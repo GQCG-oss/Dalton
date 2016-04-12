@@ -20,6 +20,9 @@ C
       use so_info, only: sop_excita
 C
 #include "implicit.h"
+#ifdef VAR_MPI
+#include "mpif.h"
+#endif
 #include "priunit.h"
 C
 #include "soppinf.h"
@@ -45,7 +48,7 @@ C     The definition must match that in soppa_nodedriver
      &            (info_array(3), nnewtr),    (info_array(4),noldtr)
       INTEGER(MPI_INTEGER_KIND) :: IERR
 
-      CALL PARQUIT('RPA(D) not implemented for parallel calculations')
+      IF (NUMPROCS .GT. 1) CALL PARQUIT('RPA(D)')
 #endif
 C
 C------------------

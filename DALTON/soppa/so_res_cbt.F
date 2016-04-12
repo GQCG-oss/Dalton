@@ -90,7 +90,7 @@ C
 C
 C----------------------------------------------------------------------
 C                                       ~ ~
-C              Generate first part of ( a i | j delta ) for given j and 
+C              Generate first part of ( a i | j delta ) for given j and
 C              delta and given symmetry of ai in KSCR2 and KSCR3 for
 C              excitations and de-excitations, respectively.
 C----------------------------------------------------------------------
@@ -211,7 +211,7 @@ C
             LWORK4  = LWORK - KEND4
 C
             CALL SO_MEMMAX ('SO_RES_CBT.4',LWORK4)
-            IF (LWORK4 .LT. 0) 
+            IF (LWORK4 .LT. 0)
      &          CALL STOPIT('SO_RES_CBT.4',' ',KEND4,LWORK)
 C
             DO 400 B = 1,NVIR(ISYMB)
@@ -295,7 +295,7 @@ C
                      ELSE IF (ISYMI .LT. ISYMJ) THEN
                         KJOFF = NRHF(ISYMI) * (J - 1)
                         NIJ1  = IIJT + I + KJOFF
-                        NIJ2  = NIJ1 
+                        NIJ2  = NIJ1
                         NIJ3  = IIJS + I + KJOFF
                         SGNIJ1= -ONE
                         SGNIJ2= -ONESQ2
@@ -358,8 +358,8 @@ C
 C
                  RES2E(NABIJ2) = RES2E(NABIJ2) + SGN2*WORK(KSCR4+NAI-1)
 C
-c      if (((nabij2.eq.9).or.(nabij2.eq.10)).and.(sgn2.ne.zero)) 
-c     &        WRITE(LUPRI,'(I3,2(a,4(I3,X)),X,F5.2,X,F10.7,X,F10.7)') 
+c      if (((nabij2.eq.9).or.(nabij2.eq.10)).and.(sgn2.ne.zero))
+c     &        WRITE(LUPRI,'(I3,2(a,4(I3,X)),X,F5.2,X,F10.7,X,F10.7)')
 c     &      NABIJ2,'SYM',isyma,isymb,isymi,isymj,'Orb',A,B,I,J,
 c     &      SGN2,WORK(KSCR4+NAI-1),RES2E(NABIJ2)
 C
@@ -368,7 +368,7 @@ C
                  RES2E(NABIJ3) = RES2E(NABIJ3) +
      &                         + SGN3*WORK(KSCR4+NAI-1)*ONESQ2
 C
-                 RES2D(NABIJ3) = RES2D(NABIJ3) 
+                 RES2D(NABIJ3) = RES2D(NABIJ3)
      &                         + SGN3*WORK(KSCR5+NAI-1)*ONESQ2
 C
   700         CONTINUE

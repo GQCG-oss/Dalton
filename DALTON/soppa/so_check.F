@@ -144,7 +144,7 @@ C
          LRES1D  = NT1AM(ISYMTR)
          LRESO1E = NT1AM(ISYMTR)
          LRESO1D = NT1AM(ISYMTR)
-         IF (DOUBLES) THEN 
+         IF (DOUBLES) THEN
 C            LRES2E  = NT2AM(ISYMTR)
 C            LRES2D  = NT2AM(ISYMTR)
 C            LRESO2E = NT2AM(ISYMTR)
@@ -152,6 +152,7 @@ C            LRESO2D = NT2AM(ISYMTR)
             LRES2E  = N2P2HOP(ISYMTR)
             LRES2D  = N2P2HOP(ISYMTR)
             LRESO2E = N2P2HOP(ISYMTR)
+            LRESO2D = N2P2HOP(ISYMTR)
          ELSE
             LRES2E  = 0
             LRES2D  = 0
@@ -235,7 +236,7 @@ C Pack INFO_ARRAY variables and send them off
          CALL SO_ERES(MODEL,0, 1, DENSIJ, LDENSIJ, DENSAB, LDENSAB,
      &               T2MP, LT2MP,  FOCKD,   LFOCKD,
      &               DENSAI, LDENSAI, ICOL, ISYMTR,
-#ifdef VAR_MPI 
+#ifdef VAR_MPI
      &               WORK(kAssignedIndices),lAssignedIndices,
 #endif
      &               WORK(KEND1), LWORK1)

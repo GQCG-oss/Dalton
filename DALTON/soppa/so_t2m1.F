@@ -25,7 +25,7 @@ C------------------------------
 C     Statement function INDEX.
 C------------------------------
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
 C------------------
 C     Add to trace.
@@ -36,6 +36,8 @@ C
       ISYMB = ISYMD
 C
       LCDB  = NVIR(ISYMB)
+CRF   If there's nothing to do here, skip straight to exit
+      IF ( LCDB .LE. 0 ) GOTO 4321
 C
       KCDB    = 1
       KEND1   = KCDB  + LCDB
@@ -57,10 +59,10 @@ C     Loop over symmetry-blocks, do reductions
 C------------------------------------------------------------------
 C
 C$OMP PARALLEL PRIVATE(ISYMBJ,ISYMJ,ISYMAI,NAIBJ1,NAIBJ,FACT,NBJ,NBJ1,
-C$OMP&                 J,B,NAI)
-      DO 100 ISYMBJ = 1,NSYM
+C$OMP&                 J,B,NAI,NAIBJ2,ISYMI,ISYMA,I,A,KOFFBJ,TMP,ISTART)
+      DO 100 ISYMJ = 1,NSYM
 C
-         ISYMJ = MULD2H(ISYMBJ,ISYMB)
+         ISYMBJ = MULD2H(ISYMJ,ISYMB)
 C
          ISYMAI  = ISYMBJ
 C
@@ -69,10 +71,11 @@ C$OMP DO
          DO 120 J = 1,NRHF(ISYMJ)
 C
             KOFF = IT2BCD(ISYMAI,ISYMJ) + NT1AM(ISYMAI)*(J-1)
-
             NBJ1 = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J-1)
-C              Zero output array
-            DO NAI = 1, NT1AM(ISYMAI)
+C
+C           Zero output array 
+C           (only the part accessed in ai<bj loop)
+            DO NAI = 1, NBJ1+NVIR(ISYMB)
                T2M1(KOFF+NAI) = ZERO
             END DO
 C
@@ -83,27 +86,70 @@ C
 C
                NBJ  = NBJ1 + B
                FACT = WORK(KCDB-1+B)
+               NAIBJ2 = NAIBJ1 + NBJ*(NBJ-1)/2
 C
-               DO 140 NAI = 1, NT1AM(ISYMAI)
-C
-                   NAIBJ = NAIBJ1 + INDEX(NAI,NBJ)
-C
+C              Stride 1 loop when ai <= bj
+               DO NAI = 1, NBJ
+                   NAIBJ = NAIBJ2 + NAI
                    T2M1(KOFF+NAI) = FACT*T2MP(NAIBJ)+T2M1(KOFF+NAI)
+               END DO
 C
-  140          CONTINUE
+  130       CONTINUE ! LOOP B
 C
-  130       CONTINUE
+C           Do the same for ai>bi :
+C           T2(bj<ai)*C(b) -> T2M1 (ai,j)
+            DO ISYMI = ISYMJ, NSYM
+               ISYMA = MULD2H(ISYMAI,ISYMI)
+               IF (ISYMI .EQ. ISYMJ) THEN
+                  ! Same symmetries: two cases I>J and I=J
+                  ! DO I = J Seperately
+                  I = J
+                  DO A = 2, NVIR(ISYMA)
+                     NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1)+A
+                     TMP = ZERO
+                     KOFFBJ = NAIBJ1 + NAI*(NAI-1)/2 + NBJ1
+                     ! In this case B<A, The B>=A has allready been
+                     ! handled
+                     DO B = 1, A-1
+                        NAIBJ = KOFFBJ + B
+                        TMP = TMP + T2MP(NAIBJ)*WORK(KCDB-1+B)
+                     END DO
+                     T2M1(KOFF+NAI) = T2M1(KOFF+NAI) + TMP
+                  END DO
+                  ! I > J taken care of in the following
+                  ISTART = J + 1
+               ELSE
+                  ! ISYMI > ISYMJ, so I>J is implicit, start loop from
+                  ! one
+                  ISTART = 1
+               END IF
+
+               DO I = ISTART, NRHF(ISYMI)
+                  ! Since I>J, we have no restrictions on A,B
+                  DO A = 1, NVIR(ISYMA)
+                     NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1)+A
+                     TMP = ZERO
+                     KOFFBJ = NAIBJ1 + NAI*(NAI-1)/2 + NBJ1
+                     ! This could be a DDOT
+                     DO B = 1, NVIR(ISYMB)
+                        NAIBJ = KOFFBJ + B
+                        TMP = TMP + T2MP(NAIBJ)*WORK(KCDB-1+B)
+                     END DO
+                     T2M1(KOFF+NAI) = TMP
+                  END DO
+               END DO
+            END DO
 C
-  120    CONTINUE
+  120    CONTINUE ! LOOP J
 C$OMP END DO NOWAIT
-  100 CONTINUE
+  100 CONTINUE ! LOOP ISYMJ
 C$OMP END PARALLEL
 C
 C-----------------------
 C     Remove from trace.
 C-----------------------
 C
-      CALL QEXIT('SO_T2M1')
+4321  CALL QEXIT('SO_T2M1')
 C
       RETURN
       END

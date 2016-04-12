@@ -20,7 +20,7 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION EXTBEA(LEXTBEA), EXTBEB(LEXTBEB)
-      DIMENSION EXTBDA(LEXTBDA), EXTBDB(LEXTBDB) 
+      DIMENSION EXTBDA(LEXTBDA), EXTBDB(LEXTBDB)
       DIMENSION TR2E(LTR2E), TR2D(LTR2D)
 C
 #include "ccorb.h"
@@ -62,13 +62,13 @@ C
 C
 C----------------------------------------------------------------
 C     Extract b(a i b j) and b(b i a j) for the three triplet
-C     trial vectors for excitations and de-excitations 
+C     trial vectors for excitations and de-excitations
 C
 C     In order to combine the four summations a "fully squared" version
 C     $\underline{^{T1,E/D}b}~^{2p2h}_{aibj}$ of the T1 2p2h trial vector
 C     $^{T1,E/D}b^{2p2h}_{aibj}$ is defined as
 C $C\underline{^{T1,E/D}b}~^{2p2h}_{aibj} = ^{T1,E/D}b^{2p2h}_{aibj}$
-C   for $a > b$  and $i > j$ 
+C   for $a > b$  and $i > j$
 C\underline{^{T1,E/D}b}~^{2p2h}_{aibj} &=& - ^{T1,E/D}b^{2p2h}_{biaj}
 C~~~~~\textrm{for}~ a < b  ~\textrm{and} ~i > j $
 C\underline{^{T1,E/D}b}~^{2p2h}_{aibj} &=& - ^{T1,E/D}b^{2p2h}_{ajbi}
@@ -182,10 +182,10 @@ C
       IABS   = ISVV(MAX(ISYMA,ISYMB),MIN(ISYMA,ISYMB))
 C
 cspas
-      if ((itype.eq.2).and.((TR2E(4).eq.ONE).or.(TR2E(11).eq.ONE))) 
+      if ((itype.eq.2).and.((TR2E(4).eq.ONE).or.(TR2E(11).eq.ONE)))
      & write(lupri,'(A,4I3,X,I3)')
      &     'entering SO_TBEXTRACT with ',ISYMA,ISYMB,ISYMI,ISYMJ,J
-      if ((itype.eq.2).and.((TR2E(4).eq.ONE).or.(TR2E(11).eq.ONE))) 
+      if ((itype.eq.2).and.((TR2E(4).eq.ONE).or.(TR2E(11).eq.ONE)))
      & write(lupri,'(A,A)') ' SA SB SI SJ   A  B  I  J ',
      & 'NABIJ2 TR2E     SGN2 NAIB EXTBEA(NAIB) NAIB EXTBEB(NAIB)'
 cspas
@@ -323,7 +323,7 @@ C
                   EXTBDB(NAIB) = EXTBDB(NAIB) - SGN2 * TR2D(NABIJ2)
 C
 cspas
-      if ((TR2E(4).eq.ONE).or.(TR2E(11).eq.ONE)) 
+      if ((TR2E(4).eq.ONE).or.(TR2E(11).eq.ONE))
      & write(lupri,'(2(4I3,X),X,I3,X,F10.7,X,F5.2,2(X,I3,X,F10.7,X))')
      & ISYMA,ISYMB,ISYMI,ISYMJ,
      & A,B,I,J,NABIJ2,TR2E(NABIJ2),SGN2,
@@ -368,7 +368,7 @@ C
                      END IF
                   ELSE IF (ISYMA .GT. ISYMB) THEN
                      KBOFF = NVIR(ISYMB) * (A - 1)
-                     NAB3  = IAB1 + KBOFF 
+                     NAB3  = IAB1 + KBOFF
                      SGN3 = SGNIJ3
                   ELSE IF (ISYMA .LT. ISYMB) THEN
                      KBOFF = NVIR(ISYMA) * (B - 1)

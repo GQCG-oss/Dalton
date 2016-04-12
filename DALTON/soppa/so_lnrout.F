@@ -12,7 +12,7 @@ C     PURPOSE: Driver for printing final output for the RPA,
 C              SOPPA, and SOPPA(CCSD) polarizabilities.
 C
       use so_info, only: sop_num_models, so_get_active_models,
-     &                   sop_mod_fullname
+     &                   sop_mod_fullname, sop_model_rpad
 #include "implicit.h"
 #include "priunit.h"
 #include "soppinf.h"

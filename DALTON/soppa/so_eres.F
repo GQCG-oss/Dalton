@@ -228,7 +228,7 @@ C            LRES2D  = NT2AM(ISYMTR)
             LTR2D   = N2P2HOP(ISYMTR)
             LRES2D  = N2P2HOP(ISYMTR)
 Cend-Pi
-         ELSE 
+         ELSE
             LTR2D  = 0
             LRES2D = 0
          ENDIF
@@ -649,16 +649,12 @@ C
 C
                   IF ((NVIR(ISYMD) .GT. 0) .AND.
      &                (DOUBLES.OR.SINGLES_SECOND) ) THEN
+C
                      LT2M1 = NT2BCD(ISAIJ)
-                  ELSE
-                     LT2M1 = 0
-                  END IF
+                     KT2M1   = KEND3
+                     KEND4   = KT2M1  + LT2M1
+                     LWORK4  = LWORK  - KEND4
 C
-                  KT2M1   = KEND3
-                  KEND4   = KT2M1  + LT2M1
-                  LWORK4  = LWORK  - KEND4
-C
-                  IF (DOUBLES.OR.SINGLES_SECOND) THEN
                      CALL SO_MEMMAX ('SO_ERES.4',LWORK4)
                      IF (LWORK4 .LT. 0)
      &                   CALL STOPIT('SO_ERES.4',' ',KEND4,LWORK)
@@ -677,6 +673,10 @@ Cend-Pi
      &                            WORK(KEND4),LWORK4)
                      DTIME      = SECOND()   - DTIME
                      SOTIME(12) = SOTIME(12) + DTIME
+                  ELSE
+                     KT2M1 = HUGE(LWORK) ! Crash if this is accessed
+                     LT2M1 = 0
+                     KEND4 = KEND3
                   ENDIF
 C
 C---------------------------------------------
@@ -1300,7 +1300,7 @@ C
 C
 C-------------------------------------------------------------------
 C        Calculate the part of the result vectors RES1E and
-C        RES1D which originate from the C matrices. See 
+C        RES1D which originate from the C matrices. See
 C                 eqs. (72) and (73).
 C-------------------------------------------------------------------
 C
@@ -1333,14 +1333,6 @@ C
             DTIME      = SECOND()   - DTIME
             SOTIME(15) = SOTIME(15) + DTIME
 C
-CRF         C^T*Tr2 => Res_1 and C*Tr_1 => Res_2 goes here!
-<<<<<<< HEAD
-CRF         Pi: Check if existing implementation can be dropped in..?
-
-=======
-CRF         Pi: Check if existing implementation can be dropped in?
-C
->>>>>>> cb7abdda095321c4717b37ec611ee179db43d096
          ENDIF
 
          END SUBROUTINE

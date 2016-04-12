@@ -41,7 +41,7 @@ C------------------
 C
       CALL QENTER('SO_RES_TCBT')
 cspas
-      write(LUPRI,'(A,I3)') 
+      write(LUPRI,'(A,I3)')
      &     'in start of SO_RES_TCBT: printing RES1E for IDEL=',IDEL
       write(LUPRI,'(I8,1X,F14.8)') (I,RES1E(I),I=1,LRES1E)
 C
@@ -130,7 +130,7 @@ C
                LWORK3  = LWORK - KEND3
 C
                CALL SO_MEMMAX ('SO_RES_TCBT.3',LWORK3)
-               IF (LWORK3 .LT. 0) 
+               IF (LWORK3 .LT. 0)
      &              CALL STOPIT('SO_RES_TCBT.3',' ',KEND3,LWORK)
 C
                NTOTAL = MAX(NBAS(ISALFA),1)
@@ -166,15 +166,15 @@ C
      &                    WORK(KSCR4),NTOTAL,ZERO,WORK(KSCR3),NTOTK)
 C
 C---------------------------------------------------------------
-C              Loop over the three triplet trial vectors and 
+C              Loop over the three triplet trial vectors and
 C              C matrices.
 C---------------------------------------------------------------
 C
-               DO 400 ITTRIAL = 1, 3 
+               DO 400 ITTRIAL = 1, 3
 C
 C---------------------------------------------------------------
 C              Generate b(a k b j) +/- b(b k a j) for given j in
-C              KPTR2EA(a k b) and KPTR2EB(a k b) 
+C              KPTR2EA(a k b) and KPTR2EB(a k b)
 C              (and KPTR2DA(a k b) and KPTR2DB(a k b))
 C              for excitations (and de-excitations), respectively.
 C---------------------------------------------------------------
@@ -196,7 +196,7 @@ C
                   LWORK4  = LWORK   - KEND4
 C
                   CALL SO_MEMMAX ('SO_RES_TCBT.4',LWORK4)
-                  IF (LWORK4 .LT. 0) 
+                  IF (LWORK4 .LT. 0)
      &                CALL STOPIT('SO_RES_TCBT.4',' ',KEND4,LWORK)
 C
                   CALL SO_TBEXTRACT(ITTRIAL,WORK(KPTR2EA),LPTR2E,
@@ -209,7 +209,7 @@ C
 C-----------------------------------------------------------------------
 C              Back transform the b index of the combinations of trial
 C              vectors to delta in the AO basis:
-C              Generate 1/2 * KTTR2EA/B(a k delta) from KPTR2EA/B(a k b) 
+C              Generate 1/2 * KTTR2EA/B(a k delta) from KPTR2EA/B(a k b)
 C                   and 1/2 * KTTR2DA/B(a k delta) from KPTR2DA/B(a k b)
 C              for given delta.
 C-----------------------------------------------------------------------
@@ -231,35 +231,35 @@ C
                      CALL DGEMV('N',NVIR(ISYMA)*NRHF(ISYMK),NVIR(ISYMB),
      &                          HALF,WORK(KPTR2EB),NTOT,WORK(KCDB),1,
      &                          ZERO,WORK(KTTR2EB),1)
-                     IF ( LPTR2E .EQ. 0 ) 
+                     IF ( LPTR2E .EQ. 0 )
      &                    CALL DZERO(WORK(KTTR2EB),LTTR2E)
 C
                      CALL DGEMV('N',NVIR(ISYMA)*NRHF(ISYMK),NVIR(ISYMB),
      &                          HALF,WORK(KPTR2DB),NTOT,WORK(KCDB),1,
      &                          ZERO,WORK(KTTR2DB),1)
-                     IF ( LPTR2D .EQ. 0 ) 
+                     IF ( LPTR2D .EQ. 0 )
      &                    CALL DZERO(WORK(KTTR2DB),LTTR2D)
                   END IF
 cspas
-cspas write(LUPRI,'(A,I3)') 
+cspas write(LUPRI,'(A,I3)')
 cspas&     'in SO_RES_TCBT: printing TTR2EA for IDEL=',IDEL
 cspas write(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTTR2EA-1+I),I=1,LTTR2E)
-cspas write(LUPRI,'(A,I3)') 
+cspas write(LUPRI,'(A,I3)')
 cspas&     'in SO_RES_TCBT: printing TTR2DA for IDEL=',IDEL
 cspas write(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTTR2DA-1+i),I=1,LTTR2D)
 C
 C
 C----------------------------------------------------------------------
 C              Calculate and add C * b contribution to RES1E and RES1D.
-C              according to 
+C              according to
 C              $(c {\widetilde{a|jb}^k}) = \sum_a (c a | j \delta)
 C              ~\underline{^{E/D}\widetilde{b}}~^{2p2h}_{bk\delta j}$
-C              by multiplying two-electron integrals in SCR2 
+C              by multiplying two-electron integrals in SCR2
 C              with the triplet 2p2h amplitudes in TTR2EA and TTR2DA.
 C----------------------------------------------------------------------
 C
 cspas
-cspas write(LUPRI,'(A,I3)') 
+cspas write(LUPRI,'(A,I3)')
 cspas&     'in 1 of SO_RES_TCBT: printing RES1E for IDEL=',IDEL
 cspas write(LUPRI,'(I8,1X,F14.8)') (I,RES1E(I),I=1,LRES1E)
 C
@@ -273,7 +273,7 @@ C
 C
 C
 cspas
-cspas write(LUPRI,'(A,I3)') 
+cspas write(LUPRI,'(A,I3)')
 cspas&     'in 2 of SO_RES_TCBT: printing RES1E for IDEL=',IDEL
 cspas write(LUPRI,'(I8,1X,F14.8)') (I,RES1E(I),I=1,LRES1E)
 C
@@ -283,17 +283,17 @@ C
 C
 C----------------------------------------------------------------------
 C              Calculate and add C * b contribution to RES1E and RES1D.
-C              according to 
-C              $(i {\widetilde{k|jb}^a}) = \sum_k (i k  | j \delta) 
+C              according to
+C              $(i {\widetilde{k|jb}^a}) = \sum_k (i k  | j \delta)
 C              \underline{^{E/D}\widetilde{b}}~^{2p2h}_{ak\delta j}$
-C              by multiplying two-electron integrals in SCR3 
+C              by multiplying two-electron integrals in SCR3
 C              with the triplet 2p2h amplitudes in TTR2EA and TTR2DA
-C              for T1 and with the triplet 2p2h amplitudes in TTR2EB 
+C              for T1 and with the triplet 2p2h amplitudes in TTR2EB
 C              and TTR2DB for T2 and T3.
 C----------------------------------------------------------------------
-C     
+C
 cspas
-cspas write(LUPRI,'(A,I3)') 
+cspas write(LUPRI,'(A,I3)')
 cspas&     'in 3 of SO_RES_TCBT: printing RES1E for IDEL=',IDEL
 cspas write(LUPRI,'(I8,1X,F14.8)') (I,RES1E(I),I=1,LRES1E)
 C
@@ -323,7 +323,7 @@ C
 C
                   END IF
 cspas
-cspas write(LUPRI,'(A,I3)') 
+cspas write(LUPRI,'(A,I3)')
 cspas&     'in 4 of SO_RES_TCBT: printing RES1E for IDEL=',IDEL
 cspas write(LUPRI,'(I8,1X,F14.8)') (I,RES1E(I),I=1,LRES1E)
 C
@@ -341,7 +341,7 @@ C     Remove from trace.
 C-----------------------
 C
 cspas
-      write(LUPRI,'(A,I3)') 
+      write(LUPRI,'(A,I3)')
      &     'in end of SO_RES_TCBT: printing RES1E for IDEL=',IDEL
       write(LUPRI,'(I8,1X,F14.8)') (I,RES1E(I),I=1,LRES1E)
 C

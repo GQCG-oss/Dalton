@@ -178,7 +178,7 @@ C
 C
          END DO
 C
-         NT2AMTT(ISYM) = NT2AMT1(ISYM) + NT2AMT2(ISYM) + NT2AMT3(ISYM) 
+         NT2AMTT(ISYM) = NT2AMT1(ISYM) + NT2AMT2(ISYM) + NT2AMT3(ISYM)
 C
       END DO
 C
@@ -203,7 +203,7 @@ C
 C
             IT2AMT1(ISYMIJ,ISYMAB) = ICOUNT1
             IT2AMT2(ISYMIJ,ISYMAB) = NT2AMT1(ISYMTR) + ICOUNT2
-            IT2AMT3(ISYMIJ,ISYMAB) = NT2AMT1(ISYMTR) + NT2AMT2(ISYMTR) 
+            IT2AMT3(ISYMIJ,ISYMAB) = NT2AMT1(ISYMTR) + NT2AMT2(ISYMTR)
      &                               + ICOUNT3
 C
             ICOUNT1 = ICOUNT1 + NTOO(ISYMIJ) * NTVV(ISYMAB)
@@ -215,7 +215,7 @@ C
       END DO
 CPFP**
       IF (IPRSOP .GE. 5) THEN
-         WRITE(LUPRI,'(//,1X,A,/)') 
+         WRITE(LUPRI,'(//,1X,A,/)')
      &        'Counter and offset arrays for triplet 2p-2h vectors:'
          WRITE(LUPRI,'(A,8I4)') 'NSOO ',(NSOO(I),I=1,8)
          WRITE(LUPRI,'(A,8I4)') 'NTOO ',(NTOO(I),I=1,8)
@@ -232,11 +232,11 @@ C
          WRITE(LUPRI,'(A,8I4)') 'NT2AMT3 ',(NT2AMT3(I),I=1,8)
          WRITE(LUPRI,'(A,8I4)') 'NT2AMTT ',(NT2AMTT(I),I=1,8)
 C
-         WRITE(LUPRI,'(8(A,8I4,/))') 
+         WRITE(LUPRI,'(8(A,8I4,/))')
      &        ('IT2AMT1 ',(IT2AMT1(I,J),J=1,8),I=1,8)
-         WRITE(LUPRI,'(8(A,8I4,/))') 
+         WRITE(LUPRI,'(8(A,8I4,/))')
      &        ('IT2AMT2 ',(IT2AMT2(I,J),J=1,8),I=1,8)
-         WRITE(LUPRI,'(8(A,8I4,/))') 
+         WRITE(LUPRI,'(8(A,8I4,/))')
      &        ('IT2AMT3 ',(IT2AMT3(I,J),J=1,8),I=1,8)
          CALL FLUSH(LUPRI)
       END IF
