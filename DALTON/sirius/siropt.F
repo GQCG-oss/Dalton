@@ -1543,6 +1543,7 @@ C
 #include "dummy.h"
 C
 C Used from common blocks:
+C   exeinf.h : NEWCMO
 C   INFINP: ISTATE,LROOTS,FLAG(*),MAXCIT,THRGRD,ITRLVL,?
 C   INFVAR: NCONF (p.t. only NCONF)
 C   INFIND: ISX()
@@ -1555,6 +1556,7 @@ C
 #include "maxorb.h"
 #include "maxash.h"
 #include "priunit.h"
+#include "exeinf.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "infind.h"
@@ -1668,6 +1670,7 @@ C        Write NEWORB
 C
          WRITE (LUIT1) STAR8,LBLDAT(1),LBLINF(2),TABLE(6)
          CALL WRITT(LUIT1,NCMOT4,WRK(KCMO))
+         NEWCMO = .TRUE.
 C        single configuration has always natural orbitals
          IF (CNOLBL .EQ. 'ONLYNO') THEN
             TRCNO  = .FALSE.
@@ -2059,6 +2062,7 @@ C        write the natural orbitals to LUIT1 label NEWORB
          LBLINF(2) = '(CNOORB)'
          WRITE (LUIT1) STAR8,LBLDAT(1),LBLINF(2),TABLE(6)
          CALL WRITT(LUIT1,NCMOT4,WRK(KCMO))
+         NEWCMO = .TRUE.
          IF (NASHT .EQ. 1 .OR.
      &      (CNOLBL .NE. 'ONLYFD' .AND. NASHT .GT. 1)) THEN
             IF (NASHT.EQ.1) WRK(KAOCC) = NACTEL

@@ -15,6 +15,12 @@ All notable changes to the DALTON project will be documented in this file.
 
 Do not make changes below this line! For the relase branch only.
 
+## [2016.2] (2016-04-12)
+
+### Fixed
+- Fix for spin-orbit coupling (SOC) between S/T excited states of same symmetry (problem reported on Daltonforum.org)
+- Further fixes of MCSCF in **PROPERTIES for more than 255 basis functions - hopefully it is OK now for all requests.
+
 ## [2016.1] (2016-04-07)
 
 ### Added

@@ -406,6 +406,7 @@ C -- local constants
 C
 C Used from common blocks:
 C   priunit.h : LUERR,...
+C   exeinf.h : FTRCTL, NEWCMO, ITRLVL_LAST, LVLDRC_LAST
 C   INFINP : ISTATE,LSYM,MCTYPE,?
 C   INFORB : NISH(8),...
 C   INFVAR : NCONF,NWOPT,NVAR,JWOPSY,JWOP(2,*)
@@ -416,6 +417,7 @@ C   INFTAP : LUSIFC
 C   CCOM   : THRS
 C
 #include "abainf.h"
+#include "exeinf.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
@@ -494,7 +496,6 @@ C
       IF (ABAHF) NCONRF = 0
       LSYMRF = LSYM
 C
-C
 C PART 4 : *** Set INFTRA
 C          Open MO integral file(s)
 C          (FLAG(34) false tells that mo integrals needed)
@@ -504,10 +505,7 @@ C
       AO2INTFILE_LABEL = 'AOTWOINT'
       THRP = MAX(1.D-15,THRS)
       THRQ = MAX(1.D-15,THRS)
-C
-C     USEDRC must be set to false, kr-nov.95
-C
-      USEDRC = .FALSE.
+      USEDRC = .TRUE.
       IPRTRA = IPRNTR
       IF ((NASHT.GT.1 .AND. .NOT.HSROHF) .OR. H2MO) THEN
          FLAG(34) = .FALSE.
@@ -528,6 +526,7 @@ C        ... SIR_INTOPEN returns FLAG(14) false if no mo integral file
 C        or if ITRLVL on file too small.
       ELSE IF (ABASOP) THEN
 C        ... SOPPA requires full integral transformation
+         FLAG(34) = .FALSE.
          KTRLVL = 10
          ITRLVL = KTRLVL
          IF (NEWTRA) THEN
@@ -535,7 +534,6 @@ C        ... SOPPA requires full integral transformation
          ELSE
             FLAG(14) = .TRUE.
          END IF
-         FLAG(34) = .FALSE.
          CALL SIR_INTOPEN
       ELSE
 C        ... Hartree-Fock, MO integral file will normally
@@ -549,7 +547,9 @@ C        does exist. /980529-hjaaj
          CALL SIR_INTOPEN
       END IF
 
-      IF (.NOT. FLAG(14)) THEN
+      IF (.NOT. FLAG(34)) THEN ! MO integrals not needed
+      IF (FTRCTL .OR. NEWCMO .OR. (ITRLVL .GT. ITRLVL_SAVE) .OR.
+     &    (USEDRC .AND. LVLDRC_SAVE .LT. 0)) THEN
       ! ... needed integrals not available
          WRITE (LUPRI,1020) KTRLVL
          KCMO  = 1
@@ -562,6 +562,8 @@ C        does exist. /980529-hjaaj
          CALL READT (LUSIFC,NCMOT,WORK(KCMO))
          CALL TRACTL(KTRLVL,WORK(KCMO),WORK(KWTRA),LWTRA)
          FLAG(14) = .TRUE.
+         NEWCMO   = .FALSE.
+      END IF
       END IF
 C
 C

@@ -1434,6 +1434,12 @@ C     ... FTRCTL true forces AO sort and integral transformation,
 C         but we may restart with old integrals. FTRCTL is set
 C         true by EXEHER signalling that new AO integrals have
 C         been calculated.
+      NEWCMO = .TRUE.
+      ! force integral transformation in abaset.F / abarspn.F;
+      ! NEWCMO is then set to .false. after integral transformation.
+      ! Will be reset to .true. each time ABACTL is called (typically: new geometry)
+      ITRLVL_LAST = -999 ! Mulliken (Coulomb) MO integrals not available
+      LVLDRC_LAST = -999 ! Dirac (exchange) MO integrals not available
 C
 C     Initialize /PCMLOG/ and /EXTPCM/
 C
