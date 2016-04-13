@@ -75,7 +75,7 @@ C     Subtract from time in SO_TRIAL2 time spend in SO_ORTH_TRO and
 C     SO_ORTH_TRN.
 C------------------------------------------------------------------
 C
-C      SOTIME(34) = SOTIME(34) - SOTIME(38) - SOTIME(39)
+      SOTIME(34) = SOTIME(34) - SOTIME(38) - SOTIME(39)
 C
 C-----------------------------------------------------------
 C     Subtract from time in SO_SIGAI time spend in subparts.
@@ -167,7 +167,7 @@ C
 C
       WRITE(LUPRI,'(1X,A)') LINE2
       WRITE(LUPRI,'(1X,A19,1X,I5,A1,I2,A1,I2,23X,A1)')
-     &       '|  Total CPU time ',SOHOUR,':',SOMIN,':',SOSEC,'|'
+     &       '|  Total CPU time  ',SOHOUR,':',SOMIN,':',SOSEC,'|'
       WRITE(LUPRI,'(1X,A)') LINE1
 C
 C-----------------------------------------------------
@@ -214,7 +214,7 @@ C
          TPRCEN = TPRCEN + PRCENT
 C
          WRITE(LUPRI,
-     &         '(1X,A3,A14,3X,I5,A1,I2,A1,I2,5X,F4.1,A2,4X,F5.1,A4)')
+     &        '(1X,A3,A14,3X,I5,A1,I2.2,A1,I2.2,5X,F4.1,A2,4X,F5.1,A4)')
      &         '|  ',SUBNMW(I),SOHOUR,':',SOMIN,':',SOSEC,PRCENT,
      &         ' %',TPRCEN,' % |'
 C

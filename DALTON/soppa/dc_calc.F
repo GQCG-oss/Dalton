@@ -22,6 +22,8 @@ C
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
+C  IRAT in order to assign space for load-balancing
+#include "iratdef.h"
 #endif
 #include "priunit.h"
 C

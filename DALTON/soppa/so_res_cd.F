@@ -6,6 +6,8 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, April 1996
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
+C     Rasmus Faber: April 2016 - Now sets rather than increments 
+C                                Result-Vector                       
 C
 C     PURPOSE: Calculate contribution from D matrix to the 2p2h
 C              result vectors.
@@ -22,12 +24,6 @@ C
 #include "ccsdinp.h"
 #include "ccsdsym.h"
 #include "soppinf.h"
-C
-C------------------------------
-C     Statement function INDEX.
-C------------------------------
-C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
 C------------------
 C     Add to trace.
@@ -128,48 +124,12 @@ C---------------------------------------------------------------
 C
          IF ( ISYMAI .EQ. ISYMBJ) THEN
 C
-C            DO 401 NBJ = 1,NT1AM(ISYMBJ)
-C
-C               DO 402 NAI = 1,NBJ
-C
-C                  NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-C     &                  + INDEX(NAI,NBJ)
-C
-C                  EAIBJ = WORK(KFAI+NAI) + WORK(KFBJ+NBJ)
-C
-C                  RES2E(NAIBJ) = RES2E(NAIBJ)
-C     &                         + EAIBJ * TR2E(NAIBJ)
-C                  RES2D(NAIBJ) = RES2D(NAIBJ)
-C     &                         + EAIBJ * TR2D(NAIBJ)
-C
-C  402          CONTINUE
-C
-C  401       CONTINUE
-
             IOFF = IT2AM(ISYMAI, ISYMBJ) + 1
             CALL EXTR2_TOTSYM( TR2E(IOFF), RES2E(IOFF),
      &                         WORK(KFBJ), ISYMBJ)
             CALL EXTR2_TOTSYM( TR2D(IOFF), RES2D(IOFF),
      &                         WORK(KFBJ), ISYMBJ)
          ELSE IF ( ISYMAI .LT. ISYMBJ) THEN
-C
-C            DO 501 NBJ = 1,NT1AM(ISYMBJ)
-C
-C               DO 502 NAI = 1,NT1AM(ISYMAI)
-C
-C                  NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-C     &                  + NT1AM(ISYMAI)*(NBJ - 1) + NAI
-C
-C                  EAIBJ = WORK(KFAI+NAI-1) + WORK(KFBJ+NBJ-1)
-C
-C                  RES2E(NAIBJ) = RES2E(NAIBJ)
-C     &                         + EAIBJ * TR2E(NAIBJ)
-C                  RES2D(NAIBJ) = RES2D(NAIBJ)
-C     &                         + EAIBJ * TR2D(NAIBJ)
-C
-C  502          CONTINUE
-C
-C  501       CONTINUE
 C
             IOFF = IT2AM(ISYMAI,ISYMBJ) + 1
             CALL EXTR2_ASYM(TR2E(IOFF),RES2E(IOFF),WORK(KFAI),
@@ -203,7 +163,8 @@ C            ioffsym = it2am(isym,isym)
                do nai = 1, nbj
                   naibj = ioffbj + nai
                   eaibj = epair(nbj) + epair(nai)
-                  res2(naibj) = res2(naibj) + eaibj*tr2(naibj)
+C                  res2(naibj) = res2(naibj) + eaibj*tr2(naibj)
+                  res2(naibj) =  eaibj*tr2(naibj)
                end do
             end do
             return
@@ -223,7 +184,8 @@ C
                do nai = 1, nt1am(isym1)
                   naibj = ioffbj + nai
                   eaibj = epair1(nai) + epair2(nbj)
-                  res2(naibj) = res2(naibj) + eaibj*tr2(naibj)
+C                  res2(naibj) = res2(naibj) + eaibj*tr2(naibj)
+                  res2(naibj) = eaibj*tr2(naibj)
                end do
             end do
 

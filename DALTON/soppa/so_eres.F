@@ -374,15 +374,13 @@ C
          INEW = NOLDTR + INEWTR
 C
 C--------------------------------------------------------------
-C        Initialize RES1E, RES1D, RES2E, RES2D, SIGAI1, SIGAI2,
+C        Initialize RES1E, RES1D, SIGAI1, SIGAI2,
 C                   SIGDA1, SIGDA2 and FOCK
 C--------------------------------------------------------------
 C
          CALL DZERO(WORK(KRES1E),LRES1E)
          CALL DZERO(WORK(KRES1D),LRES1D)
 
-         IF (DOUBLES) CALL DZERO(WORK(KRES2E),LRES2E)
-         IF (DOUBLES.AND.DO_DEX) CALL DZERO(WORK(KRES2D),LRES2D)
 C
          IF (SINGLES_SECOND) THEN
             CALL DZERO(WORK(KSIGAI1),LSIGAI1)
@@ -418,6 +416,34 @@ C              speed up first iteration for excitation energies
             ENDIF
 #ifdef VAR_MPI
          ENDIF
+C
+#endif         
+         IF (DOUBLES) THEN
+C--------------------------------------------------------------------
+C        RES2E, RES2D is be initialized with the D^0*Tr2 contribution
+C        --- For MPI only one process must do this
+C--------------------------------------------------------------------
+            IF ( .NOT.TR2_ZERO
+#ifdef VAR_MPI
+     &            .OR.(MYNUM .EQ. 0 )  
+#endif 
+     &                        ) THEN
+               DTIME      = SECOND()
+               CALL SO_RES_CD(WORK(KRES2E),LRES2E,WORK(KRES2D),LRES2D,
+     &                     WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
+     &                     FOCKD,LFOCKD,ISYRES,WORK(KEND2),LWORK2)
+
+               DTIME      = SECOND()   - DTIME
+               SOTIME(30) = SOTIME(30) + DTIME
+            ELSE            
+               CALL DZERO(WORK(KRES2E),LRES2E)
+               IF (DO_DEX) CALL DZERO(WORK(KRES2D),LRES2D)
+            ENDIF
+         END IF
+#ifdef VAR_MPI
+C---------------------------
+C Communicate trial-vectors  
+C---------------------------         
 C Rememember that the trial-vectors are contigous in memory
          LTRTOT = LTR1E + LTR1D + LTR2E + LTR2D
          CALL MPI_BCAST(WORK(KTR1E), LTRTOT, MPI_REAL8,
@@ -927,21 +953,22 @@ C
          DTIME      = SECOND()   - DTIME
          SOTIME(26) = SOTIME(26) + DTIME
 C
-         IF (DOUBLES) THEN
+C
+C         IF (DOUBLES) THEN
 C
 C-----------------------------------------------------------------
 C        Construct D-contribution to 2p2h result vectors RES2E and
 C        RES2D.
 C-----------------------------------------------------------------
+CRF  Now the result vector is initialized with this contribution
+C            DTIME      = SECOND()
+C            CALL SO_RES_CD(WORK(KRES2E),LRES2E,WORK(KRES2D),LRES2D,
+C     &                     WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
+C     &                     FOCKD,LFOCKD,ISYRES,WORK(KEND2),LWORK2)
 C
-            DTIME      = SECOND()
-            CALL SO_RES_CD(WORK(KRES2E),LRES2E,WORK(KRES2D),LRES2D,
-     &                     WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
-     &                     FOCKD,LFOCKD,ISYRES,WORK(KEND2),LWORK2)
-
-            DTIME      = SECOND()   - DTIME
-            SOTIME(30) = SOTIME(30) + DTIME
-         ENDIF
+C            DTIME      = SECOND()   - DTIME
+C            SOTIME(30) = SOTIME(30) + DTIME
+C         ENDIF
 #ifdef VAR_MPI
 C Slaves are done
          IF (MYNUM .NE. 0) GOTO 100

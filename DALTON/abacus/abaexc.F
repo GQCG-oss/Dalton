@@ -225,12 +225,13 @@ CClark:end
          END IF
       END IF
 
-      IF (PARCAL.AND.EXCTRP.AND.ABASOP) THEN
-          WRITE (LUPRI, '(A,A)' ) 'Parallel calculations of '//
-     &                 'triplet excitation energies',
-     &                 ' is not implemented in the SOPPA module'
-          CALL PARQUIT('EXCTRP for ABASOP')
-      ENDIF
+CRF    We are removing this limitation
+C      IF (PARCAL.AND.EXCTRP.AND.ABASOP) THEN
+C          WRITE (LUPRI, '(A,A)' ) 'Parallel calculations of '//
+C     &                 'triplet excitation energies',
+C     &                 ' is not implemented in the SOPPA module'
+C          CALL PARQUIT('EXCTRP for ABASOP')
+C      ENDIF
 
       RETURN
       END

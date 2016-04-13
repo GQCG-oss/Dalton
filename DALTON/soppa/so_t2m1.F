@@ -21,12 +21,6 @@ C
 #include "ccsdinp.h"
 #include "ccsdsym.h"
 C
-C------------------------------
-C     Statement function INDEX.
-C------------------------------
-C
-C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
-C
 C------------------
 C     Add to trace.
 C------------------
