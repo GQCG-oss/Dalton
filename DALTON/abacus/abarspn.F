@@ -705,7 +705,8 @@ C     &                       ABS_FREQ_ALPHA(K),RES0)
           ENDDO
           WRITE(LUPRI,*) 'Vectors equal to zero'
         ELSE
-          CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
+          NGD=1
+          CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),NGD,WRK(KXSOL),
      &               ABS_FREQ_ALPHA,NFREQ_ALPHA,LUABSVECS,
      &               WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
      &               WRK(KRES),WRK(KFREE),LFREE)
