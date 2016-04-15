@@ -6,8 +6,8 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, April 1996
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
-C     Rasmus Faber: April 2016 - Now sets rather than increments 
-C                                Result-Vector                       
+C     Rasmus Faber: April 2016 - Now sets rather than increments
+C                                Result-Vector
 C
 C     PURPOSE: Calculate contribution from D matrix to the 2p2h
 C              result vectors.

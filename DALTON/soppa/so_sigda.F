@@ -146,8 +146,8 @@ C
                NTOTBE = MAX(NBAS(ISBETA),1)
 C
                KOFF5  = KSCR1 + IAODIS(ISALFA,ISBETA)
-	       KOFF6  = ILMRHF(ISALFA) + 1
-	       KOFF7  = IMATAV(ISBETA,ISYMC) + 1
+               KOFF6  = ILMRHF(ISALFA) + 1
+               KOFF7  = IMATAV(ISBETA,ISYMC) + 1
 C
 C-----------------------------------------------------------------
 C                               ~

@@ -67,7 +67,7 @@ C
             KOFF = IT2BCD(ISYMAI,ISYMJ) + NT1AM(ISYMAI)*(J-1)
             NBJ1 = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J-1)
 C
-C           Zero output array 
+C           Zero output array
 C           (only the part accessed in ai<bj loop)
             DO NAI = 1, NBJ1+NVIR(ISYMB)
                T2M1(KOFF+NAI) = ZERO

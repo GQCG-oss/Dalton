@@ -8,7 +8,7 @@ C     Keld Bak and Henrik Koch, September 1995
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C     Rasmus Faber: 22.1.2016: Do only E or D
 C              Also Sigma has been reordered as (i,alfa), though
-C              the symmetry blocks are still ordered (ialpha,isymi)         
+C              the symmetry blocks are still ordered (ialpha,isymi)
 C
 C     PURPOSE: Calculate the third contributions to RES1E or RES1D
 C              in eqs. (34) and (35).
@@ -55,8 +55,8 @@ C----------------------------------------------------------------------
 C        Multiply MO-coefficients C(alfa,a) and Sigma(alfa,i) matrices
 C        to get third contributions to RES1E and RES1D in eqs. (34) and
 C        (35).
-CRF      Sigma now stored as (i,alfa) -> This should allow for more 
-C        efficient code in so_sigai.         
+CRF      Sigma now stored as (i,alfa) -> This should allow for more
+C        efficient code in so_sigai.
 C----------------------------------------------------------------------
 C
          CALL DGEMM('T','T',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISALFA),
