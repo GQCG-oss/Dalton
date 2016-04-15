@@ -1,6 +1,6 @@
 C  /* Deck so_res_tcb */
       SUBROUTINE SO_RES_TCB(RES1E,LRES1E,RES1D,LRES1D,
-     &                      TR2E,LTR2E,TR2D,LTR2D,DSRHF,LDSRHF,
+     &                      TR2EM1,LTR2E,TR2DM1,LTR2D,DSRHF,LDSRHF,
      &                      CMO,LCMO,IDEL,ISDEL,ISYDIS,ISYMTR,
      &                      WORK,LWORK)
 C
@@ -18,7 +18,7 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION RES1E(LRES1E), RES1D(LRES1D), DSRHF(LDSRHF)
-      DIMENSION TR2E(LTR2E),   TR2D(LTR2D),   CMO(LCMO)
+      DIMENSION TR2EM1(LTR2E), TR2DM1(LTR2D), CMO(LCMO)
       DIMENSION WORK(LWORK)
 C
 #include "ccorb.h"
@@ -36,6 +36,7 @@ C
       ISYMB = ISDEL
 C
       LCDB  = NVIR(ISYMB)
+      IF (LCDB.LE.0) GOTO 999
 C
       KCDB    = 1
       KEND1   = KCDB  + LCDB
@@ -90,20 +91,22 @@ C
                ISYMAJ = MULD2H(ISYMA,ISYMJ)
 C
 C-----------------------------------------------------------------
-C              Generate ( c a | j delta ) and ( k i | j delta) for
+C              Generate ( a c | j delta ) and ( k i | j delta) for
 C              given j and delta in KSCR2 and KSCR3, respectively.
 C-----------------------------------------------------------------
 C
-               ISALFA = ISYMC
-               ISBETA = ISYMA
+               ISALFA = ISYMA
+               ISBETA = ISYMC
 C
-               ISALF2 = ISYMK
-               ISBET2 = ISYMI
+               ISALF2 = ISYMI
+               ISBET2 = ISYMK
 C
                LSCR2  = NVIR(ISYMC)*NVIR(ISYMA)
                LSCR3  = NRHF(ISYMK)*NRHF(ISYMI)
-               LSCR4  = MAX(NBAS(ISALFA)*NVIR(ISYMA),
-     &                      NBAS(ISALF2)*NRHF(ISYMI))
+C               LSCR4  = MAX(NBAS(ISALFA)*NVIR(ISYMA),
+C     &                      NBAS(ISALF2)*NRHF(ISYMI))
+               LSCR4  = MAX(NBAS(ISBETA)*NVIR(ISYMA),
+     &                      NBAS(ISBET2)*NRHF(ISYMI))
 C
                KSCR2  = KEND2
                KSCR3  = KSCR2 + LSCR2
@@ -117,20 +120,27 @@ C
 C
                NTOTAL = MAX(NBAS(ISALFA),1)
                NTOTBE = MAX(NBAS(ISBETA),1)
-               NTOTC  = MAX(NVIR(ISYMC),1)
+C               NTOTC  = MAX(NVIR(ISYMC),1)
+               NTOTA  = MAX(NVIR(ISYMA),1)
 C
                KOFF2  = KSCR1 + IAODIS(ISALFA,ISBETA)
                KOFF3  = ILMVIR(ISYMA) + 1
                KOFF4  = ILMVIR(ISYMC) + 1
 C
-               CALL DGEMM('N','N',NBAS(ISALFA),NVIR(ISYMA),
-     &                    NBAS(ISBETA),ONE,WORK(KOFF2),NTOTAL,
-     &                    CMO(KOFF3),NTOTBE,ZERO,WORK(KSCR4),NTOTAL)
-C
-               CALL DGEMM('T','N',NVIR(ISYMC),NVIR(ISYMA),
-     &                    NBAS(ISALFA),ONE,CMO(KOFF4),NTOTAL,
-     &                    WORK(KSCR4),NTOTAL,ZERO,WORK(KSCR2),NTOTC)
-C
+C              ( alpha, beta |..) * C(alpha, a) => ( beta, a | ..)
+               CALL DGEMM('T','N',NBAS(ISBETA),NVIR(ISYMA),
+     &                    NBAS(ISALFA),ONE,
+     &                    WORK(KOFF2),NTOTAL,
+     &                    CMO(KOFF3),NTOTAL,
+     &                    ZERO,WORK(KSCR4),NTOTBE)
+C              ( beta, a | .. ) * C(beta, c) => ( a, c | ..)
+               CALL DGEMM('T','N',NVIR(ISYMA),NVIR(ISYMC),
+     &                    NBAS(ISBETA),ONE,
+     &                    WORK(KSCR4),NTOTBE,
+     &                    CMO(KOFF4),NTOTBE,
+     &                    ZERO,WORK(KSCR2),NTOTA)
+
+
                NTOTAL = MAX(NBAS(ISALF2),1)
                NTOTBE = MAX(NBAS(ISBET2),1)
                NTOTK  = MAX(NRHF(ISYMK),1)
@@ -139,64 +149,18 @@ C
                KOFF6  = ILMRHF(ISYMI) + 1
                KOFF7  = ILMRHF(ISYMK) + 1
 C
-               CALL DGEMM('N','N',NBAS(ISALF2),NRHF(ISYMI),
-     &                    NBAS(ISBET2),ONE,WORK(KOFF5),NTOTAL,
-     &                    CMO(KOFF6),NTOTBE,ZERO,WORK(KSCR4),NTOTAL)
+C              ( alpha, beta | .. ) * C(alpha,i) => ( beta, i | ..)
+               CALL DGEMM('T','N',NBAS(ISBET2),NRHF(ISYMI),
+     &                    NBAS(ISALF2),ONE,WORK(KOFF5),NTOTAL,
+     &                    CMO(KOFF6),NTOTAL,ZERO,WORK(KSCR4),NTOTBE)
 C
+C              C( beta, k) * ( beta, i | ..)  = > ( k, i | j delta)
                CALL DGEMM('T','N',NRHF(ISYMK),NRHF(ISYMI),
-     &                    NBAS(ISALF2),ONE,CMO(KOFF7),NTOTAL,
-     &                    WORK(KSCR4),NTOTAL,ZERO,WORK(KSCR3),NTOTK)
+     &                    NBAS(ISBET2),ONE,CMO(KOFF7),NTOTBE,
+     &                    WORK(KSCR4),NTOTBE,ZERO,WORK(KSCR3),NTOTK)
 C
-C---------------------------------------------------------------
-C              Generate 2*b(a k b j) - b(b k a j) for given j in
-C              KPTR2E(a k b) (and KPTR2D(a k b)) for excitations
-C              (and de-excitations), respectively.
-C---------------------------------------------------------------
-C
-               LTTR2E = NVIR(ISYMA)*NRHF(ISYMK)
-               LTTR2D = NVIR(ISYMA)*NRHF(ISYMK)
-               LPTR2E = NVIR(ISYMA)*NRHF(ISYMK)*NVIR(ISYMB)
-               LPTR2D = NVIR(ISYMA)*NRHF(ISYMK)*NVIR(ISYMB)
-C
-               KTTR2E  = KSCR3  + LSCR3
-               KTTR2D  = KTTR2E + LTTR2E
-               KPTR2E  = KTTR2D + LTTR2D
-               KPTR2D  = KPTR2E + LPTR2E
-               KEND4   = KPTR2D + LPTR2D
-               LWORK4  = LWORK  - KEND4
-C
-               CALL SO_MEMMAX ('SO_RES_TCB.4',LWORK4)
-               IF (LWORK4 .LT. 0)
-     &             CALL STOPIT('SO_RES_TCB.4',' ',KEND4,LWORK)
-C
-               CALL SO_BEXTRACT(WORK(KPTR2E),LPTR2E,WORK(KPTR2D),LPTR2D,
-     &                          TR2E,LTR2E,TR2D,LTR2D,
-     &                          ISYMA,ISYMK,ISYMB,ISYMJ,J)
-C
-C-----------------------------------------------------------------------
-C              Generate 1/SQ2 * KTTR2E(a k delta) from KPTR2E(a k b) and
-C                       1/SQ2 * KTTR2D(a k delta) from KPTR2D(a k b)
-C              for given delta..
-C-----------------------------------------------------------------------
-C
-               NTOT   = MAX(NVIR(ISYMA)*NRHF(ISYMK),1)
-C
-               CALL DGEMV('N',NVIR(ISYMA)*NRHF(ISYMK),NVIR(ISYMB),SQ2I,
-     &                    WORK(KPTR2E),NTOT,WORK(KCDB),1,ZERO,
-     &                    WORK(KTTR2E),1)
-               IF ( LPTR2E .EQ. 0 ) CALL DZERO(WORK(KTTR2E),LTTR2E)
-C
-               CALL DGEMV('N',NVIR(ISYMA)*NRHF(ISYMK),NVIR(ISYMB),SQ2I,
-     &                    WORK(KPTR2D),NTOT,WORK(KCDB),1,ZERO,
-     &                    WORK(KTTR2D),1)
-               IF ( LPTR2D .EQ. 0 ) CALL DZERO(WORK(KTTR2D),LTTR2D)
-C
-C----------------------------------------------------------------------
-C              Calculate and add C * b contribution to RES1E and RES1D.
-C              according to eqs. (72) and (73) by multiplying
-C              two-electron integrals in SCR2 and SCR3 with with
-C              2p2h amplitudes in TTR2E, and TTR2D.
-C----------------------------------------------------------------------
+               KOFFX2M1 = IT2BCD(ISYMAK,ISYMJ) + NT1AM(ISYMAK)*(J-1) +
+     &                    IT1AM(ISYMA,ISYMK)+1
 C
                NTOTC  = MAX(NVIR(ISYMC),1)
                NTOTA  = MAX(NVIR(ISYMA),1)
@@ -205,22 +169,23 @@ C
                KOFF3  = IT1AM(ISYMC,ISYMK) + 1
                KOFF4  = IT1AM(ISYMA,ISYMI) + 1
 C
-               CALL DGEMM('N','N',NVIR(ISYMC),NRHF(ISYMK),NVIR(ISYMA),
-     &                    ONE,WORK(KSCR2),NTOTC,WORK(KTTR2E),NTOTA,
+C               ( a, c | j, delta ) * x( a,k, j, delta ) = > x ( c, k)
+               CALL DGEMM('T','N',NVIR(ISYMC),NRHF(ISYMK),NVIR(ISYMA),
+     &                    SQ2I,WORK(KSCR2),NTOTA,TR2EM1(KOFFX2M1),NTOTA,
      &                    ONE,RES1E(KOFF3),NTOTC)
-C
-               CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMK),
-     &                    -ONE,WORK(KTTR2E),NTOTA,WORK(KSCR3),NTOTK,
-     &                    ONE,RES1E(KOFF4),NTOTA)
-C
-C
-               CALL DGEMM('N','N',NVIR(ISYMC),NRHF(ISYMK),NVIR(ISYMA),
-     &                    ONE,WORK(KSCR2),NTOTC,WORK(KTTR2D),NTOTA,
+C              And for D vector
+               CALL DGEMM('T','N',NVIR(ISYMC),NRHF(ISYMK),NVIR(ISYMA),
+     &                    SQ2I,WORK(KSCR2),NTOTA,TR2DM1(KOFFX2M1),NTOTA,
      &                    ONE,RES1D(KOFF3),NTOTC)
+C              ~
+C              x(a,k,j,delta*(k,i | j,delta) => x( a, i)
+               CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMK),
+     &                    -SQ2I,TR2EM1(KOFFX2M1),NTOTA,WORK(KSCR3),
+     &                    NTOTK,ONE,RES1E(KOFF4),NTOTA)
 C
                CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMK),
-     &                    -ONE,WORK(KTTR2D),NTOTA,WORK(KSCR3),NTOTK,
-     &                    ONE,RES1D(KOFF4),NTOTA)
+     &                    -SQ2I,TR2DM1(KOFFX2M1),NTOTA,WORK(KSCR3),
+     &                    NTOTK,ONE,RES1D(KOFF4),NTOTA)
 C
   300       CONTINUE
 C
@@ -232,7 +197,7 @@ C-----------------------
 C     Remove from trace.
 C-----------------------
 C
-      CALL QEXIT('SO_RES_TCB')
+  999 CALL QEXIT('SO_RES_TCB')
 C
       RETURN
       END

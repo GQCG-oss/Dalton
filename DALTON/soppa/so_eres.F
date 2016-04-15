@@ -417,16 +417,16 @@ C              speed up first iteration for excitation energies
 #ifdef VAR_MPI
          ENDIF
 C
-#endif         
+#endif
          IF (DOUBLES) THEN
 C--------------------------------------------------------------------
-C        RES2E, RES2D is be initialized with the D^0*Tr2 contribution
+C        RES2E, RES2D is initialized with the D^0*Tr2 contribution
 C        --- For MPI only one process must do this
 C--------------------------------------------------------------------
             IF ( .NOT.TR2_ZERO
 #ifdef VAR_MPI
-     &            .OR.(MYNUM .EQ. 0 )  
-#endif 
+     &            .OR.(MYNUM .EQ. 0 )
+#endif
      &                        ) THEN
                DTIME      = SECOND()
                CALL SO_RES_CD(WORK(KRES2E),LRES2E,WORK(KRES2D),LRES2D,
@@ -435,15 +435,24 @@ C--------------------------------------------------------------------
 
                DTIME      = SECOND()   - DTIME
                SOTIME(30) = SOTIME(30) + DTIME
-            ELSE            
+C
+C   The trial-vectors are no longer needed in the original
+C   basis, transform them.
+C
+               IF(.NOT.TRIPLET) THEN
+                  CALL CCSD_TCMEPKX(WORK(KTR2E),TWO,ISYMTR)
+                  IF (DO_DEX) CALL CCSD_TCMEPKX(WORK(KTR2D),TWO,ISYMTR)
+               END IF
+
+            ELSE
                CALL DZERO(WORK(KRES2E),LRES2E)
                IF (DO_DEX) CALL DZERO(WORK(KRES2D),LRES2D)
             ENDIF
          END IF
 #ifdef VAR_MPI
 C---------------------------
-C Communicate trial-vectors  
-C---------------------------         
+C Communicate trial-vectors
+C---------------------------
 C Rememember that the trial-vectors are contigous in memory
          LTRTOT = LTR1E + LTR1D + LTR2E + LTR2D
          CALL MPI_BCAST(WORK(KTR1E), LTRTOT, MPI_REAL8,
@@ -677,9 +686,16 @@ C
      &                (DOUBLES.OR.SINGLES_SECOND) ) THEN
 C
                      LT2M1 = NT2BCD(ISAIJ)
-                     KT2M1   = KEND3
-                     KEND4   = KT2M1  + LT2M1
-                     LWORK4  = LWORK  - KEND4
+                     IF (DOUBLES) THEN
+                        LX2M1 = NT2BCD(MULD2H(ISYMD,ISYMTR))
+                     ELSE
+                        LX2M1 = 0
+                     ENDIF
+                     KT2M1  = KEND3
+                     KX2EM1 = KT2M1  + LT2M1
+                     KX2DM1 = KX2EM1 + LX2M1
+                     KEND4  = KX2DM1 + LX2M1
+                     LWORK4 = LWORK  - KEND4
 C
                      CALL SO_MEMMAX ('SO_ERES.4',LWORK4)
                      IF (LWORK4 .LT. 0)
@@ -697,11 +713,32 @@ CPi-140316 Change LT2MP -> LT2MPH
 Cend-Pi
      &                            WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
      &                            WORK(KEND4),LWORK4)
+C
+C------------------------------------------------------------
+C                    Construct the partially back-transformed
+C                    trial vectors.
+C------------------------------------------------------------
+C
+                     IF((.NOT.TRIPLET).AND.DOUBLES) THEN
+                        CALL SO_X2M1(WORK(KX2EM1),LX2M1,
+     &                               WORK(KTR2E),LTR2E,
+     &                               WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                               ISYMTR,WORK(KEND4),LWORK4)
+                        CALL SO_X2M1(WORK(KX2DM1),LX2M1,
+     &                               WORK(KTR2D),LTR2D,
+     &                               WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                               ISYMTR,WORK(KEND4),LWORK4)
+
+                     END IF
                      DTIME      = SECOND()   - DTIME
                      SOTIME(12) = SOTIME(12) + DTIME
+
                   ELSE
                      KT2M1 = HUGE(LWORK) ! Crash if this is accessed
+                     KX2EM1 = HUGE(LWORK)
+                     KX2DM1 = HUGE(LWORK)
                      LT2M1 = 0
+                     LX2M1 = 0
                      KEND4 = KEND3
                   ENDIF
 C
@@ -711,9 +748,9 @@ C---------------------------------------------
 C
                   LDSRHF = NDSRHF(ISYMD)
 C
-                  KDSRHF  = KEND4
-                  KEND5   = KDSRHF + LDSRHF
-                  LWORK5  = LWORK  - KEND5
+                  KDSRHF = KEND4
+                  KEND5  = KDSRHF + LDSRHF
+                  LWORK5 = LWORK  - KEND5
 C
                   CALL SO_MEMMAX ('SO_ERES.5',LWORK5)
                   IF (LWORK5 .LT. 0)
@@ -898,9 +935,6 @@ C           and (35).
 C-----------------------------------------------------------------------
 C
             DTIME      = SECOND()
-C            CALL SO_RES_C(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
-C     &                    WORK(KSIGDA1),LSIGDA1,WORK(KSIGDA2),LSIGDA2,
-C     &                    WORK(KCMO),LCMO,ISYRES)
             CALL SO_RES_C(WORK(KRES1E),LRES1E,
      &                    WORK(KSIGDA1),LSIGDA1,
      &                    WORK(KCMO),LCMO,ISYRES,ONE)
@@ -953,22 +987,6 @@ C
          DTIME      = SECOND()   - DTIME
          SOTIME(26) = SOTIME(26) + DTIME
 C
-C
-C         IF (DOUBLES) THEN
-C
-C-----------------------------------------------------------------
-C        Construct D-contribution to 2p2h result vectors RES2E and
-C        RES2D.
-C-----------------------------------------------------------------
-CRF  Now the result vector is initialized with this contribution
-C            DTIME      = SECOND()
-C            CALL SO_RES_CD(WORK(KRES2E),LRES2E,WORK(KRES2D),LRES2D,
-C     &                     WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
-C     &                     FOCKD,LFOCKD,ISYRES,WORK(KEND2),LWORK2)
-C
-C            DTIME      = SECOND()   - DTIME
-C            SOTIME(30) = SOTIME(30) + DTIME
-C         ENDIF
 #ifdef VAR_MPI
 C Slaves are done
          IF (MYNUM .NE. 0) GOTO 100
@@ -1200,15 +1218,17 @@ C        RES1D which originate from the C matrices. See
 C                 eqs. (72) and (73).
 C-------------------------------------------------------------------
 C
-            DTIME      = SECOND()
-            CALL SO_RES_TCB(WORK(KRES1E),LRES1E,WORK(KRES1D),
-     &                      LRES1D,WORK(KTR2E),LTR2E,
-     &                      WORK(KTR2D),LTR2D,
-     &                      WORK(KDSRHF),LDSRHF,
-     &                      WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                      ISYMTR,WORK(KEND5),LWORK5)
-            DTIME      = SECOND()   - DTIME
-            SOTIME(29) = SOTIME(29) + DTIME
+            IF (.NOT.TR2_ZERO) THEN
+               DTIME      = SECOND()
+               CALL SO_RES_TCB(WORK(KRES1E),LRES1E,WORK(KRES1D),
+     &                         LRES1D,WORK(KX2EM1),LX2M1,
+     &                         WORK(KX2DM1),LX2M1,
+     &                         WORK(KDSRHF),LDSRHF,
+     &                         WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+     &                         ISYMTR,WORK(KEND5),LWORK5)
+               DTIME      = SECOND()   - DTIME
+               SOTIME(29) = SOTIME(29) + DTIME
+            END IF
 C
 C----------------------------------------------------------------------
 C        Construct C-contribution to 2p2h result vectors RES2E
