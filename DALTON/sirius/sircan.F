@@ -97,7 +97,7 @@ C         Read CI-vector (CREF) from disk
 C
       IF (NASHT .GT. 1 .AND. .NOT. HSROHF)
      *   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-      CALL READMO (CMO,9,DUMMY,1)
+      CALL READMO (CMO,9)
       CALL RDCREF (CREF)
 C
 C

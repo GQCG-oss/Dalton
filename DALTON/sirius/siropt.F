@@ -399,7 +399,7 @@ C
 C
 C     First retrieve orbitals :
 C
-      CALL READMO (WRK(KCMO),9,WRK(KWRK10),LWRK10)
+      CALL READMO (WRK(KCMO),9)
 C
 C *** Transform two-electron integrals
 C
@@ -1976,7 +1976,7 @@ C
  9000 CONTINUE
       REWIND LUIT1
       IF ( .NOT.FNDLAB(TABLE(6),LUIT1) ) THEN
-         CALL READMO(WRK,7,DUMMY,0)
+         CALL READMO(WRK,7)
          CALL NEWORB(LBLDAT(2),WRK,.FALSE.)
       END IF
       IF (TRCNO) THEN
@@ -1996,7 +1996,7 @@ C
          KW31   = KAOCC  + NASHT
          LW31   = LFREE  - KW31
          IF (LW31 .LE. 0) CALL ERRWRK('OPTST.SIRCNO',-KW31,LFREE)
-         CALL READMO(WRK(KCMO),9,DUMMY,0)
+         CALL READMO(WRK(KCMO),9)
          IF (HFCALC) THEN
             WRK(KCVECS) = D1
             ICREF  = 1
