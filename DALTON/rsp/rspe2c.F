@@ -2809,9 +2809,16 @@ C
          IF (KOFFTY.EQ.1) THEN
             READ (LURSP5)
          ENDIF
+#ifdef VAR_IFORT
+         ! Workaround for Intel 15 bug
+         IF (KZRED.GT.0) THEN
+            CALL REOPEN_APPEND(LURSP5)
+         END IF
+#else
          DO, I=1,KZRED
             READ (LURSP5)
          END DO
+#endif
          ISTEC = KEVECS
          ISTEO = ISTEC + NCSIM*KZYVAR
          DO 216 ISIM=1,NSIM
@@ -2964,8 +2971,22 @@ C
 C     END OF RSPCTL
 C
       CALL QEXIT('RSPCTL')
-      RETURN
+#ifdef VAR_IFORT
+      CONTAINS
+
+          SUBROUTINE REOPEN_APPEND(LU)
+          IMPLICIT NONE
+          INTEGER LU
+          CHARACTER*80 FILENAME
+          INQUIRE(LU, NAME=FILENAME)
+          CLOSE(LU)
+          OPEN(LU, FILE=TRIM(FILENAME), FORM='UNFORMATTED',
+     &         POSITION='APPEND')
+          END SUBROUTINE
+#endif
       END
+
+
 C  /* Deck rspdia */
 C     Temporary try out for CRLRV3
       SUBROUTINE RSPCT2(CMO,UDV,PV,FC,FV,FCAC,H2AC,
