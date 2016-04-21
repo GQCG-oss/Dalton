@@ -2145,7 +2145,7 @@ C
  40            CONTINUE
                CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                     'UNFORMATTED',IDUMMY,.FALSE.)
- 199           CONTINUE
+ 199           CONTINUE ! .FERMI contact
                IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
                   IF (LABFND(1:3) .EQ. 'FC ')
      &                 LLROP(INDPRP(LABFND)) = .TRUE.
@@ -2154,7 +2154,7 @@ C
                CALL GPCLOSE(LUPROP,'KEEP')
                GO TO 100
 C
- 41            CONTINUE
+ 41            CONTINUE ! .SPIN-Dipole
                CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                     'UNFORMATTED',IDUMMY,.FALSE.)
  198           CONTINUE
