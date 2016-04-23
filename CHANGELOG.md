@@ -1,9 +1,10 @@
 # DALTON Change Log
 All notable changes to the DALTON project will be documented in this file.
 
-## [2016.2] (2016-04-21)
+## [2016.2] (2016-04-23)
 
 ### Fixed
+- Work-around for Intel 15 compiler I/O problem in some response calculations
 - Fix for spin-orbit coupling (SOC) between S/T excited states of same symmetry (problem reported on daltonforum.org)
 - Further fixes of MCSCF in **PROPERTIES for more than 255 basis functions - hopefully it is OK now for all requests.
 - Fixed an error in the manual for spin-dipole (problem reported on daltonforum.org)
@@ -25,6 +26,7 @@ All notable changes to the DALTON project will be documented in this file.
 - Fixed error in memory addressing for MCSCF g-tensor calculations
 - Fixed 2 errors in author list for WIRE dalton publication in dalton output
 - Removed unsupported configure options.
+
 
 ## [2016.0] (2015-12-22)
 
