@@ -260,10 +260,8 @@ contains
       endif
 
       if (herdir) then
-         print *, "HERDIR", maxshl
          soppa_nint = maxshl
       else ! ERIDI
-         print *,'ERI'
          soppa_nint = mxcall
       endif
 

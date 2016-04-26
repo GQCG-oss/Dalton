@@ -682,11 +682,10 @@ C---------------------------------------------
 C
                   ISAIJ = MULD2H(ISYMD,1)
 C
-                  IF ((NVIR(ISYMD) .GT. 0) .AND.
-     &                (DOUBLES.OR.SINGLES_SECOND) ) THEN
+                  IF (DOUBLES.OR.SINGLES_SECOND) THEN
 C
                      LT2M1 = NT2BCD(ISAIJ)
-                     IF (DOUBLES) THEN
+                     IF (.NOT.TRIPLET) THEN
                         LX2M1 = NT2BCD(MULD2H(ISYMD,ISYMTR))
                      ELSE
                         LX2M1 = 0
@@ -709,26 +708,53 @@ C------------------------------------------------------------
 C
                      DTIME      = SECOND()
 CPi-140316 Change LT2MP -> LT2MPH
-                     CALL SO_T2M1(WORK(KT2M1),LT2M1,T2MP,LT2MPH,
+                     IF (NVIR(ISYMD).GT.0) THEN
+                        CALL SO_T2M1(WORK(KT2M1),LT2M1,T2MP,LT2MPH,
 Cend-Pi
      &                            WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
      &                            WORK(KEND4),LWORK4)
+                     ELSE
+                        CALL DZERO(WORK(KT2M1),LT2M1)
+                     END IF
+
+                     IF(.NOT.TRIPLET) THEN
 C
 C------------------------------------------------------------
 C                    Construct the partially back-transformed
 C                    trial vectors.
+C                    These are scaled by 1/sqrt(2)                        
 C------------------------------------------------------------
 C
-                     IF((.NOT.TRIPLET).AND.DOUBLES) THEN
-                        CALL SO_X2M1(WORK(KX2EM1),LX2M1,
+                        IF(DOUBLES.AND.(NVIR(ISYMD).GT.0)) THEN
+                           CALL SO_X2M1(WORK(KX2EM1),LX2M1,
      &                               WORK(KTR2E),LTR2E,
      &                               WORK(KCMO),LCMO,IDEL,ISYMD,
      &                               ISYMTR,WORK(KEND4),LWORK4)
-                        CALL SO_X2M1(WORK(KX2DM1),LX2M1,
+                           CALL SO_X2M1(WORK(KX2DM1),LX2M1,
      &                               WORK(KTR2D),LTR2D,
      &                               WORK(KCMO),LCMO,IDEL,ISYMD,
      &                               ISYMTR,WORK(KEND4),LWORK4)
-
+                        ELSE
+                           CALL DZERO(WORK(KX2EM1),LX2M1)
+                           CALL DZERO(WORK(KX2DM1),LX2M1)
+                        ENDIF
+C                        
+C---------------------------------------------------------------
+C                    Add T2^(ab)_(ij)*x1(b, delta) intermediates
+C                    to the backtransformed trialvectors.
+C---------------------------------------------------------------
+C                    (This takes care of terms (1), and (5) of the B
+C                    matrix)
+C
+                        CALL SO_T2X1(WORK(KX2EM1),LX2M1,
+     &                               T2MP,LT2MPH,
+     &                               WORK(KBTJ1D),LBTJ1D,IDEL,ISYMD,
+     &                               ISYMTR,WORK(KEND4),LWORK4)
+                        
+                        CALL SO_T2X1(WORK(KX2DM1),LX2M1,
+     &                               T2MP,LT2MPH,
+     &                               WORK(KBTJ1E),LBTJ1E,IDEL,ISYMD,
+     &                               ISYMTR,WORK(KEND4),LWORK4)
                      END IF
                      DTIME      = SECOND()   - DTIME
                      SOTIME(12) = SOTIME(12) + DTIME
@@ -761,7 +787,7 @@ C                 Transform one index in the integral batch to an
 C                 occupied index.
 C----------------------------------------------------------------
 C
-                  DTIME      = SECOND()
+                  DTIME  = SECOND()
                   ISYMLP = 1
                   CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KCMO),
      &                        ISYMLP,WORK(KEND5),LWORK5,ISYDIS)
@@ -1175,42 +1201,42 @@ C        Construct SIGMAI1(ALFA,I) and SIGMAI2(ALFA,I) which
 C                 are used in SO_RES_B.
 C--------------------------------------------------------------------
 C
-            DTIME      = SECOND()
-            CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,
-     &                    WORK(KSIGAI2),LSIGAI2,
-     &                    WORK(KT2M1),LT2M1,WORK(KXINT),LXINT,
-     &                    WORK(KBTR1E),LBTR1E,
-     &                    WORK(KBTR1D),LBTR1D,
-     &                    WORK(KBTJ1E),LBTJ1E,
-     &                    WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
-     &                    ISYMD,ISYDIS,
-     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
-            DTIME      = SECOND()   - DTIME
-            SOTIME(16) = SOTIME(16) + DTIME
+C            DTIME      = SECOND()
+C            CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,
+C     &                    WORK(KSIGAI2),LSIGAI2,
+C     &                    WORK(KT2M1),LT2M1,WORK(KXINT),LXINT,
+C     &                    WORK(KBTR1E),LBTR1E,
+C     &                    WORK(KBTR1D),LBTR1D,
+C     &                    WORK(KBTJ1E),LBTJ1E,
+C     &                    WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
+C     &                    ISYMD,ISYDIS,
+C     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+C            DTIME      = SECOND()   - DTIME
+C            SOTIME(16) = SOTIME(16) + DTIME
 C
 C--------------------------------------------------------------------
 C           Construct SIGDA1(DELTA,A) and SIGDA2(DELTA,A) which
 C                    are used SO_RES_C.
 C--------------------------------------------------------------------
 C
-            DTIME      = SECOND()
-            CALL SO_SIGDA(WORK(KSIGDA1),LSIGDA1,
-     &                    WORK(KSIGDA2),LSIGDA2,
+C            DTIME      = SECOND()
+C            CALL SO_SIGDA(WORK(KSIGDA1),LSIGDA1,
+C     &                    WORK(KSIGDA2),LSIGDA2,
 CPi-160316 change LT2MP -> LT2MPH
-     &                    T2MP,LT2MPH,
+C     &                    T2MP,LT2MPH,
 Cend-Pi
-     &                    WORK(KDSRHF),LDSRHF,
-     &                    WORK(KBTR1E),LBTR1E,
-     &                    WORK(KBTR1D),LBTR1D,
-     &                    WORK(KBTJ1E),LBTJ1E,
-     &                    WORK(KBTJ1D),LBTJ1D,
-     &                    WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
-            DTIME      = SECOND()   - DTIME
-            SOTIME(17) = SOTIME(17) + DTIME
+C     &                    WORK(KDSRHF),LDSRHF,
+C     &                    WORK(KBTR1E),LBTR1E,
+C     &                    WORK(KBTR1D),LBTR1D,
+C     &                    WORK(KBTJ1E),LBTJ1E,
+C     &                    WORK(KBTJ1D),LBTJ1D,
+C     &                    WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+C     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+C            DTIME      = SECOND()   - DTIME
+C            SOTIME(17) = SOTIME(17) + DTIME
          ENDIF
 C
-         IF (DOUBLES) THEN
+         IF (DOUBLES.OR.SINGLES_SECOND) THEN
 C
 C-------------------------------------------------------------------
 C        Calculate the part of the result vectors RES1E and
@@ -1218,7 +1244,7 @@ C        RES1D which originate from the C matrices. See
 C                 eqs. (72) and (73).
 C-------------------------------------------------------------------
 C
-            IF (.NOT.TR2_ZERO) THEN
+C            IF (.NOT.TR2_ZERO) THEN
                DTIME      = SECOND()
                CALL SO_RES_TCB(WORK(KRES1E),LRES1E,WORK(KRES1D),
      &                         LRES1D,WORK(KX2EM1),LX2M1,
@@ -1228,7 +1254,9 @@ C
      &                         ISYMTR,WORK(KEND5),LWORK5)
                DTIME      = SECOND()   - DTIME
                SOTIME(29) = SOTIME(29) + DTIME
-            END IF
+C            END IF
+         END IF
+         IF (DOUBLES) THEN
 C
 C----------------------------------------------------------------------
 C        Construct C-contribution to 2p2h result vectors RES2E
@@ -1250,6 +1278,34 @@ C
 C
          ENDIF
 
+         IF (SINGLES_SECOND) THEN 
+            DTIME   = SECOND()  
+            ISYDIS2 = MULD2H(ISYDIS,ISYMTR)
+            KEND6 = KEND4 + NDSRHF(MULD2H(ISYMD,ISYMTR))
+            LWORK6 = LWORK - KEND6
+C                                     ~
+C           Calculate ( alpha, beta | j delta) 
+            CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KBTR1D),
+     &                  ISYMTR,WORK(KEND5),LWORK5,ISYDIS)
+C           Calculate terms 2 and 6 of the B-matrix, by
+C                     ~           
+C    (2)    - ( c a | j delta ) * T2M1( ci, j)     
+C                     ~
+C    (6)      ( k i | j delta ) * T2M1( ak, j)
+
+            CALL SO_RES_B26 ( WORK(KRES1E), LRES1E, WORK(KT2M1), LT2M1,
+     &                        WORK(KDSRHF),WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                        ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
+C
+C           Same for the D-part
+            CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KBTR1E),
+     &                  ISYMTR,WORK(KEND5),LWORK5,ISYDIS)
+            CALL SO_RES_B26 ( WORK(KRES1D), LRES1D, WORK(KT2M1), LT2M1,
+     &                        WORK(KDSRHF),WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                        ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(16) = SOTIME(16) + DTIME
+         ENDIF
          END SUBROUTINE
 C
          SUBROUTINE LOOP_BODY_TRIPLET
