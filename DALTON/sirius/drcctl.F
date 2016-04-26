@@ -101,7 +101,11 @@ C
       LWRK1  = LWRK   - KWRK1
 C
 C     LNDACD = how much work space needed in DRCACD (for NXTH2M)
-      LNDACD = ((1+IRAT)*LBINTM+2)/IRAT + 1
+      IF (NEWTRA) THEN
+         LNDACD = (3*(36*36+1) + NNORBX + 1)/IRAT + NNORBX + 2*N2ORBT
+      ELSE
+         LNDACD = ((1+IRAT)*LBINTM+2)/IRAT + 1
+      END IF
       NCDDIS = (LWRK1-LNDACD)/N2ORBX
       IF ( NCDDIS.LE.0 ) THEN
          WRITE(LUERR,'(/A,I5)')
