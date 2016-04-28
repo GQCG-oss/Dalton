@@ -143,7 +143,9 @@ C
 #include "inforb.h"
 #include "infvar.h"
 #include "infpri.h"
-C dftcom.h : DFT_SPINDNS
+!infinp.h: DOHFSRDFT
+#include "infinp.h"
+! dftcom.h : DFT_SPINDNS
 #include "dftcom.h"
 C
 C
@@ -157,6 +159,7 @@ C
 C     ************************************
 C     DVAO matrix
 C
+      
       IF (GETDV) THEN
          CALL DZERO(DVAO,N2BASX)
       IF (NASHT .GT. 0) THEN
@@ -198,7 +201,12 @@ C do spin density matrix
       IF (NASHT .GT. 0) THEN
          CALL MEMGET2('REAL','DAO1',KDAO1,NASHT*NBAST,WRK,KFREE,LFREE)
          CALL MEMGET2('REAL','UDS',KUDV ,N2ASHX,WRK,KFREE,LFREE)
-         CALL DSPTSI(NASHT,DV(1,2),WRK(KUDV))
+! edh: FOR HFSRDF DV(1,2) = 0 - this gave rise to unphyscial values
+          IF (DOHFSRDFT) THEN ! DV only unpaired elec.
+             CALL DSPTSI(NASHT,DV,WRK(KUDV))
+          ELSE 
+             CALL DSPTSI(NASHT,DV(1,2),WRK(KUDV))
+         END IF
          DO 2010 ISYM = 1,NSYM
             JSYM  = MULD2H(ISYM,JWOPSY)
             NASHI = NASH(ISYM)
