@@ -73,7 +73,6 @@ C
 ! Moved writing of pre-MOLTWOEL information on LUINTM from TRAAB to TRACTL;
 !   added NSYM,NORB,NBAS and CMO to information.
 ! TRACTL: check ITRLVL,CMO against LUINTM information, abandon transformation
-drcctl if ITRLVL.gt.0 (not ci) and usedrc
 ! MAERKE: usikkert,indfoer USEDRC el. LVLDRC i parameterliste til TRACTL
 !900302-hjaaj
 ! TRACTL: reset /CBGETD/ to tell any H2AC on disk now obsolete.
@@ -2826,8 +2825,11 @@ C
       DIMENSION H2CD(*),NEEDTP(-4:6),WRK(LFREE)
 C
 C Used from common blocks:
-C   INFTAP : LUINTD,LBINTD
+C   INFORB : NCMOT
+C   INFTAP : LBINTD
+C   INFTRA : NEWTRA, NEWTRA_USEDRC, ?
 C
+#include "inforb.h"
 #include "inftap.h"
 #include "inftra.h"
 C
@@ -2857,7 +2859,14 @@ C
          END IF
          REWIND LUINTD
          CALL MOLLAB('DRCINFO ',LUINTD,LUPRI)
-         READ (LUINTD) LBINTD, LVLDRC
+         READ (LUINTD) LBINTD, LVLDRC, NCMOT_OLD
+         IF (NCMOT_OLD .NE. NCMOT) THEN
+            WRITE (LUPRI,*)
+     &         'NXTH2D error, wrong dimension of CMO array'
+            WRITE (LUPRI,*) 'dim(CMO) on MODRCINT ',NCMOT_OLD
+            WRITE (LUPRI,*) 'dim(CMO) now         ',NCMOT
+            CALL QUIT('NXTH2D error, old MODRCINT not correct')
+         END IF
          LVLMIN = 0
          IF (NEEDTP(1).NE.0 .OR. NEEDTP(2).NE.0) LVLMIN = 1
          IF (NEEDTP(4).NE.0 .OR. NEEDTP(5).NE.0 .OR.
@@ -2870,8 +2879,8 @@ C
             CALL QTRACE(LUPRI)
             CALL QUIT('NXTH2D error, LVLDRC too small')
          END IF
-         CALL MEMGET('REAL',KBUF ,LBINTD,WRK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIBUF,LBINTD,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','BUF' ,KBUF ,LBINTD,WRK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IBUF',KIBUF,LBINTD,WRK,KFREE,LFREE)
          KNEXT = KFREE
       ELSE
 C        ... check that BUF,IBUF has not been destroyed by calling
@@ -2937,9 +2946,10 @@ C
 C ****************************************************************
 C
 #include "implicit.h"
-#include "inftap.h"
-      DIMENSION H2CD(NORBT,NORBT),BUF(LBINTD),IBUF(LBINTD)
-      DIMENSION NEEDTP(-4:6)
+#include "priunit.h"
+      REAL*8    H2CD(NORBT,NORBT),BUF(LBINTD)
+      INTEGER*2 IBUF(2,LBINTD)
+      INTEGER   NEEDTP(-4:6)
 C
 C
 C Used from common blocks:
@@ -2951,9 +2961,13 @@ C
 #include "maxorb.h"
 #include "inforb.h"
 #include "infind.h"
+#include "inftap.h"
 C
 #include "orbtypdef.h"
 C
+      INTEGER*4 INDCDN, INDCD
+      INTEGER*2 INDCD2(2)
+      EQUIVALENCE (INDCD, INDCD2)
       SAVE INDCDN, LENGTH
 C
 #include "ibtdef.h"
@@ -2966,15 +2980,14 @@ C
       IF (IDIST .EQ. 0) THEN
          REWIND LUINTD
          CALL MOLLAB('DRCTWOEL',LUINTD,LUPRI)
-  100    READ (LUINTD) BUF,IBUF,LENGTH
-         IF (LENGTH.EQ.0) GOTO 100
-         IF (LENGTH.EQ.-1) THEN
+  100    READ (LUINTD) BUF,IBUF,LENGTH,INDCDN
+         IF (INDCDN.LT.0) THEN
             WRITE (LUPRI,'(/A)')
      &         ' **** NXTH2D-ERROR *** no MO integrals on LUINTD'
             CALL QTRACE(LUPRI)
             CALL QUIT('*** ERROR ***(NXTH2D) no mo integrals on LUINTD')
          END IF
-         INDCDN = IAND(ISHFT(IBUF(1),-16),IBT16)
+         IF (LENGTH.EQ.0) GOTO 100
       END IF
 C
 C *** Initialize H2CD
@@ -2998,8 +3011,8 @@ C        Last distribution has been read
       END IF
       INDCD = INDCDN
       IDIST = IDIST + 1
-      IC = IAND(ISHFT(INDCD,-8),IBT08)
-      ID = IAND(       INDCD,   IBT08)
+      IC = INDCD2(1)
+      ID = INDCD2(2)
       ITYPC  = IOBTYP(IC)
       ITYPD  = IOBTYP(ID)
       ITYPCD = IDBTYP(ITYPC,ITYPD)
@@ -3010,13 +3023,7 @@ C        Last distribution has been read
 C        ... first buffer is already in BUF,IBUF
       END IF
 C
-  300 READ (LUINTD) BUF,IBUF,LENGTH
-      IF (LENGTH.EQ.0) GO TO 300
-      IF (LENGTH.EQ.-1) THEN
-         INDCDN = -1
-      ELSE
-         INDCDN = IAND(ISHFT(IBUF(1),-16),IBT16)
-      END IF
+  300 READ (LUINTD) BUF,IBUF,LENGTH,INDCDN
       IF (INDCDN.NE.INDCD) THEN
 C        ... finished reading the INDCD distribution
 C            if not needed (ITYPCD .eq. 0) go find type of
@@ -3027,11 +3034,12 @@ C            new INDCDN distribution
             GO TO 9999
          END IF
       END IF
+      IF (LENGTH.EQ.0) GO TO 300
       IF (ITYPCD.EQ.0) GO TO 300
 C
   400 DO 450 I = 1,LENGTH
-         IA = IAND(ISHFT(IBUF(I),-8),IBT08)
-         IB = IAND(       IBUF(I),   IBT08)
+         IA = IBUF(1,I)
+         IB = IBUF(2,I)
          H2CD(IA,IB) = BUF(I)
   450 CONTINUE
       GO TO 300
@@ -3043,3 +3051,4 @@ C
  9999 CONTINUE
       RETURN
       END
+! -- end of sirtra.F --
