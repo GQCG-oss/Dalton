@@ -1,7 +1,7 @@
 # DALTON Change Log
 All notable changes to the DALTON project will be documented in this file.
 
-## [2016.2] (2016-04-23)
+## [2016.2] (2016-05-02)
 
 ### Fixed
 - Work-around for Intel 15 compiler I/O problem in some response calculations
