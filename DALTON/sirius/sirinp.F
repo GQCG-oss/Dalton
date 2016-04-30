@@ -1401,7 +1401,7 @@ C
          K1   = 1    + NCMOT
          LSCR = LCMO - K1
          JRDMO = -IRDMO
-         CALL READMO(CMO,JRDMO,CMO(K1),LSCR)
+         CALL READMO(CMO,JRDMO)
 C        JRDMO negative : return with error status in JRDMO
 C        JRDMO positive : abort in READMO if error
          IF (JRDMO .GT. 0) THEN

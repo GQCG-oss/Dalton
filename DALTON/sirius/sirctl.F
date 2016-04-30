@@ -342,7 +342,7 @@ C              we don't call SIROUT when no 2:nd order optimization
             KWRK1 = KFC  + NNBAST
 C           (FC needs NNBAST because it is also used for SAO)
             LWRK1 = LWORK - KWRK1
-            CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+            CALL READMO(WORK(KCMO),JRDMO)
             CALL FCMO(MAXFCK,WORK(KCMO),WORK(KFC),
      &                WORK(KWRK1),LWRK1)
 C           CALL FCMO(MAXFCK,CMO,FC,SCRA,LSCRA)
@@ -358,7 +358,7 @@ C
             KWRK1 = KCMO  + NCMOT
             KFREE = 1
             LFREE = LWORK - KWRK1
-            CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LFREE)
+            CALL READMO(WORK(KCMO),JRDMO)
             CALL SRDIIS(ICONV,WORK(KCMO),WORK(KWRK1),KFREE,LFREE)
 C
 C     We overwrite in case of symmetry breaking
@@ -584,7 +584,7 @@ C
          KCMO  = 1
          KWRK1 = KCMO  + NCMOT
          LWRK1 = LWORK - KWRK1
-         CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         CALL READMO(WORK(KCMO),JRDMO)
          CALL FCVIRT(WORK(KCMO),WORK(KWRK1),LWRK1)
          CALL NEWORB('FCVORB  ',WORK(KCMO),.TRUE.)
          FLAG(14) = .FALSE.
@@ -765,7 +765,7 @@ C
          KCMO  = 1
          KWRK1 = KCMO  + NCMOT
          LWRK1 = LWORK - KWRK1
-         CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         CALL READMO(WORK(KCMO),JRDMO)
          USEDRC_save = USEDRC
          USEDRC = .TRUE.
          IF (NEWTRA) THEN
@@ -820,7 +820,7 @@ C             HFSRDFT call, we assume the HFSRDFT is done by now!)
          KFREE         = KFRSAV
          LFREE         = LWORK
          CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
-         CALL READMO(WORK(KCMO),JRDMO,WORK(KFREE),LFREE)
+         CALL READMO(WORK(KCMO),JRDMO)
 
 !       define LUCITA control variables and orbital spaces provided via GASCI input (irun_type == '2')
         irun_type =  2 
