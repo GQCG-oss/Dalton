@@ -5525,7 +5525,7 @@ C          to get here unless someone modifies SIRIUS incorrectly
      &         'closed-shell Moeller-Plesset second-order calculation.'
          END IF
          IF (IOPRHF .NE. 0 .OR. HSROHF) WRITE (IWUNIT,1051)
-     &      '      (ROHF open shell orbitals are not include.)'
+     &      '      (ROHF open shell orbitals are not included.)'
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE IF ( DOCCSD) THEN
          IF (WFTYPE .EQ. ' ') WFTYPE='CC'
@@ -5830,7 +5830,10 @@ C
      &       TXTOCC(INIOCC),
      &       ' -- Initial occupation of symmetries is :'
          WRITE(IWUNIT,1550) NRHFT,(NRHF(I),I=1,NSYM)
-         IF (HSROHF) WRITE (IWUNIT,1555) NASHT,(NASH(I),I=1,NSYM)
+         IF (HSROHF) THEN
+            NROHFT = ISUM(8,NROHF,1)
+            WRITE (IWUNIT,1555) NROHFT,(NROHF(I),I=1,NSYM)
+         END IF
          IF (IOPRHF .NE. 0) WRITE (IWUNIT,1560) IOPRHF
       END IF
       IF (SUPSYM) CALL AVEPRT(IWUNIT)
