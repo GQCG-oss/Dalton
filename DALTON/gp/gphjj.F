@@ -1209,7 +1209,29 @@ C  /* Deck writi */
 C
 C (30-Jan-1984) hjaaj
 C
-      DIMENSION INTX(N)
+      INTEGER    IT, N, INTX(N)
+      WRITE (IT) INTX
+      RETURN
+      END
+C  /* Deck writi4 */
+      SUBROUTINE WRITI4(IT,N,INTX)
+C
+C (May-2016) hjaaj, based on WRITI
+C Purpose: when INTX is always INTEGER*4
+C
+      INTEGER   IT, N
+      INTEGER*4 INTX(N)
+      WRITE (IT) INTX
+      RETURN
+      END
+C  /* Deck writi8 */
+      SUBROUTINE WRITI8(IT,N,INTX)
+C
+C (May-2016) hjaaj, based on WRITI
+C Purpose: when INTX is always INTEGER*8
+C
+      INTEGER   IT, N
+      INTEGER*8 INTX(N)
       WRITE (IT) INTX
       RETURN
       END

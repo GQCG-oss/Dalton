@@ -462,16 +462,17 @@ C....    PICK UP INTEGRAL, LABEL AND UNPACK THE LATTER
 C....    NOTE THAT STANDARD ORDER IS NOT CERTAIN IN SYMINT, SO
 C....    P.LT.Q ETC  IS TESTED FOR.
 C
-            LABEL = IINT(M+LRINT)
             VALUE = RINT(M)
 C
 C....    CHECK INTEGRAL AGAINST THRESHOLD
 C
          IF (ABS(VALUE).LT.THRQ) GOTO 3
+
+            LABEL = IINT(M+LRINT)
             ISS=IAND(ISHFT(LABEL,-IBITSHR_1),IBITMASK)
             IR =IAND(ISHFT(LABEL,-IBITSHR_2),IBITMASK)
             IQ =IAND(ISHFT(LABEL,-IBITSHR_3),IBITMASK)
-            IP =IAND(       LABEL           ,IBITMASK)
+            IP =IAND(      LABEL            ,IBITMASK)
             IF (IP.GE.IQ) THEN
                IPQ = IT(IP) + IQ
             ELSE
@@ -2965,7 +2966,7 @@ C
 C
 #include "orbtypdef.h"
 C
-      INTEGER*4 INDCDN, INDCD
+      INTEGER*4 INDCDN, INDCD, LENGTH
       INTEGER*2 INDCD2(2)
       EQUIVALENCE (INDCD, INDCD2)
       SAVE INDCDN, LENGTH
@@ -3046,7 +3047,7 @@ C
 C
 C*******************************************************************
 C
-C End of subroutine NXTH2D
+C End of subroutine NX2H2D
 C
  9999 CONTINUE
       RETURN

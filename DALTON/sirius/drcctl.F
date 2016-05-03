@@ -94,7 +94,7 @@ C DETERMINE NUMBER OF DIRAC DISTRIBUTIONS WHICH CAN BE
 C KEPT IN CORE IN ONE LOAD
 C
       KOUTB  = 1
-      KH2    = KOUTB  + LBINTD + ( LBINTD + 2 - 1)/ IRAT + 1
+      KH2    = KOUTB  + LBINTD + ( LBINTD + 2 - 1)/ 2 + 1 ! integer*4 for IOUTB
       KWRK1  = KH2    + N2ORBX
       LWRK1  = LWRK   - KWRK1
 C
@@ -356,7 +356,8 @@ C NOTE: EQUIVALENCE (OUTB,IOUTB) in call of DRCWRT
 C
 #include "implicit.h"
 C
-      DIMENSION H2ACD(NORBT,NORBT,*),OUTB(*),IOUTB(*),CMO(NCMOT)
+      REAL*8    H2ACD(NORBT,NORBT,*),OUTB(*),CMO(NCMOT)
+      INTEGER*4 IOUTB(*)
 #include "iratdef.h"
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -379,7 +380,7 @@ C
 C ************** LENGTH OF BUFFER FOR H2ACD ON LUINTD
 C
       LOUT  =LBINTD
-      LOUTI =IRAT*LOUT
+      LOUTI =2*LOUT ! "2*" because always INTEGER*4 IOUTB(:)
       LOUT2 =LOUTI+LOUT
       LOUT21=LOUT2+1
       LOUT22=LOUT2+2
@@ -451,7 +452,7 @@ C     ***** INDICES C,D,A,B                                *****
      *                 ' IC,ID,IA,IB,P',IC,ID,IA,IB,P
                   END IF
 C           ***** WRITE THIS BUFFER *****
-                  CALL WRITI(LUINTD,LOUT22,IOUTB)
+                  CALL WRITI4(LUINTD,LOUT22,IOUTB)
                END IF
                OUTB(IOUT) = P
                IOUTB(LOUTI+IOUT) = IA*2**16 + IB
@@ -466,7 +467,7 @@ C   *** Going to next (CD), empty this buffer ***
      *            ' LAST ELEMENT WRITTEN OUT ',
      *            ' IC,ID,IA,IB,P',IC,ID,IALAST,IBLAST,P
             END IF
-            CALL WRITI(LUINTD,LOUT22,IOUTB)
+            CALL WRITI4(LUINTD,LOUT22,IOUTB)
             IOUT = 0
          END IF
          NDW  = NDW + 1
@@ -488,7 +489,7 @@ C
             WRITE(LUPRI,'(/A,I10)')
      *      ' -1 WRITTEN OUT ON LAST(EMPTY) RECORD, ICDDIS;',ICDDIS
          END IF
-         CALL WRITI(LUINTD,LOUT22,IOUTB)
+         CALL WRITI4(LUINTD,LOUT22,IOUTB)
       END IF
 C
 C UPDATE C AND D FOR NEXT LOAD
