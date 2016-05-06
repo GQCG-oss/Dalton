@@ -1492,6 +1492,7 @@ C
       DO I = 1, LEN_WORD
          K = INDEX(LOWER,WORD(I:I))
          IF (K .NE. 0) WORD(I:I)=UPPER(K:K)
+         IF (ICHAR(WORD(I:I)) .EQ. 9) WORD(I:I) = ' ' ! change tab to blank
       END DO
 C
  9000 CONTINUE
