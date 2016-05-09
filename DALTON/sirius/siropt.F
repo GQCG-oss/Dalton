@@ -1718,6 +1718,8 @@ C      A  single configuration will already have natural orbitals
          IF (MAXCIT .LE. 0) THEN
             IF (CNOLBL .EQ. 'ONLYNO') THEN
                TRCNO  = .FALSE.
+            ELSE IF (CNOLBL .NE. 'TRTOFC') THEN
+               CNOLBL = 'ONLYFD'
             END IF
          END IF
 C
