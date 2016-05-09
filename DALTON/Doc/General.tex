@@ -1638,10 +1638,20 @@ for all quantum up to and including \verb|LCMMAX| will be generated
 (s=0, p=1 etc.) \verb|CMSTR| and \verb|CMEND| are the half-integer
 start- and ending quantum number for the Rydberg basis functions. The
 basis functions will be placed at the position of a dummy center
-indicated as \verb|X| in the \molinp\ file. The charge of
-the ion-core is determined by the keyword \Key{ZCMVAL} (default: +1).
+indicated as \verb|X| in the \molinp\ file, for example
+\begin{verbatim}
+Charge=0.0 Atoms=1 Basis=CMFUN
+ X    0.0      0.0       0.0
+\end{verbatim}
+The charge of
+the ion-core is determined by the keyword \Key{ZCMVAL} (default: +1),
+not by a charge specified for \verb|X|; use \verb|Charge=0.0|.
 If no center named \verb|X| is present in the \molinp\ file,
 this input will be ignored.
+(If you use \verb|ATOMBASIS| in the \molinp\ file, you still need to specify
+a basis set name for the center \verb|X|, as in the example. However, you can write anything
+because it will be ignored. Maybe for clarity you would like to use \verb|Basis=CMFUN|.)
+
 
 \item[\Key{CONTINUUM}]\verb| |\newline
 \verb|READ (LUCMD,*) LCNTMAX, CNTSTR, CNTEND|
@@ -1657,7 +1667,8 @@ for all quantum up to and including \verb|LCNTMAX| will be generated
 (s=0, p=1 etc.) \verb|CNTSTR| and \verb|CNTEND| are the integer
 start- and ending quantum number for the continuum basis functions. The
 basis functions will be placed at the position of a dummy center
-indicated as \verb|X| in the \molinp\ file. 
+indicated as \verb|X| in the \molinp\ file.
+See example above for the \Key{CM FUN} input.
 No charge of the ion-core is required for these functions.
 If no center named \verb|X| is present in the \molinp\ file,
 this input will be ignored.
