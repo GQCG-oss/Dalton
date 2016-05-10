@@ -7,7 +7,7 @@ C     Keld Bak, November 1995
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C
 C     PURPOSE: Calculate MP2-amplitudes from regular T2-amplitudes.
-C              (MP-amplitudes are 4 * Coulomb - 2 * Exchange of
+C              (MP-amplitudes are 2 * Coulomb - Exchange of
 C              T2-amplitudes). The MP2-amplitudes are triangular
 C              symmetry packed like the T2-amplitudes and stored
 C              in place.

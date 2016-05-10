@@ -114,7 +114,6 @@ C  the above transpositions
 C
       CONTAINS
          PURE SUBROUTINE SQUARE_TOTSYM(T2SQ,T2PACK,ISYM)
-C            Should work
 C           Square up the amplitudes => For totally symmetric amplitudes
 C
 C           T2( (ai)<(bj) ) -> T( b,j,a,i)
@@ -147,7 +146,7 @@ C               IOFFOUT = IOFFOUT + NT1AM(ISYM)
 
          SUBROUTINE SQUAREX(T2SQ,T2PACK,ISYMR,ISYMT)
 C
-C           Square up the amplitudes => For totally symmetric amplitudes
+C           Square up the amplitudes => For general amplitudes
 C
 C           X2( (ai)<(bj) ) -> X( b,j,a,i)
 C           For totally symmetric X, scale X( a,i,a,i)

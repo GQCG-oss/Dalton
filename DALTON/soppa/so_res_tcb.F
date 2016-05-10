@@ -33,7 +33,7 @@ C
 C
       ISYMB = ISDEL
 C
-      KEND1   = 1 
+      KEND1   = 1
       LWORK1  = LWORK - KEND1
 C
       DO 100 ISYMJ = 1,NSYM
@@ -191,9 +191,9 @@ C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Rasmus Faber, 2016: Adapted from so_res_tcb
-C                              
+C
 C     PURPOSE: Calculate contribution 2 and 6 of the B-matrix, by using
-C              x1 transformed two-electron integrals and the 
+C              x1 transformed two-electron integrals and the
 C              partially transformed T2 amplitudes
 C
 #include "implicit.h"
@@ -280,9 +280,9 @@ C
                KEND3  = KSCR4 + LSCR4
                LWORK3 = LWORK - KEND3
 C
-               CALL SO_MEMMAX ('SO_RES_TCB.3',LWORK3)
+               CALL SO_MEMMAX ('SO_RES_B26.3',LWORK3)
                IF (LWORK3 .LT. 0)
-     &             CALL STOPIT('SO_RES_TCB.3',' ',KEND3,LWORK)
+     &             CALL STOPIT('SO_RES_B26.3',' ',KEND3,LWORK)
 C
                NTOTAL = MAX(NBAS(ISALFA),1)
                NTOTBE = MAX(NBAS(ISBETA),1)

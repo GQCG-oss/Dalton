@@ -132,6 +132,7 @@ C
       TPRCEN =0.D0
 C
       DO 400 I = 1,LSOTIM
+         IF ( SOTIME(PARRAY(I) ) .LT. 1.0D-8 ) EXIT
 C
 C--------------------------------------------------------------
 C        Calculate hours, minutes, and seconds used in various
@@ -151,7 +152,7 @@ C        Print the calculated timings.
 C-------------------------------------
 C
          WRITE(LUPRI,
-     &         '(1X,A3,A14,3X,I5,A1,I2,A1,I2,5X,F4.1,A2,4X,F5.1,A4)')
+     &        '(1X,A3,A14,3X,I5,A1,I2.2,A1,I2.2,5X,F4.1,A2,4X,F5.1,A4)')
      &         '|  ',SUBNM(PARRAY(I)),SOHOUR,':',SOMIN,':',SOSEC,PRCENT,
      &         ' %',TPRCEN,' % |'
 C
@@ -166,7 +167,7 @@ C
       SOSEC  = NINT ( MOD ( MOD ( TIMTOT, 3600.D0 ), 60.D0 ) )
 C
       WRITE(LUPRI,'(1X,A)') LINE2
-      WRITE(LUPRI,'(1X,A19,1X,I5,A1,I2,A1,I2,23X,A1)')
+      WRITE(LUPRI,'(1X,A19,1X,I5,A1,I2.2,A1,I2.2,23X,A1)')
      &       '|  Total CPU time  ',SOHOUR,':',SOMIN,':',SOSEC,'|'
       WRITE(LUPRI,'(1X,A)') LINE1
 C

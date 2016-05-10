@@ -240,10 +240,17 @@ Cend-Pi
       ENDIF
 
       IF (singles_second) THEN
-         LSIGAI1 = NT1AO(ISYRES)
-         LSIGAI2 = NT1AO(ISYRES)
-         LSIGDA1 = NMATAV(ISYRES)
-         LSIGDA2 = NMATAV(ISYRES)
+         IF(TRIPLET) THEN
+            LSIGAI1 = NT1AO(ISYRES)
+            LSIGAI2 = NT1AO(ISYRES)
+            LSIGDA1 = NMATAV(ISYRES)
+            LSIGDA2 = NMATAV(ISYRES)
+         ELSE
+            LSIGAI1 = 0
+            LSIGAI2 = 0
+            LSIGDA1 = 0
+            LSIGDA2 = 0
+         END IF
          LAIJ    = NRHFT*NRHFT
          LAAB    = NVIRT*NVIRT
       ELSE
@@ -382,7 +389,7 @@ C
          CALL DZERO(WORK(KRES1D),LRES1D)
 
 C
-         IF (SINGLES_SECOND) THEN
+         IF (TRIPLET.AND.SINGLES_SECOND) THEN
             CALL DZERO(WORK(KSIGAI1),LSIGAI1)
             CALL DZERO(WORK(KSIGAI2),LSIGAI2)
             CALL DZERO(WORK(KSIGDA1),LSIGDA1)
@@ -443,7 +450,7 @@ C
                   CALL CCSD_TCMEPKX(WORK(KTR2E),TWO,ISYMTR)
                   IF (DO_DEX) CALL CCSD_TCMEPKX(WORK(KTR2D),TWO,ISYMTR)
                END IF
-
+C
             ELSE
                CALL DZERO(WORK(KRES2E),LRES2E)
                IF (DO_DEX) CALL DZERO(WORK(KRES2D),LRES2D)
@@ -711,8 +718,8 @@ CPi-140316 Change LT2MP -> LT2MPH
                      IF (NVIR(ISYMD).GT.0) THEN
                         CALL SO_T2M1(WORK(KT2M1),LT2M1,T2MP,LT2MPH,
 Cend-Pi
-     &                            WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                            WORK(KEND4),LWORK4)
+     &                               WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+     &                               WORK(KEND4),LWORK4)
                      ELSE
                         CALL DZERO(WORK(KT2M1),LT2M1)
                      END IF
@@ -722,23 +729,23 @@ C
 C------------------------------------------------------------
 C                    Construct the partially back-transformed
 C                    trial vectors.
-C                    These are scaled by 1/sqrt(2)                        
+C                    These are scaled by 1/sqrt(2)
 C------------------------------------------------------------
 C
                         IF(DOUBLES.AND.(NVIR(ISYMD).GT.0)) THEN
                            CALL SO_X2M1(WORK(KX2EM1),LX2M1,
-     &                               WORK(KTR2E),LTR2E,
-     &                               WORK(KCMO),LCMO,IDEL,ISYMD,
-     &                               ISYMTR,WORK(KEND4),LWORK4)
+     &                                  WORK(KTR2E),LTR2E,
+     &                                  WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                                  ISYMTR,WORK(KEND4),LWORK4)
                            CALL SO_X2M1(WORK(KX2DM1),LX2M1,
-     &                               WORK(KTR2D),LTR2D,
-     &                               WORK(KCMO),LCMO,IDEL,ISYMD,
-     &                               ISYMTR,WORK(KEND4),LWORK4)
+     &                                  WORK(KTR2D),LTR2D,
+     &                                  WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                                  ISYMTR,WORK(KEND4),LWORK4)
                         ELSE
                            CALL DZERO(WORK(KX2EM1),LX2M1)
                            CALL DZERO(WORK(KX2DM1),LX2M1)
                         ENDIF
-C                        
+C
 C---------------------------------------------------------------
 C                    Add T2^(ab)_(ij)*x1(b, delta) intermediates
 C                    to the backtransformed trialvectors.
@@ -750,7 +757,7 @@ C
      &                               T2MP,LT2MPH,
      &                               WORK(KBTJ1D),LBTJ1D,IDEL,ISYMD,
      &                               ISYMTR,WORK(KEND4),LWORK4)
-                        
+
                         CALL SO_T2X1(WORK(KX2DM1),LX2M1,
      &                               T2MP,LT2MPH,
      &                               WORK(KBTJ1E),LBTJ1E,IDEL,ISYMD,
@@ -868,9 +875,11 @@ C
             if (singles_second) then
 C
 C           Sigai / Sigda
-               call mpi_reduce( mpi_in_place, work(ksigai1), lsigtot,
-     &                          MPI_REAL8, MPI_SUM, 0,
-     &                          soppa_comm_active, ierr)
+               if(triplet) then
+                  call mpi_reduce( mpi_in_place, work(ksigai1), lsigtot,
+     &                             MPI_REAL8, MPI_SUM, 0,
+     &                             soppa_comm_active, ierr)
+               end if
 C
 C           Aij / Aab -- only calculated in first pass
                if ( inewtr .eq. 1 ) then
@@ -878,8 +887,8 @@ C               write(lupri,*) 'Aij'
                   call mpi_reduce ( mpi_in_place, work(kaij), latot,
      &                              MPI_REAL8, MPI_SUM, 0,
      &                              soppa_comm_active, ierr)
-               endif
-            endif
+               end if
+            end if
          else
 C  Slaves pass the same buffer as the recieve-buffer...
 C
@@ -895,9 +904,11 @@ C           Result-vectors
 C
             if (singles_second) then
 C              Sigai / Sigda
-               call mpi_reduce( work(ksigai1), work(ksigai1), lsigtot,
-     &                          MPI_REAL8, MPI_SUM, 0,
-     &                          soppa_comm_active, ierr)
+               if(triplet) then
+                  call mpi_reduce( work(ksigai1), work(ksigai1),lsigtot,
+     &                            MPI_REAL8, MPI_SUM, 0,
+     &                           soppa_comm_active, ierr)
+               end if
 C
 C              Aij / Aab
                if ( inewtr .eq. 1 ) then
@@ -917,6 +928,7 @@ C        Transform AO Fock matrix to MO basis.
 C---------------------------------------------
 C
          DTIME      = SECOND()
+         CALL TRANS_FCK(WORK(KFOCK),ISYRES)
          CALL CC_FCKMO(WORK(KFOCK),WORK(KCMO),WORK(KCMO),
      &                    WORK(KEND2),LWORK2,ISYRES,1,1)
          DTIME      = SECOND()   - DTIME
@@ -934,7 +946,7 @@ C
          DTIME      = SECOND()   - DTIME
          SOTIME(25) = SOTIME(25) + DTIME
 C
-         if (singles_second) then
+         if (triplet.and.singles_second) then
 C
 C-------------------------------------------------------------------------
 C           Add contribution from sigma1(alfa,i) to RES1E and from
@@ -972,6 +984,8 @@ C
             DTIME      = SECOND()   - DTIME
             SOTIME(19) = SOTIME(19) + DTIME
 
+        end if
+        if (singles_second) then
 C-----------------------------------------------------------------
 C           Calculate and add the symmetry correcting term to A in
 C           eq. (44).
@@ -1171,10 +1185,10 @@ C        Calculate the AO-Fock matrix.
 C----------------------------------------------
 C
          DTIME      = SECOND()
-         CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),WORK(KFOCK),
+         CALL SO_AOFOCK1(WORK(KXINT),WORK(KDENS),WORK(KFOCK),
      &                  WORK(KEND5),LWORK5,
-     &                  IDEL,ISYMD,.FALSE.,
-     &                  'crashifTrue',ISYMTR)
+     &                  IDEL,ISYMD,
+     &                  ISYMTR)
          DTIME      = SECOND()   - DTIME
          SOTIME(11) = SOTIME(11) + DTIME
          IF (singles_second) THEN
@@ -1195,45 +1209,6 @@ C
      &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(14) = SOTIME(14) + DTIME
-C
-C--------------------------------------------------------------------
-C        Construct SIGMAI1(ALFA,I) and SIGMAI2(ALFA,I) which
-C                 are used in SO_RES_B.
-C--------------------------------------------------------------------
-C
-C            DTIME      = SECOND()
-C            CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,
-C     &                    WORK(KSIGAI2),LSIGAI2,
-C     &                    WORK(KT2M1),LT2M1,WORK(KXINT),LXINT,
-C     &                    WORK(KBTR1E),LBTR1E,
-C     &                    WORK(KBTR1D),LBTR1D,
-C     &                    WORK(KBTJ1E),LBTJ1E,
-C     &                    WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
-C     &                    ISYMD,ISYDIS,
-C     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
-C            DTIME      = SECOND()   - DTIME
-C            SOTIME(16) = SOTIME(16) + DTIME
-C
-C--------------------------------------------------------------------
-C           Construct SIGDA1(DELTA,A) and SIGDA2(DELTA,A) which
-C                    are used SO_RES_C.
-C--------------------------------------------------------------------
-C
-C            DTIME      = SECOND()
-C            CALL SO_SIGDA(WORK(KSIGDA1),LSIGDA1,
-C     &                    WORK(KSIGDA2),LSIGDA2,
-CPi-160316 change LT2MP -> LT2MPH
-C     &                    T2MP,LT2MPH,
-Cend-Pi
-C     &                    WORK(KDSRHF),LDSRHF,
-C     &                    WORK(KBTR1E),LBTR1E,
-C     &                    WORK(KBTR1D),LBTR1D,
-C     &                    WORK(KBTJ1E),LBTJ1E,
-C     &                    WORK(KBTJ1D),LBTJ1D,
-C     &                    WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-C     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
-C            DTIME      = SECOND()   - DTIME
-C            SOTIME(17) = SOTIME(17) + DTIME
          ENDIF
 C
          IF (DOUBLES.OR.SINGLES_SECOND) THEN
@@ -1243,8 +1218,11 @@ C        Calculate the part of the result vectors RES1E and
 C        RES1D which originate from the C matrices. See
 C                 eqs. (72) and (73).
 C-------------------------------------------------------------------
+CRF      The X2M1 vectors is now an intermediate, which contain
+CRF      both the 2-particle trial vector AND the T2*x1 intermediate,
+CRF              ~ ~                               ~
+CRF      so both C*x2 and two terms (1) and (5) of B*x1 is calculated here.
 C
-C            IF (.NOT.TR2_ZERO) THEN
                DTIME      = SECOND()
                CALL SO_RES_TCB(WORK(KRES1E),LRES1E,WORK(KRES1D),
      &                         LRES1D,WORK(KX2EM1),LX2M1,
@@ -1254,7 +1232,6 @@ C            IF (.NOT.TR2_ZERO) THEN
      &                         ISYMTR,WORK(KEND5),LWORK5)
                DTIME      = SECOND()   - DTIME
                SOTIME(29) = SOTIME(29) + DTIME
-C            END IF
          END IF
          IF (DOUBLES) THEN
 C
@@ -1278,18 +1255,18 @@ C
 C
          ENDIF
 
-         IF (SINGLES_SECOND) THEN 
-            DTIME   = SECOND()  
+         IF (SINGLES_SECOND) THEN
+            DTIME   = SECOND()
             ISYDIS2 = MULD2H(ISYDIS,ISYMTR)
             KEND6 = KEND4 + NDSRHF(MULD2H(ISYMD,ISYMTR))
             LWORK6 = LWORK - KEND6
 C                                     ~
-C           Calculate ( alpha, beta | j delta) 
+C           Calculate ( alpha, beta | j delta)
             CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KBTR1D),
      &                  ISYMTR,WORK(KEND5),LWORK5,ISYDIS)
 C           Calculate terms 2 and 6 of the B-matrix, by
-C                     ~           
-C    (2)    - ( c a | j delta ) * T2M1( ci, j)     
+C                     ~
+C    (2)    - ( c a | j delta ) * T2M1( ci, j)
 C                     ~
 C    (6)      ( k i | j delta ) * T2M1( ak, j)
 
@@ -1316,9 +1293,9 @@ C        Calculate the AO-Fock matrix.
 C----------------------------------------------
 C
          DTIME      = SECOND()
-         CALL CC_AOFOCK3(WORK(KXINT),WORK(KDENS),
-     &                   WORK(KFOCK),WORK(KEND5),
-     &                   LWORK5,IDEL,ISYMD,ISYMTR)
+         CALL SO_AOFOCK3(WORK(KXINT),WORK(KDENS),
+     &                   WORK(KFOCK),
+     &                   IDEL,ISYMD,ISYMTR)
          DTIME      = SECOND()   - DTIME
          SOTIME(11) = SOTIME(11) + DTIME
 
@@ -1439,7 +1416,244 @@ C
          ENDIF
 
          END SUBROUTINE
+
+         SUBROUTINE TRANS_FCK(FOCK,ISYMFCK)
+            DOUBLE PRECISION, INTENT(INOUT) :: FOCK(*)
+            INTEGER, INTENT(IN) :: ISYMFCK
+
+            INTEGER :: IA, IB, ISIZE, NUMA, NUMB
+            INTEGER :: ISYMA, ISYMB, IOFF, IOFF1, IOFF2
+            DOUBLE PRECISION :: TMP
+
+            IF ( ISYMFCK .EQ. 1) THEN
+               DO ISYMA = 1, NSYM
+                  IOFF = IAODIS(ISYMA,ISYMA)
+                  DO IA = 2, NBAS(ISYMA)
+                     DO IB = 1, IA-1
+                        IPOS1 = (IA-1)*NBAS(ISYMA)+IB+IOFF
+                        IPOS2 = (IB-1)*NBAS(ISYMA)+IA+IOFF
+                        TMP = FOCK(IPOS1)
+                        FOCK(IPOS1) = FOCK(IPOS2)
+                        FOCK(IPOS2) = TMP
+                     END DO
+                  END DO
+               END DO
+            ELSE
+               DO ISYMA = 1, NSYM
+                  ISYMB = MULD2H(ISYMFCK,ISYMA)
+                  IF (ISYMB .GT.ISYMA) CYCLE
+                  NUMA = NBAS(ISYMA)
+                  NUMB = NBAS(ISYMB)
+                  IOFF1 = IAODIS(ISYMA,ISYMB)
+                  IOFF2 = IAODIS(ISYMB,ISYMA)
+                  ISIZE = NUMA*NUMB
+                  DO IB = 1, NUMB
+                     DO IA = 1, NBAS(ISYMA)
+                        IDX1 = IOFF1 + NUMA*(IB-1) +IA
+                        IDX2 = IOFF2 + NUMB*(IA-1) +IB
+                        TMP = FOCK(IDX1)
+                        FOCK(IDX1) = FOCK(IDX2)
+                        FOCK(IDX2) = TMP
+                     END DO
+                  END DO
+               END DO
+            ENDIF
+
+         END SUBROUTINE
+
+         SUBROUTINE SO_AOFOCK3(XINT,DENSIT,FOCK,
+     &                         IDEL,ISYMD,ISYDEN)
+
+#include "symsq.h"
+
+            INTEGER,INTENT(IN) ::  IDEL, ISYMD,ISYDEN
+            DOUBLE PRECISION,INTENT(IN)    :: XINT(*), DENSIT(*)
+            DOUBLE PRECISION,INTENT(INOUT) :: FOCK(*)
+
+            INTEGER :: ISYMBG, ISYMAB,ISYMG,ISYDIS,ISYMB,ISYMA
+            INTEGER :: IG, IA, IB
+            INTEGER :: KOFFINT, KOFFINT1, KOFFDEN, KOFFOUT
+            INTEGER :: NOFFB, NOFFA
+            DOUBLE PRECISION :: TMP
+
+            ISYMBG = ISYDEN
+            ISYDIS = ISYMD
+            ISYMA  = MULD2H(ISYDIS,ISYMBG)
+            KOFFOUT = IAODIS(ISYMA,ISYMD) + NBAS(ISYMA)*
+     &                (IDEL- IBAS(ISYMD) - 1)
+
+            DO ISYMG = 1, NSYM
+               ISYMB = MULD2H(ISYMBG,ISYMG)
+               ISYMAB = MULD2H(ISYMA,ISYMB)
+               KOFFINT1 = IDSAOG(ISYMG,ISYDIS) + IAODPK(ISYMA,ISYMB)
+
+               IF(ISYMAB.EQ.1) THEN ! integrals stored as triangle
+                  DO IG = 1, NBAS(ISYMG)
+                     KOFFINT = KOFFINT1 + (IG - 1) *NNBST(ISYMAB)
+                     KOFFDEN = IAODIS(ISYMB,ISYMG) + NBAS(ISYMB)*(IG-1)
+                     ! alpha =< beta :
+                     DO IB = 1, NBAS(ISYMB)
+                        NOFFB = IB*(IB-1)/2 + KOFFINT
+                        DO IA = 1, IB
+                           FOCK(KOFFOUT+IA) = -XINT(NOFFB+IA)
+     &                                        *DENSIT(KOFFDEN+IB)
+     &                                        +FOCK(KOFFOUT+IA)
+                        END DO
+                     END DO
+
+                     ! alpha > beta
+                     DO IA = 2, NBAS(ISYMA)
+                        NOFFA = IA*(IA-1)/2 + KOFFINT
+                        TMP = 0.0D0
+                        DO IB = 1, IA - 1
+                           TMP = XINT(NOFFA+IB)*DENSIT(KOFFDEN+IB) + TMP
+                        END DO
+                        FOCK(KOFFOUT+IA) = FOCK(KOFFOUT+IA) - TMP
+                     END DO
+                 END DO ! LOOP IG
+
+               ELSEIF(ISYMA .LT.ISYMB) THEN
+                  ! Stored as alpha, beta
+                  DO IG = 1, NBAS(ISYMG)
+                     KOFFINT = KOFFINT1 + (IG - 1) *NNBST(ISYMAB)
+                     KOFFDEN = IAODIS(ISYMB,ISYMG) + NBAS(ISYMB)*(IG-1)
+
+                     ! Loop B first
+                     DO IB = 1, NBAS(ISYMB)
+                        NOFFB = NBAS(ISYMA)*(IB-1) + KOFFINT
+                        DO IA = 1, NBAS(ISYMA)
+                           FOCK(KOFFOUT+IA) = -XINT(NOFFB+IA)
+     &                                        *DENSIT(KOFFDEN+IB)
+     &                                        +FOCK(KOFFOUT+IA)
+                        END DO
+                     END DO
+                  END DO
+               ELSE ! ISYMA .GT. ISYMB
+                  ! Stored as beta, alpha
+                  DO IG = 1, NBAS(ISYMG)
+                     KOFFINT = KOFFINT1 + (IG - 1) *NNBST(ISYMAB)
+                     KOFFDEN = IAODIS(ISYMB,ISYMG) + NBAS(ISYMB)*(IG-1)
+                     ! LOOP A first
+                     DO IA = 1, NBAS(ISYMA)
+                        NOFFA = NBAS(ISYMB)*(IA-1) + KOFFINT
+                        TMP = 0.0D0
+                        DO IB = 1, NBAS(ISYMB)
+                           TMP = XINT(NOFFA+IB)*DENSIT(KOFFDEN+IB) + TMP
+                        END DO
+                        FOCK(KOFFOUT+IA) = FOCK(KOFFOUT+IA) - TMP
+                     END DO
+                  END DO ! IG
+               END IF
+            END DO ! ISYMG
+
+         END SUBROUTINE
 C
+         SUBROUTINE SO_SYM_DENS(DENS_SQ,DENS_SYM,ISYDENS)
+            !                           ~
+            !  Form the symmetric array D(alpha,beta) from
+            !  the array D(alpha, beta) and store it in packed form
+            !  (alpha =< beta).
+            !  ~
+            !  D(alpha,beta) = D(alpha,beta)+ D(beta,alpha)
+            !  ~
+            !  D(alpha,alpha) = D(alpha,alpha)
+            !
+            !  D has symmetry ISYDENS
+#include "symsq.h"
+            DOUBLE PRECISION, INTENT(IN) :: DENS_SQ(*)
+            DOUBLE PRECISION, INTENT(OUT):: DENS_SYM(*)
+            INTEGER, INTENT(IN)          :: ISYDENS
+
+            INTEGER :: ISYMA, ISYMB, IA, IB
+            INTEGER :: NUMA, NUMB, IOFFA, IOFFB, IOFFPK, IOFFSQ
+            INTEGER :: IOFF1, IOFF2,IOFFSQ1,IOFFSQ2
+
+            IF (ISYDENS.EQ.1) THEN
+               ! Totally symmetric case, Triangular storage
+               DO ISYMA = 1, NSYM
+                  IOFFPK = IAODPK(ISYMA,ISYMA)
+                  IOFFSQ = IAODIS(ISYMA,ISYMA)
+                  NUMA = NBAS(ISYMA)
+                  NUMB = NBAS(ISYMA)
+                  DO IB = 1, NUMB
+                     IOFF1 = IB*(IB-1)/2 + IOFFPK
+                     IOFFB = (IB-1)*NUMA + IOFFSQ
+                     DO IA = 1, IB-1
+                        IOFFA = (IA-1)*NUMB + IOFFSQ
+                        DENS_SYM(IOFF1+IA) = DENS_SQ(IOFFB+IA) +
+     &                                       DENS_SQ(IOFFA+IB)
+                     END DO
+                     DENS_SYM(IOFF1+IB) = DENS_SQ(IOFFB+IB)
+                  END DO
+               END DO
+            ELSE ! Else we deal with rectangular offdiagonal blocks
+               DO ISYMB = 1, NSYM
+                  ISYMA = MULD2H(ISYMB,ISYDENS)
+                  IF (ISYMA.GT.ISYMA) CYCLE
+                  IOFFPK=IAODPK(ISYMA,ISYMB)
+                  IOFFSQ1 = IAODIS(ISYMB,ISYMA)
+                  IOFFSQ2 = IAODIS(ISYMA,ISYMB)
+                  NUMA = NBAS(ISYMA)
+                  NUMB = NBAS(ISYMB)
+                  DO IB = 1, NUMB
+                     IOFF1 = (IB-1)*NUMA + IOFFPK
+                     IOFFB = (IB-1)*NUMA + IOFFSQ2
+                     DO IA = 1, NUMA
+                        IOFFA = (IA-1)*NUMB + IOFFSQ1
+                        DENS_SYM(IOFF1+IA) = DENS_SQ(IOFFB+IA) +
+     &                                       DENS_SQ(IOFFA+IB)
+                     END DO
+                  END DO
+               END DO
+            ENDIF
+
+         END SUBROUTINE
+
+         SUBROUTINE SO_AOFOCK1(XINT,DENSIT,FOCK,WORK,LWORK,
+     &                         IDEL,ISYMD,ISYDEN)
+            !  Calculates here
+            !  2 ( alpha, beta | gamma ; delta) * D( alpha, beta) =>
+            !                 F ( gamma ; delta)
+            !
+            !  and in call to SO_AOFOCK3 :
+            !  - ( alpha, beta | gamma ; delta) * D( beta, gamma) =>
+            !                 F (alpha ; delta)
+            !
+            DOUBLE PRECISION, PARAMETER  :: TWO = 2.0D0, ONE =1.0D0
+
+            INTEGER,INTENT(IN) ::  IDEL, ISYMD,ISYDEN, LWORK
+            DOUBLE PRECISION,INTENT(IN)    :: XINT(*), DENSIT(*)
+            DOUBLE PRECISION,INTENT(INOUT) :: FOCK(*), WORK(LWORK)
+
+            INTEGER :: ISYDIS, ISYMG
+            INTEGER :: NUMG, NAB, KGAM, KOUT
+
+            ! First do the singlet-only term
+            ISYDIS = ISYMD
+            ISYMG  = MULD2H(ISYDIS,ISYDEN)
+            NUMG = NBAS(ISYMG)
+            IF (NUMG .GE. 1) THEN
+               !Symmetrice AO-DENSITY and compress to packed form (could be done outside)
+               CALL SO_SYM_DENS(DENSIT,WORK,ISYDEN)
+
+               ! Position of (alpha =< beta | gamma; delta ) block for this
+               ! symmetry of gamma
+               KGAM = IDSAOG(ISYMG,ISYDIS) + 1
+               ! Position of the delta'th colunm in output
+               KOUT = IAODIS(ISYMG,ISYMD) +
+     &                NBAS(ISYMG)*(IDEL-IBAS(ISYMD)-1) + 1
+               NAB  = MAX( 1, NNBST(ISYDEN) )
+
+               CALL DGEMV('T',NNBST(ISYDEN),NUMG,TWO,XINT(KGAM),NAB,
+     &                    WORK,1,ONE,FOCK(KOUT),1)
+            END IF
+
+            ! Do the term also appearing in the triplet case
+            CALL SO_AOFOCK3(XINT,DENSIT,FOCK,IDEL,ISYMD,ISYDEN)
+
+
+         END SUBROUTINE
+
       END SUBROUTINE
 
 C

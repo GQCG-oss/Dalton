@@ -119,7 +119,7 @@ C
       END IF
 C
 C
-C  For real imaginary perturbations, there is an
+C  For imaginary perturbations, there is an
 C  overall factor of i*i = -1,
 C  but VO cont. is complex conjugated, canceling this factor
       IF (IMAGPROP) THEN

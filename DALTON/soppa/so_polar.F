@@ -25,15 +25,6 @@ C
 #include "cbiexc.h"
 #include "absorp.h"
 #include "ccsdsym.h"
-c#include "infdim.h"
-c#include "inforb.h"
-c#include "iratdef.h"
-c#include "maxaqn.h"
-c#include "maxorb.h"
-c#include "mxcent.h"
-c#include "nuclei.h"
-c#include "symmet.h"
-c#include "wrkrsp.h"
 C
 C
       DIMENSION POLDD(2,3,3,NFRVAL), POLDQ(2,3,3,3,NFRVAL)

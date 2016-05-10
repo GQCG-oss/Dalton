@@ -50,7 +50,7 @@ C     The definition must match that in soppa_nodedriver
      &            (info_array(3), nnewtr),    (info_array(4),noldtr)
       INTEGER(MPI_INTEGER_KIND) :: IERR
 
-      IF (NUMPROCS .GT. 1) CALL PARQUIT('RPA(D)')
+C      IF (NUMPROCS .GT. 1) CALL PARQUIT('RPA(D)')
 #endif
 C
 C------------------

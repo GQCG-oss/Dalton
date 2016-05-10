@@ -164,7 +164,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      DOUBLE PRECISION, PARAMETER :: INVSQ2 = SQRT(HALF) 
+      DOUBLE PRECISION, PARAMETER :: INVSQ2 = SQRT(HALF)
 C
       DIMENSION X2M1(LX2M1), X2MP(LX2MP), CMO(LCMO)
       DIMENSION WORK(LWORK)
@@ -198,7 +198,7 @@ C--------------------------------------------------
 C
       CALL DCOPY(NVIR(ISYMB),CMO(KOFF1),NBAS(ISYMD),WORK(KCDB),1)
 C
-C     Incorporate factor 1/sqrt(2)      
+C     Incorporate factor 1/sqrt(2)
       CALL DSCAL(NVIR(ISYMB),INVSQ2,WORK(KCDB),1)
 C
 C------------------------------------------------------------------
@@ -206,8 +206,11 @@ C     Loop over symmetry-blocks, do reductions
 C------------------------------------------------------------------
 C
       IF (ISYMTR .EQ. 1) THEN
-C$OMP PARALLEL PRIVATE(ISYMBJ,ISYMJ,ISYMAI,NAIBJ1,NAIBJ,FACT,NBJ,NBJ1,
-C$OMP&                 J,B,NAI)
+C$OMP PARALLEL PRIVATE(ISYMBJ,ISYMJ,ISYMAI,ISYMI,ISYMA,
+C$OMP&                 NAIBJ1,NAIBJ,NAIBJ2,
+C$OMP&                 FACT,KOFF,TMP,ISTART,
+C$OMP&                 NBJ,NBJ1,NAI,
+C$OMP&                 J,B,I,A)
          DO 100 ISYMJ = 1,NSYM
 C
             ISYMBJ = MULD2H(ISYMJ,ISYMB)
@@ -293,8 +296,11 @@ C$OMP       END DO NOWAIT
   100    CONTINUE ! LOOP ISYMJ
 C$OMP    END PARALLEL
       ELSE
-C$OMP    PARALLEL PRIVATE(ISYMBJ,ISYMJ,ISYMAI,FACT,NBJ,NBJ1,
-C$OMP&                    J,B,NAI)
+C$OMP    PARALLEL PRIVATE(ISYMBJ,ISYMJ,ISYMAI,
+C$OMP&                    FACT,DSUM,
+C$OMP&                    KOFF,IOFFAIBJ,KOFFBJ,KOUT,KINP,KOFFINP,
+C$OMP&                    NBJ,NBJ1,NAI,
+C$OMP&                    J,B)
          KOFF = 0
          DO ISYMJ = 1, NSYM
             ISYMBJ = MULD2H(ISYMJ,ISYMB)
@@ -305,7 +311,7 @@ C$OMP&                    J,B,NAI)
             IF (ISYMAI.LT.ISYMBJ) THEN
 
                KOFFINP = IOFFAIBJ + NT1AM(ISYMAI)*KOFFBJ
-C$OMP          DO PRIVATE(KOFF,KINP)
+C$OMP          DO
                DO J = 1, NRHF(ISYMJ)
                   KOUT = KOFF + NT1AM(ISYMAI)*(J-1)+1
                   KINP = KOFFINP + NT1AM(ISYMAI)*NVIR(ISYMB)*(J-1)+1
@@ -318,7 +324,7 @@ C$OMP          END DO NOWAIT
 
             ELSE ! ISYMAI > ISYMBJ
 
-C$OMP          DO PRIVATE(KOUT,KOFFINP,DSUM)
+C$OMP          DO
                DO J = 1,NRHF(ISYMJ)
                   KOUT = KOFF + NT1AM(ISYMAI)*(J-1)
                   KOFFINP = IOFFAIBJ + KOFFBJ + NVIR(ISYMB)*(J-1)
@@ -355,10 +361,10 @@ C  /* Deck so_t2x1 */
 C
 C     Rasmus Faber, 2016: Bases on SO_T2M1
 C
-C     PURPOSE: Calculates a T2(ai, bj) * x1( b, delta) intermediate and 
+C     PURPOSE: Calculates a T2(ai, bj) * x1( b, delta) intermediate and
 C              and adds it to the back-transformed x2 trial-vectors.
 C              This allows term (1) and (5) of the B-matrix to be
-C              calculated in using SO_RES_TCB
+C              calculated using SO_RES_TCB
 C
 #include "implicit.h"
 #include "priunit.h"

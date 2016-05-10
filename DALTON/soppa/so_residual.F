@@ -67,7 +67,7 @@ C----------------------------------------------------------------
 C     To handle static properties, ensure that only the E part is
 C     non-zero.
 C----------------------------------------------------------------
-      STATIC = ABS(EIVAL1).LT.1.0D-8
+      STATIC = (ABS(EIVAL1).LT.1.0D-8).AND.(LTYPE.EQ.'LINEAR')
       IF(STATIC)THEN
          IF (LTYPE.NE.'LINEAR') THEN
             WRITE(LUPRI,'(A,F7.4)') 'Warning: Very low excitation'//

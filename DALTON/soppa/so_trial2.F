@@ -170,20 +170,11 @@ C        Otherwise we borrow the space from the result vectors
 C
       IF(LTYPE.EQ.'LINEAR') THEN
          KGPVC1  = KEND1B
-CRF            KGPVC1E = KGPVC1
-CRF            KGPVC1D = KGPVC1E + LGPVC1H
-CRF              KGPVC2  = KGPVC1D + LGPVC1H
          KGPVC2  = KGPVC1 + LGPVC1
-CRF              KGPVC2E = KGPVC2
-CRF              KGPVC2D = KGPVC2E + LGPVC2H
          KEND1C  = KGPVC2 + LGPVC2
       ELSE
          KGPVC1  = KEND1B
-!              KGPVC1E = KEND1B
-!              KGPVC1D = KEND1B
          KGPVC2  = KEND1B
-!              KGPVC2E = KEND1B
-!              KGPVC2D = KEND1B
          KEND1C  = KEND1B
       ENDIF
 C
