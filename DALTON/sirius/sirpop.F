@@ -141,7 +141,7 @@ C
 C     ***** Get the MO coefficients and NO occupation numbers
 C
       REWIND LUIT1
-      CALL READMO (WRK(KCMO),9,DUMMY,0)
+      CALL READMO (WRK(KCMO),9)
       REWIND LUIT1
       IF ( FNDLAB('NATOCC  ',LUIT1) ) THEN
          CALL READT(LUIT1,NORBT,WRK(KOCCUP))

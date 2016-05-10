@@ -97,7 +97,7 @@ C         Read CI-vector (CREF) from disk
 C
       IF (NASHT .GT. 1 .AND. .NOT. HSROHF)
      *   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-      CALL READMO(CMO,9,DUMMY,1)
+      CALL READMO (CMO,9)
       CALL RDCREF(CREF,.true.)
 C
 C
@@ -539,12 +539,6 @@ C           order inactive orbitals which are not frozen
          END IF
          JCMO2 = JCMO2 + NISHI_NF*NBASI
          JCMO  = JCMO  + NISHI_NF*NBASI
-         IF (.NOT. GETOCC .AND. .NOT. TRTOCO .AND.
-     &       NASHI .GT. 1 .AND. .NOT. SUPSYM) THEN
-C           order active orbitals
-            CALL ORDER(WRK(JCMO2),WRK(KBIG+NISHI),NASHI,NBASI)
-            CALL DCOPY(NASHI*NBASI,WRK(JCMO2),1,CMO(JCMO),1)
-         END IF
          NSSHI = NORBI - NOCCI
          IF (NSSHI .GT. 1) THEN
             JCMO2 = JCMO2 + NASHI*NBASI

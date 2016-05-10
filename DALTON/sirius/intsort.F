@@ -153,7 +153,6 @@ C
       INTEGER*4 XI4LAB(2)
       INTEGER*2 XI2LAB(4)
       EQUIVALENCE (XLABEL, XI4LAB, XI2LAB)
-      COMMON /UNITAR/ IUNTAB(1:99)
 C
 #include "cbisor.h"
 #include "priunit.h"
@@ -685,7 +684,6 @@ C     *********** MAXIMUM SIZE OF OUTPUT BUFFER CORRESPONDS TO 28K BYTES
       INTEGER*4 XI4LAB(2)
       INTEGER*2 XI2LAB(4)
       EQUIVALENCE (XLABEL, XI4LAB, XI2LAB)
-      COMMON /UNITAR/ IUNTAB(1:99)
 #include "priunit.h"
 #if defined (VAR_RELADR3)
       PARAMETER ( LIADUT = 176)
