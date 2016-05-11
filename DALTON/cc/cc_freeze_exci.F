@@ -184,10 +184,22 @@ C
                                         go to 444
                                      END IF
                                    end do
+                                   do bb = 1, NVIRION(ISYMB)
+                                     IF (B==IVIRION(BB,ISYMB)) THEN
+                                        ikeep = .true.
+                                        go to 444
+                                     END IF
+                                   end do
                                  end if
                               end do
                               do jj = 1, nrhfcore(isymj)
                                  if (j==IRHFCORE(jj,ISYMJ)) then
+                                   do aa = 1, NVIRION(ISYMA)
+                                     IF (A.EQ.IVIRION(AA,ISYMA)) THEN
+                                        ikeep = .true.
+                                        go to 444
+                                     END IF
+                                   end do
                                    do bb = 1, NVIRION(ISYMB)
                                      IF (B==IVIRION(BB,ISYMB)) THEN
                                         ikeep = .true.
