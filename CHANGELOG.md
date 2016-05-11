@@ -1,9 +1,10 @@
 # DALTON Change Log
 All notable changes to the DALTON project will be documented in this file.
 
-## [2016.2] (2016-05-09)
+## [2016.2] (2016-05-12)
 
 ### Fixed
+- More robust code for reading exponents and contraction coefficients in Dalton-type basis set files
 - Work-around for Intel 15 compiler I/O problem in some response calculations
 - Fix for spin-orbit coupling (SOC) between S/T excited states of same symmetry (problem reported on daltonforum.org)
 - Further fixes of MCSCF in **PROPERTIES for more than 255 basis functions - hopefully it is OK now for all requests.
