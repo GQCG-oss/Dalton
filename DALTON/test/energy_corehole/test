@@ -4,7 +4,8 @@
 #    Molecule:         CO
 #    Wave Functions:   MCSCF (RAS)
 #    Test Purpose:     Core-hole excitations using both a frozen and a
-#                      relaxed core orbital
+#                      relaxed core orbital.
+#                      Test ATOMBASIS with BASIS=INTGRL in .mol file.
 
 import os
 import sys
