@@ -16,7 +16,7 @@ All notable changes to the DALTON project will be documented in this file.
 Do not make changes below this line! For the relase branch only.
 
 
-## [2016.2] (2016-05-13)
+## [2016.2] (2016-xx-xx)
 
 ### Added
 - Added and documented Basis=INTGRL option for ATOMBASIS in .mol file.
@@ -28,6 +28,7 @@ Do not make changes below this line! For the relase branch only.
 - Further fixes of MCSCF in **PROPERTIES for more than 255 basis functions - hopefully it is OK now for all requests.
 - Fixed an error in the manual for spin-dipole (problem reported on daltonforum.org)
 - Fix of open-shell Hartree-Fock occupation output (print, not calculation, was wrong if ROHF was followed by MCSCF)
+- Removed OpenACC CMake variable (currently no OpenACC directives in Dalton).
 
 ## [2016.1] (2016-04-07)
 
