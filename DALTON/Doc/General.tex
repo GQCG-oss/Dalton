@@ -1241,7 +1241,7 @@ xyz coordinates of the center of cavity spheres, given in \angstrom{}.
 \subsection{Potential derived charges: \Sec{QFIT}}
 \label{subsec:qfit}
 
-Directives controlling the evaluation of charges (and higher ranks of multipole moments, see \verb|MPRANK| below) fitted to reproduce the molecular electrostatic potential evaluated on a grid surrounding the molecule. Currently, the only built-in grid is a Connolly-Merz grid where \verb|NSHELL| shells around the molecule are constructed from Van der Waal spheres placed on each nuclei of the molecule. The initial spheres are scaled by \verb|VDWSCL| and succesive spheres are scaled in increments of \verb|VDVINC|. Alternatively, a file with grid points given through the \verb|MEPFIL| keyword can be provided instead.
+Directives controlling the evaluation of charges (and higher ranks of multipole moments, see \verb|MPRANK| below) fitted to reproduce the molecular electrostatic potential evaluated on a grid surrounding the molecule. Currently, the only built-in grid is a Connolly-Merz grid where \verb|NSHELL| shells around the molecule are constructed from Van der Waal spheres placed on each nuclei of the molecule. The initial spheres are scaled by \verb|VDWSCL| and succesive spheres are scaled in increments of \verb|VDWINC|. Alternatively, a file with grid points given through the \verb|MEPFIL| keyword can be provided instead.
 
 \begin{description}
 \item[\Key{MPRANK}]\verb| |\newline
