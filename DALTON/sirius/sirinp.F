@@ -1624,7 +1624,8 @@ C
 
       IF (MS2 .EQ. -12345) THEN ! MS2 = 2*MS
          IF (MULTS .LE. 0) MULTS = MOD(NACTEL,2) + 1
-         IF (FLAG(27)) THEN ! determinants
+         IF (FLAG(27) .OR. DOMCSRDFT) THEN ! determinants or open-shell MC-srDFT
+            ! MC-srDFT: we need the high-spin MS value for the srDFT part
             MS2 = MULTS - 1 ! MS = max value = S, to minimize risk of converging to wrong spin state
          ELSE
             MS2 = MOD(NACTEL,2) ! MS = 0 or 1/2, for most efficient code
