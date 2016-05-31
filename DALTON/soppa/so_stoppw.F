@@ -4,6 +4,8 @@ C  /* Deck so_stoppw */
 C
 C     This routine is part of the atomic integral directSOPPA program.
 C
+C     The charge Z of the incoming ions is set to 1 here.
+C
 C     Zhiwen Shi (Clark), Stephan P. A. Sauer, January 2016
 C
 C     PURPOSE: Calculate Stopping Power.
@@ -11,9 +13,11 @@ C
 #include "implicit.h"
 #include "cbiexc.h"
 #include "ccorb.h"
+#include "pi.h"
 C
-      DIMENSION STOPP(3,LVEL),TRGOS(3),EXENG(NSYM,MXNEXI)
+      DIMENSION STOPP(3,LVEL,2),TRGOS(3),EXENG(NSYM,MXNEXI)
       REAL*8    QVAL,VELOC,QMAXV,QMINV
+      PARAMETER ( D4 = 4.0D00 )
 C
 C------------------
 C     Add to trace.
@@ -34,13 +38,27 @@ C
 C
          IF (QMINV .LE. QMAXV) THEN
 C
-             IF ((QVAL .GE. QMINV) .AND. (QVAL .LE. QMAXV)) THEN
+            IF ((QVAL .GE. QMINV) .AND. (QVAL .LE. QMAXV)) THEN
 C
-               STOPP(1,IVEL) = STOPP(1,IVEL) + TRGOS(1)*QSTEP
-               STOPP(2,IVEL) = STOPP(2,IVEL) + TRGOS(2)*QSTEP
-               STOPP(3,IVEL) = STOPP(3,IVEL) + TRGOS(3)*QSTEP
+               STOPP(1,IVEL,1) = STOPP(1,IVEL,1) + TRGOS(1)*QSTEP*
+     &                                         PI*D4/(QVAL*VELOC*2)
+               STOPP(2,IVEL,1) = STOPP(2,IVEL,1) + TRGOS(2)*QSTEP*
+     &                                         PI*D4/(QVAL*VELOC*2)
+               STOPP(3,IVEL,1) = STOPP(3,IVEL,1) + TRGOS(3)*QSTEP*
+     &                                         PI*D4/(QVAL*VELOC*2)
+
+            ENDIF
 C
-             ENDIF
+            IF ((QVAL .GE. QMINV) .AND. (QVAL .LE. QINP)) THEN
+C
+               STOPP(1,IVEL,2) = STOPP(1,IVEL,2) + TRGOS(1)*QSTEP*
+     &                                         PI*D4/(QVAL*VELOC*2)
+               STOPP(2,IVEL,2) = STOPP(2,IVEL,2) + TRGOS(2)*QSTEP*
+     &                                         PI*D4/(QVAL*VELOC*2)
+               STOPP(3,IVEL,2) = STOPP(3,IVEL,2) + TRGOS(3)*QSTEP*
+     &                                         PI*D4/(QVAL*VELOC*2)
+
+            ENDIF
 C
          ENDIF
 C

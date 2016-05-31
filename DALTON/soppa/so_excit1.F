@@ -72,7 +72,7 @@ CRF  actual size will be set to NUM_ACTIVE later
       DIMENSION BSRLON(3,NSYM,MXNEXI,*),
      &          EXENG(NSYM,MXNEXI,*)
 CClark:11/01/2016
-      DIMENSION BETHE(3,LQ,*),STOPP(3,LVEL,*)
+      DIMENSION BETHE(3,LQ,*),STOPP(3,LVEL,2,*)
 CClark:end
 CKeinSPASmehr
       DIMENSION SECMAT(3,MXNEXI,NSYM)
@@ -271,6 +271,10 @@ CSPAS:5/11-13: HRPA included
       CALL DZERO(SECMAT,3*NSYM*MXNEXI)
       CALL DZERO(EXENG, NSYM*MXNEXI*NUM_ACTIVE)
 CKeinSPASmehr
+CClark:09/03/2016
+      CALL DZERO(BETHE,3*LQ*NUM_ACTIVE)
+      CALL DZERO(STOPP,3*LVEL*2*NUM_ACTIVE)
+CClark:end
 C
 C========================================================
 C     Determine excitation energies, response vectors and
@@ -456,7 +460,7 @@ C
      &                       TRLON(1,1,1,IOUT),TRMAG(1,1,1,IOUT),
      &                       BSRLON(1,1,1,IOUT),EXENG(1,1,IOUT),
 CClark:11/01/2016
-     &                       BETHE(1,1,IOUT),STOPP(1,1,IOUT),
+     &                       BETHE(1,1,IOUT),STOPP(1,1,1,IOUT),
 CClark:end
      &                       WORK(KEND2),LWORK2)
 

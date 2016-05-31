@@ -42,7 +42,7 @@ C    actual amount of space, that we use)
       DIMENSION BSRLON(3,NSYM,MXNEXI,*),
      &          EXENG(NSYM,MXNEXI,*)
 CClark:11/01/2016
-      DIMENSION BETHE(3,LQ,*),STOPP(3,LVEL,*)
+      DIMENSION BETHE(3,LQ,*),STOPP(3,LVEL,2,*)
 CClark:end
 CKeinSPASmehr
       DIMENSION FONAC(*)
@@ -117,7 +117,7 @@ C
          IF (IMODEL .EQ. SOP_MODEL_RPA)
      &            CALL RP_WRITE_EXTEND(EXENG(1,1,IOUT),SECMAT)
 
-         CALL STOPP_WRITE(BETHE(1,1,IOUT),STOPP(1,1,IOUT) ) 
+         CALL STOPP_WRITE(BETHE(1,1,IOUT),STOPP(1,1,1,IOUT) ) 
 CSPAS:26/01-08:
 C     moved because otherwise we get a lot of non-sense output
 C     for the orbital extend
@@ -153,7 +153,8 @@ C
 #include "priunit.h"
 #include "cbiexc.h"
 C
-      DIMENSION BETHE(3,LQ),STOPP(3,LVEL)
+      DIMENSION BETHE(3,LQ),STOPP(3,LVEL,2)
+      PARAMETER ( D2 = 2.0D00 )
 C
 C---------------------------------------------
 C     Write Bethe sum rule and Stopping power.
@@ -169,28 +170,85 @@ C---------------------------------------------
      &   ' ------------------------------------------------------'
       WRITE(LUPRI,'(1X,A,I4,3(1X,A,G10.4))')
      &   'LQ=',LQ,'QMAX=',QMAX,'QMIN=',QMIN,'QSTEP=',QSTEP
+      WRITE(LUPRI,'(1X,A)')
+     &   ' ------------------------------------------------------'
+C
       DO IQ = 1, LQ
 C
-         WRITE(LUPRI,'(2X,G9.4,3(4X,G11.5))')
+         WRITE(LUPRI,'(2X,G8.3,3(4X,G11.5))')
      &                QMIN+(IQ-1)*QSTEP,(BETHE(K,IQ),K=1,3)
 C
       END DO
 C
       WRITE(LUPRI,'(//,1X,A)')
-     &   '         Stopping Power                 '
+     &   '         Stopping Power ( X Component )                '
       WRITE(LUPRI,'(1X,A/)')
-     &   '         --------------'
+     &   '    ----------------------------------------'
       WRITE(LUPRI,'(1X,A)')
-     &   ' Velocity     X Component    Y Component    Z Component'
+     &   ' Velocity  Full integral  L1      + L2      = split integral'
       WRITE(LUPRI,'(1X,A)')
-     &   ' ------------------------------------------------'
+     &   ' -----------------------------------------------------------'
 C
       DO IVEL = 1, LVEL
 C
          VELOC = VMIN+(IVEL-1)*VSTEP
 C
-         WRITE(LUPRI,'(2X,G9.4,3(4X,G11.5))')
-     &                VELOC,(STOPP(K,IVEL),K=1,3)
+C L2 part of the split integral is probably missing to time the number
+C of elections.
+C
+         WRITE(LUPRI,
+     &         '(2X,G9.4,G11.4,4X,"|",G8.3,"+",1X,G8.3,"=",1X,G11.4)')
+     &          VELOC,STOPP(1,IVEL,1),STOPP(1,IVEL,2),
+     &          LOG(VELOC*D2/QINP),
+     &          STOPP(1,IVEL,2)+LOG(VELOC*D2/QINP)
+C
+      END DO
+C
+      WRITE(LUPRI,'(//,1X,A)')
+     &   '         Stopping Power ( Y Component )                '
+      WRITE(LUPRI,'(1X,A/)')
+     &   '    ----------------------------------------'
+      WRITE(LUPRI,'(1X,A)')
+     &   ' Velocity  Full integral  L1      + L2      = split integral'
+      WRITE(LUPRI,'(1X,A)')
+     &   ' -----------------------------------------------------------'
+C
+      DO IVEL = 1, LVEL
+C
+         VELOC = VMIN+(IVEL-1)*VSTEP
+C
+C L2 part of the split integral is probably missing to time the number
+C of elections.
+C
+         WRITE(LUPRI,
+     &         '(2X,G9.4,G11.4,4X,"|",G8.3,"+",1X,G8.3,"=",1X,G11.4)')
+     &          VELOC,STOPP(2,IVEL,1),STOPP(2,IVEL,2),
+     &          LOG(VELOC*D2/QINP),
+     &          STOPP(2,IVEL,2)+LOG(VELOC*D2/QINP)
+C
+      END DO
+C
+      WRITE(LUPRI,'(//,1X,A)')
+     &   '         Stopping Power ( Z Component )                '
+      WRITE(LUPRI,'(1X,A/)')
+     &   '    ----------------------------------------'
+      WRITE(LUPRI,'(1X,A)')
+     &   ' Velocity  Full integral  L1      + L2      = split integral'
+      WRITE(LUPRI,'(1X,A)')
+     &   ' -----------------------------------------------------------'
+C
+      DO IVEL = 1, LVEL
+C
+         VELOC = VMIN+(IVEL-1)*VSTEP
+C
+C L2 part of the split integral is probably missing to time the number
+C of elections.
+C
+         WRITE(LUPRI,
+     &         '(2X,G9.4,G11.4,4X,"|",G8.3,"+",1X,G8.3,"=",1X,G11.4)')
+     &          VELOC,STOPP(3,IVEL,1),STOPP(3,IVEL,2),
+     &          LOG(VELOC*D2/QINP),
+     &          STOPP(3,IVEL,2)+LOG(VELOC*D2/QINP)
 C
       END DO
 C

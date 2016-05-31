@@ -51,7 +51,7 @@ CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI), EXENG(NSYM,MXNEXI)
 CClark:11/01/2016
-      DIMENSION BETHE(3,LQ),STOPP(3,LVEL)
+      DIMENSION BETHE(3,LQ),STOPP(3,LVEL,2)
 CClark:end
       DIMENSION T2AM(LT2AM), WORK(LWORK)
 C
@@ -62,6 +62,7 @@ C
       LOGICAL  IMAGPROP
 C
 CClark:7/1/2016
+      PARAMETER   ( D2 = 2.0D0 )
       REAL*8      ORSAVE(3)
       REAL*8      TRGOS(3,MXNEXI)
       CHARACTER*8 RTNLBL(2)
@@ -122,13 +123,10 @@ C
          LUAOGOS = -1
          LUGOS   = -1
 C
-         CALL GPOPEN(LUAOGOS,'AOGOS   ','UNKNOWN',' ',
-     &               'UNFORMATTED',IDUMMY,.FALSE.)
          CALL GPOPEN(LUGOS,'GOS     ','UNKNOWN',' ',
      &               'FORMATTED',IDUMMY,.FALSE.)
          CALL GETDAT(RTNLBL(1),RTNLBL(2))
          RTNLBL(2)='SYMMETRI'
-         CALL NEWLB2('EOFLABEL',RTNLBL,LUAOGOS,LUPRI)
 C
 C------------------------------
 C     Allocation of work space.
@@ -159,6 +157,8 @@ C
          DO IQ = 1, LQ
 C
             ORIGIN(1)=QMIN+(IQ-1)*QSTEP
+C            ORIGIN(2)=0
+C            ORIGIN(3)=0
             ORIGIN(2)=QMIN+(IQ-1)*QSTEP
             ORIGIN(3)=QMIN+(IQ-1)*QSTEP
 C
@@ -173,21 +173,21 @@ C
             CALL GET1IN(WORK(KPAOI),'EXPIKR ',NCOMP,WORK(KEND1),
      &                  LWORK1,WORK(KDLAB),WORK(KIDSYM),
      &                  WORK(KIDADR),IDUMMY,.FALSE.,NPATOM,.TRUE.,
-     &                  DUMMY,.FALSE.,DUMMY,IPRINT)
+     &                  DUMMY,.FALSE.,DUMMY,IPRSOP)
 C
-            IF (IPRSOP .GT. 5) THEN
-               CALL AROUND('COS KX/K Integrals in atomic basis')
-               CALL OUTPAK(WORK(KPAOI),NBAST,1,LUPRI)
-               CALL AROUND('COS KY/K Integrals in atomic basis')
-               CALL OUTPAK(WORK(KPAOI+NNBASX),NBAST,1,LUPRI)
-               CALL AROUND('COS KZ/K Integrals in atomic basis')
-               CALL OUTPAK(WORK(KPAOI+2*NNBASX),NBAST,1,LUPRI)
+            IF (IPRSOP .GE. 6) THEN
+C               CALL AROUND('COS KX/K Integrals in atomic basis')
+C               CALL OUTPAK(WORK(KPAOI),NBAST,1,LUPRI)
+C               CALL AROUND('COS KY/K Integrals in atomic basis')
+C               CALL OUTPAK(WORK(KPAOI+NNBASX),NBAST,1,LUPRI)
+C               CALL AROUND('COS KZ/K Integrals in atomic basis')
+C               CALL OUTPAK(WORK(KPAOI+2*NNBASX),NBAST,1,LUPRI)
                CALL AROUND('SIN KX/K Integrals in atomic basis')
                CALL OUTPAK(WORK(KPAOI+3*NNBASX),NBAST,1,LUPRI)
-               CALL AROUND('SIN KY/K Integrals in atomic basis')
-               CALL OUTPAK(WORK(KPAOI+4*NNBASX),NBAST,1,LUPRI)
-               CALL AROUND('SIN KZ/K Integrals in atomic basis')
-               CALL OUTPAK(WORK(KPAOI+5*NNBASX),NBAST,1,LUPRI)
+C               CALL AROUND('SIN KY/K Integrals in atomic basis')
+C               CALL OUTPAK(WORK(KPAOI+4*NNBASX),NBAST,1,LUPRI)
+C               CALL AROUND('SIN KZ/K Integrals in atomic basis')
+C               CALL OUTPAK(WORK(KPAOI+5*NNBASX),NBAST,1,LUPRI)
             END IF
 C
 C------------------------------------------
@@ -207,14 +207,17 @@ C         Replace time information with symmetry information$
 C                 RTNLBL(2)='SYMMETRI'
 C
 C         Place LUAOGOS in correct position for writing
-            REWIND LUAOGOS
-            IF (.NOT.FNDLAB('EOFLABEL',LUAOGOS)) THEN
-               WRITE (LUPRI,'(/A)') 
-     &                ' End of file not found in AOGOS?'
-               CALL QUIT('Internal error, EOF not found in AOGOS')
-            END IF
-            BACKSPACE LUAOGOS
-
+C            REWIND LUAOGOS
+C            IF (.NOT.FNDLAB('EOFLABEL',LUAOGOS)) THEN
+C               WRITE (LUPRI,'(/A)') 
+C     &                ' End of file not found in AOGOS?'
+C               CALL QUIT('Internal error, EOF not found in AOGOS')
+C            END IF
+C            BACKSPACE LUAOGOS
+            CALL GPOPEN(LUAOGOS,'AOGOS   ','UNKNOWN',' ',
+     &               'UNFORMATTED',IDUMMY,.FALSE.)
+            CALL NEWLB2('EOFLABEL',RTNLBL,LUAOGOS,LUPRI)
+C
 C
             LEN = MAX (4,NNBASX)
             CALL NEWLB2(LABAPPG(1),RTNLBL,LUAOGOS,LUPRI)
@@ -268,8 +271,13 @@ C
      &                         LURDENSE,LURDENSD)
 C
             END DO
-            
-            CALL DSCAL(NEXCI*3,2.0/ORIGIN(1)**2.0,TRGOS,1)
+C
+Cinside the integral the denominator q^2 has been considered
+C            CALL DSCAL(NEXCI*3,2.0/ORIGIN(1)**2.0,TRGOS,1)
+C
+            CALL DSCAL(NEXCI*3,D2,TRGOS,1)
+C
+            CALL GPCLOSE(LUAOGOS,'DELETE')
 C
 C----------------------------------
 C        Write GOS into LUGOS file.
@@ -277,13 +285,17 @@ C----------------------------------
 C
             DO IEXCI = 1, NEXCI
 C
-               WRITE (LUGOS,'(/A,D16.13)') 
+               IF (IPRSOP .GE. 6) THEN
+C
+                  WRITE (LUGOS,'(/A,D16.13)') 
      &                                'Number of q valus:', ORIGIN(1)
-               WRITE (LUGOS,'(/A,I4,A,I4,A,I4)') 'ISYMTR=',ISYMTR,
+                  WRITE (LUGOS,'(/A,I4,A,I4,A,I4)') 'ISYMTR=',ISYMTR,
      &                                     'NEXCI=',NEXCI,'IEXCI=',IEXCI
-               WRITE (LUGOS,'(D20.13)') TRGOS(1,IEXCI)
-               WRITE (LUGOS,'(D20.13)') TRGOS(2,IEXCI)
-               WRITE (LUGOS,'(D20.13)') TRGOS(3,IEXCI)
+                  WRITE (LUGOS,'(D20.13)') TRGOS(1,IEXCI)
+                  WRITE (LUGOS,'(D20.13)') TRGOS(2,IEXCI)
+                  WRITE (LUGOS,'(D20.13)') TRGOS(3,IEXCI)
+C
+               END IF
 C
 C-------------------------------------------
 C        Calculate Bethe and Stopping Power.
@@ -293,7 +305,7 @@ C
                BETHE(2,IQ) = BETHE(2,IQ) + TRGOS(2,IEXCI)
                BETHE(3,IQ) = BETHE(3,IQ) + TRGOS(3,IEXCI)
 C
-               CALL SO_STOPPW(STOPP,TRGOS,ISYMTR,IEXCI,EXENG,IQ)
+               CALL SO_STOPPW(STOPP,TRGOS,ISYMTR,IEXCI,EXENG,ORIGIN(1))
 C
 C               STOPP(1)    = STOPP(1) + TRGOS(1,IEXCI)*QSTEP
 C               STOPP(2)    = STOPP(2) + TRGOS(2,IEXCI)*QSTEP
@@ -301,7 +313,13 @@ C               STOPP(3)    = STOPP(3) + TRGOS(3,IEXCI)*QSTEP
 C
             END DO
 C
-            IF ( IPRSOP .GE. 1) THEN
+C            PRINT '(I3,3F14.10)', IQ, (BETHE(I,IQ), I=1,3)
+C
+C            DO IVEL=1,LVEL
+C             PRINT '(I3,3F14.10)',IVEL,(STOPP(I,IVEL),I=1,3)
+C            ENDDO
+C
+C            IF ( IPRSOP .GE. 5) THEN
 C
                DO IEXCI = 1,NEXCI
 C
@@ -322,7 +340,7 @@ C
 C
                END DO
 C
-            ENDIF
+C            ENDIF
 C
          END DO
 C
@@ -332,7 +350,6 @@ C------------------------------------------
 C
          CALL DCOPY(3,ORSAVE,1,ORIGIN,1)
 C
-         CALL GPCLOSE(LUAOGOS,'KEEP')
          CALL GPCLOSE(LUGOS,'KEEP')
 C
       ENDIF

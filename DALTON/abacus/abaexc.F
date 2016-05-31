@@ -158,6 +158,12 @@ CClark: QMAX reset by qmax=2*me*Vmax/hbar according to Bonderup)
      &         'Qmax reset to 2*Vmax according to Bonderup'
                QMAX = 2*VMAX
                LQ   = INT((QMAX-QMIN)/QSTEP+1.0001)
+               READ (LUCMD,*) QINP
+C
+C               IF ( THREXC .GT. 1.0D-3 ) THEN
+               THREXC = 1.0D-3
+C               ENDIF
+C
                ICHANG = ICHANG + 1
                GO TO 100
 CClark:end
@@ -301,7 +307,7 @@ C
       DIMENSION TRLON(3,NSYM,MXNEXI,*), TRMAG(3,NSYM,MXNEXI,*)
       DIMENSION BSRLON(3,NSYM,MXNEXI,*),EXENG(NSYM,MXNEXI,*)
 CClark:11/01/2016
-      DIMENSION BETHE(3,LQ,*),STOPP(3,LVEL,*)
+      DIMENSION BETHE(3,LQ,*),STOPP(3,LVEL,2,*)
 CClark:end
       DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
       DIMENSION SECMAT(3,MXNEXI,NSYM)
@@ -325,7 +331,7 @@ CClark:end
      &               TRLON,TRMAG,BSRLON,EXENG,FONAC,FONA2,
      &               WORK,LWORK)
       END IF
-C
+
       CALL TIMER ('EXCITA',TIMEIN,TIMOUT)
       PASS   = .TRUE.
       IF (CUT) THEN

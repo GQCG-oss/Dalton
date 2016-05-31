@@ -69,8 +69,8 @@ C
       CALL GPINQ(FNAME,'OPENE',OPENED)
       IF (OPENED) THEN
          INQUIRE (FILE=FNAME,NUMBER=LUFILE)
-         WRITE(LUPRI,'(4A,I3)') ' SO_ONEP: file',FNAME,' is already',
-     &                          ' opened with unit number ',LUFILE
+C         WRITE(LUPRI,'(4A,I3)') ' SO_ONEP: file',FNAME,' is already',
+C     &                          ' opened with unit number ',LUFILE
       ELSE
          IF (LUFILE .LE. 0) CALL GPOPEN(LUFILE,FNAME,'OLD',' ',
      &                                  'UNFORMATTED',IDUMMY,.FALSE.)
