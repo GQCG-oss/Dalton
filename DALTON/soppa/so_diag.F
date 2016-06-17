@@ -86,8 +86,13 @@ C------------------------------------------------------------------------
 C     Calculate the diagonal two-electron parts of the SOPPA E[2] matrix. 
 C------------------------------------------------------------------------
 C
-         CALL SO_EDIAG2(WORK(KDIAG2),LDIAG2,FOCKD,LFOCKD,ISYRES,
-     &                  WORK(KEND1),LWORK1)
+         IF (TRIPLET) THEN
+            CALL SO_EDIAG2T(WORK(KDIAG2),LDIAG2,FOCKD,LFOCKD,ISYRES,
+     &                     WORK(KEND1),LWORK1)
+         ELSE
+            CALL SO_EDIAG2(WORK(KDIAG2),LDIAG2,FOCKD,LFOCKD,ISYRES,
+     &                     WORK(KEND1),LWORK1)
+         END IF
          CALL WRITT(LUDIAG,LDIAG2,WORK(KDIAG2))
       ENDIF
 C
