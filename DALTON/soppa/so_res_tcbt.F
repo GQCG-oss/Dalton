@@ -40,20 +40,16 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_RES_TCBT')
-cspas
-      write(LUPRI,'(A,I3)')
-     &     'in start of SO_RES_TCBT: printing RES1E for IDEL=',IDEL
-      write(LUPRI,'(I8,1X,F14.8)') (I,RES1E(I),I=1,LRES1E)
-C
-C-------------------------
-C     Calculate constants.
-C-------------------------
-C
       SQ2I  = ONE / DSQRT(TWO)
 C
       ISYMB = ISDEL
 C
       LCDB  = NVIR(ISYMB)
+CPi If no virtual orbitals, skip this transformation
+      IF(LCDB .LE. 0 ) THEN
+         CALL QEXIT('SO_RES_TCBT')
+         RETURN
+      END IF
 C
       KCDB    = 1
       KEND1   = KCDB  + LCDB
@@ -240,14 +236,6 @@ C
                      IF ( LPTR2D .EQ. 0 )
      &                    CALL DZERO(WORK(KTTR2DB),LTTR2D)
                   END IF
-cspas
-cspas write(LUPRI,'(A,I3)')
-cspas&     'in SO_RES_TCBT: printing TTR2EA for IDEL=',IDEL
-cspas write(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTTR2EA-1+I),I=1,LTTR2E)
-cspas write(LUPRI,'(A,I3)')
-cspas&     'in SO_RES_TCBT: printing TTR2DA for IDEL=',IDEL
-cspas write(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTTR2DA-1+i),I=1,LTTR2D)
-C
 C
 C----------------------------------------------------------------------
 C              Calculate and add C * b contribution to RES1E and RES1D.
@@ -258,27 +246,16 @@ C              by multiplying two-electron integrals in SCR2
 C              with the triplet 2p2h amplitudes in TTR2EA and TTR2DA.
 C----------------------------------------------------------------------
 C
-cspas
-cspas write(LUPRI,'(A,I3)')
-cspas&     'in 1 of SO_RES_TCBT: printing RES1E for IDEL=',IDEL
-cspas write(LUPRI,'(I8,1X,F14.8)') (I,RES1E(I),I=1,LRES1E)
-C
                   NTOTC  = MAX(NVIR(ISYMC),1)
                   NTOTA  = MAX(NVIR(ISYMA),1)
                   KOFF3  = IT1AM(ISYMC,ISYMK) + 1
 C
                   CALL DGEMM('N','N',NVIR(ISYMC),NRHF(ISYMK),
-     &                       NVIR(ISYMA),-ONE,WORK(KSCR2),NTOTC,
+     &                       NVIR(ISYMA),-SQ2I,WORK(KSCR2),NTOTC,
      &                       WORK(KTTR2EA),NTOTA,ONE,RES1E(KOFF3),NTOTC)
 C
-C
-cspas
-cspas write(LUPRI,'(A,I3)')
-cspas&     'in 2 of SO_RES_TCBT: printing RES1E for IDEL=',IDEL
-cspas write(LUPRI,'(I8,1X,F14.8)') (I,RES1E(I),I=1,LRES1E)
-C
                   CALL DGEMM('N','N',NVIR(ISYMC),NRHF(ISYMK),
-     &                       NVIR(ISYMA),-ONE,WORK(KSCR2),NTOTC,
+     &                       NVIR(ISYMA),-SQ2I,WORK(KSCR2),NTOTC,
      &                       WORK(KTTR2DA),NTOTA,ONE,RES1D(KOFF3),NTOTC)
 C
 C----------------------------------------------------------------------
@@ -302,31 +279,26 @@ C
 C
                   IF (ITTRIAL .EQ. 1) THEN
                      CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                          NRHF(ISYMK),ONE,WORK(KTTR2EA),NTOTA,
+     &                          NRHF(ISYMK),SQ2I,WORK(KTTR2EA),NTOTA,
      &                          WORK(KSCR3),NTOTK,ONE,RES1E(KOFF4),
      &                          NTOTA)
 C
                      CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                          NRHF(ISYMK),ONE,WORK(KTTR2DA),NTOTA,
+     &                          NRHF(ISYMK),SQ2I,WORK(KTTR2DA),NTOTA,
      &                          WORK(KSCR3),NTOTK,ONE,RES1D(KOFF4),
      &                          NTOTA)
                   ELSE
                      CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                          NRHF(ISYMK),ONE,WORK(KTTR2EB),NTOTA,
+     &                          NRHF(ISYMK),SQ2I,WORK(KTTR2EB),NTOTA,
      &                          WORK(KSCR3),NTOTK,ONE,RES1E(KOFF4),
      &                          NTOTA)
 C
                      CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                          NRHF(ISYMK),ONE,WORK(KTTR2DB),NTOTA,
+     &                          NRHF(ISYMK),SQ2I,WORK(KTTR2DB),NTOTA,
      &                          WORK(KSCR3),NTOTK,ONE,RES1D(KOFF4),
      &                          NTOTA)
 C
                   END IF
-cspas
-cspas write(LUPRI,'(A,I3)')
-cspas&     'in 4 of SO_RES_TCBT: printing RES1E for IDEL=',IDEL
-cspas write(LUPRI,'(I8,1X,F14.8)') (I,RES1E(I),I=1,LRES1E)
-C
 C
   400          END DO
 C
@@ -339,11 +311,6 @@ C
 C-----------------------
 C     Remove from trace.
 C-----------------------
-C
-cspas
-      write(LUPRI,'(A,I3)')
-     &     'in end of SO_RES_TCBT: printing RES1E for IDEL=',IDEL
-      write(LUPRI,'(I8,1X,F14.8)') (I,RES1E(I),I=1,LRES1E)
 C
       CALL QEXIT('SO_RES_TCBT')
 C

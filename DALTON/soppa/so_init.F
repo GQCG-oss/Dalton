@@ -264,8 +264,6 @@ C-----------------------
 C     Remove from trace.
 C-----------------------
 C
-C      CALL FLSHFO(LUPRI)
-C
       CALL QEXIT('SO_INIT')
 C
       RETURN

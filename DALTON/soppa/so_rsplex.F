@@ -49,8 +49,19 @@ C
       MAXIT   = MAXITE
 C
       LRESINM = NEXCI
-      LCONV   = 8
-      LMXRED  = (2 * NEXCI * NSAVMX)**2
+CPi 20.06.16 Old version had this limitation on converged results
+C      LCONV   = 8
+      LCONV   = NEXCI
+C
+C      LMXRED  = (2 * NEXCI * NSAVMX)**2
+CPi Adjust max size of reduced space if necessary
+      IF (NEXCI*NSAVMX .GE. (NT1AM(ISYMTR)+N2P2HOP(ISYMTR))) THEN
+         LMXRED = ( 2 * (NT1AM(ISYMTR)+N2P2HOP(ISYMTR)) )**2
+         WRITE(LUPRI,*) 'SO_RSPLEX: Adjusting LMXRED'
+      ELSE
+         LMXRED  = (2 * NEXCI * NSAVMX)**2
+      END IF
+Cend-Pi
 C
       KRESINM = 1
       KCONV   = KRESINM + LRESINM
@@ -170,12 +181,18 @@ C
             IF (DOUBLES) THEN
                CALL SO_READ(WORK(KTR2E), LTR2E, LUTR2E,FNTR2E,IEXCI)
                CALL DCOPY(LTR2E,WORK(KTR2E),1,WORK(KTR2D),1)
-               CALL SO_TFSET(WORK(KTR2D),1,LTR2E,ISYMTR)
+C
+               IF (.NOT. TRIPLET) THEN
+                  CALL SO_TFSET(WORK(KTR2D),1,LTR2E,ISYMTR)
+               END IF
                W2ENM = DDOT(LTR2E,WORK(KTR2D),1,WORK(KTR2E),1)
 C
                CALL SO_READ(WORK(KTR2D), LTR2D, LUTR2D,FNTR2D,IEXCI)
                CALL DCOPY(LTR2E,WORK(KTR2D),1,WORK(KTR2E),1)
-               CALL SO_TFSET(WORK(KTR2E),1,LTR2D,ISYMTR)
+               IF (.NOT. TRIPLET) THEN
+                  CALL SO_TFSET(WORK(KTR2E),1,LTR2D,ISYMTR)
+               END IF
+C
                W2DNM = -DDOT(LTR2D,WORK(KTR2E),1,WORK(KTR2D),1)
             ELSE
                W2ENM = 0.0D0

@@ -177,6 +177,12 @@ C load-distribution later on
       endif
 #endif
 C
+C----------------------------------
+C     Set print level for AO-SOPPA.
+C----------------------------------
+C
+      IPRSOP = IPREXC
+C
 C---------------------------------------------------
 C     Initialize a few pointerarrays and dimensions.
 C---------------------------------------------------
@@ -185,12 +191,6 @@ C
       CALL SO_INIT
       DTIME     = SECOND()  - DTIME
       SOTIME(2) = SOTIME(2) + DTIME
-C
-C----------------------------------
-C     Set print level for AO-SOPPA.
-C----------------------------------
-C
-      IPRSOP = IPREXC
 C
 C---------------------------------
 C     1. allocation of work space.

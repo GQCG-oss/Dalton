@@ -430,7 +430,7 @@ C--------------------------------------------------------------------
 C        RES2E, RES2D is initialized with the D^0*Tr2 contribution
 C        --- For MPI only one process must do this
 C--------------------------------------------------------------------
-            IF ( .NOT.TR2_ZERO
+            IF ( (.NOT.TR2_ZERO).AND.(.NOT.TRIPLET)
 #ifdef VAR_MPI
      &            .OR.(MYNUM .EQ. 0 )
 #endif
@@ -1027,6 +1027,23 @@ C
          DTIME      = SECOND()   - DTIME
          SOTIME(26) = SOTIME(26) + DTIME
 C
+         IF (DOUBLES) THEN
+C
+C-----------------------------------------------------------------
+C        Construct D-contribution to 2p2h result vectors RES2E and
+C        RES2D.
+C-----------------------------------------------------------------
+C
+            IF (TRIPLET) THEN
+               DTIME      = SECOND()
+               CALL SO_RES_CDT(WORK(KRES2E),LRES2E,WORK(KRES2D),LRES2D,
+     &                        WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
+     &                        FOCKD,LFOCKD,ISYRES,WORK(KEND2),LWORK2)
+               DTIME      = SECOND()   - DTIME
+               SOTIME(30) = SOTIME(30) + DTIME
+C
+            END IF
+         ENDIF
 #ifdef VAR_MPI
 C Slaves are done
          IF (MYNUM .NE. 0) GOTO 100
@@ -1125,12 +1142,14 @@ C------------------------------------------
             WRITE(LUPRI,'(/,I3,A)') INEWTR,
      &                '. new E[2] linear transformed trial vector'
             CALL SO_READ(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,INEW)
-            CALL SO_READ(WORK(KRES2E),LRES2E,LURS2E,FNRS1D,INEW)
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
+            CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
+CPi            CALL SO_READ(WORK(KRES2E),LRES2E,LURS2E,FNRS1D,INEW)
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
      &           (I,WORK(KRES1E+I-1),WORK(KRES1D+I-1),I=1,LRES1E)
             IF (DOUBLES) THEN
-               CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS2E,INEW)
-               IF (DO_DEX)
+CPi               CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS2E,INEW)
+               CALL SO_READ(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
+               IF (DO_DEX) 
      &            CALL SO_READ(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
                WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &             (I,WORK(KRES2E+I-1),WORK(KRES2D+I-1),I=1,LRES2E)
@@ -1176,7 +1195,7 @@ C  Be aware that variables fall through from the outer scope!
 C
 
          SUBROUTINE LOOP_BODY_SINGLET
-C        Singlet case
+C
          DOUBLE PRECISION DTIME
 C
 C
@@ -1194,9 +1213,9 @@ C
          IF (singles_second) THEN
 C
 C----------------------------------------------------------------------
-C        Calculate part of the result vectors RES1E and RES1D,
-C                 specifically the first and the second term in eqs.
-C                 (34,35). Also calculate Aij and Aab in eqs. (43,44).
+C           Calculate part of the result vectors RES1E and RES1D,
+C           specifically the first and the second term in eqs. (34,35).
+C           Also calculate Aij and Aab in eqs. (43,44).
 C----------------------------------------------------------------------
 C
             DTIME      = SECOND()
@@ -1223,26 +1242,27 @@ CRF      both the 2-particle trial vector AND the T2*x1 intermediate,
 CRF              ~ ~                               ~
 CRF      so both C*x2 and two terms (1) and (5) of B*x1 is calculated here.
 C
-               DTIME      = SECOND()
-               CALL SO_RES_TCB(WORK(KRES1E),LRES1E,WORK(KRES1D),
-     &                         LRES1D,WORK(KX2EM1),LX2M1,
-     &                         WORK(KX2DM1),LX2M1,
-     &                         WORK(KDSRHF),LDSRHF,
-     &                         WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                         ISYMTR,WORK(KEND5),LWORK5)
-               DTIME      = SECOND()   - DTIME
-               SOTIME(29) = SOTIME(29) + DTIME
+            DTIME      = SECOND()
+            CALL SO_RES_TCB(WORK(KRES1E),LRES1E,
+     &                      WORK(KRES1D),LRES1D,
+     &                      WORK(KX2EM1),LX2M1,
+     &                      WORK(KX2DM1),LX2M1,
+     &                      WORK(KDSRHF),LDSRHF,
+     &                      WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+     &                      ISYMTR,WORK(KEND5),LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(29) = SOTIME(29) + DTIME
          END IF
-         IF (DOUBLES) THEN
 C
 C----------------------------------------------------------------------
-C        Construct C-contribution to 2p2h result vectors RES2E
+C           Construct C-contribution to 2p2h result vectors RES2E
 C                 and RES2D.
 C----------------------------------------------------------------------
 C
+         IF(DOUBLES) THEN
             DTIME      = SECOND()
-            CALL SO_RES_CB(WORK(KRES2E),LRES2E,WORK(KRES2D),
-     &                    LRES2D,
+            CALL SO_RES_CB(WORK(KRES2E),LRES2E,
+     &                    WORK(KRES2D),LRES2D,
      &                    WORK(KDSRHF),LDSRHF,
      &                    WORK(KBTR1E),LBTR1E,
      &                    WORK(KBTR1D),LBTR1D,
@@ -1286,7 +1306,6 @@ C           Same for the D-part
          END SUBROUTINE
 C
          SUBROUTINE LOOP_BODY_TRIPLET
-C        Triplet case... To be filled by Pi
 C
 C----------------------------------------------
 C        Calculate the AO-Fock matrix.
@@ -1298,13 +1317,14 @@ C
      &                   IDEL,ISYMD,ISYMTR)
          DTIME      = SECOND()   - DTIME
          SOTIME(11) = SOTIME(11) + DTIME
-
+C
          IF (singles_second) THEN
-CRF   A^(2) Doesn't mix spins - Same for singlet and triplet
+C
+CRF         A^(2) Doesn't mix spins - Same for singlet and triplet
 C----------------------------------------------------------------------
-C        Calculate part of the result vectors RES1E and RES1D,
-C        specifically the first and the second term in eqs.
-C        (34,35). Also calculate Aij and Aab in eqs. (43,44).
+C           Calculate part of the result vectors RES1E and RES1D,
+C           specifically the first and the second term in eqs.
+C           (34,35). Also calculate Aij and Aab in eqs. (43,44).
 C----------------------------------------------------------------------
 C
             DTIME      = SECOND()
@@ -1317,8 +1337,7 @@ C
      &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(14) = SOTIME(14) + DTIME
-
-CPi-160316
+C
 C-------------------------------------------------------------------
 C           Construct the partially back-transformed T2 MP-amplitudes
 C--------------------------------------------------------------------
@@ -1333,8 +1352,8 @@ C
             SOTIME(12) = SOTIME(12) + DTIME
 C
 C--------------------------------------------------------------------
-C                 Construct SIGMAI1(ALFA,I) and SIGMAI2(ALFA,I) which
-C                 are used in SO_RES_B.
+C           Construct SIGMAI1(ALFA,I) and SIGMAI2(ALFA,I) which
+C           are used in SO_RES_B.
 C--------------------------------------------------------------------
 C
             DTIME      = SECOND()
@@ -1353,8 +1372,8 @@ C
             SOTIME(16) = SOTIME(16) + DTIME
 C
 C--------------------------------------------------------------------
-C                 Construct SIGDA1(DELTA,A) and SIGDA2(DELTA,A) which
-C                 are used SO_RES_C.
+C           Construct SIGDA1(DELTA,A) and SIGDA2(DELTA,A) which
+C           are used SO_RES_C.
 C--------------------------------------------------------------------
 C
             DTIME      = SECOND()
@@ -1372,16 +1391,13 @@ C
             DTIME      = SECOND()   - DTIME
             SOTIME(17) = SOTIME(17) + DTIME
 C
-Cend-Pi
-C
          ENDIF
 C
          IF (DOUBLES) THEN
 C
 C-------------------------------------------------------------------
-C        Calculate the part of the result vectors RES1E and
-C        RES1D which originate from the C matrices. See
-C                 eqs. (72) and (73).
+C           Calculate the part of the result vectors RES1E and RES1D
+C           which originate from the C matrices. See eqs (72) and (73)
 C-------------------------------------------------------------------
 C
             DTIME      = SECOND()
@@ -1396,7 +1412,7 @@ C
             SOTIME(29) = SOTIME(29) + DTIME
 C
 C----------------------------------------------------------------------
-C        Construct C-contribution to 2p2h result vectors RES2E
+C           Construct C-contribution to 2p2h result vectors RES2E
 C                 and RES2D.
 C----------------------------------------------------------------------
 C
