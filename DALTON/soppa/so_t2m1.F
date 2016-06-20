@@ -36,6 +36,11 @@ C
       ISYMB = ISYMD
 C
       LCDB  = NVIR(ISYMB)
+CPi If no virtual orbitals in this symmetry, skip this transformation
+      IF (LCDB .EQ. 0) THEN
+        CALL QEXIT('SO_T2M1')
+        RETURN
+      END IF
 C
       KCDB    = 1
       KEND1   = KCDB  + LCDB

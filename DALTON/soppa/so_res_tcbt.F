@@ -50,7 +50,7 @@ C
       ISYMB = ISDEL
 C
       LCDB  = NVIR(ISYMB)
-CPi This is something Rasmus added, do we need it?
+CPi If no virtual orbitals, skip this transformation
       IF(LCDB .LE. 0 ) THEN
          CALL QEXIT('SO_RES_TCBT')
          RETURN
