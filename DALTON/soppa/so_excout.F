@@ -88,7 +88,7 @@ C  Adjust number of excitations down, to the maximum allowed by the
 C  method/basis set
 C
             IF (TREAT_DOUBLES) THEN
-               MAX_EXCITATION = NT1AM(ISYM) + NT2AM(ISYM)
+               MAX_EXCITATION = NT1AM(ISYM) + N2P2HOP(ISYM)
             ELSE
                MAX_EXCITATION = NT1AM(ISYM)
             ENDIF

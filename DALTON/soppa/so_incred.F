@@ -125,10 +125,11 @@ C     Transform right hand side result vectors to left hands and
 C     save on scratch files.
 C     (A.L.2004  I think that the transformation is from Left to
 C     Right)
+C
 CPi   08.04.16: In TRIPLET case, do not call ccsd_tcmepkx
 C---------------------------------------------------------------
 C
-      DO INEWTR = 1,NNEWTR
+      DO INEWTR = 1,NNEWTR ! excitations
 C
          CALL SO_READ(WORK(KRES1),LTR1E,LURS1E,FNRS1E,INEWTR+NOLDTR)
          CALL SO_WRITE(WORK(KRES1),LTR1E,LUSC1E,FNSC1E,INEWTR)
@@ -146,7 +147,7 @@ C
 C
       END DO
 C
-      DO INEWTR = 1,NNEWTR
+      DO INEWTR = 1,NNEWTR ! de-excitations
 C
          CALL SO_READ(WORK(KRES1),LTR1E,LURS1D,FNRS1D,INEWTR+NOLDTR)
          CALL SO_WRITE(WORK(KRES1),LTR1E,LUSC1D,FNSC1D,INEWTR)
@@ -224,9 +225,9 @@ C
       CALL DZERO(WORK(KOFF1),LOFF1)
       CALL DZERO(WORK(KOFF2),LOFF2)
 C
-C-----------------------------------
-C     Open files with trial vectors.
-C-----------------------------------
+C----------------------------------------------------------------
+C     Open files with and read p-h trial vectors.
+C----------------------------------------------------------------
 C
       CALL SO_OPEN(LUTR1E,FNTR1E,LTR1E)
       CALL SO_OPEN(LUTR1D,FNTR1D,LTR1E)
@@ -241,6 +242,14 @@ C
      &                   IOFF)
          CALL SO_READSET(WORK(KOFF4),LTR,NTRIAL,LUTR1D,FNTR1D,LTR1E,
      &                   IOFF)
+C
+C--------------------------------------------------------------------
+C        Read the p-h resultvectors from LUSC1* and multiply with the
+C        excitation and de-excitation p-h trial vectors:
+C        (E * E^b)**T * E^b )
+C        (E * E^b)**T * D^b )
+C--------------------------------------------------------------------
+C
          CALL SO_READSET(WORK(KOFF5),LTR,NNEWTR,LUSC1E,FNSC1E,LTR1E,
      &                   IOFF)
 C
@@ -249,6 +258,11 @@ C
 C
          CALL DGEMM('T','N',NNEWTR,NTRIAL,LTR,ONE,WORK(KOFF5),LTR,
      &              WORK(KOFF4),LTR,ONE,WORK(KOFF2),NNEWTR)
+C
+C--------------------------------------------------------------------
+C        (E * D^b)**T * D^b)
+C        (E * D^b)**T * E^b)
+C--------------------------------------------------------------------
 C
          CALL SO_READSET(WORK(KOFF5),LTR,NNEWTR,LUSC1D,FNSC1D,LTR1E,
      &                   IOFF)
@@ -291,10 +305,10 @@ C
 C
 C     Singles only methods, jump to the end here
       IF(.NOT.DOUBLES) GOTO 1010
-C              
-C-----------------------------------
-C     Open files with trial vectors.
-C-----------------------------------
+C
+C-----------------------------------------------------------------
+C     Open files with and read the 2p-2h trial vectors
+C-----------------------------------------------------------------
 C
       CALL SO_OPEN(LUTR2E,FNTR2E,LTR2E)
       CALL SO_OPEN(LUTR2D,FNTR2D,LTR2E)
@@ -309,6 +323,14 @@ C
      &                   IOFF)
          CALL SO_READSET(WORK(KOFF4),LTR,NTRIAL,LUTR2D,FNTR2D,LTR2E,
      &                   IOFF)
+C
+C--------------------------------------------------------------------
+C        Read the 2p-2h resultvectors from LUSC2E and multiply with the
+C        excitation and de-excitation 2p-2h trial vectors:
+C        (E * E^b)**T * E^b )
+C        (E * E^b)**T * D^b )
+C--------------------------------------------------------------------
+C
          CALL SO_READSET(WORK(KOFF5),LTR,NNEWTR,LUSC2E,FNSC2E,LTR2E,
      &                   IOFF)
 C
@@ -317,6 +339,11 @@ C
 C
          CALL DGEMM('T','N',NNEWTR,NTRIAL,LTR,ONE,WORK(KOFF5),LTR,
      &              WORK(KOFF4),LTR,ONE,WORK(KOFF2),NNEWTR)
+C
+C--------------------------------------------------------------------
+C        (E * D^b)**T * D^b )
+C        (E * D^b)**T * E^b )
+C--------------------------------------------------------------------
 C
          CALL SO_READSET(WORK(KOFF5),LTR,NNEWTR,LUSC2D,FNSC2D,LTR2E,
      &                   IOFF)
