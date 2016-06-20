@@ -230,7 +230,7 @@ C
                CALL DCOPY(NT1AM(ISYMAI),WORK(KSCR2),1,WORK(KSCR4),1)
                CALL DCOPY(NT1AM(ISYMAI),WORK(KSCR3),1,WORK(KSCR5),1)
 C
-               FAC   = SQ2 * CMO(KOFF6)
+               FAC   = CMO(KOFF6)
 C
                CALL DSCAL(NT1AM(ISYMAI),FAC,WORK(KSCR4),1)
                CALL DSCAL(NT1AM(ISYMAI),FAC,WORK(KSCR5),1)
@@ -273,7 +273,7 @@ C
                         IF(I.EQ.J) THEN
                           SGNIJ1 = ZERO
                           SGNIJ2 = ZERO
-                          SGNIJ3 = ONESQ2
+                          SGNIJ3 = SQ2 ! Pi: In T3 part elimnate ONESQ2
                         ELSE IF(I.GT.J) THEN
                           SGNIJ1 = ONE
                           SGNIJ2 = ONE
@@ -290,7 +290,7 @@ C
                         NIJ2  = NIJ1
                         NIJ3  = IIJ3 + KJOFF
                         SGNIJ1= ONE
-                        SGNIJ2= ONESQ2
+                        SGNIJ2= ONE
                         SGNIJ3= ONE
                      ELSE IF (ISYMI .LT. ISYMJ) THEN
                         KJOFF = NRHF(ISYMI) * (J - 1)
@@ -298,7 +298,7 @@ C
                         NIJ2  = NIJ1 
                         NIJ3  = IIJS + I + KJOFF
                         SGNIJ1= -ONE
-                        SGNIJ2= -ONESQ2
+                        SGNIJ2= -ONE
                         SGNIJ3= ONE
                      END IF
 C
@@ -320,15 +320,18 @@ C
 C
                            IF(A.EQ.B) THEN
                              SGN1 = ZERO
+                             SGN2 = SGNIJ2*SQ2 ! CPi eliminate ONESQ2
                              SGN3 = ZERO
                            ELSE IF(A.GT.B) THEN
-                             SGN1 = SGNIJ1
+                             SGN1 = -SGNIJ1
+                             SGN2 = SGNIJ2
                              SGN3 = SGNIJ3
                            ELSE
-                             SGN1 = -SGNIJ1
+                             SGN1 = SGNIJ1
+                             SGN2 = SGNIJ2
                              SGN3 = -SGNIJ3
                            END IF
-                           SGN2  = SGNIJ2
+C
                         ELSE IF (ISYMA .GT. ISYMB) THEN
 C
                            KBOFF = NVIR(ISYMB) * (A - 1)
@@ -353,19 +356,18 @@ C
                         NABIJ3    = IABIJ3 + NAB3
 C
                  RES2E(NABIJ1) = RES2E(NABIJ1) + SGN1*WORK(KSCR4+NAI-1)
+C     &                           *ONESQ2
 C
                  RES2D(NABIJ1) = RES2D(NABIJ1) + SGN1*WORK(KSCR5+NAI-1)
+C     &                           *ONESQ2
 C
                  RES2E(NABIJ2) = RES2E(NABIJ2) + SGN2*WORK(KSCR4+NAI-1)
-C
-c      if (((nabij2.eq.9).or.(nabij2.eq.10)).and.(sgn2.ne.zero)) 
-c     &        WRITE(LUPRI,'(I3,2(a,4(I3,X)),X,F5.2,X,F10.7,X,F10.7)') 
-c     &      NABIJ2,'SYM',isyma,isymb,isymi,isymj,'Orb',A,B,I,J,
-c     &      SGN2,WORK(KSCR4+NAI-1),RES2E(NABIJ2)
+     &                           *ONESQ2
 C
                  RES2D(NABIJ2) = RES2D(NABIJ2) + SGN2*WORK(KSCR5+NAI-1)
+     &                           *ONESQ2
 C
-                 RES2E(NABIJ3) = RES2E(NABIJ3) +
+                 RES2E(NABIJ3) = RES2E(NABIJ3)
      &                         + SGN3*WORK(KSCR4+NAI-1)*ONESQ2
 C
                  RES2D(NABIJ3) = RES2D(NABIJ3) 

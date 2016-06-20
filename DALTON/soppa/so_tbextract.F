@@ -181,14 +181,6 @@ C
       IABT   = ITVV(MAX(ISYMA,ISYMB),MIN(ISYMA,ISYMB))
       IABS   = ISVV(MAX(ISYMA,ISYMB),MIN(ISYMA,ISYMB))
 C
-cspas
-      if ((itype.eq.2).and.((TR2E(4).eq.ONE).or.(TR2E(11).eq.ONE))) 
-     & write(lupri,'(A,4I3,X,I3)')
-     &     'entering SO_TBEXTRACT with ',ISYMA,ISYMB,ISYMI,ISYMJ,J
-      if ((itype.eq.2).and.((TR2E(4).eq.ONE).or.(TR2E(11).eq.ONE))) 
-     & write(lupri,'(A,A)') ' SA SB SI SJ   A  B  I  J ',
-     & 'NABIJ2 TR2E     SGN2 NAIB EXTBEA(NAIB) NAIB EXTBEB(NAIB)'
-cspas
       DO 100 B = 1,NVIR(ISYMB)
 C
          KOFF1 = NVIR(ISYMA) * NRHF(ISYMI) * (B - 1)
@@ -199,7 +191,6 @@ C
          DO 110 I = 1,NRHF(ISYMI)
 C
             KOFF2 = KOFF1 + NVIR(ISYMA) * (I - 1)
-cspas       KOFF2B = B + NVIR(ISYMB) * (I - 1)
 C
             IF (ITYPE .EQ. 1) THEN
 C
@@ -250,14 +241,8 @@ C
 C
                   NAIB   = KOFF2 + A
 C
-                  EXTBEA(NAIB) = EXTBEA(NAIB) + SGN1 * TR2E(NABIJ1)
-                  EXTBDA(NAIB) = EXTBDA(NAIB) + SGN1 * TR2D(NABIJ1)
-C
-cspas             KOFF1B = NVIR(ISYMB) * NRHF(ISYMI) * (A - 1)
-cspas             NBIA   = KOFF1B + KOFF2B
-C
-                  EXTBEA(NAIB) = EXTBEA(NAIB) + SGN1 * TR2E(NABIJ1)
-                  EXTBDA(NAIB) = EXTBDA(NAIB) + SGN1 * TR2D(NABIJ1)
+                  EXTBEA(NAIB) = EXTBEA(NAIB) + TWO*SGN1 * TR2E(NABIJ1)
+                  EXTBDA(NAIB) = EXTBDA(NAIB) + TWO*SGN1 * TR2D(NABIJ1)
 C
  120           CONTINUE
 C
@@ -309,26 +294,11 @@ C
                   NABIJ2 = IABIJ2 + NAB2
                   NAIB   = KOFF2 + A
 C
-                  EXTBEA(NAIB) = EXTBEA(NAIB) - SGN2 * TR2E(NABIJ2)
-                  EXTBDA(NAIB) = EXTBDA(NAIB) - SGN2 * TR2D(NABIJ2)
-                  EXTBEB(NAIB) = EXTBEB(NAIB) - SGN2 * TR2E(NABIJ2)
-                  EXTBDB(NAIB) = EXTBDB(NAIB) - SGN2 * TR2D(NABIJ2)
+                  EXTBEA(NAIB) = EXTBEA(NAIB) - TWO*SGN2 * TR2E(NABIJ2)
+                  EXTBDA(NAIB) = EXTBDA(NAIB) - TWO*SGN2 * TR2D(NABIJ2)
+                  EXTBEB(NAIB) = EXTBEB(NAIB) - TWO*SGN2 * TR2E(NABIJ2)
+                  EXTBDB(NAIB) = EXTBDB(NAIB) - TWO*SGN2 * TR2D(NABIJ2)
 C
-cspas             KOFF1B = NVIR(ISYMB) * NRHF(ISYMI) * (A - 1)
-cspas             NBIA   = KOFF1B + KOFF2B
-C
-                  EXTBEA(NAIB) = EXTBEA(NAIB) - SGN2 * TR2E(NABIJ2)
-                  EXTBDA(NAIB) = EXTBDA(NAIB) - SGN2 * TR2D(NABIJ2)
-                  EXTBEB(NAIB) = EXTBEB(NAIB) - SGN2 * TR2E(NABIJ2)
-                  EXTBDB(NAIB) = EXTBDB(NAIB) - SGN2 * TR2D(NABIJ2)
-C
-cspas
-      if ((TR2E(4).eq.ONE).or.(TR2E(11).eq.ONE)) 
-     & write(lupri,'(2(4I3,X),X,I3,X,F10.7,X,F5.2,2(X,I3,X,F10.7,X))')
-     & ISYMA,ISYMB,ISYMI,ISYMJ,
-     & A,B,I,J,NABIJ2,TR2E(NABIJ2),SGN2,
-     & NAIB,EXTBEA(NAIB),NAIB,EXTBEB(NAIB)
-Cspas
  130           CONTINUE
 C
             ELSE
@@ -379,21 +349,10 @@ C
                   NABIJ3 = IABIJ3 + NAB3
                   NAIB   = KOFF2 + A
 C
-cspas
-cspas                  sgn3=zero
-cspas
-                  EXTBEA(NAIB) = EXTBEA(NAIB) - SGN3 * TR2E(NABIJ3)
-                  EXTBDA(NAIB) = EXTBDA(NAIB) - SGN3 * TR2D(NABIJ3)
-                  EXTBEB(NAIB) = EXTBEB(NAIB) - SGN3 * TR2E(NABIJ3)
-                  EXTBDB(NAIB) = EXTBDB(NAIB) - SGN3 * TR2D(NABIJ3)
-C
-cspas             KOFF1B = NVIR(ISYMB) * NRHF(ISYMI) * (A - 1)
-cspas             NBIA   = KOFF1B + KOFF2B
-C
-                  EXTBEA(NAIB) = EXTBEA(NAIB) - SGN3 * TR2E(NABIJ3)
-                  EXTBDA(NAIB) = EXTBDA(NAIB) - SGN3 * TR2D(NABIJ3)
-                  EXTBEB(NAIB) = EXTBEB(NAIB) - SGN3 * TR2E(NABIJ3)
-                  EXTBDB(NAIB) = EXTBDB(NAIB) - SGN3 * TR2D(NABIJ3)
+                  EXTBEA(NAIB) = EXTBEA(NAIB) - TWO*SGN3 * TR2E(NABIJ3)
+                  EXTBDA(NAIB) = EXTBDA(NAIB) - TWO*SGN3 * TR2D(NABIJ3)
+                  EXTBEB(NAIB) = EXTBEB(NAIB) - TWO*SGN3 * TR2E(NABIJ3)
+                  EXTBDB(NAIB) = EXTBDB(NAIB) - TWO*SGN3 * TR2D(NABIJ3)
 C
  140           CONTINUE
 C
