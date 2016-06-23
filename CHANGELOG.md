@@ -32,6 +32,7 @@ Do not make changes below this line! For the relase branch only.
 - Removed OpenACC CMake variable (currently no OpenACC directives in Dalton).
 - Fix of Douglas-Kroll post-SCF with less than 256 contracted basis functions, but more than 255 uncontracted basis functions
 
+
 ## [2016.1] (2016-04-07)
 
 ### Added
