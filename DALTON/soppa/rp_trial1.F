@@ -113,25 +113,25 @@ CRF let's only zero the relevant element...
 C
   200    CONTINUE
 C
-C      IF ( IPRSOP .GE. 6 ) THEN
+      IF ( IPRSOP .GE. 6 ) THEN
 C
 C------------------------------------------
 C        Write new trial vectors to output.
 C------------------------------------------
 C
-C         DO 300 INEWTR = 1,NNEWTR
-C
-C            WRITE(LUPRI,'(I3,A)') INEWTR,
-C     &         '. raw trial vector in RP_TRIAL1'
-C
-C            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
-C            WRITE(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
-C            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
-C            WRITE(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
-C
-C  300    CONTINUE
-C
-C      END IF
+         DO 300 INEWTR = 1,NNEWTR
+
+            WRITE(LUPRI,'(I3,A)') INEWTR,
+     &         '. raw trial vector in RP_TRIAL1'
+
+            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
+            WRITE(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
+            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
+            WRITE(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
+
+  300    CONTINUE
+
+      END IF
 C
 C-----------------------------------------------
 C     Orthogonalize new trial vectors over S[2].
