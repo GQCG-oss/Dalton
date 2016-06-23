@@ -380,6 +380,9 @@ C
       READ (LUINTA) NSYMAO, NAOS,LBUFAO,NIBUFAO,NBITSAO, LENINT4
 C
       IF (NBITSAO .NE. 8) THEN
+         WRITE(LUPRI,'(/A/A,3I10)') 'FATAL ERROR: '//
+     &   'Only 8 bit index packing on AOTWOINT has been implemented',
+     &   'LBUFAO, NIBUFAO, NBITSAO:',LBUFAO,NIBUFAO,NBITSAO
          CALL QUIT(
      &   'Only 8 bit index packing on AOTWOINT has been implemented')
       END IF

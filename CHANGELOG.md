@@ -1,10 +1,11 @@
 # DALTON Change Log
 All notable changes to the DALTON project will be documented in this file.
 
-## [2016.2] (2016-xx-xx)
+## [2016.2] (2016-06-24)
 
 ### Added
 - Added and documented Basis=INTGRL option for ATOMBASIS in .mol file.
+- Included Be in cc-pV5Z basis set
 
 ### Fixed
 - More robust code for reading exponents and contraction coefficients in Dalton-type basis set files, incl. such files from EMSL
@@ -14,6 +15,7 @@ All notable changes to the DALTON project will be documented in this file.
 - Fixed an error in the manual for spin-dipole (problem reported on daltonforum.org)
 - Fix of open-shell Hartree-Fock occupation output (print, not calculation, was wrong if ROHF was followed by MCSCF)
 - Removed OpenACC CMake variable (currently no OpenACC directives in Dalton).
+- Fix of Douglas-Kroll post-SCF with less than 256 contracted basis functions, but more than 255 uncontracted basis functions
 
 
 ## [2016.1] (2016-04-07)
