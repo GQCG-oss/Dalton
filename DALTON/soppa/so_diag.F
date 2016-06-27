@@ -104,7 +104,7 @@ C
             CALL OUTPUT(WORK(KDIAG2),1,LDIAG2,1,1,LDIAG2,1,1,LUPRI)
          END IF
       END IF
-      IF (MODEL.NE.'AORPA') THEN
+      IF (MODEL.NE.'AORPA' .OR. MODEL.NE.'DCRPA') THEN
 C
 C----------------------------------------------------
 C     Calculate the diagonal one particle part of the

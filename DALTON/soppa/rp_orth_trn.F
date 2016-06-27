@@ -54,7 +54,6 @@ CRF No need to explicitly construct S[1]*TR, since S[1]
 CRF is always +/-1 !!
       LRSO1E  = 0
       LRSO1D  = 0
-
 C
       K1TR1E  = 1
       K1TR1D  = K1TR1E + LTR1E

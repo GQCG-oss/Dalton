@@ -327,6 +327,9 @@ C
             CALL AROUND('Eigenvalues of reduced eigenvalue problem')
             WRITE(LUPRI,'(/A)') '    Number          Eigenvalue    '//
      &                      'Paired Eigenvalue'
+            DO I = 1,NTRIAL
+               WRITE(LUPRI,*) I, ALFAR(I)
+            END DO
 C
          END IF
 C

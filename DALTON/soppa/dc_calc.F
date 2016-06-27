@@ -114,6 +114,16 @@ C
       DTIME      = SECOND()   - DTIME
       SOTIME(40) = SOTIME(40) + DTIME
 C
+C-----------------------------------------------------------------
+C     Calculate diagonal parts of E[2] and S[2] and write to disk.
+C-----------------------------------------------------------------
+C
+      DTIME      = SECOND()
+      CALL SO_DIAG('DCRPA',FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &             ISYMTR,WORK,LWORK)
+      DTIME      = SECOND()   - DTIME
+      SOTIME(31) = SOTIME(31) + DTIME
+C
 C------------------------------
 C     Allocation of work space.
 C------------------------------
@@ -188,8 +198,17 @@ C-----------------------------------------------------------------------
 C
          CALL SO_READ(WORK(KRES2), LTR2E,LURS2E,FNRS2E,IEXCI)
 C
-         CALL CC_OMEC(EX2P2H,WORK(KRES2),EXVAL(IEXCI),
+         IF (TRIPLET) THEN
+C
+            CALL DC_OMEC(EX2P2H,WORK(KRES2),LTR2E,EXVAL(IEXCI),
+     &                ISYMTR,WORK(KEND1),LWORK1)
+C
+         ELSE
+C
+            CALL CC_OMEC(EX2P2H,WORK(KRES2),EXVAL(IEXCI),
      &                WORK(KEND1),LWORK1,ISYMTR)
+C
+         END IF
 C
 C--------------------------------------------------------------------
 C        Calculate the first order 2p-2h eigenvector in RPA(D) theory
@@ -207,8 +226,17 @@ C-----------------------------------------------------------------------
 C
          CALL SO_READ(WORK(KRES2), LTR2D,LURS2D,FNRS2D,IEXCI)
 C
-         CALL CC_OMEC(EX2H2P,WORK(KRES2),EXVAL(IEXCI),
+         IF (TRIPLET) THEN
+C
+            CALL DC_OMEC(EX2H2P,WORK(KRES2),LTR2D,EXVAL(IEXCI),
+     &                ISYMTR,WORK(KEND1),LWORK1)
+C
+         ELSE
+C
+            CALL CC_OMEC(EX2H2P,WORK(KRES2),EXVAL(IEXCI),
      &                WORK(KEND1),LWORK1,ISYMTR)
+C
+         END IF
 C
 C--------------------------------------------------------------------
 C        Calculate the first order 2h-2p eigenvector in RPA(D) theory

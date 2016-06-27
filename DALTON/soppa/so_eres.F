@@ -327,8 +327,7 @@ C
       ENDIF
 #endif
 C
-
-      IF ( IPRSOP. GE. 7 
+      IF ( IPRSOP. GE. 7
 #ifdef VAR_MPI
      &      .AND. (MYNUM .EQ.0) 
 #endif
@@ -345,7 +344,7 @@ C
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
             IF(DO_DEX) 
      &               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
-            IF (DOUBLES) THEN
+            IF (DOUBLES .AND. MODEL .NE. 'DCRPA') THEN
                      CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
                IF(DO_DEX) 
      &               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)
