@@ -14,7 +14,7 @@ C     PURPOSE: Determine the initial trialvectors for the linear
 C     response equations using eq. (19) with R = (C +-C).
 C
 C   INPUT:
-C     ISYMTR    Symmetry of trial vectors to generate            
+C     ISYMTR    Symmetry of trial vectors to generate
 C     IMAGPROP  Is property imaginary?
 C     NEXCI     Number of trial vectors to create( 1?)
 C     IFREQ     Freq counter in the FRVAL(NFRVAL) array
@@ -23,14 +23,14 @@ C               Density Matrices:
 C     DENSIJ(LDENSIJ), DENSAB(LDENSAB)
 C
 C   OUTPUT:
-C     NNEWTR    Number of trial vectors created 
-C               (now always == NEXCI)   
+C     NNEWTR    Number of trial vectors created
+C               (now always == NEXCI)
 C
 C   SCRATCH:
-C     WORK(LWORK)         
+C     WORK(LWORK)
 CW
       use so_info, only: so_has_doubles
-C         
+C
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -59,9 +59,9 @@ C
 C
 CRF Doubles branches should be usefull to enable HRPA.
 CRF However, RPA still has it's own version of the routine,
-CRF since in that case we have no explicit     
+CRF since in that case we have no explicit
       DOUBLES = SO_HAS_DOUBLES(MODEL)
-      
+
 C
 C---------------------------------
 C     1. allocation of work space.
@@ -73,7 +73,7 @@ CPi 08.04.16
 C         LEDIA2 = NT2AM(ISYMTR)
          LEDIA2 = N2P2HOP(ISYMTR)
 Cend-Pi
-      ELSE 
+      ELSE
          LEDIA2 = 0
       ENDIF
       LSDIA1 = NT1AM(ISYMTR)
@@ -109,13 +109,13 @@ C---------------------------------
 C
 cLig  I try to use less memeory as I can so I read the part of the GP I
 cLig  need, compute the part of the trial, write on file and then again
-cLig  ... so I can use the same space, but I need at least nt2am for 
+cLig  ... so I can use the same space, but I need at least nt2am for
 cLig  TV and nt2am * 2 for gp vector. The negative effect of that is
 cLig  that I can really write only the TV in this format (1E 1D 2E 2D)
       LTRIAL  = LEDIA2
-CRF Generate D part from E part 
+CRF Generate D part from E part
       LGPVC1  = LEDIA1 !* 2
-      IF (DOUBLES) THEN 
+      IF (DOUBLES) THEN
          LGPVC2  = LEDIA2 !* 2
          LTRIAL  = LEDIA2
       ELSE
@@ -123,7 +123,7 @@ CRF Generate D part from E part
          LTRIAL  = LEDIA1
       ENDIF
 
-C  
+C
       KTRIAL  = KEND1
       KGPVEC  = KTRIAL + LTRIAL
       KEND2   = KGPVEC + LGPVC2
@@ -133,7 +133,7 @@ C
       IF (LWORK2 .LT. 0) CALL STOPIT('SO_TRIAL3.2',' ',KEND2,LWORK)
 CRF Factor for creating D gradient from E gradient
       DFACTOR  = -ONE
-      IF (IMAGPROP) DFACTOR = ONE   
+      IF (IMAGPROP) DFACTOR = ONE
 C
 C
 C--------------------------------------------
@@ -145,7 +145,7 @@ C
       IF (DOUBLES) THEN
          CALL SO_OPEN(LUTR2E,FNTR2E,LEDIA2)
          CALL SO_OPEN(LUTR2D,FNTR2D,LEDIA2)
-      ENDIF 
+      ENDIF
 C
 C---------------------------------------------------------
 C     Create initial new trial vectors and write to files.
@@ -160,7 +160,7 @@ C
 C----------------------------------------------------------------------
 C     For the first frequency: use the GP to create the starrting trial
 C                              vector.
-C     Otherwise use the last trial vector of the previous frequency      
+C     Otherwise use the last trial vector of the previous frequency
 C----------------------------------------------------------------------
 C
       IF((IFREQ.EQ.1).OR.STATIC) THEN
@@ -180,7 +180,7 @@ C           Calculate the 1E part of the trial vector as
 C           (E[2]diag - omega*S[2]diag) * GP and write on file
 C-------------------------------------------------------------
 C
-            CALL DZERO(WORK(KTRIAL),LTRIAL)             
+            CALL DZERO(WORK(KTRIAL),LTRIAL)
 C
             DO IELEM=1,LEDIA1
 C
@@ -195,10 +195,10 @@ C
 C-------------------------------------------------------------
 C           Calculate the 1D part of the trial vector as
 C           (E[2]diag + omega*S[2]diag) * GP and write on file
-C           Only if not a static calculation.            
+C           Only if not a static calculation.
 C-------------------------------------------------------------
 C
-            CALL DZERO(WORK(KTRIAL),LTRIAL)             
+            CALL DZERO(WORK(KTRIAL),LTRIAL)
 C
 cLig            IF (ABS(FRVAL(IFREQ)).GT.EPSI) THEN
             IF(.NOT.STATIC) THEN
@@ -214,7 +214,7 @@ C
             END IF
 C
             CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
-C            
+C
             IF (DOUBLES) THEN
 C
 C------------------------------------------------------------------
@@ -228,11 +228,11 @@ C
                CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
 C
 C------------------------------------------------------------------
-C           Transform the 2E and 2D part of the  GP vector from the 
+C           Transform the 2E and 2D part of the  GP vector from the
 C           right to left side
 C------------------------------------------------------------------
 C
-               IF(IPRSOP.GT.100) THEN 
+               IF(IPRSOP.GT.100) THEN
 C
                  CALL AROUND('GP before LTR transformation')
                  CALL OUTPUT(WORK(KGPVEC),1,LEDIA2,1,2,LEDIA2,2,1,LUPRI)
@@ -254,11 +254,11 @@ C           Calculate the 2E part of the trial vector as
 C           (E[2]diag - omega) * GP and write on file
 C-------------------------------------------------------------
 C
-               CALL DZERO(WORK(KTRIAL),LTRIAL)             
+               CALL DZERO(WORK(KTRIAL),LTRIAL)
 C
                DO IELEM=1,LEDIA2
 C
-                  TMP = ONE / ( WORK(KEDIA2+IELEM-1) - FRVAL(IFREQ) ) 
+                  TMP = ONE / ( WORK(KEDIA2+IELEM-1) - FRVAL(IFREQ) )
                   WORK(KTRIAL+IELEM-1) = TMP * WORK(KGPVEC+IELEM-1)
 C
                END DO
@@ -270,16 +270,16 @@ C           Calculate the 2D part of the trial vector as
 C           (E[2]diag + omega) * GP and write on file
 C-------------------------------------------------------------
 C
-               CALL DZERO(WORK(KTRIAL),LTRIAL)             
+               CALL DZERO(WORK(KTRIAL),LTRIAL)
 C
 cLig            IF (ABS(FRVAL(IFREQ)).GT.EPSI) THEN
                IF(.NOT.STATIC) THEN
 C
                   DO IELEM=1,LEDIA2
 C
-                     TMP = DFACTOR / 
-     &                     ( WORK(KEDIA2+IELEM-1) + FRVAL(IFREQ) ) 
-                     WORK(KTRIAL+IELEM-1) = TMP * 
+                     TMP = DFACTOR /
+     &                     ( WORK(KEDIA2+IELEM-1) + FRVAL(IFREQ) )
+                     WORK(KTRIAL+IELEM-1) = TMP *
      &                       WORK(KGPVEC+IELEM-1)
 C
                   END DO
@@ -296,24 +296,24 @@ C
          ELSE
 C
 cspas should NOLDTR not be 1 here ?
-cLig  this operation is quite stupid since it goes to read and write 
+cLig  this operation is quite stupid since it goes to read and write
 cLig  always in the same space ... since inewtr is also always 1 !
 C
 CRF --- No need to do anything!!!
-            NOLDTR = 1 
+            NOLDTR = 1
 C
 C            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,NOLDTR)
 C            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
-C     
+C
 C            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,NOLDTR)
 C            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
-C     
+C
 C            CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,NOLDTR)
 C            CALL SO_WRITE(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,INEWTR)
-C     
+C
 C            CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,NOLDTR)
 C            CALL SO_WRITE(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,INEWTR)
-C     
+C
          ENDIF
 C
   100 CONTINUE
@@ -331,17 +331,17 @@ C
      &         ' orthonormalization'
 C
             CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
-            WRITE (LUPRI,'(I8,1X,F14.8)') 
+            WRITE (LUPRI,'(I8,1X,F14.8)')
      &           (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
             CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
-            WRITE (LUPRI,'(I8,1X,F14.8)') 
+            WRITE (LUPRI,'(I8,1X,F14.8)')
      &           (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
             IF (DOUBLES) THEN
                CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,INEWTR)
-               WRITE (LUPRI,'(I8,1X,F14.8)') 
+               WRITE (LUPRI,'(I8,1X,F14.8)')
      &              (I,WORK(KTRIAL+I-1),I=1,LEDIA2)
                CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,INEWTR)
-               WRITE (LUPRI,'(I8,1X,F14.8)') 
+               WRITE (LUPRI,'(I8,1X,F14.8)')
      &              (I,WORK(KTRIAL+I-1),I=1,LEDIA2)
             END IF
 
@@ -377,17 +377,17 @@ C
      &          ' orthonormalization'
 C
             CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
-            WRITE (LUPRI,'(I8,1X,F14.8)') 
+            WRITE (LUPRI,'(I8,1X,F14.8)')
      &            (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
             CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
-            WRITE (LUPRI,'(I8,1X,F14.8)') 
+            WRITE (LUPRI,'(I8,1X,F14.8)')
      &            (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
             IF (DOUBLES) THEN
                CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,INEWTR)
-               WRITE (LUPRI,'(I8,1X,F14.8)') 
+               WRITE (LUPRI,'(I8,1X,F14.8)')
      &             (I,WORK(KTRIAL+I-1),I=1,LEDIA2)
                CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,INEWTR)
-               WRITE (LUPRI,'(I8,1X,F14.8)') 
+               WRITE (LUPRI,'(I8,1X,F14.8)')
      &             (I,WORK(KTRIAL+I-1),I=1,LEDIA2)
             END IF
 C

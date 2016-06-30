@@ -19,7 +19,7 @@ C
 C     Keld Bak, July 1997
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
-C     PURPOSE: Calculate RPA, RPA(D), SOPPA and SOPPA(CCSD) transition 
+C     PURPOSE: Calculate RPA, RPA(D), SOPPA and SOPPA(CCSD) transition
 C              moments.
 C
       use so_info, only: FN_RDENSE, FN_RDENSD
@@ -28,7 +28,7 @@ C
 #include "priunit.h"
 C
 #include "cbiexc.h"
-CSPAS:15/03-2006: merge with Dalton-2.0  
+CSPAS:15/03-2006: merge with Dalton-2.0
 C#include "cbilrs.h"
 CKeinSPASmehr
 #include "ccsdsym.h"
@@ -56,7 +56,7 @@ CClark:end
       DIMENSION T2AM(LT2AM), WORK(LWORK)
 C
       PARAMETER( ONE=1.0D0 )
-C      
+C
       CHARACTER*8 LABEL, PDENS_LABEL
       CHARACTER*5 MODEL
       LOGICAL  IMAGPROP
@@ -80,10 +80,10 @@ C
       LURDENSE = -1
       LURDENSD = -1
       CALL GPOPEN(LURDENSE,FN_RDENSE,'UNKNOWN',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.) 
+     &            IDUMMY,.FALSE.)
       CALL GPOPEN(LURDENSD,FN_RDENSD,'UNKNOWN',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.) 
-C      
+     &            IDUMMY,.FALSE.)
+C
 C-------------------------------
 C     Loop over property labels.
 C-------------------------------
@@ -209,7 +209,7 @@ C
 C         Place LUAOGOS in correct position for writing
             REWIND LUAOGOS
             IF (.NOT.FNDLAB('EOFLABEL',LUAOGOS)) THEN
-               WRITE (LUPRI,'(/A)') 
+               WRITE (LUPRI,'(/A)')
      &                ' End of file not found in AOGOS?'
                CALL QUIT('Internal error, EOF not found in AOGOS')
             END IF
@@ -268,7 +268,7 @@ C
      &                         LURDENSE,LURDENSD)
 C
             END DO
-            
+
             CALL DSCAL(NEXCI*3,2.0/ORIGIN(1)**2.0,TRGOS,1)
 C
 C----------------------------------
@@ -277,7 +277,7 @@ C----------------------------------
 C
             DO IEXCI = 1, NEXCI
 C
-               WRITE (LUGOS,'(/A,D16.13)') 
+               WRITE (LUGOS,'(/A,D16.13)')
      &                                'Number of q valus:', ORIGIN(1)
                WRITE (LUGOS,'(/A,I4,A,I4,A,I4)') 'ISYMTR=',ISYMTR,
      &                                     'NEXCI=',NEXCI,'IEXCI=',IEXCI

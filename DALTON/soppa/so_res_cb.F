@@ -25,12 +25,6 @@ C
 #include "ccsdinp.h"
 #include "ccsdsym.h"
 C
-C------------------------------
-C     Statement function INDEX.
-C------------------------------
-C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
-C
 C------------------
 C     Add to trace.
 C------------------
@@ -40,6 +34,18 @@ C
       SQ2   = DSQRT(TWO)
 C
       ISYMB = ISDEL
+      KCDB  = 1
+      KEND1A = KCDB + NVIR(ISYMB)
+      KOFF1 = ILMVIR(ISYMB) + IDEL - IBAS(ISDEL)
+C
+C--------------------------------------------------
+C     Copy delta MO-coefficients to the vector CDB.
+C--------------------------------------------------
+C
+      CALL DCOPY(NVIR(ISYMB),CMO(KOFF1),NBAS(ISDEL),WORK(KCDB),1)
+C     The terms in this routine carries a factor of SQRT(2),
+C     this can be taken care of by scaling the MO-coefficients
+      CALL DSCAL(NVIR(ISYMB),SQ2,WORK(KCDB),1)
 C
       DO 100 ISYMJ = 1,NSYM
 C
@@ -51,7 +57,7 @@ C
          LSCR2  = NT1AM(ISYMAI)
          LSCR3  = NT1AM(ISYMAI)
 C
-         KSCR1  = 1
+         KSCR1  = KEND1A
          KSCR2  = KSCR1 + LSCR1
          KSCR3  = KSCR2 + LSCR2
          KEND1  = KSCR3 + LSCR3
@@ -77,7 +83,7 @@ C
 C
 C----------------------------------------------------------------------
 C                                       ~ ~
-C              Generate first part of ( a i | j delta ) for given j and 
+C              Generate first part of ( a i | j delta ) for given j and
 C              delta and given symmetry of ai in KSCR2 and KSCR3 for
 C              excitations and de-excitations, respectively.
 C----------------------------------------------------------------------
@@ -92,9 +98,9 @@ C
                KSCR5  = KSCR4 + LSCR4
                KEND2  = KSCR5 + LSCR5
                LWORK2 = LWORK - KEND2
-C               
+C
                CALL SO_MEMMAX ('SO_RES_CB.2',LWORK2)
-               IF (LWORK2 .LT. 0) 
+               IF (LWORK2 .LT. 0)
      &             CALL STOPIT('SO_RES_CB.2',' ',KEND2,LWORK)
 C
                NTOTAL = MAX(NBAS(ISALFA),1)
@@ -148,7 +154,7 @@ C
                LWORK3 = LWORK - KEND3
 C
                CALL SO_MEMMAX ('SO_RES_CB.3',LWORK3)
-               IF (LWORK3 .LT. 0) 
+               IF (LWORK3 .LT. 0)
      &             CALL STOPIT('SO_RES_CB.3',' ',KEND3,LWORK)
 C
                NTOTAL = MAX(NBAS(ISALFA),1)
@@ -182,90 +188,113 @@ C
      &                    WORK(KSCR4),NTOTAL,ONE,WORK(KOFF6),NTOTA)
 C
   300       CONTINUE
+C                       ~~
+C           Calculate ( ai, j, del)*C(del,b) => X(ai,bj)
 C
-C--------------------------------------
-C           4. allocation of workspace.
-C--------------------------------------
+            NBJ1 = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J - 1)
+            KOFFRES = IT2AM(ISYMAI,ISYMBJ)
+            IF (ISYMAI.EQ.ISYMBJ) THEN
+C              Triangular storage => complicated case
+C              Calculate contributions to from ai=<bj
+C              -> loop b first, then ai
+
+               DO B = 1, NVIR(ISYMB)
+
+                  NBJ   = NBJ1 + B
+                  KOFFBJ = KOFFRES + NBJ*(NBJ-1)/2
+                  FAC   = WORK(KCDB+B-1)
+
+                  DO NAI = 1, NBJ
+                     NAIBJ = KOFFBJ + NAI
+                     RES2E(NAIBJ) = RES2E(NAIBJ)+FAC*WORK(KSCR2+ NAI-1)
+                     RES2D(NAIBJ) = RES2D(NAIBJ)+FAC*WORK(KSCR3+ NAI-1)
+                  END DO
+               END DO
 C
-            LSCR4  = NT1AM(ISYMAI)
-            LSCR5  = NT1AM(ISYMAI)
+C              Second term, ai>bj
 C
-            KSCR4   = KEND1
-            KSCR5   = KSCR4 + LSCR4
-            KEND4   = KSCR5 + LSCR5
-            LWORK4  = LWORK - KEND4
+               DO ISYMI = ISYMJ, NSYM
+                  ISYMA = MULD2H(ISYMAI,ISYMI)
+                  IF (ISYMI .EQ. ISYMJ) THEN
+                  ! Same symmetries: two cases I>J and I=J
+                  ! DO I = J Seperately
+                     I = J
+                     DO A = 2, NVIR(ISYMA)
+                        NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1)+A
+
+                        KOFFAI = KOFFRES + NAI*(NAI-1)/2 + NBJ1
+                     ! In this case B<A, The B>=A has allready been
+                     ! handled
+                        DO B = 1, A-1
+                           NAIBJ = KOFFAI + B
+                           RES2E(NAIBJ) = RES2E(NAIBJ)+
+     &                                    WORK(KCDB-1+B)*
+     &                                              WORK(KSCR2+NAI-1)
+                           RES2D(NAIBJ) = RES2D(NAIBJ)+
+     &                                    WORK(KCDB-1+B)*
+     &                                              WORK(KSCR3+NAI-1)
+                        END DO
+
+                     END DO
+                     ! Then I>J
+                     ISTART = J + 1
+                  ELSE
+                     ! ISYMI > ISYMJ, so I>J already ensured
+                     ISTART = 1
+                  END IF
+
+                  DO I = ISTART, NRHF(ISYMI)
+                  ! Since I > J, we have no restrictions on A,B
+                     DO A = 1, NVIR(ISYMA)
+                        NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1)+A
+
+                        KOFFAI = KOFFRES + NAI*(NAI-1)/2 + NBJ1
+                        ! In this case B<A, The B>=A has allready been
+                        ! handled
+                        DO B = 1, NVIR(ISYMB)
+                           NAIBJ = KOFFAI + B
+                           RES2E(NAIBJ) = RES2E(NAIBJ)+
+     &                                    WORK(KCDB-1+B)*
+     &                                              WORK(KSCR2+NAI-1)
+                           RES2D(NAIBJ) = RES2D(NAIBJ)+
+     &                                    WORK(KCDB-1+B)*
+     &                                              WORK(KSCR3+NAI-1)
+                        END DO
+                     END DO
+                  END DO
+
+               END DO ! ISYMI
+
+            ELSE IF (ISYMAI .LT. ISYMBJ) THEN
+C              ai < bj ensured, only one term
 C
-            CALL SO_MEMMAX ('SO_RES_CB.4',LWORK4)
-            IF (LWORK4 .LT. 0) 
-     &          CALL STOPIT('SO_RES_CB.4',' ',KEND4,LWORK)
+C              Loop B first, then AI
+               DO B = 1, NVIR(ISYMB)
+                  NBJ   = NBJ1 + B
+                  KOFFBJ = KOFFRES + NT1AM(ISYMAI)*(NBJ-1)
+                  FAC   =  WORK(KCDB+B-1)
+                  DO NAI = 1, NT1AM(ISYMAI)
+                     NAIBJ = KOFFBJ + NAI
+                     RES2E(NAIBJ) = RES2E(NAIBJ)+FAC*WORK(KSCR2+ NAI-1)
+                     RES2D(NAIBJ) = RES2D(NAIBJ)+FAC*WORK(KSCR3+ NAI-1)
+                  END DO
+               END DO
+
+            ELSE ! ISYMAI > ISYMBJ
+C              ai > bj ensured, one term!
+               DO NAI = 1, NT1AM(ISYMAI)
+                  KOFFAI = KOFFRES + NT1AM(ISYMBJ)*(NAI-1) + NBJ1
+                  DO B = 1, NVIR(ISYMB)
+                     NAIBJ = KOFFAI + B
+                     RES2E(NAIBJ) = RES2E(NAIBJ)+WORK(KCDB-1+B)*
+     &                                              WORK(KSCR2+NAI-1)
+                     RES2D(NAIBJ) = RES2D(NAIBJ)+WORK(KCDB-1+B)*
+     &                                              WORK(KSCR3+NAI-1)
+                  END DO
+               END DO
+            END IF
 C
-            DO 400 B = 1,NVIR(ISYMB)
-C
-               KOFF6 = ILMVIR(ISYMB) + NBAS(ISDEL)*(B - 1)
-     &               + ( IDEL - IBAS(ISDEL) )
-C
-               NBJ   = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J - 1) + B
-C
-C--------------------------------------------------------------
-C                         ~ ~
-C              Generate ( a i | j b ) for given j and b for
-C              excitations and de-excitations in SCR4 and SCR5.
-C--------------------------------------------------------------
-C
-               CALL DCOPY(NT1AM(ISYMAI),WORK(KSCR2),1,WORK(KSCR4),1)
-               CALL DCOPY(NT1AM(ISYMAI),WORK(KSCR3),1,WORK(KSCR5),1)
-C
-               FAC   = SQ2 * CMO(KOFF6)
-C
-               CALL DSCAL(NT1AM(ISYMAI),FAC,WORK(KSCR4),1)
-               CALL DSCAL(NT1AM(ISYMAI),FAC,WORK(KSCR5),1)
-C
-C------------------------------------------------------------
-C                          ~ ~
-C              Add SQ2 * ( a i | j b ) to 2p2h excitation and
-C              de-excitation result-vectors.
-C------------------------------------------------------------
-C
-               IF ( ISYMAI .EQ. ISYMBJ ) THEN
-C
-                  DO 501 NAI = 1,NT1AM(ISYMAI)
-C
-                     NAIBJ        = IT2AM(ISYMAI,ISYMBJ)
-     &                            + INDEX(NAI,NBJ)
-C
-                     RES2E(NAIBJ) = RES2E(NAIBJ) + WORK(KSCR4 + NAI - 1)
-                     RES2D(NAIBJ) = RES2D(NAIBJ) + WORK(KSCR5 + NAI - 1)
-C
-  501             CONTINUE
-C
-               ELSE IF ( ISYMAI .LT. ISYMBJ ) THEN
-C
-                  DO 502 NAI = 1,NT1AM(ISYMAI)
-C
-                     NAIBJ        = IT2AM(ISYMAI,ISYMBJ)
-     &                            + NT1AM(ISYMAI)*(NBJ - 1) + NAI
-C
-                     RES2E(NAIBJ) = RES2E(NAIBJ) + WORK(KSCR4 + NAI - 1)
-                     RES2D(NAIBJ) = RES2D(NAIBJ) + WORK(KSCR5 + NAI - 1)
-C
-  502             CONTINUE
-C
-               ELSE IF ( ISYMAI .GT. ISYMBJ ) THEN
-C
-                  DO 503 NAI = 1,NT1AM(ISYMAI)
-C
-                     NAIBJ        = IT2AM(ISYMBJ,ISYMAI)
-     &                            + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
-C
-                     RES2E(NAIBJ) = RES2E(NAIBJ) + WORK(KSCR4 + NAI - 1)
-                     RES2D(NAIBJ) = RES2D(NAIBJ) + WORK(KSCR5 + NAI - 1)
-C
-  503             CONTINUE
-C
-               END IF
-C
-  400       CONTINUE
-C
+
   200    CONTINUE
 C
   100 CONTINUE

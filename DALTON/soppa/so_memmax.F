@@ -54,12 +54,12 @@ C
          WRITE(LUPRI,'(1X,A)')
      &    '|     Memory statistics for AO-SOPPA subroutines      |'
          WRITE(LUPRI,'(1X,A)') LINE1
-         WRITE(LUPRI,'(1X,A)') 
+         WRITE(LUPRI,'(1X,A)')
      &    '|   Routine                  in Words         in MB   |'
          WRITE(LUPRI,'(1X,A)') LINE2
 C
          DO I = 1, ISOSUB
-C     
+C
             SOMEMMB = SOMEMO(I)/WORTOMB
             WRITE(LUPRI,'(1X,A3,A16,6X,I12,6X,F8.1,A4)')
      &          '|  ',SOSUBNM(I),SOMEMO(I),SOMEMMB,'  |'
@@ -75,23 +75,23 @@ C
       ELSE
 C
          IF ( (LWTOTAL - MEMOFREE) .GT. SOMEMO(ISOSUB) ) THEN
-C     
+C
             ISOSUB = ISOSUB + 1
 C
             IF (ISOSUB .GT. LSOSUB) THEN
 C
-               WRITE(LUPRI,'(A,/,A,A)') 
+               WRITE(LUPRI,'(A,/,A,A)')
      &             'ERROR: ISOSUB exceeds LSOSUB in SO_MEMMAX.',
      &             ' Recompile with larger value of LSOSUB ',
-     &             ' in soppinf.h!' 
+     &             ' in soppinf.h!'
                CALL QUIT('ERROR:  dimension to small in SO_MEMMAX')
 C
             END IF
-C 
+C
             LNM = LEN(SUBNM)
             SOSUBNM(ISOSUB) = SUBNM(1:LNM)
             SOMEMO(ISOSUB)  = LWTOTAL - MEMOFREE
-C     
+C
          END IF
 C
       END IF

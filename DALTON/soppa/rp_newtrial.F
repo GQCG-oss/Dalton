@@ -93,7 +93,7 @@ C
 C
          CALL AROUND('New raw trialvector in RP_NEWTRIAL')
 C
-         WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+         WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &        (I,TR1E(I),TR1D(I),I=1,LTR1E)
 C
       END IF

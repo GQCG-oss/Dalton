@@ -6,6 +6,8 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, April 1996
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
+C     Rasmus Faber: April 2016 - Now sets rather than increments
+C                                Result-Vector
 C
 C     PURPOSE: Calculate contribution from D matrix to the 2p2h
 C              result vectors.
@@ -23,12 +25,6 @@ C
 #include "ccsdsym.h"
 #include "soppinf.h"
 C
-C------------------------------
-C     Statement function INDEX.
-C------------------------------
-C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
-C
 C------------------
 C     Add to trace.
 C------------------
@@ -42,7 +38,7 @@ C
       DO 100 ISYMBJ = 1,NSYM
 C
          ISYMAI = MULD2H(ISYMBJ,ISYRES)
-C        Since nothing is done in the end, skip this it.         
+C        Since nothing is done in the end, skip this it.
          IF (ISYMAI.GT.ISYMBJ) GOTO 100
 C
 C---------------------------------
@@ -53,7 +49,7 @@ C
          LFAI   = NT1AM(ISYMAI)
 C
          KFBJ    = 1
-         IF(ISYMAI.LT.ISYMBJ) THEN 
+         IF(ISYMAI.LT.ISYMBJ) THEN
             KFAI    = KFBJ  + LFBJ
          ELSE ! They're the same!!!
             KFAI = KFBJ
@@ -128,48 +124,12 @@ C---------------------------------------------------------------
 C
          IF ( ISYMAI .EQ. ISYMBJ) THEN
 C
-C            DO 401 NBJ = 1,NT1AM(ISYMBJ)
-C
-C               DO 402 NAI = 1,NBJ
-C
-C                  NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-C     &                  + INDEX(NAI,NBJ)
-C
-C                  EAIBJ = WORK(KFAI+NAI) + WORK(KFBJ+NBJ)
-C
-C                  RES2E(NAIBJ) = RES2E(NAIBJ)
-C     &                         + EAIBJ * TR2E(NAIBJ)
-C                  RES2D(NAIBJ) = RES2D(NAIBJ)
-C     &                         + EAIBJ * TR2D(NAIBJ)
-C
-C  402          CONTINUE
-C
-C  401       CONTINUE
-
-            IOFF = IT2AM(ISYMAI, ISYMBJ) + 1 
-            CALL EXTR2_TOTSYM( TR2E(IOFF), RES2E(IOFF), 
-     &                         WORK(KFBJ), ISYMBJ) 
-            CALL EXTR2_TOTSYM( TR2D(IOFF), RES2D(IOFF), 
-     &                         WORK(KFBJ), ISYMBJ) 
+            IOFF = IT2AM(ISYMAI, ISYMBJ) + 1
+            CALL EXTR2_TOTSYM( TR2E(IOFF), RES2E(IOFF),
+     &                         WORK(KFBJ), ISYMBJ)
+            CALL EXTR2_TOTSYM( TR2D(IOFF), RES2D(IOFF),
+     &                         WORK(KFBJ), ISYMBJ)
          ELSE IF ( ISYMAI .LT. ISYMBJ) THEN
-C
-C            DO 501 NBJ = 1,NT1AM(ISYMBJ)
-C
-C               DO 502 NAI = 1,NT1AM(ISYMAI)
-C
-C                  NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-C     &                  + NT1AM(ISYMAI)*(NBJ - 1) + NAI
-C
-C                  EAIBJ = WORK(KFAI+NAI-1) + WORK(KFBJ+NBJ-1)
-C
-C                  RES2E(NAIBJ) = RES2E(NAIBJ)
-C     &                         + EAIBJ * TR2E(NAIBJ)
-C                  RES2D(NAIBJ) = RES2D(NAIBJ)
-C     &                         + EAIBJ * TR2D(NAIBJ)
-C
-C  502          CONTINUE
-C
-C  501       CONTINUE
 C
             IOFF = IT2AM(ISYMAI,ISYMBJ) + 1
             CALL EXTR2_ASYM(TR2E(IOFF),RES2E(IOFF),WORK(KFAI),
@@ -187,12 +147,12 @@ C
       CALL QEXIT('SO_RES_CD')
 C
       RETURN
-      CONTAINS 
-         pure SUBROUTINE EXTR2_TOTSYM ( TR2, RES2, EPAIR, ISYM) 
+      CONTAINS
+         pure SUBROUTINE EXTR2_TOTSYM ( TR2, RES2, EPAIR, ISYM)
             DOUBLE PRECISION, INTENT(IN) :: TR2(*), EPAIR(*)
             DOUBLE PRECISION, INTENT(INOUT) :: RES2(*)
-            integer, intent(in) :: isym            
-C            
+            integer, intent(in) :: isym
+C
             integer :: nbj, nai, naibj, ioffbj
             double precision :: eaibj
 C
@@ -200,16 +160,17 @@ C            ioffsym = it2am(isym,isym)
 
             do nbj = 1, nt1am(isym)
                ioffbj = nbj*(nbj-1)/2
-               do nai = 1, nbj 
+               do nai = 1, nbj
                   naibj = ioffbj + nai
                   eaibj = epair(nbj) + epair(nai)
-                  res2(naibj) = res2(naibj) + eaibj*tr2(naibj)
+C                  res2(naibj) = res2(naibj) + eaibj*tr2(naibj)
+                  res2(naibj) =  eaibj*tr2(naibj)
                end do
             end do
             return
          end subroutine
 
-         pure subroutine extr2_asym ( tr2, res2, epair1, epair2, 
+         pure subroutine extr2_asym ( tr2, res2, epair1, epair2,
      &                                isym1, isym2 )
             double precision, intent(in) :: tr2(*), epair1(*), epair2(*)
             double precision, intent(inout) :: res2(*)
@@ -223,7 +184,8 @@ C
                do nai = 1, nt1am(isym1)
                   naibj = ioffbj + nai
                   eaibj = epair1(nai) + epair2(nbj)
-                  res2(naibj) = res2(naibj) + eaibj*tr2(naibj)
+C                  res2(naibj) = res2(naibj) + eaibj*tr2(naibj)
+                  res2(naibj) = eaibj*tr2(naibj)
                end do
             end do
 

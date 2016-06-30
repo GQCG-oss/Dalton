@@ -11,7 +11,7 @@ C
 C     PURPOSE: Determine the initial trialvectors.
 CW
       use so_info, only: so_has_doubles
-C         
+C
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -60,7 +60,7 @@ C
       IF ( DOUBLES) THEN
          CALL SO_OPEN(LUTR2E,FNTR2E,LTR2)
          CALL SO_OPEN(LUTR2D,FNTR2D,LTR2)
-      END IF 
+      END IF
 C
 C=============================================================
 C     Determine how the initial trialvectors are to be chosen.
@@ -90,7 +90,7 @@ C--------------------------------------------------------------------
 C        Use RPA eigenvectors as first trial vectors for SOPPA(CCSD).
 C--------------------------------------------------------------------
 C
-         CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK) 
+         CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK)
 C
       ELSE IF ((MODEL.EQ.'AOSOP') .AND. DCRPA .AND. (NEXCI.LE.LTR1))THEN
 C
@@ -107,7 +107,7 @@ C--------------------------------------------------------------
 C        Use RPA eigenvectors as first trial vectors for SOPPA.
 C--------------------------------------------------------------
 C
-         CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK) 
+         CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK)
 C
       ELSE IF ((MODEL.EQ.'AOSOC') .OR. (MODEL.EQ.'AOSOP') .OR.
      &         (MODEL.EQ.'AOHRP')                              ) THEN
@@ -126,8 +126,8 @@ C
 
 C
       END IF
-      
-      
+
+
 
 C
 C-----------------------------------------------
@@ -188,7 +188,7 @@ C
       IF (DOUBLES) THEN
          CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
          CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
-      END IF 
+      END IF
 C
 C-----------------------
 C     Remove from trace.

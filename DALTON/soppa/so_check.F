@@ -23,7 +23,7 @@ C
 #ifdef VAR_MPI
 #include "mpif.h"
 C  We need MXCALL and IRAT in order to assign space for load-balancing
-C  
+C
 #include "maxorb.h"
 #include "distcl.h"
 #include "iratdef.h"
@@ -45,7 +45,7 @@ C     are allocated consecutively, so that it can be send together. Only
 C     use it for this purpose.
 C     The definition must match that in soppa_nodedriver
       INTEGER   INFO_ARRAY(4)
-      EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit), 
+      EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
      &            (info_array(3), nnewtr),    (info_array(4),noldtr)
       INTEGER(MPI_INTEGER_KIND) :: IERR
 #endif
@@ -115,13 +115,13 @@ C
 C Not a real parallel job, don't bother
          lAssignedIndices = 1
          kAssignedIndices = 0
-      else  
+      else
          lAssignedIndices = (maxnumjobs + 1) /IRAT
          kAssignedIndices = KEND1
          KEND1 = kAssignedIndices + lAssignedIndices
          LWORK1 = LWORK - KEND1
       endif
-#endif 
+#endif
 C
       CALL SO_MEMMAX ('SO_CHECK.1',LWORK1)
       IF (LWORK1 .LT. 0) CALL STOPIT('SO_CHECK.1',' ',KEND1,LWORK)
@@ -135,16 +135,16 @@ C
 C---------------------------------------------------
 C        Work space allocation for solution vectors.
 C---------------------------------------------------
-C         
-C      Pointer for the correct column in E and S     
+C
+C      Pointer for the correct column in E and S
          LE2MAT  = (ICOL - 1) * NVAR
          LS2MAT  = (ICOL - 1) * NVAR
-C         
+C
          LRES1E  = NT1AM(ISYMTR)
          LRES1D  = NT1AM(ISYMTR)
          LRESO1E = NT1AM(ISYMTR)
          LRESO1D = NT1AM(ISYMTR)
-         IF (DOUBLES) THEN 
+         IF (DOUBLES) THEN
 C            LRES2E  = NT2AM(ISYMTR)
 C            LRES2D  = NT2AM(ISYMTR)
 C            LRESO2E = NT2AM(ISYMTR)
@@ -160,7 +160,7 @@ C            LRESO2D = NT2AM(ISYMTR)
             LRESO2D = 0
          ENDIF
 C
-C      Positions on various parts in E and S         
+C      Positions on various parts in E and S
          KRES1E  = KE2MAT  + LE2MAT
          KRES1D  = KRES1E  + LRES1E
          KRES2E  = KRES1D  + LRES1D
@@ -191,7 +191,7 @@ C
          ELSE IF (ICOL.LE.(LTR1E+LTR1D+LTR2E)) THEN ! DOUBLES ONLY
             WORK(KTR2E + (ICOL - LTR1E - LTR1D) - 1) = ONE
             WORK(KRESO2E + ICOL - LTR1E - LTR1D -1)  = ONE
-         ELSE 
+         ELSE
             WORK(KTR2D + (ICOL - LTR1E - LTR1D - LTR2E) - 1) = ONE
             WORK(KRESO2D + (ICOL - LTR1E - LTR1D - LTR2E) - 1) = -ONE
          ENDIF
@@ -214,7 +214,7 @@ C
 C
 C
 C--------------------------------------------------------------
-C        Make E[2] linear transformation of trialvectors giving 
+C        Make E[2] linear transformation of trialvectors giving
 C        resultvectors.
 C--------------------------------------------------------------
 C
@@ -223,20 +223,20 @@ C In parallel, send slaves to so_eres
 C
          call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
      &                   mpi_comm_world, ierr )
-C Pack INFO_ARRAY variables and send them off 
+C Pack INFO_ARRAY variables and send them off
          CP_ISYMTR = ISYMTR
          NOLDTR    = 0
          NNEWTR    = 1
-         NIT       = ICOL 
+         NIT       = ICOL
          CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
      &                   MPI_COMM_WORLD, IERR)
 #endif
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
          CALL SO_ERES(MODEL,0, 1, DENSIJ, LDENSIJ, DENSAB, LDENSAB,
-     &               T2MP, LT2MP,  FOCKD,   LFOCKD, 
+     &               T2MP, LT2MP,  FOCKD,   LFOCKD,
      &               DENSAI, LDENSAI, ICOL, ISYMTR,
-#ifdef VAR_MPI 
+#ifdef VAR_MPI
      &               WORK(kAssignedIndices),lAssignedIndices,
 #endif
      &               WORK(KEND1), LWORK1)
@@ -247,7 +247,7 @@ C Pack INFO_ARRAY variables and send them off
          SOWTIM(1)  = SOWTIM(1)  + WTIMEE - WTIMES
 C
          CALL GETTIM (DUMMY,WTIMES)
-C     Explicitly calculate S for singles if not RPA         
+C     Explicitly calculate S for singles if not RPA
          IF (MODEL.NE.'AORPA'.AND.(ICOL.LE.(LTR1E+LTR1D))) THEN
             CALL SO_SRES(0,1,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                ISYMTR,WORK(KEND1),LWORK1)
@@ -281,7 +281,7 @@ C
          CALL SO_CLOSE(LURS1E,FNRS1E,'DELETE')
          CALL SO_CLOSE(LURS1D,FNRS1D,'DELETE')
 C
-         IF (DOUBLES) THEN 
+         IF (DOUBLES) THEN
             CALL SO_OPEN(LURS2E,FNRS2E,LRES2E)
             CALL SO_OPEN(LURS2D,FNRS2D,LRES2D)
             CALL SO_READ(WORK(KRES2E), LRES2E, LURS2E,FNRS2E,1)

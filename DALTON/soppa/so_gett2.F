@@ -49,14 +49,14 @@ C
          CALL GPOPEN(LUTAM,'MP2__TAM','OLD',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND LUTAM
-C     
+C
          READ(LUTAM)
 CPi-150316
 C         READ(LUTAM) (T2AM(I), I = 1,LT2AM)
          READ(LUTAM) (T2AM(I), I = 1,LT2AMH)
 Cend-Pi
          CALL GPCLOSE(LUTAM,'KEEP')
-         
+
       ELSE IF ( KEY(1:4) .EQ. 'CCSD' ) THEN
 C
 C--------------------------------------------------
@@ -75,7 +75,7 @@ C         READ(LUTAM) (T2AM(I), I = 1,LT2AM)
          READ(LUTAM) (T2AM(I), I = 1,LT2AMH)
 Cend-Pi
          CALL GPCLOSE(LUTAM,'KEEP')
-         
+
       END IF
 C
 C----------------------------------------------------

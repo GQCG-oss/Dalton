@@ -15,7 +15,7 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Calculate a new trial vector from the residual vector
 C              and the diagonal parts of the Hessian and overlap
-C              matrices. 
+C              matrices.
 C              The orthogonalization of the new trial vector is
 C              not performed here but in SO_ORTH_TRN.
 C
@@ -24,17 +24,17 @@ C        DOUBLES        Include doubles contributions
 C        NNEWTR         Number of the created trial-vector in new batch
 C        NOLDTR         Number of trial-vectors from previous iterations
 C        EIVAL1         Eigenvalue/frequecy corresponding to new vector
-C                    Diagonals of elec. hessian and metric:        
+C                    Diagonals of elec. hessian and metric:
 C        EDIA1(LEDIA1)  E[2] p-h
 C        EDIA2(LEDIA2)  E[0] 2p-2h
 C        SDIA1(LSDIA1)  S[2] p-h
-C                    Residuals of old vectors       
-C        RESI1E(LRESI1E), RESI1D(LRESI1D) 
+C                    Residuals of old vectors
+C        RESI1E(LRESI1E), RESI1D(LRESI1D)
 C        RESI2E(LRESI2E), RESI2D(LRESI2D)
 C
 C     OUTPUT:
-C                    New trial-vectors 
-C        TR1E(LTR1E), TR1D(LTR1D), TR2E(LTR2E), TR2D(LTR2D)                             
+C                    New trial-vectors
+C        TR1E(LTR1E), TR1D(LTR1D), TR2E(LTR2E), TR2D(LTR2D)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -171,16 +171,16 @@ C
          CALL SO_WRITE(TR2E,LTR2E,LUTR2E,FNTR2E,NOLDTR+NNEWTR)
          CALL SO_WRITE(TR2D,LTR2D,LUTR2D,FNTR2D,NOLDTR+NNEWTR)
 C
-      END IF !DOUBLES 
+      END IF !DOUBLES
 C
       IF ( IPRSOP .GE. 7 ) THEN
 C
          CALL AROUND('New raw trialvector in SO_NEWTRIAL')
 C
-         WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+         WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &       (I,TR1E(I),TR1D(I),I=1,LTR1E)
          IF(DOUBLES)THEN
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &           (I,TR2E(I),TR2D(I),I=1,LTR2E)
          ENDIF
 C

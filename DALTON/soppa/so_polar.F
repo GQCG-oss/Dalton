@@ -9,10 +9,10 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Stephan P. A. Sauer: 5.12.2003
 C     Rasmus Faber: Nov. 2015 --> Implemented pert. dens. approach.
-C         
-C     PURPOSE: Calculates the frequency dependent linear response 
-C              properties from the perturbed density matrices and 
-C              appropriate property integrals with the atomic 
+C
+C     PURPOSE: Calculates the frequency dependent linear response
+C              properties from the perturbed density matrices and
+C              appropriate property integrals with the atomic
 C              integral direct SOPPA program.
 C
       use so_info, only: fn_rdens, sop_stat_trh
@@ -25,15 +25,6 @@ C
 #include "cbiexc.h"
 #include "absorp.h"
 #include "ccsdsym.h"
-c#include "infdim.h"
-c#include "inforb.h"
-c#include "iratdef.h"
-c#include "maxaqn.h"
-c#include "maxorb.h"
-c#include "mxcent.h"
-c#include "nuclei.h"
-c#include "symmet.h"
-c#include "wrkrsp.h"
 C
 C
       DIMENSION POLDD(2,3,3,NFRVAL), POLDQ(2,3,3,3,NFRVAL)
@@ -77,11 +68,11 @@ C
 C-----------------------------------------
 C     Open files with perturbed densities.
 C-----------------------------------------
-C  
+C
       LURDENS = -1
       CALL GPOPEN(LURDENS, FN_RDENS, 'OLD',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
-C     
+C
 C=============================================
 C     Loop over the second property operators.
 C=============================================
@@ -89,38 +80,38 @@ C
       DO 200 IPRLBL = 1, NLBTOT
 C      DO 200 IPRLBL = 1, 3
 C
-C---------------------------------------------------     
+C---------------------------------------------------
 C        Find label and symmetry of second operator.
-C---------------------------------------------------     
-C     
+C---------------------------------------------------
+C
          LABEL2 = LABAPP(IPRLBL)
          KSYM   = LABSYM(IPRLBL)
 C
-C--------------------------------------------------------     
+C--------------------------------------------------------
 C        If symmetry of first operator equals symmetry of
 C        second operator, that is if ISYMTR = KSYM, then.
 C--------------------------------------------------------
-C     
+C
          IF (KSYM .EQ. ISYMTR) THEN
 C
 C--------------------------------------------------
 C           Get the property integrals in MO basis.
 C--------------------------------------------------
-C            
+C
             CALL SO_ONEPMO(WORK(KPRP1),LPRP1,LABEL2,ISYMTR,
      &                     RTNLBL,WORK(KEND1),LWORK1)
 C
-            IMAGPROP = RTNLBL(2).EQ.'ANTISYMM' 
-
+            IMAGPROP = RTNLBL(2).EQ.'ANTISYMM'
+C
             DFACTOR = -1.0D0
             IF (IMAGPROP) DFACTOR = 1.0D0
 C
 C===============================================
 C           Form second order properties SNDPRP.
 C===============================================
-C     
+C
             IF (.NOT. ABSORP) THEN
-C     
+C
                DO 100 IFRVAL = 1, NFRVAL
 C
 C  These allocations as such doesn't change...
@@ -131,21 +122,21 @@ C  These allocations as such doesn't change...
                      LPDENSAB = NABDEN(ISYMTR)
                   ENDIF
                   LPDENSAI = NAIDEN(ISYMTR)
-         
-                  KPDENSIJ = KEND1 
+
+                  KPDENSIJ = KEND1
                   KPDENSAB = KPDENSIJ + LPDENSIJ
                   KPDENSAI = KPDENSAB + LPDENSAB
                   KEND2    = KPDENSAI + LPDENSAI
                   LWORK2   = LWORK - KEND2
 C
                   CALL SO_MEMMAX ('SO_POLAR.2',LWORK2)
-                  IF (LWORK2 .LT. 0) 
+                  IF (LWORK2 .LT. 0)
      &                     CALL STOPIT('SO_POLAR.2',' ',KEND2,LWORK)
-C                 
+C
 C-----------------------------------------------------------
 C           Get the perturbed density matrix from file
 C-----------------------------------------------------------
-C                  
+C
                   CALL SO_FNDPOS(LABEL1,FRVAL(IFRVAL),LURDENS)
                   LPDENSTOT = LPDENSIJ + LPDENSAB + LPDENSAI
                   IF (MODEL.EQ.'AORPA') THEN
@@ -154,9 +145,9 @@ C
                      CALL DZERO(WORK(KPDENSIJ),LPDENSIJ)
                   ELSE
                      CALL SO_REAVE(WORK(KPDENSIJ),LPDENSTOT,ISYMTR,
-     &                             LABEL1,FRVAL(IFRVAL),LURDENS) 
+     &                             LABEL1,FRVAL(IFRVAL),LURDENS)
                   ENDIF
-C                 
+C
 C---------------------------------------------------------------------
 C           Calculate second order properties SNDPRP.
 C---------------------------------------------------------------------
@@ -175,39 +166,39 @@ C
      &                   ' Second order property for ',
      &                   LABEL2,LABEL1,' = ',SNDPRP(1)
                   ENDIF
-C     
+C
 C---------------------------------------------------------------------
 C                 Write properties into the various property matrices.
 C---------------------------------------------------------------------
-C    
-CRF  all the label seems to have coordinate first                                   
-                  IDX = COORD_IDX(LABEL2(1:1)) 
+C
+CRF  all the label seems to have coordinate first
+                  IDX = COORD_IDX(LABEL2(1:1))
                   IF (IDX .LT. 1 .OR. IDX .GT. 3 ) GOTO 888
-C                  
+C
                   IF (LABEL2(2:7).EQ.'DIPLEN') THEN
 C
                       POLDD(1,IDIP,IDX,IFRVAL) = SNDPRP(1)
 C
                   ELSE IF (LABEL2(3:8).EQ.'THETA ') THEN
-C    
-                     JDX = COORD_IDX(LABEL2(2:2)) 
+C
+                     JDX = COORD_IDX(LABEL2(2:2))
                      IF (JDX .LT. 1 .OR. JDX .GT. 3 ) GOTO 888
                      POLDQ(1,IDIP,IDX,JDX,IFRVAL) = SNDPRP(1)
-                     IF (IDX .NE. JDX ) 
+                     IF (IDX .NE. JDX )
      &                   POLDQ(1,IDIP,JDX,IDX,IFRVAL) = SNDPRP(1)
-C     
+C
                   ELSE IF (LABEL2(2:7).EQ.'LONMAG') THEN
-C     
+C
 C----------------------------------------------------------------
 C                 Multiply with minus the Bohr-magneton (-0.5) to
-C                 create the magnetic dipole operator from the 
+C                 create the magnetic dipole operator from the
 C                 angular momentum operator.
 C----------------------------------------------------------------
-C     
+C
                      POLDL(1,IDIP,IDX,IFRVAL) = -DP5*SNDPRP(1)
 C
                   ELSE IF (LABEL2(2:7).EQ.'ANGMOM') THEN
-C     
+C
                      POLDA(1,IDIP,IDX,IFRVAL) = -DP5*SNDPRP(1)
 C
                   END IF
@@ -236,7 +227,7 @@ C
       RETURN
 C-------------------
 C     Error handling
-C-------------------      
+C-------------------
 C
   888 CONTINUE ! FIRST CHARACTER of LABEL2 not X, Y or Z
       WRITE(LUPRI,'(A,A)') 'SO_POLAR:: ERROR in integral label', LABEL2
@@ -244,8 +235,8 @@ C
 
       CONTAINS
 C
-C        A function that converts the letters X,Y and Z to 
-C        the integers 1,2 and3         
+C        A function that converts the letters X,Y and Z to
+C        the integers 1,2 and3
          PURE FUNCTION COORD_IDX(A)
             CHARACTER(LEN=1), INTENT(IN) :: A
             INTEGER :: COORD_IDX

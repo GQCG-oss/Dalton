@@ -18,8 +18,13 @@ C
      &                       soppa_nint
 #endif
       use so_info, only: sop_excita
-C      
+C
 #include "implicit.h"
+#ifdef VAR_MPI
+#include "mpif.h"
+C  IRAT in order to assign space for load-balancing
+#include "iratdef.h"
+#endif
 #include "priunit.h"
 C
 #include "soppinf.h"
@@ -45,7 +50,7 @@ C     The definition must match that in soppa_nodedriver
      &            (info_array(3), nnewtr),    (info_array(4),noldtr)
       INTEGER(MPI_INTEGER_KIND) :: IERR
 
-      CALL PARQUIT('RPA(D) not implemented for parallel calculations')
+C      IF (NUMPROCS .GT. 1) CALL PARQUIT('RPA(D)')
 #endif
 C
 C------------------
@@ -53,7 +58,7 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('DC_CALC')
-      
+
 #ifdef VAR_MPI
 C------------------------------------------------------------------
 C     For MPI, we need some space in which to store the indices each
@@ -98,7 +103,7 @@ C ISYMTR is a non-local parameter, we need to copy it to the info-array
      &             T2MP,LT2MP,FOCKD,LFOCKD,DENSAI,LDENSAI,1,ISYMTR,
 #ifdef VAR_MPI
      &             WORK(kAssignedIndices),maxnumjobs,
-#endif      
+#endif
      &             WORK(KEND1),LWORK1)
       DTIME      = SECOND()   - DTIME
       SOTIME(35) = SOTIME(35) + DTIME
@@ -178,7 +183,7 @@ C
 C
          CALL DAXPY(LTR1E,-EXVAL(IEXCI),WORK(KRESO1),1,WORK(KRES1),1)
 C
-         EX1P1H = DDOT(LTR1E,WORK(KRES1),1,WORK(KTR1),1) 
+         EX1P1H = DDOT(LTR1E,WORK(KRES1),1,WORK(KTR1),1)
 C
 C-----------------------------------------------------------------------
 C        Calculate 1h-1p part of double corrected RPA excitation energy.
@@ -190,7 +195,7 @@ C
 C
          CALL DAXPY(LTR1D,-EXVAL(IEXCI),WORK(KRESO1),1,WORK(KRES1),1)
 C
-         EX1H1P = DDOT(LTR1D,WORK(KRES1),1,WORK(KTR1),1) 
+         EX1H1P = DDOT(LTR1D,WORK(KRES1),1,WORK(KTR1),1)
 C
 C-----------------------------------------------------------------------
 C        Calculate 2p-2h part of double corrected RPA excitation energy.

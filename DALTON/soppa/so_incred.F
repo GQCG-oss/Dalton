@@ -53,7 +53,7 @@ C
 C
       CALL SO_MEMMAX ('SO_INCRED.1',LWORK1)
       IF (LWORK1 .LT. 0) CALL STOPIT('SO_INCRED.1',' ',KEND1,LWORK)
-C 
+C
 C-----------------------------------------------------------------------
 C     Move matrix elements from previous reduced eigenvalue problem to
 C     the right positions in the matrices of the new eigenvalue problem.
@@ -66,8 +66,8 @@ C
 C
          DO IVEC = 1,NOLDTR
 C
-            IOFF1 = IVEC            + ((JVEC - 1) * LREDOL)        
-            IOFF2 = (IVEC + LREDOH) + ((JVEC - 1) * LREDOL)       
+            IOFF1 = IVEC            + ((JVEC - 1) * LREDOL)
+            IOFF2 = (IVEC + LREDOH) + ((JVEC - 1) * LREDOL)
             IOFF3 = IVEC            + ((JVEC - 1 + LREDOH) * LREDOL)
             IOFF4 = (IVEC + LREDOH) + ((JVEC - 1 + LREDOH) * LREDOL)
 C
@@ -178,7 +178,7 @@ C
 C
       KOFF1   = 1
       KOFF2   = KOFF1  + LOFF1
-      KEND3   = KOFF2  + LOFF2 
+      KEND3   = KOFF2  + LOFF2
       LWORK3  = LWORK  - KEND3
 C
 C-------------------------------------------------------------------
@@ -297,10 +297,10 @@ C
 C
          CALL DGEMM('T','N',NNEWTR,NTRIAL,L1LTR,ONE,WORK(KOFF5),L1LTR,
      &              WORK(KOFF4),L1LTR,ONE,WORK(KOFF1),NNEWTR)
-C 
+C
          CALL DGEMM('T','N',NNEWTR,NTRIAL,L1LTR,ONE,WORK(KOFF5),L1LTR,
      &              WORK(KOFF3),L1LTR,ONE,WORK(KOFF2),NNEWTR)
-C 
+C
       END IF
 C
 C     Singles only methods, jump to the end here
@@ -383,7 +383,7 @@ C
      &              L2LTR,WORK(KOFF3),L2LTR,ONE,WORK(KOFF2),NNEWTR)
 C
       END IF
-C      
+C
 C     Singles only methods resume here
 1010  CONTINUE
 C

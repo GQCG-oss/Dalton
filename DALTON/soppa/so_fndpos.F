@@ -39,7 +39,7 @@ C
 C
       READ(LU,END=10) DUMMY
       GO TO 1
-C     
+C
    10 CONTINUE
 
       BACKSPACE(LU)
