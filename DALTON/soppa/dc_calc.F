@@ -208,15 +208,15 @@ C
             CALL CC_OMEC(EX2P2H,WORK(KRES2),EXVAL(IEXCI),
      &                WORK(KEND1),LWORK1,ISYMTR)
 C
-         END IF
-C
 C--------------------------------------------------------------------
 C        Calculate the first order 2p-2h eigenvector in RPA(D) theory
 C        and write to output.
 C--------------------------------------------------------------------
 C
-         CALL DC_R1VEC(WORK(KRES2), LTR2E,EXVAL(IEXCI),ISYMTR,
-     &                 WORK(KEND1),LWORK1)
+            CALL DC_R1VEC(WORK(KRES2), LTR2E,EXVAL(IEXCI),ISYMTR,
+     &                    WORK(KEND1),LWORK1)
+C
+         END IF
 C
          CALL SO_WRITE(WORK(KRES2), LTR2E, LUTR2E,FNTR2E, IEXCI)
 C
@@ -236,15 +236,15 @@ C
             CALL CC_OMEC(EX2H2P,WORK(KRES2),EXVAL(IEXCI),
      &                WORK(KEND1),LWORK1,ISYMTR)
 C
-         END IF
-C
 C--------------------------------------------------------------------
 C        Calculate the first order 2h-2p eigenvector in RPA(D) theory
 C        and write to output.
 C--------------------------------------------------------------------
 C
-         CALL DC_R1VEC(WORK(KRES2), LTR2D,EXVAL(IEXCI),ISYMTR,
-     &                 WORK(KEND1),LWORK1)
+            CALL DC_R1VEC(WORK(KRES2), LTR2D,EXVAL(IEXCI),ISYMTR,
+     &                    WORK(KEND1),LWORK1)
+C
+         END IF
 C
          CALL SO_WRITE(WORK(KRES2), LTR2D, LUTR2D,FNTR2D, IEXCI)
 C
@@ -252,7 +252,15 @@ C-----------------------------------------------------------
 C        Add contributions to give RPA(D) excitation energy.
 C-----------------------------------------------------------
 C
-         EXVAL(IEXCI) = EX1P1H + EX1H1P + EX2P2H/TWO + EX2H2P/TWO
+         IF (TRIPLET) THEN
+C
+            EXVAL(IEXCI) = EX1P1H + EX1H1P + EX2P2H + EX2H2P
+C
+         ELSE
+C
+            EXVAL(IEXCI) = EX1P1H + EX1H1P + EX2P2H/TWO + EX2H2P/TWO
+C
+         END IF
 C
   100 CONTINUE
 C

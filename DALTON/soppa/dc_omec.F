@@ -63,9 +63,15 @@ C
 C
          DEN = - ( WORK(IABIJ2) - OME )
 C
-         XIDEN = ONE/DEN
+         XIDEN = ONE / DEN
 C
-         OMEC = OMEC + RES2(IABIJ)*RES2(IABIJ)*XIDEN
+         OMEC = OMEC + RES2(IABIJ) * RES2(IABIJ) * XIDEN
+C
+C-----------------------------------------------------------
+C     Calculate the first-order RPA(D) eigenvector (eq 16)
+C-----------------------------------------------------------
+C
+         RES2(IABIJ) = RES2(IABIJ) * XIDEN
 C
       END DO
 C
