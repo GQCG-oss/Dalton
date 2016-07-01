@@ -47,7 +47,7 @@ module so_parutils
 ! In order to work with both ERI and HERMITE direct...
    integer            :: soppa_nint   ! number of calls to integral program
 !
-! Make the defines in infpar, a fortran parameter (nicer IMO).
+! Make the defines in infpar a fortran parameter (nicer IMO).
 ! also, maybe change the name?
    integer(mpi_integer_kind), parameter :: my_mpi_integer = my_MPI_INTEGER
    ! Actually every call to MPI functions should be explicitly typed,

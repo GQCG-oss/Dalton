@@ -342,7 +342,7 @@ C----------------------------------------
                DOUBLES = SO_HAS_DOUBLES(IMODEL)
                NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
 C
-               IF (IPRSOP .GE. 3) THEN
+               IF (IPRSOP .GE. 1) THEN
                   WRITE(LUPRI,9000)
                   WRITE(LUPRI,'(1X,A)') TRIM(FULLNAME)//':'
                   WRITE(LUPRI,'(A,I8,/,A,I8)')
@@ -424,7 +424,7 @@ C
      &                           WORK(KT2AM),
      &                           LT2AM,WORK(KFOCKD),LFOCKD,
      &                           WORK(KEND2),LWORK2)
-               ELSE ! RPA(D) still has it's own driver...
+               ELSE ! RPA(D) still has its own driver...
                   CALL DC_RSPLEX(ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
      &                           WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                           LDENSAB,WORK(KDENSAI),LDENSAI,

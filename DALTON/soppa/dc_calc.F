@@ -59,6 +59,8 @@ C------------------
 C
       CALL QENTER('DC_CALC')
 
+      KEND1 = 1
+      LWORK1 = LWORK
 #ifdef VAR_MPI
 C------------------------------------------------------------------
 C     For MPI, we need some space in which to store the indices each
@@ -79,9 +81,6 @@ C Not a real parallel job, don't bother
          CALL SO_MEMMAX ('SO_LRSOLV.1A',LWORK1)
          IF (LWORK1 .LT. 0) CALL STOPIT('SO_LRSOLV.1A',' ',KEND1,LWORK)
       endif
-#else
-      KEND1 = 1
-      LWORK1 = LWORK
 #endif
 C
 C---------------------------------------------------------

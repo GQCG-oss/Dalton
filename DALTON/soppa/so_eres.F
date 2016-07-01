@@ -431,7 +431,7 @@ C        --- For MPI only one process must do this
 C--------------------------------------------------------------------
             IF ( (.NOT.TR2_ZERO).AND.(.NOT.TRIPLET)
 #ifdef VAR_MPI
-     &            .OR.(MYNUM .EQ. 0 )
+     &            .AND.(MYNUM .EQ. 0 )
 #endif
      &                        ) THEN
                DTIME      = SECOND()
@@ -445,10 +445,8 @@ C
 C   The trial-vectors are no longer needed in the original
 C   basis, transform them.
 C
-               IF(.NOT.TRIPLET) THEN
-                  CALL CCSD_TCMEPKX(WORK(KTR2E),TWO,ISYMTR)
-                  IF (DO_DEX) CALL CCSD_TCMEPKX(WORK(KTR2D),TWO,ISYMTR)
-               END IF
+               CALL CCSD_TCMEPKX(WORK(KTR2E),TWO,ISYMTR)
+               IF (DO_DEX) CALL CCSD_TCMEPKX(WORK(KTR2D),TWO,ISYMTR)
 C
             ELSE
                CALL DZERO(WORK(KRES2E),LRES2E)
@@ -850,7 +848,7 @@ C  since the one-particle result-vector is first needed in the
 C  second call, sigai and sigda in the third and fourth call,
 C  and the two-particle vector is just written to file.
 C  The alternative approach, is to do all these calculations
-C  one the slaves, and only reduce in the end, this would save
+C  on the slaves, and only reduce in the end, this would save
 C  communication of sigai and sigda.
 C
 C  Use the fact that memory are together
@@ -1604,7 +1602,7 @@ C
             ELSE ! Else we deal with rectangular offdiagonal blocks
                DO ISYMB = 1, NSYM
                   ISYMA = MULD2H(ISYMB,ISYDENS)
-                  IF (ISYMA.GT.ISYMA) CYCLE
+                  IF (ISYMA.GT.ISYMB) CYCLE
                   IOFFPK=IAODPK(ISYMA,ISYMB)
                   IOFFSQ1 = IAODIS(ISYMB,ISYMA)
                   IOFFSQ2 = IAODIS(ISYMA,ISYMB)
