@@ -46,6 +46,7 @@ f.add(from_string = 'Triplet electronic excitation energies',
       num_lines = 21,
       abs_tolerance = 1.0e-4)
 
-test.run(['prop_exci_aorpa_trip.dal'], ['H2O_intgrl_sym.mol'], f={'out': f})
+test.run(['prop_exci_aorpa_trip.dal'], ['H2O_intgrl_sym.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.','ERI does not work with Cartesian basis.'])
 
 sys.exit(test.return_code)
