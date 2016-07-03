@@ -394,9 +394,12 @@ C  /* Deck exeher */
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION WORK(0:LMWORK)
 #include "priunit.h"
 #include "gnrinf.h"
+! cbiher.h : TWOBYTEPACKING
+#include "cbiher.h"
 #include "dftcom.h"
 #include "pcmlog.h"
 #include "qm3.h"
@@ -404,6 +407,7 @@ C
 C     Run Integral section
 C
       CALL QENTER('HERMIT')
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini HERMIT')
       NEWPRP = .TRUE.
       NEWMAT = .TRUE.
       GRDONE = .FALSE.
@@ -435,6 +439,7 @@ C
       IF (DKTRAN .AND. RNHERM) THEN
          DKHINT = .TRUE. ! now we are calculating DKH 1-el. integrals
          CALL DKH_INTF(WORK(1),LMWORK)
+         CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'DKH_INTF ')
          DKHINT = .FALSE.
          NEWPRP = .TRUE.
       END IF
@@ -442,10 +447,14 @@ C
 C     Third parameter .TRUE. in call indicates that LUONEL will be written.
 C
       CALL READIN(WORK(1),LMWORK,RNHERM)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'READIN')
 C
 C     Initialize Hermit variables, also when RNHERM false (e.g. for ABACUS)
 C
       CALL HERINI
+      TWOBYTEPACKING = TWOBYTEPACKING .OR. NBASIS .GT. 255
+      ! we need two bytes to pack indices if NBASIS .gt. 255; we also need
+      ! the .OR. test, because TWOBYTEPACKING might have been requested in input
 C
 C     ***************************************************************
 C     Setup of MM information.
@@ -491,6 +500,7 @@ C
       CALL QENTER('SIRIUS')
 C
       CALL TITLER('Starting in Wave Function Section (SIRIUS)',' ',200)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini SIRIUS') ! boundary checks on WORK
 C
 C     SIRINI defines buffer lengths for I/O and the IROW() array
 C
@@ -554,6 +564,7 @@ C
       CALL QENTER('CC')
 C
       CALL TITLER('Starting in Coupled Cluster Section (CC)',' ',200)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini CC')
 C
       IF (RNSIRI .AND. .NOT. RNHERM) THEN
          CALL SETHER(IPRUSR,.FALSE.,WORK(1),LMWORK)
@@ -609,6 +620,7 @@ C
       CALL QENTER('ABACUS')
       CALL TITLER('Starting in Static Property Section (ABACUS) -',
      &   ' ',200)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini ABACUS')
 C
       CALL ABACTL(WORK(1),LMWORK)
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ABACUS')
@@ -2203,6 +2215,7 @@ C
 C
       CALL TITLER('Starting in Cholesky Integral Section',
      &  ' ',200)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini CHOLESKY')
 C
       CALL CC_CHODRV(WORK(1),LMWORK)
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOLESKY')
@@ -2235,6 +2248,7 @@ C
       CALL QENTER('EXEACT')
 C
       CALL TITLER('Starting in Choact Section',' ',200)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini CHOACT')
 C
       CALL CC_SELACT(WORK(1),LMWORK)
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOACT')

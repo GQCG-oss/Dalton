@@ -623,7 +623,7 @@ C
 C     CALL RDLINE(LUINFO)
 C     READ (MLINE(NMLINE),'(A6)') KEYWRD
 C     IF (KEYWRD .NE. 'FINISH') GOTO 5030
-      IF (IPREAD .GT. 10) CALL REAPRI
+      IF (IPREAD .GT. 10) CALL READIN_PRINT
       IF (NEWFILE) CALL GPCLOSE(LUINFO,'KEEP')
 C
       IF (NODDYDF) CALL DENFIT_NODDY_INT
@@ -635,11 +635,11 @@ C
 C Error messages:
 C
  5010 CONTINUE
-      CALL QUIT('Wrong keyword. Expecting INTGRL or BASIS')
+      CALL QUIT('Wrong keyword. Expecting INTGRL, BASIS or ATOMBA.')
  5020 CONTINUE
       CALL STOPIT('READIN','READ_MOL',KLAST,LWORK)
-C5030 CONTINUE
-      CALL QUIT('Wrong keyword. Expecting FINISH')
+!5030 CONTINUE
+!     CALL QUIT('Wrong keyword. Expecting FINISH')
       END ! SUBROUITNE READIN
 C  /* Deck read_mol */
       SUBROUTINE READ_MOL(LUINFO,WORK,LWORK,
@@ -745,7 +745,7 @@ C     Initialize ISUBSY for QM3 info to all atoms QM atoms
       CALL IZERO(ISUBSY,MXQM3)
 C
 C***********************************************************************
-C     Card 1: Keyword (INTGRL/BASIS) - read in READIN
+C     Card 1: Keyword (INTGRL/BASIS/ATOMBA/...) - read in READIN
 C***********************************************************************
 C***********************************************************************
 C     Card 2: If basis set library, read additional card containing basis set
@@ -1171,7 +1171,7 @@ C***********************************************************************
 C
          CALL RDLINE(LUINFO)
          BKPLIN = MLINE(NMLINE)
-         CALL UPCASE(BKPLIN)
+         CALL UPCASE(BKPLIN) ! used to make case-insensitive keyword checks
 C
 C        Test if Z-matrix for first line (I.eq.1):
 C
@@ -1580,11 +1580,8 @@ C     &                 BASNAM(1:LBASNAM),'"'
               IF (BASNAM(1:6) .EQ. 'INTGRL') THEN
 C                This makes it possible to specify basis sets
 C                not in basis library for some atoms.
-C                Use DIRAC style format for specifying IQM and JCO.
-                 CALL RDLINE(LUINFO)
-                 READ (MLINE(NMLINE),'(BN,A5,12I5)')
-     &                BSET,IQM(I,J),(JCO(K,I,J),K=1,IQM(I,J))
-                 IF (BSET .EQ. '     ') BSET = 'Input'
+C                IQM(I,J) and (JCO(K,I,J),K=1,IQM(I,J)) must have been
+C                defined with the Blocks= keyword in LINE5R routine.
                  CALL GTOINP(LUINFO,IQM(I,J),JCO(1,I,J),
      &                NUC(IBLOCK(J),J),NRC(IBLOCK(J),J),
      &                SEG(IBLOCK(J),J),
@@ -5876,8 +5873,8 @@ C
       CALL GPCLOSE(LUONEL,'KEEP')
       RETURN
       END
-C  /* Deck reapri */
-      SUBROUTINE REAPRI
+C  /* Deck READIN_PRINT */
+      SUBROUTINE READIN_PRINT
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -5897,7 +5894,7 @@ C
 #include "chrsgn.h"
 #include "aosotr.h"
 C
-      CALL HEADER('Test output from REAPRI',-1)
+      CALL HEADER('Test output from READIN_PRINT',-1)
       WRITE(LUPRI,'(A,1P,D12.2)') '  THRS  ', THRS
       WRITE(LUPRI,'(A,I5)')    '  NHTYP ', NHTYP
       WRITE(LUPRI,'(A,L5)')    '  DOCART', DOCART
@@ -7108,7 +7105,8 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
       CHARACTER TMPLN*80, BASNAM*80, BKPLIN*80, FRMT*5
-      LOGICAL BASIS, ATOMBA, LMULBS, FOUNDR, FOUNDA
+      LOGICAL   BASIS, ATOMBA, LMULBS, READ_BLOCKS
+      LOGICAL   FOUNDR, FOUNDA
       DIMENSION JCO(KANG)
 C
       CALL QENTER('LINE5R')
@@ -7170,28 +7168,7 @@ C
 C
 C     Read in basis set information
 C
-         IF (.NOT. (BASIS .OR. ATOMBA)) THEN
-            IPOS = INDEX(BKPLIN,'BLO')
-            IF (IPOS .NE. 0) THEN
-               IPOS2 = INDEX(BKPLIN(IPOS:),'=')
-               IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
-                  WRITE (LUPRI,*) 'Incorrect input for # of '//
-     &                 'integral blocks in'
-                  WRITE (LUPRI,*) TMPLN
-                  WRITE (LUPRI,*) 'Format is "Blocks=? ? ?"'
-                  CALL QENTER('LINE5R')
-                  CALL QUIT('Incorrect input for # of '//
-     &                 'integral blocks')
-               ELSE
-                  ISTART = IPOS + IPOS2
-                  CALL FREFRM(BKPLIN,ISTART,IQM,DUMMY,'INT',IERR)
-                  DO IQMLOP = 1, IQM
-                     CALL FREFRM(BKPLIN,ISTART,JCO(IQMLOP),DUMMY,'INT',
-     &                           IERR)
-                  END DO
-               END IF
-            END IF
-         ELSE IF (ATOMBA) THEN
+         IF (ATOMBA) THEN
             IPOS = INDEX(BKPLIN,'BAS')
             IF (IPOS .NE. 0) THEN
                IPOS2 = INDEX(BKPLIN(IPOS:),'=')
@@ -7228,6 +7205,37 @@ C
                WRITE (LUPRI,*) TMPLN
                CALL QUIT( 'ATOMBASIS selected, but no '//
      &              'atomic basis set specified for one atom type')
+            END IF
+         END IF
+
+! Blocks= not valid for library basis sets
+         READ_BLOCKS = .NOT. BASIS
+     &           .AND. .NOT.(ATOMBA .AND. BASNAM.NE.'INTGRL')
+         IPOS = INDEX(BKPLIN,'BLO')
+         IF (IPOS .NE. 0) THEN
+            IF (.NOT. READ_BLOCKS) THEN
+               WRITE (LUPRI,*) 'Incorrect input in'
+               WRITE (LUPRI,*) TMPLN
+               WRITE (LUPRI,*)'Blocks= not valid for library basis sets'
+               CALL QENTER('LINE5R')
+               CALL QUIT('Blocks= not valid for library basis sets')
+            END IF
+            IPOS2 = INDEX(BKPLIN(IPOS:),'=')
+            IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
+               WRITE (LUPRI,*) 'Incorrect input for # of '//
+     &              'integral blocks in'
+               WRITE (LUPRI,*) TMPLN
+               WRITE (LUPRI,*) 'Format is "Blocks=? ? ?"'
+               CALL QENTER('LINE5R')
+               CALL QUIT('Incorrect input for # of '//
+     &              'integral blocks')
+            ELSE
+               ISTART = IPOS + IPOS2
+               CALL FREFRM(BKPLIN,ISTART,IQM,DUMMY,'INT',IERR)
+               DO IQMLOP = 1, IQM
+                  CALL FREFRM(BKPLIN,ISTART,JCO(IQMLOP),DUMMY,'INT',
+     &                        IERR)
+               END DO
             END IF
          END IF
 C

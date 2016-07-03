@@ -1,11 +1,21 @@
 # DALTON Change Log
 All notable changes to the DALTON project will be documented in this file.
 
-## [2016.2] (2016-04-12)
+## [2016.2] (2016-06-24)
+
+### Added
+- Added and documented Basis=INTGRL option for ATOMBASIS in .mol file.
+- Included Be in cc-pV5Z basis set
 
 ### Fixed
-- Fix for spin-orbit coupling (SOC) between S/T excited states of same symmetry (problem reported on Daltonforum.org)
+- More robust code for reading exponents and contraction coefficients in Dalton-type basis set files, incl. such files from EMSL
+- Work-around for Intel 15 compiler I/O problem in some response calculations
+- Fix for spin-orbit coupling (SOC) between S/T excited states of same symmetry (problem reported on daltonforum.org)
 - Further fixes of MCSCF in **PROPERTIES for more than 255 basis functions - hopefully it is OK now for all requests.
+- Fixed an error in the manual for spin-dipole (problem reported on daltonforum.org)
+- Fix of open-shell Hartree-Fock occupation output (print, not calculation, was wrong if ROHF was followed by MCSCF)
+- Removed OpenACC CMake variable (currently no OpenACC directives in Dalton).
+- Fix of Douglas-Kroll post-SCF with less than 256 contracted basis functions, but more than 255 uncontracted basis functions
 
 
 ## [2016.1] (2016-04-07)
@@ -24,6 +34,7 @@ All notable changes to the DALTON project will be documented in this file.
 - Fixed error in memory addressing for MCSCF g-tensor calculations
 - Fixed 2 errors in author list for WIRE dalton publication in dalton output
 - Removed unsupported configure options.
+
 
 ## [2016.0] (2015-12-22)
 

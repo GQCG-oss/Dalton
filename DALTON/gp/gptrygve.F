@@ -1218,11 +1218,15 @@ C
       CALL QUIT('ERROR (GPOPEN) ILLEGAL FILE NUMBER REQUESTED')
 C
  9003 CONTINUE
-      WRITE (LUGPPRI,'(//A//A,I5/2A//A)')
+      WRITE (LUGPPRI,'(//A//A,I5/2A//A/)')
      &   '--> ERROR (GPOPEN) TRYING TO USE A FILE NUMBER ALREADY IN USE'
      &  ,'--> Offending UNIT number: ',LUNIT,
      &   '--> Name of offending file (if any): ', FILENM(1:FILELN),
      &   '### Please report the problem on http://daltonforum.org'
+      WRITE(LUPRI,'(2A)')
+     &   ' Input parameter status : ',STATIN,
+     &   ' Input parameter access : ',ACCEIN,
+     &   ' Input parameter format : ',FORMIN
       INQUIRE(UNIT=LUNIT,OPENED=FEXST)
       IF (FEXST) THEN
          INQUIRE(UNIT=LUNIT,NAME=FILENM)
@@ -1534,6 +1538,7 @@ C
       DO I = 1, LEN_WORD
          K = INDEX(LOWER,WORD(I:I))
          IF (K .NE. 0) WORD(I:I)=UPPER(K:K)
+         IF (ICHAR(WORD(I:I)) .EQ. 9) WORD(I:I) = ' ' ! change tab to blank
       END DO
 C
  9000 CONTINUE

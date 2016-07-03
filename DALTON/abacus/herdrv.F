@@ -4076,7 +4076,7 @@ C
       no2so  = .false.
       SOTEST = .FALSE.
       NOTWO  = DIRCAL
-      TWOBYTEPACKING = NBASIS .GT. 255   ! then we need two bytes to pack indices
+      TWOBYTEPACKING = .FALSE.
       SECMOM = .FALSE.
       CARMOM = .FALSE.
       SPHMOM = .FALSE.
