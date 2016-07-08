@@ -334,7 +334,10 @@ contains
      integer, intent(in )   :: my_process_id_glb
      integer, intent(in )   :: process_list_glb(nr_of_process_glb)
      integer, intent(out)   :: group_list(nr_of_process_glb)
-     integer, intent(out)   :: shared_mem_list(nr_of_process_glb)
+! May 2016 hjaaj: removing intent on shared_mem_list, because it throws intel compile
+!    warnings as shared_mem_list is not set in this routine (currently?)
+!    integer, intent(out)   :: shared_mem_list(nr_of_process_glb)
+     integer                :: shared_mem_list(nr_of_process_glb)
      integer, intent(out)   :: my_intra_node_id
      integer, intent(out)   :: my_inter_node_id
      integer, intent(out)   :: my_shmem_node_id

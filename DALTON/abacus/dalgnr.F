@@ -394,9 +394,12 @@ C  /* Deck exeher */
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION WORK(0:LMWORK)
 #include "priunit.h"
 #include "gnrinf.h"
+! cbiher.h : TWOBYTEPACKING
+#include "cbiher.h"
 #include "dftcom.h"
 #include "pcmlog.h"
 #include "qm3.h"
@@ -450,6 +453,9 @@ C
 C     Initialize Hermit variables, also when RNHERM false (e.g. for ABACUS)
 C
       CALL HERINI
+      TWOBYTEPACKING = TWOBYTEPACKING .OR. NBASIS .GT. 255
+      ! we need two bytes to pack indices if NBASIS .gt. 255; we also need
+      ! the .OR. test, because TWOBYTEPACKING might have been requested in input
 C
 C     ***************************************************************
 C     Setup of MM information.

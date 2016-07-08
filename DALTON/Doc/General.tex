@@ -1241,7 +1241,7 @@ xyz coordinates of the center of cavity spheres, given in \angstrom{}.
 \subsection{Potential derived charges: \Sec{QFIT}}
 \label{subsec:qfit}
 
-Directives controlling the evaluation of charges (and higher ranks of multipole moments, see \verb|MPRANK| below) fitted to reproduce the molecular electrostatic potential evaluated on a grid surrounding the molecule. Currently, the only built-in grid is a Connolly-Merz grid where \verb|NSHELL| shells around the molecule are constructed from Van der Waal spheres placed on each nuclei of the molecule. The initial spheres are scaled by \verb|VDWSCL| and succesive spheres are scaled in increments of \verb|VDVINC|. Alternatively, a file with grid points given through the \verb|MEPFIL| keyword can be provided instead.
+Directives controlling the evaluation of charges (and higher ranks of multipole moments, see \verb|MPRANK| below) fitted to reproduce the molecular electrostatic potential evaluated on a grid surrounding the molecule. Currently, the only built-in grid is a Connolly-Merz grid where \verb|NSHELL| shells around the molecule are constructed from van der Waals spheres placed on each nuclei of the molecule. The initial spheres are scaled by \verb|VDWSCL| and succesive spheres are scaled in increments of \verb|VDWINC|. Alternatively, a file with grid points given through the \verb|MEPFIL| keyword can be provided instead.
 
 \begin{description}
 \item[\Key{MPRANK}]\verb| |\newline
@@ -1257,12 +1257,12 @@ Set the type of constraint on the derived charges. Options are \verb|NONE|, \ver
 \item[\Key{VDWSCL}]\verb| |\newline
 \verb|READ (LUCMD,*) VDWSCL|
 
-Sets the scaling factor, $R_{scl}$, for the Van der Waal radii of the nuclei when generating the surface. The default value is 1.4.
+Sets the scaling factor, $R_{scl}$, for the van der Waals radii of the nuclei when generating the surface. The default value is 1.4.
 
 \item[\Key{VDWINC}]\verb| |\newline
 \verb|READ (LUCMD,*) VDWINC|
 
-Sets the increment of scaling, $R_{inc}$, for successive shells past the first. See option \verb|NSHELL|. The total scaling factor for each Van der Waal sphere for shell $n$ can be calculated from $R = R_{vdw}\cdot (R_{scl}+(n-1)\cdot R_{inc})$. The default value is 0.2 \angstrom{} per shell.
+Sets the increment of scaling, $R_{inc}$, for successive shells past the first. See option \verb|NSHELL|. The total scaling factor for each van der Waals sphere for shell $n$ can be calculated from $R = R_{vdw}\cdot (R_{scl}+(n-1)\cdot R_{inc})$. The default value is 0.2 \angstrom{} per shell.
 
 \item[\Key{NSHELL}]\verb| |\newline
 \verb|READ (LUCMD,*) NSHELL|

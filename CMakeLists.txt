@@ -38,7 +38,6 @@ set(CMAKE_MODULE_PATH
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                           OFF)
 option(ENABLE_GPU            "Enable GPU acceleration"                          OFF)
-option(ENABLE_OPENACC        "Enable OpenACC GPU acceleration"                  OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     OFF)
 option(ENABLE_CUBLAS         "Enable the CUBLAS GPU library"                    OFF)
 option(ENABLE_COLLAPSE       "Enable COLLAPSE clause for reorderings"           OFF)
