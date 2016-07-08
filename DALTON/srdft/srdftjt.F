@@ -386,7 +386,7 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
        else if (domcsrdft .and. .not. docisrdft) then
           if (dogga. and. dft_spindns) then ! special treatment if gga + spin
               CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
-     &             d1Excdrhot,d1Excdngrd2,d1Excdngrd2,d1Excdngrds2,
+     &             d1Excdrhot,d1Excdngrd2,d1Excdrhos,d1Excdngrds2,
      &             DFTHRL,IPNT)
           else                              ! pure GGA or pure spin
              CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
