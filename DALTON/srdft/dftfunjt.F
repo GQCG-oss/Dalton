@@ -530,9 +530,13 @@ C      because we use central 2nd-order approximation=)
       if (grdt .lt. 1.d-10) then
          hgt = 0.0d0
       else
-         hgt = abs(1.d-4*grdt)
+         hgt = 1.d-4*grdt ! grdt .ge. 0 so hgt .ge.0
       end if
-      hgs = hgt
+      if (grds .lt. 1.d-10) then
+         hgs = 0.0d0
+      else
+         hgs = 1.d-4*grds
+      end if
       
 !      arhos_min = 1.d-10*max(1.d0,rhot) ! for numerical accuracy
 !      if (arhos .gt. 1.d-10*rhot) then
