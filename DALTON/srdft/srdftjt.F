@@ -612,8 +612,8 @@ c  Exchange  ------------------------------------------------------------
       ELSE
          rhogrd(1) = sqrt(rhg(1,1)**2 + rhg(2,1)**2 + rhg(3,1)**2)
          rhogrd(2) = 0.0d0
-         rhogrd(3) = 0.0d0
-         rhogrd(4) = 0.0d0
+         rhogrd(3) = rhogrd(1)
+         rhogrd(4) = rhogrd(1)
       END IF
 
 !     LDA exchange functional (to fit with corresponding correlation
