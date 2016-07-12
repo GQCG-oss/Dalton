@@ -1,6 +1,6 @@
 # DALTON Change Log All notable changes to the DALTON project will be documented in this file.
 
-## [2016.2] (2016-07-11)
+## [2016.2] (2016-07-12)
 
 ### Added
 - Added and documented Basis=INTGRL option for ATOMBASIS in .mol file.

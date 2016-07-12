@@ -105,11 +105,11 @@ ERROR[2]="SYMMETRY NOT CORRECT"
 
 # Geometry (removed sign check because depends on order of symops /hjaaj)
 CRIT1=`$GREP "Total number of coordinates\: * 24" $log | wc -l`
-CRIT2=`$GREP "C .* [0-9] *x .*1\.45478762[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "H .* .[0-9] *x .*0*\.9704360[8-9].[0-9]" $log | wc -l`
-CRIT4=`$GREP "H .* .[0-9] *x .*1\.680844[5-6]..[0-9]" $log | wc -l`
-CRIT5=`$GREP "H .* .[0-9] *x .*1\.9408721[0-9].[0-9]" $log | wc -l`
-CRIT6=`$GREP "H .* .[0-9] *x .*2\.14455455[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "C .* .[0-9] *x .*1\.454787" $log | wc -l`
+CRIT3=`$GREP "H .* .[0-9] *x .*0*\.970436" $log | wc -l`
+CRIT4=`$GREP "H .* .[0-9] *x .*1\.680844" $log | wc -l`
+CRIT5=`$GREP "H .* .[0-9] *x .*1\.940872" $log | wc -l`
+CRIT6=`$GREP "H .* .[0-9] *x .*2\.144554" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[3]=19
 ERROR[3]="GEOMETRY NOT READ CORRECTLY"
