@@ -15,7 +15,7 @@
 Do not make changes below this line! For the relase branch only.
 
 
-## [2016.2] (2016-07-11)
+## [2016.2] (2016-07-12)
 
 ### Added
 - Added and documented Basis=INTGRL option for ATOMBASIS in .mol file.
