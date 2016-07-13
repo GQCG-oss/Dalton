@@ -1,5 +1,13 @@
 # DALTON Change Log All notable changes to the DALTON project will be documented in this file.
 
+## [2016.3] (2016-xx-xx)
+
+### Changed
+- OK to run ECD or OECD with SOPPA
+
+### Fixed
+
+
 ## [2016.2] (2016-07-12)
 
 ### Added
