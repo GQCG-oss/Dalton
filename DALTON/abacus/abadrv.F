@@ -1852,15 +1852,17 @@ c            CALL QUIT('Not supported input in ABAINP')
      &                         'cannot be calculated with SOPPA'
             IERR = IERR + 1
          END IF
-         IF (OECD)    THEN
-            WRITE(LUPRI,'(A)') ' Incompatible input. OECD '//
-     &                         'cannot be calculated with SOPPA'
-            IERR = IERR + 1
+         IF (OECD .AND. .NOT.NOLOND) THEN
+            WRITE(LUPRI,'(A)')
+     &      ' OECD and SOPPA only without London orbitals.'//
+     &      ' London orbitals (GIAO) disabled.'
+            NOLOND = .TRUE.
          END IF
-         IF (ECD)    THEN
-            WRITE(LUPRI,'(A)') ' Incompatible input. ECD '//
-     &                         'cannot be calculated with SOPPA'
-            IERR = IERR + 1
+         IF (ECD .AND. .NOT.NOLOND)  THEN
+            WRITE(LUPRI,'(A)')
+     &      ' ECD and SOPPA only without London orbitals.'//
+     &      ' London orbitals (GIAO) disabled.'
+            NOLOND = .TRUE.
          END IF
          IF (MCD)    THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. MCD '//
