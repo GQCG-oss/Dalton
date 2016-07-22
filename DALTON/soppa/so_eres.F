@@ -453,6 +453,7 @@ C
                IF (DO_DEX) CALL DZERO(WORK(KRES2D),LRES2D)
             ENDIF
          END IF
+C
 #ifdef VAR_MPI
 C---------------------------
 C Communicate trial-vectors
@@ -567,6 +568,7 @@ C
                NLOOPIDX = NTOT
                loadbal_dyn = .false.
             ENDIF
+C
 #endif
 C
 
@@ -712,6 +714,7 @@ C------------------------------------------------------------
 C
                      DTIME      = SECOND()
 CPi-140316 Change LT2MP -> LT2MPH
+CPi I think now we have this condition two times
                      IF (NVIR(ISYMD).GT.0) THEN
                         CALL SO_T2M1(WORK(KT2M1),LT2M1,T2MP,LT2MPH,
 Cend-Pi
@@ -819,7 +822,6 @@ C
                      CALL LOOP_BODY_SINGLET
                   ENDIF
 C
-C
   230          CONTINUE  ! End of IDEL2 loop
 C
 #ifdef VAR_MPI
@@ -855,7 +857,6 @@ C  Use the fact that memory are together
          lrestot = lres1e + lres1d + lres2e + lres2d
          lsigtot = lsigai1 + lsigai2 + lsigda1 + lsigda2
          latot   = laij + laab
-!         write(*,*) lrestot, lsigtot, latot
 C  Master use inplace operations
          if (mynum .eq. 0 ) then
 C
@@ -1041,6 +1042,7 @@ C
 C
             END IF
          ENDIF
+C
 #ifdef VAR_MPI
 C Slaves are done
          IF (MYNUM .NE. 0) GOTO 100
@@ -1130,7 +1132,7 @@ C
       DTIME      = SECOND()   - DTIME
       SOTIME(41) = SOTIME(41) + DTIME
 C
-      IF ( IPRSOP. GE. 7 ) THEN
+      IF ( IPRSOP .GE. 7 ) THEN
 C------------------------------------------
 C        Write new resultvectors to output.
 C------------------------------------------
@@ -1140,11 +1142,9 @@ C------------------------------------------
      &                '. new E[2] linear transformed trial vector'
             CALL SO_READ(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,INEW)
             CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
-CPi            CALL SO_READ(WORK(KRES2E),LRES2E,LURS2E,FNRS1D,INEW)
             WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
      &           (I,WORK(KRES1E+I-1),WORK(KRES1D+I-1),I=1,LRES1E)
             IF (DOUBLES) THEN
-CPi               CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS2E,INEW)
                CALL SO_READ(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
                IF (DO_DEX) 
      &            CALL SO_READ(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)

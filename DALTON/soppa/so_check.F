@@ -102,7 +102,7 @@ C
       KDENSAI= KTR2D  + LTR2D
       KEND1  = KDENSAI+ LDENSAI
       LWORK1 = LWORK  - KEND1
-      print *,LWORK1
+C
 #ifdef VAR_MPI
 C------------------------------------------------------------------
 C     For MPI, we need som space in which to store the indices each
