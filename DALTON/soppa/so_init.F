@@ -22,7 +22,8 @@ C
 #include "ccorb.h"
 #include "ccsdsym.h"
 #include "soppinf.h"
-#include "infsop.h"
+CPi moved triplet variables to soppinf.h
+C#include "infsop.h"
 C
 C------------------
 C     Add to trace.

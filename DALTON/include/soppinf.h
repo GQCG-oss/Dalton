@@ -76,6 +76,7 @@
 !RF while the one starting with I seems to contain offsets for the block
 !RF blocks of given symmetry.
       INTEGER ISOO, ISVV, ITOO, ITVV
+      INTEGER NSOO, NTOO, NSVV, NTVV
       INTEGER NT2AMT1, NT2AMT2, NT2AMT3, NT2AMTT
       INTEGER IT2AMT1, IT2AMT2, IT2AMT3
       INTEGER NIJDEN, NABDEN, NAIDEN
@@ -91,6 +92,7 @@
 !SPAS:10/08-09 including triplet 2p2h vectors
 !    &                 NAIDEN(8),IPRSOP,AOTEST,NSAVMX,                  &
      &                 NAIDEN(8),N2P2HOP(8),                            &
+     &                 NSOO(8), NTOO(8), NSVV(8), NTVV(8),              &
      &                 NT2AMT1(8), NT2AMT2(8), NT2AMT3(8), NT2AMTT(8),  &
      &                 IT2AMT1(8,8), IT2AMT2(8,8), IT2AMT3(8,8),        &
      &                 ISOO(8,8), ITOO(8,8), ISVV(8,8), ITVV(8,8),      &

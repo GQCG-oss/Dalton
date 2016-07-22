@@ -714,6 +714,12 @@ C     input:  WRDSRC - which ABACUS label to look for in input file
 C             (one of **START, **EACH , or **PROPE)
 C
       use pelib_interface, only: use_pelib
+CPi Haase, 22.07.16: since the commonblocks soppinf.h (used in integral
+C direct soppa program) and infsop.h (used in molecular orbital basis
+C soppa program) contain the same triplet variables, import the necessary
+C variables from soppinf.h through the so_info module:
+      use SO_INFO, only: AORPA, AOHRP, DCRPA, AOSOP, AOSOC
+C
 #include "implicit.h"
 #include "iratdef.h"
 #include "dummy.h"
@@ -759,7 +765,7 @@ C use from COMMON /INFRSP/ :  SOPPA
 #include "infsop.h"
 #include "infrsp.h"
 #include "infinp.h"
-#include "soppinf.h"
+C#include "soppinf.h"
 #include "locinf.h"
 
 C  jim-gesc 1.0: TABDIR(#17) ="*LROPTS" , TABLE(60)=".LRESC ". check INTRST for gaugeo
