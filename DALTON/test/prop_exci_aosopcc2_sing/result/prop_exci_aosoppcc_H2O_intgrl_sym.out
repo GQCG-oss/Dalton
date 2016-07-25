@@ -1,0 +1,3303 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2013.2
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.2 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Wed May 28 13:01:30 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /Users/ast018/dalton/DALTON/test/runtest_prop_exci_aosoppcc
+   2) /Users/ast018/dalton/build-master/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | ast018
+ Host                     | rfb-ntf-m0022.bargi.uit.no
+ System                   | Darwin-13.1.0
+ CMake generator          | Unix Makefiles
+ Processor                | i386
+ 64-bit integers          | OFF
+ MPI                      | ON
+ Fortran compiler         | /usr/local/bin/mpif90
+ Fortran compiler version | GNU Fortran (MacPorts gcc48 4.8.2_0) 4.8.2
+ C compiler               | /usr/local/bin/mpicc
+ C compiler version       | gcc (MacPorts gcc48 4.8.2_0) 4.8.2
+ C++ compiler             | /usr/local/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /usr/lib/libblas.dylib
+ LAPACK                   | /usr/lib/liblapack.dylib
+ Static linking           | OFF
+ Last Git revision        | 0c3e398ca4c78bacad0308b5fa7e055981e33872
+ Configuration time       | 2014-05-26 21:29:21.213348
+
+ * Sequential calculation.
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN PROPERTIES                                   
+**WAVE FUNCTIONS                                  
+.HF                                               
+.CC                                               
+*CC INPUT                                         
+.CCSD                                             
+.AO-SOPPA                                         
+**PROPERTIES                                      
+.SOPPA                                            
+.EXCITA                                           
+.PRINT                                            
+ 2                                                
+*SOPPA                                            
+.AOSOC                                            
+.NEXCI2                                           
+    0    3    1    1    0    0    0    0          
+*EXCITA                                           
+.DIPSTR                                           
+.ROTVEL                                           
+.NEXCITA                                          
+    5    8    6    6    0    0    0    0          
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+INTGRL                                                                         
+Calculation of excitation energies through ABACUS                              
+                                                                               
+c   2    2  X  Y      0.10D-14                                                 
+      8.00    1    3    6    5    1                                            
+O   0.00000             0.00000              0.1241444240                      
+F  6    1                                                                      
+31195.6 0.00021                                                                
+4669.38 0.001628                                                               
+1062.62 0.00845                                                                
+301.426 0.034191                                                               
+98.5153 0.110311                                                               
+35.4609 .269493                                                                
+F  1    1                                                                      
+13.6179 .423545                                                                
+F  1    1                                                                      
+5.38618 .283038                                                                
+F  1    1                                                                      
+1.53873 .027484                                                                
+F  1    1                                                                      
+.6055 -.005144                                                                 
+F  1    1                                                                      
+.22054 .00164                                                                  
+F  3    1                                                                      
+114.863 .002266                                                                
+26.8767 0.017192                                                               
+8.32077 0.075341                                                               
+F  1    1                                                                      
+2.97237 .212775                                                                
+F  1    1                                                                      
+1.12848 .370478                                                                
+F  1    1                                                                      
+.4236 .398523                                                                  
+F  1    1                                                                      
+.15074 .184703                                                                 
+F  2    1                                                                      
+1.21879 .357851                                                                
+.36102 .759561                                                                 
+      1.00    1    2    3    1                                                 
+H   0.00000             1.43153              -0.985265576                      
+F  3    1                                                                      
+33.865014 .006068                                                              
+5.094788 0.045316                                                              
+1.158786 0.202846                                                              
+F  1    1                                                                      
+0.32584 0.503709                                                               
+F  1    1                                                                      
+.102741 .383568                                                                
+F  1    1                                                                      
+1.16 1.0                                                                       
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Static molecular property section will be executed (ABACUS module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Calculation of excitation energies through ABACUS                       
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C2v
+
+@  * The irrep name for each symmetry:    1: A1     2: B1     3: B2     4: A2 
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           H   _1      1.007825
+                           H   _2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.000015
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    3
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  O           1    8.0000    44    27      [11s7p2d|6s5p1d]                                   
+  H           2    1.0000     8     6      [5s1p|3s1p]                                        
+  ----------------------------------------------------------------------
+  total:      3   10.0000    60    39
+  ----------------------------------------------------------------------
+  Cartesian basis used.
+  (Note that d, f, ... atomic GTOs are not all normalized.)
+
+  Threshold for neglecting AO integrals:  1.00D-15
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    9
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.1241444240
+  H   / 1 :     4  x   0.0000000000    5  y   1.4315300000    6  z  -0.9852655760
+  H   / 2 :     7  x   0.0000000000    8  y  -1.4315300000    9  z  -0.9852655760
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     3    2    3    1
+
+  Symmetry  A1  ( 1)
+
+    1   O     z    3
+    2   H     y    [  5  -    8 ]/2
+    3   H     z    [  6  +    9 ]/2
+
+  Symmetry  B1  ( 2)
+
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
+
+  Symmetry  B2  ( 3)
+
+    6   O     y    2
+    7   H     y    [  5  +    8 ]/2
+    8   H     z    [  6  -    9 ]/2
+
+  Symmetry  A2  ( 4)
+
+    9   H     x    [  4  -    7 ]/2
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           H   _1      H   _2
+            ------      ------      ------
+ O     :    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
+
+
+  Max    interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
+  between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9584 Angstrom (    1.8111 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H   _1     O          H   _2       104.450
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.616959          0.000000    1.000000    0.000000
+   IB       1.156694          0.000000    0.000000    1.000000
+   IC       1.773652          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is planar.
+
+               A                   B                   C
+
+         819145.5126         436916.9575         284936.9149 MHz
+           27.323753           14.573981            9.504472 cm-1
+
+
+@  Nuclear repulsion energy :    9.183706230245 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          19    7   11    2
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        s          1
+    2     O        s          2
+    3     O        s          3
+    4     O        s          4
+    5     O        s          5
+    6     O        s          6
+    7     O        pz         9
+    8     O        pz        12
+    9     O        pz        15
+   10     O        pz        18
+   11     O        pz        21
+   12     O        dxx       22
+   13     O        dyy       25
+   14     O        dzz       27
+   15     H        s         28 +   29
+   16     H        s         30 +   31
+   17     H        s         32 +   33
+   18     H        py        36 -   37
+   19     H        pz        38 +   39
+
+
+  Symmetry  B1 ( 2)
+
+   20     O        px         7
+   21     O        px        10
+   22     O        px        13
+   23     O        px        16
+   24     O        px        19
+   25     O        dxz       24
+   26     H        px        34 +   35
+
+
+  Symmetry  B2 ( 3)
+
+   27     O        py         8
+   28     O        py        11
+   29     O        py        14
+   30     O        py        17
+   31     O        py        20
+   32     O        dyz       26
+   33     H        s         28 -   29
+   34     H        s         30 -   31
+   35     H        s         32 -   33
+   36     H        py        36 +   37
+   37     H        pz        38 -   39
+
+
+  Symmetry  A2 ( 4)
+
+   38     O        dxy       23
+   39     H        px        34 -   35
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.000015049426
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-15
+ Number of two-electron integrals written:       75206 ( 24.7% )
+ Megabytes written:                              0.866
+
+ >>>> Total CPU  time used in HERMIT:   0.11 seconds
+ >>>> Total wall time used in HERMIT:   0.12 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:    4    1    2    0
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.705520      -1.505990      -0.670643      -0.292535
+
+ Huckel EHT eigenvalues for symmetry :  2
+           -0.616200
+
+ Huckel EHT eigenvalues for symmetry :  3
+           -0.731199      -0.257813
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed May 28 13:01:30 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+ Title lines from ".mol" input file:
+     Calculation of excitation energies through ABACUS                       
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    (Integral direct) CC calculation.
+
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+     Wave function specification
+     ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+@    Wave function type        >>> CC <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 4 (point group: C2v)
+@    Reference state symmetry                   1 (irrep name : A1 )
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1    2    3    4
+                                           |  A1   B1   B2   A2 
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals           39 |   19    7   11    2
+     Number of basis functions          39 |   19    7   11    2
+
+      ** Automatic occupation of RHF orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               5 |    3    1    1    0
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-06
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ MP2 Amplitudes written for atom integral direct SOPPA calculations
+  
+
+
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+@  1  -75.8289971698       2.45D+00  -7.58D+01     3   1   1   0
+      Virial theorem: -V/T =      1.995901
+@      MULPOP O      -0.57; H   _1  0.28; H   _2  0.28; 
+ -----------------------------------------------------------------------------
+@  2  -76.0524932147       3.68D-01  -2.23D-01     3   1   1   0
+      Virial theorem: -V/T =      2.001335
+@      MULPOP O      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+@  3  -76.0600659833       8.25D-02  -7.57D-03     3   1   1   0
+      Virial theorem: -V/T =      2.001271
+@      MULPOP O      -0.81; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+@  4  -76.0607504694       1.69D-02  -6.84D-04     3   1   1   0
+      Virial theorem: -V/T =      2.000709
+@      MULPOP O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+@  5  -76.0607819108       5.34D-03  -3.14D-05     3   1   1   0
+      Virial theorem: -V/T =      2.000876
+@      MULPOP O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+@  6  -76.0607838671       1.91D-03  -1.96D-06     3   1   1   0
+      Virial theorem: -V/T =      2.000775
+@      MULPOP O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+@  7  -76.0607842019       3.26D-04  -3.35D-07     3   1   1   0
+      Virial theorem: -V/T =      2.000810
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+@  8  -76.0607842185       4.25D-05  -1.66D-08     3   1   1   0
+      Virial theorem: -V/T =      2.000809
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+@  9  -76.0607842187       8.01D-06  -2.01D-10     3   1   1   0
+      Virial theorem: -V/T =      2.000810
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+@ 10  -76.0607842187       1.50D-06  -9.61D-12     3   1   1   0
+      Virial theorem: -V/T =      2.000810
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+@ 11  -76.0607842187       3.97D-07  -3.98D-13     3   1   1   0
+
+@ *** DIIS converged in  11 iterations !
+@     Converged SCF energy, gradient:    -76.060784218682    3.97D-07
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Sym       Hartree-Fock orbital energies
+
+1 A1    -20.56238100    -1.35070292    -0.58322553     0.13488236     0.46314710
+          0.61795220     0.96390625     1.24752064
+
+2 B1     -0.50745990     0.47365390     1.30684668     2.03588081     3.06713277
+          6.59507910
+
+3 B2     -0.71596732     0.19111002     0.50061393     0.67340607     1.74928910
+          2.12363466
+
+4 A2      1.26154317     2.98152149
+
+    E(LUMO) :     0.13488236 au (symmetry 1)
+  - E(HOMO) :    -0.50745990 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.64234226 au
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       0.027       0.034
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A1  in C2v )
+@    Total charge of molecule:    0
+
+@    Final HF energy:             -76.060784218682                 
+@    Nuclear repulsion:             9.183706230245
+@    Electronic energy:           -85.244490448927
+
+@    Final gradient norm:           0.000000397032
+
+ 
+     Date and time (Linux)  : Wed May 28 13:01:30 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+ INFO: Sorry, plot of MOs with Molden is only implemented for spherical GTOs
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5
+   1 O   :s      0.3905  -0.0859  -0.0284   0.0258   0.0135
+   2 O   :s      0.4237  -0.1378  -0.0459   0.0378   0.0306
+   3 O   :s      0.2819  -0.1215  -0.0431   0.0497  -0.0041
+   4 O   :s      0.0265   0.2173   0.0651  -0.2180  -0.2033
+   5 O   :s      0.0055  -0.5023  -0.2007  -0.1581  -0.0657
+   6 O   :s      0.0155   0.1756   0.2265  -0.9082  -0.1321
+   7 O   :pz    -0.0012  -0.0103   0.0721   0.0191  -0.0321
+   8 O   :pz    -0.0004  -0.0234   0.1696   0.0449  -0.1369
+   9 O   :pz    -0.0002  -0.0499   0.2999   0.0858   0.0069
+  10 O   :pz     0.0004  -0.0487   0.3172   0.0693  -0.7063
+  11 O   :pz    -0.0006  -0.0078   0.1975   0.2876   1.6736
+  12 O   :dxx   -0.0029   0.0146   0.0070  -0.0620  -0.1443
+  13 O   :dyy   -0.0030   0.0263   0.0015  -0.0507  -0.1683
+  14 O   :dzz   -0.0030   0.0251  -0.0304  -0.0614  -0.1732
+  15 H   :s      0.0003   0.0918  -0.0879   0.0285  -0.0105
+  16 H   :s      0.0001   0.0539  -0.1102  -0.0295   0.5540
+  17 H   :s     -0.0008   0.0066  -0.0189   0.9445   0.1271
+  18 H   :py    -0.0001  -0.0144   0.0141   0.0199  -0.0037
+  19 H   :pz     0.0000   0.0099   0.0025  -0.0117   0.0068
+
+ Molecular orbitals for symmetry species 2  (B1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3
+   1 O   :px     0.0819  -0.0403   0.0108
+   2 O   :px     0.1941  -0.1683   0.0187
+   3 O   :px     0.3396  -0.0020   0.0667
+   4 O   :px     0.3822  -0.8903  -0.0370
+   5 O   :px     0.2591   1.3740   0.0656
+   6 O   :dxz   -0.0383  -0.0021   0.9472
+   7 H   :px     0.0183   0.0056  -0.0833
+
+ Molecular orbitals for symmetry species 3  (B2 )
+ ------------------------------------------------
+
+    Orbital         1        2        3
+   1 O   :py     0.0653  -0.0306   0.0081
+   2 O   :py     0.1529  -0.0600  -0.0127
+   3 O   :py     0.2746  -0.1667   0.0964
+   4 O   :py     0.2860   0.0539  -0.0558
+   5 O   :py     0.1253  -0.9468   1.9322
+   6 O   :dyz   -0.0554  -0.0253  -0.0628
+   7 H   :s      0.1438   0.0176  -0.0539
+   8 H   :s      0.1473  -0.1648  -1.1763
+   9 H   :s      0.0368   2.0991  -0.4183
+  10 H   :py    -0.0096   0.0204   0.0307
+  11 H   :pz     0.0163  -0.0225  -0.0098
+
+ Molecular orbitals for symmetry species 4  (A2 )
+ ------------------------------------------------
+
+    Orbital         1        2
+   1 O   :dxy    0.9129   0.7003
+   2 H   :px     0.1116  -0.8095
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
+
+ 
+     Date and time (Linux)  : Wed May 28 13:01:30 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+ NOTE:    1 informational messages have been issued.
+ Check output, result, and error files for "INFO".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        64
+          Number of t2 amplitudes                 :      4175
+          Total number of amplitudes in ccsd      :      4239
+
+ Iter.  1: Coupled cluster MP2   energy :     -76.3109682849683111
+ Iter.  1: Coupled cluster CCSD  energy :     -76.3113973909107983
+ Iter.  2: Coupled cluster CCSD  energy :     -76.3163485443903795
+ Iter.  3: Coupled cluster CCSD  energy :     -76.3173818482812010
+ Iter.  4: Coupled cluster CCSD  energy :     -76.3173248685917684
+ Iter.  5: Coupled cluster CCSD  energy :     -76.3173563340940149
+ Iter.  6: Coupled cluster CCSD  energy :     -76.3173581688335645
+ Iter.  7: Coupled cluster CCSD  energy :     -76.3173567458780013
+ Iter.  8: Coupled cluster CCSD  energy :     -76.3173571751714945
+ Iter.  9: Coupled cluster CCSD  energy :     -76.3173570802658645
+ Iter. 10: Coupled cluster CCSD  energy :     -76.3173570615706751
+ Iter. 11: Coupled cluster CCSD  energy :     -76.3173570481360315
+ Iter. 12: Coupled cluster CCSD  energy :     -76.3173570526235494
+
+ CCSD  energy converged to within   0.10D-07 is          -76.317357052624
+ Final 2-norm of the CC vector function:  1.11806223D-07
+
+
+
+
+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                   -76.0607842187
+
+            Total MP2   energy:                   -76.3109682850
+
+            Total CCSD  energy:                   -76.3173570526
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                   -76.0607842187                
+            Total MP2   energy:                   -76.3109682850                
+            Total CCSD  energy:                   -76.3173570526                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+ >>>> CPU and wall time for CC :       0.252       0.414
+
+ 
+     Date and time (Linux)  : Wed May 28 13:01:30 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+
+
+        *****************************************************************
+        ******** Output from **PROPE input processing for ABACUS ********
+        *****************************************************************
+
+
+
+      SOPPA : Second Order Polarization Propagator Approximation
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+ Default print level:        2
+
+      Electronic excitation energies 
+      No mass-velocity correction calculated
+      No Darwin correction calculated
+      Natural orbital connection is used
+      for perturbation dependent basis sets.
+
+
+ Changes of defaults in SOPPA:
+ -----------------------------
+
+ AO integral driven SOPPA(CCSD)
+    (Ref.: H. H. Falden, K. R. Falster-Hansen, K. L. Bak, S. Rettrup and S. P. A. Sauer,
+     J. Phys. Chem. A 113, 11995-12012 (2009))
+ The last :     0    3    1    1    0    0    0    0 excitation energies
+    are only converged to :  0.10E-01
+
+
+ Changes of defaults for .EXCITA:
+ --------------------------------
+
+ Number of excitation energies:    5    8    6    6
+ Print level          :    2
+ Integral print level :    2
+ Convergence threshold: 1.00E-04
+ Maximum iterations   :   60
+ Conventional rotational strength
+ Dipole strength
+
+ WARNING SIR_INTOPEN, old integral transformation not found as expected, ICASE = 1
+ - ICASE = 1: MO integral file MOTWOINT does not exist
+ - ICASE = 2: no MO integrals on MOTWOINT
+ - ICASE = 3: transformation level on MOTWOINT not sufficient
+
+ NSETUP: MO transformation level too low or no MO integral file found.
+ NSETUP: generating MO 2-el. integral file.
+
+
+ WORKING AREA IN TRANSFORMATION SECTION    8000000
+
+ TRANSFORMATION SECTION: PARAMETER =  10
+ MAXIMUM NUMBER OF AO INTEGRALS =      85064
+
+---> (Re)generating AOTWOINT
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-15
+ Number of two-electron integrals written:       75206 ( 24.7% )
+ Megabytes written:                              0.866
+
+
+ FIRST HALF-SORT STATISTICS
+  NUMBER OF PASSES OVER AO FI      1
+  NUMBER OF BLOCKS PER CHA       780
+  TOTAL NUMBER OF CHAINS           1
+  NUMBER OF BUFFERS PER PA         1
+
+  NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER      1706
+
+  NUMBER OF DA RECORDS FOR ALL INTEGRALS     100
+  NUMBER OF DA RECORDS ACTUALLY USED          88
+  PERCENT NON-ZERO AO INTEGRALS             0.01
+
+  THRESHOLD FOR DISCARDING INTEGRALS  1.00D-16
+
+ TIME IN SORTA      0.10
+
+ NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 13 IS    169348
+
+  THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
+ TIME IN TRACD      0.02
+
+ SECOND HALF-SORT STATISTICS
+  NUMBER OF PASSES OVER FILE       1
+  NUMBER OF BLOCKS PER CHA       780
+  TOTAL NUMBER OF CHAINS           1
+  NUMBER OF BUFFERS PER PA         1
+
+ NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER      1706
+
+  NUMBER OF DA RECORDS FOR ALL INTEGRALS     100
+  NUMBER OF DA RECORDS ACTUALLY USED         100
+  PERCENT NON-ZERO INTEGRALS                0.01
+ TIME IN SORTB      0.00
+ TIME IN TRAAB      0.02
+
+ NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 12 IS    169348
+ USING   780 + 1 RECORDS WITH BUFFER LENGTH   287
+
+  THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
+ TOTAL TIME IN TRACD,SORTB,TRAAB      0.04
+
+ Integral transformation: Total CPU and WALL times (sec)       0.136       0.143
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           H   _1      1.007825
+                           H   _2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.000015
+
+ Center of mass dipole origin  :    0.000000    0.000000   -0.000015
+
+ Center of mass gauge origin   :    0.000000    0.000000   -0.000015
+
+
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
+
+
+ 
+     Date and time (Linux)  : Wed May 28 13:01:30 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+                            **************************
+                            *** Output from TROINV ***
+                            **************************
+
+
+
+  Translational and rotational coordinates
+  ----------------------------------------
+
+
+  Symmetry  1
+
+        Translation along Z axis
+
+  Symmetry  2
+
+        Translation along X axis
+        Rotation around Y axis
+
+  Symmetry  3
+
+        Translation along Y axis
+        Rotation around X axis
+
+  Symmetry  4
+
+        Rotation around Z axis
+
+
+                  **********************************************
+                  *** ABACUS - Excitation energies (.EXCITA) ***
+                  **********************************************
+
+
+ Maximum number of trial vectors for each excitation is  3
+
+
+  ******************************************************************
+           SOPPA(CCSD)  iterations, Excitation symmetry 1
+  ******************************************************************
+
+  ==================================================================
+             1. SOPPA(CCSD)  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.50097988     6.9458D-01       no
+                 2       0.70178322     5.9125D-01       no
+                 3       0.73723896     6.1224D-01       no
+                 4       0.86957415     7.1190D-01       no
+                 5       0.97112178     8.0358D-01       no
+            --------------------------------------------------
+
+  ==================================================================
+             2. SOPPA(CCSD)  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.37002061     7.4702D-02       no
+                 2       0.59249377     8.6593D-02       no
+                 3       0.63004735     5.9392D-02       no
+                 4       0.72265258     1.1549D-01       no
+                 5       0.79488391     1.7289D-01       no
+            --------------------------------------------------
+
+  ==================================================================
+             3. SOPPA(CCSD)  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.36852455     2.7802D-02       no
+                 2       0.59044103     3.1023D-02       no
+                 3       0.62918012     1.9379D-02       no
+                 4       0.72023601     2.7541D-02       no
+                 5       0.78920290     5.3150D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             4. SOPPA(CCSD)  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.36832749     4.5746D-03       no
+                 2       0.59017500     6.0455D-03       no
+                 3       0.62908127     4.8135D-03       no
+                 4       0.72002085     5.9157D-03       no
+                 5       0.78825635     1.5311D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             5. SOPPA(CCSD)  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.36832364     7.5567D-04       no
+                 2       0.59016272     2.1383D-03       no
+                 3       0.62907280     1.8586D-03       no
+                 4       0.72001115     1.7104D-03       no
+                 5       0.78812780     1.1798D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             6. SOPPA(CCSD)  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.36832353     1.3843D-04       no
+                 2       0.59016132     7.3429D-04       no
+                 3       0.62907177     5.8270D-04       no
+                 4       0.72001052     1.0658D-03       no
+                 5       0.78805786     7.1636D-03       no
+            --------------------------------------------------
+
+  ==================================================================
+             7. SOPPA(CCSD)  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.36832353     2.7798D-05      yes
+                 2       0.59016118     2.2532D-04       no
+                 3       0.62907170     1.5515D-04       no
+                 4       0.72001024     2.8573D-04       no
+                 5       0.78803894     3.6099D-03       no
+            --------------------------------------------------
+
+  ==================================================================
+             8. SOPPA(CCSD)  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.36832353     1.7262D-05      yes
+                 2       0.59016117     5.8615D-05      yes
+                 3       0.62907169     4.4367D-05      yes
+                 4       0.72001022     1.6955D-04       no
+                 5       0.78803483     1.4732D-03       no
+            --------------------------------------------------
+
+  ==================================================================
+             9. SOPPA(CCSD)  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.36832353     1.6855D-05      yes
+                 2       0.59016117     5.3025D-05      yes
+                 3       0.62907169     3.9289D-05      yes
+                 4       0.72001022     6.5375D-05      yes
+                 5       0.78803427     6.3287D-04       no
+            --------------------------------------------------
+
+  ==================================================================
+            10. SOPPA(CCSD)  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.36832353     1.6675D-05      yes
+                 2       0.59016117     5.1710D-05      yes
+                 3       0.62907169     3.7806D-05      yes
+                 4       0.72001022     6.5128D-05      yes
+                 5       0.78803419     2.2557D-04       no
+            --------------------------------------------------
+
+  ==================================================================
+            11. SOPPA(CCSD)  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.36832353     1.6555D-05      yes
+                 2       0.59016117     5.0249D-05      yes
+                 3       0.62907169     3.6051D-05      yes
+                 4       0.72001022     6.5114D-05      yes
+                 5       0.78803418     1.3154D-04       no
+            --------------------------------------------------
+
+  ==================================================================
+            12. SOPPA(CCSD)  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.36832353     1.6556D-05      yes
+                 2       0.59016117     5.0860D-05      yes
+                 3       0.62907169     3.6698D-05      yes
+                 4       0.72001022     6.6167D-05      yes
+                 5       0.78803418     1.2713D-04       no
+            --------------------------------------------------
+
+  ==================================================================
+            13. SOPPA(CCSD)  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.36832353     1.6485D-05      yes
+                 2       0.59016117     5.0820D-05      yes
+                 3       0.62907169     3.6653D-05      yes
+                 4       0.72001022     6.5806D-05      yes
+                 5       0.78803418     9.7022D-05      yes
+            --------------------------------------------------
+
+ -------------------------------------------------------------
+ Iterations stopped since: 
+ -------------------------
+ All of the excitations are converged.
+ -------------------------------------------------------------
+
+
+ --------------------------------------------------------------
+ Excitation symmetry  1, state no.  1
+
+ SOPPA(CCSD) excitation energy :  0.36832353     au
+                                   10.022593     eV
+                                   80837.670     cm-1
+                                   967.03328     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  93.90 + -0.09  =  93.81 %
+ 2p-2h + 2h-2p excitation weight:   6.19 + -0.00  =   6.19 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   1   |   1       3     |   -0.968840  |
+ |-----------------------------------------------------|
+ |    exci. | 1 1 1 1 |   2   1   3   3 |    0.124028  |
+ |    exci. | 2 1 2 1 |   1   1   1   3 |    0.115295  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  1, state no.  2
+
+ SOPPA(CCSD) excitation energy :  0.59016117     au
+                                   16.059102     eV
+                                   129525.40     cm-1
+                                   1549.4679     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  95.43 + -0.02  =  95.41 %
+ 2p-2h + 2h-2p excitation weight:   4.59 + -0.00  =   4.59 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 2   2   |   1       1     |   -0.618442  |
+ |    exci. | 3   3   |   1       1     |    0.755803  |
+ |    exci. | 3   3   |   3       1     |    0.140707  |
+ |-----------------------------------------------------|
+ |    exci. | 2 1 2 1 |   1   1   1   2 |    0.026270  |
+ |    exci. | 2 1 2 1 |   1   4   1   2 |   -0.024175  |
+ |    exci. | 2 1 2 1 |   1   1   1   3 |   -0.023329  |
+ |    exci. | 2 1 2 1 |   1   2   1   3 |    0.052689  |
+ |    exci. | 2 1 2 1 |   1   3   1   3 |    0.027128  |
+ |    exci. | 3 1 3 1 |   1   1   1   2 |   -0.036802  |
+ |    exci. | 3 1 3 1 |   1   4   1   2 |    0.029609  |
+ |    exci. | 3 1 3 1 |   1   1   1   3 |    0.036538  |
+ |    exci. | 3 1 3 1 |   1   2   1   3 |   -0.062891  |
+ |    exci. | 3 1 3 1 |   1   3   1   3 |   -0.026586  |
+ |    exci. | 2 2 2 2 |   1   1   1   1 |    0.080841  |
+ |    exci. | 3 2 3 2 |   1   1   1   1 |   -0.035777  |
+ |    exci. | 3 2 3 2 |   3   1   1   1 |    0.059750  |
+ |    exci. | 3 2 3 2 |   5   1   1   1 |   -0.027216  |
+ |    exci. | 3 2 3 2 |   1   3   1   1 |   -0.034264  |
+ |    exci. | 3 3 3 3 |   1   1   1   1 |   -0.070972  |
+ |    exci. | 3 3 3 3 |   3   1   1   1 |   -0.048569  |
+ |    exci. | 3 3 3 3 |   4   1   1   1 |   -0.022524  |
+ |    exci. | 2 2 1 1 |   2   1   3   2 |   -0.021736  |
+ |    exci. | 4 2 3 1 |   1   1   1   2 |   -0.024036  |
+ |    exci. | 1 1 2 2 |   3   1   1   1 |    0.020442  |
+ |    exci. | 3 3 1 1 |   2   1   3   2 |    0.025006  |
+ |    exci. | 3 3 1 1 |   3   1   3   2 |   -0.021696  |
+ |    exci. | 3 3 1 1 |   4   1   3   2 |    0.024404  |
+ |    exci. | 4 3 2 1 |   1   1   1   2 |    0.036626  |
+ |    exci. | 1 3 3 1 |   3   1   1   2 |   -0.022363  |
+ |    exci. | 1 1 3 3 |   3   1   1   1 |    0.028966  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+ Excitation symmetry  1, state no.  3
+
+ SOPPA(CCSD) excitation energy :  0.62907169     au
+                                   17.117911     eV
+                                   138065.28     cm-1
+                                   1651.6275     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  95.22 + -0.22  =  95.01 %
+ 2p-2h + 2h-2p excitation weight:   4.99 + -0.00  =   4.99 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   1   |   2       3     |    0.548770  |
+ |    exci. | 1   1   |   3       3     |    0.117613  |
+ |    exci. | 2   2   |   1       1     |   -0.630680  |
+ |    exci. | 3   3   |   1       1     |   -0.503585  |
+ |-----------------------------------------------------|
+ |    exci. | 3 2 3 2 |   1   1   1   1 |    0.103141  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  1, state no.  4
+
+ SOPPA(CCSD) excitation energy :  0.72001022     au
+                                   19.592475     eV
+                                   158023.98     cm-1
+                                   1890.3865     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  93.74 + -0.59  =  93.15 %
+ 2p-2h + 2h-2p excitation weight:   6.86 + -0.01  =   6.85 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   1   |   2       3     |   -0.755193  |
+ |    exci. | 1   1   |   3       3     |    0.404410  |
+ |    exci. | 2   2   |   1       1     |   -0.332604  |
+ |    exci. | 3   3   |   1       1     |   -0.297561  |
+ |    exci. | 3   3   |   3       1     |    0.118761  |
+ |-----------------------------------------------------|
+ |    exci. | 2 1 2 1 |   1   2   1   3 |    0.123349  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  1, state no.  5
+
+ SOPPA(CCSD) excitation energy :  0.78803418     au
+                                   21.443501     eV
+                                   172953.51     cm-1
+                                   2068.9834     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  94.80 + -0.51  =  94.28 %
+ 2p-2h + 2h-2p excitation weight:   5.72 + -0.00  =   5.72 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   1   |   2       3     |    0.255447  |
+ |    exci. | 1   1   |   3       3     |    0.864908  |
+ |    exci. | 2   2   |   1       1     |    0.207766  |
+ |    exci. | 3   3   |   1       1     |    0.219344  |
+ |    exci. | 3   3   |   3       1     |   -0.196021  |
+ |-----------------------------------------------------|
+ |    exci. | 1 1 1 1 |   1   1   3   2 |   -0.020326  |
+ |    exci. | 1 1 1 1 |   3   2   3   2 |   -0.021868  |
+ |    exci. | 1 1 1 1 |   5   3   3   2 |   -0.036686  |
+ |    exci. | 1 1 1 1 |   3   4   3   2 |    0.025008  |
+ |    exci. | 1 1 1 1 |   2   1   3   3 |   -0.038534  |
+ |    exci. | 1 1 1 1 |   3   1   3   3 |    0.029692  |
+ |    exci. | 1 1 1 1 |   2   2   3   3 |   -0.022811  |
+ |    exci. | 1 1 1 1 |   3   2   3   3 |   -0.077969  |
+ |    exci. | 1 1 1 1 |   3   3   3   3 |   -0.054149  |
+ |    exci. | 1 1 1 1 |   5   3   3   3 |   -0.049830  |
+ |    exci. | 2 1 2 1 |   2   3   1   2 |    0.033854  |
+ |    exci. | 2 1 2 1 |   1   1   1   3 |   -0.037634  |
+ |    exci. | 2 1 2 1 |   1   2   1   3 |   -0.041078  |
+ |    exci. | 2 1 2 1 |   1   3   1   3 |   -0.082984  |
+ |    exci. | 2 1 2 1 |   2   3   1   3 |    0.044240  |
+ |    exci. | 2 1 2 1 |   3   3   1   3 |   -0.026620  |
+ |    exci. | 3 1 3 1 |   2   3   1   2 |    0.025278  |
+ |    exci. | 3 1 3 1 |   3   3   1   2 |   -0.027303  |
+ |    exci. | 3 1 3 1 |   4   3   1   2 |    0.022885  |
+ |    exci. | 3 1 3 1 |   1   2   1   3 |   -0.040529  |
+ |    exci. | 3 1 3 1 |   1   3   1   3 |   -0.072226  |
+ |    exci. | 3 1 3 1 |   2   3   1   3 |    0.026498  |
+ |    exci. | 3 1 3 1 |   3   3   1   3 |   -0.073010  |
+ |    exci. | 3 1 3 1 |   5   3   1   3 |    0.026417  |
+ |    exci. | 2 2 2 2 |   1   1   1   1 |   -0.034468  |
+ |    exci. | 3 2 3 2 |   1   1   1   1 |   -0.057166  |
+ |    exci. | 3 3 3 3 |   1   1   1   1 |   -0.033258  |
+ |    exci. | 1 2 2 1 |   3   2   1   3 |    0.024557  |
+ |    exci. | 3 3 1 1 |   2   2   3   3 |   -0.023008  |
+ |    exci. | 3 3 1 1 |   3   2   3   3 |    0.032866  |
+ |    exci. | 1 3 3 1 |   1   2   1   3 |   -0.023392  |
+ |    exci. | 1 3 3 1 |   3   2   1   3 |    0.021319  |
+ |    exci. | 1 3 3 1 |   3   3   1   3 |   -0.035611  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+
+ ZDIPLEN  SOPPA(CCSD) transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1    -0.68284 +   -0.03800 +    0.03231 +    0.00067 =   -0.68787
+   2    -0.37368 +   -0.01360 +    0.01959 +    0.00032 =   -0.36737
+   3     0.34697 +    0.01580 +   -0.02928 +   -0.00054 =    0.33295
+   4    -0.02433 +    0.00506 +   -0.03910 +   -0.00056 =   -0.05894
+   5    -0.00830 +   -0.00032 +    0.03903 +    0.00061 =    0.03103
+ ===================================================================
+
+ ZDIPVEL  SOPPA(CCSD) transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1     0.26315 +    0.01013 +    0.01649 +    0.00031 =    0.29009
+   2     0.19151 +    0.00663 +    0.02086 +    0.00012 =    0.21912
+   3    -0.20532 +   -0.00710 +   -0.01353 +   -0.00034 =   -0.22628
+   4     0.05194 +   -0.00176 +   -0.03052 +   -0.00044 =    0.01922
+   5    -0.02244 +    0.00121 +    0.02090 +    0.00039 =    0.00007
+ ===================================================================
+
+ XXSECMOM SOPPA(CCSD) transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1    -0.02499 +    0.00582 +   -0.04074 +   -0.00096 =   -0.06087
+   2    -1.08472 +   -0.05052 +   -0.00007 +   -0.00009 =   -1.13540
+   3    -1.32059 +   -0.06917 +    0.08141 +    0.00165 =   -1.30671
+   4    -1.39032 +   -0.08776 +    0.16133 +    0.00313 =   -1.31362
+   5     0.78132 +    0.04265 +   -0.13932 +   -0.00259 =    0.68206
+ ===================================================================
+
+ YYSECMOM SOPPA(CCSD) transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1     0.50809 +    0.03272 +   -0.07480 +   -0.00163 =    0.46438
+   2     1.12367 +    0.03990 +    0.00359 +   -0.00004 =    1.16712
+   3    -1.10092 +   -0.06147 +    0.11633 +    0.00224 =   -1.04381
+   4    -0.71657 +   -0.05874 +    0.18258 +    0.00349 =   -0.58924
+   5     1.05392 +    0.06164 +   -0.18496 +   -0.00327 =    0.92734
+ ===================================================================
+
+ ZZSECMOM SOPPA(CCSD) transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1     0.49494 +    0.02859 +   -0.05066 +   -0.00114 =    0.47173
+   2     0.22805 +    0.00529 +   -0.00201 +   -0.00017 =    0.23116
+   3     0.27470 +   -0.00585 +    0.10998 +    0.00214 =    0.38097
+   4    -2.02353 +   -0.11972 +    0.17682 +    0.00340 =   -1.96303
+   5     0.80932 +    0.03485 +   -0.14820 +   -0.00271 =    0.69326
+ ===================================================================
+
+  ******************************************************************
+           SOPPA(CCSD)  iterations, Excitation symmetry 2
+  ******************************************************************
+
+  ==================================================================
+             1. SOPPA(CCSD)  iteration, Excitation symmetry 2
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.39107891     6.8851D-01       no
+                 2       0.68950658     6.5443D-01       no
+                 3       0.77325441     6.4438D-01       no
+                 4       0.82341048     7.6759D-01       no
+                 5       1.13772242     7.3928D-01       no
+                 6       1.36347906     5.3312D-02       no
+                 7       1.47312412     1.5005D-02       no
+                 8       1.56178719     7.9342D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             2. SOPPA(CCSD)  iteration, Excitation symmetry 2
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.27667940     2.5233D-02       no
+                 2       0.58425653     5.0467D-02       no
+                 3       0.67682480     5.5303D-02       no
+                 4       0.68408308     6.5541D-02       no
+                 5       1.02472032     6.1615D-02       no
+                 6       1.36231708     1.2733D-02       no
+                 7       1.47284325     1.7707D-02       no
+                 8       1.55648114     3.4564D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             3. SOPPA(CCSD)  iteration, Excitation symmetry 2
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.27660000     3.0377D-03       no
+                 2       0.58385460     7.8567D-03       no
+                 3       0.67588049     2.0484D-02       no
+                 4       0.68315749     1.5214D-02       no
+                 5       1.02402487     1.6711D-02       no
+                 6       1.36081428     1.7666D-01       no
+                 7       1.37289054     4.9239D-01       no
+                 8       1.47317104     3.5808D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             4. SOPPA(CCSD)  iteration, Excitation symmetry 2
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.27659862     3.9586D-04       no
+                 2       0.58383632     8.6477D-04       no
+                 3       0.67580389     2.8875D-03       no
+                 4       0.68311877     1.4500D-03       no
+                 5       1.02393032     2.6200D-03       no
+                 6       1.25958754     1.1717D-01       no
+                 7       1.36231829     7.1724D-03      yes
+                 8       1.42707212     6.3018D-01       no
+            --------------------------------------------------
+
+  ==================================================================
+             5. SOPPA(CCSD)  iteration, Excitation symmetry 2
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.27659860     3.9460D-05      yes
+                 2       0.58383621     1.0168D-04       no
+                 3       0.67580282     8.5549D-04       no
+                 4       0.68311848     1.6923D-04       no
+                 5       1.02392878     6.6946D-04       no
+                 6       1.25544160     3.9313D-02       no
+                 7       1.36228548     7.5571D-03      yes
+                 8       1.37370980     1.0575D-01       no
+            --------------------------------------------------
+
+  ==================================================================
+             6. SOPPA(CCSD)  iteration, Excitation symmetry 2
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.27659860     3.3997D-05      yes
+                 2       0.58383621     1.3530D-05      yes
+                 3       0.67580272     5.8964D-04       no
+                 4       0.68311848     4.0210D-05      yes
+                 5       1.02392873     3.9536D-04       no
+                 6       1.25479357     1.3368D-02       no
+                 7       1.36227231     3.6979D-03      yes
+                 8       1.37173507     3.2787D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             7. SOPPA(CCSD)  iteration, Excitation symmetry 2
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.27659860     2.9400D-05      yes
+                 2       0.58383621     1.1031D-05      yes
+                 3       0.67580268     3.1579D-04       no
+                 4       0.68311848     2.7514D-05      yes
+                 5       1.02392871     3.0269D-04       no
+                 6       1.25472509     8.0893D-03      yes
+                 7       1.36227107     2.0871D-03      yes
+                 8       1.37136637     2.2133D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             8. SOPPA(CCSD)  iteration, Excitation symmetry 2
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.27659860     2.8802D-05      yes
+                 2       0.58383621     9.3174D-06      yes
+                 3       0.67580268     3.1715D-04       no
+                 4       0.68311848     2.7711D-05      yes
+                 5       1.02392870     1.1209D-04       no
+                 6       1.25471405     6.4136D-03      yes
+                 7       1.36227102     2.0907D-03      yes
+                 8       1.37122037     1.1991D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             9. SOPPA(CCSD)  iteration, Excitation symmetry 2
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.27659860     2.7509D-05      yes
+                 2       0.58383621     9.5204D-06      yes
+                 3       0.67580267     1.5275D-04       no
+                 4       0.68311848     1.8146D-05      yes
+                 5       1.02392870     8.3358D-05      yes
+                 6       1.25470482     3.8190D-03      yes
+                 7       1.36227090     2.2321D-03      yes
+                 8       1.37116311     7.4536D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+            10. SOPPA(CCSD)  iteration, Excitation symmetry 2
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.27659860     2.7415D-05      yes
+                 2       0.58383621     9.4706D-06      yes
+                 3       0.67580267     1.4157D-04       no
+                 4       0.68311848     1.7947D-05      yes
+                 5       1.02392870     8.3205D-05      yes
+                 6       1.25470480     3.8211D-03      yes
+                 7       1.36227090     2.2309D-03      yes
+                 8       1.37116309     7.4927D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+            11. SOPPA(CCSD)  iteration, Excitation symmetry 2
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.27659860     2.7403D-05      yes
+                 2       0.58383621     9.9111D-06      yes
+                 3       0.67580266     1.0470D-04       no
+                 4       0.68311848     1.6499D-05      yes
+                 5       1.02392870     8.4138D-05      yes
+                 6       1.25470476     3.8602D-03      yes
+                 7       1.36227090     2.2287D-03      yes
+                 8       1.37116298     7.3732D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+            12. SOPPA(CCSD)  iteration, Excitation symmetry 2
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.27659860     2.7474D-05      yes
+                 2       0.58383621     1.0071D-05      yes
+                 3       0.67580266     8.0618D-05      yes
+                 4       0.68311848     1.5622D-05      yes
+                 5       1.02392870     8.3938D-05      yes
+                 6       1.25470475     3.8424D-03      yes
+                 7       1.36227090     2.2271D-03      yes
+                 8       1.37116295     7.3978D-03      yes
+            --------------------------------------------------
+
+ -------------------------------------------------------------
+ Iterations stopped since: 
+ -------------------------
+ All of the excitations are converged.
+ -------------------------------------------------------------
+
+
+ --------------------------------------------------------------
+ Excitation symmetry  2, state no.  1
+
+ SOPPA(CCSD) excitation energy :  0.27659860     au
+                                   7.5266308     eV
+                                   60706.375     cm-1
+                                   726.20951     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  93.99 + -0.05  =  93.95 %
+ 2p-2h + 2h-2p excitation weight:   6.05 + -0.00  =   6.05 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   2   |   1       1     |    0.969779  |
+ |    exci. | 1   2   |   3       1     |   -0.119299  |
+ |-----------------------------------------------------|
+ |    exci. | 2 1 1 1 |   1   2   3   3 |   -0.147666  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  2, state no.  2
+
+ SOPPA(CCSD) excitation energy :  0.58383621     au
+                                   15.886991     eV
+                                   128137.24     cm-1
+                                   1532.8617     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  95.43 + -0.01  =  95.42 %
+ 2p-2h + 2h-2p excitation weight:   4.58 + -0.00  =   4.58 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   2   |   2       1     |    0.979878  |
+ |-----------------------------------------------------|
+ |    exci. | 2 1 1 1 |   5   4   1   3 |   -0.132375  |
+ |    exci. | 1 1 2 1 |   8   3   1   3 |   -0.103134  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  2, state no.  3
+
+ SOPPA(CCSD) excitation energy :  0.67580266     au
+                                   18.389526     eV
+                                   148321.54     cm-1
+                                   1774.3196     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  95.75 + -0.01  =  95.74 %
+ 2p-2h + 2h-2p excitation weight:   4.26 + -0.00  =   4.26 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   2   |   3       1     |   -0.391039  |
+ |    exci. | 2   1   |   1       3     |   -0.906168  |
+ |-----------------------------------------------------|
+ |    exci. | 1 1 2 1 |   7   7   1   2 |    0.105617  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  2, state no.  4
+
+ SOPPA(CCSD) excitation energy :  0.68311848     au
+                                   18.588599     eV
+                                   149927.18     cm-1
+                                   1793.5273     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  94.54 + -0.13  =  94.41 %
+ 2p-2h + 2h-2p excitation weight:   5.59 + -0.00  =   5.59 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   2   |   3       1     |    0.886502  |
+ |    exci. | 2   1   |   1       3     |   -0.398281  |
+ |-----------------------------------------------------|
+ |    exci. | 1 1 2 1 |  15   5   1   3 |   -0.103763  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  2, state no.  5
+
+ SOPPA(CCSD) excitation energy :   1.0239287     au
+                                   27.862517     eV
+                                   224726.37     cm-1
+                                   2688.3244     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  94.79 + -0.04  =  94.75 %
+ 2p-2h + 2h-2p excitation weight:   5.25 + -0.00  =   5.25 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   2   |   4       1     |    0.978676  |
+ |-----------------------------------------------------|
+ |    exci. | 1 1 2 1 |   7   7   1   3 |   -0.124049  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  2, state no.  6
+
+ SOPPA(CCSD) excitation energy :   1.2547047     au
+                                   34.142253     eV
+                                   275375.86     cm-1
+                                   3294.2268     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  97.14 + -0.03  =  97.10 %
+ 2p-2h + 2h-2p excitation weight:   2.90 + -0.00  =   2.90 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   2   |   5       1     |   -0.983427  |
+ |    exci. | 2   1   |   2       3     |    0.104948  |
+ |-----------------------------------------------------|
+ |    exci. | 2 1 1 1 |   1   2   3   3 |    0.020959  |
+ |    exci. | 2 1 1 1 |   5   4   1   3 |   -0.025081  |
+ |    exci. | 2 1 1 1 |   5   5   1   3 |   -0.029944  |
+ |    exci. | 2 1 1 1 |   2   9   1   3 |    0.042465  |
+ |    exci. | 2 1 1 1 |   3   9   1   3 |    0.024028  |
+ |    exci. | 2 1 1 1 |   6   9   1   3 |   -0.020391  |
+ |    exci. | 2 1 1 1 |   1   9   2   3 |   -0.030643  |
+ |    exci. | 2 1 1 1 |   5   9   3   3 |    0.081024  |
+ |    exci. | 2 1 1 1 |   5  10   3   3 |   -0.038605  |
+ |    exci. | 1 1 2 1 |   7   8   1   2 |   -0.034088  |
+ |    exci. | 1 1 2 1 |  15   1   1   3 |    0.035542  |
+ |    exci. | 1 1 2 1 |   8   3   1   3 |   -0.034221  |
+ |    exci. | 1 1 2 1 |   7   7   1   3 |   -0.024396  |
+ |    exci. | 1 1 2 1 |   3   8   1   3 |    0.029099  |
+ |    exci. | 1 1 2 1 |   5   8   1   3 |   -0.031568  |
+ |    exci. | 1 1 2 1 |   6   8   1   3 |   -0.025217  |
+ |    exci. | 1 1 2 1 |   7   8   1   3 |   -0.029152  |
+ |    exci. | 1 1 2 1 |   8   8   1   3 |   -0.021967  |
+ |    exci. | 1 1 2 1 |   1   9   1   3 |    0.047451  |
+ |    exci. | 1 1 2 1 |   5   9   1   3 |    0.036639  |
+ |    exci. | 1 1 2 1 |   7   9   1   3 |    0.053106  |
+ |    exci. | 1 1 2 1 |   9   9   1   3 |   -0.026896  |
+ |    exci. | 2 3 1 3 |   1   8   1   1 |   -0.032556  |
+ |    exci. | 3 3 2 1 |   9   7   1   2 |    0.021811  |
+ |    exci. | 3 3 2 1 |   7   6   1   3 |    0.020512  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+ Excitation symmetry  2, state no.  7
+
+ SOPPA(CCSD) excitation energy :   1.3622709     au
+                                   37.069277     eV
+                                   298983.90     cm-1
+                                   3576.6417     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:   0.79 + -0.00  =   0.79 %
+ 2p-2h + 2h-2p excitation weight:  99.21 + -0.00  =  99.21 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   2   |   1       1     |    0.035470  |
+ |    exci. | 1   2   |   4       1     |    0.033898  |
+ |    exci. | 1   2   |   5       1     |   -0.022790  |
+ |    exci. | 2   1   |   1       2     |   -0.057793  |
+ |    exci. | 2   1   |   2       3     |   -0.033473  |
+ |-----------------------------------------------------|
+ |    exci. | 1 1 2 1 |  15   1   1   3 |   -1.407237  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.020000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  2, state no.  8
+
+ SOPPA(CCSD) excitation energy :   1.3711629     au
+                                   37.311242     eV
+                                   300935.48     cm-1
+                                   3599.9878     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  91.92 + -0.01  =  91.91 %
+ 2p-2h + 2h-2p excitation weight:   8.09 + -0.00  =   8.09 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 2   1   |   1       2     |   -0.935638  |
+ |    exci. | 2   1   |   2       3     |   -0.222354  |
+ |-----------------------------------------------------|
+ |    exci. | 2 1 1 1 |   1  13   1   1 |    0.143642  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+ XDIPLEN  SOPPA(CCSD) transition moments for excitation symmetry  2
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1     0.47363 +    0.02799 +    0.00646 +   -0.00012 =    0.50796
+   2     0.07378 +    0.00177 +    0.00648 +    0.00002 =    0.08205
+   3    -0.22466 +   -0.00966 +    0.00824 +    0.00010 =   -0.22598
+   4     0.48403 +    0.03090 +   -0.04844 +   -0.00043 =    0.46606
+   5    -0.66901 +   -0.01909 +    0.03089 +    0.00043 =   -0.65678
+   6    -0.32467 +   -0.01056 +    0.02251 +    0.00022 =   -0.31249
+   7    -0.04367 +   -0.00970 +    0.00224 +    0.00003 =   -0.05110
+   8    -0.36620 +   -0.00085 +   -0.00166 +    0.00000 =   -0.36871
+ ===================================================================
+
+ XDIPVEL  SOPPA(CCSD) transition moments for excitation symmetry  2
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1    -0.19649 +   -0.00585 +    0.02133 +   -0.00002 =   -0.18103
+   2    -0.01926 +   -0.00011 +    0.01351 +    0.00001 =   -0.00585
+   3     0.15766 +    0.00391 +    0.01067 +    0.00004 =    0.17229
+   4    -0.19787 +   -0.00716 +   -0.06887 +   -0.00014 =   -0.27404
+   5     0.53705 +    0.00403 +    0.02123 +    0.00012 =    0.56244
+   6     0.29857 +    0.00136 +    0.02663 +    0.00005 =    0.32661
+   7     0.05993 +    0.00402 +    0.00219 +    0.00001 =    0.06614
+   8     0.47194 +    0.00681 +   -0.00797 +    0.00003 =    0.47081
+ ===================================================================
+
+ YANGMOM  SOPPA(CCSD) transition moments for excitation symmetry  2
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1    -0.11789 +   -0.00598 +   -0.00198 +   -0.00005 =   -0.12590
+   2    -0.02220 +   -0.00329 +   -0.00048 +    0.00000 =   -0.02597
+   3    -0.13140 +   -0.00449 +    0.00214 +    0.00003 =   -0.13373
+   4     0.16686 +    0.00696 +   -0.00201 +   -0.00005 =    0.17177
+   5    -0.03914 +   -0.00132 +    0.00544 +    0.00008 =   -0.03494
+   6    -0.05477 +   -0.00131 +    0.00141 +    0.00005 =   -0.05463
+   7    -0.00555 +    0.00115 +    0.00017 +    0.00000 =   -0.00423
+   8     0.02185 +   -0.00179 +    0.00035 +   -0.00004 =    0.02037
+ ===================================================================
+
+ XZSECMOM SOPPA(CCSD) transition moments for excitation symmetry  2
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1    -0.15888 +   -0.00630 +   -0.00231 +   -0.00008 =   -0.16757
+   2     0.78931 +    0.03578 +    0.00418 +    0.00006 =    0.82934
+   3    -0.60940 +   -0.01814 +   -0.00655 +   -0.00013 =   -0.63422
+   4    -0.44676 +   -0.02759 +    0.00232 +    0.00011 =   -0.47193
+   5     0.02120 +    0.00332 +   -0.00333 +   -0.00008 =    0.02111
+   6     0.06404 +    0.00765 +    0.00116 +    0.00000 =    0.07286
+   7    -0.02252 +   -0.01107 +   -0.00015 +   -0.00000 =   -0.03375
+   8     0.07864 +   -0.00668 +   -0.00140 +   -0.00008 =    0.07048
+ ===================================================================
+
+  ******************************************************************
+           SOPPA(CCSD)  iterations, Excitation symmetry 3
+  ******************************************************************
+
+  ==================================================================
+             1. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.56771471     6.7909D-01       no
+                 2       0.62744661     6.1789D-01       no
+                 3       0.83189213     7.0000D-01       no
+                 4       0.92478943     6.0583D-01       no
+                 5       0.96320496     7.2109D-01       no
+                 6       1.34099545     2.0048D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             2. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44377611     4.7293D-02       no
+                 2       0.52087710     7.5369D-02       no
+                 3       0.70113949     7.7420D-02       no
+                 4       0.83235186     5.9160D-02       no
+                 5       0.83833979     8.9209D-02       no
+                 6       1.29259517     7.4332D-01       no
+            --------------------------------------------------
+
+  ==================================================================
+             3. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44337148     8.8076D-03       no
+                 2       0.51920996     2.3964D-02       no
+                 3       0.69900995     2.9182D-02       no
+                 4       0.83120032     2.7287D-02       no
+                 5       0.83570219     3.1986D-02       no
+                 6       1.04610730     4.2618D-01       no
+            --------------------------------------------------
+
+  ==================================================================
+             4. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44335254     1.4201D-03       no
+                 2       0.51906406     2.8347D-03       no
+                 3       0.69871597     6.3069D-03       no
+                 4       0.83074744     1.0904D-02       no
+                 5       0.83525814     1.0248D-02       no
+                 6       0.95409802     1.4754D-01       no
+            --------------------------------------------------
+
+  ==================================================================
+             5. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44335201     3.2510D-04       no
+                 2       0.51906210     5.5279D-04       no
+                 3       0.69870453     1.5419D-03       no
+                 4       0.83071323     3.8425D-03       no
+                 5       0.83523201     3.7753D-03       no
+                 6       0.94703955     4.5603D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             6. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44335198     6.6449D-05      yes
+                 2       0.51906203     1.2825D-04       no
+                 3       0.69870374     6.0660D-04       no
+                 4       0.83070885     2.0219D-03       no
+                 5       0.83522829     1.9088D-03       no
+                 6       0.94628494     1.9675D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             7. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44335198     2.3735D-05      yes
+                 2       0.51906202     2.2112D-05      yes
+                 3       0.69870367     1.3678D-04       no
+                 4       0.83070812     1.1065D-03       no
+                 5       0.83522765     8.5978D-04       no
+                 6       0.94619583     5.3418D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+             8. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44335198     2.1684D-05      yes
+                 2       0.51906202     1.5650D-05      yes
+                 3       0.69870367     3.9856D-05      yes
+                 4       0.83070799     7.3910D-04       no
+                 5       0.83522757     5.4275D-04       no
+                 6       0.94619537     4.8226D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+             9. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44335198     2.1744D-05      yes
+                 2       0.51906202     1.5624D-05      yes
+                 3       0.69870367     3.9762D-05      yes
+                 4       0.83070795     6.6900D-04       no
+                 5       0.83522754     4.4029D-04       no
+                 6       0.94619486     4.7164D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+            10. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44335198     2.1818D-05      yes
+                 2       0.51906202     1.5538D-05      yes
+                 3       0.69870367     3.8877D-05      yes
+                 4       0.83070789     4.9853D-04       no
+                 5       0.83522751     3.0368D-04       no
+                 6       0.94619480     4.6031D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+            11. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44335198     2.1953D-05      yes
+                 2       0.51906202     1.5169D-05      yes
+                 3       0.69870367     3.6841D-05      yes
+                 4       0.83070786     3.3511D-04       no
+                 5       0.83522750     1.9051D-04       no
+                 6       0.94619478     4.6104D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+            12. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44335198     2.1988D-05      yes
+                 2       0.51906202     1.4896D-05      yes
+                 3       0.69870367     3.6977D-05      yes
+                 4       0.83070784     2.3376D-04       no
+                 5       0.83522749     1.2363D-04       no
+                 6       0.94619476     4.6226D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+            13. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44335198     2.1959D-05      yes
+                 2       0.51906202     1.4319D-05      yes
+                 3       0.69870367     3.4601D-05      yes
+                 4       0.83070783     1.7235D-04       no
+                 5       0.83522749     8.8112D-05      yes
+                 6       0.94619471     4.6381D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+            14. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44335198     2.1881D-05      yes
+                 2       0.51906202     1.4062D-05      yes
+                 3       0.69870367     3.3586D-05      yes
+                 4       0.83070783     1.5555D-04       no
+                 5       0.83522748     7.9297D-05      yes
+                 6       0.94619470     4.6840D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+            15. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44335198     2.1885D-05      yes
+                 2       0.51906202     1.4058D-05      yes
+                 3       0.69870367     3.4472D-05      yes
+                 4       0.83070782     1.5476D-04       no
+                 5       0.83522748     7.8937D-05      yes
+                 6       0.94619469     4.6845D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+            16. SOPPA(CCSD)  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.44335198     2.1863D-05      yes
+                 2       0.51906202     1.4130D-05      yes
+                 3       0.69870367     3.2478D-05      yes
+                 4       0.83070782     8.1884D-05      yes
+                 5       0.83522748     4.2414D-05      yes
+                 6       0.94619462     4.7453D-03      yes
+            --------------------------------------------------
+
+ -------------------------------------------------------------
+ Iterations stopped since: 
+ -------------------------
+ All of the excitations are converged.
+ -------------------------------------------------------------
+
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  1
+
+ SOPPA(CCSD) excitation energy :  0.44335198     au
+                                   12.064221     eV
+                                   97304.512     cm-1
+                                   1164.0204     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  94.00 + -0.08  =  93.93 %
+ 2p-2h + 2h-2p excitation weight:   6.07 + -0.00  =   6.07 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 3   1   |   1       3     |   -0.965214  |
+ |    exci. | 3   1   |   3       3     |   -0.163701  |
+ |-----------------------------------------------------|
+ |    exci. | 3 1 1 1 |   8  12   2   2 |    0.113360  |
+ |    exci. | 1 1 3 1 |   1  12   1   2 |    0.117598  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  2
+
+ SOPPA(CCSD) excitation energy :  0.51906202     au
+                                   14.124396     eV
+                                   113920.94     cm-1
+                                   1362.7971     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  95.40 + -0.06  =  95.34 %
+ 2p-2h + 2h-2p excitation weight:   4.66 + -0.00  =   4.66 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   3   |   1       1     |    0.977345  |
+ |    exci. | 1   3   |   3       1     |   -0.109350  |
+ |-----------------------------------------------------|
+ |    exci. | 1 1 3 1 |   1  12   1   3 |   -0.101390  |
+ |    exci. | 1 1 3 1 |   7  12   1   3 |   -0.109918  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  3
+
+ SOPPA(CCSD) excitation energy :  0.69870367     au
+                                   19.012694     eV
+                                   153347.73     cm-1
+                                   1834.4462     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  94.51 + -0.14  =  94.37 %
+ 2p-2h + 2h-2p excitation weight:   5.63 + -0.00  =   5.63 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   3   |   3       1     |    0.102997  |
+ |    exci. | 3   1   |   2       3     |    0.967472  |
+ |-----------------------------------------------------|
+ |    exci. | 3 1 1 1 |   1  14   1   2 |   -0.112044  |
+ |    exci. | 1 1 3 1 |   2  13   1   2 |   -0.125792  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  4
+
+ SOPPA(CCSD) excitation energy :  0.83070782     au
+                                   22.604710     eV
+                                   182319.29     cm-1
+                                   2181.0230     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  96.26 + -0.02  =  96.24 %
+ 2p-2h + 2h-2p excitation weight:   3.76 + -0.00  =   3.76 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   3   |   2       1     |    0.974970  |
+ |    exci. | 1   3   |   3       1     |    0.142419  |
+ |-----------------------------------------------------|
+ |    exci. | 3 1 1 1 |   8  13   2   2 |    0.031634  |
+ |    exci. | 3 1 1 1 |   2  16   1   2 |    0.031456  |
+ |    exci. | 3 1 1 1 |   8   9   2   3 |    0.044715  |
+ |    exci. | 3 1 1 1 |   8  12   2   3 |   -0.021440  |
+ |    exci. | 3 1 1 1 |   1  12   3   3 |    0.020706  |
+ |    exci. | 3 1 1 1 |   7  13   2   3 |   -0.038776  |
+ |    exci. | 3 1 1 1 |  10  13   2   3 |    0.036697  |
+ |    exci. | 3 1 1 1 |   1  14   1   3 |   -0.086603  |
+ |    exci. | 3 1 1 1 |   2  14   1   3 |   -0.026868  |
+ |    exci. | 3 1 1 1 |   3  14   1   3 |   -0.030420  |
+ |    exci. | 3 1 1 1 |   7  14   1   3 |   -0.061172  |
+ |    exci. | 3 1 1 1 |   8  14   1   3 |   -0.041451  |
+ |    exci. | 3 1 1 1 |   9  14   1   3 |   -0.049578  |
+ |    exci. | 3 1 1 1 |  10  14   1   3 |   -0.029676  |
+ |    exci. | 1 1 3 1 |   2  14   1   2 |   -0.026179  |
+ |    exci. | 1 1 3 1 |   1  12   1   3 |   -0.020612  |
+ |    exci. | 1 1 3 1 |   8  12   1   3 |   -0.036069  |
+ |    exci. | 1 1 3 1 |   2  13   1   3 |   -0.087615  |
+ |    exci. | 1 1 3 1 |   5  13   1   3 |    0.029666  |
+ |    exci. | 1 1 3 1 |   7  13   1   3 |    0.022096  |
+ |    exci. | 1 1 3 1 |   2  14   1   3 |   -0.029796  |
+ |    exci. | 3 2 1 2 |   8   1   2   1 |    0.030202  |
+ |    exci. | 1 2 3 2 |   2   2   1   1 |   -0.023842  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  5
+
+ SOPPA(CCSD) excitation energy :  0.83522748     au
+                                   22.727696     eV
+                                   183311.24     cm-1
+                                   2192.8894     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  94.83 + -0.05  =  94.78 %
+ 2p-2h + 2h-2p excitation weight:   5.22 + -0.00  =   5.22 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   3   |   2       1     |    0.103840  |
+ |    exci. | 1   3   |   3       1     |   -0.116172  |
+ |    exci. | 3   1   |   1       3     |   -0.132750  |
+ |    exci. | 3   1   |   3       3     |    0.953779  |
+ |-----------------------------------------------------|
+ |    exci. | 3 1 1 1 |   2   2   1   2 |    0.036507  |
+ |    exci. | 3 1 1 1 |   8   2   1   2 |    0.022570  |
+ |    exci. | 3 1 1 1 |   9   2   1   2 |   -0.035080  |
+ |    exci. | 3 1 1 1 |  10   2   1   2 |    0.024606  |
+ |    exci. | 3 1 1 1 |   1  12   1   2 |    0.023441  |
+ |    exci. | 3 1 1 1 |   4  12   1   2 |   -0.021743  |
+ |    exci. | 3 1 1 1 |   7  12   2   2 |   -0.026420  |
+ |    exci. | 3 1 1 1 |   8  12   2   2 |    0.070918  |
+ |    exci. | 3 1 1 1 |   1  14   1   2 |   -0.025455  |
+ |    exci. | 3 1 1 1 |   8  14   1   2 |   -0.020682  |
+ |    exci. | 3 1 1 1 |   1  15   1   2 |    0.052686  |
+ |    exci. | 3 1 1 1 |   2  15   1   2 |   -0.063904  |
+ |    exci. | 3 1 1 1 |   3  15   1   2 |   -0.068483  |
+ |    exci. | 3 1 1 1 |   5  15   1   2 |   -0.037895  |
+ |    exci. | 3 1 1 1 |   7  15   1   2 |    0.021953  |
+ |    exci. | 3 1 1 1 |   7  15   2   2 |   -0.068702  |
+ |    exci. | 3 1 1 1 |   8  15   2   2 |    0.028101  |
+ |    exci. | 3 1 1 1 |   9  15   2   2 |   -0.023604  |
+ |    exci. | 3 1 1 1 |   3  15   3   2 |   -0.048295  |
+ |    exci. | 3 1 1 1 |   5  15   3   2 |   -0.058006  |
+ |    exci. | 3 1 1 1 |   1   2   1   3 |   -0.023279  |
+ |    exci. | 3 1 1 1 |   9   2   1   3 |   -0.021046  |
+ |    exci. | 3 1 1 1 |   3  15   1   3 |   -0.034593  |
+ |    exci. | 3 1 1 1 |   5  15   3   3 |    0.025952  |
+ |    exci. | 1 1 3 1 |   5   1   1   2 |   -0.042470  |
+ |    exci. | 1 1 3 1 |   1  12   1   2 |    0.071873  |
+ |    exci. | 1 1 3 1 |   3  12   1   2 |    0.022194  |
+ |    exci. | 1 1 3 1 |   7  12   1   2 |    0.060284  |
+ |    exci. | 1 1 3 1 |   9  12   1   2 |    0.043882  |
+ |    exci. | 1 1 3 1 |   1  13   1   2 |   -0.022496  |
+ |    exci. | 1 1 3 1 |   2  13   1   2 |   -0.039799  |
+ |    exci. | 1 1 3 1 |   3  13   1   2 |    0.023712  |
+ |    exci. | 1 1 3 1 |   4  13   1   2 |    0.025168  |
+ |    exci. | 1 1 3 1 |   1  14   1   2 |   -0.024285  |
+ |    exci. | 1 1 3 1 |   3  14   1   2 |    0.021822  |
+ |    exci. | 1 1 3 1 |   4  14   1   2 |    0.020342  |
+ |    exci. | 1 1 3 1 |   2   1   1   3 |   -0.020099  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  6
+
+ SOPPA(CCSD) excitation energy :  0.94619462     au
+                                   25.747265     eV
+                                   207665.71     cm-1
+                                   2484.2336     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  95.65 + -0.27  =  95.38 %
+ 2p-2h + 2h-2p excitation weight:   4.62 + -0.00  =   4.62 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   3   |   2       1     |   -0.128604  |
+ |    exci. | 1   3   |   3       1     |    0.955434  |
+ |    exci. | 3   1   |   3       3     |    0.136932  |
+ |    exci. | 4   2   |   1       1     |    0.114225  |
+ |-----------------------------------------------------|
+ |    exci. | 3 1 1 1 |   5  15   3   3 |   -0.110720  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+ YDIPLEN  SOPPA(CCSD) transition moments for excitation symmetry  3
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1     0.48972 +    0.02595 +   -0.04762 +   -0.00080 =    0.46724
+   2     0.82522 +    0.03246 +   -0.03746 +   -0.00082 =    0.81939
+   3     0.68029 +    0.03386 +   -0.06954 +   -0.00107 =    0.64354
+   4     0.20775 +    0.01253 +   -0.01604 +   -0.00028 =    0.20397
+   5    -0.02613 +    0.00885 +    0.03087 +    0.00044 =    0.01402
+   6    -0.82887 +   -0.02624 +    0.09538 +    0.00154 =   -0.75818
+ ===================================================================
+
+ YDIPVEL  SOPPA(CCSD) transition moments for excitation symmetry  3
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1    -0.16674 +   -0.00882 +   -0.04922 +   -0.00030 =   -0.22508
+   2    -0.40883 +   -0.01242 +   -0.02006 +   -0.00036 =   -0.44167
+   3    -0.37588 +   -0.01115 +   -0.06987 +   -0.00041 =   -0.45731
+   4    -0.13808 +   -0.00398 +   -0.01036 +   -0.00011 =   -0.15253
+   5    -0.06255 +   -0.00224 +    0.03645 +    0.00015 =   -0.02818
+   6     0.61547 +    0.01313 +    0.08092 +    0.00062 =    0.71014
+ ===================================================================
+
+ XANGMOM  SOPPA(CCSD) transition moments for excitation symmetry  3
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1    -0.17616 +   -0.00626 +    0.00192 +    0.00003 =   -0.18047
+   2     0.13003 +    0.00614 +    0.00073 +    0.00002 =    0.13691
+   3    -0.42329 +   -0.01793 +    0.00651 +    0.00009 =   -0.43461
+   4     0.11475 +    0.00469 +   -0.00030 +   -0.00002 =    0.11912
+   5     0.17959 +    0.00411 +   -0.00262 +   -0.00004 =    0.18104
+   6    -0.23758 +   -0.00900 +    0.00258 +    0.00003 =   -0.24398
+ ===================================================================
+
+ YZSECMOM SOPPA(CCSD) transition moments for excitation symmetry  3
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1    -0.76287 +   -0.04049 +    0.00489 +    0.00035 =   -0.79812
+   2    -0.74364 +   -0.03059 +    0.02780 +    0.00058 =   -0.74585
+   3     0.25013 +    0.01186 +    0.01434 +    0.00053 =    0.27685
+   4     0.48608 +    0.01165 +    0.00839 +    0.00021 =    0.50633
+   5     0.33674 +    0.00020 +    0.00093 +   -0.00016 =    0.33772
+   6     0.76664 +    0.02304 +   -0.04331 +   -0.00093 =    0.74544
+ ===================================================================
+
+  ******************************************************************
+           SOPPA(CCSD)  iterations, Excitation symmetry 4
+  ******************************************************************
+
+  ==================================================================
+             1. SOPPA(CCSD)  iteration, Excitation symmetry 4
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.46665671     6.7606D-01       no
+                 2       0.72120018     7.0793D-01       no
+                 3       0.86419112     6.8977D-01       no
+                 4       0.91452073     5.9082D-01       no
+                 5       1.41687205     1.4260D-02       no
+                 6       1.42165099     5.2945D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             2. SOPPA(CCSD)  iteration, Excitation symmetry 4
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.34853678     2.7633D-02       no
+                 2       0.59470736     4.6191D-02       no
+                 3       0.74350548     6.4633D-02       no
+                 4       0.83460084     4.2963D-02       no
+                 5       1.41647397     3.7599D-02       no
+                 6       1.41986553     1.5392D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             3. SOPPA(CCSD)  iteration, Excitation symmetry 4
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.34843358     3.2496D-03       no
+                 2       0.59423841     7.0110D-03       no
+                 3       0.74260284     7.6847D-03       no
+                 4       0.83419961     8.6763D-03       no
+                 5       1.37520733     2.0827D-01       no
+                 6       1.41744293     3.1142D-02       no
+            --------------------------------------------------
+
+  ==================================================================
+             4. SOPPA(CCSD)  iteration, Excitation symmetry 4
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.34843168     3.1685D-04       no
+                 2       0.59422829     5.2525D-04       no
+                 3       0.74258504     1.1836D-03       no
+                 4       0.83418320     8.2979D-04       no
+                 5       1.35235953     6.0656D-02       no
+                 6       1.41708711     6.8187D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+             5. SOPPA(CCSD)  iteration, Excitation symmetry 4
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.34843166     4.8649D-05      yes
+                 2       0.59422824     8.1449D-05      yes
+                 3       0.74258479     2.1165D-04       no
+                 4       0.83418298     2.4099D-04       no
+                 5       1.35159029     1.0068D-02       no
+                 6       1.41707715     1.5196D-03      yes
+            --------------------------------------------------
+
+  ==================================================================
+             6. SOPPA(CCSD)  iteration, Excitation symmetry 4
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.34843166     3.7247D-05      yes
+                 2       0.59422823     7.3119D-05      yes
+                 3       0.74258479     1.7796D-04       no
+                 4       0.83418297     4.7393D-05      yes
+                 5       1.35155325     2.7929D-03       no
+                 6       1.41707645     8.7219D-04      yes
+            --------------------------------------------------
+
+  ==================================================================
+             7. SOPPA(CCSD)  iteration, Excitation symmetry 4
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.34843166     2.6268D-05      yes
+                 2       0.59422823     5.7608D-05      yes
+                 3       0.74258478     8.8997D-05      yes
+                 4       0.83418297     4.4717D-05      yes
+                 5       1.35155049     1.2758D-03       no
+                 6       1.41707638     9.0702D-04      yes
+            --------------------------------------------------
+
+  ==================================================================
+             8. SOPPA(CCSD)  iteration, Excitation symmetry 4
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.34843166     2.6139D-05      yes
+                 2       0.59422823     5.7762D-05      yes
+                 3       0.74258478     8.8520D-05      yes
+                 4       0.83418297     4.4717D-05      yes
+                 5       1.35155020     3.3552D-04       no
+                 6       1.41707635     7.8646D-04      yes
+            --------------------------------------------------
+
+  ==================================================================
+             9. SOPPA(CCSD)  iteration, Excitation symmetry 4
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.34843166     2.6138D-05      yes
+                 2       0.59422823     5.6359D-05      yes
+                 3       0.74258478     8.8206D-05      yes
+                 4       0.83418297     4.4533D-05      yes
+                 5       1.35155018     8.9988D-05      yes
+                 6       1.41707635     7.8693D-04      yes
+            --------------------------------------------------
+
+ -------------------------------------------------------------
+ Iterations stopped since: 
+ -------------------------
+ All of the excitations are converged.
+ -------------------------------------------------------------
+
+
+ --------------------------------------------------------------
+ Excitation symmetry  4, state no.  1
+
+ SOPPA(CCSD) excitation energy :  0.34843166     au
+                                   9.4813078     eV
+                                   76471.909     cm-1
+                                   914.80718     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  94.08 + -0.02  =  94.06 %
+ 2p-2h + 2h-2p excitation weight:   5.94 + -0.00  =   5.94 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 3   2   |   1       1     |   -0.958277  |
+ |    exci. | 3   2   |   3       1     |   -0.192710  |
+ |-----------------------------------------------------|
+ |    exci. | 3 1 2 1 |   9   4   1   2 |    0.141750  |
+ |    exci. | 2 1 3 1 |   5   4   1   2 |    0.102865  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  4, state no.  2
+
+ SOPPA(CCSD) excitation energy :  0.59422823     au
+                                   16.169773     eV
+                                   130418.02     cm-1
+                                   1560.1460     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  94.44 + -0.01  =  94.43 %
+ 2p-2h + 2h-2p excitation weight:   5.57 + -0.00  =   5.57 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 3   2   |   1       1     |   -0.107752  |
+ |    exci. | 3   2   |   2       1     |   -0.955739  |
+ |    exci. | 3   2   |   3       1     |    0.188021  |
+ |-----------------------------------------------------|
+ |    exci. | 3 1 2 1 |   7   7   1   2 |    0.138206  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+ Excitation symmetry  4, state no.  3
+
+ SOPPA(CCSD) excitation energy :  0.74258478     au
+                                   20.206760     eV
+                                   162978.52     cm-1
+                                   1949.6560     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  94.69 + -0.01  =  94.68 %
+ 2p-2h + 2h-2p excitation weight:   5.32 + -0.00  =   5.32 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 3   2   |   1       1     |   -0.143126  |
+ |    exci. | 3   2   |   2       1     |    0.201319  |
+ |    exci. | 3   2   |   3       1     |    0.948351  |
+ |-----------------------------------------------------|
+ |    exci. | 3 2 1 1 |   4   4   2   2 |    0.032811  |
+ |    exci. | 3 2 1 1 |   1   4   3   2 |    0.031572  |
+ |    exci. | 3 2 1 1 |   4   4   3   2 |    0.034693  |
+ |    exci. | 3 2 1 1 |   9   5   1   3 |    0.021776  |
+ |    exci. | 1 2 3 1 |   3   4   1   2 |    0.031931  |
+ |    exci. | 1 1 3 2 |  11   5   1   1 |   -0.022624  |
+ |    exci. | 1 1 3 2 |  13   5   1   1 |    0.020068  |
+ |    exci. | 1 1 3 2 |  14   5   1   1 |    0.024859  |
+ |    exci. | 1 1 3 2 |  13   8   1   1 |   -0.033524  |
+ |    exci. | 4 1 1 1 |   1   3   3   2 |    0.026364  |
+ |    exci. | 4 1 1 1 |   1   4   1   2 |    0.025703  |
+ |    exci. | 4 1 1 1 |   1   5   1   2 |    0.040973  |
+ |    exci. | 4 1 1 1 |   1   9   1   2 |   -0.036575  |
+ |    exci. | 4 1 1 1 |   1   9   2   2 |    0.037640  |
+ |    exci. | 4 1 1 1 |   2   9   2   2 |    0.023065  |
+ |    exci. | 4 1 1 1 |   2   9   3   2 |    0.020355  |
+ |    exci. | 4 1 1 1 |   1  10   1   2 |    0.021759  |
+ |    exci. | 3 1 2 1 |   2   3   1   2 |   -0.021739  |
+ |    exci. | 3 1 2 1 |   9   4   1   2 |    0.079901  |
+ |    exci. | 3 1 2 1 |   7   7   1   2 |   -0.049265  |
+ |    exci. | 3 1 2 1 |   5  10   1   2 |   -0.091563  |
+ |    exci. | 3 1 2 1 |   7  10   1   2 |   -0.031691  |
+ |    exci. | 3 1 2 1 |   1  16   1   2 |   -0.022706  |
+ |    exci. | 2 1 3 1 |   5   3   1   2 |   -0.033847  |
+ |    exci. | 2 1 3 1 |   6   3   1   2 |    0.058231  |
+ |    exci. | 2 1 3 1 |   1   4   1   2 |    0.025664  |
+ |    exci. | 2 1 3 1 |   5   4   1   2 |    0.060370  |
+ |    exci. | 2 1 3 1 |   4   6   1   2 |   -0.034260  |
+ |    exci. | 2 1 3 1 |   3   7   1   2 |   -0.020299  |
+ |    exci. | 2 1 3 1 |   4   7   1   2 |   -0.021521  |
+ |    exci. | 2 1 3 1 |   1   9   1   2 |    0.035772  |
+ |    exci. | 2 1 3 1 |   2   9   1   2 |   -0.058506  |
+ |    exci. | 2 1 3 1 |   3   9   1   2 |   -0.042203  |
+ |    exci. | 2 1 3 1 |   6   9   1   2 |    0.021037  |
+ |    exci. | 2 1 3 1 |   1  10   1   2 |   -0.052094  |
+ |    exci. | 2 1 3 1 |   3  10   1   2 |   -0.071351  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+ Excitation symmetry  4, state no.  4
+
+ SOPPA(CCSD) excitation energy :  0.83418297     au
+                                   22.699273     eV
+                                   183082.00     cm-1
+                                   2190.1471     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  96.81 + -0.01  =  96.79 %
+ 2p-2h + 2h-2p excitation weight:   3.21 + -0.00  =   3.21 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 2   3   |   1       1     |    0.994601  |
+ |-----------------------------------------------------|
+ |    exci. | 3 2 1 1 |   9   6   2   3 |    0.031826  |
+ |    exci. | 4 2 2 1 |   1   5   1   3 |   -0.028117  |
+ |    exci. | 1 2 3 1 |  11   4   1   3 |    0.032594  |
+ |    exci. | 3 1 1 2 |   1   7   3   1 |   -0.020487  |
+ |    exci. | 3 1 1 2 |   7  10   1   1 |    0.025432  |
+ |    exci. | 4 1 2 2 |   1   5   1   1 |    0.045290  |
+ |    exci. | 4 1 2 2 |   1   8   1   1 |   -0.034878  |
+ |    exci. | 1 1 3 2 |   3   7   1   1 |   -0.026568  |
+ |    exci. | 1 1 3 2 |  15   9   1   1 |    0.020937  |
+ |    exci. | 1 1 3 2 |  11  10   1   1 |   -0.028723  |
+ |    exci. | 3 1 2 1 |   1  16   1   3 |   -0.034803  |
+ |    exci. | 3 1 2 1 |   4  16   1   3 |    0.036655  |
+ |    exci. | 4 2 1 2 |   1   1   1   1 |    0.021681  |
+ |    exci. | 4 2 1 2 |   2   1   1   1 |   -0.067739  |
+ |    exci. | 4 2 1 2 |   1   2   1   1 |   -0.064380  |
+ |    exci. | 4 2 1 2 |   2   2   1   1 |   -0.031816  |
+ |    exci. | 4 2 1 2 |   1   2   2   1 |   -0.049789  |
+ |    exci. | 4 2 1 2 |   2   2   2   1 |   -0.022979  |
+ |    exci. | 2 2 3 2 |   1   1   1   1 |   -0.093810  |
+ |    exci. | 2 2 3 2 |   3   1   1   1 |   -0.027460  |
+ |    exci. | 3 3 2 3 |   7   1   1   1 |    0.025971  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+ Excitation symmetry  4, state no.  5
+
+ SOPPA(CCSD) excitation energy :   1.3515502     au
+                                   36.777551     eV
+                                   296630.97     cm-1
+                                   3548.4945     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  97.03 + -0.02  =  97.02 %
+ 2p-2h + 2h-2p excitation weight:   2.98 + -0.00  =   2.98 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 4   1   |   1       3     |   -0.995405  |
+ |-----------------------------------------------------|
+ |    exci. | 3 2 1 1 |   9   4   2   3 |    0.082889  |
+ |    exci. | 3 1 1 2 |   3   7   2   1 |    0.022098  |
+ |    exci. | 1 1 3 2 |   6   5   1   1 |   -0.025018  |
+ |    exci. | 4 1 1 1 |   2   9   1   1 |   -0.037130  |
+ |    exci. | 4 1 1 1 |   1  14   2   1 |   -0.025044  |
+ |    exci. | 4 1 1 1 |   2  14   2   1 |    0.060337  |
+ |    exci. | 4 1 1 1 |   1  14   3   1 |    0.044432  |
+ |    exci. | 4 1 1 1 |   1  15   2   1 |    0.030191  |
+ |    exci. | 4 1 1 1 |   1  15   3   1 |    0.044040  |
+ |    exci. | 3 1 2 1 |   5   8   1   1 |    0.052509  |
+ |    exci. | 3 1 2 1 |   2   9   1   1 |   -0.023869  |
+ |    exci. | 3 1 2 1 |   3   9   1   1 |    0.023745  |
+ |    exci. | 3 1 2 1 |   4   9   1   1 |   -0.024960  |
+ |    exci. | 3 1 2 1 |   6  13   1   1 |   -0.023033  |
+ |    exci. | 3 1 2 1 |   7  13   1   1 |    0.027867  |
+ |    exci. | 3 1 2 1 |   1  14   1   1 |    0.041108  |
+ |    exci. | 3 1 2 1 |   3  14   1   1 |   -0.031404  |
+ |    exci. | 3 1 2 1 |   1  15   1   1 |   -0.026742  |
+ |    exci. | 2 1 3 1 |   3  14   1   1 |    0.050751  |
+ |    exci. | 2 1 3 1 |   4  14   1   1 |   -0.029241  |
+ |    exci. | 2 1 3 1 |   5  14   1   1 |    0.034762  |
+ |    exci. | 2 1 3 1 |   5   3   1   2 |    0.044835  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.100000
+ Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+ Excitation symmetry  4, state no.  6
+
+ SOPPA(CCSD) excitation energy :   1.4170763     au
+                                   38.560609     eV
+                                   311012.31     cm-1
+                                   3720.5334     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:   0.51 + -0.00  =   0.51 %
+ 2p-2h + 2h-2p excitation weight:  99.49 + -0.00  =  99.49 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 4   1   |   1       3     |    0.069110  |
+ |-----------------------------------------------------|
+ |    exci. | 3 2 1 1 |   9   4   2   3 |    1.123570  |
+ |    exci. | 2 1 3 1 |   5   3   1   2 |    0.342791  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than 0.020000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+ ZANGMOM  SOPPA(CCSD) transition moments for excitation symmetry  4
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1     0.15153 +    0.00444 +   -0.00203 +   -0.00001 =    0.15393
+   2    -0.26329 +   -0.01330 +    0.00460 +    0.00004 =   -0.27195
+   3    -0.11283 +   -0.00119 +    0.00152 +    0.00000 =   -0.11249
+   4    -0.08098 +   -0.00060 +    0.00104 +    0.00002 =   -0.08051
+   5    -0.26790 +   -0.00612 +    0.00421 +    0.00006 =   -0.26975
+   6     0.02211 +   -0.00530 +   -0.00034 +   -0.00000 =    0.01647
+ ===================================================================
+
+ XYSECMOM SOPPA(CCSD) transition moments for excitation symmetry  4
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1    -0.46352 +   -0.02377 +   -0.00595 +   -0.00007 =   -0.49331
+   2    -0.68267 +   -0.04055 +    0.00370 +    0.00002 =   -0.71950
+   3     0.26308 +    0.00111 +    0.00440 +    0.00004 =    0.26863
+   4     0.69079 +    0.01804 +    0.00369 +    0.00011 =    0.71262
+   5    -0.06984 +   -0.00206 +    0.00164 +   -0.00004 =   -0.07030
+   6    -0.00480 +    0.00126 +   -0.00014 +    0.00000 =   -0.00367
+ ===================================================================
+
+ |=====================================================| 
+ |     Memory statistics for AO-SOPPA subroutines      |
+ |=====================================================| 
+ |   Routine                  in Words         in MB   |
+ |-----------------------------------------------------| 
+ |  START                            0           0.0   |
+ |  SO_EXCIT1.1                   4686           0.0   |
+ |  SO_PRPINT                    18187           0.1   |
+ |  SO_ORTH_TRN                  27771           0.2   |
+ |  SO_ERES.2                    28394           0.2   |
+ |  SO_AODENS                 63990495         488.2   |
+ |=====================================================| 
+
+ |=====================================================| 
+ |           Timings for AO-SOPPA subroutines          |
+ |=====================================================| 
+ |   Routine            cpu time   of total        sum |
+ |-----------------------------------------------------| 
+ |   SO_SIGAI            0: 0: 2     33.3 %     33.3 % |
+ |   SO_OPTVEC           0: 0: 1     15.0 %     48.3 % |
+ |   SO_RES_TCB          0: 0: 1     10.4 %     58.7 % |
+ |   SO_RES_A            0: 0: 0      6.8 %     65.5 % |
+ |   SO_SIGDA            0: 0: 0      6.8 %     72.3 % |
+ |   SO_ORTH_TRN         0: 0: 0      6.7 %     79.0 % |
+ |   SO_RES_CB           0: 0: 0      6.2 %     85.2 % |
+ |   CC_AOFOCK           0: 0: 0      4.0 %     89.2 % |
+ |   CCRDAO              0: 0: 0      1.9 %     91.1 % |
+ |   SO_T2M1             0: 0: 0      1.8 %     92.9 % |
+ |   SO_ERES             0: 0: 0      1.3 %     94.2 % |
+ |   SO_TRIAL2           0: 0: 0      1.1 %     95.4 % |
+ |   SO_REDEV            0: 0: 0      1.1 %     96.4 % |
+ |   SO_INCRED           0: 0: 0      1.1 %     97.5 % |
+ |   CCTRBT              0: 0: 0      1.0 %     98.5 % |
+ |   SO_RES_OVL          0: 0: 0      0.4 %     98.9 % |
+ |   SO_SRES             0: 0: 0      0.2 %     99.1 % |
+ |   SO_TRIAL1           0: 0: 0      0.2 %     99.2 % |
+ |   SO_RES_OVLR         0: 0: 0      0.1 %     99.3 % |
+ |   SO_GETMO            0: 0: 0      0.1 %     99.4 % |
+ |   SO_RES_CD           0: 0: 0      0.1 %     99.4 % |
+ |   SO_DENSAI           0: 0: 0      0.1 %     99.5 % |
+ |   SO_ROPT             0: 0: 0      0.1 %     99.6 % |
+ |   SO_AODENS           0: 0: 0      0.0 %     99.6 % |
+ |   SO_ORDEIG           0: 0: 0      0.0 %     99.6 % |
+ |   CC_FCKMO            0: 0: 0      0.0 %     99.7 % |
+ |   SO_DENS             0: 0: 0      0.0 %     99.7 % |
+ |   SO_RES_FCK          0: 0: 0      0.0 %     99.7 % |
+ |   SO_RES_SYM          0: 0: 0      0.0 %     99.7 % |
+ |   SO_BCKTR            0: 0: 0      0.0 %     99.7 % |
+ |   SO_DIAG             0: 0: 0      0.0 %     99.7 % |
+ |   SO_RES_B            0: 0: 0      0.0 %     99.8 % |
+ |   SO_RES_C            0: 0: 0      0.0 %     99.8 % |
+ |   SO_TWOFOCK          0: 0: 0      0.0 %     99.8 % |
+ |   SO_ONEFOCK          0: 0: 0      0.0 %     99.8 % |
+ |   SO_T2MP             0: 0: 0      0.0 %     99.8 % |
+ |   SO_MOENERGY         0: 0: 0      0.0 %     99.8 % |
+ |   SO_INIT             0: 0: 0      0.0 %     99.8 % |
+ |   ERIDI1              0: 0: 0      0.0 %     99.8 % |
+ |   ERIDI2              0: 0: 0      0.0 %     99.8 % |
+ |   SO_CHECK            0: 0: 0      0.0 %     99.8 % |
+ |   ???????????         0: 0: 0      0.0 %     99.8 % |
+ |   ?????????           0: 0: 0      0.0 %     99.8 % |
+ |-----------------------------------------------------| 
+ |   Total CPU time      0: 0: 6                       |
+ |=====================================================| 
+
+ |-----------------------------------------------------| 
+ |   SO_READ             0: 0: 0      2.2 %            |
+ |   SO_WRITE            0: 0: 0      0.6 %            |
+ |   SO_OPEN             0: 0: 0      0.5 %            |
+ |   SO_CLOSE            0: 0: 0      0.7 %            |
+ |-----------------------------------------------------| 
+
+ |=====================================================| 
+ |        Wall timings for AO-SOPPA subroutines        |
+ |=====================================================| 
+ |   Routine           wall time   of total       sum  |
+ |-----------------------------------------------------| 
+ |   SO_ERES             0: 0: 5     49.9 %     49.9 % |
+ |   SO_SRES             0: 0: 0      4.1 %     54.0 % |
+ |   SO_REDEV            0: 0: 4     33.8 %     87.9 % |
+ |   SO_TRIAL2           0: 0: 1     11.1 %     99.0 % |
+ |-----------------------------------------------------| 
+ |   Total wall time     0: 0:11                       |
+ |=====================================================| 
+ >>>  Time used in EXCITA     is   6.11 seconds
+
+
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Wed May 28 13:01:41 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+                             Molecular geometry (au)
+                             -----------------------
+
+ O          0.0000000000            0.0000000000            0.1241444240
+ H   _1     0.0000000000            1.4315300000           -0.9852655760
+ H   _2     0.0000000000           -1.4315300000           -0.9852655760
+
+
+
+
+
+                        Molecular wave function and energy
+                        ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+     Total energy        -76.0607842187 au (Hartrees)
+                         -2069.71922269 eV
+                           -199697.5582 kJ/mol
+
+
+ ======================================================================
+                              SOPPA(CCSD) results:
+ ----------------------------------------------------------------------
+
+
+@               Singlet electronic excitation energies
+                --------------------------------------
+
+               ========================================
+                 Sym.   Mode   Frequency    Frequency
+                ex. st.  No.      (au)         (eV)
+               ----------------------------------------
+                   1      1     0.368324    10.022593
+                   1      2     0.590161    16.059102
+                   1      3     0.629072    17.117911
+                   1      4     0.720010    19.592475
+                   1      5     0.788034    21.443501
+               ----------------------------------------
+                   2      1     0.276599     7.526631
+                   2      2     0.583836    15.886991
+                   2      3     0.675803    18.389526
+                   2      4     0.683118    18.588599
+                   2      5     1.023929    27.862517
+                   2      6     1.254705    34.142253
+                   2      7     1.362271    37.069277
+                   2      8     1.371163    37.311242
+               ----------------------------------------
+                   3      1     0.443352    12.064221
+                   3      2     0.519062    14.124396
+                   3      3     0.698704    19.012694
+                   3      4     0.830708    22.604710
+                   3      5     0.835227    22.727696
+                   3      6     0.946195    25.747265
+               ----------------------------------------
+                   4      1     0.348432     9.481308
+                   4      2     0.594228    16.169773
+                   4      3     0.742585    20.206760
+                   4      4     0.834183    22.699273
+                   4      5     1.351550    36.777551
+                   4      6     1.417076    38.560609
+               ========================================
+
+
+@               Electric transition dipole moments (au)
+                ---------------------------------------
+
+@        Mode    Frequency       Velocity/Frequency              Length
+@         No.      (au)          x       y       z         x       y       z
+@==============================================================================
+@  Symmetry of excited state: 1  ( A1 )
+@           1     0.368324     0.0000  0.0000 -0.7876    0.0000  0.0000 -0.6879
+@           2     0.590161     0.0000  0.0000 -0.3713    0.0000  0.0000 -0.3674
+@           3     0.629072     0.0000  0.0000  0.3597    0.0000  0.0000  0.3329
+@           4     0.720010     0.0000  0.0000 -0.0267    0.0000  0.0000 -0.0589
+@           5     0.788034     0.0000  0.0000 -0.0001    0.0000  0.0000  0.0310
+@------------------------------------------------------------------------------
+@  Symmetry of excited state: 2  ( B1 )
+@           1     0.276599     0.6545  0.0000  0.0000    0.5080  0.0000  0.0000
+@           2     0.583836     0.0100  0.0000  0.0000    0.0821  0.0000  0.0000
+@           3     0.675803    -0.2549  0.0000  0.0000   -0.2260  0.0000  0.0000
+@           4     0.683118     0.4012  0.0000  0.0000    0.4661  0.0000  0.0000
+@           5     1.023929    -0.5493  0.0000  0.0000   -0.6568  0.0000  0.0000
+@           6     1.254705    -0.2603  0.0000  0.0000   -0.3125  0.0000  0.0000
+@           7     1.362271    -0.0486  0.0000  0.0000   -0.0511  0.0000  0.0000
+@           8     1.371163    -0.3434  0.0000  0.0000   -0.3687  0.0000  0.0000
+@------------------------------------------------------------------------------
+@  Symmetry of excited state: 3  ( B2 )
+@           1     0.443352     0.0000  0.5077  0.0000    0.0000  0.4672  0.0000
+@           2     0.519062     0.0000  0.8509  0.0000    0.0000  0.8194  0.0000
+@           3     0.698704     0.0000  0.6545  0.0000    0.0000  0.6435  0.0000
+@           4     0.830708     0.0000  0.1836  0.0000    0.0000  0.2040  0.0000
+@           5     0.835227     0.0000  0.0337  0.0000    0.0000  0.0140  0.0000
+@           6     0.946195     0.0000 -0.7505  0.0000    0.0000 -0.7582  0.0000
+@------------------------------------------------------------------------------
+@  Symmetry of excited state: 4  ( A2 )
+@           1     0.348432     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
+@           2     0.594228     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
+@           3     0.742585     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
+@           4     0.834183     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
+@           5     1.351550     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
+@           6     1.417076     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
+@------------------------------------------------------------------------------
+
+
+@               Magnetic transition dipole moments (au)
+                ---------------------------------------
+
+  ( mu_B*<0|l_i|n>, where mu_B = 0.5 is the Bohr magneton)
+
+ Symm.  Mode   Frequency         Conventional                  London
+ ex.st.  No.     (eV)        x        y       z         x        y        z
+ ==============================================================================
+   1      1    10.0226   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      2    16.0591   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      3    17.1179   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      4    19.5925   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      5    21.4435   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+ ------------------------------------------------------------------------------
+   2      1     7.5266   -0.00000 -0.06295 -0.00000  -0.00000 -0.00000 -0.00000
+   2      2    15.8870   -0.00000 -0.01299 -0.00000  -0.00000 -0.00000 -0.00000
+   2      3    18.3895   -0.00000 -0.06686 -0.00000  -0.00000 -0.00000 -0.00000
+   2      4    18.5886   -0.00000  0.08588 -0.00000  -0.00000 -0.00000 -0.00000
+   2      5    27.8625   -0.00000 -0.01747 -0.00000  -0.00000 -0.00000 -0.00000
+   2      6    34.1423   -0.00000 -0.02732 -0.00000  -0.00000 -0.00000 -0.00000
+   2      7    37.0693   -0.00000 -0.00211 -0.00000  -0.00000 -0.00000 -0.00000
+   2      8    37.3112   -0.00000  0.01018 -0.00000  -0.00000 -0.00000 -0.00000
+ ------------------------------------------------------------------------------
+   3      1    12.0642   -0.09024 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      2    14.1244    0.06845 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      3    19.0127   -0.21731 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      4    22.6047    0.05956 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      5    22.7277    0.09052 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      6    25.7473   -0.12199 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+ ------------------------------------------------------------------------------
+   4      1     9.4813   -0.00000 -0.00000  0.07696  -0.00000 -0.00000 -0.00000
+   4      2    16.1698   -0.00000 -0.00000 -0.13598  -0.00000 -0.00000 -0.00000
+   4      3    20.2068   -0.00000 -0.00000 -0.05625  -0.00000 -0.00000 -0.00000
+   4      4    22.6993   -0.00000 -0.00000 -0.04026  -0.00000 -0.00000 -0.00000
+   4      5    36.7776   -0.00000 -0.00000 -0.13487  -0.00000 -0.00000 -0.00000
+   4      6    38.5606   -0.00000 -0.00000  0.00823  -0.00000 -0.00000 -0.00000
+ ------------------------------------------------------------------------------
+
+
+@                  Oscillator and Scalar Rotational Strengths
+                   ------------------------------------------
+
+@   Units: 10**(-40) (esu**2)*(cm**2) (rotational strength)
+@          dimensionless              (oscillator strength)
+
+@ Symm.  Mode   Frequency    Oscillator-strength      Rotational-strength   
+@ ex.st.  No.     (eV)        velocity  length     velocity  length   London
+@ ==========================================================================
+@  1      1    10.0226        0.1523   0.1162      -0.000   -0.000   -0.000
+@  1      2    16.0591        0.0542   0.0531      -0.000   -0.000   -0.000
+@  1      3    17.1179        0.0543   0.0465      -0.000   -0.000   -0.000
+@  1      4    19.5925        0.0003   0.0017      -0.000   -0.000   -0.000
+@  1      5    21.4435        0.0000   0.0005      -0.000   -0.000   -0.000
+@ --------------------------------------------------------------------------
+@  2      1     7.5266        0.0790   0.0476      -0.000   -0.000   -0.000
+@  2      2    15.8870        0.0000   0.0026      -0.000   -0.000   -0.000
+@  2      3    18.3895        0.0293   0.0230      -0.000   -0.000   -0.000
+@  2      4    18.5886        0.0733   0.0989      -0.000   -0.000   -0.000
+@  2      5    27.8625        0.2060   0.2945      -0.000   -0.000   -0.000
+@  2      6    34.1423        0.0567   0.0817      -0.000   -0.000   -0.000
+@  2      7    37.0693        0.0021   0.0024      -0.000   -0.000   -0.000
+@  2      8    37.3112        0.1078   0.1243      -0.000   -0.000   -0.000
+@ --------------------------------------------------------------------------
+@  3      1    12.0642        0.0762   0.0645      -0.000   -0.000   -0.000
+@  3      2    14.1244        0.2505   0.2323      -0.000   -0.000   -0.000
+@  3      3    19.0127        0.1995   0.1929      -0.000   -0.000   -0.000
+@  3      4    22.6047        0.0187   0.0230      -0.000   -0.000   -0.000
+@  3      5    22.7277        0.0006   0.0001      -0.000   -0.000   -0.000
+@  3      6    25.7473        0.3553   0.3626      -0.000   -0.000   -0.000
+@ --------------------------------------------------------------------------
+@  4      1     9.4813        0.0000   0.0000      -0.000   -0.000   -0.000
+@  4      2    16.1698        0.0000   0.0000      -0.000   -0.000   -0.000
+@  4      3    20.2068        0.0000   0.0000      -0.000   -0.000   -0.000
+@  4      4    22.6993        0.0000   0.0000      -0.000   -0.000   -0.000
+@  4      5    36.7776        0.0000   0.0000      -0.000   -0.000   -0.000
+@  4      6    38.5606        0.0000   0.0000      -0.000   -0.000   -0.000
+@ --------------------------------------------------------------------------
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           H   _1      H   _2
+            ------      ------      ------
+ O     :    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
+
+
+  Max    interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
+  between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9584 Angstrom (    1.8111 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H   _1     O          H   _2       104.450
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ EXCITA     00:00:06     100 %
+
+ TOTAL      00:00:06     100 %
+
+
+ >>>> Total CPU  time used in ABACUS:   6.11 seconds
+ >>>> Total wall time used in ABACUS:  10.51 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   6.67 seconds
+ >>>> Total wall time used in DALTON:  11.28 seconds
+
+ 
+     Date and time (Linux)  : Wed May 28 13:01:41 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              

@@ -34,7 +34,7 @@ f.add(string = 'Number of orbitals in each symmetry',
 # Property calculation
 f.add(string = 'Electronic excitation energies',
       rel_tolerance = 1.0e-2)
-f.add(string = 'AO integral driven SOPPA',
+f.add(string = 'AO integral driven SOPPA :',
       rel_tolerance = 1.0e-2)
 f.add(from_string = 'Changes of defaults for .EXCITA',
       num_lines = 10,
