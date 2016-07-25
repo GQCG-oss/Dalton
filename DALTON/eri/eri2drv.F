@@ -651,7 +651,7 @@ C
 C     AOSOPPA in parallel makes use of slaves in this subroutine.
 C     hence the slaves are redirected to parts of the code normally
 C     only available to the master.
-      if (aorpa.or.aohrp.or.aosop.or.dcrpa.or.aosoc)
+      if (aorpa.or.aohrp.or.aosop.or.dcrpa.or.aosoc.or.aocc2)
      &   USE_SLAVE_CODE = .FALSE.
 #endif
 C

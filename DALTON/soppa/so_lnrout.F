@@ -110,6 +110,7 @@ C    &                POLDA(1,1,1,1,3),IPRSOP)
 C
 C     END IF
 C
+CPi If the above section becomes active, remember SOPPA(CC2)
 C-----------------------
 C     Remove from trace.
 C-----------------------

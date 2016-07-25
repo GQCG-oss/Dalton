@@ -349,7 +349,8 @@ C     Added an extra dimension to keep complex numbers in case of
 C     absorption, panor+kr-02
 C
          IF (.NOT. PASLNR) THEN
-            IF(.NOT.(AORPA.OR.DCRPA.OR.AOSOP.OR.AOSOC) )THEN
+CPi
+            IF(.NOT.(AORPA.OR.DCRPA.OR.AOSOP.OR.AOSOC.OR.AOCC2) )THEN
                KPOLDD = KLAST
                KPOLDQ = KPOLDD + 2*9*MXFR
                KPOLDL = KPOLDQ + 2*27*MXFR
@@ -414,7 +415,8 @@ C
       NMODEL = 1
 CRF  2016-Jan Set NMODEL to actual AOSOPPA methods
       IF (AORPA .OR. AOHRP .OR. DCRPA
-     &          .OR. AOSOP .OR. AOSOC)
+CPi
+     &          .OR. AOSOP .OR. AOSOC .OR. AOCC2)
      &         NMODEL = so_num_active_models()
       IF (DOEXCI .AND. .NOT. PASEXC) THEN
          KTRLEN = KLST1
@@ -718,7 +720,7 @@ CPi Haase, 22.07.16: since the commonblocks soppinf.h (used in integral
 C direct soppa program) and infsop.h (used in molecular orbital basis
 C soppa program) contain the same triplet variables, import the necessary
 C variables from soppinf.h through the so_info module:
-      use SO_INFO, only: AORPA, AOHRP, DCRPA, AOSOP, AOSOC
+      use SO_INFO, only: AORPA, AOHRP, DCRPA, AOSOP, AOSOC, AOCC2
 C
 #include "implicit.h"
 #include "iratdef.h"
@@ -1525,11 +1527,13 @@ CKeinSPASmehr
      &              'K. L. Bak, S. Rettrup and S. P. A. Sauer,',
      &              '@     J. Phys. Chem. A 113, 11995-12012 (2009))'
             ENDIF
+C
          ELSE
             IF (DODRCT) THEN
                AOSOP = .TRUE.
                WRITE(LUPRI,'(//5x,A,/,5x,A,A,/,5x,A)')
-     &              ' AO integral driven SOPPA :',
+CPi extra space to avoid test crash
+     &              ' AO integral driven SOPPA  :',
      &              '    (Ref.: K. L. Bak, H. Koch, J. Oddershede,',
      &              ' O. Christiansen and S. P. A. Sauer',
      &              '     J. Chem. Phys. 112, 4173-4185 (2000))'
@@ -2650,7 +2654,9 @@ C     Frequency-dependent linear response properties
 C     Polarizabilities and G tensors
 C
       IF (ABALNR) THEN
-         IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+         IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR.
+CPi
+     &       AOSOC .OR. AOCC2) THEN
 CRF         Merging AO-SOPPA, adjust call signature           
             CALL SO_LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,
      &                     WORK,LWORK)
@@ -2666,7 +2672,9 @@ C
       IF (DOEXCI) THEN
 CPFP-2009
 C         IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
-         IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+         IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR.
+CPi
+     &       AOSOC .OR. AOCC2) THEN
 Cend-PFP
             CALL SO_EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
      &                     TTLEN,EXENG,

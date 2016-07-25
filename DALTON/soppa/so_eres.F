@@ -600,8 +600,10 @@ C------------------------------------------------
 C
                   DTIME  = SECOND()
                   IF (HERDIR) THEN
+C
                     CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
      &                          IPRINT)
+C
                   ELSE
 C
                      CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
@@ -643,7 +645,6 @@ C--------------------------------------------------------------------
 C
                DO 230 IDEL2 = 1,NUMDIS
 C
-
                   IF (DIRECT) THEN
                      IDEL  = INDEXA(IDEL2)
                      ISYMD = ISAO(IDEL) !keeps track of current symmetry
@@ -723,7 +724,7 @@ Cend-Pi
                      ELSE
                         CALL DZERO(WORK(KT2M1),LT2M1)
                      END IF
-
+C
                      IF(.NOT.TRIPLET) THEN
 C
 C------------------------------------------------------------
@@ -815,7 +816,7 @@ C
                   END IF
                   DTIME      = SECOND()   - DTIME
                   SOTIME(41) = SOTIME(41) + DTIME
-
+C
                   IF (TRIPLET) THEN
                      CALL LOOP_BODY_TRIPLET
                   ELSE

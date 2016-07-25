@@ -35,7 +35,8 @@ C
       CALL QENTER('SO_DIAG')
 C
       DOUBLES = (MODEL.EQ.'AOSOP').OR.(MODEL.EQ.'AOSOC').OR.
-     &          (MODEL.EQ.'DCRPA')
+CPi
+     &          (MODEL.EQ.'AOCC2').OR.(MODEL.EQ.'DCRPA')
 C
 C------------------------------------------------------------------
 C     Determine the symmetri of the result vector from the symmetry

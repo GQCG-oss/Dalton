@@ -525,7 +525,7 @@ C        or if ITRLVL on file too small.
       ELSE IF (ABASOP) THEN
 C        ... SOPPA requires full integral transformation
 C        --- But not if run through AO-SOPPA module        
-         IF(AOSOP.OR.AORPA.OR.DCRPA.OR.AOSOC.OR.AOHRP) THEN
+         IF(AOSOP.OR.AORPA.OR.DCRPA.OR.AOSOC.OR.AOCC2.OR.AOHRP) THEN
             KTRLVL = 0
          ELSE
             KTRLVL = 10

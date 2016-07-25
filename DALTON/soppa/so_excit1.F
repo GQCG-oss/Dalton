@@ -145,7 +145,9 @@ C     into distributions.
 C---------------------------------------------------------------
 C
       IF ( AORPA .AND. (.NOT.AOHRP) .AND. (.NOT.DCRPA)
-     &           .AND. (.NOT.AOSOP) .AND. (.NOT.AOSOC) ) THEN
+     &           .AND. (.NOT.AOSOP) .AND. (.NOT.AOSOC)
+CPi
+     &           .AND. (.NOT.AOCC2) ) THEN
          CALL RP_INIT(WORK,LWORK)
 #ifdef VAR_MPI
 C     In pure aorpa calculations, eridi has not been initialized
@@ -204,7 +206,8 @@ C
 C
 CPFP: Higher RPA added
 C     IF (DCRPA .OR. AOSOP .OR. AOSOC) THEN
-      IF (AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+CPi
+      IF (AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC .OR. AOCC2) THEN
 Cend-PFP
 C
 CSPAS:5/11-2013: Patricio had the following statement before the IF statement

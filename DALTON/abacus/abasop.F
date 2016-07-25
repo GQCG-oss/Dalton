@@ -42,7 +42,8 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 13)
+C      PARAMETER (NTABLE = 13)
+      PARAMETER (NTABLE = 14)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       LOGICAL LNEXC2
 #include "abainf.h"
@@ -54,7 +55,10 @@ C
 C
       DATA TABLE /'.HIRPA ', '.SOPW4 ', '.DIRECT', '.AORPA ', '.DCRPA ',
      &            '.AOSOP ', '.AOSOC ', '.SOPCHK', '.AOTEST', '.NSAVMX',
-     &            '.NEXCI2', '.THREX2', '.AOHRP '/
+CPi
+C     &            '.NEXCI2', '.THREX2', '.AOHRP '/
+     &            '.NEXCI2', '.THREX2', '.AOHRP ', '.AOCC2 '/
+Cend-Pi
 C     
 C------------------
 C     Set defaults.
@@ -69,8 +73,11 @@ C
       SOPCHK = .FALSE.
       AOTEST = .FALSE.
 CPFP
-      AOHRP = .FALSE.
+      AOHRP  = .FALSE.
 Cend-PFP
+CPi
+      AOCC2  = .FALSE.
+Cend-Pi
 C
       NSAVMX = 3
       NSAVMXORIG = 3
@@ -94,8 +101,11 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
 CPFP
 C               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
-               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
+C               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
 Cend-PFP
+CPi
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
+Cend-Pi
             END IF
   200    CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -153,6 +163,9 @@ C           NSYM is set to 8 since NSYM has not yet been set !!
    13    CONTINUE !.AOHRP
             AOHRP  = .TRUE.
             GOTO 100
+   14    CONTINUE !.AOCC2
+            AOCC2  = .TRUE.
+            GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GOTO 300
       ELSE
@@ -185,6 +198,10 @@ Cend-PFP
      &       '    (Ref.: K. L. Bak, H. Koch, J. Oddershede,',
      &       ' O. Christiansen and S. P. A. Sauer',
      &       '     J. Chem. Phys. 112, 4173-4185 (2000))'
+CPi
+         IF (AOCC2)  WRITE(LUPRI,'(A)')
+     &       ' AO integral driven SOPPA(CC2) :'
+Cend-Pi
          IF (AOSOC)  WRITE(LUPRI,'(A,/,A,A,/,A,A)')
      &       ' AO integral driven SOPPA(CCSD)',
      &       '    (Ref.: H. H. Falden, K. R. Falster-Hansen, ',

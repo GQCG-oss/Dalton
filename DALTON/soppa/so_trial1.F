@@ -75,6 +75,16 @@ C---------------------------------------------------------------------
 C
          CONTINUE
 C
+CPi
+      ELSE IF ( (MODEL .EQ. 'AOCC2') .AND. AOSOP ) THEN
+C
+C---------------------------------------------------------------------
+C        Use SOPPA eigenvectors as first trial vectors in SOPPA(CC2).
+C        Since the SOPPA vectors are in place nothing shall be done.
+C---------------------------------------------------------------------
+C
+         CONTINUE
+C
       ELSE IF ((MODEL.EQ.'AOSOC') .AND. DCRPA .AND. (NEXCI.LE.LTR1))THEN
 C
 C----------------------------------------------------------------------
@@ -84,10 +94,29 @@ C----------------------------------------------------------------------
 C
          CONTINUE
 C
+CPi
+      ELSE IF ((MODEL.EQ.'AOCC2') .AND. DCRPA .AND. (NEXCI.LE.LTR1))THEN
+C
+C----------------------------------------------------------------------
+C        Use RPA(D) eigenvectors as first trial vectors in SOPPA(CC2).
+C        Since the RPA(D) vectors are in place nothing shall be done.
+C----------------------------------------------------------------------
+C
+         CONTINUE
+C
       ELSE IF ((MODEL.EQ.'AOSOC') .AND. AORPA .AND. (NEXCI.LE.LTR1))THEN
 C
 C--------------------------------------------------------------------
 C        Use RPA eigenvectors as first trial vectors for SOPPA(CCSD).
+C--------------------------------------------------------------------
+C
+         CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK)
+C
+CPi
+      ELSE IF ((MODEL.EQ.'AOCC2') .AND. AORPA .AND. (NEXCI.LE.LTR1))THEN
+C
+C--------------------------------------------------------------------
+C        Use RPA eigenvectors as first trial vectors for SOPPA(CC2).
 C--------------------------------------------------------------------
 C
          CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK)
@@ -110,12 +139,13 @@ C
          CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK)
 C
       ELSE IF ((MODEL.EQ.'AOSOC') .OR. (MODEL.EQ.'AOSOP') .OR.
-     &         (MODEL.EQ.'AOHRP')                              ) THEN
+CPi
+     &         (MODEL.EQ.'AOHRP') .OR. (MODEL.EQ.'AOCC2') ) THEN
 C
-C---------------------------------------------------------------
-C        Create brand new trial vectors for SOPPA or SOPPA(CCSD)
-C        based on approximate diagonal elements of hessian.
-C---------------------------------------------------------------
+C----------------------------------------------------------------------
+C        Create brand new trial vectors for SOPPA, SOPPA(CCSD) or
+C        SOPPA(CC2) based on approximate diagonal elements of hessian.
+C----------------------------------------------------------------------
 C
          CALL SO_TR1NEW(MODEL,NNEWTR,POINT,LPOINT,ISYMTR,NEXCI,DENSIJ,
      &                  LDENSIJ,DENSAB,LDENSAB,WORK,LWORK)

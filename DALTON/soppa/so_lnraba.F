@@ -107,7 +107,9 @@ C     into distributions.
 C---------------------------------------------------------------
 C     On the flip side, this cause a crash if CC has been run
       IF ( AORPA .AND. (.NOT.DCRPA) .AND. (.NOT.AOSOP)
-     &           .AND. (.NOT.AOSOC) .AND. (.NOT.AOHRP)) THEN
+     &           .AND. (.NOT.AOSOC) .AND. (.NOT.AOHRP)
+CPi
+     &           .AND. (.NOT.AOCC2) ) THEN
          CALL RP_INIT(WORK,LWORK)
 #ifdef VAR_MPI
 C     In pure aorpa calculations, eridi has not been initialized
@@ -168,7 +170,8 @@ C
       KEND1   = KFOCKD  + LFOCKD
       LWORK1  = LWORK   - KEND1
 C
-      IF (DCRPA .OR. AOSOP .OR. AOHRP .OR. AOSOC) THEN
+CPi
+      IF (DCRPA .OR. AOSOP .OR. AOHRP .OR. AOSOC .OR. AOCC2) THEN
 C
          LT2AM   = NT2AMX
          LDENSIJ = NIJDEN(1)
