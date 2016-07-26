@@ -27,17 +27,17 @@ module so_info
                          sop_model_rpad    = 2, &
                          sop_model_hrpa    = 3, &
                          sop_model_soppa   = 4, &
-                         sop_model_sopccsd = 5, &
-                         sop_model_sopcc2  = 6
+                         sop_model_sopcc2  = 5, &
+                         sop_model_sopccsd = 6
 
    ! Array of the allowed model labels
    character(len=5), dimension(sop_num_models), parameter :: sop_models = &
-                  (/ 'AORPA','DCRPA','AOHRP','AOSOP','AOSOC','AOCC2' /)
+                  (/ 'AORPA','DCRPA','AOHRP','AOSOP','AOCC2','AOSOC' /)
 
    ! Array of method full model names names
    character(len=11), dimension(sop_num_models), parameter :: sop_mod_fullname = &
-      (/'RPA        ','RPA(D)     ','Higher RPA ','SOPPA      ','SOPPA(CCSD)', &
-       'SOPPA(CC2) '/)
+      (/'RPA        ','RPA(D)     ','Higher RPA ','SOPPA      ','SOPPA(CC2) ', &
+       'SOPPA(CCSD)'/)
 
    ! Arrays of arguments the method needs to pass to GET_DENS
    character(len=4), dimension(sop_num_models), parameter :: sop_dens_label = &
@@ -94,8 +94,8 @@ contains
       logical :: so_has_doubles_num
       so_has_doubles_num = any ( nmodel .EQ. (/ sop_model_rpad,    &
                                                 sop_model_soppa,   &
-                                                sop_model_sopccsd, &
-                                                sop_model_sopcc2 /) )
+                                                sop_model_sopcc2, &
+                                                sop_model_sopccsd /) )
       return
    end function
 
@@ -104,7 +104,7 @@ contains
       !  (Work around to the fact that the models are controlled by
       !   individual logical variables)
       logical, intent(out) :: list(sop_num_models)
-      list = (/ AORPA, DCRPA, AOHRP, AOSOP, AOSOC, AOCC2 /)
+      list = (/ AORPA, DCRPA, AOHRP, AOSOP, AOCC2, AOSOC /)
       return
    end subroutine
 
@@ -124,7 +124,7 @@ contains
       logical :: so_has_doubles_name
 
       so_has_doubles_name = (model.eq.'DCRPA').or.(model.eq.'AOSOP').or. &
-                            (model.eq.'AOSOC').or.(model.eq.'AOCC2')
+                            (model.eq.'AOCC2').or.(model.eq.'AOSOC')
       return
    end function
 
