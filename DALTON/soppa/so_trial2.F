@@ -320,7 +320,23 @@ C------------------------------------------------
 C
          ELSE
 C
-            CONV(IEXCI) = NO
+C------------------------------------------------------------------
+C           If imaginary excitation increase NCONV in order to stop
+C           iterations if all other excitations are either converged
+C           or imaginary, but create a new trial vector in case all
+C           excitations haven't converged. The 'i' label in case of
+C           imaginary excitation is assigned in SO_ORDEIG
+C-------------------------------------------------------------------
+CPi 10.08.16
+            IF ( CONV(IEXCI) .EQ. '  i') THEN
+C
+               NCONV = NCONV + 1
+C
+            ELSE
+C
+               CONV(IEXCI) = NO
+C
+            END IF
 C
 C--------------------------------------------------------------------
 C           Check if space is large enough to hold new trial vectors.

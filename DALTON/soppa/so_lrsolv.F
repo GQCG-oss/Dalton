@@ -265,7 +265,8 @@ C
          DTIME      = SECOND()
          CALL SO_REDEV(DOUBLES,NEXCI,NOLDTR,NNEWTR,ISYMTR,
      &                 REDE,LREDE,REDS,LREDS,
-     &                 LREDOL,EXVAL,LEXVAL,WORK(KEND1),LWORK1)
+     &                 LREDOL,EXVAL,LEXVAL,CONV,LCONV,
+     &                 WORK(KEND1),LWORK1)
 C
          DTIME      = SECOND()   - DTIME
          SOTIME(33) = SOTIME(33) + DTIME
@@ -327,11 +328,17 @@ C
          CALL FLSHFO(LUPRI)
 C
 C---------------------------------------------------------------------
-C     Go to next iteration if all eigenvalues are not converged and if
-C     the maximum number of iterations have not been reached.
+C     Go to next iteration if all eigenvalues are not converged or if
+C     only complex excitations remain and if the maximum number of
+C     iterations have not been reached.
+CPi 10.08.16: In the case of complex excitations NNEWTR will always
+C     be greater than 0. Use instead nr of converged excitations since
+C     this in increased also in case of complex excitations (SO_REDEV)
 C---------------------------------------------------------------------
 C
-      IF ( (NNEWTR .GT. 0) .AND. (NIT .LT. MAXIT) ) GOTO 100
+C      IF ( (NNEWTR .GT. 0) .AND. (NIT .LT. MAXIT) ) GOTO 100
+      IF ( (NCONV .LT. NEXCI) .AND. (NIT .LT. MAXIT) ) GOTO 100
+Cend-Pi
 C
 C--------------------------------------------------------------
 C     Calculate and save the pertubed density matrix
@@ -344,6 +351,14 @@ C
      &                 T2MP,LT2MP,DENSIJ,LDENSIJ,
      &                 DENSAB,LDENSAB,DENSAI,LDENSAI,
      &                 WORK(KEND1),LWORK1)
+C
+C--------------------------------------------------------------
+C     Write appropriate iteration info to output
+C-------------------------------------------------------------
+C
+C--------------------------------------------------------------
+C     All excitations have converged
+C-------------------------------------------------------------
 C
       IF ((NNEWTR .EQ. 0) .AND. (NIT.LT.MAXIT)) THEN
 C
@@ -365,6 +380,26 @@ C
             WRITE(LUPRI,9008)
 C
          END IF
+CPi 10.08.16
+C-------------------------------------------------------------------
+C     All excitations have either converged or are imaginary.
+C     Comment: Since the imaginary excitations are not converged,
+C     new trial vectors are construted in the previous iteration and
+C     this case will not be included in the previous if statement.
+C-------------------------------------------------------------------
+C
+      ELSE IF ((NCONV .EQ. NEXCI) .AND. (NIT .LT. MAXIT) ) THEN
+C
+         WRITE(LUPRI,9001)
+         WRITE(LUPRI,9002)
+         WRITE(LUPRI,9003)
+         WRITE(LUPRI,9009)
+         WRITE(LUPRI,9008)
+C
+Cend-Pi
+C--------------------------------------------------------------
+C     Maximum number of iterations is reached
+C-------------------------------------------------------------
 C
       ELSE IF (NIT .EQ. MAXIT) THEN
 C
@@ -399,6 +434,8 @@ C
  9005 FORMAT(1X,I2,' of the excitations are converged.')
  9006 FORMAT(1X,'All of the excitations are converged.')
  9007 FORMAT(1X,'Maximum number of ',I3,' iterations is reached.')
+ 9009 FORMAT(1X,'All of the excitations are either converged or ',
+     &       'imaginary.')
  9008 FORMAT(1X,'---------------------------------------------',
      &       '----------------',/)
  9010 FORMAT(12X,'--------------------------------------------------')

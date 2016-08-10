@@ -275,19 +275,23 @@ C
 C------------------------------------------------------------
 C     Order eigensolutions in ascending order of eigenvalues.
 C------------------------------------------------------------
-C
+CPi 10.08.16: Add Imaginary part
       DO I = 1, IPOS
          JMIN = I
          AMIN = ALFAR(I)
+         BMIN = ALFAI(I)
          DO J = I+1, IPOS
             IF(ALFAR(J) .LT. AMIN) THEN
                AMIN = ALFAR(J)
+               BMIN = ALFAI(J)
                JMIN = J
             ENDIF
          END DO
          IF (JMIN .NE. I) THEN
             ALFAR(JMIN) = ALFAR(I)
+            ALFAI(JMIN) = ALFAI(I)
             ALFAR(I)    = AMIN
+            ALFAI(I)    = BMIN
             CALL DSWAP(NTRIAL,EIVEC(1,I),1,EIVEC(1,JMIN),1)
          ENDIF
       END DO
@@ -295,18 +299,23 @@ C
       DO I = IPOS+1, IPOS+INEG
          JMIN = I
          AMIN = ALFAR(I)
+         BMIN = ALFAI(I)
          DO J = I+1, IPOS+INEG
             IF(ALFAR(J) .GT. AMIN) THEN
                AMIN = ALFAR(J)
+               BMIN = ALFAI(J)
                JMIN = J
             ENDIF
          END DO
          IF (JMIN .NE. I) THEN
             ALFAR(JMIN) = ALFAR(I)
+            ALFAI(JMIN) = ALFAI(I)
             ALFAR(I)    = AMIN
+            ALFAI(I)    = BMIN
             CALL DSWAP(NTRIAL,EIVEC(1,I),1,EIVEC(1,JMIN),1)
          ENDIF
       END DO
+Cend-Pi
 C
 C------------------------------------------------
 C     Print reduced eigenvalues and eigenvectors.
