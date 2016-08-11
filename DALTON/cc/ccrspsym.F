@@ -1918,13 +1918,20 @@ C
 
               LABELA = LBLOPR(IALRSOP(IOPER))
               LABELB = LBLOPR(IBLRSOP(IOPER))
-              IF (.NOT.LRS2N1) THEN
+              if (SKIPLEQ) then
+                   !if (locdbg) then
+                   write(lupri,*)'SONIA LRESIND WARNING'
+                   write(lupri,*)'LRESIND: skip lin eqs'
+                   !end if
+              else
+               IF (.NOT.LRS2N1) THEN
                  EIGV  = -EIGVAL(ILRSST(NXLRSST)) 
                  INUM  = IR1TAMP(LABELB,.FALSE.,EIGV,ISYMB)
-              ELSE
+               ELSE
                  EIGV  = EIGVAL(ILRSST(NXLRSST))   
                  INUM  = ILRMAMP(ILRSST(NXLRSST),EIGV,ISYMB)
-              ENDIF
+               ENDIF
+              end if
 
             ENDIF
   400     CONTINUE
