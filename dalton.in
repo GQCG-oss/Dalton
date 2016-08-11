@@ -149,6 +149,7 @@ usage (){
         echo '    DALTON_USE_GLOBAL_SCRATCH : use global scratch directory, do not copy any files to worker nodes'
         echo '    DALTON_NODELIST           : list of nodes, '$dalton'.x will be copied to DALTON_TMPDIR on each node'
         echo '                                unless DALTON_USE_GLOBAL_SCRATCH is defined'
+        echo '    DALTON_NUM_MPI_PROCS      : number of MPI processes (overridden by -N flag)'
         echo '    DALTON_LAUNCHER           : launcher for the '$dalton'.x binary'
          }
 #
