@@ -1748,7 +1748,7 @@ C=====================================================================*
       DATA TABLE /'.DIPOLE','.ECDLEN','.DIPLEN','.NO2N+1','.OPERAT',
      *            '.SELEXC','.DIPVEL','.DIPMIX','.ECDVEL','.OECDLE',
      *            '.OECDVE','.OLD_LR','.BOTHLR','.NEW_LR','.ECD   ',
-     *            '.OECD  ','.SUMRUL','.XXXXXX','.XXXXXX','.XXXXXX'/
+     *            '.OECD  ','.SUMRUL','.EOMTMO','.SKIPLE','.XXXXXX'/
 
 *--------------------------------------------------------------------*
 * begin:
@@ -1772,6 +1772,8 @@ C
       OLDLRS = .FALSE.
       BOTHLRS = .FALSE.
       SUMRULES = .false.
+      EOMCCSD = .false.
+      SKIPLEQ = .false.
 C
       NSELRS = 0
       NLRSOP = 0
@@ -2276,11 +2278,26 @@ C
             GO TO 100
 C
 C------------------------------------
-C           .XXXXXX: unused keywords.
+C           .EOMTMO: Compute transition
+C            moments according to EOM recipe
 C------------------------------------
 C
 18          CONTINUE
+            eomccsd = .true.
+            skipleq = .true.
+            GO TO 100
+C
+C----------------------------------------------
+C           .SKIPLE: skip solving for M vectors
+C           (introduced mainly for EOM)
+C----------------------------------------------
 19          CONTINUE
+            skipleq = .true.
+            GO TO 100
+C
+C------------------------------------
+C           .XXXXXX: unused
+C------------------------------------
 20          CONTINUE
             GO TO 100
 
@@ -2346,7 +2363,7 @@ C=====================================================================*
       PARAMETER (SECNAM='CC_OPAINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 20)
+      PARAMETER (NTABLE = 21)
 
 * variables:
       LOGICAL SETGSTOPA, SETGSTTPA, SETXSTOPA
@@ -2373,11 +2390,14 @@ C=====================================================================*
       DATA TABLE / '.SELEXC','.NO2N+1','.OPERAT','.DIPLEN','.DIPVEL',
      *             '.ANGMOM','.HALFFR','.PRINT ','.USE X2','.USE O2',
      *             '.SELSTA','.STATES','.TRANSI','.SECMOM','.ROTSTR',
-     *             '.DIPOLE','.XCVSEP','.XRMCOR','.SKIPLE','.EOMXTM'/
+     *             '.DIPOLE','.XCVSEP','.XRMCOR','.SKIPLE','.EOMXTM',
+     &             '.OPADEN'/
 
 *---------------------------------------------------------------------*
 * begin:
 *---------------------------------------------------------------------*
+      LOPADEN = .FALSE.
+
       IF (WORD(1:7) .EQ. '*CCOPA ') THEN
          GSTOPA = .TRUE.
          GSTTPA = .FALSE.
@@ -2454,8 +2474,8 @@ c         table look up:
 
 c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20),
-     &            IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,
+     &            18,19,20,21), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_OPAINP.')
 
 C           ---------------------------------------------------------
@@ -2767,6 +2787,17 @@ C           ------------------------------------------------------
 
               WRITE(LUPRI,*)'CCSD_INPUT: skip Nij*xksi or TX*B' 
               WRITE(LUPRI,*)'CCSD_INPUT: Add EOM extra term   '
+            GO TO 100
+C
+C           ------------------------------------------------------
+C           .OPADEN: use density based implementation of transition 
+C           moments
+C           ------------------------------------------------------
+21          CONTINUE
+            LOPADEN = .true.
+
+              WRITE(LUPRI,*)'CCSD_INPUT: You requested the density 
+     &                       implementation of TMoms'
             GO TO 100
 C
           ELSE
