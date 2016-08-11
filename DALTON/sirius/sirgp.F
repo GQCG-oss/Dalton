@@ -619,7 +619,7 @@ C -- end of subroutine PRWOP
 C
       END
 C  /* Deck readmo */
-      SUBROUTINE READMO(CMO,JRDMO,WRK,LFREE)
+      SUBROUTINE READMO(CMO,JRDMO)
 C
 C Last revision 7-Jan-1985 hjaaj -- ver. 2.6
 C  8-Jul-1992 hjaaj (removed H1VIRT and FCMO calls)
@@ -642,7 +642,7 @@ C
 C
 #include "implicit.h"
 #include "dummy.h"
-      DIMENSION CMO(*),WRK(*)
+      DIMENSION CMO(*)
       LOGICAL   FOUND
 C
 #include "priunit.h"
@@ -764,7 +764,7 @@ C
 C-- IRDMO = 10: read CMO from SIRIFC (LUSIFC)
 C
  1000 CONTINUE
-      CALL RD_SIRIFC('CMO',FOUND,CMO,WRK,LFREE)
+      CALL RD_SIRIFC('CMO',FOUND,CMO)
       IF (.NOT.FOUND) THEN
          IF (NOSTOP) THEN
             JRDMO = JRDMO + 1
@@ -2073,7 +2073,7 @@ C
       RETURN
       END
 C  /* Deck rd_sirifc */
-      SUBROUTINE RD_SIRIFC(KEY,FOUND,AMAT,WRK,LWRK)
+      SUBROUTINE RD_SIRIFC(KEY,FOUND,AMAT)
 C
 C Read specific information from Sirius interface file
 C
@@ -2138,7 +2138,7 @@ C
 C
       CHARACTER*(*) KEY
       LOGICAL   FOUND
-      DIMENSION AMAT(*), WRK(LWRK)
+      DIMENSION AMAT(*)
 C
 C Used from common blocks:
 C   INFINP : NLMSOL

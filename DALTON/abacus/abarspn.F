@@ -700,13 +700,15 @@ C
           WRK(KXSOL:4*KZVAR-1)=0.0d0
           RES0=0.0d0
           DO K=1,NFREQ_ALPHA
-              CALL WRITE_XVEC(LUABSVECS,4*KZVAR,WRK(KXSOL),LABEL,
-     &                       ABS_FREQ_ALPHA(K),RES0)
+C              CALL WRITE_XVEC(LUABSVECS,4*KZVAR,WRK(KXSOL),LABEL,
+C     &                       ABS_FREQ_ALPHA(K),RES0)
+              CALL WRITE_XVEC2(LUABSVECS,4*KZVAR,WRK(KXSOL),LABEL,
+     &             '        ',ABS_FREQ_ALPHA(K),0.0D0,RES0)
           ENDDO
           WRITE(LUPRI,*) 'Vectors equal to zero'
         ELSE
           CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &               ABS_FREQ_ALPHA,NFREQ_ALPHA,
+     &               ABS_FREQ_ALPHA,NFREQ_ALPHA,LUABSVECS,
      &               WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
      &               WRK(KRES),WRK(KFREE),LFREE)
         ENDIF

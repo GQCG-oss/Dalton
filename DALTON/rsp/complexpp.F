@@ -32,13 +32,14 @@ C        response equations",
 C        J. Chem. Theory Comput. 7 (2011) 1610.
 C ============================================================================
 C
-      SUBROUTINE ABS_CTL(LABEL,KZVAR,GD,XSOL,FREQS,NFREQS,
+      SUBROUTINE ABS_CTL(LABEL,KZVAR,GD,XSOL,FREQS,NFREQS,LU,
      &                   MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,
      &                   RESLRF,WRK,LWRK)
 C
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "abslrs.h"
+#include "abscrs.h"
 C
 C PURPOSE:
 C
@@ -69,18 +70,21 @@ C
       KREDGD = KREDS  + ABS_MAXRM*ABS_MAXRM
       KFREE  = KREDGD + 2*ABS_MAXRM
       LFREE  = LWRK - KFREE
+
       IF (LFREE.LT.0) STOP 'ABS_CTL: out of memory'
 c
-      CALL ABS_CHKONFILE(LUABSVECS,CONVERGED,LABEL,ABS_GRADSYM,
-     &     ABS_DAMP,NEQ2S,FREQS,ABS_THCLR,WRK(KFREE))
-      IF (CONVERGED) THEN
-         WRITE(LUABSPRI,'(/A,I3)')
-     &        ' ABSCTL: converged response vectors found on file'//
-     &        ' RSPVEC with unit=',LUABSVECS
-         CALL GET_LRF(LUABSVECS,LABEL,NEQ2S,FREQS,FC,FV,CMO,UDV,PV,
-     &               XINDX,RESLRF,KZVAR,WRK(KFREE),LFREE)
-         GOTO 900
-      END IF
+C      IF (.NOT. ABS_IDRI_XY) THEN
+C      CALL ABS_CHKONFILE(LU,CONVERGED,LABEL,ABS_GRADSYM,
+C     &     ABS_DAMP,NEQ2S,FREQS,ABS_THCLR,WRK(KFREE))
+C      IF (CONVERGED) THEN
+C         WRITE(LUABSPRI,'(/A,I3)')
+C     &        ' ABSCTL: converged response vectors found on file'//
+C     &        ' RSPVEC with unit=',LUABSVECS
+C         CALL GET_LRF(LU,LABEL,NEQ2S,FREQS,FC,FV,CMO,UDV,PV,
+C     &               XINDX,RESLRF,KZVAR,WRK(KFREE),LFREE)
+C         GOTO 900
+C      END IF
+C      END IF
 c
       WRK(KGD:KGD+4*KZVAR-1) = 0.0d0
       WRK(KXRED:KXRED+4*NEQ2S*ABS_MAXRM-1) = 0.0d0
@@ -90,7 +94,8 @@ c
         CONV(I)=.FALSE.
       ENDDO
 C
-      IF ((MAX(ABS_KLRED(1),ABS_KLRED(2)).NE.0).AND. ABS_REBD) THEN
+      IF ((MAX(ABS_KLRED(1),ABS_KLRED(2)).NE.0)
+     &    .AND. .NOT. ABS_IDRI_XY) THEN
 c        write(luabspri,*) 'ABS_KLRED >0, restart'
         DO I=1,KZVAR
           WRK(KGD-1+I)=0.5d0*(GD(I)+GD(KZVAR+I))
@@ -132,7 +137,7 @@ c
         NNLT=4*NEQ2S
         KLRED(1)=0
         KLRED(2)=0
-        IF (.NOT. ABS_REBD) THEN
+        IF ((.NOT. ABS_REBD) .AND. (.NOT. ABS_IDRI_XY)) THEN
           REWIND(LUSB)
           REWIND(LUAB)
           REWIND(LUSS)
@@ -183,7 +188,7 @@ c       call DZERO(WRK(KRESD),4*NEQ2S*KZVAR)
       CALL ABS_RSD(WRK(KXRED),LABEL,KZVAR,NEQ2S,FREQS,KLRED,
      &             KNVEC,NNLT,WRK(KGD),
      &             WRK(KRESD),ITER,CONVERGED,
-     &             CONV,WRK(KXTRL),XSOL,WRK(KFREE),LFREE)
+     &             CONV,WRK(KXTRL),XSOL,LU,WRK(KFREE),LFREE)
 C   
 C     Calculate polarizability
 C
@@ -563,7 +568,7 @@ C
       END
       SUBROUTINE ABS_RSD(RDX,LABEL,KZVAR,NFREQS,FREQS,
      &           KLRED,KNVEC,NNLT,
-     &           GD,RES,ITER,CONVERGED,CONV,XVEC,XSOL,WRK,LWRK)
+     &           GD,RES,ITER,CONVERGED,CONV,XVEC,XSOL,LU,WRK,LWRK)
 C
 C PURPOSE:
 C     Compute the complex residual vector to the linear response 
@@ -575,7 +580,8 @@ C
 C
 #include "abslrs.h"
 C
-      CHARACTER*8 LABEL
+      CHARACTER*8 LABEL, BLANK
+      PARAMETER (BLANK='        ')
       INTEGER NFREQS,KLRED(2),KNVEC(2),NNLT,ITER,KZVAR
       LOGICAL CONV(NFREQS)
       PARAMETER (D0 = 0.0D0, D1=1.0D0)
@@ -769,14 +775,18 @@ C
             IF (DNORM_RT/DNORM_REL.LE.ABS_THCLR) THEN
                NCONV=NCONV+1
                CONV(K)=.TRUE.
-               CALL WRITE_XVEC(LUABSVECS,2*KZYVAR,XSOL(1,1,K),LABEL,
-     &              FREQS(K),RESID)
+C               CALL WRITE_XVEC(LU,2*KZYVAR,XSOL(1,1,K),LABEL,
+C     &              FREQS(K),RESID)
+               CALL WRITE_XVEC2(LU,2*KZYVAR,XSOL(1,1,K),LABEL,
+     &              BLANK,FREQS(K),0.0d0,RESID)
             ELSEIF (ITER.EQ.ABS_MAXITER) THEN
                CONVERGED=.FALSE.
                SOLVER_QUIT=.TRUE.
                IF (RESID .LE. 10.0d0*ABS_THCLR) THEN
-                  CALL WRITE_XVEC(LUABSVECS,2*KZYVAR,XSOL(1,1,K),LABEL,
-     &                 FREQS(K),RESID)
+C                  CALL WRITE_XVEC(LU,2*KZYVAR,XSOL(1,1,K),LABEL,
+C     &                 FREQS(K),RESID)
+                  CALL WRITE_XVEC2(LU,2*KZYVAR,XSOL(1,1,K),LABEL,
+     &                 BLANK,FREQS(K),0.0d0,RESID)
                   WRITE(LUABSPRI,*) 'WARNING! For',FREQS(K)
                   WRITE(LUABSPRI,*) 'CPP equations not converged'
                  WRITE(LUABSPRI,*) 'Threshold in iteration',ITER,RESID

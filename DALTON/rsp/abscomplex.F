@@ -60,13 +60,14 @@ C ISYMAX
 C NCONF
 #include "abslrs.h"
 #include "absorp.h"
+#include "abscrs.h"
 #include "inforb.h"
 #include "inftap.h"
 #include "infinp.h"
 #include "infrsp.h"
 C
       LOGICAL NEWDEF, ALLCOMP, NXTLAB
-      PARAMETER ( NTABLE = 32 )
+      PARAMETER ( NTABLE = 39 )
       PARAMETER ( THRFRQ=1.0D-14, THD=1.0D-6 )
       CHARACTER PROMPT*1, WORD*7, WORD1*7, TABLE(NTABLE)*7
       CHARACTER*8 DIPLEN(3),ANGMOM(3),THETA(6),RTNLBL(2),LABFND
@@ -84,19 +85,23 @@ c
      &            '.CFREQ ','.CFREQI','.SHG   ','.XXCOMP','.YYCOMP',
      &            '.ZZCOMP','.IMAG F','.NBATCH','.NOREBD','.OLDCPP',
      &            '.MAX MI','.MAXITO','.EXCITA','.MAX MA','.THCPP ',
-     &            '.REDUCE','.BATCH '/
+     &            '.REDUCE','.BATCH ','.IDRI  ','.GAMMA ','.DFREQ ',
+     &            '.DFREQI','.ELEMNT','.OTOFGA','.ALLELE'/
 C
       NEWDEF = (WORD .EQ. '*ABSORP')
       ICHANG = 0
 C
-      ALLCOMP = .TRUE.
-      ICOMP=0
-      ABSLRS=.TRUE.
-      ABSLRS_MCD=.FALSE.
-      ABSLRS_MCHD=.FALSE.
-      ABSLRS_NSCD=.FALSE.
-C
 C     Set default values
+      ALLCOMP           = .TRUE.  !All components of requested tensor
+      ICOMP             = 0       !ICHOMP=1,2,3 --> XX,YY,ZZCOMP
+      ABSLRS            = .TRUE.  !New linear response solver
+      ABSLRS_MCD        = .FALSE. !Magnetic circular dichroism
+      ABSLRS_MCHD       = .FALSE. !Magneto-chiral dichroism
+      ABSLRS_NSCD       = .FALSE. !Nuclear-spin circular dichroism
+      ABSLRS_IDRI       = .FALSE. !Intensity dependent refractive index
+      ABS_GAMMA_ELEMENT = .FALSE. !Specific elements for GAMMA
+      ABS_GAMMA_ALLELE  = .FALSE. !All elements for GAMMA
+      ABS_OTOF_GAMMA    = .FALSE. !One-to-one frequencies for GAMMA
 C
       IF (NEWDEF) THEN
 C     Common default value of the damping parameter is set to 
@@ -116,7 +121,7 @@ C
                   IF (TABLE(I) .EQ. WORD) 
      &                GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      &                     16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,
-     &                     31,32),I
+     &                     31,32,33,34,35,36,37,38,39),I
                END DO
                IF (WORD .EQ. '.OPTION') THEN
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
@@ -127,11 +132,14 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT(' ILLEGAL KEYWORD IN ABSORP_INPUT ')
 C
+C              .ALPHA
  1             CONTINUE
                ABSLRS_ALPHA=.TRUE.
                ABSLRS_BETA=.FALSE.
                ABSLRS_GAMMA=.FALSE.
                GOTO 100
+C
+C              .FREQUE
  2             CONTINUE
                IF (ABSLRS_ALPHA) THEN
                   READ (LUCMD,*) ABS_NFREQ_ALPHA
@@ -155,48 +163,71 @@ C
                   READ(LUCMD,*)
                END IF
                GOTO 100
+C
+C              .THCLR
  3             CONTINUE
                   READ (LUCMD,*) ABS_THCLR
                   IF (ABS_OLDCPP) THCLR_ABSORP=ABS_THCLR
                GOTO 100
+C
+C              .MAXIT
  4             CONTINUE
                   READ (LUCMD,*) ABS_MAXITER
                GOTO 100
+C
+C              .MAXRM
  5             CONTINUE
                   READ (LUCMD,*) ABS_MAXRM
                GOTO 100
+C
+C              .PRINT
  6             CONTINUE
                   READ (LUCMD,*) IPRABSLRS
                GOTO 100
+C
+C              .DAMPIN
  7             CONTINUE
-C     User input of damping parameter
                   READ (LUCMD,*) ABS_DAMP
                GOTO 100
+C
+C              .ANALYZ
  8             CONTINUE
                ABSLRS_ANALYZE=.TRUE.
                GOTO 100
+C
+C              .FREQ I
  9             CONTINUE
                ABSLRS_INTERVAL = .TRUE.
 c               ABS_REDUCE = .TRUE.
                READ(LUCMD,*) (ABS_FREQ_INTERVAL(I), I=1,3)
                GOTO 100
+C
+C              .MCD
  10            CONTINUE
                ABSLRS_ALPHA=.FALSE.
                ABSLRS_MCD  =.TRUE.
                GOTO 100
+C
+C              .MCHD
  11            CONTINUE
                ABSLRS_ALPHA=.FALSE.
                ABSLRS_MCHD  =.TRUE.
                GOTO 100
+C
+C              .NSCD
  12            CONTINUE
                 ABSLRS_ALPHA=.FALSE.
                 ABSLRS_NSCD  =.TRUE.
                 GOTO 100
+C
+C              .BETA
  13            CONTINUE
                 ABSLRS_ALPHA=.FALSE.
                 ABSLRS_BETA  =.TRUE.
                 ABSLRS_GAMMA =.FALSE.
                 GOTO 100
+C
+C              .BFREQ
  14            CONTINUE
                IF (ABSLRS_BETA .OR. ABSLRS_MCD .OR. ABSLRS_MCHD .OR. 
      &             ABSLRS_NSCD) THEN
@@ -214,17 +245,50 @@ c               ABS_REDUCE = .TRUE.
      &                              (FFFF,J=NMXFREQ+1,ABS_NFREQ_BETA_B)
                      ABS_NFREQ_BETA_B = NMXFREQ
                   END IF
+               ELSE IF (ABSLRS_GAMMA .OR. ABSLRS_IDRI) THEN
+                  READ (LUCMD,*) ABS_NFREQ_GAMMA_B
+                  IF (ABS_NFREQ_GAMMA_B .LE. NMXFREQ) THEN
+                     READ (LUCMD,*) (ABS_FREQ_GAMMA_B(J),
+     &               J = 1,ABS_NFREQ_GAMMA_B)
+                     IF (ABSLRS_IDRI) THEN
+                        ABS_NFREQ_GAMMA_C = ABS_NFREQ_GAMMA_B
+                        ABS_NFREQ_GAMMA_D = ABS_NFREQ_GAMMA_B
+                        DO J= 1,ABS_NFREQ_GAMMA_B
+                           ABS_FREQ_GAMMA_C(J) = -ABS_FREQ_GAMMA_B(J)
+                           ABS_FREQ_GAMMA_D(J) =  ABS_FREQ_GAMMA_B(J)
+                        END DO
+                     END IF
+                  ELSE
+                     WRITE (LUPRI,'(3(/,A,I5),/)')
+     &              ' NUMBER OF FREQUENCIES SPECIFIED   :',
+     &                                            ABS_NFREQ_GAMMA_B,
+     &              ' IS GREATER THAN THE ALLOWED NUMBER:',NMXFREQ,
+     &              ' THE NUMBER IS RESET TO THE MAXIMUM:',NMXFREQ
+                     READ (LUCMD,*) (ABS_FREQ_GAMMA_B(J),J=1,NMXFREQ),
+     &                              (FFFF,J=NMXFREQ+1,ABS_NFREQ_GAMMA_B)
+                     ABS_NFREQ_GAMMA_B = NMXFREQ
+                     IF (ABSLRS_IDRI) THEN
+                        DO J=1,ABS_NFREQ_GAMMA_B
+                           ABS_FREQ_GAMMA_C(J)= -ABS_FREQ_GAMMA_B(J)
+                           ABS_FREQ_GAMMA_D(J)=  ABS_FREQ_GAMMA_B(J)
+                        END DO
+                     END IF
+                  END IF
                ELSE
                   WRITE(LUPRI,1010) WORD
                   READ(LUCMD,*)
                   READ(LUCMD,*)
                END IF
                GOTO 100
+C
+C              .BFREQI
  15            CONTINUE
                ABSQRS_INTERVAL = .TRUE.
 c               ABS_REDUCE = .TRUE.
                READ(LUCMD,*) (ABS_BFREQ_INTERVAL(I), I=1,3)
                GOTO 100
+C
+C              .CFREQ
  16            CONTINUE
                IF (ABSLRS_BETA) THEN
                  READ (LUCMD,*) ABS_NFREQ_BETA_C
@@ -240,49 +304,84 @@ c               ABS_REDUCE = .TRUE.
      &                              (FFFF,J=NMXFREQ+1,ABS_NFREQ_BETA_C)
                      ABS_NFREQ_BETA_C = NMXFREQ
                   END IF
+               ELSE IF (ABSLRS_GAMMA) THEN
+                  READ (LUCMD,*) ABS_NFREQ_GAMMA_C
+                  IF (ABS_NFREQ_GAMMA_C .LE. NMXFREQ) THEN
+                     READ (LUCMD,*) (ABS_FREQ_GAMMA_C(J),
+     &               J = 1,ABS_NFREQ_GAMMA_C)
+                  ELSE
+                     WRITE (LUPRI,'(3(/,A,I5),/)')
+     &              ' NUMBER OF FREQUENCIES SPECIFIED   :',
+     &                                            ABS_NFREQ_GAMMA_C,
+     &              ' IS GREATER THAN THE ALLOWED NUMBER:',NMXFREQ,
+     &              ' THE NUMBER IS RESET TO THE MAXIMUM:',NMXFREQ
+                     READ (LUCMD,*) (ABS_FREQ_GAMMA_C(J),J=1,NMXFREQ),
+     &                              (FFFF,J=NMXFREQ+1,ABS_NFREQ_GAMMA_C)
+                     ABS_NFREQ_GAMMA_C = NMXFREQ
+                  END IF
                ELSE
                   WRITE(LUPRI,1010) WORD
                   READ(LUCMD,*)
                   READ(LUCMD,*)
                END IF
                GOTO 100
+C
+C              .CFREQI
  17            CONTINUE
                ABSQRS_CINTERVAL = .TRUE.
 c               ABS_REDUCE = .TRUE.
                READ(LUCMD,*) (ABS_CFREQ_INTERVAL(I), I=1,3)
                GOTO 100
+C
+C              .SHG
  18            CONTINUE
                ABSLRS_ALPHA=.FALSE.
                ABSLRS_BETA =.TRUE.
                ABSLRS_GAMMA=.FALSE.
                ABSLRS_SHG  =.TRUE.
                GOTO 100
+C
+C              .XXCOMP
  19            CONTINUE      
                ALLCOMP=.FALSE.
                ICOMP=1
                GOTO 100
+C
+C              .YYCOMP
  20            CONTINUE
                ALLCOMP=.FALSE.
                ICOMP=2
                GOTO 100
+C
+C              .ZZCOMP
  21            CONTINUE
                ALLCOMP=.FALSE.
                ICOMP=3
                GOTO 100
+C
+C              .IMAG F
  22            CONTINUE
                ABS_IMFREQ=.TRUE.
                ABS_DAMP=0.0d0
                GOTO 100
+C
+C              .NBATCH
  23            CONTINUE
                ABS_BATCH=.TRUE.
                READ(LUCMD,*) ABS_NBATCHMAX
                GOTO 100
+C
+C              .NOREBD
  24            CONTINUE
                  ABS_REBD = .FALSE.
                GOTO 100
+C
+C              .OLDCPP
  25            CONTINUE
                  ABS_OLDCPP = .TRUE.
                GOTO 100
+C
+C              .MAX MI
  26            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) MAX_MICRO
@@ -291,6 +390,8 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
+C
+C              .MAXITO
  27            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) MAX_ITORB
@@ -300,7 +401,9 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 28             CONTINUE
+C
+C              .EXCITA
+ 28            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) NEXCITED_STATES
                ELSE
@@ -308,7 +411,9 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 29             CONTINUE
+C
+C              .MAX MA
+ 29            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) MAX_MACRO
                ELSE
@@ -316,6 +421,8 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
+C
+C              .THCPP
  30            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) THCPP_ABSORP
@@ -325,6 +432,8 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
+C
+C              .REDUCE
  31            CONTINUE
                  IF (ABS_OLDCPP) THEN
                  ABS_REDUCE=.TRUE.
@@ -332,12 +441,87 @@ c               ABS_REDUCE = .TRUE.
                   WRITE(LUPRI,1020) WORD
                END IF
                GOTO 100
+C
+C              .BATCH
  32            CONTINUE
                READ(LUCMD,*) NFREQ_BATCH
                IF (NFREQ_BATCH.GT.MXFREQ) THEN
                   NFREQ_BATCH = MXFREQ
                END IF
                GOTO 100
+C
+C              .IDRI
+ 33            CONTINUE
+                  ABSLRS_ALPHA = .FALSE.
+                  ABSLRS_BETA  = .FALSE.
+                  ABSLRS_GAMMA = .FALSE.
+                  ABSLRS_IDRI  = .TRUE.
+               GOTO 100
+C
+C              .GAMMA
+ 34            CONTINUE
+                  ABSLRS_ALPHA = .FALSE.
+                  ABSLRS_BETA  = .FALSE.
+                  ABSLRS_GAMMA = .TRUE.
+               GOTO 100
+C
+C              .DFREQ
+ 35            CONTINUE
+                  IF (ABSLRS_GAMMA) THEN
+                     READ (LUCMD,*) ABS_NFREQ_GAMMA_D
+                     IF (ABS_NFREQ_GAMMA_D .LE. NMXFREQ) THEN
+                        READ (LUCMD,*) (ABS_FREQ_GAMMA_D(J),
+     &                                  J=1,ABS_NFREQ_GAMMA_D)
+                     ELSE
+                        WRITE (LUPRI,'(3(/,A,I5),/)')
+     &         ' NUMBER OF FREQUENCIES SPECIFIED   :',ABS_NFREQ_GAMMA_D,
+     &         ' IS GREATER THAN THE ALLOWED NUMBER:',NMXFREQ,
+     &         ' THE NUMBER IS RESET TO THE MAXIMUM:',NMXFREQ
+                        READ (LUCMD,*) (ABS_FREQ_GAMMA_D(J),
+     &                       J=1,NMXFREQ),
+     &                       (FFFF,J=NMXFREQ+1,ABS_NFREQ_GAMMA_D)
+                     ABS_NFREQ_GAMMA_D = NMXFREQ
+                     END IF
+                  ELSE
+                     WRITE(LUPRI,1010) WORD
+                     READ(LUCMD,*)
+                     READ(LUCMD,*)
+                  END IF
+               GOTO 100
+C
+C              .DFREQI
+ 36            CONTINUE
+               GOTO 100
+C
+C              .ELEMNT
+ 37            CONTINUE
+                  IF (ABSLRS_GAMMA .AND. .NOT. ABS_GAMMA_ALLELE) THEN
+                     ABS_GAMMA_ELEMENT = .TRUE.
+                     READ (LUCMD,*) ABS_NELEMENTS_GAMMA
+                     IF (ABS_NELEMENTS_GAMMA .GT. 81) THEN
+                       CALL QUIT(' Too many elements specified for                              
+     &                             gamma tensor: ',ABS_NELEMENTS_GAMMA,
+     &                             ', maximum = 81) ')
+                     END IF
+                     READ (LUCMD,*)
+     &               (ABS_ELEMENTS_GAMMA(J),J=1,ABS_NELEMENTS_GAMMA)
+                  END IF
+               GOTO 100
+C
+C              .OTOFGA
+ 38            CONTINUE
+                  IF (ABSLRS_GAMMA .OR. ABSLRS_IDRI) THEN
+                     ABS_OTOF_GAMMA = .TRUE.
+                  END IF
+               GOTO 100
+C
+C              .ALLELE
+ 39            CONTINUE
+                  IF (ABSLRS_GAMMA .AND. .NOT. ABS_GAMMA_ELEMENT) THEN
+                     ABS_GAMMA_ALLELE = .TRUE.
+                  ENDIF
+               GOTO 100
+C
             ELSE IF (PROMPT .EQ. '*') THEN
                GOTO 300
             ELSE
@@ -378,7 +562,8 @@ C
 
 C
       ABSLRS = ABSLRS_ALPHA .OR. ABSLRS_BETA .OR. ABSLRS_GAMMA .OR.
-     &         ABSLRS_MCD .OR. ABSLRS_MCHD .OR. ABSLRS_NSCD
+     &         ABSLRS_MCD .OR. ABSLRS_MCHD .OR. ABSLRS_NSCD .OR.
+     &         ABSLRS_GAMMA .OR. ABSLRS_IDRI
       IF (.NOT.ABSLRS) THEN
          WRITE(LUPRI,'(/A)') ' Absorption input ignored because:'
          WRITE(LUPRI,'(A,L2)')' No process requested:',
@@ -514,6 +699,24 @@ C
             WRITE(LUPRI,'(A,5(4F12.8))')
      &           ' C-FREQ:',(ABS_FREQ_BETA_C(I),I=1,ABS_NFREQ_BETA_C)
          END IF
+C
+         IF (ABSLRS_GAMMA .OR. ABSLRS_IDRI) THEN
+            IF (ABSLRS_GAMMA) THEN
+            WRITE (LUPRI,'(2A,L4)')
+     &  ' Nonlinear polarizability calculation requested:ABSLRS_GAMMA ',
+     &  '=',ABSLRS_GAMMA
+            ELSE IF (ABSLRS_IDRI) THEN
+            WRITE (LUPRI,'(2A,L4)')
+     &  ' Nonlinear polarizability calculation requested:ABSLRS_IDRI ',
+     &  '=',ABSLRS_IDRI
+            END IF
+            WRITE(LUPRI,'(A,5(4F12.8))')
+     &           ' B-FREQ:',(ABS_FREQ_GAMMA_B(I),I=1,ABS_NFREQ_GAMMA_B)
+            WRITE(LUPRI,'(A,5(4F12.8))')
+     &           ' C-FREQ:',(ABS_FREQ_GAMMA_C(I),I=1,ABS_NFREQ_GAMMA_C)
+            WRITE(LUPRI,'(A,5(4F12.8))')
+     &           ' D-FREQ:',(ABS_FREQ_GAMMA_D(I),I=1,ABS_NFREQ_GAMMA_D)
+         END IF
 cC
          IF (ABSLRS_MCD) THEN
             WRITE (LUPRI,'(A,L4)')
@@ -585,11 +788,11 @@ C
      &  /,' The program will continue.')
 
  1010 FORMAT(/,
-     &  ' Keyword:',A8,' ignored since a BETA calc not specified.',
-     &  /,' If asked for, the .BETA keyword should be placed first',
-     &  /,' of *ABSORPTION input keys.',
+     &  ' Keyword:',A8,' ignored since a BETA or GAMMA calc not '
+     &  'specified.',
+     &  /,' If asked for, the .BETA or .GAMMA keyword should be placed '
+     &  'first of *ABSORPTION input keys.',
      &  /,' The program will continue.')
-
 
  1020 FORMAT(/,
      &  ' Keyword:',A8,' ignored,calc with old cpp not specified.',
@@ -617,6 +820,7 @@ C   iradef.h : IRAT
 #include "priunit.h"
 #include "iratdef.h"
 #include "abslrs.h"
+#include "abscrs.h"
 #include "infvar.h"
 #include "inforb.h"
 C
@@ -639,12 +843,23 @@ C
       CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
      &     KFREE,LFREE)
 C
+C     Determine the QR that is to be calculated
+C     =========================================
+C
       IF (ABSLRS_BETA .OR. ABSLRS_MCD .OR. ABSLRS_MCHD .OR. ABSLRS_NSCD)
      &     THEN
          CALL ABS_BETA_SETUP
       END IF
 C
-C     Allocate memory for results of linear absorption calc.
+C     Determine the CR that is to be calculated
+C     =========================================
+C
+      IF (ABSLRS_GAMMA .OR. ABSLRS_IDRI) THEN
+         CALL ABS_GAMMA_SETUP
+      END IF
+C
+C     Allocate memory for results of linear absorption calc
+C     =====================================================
 C
       DSMALL=1.0000001
       IF (ABSLRS_INTERVAL) THEN
@@ -660,11 +875,23 @@ C
       CALL DZERO(WRK(KRES),2*ABS_NFREQ_INTERVAL*3*3*3)
 C
 C     Determine linear response vectors
+C     =================================
 C
       CALL AROUND('Solving Linear Response Equations')
 C     default: Use the new SCF solver (see Reference C) 
       CALL ABS_LRS(NSYM,CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      &        XINDX,WRK(KMJWOP),WRK(KRES),WRK(KFREE),LFREE)
+C
+C     Determine double-indexed response vectors for cubic response
+C     ============================================================
+C
+      IF (ABSLRS_GAMMA .OR. ABSLRS_IDRI) THEN
+         CALL ABS_NXY(CMO, UDV, PV, XINDX, WRK(KMJWOP), FC, FCAC, FV,
+     &                H2AC, FOCK, WRK(KRES), WRK(KFREE), LFREE)
+      END IF
+C
+C     Evaluation of QRF
+C     =================
 C
       IF (ABSLRS_BETA .OR. ABSLRS_MCD .OR. ABSLRS_MCHD .OR. ABSLRS_NSCD)
      &     THEN
@@ -673,7 +900,17 @@ C
      &               XINDX,WRK(KMJWOP),WRK(KFREE),LFREE)
       END IF
 C
-C     Print-out a summary of results
+C     Evaluation of CRF
+C     =================
+C
+      IF (ABSLRS_GAMMA .OR. ABSLRS_IDRI) THEN
+         CALL AROUND('Evaluate Cubic Response Functions')
+         CALL ABS_CRF(CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
+     &                XINDX, WRK(KMJWOP), WRK(KFREE), LFREE)
+      END IF
+C
+C     Print obtained response results
+C     ===============================
 C
       CALL ABSLRSRESULT(WRK(KMJWOP),WRK(KRES),WRK(KFREE),LFREE)
 c
@@ -694,7 +931,8 @@ C
 #include "abslrs.h"
 c
       LOGICAL CONVERGED
-      CHARACTER LABEL*8
+      CHARACTER*8 LABEL, BLANK
+      PARAMETER (BLANK='        ')
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
 c      DIMENSION XINDX(*),MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*),MJWOP(*)
@@ -707,7 +945,7 @@ C     local
 C
 C
       IF (IPRABSLRS.GT.0) CALL TIMER('START ',TIMSTR,TIMEND)
-C 
+C
       negf=.false.
       DO ISYM=1,NSYM
          IF (ABS_NOPER(ISYM).GT.0) THEN
@@ -773,8 +1011,10 @@ C
                IF (GDNRM .LE. 1.0d-6) THEN
                  WRK(KXSOL:4*KZVAR-1)=0.0d0
                  DO K=1,ABS_NFREQ_INTERVAL
-                   CALL WRITE_XVEC(LUABSVECS,4*KZVAR,WRK(KXSOL),LABEL,
-     &                  ABS_FREQ_ALPHA(K),RES0)
+C                   CALL WRITE_XVEC(LUABSVECS,4*KZVAR,WRK(KXSOL),LABEL,
+C     &                  ABS_FREQ_ALPHA(K),RES0)
+                    CALL WRITE_XVEC2(LUABSVECS,4*KZVAR,WRK(KXSOL),LABEL,
+     &                   BLANK,ABS_FREQ_ALPHA(K),0.0d0,RES0)
                    ENDDO
                  WRITE(LUPRI,*) 'Vectors equal to zero'
                ELSE
@@ -786,9 +1026,8 @@ C
                  if (negf) then
                    call gpdsrt(nfreqs,wrk(kfreqs),thd)
                  endif
-                 
                  CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &                        wrk(kfreqs),nfreqs,
+     &                        wrk(kfreqs),nfreqs,LUABSVECS,
      &                        MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,RESLRF,
      &                        WRK(KFREE),LFREE)
                ENDIF
@@ -1625,7 +1864,8 @@ C
       DIMENSION GREABG(NFREQ_BETA_B),GIMABG(NFREQ_BETA_B)
       DIMENSION BIREFR(NFREQ_BETA_B),DICHRO(NFREQ_BETA_B)
       !Nuclear spin CD/OR averages. Sonia
-      CHARACTER*8 LABINT, LABX, LABY, LABZ
+      CHARACTER*8 LABINT, LABX, LABY, LABZ, BLANK
+      PARAMETER (BLANK='        ')
       DOUBLE PRECISION XNSCD(NPATOM), XNSOR(NPATOM)
 C
       KFREE = 1
@@ -2232,9 +2472,12 @@ C ------------------------------------------------------------------
      &              ABS_LABOP(IOPER,ISYM),
      &              'Frequency:',ABS(FREQ),
      &              'Damping  :',ABS_DAMP
-                 CALL READ_XVEC(LUABSVECS,2*KZYVAR,WRK(KVEC),
-     &              ABS_LABOP(IOPER,ISYM),ISYM,
-     &              ABS(FREQ),ABS_THCLR,FOUND,CONV)
+C                 CALL READ_XVEC(LUABSVECS,2*KZYVAR,WRK(KVEC),
+C     &              ABS_LABOP(IOPER,ISYM),ISYM,
+C     &              ABS(FREQ),ABS_THCLR,FOUND,CONV)
+                 CALL READ_XVEC2(LUABSVECS,2*KZYVAR,WRK(KVEC),
+     &              ABS_LABOP(IOPER,ISYM),BLANK,ISYM,
+     &              ABS(FREQ),0.0d0,ABS_THCLR,FOUND,CONV)
                  IF (.NOT. FOUND) THEN
                    WRITE(LUPRI,'(/A)') 
      &                 ' Response vector not found on file LUABSVECS'
@@ -2325,7 +2568,8 @@ C
 #include "priunit.h"
 #include "abslrs.h"
 C
-      CHARACTER*8 LABEL,LABGD
+      CHARACTER*8 LABEL,LABGD, BLANK
+      PARAMETER (BLANK='        ')
       LOGICAL FOUND,CONV
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),XINDX(*),
      &     WRK(LWRK),RESLRF(2,ABS_NFREQ_INTERVAL,3,3,2),
@@ -2358,10 +2602,13 @@ C
             CALL GETGPV(LABGD,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &           WRK(KGD),LFREE)
             DO IFREQ=1,ABS_NFREQ_INTERVAL
-                 CALL READ_XVEC(LU,2*KZYVAR,WRK(KVEC),
-     &              LABEL,ABS_GRADSYM,
+C                 CALL READ_XVEC(LU,2*KZYVAR,WRK(KVEC),
+C     &              LABEL,ABS_GRADSYM,
+C     &              abs(FREQ_ABS(IFREQ)),ABS_THCLR,FOUND,CONV)
 c     &              ABS(FREQ_ABS(IFREQ),ABS_THCLR,FOUND,CONV)
-     &              abs(FREQ_ABS(IFREQ)),ABS_THCLR,FOUND,CONV)
+                 CALL READ_XVEC2(LU,2*KZYVAR,WRK(KVEC),
+     &              LABEL,BLANK,ABS_GRADSYM,
+     &              abs(FREQ_ABS(IFREQ)),0.0d0,ABS_THCLR,FOUND,CONV)
                if (freq_abs(ifreq) .lt. d0) then
                  call abs_vec_swap(2*kzyvar,wrk(kvec))
                endif
@@ -2392,7 +2639,8 @@ C
 C
       LOGICAL FOUND, CONV
       CHARACTER*8 ALAB,BLAB,CLAB,BLANK
-      PARAMETER ( D0=0.0D0, DM1=-1.0D0 )
+      PARAMETER (BLANK='        ')
+      PARAMETER ( D0=0.0D0, DM1=-1.0D0)
       DIMENSION VECA(*),VECB(*),VECC(*)
 C
       KZYVA  = MZYVAR(ISYMA)
@@ -2411,8 +2659,10 @@ C
 C
 C     Read in Na
 C
-      CALL READ_XVEC(LUABSVECS,2*KZYVA,VECA,ALAB,ISYMA,
-     &              ABS(FREQA),ABS_THCLR,FOUND,CONV)
+C      CALL READ_XVEC(LUABSVECS,2*KZYVA,VECA,ALAB,ISYMA,
+C     &              ABS(FREQA),ABS_THCLR,FOUND,CONV)
+      CALL READ_XVEC2(LUABSVECS,2*KZYVA,VECA,ALAB,BLANK,ISYMA,
+     &              ABS(FREQA),0.0d0,ABS_THCLR,FOUND,CONV)
       IF (.NOT. (FOUND .AND. CONV)) THEN
          IF (.NOT. FOUND) THEN
             WRITE (LUPRI,'(/3A,F8.5,A,I3,/A)') ' Response label ',ALAB,
@@ -2441,8 +2691,10 @@ C
 C
 C     Read in Nb
 C
-      CALL READ_XVEC(LUABSVECS,2*KZYVB,VECB,BLAB,ISYMB,
-     &              ABS(FREQB),ABS_THCLR,FOUND,CONV)
+C      CALL READ_XVEC(LUABSVECS,2*KZYVB,VECB,BLAB,ISYMB,
+C     &              ABS(FREQB),ABS_THCLR,FOUND,CONV)
+      CALL READ_XVEC2(LUABSVECS,2*KZYVB,VECB,BLAB,BLANK,ISYMB,
+     &              ABS(FREQB),0.0d0,ABS_THCLR,FOUND,CONV)
       IF (.NOT. (FOUND .AND. CONV)) THEN
          IF (.NOT. FOUND) THEN
             WRITE (LUPRI,'(/3A,F8.5,A,I3,/A)') ' Response label ',BLAB,
@@ -2471,8 +2723,10 @@ C
 C
 C     Read in Nc
 C
-      CALL READ_XVEC(LUABSVECS,2*KZYVC,VECC,CLAB,ISYMC,
-     &              ABS(FREQC),ABS_THCLR,FOUND,CONV)
+C      CALL READ_XVEC(LUABSVECS,2*KZYVC,VECC,CLAB,ISYMC,
+C     &              ABS(FREQC),ABS_THCLR,FOUND,CONV)
+      CALL READ_XVEC2(LUABSVECS,2*KZYVC,VECC,CLAB,BLANK,ISYMC,
+     &              ABS(FREQC),0.0d0,ABS_THCLR,FOUND,CONV)
       IF (.NOT. (FOUND .AND. CONV)) THEN
          IF (.NOT. FOUND) THEN
             WRITE (LUPRI,'(/3A,F8.5,A,I3,/A)') ' Response label ',CLAB,

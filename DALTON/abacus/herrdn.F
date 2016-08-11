@@ -98,7 +98,7 @@ cBASPRO: Now takes care of the generation of the symmetry-dependant atoms
 c        through the array ISTBNU.
 c941119-tsaue:
 cREADIN: added extra index to arrays IQM,NBLCK,JCO,NUC,NRC,SEG,ALPHA,
-c        CPRIMU ta accomodat both large and small components
+c        CPRIMU ta accomodate both large and small components
 cACPORB: implemented readin of exponents only
 cSYMGRP: New routine determining irreps, characters etc.
 cDBLGRP: new routine for handling double group symmetry
@@ -125,24 +125,28 @@ C  /* Deck reainp */
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-      PARAMETER ( NTABLE = 12, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 13, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 !
 !     Parameter MAXPRD in cbirea.h is default for MAXPRI
+! numder.h : NOMOVE
 #include "cbirea.h"
+#include "numder.h"
 #include "r12int.h"
 #include "qm3.h"
 C
       DATA TABLE /'.PRINT ', '.CONTIN', '.MAXPRI', '.BIGVEC',
      *            '.ONLYOV', '.SYMTHR', '.CM FUN', '.ZCMVAL',
-     *            '.WRTLIN', '.UNCONT', '.ANGSTR', '.R12AUX'/
+     *            '.WRTLIN', '.UNCONT', '.ANGSTR', '.R12AUX',
+     &            '.NOMOVE'/
 C
 C     ... in qm3.h, for QM3:
       ONLYOV = .FALSE.
 C
       NEWDEF = (WORD .EQ. '*READIN' .OR. WORD .EQ. '*MOLBAS')
       ICHANG = 0
+      IPREAD_ini = IPREAD
       IF (NEWDEF) THEN
          WORD1 = WORD
   100    CONTINUE
@@ -162,14 +166,16 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized for *MOLBAS.'
+               WRITE (LUPRI,'(/4A/)') ' ERROR: Keyword "',WORD,
+     *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword for *MOLBAS.')
-C                 '.PRINT '
-    1          CONTINUE
+               CALL QUIT('Illegal keyword for '//WORD1)
+    1          CONTINUE ! .PRINT
                   IPREAD_ini = IPREAD
-                  READ (LUCMD, *) IPREAD
+                  READ (LUCMD, *,IOSTAT=IOS) IPREAD
+                  IF (IOS.NE.0) THEN
+                     CALL QUIT('Error in reading .PRINT')
+                  ENDIF
                   IF (IPREAD .EQ. IPREAD_ini) ICHANG = ICHANG - 1
                GO TO 100
     2          CONTINUE
@@ -188,23 +194,19 @@ C                 Sonia, 2012
                   NCMEND = NINT(CMEND)
                   LCNTNUUM = .true.
                GO TO 100
-C                 '.MAXPRI'
-    3          CONTINUE
+    3          CONTINUE ! .MAXPRI
                   READ (LUCMD, *,IOSTAT=IOS) MAXPRI
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .MAXPRI')
                   ENDIF
                GO TO 100
-C                 '.BIGVEC'
-    4          CONTINUE
+    4          CONTINUE ! .BIGVEC
                   BIGVC = .TRUE.
                GO TO 100
-C                 '.ONLYOV'
-    5          CONTINUE
+    5          CONTINUE ! .ONLYOV
                   ONLYOV= .TRUE.
                GO TO 100
-C                 '.SYMTHR'
-    6          CONTINUE
+    6          CONTINUE ! .SYMTHR
                   READ (LUCMD, *,IOSTAT=IOS) TOL_SYMADD
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error in reading .SYMTHR')
@@ -224,43 +226,42 @@ C              '.CM FUN'
                   NCMSTR = NINT(2*CMSTR + 0.01D0)
                   NCMEND = NINT(2*CMEND + 0.01D0)
                GO TO 100
-C              '.ZCMVAL'
-    8          CONTINUE
+    8          CONTINUE ! .ZCMVAL
                   READ (LUCMD,*,IOSTAT=IOS) ZCMVAL
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .ZCMVAL')
                   ENDIF
                GO TO 100
-C              '.WRTLIN'  (ach easier to debug intgral input)
-    9          CONTINUE
+    9          CONTINUE ! .WRTLIN  (ach easier to debug intgral input)
                   WRTLIN= .TRUE.
                GO TO 100
-C              '.UNCONT'
-   10          CONTINUE
+   10          CONTINUE ! .UNCONT
                   UNCONT = .TRUE.
                GO TO 100
-C              '.ANGSTR'
-   11          CONTINUE
+   11          CONTINUE ! .ANGSTR
                   ANGS = .TRUE.
                GO TO 100
-   12          CONTINUE
-C              '.R12AUX'
+   12          CONTINUE ! '.R12AUX'
 C              (moved here June 09, because LMULBS used in READIN
 C              (renamed from .AUXBAS) /hjaaj
                   LMULBS = .TRUE.
+   13          CONTINUE ! .NOMOVE
+C setting NOMOVE to true disables redefinition of coordinates for automatically
+C determined symmetry
+                  NOMOVE = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized for *MOLBAS.'
+               WRITE (LUPRI,'(/4A/)') ' ERROR: Keyword "',WORD,
+     *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt for *MOLBAS.')
+               CALL QUIT('Illegal prompt for '//WORD1)
             END IF
       END IF
   300 CONTINUE
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for *MOLBAS:',0)
+         CALL HEADER('Changes of defaults for '//WORD1,0)
          IF (IPREAD .NE. IPREAD_ini) THEN
             WRITE (LUPRI,'(A,I5)')
      &         ' Print level in molecule setup (READIN):',IPREAD
@@ -268,8 +269,8 @@ C              (renamed from .AUXBAS) /hjaaj
          IF (ONLYOV) WRITE (LUPRI,'(A)')
      &  ' Stop after calculation of overlap integrals (.ONLYOV) for QM3'
          IF (TOL_SYMADD .NE. 0.0D0) THEN
-            WRITE (LUPRI,'(A,1P,G9.2)')
-     &      ' Symmetry detection threshold: ',TOL_SYMADD
+            WRITE (LUPRI,'(A,1P,G10.2)')
+     &      ' Symmetry detection threshold:',TOL_SYMADD
          END IF
          IF (UNCONT) THEN
             WRITE (LUPRI,'(/A)')
@@ -294,7 +295,7 @@ C              (renamed from .AUXBAS) /hjaaj
          IF (LCMMAX .GT. -1) THEN
             if (LCNTNUUM) then
             WRITE (LUPRI,'(/A,I5)')
-     &           ' Continuum center of mass basis fctns  with l(max) =',
+     &           ' Continuum center of mass basis fctns with l(max) =',
      &           LCMMAX
             else
             WRITE (LUPRI,'(/A,I5)')
@@ -304,9 +305,9 @@ C              (renamed from .AUXBAS) /hjaaj
             WRITE (LUPRI,'(2(A,F4.1))')
      &           ' Sequence starts at n=',CMSTR,' and ends at n=', CMEND
             IF (ZCMVAL .NE. D1)
-     &           WRITE (LUPRI,'(A,F8.1)') ' Net charge of ionic core  ',
-     &           ZCMVAL
-            WRITE(LUPRI,'(/A/A/A/A/A)')
+     &           WRITE (LUPRI,'(A,F10.3)')
+     &         ' Net charge of ionic core',ZCMVAL
+                 WRITE(LUPRI,'(/A/A/A/A/A)')
      &         ' Proper reference for these basis functions:'
      &        ,' K. Kaufmann, W. Baumeister, and M. Jungen'
      &        ,' "Universal Gaussian basis sets for an optimum'
@@ -315,9 +316,9 @@ C              (renamed from .AUXBAS) /hjaaj
 
             IF (LCMMAX .GT. 4) THEN
                WRITE (LUPRI,'(/A)')
-     &           ' FATAL ERROR: Center of mass basis functions is'//
-     &           ' not defined for l(max) .gt. 4'
-               CALL QUIT('Error in *MOLBAS input processing')
+     &           ' ERROR: Center of mass basis functions are'//
+     &           ' not defined for l(max) > 4'
+               CALL QUIT('Error in input processing for '//WORD1)
             END IF
          END IF
          WRITE (LUPRI,'()')
@@ -340,10 +341,10 @@ C
 #include "maxaqn.h"
 #include "ccom.h"
 #include "cbirea.h"
+#include "numder.h"
 #include "ecpinf.h"
 #include "qm3.h"
 #include "r12int.h"
-#include "numder.h"
 #include "nuclei.h"
 C
       LOGICAL FIRST_CALL
@@ -542,7 +543,8 @@ C
       IF (IOS.NE.0) THEN
          WRITE (LUPRI,'(/A,I5/A/A)') 'Error in input line no. ',NMLINE,
      &   MLINE(NMLINE),'Error in reading basis keyword'
-         CALL QUIT('Error in reading basis keyword in .mol file')
+         CALL QUIT(
+     /   'Error in reading basis keyword in first line of .mol file')
       ENDIF
 
 #ifdef PRG_DIRAC
@@ -640,7 +642,7 @@ C
       CALL STOPIT('READIN','READ_MOL',KLAST,LWORK)
 !5030 CONTINUE
 !     CALL QUIT('Wrong keyword. Expecting FINISH')
-      END ! SUBROUITNE READIN
+      END ! SUBROUTINE READIN
 C  /* Deck read_mol */
       SUBROUTINE READ_MOL(LUINFO,WORK,LWORK,
      &           NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
@@ -992,6 +994,7 @@ C     ****************************************
 C     ***** Output on LUONEL *****************
 C     ****************************************
 C
+
       IF (HERMIT) CALL WRONEL(TTITLE,NONTYP,NONT,IQM,IFXYZ,KATOM,JCO,
      &                        KANG)
 C
@@ -1144,7 +1147,7 @@ C
 C     If (DOHUCKEL) use second set for atomic orbitals for Huckel guess
       BSET = 'Basis'
       MBSI = 1
-      if (ipread .gt. 10 .OR. NSETS .gt. KSETS) 
+      if (ipread .gt. 10 .OR. NSETS .gt. KSETS)
      &   write(lupri,*) 'setting NSETS =',NSETS
       IF (NSETS .GT. KSETS) THEN
          CALL QUIT('NSETS .gt. KSETS error')
@@ -1884,7 +1887,7 @@ C     include character ASYMB(0:NSYMB)*2 with atomic symbols
 C
       NQ = NINT(Q)
 C
-      IF (GAUNUC.AND.(NQ.GT.0)) THEN
+      IF (GAUNUC .AND. NQ.GT.0) THEN
          IF (Q_EXPONENT.LE.D0) THEN
             CALL NUCSIZ(NQ,GEXP)
          ELSE
@@ -2294,27 +2297,21 @@ C
 C       Error messages:
 C
  5000 CONTINUE
-        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' BASPRO error, number of shells                    ',
-     *  KMAX,
-     *  '                   current maximum number              ',
-     *  MXSHEL,
+        WRITE (LUPRI,'(/A,I6/A,I6/A)')
+     *  ' BASPRO error, number of shells                 ',KMAX,
+     *  '               current maximum number (MXSHEL)  ',MXSHEL,
      *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5010 CONTINUE
-        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' BASPRO error, number of contracted basis functions',
-     *  NBASIS,
-     *  '                   current maximum number              ',
-     *  MXCORB,
+        WRITE (LUPRI,'(/A,I6/A,I6/A)')
+     *  ' BASPRO error, number of contracted basis functions',NBASIS,
+     *  '               current maximum number (MXCORB)     ',MXCORB,
      *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
-        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' BASPRO error, number of primitive basis functions',
-     *  NPBAS,
-     *  '                   current maximum number             ',
-     *  MXPRIM,
+        WRITE (LUPRI,'(/A,I6/A,I6/A)')
+     *  ' BASPRO error, number of primitive basis functions',NPBAS,
+     *  '               current maximum number (MXPRIM)    ',MXPRIM,
      *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many primitives, increase MXPRIM')
  5030 CONTINUE
@@ -2377,8 +2374,8 @@ C*****************************************************************************
       DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
      &          NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
      &          SEG(KBLOCK,KSETS),
-     &          ALPHA (KPRIM,KBLOCK,KSETS),
-     &          CPRIM (KPRIM,KPRIM,KBLOCK,KSETS),
+     &          ALPHA(KPRIM,KBLOCK,KSETS),
+     &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       CHARACTER*1  KASYM(3,3)
@@ -3428,7 +3425,7 @@ C
 C
 #ifdef ENABLE_EFS
       call MPI_COMM_RANK(MPI_COMM_WORLD, irank, ierror)
-      if ((.not. efs_interface_is_initialized) 
+      if ((.not. efs_interface_is_initialized)
      &    .and. (irank.eq.MASTER)) then
 
         jblock = 0
@@ -3490,7 +3487,7 @@ C
 #endif
 
           call efs_add_atomtype( atype%centers,
-     &        atype%gtos, atype%nr_centers, 
+     &        atype%gtos, atype%nr_centers,
      &        atype%nr_gtos )
 
           !free memory
@@ -4672,8 +4669,7 @@ Clf       031104 - Bush Jr. re-elected
 C
       use pelib_interface, only: use_pelib
 #ifdef HAS_PCMSOLVER
-      use pcm_scf, only: pcm_scf_initialize
-      use pcmmod_cfg
+      use pcm_config, only: pcm_configuration, pcm_cfg, pcm_initialize
 #endif
 #include "implicit.h"
 #include "dummy.h"
@@ -4837,8 +4833,8 @@ C
 C
 C     Print internuclear distances (if not an atom)
 C
-         LUIP = -100
-         IF ((IPREAD .GT. 0) .OR. (GEOALL)) THEN
+         IF (IPREAD .GT. 0 .OR. GEOALL) THEN
+            LUIP = -100
             CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,LUIP,
      &         WORK(ISTRT),LWORK)
             IF (NUCDEP .GT. 2 .AND. NBONDS .LE. 0) THEN
@@ -4855,13 +4851,14 @@ C
          IF (IPREAD .GT. 0) CALL ROTANA(WORK(1),WORK(KMASS),WORK(ISTRT),
      &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NCENTS,NCOOR,IPREAD)
 C
-      IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
+         IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
 
 #ifdef HAS_PCMSOLVER
-      if (pcmmod_is_pcm_calculation) then
-        call pcm_scf_initialize(lupri)
+      if (pcm_cfg%do_pcm) then
+        call report_after_pcm_input(lupri, pcm_cfg)
+        call pcm_initialize(lupri, lupri)
         write(lupri, *) "PCMSolver interface correctly initialized"
       end if
 #endif
@@ -4949,15 +4946,24 @@ C
       END IF
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nucsiz */
       SUBROUTINE NUCSIZ(INUC,DELTA)
 C.......................................................................
 C
-C     For a nucleus of atomic no. "charge", calculate the exponent delta
-C     for a gaussian charge distribution approximation to the finite nuc
+C     For a nucleus of atomic no. "INUC", calculate the exponent DELTA
+C     for a Gaussian charge distribution approximation to the finite
+C     Nucleus. Uses the Formula and Nuclear Masses from
+C     REHE Newsletter No. 13 (14. June 1995), L. Visscher and K. Dyall.
+C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
+C     Conversion Factor Bohr/fm 52917.7249.
+C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER (DP3=1.0D0/3.0D0)
+      PARAMETER (FAC=1.5D10,AF=0.529177249D0,BF=0.836D0,CF=0.570D0)
+      PARAMETER (FAC2=2.556D0)
 C     include character ASYMB(0:NSYNB)*2 with atomic symbols
 #include "asymb.h"
       DIMENSION AMASS(103)
@@ -4988,10 +4994,11 @@ C     include character ASYMB(0:NSYNB)*2 with atomic symbols
       IF (INUC.LE.103) THEN
          A = AMASS(INUC)
       ELSE
-         A = INUC*2.556D0
+         A = INUC*FAC2
       END IF
-      A = A**(1.0D0/3.0D0)
-      DELTA = 1.5D10*(.52917706D0/(.836D0*A+0.57D0))**2
+      A = A**DP3
+      DELTA = (AF/(BF*A+CF))
+      DELTA = FAC*DELTA*DELTA
       RETURN
       END
 C  /* Deck sphlab */
@@ -5650,6 +5657,7 @@ C
       CHARACTER*(len_NEXT_INPUT_LINE) NEXT_INPUT_LINE
       INTEGER    NMLN_LASTREAD
       DATA       NMLN_LASTREAD /0/
+      SAVE       NMLN_LASTREAD
 C
 C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new call of readin,
 C     e.g. during a geometry optimization.
@@ -7004,11 +7012,10 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
         IF (ADDSYM) THEN
             ADDSYM = .FALSE.
         ELSE IF (NSYMOP > 0) THEN
-            WRITE(LUPRI,'(/A)') 'ERROR: point group symmetry is'//
-     &                          ' incompatible with polarizable'//
-     &                          ' embedding'
-            CALL QUIT('point group symmetry is incompatible with'//
-     &                ' polarizable embedding')
+            WRITE(LUPRI,'(/A)') 'ERROR: Point group symmetry is'//
+     &         ' incompatible with polarizable embedding'
+            CALL QUIT('ERROR: Point group symmetry is'//
+     &         ' incompatible with polarizable embedding')
         END IF
       END IF
       RETURN

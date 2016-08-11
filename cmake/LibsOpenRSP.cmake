@@ -12,6 +12,7 @@ set(ExternalProjectCMakeArgs
     -DPARENT_INCLUDE_DIR=${CMAKE_SOURCE_DIR}/DALTON/include
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+    -DENABLE_PELIB=${ENABLE_PELIB}
     )
 add_external(matrix-defop)
 add_external(openrsp)
@@ -27,7 +28,6 @@ add_dependencies(gen1int_interface matrix-defop)
 add_dependencies(openrsp           cgto-diff-eri)
 add_dependencies(openrsp           gen1int_interface)
 add_dependencies(openrsp           matrix-defop)
-add_dependencies(openrsp           pelib)
 
 set(EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libopenrsp.a

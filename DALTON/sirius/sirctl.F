@@ -56,7 +56,7 @@ C
       use efs_interface
 #endif
 #ifdef HAS_PCMSOLVER
-      use pcmmod_cfg
+      use pcm_config, only: pcm_configuration, pcm_cfg
 #endif
 #ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_is_active, xcint_init
@@ -334,7 +334,7 @@ C           we do not call SIROUT when no 2:nd order optimization
             KWRK1 = KFC  + NNBAST
 C           (FC needs NNBAST because it is also used for SAO)
             LWRK1 = LWORK - KWRK1
-            CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+            CALL READMO(WORK(KCMO),JRDMO)
             CALL FCMO(MAXFCK,WORK(KCMO),WORK(KFC),
      &                WORK(KWRK1),LWRK1)
 C           CALL FCMO(MAXFCK,CMO,FC,SCRA,LSCRA)
@@ -350,7 +350,7 @@ C
             KWRK1 = KCMO  + NCMOT
             KFREE = 1
             LFREE = LWORK - KWRK1
-            CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LFREE)
+            CALL READMO(WORK(KCMO),JRDMO)
             CALL SRDIIS(ICONV,WORK(KCMO),WORK(KWRK1),KFREE,LFREE)
 C
 C     We overwrite in case of symmetry breaking
@@ -380,7 +380,7 @@ C
      &      ' because it is not implemented for open-shell SCF'
          ELSE IF (FLAG(21) .AND. ICONV .LE. 0) THEN
 #ifdef HAS_PCMSOLVER
-            if (pcmmod_is_pcm_calculation) call quit('ERROR: DIIS '//
+            if (pcm_cfg%do_pcm) call quit('ERROR: DIIS '//
      &      'failed to converge and QC-SCF is not implemented with '//
      &      'PCMSolver')
 #endif
@@ -579,7 +579,7 @@ C
          KCMO  = 1
          KWRK1 = KCMO  + NCMOT
          LWRK1 = LWORK - KWRK1
-         CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         CALL READMO(WORK(KCMO),JRDMO)
          CALL FCVIRT(WORK(KCMO),WORK(KWRK1),LWRK1)
          CALL NEWORB('FCVORB  ',WORK(KCMO),.TRUE.)
          FLAG(14) = .FALSE.
@@ -759,7 +759,7 @@ C
          KCMO  = 1
          KWRK1 = KCMO  + NCMOT
          LWRK1 = LWORK - KWRK1
-         CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         CALL READMO(WORK(KCMO),JRDMO)
          USEDRC_save = USEDRC
          USEDRC = .TRUE.
          IF (NEWTRA) THEN
@@ -803,7 +803,7 @@ C
          KFREE  = KFRSAV
          LFREE  = LWORK
          CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
-         CALL READMO(WORK(KCMO),JRDMO,WORK(KFREE),LFREE)
+         CALL READMO(WORK(KCMO),JRDMO)
 
          CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
                                           ! orbital occupations for TRACTL

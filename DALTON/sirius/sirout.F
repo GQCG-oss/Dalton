@@ -56,7 +56,7 @@ C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
 #ifdef HAS_PCMSOLVER
-      use pcmmod_cfg
+      use pcm_config, only: pcm_configuration, pcm_cfg
 #endif
       use qmcmm_fock, only: scf_qmnpmm_out
       use pelib_interface, only: use_pelib
@@ -315,14 +315,14 @@ csonia 04/10/95
      &         ' The molecule is placed in a static field.',
      &         ' Field strength (a.u.)          Field operator',
      &         ' ---------------------          --------------'
-csonia 04/10/95                                                               
+csonia 04/10/95
          DO 100 IFIELD = 1,NFIELD
             WRITE (LUPRI,'(1P,G18.8,18X,A8)')
      *         EFIELD(IFIELD),LFIELD(IFIELD)
 csonia 04/10/95
             IF (LUCME.GT.0) WRITE (LUCME,'(1P,G18.8,18X,A8)')
      &         EFIELD(IFIELD), LFIELD(IFIELD)
-csonia 04/10/95                                                            
+csonia 04/10/95
   100    CONTINUE
          WRITE (LUPRI,'()')
       END IF
@@ -348,7 +348,7 @@ csonia 04/10/95
      *           ,'dielectric constant =',EPS
          END IF
 #ifdef HAS_PCMSOLVER
-      ELSE IF (pcmmod_is_pcm_calculation) THEN
+      ELSE IF (pcm_cfg%do_pcm) THEN
          WRITE (LUPRI,'(/5X,A,(/10X,A,F12.6))')
      *        'SOLVATION MODEL: polarizable continuum model (PCM),'
          WRITE(LUPRI,'(5X,A24,F20.12)') 'Solvation energy:     ',ESOLT
@@ -434,7 +434,7 @@ C        ... DIIS-DFT or QC-DFT optimization
 
       IF (QMMM .AND. MMPROP) THEN
         CALL MM_PROPS(WRK(KFREE),LFREE,IPQMMM)
-      ENDIF 
+      ENDIF
 
  5000 FORMAT(/'@    Spin multiplicity:',T31,I5,
      *       /'@    Spatial symmetry:',T31,I5,
@@ -513,7 +513,7 @@ C
      &                   WRK(KUCMO), WRK(KOVEC))
          CALL MEMREL('SIROUT.MOLDEN_MOS',WRK,KREL2,KREL2,KFREE,LFREE)
       END IF ! (MOLDEN)
-C     
+C
 C ***  Print final MCSCF orbitals ***
 C
       IF (IPRI4 .GE. 5) P4FLAG(5) = .TRUE.

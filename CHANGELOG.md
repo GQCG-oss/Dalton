@@ -1,5 +1,17 @@
 # DALTON Change Log All notable changes to the DALTON project will be documented in this file.
 
+## [2017.alpha Unreleased]
+
+### Added
+- This will be in dalton2017. Please write something here if you implement new features!
+
+### Changed
+
+### Removed
+
+
+Do not make changes below this line! For the relase branch only.
+
 ## [2016.3] (2016-xx-xx)
 
 ### Changed
@@ -24,7 +36,7 @@
 - Fix of Douglas-Kroll post-SCF with less than 256 contracted basis functions, but more than 255 uncontracted basis functions
 - Fix of an insufficient memory error for construction of 2-el. integrals in Dirac format with more than 255 basis functions
 - Removed OpenACC CMake variable (currently no OpenACC directives in Dalton).
-
+- Fix of Douglas-Kroll post-SCF with less than 256 contracted basis functions, but more than 255 uncontracted basis functions
 
 ## [2016.1] (2016-04-07)
 

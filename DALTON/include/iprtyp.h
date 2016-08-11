@@ -57,4 +57,6 @@
 #define efs_generate_basis_work   130
 #define efs_init_2efock_work      131
 #define efs_fock_update_work      132
+#define pcmsolver_npetes2_work    133
+#define pcmsolver_pcmbsol_work    134
 #define CALL_HJJTRA_DISTRIBUTED   201

@@ -507,10 +507,10 @@ C
       KWORK1 = KFREE
       LWORK1 = LFREE
 C
-      CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
+      CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO))
       IF (.NOT.FOUND) CALL QUIT('LNRABA error: CMO not found on SIRIFC')
       IF (NASHT .GT. 0) THEN
-         CALL RD_SIRIFC('DV',FOUND,WORK(KWORK1),WORK(KWORK1),LWORK1)
+         CALL RD_SIRIFC('DV',FOUND,WORK(KWORK1))
          IF (.NOT.FOUND)
      &      CALL QUIT('LNRABA error: DV not found on SIRIFC')
          CALL DSPTSI(NASHT,WORK(KWORK1),WORK(KUDV))
@@ -907,9 +907,12 @@ C
                              LUABSVECS = -1
                              CALL GPOPEN(LUABSVECS,'ABSVECS','OLD',' ',
      &                           ' ',IDUMMY,.FALSE.)
-                             CALL READ_XVEC(LUABSVECS,4*NVARPT,
-     &                            WORK(KSLV),LABEL1,ISYM,
-     &                             FRVAL(IFRVAL),ABS_THCLR,FOUND,CONV)
+C                             CALL READ_XVEC(LUABSVECS,4*NVARPT,
+C     &                            WORK(KSLV),LABEL1,ISYM,
+C     &                             FRVAL(IFRVAL),ABS_THCLR,FOUND,CONV)
+                             CALL READ_XVEC2(LUABSVECS,4*NVARPT,
+     &                       WORK(KSLV),LABEL1,'        ',ISYM,
+     &                       FRVAL(IFRVAL),0.0D0,ABS_THCLR,FOUND,CONV)
                              CALL GPCLOSE(LUABSVECS,'KEEP')
                           ENDIF
                             CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',

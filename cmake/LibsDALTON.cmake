@@ -36,6 +36,17 @@ add_library(
     ${CMAKE_BINARY_DIR}/binary_info.F90
     )
 
+if(ENABLE_PCMSOLVER)
+  add_dependencies(dalton pcmsolver)
+  get_target_property(_incdirs dalton INCLUDE_DIRECTORIES)
+  set(_incdirs ${_incdirs} ${PROJECT_BINARY_DIR}/external/pcmsolver/src/pcmsolver-build/modules)
+  set_target_properties(dalton PROPERTIES INCLUDE_DIRECTORIES "${_incdirs}")
+  set(DALTON_LIBS
+    ${PCMSOLVER_LIBS}
+    ${DALTON_LIBS}
+    )
+endif()
+
 add_dependencies(dalton generate_binary_info)
 
 
@@ -86,11 +97,6 @@ if(ENABLE_GEN1INT)
         )
 endif()
 
-if(ENABLE_PELIB)
-    include(LibsPElib)
-    add_dependencies(dalton pelib)
-endif()
-
 if(ENABLE_QFITLIB)
     include(LibsQFITlib)
     add_dependencies(dalton qfitlib)
@@ -100,17 +106,7 @@ if(ENABLE_OPENRSP)
     include(LibsOpenRSP)
 endif()
 
-if(ENABLE_PCMSOLVER)
-    set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
-    if(MPI_FOUND)
-        set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
-    endif()
-    add_dependencies(dalton pcmsolver)
-    set(DALTON_LIBS
-        ${PCMSOLVER_LIBS}
-        ${DALTON_LIBS}
-        )
-endif()
+include(LibsPElib)
 
 if(ENABLE_QMMM_CUDA)
     add_subdirectory(external/qmmm_cuda)
@@ -126,9 +122,9 @@ if(NOT ENABLE_CHEMSHELL)
         dalton.x
         ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F
         )
-    
+
     set_property(TARGET dalton.x PROPERTY LINKER_LANGUAGE Fortran)
-    
+
     target_link_libraries(
         dalton.x
         dalton
@@ -139,7 +135,7 @@ endif()
 
 # compile utilities
 
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/tools) 
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/tools)
 
 add_library(peter_utils_blocks ${CMAKE_SOURCE_DIR}/DALTON/tools/blocks.f90)
 

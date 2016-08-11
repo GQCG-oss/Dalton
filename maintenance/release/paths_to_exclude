@@ -14,6 +14,7 @@ external/qfitlib/.git
 external/efs/.git
 basis/cc-pVTZ_apra
 external/qmmm_cuda/
+external/pcmsolver/
 external/xcint/
 DALTON/test/nonconverted_runtests
 DALTON/pcm

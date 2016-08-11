@@ -16,10 +16,6 @@ if(ENABLE_CHEMSHELL)
     add_definitions(-DVAR_CHEMSHELL)
 endif()
 
-if(ENABLE_PELIB)
-    add_definitions(-DBUILD_PELIB)
-endif()
-
 if(ENABLE_QFITLIB)
     add_definitions(-DBUILD_QFITLIB)
 endif()

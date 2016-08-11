@@ -77,7 +77,7 @@ C
       LW22   = LFREE   - KW22
       IF (LW22 .LT. 0) CALL ERRWRK(' CINO',-KW22,LFREE)
 c     MAERKE 900801-hjaaj: call setsir and getcix ???
-      CALL READMO(WRK(KCMO),9,DUMMY,0)
+      CALL READMO(WRK(KCMO),9)
       CALL NEWIT1
       WRITE (LUIT1) TABLE(1),TABLE(1),TABLE(1),TABLE(2)
       NCMOT4 = MAX(4,NCMOT)

@@ -982,40 +982,40 @@ C  /* Deck dalton_nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE DALTON_NODEDRIVER(MWORK,WRKDLM)
 C
-C Slaves are sent to this nodedriver from abacus/dalton.F where they 
-C idle until the keyword IPRTYP is set with an MPI_BCAST (this is 
+C Slaves are sent to this nodedriver from abacus/dalton.F where they
+C idle until the keyword IPRTYP is set with an MPI_BCAST (this is
 C mediated via the subroutine MPIXBCAST from /gp/mpimacro.F)
-C Once the slaves have received the IPRTYP.ne.0 broadcast, they need a 
+C Once the slaves have received the IPRTYP.ne.0 broadcast, they need a
 C broadcast with the print level.
-C IPRTYP is set in iprtyp.h. This file associates every parallel 
+C IPRTYP is set in iprtyp.h. This file associates every parallel
 C computation in Dalton with an specific integer and a character string.
-C This iprtyp.h file has to be imported in every subroutine that wants to 
+C This iprtyp.h file has to be imported in every subroutine that wants to
 C communicate with this nodedriver.
-C 
-C If you add a parallel routine to Dalton it needs to be added to 
+C
+C If you add a parallel routine to Dalton it needs to be added to
 C iprtyp.h
-C 
-C  This idling works because MPIXBCAST in a collective and blocking 
-C communication. Every slave will be blocked by the broadcast at label 
-C 100 until the master participates in the broadcast. As soon as an 
-C IPRTYP broadcast is made, every slave executes the computation 
-C associated with the broadcast once, exits the if-statement and is 
+C
+C  This idling works because MPIXBCAST in a collective and blocking
+C communication. Every slave will be blocked by the broadcast at label
+C 100 until the master participates in the broadcast. As soon as an
+C IPRTYP broadcast is made, every slave executes the computation
+C associated with the broadcast once, exits the if-statement and is
 C blocked/idles once again by the MPI_COMM_WORLD broadcast at label 100.
-C 
+C
 C If IPRTYP is set to 0 the nodes exit the loop.
-C 
-C As of Aug 2013, you have to broadcast the IPRTYP from the master node 
-C using MPIXBCAST or MPI_BCAST, to communicate with the nodedriver. 
-C This mean you can change IPRTYP locally if you need it for whatever 
-C reason. To start a parallel calculation the master HAS to broadcast 
+C
+C As of Aug 2013, you have to broadcast the IPRTYP from the master node
+C using MPIXBCAST or MPI_BCAST, to communicate with the nodedriver.
+C This mean you can change IPRTYP locally if you need it for whatever
+C reason. To start a parallel calculation the master HAS to broadcast
 C the IPRTYP and the needed parameters for the calculation.
-C 
-C IMPORTANT: The communication is always via the communicator 
-C MPI_COMM_WORLD, so if another communicator is made, only those nodes 
-C included in the new communicator will receive the broadcast IPRTYP. 
-C This is because the nodedriver uses the MPIXBCAST subroutine to 
+C
+C IMPORTANT: The communication is always via the communicator
+C MPI_COMM_WORLD, so if another communicator is made, only those nodes
+C included in the new communicator will receive the broadcast IPRTYP.
+C This is because the nodedriver uses the MPIXBCAST subroutine to
 C communicate and as of Nov 2014 this is hardcoded to MPI_COMM_WORLD.
-C 
+C
 #ifdef VAR_IFORT
 !     subroutine sleep is in IFPORT module
       use IFPORT, ONLY: SLEEPQQ
@@ -1027,6 +1027,9 @@ C
       use dalton_xcint_interface, only: xcint_integrate_worker
 #endif
       use pelib_interface, only: pelib_ifc_slave
+#if defined (HAS_PCMSOLVER)
+      use pcm_parallel, only: j1ints_pcm
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1130,7 +1133,7 @@ C  new calculation type needs to be added in include/iprtyp.h
          ELSE IF (IPRTYP.EQ.ERI_WORK) THEN
             CALL ERI_NODSTR(WORK(1),MWORK,IPRINT)
 C        ELSE IF (IPRTYP.EQ.GEM_WORK) THEN
-C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
+C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYNUM,MYNUM,IPRINT)
          ELSE IF (IPRTYP.EQ.DFT_KSM_WORK) THEN
             CALL DFT_KSMSLAVE(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.DFT_C_WORK) THEN
@@ -1184,6 +1187,12 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL QMMMQRO_S1(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.QMMMQRO_2_WORK) THEN
             CALL QMMMQRO_S2(WORK(1),MWORK,IPRINT)
+#ifdef MOD_UNRELEASED
+         ELSE IF (IPRTYP.EQ.QMMMCRO_1_WORK) THEN
+            CALL QMMMCRO_S1(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMCRO_2_WORK) THEN
+            CALL QMMMCRO_S2(WORK(1),MWORK,IPRINT)
+#endif
          ELSE IF (IPRTYP.EQ.QMMMFIRST_1_WORK) THEN
             CALL QMMMFIRST_S1(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.QMMMFIRST_2_WORK) THEN
@@ -1218,9 +1227,9 @@ C added by Bin Gao, May 12, 2012
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
          ELSE IF (IPRTYP.EQ.PARA_RP_ERES) THEN
-            CALL PAR_RP_ERES(work(1), mwork, mytid )
+            CALL PAR_RP_ERES(work(1), mwork, mynum )
          ELSE IF (IPRTYP.EQ.PARA_SO_ERES) THEN
-            CALL PAR_SO_ERES(work(1), mwork, mytid )
+            CALL PAR_SO_ERES(work(1), mwork, mynum )
 #ifdef MOD_CGTO_DIFF_ERI
          ! added by Bin Gao, Oct. 27, 2012
          ! cgto-diff-eri code to calculate arbitray order geometric derivatives
@@ -1252,35 +1261,21 @@ C added by Bin Gao, May 12, 2012
          else if (IPRTYP.eq.efs_fock_update_work) then
             call efs_fock_update_slave()
 #endif
-
-         ELSE IF (IPRTYP.EQ.QMCMM_WORK) THEN
-#ifdef ENABLE_VPOTDAMP
-            CALL vpotdamped_slave()
-#else
-            call quit('VPOTDAMP not compiled in this version')
-#endif
-
-#if defined(ENABLE_EFS)
-         else if (IPRTYP.eq.efs_add_atomtype_work) then
-            call efs_add_atomtype_slave()
-         else if (IPRTYP.eq.efs_init_work) then
-            call efs_init_slave()
-         else if (IPRTYP.eq.efs_generate_basis_work) then
-            call efs_generate_basis_product_slave()
-         else if (IPRTYP.eq.efs_init_2efock_work) then
-            call efs_init_2efock_slave()
-         else if (IPRTYP.eq.efs_fock_update_work) then
-            call efs_fock_update_slave()
+#if defined (HAS_PCMSOLVER)
+         else if (iprtyp.eq.pcmsolver_npetes2_work) then
+            call j1ints_pcm(work(1),mwork,iprtyp,iprint)
+         else if (iprtyp.eq.pcmsolver_pcmbsol_work) then
+            call j1ints_pcm(work(1),mwork,iprtyp,iprint)
 #endif
 
          else if (IPRTYP .eq. CALL_HJJTRA_DISTRIBUTED) THEN
             call HJJTRA_DISTRIBUTED_NODE(WORK(1),MWORK,IPRINT)
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
-     &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,
+     &         '(DALTON_NODEDRIVER) ERROR on slave',mynum,
      &         ': Unknown calculation type request',IPRTYP
             WRITE(*,'(/A,I5,A,I10)')
-     &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,
+     &         '(DALTON_NODEDRIVER) ERROR on slave',mynum,
      &         ': Unknown calculation type request',IPRTYP
             CALL QUIT('DALTON_NODEDRIVER: Unknown calculation type')
          END IF
@@ -1322,13 +1317,6 @@ C
       MASTER = NASTER
       MYTID  = NYTID
 C
-#if defined (VAR_PVM)
-C
-C     NCODE is the first variable PVM-slaves must receive
-C
-      CALL PVMXRECV(MASTER,MTAG0)
-      CALL PVMXUNPACK(NCODE,1,'INTEGER')
-#endif
 C     Get my name
 C
       CALL GETNAME(MYNAME)
@@ -1339,6 +1327,11 @@ C
       CALL MPIXSEND(MYNAME,20,'STRING',MASTER,MTAG8)
 #endif
 #if defined (VAR_PVM)
+C
+C     NCODE is the first variable PVM-slaves must receive
+C
+      CALL PVMXRECV(MASTER,MTAG0)
+      CALL PVMXUNPACK(NCODE,1,'INTEGER')
       CALL PVMXINITSEND(NCODE)
       CALL PVMXPACK(MYTID,1,'INTEGER')
       CALL PVMXPACK(MYNAME,20,'STRING')

@@ -523,6 +523,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/rsp/absorp.F
     DALTON/rsp/abscomplex.F
     DALTON/rsp/complexpp.F
+    DALTON/rsp/abscrs.F
     DALTON/rsp/gpcpp.F
     DALTON/rsp/deq27.F
     DALTON/rsp/expone.F
@@ -780,19 +781,7 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/qmcmm/fock.F90
     DALTON/qmcmm/response.F90
     DALTON/qmcmm/input.F90
-    DALTON/pelib/pelib_interface.F90
    )
-if(ENABLE_PCMSOLVER)
-   set(DAL_PCM_SOURCES
-    DALTON/pcm/pcm_scf.F90
-    DALTON/pcm/pcm_integrals.F90
-    DALTON/pcm/pcm_linear_response.F90
-    DALTON/pcm/pcmmod_cfg.F90
-    DALTON/pcm/pcm_write.F90
-    DALTON/pcm/pcm_utils.F90
-   )
-   set(DALTON_FREE_FORTRAN_SOURCES "${DALTON_FREE_FORTRAN_SOURCES} ${DAL_PCM_SOURCES}")
-endif()
 set(DALTON_OWN_BLAS_SOURCES
     DALTON/pdpack/gp_blas.F
     )

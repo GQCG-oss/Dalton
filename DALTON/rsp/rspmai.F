@@ -4085,6 +4085,9 @@ C   We assume that either the SIRIUS module or the SETSIR
 C   subroutine has been called before RSPMC.
 C
       use pelib_interface, only: use_pelib
+#if defined (HAS_PCMSOLVER)
+      use pcm_config, only: pcm_configuration, pcm_cfg
+#endif
 #include "implicit.h"
 #include "infdim.h"
 C
@@ -4365,6 +4368,14 @@ Cjje
         DO I = 1,NNORBT
            FC(I) = FC(I) + WRK(I)
         ENDDO
+#if defined (HAS_PCMSOLVER)
+      else if (pcm_cfg%do_pcm) then
+       CALL MOLLAB('EXTPCMMAT',LUSIFC,LUPRI)
+       CALL READT (LUSIFC,NNORBT,WRK)
+       DO I = 1,NNORBT
+          FC(I) = FC(I) + WRK(I)
+       ENDDO
+#endif
       END IF
 Cjje
 C

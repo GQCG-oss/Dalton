@@ -169,6 +169,7 @@ add_dalton_runtest(rsp_cpp_mcd                   "dalton;runtest;rsp;dft;medium"
 add_dalton_runtest(rsp_cpp_nscd                  "dalton;runtest;rsp;dft;medium")
 add_dalton_runtest(rsp_cpp_mchd                  "dalton;runtest;rsp;short")
 add_dalton_test(rsp_cpph                         "dalton;rsp;medium")
+add_dalton_runtest(rsp_cpp_2ndhyperpolar         "dalton;runtest;rsp;short;essential")
 add_dalton_runtest(rsp_polar                     "dalton;runtest;rsp;short;essential")
 add_dalton_runtest(rsp_hyperpolar                "dalton;rsp;short;essential")
 add_dalton_runtest(rsp_hyperpolar_oit            "dalton;rsp;short")
@@ -432,6 +433,9 @@ endif()
 
 if(ENABLE_PCMSOLVER)
 	add_dalton_runtest(extpcm "dalton;runtest;short")
+	add_dalton_runtest(extpcm_lr_static "dalton;runtest;short;rsp")
+	add_dalton_runtest(extpcm_lr_dynamic "dalton;runtest;short;rsp")
+	add_dalton_runtest(extpcm_opa "dalton;runtest;short;rsp")
 endif()
 
 add_dalton_test(hfreqfromE                       "dalton;numder;short")

@@ -7805,10 +7805,7 @@ C
 C
       IF (ITER_GEO .GE. 0) THEN
          FILENM = 'XXXX_mol.inp'
-         WRITE(FILENM(1:4),'(I4)') (ITER_GEO + 1)
-         IF (ITER_GEO .LT. 9)   WRITE(FILENM(3:3),'(A1)') '0'
-         IF (ITER_GEO .LT. 99)  WRITE(FILENM(2:2),'(A1)') '0'
-         IF (ITER_GEO .LT. 999) WRITE(FILENM(1:1),'(A1)') '0'
+         WRITE(FILENM(1:4),'(I4.4)') (ITRNMR + 1)
          CALL GPOPEN(LUMOL,FILENM,'UNKNOWN',' ','FORMATTED',
      &      IDUMMY,.FALSE.)
          DO IMLINE = 1,NMLINE
@@ -7863,7 +7860,7 @@ C ===
          WRITE(LUHES,*)
          DO 100 J = 1, 3*NUCDEP
             DO 110 I = 1, 3*NUCDEP
-               WRITE(LUHES,'(F20.16)') TMPMT4(I,J)
+               WRITE(LUHES,'(F25.16)') TMPMT4(I,J)
  110        CONTINUE
             WRITE(LUHES,*)
  100     CONTINUE

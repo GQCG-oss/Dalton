@@ -28,6 +28,7 @@ C General Purpose utility routines (originally) introduced in Dalton by Trygve H
 C or one of his students
 C
 ! Dirac uses INT_STAR8 and Dalton used VAR_INT64;
+! If one set then set the other:
 #ifdef INT_STAR8
 #define VAR_INT64
 #endif
@@ -1537,7 +1538,7 @@ C        ......... then whole line is a comment line, we skip it
 C
       DO I = 1, LEN_WORD
          K = INDEX(LOWER,WORD(I:I))
-         IF (K .NE. 0) WORD(I:I)=UPPER(K:K)
+         IF (K .NE. 0) WORD(I:I) = UPPER(K:K)
          IF (ICHAR(WORD(I:I)) .EQ. 9) WORD(I:I) = ' ' ! change tab to blank
       END DO
 C
