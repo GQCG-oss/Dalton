@@ -9,10 +9,13 @@
 # Version 2.1 Feb. 2005 by K.Ruud, H.J.Aa.Jensen, and P. Salek                 #
 # Version 2011 May 2011 by H.J.Aa.Jensen, with help from others                #
 # Version 2014 Aug 2014 by H.J.Aa.Jensen, with help from others                #
+# Version 2016 Aug 2015 by H.J.Aa.Jensen, with help from others                #
 #                                                                              #
 ################################################################################
 
 opt_lsdalton=@opt_lsdalton@
+mpi_enabled=@ENABLE_MPI@
+
 if [ $opt_lsdalton -eq 1 ] ; then #LSDALTON only
   dalton="lsdalton"
   DALTON="LSDALTON"
@@ -70,7 +73,7 @@ SCP=scp
 optd=0
 optD=1
 optf=0
-optn=0
+optn=${DALTON_NUM_MPI_PROCS:-1} # default value must be 1 for running Dalton in sequential mode with openMPI.
 opto=0
 optpg=0
 opt_cpexe=0
@@ -146,6 +149,7 @@ usage (){
         echo '    DALTON_USE_GLOBAL_SCRATCH : use global scratch directory, do not copy any files to worker nodes'
         echo '    DALTON_NODELIST           : list of nodes, '$dalton'.x will be copied to DALTON_TMPDIR on each node'
         echo '                                unless DALTON_USE_GLOBAL_SCRATCH is defined'
+        echo '    DALTON_NUM_MPI_PROCS      : number of MPI processes (overridden by -N flag)'
         echo '    DALTON_LAUNCHER           : launcher for the '$dalton'.x binary'
          }
 #
@@ -274,8 +278,8 @@ if [ -z "$DALTON_TMPDIR" ]; then  # not set as environment variable and not set 
     for dir in $scratch_dir_candidates; do
         if [ -d "$dir" ]; then
             DALTON_TMPDIR=$dir
-            echo " INFO : DALTON_TMPDIR not defined by user."
-            echo " INFO : Guessing $dir is appropriate scratch directory, and DALTON_TMPDIR is set to this directory"
+            echo "INFO: DALTON_TMPDIR not defined by user."
+            echo "INFO: Guessing $dir is an appropriate scratch directory, and DALTON_TMPDIR is set to this directory"
             break
         fi
     done
@@ -539,14 +543,6 @@ if [ $dalton_exitcode = 1 ]; then
    exit 1
 fi
 
-if [ -n "$DALTON_NUM_MPI_PROCS" ]; then
-    if [ $optn -eq 0 ] ; then
-        # DALTON_NUM_MPI_PROCS is set but -N is not
-        # in this case default -N to DALTON_NUM_MPI_PROCS
-        optn=$DALTON_NUM_MPI_PROCS
-    fi
-fi
-
 # set environment variables for EFS code
 if [ -z "$EFS_MEM_MB" ]; then
     export EFS_MEM_MB=4096
@@ -586,7 +582,7 @@ if [ $opt_cpexe -eq 1 ] ; then
    DALTON_EXECUTABLE=$SCRATCHDIR/dalton.x
 fi
 
-if [ $optn -gt 1 ] ; then # MPI case
+if [ $mpi_enabled = "ON" -o $optn -gt 1 ] ; then # MPI case
 
    if [ -z "$OMP_NUM_THREADS" ]; then
       if [ $opt_lsdalton -eq 1 ]; then
@@ -734,7 +730,10 @@ fi
 if [ $opt_lsdalton -eq 1 ]; then
   filelist="LSDALTON.ERR SIRIUS.RST RESULTS.RSP RSPVEC SIRIFC DALTON.NCA UNIT1 UNIT2 DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.PHS DALTON.PHS DALTON.WLK molden.inp dens.restart fock.restart lcm_orbitals.u runopt.history MOLECULE.OUT"
 else
-  filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC* DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off FCIDUMP pe_*.bin UNIT1 UNIT2 rsp_tensor_human final_geometry.xyz *.cube"
+  filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC* "
+  filelist="$filelist DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK"
+  filelist="$filelist molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h"
+  filelist="$filelist gv.off FCIDUMP pe_*.bin UNIT1 UNIT2 rsp_tensor_human final_geometry.xyz *.cube"
 fi
 pcmfiles="cavity.off PCM_matrix PCM_mep_asc PEDRA.OUT *.npy *.npz *.vtk molec_dyadic.dat"
 filelist="$filelist $pcmfiles $GET_FILES"
@@ -846,4 +845,4 @@ echo "   ***************************************** "
 if [ $dalton_exitcode -ne 0 ]; then
    exit $dalton_exitcode
 fi
-
+# -- end of the dalton script --

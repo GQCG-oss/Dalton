@@ -549,11 +549,15 @@ C           ... orbital super symmetries may have been reordered
          END IF
          JWOPSY = 1
          MCTYPE = MCTYPE_save
-         CALL SIRSET(WORK,LWORK,OLDWOP)
-         IAVERR = 0
-         CALL AVECHK(WORK,LWORK,IAVERR)
-         IF (IAVERR .NE. 0) CALL QUIT(
+         IF  (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB) THEN
+            ! do not call SIRSET if next step is LUCITA:
+            ! SETCI will return NCONF=0 and cause error exit.
+            CALL SIRSET(WORK,LWORK,OLDWOP)
+            IAVERR = 0
+            CALL AVECHK(WORK,LWORK,IAVERR)
+            IF (IAVERR .NE. 0) CALL QUIT(
      &      'SIRCTL CI/MC error: inconsistency in sup.sym. averaging')
+         END IF
 C
       END IF
 C
