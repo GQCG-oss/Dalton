@@ -648,7 +648,7 @@ C --- start of executable code
       real*8 , allocatable :: CMO(:)
       integer ICD, NCDTRA, MX_NDMAT
       integer KFREE, LFREE, KDMAT, KFMAT, KUCMO
-      logical PARCAL_save, SLAVE_save, DIRFCK_save
+      logical PARHER_save, SLAVE_save, DIRFCK_save
 #include "priunit.h"
 
 ! Used from include files:
@@ -656,7 +656,7 @@ C --- start of executable code
 !  infinp.h : DIRFCK
 !  infind.h : ISMO(:)
 !  inforb.h : NORBT, NNORBX, NCMOT
-!  infpar.h : MYNUM,SLAVE,?
+!  infpar.h : MYNUM,SLAVE,PARHER,?
 !  inftap.h : LUSUPM
 !  mpif.h : for MPI
 #include "maxorb.h"
@@ -692,10 +692,10 @@ C --- start of executable code
       KFREE = 1
       LFREE = LWORK
 
-      PARCAL_save = PARCAL
+      PARHER_save = PARHER
       SLAVE_save  = SLAVE
       SLAVE  = .FALSE. ! Be sure the Fock matrices are NOT constructed in parallel,
-      PARCAL = .FALSE. ! be sure the Fock matrices are NOT constructed in parallel
+      PARHER = .FALSE. ! be sure the Fock matrices are NOT constructed in parallel
                        ! we are parallelizing on the distributions
       DIRFCK_save = DIRFCK
       DIRFCK = .TRUE.  ! NEVER read from AOTWOINT when parallel.
@@ -758,7 +758,7 @@ C --- start of executable code
       deallocate( CMO )
       deallocate( ICD_NODE )
 
-      PARCAL = PARCAL_save
+      PARHER = PARHER_save
       SLAVE  = SLAVE_save
       DIRFCK = DIRFCK_save
 

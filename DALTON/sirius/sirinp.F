@@ -5248,6 +5248,7 @@ C   DFTCOM : DFTRUN, DOSRBCK, ...
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
 C   siripc : INPPRC
 C   gnrinf : NEWSYM,EMBEDDING,QM3,QMMM,?
+C   infpar.h : PARHER
 C   pgroup : GROUP, REP
 C   pcmlog : PCM
 C
@@ -5256,8 +5257,6 @@ C
 #include "maxash.h"
 #include "maxorb.h"
 C
-#include "gnrinf.h"
-#include "pgroup.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "infind.h"
@@ -5272,6 +5271,9 @@ C
 #include "dfterg.h"
 #include "dftacb.h"
 #include "siripc.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "pgroup.h"
 #include "pcmlog.h"
 #include "spinfo.h"
 C
@@ -5550,7 +5552,7 @@ C          to get here unless someone modifies SIRIUS incorrectly
          WRITE (IWUNIT,'()')
       END IF
       IF ( DIRFCK ) THEN
-      IF ( PARCAL ) THEN
+      IF ( PARHER ) THEN
          WRITE (IWUNIT,'(A)')
      &      ' Fock matrices are calculated directly and in parallel'//
      &      ' without use of integrals on disk.'

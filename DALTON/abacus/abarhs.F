@@ -444,11 +444,9 @@ C
 C
 C Used from common blocks:
 C   CBIRHS : *
-C   GNRINF : PARCAL
-C   INFPAR : NODTOT
+C   INFPAR : NODTOT, PARHER
 C
 #include "cbirhs.h"
-#include "gnrinf.h"
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -836,7 +834,7 @@ C
                L2INT  = LWORK - K2INT + 1
 C
 #if defined (VAR_MPI) || defined (VAR_PVM)
-               IF (PARCAL .AND. DDFOCK) THEN
+               IF (PARHER .AND. DDFOCK) THEN
 C
                   KNSTAT = KLAST
                   KLAST  = KNSTAT + (NODTOT + 1)/IRAT

@@ -276,18 +276,14 @@ C  /* Deck twocal */
      &          IFCTYP(*), INDXAB(*), JSTRSH(*), NPRIMS(*), NCONTS(*),
      &          IORBSH(*),GABRAO(*),DMRAO(*), DMRSO(*),DINTSKP(*),
      &          WORK(LWORK)
-! gnrinf.h : PARCAL
-!  note: RELCAL in parameter list renamed to RELCAL_in to avoid conflict
-! infpar.h : SLAVE
-#include "gnrinf.h"
+
+! infpar.h : PARHER, SLAVE
 #include "infpar.h"
 #include "hertop.h"
-C NECgh
 #include "nuclei.h"
 #include "veclen.h"
 #include "drw2el.h"
 #include "r12int.h"
-C NECgh
 C
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOCAL','*',103)
 C
@@ -368,7 +364,7 @@ C        All integrals
 C        =============
 C
 #if defined (VAR_MPI) || defined (VAR_PVM)
-         IF (SLAVE .AND. PARCAL) THEN
+         IF (SLAVE .AND. PARHER) THEN
             KTKCPU = KLAST
             KWHICH = KTKCPU +  MTOTTK
             KIJS   = KWHICH + (MTOTTK + 1)/IRAT

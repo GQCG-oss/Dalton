@@ -720,6 +720,7 @@ C Common blocks used for SOPPA :
 C use from COMMON /INFDIM/ :  NCONMA,NWOPMA,NVARMA
 C use from COMMON /INFSOP/ :  N2P2HS,N2P2HT
 C use from COMMON /INFRSP/ :  SOPPA
+C infpar.h : PARHER
 #include "infdim.h"
 #include "infmp2.h"
 #include "infsop.h"
@@ -727,6 +728,7 @@ C use from COMMON /INFRSP/ :  SOPPA
 #include "infinp.h"
 #include "soppinf.h"
 #include "locinf.h"
+#include "infpar.h"
 
 C  jim-gesc 1.0: TABDIR(#17) ="*LROPTS" , TABLE(60)=".LRESC ". check INTRST for gaugeo
       DATA TABDIR /'*END OF', 'xxxxxxx', '*NUCREP',
@@ -1451,16 +1453,16 @@ C All the properties which parallel soppa currently cannot do. I.e all.
      &      ANY( (/  SHIELD, MAGSUS, SPINRO, MOLGFA, SPNSPN, 
      &           POLAR, CTOCD /) ) 
      &         ) THEN
-               WRITE(LUPRI,'(3A)')'@ ', WRDSRC, 'SOPPA can only be ' //
-     &               'run in parallel for excitation energies'
+               WRITE(LUPRI,'(3A)')'@ ', WRDSRC, ' SOPPA can only be '
+     &             //'run in parallel for excitation energies'
                par_soppa_input_errors = .true.
             ENDIF
 C            
 C Parallel soppa should be run using mp2 from the cc module
 C 
             IF (DOMP2) THEN
-               WRITE(LUPRI,'(3A/A)')'@ ', WRDSRC, 'Parallel SOPPA can'//
-     &               ' currently only run using the MP2 applitudes ',
+               WRITE(LUPRI,'(3A/A)')'@ ', WRDSRC, ' Parallel SOPPA can'
+     &             //' currently only run using the MP2 amplitudes ',
      &               'from the CC module'
                par_soppa_input_errors = .true. 
             ENDIF
@@ -1586,7 +1588,7 @@ cLig
      &   ' matrices are calculated simultaneously (for direct SCF).'
       IF (SUPMAT) WRITE (LUPRI,'(5X,A)')
      &   ' Two-electron supermatrix integrals are used.'
-      IF (PARCAL) WRITE (LUPRI,'(5X,A)')
+      IF (PARHER) WRITE (LUPRI,'(5X,A)')
      &   ' Two-electron integrals will be calculated in parallel'
       IF (LINCPL) THEN
          WRITE (LUPRI,'(A)') ' Analyze the gradient in normal '//

@@ -28,11 +28,11 @@ C
 !/* Comdeck herdirect_log */
 !941206-hjaaj
 !HERPAR: new routine for defining parallel hermit calc. of Fock matr.
-!HERFCK: call PARDRV if PARCAL true
+!HERFCK: call PARDRV if PARHER true
 !        changed STATIS to KPRINT.gt.0 (STATIS missing in newest
 !        aba.cdk from oslo)
 !941205-from oslo:
-!HERFCK: also IPRINT = IPRFCK for PARCAL true (was = 0)
+!HERFCK: also IPRINT = IPRFCK for PARHER true (was = 0)
 !941103-hjaaj:
 !implemented ISYMDM(NDMAT), IFCTYP(NDMAT)
 !ABARUN: moved to here from abadrv.u (needed for HERMIT)
@@ -460,8 +460,8 @@ C
      &          WORK(*)
 C
 C Used from common blocks:
-C   gnrinf: SEGBAS, PARCAL, USE_LSLIB
-C   infpar: NODTOT
+C   gnrinf: SEGBAS, USE_LSLIB
+C   infpar: NODTOT, PARHER
 C   symmet: MAXREP
 C
 #include "infpar.h"
@@ -502,7 +502,7 @@ C
       DO I = 1, NDMT
          USEERI = USEERI .AND. ((IFCTYP(I).EQ.13).OR.(IFCTYP(I).EQ.3))
       END DO
-      USEERI = USEERI .AND. .NOT.PARCAL
+      USEERI = USEERI .AND. .NOT.PARHER
       IF (RUNERI .AND. .NOT.USEERI) WRITE(LUPRI,'(/A/A)')
      &   'INFO HERFCK: Using Hermit instead of ERI for 2-el. ints.',
      &   'because requested calculation is not implemented in ERI.'
@@ -521,7 +521,7 @@ C
      &               ICEDIF,IFTHRS,WORK(KFREE),LFREE)
       ELSE
 #if defined (VAR_MPI) || defined (VAR_PVM)
-         IF (PARCAL) THEN
+         IF (PARHER) THEN
             if (iprfck .gt. 1) write (lupri,'(/A)')
      &      ' Direct Fock matrices using parallel ERI'; flush(lupri)
             CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)
@@ -600,8 +600,8 @@ C
 C Used from common blocks:
 C  INFORB: N2BASX,NBAST,?
 C  CBITWO: IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,?
-C  GNRINF: PARCAL
-C  INFPAR: NODTOT
+C  GNRINF: 
+C  INFPAR: NODTOT, PARHER
 C
 #include "abainf.h"
 #include "dftcom.h"
@@ -627,8 +627,8 @@ C
       CALL ABARUN(ABA)
       IF (IPRFCK .GT. 3) THEN
          write(lupri,'(/A,I10,3L10)')
-     &   '-- HRFCK1: NDMAT, PARCAL, ABA, SRINTS:',
-     &   NDMAT,PARCAL,ABA,SRINTS
+     &   '-- HRFCK1: NDMAT, PARHER, ABA, SRINTS:',
+     &   NDMAT,PARHER,ABA,SRINTS
       END IF
 C
 C
@@ -724,7 +724,7 @@ C--------------------------------
 C
       CALL GETTIM(CPU1,WALL1)
 #if defined (VAR_MPI) || defined (VAR_PVM)
-      IF (PARCAL) THEN
+      IF (PARHER) THEN
          IATOM = 0
          CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)
 C

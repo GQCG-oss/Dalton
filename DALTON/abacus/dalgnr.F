@@ -1384,8 +1384,6 @@ C
       RNSIRI = .FALSE.
       RNABAC = .FALSE.
       RNRESP = .FALSE.
-      PARCAL = .FALSE.
-      DIRCAL = .FALSE.
       DOCCSD = .FALSE.
       WESTA  = .FALSE.
       QMNPMM = .FALSE.
@@ -1409,9 +1407,14 @@ C     NEWTRA and NEWTRA_USEDRC are in /INFTRA/ for practical reasons
       NPCMIN = .TRUE.
       QFIT   = .FALSE.
       USE_LSLIB = .FALSE.
-      IF (NODTOT.GE.1) THEN
+      IF (NODTOT .GE. 1) THEN
          PARCAL = .TRUE.
          DIRCAL = .TRUE.
+         PARHER = .TRUE. ! in infpar.h - calculate 2-el. integrals in parallel
+      ELSE
+         PARCAL = .FALSE.
+         DIRCAL = .FALSE.
+         PARHER = .FALSE.
       END IF
 C
 C ...............
@@ -1578,6 +1581,7 @@ C
   108    CONTINUE  ! .PARALLel calculation
             PARCAL = .TRUE.
             DIRCAL = .TRUE.
+            PARHER = .TRUE.
             GO TO 100
   109    CONTINUE  ! .DIRECT calculation (AO direct, AOTWOINT file is not generated unless needed by a module)
             DIRCAL = .TRUE.
@@ -1637,7 +1641,7 @@ C
          !  negative: old integral transformation
          !  zero: new integral transformation
          !  1: standard .FCKTRA
-         !  2: .FCKTRA not parallel, even when PARCAL
+         !  2: .FCKTRA not parallel, even when PARHER
          !  3: .FCKTRA not parallel with ONLY_J on AO2SUPINT file
             READ(LUCMD, *) FCKTRA_TYPE
             NEWTRA = FCKTRA_TYPE .GE. 0
@@ -1728,6 +1732,7 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Request for parallel calculation (.PARALL) is ignored '//
      &   'because only one CPU process available.',SEPARATOR
          PARCAL = .FALSE.
+         PARHER = .FALSE.
       END IF
 #if defined (VAR_MPI)
       IF (PARCAL) WRITE (LUPRI,'(4X,A)')'Parallel calculation using MPI'

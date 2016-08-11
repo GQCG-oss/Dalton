@@ -1034,7 +1034,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
-C infpar.h: MASTER,MYNUM
+C infpar.h: MASTER,MYNUM, PARHER
 #include "maxorb.h"
 #include "infpar.h"
 C iprtyp.h: define parallel calculation types
@@ -1054,6 +1054,7 @@ C gnrinf.h : PARCAL, DIRCAL
 
       PARCAL = .TRUE.
       DIRCAL = .TRUE.
+      PARHER = .TRUE.
 
       N_TASKS = 0
 C
