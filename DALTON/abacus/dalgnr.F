@@ -1334,8 +1334,8 @@ C
      &            '.WALK  ', '.MAX IT', '.RESPON', ! 12
      &            '.RUN PR', '.RUN RE', '.RUN WA',
      &            '.PRESOR', '.WESTA ', '.CHOLES', ! 18
-     &            '.EXTPCM', 'xxxxxxx', 'xxxxxxx',
-     &            '.FCKTRA', '.OPTIMI', '.TOTSYM', ! 24
+     &            '.EXTPCM', '.FCKTRA', '.2TRATY',
+     &            'xXXXXXX', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
      &            '.THRRED', '.DOUGLA', '.PEQM  ',
@@ -1520,14 +1520,14 @@ C         if reading input from a terminal
 C
 C     ***** Process input for COMMON  /GENINF/  *****
 C
-C Table(01:34) :
+C Table(01:35) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
-C 16-20: '.PRESOR', '.WESTA ', '.CHOLES', '.EXTPCM', 'xxxxxxx',
-C 21-25: 'xXXXXXX', '.FCKTRA', '.OPTIMI', '.TOTSYM', '.VECLEN',
+C 16-20: '.PRESOR', '.WESTA ', '.CHOLES', '.EXTPCM', '.FCKTRA',
+C 21-25: '.2TRATY', 'xXXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.NEWTRA', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  '.
+C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  ', '.LSLIB '.
 C
       IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1553,57 +1553,56 @@ C
      &         ' Keyword ',WORD,' not recognized in DALTON_GNRLINP.'
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in DALTON_GNRLINP.')
-  101    CONTINUE
+  101    CONTINUE  ! .PRINT
             READ (LUCMD,*) IPRUSR
             USRIPR = .TRUE.
             GO TO 100
-  102    CONTINUE
+  102    CONTINUE  ! .ITERATions
             READ (LUCMD,*) ITERNR
             GO TO 100
-  103    CONTINUE
+  103    CONTINUE  ! .PRIERR
             READ (LUCMD,*) IPRSTAT
             GO TO 100
-  104    CONTINUE
+  104    CONTINUE  ! .INTEGRals
             RNHERM = .TRUE.
             GO TO 100
-  105    CONTINUE
+  105    CONTINUE  ! .WAVE Function
             RNSIRI = .TRUE.
             GO TO 100
-  106    CONTINUE
+  106    CONTINUE  ! .PROPERties
             RNABAC = .TRUE.
             GO TO 100
-  107    CONTINUE
+  107    CONTINUE  ! .INPTESt
             TESTIN = .TRUE.
             GO TO 100
-  108    CONTINUE
+  108    CONTINUE  ! .PARALLel calculation
             PARCAL = .TRUE.
             DIRCAL = .TRUE.
             GO TO 100
-  109    CONTINUE  ! .DIRECT
+  109    CONTINUE  ! .DIRECT calculation (AO direct, AOTWOINT file is not generated unless needed by a module)
             DIRCAL = .TRUE.
          GO TO 100
-C        ".WALK  "
-  110    CONTINUE
+  110    CONTINUE  ! .WALK
             OPTWLK = .TRUE.
             DOWALK = .TRUE.
          GO TO 100
-  111    CONTINUE
+  111    CONTINUE  ! .MAX ITerations
             READ (LUCMD,*) ITERMX
          GO TO 100
-  112    CONTINUE
+  112    CONTINUE  ! .RESPONs
             RNRESP = .TRUE.
          GO TO 100
-  113    CONTINUE
+  113    CONTINUE  ! .RUN PRoperties
             RNHERM = .TRUE.
             RNSIRI = .TRUE.
             RNABAC = .TRUE.
          GO TO 100
- 114     CONTINUE
+ 114     CONTINUE  ! .RUN REspons
             RNHERM = .TRUE.
             RNSIRI = .TRUE.
             RNRESP = .TRUE.
          GO TO 100
- 115     CONTINUE
+ 115     CONTINUE  ! .RUN WAve function
             RNHERM = .TRUE.
             RNSIRI = .TRUE.
          GO TO 100
@@ -1620,78 +1619,81 @@ C        ".WALK  "
             CHOINT = .TRUE.
             DIRCAL = .TRUE.
          GO TO 100
- 119     CONTINUE
+ 119     CONTINUE  ! .EXTPCM
 #ifdef HAS_PCMSOLVER
             extpcm_input_provided = .true.
 #else
-      WRITE(LUPRI,'(//A/)')
-     $           'ERROR: EXTPCM requested but PCM Module not compiled'
-      CALL QUIT('Recompile including the PCM Module')
+            WRITE(LUPRI,'(//A/)')
+     $         'ERROR: EXTPCM requested but PCM Module not compiled'
+            CALL QUIT('Recompile including the PCM Module')
 #endif
          goto 100
- 120     CONTINUE
- 121     CONTINUE
-         GO TO 100
- 122     CONTINUE   ! .FCKTRA
-            READ(LUCMD, *) FCKTRA_TYPE
+ 120     CONTINUE  ! .FCKTRA
+            IF (FCKTRA_TYPE .LT. 0) FCKTRA_TYPE = 1
             NEWTRA = .TRUE.
          GO TO 100
-C        '.OPTIMI'
- 123     CONTINUE
+ 121     CONTINUE  !.2TRATYpe
+         ! "Secret option" for debugging/enhancing 2-electron integral transformation
+         !  negative: old integral transformation
+         !  zero: new integral transformation
+         !  1: standard .FCKTRA
+         !  2: .FCKTRA not parallel, even when PARCAL
+         !  3: .FCKTRA not parallel with ONLY_J on AO2SUPINT file
+            READ(LUCMD, *) FCKTRA_TYPE
+            NEWTRA = FCKTRA_TYPE .GE. 0
+         GO TO 100
+ 122     CONTINUE  ! not used
+         GO TO 100
+ 123     CONTINUE  ! .OPTIMIzation of geometry
             OPTNEW = .TRUE.
          GO TO 100
- 124     CONTINUE
+ 124     CONTINUE  ! .TOTSYM
             TOTSYM = .TRUE.
          GO TO 100
- 125     CONTINUE
+ 125     CONTINUE  ! .VECLEN
             READ (LUCMD,*) IVECLN
          GO TO 100
- 126     CONTINUE
+ 126     CONTINUE  ! .RUNERI
             RUNERI = .TRUE.
          GO TO 100
- 127     CONTINUE   ! .NEWTRA
+ 127     CONTINUE  ! .NEWTRA
             NEWTRA = .TRUE.
+            FCKTRA_TYPE = 0
          GO TO 100
- 128     CONTINUE
+ 128     CONTINUE ! .RUN ALl four modules
             RNHERM = .TRUE.
             RNSIRI = .TRUE.
             RNABAC = .TRUE.
             RNRESP = .TRUE.
          GO TO 100
-C        '.NMDDRV' and '.PARNMD'
- 129     CONTINUE
+ 129     CONTINUE ! '.NMDDRV' and '.PARNMD'
             NMWALK = .TRUE.
             NOMOVE = .TRUE.
             OPTWLK = .TRUE.
          GOTO 100
-C        '.THRRED'
- 131     CONTINUE
+ 131     CONTINUE ! .THRRED
             READ (LUCMD,*) THR_REDFAC
          GOTO 100
-C        '.DOUGLA'
- 132     CONTINUE
+ 132     CONTINUE ! .DOUGLAs-kroll-hess scalar second order
             DKTRAN = .TRUE.
          GOTO 100
-!        '.PEQM  '
- 133     CONTINUE
+ 133     CONTINUE ! .PEQM
             CALL PELIB_IFC_ACTIVATE()
          GOTO 100
-!        '.QFIT  '
- 134     CONTINUE
+ 134     CONTINUE ! .QFIT
 #if defined (BUILD_QFITLIB)
-         QFIT = .TRUE.
+            QFIT = .TRUE.
 #else
-         WRITE(LUPRI,*) 'ERROR for .QFIT: QFITLIB not enabled.'
-         CALL QUIT('ERROR for .QFIT: QFITLIB not enabled.')
+            WRITE(LUPRI,*) 'ERROR for .QFIT: QFITLIB not enabled.'
+            CALL QUIT('ERROR for .QFIT: QFITLIB not enabled.')
 #endif
          GOTO 100
-!        '.LSLIB '
- 135     CONTINUE
+ 135     CONTINUE ! .LSLIB 
 #if defined (BUILD_LSLIB)
-         USE_LSLIB  = .TRUE.
+            USE_LSLIB  = .TRUE.
 #else
-         WRITE(LUPRI,*) 'ERROR for .LSLIB : LSLIB not enabled.'
-         CALL QUIT('ERROR for .LSLIB : LSLIB not enabled.')
+            WRITE(LUPRI,*) 'ERROR for .LSLIB : LSLIB not enabled.'
+            CALL QUIT('ERROR for .LSLIB : LSLIB not enabled.')
 #endif
          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
