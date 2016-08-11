@@ -111,6 +111,7 @@ C
       CALL QENTER('SIRFCK')
       CALL GETTIM(T0,W0)
 C
+      iprfck = max(iprfck, SIRFCK_DEBUG)
       iprsrdft = iprfck
       IF (NDMAT.EQ.0) GO TO 9999
 C
@@ -146,6 +147,7 @@ C
 #if SIRFCK_DEBUG > 0
       iprsrdft = max(1,iprsrdft)  ! development code, always print
       write(lupri,*)'SIRFCK: entering'
+      write(lupri,*)'iprfck,iprsrdft =',iprfck,iprsrdft
       write(lupri,*)'SIRFCK: NDMAT=', NDMAT
       write(lupri,*)'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
       write(lupri,*)'SIRFCK: DO_SPINDNS,DFT_SPINDNS = ',
@@ -315,7 +317,7 @@ C           CALL SETHER(IPRHER,NEWGEO,WORK,LWORK)
          DO I = 1,NDMAT
             ISYMDM(I) = ISYMDM(I) - 1
          END DO
-         IPRHER = IPRFCK/100
+         IPRHER = MAX(IPRFCK/100, SIRFCK_DEBUG - 1)
 C
 C        Special code for short range/long range integrals
 C        ... never short-range integrals in first call of HERFCK
@@ -355,9 +357,15 @@ C        INFO: HERFCK destroys DMAT when called with symmetry
 
          if (atomdf .AND. CHIVAL .LT. D0) then
 C          hjaaj mar 2006: dens_fit not for short range integrals (yet)
+#if SIRFCK_DEBUG > 0
+           write(lupri,*) 'calling dens_fit'; flush(lupri)
+#endif
            call dens_fit(fmat,dmat,NDCandDV,ISYMDM,IFCTYP,IPRHER,
      &                   wrk,lwork)
          else
+#if SIRFCK_DEBUG > 0
+           write(lupri,*) 'calling HERFCK, IPRHER=',IPRHER; flush(lupri)
+#endif
            CALL HERFCK  (FMAT,DMAT,NDCandDV,ISYMDM,IFCTYP,IPRHER,
      &                   WRK,LWORK)
          end if

@@ -480,7 +480,7 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
 #if defined (VAR_MPI)
          IF (NODTOT .GT. 0) THEN
             WRITE(LUPRI,'(/A,I0,A)')
-     &      " * MPI run using ", NODTOT+1, " processes."
+     &      " * MPI parallel run using ", NODTOT+1, " processes."
          ELSE
             WRITE(LUPRI,'(/A,I5,A)')
      &      " * Sequential calculation."

@@ -481,6 +481,9 @@ C
       CALL QENTER('HERFCK')
 
       IPRFCK = MAX(IPRFCK_in, HERFCK_DEBUG)
+#if HERFCK_DEBUG > 0
+      write (lupri,*) 'HERFCK DEBUG: iprfck =',iprfck; flush(lupri)
+#endif
 C
 C     The new ERI routines have not been parallelized yet.
 C     RUNERI is the flag from input processing, to tell that we should use eri,
@@ -510,7 +513,7 @@ C
       IF (USE_LSLIB .AND. MAXREP .EQ. 0) THEN
          ! only implemented for C1 symmetry
          if (iprfck .gt. 1) write (lupri,'(/A)')
-     &   ' Direct Fock matrices using LSLIB_FCK'
+     &   ' Direct Fock matrices using LSLIB_FCK'; flush(lupri)
          CALL DALTON_LSLIB_FCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &               ICEDIF,IFTHRS,WORK(KFREE),LFREE)
       ELSE IF (.NOT. USEERI) THEN
@@ -520,7 +523,7 @@ C
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
             if (iprfck .gt. 1) write (lupri,'(/A)')
-     &      ' Direct Fock matrices using parallel ERI'
+     &      ' Direct Fock matrices using parallel ERI'; flush(lupri)
             CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)
             IPRTYP = ERI_WORK
             CALL PARDRV(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,WORK(KFREE),
@@ -540,7 +543,7 @@ C
            KFCKTP = KFREE
 #endif
            if (iprfck .gt. 1) write (lupri,'(/A)')
-     &     ' Direct Fock matrices using sequential ERI'
+     &     ' Direct Fock matrices using sequential ERI'; flush(lupri)
            CALL ERIFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &                 WORK(KFREE),LFREE)
@@ -623,7 +626,7 @@ C     Inquire if this is an ABACUS run or not:
 C
       CALL ABARUN(ABA)
       IF (IPRFCK .GT. 3) THEN
-         write(lupri,'(/A,I4,2L10)')
+         write(lupri,'(/A,I10,3L10)')
      &   '-- HRFCK1: NDMAT, PARCAL, ABA, SRINTS:',
      &   NDMAT,PARCAL,ABA,SRINTS
       END IF
@@ -664,12 +667,12 @@ C
       ITYPE  = 3
       MAXDER = 0
       NPAO = MXSHEL*MXAOVC
-      CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNCONT,NPAO*2,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIORBS,NPAO  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KJORBS,NPAO  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','JSTRSH',KJSTRS,NPAO*2,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','NPRIMS',KNPRIM,NPAO*2,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','NCONTS',KNCONT,NPAO*2,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IORBSH',KIORBS,NPAO  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','JORBSH',KJORBS,NPAO  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KORBSH',KKORBS,NPAO  ,WORK,KFREE,LFREE)
       CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &            WORK(KJORBS),WORK(KKORBS),0,.FALSE.,IPRINT)
       CALL MEMREL('HRFCK1.PAOVEC',WORK,KWORK,KJORBS,KFREE,LFREE)
@@ -690,9 +693,9 @@ C     =====================
 C
       N2DRAO = NSYMBL*NSYMBL*NDMAT
       N2GAB = NSYMBL*NSYMBL      
-      CALL MEMGET('REAL',KGAB ,N2GAB, WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDRAO,N2DRAO,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDSKP,8     ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GABRAO', KGAB ,N2GAB, WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DMRAO',  KDRAO,N2DRAO,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DINTSKP',KDSKP,8     ,WORK,KFREE,LFREE)
 C     
 C     Get GAB-matrix (Cauchy-Schwarz)
 C
@@ -729,7 +732,7 @@ C
          HFXM0 = HFXMU
          HFXMU = D0
          if (iprfck .gt. 1) write (lupri,'(/A)')
-     &      ' Direct Fock matrices using parallel HERMIT'
+     &      ' Direct Fock matrices using parallel HERMIT'; flush(lupri)
          CALL PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,
      &               WORK(KFREE),WORK(KNSTAT),DUMMY,LFREE,ITYPE,MAXDER,
      &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
@@ -794,11 +797,9 @@ C
          CALL TIMER('START ',TIMSTR,TIMEND)
          HFXM0 = HFXMU
          HFXMU = D0
-#if HERFCK_DEBUG > 1
-      IPRINT = max(IPRINT, HERFCK_DEBUG)
-#endif
+         IPRINT = max(IPRINT, HERFCK_DEBUG)
          if (iprfck .gt. 1) write (lupri,'(/A)')
-     &      ' Direct Fock matrices using sequential HERMIT'
+     &   ' Direct Fock matrices using sequential HERMIT'; flush(lupri)
          CALL TWOINT(WORK(KFREE),LFREE,DUMMY,FMAT,DMAT,NDMAT,
      &               ISYMDM,
      &               IFCTYP,DUMMY,IDUMMY,NUMDIS,1,ITYPE,MAXDER,0,
@@ -914,16 +915,15 @@ C
       END
 C  /* Deck abarun */
       SUBROUTINE ABARUN(RUNABA)
-#include "implicit.h"
       LOGICAL ABA, RUNABA
       SAVE ABA
       DATA ABA /.FALSE./
       RUNABA = ABA
       RETURN
-      ENTRY ABUSET
+      ENTRY ABA_UNSET()
       ABA = .FALSE.
       RETURN
-      ENTRY ABASET
+      ENTRY ABA_SET()
       ABA = .TRUE.
       RETURN
       END

@@ -1,3 +1,4 @@
+#define IPRPAR_DEBUG -1
 !
 !...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -43,9 +44,11 @@ C Used from common blocks
 C
 C MXORB  : MXSHEL (for INFPAR)
 C INFPAR : MASTER, NODTOT, IPRPAR,  NCODE, DBG
+C iprtyp.h : HER_WORK, ERI_WORK
 C GNRINF : BASDIR, LENBAS
 C
 #include "infpar.h"
+#include "iprtyp.h"
 #include "gnrinf.h"
       DATA TOTWAL /0./
       SAVE TOTWAL
@@ -55,17 +58,19 @@ C
 !     IPRPAR = 11
       IPRINT = MAX(IPRINT,IPRPAR)
 C
-      IF (IPRINT .GT. 3) THEN
-         CALL TITLER('Output from PARDRV','*',103)
-         WRITE(LUPRI,'(/A,I5)')
-     &      'Parallel type (ITYPE) is',ITYPE
-      END IF
       IF (IPRPAR .GT. 0) CALL GETTIM(CPU1,WALL1)
 C
       IF (INFPAR_DEBUG) THEN
          IPRNOD = IPRINT
       ELSE
          IPRNOD = 0
+      END IF
+      IPRNOD = MAX(IPRNOD,IPRPAR_DEBUG)
+      IF (IPRINT .GT. 3) THEN
+         CALL TITLER('Output from PARDRV','*',103)
+         WRITE(LUPRI,'(/A,2I5)')
+     &      'Parallel types IPRTYP and ITYPE are',IPRTYP,ITYPE,
+     &      'Print level on nodes is',IPRNOD
       END IF
 C
 C     Tell nodes whether this is an ERI or HERMIT run. Send IPRNOD (PVM: NCODE)
@@ -80,7 +85,7 @@ C
       CALL PVMXPACK(IPRNOD,1,'INTEGER')
       CALL PVMXMCAST(NODTOT,NODEID(1),MTAG1)
 #endif
-      IF (IPRTYP.EQ.1) THEN
+      IF (IPRTYP.EQ.HER_WORK) THEN
          if (iprint .gt. 3)
      &      write (lupri,*) 'Calling parallel HERMIT routines.'
          CALL HER_PARDRV(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
@@ -88,11 +93,14 @@ C
      &                   NOPV,NOCONT,TKTIME,RETUR,IPRINT,
      &                   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
      &                   DINTSKP,RELCAL,GENCTR)
-      ELSE
+      ELSE IF (IPRTYP.EQ.ERI_WORK) THEN
          if (iprint .gt. 3)
      &      write (lupri,*) 'Calling parallel ERI routines.'
          CALL ERI_PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,IPRINT)
+      ELSE
+         write (lupri,*) 'PARDRV: Invalid IPRTYP = ',IPRTYP
+         CALL QUIT('PARDRV: Invalid IPRTYP here')
       END IF
 C
       KCPUS  = 1
@@ -137,7 +145,7 @@ C
 #include "mtags.h"
       CHARACTER*20 NAME, NODNAM(NODTOT)
       DIMENSION NSTAT(NODTOT),CPUS(NODTOT),WALLS(NODTOT)
-      DIMENSION TMGARR(2)
+      REAL*8 TMGARR(2)
 C
       SAVE TSOFAR
       DATA TSOFAR/0.0D0/
@@ -625,6 +633,10 @@ C
       IDONE = 0
 C
       IF (AOSAVE) THEN
+         IF (IPRINT .GT. 3) THEN
+            write(lupri,*) 'DOPAR: sending AOSAVE information'
+            flush(lupri)
+         END IF
 C
 C         do ii=1,mxbtch
 C            write(lupri,*) 'i,INDEX(1..3,i):',ii,INDEX(1,ii),
@@ -718,8 +730,9 @@ C
          NSTAT(NWHO) = NSTAT(NWHO) + 1
 C
          IF (IPRINT .GT. 4) THEN
-            WRITE(LUPRI,'(5X,A10,I5,A8,I4)')
-     &              'Send batch', I, 'to node', NWHO
+            WRITE(LUPRI,'(5X,A,I5,A,I5)')
+     &         'DOPAR: Sending batch', I, ' to node ', NWHO
+            flush(lupri)
          END IF
 C
          IF (IPLACE .LE. NBATCH .OR. IPLACQ .GT. 0) THEN
@@ -766,8 +779,14 @@ C      DO J=1,MXBTCH
 C         write(lupri,*) j,(INDX_C(I,J),i=1,3)
 C      END DO
 C
+
 C  ELSE below is for the compability to old code: AOSAVE = FALSE
       ELSE
+         IF (IPRINT .GT. 3) THEN
+            write(lupri,*) 'DOPAR: sending information (AOSAVE false).'
+     &         //' NBATCH =',NBATCH
+            flush(lupri)
+         END IF
 C
          DO 100, I = 1,NBATCH
 C
@@ -798,8 +817,9 @@ C
          NSTAT(NWHO) = NSTAT(NWHO) + 1
 C
          IF (IPRINT .GT. 4) THEN
-            WRITE(LUPRI,'(5X,A10,I5,A8,I4)')
-     &              'Send batch', I, 'to node', NWHO
+            WRITE(LUPRI,'(5X,A10,I5,A8,I5)')
+     &          'Sending batch', I, ' to node', NWHO
+            flush(lupri)
          END IF
 C
          IPLACE = IPLACE + NTASK
@@ -1018,6 +1038,9 @@ C iprtyp.h: define parallel calculation types
 #include "iprtyp.h"
 #include "mpif.h"
 
+C gnrinf.h : PARCAL, DIRCAL
+#include "gnrinf.h"
+
       real(8), allocatable  :: work(:)
       integer(4), parameter :: TEN_4 = 10
 
@@ -1025,6 +1048,10 @@ C iprtyp.h: define parallel calculation types
 
       CALL QENTER('DALTON_NODEDRIVER')
       CALL GETTIM(CSTR,WSTR)
+
+      PARCAL = .TRUE.
+      DIRCAL = .TRUE.
+
       N_TASKS = 0
 C
 C     Get calculation type (IPRTYP)
@@ -1073,6 +1100,7 @@ C
      &      'Node',MYNUM,' received task',N_TASKS,' IPRTYP =',IPRTYP,
      &      ' Print level is',IPRINT,
      &      '(See DALTON/include/iprtyp.h for IPRTYP codes)'
+            flush(lupri)
 
 !        allocate memory here if we do not call hermit (more to follow...).
 !        idea: move allocation down to main driver routines of modules as we might want to use
@@ -1087,11 +1115,11 @@ C
            work(1+mwork) = wrkdlm
 
            if(i /= 0)then
-             write (luerr,*) mynum,
-     &           ': ALLOCATE command failed to allocate'//
-     &           ' the requested memory on slave. Error code:',i
-             write (luerr,*)
-     &           'Reduce the memory demands and be welcome back'
+             write (lupri,*) mynum,
+     &        ': ALLOCATE command failed to allocate'//
+     &        ' the requested memory ',mwork,' on slave. Error code:',i
+             write (lupri,*)
+     &        'Reduce the memory demands and be welcome back'
              call quit('Failed to allocate memory on slave')
            end if
          end if
@@ -1628,7 +1656,7 @@ C
 #include "implicit.h"
 #include "maxorb.h"
 #include "mtags.h"
-      DIMENSION TMGARR(2)
+      REAL*8 TMGARR(2)
 #include "infpar.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from SDTIM','*',103)
