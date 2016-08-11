@@ -1268,8 +1268,8 @@ C added by Bin Gao, May 12, 2012
             call j1ints_pcm(work(1),mwork,iprtyp,iprint)
 #endif
 
-         else if (IPRTYP .eq. CALL_HJJTRA_DISTRIBUTED) THEN
-            call HJJTRA_DISTRIBUTED_NODE(WORK(1),MWORK,IPRINT)
+         else if (IPRTYP .eq. CALL_FCKTRA_DISTRIBUTED) THEN
+            call FCKTRA_DISTRIBUTED_NODE(WORK(1),MWORK,IPRINT)
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(DALTON_NODEDRIVER) ERROR on slave',mynum,

@@ -953,7 +953,7 @@ C To be safe, include EXTERNAL SBDTRA in sirctl
 C
 #include "implicit.h"
 #include "inftra.h"
-      DATA HJJTRA_TYPE/-1/, NEWTRA /.FALSE./
+      DATA FCKTRA_TYPE/-1/, NEWTRA /.FALSE./
       END
 C  /* Deck sbddim */
       BLOCK DATA SBDDIM

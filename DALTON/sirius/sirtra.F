@@ -170,8 +170,8 @@ C
      &     /'integral transformation (from 1988 ;-) )',
      &      'because more than 255 basis functions.'
       END IF
-      IF (HJJTRA_TYPE .gt. 0) THEN
-         CALL SIR_INTOPEN_HJJTRA
+      IF (FCKTRA_TYPE .gt. 0) THEN
+         CALL SIR_INTOPEN_FCKTRA
          ! RETURN -- no, continue below to create MOTWOINT for now
       ELSE IF (NEWTRA) THEN
          CALL SIR_INTOPEN_NEWTRA
@@ -1785,8 +1785,8 @@ C
          CALL GETTIM(TCPU0,TWALL0)
       END IF
 C
-      IF (HJJTRA_TYPE .gt. 0) THEN
-         CALL HJJTRA_CTL(KTRLVL,CMO,WORK,KWORK)
+      IF (FCKTRA_TYPE .gt. 0) THEN
+         CALL FCKTRA_CTL(KTRLVL,CMO,WORK,KWORK)
       ELSE IF (NEWTRA) THEN
          IF (ITRLVL .EQ. 0 .OR. ITRLVL .GE. 5) THEN ! zeroth, third or fourth order transformation
             USEDRC = .FALSE. ! use DRCCTL and not Dirac integrals from N_TRACTL
@@ -2589,13 +2589,13 @@ C
       SAVE KBUF, KIBUF, KNEXT
       DATA KNEXT /-1/
 C
-      IF (HJJTRA_TYPE .gt. 0) THEN
+      IF (FCKTRA_TYPE .gt. 0) THEN
          IF (LFREE .LT. N2ORBX) THEN
             write(lupri,*) 'KFREE, LFREE, IDIST',KFREE,LFREE,IDIST
             write(lupri,*) 'N2ORBX',N2ORBX
-            call QUIT('too little memory for HJJTRA_NXTH2M')
+            call QUIT('too little memory for FCKTRA_NXTH2M')
          END IF
-         CALL HJJTRA_NXTH2M(IC,ID,H2CD,NEEDTP,WRK(KFREE),IDIST)
+         CALL FCKTRA_NXTH2M(IC,ID,H2CD,NEEDTP,WRK(KFREE),IDIST)
          RETURN
       ELSE IF (NEWTRA) THEN
          CALL N_NXTH2M(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
@@ -2873,8 +2873,8 @@ C
       SAVE    KBUF, KIBUF, KNEXT
       DATA    KNEXT /-1/
 C
-      IF (HJJTRA_TYPE .gt. 0) THEN
-         CALL HJJTRA_NXTH2D(IC,ID,H2CD,NEEDTP,IDIST)
+      IF (FCKTRA_TYPE .gt. 0) THEN
+         CALL FCKTRA_NXTH2D(IC,ID,H2CD,NEEDTP,IDIST)
          RETURN
       ELSE IF (NEWTRA .AND. NEWTRA_USEDRC) THEN
          CALL N_NXTH2D(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)

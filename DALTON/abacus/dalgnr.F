@@ -1335,7 +1335,7 @@ C
      &            '.RUN PR', '.RUN RE', '.RUN WA',
      &            '.PRESOR', '.WESTA ', '.CHOLES', ! 18
      &            '.EXTPCM', 'xxxxxxx', 'xxxxxxx',
-     &            '.HJJTRA', '.OPTIMI', '.TOTSYM', ! 24
+     &            '.FCKTRA', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
      &            '.THRRED', '.DOUGLA', '.PEQM  ',
@@ -1390,9 +1390,9 @@ C
       WESTA  = .FALSE.
       QMNPMM = .FALSE.
 
-C     HJJTRA_TYPE and NEWTRA are in /INFTRA/ for practical reasons
+C     FCKTRA_TYPE and NEWTRA are in /INFTRA/ for practical reasons
 C     NEWTRA and NEWTRA_USEDRC are in /INFTRA/ for practical reasons
-      HJJTRA_TYPE = -1
+      FCKTRA_TYPE = -1
       NEWTRA = .FALSE.         ! if true, use "new" transformation for Mulliken integrals
       NEWTRA_USEDRC = .FALSE.  ! if NEWTRA and NEWTRA_USEDRC both true, also use "new" transformation for Dirac integrals
 
@@ -1525,7 +1525,7 @@ C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.CHOLES', '.EXTPCM', 'xxxxxxx',
-C 21-25: 'xXXXXXX', '.HJJTRA', '.OPTIMI', '.TOTSYM', '.VECLEN',
+C 21-25: 'xXXXXXX', '.FCKTRA', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.NEWTRA', '.RUN AL', '.NMDDRV', '.PARNMD',
 C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  '.
 C
@@ -1632,8 +1632,8 @@ C        ".WALK  "
  120     CONTINUE
  121     CONTINUE
          GO TO 100
- 122     CONTINUE   ! .HJJTRA
-            READ(LUCMD, *) HJJTRA_TYPE
+ 122     CONTINUE   ! .FCKTRA
+            READ(LUCMD, *) FCKTRA_TYPE
             NEWTRA = .TRUE.
          GO TO 100
 C        '.OPTIMI'
@@ -1790,10 +1790,10 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (IVECLN .NE. 1) WRITE (LUPRI,'(4X,A,I5)')
      &     'Vector length used in direct Fock matrix calculations '//
      &     '(assuming vector machine)',IVECLN
-      IF (HJJTRA_TYPE .gt. 0) THEN
+      IF (FCKTRA_TYPE .gt. 0) THEN
          WRITE(LUPRI,'(4X,A,I5)')
-     &     'Hans Joergens integral transformation (2014) used, type',
-     &     HJJTRA_TYPE
+     &     'Fock-matrix based 2-el integral transformation (2016) used,'
+     &     //' type',FCKTRA_TYPE
       ELSE IF (NEWTRA) THEN
          WRITE(LUPRI,'(4X,A)')
      &     '"New" (from 1988!) integral transformation used'

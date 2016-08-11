@@ -2964,7 +2964,7 @@ C
          ITUSYM = 1
          CALL TRASET_3(LX2X3, LWORK)
       ELSE IF (IRDAO .LT. 0) THEN
-         ! do no more, this is called from .HJJTRA routines
+         ! do no more, this is called from .FCKTRA routines
       ELSE
          WRITE (LUPRI,*) 'ERROR TRASET: Illegal IRDAO =',IRDAO
          CALL QTRACE(LUPRI)

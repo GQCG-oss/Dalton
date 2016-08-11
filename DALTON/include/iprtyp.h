@@ -59,4 +59,4 @@
 #define efs_fock_update_work      132
 #define pcmsolver_npetes2_work    133
 #define pcmsolver_pcmbsol_work    134
-#define CALL_HJJTRA_DISTRIBUTED   201
+#define CALL_FCKTRA_DISTRIBUTED   201

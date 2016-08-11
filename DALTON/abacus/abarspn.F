@@ -217,7 +217,7 @@ C
             JTRLVL = 0
          ELSE IF (SOPPA .OR. NEXVAL.EQ.0) THEN  ! SOPPA or quadratic response
             JTRLVL = -10
-         ELSE IF (HJJTRA_TYPE .gt. 0) THEN
+         ELSE IF (FCKTRA_TYPE .gt. 0) THEN
             JTRLVL = -4
          ELSE IF (NEWTRA .AND. .NOT.USEDRC) THEN
             JTRLVL = -5 ! level 5 needed for occ-sec distributions in NEWTRA
