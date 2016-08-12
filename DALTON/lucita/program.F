@@ -5056,9 +5056,9 @@ C    &  '         Allowed number of iterations    ',MAXIT
       END IF
 *
       IF(IDIAG.EQ.2) THEN
-        WRITE(luwrt,'(1X ,/A,E11.5)')
+        WRITE(luwrt,'(1X ,/A,E12.5)')
      &   '        Individual second order energy threshold ',E_THRE
-        WRITE(luwrt,'(1X ,A,E11.5)')
+        WRITE(luwrt,'(1X ,A,E12.5)')
      &   '        Individual first order wavefunction threshold ',C_THRE
         IF(ICLSSEL.EQ.1) THEN
          WRITE(luwrt,*)
@@ -5066,9 +5066,9 @@ C    &  '         Allowed number of iterations    ',MAXIT
      &   '         Class selection will be performed : '
          WRITE(luwrt,'(1X ,A)')
      &   '         =================================== '
-         WRITE(luwrt,'(1X ,A,E11.5)')
+         WRITE(luwrt,'(1X ,A,E12.5)')
      &    '          Total second order energy threshold ',E_CONV
-         WRITE(luwrt,'(1X ,A,E11.5)')
+         WRITE(luwrt,'(1X ,A,E12.5)')
      &    '          Total first order wavefunction threshold ',C_CONV
         ELSE
          WRITE(luwrt,'(1X ,A)')

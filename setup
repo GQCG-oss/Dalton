@@ -143,10 +143,6 @@ def parse_input():
             choices=('intelmpi', 'openmpi', 'sgimpt'),
             default='intelmpi',
             help='specify the BLACS implementation; only used in combination with --scalapack [default: %(default)s]')
-    group.add_argument('--scalasca',
-            action='store_true',
-            default=False,
-            help='build using SCALASCA profiler mode [default: %(default)s]')
     
     group = parser.add_argument_group('advanced options')
     group.add_argument('--check',
@@ -250,9 +246,6 @@ def gen_cmake_command(args):
     command += ' -DENABLE_GPU=%s'            % translate_cmake(args.gpu)
     command += ' -DENABLE_CUBLAS=%s'         % translate_cmake(args.cublas)
     command += ' -DENABLE_REAL_SP=%s'        % translate_cmake(args.real_sp)
-    command += ' -DENABLE_CSR=%s'            % translate_cmake(args.csr)
-    command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
-    command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
 
     command += ' -DENABLE_SCALAPACK=%s'      % translate_cmake(args.scalapack)
@@ -295,7 +288,6 @@ def gen_cmake_command(args):
         command += ' -DENABLE_AUTO_LAPACK=OFF'
 
     if args.gpu:
-        command += ' -DENABLE_OPENACC=ON'
         command += ' -DENABLE_CUDA=ON'
 
     if args.mkl != 'none':

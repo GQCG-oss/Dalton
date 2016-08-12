@@ -1141,13 +1141,13 @@ C     --------
 C     Print.
 C     ------
 
-      WRITE(LUPRI,'(6X,A,11X,1P,D10.4,A,I10)')
+      WRITE(LUPRI,'(6X,A,11X,1P,D11.4,A,I10)')
      & 'Larger than ',XLIST(1),':',ICOUNT(1)
       DO ILIST = 2,NLTOT
-         WRITE(LUPRI,'(6X,A,1P,D10.4,A,D10.4,A,I10)')
+         WRITE(LUPRI,'(6X,A,1P,D11.4,A,D11.4,A,I10)')
      &  'Between ',XLIST(ILIST-1),' and ',XLIST(ILIST),':',ICOUNT(ILIST)
       ENDDO
-      WRITE(LUPRI,'(6X,A,10X,1P,D10.4,A,I10,/)')
+      WRITE(LUPRI,'(6X,A,10X,1P,D11.4,A,I10,/)')
      & 'Smaller than ',XLIST(NLTOT),':',NUMN
 
       IF (NNEG .GT. 0) THEN

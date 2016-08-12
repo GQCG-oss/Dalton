@@ -75,7 +75,7 @@ C
 C
 C     Tag this as an ABACUS run.
 C
-      CALL ABASET
+      CALL ABA_SET
 C
 C     *************************
 C     ***** Input Section *****
@@ -762,6 +762,7 @@ C Common blocks used for SOPPA :
 C use from COMMON /INFDIM/ :  NCONMA,NWOPMA,NVARMA
 C use from COMMON /INFSOP/ :  N2P2HS,N2P2HT
 C use from COMMON /INFRSP/ :  SOPPA
+C infpar.h : PARHER
 #include "infdim.h"
 #include "infmp2.h"
 #include "infsop.h"
@@ -769,6 +770,7 @@ C use from COMMON /INFRSP/ :  SOPPA
 #include "infinp.h"
 C#include "soppinf.h"
 #include "locinf.h"
+#include "infpar.h"
 
 C  jim-gesc 1.0: TABDIR(#17) ="*LROPTS" , TABLE(60)=".LRESC ". check INTRST for gaugeo
       DATA TABDIR /'*END OF', 'xxxxxxx', '*NUCREP',
@@ -969,16 +971,16 @@ C
          DOPERT(I,2) = .TRUE.
    60 CONTINUE
 C
-C     Set FTRONV and FABRHS in /EXEINF/:
+C     Set FTRONV and NEWCMO in /EXEINF/:
 C
 C     TROINV is run twice. FTRONV keeps track of it, and setting it TRUE
 C     indicates first run.
 C
       FTRONV = .TRUE.
 C
-C     ABARHS has a variable of the same kind:
+C     NEWCMO means we need new MOTWOINT file because CMO has changed
 C
-      FABRHS = .TRUE.
+      NEWCMO = .TRUE.
 C
 C     **** Find Abacus input *****
 C
@@ -1488,21 +1490,21 @@ CSPAS : 26/08-2013 fixing the problem with the test jobs running MPI
          IF (PARCAL) THEN
 CRF Only quit if the stuff that is asked for is not yet parallelized.
             par_soppa_input_errors = .false.
-C            IF (.NOT.DOEXCI.OR.
-C Polar now works, which other?
-C     &      ANY( (/  SHIELD, MAGSUS, SPINRO, MOLGFA, SPNSPN, 
-C     &           POLAR, CTOCD /) ) 
-C     &         ) THEN
-C               WRITE(LUPRI,'(3A)')'@ ', WRDSRC, 'SOPPA can only be ' //
-C     &               'run in parallel for excitation energies'
-C               par_soppa_input_errors = .true.
-C            ENDIF
+            IF (.NOT.DOEXCI.OR.
+C All the properties which parallel soppa currently cannot do. I.e all.
+     &      ANY( (/  SHIELD, MAGSUS, SPINRO, MOLGFA, SPNSPN, 
+     &           POLAR, CTOCD /) ) 
+     &         ) THEN
+               WRITE(LUPRI,'(3A)')'@ ', WRDSRC, ' SOPPA can only be '
+     &             //'run in parallel for excitation energies'
+               par_soppa_input_errors = .true.
+            ENDIF
 C            
 C Parallel soppa should be run using mp2 from the cc module
 C 
             IF (DOMP2) THEN
-               WRITE(LUPRI,'(3A/A)')'@ ', WRDSRC, 'Parallel SOPPA can'//
-     &               ' currently only run using the MP2 applitudes ',
+               WRITE(LUPRI,'(3A/A)')'@ ', WRDSRC, ' Parallel SOPPA can'
+     &             //' currently only run using the MP2 amplitudes ',
      &               'from the CC module'
                par_soppa_input_errors = .true. 
             ENDIF
@@ -1630,7 +1632,7 @@ cLig
      &   ' matrices are calculated simultaneously (for direct SCF).'
       IF (SUPMAT) WRITE (LUPRI,'(5X,A)')
      &   ' Two-electron supermatrix integrals are used.'
-      IF (PARCAL) WRITE (LUPRI,'(5X,A)')
+      IF (PARHER) WRITE (LUPRI,'(5X,A)')
      &   ' Two-electron integrals will be calculated in parallel'
       IF (LINCPL) THEN
          WRITE (LUPRI,'(A)') ' Analyze the gradient in normal '//
@@ -1893,15 +1895,17 @@ c            CALL QUIT('Not supported input in ABAINP')
      &                         'cannot be calculated with SOPPA'
             IERR = IERR + 1
          END IF
-         IF (OECD)    THEN
-            WRITE(LUPRI,'(A)') ' Incompatible input. OECD '//
-     &                         'cannot be calculated with SOPPA'
-            IERR = IERR + 1
+         IF (OECD .AND. .NOT.NOLOND) THEN
+            WRITE(LUPRI,'(A)')
+     &      ' OECD and SOPPA only without London orbitals.'//
+     &      ' London orbitals (GIAO) disabled.'
+            NOLOND = .TRUE.
          END IF
-         IF (ECD)    THEN
-            WRITE(LUPRI,'(A)') ' Incompatible input. ECD '//
-     &                         'cannot be calculated with SOPPA'
-            IERR = IERR + 1
+         IF (ECD .AND. .NOT.NOLOND)  THEN
+            WRITE(LUPRI,'(A)')
+     &      ' ECD and SOPPA only without London orbitals.'//
+     &      ' London orbitals (GIAO) disabled.'
+            NOLOND = .TRUE.
          END IF
          IF (MCD)    THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. MCD '//
@@ -2390,7 +2394,7 @@ C
      &           'Mass-velocity correction:     ',       RMASSV,' au'
             IF (DARWIN .AND. MASSVE) THEN
                RELTOT = DARWN + RMASSV
-               WRITE (LUPRI,'(/5X,A,F17.10,A,F6.4,A)')
+               WRITE (LUPRI,'(/5X,A,F17.10,A,F7.4,A)')
      &              'Total relativistic correction:         ',  RELTOT,
      &              ' au (', D100*RELTOT/EMCSCF,'%)'
                WRITE (LUPRI,'(5X,A,F17.10,A//)')
@@ -2433,7 +2437,7 @@ C              WRITE (LUPRI,'(5X,A,I3,3X,A,I2,I5,4X,A,3F17.10)')
             END DO
             ALPNRM = SQRT(ALPNRM)
             ALPNRL = SQRT(ALPNRL)
-            WRITE (LUPRI,'(/5X,A,19X,1P,D12.6,5X,D12.6)')
+            WRITE (LUPRI,'(/5X,A,1P,D31.6,D17.6)')
      &         '##     Norm of gradient:   ',ALPNRM,ALPNRL
 C
             MAXZ = 0
@@ -2499,7 +2503,7 @@ C                    WRITE (LUPRI,'(5X,A,I5,4X,A,3F20.10)')
             END DO
             ALPNRM = SQRT(ALPNRM)
             ALPNRL = SQRT(ALPNRL)
-            WRITE (LUPRI,'(5X,A,17X,1P,E12.6,8X,E12.6)')
+            WRITE (LUPRI,'(5X,A,9X,1P,2E20.6)')
      &         '@@    Norm of gradient:',ALPNRM,ALPNRL
 C
          ELSE IF (MOLGRD) THEN
@@ -3706,7 +3710,7 @@ C
                   FACT = CONV*QMOM
                   FACT2 = FACT/CONV2
                   IF (IPRINT .GE. 0) THEN
-                    WRITE (LUPRI,'(10X,A10,F5.1,10X,A18,F10.8)')
+                    WRITE (LUPRI,'(10X,A10,F5.1,10X,A18,F11.8)')
      &                   'Spin     :',SPIN,'Quadrupole moment:',QMOM
                     WRITE (LUPRI,'(28X,A2,11X,A3,8X,A5)')
      &                   'au','MHz','Gauss'

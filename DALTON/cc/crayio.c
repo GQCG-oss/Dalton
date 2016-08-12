@@ -235,7 +235,7 @@ FSYM(wclose)(const INTEGER *unit, INTEGER *ierr)
   if (first_call)
     FirstCall();
 
-  if (*ierr = isUnitValidAndOpen(*unit))
+  if ( (*ierr = isUnitValidAndOpen(*unit)) )
     return;
 
   file = file_array + *unit;
@@ -307,13 +307,13 @@ FSYM(getwa)(const INTEGER *unit, double *result, const INTEGER *addr,
   if (first_call)
     FirstCall();
 
-  if (*ierr = isUnitValidAndOpen(*unit))
+  if ( (*ierr = isUnitValidAndOpen(*unit)) )
     return;
 
-  if (*ierr = isAddressValid(*addr))
+  if ( (*ierr = isAddressValid(*addr)) )
     return;
 
-  if (*ierr = isCountValid(*count))
+  if ( (*ierr = isCountValid(*count)) )
     return;
 
   file = file_array + *unit;
@@ -377,13 +377,13 @@ FSYM(putwa)(const INTEGER *unit, const double *source, const INTEGER *addr,
   if (first_call)
     FirstCall();
 
-  if ( *ierr = isUnitValidAndOpen(*unit))
+  if ( (*ierr = isUnitValidAndOpen(*unit)) )
     return;
 
-  if (*ierr = isAddressValid(*addr))
+  if ( (*ierr = isAddressValid(*addr)) )
     return;
 
-  if (*ierr = isCountValid(*count))
+  if ( (*ierr = isCountValid(*count)) )
     return;
 
   file = file_array + *unit;

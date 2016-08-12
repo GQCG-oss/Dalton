@@ -421,7 +421,7 @@ C
          CALL DAXPY(KZYRED*KZYRED,-DAMPING,WRK(KREDS),1,REDZ(2),2)
 C
          IF (IPRABS.GT.10) THEN
-            WRITE(LUPRI,'(/,5X,A,/,5X,2(A,D10.4),/,5X,A)')
+            WRITE(LUPRI,'(/,5X,A,/,5X,2(A,D11.4),/,5X,A)')
      &           ' Reduced ( E[2] - {w+iW}*S[2] )  matrix',
      &           ' with w =', FREQ_ABS(IFREQ),' and W =', DAMPING,
      &           '========================================'
@@ -439,7 +439,7 @@ C
          CALL DCOPY(2*KZYRED,REDZGD,1,REDVEC(1,IFREQ),1)
 C
          IF (IPRABS.GE.5) THEN
-            WRITE(LUPRI,'(/,5X,A,/,5X,2(A,D10.4),/,5X,A)')
+            WRITE(LUPRI,'(/,5X,A,/,5X,2(A,D11.4),/,5X,A)')
      &           ' Reduced ( E[2] - {w+iW}*S[2] )-1 * B[1] vector',
      &           ' with w =', FREQ_ABS(IFREQ),' and W =', DAMPING,
      &           '================================================'
@@ -2324,12 +2324,12 @@ C
      &     ISYMA,0,THCLR,FOUND,CONV,ANTSYM)
       IF (.NOT. (FOUND .AND. CONV)) THEN
          IF (.NOT. FOUND) THEN
-            WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' Response label ',ALAB,
+            WRITE (LUPRI,'(/3A,F8.5,A,I3,/A)') ' Response label ',ALAB,
      &           ' with frequency ',FREQA, ' and symmetry',
      &           ISYMA,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file RSPVEC')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
+            WRITE (LUPRI,'(/3A,F8.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',ALAB,
      &           ' with frequency ',FREQA, ' and symmetry',
      &           ISYMA,' not converged on file RSPVEC'
@@ -2354,12 +2354,12 @@ C
      &     ISYMB,0,THCLR,FOUND,CONV,ANTSYM)
       IF (.NOT. (FOUND .AND. CONV)) THEN
          IF (.NOT. FOUND) THEN
-            WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' Response label ',BLAB,
+            WRITE (LUPRI,'(/3A,F8.5,A,I3,/A)') ' Response label ',BLAB,
      &           ' with frequency ',FREQB, ' and symmetry',
      &           ISYMB,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
+            WRITE (LUPRI,'(/3A,F8.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',BLAB,
      &           ' with frequency ',FREQB, ' and symmetry',
      &           ISYMB,' not converged on file RSPVEC'
@@ -2384,12 +2384,12 @@ C
      &     ISYMC,0,THCLR,FOUND,CONV,ANTSYM)
       IF (.NOT. (FOUND .AND. CONV)) THEN
          IF (.NOT. FOUND) THEN
-            WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' Response label ',CLAB,
+            WRITE (LUPRI,'(/3A,F8.5,A,I3,/A)') ' Response label ',CLAB,
      &           ' with frequency ',FREQC, ' and symmetry',
      &           ISYMC,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
+            WRITE (LUPRI,'(/3A,F8.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',CLAB,
      &           ' with frequency ',FREQC, ' and symmetry',
      &           ISYMC,' not converged on file RSPVEC'

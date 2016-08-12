@@ -1,7 +1,7 @@
 
 import os
 import sys
-import runtest
+import runtest_v1 as runtest
 
 
 def write_stderr(log_file, s):

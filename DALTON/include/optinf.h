@@ -7,17 +7,17 @@
 ! l.r. June 2015 hjaaj: added THRFAC_PRE
 !
       PARAMETER      (MX_IFREEZ = 200, THRFAC_PRE = 1.0D1)
-      LOGICAL         GECONV, NOTRST, NOBRKS, BRKSYM, NWSYMM,           ! please keep same order as below, for easier checking
-     &                DOSPE,  DOPRE,  FINPRE, VRML,   VRBOND, VREIGV,
-     &                VRCORD, VRVIBA, VRML_SYM, VISUAL, INITHS, HSFILE,
-     &                BFGSR1, STEEPD, RANKON, PSB,    DFP,    BFGS,
-     &                SCHLEG, NEWTON, QUADSD, KEEPHE, BAKER,  REDINT,
-     &                CARTCO, INRDHS, FSTORD, SNDORD, REJINI, GRDINI,
-     &                MULTI,  CHGRDT, CONOPT, MODHES, INMDHS, FINDRE,
-     &                TRSTRG, RATFUN, GDIIS,  DELINT, RSTARR, LNSRCH,
-     &                SADDLE, REBILD, BOFILL, CMBMOD, HFPROP, CONFRM,
-     &                NOAUX,  NODIHE, LINDHD, ADDCRD, REDRED, NOADDA,
-     &                NATNRM, NOHSWR, PRJTRO
+      LOGICAL GECONV, NOTRST, NOBRKS, BRKSYM, NWSYMM,           ! please keep same order as below, for easier checking
+     &        DOSPE,  DOPRE,  FINPRE, VRML,   VRBOND, VREIGV,
+     &        VRCORD, VRVIBA, VRML_SYM,VISUAL,INITHS, HSFILE,
+     &        BFGSR1, STEEPD, RANKON, PSB,    DFP,    BFGS,
+     &        SCHLEG, NEWTON, QUADSD, KEEPHE, BAKER,  REDINT,
+     &        CARTCO, INRDHS, FSTORD, SNDORD, REJINI, GRDINI,
+     &        MULTI,  CHGRDT, CONOPT, MODHES, INMDHS, FINDRE,
+     &        TRSTRG, RATFUN, GDIIS,  DELINT, RSTARR, LNSRCH,
+     &        SADDLE, REBILD, BOFILL, CMBMOD, HFPROP, CONFRM,
+     &        NOAUX,  NODIHE, LINDHD, ADDCRD, REDRED, NOADDA,
+     &        NATNRM, NOHSWR, PRJTRO
       COMMON /OPTINF/ TRSTRA, TRSTIN, TRSTDE, RTENBD, RTENGD, RTRJMN,     ! we start with double precision variables
      &                RTRJMX, ENERGY, ERGOLD, ERGPRD, ERGPRO, STPNRM,
      &                STPNRO, GRADNM, THRERG, GRDTHR, THRSTP, THRSYM,
@@ -34,9 +34,9 @@
      &                INDTOT, ITRNMR, ITRMAX, MAXREJ, IPRINT, NCRTOT,
      &                NCART,  NPROJ,  NTMAT,  IINTCR, IREDIC, ICRTCR,
      &                ICONDI, ITRBRK, NUMPRE, IPRE,   ITRFRZ,
-     &                GECONV, NOTRST, NOBRKS, BRKSYM, NWSYMM,              ! first line with logical variables
+     &                GECONV, NOTRST, NOBRKS, BRKSYM, NWSYMM,             ! first line with logical variables 
      &                DOSPE,  DOPRE,  FINPRE, VRML,   VRBOND, VREIGV,
-     &                VRCORD, VRVIBA, VRML_SYM, VISUAL, INITHS, HSFILE,
+     &                VRCORD, VRVIBA, VRML_SYM,VISUAL,INITHS, HSFILE,
      &                BFGSR1, STEEPD, RANKON, PSB   , DFP,    BFGS,
      &                SCHLEG, NEWTON, QUADSD, KEEPHE, BAKER,  REDINT,
      &                CARTCO, INRDHS, FSTORD, SNDORD, REJINI, GRDINI,
@@ -46,6 +46,7 @@
      &                NOAUX,  NODIHE, LINDHD, ADDCRD, REDRED, NOADDA,
      &                NATNRM, NOHSWR, PRJTRO
 
+      INTEGER MAXPRE
       PARAMETER (MAXPRE = 10)
       CHARACTER*80            PREBTX,         SPBSTX
       COMMON /OPTINF_C/       PREBTX(MAXPRE), SPBSTX

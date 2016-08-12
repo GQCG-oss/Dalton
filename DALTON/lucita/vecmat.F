@@ -840,7 +840,7 @@ C     WRITE(6,*) 'C(1) = ',C(1)
       IDET     = 0
       ipot_max = 5
 C
-      WRITE(lupri,'(/A,E10.4,A,E10.4)')
+      WRITE(lupri,'(/A,E11.4,A,E11.4)')
      &'   Printout of coefficients in interval  ',XMIN,' to ',XMAX
       WRITE(lupri,'(A )')
      &'   ========================================================='
@@ -906,7 +906,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
                   iprint_hline = iprint_hline + 1
                 end if
 *
-                WRITE(lupri,'(A,I8,A,E14.8)')
+                WRITE(lupri,'(A,I8,A,E15.8)')
      &          '   Coefficient of combination ',IDET,' is ',
      &          C(IDET)
                 WRITE(lupri,'(A)')

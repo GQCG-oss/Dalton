@@ -692,9 +692,7 @@ C
 C Written 21-Nov-1983 Hans Jorgen Aa. Jensen.
 C Revisions:
 C  3-May-1984 -- hjaaj
-C  16-Oct-1984 ha/hjaaj (I*2 + FPS for reading LUSUPM)
 C  29-Dec-1984 hjaaj (NCONF=0 option for call by ORBLIN)
-C  15-Jan-1985 hjaaj (moved calc. of UTBO outside TR1FCY)
 C  30 Jan '85 hjaaj  (ver 2; separated conf. and orb. trial vectors)
 C  31-Jan-1985 hjaaj (NCONF=0 option changed to NCSIM.lt.0)
 C 891106 - hjaaj : only FXCAO if NISHT.gt.0
@@ -873,17 +871,17 @@ C ***** of the inactive Fock matrix above).
 C
       IF (NDMAT .GT. 0) THEN
          CALL DZERO(FXCAO,NDMAT*N2BASX)
-      IF (LUSUPM .NE. -1 .AND.
-     &   .NOT. (HSROHF .OR. DFTRUN .OR. DOCISRDFT .OR. DOHFSRDFT .OR.
-     &    DOMCSRDFT)) THEN
-         CALL RDSUPM(NDMAT,FXCAO,DXCAO,WRK(KFREE),LFREE)
-C        CALL RDSUPM(NSIM,FMAT,DMAT,WORK,LFREE)
-      ELSE
-         DO 400 IDMAT = 1,NDMAT
+         DO IDMAT = 1,NDMAT
             ISYMDM(IDMAT) = JWOPSY
             IFCTYP(IDMAT) = 13
             IF (CHOINT) IFCTYP(IDMAT) = 3
-  400    CONTINUE
+         END DO
+      IF (LUSUPM .NE. -1 .AND.
+     &   .NOT. (HSROHF .OR. DOCISRDFT .OR. DOHFSRDFT .OR.
+     &    DOMCSRDFT)) THEN
+         CALL RDSUPM(NDMAT,FXCAO,DXCAO,ISYMDM,WRK(KFREE),LFREE)
+C        CALL RDSUPM(NSIM,FMAT,DMAT,ISYMDM,WORK,LFREE)
+      ELSE
          IF (HSROHF) THEN
             DO IDMAT = NOSIM+1,NDMAT
                IFCTYP(IDMAT) = 12
@@ -2306,7 +2304,7 @@ C     ... if idist .lt. 0 then no more distributions
          JDIST = JDIST + 1
          WRITE (LUPRI,'(/A,I5,A,2I5)')
      &      ' Mulliken distribution no.',JDIST,', IC and ID:',IC,ID
-         WRITE (LUPRI,'(A,I5)') ' IDIST form NXTH2M :',IDIST
+         WRITE (LUPRI,'(A,I5)') ' IDIST from NXTH2M :',IDIST
          CALL OUTPUT(WRK(KH2CD),1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
       END IF
 C

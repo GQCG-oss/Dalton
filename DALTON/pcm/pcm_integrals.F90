@@ -1,5 +1,7 @@
 module pcm_integrals
 
+use pcm_config, only: pcm_configuration, pcm_cfg
+
 implicit none
 
 public get_mep
@@ -12,46 +14,43 @@ contains
 
    subroutine get_mep(nr_points, nr_points_irr, centers, mep, density, work, lwork)
 
-   integer(4), intent(in)  :: nr_points
-   integer(4), intent(in)  :: nr_points_irr
+   integer(8), intent(in)  :: nr_points
+   integer(8), intent(in)  :: nr_points_irr
    real(8), intent(in)  :: centers(3, nr_points)
    real(8), intent(out) :: mep(nr_points)
    real(8)              :: density(*)
    real(8)              :: work(*)
    integer              :: lwork
 
-   ! For some reason that I don't understand, the potential vector is zeroed out 
+   ! For some reason that I don't understand, the potential vector is zeroed out
    ! somewhere in j1int_pcm. So the mep must be calculated in this order.
    call get_electronic_mep(nr_points, nr_points_irr, centers, mep, density, work, lwork, .false.)
    call get_nuclear_mep(nr_points, nr_points_irr, centers, mep)
 
    end subroutine get_mep
-             
+
    subroutine get_nuclear_mep(nr_points, nr_points_irr, centers, mep)
 
-   use pcm_utils, only: getacord
-   use pcmmod_cfg, only: pcmmod_separate
-                                                          
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "symmet.h"      
+#include "symmet.h"
 #include "nuclei.h"
 
-   integer(4), intent(in)  :: nr_points                           
-   integer(4), intent(in)  :: nr_points_irr                   
-   real(8), intent(in)  :: centers(3, nr_points)               
+   integer(8), intent(in)  :: nr_points
+   integer(8), intent(in)  :: nr_points_irr
+   real(8), intent(in)  :: centers(3, nr_points)
    real(8), intent(out) :: mep(nr_points)
 
    real(8)              :: coora(3, nucdep), charges(nucdep)
    real(8), allocatable :: scratch(:)
-   real(8)              :: dist, temp                          
+   real(8)              :: dist, temp
    integer              :: i, j, k, ipoint
    real(8)              :: renorm
 
    renorm = dble(maxrep + 1)
    ! Get coordinates and charges of all centers, not only the ones
-   ! that are symmetry independent      
+   ! that are symmetry independent
    call getacord(coora)
    i = 0
    do j = 1, nucind
@@ -63,12 +62,12 @@ contains
 
    ! In order to renormalize for the number of symmetry operations we have
    ! to branch based on the type of algorithms chosen: .SEPARATE or
-   ! .TOTAL MEP/ASC 
+   ! .TOTAL MEP/ASC
    ! In the second case, in fact, the nuclear potential is accumulated on
    ! top of the electronic and the renormalization will then affect also
    ! the electronic part (which we do not want)
-   if (pcmmod_separate) then
-     do i = 1, nucdep                                            
+   if (pcm_cfg%separate) then
+     do i = 1, nucdep
         do ipoint = 1, nr_points_irr
            dist = (coora(1, i) - centers(1, ipoint))**2 +      &
                   (coora(2, i) - centers(2, ipoint))**2 +      &
@@ -77,16 +76,16 @@ contains
            mep(ipoint) = mep(ipoint) + (charges(i) / dist)
         end do
      end do
-                                                                 
+
      do ipoint = 1, nr_points_irr
         temp = mep(ipoint) * renorm
-        mep(ipoint) = temp 
+        mep(ipoint) = temp
         !write(lupri, *) "v_nuc(",ipoint,") = ", mep(ipoint)
      end do
-   else 
+   else
      allocate(scratch(nr_points_irr))
      scratch = 0.0d0
-     do i = 1, nucdep                                            
+     do i = 1, nucdep
         do ipoint = 1, nr_points_irr
            dist = (coora(1, i) - centers(1, ipoint))**2 +      &
                   (coora(2, i) - centers(2, ipoint))**2 +      &
@@ -95,10 +94,10 @@ contains
            scratch(ipoint) = scratch(ipoint) + (charges(i) / dist)
         end do
      end do
-                                                                 
+
      do ipoint = 1, nr_points_irr
         temp = scratch(ipoint) * renorm
-        scratch(ipoint) = temp 
+        scratch(ipoint) = temp
         !write(lupri, *) "v_nuc(",ipoint,") = ", scratch(ipoint)
      end do
      do ipoint = 1, nr_points_irr
@@ -106,56 +105,57 @@ contains
      end do
      deallocate(scratch)
    end if
-   
-   !print *, "Debug print of v_nuc at cavity points"       
-   !do ipoint = 1, nr_points                               
-   !   print *, "v_nuc(",ipoint,") = ", mep(ipoint)        
-   !end do                                                 
-         
+
+   !print *, "Debug print of v_nuc at cavity points"
+   !do ipoint = 1, nr_points
+   !   print *, "v_nuc(",ipoint,") = ", mep(ipoint)
+   !end do
+
    end subroutine get_nuclear_mep
-         
+
    subroutine get_electronic_mep(nr_points, nr_points_irr, centers, vector, matrix, work, lwork, get_matrix)
-   !      
-   ! Driver routine for the calculation of the electronic part of the molecular 
+   !
+   ! Driver routine for the calculation of the electronic part of the molecular
    ! electrostatic potential on a certain grid of points {r_i}:
    !     v_el(r_i) = tr(DV_i)
-   ! tr is the trace operator, D is the density matrix, V^i is the matrix of the 
+   ! tr is the trace operator, D is the density matrix, V^i is the matrix of the
    ! "nuclear attraction" integrals calculated at point r_i of the grid:
    !     V_mu,nu,i =  - <mu|1/|r-r_i||nu>
-   ! 
+   !
    ! Written, tested, debugged: R. Bast, R. Di Remigio, L. Frediani, K. Ruud
-   ! 
+   !
    !  array ADER(mu, nu, r_i) contains these integrals.
    !  array vc(r_i) contains the electronic MEP at point r_i.
    !
    ! RDR 0512.
-   ! 
+   !
    ! RDR 050312 CANNOT yet handle symmetry.
    ! RDR 220312 This routine will be used to form both potentials and Fock
    !            matrix contribution for PCM.
-   !            matrix is Fock or density matrix, vector is potentials 
+   !            matrix is Fock or density matrix, vector is potentials
    !            or charges vector.
    !            get_matrix logical is present and TRUE:
    !            charges vector as input, Fock matrix contribution as output.
    !            get_matrix logical is absent or is present and FALSE:
-   !            density matrix as input, potentials vector as output.                        
-   !                           
-   use pcmmod_cfg                                     
-   
-   integer(4), intent(in)  :: nr_points 
-   integer(4), intent(in)  :: nr_points_irr                   
+   !            density matrix as input, potentials vector as output.
+   !
+   integer(8), intent(in)  :: nr_points
+   integer(8), intent(in)  :: nr_points_irr
    real(8), intent(in)  :: centers(3, nr_points)
-   real(8), intent(out) :: vector(nr_points) 
-   real(8)              :: matrix(*)                           
-   real(8)              :: work(*)                              
-   integer              :: lwork                               
-   logical, optional    :: get_matrix 
+   real(8), intent(out) :: vector(nr_points)
+   real(8)              :: matrix(*)
+   real(8)              :: work(*)
+   integer              :: lwork
+   logical, optional    :: get_matrix
    ! Local variables
    logical              :: do_matrix
    integer :: ipoint
-         
-   ! Fock matrix contribution or potential calculation?      
-   do_matrix = .false. 
+   integer :: nosim, ksymp
+   logical :: tofile
+   character(7) :: integral_type
+
+   ! Fock matrix contribution or potential calculation?
+   do_matrix = .false.
    if (present(get_matrix)) then
      if (get_matrix) then
        do_matrix = .true.
@@ -163,25 +163,31 @@ contains
    end if
 
    ! Decide which integration routines to use
-   if (pcmmod_old_integration) then
-      call j1int_pcm(vector, nr_points, nr_points_irr, centers, &
-    (.not.do_matrix), matrix, 1, .false., 'NPETES ', 1, work, lwork)
+   if (pcm_cfg%fast_integration) then
+      ksymp = 1
+      call vectorized_integration_pcm(nr_points, centers, vector, matrix, ksymp, work, lwork, do_matrix)
    else
-      call vectorized_integration_pcm(nr_points, centers, vector, matrix, work, lwork, do_matrix)
+      nosim  = 1
+      tofile = .false.
+      integral_type = 'NPETES '
+      ksymp = 1
+      call j1int_pcm(vector, nr_points, nr_points_irr, centers, &
+    (.not.do_matrix), matrix, nosim, tofile, integral_type, ksymp, work, lwork)
    end if
 
-   !if (do_matrix) then                                       
-   !   print *, "Called with get_matrix"                      
-   !else                                                      
-   !   print *, "Debug print of v_ele at cavity points"       
-   !   do ipoint = 1, nr_points                               
-   !     print *, "v_ele(", ipoint,") = ", vector(ipoint)     
-   !   end do                                                 
-   !end if                                                    
+   !if (do_matrix) then
+   !   print *, "Called with get_matrix"
+   !else
+   !   print *, "Debug print of v_ele at cavity points"
+   !   do ipoint = 1, nr_points
+   !     print *, "v_ele(", ipoint,") = ", vector(ipoint)
+   !   end do
+   !end if
 
    end subroutine get_electronic_mep
-   
-   subroutine j1int_pcm(expval, nr_points, nr_points_irr, centers, exp1vl, denmat, nosim, tofile, intlab, ksymp, work, lwork)
+
+   subroutine j1int_pcm(expval, nr_points, nr_points_irr, centers, exp1vl, denmat, &
+                        nosim, tofile, intlab, ksymp, work, lwork)
    !
    ! This subroutines is used both for the calculation of the electronic
    ! MEP and the PCM Fock matrix contribution.
@@ -189,9 +195,13 @@ contains
    !             density matrix as input and vector of electronic MEP as
    !             output
    ! else
-   !             vector of ASC and Fock matrix contribution as output 
+   !             vector of ASC and Fock matrix contribution as output
    ! end if
-   !   
+   !
+#if defined (VAR_MPI)
+   use pcm_parallel, only: j1intp_pcm
+#endif
+
 #include "dummy.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -203,38 +213,41 @@ contains
 #include "infpar.h"
 
    ! Passed variables
-   integer(4)   :: nr_points, nr_points_irr
+   integer(8)   :: nr_points, nr_points_irr
    integer      :: nosim, ksymp, lwork
    real(8)      :: centers(3, nr_points), expval(nr_points, nosim)
    real(8)      :: denmat(*)
    real(8)      :: work(*)
    logical      :: exp1vl, tofile
-   character(7) :: intlab                                     
+   character(7) :: intlab
 
-   ! Local variables                 
+   ! Local variables
    character(8) :: labint(9*mxcent)
    integer      :: isum
    integer      :: i, j, iaddr, iosim, iprpcm
    integer      :: iadr, iprtyp, isymd, its, jmat, kden, klast
    integer      :: kmat, kpatom, ktmp, l, lwrk, matdim, nbastold
-   integer      :: ncomp, nnbasxold, ntesp, ntsirr
+   integer      :: lwrk1, klast1
+   integer      :: ncomp, nnbasxold, ntesp
    real(8)      :: intrep(9*mxcent), intadr(9*mxcent)
    real(8)      :: xdiporg, ydiporg, zdiporg
    logical      :: trimat, vcheck
 
-   nbastold  = nbast               
+#include "iprtyp.h"
+
+   nbastold  = nbast
    nnbasxold = nnbasx
    nbast  = isum(maxrep + 1, naos, 1)
    nnbasx = nbast * (nbast + 1)/2
    n2basx = nbast*nbast
    if (intlab .eq. 'PCMBSOL') then
       matdim = n2basx
-      iprtyp = 13
+      iprtyp = 134
       ncomp  = 3
       trimat = .false.
    else
       matdim = nnbasx
-      iprtyp = 11
+      iprtyp = 133
       ncomp  = 1
       trimat = .true.
    end if
@@ -243,13 +256,13 @@ contains
    ! We use as a quick way of transfering tessera coordinates to hermit:
    ! the dipole origin. Need to be restored.
    !
-   xdiporg = diporg(1)  
+   xdiporg = diporg(1)
    ydiporg = diporg(2)
    zdiporg = diporg(3)
    !
    ! 2) calculation of apparent charges generated by the solute's nuclei.
    !
-   iprpcm=0                     
+   iprpcm=0
    if (exp1vl) then
       kden = 1
       klast = kden + nnbasx
@@ -272,33 +285,45 @@ contains
       end if
       lwrk = lwork - klast
    end if
-   
+
+   ! RDR 210515 Copied verbatim from sirpcm.F
+#if defined (VAR_MPI)
+      if (nodtot .ge. 1) then
+         call j1intp_pcm(nbast, nosim, ksymp, work(kden), exp1vl, expval, &
+                     nr_points, nr_points_irr, centers, tofile,       &
+                     iprtyp, matdim, work(klast), lwrk)
+         if (.not. exp1vl) call daxpy(matdim*nosim, 1.0d0, work(kden), 1, &
+                                     denmat, 1)
+      else
+#endif
+
    do  its = 1, nr_points_irr
       diporg(1) = centers(1,its)
       diporg(2) = centers(2,its)
       diporg(3) = centers(3,its)
-                                                                 
+
       ntesp = 1
       kpatom = 0
-   !                                                                       
+   !
    ! calculates nuclear potential energy integrals (in ao basis) for the given tessera
-   !                                                                       
+   !
       l=1
       ktmp = klast
       if (.not. tofile .and. .not. exp1vl) then
          kmat = ktmp + 8
          if (iprtyp .eq. 11) then
-            klast = kmat + (maxrep + 1)*matdim
+            klast1 = kmat + (maxrep + 1)*matdim
          else
-            klast = kmat + (maxrep + 1)*matdim*ncomp
+            klast1 = kmat + (maxrep + 1)*matdim*ncomp
          end if
          ncomp = nsym
       else
          kmat  = ktmp + 8
-         klast = kmat
+         klast1 = kmat
          ncomp = 0
       end if
-      call get1in(work(kmat),intlab,ncomp,work(klast),lwrk,labint, &
+      lwrk1 = lwork - klast1
+      call get1in(work(kmat),intlab,ncomp,work(klast1),lwrk1,labint, &
                   intrep,intadr,l,tofile,kpatom,trimat,work(ktmp), &
                   exp1vl,work(kden),iprpcm)
       if (iprtyp .eq. 13) then
@@ -308,7 +333,7 @@ contains
             jmat = jmat + matdim
          end do
       else if (exp1vl) then
-         do i = 1, ncomp 
+         do i = 1, ncomp
            expval(its+(i-1)*nr_points_irr,1) = -work(ktmp+i-1)
          end do
       else if (.not. tofile) then
@@ -319,16 +344,23 @@ contains
       end if
    enddo
 
+   ! RDR 210515 Copied verbatim from sirpcm.F
+#if defined (VAR_MPI)
+      END IF
+#endif
+
    diporg(1) = xdiporg
    diporg(2) = ydiporg
    diporg(3) = zdiporg
    nbast  = nbastold
    nnbasx = nnbasxold
-   
+
    end subroutine j1int_pcm
-      
-   subroutine j1x_pcm(nr_points, nr_points_irr, centers, nosim, vtex, ucmo, ubo, udv, udvtr, tofile, jwopsy, work, lwork)
-   ! Calculates one-index transformed potentials at tesserae centers                   
+
+   subroutine j1x_pcm(nr_points, nr_points_irr, centers, nosim, vtex, &
+                      ucmo, ubo, udv, udvtr, jwopsy,                  &
+                      work, lwork)
+   ! Calculates one-index transformed potentials at tesserae centers
 #include "dummy.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -343,19 +375,18 @@ contains
 #include "wrkrsp.h"
 #include "infrsp.h"
 
-   ! Parameters                   
+   ! Parameters
    real(8), parameter :: d0 = 0.0d0
    ! Passed variables
-   integer(4) :: nr_points
-   integer(4) :: nr_points_irr
+   integer(8) :: nr_points
+   integer(8) :: nr_points_irr
    real(8) :: centers(3, nr_points)
    integer :: nosim
-   real(8) :: vtex(nr_points, nosim) 
+   real(8) :: vtex(nr_points, nosim)
    real(8) :: ucmo(norbt * nbast)
    real(8) :: ubo(nosim * n2orbx)
    real(8) :: udv(n2ashx)
    real(8) :: udvtr(n2ashx)
-   logical :: tofile
    integer :: jwopsy
    integer :: lwork
    real(8) :: work(lwork)
@@ -363,20 +394,19 @@ contains
    character(8) :: labint(3 * mxcoor)
    integer      :: its, iadr, iosim, iprpcm
    real(8) :: dipx, dipy, dipz
-   real(8) :: factor 
+   real(8) :: factor
    logical :: exp1vl, trimat
    integer :: jj1ao, jj1x, jj1xac, jpcmx, jts, jubo
    integer :: kexpvl, kintad, kintrp, kj1, kj1ao, kj1sq, kj1xac, kj1xsq
    integer :: klast, kpatom, kpcmx, kubo, kucmo, kudv, l, lwrk, ncomp
    integer :: ndimz
    real(8) :: tj1xac, slvtlm, slvqlm
-   ! Change as soon as feasible
-   real(8) :: qsn(nr_points_irr), qse(nr_points_irr)
+   logical :: tofile
 
    ndimz = max(n2orbx, nr_points)
    call dzero(work, nosim * ndimz)
    call dzero(vtex, nr_points * nosim)
-   iprpcm = 0 
+   iprpcm = 0
    kintrp = 1
    kintad = kintrp + (3 * mxcoor + 1) / irat
    kexpvl = kintad + (3 * mxcoor + 1) / irat
@@ -402,7 +432,7 @@ contains
    dipx = diporg(1)
    dipy = diporg(2)
    dipz = diporg(3)
-   do its = 1, nr_points_irr
+   IrreducibleCavityPoints: do its = 1, nr_points_irr
       l = 1
       ncomp     = maxrep + 1
       diporg(1) = centers(1, its)
@@ -413,7 +443,7 @@ contains
       kpatom    = 0
       trimat    = .true.
 
-      call get1in(work(kj1ao), 'npetes ', ncomp, work(klast), lwrk,      &
+      call get1in(work(kj1ao), 'NPETES ', ncomp, work(klast), lwrk,      &
                   labint, work(kintrp), work(kintad), l, tofile, kpatom, &
                   trimat, dummy, exp1vl, dummy, iprpcm)
       jj1ao = kj1ao
@@ -422,7 +452,7 @@ contains
       ! Transform V(MO) from triangular to square format
       call dsptsi(norbt, work(kj1), work(kj1sq))
       call dzero(work(kj1xsq), n2orbx * nosim)
-      do iosim = 1, nosim
+      TildeVSymmetries: do iosim = 1, nosim
          jubo = 1 + (iosim - 1) * n2orbx
          jj1x = kj1xsq + (iosim - 1) * n2orbx
          jj1xac = kj1xac + (iosim - 1) * n2ashx
@@ -439,7 +469,7 @@ contains
          end if
          !
          ! Expectation value of transformed potential on tesserae:
-         !               <0|\tilde{V}|0> 
+         !               <0|\tilde{V}|0>
          !
          if (ksymop .eq. 1) then
             if (trplet) then
@@ -454,38 +484,32 @@ contains
                write (lupri,'(a,f17.8)') ' --- active part of J1X    :', tj1xac
             end if
          end if
-         ! KPCMX: \tilde{J} + \tilde{X}
-         ! RDR: here instead of qsn+qse I need the unperturbed charges coming from PCMSolver
-         call daxpy(n2orbx, qsn(its)+qse(its), work(jj1x), 1, work(jpcmx), 1)
-         end do
-         !
-         ! Non-totally symmetric perturbation operators
-         !
-         if (ksymop .gt. 1) then
-            jj1ao = kj1ao + (ksymop - 1) * nnbasx
-            jts = (ksymop - 1) * nr_points_irr + its
-            ! Transform AO pot. int. into MO basis  V(AO) --> V(MO)
-            call uthu(work(jj1ao), work(kj1), ucmo, work(klast), nbast, norbt)
-            ! Transform V(MO) from triangular to square format
-            call dsptsi(norbt, work(kj1), work(kj1sq))
-            call dzero(work(kj1xsq), n2orbx * nosim)
-            do iosim = 1, nosim
-               jubo = 1 + (iosim - 1) * n2orbx
-               jj1x = kj1xsq + (iosim - 1) * n2orbx
-               jj1xac = kj1xac + (iosim - 1) * n2ashx
-               call onexh1(ubo(jubo), work(kj1sq), work(jj1x))
-               if (nasht .gt. 0) call getacq(work(jj1x), work(jj1xac))
-               if (iprrsp .ge. 15) then
-                  write (lupri,'(/a)') ' J1X_mo matrix (KSYMOP):'
-                  call output(work(jj1x), 1, norbt, 1, norbt, norbt, norbt, 1, lupri)
-                  if (nasht .gt. 0) then
-                     write (lupri,'(/a)') ' J1X_ac matrix (KSYMOP):'
-                     call output(work(jj1xac), 1, nasht, 1, nasht, nasht, nasht, 1, lupri)
-                  end if
+      end do TildeVSymmetries
+      ! Non-totally symmetric perturbation operators
+      if (ksymop .gt. 1) then
+         jj1ao = kj1ao + (ksymop - 1) * nnbasx
+         jts = (ksymop - 1) * nr_points_irr + its
+         ! Transform AO pot. int. into MO basis  V(AO) --> V(MO)
+         call uthu(work(jj1ao), work(kj1), ucmo, work(klast), nbast, norbt)
+         ! Transform V(MO) from triangular to square format
+         call dsptsi(norbt, work(kj1), work(kj1sq))
+         call dzero(work(kj1xsq), n2orbx * nosim)
+         Symmetries: do iosim = 1, nosim
+            jubo = 1 + (iosim - 1) * n2orbx
+            jj1x = kj1xsq + (iosim - 1) * n2orbx
+            jj1xac = kj1xac + (iosim - 1) * n2ashx
+            call onexh1(ubo(jubo), work(kj1sq), work(jj1x))
+            if (nasht .gt. 0) call getacq(work(jj1x), work(jj1xac))
+            if (iprrsp .ge. 15) then
+               write (lupri,'(/a)') ' J1X_mo matrix (KSYMOP):'
+               call output(work(jj1x), 1, norbt, 1, norbt, norbt, norbt, 1, lupri)
+               if (nasht .gt. 0) then
+                  write (lupri,'(/a)') ' J1X_ac matrix (KSYMOP):'
+                  call output(work(jj1xac), 1, nasht, 1, nasht, nasht, nasht, 1, lupri)
                end if
-            !
+            end if
             ! Expectation value of transformed potential on tesserae:
-            !         <0|\tilde{V}|0> 
+            !         <0|\tilde{V}|0>
             !
             if (trplet) then
                factor = slvtlm(work(kudv), work(jj1xac), work(jj1x), tj1xac)
@@ -498,17 +522,18 @@ contains
                write (lupri,'(a,f17.8)') ' --- J1X expectation value :', work(iadr)
                write (lupri,'(a,f17.8)') ' --- active part of J1X    :', tj1xac
             end if
-         enddo
+         enddo Symmetries
       end if
-   end do
+   end do IrreducibleCavityPoints
    diporg(1) = dipx
    diporg(2) = dipy
    diporg(3) = dipz
 
    end subroutine j1x_pcm
 
-   subroutine vectorized_integration_pcm(nr_points, centers, vector, matrix, work, lwork, do_matrix)
+   subroutine vectorized_integration_pcm(nr_points, centers, vector, matrix, ksymp, work, lwork, do_matrix)
 
+#include "dummy.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "inforb.h"
@@ -524,36 +549,52 @@ contains
 #include "onecom.h"
 #include "primit.h"
 #include "lmns.h"
+#include "priunit.h"
 
    ! Parameters
    real(8), parameter :: pi = acos(-1.0d0)
 
-   integer(4), intent(in)  :: nr_points                                    
-   real(8), intent(in)  :: centers(3, nr_points)                          
-   real(8), intent(out) :: vector(nr_points)                         
-   real(8)              :: matrix(nbast, nbast)!matrix(*)                           
-   real(8)              :: work(*)                              
-   integer              :: lwork                               
-   logical              :: do_matrix 
+   integer(8), intent(in)  :: nr_points
+   real(8), intent(in)  :: centers(3, nr_points)
+   real(8), intent(out) :: vector(nr_points)
+   real(8)              :: matrix(nnbasx)
+   real(8)              :: work(*)
+   integer              :: lwork
+   logical              :: do_matrix
+   integer, intent(in)  :: ksymp
 
    ! Local variables
    real(8), allocatable :: ader(:, :, :)
+   ! DALTON packs the density/Fock matrix.
+   ! matrix_internal is an "alias" to that, stored in full format
+   real(8), allocatable :: matrix_internal(:, :)
    real(8)              :: tolog, tols, factor = 1.0d0
    integer              :: ishela, ishelb, ica, icb, ia, ib
    integer              :: multa, multb, nhktab, kab
-   integer              :: ipoint, idxmax, iprint
+   integer              :: ipoint, idxmax, iprint, i, j
+   integer              :: ierr
 
    iprint = 0
+
+   allocate(matrix_internal(nbast, nbast))
+   matrix_internal = 0.0d0
+
+   ! If calculating the potential, transfer matrix to matrix_internal
+   if (.not. do_matrix) then
+      call dsptge(nbast, matrix, matrix_internal)
+   end if
+
    tols = thrs**2
    tolog = 2 * log(thrs)
    idxmax = kmax
-   ! Loop over bras <mu|      
+   ! Loop over bras <mu|
    idena = 0
    do ishela = 1, idxmax
      ica   = lclass(ishela)
      nhkta = nhkt(ishela)
      khkta = khkt(ishela)
      kckta = kckt(ishela)
+     sphra = sphr(ishela)
      call lmnval(nhkta, kckta, lvalua, mvalua, nvalua)
      ncenta = ncent(ishela)
      icenta = nucnum(ncenta, 1)
@@ -566,13 +607,14 @@ contains
      coray  = cent(ishela, 2, 1)
      coraz  = cent(ishela, 3, 1)
      ! Loop over kets |nu>
-     idenb = 0        
+     idenb = 0
      do ishelb = 1, ishela
        icb   = lclass(ishelb)
        ldiag = ishela .eq. ishelb
        nhktb = nhkt(ishelb)
        khktb = khkt(ishelb)
        kcktb = kckt(ishelb)
+       sphrb = sphr(ishelb)
        call lmnval(nhktb, kcktb, lvalub, mvalub, nvalub)
        ncentb = ncent(ishelb)
        nhktab = nhkta + nhktb
@@ -589,63 +631,82 @@ contains
        mab    = ior(mula, mulb)
        kab    = iand(mula ,mulb)
        hkab   = fmult(kab)
+
+       sphrab = sphr(ishela) .or. sphr(ishelb)
        ! Calculate -<mu|1/|r-r_i||nu> integrals for each shell pair mu, nu and point r_i,
        ! then contract with the density matrix. The minus sign accounts for the
        ! charge of the electron.
-       if (ica == icb) then 
-         allocate(ader(nr_points, kckta, kcktb))
+       if (ica == icb) then
+         allocate(ader(kckta, kcktb, nr_points), stat=ierr)
+         if (ierr .ne. 0) then
+             call quit("Allocating ader failed in vectorized_integration_pcm")
+         end if
          ader = 0.0d0
          call vc_shell(nr_points, ader, tolog, tols, centers, iprint, work, lwork)
-         if (ishela /= ishelb) then 
-           ader = 2.0d0 * ader
-         end if
-       ! We multiply by +2.0d0. The D matrix refers to the alpha part only.  
-       !   do ipoint = 1, nr_points
-       !      print *, "ELECTROSTATIC_POTENTIAL_MATRIX @point", ipoint
-       !      do ib = 1, kcktb
-       !        do ia = 1, kckta
-       !           print *, "ELEMENT", ia, ib
-       !           print *, ader(ipoint, ia, ib)
-       !      call output(ader(ipoint,:,:),1,kckta,1,kcktb,kckta,kcktb,2,6)
-       !        enddo
+         if (sphrab) then
+            call sphrm1(ader, ader, nr_points, work, lwork, .false., iprint)
+         endif
+       ! do ipoint = 1, nr_points
+       !    write(lupri, *) "ELECTROSTATIC_POTENTIAL_MATRIX @point", ipoint
+       !    do ib = 1, kcktb
+       !      do ia = 1, kckta
+       !        ! write(lupri, *) "ELEMENT", ia, ib
+       !        ! write(lupri, *) ader(ia, ib, ipoint)
+       !    call output(ader(:,:, ipoint),1,kckta,1,kcktb,kckta,kcktb,2,lupri)
        !      enddo
-       !   enddo
+       !    enddo
+       ! enddo
        do ipoint = 1, nr_points
          if (do_matrix) then
-           do ib = 1, kcktb
-             do ia = 1, kckta 
-             matrix(idena+ia, idenb+ib) = matrix(idena+ia, idenb+ib) &
-                  - ader(ipoint, ia, ib) * vector(ipoint)
+           do ib = 1, khktb
+             do ia = 1, khkta
+             matrix_internal(idena+ia, idenb+ib) = matrix_internal(idena+ia, idenb+ib) &
+                  - ader(ia, ib, ipoint) * vector(ipoint)
              end do
            end do
          else
-           vector(ipoint) = vector(ipoint) + 2.0d0                    * &
-              sum(matrix(idena+1:idena+kckta, idenb+1:idenb+kcktb) * &
-                        ader(ipoint, 1:kckta, 1:kcktb))
+           vector(ipoint) = vector(ipoint) +                                  &
+              sum(matrix_internal(idena+1:idena+khkta, idenb+1:idenb+khktb) * &
+                        ader(1:khkta, 1:khktb, ipoint))
          end if
-       end do 
+       end do
        deallocate(ader)
-       end if  
+       end if
        idenb = idenb + khktb * multb
     end do
     idena = idena + khkta * multa
    end do
 
+   if (do_matrix) then
+      ! Multiply by 2.0 off-diagonal elements
+      do i = 1, nbast
+         do j = 1, nbast
+           if (i /= j) then
+              matrix_internal(i, j) = 2.0d0 * matrix_internal(i, j)
+           end if
+         end do
+      end do
+      ! Transfer from matrix_internal to matrix and clean-up
+      call dgetsp(nbast, matrix_internal, matrix)
+   end if
+
+   deallocate(matrix_internal)
+
    !if (.not.do_matrix) then
    !   do ipoint = 1, nr_points
-   !      print *, "PRINT vector(",ipoint,")", vector(ipoint)
+   !      write(lupri, *) "PRINT vector(",ipoint,")", vector(ipoint)
    !   end do
    !end if
 
    end subroutine vectorized_integration_pcm
 
    subroutine vc_shell(nr_points, ader, tolog, tols, points, iprint, work, lwork)
-   !      
+   !
    ! Calculates the contribution for one primitive orbital set.
    !
-   ! Written, tested, debugged: R. Bast and R. Di Remigio 
+   ! Written, tested, debugged: R. Bast and R. Di Remigio
    !
-   ! RDR 090312 Clean-up.      
+   ! RDR 090312 Clean-up.
    !
 
 #include "mxcent.h"
@@ -657,11 +718,11 @@ contains
 #include "primit.h"
 
    ! Parameters
-   real(8), parameter :: pi = acos(-1.0d0) 
+   real(8), parameter :: pi = acos(-1.0d0)
    ! Passed variables
-   integer(4), intent(in) :: nr_points
+   integer(8), intent(in) :: nr_points
    integer, intent(in) :: iprint, lwork
-   real(8) :: points(3, nr_points), ader(nr_points, kckta, kcktb)
+   real(8) :: points(3, nr_points), ader(kckta, kcktb, nr_points)
    real(8) :: work(*)
    real(8) :: tolog, tols, factor=1.0
    ! Local variables
@@ -685,8 +746,11 @@ contains
    jmax = jmaxa + jmaxb
    ! Initialization
    allocate(odc(0:jmaxa,0:jmaxb,0:jmaxt,0:jmaxd,0:jmaxm,3))
+   odc = 0.0d0
    allocate(ahgtf(nr_points, 0:jmax, 0:jmax, 0:jmax))
+   ahgtf = 0.0d0
    allocate(r(nr_points, 0:jmax, 0:jmax, 0:jmax, 0:jmax))
+   r = 0.0d0
 
    cora(1) = corax
    cora(2) = coray
@@ -698,25 +762,25 @@ contains
    distab = difab(1) * difab(1) + difab(2) * difab(2) + difab(3) * difab(3)
 
    ! Loop over primitive orbitals
-   ! Shell a       
+   ! Shell a
    do iprima = 1, nuca
      jprima = jsta + iprima
      conta = priccf(jprima, numcfa)
      expa = priexp(jprima)
-     ! Shell b        
+     ! Shell b
      do iprimb = 1, nucb
        jprimb = jstb + iprimb
        contb = priccf(jprimb, numcfb)
        expb = priexp(jprimb)
        expp = expa + expb
        exppi = 1.0d0 / expp
-       expabq = expa * expb * exppi 
-       saab = conta * contb * exp(-expabq * distab) 
+       expabq = expa * expb * exppi
+       saab = conta * contb * exp(-expabq * distab)
        asaab = abs(saab)
-       if (expabq * distab < tolog) then 
+       if (expabq * distab < tolog) then
              cycle
        end if
-       if (asaab < tols) then 
+       if (asaab < tols) then
              cycle
        end if
        saab13 = sign(asaab**(1.0d0/3.0d0), saab)
@@ -753,19 +817,19 @@ contains
    !
    ! Written, tested, debugged: R. Bast, R. Di Remigio, J. Sikkema
    !
-   ! JHS 260308 Only slightly slower than the implementation hernai 
+   ! JHS 260308 Only slightly slower than the implementation hernai
    !            in abacus/her1car.f of TUH
-   ! RDR 090312 Clean-up.      
-   !     
+   ! RDR 090312 Clean-up.
+   !
 #include "maxaqn.h"
 #include "gamcom.h"
 
    ! Parameters
-   real(8), parameter :: pi = acos(-1.0d0) 
+   real(8), parameter :: pi = acos(-1.0d0)
    ! Passed variables
    integer :: jmax
-   integer(4) :: nr_points
-   real(8), intent(out) :: ahgtf(nr_points, 0:jmax, 0:jmax, 0:jmax) 
+   integer(8) :: nr_points
+   real(8), intent(out) :: ahgtf(nr_points, 0:jmax, 0:jmax, 0:jmax)
    real(8), intent(in)  :: cp(3, nr_points)
    real(8) :: r(nr_points, 0:jmax, 0:jmax, 0:jmax, 0:jmax)
    real(8) :: pval
@@ -785,23 +849,23 @@ contains
        factor            = - 2.0d0 * pval * factor
        r(ipoint, 0, 0, 0, jval)  =   fjw(jval)
      end do
-     ! Calculate r(t, u, v, jval) 
+     ! Calculate r(t, u, v, jval)
      do jval = jmax, 1, -1
        do v = 0, jmax - jval
          prod = -cp(3, ipoint) * r(ipoint, 0, 0, v, jval)
-         if (v > 0) then 
+         if (v > 0) then
            prod = prod + v * r(ipoint, 0, 0, v - 1, jval)
-         end if    
+         end if
          r(ipoint, 0, 0, v + 1, jval - 1) = prod
          do u = 0, jmax - jval - v
            prod = -cp(2, ipoint) * r(ipoint, 0, u, v, jval)
-           if (u > 0) then 
+           if (u > 0) then
              prod = prod + u * r(ipoint, 0, u - 1, v, jval)
-           end if    
+           end if
            r(ipoint, 0, u + 1, v, jval - 1) = prod
            do t = 0, jmax - jval - u - v
              prod = -cp(1, ipoint) * r(ipoint, t, u, v, jval)
-             if (t > 0) then 
+             if (t > 0) then
                prod = prod + t * r(ipoint, t - 1, u, v, jval)
              end if
              r(ipoint, t + 1, u, v, jval - 1) = prod
@@ -820,13 +884,13 @@ contains
        end do
      end do
    end do
-        
+
    end subroutine
 
    subroutine cart_vc_vec(odc, jmaxa, jmaxb, jmaxt, jmaxd, jmaxm, ader, ahgtf, nr_points)
-   !      
+   !
    ! Written, tested, debugged: R. Bast, R. Di Remigio, J. Sikkema
-   !      
+   !
    ! RDR 060312 Clean-up.
    !
 
@@ -836,14 +900,14 @@ contains
 
    ! Passed variables
    integer :: jmaxa, jmaxb, jmaxt, jmaxd, jmaxm
-   integer(4) :: nr_points 
+   integer(8) :: nr_points
    real(8) :: ahgtf(nr_points, 0:jmax, 0:jmax, 0:jmax)
-   real(8) :: ader(nr_points, kckta, kcktb)
+   real(8) :: ader(kckta, kcktb, nr_points)
    real(8) :: odc(0:jmaxa, 0:jmaxb, 0:jmaxt, 0:jmaxd, 0:jmaxm, 3)
    ! Local variables
    real(8) :: ev, ee, eee
    integer :: icompa, lvala, mvala, nvala
-   integer :: icompb, lvalb, mvalb, nvalb                          
+   integer :: icompb, lvalb, mvalb, nvalb
    integer :: t, u, v, ipoint
 
    do icompa = 1,kckta
@@ -861,7 +925,7 @@ contains
            do t = 0, lvala + lvalb
                eee = odc(lvala,lvalb,t,0,0,1)*ee
              do ipoint = 1, nr_points
-               ader(ipoint, icompa, icompb) = ader(ipoint, icompa, icompb) + eee * ahgtf(ipoint, t, u, v)
+               ader(icompa, icompb, ipoint) = ader(icompa, icompb, ipoint) + eee * ahgtf(ipoint, t, u, v)
              end do
            end do
          end do
@@ -877,22 +941,22 @@ contains
    !
    ! This subroutine calculates the incomplete gamma function as
    ! described by McMurchie & Davidson, J. Comp. Phys. 26 (1978) 218.
-   ! 
+   !
    ! Roberto Di Remigio May 2012
-   ! Purified from the evil implicit.h and all the other common blocks.  
+   ! Purified from the evil implicit.h and all the other common blocks.
    !
 #include "maxaqn.h"
 
    real(8), parameter :: d1 = 1.0d0,  d2 = 2.0d0, d10 = 10.0d0
    real(8), parameter :: half = 0.5d0, tenth = 0.1d0, ten6 = 1.0d6
-   real(8), parameter :: pi = acos(-1.0d0) 
+   real(8), parameter :: pi = acos(-1.0d0)
    real(8), parameter :: sqrtpi = sqrt(pi)
    real(8), parameter :: pi2 = pi * pi
    real(8), parameter :: sqrpih = sqrtpi/d2
    real(8), parameter :: coef2 = half,  coef3 = - d1/6.0d0, coef4 = d1/24.0d0
    real(8), parameter :: coef5 = - d1/120.0d0, coef6 = d1/720.0d0
    real(8), parameter :: gfac30 = 0.4999489092d0, gfac31 = -0.2473631686d0,        &
-   &   gfac32 = 0.321180909d0, gfac33 = -0.3811559346d0, gfac20 = 0.4998436875d0,  & 
+   &   gfac32 = 0.321180909d0, gfac33 = -0.3811559346d0, gfac20 = 0.4998436875d0,  &
    &   gfac21 = -0.24249438d0, gfac22 = 0.24642845d0, gfac10 = 0.499093162d0,      &
    &   gfac11 = -0.2152832d0, gfac00 = 0.490d0
 
@@ -915,12 +979,12 @@ contains
    else if (ipoint < 120) then
       istart = 1 + 121 * jmax0 + ipoint
       wdif = wval - tenth * ipoint
-      fjw(jmax0) = (((((coef6 * tabfjw(istart + 726) * wdif    &  ! 726 = 6*121 
+      fjw(jmax0) = (((((coef6 * tabfjw(istart + 726) * wdif    &  ! 726 = 6*121
    &                   + coef5 * tabfjw(istart + 605)) * wdif   &
-   &                    + coef4 * tabfjw(istart + 484)) * wdif  &  
-   &                     + coef3 * tabfjw(istart + 363)) * wdif   & 
+   &                    + coef4 * tabfjw(istart + 484)) * wdif  &
+   &                     + coef3 * tabfjw(istart + 363)) * wdif   &
    &                      + coef2 * tabfjw(istart + 242)) * wdif  &
-   &                       - tabfjw(istart + 121)) * wdif       & 
+   &                       - tabfjw(istart + 121)) * wdif       &
    &                        + tabfjw(istart)
       d2wal = d2 * wval
       rexpw = exp(-wval)
@@ -998,17 +1062,17 @@ contains
       end do
       rexpw = exp(-wval)
       tabfjw(iadr) = rexpw * summ
-      denom = d2max1 
+      denom = d2max1
       jadr = iadr
       do j = 1, jmax
          denom = denom - d2
          tabfjw(jadr - 121) = (tabfjw(jadr) * d2wal + rexpw) / denom
          jadr = jadr - 121
       end do
-   end do      
+   end do
 
    end subroutine
-   
+
    subroutine pot_int_tess(potint, tessera, trimat, work, lwork)
 
 #include "dummy.h"
@@ -1017,8 +1081,8 @@ contains
 #include "priunit.h"
 #include "orgcom.h"
 #include "inforb.h"
-        
-   real(8), intent(out) :: potint(*)                                        
+
+   real(8), intent(out) :: potint(*)
    real(8), intent(in)  :: tessera(3)
    real(8)              :: work(*)
    logical              :: trimat, tofile, exp1vl
@@ -1027,14 +1091,14 @@ contains
    integer              :: intrep(9*mxcent), intadr(9*mxcent), lwork
    integer              :: il, iprint, j, kfree, kpatom, lfree, ncomp
    real(8)              :: xdiporg, ydiporg, zdiporg
-                                                                            
-   xdiporg = diporg(1)                                             
+
+   xdiporg = diporg(1)
    ydiporg = diporg(2)
    zdiporg = diporg(3)
    diporg(1) = tessera(1)
    diporg(2) = tessera(2)
    diporg(3) = tessera(3)
-                                                                   
+
    intlab = 'NPETES '
    ncomp = nsym
    il = 1
@@ -1042,18 +1106,18 @@ contains
    kpatom = 0
    exp1vl = .false.
    iprint = 0
-                                                                 
+
    kfree = 1
    lfree = lwork - kfree + 1
-   if (lfree .lt. 0) call errwrk('pot_int_tess', kfree, lwork) 
-                                                                  
+   if (lfree .lt. 0) call errwrk('pot_int_tess', kfree, lwork)
+
    call get1in(potint,intlab,ncomp,work(kfree),lfree,labint, &
                intrep,intadr,il,tofile,kpatom,trimat,dummy,  &
                exp1vl,dummy,iprint)
-                                                                  
+
    write(lupri, *) "Potentials for tessera rsp",1,(diporg(j), j=1,3),mxcent
    call outpak(potint, norbt, 1, lupri)
-                                                                  
+
    diporg(1) = xdiporg
    diporg(2) = ydiporg
    diporg(3) = zdiporg

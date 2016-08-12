@@ -1358,11 +1358,11 @@ C
                   V = J - T - U
                   TUV = INDHER(T,U,V)
 C                 IF (IODDHR(TUV) .EQ. 0) THEN
-                    WRITE (LUPRI,'(2X,3(A,I1),A,2X,5G12.6/,
-     &                                                 (12X,5G12.6))')
+                    WRITE (LUPRI,'(2X,3(A,I1),A,2X,5G13.6/,
+     &                                                 (12X,5G13.6))')
      &              'RO(',T,',',U,',',V,')', (HERINTO(I,TUV),I=1,NPPX)
-                    WRITE (LUPRI,'(2X,3(A,I1),A,2X,5G12.6/,
-     &                                                 (12X,5G12.6))')
+                    WRITE (LUPRI,'(2X,3(A,I1),A,2X,5G13.6/,
+     &                                                 (12X,5G13.6))')
      &              'RM(',T,',',U,',',V,')', (HERINTM(I,TUV),I=1,NPPX)
                   WRITE (LUPRI,'()')
 C                 END IF

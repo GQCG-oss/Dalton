@@ -1,21 +1,22 @@
-! File : cbieri.h
-!
-!     Parameters NCBI? must be updated after changes (for parallelization)
-!
-!     NOTE: New logicals should appear after the last logical (NCLERI)
-!           New integers should appear after the last integer (IFITDM)
-!           Reals should appear at the end.
-!
+C File : cbieri.h
+C
+C     Parameters NCBI? must be updated after changes (for parallelization)
+
       INTEGER NCBII,  NCBIL
-!     
-!     IANGMO takes up space for 4 ints. That is not included in this counter
-      PARAMETER (NCBII = 15,                                            &
-     &           NCBIL = 31)
+      PARAMETER (NCBII = 18, NCBIL = 31)
 
-      INTEGER IPRERI, IAOBCH, IPRNT1, IPRNT2, IPROD1, IPROD2
+C     NOTE: First integer MUST be NDMAT,  number of integers is NCBII
+C           First logical MUST be RUNERI, number of logicals is NCBIL
+C
 
+<<<<<<< HEAD
       INTEGER LBFINP, MAXDST, NDMAT,  IANGMO, NSPMAX, MAXDSD,           &
      &        MXBCH,  MXBCH0, IFITDM, CBIERILAST
+=======
+      INTEGER NDMAT,  IPROD1, IPROD2, IAOBCH, IPRNT1, IPRNT2,
+     &        IPRERI, LBFINP, MAXDST, IANGMO, NSPMAX, 
+     &        MAXDSD, MXBCH,  MXBCH0, IFITDM
+>>>>>>> master
 
       LOGICAL RUNERI, TIMERI, PMSAB,  PMSCD,  PMS12,  RTNERI, OFFCNT,   &
      &        DIASRT, OLDCR1, CANIND, WRTSCR, NOWRIT, EXTPRI,           &
@@ -23,8 +24,9 @@
      &        NOLOCS, GRDZER, OLDDER, EXPERI, DOERIP, ERITWO, CCRUN,    &
      &        COMPRS, GENCON_ERI, NCLERI, DGABAB  
 
-      DIMENSION IANGMO(4)
+      INTEGER CBIERIlast
 
+<<<<<<< HEAD
       COMMON /CBIERI/ RUNERI, TIMERI, PMSAB,  PMSCD,  PMS12,  RTNERI,   &
      &                OFFCNT, DIASRT, OLDCR1, CANIND, WRTSCR, NOWRIT,   &
      &                EXTPRI, INTPRI, DODIST, INTSKP, DISTST, WRTINT,   &
@@ -45,3 +47,18 @@
       !   to get the number of bytes needed to transfer the common block.
       !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
 ! -- end of cbieri.h --
+=======
+      COMMON /CBIERI/ NDMAT,  IPROD1, IPROD2, IAOBCH, IPRNT1, IPRNT2,             ! integers
+     &                IPRERI, LBFINP, MAXDST, IANGMO(4), NSPMAX, 
+     &                MAXDSD, MXBCH,  MXBCH0, IFITDM,
+     &                RUNERI, TIMERI, PMSAB,  PMSCD,  PMS12,  RTNERI,             ! logicals
+     &                OFFCNT, DIASRT, OLDCR1, CANIND, WRTSCR, NOWRIT,
+     &                EXTPRI, INTPRI, DODIST, INTSKP, DISTST, WRTINT,
+     &                FCKINT, PROFIL, NOLOCS, GRDZER, OLDDER, EXPERI,
+     &                DOERIP, ERITWO, CCRUN, COMPRS, GENCON_ERI, NCLERI,
+     &                DGABAB,
+     &   CBIERIlast !  Very important:
+      !  Always keep CBIERIlast as the last variable in the common block. 
+      !  See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
+C -- end of cbieri.h --
+>>>>>>> master

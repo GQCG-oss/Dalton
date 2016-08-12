@@ -1,18 +1,15 @@
-!PFP
-!      LOGICAL AOSOP, AORPA, SOPCHK, AOTEST, DCRPA, AOSOC
-      LOGICAL AOSOP, AORPA, AOHRP, SOPCHK, AOTEST, DCRPA, AOSOC, AOCC2
+      LOGICAL AOSOP, AORPA, AOHRP, SOPCHK, AOTEST, DCRPA, AOSOC
       LOGICAL TRIPLET
-!end-PFP
-      CHARACTER*7 FNTR1E, FNTR1D, FNTR2E, FNTR2D,                       &
-     &            FNRS1E, FNRS1D, FNRS2E, FNRS2D,                       &
-     &            FNRO1E, FNRO1D,                                       &
-     &            FNDIAG, FNDENS, FNFOCK,                               &
-     &            FNSAI1, FNSAI2, FNSDA1, FNSDA2,                       &
-     &            FNBT1E, FNBT1D, FNBJ1E, FNBJ1D,                       &
-     &            FNRI1E, FNRI1D, FNRI2E, FNRI2D,                       &
-     &            FNSC1E, FNSC1D, FNSC2E, FNSC2D,                       &
-     &            FNSV1E, FNSV1D, FNSV2E, FNSV2D,                       &
-     &            FNRV1E, FNRV1D, FNRV2E, FNRV2D,                       &
+      CHARACTER*7 FNTR1E, FNTR1D, FNTR2E, FNTR2D,
+     &            FNRS1E, FNRS1D, FNRS2E, FNRS2D,
+     &            FNRO1E, FNRO1D,
+     &            FNDIAG, FNDENS, FNFOCK,
+     &            FNSAI1, FNSAI2, FNSDA1, FNSDA2,
+     &            FNBT1E, FNBT1D, FNBJ1E, FNBJ1D,
+     &            FNRI1E, FNRI1D, FNRI2E, FNRI2D,
+     &            FNSC1E, FNSC1D, FNSC2E, FNSC2D,
+     &            FNSV1E, FNSV1D, FNSV2E, FNSV2D,
+     &            FNRV1E, FNRV1D, FNRV2E, FNRV2D,
      &            FNGPVE, FNSOLA, FNGPV1, FNGPV2
       PARAMETER (FNTR1E = 'SO_TR1E', FNTR1D = 'SO_TR1D',                &
      &           FNTR2E = 'SO_TR2E', FNTR2D = 'SO_TR2D',                &

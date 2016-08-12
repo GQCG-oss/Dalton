@@ -3557,7 +3557,7 @@ CBS   write(6,*) 'get occupations from DATA-block'
      *CALL QUIT('wrong keyword for number of orbitals in getAOs')
       write(LUPRI,*) 'number of orbitals ',noccorb(lrun)
       do iorbital=1,noccorb(lrun)     
-      read(LUAOEX,'(A12,F5.3)')  occread,occup(iorbital,lrun)
+      read(LUAOEX,'(A12,F6.3)')  occread,occup(iorbital,lrun)
       write(LUPRI,'(A,F8.4)') occtext,occup(iorbital,lrun)
       if (occread.ne.occtext) CALL QUIT('error reading AOs')
       read(LUAOEX,*) (AOcoeffs(icont,iorbital,lrun),
@@ -6072,7 +6072,7 @@ cbs   end of reading for the current L-value
 cbs   
 c     do  Irun=1,ncontrac(Lrun)
 c     writE(LUPRI,*) 'orbital : ',irun   
-c     write(LUPRI,'(6(X,E12.6))') 
+c     write(LUPRI,'(6(X,E13.6))') 
 c    *(cntscrtch(I,Irun,Lrun),I=1,nprimit(Lrun))
 c     enddo 
 c     write(LUPRI,*) ' ' 
@@ -7537,7 +7537,7 @@ cbs   the other orbit parts cancel
       enddo
 c     write(6,*) 'effective integrals' 
 c     do jrun=1,ncontmf
-c     write(6,'(4E20.14)') (onecart(irun,jrun),irun=1,ncontmf)
+c     write(6,'(4E21.14)') (onecart(irun,jrun),irun=1,ncontmf)
 c     enddo
       return 
       end 

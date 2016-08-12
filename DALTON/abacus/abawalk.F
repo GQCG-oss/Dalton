@@ -436,7 +436,7 @@ C
          IF (IWKTYP .LT. 3) THEN
             WRITE (LUPRI,'(/A,I2/)')
      *           ' Index of critical point searched:',IWKIND
-            WRITE (LUPRI,'(A/A,F12.8/)')
+            WRITE (LUPRI,'(A/A,F15.8/)')
      *        ' Tolerance for stationary point :',
      *        ' Molecular gradient norm less than',TOLST
             IF (IMODE .NE. 0) WRITE (LUPRI,'(A,I10)')
@@ -458,7 +458,7 @@ C
      &               ' Initial momenta have been given for ',NSTMOM,
      &               ' modes:'
                   DO 150 I = 1, NSTMOM
-                    WRITE(LUPRI,'(10X,I5,5X,F12.6)')ISTMOM(I),STRMOM(I)
+                    WRITE(LUPRI,'(10X,I5,5X,F13.6)')ISTMOM(I),STRMOM(I)
   150             CONTINUE
                END IF
             END IF
@@ -1904,7 +1904,7 @@ C     ****************************************
 C
       IF (REJECT) THEN
          TRUSTR = TRUSTD*STPNRX
-         IF (IPRINT .GT. 2) WRITE (LUPRI,'(/A/A,F12.6/)')
+         IF (IPRINT .GT. 2) WRITE (LUPRI,'(/A/A,F13.6/)')
      &      ' Trust radius has been reduced because step was rejected.',
      &      ' Updated trust radius :', TRUSTR
 C
@@ -1944,7 +1944,7 @@ C        Case 1: Minimization walk
 C
          IF (IWKTYP.EQ.1 .AND. IWKIND.EQ.0 .AND. .NOT.IMAGE) THEN
             IF (RATIO .LT. REJMIN .AND. ISTATE .EQ. 1) THEN
-               WRITE (LUPRI,'(/A/A,F12.6)')
+               WRITE (LUPRI,'(/A/A,F13.6)')
      *           ' Walk to minimum stopped because ratio between',
      *           ' predicted and actual energy change is:',RATIO
                CALL QUIT
@@ -1985,7 +1985,7 @@ C
             END IF
 C
             IF ((RATIO.LT.REJMIN) .OR. (RATIO.GT.REJMAX)) THEN
-               WRITE (LUPRI,'(/2A/A,F12.6)')
+               WRITE (LUPRI,'(/2A/A,F13.6)')
      *            ' Walk to transition state stopped because',
      *            ' ratio between',
      *            ' predicted and actual energy change is:',RATIO
@@ -2005,9 +2005,9 @@ C
          ENDIF
          IF (IWKTYP .EQ. 7) TRUSTR = MIN(TRUSTR,TRUMAX)
          IF (IPRINT .GT. 5) THEN
-            WRITE (LUPRI,'(/A,2F12.6)') ' STPNRX     ', STPNRX
-            WRITE (LUPRI,'(/A,2F12.6)') ' RED1, RED2 ', RED1, RED2
-            WRITE (LUPRI,'(/A,F12.6)') ' Final TRUSTR ', TRUSTR
+            WRITE (LUPRI,'(/A,2F13.6)') ' STPNRX     ', STPNRX
+            WRITE (LUPRI,'(/A,2F13.6)') ' RED1, RED2 ', RED1, RED2
+            WRITE (LUPRI,'(/A,F13.6)') ' Final TRUSTR ', TRUSTR
          END IF
       END IF
       RETURN
@@ -2637,8 +2637,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
-C defined parallel calculation types
-#include "iprtyp.h"
 C
       CHARACTER*1 STARM, STARE, STARG, STARS, STARH
       CHARACTER*42 WLKTYP(0:8)
@@ -2654,15 +2652,13 @@ C
 C
       CALL TITLER('FINAL RESULTS FROM WALK','*',125)
 C
-      IPRTYP = IWKTYP
-      IF (IWKTYP .EQ. 1 .AND. IWKIND .EQ. 0) IPRTYP = ENDING_SIGNAL
-      IF (IMAGE) IPRTYP = DFT_HESSTAT_WORK
-      WRITE (LUPRI,'(/2A)') ' Walk type: ', WLKTYP(IPRTYP)
-      WRITE (LUPRI,'(/A,I3)') ' Iteration number:', IPOINT
-      IF (REJECT) WRITE (LUPRI,'(/A)')
-     &      '@ Previous step was rejected - attempting shorter step.'
-      WRITE (LUPRI,'(/A,F17.10)') '  Norm of molecular gradient:',GRDNRM
-      WRITE (LUPRI,'(/A,F17.10)') '@ Energy at current point:', ERGMOL
+      IWKTYP_PR = IWKTYP
+      IF (IWKTYP .EQ. 1 .AND. IWKIND .EQ. 0) IWKTYP_PR = 0
+      IF (IMAGE) IWKTYP_PR = 8
+      WRITE (LUPRI,'(/2A)')       '@ Walk type: ', WLKTYP(IWKTYP_PR)
+      WRITE (LUPRI,'(/A,I5)')     '@ Iteration number:', IPOINT
+      WRITE (LUPRI,'(/A,F17.10)') '@ Norm of molecular gradient:',GRDNRM
+      WRITE (LUPRI,'(/A,F17.10)') '@ Energy at current point:   ',ERGMOL
       IF (IPOINT .GT. 0) THEN
          WRITE (LUPRI,'( A,F17.10)')
      &                      '  Energy at initial point:', ESTART
@@ -2670,11 +2666,13 @@ C
      &         '  Change in energy since start of walk:',
      &                   ERGMOL - ESTART,  ' au',
      &                   XKJMOL*(ERGMOL - ESTART), ' kJ/mol',
-     &                   XKCMOL*(ERGMOL - ESTART), ' kCal/mol'
+     &                   XKCMOL*(ERGMOL - ESTART), ' kcal/mol'
          IF (.NOT.REJECT) WRITE (LUPRI,'(/A,F6.2)')
      &      '@ Ratio between actual and predicted energies:',
      &       (ERGMOL - ERGMLX)/ERGSCX
       END IF
+      IF (REJECT) WRITE (LUPRI,'(/A)')
+     &      '@ Previous step was rejected - attempting shorter step.'
 C
       IF (IWKTYP .EQ. 3 .OR. IWKTYP .EQ. 7) THEN
 C
@@ -2684,39 +2682,38 @@ C
             DMASS = DISOTP(IZATOM(IATOM),ISOTOP(IATOM),'MASS')
             NDEG  = NUCDEG(IATOM)
             DO 515 IDEG = 1, NDEG
-               WRITE (LUPRI,'(2X,A6,2X,F12.6)') NAMDEP(JATOM+IDEG),DMASS
+               WRITE (LUPRI,'(2X,A6,2X,F13.6)') NAMDEP(JATOM+IDEG),DMASS
   515       CONTINUE
             JATOM = JATOM + NDEG
   510    CONTINUE
       END IF
 C
       IF (IWKTYP .EQ. 3) THEN
-         IF (CMDIF .GT. D0) WRITE (LUPRI,'(/A,2(F12.6,A))')
+         IF (CMDIF .GT. D0) WRITE (LUPRI,'(/A,2(F13.6,A))')
      &      '@ Distance between centers of mass ', CMDIF,' au  ',
      &      XTANG*CMDIF,' Angstrom'
          WRITE (LUPRI,'(/A,F12.2,A,1P,E12.2,A)')
      &      '@ Accumulated time before step: ',
      &        TACCUM - TIMSTP, ' au  ',D15*XFSEC*(TACCUM - TIMSTP),' fs'
          EKINX = EKIN0 + ESTART - ERGMOL
-         WRITE (LUPRI,'(/A,1P,E12.6)')
-     &     ' Kinetic energy before step - exact       : ', EKINX
+         WRITE (LUPRI,'(/A,1P,E13.6)')
+     &      ' Kinetic energy before step - exact       :', EKINX
          IF (IPOINT .GT. 0) THEN
-            WRITE (LUPRI,'(/A,1P,E12.6)')
-     &        ' Kinetic energy at initial point          : ', EKIN0
-            WRITE (LUPRI,'(/A,1P,E12.6)')
-     &        ' Accumulated kinetic energy since start   : ',
-     &          EKINX - EKIN0
+            WRITE (LUPRI,'(/A,1P,E13.6)')
+     &      ' Kinetic energy at initial point          :', EKIN0
+            WRITE (LUPRI,'(/A,1P,E13.6)')
+     &      ' Accumulated kinetic energy since start   :', EKINX - EKIN0
             ERROR = D100*(EKINX - EKINTO)/EKINX
-            WRITE (LUPRI,'( A,1P,E12.6,A,0P,F5.1,A)')
-     &        '                            - from momenta: ', EKINTO,
-     &        ' (',ERROR,'% error)'
+            WRITE (LUPRI,'( A,1P,E13.6,A,0P,F5.1,A)')
+     &      '                            - from momenta:', EKINTO,
+     &      ' (',ERROR,'% error)'
          END IF
-         IF (ABS(VREL) .GT. D0) WRITE(LUPRI,'(/A,1P,E12.6,A,0P,F6.2,A)')
-     &      '@ Relative velocity before step            : ', ABS(VREL),
+         IF (ABS(VREL) .GT. D0) WRITE(LUPRI,'(/A,1P,E13.6,A,0P,F6.2,A)')
+     &      '@ Relative velocity before step            :', ABS(VREL),
      &      ' (',DM13*ABS(VREL)*XTANG/XFSEC, 'km/s)'
          IF (ABS(EKINPA) .GT. D0) THEN
-            WRITE (LUPRI,'( A,1P,E12.6,A,0P,F5.1,A)')
-     &      '@ Relative translational energy before step: ', EKINPA,
+            WRITE (LUPRI,'( A,1P,E13.6,A,0P,F5.1,A)')
+     &      '@ Relative translational energy before step:', EKINPA,
      &      ' (',D100*EKINPA/EKINTO,'% of total)'
          END IF
 C
@@ -2845,16 +2842,16 @@ C
                   GRADNR = D0
                END IF
                IF (PRJTRO) THEN
-                  WRITE (LUPRI,'(3(3X,I2,7X),1P,D12.6,3X,I2,10X,D8.2)')
+                  WRITE (LUPRI,'(3(I5,7X),1P,D12.5,I5,D18.2)')
      *                  IREP + 1, NCRREP(IREP,1) - NPRREP(IREP),
      *                  NPRREP(IREP), GRADNR, INDHES(IREP), CNDHES(IREP)
                ELSE
-                  WRITE (LUPRI,'(3(3X,I2,7X),1P,D12.6,3X,I2)')
+                  WRITE (LUPRI,'(3(I5,7X),1P,D12.5,I5)')
      *                  IREP + 1, NCRREP(IREP,1) - NPRREP(IREP),
      *                  NPRREP(IREP), GRADNR, INDHES(IREP)
                END IF
             ELSE
-               WRITE (LUPRI,'(3(3X,I2,7X))')
+               WRITE (LUPRI,'(3(I5,7X))')
      *                IREP + 1, NCRREP(IREP,1) - NPRREP(IREP),
      *                NPRREP(IREP)
             END IF
@@ -2926,7 +2923,7 @@ C
      &         '  Angle between gradient and step: ',ANGLE,' degrees'
          END IF
          IF (.NOT.STOP .AND. IWKTYP.EQ.2) THEN
-            WRITE (LUPRI,'(3(/,A,F12.6))')
+            WRITE (LUPRI,'(3(/,A,F13.6))')
      *         '  Step size:                   ', STPNRM,
      *         '     - parallel component:     ', STPPAR,
      *         '     - perpendicular component:', STPPER
@@ -2961,7 +2958,7 @@ C
                IOFF = IOFF +  NCRREP(IREP,1)
             END IF
   220    CONTINUE
-         WRITE (LUPRI,'(/,A,F12.6)')
+         WRITE (LUPRI,'(/,A,F13.6)')
      &      ' Step size:', STPNRM
          WRITE (LUPRI,'(/A,F12.2,A,1P,E12.2,A)')
      &      ' Time step                  :',
@@ -3012,7 +3009,7 @@ C
      *              '  sym ',IREP + 1, (I,I = ISTR,IEND)
                   WRITE (LUPRI,'(2X,70A1,/)') ('-',I=1,10+NUMB*12)
                   DO 320 ICOOR = 1, NCR
-                     WRITE (LUPRI,'(3X,A,(T13,5F12.6))')
+                     WRITE (LUPRI,'(3X,A,(T13,5F13.6))')
      *                   NAMEX(IPTCOR(IOFF + ICOOR,1)),
      *                  (EVEC(IEVC + ICOOR + I),I=1,NEND,NCR)
                      IF (MAXREP+MOD(ICOOR,3) .EQ. 0) WRITE (LUPRI,'()')
@@ -3038,17 +3035,17 @@ C
          CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,-1,WORK,LWORK)
       ELSE
          IF (OLDREA) THEN
-            WRITE(LUPRI,'(/,A,F12.6)')
+            WRITE(LUPRI,'(/,A,F13.6)')
      *       ' Old trust radius:          ', TRUSTX
          ELSE
-            WRITE(LUPRI,'(/,A,F12.6)')
+            WRITE(LUPRI,'(/,A,F13.6)')
      *       ' Input trust radius:        ', TRUSTX
          END IF
-         WRITE (LUPRI,'(A,F12.6)')
+         WRITE (LUPRI,'(A,F13.6)')
      *       ' Updated trust radius:      ', TRUSTR
          IF (OLDREA.AND.
      &      (((IWKIND.GT.0).AND.(IWKTYP.LT.3)).AND..NOT.IMAGE)) THEN
-            IF (ANHRAD .LT. D100) WRITE (LUPRI,'(A,F12.6)')
+            IF (ANHRAD .LT. D100) WRITE (LUPRI,'(A,F13.6)')
      *          ' Finite-difference estimate of harmonic radius',ANHRAD
          END IF
          IF (IWKTYP .EQ. 1) THEN
@@ -3130,7 +3127,7 @@ C
       END IF
 C
       IF (IPRWLK .GT. 2) THEN
-         WRITE (LUPRI,'(/A,1P,D12.6)') ' Norm of gradient   ',GRDNRM
+         WRITE (LUPRI,'(/A,1P,D14.6)') ' Norm of gradient ',GRDNRM
         IF (IWKTYP .NE. 6) THEN
 C        ... Hessian index not calculated for numerical differentiation
          WRITE (LUPRI,'(A,I5)')        ' Totally sym.  index',INDHES(0)
@@ -3514,7 +3511,7 @@ C
          END IF
       ELSE
          ICUR = (IPOINT+1)/2
-         WRITE (LUPRI,'(2A,/,A,10X,21X,A,F12.10)')
+         WRITE (LUPRI,'(2A,/,A,10X,21X,A,F17.10)')
      *         ' Coordinate displaced in this calculation:    ',
      *         NAMEX(IPTCOR(ICUR,1)),
      *         ' Displacement:', CHRSGN(2*MOD(IPOINT,2)-1), DISPLC
@@ -3545,7 +3542,7 @@ C
      *             DIFFER, TYPE
   300    CONTINUE
          IF (MOD(IPOINT,2) .EQ. 0) THEN
-            WRITE (LUPRI,'(/,A,1P,D7.1//)') ' Largest difference: ',
+            WRITE (LUPRI,'(/,A,1P,D8.1//)') ' Largest difference: ',
      *             DIFMAX
          END IF
          CALL AROUND('Analytical and numerical Hessians')
@@ -3562,7 +3559,7 @@ C
                   DIFMAX = MAX(DIFMAX,ABS(DIFFER))
   410          CONTINUE
   400       CONTINUE
-            WRITE (LUPRI,'(/A,1P,D7.1,/)')
+            WRITE (LUPRI,'(/A,1P,D8.1,/)')
      *         '  Numerical Hessian is symmetric to ',DIFMAX
          END IF
 C
@@ -3581,7 +3578,7 @@ C
      *    ('Difference between analytical and numerical Hessians',1)
          CALL OUTPUT(WORK,1,NCART,1,ICUR,NCART,NCART,1,LUPRI)
          IF (MOD(IPOINT,2) .EQ. 0) THEN
-            WRITE (LUPRI,'(/,A,1P,D7.1//)') '  Largest difference: ',
+            WRITE (LUPRI,'(/,A,1P,D8.1//)') '  Largest difference: ',
      *         DIFMAX
          END IF
          IF (DODIP) THEN
@@ -3605,7 +3602,7 @@ C
      *                  'dipole gradients',1)
             CALL OUTPUT(WORK,1,NXYZ,1,ICUR,NXYZ,NCART,1,LUPRI)
             IF (MOD(IPOINT,2) .EQ. 0) THEN
-               WRITE (LUPRI,'(/,A,1P,D7.1//)') '  Largest difference: ',
+               WRITE (LUPRI,'(/,A,1P,D8.1//)') '  Largest difference: ',
      *            DIFMAX
             END IF
          END IF
@@ -3680,7 +3677,7 @@ C
          CALL OUTPUT(HESCAR,1,NCART,1,NCART,NCART,NCART,1,LUPRI)
       ELSE
          ICUR = (IPOINT+1)/2
-         WRITE (LUPRI,'(2A,/,A,10X,21X,A,F12.10)')
+         WRITE (LUPRI,'(2A,/,A,10X,21X,A,F17.10)')
      *         ' Coordinate displaced in this calculation:    ',
      *         NAMEX(IPTCOR(ICUR,1)),
      *         ' Displacement:', CHRSGN(2*MOD(IPOINT,2)-1), DISPLC
@@ -3776,7 +3773,7 @@ C
          CALL OUTPUT(GRADIN,1,1,1,NUMMOD,1,NCART,1,LUPRI)
       ELSE
          ICUR = (IPOINT+1)/2
-         WRITE (LUPRI,'(2A,/,A,10X,21X,A,F12.10)')
+         WRITE (LUPRI,'(2A,/,A,10X,21X,A,F17.10)')
      *         ' Coordinate displaced in this calculation:    ',
      *         NAMEX(IPTCOR(ICUR,1)),
      *         ' Displacement:', CHRSGN(2*MOD(IPOINT,2)-1), DISPLC
@@ -4127,7 +4124,7 @@ C
          END IF
       ELSE
          ICUR = (IPOINT+1)/2
-         WRITE (LUPRI,'(2A,/,A,10X,21X,A,F12.10)')
+         WRITE (LUPRI,'(2A,/,A,10X,21X,A,F17.10)')
      *         ' Coordinate displaced in this calculation:    ',
      *         NAMEX(IPTCOR(ICUR,1)),
      *         ' Displacement:', CHRSGN(2*MOD(IPOINT,2)-1), DISPLC
@@ -4242,7 +4239,7 @@ C
             WRITE (LUPRI,'(5X,A4,5X,3(5X,A1,11X))') 'Mode','X',
      &           'Y','Z'
             DO IMOD = 1, NUMMOD
-               WRITE (LUPRI,'(6X,I2,6X,F12.6,5X,F12.6,5X,F12.6)')
+               WRITE (LUPRI,'(6X,I2,6X,F13.6,5X,F13.6,5X,F13.6)')
      &              IMOD,(DIPMF(ICOOR,IMOD),ICOOR = 1, 3)
             END DO
             IF (MAGSUS) THEN
@@ -4425,7 +4422,7 @@ C
 C
       END IF
       RETURN
-9008  FORMAT (16X,A,2X,3F12.7)
+9008  FORMAT (16X,A,2X,3F14.7)
 9009  FORMAT (/,27X,3(A,10X)/)
       END
 C  /* Deck wlkgeo */
@@ -4465,11 +4462,11 @@ C
          WRITE (LUPRI,'(A,L5)')       ' INDXOK ', INDXOK
          WRITE (LUPRI,'(A,L5)')       ' KEEPSY ', KEEPSY
          WRITE (LUPRI,'(A,L5)')       ' WFPRED ', WFPRED
-         WRITE (LUPRI,'(A,1P,D12.6)') ' ANHRAD ', ANHRAD
-         WRITE (LUPRI,'(A,1P,D12.6)') ' ZERGRD ', ZERGRD
-         WRITE (LUPRI,'(A,1P,D12.6)') ' RADIUS ', RADIUS
-         WRITE (LUPRI,'(A,1P,D12.6)') ' XMXNUC ', XMXNUC
-         WRITE (LUPRI,'(A,1P,D12.6)') ' TIMSTP ', TIMSTP
+         WRITE (LUPRI,'(A,1P,D13.6)') ' ANHRAD ', ANHRAD
+         WRITE (LUPRI,'(A,1P,D13.6)') ' ZERGRD ', ZERGRD
+         WRITE (LUPRI,'(A,1P,D13.6)') ' RADIUS ', RADIUS
+         WRITE (LUPRI,'(A,1P,D13.6)') ' XMXNUC ', XMXNUC
+         WRITE (LUPRI,'(A,1P,D13.6)') ' TIMSTP ', TIMSTP
          CALL HEADER('Gradient in WLKGEO',-1)
          CALL OUTPUT(GRDDIA,1,1,1,NINTER,1,NCART,1,LUPRI)
          CALL HEADER('Eigenvalues in WLKGEO',-1)
@@ -4590,7 +4587,7 @@ C
             ELSE IF ((IWKTYP .EQ. 7) .AND. (.NOT.ANGOK)) THEN
                WRITE (LUPRI,'(/A)') '@ Step rejected since '//
      *                              'step-gradient angle is too large.'
-               WRITE (LUPRI,'(A,F12.6)') '@ Angle: ',ANGLE
+               WRITE (LUPRI,'(A,F13.6)') '@ Angle: ',ANGLE
                RADIUS = REDANG*MIN(STPNRM,RADIUS)
             ELSE
 C              IF (WFPRED) THEN
@@ -4681,8 +4678,8 @@ C
          WRITE (LUPRI,'(A,I5)')       ' NNEG   ', NNEG
          WRITE (LUPRI,'(A,L5)')       ' IMAGE  ', IMAGE
          WRITE (LUPRI,'(A,L5)')       ' KEEPSY ', KEEPSY
-         WRITE (LUPRI,'(A,1P,D12.6)') ' RADIUS ', RADIUS
-         WRITE (LUPRI,'(A,1P,D12.6)') ' TIMSTP ', TIMSTP
+         WRITE (LUPRI,'(A,1P,D13.6)') ' RADIUS ', RADIUS
+         WRITE (LUPRI,'(A,1P,D13.6)') ' TIMSTP ', TIMSTP
          CALL HEADER('Gradient in WLKSTP',-1)
          CALL OUTPUT(GRDDIA,1,1,1,NVEC,1,NCART,1,LUPRI)
          CALL HEADER('Eigenvalues in WLKSTP',-1)
@@ -5019,7 +5016,7 @@ C
          END IF
   100 CONTINUE
       IF (.NOT.ANHOK) THEN
-         WRITE (LUPRI,'(/A,F12.6)')
+         WRITE (LUPRI,'(/A,F13.6)')
      &      ' Reduction factor for trust radius in WLKCAN:' , REDANH
       END IF
       RETURN
@@ -5185,7 +5182,7 @@ C        Set RNU = - HESMIN and determine step length
 C
          STPNRM = WLKSTL(GRDDIA(2),EVAL(2),-HESMIN,NONTRO-1,D0)
          IF (IPRINT .GT. 3) THEN
-            WRITE (LUPRI,'(/A,F12.6)')
+            WRITE (LUPRI,'(/A,F13.6)')
      *      ' Step length with level shift equal to lowest eigenvalue:',
      *      STPNRM
          END IF
@@ -5237,7 +5234,7 @@ C
                STPDIA(I) = - GRDDIA(I)/(EVAL(I) - HESMIN)
  300        CONTINUE
             STP2      = DDOT(NONTRO-1,STPDIA(2),1,STPDIA(2),1)
-            IF (IPRINT .GT. 3) WRITE (LUPRI,'(/A,F12.6)')
+            IF (IPRINT .GT. 3) WRITE (LUPRI,'(/A,F13.6)')
      *         ' Norm of step orthogonal to lowest eigenvector:',
      *         SQRT(STP2)
             STPDIA(1) = SQRT(TRUSTR*TRUSTR - STP2)
@@ -5594,7 +5591,7 @@ C
          CALL OUTPUT(GRDDIA,1,1,1,NCART,1,NCART,1,LUPRI)
          CALL HEADER('Eigenvalues in WLKDYN',-1)
          CALL OUTPUT(EVAL,1,1,1,NCART,1,NCART,1,LUPRI)
-         WRITE (LUPRI,'(1X,A,F12.6)') ' RADIUS ', RADIUS
+         WRITE (LUPRI,'(1X,A,F13.6)') ' RADIUS ', RADIUS
       END IF
 C
       TRADAU = RADIUS*SQRT(XFAMU)
@@ -5613,8 +5610,8 @@ C
          HESMIN = MIN(HESMIN,EVAL(I))
   110 CONTINUE
       IF (IPRINT .GT. 5) THEN
-         WRITE (LUPRI,'(1X,A,F12.6)') ' HESMAX ', HESMAX
-         WRITE (LUPRI,'(1X,A,F12.6)') ' HESMIN ', HESMIN
+         WRITE (LUPRI,'(1X,A,F13.6)') ' HESMAX ', HESMAX
+         WRITE (LUPRI,'(1X,A,F13.6)') ' HESMIN ', HESMIN
       END IF
 C
 C     If all non-zero eigenvalues are positive,
@@ -5838,7 +5835,7 @@ C
          CALL OUTPUT(GRDDIA,1,1,1,NCART,1,NCART,1,LUPRI)
          CALL HEADER('Eigenvalues in WLKIRC',-1)
          CALL OUTPUT(EVAL,1,1,1,NCART,1,NCART,1,LUPRI)
-         WRITE (LUPRI,'(1X,A,F12.6)') ' RADIUS ', RADIUS
+         WRITE (LUPRI,'(1X,A,F13.6)') ' RADIUS ', RADIUS
       END IF
 C
 C     Take Newton step if:  1) it is smaller than RADIUS
@@ -5855,7 +5852,7 @@ C        integration is to the boundary RADIUS
 C
          TIMSTP = WLKIRN(GRDDIA,EVAL,NCART,RADIUS,IPRINT)
          IF (TIMSTP .GT. TMAX) THEN
-            WRITE (LUPRI,'(//A,2(/A,1P,E12.6),/A)')
+            WRITE (LUPRI,'(//A,2(/A,1P,E12.5),/A)')
      &         ' WARNING: Time step exceeded in WLKIRN!',
      &         ' Time step determined in WLKIRN:', TIMSTP,
      &         ' Maximum time step allowed:     ', TMAX,
@@ -5864,7 +5861,7 @@ C
             NWNABA = NWNABA + 1
          END IF
          IF (IPRINT .GT. 10) THEN
-            WRITE (LUPRI,'(/A,F12.6)')
+            WRITE (LUPRI,'(/A,F13.6)')
      &         ' Time step after Newton iterations: ', TIMSTP
          END IF
 C
@@ -5875,7 +5872,7 @@ C
 C
       IF (IPRINT .GT. 10) THEN
          WRITE (LUPRI,'(A,L5)') ' DONWTN ', DONWTN
-         IF (.NOT.DONWTN) WRITE (LUPRI,'(A,F12.6)')' Time step ',TIMSTP
+         IF (.NOT.DONWTN) WRITE (LUPRI,'(A,F13.6)')' Time step ',TIMSTP
          CALL HEADER('Step vector in WLKIRC',-1)
          CALL OUTPUT(Q,1,1,1,NCART,1,NCART,1,LUPRI)
       END IF
@@ -5985,7 +5982,7 @@ C
  401  CONTINUE
       IF (IPRINT .GT. 10) THEN
          STP = WLKIRS(TIME,GRDDIA,EVAL,NCART)
-         WRITE (LUPRI,'(/A,2F12.6)')
+         WRITE (LUPRI,'(/A,2F13.6)')
      &      ' Time and step size before Newton:', TIME, STP
       END IF
 C
@@ -6015,7 +6012,7 @@ C
       WLKIRN = TIME
       IF (IPRINT .GT. 10) THEN
          STP = WLKIRS(TIME,GRDDIA,EVAL,NCART)
-         WRITE (LUPRI,'(/A,2F12.6)')
+         WRITE (LUPRI,'(/A,2F13.6)')
      &      ' Final time and step size in WLKIRN:', TIME, STP
       END IF
       RETURN
@@ -6759,50 +6756,50 @@ C
          IF (BPLAN) WRITE (LUPRI,'(1X,A)') ' Fragment B is planar.'
          IF (BLIN ) WRITE (LUPRI,'(1X,A)') ' Fragment B is linear.'
          CALL HEADER('Positions of centers of mass',-1)
-         WRITE (LUPRI,'(1X,A,3F12.6)')  ' CM of total system:',
+         WRITE (LUPRI,'(1X,A,3F13.6)')  ' CM of total system:',
      &        TCMXYZ(1), TCMXYZ(2), TCMXYZ(3)
-         WRITE (LUPRI,'(1X,A,3F12.6)')  ' CM of fragment A  :',
+         WRITE (LUPRI,'(1X,A,3F13.6)')  ' CM of fragment A  :',
      &        ACMXYZ(1), ACMXYZ(2), ACMXYZ(3)
-         WRITE (LUPRI,'(1X,A,3F12.6)')  ' CM of fragment B  :',
+         WRITE (LUPRI,'(1X,A,3F13.6)')  ' CM of fragment B  :',
      &        BCMXYZ(1), BCMXYZ(2), BCMXYZ(3)
          CALL HEADER('CM velocities (components and total)',-1)
-         WRITE (LUPRI,'(1X,A,4F12.6)') ' CM velocity of total system:',
+         WRITE (LUPRI,'(1X,A,4F13.6)') ' CM velocity of total system:',
      &      TVLXYZ(1), TVLXYZ(2), TVLXYZ(3),
      &      SQRT(DDOT(3,TVLXYZ,1,TVLXYZ,1))
-         WRITE (LUPRI,'(1X,A,4F12.6)') ' CM velocity of fragment A  :',
+         WRITE (LUPRI,'(1X,A,4F13.6)') ' CM velocity of fragment A  :',
      &      AVLXYZ(1), AVLXYZ(2), AVLXYZ(3),
      &      SQRT(DDOT(3,AVLXYZ,1,AVLXYZ,1))
-         WRITE (LUPRI,'(1X,A,4F12.6)') ' CM velocity of fragment B  :',
+         WRITE (LUPRI,'(1X,A,4F13.6)') ' CM velocity of fragment B  :',
      &      BVLXYZ(1), BVLXYZ(2), BVLXYZ(3),
      &      SQRT(DDOT(3,BVLXYZ,1,BVLXYZ,1))
          CALL HEADER('Angular momenta in CM coordinate systems',-1)
-         WRITE (LUPRI,'(1X,A,3F12.6)')
+         WRITE (LUPRI,'(1X,A,3F13.6)')
      &       ' Angular momemtum of total system:',
      &        TLXYZ(1), TLXYZ(2), TLXYZ(3)
-         WRITE (LUPRI,'(1X,A,3F12.6)')
+         WRITE (LUPRI,'(1X,A,3F13.6)')
      &       ' Angular momemtum of fragment A  :',
      &         ALXYZ(1), ALXYZ(2), ALXYZ(3)
-         WRITE (LUPRI,'(1X,A,3F12.6)')
+         WRITE (LUPRI,'(1X,A,3F13.6)')
      &       ' Angular momentum of fragment B  :',
      &         BLXYZ(1), BLXYZ(2), BLXYZ(3)
          CALL HEADER('Angular velocities:',-1)
-         WRITE (LUPRI,'(1X,A,3F12.6)')
+         WRITE (LUPRI,'(1X,A,3F13.6)')
      &       ' Angular velocity of total system:',
      &         TOMEGA(1), TOMEGA(2), TOMEGA(3)
-         WRITE (LUPRI,'(1X,A,3F12.6)')
+         WRITE (LUPRI,'(1X,A,3F13.6)')
      &       ' Angular velocity of fragment A  :',
      &         AOMEGA(1), AOMEGA(2), AOMEGA(3)
-         WRITE (LUPRI,'(1X,A,3F12.6)')
+         WRITE (LUPRI,'(1X,A,3F13.6)')
      &       ' Angular velocity of fragment B  :',
      &         BOMEGA(1), BOMEGA(2), BOMEGA(3)
          CALL HEADER('Vibrational angular momenta:',-1)
-         WRITE (LUPRI,'(1X,A,3F12.6)')
+         WRITE (LUPRI,'(1X,A,3F13.6)')
      &       ' Vib. ang. momentum of total system:',
      &         TVBANG(1), TVBANG(2), TVBANG(3)
-         WRITE (LUPRI,'(1X,A,3F12.6)')
+         WRITE (LUPRI,'(1X,A,3F13.6)')
      &       ' Vib. ang. momentum of fragment A  :',
      &         AVBANG(1), AVBANG(2), AVBANG(3)
-         WRITE (LUPRI,'(1X,A,3F12.6)')
+         WRITE (LUPRI,'(1X,A,3F13.6)')
      &       ' Vib. ang. momentum of fragment B  :',
      &         BVBANG(1), BVBANG(2), BVBANG(3)
          CALL AROUND('Breakdown of kinetic energy contributions')
@@ -6842,7 +6839,7 @@ C
          WRITE (LUPRI,'(1X)')
          CALL WLKDPR('total         :',TOTAL,ETOTT,TOTAL)
 C
-         WRITE (LUPRI,'(/1X,A,F12.6)')
+         WRITE (LUPRI,'(/1X,A,F13.6)')
      &      'Relative translational energy between fragments:',ERLTRA
       ELSE
          CALL AROUND('Breakdown of kinetic energy contributions')
@@ -6960,7 +6957,7 @@ C
          CALL AROUND('Dynamic analysis for fragment '//FRAG)
          WRITE (LUPRI,'(1X,A,I5)')
      &      ' Number of atoms in fragment',NATOMS
-         WRITE (LUPRI,'(1X,A,F12.6)')
+         WRITE (LUPRI,'(1X,A,F13.6)')
      &      ' Total mass of fragment ',TAMASS
          CALL HEADER('Masses of fragment '//FRAG,-1)
          CALL OUTPUT(AMASS,1,NATOMS,1,1,NATOMS,1,1,LUPRI)
@@ -6969,23 +6966,23 @@ C
          CALL HEADER('Velocities of fragment '//FRAG,-1)
          CALL OUTPUT(VELABS,1,NATOMS,1,3,NATOMS,3,1,LUPRI)
          CALL HEADER('Energy contributions for fragment'//FRAG,-1)
-         WRITE (LUPRI,'(1X,A,2F12.6)')
+         WRITE (LUPRI,'(1X,A,2F13.6)')
      &      ' Total kinetic energy of fragment:   ',ETOT,TKIN
-         WRITE (LUPRI,'(1X,A,F12.6)')
+         WRITE (LUPRI,'(1X,A,F13.6)')
      &      ' Translational energy of fragment:   ',ETRA
-         IF (NATOMS .GT. 1) WRITE (LUPRI,'(1X,A,F12.6)')
+         IF (NATOMS .GT. 1) WRITE (LUPRI,'(1X,A,F13.6)')
      &      ' Rotational    energy of fragment:   ',EROT
-         IF (NATOMS .GT. 1) WRITE (LUPRI,'(1X,A,F12.6)')
+         IF (NATOMS .GT. 1) WRITE (LUPRI,'(1X,A,F13.6)')
      &      ' Internal kinetic energy of fragment:',EVIB
-         IF (NATOMS .GT. 1) WRITE (LUPRI,'(1X,A,F12.6)')
+         IF (NATOMS .GT. 1) WRITE (LUPRI,'(1X,A,F13.6)')
      &      ' Coriolis energy of fragment:        ',ECOR
-         WRITE (LUPRI,'(/,1X,A,3F12.6)')' Position of center of mass ',
+         WRITE (LUPRI,'(/,1X,A,3F13.6)')' Position of center of mass ',
      &      CMXYZ(1),CMXYZ(2),CMXYZ(3)
-         WRITE (LUPRI,'(1X,A,3F12.6)')' Velocity of center of mass ',
+         WRITE (LUPRI,'(1X,A,3F13.6)')' Velocity of center of mass ',
      &      VELXYZ(1),VELXYZ(2),VELXYZ(3)
-         WRITE (LUPRI,'(1X,A,3F12.6)')' Angular momentum of fragment',
+         WRITE (LUPRI,'(1X,A,3F13.6)')' Angular momentum of fragment',
      &      ANGXYZ(1),ANGXYZ(2),ANGXYZ(3)
-         WRITE (LUPRI,'(1X,A,3F12.6)')' Angular velocity of fragment',
+         WRITE (LUPRI,'(1X,A,3F13.6)')' Angular velocity of fragment',
      &      OMEGA(1),OMEGA(2),OMEGA(3)
          IF (NATOMS .GT. 1) THEN
             CALL HEADER('Moments of inertia',-1)
@@ -7008,7 +7005,7 @@ C  /* Deck wlkdpr */
       CHARACTER LABEL*15
       FRACT = D100*PART/TOTAL
       IF (ABS(FRACT) .GE. D1/(D100*D100)) THEN
-         WRITE (LUPRI,'(20X,A,F12.6,2X,F6.2,A)') LABEL, PART, FRACT,' %'
+         WRITE (LUPRI,'(20X,A,F13.6,2X,F9.2,A)') LABEL, PART, FRACT,' %'
       END IF
       ACCUM = ACCUM + PART
       RETURN
@@ -7227,23 +7224,23 @@ C
       IF (IPOINT .EQ. 0 .AND. IPRINT .GT. 0) THEN
          CALL HEADER('Polarizability tensor at reference geometry',1)
          DO 300 F = 1, NFRVAL
-            WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+            WRITE (LUPRI,'(1X,A,F11.4)') ' frequency:', FRVAL(F)
             CALL OUTPUT(ROAAFU(1,1,F),1,3,1,3,3,3,11,LUPRI)
   300    CONTINUE
          IF (VROA) THEN
             CALL HEADER('Non-London G tensor at reference geometry',1)
             DO 310 F = 1, NFRVAL
-               WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+               WRITE (LUPRI,'(1X,A,F11.4)') ' frequency:', FRVAL(F)
                CALL OUTPUT(ROAGNU(1,1,F),1,3,1,3,3,3,11,LUPRI)
   310       CONTINUE
             CALL HEADER('London G tensor at reference geometry',1)
             DO 320 F = 1, NFRVAL
-               WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+               WRITE (LUPRI,'(1X,A,F11.4)') ' frequency:', FRVAL(F)
                CALL OUTPUT(ROAGLU(1,1,F),1,3,1,3,3,3,11,LUPRI)
   320       CONTINUE
             CALL HEADER('A tensor at reference geometry',1)
             DO 330 F = 1, NFRVAL
-               WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+               WRITE (LUPRI,'(1X,A,F11.4)') ' frequency:', FRVAL(F)
                CALL OUTPUT(ROAAU(1,1,1,F),1,3,1,9,3,9,11,LUPRI)
   330       CONTINUE
          END IF
@@ -7253,7 +7250,7 @@ C
          CALL HEADER('Rayleigh properties for parent molecule '//
      &               '(in A**6)',1)
          DO 340 F = 1, NFRVAL
-            WRITE (LUPRI,'(2X,A,F8.6,A,F6.2,A,/2X,A)')
+            WRITE (LUPRI,'(2X,A,F13.6,A,F9.2,A,/2X,A)')
      &         'frequency: ',FRVAL(F),' a.u. = ',XTNM/FRVAL(F),' nm',
      &         '----------------------------------'
             ALMN  = ALFMN  (ROAAFU(1,1,F))
@@ -7312,7 +7309,7 @@ C
 C     ***********End Rayleigh (G. Hangartner 24.12.1996)
       ELSE IF (FINAL .OR. (IPRINT.GT.1)) THEN
          ICUR = (IPOINT+1)/2
-         WRITE (LUPRI,'(2A,/,A,10X,21X,A,F12.10)')
+         WRITE (LUPRI,'(2A,/,A,10X,21X,A,F17.10)')
      &         ' Coordinate displaced in this calculation:    ',
      &         NAMEX(IPTCOR(ICUR,1)),
      &         ' Displacement:', CHRSGN(2*MOD(IPOINT,2)-1), DISPLC
@@ -7324,25 +7321,25 @@ C     ***********End Rayleigh (G. Hangartner 24.12.1996)
 C
          CALL HEADER('Polarizability tensor (alpha) gradient',1)
          DO 400 F = 1, NFRVAL
-            WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+            WRITE (LUPRI,'(1X,A,F11.4)') ' frequency:', FRVAL(F)
             CALL OUTPUT(ROAAFD(1,1,F,1),1,9,1,ICUR,9*MXFR,NCART,1,LUPRI)
   400    CONTINUE
          IF (VROA) THEN
             CALL HEADER('Non-London G tensor gradient',1)
             DO 410 F = 1, NFRVAL
-               WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+               WRITE (LUPRI,'(1X,A,F11.4)') ' frequency:', FRVAL(F)
                CALL OUTPUT(ROAGND(1,1,F,1),1,9,1,ICUR,9*MXFR,NCART,1,
      &                     LUPRI)
   410       CONTINUE
             CALL HEADER('London G tensor gradient',1)
             DO 420 F = 1, NFRVAL
-               WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+               WRITE (LUPRI,'(1X,A,F11.4)') ' frequency:', FRVAL(F)
                CALL OUTPUT(ROAGLD(1,1,F,1),1,9,1,ICUR,9*MXFR,NCART,1,
      &                     LUPRI)
   420       CONTINUE
             CALL HEADER('A tensor gradient',1)
             DO 430 F = 1, NFRVAL
-                WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+                WRITE (LUPRI,'(1X,A,F11.4)') ' frequency:', FRVAL(F)
                 CALL OUTPUT(ROAAD(1,1,1,F,1),1,27,1,ICUR,27*MXFR,NCART,
      &                  1,LUPRI)
   430       CONTINUE
@@ -7684,7 +7681,7 @@ C
          CALL HEADER('OMO overlap matrix in WLKOR1',-1)
          CALL OUTPUT(S22OMO,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       END IF
-      WRITE (LUPRI,'(/A,E12.6,/A,2I4)')
+      WRITE (LUPRI,'(/A,1P,E12.5,/A,2I4)')
      &   ' Largest deviation from orthonormality of OMOs:',DIFMAX,
      &   ' - found for element ',IDIFMX,JDIFMX
 
@@ -7722,7 +7719,7 @@ C
             CALL HEADER('Antisymmetric part of WT in WLKOR1',-1)
             CALL OUTPUT(S22OMO,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          END IF
-         WRITE (LUPRI,'(/A,E12.6,/A,2I4)')
+         WRITE (LUPRI,'(/A,1P,E12.5,/A,2I4)')
      &      ' Largest deviation from Hermiticity of UMO/OMO overlaps:',
      &        DIFMAX,
      &      ' - found for element ',IDIFMX,JDIFMX

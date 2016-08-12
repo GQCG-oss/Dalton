@@ -1,3 +1,4 @@
+#define HER2SUP_DEBUG -1
 !
 !...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -24,23 +25,17 @@
 C
 #ifdef REV_LOG
 c===========================================================================
+c160207-hjaaj: removed unused, obsolete IND(600),BUF(600) from common
 c031021-hjaaj: removed OLDSUP
-c950605-vebjornb:
-c      Added test to check if LUSUPM already open to avoid error message.
 c940818-hjaaj:
-c- new label: IRIX for Silicon Graphics
 c- Removed check for duplicate integrals (reactivate with *DEFINE DUPLCHCK)
 c- move symmetry check in SUPSRT in front of canonical index ordering
 c- passed NOSYM to SUPSRT, skip symmetry check if NOSYM
-c- changed def. of ZERO,ONE,ON2,...,TH8 from DATA to PARAMETER
 c- SUPSRT: use that hermit already has put the 4 indices in canonical
-c  order (when SUPSRT's def. of np,nq,nr,ns was reversed).
+c  order (when SUPSRTs def. of np,nq,nr,ns was reversed).
 c- SUP1,SUP,SUP1D,SUPD: reverse order of np,nq,nr,ns in label
-c- removed N8,N16,N24 from /CSPINT/ (not used)
-c- maximize NST1 for LWORK
 cnov 90-hjaaj:
 cSUPDRV: LINT = 1706 instead of 540
-cSUPNWR: fixed errors for NOSYM false
 c900319-hjaaj: corrected error in NPLAST for SUP1D and SUPD
 c- rewritten SUPNWR to write up to NP=NST-1 as type 1 if advantageous,
 c  used new routine NDXGTA to determine this.
@@ -50,8 +45,8 @@ cwhen OLDSUP and .NOT.OLDSUP, resp.
 c- use new variable NBAS1 = true NBAS(1) for NST in SUPSRT
 c900111-hjaaj: added NPLAST to CSPINT
 c- Format of LUSUPM if .not.oldsup:
-crec 1 : '*******','date    ','time    ','PSUPMAT '
-crec 2 : nosym,nsym,nbas(1:8)
+crec 1 : '*******','date    ','time    ','PXSUPMAT'
+crec 2 : xfac,nosym,nsym,nbas(1:8)
 cfor i = 3 until finished
 crec ia: ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS
 crec ib: if (ityp.eq.1) P(ibef+1:ibef+npqrs)
@@ -66,7 +61,7 @@ c   allocate IT(NP+1) for INDP when not OLDSUP
 c===========================================================================
 #endif
 C  /* Deck frmsup */
-      SUBROUTINE FORMSUP(WORK,LWORK,NOSYM,THRESH,IPRINT)
+      SUBROUTINE FORMSUP(WORK,LWORK,NOSYM,HFXFAC,THRESH,IPRINT)
 C
 C --- PROGRAM FORMSUP (form super matrices for Fock matrices)
 C
@@ -77,8 +72,6 @@ C        5-Jul-1984 hjaaj (changed all var. to max 6 char.)
 C       23-Sep-1986 tuh   adaption to HERMIT
 C       12-Jun-1987 hjaaj increased NBMAX from 150 to 255 and
 C                         made appropriate changes in commons etc.
-C       13-Jun-1987 hjaaj changed packing to accept NBMAX .gt. 127
-C        (VAX gives integer overflow on e.g. LABEL = NS*2**24, when NS .gt. 127)
 C        9-Jan-1990 tuh+hjaaj: NOSYM parameter;
 C          Dec 1991 - work space in call, tuh
 C
@@ -90,11 +83,17 @@ C
 C
       CALL QENTER('FORMSUP')
 C
+#if HER2SUP_DEBUG > 0
+      iprint = max(iprint,HER2SUP_DEBUG) ! DEBUG
+      write (lupri,*) 'HER2SUP DEBUG, print level set to',IPRINT
+#endif
+
       IF (IPRINT .GT. 1) THEN
          CALL TITLER('Output from FORMSUP','*',125)
-         WRITE (LUPRI,'(A/A,1P,D10.2/A,L10)')
+         WRITE (LUPRI,'(A,2(/A,1P,D10.2)/A,L10)')
      &   '    Precalculated two-electron integrals'
      &   //' are transformed to P-supermatrix elements.',
+     &   '    Factor on exchange                            :',HFXFAC,
      &   '    Threshold for discarding integrals            :',THRESH,
      &   '    Include integrals for general density matrices:',NOSYM
       ELSE
@@ -115,40 +114,41 @@ C Allocate memory for IBIT vector in IWORK
       KWRK2 = KWRK1 + LWRK1
       LIWRK2 = IRAT*LWRK2
       CALL SUPDRV(NOSYM,WORK(KWRK1),LWRK1,WORK(KWRK2),LIWRK2,
-     &            THRESH,IPRINT)
+     &            HFXFAC,THRESH,IPRINT)
       CALL QEXIT('FORMSUP')
       RETURN
       END
 C  /* Deck supdrv */
-      SUBROUTINE SUPDRV(NOSYM,WORK,LWORK,IWORK,LIWORK,THRESH,
-     &                  IPRINT)
+      SUBROUTINE SUPDRV(NOSYM,WORK,LWORK,IWORK,LIWORK,
+     &                  HFXFAC,THRESH,IPRINT)
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "iratdef.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION WORK(LWORK), IWORK(LIWORK)
-      LOGICAL   NOSYM, OPTST
+      LOGICAL   NOSYM
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,IND(600),NUT,
+     A      NBAS1,NPLAST,NST,NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
-      COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
+      COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
 
 !     statement function
       IT( I ) = (I*(I-1))/2
 
+      CALL GETTIM(DST1,WST1)
 C
 C*** DEFAULTS
 C
       NWORK = LIWORK
-      DST1  = SECOND()
       NBMAX = 255
       NUT   = 0
-      THRQ = THRESH
-      KSUP = 0
+      XFAC  = HFXFAC
+      THRQ  = THRESH
+      KSUP  = 0
 C
       LINT   = 1706
       LDA2   = (IRAT+1)*LINT
@@ -156,6 +156,7 @@ C
       LDA21  = LDA2+1
       LDA22  = LDA21+1
       LRDA22 = (LDA22-1)/IRAT + 1
+
       CALL SUPRDI(NOSYM)
 C
       NUT  = 0
@@ -194,21 +195,25 @@ C allocate space for buffer with 600 real + 602 integer elements
       LW1   = 1
       LW2   = LW1+LENBUF
       LSORT = LWORK-LENBUF
-      DST   = SECOND()
+      CALL GETTIM(DST,WST)
       CALL SUP_SORT(NOSYM,WORK(LW1),WORK(LW1),WORK(LW2),WORK(LW2),LSORT,
      &            IWORK(1),IPRINT)
-      DFIN  = SECOND()
+      CALL GETTIM(DFIN,WFIN)
       DTOT  = DFIN-DST
-      IF (IPRINT .GT. 1) WRITE(LUPRI,340) DTOT
- 340  FORMAT(/,'    TIME IN SUP_SORT :',F9.2,' SEC.')
+      WTOT  = WFIN-WST
+      IF (IPRINT .GT. 1) WRITE(LUPRI,340) DTOT,WTOT
+ 340  FORMAT(/'    TIME IN SUP_SORT :',2(F9.2,' SEC.')/)
 C
 C*** START TRANSFERRING INTEGRALS TO SUPERMATRIX FORM.
 C*** BEGIN WITH FIRST BLOCK CONTAINING ALL INDICES BETWEEN
-C*** 1 AND NST-1. ALL INDICES IN FIRST IRREP.
+C*** 1 AND NST-1. ALL INDICES IN FIRST IRREP (i.e. irrep(NP) = 1).
 C
 C
 C*** FIRST FIND NUMBER OF P-SUPER MATRIX ELEMENTS
 C
+      CALL GETTIM(DST,WST)
+      DTOTD = D0
+      WTOTD = D0
       IBEF   = 0
       NPLAST = 0
       NST1   = NST-1
@@ -220,23 +225,18 @@ C
       NPM    = LRDA22 + NPMAX + IJ
       LSUP   = LWORK-LRDA22-IJ
       ICHAIN = 1
-      DST    = SECOND()
       IF (NPM.LE.LWORK) THEN
          LW3 = LW2+NPMAX
          CALL SUP1(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
      &             WORK(LW3),IBEF,IWORK(1))
-         DFIN = SECOND()
-         DTOT = DFIN-DST
-         IF (IPRINT .GT. 1) WRITE(LUPRI,350) DTOT
- 350     FORMAT(/,'    TIME IN SUP1  :',F9.2,' SEC.')
       ELSE
+         CALL GETTIM(DST1D,WST1D)
          LW3 = LW2+LSUP
          CALL SUP1D(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
      &             WORK(LW3),IBEF,IWORK(1))
-         DFIN = SECOND()
-         DTOT = DFIN-DST
-         IF (IPRINT .GT. 1) WRITE(LUPRI,351) DTOT
- 351     FORMAT(/,'    TIME IN SUP1D :',F9.2,' SEC.')
+         CALL GETTIM(DFIN1D,WFIN1D)
+         DTOTD = DTOTD + DFIN1D - DST1D
+         WTOTD = WTOTD + WFIN1D - WST1D
       END IF
       IBEF = IBEF+NPMAX
 C
@@ -245,8 +245,6 @@ C
       NPLAST = NST1
       IFIRST = NBAS(1)-NPLAST
       IF (IFIRST.EQ.0) GO TO 100
-      DST = DFIN
-      DTOTD = D0
       DO 60 I = 1,IFIRST
          ICHAIN = ICHAIN+1
          NPMX   = NPMAX
@@ -262,28 +260,36 @@ C
             CALL SUP1(ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
      &                WORK(LW3),IBEF,IWORK(1))
          ELSE
-            DTOTD = DTOTD - SECOND()
+            CALL GETTIM(DST1D,WST1D)
             LW3 = LW2+LSUP
             CALL SUP1D(ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
      &                WORK(LW3),IBEF,IWORK(1))
-            DTOTD = DTOTD + SECOND()
+            CALL GETTIM(DFIN1D,WFIN1D)
+            DTOTD = DTOTD + DFIN1D - DST1D
+            WTOTD = WTOTD + WFIN1D - WST1D
          END IF
          IBEF=IBEF+NPMM
          NPLAST = NP
   60  CONTINUE
-      DFIN = SECOND()
-      DTOT = DFIN-DST - DTOTD
+      CALL GETTIM(DFIN,WFIN)
+      DTOT = DFIN - DST - DTOTD
+      WTOT = WFIN - WST - WTOTD
       IF (IPRINT .GT. 1) THEN
-         WRITE(LUPRI,350) DTOT
-         IF (DTOTD .NE. D0) WRITE(LUPRI,351) DTOTD
+         WRITE(LUPRI,350) DTOT,WTOT
+         IF (DTOTD .NE. D0) WRITE(LUPRI,351) DTOTD,WTOTD
       END IF
+ 350  FORMAT('    TIME IN SUP1     :',2(F9.2,' SEC.'))
+ 351  FORMAT('    TIME IN SUP1D    :',2(F9.2,' SEC.'))
 C
 C*** NOW TRANSFER REST OF THE INTEGRALS
+C    (irrep(NP) > 1)
 C
  100  CONTINUE
       IF(NSYM.EQ.1) GO TO 250
       DST = DFIN
+      WST = WFIN
       DTOTD = D0
+      WTOTD = D0
       NSTA = IBAS(2)+1
       DO 200 NP = NSTA,NBAST
          ICHAIN = ICHAIN+1
@@ -312,33 +318,37 @@ C
             CALL SUP(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
      &               WORK(LW3),IWORK(1),IBEF,NP,IPRINT)
          ELSE
-            DTOTD = DTOTD - SECOND()
+            CALL GETTIM(DST1D,WST1D)
             LW3 = LW2+LSUP
             CALL SUPD(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
      &                WORK(LW3),IWORK(1),IBEF,NP)
-            DTOTD = DTOTD + SECOND()
+            CALL GETTIM(DFIN1D,WFIN1D)
+            DTOTD = DTOTD + DFIN1D - DST1D
+            WTOTD = WTOTD + WFIN1D - WST1D
          END IF
          IBEF = IBEF+NPMAX
          NPLAST = NP
  200  CONTINUE
-      DFIN = SECOND()
+      CALL GETTIM(DFIN,WFIN)
       DTOT = DFIN-DST - DTOTD
+      WTOT = WFIN-WST - WTOTD
       IF (IPRINT .GT. 1) THEN
-         WRITE(LUPRI,370) DTOT
-         IF (DTOTD .NE. D0) WRITE(LUPRI,371) DTOTD
+         WRITE(LUPRI,370) DTOT,WTOT
+         IF (DTOTD .NE. D0) WRITE(LUPRI,371) DTOTD,WTOTD
       END IF
- 370  FORMAT(/,'    TIME IN SUP   :',F9.2,' SEC.')
- 371  FORMAT(/,'    TIME IN SUPD  :',F9.2,' SEC.')
+ 370  FORMAT('    TIME IN SUP      :',2(F9.2,' SEC.'))
+ 371  FORMAT('    TIME IN SUPD     :',2(F9.2,' SEC.'))
  250  CONTINUE
 C
-C*** FINALLY BUF MUST BE EMPTIED IF IT STILL CONTAINS INFORMATION
+C*** FINALLY signal end of integrals
 C
       WRITE(LUSUPM) -2,0,0,0,0,0,0
       CALL GPCLOSE(LUDASP,' ')
-      DFIN1 = SECOND()
-      DTOT1 = DFIN1-DST1
-      IF (IPRINT .GT. 1) WRITE(LUPRI,380) DTOT1
- 380  FORMAT(/,'    TOTAL TIME    :',F9.2,' SEC.')
+      CALL GETTIM(DFIN,WFIN)
+      DTOT = DFIN-DST1 - DTOTD
+      WTOT = WFIN-WST1 - WTOTD
+      IF (IPRINT .GT. 1) WRITE(LUPRI,380) DTOT,WTOT
+ 380  FORMAT(/'    TOTAL TIME       :',2(F9.2,' SEC.'))
       END
 C  /* Deck suprdi */
       SUBROUTINE SUPRDI(NOSYM)
@@ -347,13 +357,14 @@ C  /* Deck suprdi */
       LOGICAL NOSYM
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,IND(600),NUT,
+     A      NBAS1,NPLAST,NST,NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
-      CHARACTER*8 LAB123(3), OLDLBL, NEWLBL
+      CHARACTER*8 LAB123(3), NEWLBL
       DATA LAB123 /'********','        ','        '/
-      DATA OLDLBL, NEWLBL /'TWOELSUP','PSUPMAT '/
+      DATA NEWLBL /'PXSUPMAT'/
 C
       IF (LUONEL .LT. 0)
      &CALL GPOPEN(LUONEL,'AOONEINT','OLD',' ','UNFORMATTED',IDUMMY,
@@ -368,16 +379,12 @@ C
       CALL GETDAT(LAB123(2),LAB123(3))
       CALL REWSPL(LUSUPM)
       WRITE (LUSUPM) LAB123, NEWLBL
-      WRITE (LUSUPM) NOSYM, NSYM, NBAS
+      WRITE (LUSUPM) XFAC, NOSYM, NSYM, NBAS
 C
 C***  If (NOSYM) then reset symmetry index arrays
+C     (now done in SUP_SORT after consistency check with AOTWOINT)
 C
       NBAS1 = NBAS(1)
-      IF (NOSYM) THEN
-         CALL IZERO(NBAS,8)
-         NSYM = 1
-         NBAS(1) = NBAST
-      END IF
       RETURN
       END
 C  /* Deck supsrt */
@@ -387,10 +394,10 @@ C  /* Deck supsrt */
 #include "dummy.h"
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,IND(600),NUT,
+     A      NBAS1,NPLAST,NST,NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
-      COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
+      COMMON/CSPREA/XFAC,THRQ
       DIMENSION RINT(*),SCR(*),ISCR(*)
       INTEGER*4 INT4(*)
       LOGICAL NOSYM, OLDDX 
@@ -436,25 +443,23 @@ C
         CALL QUIT('Sorry, SUP_SORT only works for NIBUF=1 on AOTWOINT')
       END IF
 C
-C***  TEST NSYM
-C
-      IF (NSYM.LT.1 .OR. NSYM.GT.8) THEN
-         WRITE(LUPRI,1100) NSYM
- 1100    FORMAT(/' SUP_SORT: NO SORT -- WRONG NUMBER OF SYMMETRIES',I3/)
-         CALL QUIT('SUP_SORT ERROR: wrong number of symmetries')
-      END IF
       IF (IPRINT .GE. 3) THEN
          WRITE(LUPRI,1050)(I,I = 1,NSYM)
          WRITE(LUPRI,1051)(NBAS(I),I = 1,NSYM)
       END IF
  1050 FORMAT(/'  Symmetry                    ',8I10)
  1051 FORMAT( '  Basis functions per symmetry',8I10/)
+
+C***  If (NOSYM) then reset symmetry index arrays
+
+      IF (NOSYM) THEN
+         NBAS(1:8) = 0
+         NSYM = 1
+         NBAS(1) = NBAST
+      END IF
 C
-      NN = 0
-      DO 1000 I = 1,NSYM
- 1000    NN = NN + NBAS(I)
-      IF (NN .GT. NBMAX) THEN
-         WRITE(LUPRI,1002) NN,NBMAX
+      IF (NBAST .GT. NBMAX) THEN
+         WRITE(LUPRI,1002) NBAST,NBMAX
  1002    FORMAT(/,' NUMBER OF BASIS FUNCTIONS IS ',I5,' WHICH EXCEEDS',
      &          /,' THE LIMITATION OF ',I5)
          CALL QUIT('SUP_SORT ERROR: max. # basis funcions exceeded')
@@ -674,10 +679,10 @@ C  /* Deck sup1 */
 C***  TRANSFORMATION OF FIRST SYMMETRY
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,IND(600),NUT,
+     A      NBAS1,NPLAST,NST,NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
-      COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
+      COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
       DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*)
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
@@ -692,11 +697,24 @@ C
       JO(L) = IAND(ISHFT(IBIT((L+31)/32),-((L+31)/32*32-L)),1)
 #endif
 C
+#if HER2SUP_DEBUG > 1
+      write (lupri,*) 'SUP1: XFAC =',XFAC
+#endif
 C
 C***  PREPARE TEMPORARY STORAGE OF P-SUPERMATRIX
 C
-      DO 10 I = 1,NPMAX
-  10     P(I) = ZERO
+      P(1:NPMAX) = 0.0D0
+      CFAC  = 1.0D0 ! Coulomb factor; XFAC is exchange factor
+      FPQQS = CFAC - XFAC*0.25D0
+      FPQQQ = CFAC - XFAC*0.5D0
+      FPQRQ = CFAC - XFAC*0.25D0
+      FPQPS = CFAC - XFAC*0.25D0
+      FPQPQ = CFAC*0.5D0 - XFAC*0.125
+      FPPPS = CFAC - XFAC*0.50D0
+      FPPPP = CFAC*0.5D0 - XFAC*0.25D0
+      XON2 = XFAC*ON2
+      XON4 = XFAC*ON4
+      XON8 = XFAC*ON8
 #if defined (VAR_DUPLCHCK)
 C
 C***  PREPARE BIT VECTOR FOR CHECK OF UNIQUE INTEGRALS
@@ -745,27 +763,27 @@ C
 C
 C***  PQ,QS
 C
-      P   (IJKL) = P(IJKL) + TH4*BBUF(I)
+      P   (IJKL) = P(IJKL) + FPQQS*BBUF(I)
 C
 C***  CONTRIBUTION TO PS,QQ
 C
       IJ = IT(NP)+NS
       KL = IT(NQ)+NQ
       IJKL = IT(IJ)+KL-IBEF
-      P   (IJKL) = P(IJKL)-ON2*BBUF(I)
+      P   (IJKL) = P(IJKL) - XON2*BBUF(I)
       GO TO 400
 C
 C***  PQ,QQ
 C
   60  CONTINUE
-      P   (IJKL) = ON2*BBUF(I)
+      P   (IJKL) = FPQQQ*BBUF(I)
       GO TO 400
 C
   80  IF(NS.NE.NR) GO TO 100
 C
 C***  PQ,RR
 C
-      P(IJKL)    = P(IJKL)+BBUF(I)
+      P(IJKL)    = P(IJKL)+CFAC*BBUF(I)
       IJ = IT(NP)+NR
       IF(NR.GT.NQ) GO TO 85
 C
@@ -773,7 +791,7 @@ C***  CONTRIBUTION TO PR,QR
 C
       KL = IT(NQ)+NR
       IJKL = IT(IJ)+KL-IBEF
-      P   (IJKL) = P(IJKL)-ON4*BBUF(I)
+      P   (IJKL) = P(IJKL)-XON4*BBUF(I)
       GO TO 400
   85  CONTINUE
 C
@@ -781,13 +799,13 @@ C***  CONTRIBUTION TO PR,RQ
 C
       KL = IT(NR)+NQ
       IJKL = IT(IJ)+KL-IBEF
-      P   (IJKL) = P(IJKL)-ON4*BBUF(I)
+      P   (IJKL) = P(IJKL)-XON4*BBUF(I)
       GO TO 400
  100  IF(NS.EQ.NQ) GO TO 120
 C
 C***  PQ,RS
 C
-      P   (IJKL) = P(IJKL)+BBUF(I)
+      P   (IJKL) = P(IJKL)+CFAC*BBUF(I)
       IJ = IT(NP)+NR
       IF (NQ.GT.NS) GO TO 105
 C
@@ -795,14 +813,14 @@ C***  CONTRIBUTION TO PR,SQ
 C
       KL = IT(NS)+NQ
       IJKL = IT(IJ)+KL-IBEF
-      P   (IJKL) = P(IJKL)-ON4*BBUF(I)
+      P   (IJKL) = P(IJKL)-XON4*BBUF(I)
       GO TO 110
 C
 C***  CONTRIBUTION TO PR,QS
 C
  105  KL = IT(NQ)+NS
       IJKL = IT(IJ)+KL-IBEF
-      P   (IJKL) = P(IJKL)-ON4*BBUF(I)
+      P   (IJKL) = P(IJKL)-XON4*BBUF(I)
  110  IJ = IT(NP)+NS
       IF(NQ.GT.NR) GO TO 115
 C
@@ -810,54 +828,54 @@ C***  CONTRIBUTION TO PS,RQ
 C
       KL = IT(NR)+NQ
       IJKL = IT(IJ)+KL-IBEF
-      P   (IJKL) = P(IJKL)-ON4*BBUF(I)
+      P   (IJKL) = P(IJKL)-XON4*BBUF(I)
       GO TO 400
 C
 C***  CONTRIBUTION TO PS,QR
 C
  115  KL = IT(NQ)+NR
       IJKL = IT(IJ)+KL-IBEF
-      P   (IJKL) = P(IJKL)-ON4*BBUF(I)
+      P   (IJKL) = P(IJKL)-XON4*BBUF(I)
       GO TO 400
 C
 C***  PQ,RQ
 C
  120  CONTINUE
-      P   (IJKL) = P(IJKL)+TH4*BBUF(I)
+      P   (IJKL) = P(IJKL)+FPQRQ*BBUF(I)
 C
 C***  CONTRIBUTION TO PR,QQ
 C
       IJ = IT(NP)+NR
       KL = IT(NQ)+NQ
       IJKL = IT(IJ)+KL-IBEF
-      P   (IJKL) = P(IJKL)-ON2*BBUF(I)
+      P   (IJKL) = P(IJKL)-XON2*BBUF(I)
       GO TO 400
 C
  140  IF(NS.EQ.NQ) GO TO 160
 C
 C***  PQ,PS
 C
-      P   (IJKL) = P(IJKL)+TH4*BBUF(I)
+      P   (IJKL) = P(IJKL)+FPQPS*BBUF(I)
       IJ = IT(NP)+NP
 C
 C***  CONTRIBUTION TO PP,QS   CANONICAL ORDERING ASSUMED
 C
       KL = IT(NQ)+NS
       IJKL = IT(IJ)+KL-IBEF
-      P   (IJKL) = P(IJKL)-ON2*BBUF(I)
+      P   (IJKL) = P(IJKL)-XON2*BBUF(I)
       GO TO 400
 C
 C***  PQ,PQ
 C
  160  CONTINUE
-      P   (IJKL) = P(IJKL)+TH8*BBUF(I)
+      P   (IJKL) = P(IJKL)+FPQPQ*BBUF(I)
 C
 C***  CONTRIBUTION TO PP,QQ
 C
       IJ = IT(NP)+NP
       KL = IT(NQ)+NQ
       IJKL = IT(IJ)+KL-IBEF
-      P   (IJKL) = P(IJKL)-ON2*BBUF(I)
+      P   (IJKL) = P(IJKL)-XON2*BBUF(I)
       GO TO 400
 C
  180  IF(NR.EQ.NQ) GO TO 220
@@ -865,40 +883,40 @@ C
 C
 C***  PP,RS
 C
-      P   (IJKL) = P(IJKL)+BBUF(I)
+      P   (IJKL) = P(IJKL)+CFAC*BBUF(I)
 C
 C***  CONTRIBUTION TO PR,PS
 C
       IJ = IT(NP)+NR
       KL = IT(NP)+NS
       IJKL = IT(IJ)+KL-IBEF
-      P   (IJKL) = P(IJKL)-ON4*BBUF(I)
+      P   (IJKL) = P(IJKL)-XON4*BBUF(I)
       GO TO 400
 C
 C***  PP,RR
 C
  200  CONTINUE
-      P   (IJKL) = P(IJKL)+BBUF(I)
+      P   (IJKL) = P(IJKL)+CFAC*BBUF(I)
 C
 C***  CONTRIBUTION TO PR,PR
 C
       IJ = IT(NP)+NR
       KL = IJ
       IJKL = IT(IJ)+KL-IBEF
-      P   (IJKL) = P(IJKL)-ON8*BBUF(I)
+      P   (IJKL) = P(IJKL)-XON8*BBUF(I)
       GO TO 400
 C
  220  IF(NS.EQ.NR) GO TO 240
 C
 C***  PP,PS
 C
-      P   (IJKL) = ON2*BBUF(I)
+      P   (IJKL) = FPPPS*BBUF(I)
       GO TO 400
 C
 C***  PP,PP
 C
  240  CONTINUE
-      P   (IJKL) = ON4*BBUF(I)
+      P   (IJKL) = FPPPP*BBUF(I)
  400  CONTINUE
  500  IF(IADR.NE.-1) GO TO 50
 C
@@ -928,10 +946,10 @@ C  /* Deck sup */
 C
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,IND(600),NUT,
+     A      NBAS1,NPLAST,NST,NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
-      COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
+      COMMON/CSPREA/XFAC,THRQ
 C
 
 !     statement function
@@ -944,8 +962,18 @@ C
 C
 C***  PREPARE TEMPORARY STORAGE OF P-SUPERMATRIX
 C
-      DO 10 I = 1,NPMAX
-  10     P(I) = ZERO
+      P(1:NPMAX) = 0.0D0
+      CFAC  = 1.0D0 ! Coulomb factor; XFAC is exchange factor
+      FPQQS = CFAC - XFAC*0.25D0
+      FPQQQ = CFAC - XFAC*0.5D0
+      FPQRQ = CFAC - XFAC*0.25D0
+      FPQPS = CFAC - XFAC*0.25D0
+      FPQPQ = CFAC*0.5D0 - XFAC*0.125
+      FPPPS = CFAC - XFAC*0.50D0
+      FPPPP = CFAC*0.5D0 - XFAC*0.25D0
+      XON2 = XFAC*ON2
+      XON4 = XFAC*ON4
+      XON8 = XFAC*ON8
 #if defined (VAR_DUPLCHCK)
 C
 C***  PREPARE BITVECTOR
@@ -1027,27 +1055,27 @@ C
 C
 C***  PQ,QS
 C
-      P   (ID) = P(ID)+TH4*BBUF(I)
+      P   (ID) = P(ID)+FPQQS*BBUF(I)
 C
 C***  CONTRIBUTION TO PS,QQ
 C
       IJ = MPP+NSR
       KL = IT(NQR)+NQR+IIBAS(ISP)
       ID = IT(IJ)+KL-IBEF
-      P(ID)    = P(ID)-ON2*BBUF(I)
+      P(ID)    = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
 C***  PQ,QQ
 C
   60  CONTINUE
-      P(ID)    = ON2*BBUF(I)
+      P(ID)    = FPQQQ*BBUF(I)
       GO TO 400
 C
   80  IF(NS.NE.NR) GO TO 100
 C
 C***  PQ,RR
 C
-      P(ID)    = P(ID)+BBUF(I)
+      P(ID)    = P(ID)+CFAC*BBUF(I)
       IJ       = MPP+NRR
       IF(NR.GT.NQ) GO TO 85
 C
@@ -1055,7 +1083,7 @@ C***  CONTRIBUTION TO PR,QR
 C
       KL = IT(NQR)+NRR+IIBAS(ISP)
       ID = IT(IJ)+KL-IBEF
-      P(ID)    = P(ID)-ON4*BBUF(I)
+      P(ID)    = P(ID)-XON4*BBUF(I)
       GO TO 400
   85  CONTINUE
 C
@@ -1063,13 +1091,13 @@ C***  CONTRIBUTION TO PR,RQ
 C
       KL = IT(NRR)+NQR+IIBAS(ISP)
       ID = IT(IJ)+KL-IBEF
-      P(ID)    = P(ID)-ON4*BBUF(I)
+      P(ID)    = P(ID)-XON4*BBUF(I)
       GO TO 400
  100  IF(NS.EQ.NQ) GO TO 120
 C
 C***  PQ,RS
 C
-      P(ID)    = P(ID)+BBUF(I)
+      P(ID)    = P(ID)+CFAC*BBUF(I)
       IJ = MPP+NRR
       IF(NQ.GT.NS) GO TO 105
 C
@@ -1077,14 +1105,14 @@ C***  CONTRIBUTION TO PR,SQ
 C
       KL = IT(NSR)+NQR+IIBAS(ISP)
       ID = IT(IJ)+KL-IBEF
-      P(ID)    = P(ID)-ON4*BBUF(I)
+      P(ID)    = P(ID)-XON4*BBUF(I)
       GO TO 110
 C
 C***  CONTRIBUTION TO PR,QS
 C
  105  KL = IT(NQR)+NSR+IIBAS(ISP)
       ID = IT(IJ)+KL-IBEF
-      P(ID)    = P(ID)-ON4*BBUF(I)
+      P(ID)    = P(ID)-XON4*BBUF(I)
  110  CONTINUE
       IJ = MPP+NSR
       IF(NQ.GT.NR) GO TO 115
@@ -1093,7 +1121,7 @@ C***  CONTRIBUTION TO PS,RQ
 C
       KL = IT(NRR)+NQR+IIBAS(ISP)
       ID = IT(IJ)+KL-IBEF
-      P(ID)    = P(ID)-ON4*BBUF(I)
+      P(ID)    = P(ID)-XON4*BBUF(I)
       GO TO 400
 C
 C***  CONTRIBUTION TO PS,QR
@@ -1101,47 +1129,47 @@ C
  115  CONTINUE
       KL = IT(NQR)+NRR+IIBAS(ISP)
       ID = IT(IJ)+KL-IBEF
-      P(ID)    = P(ID)-ON4*BBUF(I)
+      P(ID)    = P(ID)-XON4*BBUF(I)
       GO TO 400
 C
 C***  PQ,RQ
 C
  120  CONTINUE
-      P(ID)    = P(ID)+TH4*BBUF(I)
+      P(ID)    = P(ID)+FPQRQ*BBUF(I)
 C
 C***  CONTRIBUTION TO PR,QQ
 C
       IJ = MPP+NRR
       KL = IT(NQR)+NQR+IIBAS(ISP)
       ID = IT(IJ)+KL-IBEF
-      P(ID)    = P(ID)-ON2*BBUF(I)
+      P(ID)    = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
  140  IF(NS.EQ.NQ) GO TO 160
 C
 C***  PQ,PS
 C
-      P(ID)    = P(ID)+TH4*BBUF(I)
+      P(ID)    = P(ID)+FPQPS*BBUF(I)
       IJ = MPP+NPR
 C
 C***  CONTRIBUTION TO PP,QS  CANONICAL ORDERING ASSUMED
 C
       KL = IT(NQR)+NSR+IIBAS(ISP)
       ID = IT(IJ)+KL-IBEF
-      P(ID)    = P(ID)-ON2*BBUF(I)
+      P(ID)    = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
 C***  PQ,PQ
 C
  160  CONTINUE
-      P(ID)    = P(ID)+TH8*BBUF(I)
+      P(ID)    = P(ID)+FPQPQ*BBUF(I)
 C
 C***  CONTRIBUTION TO PP,QQ
 C
       IJ = MPP+NPR
       KL = IT(NQR)+NQR+IIBAS(ISP)
       ID = IT(IJ)+KL-IBEF
-      P(ID)    = P(ID)-ON2*BBUF(I)
+      P(ID)    = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
  180  IF(NR.EQ.NQ) GO TO 220
@@ -1149,40 +1177,40 @@ C
 C
 C***  PP,RS
 C
-      P(ID)    = P(ID)+BBUF(I)
+      P(ID)    = P(ID)+CFAC*BBUF(I)
 C
 C***  CONTRIBUTION TO PR,PS
 C
       IJ = MPP+NRR
       KL = IT(NPR)+NSR+IIBAS(ISP)
       ID = IT(IJ)+KL-IBEF
-      P(ID)    = P(ID)-ON4*BBUF(I)
+      P(ID)    = P(ID)-XON4*BBUF(I)
       GO TO 400
 C
 C***  PP,RR
 C
  200  CONTINUE
-      P(ID)    = P(ID)+BBUF(I)
+      P(ID)    = P(ID)+CFAC*BBUF(I)
 C
 C***  CONTRIBUTION TO PR,PR
 C
       IJ = MPP+NRR
       KL = IJ
       ID = IT(IJ)+KL-IBEF
-      P(ID)    = P(ID)-ON8*BBUF(I)
+      P(ID)    = P(ID)-XON8*BBUF(I)
       GO TO 400
 C
  220  IF(NS.EQ.NR) GO TO 240
 C
 C***  PP,PS
 C
-      P(ID)    = ON2*BBUF(I)
+      P(ID)    = FPPPS*BBUF(I)
       GO TO 400
 C
 C***  PP,PP
 C
  240  CONTINUE
-      P(ID)    = ON4*BBUF(I)
+      P(ID)    = FPPPP*BBUF(I)
       GO TO 400
 C
 C***  ISP = ISR, ISP>ISQ, ISQ = ISS
@@ -1198,9 +1226,9 @@ C
       ID  = IT(IJ)+KL-IBEF
       IF(NQ.EQ.NS) GO TO 264
       IF(NP.EQ.NR) GO TO 264
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 400
- 264  P(ID) = P(ID)-ON2*BBUF(I)
+ 264  P(ID) = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
 C***  ISP = ISQ, ISP>ISR, ISR = ISS
@@ -1208,7 +1236,7 @@ C
  350  IJ = MPP+NQR
       KL = IT(NRR)+NSR+IIBAS(ISR)
       ID = IT(IJ)+KL-IBEF
-      P(ID)    = P(ID)+BBUF(I)
+      P(ID)    = P(ID)+CFAC*BBUF(I)
  400  CONTINUE
 C
  410  IF(IADR.NE.-1) GO TO 50
@@ -1234,10 +1262,10 @@ C  /* Deck sup1d */
 C***  TRANSFORMATION OF FIRST SYMMETRY
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,IND(600),NUT,
+     A      NBAS1,NPLAST,NST,NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
-      COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
+      COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
       DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*)
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
@@ -1265,8 +1293,18 @@ C
 C
 C***  PREPARE TEMPORARY STORAGE OF P-SUPERMATRIX
 C
-      DO 10 I = 1,NBB
-  10  P(I) = ZERO
+      P(1:NBB) = 0.0D0
+      CFAC  = 1.0D0 ! Coulomb factor; XFAC is exchange factor
+      FPQQS = CFAC - XFAC*0.25D0
+      FPQQQ = CFAC - XFAC*0.5D0
+      FPQRQ = CFAC - XFAC*0.25D0
+      FPQPS = CFAC - XFAC*0.25D0
+      FPQPQ = CFAC*0.5D0 - XFAC*0.125
+      FPPPS = CFAC - XFAC*0.50D0
+      FPPPP = CFAC*0.5D0 - XFAC*0.25D0
+      XON2 = XFAC*ON2
+      XON4 = XFAC*ON4
+      XON8 = XFAC*ON8
 #if defined (VAR_DUPLCHCK)
 C
 C***  PREPARE BIT VECTOR FOR CHECK OF UNIQUE INTEGRALS
@@ -1317,7 +1355,7 @@ C
 C***  PQ,QS
 C
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 55
-      P(ID) = P(ID)+TH4*BBUF(I)
+      P(ID) = P(ID)+FPQQS*BBUF(I)
 C
 C***  CONTRIBUTION TO PS,QQ
 C
@@ -1326,13 +1364,13 @@ C
       IJKL = IT(IJ)+KL-IBEF
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
-      P(ID) = P(ID)-ON2*BBUF(I)
+      P(ID) = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
 C***  PQ,QQ
 C
   60  IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
-      P(ID) = ON2*BBUF(I)
+      P(ID) = FPQQQ*BBUF(I)
       GO TO 400
 C
   80  IF(NS.NE.NR) GO TO 100
@@ -1340,7 +1378,7 @@ C
 C***  PQ,RR
 C
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 82
-      P(ID) = P(ID)+BBUF(I)
+      P(ID) = P(ID)+CFAC*BBUF(I)
   82  IJ = IT(NP)+NR
       IF(NR.GT.NQ) GO TO 85
 C
@@ -1350,7 +1388,7 @@ C
       IJKL = IT(IJ)+KL-IBEF
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 400
   85  CONTINUE
 C
@@ -1360,14 +1398,14 @@ C
       IJKL = IT(IJ)+KL-IBEF
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 400
  100  IF(NS.EQ.NQ) GO TO 120
 C
 C***  PQ,RS
 C
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 101
-      P(ID) = P(ID)+BBUF(I)
+      P(ID) = P(ID)+CFAC*BBUF(I)
  101  IJ = IT(NP)+NR
       IF(NQ.GT.NS) GO TO 105
 C
@@ -1377,7 +1415,7 @@ C
       IJKL = IT(IJ)+KL-IBEF
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 110
       ID = IJKL-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 110
 C
 C***  CONTRIBUTION TO PR,QS
@@ -1386,7 +1424,7 @@ C
       IJKL = IT(IJ)+KL-IBEF
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 110
       ID = IJKL-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
  110  IJ = IT(NP)+NS
       IF(NQ.GT.NR) GO TO 115
 C
@@ -1396,7 +1434,7 @@ C
       IJKL = IT(IJ)+KL-IBEF
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 400
 C
 C***  CONTRIBUTION TO PS,QR
@@ -1405,13 +1443,13 @@ C
       IJKL = IT(IJ)+KL-IBEF
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 400
 C
 C***  PQ,RQ
 C
  120  IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 125
-      P(ID) = P(ID)+TH4*BBUF(I)
+      P(ID) = P(ID)+FPQRQ*BBUF(I)
 C
 C***  CONTRIBUTION TO PR,QQ
 C
@@ -1420,7 +1458,7 @@ C
       IJKL = IT(IJ)+KL-IBEF
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
-      P(ID) = P(ID)-ON2*BBUF(I)
+      P(ID) = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
  140  IF(NS.EQ.NQ) GO TO 160
@@ -1428,7 +1466,7 @@ C
 C***  PQ,PS
 C
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 142
-      P(ID) = P(ID)+TH4*BBUF(I)
+      P(ID) = P(ID)+FPQPS*BBUF(I)
  142  IJ = IT(NP)+NP
 C
 C***  CONTRIBUTION TO PP,QS   CANONICAL ORDERING ASSUMED
@@ -1437,13 +1475,13 @@ C
       IJKL = IT(IJ)+KL-IBEF
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
-      P(ID) = P(ID)-ON2*BBUF(I)
+      P(ID) = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
 C***  PQ,PQ
 C
  160  IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 162
-      P(ID) = P(ID)+TH8*BBUF(I)
+      P(ID) = P(ID)+FPQPQ*BBUF(I)
 C
 C***  CONTRIBUTION TO PP,QQ
 C
@@ -1452,7 +1490,7 @@ C
       IJKL = IT(IJ)+KL-IBEF
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
-      P(ID) = P(ID)-ON2*BBUF(I)
+      P(ID) = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
  180  IF(NR.EQ.NQ) GO TO 220
@@ -1461,7 +1499,7 @@ C
 C***  PP,RS
 C
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 182
-      P(ID) = P(ID)+BBUF(I)
+      P(ID) = P(ID)+CFAC*BBUF(I)
 C
 C***  CONTRIBUTION TO PR,PS
 C
@@ -1470,13 +1508,13 @@ C
       IJKL = IT(IJ)+KL-IBEF
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 400
 C
 C***  PP,RR
 C
  200  IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 202
-      P(ID) = P(ID)+BBUF(I)
+      P(ID) = P(ID)+CFAC*BBUF(I)
 C
 C***  CONTRIBUTION TO PR,PR
 C
@@ -1485,7 +1523,7 @@ C
       IJKL = IT(IJ)+KL-IBEF
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
-      P(ID) = P(ID)-ON8*BBUF(I)
+      P(ID) = P(ID)-XON8*BBUF(I)
       GO TO 400
 C
  220  IF(NS.EQ.NR) GO TO 240
@@ -1493,13 +1531,13 @@ C
 C***  PP,PS
 C
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
-      P(ID) = ON2*BBUF(I)
+      P(ID) = FPPPS*BBUF(I)
       GO TO 400
 C
 C***  PP,PP
 C
  240  IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
-      P(ID) = ON4*BBUF(I)
+      P(ID) = FPPPP*BBUF(I)
  400  CONTINUE
  500  IF(IADR.NE.-1) GO TO 50
 C
@@ -1530,10 +1568,10 @@ C  /* Deck supd */
 #include "iratdef.h"
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,IND(600),NUT,
+     A      NBAS1,NPLAST,NST,NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
-      COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
+      COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
       DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*)
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
@@ -1561,8 +1599,18 @@ C
 C
 C***  PREPARE TEMPORARY STORAGE OF P-SUPERMATRIX
 C
-      DO 10 I = 1,NBB
-  10  P(I) = ZERO
+      P(1:NBB) = 0.0D0
+      CFAC  = 1.0D0 ! Coulomb factor; XFAC is exchange factor
+      FPQQS = CFAC - XFAC*0.25D0
+      FPQQQ = CFAC - XFAC*0.5D0
+      FPQRQ = CFAC - XFAC*0.25D0
+      FPQPS = CFAC - XFAC*0.25D0
+      FPQPQ = CFAC*0.5D0 - XFAC*0.125
+      FPPPS = CFAC - XFAC*0.50D0
+      FPPPP = CFAC*0.5D0 - XFAC*0.25D0
+      XON2 = XFAC*ON2
+      XON4 = XFAC*ON4
+      XON8 = XFAC*ON8
 #if defined (VAR_DUPLCHCK)
 C
 C***  PREPARE BITVECTOR
@@ -1634,7 +1682,7 @@ C***  PQ,QS
 C
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 55
       ID = ID-IRED
-      P(ID) = P(ID)+TH4*BBUF(I)
+      P(ID) = P(ID)+FPQQS*BBUF(I)
 C
 C***  CONTRIBUTION TO PS,QQ
 C
@@ -1643,14 +1691,14 @@ C
       ID = IT(IJ)+KL-IBEF
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = P(ID)-ON2*BBUF(I)
+      P(ID) = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
 C***  PQ,QQ
 C
   60  IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = ON2*BBUF(I)
+      P(ID) = FPQQQ*BBUF(I)
       GO TO 400
 C
   80  IF(NS.NE.NR) GO TO 100
@@ -1659,7 +1707,7 @@ C***  PQ,RR
 C
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 82
       ID = ID-IRED
-      P(ID) = P(ID)+BBUF(I)
+      P(ID) = P(ID)+CFAC*BBUF(I)
   82  IJ = MPP+NRR
       IF(NR.GT.NQ) GO TO 85
 C
@@ -1669,7 +1717,7 @@ C
       ID = IT(IJ)+KL-IBEF
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 400
   85  CONTINUE
 C
@@ -1679,7 +1727,7 @@ C
       ID = IT(IJ)+KL-IBEF
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 400
  100  IF(NS.EQ.NQ) GO TO 120
 C
@@ -1687,7 +1735,7 @@ C***  PQ,RS
 C
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 101
       ID = ID-IRED
-      P(ID) = P(ID)+BBUF(I)
+      P(ID) = P(ID)+CFAC*BBUF(I)
  101  IJ = MPP+NRR
       IF(NQ.GT.NS) GO TO 105
 C
@@ -1697,7 +1745,7 @@ C
       ID = IT(IJ)+KL-IBEF
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 110
       ID = ID-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 110
 C
 C***  CONTRIBUTION TO PR,QS
@@ -1706,7 +1754,7 @@ C
       ID = IT(IJ)+KL-IBEF
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 110
       ID = ID-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
  110  CONTINUE
       IJ = MPP+NSR
       IF(NQ.GT.NR) GO TO 115
@@ -1717,7 +1765,7 @@ C
       ID = IT(IJ)+KL-IBEF
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 400
 C
 C***  CONTRIBUTION TO PS,QR
@@ -1727,14 +1775,14 @@ C
       ID = IT(IJ)+KL-IBEF
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 400
 C
 C***  PQ,RQ
 C
  120  IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 122
       ID = ID-IRED
-      P(ID) = P(ID)+TH4*BBUF(I)
+      P(ID) = P(ID)+FPQRQ*BBUF(I)
 C
 C***  CONTRIBUTION TO PR,QQ
 C
@@ -1743,7 +1791,7 @@ C
       ID = IT(IJ)+KL-IBEF
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = P(ID)-ON2*BBUF(I)
+      P(ID) = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
  140  IF(NS.EQ.NQ) GO TO 160
@@ -1752,7 +1800,7 @@ C***  PQ,PS
 C
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 142
       ID = ID-IRED
-      P(ID) = P(ID)+TH4*BBUF(I)
+      P(ID) = P(ID)+FPQPS*BBUF(I)
  142  IJ = MPP+NPR
 C
 C***  CONTRIBUTION TO PP,QS  CANONICAL ORDERING ASSUMED
@@ -1761,14 +1809,14 @@ C
       ID = IT(IJ)+KL-IBEF
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = P(ID)-ON2*BBUF(I)
+      P(ID) = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
 C***  PQ,PQ
 C
  160  IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 162
       ID = ID-IRED
-      P(ID) = P(ID)+TH8*BBUF(I)
+      P(ID) = P(ID)+FPQPQ*BBUF(I)
 C
 C***  CONTRIBUTION TO PP,QQ
 C
@@ -1777,7 +1825,7 @@ C
       ID = IT(IJ)+KL-IBEF
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = P(ID)-ON2*BBUF(I)
+      P(ID) = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
  180  IF(NR.EQ.NQ) GO TO 220
@@ -1787,7 +1835,7 @@ C***  PP,RS
 C
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 182
       ID = ID-IRED
-      P(ID) = P(ID)+BBUF(I)
+      P(ID) = P(ID)+CFAC*BBUF(I)
 C
 C***  CONTRIBUTION TO PR,PS
 C
@@ -1796,14 +1844,14 @@ C
       ID = IT(IJ)+KL-IBEF
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 400
 C
 C***  PP,RR
 C
  200  IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 202
       ID = ID-IRED
-      P(ID) = P(ID)+BBUF(I)
+      P(ID) = P(ID)+CFAC*BBUF(I)
 C
 C***  CONTRIBUTION TO PR,PR
 C
@@ -1812,7 +1860,7 @@ C
       ID = IT(IJ)+KL-IBEF
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = P(ID)-ON8*BBUF(I)
+      P(ID) = P(ID)-XON8*BBUF(I)
       GO TO 400
 C
  220  IF(NS.EQ.NR) GO TO 240
@@ -1821,14 +1869,14 @@ C***  PP,PS
 C
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = ON2*BBUF(I)
+      P(ID) = FPPPS*BBUF(I)
       GO TO 400
 C
 C***  PP,PP
 C
  240  IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = ON4*BBUF(I)
+      P(ID) = FPPPP*BBUF(I)
       GO TO 400
 C
 C***  ISP = ISR, ISP>ISQ, ISQ = ISS
@@ -1846,9 +1894,9 @@ C
       ID = ID-IRED
       IF(NQ.EQ.NS) GO TO 264
       IF(NP.EQ.NR) GO TO 264
-      P(ID) = P(ID)-ON4*BBUF(I)
+      P(ID) = P(ID)-XON4*BBUF(I)
       GO TO 400
- 264  P(ID) = P(ID)-ON2*BBUF(I)
+ 264  P(ID) = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
 C***  ISP = ISQ, ISP>ISR, ISR = ISS
@@ -1858,7 +1906,7 @@ C
       ID = IT(IJ)+KL-IBEF
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
-      P(ID) = P(ID)+BBUF(I)
+      P(ID) = P(ID)+CFAC*BBUF(I)
  400  CONTINUE
 C
  410  IF(IADR.NE.-1) GO TO 50
@@ -1906,10 +1954,10 @@ C
 #include "inftap.h"
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,IND(600),NUT,
+     A      NBAS1,NPLAST,NST,NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
-      COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
+      COMMON/CSPREA/XFAC,THRQ
 
 !     statement function
       IT( I ) = (I*(I-1))/2
@@ -2007,6 +2055,10 @@ C  /* Deck wrsup1 */
       DIMENSION P(NPQRS)
       WRITE (LUSUPM) ITYP1,NPF,NQF,NPL,NQL,IOFF,NPQRS,NPQL
       WRITE (LUSUPM) P
+#if HER2SUP_DEBUG > 5
+      write(lupri,*) 'type 1; NPF,NQF,NPL,NQL,IOFF,NPQRS,NPQL',
+     &                        NPF,NQF,NPL,NQL,IOFF,NPQRS,NPQL
+#endif
       RETURN
       END
 C  /* Deck wrsup2 */
@@ -2019,6 +2071,10 @@ C
       DIMENSION P(NRSOUT), INDP(NRSOUT)
       WRITE (LUSUPM) ITYP2,NP,NQ,NP,NQ,IOFPQ,NRSOUT,NPQ
       WRITE (LUSUPM) P,INDP
+#if HER2SUP_DEBUG > 5
+      write(lupri,*) 'type 2; NP,NQ,NP,NQ,IOFPQ,NRSOUT,NPQ',
+     &                        NP,NQ,NP,NQ,IOFPQ,NRSOUT,NPQ
+#endif
       RETURN
       END
 !  -- end of abacus/her2sup.F --

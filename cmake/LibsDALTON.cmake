@@ -36,6 +36,17 @@ add_library(
     ${CMAKE_BINARY_DIR}/binary_info.F90
     )
 
+if(ENABLE_PCMSOLVER)
+  add_dependencies(dalton pcmsolver)
+  get_target_property(_incdirs dalton INCLUDE_DIRECTORIES)
+  set(_incdirs ${_incdirs} ${PROJECT_BINARY_DIR}/external/pcmsolver/src/pcmsolver-build/modules)
+  set_target_properties(dalton PROPERTIES INCLUDE_DIRECTORIES "${_incdirs}")
+  set(DALTON_LIBS
+    ${PCMSOLVER_LIBS}
+    ${DALTON_LIBS}
+    )
+endif()
+
 add_dependencies(dalton generate_binary_info)
 
 
@@ -96,18 +107,6 @@ if(ENABLE_OPENRSP)
 endif()
 
 include(LibsPElib)
-
-if(ENABLE_PCMSOLVER)
-    set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
-    if(MPI_FOUND)
-        set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
-    endif()
-    add_dependencies(dalton pcmsolver)
-    set(DALTON_LIBS
-        ${PCMSOLVER_LIBS}
-        ${DALTON_LIBS}
-        )
-endif()
 
 if(ENABLE_QMMM_CUDA)
     add_subdirectory(external/qmmm_cuda)

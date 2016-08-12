@@ -3309,7 +3309,7 @@ C
                   CALL CC3_RACC(OMEGA2P,WORK(KRMAT2),ISYMB,B,ISYRES)
                   IOPT = 2
                   FACTOR = ONE
-                  CALL CC3_RACC3(DUMMY2,OMEGA2M,WORK(KRMAT4),ISYMB,B,
+                  CALL CC3_RACC3(VDUMMY,OMEGA2M,WORK(KRMAT4),ISYMB,B,
      *                          ISYRES,FACTOR,IOPT)
 C
                   IF (IPRINT .GT. 55 .OR. LDEBUG) THEN
@@ -3339,7 +3339,7 @@ C
             CALL CC3_RACC(OMEGA2P,WORK(KRMAT1),ISYMD,D,ISYRES)
             IOPT = 2
             FACTOR = ONE
-            CALL CC3_RACC3(DUMMY2,OMEGA2M,WORK(KRMAT3),ISYMD,D,ISYRES,
+            CALL CC3_RACC3(VDUMMY,OMEGA2M,WORK(KRMAT3),ISYMD,D,ISYRES,
      *                     FACTOR,IOPT)
 C
             IF (IPRINT .GT. 55 .OR. LDEBUG) THEN

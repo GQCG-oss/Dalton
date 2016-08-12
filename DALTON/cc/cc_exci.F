@@ -111,6 +111,9 @@ C
 C
       CALL QENTER('CC_EXCI')
 C
+C
+      ECURR = ZERO
+C
       IF (CHOINT .AND. (.NOT. (CCS .OR. CC2))) THEN
          WRITE(LUPRI,*) 'Error : ',
      &        'Only CCS/CC2 singlet excitation energies have been ',
@@ -282,6 +285,11 @@ C
          MODEL = 'CC3'
          MOPRPC ='CC3       '
       ENDIF
+      IF (MLCC3  ) THEN
+         CALL AROUND( ' MLCC3 Excitation Energies ')
+         MODEL = 'CC3'
+         MOPRPC ='CC3       '
+      ENDIF
       IF (CC1B .AND. ( .NOT. CC1a) ) THEN
          CALL AROUND( ' CCSDT-1b Excitation Energies ')
          MODEL = 'CCSDT-1b'
@@ -312,7 +320,7 @@ C
          MODEL = 'CCSD'
          MOPRPC ='CCSD      '
       ENDIF
-      IF (CCSD) THEN
+      IF (CCSD .AND. .NOT. MLCC3) THEN
          CALL AROUND( ' CCSD Excitation Energies ')
          MODEL = 'CCSD'
          MOPRPC ='CCSD      '
@@ -526,7 +534,7 @@ C        Choose the first, for omesc and mxtomn this means the highest,
 C        and thus probably the hightest shift.
 C-----------------------------------------------------------------------
 C
-         IF (CCSDT) THEN
+         IF (CCSDT .OR. MLCC3) THEN
             ECURR = EOMINP(1,ISYMTR,IMULT)
          ENDIF
 C
@@ -596,7 +604,8 @@ C
                  KIPLAC = KWRK1
                  KWRK2  = KIPLAC + MAXRED
                  LWRK2  = LWORK  - KWRK2
-                 IF (LWRK2 .LT. 0) STOP 'Not enough space for DV4DIS'
+                 IF (LWRK2 .LT. 0)
+     &              CALL QUIT('Not enough space for DV4DIS')
 C
                  CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
      *                 FS12AM,LUFS12,FS2AM,LUFS2,LPROJECT,ISTATPRJ,
@@ -828,7 +837,8 @@ C----------------------------------------------------------
 C
 C
          IF (OMESC .AND. ((CCSDT.AND.(.NOT.CCSDT_DIIS)) 
-     &       .OR. (CHOINT .AND. CC2 .AND. (.NOT. CHEXDI)))) THEN
+     &       .OR. (CHOINT .AND. CC2 .AND. (.NOT. CHEXDI)))
+     &       .OR. MLCC3) THEN
 C
          CALL DZERO(WORK(KEXCIS),NCCEXCI(ISYMTR,IMULT))
          CALL DZERO(WORK(KT1PS),NCCEXCI(ISYMTR,IMULT))

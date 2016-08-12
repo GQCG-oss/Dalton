@@ -399,7 +399,7 @@ C
 C
 C     First retrieve orbitals :
 C
-      CALL READMO (WRK(KCMO),9,WRK(KWRK10),LWRK10)
+      CALL READMO (WRK(KCMO),9)
 C
 C *** Transform two-electron integrals
 C
@@ -1535,6 +1535,7 @@ C
 #include "dummy.h"
 C
 C Used from common blocks:
+C   exeinf.h : NEWCMO
 C   INFINP: ISTATE,LROOTS,FLAG(*),MAXCIT,THRGRD,ITRLVL,?
 C   INFVAR: NCONF (p.t. only NCONF)
 C   INFIND: ISX()
@@ -1547,6 +1548,7 @@ C
 #include "maxorb.h"
 #include "maxash.h"
 #include "priunit.h"
+#include "exeinf.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "infind.h"
@@ -1660,6 +1662,7 @@ C        Write NEWORB
 C
          WRITE (LUIT1) STAR8,LBLDAT(1),LBLINF(2),TABLE(6)
          CALL WRITT(LUIT1,NCMOT4,WRK(KCMO))
+         NEWCMO = .TRUE.
 C        single configuration has always natural orbitals
          IF (CNOLBL .EQ. 'ONLYNO') THEN
             TRCNO  = .FALSE.
@@ -1709,7 +1712,7 @@ C      A  single configuration will already have natural orbitals
          IF (MAXCIT .EQ. 0) THEN
             IF (CNOLBL .EQ. 'ONLYNO') THEN
                TRCNO  = .FALSE.
-            ELSE
+            ELSE IF (CNOLBL .NE. 'TRTOFC') THEN
                CNOLBL = 'ONLYFD'
             END IF
          END IF
@@ -1973,7 +1976,7 @@ C
  9000 CONTINUE
       REWIND LUIT1
       IF ( .NOT.FNDLAB(TABLE(6),LUIT1) ) THEN
-         CALL READMO(WRK,7,DUMMY,0)
+         CALL READMO(WRK,7)
          CALL NEWORB(LBLDAT(2),WRK,.FALSE.)
       END IF
       IF (TRCNO) THEN
@@ -1993,7 +1996,7 @@ C
          KW31   = KAOCC  + NASHT
          LW31   = LFREE  - KW31
          IF (LW31 .LE. 0) CALL ERRWRK('OPTST.SIRCNO',-KW31,LFREE)
-         CALL READMO(WRK(KCMO),9,DUMMY,0)
+         CALL READMO(WRK(KCMO),9)
          IF (HFCALC) THEN
             WRK(KCVECS) = D1
             ICREF  = 1
@@ -2050,6 +2053,7 @@ C        write the natural orbitals to LUIT1 label NEWORB
          LBLINF(2) = '(CNOORB)'
          WRITE (LUIT1) STAR8,LBLDAT(1),LBLINF(2),TABLE(6)
          CALL WRITT(LUIT1,NCMOT4,WRK(KCMO))
+         NEWCMO = .TRUE.
          IF (NASHT .EQ. 1 .OR.
      &      (CNOLBL .NE. 'ONLYFD' .AND. NASHT .GT. 1)) THEN
             IF (NASHT.EQ.1) WRK(KAOCC) = NACTEL
@@ -2560,6 +2564,10 @@ C    *) FCDIA, ISMO
 C    *) CMO
 C
       use pelib_interface, only: use_pelib, pelib_ifc_fock
+#if defined (HAS_PCMSOLVER)
+      use pcm_config, only: pcm_configuration, pcm_cfg
+      use pcm_scf
+#endif
 #include "implicit.h"
       DIMENSION CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),XINDX(*)
       DIMENSION ERLM(NLMSOL,2),GORB(*),CREF(*),FCAC(*),H2AC(*),WRK(*)
@@ -2613,6 +2621,9 @@ C
      *            'PCMINFO ','PCMJXMAT','QMMMTMAT','PEFMAT  '/
       DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
+#if defined (HAS_PCMSOLVER)
+      real(8), allocatable :: fock_pcm_mo(:)
+#endif
 C
       CALL QENTER('WR_SIRIFC')
       LGLOCAL = BOYORB.OR.PIPORB
@@ -2907,6 +2918,21 @@ Ckr
          WRITE (LUSIFC) (WRK(KPOT + I - 1), I = 1, NTS)
          IF (NEQRSP) CALL V2Q(WRK(KWRK2),WRK(KPOT),QSENEQ,QETNEQ,NEQRSP)
       END IF
+
+#if defined (HAS_PCMSOLVER)
+! Write PCM contribution to Fock matrix in MO basis to SIRIFC
+      if(pcm_cfg%do_pcm) then
+         kwrk2 = 1
+         lwrk2 = lfree - kwrk2 +1
+! Allocate scratch space for the PCM Fock matrix contribution in AO basis.
+         allocate(fock_pcm_mo(nnorbt))
+         fock_pcm_mo = 0.0d0
+! Calculate PCM contribution to Fock matrix in MO basis
+         call pcm_mo_fock(fock_pcm_mo, cmo, wrk(kwrk2), lwrk2)
+         WRITE (LUSIFC) LAB123,'EXTPCMMAT'
+         CALL WRITT (LUSIFC,MMORBT,fock_pcm_mo)
+      end if
+#endif
 
 C ****** edh: 24/11/2011 ******
 

@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f_hf = Filter()
+f_hf.add(string = 'Nuclear repulsion:',
+      rel_tolerance = 1.0e-7)
+f_hf.add(string = 'Electronic energy:',
+      rel_tolerance = 1.0e-7)
+f_hf.add(string = 'Solvation energy:',
+      abs_tolerance = 1.0e-7)
+f_hf.add(string = 'Final HF energy:',
+      rel_tolerance = 1.0e-7)
+f_hf.add(re = 'XDIPLEN  \; XDIPLEN',
+              rel_tolerance = 1.0e-7)
+f_hf.add(re = 'YDIPLEN  \; YDIPLEN',
+              rel_tolerance = 1.0e-7)
+f_hf.add(re = 'ZDIPLEN  \; ZDIPLEN',
+              rel_tolerance = 1.0e-7)
+
+test.run(['alpha_extpcm_hf.dal'], ['H2O_symm.mol', 'H2O.mol'], ['pcmsolver.pcm'], f={'out': f_hf})
+
+f_dft = Filter()
+f_dft.add(string = 'Nuclear repulsion:',
+      rel_tolerance = 1.0e-7)
+f_dft.add(string = 'Electronic energy:',
+      rel_tolerance = 1.0e-7)
+f_dft.add(string = 'Solvation energy:',
+      abs_tolerance = 1.0e-7)
+f_dft.add(string = 'Final DFT energy:',
+      rel_tolerance = 1.0e-7)
+f_dft.add(re = 'XDIPLEN  \; XDIPLEN',
+              rel_tolerance = 1.0e-7)
+f_dft.add(re = 'YDIPLEN  \; YDIPLEN',
+              rel_tolerance = 1.0e-7)
+f_dft.add(re = 'ZDIPLEN  \; ZDIPLEN',
+              rel_tolerance = 1.0e-7)
+
+test.run(['alpha_extpcm_lda.dal'], ['H2O_symm.mol', 'H2O.mol'], ['pcmsolver.pcm'], f={'out': f_dft})
+
+sys.exit(test.return_code)

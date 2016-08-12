@@ -1,0 +1,34 @@
+#!/usr/bin/env python 
+
+
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import runtest_dalton
+
+output_filter = runtest_dalton.Filter()
+output_test = runtest_dalton.TestRun(__file__, sys.argv)
+
+# Basis
+output_filter.add(string="9s4p1d", abs_tolerance=0)
+output_filter.add(string="total:", abs_tolerance=0)
+
+# Geometry
+output_filter.add(from_string="Total number of coordinates:", to_re="^$", abs_tolerance=1e-8)
+
+# Energy
+output_filter.add(string="Final DFT energy", rel_tolerance=1e-8)
+
+
+# Excitation energy
+output_filter.add(re="excitation energy", abs_tolerance=1e-6)
+
+# Spin-orbit coupling constants
+output_filter.add(re="B and C", abs_tolerance=1e-4)
+
+
+#
+output_test.run(
+    ['rsp_soestm.dal'], ['h2o_cc-pVDZ.mol'], f={'out': output_filter},
+    )

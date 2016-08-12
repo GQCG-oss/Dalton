@@ -377,12 +377,12 @@ C
      &               ISYMX,0,THCLR,FOUND,CONV,ANTSYM)
          IF (.NOT. (FOUND .AND. CONV)) THEN
             IF (.NOT. FOUND) THEN
-               WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' XYVEC: Response '//
+               WRITE (LUPRI,'(/3A,F8.5,A,I3,/A)') ' XYVEC: Response '//
      &            'label ',XOPLBL,' with frequency ',FREQX,
      &            ' and symmetry',ISYMX,' not found on file RSPVEC'
                CALL QUIT('Response vector not found on file')
             ELSE
-               WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' XYVEC: Response '//
+               WRITE (LUPRI,'(/3A,F8.5,A,I3,/A)') ' XYVEC: Response '//
      &            'label ',XOPLBL,' with frequency ',FREQX,
      &            ' and symmetry',ISYMX,' not converged on file RSPVEC'
                CALL QUIT('Non-converged response vector on file')
@@ -397,12 +397,12 @@ C
      &               ISYMY,0,THCLR,FOUND,CONV,ANTSYM)
          IF (.NOT. (FOUND .AND. CONV)) THEN
             IF (.NOT. FOUND) THEN
-               WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' XYVEC: Response '//
+               WRITE (LUPRI,'(/3A,F8.5,A,I3,/A)') ' XYVEC: Response '//
      &            'label ',YOPLBL,' with frequency ',FREQY,
      &            ' and symmetry',ISYMY,' not found on file RSPVEC'
                CALL QUIT('Response vector not found on file')
             ELSE
-               WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' XYVEC: Response '//
+               WRITE (LUPRI,'(/3A,F8.5,A,I3,/A)') ' XYVEC: Response '//
      &            'label ',YOPLBL,' with frequency ',FREQY,
      &            ' and symmetry',ISYMY,' not converged on file RSPVEC'
                CALL QUIT('Non-converged response vector on file')
@@ -456,7 +456,7 @@ C
 C     Printout of result
 C
          IF (IPRRSP.GT.10) THEN
-            WRITE(LUPRI,'(//A,2(/A,A12),6(/A,I8),2(/A,D12.6),//A,/A)')
+            WRITE(LUPRI,'(//A,2(/A,A12),6(/A,I8),2(/A,D13.6),//A,/A)')
      *               'Characteristics in XYVEC routine',
      *               'XOPLBL =', CRLB2(IOP,1),
      *               'YOPLBL =', CRLB2(IOP,2),
