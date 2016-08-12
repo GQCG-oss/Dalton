@@ -56,7 +56,26 @@ C         READ(LUTAM) (T2AM(I), I = 1,LT2AM)
          READ(LUTAM) (T2AM(I), I = 1,LT2AMH)
 Cend-Pi
          CALL GPCLOSE(LUTAM,'KEEP')
-
+CPi 11.08.16: Add CC2
+      ELSE IF ( KEY(1:3) .EQ. 'CC2' ) THEN
+C
+C--------------------------------------------------
+C        Read CC2 T1- and T2-amplitudes from disk.
+C--------------------------------------------------
+C
+         LUTAM = -1
+         CALL GPOPEN(LUTAM,'CC2__TAM','OLD',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+         REWIND LUTAM
+C
+         READ(LUTAM) (DENSAI(I), I = 1,LDENSAI)
+         CALL DSCAL(LDENSAI,HALF,DENSAI,1)
+CPi-150316
+C         READ(LUTAM) (T2AM(I), I = 1,LT2AM)
+         READ(LUTAM) (T2AM(I), I = 1,LT2AMH)
+Cend-Pi
+         CALL GPCLOSE(LUTAM,'KEEP')
+Cend-Pi
       ELSE IF ( KEY(1:4) .EQ. 'CCSD' ) THEN
 C
 C--------------------------------------------------

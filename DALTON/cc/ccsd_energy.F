@@ -718,11 +718,13 @@ C
       EINI = EN2
 C
 CSPAS: 15.11.2009 adding AO-SOPPA
+CPi 11.08.16: Add .AND. MP2
 C-----------------------------------------------
 C     For AO-SOPPA Write MP2 amplitudes to disk.
 C-----------------------------------------------
 C
-      IF (AOSOPPA) THEN
+      IF (AOSOPPA .AND. MP2) THEN
+C      IF (AOSOPPA) THEN
          LUTAM = -1
          CALL GPOPEN(LUTAM,'MP2__TAM',' ',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
@@ -731,6 +733,7 @@ C
          WRITE(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
          CALL GPCLOSE(LUTAM,'KEEP')
       ENDIF
+Cend-Pi
 CKeinSPASmehr
 C
 C----------------------------------------
@@ -1125,7 +1128,17 @@ C
       ENDIF
 C
 CSPAS: 15.11.09 adding AO-SOPPA
-      IF (AOSOPPA .AND. .NOT. MP2) THEN
+CPi 11.08.16: Adding CC2
+      IF (AOSOPPA .AND. CC2) THEN
+         LUTAM = -1
+         CALL GPOPEN(LUTAM,'CC2__TAM',' ',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+         REWIND LUTAM
+         WRITE(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
+         WRITE(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
+         CALL GPCLOSE(LUTAM,'KEEP')
+Cend-Pi
+      ELSE IF (AOSOPPA .AND. CCSD) THEN
          LUTAM = -1
          CALL GPOPEN(LUTAM,'CCSD_TAM',' ',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
