@@ -9,14 +9,9 @@ C     NOTE: First integer MUST be NDMAT,  number of integers is NCBII
 C           First logical MUST be RUNERI, number of logicals is NCBIL
 C
 
-<<<<<<< HEAD
-      INTEGER LBFINP, MAXDST, NDMAT,  IANGMO, NSPMAX, MAXDSD,           &
-     &        MXBCH,  MXBCH0, IFITDM, CBIERILAST
-=======
       INTEGER NDMAT,  IPROD1, IPROD2, IAOBCH, IPRNT1, IPRNT2,
      &        IPRERI, LBFINP, MAXDST, IANGMO, NSPMAX, 
      &        MAXDSD, MXBCH,  MXBCH0, IFITDM
->>>>>>> master
 
       LOGICAL RUNERI, TIMERI, PMSAB,  PMSCD,  PMS12,  RTNERI, OFFCNT,   &
      &        DIASRT, OLDCR1, CANIND, WRTSCR, NOWRIT, EXTPRI,           &
@@ -26,28 +21,6 @@ C
 
       INTEGER CBIERIlast
 
-<<<<<<< HEAD
-      COMMON /CBIERI/ RUNERI, TIMERI, PMSAB,  PMSCD,  PMS12,  RTNERI,   &
-     &                OFFCNT, DIASRT, OLDCR1, CANIND, WRTSCR, NOWRIT,   &
-     &                EXTPRI, INTPRI, DODIST, INTSKP, DISTST, WRTINT,   &
-     &                FCKINT, PROFIL, NOLOCS, GRDZER, OLDDER, EXPERI,   &
-     &                DOERIP, ERITWO, CCRUN, COMPRS, GENCON_ERI, NCLERI,&
-     &                DGABAB, NDMAT,  IPROD1, IPROD2, IAOBCH, IPRNT1,   &
-     &                IPRNT2, IPRERI, LBFINP, MAXDST, IANGMO, NSPMAX,   &
-     &                MAXDSD, MXBCH,  MXBCH0, IFITDM
-
-      COMMON /CBIERI/ CBIERILAST
-      !   Very important !!!
-      !   Always keep this variable as the last variable in the common block. 
-      !   If you add more variables to the block add them before <name>last.
-      !   This variable is used to synchronize slaves for parallel
-      !   calculations. Other than acting as a target to calculate the size of a common
-      !   block, they have no use.
-      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
-      !   to get the number of bytes needed to transfer the common block.
-      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
-! -- end of cbieri.h --
-=======
       COMMON /CBIERI/ NDMAT,  IPROD1, IPROD2, IAOBCH, IPRNT1, IPRNT2,             ! integers
      &                IPRERI, LBFINP, MAXDST, IANGMO(4), NSPMAX, 
      &                MAXDSD, MXBCH,  MXBCH0, IFITDM,
@@ -61,4 +34,3 @@ C
       !  Always keep CBIERIlast as the last variable in the common block. 
       !  See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
 C -- end of cbieri.h --
->>>>>>> master
