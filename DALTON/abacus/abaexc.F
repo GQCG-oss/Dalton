@@ -523,7 +523,8 @@ C
       END IF
       IF (ROTSTR) THEN         ! rot. str., len+London
          LOCDIPLEN = .TRUE.
-         LOCLONDON = .TRUE.
+CPi 11.08.16: No london orbitals in SOPPA
+         IF (.NOT. ABASOP) LOCLONDON = .TRUE.
          LOCANGMOM = .TRUE.
          IF (NODIFC) LOCHBDO = .TRUE.
       END IF

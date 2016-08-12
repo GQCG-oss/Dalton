@@ -1543,7 +1543,9 @@ CPi extra space to avoid test crash
      *             ' Second Order Polarization Propagator Approximation'
             END IF
          END IF
-         IF (SHIELD .OR. MAGSUS .OR. SPINRO .OR. MOLGFA) THEN
+CPi 9.8.16 SPAS: In case of ECD or OECD avoid london orbitals
+         IF (SHIELD .OR. MAGSUS .OR. SPINRO .OR. MOLGFA.OR.ECD
+     &       .OR.OECD) THEN
             NOLOND = .TRUE.
          END IF
 C
@@ -1893,16 +1895,17 @@ c            CALL QUIT('Not supported input in ABAINP')
      &                         'cannot be calculated with SOPPA'
             IERR = IERR + 1
          END IF
-         IF (OECD)    THEN
-            WRITE(LUPRI,'(A)') ' Incompatible input. OECD '//
-     &                         'cannot be calculated with SOPPA'
-            IERR = IERR + 1
-         END IF
-         IF (ECD)    THEN
-            WRITE(LUPRI,'(A)') ' Incompatible input. ECD '//
-     &                         'cannot be calculated with SOPPA'
-            IERR = IERR + 1
-         END IF
+CPi 9.8.16 SPAS: Should be compatible with SOPPA
+C         IF (OECD)    THEN
+C            WRITE(LUPRI,'(A)') ' Incompatible input. OECD '//
+C     &                         'cannot be calculated with SOPPA'
+C            IERR = IERR + 1
+C         END IF
+C         IF (ECD)    THEN
+C            WRITE(LUPRI,'(A)') ' Incompatible input. ECD '//
+C     &                         'cannot be calculated with SOPPA'
+C            IERR = IERR + 1
+C         END IF
          IF (MCD)    THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. MCD '//
      &                         'cannot be calculated with SOPPA'
