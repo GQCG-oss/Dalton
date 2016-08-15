@@ -1652,7 +1652,7 @@ Directives controling the calculation of molecular properties
 using the second-order polarization propagator approximation, and
 whether the MO (default) or AO based implementation is used.
 The two implementations are desribed in Chapter~\ref{ch:soppa}, 
-and some additional requirements for AO based aproach, 
+as well as some additional requirements for the AO based approach, 
 see Section~\ref{sec:AOsoppa}.
 
 \begin{description}
@@ -1668,29 +1668,53 @@ This is synonymous to \Key{AOSOP} or \Key{AOSOC}, depending on whether
 \Key{SOPPA} or \Key{SOPPA(CCSD)} was used in \Sec{*PROPERTIES}.
 This is possible for the
 calculation of electronic singlet excitation energies with corresponding
-oscillator and rotatory strengths, and singlet type linear response functions. 
+oscillator and rotatory strengths, triplet excitation energies and
+singlet type linear response functions. 
 
 \item[\Key{DCRPA}] Requests an atomic orbital based RPA(D)
 calculation. An RPA calculation will also be performed.
-RPA(D) is currently only available for the calculation of
-electronic singlet excitation energies. 
+RPA(D) is currently available for the calculation of
+electronic singlet and triplet excitation energies.
+The necessary M{\o}ller-Plesset correlation
+coefficients have to be requested by the \Key{CC} keyword in the
+\Sec{*WAVE FUNCTIONS} input module combined with the \Key{MP2} and
+\Key{AO-SOPPA} keywords in the \Sec{CC INPUT} section of the \Sec{*WAVE
+FUNCTIONS} input module.
 
 \item[\Key{AOSOP}] Requests an atomic orbital based SOPPA
 calculation. This is possible for the calculation of
-electronic singlet excitation energies and singlet type linear response
-functions. 
+electronic singlet and triplet excitation energies and singlet type linear 
+response functions. 
+The necessary M{\o}ller-Plesset correlation
+coefficients have to be requested by the \Key{CC} keyword in the
+\Sec{*WAVE FUNCTIONS} input module combined with the \Key{MP2} and
+\Key{AO-SOPPA} keywords in the \Sec{CC INPUT} section of the \Sec{*WAVE
+FUNCTIONS} input module.
 
 \item[\Key{AOSOC}] Requests an atomic orbital based SOPPA(CCSD)
 calculation. This is possible for the calculation of
-electronic singlet excitation energies and singlet type linear response
-functions.
+electronic singlet and triplet excitation energies and singlet type 
+linear response functions.
+The necessary CCSD amplitudes have to be requested by the \Key{CC} keyword 
+in the \Sec{*WAVE FUNCTIONS} input module combined with the \Key{CCSD} and
+\Key{AO-SOPPA} keywords in the \Sec{CC INPUT} section of the \Sec{*WAVE
+FUNCTIONS} input module.
+
+\item[\Key{AOCC2}] Requests an atomic orbital based SOPPA(CC2)
+calculation. This is possible for the calculation of
+electronic singlet and triplet excitation energies and singlet type 
+linear response functions.
+The necessary CC2 amplitudes have to be requested by the \Key{CC} keyword 
+in the \Sec{*WAVE FUNCTIONS} input module combined with the \Key{CC2} and
+\Key{AO-SOPPA} keywords in the \Sec{CC INPUT} section of the \Sec{*WAVE
+FUNCTIONS} input module.
 
 \item[\Key{AOHRP}] Requests an atomic orbital based higher-order RPA
 calculation. This is possible for the calculation of
-electronic singlet excitation energies and singlet type linear response
-functions. 
+electronic singlet and triplet excitation energies and singlet type 
+linear response functions. 
 
-\item[\Key{AORPA}] Requests an RPA calculating run using the AO-based 
+\item[\Key{AORPA}] Requests a RPA calculating run using the AO-based 
 SOPPA implementation. This can be useful for calculation of excitation 
 energies, since a subsequent calculation at a higher level of theory will 
 use the converged RPA vectors as a starting guess.

@@ -282,37 +282,40 @@ S.~P.~A.~Sauer,
 }}
 \end{center}
 
-A prerequisite for any atomic orbital based RPA(D), SOPPA or
-SOPPA(CCSD) calculation of electronic singlet excitation energies and
-corresponding oscillator strengths is the calculation of the
+A prerequisite for any atomic orbital based HRPA, RPA(D), SOPPA, SOPPA(CC2) or
+SOPPA(CCSD) calculation of electronic singlet excitation energies 
+and corresponding oscillator strengths or electronic triplet excitation 
+energies is the calculation of the
 M{\o}ller-Plesset first order doubles and second order singles
-correlation coefficients or the CCSD singles and doubles amplitudes.
+correlation coefficients or the CC2 or CCSD singles and doubles amplitudes.
 This is invoked by the keyword \Key{CC} in the \Sec{*WAVE FUNCTIONS}
-input module together with the keywords \Key{MP2} and \Key{AO-SOPPA} or
-\Key{CCSD} and \Key{AO-SOPPA} in \Sec{CC INPUT} section of the
-\Sec{*WAVE FUNCTIONS} input module. 
+input module together with the keywords \Key{MP2} and \Key{AO-SOPPA}, \Key{CC2}
+and \Key{AO-SOPPA} or \Key{CCSD} and \Key{AO-SOPPA} in the \Sec{CC INPUT} section 
+of the \Sec{*WAVE FUNCTIONS} input module. 
 
-There are two ways of requesting that the calculation use the atomic 
-orbital based approach. 
+There are two ways of requesting the atomic orbital based approach. 
 For SOPPA and SOPPA(CCSD) one can specify the 
 appropriate keyword as normal in the \Sec{*PROPERTIES} input module
 and \Key{DIRECT} in the \Sec{SOPPA} section. 
 Alternatively if \Key{SOPPA} is specified in \Sec{*PROPERTIES}, one 
 can overwrite the method actually used in the \Sec{SOPPA} section by using
-\Key{AOSOP}, \Key{DCRPA}, \Key{AOHRP}  or \Key{AOSOC} for either a 
-SOPPA, RPA(D), HRPA or SOPPA(CCSD) calculation using the AO based approach.
-The advantage of the latter approach is that the method specification is 
+\Key{AOSOP}, \Key{DCRPA}, \Key{AOHRP}, \Key{AOCC2}  or \Key{AOSOC} for either a 
+SOPPA, RPA(D), HRPA, SOPPA(CC2) or SOPPA(CCSD) calculation using the AO based 
+approach. The advantage of the latter approach is that the method specification is 
 non-exclusive, so several different response calculations can be 
-carried out as part of the same Dalton job. 
+carried out as part of the same Dalton job. Using several methods in the same job, 
+be sure to request all the necessary MP2 correlatoin coefficents, CC2 or CCSD
+amplitudes in the \Sec{CC INPUT} section of the \Sec{*WAVE FUNCTIONS} input module
 Further keywords, which control the details of an atomic
-orbital direct SOPPA, RPA(D) or SOPPA(CCSD) calculation, are described
+orbital direct SOPPA, HRPA, RPA(D), SOPPA(CC2) or SOPPA(CCSD) calculation, are described
 in chapter \ref{sec:soppa}.
 
 A typical input file for an atomic integral direct calculation of 5
 electronic singlet excitation energies to states which transform like
 the totally symmetric irreducible representation and their
-corresponding oscillator and rotatory strengths at the RPA(D), SOPPA and SOPPA(CCSD)
-level of a molecule will be:\index{SOPPA}\index{RPA(D)}\index{SOPPA(CCSD)}
+corresponding oscillator and rotatory strengths at the HRPA, RPA(D), SOPPA, 
+SOPPA(CC2) and SOPPA(CCSD) level of a molecule will be:\index{SOPPA}\index{RPA(D)}
+\index{SOPPA(CC2)}\index{SOPPA(CCSD)}\index{HRPA}
 
 \begin{verbatim}
 **DALTON INPUT
@@ -321,14 +324,18 @@ level of a molecule will be:\index{SOPPA}\index{RPA(D)}\index{SOPPA(CCSD)}
 .HF
 .CC
 *CC INPUT
+.MP2
+.CC2
 .CCSD
 .AO-SOPPA
 **PROPERTIES
 .SOPPA
 .EXCITA
 *SOPPA
+.AOHRP
 .DCRPA
 .AOSOP
+.AOCC2
 .AOSOC
 *EXCITA
 .DIPSTR
@@ -337,8 +344,30 @@ level of a molecule will be:\index{SOPPA}\index{RPA(D)}\index{SOPPA(CCSD)}
     5    0    0    0    0    0    0    0
 **END OF DALTON INPUT
 \end{verbatim}
-The corresponding inputs for calculations using only the RPA(D) model will be
-\index{RPA(D)}
+The corresponding inputs for calculations using only the HRPA model will be
+\index{HRPA}
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.MP2
+.AO-SOPPA
+**PROPERTIES
+.SOPPA
+.EXCITA
+*SOPPA
+.AOHRP
+*EXCITA
+.DIPSTR
+.ROTVEL
+.NEXCITA
+    5    0    0    0    0    0    0    0
+**END OF DALTON INPUT
+\end{verbatim}
+and using only the RPA(D) model:\index{RPA(D)}
 \begin{verbatim}
 **DALTON INPUT
 .RUN PROPERTIES
@@ -374,7 +403,29 @@ and using only the SOPPA model:\index{SOPPA}
 .SOPPA
 .EXCITA
 *SOPPA
-.DIRECT
+.AOSOP
+*EXCITA
+.DIPSTR
+.ROTVEL
+.NEXCITA
+    5    0    0    0    0    0    0    0
+**END OF DALTON INPUT
+\end{verbatim}
+and using only the SOPPA(CC2) model:\index{SOPPA(CC2)}
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.CC2
+.AO-SOPPA
+**PROPERTIES
+.SOPPA
+.EXCITA
+*SOPPA
+.AOCC2
 *EXCITA
 .DIPSTR
 .ROTVEL
@@ -393,10 +444,10 @@ and finally using only the SOPPA(CCSD) model:\index{SOPPA(CCSD)}
 .CCSD
 .AO-SOPPA
 **PROPERTIES
-.SOPPA(CCSD)
+.SOPPA
 .EXCITA
 *SOPPA
-.DIRECT
+.AOSOC
 *EXCITA
 .DIPSTR
 .ROTVEL
@@ -409,3 +460,33 @@ However, one should note, that is computationally advantageous to
 combine calculations at different SOPPA levels in one input file, as
 the program automatically uses the converged solutions of the lower
 level as start guess for the higher levels.
+
+In order to calculate electronic triplet excitation energies, the \Key{TRIPLET}
+keyword has to be specified in the \Sec{EXCITA} section. Note that singlet and 
+triplet excitation energies cannot be calculated in the same job. An input for the 
+calculation of 5 vertical triplet excitation energies using the SOPPA, SOPPA(CC2) 
+and SOPPA(CCSD) methods looks like:
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.MP2
+.CC2
+.CCSD
+.AO-SOPPA
+**PROPERTIES
+.SOPPA
+.EXCITA
+*SOPPA
+.AOSOP
+.AOCC2
+.AOSOC
+*EXCITA
+.TRIPLET
+.NEXCITA
+    5    0    0    0    0    0    0    0
+**END OF DALTON INPUT
+\end{verbatim}
