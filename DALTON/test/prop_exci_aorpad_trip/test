@@ -53,7 +53,7 @@ f.add(from_string = 'Changes of defaults for .EXCITA',
 
 
 f.add(from_string = 'Triplet electronic excitation energies',
-      num_lines = 32,
+      num_lines = 21,
       abs_tolerance = 1.0e-4)
 
 test.run(['prop_exci_aorpad_trip.dal'], ['h2o_STO2G.mol'], f={'out': f},
