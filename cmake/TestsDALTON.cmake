@@ -160,6 +160,7 @@ add_dalton_runtest(prop_exci_aorpad              "dalton;runtest;prop;aosoppa;sh
 add_dalton_runtest(prop_exci_aorpad_trip         "dalton;runtest;prop;aosoppa;short")
 add_dalton_runtest(prop_exci_aosoppa             "dalton;runtest;prop;aosoppa;short")
 add_dalton_runtest(prop_exci_aosoppcc            "dalton;runtest;prop;aosoppa;short")
+add_dalton_runtest(prop_exci_aosoc_trip          "dalton;runtest;prop;aosoppa;short")
 add_dalton_runtest(prop_exci_aosopcc2_sing       "dalton;runtest;prop;aosoppa;short")
 add_dalton_runtest(prop_exci_aorpa_direct        "dalton;runtest;prop;aosoppa;short")
 add_dalton_runtest(prop_exci_aosopcc_direct      "dalton;runtest;prop;aosoppa;short")

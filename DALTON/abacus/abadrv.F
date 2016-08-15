@@ -1545,7 +1545,9 @@ CPi extra space to avoid test crash
      *             ' Second Order Polarization Propagator Approximation'
             END IF
          END IF
-         IF (SHIELD .OR. MAGSUS .OR. SPINRO .OR. MOLGFA) THEN
+CPi 9.8.16 SPAS: In case of ECD or OECD avoid london orbitals
+         IF (SHIELD .OR. MAGSUS .OR. SPINRO .OR. MOLGFA.OR.ECD
+     &       .OR.OECD) THEN
             NOLOND = .TRUE.
          END IF
 C

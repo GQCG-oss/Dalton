@@ -1,7 +1,7 @@
 C  /* Deck so_redev */
       SUBROUTINE SO_REDEV(DOUBLES,NEXCI,NOLDTR,NNEWTR,ISYMTR,
      &                    REDE,LREDE,REDS,LREDS,
-     &                    LREDOL,EXVAL,LEXVAL,WORK,LWORK)
+     &                    LREDOL,EXVAL,LEXVAL,CONV,LCONV,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -41,12 +41,21 @@ C
       DIMENSION EXVAL(LEXVAL)
       DIMENSION WORK(LWORK)
       LOGICAL   DOUBLES
+CPi 10.08.16
+      CHARACTER*3 IMAG
+      CHARACTER*3 CONV(LCONV)
 C
 C------------------
 C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_REDEV')
+C
+C-------------------------
+C     Set imaginary label.
+C-------------------------
+C
+      IMAG = '  i'
 C
 C-------------------------------------
 C     Check dimensions of the matrices
@@ -217,10 +226,19 @@ C
 C
 C----------------------------------------------
 C     Save the lowest NEXCI excitation energies
+CPi 10.08.16: If imaginary eigenvalue, assign an 'i' label to the
+C     'yes' or 'no' vector.
 C----------------------------------------------
 C
       DO I = 1, NEXCI
+C
          EXVAL(I) = WORK(KALFAR-1+I)
+C
+         IF (ABS(WORK(KALFAI-1+I)) .GT. ZERO) THEN
+C
+            CONV(I) = IMAG
+C
+         END IF
       END DO
 C
 C-------------------------------------------------------------------
