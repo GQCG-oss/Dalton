@@ -149,22 +149,18 @@ CKeinSPASmehr
                GO TO 100
 CClark:7/1/2016
    17          CONTINUE
-               STOPPW = .TRUE.
-               READ (LUCMD,*) QMIN,QMAX,QSTEP
-               READ (LUCMD,*) VMIN,VMAX,VSTEP
-               LVEL = INT((VMAX-VMIN)/VSTEP+1.0001)
+                  STOPPW = .TRUE.
+                  READ (LUCMD,*) QMIN,QMAX,QSTEP
+                  READ (LUCMD,*) VMIN,VMAX,VSTEP
+                  LVEL = INT((VMAX-VMIN)/VSTEP+1.0001)
 CClark: QMAX reset by qmax=2*me*Vmax/hbar according to Bonderup)
-               WRITE (LUPRI,'(1A)')
-     &         'Qmax reset to 2*Vmax according to Bonderup'
-               QMAX = 2*VMAX
-               LQ   = INT((QMAX-QMIN)/QSTEP+1.0001)
-               READ (LUCMD,*) QINP
-C
-C               IF ( THREXC .GT. 1.0D-3 ) THEN
-               THREXC = 1.0D-3
-C               ENDIF
-C
-               ICHANG = ICHANG + 1
+                  WRITE (LUPRI,'(1A)')
+     &            'Qmax reset to 2*Vmax according to Bonderup'
+                  QMAX = 2*VMAX
+                  LQ   = INT((QMAX-QMIN)/QSTEP+1.0001)
+                  READ (LUCMD,*) QINP
+                  THREXC = 1.0D-3
+                  ICHANG = ICHANG + 1
                GO TO 100
 CClark:end
             ELSE IF (PROMPT .EQ. '*') THEN

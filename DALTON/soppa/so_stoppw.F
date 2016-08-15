@@ -33,7 +33,9 @@ C
 C
          VELOC = VMIN+(IVEL-1)*VSTEP
 C
+C         QMAXV = 20.0
          QMAXV = VELOC*2
+C         QMINV = EXENG(ISYMTR,IEXCI)
          QMINV = EXENG(ISYMTR,IEXCI)/VELOC
 C
          IF (QMINV .LE. QMAXV) THEN
@@ -41,23 +43,43 @@ C
             IF ((QVAL .GE. QMINV) .AND. (QVAL .LE. QMAXV)) THEN
 C
                STOPP(1,IVEL,1) = STOPP(1,IVEL,1) + TRGOS(1)*QSTEP*
-     &                                         PI*D4/(QVAL*VELOC*2)
+     &                           PI*D4/(QVAL*VELOC*VELOC)
                STOPP(2,IVEL,1) = STOPP(2,IVEL,1) + TRGOS(2)*QSTEP*
-     &                                         PI*D4/(QVAL*VELOC*2)
+     &                           PI*D4/(QVAL*VELOC*VELOC)
                STOPP(3,IVEL,1) = STOPP(3,IVEL,1) + TRGOS(3)*QSTEP*
-     &                                         PI*D4/(QVAL*VELOC*2)
+     &                           PI*D4/(QVAL*VELOC*VELOC)
 
             ENDIF
 C
-            IF ((QVAL .GE. QMINV) .AND. (QVAL .LE. QINP)) THEN
+C The next line makes sure that the split integration will be applied
+C after the velocity is larger than half of Q value.
+C This velocity as half of chosen Q value corresponds to
+C the highest excitation energy for given basis set.
+C i.e. integration can be split after this velocity.
+C
+            IF (VELOC .GE. QINP/2.0) THEN
+C
+               IF ((QVAL .GE. QMINV) .AND. (QVAL .LE. QINP)
+     &                            .AND. (QVAL .LE. QMAXV)) THEN
+C
+                  STOPP(1,IVEL,2) = STOPP(1,IVEL,2) + TRGOS(1)*QSTEP*
+     &                              PI*D4/(QVAL*VELOC*VELOC)
+                  STOPP(2,IVEL,2) = STOPP(2,IVEL,2) + TRGOS(2)*QSTEP*
+     &                              PI*D4/(QVAL*VELOC*VELOC)
+                  STOPP(3,IVEL,2) = STOPP(3,IVEL,2) + TRGOS(3)*QSTEP*
+     &                              PI*D4/(QVAL*VELOC*VELOC)
+C
+               ENDIF
+C
+            ELSEIF ((QVAL .GE. QMINV) .AND. (QVAL .LE. QMAXV)) THEN
 C
                STOPP(1,IVEL,2) = STOPP(1,IVEL,2) + TRGOS(1)*QSTEP*
-     &                                         PI*D4/(QVAL*VELOC*2)
+     &                           PI*D4/(QVAL*VELOC*VELOC)
                STOPP(2,IVEL,2) = STOPP(2,IVEL,2) + TRGOS(2)*QSTEP*
-     &                                         PI*D4/(QVAL*VELOC*2)
+     &                           PI*D4/(QVAL*VELOC*VELOC)
                STOPP(3,IVEL,2) = STOPP(3,IVEL,2) + TRGOS(3)*QSTEP*
-     &                                         PI*D4/(QVAL*VELOC*2)
-
+     &                           PI*D4/(QVAL*VELOC*VELOC)
+C
             ENDIF
 C
          ENDIF

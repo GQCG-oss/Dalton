@@ -4,10 +4,10 @@
       LOGICAL         SKIP, CUT, DIPSTR, ROTSTR, ROTVEL, FNAC, EXCTRP,
 CPFP
 C     &        SUMRUL, OOTV
-     &        SUMRUL, OOTV, MAGPRP,
+     &                SUMRUL, OOTV, MAGPRP,
 Cend-PFP
 CClark:7/1/2016
-     &        STOPPW
+     &                STOPPW
       REAL*8          QMIN,QMAX,QSTEP
       REAL*8          VMIN,VMAX,VSTEP
       INTEGER         LQ,LVEL

@@ -118,26 +118,17 @@ C
          IDX1 = COORD_IDX(LABEL(7:7))
          BSRLON(IDX1,ISYMTR,IEXCI) = -TRMOM *EXENG(ISYMTR,IEXCI)
 C
-CClark:22/12/2015
-CRF The content of these two branches look exactly the same..?
-      ELSE IF (LABEL(1:5).EQ.'COS K') THEN
-         IF (LABEL(6:6).EQ.'X') TRGOS(1,IEXCI) = 
-     &       TRGOS(1,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
-         IF (LABEL(6:6).EQ.'Y') TRGOS(2,IEXCI) = 
-     &       TRGOS(2,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
-         IF (LABEL(6:6).EQ.'Z') TRGOS(3,IEXCI) = 
-     &       TRGOS(3,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+CClark:22/12/2015 first,and changed at 17/06/2016
+      ELSE IF (LABEL(1:3).EQ.'COS' .OR. LABEL(1:3).EQ.'SIN') THEN
 C
-      ELSE IF (LABEL(1:5).EQ.'SIN K') THEN
+         IDX1 = COORD_IDX(LABEL(6:6))
 C
-         IF (LABEL(6:6).EQ.'X') TRGOS(1,IEXCI) = 
-     &      TRGOS(1,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
-         IF (LABEL(6:6).EQ.'Y') TRGOS(2,IEXCI) = 
-     &       TRGOS(2,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
-         IF (LABEL(6:6).EQ.'Z') TRGOS(3,IEXCI) = 
-     &       TRGOS(3,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+         TRGOS(IDX1,IEXCI) =
+     &       TRGOS(IDX1,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+C
       ELSE 
-CRF         Something is wrong
+CClark:17/06/2016
+C
          WRITE(LUPRI,'(A,/,2A)') 'ERROR in SO_COLLECT_TM:',
      &         'Label not recognized: ', LABEL
 C

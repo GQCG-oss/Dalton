@@ -319,16 +319,18 @@ C            DO IVEL=1,LVEL
 C             PRINT '(I3,3F14.10)',IVEL,(STOPP(I,IVEL),I=1,3)
 C            ENDDO
 C
-C            IF ( IPRSOP .GE. 5) THEN
+            IF ( IPRSOP .GE. 5) THEN
 C
                DO IEXCI = 1,NEXCI
+C               DO IEXCI = 1, 1
+C
 C
                   WRITE(LUPRI,'(/,1X,A,I3)')
      &            ' RPA generalized oscilator strength',
      &            ISYMTR
                   WRITE(LUPRI,9001)
-                  WRITE(LUPRI,'(A)')
-     &            ' Exci. component  Total'
+                  WRITE(LUPRI,'(A,F5.3)')
+     &            ' Exci. component  Total, q=',ORIGIN(1)
                   WRITE(LUPRI,9002)
 C
                   WRITE(LUPRI,'(1X,I3,3X,A,10X,D20.13)') IEXCI,'X',
@@ -340,7 +342,7 @@ C
 C
                END DO
 C
-C            ENDIF
+            ENDIF
 C
          END DO
 C

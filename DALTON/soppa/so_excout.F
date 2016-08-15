@@ -116,8 +116,12 @@ C
 C
          IF (IMODEL .EQ. SOP_MODEL_RPA)
      &            CALL RP_WRITE_EXTEND(EXENG(1,1,IOUT),SECMAT)
-
-         CALL STOPP_WRITE(BETHE(1,1,IOUT),STOPP(1,1,1,IOUT) ) 
+C
+         IF (STOPPW) THEN
+C
+            CALL STOPP_WRITE(BETHE(1,1,IOUT),STOPP(1,1,1,IOUT) ) 
+C
+         ENDIF
 CSPAS:26/01-08:
 C     moved because otherwise we get a lot of non-sense output
 C     for the orbital extend
@@ -152,9 +156,13 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "cbiexc.h"
+#include "ccorb.h"
+#include "pi.h"
 C
       DIMENSION BETHE(3,LQ),STOPP(3,LVEL,2)
+      REAL*8    LTWO
       PARAMETER ( D2 = 2.0D00 )
+      PARAMETER ( D4 = 4.0D00 )
 C
 C---------------------------------------------
 C     Write Bethe sum rule and Stopping power.
@@ -181,11 +189,11 @@ C
       END DO
 C
       WRITE(LUPRI,'(//,1X,A)')
-     &   '         Stopping Power ( X Component )                '
+     &   '       Stopping Power ( X Component )  [a.u.]           '
       WRITE(LUPRI,'(1X,A/)')
-     &   '    ----------------------------------------'
+     &   '    ---------------------------------------------'
       WRITE(LUPRI,'(1X,A)')
-     &   ' Velocity  Full integral  L1      + L2      = split integral'
+     &   ' V[a.u.] Ekinet[KeV] Full  L1  + L2   = split [a.u.]'
       WRITE(LUPRI,'(1X,A)')
      &   ' -----------------------------------------------------------'
 C
@@ -193,23 +201,32 @@ C
 C
          VELOC = VMIN+(IVEL-1)*VSTEP
 C
-C L2 part of the split integral is probably missing to time the number
-C of elections.
+C 2.0*NRFHT is the number of electrons.
+C
+         IF (VELOC*2.0 .GE. QINP) THEN
+C
+            LTWO = PI*D4*LOG(VELOC*D2/QINP)*D2*NRHFT/(VELOC*VELOC)
+C
+         ELSE
+C
+            LTWO = 0
+C
+         ENDIF
 C
          WRITE(LUPRI,
-     &         '(2X,G9.4,G11.4,4X,"|",G8.3,"+",1X,G8.3,"=",1X,G11.4)')
-     &          VELOC,STOPP(1,IVEL,1),STOPP(1,IVEL,2),
-     &          LOG(VELOC*D2/QINP),
-     &          STOPP(1,IVEL,2)+LOG(VELOC*D2/QINP)
+     &         '(1X,F5.2,1X,F7.1,1X,F8.4,5X,F7.3,2X,F7.3,2X,F8.4)')
+     &          VELOC,VELOC*VELOC*24.98,
+     &          STOPP(1,IVEL,1),STOPP(1,IVEL,2),LTWO,
+     &          STOPP(1,IVEL,2)+LTWO
 C
       END DO
 C
       WRITE(LUPRI,'(//,1X,A)')
-     &   '         Stopping Power ( Y Component )                '
+     &   '       Stopping Power ( Y Component )  [a.u.]           '
       WRITE(LUPRI,'(1X,A/)')
-     &   '    ----------------------------------------'
+     &   '    ---------------------------------------------'
       WRITE(LUPRI,'(1X,A)')
-     &   ' Velocity  Full integral  L1      + L2      = split integral'
+     &   ' V[a.u.] Ekinet[KeV] Full  L1  + L2   = split [a.u.]'
       WRITE(LUPRI,'(1X,A)')
      &   ' -----------------------------------------------------------'
 C
@@ -217,23 +234,32 @@ C
 C
          VELOC = VMIN+(IVEL-1)*VSTEP
 C
-C L2 part of the split integral is probably missing to time the number
-C of elections.
+C 2.0*NRFHT is the number of electrons.
+C
+         IF (VELOC*2.0 .GE. QINP) THEN
+C
+            LTWO = PI*D4*LOG(VELOC*D2/QINP)*D2*NRHFT/(VELOC*VELOC)
+C
+         ELSE
+C
+            LTWO = 0
+C
+         ENDIF
 C
          WRITE(LUPRI,
-     &         '(2X,G9.4,G11.4,4X,"|",G8.3,"+",1X,G8.3,"=",1X,G11.4)')
-     &          VELOC,STOPP(2,IVEL,1),STOPP(2,IVEL,2),
-     &          LOG(VELOC*D2/QINP),
-     &          STOPP(2,IVEL,2)+LOG(VELOC*D2/QINP)
+     &         '(1X,F5.2,1X,F7.1,1X,F8.4,5X,F7.3,2X,F7.3,2X,F8.4)')
+     &          VELOC,VELOC*VELOC*24.98,
+     &          STOPP(2,IVEL,1),STOPP(2,IVEL,2),LTWO,
+     &          STOPP(2,IVEL,2)+LTWO
 C
       END DO
 C
       WRITE(LUPRI,'(//,1X,A)')
-     &   '         Stopping Power ( Z Component )                '
+     &   '       Stopping Power ( Z Component )  [a.u.]           '
       WRITE(LUPRI,'(1X,A/)')
-     &   '    ----------------------------------------'
+     &   '    ---------------------------------------------'
       WRITE(LUPRI,'(1X,A)')
-     &   ' Velocity  Full integral  L1      + L2      = split integral'
+     &   ' V[a.u.] Ekinet[KeV] Full  L1  + L2   = split [a.u.]'
       WRITE(LUPRI,'(1X,A)')
      &   ' -----------------------------------------------------------'
 C
@@ -241,14 +267,23 @@ C
 C
          VELOC = VMIN+(IVEL-1)*VSTEP
 C
-C L2 part of the split integral is probably missing to time the number
-C of elections.
+C 2.0*NRFHT is the number of electrons.
+C
+         IF (VELOC*2.0 .GE. QINP) THEN
+C
+            LTWO = PI*D4*LOG(VELOC*D2/QINP)*D2*NRHFT/(VELOC*VELOC)
+C
+         ELSE
+C
+            LTWO = 0
+C
+         ENDIF
 C
          WRITE(LUPRI,
-     &         '(2X,G9.4,G11.4,4X,"|",G8.3,"+",1X,G8.3,"=",1X,G11.4)')
-     &          VELOC,STOPP(3,IVEL,1),STOPP(3,IVEL,2),
-     &          LOG(VELOC*D2/QINP),
-     &          STOPP(3,IVEL,2)+LOG(VELOC*D2/QINP)
+     &         '(1X,F5.2,1X,F7.1,1X,F8.4,5X,F7.3,2X,F7.3,2X,F8.4)')
+     &          VELOC,VELOC*VELOC*24.98,
+     &          STOPP(3,IVEL,1),STOPP(3,IVEL,2),LTWO,
+     &          STOPP(3,IVEL,2)+LTWO
 C
       END DO
 C
