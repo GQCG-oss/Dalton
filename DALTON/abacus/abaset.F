@@ -526,12 +526,16 @@ C        ... SOPPA requires full integral transformation
 C        --- But not if run through AO-SOPPA module        
          IF(AOSOP.OR.AORPA.OR.DCRPA.OR.AOSOC.OR.AOCC2.OR.AOHRP) THEN
             KTRLVL = 0
+CPi 15.08.16: AO-SOPPA doesn't need MO integrals
+            FLAG(34) = .TRUE.
          ELSE
             KTRLVL = 10
+            FLAG(34) = .FALSE.
          ENDIF
          ITRLVL = KTRLVL
          FLAG(14) = .TRUE. 
-         FLAG(34) = .FALSE.
+C         FLAG(34) = .FALSE.
+Cend-Pi
          IF (KTRLVL.GT.0) CALL SIR_INTOPEN
       ELSE
 C        ... Hartree-Fock, MO integral file will normally
