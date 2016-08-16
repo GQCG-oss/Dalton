@@ -4,11 +4,14 @@
 
       LOGICAL DUMPCD
 
-      INTEGER IT2DEL, IT2DLR, CCSDIOlast
+      INTEGER IT2DEL, IT2DLR, CCSDIOLAST
 
 
-      COMMON /CCSDIO/ IT2DEL(MXCORB),
-     &                DUMPCD,IT2DLR(MXCORB,MAXSIM),
-     &   CCSDIOlast !  Very important:
-      !  Always keep CCSDIOlast as the last variable in the common block. 
+      COMMON /CCSDIO/ IT2DEL(MXCORB),                                   &
+     &                DUMPCD,IT2DLR(MXCORB,MAXSIM)
+
+
+      COMMON /CCSDIO/ CCSDIOLAST
+      !  Very important !!!
+      !  Always keep CCSDIOLAST as the last variable in the common block. 
       !  See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
