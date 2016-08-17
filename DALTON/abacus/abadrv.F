@@ -1490,13 +1490,16 @@ CSPAS : 26/08-2013 fixing the problem with the test jobs running MPI
          IF (PARCAL) THEN
 CRF Only quit if the stuff that is asked for is not yet parallelized.
             par_soppa_input_errors = .false.
-            IF (.NOT.DOEXCI.OR.
+CPi 17.08.16: RF: Polarizabilities now work
+C            IF (.NOT.DOEXCI.OR.
+            IF (
 C All the properties which parallel soppa currently cannot do. I.e all.
      &      ANY( (/  SHIELD, MAGSUS, SPINRO, MOLGFA, SPNSPN, 
-     &           POLAR, CTOCD /) ) 
+     &            CTOCD /) ) 
      &         ) THEN
                WRITE(LUPRI,'(3A)')'@ ', WRDSRC, ' SOPPA can only be '
-     &             //'run in parallel for excitation energies'
+     &         //'run in parallel for excitation energies and '
+     &         //'polarizabilities'
                par_soppa_input_errors = .true.
             ENDIF
 C            
