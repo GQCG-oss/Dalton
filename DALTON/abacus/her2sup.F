@@ -362,6 +362,8 @@ C  /* Deck suprdi */
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
+! frame.h : POTNUC
+#include "frame.h"
       CHARACTER*8 LAB123(3), NEWLBL
       DATA LAB123 /'********','        ','        '/
       DATA NEWLBL /'PXSUPMAT'/
@@ -379,7 +381,7 @@ C
       CALL GETDAT(LAB123(2),LAB123(3))
       CALL REWSPL(LUSUPM)
       WRITE (LUSUPM) LAB123, NEWLBL
-      WRITE (LUSUPM) XFAC, NOSYM, NSYM, NBAS
+      WRITE (LUSUPM) XFAC, POTNUC, NOSYM, NSYM, NBAS
 C
 C***  If (NOSYM) then reset symmetry index arrays
 C     (now done in SUP_SORT after consistency check with AOTWOINT)

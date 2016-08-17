@@ -762,7 +762,7 @@ C     ... note: NDMAT = # of DCAO and FCAO matrices; NFMAT = # of non-zero FCAO 
 !    &   .NOT. (HSROHF .OR. DODFT .OR.
 !    &          DOCISRDFT .OR. DOHFSRDFT .OR. DOMCSRDFT)) THEN
          if (iprsir .gt. 5) write(lupri,*)
-     &      'RDSUPM called, NFMAT',NFMAT,ISYMDM(1:NFMAT)
+     &   'RDSUPM called. NFMAT, ISYMDM(1:NFMAT)',NFMAT,ISYMDM(1:NFMAT)
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),ISYMDM,
      &      WRK(KFREE),LFREE)
       ELSE

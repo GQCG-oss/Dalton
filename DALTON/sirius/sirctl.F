@@ -374,11 +374,7 @@ C
 C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV
-         IF (HSROHF .AND. ICONV .LE. 0) THEN
-            NINFO = NINFO + 1
-            WRITE(LUPRI,'(//A/)') 'INFO: Second order QC-SCF skipped'//
-     &      ' because it is not implemented for open-shell SCF'
-         ELSE IF (FLAG(21) .AND. ICONV .LE. 0) THEN
+         IF (FLAG(21) .AND. ICONV .LE. 0) THEN
 #ifdef HAS_PCMSOLVER
             if (pcm_cfg%do_pcm) call quit('ERROR: DIIS '//
      &      'failed to converge and QC-SCF is not implemented with '//

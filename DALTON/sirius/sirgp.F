@@ -1635,12 +1635,14 @@ C  INFORB  : NBAST,N2BASX
 C  INFTAP  : LUSUPM
 C  PRIUNIT : IPRSTAT
 C  CBIHRS  : parameters for FORMSUP
+C  frame.h : POTNUC
 C  DFTCOM  : HFXFAC
 C
 #include "inforb.h"
 #include "inftap.h"
 #include "infpri.h"
 #include "cbihrs.h"
+#include "frame.h"
 #include "dftcom.h"
 C
 C     Local variables:
@@ -1680,10 +1682,15 @@ C
 
          FNSUPM_OK = FNDLAB('PXSUPMAT',LUSUPM)
          IF (FNSUPM_OK) THEN
-            READ (LUSUPM) XFAC, NOSYM
+            READ (LUSUPM) XFAC, XPOTNUC, NOSYM
             IF (abs(XFAC-HFXFACSUP) .gt. THRSUP) THEN
                WRITE(LUPRI,*) 'Calculating ',FNSUPM_local,
      &         ' because HFXFAC changed from',XFAC,' to',HFXFACSUP
+               FNSUPM_OK = .FALSE.
+            END IF
+            IF (abs(XPOTNUC-POTNUC) .gt. THRSUP) THEN
+               WRITE(LUPRI,*) 'Calculating ',FNSUPM_local,
+     &         ' because geometry has changed.'
                FNSUPM_OK = .FALSE.
             END IF
             IF (NOSSUP .AND. .NOT.NOSYM) THEN
@@ -1779,7 +1786,7 @@ C
 C
 C *** Test if LUSUPM file is OK
 C
-      READ (LUSUPM) XFAC,NOSYM, MSYM, MBAS
+      READ (LUSUPM) XFAC,XPOTNUC,NOSYM, MSYM, MBAS
       NERR = 0
       ISYMDM_ALL = ISYMDM(1)
       DO I = 1,NSIM
