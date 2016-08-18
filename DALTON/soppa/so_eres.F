@@ -492,7 +492,6 @@ C
      &                 WORK(KCMO),LCMO,ISYMTR)
          DTIME     = SECOND()  - DTIME
          SOTIME(7) = SOTIME(7) + DTIME
-
 C
 C=======================================================
 C        Start the loop over distributions of integrals.
@@ -571,7 +570,6 @@ C
 C
 #endif
 C
-
 C-------------------------------------------------
 C           Main loop over integral-distributions.
 C-------------------------------------------------

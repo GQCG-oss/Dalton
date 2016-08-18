@@ -61,6 +61,18 @@ C
 
       KEND1 = 1
       LWORK1 = LWORK
+C
+C--------------------------------------------------------------
+C     Initialize iteration counter, number of old trialvectors,
+C     and number of new trialvectors.
+C--------------------------------------------------------------
+C
+      NIT    = 1
+C
+      NOLDTR = 0
+C
+      NNEWTR = NEXCI
+C
 #ifdef VAR_MPI
 C------------------------------------------------------------------
 C     For MPI, we need some space in which to store the indices each
@@ -78,8 +90,8 @@ C Not a real parallel job, don't bother
          kAssignedIndices = KEND1
          KEND1 = kAssignedIndices + lAssignedIndices
          LWORK1 = LWORK - KEND1
-         CALL SO_MEMMAX ('SO_LRSOLV.1A',LWORK1)
-         IF (LWORK1 .LT. 0) CALL STOPIT('SO_LRSOLV.1A',' ',KEND1,LWORK)
+         CALL SO_MEMMAX ('DC_CALC.1A',LWORK1)
+         IF (LWORK1 .LT. 0) CALL STOPIT('DC_CALC.1A',' ',KEND1,LWORK)
       endif
 #endif
 C
@@ -97,6 +109,8 @@ C ISYMTR is a non-local parameter, we need to copy it to the info-array
          CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
      &                   MPI_COMM_WORLD, IERR)
 #endif
+CPi 18.08.16: Copy from so_lrsolv
+      CALL GETTIM (DUMMY,WTIMES)
       DTIME      = SECOND()
       CALL SO_ERES('DCRPA',0,NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &             T2MP,LT2MP,FOCKD,LFOCKD,DENSAI,LDENSAI,1,ISYMTR,
@@ -106,6 +120,8 @@ C ISYMTR is a non-local parameter, we need to copy it to the info-array
      &             WORK(KEND1),LWORK1)
       DTIME      = SECOND()   - DTIME
       SOTIME(35) = SOTIME(35) + DTIME
+      CALL GETTIM (DUMMY,WTIMEE)
+      SOWTIM(1)  = SOWTIM(1)  + WTIMEE - WTIMES
 C
 C-----------------------------------------------------------
 C     Make S[2] linear transformation of trialvectors giving
