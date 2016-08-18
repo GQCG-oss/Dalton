@@ -4,6 +4,7 @@
 
 ### Added
 - New parallel 2-electron integral transformatin .FCKTRA
+- Triplet excitation energies and polarizabilities with the AO-SOPPA code
 
 ### Changed
 
