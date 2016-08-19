@@ -23,6 +23,14 @@ module mlcc_typedef
 !   
    real(dp), parameter                 :: zero = 0.0D0, one = 1.0D0, two = 2.0D0, half = 0.5D0
    real(dp), parameter                 :: three = 3.0D0, four = 4.0D0, five = 5.0D0, six = 6.0D0
-!   
-!   
+!
+!
+!  The mlc_dummy subroutine below is an ugly hack to quench these 3 output lines every time rebuilding dalton.x:
+!    /opt/local/bin/ranlib: file: lib/libdalton.a(mlcc_typedef.F90.o) has no symbols
+!    /opt/local/bin/ranlib: file: lib/libdalton.a(mlcc_typedef.F90.o) has no symbols
+!    /opt/local/bin/ranlib: file: lib/libdalton.a(mlcc_typedef.F90.o) has no symbols
+!  If anyone has a prettier solution, nice! /hjaaj Aug. 2016
+contains
+   subroutine mlcc_dummy
+   end subroutine mlcc_dummy
 end module mlcc_typedef

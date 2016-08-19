@@ -292,7 +292,7 @@ contains
 !     master reports the count of intra-groups formed by all processes
       if(my_process_id_glb == 0)then
         write(*,'(/a)')                                                     &
-        ' output from the communication group generator:'
+        ' Output from the communication group generator:'
         if(local_counter_file_groups == 1)then
           write(*,'(i4,a/)')                                                &
           local_counter_file_groups,' intra-node group has been built.'
@@ -417,7 +417,7 @@ contains
 !       OpenMPIs --bysocket --bind-to-socket policy: round-robin fashion between the X sockets (often socket == NUMA node) 
 !       thus, we will follow this strategy here...
         numa_nodes = intra_node_size/numa_procs
-        if(mod(intra_node_size,numa_procs) /= 0 ) write(*,*) ' ** warning: asymmetric NUMA node allocation'
+        if(mod(intra_node_size,numa_procs) /= 0 ) write(*,*) ' ** Warning: asymmetric NUMA node allocation'
 
         numa_counter = 0
         i            = 0

@@ -286,7 +286,7 @@ C defined parallel calculation types
 C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MXDMAT = 2*MXCOOR)
-      LOGICAL   DDFOCK, NOBLK, ZFS2EL, PARCAL_IS_OK, PARCAL_SAVE
+      LOGICAL   DDFOCK, NOBLK, ZFS2EL, PARHER_IS_OK, PARHER_SAVE
       INTEGER   IFCTYP(MXDMAT), ISYMDM(MXDMAT)
       DIMENSION ALPGR1(MXPRIM)
 C
@@ -415,7 +415,7 @@ C        Zero EE gradient and Hessian, if calculated.
 C        Allocate memory for HESSEE.
          IF (MOLGRD) CALL DZERO(GRADEE,MXCOOR)
          KHESEE = KLAST
-         IF (MOLHES .OR. PARCAL) THEN
+         IF (MOLHES .OR. PARHER) THEN
            KLAST  = KHESEE + MXCOOR*MXCOOR
            CALL DZERO(WORK(KHESEE),MXCOOR*MXCOOR)
          ENDIF
@@ -474,13 +474,13 @@ C           dimension ISYMDM(MXDMAT), IFCTYP(MXDMAT)
          END IF
 C
 C        Is it OK to do parallel calculation here ??
-         PARCAL_IS_OK = PARCAL ! has user wanted PARCAL ?
+         PARHER_IS_OK = PARHER ! has user wanted PARHER ?
          IF ((NASHT .GT. 0) .AND. (.NOT.(HSROHF.OR.DFTADD)))
-     &      PARCAL_IS_OK = .FALSE. ! parallel TWOEXP only for SCF 
+     &      PARHER_IS_OK = .FALSE. ! parallel TWOEXP only for SCF 
 C
 C        ERI can only be used for Hartree-Fock gradients
 C
-         DOERI = RUNERI .AND. .NOT. PARCAL_IS_OK .AND. NODV .AND. NOPV
+         DOERI = RUNERI .AND. .NOT. PARHER_IS_OK .AND. NODV .AND. NOPV
      &                  .AND. ITYPE.EQ.2 .AND. MAXDIF .LT. 2
 C
          CALL GETDMT(WORK(KDMAT),NDMAT,WORK(KLAST),LWRK,NODC,NODV,
@@ -493,9 +493,9 @@ C
      &               LWRK)
 C
 #if defined (VAR_MPI) || defined (VAR_PVM)
-         IF (PARCAL_IS_OK) THEN
+         IF (PARHER_IS_OK) THEN
             IF ((NASHT .GT. 0) .AND. (.NOT.(HSROHF.OR.DFTADD)))
-     &         CALL QUIT(' ERROR in TWOEXP: PARCAL only'// 
+     &         CALL QUIT(' ERROR in TWOEXP: PARHER only'// 
      &                   ' implemented for SCF')
 C
             KNSTAT = KLAST
@@ -548,8 +548,8 @@ cfrj-end
                HFXFAC = HFXFC0
             END IF
          ELSE
-            PARCAL_SAVE = PARCAL
-            PARCAL = .FALSE.
+            PARHER_SAVE = PARHER
+            PARHER = .FALSE.
 #endif
             IF (DOERI) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
@@ -592,7 +592,7 @@ cfrj-end
      &         CALL TIMER('TWOEXP/TWOINT',TIMSTR,TIMEND)
             END IF
 #if defined (VAR_MPI) || defined (VAR_PVM)
-            PARCAL = PARCAL_SAVE
+            PARHER = PARHER_SAVE
          END IF
 #endif
 CTROND

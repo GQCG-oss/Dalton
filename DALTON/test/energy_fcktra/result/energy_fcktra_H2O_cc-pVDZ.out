@@ -1,0 +1,2564 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON release Dalton2017.alpha (2016)
+         ( Web site: http://daltonprogram.org )
+
+   ----------------------------------------------------------------------------
+
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
+    and
+     
+       Dalton, a Molecular Electronic Structure Program,
+       Release Dalton2017.alpha (2016), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex frequency response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Darwin) : Thu Aug 11 16:21:30 2016
+     Host name              : adm-106152.pc.sdu.dk                    
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /Users/hjj/progs/gitDalton_hjjtra/build_hjjtra_mpi/test/energy_fcktra
+   2) /Users/hjj/progs/gitDalton_hjjtra/build_hjjtra_mpi/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | hjj
+ Host                     | adm-106152.pc.sdu.dk
+ System                   | Darwin-15.6.0
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | ON
+ Fortran compiler         | /opt/local/bin/mpif90
+ Fortran compiler version | GNU Fortran (MacPorts gcc5 5.4.0_0) 5.4.0
+ C compiler               | /opt/local/bin/mpicc
+ C compiler version       | gcc-mp-5 (MacPorts gcc5 5.4.0_0) 5.4.0
+ C++ compiler             | /opt/local/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /opt/local/lib/libopenblas.dylib
+ LAPACK                   | /usr/lib/liblapack.dylib
+ Static linking           | OFF
+ Last Git revision        | f795574ab680c3dbd26eeb1e76be85f695bea3c1
+ Git branch               | Dalton2014-hjjtra
+ Configuration time       | 2016-08-11 16:21:14.886329
+
+ * Sequential calculation.
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT
+.RUN WAVE FUNCTION
+.FCKTRA
+ 2
+**WAVE FUNCTIONS
+.HF
+.MP2
+.MCSCF
+*MP2 INPUT
+.SOSMP2
+*CONFIGURATION INPUT
+.SYMMETRY
+ 1
+.SPIN MUL
+ 1
+.INACTIVE
+ 1 0 0 0
+.ELECTRONS
+ 8
+.CAS SPACE
+ 4 2 2 0
+*PRINT LEVELS
+.PRINTF
+ 1 0
+ 51
+# p6flag(51) is code for checking that reduced matrix redH is symmetric
+**END OF DALTON INPUT
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS
+cc-pVDZ
+   Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ
+   Test Purpose:     Check energy calculation with symmetry
+    2
+        8.    1
+O     0.0 -0.2249058930 0.0
+        1.    2
+H_a   1.45235 0.899623 0.0
+H_b  -1.45235 0.899623 0.0
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    Fock-matrix based 2-el integral transformation (2016) used, type    2
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1:    Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ            
+ 2:    Test Purpose:     Check energy calculation with symmetry             
+    ------------------------------------------------------------------------
+
+
+
+@ WARNING - deprecated old .mol fixed format input has been detected:
+    2                                                                           
+@ WARNING - this input format may not be supported in future releases.
+
+
+
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   8 :
+     "/Users/hjj/progs/gitDalton_hjjtra/build_hjjtra_mpi/basis/cc-pVDZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/Users/hjj/progs/gitDalton_hjjtra/build_hjjtra_mpi/basis/cc-pVDZ"
+
+
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+@   The molecule is centered at center of mass and rotated
+@   so principal axes of inertia are along coordinate axes.
+
+ Symmetry class found: C(2v)          
+
+ Symmetry Independent Centres             
+ ----------------------------
+       8 :      0.00000000     0.00000000    -0.12585150  Isotope  1
+       1 :      0.00000000     1.45235000     0.99867739  Isotope  1
+
+ The following elements were found:   X  Y     
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Full point group is: C(2v)          
+@    Represented as:      C2v
+
+@  * The irrep name for each symmetry:    1: A1     2: B1     3: B2     4: A2 
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           H_a _1      1.007825
+                           H_a _2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    3
+
+  Basis set used is "cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  O           1    8.0000    26    14      [9s4p1d|3s2p1d]                                    
+  H_          2    1.0000     7     5      [4s1p|2s1p]                                        
+  ----------------------------------------------------------------------
+  total:      3   10.0000    40    24
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    9
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z  -0.1258515023
+  H_a / 1 :     4  x   0.0000000000    5  y   1.4523500000    6  z   0.9986773907
+  H_a / 2 :     7  x   0.0000000000    8  y  -1.4523500000    9  z   0.9986773907
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     3    2    3    1
+
+  Symmetry  A1  ( 1)
+
+    1   O     z    3
+    2   H_a   y    [  5  -    8 ]/2
+    3   H_a   z    [  6  +    9 ]/2
+
+  Symmetry  B1  ( 2)
+
+    4   O     x    1
+    5   H_a   x    [  4  +    7 ]/2
+
+  Symmetry  B2  ( 3)
+
+    6   O     y    2
+    7   H_a   y    [  5  +    8 ]/2
+    8   H_a   z    [  6  -    9 ]/2
+
+  Symmetry  A2  ( 4)
+
+    9   H_a   x    [  4  -    7 ]/2
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           H_a _1      H_a _2
+            ------      ------      ------
+ O     :    0.000000
+ H_a _1:    0.972000    0.000000
+ H_a _2:    0.972000    1.537101    0.000000
+
+
+  Max    interatomic separation is    1.5371 Angstrom (    2.9047 Bohr)
+  between atoms    3 and    2, "H_a _2" and "H_a _1".
+
+  Min HX interatomic separation is    0.9720 Angstrom (    1.8368 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H_a _1     O            0.972000
+  bond distance:  H_a _2     O            0.972000
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H_a _1     O          H_a _2       104.500
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.633889          0.000000    1.000000    0.000000
+   IB       1.190584          0.000000    0.000000    1.000000
+   IC       1.824473          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is planar.
+
+               A                   B                   C
+
+         797267.3370         424479.9976         277000.0210 MHz
+           26.593976           14.159129            9.239726 cm-1
+
+
+@  Nuclear repulsion energy :    9.055004525638 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          11    4    7    2
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        1s         3
+    4     O        2pz        6
+    5     O        2pz        9
+    6     O        3d0       12
+    7     O        3d2+      14
+    8     H_a      1s        15 +   16
+    9     H_a      1s        17 +   18
+   10     H_a      2py       21 -   22
+   11     H_a      2pz       23 +   24
+
+
+  Symmetry  B1 ( 2)
+
+   12     O        2px        4
+   13     O        2px        7
+   14     O        3d1+      13
+   15     H_a      2px       19 +   20
+
+
+  Symmetry  B2 ( 3)
+
+   16     O        2py        5
+   17     O        2py        8
+   18     O        3d1-      11
+   19     H_a      1s        15 -   16
+   20     H_a      1s        17 -   18
+   21     H_a      2py       21 +   22
+   22     H_a      2pz       23 -   24
+
+
+  Symmetry  A2 ( 4)
+
+   23     O        3d2-      10
+   24     H_a      2px       19 -   20
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ HERMIT - Number of two-electron integrals written:       11412 ( 25.3% )
+ HERMIT - Megabytes written:                              0.137
+
+  Total CPU  time used in HERMIT:   0.02 seconds
+  Total wall time used in HERMIT:   0.03 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+@ M. Head-Gordon's SOS MP2 requested.
+@ Scale factors p_S and p_T:      1.300000      0.000000
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:    4    1    2    0
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.704225      -1.499390      -0.671093      -0.296848
+
+ Huckel EHT eigenvalues for symmetry :  2
+           -0.616200
+
+ Huckel EHT eigenvalues for symmetry :  3
+           -0.731017      -0.261127
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Darwin) : Thu Aug 11 16:21:30 2016
+     Host name              : adm-106152.pc.sdu.dk                    
+
+ Title lines from ".mol" input file:
+        Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ            
+        Test Purpose:     Check energy calculation with symmetry             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    MC-SCF optimization.
+@              Type: complete active space calculation (CAS).
+
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+@              an SOS-MP2 calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+     Wave function specification
+     ============================
+@    Wave function type        --- MC-SCF ---
+@    Number of closed shell electrons           2
+@    Number of electrons in active shells       8
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 4 (point group: C2v)
+@    Reference state symmetry                   1 (irrep name : A1 )
+
+     Orbital specifications
+     ======================
+@    Abelian symmetry species          All |    1    2    3    4
+@                                          |  A1   B1   B2   A2 
+                                       --- |  ---  ---  ---  ---
+@    Inactive orbitals                   1 |    1    0    0    0
+@    Active orbitals                     8 |    4    2    2    0
+@    Secondary orbitals                 15 |    6    2    5    2
+@    Total number of orbitals           24 |   11    4    7    2
+@    Number of basis functions          24 |   11    4    7    2
+
+      ** Automatic occupation of RHF orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               5 |    3    1    1    0
+
+     Optimization information
+     ========================
+@    Number of configurations               492
+@    Number of orbital rotations             48
+     ------------------------------------------
+@    Total number of variables              540
+
+     Maximum number of macro iterations      25
+     Maximum number of micro iterations     600
+     Threshold for MCSCF gradient      1.00D-05
+     Number of initial trial vectors          1
+     Number of initial CI iterations          3
+     Number of simultaneous trial vectors     1
+
+@    This calculation converges to the lowest state for the specified symmetry and spin species.
+
+     Maximum number of NEO/NR iterations  24
+
+
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+ Calculating AOSUPINT
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -75.8080240525       2.26D+00  -7.58D+01     3   1   1   0
+      Virial theorem: -V/T =      1.999834
+@      MULPOP O      -0.43; H_a _1  0.22; H_a _2  0.22; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
+ -----------------------------------------------------------------------------
+@  2  -76.0131367633       3.85D-01  -2.05D-01     3   1   1   0
+      Virial theorem: -V/T =      2.001399
+@      MULPOP O      -0.28; H_a _1  0.14; H_a _2  0.14; 
+   2  Level shift: doubly occupied orbital energies shifted by -5.00D-02
+ -----------------------------------------------------------------------------
+@  3  -76.0247463356       9.98D-02  -1.16D-02     3   1   1   0
+      Virial theorem: -V/T =      2.002098
+@      MULPOP O      -0.29; H_a _1  0.15; H_a _2  0.15; 
+   3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
+ -----------------------------------------------------------------------------
+@  4  -76.0256349904       2.81D-02  -8.89D-04     3   1   1   0
+      Virial theorem: -V/T =      2.000751
+@      MULPOP O      -0.32; H_a _1  0.16; H_a _2  0.16; 
+   4  Level shift: doubly occupied orbital energies shifted by -1.25D-02
+ -----------------------------------------------------------------------------
+@  5  -76.0256787758       6.64D-03  -4.38D-05     3   1   1   0
+      Virial theorem: -V/T =      2.001310
+@      MULPOP O      -0.32; H_a _1  0.16; H_a _2  0.16; 
+ -----------------------------------------------------------------------------
+@  6  -76.0256813975       8.77D-04  -2.62D-06     3   1   1   0
+      Virial theorem: -V/T =      2.001205
+@      MULPOP O      -0.32; H_a _1  0.16; H_a _2  0.16; 
+ -----------------------------------------------------------------------------
+@  7  -76.0256814803       1.61D-04  -8.29D-08     3   1   1   0
+      Virial theorem: -V/T =      2.001216
+@      MULPOP O      -0.32; H_a _1  0.16; H_a _2  0.16; 
+ -----------------------------------------------------------------------------
+@  8  -76.0256814839       1.92D-05  -3.55D-09     3   1   1   0
+      Virial theorem: -V/T =      2.001217
+@      MULPOP O      -0.32; H_a _1  0.16; H_a _2  0.16; 
+ -----------------------------------------------------------------------------
+@  9  -76.0256814839       3.76D-06  -4.98D-11     3   1   1   0
+      Virial theorem: -V/T =      2.001217
+@      MULPOP O      -0.32; H_a _1  0.16; H_a _2  0.16; 
+ -----------------------------------------------------------------------------
+@ 10  -76.0256814839       9.58D-07  -2.56D-12     3   1   1   0
+
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -76.025681483944    9.58D-07
+    - total time used in SIRFCK :              0.00 seconds
+
+ --- Writing SIRIFC interface file
+
+ CPU and wall time for SCF :       0.013       0.019
+
+
+ ----- Output from SIRIUS MP2 module -----
+
+ Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,
+            J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)
+
+ Checking that the closed shell orbitals are canonical Hartree-Fock orbitals
+
+    Number of electrons  :   10
+    Closed shell orbitals:    3    1    1    0
+
+ Generating Fock matrix
+
+ Hartree-Fock electronic energy:         -85.080686009581
+ Hartree-Fock total      energy:         -76.025681483944
+
+ Hartree-Fock orbital energies, symmetry 1 ( A1 ),    3 occupied SCF orbitals
+
+       -20.55302006    -1.32934107    -0.56387092     0.18304192     0.84069368
+         1.16451080     1.44696809     1.87052764     2.45391736     3.49100499
+         3.85003075
+
+ Hartree-Fock orbital energies, symmetry 2 ( B1 ),    1 occupied SCF orbitals
+
+        -0.49212363     1.20008014     1.67196076     3.27277142
+
+ Hartree-Fock orbital energies, symmetry 3 ( B2 ),    1 occupied SCF orbitals
+
+        -0.69144637     0.25403521     0.77887078     1.25426148     1.91890925
+         2.41834246     4.13079455
+
+ Hartree-Fock orbital energies, symmetry 4 ( A2 ),    0 occupied SCF orbitals
+
+         1.47255804     3.32446046
+
+    E(LUMO) :     0.18304192   (in symmetry 1)
+  - E(HOMO) :    -0.49212363   (in symmetry 2)
+  --------------------------
+    gap     :     0.67516556
+ Calculating AO2_JINT
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
+
+ 2-el. integral transformation: Total CPU and WALL times (sec)       0.013       0.014
+
+ MP2 move   0.099313 electrons to unoccupied HF orbitals
+
+@   * MP2 calculation was scaled using the factors
+@       p_S :    1.30000000
+@       p_T :    0.00000000
+
+
+@   Hartree-Fock total energy        :           -76.0256814839
+@   + Scaled MP2 contribution        :            -0.1992969368
+@   = Scaled MP2 second order energy :           -76.2249784207
+
+ Natural orbital occupation numbers, symmetry 1 (irrep A1 )
+ Sum =     5.99953726; RHF =     6.00000000; Difference =    -0.00046274
+
+         1.99992466     1.98635873     1.97070026     0.02169203     0.01019381
+         0.00471720     0.00381963     0.00104057     0.00057923     0.00045453
+         0.00005661
+
+ Natural orbital occupation numbers, symmetry 2 (irrep B1 )
+ Sum =     1.99620138; RHF =     2.00000000; Difference =    -0.00379862
+
+         1.97587088     0.01614520     0.00365780     0.00052749
+
+ Natural orbital occupation numbers, symmetry 3 (irrep B2 )
+ Sum =     1.99939436; RHF =     2.00000000; Difference =    -0.00060564
+
+         1.96821845     0.02392261     0.00508404     0.00097404     0.00065051
+         0.00048964     0.00005507
+
+ Natural orbital occupation numbers, symmetry 4 (irrep A2 )
+ Sum =     0.00486700; RHF =     0.00000000; Difference =     0.00486700
+
+         0.00417704     0.00068995
+
+ Time used for MP2 natural orbitals :       0.014 CPU seconds,       0.016 wall seconds.
+
+ CPU and wall time for MP2 :       0.014       0.016
+
+
+        SIRIUS MCSCF optimization (SIROPT)
+ ================================================
+
+
+
+ ----- Output from SIRIUS CI module (CICTL) -----
+
+
+
+
+ 2-el. integral transformation: Total CPU and WALL times (sec)       0.004       0.005
+
+ (CIST1)  4 lowest diagonal elements:
+
+ Element no. Config.no.    Active energy      Total energy
+
+         1 :         20    -23.8021365389    -76.0250280969
+         2 :        131    -22.8484203503    -75.0713119083
+         3 :         80    -22.8220736734    -75.0449652315
+         4 :        120    -22.6041893002    -74.8270808583
+
+
+ %%% Non-symmetric elements in redH, reduced CI matrix,
+     and wrong elements in redS, reduced CI overlap
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+
+ Reduced CI matrix (as bT*s) :
+
+               Column   1
+       1     -23.80213654
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1
+       1       1.00000000
+    ==== End of matrix output ====
+
+
+ Convergence threshold for CI optimization :     0.00000500
+
+
+
+ %%% Non-symmetric elements in redH, reduced CI matrix,
+     and wrong elements in redS, reduced CI overlap
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+
+ Reduced CI matrix (as bT*s) :
+
+               Column   1     Column   2
+       1     -23.80213654     0.61207171
+       2       0.61207171   -20.53197168
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2
+       1       1.00000000     0.00000000
+       2       0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH, reduced CI matrix,
+     and wrong elements in redS, reduced CI overlap
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+
+ Reduced CI matrix (as bT*s) :
+
+               Column   1     Column   2     Column   3
+       1     -23.80213654     0.61207171     0.03133844
+       2       0.61207171   -20.53197168    -0.90127950
+       3       0.03133844    -0.90127950   -19.71555499
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000    -0.00000000
+       3       0.00000000    -0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ *** Reached maximum number of CI iterations:    3
+              1 CI roots are not converged.
+
+
+@ Final CI energies and residuals in symmetry 1 (irrep A1 )
+@    1      -76.145026674948980       4.98D-02
+
+   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1 ( irrep A1  in C2v )
+
+   1.989754746   1.975936559   0.024404509   0.010652324
+
+ Symmetry  2 ( irrep B1  in C2v )
+
+   1.981168105   0.017661635
+
+ Symmetry  3 ( irrep B2  in C2v )
+
+   1.974613542   0.025808581
+
+
+ --- MACRO ITERATION  1 ---
+ --------------------------
+
+ 2-el. integral transformation: Total CPU and WALL times (sec)       0.016       0.016
+
+ Total MCSCF energy       :           -76.145026674948866  (MACRO    1)
+
+ - Nuclear repulsion      :             9.055004525637894
+ - Inactive energy        :           -61.277896083661304
+ - Active energy          :           -23.922135116925460
+
+ Norm of total gradient   :             0.106665341960
+ -    of CI gradient      :             0.099587478001
+ -    of orbital gradient :             0.038207713893
+      Virial theorem: -V/T =      2.000933
+@      MULPOP O      -0.30; H_a _1  0.15; H_a _2  0.15; 
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2
+       1       8.72698045     0.04098247
+       2       0.04098247     0.11506521
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3
+       1       1.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3
+       1       8.72698045     0.04098247    -1.01284699
+       2       0.04098247     0.11506521    -0.31962418
+       3      -1.01284699    -0.31962418     6.27426484
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4
+       1       1.00000000    -0.00000000     0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4
+       1       8.72698045     0.04098247    -1.01284699     1.83704862
+       2       0.04098247     0.11506521    -0.31962418    -0.07656034
+       3      -1.01284699    -0.31962418     6.27426484    -2.64454277
+       4       1.83704862    -0.07656034    -2.64454277    10.32015613
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000     0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1   -1    1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       8.72698045     0.04098247    -1.01284699     1.83704862    -0.03677516
+       2       0.04098247     0.11506521    -0.31962418    -0.07656034    -0.04671683
+       3      -1.01284699    -0.31962418     6.27426484    -2.64454277    -0.05129901
+       4       1.83704862    -0.07656034    -2.64454277    10.32015613    -0.01512822
+       5      -0.03677516    -0.04671683    -0.05129901    -0.01512822     0.16715685
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000     0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column   6
+       6       1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1   -1    1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       8.72698045     0.04098247    -1.01284699     1.83704862    -0.03677516
+       2       0.04098247     0.11506521    -0.31962418    -0.07656034    -0.04671683
+       3      -1.01284699    -0.31962418     6.27426484    -2.64454277    -0.05129901
+       4       1.83704862    -0.07656034    -2.64454277    10.32015613    -0.01512822
+       5      -0.03677516    -0.04671683    -0.05129901    -0.01512822     0.16715685
+       6      -1.29588010     0.02028642     0.26078313    -5.07989034    -0.08125595
+
+               Column   6
+       1      -1.29588010
+       2       0.02028642
+       3       0.26078313
+       4      -5.07989034
+       5      -0.08125595
+       6      12.53211195
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000     0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7
+       6       1.00000000     0.00000000
+       7       0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1   -1    1   -1    1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       8.72698045     0.04098247    -1.01284699     1.83704862    -0.03677516
+       2       0.04098247     0.11506521    -0.31962418    -0.07656034    -0.04671683
+       3      -1.01284699    -0.31962418     6.27426484    -2.64454277    -0.05129901
+       4       1.83704862    -0.07656034    -2.64454277    10.32015613    -0.01512822
+       5      -0.03677516    -0.04671683    -0.05129901    -0.01512822     0.16715685
+       6      -1.29588010     0.02028642     0.26078313    -5.07989034    -0.08125595
+       7      -0.00990821     0.01636472    -0.01768237     0.02747962    -0.09075064
+
+               Column   6     Column   7
+       1      -1.29588010    -0.00990821
+       2       0.02028642     0.01636472
+       3       0.26078313    -0.01768237
+       4      -5.07989034     0.02747962
+       5      -0.08125595    -0.09075064
+       6      12.53211195     0.01238256
+       7       0.01238256     0.22742645
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000     0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7     Column   8
+       6       1.00000000     0.00000000     0.00000000
+       7       0.00000000     1.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+ Residual norm when dim(red L) =   8
+ NEO root     CSF        orbital          total
+    1     0.01142689     0.00319907     0.01186625 converged
+
+ (NEONEX) NEO vector is converged.
+
+   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1 ( irrep A1  in C2v )
+
+   1.988448476   1.975718082   0.025043526   0.011708060
+
+ Symmetry  2 ( irrep B1  in C2v )
+
+   1.981229220   0.018001638
+
+ Symmetry  3 ( irrep B2  in C2v )
+
+   1.973591105   0.026259894
+
+
+ --- MACRO ITERATION  2 ---
+ --------------------------
+
+ 2-el. integral transformation: Total CPU and WALL times (sec)       0.017       0.018
+
+ Total MCSCF energy       :           -76.147511953962521  (MACRO    2)
+
+ - Nuclear repulsion      :             9.055004525637894
+ - Inactive energy        :           -61.281603832472612
+ - Active energy          :           -23.920912647127807
+
+ Norm of total gradient   :             0.031231430289
+ -    of CI gradient      :             0.030404776754
+ -    of orbital gradient :             0.007138052148
+      Virial theorem: -V/T =      2.000924
+@      MULPOP O      -0.30; H_a _1  0.15; H_a _2  0.15; 
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2
+       1       6.61742250     0.03260448
+       2       0.03260448     0.10998563
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3
+       1       1.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3
+       1       6.61742250     0.03260448    -0.72449008
+       2       0.03260448     0.10998563    -0.13232920
+       3      -0.72449008    -0.13232920     8.00625002
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4
+       1       6.61742250     0.03260448    -0.72449008     0.29628686
+       2       0.03260448     0.10998563    -0.13232920    -0.10284418
+       3      -0.72449008    -0.13232920     8.00625002    -3.95339572
+       4       0.29628686    -0.10284418    -3.95339572    13.20884220
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000    -0.00000000     0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1   -1    1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       6.61742250     0.03260448    -0.72449008     0.29628686    -0.21001621
+       2       0.03260448     0.10998563    -0.13232920    -0.10284418    -0.02857437
+       3      -0.72449008    -0.13232920     8.00625002    -3.95339572     0.01170382
+       4       0.29628686    -0.10284418    -3.95339572    13.20884220     0.01806884
+       5      -0.21001621    -0.02857437     0.01170382     0.01806884     0.15490746
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000    -0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column   6
+       6       1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1   -1    1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       6.61742250     0.03260448    -0.72449008     0.29628686    -0.21001621
+       2       0.03260448     0.10998563    -0.13232920    -0.10284418    -0.02857437
+       3      -0.72449008    -0.13232920     8.00625002    -3.95339572     0.01170382
+       4       0.29628686    -0.10284418    -3.95339572    13.20884220     0.01806884
+       5      -0.21001621    -0.02857437     0.01170382     0.01806884     0.15490746
+       6      -0.37379871    -0.03974792     0.25545757    -4.11215601    -0.14488337
+
+               Column   6
+       1      -0.37379871
+       2      -0.03974792
+       3       0.25545757
+       4      -4.11215601
+       5      -0.14488337
+       6       9.40470521
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000    -0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7
+       6       1.00000000     0.00000000
+       7       0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1   -1    1   -1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       6.61742250     0.03260448    -0.72449008     0.29628686    -0.21001621
+       2       0.03260448     0.10998563    -0.13232920    -0.10284418    -0.02857437
+       3      -0.72449008    -0.13232920     8.00625002    -3.95339572     0.01170382
+       4       0.29628686    -0.10284418    -3.95339572    13.20884220     0.01806884
+       5      -0.21001621    -0.02857437     0.01170382     0.01806884     0.15490746
+       6      -0.37379871    -0.03974792     0.25545757    -4.11215601    -0.14488337
+       7      -0.87266294     0.00431434     0.06068571     1.78245907    -0.07167696
+
+               Column   6     Column   7
+       1      -0.37379871    -0.87266294
+       2      -0.03974792     0.00431434
+       3       0.25545757     0.06068571
+       4      -4.11215601     1.78245907
+       5      -0.14488337    -0.07167696
+       6       9.40470521    -5.66322424
+       7      -5.66322424    11.37876010
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000    -0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7     Column   8
+       6       1.00000000     0.00000000     0.00000000
+       7       0.00000000     1.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1   -1    1   -1   -1    1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       6.61742250     0.03260448    -0.72449008     0.29628686    -0.21001621
+       2       0.03260448     0.10998563    -0.13232920    -0.10284418    -0.02857437
+       3      -0.72449008    -0.13232920     8.00625002    -3.95339572     0.01170382
+       4       0.29628686    -0.10284418    -3.95339572    13.20884220     0.01806884
+       5      -0.21001621    -0.02857437     0.01170382     0.01806884     0.15490746
+       6      -0.37379871    -0.03974792     0.25545757    -4.11215601    -0.14488337
+       7      -0.87266294     0.00431434     0.06068571     1.78245907    -0.07167696
+       8      -0.08901600     0.00064224     0.02768357    -0.00386106     0.03001597
+
+               Column   6     Column   7     Column   8
+       1      -0.37379871    -0.87266294    -0.08901600
+       2      -0.03974792     0.00431434     0.00064224
+       3       0.25545757     0.06068571     0.02768357
+       4      -4.11215601     1.78245907    -0.00386106
+       5      -0.14488337    -0.07167696     0.03001597
+       6       9.40470521    -5.66322424    -0.14030742
+       7      -5.66322424    11.37876010    -0.11890044
+       8      -0.14030742    -0.11890044     0.20006286
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000    -0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       6       1.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000000     1.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1   -1    1   -1   -1    1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       6.61742250     0.03260448    -0.72449008     0.29628686    -0.21001621
+       2       0.03260448     0.10998563    -0.13232920    -0.10284418    -0.02857437
+       3      -0.72449008    -0.13232920     8.00625002    -3.95339572     0.01170382
+       4       0.29628686    -0.10284418    -3.95339572    13.20884220     0.01806884
+       5      -0.21001621    -0.02857437     0.01170382     0.01806884     0.15490746
+       6      -0.37379871    -0.03974792     0.25545757    -4.11215601    -0.14488337
+       7      -0.87266294     0.00431434     0.06068571     1.78245907    -0.07167696
+       8      -0.08901600     0.00064224     0.02768357    -0.00386106     0.03001597
+       9       0.12852370     0.02277574    -0.06390956    -0.56019248     0.02678394
+
+               Column   6     Column   7     Column   8     Column   9
+       1      -0.37379871    -0.87266294    -0.08901600     0.12852370
+       2      -0.03974792     0.00431434     0.00064224     0.02277574
+       3       0.25545757     0.06068571     0.02768357    -0.06390956
+       4      -4.11215601     1.78245907    -0.00386106    -0.56019248
+       5      -0.14488337    -0.07167696     0.03001597     0.02678394
+       6       9.40470521    -5.66322424    -0.14030742     0.43077240
+       7      -5.66322424    11.37876010    -0.11890044    -4.38496586
+       8      -0.14030742    -0.11890044     0.20006286    -0.10663859
+       9       0.43077240    -4.38496586    -0.10663859     7.90120559
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000    -0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       6       1.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000000     1.00000000     0.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
+      10       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1   -1    1   -1   -1    1   -1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       6.61742250     0.03260448    -0.72449008     0.29628686    -0.21001621
+       2       0.03260448     0.10998563    -0.13232920    -0.10284418    -0.02857437
+       3      -0.72449008    -0.13232920     8.00625002    -3.95339572     0.01170382
+       4       0.29628686    -0.10284418    -3.95339572    13.20884220     0.01806884
+       5      -0.21001621    -0.02857437     0.01170382     0.01806884     0.15490746
+       6      -0.37379871    -0.03974792     0.25545757    -4.11215601    -0.14488337
+       7      -0.87266294     0.00431434     0.06068571     1.78245907    -0.07167696
+       8      -0.08901600     0.00064224     0.02768357    -0.00386106     0.03001597
+       9       0.12852370     0.02277574    -0.06390956    -0.56019248     0.02678394
+      10       0.16380886     0.05108151    -0.07867287    -0.12469552    -0.01260509
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1      -0.37379871    -0.87266294    -0.08901600     0.12852370     0.16380886
+       2      -0.03974792     0.00431434     0.00064224     0.02277574     0.05108151
+       3       0.25545757     0.06068571     0.02768357    -0.06390956    -0.07867287
+       4      -4.11215601     1.78245907    -0.00386106    -0.56019248    -0.12469552
+       5      -0.14488337    -0.07167696     0.03001597     0.02678394    -0.01260509
+       6       9.40470521    -5.66322424    -0.14030742     0.43077240    -0.03455834
+       7      -5.66322424    11.37876010    -0.11890044    -4.38496586     0.39797182
+       8      -0.14030742    -0.11890044     0.20006286    -0.10663859    -0.04657996
+       9       0.43077240    -4.38496586    -0.10663859     7.90120559    -3.70638920
+      10      -0.03455834     0.39797182    -0.04657996    -3.70638920     9.82142350
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000    -0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       6       1.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000000     1.00000000     0.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
+      10       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
+
+               Column  11
+      11       1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1   -1    1   -1   -1    1   -1   -1    1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       6.61742250     0.03260448    -0.72449008     0.29628686    -0.21001621
+       2       0.03260448     0.10998563    -0.13232920    -0.10284418    -0.02857437
+       3      -0.72449008    -0.13232920     8.00625002    -3.95339572     0.01170382
+       4       0.29628686    -0.10284418    -3.95339572    13.20884220     0.01806884
+       5      -0.21001621    -0.02857437     0.01170382     0.01806884     0.15490746
+       6      -0.37379871    -0.03974792     0.25545757    -4.11215601    -0.14488337
+       7      -0.87266294     0.00431434     0.06068571     1.78245907    -0.07167696
+       8      -0.08901600     0.00064224     0.02768357    -0.00386106     0.03001597
+       9       0.12852370     0.02277574    -0.06390956    -0.56019248     0.02678394
+      10       0.16380886     0.05108151    -0.07867287    -0.12469552    -0.01260509
+      11      -0.03096855     0.00447683    -0.07909281    -0.06362782     0.05660423
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1      -0.37379871    -0.87266294    -0.08901600     0.12852370     0.16380886
+       2      -0.03974792     0.00431434     0.00064224     0.02277574     0.05108151
+       3       0.25545757     0.06068571     0.02768357    -0.06390956    -0.07867287
+       4      -4.11215601     1.78245907    -0.00386106    -0.56019248    -0.12469552
+       5      -0.14488337    -0.07167696     0.03001597     0.02678394    -0.01260509
+       6       9.40470521    -5.66322424    -0.14030742     0.43077240    -0.03455834
+       7      -5.66322424    11.37876010    -0.11890044    -4.38496586     0.39797182
+       8      -0.14030742    -0.11890044     0.20006286    -0.10663859    -0.04657996
+       9       0.43077240    -4.38496586    -0.10663859     7.90120559    -3.70638920
+      10      -0.03455834     0.39797182    -0.04657996    -3.70638920     9.82142350
+      11      -0.09835943    -0.18095565    -0.04246247    -0.26853648    -0.13799345
+
+               Column  11
+       1      -0.03096855
+       2       0.00447683
+       3      -0.07909281
+       4      -0.06362782
+       5       0.05660423
+       6      -0.09835943
+       7      -0.18095565
+       8      -0.04246247
+       9      -0.26853648
+      10      -0.13799345
+      11       0.62466966
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000    -0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       6       1.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000000     1.00000000     0.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
+      10       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
+
+               Column  11     Column  12
+      11       1.00000000     0.00000000
+      12       0.00000000     1.00000000
+    ==== End of matrix output ====
+
+ Residual norm when dim(red L) =  12
+ NEO root     CSF        orbital          total
+    1     0.00060592     0.00016661     0.00062841 converged
+
+ (NEONEX) NEO vector is converged.
+
+   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1 ( irrep A1  in C2v )
+
+   1.989069446   1.976435185   0.024209241   0.011258944
+
+ Symmetry  2 ( irrep B1  in C2v )
+
+   1.981380541   0.017800613
+
+ Symmetry  3 ( irrep B2  in C2v )
+
+   1.974635246   0.025210784
+
+
+ --- MACRO ITERATION  3 ---
+ --------------------------
+
+ 2-el. integral transformation: Total CPU and WALL times (sec)       0.016       0.016
+
+ Total MCSCF energy       :           -76.147614042098667  (MACRO    3)
+
+ - Nuclear repulsion      :             9.055004525637894
+ - Inactive energy        :           -61.283199136167553
+ - Active energy          :           -23.919419431569008
+
+ Norm of total gradient   :             0.000756285302
+ -    of CI gradient      :             0.000682631728
+ -    of orbital gradient :             0.000325547817
+      Virial theorem: -V/T =      2.000969
+@      MULPOP O      -0.30; H_a _1  0.15; H_a _2  0.15; 
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2
+       1       5.67639847     0.03446886
+       2       0.03446886     0.12879643
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3
+       1       1.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3
+       1       5.67639847     0.03446886    -0.00992068
+       2       0.03446886     0.12879643    -0.22416862
+       3      -0.00992068    -0.22416862     6.35145870
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1    1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4
+       1       5.67639847     0.03446886    -0.00992068    -0.14616171
+       2       0.03446886     0.12879643    -0.22416862    -0.05588260
+       3      -0.00992068    -0.22416862     6.35145870    -0.04236110
+       4      -0.14616171    -0.05588260    -0.04236110     0.29605588
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1    1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       5.67639847     0.03446886    -0.00992068    -0.14616171    -1.30788673
+       2       0.03446886     0.12879643    -0.22416862    -0.05588260    -0.09183051
+       3      -0.00992068    -0.22416862     6.35145870    -0.04236110    -3.37862501
+       4      -0.14616171    -0.05588260    -0.04236110     0.29605588    -0.07243393
+       5      -1.30788673    -0.09183051    -3.37862501    -0.07243393    12.10300820
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
+
+               Column   6
+       6       1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1    1   -1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       5.67639847     0.03446886    -0.00992068    -0.14616171    -1.30788673
+       2       0.03446886     0.12879643    -0.22416862    -0.05588260    -0.09183051
+       3      -0.00992068    -0.22416862     6.35145870    -0.04236110    -3.37862501
+       4      -0.14616171    -0.05588260    -0.04236110     0.29605588    -0.07243393
+       5      -1.30788673    -0.09183051    -3.37862501    -0.07243393    12.10300820
+       6       0.42875192     0.00870725     0.43972223    -0.06338053    -5.17207962
+
+               Column   6
+       1       0.42875192
+       2       0.00870725
+       3       0.43972223
+       4      -0.06338053
+       5      -5.17207962
+       6       9.80537159
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7
+       6       1.00000000     0.00000000
+       7       0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1    1   -1   -1    1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       5.67639847     0.03446886    -0.00992068    -0.14616171    -1.30788673
+       2       0.03446886     0.12879643    -0.22416862    -0.05588260    -0.09183051
+       3      -0.00992068    -0.22416862     6.35145870    -0.04236110    -3.37862501
+       4      -0.14616171    -0.05588260    -0.04236110     0.29605588    -0.07243393
+       5      -1.30788673    -0.09183051    -3.37862501    -0.07243393    12.10300820
+       6       0.42875192     0.00870725     0.43972223    -0.06338053    -5.17207962
+       7       0.00897384    -0.02686097    -0.04404200     0.04213939    -0.09374818
+
+               Column   6     Column   7
+       1       0.42875192     0.00897384
+       2       0.00870725    -0.02686097
+       3       0.43972223    -0.04404200
+       4      -0.06338053     0.04213939
+       5      -5.17207962    -0.09374818
+       6       9.80537159    -0.13476106
+       7      -0.13476106     0.22596306
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7     Column   8
+       6       1.00000000     0.00000000     0.00000000
+       7       0.00000000     1.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1    1   -1   -1    1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       5.67639847     0.03446886    -0.00992068    -0.14616171    -1.30788673
+       2       0.03446886     0.12879643    -0.22416862    -0.05588260    -0.09183051
+       3      -0.00992068    -0.22416862     6.35145870    -0.04236110    -3.37862501
+       4      -0.14616171    -0.05588260    -0.04236110     0.29605588    -0.07243393
+       5      -1.30788673    -0.09183051    -3.37862501    -0.07243393    12.10300820
+       6       0.42875192     0.00870725     0.43972223    -0.06338053    -5.17207962
+       7       0.00897384    -0.02686097    -0.04404200     0.04213939    -0.09374818
+       8      -0.97549432     0.04042360    -0.01417551    -0.03443252     0.54202643
+
+               Column   6     Column   7     Column   8
+       1       0.42875192     0.00897384    -0.97549432
+       2       0.00870725    -0.02686097     0.04042360
+       3       0.43972223    -0.04404200    -0.01417551
+       4      -0.06338053     0.04213939    -0.03443252
+       5      -5.17207962    -0.09374818     0.54202643
+       6       9.80537159    -0.13476106    -5.33311433
+       7      -0.13476106     0.22596306    -0.11597401
+       8      -5.33311433    -0.11597401    12.91249584
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       6       1.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000000     1.00000000     0.00000000    -0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000
+       9       0.00000000    -0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1    1   -1   -1    1   -1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       5.67639847     0.03446886    -0.00992068    -0.14616171    -1.30788673
+       2       0.03446886     0.12879643    -0.22416862    -0.05588260    -0.09183051
+       3      -0.00992068    -0.22416862     6.35145870    -0.04236110    -3.37862501
+       4      -0.14616171    -0.05588260    -0.04236110     0.29605588    -0.07243393
+       5      -1.30788673    -0.09183051    -3.37862501    -0.07243393    12.10300820
+       6       0.42875192     0.00870725     0.43972223    -0.06338053    -5.17207962
+       7       0.00897384    -0.02686097    -0.04404200     0.04213939    -0.09374818
+       8      -0.97549432     0.04042360    -0.01417551    -0.03443252     0.54202643
+       9      -0.97310863     0.03380855    -0.15167201    -0.00791164     0.39539818
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.42875192     0.00897384    -0.97549432    -0.97310863
+       2       0.00870725    -0.02686097     0.04042360     0.03380855
+       3       0.43972223    -0.04404200    -0.01417551    -0.15167201
+       4      -0.06338053     0.04213939    -0.03443252    -0.00791164
+       5      -5.17207962    -0.09374818     0.54202643     0.39539818
+       6       9.80537159    -0.13476106    -5.33311433     0.41318541
+       7      -0.13476106     0.22596306    -0.11597401    -0.06700345
+       8      -5.33311433    -0.11597401    12.91249584    -5.34826626
+       9       0.41318541    -0.06700345    -5.34826626    10.09472290
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       6       1.00000000     0.00000000     0.00000000     0.00000000    -0.00000000
+       7       0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       9       0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+      10      -0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1    1   -1   -1    1   -1   -1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       5.67639847     0.03446886    -0.00992068    -0.14616171    -1.30788673
+       2       0.03446886     0.12879643    -0.22416862    -0.05588260    -0.09183051
+       3      -0.00992068    -0.22416862     6.35145870    -0.04236110    -3.37862501
+       4      -0.14616171    -0.05588260    -0.04236110     0.29605588    -0.07243393
+       5      -1.30788673    -0.09183051    -3.37862501    -0.07243393    12.10300820
+       6       0.42875192     0.00870725     0.43972223    -0.06338053    -5.17207962
+       7       0.00897384    -0.02686097    -0.04404200     0.04213939    -0.09374818
+       8      -0.97549432     0.04042360    -0.01417551    -0.03443252     0.54202643
+       9      -0.97310863     0.03380855    -0.15167201    -0.00791164     0.39539818
+      10       0.25588823     0.01170989    -0.00654610     0.01244052    -0.28001515
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.42875192     0.00897384    -0.97549432    -0.97310863     0.25588823
+       2       0.00870725    -0.02686097     0.04042360     0.03380855     0.01170989
+       3       0.43972223    -0.04404200    -0.01417551    -0.15167201    -0.00654610
+       4      -0.06338053     0.04213939    -0.03443252    -0.00791164     0.01244052
+       5      -5.17207962    -0.09374818     0.54202643     0.39539818    -0.28001515
+       6       9.80537159    -0.13476106    -5.33311433     0.41318541     0.35338330
+       7      -0.13476106     0.22596306    -0.11597401    -0.06700345    -0.02205262
+       8      -5.33311433    -0.11597401    12.91249584    -5.34826626     0.03942409
+       9       0.41318541    -0.06700345    -5.34826626    10.09472290    -5.31398072
+      10       0.35338330    -0.02205262     0.03942409    -5.31398072    12.96759402
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       6       1.00000000     0.00000000     0.00000000     0.00000000    -0.00000000
+       7       0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       9       0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+      10      -0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  11
+      11       1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1    1   -1   -1    1   -1   -1   -1    1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       5.67639847     0.03446886    -0.00992068    -0.14616171    -1.30788673
+       2       0.03446886     0.12879643    -0.22416862    -0.05588260    -0.09183051
+       3      -0.00992068    -0.22416862     6.35145870    -0.04236110    -3.37862501
+       4      -0.14616171    -0.05588260    -0.04236110     0.29605588    -0.07243393
+       5      -1.30788673    -0.09183051    -3.37862501    -0.07243393    12.10300820
+       6       0.42875192     0.00870725     0.43972223    -0.06338053    -5.17207962
+       7       0.00897384    -0.02686097    -0.04404200     0.04213939    -0.09374818
+       8      -0.97549432     0.04042360    -0.01417551    -0.03443252     0.54202643
+       9      -0.97310863     0.03380855    -0.15167201    -0.00791164     0.39539818
+      10       0.25588823     0.01170989    -0.00654610     0.01244052    -0.28001515
+      11      -0.16358877     0.01513858    -0.01803865     0.13503116    -0.06850560
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.42875192     0.00897384    -0.97549432    -0.97310863     0.25588823
+       2       0.00870725    -0.02686097     0.04042360     0.03380855     0.01170989
+       3       0.43972223    -0.04404200    -0.01417551    -0.15167201    -0.00654610
+       4      -0.06338053     0.04213939    -0.03443252    -0.00791164     0.01244052
+       5      -5.17207962    -0.09374818     0.54202643     0.39539818    -0.28001515
+       6       9.80537159    -0.13476106    -5.33311433     0.41318541     0.35338330
+       7      -0.13476106     0.22596306    -0.11597401    -0.06700345    -0.02205262
+       8      -5.33311433    -0.11597401    12.91249584    -5.34826626     0.03942409
+       9       0.41318541    -0.06700345    -5.34826626    10.09472290    -5.31398072
+      10       0.35338330    -0.02205262     0.03942409    -5.31398072    12.96759402
+      11      -0.11562132    -0.03327138    -0.13495254    -0.13814522    -0.05957713
+
+               Column  11
+       1      -0.16358877
+       2       0.01513858
+       3      -0.01803865
+       4       0.13503116
+       5      -0.06850560
+       6      -0.11562132
+       7      -0.03327138
+       8      -0.13495254
+       9      -0.13814522
+      10      -0.05957713
+      11       0.40585840
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       6       1.00000000     0.00000000     0.00000000     0.00000000    -0.00000000
+       7       0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       9       0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+      10      -0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  11     Column  12
+      11       1.00000000     0.00000000
+      12       0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1    1   -1   -1    1   -1   -1   -1    1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       5.67639847     0.03446886    -0.00992068    -0.14616171    -1.30788673
+       2       0.03446886     0.12879643    -0.22416862    -0.05588260    -0.09183051
+       3      -0.00992068    -0.22416862     6.35145870    -0.04236110    -3.37862501
+       4      -0.14616171    -0.05588260    -0.04236110     0.29605588    -0.07243393
+       5      -1.30788673    -0.09183051    -3.37862501    -0.07243393    12.10300820
+       6       0.42875192     0.00870725     0.43972223    -0.06338053    -5.17207962
+       7       0.00897384    -0.02686097    -0.04404200     0.04213939    -0.09374818
+       8      -0.97549432     0.04042360    -0.01417551    -0.03443252     0.54202643
+       9      -0.97310863     0.03380855    -0.15167201    -0.00791164     0.39539818
+      10       0.25588823     0.01170989    -0.00654610     0.01244052    -0.28001515
+      11      -0.16358877     0.01513858    -0.01803865     0.13503116    -0.06850560
+      12      -0.98526498    -0.00042736    -0.02874652     0.00154567     0.44485969
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.42875192     0.00897384    -0.97549432    -0.97310863     0.25588823
+       2       0.00870725    -0.02686097     0.04042360     0.03380855     0.01170989
+       3       0.43972223    -0.04404200    -0.01417551    -0.15167201    -0.00654610
+       4      -0.06338053     0.04213939    -0.03443252    -0.00791164     0.01244052
+       5      -5.17207962    -0.09374818     0.54202643     0.39539818    -0.28001515
+       6       9.80537159    -0.13476106    -5.33311433     0.41318541     0.35338330
+       7      -0.13476106     0.22596306    -0.11597401    -0.06700345    -0.02205262
+       8      -5.33311433    -0.11597401    12.91249584    -5.34826626     0.03942409
+       9       0.41318541    -0.06700345    -5.34826626    10.09472290    -5.31398072
+      10       0.35338330    -0.02205262     0.03942409    -5.31398072    12.96759402
+      11      -0.11562132    -0.03327138    -0.13495254    -0.13814522    -0.05957713
+      12      -0.25105712    -0.00697246     0.28455067     0.40764203    -4.34669257
+
+               Column  11     Column  12
+       1      -0.16358877    -0.98526498
+       2       0.01513858    -0.00042736
+       3      -0.01803865    -0.02874652
+       4       0.13503116     0.00154567
+       5      -0.06850560     0.44485969
+       6      -0.11562132    -0.25105712
+       7      -0.03327138    -0.00697246
+       8      -0.13495254     0.28455067
+       9      -0.13814522     0.40764203
+      10      -0.05957713    -4.34669257
+      11       0.40585840    -0.14247818
+      12      -0.14247818    10.07545460
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       6       1.00000000     0.00000000     0.00000000     0.00000000    -0.00000000
+       7       0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       9       0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+      10      -0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  11     Column  12     Column  13
+      11       1.00000000     0.00000000    -0.00000000
+      12       0.00000000     1.00000000     0.00000000
+      13      -0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ %%% Non-symmetric elements in redH
+     and wrong elements in redS
+     ( threshold is  1.00D-08 ) :
+ None, redH is symmetric.
+
+ IBNDX vector:
+   -1   -1    1   -1    1   -1   -1    1   -1   -1   -1    1   -1   -1
+
+
+ Reduced Hessian (as bT*s) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       5.67639847     0.03446886    -0.00992068    -0.14616171    -1.30788673
+       2       0.03446886     0.12879643    -0.22416862    -0.05588260    -0.09183051
+       3      -0.00992068    -0.22416862     6.35145870    -0.04236110    -3.37862501
+       4      -0.14616171    -0.05588260    -0.04236110     0.29605588    -0.07243393
+       5      -1.30788673    -0.09183051    -3.37862501    -0.07243393    12.10300820
+       6       0.42875192     0.00870725     0.43972223    -0.06338053    -5.17207962
+       7       0.00897384    -0.02686097    -0.04404200     0.04213939    -0.09374818
+       8      -0.97549432     0.04042360    -0.01417551    -0.03443252     0.54202643
+       9      -0.97310863     0.03380855    -0.15167201    -0.00791164     0.39539818
+      10       0.25588823     0.01170989    -0.00654610     0.01244052    -0.28001515
+      11      -0.16358877     0.01513858    -0.01803865     0.13503116    -0.06850560
+      12      -0.98526498    -0.00042736    -0.02874652     0.00154567     0.44485969
+      13       0.55342298    -0.00933160     0.04446806    -0.00908394    -0.19705413
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.42875192     0.00897384    -0.97549432    -0.97310863     0.25588823
+       2       0.00870725    -0.02686097     0.04042360     0.03380855     0.01170989
+       3       0.43972223    -0.04404200    -0.01417551    -0.15167201    -0.00654610
+       4      -0.06338053     0.04213939    -0.03443252    -0.00791164     0.01244052
+       5      -5.17207962    -0.09374818     0.54202643     0.39539818    -0.28001515
+       6       9.80537159    -0.13476106    -5.33311433     0.41318541     0.35338330
+       7      -0.13476106     0.22596306    -0.11597401    -0.06700345    -0.02205262
+       8      -5.33311433    -0.11597401    12.91249584    -5.34826626     0.03942409
+       9       0.41318541    -0.06700345    -5.34826626    10.09472290    -5.31398072
+      10       0.35338330    -0.02205262     0.03942409    -5.31398072    12.96759402
+      11      -0.11562132    -0.03327138    -0.13495254    -0.13814522    -0.05957713
+      12      -0.25105712    -0.00697246     0.28455067     0.40764203    -4.34669257
+      13       0.19853741    -0.01496970    -0.20395992    -0.06810084     0.84625711
+
+               Column  11     Column  12     Column  13
+       1      -0.16358877    -0.98526498     0.55342298
+       2       0.01513858    -0.00042736    -0.00933160
+       3      -0.01803865    -0.02874652     0.04446806
+       4       0.13503116     0.00154567    -0.00908394
+       5      -0.06850560     0.44485969    -0.19705413
+       6      -0.11562132    -0.25105712     0.19853741
+       7      -0.03327138    -0.00697246    -0.01496970
+       8      -0.13495254     0.28455067    -0.20395992
+       9      -0.13814522     0.40764203    -0.06810084
+      10      -0.05957713    -4.34669257     0.84625711
+      11       0.40585840    -0.14247818    -0.08570243
+      12      -0.14247818    10.07545460    -5.20741287
+      13      -0.08570243    -5.20741287    11.86380084
+    ==== End of matrix output ====
+
+
+ Reduced overlap (as bT*b) :
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       6       1.00000000     0.00000000     0.00000000     0.00000000    -0.00000000
+       7       0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       9       0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
+      10      -0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  11     Column  12     Column  13     Column  14
+      11       1.00000000     0.00000000    -0.00000000     0.00000000
+      12       0.00000000     1.00000000     0.00000000     0.00000000
+      13      -0.00000000     0.00000000     1.00000000    -0.00000000
+      14       0.00000000     0.00000000    -0.00000000     1.00000000
+    ==== End of matrix output ====
+
+ Residual norm when dim(red L) =  14
+ NEO root     CSF        orbital          total
+    1     0.00000510     0.00000755     0.00000911 converged
+
+ (NEONEX) NEO vector is converged.
+
+   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1 ( irrep A1  in C2v )
+
+   1.989080749   1.976436583   0.024209560   0.011251103
+
+ Symmetry  2 ( irrep B1  in C2v )
+
+   1.981380839   0.017798593
+
+ Symmetry  3 ( irrep B2  in C2v )
+
+   1.974627531   0.025215043
+
+
+ --- MACRO ITERATION  4 ---
+ --------------------------
+
+ 2-el. integral transformation: Total CPU and WALL times (sec)       0.014       0.014
+
+ Total MCSCF energy       :           -76.147614159002345  (MACRO    4)
+
+ - Nuclear repulsion      :             9.055004525637894
+ - Inactive energy        :           -61.283288418193827
+ - Active energy          :           -23.919330266446412
+
+ Norm of total gradient   :             0.000009158147
+ -    of CI gradient      :             0.000005249962
+ -    of orbital gradient :             0.000007503969
+      Virial theorem: -V/T =      2.000973
+@      MULPOP O      -0.30; H_a _1  0.15; H_a _2  0.15; 
+
+ *** Optimization control: MCSCF converged ***
+     Number of macro iterations used            4
+     Number of micro iterations used           28
+     Total number of CPU seconds used         0.21
+
+ CPU and wall time for MCSCF :       0.210       0.222
+
+
+                     .----------------------------------------.
+                     | --- SIRIUS OPTIMIZATION STATISTICS --- |
+                     `----------------------------------------'
+
+
+ 
+     Date and time (Darwin) : Thu Aug 11 16:21:31 2016
+     Host name              : adm-106152.pc.sdu.dk                    
+
+
+  ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
+ ---------------------------------------------------------------------
+    1    6    -76.145026674949   0.1066653420  0.000000   0.2472196410
+    2   10    -76.147511953963   0.0312314303  0.900232   0.0273537242
+    3   12    -76.147614042099   0.0007562853  1.012374   0.0013188878
+    4    0    -76.147614159002   0.0000091581  1.000480   0.0000000000
+
+
+  ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
+ ------------------------------------------------------------------------------
+    1    372   -0.025925    0.099587     16   -0.014479    0.038208    0.106665
+    2    276    0.010416    0.030405     16    0.003590    0.007138    0.031231
+    3     51    0.000232    0.000683     22    0.000167    0.000326    0.000756
+    4     80    0.000002    0.000005     17    0.000005    0.000008    0.000009
+
+
+  ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
+ ------------------------------------------------------------------------------
+
+    1     6     4     3      0.05      0.02      0.03      0.03      0.01
+    2    10     7     4      0.06      0.02      0.04      0.03      0.00
+    3    12     9     4      0.07      0.02      0.05      0.04      0.00
+    4     0     0     0      0.02      0.01      0.00      0.00
+
+
+ ITER         EMY                 EACTIV              EMCSCF
+
+    1    -61.277896083661    -23.922135116925    -76.145026674949
+    2    -61.281603832473    -23.920912647128    -76.147511953963
+    3    -61.283199136168    -23.919419431569    -76.147614042099
+    4    -61.283288418194    -23.919330266446    -76.147614159002
+
+
+ ITER         DEPRED              DEACT               RATIO
+
+    1      0.000000000000      0.000000000000      0.000000000000
+    2     -0.002760710468     -0.002485279014      0.900231676683
+    3     -0.000100840298     -0.000102088136      1.012374403674
+    4     -0.000000116848     -0.000000116904      1.000479502002
+
+
+ ITER    BETA           GAMMA             STPLNG              RTRUST
+
+    1      0.20000000  1.00000000      0.247219641017      0.700000000000
+    2      0.20000000  1.00000000      0.027353724181      0.700000000000
+    3      0.20000000  1.00000000      0.001318887766      0.700000000000
+    4      0.00000000  0.00000000      0.000000000000      0.700000000000
+
+
+ Reduced L root no.  1
+ ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
+ ----------------------------------------------------------------------------
+    1   -0.000220318225    0.998779885639   -0.002122911344   -0.047880148949
+    2   -0.000008066982    0.999985035811   -0.000947919742   -0.005030562601
+    3   -0.000000009348    0.999999965211   -0.000022107409   -0.000258775873
+    4    0.000000000000    0.000000000000    0.000000000000    0.000000000000
+
+
+                       .-----------------------------------.
+                       | --- Final results from SIRIUS --- |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A1  in C2v )
+@    Total charge of molecule:    0
+@    State number:                1
+
+@    Final MCSCF energy:          -76.147614159002                 
+@    Nuclear repulsion:             9.055004525638
+@    Electronic energy:           -85.202618684640
+
+@    Final gradient norm:           0.000009158147
+
+ 
+     Date and time (Darwin) : Thu Aug 11 16:21:31 2016
+     Host name              : adm-106152.pc.sdu.dk                    
+
+ Occupancies of natural orbitals
+ -------------------------------
+
+ Symmetry 1  ( A1 ) -- Total occupation in this symmetry is   6.000977994
+
+   2.000000000   1.989080749   1.976436583   0.024209560   0.011251103
+
+ Symmetry 2  ( B1 ) -- Total occupation in this symmetry is   1.999179432
+
+   1.981380839   0.017798593
+
+ Symmetry 3  ( B2 ) -- Total occupation in this symmetry is   1.999842574
+
+   1.974627531   0.025215043
+
+ Symmetry 4  ( A2 ) -- No occupied orbitals
+
+File label for MO orbitals:  11Aug16   (CNOORB)
+
+ (Only coefficients > 0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 O   :1s     1.0004  -0.0070   0.0003   0.0953   0.5206   0.2039  -0.3553
+   2 O   :1s     0.0013   0.9097   0.1277   0.7366   2.6204   0.7913  -1.4292
+   3 O   :1s    -0.0020  -0.0270  -0.2215  -0.1476  -2.6096  -1.7142   2.3482
+   4 O   :2pz    0.0039  -0.2408   0.7686   1.2797  -0.5909   0.0965  -0.1792
+   5 O   :2pz   -0.0016  -0.0640  -0.0326  -0.8871   0.8988  -0.2739   0.4585
+   6 O   :3d0    0.0000  -0.0067   0.0163  -0.0080   0.0263  -0.0081   0.0660
+   7 O   :3d2+  -0.0001  -0.0005  -0.0060  -0.0194   0.0148   0.0657   0.0691
+   8 H_a :1s     0.0002   0.1400   0.4566  -0.8035  -0.2690  -0.8063  -0.8509
+   9 H_a :1s     0.0004  -0.0775  -0.1832   0.3045   0.1620   1.4286   0.1877
+  10 H_a :2py    0.0005  -0.0190  -0.0405   0.0528   0.0032  -0.1546  -0.2644
+  11 H_a :2pz    0.0005  -0.0216   0.0008  -0.0147   0.0536  -0.0694   0.4383
+
+    Orbital         8        9       10       11
+   1 O   :1s    -0.4348  -0.0720  -0.0831   0.1671
+   2 O   :1s    -1.6758  -0.4811  -0.3015   0.4674
+   3 O   :1s     3.0567  -1.1694   0.6953  -2.4309
+   4 O   :2pz   -0.3178  -0.7296   0.0152  -0.3849
+   5 O   :2pz    1.6587  -0.0758   0.5066  -0.7875
+   6 O   :3d0   -0.1476   0.0582   1.0749  -0.1518
+   7 O   :3d2+   0.0754  -0.1765   0.1850   1.1628
+   8 H_a :1s    -1.7221   0.8622  -0.4851   1.9471
+   9 H_a :1s     0.6758  -0.1739   0.2079  -0.7917
+  10 H_a :2py    0.3881  -0.8192   0.3428  -0.5966
+  11 H_a :2pz   -0.3130  -0.5923  -0.3112  -0.4752
+
+ Molecular orbitals for symmetry species 2  (B1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4
+   1 O   :2px    0.9133  -1.4088  -0.1295   0.0002
+   2 O   :2px    0.0798   1.6069   0.7858  -0.2847
+   3 O   :3d1+   0.0179   0.0304  -0.1627  -1.0380
+   4 H_a :2px    0.0318   0.0800  -0.7588   0.3896
+
+ Molecular orbitals for symmetry species 3  (B2 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 O   :2py    0.7254  -1.3704   0.2200  -0.6057   0.0506   0.8924   0.4694
+   2 O   :2py   -0.1205   0.7418  -0.7014   2.0424  -0.9513  -0.0771   0.9418
+   3 O   :3d1-   0.0267  -0.0399  -0.0856  -0.0316   0.0259  -0.0831   1.3239
+   4 H_a :1s     0.5563   0.8579  -0.8580  -1.3583   0.6549  -0.3845  -1.6854
+   5 H_a :1s    -0.1814  -0.2594   2.0953   0.1391  -0.2201  -0.2122   0.5643
+   6 H_a :2py   -0.0203  -0.0265  -0.0963   0.1717   0.4420   0.7756   0.5824
+   7 H_a :2pz   -0.0293  -0.0250  -0.1156   0.0267  -0.7055   0.5772   0.4770
+
+ Molecular orbitals for symmetry species 4  (A2 )
+ ------------------------------------------------
+
+    Orbital         1        2
+   1 O   :3d2-  -0.1340   1.0607
+   2 H_a :2px   -0.6841  -0.3624
+
+ Printout of CI-coefficients abs greater than 0.05000 for root  1
+ *** NOTE: this root is the reference state ***
+
+ Printout of coefficients in interval  3.1623E-01 to  1.0000E+00
+ ===============================================================
+
+  Coefficient of CSF no.        20 is      0.98066462    9.80664623E-01
+  Orbital          1   2   5   7
+  Spin coupling    2   2   2   2
+
+ Printout of coefficients in interval  1.0000E-01 to  3.1623E-01
+ ===============================================================
+   ( no coefficients )
+
+ Printout of coefficients in interval  5.0000E-02 to  1.0000E-01
+ ===============================================================
+
+  Coefficient of CSF no.        21 is     -0.06242395   -6.24239527E-02
+  Orbital          1   3   5   7
+  Spin coupling    2   2   2   2
+
+  Coefficient of CSF no.        26 is     -0.05175988   -5.17598797E-02
+  Orbital          1   2   6   7
+  Spin coupling    2   2   2   2
+
+  Coefficient of CSF no.        40 is     -0.06584974   -6.58497354E-02
+  Orbital          1   2   5   8
+  Spin coupling    2   2   2   2
+
+  Coefficient of CSF no.       236 is     -0.06269908   -6.26990846E-02
+  Orbital          1   2   5   6   7   8
+  Spin coupling    2   2   1  -1   1  -1
+
+  Coefficient of CSF no.       268 is      0.06957296    6.95729647E-02
+  Orbital          1   5   2   3   7   8
+  Spin coupling    2   2   1  -1   1  -1
+
+  Coefficient of CSF no.       330 is      0.06103406    6.10340616E-02
+  Orbital          1   7   2   3   5   6
+  Spin coupling    2   2   1  -1   1  -1
+
+ Norm of printed CI vector ..      0.98511186
+
+ Magnitude of CI coefficients
+ ============================
+ ( Ranges are relative to norm of vector :  1.00E+00 )
+
+  10- 1 to 10- 0         1    0.96170310E+00      0.9617031032
+  10- 2 to 10- 1        31    0.36871717E-01      0.9985748201
+  10- 3 to 10- 2        89    0.13778489E-02      0.9999526690
+  10- 4 to 10- 3       220    0.47010827E-04      0.9999996798
+  10- 5 to 10- 4       115    0.31904744E-06      0.9999999989
+  10- 6 to 10- 5        35    0.11310382E-08      1.0000000000
+  10- 7 to 10- 6         1    0.48610330E-12      1.0000000000
+  Number of coefficients less than 10^-11 times norm is            0
+
+  Total CPU  time used in SIRIUS :   0.25 seconds
+  Total wall time used in SIRIUS :   0.28 seconds
+
+ 
+     Date and time (Darwin) : Thu Aug 11 16:21:31 2016
+     Host name              : adm-106152.pc.sdu.dk                    
+
+ NOTE:    1 warnings have been issued.
+ Check output, result, and error files for "WARNING".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+  Total CPU  time used in DALTON:   0.28 seconds
+  Total wall time used in DALTON:   0.35 seconds
+
+ 
+     Date and time (Darwin) : Thu Aug 11 16:21:31 2016
+     Host name              : adm-106152.pc.sdu.dk                    

@@ -84,6 +84,7 @@ if(ENABLE_GEN1INT)
     add_dalton_runtest(gen1int_water                "dalton;runtest;gen1int;short")
 endif()
 
+add_dalton_runtest(energy_fcktra                 "dalton;runtest;energy;short;essential")
 add_dalton_runtest(energy_restart                "dalton;runtest;energy;multistep;short")
 add_dalton_runtest(energy_restart_scf            "dalton;runtest;energy;multistep;short;essential")
 add_dalton_runtest(energy_symm                   "dalton;runtest;energy;short;essential")

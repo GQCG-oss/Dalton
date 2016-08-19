@@ -3,7 +3,7 @@
 ## [2017.alpha Unreleased]
 
 ### Added
-- This will be in dalton2017. Please write something here if you implement new features!
+- New parallel 2-electron integral transformatin .FCKTRA
 
 ### Changed
 

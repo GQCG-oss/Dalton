@@ -2196,11 +2196,9 @@ C
  133     CONTINUE
          READ (LUCMD,'(A7)',END=134,ERR=134) WRDRSP
          IF (WRDRSP .EQ. '**RESPO') THEN
-            REWIND (LUCMD)
             RNRESP = .TRUE.
-            CALL SETSIR(WORK(2),LWORK)
-            CALL GPCLOSE(LUSIFC,'KEEP')
             CALL GPCLOSE(LUCMD,'KEEP')
+            IF (LUSIFC.GT.0) CALL GPCLOSE(LUSIFC,'KEEP')
             CALL RSPDRV(WORK(2),LWORK)
          ELSE
             GOTO 133

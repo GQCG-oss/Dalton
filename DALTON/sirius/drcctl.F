@@ -159,8 +159,8 @@ C END REPEAT
 C
       IF (IPRTRA.GT.0) WRITE(LUPRI,1000) LABCD,NLOAD
  1000 FORMAT(/' DRCCTL: Number of Dirac integrals written on file',
-     *    ' "MODRCINT" is',I12,
-     *   /'         Number of passes over Mulliken file MOTWOINT',I5)
+     &    ' "MODRCINT" is',I12,
+     &   /'         Number of passes over Mulliken file MOTWOINT',I5)
 C
  9000 CONTINUE
       CALL GPCLOSE(LUINTD,'KEEP')

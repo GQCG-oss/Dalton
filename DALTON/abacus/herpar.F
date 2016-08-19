@@ -69,7 +69,7 @@ C
 #include "memint.h"
 C
       CALL QENTER('HER_PARDRV')
-      IF (IPRINT .GT. 3) CALL TITLER('Output from HER_PARDRV','*',103)
+      IF (IPRINT .GT. 2) CALL TITLER('Output from HER_PARDRV','*',103)
 C
 C     Determine total number of tasks - MTOTTK.
 C
@@ -353,6 +353,10 @@ C
 !     initialize memory windows for rma access within a given shared-memory / NUMA node
 !--------------------------------------------------------------------------------------
       if(rma_model)then
+         IF (IPRINT .GT. 2) then
+            write(lupri,*) 'Using rma model'
+            flush(lupri)
+         end if
 
         rma_win_info%dmat_win = -1
         rma_win_info%fmat_win = -1
@@ -1388,7 +1392,7 @@ C     This is a slave in a parallel run; check for programming error
      &                I2TYP,ICEDIF,IFTHRS,
      &                N2RED,dmat_buff,fmat_buff,KHESEE,KDMRAO,
      &                KGABAO,KDMRSO,GENCTR,.false.)
-      IF (IPRINT .GE. 2) THEN
+      IF (IPRINT .GE. 1) THEN
          WRITE(LUPRI,'(/A,4I5)')
      &   'After HER_RVINIT; ITYPE, IATOM, NDMAT, MAXDIF =',
      &   ITYPE,IATOM,NDMAT,MAXDIF
@@ -1489,6 +1493,10 @@ C     ***********************************
 C     ***** Calculate the integrals *****
 C     ***********************************
 C
+      IF (IPRINT .GE. 1) THEN
+         write(lupri,*) 'HER_NODSTR: Calling TWOINT'
+         flush(lupri)
+      END IF
       GMAT   = 0
       INDXAB = 0
       NUMDIS = 0
@@ -1541,6 +1549,10 @@ C
       deallocate(JORBS)
       deallocate(KORBS)
 C
+      IF (IPRINT .GE. 1) THEN
+         write(lupri,*) 'Exit from HER_NODSTR'
+         flush(lupri)
+      END IF
       CALL QEXIT('HER_NODSTR')
       RETURN
       END

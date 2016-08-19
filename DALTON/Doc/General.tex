@@ -115,11 +115,15 @@ option.
 %\item[\Key{MINIMIZE}] Alternative keyword to \verb|.OPTIMIZE|. Obsolete,
 %do not use.
 
+\item[\Key{FCKTRA}]\verb| |\newline
+\index{integral transformation!parallel"} Requests that the parallel
+Fock-matrix based two-electron integral transformation routines
+by Hans J\o rgen Aagaard Jensen (2016) are used.
+
 \item[\Key{NEWTRA}]\index{integral transformation!"new"} Requests that the
-two-electron integral transformation routines of Bj\o rn
-Roos should be used during execution of the program, also if less than
-256 orbitals. The "new" transformation is always used if more than 255
-orbitals.
+two-electron integral transformation routines of Bj\"{o}rn ROos
+should be used during execution of the program, also if less than
+256 orbitals. The "new" transformation is always used if more than 255 orbitals.
 
 \item[\Key{NMDDRV}] Calls for a generalized numerical geometry
 differentiation. These routines will take advantage of the full
