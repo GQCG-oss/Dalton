@@ -1343,7 +1343,7 @@ C           -------------------------------------------
                IF (WORD(1:1).NE.'.' .AND. WORD(1:1).NE.'*'
      &                              .AND. WORD(1:1).NE.'!' ) THEN
 
-                  ! read # triplett states
+                  ! read # triplet states
                   READ (LUCMD,*) (NCCEXCI(ISYM,3),ISYM=1,MSYM)
                   WRITE (LUPRI,'(A,8I5)') 'NCCEXCI for triplet:',
      &                 (NCCEXCI(ISYM,3),ISYM=1,MSYM)
