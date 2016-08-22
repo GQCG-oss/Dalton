@@ -80,12 +80,12 @@ C --- start of executable code
       KFREE  = 1
       LFREE  = LWORK
       KFRSAV = KFREE
-     
+
       ! call SIR_INTOPEN_FCKTRA()
 
 !     translate sirius integral level code to FCKTRA and NEWTRA integral level code
       JTRSIR = abs(ITRSIR)
-      call TRALVL(JTRSIR, NTRLVL) 
+      call TRALVL(JTRSIR, NTRLVL)
       IF (JTRSIR .GE. 1 .AND. JTRSIR .LE. 4) NTRLVL = NTRLVL + 1
       ! we need third order, because USEDRC not defined for FCKTRA
 #if FCKTRA_DEBUG > 0
@@ -156,6 +156,8 @@ C --- start of executable code
          ICD_NODE(:) = 0
          LUSUPM_save = LUSUPM
          if (FCKTRA_TYPE .eq. 3) LUSUPM = -9999 ! use RDSUPM
+         if (FCKTRA_TYPE .eq. 4) LUSUPM = -1    ! do not use RDSUPM
+
          call FCKTRA_FCK_DISTRIBUTED(ICDTRA, ITRTYP, ICD_NODE,
      &      WORK(KUCMO), MX_NDMAT,
      &      WORK(KDMAT), WORK(KFMAT), WORK(KFREE), LFREE)
@@ -261,7 +263,7 @@ C --- start of executable code
       do IC = 1, NORBT
          do ID = 1, IC
             ICD = ICD + 1
-#if FCKTRA_DEBUG > 2
+#if FCKTRA_DEBUG > 4
             write (lupri,*) 'mynum, icd, icdtra, icd_node',
      &      mynum, icd, icdtra(icd), icd_node(icd) ; flush(lupri)
 #endif
@@ -368,6 +370,12 @@ C --- start of executable code
             TCPU_FCK = TCPU_FCK + TCPU2 - TCPU1
             TWAL_FCK = TWAL_FCK + TWAL2 - TWAL1
          end if
+         ! (**|CD) in AO basis now in FMAT
+         call FCKTRA_AB_TO_MO(UCMO,NDMAT,FMAT,DMAT,ISYMDM)
+         ! (**|CD) in MO basis now in DMAT
+#if FCKTRA_DEBUG > 2
+         write (lupri,*) 'Back from FCKTRA_AB_TO_MO'; flush(lupri)
+#endif
          IF (MYNUM .NE. 0) THEN
             CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG7)
             CALL MPIXSEND(NDMAT,1,'INTEGER',MASTER,MTAG7)
@@ -382,7 +390,7 @@ C --- start of executable code
             TWAL_WR  = TWAL_WR  + TWAL1 - TWAL2
          end if
       end if
-      
+
       if (FCKTRA_TIMING) then
          call GETTIM(TCPU1,TWAL1)
          write(lupri,*) 'CPU and WALL time (s) AO Fock',
@@ -431,6 +439,7 @@ C --- start of executable code
          do JA = 1,NBAST
             DMAT(JA,JB) = 0.5D0*
      &         (UCMO(JA,IC)*UCMO_BD + UCMO(JA,ID)*UCMO_BC) ! symmetrize
+      ! TODO this symmetrization is not needed, and should not be done for Dirac .. 20.aug.16
          end do
       end do
 
@@ -548,7 +557,7 @@ C --- start of executable code
 !  inforb.h : N2BASX, NORBT,NNORBX, ...
 !  infind.h : ISMO(:)
 !  infpar.h, mpif.h : for MPI: MYNUM
-!  iprtyp.h : defined parallel calculation types  
+!  iprtyp.h : defined parallel calculation types
 #include "maxorb.h"
 #include "maxash.h"
 #include "gnrinf.h"
@@ -618,7 +627,7 @@ C --- start of executable code
       call FCKTRA_WR_LUMINT(NDMAT,WORK,ICD_NODE)
 
 #if FCKTRA_DEBUG > 1
-      write (lupri,*) 'Received from nwho =',nwho 
+      write (lupri,*) 'Received from nwho =',nwho
       write (lupri,*) 'Received and saved ndmat =',ndmat
       write(lupri,'(A,(20I5))') 'The CD records:',ICD_NODE(1:NDMAT)
 #endif
@@ -816,8 +825,6 @@ C --- start of executable code
 #if FCKTRA_DEBUG > 3
       write(LUPRI,*) 'FCKTRA_NXTH2M called, IC, ID, IDIST =',
      &   IC, ID, IDIST
-      write(LUPRI,*) 'FCKTRA_NXTH2M called, LUINTM, LUMINT =',
-     &   LUINTM, LUMINT
       flush(LUPRI)
 #endif
 
@@ -866,7 +873,7 @@ C --- start of executable code
 
   100    continue
          if (IDIST .eq. NCDTRA) then
-            ! finished 
+            ! finished
             IDIST = -1
             !deallocate(ICDTRA)
             return
@@ -916,7 +923,7 @@ C --- start of executable code
 !
 !  Written by Hans Joergen Aa. Jensen 2016
 !  This version is interface routine for .FCKTRA integral transformation.
-!  
+!
 ! Purpose:
 !    Read next Dirac two-electron integral distribution <**|cd> = (*c|*d)
 !    where (cd) distribution is needed according to NEEDTP(ITYPCD)
@@ -935,6 +942,6 @@ C --- start of executable code
 
       call quit('ERROR: FCKTRA_NXTH2D is not implemented')
 
-     
+
       end
 ! -- end of DALTON/sirius/sirfcktra.F --
