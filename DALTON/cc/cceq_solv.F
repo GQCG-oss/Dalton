@@ -766,20 +766,20 @@ C
          END IF
          IF (LRMCORE) THEN
            write(lupri,*)'CCEQ_STR: freeze CORE '
-           if (triplet) then
+           if (TRIPLET) then
                KCAM1 = KV
                KCAMP = KCAM1 + NT1AM(ISYMTR)
                KCAMM = KCAMP + NT2AM(ISYMTR)
-           CALL CC_FREEZE_TRIPLETEXCI(WORK(KCAM1), WORK(KCAMP), 
-     &         WORK(KCAMM),ISYMTR,
-     &         MAXCORE,MAXION,
-     &         NRHFCORE,IRHFCORE,
-     &         NVIRION,IVIRION,LBOTHEXCI)
+               CALL CC_FREEZE_TRIPLETCORE(WORK(KCAM1), WORK(KCAMP), 
+     &          WORK(KCAMM),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,LBOTHEXCI)
            else
                CALL CC_FREEZE_CORE(WORK(KV),ISYMTR,
-     &         MAXCORE,MAXION,
-     &         NRHFCORE,IRHFCORE,
-     &         NVIRION,IVIRION,.false.)
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,.false.)
            end if
          END IF
 CCN
@@ -971,10 +971,22 @@ C              ----------------------
                END IF
                IF (LRMCORE) THEN
                   !write(lupri,*)'CCNEX: freeze the core'
-                  CALL CC_FREEZE_CORE(WRK(LGD),ISYMTR,
-     &             MAXCORE,MAXION,
-     &             NRHFCORE,IRHFCORE,
-     &             NVIRION,IVIRION,.false.)
+                 IF (TRIPLET) THEN
+C Eirik
+                   KCAM1 = LGD
+                   KCAMP = KCAM1 + NT1AM(ISYMTR)
+                   KCAMM = KCAMP + NT2AM(ISYMTR)
+                   CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), WRK(KCAMP),
+     &              WRK(KCAMM),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,.false.)
+                 ELSE
+                   CALL CC_FREEZE_CORE(WRK(LGD),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,.false.)
+                 END IF
                END IF
                !
                LGD = LGD + NCCVAR
@@ -1088,11 +1100,23 @@ C        -----------------------------------------------
               end if
             END IF
             IF (LRMCORE) THEN
-               !write(lupri,*)'CCNEX: freeze the core'
-               CALL CC_FREEZE_CORE(WRK(KWRK1),ISYMTR,
-     &          MAXCORE,MAXION,
-     &          NRHFCORE,IRHFCORE,
-     &          NVIRION,IVIRION,.false.)
+               IF (TRIPLET) THEN
+C Eirik
+                 KCAM1 = KWRK1
+                 KCAMP = KCAM1 + NT1AM(ISYMTR)
+                 KCAMM = KCAMP + NT2AM(ISYMTR)
+                 CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), WRK(KCAMP),
+     &            WRK(KCAMM),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,.false.)
+               ELSE               
+!write(lupri,*)'CCNEX: freeze the core'
+                 CALL CC_FREEZE_CORE(WRK(KWRK1),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,.false.)
+               END IF
             END IF
             DO JR = 1,NBX
                JROOTJ = ISIMC - 1 + JR
@@ -1153,10 +1177,22 @@ C        -------------------------------------------------------
             DO JR = 1,NBX
             !WRITE(LUPRI,*)'freeze core in resid'
                KOFF = KRES+(JR-1)*NCCVAR
-               CALL CC_FREEZE_CORE(WRK(Koff),ISYMTR,
-     &         MAXCORE,MAXION,
-     &         NRHFCORE,IRHFCORE,
-     &         NVIRION,IVIRION,.FALSE.)
+               IF (TRIPLET) THEN
+C Eirik
+                 KCAM1 = KOFF
+                 KCAMP = KCAM1 + NT1AM(ISYMTR)
+                 KCAMM = KCAMP + NT2AM(ISYMTR)
+                 CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), WRK(KCAMP),
+     &            WRK(KCAMM),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,.FALSE.)
+               ELSE
+                 CALL CC_FREEZE_CORE(WRK(Koff),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,.FALSE.)
+               END IF
             END DO
          END IF
 C        ------------------------------------------
@@ -1266,11 +1302,11 @@ C        -----------------------------------------------------------
                  KCAM1 = Koff
                  KCAMP = KCAM1 + NT1AM(ISYMTR)
                  KCAMM = KCAMP + NT2AM(ISYMTR)
-           CALL CC_FREEZE_TRIPLETEXCI(WRK(KCAM1), WRK(KCAMP),
-     &          WRK(KCAMM),ISYMTR,
-     &          MAXCORE,MAXION,
-     &          NRHFCORE,IRHFCORE,
-     &          NVIRION,IVIRION,LBOTHEXCI)
+                 CALL CC_FREEZE_TRIPLETEXCI(WRK(KCAM1), WRK(KCAMP),
+     &            WRK(KCAMM),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,LBOTHEXCI)
            else
                CALL CC_FREEZE_EXCI(WRK(Koff),ISYMTR,
      &         MAXCORE,MAXION,
@@ -1283,10 +1319,22 @@ C        -----------------------------------------------------------
             DO JR = 1,NFIN
             !write(lupri,*)'CCNEX CVS or IONISATION upd trials'
                koff = KRES+(JR-1)*NCCVAR
-               CALL CC_FREEZE_CORE(WRK(Koff),ISYMTR,
-     &         MAXCORE,MAXION,
-     &         NRHFCORE,IRHFCORE,
-     &         NVIRION,IVIRION,.false.)
+               IF (TRIPLET) THEN
+C Eirik
+                 KCAM1 = KOFF
+                 KCAMP = KCAM1 + NT1AM(ISYMTR)
+                 KCAMM = KCAMP + NT2AM(ISYMTR)
+                 CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), WRK(KCAMP),
+     &            WRK(KCAMM),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,.false.)
+               ELSE
+                 CALL CC_FREEZE_CORE(WRK(Koff),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,.false.)
+               END IF
             END DO
          END IF
 CCN
@@ -1551,10 +1599,22 @@ C
                IF (LRMCORE) THEN
                  write(lupri,*)'CCRED CVS/IONIS sigma_',ivenu,
      &           'project out core or virtual'
-                 CALL CC_FREEZE_CORE(WRK(LSVEC),ISYMTR,
-     &            MAXCORE,MAXION,
-     &            NRHFCORE,IRHFCORE,
-     &            NVIRION,IVIRION,.false.)
+                 IF (TRIPLET) THEN
+C Eirik
+                   KCAM1 = LSVEC
+                   KCAMP = KCAM1 + NT1AM(ISYMTR)
+                   KCAMM = KCAMP + NT2AM(ISYMTR)
+                   CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), WRK(KCAMP),
+     &              WRK(KCAMM),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,.false.)
+                 ELSE
+                   CALL CC_FREEZE_CORE(WRK(LSVEC),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,.false.)
+                 END IF
                END IF
 !sonia
                LSVEC = LSVEC + NCCVAR
@@ -1686,10 +1746,23 @@ C
                   END IF
                   IF (LRMCORE) THEN
                     !write(lupri,*)'CCRED remove core orbitals',J
-                    CALL CC_FREEZE_CORE(WRK(KSVEC),ISYMTR,
+                    IF (TRIPLET) THEN
+C Eirik
+                      KCAM1 = KSVEC
+                      KCAMP = KCAM1 + NT1AM(ISYMTR)
+                      KCAMM = KCAMP + NT2AM(ISYMTR)
+                      CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), 
+     &                 WRK(KCAMP),
+     &                 WRK(KCAMM),ISYMTR,
+     &                 MAXCORE,MAXION,
+     &                 NRHFCORE,IRHFCORE,
+     &                 NVIRION,IVIRION,.false.)
+                    ELSE
+                      CALL CC_FREEZE_CORE(WRK(KSVEC),ISYMTR,
      &                   MAXCORE,MAXION,
      &                   NRHFCORE,IRHFCORE,
      &                   NVIRION,IVIRION,.false.)
+                    END IF
                   END IF
 
                   IF (LREDS) THEN
@@ -1781,17 +1854,39 @@ cs -------------------------------
 cs ------------------
                IF (LCVSEXCI.or.LIONIZEXCI) THEN
                   !write(lupri,*)'CCNEX:CVS or IONISATION (1)'
-                  CALL CC_FREEZE_EXCI(WRK(LGDVEC),ISYMTR,
-     &             MAXCORE,MAXION,
-     &             NRHFCORE,IRHFCORE,
-     &             NVIRION,IVIRION,LBOTHEXCI)
+                 IF (TRIPLET) THEN
+C Eirik
+                   KCAM1 = LGDVEC
+                   KCAMP = KCAM1 + NT1AM(ISYMTR)
+                   KCAMM = KCAMP + NT2AM(ISYMTR)
+                   CALL CC_FREEZE_TRIPLETEXCI(WRK(KCAM1),WRK(KCAMP),
+     &              WRK(KCAMM),ISYMTR,MAXCORE,MAXION,NRHFCORE,
+     &              IRHFCORE,NVIRION,IVIRION,LBOTHEXCI)
+                 ELSE 
+                   CALL CC_FREEZE_EXCI(WRK(LGDVEC),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,LBOTHEXCI)
+                 END IF
                END IF
                IF (LRMCORE) THEN
                write(lupri,*)'CCRED: freeze the core in grad'
-                  CALL CC_FREEZE_CORE(WRK(LGDVEC),ISYMTR,
-     &             MAXCORE,MAXION,
-     &             NRHFCORE,IRHFCORE,
-     &             NVIRION,IVIRION,.false.)
+                 IF (TRIPLET) THEN
+C Eirik
+                   KCAM1 = LGDVEC
+                   KCAMP = KCAM1 + NT1AM(ISYMTR)
+                   KCAMM = KCAMP + NT2AM(ISYMTR)
+                   CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), WRK(KCAMP),
+     &              WRK(KCAMM),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,.false.)
+                 ELSE
+                   CALL CC_FREEZE_CORE(WRK(LGDVEC),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,.false.)
+                 END IF
                END IF
 C
                   LGDVEC = LGDVEC + NCCVAR

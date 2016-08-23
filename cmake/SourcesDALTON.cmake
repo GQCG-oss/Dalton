@@ -288,10 +288,10 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/cc_mofconr12.F
     DALTON/cc/cc_nuccon.F
     DALTON/cc/cc_opa.F
-    DALTON/cc/cc_transden.F
-    DALTON/cc/cc_transdens_exci.F
-    DALTON/cc/cclx_d1ao.F
-    DALTON/cc/ccrx_d1ao.F
+#    DALTON/cc/cc_transden.F
+#    DALTON/cc/cc_transdens_exci.F
+#    DALTON/cc/cclx_d1ao.F
+#    DALTON/cc/ccrx_d1ao.F
     DALTON/cc/cc_omega2_rccd.F
     DALTON/cc/cc_pckutil.F
     DALTON/cc/cc_pqi.F
@@ -411,6 +411,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
 #    DALTON/cc/cc_freeze_val.F
     DALTON/cc/cc_freeze_exci.F
     DALTON/cc/cc_freeze_core.F
+    DALTON/cc/cc_freeze_tripletcore.F
     DALTON/cc/cc_freeze_tripletexci.F
 #    DALTON/cc/cc_soldrv_noddy.F
 #    DALTON/cc/cceq_solv_noddy.F
@@ -424,7 +425,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
 #    DALTON/cc/cc_lanczos_Fmatrix.F
 #    DALTON/cc/cc_lanczos_Fmatrix_old.F
     DALTON/cc/cc_molden.F
-    DALTON/cc/cc_molden_dyson.F
+#    DALTON/cc/cc_molden_dyson.F
     DALTON/cc/rpa_grad.F
     DALTON/cc/cc_active.F
     DALTON/choles/cc_caa.F
