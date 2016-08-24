@@ -9,7 +9,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, July 1997
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
-C     Andrea Ligabue, December 2003: linear response functions 
+C     Andrea Ligabue, December 2003: linear response functions
 C                                    implemented
 C     Rasmus Faber, October 2015: Now (again?) return only excitation
 C                                 part. Merged with rp version
@@ -19,18 +19,18 @@ C              (GPVC1 and GPVC2) for the property with label LABEL
 C              and symmetry ISYMTR.
 C
 C     INPUT:
-C        LABEL         Label of the property to read         
+C        LABEL         Label of the property to read
 C        MODEL         Determines which terms to include
 C        ISYMTR        Symmetry of trial-vector, and gradient
 C        T2AM(LT2AM)   Doubles amplitudes (IA)
 C                      Density matricies  (IA):
 C        DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
-C         
-C     OUTPUT:         
+C
+C     OUTPUT:
 C        GPVC1(LGPVC1) 1p-1h gradient, excitation part
 C        GPVC2(LGPVC2) 2p-2h gradient, excitation part (IA)
 C        IMAGPROP      Whether the property operators are imaginary
-C         
+C
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -47,9 +47,10 @@ C
       LOGICAL     IMAGPROP, DOUBLES
 C
       DOUBLES =     MODEL.EQ.'AOSOP'.OR.MODEL.EQ.'AOSOC'
-     &          .OR.MODEL.EQ.'DCRPA'
-      LGPVC1H = LGPVC1 
-      IF(DOUBLES) LGPVC2H = LGPVC2 
+CPi
+     &          .OR.MODEL.EQ.'DCRPA'.OR.MODEL.EQ.'AOCC2'
+      LGPVC1H = LGPVC1
+      IF(DOUBLES) LGPVC2H = LGPVC2
 C      SQ2 = DSQRT(TWO)
 C
 C------------------
@@ -110,7 +111,7 @@ C
 C        Something is rotten
          CALL AROUND( 'In SO_GETGP:  '//
      &                'Invalid property type' )
-      ENDIF        
+      ENDIF
 C
 C-----------------------------------------------------------------
 C     Initialize and determine the SOPPA gradient property vector.
@@ -133,7 +134,7 @@ C
          CALL CC_PRP(GPVC1,GPVC1,ISYMTR,1,0)
       ENDIF
 C
-C     RPA calculations stop here      
+C     RPA calculations stop here
       IF (MODEL.EQ.'AORPA') GOTO 1010
 C
 C-------------------------------------------------------------
@@ -181,7 +182,7 @@ C
       ENDIF
 C
 C     JUMP-POINT For exit
-1010  CONTINUE 
+1010  CONTINUE
 C
 C-----------------------
 C     Remove from trace.

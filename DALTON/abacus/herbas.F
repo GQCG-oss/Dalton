@@ -49,8 +49,8 @@ C*             coefficients are normalized.                  *
 C*     NBLOCK - total number of blocks; here always same as  *
 C*              IQM, but in GTOINP the user may divide any   *
 C*              IQM value in several blocks.                 *
-C*     KAOVEC, KPRIM, Q, DSM are max (angular quantum number *
-C*             + 1), max number of primitives, nuclear       *
+C*     KAOVEC - max blocks, here (angular quantum number + 1)*
+C*     KPRIM, Q, DSM are max number of primitives, nuclear   *
 C*             charge, highest number to be accepted as zero *
 C*     BASREF - documentation lines for basis set            *
 C*     QEFF is eff. nuclear charge which is .le. Q,          *
@@ -63,7 +63,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-      LOGICAL   UNCONT, SEG, READNU_CALLED
+      LOGICAL   UNCONT, SEG
       DIMENSION JCO(MXAQN), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
      +          ALPHA(KPRIM, KAOVEC), CPRIMU(KPRIM, KPRIM, KAOVEC),
      +          CPRIM(KPRIM,KPRIM, KAOVEC), ISGEN(KAOVEC)
@@ -93,7 +93,7 @@ C*************************************************************
 C
       CHARACTER*80 BASNAM,  BASTMP, BASSAV
       CHARACTER*80 BASREF(10)
-      LOGICAL NEWEL, SEGEJ, ANO, SADLEJ, POLFUN, FOUND, NQVD
+      LOGICAL NEWEL, SEGEJ, ANO, SADLEJ, POLFUN, FOUND, NQVD, EMSL_TYPE
 #ifdef PRG_DIRAC
 C     Define a maximum number of primitives that can go in one block
 C     for UNCONTRACTED basis sets. The value given is for s-functions
@@ -396,13 +396,15 @@ C
          CALL FIND_NQD(BASNAM,INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,NRC,
      &       SEG,KPRIM,KAOVEC,DSM,POLFUN,IPOLST,UNCONT,LUBAS,IPRINT)
       ELSE
-         CALL FIND_ELEMENT(BASTMP,INTQ,LUBAS,IPRINT)
+         CALL FIND_ELEMENT(BASTMP,INTQ,LUBAS,IPRINT,EMSL_TYPE)
 C
 C Finds the number of primitives and columns of contraction coefficients
 C
-         CALL FIND_POS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
+         CALL FIND_POS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS,
+     &      IPRINT, EMSL_TYPE)
 C
  10      CONTINUE
+         IF ( .NOT. NEWEL) THEN
 
             IF (INTEXP.GT.KPRIM) GOTO 5010
             IF (abs(INTORB).GT.INTEXP) THEN
@@ -412,11 +414,10 @@ C
      &         '       in basis ',BASNAM
             END IF
 C
-         IF ( .NOT. NEWEL) THEN
             NBLOCK = NBLOCK + 1
             IF (NBLOCK .GT. KAOVEC) THEN
                CALL QUIT('Too many AO blocks'//
-     &            ' for available work memory; increase WRKMEM')
+     &            ' for available work memory; increase KAOVEC')
             END IF
 C
 C Setting ALPHA, CPRIMU AND CPRIM to zero.
@@ -425,7 +426,7 @@ C
             CALL DZERO(CPRIMU(1,1, NBLOCK), KPRIM*KPRIM)
             CALL DZERO(CPRIM (1, 1, NBLOCK), KPRIM*KPRIM)
 C
-C Reading the primitives and contraction coefficients from file in READNU
+C Reading the primitives and contraction coefficients from file in READ_NU
 C
             IF (ANO .OR. SADLEJ) THEN
                IQCORE = NINT(Q-QEFF)
@@ -435,16 +436,15 @@ C
                IF (INTORB .EQ. 0) THEN
                   NBLOCK = NBLOCK - 1 ! why this? Can we imagine user wants 2 0 1, i.e. 2s 0p 1d ??????
                   CALL FIND_POS ( NEWEL, INTEXP, INTORB,
-     &                            INTISG, LUBAS, IPRINT)
+     &                            INTISG, LUBAS, IPRINT, EMSL_TYPE)
                   GOTO 10
                END IF
             ELSE
 Chj-aug99:     if (UNCONT) force uncontracted
                IF (UNCONT) INTORB = -INTORB
-               CALL READNU(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU,ALPHA,
-     +                KPRIM,IAUG,DSM,BASNAM,POLFUN,IPOLST,LUBAS,IPRINT)
-
-               READNU_CALLED = .TRUE.
+               CALL READ_NU(INTEXP,INTORB,NBLOCK, ALPHA,CPRIMU,
+     &                      KAOVEC,KPRIM, IAUG,POLFUN,IPOLST,
+     &                      LUBAS,BASNAM,IPRINT)
 
             END IF
 C
@@ -482,9 +482,10 @@ C
 C
 C Define the type of the next relevant line in file
 C
-            CALL FIND_POS( NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
+            CALL FIND_POS( NEWEL, INTEXP, INTORB, INTISG,
+     &         LUBAS, IPRINT, EMSL_TYPE)
             GOTO 10
-         END IF
+         END IF ! .not. NEWEL
       END IF
 C
       IF (POLFUN) THEN
@@ -589,8 +590,7 @@ C
 C*************************************************************
 C* This is the subroutine that takes care of the reading of  *
 C* the primitives and the contraction coefficients from the  *
-C* file (for a given format). The variables that are         *
-C* transferred out are:                                      *
+C* file. The variables that are transferred out are:         *
 C*     CPRIMU - The matrix that the contraction coefficients *
 C*              are put in (not normalized).                 *
 C*     ALPHA - The matrix where the primitives are put in    *
@@ -598,194 +598,67 @@ C*     (Both of the variables are given for a given (quantum *
 C*     number + 1))                                          *
 C*************************************************************
 C
-C/* Deck readnu */
-      SUBROUTINE READNU(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU, ALPHA,
-     +            KPRIM,IAUG,DSM,BASNAM,POLFUN,IPOLST,LUBAS,IPRINT)
+C/* Deck read_nu */
+      SUBROUTINE READ_NU(INTEXP,INTORB,NBLOCK, ALPHA,CPRIMU,
+     &                   KAOVEC,KPRIM, IAUG,POLFUN,IPOLST,
+     &                   LUBAS,BASNAM,IPRINT)
+C
+C Reading the exponents and contraction coefficients
+C for standard Dalton-type basis sets (i.e. not MOLCAS ANO format)
+C
+C Rewritten May 2016 hjaaj to free format input from LUBAS
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-C
-C Reading the exponents
-C
-      DIMENSION CPRIMU( KPRIM, KPRIM, KAOVEC), ALPHA(KPRIM, KAOVEC)
-C**************************************************************
-C* Variable declarations:                                     *
-C*     SIGN   - Character that gives what kind of sentence    *
-C*              it is.                                        *
-C*     STRING - A character string that helps bulletproofing  *
-C*              the subroutine                                *
-C**************************************************************
-      CHARACTER SIGN
-      CHARACTER STRING*300, BASNAM*(*)
+      REAL*8    ALPHA(KPRIM, KAOVEC), CPRIMU( KPRIM, KPRIM, KAOVEC)
       LOGICAL   POLFUN
-C
-C CONEOR is the maximum number of columns of contraction coefficients on
-C the 1. line in file. If INTORB is .GT. CONEOR then the contraction
-C coefficients will continue on the next line. CONORB is the max. number
-C of contraction coefficients on the next lines.
-C
-      INTEGER CONEOR, CONORB
-      PARAMETER(CONEOR = 6, CONORB = 7)
+      CHARACTER BASNAM*(*)
+
       IF (IPRINT.GE.5) THEN
-       CALL HEADER('Output from READNU',-1)
-       WRITE(lupri,*) 'entering READNU, IPRINT=',IPRINT
-       WRITE(lupri,*) 'NBLOCK,INTORB:',NBLOCK,INTORB
-       WRITE(lupri,*) 'DSM=',DSM
+       CALL HEADER('Output from READ_NU',-1)
+       WRITE(lupri,*) 'INTEXP,INTORB,NBLOCK:',INTEXP,INTORB,NBLOCK
+       WRITE(lupri,*) 'IPRINT=',IPRINT
       ENDIF
 
+      INTORB_dim = ABS(INTORB)
+      DO J = 1, INTEXP
+          IF (INTORB .EQ. 0) THEN
+C            uncontracted basis set
+             READ (LUBAS, * ,IOSTAT=IOS) ALPHA(J,NBLOCK)
+             CPRIMU(J,J,NBLOCK) = 1.0D0
+          ELSE IF (INTORB .LT. 0) THEN
+C            forced uncontracted with .UNCONT
+             READ (LUBAS, * ,IOSTAT=IOS) ALPHA(J,NBLOCK),
+     &          (DUM, I=1,INTORB_dim)
+             CPRIMU(J,J,NBLOCK) = 1.0D0
+          ELSE
+             READ (LUBAS, * ,IOSTAT=IOS) ALPHA(J,NBLOCK),
+     &          (CPRIMU(J,I,NBLOCK), I = 1, INTORB)
+          END IF
+          IF (IOS.NE.0) THEN
+             WRITE(LUPRI,*) 'BASLIB READ_NU: Error in reading basis set'
+             WRITE(LUPRI,*) 'IOSTAT code ',IOS
+             WRITE(LUPRI,*) 'BASNAM : ',TRIM(BASNAM)
+             WRITE(lupri,*) 'INTEXP,INTORB,NBLOCK:',INTEXP,INTORB,NBLOCK
+             WRITE(lupri,*) 'Exponent no. ',J
+             CALL QUIT('BASLIB READ_NU: Error in reading basis set')
+          END IF
+          IF (IPRINT.GE.6) THEN
+             WRITE(lupri,*)
+     &          'READ_NU read - J,NBLOCK,ALPHA(J,NBLOCK)',
+     &          J,NBLOCK,ALPHA(J,NBLOCK)
+             IF (INTORB .gt. 0) WRITE(lupri,*)
+     &          'READ_NU read - CPRIMU:',
+     &          (CPRIMU(J,I,NBLOCK),I=1,INTORB)
+          END IF
+      END DO ! J
 C
-C Initializing a counting variable that must be 0 before loop
+C     For uncontracted basis sets, update INTORB.
 C
-      J = 0
-C
- 20   CONTINUE
-      IF ( J .LT. INTEXP) THEN
-C
-C Reading the primitive and contracted coefficients
-C
-         READ(LUBAS, '(A)', IOSTAT = IOERR, ERR = 2000) STRING
-
-         IF (IPRINT.GE.7)
-     &      WRITE(LUPRI,'(A,A)') '  READNU: read STRING=',STRING
-
-         READ (STRING, '(A1)') SIGN
-
-         IF (IPRINT.GE.7)
-     &      WRITE(LUPRI,'(A,A)') '  READNU: read SIGN=',SIGN
-
-         IF (SIGN .EQ. ' ') THEN
-C
-            len_STRING = LNBLNK(STRING)
-            IF (len_STRING .GT. 0) THEN
-C
-C We have found a line with a primitive and coefficients
-C
-               J = J + 1
-C
-C BAS_CONLIN returns the number of lines we have the contraction
-C coefficients written on.
-C
-               CALL BAS_CONLIN(INTORB, NUMLIN, IPRINT)
-
-               IF (INTORB .LE. 0) THEN
-C                 uncontracted basis set or
-C                 forced uncontracted with .UNCONT
-                  READ (STRING, * ,IOSTAT=IOS) ALPHA(J,NBLOCK)
-                  IF (IOS.NE.0)
-     &               CALL QUIT('BASLIB READNU: Error in reading alpha')
-
-C                 skip continuation lines for contraction coefficients
-                  DO I = 2,NUMLIN
-                     READ (LUBAS,*)
-                  END DO
-
-                  CPRIMU(J,J,NBLOCK) = 1.0D0
-
-                  IF (IPRINT.GE.5) WRITE(lupri,*)
-     &              'READNU read 1 - NUMLIN,J,NBLOCK,ALPHA(J,NBLOCK)',
-     &              NUMLIN,J,NBLOCK,ALPHA(J,NBLOCK)
-
-                  GOTO 20
-               ELSE
-C
-C     Getting the format for the read statement right.
-C
-                  IF (NUMLIN .EQ. 1) THEN
-                     KNTORB = INTORB
-                  ELSE
-                     KNTORB = CONEOR
-                  END IF
-C
-C     Reading the first line with exponents and contraction coefficients
-C
-                  READ (STRING, * ,IOSTAT=IOS)
-     +                 ALPHA(J, NBLOCK), (CPRIMU(J,I,NBLOCK),
-     +                 I = 1, KNTORB)
-                  IF (IOS.NE.0) THEN
-                    WRITE(LUPRI,*) 'KNTORB=',KNTORB
-                    WRITE(LUPRI,'(3A)') ' STRING = "',STRING,'"'
-                    WRITE(LUPRI,*) 'J,NBLOCK:',J,NBLOCK
-                    WRITE(LUPRI,*) 'ALPHA(J, NBLOCK)=',ALPHA(J, NBLOCK)
-                    WRITE(LUPRI,*) 'CPRIMU(J,I,NBLOCK), I = 1, KNTORB:',
-     &              ( CPRIMU(J,I,NBLOCK),I = 1, KNTORB )
-                    CALL QUIT('BASLIB:Error in reading basis set...')
-                  ENDIF
-
-                  IF (IPRINT.GE.6) THEN
-                    WRITE(lupri,*)
-     &              'READNU read 2 - J,NBLOCK,ALPHA(J,NBLOCK)',
-     &              J,NBLOCK,ALPHA(J,NBLOCK)
-                    WRITE(lupri,*)
-     &              'READNU read 2 - CPRIMU:',
-     &              (CPRIMU(J,I,NBLOCK),I=1,KNTORB)
-                  ENDIF
-C
-C     If there are more lines with contraction coefficients,
-C     they will be read here.
-C
-                  DO 100 I = 2, NUMLIN
-                     NUMNUM = CONEOR + (I-1)*CONORB
-C
-C Getting the format for the read-stat right.
-C
-                     KNTORB = MIN0(NUMNUM, INTORB)
- 30                  CONTINUE
-C
-C     Making the usual safety-precautions before we read the
-C     contraction coefficients.
-C
-                     READ(LUBAS, '(A)', IOSTAT = IOERR, ERR = 2000)
-     +                    STRING
-                     READ (STRING, '(A1)') SIGN
-                     IF (SIGN .EQ. ' ') THEN
-C
-                        len_STRING = LNBLNK(STRING)
-                        IF (len_STRING .GT. 0) THEN
-C
-C     We now have a line with contraction coefficients.
-C
-                           READ (STRING,*,IOSTAT=IOS)
-     &                          (CPRIMU(J,M,NBLOCK),
-     +                          M = CONEOR + (I-2)*CONORB +1, KNTORB)
-                           IF (IOS.NE.0) CALL QUIT('BASLIB: '//
-     &    'Error reading contraction coefficients in basis set file')
-                           IF (IPRINT.GE.6) THEN
-                              WRITE(LUPRI,*)
-     &                        J,NBLOCK,' CPRIMU(J,M,NBLOCK):'
-                              WRITE(LUPRI,*) ( CPRIMU(J,M,NBLOCK),
-     &                         M = CONEOR + (I-2)*CONORB +1, KNTORB )
-                           END IF
-                        END IF
-C
-C     Blank line read the next one
-C
-                     ELSE
-                        GOTO 30
-                     END IF
- 100              CONTINUE
-                  GOTO 20
-               END IF
-            ELSE
-C
-C blank line, read the next one.
-C
-               GOTO 20
-            END IF
-            CALL QUIT('READNU: this line should never be reached')
-         ELSE    ! IF (SIGN .EQ. ' ') THEN
-C
-C Found a line with nothing sensible in it
-C
-            GOTO 20
-         END IF
-      ELSE   ! IF ( J .LT. INTEXP) THEN
-C
-C        For uncontracted basis sets, update INTORB.
-C
-         IF ( INTORB .LE. 0 ) INTORB = INTEXP
+      IF ( INTORB .LE. 0 ) INTORB = INTEXP
 C
 C
-C Read all of the primitives, and the coefficients
 C If this is some kind of augmented basis set, we augment it here, kr-96
 C
 C Fix jan -01 VB: For certain elements some of the cc basis sets do
@@ -832,7 +705,7 @@ C
                         CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
                      END IF
                      IF (IPRINT.GE.5) WRITE(LUPRI,*)
-     &                  'INTEXP,NBLOCK,ALPHA',
+     &                  'POLFUN INTEXP,NBLOCK,ALPHA',
      &                   INTEXP,NBLOCK,ALPHA(INTEXP,NBLOCK)
                   END IF
                END IF
@@ -840,18 +713,13 @@ C
             END IF
          END IF
 
-         IF (IPRINT.GE.4) THEN
-            WRITE(lupri,*) 'READNU...NBLOCK,J=',NBLOCK,J
-            WRITE(lupri,*) (ALPHA(IX,NBLOCK),IX=1,J)
+         IF (IPRINT.GE.6) THEN
+            WRITE(lupri,*) 'READ_NU...NBLOCK,INTEXP=',NBLOCK,INTEXP
+            WRITE(lupri,*) (ALPHA(IX,NBLOCK),IX=1,INTEXP)
          ENDIF
 
-      END IF
 C
       RETURN
-C
- 2000 CONTINUE
-      WRITE (LUPRI,'(/A,I5)') 'Error in reading from basis file.'//
-     &     ' IOSTAT =',IOERR
       END
 C/* Deck read_ano */
       SUBROUTINE READ_ANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU, ALPHA,
@@ -952,57 +820,12 @@ C           skip core orbitals for Huckel guess for ECP
       END IF
       RETURN
       END
-C/* Deck bas_conlin */
-C
-C*************************************************************
-C* BAS_CONLIN is a subroutine that finds out how many lines the  *
-C* contraction coefficients are written on.  There are 6     *
-C* cc (contraction coefficients) on the 1. line, and then    *
-C* there are seven on the rest of the lines. In out going    *
-C* variables are :                                           *
-C*      INTORB - Total number of columns of contraction      *
-C*               coefficients.                               *
-C*      NUMLIN - Returns the number of lines the contraction *
-C*               coefficients are written on.                *
-C*************************************************************
-C
-      SUBROUTINE BAS_CONLIN(INTORB, NUMLIN, IPRINT)
-#include "implicit.h"
-#include "priunit.h"
-C
-C This is the parameters for the number of contraction coefficients
-C on 1. and 2. line.
-C
-      INTEGER    CONORB
-      PARAMETER (CONORB = 7)
-
-      LOGICAL ONE_LINE_PER_PRIMITIVE
-      COMMON /CB_BASLIB/ ONE_LINE_PER_PRIMITIVE
-
-      IF (ONE_LINE_PER_PRIMITIVE) THEN
-         NUMLIN = 1
-      ELSE
-         JNTORB = ABS(INTORB)
-         NUMLIN = JNTORB/CONORB + 1
-!        truncation of: NUMLIN = ( (JNTORB + 1) - 1)/CONORB + 1
-!        as we have JNTORB + 1 numbers: exponent + JNTORB contraction
-!        coefficients.
-      END IF
-
-      IF (IPRINT.GE.10) THEN
-       WRITE(lupri,'(/A)') '*** BAS_CONLIN output ***'
-       WRITE(lupri,*) 'input INTORB =',INTORB
-       WRITE(lupri,*) 'output NUMLIN=',NUMLIN
-      ENDIF
-
-      RETURN
-      END
 C*********************************************************
 C* This is the subroutine that searches through the file *
 C* and finds the element in question.                    *
 C*********************************************************
 C/* Deck FIND_ELEMENT */
-      SUBROUTINE FIND_ELEMENT(BASNAM,INTQ,LUBAS,IPRINT)
+      SUBROUTINE FIND_ELEMENT(BASNAM,INTQ,LUBAS,IPRINT,EMSL_TYPE)
 #include "implicit.h"
 #include "priunit.h"
 C*********************************************************
@@ -1013,26 +836,82 @@ C*              proofing the subroutine.                 *
 C*********************************************************
 C
       CHARACTER*(*) BASNAM
+      LOGICAL       EMSL_TYPE
       CHARACTER*300 STRING  ! long because contains the full directory path
       CHARACTER SIGN
+      CHARACTER*12  EMSL_ELEMENT_NAME(96)
+      CHARACTER*5 EMSL_NAME_CHECK
+      DATA EMSL_ELEMENT_NAME(1:96) /
+     & 'HYDROGEN','HELIUM',
+     & 'LITHIUM','BERYLLIUM',
+     & 'BORON','CARBON','NITROGEN','OXYGEN','FLUORINE','NEON',
+     & 'SODIUM','MAGNESIUM',
+     & 'ALUMINUM','SILICON','PHOSPHOROUS','SULFUR','CHLORINE','ARGON',
+     & 'POTASSIUM','CALCIUM',
+     & 'SCANDIUM','TITANIUM','VANADIUM','CHROMIUM','MANGANESE',
+     &   'IRON','COBALT','NICKEL','COPPER','ZINC','GALLIUM',
+     & 'GERMANIUM','ARSENIC','SELENIUM','BROMINE','KRYPTON',
+     & 'RUBIDIUM','STRONTIUM',
+     & 'YTTRIUM','ZIRCONIUM','NIOBIUM','MOLYBDENUM','TECHNETIUM',
+     &   'RUTHENIUM','RHODIUM','PALLADIUM','SILVER','CADMIUM',
+     & 'INDIUM','TIN','ANTIMONY','TELLURIUM','IODINE','XENON',
+     & 'CESIUM','BARIUM',
+     & 'LANTHANUM','CERIUM','PRASEODYMIUM','NEODYMIUM',
+     &   'PROMETHIUM','SAMARIUM','EUROPIUM',
+     &   'GADOLIUM','TERBIUM','DYSPROSIUM','HOLMIUM','ERBIUM',
+     &   'THULIUM','YTTERBIUM',
+     & 'LUTETIUM','HAFNIUM','TANTALUM','TUNGSTEN','RHENIUM',
+     &   'OSMIUM','IRIDIUM','PLATINUM','GOLD','MERCURY',
+     & 'THALLIUM','LEAD','BISMUTH','POLONIUM','ASTATINE','RADON',
+     & 'FRANCIUM','RADIUM',
+     & 'ACTINIUM','THORIUM','PROTACTINIUM','URANIUM','NEPTUNIUM',
+     &   'PLUTONIUM','AMERICIUM','CURIUM'/
 C
       CALL FIND_BASFIL(BASNAM,LUBAS,IPRINT)
 C
 C Searching the file for the element.
+C Traditional Dalton basis set layout with and 'a' or 'A' in first column
+C to identify next element.
 C
+      EMSL_TYPE = .FALSE.
  20   CONTINUE
-         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
+         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 100)
      +       STRING
          READ (STRING, '(A1)',IOSTAT=IOS) SIGN
-         IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
-            READ (STRING, 110,IOSTAT=IOS) SIGN, NUCEL
+         IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN       ! <- traditional Dalton basis set file
+            READ (STRING, '(BN,A1,I4)',IOSTAT=IOS) SIGN, NUCEL
             IF (IOS.NE.0) THEN
                CALL QUIT('FIND_ELEMENT: Error in reading NUCEL')
             ENDIF
- 110        FORMAT (BN, A1, I4)
             IF (INTQ .EQ. NUCEL) RETURN
          END IF
       GOTO 20
+C
+C Searching the file for the element again. This time with
+C the EMSL Dalton basis set layout without an 'a' or 'A' in first column.
+C Element must be identified by name from the table EMSL_ELEMENT_NAME.
+C
+  100 IF (INTQ .GT. 0 .AND. INTQ .LE. 96) THEN
+         EMSL_NAME_CHECK = EMSL_ELEMENT_NAME(INTQ)(1:5)
+      ELSE
+         GOTO 200
+      END IF
+      EMSL_TYPE = .TRUE.
+      REWIND LUBAS
+      NUCEL = -1
+ 30   CONTINUE
+         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
+     +       STRING
+         IF (INDEX(STRING,EMSL_NAME_CHECK) .GT. 0) THEN  ! <- basis set file made by EMSL
+            ! we do not know how many lines the element name is repeated in,
+            ! therefore we continue until it is not found in order that FIND_POS can work correctly
+            ! (EMSL always print "! s functions" for the first block, so this is OK)
+ 35         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
+     +          STRING
+            IF (INDEX(STRING,EMSL_NAME_CHECK) .GT. 0) GO TO 35
+            RETURN
+         END IF
+      GOTO 30
 C
 C Error messages
 C
@@ -1377,7 +1256,8 @@ C*                          coefficients                 *
 C*********************************************************
 C
 C/* Deck find_pos */
-      SUBROUTINE FIND_POS(NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
+      SUBROUTINE FIND_POS(NEWEL, INTEXP, INTORB, INTISG,
+     &   LUBAS, IPRINT, EMSL_TYPE)
 #include "implicit.h"
 #include "priunit.h"
 C*********************************************************
@@ -1387,12 +1267,10 @@ C*            what kind of sentence it is.               *
 C*     STRING - A character string to help bulletproofing*
 C*              the subroutine.                          *
 C*********************************************************
-      LOGICAL   NEWEL
+      LOGICAL   NEWEL, EMSL_TYPE
       CHARACTER SIGN
       CHARACTER*300 STRING
 
-      LOGICAL ONE_LINE_PER_PRIMITIVE
-      COMMON /CB_BASLIB/ ONE_LINE_PER_PRIMITIVE
 C
 C Initializing NEWEL, because one is innocent until proven guilty
 C
@@ -1403,21 +1281,20 @@ C
      +     STRING
       len_STRING = LNBLNK(STRING)
       IF (len_STRING .eq. 0) GOTO 20
-      READ (STRING, '(A1)',IOSTAT=IOS) SIGN
+      SIGN = STRING(1:1)
 C
 C
-      ONE_LINE_PER_PRIMITIVE = .FALSE.
       IF (SIGN .EQ. 'H' .OR. SIGN .EQ. 'h') THEN
-!        this is presumably a basis set from EMSL library
-         ONE_LINE_PER_PRIMITIVE = .TRUE.
+!        this is presumably a basis set from EMSL library, no INTISG
          READ (STRING(2:len_STRING),*,IOSTAT=IOS) INTEXP, INTORB
          INTISG = 0
       ELSE IF (SIGN .EQ. ' ') THEN
          READ (STRING, '(BN,3I5)',IOSTAT=IOS) INTEXP, INTORB, INTISG
-      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
+      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A') .OR.                ! <- traditional Dalton basis set file
+     &         (EMSL_TYPE .AND. INDEX(STRING,'->') .GT. 0) ) THEN       ! <- basis set file made by EMSL without "a" or "A"
          NEWEL = .TRUE.
-         IF (IPRINT.GE.10) WRITE(lupri,'(/2X,A)')
-     &      'Output from FIND_POS: New element'
+         IF (IPRINT.GE.10) WRITE(lupri,'(/A)')
+     &      '  Output from FIND_POS: New element'
          RETURN
       ELSE
          GOTO 20

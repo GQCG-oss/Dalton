@@ -394,9 +394,12 @@ C  /* Deck exeher */
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION WORK(0:LMWORK)
 #include "priunit.h"
 #include "gnrinf.h"
+! cbiher.h : TWOBYTEPACKING
+#include "cbiher.h"
 #include "dftcom.h"
 #include "pcmlog.h"
 #include "qm3.h"
@@ -404,6 +407,7 @@ C
 C     Run Integral section
 C
       CALL QENTER('HERMIT')
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini HERMIT')
       NEWPRP = .TRUE.
       NEWMAT = .TRUE.
       GRDONE = .FALSE.
@@ -435,6 +439,7 @@ C
       IF (DKTRAN .AND. RNHERM) THEN
          DKHINT = .TRUE. ! now we are calculating DKH 1-el. integrals
          CALL DKH_INTF(WORK(1),LMWORK)
+         CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'DKH_INTF ')
          DKHINT = .FALSE.
          NEWPRP = .TRUE.
       END IF
@@ -442,10 +447,14 @@ C
 C     Third parameter .TRUE. in call indicates that LUONEL will be written.
 C
       CALL READIN(WORK(1),LMWORK,RNHERM)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'READIN')
 C
 C     Initialize Hermit variables, also when RNHERM false (e.g. for ABACUS)
 C
       CALL HERINI
+      TWOBYTEPACKING = TWOBYTEPACKING .OR. NBASIS .GT. 255
+      ! we need two bytes to pack indices if NBASIS .gt. 255; we also need
+      ! the .OR. test, because TWOBYTEPACKING might have been requested in input
 C
 C     ***************************************************************
 C     Setup of MM information.
@@ -491,6 +500,7 @@ C
       CALL QENTER('SIRIUS')
 C
       CALL TITLER('Starting in Wave Function Section (SIRIUS)',' ',200)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini SIRIUS') ! boundary checks on WORK
 C
 C     SIRINI defines buffer lengths for I/O and the IROW() array
 C
@@ -554,6 +564,7 @@ C
       CALL QENTER('CC')
 C
       CALL TITLER('Starting in Coupled Cluster Section (CC)',' ',200)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini CC')
 C
       IF (RNSIRI .AND. .NOT. RNHERM) THEN
          CALL SETHER(IPRUSR,.FALSE.,WORK(1),LMWORK)
@@ -609,6 +620,7 @@ C
       CALL QENTER('ABACUS')
       CALL TITLER('Starting in Static Property Section (ABACUS) -',
      &   ' ',200)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini ABACUS')
 C
       CALL ABACTL(WORK(1),LMWORK)
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ABACUS')
@@ -640,8 +652,7 @@ C     Called by PROGRAM DALTON after reading environment
 C     variables.
 C
 #ifdef HAS_PCMSOLVER
-      use pcm_scf
-      use pcmmod_cfg
+      use pcm_config, only: pcm_configuration, pcm_cfg, pcm_finalize
 #endif
 
 #include "implicit.h"
@@ -1117,7 +1128,7 @@ Cholesky
 Cholesky
          IF (RNSIRI) CALL EXESIR(WORK(0),LMWORK,WRKDLM)
 Cact
-         IF (ACTSEL) CALL EXEACT(WORK(0),LMWORK,WRKDLM)
+         IF (ACTSEL .AND. DOCCSD) CALL EXEACT(WORK(0),LMWORK,WRKDLM)
 Cact
          IF (DOCCSD) CALL EXECC (WORK(0),LMWORK,WRKDLM)
 C
@@ -1237,8 +1248,8 @@ C
 ! Finalize pcm_scf if an EXTPCM calculation (PCM using PCMSolver
 ! library) was requested.
 #ifdef HAS_PCMSOLVER
-      if (pcmmod_is_pcm_calculation) then
-        call pcm_scf_finalize
+      if (pcm_cfg%do_pcm) then
+        call pcm_finalize
         write(lupri, '(//A/)') 'PCMSolver interface correctly finalized'
       end if
 #endif
@@ -1262,7 +1273,7 @@ C
 C     GENERAL input for Dalton
 C
 #ifdef HAS_PCMSOLVER
-      use pcmmod_cfg
+      use pcm_config
       use pcm_write
 #endif
       use qmcmm_input, only: qmnpinp
@@ -1323,8 +1334,8 @@ C
      &            '.WALK  ', '.MAX IT', '.RESPON', ! 12
      &            '.RUN PR', '.RUN RE', '.RUN WA',
      &            '.PRESOR', '.WESTA ', '.CHOLES', ! 18
-     &            '.EXTPCM', 'xxxxxxx', 'xxxxxxx',
-     &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
+     &            '.EXTPCM', '.FCKTRA', '.2TRATY',
+     &            'xXXXXXX', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
      &            '.THRRED', '.DOUGLA', '.PEQM  ',
@@ -1373,14 +1384,14 @@ C
       RNSIRI = .FALSE.
       RNABAC = .FALSE.
       RNRESP = .FALSE.
-      PARCAL = .FALSE.
-      DIRCAL = .FALSE.
       DOCCSD = .FALSE.
       WESTA  = .FALSE.
       QMNPMM = .FALSE.
 
+C     FCKTRA_TYPE and NEWTRA are in /INFTRA/ for practical reasons
 C     NEWTRA and NEWTRA_USEDRC are in /INFTRA/ for practical reasons
-      NEWTRA = .FALSE.        ! if true, use "new" transformation for Mulliken integrals
+      FCKTRA_TYPE = -1
+      NEWTRA = .FALSE.         ! if true, use "new" transformation for Mulliken integrals
       NEWTRA_USEDRC = .FALSE.  ! if NEWTRA and NEWTRA_USEDRC both true, also use "new" transformation for Dirac integrals
 
       OPTNEW = .FALSE.
@@ -1396,9 +1407,14 @@ C     NEWTRA and NEWTRA_USEDRC are in /INFTRA/ for practical reasons
       NPCMIN = .TRUE.
       QFIT   = .FALSE.
       USE_LSLIB = .FALSE.
-      IF (NODTOT.GE.1) THEN
+      IF (NODTOT .GE. 1) THEN
          PARCAL = .TRUE.
          DIRCAL = .TRUE.
+         PARHER = .TRUE. ! in infpar.h - calculate 2-el. integrals in parallel
+      ELSE
+         PARCAL = .FALSE.
+         DIRCAL = .FALSE.
+         PARHER = .FALSE.
       END IF
 C
 C ...............
@@ -1432,12 +1448,17 @@ C     ... FTRCTL true forces AO sort and integral transformation,
 C         but we may restart with old integrals. FTRCTL is set
 C         true by EXEHER signalling that new AO integrals have
 C         been calculated.
+      NEWCMO = .TRUE.
+      ! force integral transformation in abaset.F / abarspn.F;
+      ! NEWCMO is then set to .false. after integral transformation.
+      ! Will be reset to .true. each time ABACTL is called (typically: new geometry)
+      ITRLVL_LAST = -999 ! Mulliken (Coulomb) MO integrals not available
+      LVLDRC_LAST = -999 ! Dirac (exchange) MO integrals not available
 C
 C     Initialize /PCMLOG/ and /EXTPCM/
 C
 #ifdef HAS_PCMSOLVER
       extpcm_input_provided = .false.
-      pcmmod_is_pcm_calculation = .false.
 #endif
       PCM    = .FALSE.
       OUTFLD = .FALSE.
@@ -1502,14 +1523,14 @@ C         if reading input from a terminal
 C
 C     ***** Process input for COMMON  /GENINF/  *****
 C
-C Table(01:34) :
+C Table(01:35) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
-C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.EXTPCM',
-C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
-C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  '.
+C 16-20: '.PRESOR', '.WESTA ', '.CHOLES', '.EXTPCM', '.FCKTRA',
+C 21-25: '.2TRATY', 'xXXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
+C 26-30: '.RUNERI', '.NEWTRA', '.RUN AL', '.NMDDRV', '.PARNMD',
+C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  ', '.LSLIB '.
 C
       IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1535,142 +1556,148 @@ C
      &         ' Keyword ',WORD,' not recognized in DALTON_GNRLINP.'
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in DALTON_GNRLINP.')
-  101    CONTINUE
+  101    CONTINUE  ! .PRINT
             READ (LUCMD,*) IPRUSR
             USRIPR = .TRUE.
             GO TO 100
-  102    CONTINUE
+  102    CONTINUE  ! .ITERATions
             READ (LUCMD,*) ITERNR
             GO TO 100
-  103    CONTINUE
+  103    CONTINUE  ! .PRIERR
             READ (LUCMD,*) IPRSTAT
             GO TO 100
-  104    CONTINUE
+  104    CONTINUE  ! .INTEGRals
             RNHERM = .TRUE.
             GO TO 100
-  105    CONTINUE
+  105    CONTINUE  ! .WAVE Function
             RNSIRI = .TRUE.
             GO TO 100
-  106    CONTINUE
+  106    CONTINUE  ! .PROPERties
             RNABAC = .TRUE.
             GO TO 100
-  107    CONTINUE
+  107    CONTINUE  ! .INPTESt
             TESTIN = .TRUE.
             GO TO 100
-  108    CONTINUE
+  108    CONTINUE  ! .PARALLel calculation
             PARCAL = .TRUE.
             DIRCAL = .TRUE.
+            PARHER = .TRUE.
             GO TO 100
-  109    CONTINUE  ! .DIRECT
+  109    CONTINUE  ! .DIRECT calculation (AO direct, AOTWOINT file is not generated unless needed by a module)
             DIRCAL = .TRUE.
          GO TO 100
-C        ".WALK  "
-  110    CONTINUE
+  110    CONTINUE  ! .WALK
             OPTWLK = .TRUE.
             DOWALK = .TRUE.
          GO TO 100
-  111    CONTINUE
+  111    CONTINUE  ! .MAX ITerations
             READ (LUCMD,*) ITERMX
          GO TO 100
-  112    CONTINUE
+  112    CONTINUE  ! .RESPONs
             RNRESP = .TRUE.
          GO TO 100
-  113    CONTINUE
+  113    CONTINUE  ! .RUN PRoperties
             RNHERM = .TRUE.
             RNSIRI = .TRUE.
             RNABAC = .TRUE.
          GO TO 100
-  114    CONTINUE
+ 114     CONTINUE  ! .RUN REspons
             RNHERM = .TRUE.
             RNSIRI = .TRUE.
             RNRESP = .TRUE.
          GO TO 100
- 115     CONTINUE
+ 115     CONTINUE  ! .RUN WAve function
             RNHERM = .TRUE.
             RNSIRI = .TRUE.
          GO TO 100
- 116     CONTINUE
-            WRITE(LUPRI,'(//A/)') 'INFO: .PRESORT obsolete, use .NEWTRA'
+ 116     CONTINUE   ! .PRESORt
+            WRITE(LUPRI,'(//A/)')
+     &      'INFO: .PRESORT deprecated, use .NEWTRA'
             NEWTRA = .TRUE.
          GO TO 100
- 117     CONTINUE
+ 117     CONTINUE   ! .WESTA
             WESTA = .TRUE.
          GO TO 100
- 118     CONTINUE
+ 118     CONTINUE   ! .CHOLESky
             RNHERM = .TRUE.
             CHOINT = .TRUE.
             DIRCAL = .TRUE.
          GO TO 100
- 119     CONTINUE
+ 119     CONTINUE  ! .EXTPCM
 #ifdef HAS_PCMSOLVER
             extpcm_input_provided = .true.
 #else
-      WRITE(LUPRI,'(//A/)') 
-     $           'ERROR: EXTPCM requested but PCM Module not compiled'
-      CALL QUIT('Recompile including the PCM Module')
+            WRITE(LUPRI,'(//A/)')
+     $         'ERROR: EXTPCM requested but PCM Module not compiled'
+            CALL QUIT('Recompile including the PCM Module')
 #endif
          goto 100
- 120     CONTINUE
- 121     CONTINUE
- 122     CONTINUE
-         GO TO 100
-C        '.OPTIMI'
- 123     CONTINUE
-            OPTNEW = .TRUE.
-         GO TO 100
- 124     CONTINUE
-            TOTSYM = .TRUE.
-         GO TO 100
- 125     CONTINUE
-            READ (LUCMD,*) IVECLN
-         GO TO 100
- 126     CONTINUE
-            RUNERI = .TRUE.
-         GO TO 100
-C        .NEWTRA
- 127     CONTINUE
+ 120     CONTINUE  ! .FCKTRA
+            IF (FCKTRA_TYPE .LT. 0) FCKTRA_TYPE = 1
             NEWTRA = .TRUE.
          GO TO 100
- 128     CONTINUE
+ 121     CONTINUE  !.2TRATYpe
+         ! "Secret option" for debugging/enhancing 2-electron integral transformation
+         !  negative: old integral transformation
+         !  zero: new integral transformation
+         !  1: standard .FCKTRA
+         !  2: .FCKTRA not parallel, even when PARHER
+         !  3: .FCKTRA not parallel with ONLY_J on AO2SUPINT file
+            READ(LUCMD, *) FCKTRA_TYPE
+            NEWTRA = FCKTRA_TYPE .GE. 0
+         GO TO 100
+ 122     CONTINUE  ! not used
+         GO TO 100
+ 123     CONTINUE  ! .OPTIMIzation of geometry
+            OPTNEW = .TRUE.
+         GO TO 100
+ 124     CONTINUE  ! .TOTSYM
+            TOTSYM = .TRUE.
+         GO TO 100
+ 125     CONTINUE  ! .VECLEN
+            READ (LUCMD,*) IVECLN
+         GO TO 100
+ 126     CONTINUE  ! .RUNERI
+            RUNERI = .TRUE.
+         GO TO 100
+ 127     CONTINUE  ! .NEWTRA
+            NEWTRA = .TRUE.
+            FCKTRA_TYPE = 0
+         GO TO 100
+ 128     CONTINUE ! .RUN ALl four modules
             RNHERM = .TRUE.
             RNSIRI = .TRUE.
             RNABAC = .TRUE.
             RNRESP = .TRUE.
          GO TO 100
-C        '.NMDDRV' and '.PARNMD'
- 129     CONTINUE
+ 129     CONTINUE ! '.NMDDRV' and '.PARNMD'
             NMWALK = .TRUE.
             NOMOVE = .TRUE.
             OPTWLK = .TRUE.
          GOTO 100
-C        '.THRRED'
- 131     CONTINUE
+ 131     CONTINUE ! .THRRED
             READ (LUCMD,*) THR_REDFAC
          GOTO 100
-C        '.DOUGLA'
- 132     CONTINUE
+ 132     CONTINUE ! .DOUGLAs-kroll-hess scalar second order
             DKTRAN = .TRUE.
          GOTO 100
-!        '.PEQM  '
- 133     CONTINUE
+ 133     CONTINUE ! .PEQM
             CALL PELIB_IFC_ACTIVATE()
          GOTO 100
-!        '.QFIT  '
- 134     CONTINUE
+ 134     CONTINUE ! .QFIT
 #if defined (BUILD_QFITLIB)
-         QFIT = .TRUE.
+            QFIT = .TRUE.
 #else
-         WRITE(LUPRI,*) 'ERROR for .QFIT: QFITLIB not enabled.'
-         CALL QUIT('ERROR for .QFIT: QFITLIB not enabled.')
+            WRITE(LUPRI,*) 'ERROR for .QFIT: QFITLIB not enabled.'
+            CALL QUIT('ERROR for .QFIT: QFITLIB not enabled.')
 #endif
          GOTO 100
-!        '.LSLIB '
- 135     CONTINUE
+ 135     CONTINUE ! .LSLIB 
 #if defined (BUILD_LSLIB)
-         USE_LSLIB  = .TRUE.
+            USE_LSLIB  = .TRUE.
 #else
-         WRITE(LUPRI,*) 'ERROR for .LSLIB : LSLIB not enabled.'
-         CALL QUIT('ERROR for .LSLIB : LSLIB not enabled.')
+            WRITE(LUPRI,*) 'ERROR for .LSLIB : LSLIB not enabled.'
+            CALL QUIT('ERROR for .LSLIB : LSLIB not enabled.')
 #endif
          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -1705,6 +1732,7 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Request for parallel calculation (.PARALL) is ignored '//
      &   'because only one CPU process available.',SEPARATOR
          PARCAL = .FALSE.
+         PARHER = .FALSE.
       END IF
 #if defined (VAR_MPI)
       IF (PARCAL) WRITE (LUPRI,'(4X,A)')'Parallel calculation using MPI'
@@ -1769,7 +1797,11 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (IVECLN .NE. 1) WRITE (LUPRI,'(4X,A,I5)')
      &     'Vector length used in direct Fock matrix calculations '//
      &     '(assuming vector machine)',IVECLN
-      IF (NEWTRA) THEN
+      IF (FCKTRA_TYPE .gt. 0) THEN
+         WRITE(LUPRI,'(4X,A,I5)')
+     &     'Fock-matrix based 2-el integral transformation (2016) used,'
+     &     //' type',FCKTRA_TYPE
+      ELSE IF (NEWTRA) THEN
          WRITE(LUPRI,'(4X,A)')
      &     '"New" (from 1988!) integral transformation used'
       ELSE
@@ -1916,7 +1948,7 @@ C     "*END OF" or "**something"
 #ifdef HAS_PCMSOLVER
             call move_to_next_star(word,lucmd)
 #else
-            WRITE(LUPRI,'(//A/)') 
+            WRITE(LUPRI,'(//A/)')
      $           'ERROR: EXTPCM requested but PCM Module not compiled'
             CALL QUIT('Recompile including the PCM Module')
 #endif
@@ -1929,14 +1961,10 @@ C
       if(extpcm_input_provided)then
         call read_menu_input('DALTON.INP', lucmd,
      &                       '*EXTPCM', extpcm_input_provided)
-        pcmmod_is_pcm_calculation = .true.
+        pcm_cfg%do_pcm = .true.
         if (.not. extpcm_input_provided) then
         call quit('Oops, read_menu_input could not find *EXTPCM input')
         end if
-      end if
-      if(pcmmod_is_pcm_calculation) then
-! Print useful info about DALTON+PCMSolver input options specified              
-              call report_after_pcm_input(lupri)
       end if
 #endif
 
@@ -2188,6 +2216,7 @@ C
 C
       CALL TITLER('Starting in Cholesky Integral Section',
      &  ' ',200)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini CHOLESKY')
 C
       CALL CC_CHODRV(WORK(1),LMWORK)
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOLESKY')
@@ -2220,6 +2249,7 @@ C
       CALL QENTER('EXEACT')
 C
       CALL TITLER('Starting in Choact Section',' ',200)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini CHOACT')
 C
       CALL CC_SELACT(WORK(1),LMWORK)
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOACT')

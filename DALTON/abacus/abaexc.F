@@ -227,12 +227,13 @@ CClark:end
          END IF
       END IF
 
-      IF (PARCAL.AND.EXCTRP.AND.ABASOP) THEN
-          WRITE (LUPRI, '(A,A)' ) 'Parallel calculations of '//
-     &                 'triplet excitation energies',
-     &                 ' is not implemented in the SOPPA module'
-          CALL PARQUIT('EXCTRP for ABASOP')
-      ENDIF
+CRF    We are removing this limitation
+C      IF (PARCAL.AND.EXCTRP.AND.ABASOP) THEN
+C          WRITE (LUPRI, '(A,A)' ) 'Parallel calculations of '//
+C     &                 'triplet excitation energies'//
+C     &                 ' is not implemented in the SOPPA module'
+C          CALL PARQUIT('EXCTRP for ABASOP')
+C      ENDIF
 
       RETURN
       END
@@ -315,7 +316,9 @@ C
 C
       IPRRSP = IPREXC
 C
-      IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+      IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP
+CPi
+     &    .OR. AOSOC .OR. AOCC2) THEN
          CALL SO_EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,
      &                  BSRLON,SECMAT,EXENG,
 CClark:11/01/2016
@@ -412,10 +415,10 @@ C
       KWORK1 = KFREE
       LWORK1 = LFREE
 C
-      CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
+      CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO))
       IF (.NOT.FOUND) CALL QUIT('EXCIT1 error: CMO not found on SIRIFC')
       IF (NASHT .GT. 0) THEN
-         CALL RD_SIRIFC('DV',FOUND,WORK(KWORK1),WORK(KWORK1),LWORK1)
+         CALL RD_SIRIFC('DV',FOUND,WORK(KWORK1))
          IF (.NOT.FOUND)
      &      CALL QUIT('EXCIT1 error: DV not found on SIRIFC')
          CALL DSPTSI(NASHT,WORK(KWORK1),WORK(KUDV))
@@ -522,7 +525,8 @@ C
       END IF
       IF (ROTSTR) THEN         ! rot. str., len+London
          LOCDIPLEN = .TRUE.
-         LOCLONDON = .TRUE.
+CPi 11.08.16: No london orbitals in SOPPA
+         IF (.NOT. ABASOP) LOCLONDON = .TRUE.
          LOCANGMOM = .TRUE.
          IF (NODIFC) LOCHBDO = .TRUE.
       END IF

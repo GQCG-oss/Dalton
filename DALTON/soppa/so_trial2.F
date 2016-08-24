@@ -16,7 +16,7 @@ C     PURPOSE: Determine the residues from the current optimal solution
 C              vectors and decide if convergence has been obtained for
 C              any of the vectors. For the non-converged vectors create
 C              new trial-vectors. These are orthonormalized against the
-C              privious optimal trial-vectors and among themself 
+C              privious optimal trial-vectors and among themself
 C              including the ones obtained from pairing.
 C
       use so_info, only: so_has_doubles, so_singles_second
@@ -67,7 +67,7 @@ C     contributions
 C--------------------------------------------------------------------
 C     Work space allocation no. 1.  Notice that the RESULT and TRIAL
 C     vectors are of equal length and are chosen to use the same work
-C     space as they are not used at the same time. The same apply 
+C     space as they are not used at the same time. The same apply
 C     to the overlap-RESULT and the DIAGONAL vectors which also
 C     use the same work space.
 C--------------------------------------------------------------------
@@ -83,16 +83,24 @@ C
       LRESO1D = NT1AM(ISYMTR)
       LSDIA1  = LRESO1D
       IF(DOUBLES)THEN
-         LRES2E  = NT2AM(ISYMTR)
+CPi 01.04.16
+C         LRES2E  = NT2AM(ISYMTR)
+         LRES2E  = N2P2HOP(ISYMTR)
          LTR2E   = LRES2E
-         LRES2D  = NT2AM(ISYMTR)
+C         LRES2D  = NT2AM(ISYMTR)
+         LRES2D  = N2P2HOP(ISYMTR)
          LTR2D   = LRES2D
-         LRESI2E = NT2AM(ISYMTR)
-         LRESI2D = NT2AM(ISYMTR)
-         LRESO2E = NT2AM(ISYMTR)
+C         LRESI2E = NT2AM(ISYMTR)
+         LRESI2E = N2P2HOP(ISYMTR)
+C         LRESI2D = NT2AM(ISYMTR)
+         LRESI2D = N2P2HOP(ISYMTR)
+C         LRESO2E = NT2AM(ISYMTR)
+         LRESO2E = N2P2HOP(ISYMTR)
          LEDIA2  = LRESO2E
-         LRESO2D = NT2AM(ISYMTR)
+C         LRESO2D = NT2AM(ISYMTR)
+         LRESO2D = N2P2HOP(ISYMTR)
       ELSE
+Cend-Pi
 C   Setting all doubles lengths to zero, should allow us to keep
 C   the following allocations unmodified
          LRES2E  = 0
@@ -109,7 +117,10 @@ C
       IF (LTYPE.EQ.'LINEAR') THEN
          LGPVC1H = NT1AM(ISYMTR)
          IF(DOUBLES)THEN
-            LGPVC2H = NT2AM(ISYMTR)
+CPi 01.04.16
+C            LGPVC2H = NT2AM(ISYMTR)
+            LGPVC2H = N2P2HOP(ISYMTR)
+Cend-Pi
          ELSE
             LGPVC2H = 0
          END IF
@@ -150,29 +161,20 @@ C     We need to transform trial-vectors with S (S*Tr) , grap some space
       IF (MODEL.EQ.'AORPA') THEN
 C        Only need to change sign on TR1D, done in place
          KTMP1E = KRESO1E
-         KTMP1D = KRESO1D                  
+         KTMP1D = KRESO1D
       ELSE
 C        Otherwise we borrow the space from the result vectors
          KTMP1E = KRES1E
-         KTMP1D = KRES1D     
-      ENDIF   
+         KTMP1D = KRES1D
+      ENDIF
 C
       IF(LTYPE.EQ.'LINEAR') THEN
          KGPVC1  = KEND1B
-CRF            KGPVC1E = KGPVC1
-CRF            KGPVC1D = KGPVC1E + LGPVC1H
-CRF              KGPVC2  = KGPVC1D + LGPVC1H
          KGPVC2  = KGPVC1 + LGPVC1
-CRF              KGPVC2E = KGPVC2  
-CRF              KGPVC2D = KGPVC2E + LGPVC2H
          KEND1C  = KGPVC2 + LGPVC2
       ELSE
          KGPVC1  = KEND1B
-!              KGPVC1E = KEND1B
-!              KGPVC1D = KEND1B
          KGPVC2  = KEND1B
-!              KGPVC2E = KEND1B
-!              KGPVC2D = KEND1B
          KEND1C  = KEND1B
       ENDIF
 C
@@ -219,7 +221,7 @@ C
          CALL SO_READ(WORK(KTMP1E),LRESO1E,LUTR1E,FNTR1E,IEXCI)
          CALL SO_READ(WORK(KTMP1D),LRESO1D,LUTR1D,FNTR1D,IEXCI)
          IF (MODEL.EQ.'AORPA') THEN
-C           S(1) == S(0) for RPA, that is simple             
+C           S(1) == S(0) for RPA, that is simple
             CALL DSCAL(LRESO1D,-ONE,WORK(KRESO1D),1) !KRESO1D = KTMP1D
          ELSE
 C           S(2) for doubles, that require some work
@@ -227,8 +229,8 @@ C           S(2) for doubles, that require some work
      &                    WORK(KTMP1E), LRESO1E,WORK(KTMP1D) ,LRESO1D,
      &                    DENSIJ,LDENSIJ,DENSAB,LDENSAB,
 C           ISYRES == ISYMTR always for abelian symmetry, totally symmetry S..
-C           right?            
-     &                    ISYMTR,ISYMTR)                     
+C           right?
+     &                    ISYMTR,ISYMTR)
          ENDIF
 C  Warning: For model != aorpa, the space for the result-vectors
 C  is used to perform the above transformation.
@@ -238,8 +240,8 @@ C  is used to perform the above transformation.
          IF(DOUBLES)THEN
             CALL SO_READ(WORK(KRES2E), LRES2E, LURS2E,FNRS2E,IEXCI)
             CALL SO_READ(WORK(KRES2D), LRES2D, LURS2D,FNRS2D,IEXCI)
-C           
-C           S(0) for doubles, factor of -1 on D part 
+C
+C           S(0) for doubles, factor of -1 on D part
             CALL SO_READ(WORK(KRESO2E),LRESO2E,LUTR2E,FNTR2E,IEXCI)
             CALL SO_READ(WORK(KRESO2D),LRESO2D,LUTR2D,FNTR2D,IEXCI)
             CALL DSCAL(LRESO2D,-ONE,WORK(KRESO2D),1)
@@ -310,7 +312,7 @@ C
 C
             CONV(IEXCI) = NO
 C
-            GO TO 100 
+            GO TO 100
 C
 C------------------------------------------------
 C        If not converged and not last iteration.
@@ -318,7 +320,23 @@ C------------------------------------------------
 C
          ELSE
 C
-            CONV(IEXCI) = NO
+C------------------------------------------------------------------
+C           If imaginary excitation increase NCONV in order to stop
+C           iterations if all other excitations are either converged
+C           or imaginary, but create a new trial vector in case all
+C           excitations haven't converged. The 'i' label in case of
+C           imaginary excitation is assigned in SO_ORDEIG
+C-------------------------------------------------------------------
+CPi 10.08.16
+            IF ( CONV(IEXCI) .EQ. '  i') THEN
+C
+               NCONV = NCONV + 1
+C
+            ELSE
+C
+               CONV(IEXCI) = NO
+C
+            END IF
 C
 C--------------------------------------------------------------------
 C           Check if space is large enough to hold new trial vectors.
@@ -356,7 +374,7 @@ C------------------------------------------------------------
 C
            IF(MODEL.EQ.'AORPA') THEN
 C Use special RPA routine, since for RPA "S" is not explicitly calculated
-C (and it would be a waste to do so)              
+C (and it would be a waste to do so)
               CALL RP_NEWTRIAL(NNEWTR,NOLDTR,WORK(KTR1E),LTR1E,
      &                         WORK(KTR1D),LTR1D,EIVAL(IEXCI),
      &                         WORK(KEDIA1),LEDIA1,
@@ -403,7 +421,7 @@ C            IF(DOUBLES)THEN
 C              LURV2E = -1
 C              CALL GPOPEN(LURV2E,FNRV2E,'UNKNOWN',' ','UNFORMATTED',
 C     &                    IDUMMY,.FALSE.)
-C              LURV2D = -1 
+C              LURV2D = -1
 C              CALL GPOPEN(LURV2D,FNRV2D,'UNKNOWN',' ','UNFORMATTED',
 C     &                    IDUMMY,.FALSE.)
 CC             find the right positions
@@ -424,13 +442,13 @@ C----------------------------------------------------------------------
 C     Orthogonalize new trial vector against all previous trial vectors
 C     (including the paired ones) and normalize. Make a symmetric
 C     orthonormalization of the the new trial vector and its pair trial
-C     vector. Finally write the new trial vector to file. 
+C     vector. Finally write the new trial vector to file.
 C----------------------------------------------------------------------
 C
       DTIME      = SECOND()
       IF(UNIT_S)THEN
          CALL RP_ORTH_TRN(LTYPE,NOLDTR,NNEWTR,NLINDP,ISYMTR,WORK,LWORK)
-      ELSE   
+      ELSE
          CALL SO_ORTH_TRN(DOUBLES,LTYPE,NOLDTR,NNEWTR,NLINDP,ISYMTR,
      &                    DENSIJ,LDENSIJ,
      &                    DENSAB,LDENSAB,WORK,LWORK)

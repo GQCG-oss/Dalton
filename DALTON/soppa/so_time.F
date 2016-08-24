@@ -53,7 +53,7 @@ C     Subtract from time in SO_RES all time spend in subroutines
 C     which are timed separately.
 C---------------------------------------------------------------
 C
-      SOTIME(35) = SOTIME(35) 
+      SOTIME(35) = SOTIME(35)
      &           - SOTIME(1)  - SOTIME(6)  - SOTIME(7)  - SOTIME(8)
      &           - SOTIME(9)  - SOTIME(10) - SOTIME(11) - SOTIME(12)
      &           - SOTIME(13) - SOTIME(14) - SOTIME(15) - SOTIME(16)
@@ -75,13 +75,13 @@ C     Subtract from time in SO_TRIAL2 time spend in SO_ORTH_TRO and
 C     SO_ORTH_TRN.
 C------------------------------------------------------------------
 C
-C      SOTIME(34) = SOTIME(34) - SOTIME(38) - SOTIME(39)
+      SOTIME(34) = SOTIME(34) - SOTIME(38) - SOTIME(39)
 C
 C-----------------------------------------------------------
 C     Subtract from time in SO_SIGAI time spend in subparts.
 C-----------------------------------------------------------
 C
-      SOTIME(16) = SOTIME(16) 
+      SOTIME(16) = SOTIME(16)
      &           - SOTIME(40) - SOTIME(41) - SOTIME(42) - SOTIME(43)
 C
 C------------------------------
@@ -132,6 +132,7 @@ C
       TPRCEN =0.D0
 C
       DO 400 I = 1,LSOTIM
+         IF ( SOTIME(PARRAY(I) ) .LT. 1.0D-8 ) EXIT
 C
 C--------------------------------------------------------------
 C        Calculate hours, minutes, and seconds used in various
@@ -151,7 +152,7 @@ C        Print the calculated timings.
 C-------------------------------------
 C
          WRITE(LUPRI,
-     &         '(1X,A3,A14,3X,I5,A1,I2,A1,I2,5X,F4.1,A2,4X,F5.1,A4)')
+     &        '(1X,A3,A14,3X,I5,A1,I2.2,A1,I2.2,5X,F4.1,A2,4X,F5.1,A4)')
      &         '|  ',SUBNM(PARRAY(I)),SOHOUR,':',SOMIN,':',SOSEC,PRCENT,
      &         ' %',TPRCEN,' % |'
 C
@@ -166,8 +167,8 @@ C
       SOSEC  = NINT ( MOD ( MOD ( TIMTOT, 3600.D0 ), 60.D0 ) )
 C
       WRITE(LUPRI,'(1X,A)') LINE2
-      WRITE(LUPRI,'(1X,A19,1X,I5,A1,I2,A1,I2,23X,A1)')
-     &       '|  Total CPU time ',SOHOUR,':',SOMIN,':',SOSEC,'|'
+      WRITE(LUPRI,'(1X,A19,1X,I5,A1,I2.2,A1,I2.2,23X,A1)')
+     &       '|  Total CPU time  ',SOHOUR,':',SOMIN,':',SOSEC,'|'
       WRITE(LUPRI,'(1X,A)') LINE1
 C
 C-----------------------------------------------------
@@ -214,7 +215,7 @@ C
          TPRCEN = TPRCEN + PRCENT
 C
          WRITE(LUPRI,
-     &         '(1X,A3,A14,3X,I5,A1,I2,A1,I2,5X,F4.1,A2,4X,F5.1,A4)')
+     &        '(1X,A3,A14,3X,I5,A1,I2.2,A1,I2.2,5X,F4.1,A2,4X,F5.1,A4)')
      &         '|  ',SUBNMW(I),SOHOUR,':',SOMIN,':',SOSEC,PRCENT,
      &         ' %',TPRCEN,' % |'
 C

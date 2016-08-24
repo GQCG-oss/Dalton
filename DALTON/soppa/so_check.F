@@ -1,6 +1,9 @@
 C  /* Deck so_check */
       SUBROUTINE SO_CHECK(MODEL,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-     &                    T2MP,LT2MP,
+CPi 04.04.16
+C     &                    T2MP,LT2MP,
+     &                    DENSAI,LDENSAI,T2MP,LT2MP,
+Cend-Pi
      &                    FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
@@ -20,7 +23,7 @@ C
 #ifdef VAR_MPI
 #include "mpif.h"
 C  We need MXCALL and IRAT in order to assign space for load-balancing
-C  
+C
 #include "maxorb.h"
 #include "distcl.h"
 #include "iratdef.h"
@@ -42,7 +45,7 @@ C     are allocated consecutively, so that it can be send together. Only
 C     use it for this purpose.
 C     The definition must match that in soppa_nodedriver
       INTEGER   INFO_ARRAY(4)
-      EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit), 
+      EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
      &            (info_array(3), nnewtr),    (info_array(4),noldtr)
       INTEGER(MPI_INTEGER_KIND) :: IERR
 #endif
@@ -63,7 +66,10 @@ C     and trial vectors.
 C-----------------------------------------------------
 C
       IF (DOUBLES) THEN
-         NVAR   = 2 * (NT1AM(ISYMTR)+NT2AM(ISYMTR))
+CPi 01.04.16
+C         NVAR   = 2 * (NT1AM(ISYMTR)+NT2AM(ISYMTR))
+         NVAR   = 2 * (NT1AM(ISYMTR)+N2P2HOP(ISYMTR))
+Cend-Pi
       ELSE
          NVAR = 2*NT1AM(ISYMTR)
       END IF
@@ -72,10 +78,16 @@ C
       LS2MAT = NVAR * NVAR
       LTR1E  = NT1AM(ISYMTR)
       LTR1D  = NT1AM(ISYMTR)
-      LDENSAI = NT1AM(1)
+CPi 04.04.16
+C      LDENSAI = NT1AM(1)
+Cend-Pi
       IF (DOUBLES) THEN
-         LTR2E  = NT2AM(ISYMTR)
-         LTR2D  = NT2AM(ISYMTR)
+CPi 01.04.16
+C         LTR2E  = NT2AM(ISYMTR)
+C         LTR2D  = NT2AM(ISYMTR)
+         LTR2E  = N2P2HOP(ISYMTR)
+         LTR2D  = N2P2HOP(ISYMTR)
+Cend-Pi
       ELSE
          LTR2E  = 0
          LTR2D  = 0
@@ -90,7 +102,7 @@ C
       KDENSAI= KTR2D  + LTR2D
       KEND1  = KDENSAI+ LDENSAI
       LWORK1 = LWORK  - KEND1
-      print *,LWORK1
+C
 #ifdef VAR_MPI
 C------------------------------------------------------------------
 C     For MPI, we need som space in which to store the indices each
@@ -103,13 +115,13 @@ C
 C Not a real parallel job, don't bother
          lAssignedIndices = 1
          kAssignedIndices = 0
-      else  
+      else
          lAssignedIndices = (maxnumjobs + 1) /IRAT
          kAssignedIndices = KEND1
          KEND1 = kAssignedIndices + lAssignedIndices
          LWORK1 = LWORK - KEND1
       endif
-#endif 
+#endif
 C
       CALL SO_MEMMAX ('SO_CHECK.1',LWORK1)
       IF (LWORK1 .LT. 0) CALL STOPIT('SO_CHECK.1',' ',KEND1,LWORK)
@@ -123,20 +135,24 @@ C
 C---------------------------------------------------
 C        Work space allocation for solution vectors.
 C---------------------------------------------------
-C         
-C      Pointer for the correct column in E and S     
+C
+C      Pointer for the correct column in E and S
          LE2MAT  = (ICOL - 1) * NVAR
          LS2MAT  = (ICOL - 1) * NVAR
-C         
+C
          LRES1E  = NT1AM(ISYMTR)
          LRES1D  = NT1AM(ISYMTR)
          LRESO1E = NT1AM(ISYMTR)
          LRESO1D = NT1AM(ISYMTR)
-         IF (DOUBLES) THEN 
-            LRES2E  = NT2AM(ISYMTR)
-            LRES2D  = NT2AM(ISYMTR)
-            LRESO2E = NT2AM(ISYMTR)
-            LRESO2D = NT2AM(ISYMTR)
+         IF (DOUBLES) THEN
+C            LRES2E  = NT2AM(ISYMTR)
+C            LRES2D  = NT2AM(ISYMTR)
+C            LRESO2E = NT2AM(ISYMTR)
+C            LRESO2D = NT2AM(ISYMTR)
+            LRES2E  = N2P2HOP(ISYMTR)
+            LRES2D  = N2P2HOP(ISYMTR)
+            LRESO2E = N2P2HOP(ISYMTR)
+            LRESO2D = N2P2HOP(ISYMTR)
          ELSE
             LRES2E  = 0
             LRES2D  = 0
@@ -144,7 +160,7 @@ C
             LRESO2D = 0
          ENDIF
 C
-C      Positions on various parts in E and S         
+C      Positions on various parts in E and S
          KRES1E  = KE2MAT  + LE2MAT
          KRES1D  = KRES1E  + LRES1E
          KRES2E  = KRES1D  + LRES1D
@@ -175,7 +191,7 @@ C
          ELSE IF (ICOL.LE.(LTR1E+LTR1D+LTR2E)) THEN ! DOUBLES ONLY
             WORK(KTR2E + (ICOL - LTR1E - LTR1D) - 1) = ONE
             WORK(KRESO2E + ICOL - LTR1E - LTR1D -1)  = ONE
-         ELSE 
+         ELSE
             WORK(KTR2D + (ICOL - LTR1E - LTR1D - LTR2E) - 1) = ONE
             WORK(KRESO2D + (ICOL - LTR1E - LTR1D - LTR2E) - 1) = -ONE
          ENDIF
@@ -198,7 +214,7 @@ C
 C
 C
 C--------------------------------------------------------------
-C        Make E[2] linear transformation of trialvectors giving 
+C        Make E[2] linear transformation of trialvectors giving
 C        resultvectors.
 C--------------------------------------------------------------
 C
@@ -207,20 +223,20 @@ C In parallel, send slaves to so_eres
 C
          call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
      &                   mpi_comm_world, ierr )
-C Pack INFO_ARRAY variables and send them off 
+C Pack INFO_ARRAY variables and send them off
          CP_ISYMTR = ISYMTR
          NOLDTR    = 0
          NNEWTR    = 1
-         NIT       = ICOL 
+         NIT       = ICOL
          CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
      &                   MPI_COMM_WORLD, IERR)
 #endif
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
          CALL SO_ERES(MODEL,0, 1, DENSIJ, LDENSIJ, DENSAB, LDENSAB,
-     &               T2MP, LT2MP,  FOCKD,   LFOCKD, 
-     &               WORK(KDENSAI), LDENSAI, ICOL, ISYMTR,
-#ifdef VAR_MPI 
+     &               T2MP, LT2MP,  FOCKD,   LFOCKD,
+     &               DENSAI, LDENSAI, ICOL, ISYMTR,
+#ifdef VAR_MPI
      &               WORK(kAssignedIndices),lAssignedIndices,
 #endif
      &               WORK(KEND1), LWORK1)
@@ -231,7 +247,7 @@ C Pack INFO_ARRAY variables and send them off
          SOWTIM(1)  = SOWTIM(1)  + WTIMEE - WTIMES
 C
          CALL GETTIM (DUMMY,WTIMES)
-C     Explicitly calculate S for singles if not RPA         
+C     Explicitly calculate S for singles if not RPA
          IF (MODEL.NE.'AORPA'.AND.(ICOL.LE.(LTR1E+LTR1D))) THEN
             CALL SO_SRES(0,1,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                ISYMTR,WORK(KEND1),LWORK1)
@@ -265,7 +281,7 @@ C
          CALL SO_CLOSE(LURS1E,FNRS1E,'DELETE')
          CALL SO_CLOSE(LURS1D,FNRS1D,'DELETE')
 C
-         IF (DOUBLES) THEN 
+         IF (DOUBLES) THEN
             CALL SO_OPEN(LURS2E,FNRS2E,LRES2E)
             CALL SO_OPEN(LURS2D,FNRS2D,LRES2D)
             CALL SO_READ(WORK(KRES2E), LRES2E, LURS2E,FNRS2E,1)
@@ -282,6 +298,52 @@ C
 C
       WRITE(LUPRI,'(A,I2,A,I8)')' SYMMETRY :',ISYMTR,'  DIMENSION ',NVAR
       CALL OUTPUT(WORK(KE2MAT),1,NVAR,1,NVAR,NVAR,NVAR,1,LUPRI)
+C
+CPFP 2009-Aug  Write the C matrices
+C
+      CALL AROUND('Ce1[2] Matrix')
+      WRITE(LUPRI,'(A,I2,A,5I8)')' SYMMETRY :',ISYMTR,
+     &            '  DIMENSIONS ',LRESO1E,LRESO1D,LRESO2E,LRESO2D,NVAR
+      CALL OUTPUT(WORK(KE2MAT),(2*LRESO1E+1),(2*LRESO1E+LRESO2E),
+     &                         1,LRESO1D,NVAR,NVAR,1,LUPRI)
+C
+      CALL AROUND('~Cd1[2] Matrix')
+      WRITE(LUPRI,'(A,I2,A,5I8)')' SYMMETRY :',ISYMTR,
+     &            '  DIMENSIONS ',LRESO1E,LRESO1D,LRESO2E,LRESO2D,NVAR
+      CALL OUTPUT(WORK(KE2MAT),1,LRESO1E,(2*LRESO1D+1),
+     &            (2*LRESO1E+LRESO2E),NVAR,NVAR,1,LUPRI)
+C
+      CALL AROUND('Ce2[2] Matrix')
+      WRITE(LUPRI,'(A,I2,A,5I8)')' SYMMETRY :',ISYMTR,
+     &            '  DIMENSIONS ',LRESO1E,LRESO1D,LRESO2E,LRESO2D,NVAR
+      CALL OUTPUT(WORK(KE2MAT),(2*LRESO1E+LRESO2E+1),NVAR,(LRESO1D+1),
+     &            (2*LRESO1D),NVAR,NVAR,1,LUPRI)
+C
+      CALL AROUND('~Cd2[2] Matrix')
+      WRITE(LUPRI,'(A,I2,A,5I8)')' SYMMETRY :',ISYMTR,
+     &            '  DIMENSIONS ',LRESO1E,LRESO1D,LRESO2E,LRESO2D,NVAR
+      CALL OUTPUT(WORK(KE2MAT),(LRESO1E+1),(2*LRESO1E),
+     &            (2*LRESO1D+LRESO2D+1),NVAR,NVAR,NVAR,1,LUPRI)
+C
+CPi 02.05.16: Write D matrix
+C
+      CALL AROUND('D1[0] Matrix')
+      WRITE(LUPRI,'(A,I2,A,5I8,/A,5I8)')' SYMMETRY :',ISYMTR,
+     &            '  DIMENSIONS ',LRESO1E,LRESO1D,LRESO2E,LRESO2D,NVAR,
+     &            ' DIMENSION Triplet operators',
+     &            NT2AMTT(ISYMTR),NT2AMT1(ISYMTR),NT2AMT2(ISYMTR),
+     &            NT2AMT3(ISYMTR)
+      CALL OUTPUT(WORK(KE2MAT),(2*LRESO1E+1),(2*LRESO1E+LRESO2E),
+     &            (2*LRESO1D+1),(2*LRESO1E+LRESO2E),NVAR,NVAR,1,LUPRI)
+C
+      CALL AROUND('D2[0] Matrix')
+      WRITE(LUPRI,'(A,I2,A,5I8,/A,5I8)')' SYMMETRY :',ISYMTR,
+     &            '  DIMENSIONS ',LRESO1E,LRESO1D,LRESO2E,LRESO2D,NVAR,
+     &            ' DIMENSION Triplet operators',
+     &            NT2AMTT(ISYMTR),NT2AMT1(ISYMTR),NT2AMT2(ISYMTR),
+     &            NT2AMT3(ISYMTR)
+      CALL OUTPUT(WORK(KE2MAT),(2*LRESO1E+LRESO2E+1),NVAR,
+     &            (2*LRESO1D+LRESO2D+1),NVAR,NVAR,NVAR,1,LUPRI)
 C
       CALL AROUND('S[2] Matrix')
 C

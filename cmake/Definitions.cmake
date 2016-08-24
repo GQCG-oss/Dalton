@@ -64,7 +64,6 @@ if(ENABLE_64BIT_INTEGERS)
 endif()
 
 if(ENABLE_GPU)
-    add_definitions(-DVAR_OPENACC)
     add_definitions(-DVAR_CUDA)
     if(ENABLE_CUBLAS)
         add_definitions(-DVAR_CUBLAS)
@@ -73,19 +72,6 @@ endif()
 
 if(ENABLE_REAL_SP)
     add_definitions(-DVAR_REAL_SP)
-endif()
-
-if(ENABLE_CSR)
-    add_definitions(-DVAR_MKL)
-    add_definitions(-DVAR_CSR)
-endif()
-
-if(ENABLE_SCALAPACK)
-    add_definitions(-DVAR_SCALAPACK)
-endif()
-
-if(ENABLE_TIMINGS)
-    add_definitions(-DVAR_TIME)
 endif()
 
 if(ENABLE_DEBUGPBC)

@@ -11,9 +11,9 @@ C     Andrea Ligabue, January 2004: added the check for Z = +- Y
 C       when freq=0 in linear response properties
 C
 C     PURPOSE: Orthogonalize new trial vector against all previous
-C              trial vectors (including the paired ones) and 
-C              normalize. Finally make a symmetric orthonormalization 
-C              of the the new trial vector and its pair trial vector. 
+C              trial vectors (including the paired ones) and
+C              normalize. Finally make a symmetric orthonormalization
+C              of the the new trial vector and its pair trial vector.
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -54,7 +54,6 @@ CRF No need to explicitly construct S[1]*TR, since S[1]
 CRF is always +/-1 !!
       LRSO1E  = 0
       LRSO1D  = 0
-
 C
       K1TR1E  = 1
       K1TR1D  = K1TR1E + LTR1E
@@ -85,7 +84,7 @@ C
 C
             CALL AROUND('Raw new trial vector in RP_ORTH_TRN')
 C
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &           (I,WORK(K1TR1E+I-1),WORK(K1TR1D+I-1),I=1,LTR1E)
 C
          END IF
@@ -95,7 +94,7 @@ C
 C
   200    CONTINUE
 C
-         ITURN = ITURN + 1 
+         ITURN = ITURN + 1
 C
 C-----------------------------------------
 C        Loop over previous trial vectors.
@@ -114,13 +113,13 @@ C
 C
                CALL AROUND('Previous trial vector in RP_ORTH_TRN')
 C
-               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &              (I,WORK(KTR1E+I-1),WORK(KTR1D+I-1),I=1,LTR1E)
 C
             END IF
 C
 C----------------------------------------------------------------
-C           Orthogonalize new trial vector against previous trial 
+C           Orthogonalize new trial vector against previous trial
 C           vectors and their paired partners.
 C----------------------------------------------------------------
 C
@@ -128,7 +127,7 @@ C            CALL RP_RES_O(WORK(KRSO1E),LRSO1E, WORK(KRSO1D),LRSO1D,
 C     &                    WORK(KTR1E), LTR1E,  WORK(KTR1D), LTR1D,
 C     &                    ISYRES,      ISYMTR)
 C
-            
+
             DOTP = DDOT(LTR1E,WORK(K1TR1E),1,WORK(KTR1E),1)
      &           - DDOT(LTR1D,WORK(K1TR1D),1,WORK(KTR1D),1)
 C
@@ -162,12 +161,12 @@ C
 C----------------------------------------------------------
 C        Remove new trial vector if it is linear dependent.
 C----------------------------------------------------------
-C 
+C
          THNORM = THRLDP
 C
          IF (DABS(DNORM) .LE. THNORM) THEN
 C
-            IF ( IPRSOP .GE. 1 ) WRITE(LUPRI,9002) DNORM 
+            IF ( IPRSOP .GE. 1 ) WRITE(LUPRI,9002) DNORM
 C
             NLINDP = NLINDP + 1
 C
@@ -244,7 +243,7 @@ C
 C
             CALL AROUND('Orthonormalized trialvector in RP_ORTH_TRN')
 C
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &           (I,WORK(K1TR1E+I-1),WORK(K1TR1D+I-1),I=1,LTR1E)
 C
          END IF

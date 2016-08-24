@@ -202,6 +202,10 @@ C
       LPACKINT  = .FALSE.
       THRPCKINT = 1.0D-15
 C
+C     Multi-Level CC3 OR CCSD(T)
+      MLCC3 = .FALSE.
+      MLCCSDPT = .FALSE.
+C
 C DRCCD/DRPA related stuff
 C
 C IT2UPD: decide on doubles amplitude updating scheme for RCCD and DRCCD

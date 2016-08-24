@@ -1,4 +1,5 @@
-      DIMENSION   IDBTYP(4,4)
+! orbtypdef.h
+      INTEGER     IDBTYP(4,4)
       CHARACTER*9 COBTYP(4)
       SAVE      IDBTYP, COBTYP
       DATA      IDBTYP/-1,-2,-3,-4,

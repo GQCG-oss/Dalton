@@ -10,9 +10,9 @@ C     Keld Bak, May 1996
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Orthogonalize new trial vector against all previous
-C              trial vectors (including the paired ones) and 
-C              normalize. Finally make a symmetric orthonormalization 
-C              of the the new trial vector and its pair trial vector. 
+C              trial vectors (including the paired ones) and
+C              normalize. Finally make a symmetric orthonormalization
+C              of the the new trial vector and its pair trial vector.
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -52,9 +52,13 @@ C------------------------------------------------
 C
       LTR1E   = NT1AM(ISYMTR)
       LTR1D   = NT1AM(ISYMTR)
-      IF(DOUBLES)THEN
-         LTR2E   = NT2AM(ISYMTR)
-         LTR2D   = NT2AM(ISYMTR)
+      IF (DOUBLES) THEN
+CPi 01.04.16
+C         LTR2E   = NT2AM(ISYMTR)
+C         LTR2D   = NT2AM(ISYMTR)
+         LTR2E   = N2P2HOP(ISYMTR)
+         LTR2D   = N2P2HOP(ISYMTR)
+Cend-Pi
       ELSE
          LTR2E   = 0
          LTR2D   = 0
@@ -100,10 +104,10 @@ C
 C
             CALL AROUND('Raw new trial vector in SO_ORTH_TRN')
 C
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &       (I,WORK(K1TR1E+I-1),WORK(K1TR1D+I-1),I=1,LTR1E)
-            IF (DOUBLES) 
-     &             WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            IF (DOUBLES)
+     &             WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &              (I,WORK(K1TR2E+I-1),WORK(K1TR2D+I-1),I=1,LTR2E)
 C
          END IF
@@ -114,7 +118,7 @@ C         IF(LTYPE.EQ.'LINEAR') THEN
 C
   200    CONTINUE
 C
-         ITURN = ITURN + 1 
+         ITURN = ITURN + 1
 C
 C-----------------------------------------
 C        Loop over previous trial vectors.
@@ -133,21 +137,23 @@ C
                CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,IPRVTR)
             ENDIF
 C
-            IF ( IPRSOP .GE. 7 ) THEN
+            IF ( (INEWTR.EQ.1) .AND. (IPRSOP .GE. 7) ) THEN
 C
                CALL AROUND('Previous trial vector in SO_ORTH_TRN')
 C
-               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &              (I,WORK(KTR1E+I-1),WORK(KTR1D+I-1),I=1,LTR1E)
                IF (DOUBLES)
-     &              WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+     &              WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &              (I,WORK(KTR2E+I-1),WORK(KTR2D+I-1),I=1,LTR2E)
 C
             END IF
 C
 C----------------------------------------------------------------
-C           Orthogonalize new trial vector against previous trial 
+C           Orthogonalize new trial vector against previous trial
 C           vectors and their paired partners.
+C           KTR1* and KTR2*  : pointers to previous trial vectors
+C           K1TR1* and K1TR2*: pointers to raw new trial vectors
 C----------------------------------------------------------------
 C
             CALL SO_RES_O(WORK(KRSO1E),LRSO1E, WORK(KRSO1D),LRSO1D,
@@ -159,20 +165,31 @@ C
      &           + DDOT(LTR1D,WORK(K1TR1D),1,WORK(KRSO1D),1)
 C
             IF (DOUBLES) THEN
-               CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
-               CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-               CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
 C
-               DOTP = DOTP + DDOT(LTR2E,WORK(KTTR2),1,WORK(KTR2E),1)
+               IF (TRIPLET) THEN
 C
-               CALL DCOPY(LTR2D,WORK(K1TR2D),1,WORK(KTTR2),1)
-               CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-               CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
+                  DOTP = DOTP + DDOT(LTR2E,WORK(K1TR2E),1,WORK(KTR2E),1)
+                  DOTP = DOTP - DDOT(LTR2D,WORK(K1TR2D),1,WORK(KTR2D),1)
 C
-               DOTP = DOTP - DDOT(LTR2D,WORK(KTTR2),1,WORK(KTR2D),1)
+               ELSE
+C
+                  CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
+                  CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
+                  CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
+C
+                  DOTP = DOTP + DDOT(LTR2E,WORK(KTTR2),1,WORK(KTR2E),1)
+C
+                  CALL DCOPY(LTR2D,WORK(K1TR2D),1,WORK(KTTR2),1)
+                  CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
+                  CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
+C
+                  DOTP = DOTP - DDOT(LTR2D,WORK(KTTR2),1,WORK(KTR2D),1)
+C
+               END IF
 C
                CALL DAXPY(LTR2E,-DOTP,WORK(KTR2E),1,WORK(K1TR2E),1)
                CALL DAXPY(LTR2D,-DOTP,WORK(KTR2D),1,WORK(K1TR2D),1)
+C
             END IF
 C
             CALL DAXPY(LTR1E,-DOTP,WORK(KTR1E),1,WORK(K1TR1E),1)
@@ -188,21 +205,33 @@ C
      &           + DDOT(LTR1D,WORK(K1TR1D),1,WORK(KRSO1E),1)
 C
             IF (DOUBLES) THEN
-               CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
-               CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-               CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
 C
-               DOTP = DOTP + DDOT(LTR2E,WORK(KTTR2),1,WORK(KTR2D),1)
+               IF (TRIPLET) THEN
 C
-               CALL DCOPY(LTR2D,WORK(K1TR2D),1,WORK(KTTR2),1)
-               CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-               CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
+                  DOTP = DOTP + DDOT(LTR2E,WORK(K1TR2E),1,WORK(KTR2D),1)
+                  DOTP = DOTP - DDOT(LTR2D,WORK(K1TR2D),1,WORK(KTR2E),1)
 C
-               DOTP = DOTP - DDOT(LTR2D,WORK(KTTR2),1,WORK(KTR2E),1)
+               ELSE
+C
+                  CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
+                  CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
+                  CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
+C
+                  DOTP = DOTP + DDOT(LTR2E,WORK(KTTR2),1,WORK(KTR2D),1)
+C
+                  CALL DCOPY(LTR2D,WORK(K1TR2D),1,WORK(KTTR2),1)
+                  CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
+                  CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
+C
+                  DOTP = DOTP - DDOT(LTR2D,WORK(KTTR2),1,WORK(KTR2E),1)
+C
+               END IF
 C
                CALL DAXPY(LTR2E,DOTP,WORK(KTR2D),1,WORK(K1TR2E),1)
                CALL DAXPY(LTR2D,DOTP,WORK(KTR2E),1,WORK(K1TR2D),1)
+C
             END IF
+C
             CALL DAXPY(LTR1E,DOTP,WORK(KTR1D),1,WORK(K1TR1E),1)
             CALL DAXPY(LTR1D,DOTP,WORK(KTR1E),1,WORK(K1TR1D),1)
 C
@@ -221,28 +250,33 @@ C
      &         + DDOT(LTR1D,WORK(K1TR1D),1,WORK(KRSO1D),1)
 C
          IF (DOUBLES) THEN
-            CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
-            CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-            CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
+            IF (TRIPLET) THEN
+               DNORM = DNORM + DDOT(LTR2E,WORK(K1TR2E),1,WORK(K1TR2E),1)
+               DNORM = DNORM - DDOT(LTR2D,WORK(K1TR2D),1,WORK(K1TR2D),1)
+            ELSE
+               CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
+               CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
+               CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
 C
-            DNORM = DNORM + DDOT(LTR2E,WORK(KTTR2),1,WORK(K1TR2E),1)
+               DNORM = DNORM + DDOT(LTR2E,WORK(KTTR2),1,WORK(K1TR2E),1)
 C
-            CALL DCOPY(LTR2E,WORK(K1TR2D),1,WORK(KTTR2),1)
-            CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-            CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
+               CALL DCOPY(LTR2E,WORK(K1TR2D),1,WORK(KTTR2),1)
+               CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
+               CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
 C
-            DNORM = DNORM - DDOT(LTR2D,WORK(KTTR2),1,WORK(K1TR2D),1)
+               DNORM = DNORM - DDOT(LTR2D,WORK(KTTR2),1,WORK(K1TR2D),1)
+            END IF
          ENDIF
 C
 C----------------------------------------------------------
 C        Remove new trial vector if it is linear dependent.
 C----------------------------------------------------------
-C 
+C
          THNORM = THRLDP
 C
          IF (DABS(DNORM) .LE. THNORM) THEN
 C
-            IF ( IPRSOP .GE. 1 ) WRITE(LUPRI,9002) DNORM 
+            IF ( IPRSOP .GE. 1 ) WRITE(LUPRI,9002) DNORM
 C
             NLINDP = NLINDP + 1
 C
@@ -293,18 +327,23 @@ C
               CALL DSCAL(LTR2E,DNORMI,WORK(K1TR2E),1)
               CALL DSCAL(LTR2D,DNORMI,WORK(K1TR2D),1)
 C
-              CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
-              CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-              CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
+              IF (TRIPLET) THEN
+                 DNORM = DNORM+DDOT(LTR2E,WORK(K1TR2E),1,WORK(K1TR2E),1)
+                 DNORM = DNORM-DDOT(LTR2D,WORK(K1TR2D),1,WORK(K1TR2D),1)
+              ELSE
+                 CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
+                 CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
+                 CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
 C
-              DNORM = DNORM + DDOT(LTR2E,WORK(KTTR2),1,WORK(K1TR2E),1)
+                 DNORM = DNORM +DDOT(LTR2E,WORK(KTTR2),1,WORK(K1TR2E),1)
 C
-              CALL DCOPY(LTR2E,WORK(K1TR2D),1,WORK(KTTR2),1)
-              CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-              CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
+                 CALL DCOPY(LTR2E,WORK(K1TR2D),1,WORK(KTTR2),1)
+                 CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
+                 CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
 C
-              DNORM = DNORM - DDOT(LTR2D,WORK(KTTR2),1,WORK(K1TR2D),1)
-            ENDIF
+                 DNORM = DNORM -DDOT(LTR2D,WORK(KTTR2),1,WORK(K1TR2D),1)
+              END IF
+           ENDIF
 C
          ENDIF
 C
@@ -312,7 +351,7 @@ C-------------------------------------------------------
 C        Normalize new trial vector first (second) time.
 C-------------------------------------------------------
 C
-C         print *, dnorm 
+C         print *, dnorm
          DNORMI = ONE / DSQRT( DABS(DNORM) )
 C
          CALL DSCAL(LTR1E,DNORMI,WORK(K1TR1E),1)
@@ -358,10 +397,10 @@ C
 C
             CALL AROUND('Orthonormalized trialvector in SO_ORTH_TRN')
 C
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &        (I,WORK(K1TR1E+I-1),WORK(K1TR1D+I-1),I=1,LTR1E)
-            IF (DOUBLES) THEN 
-                WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            IF (DOUBLES) THEN
+                WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &            (I,WORK(K1TR2E+I-1),WORK(K1TR2D+I-1),I=1,LTR2E)
             ENDIF
 C

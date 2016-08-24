@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+#    prop_exci_ao
+#    ------------
+#    Molecule:         H2O
+#    Wave Function:    MP2/CCSD (RPA, RPA(D), SOPPA, SOPPA(CCSD))
+#    Test Purpose:     Calculation of excitation energies through ABACUS
+#                      atomic integral direct implementation of SOPPA
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 8,
+      rel_tolerance = 1.0e-8)
+
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+      
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+
+# Property calculation
+f.add(string = 'Electronic excitation energies',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'AO integral driven RPA',
+      rel_tolerance = 1.0e-2)
+f.add(from_string = 'Changes of defaults for .EXCITA',
+      num_lines = 10,
+      rel_tolerance = 1.0e-5)
+
+
+
+f.add(from_string = 'Triplet electronic excitation energies',
+      num_lines = 21,
+      abs_tolerance = 1.0e-4)
+
+test.run(['prop_exci_aorpa_trip.dal'], ['H2O_intgrl_sym.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.','ERI does not work with Cartesian basis.'])
+
+sys.exit(test.return_code)

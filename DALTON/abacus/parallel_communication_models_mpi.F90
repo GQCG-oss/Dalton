@@ -292,7 +292,7 @@ contains
 !     master reports the count of intra-groups formed by all processes
       if(my_process_id_glb == 0)then
         write(*,'(/a)')                                                     &
-        ' output from the communication group generator:'
+        ' Output from the communication group generator:'
         if(local_counter_file_groups == 1)then
           write(*,'(i4,a/)')                                                &
           local_counter_file_groups,' intra-node group has been built.'
@@ -334,7 +334,10 @@ contains
      integer, intent(in )   :: my_process_id_glb
      integer, intent(in )   :: process_list_glb(nr_of_process_glb)
      integer, intent(out)   :: group_list(nr_of_process_glb)
-     integer, intent(out)   :: shared_mem_list(nr_of_process_glb)
+! May 2016 hjaaj: removing intent on shared_mem_list, because it throws intel compile
+!    warnings as shared_mem_list is not set in this routine (currently?)
+!    integer, intent(out)   :: shared_mem_list(nr_of_process_glb)
+     integer                :: shared_mem_list(nr_of_process_glb)
      integer, intent(out)   :: my_intra_node_id
      integer, intent(out)   :: my_inter_node_id
      integer, intent(out)   :: my_shmem_node_id
@@ -414,7 +417,7 @@ contains
 !       OpenMPIs --bysocket --bind-to-socket policy: round-robin fashion between the X sockets (often socket == NUMA node) 
 !       thus, we will follow this strategy here...
         numa_nodes = intra_node_size/numa_procs
-        if(mod(intra_node_size,numa_procs) /= 0 ) write(*,*) ' ** warning: asymmetric NUMA node allocation'
+        if(mod(intra_node_size,numa_procs) /= 0 ) write(*,*) ' ** Warning: asymmetric NUMA node allocation'
 
         numa_counter = 0
         i            = 0

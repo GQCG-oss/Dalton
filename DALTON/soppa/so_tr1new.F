@@ -11,15 +11,15 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Determine new initial trialvectors.
 C
-C     'Atomic integral driven second order polarization propagator 
+C     'Atomic integral driven second order polarization propagator
 C     calculations of the excitation spectra of napthalene and anthracene'
-C     Keld L. Bak, Henrik Koch, Jens Oddershede, Ove Christiansen 
+C     Keld L. Bak, Henrik Koch, Jens Oddershede, Ove Christiansen
 C     and Stephan P. A Sauer
 C     Journal of Chemical Physics, 112, 9, (2000)
 C
 C     Section C pp. 4176
-C     SO_TR1NEW is called to create a brand new set of trial vectors for 
-C     SOPPA or SOPPA(CCSD) based on approximate diagonal elements of the 
+C     SO_TR1NEW is called to create a brand new set of trial vectors for
+C     SOPPA or SOPPA(CCSD) based on approximate diagonal elements of the
 C     Hessian.
 C
       use so_info, only : so_has_doubles, so_singles_second
@@ -51,7 +51,10 @@ C---------------------------------
 C
       LEDIA1 = NT1AM(ISYMTR)
       IF (DOUBLES) THEN
-         LEDIA2 = NT2AM(ISYMTR)
+CPi 01.04.16
+C         LEDIA2 = NT2AM(ISYMTR)
+         LEDIA2 = N2P2HOP(ISYMTR)
+Cend-Pi
       ELSE
          LEDIA2 = 0
       ENDIF
@@ -146,7 +149,7 @@ C
 C
 C
          CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
-         IF (DOUBLES) THEN 
+         IF (DOUBLES) THEN
             CALL SO_WRITE(WORK(KTRIAL+LEDIA1),LEDIA2,
      &                                        LUTR2D,FNTR2D,INEWTR)
          END IF

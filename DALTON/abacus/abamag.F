@@ -1690,11 +1690,11 @@ C
 C
 C     Allocate work space for necessary information to be read by RSPMC
 C
-      CALL RD_SIRIFC('CMO',FOUND,CMO,WORK,LWORK)
+      CALL RD_SIRIFC('CMO',FOUND,CMO)
       IF (.NOT.FOUND) CALL QUIT('TRPRH1 error: CMO not found on SIRIFC')
       IF (NASHT .GT. 0) THEN
          IF (LWORK.LT.NNASHX)CALL STOPIT('TRPRH1','UDV',LWORK,NNASHX)
-         CALL RD_SIRIFC('DV',FOUND,WORK,WORK,LWORK)
+         CALL RD_SIRIFC('DV',FOUND,WORK)
          IF (.NOT.FOUND)
      &      CALL QUIT('TRPRH1 error: DV not found on SIRIFC')
             CALL DSPTSI(NASHT,WORK,UDV)
@@ -1997,7 +1997,7 @@ C
      &                        CHRNOS(ISYM)//':',-1)
                   WRITE (LUPRI,'(A,I5)') ' Coordinate:',ICOOR
                   WRITE (LUPRI,'(A,I5)') ' Record:    ',IREC
-                  WRITE (LUPRI,'(A,D20.14)') ' Norm:      ', DNORM
+                  WRITE (LUPRI,'(A,D21.14)') ' Norm:      ', DNORM
                   IF (ZERNRM(I)) WRITE (LUPRI,'(A)')
      &             ' *Note: vector excluded because norm .le. thrclc/10'
                END IF
@@ -2056,7 +2056,7 @@ ckr               IDORCT(IREC) = 1
                   WRITE (LUPRI,'(A,I5)') ' Record:    ',IREC
                   DN1 = DNRM2(NVARPT,WORK,1)
                   DN2 = DNRM2(NVARPT,WORK(1+NVARPT),1)
-                  WRITE (LUPRI,'(A,2(D20.14,2X))')
+                  WRITE (LUPRI,'(A,2(D21.14,2X))')
      &                   ' Norms:     ',DN1,DN2
                END IF
                IF (IPRTRP .GT. 10) THEN

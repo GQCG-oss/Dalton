@@ -150,7 +150,7 @@ C
           write(lupri,*) '   '     
       ENDIF 
 
-      CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
+      CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO))
 C          RD_SIRIFC( KEY ,FOUND,   AMAT   ,  WRK      ,LWRK)
  
       IF (.NOT.FOUND) CALL QUIT('AVELRSC error: CMO not on SIRIFC')

@@ -9,7 +9,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Stephan Sauer, May 1996
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
-C     Andrea Ligabue, January 2004: linear response functions 
+C     Andrea Ligabue, January 2004: linear response functions
 C                                    implemented
 C
 C        Set up and solve the reduced linear response problem. Save the
@@ -29,8 +29,8 @@ C LREDOL        dimension of the old E[2] and S[2] matrix
 C FRVAL         array with the frequencies fot that property
 C NFRVAL        dimension of the array FRVAL
 C IFREQ         for which components of the FRVAL array we are computing
-C ENORM         is the norm used to generate the new Z vector; i need that 
-C               to compute the residual 
+C ENORM         is the norm used to generate the new Z vector; i need that
+C               to compute the residual
 C WORK
 C LWORK
 C
@@ -51,7 +51,7 @@ C
       DIMENSION REDE(LREDE,LREDE),REDS(LREDS,LREDS),REDC(LREDC)
       DIMENSION FRVAL(NFRVAL)
 cLig  <> I have to check if I really need to dimension these here!
-cLig  and if it is true, I have to use the work array and check the 
+cLig  and if it is true, I have to use the work array and check the
 cLig  memory requirment in teh calling subroutine (RP_LRSOEQ)
       DIMENSION WORK(LWORK)
       DIMENSION KPVT(LREDE),INERT(3),DET(2)
@@ -73,7 +73,7 @@ C     Check dimensions of the matrices
 C-------------------------------------
 C
       IF (LREDE .NE. LREDS) THEN
-         WRITE(LUPRI,*) 
+         WRITE(LUPRI,*)
      &        'SO_REDLE : Dimensions of reduced E[2] and S[2] matrices',
      &        ' LREDE : ',LREDE,' and LREDS : ',LREDS,' are different'
          CALL QUIT('Incompatible dimensions of reduced matrices in //
@@ -100,20 +100,20 @@ C===============================================
 C
 C--------------------------------------------------------------------
 C     Work space allocation no. 1.
-C     Notice that the E[2] linear transformed trial vector and the 
+C     Notice that the E[2] linear transformed trial vector and the
 C     S[2] linear transformed trial vector are of equal length and
 C     that they use the same work space.
 C--------------------------------------------------------------------
 C
       LTR1E    = NT1AM(ISYMTR)
-CPFP   2009-Jun
       IF(DOUBLES)THEN
-         LTR2E    = NT2AM(ISYMTR)
+CPi 08.04.16
+C         LTR2E    = NT2AM(ISYMTR)
+         LTR2E    = N2P2HOP(ISYMTR)
+Cend-Pi
       ELSE
          LTR2E    = 0
       ENDIF
-C      LTR2E    = N2P2HOP(ISYMTR)
-Cend-PFP
       LI       = NOLDTR + NNEWTR
       LJ       = NOLDTR + NNEWTR
 C
@@ -210,7 +210,7 @@ C     Work space allocation no. 2.
 C----------------------------------
 C
       LEIVEC  = LREDE
-C     
+C
       KEMOS    = 1
       KZETA    = KEMOS  + LREDE* LREDE
       KEND2    = KZETA  + LEIVEC*LEIVEC
@@ -220,9 +220,9 @@ C
       IF (LWORK2 .LT. 0) CALL STOPIT('SO_REDLE.2',' ',KEND2,LWORK)
 C
 C-------------------------------------------------------
-C     Use EISPACK routine for real general matrices 
+C     Use EISPACK routine for real general matrices
 C     in generalized eigenvalue problem.
-C     The reduced E[2] and S[2] matrices are backuped to 
+C     The reduced E[2] and S[2] matrices are backuped to
 C     WORK(KREDES) and WORK(KREDSS).
 C-------------------------------------------------------
 cLigC
@@ -243,17 +243,17 @@ C
 C
           IJ = IJ +1
 C
-          WORK(KEMOS+IJ-1) = REDE(ICOMP,JCOMP) - 
+          WORK(KEMOS+IJ-1) = REDE(ICOMP,JCOMP) -
      &                       FRVAL(IFREQ) * REDS(ICOMP,JCOMP)
 C
-          IF(IPRSOP.GT.100) 
+          IF(IPRSOP.GT.100)
      &    WRITE(LUPRI,'(1X,A,F15.8,/,1x,A,F15.8,A,F15.8,A,F15.8)')
      &      'Res',WORK(KEMOS+IJ-1),' REDE',REDE(ICOMP,JCOMP),
-     &      ' Freq',FRVAL(IFREQ),' REDS',REDS(ICOMP,JCOMP)     
+     &      ' Freq',FRVAL(IFREQ),' REDS',REDS(ICOMP,JCOMP)
 C
   200   CONTINUE
 C
-  100 CONTINUE  
+  100 CONTINUE
 C
       CALL DZERO(WORK(KZETA),LEIVEC*LEIVEC)
 C
@@ -264,9 +264,9 @@ C
 C
 C--------------------------------------------------------------
 C     Calculate the "diagonal" property from the reduced space.
-C     solution-vector and property gradient. 
-C     (This is not really needed, but hardly costs anything)      
-C--------------------------------------------------------------     
+C     solution-vector and property gradient.
+C     (This is not really needed, but hardly costs anything)
+C--------------------------------------------------------------
       PROP = DDOT(LREDE,REDC,1,WORK(KZETA),1)
 C
       IF( IPRSOP .GE. 5 ) THEN
@@ -315,21 +315,6 @@ C
      &             REDS,LREDS,.TRUE.,ENORM,WORK(KEND3),LWORK3)
       DTIME      = SECOND()   - DTIME
       SOTIME(38) = SOTIME(38) + DTIME
-C
-C-----------------------------------------------------------------
-C     Calculate the value of the property with the trial vectors used
-C     for the linear problem before they will be changed by the 
-C     SO_OPTVEC and write solution vector on the file
-C-----------------------------------------------------------------
-C
-C      DTIME      = SECOND()
-C      CALL SO_PROP(DOUBLES,NOLDTR,NNEWTR,ISYMTR,IMAGPROP,
-C     &             REDC,LREDC,LABEL,FRVAL(IFREQ),
-C     &             PROP,WORK(KEND2),LWORK2)
-C      DTIME      = SECOND()   - DTIME
-cLig  I'm quite sure to have to change this SOTIME 
-C      SOTIME(38) = SOTIME(38) + DTIME
-cLig >>
 C
 C-----------------------------------------------------------------
 C     Calculate the new optimal trial and linear transformed trial

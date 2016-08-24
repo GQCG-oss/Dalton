@@ -2196,11 +2196,9 @@ C
  133     CONTINUE
          READ (LUCMD,'(A7)',END=134,ERR=134) WRDRSP
          IF (WRDRSP .EQ. '**RESPO') THEN
-            REWIND (LUCMD)
             RNRESP = .TRUE.
-            CALL SETSIR(WORK(2),LWORK)
-            CALL GPCLOSE(LUSIFC,'KEEP')
             CALL GPCLOSE(LUCMD,'KEEP')
+            IF (LUSIFC.GT.0) CALL GPCLOSE(LUSIFC,'KEEP')
             CALL RSPDRV(WORK(2),LWORK)
          ELSE
             GOTO 133
@@ -2570,7 +2568,7 @@ c           IF (CHGRDT) THEN
      &        'integration in DFT optimization'
               WRITE (LUPRI,'(A)') ' INFO: thresholds for convergence'
      &        //' of geometry optimization have been reset'
-              WRITE (LUPRI,'(/A/,3(/20X,A,F10.8))') ' New thresholds:',
+              WRITE (LUPRI,'(/A/,3(/20X,A,F11.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
 c           END IF
@@ -7806,10 +7804,7 @@ C
 C
       IF (ITER_GEO .GE. 0) THEN
          FILENM = 'XXXX_mol.inp'
-         WRITE(FILENM(1:4),'(I4)') (ITER_GEO + 1)
-         IF (ITER_GEO .LT. 9)   WRITE(FILENM(3:3),'(A1)') '0'
-         IF (ITER_GEO .LT. 99)  WRITE(FILENM(2:2),'(A1)') '0'
-         IF (ITER_GEO .LT. 999) WRITE(FILENM(1:1),'(A1)') '0'
+         WRITE(FILENM(1:4),'(I4.4)') (ITRNMR + 1)
          CALL GPOPEN(LUMOL,FILENM,'UNKNOWN',' ','FORMATTED',
      &      IDUMMY,.FALSE.)
          DO IMLINE = 1,NMLINE
@@ -7864,7 +7859,7 @@ C ===
          WRITE(LUHES,*)
          DO 100 J = 1, 3*NUCDEP
             DO 110 I = 1, 3*NUCDEP
-               WRITE(LUHES,'(F20.16)') TMPMT4(I,J)
+               WRITE(LUHES,'(F25.16)') TMPMT4(I,J)
  110        CONTINUE
             WRITE(LUHES,*)
  100     CONTINUE
@@ -8109,7 +8104,7 @@ C
      &        'of the accuracy of the numerical gradients'
          WRITE (LUPRI,'(A)') ' INFO: thresholds for convergence'
      &        //' of geometry optimization has been reset'
-         WRITE (LUPRI,'(/A,/,3(/,20X,A,F10.8))') ' New thresholds:',
+         WRITE (LUPRI,'(/A,/,3(/,20X,A,F11.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
       END IF

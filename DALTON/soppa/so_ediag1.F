@@ -7,8 +7,8 @@ C
 C     Keld Bak, April 1996
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
-C     PURPOSE: Calculate diagonale one-particle part of the 
-C              SOPPA E[2] matrix excluding the second order 
+C     PURPOSE: Calculate diagonale one-particle part of the
+C              SOPPA E[2] matrix excluding the second order
 C              contributions.
 C
 #include "implicit.h"

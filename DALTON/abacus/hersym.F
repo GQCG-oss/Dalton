@@ -30,7 +30,7 @@ Added solvent in FIND_SYMMETRY,
 as well as using NUCIND instead ATMARR in loops
 950208-vebjorn
 SYMADD: Completely new module to determine molecular symmetry, find the
-        symmetry elements, remove symmetry-dependant atoms and finally
+        symmetry elements, remove symmetry-dependent atoms and finally
         return a string containing the full point group.
 ========================================================================
 #endif
@@ -65,8 +65,11 @@ C     Set control variables in "mxsymm.h"
       MAXMIR = 25
       IPRSYM = IPRSYM_INPUT
 
-      CALL HEADER('SYMADD: Requested addition of symmetry',-1)
-      WRITE(LUPRI,'(A,1P,G9.2)') ' Symmetry test threshold: ', TOLLRN
+CSK   only MASTER needs to print the information
+      IF( MYTID .eq. MPARID )THEN
+        CALL HEADER('SYMADD: Requested addition of symmetry',-1)
+        WRITE(LUPRI,'(A,1P,G9.2)') ' Symmetry test threshold: ', TOLLRN
+      END IF
 
       KFRSAV = 1
       KFREE  = KFRSAV
@@ -176,7 +179,7 @@ C
 C           CALL PRIGEOLU(LUCOOR,CORD)
             DO ICENT=1,N_ATOMS
                NAME=NAMEX(3*ICENT)(1:4)
-               WRITE(LUCOOR,'(2X,A,3(2X,E22.16))')
+               WRITE(LUCOOR,'(2X,A,3(2X,E23.16))')
      &              NAMEX(3*ICENT)(1:4),ATMARR(1,ICENT),
      &              ATMARR(2,ICENT),ATMARR(3,ICENT)
             ENDDO
@@ -191,7 +194,7 @@ C           with principal axes of inertia along coordinate axes
             CALL CENTER_MOLECULE(ATMARR)
          END IF
 CRF      We have to sort the atoms AFTER we center the molecule
-C        Else errors occur when non-standart isotopes are used
+C        Else errors occur when non-standard isotopes are used
          CALL SRTATM(MXCENT, ATMARR, .TRUE.)
 C
 C        Determine molecular point group
@@ -214,9 +217,9 @@ C
               TEXT = 'Centered and Rotated Coordinates'
               CALL PRNARR(TEXT , MXCENT, ATMARR)
             ELSE
-              WRITE (LUPRI,'(/A/)')
-     &  '   System could not be centered or rotated due to finite field'
-             END IF
+              WRITE (LUPRI,'(/A/)') '   System has not been centered '//
+     &           ' or rotated before symmetry analysis.'
+            END IF
          END IF
          IF (IPRSYM .GE. IPRTHR) THEN
             IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
@@ -289,10 +292,11 @@ C ::: If there's any Angstrom mark, it's removed.    :::
          END IF
 C ::: The reduced coordinates are moved back. :::
          CALL SRTOLD(MXCENT, ATMARR)
-         DO 250 I = 1, NINT(ATMARR(1,0))
-            CORD(1,I) = ATMARR(1,I)
-            CORD(2,I) = ATMARR(2,I)
-            CORD(3,I) = ATMARR(3,I)
+         NCTOT = NINT(ATMARR(1,0))
+         IF (NCTOT .LE. 0) CALL QUIT ('No atoms defined')
+
+         DO 250 I = 1, NCTOT
+            CORD(1:3,I) = ATMARR(1:3,I)
             IOLD = NINT(ATMARR(5,I))
 C           ... IOLD .ge. I after CALL SRTOLD
             RSPH(I)   = RSPH(IOLD)
@@ -306,9 +310,9 @@ C           GNUEXP(I) and MULBSI(I) have been added (WK/UniKA/04-11-2002).
  250     CONTINUE
 C ::: Then the different elements are counted, and arrays updated. :::
          NONTYP = 1
-         CALL IZERO(NONT, KATOM)
+         NONT(1:KATOM) = 0
          IELMNT = NINT(ATMARR(4,1))
-         DO 275 I = 1, NINT(ATMARR(1,0))
+         DO 275 I = 1, NCTOT
             IF (NINT(ATMARR(4,I)) .NE. IELMNT) THEN
                NONTYP = NONTYP + 1
                IELMNT = NINT(ATMARR(4,I))
@@ -320,7 +324,7 @@ C ::: Then the different elements are counted, and arrays updated. :::
             NAMEX(3*I-2) = NAMN(I)//'x'
             ISOTOP(I) = NINT(ATMARR(6,I))
  275     CONTINUE
-         NCTOT = NINT(ATMARR(1,0))
+
          DO 300 I = NCTOT + 1, KATOM
             NAMN(I) = '    '
             NAMEX(3*I)   = '      '
@@ -337,25 +341,26 @@ C ::: We update the coordinates of the input file :::
          DO 400 I = 1, NCTOT
             NCI   = NCLINE(I)
             TMPLN = MLINE(NCI)
-            IF (ABS(CORD(1,I)).ge.100.0D0 .OR.
-     &          ABS(CORD(2,I)).ge.100.0D0 .OR.
-     &          ABS(CORD(3,I)).ge.100.0D0) THEN
+            IF (ABS(CORD(1,I)).ge.10000.0D0 .OR.
+     &          ABS(CORD(2,I)).ge.10000.0D0 .OR.
+     &          ABS(CORD(3,I)).ge.10000.0D0) THEN
                WRITE(TMPLN(5:65),'(3G20.12,1X)')
      &            CORD(1,I),CORD(2,I),CORD(3,I)
             ELSE
-               WRITE(TMPLN(5:65),'(3F20.15,1X)')
+               WRITE(TMPLN(5:65),'(3F20.14,1X)')
      &            CORD(1,I),CORD(2,I),CORD(3,I)
             END IF
 C
-            QMASS = DISOTP(IZATOM(I),ISOTOP(I),'MASS')
-            IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
-     &                            'Isotope=', NINT(QMASS)
+            IF (ISOTOP(I) .GT. 1) THEN
+              QMASS = DISOTP(IZATOM(I),ISOTOP(I),'MASS')
+              WRITE(TMPLN(66:76),'(A8,I3)') 'Isotope=', NINT(QMASS)
+            END IF
             MLINE(NCI) = TMPLN
  400     CONTINUE
 C ::: Finally the number of atoms are updated. :::
          I = 1
          J = NINT(ATMARR(4,I))
-         DO 500 K = 1, NONTYP
+         DO K = 1, NONTYP
             NCI   = NCLINE(I) - 1
             TMPLN = MLINE(NCI)
             CALL UPCASE(TMPLN)
@@ -376,7 +381,7 @@ C ::: Finally the number of atoms are updated. :::
                GOTO 510
             END IF
             J = NINT(ATMARR(4,I))
- 500     CONTINUE
+         END DO
 C        IF (SOLVNT .OR. DORLM) THEN
 C           NUCIND = NUCIND + 1
 C           NCNTCV = NUCIND
@@ -390,7 +395,7 @@ C           CORD(2,NUCIND) = D0
 C           CORD(3,NUCIND) = D0
 C           CHARGE(NUCIND) = D0
 C        END IF
-         NUCIND = NCTOT
+      NUCIND = NCTOT
       RETURN
       END
 C  /* Deck prnarr */
@@ -727,9 +732,9 @@ C
 
       N_ATOMS = NINT(ATMARR(1,0))
 
-Cdbg     write (lupri,*) 'CNTRML: initial coord.s etc.'
+Cdbg     write (lupri,*) 'CENTER_MOLECULE: initial coord.s etc.'
 Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,NUCLP+1,6,NUCLP+1,1,LUPRI)
-Cdbg     CALL PRNARR('CNTRML: ATMARR start', NUCLP, ATMARR)
+Cdbg     CALL PRNARR('CENTER_MOLECULE: ATMARR start', NUCLP, ATMARR)
 
       IF (N_ATOMS .EQ. 1) THEN ! atom, just move to (0,0,0)
          ATMARR(1,1) = 0.0D0

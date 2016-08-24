@@ -12,13 +12,13 @@ C     PURPOSE: Determine the initial trialvectors for the linear
 C     response equations using eq. (19) with R = (C +-C).
 C
 C     NNEWTR            number of new trial vectors (OUT)
-C     NOLDTR            number of old trial vectors of the last frequency 
+C     NOLDTR            number of old trial vectors of the last frequency
 C                       ... it is not used in the first calculation
-C     ISYMTR            symmetry of the trial vectors 
+C     ISYMTR            symmetry of the trial vectors
 C                       (it is the symmetry of the property)
 C     IFREQ             position in the frequency array we are computing
 C     FRVAL(NFRVAL)     array of frequencise
-C     NEXCI             number of frequencies to be computed for that property 
+C     NEXCI             number of frequencies to be computed for that property
 C                       (always 1)
 C
 #include "implicit.h"
@@ -55,7 +55,7 @@ C
       IF (LWORK1 .LT.0) CALL STOPIT('RP_TRIAL3.1',' ',KEND1,LWORK)
 C
 C-----------------------------------------
-C     Read diagonal E[2] and S[2] elements 
+C     Read diagonal E[2] and S[2] elements
 C-----------------------------------------
 C
       CALL GPOPEN  (LUDIAG,'SO_DIAG','UNKNOWN',' ','UNFORMATTED',IDUMMY,
@@ -82,7 +82,7 @@ C
       IF (LWORK2 .LT.0) CALL STOPIT('RP_TRIAL3.2',' ',KEND2,LWORK)
 CRF Factor for creating D gradient from E gradient
       DFACTOR  = -ONE
-      IF (IMAGPROP) DFACTOR = ONE   
+      IF (IMAGPROP) DFACTOR = ONE
 C
 C----------------------------------
 C     Open files for trial vectors.
@@ -96,21 +96,21 @@ C     Open file for property gradient.
 C-------------------------------------
 C
       CALL SO_OPEN(LUGPVE,FNGPVE,LGPVEC)
-C 
+C
 C---------------------------------------------------------------
 C     Set the number of new trial vectors equal to NEXCI
-C     remember that for us NEXCI is always 1 ... 
+C     remember that for us NEXCI is always 1 ...
 C     I'll add one trial vector each iteration
 C     Loop over the new trial vectors.
 C     This loop is quite stupid since NNEWTR is always 1.
 C---------------------------------------------------------------
 C
       NNEWTR = NEXCI
-C     
+C
       DO 200 INEWTR = 1, NNEWTR
-C     
+C
 C----------------------------------------------------------------------
-C        For the first frequency: use the GP vector as starting trial 
+C        For the first frequency: use the GP vector as starting trial
 C        vector. I need also tu use the GP vector when freq. is 0
 C        Otherwise use the last trial vector of the previous frequency.
 C----------------------------------------------------------------------
@@ -145,13 +145,13 @@ C           (E[2]diag + omega)^-1 * GP
 C-------------------------------------------------------------------
 C
             CALL DZERO(WORK(KTRIAL),LTRIAL)
-C 
+C
             IF(.NOT.STATIC)THEN
 C
                DO IELEM = 1, LEDIA1
-C     
+C
                   TMP = DFACTOR / ( WORK(KEDIA1+IELEM-1) + FRVAL(IFREQ))
-                  WORK(KTRIAL+IELEM-1) = TMP 
+                  WORK(KTRIAL+IELEM-1) = TMP
      &                                 * WORK(KGPVEC + IELEM-1)
 C
                END DO
@@ -162,19 +162,19 @@ C
 C-----------------------------------------------------------------------
 C           For the other frequencies use the last trial vector on file.
 C-----------------------------------------------------------------------
-C     
+C
          ELSE
 C
 cspas should NOLDTR not be 1 here ?
-            NOLDTR = 1 
+            NOLDTR = 1
 C
 CRF don't do a thing
 C            CALL SO_READ(WORK(KTRIAL),LTRIAL,LUTR1E,FNTR1E,NOLDTR)
 C            CALL SO_WRITE(WORK(KTRIAL),LTRIAL,LUTR1E,FNTR1E,INEWTR)
-C     
+C
 C            CALL SO_READ(WORK(KTRIAL),LTRIAL,LUTR1D,FNTR1D,NOLDTR)
 C            CALL SO_WRITE(WORK(KTRIAL),LTRIAL,LUTR1D,FNTR1D,INEWTR)
-C     
+C
          ENDIF
 C
   200 CONTINUE
@@ -198,10 +198,10 @@ C
      &          ' orthonormalization'
 C
             CALL SO_READ(WORK(KTRIAL),LTRIAL,LUTR1E,FNTR1E,INEWTR)
-            WRITE (LUPRI,'(I8,1X,F14.8)') 
+            WRITE (LUPRI,'(I8,1X,F14.8)')
      &          (I,WORK(KTRIAL+I-1),I=1,LTRIAL)
             CALL SO_READ(WORK(KTRIAL),LTRIAL,LUTR1D,FNTR1D,INEWTR)
-            WRITE (LUPRI,'(I8,1X,F14.8)') 
+            WRITE (LUPRI,'(I8,1X,F14.8)')
      &          (I,WORK(KTRIAL+I-1),I=1,LTRIAL)
 C
   300   CONTINUE
@@ -229,10 +229,10 @@ C
      &          ' orthonormalization'
 C
             CALL SO_READ(WORK(KTRIAL),LTRIAL,LUTR1E,FNTR1E,INEWTR)
-            WRITE (LUPRI,'(I8,1X,F14.8)') 
+            WRITE (LUPRI,'(I8,1X,F14.8)')
      &          (I,WORK(KTRIAL+I-1),I=1,LTRIAL)
             CALL SO_READ(WORK(KTRIAL),LTRIAL,LUTR1D,FNTR1D,INEWTR)
-            WRITE (LUPRI,'(I8,1X,F14.8)') 
+            WRITE (LUPRI,'(I8,1X,F14.8)')
      &          (I,WORK(KTRIAL+I-1),I=1,LTRIAL)
 C
   400    CONTINUE

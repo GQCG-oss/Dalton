@@ -1840,7 +1840,7 @@ C    &                  LISTL,  IZETAV, WORK,  LWORK   )
           WRITE(LUPRI,'(A,3I5)') MSGDBG, (IFATRAN(I,ITRAN),I=1,3)
           IVEC = 1
           DO WHILE (IFADOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
-            WRITE(LUPRI,'(A,20X,I5,2X,E18.12)') MSGDBG,
+            WRITE(LUPRI,'(A,20X,I5,2X,E19.12)') MSGDBG,
      &          IFADOTS(IVEC,ITRAN), FACON(IVEC,ITRAN)
             IVEC = IVEC + 1
           END DO
@@ -2055,7 +2055,7 @@ c /* deck ccqr_eadrv */
           WRITE (LUPRI,*)
           IVEC = 1
           DO WHILE (IEDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
-           WRITE(LUPRI,'(A,3I5,2X,E18.12)') MSGDBG, 
+           WRITE(LUPRI,'(A,3I5,2X,E19.12)') MSGDBG, 
      &      (IETRAN(I,ITRAN),I=1,2),IEDOTS(IVEC,ITRAN),ECON(IVEC,ITRAN)
            IVEC = IVEC + 1
           END DO
@@ -2373,7 +2373,7 @@ c /* deck CC_DOTDRV */
           WRITE (LUPRI,*)
           IVEC = 1
           DO WHILE (IDDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
-           WRITE(LUPRI,'(A,2I5,2X,E18.12)') MSGDBG, 
+           WRITE(LUPRI,'(A,2I5,2X,E19.12)') MSGDBG, 
      &      IDTRAN(ITRAN),IDDOTS(IVEC,ITRAN),DCON(IVEC,ITRAN)
            IVEC = IVEC + 1
           END DO

@@ -1344,7 +1344,7 @@ C
 C
       IF (LSCRA .LT. N2BASX) CALL ERRWRK('MP2FCK',-N2BASX,LSCRA)
 C
-      CALL READMO(CMO,9,SCRA,LSCRA)
+      CALL READMO(CMO,9)
 
 C
 C     Step 1 : Construct or read the inactive Fock matrix
@@ -1358,7 +1358,7 @@ C
          KCMO_diff = KCMO  + NCMOT
          KWRK      = KCMO_diff  + NCMOT
          LWRK      = LSCRA - KWRK
-         CALL RD_SIRIFC('CMO',FOUND,SCRA(KCMO),SCRA(KWRK),LWRK)
+         CALL RD_SIRIFC('CMO',FOUND,SCRA(KCMO))
          CALL DCOPY(NCMOT,CMO,1,SCRA(KCMO_diff),1)
          CALL DAXPY(NCMOT,-1.0D0,CMO,1,SCRA(KCMO_diff),1)
          KCMO_diff_MAX = KCMO_diff - 1 + IDAMAX(NCMOT,SCRA(KCMO_diff),1)
@@ -1386,7 +1386,7 @@ C
             CALL PRORB(CMO       ,.FALSE.,LUPRI)
             CALL QUIT('CMO on SIRIFC not same as CMO from SIRIUS.RST')
          END IF
-         CALL RD_SIRIFC('FC for MP2',FOUND,FC,SCRA,LSCRA)
+         CALL RD_SIRIFC('FC for MP2',FOUND,FC)
          IF (.NOT. FOUND) THEN
             CALL QUIT('Info for "FC for MP2" not found on SIRIFC')
          END IF

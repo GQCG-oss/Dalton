@@ -8,7 +8,7 @@ C
 C     Keld Bak, June 1997
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C
-C     PURPOSE: Drive the calculation and analysis of SOPPA and 
+C     PURPOSE: Drive the calculation and analysis of SOPPA and
 C              SOPPA(CCSD) excitation energies and vectors.
 C
       use so_info, only: so_full_name, so_has_doubles
@@ -23,7 +23,7 @@ C
 C
       PARAMETER ( D100 = 100.0D0 )
       CHARACTER MODEL*5
-C      
+C
       LOGICAL   DOUBLES
 C
 #include "codata.h"
@@ -41,7 +41,7 @@ C
       CALL QENTER('SO_RSPLEX')
 C
       DOUBLES = SO_HAS_DOUBLES(MODEL)
-C      
+C
 C-----------------------------------------------
 C     Solve linear response equation
 C-----------------------------------------------
@@ -49,8 +49,19 @@ C
       MAXIT   = MAXITE
 C
       LRESINM = NEXCI
-      LCONV   = 8
-      LMXRED  = (2 * NEXCI * NSAVMX)**2
+CPi 20.06.16 Old version had this limitation on converged results
+C      LCONV   = 8
+      LCONV   = NEXCI
+C
+C      LMXRED  = (2 * NEXCI * NSAVMX)**2
+CPi Adjust max size of reduced space if necessary
+      IF (NEXCI*NSAVMX .GE. (NT1AM(ISYMTR)+N2P2HOP(ISYMTR))) THEN
+         LMXRED = ( 2 * (NT1AM(ISYMTR)+N2P2HOP(ISYMTR)) )**2
+         WRITE(LUPRI,*) 'SO_RSPLEX: Adjusting LMXRED'
+      ELSE
+         LMXRED  = (2 * NEXCI * NSAVMX)**2
+      END IF
+Cend-Pi
 C
       KRESINM = 1
       KCONV   = KRESINM + LRESINM
@@ -74,7 +85,7 @@ C     Calculate p-h and 2p-2h weight in excitation operator
 C     and write to output together with excitation energies.
 C-----------------------------------------------------------
 C
-      IF ( IPRSOP .GE. 1 ) THEN
+      IF ( IPRSOP .GE. 1 .AND. NEXCI .GT. 0) THEN
 C
 C------------------------------
 C     Allocation of work space.
@@ -85,9 +96,11 @@ C
          LRESO1E = NT1AM(ISYMTR)
          LRESO1D = NT1AM(ISYMTR)
          IF(DOUBLES) THEN
-            LTR2E   = NT2AM(ISYMTR)
-            LTR2D   = NT2AM(ISYMTR)
-         ELSE 
+C            LTR2E   = NT2AM(ISYMTR)
+C            LTR2D   = NT2AM(ISYMTR)
+            LTR2E   = N2P2HOP(ISYMTR)
+            LTR2D   = N2P2HOP(ISYMTR)
+         ELSE
             LTR2E   = 0
             LTR2D   = 0
          ENDIF
@@ -135,7 +148,7 @@ C
             WRITE(LUPRI,'(A,I3,A,I3)')
      &           ' Excitation symmetry',ISYMTR,', state no.',IEXCI
             WRITE(LUPRI,'(/2A,1P,G16.8,A,3(/32X,G16.8,A),/)')
-     &              ADJUSTR(SO_FULL_NAME(MODEL)),                
+     &              ADJUSTR(SO_FULL_NAME(MODEL)),
      &              ' excitation energy :',
      &              EXVAL(IEXCI),' au',
      &              EXVAL(IEXCI)*XTEV,  ' eV',
@@ -159,7 +172,7 @@ C
      &                       WORK(KRESO1D),LRESO1D,
      &                       WORK(KTR1E),  LTR1E,  WORK(KTR1D),  LTR1D,
      &                       DENSIJ,      LDENSIJ,DENSAB,      LDENSAB,
-     &                       ISYRES,      ISYMTR) 
+     &                       ISYRES,      ISYMTR)
             END IF
 C
             W1ENM = DDOT(LTR1E,WORK(KTR1E),1,WORK(KRESO1E),1)
@@ -168,17 +181,23 @@ C
             IF (DOUBLES) THEN
                CALL SO_READ(WORK(KTR2E), LTR2E, LUTR2E,FNTR2E,IEXCI)
                CALL DCOPY(LTR2E,WORK(KTR2E),1,WORK(KTR2D),1)
-               CALL SO_TFSET(WORK(KTR2D),1,LTR2E,ISYMTR)
+C
+               IF (.NOT. TRIPLET) THEN
+                  CALL SO_TFSET(WORK(KTR2D),1,LTR2E,ISYMTR)
+               END IF
                W2ENM = DDOT(LTR2E,WORK(KTR2D),1,WORK(KTR2E),1)
 C
                CALL SO_READ(WORK(KTR2D), LTR2D, LUTR2D,FNTR2D,IEXCI)
                CALL DCOPY(LTR2E,WORK(KTR2D),1,WORK(KTR2E),1)
-               CALL SO_TFSET(WORK(KTR2E),1,LTR2D,ISYMTR)
+               IF (.NOT. TRIPLET) THEN
+                  CALL SO_TFSET(WORK(KTR2E),1,LTR2D,ISYMTR)
+               END IF
+C
                W2DNM = -DDOT(LTR2D,WORK(KTR2E),1,WORK(KTR2D),1)
             ELSE
                W2ENM = 0.0D0
                W2DNM = 0.0D0
-            ENDIF 
+            ENDIF
 
 C
             W1ENM = (W1ENM * D100)
@@ -202,7 +221,7 @@ C
             THR1 = 0.1D0
             THR2 = 0.1D0
 C
-            IF(DOUBLES) CALL SO_READ(WORK(KTR2E), LTR2E, 
+            IF(DOUBLES) CALL SO_READ(WORK(KTR2E), LTR2E,
      &                               LUTR2E,FNTR2E,IEXCI)
 C
             CALL SO_ANAL(DOUBLES,WORK(KTR1E),WORK(KTR1D),

@@ -14,7 +14,7 @@ C     PURPOSE: Calculates the reduced eigenvalue problem.
 C
 C     INPUT
 C        DOUBLES    Are there a doubles contribution?
-C        IMAGPROP   Are there gradient imaginary?         
+C        IMAGPROP   Are there gradient imaginary?
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -40,17 +40,17 @@ C
 C
 C  Factor for d-ex gradient
       DFACTOR = -1.0D0
-      IF(IMAGPROP) DFACTOR = ONE 
+      IF(IMAGPROP) DFACTOR = ONE
 C
 C---------------------------------
 C     1. allocation of work space.
 C---------------------------------
 C
       LTR1E   = NT1AM(ISYMTR)
-CPFP   2009-Jun
-      IF (DOUBLES) LTR2E   = NT2AM(ISYMTR)
-C      LTR2E   = N2P2HOP(ISYMTR)
-Cend-PFP
+CPi 08.04.16
+C      IF (DOUBLES) LTR2E   = NT2AM(ISYMTR)
+      IF (DOUBLES) LTR2E   = N2P2HOP(ISYMTR)
+Cend-Pi
       LGPVC1  = LTR1E
       IF (DOUBLES) LGPVC2  = LTR2E
 C
@@ -65,11 +65,11 @@ C
       IF(DOUBLES) THEN
          KGPVC2  = KGPVC1 + LGPVC1
          KOFF1   = KGPVC2 + LGPVC2
-      ELSE 
+      ELSE
          KOFF1   = KGPVC1 + LGPVC1
       ENDIF
       KOFF2   = KOFF1  + LOFF1
-      KEND1   = KOFF2  + LOFF2 
+      KEND1   = KOFF2  + LOFF2
       LWORK1  = LWORK  - KEND1
 C
 C-------------------------------------------------------------------
@@ -127,7 +127,7 @@ C
 C
          CALL AROUND("Right GP vector inside SO_REDGP")
          CALL OUTPUT(WORK(KGPVC1),1,LTR1E,1,1,LTR1E,1,1,LUPRI)
-         IF(DOUBLES) 
+         IF(DOUBLES)
      &         CALL OUTPUT(WORK(KGPVC2),1,LTR2E,1,1,LTR2E,1,1,LUPRI)
 C
       ENDIF
@@ -230,9 +230,9 @@ C
       CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
       CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
 C
-C---------------------------------      
+C---------------------------------
 C     Jump to end if singles only.
-C---------------------------------      
+C---------------------------------
 C
       IF (.NOT.DOUBLES) GOTO 1010
 C-----------------------------------
@@ -301,7 +301,7 @@ C
       CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
       CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
 C  Continuation point in the end
-1010  CONTINUE      
+1010  CONTINUE
 
 C
 C----------------------------------------------------

@@ -1694,7 +1694,7 @@ cLig
       IF (.NOT.HAMILT) WRITE (LUPRI,'(/A)')
      *    ' Ordinary (field-free non-relativistic) Hamiltonian '/
      *     /'integrals not calculated.'
-      IF (MGMO2T) WRITE (LUPRI,'(/A,D12.6)')
+      IF (MGMO2T) WRITE (LUPRI,'(/A,1P,D10.2)')
      &    ' Threshold for testing two-electron part of magnetic moment:'
      &    ,PRTHRS
       IF (NMRISS) THEN
@@ -2158,7 +2158,7 @@ C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
               IF (USRSCR) THEN
                 FCKTHR = -IFTHRS
                 FCKTHR = 10.0D0**FCKTHR
-                WRITE(LUPRI,'(2A,1P,D8.2)') 
+                WRITE(LUPRI,'(2A,1P,D9.2)') 
      &            ' * Screening threshold in direct Fock ',
      &            'matrix construction: ',FCKTHR
                 IF(IFTHRS.GE.16) WRITE(LUPRI,'(4X,A)') 
@@ -2173,7 +2173,7 @@ C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
      &    ' * Separate density screening of exchange integral batches'
             ENDIF
             IF (RELCAL .AND. (THRFAC(1).NE.D1.OR.THRFAC(2).NE.D1)) THEN
-              WRITE(LUPRI,'(A,2(/3X,A,1P,D9.3))')
+              WRITE(LUPRI,'(A,2(/3X,A,1P,D10.3))')
      +           ' * Threshold factors for omitting integrals:',
      +           'SL-integrals: ',THRFAC(1),
      +           'SS-integrals: ',THRFAC(2)
@@ -2203,7 +2203,7 @@ C
 #include "cbiher.h"
 #include "cbihrs.h"
       SAVE SET
-      DATA TABLE /'.SKIP  ', '.PRINT ', '.NOSYMM', 'xxxxxxx', '.THRESH',
+      DATA TABLE /'.SKIP  ', '.PRINT ', '.NOSYMM', '.ONLY J', '.THRESH',
      &            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
       DATA SET/.FALSE./
 C
@@ -2225,6 +2225,7 @@ C
       RUNSUP = SUPMAT
       IPRSUP = IPRDEF
       NOSSUP = .FALSE.
+      ONLY_J = .FALSE.
       THRSUP = -1.0D0
 C
       NEWDEF = WORD .EQ. '*SUPINT'
@@ -2264,6 +2265,7 @@ C
                   NOSSUP = .TRUE.
                GO TO 100
     4          CONTINUE
+                  ONLY_J = .TRUE.
                GO TO 100
     5          CONTINUE
                   READ (LUCMD,*) THRSUP
@@ -2295,12 +2297,18 @@ C
       END IF
   300 CONTINUE
       IF (ICHANG .EQ. 0) GOTO 199
-      IF (RUNSUP. AND. NEWDEF) THEN
-         CALL HEADER('Changes of defaults for SUPINT:',1)
+      IF (NEWDEF) THEN
+         CALL HEADER('Changes of defaults for *SUPINT:',1)
          IF (IPRSUP .NE. IPRDEF) WRITE (LUPRI,'(A,I5)')
-     &         ' Print level in SUPINT:',IPRSUP
+     &         ' Print level                        :',IPRSUP
+         IF (ONLY_J) THEN
+            WRITE(LUPRI,'(A)') ' Only Coulomb (no exchange)'
+         ELSE
+            WRITE(LUPRI,'(A)') ' P-supermatrix integrals,'//
+     &         ' (if requested for DFT: with scaled exchange)'
+         END IF
          IF (THRSUP .NE. -1.0D0) WRITE (LUPRI,'(A,D12.2)')
-     &         ' Threshold for supermatrix integrals:', THRSUP
+     &         ' Threshold for supermatrix integrals:',THRSUP
          IF (NOSSUP) THEN
             WRITE (LUPRI,'(A)') ' No symmetry used in SUPINT.'
          ELSE
@@ -4068,7 +4076,7 @@ C
       no2so  = .false.
       SOTEST = .FALSE.
       NOTWO  = DIRCAL
-      TWOBYTEPACKING = NBASIS .GT. 255   ! then we need two bytes to pack indices
+      TWOBYTEPACKING = .FALSE.
       SECMOM = .FALSE.
       CARMOM = .FALSE.
       SPHMOM = .FALSE.

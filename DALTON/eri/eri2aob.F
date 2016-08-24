@@ -118,7 +118,7 @@ C
             KEXP = KEXPBT(I) - 1
             KPRI = KCCFBT(I) - 1
             DO J = 1, NPRFBT(I)
-               WRITE (LUPRI,'(2X,E8.3,7(2X,E8.2))') EXPBT(KEXP + J),
+               WRITE (LUPRI,'(2X,E10.3,7(2X,E9.2))') EXPBT(KEXP + J),
      &             (CCFBT(KPRI + J + NPRFBT(I)*(K-1)),K=1,NCTFBT(I))
             END DO
          END DO

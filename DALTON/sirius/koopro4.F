@@ -5095,7 +5095,7 @@ C
 C     We read from LUIT1 using NEWORB label
 C
       JRDMO =9
-      CALL READMO(CMO,JRDMO,WRK(KFREE),LFREE)
+      CALL READMO(CMO,JRDMO)
 c      CALL PRORB(CMO,.FALSE.,LUPRI) ! Write MO sym packed
 C
 C

@@ -57,8 +57,8 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
-      DIMENSION CMO(*), WRK(LWRK)
-      LOGICAL FNDLAB, DRCOLD
+      REAL*8  CMO(*), WRK(LWRK)
+      LOGICAL DRCOLD
 C
 #include "iratdef.h"
 #include "lbmxsq.h"
@@ -75,14 +75,12 @@ C
 C
       CALL QENTER('DRCCTL')
 C
-C     Open MODRCINT and check if integrals already there ...
+C     Open MODRCINT and check if requested integrals already are there ...
 C
       LUINTD = -1
       CALL GPOPEN(LUINTD,'MODRCINT','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
-      IF (FNDLAB('DRCINFO',LUINTD)) THEN
-         IF (DRCOLD(CMO,LUINTD,LVLDRC,WRK,LWRK)) GO TO 9999
-      END IF
+      IF ( DRCOLD(CMO,LUINTD,LVLDRC,WRK,LWRK) ) GO TO 9000
 C
 C Set LBINTD to optimal buffer length .le. LBMXSQ for LUINTD
 C ( N2ORBT is the maximum number of non-zero elements in
@@ -96,16 +94,20 @@ C DETERMINE NUMBER OF DIRAC DISTRIBUTIONS WHICH CAN BE
 C KEPT IN CORE IN ONE LOAD
 C
       KOUTB  = 1
-      KH2    = KOUTB  + LBINTD + ( LBINTD + 2 - 1)/ IRAT + 1
+      KH2    = KOUTB  + LBINTD + ( LBINTD + 2 - 1)/ 2 + 1 ! integer*4 for IOUTB
       KWRK1  = KH2    + N2ORBX
       LWRK1  = LWRK   - KWRK1
 C
 C     LNDACD = how much work space needed in DRCACD (for NXTH2M)
-      LNDACD = ((1+IRAT)*LBINTM+2)/IRAT + 1
+      IF (NEWTRA) THEN
+         LNDACD = (3*(36*36+1) + NNORBX + 1)/IRAT + NNORBX + 2*N2ORBT
+      ELSE
+         LNDACD = ((1+IRAT)*LBINTM+2)/IRAT + 1
+      END IF
       NCDDIS = (LWRK1-LNDACD)/N2ORBX
       IF ( NCDDIS.LE.0 ) THEN
-         WRITE(LUERR,'(/A,I5)')
-     *   ' NOT ENOUGH MEMORY TO HAVE ONE DIRAC DISTRIBUTION :NCDDIS'
+         WRITE(LUPRI,'(/A,I5)') 'DRCCTL ERROR: '//
+     *   ' NOT ENOUGH MEMORY TO HAVE ONE DIRAC DISTRIBUTION. NCDDIS='
      *   ,NCDDIS
          CALL QTRACE(LUERR)
          CALL QUIT('DRCCTL: NOT ENOUGH MEMORY FOR ONE DISTRIBUTION')
@@ -156,12 +158,13 @@ C
 C END REPEAT
 C
       IF (IPRTRA.GT.0) WRITE(LUPRI,1000) LABCD,NLOAD
-      CALL GPCLOSE(LUINTD,'KEEP')
- 1000 FORMAT(/' DRCCTL: Number of Dirac integrals written on file'//
-     *    ' "MODRCINT" is',I12,
-     *   /'         Number of passes over Mulliken file MOTWOINT',I5)
+ 1000 FORMAT(/' DRCCTL: Number of Dirac integrals written on file',
+     &    ' "MODRCINT" is',I12,
+     &   /'         Number of passes over Mulliken file MOTWOINT',I5)
 C
- 9999 CALL QEXIT('DRCCTL')
+ 9000 CONTINUE
+      CALL GPCLOSE(LUINTD,'KEEP')
+      CALL QEXIT('DRCCTL')
       RETURN
 C     ... end of DRCCTL
       END
@@ -196,7 +199,6 @@ C
 #include "inftra.h"
 C
       DIMENSION NEEDMU(-4:6)
-#include "ibtdef.h"
 C
       CALL QENTER('DRCACD')
       IF ( IPRTRA.GT.20 ) THEN
@@ -354,7 +356,8 @@ C NOTE: EQUIVALENCE (OUTB,IOUTB) in call of DRCWRT
 C
 #include "implicit.h"
 C
-      DIMENSION H2ACD(NORBT,NORBT,*),OUTB(*),IOUTB(*),CMO(NCMOT)
+      REAL*8    H2ACD(NORBT,NORBT,*),OUTB(*),CMO(NCMOT)
+      INTEGER*4 IOUTB(*)
 #include "iratdef.h"
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -371,19 +374,16 @@ C
 C
       CHARACTER*8 LAB123(3), LABELD(2)
 C
-#include "ibtdef.h"
-C
       DATA LAB123/'********','********','********'/
       DATA LABELD/'DRCINFO ','DRCTWOEL'/
 C
 C ************** LENGTH OF BUFFER FOR H2ACD ON LUINTD
 C
       LOUT  =LBINTD
-      LOUTI =IRAT*LOUT
+      LOUTI =2*LOUT ! "2*" because always INTEGER*4 IOUTB(:)
       LOUT2 =LOUTI+LOUT
       LOUT21=LOUT2+1
       LOUT22=LOUT2+2
-      IOUTB(LOUT22) = 0
 C
 C WRITE LABEL ON LUINTD
 C
@@ -391,7 +391,7 @@ C
          CALL GETDAT(LAB123(2),LAB123(3))
          REWIND LUINTD
          WRITE(LUINTD)LAB123,LABELD(1)
-         WRITE(LUINTD)LBINTD,LVLDRC,D0,D0,D0,D0
+         WRITE(LUINTD)LBINTD,LVLDRC,NCMOT,D0,D0,D0,D0
          WRITE(LUINTD)CMO
          WRITE(LUINTD)LAB123,LABELD(2)
       END IF
@@ -425,14 +425,16 @@ C
             IC = ISX( NCW )
             ID = ISX( NDW )
          END IF
-         INDCD = IC*2**8  + ID
-         INDCD = ISHFT( INDCD , 16 )
+         INDCD = IC*2**16  + ID
+         IOUTB(LOUT22) = INDCD
+         IF (IPRTRA.GT.20) THEN
+            WRITE(LUPRI,'(A,2I10)') 'Writing IC,ID',IC,ID
+         END IF
 C
 C     ***** ALL INTEGRALS <AB/CD> FOR A GIVEN PAIR CD HAVE *****
 C     ***** BEEN CREATED. WRITE THEM ON UNIT LUINTD WITH   *****
 C     ***** INDICES C,D,A,B                                *****
          DO 170 IA=1,NORBT
-            INDCDA = IOR(INDCD , ISHFT( IA, 8 ) )
             DO 160 IB = 1,NORBT
                P = H2ACD(IA,IB,ICDDIS-IDISOF)
                IF (ABS(P).LT.THRP) GO TO 160
@@ -443,29 +445,29 @@ C     ***** INDICES C,D,A,B                                *****
                IF(IOUT.GT.LOUT) THEN
                   IOUT=1
                   IOUTB(LOUT21)=LOUT
-                  IF ( IPRTRA.GT.150 ) THEN
-                     WRITE(LUPRI,'(/A,/A/,A,4I6,F12.6)')
+                  IF ( IPRTRA.GT.30 ) THEN
+                     WRITE(LUPRI,'(/A,/A/,A,4I6,F20.14)')
      *                 ' SEVERAL RECORDS FOR DISTRIBUTION IC,ID',
      *                 ' LAST ELEMENT NOT WRITTEN OUT ',
      *                 ' IC,ID,IA,IB,P',IC,ID,IA,IB,P
                   END IF
 C           ***** WRITE THIS BUFFER *****
-                  CALL WRITI(LUINTD,LOUT22,IOUTB)
+                  CALL WRITI4(LUINTD,LOUT22,IOUTB)
                END IF
                OUTB(IOUT) = P
-               IOUTB(LOUTI+IOUT) = IOR( INDCDA , IB )
+               IOUTB(LOUTI+IOUT) = IA*2**16 + IB
   160       CONTINUE
   170    CONTINUE
 C   *** Going to next (CD), empty this buffer ***
          IF (IOUT .GT. 0) THEN
             IOUTB(LOUT21) = IOUT
-            IF ( IPRTRA.GT.150 ) THEN
-               WRITE(LUPRI,'(/A,/A/,A,4I6,F12.6)')
+            IF ( IPRTRA.GT.30 ) THEN
+               WRITE(LUPRI,'(/A,/A/,A,4I6,F20.14)')
      *            ' LAST RECORD FOR DISTRIBUTION IC,ID',
      *            ' LAST ELEMENT WRITTEN OUT ',
      *            ' IC,ID,IA,IB,P',IC,ID,IALAST,IBLAST,P
             END IF
-            CALL WRITI(LUINTD,LOUT22,IOUTB)
+            CALL WRITI4(LUINTD,LOUT22,IOUTB)
             IOUT = 0
          END IF
          NDW  = NDW + 1
@@ -482,11 +484,12 @@ C     ***** WRITE LAST BUFFER *****
 C
       IF ( ICDDIS.GT.NTOTDI) THEN
          IOUTB(LOUT21)=-1
+         IOUTB(LOUT22)=-1
          IF ( IPRTRA.GT.20 ) THEN
             WRITE(LUPRI,'(/A,I10)')
      *      ' -1 WRITTEN OUT ON LAST(EMPTY) RECORD, ICDDIS;',ICDDIS
          END IF
-         CALL WRITI(LUINTD,LOUT22,IOUTB)
+         CALL WRITI4(LUINTD,LOUT22,IOUTB)
       END IF
 C
 C UPDATE C AND D FOR NEXT LOAD
@@ -497,8 +500,9 @@ C
 C *** END OF DRCWRT
       END
 C  /* Deck drcctl */
-      FUNCTION DRCOLD(CMO,LUINTD,LVLDRC,WRK,LWRK)
+      LOGICAL FUNCTION DRCOLD(CMO,LUINTD,LVLDRC,WRK,LWRK)
 C
+C Check if requested integrals in Dirac format are already available.
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -506,31 +510,30 @@ C
       DIMENSION CMO(*), WRK(LWRK)
       LOGICAL FNDLAB
 C
-#include "iratdef.h"
-#include "lbmxsq.h"
+C thrzer.h : THRZER
+C inforb.h : NCMOT
+C inftra.h : IPRTRA
 #include "thrzer.h"
-C
 #include "inforb.h"
-#include "inftap.h"
 #include "inftra.h"
-#include "infpri.h"
-C
-      LOGICAL DRCOLD
 C
       DRCOLD = .FALSE.
       REWIND LUINTD
-      READ  (LUINTD) LBINTD, LVLOLD
-      IF (LVLOLD .GE. LVLDRC) THEN
+      IF (.NOT.FNDLAB('DRCINFO ',LUINTD)) GOTO 9999
+      READ (LUINTD) LBINTD, LVLDRC_OLD, NCMOT_OLD
+      IF (LVLDRC_OLD .GE. LVLDRC) THEN
+      IF (NCMOT_OLD .EQ. NCMOT) THEN
 C        read CMO matrix from LUINTD
 C        and subtract from input CMO matrix
-         READ  (LUINTD) (WRK(I),I=1,NCMOT)
+         READ  (LUINTD) WRK(1:NCMOT)
          CALL DAXPY(NCMOT,-1.0D0,CMO,1,WRK,1)
          I = IDAMAX(NCMOT,WRK,1)
          DRCOLD = ABS(WRK(I)) .LE. THRZER
       END IF
+      END IF
       IF (DRCOLD .AND. IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
      &' DRCCTL abandoned: the required MO integrals in Dirac format',
      &' are already available on the MODRCINT file.'
-      RETURN
+ 9999 RETURN
       END
 C --- end of drcctl.F ---

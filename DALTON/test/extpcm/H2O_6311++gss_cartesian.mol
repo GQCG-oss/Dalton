@@ -1,0 +1,9 @@
+ATOMBASIS
+Water R(OH) = 0.95Aa , <HOH = 109 deg.
+Distance in Aangstroms
+Atomtypes=2 Nosymmetry Cartesian
+Charge=8.0 Atoms=1 Basis=6-311++G**
+O      0.00000   0.00000   0.00000
+Charge=1.0 Atoms=2 Basis=6-311++G**
+H1     0.55168   0.77340   0.00000
+H2     0.55168  -0.77340   0.00000

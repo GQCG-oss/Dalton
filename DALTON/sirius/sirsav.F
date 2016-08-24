@@ -75,6 +75,7 @@ C
 #include "dummy.h"
 C
 C Used from common blocks:
+C   exeinf.h : NEWCMO
 C   INFINP : ISTATE,FLAG(*),?
 C   INFVAR : NCONF,NWOPT,NVAR
 C   INFIND : ISX()
@@ -86,6 +87,7 @@ C
 #include "maxorb.h"
 #include "maxash.h"
 #include "priunit.h"
+#include "exeinf.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "infind.h"
@@ -421,6 +423,7 @@ C
          LAB123(3) = 'CANORB  '
          WRITE (LUIT1) LAB123,TABLE(6)
          CALL WRITT(LUIT1,NCMOT4,CMO)
+         NEWCMO = .TRUE.
          GO TO 9000
       END IF
 C        ----------------------------------------------------
@@ -475,6 +478,7 @@ C
          LAB123(3) = ' CIORB  '
          WRITE (LUIT1) LAB123,TABLE(6)
          CALL WRITT(LUIT1,NCMOT4,CMO)
+         NEWCMO = .TRUE.
 C
 C        Go to 4000 to transform to CNO orbitals, if requested.
 C
@@ -581,6 +585,7 @@ C
       END IF
       WRITE (LUIT1) LAB123,TABLE(6)
       CALL WRITT(LUIT1,NCMOT,CMO)
+      NEWCMO = .TRUE.
       REWIND LUIT1
 C
 C
@@ -661,6 +666,7 @@ C        write the natural orbitals to LUIT1 label NEWORB
          LAB123(3) = '(CNOORB)'
          WRITE (LUIT1) LAB123,TABLE(6)
          CALL WRITT(LUIT1,NCMOT4,CMO)
+         NEWCMO = .TRUE.
          IF (.NOT.FLAG(34)) FLAG(14) = .FALSE.
 C        if (int.transf. needed in optimization) then new transf. needed
       END IF

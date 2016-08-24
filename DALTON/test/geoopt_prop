@@ -122,7 +122,7 @@ ERROR[4]="INITIAL ENERGY NOT CORRECT"
 # Relativistic corrections:
 CRIT1=`$GREP "Darwin correction\: *               0*\.1974514... au" $log | wc -l`
 CRIT2=`$GREP "Mass\-velocity correction\: *     \-0*\.2489637... au" $log | wc -l`
-CRIT3=`$GREP "Total relativistic correction\: * \-0*\.0515123... au \((0| )\.0677\%\)" $log | wc -l`
+CRIT3=`$GREP "Total relativistic correction\: * \-0*\.0515123... au \(\ (0| )\.0677\%\)" $log | wc -l`
 CRIT4=`$GREP "Non\-relativistic \+ relativistic energy\: * \-76\.1029718... au" $log | wc -l`
 TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[5]=4

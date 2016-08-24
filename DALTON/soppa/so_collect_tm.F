@@ -7,7 +7,7 @@ CKeinSPASmehr
      &                         TRLON,TRMAG,TRGOS,BSRLON,EXENG)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
-C   
+C
 C     Keld Bak, August 1997
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
@@ -16,7 +16,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
-CSPAS:15/03-2006: merge with Dalton-2.0  
+CSPAS:15/03-2006: merge with Dalton-2.0
 C#include "cbilrs.h"
 #include "cbiexc.h"
 CKeinSPASmehr
@@ -52,20 +52,20 @@ C
          WRITE(LUPRI,*) 'Reset MXNEXI in the file cbiexc.h and resubmit'
          RETURN
       END IF
-C 
+C
 C------------------------------------------------------------
-C     The calculated transition moments are <f|Operator|0>. 
-C     We want to keep them as <O|Operator|f>. Therefore, for 
+C     The calculated transition moments are <f|Operator|0>.
+C     We want to keep them as <O|Operator|f>. Therefore, for
 C     anti-hermitian operators we multiply with a minus-sign.
 C------------------------------------------------------------
 C
-CRF :Handle first labels starting with a coordinate axis      
+CRF :Handle first labels starting with a coordinate axis
       IDX1 = COORD_IDX(LABEL(1:1))
       IF (IDX1 .ge. 1 .and. IDX1 .LE. 3 ) THEN
-C    Dipole - length gauge          
+C    Dipole - length gauge
          IF (LABEL(2:7).EQ.'DIPLEN') THEN
             TRLEN(IDX1,ISYMTR,IEXCI) = TRMOM
-C    Dipole - velocity gauge 
+C    Dipole - velocity gauge
          ELSE IF (LABEL(2:7).EQ.'DIPVEL') THEN
             TRVEL(IDX1,ISYMTR,IEXCI) = - TRMOM
 CSPAS:23/5-11: second and third moment sum rules
@@ -107,12 +107,12 @@ C
 C
             TRLON(IDX1,ISYMTR,IEXCI) = - TRMOM
 C
-         ELSE 
+         ELSE
 CRF         Something is wrong
             WRITE(LUPRI,'(A,/,2A,I3)') 'ERROR in SO_COLLECT_TM:',
      &      'Label not recognized: ', LABEL, IDX1
          END IF
-CRF Handle labels that does not start with X,Y OR Z         
+CRF Handle labels that does not start with X,Y OR Z
       ELSE IF (LABEL(2:6).EQ.'HBDO ') THEN
 C
          IDX1 = COORD_IDX(LABEL(7:7))
@@ -143,8 +143,8 @@ C
 
       CONTAINS
 C
-C        A function that converts the letters X,Y and Z to 
-C        the integers 1,2 and3         
+C        A function that converts the letters X,Y and Z to
+C        the integers 1,2 and3
          PURE FUNCTION COORD_IDX(A)
             CHARACTER(LEN=1), INTENT(IN) :: A
             INTEGER :: COORD_IDX

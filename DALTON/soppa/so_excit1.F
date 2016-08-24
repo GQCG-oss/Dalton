@@ -40,6 +40,7 @@ C
 #include "priunit.h"
 C
 #include "cbiexc.h"
+CPi for NT2AMX, NT1AM(), NT2AM() (t2 amplitude vectors?)
 #include "ccsdsym.h"
 #include "infdim.h"
 #include "inforb.h"
@@ -144,7 +145,9 @@ C     into distributions.
 C---------------------------------------------------------------
 C
       IF ( AORPA .AND. (.NOT.AOHRP) .AND. (.NOT.DCRPA)
-     &           .AND. (.NOT.AOSOP) .AND. (.NOT.AOSOC) ) THEN
+     &           .AND. (.NOT.AOSOP) .AND. (.NOT.AOSOC)
+CPi
+     &           .AND. (.NOT.AOCC2) ) THEN
          CALL RP_INIT(WORK,LWORK)
 #ifdef VAR_MPI
 C     In pure aorpa calculations, eridi has not been initialized
@@ -176,6 +179,12 @@ C load-distribution later on
       endif
 #endif
 C
+C----------------------------------
+C     Set print level for AO-SOPPA.
+C----------------------------------
+C
+      IPRSOP = IPREXC
+C
 C---------------------------------------------------
 C     Initialize a few pointerarrays and dimensions.
 C---------------------------------------------------
@@ -184,12 +193,6 @@ C
       CALL SO_INIT
       DTIME     = SECOND()  - DTIME
       SOTIME(2) = SOTIME(2) + DTIME
-C
-C----------------------------------
-C     Set print level for AO-SOPPA.
-C----------------------------------
-C
-      IPRSOP = IPREXC
 C
 C---------------------------------
 C     1. allocation of work space.
@@ -203,7 +206,8 @@ C
 C
 CPFP: Higher RPA added
 C     IF (DCRPA .OR. AOSOP .OR. AOSOC) THEN
-      IF (AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+CPi
+      IF (AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC .OR. AOCC2) THEN
 Cend-PFP
 C
 CSPAS:5/11-2013: Patricio had the following statement before the IF statement
@@ -345,19 +349,20 @@ C----------------------------------------
                DOUBLES = SO_HAS_DOUBLES(IMODEL)
                NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
 C
-               IF (IPRSOP .GE. 3) THEN
+               IF (IPRSOP .GE. 1) THEN
                   WRITE(LUPRI,9000)
                   WRITE(LUPRI,'(1X,A)') TRIM(FULLNAME)//':'
                   WRITE(LUPRI,'(A,I8,/,A,I8)')
      &            ' Perturbation symmetry     :',ISYM,
      &            ' p-h variables             :',2*NT1AM(ISYM)
                   IF (DOUBLES) THEN
-                     NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
-CPFP   2009-Jun
+CPi 01-04-16
+C                     NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+                     NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
                      WRITE(LUPRI,'(A,I8,/,A,I8)')
-     &               ' 2p-2h variables           :',2*NT2AM(ISYM),
-c     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
-Cend-PFP
+C     &               ' 2p-2h variables           :',2*NT2AM(ISYM),
+     &               ' 2p-2h variables           :',2*N2P2HOP(ISYM),
+Cend-Pi
      &               ' Total number of variables :',NVARPT
                   ENDIF
                   WRITE(LUPRI,9001)
@@ -367,13 +372,14 @@ C              Adjust number of excitations of this symmetry down to
 C              the highest possible number
 C
                IF (DOUBLES .AND.(.NOT.IMODEL.EQ.SOP_MODEL_RPAD) ) THEN
-                  NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM)+NT2AM(ISYM))
+C                  NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM)+NT2AM(ISYM))
+                  NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM)+N2P2HOP(ISYM))
                ELSE
                   NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM))
                ENDIF
 C
                IF ( NEXCI .EQ. 0 ) THEN
-                  WRITE (LUPRI,'(1X,A)') 
+                  WRITE (LUPRI,'(1X,A)')
      &               'There are no possible excitations of this '//
      &               'symmetry!'
                   CYCLE
@@ -425,7 +431,7 @@ C
      &                           WORK(KT2AM),
      &                           LT2AM,WORK(KFOCKD),LFOCKD,
      &                           WORK(KEND2),LWORK2)
-               ELSE ! RPA(D) still has it's own driver...
+               ELSE ! RPA(D) still has its own driver...
                   CALL DC_RSPLEX(ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
      &                           WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                           LDENSAB,WORK(KDENSAI),LDENSAI,

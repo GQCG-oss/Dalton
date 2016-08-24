@@ -18,7 +18,7 @@ C
 C
       PARAMETER   (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER   (D100 = 100.0D0)
-      PARAMETER   (THRNM = 1.0D-15, OVLMIN = 10D-20 ) ! Try (from rp) 1.0D-4) 
+      PARAMETER   (THRNM = 1.0D-15, OVLMIN = 10D-20 ) ! Try (from rp) 1.0D-4)
       CHARACTER*3 YES, NO
       LOGICAL    DOUBLES
 C
@@ -36,12 +36,16 @@ C----------------------------------------------------------
 C     Determine the number of previous trialvectors and the
 C     number of trialvectors they are transformed to.
 C----------------------------------------------------------
-C 
+C
       LTR1E  = NT1AM(ISYMTR)
       LTR1D  = NT1AM(ISYMTR)
       IF(DOUBLES)THEN
-         LTR2E  = NT2AM(ISYMTR)
-         LTR2D  = NT2AM(ISYMTR)
+CPi 01.04.16
+C         LTR2E  = NT2AM(ISYMTR)
+C         LTR2D  = NT2AM(ISYMTR)
+         LTR2E  = N2P2HOP(ISYMTR)
+         LTR2D  = N2P2HOP(ISYMTR)
+Cend-Pi
       ELSE
          LTR2E  = 0
          LTR2D  = 0
@@ -92,7 +96,10 @@ C
       KOFF2   = KOFF1 + LOFF1
       KOFF3   = KOFF2 + LOFF2
       KOFF4   = KOFF3 + LOFF3
+CPi 04.04.16 old triplet version has - 1 here
+C      KEND1   = KOFF4 + LOFF4 - 1
       KEND1   = KOFF4 + LOFF4
+Cend-Pi
       LWORK1  = LWORK - KEND1
 C
       CALL SO_MEMMAX ('SO_OPTVEC.1',LWORK1)
@@ -242,7 +249,7 @@ C
      &                    IOFF)
 C
       END IF
-C     
+C
 C     All methods continue at this point
       ENDIF
 C
@@ -252,7 +259,7 @@ C     optimized trial vector will be in the form Z = Y or Z = -Y
 C
 C     However, if Z = Y or Z = -Y then (Z Y) and (Y Z) are linear
 C     dependent and we want instead (Z 0) and (0 Z) as trial vectors.
-C     (I try to use as much as I can the name used in RSPORT)         
+C     (I try to use as much as I can the name used in RSPORT)
 C-----------------------------------------------------------------------
 C
 C      KTR1E   = 1
@@ -265,7 +272,7 @@ C      LWORK1  = LWORK  - KEND1
 CC
 C      CALL SO_MEMMAX ('SO_OPTVEC.2',LWORK1)
 C      IF (LWORK1 .LT. 0) THEN
-C         WRITE(LUPRI,*) 
+C         WRITE(LUPRI,*)
 C     &      'NOTICE: Requirement is due to high print level'
 C         CALL STOPIT('SO_OPTVEC.2',' ',KEND1,LWORK)
 C      ENDIF
@@ -277,7 +284,7 @@ C         CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,ITR)
 CC
 C         T1=DDOT(LTR1E,WORK(KTR1E),1,WORK(KTR1E),1)+
 C     &      DDOT(LTR1D,WORK(KTR1D),1,WORK(KTR1D),1)
-CC         
+CC
 C         OVLPI=TWO*DDOT(LTR1E,WORK(KTR1E),1,WORK(KTR1D),1)
 C
 C         IF(DOUBLES)THEN
@@ -359,13 +366,13 @@ C
 C
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,ITR)
             CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,ITR)
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &       (I,WORK(KTR1E+I-1),WORK(KTR1D+I-1),I=1,LTR1E)
 C
             IF(DOUBLES)THEN
                CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,ITR)
                CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,ITR)
-               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &         (I,WORK(KTR2E+I-1),WORK(KTR2D+I-1),I=1,LTR2E)
             ENDIF
 C
@@ -534,6 +541,7 @@ C
 C
 C     All methods continue here
       ENDIF
+C
       IF ( IPRSOP .GE. 8 ) THEN
 C
 C--------------------------------------------------------------------
@@ -550,7 +558,7 @@ C
          CALL SO_MEMMAX ('SO_OPTVEC.3',LWORK1)
 C
          IF (LWORK1 .LT. 0) THEN
-            WRITE(LUPRI,*) 
+            WRITE(LUPRI,*)
      &          'NOTICE: Requirement is due to high print level'
             CALL STOPIT('SO_OPTVEC.3',' ',KEND1,LWORK)
          ENDIF
@@ -561,13 +569,13 @@ C
 C
             CALL SO_READ(WORK(KTR1E),LTR1E,LURS1E,FNRS1E,ITR)
             CALL SO_READ(WORK(KTR1D),LTR1D,LURS1D,FNRS1D,ITR)
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &         (I,WORK(KTR1E+I-1),WORK(KTR1D+I-1),I=1,LTR1E)
             IF(DOUBLES)THEN
                CALL SO_READ(WORK(KTR2E),LTR2E,LURS2E,FNRS2E,ITR)
                CALL SO_READ(WORK(KTR2D),LTR2D,LURS2D,FNRS2D,ITR)
 C
-               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &            (I,WORK(KTR2E+I-1),WORK(KTR2D+I-1),I=1,LTR2E)
             ENDIF
 C
@@ -595,7 +603,7 @@ C     Open files with S[2] transformed trial vectors.
 C----------------------------------------------------
 CRF   I've stopped saving this on disk, calculate on the
 C     fly if ever needed
-C      
+C
 CRF     CALL SO_OPEN(LURO1E,FNRO1E,LTR1E)
 CRF     CALL SO_OPEN(LURO1D,FNRO1D,LTR1D)
 C
@@ -676,7 +684,7 @@ C
 CRF        CALL SO_MEMMAX ('SO_OPTVEC.4',LWORK1)
 C
 CRF        IF (LWORK1 .LT. 0) THEN
-CRF           WRITE(LUPRI,*) 
+CRF           WRITE(LUPRI,*)
 CRF    &          'NOTICE: Requirement is due to high print level'
 CRF           CALL STOPIT('SO_OPTVEC.4',' ',KEND1,LWORK)
 CRF        ENDIF
@@ -688,7 +696,7 @@ CRF           CALL SO_READ(WORK(KTR1D),LTR1D,LURO1D,FNRO1D,ITR)
 C
 CRF           CALL AROUND('Optimized S[2] trial vectors')
 C
-CRF           WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+CRF           WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
 CRF    &          (I,WORK(KTR1E+I-1),WORK(KTR1D+I-1),I=1,LTR1E)
 C
 CRF        END DO

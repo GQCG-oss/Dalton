@@ -53,7 +53,7 @@ C
 C
       CALL SO_MEMMAX ('SO_INCRED.1',LWORK1)
       IF (LWORK1 .LT. 0) CALL STOPIT('SO_INCRED.1',' ',KEND1,LWORK)
-C 
+C
 C-----------------------------------------------------------------------
 C     Move matrix elements from previous reduced eigenvalue problem to
 C     the right positions in the matrices of the new eigenvalue problem.
@@ -66,8 +66,8 @@ C
 C
          DO IVEC = 1,NOLDTR
 C
-            IOFF1 = IVEC            + ((JVEC - 1) * LREDOL)        
-            IOFF2 = (IVEC + LREDOH) + ((JVEC - 1) * LREDOL)       
+            IOFF1 = IVEC            + ((JVEC - 1) * LREDOL)
+            IOFF2 = (IVEC + LREDOH) + ((JVEC - 1) * LREDOL)
             IOFF3 = IVEC            + ((JVEC - 1 + LREDOH) * LREDOL)
             IOFF4 = (IVEC + LREDOH) + ((JVEC - 1 + LREDOH) * LREDOL)
 C
@@ -125,9 +125,11 @@ C     Transform right hand side result vectors to left hands and
 C     save on scratch files.
 C     (A.L.2004  I think that the transformation is from Left to
 C     Right)
+C
+CPi   08.04.16: In TRIPLET case, do not call ccsd_tcmepkx
 C---------------------------------------------------------------
 C
-      DO INEWTR = 1,NNEWTR
+      DO INEWTR = 1,NNEWTR ! excitations
 C
          CALL SO_READ(WORK(KRES1),LTR1E,LURS1E,FNRS1E,INEWTR+NOLDTR)
          CALL SO_WRITE(WORK(KRES1),LTR1E,LUSC1E,FNSC1E,INEWTR)
@@ -135,15 +137,17 @@ C
          IF(DOUBLES)THEN
             CALL SO_READ(WORK(KRES2),LTR2E,LURS2E,FNRS2E,INEWTR+NOLDTR)
 C
-            CALL CCSD_TCMEPKX(WORK(KRES2),TWO,ISYMTR)
-            CALL DSCAL(LTR2E,HALF,WORK(KRES2),1)
+            IF (.NOT.TRIPLET) THEN
+               CALL CCSD_TCMEPKX(WORK(KRES2),TWO,ISYMTR)
+               CALL DSCAL(LTR2E,HALF,WORK(KRES2),1)
+            END IF
 C
             CALL SO_WRITE(WORK(KRES2),LTR2E,LUSC2E,FNSC2E,INEWTR)
          ENDIF
 C
       END DO
 C
-      DO INEWTR = 1,NNEWTR
+      DO INEWTR = 1,NNEWTR ! de-excitations
 C
          CALL SO_READ(WORK(KRES1),LTR1E,LURS1D,FNRS1D,INEWTR+NOLDTR)
          CALL SO_WRITE(WORK(KRES1),LTR1E,LUSC1D,FNSC1D,INEWTR)
@@ -151,8 +155,10 @@ C
          IF(DOUBLES)THEN
             CALL SO_READ(WORK(KRES2),LTR2E,LURS2D,FNRS2D,INEWTR+NOLDTR)
 C
-            CALL CCSD_TCMEPKX(WORK(KRES2),TWO,ISYMTR)
-            CALL DSCAL(LTR2E,HALF,WORK(KRES2),1)
+            IF (.NOT.TRIPLET) THEN
+               CALL CCSD_TCMEPKX(WORK(KRES2),TWO,ISYMTR)
+               CALL DSCAL(LTR2E,HALF,WORK(KRES2),1)
+            END IF
 C
             CALL SO_WRITE(WORK(KRES2),LTR2E,LUSC2D,FNSC2D,INEWTR)
          ENDIF
@@ -172,7 +178,7 @@ C
 C
       KOFF1   = 1
       KOFF2   = KOFF1  + LOFF1
-      KEND3   = KOFF2  + LOFF2 
+      KEND3   = KOFF2  + LOFF2
       LWORK3  = LWORK  - KEND3
 C
 C-------------------------------------------------------------------
@@ -219,9 +225,9 @@ C
       CALL DZERO(WORK(KOFF1),LOFF1)
       CALL DZERO(WORK(KOFF2),LOFF2)
 C
-C-----------------------------------
-C     Open files with trial vectors.
-C-----------------------------------
+C----------------------------------------------------------------
+C     Open files with and read p-h trial vectors.
+C----------------------------------------------------------------
 C
       CALL SO_OPEN(LUTR1E,FNTR1E,LTR1E)
       CALL SO_OPEN(LUTR1D,FNTR1D,LTR1E)
@@ -236,6 +242,14 @@ C
      &                   IOFF)
          CALL SO_READSET(WORK(KOFF4),LTR,NTRIAL,LUTR1D,FNTR1D,LTR1E,
      &                   IOFF)
+C
+C--------------------------------------------------------------------
+C        Read the p-h resultvectors from LUSC1* and multiply with the
+C        excitation and de-excitation p-h trial vectors:
+C        (E * E^b)**T * E^b )
+C        (E * E^b)**T * D^b )
+C--------------------------------------------------------------------
+C
          CALL SO_READSET(WORK(KOFF5),LTR,NNEWTR,LUSC1E,FNSC1E,LTR1E,
      &                   IOFF)
 C
@@ -244,6 +258,11 @@ C
 C
          CALL DGEMM('T','N',NNEWTR,NTRIAL,LTR,ONE,WORK(KOFF5),LTR,
      &              WORK(KOFF4),LTR,ONE,WORK(KOFF2),NNEWTR)
+C
+C--------------------------------------------------------------------
+C        (E * D^b)**T * D^b)
+C        (E * D^b)**T * E^b)
+C--------------------------------------------------------------------
 C
          CALL SO_READSET(WORK(KOFF5),LTR,NNEWTR,LUSC1D,FNSC1D,LTR1E,
      &                   IOFF)
@@ -278,18 +297,18 @@ C
 C
          CALL DGEMM('T','N',NNEWTR,NTRIAL,L1LTR,ONE,WORK(KOFF5),L1LTR,
      &              WORK(KOFF4),L1LTR,ONE,WORK(KOFF1),NNEWTR)
-C 
+C
          CALL DGEMM('T','N',NNEWTR,NTRIAL,L1LTR,ONE,WORK(KOFF5),L1LTR,
      &              WORK(KOFF3),L1LTR,ONE,WORK(KOFF2),NNEWTR)
-C 
+C
       END IF
 C
 C     Singles only methods, jump to the end here
       IF(.NOT.DOUBLES) GOTO 1010
-C              
-C-----------------------------------
-C     Open files with trial vectors.
-C-----------------------------------
+C
+C-----------------------------------------------------------------
+C     Open files with and read the 2p-2h trial vectors
+C-----------------------------------------------------------------
 C
       CALL SO_OPEN(LUTR2E,FNTR2E,LTR2E)
       CALL SO_OPEN(LUTR2D,FNTR2D,LTR2E)
@@ -304,6 +323,14 @@ C
      &                   IOFF)
          CALL SO_READSET(WORK(KOFF4),LTR,NTRIAL,LUTR2D,FNTR2D,LTR2E,
      &                   IOFF)
+C
+C--------------------------------------------------------------------
+C        Read the 2p-2h resultvectors from LUSC2E and multiply with the
+C        excitation and de-excitation 2p-2h trial vectors:
+C        (E * E^b)**T * E^b )
+C        (E * E^b)**T * D^b )
+C--------------------------------------------------------------------
+C
          CALL SO_READSET(WORK(KOFF5),LTR,NNEWTR,LUSC2E,FNSC2E,LTR2E,
      &                   IOFF)
 C
@@ -312,6 +339,11 @@ C
 C
          CALL DGEMM('T','N',NNEWTR,NTRIAL,LTR,ONE,WORK(KOFF5),LTR,
      &              WORK(KOFF4),LTR,ONE,WORK(KOFF2),NNEWTR)
+C
+C--------------------------------------------------------------------
+C        (E * D^b)**T * D^b )
+C        (E * D^b)**T * E^b )
+C--------------------------------------------------------------------
 C
          CALL SO_READSET(WORK(KOFF5),LTR,NNEWTR,LUSC2D,FNSC2D,LTR2E,
      &                   IOFF)
@@ -351,7 +383,7 @@ C
      &              L2LTR,WORK(KOFF3),L2LTR,ONE,WORK(KOFF2),NNEWTR)
 C
       END IF
-C      
+C
 C     Singles only methods resume here
 1010  CONTINUE
 C

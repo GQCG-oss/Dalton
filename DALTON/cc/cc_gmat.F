@@ -737,11 +737,11 @@ C
           Call CC_PRP(WORK(KCTR1(ITRAN)),WORK,ISYCTR,1,0)
           WRITE (LUPRI,*) MSGDBG, 
      &         'double one-index trans. Fock mat. (o/o):'
-          WRITE (LUPRI,'(5D20.14)')
+          WRITE (LUPRI,'(5D21.14)')
      &         (WORK(KFBCOO(ITRAN)-1+I),I=1,NMATIJ(ISYFBC))
           WRITE (LUPRI,*) MSGDBG, 
      &         'double one-index trans. Fock mat. (v/v):'
-          WRITE (LUPRI,'(5D20.14)') 
+          WRITE (LUPRI,'(5D21.14)') 
      &         (WORK(KFBCVV(ITRAN)-1+I),I=1,NMATAB(ISYFBC))
           WRITE (LUPRI,*) MSGDBG, 
      &         'contribution of double trans. F to DELTA:'

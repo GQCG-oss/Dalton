@@ -19,7 +19,7 @@ C
 C     Keld Bak, July 1997
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
-C     PURPOSE: Calculate RPA, RPA(D), SOPPA and SOPPA(CCSD) transition 
+C     PURPOSE: Calculate RPA, RPA(D), SOPPA and SOPPA(CCSD) transition
 C              moments.
 C
       use so_info, only: FN_RDENSE, FN_RDENSD
@@ -28,7 +28,7 @@ C
 #include "priunit.h"
 C
 #include "cbiexc.h"
-CSPAS:15/03-2006: merge with Dalton-2.0  
+CSPAS:15/03-2006: merge with Dalton-2.0
 C#include "cbilrs.h"
 CKeinSPASmehr
 #include "ccsdsym.h"
@@ -56,7 +56,7 @@ CClark:end
       DIMENSION T2AM(LT2AM), WORK(LWORK)
 C
       PARAMETER( ONE=1.0D0 )
-C      
+C
       CHARACTER*8 LABEL, PDENS_LABEL
       CHARACTER*5 MODEL
       LOGICAL  IMAGPROP
@@ -81,10 +81,10 @@ C
       LURDENSE = -1
       LURDENSD = -1
       CALL GPOPEN(LURDENSE,FN_RDENSE,'UNKNOWN',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.) 
+     &            IDUMMY,.FALSE.)
       CALL GPOPEN(LURDENSD,FN_RDENSD,'UNKNOWN',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.) 
-C      
+     &            IDUMMY,.FALSE.)
+C
 C-------------------------------
 C     Loop over property labels.
 C-------------------------------
@@ -207,6 +207,7 @@ C         Replace time information with symmetry information$
 C                 RTNLBL(2)='SYMMETRI'
 C
 C         Place LUAOGOS in correct position for writing
+<<<<<<< HEAD
 C            REWIND LUAOGOS
 C            IF (.NOT.FNDLAB('EOFLABEL',LUAOGOS)) THEN
 C               WRITE (LUPRI,'(/A)') 
@@ -218,6 +219,16 @@ C            BACKSPACE LUAOGOS
      &               'UNFORMATTED',IDUMMY,.FALSE.)
             CALL NEWLB2('EOFLABEL',RTNLBL,LUAOGOS,LUPRI)
 C
+=======
+            REWIND LUAOGOS
+            IF (.NOT.FNDLAB('EOFLABEL',LUAOGOS)) THEN
+               WRITE (LUPRI,'(/A)')
+     &                ' End of file not found in AOGOS?'
+               CALL QUIT('Internal error, EOF not found in AOGOS')
+            END IF
+            BACKSPACE LUAOGOS
+
+>>>>>>> 51bacf87b5a11c7214010fd7caf3a02af8eb32f6
 C
             LEN = MAX (4,NNBASX)
             CALL NEWLB2(LABAPPG(1),RTNLBL,LUAOGOS,LUPRI)
@@ -285,9 +296,13 @@ C----------------------------------
 C
             DO IEXCI = 1, NEXCI
 C
+<<<<<<< HEAD
                IF (IPRSOP .GE. 6) THEN
 C
                   WRITE (LUGOS,'(/A,D16.13)') 
+=======
+               WRITE (LUGOS,'(/A,D16.13)')
+>>>>>>> 51bacf87b5a11c7214010fd7caf3a02af8eb32f6
      &                                'Number of q valus:', ORIGIN(1)
                   WRITE (LUGOS,'(/A,I4,A,I4,A,I4)') 'ISYMTR=',ISYMTR,
      &                                     'NEXCI=',NEXCI,'IEXCI=',IEXCI

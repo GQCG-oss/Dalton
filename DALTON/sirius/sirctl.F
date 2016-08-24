@@ -56,7 +56,7 @@ C
       use efs_interface
 #endif
 #ifdef HAS_PCMSOLVER
-      use pcmmod_cfg
+      use pcm_config, only: pcm_configuration, pcm_cfg
 #endif
 #ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_is_active, xcint_init
@@ -102,7 +102,7 @@ C
 
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCM_save
-      LOGICAL   DFT_SPINDNS_save, DFT_LOCALSPIN_save
+      LOGICAL   DFT_SPINDNS_save, DFT_LOCALSPIN_save, USEDRC_save
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
       real(8), allocatable :: tmp_space(:)
 
@@ -327,14 +327,14 @@ C        Call FCMO to perform MAXFCK Roothaan Fock iterations
 C
          IF (MAXFCK .GT. 0) THEN
             FLAG(5) = .FALSE.
-C              we don't call SIROUT when no 2:nd order optimization
+C           we do not call SIROUT when no 2:nd order optimization
             JRDMO = 9
             KCMO  = 1
             KFC   = KCMO + NCMOT
             KWRK1 = KFC  + NNBAST
 C           (FC needs NNBAST because it is also used for SAO)
             LWRK1 = LWORK - KWRK1
-            CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+            CALL READMO(WORK(KCMO),JRDMO)
             CALL FCMO(MAXFCK,WORK(KCMO),WORK(KFC),
      &                WORK(KWRK1),LWRK1)
 C           CALL FCMO(MAXFCK,CMO,FC,SCRA,LSCRA)
@@ -350,7 +350,7 @@ C
             KWRK1 = KCMO  + NCMOT
             KFREE = 1
             LFREE = LWORK - KWRK1
-            CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LFREE)
+            CALL READMO(WORK(KCMO),JRDMO)
             CALL SRDIIS(ICONV,WORK(KCMO),WORK(KWRK1),KFREE,LFREE)
 C
 C     We overwrite in case of symmetry breaking
@@ -376,7 +376,7 @@ C
          ICONVI = ICONV
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
 #ifdef HAS_PCMSOLVER
-            if (pcmmod_is_pcm_calculation) call quit('ERROR: DIIS '//
+            if (pcm_cfg%do_pcm) call quit('ERROR: DIIS '//
      &      'failed to converge and QC-SCF is not implemented with '//
      &      'PCMSolver')
 #endif
@@ -545,11 +545,15 @@ C           ... orbital super symmetries may have been reordered
          END IF
          JWOPSY = 1
          MCTYPE = MCTYPE_save
-         CALL SIRSET(WORK,LWORK,OLDWOP)
-         IAVERR = 0
-         CALL AVECHK(WORK,LWORK,IAVERR)
-         IF (IAVERR .NE. 0) CALL QUIT(
+         IF  (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB) THEN
+            ! do not call SIRSET if next step is LUCITA:
+            ! SETCI will return NCONF=0 and cause error exit.
+            CALL SIRSET(WORK,LWORK,OLDWOP)
+            IAVERR = 0
+            CALL AVECHK(WORK,LWORK,IAVERR)
+            IF (IAVERR .NE. 0) CALL QUIT(
      &      'SIRCTL CI/MC error: inconsistency in sup.sym. averaging')
+         END IF
 C
       END IF
 C
@@ -575,7 +579,7 @@ C
          KCMO  = 1
          KWRK1 = KCMO  + NCMOT
          LWRK1 = LWORK - KWRK1
-         CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         CALL READMO(WORK(KCMO),JRDMO)
          CALL FCVIRT(WORK(KCMO),WORK(KWRK1),LWRK1)
          CALL NEWORB('FCVORB  ',WORK(KCMO),.TRUE.)
          FLAG(14) = .FALSE.
@@ -755,7 +759,8 @@ C
          KCMO  = 1
          KWRK1 = KCMO  + NCMOT
          LWRK1 = LWORK - KWRK1
-         CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         CALL READMO(WORK(KCMO),JRDMO)
+         USEDRC_save = USEDRC
          USEDRC = .TRUE.
          IF (NEWTRA) THEN
 C        ... koopro4 uses (ia/ (inactive-secondary) Mulliken distributions;
@@ -779,6 +784,7 @@ C            transformation  /hjaaj June 09
          CALL FLSHFO(LUW4)
          CALL FLSHFO(LUPRI)
          CALL FLSHFO(LUSTAT)
+         USEDRC = USEDRC_save
 
        END IF
       END IF
@@ -797,11 +803,12 @@ C
          KFREE  = KFRSAV
          LFREE  = LWORK
          CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
-         CALL READMO(WORK(KCMO),JRDMO,WORK(KFREE),LFREE)
+         CALL READMO(WORK(KCMO),JRDMO)
 
          CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
                                           ! orbital occupations for TRACTL
          JTRALVL = 0 ! only active orbitals for all four indices
+         USEDRC_save = USEDRC
          USEDRC  = .FALSE. ! Dirac format 2-el. integrals not needed
 
          FTRCTL = .true.
@@ -828,6 +835,7 @@ C
          CALL FLSHFO(LUW4)
          CALL FLSHFO(LUPRI)
          CALL FLSHFO(LUSTAT)
+         USEDRC = USEDRC_save
 
          CALL SET_INFORB_LUCITA('RESET ')
        END IF
@@ -861,8 +869,8 @@ C
       TIMSIR = TEND - TIMSIR
       WALSIR = WEND - WALSIR
       WRITE (LUPRI,'()')
-      CALL TIMTXT(' Total CPU  time used in SIRIUS :',CTOT,LUPRI)
-      CALL TIMTXT(' Total wall time used in SIRIUS :',WTOT,LUPRI)
+      CALL TIMTXT(' Total CPU  time used in SIRIUS :',TIMSIR,LUPRI)
+      CALL TIMTXT(' Total wall time used in SIRIUS :',WALSIR,LUPRI)
       CALL TSTAMP(' ',LUPRI)
       IF (LUW4 .NE. LUPRI) THEN
          WRITE (LUW4,7100)  TIMSIR, WALSIR
@@ -941,7 +949,7 @@ C To be safe, include EXTERNAL SBDTRA in sirctl
 C
 #include "implicit.h"
 #include "inftra.h"
-      DATA NEWTRA /.FALSE./
+      DATA FCKTRA_TYPE/-1/, NEWTRA /.FALSE./
       END
 C  /* Deck sbddim */
       BLOCK DATA SBDDIM

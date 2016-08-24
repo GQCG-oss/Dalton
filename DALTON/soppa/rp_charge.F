@@ -76,7 +76,7 @@ C
      &                  WORK(KEND1),LWORK1)
 C
 C-------------------------------------------------------------
-C        Extract second moments of charge for each orbital and 
+C        Extract second moments of charge for each orbital and
 C        the SCF ground state.
 C-------------------------------------------------------------
 C
@@ -84,7 +84,7 @@ C
 C
          DO 50 ISYMI = 1,NSYM
 C
-            KOFF1 = KPRP1 + IFCRHF(ISYMI,ISYMI) 
+            KOFF1 = KPRP1 + IFCRHF(ISYMI,ISYMI)
 C
             DO 40  I = 1,NRHF(ISYMI)
 C
@@ -146,7 +146,7 @@ C
 C
                KOFF1 = KTR1E + IT1AM(ISYMA,ISYMJ)
                KOFF2 = KTR1D + IT1AM(ISYMA,ISYMJ)
-               KOFF3 = KPRP1 + IFCRHF(ISYMJ,ISYMI) 
+               KOFF3 = KPRP1 + IFCRHF(ISYMJ,ISYMI)
                KOFF4 = KAIE  + IT1AM(ISYMA,ISYMI)
                KOFF5 = KAID  + IT1AM(ISYMA,ISYMI)
 C

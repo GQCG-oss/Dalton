@@ -54,7 +54,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -w")
     endif()
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -traceback")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip -diag-disable 8290 -diag-disable 8291")
     set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
 
     if(DEFINED MKL_FLAG)
@@ -115,14 +115,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     if(ENABLE_OMP) 
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mp " )
         set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -Mconcur")
-    endif()
-# WARNING you may need to add -Mcuda=5.5 
-# For now use --extra-fc-flags="-Mcuda=5.5"
-# ./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --openacc --extra-fc-flags="-Mcuda=5.5" build
-    if(ENABLE_OPENACC) 
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -acc"
-            )
     endif()
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
@@ -185,15 +177,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
       set(CMAKE_Fortran_FLAGS
         "${CMAKE_Fortran_FLAGS} -h noomp"
         )
-    endif()
-# WARNING OpenACC is activated as default on cray 
-    if(ENABLE_OPENACC) 
-      #do nothing OpenACC activated as default with cray 
-    else()
-      #can be deactivated using -x acc or -h noacc
-      set(CMAKE_Fortran_FLAGS
-        "${CMAKE_Fortran_FLAGS} -h noacc"
-        )	  
     endif()
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS

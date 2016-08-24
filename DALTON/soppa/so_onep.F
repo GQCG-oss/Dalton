@@ -59,7 +59,7 @@ C
          FNAME = 'AOGOS   '
          LUFILE = LUAOGOS
 C
-      ELSE 
+      ELSE
          FNAME = 'AOPROPER'
          LUFILE = LUPROP
 C

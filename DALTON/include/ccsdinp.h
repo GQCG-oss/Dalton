@@ -10,7 +10,7 @@
      &        CCP3, CCRT, CCR3, CCR1A, CCR1B, CCT,                      &
      &        rCCD, drCCD, SOSEX, rTCCD,                                &
      &        CCSDT,CCR12, MTRIP, CHOPT, DCPT2,                         &
-     &        ETACCPT, DIRKAPB
+     &        ETACCPT, DIRKAPB, MLCC3, MLCCSDPT
 
       INTEGER MXDIIS, MXLRV,                                            &
      &        IT2UPD, IT2START,                                         &
@@ -24,20 +24,14 @@
      &                   ICHANG,  IPRINT,  KEEPAOTWO, HERDIR,           &
      &                   ETACCPT, DIRKAPB,                              &
      &                   FREEZE,  KEEPAOIN, NOEONL, NOSORT,             &
-     &                   HURWITZ_CHECK,                                 &
+     &                   HURWITZ_CHECK, MLCC3, MLCCSDPT,                &
      &                   SIRSOP,  LVVVV, ONLYMO, AOSOPPA
 
 
       COMMON /CCSDGNINP/ CCSDGNINPLAST 
-      !   Very important !!!
-      !   Always keep this variable as the last variable in the common block. 
-      !   If you add more variables to the block add them before <name>last.
-      !   This variable is used to synchronize slaves for parallel
-      !   calculations. Other than acting as a target to calculate the size of a common
-      !   block, they have no use.
-      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
-      !   to get the number of bytes needed to transfer the common block.
-      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+      !  Very important !!!
+      !  Always keep CCSDGNINPLSDT as the last variable in the common block. 
+      !  See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
 
 
       INTEGER CCMODELSLAST
@@ -47,15 +41,9 @@
      &                  rCCD, drCCD, SOSEX, rTCCD,                      &
      &                  CCSDT,CCR12,MTRIP, CHOPT, DCPT2                 
       COMMON /CCMODELS/ CCMODELSLAST 
-      !   Very important !!!
-      !   Always keep this variable as the last variable in the common block. 
-      !   If you add more variables to the block add them before <name>last.
-      !   This variable is used to synchronize slaves for parallel
-      !   calculations. Other than acting as a target to calculate the size of a common
-      !   block, they have no use.
-      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
-      !   to get the number of bytes needed to transfer the common block.
-      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+      !  Very important !!!
+      !  Always keep CCMODELSLAST as the last variable in the common block. 
+      !  See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
 
 
 
@@ -75,14 +63,6 @@
       COMMON/ETMP/ ETMP
 !
       COMMON /ETMP/ ETMPLAST 
-      !   Very important !!!
-      !   Always keep this variable as the last variable in the common block. 
-      !   If you add more variables to the block add them before <name>last.
-      !   This variable is used to synchronize slaves for parallel
-      !   calculations. Other than acting as a target to calculate the size of a common
-      !   block, they have no use.
-      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
-      !   to get the number of bytes needed to transfer the common block.
-      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
-
-
+      !  Very important !!!
+      !  Always keep ETMPLAST as the last variable in the common block. 
+      !  See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.

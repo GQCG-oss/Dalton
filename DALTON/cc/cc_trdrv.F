@@ -139,7 +139,8 @@ C
       CALL QENTER('CC_TRDRV')
 C
       MSCRS = MINSCR
-      IF ( CCSDT .OR. (ISIDE.EQ.2) .OR. FDJAC .OR. JACEXP ) THEN
+      IF ( CCSDT .OR. (ISIDE.EQ.2) .OR. FDJAC .OR. JACEXP
+     *           .OR. MLCC3) THEN
          MINSCR = .TRUE.
       ENDIF  
 C
@@ -610,6 +611,7 @@ C
 C
             ELSE
                IF (ISIDE .EQ. 1) THEN
+C
                   CALL CC_RHTR(ECURR,
      *                         FRHO1,LUFR1,FR2SD,LUFSD,FRHO12,LUFR12,
      *                         FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
@@ -617,6 +619,7 @@ C
      *                         WORK(KC1AM),WORK(KC2AM),
      *                         WORK(KEND1),LWRK1,NSIMTR,
      *                         IVEC,ITR,LRHO1,.FALSE.,DUMMY,APROXR12)
+C
 
                   IF (DEBUGV) THEN
                     WRITE(LUPRI,*)'analytical RHO1 and RHO2:'
