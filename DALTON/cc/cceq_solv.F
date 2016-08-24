@@ -559,13 +559,44 @@ C     -------------------------------------
            CALL AROUND(' CCEQ_STR:  approximate diagonal Jacobian')
            CALL OUTPUT(WORK(KDIA),1,NCCVAR,1,1,NCCVAR,1,1,LUPRI)
         ENDIF
-        !if (LCVSEXCI) then
-        !CALL AROUND(' CCEQ_STR:  approximate diagonal Jacobian')
-        !write(lupri,*)'SYMMETRY=', ISYMTR
-        !CALL OUTPUT(WORK(KDIA),1,NCCVAR,1,1,NCCVAR,1,1,lupri)
-        !end if
-
-
+        IF (LCVSEXCI.or.LIONIZEXCI) THEN
+           write(lupri,*)'CCEQ_STR: freeze VALENCE OR VIRT'
+           if (triplet) then
+                KCAM1 = KDIA
+                KCAMP = KCAM1 + NT1AM(ISYMTR)
+                KCAMM = KCAMP + NT2AM(ISYMTR)
+                CALL CC_FREEZE_TRIPLETstart(WORK(KCAM1), 
+     &          WORK(KCAMP),WORK(KCAMM),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,LBOTHEXCI)
+           else 
+                CALL CC_FREEZE_start(WORK(KDIA),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,LBOTHEXCI)
+           end if
+         END IF
+!NOT NEEDED WHEN REMOVING THE CORE, AS VALENCE ARE ALWAYS LOWEST
+!         IF (LRMCORE) THEN
+!           write(lupri,*)'CCEQ_STR: freeze CORE '
+!           if (TRIPLET) then
+!               KCAM1 = KDIA
+!               KCAMP = KCAM1 + NT1AM(ISYMTR)
+!               KCAMM = KCAMP + NT2AM(ISYMTR)
+!               CALL CC_FREEZE_TRIPLETCORE(WORK(KCAM1), WORK(KCAMP), 
+!     &          WORK(KCAMM),ISYMTR,
+!     &          MAXCORE,MAXION,
+!     &          NRHFCORE,IRHFCORE,
+!     &          NVIRION,IVIRION,LBOTHEXCI)
+!           else
+!               CALL CC_FREEZE_CORE(WORK(KDIA),ISYMTR,
+!     &          MAXCORE,MAXION,
+!     &          NRHFCORE,IRHFCORE,
+!     &          NVIRION,IVIRION,.false.)
+!           end if
+!         END IF
+CCN
       ENDIF
 C
 C     ---------------------------------------------------------------
