@@ -8,7 +8,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, April 1997
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
-C     Andrea Ligabue, December 2003: LINEAR and ENORM added to the 
+C     Andrea Ligabue, December 2003: LINEAR and ENORM added to the
 C                                    argument list, which are needed
 C                                    for the linear equation problem
 C
@@ -74,13 +74,19 @@ C
 C
          DO 300 JVEC = 1,NEXCI
 C
-            EVNM = DDOT(LEIVH,EIVEC(1,JVEC),1,EIVEC(1,JVEC),1)
-     &           - DDOT(LEIVH,EIVEC(LEIVH+1,JVEC),1,
-     &             EIVEC(LEIVH+1,JVEC),1)
+C            EVNM = DDOT(LEIVH,EIVEC(1,JVEC),1,EIVEC(1,JVEC),1)
+C     &           - DDOT(LEIVH,EIVEC(LEIVH+1,JVEC),1,
+C     &             EIVEC(LEIVH+1,JVEC),1)
+            EVNM = 0.0D0
+            DO IVEC = 1,LEIVH
+               EVNM = EVNM + EIVEC(IVEC,JVEC)*EIVEC(IVEC,JVEC)
+               EVNM = EVNM - EIVEC(LEIVH+IVEC,JVEC)**2
+            ENDDO
 C
-            IF ( (EVNM - ONE) .GE. THRNM ) THEN
+CRF  If we do a linear response calculation, this is to be expected.
+            IF ( ABS(EVNM - ONE) .GE. THRNM .AND.(.NOT.LINEAR) ) THEN
 C
-               WRITE(LUPRI,'(/,1X,A,I3,A,/,1X,A,F18.9)') 
+               WRITE(LUPRI,'(/,1X,A,I3,A,/,1X,A,F18.9)')
      &            'WARNING: Reduced trialvector ',
      &            JVEC,' is not properly normalized.',' Norm is',EVNM
 C
@@ -103,7 +109,7 @@ C
                   IF (EXDIFF .GT. THREX) THEN
 C
                      WRITE(LUPRI,
-     &                     '(/,1X,A,I3,A,I3,A,/,1X,A,E18.9,/,1X,A)') 
+     &                     '(/,1X,A,I3,A,I3,A,/,1X,A,E18.9,/,1X,A)')
      &               'WARNING: Reduced trialvectors ',IVEC,' and ',JVEC,
      &               ' are not properly orthogonal.',
      &               'Scalar product is',DOTP1,
@@ -125,7 +131,7 @@ C
 C
                IF ( (DOTP2) .GE. THRNM ) THEN
 C
-                  WRITE(LUPRI,'(/,1X,A,I3,A,I3,A,/,1X,A,E18.9)') 
+                  WRITE(LUPRI,'(/,1X,A,I3,A,I3,A,/,1X,A,E18.9)')
      &              'WARNING: Reduced trialvectors ',IVEC+LEIVH,' and ',
      &               JVEC,' are not properly orthogonal.',
      &               'Scalar product is',DOTP2
@@ -141,18 +147,33 @@ C
      &             EIVEC(LEIVH+1,JVEC),1)
 C
             IF (LINEAR .AND. DABS(EVNM).LT.T1MIN) THEN
-C                    
-                  WRITE(LUPRI,'(/,1X,A,E18.9)') 
-     &              'WARNING: Norm is ',EVNM
 C
-                  WRITE(LUPRI,'(/,1X,A)') 
-     &              'I Try to remove the Z part of (Y Z)'
 C
-                  CALL DZERO(EIVEC(LEIVH+1,JVEC),LEIVH)
+               EVNM2 = 0.0D0
+               DO IVEC = 1,LEIVH
+                  EVNM2 = EVNM2 + EIVEC(IVEC,JVEC)**2
+               ENDDO
+               IF (ABS(EVNM2).GT.ABS(EVNM))THEN
+C                  WRITE(LUPRI,'(/,1X,A,E18.9)')
+C     &              'WARNING: Norm is ',EVNM
 C
-                  GOTO 201
+C                  WRITE(LUPRI,'(/,1X,A)')
+C     &              'I Try to remove the Z part of (Y Z)'
+
+                  DO IVEC = LEIVH+1,2*LEIVH
+                     EIVEC(IVEC,JVEC) = 0.0D0
+                  ENDDO
+                  EVNM = EVNM2
+               ELSE
+                  WRITE(LUPRI,'(1x,a)')
+     &              'WARNING: cannot resolve linear dependence in '//
+     &              'reduced space'
+               ENDIF
+C                  CALL DZERO(EIVEC(LEIVH+1,JVEC),LEIVH)
 C
-            ELSE
+C                  GOTO 201
+C
+            ENDIF
 C
               EVNM = ONE / DSQRT( DABS(EVNM) )
 C
@@ -166,7 +187,7 @@ C
                     ENORM = ENORM * EVNM
               ENDIF
 C
-            ENDIF
+C            ENDIF
 C
   300    CONTINUE
 C
@@ -244,7 +265,7 @@ C
                   WRITE(LUPRI,'(1X,A,I3,A)') 'Reduced trialvector #',
      &                  JVEC,' is modified to avoid linear dependencies'
                END IF
-C            
+C
                CALL DZERO(EIVEC(1,JVEC),LEIVEC)
 C
                LPOS = LPOS + NEXCI
@@ -255,7 +276,7 @@ C
                      CALL QUIT('ERROR in SO_ROPT 3: Linear'//
      &               ' dependencies in room of reduced'//
      &               ' trialvectors')
-                  END IF 
+                  END IF
 C
                   LPOS   = NEXCI  + LEXTRA
                   LEXTRA = LEXTRA + 1
@@ -356,7 +377,7 @@ C
       CALL DGEMM('N','N',LEIVEC,LEIVEC,LEIVEC,ONE,WORK(KMAT1),LEIVEC,
      &           EIVEC,LEIVEC,ZERO,REDS,LEIVEC)
 C
-      IF ( IPRSOP .GE. 6 ) THEN
+      IF ( IPRSOP .GE. 5 ) THEN
 C
 C---------------------------------------------
 C        Print reduced E[2] and S[2] matrices.

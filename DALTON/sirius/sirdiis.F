@@ -1473,7 +1473,7 @@ C
 C               restore old CMO from LUIT1 (for backstep);
 C               no DIFDEN because DAOSAV is for current, not previous iteration
 C
-                CALL READMO(CMO,9,DUMMY,1)
+                CALL READMO(CMO,9)
                 DIFDEN = .FALSE.
              END IF
              IF (JNDEVC .NE. 1) THEN

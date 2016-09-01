@@ -1,5 +1,5 @@
 C  /* Deck so_t2mp */
-      SUBROUTINE SO_T2MP(T2AM,LT2AM)
+      SUBROUTINE SO_T2MP(T2AM,LT2AMH)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -7,7 +7,7 @@ C     Keld Bak, November 1995
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C
 C     PURPOSE: Calculate MP2-amplitudes from regular T2-amplitudes.
-C              (MP-amplitudes are 4 * Coulomb - 2 * Exchange of
+C              (MP-amplitudes are 2 * Coulomb - Exchange of
 C              T2-amplitudes). The MP2-amplitudes are triangular
 C              symmetry packed like the T2-amplitudes and stored
 C              in place.
@@ -19,11 +19,14 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
 C
-      DIMENSION T2AM(LT2AM)
+      DIMENSION T2AM(LT2AMH)
 C
 #include "ccorb.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
+CPi-160316 include Triplet flag
+#include "soppinf.h"
+Cend-Pi
 C
 C------------------------------
 C     Statement function INDEX.
@@ -37,6 +40,18 @@ C------------------
 C
       CALL QENTER('SO_T2MP')
 C
+CPi-160316 Already done in so_gett2
+C---------------------------------------------------------------------
+C     If Triplet, initialize pointer to the last part of T2AM in which
+C     the triplet amplitudes will be stored.
+C---------------------------------------------------------------------
+C
+C      LT2AMH = LT2AM
+C      IF (TRIPLET) THEN
+C         LT2AMH = INT(LT2AM/2)
+C      END IF
+C
+Cend-Pi
 C
 C---------------------------------------------------
 C     Loop over T2-amplitudes for a =< b and i =< j.
@@ -55,7 +70,7 @@ C
 C
                   NBJ = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J-1) + B
 C
-                  DO 500 ISYMI = 1,NSYM
+                  DO 500 ISYMI = 1,ISYMJ
 C
                      ISYMA  = MULD2H(ISYMI,ISYMAI)
                      ISYMAJ = MULD2H(ISYMA,ISYMJ)
@@ -67,28 +82,26 @@ C---------------------------------------
 C
                      IF ( ISYMI .LT. ISYMJ) THEN
                         LI = NRHF(ISYMI)
-                     ELSE IF ( ISYMI .EQ. ISYMJ) THEN
-                        LI = J
                      ELSE
-                        LI = 0
+                        LI = J
                      END IF
-C
-                     DO 600 I = 1,LI
-C
-                        NBI   = IT1AM(ISYMB,ISYMI)
-     &                        + NVIR(ISYMB)*(I-1) + B
 C
 C------------------------------------------
 C                       Ensure that a =< b.
 C------------------------------------------
 C
-                        IF ( ISYMA .LT. ISYMB ) THEN
-                           LA = NVIR(ISYMA)
-                        ELSE IF ( ISYMA .EQ. ISYMB ) THEN
-                           LA = B
-                        ELSE
-                           LA = 0
-                        ENDIF
+                     IF ( ISYMA .LT. ISYMB ) THEN
+                        LA = NVIR(ISYMA)
+                     ELSE IF ( ISYMA .EQ. ISYMB ) THEN
+                        LA = B
+                     ELSE
+                        CYCLE
+                     ENDIF
+C
+                     DO 600 I = 1,LI
+C
+                        NBI   = IT1AM(ISYMB,ISYMI)
+     &                        + NVIR(ISYMB)*(I-1) + B
 C
                         DO 700 A = 1,LA
 C
@@ -100,12 +113,30 @@ C
      &                           + INDEX(NAI,NBJ)
                            NAJBI = IT2AM(ISYMAJ,ISYMBI)
      &                           + INDEX(NAJ,NBI)
+CPi-160316
+C------------------------------------------------------
+C                          Transform singlet amplitudes
+C------------------------------------------------------
 C
                            T2MP1 = TWO * T2AM(NAIBJ)
      &                           - ONE * T2AM(NAJBI)
                            T2MP2 = TWO * T2AM(NAJBI)
      &                           - ONE * T2AM(NAIBJ)
 C
+C-----------------------------------------------------------------------
+C                          Transform triplet amplitudes and save in last
+C                          part of T2AM vector. Include -1 here? Yes!
+C-----------------------------------------------------------------------
+C
+                           IF (TRIPLET) THEN
+                              T2AM(LT2AMH+NAJBI) = - ONE * T2AM(NAIBJ)
+                              T2AM(LT2AMH+NAIBJ) = - ONE * T2AM(NAJBI)
+                           END IF
+C
+C-----------------------------------------------------------------------
+C                          Save singlet amplitudes in first part of T2MP
+C-----------------------------------------------------------------------
+Cend-Pi
                            T2AM(NAIBJ) = T2MP1
                            T2AM(NAJBI) = T2MP2
 C

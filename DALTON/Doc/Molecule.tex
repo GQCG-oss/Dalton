@@ -279,38 +279,39 @@ For tetrahedrane, the input would then look like
 Lines 1-4 are already described. The different new types of lines are:
 \begin{description}
 \item[5] This line is keyword-driven. The general structure of the input is
-\verb|Keyword=|. The input is case sensitive, but it will recognize
-the keywords whether specified with only three characters (minimum) or
-the full name (or any intermediate option). The order of the keywords
-is arbitrary. The following keywords are
-recognized for this line:
+\verb|Keyword=|. The keywords are not case sensitive, and keywords will
+be recognized whether specified with only three characters (minimum) or
+the full name (or any intermediate option).
+The order of the keywords is arbitrary.
+The following keywords are recognized for this line:
 \begin{description}
 \item[Atoms] \verb|(Integer)|. Number of {\em
   symmetry-distinct}\index{symmetry-distinct atom} atoms of 
 this type (or, if the symmetry detection routines are being used, all
 atoms of this kind).
 \item[Basis] \verb|(Character)|. If \verb|ATOMBASIS| has been specified,
-  the keyword is required, and have to be followed by the name of the
-  basis set that is to be used for this group of atoms, {\it e.g.\/}
-  \verb|Basis=6-31G**|. By specifying
-  \verb|Basis=pointcharge|\index{point charge}, the
+  this keyword is required, and it has to be followed by the name of the
+  basis set that is to be used for this group of atoms.
+  The valid options are:
+  \begin{description}
+  \item{\verb|Basis="basis set name"|} {\it e.g.\/} \verb|Basis=6-31G**|.
+  \item{\verb|Basis=INTGRL|} \index{INTGRL}. The basis set is specified in
+  the .mol file for this atom type in the same way as if line 1 keyword had been 
+  \verb|INTGRL|. The keyword \verb|Blocks| \emph{must} also be specified.
+  \item{\verb|Basis=pointcharge|} \index{point charge} The
   atoms in this block will be treated as point charges, that is,
-  having only a charge but no basis functions attached to
-  them.
-
-  Different effective core potentials (ECP) could be used when \verb|ATOMBASIS|
-  is specified. For instance, Stuttgart ECPs with corresponding
-  Stuttgart double zeta basis sets\index{effective core
-  potentials}\index{ECP} can be used by specifying
-  \verb|Basis=ecp-sdd-DZ| \verb|ECP=ecp-sdd-DZ| (see \verb|test/rsp_ecp| for example).
+  having only a charge but no basis functions attached to them.
+  \end{description}
 \item[Blocks] \verb|(Integers)|. Maximum angular quantum number + 1 used in the
 basis set for this atom type ($s=1$, $p=2$, etc.).
-Ignored if library basis sets are being used (\verb|BASIS| or
-\verb|ATOMBASIS| in first line). This number is followed by one
+Must not be specifed if a library basis sets are being used.
+This number is followed by one
 integer for each angular momentum used in the basis, indicating 
 the number of groups (blocks) of generally contracted
 functions of angular quantum number~{\tt I-1}.
-Ignored if the basis set library is used. \newline
+For example, \verb|Blocks=3 1 1 2| to add one block of $s$,
+one block of $p$, and two blocks of $d$ CGTOs.
+\newline
 It is noteworthy that
 \dalton\ collects all basis functions into one such shell, and
 evaluates all integrals arising from that 
@@ -318,13 +319,19 @@ shell\index{shell of basis functions} simultaneously, and
 the memory requirements grow rapidly with the number of basis
 functions in a shell (note for instance that four $g$ functions
 actually are 36 basis functions,
-as there are 9 components of each $g$ function).
+as there are 9 components of each spherical $g$ function).
 Memory requirements\index{memory} can therefore be reduced by splitting
 basis functions of the quantum number into different blocks. However,
 this will decrease the performance of the
 integral\index{performance of integral program} calculation.
 \item[Charge] \verb|(Real)|. {\em This keyword is required\/}.
   Charge of this atom\index{charge of atom} or point charge. 
+\item[ECP] \verb|(Character)|.
+  Different effective core potentials (ECP) could also be used when \verb|ATOMBASIS|
+  is specified. For instance, Stuttgart ECPs with corresponding
+  Stuttgart double zeta basis sets\index{effective core
+  potentials}\index{ECP} can be used by specifying
+  \verb|Basis=ecp-sdd-DZ| \verb|ECP=ecp-sdd-DZ| (see \verb|test/rsp_ecp| for example).
 \item[Pol] \verb|(Integer+real)|. This keyword adds single, primitive
   basis function of a given quantum number (quantum number + 1 given
   in the input) and a given exponent. An arbitrary number of
@@ -523,7 +530,7 @@ to:
 11:H2     .0                 3.020386510         -2.1357357837
 \end{verbatim}
 
-The use of the basis set library is indicated by the presence of the
+The use of the same basis set library for all atom types is indicated by the presence of the
 \verb|BASIS| word in the beginning of \molinp\ file instead of
 \verb|INTGRL|.
 

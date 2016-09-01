@@ -9,7 +9,7 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Repack the AO property integrals to the order used
 C              in the CC and SOPPA codes. The repacked integrals
-C              are kept in a full square matrix.  
+C              are kept in a full square matrix.
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -77,9 +77,9 @@ C
 C
                         DO 230 B = 1, A
                            NABP  = NABP + 1
-                           KOFF1 = IAODIS(ISYMA,ISYMB) 
+                           KOFF1 = IAODIS(ISYMA,ISYMB)
      &                           + NBAS(ISYMA)*(B-1) + A
-                           KOFF2 = IAODIS(ISYMA,ISYMB) 
+                           KOFF2 = IAODIS(ISYMA,ISYMB)
      &                           + NBAS(ISYMB)*(A-1) + B
                            PRP1(KOFF1) = PAOI(NABP)
                            PRP1(KOFF2) = PAOI(NABP) * ANTSYM

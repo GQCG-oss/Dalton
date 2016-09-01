@@ -33,11 +33,15 @@ C
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
+! gnrinf.h : DIRCAL,?
+! infpar.h : PARHER
 #include "cbiher.h"
 #include "cbieri.h"
 #include "erisel.h"
 #include "eribuf.h"
 #include "gnrinf.h"
+#include "infpar.h"
+
       DATA TABLE /'.SKIP  ', '.PRINT ', '.TIME  ', '.RETURN', '.AOBTCH',
      &            '.NOPSAB', '.NOPSCD', '.NOPS12', '.OFFCNT', '.NO12GS',
      &            '.NEWCR1', '.NONCAN', '.WRITEA', '.NOWRIT', '.GABAB ',
@@ -202,7 +206,7 @@ C
       IF (ICHANG .EQ. 0) RETURN
       IF (NEWDEF) THEN
          CALL HEADER('Changes of defaults for ER2INP:',1)
-         IF (.NOT.RUNERI .AND. .NOT. (DIRCAL .OR. PARCAL)) THEN
+         IF (.NOT.RUNERI .AND. .NOT. (DIRCAL .OR. PARHER)) THEN
             WRITE (LUPRI,'(A)') ' No two-electron integrals calculated.'
          ELSE
             IF (IPRERI .NE. IPRDEF) WRITE (LUPRI,'(A,I5)')
@@ -651,7 +655,7 @@ C
 C     AOSOPPA in parallel makes use of slaves in this subroutine.
 C     hence the slaves are redirected to parts of the code normally
 C     only available to the master.
-      if (aorpa.or.aohrp.or.aosop.or.dcrpa.or.aosoc)
+      if (aorpa.or.aohrp.or.aosop.or.dcrpa.or.aosoc.or.aocc2)
      &   USE_SLAVE_CODE = .FALSE.
 #endif
 C

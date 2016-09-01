@@ -1,0 +1,37 @@
+Wed Jun 15 10:21:51 CEST 2016
+/scratch/436220
+
+   ******************************************* 
+   **** OUTPUT FROM DALTON SHELL SCRIPT
+   ******************************************* 
+
+   DALTON release 2016.alpha
+
+   Invocation: /home/zth702/source/dalton/build/dalton -noarch -M 1000 -t /scratch/436220 -d -o prop_exci_aosoppa_trip_h2o_STO2G.out prop_exci_aosoppa_trip h2o_STO2G
+
+   Wed Jun 15 10:21:51 CEST 2016
+
+   Calculation: prop_exci_aosoppa_trip_h2o_STO2G  (input files: prop_exci_aosoppa_trip.dal and h2o_STO2G.mol)
+   PID        : 10679
+   Input dir  : /home/zth702/source/dalton/DALTON/test/prop_exci_aosoppa_trip
+   Scratch dir: /scratch/436220/DALTON_scratch_zth702/prop_exci_aosoppa_trip_h2o_STO2G_10679
+
+
+ INFO : OMP_NUM_THREADS is not defined by the user, and default values will be assumed:
+ INFO : gnu and intel compilers defaults to all available cores, 
+ INFO : whereas portland compilers defaults to one
+
+
+ DALTON: user specified work memory size used,
+         environment variable WRKMEM = "128000000"
+
+ Work memory size (LMWORK+2):   128000002 =  976.56 megabytes; node   0
+
+   0: Directories for basis set searches:
+     /home/zth702/source/dalton/DALTON/test/prop_exci_aosoppa_trip:/home/zth702/source/dalton/build/basis
+prop_exci_aosoppa_trip_h2o_STO2G.tar.gz has not been created and has thus not been copied to /home/zth702/source/dalton/DALTON/test/prop_exci_aosoppa_trip
+Output is in /home/zth702/source/dalton/DALTON/test/prop_exci_aosoppa_trip/prop_exci_aosoppa_trip_h2o_STO2G.out as requested in input.
+
+   Wed Jun 15 10:21:53 CEST 2016
+   ***************************************** 
+========= Job finished ===================

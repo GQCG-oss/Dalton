@@ -115,11 +115,15 @@ option.
 %\item[\Key{MINIMIZE}] Alternative keyword to \verb|.OPTIMIZE|. Obsolete,
 %do not use.
 
+\item[\Key{FCKTRA}]\verb| |\newline
+\index{integral transformation!parallel"} Requests that the parallel
+Fock-matrix based two-electron integral transformation routines
+by Hans J\o rgen Aagaard Jensen (2016) are used.
+
 \item[\Key{NEWTRA}]\index{integral transformation!"new"} Requests that the
-two-electron integral transformation routines of Bj\o rn
-Roos should be used during execution of the program, also if less than
-256 orbitals. The "new" transformation is always used if more than 255
-orbitals.
+two-electron integral transformation routines of Bj\"{o}rn ROos
+should be used during execution of the program, also if less than
+256 orbitals. The "new" transformation is always used if more than 255 orbitals.
 
 \item[\Key{NMDDRV}] Calls for a generalized numerical geometry
 differentiation. These routines will take advantage of the full
@@ -1241,7 +1245,7 @@ xyz coordinates of the center of cavity spheres, given in \angstrom{}.
 \subsection{Potential derived charges: \Sec{QFIT}}
 \label{subsec:qfit}
 
-Directives controlling the evaluation of charges (and higher ranks of multipole moments, see \verb|MPRANK| below) fitted to reproduce the molecular electrostatic potential evaluated on a grid surrounding the molecule. Currently, the only built-in grid is a Connolly-Merz grid where \verb|NSHELL| shells around the molecule are constructed from Van der Waal spheres placed on each nuclei of the molecule. The initial spheres are scaled by \verb|VDWSCL| and succesive spheres are scaled in increments of \verb|VDVINC|. Alternatively, a file with grid points given through the \verb|MEPFIL| keyword can be provided instead.
+Directives controlling the evaluation of charges (and higher ranks of multipole moments, see \verb|MPRANK| below) fitted to reproduce the molecular electrostatic potential evaluated on a grid surrounding the molecule. Currently, the only built-in grid is a Connolly-Merz grid where \verb|NSHELL| shells around the molecule are constructed from van der Waals spheres placed on each nuclei of the molecule. The initial spheres are scaled by \verb|VDWSCL| and succesive spheres are scaled in increments of \verb|VDWINC|. Alternatively, a file with grid points given through the \verb|MEPFIL| keyword can be provided instead.
 
 \begin{description}
 \item[\Key{MPRANK}]\verb| |\newline
@@ -1257,12 +1261,12 @@ Set the type of constraint on the derived charges. Options are \verb|NONE|, \ver
 \item[\Key{VDWSCL}]\verb| |\newline
 \verb|READ (LUCMD,*) VDWSCL|
 
-Sets the scaling factor, $R_{scl}$, for the Van der Waal radii of the nuclei when generating the surface. The default value is 1.4.
+Sets the scaling factor, $R_{scl}$, for the van der Waals radii of the nuclei when generating the surface. The default value is 1.4.
 
 \item[\Key{VDWINC}]\verb| |\newline
 \verb|READ (LUCMD,*) VDWINC|
 
-Sets the increment of scaling, $R_{inc}$, for successive shells past the first. See option \verb|NSHELL|. The total scaling factor for each Van der Waal sphere for shell $n$ can be calculated from $R = R_{vdw}\cdot (R_{scl}+(n-1)\cdot R_{inc})$. The default value is 0.2 \angstrom{} per shell.
+Sets the increment of scaling, $R_{inc}$, for successive shells past the first. See option \verb|NSHELL|. The total scaling factor for each van der Waals sphere for shell $n$ can be calculated from $R = R_{vdw}\cdot (R_{scl}+(n-1)\cdot R_{inc})$. The default value is 0.2 \angstrom{} per shell.
 
 \item[\Key{NSHELL}]\verb| |\newline
 \verb|READ (LUCMD,*) NSHELL|
@@ -1638,10 +1642,20 @@ for all quantum up to and including \verb|LCMMAX| will be generated
 (s=0, p=1 etc.) \verb|CMSTR| and \verb|CMEND| are the half-integer
 start- and ending quantum number for the Rydberg basis functions. The
 basis functions will be placed at the position of a dummy center
-indicated as \verb|X| in the \molinp\ file. The charge of
-the ion-core is determined by the keyword \Key{ZCMVAL} (default: +1).
+indicated as \verb|X| in the \molinp\ file, for example
+\begin{verbatim}
+Charge=0.0 Atoms=1 Basis=CMFUN
+ X    0.0      0.0       0.0
+\end{verbatim}
+The charge of
+the ion-core is determined by the keyword \Key{ZCMVAL} (default: +1),
+not by a charge specified for \verb|X|; use \verb|Charge=0.0|.
 If no center named \verb|X| is present in the \molinp\ file,
 this input will be ignored.
+(If you use \verb|ATOMBASIS| in the \molinp\ file, you still need to specify
+a basis set name for the center \verb|X|, as in the example. However, you can write anything
+because it will be ignored. Maybe for clarity you would like to use \verb|Basis=CMFUN|.)
+
 
 \item[\Key{CONTINUUM}]\verb| |\newline
 \verb|READ (LUCMD,*) LCNTMAX, CNTSTR, CNTEND|
@@ -1657,7 +1671,8 @@ for all quantum up to and including \verb|LCNTMAX| will be generated
 (s=0, p=1 etc.) \verb|CNTSTR| and \verb|CNTEND| are the integer
 start- and ending quantum number for the continuum basis functions. The
 basis functions will be placed at the position of a dummy center
-indicated as \verb|X| in the \molinp\ file. 
+indicated as \verb|X| in the \molinp\ file.
+See example above for the \Key{CM FUN} input.
 No charge of the ion-core is required for these functions.
 If no center named \verb|X| is present in the \molinp\ file,
 this input will be ignored.

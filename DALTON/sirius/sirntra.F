@@ -57,8 +57,6 @@ C
 !TRA2,TRA2E1: OPHLFx parameter, call DARMOV(LUHLFx) if true to delete
 !   any large temporary files before exit from TRACTL.
 !-- version n04 --
-!931201-hjaaj:
-!TRALVL: 'MOFCFV' is not defined any more.
 !920529-hjaaj:
 !TR2CTL: fixed error in LTUPQ calculation (s/NOCR/NOCQ/)
 !        use NOCOUL in LTUPQ calculation
@@ -233,8 +231,8 @@ C
       KFREE  = 1
       LFREE  = MEMX
       LCDTRA = MMORBX
-      CALL MEMGET2('INTE','CDTRA',KCDTRA,LCDTRA,WRK,KFREE,LFREE)
-      CALL MEMGET2('INTE','TRTYP',KTRTYP,MXCORB,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','ICDTRA',KCDTRA,LCDTRA,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','ITRTYP',KTRTYP,MXCORB,WRK,KFREE,LFREE)
 C
 C     Set MO loop limits for the four integral indices
 C
@@ -1255,10 +1253,8 @@ C
 C
 C     SET TIME AT START OF TRANSFORMATION
 C
-      IF (IPRTRA .GE. 0) THEN
-         CALL GETTIM(TCPU0,TWALL0)
-         TCPU1  = TCPU0
-         TWALL1 = TWALL0
+      IF (IPRTRA .GE. 2) THEN
+         CALL GETTIM(TCPU1,TWALL1)
       END IF
 C
       IF (IPRTRA .GE. 2) THEN
@@ -1533,15 +1529,6 @@ C    &              X1,X2,X3, USPQ,RUPQ,TUPQ)
   102   CONTINUE
   103  CONTINUE
   104 CONTINUE
-C
-      IF (IPRTRA .GE. 0) THEN
-         CALL GETTIM(TCPU,TWALL)
-         TCPU  = TCPU -TCPU0
-         TWALL = TWALL-TWALL0
-         WRITE(LUPRI,2200) TCPU, TWALL
-      END IF
- 2200 FORMAT(/' Integral transformation: Total CPU and WALL times (sec)'
-     &       ,2F12.3)
 C
 C     FINALLY save first free address on LUMINT in IADOUT(1,LIADUT) and
 C     WRITE OUT THE DAFILE ADDRESS LIST ON UNIT 13
@@ -2976,6 +2963,8 @@ C
       ELSE IF (IRDAO .EQ. 3) THEN
          ITUSYM = 1
          CALL TRASET_3(LX2X3, LWORK)
+      ELSE IF (IRDAO .LT. 0) THEN
+         ! do no more, this is called from .FCKTRA routines
       ELSE
          WRITE (LUPRI,*) 'ERROR TRASET: Illegal IRDAO =',IRDAO
          CALL QTRACE(LUPRI)
@@ -3331,7 +3320,7 @@ C     Redefine MFRO,MISH,MASH according to requested integral
 C     transformation.  If KTRLVL .eq. 1 then this is the same
 C     as in Sirius.
 C
-      CALL IZERO(ITRTYP,MORBT)
+      ITRTYP(1:MORBT) = 0
       IMOL = 0
       DO 300 ISYM = 1, MSYM
          IF (KTRLVL .EQ. 0) THEN
@@ -3342,10 +3331,10 @@ C
             MFRO(ISYM) = 0
             MISH(ISYM) = 0
          END IF
-         IMOG = IMOL + MFRO(ISYM)
-         IMOA = IMOL + MFRO(ISYM) + MISH(ISYM)
+         IMOG = IMOL + MFRO(ISYM) ! off-set to g indices
+         IMOA = IMOL + MFRO(ISYM) + MISH(ISYM) ! off-set to a indices
          NMOA = MASH(ISYM)
-         IMOL = IMOL + MORB(ISYM)
+         IMOL = IMOL + MORB(ISYM) ! last index to transform in this symmetry
 C        ... if 3. order or full integral transformation
 C            then reset MASH(*) to MORB(*) - MFRO(ISYM)
 C            for symmetry quadruplet tests in TR2CTL
@@ -3356,12 +3345,13 @@ C            and for limits on (c d) summation indices in TRA2
          END IF
 C
          NG = MIN(4,JTRLVL)
-         DO 240 I = IMOG + 1,IMOL
+         DO I = IMOG + 1,IMOL
             ITRTYP(I) = NG
-  240    CONTINUE
-         DO 250 I = IMOA + 1,IMOA + NMOA
+            ! this includes the a indices, but they are overwritten below
+         END DO
+         DO I = IMOA + 1,IMOA + NMOA
             ITRTYP(I) = 4
-  250    CONTINUE
+         END DO
   300 CONTINUE
 C
 C     Define ICDTRA matrix
@@ -3369,18 +3359,22 @@ C
       ICDTRA(1:MMORBX) = 0
 
       IDIST = 0
-      DO 780 I = 1,MORBT
+      DO I = 1,MORBT
          IF (ITRTYP(I) .GE. 3) THEN
             IR = (I*I-I)/2
-            DO 770 J = 1,I
+            DO J = 1,I
                IF ( (ITRTYP(I)+ITRTYP(J)).GE.7 ) THEN
                   IDIST = IDIST + 1
                   ICDTRA(IR+J) = IDIST
                END IF
-  770       CONTINUE
+            END DO
          END IF
-  780 CONTINUE
-      IF (IPRTRA .GE. 3) THEN
+      END DO
+      NCDTRA = IDIST ! save in inftra.h
+      IF (IPRTRA .GE. 5) THEN
+         WRITE (LUPRI,'(/A)') ' ITRTYP(1:NORBT) = '//
+     &      'number of integral indices in which this orbital enters:'
+             WRITE(LUPRI,'(5(2X,10I2))') ITRTYP(1:MORBT)
          WRITE (LUPRI,'(/A)')
      &      ' ICDTRA: list of distributions included on LUMINT:'
          DO 810 I = 1,MORBT
@@ -3430,16 +3424,7 @@ C
 C
       CALL QENTER('TRALVL')
       JTRLVL = ABS(ITRSIR)
-#if defined (VAR_OLDCODE)
-c --- 931201-hjaaj: MOFCFV does not exist any more
-      IF (MOFCFV) THEN
-         KTRLVL = 0
-      ELSE
-         KTRLVL = 1
-      END IF
-#else
       KTRLVL = 0
-#endif
       IF (JTRLVL .EQ. 0) THEN
          KTRLVL = 1
       ELSE IF (JTRLVL .EQ. 1) THEN

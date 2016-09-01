@@ -27,10 +27,10 @@ C
 C
          IF ((FR.GT.(FREQ-EPSI)) .AND. (FR.LT.(FREQ+EPSI))) THEN
 C
-            WRITE(LUPRI,'(3A,I5)')
-     &         ' SO_FNDPOS: found label ',LB,' on unit ',LU
+C            WRITE(LUPRI,'(3A,I5)')
+C     &         ' SO_FNDPOS: found label ',LB,' on unit ',LU
             BACKSPACE LU
-            CALL FLUSH(LUPRI)
+C            CALL FLUSH(LUPRI)
             RETURN
 C
          END IF
@@ -39,9 +39,10 @@ C
 C
       READ(LU,END=10) DUMMY
       GO TO 1
-C     
-   10 CONTINUE
 C
+   10 CONTINUE
+
+      BACKSPACE(LU)
       RETURN
 C
       END

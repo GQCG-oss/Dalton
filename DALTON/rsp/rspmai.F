@@ -156,8 +156,8 @@ C
       CALL RSPACT
 C
       IF (INPTES) THEN
-         WRITE(LUPRI,'(//A/)') ' *** END of input test for RESPONSE ***'
-         CALL QUIT('*** END of input test for RESPONSE ***')
+         WRITE(LUPRI,'(//A/)')' *** End of input test for **RESPONS ***'
+         CALL QUIT('*** End of input test for **RESPONS ***')
       END IF
       CALL FLSHFO(LUPRI)
 C
@@ -862,12 +862,11 @@ C
 C
       IF (.NOT.SET) THEN
          SET = .TRUE.
-         IF (.NOT. DIRFCK) DIRFCK = DIRCAL
+         IF (.NOT. DIRFCK)             DIRFCK = DIRCAL
          IF (DOHFSRDFT .OR. DOMCSRDFT) DIRFCK = .TRUE.
          IF (NASHT .LE. 1 .OR. HSROHF) NOITRA = DIRFCK
-         IF (DOMCSRDFT .OR. DOMC) NOITRA = .FALSE.
-         IF (DOMC) DIRFCK = .FALSE.
-         MAXPHP = 100
+         IF (DOMCSRDFT .OR. DOMC)      NOITRA = .FALSE.
+         MAXPHP  = 100
          N1AVTOT = 0
          N2AVTOT = 0
          TRDQF = .FALSE.
@@ -1028,14 +1027,14 @@ C              .PROP2Average
   300 CONTINUE
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('CHANGES OF DEFAULTS FOR RSPINP:',0)
-         IF (INPTES) WRITE(LUPRI,'(/A,L1)')
-     *      ' INPUT TEST.  INPTES = ',INPTES
-         IF (TDA) WRITE(LUPRI,'(/A,L1)')
-     *      ' TAMM-DANCOFF APPROXIMATION (B = 0). TDA=',TDA
+         IF (INPTES) WRITE(LUPRI,'(//A//)')
+     &      '@ *RESPONS INPUT TEST.  STOP AFTER INPUT.'
+         IF (TDA) WRITE(LUPRI,'(/A)')
+     *      ' TAMM-DANCOFF APPROXIMATION (B-matrix = 0).'
          IF (DODFT .AND. CISRPA)
      *      CALL QUIT('TDDFT CALC WITH .CIS KEYWORD - USE .TDA INSTEAD')
          IF (CISRPA) WRITE(LUPRI,'(/A,L1)')
-     *      ' CI SINGLES CALCULATION (RPA/TDA (B = 0)). CIS=',CISRPA
+     *      ' CI SINGLES CALCULATION (RPA/TDA (B-matrix = 0)).'
          IF (HIRPA)  THEN
             WRITE(LUPRI,'(/A)')
      *   ' Higher RPA Polarization Propagator Approximation -- HRPA'
@@ -1053,7 +1052,8 @@ C              .PROP2Average
          IF (DIRFCK) THEN
             WRITE(LUPRI,'(/A)')
      *      ' AO-direct Fock matrix calculations.'
-         ELSE IF (NOITRA) THEN
+         END IF
+         IF (NOITRA .and. NASHT.gt.1 .and. .not.HSROHF) THEN
             WRITE(LUPRI,'(/2A,L1)')
      *      ' MO integrals for RESPONS are already available.'
      *      ,'  NOITRA = ',NOITRA
@@ -1076,9 +1076,8 @@ C              .PROP2Average
      *      ' Diagonal orbital E[2] shifted with ORBSFT =',ORBSFT
          IF (ORBSPC) WRITE(LUPRI,'(/A)') ' .ORBSPC:'//
      *      ' Calculation with only orbital operators included.'
-         IF (.NOT.NOS0MX) WRITE(LUPRI,'(/2A,L1)')
-     *      ' S(0) sum rule calculated in mixed representation',
-     *      ' NOS0MX = ',NOS0MX
+         IF (.NOT.NOS0MX) WRITE(LUPRI,'(/A)')
+     *      ' S(0) sum rule calculated in mixed representation.'
          IF (OPTORB) WRITE(LUPRI,'(/2A,/A,L1)')
      *      ' .OPTORB: Orbital trial vectors calculated with optimal',
      *      ' orbital trial vector algorithm.'
@@ -1089,7 +1088,7 @@ C              .PROP2Average
      *      ' PHPRES = ',PHPRES
          IF (ABSLRS) THEN
            IF (ABS_MAXRM.NE.600) WRITE(LUPRI,'(/A,I6)')
-     *        ' MAX DIMENSION OF REDUCED SPACE. ABS_MAXRM =',ABS_MAXRM
+     *        ' Max dimension of reduced space. ABS_MAXRM =',ABS_MAXRM
          ELSE
            IF (MAXRM.NE.600) WRITE(LUPRI,'(/A,I6)')
      *        ' Max dimension of reduced space. MAXRM =',MAXRM
@@ -2146,7 +2145,7 @@ C
  40            CONTINUE
                CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                     'UNFORMATTED',IDUMMY,.FALSE.)
- 199           CONTINUE
+ 199           CONTINUE ! .FERMI contact
                IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
                   IF (LABFND(1:3) .EQ. 'FC ')
      &                 LLROP(INDPRP(LABFND)) = .TRUE.
@@ -2155,7 +2154,7 @@ C
                CALL GPCLOSE(LUPROP,'KEEP')
                GO TO 100
 C
- 41            CONTINUE
+ 41            CONTINUE ! .SPIN-Dipole
                CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                     'UNFORMATTED',IDUMMY,.FALSE.)
  198           CONTINUE

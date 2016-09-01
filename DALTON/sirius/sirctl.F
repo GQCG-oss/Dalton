@@ -327,14 +327,14 @@ C        Call FCMO to perform MAXFCK Roothaan Fock iterations
 C
          IF (MAXFCK .GT. 0) THEN
             FLAG(5) = .FALSE.
-C              we don't call SIROUT when no 2:nd order optimization
+C           we do not call SIROUT when no 2:nd order optimization
             JRDMO = 9
             KCMO  = 1
             KFC   = KCMO + NCMOT
             KWRK1 = KFC  + NNBAST
 C           (FC needs NNBAST because it is also used for SAO)
             LWRK1 = LWORK - KWRK1
-            CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+            CALL READMO(WORK(KCMO),JRDMO)
             CALL FCMO(MAXFCK,WORK(KCMO),WORK(KFC),
      &                WORK(KWRK1),LWRK1)
 C           CALL FCMO(MAXFCK,CMO,FC,SCRA,LSCRA)
@@ -350,7 +350,7 @@ C
             KWRK1 = KCMO  + NCMOT
             KFREE = 1
             LFREE = LWORK - KWRK1
-            CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LFREE)
+            CALL READMO(WORK(KCMO),JRDMO)
             CALL SRDIIS(ICONV,WORK(KCMO),WORK(KWRK1),KFREE,LFREE)
 C
 C     We overwrite in case of symmetry breaking
@@ -545,11 +545,15 @@ C           ... orbital super symmetries may have been reordered
          END IF
          JWOPSY = 1
          MCTYPE = MCTYPE_save
-         CALL SIRSET(WORK,LWORK,OLDWOP)
-         IAVERR = 0
-         CALL AVECHK(WORK,LWORK,IAVERR)
-         IF (IAVERR .NE. 0) CALL QUIT(
+         IF  (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB) THEN
+            ! do not call SIRSET if next step is LUCITA:
+            ! SETCI will return NCONF=0 and cause error exit.
+            CALL SIRSET(WORK,LWORK,OLDWOP)
+            IAVERR = 0
+            CALL AVECHK(WORK,LWORK,IAVERR)
+            IF (IAVERR .NE. 0) CALL QUIT(
      &      'SIRCTL CI/MC error: inconsistency in sup.sym. averaging')
+         END IF
 C
       END IF
 C
@@ -575,7 +579,7 @@ C
          KCMO  = 1
          KWRK1 = KCMO  + NCMOT
          LWRK1 = LWORK - KWRK1
-         CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         CALL READMO(WORK(KCMO),JRDMO)
          CALL FCVIRT(WORK(KCMO),WORK(KWRK1),LWRK1)
          CALL NEWORB('FCVORB  ',WORK(KCMO),.TRUE.)
          FLAG(14) = .FALSE.
@@ -755,7 +759,7 @@ C
          KCMO  = 1
          KWRK1 = KCMO  + NCMOT
          LWRK1 = LWORK - KWRK1
-         CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         CALL READMO(WORK(KCMO),JRDMO)
          USEDRC_save = USEDRC
          USEDRC = .TRUE.
          IF (NEWTRA) THEN
@@ -799,7 +803,7 @@ C
          KFREE  = KFRSAV
          LFREE  = LWORK
          CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
-         CALL READMO(WORK(KCMO),JRDMO,WORK(KFREE),LFREE)
+         CALL READMO(WORK(KCMO),JRDMO)
 
          CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
                                           ! orbital occupations for TRACTL
@@ -945,7 +949,7 @@ C To be safe, include EXTERNAL SBDTRA in sirctl
 C
 #include "implicit.h"
 #include "inftra.h"
-      DATA NEWTRA /.FALSE./
+      DATA FCKTRA_TYPE/-1/, NEWTRA /.FALSE./
       END
 C  /* Deck sbddim */
       BLOCK DATA SBDDIM
