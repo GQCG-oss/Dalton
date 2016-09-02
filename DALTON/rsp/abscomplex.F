@@ -944,6 +944,11 @@ C     local
       logical negf
 C
 C
+      IF (ABS_NGD) THEN
+         NGD=ABS_NFREQ_INTERVAL
+      ELSE
+         NGD=1
+      ENDIF
       IF (IPRABSLRS.GT.0) CALL TIMER('START ',TIMSTR,TIMEND)
 C
       negf=.false.
@@ -957,7 +962,7 @@ C
      &                    KZVAR,WRK(KFREE),LFREE)
 C
             KGD    = 1
-            kfreqs = KGD + 2*KZVAR
+            kfreqs = KGD + 4*NGD*KZVAR
             KXSOL  = kfreqs + abs_nfreq_interval
             KFREE  = KXSOL + 4*ABS_NFREQ_INTERVAL*KZVAR
             LFREE  = LWRK - KFREE 
@@ -1003,6 +1008,8 @@ C
      &                               I=1,ABS_NFREQ_INTERVAL)
                END IF
 C
+               CALL DZERO(WRK(KGD),4*KZVAR*NGD)
+               CALL DZERO(WRK(KXSOL),4*KZVAR*ABS_NFREQ_INTERVAL)
                CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &              WRK(KFREE),LFREE)
                CALL DCOPY(2*KZVAR,WRK(KFREE),1,WRK(KGD),1)
@@ -1026,7 +1033,7 @@ C     &                  ABS_FREQ_ALPHA(K),RES0)
                  if (negf) then
                    call gpdsrt(nfreqs,wrk(kfreqs),thd)
                  endif
-                 CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
+                 CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),NGD,WRK(KXSOL),
      &                        wrk(kfreqs),nfreqs,LUABSVECS,
      &                        MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,RESLRF,
      &                        WRK(KFREE),LFREE)
@@ -2591,9 +2598,12 @@ C
          RETURN
       END IF
 C
+
       KZYVAR=2*KZVAR
       CALL MEMGET('REAL',KVEC,2*KZYVAR,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGD,2*KZYVAR,WRK,KFREE,LFREE)
+
+      IF (.NOT.(ABS_GDCOMPLEX.OR.ABS_NGD)) THEN 
 C
       DO IOPER=1,ABS_NOPER(ABS_GRADSYM)
          LABGD = ABS_LABOP(IOPER,ABS_GRADSYM)
@@ -2620,6 +2630,9 @@ c     &              ABS(FREQ_ABS(IFREQ),ABS_THCLR,FOUND,CONV)
             END DO
          END IF
       END DO
+      ELSE ! Complex and/or frequency-dependent rhs
+         CALL QUIT('Collection of terms have not yet been implemented')
+      END IF
 C
       RETURN
       END
