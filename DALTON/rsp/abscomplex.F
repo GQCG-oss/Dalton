@@ -67,15 +67,17 @@ C NCONF
 #include "infrsp.h"
 C
       LOGICAL NEWDEF, ALLCOMP, NXTLAB
-      PARAMETER ( NTABLE = 39 )
+      PARAMETER ( NTABLE = 40 )
       PARAMETER ( THRFRQ=1.0D-14, THD=1.0D-6 )
       CHARACTER PROMPT*1, WORD*7, WORD1*7, TABLE(NTABLE)*7
       CHARACTER*8 DIPLEN(3),ANGMOM(3),THETA(6),RTNLBL(2),LABFND
+      CHARACTER*8 DIPVEL(3)
       INTEGER NUMBER_ORBS(8), NUMBER_EXORBS(8)
 C
       logical, external :: fun_is_ready_for_qr
 c
       DATA DIPLEN/'XDIPLEN','YDIPLEN','ZDIPLEN'/
+      DATA DIPVEL/'XDIPVEL','YDIPVEL','ZDIPVEL'/
       DATA ANGMOM/'XANGMOM','YANGMOM','ZANGMOM'/
       DATA THETA/'XXTHETA','XYTHETA','XZTHETA','YYTHETA','YZTHETA',
      &           'ZZTHETA'/
@@ -86,7 +88,7 @@ c
      &            '.ZZCOMP','.IMAG F','.NBATCH','.NOREBD','.OLDCPP',
      &            '.MAX MI','.MAXITO','.EXCITA','.MAX MA','.THCPP ',
      &            '.REDUCE','.BATCH ','.IDRI  ','.GAMMA ','.DFREQ ',
-     &            '.DFREQI','.ELEMNT','.OTOFGA','.ALLELE'/
+     &            '.DFREQI','.ELEMNT','.OTOFGA','.ALLELE','.VELOCI'/
 C
       NEWDEF = (WORD .EQ. '*ABSORP')
       ICHANG = 0
@@ -121,7 +123,7 @@ C
                   IF (TABLE(I) .EQ. WORD) 
      &                GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      &                     16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36,37,38,39),I
+     &                     31,32,33,34,35,36,37,38,39,40),I
                END DO
                IF (WORD .EQ. '.OPTION') THEN
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
@@ -141,7 +143,7 @@ C              .ALPHA
 C
 C              .FREQUE
  2             CONTINUE
-               IF (ABSLRS_ALPHA) THEN
+               IF (ABSLRS_ALPHA .OR. ABS_VELOCI) THEN
                   READ (LUCMD,*) ABS_NFREQ_ALPHA
                   IF (ABS_NFREQ_ALPHA.LE.NMXFREQ) THEN
                      READ (LUCMD,*) (ABS_FREQ_ALPHA(J),
@@ -521,6 +523,9 @@ C              .ALLELE
                      ABS_GAMMA_ALLELE = .TRUE.
                   ENDIF
                GOTO 100
+ 40            CONTINUE
+               ABS_VELOCI=.TRUE.
+               GOTO 100
 C
             ELSE IF (PROMPT .EQ. '*') THEN
                GOTO 300
@@ -563,7 +568,7 @@ C
 C
       ABSLRS = ABSLRS_ALPHA .OR. ABSLRS_BETA .OR. ABSLRS_GAMMA .OR.
      &         ABSLRS_MCD .OR. ABSLRS_MCHD .OR. ABSLRS_NSCD .OR.
-     &         ABSLRS_GAMMA .OR. ABSLRS_IDRI
+     &         ABSLRS_GAMMA .OR. ABSLRS_IDRI .OR. ABS_VELOCI
       IF (.NOT.ABSLRS) THEN
          WRITE(LUPRI,'(/A)') ' Absorption input ignored because:'
          WRITE(LUPRI,'(A,L2)')' No process requested:',
@@ -578,9 +583,14 @@ C
            IF (ALLCOMP .OR. ICOMP.EQ.ILABEL) THEN
              ISYM = ISYMAX(ILABEL,1)+1
              ABS_NOPER(ISYM) = ABS_NOPER(ISYM) + 1
-             ABS_LABOP(ABS_NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
              NOPER(ISYM)=NOPER(ISYM)+1
-             LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
+             IF (.NOT. ABS_VELOCI) THEN
+                ABS_LABOP(ABS_NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
+                LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
+             ELSE 
+                ABS_LABOP(ABS_NOPER(ISYM),ISYM) = DIPVEL(ILABEL)
+                LABOP(NOPER(ISYM),ISYM) = DIPVEL(ILABEL)
+             END IF
              IF (ABSLRS_MCD) THEN
                 ISYM = ISYMAX(ILABEL,2)+1
                 ABS_NOPER(ISYM) = ABS_NOPER(ISYM) + 1
@@ -870,9 +880,9 @@ C
          ABS_NFREQ_INTERVAL = ABS_NFREQ_ALPHA
       END IF
 C
-      CALL MEMGET('REAL',KRES,2*ABS_NFREQ_INTERVAL*3*3*3,WRK,
+      CALL MEMGET('REAL',KRES,2*ABS_NFREQ_INTERVAL*3*3*4,WRK,
      &                   KFREE,LFREE)
-      CALL DZERO(WRK(KRES),2*ABS_NFREQ_INTERVAL*3*3*3)
+      CALL DZERO(WRK(KRES),2*ABS_NFREQ_INTERVAL*3*3*4)
 C
 C     Determine linear response vectors
 C     =================================
@@ -936,7 +946,7 @@ c
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
 c      DIMENSION XINDX(*),MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*),MJWOP(*)
-      DIMENSION RESLRF(2,ABS_NFREQ_INTERVAL,3,3,3),WRK(LWRK)
+      DIMENSION RESLRF(2,ABS_NFREQ_INTERVAL,3,3,4),WRK(LWRK)
 C     local
       REAL*8  DUMMY, thd
       INTEGER IDUMMY
@@ -1863,7 +1873,7 @@ C   infdim.h: NVARMA (when ABS_ANALYZE)
 C
       LOGICAL FOUND, CONV
 C
-      DIMENSION MJWOP(2,MAXWOP,8),RESLRF(2,ABS_NFREQ_INTERVAL,3,3,2)
+      DIMENSION MJWOP(2,MAXWOP,8),RESLRF(2,ABS_NFREQ_INTERVAL,3,3,4)
       DIMENSION WRK(LWRK),ISRCORBR(5),ISRCORBI(5)
       !Magneto-chiral dichroism averages. Janusz
       DIMENSION AREAABB(NFREQ_BETA_B),AREABBA(NFREQ_BETA_B)
@@ -1891,26 +1901,49 @@ C
          ELSE
             FREQ = ABS_FREQ_ALPHA(IFREQ)
          END IF
-         WRITE(LUPRI,'(3(/,I3,2A10,F12.6,2F16.6))') 
-     &        6*IFREQ-5,'XDIPLEN','XDIPLEN',FREQ,
-     &        RESLRF(1,IFREQ,1,1,1),RESLRF(2,IFREQ,1,1,1),
-     &        6*IFREQ-4,'YDIPLEN','YDIPLEN',FREQ,
-     &        RESLRF(1,IFREQ,2,2,1),RESLRF(2,IFREQ,2,2,1),
-     &        6*IFREQ-3,'ZDIPLEN','ZDIPLEN',FREQ,
-     &        RESLRF(1,IFREQ,3,3,1),RESLRF(2,IFREQ,3,3,1)
-         WRITE(LUPRI,'(3(I3,2A10,F12.6,2F16.6,/))') 
-     &        6*IFREQ-2,'XDIPLEN','YDIPLEN',FREQ,
-     &        RESLRF(1,IFREQ,1,2,1),RESLRF(2,IFREQ,1,2,1),
-     &        6*IFREQ-1,'XDIPLEN','ZDIPLEN',FREQ,
-     &        RESLRF(1,IFREQ,1,3,1),RESLRF(2,IFREQ,1,3,1),
-     &        6*IFREQ,'YDIPLEN','ZDIPLEN',FREQ,
-     &        RESLRF(1,IFREQ,2,3,1),RESLRF(2,IFREQ,2,3,1)
-         WRITE(LUPRI,'(6X,A14,3X,F12.6,2F16.6)') 
-     &        'Averaged value',FREQ,
-     &        (RESLRF(1,IFREQ,1,1,1)+RESLRF(1,IFREQ,2,2,1)+
-     &         RESLRF(1,IFREQ,3,3,1))/3,
-     &        (RESLRF(2,IFREQ,1,1,1)+RESLRF(2,IFREQ,2,2,1)+
-     &         RESLRF(2,IFREQ,3,3,1))/3
+         IF (.NOT. ABS_VELOCI) THEN
+            WRITE(LUPRI,'(3(/,I3,2A10,F12.6,2F16.6))') 
+     &           6*IFREQ-5,'XDIPLEN','XDIPLEN',FREQ,
+     &           RESLRF(1,IFREQ,1,1,1),RESLRF(2,IFREQ,1,1,1),
+     &           6*IFREQ-4,'YDIPLEN','YDIPLEN',FREQ,
+     &           RESLRF(1,IFREQ,2,2,1),RESLRF(2,IFREQ,2,2,1),
+     &           6*IFREQ-3,'ZDIPLEN','ZDIPLEN',FREQ,
+     &           RESLRF(1,IFREQ,3,3,1),RESLRF(2,IFREQ,3,3,1)
+            WRITE(LUPRI,'(3(I3,2A10,F12.6,2F16.6,/))') 
+     &           6*IFREQ-2,'XDIPLEN','YDIPLEN',FREQ,
+     &           RESLRF(1,IFREQ,1,2,1),RESLRF(2,IFREQ,1,2,1),
+     &           6*IFREQ-1,'XDIPLEN','ZDIPLEN',FREQ,
+     &           RESLRF(1,IFREQ,1,3,1),RESLRF(2,IFREQ,1,3,1),
+     &           6*IFREQ,'YDIPLEN','ZDIPLEN',FREQ,
+     &           RESLRF(1,IFREQ,2,3,1),RESLRF(2,IFREQ,2,3,1)
+            WRITE(LUPRI,'(6X,A14,3X,F12.6,2F16.6)') 
+     &           'Averaged value',FREQ,
+     &           (RESLRF(1,IFREQ,1,1,1)+RESLRF(1,IFREQ,2,2,1)+
+     &            RESLRF(1,IFREQ,3,3,1))/3,
+     &           (RESLRF(2,IFREQ,1,1,1)+RESLRF(2,IFREQ,2,2,1)+
+     &            RESLRF(2,IFREQ,3,3,1))/3
+         ELSE IF (ABS_VELOCI) THEN
+            WRITE(LUPRI,'(3(/,I3,2A10,F12.6,2F16.6))') 
+     &           6*IFREQ-5,'XDIPVEL','XDIPVEL',FREQ,
+     &           RESLRF(1,IFREQ,1,1,4),RESLRF(2,IFREQ,1,1,4),
+     &           6*IFREQ-4,'YDIPVEL','YDIPVEL',FREQ,
+     &           RESLRF(1,IFREQ,2,2,4),RESLRF(2,IFREQ,2,2,4),
+     &           6*IFREQ-3,'ZDIPVEL','ZDIPVEL',FREQ,
+     &           RESLRF(1,IFREQ,3,3,4),RESLRF(2,IFREQ,3,3,4)
+            WRITE(LUPRI,'(3(I3,2A10,F12.6,2F16.6,/))') 
+     &           6*IFREQ-2,'XDIPVEL','YDIPVEL',FREQ,
+     &           RESLRF(1,IFREQ,1,2,4),RESLRF(2,IFREQ,1,2,4),
+     &           6*IFREQ-1,'XDIPVEL','ZDIPVEL',FREQ,
+     &           RESLRF(1,IFREQ,1,3,4),RESLRF(2,IFREQ,1,3,4),
+     &           6*IFREQ,'YDIPVEL','ZDIPVEL',FREQ,
+     &           RESLRF(1,IFREQ,2,3,4),RESLRF(2,IFREQ,2,3,4)
+            WRITE(LUPRI,'(6X,A14,3X,F12.6,2F16.6)') 
+     &           'Averaged value',FREQ,
+     &           (RESLRF(1,IFREQ,1,1,4)+RESLRF(1,IFREQ,2,2,4)+
+     &            RESLRF(1,IFREQ,3,3,4))/3,
+     &           (RESLRF(2,IFREQ,1,1,4)+RESLRF(2,IFREQ,2,2,4)+
+     &            RESLRF(2,IFREQ,3,3,4))/3
+         END IF
       END DO
       WRITE(LUPRI,'(A)')' '
       CALL PRSYMB(LUPRI,'-',66,1)
@@ -2579,7 +2612,7 @@ C
       PARAMETER (BLANK='        ')
       LOGICAL FOUND,CONV
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),XINDX(*),
-     &     WRK(LWRK),RESLRF(2,ABS_NFREQ_INTERVAL,3,3,2),
+     &     WRK(LWRK),RESLRF(2,ABS_NFREQ_INTERVAL,3,3,4),
      &     FREQ_ABS(NMXFREQ)
       parameter (d0=-1.D0-16)
 C
@@ -2593,6 +2626,8 @@ C
          ITYPE = 2
       ELSE IF (LABEL(3:7).EQ.'THETA') THEN
          ITYPE = 3
+      ELSE IF (LABEL(2:8).EQ.'DIPVEL') THEN
+         ITYPE = 4
       ELSE
          WRITE(LUPRI,'(A)') ' Warning: Unknown operator!'
          RETURN

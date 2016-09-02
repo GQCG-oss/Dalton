@@ -54,7 +54,7 @@ C
       DIMENSION MJWOP(*),XINDX(*)
       DIMENSION CMO(*),UDV(*),FC(*),FCAC(*),FV(*),PV(*)
       DIMENSION FREQS(NFREQS)
-      DIMENSION RESLRF(2,NFREQS,3,3,3),WRK(LWRK)
+      DIMENSION RESLRF(2,NFREQS,3,3,4),WRK(LWRK)
       DIMENSION KLRED(2),KNVEC(2)
       LOGICAL CONV(NFREQS),CONVERGED,EX1,EX2,EX3
 C
@@ -208,6 +208,8 @@ C
           ITYPE = 2
         ELSE IF (LABEL(3:7).EQ.'THETA') THEN
           ITYPE = 3
+        ELSE IF (LABEL(2:8).EQ.'DIPVEL') THEN
+          ITYPE = 4
         ELSE
           WRITE(LUABSPRI,'(2A)') ' Warning : Unknown operator! ',LABEL
           GO TO 778
