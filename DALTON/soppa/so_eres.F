@@ -429,24 +429,37 @@ C--------------------------------------------------------------------
 C        RES2E, RES2D is initialized with the D^0*Tr2 contribution
 C        --- For MPI only one process must do this
 C--------------------------------------------------------------------
-            IF ( (.NOT.TR2_ZERO).AND.(.NOT.TRIPLET)
+            IF ( (.NOT.TR2_ZERO)
 #ifdef VAR_MPI
      &            .AND.(MYNUM .EQ. 0 )
 #endif
      &                        ) THEN
-               DTIME      = SECOND()
-               CALL SO_RES_CD(WORK(KRES2E),LRES2E,WORK(KRES2D),LRES2D,
-     &                     WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
-     &                     FOCKD,LFOCKD,ISYRES,WORK(KEND2),LWORK2)
+               IF (TRIPLET) THEN
+                  DTIME      = SECOND()
+                  CALL SO_RES_CDT(WORK(KRES2E),LRES2E,
+     &                            WORK(KRES2D),LRES2D,
+     &                            WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
+     &                            FOCKD,LFOCKD,ISYRES,
+     &                            WORK(KEND2),LWORK2)
+                  DTIME      = SECOND()   - DTIME
+                  SOTIME(30) = SOTIME(30) + DTIME
+C
+               ELSE
+                  DTIME      = SECOND()
+                  CALL SO_RES_CD(WORK(KRES2E),LRES2E,
+     &                           WORK(KRES2D),LRES2D,
+     &                           WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
+     &                           FOCKD,LFOCKD,ISYRES,WORK(KEND2),LWORK2)
 
-               DTIME      = SECOND()   - DTIME
-               SOTIME(30) = SOTIME(30) + DTIME
+                  DTIME      = SECOND()   - DTIME
+                  SOTIME(30) = SOTIME(30) + DTIME
 C
 C   The trial-vectors are no longer needed in the original
 C   basis, transform them.
 C
-               CALL CCSD_TCMEPKX(WORK(KTR2E),TWO,ISYMTR)
-               IF (DO_DEX) CALL CCSD_TCMEPKX(WORK(KTR2D),TWO,ISYMTR)
+                  CALL CCSD_TCMEPKX(WORK(KTR2E),TWO,ISYMTR)
+                  IF (DO_DEX) CALL CCSD_TCMEPKX(WORK(KTR2D),TWO,ISYMTR)
+               ENDIF
 C
             ELSE
                CALL DZERO(WORK(KRES2E),LRES2E)
@@ -1031,15 +1044,6 @@ C        Construct D-contribution to 2p2h result vectors RES2E and
 C        RES2D.
 C-----------------------------------------------------------------
 C
-            IF (TRIPLET) THEN
-               DTIME      = SECOND()
-               CALL SO_RES_CDT(WORK(KRES2E),LRES2E,WORK(KRES2D),LRES2D,
-     &                        WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
-     &                        FOCKD,LFOCKD,ISYRES,WORK(KEND2),LWORK2)
-               DTIME      = SECOND()   - DTIME
-               SOTIME(30) = SOTIME(30) + DTIME
-C
-            END IF
          ENDIF
 C
 #ifdef VAR_MPI
@@ -1236,7 +1240,7 @@ C-------------------------------------------------------------------
 CRF      The X2M1 vectors is now an intermediate, which contain
 CRF      both the 2-particle trial vector AND the T2*x1 intermediate,
 CRF              ~ ~                               ~
-CRF      so both C*x2 and two terms (1) and (5) of B*x1 is calculated here.
+CRF      so both C*x2 and terms (1) and (5) of B*x1 is calculated here.
 C
             DTIME      = SECOND()
             CALL SO_RES_TCB(WORK(KRES1E),LRES1E,

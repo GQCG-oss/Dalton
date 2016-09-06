@@ -333,10 +333,10 @@ C                ~ ~
 C              ( d a | k delta).
 C---------------------------------------------------------------
 C
-               ISYMJ  = MULD2H(ISYMA,ISYMTR)
+C               ISYMJ  = MULD2H(ISYMA,ISYMTR)
 C
-               KOFF19 = KSCR2 + IT1AM(ISYMD,ISYMJ)
-               KOFF20 = IT1AM(ISYMA,ISYMJ) + 1
+C               KOFF19 = KSCR2 + IT1AM(ISYMD,ISYMJ)
+C               KOFF20 = IT1AM(ISYMA,ISYMJ) + 1
 C
 C               CALL DGEMM('N','T',NVIR(ISYMD),NVIR(ISYMA),NRHF(ISYMJ),
 C     &                    -ONE,WORK(KOFF19),NTOTD,TR1D(KOFF20),NTOTA,
@@ -370,12 +370,12 @@ C                ~ ~
 C              ( i l | k delta).
 C---------------------------------------------------------------
 C
-               ISYMB  = MULD2H(ISYMI,ISYMTR)
+C               ISYMB  = MULD2H(ISYMI,ISYMTR)
 C
-               NTOTB  = MAX(NVIR(ISYMB),1)
+C               NTOTB  = MAX(NVIR(ISYMB),1)
 C
-               KOFF22 = IT1AM(ISYMB,ISYMI) + 1
-               KOFF23 = KSCR2 + IT1AM(ISYMB,ISYML)
+C               KOFF22 = IT1AM(ISYMB,ISYMI) + 1
+C               KOFF23 = KSCR2 + IT1AM(ISYMB,ISYML)
 C
 C               CALL DGEMM('T','N',NRHF(ISYMI),NRHF(ISYML),NVIR(ISYMB),
 C     &                    ONE,TR1D(KOFF22),NTOTB,WORK(KOFF23),NTOTB,
