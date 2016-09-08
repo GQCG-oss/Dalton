@@ -768,7 +768,6 @@ C infpar.h : PARHER
 #include "infsop.h"
 #include "infrsp.h"
 #include "infinp.h"
-C#include "soppinf.h"
 #include "locinf.h"
 #include "infpar.h"
 
