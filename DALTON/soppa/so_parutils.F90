@@ -99,7 +99,6 @@ contains
 #include "cbieri.h"
 ! Parameters + stuff initialized in so_init, depends on ccorb.h
 !#include "soppinf.h"
-!#include "parsoppa.h"
 #include "aobtch.h"
 #include "odclss.h"
 #include "ccom.h"

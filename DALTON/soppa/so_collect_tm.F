@@ -126,7 +126,7 @@ C
          TRGOS(IDX1,IEXCI) =
      &       TRGOS(IDX1,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
 C
-      ELSE 
+      ELSE
 CClark:17/06/2016
 C
          WRITE(LUPRI,'(A,/,2A)') 'ERROR in SO_COLLECT_TM:',

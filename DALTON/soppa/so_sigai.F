@@ -8,9 +8,9 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak and Henrik Koch, September 1995
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
-C     Rasmus Faber 2016 : Reordered code, which should result in 
-C                         improved memory access. 
-C                   
+C     Rasmus Faber 2016 : Reordered code, which should result in
+C                         improved memory access.
+C
 C     PURPOSE: Calculate SIGMA1(ALFA,I) and SIGMA2(ALFA,I)
 C                                     ~ ~
 C              which are defined as ( k c | alfa delta ) x
@@ -72,7 +72,7 @@ C
          DO 110 ALFA = 1,NBAS(ISALFA)
 C
             KOFF1 = IDSAOG(ISALFA,ISYDIS) + NNBST(ISBEGA)*(ALFA-1) + 1
-            
+
 
 C
 C---------------------------------------------------------------------
@@ -82,9 +82,9 @@ C---------------------------------------------------------------------
 C
             CALL CCSD_SYMSQ(XINT(KOFF1),ISBEGA,WORK(KSCR1))
 C--------------------------------------------------------
-C           for each beta gamma symmetry block, generate 
-C             ( c beta | .. ) * x ( beta, k) 
-C           - ( beta k | .. ) * x ( c, beta )        
+C           for each beta gamma symmetry block, generate
+C             ( c beta | .. ) * x ( beta, k)
+C           - ( beta k | .. ) * x ( c, beta )
 C--------------------------------------------------------
             DO 120 ISYMK = 1,NSYM
 C
