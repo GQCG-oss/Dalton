@@ -326,8 +326,6 @@ C
          CALL TITLER('DFT response calculation (TD-DFT)','*',103)
       ELSE IF (HSROHF) THEN
          CALL TITLER('High-spin ROHF response calculation','*',103)
-      ELSE IF (TDHF) THEN
-         CALL TITLER('RHF response calculation (TDHF)','*',103)
       ELSE IF (CCPPA) THEN
          CALL TITLER('SOPPA(CCSD) response calculation','*',103)
          IF (PARCAL) CALL PARQUIT('SOPPA(CCSD) RESPONSE')
@@ -336,6 +334,8 @@ C
          IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
       ELSE IF (RSPCI) THEN
          CALL TITLER('CI response calculation','*',103)
+      ELSE IF (TDHF) THEN
+         CALL TITLER('RHF response calculation (TDHF)','*',103)
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
          ! IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
