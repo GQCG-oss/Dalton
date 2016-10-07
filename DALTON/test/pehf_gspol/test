@@ -23,6 +23,20 @@ f.add(from_string = 'Electric transition dipole moments (au)',
       num_lines = 12,
       abs_tolerance = 1.0e-4)
 
-test.run(['pehf_gspol.dal'], ['pehf_gspol.mol'], ['pehf_gspol.pot'], f={'out': f})
+test.run(['1pa_gspol.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f})
+
+g = Filter()
+
+g.add(from_string = 'Two-photon transition tensor S',
+      num_lines = 10,
+      ignore_sign = True,
+      rel_tolerance = 1.0e-3)
+
+g.add(from_string = 'Two-photon absorption summary',
+      num_lines = 14,
+      mask = [1,2,3,5,6,7,8],
+      rel_tolerance = 1.0e-3)
+
+test.run(['2pa_gspol.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': g})
 
 sys.exit(test.return_code)
