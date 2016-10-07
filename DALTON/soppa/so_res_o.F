@@ -26,12 +26,18 @@ C------------------
 C
       CALL QENTER('SO_RES_O')
 C
+C-----------------------------------
+C     Initialize to the RPA overlap.
+C-----------------------------------
+C
+      CALL DCOPY(LRESO1E,TR1E,1,RESO1E,1)
+      DO I = 1, LRESO1D
+         RESO1D(I) = -TR1D(I)
+      END DO
+C
 C----------------------------------------------
 C     Calculate the overlap matrix in eq. (67).
 C----------------------------------------------
-C
-      CALL DZERO(RESO1E,LRESO1E)
-      CALL DZERO(RESO1D,LRESO1D)
 C
       DTIME      = SECOND()
       CALL SO_RES_OVL(RESO1E,LRESO1E,RESO1D,LRESO1D,TR1E,LTR1E,
@@ -44,11 +50,11 @@ C--------------------------------------
 C     Calculate the RPA overlap matrix.
 C--------------------------------------
 C
-      DTIME      = SECOND()
-      CALL SO_RES_OVLR(RESO1E,LRESO1E,RESO1D,LRESO1D,
-     &                 TR1E,LTR1E,TR1D,LTR1D)
-      DTIME      = SECOND()   - DTIME
-      SOTIME(23) = SOTIME(23) + DTIME
+C      DTIME      = SECOND()
+c      CALL SO_RES_OVLR(RESO1E,LRESO1E,RESO1D,LRESO1D,
+C     &                 TR1E,LTR1E,TR1D,LTR1D)
+C      DTIME      = SECOND()   - DTIME
+C      SOTIME(23) = SOTIME(23) + DTIME
 C
 C-----------------------
 C     Remove from trace.

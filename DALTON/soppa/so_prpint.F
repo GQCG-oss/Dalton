@@ -101,7 +101,7 @@ C
          ELSE
 C
 C-------------------------------------------------------------
-C           Dipole strength and conventional rotatory strength 
+C           Dipole strength and conventional rotatory strength
 C           is set true.
 C-------------------------------------------------------------
 C
@@ -281,7 +281,7 @@ C
 C
          NLAB = 6
          CALL LABCOP(NLAB,NLBTOT,WORK(KDLAB),WORK(KIDSYM),LABAPP,LABSYM)
-C 
+C
       END IF
 C
 C-----------------------------------------------------
@@ -300,7 +300,7 @@ C
 C
          NLAB = 6
          CALL LABCOP(NLAB,NLBTOT,WORK(KDLAB),WORK(KIDSYM),LABAPP,LABSYM)
-C 
+C
       END IF
 CSPAS:23/5-11: second and third moment sum rules
 C

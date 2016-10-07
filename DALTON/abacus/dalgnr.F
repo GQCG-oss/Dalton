@@ -1645,7 +1645,8 @@ C
          !  zero: new integral transformation
          !  1: standard .FCKTRA
          !  2: .FCKTRA not parallel, even when PARHER
-         !  3: .FCKTRA not parallel with ONLY_J on AO2SUPINT file
+         !  3: .FCKTRA not parallel with ONLY_J on AO2_JINT file
+         !  4: .FCKTRA not parallel, do not use ONLY_J on AO2_JINT file
             READ(LUCMD, *) FCKTRA_TYPE
             NEWTRA = FCKTRA_TYPE .GE. 0
          GO TO 100

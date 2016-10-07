@@ -7,7 +7,14 @@ C
 C     Keld Bak, November 1995
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
-C     PURPOSE: Calculate the symmetry correcting term to the A matrix,
+C     Rasmus Faber, 2016 : Now calculates the whole of terms (2) and (3)
+C                          of the A^(2) matrix
+C                          This this saves N^5 operations in SO_RES_A
+C         
+C     PURPOSE: Calculate the symmetry corrected terms (2) and (3) of the
+C              A matrix, using the A_{i,j} and A_{a,b} intermediates
+C              calculated in SO_RES_A.
+C         
 C              as expressed in eq. (44).
 C
 #include "implicit.h"
@@ -49,7 +56,7 @@ C        Multiply trial-vectors with Aij elements according to eq. (44).
 C-----------------------------------------------------------------------
 C
          CALL DGEMM('N','T',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
-     &              HALF,TR1E(KOFF1),NTOTA,AIJ(KOFF2),NTOTI,ONE,
+     &              -HALF,TR1E(KOFF1),NTOTA,AIJ(KOFF2),NTOTI,ONE,
      &              RES1E(KOFF3),NTOTA)
 C
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
@@ -57,7 +64,7 @@ C
      &              RES1E(KOFF3),NTOTA)
 C
          CALL DGEMM('N','T',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
-     &              HALF,TR1D(KOFF1),NTOTA,AIJ(KOFF2),NTOTI,ONE,
+     &              -HALF,TR1D(KOFF1),NTOTA,AIJ(KOFF2),NTOTI,ONE,
      &              RES1D(KOFF3),NTOTA)
 C
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
@@ -79,7 +86,7 @@ C        Multiply trial-vectors with Aab elements according to eq. (44).
 C-----------------------------------------------------------------------
 C
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NVIR(ISYMB),
-     &              HALF,AAB(KOFF1),NTOTA,TR1E(KOFF2),NTOTB,ONE,
+     &              -HALF,AAB(KOFF1),NTOTA,TR1E(KOFF2),NTOTB,ONE,
      &              RES1E(KOFF3),NTOTA)
 C
          CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NVIR(ISYMB),
@@ -87,7 +94,7 @@ C
      &              RES1E(KOFF3),NTOTA)
 C
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NVIR(ISYMB),
-     &              HALF,AAB(KOFF1),NTOTA,TR1D(KOFF2),NTOTB,ONE,
+     &              -HALF,AAB(KOFF1),NTOTA,TR1D(KOFF2),NTOTB,ONE,
      &              RES1D(KOFF3),NTOTA)
 C
          CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NVIR(ISYMB),

@@ -5,7 +5,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, July 1998
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
-C     Andrea Ligabue, December 2003: linear response functions 
+C     Andrea Ligabue, December 2003: linear response functions
 C                                    implemented
 C
 C     PURPOSE: Calculate MO-property matrix for a one-electron operator
@@ -52,7 +52,7 @@ C
 C--------------------------------------------
 C     Get one electron AO property integrals.
 C--------------------------------------------
-C
+C     They are returned as a symmetry-blocked square array.
       CALL DZERO(PRP1,LPRP1)
       CALL SO_ONEP(PRP1,LPRP1,LABEL,KSYMOP,RTNLBL,WORK(KEND1),LWORK1)
 C

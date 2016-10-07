@@ -254,7 +254,7 @@ C
       RETURN
       END
 C  /* Deck sorta */
-      SUBROUTINE SORTA(LUDA,RINT,IINT,SCR,ISCR,MEMSX,MEMTX,IT)
+      SUBROUTINE SORTA(LUDA,RINT,IINTPK,SCR,ISCR,MEMSX,MEMTX,IT)
 C
 C....   THIS SUBROUTINE PERFORMS A SORT OF THE AO INTEGRAL FILE PRIOR
 C....    TO THE FIRST HALF OF THE TWO-ELECTRON TRANSFORMATION. THE
@@ -271,7 +271,7 @@ C
 C....    FORMAL PARAMETERS
 C
 C....       RINT --  START ADDRESS OF INTEGRAL BUFFER FOR AO FILE
-C...        IINT --  (AS RINT - ALLOWS INTEGER ADDRESSING)
+C...        IINTPK--  (AS RINT - ALLOWS INTEGER*4 ADDRESSING)
 C....       SCR  --  START OF SCRATCH WORK AREA
 C....       ISCR --  (AS SCR - ALLOWS INTEGER ADDRESSING)
 C....       MEMS --  LENGTH OF SCRATCH SORT AREA
@@ -279,8 +279,9 @@ C....       MEMT --    **   *    **    TRANSFORMATION AREA
 C
 #include "implicit.h"
       DIMENSION ISCR(*),SCR(*),RINT(*)
-      INTEGER*4 IINT(*)
+      INTEGER*4 IINTPK(*)
       INTEGER   IT(*)
+      INTEGER, ALLOCATABLE :: IINDX4(:,:)
 #include "iratdef.h"
 #include "dummy.h"
 C
@@ -391,18 +392,7 @@ C
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
       READ (LUINTA) NSYMAO, NAOS,LBUFAO,NIBUFAO,NBITSAO, LENINT4
 C
-      IF (NBITSAO .NE. 8) THEN
-         WRITE(LUPRI,'(/A/A,3I10)') 'FATAL ERROR: '//
-     &   'Only 8 bit index packing on AOTWOINT has been implemented',
-     &   'LBUFAO, NIBUFAO, NBITSAO:',LBUFAO,NIBUFAO,NBITSAO
-         CALL QUIT(
-     &   'Only 8 bit index packing on AOTWOINT has been implemented')
-      END IF
-C
-      IBITMASK  = 2**NBITSAO - 1
-      IBITSHR_1 = 3*NBITSAO
-      IBITSHR_2 = 2*NBITSAO
-      IBITSHR_3 =   NBITSAO
+      allocate(IINDX4(4,LBUFAO))
 C
 C...  OPEN DIRECT ACCESS FILE FOR SORTED AO INTEGRALS "AOSRTINT.DA"
 C
@@ -424,7 +414,7 @@ C
 C
 C....   AO INTEGRAL FILE SPEC; MOLECULE FORMAT
 C
-      LRINT  = 2*LBUFAO ! factor 2 because IINT is always integer*4
+      LRINT  = 2*LBUFAO ! factor 2 because IINTPK is always integer*4
       LENINT = (2+NIBUFAO)*LBUFAO + 1
       IF (LENINT .NE. LENINT4)
      &   CALL QUIT('LENINT .ne. LENINT4 from AOTWOINT')
@@ -451,11 +441,11 @@ C
 C....    INITIALIZE BUFFERS
 C
          KAP = 0
-         DO 30 K = 1,NOB
+         DO K = 1,NOB
             KAP = KAP + LBUF
             ISCR(KAP-1) = -1
-            ISCR(KAP)   = 0
-30       CONTINUE
+            ISCR(KAP)   =  0
+         END DO
 C
 C....    BEGIN LOOP OVER THE INTEGRAL FILE
 C
@@ -463,15 +453,16 @@ C....    REWIND IT FIRST
 C
          CALL REWSPL(LUINTA)
          CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
-1        CONTINUE
-         CALL READI4(LUINTA,LENINT,IINT)
-         NINT = IINT(LENINT)
-         IF(NINT.EQ.0)GOTO 1
-         IF(NINT.EQ.-1)GOTO 2
+ 1       CONTINUE
+         CALL READI4(LUINTA,LENINT,IINTPK)
+         CALL AOLAB4(IINTPK(LRINT+1),LBUFAO,NIBUFAO,NBITSAO,
+     &      IINDX4,LENGTH)
+         IF(LENGTH.EQ. 0)GOTO 1
+         IF(LENGTH.EQ.-1)GOTO 2
 C
 C....    LOOP OVER INTEGRALS
 C
-         DO 3 M = 1,NINT
+         DO 3 M = 1,LENGTH
 C
 C....    PICK UP INTEGRAL, LABEL AND UNPACK THE LATTER
 C....    NOTE THAT STANDARD ORDER IS NOT CERTAIN IN SYMINT, SO
@@ -483,20 +474,19 @@ C....    CHECK INTEGRAL AGAINST THRESHOLD
 C
          IF (ABS(VALUE).LT.THRQ) GOTO 3
 
-            LABEL = IINT(M+LRINT)
-            ISS=IAND(ISHFT(LABEL,-IBITSHR_1),IBITMASK)
-            IR =IAND(ISHFT(LABEL,-IBITSHR_2),IBITMASK)
-            IQ =IAND(ISHFT(LABEL,-IBITSHR_3),IBITMASK)
-            IP =IAND(      LABEL            ,IBITMASK)
-            IF (IP.GE.IQ) THEN
-               IPQ = IT(IP) + IQ
+            JS = IINDX4(4,M)
+            JR = IINDX4(3,M)
+            JQ = IINDX4(2,M)
+            JP = IINDX4(1,M)
+            IF (JP.GE.JQ) THEN
+               IPQ = IT(JP) + JQ
             ELSE
-               IPQ = IT(IQ) + IP
+               IPQ = IT(JQ) + JP
             END IF
-            IF (IR.GE.ISS) THEN
-               IRS = IT(IR) + ISS
+            IF (JR.GE.JS) THEN
+               IRS = IT(JR) + JS
             ELSE
-               IRS = IT(ISS) + IR
+               IRS = IT(JS) + JR
             END IF
 C
 C....    CHECK PQ FIRST
@@ -603,6 +593,7 @@ C
          WRITE (LUPRI,202) NDAREC,(IDISK-1),PNZ
          WRITE (LUPRI,203) THRQ
       END IF
+      deallocate(IINDX4)
       CALL QEXIT('SORTA ')
       RETURN
 C
@@ -798,13 +789,13 @@ C....    BEGIN READING THE INTEGRAL FILE
          CALL REWSPL(LUHALF)
     1    CONTINUE
          CALL READI(LUHALF,LENINT,IINT)
-         NINT = IINT(LENINT-1)
-         IF(NINT.EQ.0)GOTO 1
-         IF(NINT.EQ.-1)GOTO 2
+         LENGTH = IINT(LENINT-1)
+         IF(LENGTH.EQ.0)GOTO 1
+         IF(LENGTH.EQ.-1)GOTO 2
 C
 C....    LOOP OVER THE INTEGRALS IN THIS BUFFER
 C
-         DO 3 M = 1,NINT
+         DO 3 M = 1,LENGTH
 C
 C....    PICK UP INTEGRAL AND LABEL, UNPACK IPQ, IC, AND ID
 C

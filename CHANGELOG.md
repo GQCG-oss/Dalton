@@ -4,6 +4,10 @@
 
 ### Added
 - New parallel 2-electron integral transformatin .FCKTRA
+- Triplet excitation energies and polarizabilities with the AO-SOPPA code
+
+### Fixed
+- Fix .GSPOL for parallel polarizable embedding quadratic response
 
 ### Changed
 

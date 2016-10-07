@@ -337,8 +337,6 @@ C
          CALL TITLER('DFT response calculation (TD-DFT)','*',103)
       ELSE IF (HSROHF) THEN
          CALL TITLER('High-spin ROHF response calculation','*',103)
-      ELSE IF (TDHF) THEN
-         CALL TITLER('RHF response calculation (TDHF)','*',103)
       ELSE IF (CCPPA) THEN
          CALL TITLER('SOPPA(CCSD) response calculation','*',103)
          IF (PARCAL) CALL PARQUIT('SOPPA(CCSD) RESPONSE')
@@ -347,6 +345,8 @@ C
          IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
       ELSE IF (RSPCI) THEN
          CALL TITLER('CI response calculation','*',103)
+      ELSE IF (TDHF) THEN
+         CALL TITLER('RHF response calculation (TDHF)','*',103)
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
          ! IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
@@ -1287,6 +1287,7 @@ C  Initializing ABSORP
       DATA ABSORP/.FALSE./,ABS_INTERVAL/.FALSE./,ABS_REDUCE/.FALSE./
       DATA ABS_ALPHA/.FALSE./,ABS_BETA/.FALSE./,ABS_GAMMA/.FALSE./
       DATA ABS_SHG/.FALSE./,ABS_MCD/.FALSE./,ABS_ANALYZE/.FALSE./
+      DATA ABS_VELOCI/.FALSE./,ABS_NGD/.FALSE./,ABS_GDCOMPLEX/.FALSE./
       DATA NFREQ_BATCH/10/,MAX_MACRO/30/,MAX_MICRO/10/,MAX_ITORB/5/
       DATA NEXCITED_STATES/2/,IPRABS/0/
       DATA NFREQ_ALPHA/1/,NFREQ_BETA_B/1/,NFREQ_BETA_C/1/

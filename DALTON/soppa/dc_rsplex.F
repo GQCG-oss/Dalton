@@ -11,6 +11,8 @@ C
 C     PURPOSE: Controls calculation of "Double corrected RPA"
 C              excitation energies.
 C
+      use so_info, only: sop_excita
+C
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -21,9 +23,10 @@ C
 C
       PARAMETER ( ONE = 1.0D0, D100 = 100.0D0 )
 C
+      CHARACTER*8 PDENS_LABEL
 #include "codata.h"
 #include "wrkrsp.h"
-CSPAS:15/03-2006: merge with Dalton-2.0      
+CSPAS:15/03-2006: merge with Dalton-2.0
 C#include "infpp.h"
 CKeinSPASmehr
 #include "inforb.h"
@@ -41,7 +44,7 @@ C
 C------------------
 C     Write banner.
 C------------------
-C 
+C
       WRITE(LUPRI,'(/,2X,A,/,15X,A,I1,/,2X,A,/)')
      &     '*****************************************************'//
      &     '*************',
@@ -54,9 +57,11 @@ C----------------------------------------------------------
 C     Calculate "Double corrected RPA" excitation energies.
 C----------------------------------------------------------
 C
-      CALL DC_CALC(ISYMTR,NEXCI,EXVAL,LEXVAL,DENSIJ,LDENSIJ,
-     &             DENSAB,LDENSAB,DENSAI,LDENSAI,T2MP,LT2MP,FOCKD,
-     &             LFOCKD,WORK,LWORK)
+      CALL DC_CALC(ISYMTR,NEXCI,EXVAL,LEXVAL,
+     &             DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &             DENSAI,LDENSAI,
+     &             T2MP,LT2MP,FOCKD,LFOCKD,
+     &             WORK,LWORK)
 C
 C------------------------------
 C     Allocation of work space.
@@ -66,8 +71,12 @@ C
       LTR1D   = NT1AM(ISYMTR)
       LRESO1E = NT1AM(ISYMTR)
       LRESO1D = NT1AM(ISYMTR)
-      LTR2E   = NT2AM(ISYMTR)
-      LTR2D   = NT2AM(ISYMTR)
+CPi 15.06.16
+C      LTR2E   = NT2AM(ISYMTR)
+C      LTR2D   = NT2AM(ISYMTR)
+      LTR2E   = N2P2HOP(ISYMTR)
+      LTR2D   = N2P2HOP(ISYMTR)
+Cend-Pi
 C
       KTR1E   = 1
       KTR1D   = KTR1E   + LTR1E
@@ -106,7 +115,7 @@ C
       IF ( IPRSOP .GE. 1 ) THEN
 C
          DO 200 IEXCI = 1,NEXCI
-C     
+C
             WRITE(LUPRI,'(/1X,A)') '-------------------------------'//
      &                             '-------------------------------'
             WRITE(LUPRI,'(A,I3,A,I3,//A,1P,G16.8,A,3(/26X,G16.8,A),/)')
@@ -128,7 +137,7 @@ cKeld     &                 ISYRES,      ISYMTR)
             CALL SO_RES_O(WORK(KRESO1E),LRESO1E,WORK(KRESO1D),LRESO1D,
      &                    WORK(KTR1E),  LTR1E,  WORK(KTR1D),  LTR1D,
      &                    DENSIJ,      LDENSIJ,DENSAB,      LDENSAB,
-     &                    ISYRES,      ISYMTR) 
+     &                    ISYRES,      ISYMTR)
 C
             W1ENM = DDOT(LTR1E,WORK(KTR1E),1,WORK(KRESO1E),1)
             W1DNM = DDOT(LTR1D,WORK(KTR1D),1,WORK(KRESO1D),1)
@@ -195,19 +204,18 @@ C
             THR1 = 0.1D0
             THR2 = 0.1D0
 C
-            CALL SO_ANAL(WORK(KTR1E),WORK(KTR1D),LTR1E,WORK(KTR2E),
+            CALL SO_ANAL(.TRUE.,WORK(KTR1E),WORK(KTR1D),LTR1E,
+     &                   WORK(KTR2E),
      &                   WORK(KTR2D),LTR2E,THR1,THR2,ISYMTR)
+C
+ 200     CONTINUE
 C
 C---------------------------------------
 C        Write a closing line to output.
 C---------------------------------------
 C
-            IF ( IEXCI .EQ. NEXCI ) THEN
-               WRITE(LUPRI,'(/1X,A)')'-------------------------------'//
-     &                               '-------------------------------'
-            END IF
-C
- 200     CONTINUE
+         WRITE(LUPRI,'(/1X,A)')'-------------------------------'//
+     &                         '-------------------------------'
 C
       END IF
 C
@@ -219,6 +227,18 @@ C
       CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
       CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
       CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+C
+C--------------------------------------------------------------
+C     Calculate and save the pertubed density matrix
+C-------------------------------------------------------------
+C
+      WRITE(PDENS_LABEL,'(A7,I1)') 'EXCITA ',ISYMTR
+      CALL SO_PERTDENS('DCRPA',SOP_EXCITA,NEXCI,
+     &                 EXVAL,NEXCI,PDENS_LABEL,
+     &                 ISYMTR,.FALSE.,1.0D0,
+     &                 T2MP,LT2MP,DENSIJ,LDENSIJ,
+     &                 DENSAB,LDENSAB,DENSAI,LDENSAI,
+     &                 WORK(KEND2),LWORK2)
 C
 C-----------------------
 C     Remove from trace.

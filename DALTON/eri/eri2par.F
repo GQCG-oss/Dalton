@@ -1026,6 +1026,7 @@ C
 #ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_integrate_worker
 #endif
+      use so_parutils, only: soppa_nodedriver
       use pelib_interface, only: pelib_ifc_slave
 #if defined (HAS_PCMSOLVER)
       use pcm_parallel, only: j1ints_pcm
@@ -1188,12 +1189,6 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYNUM,MYNUM,IPRINT)
             CALL QMMMQRO_S1(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.QMMMQRO_2_WORK) THEN
             CALL QMMMQRO_S2(WORK(1),MWORK,IPRINT)
-#ifdef MOD_UNRELEASED
-         ELSE IF (IPRTYP.EQ.QMMMCRO_1_WORK) THEN
-            CALL QMMMCRO_S1(WORK(1),MWORK,IPRINT)
-         ELSE IF (IPRTYP.EQ.QMMMCRO_2_WORK) THEN
-            CALL QMMMCRO_S2(WORK(1),MWORK,IPRINT)
-#endif
          ELSE IF (IPRTYP.EQ.QMMMFIRST_1_WORK) THEN
             CALL QMMMFIRST_S1(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.QMMMFIRST_2_WORK) THEN
@@ -1228,10 +1223,8 @@ C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_GET_CUBE) THEN
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
-         ELSE IF (IPRTYP.EQ.PARA_RP_ERES) THEN
-            CALL PAR_RP_ERES(work(1), mwork, mynum )
          ELSE IF (IPRTYP.EQ.PARA_SO_ERES) THEN
-            CALL PAR_SO_ERES(work(1), mwork, mynum )
+            CALL SOPPA_NODEDRIVER(work(1), mwork, iprint )
 #ifdef MOD_CGTO_DIFF_ERI
          ! added by Bin Gao, Oct. 27, 2012
          ! cgto-diff-eri code to calculate arbitray order geometric derivatives

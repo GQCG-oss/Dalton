@@ -17,7 +17,7 @@ C     Dummy argument library
 C
 C     CMO:: intent(in)        MO coefficient matrix. calculated with so_get_mo
 C     DENS:: intent(out)      Density matrix. Output from this routine
-C     ISYMTR:: intent(in)     
+C     ISYMTR:: intent(in)
 C     TR1E:: intent(in)       Trial vector excitations
 C     TR1D:: intent(in)       Trial vector de-excitations
 #include "implicit.h"
@@ -53,10 +53,10 @@ C
 C
          KSCR    = 1
          KEND    = KSCR  + LSCR
-         LWORK   = LWORK - KEND
+         LWORK1  = LWORK - KEND
 C
          CALL SO_MEMMAX ('SO_AODENS',LWORK1)
-         IF (LWORK .LT. 0) CALL STOPIT('SO_AODENS',' ',KEND,LWORK)
+         IF (LWORK1 .LT. 0) CALL STOPIT('SO_AODENS',' ',KEND,LWORK1)
 C
 C-----------------------------------------
 C        Calculate density matrix DI1. See

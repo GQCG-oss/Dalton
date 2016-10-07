@@ -35,11 +35,13 @@ C
 C
          KOFF1 = IFCRHF(ISYMA,ISYMJ) + NRHF(ISYMA) + 1
          KOFF2 = IIJDEN(ISYMJ,ISYMI) + 1
-         KOFF3 = IT1AM(ISYMA,ISYMI)  + 1 
+         KOFF3 = IT1AM(ISYMA,ISYMI)  + 1
 C
          NVIRA = MAX(NVIR(ISYMA),1)
          NORBA = MAX(NORB(ISYMA),1)
          NRHFJ = MAX(NRHF(ISYMJ),1)
+C
+C  fact? \sum _j P_{aj} * \rho _{ji}
 C
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
      &              SQ2,PRP1(KOFF1),NORBA,DENSIJ(KOFF2),NRHFJ,
@@ -52,6 +54,8 @@ C
 C
          NORBJ = MAX(NORB(ISYMJ),1)
 C
+C -fact? \sum _j P_{ij} * \rho _{aj}
+C
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
      &              -SQ2,DENSAI(KOFF4),NVIRA,PRP1(KOFF5),NORBJ,
      &              ONE,GPVC1(KOFF3),NVIRA)
@@ -62,6 +66,8 @@ C
          KOFF7 = IAIDEN(ISYMB,ISYMI) + 1
 C
          NVIRB = MAX(NVIR(ISYMB),1)
+C
+C  fact? \sum _b P_{ba} * \rho _{bi}
 C
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NVIR(ISYMB),
      &              SQ2,PRP1(KOFF6),NORBA,DENSAI(KOFF7),NVIRB,
@@ -74,6 +80,8 @@ C
 C
          NORBB = MAX(NORB(ISYMB),1)
 C
+C -fact? \sum _b P_{bi} * \rho _{ba}
+C
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NVIR(ISYMB),
      &              -SQ2,DENSAB(KOFF8),NVIRA,PRP1(KOFF9),NORBB,
      &              ONE,GPVC1(KOFF3),NVIRA)
@@ -85,6 +93,6 @@ C     Remove from trace.
 C-----------------------
 C
       CALL QEXIT('SO_SECGP')
-C   
+C
       RETURN
       END

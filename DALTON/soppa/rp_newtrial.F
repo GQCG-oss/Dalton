@@ -1,7 +1,9 @@
 C
 C  /* Deck rp_newtrial */
-      SUBROUTINE RP_NEWTRIAL(NNEWTR,NOLDTR,TR1E,LTR1E,TR1D,LTR1D,EIVAL1,
-     &                       EDIA1,LEDIA1,RESI1E,LRESI1E,RESI1D,LRESI1D)
+      SUBROUTINE RP_NEWTRIAL(NNEWTR,NOLDTR,
+     &                       TR1E,LTR1E,TR1D,LTR1D,
+     &                       EIVAL1,EDIA1,LEDIA1,
+     &                       RESI1E,LRESI1E,RESI1D,LRESI1D)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -91,7 +93,7 @@ C
 C
          CALL AROUND('New raw trialvector in RP_NEWTRIAL')
 C
-         WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+         WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &        (I,TR1E(I),TR1D(I),I=1,LTR1E)
 C
       END IF

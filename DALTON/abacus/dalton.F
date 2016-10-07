@@ -330,6 +330,8 @@ C
      &  '(quadratic response in RESPONS; SIRIUS supersymmetry)',
      *'Eirik Hjertenaes,', 'NTNU,','Norway',
      &  '(Cholesky decomposition)',
+     *'Pi A. B. Haase,','University of Copenhagen,','Denmark',
+     &  '(Triplet AO-SOPPA)',
      *'Maria Francesca Iozzi,','University of Oslo,','Norway',
      &  '(RPA)',
      *'Brano Jansik','Technical Univ. of Ostrava','Czech Rep.',

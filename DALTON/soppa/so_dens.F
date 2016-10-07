@@ -82,7 +82,7 @@ C
                   LWORK1  = LWORK   - KEND1
 C
                   CALL SO_MEMMAX ('SO_DENS.1',LWORK1)
-                  IF (LWORK1 .LT. 0) 
+                  IF (LWORK1 .LT. 0)
      &                CALL STOPIT('SO_DENS.1',' ',KEND1,LWORK)
 C
                   DO 500 K = 1,NRHF(ISYMK)
