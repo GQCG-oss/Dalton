@@ -1,6 +1,6 @@
 C
 C  /* Deck so_sres */
-      SUBROUTINE SO_SRES(NOLDTR, NNEWTR,  DENSIJ, LDENSIJ, 
+      SUBROUTINE SO_SRES(NOLDTR, NNEWTR,  DENSIJ, LDENSIJ,
      &                   DENSAB, LDENSAB, ISYMTR, WORK,   LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
@@ -120,7 +120,7 @@ C
             CALL SO_READ(WORK(KRESO1E),LRESO1E,LURO1E,FNRO1E,INEW)
             CALL SO_READ(WORK(KRESO1D),LRESO1D,LURO1D,FNRO1D,INEW)
 C
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &            (I,WORK(KRESO1E+I-1),WORK(KRESO1D+I-1),I=1,LRESO1E)
 C
   200    CONTINUE

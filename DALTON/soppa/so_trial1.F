@@ -10,6 +10,8 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Determine the initial trialvectors.
 CW
+      use so_info, only: so_has_doubles
+C
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -22,12 +24,15 @@ C
       DIMENSION   DENSIJ(LDENSIJ), DENSAB(LDENSAB)
       DIMENSION   WORK(LWORK)
       CHARACTER*5 MODEL
+      LOGICAL DOUBLES
 C
 C------------------
 C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_TRIAL1')
+C
+      DOUBLES = so_has_doubles(model)
 C
 C-----------------------------------------------------------
 C     Set the number of new trial vectors equal to number of
@@ -41,12 +46,21 @@ C     Open files for storing of trialvectors.
 C--------------------------------------------
 C
       LTR1 = NT1AM(ISYMTR)
-      LTR2 = NT2AM(ISYMTR)
+      IF (DOUBLES) THEN
+CPi 01.04.16
+C         LTR2 = NT2AM(ISYMTR)
+         LTR2 = N2P2HOP(ISYMTR)
+Cend-Pi
+      ELSE
+         LTR2 = 0
+      ENDIF
 C
       CALL SO_OPEN(LUTR1E,FNTR1E,LTR1)
       CALL SO_OPEN(LUTR1D,FNTR1D,LTR1)
-      CALL SO_OPEN(LUTR2E,FNTR2E,LTR2)
-      CALL SO_OPEN(LUTR2D,FNTR2D,LTR2)
+      IF ( DOUBLES) THEN
+         CALL SO_OPEN(LUTR2E,FNTR2E,LTR2)
+         CALL SO_OPEN(LUTR2D,FNTR2D,LTR2)
+      END IF
 C
 C=============================================================
 C     Determine how the initial trialvectors are to be chosen.
@@ -61,10 +75,30 @@ C---------------------------------------------------------------------
 C
          CONTINUE
 C
+CPi
+      ELSE IF ( (MODEL .EQ. 'AOCC2') .AND. AOSOP ) THEN
+C
+C---------------------------------------------------------------------
+C        Use SOPPA eigenvectors as first trial vectors in SOPPA(CC2).
+C        Since the SOPPA vectors are in place nothing shall be done.
+C---------------------------------------------------------------------
+C
+         CONTINUE
+C
       ELSE IF ((MODEL.EQ.'AOSOC') .AND. DCRPA .AND. (NEXCI.LE.LTR1))THEN
 C
 C----------------------------------------------------------------------
 C        Use RPA(D) eigenvectors as first trial vectors in SOPPA(CCSD).
+C        Since the RPA(D) vectors are in place nothing shall be done.
+C----------------------------------------------------------------------
+C
+         CONTINUE
+C
+CPi
+      ELSE IF ((MODEL.EQ.'AOCC2') .AND. DCRPA .AND. (NEXCI.LE.LTR1))THEN
+C
+C----------------------------------------------------------------------
+C        Use RPA(D) eigenvectors as first trial vectors in SOPPA(CC2).
 C        Since the RPA(D) vectors are in place nothing shall be done.
 C----------------------------------------------------------------------
 C
@@ -76,7 +110,16 @@ C--------------------------------------------------------------------
 C        Use RPA eigenvectors as first trial vectors for SOPPA(CCSD).
 C--------------------------------------------------------------------
 C
-         CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK) 
+         CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK)
+C
+CPi
+      ELSE IF ((MODEL.EQ.'AOCC2') .AND. AORPA .AND. (NEXCI.LE.LTR1))THEN
+C
+C--------------------------------------------------------------------
+C        Use RPA eigenvectors as first trial vectors for SOPPA(CC2).
+C--------------------------------------------------------------------
+C
+         CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK)
 C
       ELSE IF ((MODEL.EQ.'AOSOP') .AND. DCRPA .AND. (NEXCI.LE.LTR1))THEN
 C
@@ -87,22 +130,24 @@ C--------------------------------------------------------------------
 C
          CONTINUE
 C
-      ELSE IF ((MODEL.EQ.'AOSOC') .AND. AORPA .AND. (NEXCI.LE.LTR1))THEN
+      ELSE IF ((MODEL.EQ.'AOSOP') .AND. AORPA .AND. (NEXCI.LE.LTR1))THEN
 C
 C--------------------------------------------------------------
 C        Use RPA eigenvectors as first trial vectors for SOPPA.
 C--------------------------------------------------------------
 C
-         CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK) 
+         CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK)
 C
-      ELSE IF ((MODEL.EQ.'AOSOC') .OR. (MODEL.EQ.'AOSOP')) THEN
+      ELSE IF ((MODEL.EQ.'AOSOC') .OR. (MODEL.EQ.'AOSOP') .OR.
+CPi
+     &         (MODEL.EQ.'AOHRP') .OR. (MODEL.EQ.'AOCC2') ) THEN
 C
-C---------------------------------------------------------------
-C        Create brand new trial vectors for SOPPA or SOPPA(CCSD)
-C        based on approximate diagonal elements of hessian.
-C---------------------------------------------------------------
+C----------------------------------------------------------------------
+C        Create brand new trial vectors for SOPPA, SOPPA(CCSD) or
+C        SOPPA(CC2) based on approximate diagonal elements of hessian.
+C----------------------------------------------------------------------
 C
-         CALL SO_TR1NEW(NNEWTR,POINT,LPOINT,ISYMTR,NEXCI,DENSIJ,
+         CALL SO_TR1NEW(MODEL,NNEWTR,POINT,LPOINT,ISYMTR,NEXCI,DENSIJ,
      &                  LDENSIJ,DENSAB,LDENSAB,WORK,LWORK)
 C
       ELSE
@@ -111,6 +156,9 @@ C
 
 C
       END IF
+
+
+
 C
 C-----------------------------------------------
 C     Orthogonalize new trial vectors over S[2].
@@ -123,7 +171,7 @@ C     &                 DENSIJ,LDENSIJ,DENSAB,LDENSAB,WORK,LWORK)
 C
       NLINDP = 0
       NOLDTR = 0
-      CALL SO_ORTH_TRN('EIXVAL',NOLDTR,NNEWTR,NLINDP,ISYMTR,
+      CALL SO_ORTH_TRN(DOUBLES,'EIXVAL',NOLDTR,NNEWTR,NLINDP,ISYMTR,
      &                 DENSIJ,LDENSIJ,DENSAB,LDENSAB,WORK,LWORK)
 C
       IF ( IPRSOP .GE. 6 ) THEN
@@ -167,8 +215,10 @@ C------------------------------------
 C
       CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
       CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
-      CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
-      CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+      IF (DOUBLES) THEN
+         CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
+         CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+      END IF
 C
 C-----------------------
 C     Remove from trace.

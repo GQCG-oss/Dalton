@@ -7,7 +7,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Andrea Ligabue, december 2003
 C
-C     Write solution or residual vector on file 
+C     Write solution or residual vector on file
 C     and all the needed information related to that vector
 C
 C     ARRAY      solution/residual vecotr

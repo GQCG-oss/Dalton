@@ -4,10 +4,10 @@ C  /* Deck so_collect_tm */
 CSPAS:23/5-11: second and third moment sum rules
      &                         TQLEN,TQVEL,TTLEN,
 CKeinSPASmehr
-     &                         TRLON,TRMAG,BSRLON,EXENG)
+     &                         TRLON,TRMAG,TRGOS,BSRLON,EXENG)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
-C   
+C
 C     Keld Bak, August 1997
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
@@ -16,7 +16,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
-CSPAS:15/03-2006: merge with Dalton-2.0  
+CSPAS:15/03-2006: merge with Dalton-2.0
 C#include "cbilrs.h"
 #include "cbiexc.h"
 CKeinSPASmehr
@@ -33,6 +33,9 @@ CSPAS:23/5-11: second and third moment sum rules
 CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI),        TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI),       EXENG(NSYM,MXNEXI)
+CClark:7/1/2016
+      DIMENSION TRGOS(3,MXNEXI)
+CClark:end
 C
 C------------------
 C     Add to trace.
@@ -49,87 +52,94 @@ C
          WRITE(LUPRI,*) 'Reset MXNEXI in the file cbiexc.h and resubmit'
          RETURN
       END IF
-C 
+C
 C------------------------------------------------------------
-C     The calculated transition moments are <f|Operator|0>. 
-C     We want to keep them as <O|Operator|f>. Therefore, for 
+C     The calculated transition moments are <f|Operator|0>.
+C     We want to keep them as <O|Operator|f>. Therefore, for
 C     anti-hermitian operators we multiply with a minus-sign.
 C------------------------------------------------------------
 C
-      IF (LABEL(2:7).EQ.'DIPLEN') THEN
-C
-         IF (LABEL(1:1).EQ.'X') TRLEN(1,ISYMTR,IEXCI) =   TRMOM
-         IF (LABEL(1:1).EQ.'Y') TRLEN(2,ISYMTR,IEXCI) =   TRMOM
-         IF (LABEL(1:1).EQ.'Z') TRLEN(3,ISYMTR,IEXCI) =   TRMOM
-C
-      ELSE IF (LABEL(2:7).EQ.'DIPVEL') THEN
-C
-         IF (LABEL(1:1).EQ.'X') TRVEL(1,ISYMTR,IEXCI) = - TRMOM
-         IF (LABEL(1:1).EQ.'Y') TRVEL(2,ISYMTR,IEXCI) = - TRMOM
-         IF (LABEL(1:1).EQ.'Z') TRVEL(3,ISYMTR,IEXCI) = - TRMOM
-C
+CRF :Handle first labels starting with a coordinate axis
+      IDX1 = COORD_IDX(LABEL(1:1))
+      IF (IDX1 .ge. 1 .and. IDX1 .LE. 3 ) THEN
+C    Dipole - length gauge
+         IF (LABEL(2:7).EQ.'DIPLEN') THEN
+            TRLEN(IDX1,ISYMTR,IEXCI) = TRMOM
+C    Dipole - velocity gauge
+         ELSE IF (LABEL(2:7).EQ.'DIPVEL') THEN
+            TRVEL(IDX1,ISYMTR,IEXCI) = - TRMOM
 CSPAS:23/5-11: second and third moment sum rules
-      ELSE IF (LABEL(3:8).EQ.'SECMOM') THEN
-         IF (LABEL(1:2) .EQ. 'XX') THEN
-                                TQLEN(1,1,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:2) .EQ. 'XY') THEN
-                                TQLEN(1,2,ISYMTR,IEXCI) = TRMOM
-                                TQLEN(2,1,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:2) .EQ. 'XZ') THEN
-                                TQLEN(1,3,ISYMTR,IEXCI) = TRMOM
-                                TQLEN(3,1,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:2) .EQ. 'YY') THEN
-                                TQLEN(2,2,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:2) .EQ. 'YZ') THEN
-                                TQLEN(2,3,ISYMTR,IEXCI) = TRMOM
-                                TQLEN(3,2,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:2) .EQ. 'ZZ') THEN
-                                TQLEN(3,3,ISYMTR,IEXCI) = TRMOM
-         END IF
-      ELSE IF (LABEL(5:8).EQ.'3MOM') THEN
-         IF (LABEL(1:3) .EQ. 'XXX') THEN
+         ELSE IF (LABEL(3:8).EQ.'SECMOM') THEN
+            IDX2 = COORD_IDX(LABEL(2:2))
+            TQLEN(IDX1,IDX2,ISYMTR,IEXCI) = TRMOM
+            IF (IDX1 .NE. IDX2 ) THEN
+               TQLEN(IDX2,IDX1,ISYMTR,IEXCI) = TRMOM
+            ENDIF
+         ELSE IF (LABEL(5:8).EQ.'3MOM') THEN
+            IF (LABEL(1:3) .EQ. 'XXX') THEN
                                 TTLEN(1,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:3) .EQ. 'YYY') THEN
+            ELSE IF (LABEL(1:3) .EQ. 'YYY') THEN
                                 TTLEN(2,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:3) .EQ. 'ZZZ') THEN
+            ELSE IF (LABEL(1:3) .EQ. 'ZZZ') THEN
                                 TTLEN(3,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:3) .EQ. 'XXY') THEN
+            ELSE IF (LABEL(1:3) .EQ. 'XXY') THEN
                                 TTLEN(4,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:3) .EQ. 'XXZ') THEN
+            ELSE IF (LABEL(1:3) .EQ. 'XXZ') THEN
                                 TTLEN(5,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:3) .EQ. 'XYY') THEN
+            ELSE IF (LABEL(1:3) .EQ. 'XYY') THEN
                                 TTLEN(6,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:3) .EQ. 'XYZ') THEN
+            ELSE IF (LABEL(1:3) .EQ. 'XYZ') THEN
                                 TTLEN(7,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:3) .EQ. 'XZZ') THEN
+            ELSE IF (LABEL(1:3) .EQ. 'XZZ') THEN
                                 TTLEN(8,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:3) .EQ. 'YYZ') THEN
+            ELSE IF (LABEL(1:3) .EQ. 'YYZ') THEN
                                 TTLEN(9,ISYMTR,IEXCI) = TRMOM
-         ELSE IF (LABEL(1:3) .EQ. 'YZZ') THEN
+            ELSE IF (LABEL(1:3) .EQ. 'YZZ') THEN
                                 TTLEN(10,ISYMTR,IEXCI) = TRMOM
-         END IF
+            END IF
 CKeinSPASmehr
 C
-      ELSE IF (LABEL(2:7).EQ.'ANGMOM') THEN
+         ELSE IF (LABEL(2:7).EQ.'ANGMOM') THEN
 C
-         IF (LABEL(1:1).EQ.'X') TRMAG(1,ISYMTR,IEXCI) = - TRMOM
-         IF (LABEL(1:1).EQ.'Y') TRMAG(2,ISYMTR,IEXCI) = - TRMOM
-         IF (LABEL(1:1).EQ.'Z') TRMAG(3,ISYMTR,IEXCI) = - TRMOM
+            TRMAG(IDX1,ISYMTR,IEXCI) = - TRMOM
 C
-      ELSE IF (LABEL(2:7).EQ.'LONMAG') THEN
+         ELSE IF (LABEL(2:7).EQ.'LONMAG') THEN
 C
-         IF (LABEL(1:1).EQ.'X') TRLON(1,ISYMTR,IEXCI) = - TRMOM
-         IF (LABEL(1:1).EQ.'Y') TRLON(2,ISYMTR,IEXCI) = - TRMOM
-         IF (LABEL(1:1).EQ.'Z') TRLON(3,ISYMTR,IEXCI) = - TRMOM
+            TRLON(IDX1,ISYMTR,IEXCI) = - TRMOM
 C
+         ELSE
+CRF         Something is wrong
+            WRITE(LUPRI,'(A,/,2A,I3)') 'ERROR in SO_COLLECT_TM:',
+     &      'Label not recognized: ', LABEL, IDX1
+         END IF
+CRF Handle labels that does not start with X,Y OR Z
       ELSE IF (LABEL(2:6).EQ.'HBDO ') THEN
 C
-         IF (LABEL(7:7).EQ.'X') BSRLON(1,ISYMTR,IEXCI) =
-     &                          -TRMOM * EXENG(ISYMTR,IEXCI)
-         IF (LABEL(7:7).EQ.'Y') BSRLON(2,ISYMTR,IEXCI) =
-     &                          -TRMOM * EXENG(ISYMTR,IEXCI)
-         IF (LABEL(7:7).EQ.'Z') BSRLON(3,ISYMTR,IEXCI) =
-     &                          -TRMOM * EXENG(ISYMTR,IEXCI)
+         IDX1 = COORD_IDX(LABEL(7:7))
+         BSRLON(IDX1,ISYMTR,IEXCI) = -TRMOM *EXENG(ISYMTR,IEXCI)
+C
+CClark:22/12/2015
+CRF The content of these two branches look exactly the same..?
+      ELSE IF (LABEL(1:5).EQ.'COS K') THEN
+         IF (LABEL(6:6).EQ.'X') TRGOS(1,IEXCI) =
+     &       TRGOS(1,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+         IF (LABEL(6:6).EQ.'Y') TRGOS(2,IEXCI) =
+     &       TRGOS(2,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+         IF (LABEL(6:6).EQ.'Z') TRGOS(3,IEXCI) =
+     &       TRGOS(3,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+C
+      ELSE IF (LABEL(1:5).EQ.'SIN K') THEN
+C
+         IF (LABEL(6:6).EQ.'X') TRGOS(1,IEXCI) =
+     &      TRGOS(1,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+         IF (LABEL(6:6).EQ.'Y') TRGOS(2,IEXCI) =
+     &       TRGOS(2,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+         IF (LABEL(6:6).EQ.'Z') TRGOS(3,IEXCI) =
+     &       TRGOS(3,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+      ELSE
+CRF         Something is wrong
+         WRITE(LUPRI,'(A,/,2A)') 'ERROR in SO_COLLECT_TM:',
+     &         'Label not recognized: ', LABEL
 C
       ENDIF
 C
@@ -138,6 +148,16 @@ C     Remove from trace.
 C-----------------------
 C
       CALL QEXIT('SO_COLLECT_TM')
-C
       RETURN
+
+      CONTAINS
+C
+C        A function that converts the letters X,Y and Z to
+C        the integers 1,2 and3
+         PURE FUNCTION COORD_IDX(A)
+            CHARACTER(LEN=1), INTENT(IN) :: A
+            INTEGER :: COORD_IDX
+            COORD_IDX = ICHAR(A) - ICHAR('X') + 1
+            RETURN
+         END FUNCTION
       END

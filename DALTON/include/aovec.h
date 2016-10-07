@@ -7,5 +7,7 @@
 !     IF you change MXAOVC, then rebuild with "make".
 !
       INTEGER MXAOVC, MXCONT
-      PARAMETER (MXAOVC = 25, MXCONT = 35)
+      PARAMETER (MXAOVC = 36, MXCONT = 36)
 !     hjaaj: MXCONT needs to be 35 for ANO-DK3 uncontracted for DKH Hamiltonian
+!     hjaaj: MXAOVC, MXCONT needs to be 36 for some uncontracted Dyall basis sets
+!  -- end of aovec.h ---

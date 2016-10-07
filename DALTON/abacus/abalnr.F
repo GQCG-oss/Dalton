@@ -507,10 +507,10 @@ C
       KWORK1 = KFREE
       LWORK1 = LFREE
 C
-      CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
+      CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO))
       IF (.NOT.FOUND) CALL QUIT('LNRABA error: CMO not found on SIRIFC')
       IF (NASHT .GT. 0) THEN
-         CALL RD_SIRIFC('DV',FOUND,WORK(KWORK1),WORK(KWORK1),LWORK1)
+         CALL RD_SIRIFC('DV',FOUND,WORK(KWORK1))
          IF (.NOT.FOUND)
      &      CALL QUIT('LNRABA error: DV not found on SIRIFC')
          CALL DSPTSI(NASHT,WORK(KWORK1),WORK(KUDV))
@@ -2225,8 +2225,9 @@ C
 #include "symmet.h"
 #include "abainf.h"
 #include "cbilnr.h"
-      DIMENSION POLDD(2,3,3,MXFR), POLDL(2,3,3,MXFR), POLDA(2,3,3,MXFR),
-     &          POLVL(2,3,3,MXFR), POLVV(2,3,3,MXFR),
+      DIMENSION POLDD(2,3,3,NFRVAL), POLDL(2,3,3,NFRVAL), 
+     &          POLDA(2,3,3,NFRVAL),
+     &          POLVL(2,3,3,NFRVAL), POLVV(2,3,3,NFRVAL),
      &          BETANL(2), BETAL(2), ALPHNL(2), ALPHAL(2),
      &          BETAVL(2), BETAVV(2), ALPHVL(2), ALPHVV(2)
 cmbh: helper strings

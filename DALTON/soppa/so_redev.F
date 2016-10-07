@@ -1,18 +1,20 @@
 C  /* Deck so_redev */
-      SUBROUTINE SO_REDEV(NEXCI,NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,
-     &                    LREDS,LREDOL,EXVAL,LEXVAL,WORK,LWORK)
+      SUBROUTINE SO_REDEV(DOUBLES,NEXCI,NOLDTR,NNEWTR,ISYMTR,
+     &                    REDE,LREDE,REDS,LREDS,
+     &                    LREDOL,EXVAL,LEXVAL,CONV,LCONV,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Stephan Sauer, May 1996
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
-C     Andrea Ligabue, December 2003: linear response functions 
+C     Andrea Ligabue, December 2003: linear response functions
 C                                    implemented
 C
 C        Set up and solve the reduced eigenvalue problem. Save the
 C        new reduced matrices and the optimized trial and solution
 C        vectors which may be written to disk.
 C
+C DOUBLES         Include Doubles vector
 C NEXCI           # of excitation energies to be calculated in the
 C                 given symmetry
 C NOLDTR          # of old trial vectors
@@ -38,6 +40,10 @@ C
       DIMENSION REDE(LREDE,LREDE),REDS(LREDS,LREDS)
       DIMENSION EXVAL(LEXVAL)
       DIMENSION WORK(LWORK)
+      LOGICAL   DOUBLES
+CPi 10.08.16
+      CHARACTER*3 IMAG
+      CHARACTER*3 CONV(LCONV)
 C
 C------------------
 C     Add to trace.
@@ -45,12 +51,18 @@ C------------------
 C
       CALL QENTER('SO_REDEV')
 C
+C-------------------------
+C     Set imaginary label.
+C-------------------------
+C
+      IMAG = '  i'
+C
 C-------------------------------------
 C     Check dimensions of the matrices
 C-------------------------------------
 C
       IF (LREDE .NE. LREDS) THEN
-         WRITE(LUPRI,*) 
+         WRITE(LUPRI,*)
      &        'SO_REDEV : Dimensions of reduced E[2] and S[2] matrices',
      &        ' LREDE : ',LREDE,' and LREDS : ',LREDS,' are different'
          CALL QUIT('Incompatible dimensions of reduced matrices in //
@@ -77,13 +89,20 @@ C==========================================
 C
 C--------------------------------------------------------------------
 C     Work space allocation no. 1.
-C     Notice that the E[2] linear transformed trial vector and the 
+C     Notice that the E[2] linear transformed trial vector and the
 C     S[2] linear transformed trial vector are of equal length and
 C     that they use the same work space.
 C--------------------------------------------------------------------
 C
       LTR1E    = NT1AM(ISYMTR)
-      LTR2E    = NT2AM(ISYMTR)
+      IF(DOUBLES)THEN
+CPi 01.04.16
+C         LTR2E    = NT2AM(ISYMTR)
+         LTR2E    = N2P2HOP(ISYMTR)
+Cend-Pi
+      ELSE
+         LTR2E    = 0
+      ENDIF
       LI       = NOLDTR + NNEWTR
       LJ       = NOLDTR + NNEWTR
 C
@@ -104,7 +123,8 @@ C     Calculate new elements of the reduced matrices
 C---------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_INCRED(NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,LREDS,
+      CALL SO_INCRED(DOUBLES,NOLDTR,NNEWTR,ISYMTR,
+     &               REDE,LREDE,REDS,LREDS,
      &               LREDOL,LTR1E,LTR2E,WORK(KIS),WORK(KIE),
      &               WORK(KIN),LI,WORK(KJS),WORK(KJE),WORK(KJN),LJ,
      &               WORK(KEND1),LWORK1)
@@ -121,7 +141,6 @@ C
          CALL AROUND('Reduced E[2] Matrix')
 C
          CALL OUTPUT(REDE,1,NTRIAL,1,NTRIAL,LREDE,LREDE,1,LUPRI)
-C
 C
          CALL AROUND('Reduced S[2] Matrix')
 C
@@ -144,8 +163,8 @@ C
       LREDES  = LREDE
       LREDSS  = LREDS
       LREDST  = LREDS
-      LSCR1   = NTRIAL      
-C     
+      LSCR1   = NTRIAL
+C
       KEIVEC   = 1
       KEND2A   = KEIVEC + LEIVEC*LEIVEC
       LWORK2A  = LWORK  - KEND2A
@@ -156,7 +175,7 @@ C
       KREDES  = KBETA  + LBETA
       KREDSS  = KREDES + LREDES*LREDES
       KREDST  = KREDSS
-      KEND2B  = KREDSS + LREDSS*LREDSS   
+      KEND2B  = KREDSS + LREDSS*LREDSS
 C
       KSCR1   = KEND2A
       KEND2C  = KEND2A + LSCR1*LSCR1
@@ -168,9 +187,9 @@ C
       IF (LWORK2 .LT. 0) CALL STOPIT('SO_REDEV.2',' ',KEND2,LWORK)
 C
 C-------------------------------------------------------
-C     Use EISPACK routine for real general matrices 
+C     Use EISPACK routine for real general matrices
 C     in generalized eigenvalue problem.
-C     The reduced E[2] and S[2] matrices are backuped to 
+C     The reduced E[2] and S[2] matrices are backuped to
 C     WORK(KREDES) and WORK(KREDSS).
 C-------------------------------------------------------
 C
@@ -179,7 +198,7 @@ C
 C
 C Online documentation for EISPACK routine RGG on netlib.org/eispack/rgg.f
 C WORK(KEIVEC) is the output with real and imaginary parts of the eigenvectors.
-      MATZ  = 1 
+      MATZ  = 1
       CALL RGG(LREDE,NTRIAL,REDE,REDS,WORK(KALFAR),WORK(KALFAI),
      &         WORK(KBETA),MATZ,WORK(KEIVEC),IERR)
 C
@@ -194,7 +213,7 @@ C
       CALL DCOPY(LREDS*LREDS,WORK(KREDSS),1,REDS,1)
 C
 C-----------------------------------------------
-C     Order reduced eigenvalues and eigenvectors 
+C     Order reduced eigenvalues and eigenvectors
 C-----------------------------------------------
 C
       DTIME      = SECOND()
@@ -207,10 +226,19 @@ C
 C
 C----------------------------------------------
 C     Save the lowest NEXCI excitation energies
+CPi 10.08.16: If imaginary eigenvalue, assign an 'i' label to the
+C     'yes' or 'no' vector.
 C----------------------------------------------
 C
       DO I = 1, NEXCI
+C
          EXVAL(I) = WORK(KALFAR-1+I)
+C
+         IF (ABS(WORK(KALFAI-1+I)) .GT. ZERO) THEN
+C
+            CONV(I) = IMAG
+C
+         END IF
       END DO
 C
 C-------------------------------------------------------------------
@@ -245,7 +273,8 @@ C     (solution) vectors
 C-----------------------------------------------------------------
 C
       DTIME      = SECOND()   - DTIME
-      CALL SO_OPTVEC(NOLDTR,NNEWTR,NEXCI,WORK(KEIVEC),LEIVEC,ISYMTR,
+      CALL SO_OPTVEC(DOUBLES,NOLDTR,NNEWTR,NEXCI,
+     &               WORK(KEIVEC),LEIVEC,ISYMTR,
      &               WORK(KEND2A),LWORK2A)
       DTIME      = SECOND()   - DTIME
       SOTIME(37) = SOTIME(37) + DTIME

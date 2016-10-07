@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+#    prop_exci_aorpa
+#    ---------------
+#    Molecule:         H2O
+#    Wave Function:    SCF (AO-RPA through AO-SOPPA module)
+#    Test Purpose:     Calculation of excitation energies through ABACUS
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 8,
+      rel_tolerance = 1.0e-8)
+
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+      
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+# Energy
+f.add(string = 'Final HF energy',
+      rel_tolerance = 1.0e-9)
+
+# Property calculation
+f.add(string = 'AO integral driven RPA',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Frequencies',
+      rel_tolerance = 1.0e-5)
+
+f.add(from_string = 'Perturbation symmetry',
+      num_lines = 2,
+      rel_tolerance = 1.0e-2)
+
+f.add(string = 'RPA results')
+
+f.add(from_string = 'Frequency dependent polarizabilities',
+      num_lines = 33,
+      abs_tolerance = 1.0e-5)
+
+test.run(['prop_alpha_aorpa.dal'], ['prop_alpha_aorpa.mol'], f={'out': f},
+         )
+
+sys.exit(test.return_code)

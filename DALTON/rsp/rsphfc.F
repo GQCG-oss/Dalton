@@ -930,7 +930,7 @@ C
              END DO
              CALL DUNIT(XBASIS,3)
              CALL JACO(XVAL,XBASIS,3,3,3,WORK,WORK(10))
-C            Principla values
+C            Principal values
              APVAL(IDX,1) = XVAL(1)
              APVAL(IDX,2) = XVAL(3)
              APVAL(IDX,3) = XVAL(6)

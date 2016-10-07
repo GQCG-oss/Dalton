@@ -263,7 +263,7 @@ C  /* Deck twocal */
      &            MAXDIS,SQ12EL,RETUR,NHTYP,IREPDM,IFCTYP,ISHLA,ADISTR,
      &            ITYPE,JSTRSH,NPRIMS,NCONTS,IORBSH,
      &            I2TYP,ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,
-     &            RELCAL,GENCNT)
+     &            RELCAL_in,GENCNT)
 #if defined (BUILD_PELIB)
       use pe_variables, only: pe_twoint
 #endif
@@ -274,19 +274,19 @@ C  /* Deck twocal */
 #include "maxorb.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK, RETUR,
      &        NOCONT, LONDON, SPNORB, DIA2SO, ZFS2EL, DISTRI, SQ12EL,
-     &        SUSCEP, ADISTR, RELCAL, GENCNT, SOFOCK
+     &        SUSCEP, ADISTR, RELCAL_in, GENCNT, SOFOCK
       DIMENSION DMAT(*), FMAT(*), HESSEE(*),GMAT(*), IREPDM(*),
      &          IFCTYP(*), INDXAB(*), JSTRSH(*), NPRIMS(*), NCONTS(*),
      &          IORBSH(*),GABRAO(*),DMRAO(*), DMRSO(*),DINTSKP(*),
      &          WORK(LWORK)
-#include "hertop.h"
+
+! infpar.h : PARHER, SLAVE
 #include "infpar.h"
-C NECgh
+#include "hertop.h"
 #include "nuclei.h"
 #include "veclen.h"
 #include "drw2el.h"
 #include "r12int.h"
-C NECgh
 C
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOCAL','*',103)
 C
@@ -346,7 +346,7 @@ C
      &               NOPV,NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,
      &               IPRNTD,NUMDIS,MAXDIS,SQ12EL,WORK(KINDHR),
      &               WORK(KINDSQ),WORK(KIODHR),IFCTYP,ADISTR,I2TYP,
-     &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL,GENCNT)
+     &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL_in,GENCNT)
       ELSE IF (ADISTR) THEN
 C
 C        All g_abcd for given index a
@@ -359,7 +359,7 @@ C
      &               NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
      &               RETUR,SQ12EL,WORK(KINDHR),WORK(KINDSQ),
      &               WORK(KIODHR),IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,
-     &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL,GENCNT)
+     &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL_in,GENCNT)
 C
 #if defined (BUILD_PELIB)
       else if (pe_twoint) then
@@ -382,7 +382,7 @@ C        All integrals
 C        =============
 C
 #if defined (VAR_MPI) || defined (VAR_PVM)
-         IF (SLAVE) THEN
+         IF (SLAVE .AND. PARHER) THEN
             KTKCPU = KLAST
             KWHICH = KTKCPU +  MTOTTK
             KIJS   = KWHICH + (MTOTTK + 1)/IRAT
@@ -401,7 +401,7 @@ C
      &           WORK(KTKCPU),WORK(KWHICH),WORK(KIJS),
      &           IREPDM,IFCTYP,ADISTR,ITYPE,JSTRSH,NPRIMS,NCONTS,
      &           IORBSH,I2TYP,ICEDIF,IFTHRS,
-     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT)
+     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL_in,GENCNT)
          ELSE
 #endif
             CALL TWOLOP(WORK(KLAST),LWRK,HESSEE,FMAT,DMAT,NDMAT,
@@ -411,8 +411,8 @@ C
      &           THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
      &           SQ12EL,WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
      &           IREPDM,IFCTYP,ADISTR,I2TYP,JSTRSH,NPRIMS,NCONTS,
-     &           IORBSH,ICEDIF,IFTHRS,
-     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,WORK(KTFMAT),GENCNT)
+     &           IORBSH,ICEDIF,IFTHRS, GABRAO,DMRAO,DMRSO,
+     &           DINTSKP,RELCAL_in,WORK(KTFMAT),GENCNT)
 #if defined (VAR_MPI) || defined (VAR_PVM)
          END IF
 #endif
@@ -529,9 +529,9 @@ C
       IF(DIRFCK.OR.SOFOCK)  THEN
         CALL DZERO(DINTSKP,8)
         IF(IFTHRS.LT.4) THEN
-           WRITE(LUPRI,'(/A,I4)')
+           WRITE(LUPRI,'(/A,I0,A)')
      &       'WARNING, density screening of 10^(',-IFTHRS,
-     &       ') does not make sense. Screening reset to 10^-14.'
+     &       ') does not make sense. Screening reset to 10^(-14).'
            IFTHRS = 14
         END IF
         IF(IFTHRS.LT.16) THEN

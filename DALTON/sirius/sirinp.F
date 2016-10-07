@@ -876,13 +876,16 @@ c        END IF
       END IF
 C
 C     set ITRFIN for ABAIPH
-C
-      IF (ABAIPH .AND. ITRFIN .EQ. -6789) THEN
-         IF (DOMC .OR. DOCI) THEN
-            ITRFIN = 4
-            IF (NEWTRA) ITRFIN = 5 ! to get occ-sec integrals
-         END IF
-      END IF
+!     Apr. 2016: not any more, Abacus calls TRACTL
+!     and that is better, then it is known exactly what
+!     transformation level is needed.
+!
+!     IF (ABAIPH .AND. ITRFIN .EQ. -6789) THEN
+!        IF (DOMC .OR. DOCI) THEN
+!           ITRFIN = 4
+!           IF (NEWTRA) ITRFIN = 5 ! to get occ-sec integrals
+!        END IF
+!     END IF
 C
       IF (DOCI .AND. ISTACI .LE. 0) THEN
          IF (DORSP .AND. .NOT.DOMC) THEN
@@ -1389,7 +1392,7 @@ C
          K1   = 1    + NCMOT
          LSCR = LCMO - K1
          JRDMO = -IRDMO
-         CALL READMO(CMO,JRDMO,CMO(K1),LSCR)
+         CALL READMO(CMO,JRDMO)
 C        JRDMO negative : return with error status in JRDMO
 C        JRDMO positive : abort in READMO if error
          IF (JRDMO .GT. 0) THEN
@@ -5245,6 +5248,7 @@ C   DFTCOM : DFTRUN, DOSRBCK, ...
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
 C   siripc : INPPRC
 C   gnrinf : NEWSYM,EMBEDDING,QM3,QMMM,?
+C   infpar.h : PARHER
 C   pgroup : GROUP, REP
 C   pcmlog : PCM
 C
@@ -5253,8 +5257,6 @@ C
 #include "maxash.h"
 #include "maxorb.h"
 C
-#include "gnrinf.h"
-#include "pgroup.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "infind.h"
@@ -5269,6 +5271,9 @@ C
 #include "dfterg.h"
 #include "dftacb.h"
 #include "siripc.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "pgroup.h"
 #include "pcmlog.h"
 #include "spinfo.h"
 C
@@ -5461,7 +5466,7 @@ C          to get here unless someone modifies SIRIUS incorrectly
      &         'closed-shell Moeller-Plesset second-order calculation.'
          END IF
          IF (IOPRHF .NE. 0 .OR. HSROHF) WRITE (IWUNIT,1051)
-     &      '      (ROHF open shell orbitals are not include.)'
+     &      '      (ROHF open shell orbitals are not included.)'
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE IF ( DOCCSD) THEN
          IF (WFTYPE .EQ. ' ') WFTYPE='CC'
@@ -5547,7 +5552,7 @@ C          to get here unless someone modifies SIRIUS incorrectly
          WRITE (IWUNIT,'()')
       END IF
       IF ( DIRFCK ) THEN
-      IF ( PARCAL ) THEN
+      IF ( PARHER ) THEN
          WRITE (IWUNIT,'(A)')
      &      ' Fock matrices are calculated directly and in parallel'//
      &      ' without use of integrals on disk.'
@@ -5764,7 +5769,10 @@ C
      &       TXTOCC(INIOCC),
      &       ' -- Initial occupation of symmetries is :'
          WRITE(IWUNIT,1550) NRHFT,(NRHF(I),I=1,NSYM)
-         IF (HSROHF) WRITE (IWUNIT,1555) NASHT,(NASH(I),I=1,NSYM)
+         IF (HSROHF) THEN
+            NROHFT = ISUM(8,NROHF,1)
+            WRITE (IWUNIT,1555) NROHFT,(NROHF(I),I=1,NSYM)
+         END IF
          IF (IOPRHF .NE. 0) WRITE (IWUNIT,1560) IOPRHF
       END IF
       IF (SUPSYM) CALL AVEPRT(IWUNIT)

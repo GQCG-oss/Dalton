@@ -288,7 +288,6 @@ def gen_cmake_command(args):
         command += ' -DENABLE_AUTO_LAPACK=OFF'
 
     if args.gpu:
-        command += ' -DENABLE_OPENACC=ON'
         command += ' -DENABLE_CUDA=ON'
 
     if args.mkl != 'none':

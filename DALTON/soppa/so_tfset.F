@@ -11,6 +11,7 @@ C              the same vectors.
 C
 #include "implicit.h"
 #include "priunit.h"
+#include "soppinf.h"
 C
       PARAMETER (ZERO = 0.0D+00, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C

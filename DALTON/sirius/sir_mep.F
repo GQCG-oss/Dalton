@@ -26,7 +26,6 @@ C  /* Deck calc_mep */
 #include "codata.h"
 #include "gnrinf.h"
 #ifdef VAR_MPI
-#include "mtags.h"
 #include "infpar.h"
 #include "mpif.h"
 #endif

@@ -11,9 +11,9 @@ C     Andrea Ligabue, January 2004: added the check for Z = +- Y
 C       when freq=0 in linear response properties
 C
 C     PURPOSE: Orthogonalize new trial vector against all previous
-C              trial vectors (including the paired ones) and 
-C              normalize. Finally make a symmetric orthonormalization 
-C              of the the new trial vector and its pair trial vector. 
+C              trial vectors (including the paired ones) and
+C              normalize. Finally make a symmetric orthonormalization
+C              of the the new trial vector and its pair trial vector.
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -48,8 +48,12 @@ C------------------------------------------------
 C
       LTR1E   = NT1AM(ISYMTR)
       LTR1D   = NT1AM(ISYMTR)
-      LRSO1E  = NT1AM(ISYMTR)
-      LRSO1D  = NT1AM(ISYMTR)
+C      LRSO1E  = NT1AM(ISYMTR)
+C      LRSO1D  = NT1AM(ISYMTR)
+CRF No need to explicitly construct S[1]*TR, since S[1]
+CRF is always +/-1 !!
+      LRSO1E  = 0
+      LRSO1D  = 0
 C
       K1TR1E  = 1
       K1TR1D  = K1TR1E + LTR1E
@@ -80,61 +84,17 @@ C
 C
             CALL AROUND('Raw new trial vector in RP_ORTH_TRN')
 C
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &           (I,WORK(K1TR1E+I-1),WORK(K1TR1D+I-1),I=1,LTR1E)
 C
          END IF
 C
          ITURN = 0
 C
-         IF (LTYPE .EQ. 'LINEAR') THEN
-C
-C-----------------------------------------------------------------------
-C        For zero frequency linear response, the result will
-C        be Z = Y for real perturbations and Z = -Y for imaginary
-C        perturbations; trial vectors will have the same structure.
-C
-C
-C        However, if Z = Y or Z = -Y then (Z Y) and (Y Z) are linear
-C        dependent and we want instead (Z 0) and (0 Z) as trial vectors.
-C        (I try to use as much as I can the name used in RSPORT)         
-C-----------------------------------------------------------------------
-C
-         T1=DDOT(LTR1E,WORK(K1TR1E),1,WORK(K1TR1E),1)+
-     &      DDOT(LTR1D,WORK(K1TR1D),1,WORK(K1TR1D),1) 
-         OVLPI=TWO*DDOT(LTR1E,WORK(K1TR1E),1,WORK(K1TR1D),1)
-C        test if Z + Y is zero
-         TZPY  = T1 + OVLPI
-         IF (IPRSOP .GE. 5) WRITE (LUPRI,'(/A/,(A,1P,D15.8))')
-     *      ' ** in RP_ORTH_TRN: TEST OF Z = Y OR Z = -Y:',
-     *      ' (Z Y) norm squared =',T1,
-     *      ' Z + Y norm squared =',TZPY
-         IF (TZPY .LE. OVLMIN*T1) THEN
-            IF (IPRSOP .GE. 5) WRITE (LUPRI,'(/A,I4/A)')
-     *         ' Z = -Y in new trial vector no.',INEWTR,
-     *         ' Y component removed.'
-            CALL DZERO(WORK(K1TR1D),LTR1D)
-         ELSE IF (TZPY .GT. T1) THEN
-C           test if Z - Y is zero;
-C           only if TZPY = 2 * T1 can Z - Y be zero,
-C           so TZPY .gt. T1 is a safe test.
-            TZMY = T1 - OVLPI
-            IF (IPRSOP .GE. 5) WRITE (LUPRI,'(A,1P,D15.8)')
-     *         ' Z - Y norm squared =',TZMY
-            IF (TZMY .LE. OVLMIN*T1) THEN
-               IF (IPRSOP .GE. 5) WRITE (LUPRI,'(/A,I4/A)')
-     *         ' Z = Y in new trial vector no.',INEWTR,
-     *         ' Y component removed.'
-               CALL DZERO(WORK(K1TR1D),LTR1D)
-            END IF
-C
-         ENDIF
-C
-         ENDIF
 C
   200    CONTINUE
 C
-         ITURN = ITURN + 1 
+         ITURN = ITURN + 1
 C
 C-----------------------------------------
 C        Loop over previous trial vectors.
@@ -149,37 +109,38 @@ C
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,IPRVTR)
             CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,IPRVTR)
 C
-            IF ( IPRSOP .GE. 7 ) THEN
+            IF ( IPRSOP .GE. 9 ) THEN
 C
                CALL AROUND('Previous trial vector in RP_ORTH_TRN')
 C
-               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &              (I,WORK(KTR1E+I-1),WORK(KTR1D+I-1),I=1,LTR1E)
 C
             END IF
 C
 C----------------------------------------------------------------
-C           Orthogonalize new trial vector against previous trial 
+C           Orthogonalize new trial vector against previous trial
 C           vectors and their paired partners.
 C----------------------------------------------------------------
 C
-            CALL RP_RES_O(WORK(KRSO1E),LRSO1E, WORK(KRSO1D),LRSO1D,
-     &                    WORK(KTR1E), LTR1E,  WORK(KTR1D), LTR1D,
-     &                    ISYRES,      ISYMTR)
+C            CALL RP_RES_O(WORK(KRSO1E),LRSO1E, WORK(KRSO1D),LRSO1D,
+C     &                    WORK(KTR1E), LTR1E,  WORK(KTR1D), LTR1D,
+C     &                    ISYRES,      ISYMTR)
 C
-            DOTP = DDOT(LTR1E,WORK(K1TR1E),1,WORK(KRSO1E),1)
-     &           + DDOT(LTR1D,WORK(K1TR1D),1,WORK(KRSO1D),1)
+
+            DOTP = DDOT(LTR1E,WORK(K1TR1E),1,WORK(KTR1E),1)
+     &           - DDOT(LTR1D,WORK(K1TR1D),1,WORK(KTR1D),1)
 C
             CALL DAXPY(LTR1E,-DOTP,WORK(KTR1E),1,WORK(K1TR1E),1)
             CALL DAXPY(LTR1D,-DOTP,WORK(KTR1D),1,WORK(K1TR1D),1)
 C
 C
-            CALL RP_RES_O(WORK(KRSO1D),LRSO1D, WORK(KRSO1E),LRSO1E,
-     &                    WORK(KTR1D), LTR1D,  WORK(KTR1E), LTR1E,
-     &                    ISYRES,      ISYMTR)
+C            CALL RP_RES_O(WORK(KRSO1D),LRSO1D, WORK(KRSO1E),LRSO1E,
+C     &                    WORK(KTR1D), LTR1D,  WORK(KTR1E), LTR1E,
+C     &                    ISYRES,      ISYMTR)
 C
-            DOTP = DDOT(LTR1E,WORK(K1TR1E),1,WORK(KRSO1D),1)
-     &           + DDOT(LTR1D,WORK(K1TR1D),1,WORK(KRSO1E),1)
+            DOTP = DDOT(LTR1E,WORK(K1TR1E),1,WORK(KTR1D),1)
+     &           - DDOT(LTR1D,WORK(K1TR1D),1,WORK(KTR1E),1)
 C
             CALL DAXPY(LTR1E,DOTP,WORK(KTR1D),1,WORK(K1TR1E),1)
             CALL DAXPY(LTR1D,DOTP,WORK(KTR1E),1,WORK(K1TR1D),1)
@@ -190,22 +151,22 @@ C----------------------------------------------------
 C        Calculate absolute norm of new trial vector.
 C----------------------------------------------------
 C
-         CALL RP_RES_O(WORK(KRSO1E),LRSO1E, WORK(KRSO1D),LRSO1D,
-     &                 WORK(K1TR1E),LTR1E,  WORK(K1TR1D),LTR1D,
-     &                 ISYRES,      ISYMTR)
+C         CALL RP_RES_O(WORK(KRSO1E),LRSO1E, WORK(KRSO1D),LRSO1D,
+c     &                 WORK(K1TR1E),LTR1E,  WORK(K1TR1D),LTR1D,
+C     &                 ISYRES,      ISYMTR)
 C
-         DNORM = DDOT(LTR1E,WORK(K1TR1E),1,WORK(KRSO1E),1)
-     &         + DDOT(LTR1D,WORK(K1TR1D),1,WORK(KRSO1D),1)
+         DNORM = DDOT(LTR1E,WORK(K1TR1E),1,WORK(K1TR1E),1)
+     &         - DDOT(LTR1D,WORK(K1TR1D),1,WORK(K1TR1D),1)
 C
 C----------------------------------------------------------
 C        Remove new trial vector if it is linear dependent.
 C----------------------------------------------------------
-C 
+C
          THNORM = THRLDP
 C
          IF (DABS(DNORM) .LE. THNORM) THEN
 C
-            IF ( IPRSOP .GE. 1 ) WRITE(LUPRI,9002) DNORM 
+            IF ( IPRSOP .GE. 1 ) WRITE(LUPRI,9002) DNORM
 C
             NLINDP = NLINDP + 1
 C
@@ -239,8 +200,8 @@ C
             CALL DSCAL(LTR1E,DNORMI,WORK(K1TR1E),1)
             CALL DSCAL(LTR1D,DNORMI,WORK(K1TR1D),1)
 C
-            DNORM = DDOT(LTR1E,WORK(K1TR1E),1,WORK(KRSO1E),1)
-     &            - DDOT(LTR1D,WORK(K1TR1D),1,WORK(KRSO1D),1)
+            DNORM = DDOT(LTR1E,WORK(K1TR1E),1,WORK(K1TR1E),1)
+     &            - DDOT(LTR1D,WORK(K1TR1D),1,WORK(K1TR1D),1)
 C
          ENDIF
 C------------------------------------------------------------
@@ -278,11 +239,11 @@ C
          CALL SO_WRITE(WORK(K1TR1D),LTR1D,LUTR1D,FNTR1D,
      &                 NOLDTR+INEWTR-NLINDP)
 C
-         IF ( IPRSOP .GE. 6 ) THEN
+         IF ( IPRSOP .GE. 5 ) THEN
 C
             CALL AROUND('Orthonormalized trialvector in RP_ORTH_TRN')
 C
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &           (I,WORK(K1TR1E+I-1),WORK(K1TR1D+I-1),I=1,LTR1E)
 C
          END IF

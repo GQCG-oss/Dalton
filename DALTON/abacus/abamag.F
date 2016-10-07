@@ -1690,11 +1690,11 @@ C
 C
 C     Allocate work space for necessary information to be read by RSPMC
 C
-      CALL RD_SIRIFC('CMO',FOUND,CMO,WORK,LWORK)
+      CALL RD_SIRIFC('CMO',FOUND,CMO)
       IF (.NOT.FOUND) CALL QUIT('TRPRH1 error: CMO not found on SIRIFC')
       IF (NASHT .GT. 0) THEN
          IF (LWORK.LT.NNASHX)CALL STOPIT('TRPRH1','UDV',LWORK,NNASHX)
-         CALL RD_SIRIFC('DV',FOUND,WORK,WORK,LWORK)
+         CALL RD_SIRIFC('DV',FOUND,WORK)
          IF (.NOT.FOUND)
      &      CALL QUIT('TRPRH1 error: DV not found on SIRIFC')
             CALL DSPTSI(NASHT,WORK,UDV)

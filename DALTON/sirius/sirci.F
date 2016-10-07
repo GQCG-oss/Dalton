@@ -83,7 +83,7 @@ C             HFSRDFT call, we assume the HFSRDFT is done by now!)
 C
       IF (NASHT .GT. 1 .AND. .NOT. HSROHF)
      *   CALL GETCIX(WORK(KCINDX),LSYM,LSYM,WORK(KFREE),LFREE,0)
-      CALL READMO(WORK(KCMO),9,WORK(KFREE),LFREE)
+      CALL READMO(WORK(KCMO),9)
 C
 C     =================
       IF (.NOT.DOCISRDFT .OR. ISTACI .LE. 0) THEN
@@ -2213,13 +2213,12 @@ C
 C
 C *** Local variables:
 C
-      CHARACTER*8 TABLE(5), LAB123(3), CHRDUM
+      CHARACTER*8 TABLE(4), LAB123(3), CHRDUM
 C
 C *** data:
 C
       DATA LAB123(1)/'********'/
-      DATA TABLE/'********','OLDORB  ','STARTVEC','CIDIAG2 ',
-     *           'NEWORB  '/
+      DATA TABLE/'********','OLDORB  ','STARTVEC','CIDIAG2 '/
 C
       CALL QENTER('CIST  ')
       CALL GETDAT(LAB123(2),LAB123(3))

@@ -161,7 +161,8 @@ C
      *                  ISYMA,ISYMB,ISYMC,ISYMD,CMO,FC,MJWOP)
 C
 C
-      use pelib_interface, only: use_pelib, pelib_ifc_cro
+      use pelib_interface, only: use_pelib, pelib_ifc_cro,
+     &                           pelib_ifc_gspol
 #include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
@@ -258,11 +259,13 @@ C
              CALL QUIT('ERROR: triplets not implemented for cubic'//
      &                 ' response with PE library.')
          ENDIF
-         CALL PELIB_IFC_CRO(VECB, VECC, VECD, ETRS, XINDX,
-     &                      WRK(KZYMB), WRK(KZYMC), WRK(KZYMD),
-     &                      UDV, WRK(KFREE), LFREE, KZYVA, KZYVB,
-     &                      KZYVC, KZYVD, ISYMA, ISYMB, ISYMC,
-     &                      ISYMD, CMO, MJWOP)
+         IF (.NOT. PELIB_IFC_GSPOL()) THEN
+          CALL PELIB_IFC_CRO(VECB, VECC, VECD, ETRS, XINDX,
+     &                       WRK(KZYMB), WRK(KZYMC), WRK(KZYMD),
+     &                       UDV, WRK(KFREE), LFREE, KZYVA, KZYVB,
+     &                       KZYVC, KZYVD, ISYMA, ISYMB, ISYMC,
+     &                       ISYMD, CMO, MJWOP)
+         END IF
       END IF
 C
       IF (QMMM) THEN

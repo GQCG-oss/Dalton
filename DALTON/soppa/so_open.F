@@ -8,7 +8,7 @@ C     Keld Bak, May 1996
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Open and rewind the file LUFILE.
-C             
+C
 #include "implicit.h"
 #include "soppinf.h"
 C

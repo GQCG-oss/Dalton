@@ -1480,7 +1480,7 @@ C
 C               restore old CMO from LUIT1 (for backstep);
 C               no DIFDEN because DAOSAV is for current, not previous iteration
 C
-                CALL READMO(CMO,9,DUMMY,1)
+                CALL READMO(CMO,9)
                 DIFDEN = .FALSE.
              END IF
              IF (JNDEVC .NE. 1) THEN
@@ -1928,13 +1928,12 @@ C
          CALL MEMREL('DIIS_CTL.WR_SIRIFC',WRK,1,KPV,KFREE,LFREE)
       END IF
 C
-C        Transform integrals for abacus or response,
+C        Transform integrals for abacus or response or something else,
 C        if converged and if not followed by higher level,
-C        and if not Cholesky decomposition
+C        and if requested in input (.FINAL TRANSFORMATION)
 C
       IF (ICONV .NE. 0 .AND. ABS(ITRFIN) .LE. 10 .AND.
-     &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC) .AND.
-     &    .NOT. CHOINT) THEN
+     &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC)) THEN
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3)')
      &      ' --- Transforming 2-el. integrals acc. to'//
      &      ' .FINAL TRANSFORMATION =',ITRFIN

@@ -2253,6 +2253,8 @@ C
             END IF
          END IF
 C
+C     We check to see if there is any properties to be calculated
+C
          WORK(1) = WRKDLM
          WRINDX = .TRUE.
 Chj aug 99: reset IPRUSR to original level
@@ -2274,9 +2276,6 @@ C        Computation of numerical Hessian NHL 10/13
      &                         'is unexpected')          
          END IF
 
-C
-C     We check to see if there is any properties to be calculated
-C
          CALL EXEABA(WORK,LWORK-1,WRKDLM)
 C
 C     We also check to see if we have requested a RESPONSE calculations
@@ -2290,16 +2289,14 @@ C
  133     CONTINUE
          READ (LUCMD,'(A7)',END=134,ERR=134) WRDRSP
          IF (WRDRSP .EQ. '**RESPO') THEN
-            REWIND (LUCMD)
             RNRESP = .TRUE.
-            CALL SETSIR(WORK(2),LWORK)
-            CALL GPCLOSE(LUSIFC,'KEEP')
             CALL GPCLOSE(LUCMD,'KEEP')
+            IF (LUSIFC.GT.0) CALL GPCLOSE(LUSIFC,'KEEP')
             CALL RSPDRV(WORK(2),LWORK)
          ELSE
             GOTO 133
          END IF
- 134     CONTINUE 
+ 134     CONTINUE
          IF (LUCMD .GT. 0) CALL GPCLOSE(LUCMD,'KEEP')
 C
 C     Single point energy is calculated if requested.

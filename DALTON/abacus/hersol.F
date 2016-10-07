@@ -1608,7 +1608,7 @@ C
 C     Construct GLM, TLM, and density matrix
 C
       CALL SOLFL(GLM,EPDIEL,RCAV,LCAVMX)
-      CALL RD_SIRIFC('SOLTLM',FOUND,TLM,WORK,LWORK)
+      CALL RD_SIRIFC('SOLTLM',FOUND,TLM)
       IF (.NOT. FOUND)
      &    CALL QUIT('MAGSO1 ERROR: "SOLTLM" not found on SIRIFC.')
 C
@@ -1778,7 +1778,7 @@ C
 C     Construct GLM, TLM, and density matrix
 C
       CALL SOLFL(GLM,EPDIEL,RCAV,LCAVMX)
-      CALL RD_SIRIFC('SOLTLM',FOUND,TLM,WORK,LWORK)
+      CALL RD_SIRIFC('SOLTLM',FOUND,TLM)
       IF (.NOT. FOUND)
      &    CALL QUIT('MAGSO2 ERROR: "SOLTLM" not found on SIRIFC.')
 C
@@ -1995,7 +1995,7 @@ C
 C     Construct GLM, TLM, and density matrix
 C
       CALL SOLFL(GLM,EPDIEL,RCAV,LCAVMX)
-      CALL RD_SIRIFC('SOLTLM',FOUND,TLM,WORK,LWORK)
+      CALL RD_SIRIFC('SOLTLM',FOUND,TLM)
       IF (.NOT. FOUND)
      &    CALL QUIT('MAGSO1 ERROR: "SOLTLM" not found on SIRIFC.')
 C

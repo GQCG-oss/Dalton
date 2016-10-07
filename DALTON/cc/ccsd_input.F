@@ -1298,7 +1298,7 @@ c         table look up:
             IJUMP = IJUMP + 1
           END DO
      
-c         jump to the appropiate input section:
+c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
             GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
@@ -1309,10 +1309,10 @@ C           -------------------------------------------
 C           .NCCEXC # excitation energies to solve for:
 C           -------------------------------------------
 1           CONTINUE
-               ! read # singlett states
+               ! read # singlet states
                READ (LUCMD,*) (NCCEXCI(ISYM,1),ISYM=1,MSYM)
 
-               WRITE (LUPRI,*) 'NCCEXCI for singlet:',
+               WRITE (LUPRI,'(A,8I5)') 'NCCEXCI for singlet:',
      &              (NCCEXCI(ISYM,1),ISYM=1,MSYM)
 
                ! check for further excitation energy input:
@@ -1324,7 +1324,7 @@ C           -------------------------------------------
 
                   ! read # triplett states
                   READ (LUCMD,*) (NCCEXCI(ISYM,3),ISYM=1,MSYM)
-                  WRITE (LUPRI,*) 'NCCEXCI for triplet:',
+                  WRITE (LUPRI,'(A,8I5)') 'NCCEXCI for triplet:',
      &                 (NCCEXCI(ISYM,3),ISYM=1,MSYM)
                END IF                                 
             GO TO 100
@@ -1801,7 +1801,7 @@ c         table look up:
             IJUMP = IJUMP + 1
           END DO
 
-c         jump to the appropiate input section:
+c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
             GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20),
@@ -2442,7 +2442,7 @@ c         table look up:
             IJUMP = IJUMP + 1
           END DO
 
-c         jump to the appropiate input section:
+c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_OPAINP.')
@@ -2911,7 +2911,7 @@ c         table look up:
             IJUMP = IJUMP + 1
           END DO
 
-c         jump to the appropiate input section:
+c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), 
      &            IJUMP
@@ -3315,7 +3315,7 @@ c         table look up:
             IJUMP = IJUMP + 1
           END DO
 
-c         jump to the appropiate input section:
+c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
             GOTO (1,2,3,4,5), IJUMP
@@ -3973,7 +3973,7 @@ c         table look up:
             IJUMP = IJUMP + 1
           END DO
      
-c         jump to the appropiate input section:
+c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
             GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), IJUMP
@@ -5135,7 +5135,7 @@ c         table look up:
             IJUMP = IJUMP + 1
           END DO
      
-c         jump to the appropiate input section:
+c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
             GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), 
@@ -5711,7 +5711,7 @@ c         table look up:
             IJUMP = IJUMP + 1
           END DO
      
-c         jump to the appropiate input section:
+c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
             GOTO ( 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
@@ -6398,7 +6398,7 @@ c         table look up:
             IJUMP = IJUMP + 1
           END DO
      
-c         jump to the appropiate input section:
+c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
             GOTO (1,2,3,4,5,6,7,8,9,10), IJUMP
@@ -6730,7 +6730,7 @@ c         table look up:
             IJUMP = IJUMP + 1
           END DO
      
-c         jump to the appropiate input section:
+c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
             GOTO (1,2,3,4,5,6,7,8,9,10), IJUMP
@@ -7264,7 +7264,7 @@ C the CC_EXLRINP module with CC3:
             IJUMP = IJUMP + 1
           END DO
      
-*         jump to the appropiate input section:
+*         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
             GOTO (1,2,3,4,5,6,7,8,9,10,11,12), IJUMP
@@ -7638,7 +7638,7 @@ c         table look up:
             IJUMP = IJUMP + 1
           END DO
      
-c         jump to the appropiate input section:
+c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
             GOTO (1,2,3,4,5,6,7,8,9,10), IJUMP
