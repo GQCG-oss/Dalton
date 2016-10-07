@@ -125,24 +125,28 @@ C  /* Deck reainp */
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-      PARAMETER ( NTABLE = 12, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 13, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 !
 !     Parameter MAXPRD in cbirea.h is default for MAXPRI
+! numder.h : NOMOVE
 #include "cbirea.h"
+#include "numder.h"
 #include "r12int.h"
 #include "qm3.h"
 C
       DATA TABLE /'.PRINT ', '.CONTIN', '.MAXPRI', '.BIGVEC',
      *            '.ONLYOV', '.SYMTHR', '.CM FUN', '.ZCMVAL',
-     *            '.WRTLIN', '.UNCONT', '.ANGSTR', '.R12AUX'/
+     *            '.WRTLIN', '.UNCONT', '.ANGSTR', '.R12AUX',
+     &            '.NOMOVE'/
 C
 C     ... in qm3.h, for QM3:
       ONLYOV = .FALSE.
 C
       NEWDEF = (WORD .EQ. '*READIN' .OR. WORD .EQ. '*MOLBAS')
       ICHANG = 0
+      IPREAD_ini = IPREAD
       IF (NEWDEF) THEN
          WORD1 = WORD
   100    CONTINUE
@@ -166,7 +170,7 @@ C
      *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword for '//WORD1)
-    1          CONTINUE
+    1          CONTINUE ! .PRINT
                   IPREAD_ini = IPREAD
                   READ (LUCMD, *,IOSTAT=IOS) IPREAD
                   IF (IOS.NE.0) THEN
@@ -190,23 +194,19 @@ C                 Sonia, 2012
                   NCMEND = NINT(CMEND)
                   LCNTNUUM = .true.
                GO TO 100
-C                 '.MAXPRI'
-    3          CONTINUE
+    3          CONTINUE ! .MAXPRI
                   READ (LUCMD, *,IOSTAT=IOS) MAXPRI
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .MAXPRI')
                   ENDIF
                GO TO 100
-C                 '.BIGVEC'
-    4          CONTINUE
+    4          CONTINUE ! .BIGVEC
                   BIGVC = .TRUE.
                GO TO 100
-C                 '.ONLYOV'
-    5          CONTINUE
+    5          CONTINUE ! .ONLYOV
                   ONLYOV= .TRUE.
                GO TO 100
-C                 '.SYMTHR'
-    6          CONTINUE
+    6          CONTINUE ! .SYMTHR
                   READ (LUCMD, *,IOSTAT=IOS) TOL_SYMADD
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error in reading .SYMTHR')
@@ -226,30 +226,29 @@ C              '.CM FUN'
                   NCMSTR = NINT(2*CMSTR + 0.01D0)
                   NCMEND = NINT(2*CMEND + 0.01D0)
                GO TO 100
-C              '.ZCMVAL'
-    8          CONTINUE
+    8          CONTINUE ! .ZCMVAL
                   READ (LUCMD,*,IOSTAT=IOS) ZCMVAL
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .ZCMVAL')
                   ENDIF
                GO TO 100
-C              '.WRTLIN'  (ach easier to debug intgral input)
-    9          CONTINUE
+    9          CONTINUE ! .WRTLIN  (ach easier to debug intgral input)
                   WRTLIN= .TRUE.
                GO TO 100
-C              '.UNCONT'
-   10          CONTINUE
+   10          CONTINUE ! .UNCONT
                   UNCONT = .TRUE.
                GO TO 100
-C              '.ANGSTR'
-   11          CONTINUE
+   11          CONTINUE ! .ANGSTR
                   ANGS = .TRUE.
                GO TO 100
-   12          CONTINUE
-C              '.R12AUX'
+   12          CONTINUE ! '.R12AUX'
 C              (moved here June 09, because LMULBS used in READIN
 C              (renamed from .AUXBAS) /hjaaj
                   LMULBS = .TRUE.
+   13          CONTINUE ! .NOMOVE
+C setting NOMOVE to true disables redefinition of coordinates for automatically
+C determined symmetry
+                  NOMOVE = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -270,8 +269,8 @@ C              (renamed from .AUXBAS) /hjaaj
          IF (ONLYOV) WRITE (LUPRI,'(A)')
      &  ' Stop after calculation of overlap integrals (.ONLYOV) for QM3'
          IF (TOL_SYMADD .NE. 0.0D0) THEN
-            WRITE (LUPRI,'(A,1P,G9.2)')
-     &      ' Symmetry detection threshold: ',TOL_SYMADD
+            WRITE (LUPRI,'(A,1P,G10.2)')
+     &      ' Symmetry detection threshold:',TOL_SYMADD
          END IF
          IF (UNCONT) THEN
             WRITE (LUPRI,'(/A)')
@@ -296,7 +295,7 @@ C              (renamed from .AUXBAS) /hjaaj
          IF (LCMMAX .GT. -1) THEN
             if (LCNTNUUM) then
             WRITE (LUPRI,'(/A,I5)')
-     &           ' Continuum center of mass basis fctns  with l(max) =',
+     &           ' Continuum center of mass basis fctns with l(max) =',
      &           LCMMAX
             else
             WRITE (LUPRI,'(/A,I5)')
@@ -342,10 +341,10 @@ C
 #include "maxaqn.h"
 #include "ccom.h"
 #include "cbirea.h"
+#include "numder.h"
 #include "ecpinf.h"
 #include "qm3.h"
 #include "r12int.h"
-#include "numder.h"
 #include "nuclei.h"
 C
       LOGICAL FIRST_CALL
@@ -544,7 +543,8 @@ C
       IF (IOS.NE.0) THEN
          WRITE (LUPRI,'(/A,I5/A/A)') 'Error in input line no. ',NMLINE,
      &   MLINE(NMLINE),'Error in reading basis keyword'
-         CALL QUIT('Error in reading basis keyword in .mol file')
+         CALL QUIT(
+     /   'Error in reading basis keyword in first line of .mol file')
       ENDIF
 
 #ifdef PRG_DIRAC
@@ -625,7 +625,7 @@ C
 C     CALL RDLINE(LUINFO)
 C     READ (MLINE(NMLINE),'(A6)') KEYWRD
 C     IF (KEYWRD .NE. 'FINISH') GOTO 5030
-      IF (IPREAD .GT. 10) CALL REAPRI
+      IF (IPREAD .GT. 10) CALL READIN_PRINT
       IF (NEWFILE) CALL GPCLOSE(LUINFO,'KEEP')
 C
       IF (NODDYDF) CALL DENFIT_NODDY_INT
@@ -637,12 +637,12 @@ C
 C Error messages:
 C
  5010 CONTINUE
-      CALL QUIT('Wrong keyword. Expecting INTGRL or BASIS')
+      CALL QUIT('Wrong keyword. Expecting INTGRL, BASIS or ATOMBA.')
  5020 CONTINUE
       CALL STOPIT('READIN','READ_MOL',KLAST,LWORK)
-C5030 CONTINUE
-      CALL QUIT('Wrong keyword. Expecting FINISH')
-      END ! SUBROUITNE READIN
+!5030 CONTINUE
+!     CALL QUIT('Wrong keyword. Expecting FINISH')
+      END ! SUBROUTINE READIN
 C  /* Deck read_mol */
       SUBROUTINE READ_MOL(LUINFO,WORK,LWORK,
      &           NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
@@ -747,7 +747,7 @@ C     Initialize ISUBSY for QM3 info to all atoms QM atoms
       CALL IZERO(ISUBSY,MXQM3)
 C
 C***********************************************************************
-C     Card 1: Keyword (INTGRL/BASIS) - read in READIN
+C     Card 1: Keyword (INTGRL/BASIS/ATOMBA/...) - read in READIN
 C***********************************************************************
 C***********************************************************************
 C     Card 2: If basis set library, read additional card containing basis set
@@ -1174,7 +1174,7 @@ C***********************************************************************
 C
          CALL RDLINE(LUINFO)
          BKPLIN = MLINE(NMLINE)
-         CALL UPCASE(BKPLIN)
+         CALL UPCASE(BKPLIN) ! used to make case-insensitive keyword checks
 C
 C        Test if Z-matrix for first line (I.eq.1):
 C
@@ -1354,8 +1354,10 @@ C
      &         '  Nuclear charge:',Q,
      &         '  Number of symmetry independent centers:',NONT(I)
             IF (NONT(I).LE.0) THEN
-               WRITE(LUPRI,'(/A)') 'INPUT ERROR: '//
-     &         'Number of symmetry independent centers invalid.'
+               WRITE(LUPRI,'(/A/A,I0,A/A)') 'INPUT ERROR. '//
+     &         'Number of symmetry independent centers is not valid.',
+     &         'Error is in .mol file line no. ',NMLINE,':',
+     &         MLINE(NMLINE)
                CALL QUIT('Input error in .mol file, see output.')
             ENDIF
          ENDIF
@@ -1520,7 +1522,7 @@ C...
      &                       MLINE(NMLINE-NONT(I))((IPOS+IPOS2):IPOS3-1)
                            ENDIF
                          ELSE
-                           WRITE (LUPRI,'(A,I4,A/A)') 'No auxiliary ' //
+                           WRITE (LUPRI,'(A,I0,A/A)') 'No auxiliary ' //
      &                          'basis set given for atom kind # ', I,
      &                          ' - input line:',MLINE(NMLINE-NONT(I))
                            CALL QUIT('Incorrect input for '//
@@ -1534,8 +1536,7 @@ C...
                     WRITE (LUPRI,'(A,I4,A/A)') 'No basis set given '//
      &                   'for atom kind # ', I,
      &                    ' - input line:',MLINE(NMLINE-NONT(I))
-                    CALL QUIT('Incorrect input for '//
-     &                   'basis set name')
+                    CALL QUIT('Incorrect input for basis set name')
                  END IF
                  DO ILEN = 1, LEN(BASNAM)
                     IF (BASNAM(ILEN:ILEN) .NE. ' ') GO TO 33
@@ -1583,11 +1584,8 @@ C     &                 BASNAM(1:LBASNAM),'"'
               IF (BASNAM(1:6) .EQ. 'INTGRL') THEN
 C                This makes it possible to specify basis sets
 C                not in basis library for some atoms.
-C                Use DIRAC style format for specifying IQM and JCO.
-                 CALL RDLINE(LUINFO)
-                 READ (MLINE(NMLINE),'(BN,A5,12I5)')
-     &                BSET,IQM(I,J),(JCO(K,I,J),K=1,IQM(I,J))
-                 IF (BSET .EQ. '     ') BSET = 'Input'
+C                IQM(I,J) and (JCO(K,I,J),K=1,IQM(I,J)) must have been
+C                defined with the Blocks= keyword in LINE5R routine.
                  CALL GTOINP(LUINFO,IQM(I,J),JCO(1,I,J),
      &                NUC(IBLOCK(J),J),NRC(IBLOCK(J),J),
      &                SEG(IBLOCK(J),J),
@@ -1794,8 +1792,8 @@ C
           END IF
 C
 C 3: Testing if the number of diatomic sigma and epsilon parameters
-C    read matches the number generated from the knowledge of sytem-
-C    types and number of nuclei for each systemtype:
+C    read matches the number generated from the knowledge of system
+C    types and number of nuclei for each system type:
 C
           IF (LTWOPAR) THEN
             INT_TEMP = 0
@@ -2090,9 +2088,10 @@ C
 C       Error messages:
 C
  5000 CONTINUE
-        WRITE (LUPRI,'(/A/A,I5)')
-     &    ' Too many atomic centers: MXCENT exceed in CNTINP,',
-     &    ' Current limit:',MXCENT
+        WRITE (LUPRI,'(/A/A,I0/A)')
+     &    ' Too many atomic centers: MXCENT exceeded in CNTINP,',
+     &    ' Current limit : ',MXCENT,
+     &    ' Increase MXCENT in DALTON/include/mxcent.h and recompile.'
         CALL QUIT('*** ERROR *** MXCENT exceeded in CNTINP')
  5010 CONTINUE
         WRITE (LUPRI,'(A,1P,E12.5,A/A/A,E12.5)')
@@ -2303,19 +2302,19 @@ C
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' BASPRO error, number of shells                 ',KMAX,
      *  '               current maximum number (MXSHEL)  ',MXSHEL,
-     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile.'
         CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' BASPRO error, number of contracted basis functions',NBASIS,
      *  '               current maximum number (MXCORB)     ',MXCORB,
-     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile.'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' BASPRO error, number of primitive basis functions',NPBAS,
      *  '               current maximum number (MXPRIM)    ',MXPRIM,
-     *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile.'
         CALL QUIT('BASPRO: Too many primitives, increase MXPRIM')
  5030 CONTINUE
         CALL STOPIT('BASPRO','SYMPRO',KLAST,LWORK)
@@ -2325,7 +2324,7 @@ C
      *     ISHELL,
      *  '                   current maximum number                 ',
      *     MXSHEL,
-     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile.'
         CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5050 CONTINUE
         WRITE (LUPRI,'(/A,A,I6,/A,A,I6,/A)')
@@ -2334,7 +2333,7 @@ C
      *  IORBD,
      *  '                   current maximum number                  ',
      *  '        ',MXCORB,
-     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile.'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5060 CONTINUE
         WRITE (LUPRI,'(/A,A,I6,/A,A,I6,/A)')
@@ -2343,7 +2342,7 @@ C
      *  IPRIMD,
      *  '                   current maximum number                 ',
      *  '       ',MXPRIM,
-     *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile.'
         CALL QUIT('BASPRO: Too many primitives, increase MXPRIM')
       END
 C  /* Deck basout */
@@ -3938,11 +3937,12 @@ C
      &     ' Z_A, Z_B :',CORD(3,N),CORD(3,M)*PT(IAND(ISYMAX(3,1),KB))
       CALL QUIT('NUCPRO: Nuclei too close.')
  5010 CONTINUE
-      WRITE (LUPRI,'(///A/2(A,I5/)/A,I5,A)')
+      WRITE (LUPRI,'(///A/2(A,I5/)/A,I0,A)')
      &      ' Allowed number of atoms exceeded.',
      &      ' - Number of atoms in input:',NUCDEP,
      &      ' - Number of atoms allowed: ',MXCENT,
-     &      ' Increase MXCENT to at least',NUCDEP,' and recompile.'
+     &      ' Increase MXCENT in DALTON/include/mxcent.h to at least ',
+     &      NUCDEP,' and recompile.'
       CALL QUIT('NUCPRO: Too many atoms for current value of MXCENT.')
 C
  1000 FORMAT(2X,A4,5X,3F10.5,F20.8/,
@@ -5892,8 +5892,8 @@ C
       CALL GPCLOSE(LUONEL,'KEEP')
       RETURN
       END
-C  /* Deck reapri */
-      SUBROUTINE REAPRI
+C  /* Deck READIN_PRINT */
+      SUBROUTINE READIN_PRINT
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -5913,7 +5913,7 @@ C
 #include "chrsgn.h"
 #include "aosotr.h"
 C
-      CALL HEADER('Test output from REAPRI',-1)
+      CALL HEADER('Test output from READIN_PRINT',-1)
       WRITE(LUPRI,'(A,1P,D12.2)') '  THRS  ', THRS
       WRITE(LUPRI,'(A,I5)')    '  NHTYP ', NHTYP
       WRITE(LUPRI,'(A,L5)')    '  DOCART', DOCART
@@ -7023,11 +7023,10 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
         IF (ADDSYM) THEN
             ADDSYM = .FALSE.
         ELSE IF (NSYMOP > 0) THEN
-            WRITE(LUPRI,'(/A)') 'ERROR: point group symmetry is'//
-     &                          ' incompatible with polarizable'//
-     &                          ' embedding'
-            CALL QUIT('point group symmetry is incompatible with'//
-     &                ' polarizable embedding')
+            WRITE(LUPRI,'(/A)') 'ERROR: Point group symmetry is'//
+     &         ' incompatible with polarizable embedding'
+            CALL QUIT('ERROR: Point group symmetry is'//
+     &         ' incompatible with polarizable embedding')
         END IF
       END IF
       RETURN
@@ -7124,7 +7123,8 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
       CHARACTER TMPLN*80, BASNAM*80, BKPLIN*80, FRMT*5
-      LOGICAL BASIS, ATOMBA, LMULBS, FOUNDR, FOUNDA
+      LOGICAL   BASIS, ATOMBA, LMULBS, READ_BLOCKS
+      LOGICAL   FOUNDR, FOUNDA
       DIMENSION JCO(KANG)
 C
       CALL QENTER('LINE5R')
@@ -7186,28 +7186,7 @@ C
 C
 C     Read in basis set information
 C
-         IF (.NOT. (BASIS .OR. ATOMBA)) THEN
-            IPOS = INDEX(BKPLIN,'BLO')
-            IF (IPOS .NE. 0) THEN
-               IPOS2 = INDEX(BKPLIN(IPOS:),'=')
-               IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
-                  WRITE (LUPRI,*) 'Incorrect input for # of '//
-     &                 'integral blocks in'
-                  WRITE (LUPRI,*) TMPLN
-                  WRITE (LUPRI,*) 'Format is "Blocks=? ? ?"'
-                  CALL QENTER('LINE5R')
-                  CALL QUIT('Incorrect input for # of '//
-     &                 'integral blocks')
-               ELSE
-                  ISTART = IPOS + IPOS2
-                  CALL FREFRM(BKPLIN,ISTART,IQM,DUMMY,'INT',IERR)
-                  DO IQMLOP = 1, IQM
-                     CALL FREFRM(BKPLIN,ISTART,JCO(IQMLOP),DUMMY,'INT',
-     &                           IERR)
-                  END DO
-               END IF
-            END IF
-         ELSE IF (ATOMBA) THEN
+         IF (ATOMBA) THEN
             IPOS = INDEX(BKPLIN,'BAS')
             IF (IPOS .NE. 0) THEN
                IPOS2 = INDEX(BKPLIN(IPOS:),'=')
@@ -7244,6 +7223,37 @@ C
                WRITE (LUPRI,*) TMPLN
                CALL QUIT( 'ATOMBASIS selected, but no '//
      &              'atomic basis set specified for one atom type')
+            END IF
+         END IF
+
+! Blocks= not valid for library basis sets
+         READ_BLOCKS = .NOT. BASIS
+     &           .AND. .NOT.(ATOMBA .AND. BASNAM.NE.'INTGRL')
+         IPOS = INDEX(BKPLIN,'BLO')
+         IF (IPOS .NE. 0) THEN
+            IF (.NOT. READ_BLOCKS) THEN
+               WRITE (LUPRI,*) 'Incorrect input in'
+               WRITE (LUPRI,*) TMPLN
+               WRITE (LUPRI,*)'Blocks= not valid for library basis sets'
+               CALL QENTER('LINE5R')
+               CALL QUIT('Blocks= not valid for library basis sets')
+            END IF
+            IPOS2 = INDEX(BKPLIN(IPOS:),'=')
+            IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
+               WRITE (LUPRI,*) 'Incorrect input for # of '//
+     &              'integral blocks in'
+               WRITE (LUPRI,*) TMPLN
+               WRITE (LUPRI,*) 'Format is "Blocks=? ? ?"'
+               CALL QENTER('LINE5R')
+               CALL QUIT('Incorrect input for # of '//
+     &              'integral blocks')
+            ELSE
+               ISTART = IPOS + IPOS2
+               CALL FREFRM(BKPLIN,ISTART,IQM,DUMMY,'INT',IERR)
+               DO IQMLOP = 1, IQM
+                  CALL FREFRM(BKPLIN,ISTART,JCO(IQMLOP),DUMMY,'INT',
+     &                        IERR)
+               END DO
             END IF
          END IF
 C

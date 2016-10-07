@@ -1,8 +1,9 @@
       INTEGER ISAO
-      INTEGER CCISAOlast
-C
-      COMMON /CCISAO/ ISAO(MXCORB),                                     &
-     &   CCISAOlast !  Very important:
-      !  Always keep CCISAOlast as the last variable in the common block. 
+      INTEGER CCISAOLAST
+!
+      COMMON /CCISAO/ ISAO(MXCORB)
+!
+      COMMON /CCISAO/ CCISAOLAST
+      !  Very important !!!
+      !  Always keep CCISAOLAST as the last variable in the common block. 
       !  See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
-! -- end of ccisao.h

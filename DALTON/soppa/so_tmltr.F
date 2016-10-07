@@ -6,11 +6,11 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Andrea Ligabue, January 2004
 C
-C     Develepode starting frm CCSD_TCMEPKX 
+C     Developed starting frm CCSD_TCMEPKX
 C     Henrik Koch and Alfredo Sanchez.                Dec 1994
 C     Made workable for non-symmetric T2AM, Keld Bak, Dec 1996
 C
-C     Purpose: calculate the left T_aibj starting from the right ones 
+C     Purpose: calculate the left T_aibj starting from the right ones
 C     (I need to call that subroutine with SCAL = HALF)
 C
 #include "implicit.h"

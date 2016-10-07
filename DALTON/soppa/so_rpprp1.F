@@ -6,7 +6,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, July 1997
 C
-C     PURPOSE: Repack the one-particle property mo-integrals (PRP1) in 
+C     PURPOSE: Repack the one-particle property mo-integrals (PRP1) in
 C              an occupied-occupied matirx (PR1IJ) and a virtual-virtual
 C              matrix (PR1AB).
 C

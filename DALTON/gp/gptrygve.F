@@ -28,6 +28,7 @@ C General Purpose utility routines (originally) introduced in Dalton by Trygve H
 C or one of his students
 C
 ! Dirac uses INT_STAR8 and Dalton used VAR_INT64;
+! If one set then set the other:
 #ifdef INT_STAR8
 #define VAR_INT64
 #endif
@@ -97,6 +98,52 @@ C        Jun 06 hjaaj: do not print times less than 0.1 seconds
                LOUT = 18 + 10 + 3
             END IF
             CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
+            CALL FLSHFO(LUPRI)
+         END IF
+      END IF
+      RETURN
+      END
+C  /* Deck newtimer */
+      SUBROUTINE newTIMER(TEXT)
+!
+!   Feb 2016 hjaaj:
+!   newTIMER prints both used CPU time and used WALL time,
+!   while the old TIMER subroutine only prints used CPU time.
+!   Also, TIMSTR and WALSTR are saved internally and not
+!   returned to calling routine (as TIMSTR,TIMEND are in old TIMER)
+!
+#include "implicit.h"
+#include "priunit.h"
+      CHARACTER TEXT*(*), OUT_TEXT*51, BLANK*10
+      PARAMETER ( BLANK = '          ')
+      REAL*8, SAVE :: TIMSTR, TIMEND, WALSTR, WALEND
+C
+      IF (TEXT(1:5) .EQ. 'START') THEN
+         CALL GETTIM(TIMSTR,WALSTR)
+      ELSE
+         CALL GETTIM(TIMEND,WALEND)
+
+         TIME   = TIMEND - TIMSTR
+         WALLT  = WALEND - WALSTR
+         TIMSTR = TIMEND
+         WALSTR = WALEND
+
+         IF (TIME .GT. 0.1D0 .OR. WALLT .GT. 0.1D0) THEN
+C        Jun 06 hjaaj: do not print times less than 0.1 seconds
+            LTEXT = LNBLNK(TEXT)
+            LTEXT = MIN(30,LTEXT)
+            IF (LTEXT .GE. 10) THEN
+               OUT_TEXT = ' CPU  time used in '//TEXT(1:LTEXT)//' is'
+               LOUT = 19 + LTEXT + 3
+            ELSE
+               LBLANK = 10 - LTEXT
+               OUT_TEXT = ' CPU  time used in '//TEXT(1:LTEXT)//
+     &                    BLANK(1:LBLANK)//' is'
+               LOUT = 19 + 10 + 3
+            END IF
+            CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
+            OUT_TEXT(2:5) = 'WALL'
+            CALL TIMTXT(OUT_TEXT(1:LOUT),WALLT,LUPRI)
             CALL FLSHFO(LUPRI)
          END IF
       END IF
@@ -1172,11 +1219,15 @@ C
       CALL QUIT('ERROR (GPOPEN) ILLEGAL FILE NUMBER REQUESTED')
 C
  9003 CONTINUE
-      WRITE (LUGPPRI,'(//A//A,I5/2A//A)')
+      WRITE (LUGPPRI,'(//A//A,I5/2A//A/)')
      &   '--> ERROR (GPOPEN) TRYING TO USE A FILE NUMBER ALREADY IN USE'
      &  ,'--> Offending UNIT number: ',LUNIT,
      &   '--> Name of offending file (if any): ', FILENM(1:FILELN),
      &   '### Please report the problem on http://daltonforum.org'
+      WRITE(LUPRI,'(2A)')
+     &   ' Input parameter status : ',STATIN,
+     &   ' Input parameter access : ',ACCEIN,
+     &   ' Input parameter format : ',FORMIN
       INQUIRE(UNIT=LUNIT,OPENED=FEXST)
       IF (FEXST) THEN
          INQUIRE(UNIT=LUNIT,NAME=FILENM)
@@ -1487,7 +1538,8 @@ C        ......... then whole line is a comment line, we skip it
 C
       DO I = 1, LEN_WORD
          K = INDEX(LOWER,WORD(I:I))
-         IF (K .NE. 0) WORD(I:I)=UPPER(K:K)
+         IF (K .NE. 0) WORD(I:I) = UPPER(K:K)
+         IF (ICHAR(WORD(I:I)) .EQ. 9) WORD(I:I) = ' ' ! change tab to blank
       END DO
 C
  9000 CONTINUE

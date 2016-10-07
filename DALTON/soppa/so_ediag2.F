@@ -72,7 +72,7 @@ C
 C
                DO 203 B = 1,NVIR(ISYMB)
 C
-                  NBJ   = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J - 1) + B
+                  NBJ   = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J - 1) + B-1
 C
                   KOFFB = IVIR(ISYMB) + B
 C
@@ -98,7 +98,7 @@ C
 C
                DO 303 A = 1,NVIR(ISYMA)
 C
-                  NAI   = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I - 1) + A
+                  NAI   = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I - 1) + A-1
 C
                   KOFFA = IVIR(ISYMA) + A
 C
@@ -125,7 +125,7 @@ C
                   NAIBJ = IT2AM(ISYMAI,ISYMBJ)
      &                  + INDEX(NAI,NBJ)
 C
-                  DIAG2(NAIBJ) = WORK(KFAI+NAI) + WORK(KFBJ+NBJ)
+                  DIAG2(NAIBJ) = WORK(KFAI-1+NAI) + WORK(KFBJ-1+NBJ)
 C
   402          CONTINUE
 C
@@ -140,7 +140,7 @@ C
                   NAIBJ = IT2AM(ISYMAI,ISYMBJ)
      &                  + NT1AM(ISYMAI)*(NBJ - 1) + NAI
 C
-                  DIAG2(NAIBJ) = WORK(KFAI+NAI) + WORK(KFBJ+NBJ)
+                  DIAG2(NAIBJ) = WORK(KFAI-1+NAI) + WORK(KFBJ-1+NBJ)
 C
   502          CONTINUE
 C

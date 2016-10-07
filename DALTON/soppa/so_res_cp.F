@@ -320,7 +320,7 @@ C
      &                        WORK(KRDBC1),WORK(KRDBC2),
      &                        WORK(KODPP1),WORK(KODPP2),
      &                        WORK(KRDPP1),WORK(KRDPP2),
-     &                        WORK(KCCFB1),WORK(KINDXB), 
+     &                        WORK(KCCFB1),WORK(KINDXB),
      &                        WORK(KEND2),LWORK2,IPRINT)
 C
                   DTIME     = SECOND()  - DTIME
@@ -333,7 +333,7 @@ C
 C
 C-------------------------------------------------------------------------------------------------
 C              Loop over number of distributions in disk.
-C              In the case of ERI 
+C              In the case of ERI
 C                 there are more than one distribution and IDEL2 loops over them and
 C                 the actual index of the delta orbital IDEL is then obtain from the array INDEXA.
 C              In the case of a not direct calculation
@@ -370,7 +370,7 @@ C
                LWORK3  = LWORK  - KEND3
 C
                CALL SO_MEMMAX ('SO_RES_CP.3',LWORK3)
-               IF (LWORK3 .LT. 0) 
+               IF (LWORK3 .LT. 0)
      &             CALL STOPIT('SO_RES_CP.3',' ',KEND3,LWORK)
 C
 C-----------------------------------------
@@ -400,7 +400,7 @@ C
                LWORK4  = LWORK  - KEND4
 C
                CALL SO_MEMMAX ('SO_RES_CP.4',LWORK4)
-               IF (LWORK4 .LT. 0) 
+               IF (LWORK4 .LT. 0)
      &             CALL STOPIT('SO_RES_CP.4',' ',KEND4,LWORK)
 C
 C---------------------------------------------------------
@@ -425,7 +425,7 @@ C
                LWORK5  = LWORK  - KEND5
 C
                CALL SO_MEMMAX ('SO_RES_CP.5',LWORK5)
-               IF (LWORK5 .LT. 0) 
+               IF (LWORK5 .LT. 0)
      &             CALL STOPIT('SO_RES_CP.5',' ',KEND5,LWORK)
 C
 C----------------------------------------------------------------------
@@ -522,7 +522,7 @@ C
 C
 C-------------------------------------------------------------------
 C                 Calculate the part of the result vectors RES1E and
-C                 RES1D which orriginate from the C matrices. See 
+C                 RES1D which orriginate from the C matrices. See
 C                 eqs. (72) and (73).
 C-------------------------------------------------------------------
 C
@@ -703,7 +703,7 @@ C
          SOTIME(24) = SOTIME(24) + DTIME
 C
 C------------------------------------------------------------------
-C        Calculate and add the RPA two-particle parts to the result 
+C        Calculate and add the RPA two-particle parts to the result
 C        vectors.
 C------------------------------------------------------------------
 C
@@ -717,8 +717,8 @@ C
          SOTIME(25) = SOTIME(25) + DTIME
 C
 C----------------------------------------------------------------------
-C        Add contribution from sigma1(alfa,i) to RES1E and from 
-C        sigma2(alfa,i) to RES1D. I.e. the third terms in eqs. (34) and 
+C        Add contribution from sigma1(alfa,i) to RES1E and from
+C        sigma2(alfa,i) to RES1D. I.e. the third terms in eqs. (34) and
 C        (35).
 C----------------------------------------------------------------------
 C
@@ -798,7 +798,7 @@ c         CALL DZERO(WORK(KRESO1E),LRESO1E)
 c         CALL DZERO(WORK(KRESO1D),LRESO1D)
 C
          DTIME      = SECOND()
-         CALL SO_RES_OVL(RESO1E,LRESO1E,RESO1D,LRESO1D,
+         CALL SO_RES_O(RESO1E,LRESO1E,RESO1D,LRESO1D,
      &                   TR1E,LTR1E,TR1D,LTR1D,DENSIJ,
      &                   LDENSIJ,DENSAB,LDENSAB,ISYRES,ISYMTR)
          DTIME      = SECOND()   - DTIME
@@ -808,11 +808,11 @@ C-----------------------------------------
 C        Calculate the RPA overlap matrix.
 C-----------------------------------------
 C
-         DTIME      = SECOND()
-         CALL SO_RES_OVLR(RESO1E,LRESO1E,RESO1D,LRESO1D,
-     &                    TR1E,LTR1E,TR1D,LTR1D)
-         DTIME      = SECOND()   - DTIME
-         SOTIME(23) = SOTIME(23) + DTIME
+C         DTIME      = SECOND()
+c         CALL SO_RES_OVLR(RESO1E,LRESO1E,RESO1D,LRESO1D,
+C     &                    TR1E,LTR1E,TR1D,LTR1D)
+C         DTIME      = SECOND()   - DTIME
+C         SOTIME(23) = SOTIME(23) + DTIME
 C
 c        CALL SO_WRITE(WORK(KRESO1E),LRESO1E,LURO1E,FNRO1E,NEXCI+INEWTR)
 c        CALL SO_WRITE(WORK(KRESO1D),LRESO1D,LURO1D,FNRO1D,NEXCI+INEWTR)

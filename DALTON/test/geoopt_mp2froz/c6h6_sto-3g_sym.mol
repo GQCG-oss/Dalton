@@ -3,9 +3,9 @@ STO-3G
 1st order geometry optimization using MP2 frozen core
 numerical gradients
 Atomtypes=2 Integrals=1.00D-15 Generators=3  X  Y  Z
-Charge=1.0 Atoms=2 Blocks=2 1 1
+Charge=1.0 Atoms=2
 H1    0.00000000          4.686595943         0.00000000               *
 H2    4.058715599         2.343279074         0.00000000               *
-Charge=6.0 Atoms=2 Blocks=3 1   1 1
+Charge=6.0 Atoms=2
 C1    0.00000000          2.636205494         0.00000000               *
 C2    2.283034611         1.318102747         0.00000000               *

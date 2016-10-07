@@ -6,6 +6,8 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, April 1996
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
+C     Rasmus Faber: April 2016 - Now sets rather than increments
+C                                Result-Vector
 C
 C     PURPOSE: Calculate contribution from D matrix to the 2p2h
 C              result vectors.
@@ -23,12 +25,6 @@ C
 #include "ccsdsym.h"
 #include "soppinf.h"
 C
-C------------------------------
-C     Statement function INDEX.
-C------------------------------
-C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
-C
 C------------------
 C     Add to trace.
 C------------------
@@ -42,6 +38,8 @@ C
       DO 100 ISYMBJ = 1,NSYM
 C
          ISYMAI = MULD2H(ISYMBJ,ISYRES)
+C        Since nothing is done in the end, skip this it.
+         IF (ISYMAI.GT.ISYMBJ) GOTO 100
 C
 C---------------------------------
 C        Allocation of work space.
@@ -51,7 +49,11 @@ C
          LFAI   = NT1AM(ISYMAI)
 C
          KFBJ    = 1
-         KFAI    = KFBJ  + LFBJ
+         IF(ISYMAI.LT.ISYMBJ) THEN
+            KFAI    = KFBJ  + LFBJ
+         ELSE ! They're the same!!!
+            KFAI = KFBJ
+         ENDIF
          KEND    = KFAI  + LFAI
          LWORK1  = LWORK - KEND
 C
@@ -65,6 +67,7 @@ C
          DO 201 ISYMJ = 1,NSYM
 C
             ISYMB = MULD2H(ISYMJ,ISYMBJ)
+            IOFFSYM = IT1AM(ISYMB,ISYMJ)
 C
             DO 202 J = 1,NRHF(ISYMJ)
 C
@@ -72,7 +75,7 @@ C
 C
                DO 203 B = 1,NVIR(ISYMB)
 C
-                  NBJ   = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J - 1) + B
+                  NBJ   = IOFFSYM + NVIR(ISYMB)*(J - 1) + B - 1
 C
                   KOFFB = IVIR(ISYMB) + B
 C
@@ -87,28 +90,31 @@ C
 C----------------------------------------------------------------
 C        Make difference of fock-diagonals A and I in WORK(KFAI).
 C----------------------------------------------------------------
+CRF      Only if it is different than the calculated above!!!
+         IF (ISYMAI.LT.ISYMBJ) THEN
+            DO  301 ISYMI = 1,NSYM
 C
-         DO  301 ISYMI = 1,NSYM
+               ISYMA = MULD2H(ISYMI,ISYMAI)
 C
-            ISYMA = MULD2H(ISYMI,ISYMAI)
+               IOFFSYM = IT1AM(ISYMA,ISYMI)
+               DO 302 I = 1,NRHF(ISYMI)
 C
-            DO 302 I = 1,NRHF(ISYMI)
+                  KOFFI = IRHF(ISYMI) + I
 C
-               KOFFI = IRHF(ISYMI) + I
+                  DO 303 A = 1,NVIR(ISYMA)
 C
-               DO 303 A = 1,NVIR(ISYMA)
+                     NAI = IOFFSYM + NVIR(ISYMA)*(I - 1) + A - 1
 C
-                  NAI   = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I - 1) + A
+                     KOFFA = IVIR(ISYMA) + A
 C
-                  KOFFA = IVIR(ISYMA) + A
+                     WORK(KFAI+NAI) =  FOCKD(KOFFA) - FOCKD(KOFFI)
 C
-                  WORK(KFAI+NAI) =  FOCKD(KOFFA) - FOCKD(KOFFI)
+  303             CONTINUE
 C
-  303          CONTINUE
+  302          CONTINUE
 C
-  302       CONTINUE
-C
-  301    CONTINUE
+  301       CONTINUE
+         ENDIF
 C
 C---------------------------------------------------------------
 C        Multiply energy-differences EAIBJ and 2p2h trialvectors
@@ -118,44 +124,18 @@ C---------------------------------------------------------------
 C
          IF ( ISYMAI .EQ. ISYMBJ) THEN
 C
-            DO 401 NBJ = 1,NT1AM(ISYMBJ)
-C
-               DO 402 NAI = 1,NBJ
-C
-                  NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     &                  + INDEX(NAI,NBJ)
-C
-                  EAIBJ = WORK(KFAI+NAI) + WORK(KFBJ+NBJ)
-C
-                  RES2E(NAIBJ) = RES2E(NAIBJ)
-     &                         + EAIBJ * TR2E(NAIBJ)
-                  RES2D(NAIBJ) = RES2D(NAIBJ)
-     &                         + EAIBJ * TR2D(NAIBJ)
-C
-  402          CONTINUE
-C
-  401       CONTINUE
-C
+            IOFF = IT2AM(ISYMAI, ISYMBJ) + 1
+            CALL EXTR2_TOTSYM( TR2E(IOFF), RES2E(IOFF),
+     &                         WORK(KFBJ), ISYMBJ)
+            CALL EXTR2_TOTSYM( TR2D(IOFF), RES2D(IOFF),
+     &                         WORK(KFBJ), ISYMBJ)
          ELSE IF ( ISYMAI .LT. ISYMBJ) THEN
 C
-            DO 501 NBJ = 1,NT1AM(ISYMBJ)
-C
-               DO 502 NAI = 1,NT1AM(ISYMAI)
-C
-                  NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     &                  + NT1AM(ISYMAI)*(NBJ - 1) + NAI
-C
-                  EAIBJ = WORK(KFAI+NAI) + WORK(KFBJ+NBJ)
-C
-                  RES2E(NAIBJ) = RES2E(NAIBJ)
-     &                         + EAIBJ * TR2E(NAIBJ)
-                  RES2D(NAIBJ) = RES2D(NAIBJ)
-     &                         + EAIBJ * TR2D(NAIBJ)
-C
-  502          CONTINUE
-C
-  501       CONTINUE
-C
+            IOFF = IT2AM(ISYMAI,ISYMBJ) + 1
+            CALL EXTR2_ASYM(TR2E(IOFF),RES2E(IOFF),WORK(KFAI),
+     &                      WORK(KFBJ),ISYMAI,ISYMBJ)
+            CALL EXTR2_ASYM(TR2D(IOFF),RES2D(IOFF),WORK(KFAI),
+     &                      WORK(KFBJ),ISYMAI,ISYMBJ)
          END IF
 C
   100 CONTINUE
@@ -167,4 +147,48 @@ C
       CALL QEXIT('SO_RES_CD')
 C
       RETURN
+      CONTAINS
+         pure SUBROUTINE EXTR2_TOTSYM ( TR2, RES2, EPAIR, ISYM)
+            DOUBLE PRECISION, INTENT(IN) :: TR2(*), EPAIR(*)
+            DOUBLE PRECISION, INTENT(INOUT) :: RES2(*)
+            integer, intent(in) :: isym
+C
+            integer :: nbj, nai, naibj, ioffbj
+            double precision :: eaibj
+C
+C            ioffsym = it2am(isym,isym)
+
+            do nbj = 1, nt1am(isym)
+               ioffbj = nbj*(nbj-1)/2
+               do nai = 1, nbj
+                  naibj = ioffbj + nai
+                  eaibj = epair(nbj) + epair(nai)
+C                  res2(naibj) = res2(naibj) + eaibj*tr2(naibj)
+                  res2(naibj) =  eaibj*tr2(naibj)
+               end do
+            end do
+            return
+         end subroutine
+
+         pure subroutine extr2_asym ( tr2, res2, epair1, epair2,
+     &                                isym1, isym2 )
+            double precision, intent(in) :: tr2(*), epair1(*), epair2(*)
+            double precision, intent(inout) :: res2(*)
+            integer, intent(in) :: isym1, isym2
+C
+            integer :: nbj, nai, naibj, ioffbj
+            double precision :: eaibj
+
+            do nbj = 1, nt1am(isym2)
+               ioffbj = nt1am(isym1)*(nbj-1)
+               do nai = 1, nt1am(isym1)
+                  naibj = ioffbj + nai
+                  eaibj = epair1(nai) + epair2(nbj)
+C                  res2(naibj) = res2(naibj) + eaibj*tr2(naibj)
+                  res2(naibj) = eaibj*tr2(naibj)
+               end do
+            end do
+
+            return
+         end subroutine
       END

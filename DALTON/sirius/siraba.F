@@ -438,11 +438,14 @@ C
             LPV = NNASHX
          END IF
          CALL TR1L2M(NDERIV, TR1MAT, PV,LPV, H2XAC,FXQ,
-     *               .NOT.USEDRC,LONDON,WRK(KWRK1),LWRK1)
-         IF (USEDRC) THEN
-            CALL TR1L2D(NDERIV, TR1MAT,PV,LPV,FXQ, LONDON,
-     &                  WRK(KWRK1),LWRK1)
-         END IF
+     *               .TRUE.,LONDON,WRK(KWRK1),LWRK1)
+! Dirac format of London integrals is not implemented yet
+!        CALL TR1L2M(NDERIV, TR1MAT, PV,LPV, H2XAC,FXQ,
+!    *               .NOT.USEDRC,LONDON,WRK(KWRK1),LWRK1)
+!        IF (USEDRC) THEN
+!           CALL TR1L2D(NDERIV, TR1MAT,PV,LPV,FXQ, LONDON,
+!    &                  WRK(KWRK1),LWRK1)
+!        END IF
 C
 C        CALL TR1L2M(NDERIV,TR1MAT,PV,H2XAC,FXQ, NODRC,LONDON,
 C    &               WRK,LFRSAV)

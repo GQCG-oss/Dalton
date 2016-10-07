@@ -1494,7 +1494,7 @@ C     first state of symmetry ESASYM and that the C-state is separate
 C     from the B-state.
 C
       DO 300 ICSYM = 1,NSYM
-         IF (DOESA .OR. EXMTES) THEN
+         IF (DOESA .OR. EXMTES .OR. ISPINB.NE.ISPINC) THEN
             NBSYME = NSYM
          ELSE
             NBSYME = ICSYM

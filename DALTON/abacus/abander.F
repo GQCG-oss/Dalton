@@ -2391,7 +2391,7 @@ C
 C
 C     *** unset ABA variable to false ***
 C
-      CALL ABUSET
+      CALL ABA_UNSET
 C
 C     *** If there are possibilities for  new symmetry. ***
 C

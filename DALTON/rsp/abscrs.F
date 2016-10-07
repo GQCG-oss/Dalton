@@ -978,7 +978,7 @@ C     every ABS_NXYVEC
 C
 C     Setting NGD to 1 would mean only 1 r.h.s., but multiple r.h.s. is
 C     put on ice
-C      NGD = 1
+      NGD = 1
 C                                                                                             
 C     Call the LR solver for every ABS_NXYVEC                                                 
 C     =======================================                                                 
@@ -1038,7 +1038,7 @@ C        Open temporary auxiliary files
 C
 C        Solve the linear response equation
          CALL ABS_CTL('XYLAB   ', KZYVXY/2, WRK(ABS_XYMEMREF(INXY)),
-     &        WRK(KXSOL), FREQS, NFREQS, LUTEMP,
+     &        NGD, WRK(KXSOL), FREQS, NFREQS, LUTEMP,
      &        MJWOP, CMO, UDV, FC, FCAC, FV, PV, XINDX,
      &        RESLRF, WRK(KFREE), LFREE)
 C

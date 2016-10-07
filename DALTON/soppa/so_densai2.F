@@ -43,7 +43,7 @@ C
             NI    = IRHF(ISYMI) + I
             KOFFA = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1)
 C
-            DO 100 A = 1,NVIR(ISYMA)      
+            DO 100 A = 1,NVIR(ISYMA)
 C
                NA  = IVIR(ISYMA) + A
                NAI = KOFFA       + A

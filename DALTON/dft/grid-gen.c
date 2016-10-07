@@ -906,7 +906,7 @@ struct point_key_t {
 
 
 /* assume currently constant amounts of bits per coordinate */
-static integer
+static int
 comp_point_key(const void* a, const void* b)
 {
     return ((struct point_key_t*)a)->key-((struct point_key_t*)b)->key;

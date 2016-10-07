@@ -275,10 +275,10 @@ C
       KWORK1 = KXINDX + LCINDX
       LWORK1 = LWORK - KWORK1
 C
-      CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KWORK1),LWORK1)
+      CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO))
       IF (.NOT.FOUND) CALL QUIT('AQRDRV error: CMO not found on SIRIFC')
       IF (NASHT .GT. 0) THEN
-         CALL RD_SIRIFC('DV',FOUND,WORK(KWORK1),WORK(KWORK1),LWORK1)
+         CALL RD_SIRIFC('DV',FOUND,WORK(KWORK1))
          IF (.NOT.FOUND)
      &      CALL QUIT('AQRDRV error: DV not found on SIRIFC')
          CALL DSPTSI(NASHT,WORK(KWORK1),WORK(KUDV))
@@ -372,9 +372,9 @@ cs          CALL DCOPY (NBFREQ,BFREQ,1,BSMFR,1)
          ENDIF
    10 CONTINUE
 C
-C     We might need a somewhat more intelligent test for FABRHS
+C     We might need a somewhat more intelligent test for NEWCMO
 C
-      FABRHS = .TRUE.
+      NEWCMO = .TRUE.
       CICLC  = .FALSE.
       HFCLC  = NASHT .LE. 1
       TRIPLE = .FALSE.

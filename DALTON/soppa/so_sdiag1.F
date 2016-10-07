@@ -48,7 +48,7 @@ C
                KOFFAB = KOFF2 + NVIR(ISYMA)*(A-1) + A
                KOFFAI = KOFF3 + NVIR(ISYMA)*(I-1) + A
 C
-               DIAG1(KOFFAI) = ONE + DENSIJ(KOFFIJ) - DENSAB(KOFFAB) 
+               DIAG1(KOFFAI) = ONE + DENSIJ(KOFFIJ) - DENSAB(KOFFAB)
 C
   300       CONTINUE
 C

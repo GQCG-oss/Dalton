@@ -2637,8 +2637,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
-C defined parallel calculation types
-#include "iprtyp.h"
 C
       CHARACTER*1 STARM, STARE, STARG, STARS, STARH
       CHARACTER*42 WLKTYP(0:8)
@@ -2654,10 +2652,10 @@ C
 C
       CALL TITLER('FINAL RESULTS FROM WALK','*',125)
 C
-      IPRTYP = IWKTYP
-      IF (IWKTYP .EQ. 1 .AND. IWKIND .EQ. 0) IPRTYP = ENDING_SIGNAL
-      IF (IMAGE) IPRTYP = DFT_HESSTAT_WORK
-      WRITE (LUPRI,'(/2A)')       '@ Walk type: ', WLKTYP(IPRTYP)
+      IWKTYP_PR = IWKTYP
+      IF (IWKTYP .EQ. 1 .AND. IWKIND .EQ. 0) IWKTYP_PR = 0
+      IF (IMAGE) IWKTYP_PR = 8
+      WRITE (LUPRI,'(/2A)')       '@ Walk type: ', WLKTYP(IWKTYP_PR)
       WRITE (LUPRI,'(/A,I5)')     '@ Iteration number:', IPOINT
       WRITE (LUPRI,'(/A,F17.10)') '@ Norm of molecular gradient:',GRDNRM
       WRITE (LUPRI,'(/A,F17.10)') '@ Energy at current point:   ',ERGMOL
