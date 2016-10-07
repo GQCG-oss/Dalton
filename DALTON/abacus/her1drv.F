@@ -403,8 +403,10 @@ Cjth
 #ifndef PRG_DIRAC
 C
 C     ***** Nuclear contributions *****
-C
-      IF (PROPTY.AND..NOT.EXPGRA) CALL DIPNUC(CSTRA,SCTRA,IPRINT,DIFDIP)
+C     Nanna H. List 17/12-2014: Always compute nuclear contrib to dipole moment
+C                    (then we can use it in e.g. SIRIUS and RESPONSE)
+C      IF (PROPTY.AND..NOT.EXPGRA) CALL DIPNUC(CSTRA,SCTRA,IPRINT,DIFDIP)
+      CALL DIPNUC(CSTRA,SCTRA,IPRINT,DIFDIP)
       IF (PROPTY.AND.DIFQDP) CALL SECNUC(CSTRA,SCTRA,IPRINT)
 C
 #endif

@@ -130,6 +130,7 @@ C
          LINTAD = MAXTYP
       END IF
       CALL MEMGET('INTE',KINTAD,LINTAD,WORK,KFREE,LFREE)
+      write(lupri,*) 'WORD in HER1INT', WORD
       CALL PR1IN1(WORK,KFREE,LFREE,WORK(KINTRP),WORK(KINTAD),
      &            WORK(KLBINT),WORD,IORDER,NPQUAD,TRIANG,
      &            PROPRI,IPRINT,DUMMY,NCOMP,TOFILE,'TRIANG',
@@ -196,7 +197,7 @@ C     perturbation (WORD=PCMBSOL/PCM2BSL) (Feb2004 KR&DM)
 #include "efield.h"
 #include "ccom.h"
 #include "qm3.h"
-      PARAMETER (NTABLE = 104)
+      PARAMETER (NTABLE = 105)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
@@ -252,7 +253,8 @@ C Bin Gao, December 17, 2009; adds integrals S2MBRA, S2MKET, and S2MMIX
      &            'NPETES ', 'PCMBSOL', 'PCMB2SL', 'DIPLOC ', !  89:92
      &            'HUCKEL ', 'SQHD2OR', 'EFIELB1', 'EFIELB2', !  93:96
      &            'MAGQDP ', 'DERANGM', 'DIPANH ', 'POPOVLP', !  97:100
-     &            'KINADIA', 'S2MBRA ', 'S2MKET ', 'S2MMIX '/ ! 101:104
+     &            'KINADIA', 'S2MBRA ', 'S2MKET ', 'S2MMIX ', ! 101:104
+     &            'LFDIPLN'/ ! 104:108
 C
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
@@ -286,7 +288,7 @@ C
      &             71,72,73,74,75,76,77,78,79,80,
      &             81,82,83,84,85,86,87,88,89,90,
      &             91,92, 1,94,95,96,97,98,99,100,
-     &             101,102,103,104), I
+     &             101,102,103,104,105), I
          END IF
       END DO
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -2425,6 +2427,22 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
+  105 CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of dipole moment (length) integrals
+     &        which will be augmented with PE contribution later on.'
+         INTTYP = 2
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'XLFDIPLN'
+         LABINT(2) = 'YLFDIPLN'
+         LABINT(3) = 'ZLFDIPLN'
+         INTREP(1) = ISYMAX(1,1)
+         INTREP(2) = ISYMAX(2,1)
+         INTREP(3) = ISYMAX(3,1)
+         ANTI = .FALSE.
+      GO TO 200
   200 CONTINUE
 C
 C     ***** Print section *****

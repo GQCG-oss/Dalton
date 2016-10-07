@@ -29,11 +29,11 @@ module pelib_interface
 
     public :: use_pelib, pelib_ifc_gspol
     public :: pelib_ifc_domep, pelib_ifc_domep_noqm, pelib_ifc_docube
-    public :: pelib_ifc_doinfld
+    public :: pelib_ifc_doinfld, pelib_ifc_dolf
     public :: pelib_ifc_activate, pelib_ifc_deactivate
     public :: pelib_ifc_init, pelib_ifc_finalize, pelib_ifc_input_reader
     public :: pelib_ifc_fock, pelib_ifc_energy, pelib_ifc_response, pelib_ifc_london
-    public :: pelib_ifc_molgrad, pelib_ifc_infld
+    public :: pelib_ifc_molgrad, pelib_ifc_infld, pelib_ifc_lf
     public :: pelib_ifc_mep, pelib_ifc_mep_noqm, pelib_ifc_cube
 #if defined(VAR_MPI)
     public :: pelib_ifc_slave
@@ -97,6 +97,15 @@ logical function pelib_ifc_doinfld()
       pelib_ifc_doinfld = .false.
   end if
 end function pelib_ifc_doinfld
+
+logical function pelib_ifc_dolf()
+  use pe_variables, only: pe_lf
+  if (pe_lf) then
+      pelib_ifc_dolf = .true.
+  else
+      pelib_ifc_dolf = .false.
+  end if
+end function pelib_ifc_dolf
 
 subroutine pelib_ifc_activate()
     use pe_variables, only: peqm
@@ -259,6 +268,71 @@ subroutine pelib_ifc_london(fckmats)
     call qexit('pelib_ifc_london')
 end subroutine pelib_ifc_london
 
+subroutine pelib_ifc_lf()
+    use polarizable_embedding, only: pe_master
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "orgcom.h"
+    real*8, dimension(nnbasx) :: dip
+!    real*8, dimension(3*nnbasx) :: fckmats
+    real*8, dimension(:),allocatable :: fckmats
+    integer :: i, j, k
+    logical :: lopen
+    character*8 :: lblinf(2)
+    allocate(fckmats(3*nnbasx))
+    call qenter('pelib_ifc_lf')
+    if (.not. use_pelib()) call quit('PElib not active')
+
+    write(lupri,*) 'PEQM: Local field factors are included.'
+    call flshfo(lupri)
+    lopen = .false.
+    dip = 0.0d0
+    fckmats = 0.0d0
+
+#if defined(VAR_MPI)
+    call pelib_ifc_start_slaves(8)
+#endif
+    call flshfo(lupri)
+    call pe_master(runtype='effdipole', &
+                   triang=.true.,       &
+                   ndim=nbast,          &
+                   fckmats=fckmats)
+
+    if (luprop <= 0) then
+        call gpopen(luprop, 'AOPROPER', 'OLD', ' ', 'UNFORMATTED', 0, .false.)
+        lopen = .true.
+    end if
+
+!   dipole integrals are stored in triangular form
+    rewind(luprop)
+    call mollb2('XDIPLEN ',lblinf,luprop,LUPRI)
+    call readt(luprop, nnbasx, dip)
+    dip(:) = dip(:) + fckmats(1:nnbasx)
+    call WRTPRO(dip,nnbasx,'XLFDIPLN',lblinf,0)
+
+    rewind(luprop)
+    call mollb2('YDIPLEN ',lblinf,luprop,LUPRI)
+    call readt(luprop, nnbasx, dip)
+    dip(:) = dip(:) + fckmats(nnbasx+1:2*nnbasx)
+    call WRTPRO(dip,nnbasx,'YLFDIPLN',lblinf,0)
+
+    rewind(luprop)
+    call mollb2('ZDIPLEN ',lblinf,luprop,LUPRI)
+    call readt(luprop, nnbasx, dip)
+    dip(:) = dip(:) + fckmats(2*nnbasx+1:3*nnbasx)
+    call WRTPRO(dip,nnbasx,'ZLFDIPLN',lblinf,0)
+
+    deallocate(fckmats)
+!    rewind(luprop)
+!    call mollb2('LFDIPLNX',lblinf,luprop,LUPRI)
+!    call readt(luprop, nnbasx, dip)
+
+    if (lopen) call gpclose(luprop,'KEEP')
+    call qexit('pelib_ifc_lf')
+
+end subroutine pelib_ifc_lf
+
 subroutine pelib_ifc_mep(denmats)
   use polarizable_embedding, only: pe_master
   implicit none
@@ -328,6 +402,8 @@ subroutine pelib_ifc_slave(runtype)
         call pe_slave('mep')
     else if (runtype == 7) then
         call pe_slave('cube')
+    else if (runtype == 8) then
+        call pe_slave('effdipole')
     end if
     call qexit('pelib_ifc_slave')
 end subroutine pelib_ifc_slave
