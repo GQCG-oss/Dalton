@@ -1128,6 +1128,10 @@ C
 C Request effective dipole integrals using PE library
          IF (USE_PELIB()) THEN
              IF (PELIB_IFC_DOLF()) THEN
+                 WRITE(LUPRI,'(/A)') 'PEQM calculation includes '//
+     &        'effective external field effects.'
+          WRITE(LUPRI,'(A)') 'Reference: '//
+     &       'Phys. Chem. Chem. Phys. 2016, 18, 10070.'
                  CALL PELIB_IFC_LF()
              END IF
          END IF

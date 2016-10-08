@@ -275,7 +275,6 @@ subroutine pelib_ifc_lf()
 #include "inftap.h"
 #include "orgcom.h"
     real*8, dimension(nnbasx) :: dip
-!    real*8, dimension(3*nnbasx) :: fckmats
     real*8, dimension(:),allocatable :: fckmats
     integer :: i, j, k
     logical :: lopen
@@ -284,7 +283,6 @@ subroutine pelib_ifc_lf()
     call qenter('pelib_ifc_lf')
     if (.not. use_pelib()) call quit('PElib not active')
 
-    write(lupri,*) 'PEQM: Local field factors are included.'
     call flshfo(lupri)
     lopen = .false.
     dip = 0.0d0
@@ -324,10 +322,6 @@ subroutine pelib_ifc_lf()
     call WRTPRO(dip,nnbasx,'ZLFDIPLN',lblinf,0)
 
     deallocate(fckmats)
-!    rewind(luprop)
-!    call mollb2('LFDIPLNX',lblinf,luprop,LUPRI)
-!    call readt(luprop, nnbasx, dip)
-
     if (lopen) call gpclose(luprop,'KEEP')
     call qexit('pelib_ifc_lf')
 
