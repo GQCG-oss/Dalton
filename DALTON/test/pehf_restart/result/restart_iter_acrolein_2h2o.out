@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2014.0
+    This is output from DALTON 2016.alpha
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -50,7 +50,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2014.0 (2014), see http://daltonprogram.org
+       Release Dalton2016.alpha (2015), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -136,14 +136,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Dec  1 23:06:20 2014
+     Date and time (Linux)  : Mon Jun 15 11:32:55 2015
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/build_release/test/pehf_restart
-   2) /home/magnus/Projects/dalton_devel/dalton/build_release/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/pehf_restart
+   2) /home/magnus/Projects/dalton_devel/dalton/build/basis
 
 
 Compilation information
@@ -151,24 +151,23 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-3.17.3-200.fc20.x86_64
+ System                   | Linux-4.0.4-303.fc22.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | ON
- Fortran compiler         | /usr/local/bin/mpif90
- Fortran compiler version | GNU Fortran (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
- C compiler               | /usr/local/bin/mpicc
- C compiler version       | gcc (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
- C++ compiler             | /usr/local/bin/mpicxx
+ Fortran compiler         | /usr/lib64/openmpi/bin/mpif90
+ Fortran compiler version | GNU Fortran (GCC) 5.1.1 20150422 (Red Hat 5.1.1-1)
+ C compiler               | /usr/lib64/openmpi/bin/mpicc
+ C compiler version       | gcc (GCC) 5.1.1 20150422 (Red Hat 5.1.1-1)
+ C++ compiler             | /usr/lib64/openmpi/bin/mpicxx
  C++ compiler version     | unknown
- BLAS                     | /lib64/atlas-sse3/libf77blas.so;/lib64/atlas-sse3/
-                          | libcblas.so;/lib64/atlas-sse3/libatlas.so
- LAPACK                   | /lib64/atlas-sse3/libatlas.so;/lib64/atlas-sse3/li
-                          | blapack.so
+ BLAS                     | /lib64/libblas.so
+ LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | 33e513e6ec145230f67a26e0d0b2095c11a06f8e
- Configuration time       | 2014-12-01 16:28:52.079620
+ Last Git revision        | beeb2214658a3e0ccf80f4d037078a5fa38f329c
+ Git branch               | [32mpe/develop[m
+ Configuration time       | 2015-06-15 09:56:40.593492
 
  * Sequential calculation.
 
@@ -182,7 +181,8 @@ Compilation information
 *PEQM                                             
 .RESTART                                          
 .VERBOSE                                          
-.DIRECT                                           
+.ITERATIVE                                        
+1.0d-10                                           
 **WAVE FUNCTIONS                                  
 .HF                                               
 .RESTART                                          
@@ -245,7 +245,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -253,7 +253,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -261,7 +261,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    4
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -405,18 +405,20 @@ H              2.675323   -2.516779   -0.000673
 
   Reading potential input file for polarizable embedding calculation
 
-  Polarizable embedding information
-  ---------------------------------
+    .------------------------------------------------.
+    | Information from polarizable embedding library |
+    `------------------------------------------------´
 
-    Number of classical sites:     10
+      Number of classical sites:     10
 
-    Multipole moments upto 3rd order.
+      Multipole moments upto 3rd order.
 
-    Dipole-dipole polarizabilities.
+      Dipole-dipole polarizabilities.
 
-    Direct solver for induced moments will be used.
+      Iterative solver for induced moments will be used
+      with convergence threshold: 1.0E-10
 
-    Existing files will be used to restart if possible.
+      Existing files will be used to restart if possible.
 
 
                      .---------------------------------------.
@@ -453,7 +455,7 @@ H              2.675323   -2.516779   -0.000673
  HERMIT - Number of two-electron integrals written:       43383 ( 96.1% )
  HERMIT - Megabytes written:                              0.502
 
- >>>  Time used in TWOINT     is   0.22 seconds
+ >>>  Time used in TWOINT     is   0.21 seconds
  >>>> Total CPU  time used in HERMIT:   0.26 seconds
  >>>> Total wall time used in HERMIT:   0.26 seconds
 
@@ -474,7 +476,7 @@ H              2.675323   -2.516779   -0.000673
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Dec  1 23:06:20 2014
+     Date and time (Linux)  : Mon Jun 15 11:32:56 2015
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -510,13 +512,13 @@ H              2.675323   -2.516779   -0.000673
 
      Orbital specifications
      ======================
-     Abelian symmetry species          All |    1
-                                           |  A  
+@    Abelian symmetry species          All |    1
+@                                          |  A  
                                        --- |  ---
 @    Occupied SCF orbitals              15 |   15
-     Secondary orbitals                  9 |    9
-     Total number of orbitals           24 |   24
-     Number of basis functions          24 |   24
+@    Secondary orbitals                  9 |    9
+@    Total number of orbitals           24 |   24
+@    Number of basis functions          24 |   24
 
      Optimization information
      ========================
@@ -543,9 +545,10 @@ H              2.675323   -2.516779   -0.000673
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
+      Induced dipole moments converged in  1 iterations.
 
-      Polarizable embedding information
-     -----------------------------------
+      Info from polarizable embedding library:
+     ------------------------------------------
 
        Input density no.:   1
 
@@ -563,8 +566,6 @@ H              2.675323   -2.516779   -0.000673
  *** SCF orbital energy analysis ***
    (incl. contribution from polarizable embedding potential)
 
- Only the five lowest virtual orbital energies printed in each symmetry.
-
  Number of electrons :   30
  Orbital occupations :   15
 
@@ -574,52 +575,58 @@ H              2.675323   -2.516779   -0.000673
          -1.02347208    -0.82817321    -0.73627017    -0.61639430    -0.60505833
          -0.52315126    -0.50359063    -0.47863644    -0.36294749    -0.32551271
           0.20429359     0.38331426     0.59620654     0.62636541     0.65972004
+          0.73772249     0.84219133     0.92707702     1.03955698
 
     E(LUMO) :     0.20429359 au (symmetry 1)
   - E(HOMO) :    -0.32551271 au (symmetry 1)
   ------------------------------------------
     gap     :     0.52980630 au
 
-      Polarizable embedding energy contributions:
-     ---------------------------------------------
+    .--------------------------------------------------.
+    | Final results from polarizable embedding library |
+    `--------------------------------------------------´
+
+        Polarizable embedding energy contributions:
+       ---------------------------------------------
 
        Electrostatic contributions:
-         Monopoles                 -0.015401648863
-         Dipoles                    0.004183501103
-         Quadrupoles               -0.004908350661
-         Octopoles                 -0.002292518851
+            Electronic                -0.467226817868
+            Nuclear                    0.448807800596
+            Multipole                  0.000000000000
+            Total                     -0.018419017272
 
        Polarization contributions:
-         Electronic                -0.043153620832
-         Nuclear                    0.042259203058
-         Multipole                  0.000129039146
+            Electronic                -0.043153620832
+            Nuclear                    0.042259203058
+            Multipole                  0.000129039146
+            Total                     -0.000765378628
 
        Total PE energy:            -0.019184395900
 
-      Polarizable embedding information:
-     ------------------------------------
+               Polarizable embedding information:
+              ------------------------------------
 
-                         Induced dipole moments
-         site          X              Y              Z
-            1     0.00476311     0.01019098     0.00000484
-            2     0.01289388     0.00694309     0.00000699
-            3     0.00143745     0.00040934     0.00000037
-            4     0.03434617     0.02404833     0.00002600
-            5     0.00218296    -0.00024280    -0.00000125
-            6    -0.01359397     0.00422170     0.00000308
-            7    -0.01471187    -0.00670064     0.00000073
-            8    -0.00136519    -0.00073266    -0.00000386
-            9    -0.04351678    -0.01374461     0.00000811
-           10    -0.00233057    -0.00019381    -0.00000825
+                       Induced dipole moments
+       site          X              Y              Z
+          1     0.00476311     0.01019098     0.00000484
+          2     0.01289388     0.00694309     0.00000699
+          3     0.00143745     0.00040934     0.00000037
+          4     0.03434617     0.02404833     0.00002600
+          5     0.00218296    -0.00024280    -0.00000125
+          6    -0.01359397     0.00422170     0.00000308
+          7    -0.01471187    -0.00670064     0.00000073
+          8    -0.00136519    -0.00073266    -0.00000386
+          9    -0.04351678    -0.01374461     0.00000811
+         10    -0.00233057    -0.00019381    -0.00000825
 
-                        Total induced dipole moment
-                       X              Y              Z
-                 -0.01989481     0.02419892     0.00003676
+                      Total induced dipole moment
+                     X              Y              Z
+               -0.01989481     0.02419892     0.00003676
 
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.121       0.121
+ >>>> CPU and wall time for SCF :       0.116       0.116
 
 
                        .-----------------------------------.
@@ -639,8 +646,10 @@ H              2.675323   -2.516779   -0.000673
 @    Final gradient norm:           0.000009304175
 
  
-     Date and time (Linux)  : Mon Dec  1 23:06:20 2014
+     Date and time (Linux)  : Mon Jun 15 11:32:56 2015
      Host name              : foeroyar                                
+
+File label for MO orbitals:  15Jun15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -695,11 +704,53 @@ H              2.675323   -2.516779   -0.000673
   23 H   :1s     0.1768  -0.2785   0.0217   0.0441   0.3828  -0.0000  -0.0587
   24 H   :1s     0.0721   0.0524  -0.3222   0.2088  -0.2831   0.0000   0.1043
 
-    Orbital        15       16       17
-   5 C   :2pz    0.1679  -0.5381  -0.6701
-  10 C   :2pz   -0.5667  -0.3985   0.7309
-  15 C   :2pz   -0.5857   0.6322  -0.5310
-  20 O   :2pz    0.4118   0.5832   0.4465
+    Orbital        15       16       17       18       19       20       21
+   1 C   :1s     0.0000   0.0000   0.0000   0.0141  -0.1917   0.0175  -0.0005
+   2 C   :1s    -0.0000  -0.0000  -0.0000  -0.0876   1.1842  -0.1130   0.0211
+   3 C   :2px    0.0001  -0.0003  -0.0004  -0.3387   0.0345  -0.0617  -0.8907
+   4 C   :2py    0.0000  -0.0001  -0.0002  -0.2798  -0.4583   0.1675  -0.2486
+   5 C   :2pz    0.1679  -0.5381  -0.6701   0.0003   0.0001  -0.0000   0.0006
+   6 C   :1s    -0.0000  -0.0000   0.0000   0.0515   0.1060   0.0123  -0.1870
+   7 C   :1s     0.0000   0.0000  -0.0000  -0.3172  -0.6260  -0.0482   1.2337
+   8 C   :2px   -0.0003  -0.0002   0.0004  -0.5130   0.4226  -0.1281   0.0041
+   9 C   :2py   -0.0001  -0.0001   0.0001  -0.3427  -0.2331   0.2849   0.2011
+  10 C   :2pz   -0.5667  -0.3985   0.7309   0.0003  -0.0002   0.0000  -0.0000
+  11 C   :1s    -0.0000   0.0000  -0.0000  -0.0041  -0.0386  -0.2035   0.0529
+  12 C   :1s     0.0000  -0.0000   0.0000   0.0116   0.2253   1.3029  -0.3330
+  13 C   :2px   -0.0003   0.0004  -0.0003  -0.6027   0.3040   0.0476  -0.0075
+  14 C   :2py   -0.0001   0.0001  -0.0001  -0.1971  -0.0359  -0.4671  -0.4162
+  15 C   :2pz   -0.5857   0.6322  -0.5310   0.0004  -0.0002   0.0001   0.0001
+  16 O   :1s    -0.0000  -0.0000  -0.0000  -0.0178   0.0224   0.0101   0.0040
+  17 O   :1s     0.0000   0.0000   0.0000   0.1246  -0.1272  -0.0746  -0.0285
+  18 O   :2px    0.0003   0.0003   0.0003   0.1658  -0.0370  -0.0320   0.2193
+  19 O   :2py    0.0001   0.0002   0.0001  -0.1106   0.1902   0.0789   0.1263
+  20 O   :2pz    0.4118   0.5832   0.4465  -0.0001  -0.0000  -0.0000  -0.0002
+  21 H   :1s     0.0000   0.0000  -0.0000  -0.3606  -0.9176   0.1867  -0.6367
+  22 H   :1s     0.0000   0.0000   0.0001   0.8179   0.2516  -0.0674  -0.6994
+  23 H   :1s     0.0000   0.0000  -0.0000  -0.5800   0.1119  -0.9322  -0.0667
+  24 H   :1s    -0.0000   0.0000   0.0000   0.5290  -0.4406  -0.8057   0.0773
+
+    Orbital        22       23       24
+   1 C   :1s    -0.1183   0.0249  -0.0387
+   2 C   :1s     0.7778  -0.1795   0.2555
+   3 C   :2px   -0.1858  -0.6832  -0.1192
+   4 C   :2py    0.6546   0.2357   0.8364
+   6 C   :1s     0.0535   0.0303  -0.0695
+   7 C   :1s    -0.3750  -0.2462   0.5464
+   8 C   :2px    0.1986  -0.9722  -0.1120
+   9 C   :2py    0.4626   0.3082  -1.0298
+  11 C   :1s    -0.0306  -0.0449   0.0841
+  12 C   :1s     0.2250   0.3340  -0.6641
+  13 C   :2px   -0.6949   0.5641   0.3682
+  14 C   :2py    0.4006   0.6965  -0.7166
+  16 O   :1s     0.0883   0.0264   0.0681
+  17 O   :1s    -0.6332  -0.1997  -0.5178
+  18 O   :2px   -0.2581   0.0464  -0.2002
+  19 O   :2py    0.6640   0.2385   0.4938
+  21 H   :1s    -0.0792  -0.1645   0.2454
+  22 H   :1s    -0.2398   0.4036   0.3750
+  23 H   :1s    -0.2205   0.5473   0.0473
+  24 H   :1s     0.5319  -0.3795  -0.1527
 
 
 
@@ -707,7 +758,7 @@ H              2.675323   -2.516779   -0.000673
  >>>> Total wall time used in SIRIUS :      0.12 seconds
 
  
-     Date and time (Linux)  : Mon Dec  1 23:06:20 2014
+     Date and time (Linux)  : Mon Jun 15 11:32:56 2015
      Host name              : foeroyar                                
 
 
@@ -715,9 +766,9 @@ H              2.675323   -2.516779   -0.000673
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.39 seconds
- >>>> Total wall time used in DALTON:   0.39 seconds
+ >>>> Total CPU  time used in DALTON:   0.38 seconds
+ >>>> Total wall time used in DALTON:   0.38 seconds
 
  
-     Date and time (Linux)  : Mon Dec  1 23:06:20 2014
+     Date and time (Linux)  : Mon Jun 15 11:32:56 2015
      Host name              : foeroyar                                

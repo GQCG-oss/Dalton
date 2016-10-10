@@ -643,9 +643,6 @@ C  /* Deck dalton_exedrv */
 #ifdef BUILD_OPENRSP
           use openrsp_input, only: read_openrsp_input
 #endif
-          use pelib_interface, only: use_pelib, pelib_ifc_finalize,
-     &                               pelib_ifc_deactivate
-
 C
 C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
@@ -654,6 +651,9 @@ C
 #ifdef HAS_PCMSOLVER
       use pcm_config, only: pcm_configuration, pcm_cfg, pcm_finalize
 #endif
+      use pelib_interface, only: use_pelib, pelib_ifc_finalize,
+     &                           pelib_ifc_deactivate,
+     &                           pelib_ifc_dolf, pelib_ifc_lf
 
 #include "implicit.h"
 #include "dummy.h"
@@ -1123,6 +1123,17 @@ Chj      IF (RNHERM .OR. TESTIN) CALL EXEHER(WORK,LMWORK,WRKDLM)
 Chj always call EXEHER to read MOLECULE.INP (not read in abactl any more)
 Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
 C
+C Request effective dipole integrals using PE library
+         IF (USE_PELIB()) THEN
+             IF (PELIB_IFC_DOLF()) THEN
+!                 WRITE(LUPRI,'(/A)') 'PEQM calculation includes '//
+!     &                               'effective external field effects.'
+!                 WRITE(LUPRI,'(A)') 'Reference: '//
+!     &                        'Phys. Chem. Chem. Phys. 2016, 18, 10070.'
+                 CALL PELIB_IFC_LF()
+             END IF
+         END IF
+
 Cholesky
          IF (CHOINT) CALL EXECHO(WORK(0),LMWORK,WRKDLM)
 Cholesky
@@ -1530,7 +1541,7 @@ C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.CHOLES', '.EXTPCM', '.FCKTRA',
 C 21-25: '.2TRATY', 'xXXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.NEWTRA', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  ', '.LSLIB '.
+C 31-35: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  ', '.LSLIB '.
 C
       IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD

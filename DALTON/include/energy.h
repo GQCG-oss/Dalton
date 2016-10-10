@@ -2,7 +2,7 @@
 !
       REAL*8 ENERKE, ENERNA, ENEREE, ENERNN
       REAL*8 GRADKE, GRADNA, GRADEE, GRADNN
-      REAL*8 GRADFS, GRADFT, GRADFTD
+      REAL*8 GRADFS, GRADFT, GRADFTD, PEGRAD
 
       COMMON /CB_ABACUS_ENERGY/
      &   ENERKE, GRADKE(MXCOOR),
@@ -11,5 +11,6 @@
      &   ENERNN, GRADNN(MXCOOR),
      &           GRADFS(MXCOOR),
      &           GRADFT(MXCOOR),
-     &           GRADFTD(MXCOOR)
+     &           GRADFTD(MXCOOR),
+     &           PEGRAD(MXCOOR)
 !  -- end of energy.h --

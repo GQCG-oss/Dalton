@@ -11,9 +11,16 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 
 f.add(from_string = 'Polarizable embedding energy contributions:',
-      num_lines = 12,
+      num_lines = 16,
       abs_tolerance = 1.0e-5)
 
-test.run(['zeromul.dal', 'zeropol.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f})
+test.run(['zeromul.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f})
+
+g = Filter()
+g.add(from_string = 'Polarizable embedding energy contributions:',
+      num_lines = 10,
+      abs_tolerance = 1.0e-5)
+
+test.run(['zeropol.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': g})
 
 sys.exit(test.return_code)

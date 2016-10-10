@@ -28,15 +28,16 @@ module pelib_interface
     private
 
     public :: use_pelib, pelib_ifc_gspol
+    public :: pelib_ifc_dolf
     public :: pelib_ifc_activate, pelib_ifc_deactivate
     public :: pelib_ifc_init, pelib_ifc_finalize, pelib_ifc_input_reader
     public :: pelib_ifc_fock, pelib_ifc_energy, pelib_ifc_response, pelib_ifc_london
+    public :: pelib_ifc_molgrad, pelib_ifc_lf
 #if defined(VAR_MPI)
     public :: pelib_ifc_slave
 #endif
     ! TODO: update the following interface routines
     public :: pelib_ifc_grad, pelib_ifc_lin, pelib_ifc_lr, pelib_ifc_qro
-    public :: pelib_ifc_cro
 
 contains
 
@@ -57,6 +58,15 @@ logical function pelib_ifc_gspol()
         pelib_ifc_gspol = .false.
     end if
 end function pelib_ifc_gspol
+
+logical function pelib_ifc_dolf()
+  use pe_variables, only: pe_lf
+  if (pe_lf) then
+      pelib_ifc_dolf = .true.
+  else
+      pelib_ifc_dolf = .false.
+  end if
+end function pelib_ifc_dolf
 
 subroutine pelib_ifc_activate()
     use pe_variables, only: peqm
@@ -145,6 +155,27 @@ subroutine pelib_ifc_energy(denmats)
     call qexit('pelib_ifc_energy')
 end subroutine pelib_ifc_energy
 
+subroutine pelib_ifc_molgrad(denmats, molgrad)
+    use polarizable_embedding, only: pe_master
+#include "inforb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+    real*8, dimension(nnbasx), intent(in) :: denmats
+    real*8, dimension(3*natoms), intent(out) :: molgrad
+    call qenter('pelib_ifc_molgrad')
+    if (.not. use_pelib()) call quit('PElib not active')
+#if defined(VAR_MPI)
+    call pelib_ifc_start_slaves(5)
+#endif
+    call pe_master(runtype='molecular_gradient', &
+                   triang=.true.,                &
+                   ndim=nbast,                   &
+                   nmats=1,                      &
+                   denmats=denmats,              &
+                   expvals=molgrad)
+        call qexit('pelib_ifc_molgrad')
+end subroutine pelib_ifc_molgrad
+
 subroutine pelib_ifc_response(denmats, fckmats, nmats)
     use polarizable_embedding, only: pe_master
 #include "inforb.h"
@@ -192,6 +223,65 @@ subroutine pelib_ifc_london(fckmats)
     call qexit('pelib_ifc_london')
 end subroutine pelib_ifc_london
 
+subroutine pelib_ifc_lf()
+    use polarizable_embedding, only: pe_master
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "orgcom.h"
+    real*8, dimension(nnbasx) :: dip
+    real*8, dimension(:),allocatable :: fckmats
+    integer :: i, j, k
+    logical :: lopen
+    character*8 :: lblinf(2)
+    allocate(fckmats(3*nnbasx))
+    call qenter('pelib_ifc_lf')
+    if (.not. use_pelib()) call quit('PElib not active')
+
+    call flshfo(lupri)
+    lopen = .false.
+    dip = 0.0d0
+    fckmats = 0.0d0
+
+#if defined(VAR_MPI)
+    call pelib_ifc_start_slaves(8)
+#endif
+    call flshfo(lupri)
+    call pe_master(runtype='effdipole', &
+                   triang=.true.,       &
+                   ndim=nbast,          &
+                   fckmats=fckmats)
+
+    if (luprop <= 0) then
+        call gpopen(luprop, 'AOPROPER', 'OLD', ' ', 'UNFORMATTED', 0, .false.)
+        lopen = .true.
+    end if
+
+!   dipole integrals are stored in triangular form
+    rewind(luprop)
+    call mollb2('XDIPLEN ',lblinf,luprop,LUPRI)
+    call readt(luprop, nnbasx, dip)
+    dip(:) = dip(:) + fckmats(1:nnbasx)
+    call WRTPRO(dip,nnbasx,'XLFDIPLN',lblinf,0)
+
+    rewind(luprop)
+    call mollb2('YDIPLEN ',lblinf,luprop,LUPRI)
+    call readt(luprop, nnbasx, dip)
+    dip(:) = dip(:) + fckmats(nnbasx+1:2*nnbasx)
+    call WRTPRO(dip,nnbasx,'YLFDIPLN',lblinf,0)
+
+    rewind(luprop)
+    call mollb2('ZDIPLEN ',lblinf,luprop,LUPRI)
+    call readt(luprop, nnbasx, dip)
+    dip(:) = dip(:) + fckmats(2*nnbasx+1:3*nnbasx)
+    call WRTPRO(dip,nnbasx,'ZLFDIPLN',lblinf,0)
+
+    deallocate(fckmats)
+    if (lopen) call gpclose(luprop,'KEEP')
+    call qexit('pelib_ifc_lf')
+
+end subroutine pelib_ifc_lf
+
 #if defined(VAR_MPI)
 subroutine pelib_ifc_slave(runtype)
     use polarizable_embedding, only: pe_slave
@@ -205,6 +295,10 @@ subroutine pelib_ifc_slave(runtype)
         call pe_slave('dynamic_response')
     else if (runtype == 4) then
         call pe_slave('magnetic_gradient')
+    else if (runtype == 5) then
+        call pe_slave('molecular_gradient')
+    else if (runtype == 8) then
+        call pe_slave('effdipole')
     end if
     call qexit('pelib_ifc_slave')
 end subroutine pelib_ifc_slave
@@ -1065,244 +1159,6 @@ subroutine pelib_ifc_qro(vecb, vecc, etrs, xindx, zymb, zymc, udv, wrk, nwrk,&
 
 end subroutine pelib_ifc_qro
 
-subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
-                    & wrk, nwrk, kzyva, kzyvb, kzyvc, kzyvd, isyma, isymb,&
-                    & isymc, isymd, cmo,mjwop)
-    implicit none
-#include "inforb.h"
-#include "infvar.h"
-#include "infrsp.h"
-#include "infdim.h"
-#include "qrinf.h"
-
-    integer :: kzyva, kzyvb, kzyvc, kzyvd
-    integer :: isyma, isymb, isymc, isymd
-    integer :: nwrk
-    real*8, dimension(nwrk) :: wrk
-    real*8, dimension(kzyva) :: etrs
-    real*8, dimension(kzyvb) :: vecb
-    real*8, dimension(kzyvc) :: vecc
-    real*8, dimension(kzyvd) :: vecd
-    real*8, dimension(ncmot) :: cmo
-    real*8, dimension(norbt,norbt) :: zymb, zymc, zymd
-    real*8, dimension(nashdi,nashdi) :: udv
-    real*8, dimension(lcindx) :: xindx
-    integer, dimension(2,maxwop,8) :: mjwop
-
-    integer :: i, j, k
-    integer :: idum = 1
-    real*8, dimension(:), allocatable :: udcao, ufcmo
-    real*8, dimension(:), allocatable :: dcaos, fcaos
-    real*8, dimension(:), allocatable :: fcmo
-
-    call qenter('pelib_ifc_cro')
-    if (.not. use_pelib()) call quit('PElib not active')
-
-    call gtzymt(1, vecb, kzyvb, isymb, zymb, mjwop)
-    call gtzymt(1, vecc, kzyvc, isymc, zymc, mjwop)
-    call gtzymt(1, vecd, kzyvd, isymd, zymd, mjwop)
-
-    allocate(udcao(n2basx))
-    allocate(ufcmo(n2orbx))
-    allocate(dcaos(15*nnbasx))
-    dcaos = 0.0d0
-
-    udcao = 0.0d0
-    call cdens1(isymb, cmo, zymb, udcao, wrk, nwrk)
-    call dgefsp(nbast, udcao, dcaos(1:nnbasx))
-    udcao = 0.0d0
-    call cdens1(isymc, cmo, zymc, udcao, wrk, nwrk)
-    call dgefsp(nbast, udcao, dcaos(nnbasx+1:2*nnbasx))
-    udcao = 0.0d0
-    call cdens1(isymd, cmo, zymd, udcao, wrk, nwrk)
-    call dgefsp(nbast, udcao, dcaos(2*nnbasx+1:3*nnbasx))
-
-    udcao = 0.0d0
-    call cdens2(isymb, isymc, cmo, zymb, zymc, udcao,&
-               & wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
-    call dgefsp(nbast, udcao, dcaos(3*nnbasx+1:4*nnbasx))
-    udcao = 0.0d0
-    call cdens2(isymc, isymb, cmo, zymc, zymb, udcao,&
-               & wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
-    call dgefsp(nbast, udcao, dcaos(4*nnbasx+1:5*nnbasx))
-    udcao = 0.0d0
-    call cdens2(isymb, isymd, cmo, zymb, zymd, udcao,&
-               & wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
-    call dgefsp(nbast, udcao, dcaos(5*nnbasx+1:6*nnbasx))
-    udcao = 0.0d0
-    call cdens2(isymd, isymb, cmo, zymd, zymb, udcao,&
-               & wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
-    call dgefsp(nbast, udcao, dcaos(6*nnbasx+1:7*nnbasx))
-    udcao = 0.0d0
-    call cdens2(isymc, isymd, cmo, zymc, zymd, udcao,&
-               & wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
-    call dgefsp(nbast, udcao, dcaos(7*nnbasx+1:8*nnbasx))
-    udcao = 0.0d0
-    call cdens2(isymd, isymc, cmo, zymd, zymc, udcao,&
-               & wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
-    call dgefsp(nbast, udcao, dcaos(8*nnbasx+1:9*nnbasx))
-
-    udcao = 0.0d0
-    call cdens3(isymb, isymc, isymd, cmo, zymb, zymc, zymd, udcao,&
-               & wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
-    call dgefsp(nbast, udcao, dcaos(9*nnbasx+1:10*nnbasx))
-    udcao = 0.0d0
-    call cdens3(isymd, isymb, isymc, cmo, zymd, zymb, zymc, udcao,&
-               & wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
-    call dgefsp(nbast, udcao, dcaos(10*nnbasx+1:11*nnbasx))
-    udcao = 0.0d0
-    call cdens3(isymc, isymd, isymb, cmo, zymc, zymd, zymb, udcao,&
-               & wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
-    call dgefsp(nbast, udcao, dcaos(11*nnbasx+1:12*nnbasx))
-    udcao = 0.0d0
-    call cdens3(isymb, isymd, isymc, cmo, zymb, zymd, zymc, udcao,&
-               & wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
-    call dgefsp(nbast, udcao, dcaos(12*nnbasx+1:13*nnbasx))
-    udcao = 0.0d0
-    call cdens3(isymc, isymb, isymd, cmo, zymc, zymb, zymd, udcao,&
-               & wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
-    call dgefsp(nbast, udcao, dcaos(13*nnbasx+1:14*nnbasx))
-    udcao = 0.0d0
-    call cdens3(isymd, isymc, isymb, cmo, zymd, zymc, zymb, udcao,&
-               & wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
-    call dgefsp(nbast, udcao, dcaos(14*nnbasx+1:15*nnbasx))
-
-    deallocate(udcao)
-
-    allocate(fcaos(15*nnbasx))
-    call pelib_ifc_response(dcaos, fcaos, 15)
-    deallocate(dcaos)
-
-    allocate(fcmo(nnorbx))
-    ufcmo = 0.0d0
-
-    i = 1
-    j = nnbasx
-    call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:2*n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    call oith1(isymc, zymc, wrk(1:n2orbx), wrk(n2orbx+1:2*n2orbx), isyma)
-    call oith1(isymd, zymd, wrk(n2orbx+1:2*n2orbx), ufcmo, isyma)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:2*n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    call oith1(isymb, zymb, wrk(1:n2orbx), wrk(n2orbx+1:2*n2orbx), isyma)
-    call oith1(isymd, zymd, wrk(n2orbx+1:2*n2orbx), ufcmo, isyma)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:2*n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    call oith1(isymb, zymb, wrk(1:n2orbx), wrk(n2orbx+1:2*n2orbx), isyma)
-    call oith1(isymc, zymc, wrk(n2orbx+1:2*n2orbx), ufcmo, isyma)
-    i = 1
-    j = nnbasx
-    call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:2*n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    call oith1(isymd, zymd, wrk(1:n2orbx), wrk(n2orbx+1:2*n2orbx), isyma)
-    call oith1(isymc, zymc, wrk(n2orbx+1:2*n2orbx), ufcmo, isyma)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:2*n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    call oith1(isymd, zymd, wrk(1:n2orbx), wrk(n2orbx+1:2*n2orbx), isyma)
-    call oith1(isymb, zymb, wrk(n2orbx+1:2*n2orbx), ufcmo, isyma)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:2*n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    call oith1(isymc, zymc, wrk(1:n2orbx), wrk(n2orbx+1:2*n2orbx), isyma)
-    call oith1(isymb, zymb, wrk(n2orbx+1:2*n2orbx), ufcmo, isyma)
-
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    call oith1(isymd, zymd, wrk(1:n2orbx), ufcmo, isyma)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    call oith1(isymd, zymd, wrk(1:n2orbx), ufcmo, isyma)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    call oith1(isymc, zymc, wrk(1:n2orbx), ufcmo, isyma)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    call oith1(isymc, zymc, wrk(1:n2orbx), ufcmo, isyma)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    call oith1(isymb, zymb, wrk(1:n2orbx), ufcmo, isyma)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    call oith1(isymb, zymb, wrk(1:n2orbx), ufcmo, isyma)
-
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0/3.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    ufcmo = ufcmo + wrk(1:n2orbx)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0/3.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    ufcmo = ufcmo + wrk(1:n2orbx)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0/3.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    ufcmo = ufcmo + wrk(1:n2orbx)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0/3.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    ufcmo = ufcmo + wrk(1:n2orbx)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0/3.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    ufcmo = ufcmo + wrk(1:n2orbx)
-    i = i + nnbasx
-    j = j + nnbasx
-    call uthu(1.0d0/3.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
-    wrk(1:n2orbx) = 0.0d0
-    call dsptsi(norbt, fcmo, wrk(1:n2orbx))
-    ufcmo = ufcmo + wrk(1:n2orbx)
-
-    call rsp1gr(1, kzyva, idum, 0, isyma, 0, 1, etrs,&
-               & wrk, idum, idum, 1.0d0, 1, udv, ufcmo, xindx,&
-               & mjwop, wrk, nwrk, .true., .false., .false.)
-
-    deallocate(fcaos, fcmo, ufcmo)
-
-    call qexit('pelib_ifc_cro')
-
-end subroutine pelib_ifc_cro
-
 end module pelib_interface
 
 subroutine pelib_ifc_start_slaves(runtyp)
@@ -1333,6 +1189,7 @@ module pelib_interface
     public :: pelib_ifc_activate, pelib_ifc_deactivate
     public :: pelib_ifc_init, pelib_ifc_finalize, pelib_ifc_input_reader
     public :: pelib_ifc_fock, pelib_ifc_energy, pelib_ifc_response, pelib_ifc_london
+    public :: pelib_ifc_molgrad
 #if defined(VAR_MPI)
     public :: pelib_ifc_slave
 #endif
@@ -1396,6 +1253,14 @@ subroutine pelib_ifc_energy(denmats)
     call quit('using dummy PElib interface routines')
     call qexit('pelib_ifc_energy')
 end subroutine pelib_ifc_energy
+
+subroutine pelib_ifc_molgrad(denmats, molgrad)
+    real*8, dimension(*), intent(in) :: denmats
+    real*8, dimension(*), intent(out) :: molgrad
+    call qenter('pelib_ifc_molgrad')
+    call quit('using dummy PElib interface routines')
+    call qexit('pelib_ifc_molgrad')
+end subroutine pelib_ifc_molgrad
 
 subroutine pelib_ifc_response(denmats, fckmats, nmats)
     integer, intent(in) :: nmats

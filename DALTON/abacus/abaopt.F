@@ -29,6 +29,7 @@ C                  It uses both the old cbiwlk.h and the new optinf.h
 C
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -161,6 +162,11 @@ C
       NODIHE = .FALSE.
       NOADDA = .FALSE.
       PRJTRO = .TRUE.  ! Project translation-rotation out of gradient and Hessian
+      IF (USE_PELIB()) THEN 
+          PRJTRO = .FALSE.  ! no translation and rotation invariance when PE sites are fixed
+          IF (.NOT. CARTCO) CARTCO = .TRUE.
+          IF (EVLINI .LE. 0.0D0) EVLINI = 1.0D0
+      END IF
       REDRED = .FALSE.
       LINDHD = .TRUE.
 C     ... hjaaj Mar 2004: disable generalization of Lindh
@@ -197,7 +203,7 @@ C     satisfactorily yet.
       CALL DZERO(CRDIN1,8*MXCENT)
       CALL IZERO(ICNSTR,8*MXCENT)
       CALL IZERO(IADDCR,11*4)
-      CALL IZERO(IFREEZ,11)
+      CALL IZERO(IFREEZ,MX_IFREEZ)
       DO 123 I = 0, 7
          CNDHES(I) = D0
          INDHES(I) = 0
@@ -524,7 +530,9 @@ C
      &              // 'be between 1 and', MXCENT,'!'
                CALL QUIT('Illegal number of frozen atoms.')
             END IF
-            DO 474 I = 1, NFREEZ
+            IF (.NOT. CARTCO) CARTCO = .TRUE.
+            IF (EVLINI .LE. 0.0D0) EVLINI = 1.0D0
+            DO I = 1, NFREEZ
                READ (LUCMD,*) NFRZ
                IF ((NFRZ .LE. 0) .OR. (NFRZ .GT. MXCENT)) THEN
                   WRITE(LUPRI,'(/A,I6,A/)')
@@ -539,8 +547,10 @@ C
                   CALL QUIT('Too many atoms frozen with .FREEZE')
                END IF
                IFREEZ(IFREEZ(0)) = NFRZ
- 474        CONTINUE
-            IF (IFREEZ(0) .GT. 0) PRJTRO = .FALSE. ! Do not project out translation-rotation if some coordinates are frozen.
+               IF (NFRZ .GT. 0) PRJTRO = .FALSE.
+            END DO
+            ! Do not project out translation-rotation if some coordinates are frozen.
+            IF (IFREEZ(0) .GT. 0) PRJTRO = .FALSE.
             GOTO 100
  75         READ (LUCMD,*) ITRFRZ
             GOTO 100
@@ -1544,6 +1554,7 @@ C  /* Deck runopt */
 #include "gnrinf.h"
 #include "molde.h"
 #include "numder.h"
+#include "cbinum.h"
       LOGICAL EXHER, EXSIR, EXABA, MINEND, STATPO, ACTIVE
       LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP
       CHARACTER TMPLIN*80, WRDRSP*7
@@ -1552,6 +1563,7 @@ C  /* Deck runopt */
       DIMENSION STPMAT(25,MXRCRD), HESOLD(MXRCRD,MXRCRD)
       DIMENSION GRDARR(25,MXRCRD), STPARR(MXRCRD,MXRCRD)
       CHARACTER LABEL1*8, STHELP*10 ! emg
+      INTEGER IORDR
 C
 C     The array geinfo contains optimization information for each
 C     iteration. The first index is the iteration, the second gives
@@ -2175,43 +2187,6 @@ C     Finished case 1: Geometry has converged.
 C
       ELSE IF (GECONV) THEN
 C
-C     We check to see if there is any properties to be calculated
-C
-         WORK(1) = WRKDLM
-         WRINDX = .TRUE.
-Chj aug 99: reset IPRUSR to original level
-         IPRUSR = IPRUSR_orig
-         IPREAD = IPREAD_orig
-         CALL ABAINP('**PROPE',WORK(2),LWORK)
-         CALL EXEABA(WORK,LWORK-1,WRKDLM)
-C
-C     We also check to see if we have requested a RESPONSE calculations
-C
-         CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
-     &               .FALSE.)
-         REWIND (LUCMD)
-C
-C     Let us first see if we can find any **RESPONSE input
-C
- 133     CONTINUE
-         READ (LUCMD,'(A7)',END=134,ERR=134) WRDRSP
-         IF (WRDRSP .EQ. '**RESPO') THEN
-            RNRESP = .TRUE.
-            CALL GPCLOSE(LUCMD,'KEEP')
-            IF (LUSIFC.GT.0) CALL GPCLOSE(LUSIFC,'KEEP')
-            CALL RSPDRV(WORK(2),LWORK)
-         ELSE
-            GOTO 133
-         END IF
- 134     CONTINUE
-         IF (LUCMD .GT. 0) CALL GPCLOSE(LUCMD,'KEEP')
-C
-C     Single point energy is calculated if requested.
-C
-         WORK(1) = WRKDLM
-         IF (DOSPE) CALL SPNRGY(GEINFO,EXHER,EXSIR,EXABA,WORK,
-     &           LWORK,WRKDLM)
-C
 C     Final results are printed, partially through PRIINF.
 C
          IF (MOLDEN) CALL MOLDEN_GECON(.TRUE.,DUMMY)
@@ -2269,6 +2244,59 @@ C
      &          '@ single point energy was calculated: ',ENERGY,' a.u.'
          END IF
          WRITE(LUPRI,*)
+
+C
+C     We check to see if there is any properties to be calculated
+C
+         WORK(1) = WRKDLM
+         WRINDX = .TRUE.
+Chj aug 99: reset IPRUSR to original level
+         IPRUSR = IPRUSR_orig
+         IPREAD = IPREAD_orig
+         CALL ABAINP('**PROPE',WORK(2),LWORK)
+
+C        Computation of numerical Hessian NHL 10/13
+         CALL FNDANA(IORDR)
+         IF (IORDR .LT. 2 .AND. VIB) THEN 
+            CALL TITLER(
+     &            'Calculate numerical Hessian',
+     &            ' ',200)
+            CALL NMHES(IPRUSR,IORDR,WORK(1),LWORK,WRKDLM)
+            VIB = .TRUE.
+            DIPDER = .TRUE.
+         ELSE IF (IORDR .GT. 2 .OR. IORDR .LT. 0) THEN
+            CALL QUIT('The order of analytical derivatives'//
+     &                         'is unexpected')
+         END IF
+
+         CALL EXEABA(WORK,LWORK-1,WRKDLM)
+C
+C     We also check to see if we have requested a RESPONSE calculations
+C
+         CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
+     &               .FALSE.)
+         REWIND (LUCMD)
+C
+C     Let us first see if we can find any **RESPONSE input
+C
+ 133     CONTINUE
+         READ (LUCMD,'(A7)',END=134,ERR=134) WRDRSP
+         IF (WRDRSP .EQ. '**RESPO') THEN
+            RNRESP = .TRUE.
+            CALL GPCLOSE(LUCMD,'KEEP')
+            IF (LUSIFC.GT.0) CALL GPCLOSE(LUSIFC,'KEEP')
+            CALL RSPDRV(WORK(2),LWORK)
+         ELSE
+            GOTO 133
+         END IF
+ 134     CONTINUE
+         IF (LUCMD .GT. 0) CALL GPCLOSE(LUCMD,'KEEP')
+C
+C     Single point energy is calculated if requested.
+C
+         WORK(1) = WRKDLM
+         IF (DOSPE) CALL SPNRGY(GEINFO,EXHER,EXSIR,EXABA,WORK,
+     &           LWORK,WRKDLM)
 C
 C     Finished case 2: Exceeded maximum number of iterations.
 C
@@ -2282,7 +2310,7 @@ C
      &      '@ WARNING: Geometry has NOT converged!',
      &      '@ Maximum number of iterations (', ITRMAX,
      &         ') has been reached and',
-     &      '@ optimization halted. Increase number or ',
+     &      '@ optimization halted. Increase number or '//
      &         'restart from last geometry.'
          IF (DOSPE) WRITE(LUPRI,'(A/)')
      &      '@ Therefore, no single point energy has been calculated.'
@@ -2362,10 +2390,10 @@ C
       IF (IPRINT .GE. 3 .OR. INDTOT .NE. INDHES(0)) THEN
          DO, I = 0, MAXREP
             IF (INDHES(I) .GT. 0) WRITE(LUPRI,'(A,I2,A,I8)')
-     &           ' Hessian index (irrep',I,')     :', INDHES(I)
+     &           ' Hessian index (irrep',I,')        :', INDHES(I)
          END DO
       END IF
-      WRITE(LUPRI,'(A,I8//)')' Total Hessian index            :', INDTOT
+      WRITE(LUPRI,'(A,I8//)')' Total effective Hessian index  :',INDTOT
       IF (BRKSYM .AND. GECONV) THEN
          WRITE(LUPRI,'(/A)') ' *) Within given symmetry.'
          ERGPRD = 0.0D0
@@ -2382,10 +2410,12 @@ C
       END IF
       IF (IPRINT .GE. 3) THEN
          CALL HEADER('Eigenvalues',-1)
-         WRITE(LUPRI,'(A)')
-     &      '   #      Current value  Previous value      Change   ',
-     &      ' -----------------------------------------------------'
-         DO, I = START, NCRD
+         WRITE(LUPRI,'(A/A)')
+     &        '   #      Current value  Previous value      Change   '//
+     &        '      Gradient',
+     &        ' -----------------------------------------------------'//
+     &        '-----------------'
+         DO I = START, NCRD
             EVL   = EVAL(I)
             EVLOL = EVALOL(I)
             IF (EVL .GT. 9.9D3) THEN
@@ -2394,7 +2424,7 @@ C
             END IF
             NR = I
             IF (RATFUN) NR = NR - 1
-            WRITE(LUPRI,'(I4,3F16.6)') NR,EVL,EVLOL,EVL-EVLOL
+            WRITE(LUPRI,'(I4,4F16.6)') NR,EVL,EVLOL,EVL-EVLOL,GRDDIA(I)
          END DO
       END IF
       RETURN
@@ -2775,6 +2805,8 @@ C
 C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
+      use pelib_interface, only: use_pelib, pelib_ifc_activate,
+     &                           pelib_ifc_deactivate
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2788,6 +2820,7 @@ C
 #include "cbiwlk.h"
 #include "pvibav.h"
       LOGICAL EXHER, EXSIR, EXABA
+      LOGICAL SAVE_PELIB
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT)
@@ -2811,7 +2844,19 @@ C         NAORDR = 0; Only energies available
 C         NAORDR = 1; Analytical gradients available
 C         NAORDR = 2; Analytical gradients and hessians available.
 C
+
+      SAVE_PELIB = .FALSE.
+      IF (USE_PELIB() .AND. INITHS) THEN
+         SAVE_PELIB = .TRUE.
+         CALL PELIB_IFC_DEACTIVATE()
+      END IF
+
       CALL FNDANA(NAORDR)
+
+      IF (SAVE_PELIB .AND. INITHS) THEN
+         CALL PELIB_IFC_ACTIVATE()
+      END IF
+
       IF (NAORDR .LT. 2) THEN
          CALL QUIT('2nd order optimization aborted because'//
      &   ' analytical Hessian not available.')
@@ -2976,12 +3021,23 @@ C
  14            CONTINUE
  12         CONTINUE
          END IF
-         WRITE(LUPRI,'(/A/)') 'Initial Hessian has been read from file.'
+         WRITE(LUPRI,'(/A)') 'Initial Hessian has been read from file'
+         IF (REDINT) THEN
+            WRITE(LUPRI,'(A/)') ' in redundant internal coordinates.'
+         ELSE IF (DELINT) THEN
+            WRITE(LUPRI,'(A/)')
+     &         ' in delocalized redundant internal coordinates.'
+         ELSE
+            WRITE(LUPRI,'(A/)') ' in cartesian coordinates.'
+         END IF
+
          HSFILE = .FALSE.
 C
 C     Check if Hessian has been calculated
 C
       ELSE IF (INITHS) THEN
+         IF (IPRINT .GE. IPRMIN) WRITE (LUPRI,'(A)')
+     &      'Initial Hessian is analytical Hessian'
          IF (REDINT .OR. DELINT) THEN
             IF (MAXREP .GT. 0) THEN
                CALL DZERO(TMPMAT,MX2CRD*MX2CRD)
@@ -3039,7 +3095,16 @@ C
                GRDOLD(J) = GRDMOL(J)
  18         CONTINUE
          END IF
-         WRITE(LUPRI,'(/A/)') 'Initial Hessian has been calculated.'
+         IF (REDINT) THEN
+            WRITE(LUPRI,'(/A/)') 'Initial Hessian has been calculated'//
+     &                          ' in redundant internal coordinates.'
+         ELSE IF (DELINT) THEN
+            WRITE(LUPRI,'(/A/)') 'Initial Hessian has been calculated'//
+     &              ' in delocalized redundant internal coordinates.'
+         ELSE
+            WRITE(LUPRI,'(/A/)') 'Initial Hessian has been calculated'//
+     &                          ' in Cartesian coordinates.'
+         END IF
 C
 C     Next line makes reinitialization possible:
 C
@@ -3121,8 +3186,15 @@ C
             CALL OUTPUT(HESINT,1,IINTCR,1,IINTCR,
      &                  MXRCRD,MXRCRD,-1,LUPRI)
          END IF
-         IF ((INRDHS .OR. INMDHS) .AND. ((.NOT. REDINT)
-     &        .AND. (.NOT. DELINT))) THEN
+!        if (initial Hessian in internal coordinates and
+!            not optimization in internal coordinates) then
+         WRITE(LUPRI,'(/A)') 'Initial model Hessian '//
+     &      'in internal coordinates has been calculated'
+         IF ((INRDHS .OR. INMDHS) .AND. .NOT. (REDINT .OR. DELINT)) THEN
+            WRITE(LUPRI,'(A)')
+     &         ' and transformed to cartesian coordinates'
+!           Then transform Hessian HESINT in internal coordinates
+!           to Hessian HESMOL in Cartesian coordinates
             HESMOL(:,:) = 0.0D0
             CALL HQ2HX(MXRCRD,MX2CRD,TMPMAT,TMPMT2,TMPMT3,HESINT,
      &           GRDINT,HESMOL,NCOOR,WILBMT,BMTRAN,WORK,LWORK)
@@ -3163,6 +3235,10 @@ C
      &                        NCOOR,NCOOR,-1,LUPRI)
                END IF
             END IF
+
+C           Zero elements of initial Hessian in HESMOL for nuclei frozen with .FREEZE
+            CALL FREEZE_COORDINATES(WORK,LWORK)
+
             DO 25 J = 1, ICRTCR
                GRDOLD(J) = GRDMOL(J)
                DO 27 I = 1, ICRTCR
@@ -5607,14 +5683,20 @@ C
 #include "infinp.h"
 #include "gnrinf.h"
 #include "optinf.h"
+#include "infopt.h"
       PARAMETER (DP25=0.25D0)
       LOGICAL REJGEO
-      THDE = 1.0D-10
+C
+C     Define threshold for numerical noise in Delta energy
+C     by using that SCF/MCSCF/DFT energies are of quadratic
+C     accuracy in the wave function gradient norm.
+C
+      THDE = MAX(1.0D-10, 10.0D0*GRDNRM**2)
 C
 C     CC energies are less precise and we have to decrease the
 C     energy threshold
 C
-      IF (DOCCSD) THDE = 1.0D-8
+      IF (DOCCSD) THDE = 1.0D-2*THDE
 C
       ERGDIF = ENERGY - ERGOLD
       REJGEO = .FALSE.
@@ -6306,9 +6388,36 @@ C
 C
 C     Newton step is calculated.
 C
-         DO 30 I = 1, NVEC
-            STPDIA(I) = -GRDDIA(I)/EVAL(I)
- 30      CONTINUE
+         INDTOT_eff = 0
+         IF (IFREEZ(0) .GT. 0 .AND. .NOT. NEWTON) THEN
+            THR_ZERO_EVAL = 3.0D-3
+         ELSE
+            THR_ZERO_EVAL = THRLDP
+         END IF
+         DO I = 1, NVEC
+            IF (EVAL(I) .LT. -THR_ZERO_EVAL) INDTOT_eff = INDTOT_eff + 1
+            ! do not divide by zero, or very small unreliable values
+            IF (ABS(EVAL(I)) .LT. THRLDP) THEN
+               EVAL_EFF = SIGN(THRLDP, EVAL(I))
+            ELSE
+               EVAL_EFF = EVAL(I)
+            END IF
+            STPDIA(I) = -GRDDIA(I)/EVAL_EFF
+         END DO
+         IF (INDTOT .NE. INDHES(0) .AND. .NOT. NOBRKS) THEN
+            ! Do not reset INDTOT because we probably want to break 
+            ! symmetry. Instead we reset INDTOT_eff because it is used
+            ! below
+            INDTOT_eff = INDTOT
+         ELSE IF (INDTOT_eff .NE. INDTOT .AND. .NOT. SADDLE) THEN
+            WRITE(LUPRI,'(/A,I3,A,I3/A/A)')
+     &      ' Calculated Hessian index',INDTOT,
+     &        ' is reset to effective Hessian index',INDTOT_eff,
+     &      ' because the difference corresponds to small negative'//
+     &        ' eigenvalue(s) with a converged gradient component',
+     &      ' (probably a rotational coordinate .FREEZE)'
+            INDTOT = INDTOT_eff
+         END IF
          STPNRM = SQRT(DDOT(NVEC,STPDIA,1,STPDIA,1))
 C
 C     If Newton step is larger that trust radius, we take a step
@@ -6318,9 +6427,9 @@ C     Newton step is larger than 0.5D-3. For saddle points we
 C     employ the level-shift when the index is different from 1.
 C
          IF (((STPNRM .GT. TRSTRA) .AND. (.NOT. NOTRST)) .OR.
-     &        ((.NOT. SADDLE) .AND. (INDTOT .GT. 0) .AND.
-     &        (STPNRM .GE. 0.5D-3)) .OR. (SADDLE .AND.
-     &        (INDTOT .NE. 1))) THEN
+     &       ((.NOT. SADDLE) .AND. (INDTOT_eff .GT. 0) .AND.
+     &       (STPNRM .GE. 0.5D-3)) .OR. (SADDLE .AND.
+     &       (INDTOT_eff .NE. 1))) THEN
             IF (IPRINT .GT. 5) THEN
                WRITE(LUPRI,'(/A,F15.10)')' Norm of Newton step:', STPNRM
                WRITE(LUPRI,'(A,F15.10/)')' Trust radius       :', TRSTRA
@@ -6469,6 +6578,7 @@ C
 C     If the step is acceptable, the geometry is updated
 C     and written to file.
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -6713,10 +6823,16 @@ C
      &           ') reached.'
             WRITE(LUPRI,'(A)') 'No acceptable step found.'
             WRITE(LUPRI,'(/A)')'***** NOTE! *****'
-            WRITE(LUPRI,'(A)')'As a last resort, ' //
+            IF (USE_PELIB()) THEN
+               WRITE(LUPRI,'(A)')'As a last resort, ' //
+     &           'the Hessian is reinitialized using iniths!'
+               INITHS = .TRUE.
+            ELSE
+               WRITE(LUPRI,'(A)')'As a last resort, ' //
      &           'the Hessian is initialized to unity!'
-            EVLINI = 1.0D0
-            TRSTRA = 0.5D0
+               EVLINI = 1.0D0
+               TRSTRA = 0.5D0
+            END IF
             GO TO 9999
 C
 C     Otherwise we give up...
@@ -8032,8 +8148,11 @@ C
       PARAMETER(D0=0.0D0, ZERO=1.0D-8 )
       STEP = D0
       DO 100 K=1,NCORD
-         IF ((ABS(GDDIA(K)) .GE. ZERO) .AND.
-     &        (ABS(HESDIA(K)) .GE. ZERO)) THEN
+!        IF ((ABS(GDDIA(K)) .GE. ZERO) .AND.
+!    &        (ABS(HESDIA(K)) .GE. ZERO)) THEN
+! hjaaj Oct 2013: test on Hessian is problematic
+!                 when soft modes !!!
+         IF ((ABS(GDDIA(K)) .GE. ZERO)) THEN
             STEPK = GDDIA(K) / (HESDIA(K)+RNU)
             STEP = STEP + STEPK*STEPK
          END IF
@@ -8128,4 +8247,81 @@ C
       CALL QEXIT('NUMGRD')
       RETURN
       END
+C
+      SUBROUTINE FREEZE_COORDINATES(WORK,LWORK)
+C
+C     Nanna List & Hans Joergen Aa. Jensen, Aug. 2013
+C
+C     Zero gradient and Hessian elements for atoms frozen
+C     with .FREEZE keywords.
+C
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "nuclei.h"
+#include "optinf.h"
+      DIMENSION WORK(LWORK)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, ALLOCATABLE ::  GRDMOL(:), HESMOL(:,:)
+
+      ALLOCATE(GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR))
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
+      IF (IFREEZ(0) .GT. 0) THEN
+         NCOORD = 3*NUCDEP
+
+         DO, I = 1, IFREEZ(0)
+            IC_OFF = 3*(IFREEZ(I)-1)
+            DO, IC = 1, 3
+               IC_TOT = IC_OFF + IC
+               GRDMOL(IC_TOT) = 0.0D0
+               DO, JC = 1, NCOORD
+                  HESMOL(JC,IC_TOT) = 0.0D0
+                  HESMOL(IC_TOT,JC) = 0.0D0
+               END DO
+               HESMOL(IC_TOT,IC_TOT) = 10.0D0
+            END DO
+         END DO
+
+         IF (IPRINT .GT. 1) THEN
+            WRITE (LUPRI,*) 'Molecular gradient after freeze:'
+            DO I = 1, NCOORD
+                WRITE(LUPRI,*) 'i,grdmol(i)',I,GRDMOL(I)
+            END DO
+            WRITE (LUPRI,*) 'Molecular Hessian after freeze:'
+            CALL OUTPUT(HESMOL,1,NCOORD,1,NCOORD,MXCOOR,MXCOOR,-1,LUPRI)
+         end if
+      END IF
+
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      DEALLOCATE(GRDMOL, HESMOL)
+
+      END
+
+      SUBROUTINE NMHES(IPRUSR,IORDR,WRK,LWRK,WRKDLM)
+C
+C     Nanna H. List Oct. 2013
+C
+C     Get numerical Hessian after optimization if  
+C     **PROPER .VIBANA has been requested.
+C
+#include "mxcent.h"
+#include "cbivib.h"
+#include "numder.h"
+#include "cbinum.h"
+      INTEGER IORDR
+      LOGICAL SAVE_REUHES
+
+      CALL NMDINI(IPRUSR)
+      NAORDR = IORDR
+      SAVE_REUHES = REUHES
+      REUHES = .TRUE.
+      NMORDR = 2 - NAORDR
+      CALL NUMDRV(WRK,LWRK,IPRUSR,WRKDLM)
+      REUHES = SAVE_REUHES
+      HESFIL = .TRUE.
+      END
+
 C --- end of abaopt.F ---

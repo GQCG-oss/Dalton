@@ -26,6 +26,7 @@ C  /* Deck abactl */
       SUBROUTINE ABACTL(WORK,LWORK)
 C
       USE SO_INFO, ONLY: SO_NUM_ACTIVE_MODELS
+      use pelib_interface, only: use_pelib
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -214,7 +215,7 @@ C     ***** Dipole moment gradient *****
 C     **********************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF (.NOT. PASDIP) THEN
+      IF (.NOT. PASDIP .AND. .NOT. USE_PELIB()) THEN
          CALL DIPCTL(WORK(KLAST),LWRK,PASDIP)
          IF (PASDIP) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
@@ -302,7 +303,8 @@ C
       IF (.NOT. PASREL) THEN
       IF (MOLHES .OR. SHIELD .OR. MAGSUS .OR. VCD .OR.
      &    DIPDER .OR. POLAR .OR. QPGRAD .OR. (SPNSPN .AND. DOPSO) .OR.
-     &    ECD .OR. VROA .OR. MOLGFA .OR. SPINRO .OR. OPTROT) THEN
+     &    ECD .OR. VROA .OR. MOLGFA .OR. SPINRO .OR. OPTROT
+     &    .AND. .NOT. USE_PELIB()) THEN
          CALL RELAX(WORK(KPSO),WORK(KSD),WORK(KFC),WORK(KSDFC),
      &              WORK(KLAST),LWRK,PASREL,.FALSE.)
          IF (PASREL) CALL ABAWRIT_RESTART
@@ -571,6 +573,7 @@ CAMT Add empirical DFT-D gradient...
          IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLTT)
          IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLNN)
          IF (PCM) CALL ADDGRD(GSOLCV)
+         IF (USE_PELIB()) CALL ADDGRD(PEGRAD)
       END IF
 C
 C     Calculated dipole moment
@@ -579,9 +582,9 @@ C
 C
 C     Calculated elements of dipole gradient
 C
-      CALL DZERO(DIP1,9*NUCDEP)
+      IF (.NOT. USE_PELIB()) CALL DZERO(DIP1,9*NUCDEP)
 Clf to be adjusted for PCM IR intensities calculation
-      IF (DIPDER) THEN
+      IF (DIPDER .AND. .NOT. USE_PELIB()) THEN
          CALL DIPADD(DDIPN)
          CALL DIPADD(DDIPE)
          CALL DIPADD(DDIPS)
@@ -622,6 +625,13 @@ C     ***** Fold in contrbutions from floating orbitals *****
 C     *******************************************************
 C
       CALL FLTORB(WORK(KLST2),LWRK1)
+      CALL FLSHFO(LUPRI)
+C
+C     *******************************************************
+C     ***** Freezing any coordinates ???                *****
+C     *******************************************************
+C
+      CALL FREEZE_COORDINATES(WORK(KLST2),LWRK1)
       CALL FLSHFO(LUPRI)
 C
 C     **************************
@@ -679,7 +689,11 @@ C     ***** Vibrational analysis *****
 C     ********************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF (VIB) CALL VIBCTL(WORK(KLAST),LWRK3)
+      IF (VIB) THEN 
+          CALL SET_VIBCTL('Copy_PRJTRO')
+          CALL VIBCTL(WORK(KLAST),LWRK3)
+          CALL SET_VIBCTL('Reset')
+      END IF
       CALL GETTIM(TIMVIB,TIMDUM)
       TIMVIB = TIMVIB - TIMSTR
       CALL FLSHFO(LUPRI)
