@@ -318,7 +318,7 @@ C
 #include "maxaqn.h"
 C
 C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
-      PARAMETER (NDIR = 9, NTABLE = 145)
+      PARAMETER (NDIR = 9, NTABLE = 146)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -438,8 +438,8 @@ C     Bin Gao, Oct. 3, 2011
      &             '.NEWTRA', '.KINADI', '.GENINT', '.S2MBRA',
 !                    241        242        243        244
      &             '.S2MKET', '.S2MMIX', '.LRINTS', '.NORMAO',
-!                    245
-     &             '.TWOBYT'/
+!                    245        246
+     &             '.TWOBYT', '.LFDIPL'/
 C
 C
       CALL QENTER('HERINP')
@@ -530,7 +530,7 @@ C
      &                211,212,213,214,215,216,217,218,219,220,
      &                221,222,223,224,225,226,227,228,229,230,
      &                231,232,233,234,235,236,237,238,239,240,
-     &                241,242,243,244,245), I
+     &                241,242,243,244,245,246), I
             END IF
          END DO
             IF (WORD .EQ. '.OPTION') THEN
@@ -1322,6 +1322,10 @@ cs            ENDIF
   245    CONTINUE   ! .TWOBYTEPACKING
             TWOBYTEPACKING = .TRUE.
             GO TO 100 
+  246    CONTINUE
+            LFDIPLN = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
       ELSE
@@ -1679,6 +1683,8 @@ cLig added message to display for RPSO and RAGNMO optiion
      &      '  computation of CTOCD-DZ magnetizability in an'//
      &      '  analytical way'
 cLig
+         IF (LFDIPLN) WRITE (LUPRI,'(10X,A)')
+     &     '- Effective dipole operator - only possible with PE library'
       END IF
 
       WRITE (LUPRI,'(4(/A,3F20.12))')
@@ -2573,6 +2579,19 @@ C
                CALL PR1INT('DIPVEL ',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
                CALL TIMER('DIPVEL',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+C
+C           ***** Effective dipole integrals *****
+C           - only when polarizable environment turned on
+C             using PE library - otherwise they are just
+C             standard dipole integrals
+
+            IF (LFDIPLN) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('LFDIPLN',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('LFDIPL',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             END IF
 C
@@ -4207,6 +4226,7 @@ C
       DPTOVL = .FALSE.
       DPTPOT = .FALSE.
       XDDXR3 = .FALSE.
+      LFDIPLN = .FALSE.
 C     Initialize R12 logical variables R12CAL (WK/UniKA/04-11-2002).
       R12DIA = .TRUE.
       R12SVD = .FALSE.

@@ -1333,7 +1333,8 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
-      use pelib_interface, only: use_pelib
+      use pelib_interface, only: use_pelib, pelib_ifc_dolf, 
+     &                                     pelib_ifc_lf
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1416,15 +1417,37 @@ C
                LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
                LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
                LPPOP( INDPRP('ZDIPLEN ')) = .TRUE.
+               IF (USE_PELIB()) THEN
+                 IF (PELIB_IFC_DOLF()) THEN
+                   LPPOP( INDPRP('XLFDIPLN')) = .TRUE.
+                   LPPOP( INDPRP('YLFDIPLN')) = .TRUE.
+                   LPPOP( INDPRP('ZLFDIPLN')) = .TRUE.
+                 END IF
+               END IF
                GO TO 100
  2             CONTINUE   ! .DIPLNX
                LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
+               IF (USE_PELIB()) THEN
+                 IF (PELIB_IFC_DOLF()) THEN
+                   LPPOP( INDPRP('XLFDIPLN')) = .TRUE.
+                 END IF
+               END IF
                GO TO 100
  3             CONTINUE   ! .DIPLNY
                LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
+               IF (USE_PELIB()) THEN
+                 IF (PELIB_IFC_DOLF()) THEN
+                   LPPOP( INDPRP('YLFDIPLN')) = .TRUE.
+                 END IF
+               END IF
                GO TO 100
  4             CONTINUE   ! .DIPLNZ
                LPPOP( INDPRP('ZDIPLEN ')) = .TRUE.
+               IF (USE_PELIB()) THEN
+                 IF (PELIB_IFC_DOLF()) THEN
+                   LPPOP( INDPRP('ZLFDIPLN')) = .TRUE.
+                 END IF
+               END IF
                GO TO 100
  5             CONTINUE   ! .DIPVEL
                LPPOP( INDPRP('XDIPVEL ')) = .TRUE.

@@ -29,6 +29,7 @@ basic examples.
 \item PE-CC: K.~Sneskov, T.~Schwabe, J.~Kongsted and O.~Christiansen. \newblock {\em J.~ Chem.~Phys.}, {\bf 134}, 104108, (2011).
 \item PE-CPP: M.~N.~Pedersen, E.~D.~Hedeg\aa{}rd, J.~M.~H.~Olsen, J.~Kauczor, P.~Norman and J.~Kongsted \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 1164 (2014).
 \item Magnetic properties with LAOs: C.~Steinmann, J.~M.~H.~Olsen and J.~Kongsted. \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 981 (2014).
+\item Effective external field effects: N.~H.~List, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock{\em Phys.~Chem.~Chem.~Phys.},{\bf 18}, 10070 (2016) and N.~H.~List. PhD thesis, University of Southern Denmark, Odense, Denmark, 2015. 
 \end{list}
 }}
 \end{center}
@@ -81,7 +82,12 @@ propagator (CPP) module to allow damped linear response properties at
 PE-HF and PE-DFT levels of theory for closed- and open-shell systems~\cite{pecpp}.
 Triplet linear response properties are
 available at the PE-HF and PE-DFT levels for closed-shell systems
-only. Magnetic linear response properties using London atomic
+only. For the calculation of 1PA and 2PA properties, it is furthermore possible to include 
+the so-called effective external field (EEF) effect, which models the environment polarization
+induced directly by the presence of an external field \cite{peeef,peeef2}.
+This leads to properties that are defined in terms of the external field and are thus comparable to
+supermolecular calculations.
+Magnetic linear response properties using London atomic
 orbitals (LAOs) are also available. Singlet quadratic response properties can be
 calculated at PE-HF and PE-DFT levels for closed-shell systems.
 In the PE-MP2/SOPPA models, the

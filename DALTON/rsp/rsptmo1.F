@@ -24,6 +24,7 @@
 C
       SUBROUTINE TMOINP(WORD)
 C
+      use pelib_interface, only: use_pelib, pelib_ifc_dolf
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -200,18 +201,48 @@ C
                GO TO 100         
  20            CONTINUE
                   THREEPHOTON = .TRUE.
-                  LABEL='XDIPLEN'
-                  ATMOP( INDPRP(LABEL)) = .TRUE.
-                  BTMOP( INDPRP(LABEL)) = .TRUE.
-                  CTMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='YDIPLEN'
-                  ATMOP( INDPRP(LABEL)) = .TRUE.
-                  BTMOP( INDPRP(LABEL)) = .TRUE.
-                  CTMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='ZDIPLEN'
-                  ATMOP( INDPRP(LABEL)) = .TRUE.
-                  BTMOP( INDPRP(LABEL)) = .TRUE.
-                  CTMOP( INDPRP(LABEL)) = .TRUE.
+                  IF (USE_PELIB()) THEN
+                     IF (PELIB_IFC_DOLF()) THEN
+                        LABEL='XLFDIPLN'
+                        ATMOP( INDPRP(LABEL)) = .TRUE.
+                        BTMOP( INDPRP(LABEL)) = .TRUE.
+                        CTMOP( INDPRP(LABEL)) = .TRUE.
+                        LABEL='YLFDIPLN'
+                        ATMOP( INDPRP(LABEL)) = .TRUE.
+                        BTMOP( INDPRP(LABEL)) = .TRUE.
+                        CTMOP( INDPRP(LABEL)) = .TRUE.
+                        LABEL='ZLFDIPLN'
+                        ATMOP( INDPRP(LABEL)) = .TRUE.
+                        BTMOP( INDPRP(LABEL)) = .TRUE.
+                        CTMOP( INDPRP(LABEL)) = .TRUE.
+                     ELSE
+                        LABEL='XDIPLEN'
+                        ATMOP( INDPRP(LABEL)) = .TRUE.
+                        BTMOP( INDPRP(LABEL)) = .TRUE.
+                        CTMOP( INDPRP(LABEL)) = .TRUE.
+                        LABEL='YDIPLEN'
+                        ATMOP( INDPRP(LABEL)) = .TRUE.
+                        BTMOP( INDPRP(LABEL)) = .TRUE.
+                        CTMOP( INDPRP(LABEL)) = .TRUE.
+                        LABEL='ZDIPLEN'
+                        ATMOP( INDPRP(LABEL)) = .TRUE.
+                        BTMOP( INDPRP(LABEL)) = .TRUE.
+                        CTMOP( INDPRP(LABEL)) = .TRUE.
+                     END IF
+                  ELSE
+                     LABEL='XDIPLEN'
+                     ATMOP( INDPRP(LABEL)) = .TRUE.
+                     BTMOP( INDPRP(LABEL)) = .TRUE.
+                     CTMOP( INDPRP(LABEL)) = .TRUE.
+                     LABEL='YDIPLEN'
+                     ATMOP( INDPRP(LABEL)) = .TRUE.
+                     BTMOP( INDPRP(LABEL)) = .TRUE.
+                     CTMOP( INDPRP(LABEL)) = .TRUE.
+                     LABEL='ZDIPLEN'
+                     ATMOP( INDPRP(LABEL)) = .TRUE.
+                     BTMOP( INDPRP(LABEL)) = .TRUE.
+                     CTMOP( INDPRP(LABEL)) = .TRUE.
+                  END IF
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

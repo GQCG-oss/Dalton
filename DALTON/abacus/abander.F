@@ -340,15 +340,15 @@ C
      &    CCR1A .OR. CCR1B .OR. CCT  .OR.
      &    (DOROSCF .AND. NSYM.gt.1 .AND. .NOT.DIRCAL) .OR.  ! high spin HF or DFT, with symmetry
      &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
-     &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN .OR.
-     &    USE_PELIB()) THEN
+     &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN) THEN
          NAORDR = 0
       ELSE IF (CCD. OR. CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR. CCPT .OR.
      &        DOROSCF .OR.  ! high spin HF or DFT, no symmetry
      &        (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0)) .OR.
      &        DRCCD .OR. SOSEX .OR. RCCD .OR.  !RPA Methods with analytic gradient only
      &        DPCM .OR.
-     &        DODFTD) THEN !AMT Only gradients for empirical disp correction so far
+     &        DODFTD .OR. !AMT Only gradients for empirical disp correction so far
+     &        USE_PELIB()) THEN
          NAORDR = 1
       ELSE
          NAORDR = 2
@@ -542,6 +542,7 @@ C
       NINNER = 1
       IF (NAORDR.GE.1) NINNER = NCOOR*NINNER
       IF (NAORDR.GE.2) NINNER =(NCOOR+1)*NINNER/2
+      NINNER = NINNER + 3  ! make space for dipole moment derivatives
 C
       MAXADR = 1
       DO 200 J = NMORDR, 1, -2
@@ -1820,6 +1821,7 @@ c#endif
 #include "infpar.h"
 #include "numder.h"
 #include "fcsym.h"
+#include "moldip.h"
 #include "past.h"
 #include "pvibav.h"
 #include "gnrinf.h"
@@ -2042,6 +2044,7 @@ C
                   CALL TRFCGD(EGRAD,SYMCOR,COOR,WORK(KSEGRD),
      &                        WORK(KLAST),NCOOR,NDCOOR,LWRK1,IPRINT)
 C
+                  ! for numerical molecular Hessian:
                   DO ICOOR = 1, NDCOOR
 c#if defined (VAR_MPI)
 c                     FTVAL(ICOOR,IDIME) = EGRAD(ICOOR)
@@ -2051,6 +2054,10 @@ c#endif
                      WRITE(LURSTR,'(2I8,F24.16)') ICOOR, IDIME,
      &                                           EGRAD(ICOOR)
                   END DO
+                  ! for numerical dipole gradient:
+                  FUNVAL(NCOOR+1,IDIME) = DIP0(1)
+                  FUNVAL(NCOOR+2,IDIME) = DIP0(2)
+                  FUNVAL(NCOOR+3,IDIME) = DIP0(3)
                   IDIME = IDIME + 1
                   CALL FLSHFO(LURSTR)
                ELSE IF (NAORDR .EQ. 2) THEN
@@ -2633,6 +2640,7 @@ C /* Deck NMNDER */
 #include "mxcent.h"
       PARAMETER (DMIN = 1.0D-12, D1=1.0D0, D0=0.0D0)
 #include "taymol.h"
+#include "moldip.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
 #include "cbinum.h"
@@ -2704,22 +2712,31 @@ C
  200           CONTINUE
             ELSE
 C
-C              ******************************
-C              *** Numerical Hessian from ***
-C              ***  analytical gradients  ***
-C              ******************************
+C              *****************************************
+C              *** Numerical Hessian and dipole gradient
+C              *** from analytical gradients and dipoles
+C              *****************************************
 C
                IF (NAORDR .EQ. 1) THEN
                   IDIME    = 2
                   HINV     = D1/DISPLC
-                  DO 260 ICOOR2 = 1, NCOOR
-                     DO 270 ICOOR1 = 1, NCOOR
+                  DO ICOOR2 = 1, NCOOR
+                     DO ICOOR1 = 1, NCOOR
                         HESMOL(ICOOR1,ICOOR2) =
-     &                         (COEFF( 1,1)*FUNVAL(ICOOR1,IDIME      )
-     &                        + COEFF(-1,1)*FUNVAL(ICOOR1,IDIME+1))*HINV
- 270                 CONTINUE
+     &                       (COEFF( 1,1)*FUNVAL(ICOOR1,IDIME)
+     &                      + COEFF(-1,1)*FUNVAL(ICOOR1,IDIME+1))*HINV
+                     END DO
+                     DIP1(1,ICOOR2) =
+     &                       (COEFF( 1,1)*FUNVAL(NCOOR+1,IDIME)
+     &                      + COEFF(-1,1)*FUNVAL(NCOOR+1,IDIME+1))*HINV
+                     DIP1(2,ICOOR2) =
+     &                       (COEFF( 1,1)*FUNVAL(NCOOR+2,IDIME)
+     &                      + COEFF(-1,1)*FUNVAL(NCOOR+2,IDIME+1))*HINV
+                     DIP1(3,ICOOR2) =
+     &                       (COEFF( 1,1)*FUNVAL(NCOOR+3,IDIME)
+     &                      + COEFF(-1,1)*FUNVAL(NCOOR+3,IDIME+1))*HINV
                      IDIME = IDIME + 2
- 260              CONTINUE
+                  END DO
                ELSE
 C
 C              ******************************
@@ -4463,6 +4480,7 @@ C
 C     /*Deck gsphes*/
       SUBROUTINE GSPHES(SYMCOR,SMCINV,CHESS1,CHESS2,WORK,ICRIRP,
      &                  NDCOOR,LWORK,LTXT,IPRINT,TEXT)
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
@@ -4471,6 +4489,7 @@ C     /*Deck gsphes*/
 #include "trkoor.h"
 #include "cbiwlk.h"
 #include "cbinum.h"
+#include "gnrinf.h"
       INTEGER BEGIN, LAST
       LOGICAL HESEXS
       CHARACTER TEXT*(*)
@@ -4581,6 +4600,19 @@ C
  800              CONTINUE
                END IF
 CRF        Shouldn't this file be closed?
+               CALL GPCLOSE(LUHES,'KEEP')
+            ELSE IF (USE_PELIB()) THEN
+               LUHES = -1
+               CALL GPOPEN(LUHES,'DALTON.HES','UNKNOWN',' ','FORMATTED',
+     &                     IDUMMY,.FALSE.)
+               WRITE(LUHES,*) NCOOR
+               WRITE(LUHES,'(A)') '                                '
+               DO ICOOR2 = 1, NCOOR
+                  DO ICOOR1 = 1, NCOOR
+                     WRITE (LUHES,'(F22.12)') CHESS2(ICOOR1,ICOOR2)
+                  END DO
+                  WRITE (LUHES,'(A)') '                            '
+               END DO
                CALL GPCLOSE(LUHES,'KEEP')
             ELSE
                WRITE (LUPRI,'(//A/A//)')

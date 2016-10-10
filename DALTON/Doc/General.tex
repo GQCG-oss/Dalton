@@ -994,10 +994,10 @@ and anisotropic dipole-dipole polarizabilities provided in the \potinp\
 file. See Chapter~\ref{ch:embedding} for an introduction to
 calculations using the polarizable embedding model. See also Ref.~\cite{pescf} for
 details on the PE-HF/DFT model, Ref.~\cite{pesoppa} for PE-MP2/SOPPA,
-Ref.~\cite{pemcscf} for PE-MCSCF and Ref.~\cite{pecc} for PE-CC. Note, that the input
+Ref.~\cite{pemcscf} for PE-MCSCF, Ref.~\cite{pecc} for PE-CC and Ref.~\cite{peeef,peeef2} 
+for details on the EEF effect. Note, that the input
 options shown here cannot be used with PE-CC, because it is based on an older
 implementation (see Section~\ref{sec:pecc} for PE-CC input examples).
-
 
 \begin{description}
 
@@ -1099,6 +1099,11 @@ Remove all polarizabilities.
 \item[\Key{ZEROMUL}]\verb| |\newline
 \verb|READ (LUCMD, *) ZEROMUL_ORDER| (optional) \verb| |\newline
 Remove all multipoles of order \verb|ZEROMUL_ORDER| and up. The default is to remove all dipoles and higher-order multipoles (i.e. \verb|ZEROMUL_ORDER| = 1).
+
+\item[\Key{EEF}]\verb| |\newline
+Request the calculation of effective dipole integrals (\verb|XLFDIPLN,YLFDIPLN,ZLFDIPLN|), i.e., 
+include the effective external field effect in property calculations in the \resp\ module. 
+NOTE: Does currently only affect 1PA and 2PA properties (.SINGLE RESIDUE and .DIPLEN or .TWO-PHOTON).
 
 \item[\Key{VERBOSE}]\verb| |\newline
 Verbose output. Currently this will print the final converged induced dipole moments.

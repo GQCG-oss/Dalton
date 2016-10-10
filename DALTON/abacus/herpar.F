@@ -1990,6 +1990,7 @@ C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 
 !     module dependencies
       use parallel_communication_models_mpi
+      use pelib_interface, only: use_pelib
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -2000,6 +2001,7 @@ C
 #include "dummy.h"
 #include "mtags.h"
 #include "pcmlog.h"
+#include "gnrinf.h"
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DIA2SO, ZFS2EL,
      &        DISTRI, NOCONT, SPNORB,
@@ -2477,6 +2479,7 @@ C
                CALL ADDGRD(GSOLNN)
             END IF
             IF (PCM) CALL ADDGRD(GSOLCV)
+            IF (USE_PELIB()) CALL ADDGRD(PEGRAD)
             CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
             NCDEP3 = 3*NUCDEP
