@@ -681,7 +681,7 @@ C              remove any "do exchange" bits
                CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFSRAO),
      &                   DMAT(1,3), 1 ,isymdm_sr,ifctyp_sr,
      &                   WRK(KLAST),LWRK)
-#ifdef SIRFCK_DEBUG
+#if SIRFCK_DEBUG > 0
                write (lupri,'(/A)')
      &         'SIRFCK SPIN DENSITY exchange Fock matrix'
            call output(wrk(kfsrao),1,nbast,1,nbast,nbast,nbast,-1,lupri)
@@ -702,7 +702,7 @@ C                 ... restore DC(I) = DTOT(I) -  DV(I)
          END IF
       END IF ! if (do_choint) then ... else if (direct) then ... else ... end if
       HFXFAC = HFXFACSAVE
-#ifdef SIRFCK_DEBUG
+#if SIRFCK_DEBUG > 0
          write(lupri,*) 'SIRFCK: final first FMAT'
          call output(FMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
@@ -1063,7 +1063,7 @@ C
 #endif
 C
 C
-#ifdef SIRFCK_DEBUG
+#if SIRFCK_DEBUG > 0
       write(lupri,*) 'Leaving SIRFCK'; flush(lupri)
 #endif
  9999 CALL QEXIT('SIRFCK')
