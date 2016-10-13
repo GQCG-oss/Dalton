@@ -1,25 +1,34 @@
-# DALTON Change Log
-All notable changes to the DALTON project will be documented in this file.
+# DALTON Change Log All notable changes to the DALTON project will be documented in this file.
 
 ## [2017.alpha Unreleased]
 
 ### Added
-- This will be in dalton2017. Please write something here if you implement new features!
+- New parallel 2-electron integral transformatin .FCKTRA
+- Triplet excitation energies and polarizabilities with the AO-SOPPA code
+
+### Fixed
+- Fix .GSPOL for parallel polarizable embedding quadratic response
 
 ### Changed
 
 ### Removed
 
-### Fixed
-
 
 Do not make changes below this line! For the relase branch only.
 
+## [2016.3] (2016-xx-xx)
 
-## [2016.2] (2016-05-13)
+### Changed
+- OK to run ECD or OECD with SOPPA
+
+### Fixed
+
+
+## [2016.2] (2016-07-12)
 
 ### Added
 - Added and documented Basis=INTGRL option for ATOMBASIS in .mol file.
+- Included Be in cc-pV5Z basis set
 
 ### Fixed
 - More robust code for reading exponents and contraction coefficients in Dalton-type basis set files, incl. such files from EMSL
@@ -27,7 +36,11 @@ Do not make changes below this line! For the relase branch only.
 - Fix for spin-orbit coupling (SOC) between S/T excited states of same symmetry (problem reported on daltonforum.org)
 - Further fixes of MCSCF in **PROPERTIES for more than 255 basis functions - hopefully it is OK now for all requests.
 - Fixed an error in the manual for spin-dipole (problem reported on daltonforum.org)
-- Fix of open-shell Hartree-Fock occupation output (print, not calculation, was wrong if ROHF was followed by MCSCF)
+- Fix of open-shell Hartree-Fock occupation output (only output, not the calculation, was wrong if ROHF was followed by MCSCF)
+- Fix of Douglas-Kroll post-SCF with less than 256 contracted basis functions, but more than 255 uncontracted basis functions
+- Fix of an insufficient memory error for construction of 2-el. integrals in Dirac format with more than 255 basis functions
+- Removed OpenACC CMake variable (currently no OpenACC directives in Dalton).
+
 
 ## [2016.1] (2016-04-07)
 

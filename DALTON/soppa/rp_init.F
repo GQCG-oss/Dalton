@@ -10,7 +10,7 @@ C     Stephan P. A. Sauer: 08.11.2013: Initialization of the CC common blocks
 C                                      is moved to new routine CCSD_INIT0
 C
 C     PURPOSE: Initialize some pointers and sort AO-integrals
-C     into distributions. 
+C     into distributions.
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -33,7 +33,7 @@ C----------------------------------------
 C     Check whether SIRIFC is still open.
 C----------------------------------------
 C
-      CALL GPINQ('SIRIFC','OPENE',OPENED) 
+      CALL GPINQ('SIRIFC','OPENE',OPENED)
       IF (OPENED) THEN
          INQUIRE (FILE='SIRIFC',NUMBER=LUSIFC)
          WRITE(LUPRI,'(2A,I3)') ' RP_INIT: file SIRIFC is already ',

@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+#    prop_exci_aosoppcc
+#    ------------------
+#    Molecule:         H2O
+#    Wave Function:    CCSD (AO-SOPPA(CCSD))
+#    Test Purpose:     Calculation of excitation energies through ABACUS
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 8,
+      rel_tolerance = 1.0e-8)
+
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+      
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+# Energies
+f.add(from_string = 'SUMMARY OF COUPLED CLUSTER CALCULATION',
+      to_string = 'END OF COUPLED CLUSTER CALCULATION',
+      rel_tolerance = 1.0e-9)
+
+# Property calculation
+f.add(string = 'Electronic excitation energies',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'AO integral driven SOPPA(CC2)',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Conventional rotational strength',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Dipole strength',
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Changes of defaults for .EXCITA',
+      num_lines = 10,
+      rel_tolerance = 1.0e-5)
+
+
+
+f.add(from_string = 'Singlet electronic excitation energies',
+      num_lines = 28,
+      abs_tolerance = 1.0e-3)
+
+f.add(from_string = 'Electric transition dipole moments',
+      num_lines = 31,
+      ignore_sign = True,
+      abs_tolerance = 5.0e-3)
+
+f.add(from_string = 'Magnetic transition dipole moments',
+      num_lines = 30,
+      ignore_sign = True,
+      abs_tolerance = 5.0e-3)
+
+f.add(from_string = 'Oscillator and Scalar Rotational Strengths',
+      num_lines = 30,
+      ignore_sign = True,
+      abs_tolerance = 5.0e-3)
+
+test.run(['prop_exci_aosopcc2_sing.dal'], ['h2o_STO2G.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.','ERI does not work with Cartesian basis.'])
+
+sys.exit(test.return_code)

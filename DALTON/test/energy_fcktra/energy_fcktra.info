@@ -1,0 +1,6 @@
+   energy_fcktra
+   --------------
+   Molecule:         H2O
+   Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ
+   Test Purpose:     Check energy calculation with symmetry and FCKTRA type 2 direct integral transformation
+                     (same as energy_symm test, except that .FCKTRA is used)

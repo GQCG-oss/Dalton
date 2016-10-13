@@ -1354,8 +1354,10 @@ C
      &         '  Nuclear charge:',Q,
      &         '  Number of symmetry independent centers:',NONT(I)
             IF (NONT(I).LE.0) THEN
-               WRITE(LUPRI,'(/A)') 'INPUT ERROR: '//
-     &         'Number of symmetry independent centers invalid.'
+               WRITE(LUPRI,'(/A/A,I0,A/A)') 'INPUT ERROR. '//
+     &         'Number of symmetry independent centers is not valid.',
+     &         'Error is in .mol file line no. ',NMLINE,':',
+     &         MLINE(NMLINE)
                CALL QUIT('Input error in .mol file, see output.')
             ENDIF
          ENDIF
@@ -1520,7 +1522,7 @@ C...
      &                       MLINE(NMLINE-NONT(I))((IPOS+IPOS2):IPOS3-1)
                            ENDIF
                          ELSE
-                           WRITE (LUPRI,'(A,I4,A/A)') 'No auxiliary ' //
+                           WRITE (LUPRI,'(A,I0,A/A)') 'No auxiliary ' //
      &                          'basis set given for atom kind # ', I,
      &                          ' - input line:',MLINE(NMLINE-NONT(I))
                            CALL QUIT('Incorrect input for '//
@@ -1534,8 +1536,7 @@ C...
                     WRITE (LUPRI,'(A,I4,A/A)') 'No basis set given '//
      &                   'for atom kind # ', I,
      &                    ' - input line:',MLINE(NMLINE-NONT(I))
-                    CALL QUIT('Incorrect input for '//
-     &                   'basis set name')
+                    CALL QUIT('Incorrect input for basis set name')
                  END IF
                  DO ILEN = 1, LEN(BASNAM)
                     IF (BASNAM(ILEN:ILEN) .NE. ' ') GO TO 33
@@ -1791,8 +1792,8 @@ C
           END IF
 C
 C 3: Testing if the number of diatomic sigma and epsilon parameters
-C    read matches the number generated from the knowledge of sytem-
-C    types and number of nuclei for each systemtype:
+C    read matches the number generated from the knowledge of system
+C    types and number of nuclei for each system type:
 C
           IF (LTWOPAR) THEN
             INT_TEMP = 0
@@ -2087,9 +2088,10 @@ C
 C       Error messages:
 C
  5000 CONTINUE
-        WRITE (LUPRI,'(/A/A,I5)')
-     &    ' Too many atomic centers: MXCENT exceed in CNTINP,',
-     &    ' Current limit:',MXCENT
+        WRITE (LUPRI,'(/A/A,I0/A)')
+     &    ' Too many atomic centers: MXCENT exceeded in CNTINP,',
+     &    ' Current limit : ',MXCENT,
+     &    ' Increase MXCENT in DALTON/include/mxcent.h and recompile.'
         CALL QUIT('*** ERROR *** MXCENT exceeded in CNTINP')
  5010 CONTINUE
         WRITE (LUPRI,'(A,1P,E12.5,A/A/A,E12.5)')
@@ -2300,19 +2302,19 @@ C
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' BASPRO error, number of shells                 ',KMAX,
      *  '               current maximum number (MXSHEL)  ',MXSHEL,
-     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile.'
         CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' BASPRO error, number of contracted basis functions',NBASIS,
      *  '               current maximum number (MXCORB)     ',MXCORB,
-     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile.'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' BASPRO error, number of primitive basis functions',NPBAS,
      *  '               current maximum number (MXPRIM)    ',MXPRIM,
-     *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile.'
         CALL QUIT('BASPRO: Too many primitives, increase MXPRIM')
  5030 CONTINUE
         CALL STOPIT('BASPRO','SYMPRO',KLAST,LWORK)
@@ -2322,7 +2324,7 @@ C
      *     ISHELL,
      *  '                   current maximum number                 ',
      *     MXSHEL,
-     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile.'
         CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5050 CONTINUE
         WRITE (LUPRI,'(/A,A,I6,/A,A,I6,/A)')
@@ -2331,7 +2333,7 @@ C
      *  IORBD,
      *  '                   current maximum number                  ',
      *  '        ',MXCORB,
-     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile.'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5060 CONTINUE
         WRITE (LUPRI,'(/A,A,I6,/A,A,I6,/A)')
@@ -2340,7 +2342,7 @@ C
      *  IPRIMD,
      *  '                   current maximum number                 ',
      *  '       ',MXPRIM,
-     *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile.'
         CALL QUIT('BASPRO: Too many primitives, increase MXPRIM')
       END
 C  /* Deck basout */
@@ -3927,11 +3929,12 @@ C
      &     ' Z_A, Z_B :',CORD(3,N),CORD(3,M)*PT(IAND(ISYMAX(3,1),KB))
       CALL QUIT('NUCPRO: Nuclei too close.')
  5010 CONTINUE
-      WRITE (LUPRI,'(///A/2(A,I5/)/A,I5,A)')
+      WRITE (LUPRI,'(///A/2(A,I5/)/A,I0,A)')
      &      ' Allowed number of atoms exceeded.',
      &      ' - Number of atoms in input:',NUCDEP,
      &      ' - Number of atoms allowed: ',MXCENT,
-     &      ' Increase MXCENT to at least',NUCDEP,' and recompile.'
+     &      ' Increase MXCENT in DALTON/include/mxcent.h to at least ',
+     &      NUCDEP,' and recompile.'
       CALL QUIT('NUCPRO: Too many atoms for current value of MXCENT.')
 C
  1000 FORMAT(2X,A4,5X,3F10.5,F20.8/,

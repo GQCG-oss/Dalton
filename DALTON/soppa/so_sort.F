@@ -6,7 +6,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, May 1996
 C
-C     PURPOSE: Find the NR lowest values in the vector VEC 
+C     PURPOSE: Find the NR lowest values in the vector VEC
 C              and leave pointers to them in PARRAY.
 C
 #include "implicit.h"

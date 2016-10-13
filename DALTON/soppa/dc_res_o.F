@@ -9,7 +9,7 @@ C
 C     Keld Bak, June 1997
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C
-C     PURPOSE: Calculate the 1p1h and 1h1p second order S[2] 
+C     PURPOSE: Calculate the 1p1h and 1h1p second order S[2]
 C              transformed trial vectors.
 C
 #include "implicit.h"

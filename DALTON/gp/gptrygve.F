@@ -103,6 +103,52 @@ C        Jun 06 hjaaj: do not print times less than 0.1 seconds
       END IF
       RETURN
       END
+C  /* Deck newtimer */
+      SUBROUTINE newTIMER(TEXT)
+!
+!   Feb 2016 hjaaj:
+!   newTIMER prints both used CPU time and used WALL time,
+!   while the old TIMER subroutine only prints used CPU time.
+!   Also, TIMSTR and WALSTR are saved internally and not
+!   returned to calling routine (as TIMSTR,TIMEND are in old TIMER)
+!
+#include "implicit.h"
+#include "priunit.h"
+      CHARACTER TEXT*(*), OUT_TEXT*51, BLANK*10
+      PARAMETER ( BLANK = '          ')
+      REAL*8, SAVE :: TIMSTR, TIMEND, WALSTR, WALEND
+C
+      IF (TEXT(1:5) .EQ. 'START') THEN
+         CALL GETTIM(TIMSTR,WALSTR)
+      ELSE
+         CALL GETTIM(TIMEND,WALEND)
+
+         TIME   = TIMEND - TIMSTR
+         WALLT  = WALEND - WALSTR
+         TIMSTR = TIMEND
+         WALSTR = WALEND
+
+         IF (TIME .GT. 0.1D0 .OR. WALLT .GT. 0.1D0) THEN
+C        Jun 06 hjaaj: do not print times less than 0.1 seconds
+            LTEXT = LNBLNK(TEXT)
+            LTEXT = MIN(30,LTEXT)
+            IF (LTEXT .GE. 10) THEN
+               OUT_TEXT = ' CPU  time used in '//TEXT(1:LTEXT)//' is'
+               LOUT = 19 + LTEXT + 3
+            ELSE
+               LBLANK = 10 - LTEXT
+               OUT_TEXT = ' CPU  time used in '//TEXT(1:LTEXT)//
+     &                    BLANK(1:LBLANK)//' is'
+               LOUT = 19 + 10 + 3
+            END IF
+            CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
+            OUT_TEXT(2:5) = 'WALL'
+            CALL TIMTXT(OUT_TEXT(1:LOUT),WALLT,LUPRI)
+            CALL FLSHFO(LUPRI)
+         END IF
+      END IF
+      RETURN
+      END
 C  /* Deck timpri */
       SUBROUTINE TIMPRI(TEXT,TIME,TIMALL)
 #include "implicit.h"

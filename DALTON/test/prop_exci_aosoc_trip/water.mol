@@ -1,0 +1,11 @@
+BASIS
+cc-pVDZ
+      Calculation of excitation energies through ABACUS
+
+Atomtypes=2 Multiplicity=1 Charge=0 Generators=0
+Charge=8.0 Atoms=1
+O   0.00000             0.00000              0.1241444240
+Charge=1.0 Atoms=2
+H   0.00000             1.43153              -0.985265576
+H   0.00000            -1.43153              -0.985265576
+FINISH

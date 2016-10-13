@@ -550,6 +550,7 @@ C END OF E2SYM
 C
       RETURN
       END
+#ifdef INCLUDE_NOT_USED_ROUTINES
 C  /* Deck fckode */
       SUBROUTINE FCKODE(NSIM,ICI,IDI,NCIW,NDIW,ICDTYP,H2,ZYMAT,
      *                  FCONE,FVONE,DENA,DENB)
@@ -604,7 +605,7 @@ C
 C   FCONE(P,Q) = (JR,PQ)*(ZYMAT(J,R)-ZYMAT(R,J))*2
 C
                ZYCD = ( ZYMAT(ICI,IDI,ISIM) -
-     *                           ZYMAT(IDI,ICI,ISIM))*D2
+     &                  ZYMAT(IDI,ICI,ISIM) )*D2
                IF ( ABS(ZYCD).GT.DTOL ) THEN
                   CALL DAXPY(N2ORBX,ZYCD,H2,1,FCONE(1,1,ISIM),1)
                END IF
@@ -679,7 +680,7 @@ C
 C   FVONE(P,Q) = (YR,PQ)*(DENB(R,Y)-DENA(R,Y))
 C
                   DENBA = (DENB(IDI,NCIW,ISIM) -
-     *                              DENA(IDI,NCIW,ISIM))
+     &                     DENA(IDI,NCIW,ISIM))
                   IF (ABS(DENBA).GT.DTOL) THEN
                      CALL DAXPY(N2ORBX,DENBA,H2,1,FVONE(1,1,ISIM),1)
                   END IF
@@ -696,12 +697,12 @@ C
 C   FVONE(P,Q) = SUM(R) (XQ,RP)*DENA(R,X)*0.5
 C
                   FVONE(IP,IDI,ISIM) = FVONE(IP,IDI,ISIM) +
-     *            DP5*DDOT(NORBR,H2(IROFF,IP),1,DENA(IROFF,NCIW,ISIM),1)
+     &            DP5*DDOT(NORBR,H2(IROFF,IP),1,DENA(IROFF,NCIW,ISIM),1)
 C
 C   FVONE(Q,P) = -SUM(R) (XQ,RP)*DENB(R,X)*0.5
 C
                   FVONE(IDI,IP,ISIM) = FVONE(IDI,IP,ISIM) -
-     *            DP5*DDOT(NORBR,H2(IROFF,IP),1,DENB(IROFF,NCIW,ISIM),1)
+     &            DP5*DDOT(NORBR,H2(IROFF,IP),1,DENB(IROFF,NCIW,ISIM),1)
  700           CONTINUE
                IF (ICDTYP.EQ.3) THEN
                   ISWAP = ICI
@@ -725,7 +726,7 @@ C   FVONE(P,Q) = (YR,PQ)*(DENB(R,Y)-DENA(R,Y))
 C
                   IF ( .NOT. TRPLET ) THEN
                      DENBA = (DENB(ICI,NDIW,ISIM) -
-     *                              DENA(ICI,NDIW,ISIM))
+     *                        DENA(ICI,NDIW,ISIM))
                      IF (ABS(DENBA).GT.DTOL) THEN
                         CALL DAXPY(N2ORBX,DENBA,H2,1,FVONE(1,1,ISIM),1)
                      END IF
@@ -760,6 +761,7 @@ C END OF FCKODE
 C
       RETURN
       END
+#endif
 C  /* Deck fckoin */
       SUBROUTINE FCKOIN(NSIM,FC,FV,ZYMAT,FCONE,FVONE)
 C
@@ -788,13 +790,13 @@ C
       IF (IPRRSP.GT.90) THEN
          DO 3000 ISIM = 1,NSIM
             WRITE(LUPRI,*) ISIM,
-     &           ' ONE-INDEX TRANSFORMED FOCK CORE MATRIX',
+     &           '. ONE-INDEX TRANSFORMED FOCK CORE MATRIX',
      *           ' BEFORE DIRECT [FC,ZYMAT] CONTRIBUTION'
             CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT,
      *                  -1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE(LUPRI,*) ISIM,
-     *           ' ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX',
+     *           '. ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX',
      *           ' BEFORE DIRECT [FC,ZYMAT] CONTRIBUTION'
                CALL OUTPUT(FVONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
      *                     ,-1,LUPRI)
@@ -840,8 +842,8 @@ C
                      IF (ABS(FV(IRQ)) .GT. THRZER) THEN
                         DO 520 IP=1,NORBIP
                            FVONE(IORBIP+IP,IORBIQ+IQ,ISIM) =
-     *                          FVONE(IORBIP+IP,IORBIQ+IQ,ISIM) +
-     *                          ZYMAT(IORBIP+IP,IORBIQ+IR,ISIM) *FV(IRQ)
+     &                          FVONE(IORBIP+IP,IORBIQ+IQ,ISIM) +
+     &                          ZYMAT(IORBIP+IP,IORBIQ+IR,ISIM) *FV(IRQ)
                            FVONE(IORBIQ+IQ,IORBIP+IP,ISIM) =
      &                          FVONE(IORBIQ+IQ,IORBIP+IP,ISIM) -
      &                          ZYMAT(IORBIQ+IR,IORBIP+IP,ISIM) *FV(IRQ)
@@ -857,22 +859,22 @@ C
 C
       IF (IPRRSP.GT.90) THEN
          DO 2000 ISIM = 1,NSIM
-            WRITE(LUPRI,*) ISIM,' ONE-INDEX TRANSFORMED FOCK CORE '//
-     &                          'MATRIX'
+            WRITE(LUPRI,*) ISIM,
+     &         '. ONE-INDEX TRANSFORMED FOCK CORE MATRIX'
             CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
-     *                  ,-1,LUPRI)
+     &                  ,-1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE(LUPRI,*) ISIM,
-     *                   ' ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX'
+     &         '. ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX'
                CALL OUTPUT(FVONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
-     *                     ,-1,LUPRI)
+     &                     ,-1,LUPRI)
             END IF
  2000    CONTINUE
          WRITE(LUPRI,*)' CORE FOCK MATRIX '
-         CALL OUTPKB(FC(1),NORB,NSYM,1,LUPRI)
+         CALL OUTPKB(FC(1),NORB,NSYM,-1,LUPRI)
          IF (NASHT.GT.0) THEN
             WRITE (LUPRI,*)' VALENCE FOCK MATRIX '
-            CALL OUTPKB(FV(1),NORB,NSYM,1,LUPRI)
+            CALL OUTPKB(FV(1),NORB,NSYM,-1,LUPRI)
          END IF
       END IF
 C
@@ -4162,13 +4164,13 @@ C ---------------------------- not non-adiabatic coupling:
      &      '  ( ',REP(KSYMST-1),')'
             CALL HEADER(PRI_LINE,0)
             WRITE(LUPRI,'( A,1P,G16.8,A
-     &                    /A,T21,3(G16.8,A)
-     &                   //A,T21,G16.8,A)')
+     &                    /A,T22,3(G16.8,A)
+     &                   //A,T22,G16.8,A)')
      &      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),' au',
      &      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,  ' eV;',
      &          WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1;',
-     *          WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
-     *      '@ Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
+     &          WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
+     &      '@ Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
             IF (SOPPA) THEN
               TXNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
               TYNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR+KZVAR),1)
@@ -4242,6 +4244,7 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
             IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
      &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
      &                             WRK(KWRK2),LWRK2)
+
 
             IF (DOMO2) CALL RSPMO2(WRK(KBVECS+(INUM-1)*KZYVAR),
      &                             KZYVAR,KZVAR,CMO,LUPRI,
@@ -4698,18 +4701,17 @@ C
 C     Call RSPCTL to solve linear set of response equations
 C
       DO 600 IOP = 1,NGPLR(KSYMOP)
-         WRITE (LUPRI,'(//A,I2,3A/2A/A,I3/A,(T25,5F10.6))')
+         WRITE (LUPRI,'(//A,I2,3A/2A/A,I3/A,(T30,5F10.6))')
      &  ' RSPLR -- linear response calculation for symmetry',KSYMOP,
      &    '  ( ',REP(KSYMOP-1),')',
      &  ' RSPLR -- operator label : ',LBLLR(KSYMOP,IOP),
      &  ' RSPLR -- operator spin  : ',OPRANK(INDPRP(LBLLR(KSYMOP,IOP))),
-     &  ' RSPLR -- frequencies :',(FREQ(I),I=1,NFREQ)
+     &  ' RSPLR -- frequencies    :',(FREQ(I),I=1,NFREQ)
          CALL GETGPV(LBLLR(KSYMOP,IOP),FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &               WRK(KGD),LWRK1)
          DNORM_GD = DNRM2(KZYVAR,WRK(KGD),1)
-         write(lupri,*) 'FREQ 2 ',FREQ(1:NFREQ)
          IF (IPRRSP .GT. 30) THEN
-            CALL HEADER('Gradient vectors in RSPLR for operator '//
+            CALL HEADER('Gradient vector in RSPLR for operator '//
      &                  LBLLR(KSYMOP,IOP)//':',-1)
             WRITE (LUPRI,'(/A,1P,D12.4)') ' Norm : ', DNORM_GD
             CALL OUTPUT(WRK(KGD),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
@@ -4798,7 +4800,7 @@ C                 CALL RSPPRC(WRK(KBVECS+(IVEC-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
      &                        //LBLLR(KSYMOP,IOP)//':',-1)
                   CALL OUTPUT(WRK(IBV),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                   DNORM_BV = DNRM2(KZYVAR,WRK(IBV),1)
-                  WRITE (LUPRI,'(A,D21.14)') ' Norm:', DNORM_BV
+                  WRITE (LUPRI,'(A,1P,D15.4)') ' Norm:', DNORM_BV
                END IF
   750       CONTINUE
             CALL RSPRES(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
@@ -4815,7 +4817,7 @@ C    *                  XINDX,LWRK,UDV,NBX,IBOFF)
      &                        //LBLLR(KSYMOP,IOP)//':',-1)
                   CALL OUTPUT(WRK(IBV),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                   DNORM_BV = DNRM2(KZYVAR,WRK(IBV),1)
-                  WRITE (LUPRI,'(A,D21.14)') ' Norm:', DNORM_BV
+                  WRITE (LUPRI,'(A,1P,D15.4)') ' Norm:', DNORM_BV
                END IF
   760       CONTINUE
   700    CONTINUE
@@ -6667,14 +6669,14 @@ C
       CALL DSPTSI(NORBT,WRK(KINTMO+2*NNORBX),WRK(KINUMO+2*N2ORBX))
 
       IF (LOCDEB) THEN
-        WRITE(LUPRI,'(/A)') 'XDIPLEN in MO BASIS'
-        CALL OUTPUT(WRK(KINUMO),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
-        WRITE(LUPRI,'(/A)') 'YDIPLEN in MO BASIS'
+        WRITE(LUPRI,'(/A)') ' XDIPLEN in MO BASIS'
+        CALL OUTPUT(WRK(KINUMO),1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+        WRITE(LUPRI,'(/A)') ' YDIPLEN in MO BASIS'
         CALL OUTPUT(WRK(KINUMO+N2ORBX),1,NORBT,1,NORBT,NORBT,
-     &              NORBT,1,LUPRI)
-        WRITE(LUPRI,'(/A)') 'ZDIPLEN in MO BASIS'
+     &              NORBT,-1,LUPRI)
+        WRITE(LUPRI,'(/A)') ' ZDIPLEN in MO BASIS'
         CALL OUTPUT(WRK(KINUMO+2*N2ORBX),1,NORBT,1,NORBT,NORBT,
-     &              NORBT,1,LUPRI)
+     &              NORBT,-1,LUPRI)
       ENDIF
 
 C Take out the diagonal elements

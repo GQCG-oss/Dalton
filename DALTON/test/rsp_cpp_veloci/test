@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+#    rsp_abslrs
+#    -------
+#    Molecule:         CH4
+#    Wave Function:    HF
+#    Test Purpose:     Response calculations (first order)with damping (absorption) 
+#                      DIPVEL using the solver with symmetrized trial vectors)
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'Final HF energy:',
+      rel_tolerance = 1.0e-8)
+
+f.add(re = '[XYZ]DIPVEL   [XYZ]DIPVEL',
+      rel_tolerance = 3.0e-4, ignore_below = 1.0e-3)
+
+test.run(['rsp_veloci.dal'], ['CH4_cc-pVDZ.mol'], f={'out': f})
+
+sys.exit(test.return_code)

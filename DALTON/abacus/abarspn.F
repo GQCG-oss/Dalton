@@ -217,6 +217,8 @@ C
             JTRLVL = 0
          ELSE IF (SOPPA .OR. NEXVAL.EQ.0) THEN  ! SOPPA or quadratic response
             JTRLVL = -10
+         ELSE IF (FCKTRA_TYPE .gt. 0) THEN
+            JTRLVL = -4
          ELSE IF (NEWTRA .AND. .NOT.USEDRC) THEN
             JTRLVL = -5 ! level 5 needed for occ-sec distributions in NEWTRA
          ELSE
@@ -705,7 +707,8 @@ C     &                       ABS_FREQ_ALPHA(K),RES0)
           ENDDO
           WRITE(LUPRI,*) 'Vectors equal to zero'
         ELSE
-          CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
+          NGD=1
+          CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),NGD,WRK(KXSOL),
      &               ABS_FREQ_ALPHA,NFREQ_ALPHA,LUABSVECS,
      &               WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
      &               WRK(KRES),WRK(KFREE),LFREE)

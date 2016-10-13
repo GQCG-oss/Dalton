@@ -335,7 +335,7 @@ C        Call FCMO to perform MAXFCK Roothaan Fock iterations
 C
          IF (MAXFCK .GT. 0) THEN
             FLAG(5) = .FALSE.
-C              we don't call SIROUT when no 2:nd order optimization
+C           we do not call SIROUT when no 2:nd order optimization
             JRDMO = 9
             KCMO  = 1
             KFC   = KCMO + NCMOT
@@ -554,11 +554,15 @@ C           ... orbital super symmetries may have been reordered
          END IF
          JWOPSY = 1
          MCTYPE = MCTYPE_save
-         CALL SIRSET(WORK,LWORK,OLDWOP)
-         IAVERR = 0
-         CALL AVECHK(WORK,LWORK,IAVERR)
-         IF (IAVERR .NE. 0) CALL QUIT(
+         IF  (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB) THEN
+            ! do not call SIRSET if next step is LUCITA:
+            ! SETCI will return NCONF=0 and cause error exit.
+            CALL SIRSET(WORK,LWORK,OLDWOP)
+            IAVERR = 0
+            CALL AVECHK(WORK,LWORK,IAVERR)
+            IF (IAVERR .NE. 0) CALL QUIT(
      &      'SIRCTL CI/MC error: inconsistency in sup.sym. averaging')
+         END IF
 C
       END IF
 C
@@ -1034,7 +1038,7 @@ C To be safe, include EXTERNAL SBDTRA in sirctl
 C
 #include "implicit.h"
 #include "inftra.h"
-      DATA NEWTRA /.FALSE./
+      DATA FCKTRA_TYPE/-1/, NEWTRA /.FALSE./
       END
 C  /* Deck sbddim */
       BLOCK DATA SBDDIM

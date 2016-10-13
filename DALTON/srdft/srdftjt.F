@@ -386,7 +386,7 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
        else if (domcsrdft .and. .not. docisrdft) then
           if (dogga. and. dft_spindns) then ! special treatment if gga + spin
               CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
-     &             d1Excdrhot,d1Excdngrd2,d1Excdngrd2,d1Excdngrds2,
+     &             d1Excdrhot,d1Excdngrd2,d1Excdrhos,d1Excdngrds2,
      &             DFTHRL,IPNT)
           else                              ! pure GGA or pure spin
              CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
@@ -612,8 +612,8 @@ c  Exchange  ------------------------------------------------------------
       ELSE
          rhogrd(1) = sqrt(rhg(1,1)**2 + rhg(2,1)**2 + rhg(3,1)**2)
          rhogrd(2) = 0.0d0
-         rhogrd(3) = 0.0d0
-         rhogrd(4) = 0.0d0
+         rhogrd(3) = rhogrd(1)
+         rhogrd(4) = rhogrd(1)
       END IF
 
 !     LDA exchange functional (to fit with corresponding correlation
