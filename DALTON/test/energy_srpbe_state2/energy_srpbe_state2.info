@@ -1,0 +1,6 @@
+   energy_srpbe_state2
+   -------------------
+   Molecule:         H2O
+   Wave Functions:   HFsrDFT, MP2srDFT, MCsrDFT (CAS) state 2/ cc-pVDZ (Atombasis)
+   Test Purpose:     Check srDFT energy calculations of excited CAS-srSCF for state no. 2 in symmetry 1
+                     with symmetry, with GGA (PBE), with erf 0.4

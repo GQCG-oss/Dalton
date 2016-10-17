@@ -1,5 +1,13 @@
 # DALTON Change Log All notable changes to the DALTON project will be documented in this file.
 
+## special changes for MC-srDFT
+
+### Fixed
+- Oct. 2016: state specific MC-srDFT for excited states
+
+
+
+
 ## [2017.alpha Unreleased]
 
 ### Added
