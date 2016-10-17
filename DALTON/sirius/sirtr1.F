@@ -730,7 +730,7 @@ C
      *            UBO,CMO,DV,DTV,
      *            WRK(KDXCAO),WRK(KDXVAO),WRK(KDTCAO), ! if not MC-srDFT then KDTCAO = KDTVAO
      *            WRK(KFXCAO),WRK(KFXVAO),WRK(KFTCAO), ! if not MC-srDFT then KFTCAO = KFTVAO
-     *            WRK,KFREE,LFREE)
+     *            NDMAT,WRK,KFREE,LFREE)
          END IF
          IF (NOSIM .GT. 0) THEN
             IF (NCSIM .GT. 0) THEN
@@ -741,14 +741,14 @@ C
      *            UBO,CMO,DV,DTV,
      *            WRK(KDXCAO),WRK(KDXVAO),WRK(KDTCAO), ! if not MC-srDFT then KDTCAO = KDTVAO
      *            WRK(KFXCAO),WRK(KFXVAO),WRK(KFTCAO), ! if not MC-srDFT then KFTCAO = KFTVAO
-     *            WRK,KFREE,LFREE)
+     *            NDMAT,WRK,KFREE,LFREE)
          END IF
       ELSE
          CALL TR1FCY(DIRFCK,NCSIM,NOSIM,FXC,FXV,FTV,
      *            UBO,CMO,DV,DTV,
      *            WRK(KDXCAO),WRK(KDXVAO),WRK(KDTCAO), ! if not MC-srDFT then KDTCAO = KDTVAO
      *            WRK(KFXCAO),WRK(KFXVAO),WRK(KFTCAO), ! if not MC-srDFT then KFTCAO = KFTVAO
-     *            WRK,KFREE,LFREE)
+     *            NDMAT,WRK,KFREE,LFREE)
       END IF
 C
       CALL MEMREL('TR1FCK',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
@@ -760,7 +760,7 @@ C  /* Deck tr1fcy */
      &                  UBO,CMO,DV,DTV,
      &                  DXCAO,DXVAO,DTVAO, ! if MC-srDFT then DTVAO is in fact DTCAO followed by DTVAO
      &                  FXCAO,FXVAO,FTVAO, ! if MC-srDFT then FTVAO is in fact FTCAO followed by FTVAO
-     &                  WRK,KFREE,LFREE)
+     &                  NDMAT,WRK,KFREE,LFREE)
 C
 C Written 21-Nov-1983 Hans Jorgen Aa. Jensen.
 C Revisions:
@@ -809,7 +809,7 @@ C
       DIMENSION FXCAO(N2BASX,*),FXVAO(N2BASX,*),FTVAO(N2BASX,*)
       DIMENSION WRK(*)
       LOGICAL   AODRCT, AODRCT_tmp, P6SAVE, DFTADX
-      INTEGER   ISYMDM(NCSIM+NOSIM),IFCTYP(NCSIM+NOSIM)  ! automatic arrays
+      INTEGER   ISYMDM(NDMAT),IFCTYP(NDMAT)  ! automatic arrays
 
 C
 #include "dummy.h"
