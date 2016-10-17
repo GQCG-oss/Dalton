@@ -618,22 +618,22 @@ C     ... for FTSAO
       LDFAO  = 2*NDMAT*N2BASX ! Length for all Dmat and Fmat in AO basis
       IF (DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT) THEN
 C     ... allocate for DTOTAO and DXTOTAO for DFTADD calls in SIRFCK
-         LDAO  = 2*N2BASX
+         LDAO_DFT  = 2*N2BASX
          IF (DFT_SPINDNS) THEN
-            LDAO = LDAO + 2*N2BASX ! for DSAO and DXSAO
+            LDAO_DFT = LDAO_DFT + 2*N2BASX ! for DSAO and DXSAO
          END IF
          LSRAO = 0
          IF (SRHYBR .AND. .NOT.DOHFSRDFT) THEN
             IF (DFT_SPINDNS)
      &      CALL QUIT('SRHYBF and DFT_SPINDNS not compatible')
-            LDAO = LDAO + 2*N2BASX
+            LDAO_DFT = LDAO_DFT + 2*N2BASX
             LSRAO = N2BASX
          END IF
 C        ... if SRHYBR we also need space for DVAO and DXVAO in SIRFCK
 C            and SRHYBR extra valence Fock type matrix
-         LDFAO = LDFAO + LDAO + LSRAO
+         LDFAO = LDFAO + LDAO_DFT + LSRAO
       ELSE
-         LDAO = 0
+         LDAO_DFT = 0
          LSRAO = 0
       END IF
       CALL MEMGET('REAL',KDFAO,LDFAO,WRK,KFREE,LFREE)
@@ -666,14 +666,14 @@ C            but we need it for SRDFT to handle the DFT part
          ELSE
             KDAO   = KDTSAO
          END IF
-         KFXCAO = KDAO + LDAO
+         KFXCAO = KDAO + LDAO_DFT
       ELSE
          KDXSAO = KDXVAO
          KDTCAO = KDXVAO
          KDTVAO = KDTCAO
          KDTSAO = KDTCAO
          KDAO   = KDTVAO
-         KFXCAO = KDAO + LDAO
+         KFXCAO = KDAO + LDAO_DFT
       END IF
       IF (NISHT .GT. 0 .OR. ADDSRI) THEN
          KFXVAO = KFXCAO + MOSIM*N2BASX
@@ -705,15 +705,13 @@ C            but we need it for SRDFT to handle the DFT part
          KFTSAO = KFTVAO
          KFSCR  = KFTVAO
       END IF
-      CALL MEMGET('INTE',KSYMDM,NDMAT,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KFCTYP,NDMAT,WRK,KFREE,LFREE)
 C
-C     If this is DFT (i.e. LDAO .gt. 0) then we must
+C     If this is DFT (i.e. LDAO_DFT .gt. 0) then we must
 C     get DTOTAO = DCAO + DVAO in WRK(KDAO) for SIRFCK
 C     DFT call with DOATR .true. /Nov 2003
 C     If (DFT_SPINDNS) then FCKDEN returns DSAO in DVAO(1,2) = WRK(KDAO+2*N2BASX)
 C
-      IF (LDAO .GT. 0) THEN
+      IF (LDAO_DFT .GT. 0) THEN
          CALL FCKDEN(.TRUE.,(NASHT.GT.0),WRK(KDAO),
      *               WRK(KDAO+N2BASX),CMO,DV,WRK(KFREE),LFREE)
 C        CALL FCKDEN(GETDC,GETDV,DCAO,DVAO,CMO,DV,WRK,LWRK)
@@ -723,11 +721,35 @@ C           make DTOTAO in WRK(KDAO)
          END IF
       END IF
 C
-      CALL TR1FCY(DIRFCK,NCSIM,NOSIM,FXC,FXV,FTV,
-     *            UBO,CMO,DV,DTV,WRK(KSYMDM),WRK(KFCTYP),
+      IF (ADDSRI) THEN
+         ! 17-Oct-2016 hjaaj: it is impossible with the current implementation in sirfck.F
+         ! to get the correct off-sets inside SIRFCK if both configuration and orbital trial vectors
+         ! in SIRFCK call. The SIRFCK routine needs to be cleaned up! (But that takes too long time for me for now.)
+         IF (NCSIM .GT. 0) THEN
+            CALL TR1FCY(DIRFCK,NCSIM,0,FXC,FXV,FTV,
+     *            UBO,CMO,DV,DTV,
      *            WRK(KDXCAO),WRK(KDXVAO),WRK(KDTCAO), ! if not MC-srDFT then KDTCAO = KDTVAO
      *            WRK(KFXCAO),WRK(KFXVAO),WRK(KFTCAO), ! if not MC-srDFT then KFTCAO = KFTVAO
      *            WRK,KFREE,LFREE)
+         END IF
+         IF (NOSIM .GT. 0) THEN
+            IF (NCSIM .GT. 0) THEN
+               KDAO_new = KDTCAO
+               CALL DCOPY(LDAO_DFT,WRK(KDAO),1,WRK(KDAO_new),1)
+            END IF
+            CALL TR1FCY(DIRFCK,0,NOSIM,FXC,FXV,FTV,
+     *            UBO,CMO,DV,DTV,
+     *            WRK(KDXCAO),WRK(KDXVAO),WRK(KDTCAO), ! if not MC-srDFT then KDTCAO = KDTVAO
+     *            WRK(KFXCAO),WRK(KFXVAO),WRK(KFTCAO), ! if not MC-srDFT then KFTCAO = KFTVAO
+     *            WRK,KFREE,LFREE)
+         END IF
+      ELSE
+         CALL TR1FCY(DIRFCK,NCSIM,NOSIM,FXC,FXV,FTV,
+     *            UBO,CMO,DV,DTV,
+     *            WRK(KDXCAO),WRK(KDXVAO),WRK(KDTCAO), ! if not MC-srDFT then KDTCAO = KDTVAO
+     *            WRK(KFXCAO),WRK(KFXVAO),WRK(KFTCAO), ! if not MC-srDFT then KFTCAO = KFTVAO
+     *            WRK,KFREE,LFREE)
+      END IF
 C
       CALL MEMREL('TR1FCK',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TR1FCK')
@@ -735,7 +757,7 @@ C
       END
 C  /* Deck tr1fcy */
       SUBROUTINE TR1FCY(AODRCT,NCSIM,NOSIM,FXC,FXV,FTV,
-     &                  UBO,CMO,DV,DTV,ISYMDM,IFCTYP,
+     &                  UBO,CMO,DV,DTV,
      &                  DXCAO,DXVAO,DTVAO, ! if MC-srDFT then DTVAO is in fact DTCAO followed by DTVAO
      &                  FXCAO,FXVAO,FTVAO, ! if MC-srDFT then FTVAO is in fact FTCAO followed by FTVAO
      &                  WRK,KFREE,LFREE)
@@ -782,11 +804,13 @@ C
 #include "implicit.h"
       DIMENSION FXC(N2ORBX,*),FXV(N2ORBX,*)
       DIMENSION FTV(N2ORBX,*),UBO(N2ORBX,*),CMO(*)
-      DIMENSION DV(*),DTV(*),ISYMDM(*),IFCTYP(*)
+      DIMENSION DV(*),DTV(*)
       DIMENSION DXCAO(N2BASX,*),DXVAO(N2BASX,*),DTVAO(N2BASX,*)
       DIMENSION FXCAO(N2BASX,*),FXVAO(N2BASX,*),FTVAO(N2BASX,*)
       DIMENSION WRK(*)
-      LOGICAL   AODRCT, P6SAVE, DFTADX
+      LOGICAL   AODRCT, AODRCT_tmp, P6SAVE, DFTADX
+      INTEGER   ISYMDM(NCSIM+NOSIM),IFCTYP(NCSIM+NOSIM)  ! automatic arrays
+
 C
 #include "dummy.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1=1.0D0, D2 = 2.0D0)
@@ -828,6 +852,13 @@ c  this is a hack, to transfer KSYMOP to DEQ27 inside DFTATR
 C
       CALL QENTER('TR1FCY')
       KFRSAV = KFREE
+      IF (DFT_SPINDNS .AND. (NOSIM .GT. 1 .OR. NCSIM .GT. 1)) THEN
+      ! hjaaj 17-Oct-2016: TR1DEN is called for each IOSIM below
+      ! which overwrites DXSAO from IOSIM.eq.1 when IOSIM.eq.2 etc.
+      ! Analogous problem for FCKDEN calls below in ICSIM loop.
+         CALL QUIT(
+     &      'TR1FCY: DFT_SPINDNS not implemented for >1 trial vector')
+      END IF
 C
 C *** Prepare for reading LUSUPM by constructing ao density
 C     matrices one B vector at a time.
@@ -943,7 +974,12 @@ C     ... for FXCAO :
 C     ... for FXVAO :
          IF (NASHT .GT. 0) THEN
             IF (HSROHF) THEN
-               IFCTYP(NDMAT+1:NDMAT+MOSIM) = 12
+               IF (CHOINT) THEN
+                  IFCTYP_HS = 2
+               ELSE
+                  IFCTYP_HS = 12
+               END IF
+               IFCTYP(NDMAT+1:NDMAT+MOSIM) = IFCTYP_HS
             ELSE
                IFCTYP(NDMAT+1:NDMAT+MOSIM) = IFCTYP_TR1
             END IF
@@ -987,26 +1023,18 @@ C ***** are accounted for through the one-index transformation
 C ***** of the inactive Fock matrix above).
 C
       IF (NDMAT .GT. 0) THEN
-         CALL DZERO(FXCAO,NDMAT*N2BASX)
 
-         DO IDMAT = 1,NDMAT
-            ISYMDM(IDMAT) = JWOPSY
-            IFCTYP(IDMAT) = 13
-            IF (CHOINT) IFCTYP(IDMAT) = 3
-         END DO
+         CALL DZERO(FXCAO,NDMAT*N2BASX)
 
       IF (LUSUPM .NE. -1 .AND.
      &   .NOT. (HSROHF .OR. DOCISRDFT .OR. DOHFSRDFT .OR.
      &    DOMCSRDFT)) THEN
+
          CALL RDSUPM(NDMAT,FXCAO,DXCAO,ISYMDM,WRK(KFREE),LFREE)
 C        CALL RDSUPM(NSIM,FMAT,DMAT,ISYMDM,WORK,LFREE)
+
       ELSE
-         IF (HSROHF) THEN
-            DO IDMAT = NOSIM+1,NDMAT
-               IFCTYP(IDMAT) = 12
-               IF (CHOINT) IFCTYP(IDMAT) = 2
-            END DO
-         END IF
+
          DFTADX = DFTADD
          DFTADD = .FALSE.
 C        ... Note : (.NOT.DFTADD) now tricks second order 
@@ -1016,12 +1044,22 @@ C            else construct Fock matrix from LUINTA
 C            ISYMDM : symmetry of density matrix (DUNP)
 C            IFCTYP = 13 : singlet Fock matrix and DUNP symmetric
          IF (ADDSRI) THEN ! srDFT
+            IF (NDXMAT .GT. 0 .AND. NDTMAT .GT. 0) THEN
+               CALL QUIT('TR1FCY and MCSRDFT not OK for simultaneous'
+     &         //' conf and orb trial vectors')
+            END IF
+            AODRCT_tmp = AODRCT .OR. NOSIM .GT. 1
+            ! ADDSRI works only for direct Fock matrices if NOSIM .gt. 1
+            ! /hjaaj 16-Oct-2016
             IF (NDXMAT .GT. 0)
      &      CALL SIRFCK(FXCAO,DXCAO,NDXMAT,ISYMDM,IFCTYP,
-     &                  AODRCT,WRK(KFREE),LFREE)
+     &                  AODRCT_TMP,WRK(KFREE),LFREE)
+            AODRCT_tmp = AODRCT .OR. NCSIM .GT. 1
+            ! ADDSRI works only for direct Fock matrices if NCSIM .gt. 1
+            ! /hjaaj 16-Oct-2016
             IF (NDTMAT .GT. 0)
      &      CALL SIRFCK(FTVAO,DTVAO,NDTMAT,ISYMDM(NDXMAT+1),
-     &                  IFCTYP(NDXMAT+1),AODRCT,WRK(KFREE),LFREE)
+     &                  IFCTYP(NDXMAT+1),AODRCT_TMP,WRK(KFREE),LFREE)
          ELSE ! WFT or KS-DFT
             CALL SIRFCK(FXCAO,DXCAO,NDMAT,ISYMDM,IFCTYP,
      &                  AODRCT,WRK(KFREE),LFREE)

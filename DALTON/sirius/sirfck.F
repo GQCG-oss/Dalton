@@ -837,29 +837,28 @@ C            loop over NSRMAT output matrices (later do the loop inside SRDFT fo
 C            efficiency!!!!!) /hjaaj June 2009
 C
          DO JSRMAT = 1, NSR_DMAT
-          JDMAT = NDOFF*(JSRMAT-1) + 1
           IF (DOATR) THEN
 #if SIRFCK_DEBUG > 0
               write(lupri,*) 'DOATR in sirfck: ndoff =', ndoff
-              write(lupri,*) 'JDMAT = ', JDMAT
-              write(lupri,*) 'JDXAO = ', JDXAO
+              write(lupri,*) 'JSRMAT = ', JSRMAT
+              write(lupri,*) 'JDXAO  = ', JDXAO
 #if SIRFCK_DEBUG > 4
-              WRITE(LUPRI,*) 'DMAT(1,JDMAT)'
-              call output(DMAT(1,JDMAT),1,NBAST,1,NBAST,NBAST,
+              WRITE(LUPRI,*) 'DMAT(1,JSRMAT) = DCMAT(JSRMAT)'
+              call output(DMAT(1,JSRMAT),1,NBAST,1,NBAST,NBAST,
      &                    NBAST,-1,lupri)
-              WRITE(LUPRI,*) 'DMAT(1,JDMAT+1)'
-              call output(DMAT(1,JDMAT+1),1,NBAST,1,NBAST,NBAST,
+              WRITE(LUPRI,*) 'DMAT(1,JSRMAT+NSRMAT) = DVMAT(JSRMAT)'
+              call output(DMAT(1,JSRMAT+NSRMAT),1,NBAST,1,NBAST,NBAST,
      &                NBAST,-1,lupri)
 #endif
 #endif
 C           we need the symmetric part of DXTOTAO in DMAT(1,JDXAO) for SRDFT :
                     IF (NDOFF .EQ. 1) THEN
 C              closed shell SCF case
-                       CALL DGETSI(NBAST,DMAT(1,JDMAT),DMAT(1,JDXAO))
+                       CALL DGETSI(NBAST,DMAT(1,JSRMAT),DMAT(1,JDXAO))
                     ELSE
-                       CALL DCOPY(N2BASX,DMAT(1,JDMAT),1,
+                       CALL DCOPY(N2BASX,DMAT(1,JSRMAT),1,
      &                            DMAT(1,JDXAO),1)
-                       CALL DAXPY(N2BASX,D1,DMAT(1,JDMAT+1),1,
+                       CALL DAXPY(N2BASX,D1,DMAT(1,JSRMAT+NSR_DMAT),1,
      &                              DMAT(1,JDXAO),1)
 C              ... DXTOTAO = DXCAO + DXVAO
                        CALL DGETSI(NBAST,DMAT(1,JDXAO),DMAT(1,JDXAO))
@@ -867,20 +866,20 @@ C              ... extract symmetric component (matrix is assumed
 C              symmetric in SRDFT, and it will in general not have any
 C              matrix symmetry e.g. when SIRFCK is called from RSPOLI)
                        IF (DO_SPINDNS) THEN
-                          CALL DGETSI(NBAST,DMAT(1,JDMAT+2),
+                          CALL DGETSI(NBAST,DMAT(1,JSRMAT+2*NSR_DMAT),
      &                                DMAT(1,JDXSAO))
 C              ... extract symmetric component of DXSAO
                        END IF
                        IF (LSRHYBR) THEN
-                          CALL DGETSI(NBAST,DMAT(1,JDMAT+1),
+                          CALL DGETSI(NBAST,DMAT(1,JSRMAT+1),
      &                                DMAT(1,JDXAO+1))
 C                 ... copy symmetric part of DXVAO
                END IF
             END IF
           ELSE ! (.not. DOATR)
-            JDAO = JDMAT
+            JDAO = JSRMAT
             IF (NDOFF.NE.1)
-     &      CALL DAXPY(N2BASX,D1,DMAT(1,JDMAT+1),1,DMAT(1,JDAO),1)
+     &      CALL DAXPY(N2BASX,D1,DMAT(1,JDAO+1),1,DMAT(1,JDAO),1)
 C           ... get total DMAT = DC + DV if NASHT .gt. 0
 C           ... spin DMAT: DS is expected in JDAO + 2
           END IF
@@ -923,14 +922,14 @@ C    &      ESRLTR = ESRLTR + DDOT(N2BASX,WRK(KSRAO),1,DMAT(1,JDAO),1)
 C           ... for MCSRDFT csf sigma-vectors : - 2 ESRLTR cref(i)
 C               NOT NEEDED because we project out CREF component in sigma vectors
 C
-                CALL DAXPY(N2BASX,D1,WRK(KSRAO),1,FMAT(1,JDMAT),1) ! add VXsr/VTsr to FXCAO
+                CALL DAXPY(N2BASX,D1,WRK(KSRAO),1,FMAT(1,JSRMAT),1) ! add VXsr/VTsr to FXCAO
                 IF (DO_SPINDNS)
      &             CALL DAXPY(N2BASX,1.0d0,WRK(KSRAO+N2BASX),1,
-     &                        FMAT(1,JDMAT+2),1)                   !  add VSXsr to FXSAO
+     &                        FMAT(1,JSRMAT+2*NSR_DMAT),1)              !  add VSXsr to FXSAO
 
                 IF (LSRHYBR) 
      &             CALL DCOPY(N2BASX,WRK(KSRAO+N2BASX),1,
-     &                        FMAT(1,JDMAT+1),1)
+     &                        FMAT(1,JSRMAT+1),1)
 C
             END DO  ! JSRMAT = 1, NSR_DMAT
 C
