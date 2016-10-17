@@ -335,8 +335,8 @@ C        ... full exchange for long range part and for PREHF
             HFXFAC = D1
             DO I = 1,NDCandDV
             IF (IFCTYP_local(I) .NE. 0) THEN ! skip "FTC" with IFCTYP=0
-               IF (IAND(IFCTYP_local(I),2) .eq. 0)
-     &            IFCTYP_local(I) = IFCTYP_local(I) + 2
+               IFC_X = IFCTYP_local(1) / 10
+               IFCTYP_local(I) = 10*IFC_X + 3
 C              ... make sure the "do exchange" bit is set in IFCTYP
             END IF
             END DO
