@@ -471,15 +471,15 @@ cd $SCRATCHDIR
 # edh: Small script to get updated RST duing run. 
 # Can be handy if the run is likely to be interrupted e.g. by tight time-limits...
 # Experimental; if it turns out handy it can be made into an input option :-) 
-#echo "#!/bin/bash                            "  > backup.sh
-#echo "sleep 30s                              " >> backup.sh
-#echo "while (pgrep "dalton.x" > /dev/null);do" >> backup.sh
-#echo "sleep 10m                              " >> backup.sh 
-#echo "echo "copy RST file from scratch.."    " >> backup.sh
-#echo "cp $SCRATCHDIR/SIRIUS.RST $WRKDIR      " >> backup.sh
-#echo "done                                   " >> backup.sh
-#[[ -f backup.sh ]] && echo "File exist" || echo "File does not exist"
-#/bin/bash $SCRATCHDIR/backup.sh & 
+#echo "#!/bin/bash                            "  > dal_backup.sh
+#echo "sleep 30s                              " >> dal_backup.sh
+#echo "while (pgrep "dalton.x" > /dev/null);do" >> dal_backup.sh
+#echo "sleep 10m                              " >> dal_backup.sh 
+#echo "echo "copy RST file from scratch.."    " >> dal_backup.sh
+#echo "cp $SCRATCHDIR/SIRIUS.RST $WRKDIR      " >> dal_backup.sh
+#echo "done                                   " >> dal_backup.sh
+#[[ -f dal_backup.sh ]] && echo "File exist" || echo "File does not exist"
+#/bin/bash $SCRATCHDIR/dal_backup.sh & 
 
 if [ -s $WRKDIR/$dalfil.$DALEXT -a -r $WRKDIR/$dalfil.$DALEXT ]; then
    cp $WRKDIR/$dalfil.$DALEXT $DALTON.INP
