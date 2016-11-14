@@ -35,7 +35,12 @@ C  /* Deck her_pardrv */
      &                      ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
      &                      DINTSKP,RELCALC,GENCTR)
 
-C
+C  Hermit parallel driver.  Only called from PARDRV (checked Nov. 2016).
+
+C Note Nov. 2016 hjaaj: GENCTR is apparently related to some BUILD_OPENRSP
+C work, but no comment explains the meaning. Was introduced in Jan. 2014
+C according to "git blame".  Currently it is **UNDEFINED** in the calls of PARDRV !!! 
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -107,8 +112,11 @@ C     Derivatives with respect to magnetic field(DDFOCK=T)
 C         L_TMPMT = 3*N2BASX + L_SUS
 C modified by Bin Gao, June 3, 2009, from linsca
          NFMAT = 3*NDMAT
-         IF (MAXDER .EQ. 2 .AND. .NOT.GENCTR)
-     &      NFMAT = 6*NDMAT
+#ifdef BUILD_OPENRSP
+         IF (USE_OPENRSP) THEN
+            IF (MAXDER .EQ. 2 .AND. .NOT.GENCTR) NFMAT = 6*NDMAT
+         END IF
+#endif
          L_FCK = NFMAT*N2BASX
          L_TMPMT = L_FCK + L_SUS
       ELSE IF (ITYPE .EQ. 8) THEN
@@ -1494,7 +1502,7 @@ C     ***** Calculate the integrals *****
 C     ***********************************
 C
       IF (IPRINT .GE. 1) THEN
-         write(lupri,*) 'HER_NODSTR: Calling TWOINT'
+         write(lupri,*) 'HER_NODSTR: Calling TWOINT, NDMAT=',NDMAT
          flush(lupri)
       END IF
       GMAT   = 0
