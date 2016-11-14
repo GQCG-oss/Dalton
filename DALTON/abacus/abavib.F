@@ -195,6 +195,7 @@ C
          MAXDIF = 1
       END IF
       DOVCD = VCD
+      VIB_PRJTRO = .TRUE.
       RETURN
       END
 C  /* Deck vibctl */
@@ -497,18 +498,21 @@ C     ******************************************************************
 C     **** Project out trans-rot coordinates from molecular Hessian ****
 C     ******************************************************************
 C
-      KTRROV = 1
-      KWRK1  = KTRROV + 6*NCORD
-      IF (SOLVNT) KWRK1 = KTRROV + 9*NCORD
-      IF (KWRK1 .GE. LWRK) CALL STOPIT('ISOMOL','VIBHES',KWRK1,LWRK)
-      CALL VIBHES(IPRINT,NCORD,GEOM,KTRRO,GRAD,HESS,WRK(KTRROV),
+      IF (VIB_PRJTRO) THEN
+         KTRROV = 1
+         KWRK1  = KTRROV + 6*NCORD
+         IF (SOLVNT) KWRK1 = KTRROV + 9*NCORD
+         IF (KWRK1 .GE. LWRK) CALL STOPIT('ISOMOL','VIBHES',KWRK1,LWRK)
+         CALL VIBHES(IPRINT,NCORD,GEOM,KTRRO,GRAD,HESS,WRK(KTRROV),
      &            NATTYP,WRK(KWRK1))
-      IF (NINTCM .GT. 0 .AND. KTRRO .NE. NCORD - NINTCM) THEN
-         WRITE (LUPRI,'(/A,I2,A,/,A,I2)') ' Number of defined'//
-     &     ' internal coordinates',NINTCM,' is not consistent',
-     &     ' with the number of independent external coordinates',KTRRO
-         CALL QUIT
-     &       ('ABACUS.VIBANA: Inconsistency in number of coordinates')
+         IF (NINTCM .GT. 0 .AND. KTRRO .NE. NCORD - NINTCM) THEN
+            WRITE (LUPRI,'(/A,I2,A,/,A,I2)') ' Number of defined'//
+     &        ' internal coordinates',NINTCM,' is not consistent',
+     &        ' with the number of independent external coordinates',
+     &          KTRRO
+            CALL QUIT
+     &      ('ABACUS.VIBANA: Inconsistency in number of coordinates')
+         END IF
       END IF
 C
 C     *************************************
@@ -528,7 +532,7 @@ C
       NOTALL = .FALSE.
       NONE   = .TRUE.
       DO 150 IREP = 0, MAXREP
-         IF (NCRREP(IREP,1) .GT. NTRREP(IREP)) THEN
+         IF (NCRREP(IREP,1) .GT. NPRREP(IREP)) THEN
             IF (.NOT.DOREPS(IREP)) THEN
                NOTALL = .TRUE.
             ELSE
@@ -4578,4 +4582,54 @@ C
       CALL V3NOM (W)
       RETURN
       END
-!  -- end of abacus/abavib.F --
+
+      SUBROUTINE SET_VIBCTL(CONTROL_KWD)
+C
+C     Keeps track of internal vibrational settings
+C     Nanna H. List 12/2013
+
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbivib.h"
+      character (len=*) :: CONTROL_KWD
+      logical           :: prjtro_optinf
+      logical, save     :: vib_prjtro_save, set=.false.
+
+      if (CONTROL_KWD == 'Copy_PRJTRO') then
+         set = .true.
+         vib_prjtro_save = vib_prjtro
+         vib_prjtro = prjtro_optinf()
+         IF (vib_prjtro .neqv. vib_prjtro_save) then
+            WRITE(lupri,'(/A,L10)')
+     &        'INFO: tra-rot projection in vibrational analysis'//
+     &        ' changed to ',vib_prjtro
+         end if
+      else if (CONTROL_KWD  == 'Reset') then
+         if (.not. set) then
+            write(lupri,*) 'ERROR: cannot reset in SET_VIBCTL'
+            call quit('ERROR: cannot reset in SET_VIBCTL')
+         end if
+         vib_prjtro = vib_prjtro_save
+      else 
+         call quit('input to SET_VIBCTL is unknown')
+      end if
+
+      end subroutine set_vibctl
+
+      logical function prjtro_optinf()
+
+!     purpose: transfer PRJTRO from optinf.h
+!     (used in SET_VIBCTL because one cannot include
+!     optinf.h and cbivib.h in same subroutine)
+
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+
+      prjtro_optinf = PRJTRO
+
+      return
+      end function prjtro_optinf
+
+! --- end of abavib.F ---

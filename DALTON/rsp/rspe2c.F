@@ -6731,7 +6731,6 @@ c
       use qfit
 #endif
 C
-C
 C     NDIM2 = KZYVAR
 C     NDIM1 = KZVAR
 C

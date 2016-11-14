@@ -5,6 +5,8 @@
 ### Added
 - New parallel 2-electron integral transformatin .FCKTRA
 - Triplet excitation energies and polarizabilities with the AO-SOPPA code
+- PE-HF/DFT molecular gradients
+- Effective external field (EEF) for one- and two-photon absorption in PE-HF/DFT calculations
 
 ### Fixed
 - Fix .GSPOL for parallel polarizable embedding quadratic response

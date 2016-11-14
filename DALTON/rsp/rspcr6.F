@@ -161,8 +161,7 @@ C
      *                  ISYMA,ISYMB,ISYMC,ISYMD,CMO,FC,MJWOP)
 C
 C
-      use pelib_interface, only: use_pelib, pelib_ifc_cro,
-     &                           pelib_ifc_gspol
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
