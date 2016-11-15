@@ -35,7 +35,12 @@ C  /* Deck her_pardrv */
      &                      ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
      &                      DINTSKP,RELCALC,GENCTR)
 
-C
+C  Hermit parallel driver.  Only called from PARDRV (checked Nov. 2016).
+
+C Note Nov. 2016 hjaaj: GENCTR is apparently related to some BUILD_OPENRSP
+C work, but no comment explains the meaning. Was introduced in Jan. 2014
+C according to "git blame".  Currently it is **UNDEFINED** in the calls of PARDRV !!!
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -107,8 +112,11 @@ C     Derivatives with respect to magnetic field(DDFOCK=T)
 C         L_TMPMT = 3*N2BASX + L_SUS
 C modified by Bin Gao, June 3, 2009, from linsca
          NFMAT = 3*NDMAT
-         IF (MAXDER .EQ. 2 .AND. .NOT.GENCTR)
-     &      NFMAT = 6*NDMAT
+#ifdef BUILD_OPENRSP
+         IF (USE_OPENRSP) THEN
+            IF (MAXDER .EQ. 2 .AND. .NOT.GENCTR) NFMAT = 6*NDMAT
+         END IF
+#endif
          L_FCK = NFMAT*N2BASX
          L_TMPMT = L_FCK + L_SUS
       ELSE IF (ITYPE .EQ. 8) THEN
@@ -901,6 +909,145 @@ C
       CALL QEXIT('HER_SDINIT')
       RETURN
       END
+C  /* Deck her_sendreceive_molinfo */
+      SUBROUTINE HER_sendreceive_molinfo(IPRINT,WORK,KFREE,LFREE)
+!
+!     Hans Joergen Aa. Jensen, Nov. 2016
+!
+!     New routine (2016) called by both master and slaves to transfer
+!     molecule information from master to slaves.
+!
+
+#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
+      use mpi
+#include "implicit.h"
+#else
+#include "implicit.h"
+#include "mpif.h"
+#endif
+#else
+#include "implicit.h"
+#endif
+C
+      INTEGER IPRINT, KFREE, LFREE
+      REAL*8  WORK(:)
+
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mtags.h"
+C
+C Used from common blocks:
+C
+C MXCENT : MXCENT (for DORPS, etc.)
+C MXORB  : MXSHEL (for INFPAR)
+C MAXAQN : *      (for SYMMET)
+C
+C INFPAR : MASTER, MYNUM, ?
+C
+C gnrinf : a lot
+C SIRIPC : NEWGEO
+C INFORB : MULD2H, ...
+C MOLINP : NMLINE, MLINE()
+C CBIREA : UNCONT, LMULBS
+C DORPS  : DOREPS(), DOCOOR()
+C ABAINF : DOSYM()
+C SYMMET : MAXREP
+C DFTCOM : HFXFAC, HFXMU, ...
+C EXPOPT : EXPGRA
+C R12INT : R12INT, INTGAC
+C
+#include "infpar.h"
+#include "gnrinf.h"
+#include "siripc.h"
+#include "inforb.h"
+#include "molinp.h"
+#include "cbirea.h"
+#include "dorps.h"
+#include "abainf.h"
+#include "symmet.h"
+#include "dftcom.h"
+#include "expopt.h"
+#include "r12int.h"
+
+      CALL QENTER('HER_sendreceive_molinfo')
+      IF (IPRINT .GT. 3) THEN
+         CALL TITLER('Output from HER_sendreceive_molinfo','*',103)
+         WRITE(LUPRI,'(A,I0)') ' From node number ',MYNUM
+      END IF
+
+#if defined (VAR_MPI)
+      CALL MPIXBCAST(NEWBAS,1,'LOGICAL',MASTER)! gnrinf.h
+      CALL MPIXBCAST(NEWGEO,1,'LOGICAL',MASTER)! siripc.h
+      CALL MPIXBCAST(HFXFAC,1,'DOUBLE',MASTER) ! dftcom.h
+      CALL MPIXBCAST(HFXMU, 1,'DOUBLE',MASTER) ! dftcom.h
+      CALL MPIXBCAST(DOSRIN,1,'LOGICAL',MASTER)! gnrinf.h
+      CALL MPIXBCAST(SRINTS,1,'LOGICAL',MASTER)! gnrinf.h
+      CALL MPIXBCAST(ERFEXP,1,'LOGICAL',MASTER)! gnrinf.h
+      CALL MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER) ! gnrinf.h
+      CALL MPIXBCAST(EXPGRA,1,'LOGICAL',MASTER)! expopt.h
+C
+! hjaaj Nov 2016: always send basis set information
+         IF (IPRINT .GT. 3) WRITE(LUPRI,'(A,2L10)')
+     &        ' Sending/receiving orbital information.'//
+     &        ' NEWBAS,NEWGEO :',NEWBAS,NEWGEO
+C  /molinp/
+         CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
+C Arnfinn, nov -08: Sending NONTYP_QM, numbers of atomtypes except MM
+         CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
+C  /molinc/
+         CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
+C  /cbirea/
+         CALL MPIXBCAST(LCMMAX,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMSTR,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMEND,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(LCNTNUUM,1,'LOGICAL',MASTER)
+         CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
+         CALL MPIXBCAST(LMULBS,1,'LOGICAL',MASTER)     ! cbirea.h
+C  /inforb/
+         CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
+C  /infpar/
+         CALL MPIXBCAST(NODTOT,NPARI,'INTEGER',MASTER)
+C  /dorps/ DOREPS, DOCOOR (NDORL covers both)
+         CALL MPIXBCAST(DOREPS(0),NDORL,'LOGICAL',MASTER)
+C  dosym()
+         CALL MPIXBCAST(DOSYM,NSYML,'LOGICAL',MASTER)
+C  comr12
+         CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER) ! r12int.h
+         CALL MPIXBCAST(INTGAC,NR12I,'INTEGER',MASTER) ! r12int.h
+!     END IF
+
+      IF (MYNUM .NE. MASTER) THEN ! I am a slave
+C
+C        Since REAINI is not initialized outside of SETHER,
+C        make sure slaves initialize it properly
+C        (REAINI will return immediately if already called).
+C
+         RELCAL = .FALSE.
+         TSTINP = .FALSE.
+         CALL REAINI(0,RELCAL,TSTINP)
+C
+C        Other defaults for the slaves
+C
+         USE_OPENRSP = .FALSE.
+C
+C        Set basis set information always (with NEWGEO .true.)
+C
+         CALL SETHER(0,.true.,WORK(KFREE),LFREE)
+!        CALL SETHER(0,NEWGEO,WORK(KFREE),LFREE)
+C
+      END IF
+C
+#else
+      CALL QUIT('ERROR: '//
+     &   'HER_sendreceive_molinfo called for sequential Dalton')
+#endif
+      CALL QEXIT('HER_sendreceive_molinfo')
+      RETURN
+      END
 C  /* Deck her_rvres */
       SUBROUTINE HER_RVRES(FMAT,TMPMAT,HESSEE,TIMES,TSKCPU,IWHICH,
      &                     L_TMPMT,L_GRA,L_HES,L_SUS,L_FCK,ITYPE,
@@ -1494,7 +1641,7 @@ C     ***** Calculate the integrals *****
 C     ***********************************
 C
       IF (IPRINT .GE. 1) THEN
-         write(lupri,*) 'HER_NODSTR: Calling TWOINT'
+         write(lupri,*) 'HER_NODSTR: Calling TWOINT, NDMAT=',NDMAT
          flush(lupri)
       END IF
       GMAT   = 0
@@ -1598,9 +1745,6 @@ C
       real(8), intent(inout)    :: fmat_buff(*), dmat_buff(*)
       logical, intent(in)       :: set_cb_blocks
 
-      LOGICAL FIRST_TIME_CALLED
-      DATA FIRST_TIME_CALLED /.TRUE./
-      SAVE FIRST_TIME_CALLED
 C
 #include "infpar.h"
 C
@@ -1653,14 +1797,12 @@ C
         call qenter('HER_RVINIT - 1 -')
 C
 C       Since REAINI is not initialized outside of SETHER, make sure slaves
-C       initialize it properly
+C       initialize it properly (REAINI will return immediately if
+C       already called).
 C
-        IF (FIRST_TIME_CALLED) THEN
-           RELCAL = .FALSE.
-           TSTINP = .FALSE.
-           CALL REAINI(0,RELCAL,TSTINP)
-           FIRST_TIME_CALLED = .FALSE.
-        END IF
+        RELCAL = .FALSE.
+        TSTINP = .FALSE.
+        CALL REAINI(0,RELCAL,TSTINP)
 C
 #if defined (VAR_MPI)
         CALL MPIXBCAST(FIRST ,   1,'LOGICAL',MASTER)
@@ -1926,7 +2068,7 @@ C
 !       call flshfo(lupri)
       end if
 
-      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)     
+      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
 C added by Bin Gao, June 3, 2009
       CALL MPIXBCAST(GENCTR,1,'LOGICAL',MASTER)
 C
@@ -2007,7 +2149,7 @@ C
      &        DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DONE,
      &        SOFOCK,RELCALC,GENCTR
-      DIMENSION DMAT(*), FMAT(*), GMAT(*),INDHSQ(*), 
+      DIMENSION DMAT(*), FMAT(*), GMAT(*),INDHSQ(*),
      & IODDHR(*), INDHER(*), WORK(LWORK), ISYMDM(*), IFCTYP(*),
      &          JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(MXSHEL,MXAOVC),
      &          TSKCPU(MTOTTK), IWHICH(MTOTTK), IJS(NTASK),

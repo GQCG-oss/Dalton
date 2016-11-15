@@ -571,6 +571,7 @@ C --- start of executable code
 
       integer, allocatable :: ICD_NODE(:)
       integer IPRTYP, IPRINT_slaves, ICD, NCDTRA, IWHO, NWHO
+      integer KFREE, LFREE
       integer NDMAT, IDIST, N2GAB
 
       call qenter('FCKTRA_DISTRIBUTED_MASTER')
@@ -582,9 +583,14 @@ C --- start of executable code
       IPRINT_slaves = 29 ! TODO set print level in input
       call MPIXBCAST(IPRINT_slaves,1,'INTEGER',MASTER)
 
-!     Now nodes are in subroutine FCKTRA_DISTRIBUITED_NODE.
-!     Transfer information to nodes; we assume basis set information
-!     already has been transferred in a Fock matrix call.
+!     Now nodes are in subroutine FCKTRA_DISTRIBUTED_NODE.
+!     First make sure basis set information is known to nodes
+
+      KFREE = 1
+      LFREE = LWORK
+      CALL HER_sendreceive_molinfo(IPRINT_slaves,WORK,KFREE,LFREE)
+
+!     Transfer integral transformation information to nodes
 
       allocate( ICD_NODE(NNORBX) )
       ICD_NODE(:) = 0
@@ -678,6 +684,12 @@ C --- start of executable code
 #include "inftap.h"
 #include "mpif.h"
 
+!     First make sure basis set information is known to this node
+
+      KFREE = 1
+      LFREE = LWORK
+      CALL HER_sendreceive_molinfo(IPRINT,WORK,KFREE,LFREE)
+
 #if FCKTRA_DEBUG > 1
       write (lupri,*)
      &'FCKTRA_DISTRIBUTED_NODE has started, MYNYM =',MYNUM
@@ -686,8 +698,7 @@ C --- start of executable code
       flush(lupri)
 #endif
 
-!    Currently we assume that parallel Fock matrix has been called beforehand,
-!    so orbital information has been transferred to slaves. We check though,
+!    We check that orbital information has been transferred to slaves,
 !    and then we call SETORB to define infind.h (we need ISMO(:))
 
       IF (NORBT .LE. 0) THEN
