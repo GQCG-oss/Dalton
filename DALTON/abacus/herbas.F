@@ -450,7 +450,6 @@ Chj-aug99:     if (UNCONT) force uncontracted
 C
 C Checking if the matrix, with the contraction coefficients, is segmented
 C
-            SEGEJ  = .TRUE.
             CALL SEGORB(SEGEJ,INTEXP,INTORB,CPRIMU(1,1,NBLOCK),KPRIM,
      +                  DSM)
             NUC(NBLOCK) = INTEXP
@@ -515,7 +514,6 @@ C
          END IF
          IF (INTEXP.GT.KPRIM) GOTO 5010
          IF (FOUND) THEN
-            SEGEJ  = .TRUE.
             CALL SEGORB( SEGEJ, INTEXP, INTORB, CPRIMU(1,1,NBLOCK),
      +                   KPRIM, DSM)
             NUC(NBLOCK) = INTEXP
@@ -1095,7 +1093,6 @@ C
 C
 C Checking if the matrix, with the contraction coefficients, is segmented
 C
-               SEGEJ  = .TRUE.
                CALL SEGORB(SEGEJ, ISPRIM, ISCONT, CPRIMU(1,1,NBLOCK),
      +                     KPRIM, DSM)
                NUC(NBLOCK) = ISPRIM
@@ -1112,7 +1109,6 @@ C
 C Checking if the matrix, with the contraction coefficients, is segmented
 C
                   NBLOCK = NBLOCK + 1
-                  SEGEJ = .TRUE.
                   CALL SEGORB(SEGEJ, IPPRIM, IPCONT,
      +                        CPRIMU(1,1,NBLOCK),KPRIM, DSM)
                   NUC(NBLOCK) = IPPRIM
