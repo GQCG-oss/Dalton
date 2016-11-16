@@ -1036,8 +1036,9 @@ C
 C
 C        Set basis set information always (with NEWGEO .true.)
 C
-         CALL SETHER(0,.true.,WORK(KFREE),LFREE)
-!        CALL SETHER(0,NEWGEO,WORK(KFREE),LFREE)
+         IPREAD = IPRINT-5
+         CALL SETHER(IPREAD,.true.,WORK(KFREE),LFREE)
+!        CALL SETHER(IPREAD,NEWGEO,WORK(KFREE),LFREE)
 C
       END IF
 C
