@@ -551,26 +551,31 @@ C --- start of executable code
 
 #include "priunit.h"
 
+#include "mpif.h"
+
 ! Used from include files:
 !  gnrinf.h : CHIVAL
 !  blocks.h : NSYMBL
 !  inforb.h : N2BASX, NORBT,NNORBX, ...
 !  infind.h : ISMO(:)
-!  infpar.h, mpif.h : for MPI: MYNUM
+!  inftra.h : IPRTRA
+!  infpar.h : MYNUM
 !  iprtyp.h : defined parallel calculation types
+!  mtags.h  : MTAG7
+
 #include "maxorb.h"
 #include "maxash.h"
 #include "gnrinf.h"
 #include "blocks.h"
 #include "inforb.h"
 #include "infind.h"
+#include "inftra.h"
 #include "infpar.h"
-#include "mpif.h"
 #include "iprtyp.h"
 #include "mtags.h"
 
       integer, allocatable :: ICD_NODE(:)
-      integer IPRTYP, IPRINT_slaves, ICD, NCDTRA, IWHO, NWHO
+      integer IPRTYP, IPRINT_slaves, ICD, NCD, IWHO, NWHO
       integer KFREE, LFREE
       integer NDMAT, IDIST, N2GAB
 
@@ -580,7 +585,7 @@ C --- start of executable code
 
       IPRTYP = CALL_FCKTRA_DISTRIBUTED ! get code number from iprtyp.h
       call MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
-      IPRINT_slaves = 29 ! TODO set print level in input
+      IPRINT_slaves = IPRTRA ! TODO set print level in input
       call MPIXBCAST(IPRINT_slaves,1,'INTEGER',MASTER)
 
 !     Now nodes are in subroutine FCKTRA_DISTRIBUTED_NODE.
@@ -594,11 +599,11 @@ C --- start of executable code
 
       allocate( ICD_NODE(NNORBX) )
       ICD_NODE(:) = 0
-      NCDTRA = 0
+      NCD = 0
       DO ICD = 1,NNORBX
          IF (ICDTRA(ICD) .EQ. 0) CYCLE
-         ICD_NODE(ICD) = MOD(NCDTRA,NODTOT) + 1
-         NCDTRA = NCDTRA + 1
+         ICD_NODE(ICD) = MOD(NCD,NODTOT) + 1
+         NCD = NCD + 1
       END DO
 
 #if FCKTRA_DEBUG > 2
@@ -639,10 +644,10 @@ C --- start of executable code
 #endif
 
       IDIST = IDIST + NDMAT
-      IF (IDIST .GT. NCDTRA) THEN
-         write(lupri,*) 'ERROR: IDIST .gt. NCDTRA',IDIST,NCDTRA
-         call quit('IDIST .gt. NCDTRA, uha')
-      ELSE IF (IDIST .LT. NCDTRA) THEN
+      IF (IDIST .GT. NCD) THEN
+         write(lupri,*) 'ERROR: IDIST .gt. NCD',IDIST,NCD
+         call quit('IDIST .gt. NCD, uha')
+      ELSE IF (IDIST .LT. NCD) THEN
          GO TO 100
       END IF
 

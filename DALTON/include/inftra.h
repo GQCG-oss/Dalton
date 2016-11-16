@@ -1,5 +1,5 @@
 C --- File: inftra.h ---
-C     Global information for the sirius/sirtra.F 2-el integral transforamtion modules
+C     Global information for the sirius/sir*tra.F 2-el integral transformation modules
 C
       REAL*8  THRP,   THRQ
       INTEGER LSRTAO, IPRTRA, LBUF, NIBUF, NBITS, NCDTRA, FCKTRA_TYPE
