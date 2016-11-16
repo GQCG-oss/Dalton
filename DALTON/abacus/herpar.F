@@ -931,7 +931,7 @@ C  /* Deck her_sendreceive_molinfo */
 #endif
 C
       INTEGER IPRINT, KFREE, LFREE
-      REAL*8  WORK(:)
+      REAL*8  WORK(*)
 
 #include "priunit.h"
 #include "mxcent.h"
