@@ -278,6 +278,7 @@ C
 #else
 #include "implicit.h"
 #endif
+#include "priunit.h"
 
 C
 #include "maxorb.h"
@@ -981,18 +982,21 @@ C
 #if defined (VAR_MPI)
       CALL MPIXBCAST(NEWBAS,1,'LOGICAL',MASTER)! gnrinf.h
       CALL MPIXBCAST(NEWGEO,1,'LOGICAL',MASTER)! siripc.h
-      CALL MPIXBCAST(HFXFAC,1,'DOUBLE',MASTER) ! dftcom.h
-      CALL MPIXBCAST(HFXMU, 1,'DOUBLE',MASTER) ! dftcom.h
+      CALL MPIXBCAST(HFXFAC,1,'DOUBLE', MASTER)! dftcom.h
+      CALL MPIXBCAST(HFXMU, 1,'DOUBLE', MASTER)! dftcom.h
       CALL MPIXBCAST(DOSRIN,1,'LOGICAL',MASTER)! gnrinf.h
       CALL MPIXBCAST(SRINTS,1,'LOGICAL',MASTER)! gnrinf.h
       CALL MPIXBCAST(ERFEXP,1,'LOGICAL',MASTER)! gnrinf.h
-      CALL MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER) ! gnrinf.h
+      CALL MPIXBCAST(CHIVAL,1,'DOUBLE', MASTER)! gnrinf.h
       CALL MPIXBCAST(EXPGRA,1,'LOGICAL',MASTER)! expopt.h
 C
 ! hjaaj Nov 2016: always send basis set information
-         IF (IPRINT .GT. 3) WRITE(LUPRI,'(A,2L10)')
+         IF (IPRINT .GT. 3) THEN
+            WRITE(LUPRI,'(A,2L10)')
      &        ' Sending/receiving orbital information.'//
      &        ' NEWBAS,NEWGEO :',NEWBAS,NEWGEO
+            flush(lupri)
+         END IF
 C  /molinp/
          CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
 C Arnfinn, nov -08: Sending NONTYP_QM, numbers of atomtypes except MM
@@ -1018,8 +1022,11 @@ C  dosym()
 C  comr12
          CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER) ! r12int.h
          CALL MPIXBCAST(INTGAC,NR12I,'INTEGER',MASTER) ! r12int.h
-!     END IF
 
+         IF (IPRINT .GT. 3) THEN
+            write(lupri,*)'Finished sending/receiving common block info'
+            flush(lupri)
+         END IF
       IF (MYNUM .NE. MASTER) THEN ! I am a slave
 C
 C        Since REAINI is not initialized outside of SETHER,
@@ -1473,6 +1480,16 @@ C     This is a slave in a parallel run; check for programming error
       lwork = lwork_save - ( 9 * npao / (8/sizeof(int)))
 
       allocate(work(0:lwork+1),stat=i)
+
+      if(i /= 0)then
+        write (*,*) mynum,
+     &      ': ALLOCATE command failed to allocate'//
+     &      ' the requested memory on node. Error code:',i
+        write (*,*)
+     &      'Reduce the memory demands and be welcome back'
+        call quit('Failed to allocate memory')
+      end if
+
 !     Set memory traps
       work(0)       = wrkdlm
       work(1+lwork) = wrkdlm
@@ -1480,15 +1497,6 @@ C     This is a slave in a parallel run; check for programming error
       kwork = 1
       kfree = kwork
       lfree = lwork
-
-      if(i /= 0)then
-        write (luerr,*) mynum,
-     &      ': ALLOCATE command failed to allocate'//
-     &      ' the requested memory. Error code:',i
-        write (luerr,*)
-     &      'Reduce the memory demands and be welcome back'
-        call quit('Failed to allocate memory')
-      end if
 
 !     Receive initialization from master - 1 - common block information
 !     =================================================================

@@ -130,6 +130,10 @@ C
      &        ' Work memory size (LMWORK+2):',
      &        LMWORK+2,' =',XMBYTES,' megabytes; node',MYNUM
          END IF
+         IF (MYNUM .EQ. 1 .AND. NODTOT .GT. 1) THEN
+            WRITE(*,'(A,I0,A)')
+     &        ' Same work memory size for all ',NODTOT,' slaves.'
+         END IF
       END IF
  
 Cef begin
@@ -586,8 +590,8 @@ C
          CALL GPCLOSE(LUPRI,'KEEP')
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
-C ahs only print if number of cores are less than 16
-         IF (NODTOT .LE. 15) THEN
+C     (only print on first 10 slaves)
+         IF (MYNUM .LE. 10) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
            WRITE(LUPRI,'(/A)') ' * Release: '//
