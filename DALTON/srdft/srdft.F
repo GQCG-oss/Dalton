@@ -124,21 +124,21 @@ C Cut string SRFTMP
        END IF
        SRXFUN = fields(1)
        SRCFUN = fields(2)
+       SRLOCALSPIN = ' '
+       DFT_LOCALSPIN = .FALSE.
        IF (NFld .GE. 3) THEN
           SRLOCALSPIN = fields(3)
           IF (INDEX(SRLOCALSPIN,'SRLOCALSP') .GT. 0) THEN
              DFT_LOCALSPIN = .TRUE.
              DFT_SPINDNS   = .TRUE.
              write (lupri,*) 'DFT_LOCALSPIN activated! ',SRLOCALSPIN
-          ELSE
-             WRITE (LUPRI,'(//2A/2A)') 'FATAL INPUT ERROR, '//
-     &       'invalid specification of local spin option: ',SRLOCALSPIN,
-     &       ' Input line: ',SRFTMP
-           CALL QUIT('Invalid specification of short range functionals')
+! --- do not quit, field 3 might be mu_0 for SRCPBERI below /160523-hjaaj
+!         ELSE
+!            WRITE (LUPRI,'(//2A/2A)') 'FATAL INPUT ERROR, '//
+!    &       'invalid specification of local spin option: ',SRLOCALSPIN,
+!    &       ' Input line: ',SRFTMP
+!          CALL QUIT('Invalid specification of short range functionals')
           END IF
-       ELSE
-          SRLOCALSPIN = ' '
-          DFT_LOCALSPIN = .FALSE.
        END IF
 
 c      write (lupri, *) 'DOSRX_PBERI=',DOSRX_PBERI         ! Manu debug
