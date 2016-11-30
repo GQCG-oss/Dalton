@@ -2652,6 +2652,10 @@ C        eps_LDA_asymptot3 = 1/d2 *  mu^(-2) - d1/(d2^2) * mu^(-3)
          denom = 1.d0 + d1*mu + d2*mu2
          e = e_pbe/denom
       else
+         denom = 1.d0 + d1*mu + d2*mu2
+         e = e_pbe
+     &     * ( 1.0d0 + ((DERF(mu_0*mu))**5) * (1.0D0/denom - 1.0D0) )
+#ifdef OLD_CODE
 C        using e = e_pbe * ( (1 + p6*mu^6) / (1 + q7*mu^7 + q8*mu^8) )
 C        based on 
 C        1) the asymptotic Taylor expansion to 3. order
@@ -2688,6 +2692,7 @@ c           e_pbe * (1 + p6 * mu_ref**6) =  eps_LDA(mu_ref)
             p6 = (eps_LDA_fac - 1.0d0) * d2od1**6 * 0.015625d0
             e = e_pbe * (1.0d0 + p6 * mu2**3)
          end if
+#endif
       end if
 
 !      print *,'ESRC_PBERIERF: e=',e
