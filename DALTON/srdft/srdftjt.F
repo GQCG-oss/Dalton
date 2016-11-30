@@ -310,7 +310,7 @@ C     Exchange and correlation energies and derivatives
       NORDER = 1  ! first-order derivatives
 C
       CALL SRDFTEXCJT(RHO,RHG,CHIVAL,NORDER,ERFEXP,
-     >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA,ipnt)
+     >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
 C      Summation with quadrature weigths
        ExInt     = ExInt + WGHTX*Ex
        EcInt     = EcInt + WGHTC*Ec
@@ -377,29 +377,31 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
        FROMVX = .FALSE.
        if (domcsrdft .and. docisrdft) then  !  only true for start-CI  (cf. routine OPST)
            CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
-     &                 d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL,IPNT)
+     &                 d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
+#ifdef SRDFT_DEBUG
           if (ipnt .eq. 1) then
              write(lupri,*)'DOGGA', DOGGA
              write(lupri,*)'DOERG', DOERG
              write(lupri,*)'d1Excdrhot', d1Excdrhot
           end if 
+#endif
        else if (domcsrdft .and. .not. docisrdft) then
           if (dogga. and. dft_spindns) then ! special treatment if gga + spin
               CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
      &             d1Excdrhot,d1Excdngrd2,d1Excdrhos,d1Excdngrds2,
-     &             DFTHRL,IPNT)
+     &             DFTHRL)
           else                              ! pure GGA or pure spin
              CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
-     &                d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL, IPNT)
+     &                d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
              if (dft_spindns .and. .not. dogga) then
                  CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHG(1,2),
-     &                       d1Excdrhos,0.0d0,DOGGA,FROMVX,DFTHRL,IPNT)
+     &                       d1Excdrhos,0.0d0,DOGGA,FROMVX,DFTHRL)
              end if
           end if
        else ! if hfsrdft
           IF (DFT_SPINDNS) CALL QUIT('no HSRDFT with open shells')
              CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
-     &            d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL,IPNT)
+     &            d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
        end if
 C
 C
@@ -429,8 +431,7 @@ C        matrix 4 is DXSAO
 
         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
      &                 WGHTX,WGHTC, GSO(KSO0),GSO(KSO1),
-     &                 CHIVAL,VLAMBDA,ERFEXP,RHO,RHG,DMAGAOSR,DOGGA,
-     &                 IPNT)
+     &                 CHIVAL,VLAMBDA,ERFEXP,RHO,RHG,DMAGAOSR,DOGGA)
      
        ENDIF
 
@@ -541,7 +542,7 @@ C     Print section
 
 C****************************************************************************
       SUBROUTINE SRDFTEXCJT(RHO,RHG, CHIVAL,NORDER,ERFEXP,
-     >           Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA, ipnt)
+     >           Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
 C*****************************************************************************
 C    Driver for short-range DFT exchange and correlation
 C    energies and derivatives
@@ -621,14 +622,14 @@ c  Exchange  ------------------------------------------------------------
       IF(DOSRX_LDA_PW92) THEN
         rho(2) = 0.0d0
         call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),CHIVAL,DFT_SPINDNS,
-     >                NORDER,Ex,d1Ex,d2Ex,ipnt)
+     >                NORDER,Ex,d1Ex,d2Ex)
       ENDIF 
 
 !     short-range exchange PBE of HSE
       IF(DOSRX_PBEHSE) THEN
         IF(.not. DFT_SPINDNS) THEN     
            call DESR(ESRX_PBEHSEERF,rho,RHOGRD,CHIVAL,NORDER,
-     >        Ex,d1Ex,d2Ex,ipnt)
+     >        Ex,d1Ex,d2Ex)
         ELSE
            call quit(' srx_pbehse not implemented for DFT_SPINDNS')
         ENDIF
@@ -636,32 +637,29 @@ c  Exchange  ------------------------------------------------------------
 
 !     short-range exchange PBE of TCS
       IF(DOSRX_PBETCS) THEN
-        call DESR(ESRX_PBETCSERF,rho,RHOGRD,CHIVAL,NORDER,Ex,d1Ex,d2Ex,
-     &            ipnt) 
+        call DESR(ESRX_PBETCSERF,rho,RHOGRD,CHIVAL,NORDER,Ex,d1Ex,d2Ex) 
       ENDIF
 
 !     short-range exchange PBE of GWS ! JT 11-08-09
       IF(DOSRX_PBEGWS) THEN
-        call DESR(ESRX_PBEGWSERF,rho,RHOGRD,CHIVAL,NORDER,Ex,d1Ex,d2Ex,
-     &            ipnt)
+        call DESR(ESRX_PBEGWSERF,rho,RHOGRD,CHIVAL,NORDER,Ex,d1Ex,d2Ex)
       ENDIF
 
 C  Manu 01-02-2006 begin
 !     short-range exchange RI
       IF(DOSRX_PBERI) THEN
-        call DESR(ESRX_PBERIERF,rho,RHOGRD,CHIVAL,NORDER,Ex,d1Ex,d2Ex,
-     &            ipnt)
+        call DESR(ESRX_PBERIERF,rho,RHOGRD,CHIVAL,NORDER,Ex,d1Ex,d2Ex)
       ENDIF
 C  Manu 01-02-2006 end
 
 !     short-range spin-dependent exchange LDA ! JT 11-08-09
       IF(DOSRX_LDA_S) THEN
         call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),
-     >             CHIVAL,DFT_SPINDNS,NORDER,Ex,d1Ex,d2Ex,ipnt)
+     >             CHIVAL,DFT_SPINDNS,NORDER,Ex,d1Ex,d2Ex)
       ENDIF
       IF(DOSRX_PBEGWS_S) THEN
         call DESRSPINGGA(ESRX_PBEGWSERFSPIN,rho,RHOGRD,CHIVAL,
-     >                   norder,Ex,d1Ex,d2Ex,ipnt)
+     >                   norder,Ex,d1Ex,d2Ex)
        ENDIF 
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
       IF(DOLAX_LDAS)  THEN
@@ -693,7 +691,7 @@ C  Correlation  ----------------------------------------------------------
         ! for closed shell (but with J. Toulouse new LDA based on PW92)
         rho(2)   = 0.0d0
         call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),CHIVAL,DFT_SPINDNS,
-     >                NORDER,Ec,d1Ec,d2Ec,ipnt)
+     >                NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !     short-range correlation PBE of TCS
       IF(DOSRC_PBETCS) THEN
@@ -702,64 +700,61 @@ C  Correlation  ----------------------------------------------------------
 !     >                  norder)
         ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_PBETCSERF,rho,RHOGRD,CHIVAL,NORDER,
-     >            Ec,d1Ec,d2Ec,ipnt)
+     >            Ec,d1Ec,d2Ec)
       ENDIF
 
 !     short-range correlation PBE of TCSJ
       IF(DOSRC_PBETCSJ) THEN
         ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_PBETCSJERF,rho,RHOGRD,CHIVAL,NORDER,
-     >            Ec,d1Ec,d2Ec,ipnt)
+     >            Ec,d1Ec,d2Ec)
       ENDIF
 
 !     short-range correlation PBE of GWS
       IF(DOSRC_PBEGWS) THEN
         ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_PBEGWSERF,rho,RHOGRD,CHIVAL,NORDER,
-     >            Ec,d1Ec,d2Ec,ipnt)
+     >            Ec,d1Ec,d2Ec)
       ENDIF
 
 !     Modified short-range correlation PBE of GWS
       IF(DOSRC_PBEGWS_PW92) THEN
         ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_PBEGWSERF_PW92,rho,RHOGRD,CHIVAL,NORDER,
-     >            Ec,d1Ec,d2Ec,ipnt)
+     >            Ec,d1Ec,d2Ec)
       ENDIF
 
 !     rational interpolation
       IF(DOSRC_PBERI) THEN
         ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_PBERIERF,rho,RHOGRD,CHIVAL,NORDER,
-     >             Ec,d1Ec,d2Ec,ipnt)
+     >             Ec,d1Ec,d2Ec)
       ENDIF
 
 !     rational interpolation LYP
       IF(DOSRC_LYPRI) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESR(ESRC_LYPRIERF,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec,
-     &            ipnt)
+        call DESR(ESRC_LYPRIERF,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !     PBE local energy formula
       IF(DOSRC_PBELO) THEN
-        call DESR(ESRC_PBELOERF,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec,
-     &            ipnt)
+        call DESR(ESRC_PBELOERF,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !     weighted interpolation
       IF(DOSRC_PBEWI) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESR(ESRC_PBEWIERF,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec,
-     &            ipnt)
+        call DESR(ESRC_PBEWIERF,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 
 !     short-range spin-dependent correlation LDA ! JT 18-08-09
       IF(DOSRC_LDA_S) THEN
         ! d1Ec(2), d1Ec(3) here ...
         call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
-     >             CHIVAL,DFT_SPINDNS,NORDER,Ec,d1Ec,d2Ec,ipnt)
+     >             CHIVAL,DFT_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
       IF(DOSRC_PBEGWS_S) THEN
         call DESRSPINGGA(ESRC_PBEGWSERFSPIN,rho,RHOGRD,CHIVAL,
-     >                   norder,Ec,d1Ec,d2Ec,ipnt)
+     >                   norder,Ec,d1Ec,d2Ec)
       ENDIF
 C Kamal SHARKAS 20-05-11 beg
 C linear Complement spin-dependent (NON-Scaled) correlation LDA functional
@@ -793,7 +788,7 @@ C Kamal SHARKAS 20-05-11 end
 !CASS        Write(LUPRI,*)'La nouvelle fonctionnelle'
         ! d1Ec(3), d1Ec(3) here ...
         call DESRSPIN(ESRC_MD_LDAERF,rho(1),rho(2),
-     >             CHIVAL,DFT_SPINDNS,NORDER,Ec,d1Ec,d2Ec,ipnt)
+     >             CHIVAL,DFT_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !CASS      Write(LUPRI,*)'EC=',Ec
 
@@ -810,20 +805,18 @@ C      mu_new = max(mu,CHIVAL)
 !      print *,'xfac,SRCMULOFAC,mu_new ==>', xfac, SRCMULOFAC,mu_new
         call ESRC_MULOC_GGA(rho,RHOGRD,CHIVAL,Ec)
         call DESR(ESRC_MULOC_GGA,rho,RHOGRD,CHIVAL,NORDER,
-     >             Ec, d1Ec, d2Ec,ipnt)
+     >             Ec, d1Ec, d2Ec)
       ENDIF
 
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11 
       IF(DOSRC_MULOD_GGA) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESR(ESRC_MULOD_GGA,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec,
-     &            ipnt)
+        call DESR(ESRC_MULOD_GGA,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11 
       IF(DOSRC_MULOE_GGA) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESR(ESRC_MULOE_GGA,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec,
-     &            ipnt)
+        call DESR(ESRC_MULOE_GGA,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 
       RETURN
@@ -832,8 +825,7 @@ C      mu_new = max(mu,CHIVAL)
 C**************************************************************************
       SUBROUTINE SRDFTLTRJT(KSYMOP,DTXMAT,DSXMAT,EXCMAT,
      &                      WGHTX,WGHTC,GAO,GAO1,
-     &                      CHIVAL,VLAMBDA,ERFEXP,RHO,RHG, DGAO,DOGGA,
-     &                      IPNT)
+     &                      CHIVAL,VLAMBDA,ERFEXP,RHO,RHG, DGAO,DOGGA)
 C**************************************************************************
 C     Generate the 1-index transformed DFT Hessian
 C     needed in second-order optimization for short-range DFT hybrids.
@@ -898,9 +890,6 @@ C***************************************************************************
       double precision d2Ecdrhotdgrds, d2Ecdrhosdgrds, d2Ecdgrdtdgrds
       double precision d2Ecdgrdsdgrds ! d2Ec(10)
 
-      ! edh for debug
-      integer ipnt
-
       ! For small values of rho to avoid NaN
       do i = 1,4
          if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
@@ -954,7 +943,7 @@ C Exchange and correlation derivatives ------------------------------------
 
       NORDER = 2  ! first-order and second-order derivatives
       CALL SRDFTEXCJT(RHO,RHG,CHIVAL,NORDER,ERFEXP,
-     >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA,ipnt)
+     >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
        if (DOGGA .and. DFT_SPINDNS) then
            d1Exdrhot      = d1Ex(1)
            d1Exdgrdt      = d1Ex(2)
