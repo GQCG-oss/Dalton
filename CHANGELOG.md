@@ -24,6 +24,7 @@ Do not make changes below this line! For the relase branch only.
 - OK to run ECD or OECD with SOPPA
 
 ### Fixed
+- open-shell doublet ROKS DFT geometry optimization
 
 
 ## [2016.2] (2016-07-12)
