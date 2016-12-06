@@ -43,7 +43,8 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 C      PARAMETER (NTABLE = 13)
-      PARAMETER (NTABLE = 14)
+C      PARAMETER (NTABLE = 14)
+      PARAMETER (NTABLE = 16)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       LOGICAL LNEXC2
 #include "abainf.h"
@@ -53,11 +54,13 @@ C      PARAMETER (NTABLE = 13)
 C
       CALL QENTER('SOPINP')
 C
-      DATA TABLE /'.HIRPA ', '.SOPW4 ', '.DIRECT', '.AORPA ', '.DCRPA ',
+      DATA TABLE /'.HIRPA ', '.SOPW4 ', '.DIRECT', '.AORPA ', '.RPA(D)',
      &            '.AOSOP ', '.AOSOC ', '.SOPCHK', '.AOTEST', '.NSAVMX',
 CPi
 C     &            '.NEXCI2', '.THREX2', '.AOHRP '/
-     &            '.NEXCI2', '.THREX2', '.AOHRP ', '.AOCC2 '/
+C     &            '.NEXCI2', '.THREX2', '.AOHRP ', '.AOCC2 '/
+     &            '.NEXCI2', '.THREX2', '.AOHRP ', '.AOCC2 ', '.HRPA(D',
+     &            '.DCRPA '/
 Cend-Pi
 C     
 C------------------
@@ -68,6 +71,9 @@ C
       HIRPA  = .FALSE.
       AORPA  = .FALSE.
       DCRPA  = .FALSE.
+CPi
+      DCHRP  = .FALSE.
+Cend-Pi
       AOSOP  = .FALSE.
       AOSOC  = .FALSE.
       SOPCHK = .FALSE.
@@ -104,7 +110,7 @@ C               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
 C               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
 Cend-PFP
 CPi
-               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
 Cend-Pi
             END IF
   200    CONTINUE
@@ -132,7 +138,7 @@ Cend-Pi
     4    CONTINUE !.AORPA
             AORPA  = .TRUE.
             GOTO 100
-    5    CONTINUE !.DCRPA
+    5    CONTINUE !.RPA(D)
             DCRPA  = .TRUE.
             AORPA  = .TRUE.
             GOTO 100
@@ -165,6 +171,14 @@ C           NSYM is set to 8 since NSYM has not yet been set !!
             GOTO 100
    14    CONTINUE !.AOCC2
             AOCC2  = .TRUE.
+            GOTO 100
+   15    CONTINUE !.HRPA(D
+            DCHRP  = .TRUE.
+            AOHRP  = .TRUE.
+            GOTO 100
+   16    CONTINUE !.DCRPA (keep old keyword just in case)
+            DCRPA  = .TRUE.
+            AORPA  = .TRUE.
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GOTO 300
@@ -201,6 +215,8 @@ Cend-PFP
 CPi
          IF (AOCC2)  WRITE(LUPRI,'(A)')
      &       ' AO integral driven SOPPA(CC2) :'
+         IF (DCHRP)  WRITE(LUPRI,'(A)')
+     &       ' AO integral driven Double corrected HRPA :'
 Cend-Pi
          IF (AOSOC)  WRITE(LUPRI,'(A,/,A,A,/,A,A)')
      &       ' AO integral driven SOPPA(CCSD)',

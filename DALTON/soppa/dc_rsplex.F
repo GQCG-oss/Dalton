@@ -1,5 +1,5 @@
 C  /* Deck dc_rsplex */
-      SUBROUTINE DC_RSPLEX(ISYMTR,NEXCI,EXVAL,LEXVAL,DENSIJ,
+      SUBROUTINE DC_RSPLEX(MODEL,ISYMTR,NEXCI,EXVAL,LEXVAL,DENSIJ,
      &                     LDENSIJ,DENSAB,LDENSAB,DENSAI,LDENSAI,T2MP,
      &                     LT2MP,FOCKD,LFOCKD,WORK,LWORK)
 C
@@ -11,7 +11,7 @@ C
 C     PURPOSE: Controls calculation of "Double corrected RPA"
 C              excitation energies.
 C
-      use so_info, only: sop_excita
+      use so_info, only: so_full_name, sop_excita
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -22,13 +22,12 @@ C
       DIMENSION WORK(LWORK)
 C
       PARAMETER ( ONE = 1.0D0, D100 = 100.0D0 )
-C
+CPi
       CHARACTER*8 PDENS_LABEL
+      CHARACTER*5 MODEL
+C
 #include "codata.h"
 #include "wrkrsp.h"
-CSPAS:15/03-2006: merge with Dalton-2.0
-C#include "infpp.h"
-CKeinSPASmehr
 #include "inforb.h"
 #include "infpri.h"
 #include "ccsdsym.h"
@@ -45,19 +44,19 @@ C------------------
 C     Write banner.
 C------------------
 C
-      WRITE(LUPRI,'(/,2X,A,/,15X,A,I1,/,2X,A,/)')
-     &     '*****************************************************'//
-     &     '*************',
-     &      'Double corrected RPA calculation, Symmetry ',
-     &      ISYMTR,
-     &     '*****************************************************'//
-     &     '*************'
+CPi      WRITE(LUPRI,'(/,2X,A,/,15X,A,I1,/,2X,A,/)')
+CPi     &     '*****************************************************'//
+CPi     &     '*************',
+CPi     &      'Double corrected RPA calculation, Symmetry ',
+CPi     &      ISYMTR,
+CPi     &     '*****************************************************'//
+CPi     &     '*************'
 C
 C----------------------------------------------------------
 C     Calculate "Double corrected RPA" excitation energies.
 C----------------------------------------------------------
 C
-      CALL DC_CALC(ISYMTR,NEXCI,EXVAL,LEXVAL,
+      CALL DC_CALC(MODEL,ISYMTR,NEXCI,EXVAL,LEXVAL,
      &             DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &             DENSAI,LDENSAI,
      &             T2MP,LT2MP,FOCKD,LFOCKD,
@@ -104,37 +103,35 @@ C     Calculate p-h and 2p-2h weight in excitation operator
 C     and write to output together with excitation energies.
 C-----------------------------------------------------------
 C
-      WRITE(LUPRI,9010)
-      WRITE(LUPRI,9011)
-      WRITE(LUPRI,9010)
-      DO 100 IEXCI = 1,NEXCI
-         WRITE(LUPRI,9012) IEXCI,EXVAL(IEXCI)
- 100  CONTINUE
-      WRITE(LUPRI,9010)
-C
-      IF ( IPRSOP .GE. 1 ) THEN
 C
          DO 200 IEXCI = 1,NEXCI
 C
             WRITE(LUPRI,'(/1X,A)') '-------------------------------'//
      &                             '-------------------------------'
-            WRITE(LUPRI,'(A,I3,A,I3,//A,1P,G16.8,A,3(/26X,G16.8,A),/)')
-     &           ' Excitation symmetry',ISYMTR,', state no.',IEXCI,
-     &           ' DCRPA excitation energy :',EXVAL(IEXCI),
-     &           ' au',
-     &           EXVAL(IEXCI)*XTEV,  ' eV',
-     &           EXVAL(IEXCI)*XTKAYS,' cm-1',
-     &           EXVAL(IEXCI)*XTKJML,' kj / mole'
-
+            IF (TRIPLET) THEN
+               WRITE(LUPRI,'(/17X,A)') 'Triplet Excitation Energies'
+            ELSE
+               WRITE(LUPRI,'(/17X,A)') 'Singlet Excitation Energies'
+            END IF
+            WRITE(LUPRI,'(/1X,A)') '-------------------------------'//
+     &                             '-------------------------------'
+            WRITE(LUPRI,'(A,I3,A,I3)')
+     &           ' Excitation symmetry',ISYMTR,', state no.',IEXCI
+            WRITE(LUPRI,'(/2A,1P,G16.8,A,3(/32X,G16.8,A),/)')
+     &              ADJUSTR(SO_FULL_NAME(MODEL)),
+     &              ' excitation energy :',
+     &              EXVAL(IEXCI),' au',
+     &              EXVAL(IEXCI)*XTEV,  ' eV',
+     &              EXVAL(IEXCI)*XTKAYS,' cm-1',
+     &              EXVAL(IEXCI)*XTKJML,' kj / mole'
+C
             CALL SO_READ(WORK(KTR1E), LTR1E, LUTR1E,FNTR1E,IEXCI)
             CALL SO_READ(WORK(KTR1D), LTR1D, LUTR1D,FNTR1D,IEXCI)
 C
             ISYRES = MULD2H(ISYMOP,ISYMTR)
 C
-cKeld         CALL RP_RES_O(WORK(KRESO1E),LRESO1E,WORK(KRESO1D),LRESO1D,
-cKeld     &                 WORK(KTR1E),  LTR1E,  WORK(KTR1D),  LTR1D,
-cKeld     &                 ISYRES,      ISYMTR)
-            CALL SO_RES_O(WORK(KRESO1E),LRESO1E,WORK(KRESO1D),LRESO1D,
+            CALL SO_RES_O(WORK(KRESO1E),LRESO1E,
+     &                    WORK(KRESO1D),LRESO1D,
      &                    WORK(KTR1E),  LTR1E,  WORK(KTR1D),  LTR1D,
      &                    DENSIJ,      LDENSIJ,DENSAB,      LDENSAB,
      &                    ISYRES,      ISYMTR)
@@ -142,14 +139,22 @@ C
             W1ENM = DDOT(LTR1E,WORK(KTR1E),1,WORK(KRESO1E),1)
             W1DNM = DDOT(LTR1D,WORK(KTR1D),1,WORK(KRESO1D),1)
 C
+C
+C
             CALL SO_READ(WORK(KTR2E), LTR2E, LUTR2E,FNTR2E,IEXCI)
             CALL DCOPY(LTR2E,WORK(KTR2E),1,WORK(KTR2D),1)
-            CALL SO_TFSET(WORK(KTR2D),1,LTR2E,ISYMTR)
+C
+            IF (.NOT. TRIPLET) THEN
+               CALL SO_TFSET(WORK(KTR2D),1,LTR2E,ISYMTR)
+            END IF
             W2ENM = DDOT(LTR2E,WORK(KTR2D),1,WORK(KTR2E),1)
 C
             CALL SO_READ(WORK(KTR2D), LTR2D, LUTR2D,FNTR2D,IEXCI)
             CALL DCOPY(LTR2E,WORK(KTR2D),1,WORK(KTR2E),1)
-            CALL SO_TFSET(WORK(KTR2E),1,LTR2D,ISYMTR)
+            IF (.NOT. TRIPLET) THEN
+               CALL SO_TFSET(WORK(KTR2D),1,LTR2E,ISYMTR)
+            END IF
+C
             W2DNM = -DDOT(LTR2D,WORK(KTR2E),1,WORK(KTR2D),1)
 C
 C--------------------------------------
@@ -217,8 +222,6 @@ C
          WRITE(LUPRI,'(/1X,A)')'-------------------------------'//
      &                         '-------------------------------'
 C
-      END IF
-C
 C-----------------
 C     Close files.
 C-----------------
@@ -232,13 +235,13 @@ C--------------------------------------------------------------
 C     Calculate and save the pertubed density matrix
 C-------------------------------------------------------------
 C
-      WRITE(PDENS_LABEL,'(A7,I1)') 'EXCITA ',ISYMTR
-      CALL SO_PERTDENS('DCRPA',SOP_EXCITA,NEXCI,
-     &                 EXVAL,NEXCI,PDENS_LABEL,
-     &                 ISYMTR,.FALSE.,1.0D0,
-     &                 T2MP,LT2MP,DENSIJ,LDENSIJ,
-     &                 DENSAB,LDENSAB,DENSAI,LDENSAI,
-     &                 WORK(KEND2),LWORK2)
+CPi      WRITE(PDENS_LABEL,'(A7,I1)') 'EXCITA ',ISYMTR
+CPi      CALL SO_PERTDENS('DCRPA',SOP_EXCITA,NEXCI,
+CPi     &                 EXVAL,NEXCI,PDENS_LABEL,
+CPi     &                 ISYMTR,.FALSE.,1.0D0,
+CPi     &                 T2MP,LT2MP,DENSIJ,LDENSIJ,
+CPi     &                 DENSAB,LDENSAB,DENSAI,LDENSAI,
+CPi     &                 WORK(KEND2),LWORK2)
 C
 C-----------------------
 C     Remove from trace.

@@ -11,7 +11,8 @@ C
 C     PURPOSE: Drive the calculation and analysis of SOPPA and
 C              SOPPA(CCSD) excitation energies and vectors.
 C
-      use so_info, only: so_full_name, so_has_doubles
+      use so_info, only: so_full_name, so_has_doubles,
+     &                   so_double_correction
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -21,10 +22,12 @@ C
       DIMENSION T2MP(LT2MP),     FOCKD(LFOCKD)
       DIMENSION WORK(LWORK)
 C
-      PARAMETER ( D100 = 100.0D0 )
+      PARAMETER ( ONE = 1.0D0, D100 = 100.0D0 )
+CPi      PARAMETER ( D100 = 100.0D0 )
       CHARACTER MODEL*5
+      CHARACTER*8 PDENS_LABEL
 C
-      LOGICAL   DOUBLES
+      LOGICAL   DOUBLES, DOUB_CORR
 C
 #include "codata.h"
 #include "wrkrsp.h"
@@ -42,43 +45,67 @@ C
 C
       DOUBLES = SO_HAS_DOUBLES(MODEL)
 C
+      DOUB_CORR = SO_DOUBLE_CORRECTION(MODEL)
+C
+C----------------------------------------------------------
+C     Calculate "Double corrected RPA" excitation energies.
+C----------------------------------------------------------
+C
+      IF (DOUB_CORR) THEN
+C
+         KEND = 1
+         LWORK1 = LWORK - KEND
+C
+         CALL SO_MEMMAX ('SO_RSPLEX.1',LWORK1)
+         IF (LWORK1 .LT. 0) CALL STOPIT('SO_RSPLEX.1',' ',KEND1,LWORK)
+C
+         CALL DC_CALC(MODEL,ISYMTR,NEXCI,EXVAL,LEXVAL,
+     &                DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &                DENSAI,LDENSAI,
+     &                T2MP,LT2MP,FOCKD,LFOCKD,
+     &                WORK(KEND),LWORK1)
+C
 C-----------------------------------------------
 C     Solve linear response equation
 C-----------------------------------------------
 C
-      MAXIT   = MAXITE
-C
-      LRESINM = NEXCI
-CPi 20.06.16 Old version had this limitation on converged results
-C      LCONV   = 8
-      LCONV   = NEXCI
-C
-C      LMXRED  = (2 * NEXCI * NSAVMX)**2
-CPi Adjust max size of reduced space if necessary
-      IF (NEXCI*NSAVMX .GE. (NT1AM(ISYMTR)+N2P2HOP(ISYMTR))) THEN
-         LMXRED = ( 2 * (NT1AM(ISYMTR)+N2P2HOP(ISYMTR)) )**2
-         WRITE(LUPRI,*) 'SO_RSPLEX: Adjusting LMXRED'
       ELSE
-         LMXRED  = (2 * NEXCI * NSAVMX)**2
-      END IF
+C
+         MAXIT   = MAXITE
+C
+         LRESINM = NEXCI
+CPi 20.06.16 Old version had this limitation on converged results
+C         LCONV   = 8
+         LCONV   = NEXCI
+C
+C         LMXRED  = (2 * NEXCI * NSAVMX)**2
+CPi Adjust max size of reduced space if necessary
+         IF (NEXCI*NSAVMX .GE. (NT1AM(ISYMTR)+N2P2HOP(ISYMTR))) THEN
+            LMXRED = ( 2 * (NT1AM(ISYMTR)+N2P2HOP(ISYMTR)) )**2
+            WRITE(LUPRI,*) 'SO_RSPLEX: Adjusting LMXRED'
+         ELSE
+            LMXRED  = (2 * NEXCI * NSAVMX)**2
+         END IF
 Cend-Pi
 C
-      KRESINM = 1
-      KCONV   = KRESINM + LRESINM
-      KREDE   = KCONV   + LCONV
-      KREDS   = KREDE   + LMXRED
-      KEND    = KREDS   + LMXRED
-      LWORK1  = LWORK   - KEND
+         KRESINM = 1
+         KCONV   = KRESINM + LRESINM
+         KREDE   = KCONV   + LCONV
+         KREDS   = KREDE   + LMXRED
+         KEND    = KREDS   + LMXRED
+         LWORK1  = LWORK   - KEND
 C
-      CALL SO_MEMMAX ('SO_RSPLEX.1',LWORK1)
-      IF (LWORK1 .LT. 0) CALL STOPIT('SO_RSPLEX.1',' ',KEND1,LWORK)
+         CALL SO_MEMMAX ('SO_RSPLEX.1',LWORK1)
+         IF (LWORK1 .LT. 0) CALL STOPIT('SO_RSPLEX.1',' ',KEND,LWORK)
 C
-      CALL SO_LRSOLV(MODEL,ISYMTR,NEXCI,MAXIT,EXVAL,LEXVAL,
-     &               WORK(KRESINM),LRESINM,WORK(KCONV),LCONV,DENSIJ,
-     &               LDENSIJ,DENSAB,LDENSAB,DENSAI,LDENSAI,
-     &               T2MP,LT2MP,
-     &               FOCKD,LFOCKD,WORK(KREDE),WORK(KREDS),LMXRED,
-     &               WORK(KEND),LWORK1)
+         CALL SO_LRSOLV(MODEL,ISYMTR,NEXCI,MAXIT,EXVAL,LEXVAL,
+     &                  WORK(KRESINM),LRESINM,WORK(KCONV),LCONV,DENSIJ,
+     &                  LDENSIJ,DENSAB,LDENSAB,DENSAI,LDENSAI,
+     &                  T2MP,LT2MP,
+     &                  FOCKD,LFOCKD,WORK(KREDE),WORK(KREDS),LMXRED,
+     &                  WORK(KEND),LWORK1)
+C
+      END IF
 C
 C-----------------------------------------------------------
 C     Calculate p-h and 2p-2h weight in excitation operator
@@ -199,6 +226,44 @@ C
                W2DNM = 0.0D0
             ENDIF
 
+C
+C----------------------------------------------------------
+C        Normalize weight coeffictions and eigenvectors if
+C        RPA(D) or HRPA(D)
+C----------------------------------------------------------
+C
+            IF (DOUB_CORR) THEN
+C
+               SWNM   = ONE / (W1ENM + W1DNM + W2ENM + W2DNM)
+C
+               W1ENM = W1ENM * SWNM
+               W1DNM = W1DNM * SWNM
+               W2ENM = W2ENM * SWNM
+               W2DNM = W2DNM * SWNM
+C
+               SQSWNM = DSQRT(SWNM)
+C
+               CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,IEXCI)
+               CALL DSCAL(LTR1E,SQSWNM,WORK(KTR1E),1)
+               CALL SO_WRITE(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,IEXCI)
+C
+               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,IEXCI)
+               CALL DSCAL(LTR1D,SQSWNM,WORK(KTR1D),1)
+               CALL SO_WRITE(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,IEXCI)
+C
+               CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,IEXCI)
+               CALL DSCAL(LTR2E,SQSWNM,WORK(KTR2E),1)
+               CALL SO_WRITE(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,IEXCI)
+C
+               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,IEXCI)
+               CALL DSCAL(LTR2D,SQSWNM,WORK(KTR2D),1)
+               CALL SO_WRITE(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,IEXCI)
+C
+            END IF
+C
+C----------------------------------------------------------
+C           Write excitation weights to output
+C----------------------------------------------------------
 C
             W1ENM = (W1ENM * D100)
             W1DNM = (W1DNM * D100)

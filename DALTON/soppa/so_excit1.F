@@ -28,8 +28,10 @@ C
      &                   so_has_doubles,
      &                   so_singles_second,
      &                   so_needs_densai,
+     &                   so_double_correction,
      &                   sop_dens_label,
-     &                   sop_model_rpa, sop_model_rpad
+     &                   sop_model_rpa, sop_model_rpad,
+     &                   sop_model_hrpad
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
      &                       soppa_release_slaves
@@ -85,7 +87,7 @@ C
 
       integer :: num_active
       logical :: active_models(sop_num_models)
-      logical :: doubles, need_t2
+      logical :: doubles, need_t2, doub_corr
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -147,7 +149,7 @@ C
       IF ( AORPA .AND. (.NOT.AOHRP) .AND. (.NOT.DCRPA)
      &           .AND. (.NOT.AOSOP) .AND. (.NOT.AOSOC)
 CPi
-     &           .AND. (.NOT.AOCC2) ) THEN
+     &           .AND. (.NOT.AOCC2) .AND. (.NOT.DCHRP) ) THEN
          CALL RP_INIT(WORK,LWORK)
 #ifdef VAR_MPI
 C     In pure aorpa calculations, eridi has not been initialized
@@ -207,7 +209,7 @@ C
 CPFP: Higher RPA added
 C     IF (DCRPA .OR. AOSOP .OR. AOSOC) THEN
 CPi
-      IF (AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC .OR. AOCC2) THEN
+      IF (AOHRP.OR.DCRPA.OR.AOSOP.OR.AOSOC.OR.AOCC2.OR.DCHRP) THEN
 Cend-PFP
 C
 CSPAS:5/11-2013: Patricio had the following statement before the IF statement
@@ -348,6 +350,7 @@ C----------------------------------------
                FULLNAME = SOP_MOD_FULLNAME(IMODEL)
                DOUBLES = SO_HAS_DOUBLES(IMODEL)
                NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
+               DOUB_CORR = SO_DOUBLE_CORRECTION(MODEL)
 C
                IF (IPRSOP .GE. 1) THEN
                   WRITE(LUPRI,9000)
@@ -371,7 +374,8 @@ C
 C              Adjust number of excitations of this symmetry down to
 C              the highest possible number
 C
-               IF (DOUBLES .AND.(.NOT.IMODEL.EQ.SOP_MODEL_RPAD) ) THEN
+CPi
+               IF (DOUBLES .AND.(.NOT. DOUB_CORR)) THEN
 C                  NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM)+NT2AM(ISYM))
                   NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM)+N2P2HOP(ISYM))
                ELSE
@@ -424,21 +428,23 @@ C              Determine excitation energies and excitation
 C              vectors. The excitation vectors are written to file.
 C------------------------------------------------------------------
 C
-               IF ( IMODEL .NE. SOP_MODEL_RPAD) THEN
+CPi               IF ( (IMODEL .NE. SOP_MODEL_RPAD) .AND.
+CPi     &              (IMODEL .NE. SOP_MODEL_HRPAD) ) THEN
                   CALL SO_RSPLEX(MODEL,ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
      &                           WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                           LDENSAB,WORK(KDENSAI),LDENSAI,
      &                           WORK(KT2AM),
      &                           LT2AM,WORK(KFOCKD),LFOCKD,
      &                           WORK(KEND2),LWORK2)
-               ELSE ! RPA(D) still has its own driver...
-                  CALL DC_RSPLEX(ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
-     &                           WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-     &                           LDENSAB,WORK(KDENSAI),LDENSAI,
-     &                           WORK(KT2AM),
-     &                           LT2AM,WORK(KFOCKD),LFOCKD,
-     &                           WORK(KEND2),LWORK2)
-               ENDIF
+CPi               ELSE ! RPA(D) still has its own driver...
+CPiCPi
+CPi                  CALL DC_RSPLEX(MODEL,ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
+CPi     &                           WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+CPi     &                           LDENSAB,WORK(KDENSAI),LDENSAI,
+CPi     &                           WORK(KT2AM),
+CPi     &                           LT2AM,WORK(KFOCKD),LFOCKD,
+CPi     &                           WORK(KEND2),LWORK2)
+CPi               ENDIF
 C
 C-----------------------------------------------------
 C              Copy exciation energies to EXENG.
@@ -469,7 +475,7 @@ CClark:11/01/2016
      &                       BETHE(1,1,IOUT),STOPP(1,1,1,IOUT),
 CClark:end
      &                       WORK(KEND2),LWORK2)
-
+C
 C
 C------------------------------------------------------------------
 C              Determine charge radius of excited states (RPA only)

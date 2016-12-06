@@ -1,6 +1,6 @@
 C
 C  /* Deck dc_calc */
-      SUBROUTINE DC_CALC(ISYMTR,NEXCI,EXVAL,LEXVAL,
+      SUBROUTINE DC_CALC(MODEL,ISYMTR,NEXCI,EXVAL,LEXVAL,
      &                   DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                   DENSAI,LDENSAI,
      &                   T2MP,LT2MP,FOCKD,LFOCKD,
@@ -17,7 +17,7 @@ C
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
      &                       soppa_nint
 #endif
-      use so_info, only: sop_excita
+      use so_info, only: sop_excita, so_full_name
 C
 #include "implicit.h"
 #ifdef VAR_MPI
@@ -34,6 +34,9 @@ C
 C
       LOGICAL   NONEWT
       CHARACTER*8 PDENS_LABEL
+CPi
+      CHARACTER*5 MODEL
+      CHARACTER*11 FULL_NAME
 C
       DIMENSION EXVAL(LEXVAL)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
@@ -58,7 +61,9 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('DC_CALC')
-
+C
+      FULL_NAME = SO_FULL_NAME(MODEL)
+C
       KEND1 = 1
       LWORK1 = LWORK
 C
@@ -94,6 +99,16 @@ C Not a real parallel job, don't bother
          IF (LWORK1 .LT. 0) CALL STOPIT('DC_CALC.1A',' ',KEND1,LWORK)
       endif
 #endif
+C------------------
+C     Write banner.
+C------------------
+CPi
+      WRITE(LUPRI,'(/,2X,A)') '*********************************'//
+     &                        '*********************************'
+         WRITE(LUPRI,'(11X,A,A,I1)') ADJUSTR(FULL_NAME),
+     &        ' calculation, Excitation symmetry ',ISYMTR
+      WRITE(LUPRI,'(2X,A)') '*********************************'//
+     &                        '*********************************'
 C
 C---------------------------------------------------------
 C     Make E[2] linear transformation of RPA eigenvectors.
@@ -112,7 +127,9 @@ C ISYMTR is a non-local parameter, we need to copy it to the info-array
 CPi 18.08.16: Copy from so_lrsolv
       CALL GETTIM (DUMMY,WTIMES)
       DTIME      = SECOND()
-      CALL SO_ERES('DCRPA',0,NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+CPi
+C      CALL SO_ERES('DCRPA',0,NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+      CALL SO_ERES(MODEL,0,NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &             T2MP,LT2MP,FOCKD,LFOCKD,DENSAI,LDENSAI,1,ISYMTR,
 #ifdef VAR_MPI
      &             WORK(kAssignedIndices),maxnumjobs,
@@ -185,6 +202,9 @@ C
 C---------------------------
 C     Loop over excitations.
 C---------------------------
+      WRITE(LUPRI,9010)
+      WRITE(LUPRI,9011)
+      WRITE(LUPRI,9010)
 C
       DO 100 IEXCI = 1,NEXCI
 C
@@ -196,7 +216,11 @@ C
          CALL SO_READ(WORK(KRES1), LTR1E,LURS1E,FNRS1E,IEXCI)
          CALL SO_READ(WORK(KRESO1),LTR1E,LURO1E,FNRO1E,IEXCI)
 C
-         CALL DAXPY(LTR1E,-EXVAL(IEXCI),WORK(KRESO1),1,WORK(KRES1),1)
+         IF (MODEL .EQ. 'DCRPA') THEN
+C
+            CALL DAXPY(LTR1E,-EXVAL(IEXCI),WORK(KRESO1),1,WORK(KRES1),1)
+C
+         END IF
 C
          EX1P1H = DDOT(LTR1E,WORK(KRES1),1,WORK(KTR1),1)
 C
@@ -208,7 +232,11 @@ C
          CALL SO_READ(WORK(KRES1), LTR1D,LURS1D,FNRS1D,IEXCI)
          CALL SO_READ(WORK(KRESO1),LTR1D,LURO1D,FNRO1D,IEXCI)
 C
-         CALL DAXPY(LTR1D,-EXVAL(IEXCI),WORK(KRESO1),1,WORK(KRES1),1)
+         IF (MODEL .EQ. 'DCRPA') THEN
+C
+            CALL DAXPY(LTR1D,-EXVAL(IEXCI),WORK(KRESO1),1,WORK(KRES1),1)
+C
+         END IF
 C
          EX1H1P = DDOT(LTR1D,WORK(KRES1),1,WORK(KTR1),1)
 C
@@ -274,15 +302,42 @@ C-----------------------------------------------------------
 C
          IF (TRIPLET) THEN
 C
+            WRITE(LUPRI,9012) IEXCI,
+     &                        EX1P1H + EX1H1P + EX2P2H + EX2H2P,
+     &                        EXVAL(IEXCI),
+     &                        (EX1P1H + EX1H1P) - EXVAL(IEXCI),
+     &                        EX2P2H + EX2H2P
+C
             EXVAL(IEXCI) = EX1P1H + EX1H1P + EX2P2H + EX2H2P
 C
          ELSE
+C
+            WRITE(LUPRI,9012) IEXCI,
+     &                        EX1P1H + EX1H1P + (EX2P2H + EX2H2P)/TWO,
+     &                        EXVAL(IEXCI),
+     &                        (EX1P1H + EX1H1P)- EXVAL(IEXCI),
+     &                        (EX2P2H + EX2H2P)/TWO
 C
             EXVAL(IEXCI) = EX1P1H + EX1H1P + EX2P2H/TWO + EX2H2P/TWO
 C
          END IF
 C
   100 CONTINUE
+C
+      WRITE(LUPRI,9010)
+C---------------------------------------------------------------------
+C        Write calculated excitation energies to output
+C---------------------------------------------------------------------
+C
+CPi      WRITE(LUPRI,9010)
+CPi      WRITE(LUPRI,9011)
+CPi      WRITE(LUPRI,9010)
+CPi      DO 200 IEXCI = 1,NEXCI
+CPi         WRITE(LUPRI,9012) IEXCI,EXVAL(IEXCI),EX1P1H+EX1H1P,
+CPi     &                     EX2P2H+EX2H2P
+CPi 200  CONTINUE
+CPi      WRITE(LUPRI,9010)
+C
 C
 C-----------------
 C     Close files.
@@ -299,6 +354,21 @@ C
       CALL SO_CLOSE(LURS2E,FNRS2E,'KEEP')
       CALL SO_CLOSE(LURS2D,FNRS2D,'KEEP')
 C
+C--------------------------------------------------------------
+C     Calculate and save the pertubed density matrix
+C-------------------------------------------------------------
+CPi Solution vectors are not normalized as in so_rpslex based on
+CPi excitation weights !!!
+C
+      WRITE(PDENS_LABEL,'(A7,I1)') 'EXCITA ',ISYMTR
+      CALL SO_PERTDENS('DCRPA',SOP_EXCITA,NEXCI,
+     &                 EXVAL,NEXCI,PDENS_LABEL,
+     &                 ISYMTR,.FALSE.,1.0D0,
+     &                 T2MP,LT2MP,DENSIJ,LDENSIJ,
+     &                 DENSAB,LDENSAB,DENSAI,LDENSAI,
+     &                 WORK(KEND1),LWORK1)
+C
+C
 C------------------------------------
 C     Flush the standard output file.
 C------------------------------------
@@ -312,4 +382,11 @@ C
       CALL QEXIT('DC_CALC')
 C
       RETURN
+C
+ 9010 FORMAT(1X,'----------------------------------------',
+     &       '-------------------------')
+ 9011 FORMAT(1X,'Excitation   Energy (au)      ph(0)     ',
+     &       '   ph(2)       2p2h(2)')
+ 9012 FORMAT(2X,I5,6X,F12.8,1X,F12.8,1X,F12.8,1X,F12.8)
+C
       END

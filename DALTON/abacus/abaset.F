@@ -524,7 +524,8 @@ C        or if ITRLVL on file too small.
       ELSE IF (ABASOP) THEN
 C        ... SOPPA requires full integral transformation
 C        --- But not if run through AO-SOPPA module        
-         IF(AOSOP.OR.AORPA.OR.DCRPA.OR.AOSOC.OR.AOCC2.OR.AOHRP) THEN
+         IF(AOSOP.OR.AORPA.OR.DCRPA.OR.AOSOC.OR.AOCC2.OR.
+     &      AOHRP.OR.DCHRP) THEN
             KTRLVL = 0
 CPi 15.08.16: AO-SOPPA doesn't need MO integrals
             FLAG(34) = .TRUE.

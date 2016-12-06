@@ -350,7 +350,8 @@ C     absorption, panor+kr-02
 C
          IF (.NOT. PASLNR) THEN
 CPi
-            IF(.NOT.(AORPA.OR.DCRPA.OR.AOSOP.OR.AOSOC.OR.AOCC2) )THEN
+            IF(.NOT.(AORPA.OR.DCRPA.OR.AOSOP.OR.AOSOC.OR.AOCC2.OR.
+     &               AOHRP.OR.DCHRP) )THEN
                KPOLDD = KLAST
                KPOLDQ = KPOLDD + 2*9*MXFR
                KPOLDL = KPOLDQ + 2*27*MXFR
@@ -414,7 +415,7 @@ C
       CALL GETTIM(TIMSTR,TIMDUM)
       NMODEL = 1
 CRF  2016-Jan Set NMODEL to actual AOSOPPA methods
-      IF (AORPA .OR. AOHRP .OR. DCRPA
+      IF (AORPA .OR. AOHRP .OR. DCRPA .OR. DCHRP
 CPi
      &          .OR. AOSOP .OR. AOSOC .OR. AOCC2)
      &         NMODEL = so_num_active_models()
@@ -720,7 +721,7 @@ CPi Haase, 22.07.16: since the commonblocks soppinf.h (used in integral
 C direct soppa program) and infsop.h (used in molecular orbital basis
 C soppa program) contain the same triplet variables, import the necessary
 C variables from soppinf.h through the so_info module:
-      use SO_INFO, only: AORPA, AOHRP, DCRPA, AOSOP, AOSOC, AOCC2
+      use SO_INFO, only: AORPA, AOHRP, DCRPA, DCHRP, AOSOP, AOSOC, AOCC2
 C
 #include "implicit.h"
 #include "iratdef.h"
@@ -2665,7 +2666,7 @@ C
       IF (ABALNR) THEN
          IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR.
 CPi
-     &       AOSOC .OR. AOCC2) THEN
+     &       AOSOC .OR. AOCC2 .OR. DCHRP) THEN
 CRF         Merging AO-SOPPA, adjust call signature           
             CALL SO_LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,
      &                     WORK,LWORK)
@@ -2683,7 +2684,7 @@ CPFP-2009
 C         IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
          IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR.
 CPi
-     &       AOSOC .OR. AOCC2) THEN
+     &       AOSOC .OR. AOCC2 .OR. DCHRP) THEN
 Cend-PFP
             CALL SO_EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
      &                     TTLEN,EXENG,

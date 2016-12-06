@@ -12,7 +12,7 @@ module so_info
                                                ! frequency as zero in linear
                                                ! response
 
-   integer, parameter :: sop_num_models = 6
+   integer, parameter :: sop_num_models = 7
 
    ! Parameter for calculation types
    integer, parameter :: sop_linres = 1, & ! linear response
@@ -26,22 +26,28 @@ module so_info
    integer, parameter :: sop_model_rpa     = 1, &
                          sop_model_rpad    = 2, &
                          sop_model_hrpa    = 3, &
-                         sop_model_soppa   = 4, &
-                         sop_model_sopcc2  = 5, &
-                         sop_model_sopccsd = 6
+                         sop_model_hrpad   = 4, &
+                         sop_model_soppa   = 5, &
+                         sop_model_sopcc2  = 6, &
+                         sop_model_sopccsd = 7
 
    ! Array of the allowed model labels
    character(len=5), dimension(sop_num_models), parameter :: sop_models = &
-                  (/ 'AORPA','DCRPA','AOHRP','AOSOP','AOCC2','AOSOC' /)
+!Pi
+!                  (/ 'AORPA','DCRPA','AOHRP','AOSOP','AOCC2','AOSOC' /)
+                  (/ 'AORPA','DCRPA','AOHRP','DCHRP','AOSOP','AOCC2','AOSOC' /)
 
    ! Array of method full model names names
    character(len=11), dimension(sop_num_models), parameter :: sop_mod_fullname = &
-      (/'RPA        ','RPA(D)     ','Higher RPA ','SOPPA      ','SOPPA(CC2) ', &
-       'SOPPA(CCSD)'/)
+!Pi
+!      (/'RPA        ','RPA(D)     ','Higher RPA ','SOPPA      ','SOPPA(CC2) ', &
+!       'SOPPA(CCSD)'/)
+      (/'RPA        ','RPA(D)     ','Higher RPA ','HRPA(D)    ','SOPPA      ', &
+       'SOPPA(CC2) ','SOPPA(CCSD)'/)
 
    ! Arrays of arguments the method needs to pass to GET_DENS
    character(len=4), dimension(sop_num_models), parameter :: sop_dens_label = &
-      (/'NONE','MP2 ','MP2 ','MP2 ','CC2 ','CCSD'/)
+      (/'NONE','MP2 ','MP2 ','MP2 ','MP2 ','CC2 ','CCSD'/)
 
    ! Additional SOPPA filenames (Added here instead of soppinf.h)
    character(len=11), parameter :: FN_RDENS  = 'soppa_densp', &
@@ -92,8 +98,10 @@ contains
       !  excitations, interger argument
       integer, intent(in) :: nmodel
       logical :: so_has_doubles_num
-      so_has_doubles_num = any ( nmodel .EQ. (/ sop_model_rpad,    &
-                                                sop_model_soppa,   &
+      so_has_doubles_num = any ( nmodel .EQ. (/ sop_model_rpad,   &
+!Pi
+                                                sop_model_hrpad,  &
+                                                sop_model_soppa,  &
                                                 sop_model_sopcc2, &
                                                 sop_model_sopccsd /) )
       return
@@ -104,7 +112,9 @@ contains
       !  (Work around to the fact that the models are controlled by
       !   individual logical variables)
       logical, intent(out) :: list(sop_num_models)
-      list = (/ AORPA, DCRPA, AOHRP, AOSOP, AOCC2, AOSOC /)
+!Pi
+!      list = (/ AORPA, DCRPA, AOHRP, AOSOP, AOCC2, AOSOC /)
+      list = (/ AORPA, DCRPA, AOHRP, DCHRP, AOSOP, AOCC2, AOSOC /)
       return
    end subroutine
 
@@ -124,7 +134,19 @@ contains
       logical :: so_has_doubles_name
 
       so_has_doubles_name = (model.eq.'DCRPA').or.(model.eq.'AOSOP').or. &
-                            (model.eq.'AOCC2').or.(model.eq.'AOSOC')
+                            (model.eq.'AOCC2').or.(model.eq.'AOSOC').or. &
+!Pi
+                            (model.eq.'DCHRP')
+      return
+   end function
+!Pi
+   pure function so_double_correction(model)
+      !  Return true if model includes double
+      !  correction (RPA(D) and HRPA(D)
+      character(len=5), intent(in) :: model
+      logical :: so_double_correction
+
+      so_double_correction = (model.eq.'DCRPA').or.(model.eq.'DCHRP')
       return
    end function
 
@@ -136,7 +158,9 @@ contains
 
       so_singles_second = (model.eq.'DCRPA').or.(model.eq.'AOSOP').or.&
                           (model.eq.'AOSOC').or.(model.eq.'AOHRP').or.&
-                          (model.eq.'AOCC2')
+!Pi I am not completely sure about this!
+                          (model.eq.'AOCC2').or.(model.eq.'DCHRP')
+!                          (model.eq.'AOCC2')
       return
    end function
 
@@ -145,8 +169,10 @@ contains
       !  Needed if we calculate perturbation correction.
       character(len=5), intent(in) :: model
       logical :: so_singles_first
-
-      so_singles_first = .not.(model.eq.'DCRPA')
+!Pi I am definitely not sure here
+!Pi Doesn't change HRPA(D) results
+      so_singles_first = .not.(model.eq.'DCRPA').or..not.(model.eq.'DCHRP')
+!      so_singles_first = .not.(model.eq.'DCRPA')
    end function
 
    pure function so_model_number(model)

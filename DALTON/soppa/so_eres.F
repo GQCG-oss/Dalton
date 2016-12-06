@@ -122,7 +122,7 @@ C
       singles_first = so_singles_first(model)
       singles_second = so_singles_second(model)
       doubles = so_has_doubles(model)
-      tr2_zero = MODEL.EQ.'DCRPA'
+      tr2_zero = (MODEL.EQ.'DCRPA').OR.(MODEL.EQ.'DCHRP')
 C
 CPi-140316
 C---------------------------------------------------------
@@ -351,7 +351,8 @@ C
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
             IF(DO_DEX)
      &               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
-            IF (DOUBLES .AND. MODEL .NE. 'DCRPA') THEN
+            IF (DOUBLES .AND. MODEL .NE. 'DCRPA' .AND.
+     &          MODEL .NE. 'DCHRP') THEN
                      CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
                IF(DO_DEX)
      &               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)

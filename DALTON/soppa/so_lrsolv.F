@@ -166,7 +166,7 @@ C
       WRITE(LUPRI,'(/,2X,A)') '*********************************'//
      &                        '*********************************'
          WRITE(LUPRI,'(11X,A,A,I1)') ADJUSTR(FULL_NAME),
-     &        '  iterations, Excitation symmetry ',ISYMTR
+     &        ' iterations, Excitation symmetry ',ISYMTR
       WRITE(LUPRI,'(2X,A)') '*********************************'//
      &                        '*********************************'
 C
