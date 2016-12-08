@@ -8,9 +8,15 @@ module so_info
 
 #include"soppinf.h"
    !
-   real(8), parameter :: sop_stat_trh = 1.0D-8 ! Threshold for considering a
-                                               ! frequency as zero in linear
-                                               ! response
+   !  implicit.h currently uses real*8 ?? 
+   integer, parameter :: sop_dp = kind(1.0D-8)
+   !
+   real(sop_dp), parameter :: sop_stat_trh = 1.0D-8 ! Threshold for considering a
+                                                    ! frequency as zero in linear
+                                                    ! response
+
+   real(sop_dp), parameter :: sop_dthresh = 1.0D-4  ! Smallest denominator used when 
+                                                    ! preconditioning trial-vectors.
 
    integer, parameter :: sop_num_models = 6
 
