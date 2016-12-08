@@ -2119,16 +2119,16 @@ C
 #include "aovec.h"
 #include "maxaqn.h"
 #include "cbirea.h"
+#include "gnrinf.h"
+
       DIMENSION WORK(LWORK)
       LOGICAL SEG,DOOWN
       DIMENSION NONT(KATOM),IQM(KATOM,3),JCO(KANG,KATOM,3),
      &          NBLCK(KATOM,3),NUC(KBLOCK,3),NRC(KBLOCK,3),
      &          SEG(KBLOCK,3),
-     &          ALPHA(KPRIM,KBLOCK,3),CPRIM(KPRIM,KPRIM,KBLOCK,3),
+     &          ALPHA(KPRIM,KBLOCK,3),
+     &          CPRIM(KPRIM,KPRIM,KBLOCK,3),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,3)
-
-#include "gnrinf.h"
-
 #include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
@@ -2139,28 +2139,43 @@ C
 
 #include "veclen.h"
 
+! local arrays:
+      REAL*8    CORD_DEP(3,4) ! (xyz,1:nsymop+1)
 
 C
 C*****************************************************************************
 C       MULK    - bitstring of basic operations that stabilise a center
 C*****************************************************************************
 C
-      II = 1
+      II = 0
       DO 100 I = 1, NONTYP
          DO 110 J = 1, NONT(I)
+            II = II + 1
+            II_DEP = 1
+            CORD_DEP(1:3,II_DEP) = CORD(1:3,II)
             MULK = 0
-            LL = 1
             DO 140 L = 1, NSYMOP
+               LL = 2**(L-1)
+               II_DEP = II_DEP + 1
                DO 150 M = 1,3
                   IF(IAND(LL,ISYMAX(M,1)) .NE. 0) THEN
 C                 Basic operation LL moves coordinate M
-                     IF(ABS(CORD(M,II)).GE.1.0D-06) GOTO 140
+                     CORD_DEP(M,II_DEP) = -CORD(M,II)
+                  ELSE
+                     CORD_DEP(M,II_DEP) =  CORD(M,II)
                   END IF
  150           CONTINUE
-               MULK = MULK + LL
- 140        LL = 2*LL
+               DO K = 1, II_DEP-1
+                  DIST = (CORD_DEP(1,K) - CORD_DEP(1,II_DEP))**2
+     &                 + (CORD_DEP(2,K) - CORD_DEP(2,II_DEP))**2
+     &                 + (CORD_DEP(3,K) - CORD_DEP(3,II_DEP))**2
+                  IF (DIST .LT. 1.D-12) THEN ! not a new center
+                     MULK = MULK + LL
+                     EXIT
+                  END IF
+               END DO
+ 140        CONTINUE
             ISTBNU(II) = MULK
-            II = II + 1
  110     CONTINUE
  100  CONTINUE
 

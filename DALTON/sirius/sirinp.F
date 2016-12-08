@@ -995,6 +995,7 @@ C
             NASH(LSYM) = 1
             NASHT  = 1
             NACTEL = 1
+            NROHF(1:8) = NASH(1:8) ! so it will work if HSROHF switched on because open-shell DFT /hjaaj Nov 2016
          ELSE IF (HSROHF) THEN
             LSYM = 1
             DO ISYM = 2, NSYM

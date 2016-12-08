@@ -64,6 +64,8 @@ C  /* Deck rspdrv */
 C
 C Driver for RESPONSE.
 C
+      use pelib_interface, only: use_pelib
+
 #include "implicit.h"
 C
       DIMENSION WRK(LWRK)
@@ -352,6 +354,12 @@ C
          ! IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
       END IF
 C
+      IF (USE_PELIB()) THEN
+         IF (TRPFLG) THEN
+            CALL QUIT('ERROR, triplet response with PEQM is not'//
+     &      ' implemented.')
+         END IF
+      END IF
 C
       CALL ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS()
 C
