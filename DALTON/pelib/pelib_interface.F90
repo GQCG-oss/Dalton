@@ -896,7 +896,7 @@ subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,&
                            & lupri)
             end if
             if (trplet) then
-               call slvsor(.false.,.false.,1, dtvtr(1,i),scvecs(1,i),wrk(fupe))
+               call slvsor(.false.,.false.,1, dtvtr(1,i),scvecs(1,i),fupe)
             else 
                call slvsor(.false., .false., 1, dtv(1,i), scvecs(1,i), fupe)
             end if 
