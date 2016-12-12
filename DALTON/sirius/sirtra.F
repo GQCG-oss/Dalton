@@ -235,9 +235,9 @@ C           no old luintm opened, then old integrals not available
      &                                     'UNFORMATTED',IDUMMY,.FALSE.)
          END IF
          IF (OLDTRA .AND. ICASE .GT. 0) THEN
-            NWARN = NWARN + 1
+            NINFO = NINFO + 1
             WRITE (LUPRI,'(/A,I2,3(/A))')
-     *         ' WARNING SIR_INTOPEN, old integral transformation not'
+     *         ' INFO SIR_INTOPEN, old integral transformation not'
      *       //' found as expected, ICASE =',ICASE,
      *         ' - ICASE = 1: MO integral file MOTWOINT does not exist',
      *         ' - ICASE = 2: no MO integrals on MOTWOINT',
