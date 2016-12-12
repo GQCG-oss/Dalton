@@ -56,7 +56,8 @@ C for mxcont
 #include "soppinf.h"
 #include "symmet.h"
 #include "wrkrsp.h"
-
+C Need DOCCSD parameter from gnring.h
+#include "gnrinf.h"
 C
       PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C
@@ -86,6 +87,7 @@ C
       integer :: num_active
       logical :: active_models(sop_num_models)
       logical :: doubles, need_t2
+      LOGICAL OPENED
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -97,6 +99,7 @@ C      herdir = so_get_herdir()
       update_common_blocks = .true.
       get_mxcall = .false.
 #endif
+C
 C
 C------------------
 C     Add to trace.
@@ -118,8 +121,6 @@ C
       CALL GETTIM (DUMMY,WTIME)
       TIMWTO  = WTIME
 C
-CPFP 2009-Jun
-C
 C---------------------------------------------------------
 C     Initialize TRIPLET keyword used inside SOPPA module.
 C---------------------------------------------------------
@@ -130,9 +131,6 @@ C
         TRIPLET = .FALSE.
       END IF
 C
-Cend-PFP
-C
-C
 C-------------------------------------------
 C     Initializes memory statistics routine.
 C-------------------------------------------
@@ -140,22 +138,21 @@ C
       CALL SO_MEMMAX ('START',LWORK)
 C
 C---------------------------------------------------------------
-C     If only RPA initialize some pointers and sort AO-integrals
+C     If only RPA and if SOPPA is calculating the MP2 amplitude without
+C     first doing CCSD calculations, then initialize some pointers and sort AO-integrals
 C     into distributions.
 C---------------------------------------------------------------
 C
-      IF ( AORPA .AND. (.NOT.AOHRP) .AND. (.NOT.DCRPA)
-     &           .AND. (.NOT.AOSOP) .AND. (.NOT.AOSOC)
-CPi
-     &           .AND. (.NOT.AOCC2) ) THEN
+      IF (.NOT. DOCCSD) THEN
          CALL RP_INIT(WORK,LWORK)
+C
 #ifdef VAR_MPI
 C     In pure aorpa calculations, eridi has not been initialized
          herdir = so_get_herdir()
          get_mxcall = so_get_direct()
 #endif
-      ENDIF
-
+      END IF
+C
 #ifdef VAR_MPI
 C
 C In AORPA we cannot be sure that the number of integral distributions
@@ -204,20 +201,15 @@ C
       KEND1   = KFOCKD  + LFOCKD
       LWORK1  = LWORK   - KEND1
 C
-CPFP: Higher RPA added
-C     IF (DCRPA .OR. AOSOP .OR. AOSOC) THEN
-CPi
       IF (AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC .OR. AOCC2) THEN
-Cend-PFP
 C
-CSPAS:5/11-2013: Patricio had the following statement before the IF statement
          LT2AM   = NT2AMX
-CPFP
+C
 C        For triplet calculations LT2AM has to be twice as large,
 C        because there are two version of the correlation coefficients
 C
          IF (TRIPLET) LT2AM = NT2AMX*2
-Cend-PFP
+C
          LDENSIJ = NIJDEN(1)
          LDENSAB = NABDEN(1)
          LDENSAI = NAIDEN(1)
@@ -263,7 +255,7 @@ C---------------------------------------------------------------------
 C     Initialize arrays of transition moments and excitation energies.
 C---------------------------------------------------------------------
 C
-CSPAS:5/11-13: HRPA included
+C
       CALL DZERO(TRLEN, 3*NSYM*MXNEXI*NUM_ACTIVE)
       CALL DZERO(TRVEL, 3*NSYM*MXNEXI*NUM_ACTIVE)
       CALL DZERO(TQLEN, 3*3*NSYM*MXNEXI*NUM_ACTIVE)
@@ -274,11 +266,8 @@ CSPAS:5/11-13: HRPA included
       CALL DZERO(BSRLON,3*NSYM*MXNEXI*NUM_ACTIVE)
       CALL DZERO(SECMAT,3*NSYM*MXNEXI)
       CALL DZERO(EXENG, NSYM*MXNEXI*NUM_ACTIVE)
-CKeinSPASmehr
-CClark:09/03/2016
       CALL DZERO(BETHE,3*LQ*NUM_ACTIVE)
       CALL DZERO(STOPP,3*LVEL*2*NUM_ACTIVE)
-CClark:end
 C
 C========================================================
 C     Determine excitation energies, response vectors and
@@ -312,7 +301,6 @@ C     state times the symmetry of the excitation vector.
 C-------------------------------------------------------------
 C
       DO 100 ISYM = 1, NSYM
-C
          CALL RSPSET
 C
          IF (NEXCIT(ISYM) .GT. 0) THEN
@@ -338,7 +326,6 @@ C
             IOUT = 0
             DO IMODEL = 1, SOP_NUM_MODELS
                IF (.NOT. ACTIVE_MODELS(IMODEL) ) CYCLE
-
 C              Increment output pointer
                IOUT = IOUT + 1
 C----------------------------------------
@@ -396,7 +383,8 @@ C-----------------------------------------------------
 C
                IF (NEED_T2) THEN
                   CALL SO_GETT2(SOP_DENS_LABEL(IMODEL),
-     &                          WORK(KT2AM),LT2AM,WORK(KDENSAI),
+     &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
+     &                          WORK(KDENSAI),
      &                          LDENSAI,WORK(KDENSIJ),LDENSIJ,
      &                          WORK(KDENSAB),LDENSAB,
      &                          WORK(KEND2),LWORK2)
