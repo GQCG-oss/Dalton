@@ -636,8 +636,8 @@ C            and SRHYBR extra valence Fock type matrix
          LDAO_DFT = 0
          LSRAO = 0
       END IF
-      CALL MEMGET('REAL',KDFAO,LDFAO,WRK,KFREE,LFREE)
-C   Note: DXCAO, DXVAO, (DTCAO,) DTVAO must be contiguous.
+      CALL MEMGET2('REAL','DFAO',KDFAO,LDFAO,WRK,KFREE,LFREE)
+C   Note: DXCAO, DXVAO, (DTCAO,) DTVAO (,DAO) must be contiguous.
 C   Note: FXCAO, FXVAO, (FTCAO,) FTVAO must be contiguous.
       KDXCAO = KDFAO
       IF (NISHT .GT. 0 .OR. ADDSRI) THEN
@@ -1049,17 +1049,17 @@ C            IFCTYP = 13 : singlet Fock matrix and DUNP symmetric
      &         //' conf and orb trial vectors')
             END IF
             AODRCT_tmp = AODRCT .OR. NOSIM .GT. 1
-            ! ADDSRI works only for direct Fock matrices if NOSIM .gt. 1
+            ! ADDSRI works only for AO-direct Fock matrices if NOSIM .gt. 1
             ! /hjaaj 16-Oct-2016
             IF (NDXMAT .GT. 0)
      &      CALL SIRFCK(FXCAO,DXCAO,NDXMAT,ISYMDM,IFCTYP,
-     &                  AODRCT_TMP,WRK(KFREE),LFREE)
+     &                  AODRCT_tmp,WRK(KFREE),LFREE)
             AODRCT_tmp = AODRCT .OR. NCSIM .GT. 1
-            ! ADDSRI works only for direct Fock matrices if NCSIM .gt. 1
+            ! ADDSRI works only for AO-direct Fock matrices if NCSIM .gt. 1
             ! /hjaaj 16-Oct-2016
             IF (NDTMAT .GT. 0)
      &      CALL SIRFCK(FTVAO,DTVAO,NDTMAT,ISYMDM(NDXMAT+1),
-     &                  IFCTYP(NDXMAT+1),AODRCT_TMP,WRK(KFREE),LFREE)
+     &                  IFCTYP(NDXMAT+1),AODRCT_tmp,WRK(KFREE),LFREE)
          ELSE ! WFT or KS-DFT
             CALL SIRFCK(FXCAO,DXCAO,NDMAT,ISYMDM,IFCTYP,
      &                  AODRCT,WRK(KFREE),LFREE)

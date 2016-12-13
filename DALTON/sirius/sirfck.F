@@ -28,7 +28,7 @@ C
 !#define noSIRFCK_MANU_SRHFX 
 C
 C  /* Deck sirfck */
-      SUBROUTINE SIRFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,DIRECT,
+      SUBROUTINE SIRFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,AO_DIRECT,
      &                  WRK,LWORK)
 C
 C     March 1997 - tsaue Screening
@@ -63,12 +63,12 @@ C         Y = 3 Coulomb + Exchange
 C       + sign: alpha + beta matrix (singlet)
 C       - sign: alpha - beta matrix (triplet)
 C
-C     DIRECT = .TRUE.   Direct calculation using hermit.
-C              .FALSE.  Read integrals from AOTWOINT.
-Cholesky       Overriden by the CHOINT flag
+C     AO_DIRECT = .TRUE.   Direct calculation using hermit.
+C                 .FALSE.  Read integrals from AOTWOINT/AOSR2INT
+Cholesky       Overridden by the CHOINT flag
 C
 #include "implicit.h"
-      LOGICAL   DIRECT, DOERG, DOATR, LSRHYBR
+      LOGICAL   AO_DIRECT, DOERG, DOATR, LSRHYBR
       LOGICAL   DO_SPINDNS, DFT_SPINDNS_SAVE
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,*)
       DIMENSION ISYMDM(NDMAT), IFCTYP(NDMAT)
@@ -143,7 +143,7 @@ C
          DO_CHOINT = .FALSE.
          IF (.NOT. ADDSRI) THEN
             WRITE(LUPRI,'(//A/A,20I5)')
-     &      'ERROR: SIRFCK can only do spin dens. for srDFT',
+     &      'ERROR: SIRFCK can only do spin density for srDFT',
      &      'ERROR: IFCTYP =',IFCTYP(1:NDMAT)
             CALL QUIT('SIRFCK can only do spin dens. for srDFT')
          END IF
@@ -302,18 +302,18 @@ C
      &     ' non-symmetric Fock matrices calculated in',DTIME,' seconds'
          ENDIF
 
-      ELSE IF (DIRECT) THEN ! not Cholesky, AO-direct?
+      ELSE IF (AO_DIRECT) THEN ! not Cholesky, AO-direct?
+C
+C
+C     ****************** AO direct Fock matrices ***************
+C
+C
          IF (IPRFCK .GT. 0) THEN
             WRITE(LUPRI,'(/A,I4,A/A,(20I5))')
      &      'SIRFCK: AO-direct construction of',NDMAT,' Fock matrices',
      &      '        IFCTYP:',(IFCTYP(I),I=1,NDMAT)
             flush(lupri)
          END IF
-C
-C
-C     ****************** AO direct Fock matrices ***************
-C
-C
          IF (SFIRST) THEN
             IPRHER = 2*IPRFCK
             CALL SETHER(IPRHER,.FALSE.,WRK,LWORK)
@@ -321,13 +321,13 @@ C           CALL SETHER(IPRHER,NEWGEO,WORK,LWORK)
             SFIRST = .FALSE.
          END IF
          DO I = 1,NDMAT
-            ISYMDM(I) = ISYMDM(I) - 1
+            ISYMDM_local(I) = ISYMDM(I) - 1 ! 1:8 -> 0:7 range for Hermit
          END DO
          IPRHER = MAX(IPRFCK/100, SIRFCK_DEBUG_HERMIT/10)
 C
 C        Special code for short range/long range integrals
 C        ... never short-range integrals in first call of HERFCK
-C        ... if normal HF then normal 2-el ints (CHIVAL=0)
+C        ... if normal HF/MCSCF then normal 2-el ints (CHIVAL=0)
          SRINTS = .FALSE.
          IFCTYP_local(1:NDMAT) = IFCTYP(1:NDMAT)
          IF (ADDSRI .OR. PREHF) THEN
@@ -335,7 +335,7 @@ C        ... full exchange for long range part and for PREHF
             HFXFAC = D1
             DO I = 1,NDCandDV
             IF (IFCTYP_local(I) .NE. 0) THEN ! skip "FTC" with IFCTYP=0
-               IFC_X = IFCTYP_local(1) / 10
+               IFC_X = IFCTYP_local(I) / 10
                IFCTYP_local(I) = 10*IFC_X + 3
 C              ... make sure the "do exchange" bit is set in IFCTYP
             END IF
@@ -350,9 +350,8 @@ C           this is e.g. PREHF, i.e. standard HF
          write(lupri,*) 'SIRFCK: ADDSRI, SRINTS =', ADDSRI,SRINTS
          write(lupri,*) 'SIRFCK: calling HERFCK with CHIVAL ',CHIVAL
          write(lupri,*) 'SIRFCK: calling HERFCK with HFXFAC ',HFXFAC
-         write(lupri,*) 'SIRFCK: ISYMDM ',(ISYMDM(I),I=1,NDMAT)
-         write(lupri,*) 'SIRFCK: IFCTYP_local',
-     &      (IFCTYP_local(I),I=1,NDMAT)
+         write(lupri,*) 'SIRFCK: ISYMDM_local', ISYMDM_local(1:NDMAT)
+         write(lupri,*) 'SIRFCK: IFCTYP_local', IFCTYP_local(1:NDMAT)
 #if SIRFCK_DEBUG > 4
          write(lupri,*) 'SIRFCK: first DMAT'
          call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
@@ -379,13 +378,13 @@ C          hjaaj mar 2006: dens_fit not for short range integrals (yet)
 #if SIRFCK_DEBUG > 0
            write(lupri,*) 'calling dens_fit'; flush(lupri)
 #endif
-           call dens_fit(FMAT,DMAT,NDCandDV,ISYMDM,IFCTYP_local,
+           call dens_fit(FMAT,DMAT,NDCandDV,ISYMDM_local,IFCTYP_local,
      &                   IPRHER,WRK,LWORK)
          else
 #if SIRFCK_DEBUG > 0
            write(lupri,*) 'calling HERFCK, IPRHER=',IPRHER; flush(lupri)
 #endif
-           CALL HERFCK  (FMAT,DMAT,NDCandDV,ISYMDM,IFCTYP_local,
+           CALL HERFCK  (FMAT,DMAT,NDCandDV,ISYMDM_local,IFCTYP_local,
      &                   IPRHER,WRK,LWORK)
          end if
 
@@ -396,7 +395,7 @@ C          hjaaj mar 2006: dens_fit not for short range integrals (yet)
 
        END IF ! (CHIVAL .ne. D0)
 #if SIRFCK_DEBUG > 4
-       do i = 1,nfmat
+       do i = 1,NDCandDV
          write(lupri,*) 'SIRFCK: FMAT no.',i,' after long-range'
          call output(FMAT(1,i),1,nbast,1,nbast,nbast,nbast,-1,lupri)
        end do
@@ -417,7 +416,8 @@ C
 
             NFSRTYP = 1
             NFSRAO = NSR_DMAT ! FT
-            IFC_X = IFCTYP(1) / 10
+            IFC_X = IFCTYP(NSR_DMAT) / 10 ! IFCTYP(1) might be 0 for "FTC", thus we go for the FXC/FTV value
+               ! as representative for all 1:NSR_DMAT matrices
             IFC_X = 10*IFC_X ! DMAT symmetric, antisymmetric or unsymmetric ?
             IF (HFXFAC .EQ. 0.0D0) THEN
                IFCTYP_local(1:NSR_DMAT) = IFC_X + 1 ! only Coulomb
@@ -437,7 +437,7 @@ C
 C           ... total DMAT = DC when NASHT.eq.0 or CISRDFT
                JFMAT = 1
             END IF
-            ISYMDM_local(1:NFSRAO) = ISYMDM(1)
+            ISYMDM_local(1:NFSRAO) = ISYMDM(1) - 1
             KFSRAO = 1
             KDSRAO = KFSRAO + NFSRAO*N2BASX
             KLAST  = KDSRAO + NFSRAO*N2BASX
@@ -519,9 +519,6 @@ C
 
          END IF   ! IF (ADDSRI .AND. (DOHFSRDFT.OR.DOMCSRDFT)) THEN
 
-         DO I = 1,NDMAT
-            ISYMDM(I) = ISYMDM(I) + 1 ! change from hermit irrep (0:7) to sirius symmetry (1:8)
-         END DO
 #if SIRFCK_DEBUG > 3
          if(addsri)then
            do i = 1,nsr_dmat
@@ -537,11 +534,12 @@ C
 
       ELSE ! not Cholesky and not AO-direct; i.e. conventional from AOTWOINT and AOSRINT files
 
+         IFCTYP_local(1:NDMAT) = IFCTYP(1:NDMAT)
          IF (IPRFCK .GT. 0) THEN
             WRITE(LUPRI,'(/A,I4,A/A,(20I5))')
      &      'SIRFCK: Construction of',NDMAT,
      &      ' Fock matrices from integrals on file',
-     &      '        IFCTYP:',(IFCTYP(I),I=1,NDMAT)
+     &      '        Input IFCTYP:',(IFCTYP(I),I=1,NDMAT)
          END IF
 C
 C     ****************** "conventional" AO Fock matrices ***************
@@ -553,12 +551,10 @@ C
 C        ... if SRHYBR (DFT-SRDFT hybrid) only include Coulomb terms 
 C            (core is treated with BLYP -> hence no exchange here!)
          IF(LSRHYBR) THEN
-            IFCTYP_local(1) = IFCTYP(1)
-            IFCTYP(1) = 11
+            IFCTYP_local(1) = 11
 C           ... FC,lr = JC,lr = J,lr * DC for SR-hybrid
             IF (NDMAT .EQ. 2) THEN
-               IFCTYP_local(2) = IFCTYP(2)
-               IFCTYP(2) = 13
+               IFCTYP_local(2) = 13
             END IF
 C           ... FV,lr = G,lr * DV
             IF (NDMAT .GT. 2) CALL QUIT('NDMAT.gt.2 for SRHYBR & lr')
@@ -568,7 +564,7 @@ C           ... FV,lr = G,lr * DV
 C        ... full exchange for long range part and for PREHF
             HFXFAC = D1
             DO I = 1,NDCandDV
-            IF (IFCTYP(I) .GT. 0) THEN ! skip "FTC"
+            IF (IFCTYP_local(I) .GT. 0) THEN ! skip "FTC"
                J = MOD(IFCTYP(I),10)
                IF (IAND(J,2) .eq. 0) IFCTYP(I) = IFCTYP(I) + 2
 C              ... make sure the "do exchange" bit is set in IFCTYP
@@ -606,38 +602,31 @@ C                 ... add DV(I) to DC(I)
             END IF
             IF (NSR_DMAT.GT.1) CALL QUIT('NSR_DMAT .GT. 1 for ADDSRI')
 C
-            IFCTYP_local(1) = IFCTYP(1)
             IF (HFXFAC.NE.D0) THEN
 C           ... for normal/preceding HF and for SRDFT with exact exch.
 C               (add SR coul. and exch. to LR to give full 2-el part)
-                IFCTYP(1) = 13
+                IFCTYP_local(1) = 13
             ELSE 
 C           ... add only Coul
 C               (only SR Hartree term for SRDFT hybrids)
-                IFCTYP(1) = 11
+                IFCTYP_local(1) = 11
             END IF
             KFSRAO = 1
             KLAST  = KFSRAO + NSR_DMAT*N2BASX
             LWRK   = LWORK  - KLAST + 1
-            IF (HFXFAC .EQ. D0) THEN
-C              remove any "do exchange" bits
-               DO I = 1,NSR_DMAT
-                  J = MOD(IFCTYP(I),10)
-                  IF (IAND(J,2) .ne. 0) IFCTYP(I) = IFCTYP(I) - 2
-               END DO
-            END IF
 #if SIRFCK_DEBUG > 0
             write(lupri,*)'SIRFCK: calling SIRFCK2 "AOSR2INT" with'
             write(lupri,*)'SIRFCK: NSR_DMAT,NDMAT=',NSR_DMAT,NDMAT
-            write(lupri,*)'SIRFCK: IFCTYP=',(IFCTYP(I),I=1,NDMAT)
+            write(lupri,*)'SIRFCK: IFCTYP_local=',
+     &         (IFCTYP_local(I),I=1,NDMAT)
 #endif
             CALL DZERO(WRK(KFSRAO),NSR_DMAT*N2BASX)
             CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFSRAO),
-     &                   DMAT,NSR_DMAT,ISYMDM,IFCTYP,WRK(KLAST),LWRK)
+     &         DMAT,NSR_DMAT,ISYMDM,IFCTYP_local,WRK(KLAST),LWRK)
             CALL DAXPY(N2BASX,D1,WRK(KFSRAO),1,FMAT,1) ! add F_sr to FC_lr
             EJSR = DP5*DDOT(N2BASX,DMAT(1,1),1,WRK(KFSRAO),1) ! EJsr+HFXFAC*EKsr from DC+DV
             IF (NASHT.GT.0) THEN
-               EJKVSR =-DP5*
+               EJKVSR = -DP5*
      &            DDOT(N2BASX,DMAT(1,NSR_DMAT+1),1,WRK(KFSRAO),1) ! correction from DV
             ELSE
                EJKVSR = D0
@@ -653,10 +642,10 @@ C              remove any "do exchange" bits
 !
             if (iprsrdft .gt. 0 .and.
      &         nsr_dmat.eq.1 .and. HFXFAC .NE. 0.0D0) then
-               IFCTYP_x = 12 ! exchange only
+               IFCTYP_local(1) = 12 ! exchange only
                CALL DZERO(WRK(KFSRAO),N2BASX)
                CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFSRAO),
-     &                   DMAT,NSR_DMAT,ISYMDM,IFCTYP_x,WRK(KLAST),LWRK)
+     &            DMAT,NSR_DMAT,ISYMDM,IFCTYP_local,WRK(KLAST),LWRK)
                EKSR = DP5*DDOT(N2BASX,DMAT(1,1),1,WRK(KFSRAO),1)
                EJSR = EJSR - EKSR
             else
@@ -675,15 +664,15 @@ C              remove any "do exchange" bits
                write (lupri,'(/A)') 'SIRFCK2 SPIN DENSITY EXX TERM'
                IF (NSR_DMAT .NE. 1)
      &         call quit('HFXFAC & SPINDNS only for NSR_DMAT.eq.1')
-               ifctyp_sr = 12 ! only exchange
-               isymdm_sr = 1
+               ifctyp_local(1) = 12 ! only exchange
+               isymdm_local(1) = 1
                CALL DZERO(WRK(KFSRAO),N2BASX)
                CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFSRAO),
-     &                   DMAT(1,3), 1 ,isymdm_sr,ifctyp_sr,
+     &                   DMAT(1,3), 1 ,isymdm_local,ifctyp_local,
      &                   WRK(KLAST),LWRK)
 #if SIRFCK_DEBUG > 0
                write (lupri,'(/A)')
-     &         'SIRFCK SPIN DENSITY exchange Fock matrix'
+     &         'SIRFCK SPIN DENSITY sr-DFT exact exchange Fock matrix'
            call output(wrk(kfsrao),1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
                CALL DAXPY(N2BASX,1.0D0,WRK(KFSRAO),1,FMAT(1,3),1)  ! add HFXFAC*Ksr_spin to FS
