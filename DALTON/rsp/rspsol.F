@@ -1209,93 +1209,91 @@ C
          CALL DSPTSI(NASHT,RYAC,WRK(KURYAC))
 C        CALL DSCAL(N2ASHX,DM1,WRK(KURYAC),1)
          DO 18 ICSIM = 1,NCSIM
-            CALL DSPTSI(NASHT,RXAC(1,ICSIM),WRK(KURXAC))
-C           CALL DSCAL(N2ASHX,DM1,WRK(KURXAC),1)
-C rxac defined with opposite sign relative to SOLSC
-C
-            IF (IPRRSP.GT.100) THEN
-               WRITE(LUPRI,*)' Z part,RXAC MATRIX, ICSIM=', ICSIM
-               CALL OUTPUT(WRK(KURXAC),1,NASHT,1,NASHT,
-     *                                 NASHT,NASHT,1,LUPRI)
-            END IF
-C           First SVECS(NA) = SVECS(NA) + < NA | 2*RX | CREF >
-C
-C Z PART OF LINEAR TRANSFORMATION
-C
-            JSPIN1 = 0
-            JSPIN2 = 0
             IF (USE_PELIB() .AND. TRPLET) THEN
                ! do nothing
             ELSE 
+               CALL DSPTSI(NASHT,RXAC(1,ICSIM),WRK(KURXAC))
+C              CALL DSCAL(N2ASHX,DM1,WRK(KURXAC),1)
+C rxac defined with opposite sign relative to SOLSC
+C
+               IF (IPRRSP.GT.100) THEN
+                  WRITE(LUPRI,*)' Z part,RXAC MATRIX, ICSIM=', ICSIM
+                  CALL OUTPUT(WRK(KURXAC),1,NASHT,1,NASHT,
+     *                                    NASHT,NASHT,1,LUPRI)
+               END IF
+C              First SVECS(NA) = SVECS(NA) + < NA | 2*RX | CREF >
+C
+C Z PART OF LINEAR TRANSFORMATION
+C
+               JSPIN1 = 0
+               JSPIN2 = 0
                CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,CREF,
      &                     SVECS(1,ICSIM),WRK(KURXAC),DUMMY,
      &                     .TRUE.,.FALSE.,XNDXCI,JSPIN1,JSPIN2,
      &                     WRK(KW1),LW1)
-            END IF 
-            IF (IPRRSP.GT.101) THEN
-               WRITE(LUPRI,*)
-     *       ' TXC Z CONF  PART OF LINEAR TRANSFORMED CONF TRIAL VECTOR'
-               CALL OUTPUT(SVECS(1,ICSIM),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
-            END IF
-C           then  SVECS(NA) = SVECS(NA) + < NA | 2*RY | BCVECS > -Note: Tg is called "Ry" 
-            IF (IPRRSP.GT.100) THEN
-               WRITE(LUPRI,*)' Z part,-1.0*RYAC MATRIX, ICSIM=', ICSIM
-               CALL OUTPUT(WRK(KURYAC),1,NASHT,1,NASHT,
-     *                                 NASHT,NASHT,1,LUPRI)
-            END IF
-            JSPIN1 = 0
-            JSPIN2 = 0
-            IF (USE_PELIB() .AND. TRPLET) THEN
-               ! do nothing
-            ELSE 
+               IF (IPRRSP.GT.101) THEN
+                  WRITE(LUPRI,*)
+     *          ' TXC Z CONF  PART OF LINEAR TRANSFORMED'// 
+     *          ' CONF TRIAL VECTOR'
+                  CALL OUTPUT(SVECS(1,ICSIM),1,KZCONF,1,1,
+     *                        KZCONF,1,1,LUPRI)
+               END IF
+C              then  SVECS(NA) = SVECS(NA) + < NA | 2*RY | BCVECS > -Note: Tg is called "Ry" 
+               IF (IPRRSP.GT.100) THEN
+                  WRITE(LUPRI,*)' Z part,-1.0*RYAC MATRIX, ICSIM=', ICSIM
+                  CALL OUTPUT(WRK(KURYAC),1,NASHT,1,NASHT,
+     *                                    NASHT,NASHT,1,LUPRI)
+               END IF
+               JSPIN1 = 0
+               JSPIN2 = 0
                CALL CISIGD(KSYMST,KSYMST,KZCONF,KZCONF,
      &                     BCVECS(1,ICSIM),SVECS(1,ICSIM),
      &                     WRK(KURYAC),DUMMY,
      &                     .TRUE.,.FALSE.,XNDXCI,JSPIN1,JSPIN2
      &                     ,WRK(KW1),LW1)
-            ENDIF
-            IF (IPRRSP.GT.101) THEN
-               WRITE(LUPRI,*)
-     *       ' TG Z CONF  PART OF LINEAR TRANSFORMED CONF TRIAL VECTOR'
-               CALL OUTPUT(SVECS(1,ICSIM),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
-            END IF
-            DO 200 NA = 1,KZCONF
-               SVECS(NA,ICSIM) = SVECS(NA,ICSIM)
-     *                         -   TRYAC        * BCVECS(NA,ICSIM)
-C    *                         - D2 * TRXAC(ICSIM) * CREF(NA)
-  200          CONTINUE
-            IF (IPRRSP.GT.101) THEN
-               WRITE(LUPRI,*)
-     *       ' TG Z CONF  PART OF LINEAR TRANSFORMED CONF TRIAL VECTOR'
-               WRITE(LUPRI,*)' <0/Tg/0> S(j) subtracted '
-               CALL OUTPUT(SVECS(1,ICSIM),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
-            END IF
-            IF (IREFSY .EQ. KSYMST) THEN
-               FAC = DDOT(KZCONF,SVECS(1,ICSIM),1,CREF,1)
-               CALL DAXPY(KZCONF,(-FAC),CREF,1,SVECS(1,ICSIM),1)
                IF (IPRRSP.GT.101) THEN
                   WRITE(LUPRI,*)
-     *            ' TG+TXC Z CONF  PART OF LINEAR TRANSFORMED',
-     *            'CONF TRIAL VECTOR'
-                  WRITE(LUPRI,*)' REFERENCE COMPONENT PROJECTED OUT'
-                  CALL OUTPUT(SVECS(1,ICSIM),1,KZCONF,1,1,KZCONF,1,
-     *                                                      1,LUPRI)
+     *          ' TXC Z CONF  PART OF LINEAR TRANSFORMED'// 
+     *          ' CONF TRIAL VECTOR'
+                  CALL OUTPUT(SVECS(1,ICSIM),1,
+     *                        KZCONF,1,1,KZCONF,1,1,LUPRI)
                END IF
-            END IF
+               DO 200 NA = 1,KZCONF
+                  SVECS(NA,ICSIM) = SVECS(NA,ICSIM)
+     *                            -   TRYAC        * BCVECS(NA,ICSIM)
+C    *                            - D2 * TRXAC(ICSIM) * CREF(NA)
+  200             CONTINUE
+               IF (IPRRSP.GT.101) THEN
+                  WRITE(LUPRI,*)
+     *          ' TG Z CONF  PART OF LINEAR TRANSFORMED'//
+     *          ' CONF TRIAL VECTOR'
+                  WRITE(LUPRI,*)' <0/Tg/0> S(j) subtracted '
+                  CALL OUTPUT(SVECS(1,ICSIM),1,
+     *                        KZCONF,1,1,KZCONF,1,1,LUPRI)
+               END IF
+               IF (IREFSY .EQ. KSYMST) THEN
+                  FAC = DDOT(KZCONF,SVECS(1,ICSIM),1,CREF,1)
+                  CALL DAXPY(KZCONF,(-FAC),CREF,1,SVECS(1,ICSIM),1)
+                  IF (IPRRSP.GT.101) THEN
+                     WRITE(LUPRI,*)
+     *               ' TG+TXC Z CONF  PART OF LINEAR TRANSFORMED',
+     *               'CONF TRIAL VECTOR'
+                     WRITE(LUPRI,*)' REFERENCE COMPONENT PROJECTED OUT'
+                     CALL OUTPUT(SVECS(1,ICSIM),1,
+     *                           KZCONF,1,1,KZCONF,1,1,LUPRI)
+                  END IF
+               END IF
 C
 C Y PART OF LINEAR TRANSFORMATION
 C
-            CALL DGETRN(WRK(KURXAC),NASHT,NASHT)
-            CALL DSCAL(N2ASHX,DM1,WRK(KURXAC),1)
-            IF (IPRRSP.GT.100) THEN
-               WRITE(LUPRI,*)' Y PART, -RXAC MATRIX, '//
-     *         ' ICSIM=', ICSIM
-               CALL OUTPUT(WRK(KURXAC),1,NASHT,1,NASHT,
-     *                                 NASHT,NASHT,-1,LUPRI)
-            END IF
-            IF (USE_PELIB() .AND. TRPLET) THEN
-               ! do nothing 
-            ELSE 
+               CALL DGETRN(WRK(KURXAC),NASHT,NASHT)
+               CALL DSCAL(N2ASHX,DM1,WRK(KURXAC),1)
+               IF (IPRRSP.GT.100) THEN
+                  WRITE(LUPRI,*)' Y PART, -RXAC MATRIX, '//
+     *            ' ICSIM=', ICSIM
+                  CALL OUTPUT(WRK(KURXAC),1,NASHT,1,NASHT,
+     *                                    NASHT,NASHT,-1,LUPRI)
+               END IF
                JSPIN1 = 0
                JSPIN2 = 0
                CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,CREF,
@@ -1307,41 +1305,42 @@ C
      *            ' TXC Y CONF PART OF LINEAR TRANSFORMED' //
      *            ' CONF TRIAL VECTOR'
                   CALL OUTPUT(SVECS(1+KZVAR,ICSIM),1,KZCONF,1,1,
-     *                                               KZCONF,1,1,LUPRI)
+     *                        KZCONF,1,1,LUPRI)
                END IF
-            END IF 
-C           then  SVECS(NA) = SVECS(NA) + < NA | 2*RY | BCVECS >
+C              then  SVECS(NA) = SVECS(NA) + < NA | 2*RY | BCVECS >
 C
 C <0L| CONTRIBUTION VANISH SINCE CONF TRIAL VECTORS HAVE ZERO Y
 C COMPONENT
 C
-C           CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,
-C    &                  BCVECS(1,ICSIM),SVECS(1,ICSIM),
-C    &                  WRK(KURYAC),DUMMY,
-C    &                  .TRUE.,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
-            IF (IREFSY .EQ. KSYMST) THEN
-               FAC = DDOT(KZCONF,SVECS(1+KZVAR,ICSIM),1,CREF,1)
-               CALL DAXPY(KZCONF,(-FAC),CREF,1,SVECS(1+KZVAR,ICSIM),1)
-C              DO 201 NA = 1,KZCONF
+C              CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,
+C    &                     BCVECS(1,ICSIM),SVECS(1,ICSIM),
+C    &                     WRK(KURYAC),DUMMY,
+C    &                     .TRUE.,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+               IF (IREFSY .EQ. KSYMST) THEN
+                  FAC = DDOT(KZCONF,SVECS(1+KZVAR,ICSIM),1,CREF,1)
+                  CALL DAXPY(KZCONF,(-FAC),CREF,1,
+     &                       SVECS(1+KZVAR,ICSIM),1)
+C                 DO 201 NA = 1,KZCONF
 C                 SVECS(NA,ICSIM) = SVECS(NA,ICSIM)
 C    *                            - D2 * TRXAC(ICSIM) * CREF(NA)
 C NO Y COMPONENT IN CONF TRIAL VECTORS
-C    *                            - D2 * TRYAC        * BCVECS(NA,ICSIM)
-C 201          CONTINUE
-               IF (IPRRSP.GT.101) THEN
-                  WRITE(LUPRI,*)
-     *            ' TXC Y CONF  PART OF LINEAR TRANSFORMED',
-     *            'CONF TRIAL VECTOR'
-                  WRITE(LUPRI,*)' REFERENCE COMPONENT PROJECTED OUT'
-                  CALL OUTPUT(SVECS(1+KZVAR,ICSIM),1,KZCONF,1,1,
-     *                                             KZCONF,1,1,LUPRI)
-               END IF
-            ELSE
+C    *                               - D2 * TRYAC        * BCVECS(NA,ICSIM)
+C 201             CONTINUE
+                  IF (IPRRSP.GT.101) THEN
+                     WRITE(LUPRI,*)
+     *               ' TXC Y CONF  PART OF LINEAR TRANSFORMED',
+     *               'CONF TRIAL VECTOR'
+                     WRITE(LUPRI,*)' REFERENCE COMPONENT PROJECTED OUT'
+                     CALL OUTPUT(SVECS(1+KZVAR,ICSIM),1,KZCONF,1,1,
+     *                                                KZCONF,1,1,LUPRI)
+                  END IF
+               ELSE
 C NO Y COMPONENT IN CONF TRIAL VECTORS
 C
-C              FAC = - D2 * TRYAC
-C              CALL DAXPY(KZCONF,FAC,BCVECS(1,ICSIM),1,SVECS(1,ICSIM),1)
-            END IF
+C                 FAC = - D2 * TRYAC
+C                 CALL DAXPY(KZCONF,FAC,BCVECS(1,ICSIM),1,SVECS(1,ICSIM),1)
+               END IF
+           END IF ! (use_pelib() .and. trplet)
    18    CONTINUE
       END IF
       IF (NOSIM .GT. 0) THEN
