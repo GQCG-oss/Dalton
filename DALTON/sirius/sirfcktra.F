@@ -194,7 +194,7 @@ C --- start of executable code
 ! Used from include files:
 !  infpri.h : IPRFCK
 !  inftra.h : IPRTRA
-!  infinp.h : DIRFCK
+!  infinp.h : DIRFCK, ADDSRI
 !  inforb.h : N2BASX, NORBT,NNORBX, ...
 !  infind.h : ISMO(:)
 !  inftap.h : LUMINT
@@ -221,7 +221,7 @@ C --- start of executable code
       real*8  TCPU0,TCPU1,TCPU2,TWAL0,TWAL1,TWAL2
       real*8  TCPU_FCK,TCPU_WR,TWAL_FCK,TWAL_WR
 
-      logical NOSSUP_SAVE, ONLY_J_SAVE
+      logical NOSSUP_SAVE, ONLY_J_SAVE, ADDSRI_save
       real*8  HFXFAC_SAVE
 
       allocate ( ICD_REC(MX_NDMAT) )
@@ -245,6 +245,10 @@ C --- start of executable code
 #endif
       flush(lupri)
 #endif
+
+!     if srdft, only long range integrals
+      ADDSRI_save = ADDSRI
+      ADDSRI = .FALSE.
 
 !     for RDSUPM calls
       if (LUSUPM .ne. -1) then
@@ -409,6 +413,7 @@ C --- start of executable code
          NOSSUP = NOSSUP_SAVE
          ONLY_J = ONLY_J_SAVE
       end if
+      ADDSRI = ADDSRI_save
 
       deallocate ( ICD_REC )
       deallocate ( IFCTYP )
