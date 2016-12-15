@@ -439,9 +439,15 @@ C
          CALL QUIT('Info on AOTWOINT inconsistent with input')
       END IF
       IF (LBUF .NE. 600) THEN
+        WRITE(LUPRI,'(//A/A,4I10)')
+     &     'Sorry, SUP_SORT only works for LBUF=600 on AOTWOINT',
+     &     ' LBUF,NIBUF,NBITS,LENINT4:', LBUF,NIBUF,NBITS,LENINT4
         CALL QUIT('Sorry, SUP_SORT only works for LBUF=600 on AOTWOINT')
       END IF
       IF (NIBUF .NE. 1) THEN
+        WRITE(LUPRI,'(//A/A,4I10)')
+     &     'Sorry, SUP_SORT only works for NIBUF=1 on AOTWOINT',
+     &     ' LBUF,NIBUF,NBITS,LENINT4:', LBUF,NIBUF,NBITS,LENINT4
         CALL QUIT('Sorry, SUP_SORT only works for NIBUF=1 on AOTWOINT')
       END IF
 C
