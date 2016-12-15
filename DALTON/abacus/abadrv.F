@@ -1996,8 +1996,11 @@ CAMT--------------
      &                       'to zero.'
          CALL QUIT('ERROR: .POLARI and .PEQM are not compatible'//
      &             ' (see output file for more details)')
-
-        END IF
+        END IF 
+        IF (MAGSUS.OR.SPINRO) THEN 
+         CALL QUIT('ERROR: .MAGNET (Magnetizability tensor and'//
+     &        ' spin-rotation constants) not implemented for PE')
+        END IF 
       END IF
 C
 C
