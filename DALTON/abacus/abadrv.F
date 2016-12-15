@@ -1997,9 +1997,10 @@ CAMT--------------
          CALL QUIT('ERROR: .POLARI and .PEQM are not compatible'//
      &             ' (see output file for more details)')
         END IF 
-        IF (MAGSUS.OR.SPINRO) THEN 
+        IF ((MAGSUS.OR.SPINRO) .AND. .NOT. NOLOND) THEN 
          CALL QUIT('ERROR: .MAGNET (Magnetizability tensor and'//
-     &        ' spin-rotation constants) not implemented for PE')
+     &        ' spin-rotation constants) not implemented for PE'//
+     &        ' with London orbitals')
         END IF 
       END IF
 C
