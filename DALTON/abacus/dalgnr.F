@@ -399,7 +399,9 @@ C  /* Deck exeher */
 #include "priunit.h"
 #include "gnrinf.h"
 ! cbiher.h : TWOBYTEPACKING
+! nuclei.h : NBASIS
 #include "cbiher.h"
+#include "nuclei.h"
 #include "dftcom.h"
 #include "pcmlog.h"
 #include "qm3.h"
