@@ -53,12 +53,12 @@ C
       CHARACTER*(10) fields(maxfld)
       integer lenfld(maxfld)
       LOGICAL SETXFUN,SETCFUN
-      DATA XTABLE /'NULL       ','SRXLDA    ','SRXGGA    ','SRBCK     ', ! 1:4
-     &             'HFEXCH     ','SRGGA2    ','SRXWIB    ','SRXWI2    ', ! 5:8
-     &             'SRXWI3     ','SRXWI4    ','SRXPBEHSE ','SRXPBETCS ', ! 9:12
-     &             'SRXPBERI   ','SRXPBEGWS ','SRXLDA_S  ','NULL_S    ', ! 13:16
-     &             'LXLDAS     ','LXLDA     ','LXPBEGWS  ','LXBCK     ', ! 17:20
-     &             'SRXPBEGWSS ','SRXLDA_C'/                            ! 21:25
+      DATA XTABLE /'NULL      ','SRXLDA    ','SRXGGA    ','SRBCK     ', ! 1:4
+     &             'HFEXCH    ','SRGGA2    ','SRXWIB    ','SRXWI2    ', ! 5:8
+     &             'SRXWI3    ','SRXWI4    ','SRXPBEHSE ','SRXPBETCS ', ! 9:12
+     &             'SRXPBERI  ','SRXPBEGWS ','SRXLDA_S  ','NULL_S    ', ! 13:16
+     &             'LXLDAS    ','LXLDA     ','LXPBEGWS  ','LXBCK     ', ! 17:20
+     &             'SRXPBEGWSS','SRXLDA_C  '/                           ! 21:25
       DATA CTABLE /'NULL      ','SRCLDA    ','SRCGGA    ','SRCMULO_A ', ! 1:4
      &             'SRLYPT    ','SRCWIB    ','SRCWI2    ','SRCWI3    ', ! 5:8
      &             'SRCWI4    ','SRCPBETCS ','SRCPBETCSJ','SRCPBERI  ', ! 9:12
@@ -67,7 +67,7 @@ C
      &             'NULL_S    ','SRCMDLDA  ','LNSCLDAS  ','LNSCLDA   ', ! 21:24
      &             'LSCLDA    ','LNSCPBEGWS','LSCPBEGWS ','LNCLYP    ', ! 25:28
      &             'LSCLYP    ','SRCLYPRI  ','SRCPBEGWSS','SRCPBEGWSC', ! 29:32
-     &             'SRCLDA_C'/                                          ! 33:36
+     &             'SRCLDA_C  '/                                        ! 33:36
 
 C K. Sharkas and J. Toulouse beg
 C List of lambda-dependent complement density functionals for linear separation of the electron-electron interaction.
