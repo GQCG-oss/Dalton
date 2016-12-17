@@ -1031,6 +1031,7 @@ C
 #if defined (HAS_PCMSOLVER)
       use pcm_parallel, only: j1ints_pcm
 #endif
+      use parallel_models_mpi, only: lucita_models_enabled
 
 #include "implicit.h"
 #include "priunit.h"

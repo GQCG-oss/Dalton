@@ -466,7 +466,7 @@ contains
 ! lucita
   use lucita_cfg
   use parallel_task_distribution_type_module
-  use parallel_models_mpi
+  use parallel_models_mpi, only: lucita_models_enabled
 #include "priunit.h"
 ! sirius
       integer,   intent(in)    :: print_lvl
