@@ -752,7 +752,7 @@ C --- start of executable code
 
       IF (NCDTRA .EQ. 0) THEN
       ! nothing to do for me this time ...
-         RETURN
+         GO TO 1000
       END IF
 
       MX_NDMAT = LFREE/(4*N2BASX) ! use up to half of free memory for DMAT and FMAT
@@ -777,6 +777,9 @@ C --- start of executable code
       CALL  FCKTRA_FCK_DISTRIBUTED(
      &      ICDTRA, ITRTYP, ICD_NODE, WORK(KUCMO), MX_NDMAT,
      &      WORK(KDMAT), WORK(KFMAT), WORK(KFREE), LFREE)
+
+
+ 1000 CONTINUE
 
       deallocate( ICDTRA )
       deallocate( ITRTYP )
