@@ -31,16 +31,16 @@ C     T. Helgaker                                                      C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <nuclei.h>
-#include <dftcom.h>
-#include <symmet.h>
-#include <ccom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "symmet.h"
+#include "ccom.h"
 
 
       PARAMETER (D0=0.0D0)
@@ -51,12 +51,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       DIMENSION WORK(LWORK)
 
-#include <chrnos.h>
+#include "chrnos.h"
       CHARACTER*16 QUADNAME
 
       CALL TIMER('START ',TIMSTR,TIMEND)
 
-#include <memint.h>
+#include "memint.h"
 
 C
 C     ********************************
@@ -72,7 +72,9 @@ C       as well
       DO ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          ZCNT   = CHARGE(ICENT)
-         IF(NAMN(ICENT)(1:2).NE.'Gh' .AND. .NOT. NOORBT(ICENT)) THEN
+         IF(NAMN(ICENT)(1:2).NE.'Gh' .AND.
+     &      NAMN(ICENT)(1:2).NE.'IP' .AND.
+     &      .NOT. NOORBT(ICENT)) THEN
            DO ISYMOP = 0, MAXOPR         
            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
              NAT = NAT + 1
@@ -317,7 +319,15 @@ CTROND: define scaling factor for Bragg: set to one !!!!
       TFAC = 1.0D0
       DO 10 IATOM = 1, NUCIND
          IF(NOORBT(IATOM)) GOTO 15
+         ! Skip if no orbitals.
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 15
+         IF(NAMN(IATOM)(1:2).EQ.'IP') GOTO 15
+         ! Skip if atom name starts with either Gh or IP.
+         ! Note: IP is intended for ultra-diffuse orbitals, e.g. 1.d-6, for
+         ! ionization potential calculations, for which grid generation will fail.
+         ! Anyway, the necessary grid points for points with significant
+         ! density will be available from the other grid points.
+         ! /hjaaj-2016
       DO 10 ISYMOP = 0, MXOPR         
       IF (IAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
          NDEG  = MULT(ISTBNU(IATOM))
