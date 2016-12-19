@@ -2083,6 +2083,8 @@ C
 C
       DIMENSION NUMIS(*), NATTYP(*), AMASS(*), GEOM(3,NNATOM), ORIGIN(3)
 C
+C codata.h : XTANG
+#include "codata.h"
 #include "cbisol.h"
 #include "nuclei.h"
 #ifdef PRG_DIRAC
@@ -2105,8 +2107,8 @@ C
             RMASS = DISOTP(NATTYP(IATOM),NUMIS(IATOM),'MASS')
             AMASS(IATOM) = RMASS
             TOTMAS       = TOTMAS + RMASS
-            PMASS = DISOTP(NATTYP(IATOM),NUMIS(IATOM),'ABUNDANCE')
-            ABUND        = ABUND*DP01*PMASS
+            ABUND_I = DISOTP(NATTYP(IATOM),NUMIS(IATOM),'ABUNDANCE')
+            ABUND        = ABUND*DP01*ABUND_I
             ORIGIN(1) = ORIGIN(1) + RMASS*GEOM(1,IATOM)
             ORIGIN(2) = ORIGIN(2) + RMASS*GEOM(2,IATOM)
             ORIGIN(3) = ORIGIN(3) + RMASS*GEOM(3,IATOM)
@@ -2119,9 +2121,10 @@ C
       ORIGIN(3) = ORIGIN(3)/TOTMAS
       IF (IPRINT .GE. 0) THEN
         WRITE (LUPRI,'(/23X,A,F12.6,A)') 'Total mass: ',TOTMAS,' amu'
-        WRITE (LUPRI,'( 23X,A,F8.3,A)')  'Natural abundance:',ABUND,' %'
-        WRITE (LUPRI,'(/A,3F12.6)')
-     &     ' Center-of-mass coordinates (a.u.):',(ORIGIN(K),K=1,3)
+        WRITE (LUPRI,'( 23X,A,F8.3,A/)') 'Natural abundance:',ABUND,' %'
+        WRITE (LUPRI,'(A,3F12.6)')
+     &     ' Center-of-mass coordinates (a.u.):',(ORIGIN(K),K=1,3),
+     &     ' Center-of-mass coordinates (Angs):',(XTANG*ORIGIN(K),K=1,3)
       END IF
       IF (QM3. OR. QMMM) THEN
         QMCOM(1) = ORIGIN(1)

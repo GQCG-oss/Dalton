@@ -284,9 +284,9 @@ C
          NWARN = NWARN + 1
          WRITE (LUPRI,'(/2A/A/A/)')
      &   ' WARNING: Raman properties calculation is NOT ',
-     &   ' implemented with the NODIFC keyword active. ',
-     &   ' WARNING: Raman properties calculation ignord',
-     &   ' WARNING: Try calculation again without specifying NODIFC.'
+     &   ' implemented with the .NODIFC keyword active.',
+     &   ' WARNING: Raman properties calculation ignored',
+     &   ' WARNING: Try calculation again without specifying .NODIFC.'
          ROAA = .FALSE.
          ROAG = .FALSE.
       ELSEIF (VROA) THEN
@@ -305,10 +305,10 @@ C
       END IF
 C
       IF (VIB_G .AND. NODIFC) THEN
-         WRITE(LUPRI,'(/,3A,/)')
-     &   ' Vibrational g-factors are NOT',
-     &   ' implemented with the NODIFC keyword active. ',
-     &   ' Try calculation again without specifying NODIFC.'
+         WRITE(LUPRI,'(/3A/)')
+     &   ' WARNING: Vibrational g-factors are NOT',
+     &   ' implemented with the .NODIFC keyword active.',
+     &   ' Try calculation again without specifying .NODIFC.'
          VIB_G = .FALSE.
       END IF
 C
