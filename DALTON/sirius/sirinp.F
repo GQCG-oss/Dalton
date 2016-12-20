@@ -3181,12 +3181,12 @@ C     ... AUTOCC may have been set true by .AUTOCC
       IF (ELECTR) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .OPEN SHELL must not be specified together with .ELECTRONS'
+     &' .OPEN SHELL is not allowed together with .ELECTRONS'
       END IF
       IF (HSROHF) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .OPEN SHELL must not be specified together with .SINGLY'
+     &' .OPEN SHELL is not allowed together with .SINGLY'
       END IF
       IF (IOPRHF .LT. 1 .OR. IOPRHF .GT. NSYM) THEN
          INPERR = INPERR + 1
