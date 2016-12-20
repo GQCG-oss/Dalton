@@ -354,9 +354,11 @@ C         if reading input from a terminal
          END IF
          GO TO 930
   910    CONTINUE
-            CALL QUIT('ERROR: End of file, no Sirius input found')
+            CALL QUIT('ERROR: '//
+     &      'End of .dal input file, no wave function input found')
   920    CONTINUE
-            CALL QUIT('ERROR reading .dal input, no Sirius input found')
+            CALL QUIT('ERROR reading .dal '//
+     &      'input file before finding wave function input')
   930    CONTINUE
       END IF
 C
