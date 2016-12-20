@@ -183,8 +183,8 @@ C
          IF (NUMVIB) THEN
             WRITE (LUPRI,'(/5X,A)') 'A vibrational analysis is done.'
             WRITE (LUPRI,'(5X,A)')  'Which/how is specified in ' //
-CRF  &           '*VIBANA (and **PROPERTIES).'
      &           '*VIBANA (and **EACH STEP).'
+CRF  &           '*VIBANA (and **PROPERTIES).'
          ELSE
             WRITE (LUPRI,'(/5X,A,I4/5X,A,I4,A)')
      &         'Numerical derivatives calculated to order', NMORDR,

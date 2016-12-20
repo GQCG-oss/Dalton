@@ -631,7 +631,7 @@ C     NAORDR = max order of analytical geometry derivatives
      &   'ERROR, analytical calculation of molecular Hessian is '//
      &      'not available for this type of wave function.',
      &   '       Analytical derivative order available:',NAORDR,
-     &   '       (You might want to choose .NUMHES if your '//
+     &   '       (You might want to choose numerical Hessian if your '//
      &      'molecule is not too big.)'
          CALL QUIT(
      &   'ERROR, analytical calculation of molecular Hessian is '//

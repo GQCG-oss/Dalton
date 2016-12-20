@@ -193,6 +193,8 @@ C
          MAXDIF = 2
       ELSE IF (MOLGRD) THEN
          MAXDIF = 1
+      ELSE
+         MAXDIF = 0
       END IF
       DOVCD = VCD
       RETURN
