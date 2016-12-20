@@ -5703,7 +5703,7 @@ C
       WRITE (LUPRI,'(/A/)') ' Properties that are analyzed: '
 C
       IF (NUMVIB) WRITE (LUPRI,'(A)')
-     &   ' - Frequency analysis and efficient geometry.'
+     &   ' - Frequency analysis and effective geometry.'
       IF (NSPNSP) WRITE (LUPRI,'(A)')
      &   ' - Vibrational average of spin-spin coupling constants'
 C

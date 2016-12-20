@@ -621,7 +621,34 @@ C
       CALL TITLER('Starting in Static Property Section (ABACUS) -',
      &   ' ',200)
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini ABACUS')
-C
+
+C     Test if a requested molecular derivative calculation is implemented
+C     NAORDR = max order of analytical geometry derivatives
+
+      CALL FNDANA(NAORDR)
+      IF (MOLHES .AND. NAORDR .LT. 2) THEN
+         WRITE(LUPRI,'(//A/A,I5/A)')
+     &   'ERROR, analytical calculation of molecular Hessian is '//
+     &      'not available for this type of wave function.',
+     &   '       Analytical derivative order available:',NAORDR,
+     &   '       (You might want to choose .NUMHES if your '//
+     &      'molecule is not too big.)'
+         CALL QUIT(
+     &   'ERROR, analytical calculation of molecular Hessian is '//
+     &      'not available for this type of wave function')
+      END IF
+      IF (MOLGRD .AND. NAORDR .LT. 1) THEN
+         WRITE(LUPRI,'(//A/A,I5)')
+     &   'ERROR, analytical calculation of molecular gradient is '//
+     &      'not available for this type of wave function.',
+     &   '       Analytical derivative order available:',NAORDR
+         CALL QUIT(
+     &   'ERROR, analytical calculation of molecular gradient is '//
+     &      'not available for this type of wave function')
+      END IF
+
+C     Now execute abacus
+
       CALL ABACTL(WORK(1),LMWORK)
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ABACUS')
 C
@@ -903,7 +930,7 @@ C
                CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
      &                     IDUMMY,.FALSE.)
                REWIND (LUCMD,IOSTAT=IOS)
- 1100          READ (LUCMD,'(A7)') WORD
+ 1100          READ (LUCMD,'(A7)',IOSTAT=IOS) WORD
                CALL UPCASE(WORD)
                IF (WORD .NE. '**NMDDR') GOTO 1100
                CALL NMDINP(WORD,IPRINT)
