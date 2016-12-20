@@ -931,6 +931,12 @@ C
      &                     IDUMMY,.FALSE.)
                REWIND (LUCMD,IOSTAT=IOS)
  1100          READ (LUCMD,'(A7)',IOSTAT=IOS) WORD
+               IF (IOS .NE. 0) THEN
+                  WRITE(LUPRI,'(//A)') 'ERROR: **NMDDRV input'//
+     &            ' required when .NMDDRV requested'
+                  CALL QUIT('ERROR: **NMDDRV input'//
+     &            ' required when .NMDDRV requested')
+               END IF
                CALL UPCASE(WORD)
                IF (WORD .NE. '**NMDDR') GOTO 1100
                CALL NMDINP(WORD,IPRINT)
@@ -1353,7 +1359,7 @@ C
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
-      DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
+      DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', 'XXXXXXX',
      &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
      &            '*READIN', '*QMNPMM', '*QFIT  ', '*EXTPCM'/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
@@ -1898,14 +1904,8 @@ C     "*OPTIMI" input
     4 CONTINUE
         CALL OPINPU(WORD)
       GO TO 200
-C     "*NMDDRV" input
+C     "XXXXXXX" input
     5 CONTINUE
-C
-C     We have to wait with the input processing of "*NMDDRV"
-C     until we know more about the molecule
-C
-  205   READ (LUCMD,'(A7)') WORD
-        IF (WORD(1:1) .NE. '*') GOTO 205
       GO TO 200
 C
 C     "*MOLBAS" input
