@@ -62,20 +62,18 @@ directives affecting the outcome of such an integral evaluation. Note
 that although not explicitly stated, {\em none of the test options
 work with symmetry}.
 
-For all atomic integrals, the proper expression for the integral is
-given, together with the labels written on the file
-\texttt{AOPROPER}\index{AOPROPER}\index{integral label}, for
+For all atomic property integrals which may be requested in this input section,
+after the keyword you will find the mathematical expression for the integral 
+and a list of the labels written on the file
+\texttt{AOPROPER}\index{AOPROPER}\index{integral label}.
+These labels are needed for
 reference in later stages of a {\dalton} calculation (like for instance
 in during the evaluation of dynamic response properties, or for
 non-{\dalton} programs).
 
-We also note that as long as any single atomic property
-integral\index{property integral} is
-requested in this module, the overlap integrals will also be
-calculated. Note also, that unless the H\"{u}ckel starting guess is turned
-off, this overlap matrix will not only be calculated for the requested
-basis set, but also for a ``ghost'' ano-4 basis set appended to the
-original set in order to do the H\"{u}ckel starting guess.
+Note that the following AO property integrals \index{property integral} are
+always calculated and saved on \texttt{AOPROPER}, also if not explicitly requested:
+overlap, dipole, quadrupole, kinetic energy.
 
 \begin{description}
 \item[\Key{1ELPOT}] One-electron potential energy integrals.
