@@ -60,6 +60,9 @@ C     **** wavefunction used.                     ****
 C     ************************************************
 C
       CALL FNDANA(NAORDR)
+      WRITE (LUPRI,'(/5X,A,I4)') 'Order of analytical ' //
+     &          'energy-derivatives available:', NAORDR
+      WRITE (LUPRI,'(5X,A,I4/)') 'This will be the default.'
 C
       ICHANG = 0
       WORD1 = WORD
@@ -294,7 +297,6 @@ C
       RETURN
       END
 C
-C
 C     /* Deck fndana */
       SUBROUTINE FNDANA(NAORDR)
 C     *******************************************************
@@ -353,10 +355,6 @@ C
       ELSE
          NAORDR = 2
       END IF
-C
-      WRITE (LUPRI,'(/5X,A,I4)') 'Order of analytical ' //
-     &          'energy-derivatives available:', NAORDR
-      WRITE (LUPRI,'(5X,A,I4/)') 'This will be the default.'
 C
       RETURN
       END

@@ -2729,7 +2729,11 @@ C         NAORDR = 2; Analytical gradients and hessians available.
 C
          CALL FNDANA(NAORDR)
 C
+C
          IF (NAORDR.EQ.0) THEN
+            WRITE (LUPRI,'(/5X,A,I4/5X,A)') 'Order of analytical ' //
+     &          'energy-derivatives available:', NAORDR,
+     &          'Calculating gradient numerically.'
             CALL NUMGRD(WORK,LWORK,WRKDLM)
          ELSE
             WRINDX = .TRUE.
