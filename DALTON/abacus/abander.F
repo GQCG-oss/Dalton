@@ -60,6 +60,9 @@ C     **** wavefunction used.                     ****
 C     ************************************************
 C
       CALL FNDANA(NAORDR)
+      WRITE (LUPRI,'(/5X,A,I4)') 'Order of analytical ' //
+     &          'energy-derivatives available:', NAORDR
+      WRITE (LUPRI,'(5X,A,I4/)') 'This will be the default.'
 C
       ICHANG = 0
       WORD1 = WORD
@@ -183,8 +186,8 @@ C
          IF (NUMVIB) THEN
             WRITE (LUPRI,'(/5X,A)') 'A vibrational analysis is done.'
             WRITE (LUPRI,'(5X,A)')  'Which/how is specified in ' //
-CRF  &           '*VIBANA (and **PROPERTIES).'
      &           '*VIBANA (and **EACH STEP).'
+CRF  &           '*VIBANA (and **PROPERTIES).'
          ELSE
             WRITE (LUPRI,'(/5X,A,I4/5X,A,I4,A)')
      &         'Numerical derivatives calculated to order', NMORDR,
@@ -294,7 +297,6 @@ C
       RETURN
       END
 C
-C
 C     /* Deck fndana */
       SUBROUTINE FNDANA(NAORDR)
 C     *******************************************************
@@ -353,10 +355,6 @@ C
       ELSE
          NAORDR = 2
       END IF
-C
-      WRITE (LUPRI,'(/5X,A,I4)') 'Order of analytical ' //
-     &          'energy-derivatives available:', NAORDR
-      WRITE (LUPRI,'(5X,A,I4/)') 'This will be the default.'
 C
       RETURN
       END
@@ -5735,7 +5733,7 @@ C
       WRITE (LUPRI,'(/A/)') ' Properties that are analyzed: '
 C
       IF (NUMVIB) WRITE (LUPRI,'(A)')
-     &   ' - Frequency analysis and efficient geometry.'
+     &   ' - Frequency analysis and effective geometry.'
       IF (NSPNSP) WRITE (LUPRI,'(A)')
      &   ' - Vibrational average of spin-spin coupling constants'
 C
