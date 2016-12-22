@@ -10,7 +10,7 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Determine the initial trialvectors.
 CW
-      use so_info, only: so_has_doubles
+      use so_info, only: so_has_doubles, AOSOP, DCRPA, AORPA
 C
 #include "implicit.h"
 #include "priunit.h"

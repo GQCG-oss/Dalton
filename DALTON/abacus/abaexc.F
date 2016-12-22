@@ -288,6 +288,7 @@ CClark:end
 C
 CSPAS:23/5-11: second and third moment sum rules added (in TTLEN)
 C
+      USE SO_INFO, ONLY: SO_ANY_ACTIVE_MODELS
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -295,7 +296,6 @@ C
 #include "cbiexc.h"
 #include "infrsp.h"
 #include "nuclei.h"
-#include "soppinf.h"
       LOGICAL PASS
       DIMENSION WORK(LWORK)
       DIMENSION TRLEN(3,NSYM,MXNEXI,*), TRVEL(3,NSYM,MXNEXI,*)
@@ -316,9 +316,7 @@ C
 C
       IPRRSP = IPREXC
 C
-      IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP
-CPi
-     &    .OR. AOSOC .OR. AOCC2) THEN
+      IF ( SO_ANY_ACTIVE_MODELS() ) THEN
          CALL SO_EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,
      &                  BSRLON,SECMAT,EXENG,
 CClark:11/01/2016

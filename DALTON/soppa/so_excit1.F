@@ -85,7 +85,7 @@ C
 
       integer :: num_active
       logical :: active_models(sop_num_models)
-      logical :: doubles, need_t2
+      logical :: doubles, need_t2, rpa_only
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -108,6 +108,8 @@ C
 C     Get the active models and their number
       CALL SO_GET_ACTIVE_MODELS (ACTIVE_MODELS)
       NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
+      RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND.
+     &           (NUM_ACTIVE.EQ.1)
 C
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.
@@ -144,10 +146,7 @@ C     If only RPA initialize some pointers and sort AO-integrals
 C     into distributions.
 C---------------------------------------------------------------
 C
-      IF ( AORPA .AND. (.NOT.AOHRP) .AND. (.NOT.DCRPA)
-     &           .AND. (.NOT.AOSOP) .AND. (.NOT.AOSOC)
-CPi
-     &           .AND. (.NOT.AOCC2) ) THEN
+      IF ( RPA_ONLY ) THEN
          CALL RP_INIT(WORK,LWORK)
 #ifdef VAR_MPI
 C     In pure aorpa calculations, eridi has not been initialized
@@ -204,11 +203,8 @@ C
       KEND1   = KFOCKD  + LFOCKD
       LWORK1  = LWORK   - KEND1
 C
-CPFP: Higher RPA added
-C     IF (DCRPA .OR. AOSOP .OR. AOSOC) THEN
-CPi
-      IF (AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC .OR. AOCC2) THEN
-Cend-PFP
+CRF if anything but AORPA
+      IF ( .NOT.RPA_ONLY ) THEN
 C
 CSPAS:5/11-2013: Patricio had the following statement before the IF statement
          LT2AM   = NT2AMX

@@ -38,7 +38,8 @@ C     It also includes the options to carry out atomic integral direct
 C     RPA, HRPA, RPA(D), SOPPA and SOPPA(CCSD) calculations and several
 C     options concerning these calculations.
 C     
-C     
+C   
+        use so_info, only: AOSOP, AOSOC, AORPA, AOHRP, AOCC2, DCRPA 
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -66,19 +67,11 @@ C------------------
 C
       SOPW4  = .FALSE.
       HIRPA  = .FALSE.
-      AORPA  = .FALSE.
-      DCRPA  = .FALSE.
-      AOSOP  = .FALSE.
-      AOSOC  = .FALSE.
       SOPCHK = .FALSE.
       AOTEST = .FALSE.
-CPFP
-      AOHRP  = .FALSE.
-Cend-PFP
-CPi
-      AOCC2  = .FALSE.
-Cend-Pi
 C
+      AOSOP = .FALSE.
+C      
       NSAVMX = 3
       NSAVMXORIG = 3
       THREX2 = 1.0D-02
