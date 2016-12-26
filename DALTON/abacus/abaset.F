@@ -387,6 +387,8 @@ C                      TRIANGULARIZED OR SQUARED.
 C  SUFFIX  Y           EXAMPLE: NASHY = NASHX*(NASHX + 1)/2
 C  SUFFIX  (K)         SYMMETRY NUMBER
 C
+      use so_info, only: so_any_active_models
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -426,7 +428,6 @@ C
 #include "inflin.h"
 #include "ccom.h"
 #include "linaba.h"
-#include "soppinf.h"
 C
       CHARACTER*8 RTNLBL(2)
 C
@@ -524,8 +525,7 @@ C        or if ITRLVL on file too small.
       ELSE IF (ABASOP) THEN
 C        ... SOPPA requires full integral transformation
 C        --- But not if run through AO-SOPPA module        
-         IF(AOSOP.OR.AORPA.OR.DCRPA.OR.AOSOC.OR.AOCC2.OR.
-     &      AOHRP.OR.DCHRP) THEN
+         IF( SO_ANY_ACTIVE_MODELS() ) THEN
             KTRLVL = 0
 CPi 15.08.16: AO-SOPPA doesn't need MO integrals
             FLAG(34) = .TRUE.
@@ -534,9 +534,12 @@ CPi 15.08.16: AO-SOPPA doesn't need MO integrals
             FLAG(34) = .FALSE.
          ENDIF
          ITRLVL = KTRLVL
-         FLAG(14) = .TRUE. 
-C         FLAG(34) = .FALSE.
-Cend-Pi
+C
+         IF (NEWTRA) THEN
+            FLAG(14) = .FALSE. ! cannot test in SIR_INTOPEN yet for NEWTRA
+         ELSE
+            FLAG(14) = .TRUE.
+         END IF
          IF (KTRLVL.GT.0) CALL SIR_INTOPEN
       ELSE
 C        ... Hartree-Fock, MO integral file will normally

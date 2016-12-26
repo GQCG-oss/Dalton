@@ -1,9 +1,7 @@
 !PFP
-!      LOGICAL AOSOP, AORPA, SOPCHK, AOTEST, DCRPA, AOSOC
-      LOGICAL AOSOP, AORPA, AOHRP, SOPCHK, AOTEST, DCRPA, AOSOC, AOCC2
-!      LOGICAL TRIPLET
-!Pi
-      LOGICAL DCHRP, TRIPLET
+!      LOGICAL AOSOP, AORPA, AOHRP, SOPCHK, AOTEST, DCRPA, AOSOC, AOCC2
+      LOGICAL SOPCHK, AOTEST
+      LOGICAL TRIPLET
 !end-PFP
       CHARACTER*7 FNTR1E, FNTR1D, FNTR2E, FNTR2D,                       &
      &            FNRS1E, FNRS1D, FNRS2E, FNRS2D,                       &
@@ -103,9 +101,8 @@
      &                 NSAVMXORIG,                                      &
 !PFP
 !    &                 AORPA,  DCRPA,  AOSOP,  AOSOC,                   &
-     &                 AORPA,  AOHRP,  DCRPA,  AOSOP,  AOSOC, AOCC2,    &
-!Pi
-     &                 DCHRP, TRIPLET,                                  &
+!    &                 AORPA,  AOHRP,  DCRPA,  AOSOP,  AOSOC, AOCC2,    &
+     &                 TRIPLET,                                         &
 !end-PFP
      &                 LUTR1E, LUTR1D, LUTR2E, LUTR2D,                  &
      &                 LURS1E, LURS1D, LURS2E, LURS2D,                  &

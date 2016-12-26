@@ -209,7 +209,7 @@ C
 C         Place LUAOGOS in correct position for writing
 C            REWIND LUAOGOS
 C            IF (.NOT.FNDLAB('EOFLABEL',LUAOGOS)) THEN
-C               WRITE (LUPRI,'(/A)') 
+C               WRITE (LUPRI,'(/A)')
 C     &                ' End of file not found in AOGOS?'
 C               CALL QUIT('Internal error, EOF not found in AOGOS')
 C            END IF
@@ -286,7 +286,7 @@ C
 C
                IF (IPRSOP .GE. 6) THEN
 C
-                  WRITE (LUGOS,'(/A,D16.13)') 
+                  WRITE (LUGOS,'(/A,D16.13)')
      &                                'Number of q valus:', ORIGIN(1)
                   WRITE (LUGOS,'(/A,I4,A,I4,A,I4)') 'ISYMTR=',ISYMTR,
      &                                     'NEXCI=',NEXCI,'IEXCI=',IEXCI

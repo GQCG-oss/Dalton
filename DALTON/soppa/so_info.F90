@@ -6,11 +6,17 @@ module so_info
 !
    implicit none
 
-#include"soppinf.h"
+!#include"soppinf.h"
    !
-   real(8), parameter :: sop_stat_trh = 1.0D-8 ! Threshold for considering a
-                                               ! frequency as zero in linear
-                                               ! response
+   !  implicit.h currently uses real*8 ?? 
+   integer, parameter :: sop_dp = kind(1.0D-8)
+   !
+   real(sop_dp), parameter :: sop_stat_trh = 1.0D-8 ! Threshold for considering a
+                                                    ! frequency as zero in linear
+                                                    ! response
+
+   real(sop_dp), parameter :: sop_dthresh = 1.0D-4  ! Smallest denominator used when 
+                                                    ! preconditioning trial-vectors.
 
    integer, parameter :: sop_num_models = 7
 
@@ -53,6 +59,11 @@ module so_info
    character(len=11), parameter :: FN_RDENS  = 'soppa_densp', &
                                    FN_RDENSE = 'soppa_dense', &
                                    FN_RDENSD = 'soppa_densd'
+
+   ! Flags stating which models are active
+   logical :: AORPA = .false., AOHRP = .false., DCRPA = .false., &
+              AOSOP = .false., AOSOC = .false., AOCC2 = .false. 
+
 
    interface so_has_doubles
       module procedure so_has_doubles_name, so_has_doubles_num
@@ -124,6 +135,14 @@ contains
       logical :: active_models (sop_num_models)
       call so_get_active_models( active_models )
       so_num_active_models = count( active_models )
+      return
+   end function
+
+   pure function so_any_active_models ()
+      logical :: so_any_active_models
+      logical :: active_models (sop_num_models)
+      call so_get_active_models(active_models)
+      so_any_active_models = any(active_models)
       return
    end function
 

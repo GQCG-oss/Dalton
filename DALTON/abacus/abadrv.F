@@ -25,7 +25,7 @@ C
 C  /* Deck abactl */
       SUBROUTINE ABACTL(WORK,LWORK)
 C
-      USE SO_INFO, ONLY: SO_NUM_ACTIVE_MODELS
+      USE SO_INFO, ONLY: SO_NUM_ACTIVE_MODELS, SO_ANY_ACTIVE_MODELS 
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -57,7 +57,6 @@ C
 #include "expopt.h"
 #include "pcmlog.h"
 #include "ccinftap.h"
-#include "soppinf.h"
 #include "gnrinf.h"
 C
 C
@@ -350,8 +349,7 @@ C     absorption, panor+kr-02
 C
          IF (.NOT. PASLNR) THEN
 CPi
-            IF(.NOT.(AORPA.OR.DCRPA.OR.AOSOP.OR.AOSOC.OR.AOCC2.OR.
-     &               AOHRP.OR.DCHRP) )THEN
+            IF(.NOT.(SO_ANY_ACTIVE_MODELS()) )THEN
                KPOLDD = KLAST
                KPOLDQ = KPOLDD + 2*9*MXFR
                KPOLDL = KPOLDQ + 2*27*MXFR
@@ -413,12 +411,8 @@ C     ***** Electronic excitation energies *****
 C     ******************************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      NMODEL = 1
 CRF  2016-Jan Set NMODEL to actual AOSOPPA methods
-      IF (AORPA .OR. AOHRP .OR. DCRPA .OR. DCHRP
-CPi
-     &          .OR. AOSOP .OR. AOSOC .OR. AOCC2)
-     &         NMODEL = so_num_active_models()
+      NMODEL = max(1,so_num_active_models())
       IF (DOEXCI .AND. .NOT. PASEXC) THEN
          KTRLEN = KLST1
          KTRVEL = KTRLEN + 3*NSYM*MXNEXI*NMODEL
@@ -769,7 +763,6 @@ C infpar.h : PARHER
 #include "infsop.h"
 #include "infrsp.h"
 #include "infinp.h"
-C#include "soppinf.h"
 #include "locinf.h"
 #include "infpar.h"
 
@@ -1492,9 +1485,9 @@ CSPAS : 26/08-2013 fixing the problem with the test jobs running MPI
 CRF Only quit if the stuff that is asked for is not yet parallelized.
             par_soppa_input_errors = .false.
 CPi 17.08.16: RF: Polarizabilities now work
-C            IF (.NOT.DOEXCI.OR.
             IF (
 C All the properties which parallel soppa currently cannot do. I.e all.
+C but Polarizabilities
      &      ANY( (/  SHIELD, MAGSUS, SPINRO, MOLGFA, SPNSPN, 
      &            CTOCD /) ) 
      &         ) THEN
@@ -2262,6 +2255,7 @@ CClark:end
 C
 C --- Final results from ABACUS ---
 C
+      use so_info, only: so_any_active_models
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -2306,7 +2300,6 @@ CClark:end
 #include "difsec.h"
 #include "expopt.h"
 #include "primit.h"
-#include "soppinf.h"
 #include "pgroup.h"
 C
 #include "trkoor.h"
@@ -2664,9 +2657,7 @@ C     Frequency-dependent linear response properties
 C     Polarizabilities and G tensors
 C
       IF (ABALNR) THEN
-         IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR.
-CPi
-     &       AOSOC .OR. AOCC2 .OR. DCHRP) THEN
+         IF ( SO_ANY_ACTIVE_MODELS() ) THEN
 CRF         Merging AO-SOPPA, adjust call signature           
             CALL SO_LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,
      &                     WORK,LWORK)
@@ -2681,10 +2672,7 @@ C     Excitation energies and (oriented) electronic circular dichroism
 C
       IF (DOEXCI) THEN
 CPFP-2009
-C         IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
-         IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR.
-CPi
-     &       AOSOC .OR. AOCC2 .OR. DCHRP) THEN
+         IF ( SO_ANY_ACTIVE_MODELS() ) THEN
 Cend-PFP
             CALL SO_EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
      &                     TTLEN,EXENG,

@@ -29,7 +29,7 @@ C
 C   SCRATCH:
 C     WORK(LWORK)
 CW
-      use so_info, only: so_has_doubles
+      use so_info, only: so_has_doubles, sop_stat_trh
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -37,7 +37,7 @@ C
 #include "soppinf.h"
 #include "ccsdsym.h"
 C
-      PARAMETER (ONE = 1.0D0, STHR = 1.0D-5, EPSI = 1.0D-8)
+      PARAMETER (ONE = 1.0D0, STHR = 1.0D-5)
       PARAMETER (HALF = 0.5D0 ,TWO = 2.0D0)
 C
       DIMENSION   DENSIJ(LDENSIJ), DENSAB(LDENSAB)
@@ -55,7 +55,7 @@ C------------------
 C
       CALL QENTER('SO_TRIAL3')
 C
-      STATIC = ABS(FRVAL(IFREQ)).LT.EPSI
+      STATIC = ABS(FRVAL(IFREQ)).LT.SOP_STAT_TRH
 C
 CRF Doubles branches should be usefull to enable HRPA.
 CRF However, RPA still has it's own version of the routine,
@@ -135,7 +135,6 @@ CRF Factor for creating D gradient from E gradient
       DFACTOR  = -ONE
       IF (IMAGPROP) DFACTOR = ONE
 C
-C
 C--------------------------------------------
 C     Open files for storing of trialvectors.
 C--------------------------------------------
@@ -155,7 +154,8 @@ C
 cLig  just another stupid loop, since nexci is always 1 and nnewtr =
 cLig  nexci ... remove ?
 C
-      DO 100 INEWTR=1,NNEWTR
+C      DO 100 INEWTR=1,NNEWTR
+      INEWTR = 1
 C
 C----------------------------------------------------------------------
 C     For the first frequency: use the GP to create the starrting trial
@@ -200,7 +200,6 @@ C-------------------------------------------------------------
 C
             CALL DZERO(WORK(KTRIAL),LTRIAL)
 C
-cLig            IF (ABS(FRVAL(IFREQ)).GT.EPSI) THEN
             IF(.NOT.STATIC) THEN
 C
               DO IELEM=1,LEDIA1
@@ -240,7 +239,6 @@ C
                ENDIF
 C
                CALL SO_TMLTR(WORK(KGPVEC),HALF,ISYMTR)
-CRF no longer            CALL SO_TMLTR(WORK(KGPVEC+LEDIA2),HALF,ISYMTR)
 C
                IF(IPRSOP.GT.10) THEN
 C
@@ -272,7 +270,6 @@ C-------------------------------------------------------------
 C
                CALL DZERO(WORK(KTRIAL),LTRIAL)
 C
-cLig            IF (ABS(FRVAL(IFREQ)).GT.EPSI) THEN
                IF(.NOT.STATIC) THEN
 C
                   DO IELEM=1,LEDIA2
@@ -301,22 +298,10 @@ cLig  always in the same space ... since inewtr is also always 1 !
 C
 CRF --- No need to do anything!!!
             NOLDTR = 1
-C
-C            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,NOLDTR)
-C            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
-C
-C            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,NOLDTR)
-C            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
-C
-C            CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,NOLDTR)
-C            CALL SO_WRITE(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,INEWTR)
-C
-C            CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,NOLDTR)
-C            CALL SO_WRITE(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,INEWTR)
-C
+
          ENDIF
 C
-  100 CONTINUE
+C  100 CONTINUE
 C
       IF( IPRSOP .GE. 15) THEN
 C

@@ -18,7 +18,8 @@ C
      &                   so_get_active_models,
      &                   so_has_doubles,
      &                   so_singles_second,
-     &                   sop_dens_label, sop_model_rpad
+     &                   sop_dens_label, sop_model_rpad,
+     &                   sop_model_rpa
 C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
@@ -58,7 +59,7 @@ C
 C
       integer :: num_active
       logical :: active_models(sop_num_models)
-      logical :: doubles, need_t2
+      logical :: doubles, need_t2, rpa_only
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -84,6 +85,9 @@ C
 C     No RPA(D) properties
       ACTIVE_MODELS(SOP_MODEL_RPAD) = .FALSE.
 C
+      RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND. 
+     &           (NUM_ACTIVE.EQ.1) 
+C
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.
 C-------------------------------------------
@@ -106,10 +110,7 @@ C     If only RPA initialize some pointers and sort AO-integrals
 C     into distributions.
 C---------------------------------------------------------------
 C     On the flip side, this cause a crash if CC has been run
-      IF ( AORPA .AND. (.NOT.DCRPA) .AND. (.NOT.AOSOP)
-     &           .AND. (.NOT.AOSOC) .AND. (.NOT.AOHRP)
-CPi
-     &           .AND. (.NOT.AOCC2) ) THEN
+      IF ( RPA_ONLY ) THEN
          CALL RP_INIT(WORK,LWORK)
 #ifdef VAR_MPI
 C     In pure aorpa calculations, eridi has not been initialized
@@ -170,8 +171,8 @@ C
       KEND1   = KFOCKD  + LFOCKD
       LWORK1  = LWORK   - KEND1
 C
-CPi
-      IF (DCRPA .OR. AOSOP .OR. AOHRP .OR. AOSOC .OR. AOCC2) THEN
+C
+      IF (.NOT.RPA_ONLY) THEN
 C
          LT2AM   = NT2AMX
          LDENSIJ = NIJDEN(1)
@@ -195,8 +196,6 @@ C        Force a crash of this is used
          KDENSAB = LWORK + 1
          KDENSAI = LWORK + 1
       END IF
-C
-C
 C
       CALL SO_MEMMAX ('SO_LNRABA.1',LWORK1)
       IF (LWORK1 .LT .0) CALL STOPIT('SO_LNRABA.1',' ',KEND1,LWORK)
