@@ -124,17 +124,14 @@ C
       doubles = so_has_doubles(model)
       tr2_zero = (MODEL.EQ.'DCRPA').OR.(MODEL.EQ.'DCHRP')
 C
-CPi-140316
 C---------------------------------------------------------
 C     Adjust lengt of T2 amplitudes vector in TRIPLET case
-C     Copied from SPAS/PFP Triplet version
 C---------------------------------------------------------
 C
       LT2MPH = LT2MP
       IF (TRIPLET) THEN
         LT2MPH = INT(LT2MP/2)
       END IF
-Cend-Pi
 C
 C------------------------------------------------------
 C     Write singlet and triplet T2 amplitudes to output
@@ -217,17 +214,11 @@ C
       LBTJ1D  = NMATAV(ISYMTR)
 
       IF(DOUBLES) THEN
-CPi 01.04.16
-C         LTR2E   = NT2AM(ISYMTR)
-C         LRES2E  = NT2AM(ISYMTR)
          LTR2E   = N2P2HOP(ISYMTR)
          LRES2E  = N2P2HOP(ISYMTR)
          IF (DO_DEX) THEN
-C            LTR2D   = NT2AM(ISYMTR)
-C            LRES2D  = NT2AM(ISYMTR)
             LTR2D   = N2P2HOP(ISYMTR)
             LRES2D  = N2P2HOP(ISYMTR)
-Cend-Pi
          ELSE
             LTR2D  = 0
             LRES2D = 0

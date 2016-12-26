@@ -23,7 +23,6 @@ C
       DIMENSION WORK(LWORK)
 C
       PARAMETER ( ONE = 1.0D0, D100 = 100.0D0 )
-CPi      PARAMETER ( D100 = 100.0D0 )
       CHARACTER MODEL*5
       CHARACTER*8 PDENS_LABEL
 C
@@ -48,7 +47,7 @@ C
       DOUB_CORR = SO_DOUBLE_CORRECTION(MODEL)
 C
 C----------------------------------------------------------
-C     Calculate "Double corrected RPA" excitation energies.
+C     Calculate "Double corrected (H)RPA" excitation energies.
 C----------------------------------------------------------
 C
       IF (DOUB_CORR) THEN
@@ -123,8 +122,6 @@ C
          LRESO1E = NT1AM(ISYMTR)
          LRESO1D = NT1AM(ISYMTR)
          IF(DOUBLES) THEN
-C            LTR2E   = NT2AM(ISYMTR)
-C            LTR2D   = NT2AM(ISYMTR)
             LTR2E   = N2P2HOP(ISYMTR)
             LTR2D   = N2P2HOP(ISYMTR)
          ELSE
@@ -156,10 +153,8 @@ C
          ENDIF
 C
 C-----------------------------------------------------------
-C     Calculate p-h and h-p weight in excitation operator
-C     and write to output together with excitation energies.
+C        Write excitation energies to output
 C-----------------------------------------------------------
-C
 C
          DO IEXCI = 1,NEXCI
 C
@@ -181,7 +176,12 @@ C
      &              EXVAL(IEXCI)*XTEV,  ' eV',
      &              EXVAL(IEXCI)*XTKAYS,' cm-1',
      &              EXVAL(IEXCI)*XTKJML,' kj / mole'
-
+C
+C-----------------------------------------------------------
+C     Calculate p-h and h-p weight in excitation operator
+C     and write to output.
+C-----------------------------------------------------------
+C
             CALL SO_READ(WORK(KTR1E), LTR1E, LUTR1E,FNTR1E,IEXCI)
             CALL SO_READ(WORK(KTR1D), LTR1D, LUTR1D,FNTR1D,IEXCI)
 C
@@ -285,8 +285,8 @@ C-------------------------------------------------
 C
             THR1 = 0.1D0
             THR2 = 0.1D0
-C
-            IF(DOUBLES) CALL SO_READ(WORK(KTR2E), LTR2E,
+CPi TR2D is already in WORK(KTR2D)
+            IF (DOUBLES) CALL SO_READ(WORK(KTR2E), LTR2E,
      &                               LUTR2E,FNTR2E,IEXCI)
 C
             CALL SO_ANAL(DOUBLES,WORK(KTR1E),WORK(KTR1D),

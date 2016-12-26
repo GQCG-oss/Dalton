@@ -31,14 +31,14 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_GETT2')
-CPi-150316
+C
 C--------------------------------------------
 C     If Triplet T2AM will get double length
 C--------------------------------------------
 C
       LT2AMH = LT2AM
       IF (TRIPLET) LT2AMH = INT(LT2AM/2)
-Cend-Pi
+C
       IF ( KEY(1:3) .EQ. 'MP2' ) THEN
 C
 C-----------------------------------------
@@ -51,12 +51,11 @@ C
          REWIND LUTAM
 C
          READ(LUTAM)
-CPi-150316
-C         READ(LUTAM) (T2AM(I), I = 1,LT2AM)
+C
          READ(LUTAM) (T2AM(I), I = 1,LT2AMH)
-Cend-Pi
+C
          CALL GPCLOSE(LUTAM,'KEEP')
-CPi 11.08.16: Add CC2
+C
       ELSE IF ( KEY(1:3) .EQ. 'CC2' ) THEN
 C
 C--------------------------------------------------
@@ -70,12 +69,10 @@ C
 C
          READ(LUTAM) (DENSAI(I), I = 1,LDENSAI)
          CALL DSCAL(LDENSAI,HALF,DENSAI,1)
-CPi-150316
-C         READ(LUTAM) (T2AM(I), I = 1,LT2AM)
          READ(LUTAM) (T2AM(I), I = 1,LT2AMH)
-Cend-Pi
+C
          CALL GPCLOSE(LUTAM,'KEEP')
-Cend-Pi
+C
       ELSE IF ( KEY(1:4) .EQ. 'CCSD' ) THEN
 C
 C--------------------------------------------------
@@ -89,10 +86,9 @@ C
 C
          READ(LUTAM) (DENSAI(I), I = 1,LDENSAI)
          CALL DSCAL(LDENSAI,HALF,DENSAI,1)
-CPi-150316
-C         READ(LUTAM) (T2AM(I), I = 1,LT2AM)
+C
          READ(LUTAM) (T2AM(I), I = 1,LT2AMH)
-Cend-Pi
+C
          CALL GPCLOSE(LUTAM,'KEEP')
 
       END IF
@@ -102,12 +98,8 @@ C     Calculate the density matrices D(ij) and D(ab).
 C----------------------------------------------------
 C
       DTIME     = SECOND()
-CPi-150316
-C      CALL SO_DENS(DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-C     &             T2AM,LT2AM,WORK,LWORK)
       CALL SO_DENS(DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &             T2AM,LT2AMH,WORK,LWORK)
-Cend-Pi
       DTIME     = SECOND()  - DTIME
       SOTIME(4) = SOTIME(4) + DTIME
 C
@@ -117,9 +109,6 @@ C     (2 * coulomb - exchange of T2-amplitudes).
 C------------------------------------------------------
 C
       DTIME     = SECOND()
-CPi-150316
-C Using LT2AMH here and do not initialize LT2MPH in so_t2mp
-Cend-Pi
       CALL SO_T2MP(T2AM,LT2AMH)
       DTIME     = SECOND()  - DTIME
       SOTIME(5) = SOTIME(5) + DTIME

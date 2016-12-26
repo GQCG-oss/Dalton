@@ -42,7 +42,7 @@ C
 #include "priunit.h"
 C
 #include "cbiexc.h"
-CPi for NT2AMX, NT1AM(), NT2AM() (t2 amplitude vectors?)
+CPi for NT2AMX, NT1AM(), NT2AM()
 #include "ccsdsym.h"
 #include "infdim.h"
 #include "inforb.h"
@@ -62,7 +62,6 @@ C for mxcont
 C
       PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C
-CSPAS:5/11-13: HRPA included
 CRF  Defer last dimension size...
 CRF  actual size will be set to NUM_ACTIVE later
       DIMENSION TRLEN(3,NSYM,MXNEXI,*),
@@ -77,7 +76,6 @@ CRF  actual size will be set to NUM_ACTIVE later
 CClark:11/01/2016
       DIMENSION BETHE(3,LQ,*),STOPP(3,LVEL,2,*)
 CClark:end
-CKeinSPASmehr
       DIMENSION SECMAT(3,MXNEXI,NSYM)
       DIMENSION WORK(LWORK)
 C
@@ -106,7 +104,6 @@ C------------------
 C
       CALL QENTER('SO_EXCIT1')
 C
-C
 C     Get the active models and their number
       CALL SO_GET_ACTIVE_MODELS (ACTIVE_MODELS)
       NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
@@ -120,8 +117,6 @@ C
       CALL GETTIM (DUMMY,WTIME)
       TIMWTO  = WTIME
 C
-CPFP 2009-Jun
-C
 C---------------------------------------------------------
 C     Initialize TRIPLET keyword used inside SOPPA module.
 C---------------------------------------------------------
@@ -131,9 +126,6 @@ C
       ELSE
         TRIPLET = .FALSE.
       END IF
-C
-Cend-PFP
-C
 C
 C-------------------------------------------
 C     Initializes memory statistics routine.
@@ -148,7 +140,6 @@ C---------------------------------------------------------------
 C
       IF ( AORPA .AND. (.NOT.AOHRP) .AND. (.NOT.DCRPA)
      &           .AND. (.NOT.AOSOP) .AND. (.NOT.AOSOC)
-CPi
      &           .AND. (.NOT.AOCC2) .AND. (.NOT.DCHRP) ) THEN
          CALL RP_INIT(WORK,LWORK)
 #ifdef VAR_MPI
@@ -206,20 +197,15 @@ C
       KEND1   = KFOCKD  + LFOCKD
       LWORK1  = LWORK   - KEND1
 C
-CPFP: Higher RPA added
-C     IF (DCRPA .OR. AOSOP .OR. AOSOC) THEN
-CPi
       IF (AOHRP.OR.DCRPA.OR.AOSOP.OR.AOSOC.OR.AOCC2.OR.DCHRP) THEN
-Cend-PFP
 C
-CSPAS:5/11-2013: Patricio had the following statement before the IF statement
          LT2AM   = NT2AMX
-CPFP
+C
 C        For triplet calculations LT2AM has to be twice as large,
 C        because there are two version of the correlation coefficients
 C
          IF (TRIPLET) LT2AM = NT2AMX*2
-Cend-PFP
+C
          LDENSIJ = NIJDEN(1)
          LDENSAB = NABDEN(1)
          LDENSAI = NAIDEN(1)
@@ -265,7 +251,6 @@ C---------------------------------------------------------------------
 C     Initialize arrays of transition moments and excitation energies.
 C---------------------------------------------------------------------
 C
-CSPAS:5/11-13: HRPA included
       CALL DZERO(TRLEN, 3*NSYM*MXNEXI*NUM_ACTIVE)
       CALL DZERO(TRVEL, 3*NSYM*MXNEXI*NUM_ACTIVE)
       CALL DZERO(TQLEN, 3*3*NSYM*MXNEXI*NUM_ACTIVE)
@@ -276,7 +261,6 @@ CSPAS:5/11-13: HRPA included
       CALL DZERO(BSRLON,3*NSYM*MXNEXI*NUM_ACTIVE)
       CALL DZERO(SECMAT,3*NSYM*MXNEXI)
       CALL DZERO(EXENG, NSYM*MXNEXI*NUM_ACTIVE)
-CKeinSPASmehr
 CClark:09/03/2016
       CALL DZERO(BETHE,3*LQ*NUM_ACTIVE)
       CALL DZERO(STOPP,3*LVEL*2*NUM_ACTIVE)
@@ -359,13 +343,9 @@ C
      &            ' Perturbation symmetry     :',ISYM,
      &            ' p-h variables             :',2*NT1AM(ISYM)
                   IF (DOUBLES) THEN
-CPi 01-04-16
-C                     NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
                      NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
                      WRITE(LUPRI,'(A,I8,/,A,I8)')
-C     &               ' 2p-2h variables           :',2*NT2AM(ISYM),
      &               ' 2p-2h variables           :',2*N2P2HOP(ISYM),
-Cend-Pi
      &               ' Total number of variables :',NVARPT
                   ENDIF
                   WRITE(LUPRI,9001)
@@ -374,9 +354,7 @@ C
 C              Adjust number of excitations of this symmetry down to
 C              the highest possible number
 C
-CPi
                IF (DOUBLES .AND.(.NOT. DOUB_CORR)) THEN
-C                  NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM)+NT2AM(ISYM))
                   NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM)+N2P2HOP(ISYM))
                ELSE
                   NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM))
