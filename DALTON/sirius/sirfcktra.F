@@ -41,13 +41,13 @@
 ! ===================================================================
 !     sirfcktra.F section 1: calculate MO integrals
 ! ===================================================================
-      subroutine FCKTRA_CTL(ITRSIR, CMO, WORK, LWORK)
+      subroutine FCKTRA_CTL(ITRSIR, THR_MOTWOINT, CMO, WORK, LWORK)
 !
 !  Written by Hans Joergen Aa. Jensen 2016
 !
       implicit none
       integer ITRSIR, LWORK
-      real*8  CMO(*), WORK(LWORK)
+      real*8  THR_MOTWOINT, CMO(*), WORK(LWORK)
 #include "priunit.h"
 
 ! Used from include files:
@@ -55,13 +55,18 @@
 !  inforb.h : NNORBX, NORBT, ???
 !  inftra.h : NCDTRA, IPRTRA, LBUF
 !  inftap.h : LUINTM, LBINTM
+!  cbihr2.h : IFTHRS
+!  ccom.h   : THRS
 #include "iratdef.h"
+#include "maxaqn.h"
 #include "gnrinf.h"
 #include "inforb.h"
 #include "inftra.h"
 #include "inftap.h"
+#include "cbihr2.h"
+#include "ccom.h"
 
-      integer JTRSIR, NTRLVL, MX_NDMAT, LUSUPM_save
+      integer JTRSIR, NTRLVL, MX_NDMAT, LUSUPM_save, IFTHRS_save
       integer KFREE, LFREE, KFRSAV, KUCMO, KDMAT, KFMAT, I
       integer, allocatable :: ICDTRA(:), ITRTYP(:), ICD_NODE(:)
       character*8 TABLE(2),LAB123(3)
@@ -72,6 +77,27 @@
 C --- start of executable code
 
       call QENTER('FCKTRA_CTL')
+
+#if FCKTRA_DEBUG > 0
+      IPRTRA = MAX(IPRTRA,FCKTRA_DEBUG)
+      write(lupri,*) 'DEBUG: IPRTRA set to',IPRTRA
+#endif
+
+      IF (IPRTRA .GT. 0) THEN
+         CALL TITLER('.FCKTRA AO->MO integral transformation','*',200)
+         WRITE(LUPRI,'(A,I4,1P,D10.2)')
+     &   ' Transformation level & screening threshold:',
+     &   ITRSIR,THR_MOTWOINT
+      END IF
+
+      IF (THR_MOTWOINT .LT. THRS) THEN
+         WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
+     &   '.FCKTRA INFO: AO screening threshold raised from',
+     &   THR_MOTWOINT,' to the general integral threshold',THRS
+         THR_MOTWOINT = THRS
+      END IF
+      IFTHRS_save = IFTHRS
+      IFTHRS = NINT(-LOG10(THR_MOTWOINT))
 
       allocate(ICDTRA(NNORBX))
       allocate(ITRTYP(NORBT))
@@ -100,17 +126,12 @@ C --- start of executable code
 !        ITRTYP(1:NORBT) = number of integral indices in which this orbital
 !                          enters (i.e. 0,1,2,3, or 4)
       call TRASET(-1,LWORK)
-#if FCKTRA_DEBUG > 0
-      IPRTRA = MAX(IPRTRA,FCKTRA_DEBUG)
-      write(lupri,*) 'DEBUG: IPRTRA set to',IPRTRA
-#endif
       call TRALIM(NTRLVL,ICDTRA,ITRTYP)
 
-      CALL REWSPL(LUINTM)
+      REWIND(LUINTM)
       WRITE (LUINTM) (0, I=1,8) ! info not used for FCKTRA
       WRITE (LUINTM) LBINTM,ITRSIR,NSYM,NORB,NBAS
       WRITE (LUINTM) CMO(1:NCMOT)
-      ! WRITE (LUINTM) MISH(1:8), MASH(1:8)
       WRITE (LUINTM) NISH(1:8), NASH(1:8)
 
       call GETDAT(LAB123(2),LAB123(3))   ! place date in LAB123(2) and time in LAB123(3)
@@ -134,7 +155,7 @@ C --- start of executable code
       if (FCKTRA_TYPE .eq. 1 .AND. PARCAL) then
 
 #ifdef VAR_MPI
-         CALL FCKTRA_DISTRIBUTED_MASTER(ICDTRA, ITRTYP,
+         CALL FCKTRA_DISTRIBUTED_MASTER(ICDTRA, ITRTYP, IFTHRS,
      &      CMO, WORK, LWORK)
 
 #else
@@ -169,12 +190,13 @@ C --- start of executable code
       end if !  if (FCKTRA_TYPE .eq. 1 .AND. PARCAL) then ... else ...
 
       WRITE (LUINTM) LAB123,TABLE(2)
-      CALL REWSPL(LUINTM)
+      REWIND(LUINTM)
       CALL GPCLOSE(LUINTM, 'KEEP')
 
       deallocate ( ICDTRA )
       deallocate ( ITRTYP )
       deallocate ( ICD_NODE )
+      IFTHRS = IFTHRS_save
       call QEXIT('FCKTRA_CTL')
       return
       end
@@ -540,13 +562,13 @@ C --- start of executable code
 !     sirfcktra.F section 2: FCKTRA type 1 routines (if VAR_MPI)
 ! ===================================================================
 #ifdef VAR_MPI
-      subroutine FCKTRA_DISTRIBUTED_MASTER(ICDTRA, ITRTYP, CMO,
-     &   WORK, LWORK)
+      subroutine FCKTRA_DISTRIBUTED_MASTER(ICDTRA, ITRTYP, IFTHRS,
+     &   CMO, WORK, LWORK)
 !
 !  Written by Hans Joergen Aa. Jensen 2016
 !
       implicit none
-      integer ICDTRA(NNORBX), ITRTYP(NORBT), LWORK
+      integer ICDTRA(NNORBX), ITRTYP(NORBT), IFTHRS, LWORK
       real*8  CMO(NCMOT), WORK(LWORK)
 
 #include "priunit.h"
@@ -614,6 +636,7 @@ C --- start of executable code
       write (lupri,'(10I4,5X,10I4)') ICD_NODE(1:NNORBX)
       flush(lupri)
 #endif
+      call MPIXBCAST(IFTHRS,1,'INTEGER',MASTER)
       call MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
       call MPIXBCAST(ICDTRA,NNORBX,'INTEGER',MASTER)
       call MPIXBCAST(ITRTYP,NORBT,'INTEGER',MASTER)
@@ -678,7 +701,7 @@ C --- start of executable code
 !  inforb.h : NORBT, NNORBX, NCMOT
 !  infpar.h : MYNUM,SLAVE,PARHER,?
 !  inftap.h : LUSUPM
-!  mpif.h : for MPI
+!  cbihr2.h : IFTHRS
 #include "maxorb.h"
 #include "maxash.h"
 #include "gnrinf.h"
@@ -687,6 +710,9 @@ C --- start of executable code
 #include "inforb.h"
 #include "infpar.h"
 #include "inftap.h"
+#include "cbihr2.h"
+
+!  mpif.h   : for MPI
 #include "mpif.h"
 
 !     First make sure basis set information is known to this node
@@ -736,6 +762,7 @@ C --- start of executable code
       call MEMGET2('REAL','UCMO',  KUCMO,NBAST*NORBT,
      &      WORK,KFREE,LFREE)
 
+      call MPIXBCAST(IFTHRS,1,'INTEGER',MASTER)            ! accuracy of MO integrals (screening)
       call MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
       call MPIXBCAST(ICDTRA,NNORBX,'INTEGER',MASTER)
       call MPIXBCAST(ITRTYP,NORBT,'INTEGER',MASTER)
@@ -760,9 +787,9 @@ C --- start of executable code
       IF (MX_NDMAT .EQ. 0) THEN
          CALL QUIT('MX_NDMAT = 0, too little memory')
       END IF
-      call MEMGET2('REAL','DMAT',  KDMAT,MX_NDMAT*N2BASX,
+      call MEMGET2('REAL','DMAT', KDMAT,MX_NDMAT*N2BASX,
      &     WORK,KFREE,LFREE)
-      call MEMGET2('REAL','FMAT',  KFMAT,MX_NDMAT*N2BASX,
+      call MEMGET2('REAL','FMAT', KFMAT,MX_NDMAT*N2BASX,
      &     WORK,KFREE,LFREE)
 
 #if FCKTRA_DEBUG > 2

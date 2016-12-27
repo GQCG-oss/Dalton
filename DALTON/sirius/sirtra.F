@@ -1775,9 +1775,20 @@ C
       IF (IPRTRA .GE. 0) THEN
          CALL GETTIM(TCPU0,TWALL0)
       END IF
+
+C     ***** SET THRESHOLDS *****
+C     *********** THRP: THRESHOLD USED IN TRACD AND TRAAB
+C     *********** THRQ: THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
+      IF (THRP.LE.1.D-16) THEN
+         WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
+     &      ' INFO: Changed THRP threshold used in 2-el.'//
+     &      ' integral transformation from',THRP,' to',1.D-14
+         THRP=1.D-14
+      END IF
+      THRQ = THRP * 0.1D0
 C
       IF (FCKTRA_TYPE .gt. 0) THEN
-         CALL FCKTRA_CTL(KTRLVL,CMO,WORK,KWORK)
+         CALL FCKTRA_CTL(KTRLVL,THRP,CMO,WORK,KWORK)
       ELSE IF (NEWTRA) THEN
          IF (ITRLVL .EQ. 0 .OR. ITRLVL .GE. 5) THEN ! zeroth, third or fourth order transformation
             USEDRC = .FALSE. ! use DRCCTL and not Dirac integrals from N_TRACTL
@@ -1938,16 +1949,6 @@ C
       LWORK = MIN(KWORK,MWORK)
       IF (JTER.EQ.1) WRITE(LUPRI,903) LWORK
   903 FORMAT(/' WORKING AREA IN TRANSFORMATION SECTION ',I10)
-C     ***** SET THRESHOLDS *****
-C     *********** THRP: THRESHOLD USED IN TRACD AND TRAAB
-C     *********** THRQ: THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
-      IF (THRP.LE.1.D-16) THEN
-         WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
-     &      ' INFO: Changed THRP threshold used in'//
-     &      ' integral transformation from',THRP,' to',1.D-14
-         THRP=1.D-14
-      END IF
-      THRQ = THRP * 0.1D0
 C
 C     ***** Reset /CBGETD/ because any H2AC on disk will be
 C           obsolete after transformation.
