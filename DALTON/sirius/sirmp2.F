@@ -346,7 +346,7 @@ C         standard srMP2 "EMP2" from AOTWOINT integrals (i.e. long-range integra
             DOSRIN = .FALSE.
             SRINTS = .FALSE.
             IF (LUINTA .LE. 0) CALL GPOPEN(LUINTA,AO2INTFILE_LABEL,
-     &         'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+     &         'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
             CALL GPCLOSE(LUINTA,'DELETE')
          ELSE
             WRITE(LUPRI,'(/A)')
