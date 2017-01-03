@@ -756,6 +756,8 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_write.F
     DALTON/soppa/so_writeset.F
     DALTON/soppa/so_wrtve.F
+    DALTON/soppa/so_lrnsl.F
+    DALTON/soppa/so_rspdrv.F
     )
 if(NOT ENABLE_CRAY_WRAPPERS)
     # radovan: CRAY provides these functions

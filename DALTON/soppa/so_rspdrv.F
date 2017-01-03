@@ -1,16 +1,13 @@
 C
-C  /* Deck so_lnraba */
-      SUBROUTINE SO_LNRABA(POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,PASS)
+C  /* Deck so_rsplr */
+      SUBROUTINE SO_RSPDRV(WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
-C     Stephan P. A. Sauer, Februrary 1999
-C     Stephan P. A. Sauer: 3.12.2003
-C     Rasmus Faber, October 2015: Added MPI
+C     Rasmus Faber, December 2015: Added MPI
 C
-C     PURPOSE: Main driver routine for the calculation of frequency
-C              dependent linear response properties with the atomic
-C              integral direct SOPPA program.
+C     PURPOSE: A RSP compatible driver for calculating linear response properties with 
+C              the atomic integral direct SOPPA program.
 C
       use so_info, only: sop_num_models,
      &                   sop_models, sop_mod_fullname,
@@ -29,11 +26,18 @@ C
 #include "priunit.h"
 C
 #include "soppinf.h"
-#include "cbilnr.h"
-#include "cbiexc.h"
-#include "absorp.h"
+C#include "cbiexc.h"
+C From infrsp we need
+C FREQ <- Array of requecies 
+C NFREQ <- Number of frequencies
+#include "infrsp.h"
+C inflr.h below requires MAXLBL from rspprp.h
+#include "rspprp.h"
+C We need 
+C LBLLR <- Label of operators 
+C NGPLR <- Number of operators of each symmetry
+#include "inflr.h"
 #include "ccsdsym.h"
-c#include "infdim.h"
 #include "inforb.h"
 C for irat
 #include "iratdef.h"
@@ -42,20 +46,17 @@ C for mxshel, mxprim
 #include "maxorb.h"
 C for mxcont
 #include "aovec.h"
-c#include "mxcent.h"
-c#include "nuclei.h"
-c#include "symmet.h"
-c#include "wrkrsp.h"
+C REP <- Symbols of the ireducible representations.
+#include "pgroup.h"
 C
-c     PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
-C
-      DIMENSION POLDD(2,3,3,NFRVAL,*), POLDQ(2,3,3,3,NFRVAL,*)
-      DIMENSION POLDL(2,3,3,NFRVAL,*), POLDA(2,3,3,NFRVAL,*)
       DIMENSION WORK(LWORK)
 C
       CHARACTER*5 MODEL
       CHARACTER*8 LABEL1
       CHARACTER*11 FULLNAME
+      CHARACTER(len=7), parameter :: dash5 = ' ----- '
+      CHARACTER(len=65), parameter :: dashl = ' -------------------'//
+     &               '---------------------------------------------'
 C
       integer :: num_active
       logical :: active_models(sop_num_models)
@@ -75,15 +76,14 @@ C------------------
 C     Add to trace.
 C------------------
 C
-      CALL QENTER('SO_LNRABA')
-C
+      CALL QENTER('SO_RSPDRV')
 C
 C     Get the active models and their number
       CALL SO_GET_ACTIVE_MODELS (ACTIVE_MODELS)
-      NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
 C
 C     No RPA(D) properties
       ACTIVE_MODELS(SOP_MODEL_RPAD) = .FALSE.
+      NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
 C
       RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND. 
      &           (NUM_ACTIVE.EQ.1) 
@@ -156,7 +156,7 @@ C----------------------------------
 C     Set print level for AO-SOPPA.
 C----------------------------------
 C
-      IPRSOP = IPRLNR
+      IPRSOP = 2
 C
       IF (IPRLNR .GE. 0)
      &     CALL TITLER('Solving Linear Response Equations','#',118)
@@ -215,16 +215,6 @@ C------------------------------------------------------
 C
       CALL SO_PRPINT('LINEAR',NLBTOT,WORK(KEND1),LWORK1)
 C
-C---------------------------------------------------------------------
-C     Initialize arrays of transition moments and excitation energies.
-C---------------------------------------------------------------------
-C
-C      CALL DZERO(SNDPRP,2)
-      CALL DZERO(POLDD,2*9*NFRVAL*NUM_ACTIVE)
-      CALL DZERO(POLDQ,2*27*NFRVAL*NUM_ACTIVE)
-      CALL DZERO(POLDL,2*9*NFRVAL*NUM_ACTIVE)
-      CALL DZERO(POLDA,2*9*NFRVAL*NUM_ACTIVE)
-C
 C==========================================
 C     Determine linear response properties.
 C==========================================
@@ -249,117 +239,136 @@ C
      &'Maximum number of trial vectors for each'//
      &' property is ',NSAVMX
 C
-C--------------------------------------------------
-C     Loop over symmetry of the property operators.
-C--------------------------------------------------
-C
-      DO 200 ISYM = 1, NSYM
-C
-         DO 100 IOPER = 1, NOPER(ISYM)
-C
-            LABEL1 = LABOP(IOPER,ISYM)
-C Do only for DIPLEN?
-            IF (LABEL1(2:7).NE.'DIPLEN') CYCLE
-
-CRF is there a common pattern here?
-            IDIP = ICHAR(LABEL1(1:1)) - ICHAR('X') + 1
-
-            ISYMTR = ISYM
-C
 C========================================
-C           Loop over the posible methods
+C     Loop over the posible methods
 C========================================
 C
-            IOUT = 1
-C
-            DO IMODEL = 1, SOP_NUM_MODELS
+      IOUT = 1
+      DO IMODEL = 1, SOP_NUM_MODELS
 C
 C  Skip methods not treated in this calcultion
-               IF (.NOT.ACTIVE_MODELS(IMODEL) ) CYCLE
+         IF (.NOT.ACTIVE_MODELS(IMODEL) ) CYCLE
 C
 C  Look up info on this model
 C  (the model number -> model conversion is defined in so_info.F90)
 C
-               MODEL = SOP_MODELS(IMODEL)
-               FULLNAME = SOP_MOD_FULLNAME(IMODEL)
-               DOUBLES = SO_HAS_DOUBLES(IMODEL)
-               NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
-C
-               IF (IPRSOP .GE. 1) THEN
-                  WRITE(LUPRI,9000)
-                  WRITE(LUPRI,'(1X,A,2(/A,I8))') TRIM(FULLNAME)//':',
-     &            ' Perturbation symmetry     :',ISYM,
-     &            ' p-h + h-p variables       :',2*NT1AM(ISYM)
-                  IF (DOUBLES) THEN
-                     NVARPT = 2*(NT1AM(ISYM)+NT2AM(ISYM))
-                     WRITE(LUPRI,'(A,I8,/A,I8)')
-     &               ' 2p-2h + 2h-2p variables   :',2*NT2AM(ISYM),
-Cend-PFP
-     &               ' Total number of variables :',NVARPT
-                  ENDIF
-                  WRITE(LUPRI,9001)
-               END IF
+         MODEL = SOP_MODELS(IMODEL)
+         FULLNAME = SOP_MOD_FULLNAME(IMODEL)
+         DOUBLES = SO_HAS_DOUBLES(IMODEL)
+         NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
+
+         CALL TITLER( TRIM(FULLNAME) // ' response calculation', 
+     &                '*',103)
 C
 C-----------------------------------------------------
 C              Get T2 amplitudes and density matrices.
 C-----------------------------------------------------
 C
-               IF(NEED_T2) THEN
-                  CALL SO_GETT2(sop_dens_label(imodel),
-     &                          WORK(KT2AM),LT2AM,WORK(KDENSAI),
-     &                          LDENSAI,WORK(KDENSIJ),LDENSIJ,
-     &                          WORK(KDENSAB),LDENSAB,
-     &                          WORK(KEND1),LWORK1)
-               END IF
+         IF(NEED_T2) THEN
+             CALL SO_GETT2(sop_dens_label(imodel),
+     &                     WORK(KT2AM),LT2AM,WORK(KDENSAI),
+     &                     LDENSAI,WORK(KDENSIJ),LDENSIJ,
+     &                     WORK(KDENSAB),LDENSAB,
+     &                     WORK(KEND1),LWORK1)
+         END IF
 #ifdef VAR_MPI
 C
 C---------------------------------------------------------
-C              Ready the slaves for parallel calculations.
+C        Ready the slaves for parallel calculations.
 C---------------------------------------------------------
 C
-               call soppa_initialize_slaves ( update_common_blocks,
-     &                                       WORK(KT2AM), LT2AM, model)
-               update_common_blocks = .false.
+         call soppa_initialize_slaves ( update_common_blocks,
+     &                                   WORK(KT2AM), LT2AM, model)
+         update_common_blocks = .false.
 #endif
 C
+C--------------------------------------------------
+C     Loop over symmetry of the property operators.
+C--------------------------------------------------
+C
+         DO ISYM = 1, NSYM
+C
+            IF (NGPLR(ISYM).LE.0) CYCLE ! Nothing to do for this sym
+C            
+            WRITE(LUPRI,'(A)') dashl
+            WRITE(LUPRI,'(2A,I5,3A)') dash5,
+     &       'Symmetry of excitation/property operator(s)',
+     &           ISYM,'  ( ',REP(ISYM-1),')'
+            WRITE(LUPRI,'(A)') dashl
+
+            WRITE(LUPRI,'(2(/A,I5))') 
+     &           ' Number of excitations of this symmetry        ',
+C     &           NPPCNV(ISYM),
+     &           0, ! Fix this!!!
+     &           ' Number of response properties of this symmetry',
+     &           NGPLR(ISYM)
+
+            WRITE(LUPRI,9000)
+            WRITE(LUPRI,'(1X,A,2(/A,I8))') TRIM(FULLNAME)//':',
+     &         ' Perturbation symmetry     :',ISYM,
+     &         ' p-h + h-p variables       :',2*NT1AM(ISYM)
+            IF (DOUBLES) THEN
+               NVARPT = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+               WRITE(LUPRI,'(A,I8,/A,I8)')
+     &         ' 2p-2h + 2h-2p variables   :',2*NT2AM(ISYM),
+     &         ' Total number of variables :',NVARPT
+            ENDIF
+            WRITE(LUPRI,9001)
+
+C            DO IEXCI = 1, NPPCNV(ISYM)
+C               WRITE(LUPRI,'(2A,/A)') 'Warning: Excitation energies',
+C     &            'not implemented in AO-SOPPA **RESPONSE driver.',
+C     &            'Use **PROPERTIES instead'
+C            END DO
+
+            DO IOPER = 1, NGPLR(ISYM)
+C
+               LABEL1 = LBLLR(ISYM,IOPER)
+               ISYMTR = ISYM
+               IOUT = 1
+C
 C------------------------------------------------------------------
-C              Determine SOPPA excitation energies and excitation
-C              vectors. The excitation vectors are written to file.
+C              Determine SOPPA linear response vectors and density
+C              matrixes. Response density matrix written on file.
 C------------------------------------------------------------------
 C
-               CALL SO_RSPLEQ(MODEL,LABEL1,ISYMTR,FRVAL,NFRVAL,
+               CALL SO_RSPLEQ(MODEL,LABEL1,ISYMTR,FREQ,NFREQ,
      &                        WORK(KDENSIJ),LDENSIJ,
      &                        WORK(KDENSAB),LDENSAB,
      &                        WORK(KDENSAI),LDENSAI,WORK(KT2AM),
      &                        LT2AM,WORK(KFOCKD),LFOCKD,
      &                        WORK(KEND1),LWORK1)
 C
+               CALL FLUSH(LUPRI)
+            END DO ! Loop operators
+C
 C----------------------------------------------
 C              Calculate second order property.
 C----------------------------------------------
 C
-               CALL SO_POLAR(MODEL,ISYMTR,IDIP,LABEL1,NLBTOT,
+            IF (NGPLR(ISYM).GT.0) THEN
+               CALL SO_LRNSL(MODEL,ISYM,
      &                       WORK(KT2AM),LT2AM,
      &                       WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
-     &                       POLDD(1,1,1,1,IOUT),POLDQ(1,1,1,1,1,IOUT),
-     &                       POLDL(1,1,1,1,IOUT),POLDA(1,1,1,1,IOUT),
      &                       WORK(KEND1),LWORK1)
+            END IF
+
+C
+         END DO ! LOOP over symmetries
+
 #ifdef VAR_MPI
 C-------------------------------------------------------
 C              Release slaves to the global node-driver.
 C-------------------------------------------------------
-               call soppa_release_slaves()
+         call soppa_release_slaves()
 #endif
-C              INCREMENT OUTPUT POINTER
-               IOUT = IOUT + 1
 C
-            END DO
-
+C        INCREMENT OUTPUT POINTER
 C
-  100    CONTINUE
+         IOUT = IOUT + 1
 C
-  200 CONTINUE
+      END DO ! Loop over models
 C
 C---------------------------------
 C     3. allocation of work space.
@@ -390,7 +399,7 @@ C-----------------------
 C     Remove from trace.
 C-----------------------
 C
-      CALL QEXIT('SO_LNRABA')
+      CALL QEXIT('SO_RSPDRV')
 C
       RETURN
 C
