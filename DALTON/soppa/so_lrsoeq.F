@@ -141,8 +141,8 @@ C     Write banner.
 C------------------
 C
       WRITE(LUPRI,'(A)') ''
-      WRITE(LUPRI,'(/,2X,A)') '*********************************'//
-     &                        '*********************************'
+C      WRITE(LUPRI,'(/,2X,A)') '*********************************'//
+C     &                        '*********************************'
       WRITE(LUPRI,9001)
       WRITE(LUPRI,'(11X,3A)') ADJUSTR(FULL_NAME),
      &        ' iterations, Property ',LABEL

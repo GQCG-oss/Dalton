@@ -29,7 +29,8 @@ C
      &                   so_singles_second,
      &                   so_needs_densai,
      &                   sop_dens_label,
-     &                   sop_model_rpa, sop_model_rpad
+     &                   sop_model_rpa, sop_model_rpad,
+     &                   sop_conv_thresh
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
      &                       soppa_release_slaves
@@ -110,6 +111,11 @@ C     Get the active models and their number
       NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
       RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND.
      &           (NUM_ACTIVE.EQ.1)
+C
+C
+C     Set the correct convergence threshold -- THREXC from
+C     cbiexc.h
+      sop_conv_thresh = THREXC
 C
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.

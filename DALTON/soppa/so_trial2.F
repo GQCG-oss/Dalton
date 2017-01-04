@@ -19,14 +19,14 @@ C              new trial-vectors. These are orthonormalized against the
 C              privious optimal trial-vectors and among themself
 C              including the ones obtained from pairing.
 C
-      use so_info, only: so_has_doubles, so_singles_second
+      use so_info, only: so_has_doubles, so_singles_second,
+     &                   sop_conv_thresh
 C
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "soppinf.h"
 #include "ccsdsym.h"
-#include "cbiexc.h"
 C
       PARAMETER   (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER   (D100 = 100.0D0)
@@ -286,11 +286,11 @@ C-----------------------------------------------
 C        Determine the threshold the excitation.
 C-----------------------------------------------
 C
-         IF (IEXCI .LE. (NEXCI - NEXCI2(ISYMTR)) ) THEN
-            THR = THREXC
-         ELSE
-            THR = THREX2
-         END IF
+         THR = SOP_CONV_THRESH
+C         
+         IF ((LTYPE.EQ.'EXCITA') .and. 
+     &       (IEXCI .GT. (NEXCI - NEXCI2(ISYMTR)))
+     &      ) THR = THREX2
 C
 C---------------------
 C        If converged.

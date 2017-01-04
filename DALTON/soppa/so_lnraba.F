@@ -19,7 +19,8 @@ C
      &                   so_has_doubles,
      &                   so_singles_second,
      &                   sop_dens_label, sop_model_rpad,
-     &                   sop_model_rpa
+     &                   sop_model_rpa,
+     &                   sop_conv_thresh
 C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
@@ -87,6 +88,12 @@ C     No RPA(D) properties
 C
       RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND. 
      &           (NUM_ACTIVE.EQ.1) 
+C
+C     Set the correct convergence threshold -- THCLNR from cbilnr.h
+      sop_conv_thresh = THCLNR
+C
+C     Triplet flag not initialized...
+      TRIPLET = .FALSE.
 C
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.

@@ -47,7 +47,7 @@ C
 C
       CHARACTER*8 LABEL1, LABEL2
       CHARACTER*8 RTNLBL(2)
-      REAL(sop_dp)  ::  PROPVAL, DFACTOR
+      REAL(sop_dp)  ::  PROPVAL
       INTEGER :: LPRP1, LWORK1, LPDENSIJ, LPDENSAB, LPDENSAI, LPDENSTOT,
      &           LWORK2
       INTEGER :: KPRP1, KEND1, KPDENSIJ, KPDENSAB, KPDENSAI, KEND2
@@ -109,9 +109,6 @@ C
 C
          IMAGPROP = RTNLBL(2).EQ.'ANTISYMM'
 C
-         DFACTOR = -1.0D0
-         IF (IMAGPROP) DFACTOR = 1.0D0
-C
 C  These allocations as such doesn't change...
          LPDENSIJ = NIJDEN(ISYM)
          IF (MODEL.EQ.'AORPA') THEN
@@ -144,15 +141,15 @@ C-----------------------------------------------------------
 C        Get the perturbed density matrix from file
 C-----------------------------------------------------------
 C
-               CALL SO_FNDPOS(LABEL1,FREQ(IFREQ),LURDENS)
+               CALL SO_FNDPOS(LABEL2,FREQ(IFREQ),LURDENS)
                LPDENSTOT = LPDENSIJ + LPDENSAB + LPDENSAI
                IF (MODEL.EQ.'AORPA') THEN
                   CALL SO_REAVE(WORK(KPDENSAI),LPDENSAI,ISYM,
-     &                          LABEL1,FREQ(IFREQ),LURDENS)
+     &                          LABEL2,FREQ(IFREQ),LURDENS)
                   CALL DZERO(WORK(KPDENSIJ),LPDENSIJ)
                ELSE
                   CALL SO_REAVE(WORK(KPDENSIJ),LPDENSTOT,ISYM,
-     &                          LABEL1,FREQ(IFREQ),LURDENS)
+     &                          LABEL2,FREQ(IFREQ),LURDENS)
                ENDIF
 C
 C---------------------------------------------------------------------
@@ -166,7 +163,7 @@ C
      &                        WORK(KPDENSAB),LPDENSAB,
      &                        WORK(KPDENSAI),LPDENSAI)
 C
-               WRITE(LUPRI,'(/A,2(/A,A10,I4,3A,F10.6),/,/A,F20.12)')
+               WRITE(LUPRI,'(/A,2(/A,A10,I4,3A,F10.6),/,/A,F20.12,/)')
      &              ' Linear response function in a.u.',
      &              ' A operator, symmetry, frequency: ',
      &              LABEL1, ISYM,'  (',REP(ISYM-1),')',-FREQ(IFREQ),

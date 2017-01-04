@@ -16,7 +16,8 @@ C
      &                   so_has_doubles,
      &                   so_singles_second,
      &                   sop_dens_label, sop_model_rpad,
-     &                   sop_model_rpa
+     &                   sop_model_rpa,
+     &                   sop_conv_thresh
 C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
@@ -28,14 +29,15 @@ C
 #include "soppinf.h"
 C#include "cbiexc.h"
 C From infrsp we need
-C FREQ <- Array of requecies 
+C FREQ <- Array of requecies
 C NFREQ <- Number of frequencies
 #include "infrsp.h"
 C inflr.h below requires MAXLBL from rspprp.h
 #include "rspprp.h"
-C We need 
-C LBLLR <- Label of operators 
+C We need
+C LBLLR <- Label of operators
 C NGPLR <- Number of operators of each symmetry
+C THCLR <- Convergence threshold
 #include "inflr.h"
 #include "ccsdsym.h"
 #include "inforb.h"
@@ -87,6 +89,16 @@ C     No RPA(D) properties
 C
       RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND. 
      &           (NUM_ACTIVE.EQ.1) 
+C
+C     Set the correct convergence threshold -- THCLR from inflr.h
+      sop_conv_thresh = THCLR
+C
+C     Set triplet flag if given -- TRPLET from infrsp.h
+      IF (TRPLET) THEN 
+         TRIPLET = .TRUE.
+      ELSE
+         TRIPLET = .FALSE.
+      ENDIF
 C
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.
