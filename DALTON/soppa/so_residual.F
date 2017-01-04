@@ -111,26 +111,21 @@ C
       IF(LTYPE.EQ.'LINEAR') THEN
 C
 C---------------------------------------------------------
-C     For linear response properties scale to the original
-C     length of the solution vector and subtract the
-C     property gradient vector.
+C     For linear response properties subtract the property
+C     gradient vector, scaled by the same factor used when
+C     normalizing the trial-vector.
 C---------------------------------------------------------
 C
-          ENORMINV = 1.0D0 / ENORM
-          DFACTOR = 1.0D0
-          IF(IMAGPROP) DFACTOR = -1.0D0
-          CALL DSCAL(LRES1E,ENORMINV,RESI1E,1)
-          CALL DAXPY(LRES1E,-1.0D0,REGP1E,1,RESI1E,1)
+          DFACTOR = ENORM
+          IF(IMAGPROP) DFACTOR = -ENORM
+          CALL DAXPY(LRES1E,-ENORM,REGP1E,1,RESI1E,1)
           IF(.NOT.STATIC) THEN
-            CALL DSCAL(LRES1E,ENORMINV,RESI1D,1)
             CALL DAXPY(LRES1E,DFACTOR,REGP1E,1,RESI1D,1)
           ENDIF
 C
           IF(DOUBLES)THEN
-              CALL DSCAL(LRES2E,ENORMINV,RESI2E,1)
-              CALL DAXPY(LRES2E,-1.0D0,REGP2E,1,RESI2E,1)
+              CALL DAXPY(LRES2E,-ENORM,REGP2E,1,RESI2E,1)
               IF(.NOT.STATIC)THEN
-                  CALL DSCAL(LRES2E,ENORMINV,RESI2D,1)
                   CALL DAXPY(LRES2E,DFACTOR,REGP2E,1,RESI2D,1)
               ENDIF
           ENDIF
@@ -173,6 +168,7 @@ CRF   For static the norm of the D part would be exactly that of the E
 C     part. Should we scale RESINM apropriately?
 C
       RESINM = DSQRT(RESINM)
+      IF(STATIC) RESINM = 2.0D0*RESINM
 C
 C-----------------------
 C     Remove from trace.
