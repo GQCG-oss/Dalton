@@ -58,7 +58,11 @@ module so_info
    logical :: AORPA = .false., AOHRP = .false., DCRPA = .false., &
               AOSOP = .false., AOSOC = .false., AOCC2 = .false. 
 
-   real(sop_dp) :: sop_conv_thresh = 1.D04
+   ! Convergence threshold
+   real(sop_dp) :: sop_conv_thresh = 1.D-04
+
+   ! Whether to save vectors for Seller's algorithm
+   logical :: sop_use_seller = .false.
 
    interface so_has_doubles
       module procedure so_has_doubles_name, so_has_doubles_num

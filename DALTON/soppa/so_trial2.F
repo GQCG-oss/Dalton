@@ -20,7 +20,8 @@ C              privious optimal trial-vectors and among themself
 C              including the ones obtained from pairing.
 C
       use so_info, only: so_has_doubles, so_singles_second,
-     &                   sop_conv_thresh
+     &                   sop_conv_thresh, sop_stat_trh,
+     &                   sop_use_seller
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -42,7 +43,7 @@ C
       DIMENSION   EIVAL(LEIVAL), RESINM(LRESINM)
       DIMENSION   DENSIJ(LDENSIJ), DENSAB(LDENSAB)
       DIMENSION   WORK(LWORK)
-      LOGICAL     IMAGPROP, DOUBLES, UNIT_S
+      LOGICAL     IMAGPROP, DOUBLES, UNIT_S, STATIC
 C
 C------------------
 C     Add to trace.
@@ -287,8 +288,8 @@ C        Determine the threshold the excitation.
 C-----------------------------------------------
 C
          THR = SOP_CONV_THRESH
-C         
-         IF ((LTYPE.EQ.'EXCITA') .and. 
+C
+         IF ((LTYPE.EQ.'EXCITA') .and.
      &       (IEXCI .GT. (NEXCI - NEXCI2(ISYMTR)))
      &      ) THR = THREX2
 C
@@ -302,7 +303,7 @@ C
 C
             NCONV       = NCONV + 1
 C
-            GO TO 100
+C            GO TO 100
 C
 C--------------------------------------------
 C        If not converged but last iteration.
@@ -312,7 +313,7 @@ C
 C
             CONV(IEXCI) = NO
 C
-            GO TO 100
+C            GO TO 100
 C
 C------------------------------------------------
 C        If not converged and not last iteration.
@@ -372,7 +373,7 @@ C------------------------------------------------------------
 C           Calculate raw new trial vector and write to file.
 C------------------------------------------------------------
 C
-           IF(MODEL.EQ.'AORPA') THEN
+            IF(MODEL.EQ.'AORPA') THEN
 C Use special RPA routine, since for RPA "S" is not explicitly calculated
 C (and it would be a waste to do so)
               CALL RP_NEWTRIAL(NNEWTR,NOLDTR,WORK(KTR1E),LTR1E,
@@ -380,7 +381,7 @@ C (and it would be a waste to do so)
      &                         WORK(KEDIA1),LEDIA1,
      &                         WORK(KRESI1E),LRESI1E,
      &                         WORK(KRESI1D),LRESI1D)
-           ELSE
+            ELSE
               CALL SO_NEWTRIAL(DOUBLES,NNEWTR,NOLDTR,
      &                         WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,
      &                         WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
@@ -394,48 +395,107 @@ C (and it would be a waste to do so)
 C
          END IF
 C
-C         IF(LTYPE.EQ.'LINEAR') THEN
-CC
-CC--------------------------------------------------------------
-CC        Write residual on file for later use in calculation of
-CC        linear response functions (When?)
-CC--------------------------------------------------------------
-CC
-C              LURV1E = -1
-C              CALL GPOPEN(LURV1E,FNRV1E,'UNKNOWN',' ','UNFORMATTED',
-C     &                    IDUMMY,.FALSE.)
-C              LURV1D = -1
-C              CALL GPOPEN(LURV1D,FNRV1D,'UNKNOWN',' ','UNFORMATTED',
-C     &                    IDUMMY,.FALSE.)
-C              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1E)
-C              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1D)
-CC
-C              CALL SO_WRTVE(WORK(KRESI1E),LRESI1E,ISYMTR,LABEL,
-C     &                      EIVAL(IEXCI),LURV1E)
-C              CALL SO_WRTVE(WORK(KRESI1D),LRESI1D,ISYMTR,LABEL,
-C     &                      EIVAL(IEXCI),LURV1D)
-C              CALL GPCLOSE(LURV1E,'KEEP')
-C              CALL GPCLOSE(LURV1D,'KEEP')
-CC
-C            IF(DOUBLES)THEN
-C              LURV2E = -1
-C              CALL GPOPEN(LURV2E,FNRV2E,'UNKNOWN',' ','UNFORMATTED',
-C     &                    IDUMMY,.FALSE.)
-C              LURV2D = -1
-C              CALL GPOPEN(LURV2D,FNRV2D,'UNKNOWN',' ','UNFORMATTED',
-C     &                    IDUMMY,.FALSE.)
-CC             find the right positions
-C              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2E)
-C              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2D)
-C              CALL SO_WRTVE(WORK(KRESI2E),LRESI2E,ISYMTR,LABEL,
-C     &                      EIVAL(IEXCI),LURV2E)
-C              CALL SO_WRTVE(WORK(KRESI2D),LRESI2D,ISYMTR,LABEL,
-C     &                      EIVAL(IEXCI),LURV2D)
-C              CALL GPCLOSE(LURV2E,'KEEP')
-C              CALL GPCLOSE(LURV2D,'KEEP')
-C            ENDIF
-C         ENDIF
 C
+C---------------------------------------------------------------------
+C        Write residual on file for later use if Seller's formula
+C        will be used in the calculation of linear response functions.
+C        We will also save the result vectors for methods with
+C        diagonal S-matrices.
+C        We must also rescale the back to the unnormalized vectors
+C---------------------------------------------------------------------
+C
+         IF (SOP_USE_SELLER.AND.(CONV(IEXCI).EQ.YES)) THEN
+            STATIC = ABS(EIVAL(IEXCI)).LT.sop_stat_trh
+C
+            ENORMINV = 1.0D0/ENORM
+            LURV1E = -1
+            CALL GPOPEN(LURV1E,FNRV1E,'UNKNOWN',' ','UNFORMATTED',
+     &                    IDUMMY,.FALSE.)
+            CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1E)
+            CALL DSCAL(LRESI1E,ENORMINV,WORK(KRESI1E),1)
+            CALL SO_WRTVE(WORK(KRESI1E),LRESI1E,ISYMTR,LABEL,
+     &                    EIVAL(IEXCI),LURV1E)
+            CALL GPCLOSE(LURV1E,'KEEP')
+
+            IF (MODEL.EQ.'AORPA') THEN
+C
+               LUSV1E = -1
+               CALL GPOPEN(LUSV1E,FNSV1E,'UNKNOWN',' ','UNFORMATTED',
+     &                     IDUMMY,.FALSE.)
+               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LUSV1E)
+               CALL DSCAL(LRESO1E,ENORMINV,WORK(KRESO1E),1)
+               CALL SO_WRTVE(WORK(KRESO1E),LRESO1E,ISYMTR,LABEL,
+     &                       EIVAL(IEXCI),LUSV1E)
+               CALL GPCLOSE(LUSV1E,'KEEP')
+
+            END IF
+C
+            IF (.NOT.STATIC) THEN
+               LURV1D = -1
+               CALL GPOPEN(LURV1D,FNRV1D,'UNKNOWN',' ','UNFORMATTED',
+     &                    IDUMMY,.FALSE.)
+               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1D)
+               CALL DSCAL(LRESI1D,ENORMINV,WORK(KRESI1D),1)
+               CALL SO_WRTVE(WORK(KRESI1D),LRESI1D,ISYMTR,LABEL,
+     &                      EIVAL(IEXCI),LURV1D)
+               CALL GPCLOSE(LURV1D,'KEEP')
+            END IF
+C
+            IF ((.NOT.STATIC).AND.(MODEL.EQ.'AORPA')) THEN
+C
+               LUSV1D = -1
+               CALL GPOPEN(LUSV1D,FNSV1D,'UNKNOWN',' ','UNFORMATTED',
+     &                     IDUMMY,.FALSE.)
+               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LUSV1D)
+               CALL DSCAL(LRESO1D,-ENORMINV,WORK(KRESO1D),1)
+               CALL SO_WRTVE(WORK(KRESO1D),LRESO1D,ISYMTR,LABEL,
+     &                       EIVAL(IEXCI),LUSV1D)
+               CALL GPCLOSE(LUSV1D,'KEEP')
+
+            END IF
+C---------------------------------------------------------------------
+C           For doubles we might as well also save the response vector
+C---------------------------------------------------------------------
+            IF(DOUBLES)THEN
+               LURV2E = -1
+               CALL GPOPEN(LURV2E,FNRV2E,'UNKNOWN',' ','UNFORMATTED',
+     &                    IDUMMY,.FALSE.)
+C              find the right positions
+               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2E)
+               CALL SO_WRTVE(WORK(KRESI2E),LRESI2E,ISYMTR,LABEL,
+     &                      EIVAL(IEXCI),LURV2E)
+               CALL GPCLOSE(LURV2E,'KEEP')
+C
+               LUSV2E = -1
+               CALL GPOPEN(LUSV2E,FNSV2E,'UNKNOWN',' ','UNFORMATTED',
+     &                    IDUMMY,.FALSE.)
+C              find the right positions
+               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LUSV2E)
+               CALL SO_WRTVE(WORK(KRESO2E),LRESO2E,ISYMTR,LABEL,
+     &                      EIVAL(IEXCI),LUSV2E)
+               CALL GPCLOSE(LUSV2E,'KEEP')
+C
+            END IF
+            IF(DOUBLES.AND..NOT.STATIC) THEN
+               LURV2D = -1
+               CALL GPOPEN(LURV2D,FNRV2D,'UNKNOWN',' ','UNFORMATTED',
+     &                    IDUMMY,.FALSE.)
+               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2D)
+               CALL SO_WRTVE(WORK(KRESI2D),LRESI2D,ISYMTR,LABEL,
+     &                      EIVAL(IEXCI),LURV2D)
+               CALL GPCLOSE(LURV2D,'KEEP')
+C
+               LUSV2D = -1
+               CALL GPOPEN(LUSV2D,FNSV2D,'UNKNOWN',' ','UNFORMATTED',
+     &                    IDUMMY,.FALSE.)
+C              find the right positions
+               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LUSV2D)
+               CALL DSCAL(LRESO2D,-ONE,WORK(KRESO2D),1)
+               CALL SO_WRTVE(WORK(KRESO2D),LRESO2D,ISYMTR,LABEL,
+     &                      EIVAL(IEXCI),LUSV2D)
+               CALL GPCLOSE(LUSV2D,'KEEP')
+            ENDIF
+         ENDIF
   100 CONTINUE
 C
 C----------------------------------------------------------------------

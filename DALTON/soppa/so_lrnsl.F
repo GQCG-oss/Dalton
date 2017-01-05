@@ -15,7 +15,8 @@ C              properties from the perturbed density matrices and
 C              appropriate property integrals with the atomic
 C              integral direct SOPPA program.
 C
-      use so_info, only: fn_rdens, sop_stat_trh, sop_dp
+      use so_info, only: fn_rdens, sop_stat_trh, sop_dp,
+     &                   sop_use_seller, so_has_doubles
 C
 C#include "implicit.h"
       implicit none
@@ -47,14 +48,18 @@ C
 C
       CHARACTER*8 LABEL1, LABEL2
       CHARACTER*8 RTNLBL(2)
-      REAL(sop_dp)  ::  PROPVAL
+      REAL(sop_dp)  ::  PROPVAL, SELLCOR
       INTEGER :: LPRP1, LWORK1, LPDENSIJ, LPDENSAB, LPDENSAI, LPDENSTOT,
-     &           LWORK2
-      INTEGER :: KPRP1, KEND1, KPDENSIJ, KPDENSAB, KPDENSAI, KEND2
+     &           LWORK2, LWORK3, LSOLV, LRESI
+      INTEGER :: KPRP1, KEND1, KPDENSIJ, KPDENSAB, KPDENSAI, KEND2, 
+     &           KEND3, KSOLV, KRESI
       INTEGER :: IDUMMY, ILAB1, ILAB2, IFREQ, LURDENS
 C
-      LOGICAL   IMAGPROP
+      LOGICAL   IMAGPROP, doubles, static
       REAL(sop_dp), PARAMETER :: DP5=0.5D0
+C
+      CHARACTER(len=*), parameter :: myname = 'SO_LRNSL'
+      real(sop_dp) :: DDOT
 C
 C------------------
 C     Add to trace.
@@ -77,8 +82,8 @@ C
       KEND1 = KPRP1 + LPRP1
       LWORK1  = LWORK  - KEND1
 C
-      CALL SO_MEMMAX ('SO_POLAR.1',LWORK1)
-      IF (LWORK1 .LT.0) CALL STOPIT('SO_POLAR.1',' ',KEND1,LWORK)
+      CALL SO_MEMMAX (myname//'.1',LWORK1)
+      IF (LWORK1 .LT.0) CALL STOPIT(myname//'.1',' ',KEND1,LWORK)
 C
 C-----------------------------------------
 C     Open files with perturbed densities.
@@ -87,6 +92,8 @@ C
       LURDENS = -1
       CALL GPOPEN(LURDENS, FN_RDENS, 'OLD',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
+C
+      doubles = so_has_doubles(model)
 C
 C=============================================
 C     Loop over the first property operators.
@@ -124,9 +131,10 @@ C  These allocations as such doesn't change...
          KEND2    = KPDENSAI + LPDENSAI
          LWORK2   = LWORK - KEND2
 C
-         CALL SO_MEMMAX ('SO_POLAR.2',LWORK2)
+C         
+         CALL SO_MEMMAX (myname//'.2',LWORK2)
          IF (LWORK2 .LT. 0)
-     &            CALL STOPIT('SO_POLAR.2',' ',KEND2,LWORK)
+     &            CALL STOPIT(myname//'.2',' ',KEND2,LWORK)
 C
 C===============================================
 C           Form second order properties SNDPRP.
@@ -134,6 +142,26 @@ C===============================================
 C
 C
          DO 100 IFREQ = 1, NFREQ ! Change these varibles
+
+            STATIC = ABS(FREQ(IFREQ)).LT.sop_stat_trh
+C-----------------------------------------------------------
+C           If using Seller's, get solution vector of LABEL1
+C-----------------------------------------------------------
+            IF (SOP_USE_SELLER) THEN
+               LRESI = NT1AM(ISYM)
+               IF (DOUBLES) LRESI = LRESI + N2P2HOP(ISYM)
+               IF (.NOT.STATIC) LRESI = LRESI*2
+               LSOLV = LRESI
+               KSOLV = KEND2
+               KRESI = KSOLV + LSOLV
+               KEND3 = KRESI + LRESI
+               LWORK3 = LWORK - KEND3
+               IF (LWORK3 .LT. 0)
+     &            CALL STOPIT(myname//'.3',' ',KEND3,LWORK)
+               CALL SO_GETSOLV(WORK(KSOLV),LSOLV,LABEL1,FREQ(IFREQ),1,
+     &                         STATIC,DOUBLES,ISYM)
+            ENDIF
+
             DO ILAB2 = 1, NGPLR(ISYM)
                LABEL2 = LBLLR(ISYM,ILAB2)
 C
@@ -162,6 +190,14 @@ C
      &                        WORK(KPDENSIJ),LPDENSIJ,
      &                        WORK(KPDENSAB),LPDENSAB,
      &                        WORK(KPDENSAI),LPDENSAI)
+C
+               IF (SOP_USE_SELLER.AND.(ILAB1.NE.ILAB2)) THEN
+                  CALL SO_GETSOLV(WORK(KRESI),LRESI,LABEL2,FREQ(IFREQ),
+     &                            2,STATIC,DOUBLES,ISYM)
+                  SELLCOR = DDOT(LRESI,WORK(KRESI),1,WORK(KSOLV),1)
+                  IF (STATIC) SELLCOR = SELLCOR*2
+                  PROPVAL = PROPVAL - SELLCOR
+               ENDIF
 C
                WRITE(LUPRI,'(/A,2(/A,A10,I4,3A,F10.6),/,/A,F20.12,/)')
      &              ' Linear response function in a.u.',
@@ -193,3 +229,82 @@ C
       CALL QEXIT('SO_LRNSL')
       RETURN
       END
+
+      SUBROUTINE SO_GETSOLV(VECT,LVECT,LABEL,FREQ,IOPT,STATIC,DOUBLES,
+     &                      ISYM) 
+C
+C     Gets a converged solution vector or corresponding residual vector
+C
+      use so_info, only: sop_dp
+      
+      implicit none
+#include "soppinf.h"
+#include "ccsdsym.h"
+C     Arguments
+      INTEGER, INTENT(IN)       :: lvect ! length of the vector
+      real(sop_dp), intent(out) :: vect(lvect) ! the vector to read
+      character(len=8), intent(in) :: LABEL
+      real(sop_dp), intent(in)  :: freq ! frequency of pt.
+      integer, intent(in)       :: iopt,! 1 or 2 to read solution or
+                                        ! residual
+     &                             isym ! symmetry of pt.
+      logical, intent(in)  :: static, ! on read E part if static
+     &                        doubles ! include doubles excitations
+C
+C     Variables
+      character(len=5) :: froot
+      integer          :: k1e, k1d, k2e, k2d, kend
+C
+C      
+      IF (IOPT.eq.1) then
+         froot = fnsv1e(1:5)
+      elseif (iopt.eq.2) then
+         froot = fnrv1e(1:5)
+      endif
+C
+C     Find positions in VECT
+      k1e = 1
+      kend = k1e + nt1am(isym)
+      call readavector(froot//'1E', isym, label,
+     &                 freq, vect(k1e), nt1am(isym))
+      print *, 'Read ', froot//'1E', label, freq
+      if (.NOT.STATIC) THEN 
+         k1d = kend
+         kend = k1d + nt1am(isym)
+         call readavector(froot//'1D',isym,
+     &                    label,freq,vect(k1d),nt1am(isym))
+      end if
+      if (doubles) then
+         k2e = kend
+         kend = k2e + n2p2hop(isym)
+         call readavector(froot//'2E',isym,label,freq,vect(k2e),
+     &                     n2p2hop(isym))
+         if (.not.static) then
+            k2d = kend
+            kend = k2d + n2p2hop(isym)
+            call readavector(froot//'2D',isym,label,freq,vect(k2d),
+     &                     n2p2hop(isym))
+         end if
+      end if
+C
+
+      contains 
+         
+         subroutine readavector(fname,isym,label,freq,vect,length)
+            character(len=7),intent(in)  :: fname
+            character(len=8),intent(in)  ::label
+            integer, intent(in) :: isym, length
+            real(sop_dp), intent(in) :: freq
+            real(sop_dp), intent(out) :: vect(length)
+
+            integer :: lufile, idummy
+
+            lufile = -1
+            call GPOPEN(lufile,fname,'OLD    ',' ','UNFORMATTED',
+     &                 idummy,.FALSE.)
+            call SO_FNDPOS(LABEL,FREQ,LUFILE)
+            call SO_REAVE(vect,length,isym,label,freq,lufile)
+            call gpclose(lufile,'KEEP')
+         end subroutine
+
+      END SUBROUTINE

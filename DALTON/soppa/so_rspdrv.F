@@ -17,7 +17,8 @@ C
      &                   so_singles_second,
      &                   sop_dens_label, sop_model_rpad,
      &                   sop_model_rpa,
-     &                   sop_conv_thresh
+     &                   sop_conv_thresh,
+     &                   sop_use_seller
 C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
@@ -332,6 +333,9 @@ C               WRITE(LUPRI,'(2A,/A)') 'Warning: Excitation energies',
 C     &            'not implemented in AO-SOPPA **RESPONSE driver.',
 C     &            'Use **PROPERTIES instead'
 C            END DO
+
+            SOP_USE_SELLER = (NGPLR(ISYM).GT.1).AND.
+     &                       (IMODEL.EQ.SOP_MODEL_RPA)
 
             DO IOPER = 1, NGPLR(ISYM)
 C

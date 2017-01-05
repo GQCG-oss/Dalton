@@ -61,8 +61,6 @@
      &           LUBT1E, LUBT1D, LUBJ1E, LUBJ1D,                        &
      &           LURI1E, LURI1D, LURI2E, LURI2D,                        &
      &           LUSC1E, LUSC1D, LUSC2E, LUSC2D,                        &
-     &           LUSV1E, LUSV1D, LUSV2E, LUSV2D,                        &
-     &           LURV1E, LURV1D, LURV2E, LURV2D,                        &
 !    LUGPVE should be replaced by LUGPV1     
      &           LUGPVE, LUSOLA, LUGPV1, LUGPV2,                        &
      &           SOMEMO
@@ -115,8 +113,6 @@
      &                 LUBT1E, LUBT1D, LUBJ1E, LUBJ1D,                  &
      &                 LURI1E, LURI1D, LURI2E, LURI2D,                  &
      &                 LUSC1E, LUSC1D, LUSC2E, LUSC2D,                  &
-     &                 LUSV1E, LUSV1D, LUSV2E, LUSV2D,                  &
-     &                 LURV1E, LURV1D, LURV2E, LURV2D,                  &
      &                 LUGPVE, LUSOLA, LUGPV1, LUGPV2
 !
       COMMON /SOPPINF/ SOPPINFLAST

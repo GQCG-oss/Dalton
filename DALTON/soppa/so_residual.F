@@ -150,12 +150,6 @@ C
 C-----------------------------------------------
 C     Calculate the norm of the residual vector.
 C-----------------------------------------------
-C
-C      RESINM = DDOT(LRESI1E,RESI1E,1,RESI1E,1)
-c     &       + DDOT(LRESI1D,RESI1D,1,RESI1D,1)
-c      IF (DOUBLES) RESINM = RESINM
-C     &       + DDOT(LRESI2E,RESI2E,1,RESI2E,1)
-C     &       + DDOT(LRESI2D,RESI2D,1,RESI2D,1)
 
       RESINM = DNRM2(LRESI1E,RESI1E,1)**2
       IF(.NOT.STATIC) RESINM = RESINM + DNRM2(LRESI1D,RESI1D,1)**2
