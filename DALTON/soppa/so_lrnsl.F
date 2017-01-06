@@ -1,6 +1,6 @@
 C
 C  /* Deck so_lrnsl */
-      SUBROUTINE SO_LRNSL(MODEL,ISYM,T2AM,LT2AM,
+      SUBROUTINE SO_LRNSL(MODEL,ISYM,
      &                    DENSIJ,LDENSIJ,
      &                    DENSAB,LDENSAB,DENSAI,LDENSAI,
      &                    WORK,LWORK)
@@ -40,9 +40,9 @@ C
 
 C
       integer, intent(in) :: isym, ! symmetry of this batch of perturbations
-     &       LDENSIJ, LDENSAB, LDENSAI, LT2AM, LWORK ! array lengths
+     &       LDENSIJ, LDENSAB, LDENSAI, LWORK ! array lengths
       REAL(sop_dp),INTENT(IN) :: DENSIJ(LDENSIJ), DENSAB(LDENSAB),
-     &                     DENSAI(LDENSAI), T2AM(LT2AM)
+     &                     DENSAI(LDENSAI)
       REAL(sop_dp),INTENT(INOUT) :: WORK(LWORK)
       CHARACTER(len=5), intent(in) :: MODEL
 C
@@ -248,7 +248,7 @@ C     Arguments
       integer, intent(in)       :: iopt,! 1 or 2 to read solution or
                                         ! residual
      &                             isym ! symmetry of pt.
-      logical, intent(in)  :: static, ! on read E part if static
+      logical, intent(in)  :: static, ! only read E part if static
      &                        doubles ! include doubles excitations
 C
 C     Variables
@@ -267,7 +267,6 @@ C     Find positions in VECT
       kend = k1e + nt1am(isym)
       call readavector(froot//'1E', isym, label,
      &                 freq, vect(k1e), nt1am(isym))
-      print *, 'Read ', froot//'1E', label, freq
       if (.NOT.STATIC) THEN 
          k1d = kend
          kend = k1d + nt1am(isym)
@@ -286,8 +285,8 @@ C     Find positions in VECT
      &                     n2p2hop(isym))
          end if
       end if
+      !if (kend .ne. lvect+1) print *, 'Odd vector length', kend, lvect
 C
-
       contains 
          
          subroutine readavector(fname,isym,label,freq,vect,length)

@@ -159,7 +159,7 @@ C
       KEND1B   = KRESO2D + LRESO2D
 C
 C     We need to transform trial-vectors with S (S*Tr) , grap some space
-      IF (MODEL.EQ.'AORPA') THEN
+      IF (UNIT_S) THEN
 C        Only need to change sign on TR1D, done in place
          KTMP1E = KRESO1E
          KTMP1D = KRESO1D
@@ -221,7 +221,7 @@ C----------------------------
 C
          CALL SO_READ(WORK(KTMP1E),LRESO1E,LUTR1E,FNTR1E,IEXCI)
          CALL SO_READ(WORK(KTMP1D),LRESO1D,LUTR1D,FNTR1D,IEXCI)
-         IF (MODEL.EQ.'AORPA') THEN
+         IF (UNIT_S) THEN
 C           S(1) == S(0) for RPA, that is simple
             CALL DSCAL(LRESO1D,-ONE,WORK(KRESO1D),1) !KRESO1D = KTMP1D
          ELSE
@@ -399,9 +399,10 @@ C
 C---------------------------------------------------------------------
 C        Write residual on file for later use if Seller's formula
 C        will be used in the calculation of linear response functions.
-C        We will also save the result vectors for methods with
-C        diagonal S-matrices.
-C        We must also rescale the back to the unnormalized vectors
+C        We will also save the solution vectors. 
+C        For methods with non-diagonal S-matrices, we need to re-read
+C        these.
+C        We must also scale the back to the unnormalized vectors
 C---------------------------------------------------------------------
 C
          IF (SOP_USE_SELLER.AND.(CONV(IEXCI).EQ.YES)) THEN
@@ -417,18 +418,20 @@ C
      &                    EIVAL(IEXCI),LURV1E)
             CALL GPCLOSE(LURV1E,'KEEP')
 
-            IF (MODEL.EQ.'AORPA') THEN
-C
-               LUSV1E = -1
-               CALL GPOPEN(LUSV1E,FNSV1E,'UNKNOWN',' ','UNFORMATTED',
-     &                     IDUMMY,.FALSE.)
-               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LUSV1E)
-               CALL DSCAL(LRESO1E,ENORMINV,WORK(KRESO1E),1)
-               CALL SO_WRTVE(WORK(KRESO1E),LRESO1E,ISYMTR,LABEL,
-     &                       EIVAL(IEXCI),LUSV1E)
-               CALL GPCLOSE(LUSV1E,'KEEP')
-
+            IF (.NOT.UNIT_S) THEN
+C -- Re-read the trial-vector from file
+               CALL SO_READ(WORK(KRESO1E), LRESO1E, LUTR1E, FNTR1E,
+     &                      IEXCI)
             END IF
+            LUSV1E = -1
+            CALL GPOPEN(LUSV1E,FNSV1E,'UNKNOWN',' ','UNFORMATTED',
+     &                  IDUMMY,.FALSE.)
+            CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LUSV1E)
+            CALL DSCAL(LRESO1E,ENORMINV,WORK(KRESO1E),1)
+            CALL SO_WRTVE(WORK(KRESO1E),LRESO1E,ISYMTR,LABEL,
+     &                       EIVAL(IEXCI),LUSV1E)
+            CALL GPCLOSE(LUSV1E,'KEEP')
+
 C
             IF (.NOT.STATIC) THEN
                LURV1D = -1
@@ -439,15 +442,20 @@ C
                CALL SO_WRTVE(WORK(KRESI1D),LRESI1D,ISYMTR,LABEL,
      &                      EIVAL(IEXCI),LURV1D)
                CALL GPCLOSE(LURV1D,'KEEP')
-            END IF
 C
-            IF ((.NOT.STATIC).AND.(MODEL.EQ.'AORPA')) THEN
+               IF(UNIT_S) THEN
+                  DFACT = -ENORMINV
+               ELSE 
+                  CALL SO_READ(WORK(KRESO1D), LRESO1D, LUTR1D, FNTR1D,
+     &                         IEXCI)
+                  DFACT = ENORMINV
+               END IF
 C
                LUSV1D = -1
                CALL GPOPEN(LUSV1D,FNSV1D,'UNKNOWN',' ','UNFORMATTED',
      &                     IDUMMY,.FALSE.)
                CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LUSV1D)
-               CALL DSCAL(LRESO1D,-ENORMINV,WORK(KRESO1D),1)
+               CALL DSCAL(LRESO1D,DFACT,WORK(KRESO1D),1)
                CALL SO_WRTVE(WORK(KRESO1D),LRESO1D,ISYMTR,LABEL,
      &                       EIVAL(IEXCI),LUSV1D)
                CALL GPCLOSE(LUSV1D,'KEEP')
@@ -462,6 +470,10 @@ C---------------------------------------------------------------------
      &                    IDUMMY,.FALSE.)
 C              find the right positions
                CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2E)
+C              Put the residual in the other basis...
+C              We need to scale by one half               
+               CALL DSCAL(LRESI2E,ENORMINV*0.5D0,WORK(KRESI2E),1)
+               CALL CCSD_TCMEPKX(WORK(KRESI2E),2.0D0,ISYMTR)
                CALL SO_WRTVE(WORK(KRESI2E),LRESI2E,ISYMTR,LABEL,
      &                      EIVAL(IEXCI),LURV2E)
                CALL GPCLOSE(LURV2E,'KEEP')
@@ -471,8 +483,9 @@ C
      &                    IDUMMY,.FALSE.)
 C              find the right positions
                CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LUSV2E)
+               CALL DSCAL(LRESO2E,ENORMINV,WORK(KRESO2E),1)
                CALL SO_WRTVE(WORK(KRESO2E),LRESO2E,ISYMTR,LABEL,
-     &                      EIVAL(IEXCI),LUSV2E)
+     &                       EIVAL(IEXCI),LUSV2E)
                CALL GPCLOSE(LUSV2E,'KEEP')
 C
             END IF
@@ -481,6 +494,10 @@ C
                CALL GPOPEN(LURV2D,FNRV2D,'UNKNOWN',' ','UNFORMATTED',
      &                    IDUMMY,.FALSE.)
                CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2D)
+C              Put the residual in the other basis...
+C              We need to scale by one half               
+               CALL DSCAL(LRESI2D,ENORMINV*0.5D0,WORK(KRESI2D),1)
+               CALL CCSD_TCMEPKX(WORK(KRESI2D),2.0D0,ISYMTR)
                CALL SO_WRTVE(WORK(KRESI2D),LRESI2D,ISYMTR,LABEL,
      &                      EIVAL(IEXCI),LURV2D)
                CALL GPCLOSE(LURV2D,'KEEP')
@@ -490,7 +507,7 @@ C
      &                    IDUMMY,.FALSE.)
 C              find the right positions
                CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LUSV2D)
-               CALL DSCAL(LRESO2D,-ONE,WORK(KRESO2D),1)
+               CALL DSCAL(LRESO2D,-ENORMINV,WORK(KRESO2D),1)
                CALL SO_WRTVE(WORK(KRESO2D),LRESO2D,ISYMTR,LABEL,
      &                      EIVAL(IEXCI),LUSV2D)
                CALL GPCLOSE(LUSV2D,'KEEP')

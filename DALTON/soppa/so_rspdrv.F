@@ -334,8 +334,7 @@ C     &            'not implemented in AO-SOPPA **RESPONSE driver.',
 C     &            'Use **PROPERTIES instead'
 C            END DO
 
-            SOP_USE_SELLER = (NGPLR(ISYM).GT.1).AND.
-     &                       (IMODEL.EQ.SOP_MODEL_RPA)
+            SOP_USE_SELLER = (NGPLR(ISYM).GT.1)
 
             DO IOPER = 1, NGPLR(ISYM)
 C
@@ -364,7 +363,6 @@ C----------------------------------------------
 C
             IF (NGPLR(ISYM).GT.0) THEN
                CALL SO_LRNSL(MODEL,ISYM,
-     &                       WORK(KT2AM),LT2AM,
      &                       WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
      &                       WORK(KEND1),LWORK1)
