@@ -133,7 +133,6 @@ C *** Option 5 >SC_SRMP2<  self-consistent short-range contributions included
 C *** Option 6 >SRINTS<  calculate MP2 energy from AOSR2INT integrals
 #ifdef MOD_SRDFT
   106 SRMP2_SRINTS = .TRUE.
-      IPRMP2 = MAX(IPRMP2,1)
 #else
   106 CONTINUE
       call quit(
@@ -174,7 +173,6 @@ C *** Option 12 >RSDHF< compute the RSDHf energy
 #ifdef MOD_SRDFT
   112 DO_RSDHF = .TRUE.
       SRMP2_SRINTS = .TRUE.   ! .RSDHF activates .SRINTS
-      IPRMP2 = MAX(IPRMP2,1)
 !     LAMSR = 1.0D0           ! original RSDHf model 
       READ(LUCMD,*) LAMSR     ! read the fraction lambda of srHFX and
 !                               lr-sr MP2 coupling  
@@ -197,6 +195,7 @@ C *** Option 12 >RSDHF< compute the RSDHf energy
       GO TO 100
 C ==========================================================================
  2000 CONTINUE
+      IF (SRMP2_SRINTS) IPRMP2 = MAX(IPRMP2,1) ! ensure output of energies
       IF (MP2_SCALED) THEN
          MP2_SCALEFAC(1) = P_S + P_T
          MP2_SCALEFAC(2) =     - P_T
@@ -253,6 +252,7 @@ C
       LOGICAL FCKFRO, MP2FRZ
       CHARACTER AO2INTFILE_LABEL_SAVE*8
       CHARACTER SR_FUNCS*80                 ! for RSDHf calculation
+      INTEGER   FCKTRA_TYPE_save
       PARAMETER ( D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0 )
 C
 C Used from common blocks:
@@ -263,7 +263,7 @@ C     SCBRHF: NFRRHF()
 C     INFMP2: NPHSYM, MP2FRO
 C     INFINP: FLAG(25), DIRFCK
 C     INFIND: ISX, ISMO
-C     INFTRA: NEWTRA, AO2INTFILE_LABEL
+C     INFTRA: NEWTRA, AO2INTFILE_LABEL, FCKTRA_TYPE
 C
 #include "maxorb.h"
 #include "maxash.h"
@@ -283,7 +283,8 @@ C
 #include "inftra.h"
 #include "dftcom.h"
 !
-#include "dfterg.h" ! Manu: needed for RSDHf
+! dfterg.h Manu: needed for RSDHf
+#include "dfterg.h"
 C
       CALL QENTER('MP2CTL')
       CALL GETTIM(CPUMP2,WALMP2)
@@ -341,45 +342,46 @@ C     Disable "MP2FRO" if result not to be printed
       END IF
       CALL FLSHFO(LUPRI)
       CHIVAL_SAVE = CHIVAL
-      IF (SRMP2_SRINTS) THEN
-         IPRMP2 = MAX(0,IPRMP2)
-C        ... make sure MP2 energy with short-range integrals is printed!
-      END IF
 C
 C     if SRMP2_SRINTS
 C     1)  calculate "EMP2" from AO2SRINT integrals (i.e. short-range integrals),
 C     2)  set SRMP2_SRINTS false, go back to label 10, and redo the
 C         standard srMP2 "EMP2" from AOTWOINT integrals (i.e. long-range integrals)
+C     3)  make sure MP2 energy with short-range integrals is printed!
       IF (SRMP2_SRINTS) THEN
          ISRINTS_LOOP = 0
          EMP2_SR   = DUMMY
          EMP2_LR   = DUMMY
          EMP2FL_SR = DUMMY
          EMP2FL_LR = DUMMY
+         IPRMP2 = MAX(0,IPRMP2)
       END IF
+      FKCTRA_TYPE_save = FCKTRA_TYPE
    10 CONTINUE
       IF (SRMP2_SRINTS) THEN
+         FKCTRA_TYPE = FCKTRA_TYPE_save
          ISRINTS_LOOP = ISRINTS_LOOP + 1
          IF (ISRINTS_LOOP .EQ. 1) THEN
-            WRITE(LUPRI,'(/A)')
-     &      ' MP2 energy expression with short-range integrals'
+            IF (FCKTRA_TYPE .GT. 0) FCKTRA_TYPE = 0 ! FCKTRA not implemented for sr 2-el. integrals
+            CALL HEADER(
+     &      ' MP2 energy expression with short-range integrals',-1)
             AO2INTFILE_LABEL_SAVE = AO2INTFILE_LABEL
             AO2INTFILE_LABEL = 'AOSR2INT'
          ELSE IF (ISRINTS_LOOP .EQ. 2) THEN
-            WRITE(LUPRI,'(/A)')
-     &      ' MP2 energy expression with long-range integrals'
+            CALL HEADER(
+     &      ' MP2 energy expression with long-range integrals',-1)
             AO2INTFILE_LABEL_SAVE = AO2INTFILE_LABEL
             AO2INTFILE_LABEL = 'AOTWOINT'
          ELSE IF (ISRINTS_LOOP .EQ. 3) THEN
-            WRITE(LUPRI,'(/A)') ' MP2 energy expression with '//
-     &      'full (short-range + long-range) integrals'
+            CALL HEADER(' MP2 energy expression with '//
+     &      'full (short-range + long-range) integrals',-1)
             AO2INTFILE_LABEL_SAVE = AO2INTFILE_LABEL
             AO2INTFILE_LABEL = 'AOTWOINT'
             CHIVAL = -1.0D0
             DOSRIN = .FALSE.
             SRINTS = .FALSE.
             IF (LUINTA .LE. 0) CALL GPOPEN(LUINTA,AO2INTFILE_LABEL,
-     &         'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+     &         'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
             CALL GPCLOSE(LUINTA,'DELETE')
          ELSE
             WRITE(LUPRI,'(/A)')
@@ -1506,7 +1508,7 @@ C
          NWARN = NWARN + 1
          WRITE(LUPRI,'(/A/A,F12.6,A)')
      &   ' WARNING : MP2 CALCULATION CARRIED OUT INCORRECTLY ',
-     &   ' WARNING : TRACE OF ONE ELECTRON DENSITY MATRIX GIVE ',
+     &   ' WARNING : TRACE OF ONE ELECTRON DENSITY MATRIX GIVES ',
      &   (-ELERMV+ELERCV),' ELECTRONS IN ADDITION TO SPECIFIED NUMBER'
          I = 1
       ELSE
