@@ -208,7 +208,9 @@ C
             IF (LUINTM .LE. 0) CALL GPOPEN(LUINTM,FNINTM,'OLD',' ',
      &                                     'UNFORMATTED',IDUMMY,.FALSE.)
             REWIND (LUINTM)
-            IF (.NOT.FNDLAB('MOLTWOEL',LUINTM)) THEN
+            IF (FCKTRA_TYPE .GT. 0) THEN
+               ICASE    = 0
+            ELSE IF (.NOT.FNDLAB('MOLTWOEL',LUINTM)) THEN ! only for "old" transformation
                ICASE    = 2
                FLAG(14) = .FALSE.
             ELSE
@@ -218,7 +220,7 @@ C     ... use of old AOSRTINT.DA may be possible
             END IF
             IF (FLAG(14)) THEN
                KTRLVL = ABS(ITRLVL)
-               CALL REWSPL(LUINTM)
+               REWIND (LUINTM)
                READ (LUINTM)
                READ (LUINTM) LBINTM, JTRLVL
                IF (JTRLVL .EQ. 3 .AND. KTRLVL .EQ. 2) KTRLVL =  7
