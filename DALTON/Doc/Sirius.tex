@@ -2204,8 +2204,9 @@ in the \Sec{CONFIGURATION INPUT} section.
 
 \item[\Key{SINGLY OCCUPIED}] Default = no singly occupied orbitals \\
     \kw{READ (LUINP,*) (NROHF(I),I=1,NSYM)} \\
-  High--spin spin-restricted open-shell Hartree--Fock or Kohn-Sham DFT.
- \index{HSROHF}\index{HSRODFT}\index{ROHF!high spin}\index{RODFT!high spin}\index{ROKS!high spin}
+  High--spin spin-restricted open-shell Hartree--Fock (aka HSROHF, ROHF)
+  or Kohn-Sham DFT (aka HSROKS, HSRODFT, RODFT, ROKS).
+ \index{HSROHF}\index{HSRODFT}\index{HSROKS}\index{ROHF!high spin}\index{RODFT!high spin}\index{ROKS!high spin}
   Specify the number of singly occupied orbitals in each irreducible representation
   of the molecular point group. Only the high-spin state of these
   singly-occupied orbitals will be made and used in the calculations.

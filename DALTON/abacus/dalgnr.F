@@ -624,7 +624,34 @@ C
       CALL TITLER('Starting in Static Property Section (ABACUS) -',
      &   ' ',200)
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini ABACUS')
-C
+
+C     Test if a requested molecular derivative calculation is implemented
+C     NAORDR = max order of analytical geometry derivatives
+
+      CALL FNDANA(NAORDR)
+      IF (MOLHES .AND. NAORDR .LT. 2) THEN
+         WRITE(LUPRI,'(//A/A,I5/A)')
+     &   'ERROR, analytical calculation of molecular Hessian is '//
+     &      'not available for this type of wave function.',
+     &   '       Analytical derivative order available:',NAORDR,
+     &   '       (You might want to choose numerical Hessian if your '//
+     &      'molecule is not too big.)'
+         CALL QUIT(
+     &   'ERROR, analytical calculation of molecular Hessian is '//
+     &      'not available for this type of wave function')
+      END IF
+      IF (MOLGRD .AND. NAORDR .LT. 1) THEN
+         WRITE(LUPRI,'(//A/A,I5)')
+     &   'ERROR, analytical calculation of molecular gradient is '//
+     &      'not available for this type of wave function.',
+     &   '       Analytical derivative order available:',NAORDR
+         CALL QUIT(
+     &   'ERROR, analytical calculation of molecular gradient is '//
+     &      'not available for this type of wave function')
+      END IF
+
+C     Now execute abacus
+
       CALL ABACTL(WORK(1),LMWORK)
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ABACUS')
 C
@@ -907,7 +934,13 @@ C
                CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
      &                     IDUMMY,.FALSE.)
                REWIND (LUCMD,IOSTAT=IOS)
- 1100          READ (LUCMD,'(A7)') WORD
+ 1100          READ (LUCMD,'(A7)',IOSTAT=IOS) WORD
+               IF (IOS .NE. 0) THEN
+                  WRITE(LUPRI,'(//A)') 'ERROR: **NMDDRV input'//
+     &            ' required when .NMDDRV requested'
+                  CALL QUIT('ERROR: **NMDDRV input'//
+     &            ' required when .NMDDRV requested')
+               END IF
                CALL UPCASE(WORD)
                IF (WORD .NE. '**NMDDR') GOTO 1100
                CALL NMDINP(WORD,IPRINT)
@@ -1341,7 +1374,7 @@ C
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
-      DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
+      DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', 'XXXXXXX',
      &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
      &            '*READIN', '*QMNPMM', '*QFIT  ', '*EXTPCM'/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
@@ -1906,14 +1939,8 @@ C     "*OPTIMI" input
     4 CONTINUE
         CALL OPINPU(WORD)
       GO TO 200
-C     "*NMDDRV" input
+C     "XXXXXXX" input
     5 CONTINUE
-C
-C     We have to wait with the input processing of "*NMDDRV"
-C     until we know more about the molecule
-C
-  205   READ (LUCMD,'(A7)') WORD
-        IF (WORD(1:1) .NE. '*') GOTO 205
       GO TO 200
 C
 C     "*MOLBAS" input

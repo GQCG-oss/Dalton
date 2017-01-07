@@ -2501,6 +2501,8 @@ C
             CALL TIMER('HUCKEL',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
          END IF
+      END IF ! RUNONE
+      IF (RUNONE .OR. ONEPRP) THEN
 C
 C           ***** Overlap integrals *****
 C
@@ -3591,8 +3593,8 @@ C
                CALL FLSHFO(LUPRI)
             END IF
 cLig
-         END IF
-      END IF  ! (RUNONE)
+         END IF ! (ONEPRP)
+      END IF  ! (RUNONE .OR. ONEPRP)
       RUNONE = .TRUE. ! enable one-electron integrals for next iteration if e.g. geometry optimization
 C
 C     Determine number of different integrals in R12 method (WK/UniKA/19-11-2002).

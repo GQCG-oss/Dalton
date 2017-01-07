@@ -354,9 +354,11 @@ C         if reading input from a terminal
          END IF
          GO TO 930
   910    CONTINUE
-            CALL QUIT('ERROR: End of file, no Sirius input found')
+            CALL QUIT('ERROR: '//
+     &      'End of .dal input file, no wave function input found')
   920    CONTINUE
-            CALL QUIT('ERROR reading .dal input, no Sirius input found')
+            CALL QUIT('ERROR reading .dal '//
+     &      'input file before finding wave function input')
   930    CONTINUE
       END IF
 C
@@ -3216,12 +3218,12 @@ C     ... AUTOCC may have been set true by .AUTOCC
       IF (ELECTR) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .OPEN SHELL must not be specified together with .ELECTRONS'
+     &' .OPEN SHELL is not allowed together with .ELECTRONS'
       END IF
       IF (HSROHF) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .OPEN SHELL must not be specified together with .SINGLY'
+     &' .OPEN SHELL is not allowed together with .SINGLY'
       END IF
       IF (IOPRHF .LT. 1 .OR. IOPRHF .GT. NSYM) THEN
          INPERR = INPERR + 1
