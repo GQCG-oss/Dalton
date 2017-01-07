@@ -1789,6 +1789,7 @@ C     *********** THRQ: THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
 C
       IF (FCKTRA_TYPE .gt. 0) THEN
          CALL FCKTRA_CTL(KTRLVL,THRP,CMO,WORK,KWORK)
+         NEWTRA_USEDRC = .FALSE. ! FCKTRA_DRCCTL not implemented yet
       ELSE IF (NEWTRA) THEN
          IF (ITRLVL .EQ. 0 .OR. ITRLVL .GE. 5) THEN ! zeroth, third or fourth order transformation
             USEDRC = .FALSE. ! use DRCCTL and not Dirac integrals from N_TRACTL
@@ -2865,7 +2866,7 @@ C
       SAVE    KBUF, KIBUF, KNEXT
       DATA    KNEXT /-1/
 C
-      IF (FCKTRA_TYPE .gt. 0) THEN
+      IF (FCKTRA_TYPE .gt. 0 .AND. NEWTRA_USEDRC) THEN
          CALL FCKTRA_NXTH2D(IC,ID,H2CD,NEEDTP,IDIST)
          RETURN
       ELSE IF (NEWTRA .AND. NEWTRA_USEDRC) THEN
