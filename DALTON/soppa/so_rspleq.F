@@ -63,7 +63,7 @@ C
       LGPVC1  =  NT1AM(ISYMTR)
 CPFP   2009-Jun
       IF (DOUBLES) THEN
-         LGPVC2  =  NT2AM(ISYMTR)
+         LGPVC2  =  N2P2HOP(ISYMTR)
       ELSE
          LGPVC2  = 0
       ENDIF

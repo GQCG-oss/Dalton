@@ -95,11 +95,7 @@ C     Set the correct convergence threshold -- THCLR from inflr.h
       sop_conv_thresh = THCLR
 C
 C     Set triplet flag if given -- TRPLET from infrsp.h
-      IF (TRPLET) THEN 
-         TRIPLET = .TRUE.
-      ELSE
-         TRIPLET = .FALSE.
-      ENDIF
+      TRIPLET = TRPLET
 C
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.
@@ -188,6 +184,9 @@ C
       IF (.NOT.RPA_ONLY) THEN
 C
          LT2AM   = NT2AMX
+C        Triplet case currently requires
+C        double the memory for MP2 amplitudes         
+         IF(TRIPLET) LT2AM = 2*LT2AM
          LDENSIJ = NIJDEN(1)
          LDENSAB = NABDEN(1)
          LDENSAI = NAIDEN(1)
@@ -228,29 +227,16 @@ C------------------------------------------------------
 C
       CALL SO_PRPINT('LINEAR',NLBTOT,WORK(KEND1),LWORK1)
 C
-C==========================================
-C     Determine linear response properties.
-C==========================================
+C     Find some otherway of setting this?
 C
-C----------------------------------------------------------
-C     Adjust number of trialvectors for each excitation and
-C     write information to output.
-C----------------------------------------------------------
-C
-      IF ( NSAVMX .LT. 2 ) THEN
-C
-         NSAVMX = 2
-C
-         WRITE(LUPRI,'(1X,A,/,A,I2,A)')
-     &   'NOTICE: Maximum number of trial vectors for each'//
-     &   ' property',' is raised to',NSAVMX, ' as this is'//
-     &   ' minimal space allowed.'
-C
-      END IF
-C
+      NSAVMX = 3
       WRITE(LUPRI,'(/,1X,A,I2,/)')
      &'Maximum number of trial vectors for each'//
      &' property is ',NSAVMX
+C
+C==========================================
+C     Determine linear response properties.
+C==========================================
 C
 C========================================
 C     Loop over the posible methods
