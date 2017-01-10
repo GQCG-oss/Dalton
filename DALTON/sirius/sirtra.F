@@ -210,7 +210,7 @@ C
             REWIND (LUINTM)
             IF (FCKTRA_TYPE .GT. 0) THEN
                ICASE    = 0
-            ELSE IF (.NOT.FNDLAB('MOLTWOEL',LUINTM)) THEN ! only for "old" transformation
+            ELSE IF (.NOT.FNDLAB('MOLTWOEL',LUINTM)) THEN ! not for FCKTRA, MOLTWOEL only for "old" transformation
                ICASE    = 2
                FLAG(14) = .FALSE.
             ELSE
@@ -453,7 +453,7 @@ C....    BEGIN LOOP OVER THE INTEGRAL FILE
 C
 C....    REWIND IT FIRST
 C
-         CALL REWSPL(LUINTA)
+         REWIND(LUINTA)
          CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
  1       CONTINUE
          CALL READI4(LUINTA,LENINT,IINTPK)
@@ -788,7 +788,7 @@ C
    30    CONTINUE
 C
 C....    BEGIN READING THE INTEGRAL FILE
-         CALL REWSPL(LUHALF)
+         REWIND(LUHALF)
     1    CONTINUE
          CALL READI(LUHALF,LENINT,IINT)
          LENGTH = IINT(LENINT-1)
@@ -962,7 +962,7 @@ C     ***** LPQCD : NUMBER OF INTEGRALS (PQ/CD)
 C
 C     ***** REWIND FILE FOR HALF TRANSFORMED INTEGRALS LUHALF *****
 C
-      CALL REWSPL(LUHALF)
+      REWIND(LUHALF)
 C
 C     ***** START TRANSFORMATION   *****
 C     ***** LOOP OVER ALL PAIRS PQ *****
@@ -1241,7 +1241,7 @@ C     ***** WRITE END BUFFER *****
 C
       IOUTB(LOUT21)=-1
       CALL WRITI(LUHALF,LOUT22,IOUTB)
-      CALL REWSPL(LUHALF)
+      REWIND(LUHALF)
       IF (JTER.EQ.1) THEN
          WRITE(LUPRI,1000) LUHALF,LPQCD
          WRITE(LUPRI,1100) THRP
@@ -1687,7 +1687,7 @@ C     ***** WRITE LAST BUFFER *****
       IOUTB(LOUT21)=-1
       CALL WRITI(LUINTM,LOUT22,IOUTB)
       WRITE(LUINTM)LAB123,TABLE(2)
-      CALL REWSPL(LUINTM)
+      REWIND(LUINTM)
       DFIN=SECOND()
       DTIM=DFIN-DST
       IF (JTER.EQ.1) THEN
@@ -1835,9 +1835,9 @@ C
          CALL GETTIM(TCPU,TWALL)
          TCPU  = TCPU -TCPU0
          TWALL = TWALL-TWALL0
-         WRITE(LUPRI,2100) TCPU, TWALL
+         WRITE(LUPRI,2100) ITRLVL, TCPU, TWALL
       END IF
- 2100 FORMAT(/' 2-el. integral transformation:',
+ 2100 FORMAT(/' 2-el. integral transformation level ',I0,':',
      &       ' Total CPU and WALL times (sec)',2F12.3)
 C
 C     Sort mo integrals to Dirac form, if requested
@@ -2310,7 +2310,7 @@ C        a transformation LSRTAO will be = +1.
 C
 C
       IF (LSRTAO .NE. 0) THEN
-         CALL REWSPL(LUINTM)
+         REWIND(LUINTM)
          READ  (LUINTM) NPQ,LDABUF,(LASTAD(I),I=1,2500)
          READ  (LUINTM) LBINT1,JTRLVL
          IF (JTRLVL .EQ. 3 .AND. ITRLVL .EQ. 2) JTRLVL = -1
@@ -2343,9 +2343,9 @@ C           and subtract from input CMO matrix
       IF (LSRTAO .LT. 0) THEN
 C     ... check if old LUDA exist, if yes then check if file
 C         is consistent with LUINTM information /890302-hjaaj
-         CALL REWSPL(LUINTM)
+         REWIND(LUINTM)
          READ  (LUINTM) NPQ,LDABUF,(LASTAD(I),I=1,2500)
-         CALL REWSPL(LUINTM)
+         REWIND(LUINTM)
          LBUF = (IRAT + 1)*LDABUF + 2
          CALL GPINQ('AOSRTINT.DA','EXIST',FEXIST)
          IF (FEXIST) THEN
@@ -2395,14 +2395,14 @@ C        CALL SORTA(RINT,IINT,SCR,ISCR,MEMSX,MEMTX,IT)
          DST  = DFIN
          IF (IPRTRA.GT.0) WRITE (LUPRI,46) DTIM
    46    FORMAT(/' TIME IN SORTA',F10.2)
-         CALL REWSPL(LUINTM)
+         REWIND(LUINTM)
          WRITE (LUINTM) NPQ,LDABUF,(LASTAD(I),I=1,2500)
-         CALL REWSPL(LUINTM)
+         REWIND(LUINTM)
          LSRTAO = 1
       ELSE
-         CALL REWSPL(LUINTM)
+         REWIND(LUINTM)
          READ  (LUINTM) NPQ,LDABUF,(LASTAD(I),I=1,2500)
-         CALL REWSPL(LUINTM)
+         REWIND(LUINTM)
 C
          LTRIPQ = NPQ*NMBASX
          LBUF = (IRAT + 1)*LDABUF + 2
@@ -2491,7 +2491,7 @@ C
 C
 C ***** save information about AO DA file (LUDA) on LUINTM
 C
-      CALL REWSPL(LUINTM)
+      REWIND(LUINTM)
       READ  (LUINTM)
 C 831014-hjaaj: maybe here also save LUINTM buffer length
 C 860731-hjaaj: done
@@ -2611,7 +2611,7 @@ C         lvlmol=10 for full integral transformation)
 C     and allocate space for buffers.
 C
       IF (IDIST .EQ. 0) THEN
-         CALL REWSPL(LUINTM)
+         REWIND(LUINTM)
          READ (LUINTM,ERR=998,END=999)
          READ (LUINTM,ERR=998,END=999) LBINTM, LVLMOL
          LVLMIN = 0
@@ -2739,7 +2739,7 @@ C     If first read (IDIST .EQ. 0)
 C     then setup for reading MO integrals ...
 C
       IF (IDIST .EQ. 0) THEN
-         CALL REWSPL(LUINTM)
+         REWIND(LUINTM)
          CALL MOLLAB('MOLTWOEL',LUINTM,LUPRI)
  100     CONTINUE
          READ (LUINTM) BUF, IBUF, LENGTH

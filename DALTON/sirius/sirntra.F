@@ -306,7 +306,7 @@ C
      &         'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
             LUORDA = LUINTA
 
-            CALL REWSPL(LUINTA)
+            REWIND(LUINTA)
             CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
 !           consistency checks before reading of AOTWOINT in RDAO2
             READ (LUINTA) NSYM_x, NBAS_x, LBUF, NIBUF, NBITS, LENINT4
@@ -3170,7 +3170,7 @@ C
       KINT = 1
       KIINT = KINT + LBUF
 C
-      CALL REWSPL(LUINTA)
+      REWIND(LUINTA)
 C
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
  150  CONTINUE
