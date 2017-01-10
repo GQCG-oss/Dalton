@@ -1,6 +1,6 @@
 C
 C  /* Deck so_residual */
-      SUBROUTINE SO_RESIDUAL(DOUBLES,LTYPE,RESINM,
+      SUBROUTINE SO_RESIDUAL(DOUBLES,LTYPE,RESINM,ISYMTR,
      &                       RESI1E,LRESI1E,RESI1D,LRESI1D,
      &                       RESI2E,LRESI2E,RESI2D,LRESI2D,
      &                       EIVAL1,
@@ -38,6 +38,7 @@ C
       DIMENSION REGP2E(LREGP2E)!, REGP2D(LREGP2D)
       LOGICAL IMAGPROP, DOUBLES
       LOGICAL STATIC
+      INTEGER ISYMTR
 C
 C------------------
 C     Add to trace.
@@ -153,16 +154,20 @@ C-----------------------------------------------
 
       RESINM = DNRM2(LRESI1E,RESI1E,1)**2
       IF(.NOT.STATIC) RESINM = RESINM + DNRM2(LRESI1D,RESI1D,1)**2
-      IF (DOUBLES) THEN
+      IF (DOUBLES.AND.TRIPLET) THEN
          RESINM = RESINM + DNRM2(LRESI2E,RESI2E,1)**2
          IF(.NOT.STATIC) RESINM = RESINM + DNRM2(LRESI2D,RESI2D,1)**2
+      ELSEIF (DOUBLES) THEN
+         RESINM = RESINM + SO_DOUBLES_LENGTH(RESI2E,ISYMTR)
+         IF(.NOT.STATIC) RESINM = RESINM +
+     &         SO_DOUBLES_LENGTH(RESI2D,ISYMTR)
       ENDIF
 C
 CRF   For static the norm of the D part would be exactly that of the E
 C     part. Should we scale RESINM apropriately?
 C
-      RESINM = DSQRT(RESINM)
       IF(STATIC) RESINM = 2.0D0*RESINM
+      RESINM = DSQRT(RESINM)
 C
 C-----------------------
 C     Remove from trace.

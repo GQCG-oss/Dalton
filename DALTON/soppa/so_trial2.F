@@ -253,7 +253,8 @@ C
             IF(DOUBLES)THEN
                  CALL SO_READ(WORK(KGPVC2),LGPVC2,LUGPV2,FNGPV2,1)
 C  Property gradient on file is in the wrong basis
-                 CALL SO_TMLTR(WORK(KGPVC2),HALF,ISYMTR)
+                 IF (.NOT.TRIPLET) 
+     &              CALL SO_TMLTR(WORK(KGPVC2),HALF,ISYMTR)
             ENDIF
 C
             IF(IPRSOP.GT.10) THEN
@@ -271,7 +272,7 @@ C-------------------------------------------------------------
 C        Calculate residual vector and norm of result vectors.
 C-------------------------------------------------------------
 C
-         CALL SO_RESIDUAL(DOUBLES,LTYPE,RESINM(IEXCI),
+         CALL SO_RESIDUAL(DOUBLES,LTYPE,RESINM(IEXCI),ISYMTR,
      &                    WORK(KRESI1E),LRESI1E,WORK(KRESI1D),LRESI1D,
      &                    WORK(KRESI2E),LRESI2E,WORK(KRESI2D),LRESI2D,
      &                    EIVAL(IEXCI),

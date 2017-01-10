@@ -254,17 +254,8 @@ C
                DNORM = DNORM + DDOT(LTR2E,WORK(K1TR2E),1,WORK(K1TR2E),1)
                DNORM = DNORM - DDOT(LTR2D,WORK(K1TR2D),1,WORK(K1TR2D),1)
             ELSE
-               CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
-               CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-C
-               DNORM = DNORM +
-     &                 HALF * DDOT(LTR2E,WORK(KTTR2),1,WORK(K1TR2E),1)
-C
-               CALL DCOPY(LTR2E,WORK(K1TR2D),1,WORK(KTTR2),1)
-               CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-C
-               DNORM = DNORM -
-     &                 HALF * DDOT(LTR2D,WORK(KTTR2),1,WORK(K1TR2D),1)
+               DNORM = DNORM + so_doubles_length(work(k1tr2e),isymtr)
+               DNORM = DNORM - so_doubles_length(work(k1tr2d),isymtr)
             END IF
          ENDIF
 C
