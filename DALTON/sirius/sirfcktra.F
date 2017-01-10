@@ -59,6 +59,7 @@
 !  ccom.h   : THRS
 #include "iratdef.h"
 #include "maxaqn.h"
+#include "thrzer.h"
 #include "gnrinf.h"
 #include "inforb.h"
 #include "inftra.h"
@@ -67,16 +68,19 @@
 #include "ccom.h"
 
       integer JTRSIR, NTRLVL, MX_NDMAT, LUSUPM_save, IFTHRS_save
-      integer KFREE, LFREE, KFRSAV, KUCMO, KDMAT, KFMAT, I
+      integer KFREE, LFREE, KFRSAV, KUCMO, KDMAT, KFMAT, I, J
+      integer MISH_TEST(8), MASH_TEST(8), IDAMAX
       integer, allocatable :: ICDTRA(:), ITRTYP(:), ICD_NODE(:)
       character*8 TABLE(2),LAB123(3)
       data        TABLE /'MO2INTHJ','END INTM'/
       data        LAB123/'********','********','********'/
-      logical     FEXIST, OLDDX
+      logical     FEXIST, OLDDX, FNDLAB
 
 C --- start of executable code
 
       call QENTER('FCKTRA_CTL')
+
+      JTRSIR = abs(ITRSIR)
 
 #if FCKTRA_DEBUG > 0
       IPRTRA = MAX(IPRTRA,FCKTRA_DEBUG)
@@ -88,6 +92,37 @@ C --- start of executable code
          WRITE(LUPRI,'(A,I4,1P,D10.2)')
      &   ' Transformation level & screening threshold:',
      &   ITRSIR,THR_MOTWOINT
+      END IF
+
+C     Test if MO integrals already available
+
+      REWIND(LUINTM)
+      IF ( FNDLAB('MO2INTHJ',LUINTM) ) THEN
+         REWIND(LUINTM)
+         READ  (LUINTM)
+         READ  (LUINTM) J,NTRLVL
+         IF (NTRLVL .EQ. 3 .AND. JTRSIR .EQ. 2) NTRLVL = -1
+         IF (NTRLVL .EQ. 2 .AND. JTRSIR .EQ. 3) NTRLVL =  3
+         IF (NTRLVL .GE. JTRSIR) THEN
+C           read CMO matrix from LUINTM
+C           and subtract from input CMO matrix
+            READ  (LUINTM) WORK(1:NCMOT)
+            WORK(1:NCMOT) = WORK(1:NCMOT) - CMO(1:NCMOT)
+            I = IDAMAX(NCMOT,WORK,1)
+            READ (LUINTM) MISH_TEST(1:8), MASH_TEST(1:8)
+            MISH_TEST(1:8) = MISH_TEST(1:8) - NISH(1:8)
+            MASH_TEST(1:8) = MASH_TEST(1:8) - NASH(1:8)
+            J = 0
+            DO I = 1,8
+               J = J + ABS(MISH_TEST(I)) + ABS(MASH_TEST(I))
+            END DO
+            IF (ABS(WORK(I)) .LE. THRZER .AND. J .EQ. 0) THEN
+               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A)')
+     &            ' FCKTRA_CTL: Integral transformation abandoned, '//
+     &            'the required MO integrals are already available.'
+               GO TO 9999
+            END IF
+         END IF
       END IF
 
       IF (THR_MOTWOINT .LT. THRS) THEN
@@ -110,7 +145,6 @@ C --- start of executable code
       ! call SIR_INTOPEN_FCKTRA()
 
 !     translate sirius integral level code to FCKTRA and NEWTRA integral level code
-      JTRSIR = abs(ITRSIR)
       call TRALVL(JTRSIR, NTRLVL)
       IF (JTRSIR .GE. 1 .AND. JTRSIR .LE. 4) NTRLVL = NTRLVL + 1
       ! we need third order, because USEDRC not defined for FCKTRA
@@ -197,7 +231,7 @@ C --- start of executable code
       deallocate ( ITRTYP )
       deallocate ( ICD_NODE )
       IFTHRS = IFTHRS_save
-      call QEXIT('FCKTRA_CTL')
+ 9999 call QEXIT('FCKTRA_CTL')
       return
       end
 
@@ -415,13 +449,13 @@ C --- start of executable code
 
       if (FCKTRA_TIMING) then
          call GETTIM(TCPU1,TWAL1)
-         write(lupri,*) 'CPU and WALL time (s) AO Fock',
+         write(lupri,'(A,2F20.3)') 'CPU and WALL time (s) AO Fock',
      &      TCPU_FCK,TWAL_FCK
-         write(lupri,*) 'CPU and WALL time (s) AO->MO ',
+         write(lupri,'(A,2F20.3)') 'CPU and WALL time (s) AO->MO ',
      &      TCPU_WR,TWAL_WR
          TCPU2 = TCPU1 - TCPU0 - TCPU_FCK - TCPU_WR
          TWAL2 = TWAL1 - TWAL0 - TWAL_FCK - TWAL_WR
-         write(lupri,*) 'CPU and WALL time (s) rest   ',
+         write(lupri,'(A,2F20.3)') 'CPU and WALL time (s) rest   ',
      &      TCPU2,TWAL2
          flush(lupri)
       end if

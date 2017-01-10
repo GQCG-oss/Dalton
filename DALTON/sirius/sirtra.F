@@ -210,7 +210,7 @@ C
             REWIND (LUINTM)
             IF (FCKTRA_TYPE .GT. 0) THEN
                ICASE    = 0
-            ELSE IF (.NOT.FNDLAB('MOLTWOEL',LUINTM)) THEN ! only for "old" transformation
+            ELSE IF (.NOT.FNDLAB('MOLTWOEL',LUINTM)) THEN ! not for FCKTRA, MOLTWOEL only for "old" transformation
                ICASE    = 2
                FLAG(14) = .FALSE.
             ELSE
