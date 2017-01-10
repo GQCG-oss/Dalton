@@ -2570,8 +2570,8 @@ C     CALL CLEAR_INCOREMEM()
 Cef end
 C ach 
       IF (DFTRUN .OR. DOHFSRDFT .OR. DOMCSRDFT) THEN
-         GRDONE = .FALSE.
-         GRDONE_OLD = .FALSE.
+         DFTGRID_DONE = .FALSE.
+         DFTGRID_DONE_OLD = .FALSE.
       END IF
       IF (.NOT. EXSIR) THEN
 C

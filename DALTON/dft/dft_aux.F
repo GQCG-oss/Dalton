@@ -51,10 +51,10 @@ C------------------------------------------------------------------------------
       RADINT = 1.0D-13
       ANGINT = 35
       ANGMIN = 15
-c     LEBMIN is in the common block but is used only internall in dftgrd
+c     LEBMIN is in the common block but is used only internally in make_dftgrid
       DFTADD = .FALSE.
-      GRDONE = .FALSE.
-      GRDONE_OLD = .FALSE.
+      DFTGRID_DONE = .FALSE.
+      DFTGRID_DONE_OLD = .FALSE.
       DFTRUN = .FALSE.
       DFTPOT = .FALSE.
       DFTORD = .FALSE.
@@ -202,11 +202,11 @@ c
       ishell_cnt = KMAX
       END
 c
-      SUBROUTINE get_grid_paras(Lgrdone, Pradint, Iangmin, Iangint)
+      SUBROUTINE get_grid_paras(LDFTGRID_DONE,Pradint,Iangmin,Iangint)
 #include "implicit.h"
 #include "dftcom.h"
-      LOGICAL LGRDONE
-      LGRDONE = GRDONE
+      LOGICAL LDFTGRID_DONE
+      LDFTGRID_DONE = DFTGRID_DONE
       PRADINT = RADINT
       IANGMIN = ANGMIN
       IANGINT = ANGINT
@@ -215,7 +215,7 @@ c
       SUBROUTINE set_grid_done
 #include "implicit.h"
 #include "dftcom.h"
-      GRDONE = .TRUE.
+      DFTGRID_DONE = .TRUE.
       END
       SUBROUTINE get_no_atoms(natom_CNT)
 c return total number of atoms.

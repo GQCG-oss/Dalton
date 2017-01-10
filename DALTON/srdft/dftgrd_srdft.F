@@ -23,8 +23,8 @@
 !
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-C  /* Deck dftgrd */
-      SUBROUTINE DFTGRD(WORK,LWORK,NTOTAL,IPRINT,TEST)
+C  /* Deck MAKE_DFTGRID */
+      SUBROUTINE MAKE_DFTGRID(WORK,LWORK,NTOTAL,IPRINT,TEST)
 C                                                                      C
 C     Interface routine for grid points                                C
 C     T. Helgaker                                                      C
@@ -156,9 +156,9 @@ C     =================
 C
       CALL GPCLOSE(LUQUAD,'KEEP')
 
-      CALL TIMER('DFTGRD',TIMSTR,TIMEND)
+      CALL TIMER('MAKE_DFTGRID',TIMSTR,TIMEND)
 
-      CALL MEMREL('DFTGRD',WORK,1,1,KFREE,LFREE)
+      CALL MEMREL('MAKE_DFTGRID',WORK,1,1,KFREE,LFREE)
 
       RETURN
       END

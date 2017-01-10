@@ -359,7 +359,7 @@ C
 #include "lmns.h"
 #include "sphtrm.h"
 C
-C     Things needed by dftgrd: 
+C     Things needed by make_dftgrid: 
 C
 C     NBASIS, CHARGE(NATOMS),CORD(MXCENT), NUCIND, MAXOPR
 C     ISYMAX,PT      
@@ -523,9 +523,9 @@ C     All of it is prob not nescecary
       isize =  1
       CALL MPI_BCAST(DFTADD,ISIZE,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(GRDONE,ISIZE,MPI_LOGICAL,
+      CALL MPI_BCAST(DFTGRID_DONE,ISIZE,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(GRDONE_OLD,ISIZE,MPI_LOGICAL,
+      CALL MPI_BCAST(DFTGRID_DONE_OLD,ISIZE,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(DFTRUN,ISIZE,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)

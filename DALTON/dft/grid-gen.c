@@ -1050,7 +1050,7 @@ boxify_save_batch_local(GridGenMolGrid *mg, FILE *f, integer cnt,
 #include <our_extra_mpi.h>
 static integer mynum, nodes, last;
 static void
-grid_par_init(real *radint, integer *angmin, integer *angint, integer *grdone) {
+grid_par_init(real *radint, integer *angmin, integer *angint, integer *DFTGRID_DONE) {
     integer arr[4];
     /* Executed by master and all slaves */
     MPI_Comm_rank(MPI_COMM_WORLD, &mynum);
@@ -1062,7 +1062,7 @@ grid_par_init(real *radint, integer *angmin, integer *angint, integer *grdone) {
     else if(selected_partitioning == &partitioning_becke_corr) arr[2] = 1;
     else if(selected_partitioning == &partitioning_ssf) arr[2] = 2;
     else /* if(selected_partitioning == &partitioning_block)*/ arr[2] = 3;
-    arr[3] = *grdone;
+    arr[3] = *DFTGRID_DONE;
     MPI_Bcast(radint, 1,             MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Bcast(arr,    ELEMENTS(arr), MPI_INT,    0, MPI_COMM_WORLD);
     *angmin = arr[0];
@@ -1076,7 +1076,7 @@ grid_par_init(real *radint, integer *angmin, integer *angint, integer *grdone) {
     case 2: selected_partitioning = &partitioning_ssf; break;
     default: selected_partitioning = &partitioning_block; break;
     }
-    *grdone = arr[3];
+    *DFTGRID_DONE = arr[3];
 }
 
 static char*
@@ -1769,24 +1769,24 @@ grid_par_slave(const char *fname, real threshold)
 struct DftGridReader_ {
     FILE *f;
 };
-void FSYM2(get_grid_paras)(integer *grdone, real *radint, integer *angmin, integer *angint);
+void FSYM2(get_grid_paras)(integer *DFTGRID_DONE, real *radint, integer *angmin, integer *angint);
 void FSYM2(set_grid_done)(void);
 
 DftGridReader*
 grid_open(integer nbast, real *dmat, real *work, integer *lwork, integer verbose)
 {
     DftGridReader *res = dal_new(1, DftGridReader);
-    integer grdone, angmin, angint;
+    integer DFTGRID_DONE, angmin, angint;
     real radint;
     char *fname;
 
     switch(gridType) {
     case GRID_TYPE_STANDARD:
-        FSYM2(get_grid_paras)(&grdone, &radint, &angmin, &angint);
+        FSYM2(get_grid_paras)(&DFTGRID_DONE, &radint, &angmin, &angint);
 #ifdef VAR_MPI
-        grid_par_init(&radint, &angmin, &angint, &grdone);
+        grid_par_init(&radint, &angmin, &angint, &DFTGRID_DONE);
 #endif
-        if(!grdone) {
+        if(!DFTGRID_DONE) {
             integer atom_cnt;
             integer lwrk = *lwork - nbast;
             GridGenAtom* atoms = grid_gen_atom_new(&atom_cnt);

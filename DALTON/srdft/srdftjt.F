@@ -167,10 +167,10 @@ C     Initializations -------------------------------------------------------
       IF (DOERG) EDFTY  = D0
 
 C     DFT grid (NTOTAL is the total number of grid points)
-      IF (.NOT.GRDONE_OLD) THEN
-         CALL DFTGRD(WORK,LWORK,NTOTAL,1,.FALSE.)
+      IF (.NOT.DFTGRID_DONE_OLD) THEN
+         CALL MAKE_DFTGRID(WORK,LWORK,NTOTAL,1,.FALSE.)
          CALL CONDFT
-         GRDONE_OLD = .TRUE.
+         DFTGRID_DONE_OLD = .TRUE.
       END IF
 
 C     Electron number

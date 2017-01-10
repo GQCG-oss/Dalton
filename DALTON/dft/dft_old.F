@@ -67,9 +67,9 @@ C
 C
 C     Calculate grid
 C
-      IF (.NOT.GRDONE_OLD) THEN
-         CALL DFTGRD(WORK,LWORK,1,.FALSE.)
-         GRDONE_OLD = .TRUE.
+      IF (.NOT.DFTGRID_DONE_OLD) THEN
+         CALL MAKE_DFTGRID(WORK,LWORK,1,.FALSE.)
+         DFTGRID_DONE_OLD = .TRUE.
       END IF
 C
       NC0  = 0

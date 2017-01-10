@@ -716,10 +716,10 @@ C     =============================
 C     Calculate grid
 C     =============================
 C
-      IF (.NOT.GRDONE_OLD) THEN
-         CALL DFTGRD(WORK,LWORK,NTOTAL,1,.FALSE.)
+      IF (.NOT.DFTGRID_DONE_OLD) THEN
+         CALL MAKE_DFTGRID(WORK,LWORK,NTOTAL,1,.FALSE.)
          CALL CONDFT
-         GRDONE_OLD = .TRUE.
+         DFTGRID_DONE_OLD = .TRUE.
       END IF
 C
       LDOGGA = DOGGA .OR. LSRHYBR
@@ -1450,10 +1450,10 @@ C     =============================
 C     Calculate grid
 C     =============================
 C
-      IF (.NOT.GRDONE_OLD) THEN
-         CALL DFTGRD(WORK,LWORK,NTOTAL,1,.FALSE.)
+      IF (.NOT.DFTGRID_DONE_OLD) THEN
+         CALL MAKE_DFTGRID(WORK,LWORK,NTOTAL,1,.FALSE.)
          CALL CONDFT
-         GRDONE_OLD = .TRUE.
+         DFTGRID_DONE_OLD = .TRUE.
       END IF
 C
       CELCTRN = D0

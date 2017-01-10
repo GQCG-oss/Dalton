@@ -412,8 +412,8 @@ C
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini HERMIT')
       NEWPRP = .TRUE.
       NEWMAT = .TRUE.
-      GRDONE = .FALSE.
-      GRDONE_OLD = .FALSE.
+      DFTGRID_DONE = .FALSE.
+      DFTGRID_DONE_OLD = .FALSE.
 C     ... we need new grid for numerical integrations when new geometry
 C
 C     ***************************************************************
