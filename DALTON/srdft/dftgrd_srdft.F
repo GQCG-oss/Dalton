@@ -155,9 +155,11 @@ C     Close unit LUQUAD
 C     =================
 C
       CALL GPCLOSE(LUQUAD,'KEEP')
-C
+
       CALL TIMER('DFTGRD',TIMSTR,TIMEND)
-c
+
+      CALL MEMREL('DFTGRD',WORK,1,1,KFREE,LFREE)
+
       RETURN
       END
 
@@ -177,8 +179,8 @@ C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
-#include <priunit.h> 
+#include "implicit.h"
+#include "priunit.h"
 
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,D3=3.0D0)
 
@@ -188,16 +190,16 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CHARACTER SPDCAR*1
 
 #include "dftwrk.h"
-#include <mxcent.h>
+#include "mxcent.h"
 
       COMMON /INFOA/ NAT,NUM,ZAN(MXCENT),C(3,MXCENT)
 
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ccom.h>
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ccom.h"
 
       DIMENSION WRKSP(4*NUM),
      &          ACCUM(IVECL),XMUIJN(IVECL),XMUIJ2(IVECL),
@@ -509,7 +511,7 @@ C  /* Deck wrtqua */
 C
 C     T. Helgaker
 C
-#include <implicit.h> 
+#include "implicit.h" 
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
       WRITE(LUQUAD) NPOINT
       IF (NPOINT .GT. 0) WRITE(LUQUAD) X,Y,Z,WT
@@ -520,8 +522,8 @@ C  /* Deck reaqua */
 C
 C     T. Helgaker
 C
-#include <implicit.h> 
-#include <priunit.h>
+#include "implicit.h" 
+#include "priunit.h"
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
       READ(LUQUAD) X,Y,Z,WT
       RETURN
@@ -531,7 +533,7 @@ C  /* Deck priqua */
 C
 C     T. Helgaker
 C
-#include <implicit.h> 
+#include "implicit.h" 
       DIMENSION X(*),Y(*),Z(*),WT(*)
       REWIND LUQUAD
   100 CONTINUE
@@ -547,8 +549,8 @@ C  /* Deck priqu2 */
 C
 C     T. Helgaker
 C
-#include <implicit.h> 
-#include <priunit.h>
+#include "implicit.h" 
+#include "priunit.h"
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
       READ(LUQUAD) X,Y,Z,WT
       DO 100 I = 1, NPOINT
@@ -563,7 +565,7 @@ C  /* Deck nleb */                                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
+#include "implicit.h" 
 
       NTOT = 5810
       
@@ -609,7 +611,7 @@ C  /* Deck nlebset */                                                  C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
+#include "implicit.h" 
 
       
       IF (NTOT.GE.5810) THEN
@@ -683,10 +685,10 @@ C  /* Deck sleb */                                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
-#include <priunit.h> 
-#include <dftcom.h>
-#include <pi.h>
+#include "implicit.h" 
+#include "priunit.h" 
+#include "dftcom.h"
+#include "pi.h"
 
       PARAMETER (MAXNUM=1455)
       DIMENSION X(MAXNUM),Y(MAXNUM),Z(MAXNUM),WT(MAXNUM)
@@ -861,8 +863,8 @@ C      the Becke partitioning amongst the atoms.                       C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
 
       PARAMETER (MAXBFN=1000)
       DIMENSION RJ(IVECL,NAT),
@@ -935,7 +937,7 @@ C     T. Helgaker                                                      C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include <implicit.h> 
+#include "implicit.h"
 
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
 
@@ -961,13 +963,13 @@ C     Symmetry multiplicity of a point in space
 C
 C     T. Helgaker  Feb 01
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (A0 = 1.0D-8)
       LOGICAL LBTAX
-#include <symmet.h>
+#include "symmet.h"
       LBTAX(I,J) = IAND(2**(I-1),ISYMAX(J,1)) .GT. 0
 C
       IF (MAXREP.EQ.0) NSYMOP = 0 
