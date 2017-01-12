@@ -75,6 +75,8 @@ set(DALTON_C_SOURCES
     DALTON/pdpack/scatter-io.c
     )
 set(DALTON_FIXED_FORTRAN_SOURCES
+    DALTON/main/dalgnr.F
+    DALTON/main/dalpar.F
     DALTON/abacus/aba2eth.F
     DALTON/abacus/aba2r12.F
     DALTON/abacus/aba2tex.F
@@ -121,7 +123,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/abacus/abavib.F
     DALTON/abacus/abavrml.F
     DALTON/abacus/abawalk.F
-    DALTON/abacus/dalgnr.F
     DALTON/abacus/eckart.F
     DALTON/abacus/ecp.F
     DALTON/abacus/her1ave.F
