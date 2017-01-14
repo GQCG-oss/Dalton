@@ -31,7 +31,6 @@ C
 #include "implicit.h"
 #include "maxorb.h"
 #include "gnrinf.h"
-#include "siripc.h"
 #include "infinp.h"
 #include "inpbak.h"
 #include "infpri.h"
@@ -41,7 +40,7 @@ C
 C     Restoring should only be done if SIRIUS has been through its
 C     input processing.
 C
-      IF (.NOT. INPPRC) RETURN
+      IF (.NOT. SIR_INPPRC) RETURN
 C
 C     /INFINP/ values are restored
 C
@@ -177,14 +176,14 @@ C     by ABACUS in SIRSET module. Called from SIRRDI.
 C
 #include "implicit.h"
 #include "maxorb.h"
-#include "siripc.h"
+#include "gnrinf.h"
 #include "infinp.h"
 #include "inpbak.h"
 #include "infpri.h"
 #include "pribak.h"
 #include "pcmlog.h"
 C
-C        /INFINP/ values are saved
+C        /INFINP/ values are saved to /INFBAK/
 C
       ISPINB = ISPIN
       ISTATB = ISTATE
@@ -489,12 +488,11 @@ C  /* Deck exesir */
       DIMENSION WORK(0:LMWORK)
 #include "priunit.h"
 #include "maxorb.h"
-#include "siripc.h"
+#include "gnrinf.h"
 #include "inftra.h"
 #include "cbihr2.h"
 #include "inftap.h"
 #include "huckel.h"
-#include "gnrinf.h"
 C
 C
 C     Run SIRIUS
@@ -556,7 +554,6 @@ C  /* Deck execc */
 #include "gnrinf.h"
 #include "maxorb.h"
 #include "mxcent.h"
-#include "siripc.h"
 #include "inftra.h"
 #include "optinf.h"
 #include "nuclei.h"
@@ -692,7 +689,6 @@ C
       PARAMETER (D0 = 0.0D0)
 C
 #include "gnrinf.h"
-#include "siripc.h"
 #include "nuclei.h"
 #include "infinp.h"
 #include "inftap.h"
@@ -1332,7 +1328,6 @@ C
 #include "maxorb.h"
 #include "priunit.h"
 #include "gnrinf.h"
-#include "siripc.h"
 C
 #include "molde.h"
 #include "abainf.h"
@@ -1389,10 +1384,6 @@ C
 C
       CALL QENTER('DALTON_GNRLINP')
 C
-C     Initialize /SIRIPC/
-C
-      INPPRC = .FALSE.
-C
 C     Initialize /VECLEN/
 C
       IVECLN = IVECDF
@@ -1421,6 +1412,7 @@ C
       HRINPC = .FALSE.
       SRINPC = .FALSE.
       RDINPC = .FALSE.
+      SIR_INPPRC = .FALSE.
       RDMLIN = .FALSE.
       TESTIN = .FALSE.
       OPTWLK = .FALSE.

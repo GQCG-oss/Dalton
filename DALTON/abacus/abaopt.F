@@ -2524,7 +2524,6 @@ C
 #include "infinp.h"
 #include "optinf.h"
 #include "gnrinf.h"
-#include "siripc.h"
 #include "dftcom.h"
 CRF Added
 #include "inforb.h"
