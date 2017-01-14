@@ -253,7 +253,6 @@ C
 #include "infmp2.h"
 #include "infpop.h"
 #include "pcmlog.h"
-#include "siripc.h"
 #include "huckel.h"
 #include "cbihrs.h"
 #include "spinfo.h"
@@ -273,7 +272,7 @@ C
 C
 C     Skip next section if processed earlier
 C
-      IF (INPPRC) THEN
+      IF (SIR_INPPRC) THEN
          INPERR = 0
          NUMRUN = 1
 C        ... only highest calculation specification is done
@@ -392,7 +391,7 @@ C     (most variables are in infinp.h)
 C
 C     Jump again if processed earlier
 C
-      IF (INPPRC) GOTO 124
+      IF (SIR_INPPRC) GOTO 124
 C
       IREST = 0
 C     IREST .ne. 0 for a restart run
@@ -871,7 +870,7 @@ C
 C
 C *************************************************************************
 C     "124" is where we jump back in if input has been processed earlier,
-C     i.e. if INPPRC is .true.
+C     i.e. if SIR_INPPRC is .true.
 C
  124  CONTINUE
 C
@@ -1691,7 +1690,8 @@ C
 C
 C ***  PRINT INPUT DATA *****
 C
-      IF (IPRSIR.GT.2 .OR. IPRI4.GT.7 .OR. IPRI6.GT.2) INPPRC = .FALSE.
+      IF (IPRSIR.GT.2 .OR. IPRI4.GT.7 .OR. IPRI6.GT.2)
+     &   SIR_INPPRC = .FALSE.
 C     ... force output if print level increased by user
       CALL SIR_PRTINP(LUPRI,NUMRUN,IRDMO)
       IF (IREST.NE.0) WRITE (LUPRI,3050)
@@ -1885,7 +1885,7 @@ C
 C
 C      
       NEWSYM = .FALSE.
-      INPPRC = .TRUE.
+      SIR_INPPRC = .TRUE.
       CALL QEXIT('SIRRDI')
       RETURN
 C
@@ -5311,8 +5311,7 @@ C   SCBRHF : IOPRHF,NFRRHF(*),MAXFCK
 C   INFMP2 : NFRMP2(*)
 C   DFTCOM : DFTRUN, DOSRBCK, ...
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
-C   siripc : INPPRC
-C   gnrinf : NEWSYM,EMBEDDING,QM3,QMMM,?
+C   gnrinf : NEWSYM,SIR_INPPRC,EMBEDDING,QM3,QMMM,?
 C   infpar.h : PARHER
 C   pgroup : GROUP, REP
 C   pcmlog : PCM
@@ -5322,6 +5321,7 @@ C
 #include "maxash.h"
 #include "maxorb.h"
 C
+#include "gnrinf.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "infind.h"
@@ -5335,8 +5335,6 @@ C
 #include "dftcom.h"
 #include "dfterg.h"
 #include "dftacb.h"
-#include "siripc.h"
-#include "gnrinf.h"
 #include "infpar.h"
 #include "pgroup.h"
 #include "pcmlog.h"
@@ -5369,7 +5367,7 @@ C
       WRITE(IWUNIT,200) STARS,RELEAS,STARS
  200  FORMAT(3(/1X,A))
 
-      IF (INPPRC) THEN
+      IF (SIR_INPPRC) THEN
          IF (NEWSYM) THEN
             WRITE(IWUNIT,'(/A)')
      &   ' (Wave function specification NOT suppressed here,'//

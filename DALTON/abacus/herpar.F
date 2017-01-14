@@ -286,13 +286,11 @@ C
 C Used from common blocks
 C
 C MXORB : MXSHEL (used for INFPAR)
-C GNRINF: NEWBAS
-C SIRIPC: NEWGEO
+C GNRINF: NEWBAS, NEWGEO
 C INFPAR: NODTOT, NTASK
 C INFORB: N2BASX
 C
 #include "gnrinf.h"
-#include "siripc.h"
 #include "inforb.h"
 #include "infpar.h"
 Cef begin
@@ -627,7 +625,7 @@ C
 C MXCENT : MXCENT (for DORPS, etc.)
 C MXORB  : MXSHEL (for INFPAR)
 C MAXAQN : *      (for SYMMET)
-C SIRIPC : NEWGEO (PVM: BASDIR, LENBAS)
+C GNRINF : NEWGEO (PVM: BASDIR, LENBAS)
 C INFORB : N2BASX
 C MOLINP : NMLINE, MLINE()
 C CBIREA : UNCONT
@@ -641,7 +639,6 @@ C PARINT : *
 C
 #include "gnrinf.h"
 #include "inftap.h"
-#include "siripc.h"
 #include "inforb.h"
 #include "molinp.h"
 #include "cbirea.h"
@@ -949,7 +946,6 @@ C
 C INFPAR : MASTER, MYNUM, ?
 C
 C gnrinf : a lot
-C SIRIPC : NEWGEO
 C INFORB : MULD2H, ...
 C MOLINP : NMLINE, MLINE()
 C CBIREA : UNCONT, LMULBS
@@ -960,9 +956,8 @@ C DFTCOM : HFXFAC, HFXMU, ...
 C EXPOPT : EXPGRA
 C R12INT : R12INT, INTGAC
 C
-#include "infpar.h"
 #include "gnrinf.h"
-#include "siripc.h"
+#include "infpar.h"
 #include "inforb.h"
 #include "molinp.h"
 #include "cbirea.h"
@@ -981,7 +976,7 @@ C
 
 #if defined (VAR_MPI)
       CALL MPIXBCAST(NEWBAS,1,'LOGICAL',MASTER)! gnrinf.h
-      CALL MPIXBCAST(NEWGEO,1,'LOGICAL',MASTER)! siripc.h
+      CALL MPIXBCAST(NEWGEO,1,'LOGICAL',MASTER)! gnrinf.h
       CALL MPIXBCAST(HFXFAC,1,'DOUBLE', MASTER)! dftcom.h
       CALL MPIXBCAST(HFXMU, 1,'DOUBLE', MASTER)! dftcom.h
       CALL MPIXBCAST(DOSRIN,1,'LOGICAL',MASTER)! gnrinf.h
@@ -1762,8 +1757,7 @@ C
 C MXCENT : MXCENT (for DORPS, etc.)
 C MXORB  : MXSHEL (for INFPAR)
 C MAXAQN : *      (for SYMMET)
-C GNRINF : NEWBAS, (PVM: BASDIR, LENBAS)
-C SIRIPC : NEWGEO
+C GNRINF : NEWBAS, NEWGEO, (PVM: BASDIR, LENBAS),
 C INFORB : N2BASX
 C MOLINP : NMLINE, MLINE()
 C CBIREA : UNCONT
@@ -1776,7 +1770,6 @@ C HRUNIT : *
 C PARINT : *
 C
 #include "gnrinf.h"
-#include "siripc.h"
 #include "inforb.h"
 #include "inftap.h"
 #include "molinp.h"

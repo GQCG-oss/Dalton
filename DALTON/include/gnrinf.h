@@ -16,7 +16,7 @@
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
      &        CHI1ST, DKHINT,                                           &
      &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM,   QFIT,             &
-     &        USE_LSLIB, USE_OPENRSP
+     &        USE_LSLIB, USE_OPENRSP, SIR_INPPRC, NEWGEO
 
       REAL*8  GRADML, PANAS,  CHIVAL, THR_REDFAC
 
@@ -41,10 +41,10 @@
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT, COMLAM,           &
      &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM,   QFIT,             &
-     &        USE_LSLIB, USE_OPENRSP,                                   &
-     &   GNRINFlast !  Very important:
-      !  Always keep GNRINFlast as the last variable in the common block. 
-      !  See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
+     &        USE_LSLIB, USE_OPENRSP, SIR_INPPRC,     NEWGEO
+      COMMON /GNRINF/ GNRINFlast
+      ! Very important: Always keep GNRINFlast as the last variable in the common block. 
+      ! See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
 
       INTEGER    LBASDIR
       PARAMETER (LBASDIR = 600)

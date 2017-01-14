@@ -57,13 +57,11 @@ C
 C Used from common blocks
 C
 C MXORB  : MXSHEL (for INFPAR)
-C GNRINF : NEWBAS
-C SIRIPC : NEWGEO
+C GNRINF : NEWBAS, NEWGEO
 C INFORB : N2BASX
 C INFPAR : NODEID(), NODTOT, NCODE, NTASK
 C
 #include "gnrinf.h"
-#include "siripc.h"
 #include "inforb.h"
 #include "infpar.h"
 C
@@ -182,8 +180,7 @@ C Used from common blocks
 C
 C MXCENT : MXCENT (for MOLINP)
 C MXORB  : MXSHEL (for INFPAR)
-C GNRINF : NEWBAS (PVM: BASDIR, LENBAS)
-C SIRIPC : NEWGEO
+C GNRINF : NEWBAS, NEWGEO (PVM: BASDIR, LENBAS)
 C MOLINP : NMLINE
 C MOLINC : MLINE()
 C INFORB : *
@@ -191,7 +188,6 @@ C INFPAR : *
 C CBIERI : *
 C
 #include "gnrinf.h"
-#include "siripc.h"
 #include "molinp.h"
 #include "inforb.h"
 #include "infpar.h"
@@ -338,12 +334,10 @@ C
 C Used from common blocks
 C
 C MXORB  : MXSHEL (for INFPAR)
-C GNRINF : NEWBAS
-C SIRIPC : NEWGEO
+C GNRINF : NEWBAS, NEWGEO
 C INFPAR : NODTOT, NTASK, TIMING, MAXTSK
 C
 #include "gnrinf.h"
-#include "siripc.h"
 #include "infpar.h"
 Cef begin
 #include "incore.h"
@@ -898,8 +892,7 @@ C Used from common blocks
 C
 C MXCENT : MXCENT (for MOLINP)
 C MXORB  : MXSHEL (for INFPAR)
-C GNRINF : NEWBAS, (PVM: BASDIR, BASLEN), RELCAL
-C SIRIPC : NEWGEO
+C GNRINF : NEWBAS, NEWGEO, (PVM: BASDIR, BASLEN), RELCAL
 C MOLINP : NMLINE
 C MOLINC : MLINE()
 C INFORB : *
@@ -907,7 +900,6 @@ C INFPAR : *
 C CBIERI : *
 C
 #include "gnrinf.h"
-#include "siripc.h"
 #include "molinp.h"
 #include "infpar.h"
 #include "inforb.h"
