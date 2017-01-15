@@ -1,0 +1,1626 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON release Dalton2017.alpha (2016)
+         ( Web site: http://daltonprogram.org )
+
+   ----------------------------------------------------------------------------
+
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
+    and
+     
+       Dalton, a Molecular Electronic Structure Program,
+       Release Dalton2017.alpha (2016), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex frequency response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Darwin) : Tue Jan 17 08:30:13 2017
+     Host name              : adm-106152.local                        
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /Users/hjj/progs/gitDalton-hjaaj-srdft/DALTON/test/rsp_srpbe_polar
+   2) /Users/hjj/progs/gitDalton-hjaaj-srdft/build_mpi_hjaaj-srdft/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | hjj
+ Host                     | adm-106152.local
+ System                   | Darwin-15.6.0
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | ON
+ Fortran compiler         | /opt/local/bin/mpif90
+ Fortran compiler version | GNU Fortran (MacPorts gcc5 5.4.0_0) 5.4.0
+ C compiler               | /opt/local/bin/mpicc
+ C compiler version       | gcc-mp-5 (MacPorts gcc5 5.4.0_0) 5.4.0
+ C++ compiler             | /opt/local/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /opt/local/lib/libopenblas.dylib
+ LAPACK                   | /usr/lib/liblapack.dylib
+ Static linking           | OFF
+ Last Git revision        | 48cbac12dda6055e58450d10563cabea2934fcf0
+ Git branch               | hjaaj-srdft
+ Configuration time       | 2017-01-15 20:09:45.574205
+
+ * MPI parallel run using 4 processes.
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT
+.RUN RESPONSE
+**INTEGRALS
+*TWOINT
+.DOSRINTEGRALS
+.ERF
+ 0.4
+**WAVE FUNCTIONS
+.HFSRDFT
+.MP2
+.MCSRDFT
+.SRFUN
+ SRXPBEGWS SRCPBEGWS
+*SCF INPUT
+.DOUBLY OCCUPIED
+ 2 0 0 0
+*CONFIGURATION INPUT
+.INACTIVE
+ 1 0 0 0
+.ELECTRONS
+ 2
+.CAS SPACE
+ 2 0 0 0
+.SYMMET
+ 1
+.SPIN MULT
+ 1
+**RESPONS
+*LINEAR
+.DIPLEN
+.FREQUE
+ 2
+0.00 0.03
+**END OF DALTON INPUT
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS
+4-31G
+Calculation of Polarizability
+
+    2    2  X  Y    1 1.00D-12
+        1.0   1
+H           .0000000000             .0000000000            2.0969699107
+        3.0   1
+Li          .0000000000             .0000000000            -.9969699107
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    Parallel calculation using MPI
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Calculation of Polarizability                                           
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+
+
+@ WARNING - deprecated old .mol fixed format input has been detected:
+    2    2  X  Y    1 1.00D-12                                                  
+@ WARNING - this input format may not be supported in future releases.
+
+
+
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/Users/hjj/progs/gitDalton-hjaaj-srdft/build_mpi_hjaaj-srdft/basis/4-31G"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   3.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   3 :
+     "/Users/hjj/progs/gitDalton-hjaaj-srdft/build_mpi_hjaaj-srdft/basis/4-31G"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C2v
+
+@  * The irrep name for each symmetry:    1: A1     2: B1     3: B2     4: A2 
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           H           1.007825
+                           Li          7.016005
+
+                       Total mass:     8.023830 amu
+                       Natural abundance:  92.486 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.608359
+ Center-of-mass coordinates (Angs):    0.000000    0.000000   -0.321930
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    2
+
+  Basis set used is "4-31G" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  H           1    1.0000     4     2      [4s|2s]                                            
+  Li          1    3.0000    17     9      [8s3p|3s2p]                                        
+  ----------------------------------------------------------------------
+  total:      2    4.0000    21    11
+  ----------------------------------------------------------------------
+
+  Threshold for neglecting AO integrals:  1.10D-11
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    6
+  H       :     1  x   0.0000000000    2  y   0.0000000000    3  z   2.0969699107
+  Li      :     4  x   0.0000000000    5  y   0.0000000000    6  z  -0.9969699107
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     2    2    2    0
+
+  Symmetry  A1  ( 1)
+
+    1   H     z    3
+    2   Li    z    6
+
+  Symmetry  B1  ( 2)
+
+    3   H     x    1
+    4   Li    x    4
+
+  Symmetry  B2  ( 3)
+
+    5   H     y    2
+    6   Li    y    5
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            H           Li    
+            ------      ------
+ H     :    0.000000
+ Li    :    1.637242    0.000000
+
+
+  Max    interatomic separation is    1.6372 Angstrom (    3.0939 Bohr)
+  between atoms    2 and    1, "Li    " and "H     ".
+
+  Min HX interatomic separation is    1.6372 Angstrom (    3.0939 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  Li         H            1.637242
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.000000          0.000000    0.000000    1.000000
+   IB       2.362214          0.000000    1.000000    0.000000
+   IC       2.362214          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is linear.
+
+               B =       213942.91 MHz     (    7.136367 cm-1)
+
+
+@  Nuclear repulsion energy :    0.969637476220 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           7    2    2    0
+
+
+  Symmetry  A1 ( 1)
+
+    1     H        1s         1
+    2     H        1s         2
+    3     Li       1s         3
+    4     Li       1s         4
+    5     Li       1s         5
+    6     Li       2pz        8
+    7     Li       2pz       11
+
+
+  Symmetry  B1 ( 2)
+
+    8     Li       2px        6
+    9     Li       2px        9
+
+
+  Symmetry  B2 ( 3)
+
+   10     Li       2py        7
+   11     Li       2py       10
+
+
+  No orbitals in symmetry  A2 ( 4)
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.608358748636
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+  Set-up from HR2INP:
+  -------------------
+
+ Print level in TWOINT:    1
+
+ DFT-hybrid : Using a Erf type two-elec. operator
+              with the coupling parameter :    0.40000
+ * Direct calculation of Fock matrices in AO-basis.
+ * Program controlled screening thresholds used for this.
+ * Separate density screening of Coulomb integral batches
+ * Separate density screening of exchange integral batches
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      z     -0.89393982        -2.27216824        -7.57913743
+
+
+  Total CPU  time used in HERMIT:   0.01 seconds
+  Total wall time used in HERMIT:   0.05 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:    4    1    1    0
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+           -2.482706      -0.579861      -0.170222      -0.071212
+
+ Huckel EWMO eigenvalues for symmetry :  2
+           -0.130000
+
+ Huckel EWMO eigenvalues for symmetry :  3
+           -0.130000
+
+ SETCI, core memory needed for CI:
+ LCINDX =          48
+ LACIMX =         126
+ LBCIMX =           0
+
+ Number of determinants:             4
+
+ Number of configurations:           3
+
+ Time used in SETCI :      0.11s
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Darwin) : Tue Jan 17 08:30:14 2017
+     Host name              : adm-106152.local                        
+
+ Title lines from ".mol" input file:
+     Calculation of Polarizability                                           
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    MC-SCF optimization.
+
+@    Multi-configurational response calculation.
+@              Type: complete active space calculation (CAS).
+
+@    This is a combination run starting with
+@              a restricted, closed shell HF-srDFT hybrid calculation
+@              an MP2 calculation
+
+ Fock matrices are calculated directly and in parallel without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option
+
+     Wave function specification
+     ============================
+@    Wave function type        --- MC-SCF ---
+@    Number of closed shell electrons           2
+@    Number of electrons in active shells       2
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 4 (point group: C2v)
+@    Reference state symmetry                   1 (irrep name : A1 )
+
+@    This is a lrWFT-srDFT calculation using the 
+@      SRXPBEGWS  short range exchange functional
+@      SRCPBEGWS  short range correlation functional
+
+@    sr-DFT and exact sr-HF exchange weights:    1.000000    0.000000
+
+     Orbital specifications
+     ======================
+@    Abelian symmetry species          All |    1    2    3    4
+@                                          |  A1   B1   B2   A2 
+                                       --- |  ---  ---  ---  ---
+@    Inactive orbitals                   1 |    1    0    0    0
+@    Active orbitals                     2 |    2    0    0    0
+@    Secondary orbitals                  8 |    4    2    2    0
+@    Total number of orbitals           11 |    7    2    2    0
+@    Number of basis functions          11 |    7    2    2    0
+
+      -- Initial occupation of symmetries is determined from user input.                      
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               2 |    2    0    0    0
+
+     Optimization information
+     ========================
+@    Number of configurations                 3
+@    Number of orbital rotations             14
+     ------------------------------------------
+@    Total number of variables               17
+
+     Maximum number of macro iterations      25
+     Maximum number of micro iterations     600
+     Threshold for MCSCF gradient      1.00D-05
+     Number of initial trial vectors          1
+     Number of initial CI iterations          3
+     Number of simultaneous trial vectors     1
+
+@    This calculation converges to the lowest state for the specified symmetry and spin species.
+
+     Maximum number of NEO/NR iterations  24
+
+
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
+ -----------------------------------------------------------------------------
+
+***  INFO  GETGAB: GABSRXXX not found on AOPROPER. Regenerating.
+
+   Ex-sr + Ec-sr                         -1.5146209839
+ + EJsr = sr Coulomb energy               3.0729824363
+ = Total E(srDFT)                         1.5583614524
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   1.0667763375
+ -     Tr(Vxc-sr Dval)                    0.0000000000
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )        0.0000000000
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    F  1.85D-01  2.01D-01
+@  1    -7.97929045422        6.54932D-01   -7.98D+00    1
+      Virial theorem: -V/T =      1.966751
+@      MULPOP H      -0.60; Li      0.60; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
+ -----------------------------------------------------------------------------
+
+   Ex-sr + Ec-sr                         -1.4469292405
+ + EJsr = sr Coulomb energy               2.9584864334
+ = Total E(srDFT)                         1.5115571929
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   1.0184655258
+ -     Tr(Vxc-sr Dval)                    0.0000000000
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )        0.0000000000
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  1.41D-01  1.45D-01
+@  2    -8.02675236520        1.03948D-01   -4.75D-02    2
+      Virial theorem: -V/T =      2.003879
+@      MULPOP H      -0.35; Li      0.35; 
+   2  Level shift: doubly occupied orbital energies shifted by -5.00D-02
+ -----------------------------------------------------------------------------
+
+   Ex-sr + Ec-sr                         -1.4392133831
+ + EJsr = sr Coulomb energy               2.9516386811
+ = Total E(srDFT)                         1.5124252981
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   1.0128768920
+ -     Tr(Vxc-sr Dval)                    0.0000000000
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )        0.0000000000
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  1.45D-01  1.48D-01
+@  3    -8.02898558326        2.34545D-02   -2.23D-03    3
+      Virial theorem: -V/T =      2.007014
+@      MULPOP H      -0.25; Li      0.25; 
+   3  Level shift: doubly occupied orbital energies shifted by -1.25D-02
+ -----------------------------------------------------------------------------
+
+   Ex-sr + Ec-sr                         -1.4387304671
+ + EJsr = sr Coulomb energy               2.9535327261
+ = Total E(srDFT)                         1.5148022590
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   1.0125056923
+ -     Tr(Vxc-sr Dval)                    0.0000000000
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )        0.0000000000
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  1.53D-01  1.58D-01
+@  4    -8.02915543686        3.06602D-03   -1.70D-04    4
+      Virial theorem: -V/T =      2.006805
+@      MULPOP H      -0.23; Li      0.23; 
+ -----------------------------------------------------------------------------
+
+   Ex-sr + Ec-sr                         -1.4389091922
+ + EJsr = sr Coulomb energy               2.9540968534
+ = Total E(srDFT)                         1.5151876612
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   1.0126271360
+ -     Tr(Vxc-sr Dval)                    0.0000000000
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )        0.0000000000
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  1.49D-01  1.52D-01
+@  5    -8.02916088279        8.12257D-04   -5.45D-06    5
+      Virial theorem: -V/T =      2.006638
+@      MULPOP H      -0.23; Li      0.23; 
+ -----------------------------------------------------------------------------
+
+   Ex-sr + Ec-sr                         -1.4388554743
+ + EJsr = sr Coulomb energy               2.9540168543
+ = Total E(srDFT)                         1.5151613800
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   1.0125847192
+ -     Tr(Vxc-sr Dval)                    0.0000000000
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )        0.0000000000
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    F  1.36D-01  1.40D-01
+@  6    -8.02916131262        1.92962D-04   -4.30D-07    6
+      Virial theorem: -V/T =      2.006635
+@      MULPOP H      -0.23; Li      0.23; 
+ -----------------------------------------------------------------------------
+
+   Ex-sr + Ec-sr                         -1.4388600426
+ + EJsr = sr Coulomb energy               2.9540190996
+ = Total E(srDFT)                         1.5151590570
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   1.0125871936
+ -     Tr(Vxc-sr Dval)                    0.0000000000
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )        0.0000000000
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    7    F  1.40D-01  1.46D-01
+@  7    -8.02916132347        1.04361D-05   -1.09D-08    7
+
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:     -8.029161323474    1.04D-05
+    - total time used in SIRFCK :              0.00 seconds
+
+ --- Writing SIRIFC interface file
+
+ CPU and wall time for SCF :       1.057       1.114
+
+
+ ----- Output from SIRIUS MP2 module -----
+
+ Reference: H.J.Aa.Jensen, P.Jørgensen, H.Ågren, and J.Olsen,
+            J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)
+
+ Checking that the closed shell orbitals are canonical Hartree-Fock orbitals
+
+    Number of electrons  :    4
+    Closed shell orbitals:    2    0    0    0
+
+ Generating Fock matrix
+
+   Ex-sr + Ec-sr                         -1.4388600426
+ + EJsr = sr Coulomb energy               2.9540190996
+ = Total E(srDFT)                         1.5151590570
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   1.0125871936
+ -     Tr(Vxc-sr Dval)                    0.0000000000
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )        0.0000000000
+
+ Hartree-Fock electronic energy:          -8.998798799695
+ Hartree-Fock total      energy:          -8.029161323474
+
+ Hartree-Fock orbital energies, symmetry 1 ( A1 ),    2 occupied SCF orbitals
+
+        -2.08459555    -0.29394796     0.00905229     0.15393428     0.24180200
+         0.35360031     1.18646508
+
+ Hartree-Fock orbital energies, symmetry 2 ( B1 ),    0 occupied SCF orbitals
+
+         0.06109235     0.22490502
+
+ Hartree-Fock orbital energies, symmetry 3 ( B2 ),    0 occupied SCF orbitals
+
+         0.06109235     0.22490502
+
+    E(LUMO) :     0.00905229   (in symmetry 1)
+  - E(HOMO) :    -0.29394796   (in symmetry 1)
+  --------------------------
+    gap     :     0.30300025
+
+---> (Re)generating AOTWOINT
+---> and (re)generating AOSR2INT
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.10D-11
+ HERMIT - Number of two-electron integrals written:         677 ( 30.6% )
+ HERMIT - Megabytes written:                              0.014
+
+
+ Threshold for neglecting two-electron integrals:  1.10D-11
+ HERMIT - Number of two-electron integrals written:         677 ( 30.6% )
+ HERMIT - Megabytes written:                              0.014
+
+
+ 2-el. integral transformation level 5: Total CPU and WALL times (sec)       0.006       0.009
+
+ MP2 move   0.001880 electrons to unoccupied HF orbitals
+
+
+@   Short-range Hartree-Fock total energy        :            -8.0291613235
+@   + MP2 contribution from long-range integrals :            -0.0009007361
+@   = short-range MP2 second order energy        :            -8.0300620596
+
+ *******************************************************
+ MP2-SRDFT natural orbitals: Short-range self-consistent
+ contributions are NOT taken into account.
+ *******************************************************
+
+ Natural orbital occupation numbers, symmetry 1 (irrep A1 )
+ Sum =     3.99931006; RHF =     4.00000000; Difference =    -0.00068994
+
+         1.99998848     1.99814932     0.00100690     0.00016092     0.00000359
+         0.00000101    -0.00000015
+
+ Natural orbital occupation numbers, symmetry 2 (irrep B1 )
+ Sum =     0.00034497; RHF =     0.00000000; Difference =     0.00034497
+
+         0.00034144     0.00000353
+
+ Natural orbital occupation numbers, symmetry 3 (irrep B2 )
+ Sum =     0.00034497; RHF =     0.00000000; Difference =     0.00034497
+
+         0.00034144     0.00000353
+
+ Time used for MP2 natural orbitals :       0.156 CPU seconds,       0.164 wall seconds.
+
+ CPU and wall time for MP2 :       0.156       0.165
+
+
+        SIRIUS MC-srDFT optimization (SIROPT)
+ ================================================
+
+
+ Fock matrix screening setting for SIRCNO: IFTHRS =    9
+
+
+ ----- Output from SIRIUS CI module (CICTL) -----
+
+
+
+
+ 2-el. integral transformation level 0: Total CPU and WALL times (sec)       0.001       0.009
+
+ (CIST1)  3 lowest diagonal elements:
+
+ Element no. Config.no.    Active energy      Total energy
+
+         1 :          1     -1.4207900645     -9.5438326690
+         2 :          3     -1.0810503337     -9.2040929382
+         3 :          2     -0.7112340841     -8.8342766885
+
+
+ Convergence threshold for CI optimization :     0.00000500
+
+
+ The requested root number is now converged.
+
+
+ *** CI converged in  3 iterations.
+
+
+SR 0-el. energy for input .STATE    1
+-------------------------------------
+
+   SR core    Hartree energy   :           2.432309186661
+ - SR valence Hartree energy   :          -0.313978712852
+ + SR Exchange-correlation     :          -1.438300854456
+ - SR Exchange-correlation pot.:           0.320388159769
+
+ = Total eff. SR 0-el. energy  :           1.000417779122
+
+CI-DFT energy for state no.    1
+-------------------------------------
+
+ SR eff. 1-el. energy          :           0.514257950385
+ SR total Hartree energy       :           2.952976583963
+ SR eff. total DFT energy      :           1.514675729507
+ LR total CI  energy           :          -9.544751077018
+
+ Total CI-DFT energy           :          -8.030075347512
+
+ Decomposition of the auxiliary CI-srDFT energy:
+ ELRCI        :          -9.544751077018
+ EMYDFTAUX    :           3.367371497667
+ ESRDV        :           0.514257950385
+ POTNUC       :           0.969637476220
+ 
+
+ Auxiliary CI-srDFT energy for root 1:        -6.632759105188
+
+
+@ Final CI energies and residuals in symmetry 1 (irrep A1 )
+@    1       -8.030075347511888       6.40D-16
+
+   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+   Ex-sr + Ec-sr                         -1.4379383829
+ + EJsr = sr Coulomb energy               2.9522855472
+ = Total E(srDFT)                         1.5143471643
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   0.8519746360
+ -     Tr(Vxc-sr Dval)                    0.3198276045
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )       -0.4165684875
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1 ( irrep A1  in C2v )
+
+   1.996677970   0.003322030
+
+
+ --- MACRO ITERATION  1 ---
+ --------------------------
+
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.001       0.002
+
+ Fock matrix screening setting for this macro iteration: 10^( -9)
+
+   Ex-sr + Ec-sr                         -1.4379383829
+ + EJsr = sr Coulomb energy               2.9522855472
+ = Total E(srDFT)                         1.5143471643
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   0.8519746360
+ -     Tr(Vxc-sr Dval)                    0.3198276045
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )       -0.4165684875
+
+ Total MC-srDFT energy    :            -8.030074907136934  (MACRO    1)
+
+ - Nuclear repulsion      :             0.969637476220371
+ - Inactive energy        :            -7.408937656921958
+ - Active energy          :            -0.908070096547774
+ - srDFT effective energy :            -0.682704629887572
+
+ Norm of total gradient   :             0.003517957862
+ -    of CI gradient      :             0.000475643893
+ -    of orbital gradient :             0.003485654947
+      Virial theorem: -V/T =      2.006846
+@      MULPOP H      -0.22; Li      0.22; 
+
+ Residual norm when dim(red L) =   7
+ NEO root     CSF        orbital          total
+    1     0.00000000     0.00006198     0.00006198 converged
+
+ (NEONEX) NEO vector is converged.
+
+   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+   Ex-sr + Ec-sr                         -1.4381332109
+ + EJsr = sr Coulomb energy               2.9526744253
+ = Total E(srDFT)                         1.5145412144
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   0.8480290856
+ -     Tr(Vxc-sr Dval)                    0.3279700816
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )       -0.4262383258
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1 ( irrep A1  in C2v )
+
+   1.996401647   0.003598353
+
+
+ --- MACRO ITERATION  2 ---
+ --------------------------
+
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.001       0.007
+
+ Fock matrix screening setting for this macro iteration: 10^( -9)
+
+   Ex-sr + Ec-sr                         -1.4381332109
+ + EJsr = sr Coulomb energy               2.9526744253
+ = Total E(srDFT)                         1.5145412144
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   0.8480290856
+ -     Tr(Vxc-sr Dval)                    0.3279700816
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )       -0.4262383258
+
+ Total MC-srDFT energy    :            -8.030088356869108  (MACRO    2)
+
+ - Nuclear repulsion      :             0.969637476220371
+ - Inactive energy        :            -7.405517540460234
+ - Active energy          :            -0.905835923183626
+ - srDFT effective energy :            -0.688372369445618
+
+ Norm of total gradient   :             0.000658833821
+ -    of CI gradient      :             0.000311776714
+ -    of orbital gradient :             0.000580394076
+      Virial theorem: -V/T =      2.006633
+@      MULPOP H      -0.22; Li      0.22; 
+
+ Residual norm when dim(red L) =   8
+ NEO root     CSF        orbital          total
+    1     0.00000000     0.00000409     0.00000409 converged
+
+ (NEONEX) NEO vector is converged.
+
+   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+   Ex-sr + Ec-sr                         -1.4381435588
+ + EJsr = sr Coulomb energy               2.9526929000
+ = Total E(srDFT)                         1.5145493412
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   0.8483025409
+ -     Tr(Vxc-sr Dval)                    0.3274408826
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )       -0.4255938021
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1 ( irrep A1  in C2v )
+
+   1.996462427   0.003537573
+
+
+ --- MACRO ITERATION  3 ---
+ --------------------------
+
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.002       0.004
+
+ Fock matrix screening setting for this macro iteration: 10^( -9)
+
+   Ex-sr + Ec-sr                         -1.4381435588
+ + EJsr = sr Coulomb energy               2.9526929000
+ = Total E(srDFT)                         1.5145493412
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   0.8483025409
+ -     Tr(Vxc-sr Dval)                    0.3274408826
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )       -0.4255938021
+
+ Total MC-srDFT energy    :            -8.030088512598510  (MACRO    3)
+
+ - Nuclear repulsion      :             0.969637476220371
+ - Inactive energy        :            -7.405969366732410
+ - Active energy          :            -0.905762684704807
+ - srDFT effective energy :            -0.687993937381662
+
+ Norm of total gradient   :             0.000051458816
+ -    of CI gradient      :             0.000012085470
+ -    of orbital gradient :             0.000050019508
+      Virial theorem: -V/T =      2.006637
+@      MULPOP H      -0.22; Li      0.22; 
+
+ Residual norm when dim(red L) =   4
+ NEO root     CSF        orbital          total
+    1     0.00000011     0.00000204     0.00000205 converged
+
+ (NEONEX) NEO vector is converged.
+
+   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+   Ex-sr + Ec-sr                         -1.4381477212
+ + EJsr = sr Coulomb energy               2.9527009097
+ = Total E(srDFT)                         1.5145531885
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   0.8483084427
+ -     Tr(Vxc-sr Dval)                    0.3274351778
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )       -0.4255873693
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1 ( irrep A1  in C2v )
+
+   1.996462776   0.003537224
+
+
+ --- MACRO ITERATION  4 ---
+ --------------------------
+
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.001       0.002
+
+ Fock matrix screening setting for this macro iteration: 10^( -9)
+
+   Ex-sr + Ec-sr                         -1.4381477212
+ + EJsr = sr Coulomb energy               2.9527009097
+ = Total E(srDFT)                         1.5145531885
+
+
+ Corrections needed for correct CI energy evaluation:
+ - 0.5 Tr(Vxc-sr Dcore)                   0.8483084427
+ -     Tr(Vxc-sr Dval)                    0.3274351778
+ - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )       -0.4255873693
+
+ Total MC-srDFT energy    :            -8.030088512909819  (MACRO    4)
+
+ - Nuclear repulsion      :             0.969637476220371
+ - Inactive energy        :            -7.405978696077872
+ - Active energy          :            -0.905755823064369
+ - srDFT effective energy :            -0.687991469987948
+
+ Norm of total gradient   :             0.000008798459
+ -    of CI gradient      :             0.000002562771
+ -    of orbital gradient :             0.000008416953
+      Virial theorem: -V/T =      2.006635
+@      MULPOP H      -0.22; Li      0.22; 
+
+ (SIRSTP) Energy difference;
+ actual, predicted and ratio:  -0.000000000311308  -0.000000000271012    1.148688
+ Close to convergence, ratio set to one.
+
+ *** Optimization control: MC-srDFT converged ***
+     Number of macro iterations used            4
+     Number of micro iterations used           16
+     Total number of CPU seconds used         4.87
+
+ CPU and wall time for MCSCF :       4.876       5.253
+
+
+                     .----------------------------------------.
+                     | --- SIRIUS OPTIMIZATION STATISTICS --- |
+                     `----------------------------------------'
+
+
+ 
+     Date and time (Darwin) : Tue Jan 17 08:30:20 2017
+     Host name              : adm-106152.local                        
+
+
+  ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
+ ---------------------------------------------------------------------
+    1    6     -8.030074907137   0.0035179579  0.000000   0.0620786865
+    2    7     -8.030088356869   0.0006588338  0.958671   0.0056315081
+    3    3     -8.030088512599   0.0000514588  1.017343   0.0000751724
+    4    0     -8.030088512910   0.0000087985  1.000000   0.0000000000
+
+
+  ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
+ ------------------------------------------------------------------------------
+    1      3    0.000475    0.000476     10   -0.002683    0.003486    0.003518
+    2      2   -0.000311    0.000312     10   -0.000348    0.000580    0.000659
+    3      3    0.000012    0.000012     10   -0.000049    0.000050    0.000051
+    4      3    0.000003    0.000003     10   -0.000008    0.000008    0.000009
+
+
+  ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
+ ------------------------------------------------------------------------------
+
+    1     6     2     4      1.59      0.00      1.45      1.30      0.24
+    2     7     2     5      1.82      0.00      1.67      1.47      0.24
+    3     3     1     2      0.99      0.00      0.81      0.65      0.27
+    4     0     0     0      0.14      0.00      0.00      0.00
+
+
+ ITER         EMY                 EACTIV              EMCSCF
+
+    1     -8.091642286810     -0.908070096548     -8.030074907137
+    2     -8.093889909906     -0.905835923184     -8.030088356869
+    3     -8.093963304114     -0.905762684705     -8.030088512599
+    4     -8.093970166066     -0.905755823064     -8.030088512910
+
+
+ ITER         DEPRED              DEACT               RATIO
+
+    1      0.000000000000      0.000000000000      0.000000000000
+    2     -0.000014029567     -0.000013449732      0.958670518506
+    3     -0.000000153075     -0.000000155729      1.017342695962
+    4     -0.000000000271     -0.000000000311      1.000000000000
+
+
+ ITER    BETA           GAMMA             STPLNG              RTRUST
+
+    1      0.20000000  1.00000000      0.062078686521      0.700000000000
+    2      0.20000000  1.00000000      0.005631508150      0.700000000000
+    3      0.20000000  1.00000000      0.000075172371      0.700000000000
+    4      0.00000000  0.00000000      0.000000000000      0.700000000000
+
+
+ Reduced L root no.  1
+ ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
+ ----------------------------------------------------------------------------
+    1   -0.000001122192    0.999922933643   -0.010511242584   -0.006551305126
+    2   -0.000000012246    0.999999365723   -0.000072134815   -0.001035790212
+    3   -0.000000000022    0.999999999887   -0.000014423653   -0.000001773438
+    4    0.000000000000    0.000000000000    0.000000000000    0.000000000000
+
+
+                       .-----------------------------------.
+                       | --- Final results from SIRIUS --- |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A1  in C2v )
+@    Total charge of molecule:    0
+@    State number:                1
+
+@    Final MC-SRDFT energy:        -8.030088512910                 
+@    Nuclear repulsion:             0.969637476220
+@    Electronic energy:            -8.999725989130
+
+@    Final gradient norm:           0.000008798459
+
+ 
+     Date and time (Darwin) : Tue Jan 17 08:30:20 2017
+     Host name              : adm-106152.local                        
+
+ Occupancies of natural orbitals
+ -------------------------------
+
+ Symmetry 1  ( A1 ) -- Total occupation in this symmetry is   4.000000000
+
+   2.000000000   1.996462776   0.003537224
+
+ Symmetry 2  ( B1 ) -- No occupied orbitals
+
+ Symmetry 3  ( B2 ) -- No occupied orbitals
+
+ Symmetry 4  ( A2 ) -- No occupied orbitals
+
+File label for MO orbitals:  17Jan17   (CNOORB)
+
+ (Only coefficients > 0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 H   :1s    -0.0027  -0.3021   0.2917  -0.0537   0.0103   0.0025  -1.3677
+   2 H   :1s    -0.0022  -0.4104   1.0484  -0.6821  -0.5644   0.1173   1.9015
+   3 Li  :1s    -0.9967   0.1448   0.0910   0.0910   0.0517  -0.1378  -0.0926
+   4 Li  :1s    -0.0567  -0.1725  -0.8336   0.3041  -0.4415  -2.3148  -0.3209
+   5 Li  :1s     0.0283  -0.2205  -0.4744  -0.2075   0.4828   2.3402  -0.3924
+   6 Li  :2pz    0.0072  -0.2171  -0.6808   0.1738   1.8595  -0.4167  -0.3331
+   7 Li  :2pz   -0.0052  -0.0130   0.0839   1.0838  -1.2568   0.3633  -0.2952
+
+ Molecular orbitals for symmetry species 2  (B1 )
+ ------------------------------------------------
+
+    Orbital         1        2
+   1 Li  :2px    0.0765  -1.7055
+   2 Li  :2px    0.9370   1.4272
+
+ Molecular orbitals for symmetry species 3  (B2 )
+ ------------------------------------------------
+
+    Orbital         1        2
+   1 Li  :2py    0.0765  -1.7055
+   2 Li  :2py    0.9370   1.4272
+
+ Printout of CI-coefficients abs greater than 0.05000 for root  1
+ *** NOTE: this root is the reference state ***
+
+ Printout of coefficients in interval  3.1623E-01 to  1.0000E+00
+ ===============================================================
+
+  Coefficient of CSF no.         1 is      0.99911530    9.99115303E-01
+  Orbital          1
+  Spin coupling    2
+
+ Printout of coefficients in interval  1.0000E-01 to  3.1623E-01
+ ===============================================================
+   ( no coefficients )
+
+ Printout of coefficients in interval  5.0000E-02 to  1.0000E-01
+ ===============================================================
+   ( no coefficients )
+
+ Norm of printed CI vector ..      0.99823139
+
+ Magnitude of CI coefficients
+ ============================
+ ( Ranges are relative to norm of vector :  1.00E+00 )
+
+  10- 1 to 10- 0         1    0.99823139E+00      0.9982313882
+  10- 2 to 10- 1         1    0.17686118E-02      1.0000000000
+  Number of coefficients less than 10^-11 times norm is            1
+
+  Total CPU  time used in SIRIUS :   6.10 seconds
+  Total wall time used in SIRIUS :   6.57 seconds
+
+ 
+     Date and time (Darwin) : Tue Jan 17 08:30:20 2017
+     Host name              : adm-106152.local                        
+
+ NOTE:    1 warnings have been issued.
+ Check output, result, and error files for "WARNING".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
+ ----------------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, SOPPA and SOPPA-srDFT response property program
+ ----------------------------------------------------------------------------------------
+
+ INFO SIR_INTOPEN, old integral transformation not found as expected, ICASE = 3
+ - ICASE = 1: MO integral file MOTWOINT does not exist
+ - ICASE = 2: no MO integrals on MOTWOINT
+ - ICASE = 3: transformation level on MOTWOINT not sufficient
+ ITRLVL requested & ITRLVL on MOTWOINT :    4    3
+
+ NSETUP: MO transformation level too low or no MO integral file found.
+ NSETUP: generating MO 2-el. integral file. Transformation level:  4
+
+
+ Old direct access AO file found, SORTA skipped.
+
+ 2-el. integral transformation level 4: Total CPU and WALL times (sec)       0.001       0.002
+
+ Sorting integrals to Dirac format: Total CPU and WALL times (sec)       0.001       0.001
+
+
+ -------- OUTPUT FROM RESPONSE INPUT PROCESSING --------
+
+
+
+
+ Linear Response calculation
+ ---------------------------
+
+ Print level                                    : IPRLR  =   2
+ Maximum number of iterations                   : MAXITL =  60
+ Threshold for relative convergence             : THCLR  = 1.000D-03
+ Maximum iterations in optimal orbital algorithm: MAXITO =   5
+
+  2 B-frequencies  0.000000D+00  3.000000D-02
+
+    1 second order properties calculated with symmetry no.    1 and labels:
+
+          ZDIPLEN 
+
+    1 second order properties calculated with symmetry no.    2 and labels:
+
+          XDIPLEN 
+
+    1 second order properties calculated with symmetry no.    3 and labels:
+
+          YDIPLEN 
+
+ TRACTL_1: Integral transformation abandoned,
+ the required MO integrals are already available.
+
+ 2-el. integral transformation level 4: Total CPU and WALL times (sec)       0.000       0.000
+
+ DRCCTL abandoned: the required MO integrals in Dirac format
+ are already available on the MODRCINT file.
+
+ Sorting integrals to Dirac format: Total CPU and WALL times (sec)       0.000       0.001
+
+
+ MCSCF energy         :       -8.030088512909819
+ -- inactive part     :       -8.093970166065819
+ --   active part     :       -0.905755823064369
+ -- nuclear repulsion :        0.969637476220371
+
+
+                      *************************************
+                      *** MC-srDFT response calculation ***
+                      *************************************
+
+ ----------------------------------------------------------------
+ ----- Linear response calculation
+ ----- Symmetry of excitation/property operator(s)    1  ( A1 )
+ ----------------------------------------------------------------
+
+ Number of excitations of this symmetry            0
+ Number of response properties of this symmetry    1
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:           1
+ Perturbation spin symmetry.TRPLET:           F
+ Orbital variables.         KZWOPT:          14
+ Configuration variables.   KZCONF:           3
+ Total number of variables. KZVAR :          17
+
+
+ RSPLR -- linear response calculation for symmetry 1  ( A1 )
+ RSPLR -- operator label : ZDIPLEN 
+ RSPLR -- operator spin  :   0
+ RSPLR -- frequencies    :     0.000000  0.030000
+
+
+
+ ---  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES ---
+
+ Operator symmetry = 1  ( A1 ); triplet =   F
+
+
+ *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   20)
+ RSP solution vector no.    1; norm of residual   8.25D-04
+ RSP solution vector no.    2; norm of residual   8.21D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+
+           Final output of second order properties from linear response
+           ------------------------------------------------------------
+
+
+@ Spin symmetry of operators: singlet
+
+ Note that minus the linear response function: - << A; B >>(omega) is printed.
+ The results are of quadratic accuracy using Sellers formula.
+
+@ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
+
+@ -<< ZDIPLEN  ; ZDIPLEN  >> =  1.837556275405D+01
+
+@ FREQUENCY DEPENDENT SECOND ORDER PROPERTIES WITH FREQUENCY :
+
+@    a.u.:  3.0000000D-02
+@    cm-1:  6.5842389D+03
+@    eV  :  8.1634153D-01
+@  kJ/mol:  7.8764988D+01
+@    nm  :  1.5187784D+03
+
+@ -<< ZDIPLEN  ; ZDIPLEN  >> =  1.890759985570D+01
+
+
+ Time used in linear response calculation is      2.17 CPU seconds for symmetry 1
+ ----------------------------------------------------------------
+ ----- Linear response calculation
+ ----- Symmetry of excitation/property operator(s)    2  ( B1 )
+ ----------------------------------------------------------------
+
+ Number of excitations of this symmetry            0
+ Number of response properties of this symmetry    1
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:           2
+ Perturbation spin symmetry.TRPLET:           F
+ Orbital variables.         KZWOPT:           6
+ Configuration variables.   KZCONF:           0
+ Total number of variables. KZVAR :           6
+
+
+ RSPLR -- linear response calculation for symmetry 2  ( B1 )
+ RSPLR -- operator label : XDIPLEN 
+ RSPLR -- operator spin  :   0
+ RSPLR -- frequencies    :     0.000000  0.030000
+
+
+
+ ---  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES ---
+
+ Operator symmetry = 2  ( B1 ); triplet =   F
+
+
+ *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   12)
+ RSP solution vector no.    1; norm of residual   1.55D-06
+ RSP solution vector no.    2; norm of residual   1.55D-06
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+
+           Final output of second order properties from linear response
+           ------------------------------------------------------------
+
+
+@ Spin symmetry of operators: singlet
+
+ Note that minus the linear response function: - << A; B >>(omega) is printed.
+ The results are of quadratic accuracy using Sellers formula.
+
+@ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
+
+@ -<< XDIPLEN  ; XDIPLEN  >> =  2.307568591944D+01
+
+@ FREQUENCY DEPENDENT SECOND ORDER PROPERTIES WITH FREQUENCY :
+
+@    a.u.:  3.0000000D-02
+@    cm-1:  6.5842389D+03
+@    eV  :  8.1634153D-01
+@  kJ/mol:  7.8764988D+01
+@    nm  :  1.5187784D+03
+
+@ -<< XDIPLEN  ; XDIPLEN  >> =  2.370263230559D+01
+
+
+ Time used in linear response calculation is      1.25 CPU seconds for symmetry 2
+ ----------------------------------------------------------------
+ ----- Linear response calculation
+ ----- Symmetry of excitation/property operator(s)    3  ( B2 )
+ ----------------------------------------------------------------
+
+ Number of excitations of this symmetry            0
+ Number of response properties of this symmetry    1
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:           3
+ Perturbation spin symmetry.TRPLET:           F
+ Orbital variables.         KZWOPT:           6
+ Configuration variables.   KZCONF:           0
+ Total number of variables. KZVAR :           6
+
+
+ RSPLR -- linear response calculation for symmetry 3  ( B2 )
+ RSPLR -- operator label : YDIPLEN 
+ RSPLR -- operator spin  :   0
+ RSPLR -- frequencies    :     0.000000  0.030000
+
+
+
+ ---  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES ---
+
+ Operator symmetry = 3  ( B2 ); triplet =   F
+
+
+ *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   12)
+ RSP solution vector no.    1; norm of residual   1.56D-06
+ RSP solution vector no.    2; norm of residual   1.56D-06
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+
+           Final output of second order properties from linear response
+           ------------------------------------------------------------
+
+
+@ Spin symmetry of operators: singlet
+
+ Note that minus the linear response function: - << A; B >>(omega) is printed.
+ The results are of quadratic accuracy using Sellers formula.
+
+@ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
+
+@ -<< YDIPLEN  ; YDIPLEN  >> =  2.543945440727D+01
+
+@ FREQUENCY DEPENDENT SECOND ORDER PROPERTIES WITH FREQUENCY :
+
+@    a.u.:  3.0000000D-02
+@    cm-1:  6.5842389D+03
+@    eV  :  8.1634153D-01
+@  kJ/mol:  7.8764988D+01
+@    nm  :  1.5187784D+03
+
+@ -<< YDIPLEN  ; YDIPLEN  >> =  2.620182056211D+01
+
+
+ Time used in linear response calculation is      1.35 CPU seconds for symmetry 3
+
+  Total CPU  time used in RESPONSE:   4.78 seconds
+  Total wall time used in RESPONSE:   5.29 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+  Total CPU  time used in DALTON:  10.90 seconds
+  Total wall time used in DALTON:  12.03 seconds
+
+ 
+     Date and time (Darwin) : Tue Jan 17 08:30:25 2017
+     Host name              : adm-106152.local                        
