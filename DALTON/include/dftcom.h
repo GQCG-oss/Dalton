@@ -10,7 +10,7 @@
       REAL*8  HFXFAC, HFXATT, HFXMU,                                    &
      &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC,   &
      &        XMULFAC_READIN, DSFAC, HEAVISIDE_PVALUE
-      INTEGER IPRDFT, ANGINT, ANGMIN, LEBMIN, IWINT
+      INTEGER IPRDFT, ANGINT, ANGMIN, LEBMIN, IWINT, NTOT_DFTGRID
       LOGICAL DFTADD, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES,           &
      &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG, HFXSET,   &
      &        DODFTD, DFTGRID_DONE, DFTGRID_DONE_OLD                                          ! DFTGRID_DONE for REAQUA, DFTGRID_DONE_OLD for REAQUA_OLD ("grid done")
@@ -32,7 +32,7 @@
      &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC,   &
      &        XMULFAC_READIN, DSFAC, HEAVISIDE_PVALUE,                  &
 ! integer:
-     &        IPRDFT, ANGINT, ANGMIN, LEBMIN, IWINT,                    &
+     &        IPRDFT, ANGINT, ANGMIN, LEBMIN, IWINT, NTOT_DFTGRID,      &
 ! logical:
      &        DFTADD, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES,           &
      &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG, HFXSET,   &
@@ -51,6 +51,10 @@
      &        DOLAX_LDAS,DOLANSC_LDAS,DOLANSC_LDA,DOLAX_LDA,DOLASC_LDA, &
      &        DOLAX_PBEGWS,DOLANSC_PBEGWS,DOLASC_PBEGWS,DOLAX_GGABCK,   &
      &        DOLANC_GGALYP,DOLASC_GGALYP,DOSRC_LYPRI
+      INTEGER DFTCOMlast
+      COMMON /DFTCOM/ DFTCOMlast
+      !  Very important !!!  Always keep DFTCOMlast as the last variable in the common block. 
+      !  See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
 !
       CHARACTER*6  DFTTYP
 !     variables for srDFT

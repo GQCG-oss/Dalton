@@ -51,9 +51,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       DIMENSION WORK(LWORK)
 
-#include "chrnos.h"
-      CHARACTER*16 QUADNAME
-
       CALL TIMER('START ',TIMSTR,TIMEND)
 
 #include "memint.h"
@@ -65,8 +62,7 @@ C     ********************************
 C
 C     INFOA
 C     =====
-CTROND: Modified to handle symmetry dependent atoms
-C       as well
+CTROND: Modified to handle symmetry dependent atoms as well
       NAT = 0
       NUM = NBASIS
       DO ICENT = 1, NUCIND
@@ -128,14 +124,11 @@ C..added for the MOLCAS scheme:
 C
 C     Open unit LUQUAD
 C     ================
+C     (When MPI parallel, then GPOPEN adds a node number
+C      as e.g. DALTON.QUAD.n0001 for mynum=1)
 C
       LUQUAD = -1
-      QUADNAME = 'DALTON.QUAD.'//chrnos(mynum/1000)
-     &     //chrnos((mynum-(mynum/1000)*1000)/100)
-     &     //chrnos((mynum-(mynum/100)*100)/10)
-     &     //chrnos(mynum-(mynum/10)*10)
-      LUQUAD = -1
-      CALL GPOPEN(LUQUAD,QUADNAME,
+      CALL GPOPEN(LUQUAD,'DALTON.QUAD',
      &     'UNKNOWN','SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
       REWIND LUQUAD
 C     

@@ -24,6 +24,7 @@
 C
 C     Parallel-routines, by Alf Christian Hennum 
 C 
+#ifdef INCLUDE_DFTPAR
       SUBROUTINE DFTPAR(DMAT,DTRMAT,EXCMAT,NXCMAT,DOERG,DOGRD,DOLND,
      &     DOATR,CORX,CORY,CORZ,WEIGHT,NBUF,GSO,NCNT,DST,
      &     C0,C1,C2,DMAGAO,HES,DOHES,TRPLET,FACDRC,FACVWN,
@@ -639,12 +640,4 @@ C
 #endif
       RETURN 
       END
-
-
-
-
-
-
-
-
-
+#endif /* INCLUDE_DFTPAR */

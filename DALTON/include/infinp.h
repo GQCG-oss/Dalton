@@ -47,6 +47,8 @@
      &                BOYORB,PIPORB,ADDMP2,DOFCI,DOCISD,DOLUCITA,DOMEP, &
      &                DOCISRDFT,DOHFSRDFT,DOMCSRDFT,ADDSRI,SRHYBR,      &
      &                DO_CUBE, DOAPSG
+      LOGICAL         LOGINPlast
+      COMMON /LOGINP/ LOGINPlast ! for MPI and getbytespan
       LOGICAL         SUPSYM, DORHF
       EQUIVALENCE (SUPSYM,FLAG(17)), (DOSCF,DORHF)
 !

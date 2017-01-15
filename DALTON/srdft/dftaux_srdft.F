@@ -42,6 +42,12 @@ C
 #include <inforb.h>
 C
 C
+      IF (IPRINT .GT. 100) THEN
+         write(lupri,*) 'GETRHO_OLD NBAST, NSYM',NBAST,NSYM
+         write(lupri,*) 'DFTHRI, DMAT(1,1)',FTHRI,DMAT(1,1),GSO(1)
+         write(lupri,*) 'IBAS',ibas(1:nsym)
+         write(lupri,*) 'NBAS',nbas(1:nsym)
+      END IF
       IF (NSYM.EQ.1) THEN
          CALL DSYMV('U',NBAST,D1,DMAT,NBAST,GSO,1,D0,DMAGAO,1)
       ELSE

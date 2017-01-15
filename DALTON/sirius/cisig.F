@@ -1531,9 +1531,10 @@ C
      &     XNDXCI(KIBSTR),MXSASM,XNDXCI(KLTSOB),XNDXCI(KSTLOB),
      &     ISPIN1,ISPIN2,IH8SM,INTFRM,WRK(KINDE2),WRK(KF3))
       CALL GETTIM(T2,W2)
-      IF (IPRSIG .GE. 1) WRITE (LUPRI,'(/A,2I10/A,2F10.3)')
-     *   ' CISIGD : KFREE, LFREE =           ',KFREE,LFREE,
-     *   '          CPU and wall time (sec) :',T2-T1,W2-W1
+      IF (IPRSIG .GE. 3) WRITE (LUPRI,'(/A,2I10)')
+     &   ' CISIGD : KFREE, LFREE =           ',KFREE,LFREE
+      IF (IPRSIG .GE. 1) WRITE (LUPRI,'(A,2F10.3)')
+     &   ' CISIGD : CPU and wall time (sec) :',T2-T1,W2-W1
 C
       RETURN
       END

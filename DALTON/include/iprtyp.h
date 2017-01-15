@@ -59,3 +59,4 @@
 #define pcmsolver_npetes2_work    133
 #define pcmsolver_pcmbsol_work    134
 #define CALL_FCKTRA_DISTRIBUTED   201
+#define PAR_SRDFT_INTEGRATION     202

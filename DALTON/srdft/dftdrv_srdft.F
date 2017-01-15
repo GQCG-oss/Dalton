@@ -21,6 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
+#ifdef INCLUDE_DFTDRV_SRDFT
 C
 C-------------------------------------------------------------------------
 C /* Deck dftexc */
@@ -181,7 +182,7 @@ C
 C     Calculate grid
 C
       IF (.NOT.DFTGRID_DONE_OLD) THEN
-         CALL MAKE_DFTGRID(WORK,LWORK,NTOTAL,1,.FALSE.)
+         CALL MAKE_DFTGRID(WORK,LWORK,NTOT_DFTGRID,1,.FALSE.)
          CALL CONDFT 
          DFTGRID_DONE_OLD = .TRUE.
       END IF
@@ -224,10 +225,11 @@ C
 C            
 C     Make quadname: Can take 9999 procs 
 C     
-      QUADNAME = 'DALTON.QUAD.'//chrnos(mynum/1000)
-     &     //chrnos((mynum-(mynum/1000)*1000)/100)
-     &     //chrnos((mynum-(mynum/100)*100)/10)
-     &     //chrnos(mynum-(mynum/10)*10)
+!     QUADNAME = 'DALTON.QUAD.'//chrnos(mynum/1000)
+!    &     //chrnos((mynum-(mynum/1000)*1000)/100)
+!    &     //chrnos((mynum-(mynum/100)*100)/10)
+!    &     //chrnos(mynum-(mynum/10)*10)
+      QUADNAME = 'DALTON.QUAD' ! GPOPEN adds slave no.
 C     
       CALL GPOPEN(LUQUAD,QUADNAME,'OLD','SEQUENTIAL',
      &     'UNFORMATTED',IDUMMY,LDUMMY)      
@@ -809,3 +811,7 @@ C
       END IF
       RETURN
       END
+#else
+      subroutine dummy_dftdrv_srdft ! to avoid warnings about no symbols
+      end
+#endif /* INCLUDE_DFTDRV_SRDFT */

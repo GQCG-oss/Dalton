@@ -1,3 +1,4 @@
+#define SRDFT_DEBUG -1
 !
 !...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -22,17 +23,26 @@
 !
 !
 
-#define noSRDFT_DEBUG
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,CORX,CORY,CORZ,
+      SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
      &                  WEIGHT,NBUF,GSO,NCNT,DMAGAOSR,DOGGA,
-     &                  DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT_inp)
+     &                  DOERG,DOGRD,DOATR,RESULTS,WORK,LWORK,IPRINT_in)
 C*****************************************************************************
 C     Calculate DFT energy and potential contributions for
 C     SR-DFT hybrid methods
 C
 C     Based on the routine SRDFT1 of J. K. Pedersen
+C
+C    Input: ND_SIM: number of input density matrices and output potential matrices
+C                  DMAT(1) = charge density matrix
+C                  DMAT(2) = 1-index transformed charge density matrix (DOATR)
+C                  DMAT(3) = spin density matrix (DFT_SPINDNS)
+C                  DMAT(4) = 1-index transformed spin density matrix (DFT_SPINDNS and DOATR)
+C            (if SRHYBR then different ordering of DMAT matrices)
+C
+C                  EXCMAT(1) = charge density potential matrix
+C                  EXCMAT(2) = spin density potential matrix (DFT_SPINDNS)
 C
 C     Created : 15-02-05, J. Toulouse
 C     Modified: 17-08-09, J. Toulouse, add spin density
@@ -40,36 +50,35 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "pi.h"
 #include "dummy.h"
+! infpar.h : MYNUM, NODTOT
 #include "maxorb.h"
+#include "gnrinf.h"
+#include "infpar.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infvar.h"
 #include "inftap.h"
-#include "infpar.h"
 #include "nuclei.h"
 #include "dftinf.h"
 #include "dftcom.h"
-#include "gnrinf.h"
 #include "chrnos.h"
 
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
 
       LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,FROMVX
 
-#ifdef SRDFT_DEBUG
-      !edh debug
-      real*8    print_thr
-#endif
-
-      DIMENSION EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*), 
+      REAL*8    EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
      &          GSO(NBAST*NTYPSO),NCNT(NBAST),
      &          DMAGAOSR(NBAST,2),
-     &          COR(3),WORK(LWORK)
-C
-      DIMENSION RHO(4), RHG(3,4)
+     &          COR(3),RESULTS(11),WORK(LWORK)
+
+      CHARACTER*17 QUADNAME
+
+      INTEGER, SAVE :: NTOT_DFTGRID_save = -1
+
+      REAL*8 RHO(4), RHG(3,4)
 C     ... RHO(1) = RHOT  = rho_a + rho_b
 C     ... RHO(2) = RHOS  = rho_a - rho_b
 C     ... RHO(3) = RHO2A = 2 rho_a
@@ -80,24 +89,28 @@ C     ... RHG(1:3,3) = RHG2A(1:3) = 2 grad ( rho_a )
 C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
 
 !     these are not initialized to zero!
-      double precision d1Ex(6), d1Ec(6), d2Ex(10), d2Ec(10)
-      double precision d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
-      double precision d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds
-      double precision d1Exdngrd2, d1Exdngrds2
-      double precision d1Ecdngrd2, d1Ecdngrds2
+      real*8   d1Ex(6), d1Ec(6), d2Ex(10), d2Ec(10)
+      real*8   d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
+      real*8   d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds
+      real*8   d1Exdngrd2, d1Exdngrds2
+      real*8   d1Ecdngrd2, d1Ecdngrds2
 
-      double precision d1Excdrhot, d1Excdrhos, d1Excdgrdt, d1Excdgrds
-      double precision d1Excdngrd2, d1Excdngrds2
+      real*8   d1Excdrhot, d1Excdrhos, d1Excdgrdt, d1Excdgrds
+      real*8   d1Excdngrd2, d1Excdngrds2
 
 
-      CHARACTER*16 QUADNAME
+#if defined SRDFT_DEBUG > 10
+      !edh debug
+      real*8    print_thr
+#endif
 
-      IPRINT = IPRINT_inp
-#ifdef SRDFT_DEBUG
-      IPRINT = MAX(IPRINT,5)
+      IPRINT = MAX(IPRINT_in,SRDFT_DEBUG)
+
 !     Debug
+      IF (IPRINT .GE. 5) THEN
       WRITE(LUPRI,*) 'SRDFT1JT: entering, ND_SIM = ',ND_SIM
-      WRITE(LUPRI,*) 'SRDFT1JT: LUPRI  =',LUPRI, IPRINT
+      WRITE(LUPRI,*) 'SRDFT1JT: MYNUM, NODTOT = ',MYNUM,NODTOT
+      WRITE(LUPRI,*) 'SRDFT1JT: LUPRI,IPRINT  =',LUPRI, IPRINT
       WRITE(LUPRI,*) 'SRDFT1JT: CHIVAL =',CHIVAL
       WRITE(LUPRI,*) 'SRDFT1JT: HFXFAC =',HFXFAC
       WRITE(LUPRI,*) 'SRDFT1JT: DOERG,DOATR,DOGRD,DOGGA  =',
@@ -105,6 +118,8 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
       WRITE(LUPRI,*) 'SRDFT1JT: ERFEXP(0:2) =',ERFEXP(0:2)
       WRITE(LUPRI,*) 'SRDFT1JT: DOSRX_PBERI=',DOSRX_PBERI
       WRITE(LUPRI,*) 'DFT_SPINDNS=',DFT_SPINDNS
+      flush(lupri)
+      IF (IPRINT .GE. 12) THEN
       WRITE(LUPRI,*) 'D_TOT_AO matrix:'
       call output(DMAT(1,1),1,nbast,1,nbast,nbast,nbast,-1,lupri)
       IF (DOATR) THEN
@@ -117,14 +132,16 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
          IF (DOATR) THEN
             WRITE(LUPRI,*) 'DX_SPIN_AO matrix for DOATR:'
             call output(DMAT(1,4),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+         END IF
       END IF
-      END IF
+      flush(lupri)
+      END IF ! iprint 12
+      END IF ! iprint 5
 C
-#endif
 C     Initializations -------------------------------------------------------
 
       ! edh debug
-#ifdef SRDFT_DEBUG
+#if defined SRDFT_DEBUG > 10
       print_thr = 0.0d0
 #endif
       ! edh the arrays are also zeroed in SRDFTEXCJT
@@ -154,23 +171,26 @@ C     Initializations -------------------------------------------------------
 
       IF (ND_SIM .NE. 1) THEN
          WRITE(LUPRI,*) 'SRDFT1: illegal ND_SIM ',ND_SIM
-         CALL QUIT('SRDFT1: illegal ND_SIM value')
+         CALL QUIT('SRDFT1jt: illegal ND_SIM value')
       END IF
 
       IF (DOGRD) THEN
-         CALL QUIT('SRDFTJT: DOGRD not implemented yet')
+         CALL QUIT('SRDFT1JT: DOGRD not implemented yet')
       END IF
 
 !     (Integrated) exchange and correlation energies
       ExInt  = D0
       EcInt  = D0
-      IF (DOERG) EDFTY  = D0
 
-C     DFT grid (NTOTAL is the total number of grid points)
-      IF (.NOT.DFTGRID_DONE_OLD) THEN
-         CALL MAKE_DFTGRID(WORK,LWORK,NTOTAL,1,.FALSE.)
+C     DFT grid (NTOT_DFTGRID is the total number of grid points)
+      IF (.NOT.DFTGRID_DONE_OLD .OR. NTOT_DFTGRID_save .LE. 0) THEN
+         CALL MAKE_DFTGRID(WORK,LWORK,NTOT_DFTGRID,1,.FALSE.)
          CALL CONDFT
+         NTOT_DFTGRID_save = NTOT_DFTGRID
          DFTGRID_DONE_OLD = .TRUE.
+      ELSE
+         NTOT_DFTGRID = NTOT_DFTGRID_save
+         ! because wrong NTOT_DFTGRID has been transferred from master in SRDFT_PAR_NODE
       END IF
 
 C     Electron number
@@ -201,32 +221,65 @@ C     For quadrature integration
 C
 C     Make quadname: Can take 9999 procs
 C
-      QUADNAME = 'DALTON.QUAD.'//chrnos(mynum/1000)
+      IF (MYNUM .EQ. 0) THEN
+         QUADNAME = 'DALTON.QUAD'
+      ELSE
+         QUADNAME = 'DALTON.QUAD.n'//chrnos(mynum/1000)
      &     //chrnos((mynum-(mynum/1000)*1000)/100)
      &     //chrnos((mynum-(mynum/100)*100)/10)
      &     //chrnos(mynum-(mynum/10)*10)
+      END IF
 C
       LUQUAD = -1
       CALL GPOPEN(LUQUAD,QUADNAME,'OLD','SEQUENTIAL',
      &     'UNFORMATTED',IDUMMY,LDUMMY)
 C
+      IF (MYNUM .EQ. 0) THEN
+         NPNTS_PER_NODE = NTOT_DFTGRID
+         my_first_point = 1
+         my_last_point  = NTOT_DFTGRID
+      ELSE
+         NPNTS_PER_NODE = (NTOT_DFTGRID-1)/NODTOT + 1
+         my_first_point = NPNTS_PER_NODE*(MYNUM-1) + 1
+         my_last_point  = MIN(NPNTS_PER_NODE*MYNUM, NTOT_DFTGRID)
+      END IF
+      if (iprint .ge. 5) then
+         write(lupri,*)
+     &      'MYNUM,NPNTS_PER_NODE,my_first_point,my_last_point',
+     &       MYNUM,NPNTS_PER_NODE,my_first_point,my_last_point
+         flush(lupri)
+      end if
       NPNTS = 0
   200 CONTINUE
       READ(LUQUAD) NPOINT
-      kpoint = npoint/10
+      if (iprint .ge. 5) then
+         write(lupri,*) 'NPOINT from LUQUAD',NPOINT
+         IPNT = 1
+         if (npoint.gt.0)
+     &   WRITE (LUPRI,'(A,I8,3F15.8,1P,D15.8)') 'Grid point',
+     &      IPNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),WEIGHT(IPNT)
+      end if
 
       IF (NPOINT.GT.0) THEN
-      NPNTS = NPNTS + NPOINT
-      CALL REAQUA_OLD(CORX,CORY,CORZ,WEIGHT,LUQUAD,NPOINT)
+         NPNT1 = NPNTS + 1       ! first integration point from this record
+         NPNTS = NPNTS + NPOINT  ! last  integration point from this record
+         IPNT_ST  = max(NPNT1,my_first_point) + 1 - NPNT1
+         IPNT_END = min(NPNTS,my_last_point) + 1 - NPNT1
+         if (iprint .ge. 5) then
+            write(lupri,*)
+     &      'MYNUM,IPNT_ST,IPNT_END', MYNUM,IPNT_ST,IPNT_END
+            flush(lupri)
+         end if
+         IF (IPNT_ST .GT. IPNT_END) THEN
+            if (iprint .ge. 5) write(lupri,*) 'Skipping this record'
+            READ (LUQUAD) ! skip this record
+            GO TO 200
+         END IF
+         CALL REAQUA_OLD(CORX,CORY,CORZ,WEIGHT,LUQUAD,NPOINT)
 
 C   Loop over grid points -----------------------------------------------
-      DO 300 IPNT = 1, NPOINT
 
-C     Print grid information
-      IF (IPRINT .GT. 100) THEN
-        WRITE (LUPRI,'(2X,I6,4F12.6)') 
-     &        IPNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),WEIGHT(IPNT)
-      END IF
+      DO 300 IPNT = IPNT_ST, IPNT_END
 
 C     Quadrature weight
       WGHT  = WEIGHT(IPNT)
@@ -238,21 +291,36 @@ C     Get AOs
       COR(1) = CORX(IPNT)
       COR(2) = CORY(IPNT)
       COR(3) = CORZ(IPNT)
+      IF (IPRINT .GT. 10 .AND. MOD(IPNT,1000) .EQ. 1) THEN
+         IPRINT_x = iprint
+      ELSE
+         IPRINT_x = 0
+      END IF
       CALL GETSOS(GSO,NCNT,COR,WORK,LWORK,NBAST,DOLND,DOGGA,
-     &            THRINT,IPRINT)
+     &            THRINT,IPRINT_x)
 
 C     Density
       CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHO(1),RHOT13,
-     &       DMAGAOSR(1,1),THRINT,IPRINT)
+     &       DMAGAOSR(1,1),THRINT,IPRINT_x)
 
 C     Contribution to electron number (N_alpha + N_beta)
       DELCTRN = WGHT*RHO(1)
 
+      IF (iprint_x .gt. 10) then
+C        Print grid information
+         WRITE (LUPRI,'(A,I8,3F15.8,1P,D15.8)') 'Grid point',
+     &      IPNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),WEIGHT(IPNT)
+         WRITE (LUPRI,*) 'RHO, DELCTRN, ELCTRN',
+     &      RHO(1),DELCTRN,ELCTRN
+      END IF
+
 C     Screening
-!      print *,'DELCTRN=',DELCTRN
-!      print *,'THRELCTRN=',THRELCTRN
       IF (ABS(DELCTRN).LE.THRELCTRN .OR. 
      &          RHO(1).LE.THRESRHO) THEN
+         
+         IF (iprint_x .gt. 10) then
+            write(lupri,*) 'Skipping this point'
+         END IF
          NSKIP1 = NSKIP1 + 1
          ELCTRSKIP = ELCTRSKIP + DELCTRN
          THRELCTRN = (THRELCTOT-ELCTRSKIP)/100
@@ -314,6 +382,11 @@ C
 C      Summation with quadrature weigths
        ExInt     = ExInt + WGHTX*Ex
        EcInt     = EcInt + WGHTC*Ec
+      IF (iprint_x .gt. 10) then
+         write(lupri,*) 'rho, rhg ',rho(1),rhg(1:3,1)
+         write(lupri,*) 'Ex, ExInt',Ex,ExInt
+         write(lupri,*) 'Ec, EcInt',Ec,EcInt
+      end if
 
 C      Potentials with quadrature weigths
 !
@@ -378,7 +451,7 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
        if (domcsrdft .and. docisrdft) then  !  only true for start-CI  (cf. routine OPST)
            CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
      &                 d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
-#ifdef SRDFT_DEBUG
+#if defined SRDFT_DEBUG > 11
           if (ipnt .eq. 1) then
              write(lupri,*)'DOGGA', DOGGA
              write(lupri,*)'DOERG', DOERG
@@ -403,8 +476,7 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
              CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
      &            d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
        end if
-C
-C
+
        ENDIF  !DOERG
 
 C      Hessian transformation for second-order terms
@@ -416,7 +488,7 @@ C        matrix 4 is DXSAO
          JDXTAO = 2
          JDXSAO = 4
 
-#ifdef SRDFT_DEBUG
+#if defined SRDFT_DEBUG > 41
        print_thr = 1000.0d0
        do k = 1,2
          do i = 1, nbast
@@ -435,7 +507,7 @@ C        matrix 4 is DXSAO
      
        ENDIF
 
-#ifdef SRDFT_DEBUG
+#if defined SRDFT_DEBUG > 41
        print_thr = 50000.0d0
        do k = 1,2
          do i = 1, nbast
@@ -449,17 +521,17 @@ C        matrix 4 is DXSAO
 #endif
 
 C
-  300  CONTINUE
+  300    CONTINUE
 C End of loop over points ------------------------------------------------
 C
-       GO TO 200
-       ELSE IF (NPOINT .EQ.0 ) THEN
          GO TO 200
-       END IF  !NPOINT.GT.0
+      ELSE IF (NPOINT .EQ.0 ) THEN
+         GO TO 200
+      END IF  !NPOINT.GT.0
 
 C Termination --------------------------------------------------------------
 
-#ifdef SRDFT_DEBUG
+#if defined SRDFT_DEBUG > 21
        print_thr = 10.0d0
        write(lupri,*) 'print_thr', print_thr
        do k = 1,2
@@ -474,68 +546,14 @@ C Termination --------------------------------------------------------------
 #endif
       CALL GPCLOSE(LUQUAD,'KEEP')
 
-      IF (DOERG) THEN
-         EDFTY = ExInt + EcInt
-         FAC = DP5
-      ELSE IF (DOATR) THEN
-         FAC = D1
-      ELSE
-         CALL QUIT('both DOERG and DOATR are false')
-      END IF
-
-      IF (DFT_SPINDNS) THEN
-        NXCMAT = 2
-      ELSE
-        NXCMAT = 1
-      ENDIF
-
-      DO K = 1, NXCMAT
-        DO I = 1, NBAST
-          DO J = 1, I - 1
-            AVERAG = FAC*(EXCMAT(I,J,K) + EXCMAT(J,I,K))
-            EXCMAT(I,J,K) = AVERAG
-            EXCMAT(J,I,K) = AVERAG
-          END DO
-        END DO
-      END DO
-
-C     Print section
-!     IF (IPRINT .GE. 2) THEN
-      IF (IPRINT .GE. 1) THEN
-      IF (DOERG) THEN
-         ELCTOT = ELCTRN + ELCTRSKIP
-         WRITE (LUPRI,'(4(/1X,A,F18.10))')
-     &'No. of non-skipped electrons from num. int.  :',ELCTRN,
-     &'No. of     skipped electrons   in num. int.  :',ELCTRSKIP,
-     &'Sum of non-skipped and skipped electrons     :',ELCTOT,
-     &'Integrated spin density (N_alpha-N_beta)     :',SPINDEN
-
-         WRITE (LUPRI,'(/1X,A,F18.10)')
-     &'Exchange energy                                     :',ExInt
-         WRITE (LUPRI,'(1X,A,F18.10)')
-     &'Correlation energy                                  :',EcInt
-         WRITE (LUPRI,'(1X,A,F18.10)')
-     &'DFT exchange-correlation energy                     :',EDFTY
-         WRITE (LUPRI,*)
-     &'Number of times RHO(2) > RHO(1)                     :',NRSGTR
-      END IF 
-
-      IF (DOATR) THEN
-         WRITE(LUPRI,'(/A)') ' srDFT linear transformation finished'
-      END IF
-
-      IF (IPRINT.GE.5) THEN
-            WRITE(LUPRI,'(//A/)') ' <<< Kohn-Sham matrix >>>'
-            CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
-            IF (DFT_SPINDNS) THEN
-               WRITE(LUPRI,'(//A/)')
-     &         ' <<< Kohn-Sham matrix from spin-density>>>'
-               CALL OUTPUT(EXCMAT(1,1,2),1,NBAST,1,NBAST,NBAST,NBAST,
-     &         -1,LUPRI)
-            END IF
-      END IF
-
-      END IF  ! IPRINT .GE. 2
+      RESULTS(1) = ELCTRN
+      RESULTS(2) = ELCTRSKIP
+      RESULTS(3) = SPINDEN
+      RESULTS(4) = ExInt
+      RESULTS(5) = EcInt
+      RESULTS(6) = NRSGTR
+      ! LSRHYBR
+      RESULTS(7:11) = 0.0D0
 
       RETURN 
       END
@@ -543,7 +561,7 @@ C     Print section
 C****************************************************************************
       SUBROUTINE SRDFTEXCJT(RHO,RHG, CHIVAL,NORDER,ERFEXP,
      >           Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
-C*****************************************************************************
+c*****************************************************************************
 C    Driver for short-range DFT exchange and correlation
 C    energies and derivatives
 C
@@ -551,7 +569,7 @@ C    Based on the routine SRDFTEXC of J. K. Pedersen
 C
 C    Created : 15-02-05, J. Toulouse
 C    Modified: 17-08-09, J. Toulouse, add spin density
-C    Modified: 15-08-16, E. Hedegård, add spin density gradient
+C    Modified: 15-08-16, E. Hedegaard, add spin density gradient
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -562,16 +580,16 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 
-      double precision rho(4),rhg(3,4),CHIVAL,VLAMBDA ! input
-      double precision rhogrd(4) ! local variable for norm of RHG(1:3,*)
+      real*8  rho(4),rhg(3,4),CHIVAL,VLAMBDA ! input
+      real*8  rhogrd(4) ! local variable for norm of RHG(1:3,*)
       integer NORDER
       logical ERFEXP(0:2)
 
-      double precision Ex, d1Ex(6), d2Ex(10)
-      double precision Ec, d1Ec(6), d2Ec(10)
+      real*8   Ex, d1Ex(6), d2Ex(10)
+      real*8   Ec, d1Ec(6), d2Ec(10)
 
 C The new terms (edh: mu_new required??)
-      double precision mu !, mu_new
+      real*8   mu !, mu_new
 
       save icall
       data icall/0/
@@ -839,7 +857,6 @@ C***************************************************************************
          implicit none
 #include "priunit.h"
 #include "mxcent.h"
-#include "pi.h"
 #include "maxorb.h"
 #include "inforb.h"
 #include "infinp.h"
@@ -850,45 +867,45 @@ C***************************************************************************
 !     input
       integer KSYMOP
       logical DOGGA,ERFEXP(0:2)
-      double precision RHO(4), RHG(3,4)
-      double precision CHIVAL,VLAMBDA 
-      double precision rhogrd(4) ! local variable for norm of RHG(1:3,*)
-      double precision DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
-      double precision GAO(NBAST),GAO1(NBAST,3), DGAO(NBAST,2)
-      double precision WGHTX,WGHTC
+      real*8   RHO(4), RHG(3,4)
+      real*8   CHIVAL,VLAMBDA 
+      real*8   rhogrd(4) ! local variable for norm of RHG(1:3,*)
+      real*8   DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
+      real*8   GAO(NBAST),GAO1(NBAST,3), DGAO(NBAST,2)
+      real*8   WGHTX,WGHTC
 !     output
-      double precision EXCMAT(NBAST,NBAST,2)
+      real*8   EXCMAT(NBAST,NBAST,2)
 
 !     local
       integer I, J, ISYM, JSYM, JEND, JSTR, ISTR, IEND
       integer I_MAT, N_MAT, NORDER
 
-      double precision ddot
+      real*8   ddot
 
-      double precision ZNV(2), BR(2), B0(2), B3(3,2), BMAX
-      double precision AR(2), AB(2), AX, AY, AZ, RX(2), RY(2), RZ(2)
+      real*8   ZNV(2), BR(2), B0(2), B3(3,2), BMAX
+      real*8   AR(2), AB(2), AX, AY, AZ, RX(2), RY(2), RZ(2)
 
-      double precision FAC0R, FAC0S, FACR, FACS
-      double precision FRR, FRZ, FZZ, FZ0
-      double precision FRS, FSS, FSZ, FSZ_S, FRZ_S, FZZ_S, FZ0_S, FZZ_SS
-      double precision G0, GX, GY, GZ
+      real*8   FAC0R, FAC0S, FACR, FACS
+      real*8   FRR, FRZ, FZZ, FZ0
+      real*8   FRS, FSS, FSZ, FSZ_S, FRZ_S, FZZ_S, FZ0_S, FZZ_SS
+      real*8   G0, GX, GY, GZ
 
 !     XC energies, and derivatives
-      double precision Ex, Ec, d1Ex(6), d1Ec(6), d2Ex(10), d2Ec(10)
-      double precision d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
-      double precision d1Exdngrd2, d1Exdngrds2 !d1Ex(6)
-      double precision d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds !d1Ex(6)
-      double precision d1Ecdngrd2, d1Ecdngrds2
+      real*8   Ex, Ec, d1Ex(6), d1Ec(6), d2Ex(10), d2Ec(10)
+      real*8   d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
+      real*8   d1Exdngrd2, d1Exdngrds2 !d1Ex(6)
+      real*8   d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds !d1Ex(6)
+      real*8   d1Ecdngrd2, d1Ecdngrds2
 
-      double precision d2Exdrhotdrhot, d2Exdrhotdrhos, d2Exdrhosdrhos
-      double precision d2Exdrhotdgrdt, d2Exdrhosdgrdt, d2Exdgrdtdgrdt
-      double precision d2Exdrhotdgrds, d2Exdrhosdgrds, d2Exdgrdtdgrds
-      double precision d2Exdgrdsdgrds ! d2Ex(10)
+      real*8   d2Exdrhotdrhot, d2Exdrhotdrhos, d2Exdrhosdrhos
+      real*8   d2Exdrhotdgrdt, d2Exdrhosdgrdt, d2Exdgrdtdgrdt
+      real*8   d2Exdrhotdgrds, d2Exdrhosdgrds, d2Exdgrdtdgrds
+      real*8   d2Exdgrdsdgrds ! d2Ex(10)
 
-      double precision d2Ecdrhotdrhot, d2Ecdrhotdrhos, d2Ecdrhosdrhos
-      double precision d2Ecdrhotdgrdt, d2Ecdrhosdgrdt, d2Ecdgrdtdgrdt
-      double precision d2Ecdrhotdgrds, d2Ecdrhosdgrds, d2Ecdgrdtdgrds
-      double precision d2Ecdgrdsdgrds ! d2Ec(10)
+      real*8   d2Ecdrhotdrhot, d2Ecdrhotdrhos, d2Ecdrhosdrhos
+      real*8   d2Ecdrhotdgrdt, d2Ecdrhosdgrdt, d2Ecdgrdtdgrdt
+      real*8   d2Ecdrhotdgrds, d2Ecdrhosdgrds, d2Ecdgrdtdgrds
+      real*8   d2Ecdgrdsdgrds ! d2Ec(10)
 
       ! For small values of rho to avoid NaN
       do i = 1,4
@@ -1069,7 +1086,8 @@ C Total contribution -------------------------------------------------------
          ! do nothing
       END IF
 
-#ifdef SRDFT_DEBUG
+#if defined xxxSRDFT_DEBUG
+! ipnt is not defined here any more ..
           if (ipnt .eq. 1) then
            !if (abs(FSS) .gt. 0.d0 .or. abs(FRS) .gt. 0.d0) then
               write(lupri,*) 'hjaaj: rho',rho(1:4)

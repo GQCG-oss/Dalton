@@ -749,7 +749,7 @@ C     LUW*     Output units for print output (now defined in SIRSET)
       IPRAVE = IPRUSR
       IPRKAP = IPRUSR
       IPRCIX = IPRUSR
-      IPRDIA = IPRUSR
+      IPRDIA = IPRUSR - 1
       IPRSIG = IPRUSR
       IPRDNS = IPRUSR
       IPRRHF = IPRUSR - 1

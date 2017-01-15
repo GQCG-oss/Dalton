@@ -1,4 +1,7 @@
+
+#define SRDFT_DEBUG -1
 #define LDAembed
+
 !
 !...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -22,9 +25,6 @@
 !...      http://daltonprogram.org
 !
 !
-
-#define noSRDFT_DEBUG
-
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck srfun_input */
@@ -43,7 +43,7 @@ C**************************************************************
 #include "priunit.h"
 #include "dftcom.h"
 C     variables for SRCPBERI
-      double precision mu_0, mu_0_m6, mu_0_m7, mu_0_m4
+      real*8   mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C
       PARAMETER  (NXTABLE = 22, NCTABLE = 33)
@@ -142,7 +142,7 @@ C Cut string SRFTMP
        END IF
 
 c      write (lupri, *) 'DOSRX_PBERI=',DOSRX_PBERI         ! Manu debug
-C      write (lupri, *) 'SRXFUN,SRCFUN,SRDENS=',SRXFUN,SRCFUN,SRDENS   ! Manu debug
+C      write (lupri, *) 'SRXFUN,SRCFUN=',SRXFUN,SRCFUN     ! Manu debug
 
       SETXFUN = .TRUE.
       DO 100 II = 1, NXTABLE
@@ -437,7 +437,7 @@ C
           ENDDO
       ENDIF
       IF (.NOT.(SETXFUN.AND.SETCFUN))
-     &   CALL QUIT('Error in specficaiton of SR functionals')
+     &   CALL QUIT('Error in specfication of SR functionals')
       IF (IXWINT.EQ.ICWINT) THEN
          IWINT = IXWINT
       ELSE
@@ -457,7 +457,7 @@ C        then set HF exchange factor to zero.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,
-     &                 WORK,LWORK,IPRINT)
+     &                 WORK,LWORK,IPRINT_in)
 C*****************************************************************************
 C    Purpose : Calculate SR DFT-energy and potential contribution for
 C               SR-DFT hybrid methods.
@@ -471,26 +471,65 @@ C            (if SRHYBR then different ordering of DMAT matrices)
 C
 C                  EXCMAT(1) = charge density potential matrix
 C                  EXCMAT(2) = spin density potential matrix (DFT_SPINDNS)
+C                  EXCMAT(2) = special potential matrix (SRHYBR)
 C
 C    Created: Jesper Kielberg Pedersen, Mar. 2003
 C    Modified: 17-08-09, J. Toulouse, add spin density matrix
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
+
+#ifdef VAR_MPI
+!  mpif.h   : for MPI
+#include "mpif.h"
+#endif
+!
+! infpar.h : MYNUM, NODTOT
+!
 #include "maxorb.h"
 #include "gnrinf.h"
+#include "infpar.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infvar.h"
 #include "dftinf.h"
 #include "dftcom.h"
 C
-      LOGICAL   DOGGA,DOLND,DOGRD,DOERG,DOATR, first_call
+      LOGICAL   DOGGA,DOLND,DOGRD,DOERG,DOATR, first_call, LSRHYBR
       DATA      first_call /.true./
-      DIMENSION EXCMAT(N2BASX,*),DMAT(N2BASX,*),WORK(LWORK)
-C
+      REAL*8    EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),WORK(LWORK)
+      REAL*8    RESULTS(11)
+
       CALL QENTER('SRDFT')
       CALL TIMER('START ',TIMSTR,TIMEND)
+      RESULTS(:) = 0.0D0
+
+      IPRINT  = max(IPRINT_in, SRDFT_DEBUG)
+      LSRHYBR = SRHYBR .AND. .NOT.DOHFSRDFT
+      IF (DFT_SPINDNS .AND. LSRHYBR) THEN
+         CALL QUIT('SRDFT: Spin density AND SRHYBR not implemented')
+      END IF
+
+!     Shall we go in MPI parallel mode for srdft ?
+
+#ifdef VAR_MPI
+      IF (MYNUM .EQ. 0 .AND. NODTOT .GT. 0) THEN
+#if defined SRDFT_DEBUG > 4
+         WRITE(lupri,*) 'calling srdft_par_master, iprint',iprint
+         flush(lupri)
+#endif
+         CALL SRDFT_PAR_MASTER(
+     &        ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,
+     &        WORK,LWORK,IPRINT)
+#if defined SRDFT_DEBUG > 4
+         WRITE(lupri,*) 'returned from srdft_par_master'
+         flush(lupri)
+#endif
+         GO TO 8000
+      END IF
+#endif
+
+!     Enter here for sequential runs (NODTOT.eq.0) or for slaves
 C     =================================
 C     Initializations :
 C     Number of AOs and their addresses
@@ -513,7 +552,7 @@ C
 
       NDER  = 0
       IF (DOGRD) NDER = 1
-      IF (SRHYBR.AND..NOT.DOHFSRDFT) THEN
+      IF (LSRHYBR) THEN
          NDER = NDER + 2
 C        ... we use DFTPOT for SRHYBR
       ELSE IF (DOGGA) THEN
@@ -524,8 +563,6 @@ CC       IF (DFTPOT) NDER = NDER + 1
       END IF
 C
 C
-
-
       IF (NDER.EQ.0) NTYPSO =  1
       IF (NDER.EQ.1) NTYPSO =  4
       IF (NDER.EQ.2) NTYPSO = 10
@@ -562,80 +599,200 @@ C     =============================
       ELSE
          KDGAT = KDGASR + NBAST
       END IF
-      IF (SRHYBR.AND. .NOT.DOHFSRDFT) THEN
+      IF (LSRHYBR) THEN
          KWRK  = KDGAT  + NBAST
       ELSE
          KWRK  = KDGAT
       END IF
       LWRK  = LWORK + 1 - KWRK
       IF (KWRK .GT. LWORK) CALL ERRWRK('SRDFT',-KWRK,LWORK)
-#ifdef SRDFT_DEBUG
+#if defined SRDFT_DEBUG > 4
       write(lupri,*) 'Entered SRDFT, SDRDT_DEBUG defined'
-      write(lupri,*) 'NDER =',NDER
-      WRITE(LUPRI,'(//A//)') ' <<< SRDFT: Total EXCMAT on entry >>>'
+      write(lupri,*) 'NDER,NTYPSO =',NDER,NTYPSO
+#endif
+#if defined SRDFT_DEBUG > 10
+      WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total EXCMAT on entry ---'
       CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-      WRITE(LUPRI,'(//A//)') ' <<< SRDFT: Total density matrix >>>'
+      WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total density matrix ---'
       CALL OUTPUT(DMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-      IF (SRHYBR) THEN
-        WRITE(LUPRI,'(//A//)') ' <<< SRDFT: Valence density matrix >>>'
+      IF (LSRHYBR) THEN
+        WRITE(LUPRI,'(//A//)') ' --- SRDFT: Valence density matrix ---'
         CALL OUTPUT(DMAT(1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
         IF (DOATR) THEN
-          WRITE(LUPRI,'(//A//)') ' <<< SRDFT: Total DTRMAT >>>'
+          WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total DTRMAT ---'
           CALL OUTPUT(DMAT(1,3),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-          WRITE(LUPRI,'(//A//)') ' <<< SRDFT: Valence DTRMAT >>>'
+          WRITE(LUPRI,'(//A//)') ' --- SRDFT: Valence DTRMAT ---'
           CALL OUTPUT(DMAT(1,4),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
         ENDIF
       ELSE IF (DOATR) THEN
-        WRITE(LUPRI,'(//A//)') ' <<< SRDFT: Total DTRMAT >>>'
+        WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total DTRMAT ---'
         CALL OUTPUT(DMAT(1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
       IF (DFT_SPINDNS) THEN
-        WRITE(LUPRI,'(//A/)') ' <<< SRDFT: Spin density matrix >>>'
+        WRITE(LUPRI,'(//A/)') ' --- SRDFT: Spin density matrix ---'
         CALL OUTPUT(DMAT(1,3),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
         IF (DOATR) THEN
-          WRITE(LUPRI,'(//A/)') ' <<< SRDFT: Spin DTRMAT >>>'
+          WRITE(LUPRI,'(//A/)') ' --- SRDFT: Spin DTRMAT ---'
           CALL OUTPUT(DMAT(1,4),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
         END IF
-        WRITE(LUPRI,'(//A//)')' <<< SRDFT: Total spin EXCMAT on entry'
-        CALL OUTPUT(EXCMAT(1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        WRITE(LUPRI,'(//A//)')' --- SRDFT: Total spin EXCMAT on entry'
+        CALL OUTPUT(EXCMAT(1,1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
 #endif
 
-C JT 15-02-05 beg
-      if (first_call .or. iprint .gt. 10) then
-         write(lupri,*) 'calling srdft1jt ? ISJT =', ISJT
-         first_call = .false.
-      end if
       IF(ISJT) THEN
-        CALL SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,WORK(KX),WORK(KY),
+C JT 15-02-05 beg
+        CALL SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
      &            WORK(KDGASR),DOGGA,DOERG,DOGRD,DOATR,
-     &            WORK(KWRK),LWRK,IPRINT)
-C JT 15-02-05 end
-      ELSE  !JT 15-02-05
-        CALL SRDFT1(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,WORK(KX),WORK(KY),
+     &            RESULTS,WORK(KWRK),LWRK,IPRINT)
+      ELSE
+        CALL SRDFT1(ND_SIM,EXCMAT,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
      &            WORK(KDGASR),WORK(KDGAT),DOGGA,DOERG,DOGRD,DOATR,
-     &            WORK(KWRK),LWRK,IPRINT)
-      ENDIF  !JT 15-02-05
+     &            RESULTS,WORK(KWRK),LWRK,IPRINT)
+      ENDIF
 
 C
-#ifdef SRDFT_DEBUG
-      WRITE(LUPRI,'(//A//)') ' <<< SRDFT: Total EXCMAT on exit >>>'
-      CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-      IF (DFT_SPINDNS) THEN
-        WRITE(LUPRI,'(//A//)')' <<< SRDFT: Total spin EXCMAT on exit'
-        CALL OUTPUT(EXCMAT(1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+ 8000 CONTINUE
+
+      IF (DFT_SPINDNS .OR. LSRHYBR) THEN
+        NEXCMAT = 2
+      ELSE
+        NEXCMAT = 1
+      ENDIF
+!
+!     parallel stuff
+!
+#if defined  (VAR_MPI)
+      IF (NODTOT .GT. 0) THEN
+         CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+C
+         IF (MYNUM .EQ. 0) THEN
+            CALL MPI_REDUCE(MPI_IN_PLACE,RESULTS,11,
+     &         MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+            CALL MPI_REDUCE(MPI_IN_PLACE,EXCMAT,N2BASX*NEXCMAT,
+     &         MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+         ELSE
+            CALL MPI_REDUCE(RESULTS,MPI_IN_PLACE,11,
+     &         MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+            CALL MPI_REDUCE(EXCMAT,MPI_IN_PLACE,N2BASX*NEXCMAT,
+     &         MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+         END IF
+         IF (IPRINT .GE. 1) THEN
+            write(lupri,*) 'srdft results on node',mynum
+            write(lupri,'(6F15.10)') RESULTS(1:11)
+            flush(lupri)
+         END IF
       END IF
 #endif
-      CALL TIMER('SRDFT ',TIMSTR,TIMEND)
+
+!     end of parallel stuff, now only master continues
+
+      IF (MYNUM .GT. 0) GO TO 9000
+
+      ELCTRN    = RESULTS(1)
+      ELCTRSKIP = RESULTS(2)
+      SPINDEN   = RESULTS(3)
+      ExInt     = RESULTS(4)
+      EcInt     = RESULTS(5)
+      NRSGTR    = NINT(RESULTS(6))
+      ! LSRHYBR
+      ELCTSR    = RESULTS(7)
+      EXSR      = RESULTS(8)
+      ECSR      = RESULTS(9)
+      EXTOT     = RESULTS(10)
+      ECTOT     = RESULTS(11)
+C
+      IF (DOERG) THEN
+         EDFTY = EXint + ECint
+         IF (LSRHYBR) THEN
+            EDFTY = EDFTY + EXTOT - EXSR + ECTOT - ECSR
+         END IF
+         FAC = 0.5D0
+      ELSE IF (DOATR) THEN
+         FAC = 1.0D0
+      ELSE
+         CALL QUIT('both DOERG and DOATR are false')
+      END IF
+
+      DO K = 1, NEXCMAT
+      DO I = 1, NBAST
+      DO J = 1, I - 1
+         AVERAG = FAC*(EXCMAT(I,J,K) + EXCMAT(J,I,K))
+         EXCMAT(I,J,K) = AVERAG
+         EXCMAT(J,I,K) = AVERAG
+      END DO
+      END DO
+      END DO
+C
+C     Print section
+C
+      IF (IPRINT .GE. 1) THEN
+      IF (DOERG) THEN
+         ELCTOT = ELCTRN + ELCTRSKIP
+         IF (LSRHYBR) THEN
+            WRITE (LUPRI,'(3(/A,F18.10))')
+     &' No. of active electrons from num. int.         :',ELCTRN,
+     &' No. of active electrons skipped in num. int.   :',ELCTRSKIP,
+     &' Sum of active and skipped electrons            :',ELCTOT
+            WRITE (LUPRI,'(A,F18.10)')
+     &' No. of valence electrons  (SRHYBR)             :',ELCTSR
+            WRITE (LUPRI,'(/A,F18.10)')
+     &' Exchange energy (SRHYBR: SR valence part)      :',EXint
+            WRITE (LUPRI,'(A,F18.10)')
+     &' Correlation energy  (SRHYBR: SR valence part)  :',ECint,
+     &' Exchange energy (SRHYBR: BLYP valence part)    :',EXSR,
+     &' Correlation energy (SRHYBR: BLYP valence part) :',ECSR,
+     &' Exchange energy (SRHYBR: BLYP total)           :',EXTOT,
+     &' Correlation energy (SRHYBR: BLYP total)        :',ECTOT
+            EXint = EXint + EXTOT - EXSR
+            ECint = ECint + ECTOT - ECSR
+         ELSE
+            WRITE (LUPRI,'(4(/A,F18.10))')
+     & ' No. of non-skipped electrons from num. int.    :',ELCTRN,
+     & ' No. of     skipped electrons   in num. int.    :',ELCTRSKIP,
+     & ' Sum of non-skipped and skipped electrons       :',ELCTOT,
+     & ' Integrated spin density (N_alpha-N_beta)       :',SPINDEN
+         END IF
+
+         WRITE (LUPRI,'(3(/A,F18.10),/A,I18)')
+     & ' Exchange energy                                :',ExInt,
+     & ' Correlation energy                             :',EcInt,
+     & ' DFT exchange-correlation energy                :',EDFTY,
+     & ' Number of times RHO(2) > RHO(1)                :',NRSGTR
+
+      END IF ! DOERG
+      IF (DOATR) THEN
+         WRITE(LUPRI,'(/A)') ' srDFT linear transformation finished'
+      END IF
+
+      IF (IPRINT.GE.8) THEN
+         WRITE(LUPRI,'(//A/)') ' --- SRDFT: Total EXCMAT on exit'
+         CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
+         IF (DFT_SPINDNS) THEN
+            WRITE(LUPRI,'(//A/)')' --- SRDFT: Total spin EXCMAT on exit'
+            CALL OUTPUT(EXCMAT(1,1,2),1,NBAST,1,NBAST,NBAST,NBAST,
+     &         -1,LUPRI)
+         END IF
+         IF (LSRHYBR) THEN
+            WRITE(LUPRI,'(//A/)')
+     &         ' --- SRDFT: SRHYBR valence EXCMAT on exit'
+            CALL OUTPUT(EXCMAT(1,1,2),1,NBAST,1,NBAST,NBAST,NBAST,
+     &         -1,LUPRI)
+         END IF
+      END IF  ! IPRINT .GE. 5
+
+      END IF  ! IPRINT .GE. 1
+
+ 9000 IF (IPRINT .GT. 0) CALL TIMER('SRDFT ',TIMSTR,TIMEND)
       CALL QEXIT('SRDFT')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRDFT1(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,CORX,CORY,CORZ,
+      SUBROUTINE SRDFT1(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
      &                  WEIGHT,NBUF,GSO,NCNT,DMAGAOSR,DMAGAOT,DOGGA,
-     &                  DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+     &                  DOERG,DOGRD,DOATR,RESULTS,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     Written by Jesper Kielberg Pedersen, Mar. 2003
@@ -648,41 +805,48 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "pi.h"
 #include "dummy.h"
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
-C
+! infpar.h : MYNUM, NODTOT
 #include "maxorb.h"
+#include "gnrinf.h"
+#include "infpar.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infvar.h"
 #include "inftap.h"
-#include "infpar.h"
 #include "nuclei.h"
 #include "dftinf.h"
 #include "dftcom.h"
-#include "gnrinf.h"
-C
+#include "chrnos.h"
+
+      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
+
       LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR
       LOGICAL   LDOGGA,LSRHYBR,RTEST,ldebug
-      DIMENSION EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),CORX(NBUF),
-     &          CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),GSO(NBAST*NTYPSO),
-     &          NCNT(NBAST),DMAGAOSR(NBAST),DMAGAOT(NBAST),WORK(LWORK),
+      REAL*8    EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
+     &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
+     &          GSO(NBAST*NTYPSO),NCNT(NBAST),
+     &          DMAGAOSR(NBAST),DMAGAOT(NBAST),RESULTS(11),WORK(LWORK),
      &          RHGT(3),RHGSR(3),ZKSR(3,3),XKSR(3,3), COR(3)
-      CHARACTER*16 QUADNAME
-C
-#include "chrnos.h"
-C
-#ifdef SRDFT_DEBUG
-      write(lupri,*) 'Entered SRDFT1, SRDFT_DEBUG defined'
+
+      CHARACTER*17 QUADNAME
+
+      INTEGER, SAVE :: NTOT_DFTGRID_save = -1
+
+#if defined SRDFT_DEBUG > 0
+      write(lupri,*) 'Entered SRDFT1, SRDFT_DEBUG defined =',SRDFT_DEBUG
       WRITE(LUPRI,*) 'SRDFT1: ND_SIM =',ND_SIM
       WRITE(LUPRI,*) 'SRDFT1: CHIVAL =',CHIVAL
       WRITE(LUPRI,*) 'SRDFT1: HFXFAC =',HFXFAC
       WRITE(LUPRI,*) 'SRDFT1: DOERG,DOATR,DOGRD,DOGGA  =',
      &   DOERG,DOATR,DOGRD,DOGGA
-      WRITE(LUPRI,*) 'SRDFT1: ERFEXP(0:2)=',ERFEXP(0:2)
+      WRITE(LUPRI,*) 'SRDFT1: ERFEXP(0:2) =',ERFEXP(0:2)
 #endif
 
+      IF (HFXFAC .NE. 1.0D0) THEN
+         WRITE(LUPRI,*) 'SRDFT1: illegal HFXFAC ',HFXFAC
+         CALL QUIT('SRDFT1: illegal HFXFAC value')
+      END IF
       IF (ND_SIM .NE. 1) THEN
          WRITE(LUPRI,*) 'SRDFT1: illegal ND_SIM ',ND_SIM
          CALL QUIT('SRDFT1: illegal ND_SIM value')
@@ -700,26 +864,30 @@ C
       ldebug = .false.
       LSRHYBR = SRHYBR .AND. .NOT.DOHFSRDFT
       IF (LSRHYBR) THEN
-         NXCMAT = 2
+         NEXCMAT = 2
       ELSE
-         NXCMAT = 1
+         NEXCMAT = 1
       END IF
-      QUADNAME='                '
-#ifdef SRDFT_DEBUG
+#if defined SRDFT_DEBUG > 10
 !     debug print of quadrature points between IPNTstart and IPNTend
       !IPNTstart = 8168
       IPNTstart = 0
 c     IPNTend   = 10210
-      IPNTend   = 100
+      IPNTend   = SRDFT_DEBUG
 #endif
 C     =============================
-C     Calculate grid
+C     Calculate DFT grid
+C     (NTOT_DFTGRID is the total number of grid points)
 C     =============================
 C
-      IF (.NOT.DFTGRID_DONE_OLD) THEN
-         CALL MAKE_DFTGRID(WORK,LWORK,NTOTAL,1,.FALSE.)
+      IF (.NOT.DFTGRID_DONE_OLD .OR. NTOT_DFTGRID_save .LE. 0) THEN
+         CALL MAKE_DFTGRID(WORK,LWORK,NTOT_DFTGRID,1,.FALSE.)
          CALL CONDFT
+         NTOT_DFTGRID_save = NTOT_DFTGRID
          DFTGRID_DONE_OLD = .TRUE.
+      ELSE
+         NTOT_DFTGRID = NTOT_DFTGRID_save
+         ! because wrong NTOT_DFTGRID has been transferred from master in SRDFT_PAR_NODE
       END IF
 C
       LDOGGA = DOGGA .OR. LSRHYBR
@@ -750,21 +918,21 @@ C
 C
 C     HJAaJ: THRELCTRN makes sure that error in
 C            no. of electrons from grid integration less than DFTHR0
-C            (NTOTAL is the total number of grid points)
+C            (NTOT_DFTGRID is the total number of grid points)
 C
-c1    THRELCTRN = 1.0D-6 / NTOTAL
+c1    THRELCTRN = 1.0D-6 / NTOT_DFTGRID
       THRELCTOT = 1.0D-7
       THRELCTRN = THRELCTOT/100
 c     THRDRHO   = DFTHRI
       THRDRHO   = 1.0D-10
 C Debug values: include everything
-c#ifdef DFT_NOSCREEN
+#ifdef DFT_NOSCREEN
       THRELCTRN = D0
       THRDRHO   = D0
       DFTHR0    = D0
       DFTHRI    = D0
       DFTHRL    = D0
-c#endif
+#endif
 C
 C     HJAaJ: skip eval. of neighbour points with same RHO
 C
@@ -772,33 +940,55 @@ C
       NSKIP1 = 0
       NSKIP2 = 0
 C
-      LUQUAD = -1
 C
 C     Make quadname: Can take 9999 procs
 C
-      QUADNAME = 'DALTON.QUAD.'//chrnos(mynum/1000)
+      IF (MYNUM .EQ. 0) THEN
+         QUADNAME = 'DALTON.QUAD'
+      ELSE
+         QUADNAME = 'DALTON.QUAD.n'//chrnos(mynum/1000)
      &     //chrnos((mynum-(mynum/1000)*1000)/100)
      &     //chrnos((mynum-(mynum/100)*100)/10)
      &     //chrnos(mynum-(mynum/10)*10)
+      END IF
 C
+      LUQUAD = -1
       CALL GPOPEN(LUQUAD,QUADNAME,'OLD','SEQUENTIAL',
      &     'UNFORMATTED',IDUMMY,LDUMMY)
 C
+      IF (MYNUM .EQ. 0) THEN
+         my_first_point = 1
+         my_last_point  = NTOT_DFTGRID
+      ELSE
+         NPNTS_PER_NODE = (NTOT_DFTGRID-1)/NODTOT + 1
+         my_first_point = NPNTS_PER_NODE*(MYNUM-1) + 1
+         my_last_point  = MIN(NPNTS_PER_NODE*MYNUM, NTOT_DFTGRID)
+         if (iprint .gt. 5) write(lupri,*)
+     &      'MYNUM,NPNTS_PER_NODE,my_first_point,my_last_point',
+     &       MYNUM,NPNTS_PER_NODE,my_first_point,my_last_point
+      END IF
       NPNTS = 0
   200 CONTINUE
       READ(LUQUAD) NPOINT
 CDBG  kpoint = npoint/10
+
       IF (NPOINT.GT.0) THEN
-CDBG      jpnt = 0
-         NPNTS = NPNTS + NPOINT
+         NPNT1 = NPNTS + 1       ! first integration point from this record
+         NPNTS = NPNTS + NPOINT  ! last  integration point from this record
+         IPNT_ST  = max(NPNT1,my_first_point) + 1 - NPNT1
+         IPNT_END = min(NPNTS,my_last_point) + 1 - NPNT1
+         if (iprint .gt. 5) write(lupri,*)
+     &      'MYNUM,IPNT_ST,IPNT_END', MYNUM,IPNT_ST,IPNT_END
+         IF (IPNT_ST .GT. IPNT_END) THEN
+            READ (LUQUAD) ! skip this record
+            GO TO 200
+         END IF
          CALL REAQUA_OLD(CORX,CORY,CORZ,WEIGHT,LUQUAD,NPOINT)
-#if defined (VAR_SRDFT_MPI)
-         DO 300 IPNT = 1+MYNUM, NPOINT, NODTOT+1
-#else
-         DO 300 IPNT = 1, NPOINT
-#endif
+C   Loop over grid points -----------------------------------------------
+         DO 300 IPNT = IPNT_ST, IPNT_END
             IF (IPRINT .GT. 100) THEN
-               WRITE (LUPRI,'(2X,I6,4F12.6)')
+C              Print grid information
+               WRITE (LUPRI,'(I8,4F12.6)')
      &            IPNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),WEIGHT(IPNT)
             END IF
 C
@@ -900,7 +1090,7 @@ c                 -------------------------------------------------------
 c                 Exchange Correlation energy and potential
 c                 -------------------------------------------------------
 c
-#ifdef SRDFT_DEBUG
+#if defined SRDFT_DEBUG > 10
                   if (IPNT.GE.IPNTstart.AND.IPNT.LE.IPNTend) then
                      ldebug=.true.
                   else
@@ -935,7 +1125,7 @@ c              IF (RTEST) THEN
                      VXBT  = WGHT*VXB
                   ENDIF
                ENDIF
-#ifdef SRDFT_DEBUG
+#if defined SRDFT_DEBUG > 10
 C               if (mod(IPNT,kpoint) .eq. 0) then
                if (IPNT.GE.IPNTSTART.AND.IPNT.LE.IPNTEND) then
                   write (lupri,*) 'IPNT,ex,ec,vx,vc',IPNT,ex,ec,vx,vc
@@ -1002,103 +1192,28 @@ C                    matrix 2 is DXTAO
             ENDIF
 C
   300    CONTINUE
+C End of loop over points ------------------------------------------------
 C
          GO TO 200
       ELSE IF (NPOINT .EQ.0 ) THEN
          GO TO 200
       END IF
 C
-      CALL GPCLOSE(LUQUAD,'KEEP')
-#if defined  (VAR_SRDFT_MPI)
-      if (nodtot .gt. 0) then
-!      call quit('MPI code not correct, finish coding ...')
-      CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+ 1000 CALL GPCLOSE(LUQUAD,'KEEP')
 C
-      CALL MPI_REDUCE(ELCTRN,EELCTRN,1,MPI_DOUBLE_PRECISION,MPI_SUM,
-     %     0, MPI_COMM_WORLD, IERR)
-      CALL MPI_REDUCE(EC,EEC,1,MPI_DOUBLE_PRECISION,MPI_SUM,
-     %     0, MPI_COMM_WORLD, IERR)
-      CALL MPI_REDUCE(EX,EEX,1,MPI_DOUBLE_PRECISION,MPI_SUM,
-     %     0, MPI_COMM_WORLD, IERR)
-      CALL MPI_REDUCE(EXCMAT,WORK,NBAST*NBAST*NXCMAT,
-     &     MPI_DOUBLE_PRECISION,MPI_SUM,
-     %     0, MPI_COMM_WORLD, IERR)
-C     ... Collect on master
-      IF (MYNUM .EQ. 0) then
-         ELCTRN = EELCTRN
-         EC     = EEC
-         EX     = EEX
-         CALL DCOPY(NBAST*NBAST,WORK,1,EXCMAT,1)
-      ENDIF
-C     ... Release nodes
-      IF (MYNUM.NE.0) RETURN
-      end if
-#endif
-C
-C
-      IF (DOERG) THEN
-         EDFTY = EX + EC
-         IF (LSRHYBR) THEN
-            EDFTY = EDFTY + EXTOT - EXSR + ECTOT - ECSR
-         END IF
-         FAC = DP5
-      ELSE IF (DOATR) THEN
-         FAC = D1
-      ELSE
-         CALL QUIT('both DOERG and DOATR are false')
-      END IF
-      DO K = 1, NXCMAT
-      DO I = 1, NBAST
-      DO J = 1, I - 1
-         AVERAG = FAC*(EXCMAT(I,J,K) + EXCMAT(J,I,K))
-         EXCMAT(I,J,K) = AVERAG
-         EXCMAT(J,I,K) = AVERAG
-      END DO
-      END DO
-      END DO
-C
-C     Print section
-C
-!     IF (IPRINT .GE. 3) THEN
-      IF (DOERG) THEN
-         ELCTOT = ELCTRN + ELCTRSKIP
-         WRITE (LUPRI,'(3(/1X,A,F18.10))')
-     &'No. of active electrons from numerical integration  :',ELCTRN,
-     &'No. of active electrons skipped in num. integration :',ELCTRSKIP,
-     &'Sum of active and skipped electrons                 :',ELCTOT
-         IF (LSRHYBR) THEN
-            WRITE (LUPRI,'(1X,A,F18.10)')
-     & 'No. of valence electrons  (SRHYBR)                  :',ELCTSR
-         WRITE (LUPRI,'(/1X,A,F18.10)')
-     &'Exchange energy (SRHYBR: SR valence part)           :',EX
-         WRITE (LUPRI,'(1X,A,F18.10)')
-     &'Correlation energy  (SRHYBR: SR valence part)       :',EC,
-     &'Exchange energy (SRHYBR: BLYP valence part)         :',EXSR,
-     &'Correlation energy  (SRHYBR: BLYP valence part)     :',ECSR,
-     &'Exchange energy (SRHYBR: BLYP total)                :',EXTOT,
-     &'Correlation energy  (SRHYBR: BLYP total)            :',ECTOT
-            EX = EX + EXTOT - EXSR
-            EC = EC + ECTOT - ECSR
-         END IF
-         WRITE (LUPRI,'(/1X,A,F18.10)')
-     &'Exchange energy                                     :',EX
-         WRITE (LUPRI,'(1X,A,F18.10)')
-     &'Correlation energy                                  :',EC
-         WRITE (LUPRI,'(1X,A,F18.10)')
-     &'DFT exchange-correlation energy                     :',EX+EC
-         IF (IPRINT.GE.5) THEN
-            WRITE(LUPRI,'(//A//)') ' <<< Kohn-Sham matrix >>>'
-            CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-            IF (LSRHYBR) THEN
-            WRITE(LUPRI,'(//A//)')
-     &        ' <<< Valence SR - valence Kohn-Sham matrix >>>'
-            CALL OUTPUT(EXCMAT(1,1,2),1,NBAST,1,NBAST,NBAST,NBAST,
-     &        1,LUPRI)
-            END IF
-         END IF
-      END IF
-!     END IF
-C
+      RESULTS(1) = ELCTRN
+      RESULTS(2) = ELCTRSKIP
+      RESULTS(3) = 0.0D0 ! SPINDEN
+      RESULTS(4) = EX
+      RESULTS(5) = EC
+      RESULTS(6) = 0 ! NRSGTR
+      ! LSRHYBR
+      RESULTS(7) = ELCTSR
+      RESULTS(8) = EXSR
+      RESULTS(9) = ECSR
+      RESULTS(10)= EXTOT
+      RESULTS(11)= ECTOT
+
       RETURN
       END
 C /* Deck srdftexc */
@@ -1121,7 +1236,7 @@ C*****************************************************************************
 #include "infinp.h"
 #include "dftinf.h"
 #include "dftcom.h"
-      double precision VLAMBDA
+      real*8   VLAMBDA
       LOGICAL ERFEXP(0:2),LSRLDA,ldebug
       DIMENSION XKSR(3,2), ZKSR(3,2), ZMU(3)
 c
@@ -1411,7 +1526,7 @@ C
      &          CORZ(NBUF),WEIGHT(NBUF),GSO(NBAST*NTYPSO),
      &          NCNT(NBAST),DMAGAO(NBAST),CREF(NCONF),
      &          DCAO(NBAST,NBAST),DVAO(NBAST,NBAST),WORK(LWORK), COR(3)
-      CHARACTER*16 QUADNAME
+      CHARACTER*17 QUADNAME
 C
 #include "chrnos.h"
 C
@@ -1420,7 +1535,6 @@ C     Open file for dumping density
 C     =============================
       CALL GPOPEN(LUDDUMP,'DENSITY.GRID','UNKNOWN',
      &                ' ','FORMATTED',IDUMMY,.FALSE.)
-      QUADNAME='                '
 C
 C     =============================
 C     Retrieve CREF
@@ -1451,7 +1565,7 @@ C     Calculate grid
 C     =============================
 C
       IF (.NOT.DFTGRID_DONE_OLD) THEN
-         CALL MAKE_DFTGRID(WORK,LWORK,NTOTAL,1,.FALSE.)
+         CALL MAKE_DFTGRID(WORK,LWORK,NTOT_DFTGRID,1,.FALSE.)
          CALL CONDFT
          DFTGRID_DONE_OLD = .TRUE.
       END IF
@@ -1460,21 +1574,22 @@ C
       VELCTRN = D0
 C
       LUQUAD = -1
-#if defined (VAR_SRDFT_MPI)
 C
 C     Make quadname: Can take 10000 procs
 C
-      QUADNAME = 'DALTON.QUAD.'//chrnos(mynum/1000)
+      IF (MYNUM .GT. 0) THEN
+         QUADNAME = 'DALTON.QUAD.n'//chrnos(mynum/1000)
      &     //chrnos((mynum-(mynum/1000)*1000)/100)
      &     //chrnos((mynum-(mynum/100)*100)/10)
      &     //chrnos(mynum-(mynum/10)*10)
 C
-      CALL GPOPEN(LUQUAD,QUADNAME,'OLD','SEQUENTIAL',
+         CALL GPOPEN(LUQUAD,QUADNAME,'OLD','SEQUENTIAL',
      &     'UNFORMATTED',IDUMMY,LDUMMY)
-#else
-      CALL GPOPEN(LUQUAD,'DALTON.QUAD','OLD','SEQUENTIAL',
+      ELSE
+         CALL GPOPEN(LUQUAD,'DALTON.QUAD','OLD','SEQUENTIAL',
      &     'UNFORMATTED',IDUMMY,.FALSE.)
-#endif
+      END IF
+
       NPNTS = 0
   200 CONTINUE
       READ(LUQUAD) NPOINT
@@ -1899,8 +2014,8 @@ C
 c
       RETURN
       END
+
 C  /* Deck srfmat */
-C
       SUBROUTINE SRFMAT(FMAT,CMO,DVREF,EJCSR,EJVSR,EDSR,EDFT,
      >                  EMYDFTAUX,UEJCVSR,WRK,LWRK,IPRINT)
 C
@@ -1971,9 +2086,9 @@ C
       CALL FCKDEN(.TRUE.,.TRUE.,
      >            WRK(KDCAO),WRK(KDVAO),CMO,DVREF,WRK(KFREE),LFREE)
 C
-      IF (IPRINT.GT.5) THEN
-         WRITE(LUPRI,'(//5X,A//)')
-     >   '<<<<  Valence AO density matrix >>>>'
+      IF (IPRINT.GT.9) THEN
+         WRITE(LUPRI,'(//5X,A/)')
+     >   '----  Valence AO density matrix ----'
          CALL OUTPUT(WRK(KDVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       ENDIF
 C
@@ -2004,13 +2119,13 @@ C
      >         +DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
 C
 C
-      IF (IPRINT.GT.5) THEN
+      IF (IPRINT.GT.9) THEN
+         WRITE(LUPRI,'(//5X,A/)')
+     >   '----  Short-range core Hartree matrix ----'
+         CALL OUTPUT(WRK(KFCAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          WRITE(LUPRI,'(//5X,A//)')
-     >   '<<<<  Short-range core Hartree matrix >>>>'
-         CALL OUTPUT(WRK(KFCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-         WRITE(LUPRI,'(//5X,A//)')
-     >   '<<<<  Short-range valence Hartree matrix >>>>'
-         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+     >   '----  Short-range valence Hartree matrix ----'
+         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
 C
 c ... Add up in KFCAO
@@ -2026,10 +2141,10 @@ C
 C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
       CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,.TRUE.,.FALSE.,.FALSE.,
      >           WRK(KFREE),LFREE,IPRFCK)
-      IF (IPRINT.GT.5) THEN
+      IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
-     >   '<<<<  Short-range Exchange-Correlation Fock-matrix >>>>'
-         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+     >   '----  Short-range Exchange-Correlation Fock-matrix ----'
+         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
       EDSR = -DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
 C
@@ -2146,10 +2261,10 @@ C
       CALL FCKDEN(.TRUE.,.TRUE.,
      >            WRK(KDCAO),WRK(KDVAO),CMO,UDVREF,WRK(KFREE),LFREE)
 C
-      IF (IPRINT.GT.5) THEN
+      IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
-     >   '<<<<  Valence AO density matrix >>>>'
-         CALL OUTPUT(WRK(KDVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+     >   '----  Valence AO density matrix ----'
+         CALL OUTPUT(WRK(KDVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
 C
 C ... Get J^c,sr adn J^v,sr
@@ -2169,13 +2284,13 @@ C        only Coulomb (Hartree) term
      >             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
       EJVSR   = -DP5*DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
 C
-      IF (IPRINT.GT.5) THEN
+      IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
-     >   '<<<<  Short-range core Hartree matrix >>>>'
-         CALL OUTPUT(WRK(KFCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+     >   '----  Short-range core Hartree matrix ----'
+         CALL OUTPUT(WRK(KFCAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          WRITE(LUPRI,'(//5X,A//)')
-     >   '<<<<  Short-range valence Hartree matrix >>>>'
-         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+     >   '----  Short-range valence Hartree matrix ----'
+         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
 C
 c ... Add up in KFCAO
@@ -2191,10 +2306,10 @@ C
 C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
       CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,.TRUE.,.FALSE.,.FALSE.,
      >           WRK(KFREE),LFREE,IPRFCK)
-      IF (IPRINT.GT.5) THEN
+      IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
-     >   '<<<<  Short-range Exchange-Correlation Fock-matrix >>>>'
-         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+     >   '----  Short-range Exchange-Correlation Fock-matrix ----'
+         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
       EDSR = -DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
 C
@@ -2236,13 +2351,13 @@ C        only Coulomb (Hartree) term
       CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFCAO),WRK(KDCAO),2,
      >             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
 C
-      IF (IPRINT.GT.5) THEN
+      IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
-     >   '<<<<  Short-range core Hartree matrix >>>>'
-         CALL OUTPUT(WRK(KFCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+     >   '----  Short-range core Hartree matrix ----'
+         CALL OUTPUT(WRK(KFCAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          WRITE(LUPRI,'(//5X,A//)')
-     >   '<<<<  Short-range valence Hartree matrix >>>>'
-         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+     >   '----  Short-range valence Hartree matrix ----'
+         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
 C
 c ... Add up in KFCAO
@@ -2258,10 +2373,10 @@ C
 C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
       CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,.TRUE.,.FALSE.,.FALSE.,
      >           WRK(KFREE),LFREE,IPRFCK)
-      IF (IPRINT.GT.5) THEN
+      IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
-     >   '<<<<  Short-range Exchange-Correlation Fock-matrix >>>>'
-         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+     >   '----  Short-range Exchange-Correlation Fock-matrix ----'
+         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
       EDSR = -DDOT(N2BASX,WRK(KDVAO_backup),1,WRK(KFVAO),1)
 C
@@ -2410,7 +2525,7 @@ C
       CALL QENTER('RSP_SRDFTSO ')
 C
 C
-#ifdef SRDFT_DEBUG
+#if defined SRDFT_DEBUG > 15
       write (lupri,*) 'rsp_srdftso: input UDV:'
       call output(udv,1,nasht,1,nasht,nasht,nasht,-1,lupri)
       write (lupri,*) 'rsp_srdftso: input V2C_SR:'
@@ -2476,7 +2591,7 @@ C
          END IF
       END DO ! DO IG = 1, KZWOPT
 C
-#ifdef SRDFT_DEBUG
+#if defined SRDFT_DEBUG > 15
       write (lupri,*) 'rsp_srdftso: output EVEC orbital part:'
       call output(evec(kzconf+1),1,kzwopt,1,2,kzvar,2,1,lupri)
 #endif

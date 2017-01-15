@@ -3077,7 +3077,7 @@ C
          END IF
 C
          CALL SRFMAT(WRK(KFSR),CMO,WRK(KDVREF),EJCSR,EJVSR,EDSR,EDFT,
-     &               EMYDFTAUX,UEJCVSR,WRK(KW2A),LW2A,IPRI4)
+     &               EMYDFTAUX,UEJCVSR,WRK(KW2A),LW2A,IPRI6)
 C        ... Correct EMY and CI diagonal
          EMYDFT = EJCSR + EJVSR + EDSR + EDFT
 C       write(lupri,*) 'just after srfmat'  

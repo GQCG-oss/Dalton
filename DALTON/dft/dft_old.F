@@ -22,6 +22,7 @@
 !
 !
 C
+#ifdef INCLUDE_DFT_OLD
       SUBROUTINE DFT_COMP_KSM(DMAT,KSM,WRK,LWORK,IPRFCK)
 #include "implicit.h"
 #include "inforb.h"
@@ -1119,3 +1120,4 @@ C
       END IF
       RETURN
       END
+#endif   /* INCLUDE_DFT_OLD */

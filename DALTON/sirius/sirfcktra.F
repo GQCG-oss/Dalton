@@ -773,7 +773,7 @@ C           and subtract from input CMO matrix
 #endif
 
 !    We check that orbital information has been transferred to slaves,
-!    and then we call SETORB to define infind.h (we need ISMO(:))
+!    and then we call SETORB to define inforb.h and infind.h (we need ISMO(:))
 
       IF (NORBT .LE. 0) THEN
          CALL QUIT(

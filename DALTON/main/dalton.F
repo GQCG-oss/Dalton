@@ -585,9 +585,8 @@ C
          CALL GPCLOSE(LUCME,'KEEP')
          CALL GPCLOSE(LUNDPF,'KEEP')
          CALL GPCLOSE(LUNMPF,'KEEP')
-         CALL GPCLOSE(LUSTAT,'KEEP')
-         LUSTAT = LUPRI ! LUSTAT may be used in GPCLOSE
          CALL GPCLOSE(LUPRI,'KEEP')
+         CALL GPCLOSE(LUSTAT,'KEEP')
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
 C     (only print on first 10 slaves)

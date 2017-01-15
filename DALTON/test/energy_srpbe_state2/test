@@ -29,7 +29,7 @@ f.add(string = 'Final MC-SRDFT energy:',
 
 f.add(from_string = 'Occupancies of natural orbitals',
       num_lines = 16,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 
 test.run(['energy_srpbe_state2.dal'], ['H2O_cc-pVDZ.mol'], f={'out': f})
