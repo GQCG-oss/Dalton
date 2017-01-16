@@ -1542,8 +1542,8 @@ C           CALL DCOPY(NTOT,WRK(KBCVEC),1,WRK(1),1)
       ENDIF
 C
       IF (KEXSTV .LE. 0) THEN
-         IF (IPRRSP.GE.3) WRITE (LUPRI,'(//A,I5)')
-     *     ' LRST, START VECTOR IS NOT LINEAR INDEPENDENT.',KEXSTV
+         IF (IPRRSP.GE.3 .OR. KZRED.LE.0) WRITE (LUPRI,'(//A,2I5)')
+     *     ' LRST, START VECTOR IS NOT LINEAR INDEPENDENT.',KEXSTV,KZRED
          IF (KZRED.LE.0) THEN
             CALL QUIT(' LRST, START VECTORS NOT LINEAR INDEPENDENT.')
          END IF
@@ -2723,8 +2723,11 @@ C
  100  CONTINUE
          CALL FLSHFO(LUPRI)
          ITMIC = ITMIC + 1
-         IF (IPRRSP.GE.3)
-     *   WRITE(LUPRI,'(/A,I5)') ' ** RSPCTL MICROITERATION NUMBER',ITMIC
+         IF (IPRRSP.GE.1) THEN
+            WRITE(LUPRI,'(/A,I5)')
+     &         ' ** RSPCTL MICROITERATION NUMBER',ITMIC
+            FLUSH(LUPRI)
+         END IF
 C
 C        200: start of loop for batch of max MAXSIM sigma vectors
 C        JEXSIM counts how many left
@@ -4195,7 +4198,8 @@ C
                   END IF
   545          CONTINUE
             END IF
-            IF (IPRRSP .GT. 3) THEN
+! Jan. 2017 hjaaj: always print eigenvector analysis
+!           IF (IPRRSP .GT. 3) THEN
                WRITE (LUPRI,'(/A,I3)')
      &              ' Eigenvector for state no.',(ISIM-1+INUM)
                CALL RSPPRO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),KZVAR,
@@ -4203,7 +4207,7 @@ C
 C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
-            END IF
+!           END IF
             IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
      &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
      &                             WRK(KWRK2),LWRK2)
