@@ -2122,6 +2122,7 @@ Chj   this call had survived from when ABACUS was a separate program.
 Chj   I have now made sure that READIN always is called in the beginning,
 Chj   also if RNHERM is false. /April 2009 hjaaj
 
+      FLAG(34) = .FALSE. ! make sure integral transformation done if needed
       CALL SETSIR(WORK,LWORK)
 C
 C     If SOPPA calculation, then

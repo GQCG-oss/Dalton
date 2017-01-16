@@ -86,7 +86,7 @@ C
 #include "dummy.h"
 C
 C Used from common blocks:
-C   INFTRA : IPRTRA,USEDRC
+C   INFTRA : IPRTRA,NEWTRA_USEDRC
 C CBGETDIS : IAD*
 C   INFTAP : LUORDA
 C
@@ -144,8 +144,8 @@ C     Delete AOORDINT after transformation if ITRSIR .lt. 0
 C
       DELORD = (ITRSIR .LT. 0)
       JTRSIR = ABS(ITRSIR)
-      IF (JTRSIR .GE. 1 .AND. JTRSIR .LE. 4) USEDRC = .TRUE.
-C     ... USEDRC must be true for second order transformation;
+      IF (JTRSIR .GE. 1 .AND. JTRSIR .LE. 4) NEWTRA_USEDRC = .TRUE.
+C     ... NEWTRA_USEDRC must be true for second order transformation;
 C         can be true by input for higher order (e.g. for RESPONS)
 C
 C     Translate from SIRIUS convention for transformation level
@@ -155,7 +155,7 @@ C
 C
       NOTUVX = .TRUE.
       NOCOUL = .FALSE.
-      NOEXCH = .NOT.USEDRC
+      NOEXCH = .NOT.NEWTRA_USEDRC
       MCOPT  = .FALSE.
 C
 
