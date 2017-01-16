@@ -601,6 +601,10 @@ C
       END
 C  /* Deck exeaba */
       SUBROUTINE EXEABA(WORK, LMWORK, WRKDLM)
+
+      use pelib_interface, only: use_pelib, pelib_ifc_activate,
+     &                           pelib_ifc_deactivate
+
 #include "implicit.h"
       DIMENSION WORK(0:LMWORK)
 #include "priunit.h"
@@ -612,6 +616,8 @@ C  /* Deck exeaba */
 #include "gnrinf.h"
 #include "abainf.h"
 #include "pcmlog.h"
+
+      LOGICAL SAVE_PELIB
 C
 C     Run ABACUS
 C
@@ -624,7 +630,20 @@ C
 C     Test if a requested molecular derivative calculation is implemented
 C     NAORDR = max order of analytical geometry derivatives
 
+      SAVE_PELIB = .FALSE.
+      IF (USE_PELIB()) THEN
+         SAVE_PELIB = .TRUE.
+         CALL PELIB_IFC_DEACTIVATE()
+      END IF
       CALL FNDANA(NAORDR)
+      IF (SAVE_PELIB) THEN
+         IF (MOLHES .AND. NAORDR .EQ. 2) THEN
+            WRITE(LUPRI,'(//A)')
+     &      '@ WARNING. Analytical molecular Hessian is approximate'//
+     &      ' because PEQM contributions are neglected.'
+         END IF
+         CALL PELIB_IFC_ACTIVATE()
+      END IF
       IF (MOLHES .AND. NAORDR .LT. 2) THEN
          WRITE(LUPRI,'(//A/A,I5/A)')
      &   'ERROR, analytical calculation of molecular Hessian is '//
