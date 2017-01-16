@@ -1879,7 +1879,10 @@ C
          IF (IPRRSP.GT.20) WRITE(LUPRI,'(/A)')
      &      '      NUMBER      EIGENVALUE      PAIRED EIGENVALUE'
          DO, I=1,IPOS
-            IF (ABS(ABS(ALFAR(I))-ABS(ALFAR(IPOS+I))).GT.ZEROT) THEN
+            RELDIF = ABS(ABS(ALFAR(I))-ABS(ALFAR(IPOS+I)))
+            IF (ABS(ALFAR(I)) .GT. ZEROT)
+     &         RELDIF = RELDIF / ABS(ALFAR(I))
+            IF (RELDIF .GT. ZEROT) THEN
                J = 1
                WRITE(LUPRI,'(/A,I5)')
      &         ' **WARNING**  EIGENVALUES NOT PAIRED.'//
