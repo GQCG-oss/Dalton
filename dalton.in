@@ -208,8 +208,8 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -pg ) optpg=1;;
       -nodelist ) DALTON_NODELIST=$2; shift;;
       -ext ) OUTEXT=$2; shift;;
-      -get ) GET_FILES=$2; shift;;
-      -put ) PUT_FILES=$2; shift;;
+      -get ) GET_FILES="$GET_FILES $2"; shift;;
+      -put ) PUT_FILES="$PUT_FILES $2"; shift;;
       -pot ) POT_FILE=$2; shift;;
       -rsh ) SCP=rcp; SSH=rsh;;
       -f ) optf=$2; shift;;
@@ -496,7 +496,7 @@ else
      cp $WRKDIR/$dalfil.$DALEXT MOLECULE.INP
    fi
 fi
-if [ "$potfil" != "" ]; then
+if [ "x$potfil" != "x" ]; then
   if [ -s $WRKDIR/$potfil.$POTEXT -a -r $WRKDIR/$potfil.$POTEXT ]; then
      cp $WRKDIR/$potfil.$POTEXT POTENTIAL.INP
   else
@@ -516,7 +516,7 @@ if [ "x$pcmfil" != "x" ]; then
 fi
 
 # put files listed under -put to scratch directory
-if [ "$PUT_FILES" != "" ]; then
+if [ "x$PUT_FILES" != "x" ]; then
    for file in $PUT_FILES; do
        echo copying $file to scratch directory
        cp $WRKDIR/$file $file
@@ -792,10 +792,10 @@ else
 fi
 
 # copy files listed under -get back from scratch directory
-if [ "$GET_FILES" != "" ]; then
+if [ "x$GET_FILES" != "x" ]; then
+   echo Copying files requested with --get back from scratch directory
    for file in $GET_FILES; do
-       echo copying $file back from scratch directory
-       cp $file $WRKDIR/$outnam.$file
+       cp -v -p $file $WRKDIR/$outnam.$file
    done
 fi
 

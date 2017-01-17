@@ -55,7 +55,7 @@ C
 #include "maxmom.h"
       PARAMETER (D0 = 0.0D0)
 C
-      LOGICAL DIPOK, FNDLAB, MCSSYM
+      LOGICAL DIPOK, FNDLAB, MCSSYM, FLAG_save
       CHARACTER*8 RTNLBL(2)
       DIMENSION WORK(LWORK)
 C
@@ -126,7 +126,9 @@ C
 C
       REWIND LUSIFC
       IF (FNDLAB('SIRFLAGS',LUSIFC)) THEN
+         FLAG_save = FLAG(34) ! flag(34) is used before CALL SETSIR in RESPONS to signal no TRACTL in NSETUP
          READ (LUSIFC) (FLAG(I),I=1,NFLAG)
+         FLAG(34) = FLAG_save
       ELSE
          WRITE (LUPRI,'(/A/A)')
      &      ' FATAL ERROR (ABACUS.SETSIR)',
