@@ -61,6 +61,7 @@ C
       CHARACTER(len=65), parameter :: dashl = ' -------------------'//
      &               '---------------------------------------------'
 C
+      character(len=9), parameter :: myname = 'SO_RSPDRV'
       integer :: num_active
       logical :: active_models(sop_num_models)
       logical :: doubles, need_t2, rpa_only
@@ -209,8 +210,8 @@ C        Force a crash of this is used
          KDENSAI = LWORK + 1
       END IF
 C
-      CALL SO_MEMMAX ('SO_LNRABA.1',LWORK1)
-      IF (LWORK1 .LT .0) CALL STOPIT('SO_LNRABA.1',' ',KEND1,LWORK)
+      CALL SO_MEMMAX (myname//'.1',LWORK1)
+      IF (LWORK1 .LT .0) CALL STOPIT(myname//'.1',' ',KEND1,LWORK)
 C
 C------------------------------------------------
 C     Get MO-energies (the fock matrix diagonal).
@@ -263,7 +264,7 @@ C-----------------------------------------------------
 C              Get T2 amplitudes and density matrices.
 C-----------------------------------------------------
 C
-         IF(NEED_T2) THEN
+         IF (NEED_T2) THEN
              CALL SO_GETT2(sop_dens_label(imodel),
      &                     WORK(KT2AM),LT2AM,WORK(KDENSAI),
      &                     LDENSAI,WORK(KDENSIJ),LDENSIJ,
@@ -348,10 +349,19 @@ C              Calculate second order property.
 C----------------------------------------------
 C
             IF (NGPLR(ISYM).GT.0) THEN
-               CALL SO_LRNSL(MODEL,ISYM,
+               KPROP = KEND1
+               LPROP = NFREQ*NGPLR(ISYM)*NGPLR(ISYM)
+               KEND2 = KPROP + LPROP
+               LWORK2 = LWORK-KEND2
+               CALL SO_MEMMAX (myname//'.2     ',LWORK2)
+               IF (LWORK2 .LT.0) CALL STOPIT(myname//'.2',' ',
+     &               KEND2,LWORK)
+
+               CALL SO_LRNSL(MODEL,ISYM,WORK(KPROP),
+     &                       FREQ,NFREQ,NGPLR(ISYM),                
      &                       WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
-     &                       WORK(KEND1),LWORK1)
+     &                       WORK(KEND2),LWORK2)
             END IF
 
 C
@@ -380,8 +390,8 @@ C
       KEND3  = KPARRA + LPARRA
       LWORK3 = LWORK  - KEND3
 C
-      CALL SO_MEMMAX ('SO_LNRABA.3     ',LWORK3)
-      IF (LWORK3 .LT.0) CALL STOPIT('SO_LNRABA.3',' ',KEND3,LWORK)
+      CALL SO_MEMMAX (myname//'.3     ',LWORK3)
+      IF (LWORK3 .LT.0) CALL STOPIT(myname//'.3',' ',KEND3,LWORK)
 C
 C---------------------------------------------------
 C     Print memory statistics for SOPPA subroutines.

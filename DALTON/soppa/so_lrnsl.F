@@ -1,6 +1,7 @@
 C
 C  /* Deck so_lrnsl */
-      SUBROUTINE SO_LRNSL(MODEL,ISYM,
+      SUBROUTINE SO_LRNSL(MODEL,ISYM,PROPAR,
+     &                    FREQ,NFREQ,NLAB,
      &                    DENSIJ,LDENSIJ,
      &                    DENSAB,LDENSAB,DENSAI,LDENSAI,
      &                    WORK,LWORK)
@@ -21,12 +22,11 @@ C
 C#include "implicit.h"
       implicit none
 #include "priunit.h"
+C From codata we need varius conversion factors, XT*. 
+#include "codata.h"
 C
+C      
 #include "soppinf.h"
-C From infrsp we need
-C FREQ <- Array of requecies 
-C NFREQ <- Number of frequencies
-#include "infrsp.h"
 C inflr.h below requires MAXLBL from rspprp.h
 #include "rspprp.h"
 C We need 
@@ -40,10 +40,12 @@ C
 
 C
       integer, intent(in) :: isym, ! symmetry of this batch of perturbations
-     &       LDENSIJ, LDENSAB, LDENSAI, LWORK ! array lengths
+     &       LDENSIJ, LDENSAB, LDENSAI, LWORK, ! array lengths
+     &       NFREQ, NLAB
       REAL(sop_dp),INTENT(IN) :: DENSIJ(LDENSIJ), DENSAB(LDENSAB),
-     &                     DENSAI(LDENSAI)
+     &                     DENSAI(LDENSAI), FREQ(NFREQ)
       REAL(sop_dp),INTENT(INOUT) :: WORK(LWORK)
+      REAL(sop_dp),intent(inout) :: PROPAR(NFREQ,NLAB,NLAB)
       CHARACTER(len=5), intent(in) :: MODEL
 C
       CHARACTER*8 LABEL1, LABEL2
@@ -141,7 +143,7 @@ C           Form second order properties SNDPRP.
 C===============================================
 C
 C
-         DO 100 IFREQ = 1, NFREQ ! Change these varibles
+         DO 100 IFREQ = 1, NFREQ !
 
             STATIC = ABS(FREQ(IFREQ)).LT.sop_stat_trh
 C-----------------------------------------------------------
@@ -199,20 +201,60 @@ C
                   PROPVAL = PROPVAL - SELLCOR
                ENDIF
 C
-               WRITE(LUPRI,'(/A,2(/A,A10,I4,3A,F10.6),/,/A,F20.12,/)')
-     &              ' Linear response function in a.u.',
-     &              ' A operator, symmetry, frequency: ',
-     &              LABEL1, ISYM,'  (',REP(ISYM-1),')',-FREQ(IFREQ),
-     &              ' B operator, symmetry, frequency: ',
-     &              LABEL2, ISYM,'  (',REP(ISYM-1),')', FREQ(IFREQ),
-     &              ' Value of linear response -<<A;B>>(omega): ',
-     &              PROPVAL
+               PROPAR(IFREQ,ILAB1,ILAB2) = PROPVAL
+C               WRITE(LUPRI,'(/A,2(/A,A10,I4,3A,F10.6),/,/A,F20.12,/)')
+C     &              ' Linear response function in a.u.',
+C     &              ' A operator, symmetry, frequency: ',
+C     &              LABEL1, ISYM,'  (',REP(ISYM-1),')',-FREQ(IFREQ),
+C     &              ' B operator, symmetry, frequency: ',
+C     &              LABEL2, ISYM,'  (',REP(ISYM-1),')', FREQ(IFREQ),
+C     &              ' Value of linear response -<<A;B>>(omega): ',
+C     &              PROPVAL
 C
             END DO
 C
   100    CONTINUE
 C
   200 CONTINUE
+C
+C
+      CALL HEADER('Final output of second order properties from'//
+     &            ' linear response',-1)
+      IF (TRIPLET) THEN
+         WRITE (LUPRI,'(/A)') '@ Spin symmetry of operators: triplet'
+      ELSE
+         WRITE (LUPRI,'(/A)') '@ Spin symmetry of operators: singlet'
+      END IF
+      WRITE (LUPRI,'(/A/A)')
+     &   ' Note that minus the linear response function:'//
+     &   ' - << A; B >>(omega) is printed.',
+     &   ' The results are of quadratic accuracy using Sellers formula.'
+      
+      DO IFREQ = 1, NFREQ
+         IF ( ABS(FREQ(IFREQ)) .LT. sop_stat_trh) THEN
+            WRITE(LUPRI,'(/A/)')
+     *      '@ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES'
+         ELSE
+            WRITE(LUPRI,'(/A/,5(/A,1P,D15.7),/)')
+     * '@ FREQUENCY DEPENDENT SECOND ORDER PROPERTIES WITH FREQUENCY :',
+     *      '@    a.u.:',FREQ(IFREQ),
+     *      '@    cm-1:',XTKAYS*FREQ(IFREQ),
+     *      '@    eV  :',XTEV*FREQ(IFREQ),
+     *      '@  kJ/mol:',XKJMOL*FREQ(IFREQ),
+     *      '@    nm  :',XTNM/FREQ(IFREQ)
+         END IF
+         DO ILAB1 = 1, NLAB
+            DO ILAB2 = ILAB1, NLAB
+               WRITE(LUPRI,'(5A,1P,D20.12)')
+     *         '@ -<< ',LBLLR(ISYM,ILAB1),' ; ',LBLLR(ISYM,ILAB2),
+     &         ' >> =',PROPAR(IFREQ,ILAB1,ILAB2)
+            END DO
+         END DO
+      END DO
+               
+             
+
+
 C
 C--------------------------------------
 C           Close files with densities.
