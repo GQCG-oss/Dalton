@@ -2751,7 +2751,6 @@ C
 #include "ibndxdef.h"
 C
       PARAMETER (D0 = 0.0D0 , D1 = 1.0D0 , DRTEST = 1.0D-5)
-      PARAMETER (MAXNVE = 200 )
 C
 C Used from common blocks:
 C  /WRKRSP/: KZVAR,KZYRED,KZRED,KZYVAR,?
@@ -2767,7 +2766,7 @@ C
 #include "infind.h"
 #include "infpri.h"
 #include "absorp.h"
-      DIMENSION IVENU(MAXNVE)
+      INTEGER, ALLOCATABLE ::  IVENU(:)
 C
       LOGICAL LINEQ
 C
@@ -2797,14 +2796,8 @@ C            with N new b-vectors
 C
       IF (ICTL.LT.1 .OR. ICTL.GT.3) GO TO 2000
       IF (ICTL.EQ.2) GO TO 1000
-      IF (N .GT. MAXNVE) THEN
-         WRITE(LUPRI,'(//A/A,I5,/A,I5)')
-     &   ' ERROR IN RSPRED ---',
-     &   ' Number of new trial vectors is ',N,
-     &   ' which exceeds the allowed maximum, MAXNVE =',MAXNVE
-         CALL QUIT('RSPRED: TOO MANY NEW TRIAL VECTORS')
-      END IF
       IF (N.LT.1) GO TO 1000
+      allocate( IVENU(1:N) )
       IZRED = KZRED - N
 C
 C Memory check
@@ -3006,6 +2999,8 @@ C    *                  UDV,SVEC,XINDX,WRK,LWRK)
             REDS(2*J-1+IROW(2*(IZRED+K)))   = -X2
    23    CONTINUE
    25 CONTINUE
+
+      deallocate( IVENU )
 C
 C *********************************************************
 C Section 2: find eigenvalues and -vectors of reduced L-matrix
