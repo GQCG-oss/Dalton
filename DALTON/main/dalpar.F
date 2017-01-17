@@ -102,6 +102,9 @@ C gnrinf.h : PARCAL, DIRCAL
       CALL QENTER('DALTON_NODEDRIVER')
       CALL GETTIM(CSTR,WSTR)
 
+      CALL TITLER('Starting in DALTON_NODEDRIVER',' ',200)
+      WRITE(LUPRI,'(/A)')
+     &      '(See DALTON/include/iprtyp.h for IPRTYP codes)'
       PARCAL = .TRUE.
       DIRCAL = .TRUE.
       PARHER = .TRUE.
@@ -148,13 +151,15 @@ C
       IF (IPRTYP.GT.0) THEN
          N_TASKS = N_TASKS + 1
 
+         CALL newTIMER('START')
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
-         IF (IPRINT .GT. 1)
-     &      write (lupri,'(/A,I5,A,I8,A,I5,A,I5/A)')
+         CALL newTIMER('waiting')
+
+         CALL newTIMER('START')
+         write (lupri,'(/A,I5,A,I8,A,I5,A,I5)')
      &      'Node',MYNUM,' received task',N_TASKS,' IPRTYP =',IPRTYP,
-     &      ' Print level is',IPRINT,
-     &      '(See DALTON/include/iprtyp.h for IPRTYP codes)'
-            flush(lupri)
+     &      ' Print level is',IPRINT
+         flush(lupri)
 
 !        allocate memory here if we do not call hermit (more to follow...).
 !        idea: move allocation down to main driver routines of modules as we might want to use
@@ -323,6 +328,7 @@ C added by Bin Gao, May 12, 2012
             CALL QUIT('DALTON_NODEDRIVER: Unknown calculation type')
          END IF
 C
+         CALL newTIMER('this task')
          GO TO 100
       END IF ! IPRTYP .gt. 0
 
