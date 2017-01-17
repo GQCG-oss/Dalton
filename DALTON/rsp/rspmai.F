@@ -245,7 +245,11 @@ C           are needed in rspoli.F (if .not. NEWTRA then
 C           only occ-occ Dirac dist. are saved on MODRCINT).
 C           hjaaj Nov 2001
          ELSE
-            JTRLVL = -4
+            IF (DIRFCK) THEN
+               JTRLVL = -3
+            ELSE
+               JTRLVL = -4
+            END IF
          END IF
          FLAGSV = DORSP
          DORSP = .TRUE.
