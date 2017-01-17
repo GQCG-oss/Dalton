@@ -88,11 +88,11 @@ C              delta and given symmetry of ai in KSCR2 and KSCR3 for
 C              excitations and de-excitations, respectively.
 C----------------------------------------------------------------------
 C
-               ISALFA = ISYMA
-               ISBETA = MULD2H(ISALFA,ISALBE)
+               ISBETA = ISYMA
+               ISALFA = MULD2H(ISBETA,ISALBE)
 C
-               LSCR4  = NBAS(ISALFA)*NRHF(ISYMI)
-               LSCR5  = NBAS(ISALFA)*NRHF(ISYMI)
+               LSCR4  = NBAS(ISBETA)*NRHF(ISYMI)
+               LSCR5  = NBAS(ISBETA)*NRHF(ISYMI)
 C
                KSCR4  = KEND1
                KSCR5  = KSCR4 + LSCR4
@@ -108,7 +108,7 @@ C
                NTOTA  = MAX(NVIR(ISYMA),1)
 C
                KOFF2  = KSCR1 + IAODIS(ISALFA,ISBETA)
-               KOFF3  = IT1AO(ISBETA,ISYMI) + 1
+               KOFF3  = IT1AO(ISALFA,ISYMI) + 1
                KOFF4  = ILMVIR(ISYMA) + 1
                KOFF5  = KSCR2 + IT1AM(ISYMA,ISYMI)
                KOFF6  = KSCR3 + IT1AM(ISYMA,ISYMI)
@@ -116,26 +116,34 @@ C
 C------------------------------
 C              For excitations.
 C------------------------------
+C                                                    ~
+C              (alpha, beta | * x (alpha,i) => (beta,i|
 C
-               CALL DGEMM('N','N',NBAS(ISALFA),NRHF(ISYMI),
-     &                    NBAS(ISBETA),ONE,WORK(KOFF2),NTOTAL,
-     &                    BTR1E(KOFF3),NTOTBE,ZERO,WORK(KSCR4),NTOTAL)
+               CALL DGEMM('T','N',NBAS(ISBETA),NRHF(ISYMI),
+     &                    NBAS(ISALFA),ONE,
+     &                    WORK(KOFF2),NTOTAL,
+     &                    BTR1E(KOFF3),NTOTAL,
+     &                    ZERO,WORK(KSCR4),NTOTBE)
+C                                  ~         ~
+C              c (beta,a) * (beta, i | => (a,i|
 C
                CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                    NBAS(ISALFA),ONE,CMO(KOFF4),NTOTAL,
-     &                    WORK(KSCR4),NTOTAL,ZERO,WORK(KOFF5),NTOTA)
+     &                    NBAS(ISBETA),ONE,CMO(KOFF4),NTOTBE,
+     &                    WORK(KSCR4),NTOTBE,ZERO,WORK(KOFF5),NTOTA)
 C
 C---------------------------------
 C              For de-excitations.
 C---------------------------------
 C
-               CALL DGEMM('N','N',NBAS(ISALFA),NRHF(ISYMI),
-     &                    NBAS(ISBETA),ONE,WORK(KOFF2),NTOTAL,
-     &                    BTR1D(KOFF3),NTOTBE,ZERO,WORK(KSCR5),NTOTAL)
+               CALL DGEMM('T','N',NBAS(ISBETA),NRHF(ISYMI),
+     &                    NBAS(ISALFA),ONE,
+     &                    WORK(KOFF2),NTOTAL,
+     &                    BTR1D(KOFF3),NTOTAL,
+     &                    ZERO,WORK(KSCR5),NTOTBE)
 C
                CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                    NBAS(ISALFA),ONE,CMO(KOFF4),NTOTAL,
-     &                    WORK(KSCR5),NTOTAL,ZERO,WORK(KOFF6),NTOTA)
+     &                    NBAS(ISBETA),ONE,CMO(KOFF4),NTOTBE,
+     &                    WORK(KSCR5),NTOTBE,ZERO,WORK(KOFF6),NTOTA)
 C
 C-----------------------------------------------------------------------
 C                                        ~ ~
@@ -144,8 +152,8 @@ C              delta and given symmetry of ai and add to KSCR2 and KSCR3
 C              for excitations and de-excitations, respectively.
 C-----------------------------------------------------------------------
 C
-               ISBETA = ISYMI
-               ISALFA = MULD2H(ISBETA,ISALBE)
+               ISALFA = ISYMI
+               ISBETA = MULD2H(ISALFA,ISALBE)
 C
                LSCR4  = NBAS(ISALFA)*NRHF(ISYMI)
 C
@@ -163,29 +171,31 @@ C
 C
                KOFF2  = KSCR1 + IAODIS(ISALFA,ISBETA)
                KOFF3  = ILMRHF(ISYMI) + 1
-               KOFF4  = IMATAV(ISALFA,ISYMA) + 1
+               KOFF4  = IMATAV(ISBETA,ISYMA) + 1
                KOFF5  = KSCR2 + IT1AM(ISYMA,ISYMI)
                KOFF6  = KSCR3 + IT1AM(ISYMA,ISYMI)
 C
-               CALL DGEMM('N','N',NBAS(ISALFA),NRHF(ISYMI),
-     &                    NBAS(ISBETA),ONE,WORK(KOFF2),NTOTAL,
-     &                    CMO(KOFF3),NTOTBE,ZERO,WORK(KSCR4),NTOTAL)
+C              ( alpha, beta | -- ) * c(alpha, i) => ( beta, i | --)
+               CALL DGEMM('T','N',NBAS(ISBETA),NRHF(ISYMI),
+     &                    NBAS(ISALFA),ONE,WORK(KOFF2),NTOTAL,
+     &                    CMO(KOFF3),NTOTAL,ZERO,WORK(KSCR4),NTOTBE)
 C
 C------------------------------
 C              For excitations.
 C------------------------------
-C
+C                                                  ~
+C              ( beta, i | -- ) * x(beta, a ) => ( a, i | --)
                CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                    NBAS(ISALFA),-ONE,BTJ1E(KOFF4),NTOTAL,
-     &                    WORK(KSCR4),NTOTAL,ONE,WORK(KOFF5),NTOTA)
+     &                    NBAS(ISBETA),-ONE,BTJ1E(KOFF4),NTOTBE,
+     &                    WORK(KSCR4),NTOTBE,ONE,WORK(KOFF5),NTOTA)
 C
 C---------------------------------
 C              For de-excitations.
 C---------------------------------
 C
                CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                    NBAS(ISALFA),-ONE,BTJ1D(KOFF4),NTOTAL,
-     &                    WORK(KSCR4),NTOTAL,ONE,WORK(KOFF6),NTOTA)
+     &                    NBAS(ISBETA),-ONE,BTJ1D(KOFF4),NTOTBE,
+     &                    WORK(KSCR4),NTOTBE,ONE,WORK(KOFF6),NTOTA)
 C
   300       CONTINUE
 C                       ~~

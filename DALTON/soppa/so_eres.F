@@ -83,7 +83,6 @@ C     properties and first iteration of excitation energies.
 #ifdef VAR_MPI
 #include "iprtyp.h"
 #include "infpar.h"
-C#include "parsoppa.h"
 C     integer, save :: numprocs
       integer :: numprocs
       logical :: loadbal_dyn
@@ -1141,11 +1140,11 @@ C------------------------------------------
      &                '. new E[2] linear transformed trial vector'
             CALL SO_READ(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,INEW)
             CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &           (I,WORK(KRES1E+I-1),WORK(KRES1D+I-1),I=1,LRES1E)
             IF (DOUBLES) THEN
                CALL SO_READ(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
-               IF (DO_DEX) 
+               IF (DO_DEX)
      &            CALL SO_READ(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
                WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &             (I,WORK(KRES2E+I-1),WORK(KRES2D+I-1),I=1,LRES2E)
@@ -1690,7 +1689,6 @@ C F.Beyer Oct. 2014.
 
 #include "implicit.h"
 #include "mpif.h"
-!#include"parsoppa.h" !fetches ntot
 #include "maxorb.h"
 #include "distcl.h"
 #include "priunit.h"
@@ -1785,7 +1783,6 @@ C     F.Beyer Oct. 2014.
 C#include "implicit.h"
 #include "priunit.h"
 #include "mpif.h"
-C#include "parsoppa.h" ! to get the value for NTOT and KINDXB
 #include "maxorb.h"
 #include "iratdef.h"
 C fetch HERDIR
