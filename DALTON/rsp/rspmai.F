@@ -136,6 +136,7 @@ C     *************************
 C
 C Define wave function variables, also if SIRIUS has not been called
 C
+      FLAG(34) = .TRUE. ! no integral transformation by SETSIR
       CALL SETSIR(WRK,LWRK)
 C
 C Define variables that are common for all perturbation symmetries
@@ -4240,8 +4241,9 @@ C     CSF's were used in SIRIUS. /hjaaj May 2001
 C
       MCONRF = NCONRF
       IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
-         FLAG(27) = .TRUE.
+         FLAG(27) = .TRUE. ! use determinants, not CSFs
 C        ... call setsir to reset Sirius common blocks to determinants
+         FLAG(34) = .TRUE. ! no integral transformation by SETSIR
          CALL SETSIR(WRK,LWRK)
       END IF
       NCONRF = MAX(1,NCONRF) ! SETSIR(abaset.F) sets NCONRF=0 for Hartree-Fock

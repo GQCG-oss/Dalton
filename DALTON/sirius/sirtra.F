@@ -1737,7 +1737,7 @@ C
 #include "gnrinf.h"
 C
       DIMENSION MFRO(8)
-      LOGICAL VFIRST, FOPEN, DELDA, FEXIST, USEDRC_SAVE
+      LOGICAL VFIRST, FOPEN, DELDA, FEXIST
       SAVE VFIRST, IPRTRA_SAVE, LDBUF, LRBUF
       DATA VFIRST /.TRUE./
 C
@@ -1775,7 +1775,6 @@ C
       END IF
 C
       ITRLVL = ABS( KTRLVL )
-      USEDRC_SAVE = USEDRC
 C
       IF (IPRTRA .GE. 0) THEN
          CALL GETTIM(TCPU0,TWALL0)
@@ -1793,17 +1792,17 @@ C     *********** THRQ: THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
       THRQ = THRP * 0.1D0
 C
       IF (FCKTRA_TYPE .gt. 0) THEN
-         CALL FCKTRA_CTL(KTRLVL,THRP,CMO,WORK,KWORK)
          NEWTRA_USEDRC = .FALSE. ! FCKTRA_DRCCTL not implemented yet
+         CALL FCKTRA_CTL(KTRLVL,THRP,CMO,WORK,KWORK)
       ELSE IF (NEWTRA) THEN
          IF (ITRLVL .EQ. 0 .OR. ITRLVL .GE. 5) THEN ! zeroth, third or fourth order transformation
-            USEDRC = .FALSE. ! use DRCCTL and not Dirac integrals from N_TRACTL
+            NEWTRA_USEDRC = .FALSE. ! use DRCCTL and not Dirac integrals from N_TRACTL
             ! because a lot of MO integrals are calculated twice in N_TRACTL if ITRLVL .ge. 5
+         ELSE
+            NEWTRA_USEDRC = USEDRC
          END IF
          CALL N_TRACTL(KTRLVL,CMO,WORK,KWORK)
-         NEWTRA_USEDRC = USEDRC
-         IF ( USEDRC_SAVE ) USEDRC = .TRUE.
-         ! not USEDRC = USEDRC_SAVE because USEDRC may have been activated inside N_TRACTL
+         IF ( NEWTRA_USEDRC ) USEDRC = .TRUE.
          ITRLVL_LAST = ITRLVL
          IF (NEWTRA_USEDRC) THEN
             IF (ITRLVL .EQ. 1 .OR. ITRLVL .EQ. 3) THEN ! see sirntra.F(TRALVL)

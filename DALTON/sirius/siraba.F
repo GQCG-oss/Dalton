@@ -754,7 +754,6 @@ C
 C
 C     Check input
 C
-
       IF (NASHT .LE. 1) GO TO 9999
 C     (FXQ zero matrix and H2XAC not used if NASHT .le. 1)
 C
@@ -1246,7 +1245,7 @@ C
 #include "iratdef.h"
       PARAMETER (D2 = 2.0D0, DM1 = -1.0D0)
 C
-      LOGICAL   LONDON, DFTADX
+      LOGICAL   LONDON, DFTADD_save
       DIMENSION TMAT(N2ORBX,NTMAT),CMO(*),UDV(*)
       DIMENSION FXC(NORBT,NORBT,NTMAT), FXV(NORBT,NORBT,NTMAT)
       DIMENSION WRK(LWRK)
@@ -1303,11 +1302,10 @@ C     Scale anti-symmetric density to "get things right..."
       ELSE
          IFCSET = 13
       END IF
-      DO 100 I = 1,NXMAT
-         ISYMDM(I) = JWOPSY
-         IFCTYP(I) = IFCSET
-  100 CONTINUE
-      DFTADX = DFTADD
+      ISYMDM(1:NXMAT) = JWOPSY
+      IFCTYP(1:NXMAT) = IFCSET
+
+      DFTADD_save = DFTADD
       IF (LONDON) DFTADD = .FALSE.
 
          IF (IPRLIN.GE.21) THEN
@@ -1328,7 +1326,7 @@ C     Scale anti-symmetric density to "get things right..."
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NXMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
       IPRFCK = IPRFCK_save
-      DFTADD = DFTADX
+      DFTADD = DFTADD_save
 
          IF (IPRLIN.GE.21) THEN
             IF (NISHT.GT.0) THEN

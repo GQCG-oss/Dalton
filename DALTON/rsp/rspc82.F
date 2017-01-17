@@ -1342,7 +1342,7 @@ C
          NOSIM = 0
          NOTCNV = 0
          KCOFF = 0
-         IF (IPRRSP.GE.3 .AND. IPRRSP.LE.5) THEN
+         IF (IPRRSP.GE.1 .AND. IPRRSP.LE.5) THEN
             IF (LINEQ) THEN
                WRITE(LUPRI,'(/6X,A)')
      &' No.  Residual tot.,    conf., and orb.    Bnorm      Frequency '
@@ -1379,7 +1379,7 @@ C
      *           ' BNORM:',BNORM,' EIVAL:',EIVAL(JROOTJ)
                IF (QCNORM .NE. D0) WRITE(LUPRI,'(1P,T10,2(A,D12.5))')
      *           ' RESIDUAL CONF Z-COMP',QCZNOR,'    Y-COMP',QCYNOR
-            ELSE IF (IPRRSP.GE.3) THEN
+            ELSE IF (IPRRSP.GE.1) THEN
                WRITE(LUPRI,'(I10,1P,D15.5,3D10.2,D15.5)')
      *           JROOTJ,QNORM,QCNORM,QONORM,BNORM,EIVAL(JROOTJ)
             END IF
@@ -1880,7 +1880,10 @@ C
          IF (IPRRSP.GT.20) WRITE(LUPRI,'(/A)')
      &      '      NUMBER      EIGENVALUE      PAIRED EIGENVALUE'
          DO, I=1,IPOS
-            IF (ABS(ABS(ALFAR(I))-ABS(ALFAR(IPOS+I))).GT.ZEROT) THEN
+            RELDIF = ABS(ABS(ALFAR(I))-ABS(ALFAR(IPOS+I)))
+            IF (ABS(ALFAR(I)) .GT. ZEROT)
+     &         RELDIF = RELDIF / ABS(ALFAR(I))
+            IF (RELDIF .GT. ZEROT) THEN
                J = 1
                WRITE(LUPRI,'(/A,I5)')
      &         ' **WARNING**  EIGENVALUES NOT PAIRED.'//
@@ -3591,7 +3594,7 @@ C           CALL DCOPY(NTOT,WRK(KDIASO),1,WRK,1)
       ELSE
          BINMEM = .FALSE.
       ENDIF
-      IF (IPRRSP.GT.3) THEN
+      IF (IPRRSP.GT.2) THEN
          IF (DO_PHPVEC) THEN
             WRITE(LUPRI,*)NCTOT,' START configuration VECTORS USING'//
      &         ' LOWEST EIGENVALUES OF PHP'

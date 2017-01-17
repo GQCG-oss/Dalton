@@ -503,25 +503,16 @@ C          (FLAG(34) false tells that mo integrals needed)
 C          (FLAG(14) true tells that old mo integral file exists)
 C          Set ITRLVL to minimum transformation level required.
 C
+      IF (.NOT. FLAG(34)) THEN ! flag(34): MO integrals not needed
       AO2INTFILE_LABEL = 'AOTWOINT'
       THRP = MAX(1.D-15,THRS)
       THRQ = MAX(1.D-15,THRS)
       USEDRC = .TRUE.
       IPRTRA = IPRNTR
       IF ((NASHT.GT.1 .AND. .NOT.HSROHF) .OR. H2MO) THEN
-         FLAG(34) = .FALSE.
-         IF (NEWTRA) THEN
-C            ... we need (ia/ (inactive-secondary) Mulliken distributions;
-C            they are only calculated for level 5 in "NEWTRA"
-C            transformation  /hjaaj June 09
-            KTRLVL = 5
-            ITRLVL = KTRLVL
-            FLAG(14) = .FALSE. ! cannot test in SIR_INTOPEN yet for NEWTRA
-         ELSE
-            KTRLVL = 4
-            ITRLVL = KTRLVL
-            FLAG(14) = .TRUE.
-         END IF
+         KTRLVL = 3
+         ITRLVL = KTRLVL
+         FLAG(14) = .TRUE.
          CALL SIR_INTOPEN
 C        ... SIR_INTOPEN returns FLAG(14) false if no mo integral file
 C        or if ITRLVL on file too small.
@@ -534,24 +525,22 @@ CPi 15.08.16: AO-SOPPA doesn't need MO integrals
             FLAG(34) = .TRUE.
          ELSE
             KTRLVL = 10
-            FLAG(34) = .FALSE.
          ENDIF
          ITRLVL = KTRLVL
          FLAG(14) = .TRUE. 
-C         FLAG(34) = .FALSE.
-Cend-Pi
          IF (KTRLVL.GT.0) CALL SIR_INTOPEN
       ELSE
 C        ... Hartree-Fock, MO integral file will normally
 C        not exist, but open to define name 'MOTWOINT' instead
 C        of e.g. 'fort.13', and to avoid problems if it actually
 C        does exist. /980529-hjaaj
-         KTRLVL = 4
+         KTRLVL = 0
          ITRLVL = KTRLVL
          FLAG(14) = .TRUE.
          FLAG(34) = .TRUE.
          CALL SIR_INTOPEN
       END IF
+      END IF ! .NOT. FLAG(34)
 
       IF (.NOT. FLAG(34)) THEN ! MO integrals not needed
       IF (FTRCTL .OR. NEWCMO .OR. (ITRLVL .GT. ITRLVL_SAVE) .OR.
@@ -570,7 +559,7 @@ C        does exist. /980529-hjaaj
          FLAG(14) = .TRUE.
          NEWCMO   = .FALSE.
       END IF
-      END IF
+      END IF ! .NOT. FLAG(34)
 C
 C
 C PART 5 : **** MISCELLANEOUS ******************************************
