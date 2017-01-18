@@ -367,7 +367,7 @@ C
       CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &     WRK(KFREE),LFREE)
       CALL DCOPY(KZYVAR,WRK(KFREE),1,WRK(KGD),1)
-      CALL REWSPL(LURSP3)
+      REWIND (LURSP3)
       IF (KOFFTY.EQ.1) THEN
          READ (LURSP3)
       END IF
@@ -843,8 +843,8 @@ C
 C
 C     Read trial and sigma vectors and add contributions to residual vector
 C
-         CALL REWSPL(LURSP3)
-         CALL REWSPL(LURSP5)
+         REWIND (LURSP3)
+         REWIND (LURSP5)
          IF (KOFFTY.EQ.1) THEN
             READ (LURSP3)
             READ (LURSP5)
@@ -984,7 +984,7 @@ C
 C
 C     Read trial vectors and add contributions to gradient
 C
-         CALL REWSPL(LURSP3)
+         REWIND (LURSP3)
          IF (KOFFTY.EQ.1) THEN
             READ (LURSP3)
          END IF
@@ -1139,7 +1139,7 @@ C
 C
 C     Read trial vectors and add contributions to response vector
 C
-         CALL REWSPL(LUIN)
+         REWIND (LUIN)
          IF (KOFFTY.EQ.1) THEN
             READ (LUIN)
          END IF
@@ -1622,8 +1622,8 @@ C
          KBTMP=KB
          KSTMP=KS
 C
-         CALL REWSPL(LURSP3)
-         CALL REWSPL(LURSP5)
+         REWIND (LURSP3)
+         REWIND (LURSP5)
 C
          DO J=1,I-1-NLINDEP
             CALL READT(LURSP3,KZYVAR,WRK(KBTMP))

@@ -1140,7 +1140,7 @@ C
 C  Read in the D-matrix in SOPPA from LURSP4
 C
          IF (SOPPA) THEN
-            CALL REWSPL(LURSP4)
+            REWIND (LURSP4)
             CALL READT(LURSP4,KZCONF,BVECS(KDIA))
          ENDIF
          DO 50 IBX = 1,NBX
@@ -1207,7 +1207,7 @@ C CONSTRUCT  E[2]*X(I) WHERE X(I) IS THE I:th
 C EIGENVECTOR AND EIGENVALUE RESPECTIVELY OF THE REDUCED
 C RSP PROBLEM
 C
-         CALL REWSPL(LURSP5)
+         REWIND (LURSP5)
          IF (KOFFTY.EQ.1) READ(LURSP5)
          DO 600 K = 1,KZRED
 C
@@ -2055,7 +2055,7 @@ C
 C        Orthogonalize new b-vectors agains previous b-vectors
 C        (both (Z, Y) and (Y, Z))
 C
-         CALL REWSPL(LU3)
+         REWIND (LU3)
          DO 2000 K = 1,NBPREV
             IBTYPK = IBTYP(K)
             IF (IBTYPK .EQ. JBCNDX) THEN
@@ -2900,7 +2900,7 @@ C  EXTEND REDUCED S- AND E-MATRICES
 C
 C  b-vectors times new S-and E-vectors
 C
-      CALL REWSPL(LURSP3)
+      REWIND (LURSP3)
       IF (KOFFTY.EQ.1) READ (LURSP3)
       KBOVEC = 1
       KBCVEC = 1
@@ -2962,7 +2962,7 @@ C
      *            UDV,EVECS,XINDX,WRK,LWRK)
 C     CALL RSPSLI(NCSIM,NOSIM,ZYCVEC,ZYOVEC,
 C    *                  UDV,SVEC,XINDX,WRK,LWRK)
-      CALL REWSPL(LURSP3)
+      REWIND (LURSP3)
       IF (KOFFTY.EQ.1) READ (LURSP3)
       KBOVEC = 1
       KBCVEC = 1
@@ -3380,8 +3380,8 @@ C
       END IF
 
       NOVLMX = 0 ! to become index of CI start vector with max overlap with reference vector
-      CALL REWSPL(LURSP3)
-      CALL REWSPL(LURSP5)
+      REWIND (LURSP3)
+      REWIND (LURSP5)
       IF (KOFFTY.EQ.1) THEN
 C
 C PUT REFERENCE CONFIGURATION AS FIRST RECORD ON LURSP3
@@ -3760,7 +3760,7 @@ C
       CALL QENTER('RSPCVE')
 C
       CALL DZERO(BVECS,KZCONF)
-      CALL REWSPL(LURSP3)
+      REWIND (LURSP3)
       IF (KOFFTY.EQ.1) READ (LURSP3)
       DO 200 K = 1,KZRED
          IBTYPK = IBTYP(K+KOFFTY)
@@ -3807,7 +3807,7 @@ C
 C
       CALL QENTER('PHPDSK')
 C
-      CALL REWSPL(LURSP4)
+      REWIND (LURSP4)
       JRSP4 = 0
 C
 C *** now SKIP diagonals of E[2]-matrix needed for RSPLIN

@@ -304,7 +304,7 @@
          LWRK1 = LWRK   - KWRK1
          IF (LWRK1.LT.0) CALL ERRWRK('RSPCTLMCD 1',KWRK1-1,LWRK)
          IF (.NOT.BINMEM) THEN
-            CALL REWSPL(LURSP3)
+            REWIND (LURSP3)
             IF (KOFFTY.EQ.1) READ (LURSP3)
             DO 210 I=1,KZRED
  210           READ (LURSP3)
@@ -352,7 +352,7 @@ C
 !
 !        WRITE E(2)*X ON LURSP5
 !
-         CALL REWSPL(LURSP5)
+         REWIND (LURSP5)
          JRSP5 = 0
          IF (KOFFTY.EQ.1) THEN
             READ (LURSP5)
@@ -652,7 +652,7 @@ C
       write(lupri,*)'SONIA: LRSTMCD, out of E[2]Xf'
       call rsppro(wrk(kecvec),KZVAR,UDV,-LUPRI)
       !dump E[2]Xf on file
-      CALL REWSPL(LURSP5)
+      REWIND (LURSP5)
       JRSP5 = 0
       ISTEC = KECVEC
       ISTEO = ISTEC + NCSIM*KZYVAR
@@ -686,8 +686,8 @@ C
          IF (KOFFTY.EQ.1) THEN
             write(lupri,*)'Sonia: do we enter here?'
             call flshfo(lupri)
-            CALL REWSPL(LURSP3)
-            CALL REWSPL(LURSP5)
+            REWIND (LURSP3)
+            REWIND (LURSP5)
             CALL GETREF(WRK,KZCONF)
             CALL WRITT(LURSP3,KZCONF,WRK)
             WRITE (LURSP5) D0, D0, D0, D0
@@ -1056,7 +1056,7 @@ C
 !        Orthogonalize new b-vectors agains previous b-vectors
 !        (both (Z, Y) and (Y, Z))
 !
-         CALL REWSPL(LU3)
+         REWIND (LU3)
          DO 2000 K = 1,NBPREV
             write(lupri,*)'RSPNOR: I should not enter here!!!'
             IBTYPK = IBTYP(K)
@@ -1445,7 +1445,7 @@ C
 !        Orthogonalize new b-vectors agains previous b-vectors
 !        (both (Z, Y) and (Y, Z))
 !
-         CALL REWSPL(LU3)
+         REWIND (LU3)
          DO 2000 K = 1,NBPREV
             IBTYPK = IBTYP(K)
             IF (IBTYPK .EQ. JBCNDX) THEN
@@ -1818,7 +1818,7 @@ C
 C  Read in the D-matrix in SOPPA from LURSP4
 C
          IF (SOPPA) THEN
-            CALL REWSPL(LURSP4)
+            REWIND (LURSP4)
             CALL READT(LURSP4,KZCONF,BVECS(KDIA))
          ENDIF
          DO 50 IBX = 1,NBX
@@ -1885,7 +1885,7 @@ C CONSTRUCT  E[2]*X(I) WHERE X(I) IS THE I'TH
 C EIGENVECTOR AND EIGENVALUE RESPECTIVELY OF THE REDUCED
 C RSP PROBLEM
 C
-         CALL REWSPL(LURSP5)
+         REWIND (LURSP5)
          IF (KOFFTY.EQ.1) READ(LURSP5)
          DO 600 K = 1,KZRED
 C
@@ -2550,7 +2550,7 @@ C  EXTEND REDUCED S-AND E-MATRICES
 C
 C  b-vectors times new S-and E-vectors
 C
-      CALL REWSPL(LURSP3)
+      REWIND (LURSP3)
       IF (KOFFTY.EQ.1) READ (LURSP3)
       KBOVEC = 1
       KBCVEC = 1
@@ -2612,7 +2612,7 @@ C
      *                  UDV,EVECS,XINDX,WRK,LWRK)
 C     CALL RSPSLI(NCSIM,NOSIM,ZYCVEC,ZYOVEC,
 C    *                  UDV,SVEC,XINDX,WRK,LWRK)
-      CALL REWSPL(LURSP3)
+      REWIND (LURSP3)
       IF (KOFFTY.EQ.1) READ (LURSP3)
       KBOVEC = 1
       KBCVEC = 1

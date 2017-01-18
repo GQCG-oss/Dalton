@@ -99,7 +99,7 @@ C
 C
 C Check how many sigma vectors have been written to LURSP5
 C
-      CALL REWSPL(LURSP5)
+      REWIND (LURSP5)
       JZDIM = 0
       JRSP5 = 0
       DO 100 I = 1,KZDIM
@@ -114,8 +114,8 @@ C REPEAT UNTILL
 C
          NLOAD  = 0
          JZDIM  = KZDIM
-         CALL REWSPL(LURSP3)
-         CALL REWSPL(LURSP5)
+         REWIND (LURSP3)
+         REWIND (LURSP5)
  200     CONTINUE
             NLOAD  = NLOAD +1
             IF ((NLOAD.EQ.1).AND.(KOFFTY.EQ.1)) THEN
@@ -124,7 +124,7 @@ C
                JZDIM = JZDIM - 1
             ENDIF
             IF ( NLOAD .GT. 1) THEN
-               CALL REWSPL(LURSP3)
+               REWIND (LURSP3)
                IF ( KOFFTY.EQ.1)READ (LURSP3)
                DO 61 IVEC = 1,KZRED
                   READ (LURSP3)
@@ -157,7 +157,7 @@ C
             ISTEC  = KECVEC
             ISTEO  = KEOVEC
             IF (SOPPA) THEN
-               CALL REWSPL(LURSP4)
+               REWIND (LURSP4)
                JRSP4 = 0
                CALL READT(LURSP4,KZCONF,WRK(KDIAE))
             ENDIF
@@ -195,17 +195,17 @@ C
 C           CALL RSPRED(1,..) INCREASE DIMENSION OF REDUCED RSP EQUATION
 C
             CALL RSPRED (1,.FALSE.,NSIM,IBTYP,DUMMY,DUMMY,REDE,REDS,
-     *                 DUMMY,DUMMY,WRK(KBCVEC),WRK(KBOVEC),
-     *                 UDV,WRK(KECVEC),XINDX,WRK(KWRK),LWRKRE)
+     &                 DUMMY,DUMMY,WRK(KBCVEC),WRK(KBOVEC),
+     &                 UDV,WRK(KECVEC),XINDX,WRK(KWRK),LWRKRE)
 C
 C           CALL RSPRED (ICTL,LINEQ,N,IBTYP,GD,REDGD,REDE,REDS,
 C    *                 EIVAL,EIVEC,BCVEC,BOVEC,UDV,EVECS,XINDX,
 C    *                 WRK,LWRK)
 C
             IF (JZDIM.LE.0) THEN
-                IF (IPRRSP.GE.10) WRITE (LUPRI,'(//A,I5,A,I3,A/)')
-     &             ' ***',KZDIM,' old trial vectors read in from'//
-     &             ' RSPRST.E2C in',NLOAD,' loads.'
+               WRITE (LUPRI,'(/A,I5,A,I3,A)') ' .RESTPP:',KZDIM,
+     &            ' old trial and sigma vectors read in',
+     &             NLOAD,' loads.'
             ELSE
                GO TO 200
 C        ^--------------
