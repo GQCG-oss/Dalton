@@ -3752,10 +3752,11 @@ C for reduced E(2) and reduced S(2)
       KWRK1  = KEIVEC + MAXRM*MAXRM
       LWRK1  = LWRK + 1 - KWRK1
       IF (IPRPP .GT. 2 .OR. LWRK1 .LT. 2*KZYVAR) THEN
-         WRITE(LUPRI,'(/A)') ' --- IN RSPPP:'
-         WRITE(LUPRI,*)' THCPP,MAXRM ',THCPP,MAXRM
-         WRITE(LUPRI,*)' KSYMOP,NGPPP(KSYMOP) ',KSYMOP,NGPPP(KSYMOP)
-         WRITE(LUPRI,*)' LWRK ,LWRK1 ',LWRK,LWRK1
+         WRITE(LUPRI,'(/A)') ' --- In RSPPP:'
+         WRITE(LUPRI,'(A,1P,D10.2,I10/A,2I10/A,2I10)')
+     &      ' THCPP, MAXRM        ',THCPP,MAXRM,
+     &      ' KSYMOP,NGPPP(KSYMOP)',KSYMOP,NGPPP(KSYMOP),
+     &      ' LWRK , LWRK1        ',LWRK,LWRK1
       END IF
 
       CALL DZERO(WRK(KFREX),LFREX)
@@ -5424,7 +5425,7 @@ C
 #include "implicit.h"
 C
       DIMENSION EIVAL(*),IBTYP(*),A1(*)
-      DIMENSION CMO(*),UDV(*),PV(*),FC(*),FCAC(*),XINDX(*),WRK(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),XINDX(*),WRK(*)
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , DM1 = -1.0D0 )
 C
