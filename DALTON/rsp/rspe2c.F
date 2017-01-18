@@ -131,8 +131,8 @@ C
       IF (LWRK1.LT.0) CALL ERRWRK('E2SYM',KWRK1-1,LWRK)
 C
 C
-      CALL REWSPL(LURSP3)
-      CALL REWSPL(LURSP5)
+      REWIND (LURSP3)
+      REWIND (LURSP5)
       JBOOFF = KBOVEC
       JBCOFF = KBCVEC
       JE2OFF = KE2LIN
@@ -141,7 +141,7 @@ C
       JCTOT  = NCTOT*KZYCON
       IF (SOPPA) THEN
          JDIAE = KDIAE
-         CALL REWSPL(LURSP4)
+         REWIND (LURSP4)
          CALL READT(LURSP4,KZCONF,WRK(JDIAE))
       ENDIF
       CALL DZERO(WRK(KBCVEC),2*NCTOT*KZYCON)
@@ -1218,7 +1218,7 @@ C
 C
 C Check how many sigma vectors have been written to LURSP5
 C
-         CALL REWSPL(LURSP5)
+         REWIND (LURSP5)
          JRSP5 = 0
          JZDIM = 0
          DO 50 I = 1,KZDIM
@@ -1242,8 +1242,8 @@ C REPEAT UNTILL
 C
          NLOAD  = 0
          JLRSTV = KZDIM
-         CALL REWSPL(LURSP3)
-         CALL REWSPL(LURSP5)
+         REWIND (LURSP3)
+         REWIND (LURSP5)
  200     CONTINUE
             NLOAD  = NLOAD +1
             IF ((NLOAD.EQ.1).AND.(KOFFTY.EQ.1)) THEN
@@ -1252,7 +1252,7 @@ C
                JLRSTV = JLRSTV - 1
             ENDIF
             IF ( NLOAD .GT. 1) THEN
-               CALL REWSPL(LURSP3)
+               REWIND (LURSP3)
                IF ( KOFFTY.EQ.1)READ (LURSP3)
                DO 61 IVEC = 1,KZRED
                   READ (LURSP3)
@@ -1285,7 +1285,7 @@ C
             ISTEC  = KECVEC
             ISTEO  = KEOVEC
             IF (SOPPA) THEN
-               CALL REWSPL(LURSP4)
+               REWIND (LURSP4)
                CALL READT(LURSP4,KZCONF,WRK(KDIAE))
             ENDIF
             DO 400 ISIM=1,NSIM
@@ -1329,8 +1329,8 @@ C           CALL RSPRED (ICTL,LINEQ,N,IBTYP,GD,REDGD,REDE,REDS,
 C    *                 EIVAL,EIVEC,BCVEC,BOVEC,SVECS,EVECS,XINDX,WRK)
 C
             IF (JLRSTV.LE.0) THEN
-                IF (IPRRSP.GE.3)WRITE (LUPRI,'(//A,I5,A/)')
-     *             ' ***',KZRED,' OLD TRIAL VECTORS FOUND ON LURSP3'
+                WRITE (LUPRI,'(/A,I5,A)')
+     *             ' .RESTLR:', KZRED,' old trial vectors used.'
             ELSE
                GO TO 200
 C        ^--------------
@@ -1338,8 +1338,8 @@ C        ^--------------
       END IF
       IF ((.NOT. RESTLR). OR. (KZRED .EQ. 0)) THEN
          IF (KOFFTY.EQ.1) THEN
-            CALL REWSPL(LURSP3)
-            CALL REWSPL(LURSP5)
+            REWIND (LURSP3)
+            REWIND (LURSP5)
             CALL GETREF(WRK,KZCONF)
             CALL WRITT(LURSP3,KZCONF,WRK)
             WRITE (LURSP5) D0, D0, D0, D0
@@ -2756,7 +2756,7 @@ C        IF NOT all B vectors in memory,
 C        THEN position LURSP3 and READ NSIM B vectors into memory
 C
          IF (.NOT.BINMEM) THEN
-            CALL REWSPL(LURSP3)
+            REWIND (LURSP3)
             IF (KOFFTY.EQ.1) READ (LURSP3)
             DO 210 I=1,KZRED
  210           READ (LURSP3)
@@ -2809,7 +2809,7 @@ C
 C
 C        WRITE E(2)*X ON LURSP5
 C
-         CALL REWSPL(LURSP5)
+         REWIND (LURSP5)
          JRSP5 = 0
          IF (KOFFTY.EQ.1) THEN
             READ (LURSP5)
@@ -3301,40 +3301,18 @@ C
          LWRK1 = LWRK   - KWRK1
          IF (LWRK1.LT.0) CALL ERRWRK('RSPCTL 1',KWRK1-1,LWRK)
          IF (.NOT.BINMEM) THEN
-            CALL REWSPL(LURSP3)
-#if !defined (VAR_SPLITFILES)
+            REWIND (LURSP3)
             IF (KOFFTY.EQ.1) READ (LURSP3)
-#else
-            JRSP3 = 0
-            IF (KOFFTY.EQ.1)
-     &           CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#endif
             DO 210 I=1,KZRED
-#if defined (VAR_SPLITFILES)
- 210           CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#else
  210           READ (LURSP3)
-#endif
             ISTBC = KBCVEC
             ISTBO = KBOVEC
             DO 400 ISIM=1,NSIM
                IF (IBTYP(KZRED+ISIM+KOFFTY).EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,WRK(ISTBC),JRSP3,.TRUE.)
-                  IF (LRSP3 .NE. KZCONF) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP3 in RSPCTL')
-#else
                   CALL READT(LURSP3,KZCONF,WRK(ISTBC))
-#endif
                   ISTBC = ISTBC + KZCONF
                ELSE
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,WRK(ISTBO),JRSP3,.TRUE.)
-                  IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP3 in RSPCTL')
-#else
                   CALL READT(LURSP3,KZYWOP,WRK(ISTBO))
-#endif
                   ISTBO = ISTBO + KZYWOP
                ENDIF
  400        CONTINUE
@@ -3376,21 +3354,13 @@ C
 C
 C        WRITE E(2)*X ON LURSP5
 C
-         CALL REWSPL(LURSP5)
+         REWIND (LURSP5)
          JRSP5 = 0
          IF (KOFFTY.EQ.1) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-#else
             READ (LURSP5)
-#endif
          ENDIF
          DO 215 I=1,KZRED
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-#else
             READ (LURSP5)
-#endif
  215     CONTINUE
          ISTEC = KEVECS
          ISTEO = ISTEC + NCSIM*KZYVAR
@@ -3405,23 +3375,13 @@ C
      *                       WRK(KSOP1),1)
                   CALL DCOPY(KZWOPT,WRK(ISTEC+KZVAR+KZCONF),1,
      *                       WRK(KSOP1+KZWOPT),1)
-#if defined (VAR_SPLITFILES)
-                  CALL WRITST(LURSP5,KZYWOP,WRK(KSOP1),JRSP5)
-               ELSE
-                  CALL WRITST(LURSP5,KZYVAR,WRK(ISTEC),JRSP5)
-#else
                   CALL WRITT(LURSP5,KZYWOP,WRK(KSOP1))
                ELSE
                   CALL WRITT(LURSP5,KZYVAR,WRK(ISTEC))
-#endif
                ENDIF
                ISTEC = ISTEC + KZYVAR
             ELSE
-#if defined (VAR_SPLITFILES)
-               CALL WRITST(LURSP5,KZYVAR,WRK(ISTEO),JRSP5)
-#else
                CALL WRITT(LURSP5,KZYVAR,WRK(ISTEO))
-#endif
                ISTEO = ISTEO + KZYVAR
             ENDIF
  216     CONTINUE
@@ -3572,7 +3532,7 @@ C
 #include "inftap.h"
 #include "infpri.h"
 C
-      CALL REWSPL(LURSP4)
+      REWIND (LURSP4)
 C
 C *** now READ diagonals of E[2]-matrix needed for RSPLIN
 C
@@ -3621,7 +3581,7 @@ C
 #include "inftap.h"
 #include "infpri.h"
 C
-      CALL REWSPL(LURSP4)
+      REWIND (LURSP4)
 C
 C *** now READ diagonals of E[2]-matrix needed for RSPLIN
 C
@@ -3650,7 +3610,7 @@ C
 #include "inftap.h"
 #include "infpri.h"
 C
-      CALL REWSPL(LURSP4)
+      REWIND (LURSP4)
       JRSP4 = 0
 C
 C *** now SKIP diagonals of E[2]-matrix needed for RSPLIN
@@ -4971,7 +4931,7 @@ C
       LWRK1 = LWRK - KWRK1
       IF (LWRK1.LT.0) CALL ERRWRK('RSPRES',KWRK1-1,LWRK)
       IF (SOPPA) THEN
-         CALL REWSPL(LURSP4)
+         REWIND (LURSP4)
          CALL READT(LURSP4,KZCONF,RD(KDIAE))
       ENDIF
       DO 50 IBX = 1,NBX
@@ -5021,7 +4981,7 @@ C ADD  E[2]*X(I)
 C
       KRD   = 1
       KWRK1 = KRD + NBX*KZYVAR
-      CALL REWSPL(LURSP5)
+      REWIND (LURSP5)
       IF (KOFFTY.EQ.1) READ(LURSP5)
       DO 600 K = 1,KZRED
          IF (SOPPA) THEN
@@ -5096,7 +5056,7 @@ C
 C
       NTOT= NBX*KZYVAR
       CALL DZERO(BVECS,NTOT)
-      CALL REWSPL(LURSP3)
+      REWIND (LURSP3)
       IF (KOFFTY.EQ.1) READ(LURSP3)
       DO 200 K = 1,KZRED
          IBTYPK = IBTYP(K+KOFFTY)
