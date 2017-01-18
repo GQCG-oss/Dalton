@@ -772,15 +772,16 @@ C     end of this input module
                GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
          END DO
-C
-         WRITE (LUPRI,'(/,3A,/)')
-     *        ' Keyword ',WORD,' not recognized under **RESPONS'
+
+         WRITE (LUPRI,'(/3A/)')
+     &       ' Keyword ',WORD,' not recognized under **RESPONS.'
          CALL PRTAB(NTABLE,TABLE,WORD//' input keywords',LUPRI)
 
-         CALL QUIT(' ILLEGAL "*" OPTION UNDER **RESPONS')
+         CALL QUIT('Illegal "*" option under **RESPONS')
       ELSE
-         WRITE (LUPRI,'(/,3A,/)') '@ PROMPT "',PROMPT,
-     *      '" ILLEGAL OR OUT OF ORDER UNDER **RESPONS'
+         WRITE (LUPRI,'(/3A/)') '@ Prompt "',PROMPT,
+     &      '" illegal or out of order under **RESPONS'
+         CALL PRTAB(NTABLE,TABLE,WORD//' input keywords',LUPRI)
          CALL QUIT('ERROR IN A **RESPONS PROMPT')
       END IF
  2    CALL RSPINP(WORD)
@@ -936,8 +937,9 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/4A/)') '@ KEYWORD "',WORD,
-     *            '" NOT RECOGNIZED FOR ',WORD1
+               WRITE (LUPRI,'(/4A/)') '@ Keyword "',WORD,
+     &            '" not recognized for ',WORD1
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('ILLEGAL KEYWORD FOR **RESPONS ')
     1          CONTINUE ! .INPTEST
                   INPTES = .TRUE.

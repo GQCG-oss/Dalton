@@ -581,7 +581,7 @@ c---------------------------------------------------------------
       allocate(occu(norb,ndet))
       allocate(iel(norb))
 c      allocate(npos(norb))   !wrong should be maximum of a deter space
-      allocate(npos(1000))    !covers 12-open shell
+      allocate(npos(2000))    !covers more than 12-open shell
       do iec=0,nexmax
        do idet=idet1,idet1+iecci(iec)-1
         read(lun15)c(idet),nec,(ibu(i),ipa(i),i=1,nec)
@@ -654,7 +654,7 @@ c      allocate(npos(norb))   !wrong should be maximum of a deter space
                 enddo
              endif
             enddo
-            if((kdet-ifirst+1).gt.1000)then
+            if((kdet-ifirst+1).gt.2000)then
                print*,'givepos: arg of npos too large'
                CALL QUIT('givepos: arg of npos too large')
             endif
