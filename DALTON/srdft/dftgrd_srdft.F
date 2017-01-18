@@ -358,7 +358,7 @@ C        Grid spacing....
            ENDIF
          ENDDO
          EPH = EXP(H)
-         WRITE(LUPRI,'(1X,A,F6.3)') 'Value chosen: ',H
+         WRITE(LUPRI,'(A,F6.3)') ' Value chosen: ',H
 C...     Inner grid point
          AH = D2*MAX(AA(1,1,1,IATOM),AA(1,1,2,IATOM))
          WRITE(LUPRI,*) 'AH = ',AH
@@ -384,11 +384,11 @@ C...     Outer point
              ENDIF
            ENDIF
          ENDDO
-         WRITE(LUPRI,'(1X,A,F6.3)') 'Value chosen: ',RH
+         WRITE(LUPRI,'(A,F9.3)')  ' Value chosen: ',RH
          GRDC = RL/(EPH-D1)
-         WRITE(LUPRI,'(A,E12.5)') 'Constant c:',GRDC
+         WRITE(LUPRI,'(A,1P,E12.5)') ' Constant c:',GRDC
          NR = NINT(LOG(D1+(RH/GRDC))/H)
-         WRITE(LUPRI,'(A,I5)') 'Number of points:',NR
+         WRITE(LUPRI,'(A,I6)') ' Number of points:',NR
          RADNDE(1) = RL
          RADWT(1)  = (RL+GRDC)*RL*RL*H
          DO IR = 2,NR
