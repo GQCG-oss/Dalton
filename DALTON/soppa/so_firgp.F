@@ -12,7 +12,6 @@ C     PURPOSE: Calculate 2p-2h part of gradient property vectors.
 C              There is only a first order contribution.
 C
 #include "implicit.h"
-C#include "priunit.h"
 C
 #include "ccsdsym.h"
 #include "ccorb.h"
@@ -178,7 +177,7 @@ C
 
 C      print *, 'First half done'
 C
-C     Resuffle y(aibj) on to the triplet gp2 vector
+C     Reshuffle y(aibj) on to the triplet gp2 vector
 C
 C     {T1}g(abij) = y(aibj) - y(ajbi) - y(biaj) + y(bjai)
 C     {T2}g(abij) = y(aibj) - y(ajbi) + y(biaj) - y(bjai)
@@ -187,16 +186,8 @@ C
       koff1 = 0
       koff2 = NT2AMT1(isymtr)
       koff3 = koff2 + nt2amt2(isymtr)
-!      if (max(koff1,koff2,koff3).gt.n2p2hop(isymtr)) then
-!         print *, 'Somthing is wrong'
-!         print *, koff1, koff2, koff3, n2p2hop(isymtr)
-!         stop
-!      endif
       do isymij = 1, nsym
          isymab = muld2h(isymtr,isymij)
-!         koff1 = it2amt1(isymij,isymab)
-!         koff2 = it2amt2(isymij,isymab)
-!         koff3 = it2amt3(isymij,isymab)
          do isymj = 1, nsym
             isymi = muld2h(isymj,isymij)
             if (isymi.gt.isymj) cycle
@@ -310,50 +301,20 @@ C                           print *, work(nbibj), work(nbjbi)
          end do ! isymj
       end do ! isymij   
 C
-      print *, koff3, n2p2hop(isymtr)
-      write(LUPRI,'(a)') 'Triples type 1'
-      do i = 1, nt2amt1(isymtr) ! 
-         write(LUPRI,'(i6,f16.10)') i, gpvc2(i)
-      end do
-      write(LUPRI,'(a)') 'Triples type 2'
-      do i = nt2amt1(isymtr)+1,nt2amt1(isymtr)+nt2amt2(isymtr) ! 
-         write(LUPRI,'(i6,f16.10)') i, gpvc2(i)
-      end do
-      write(LUPRI,'(a)') 'Triples type 3'
-      do i = nt2amt1(isymtr)+nt2amt2(isymtr)+1,
-     &         nt2amt1(isymtr)+nt2amt2(isymtr)+nt2amt3(isymtr) ! 
-         write(LUPRI,'(i6,f16.10)') i, gpvc2(i)
-      end do
-      
-
       contains
-!         pure function pair_pos(isyma,na,isymi,ni)
-         function pair_pos(isyma,na,isymi,ni)
+         pure function pair_pos(isyma,na,isymi,ni)
             integer :: pair_pos
             integer, intent(in) :: na, ni, isyma, isymi
-            if(na.gt.nvir(isyma).or.na.le.0) print *,'Error1:',na,isyma
-            if(ni.gt.nrhf(isymi).or.ni.le.0) print *,'Error2:',ni,isymi
 
             pair_pos = it1am(isyma,isymi) + nvir(isyma)*(ni-1) + na
-            if (pair_pos.gt.nt1am(muld2h(isyma,isymi)).or.
-     &               (pair_pos.le.0))
-     &         print *, 'Error pair_pos:', isyma, na, isymi, ni 
             return
          end function
 
-!         pure function quad_pos(isymai,nai,isymbj,nbj)
-         function quad_pos(isymai,nai,isymbj,nbj)
+         pure function quad_pos(isymai,nai,isymbj,nbj)
             integer :: quad_pos
             integer, intent(in) :: isymai, isymbj, nai, nbj
-            if(nai.gt.nt1am(isymai)) print *, 'Error3:', nai, isymai
-            if(nbj.gt.nt1am(isymbj)) print *, 'Error4:', nbj, isymbj
-            if(nai.le.0) print *, 'Error5:', nai, isymai
-            if(nbj.le.0) print *, 'Error6:', nbj, isymbj
             quad_pos = IT2SQ(ISYMAI,ISYMBJ)
      &               + nt1am(isymai)*(nbj-1) + nai
-            if (quad_pos.gt.nt2sq(muld2h(isymai,isymbj)).or.
-     &               (quad_pos.le.0))
-     &         print *, 'Error quad_pos:', isymai, nai, isymbj, nbj
             return
          end function
 

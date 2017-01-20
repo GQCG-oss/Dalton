@@ -471,10 +471,14 @@ C---------------------------------------------------------------------
      &                    IDUMMY,.FALSE.)
 C              find the right positions
                CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2E)
+               IF (TRIPLET) THEN
+                  CALL DSCAL(LRESI2E,ENORMINV,WORK(KRESI2E),1)
+               ELSE
 C              Put the residual in the other basis...
-C              We need to scale by one half               
-               CALL DSCAL(LRESI2E,ENORMINV*0.5D0,WORK(KRESI2E),1)
-               CALL CCSD_TCMEPKX(WORK(KRESI2E),2.0D0,ISYMTR)
+C              We need to scale by one half
+                  CALL DSCAL(LRESI2E,ENORMINV*0.5D0,WORK(KRESI2E),1)
+                  CALL CCSD_TCMEPKX(WORK(KRESI2E),2.0D0,ISYMTR)
+               END IF
                CALL SO_WRTVE(WORK(KRESI2E),LRESI2E,ISYMTR,LABEL,
      &                      EIVAL(IEXCI),LURV2E)
                CALL GPCLOSE(LURV2E,'KEEP')
@@ -495,10 +499,14 @@ C
                CALL GPOPEN(LURV2D,FNRV2D,'UNKNOWN',' ','UNFORMATTED',
      &                    IDUMMY,.FALSE.)
                CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2D)
-C              Put the residual in the other basis...
-C              We need to scale by one half               
-               CALL DSCAL(LRESI2D,ENORMINV*0.5D0,WORK(KRESI2D),1)
-               CALL CCSD_TCMEPKX(WORK(KRESI2D),2.0D0,ISYMTR)
+               IF (TRIPLET) THEN
+                  CALL DSCAL(LRESI2D,ENORMINV,WORK(KRESI2D),1)
+               ELSE
+C                 Put the residual in the other basis...
+C                 We need to scale by one half               
+                  CALL DSCAL(LRESI2D,ENORMINV*0.5D0,WORK(KRESI2D),1)
+                  CALL CCSD_TCMEPKX(WORK(KRESI2D),2.0D0,ISYMTR)
+               END IF
                CALL SO_WRTVE(WORK(KRESI2D),LRESI2D,ISYMTR,LABEL,
      &                      EIVAL(IEXCI),LURV2D)
                CALL GPCLOSE(LURV2D,'KEEP')

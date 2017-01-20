@@ -238,7 +238,8 @@ C
 C
                ENDIF
 C
-               CALL SO_TMLTR(WORK(KGPVEC),HALF,ISYMTR)
+               IF (.NOT.TRIPLET)
+     &              CALL SO_TMLTR(WORK(KGPVEC),HALF,ISYMTR)
 C
                IF(IPRSOP.GT.10) THEN
 C

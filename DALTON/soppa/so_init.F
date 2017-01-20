@@ -144,6 +144,11 @@ C
                ISVV(ISYMI,ISYMJ) = ICOUNSV
                ITVV(ISYMI,ISYMJ) = ICOUNTV
 C
+               ISOO(ISYMJ,ISYMI) = ICOUNSO
+               ITOO(ISYMJ,ISYMI) = ICOUNTO
+               ISVV(ISYMJ,ISYMI) = ICOUNSV
+               ITVV(ISYMJ,ISYMI) = ICOUNTV
+C               
                ICOUNSO = ICOUNSO + NRHF(ISYMI) * NRHF(ISYMJ)
                ICOUNTO = ICOUNTO + NRHF(ISYMI) * NRHF(ISYMJ)
                ICOUNSV = ICOUNSV + NVIR(ISYMI) * NVIR(ISYMJ)

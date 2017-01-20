@@ -3,6 +3,8 @@
      &                     T2AM,LT2AM,SOLVEC2,LSOLVEC2,
      &                     WORK,LWORK)
 C
+      use so_info, only : sop_dp
+C
 C  Important statement
       IMPLICIT NONE
 C
@@ -58,8 +60,12 @@ C        Check size...
 C        Square up the blocks
 C        T2( (ai)<(bj) ) -> T2( bj , ai)
          CALL SQUARE_TOTSYM(WORK(KT2SQ),T2AM,ISYMAJ)
+         IF (TRIPLET) THEN
+            CALL SQUAREXT(WORK(KX2SQ),SOLVEC2,ISYMAI,ISYMTR)
+         ELSE
 C        X2( (ai)<(bj) ) -> X2( bj , ai), Diagonal terms scaled by two
-         CALL SQUAREX(WORK(KX2SQ),SOLVEC2,ISYMAI,ISYMTR)
+            CALL SQUAREX(WORK(KX2SQ),SOLVEC2,ISYMAI,ISYMTR)
+         ENDIF
 C
 C-------------------------------------
 C     Doubles contribution to RDENSIJ.
@@ -195,9 +201,379 @@ C              MKL also has the nonstandard mkl_domatcopy to do this
      &                     T2PACK(IOFFINP+(NBJ-1)*NT1AM(ISYMR)+NAI)
                   END DO
                END DO
-
+C
             END IF
+C
+         END SUBROUTINE
+        
+         SUBROUTINE SQUAREXT(X2SQ,X2PACK,ISYMR,ISYMT)
+            real(sop_dp),intent(out) :: X2SQ(*)
+            real(sop_dp),intent(in) :: x2pack(*)
+            integer, intent(in) :: isymr, isymt
+         
+            real(sop_dp),parameter :: factd =  SQRT(2.0D0),
+     &                                fact1 =  -SQRT(2.0D0),
+     &                                fact23 =  1.D0,
+     &                                zero = 0.0d0
 
+            integer :: isymbj, isymai, isymaj, isymbi, isymij, isymab,
+     &                 isyma, isymb, isymi, isymj
+            integer :: sab1, sab2, nvira, nrhfi, nvirb, nrhfj
+            integer :: nai, naj, nbi, nbj, naibj, najbi, nbiaj, nbjai,
+     &                 nbibj, nbjbi, najbj, nbjaj, nbjbj, 
+     &                 nabij1, nabij2, nabij3, nbbij2, nabjj3
+            integer :: ioff1, ioffj1, ioffbj1
+            integer :: ioff2, ioffj2, ioffbj2
+            integer :: ioff3, ioffj3, ioffbj3
+            real(sop_dp) :: f, fij, fab
+
+            isymbj = isymr
+            isymai = muld2h(isymr,isymt)
+
+            if (isymt .eq. 1 ) then
+               do isymj = 1, nsym
+                  isymb = muld2h(isymj,isymbj)
+
+               ! Ensure isymi <= isymj
+                  do isymi = 1, isymj
+                     isyma = muld2h(isymi,isymai)
+                     ! and isuma <= isymb
+C                     if (isyma.gt.isymb) cycle
+C
+                     isymaj = muld2h(isyma,isymj)
+                     isymbi = muld2h(isymb,isymi)
+                     isymab = muld2h(isyma,isymb)
+                     isymij = muld2h(isymi,isymj)
+C
+                     sab1 = ntvv(isymab)
+                     sab2 = nsvv(isymab)
+                     ioff1 = it2amt1(isymij,isymab) + 
+     &                     sab1*itoo(isymj,isymi) + itvv(isymb,isyma)
+                     ioff2 = it2amt2(isymij,isymab) +
+     &                     sab2*itoo(isymj,isymi) + isvv(isymb,isyma)
+                     ioff3 = it2amt3(isymij,isymab) +
+     &                     sab1*isoo(isymj,isymi) + itvv(isymb,isyma)
+C
+                  if (isymi.eq.isymj) then ! isyma == isymb
+                     do j = 1, nrhf(isymj)
+                        nrhfi = j - 1
+                        ioffj1 = ioff1 + ((j-1)*(j-2)/2)*sab1
+                        ioffj2 = ioff2 + ((j-1)*(j-2)/2)*sab2
+                        ioffj3 = ioff3 + (j*(j-1)/2)*sab1
+                        do b = 1, nvir(isymb)
+                           nbj = pair_pos(isymb,b,isymj,j)
+                           nvira = b - 1
+                           ioffbj1 = ioffj1 + (b-1)*(b-2)/2
+                           ioffbj2 = ioffj2 + b*(b-1)/2
+                           ioffbj3 = ioffj3 + (b-1)*(b-2)/2
+
+                           do i = 1, nrhfi
+                              nbi = pair_pos(isymb,b,isymi,i)
+                              do a = 1, nvira
+                                 nai = pair_pos(isyma,a,isymi,i)
+                                 naj = pair_pos(isyma,a,isymj,j)
+                                 nabij1 = ioffbj1+(i-1)*sab1+a
+                                 nabij2 = ioffbj2+(i-1)*sab2+a
+                                 nabij3 = ioffbj3+(i-1)*sab1+a
+                                 naibj = quad_pos(isymai,nai,isymbj,nbj)
+                                 najbi = quad_pos(isymaj,naj,isymbi,nbi)
+                                 nbiaj = quad_pos(isymbi,nbi,isymaj,naj)
+                                 nbjai = quad_pos(isymbj,nbj,isymai,nai)
+                                 x2sq(naibj) =  fact1*x2pack(nabij1)
+     &                      + fact23*( x2pack(nabij2) + x2pack(nabij3) )
+                                 x2sq(najbi) = -fact1*x2pack(nabij1) 
+     &                      - fact23*( x2pack(nabij2) - x2pack(nabij3) )
+                                 x2sq(nbiaj) = -fact1*x2pack(nabij1) 
+     &                      + fact23*( x2pack(nabij2) - x2pack(nabij3) )
+                                 x2sq(nbjai) =  fact1*x2pack(nabij1) 
+     &                      - fact23*( x2pack(nabij2) + x2pack(nabij3) )
+                              end do ! a
+C                          Handle a == b, i<j
+                              nbbij2 = ioffbj2+(i-1)*sab2+b
+                              nbjbi = quad_pos(isymbj,nbj,isymbi,nbi)
+                              nbibj = quad_pos(isymbi,nbi,isymbj,nbj)
+                              x2sq(nbibj) = factd*x2pack(nbbij2)
+                              x2sq(nbjbi) = - factd*x2pack(nbbij2)
+                           end do ! i
+C                       Handle i = j, a < b
+                           do a = 1, nvira 
+                              naj = pair_pos(isyma,a,isymj,j)
+                              nabjj3 = ioffbj3+(j-1)*sab1+a
+                              najbj = quad_pos(isymaj,naj,isymbj,nbj)
+                              nbjaj = quad_pos(isymbj,nbj,isymaj,naj)
+                              x2sq(najbj) = factd*x2pack(nabjj3)
+                              x2sq(nbjaj) = -factd*x2pack(nabjj3)
+                           end do
+                           ! i == j, a == b
+C                           if (isyma.eq.isymb) then
+                           nbjbj = quad_pos(isymbj,nbj,isymbj,nbj)
+                           x2sq(nbjbj) = zero
+C                           end if
+                          
+                        end do ! b
+                     end do ! j
+                  else if (isyma .lt. isymb ) then
+                     do j = 1, nrhf(isymj)
+                        nrhfi = nrhf(isymi)
+                        ioffj1 = ioff1 + (j-1)*nrhfi*sab1
+                        ioffj2 = ioff2 + (j-1)*nrhfi*sab2
+                        ioffj3 = ioff3 + (j-1)*nrhfi*sab1
+                        do b = 1, nvir(isymb)
+                           nbj = pair_pos(isymb,b,isymj,j)
+                           nvira = nvir(isyma)
+                           ioffbj1 = ioffj1 + (b-1)*nvira
+                           ioffbj2 = ioffj2 + (b-1)*nvira
+                           ioffbj3 = ioffj3 + (b-1)*nvira
+                           do i = 1, nrhfi
+                              nbi = pair_pos(isymb,b,isymi,i)
+                              do a = 1, nvira
+                                 nai = pair_pos(isyma,a,isymi,i)
+                                 naj = pair_pos(isyma,a,isymj,j)
+                                 nabij1 = ioffbj1+(i-1)*sab1+a
+                                 nabij2 = ioffbj2+(i-1)*sab2+a
+                                 nabij3 = ioffbj3+(i-1)*sab1+a
+                                 naibj = quad_pos(isymai,nai,isymbj,nbj)
+                                 nbjai = quad_pos(isymbj,nbj,isymai,nai)
+                                 x2sq(naibj) =  fact1*x2pack(nabij1)
+     &                      + fact23*( x2pack(nabij2) + x2pack(nabij3) )
+                                 x2sq(nbjai) =  fact1*x2pack(nabij1) 
+     &                      - fact23*( x2pack(nabij2) + x2pack(nabij3) )
+                              end do ! a
+                          end do ! i
+                       end do ! b
+                    end do ! j
+                  else ! isyma > isymb -> a > b !
+                     ioff1 = it2amt1(isymij,isymab) + 
+     &                     sab1*itoo(isymj,isymi) + itvv(isyma,isymb)
+                     ioff2 = it2amt2(isymij,isymab) +
+     &                     sab2*itoo(isymj,isymi) + isvv(isyma,isymb)
+                     ioff3 = it2amt3(isymij,isymab) +
+     &                     sab1*isoo(isymj,isymi) + itvv(isyma,isymb)
+                     nvirb = nvir(isymb) 
+                     do j = 1, nrhf(isymj)
+                        nrhfi = nrhf(isymi)
+                        ioffj1 = ioff1 + (j-1)*nrhfi*sab1
+                        ioffj2 = ioff2 + (j-1)*nrhfi*sab2
+                        ioffj3 = ioff3 + (j-1)*nrhfi*sab1
+                        do b = 1, nvir(isymb)
+                           nbj = pair_pos(isymb,b,isymj,j)
+                           nvira = nvir(isyma)
+                           ioffbj1 = ioffj1 + b
+                           ioffbj2 = ioffj2 + b
+                           ioffbj3 = ioffj3 + b
+                           do i = 1, nrhfi
+                              nbi = pair_pos(isymb,b,isymi,i)
+                              do a = 1, nvira
+                                 nai = pair_pos(isyma,a,isymi,i)
+                                 naj = pair_pos(isyma,a,isymj,j)
+                                 nabij1 = ioffbj1+(i-1)*sab1+(a-1)*nvirb
+                                 nabij2 = ioffbj2+(i-1)*sab2+(a-1)*nvirb
+                                 nabij3 = ioffbj3+(i-1)*sab1+(a-1)*nvirb
+                                 naibj = quad_pos(isymai,nai,isymbj,nbj)
+                                 nbjai = quad_pos(isymbj,nbj,isymai,nai)
+                                 x2sq(naibj) = -fact1*x2pack(nabij1)
+     &                      + fact23*( x2pack(nabij2) - x2pack(nabij3) )
+                                 x2sq(nbjai) = -fact1*x2pack(nabij1) 
+     &                      - fact23*( x2pack(nabij2) - x2pack(nabij3) )
+                              end do ! a1
+                          end do ! i
+                       end do ! b
+                    end do ! j
+                  end if
+
+                  end do ! loop isymi
+               end do ! loop isymj
+C               
+            else ! isymai != isymbj
+C
+               do isymj = 1, nsym
+                  isymb = muld2h(isymj,isymbj)
+
+                  do isymi = 1, nsym
+                     isyma = muld2h(isymi,isymai)
+                     ! and isuma <= isymb
+C                     if (isyma.gt.isymb) cycle
+C
+                     isymaj = muld2h(isyma,isymj)
+                     isymbi = muld2h(isymb,isymi)
+                     isymab = muld2h(isyma,isymb)
+                     isymij = muld2h(isymi,isymj)
+C
+                     sab1 = ntvv(isymab)
+                     sab2 = nsvv(isymab)
+                     ioff1 = it2amt1(isymij,isymab) + 
+     &                     sab1*itoo(isymj,isymi) + itvv(isymb,isyma)
+                     ioff2 = it2amt2(isymij,isymab) +
+     &                     sab2*itoo(isymj,isymi) + isvv(isymb,isyma)
+                     ioff3 = it2amt3(isymij,isymab) +
+     &                     sab1*isoo(isymj,isymi) + itvv(isymb,isyma)
+
+                  if ((isymi .eq. isymj)) then ! isyma != isymb
+                     if (isyma .lt. isymb ) then
+                        nvira = nvir(isyma)
+                        nvirb = 1
+                        f = one
+                     else
+                        nvira = 1
+                        nvirb = nvir(isymb)
+                        f = onem
+                     end if
+                     do j = 1, nrhf(isymj)
+                        nrhfi = j - 1
+                        ioffj1 = ioff1 + ((j-1)*(j-2)/2)*sab1
+                        ioffj2 = ioff2 + ((j-1)*(j-2)/2)*sab2
+                        ioffj3 = ioff3 + (j*(j-1)/2)*sab1
+                        do b = 1, nvir(isymb)
+                           nbj = pair_pos(isymb,b,isymj,j)
+                           ioffbj1 = ioffj1 + (b-1)*nvira
+                           ioffbj2 = ioffj2 + (b-1)*nvira
+                           ioffbj3 = ioffj3 + (b-1)*nvira
+                           do i = 1, nrhfi
+                              nbi = pair_pos(isymb,b,isymi,i)
+                              do a = 1, nvir(isyma)
+                                 nai = pair_pos(isyma,a,isymi,i)
+                                 naj = pair_pos(isyma,a,isymj,j)
+                                 nabij1 = ioffbj1 + (i-1)*sab1+
+     &                                    (a-1)*nvirb + 1 
+                                 nabij2 = ioffbj2 + (i-1)*sab2+
+     &                                    (a-1)*nvirb + 1 
+                                 nabij3 = ioffbj3 + (i-1)*sab1+
+     &                                    (a-1)*nvirb + 1
+                                 naibj = quad_pos(isymai,nai,isymbj,nbj)
+                                 najbi = quad_pos(isymaj,naj,isymbi,nbi)
+                                 x2sq(naibj) =  f*fact1*x2pack(nabij1)
+     &                    + fact23*( x2pack(nabij2) + f*x2pack(nabij3) )
+                                 x2sq(najbi) = -f*fact1*x2pack(nabij1)
+     &                    - fact23*( x2pack(nabij2) - f*x2pack(nabij3) )
+                              end do ! a
+                           end do ! i
+C                       Handle i = j, a != b
+                           do a = 1, nvir(isyma) 
+                              naj = pair_pos(isyma,a,isymj,j)
+                              nabjj3 = ioffbj3+(j-1)*sab1+(a-1)*nvirb+1
+                              najbj = quad_pos(isymaj,naj,isymbj,nbj)
+                              x2sq(najbj) =  f*factd*x2pack(nabjj3)
+                           end do
+                        end do ! b
+                     end do ! j
+                  else if (isyma .eq. isymb ) then ! isymi != isymj
+                     if (isymi .lt. isymj ) then
+                        nrhfi = nrhf(isymi)
+                        nrhfj = 1
+                        fij = one
+                     else 
+                        nrhfi = 1
+                        nrhfj = nrhf(isymj)
+                        fij = onem
+                     end if
+                     do j = 1, nrhf(isymj)
+                        ioffj1 = ioff1 + (j-1)*nrhfi*sab1
+                        ioffj2 = ioff2 + (j-1)*nrhfi*sab2
+                        ioffj3 = ioff3 + (j-1)*nrhfi*sab1
+                        do b = 1, nvir(isymb)
+                           nbj = pair_pos(isymb,b,isymj,j)
+                           nvira = b - 1
+                           ioffbj1 = ioffj1 + (b-1)*(b-2)/2
+                           ioffbj2 = ioffj2 + b*(b-1)/2
+                           ioffbj3 = ioffj3 + (b-1)*(b-2)/2
+
+                           do i = 1, nrhf(isymi)
+                              nbi = pair_pos(isymb,b,isymi,i)
+                              do a = 1, nvira
+                                 nai = pair_pos(isyma,a,isymi,i)
+                                 naj = pair_pos(isyma,a,isymj,j)
+                                 nabij1 = ioffbj1+(i-1)*nrhfj*sab1+a
+                                 nabij2 = ioffbj2+(i-1)*nrhfj*sab2+a
+                                 nabij3 = ioffbj3+(i-1)*nrhfj*sab1+a
+                                 naibj = quad_pos(isymai,nai,isymbj,nbj)
+                                 nbiaj = quad_pos(isymbi,nbi,isymaj,naj)
+                                 x2sq(naibj) =  
+     &                               fij*fact1*x2pack(nabij1)
+     &                              + fact23*( fij*x2pack(nabij2) + 
+     &                                         x2pack(nabij3) )
+                                 x2sq(nbiaj) = 
+     &                              -fij*fact1*x2pack(nabij1) 
+     &                              + fact23*( fij*x2pack(nabij2) - 
+     &                                         x2pack(nabij3) )
+                              end do ! a
+C                          Handle a == b, i<j
+                              nbbij2 = ioffbj2+(i-1)*sab2+b
+                              nbibj = quad_pos(isymbi,nbi,isymbj,nbj)
+                              x2sq(nbibj) = fij*factd*x2pack(nbbij2)
+                           end do ! i
+                        end do ! b
+                     end do ! j
+                        
+                  else ! a != b, i != j
+                     if (isyma .lt. isymb ) then
+                        nvira = nvir(isyma)
+                        nvirb = 1
+                        fab = one
+                     else
+                        nvira = 1
+                        nvirb = nvir(isymb)
+                        fab = onem
+                     end if
+                     if (isymi .lt. isymj ) then
+                        nrhfi = nrhf(isymi)
+                        nrhfj = 1
+                        fij = one
+                     else 
+                        nrhfi = 1
+                        nrhfj = nrhf(isymj)
+                        fij = onem
+                     end if
+                     do j = 1, nrhf(isymj)
+                        ioffj1 = ioff1 + (j-1)*nrhfi*sab1
+                        ioffj2 = ioff2 + (j-1)*nrhfi*sab2
+                        ioffj3 = ioff3 + (j-1)*nrhfi*sab1
+                        do b = 1, nvir(isymb)
+                           nbj = pair_pos(isymb,b,isymj,j)
+                           ioffbj1 = ioffj1 + (b-1)*nvira
+                           ioffbj2 = ioffj2 + (b-1)*nvira
+                           ioffbj3 = ioffj3 + (b-1)*nvira
+                           do i = 1, nrhf(isymi)
+                              do a = 1, nvir(isyma)
+                                 nai = pair_pos(isyma,a,isymi,i)
+                                 nabij1 = ioffbj1 + 
+     &                                    (i-1)*nrhfj*sab1+
+     &                                    (a-1)*nvirb + 1 
+                                 nabij2 = ioffbj2 + 
+     &                                    (i-1)*nrhfj*sab2+
+     &                                    (a-1)*nvirb + 1 
+                                 nabij3 = ioffbj3 + 
+     &                                    (i-1)*nrhfj*sab1+
+     &                                    (a-1)*nvirb + 1
+                                 naibj = quad_pos(isymai,nai,isymbj,nbj)
+                                 x2sq(naibj) = 
+     &                                fab*fij*fact1*x2pack(nabij1)
+     &                                + fact23*( fij*x2pack(nabij2) + 
+     &                                           fab*x2pack(nabij3) )
+                              end do ! a
+                           end do ! i
+                        end do ! b
+                     end do ! j
+
+                  end if 
+                  end do ! isymi
+               end do ! isymj
+            end if
          END SUBROUTINE
 
+         pure function pair_pos(isyma,na,isymi,ni)
+            integer :: pair_pos
+            integer, intent(in) :: na, ni, isyma, isymi
+
+            pair_pos = it1am(isyma,isymi) + nvir(isyma)*(ni-1) + na
+            return
+         end function
+
+         pure function quad_pos(isymai,nai,isymbj,nbj)
+            integer :: quad_pos
+            integer, intent(in) :: isymai, isymbj, nai, nbj
+            quad_pos = nt1am(isymai)*(nbj-1) + nai
+            return
+         end function
+
+C
       END
