@@ -1501,7 +1501,7 @@ C
 #include "priunit.h"
 C
 C panor:
-C     DOESA=.TRUE.
+C     If DOESA=.TRUE, then:
 C     For excited state absorption we require the B-state to be the
 C     first state of symmetry ESASYM and that the C-state is separate
 C     from the B-state.

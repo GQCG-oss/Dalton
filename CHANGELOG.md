@@ -33,6 +33,7 @@ Do not make changes below this line! For the relase branch only.
 
 ### Fixed
 - open-shell doublet ROKS DFT geometry optimization
+- Fix .GSPOL for parallel polarizable embedding quadratic response
 
 
 ## [2016.2] (2016-07-12)
