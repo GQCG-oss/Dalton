@@ -27,17 +27,18 @@
 #include "channel.h"
 #include "wrkrsp.h"
       INTEGER IOP, CIOP, J, CORBJ
-      INTEGER CHANNEL_JWOP(2,MAXWOP)
+      INTEGER, allocatable :: CHANNEL_JWOP(:,:)
 C
-C Core RPA: redefine the excitaiton manifold
-C restrict to excitations involving a chosen
-C orbital CHANNEL_ORB
+C Core RPA: redefine the excitation manifold,
+C restrict to excitations involving the few chosen
+C orbitals in CHANNEL_ORB
 C
+      allocate( CHANNEL_JWOP(2,MAXWOP) )
       CIOP = 0
       DO J = 1, CHANNEL_NORB
          CORBJ = CHANNEL_ORB(J)
          DO IOP = 1,KZWOPT
-            IF (JWOP(1,IOP).EQ.CORBJ) THEN 
+            IF (JWOP(1,IOP).EQ.CORBJ) THEN
                CIOP = CIOP + 1
                CHANNEL_JWOP(1,CIOP) = JWOP(1,IOP)
                CHANNEL_JWOP(2,CIOP) = JWOP(2,IOP)
@@ -49,32 +50,35 @@ C
       KZYWOP = 2*CIOP
       NWOPT = CIOP
 C
+      deallocate( CHANNEL_JWOP )
       RETURN
       END
       SUBROUTINE CHANNEL_VIR()
       IMPLICIT NONE
+#include "priunit.h"
 #include "infvar.h"
 #include "channel.h"
 #include "wrkrsp.h"
 #include "inforb.h"
-#include "priunit.h"
       INTEGER IOP, CIOP, J, CORBJ,ISYM,IMAX
-      INTEGER CHANNEL_JWOP(2,MAXWOP),MAXVIRT(8)
+      INTEGER MAXVIRT(8)
+      INTEGER, allocatable :: CHANNEL_JWOP(:,:)
 C
 C Core RPA: redefine the excitaiton manifold
 C to delete high virtual orbitals
-C     
+C
+      allocate( CHANNEL_JWOP(2,MAXWOP) )
       DO ISYM=1,NSYM
          IF (NASH(ISYM).NE.0) THEN
-            WRITE (LUPRI,*) 
+            WRITE (LUPRI,'(/A)')
      &           'WARNING: virtual channel restriction not tested'
      &           //' for open shells.'
          ENDIF
          IF (CHANNEL_VIRT(ISYM).EQ.-1) THEN
-            MAXVIRT(ISYM) = IORB(ISYM) + NISH(ISYM) + NASH(ISYM) + 
+            MAXVIRT(ISYM) = IORB(ISYM) + NISH(ISYM) + NASH(ISYM) +
      &           NSSH(ISYM)
          ELSE
-            MAXVIRT(ISYM) = IORB(ISYM) + NISH(ISYM) + NASH(ISYM) + 
+            MAXVIRT(ISYM) = IORB(ISYM) + NISH(ISYM) + NASH(ISYM) +
      &           CHANNEL_VIRT(ISYM)
          ENDIF
          WRITE (LUPRI,*) 'MAXVIRT(',ISYM,')=',MAXVIRT(ISYM)
@@ -101,5 +105,6 @@ c               WRITE(LUPRI,*) 'Skipping',JWOP(1,IOP),JWOP(2,IOP)
       KZYWOP = 2*CIOP
       NWOPT = CIOP
 C
+      deallocate( CHANNEL_JWOP )
       RETURN
       END

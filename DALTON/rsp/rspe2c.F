@@ -6469,7 +6469,11 @@ C
 #include "infvar.h"
 #include "inflin.h"
 
+      ! RSPMO2 not implemented for open shells,
+      ! nor for symmetry, nor for reduced excitation space
+      ! (as e.g. for .CHANNEL and/or .VIRTUAL)
       IF ((NASHT .GT. 0) .OR. (NSYM .NE. 1)) RETURN
+      IF (NRHFT*NVIRT .NE. NDIM1) RETURN
 
       LOCDEB = .FALSE.
 
