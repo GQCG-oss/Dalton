@@ -47,10 +47,7 @@ C     1. allocation of work space.
 C---------------------------------
 C
       LTR1E   = NT1AM(ISYMTR)
-CPi 08.04.16
-C      IF (DOUBLES) LTR2E   = NT2AM(ISYMTR)
       IF (DOUBLES) LTR2E   = N2P2HOP(ISYMTR)
-Cend-Pi
       LGPVC1  = LTR1E
       IF (DOUBLES) LGPVC2  = LTR2E
 C

@@ -27,7 +27,8 @@ C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
       use so_info, only: so_singles_first, so_singles_second,
-     &                   so_has_doubles, so_needs_densai
+     &                   so_has_doubles, so_needs_densai,
+     &                   so_double_correction
 
 #ifdef VAR_MPI
       use so_parutils, only: soppa_comm_active, soppa_num_active,
@@ -121,7 +122,7 @@ C
       singles_first = so_singles_first(model)
       singles_second = so_singles_second(model)
       doubles = so_has_doubles(model)
-      tr2_zero = (MODEL.EQ.'DCRPA').OR.(MODEL.EQ.'DCHRP')
+      tr2_zero = so_double_correction(model)
 C
 C---------------------------------------------------------
 C     Adjust lengt of T2 amplitudes vector in TRIPLET case
@@ -341,8 +342,7 @@ C
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
             IF(DO_DEX)
      &               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
-            IF (DOUBLES .AND. MODEL .NE. 'DCRPA' .AND.
-     &          MODEL .NE. 'DCHRP') THEN
+            IF (DOUBLES .AND. .NOT. SO_DOUBLE_CORRECTION(MODEL) ) THEN
                      CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
                IF(DO_DEX)
      &               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)

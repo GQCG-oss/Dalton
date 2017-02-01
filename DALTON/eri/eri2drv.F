@@ -546,6 +546,9 @@ C  /* Deck odcdrv */
      &                  IODPP1,IODPP2,RODPP1,RODPP2,
      &                  FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
      &                  CCFBT,INDXBT,WORK,LWORK,IPRINT)
+C
+      USE SO_INFO, ONLY: SO_ANY_ACTIVE_MODELS
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -655,7 +658,8 @@ C
 C     AOSOPPA in parallel makes use of slaves in this subroutine.
 C     hence the slaves are redirected to parts of the code normally
 C     only available to the master.
-      if (aorpa.or.aohrp.or.aosop.or.dcrpa.or.aosoc.or.aocc2)
+C
+      IF ( SO_ANY_ACTIVE_MODELS() )
      &   USE_SLAVE_CODE = .FALSE.
 #endif
 C
