@@ -40,7 +40,7 @@ C
 #include "implicit.h"
 C
 #include "priunit.h"
-C
+CPi for NEXCIT() which is nr of excitations requested in .dal input
 #include "cbiexc.h"
 CPi for NT2AMX, NT1AM(), NT2AM()
 #include "ccsdsym.h"
@@ -309,7 +309,7 @@ C           2. allocation of work space.
 C---------------------------------------
 C
             KEXVAL = KEND1
-            KEND2  = KEXVAL  + NEXCIT(ISYM)
+            KEND2  = KEXVAL  + NEXCIT(ISYM) ! CPi NEXCIT() in cbiexc.h
             LWORK2 = LWORK   - KEND2
 C
             CALL SO_MEMMAX ('SO_EXCIT1.2',LWORK2)
@@ -402,28 +402,29 @@ C
                IF ( SO_NEEDS_DENSAI(MODEL))
      &            CALL DZERO(WORK(KDENSAI),LDENSAI)
 C
+CPi 31.01.16
+C----------------------------------------------------------------------
+C              Make backup of eigenvectors if HRPA(D) in order for
+C              s-HRPA(D) method to have HRPA eigenvectors on file
+C----------------------------------------------------------------------
+C
+               IF ( IMODEL .EQ. SOP_MODEL_HRPAD ) THEN
+C
+                   CALL DC_BACKUP1(ISYMTR, NEXCI, WORK(KEND2), LWORK2)
+C
+               END IF
+C
 C------------------------------------------------------------------
 C              Determine excitation energies and excitation
 C              vectors. The excitation vectors are written to file.
 C------------------------------------------------------------------
 C
-CPi               IF ( (IMODEL .NE. SOP_MODEL_RPAD) .AND.
-CPi     &              (IMODEL .NE. SOP_MODEL_HRPAD) ) THEN
                   CALL SO_RSPLEX(MODEL,ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
      &                           WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                           LDENSAB,WORK(KDENSAI),LDENSAI,
      &                           WORK(KT2AM),
      &                           LT2AM,WORK(KFOCKD),LFOCKD,
      &                           WORK(KEND2),LWORK2)
-CPi               ELSE ! RPA(D) still has its own driver...
-CPiCPi
-CPi                  CALL DC_RSPLEX(MODEL,ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
-CPi     &                           WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-CPi     &                           LDENSAB,WORK(KDENSAI),LDENSAI,
-CPi     &                           WORK(KT2AM),
-CPi     &                           LT2AM,WORK(KFOCKD),LFOCKD,
-CPi     &                           WORK(KEND2),LWORK2)
-CPi               ENDIF
 C
 C-----------------------------------------------------
 C              Copy exciation energies to EXENG.
@@ -460,8 +461,29 @@ C------------------------------------------------------------------
 C              Determine charge radius of excited states (RPA only)
 C------------------------------------------------------------------
 C
-               IF ( IMODEL .EQ. SOP_MODEL_RPA)
-     &            CALL RP_CHARGE(ISYMTR,NEXCI,SECMAT,WORK(KEND2),LWORK2)
+               IF ( IMODEL .EQ. SOP_MODEL_RPA) THEN
+C
+                  CALL RP_CHARGE(ISYMTR,NEXCI,SECMAT,WORK(KEND2),LWORK2)
+C
+               END IF
+CPi 31.01.16
+C-----------------------------------------------------------------------
+C              Get HRPA excitation vectors and energies if HRPA(D) since
+C              they are needed in an s-HRPA(D) calculation.
+C              (IOUT counts the nr of methods and since HRPA is
+C              before HRPA(D), the HRPA energies are in IOUT-1)
+C-----------------------------------------------------------------------
+C
+               IF ( IMODEL .EQ. SOP_MODEL_HRPAD ) THEN
+C
+                  CALL DC_BACKUP2(ISYMTR, NEXCI, WORK(KEND2), LWORK2)
+C
+                  DO IEXVAL = 1,NEXCI
+                     WORK(KEXVAL-1+IEXVAL) = EXENG(ISYM,IEXVAL,IOUT-1)
+                  END DO
+C
+               END IF
+C
 #ifdef VAR_MPI
 C-------------------------------------------------------
 C              Release slaves to the global node-driver.

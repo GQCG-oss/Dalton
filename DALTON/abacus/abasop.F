@@ -39,13 +39,12 @@ C     RPA, HRPA, RPA(D), SOPPA and SOPPA(CCSD) calculations and several
 C     options concerning these calculations.
 C     
 C   
-        use so_info, only: AOSOP, AOSOC, AORPA, AOHRP, AOCC2, DCRPA 
+        use so_info, only: AOSOP, AOSOC, AORPA, AOHRP, AOCC2, DCRPA,
+     &                     DCHRP, SDCHR
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-C      PARAMETER (NTABLE = 13)
-C      PARAMETER (NTABLE = 14)
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 17)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       LOGICAL LNEXC2
 #include "abainf.h"
@@ -57,13 +56,9 @@ C
 C
       DATA TABLE /'.HIRPA ', '.SOPW4 ', '.DIRECT', '.AORPA ', '.RPA(D)',
      &            '.AOSOP ', '.AOSOC ', '.SOPCHK', '.AOTEST', '.NSAVMX',
-CPi
-C     &            '.NEXCI2', '.THREX2', '.AOHRP '/
-C     &            '.NEXCI2', '.THREX2', '.AOHRP ', '.AOCC2 '/
      &            '.NEXCI2', '.THREX2', '.AOHRP ', '.AOCC2 ', '.HRPA(D',
-     &            '.DCRPA '/
-Cend-Pi
-C     
+     &            '.DCRPA ', '.SHRPA('/
+C
 C------------------
 C     Set defaults.
 C------------------
@@ -95,13 +90,7 @@ C
          ICHANG = ICHANG + 1
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-CPFP
-C               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
-C               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
-Cend-PFP
-CPi
-               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
-Cend-Pi
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), I
             END IF
   200    CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -170,6 +159,10 @@ C           NSYM is set to 8 since NSYM has not yet been set !!
             DCRPA  = .TRUE.
             AORPA  = .TRUE.
             GOTO 100
+   17    CONTINUE !.SHRPA(
+            SDCHR  = .TRUE.
+            AOHRP  = .TRUE.
+            GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GOTO 300
       ELSE
@@ -193,10 +186,8 @@ C
      &       '    (Ref.: O. Christiansen, K. L. Bak, H. Koch and',
      &       ' S. P. A. Sauer',
      &       '     Chem. Phys. Lett. 284, 47-62 (1998))'
-CPFP
          IF (AOHRP)  WRITE(LUPRI,'(A)')
      &       ' AO integral driven Higher RPA (HRPA) :'
-Cend-PFP
          IF (AOSOP)  WRITE(LUPRI,'(A/,A,A,/,A)')
      &       ' AO integral driven SOPPA :',
      &       '    (Ref.: K. L. Bak, H. Koch, J. Oddershede,',
@@ -207,6 +198,8 @@ CPi
      &       ' AO integral driven SOPPA(CC2) :'
          IF (DCHRP)  WRITE(LUPRI,'(A)')
      &       ' AO integral driven Double corrected HRPA :'
+         IF (SDCHR)  WRITE(LUPRI,'(A)')
+     &       ' AO integral driven scaled HRPA(D) :'
 Cend-Pi
          IF (AOSOC)  WRITE(LUPRI,'(A,/,A,A,/,A,A)')
      &       ' AO integral driven SOPPA(CCSD)',

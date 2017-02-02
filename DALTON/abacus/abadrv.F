@@ -715,7 +715,8 @@ CPi Haase, 22.07.16: since the commonblocks soppinf.h (used in integral
 C direct soppa program) and infsop.h (used in molecular orbital basis
 C soppa program) contain the same triplet variables, import the necessary
 C variables from soppinf.h through the so_info module:
-      use SO_INFO, only: AORPA, AOHRP, DCRPA, DCHRP, AOSOP, AOSOC, AOCC2
+      use SO_INFO, only: AORPA, AOHRP, DCRPA, DCHRP, SDCHR,
+     &                   AOSOP, AOSOC, AOCC2
 C
 #include "implicit.h"
 #include "iratdef.h"

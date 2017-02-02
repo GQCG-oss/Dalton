@@ -647,6 +647,8 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/symchk.F
     DALTON/soppa/ccsd_tcmepkx.F
     DALTON/soppa/dc_calc.F
+    DALTON/soppa/dc_backup1.F
+    DALTON/soppa/dc_backup2.F
     DALTON/soppa/dc_omec.F
     DALTON/soppa/dc_r1vec.F
     DALTON/soppa/dc_res_o.F

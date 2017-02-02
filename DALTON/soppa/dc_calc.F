@@ -127,8 +127,6 @@ C ISYMTR is a non-local parameter, we need to copy it to the info-array
 CPi 18.08.16: Copy from so_lrsolv
       CALL GETTIM (DUMMY,WTIMES)
       DTIME      = SECOND()
-CPi
-C      CALL SO_ERES('DCRPA',0,NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
       CALL SO_ERES(MODEL,0,NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &             T2MP,LT2MP,FOCKD,LFOCKD,DENSAI,LDENSAI,1,ISYMTR,
 #ifdef VAR_MPI
@@ -156,7 +154,7 @@ C     Calculate diagonal parts of E[2] and S[2] and write to disk.
 C-----------------------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_DIAG('DCRPA',FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+      CALL SO_DIAG(MODEL,FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &             ISYMTR,WORK,LWORK)
       DTIME      = SECOND()   - DTIME
       SOTIME(31) = SOTIME(31) + DTIME
@@ -212,7 +210,7 @@ C
          CALL SO_READ(WORK(KRES1), LTR1E,LURS1E,FNRS1E,IEXCI)
          CALL SO_READ(WORK(KRESO1),LTR1E,LURO1E,FNRO1E,IEXCI)
 C
-         IF (MODEL .EQ. 'DCRPA') THEN
+         IF (MODEL .EQ. 'DCRPA' .OR. MODEL .EQ. 'SDCHR') THEN
 C
             CALL DAXPY(LTR1E,-EXVAL(IEXCI),WORK(KRESO1),1,WORK(KRES1),1)
 C
@@ -228,7 +226,7 @@ C
          CALL SO_READ(WORK(KRES1), LTR1D,LURS1D,FNRS1D,IEXCI)
          CALL SO_READ(WORK(KRESO1),LTR1D,LURO1D,FNRO1D,IEXCI)
 C
-         IF (MODEL .EQ. 'DCRPA') THEN
+         IF (MODEL .EQ. 'DCRPA' .OR. MODEL .EQ. 'SDCHR') THEN
 C
             CALL DAXPY(LTR1D,-EXVAL(IEXCI),WORK(KRESO1),1,WORK(KRES1),1)
 C
@@ -321,19 +319,6 @@ C
   100 CONTINUE
 C
       WRITE(LUPRI,9010)
-C---------------------------------------------------------------------
-C        Write calculated excitation energies to output
-C---------------------------------------------------------------------
-C
-CPi      WRITE(LUPRI,9010)
-CPi      WRITE(LUPRI,9011)
-CPi      WRITE(LUPRI,9010)
-CPi      DO 200 IEXCI = 1,NEXCI
-CPi         WRITE(LUPRI,9012) IEXCI,EXVAL(IEXCI),EX1P1H+EX1H1P,
-CPi     &                     EX2P2H+EX2H2P
-CPi 200  CONTINUE
-CPi      WRITE(LUPRI,9010)
-C
 C
 C-----------------
 C     Close files.
