@@ -58,7 +58,8 @@ C for mxcont
 #include "soppinf.h"
 #include "symmet.h"
 #include "wrkrsp.h"
-
+C Need DOCCSD parameter from gnring.h
+#include "gnrinf.h"
 C
       PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C
@@ -98,6 +99,7 @@ C      herdir = so_get_herdir()
       get_mxcall = .false.
 #endif
 C
+C
 C------------------
 C     Add to trace.
 C------------------
@@ -136,19 +138,21 @@ C
       CALL SO_MEMMAX ('START',LWORK)
 C
 C---------------------------------------------------------------
-C     If only RPA initialize some pointers and sort AO-integrals
+C     If only RPA and if SOPPA is calculating the MP2 amplitude without
+C     first doing CCSD calculations, then initialize some pointers and sort AO-integrals
 C     into distributions.
 C---------------------------------------------------------------
 C
-      IF ( RPA_ONLY ) THEN
+      IF (.NOT. DOCCSD) THEN
          CALL RP_INIT(WORK,LWORK)
+C
 #ifdef VAR_MPI
 C     In pure aorpa calculations, eridi has not been initialized
          herdir = so_get_herdir()
          get_mxcall = so_get_direct()
 #endif
-      ENDIF
-
+      END IF
+C
 #ifdef VAR_MPI
 C
 C In AORPA we cannot be sure that the number of integral distributions
@@ -262,10 +266,8 @@ C
       CALL DZERO(BSRLON,3*NSYM*MXNEXI*NUM_ACTIVE)
       CALL DZERO(SECMAT,3*NSYM*MXNEXI)
       CALL DZERO(EXENG, NSYM*MXNEXI*NUM_ACTIVE)
-CClark:09/03/2016
       CALL DZERO(BETHE,3*LQ*NUM_ACTIVE)
       CALL DZERO(STOPP,3*LVEL*2*NUM_ACTIVE)
-CClark:end
 C
 C========================================================
 C     Determine excitation energies, response vectors and
@@ -299,7 +301,6 @@ C     state times the symmetry of the excitation vector.
 C-------------------------------------------------------------
 C
       DO 100 ISYM = 1, NSYM
-C
          CALL RSPSET
 C
          IF (NEXCIT(ISYM) .GT. 0) THEN
@@ -325,7 +326,6 @@ C
             IOUT = 0
             DO IMODEL = 1, SOP_NUM_MODELS
                IF (.NOT. ACTIVE_MODELS(IMODEL) ) CYCLE
-
 C              Increment output pointer
                IOUT = IOUT + 1
 C----------------------------------------
@@ -379,7 +379,8 @@ C-----------------------------------------------------
 C
                IF (NEED_T2) THEN
                   CALL SO_GETT2(SOP_DENS_LABEL(IMODEL),
-     &                          WORK(KT2AM),LT2AM,WORK(KDENSAI),
+     &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
+     &                          WORK(KDENSAI),
      &                          LDENSAI,WORK(KDENSIJ),LDENSIJ,
      &                          WORK(KDENSAB),LDENSAB,
      &                          WORK(KEND2),LWORK2)
