@@ -898,8 +898,8 @@ C           and subtract from input CMO matrix
 
       integer       :: MMORBX, ICD, ICD_1, ICDSYM
       integer       :: ITYPC, ITYPD, ITYPCD
-      integer, parameter :: LEN_ICDTRA = 160000
-      integer, save :: ICDTRA(LEN_ICDTRA), ICD_SAVE
+      integer, save :: ICD_SAVE
+      integer, save, allocatable :: ICDTRA(:)
       logical       :: OLDDX
 
 #if FCKTRA_DEBUG > 3
@@ -909,7 +909,8 @@ C           and subtract from input CMO matrix
 #endif
 
       if (IDIST .le. 0) then
-         !allocate(ICDTRA(1:NNORBX))
+         if (allocated(ICDTRA)) deallocate(ICDTRA)
+         allocate(ICDTRA(1:NNORBX))
          if (LUINTM .le. 0) THEN
             CALL GPOPEN(LUINTM,FNINTM,'OLD',' ',
      &                  'UNFORMATTED',IDUMMY,.FALSE.)
@@ -922,12 +923,13 @@ C           and subtract from input CMO matrix
          rewind (LUINTM)
          call MOLLAB('MO2INTHJ',LUINTM,LUPRI)
          read (LUINTM) MMORBX, NCDTRA, ICDTRA(1:MMORBX)
-         if (MMORBX .gt. LEN_ICDTRA) then
-            write (LUPRI,*) 'NNORBX>LEN_ICDTRA',MMORBX,LEN_ICDTRA
-            call QUIT('NNORBX > LEN_ICDTRA')
+         if (NNORBX .ne. MMORBX) then
+            call QENTER('FCKTRA_NXTH2M')
+            write (LUPRI,'(//A,2I10)')  'FATAL ERROR '//
+     &      'NNORBX on MO2INT_FCKTRA .ne. NNORBX',MMORBX,NNORBX
+            call QUIT(
+     &      'NNORBX on MO2INT_FCKTRA .ne. NNORBX in FCKTRA_NXTH2M')
          end if
-         if (NNORBX.ne.MMORBX)
-     &      call QUIT('NNORBX.ne.MMORBX in FCKTRA_NXTH2M')
          ICD_SAVE = 0
       end if
 
@@ -947,7 +949,7 @@ C           and subtract from input CMO matrix
          if (IDIST .le. 0) then
             call QUIT('IC,ID record no. .le. 0 in FCKTRA_NXTH2M')
          end if
-         !deallocate(ICDTRA)
+         deallocate(ICDTRA)
 
       else ! IDIST .ge. 0
 
@@ -955,7 +957,7 @@ C           and subtract from input CMO matrix
          if (IDIST .eq. NCDTRA) then
             ! finished
             IDIST = -1
-            !deallocate(ICDTRA)
+            deallocate(ICDTRA)
             return
          end if
 
