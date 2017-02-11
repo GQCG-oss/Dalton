@@ -818,6 +818,13 @@ C           and subtract from input CMO matrix
 
       MX_NDMAT = LFREE/(4*N2BASX) ! use up to half of free memory for DMAT and FMAT
       MX_NDMAT = MIN(NCDTRA,MX_NDMAT)
+
+      IF (IPRINT .GT. 0) THEN
+         write(lupri,'(A,2I12)') 'FCKTRA # of distributions and'//
+     &   ' # of distributions per load',NCDTRA, MX_NDMAT
+         flush(lupri)
+      END IF
+
       IF (MX_NDMAT .EQ. 0) THEN
          CALL QUIT('MX_NDMAT = 0, too little memory')
       END IF

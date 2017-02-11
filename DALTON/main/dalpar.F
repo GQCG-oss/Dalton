@@ -96,6 +96,7 @@ C gnrinf.h : PARCAL, DIRCAL
 
       real(8), allocatable  :: work(:)
       integer(4), parameter :: TEN_4 = 10
+      character(len=24)     :: fdate
 
 ! ======================================================
 
@@ -156,9 +157,15 @@ C
          CALL newTIMER('waiting')
 
          CALL newTIMER('START')
+#if defined (VAR_IFORT) || defined (VAR_GFORTRAN)
+         write (lupri,'(/A,I5,A,I8,A,I5,A,I5,2A)')
+     &      'Node',MYNUM,' received task',N_TASKS,' IPRTYP =',IPRTYP,
+     &      ' Print level is',IPRINT,' Time is ',fdate()
+#else
          write (lupri,'(/A,I5,A,I8,A,I5,A,I5)')
      &      'Node',MYNUM,' received task',N_TASKS,' IPRTYP =',IPRTYP,
      &      ' Print level is',IPRINT
+#endif
          flush(lupri)
 
 !        allocate memory here if we do not call hermit (more to follow...).

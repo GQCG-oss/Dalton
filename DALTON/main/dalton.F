@@ -586,7 +586,7 @@ C
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
 C ahs only print if number of cores are less than 16
-         IF (NODTOT .LE. 15) THEN
+!        IF (NODTOT .LE. 15) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
            WRITE(LUPRI,'(/A)') ' * Release: '//
@@ -605,7 +605,7 @@ C ahs only print if number of cores are less than 16
      &        MMCORE
            END IF
            CALL FLSHFO(LUPRI)
-         END IF
+!        END IF
          IF (PARIO) THEN
             CALL DALTON_GNRLINP
 
