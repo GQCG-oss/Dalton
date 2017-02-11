@@ -51,7 +51,7 @@ C
 C 17/9 - 1990 Hans Agren, Revised Sep 2007-Nov 2009, Hans Joergen Aa. Jensen
 C
 #include "implicit.h"
-      PARAMETER (NTABLE = 12)
+      PARAMETER (NTABLE = 13)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       CHARACTER SR_FUNCS*80 ! needed for RSDHf calculations 
       LOGICAL ALLOPT
@@ -68,7 +68,7 @@ C
 C
       DATA TABLE /'.MP2 FR','.PRINT ','.NO OV ','.TDASOP','.SC_SRM',
      &            '.SRINTS','.SCSMP2','.SOSMP2','.MP2 SC','.LEVELS',
-     &            '.DCPT2', '.RSDHF'/
+     &            '.DCPT2 ','.RSDHF ','.SAVE W'/
 CMAERKE 900918: MP2SAV not implemented, should it be?
 C
 C     ***** PROCESS INPUT FOR MP2INP *****
@@ -82,7 +82,7 @@ C
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
-     &                   111,112),II
+     &                   111,112,113),II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -163,7 +163,7 @@ C *** Option 9 >MP2 SCALED< Scaled MP2 calculation
      &   'More than one of .SCSMP2, .SOSPMP2, .MP2 SCALED specified.')
       MP2_SCALED = .TRUE.
       GO TO 100
-C *** Option 10 >LEVELSHIFT< Level-shift of  MP2 denominator
+C *** Option 10 >LEVELSHIFT< Level-shift of MP2 denominator
   110 READ(LUCMD,*) MP2_LSHIFT
       GO TO 100
 C FH  Option 11 DCPT2 for MP2 calculation
@@ -192,6 +192,10 @@ C *** Option 12 >RSDHF< compute the RSDHf energy
       call quit(
      &   '.RSDHF option not included in this non-srdft version')
 #endif
+      GO TO 100
+C *** Option 13 .SAVE WF1 : save first order wave function
+  113 CONTINUE
+         SAVE_MP2WF1 = .TRUE.
       GO TO 100
 C ==========================================================================
  2000 CONTINUE
@@ -294,7 +298,10 @@ C
      *,'            J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)'
 C
       IF (SRMP2_SRINTS .AND. .NOT.DO_RSDHF) THEN
-         FLAG(25) = .FALSE. ! do not calculate MP2 coefficients for SOPPA if we quit after MP2
+         FLAG(25) = .FALSE. ! do NOT calculate first order wave function coefficients for SOPPA if we quit after MP2
+      END IF
+      IF (SAVE_MP2WF1) THEN
+         FLAG(25) = .TRUE. ! DO calculaate first order wave function coeffients if requested in input
       END IF
 C
       KFRSAV= 1

@@ -497,6 +497,7 @@ C
       SRMP2_SRINTS = .FALSE.
       DCPT2        = .FALSE.
       DO_RSDHF     = .FALSE.
+      SAVE_MP2WF1  = .FALSE.
 C
 C********** Default values section POPINP *****
 C

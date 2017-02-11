@@ -590,7 +590,7 @@ C
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
 C     (only print on first 10 slaves)
-         IF (MYNUM .LE. 10) THEN
+!        IF (MYNUM .LE. 10) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
            WRITE(LUPRI,'(/A)') ' * Release: '//
@@ -609,7 +609,7 @@ C     (only print on first 10 slaves)
      &        MMCORE
            END IF
            CALL FLSHFO(LUPRI)
-         END IF
+!        END IF
          IF (PARIO) THEN
             CALL DALTON_GNRLINP
 
