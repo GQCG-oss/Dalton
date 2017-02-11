@@ -986,6 +986,7 @@ C                 to get right contributions from MCSCF code.
 C
 !           IF (iprsrdft .GT. 0) then
 !
+            IF (DOMCSRDFT.OR.DOCISRDFT) THEN
                WRITE (LUPRI,'(/A)')
      &         ' Corrections needed for correct CI energy evaluation:'
                WRITE (LUPRI,'(A,F20.10)')
@@ -993,6 +994,7 @@ C
      &         ' -     Tr(Vxc-sr Dval)            ',EVSR,
      &         ' - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )',EJKVSR
                flush(lupri)
+            END IF
 !           END IF
          END IF ! (DOERG)
          IF (IPRFCK .GT. 0) THEN 
