@@ -1270,24 +1270,50 @@ The field integrals are read from file \verb|AOPROPER| with the specified label.
 To direct MP2 calculation. Note that MP2 energies as well as
 properties also are available through the coupled cluster module, see
 Chapter~\ref{ch:CC}.
+For open--shell SCF, the singly occupied orbitals are frozen in the MP2 section.
 
 \begin{description}
+
 \item[\Key{MP2 FROZEN}]
   Default = no frozen orbitals\\
   \kw{READ (LUINP,*) (NFRMP2(I),I=1,NSYM)} \\
-  Orbitals frozen in MP2 calculation
+  Occupied SCF orbitals frozen in MP2 calculation.
 
 \item[\Key{PRINT}]
   \kw{READ (LUINP,*) IPRMP2} \\
-  Print level for MP2 calculation
+  Print level for MP2 calculation.
+
+\item[\Key{SAVE WF1}]
+  Save first order wave function on SIRIFC.
+  Default is only to save first order wave function if MP2 is the last wave function level
+  \emph{and} at least one of the PROPERTIES (ABACUS) or RESPONSE modules have been
+  requested (presumably then for a SOPPA calculation).
+
 \end{description}
 
+\subsubsection{Modifications of MP2 model.}
+
+\begin{description}
+
+\item[\Key{SCSMP2}]
+  Grimme's spin-component scaled MP2 ($p_S = 1.2$, $p_T = 1/3$)
+
+\item[\Key{SOSMP2}]
+  Head-Gordon's scaled opposite spin MP2 ($p_S = 1.3$, $p_T = 0$)
+
+\item[\Key{MP2 SCALED}]
+  \kw{READ (LUINP,*) p_S, p_T} \\
+  Your own scaling factors for a scaled MP2 model.
+
+\item[\Key{LEVELSHIFT}]
+  \kw{READ (LUINP,*) MP2_LSHIFT} \\
+  Level shift of MP2 denominators.
+\end{description}
 
 \noindent{\bf Comments:}
 
-
 The MP2 module expects canonical Hartree--Fock orbitals. The MP2 module will
-check the orbitals and exits if the Fock matrix has off-diagonal non-negligible
+check the orbitals and it exits if the Fock matrix has off-diagonal non-negligible
 elements.
 If starting from saved canonical Hartree--Fock orbitals from a previous calculations,
 although no Hartree--Fock calculation will be done
