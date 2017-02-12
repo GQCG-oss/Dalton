@@ -2360,7 +2360,7 @@ C
             IF (IABS(NPATH(I)) .GT. NFLAG) THEN
                INPERR = INPERR + 1
                WRITE (LUPRI,'(/A,I10)')
-     &         ' *** ERROR Sirius .FLAGS, illegal value:',NPATH(I)
+     &         ' *** ERROR Sirius .FLAGS, illegal NPATH value:',NPATH(I)
             ELSE IF (NPATH(I).LT.0) THEN
                FLAG(-NPATH(I)) = .FALSE.
                WRITE(LUPRI,'(A,I3,A)') 'INFO: flag',-NPATH(I),
