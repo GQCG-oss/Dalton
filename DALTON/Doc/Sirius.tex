@@ -1,5 +1,9 @@
-
 % checked with "ispell" sep.2003 /hjaaj
+% File: Sirius.tex
+
+\def\mxfelt{20 } % max number of finite fields
+
+
 \chapter{\label{chap:sirius-inpref}Molecular wave functions, {\sir}}
 
 \section{\label{sec:sirius-ref-notes} General notes for the {\sir} input reference
@@ -216,8 +220,9 @@ Specification of which wave function calculation is to be performed.
   \quotekw{*SCF INPUT} submodule.
   Note: you cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
 
-\item[\Key{DFT}]
-  \verb"READ (LUINP,'(A80)) LINE" \\ Restricted closed-shell, one
+\item[\Key{DFT}] \ \\
+  \kw{READ (LUINP,'(A80)') LINE} \\
+  Restricted closed-shell, one
   open-shell or high-spin spin-restricted Kohn-Sham density functional
   theory\index{DFT}\index{Kohn--Sham}\index{open shell!DFT}
   calculation.  On the following line you must specify which
@@ -267,9 +272,10 @@ Specification of which wave function calculation is to be performed.
 
 \begin{description}
 
-\item[\Key{FLAGS}]
-  \verb"READ (LUINP,NMLSIR)" \\
-  Read namelist \verb"$NMLSIR ... $END" \\
+\item[\Key{FLAGS}] \ \\
+  \kw{READ (LUINP,NMLSIR)} \\
+  Read namelist. Example: \verb" $NMLSIR NPATH=3,5,-7, $END" \\
+  Set internal flags no. 3 and 5 to true and flag no. 7 to false.
   Only for debugging. Set internal control flags directly.
   Usage is not documented.
 
@@ -284,8 +290,8 @@ Specification of which wave function calculation is to be performed.
 %  Number of spatial Abelian symmetries (1, 2, 4, or 8), corresponding
 %  to $D_{2h}$ or one of its subgroups.
 
-\item[\Key{PRINT}]
-  \verb"READ (LUINP,*) IPRSIR" \\
+\item[\Key{PRINT}] \ \\
+  \kw{READ (LUINP,*) IPRSIR} \\
   General {\sir} print level and default for all other print parameters in this module.
 
 \item[\Key{RESTART}]
@@ -296,7 +302,7 @@ Specification of which wave function calculation is to be performed.
 %\item[\Key{SCF}]
 %    Alias for the \quotekw{\Key{HF}} keyword.
 
-\item[\Key{STOP}]
+\item[\Key{STOP}] \ \\
   \kw{READ (LUINP,'(A20)') REWORD} \\
   Terminate {\sir} according to the instruction given on the following line.
   Three stop points are defined:
@@ -309,9 +315,9 @@ Specification of which wave function calculation is to be performed.
 \item \hspace{2em} \quotekw{ AFTER GRADIENT} (only for MCSCF and 2nd-order HF or DFT)
 \end{enumerate}
 
-\item[\Key{TITLE}] 
-  \verb"READ (LUINP,'(A)') TITLE(NTIT)" 
-  Any number of title lines (until next line beginning with
+\item[\Key{TITLE}]  \ \\
+  \kw{READ (LUINP,'(A)') TITLE(NTIT)} \ \\ 
+  Any number of title lines (until next line beginning with a
   \quotekw{.} or \quotekw{*} prompt).
   Up to 6 title lines will be saved and used in the output, additional
   lines will be discarded.
@@ -387,14 +393,14 @@ Options for a CI calculation.
   The \quotekw{\Key{STATE}} option must be specified.
 
 \item[\Key{CIROOTS}]
-  Default: NROOCI = 1\\
+  Default: One root.\\
   \kw{READ (LUINP,*) NROOCI} \\
   Converge the lowest \kw{NROOCI} CI roots\index{root!CI} to threshold.
 
 \item[\Key{DISKH2}]
   Active two-electron MO integrals on disk (see comments below).
 
-\item[\Key{MAX ITERATIONS}]
+\item[\Key{MAX ITERATIONS}] \ \\
   \kw{READ (LUINP,*) MXCIMA} \\
   Max iterations in iterative diagonalization of CI matrix (default = 20).
 
@@ -413,10 +419,9 @@ Options for a CI calculation.
   approximately the square of this number.
 
 \item[\Key{THRPWF}]
-  Default = 0.05D0 for electronic ground states, and 0.10D0 for
-  excited states\\
+  Default is 0.05 for electronic ground states, and 0.10 for excited states.\\
   \kw{READ (LUINP,*) THRPWF} \\
-  Only CI coefficients greater than threshold are printed
+  Only CI coefficients of absolut value greater than threshold are printed
   (PWF: print wave function).
 
 \item[\Key{WEIGHTED RESIDUALS}]
@@ -465,7 +470,7 @@ To obtain initial guess for CI vector(s).
   of degenerate   diagonal elements ({\bf STRONGLY RECOMMENDED} for
   calculation of singlet states  with \quotekw{\Key{DETERMINANTS}}).
 
-\item[\Key{SELECT}]
+\item[\Key{SELECT}] \ \\
   \kw{READ (LUINP,*) ICONF} \\
   Select CSF (or determinant if \quotekw{\Key{DETERMINANTS}}) no.
   ICONF as start configuration.\index{configuration!start}
@@ -496,7 +501,7 @@ To obtain initial guess for CI vector(s).
 To specify the configuration part in MCSCF and CI calculations.
 
 \begin{description}
-\item[\Key{CAS SPACE}]
+\item[\Key{CAS SPACE}] \ \\
   \kw{READ (LUINP,*) (NASH(I),I=1,NSYM)} \\
   CAS calculation: Active orbitals\index{active orbital} in each symmetry.
 
@@ -513,35 +518,34 @@ To specify the configuration part in MCSCF and CI calculations.
   \kw{READ (LUINP,*) (NISH(I),I=1,NSYM)} \\
   Number of inactive orbitals\index{inactive orbital} each symmetry.
 
-\item[\Key{RAS1 ELECTRONS}]
+\item[\Key{RAS1 ELECTRONS}] \ \\
    \kw{READ (LUINP,*) NEL1MN,NEL1MX} \\
    Minimum and maximum number of RAS1 electrons; this can alternatively
    be specified with \quotekw{\Key{RAS1 HOLES}}
 
-\item[\Key{RAS1 HOLES}]
+\item[\Key{RAS1 HOLES}] \ \\
   \kw{READ (LUINP,*) NHL1MN,NHL1MX} \\
   Minimum and maximum number of holes\index{electron hole} in RAS1; alternative
   to \quotekw{\Key{RAS1 ELECTRONS}}
 
-\item[\Key{RAS1 SPACE}]
+\item[\Key{RAS1 SPACE}] \ \\
    \kw{READ (LUINP,*) (NAS1(I),I=1,NSYM)} \\
    RAS calculation: RAS1 orbital space\index{RAS1 orbital space}
 
-\item[\Key{RAS2 SPACE}]
+\item[\Key{RAS2 SPACE}] \ \\
    \kw{READ (LUINP,*) (NAS2(I),I=1,NSYM)} \\
    RAS calculation: RAS2 orbital space\index{RAS2 orbital space}
 
-\item[\Key{RAS3 ELECTRONS}]
+\item[\Key{RAS3 ELECTRONS}] \ \\
    \kw{READ (LUINP,*) NEL3MN, NEL3MX} \\
    Minimum and maximum number of RAS3 electrons
 
-\item[\Key{RAS3 SPACE}]
+\item[\Key{RAS3 SPACE}] \ \\
    \kw{READ (LUINP,*) (NAS3(I),I=1,NSYM)} \\
    RAS calculation: RAS3 orbital space\index{RAS3 orbital space}
 
 \item[\Key{SPIN MULTIPLICITY}]
-  Required for MCSCF and CI wave
-  functions\index{MCSCF}\index{CI}\index{Configuration Interaction}.\\
+  Default is 1 for even number of electrons, 2 for odd number of electrons. \\
   \kw{READ (LUINP,*) ISPIN}\\
   For CSF basis: state spin multiplicity\index{spin multiplicity} = $2S + 1$,
   where $S$ is the spin quantum number. \\
@@ -549,9 +553,9 @@ To specify the configuration part in MCSCF and CI calculations.
   multiplicity.  The $M_S$ value is determined as (ISPIN-1)/2.
 
 \item[\Key{SYMMETRY}]
-  Required for MCSCF and CI wave functions.\\
+  Default is 1 (totally symmetric irrep).\\
   \kw{READ (LUINP,*) LSYM} \\
-  Spatial symmetry\index{symmetry} of CI and/or MCSCF wave function
+  Spatial symmetry\index{symmetry} of CI and/or MCSCF wave function.
 
 \end{description}
 
@@ -578,7 +582,7 @@ To specify the parameters of the DFT integration and the optional use of empiric
 
 \begin{description}
 
-\item[\Key{DFTAC}]
+\item[\Key{DFTAC}] \ \\
   \kw{READ (LUINP,*) RTYPE} \\
   \kw{READ (LUINP,*) CTYPE} \\
   \kw{READ (LUINP,*) DFTIPTA, DFTIPTB, DFTBR1, DFTBR2} \\
@@ -588,8 +592,7 @@ To specify the parameters of the DFT integration and the optional use of empiric
   and LB94 (the potential from the LB94 model potential~\cite{dft:lb94}). CTYPE defines how the potential of the parent
   functional is connected to the asymptotic model, possible options are LINEAR (as used in the Tozer-Handy correction~\cite{dft:th}), 
   TANH (a modified connection by Tozer~\cite{dft:tanh}, which removes discontinuities associated with linear interpolation) and 
-  GRAC (the gradient-regulated asymptotic correction of Gr\"uning \emph{et. al.}~\cite{dft:grac}). 
-  
+  GRAC (the gradient-regulated asymptotic correction of Gr\"uning \emph{et. al.}~\cite{dft:grac}).  \\
   Four numerical input parameters are then input
   the first two are the $\alpha$ and $\beta$ ionization potentials (either calculated or experimental). If GRAC is chosen for the 
   connection type then the last two value specify the parameters $\alpha$ and $\beta$ (see Ref.~\cite{dft:grac} for details). 
@@ -601,37 +604,38 @@ To specify the parameters of the DFT integration and the optional use of empiric
 
 
 \item[\Key{DFTD2}]
-  switches on Grimmes DFT-D2 empirical dispersion correction~\cite{dft:dftd2}. The code will attempt to assign the correct functional dependent 
+  switches on Grimme's DFT-D2 empirical dispersion correction~\cite{dft:dftd2}.
+  The code will attempt to assign the correct functional dependent 
   parameters based on the chosen DFT functional. Analytic gradient contributions are available.
  
-\item[\Key{D2PAR}]
+\item[\Key{D2PAR}] \ \\
   \kw{READ (LUINP,*) D2\_s6\_inp, D2\_alp\_inp, D2\_rs6\_inp} \\
   using this keyword user input values of the $s_6$, $\alpha$ and $s_{r,6}$ DFT-D2 parameters may be specified. If supplied these values override
   any values defined within the code.
 
 \item[\Key{DFTD3}]
-  switches on Grimmes DFT-D3 empirical dispersion correction~\cite{dft:dftd3}. The code will attempt to assign the correct functional dependent 
+  switches on Grimme's DFT-D3 empirical dispersion correction~\cite{dft:dftd3}. The code will attempt to assign the correct functional dependent 
   parameters based on the chosen DFT functional. Analytic gradient contributions are available.
   
 \item[\Key{DFD3BJ}]
-  switches on Grimmes DFT-D3 empirical dispersion correction with Becke-Johnson damping~\cite{dft:dftd3bj}. 
+  switches on Grimme's DFT-D3 empirical dispersion correction with Becke-Johnson damping~\cite{dft:dftd3bj}. 
   The code will attempt to assign the correct functional dependent parameters based on the chosen DFT functional. 
   Analytic gradient contributions are available. This is the presently recommended version.
   
 \item[\Key{3BODY}]
   keyword for adding 3-body terms to the DFT-D3 dispersion energy. Note that gradients are not implemented for these corrections 
 
-\item[\Key{D3PAR}]
+\item[\Key{D3PAR}] \ \\
   \kw{READ (LUINP,*) D3\_s6\_inp, D3\_alp\_inp, D3\_rs6\_inp, D3\_rs18\_inp, D3\_s18\_inp} \\
   keyword for specifying the $s_6$, $\alpha$, $s_{r,6}$, $s_{r,8}$ and $s_8$ parameters of the DFT-D3 methods. Note, take care to 
   match the parameter values to the correct version of the DFT-D3 correction.
 
-\item[\Key{DFTELS}]
+\item[\Key{DFTELS}] \ \\
   \kw{READ (LUINP,*) DFTELS} \\
   safety threshold -- stop if the charge integration gives too large
   error.
 
-\item[\Key{DFTTHR}]
+\item[\Key{DFTTHR}] \ \\
   \kw{READ (LUINP,*) DFTHRO, DFTHRI} \\
   Thresholds determining accuracy of the numerical integration. The
   first number determines the density threshold (contributions to a
@@ -645,19 +649,18 @@ To specify the parameters of the DFT integration and the optional use of empiric
   potential for GGA forms. This is automatically invoked when .DFTAC is selected 
   and not recommended for use otherwise.
 
-\item[\Key{RADINT}]
+\item[\Key{RADINT}] \ \\
   \kw{READ (LUINP,*) RADINT} \\
-
   Determines the quality of the radial part of the grid and
   corresponds to the upper limit of the error in case of an
   integration on an atom. Default value is $1.0D-13$.
 
-\item[\Key{ANGINT}]
+\item[\Key{ANGINT}] \ \\
   \kw{READ (LUINP,*) ANGINT} \\
   Determines the quality of the angular Lebedev grid -- the angular
   integration of spherical harmonics will be exact up to the specified
   order. Default value is 35.
-\item[\Key{GRID TYPE}]
+\item[\Key{GRID TYPE}] \ \\
   \kw{READ (LUINP,*) LINE} \\
   Allows specification of different partitioning methods and radial
   schemes. \verb|BECKE| is Becke partitioning scheme with correction
@@ -1236,20 +1239,20 @@ Add extra terms to the Hamiltonian (for finite field\index{finite field} calcula
 
 \begin{description}
 \item[\Key{FIELD TERM}]
-  Default = no fields. \\
-  \verb"READ (LUINP,  *  ) EFIELD(NFIELD)" \\
-  \verb"READ (LUINP,'(A)') LFIELD(NFIELD)" \\
+  Default = no finite external fields added. \\
+  \kw{READ (LUINP,  *  ) EFIELD(NFIELD)} \\
+  \kw{READ (LUINP,'(A)') LFIELD(NFIELD)} \\
   Enter field strength (in atomic units) and property label on separate lines
   where label is a \molecule-style property label on file \verb|AOPROPER|
   produced by the property module, see Chapter~\ref{ch:hermit}.
   The calculation of the necessary property integral(s) must be requested
   in the \quotekw{**INTEGRALS} input module. \\
   NOTE: This keyword may be repeated several times for adding more than
-  one finite field (max 20 fields).
+  one finite field (max \mxfelt fields).
 
 \item[\Key{PRINT}]
   Default = 0.\\
-  \verb"READ (LUINP,*) IPRH1" \\
+  \kw{READ (LUINP,*) IPRH1} \\
   If greater than zero:
   print the one-electron Hamiltonian matrix, including
   specified field-dependent terms, in AO basis.
@@ -1279,19 +1282,19 @@ For open--shell SCF, the singly occupied orbitals are frozen in the MP2 section.
   \kw{READ (LUINP,*) (NFRMP2(I),I=1,NSYM)} \\
   Occupied SCF orbitals frozen in MP2 calculation.
 
-\item[\Key{PRINT}]
+\item[\Key{PRINT}] \ \\
   \kw{READ (LUINP,*) IPRMP2} \\
   Print level for MP2 calculation.
 
-\item[\Key{SAVE WF1}]
+\item[\Key{SAVE WF1}] \ \\
   Save first order wave function on SIRIFC.
   Default is only to save first order wave function if MP2 is the last wave function level
-  \emph{and} at least one of the PROPERTIES (ABACUS) or RESPONSE modules have been
+  \emph{and} at least one of the modules PROPERTIES (ABACUS) or RESPONSE have been
   requested (presumably then for a SOPPA calculation).
 
 \end{description}
 
-\subsubsection{Modifications of MP2 model.}
+\subsubsection*{Modifications of MP2 model.}
 
 \begin{description}
 
@@ -1301,12 +1304,12 @@ For open--shell SCF, the singly occupied orbitals are frozen in the MP2 section.
 \item[\Key{SOSMP2}]
   Head-Gordon's scaled opposite spin MP2 ($p_S = 1.3$, $p_T = 0$)
 
-\item[\Key{MP2 SCALED}]
-  \kw{READ (LUINP,*) p_S, p_T} \\
+\item[\Key{MP2 SCALED}] \ \\
+  \kw{READ (LUINP,*) p\_S, p\_T} \\
   Your own scaling factors for a scaled MP2 model.
 
-\item[\Key{LEVELSHIFT}]
-  \kw{READ (LUINP,*) MP2_LSHIFT} \\
+\item[\Key{LEVELSHIFT}] \ \\
+  \kw{READ (LUINP,*) MP2\_LSHIFT} \\
   Level shift of MP2 denominators.
 \end{description}
 
@@ -1349,7 +1352,7 @@ perturbation theory (NEVPT2).
 
 \begin{description}
 \item[\Key{THRESH}]
- Default = 0.0D0\\
+ Default = 0.0\\
   \kw{READ (LUINP,*) THRNEVPT} \\
   Threshold to discard small coefficients in the CAS wavefunction
 
@@ -1389,7 +1392,7 @@ To change defaults for optimization of an MCSCF\index{MCSCF} wave function.
 Some of the options also affect a QC-HF optimization.
 
 \begin{description}
-\item[\Key{ABSORPTION}]
+\item[\Key{ABSORPTION}] \ \\
   \kw{READ (LUINP,'(A8)') RWORD} \\
   RWORD = ` LEVEL 1', ` LEVEL 2', or ` LEVEL 3'\\
   Orbital absorption\index{orbital absorption} in MCSCF optimization
@@ -1434,7 +1437,7 @@ Some of the options also affect a QC-HF optimization.
   \kw{MAXPHP} is the maximum dimension of PHP, the actual dimension
   will be less if \kw{MAXPHP} will split degenerate configurations.
 
-\item[\Key{COREHOLE}]
+\item[\Key{COREHOLE}] \ \\
   \kw{READ (LUINP,*) JCHSYM,JCHORB} \\
   JCHSYM = symmetry of core orbital\\
   JCHORB = the orbital in symmetry JCHSYM with a single core hole\\
@@ -1476,7 +1479,7 @@ Some of the options also affect a QC-HF optimization.
   Modified TRACI option where all orbitals, also active orbitals, are
   transformed to Fock type orbitals in each iteration.
 
-\item[\Key{FROZEN CORE ORBITALS}]
+\item[\Key{FROZEN CORE ORBITALS}] \ \\
   \kw{READ (LUINP,*) (NFRO(I),I=1,NSYM)} \\
   Frozen orbitals : Number of inactive (doubly occupied) orbitals to be frozen
   in each symmetry (the first NFRO(I) in symmetry I) in MCSCF.\index{frozen orbitals!MCSCF}
@@ -1484,26 +1487,26 @@ Some of the options also affect a QC-HF optimization.
   under \Sec{ORBITAL INPUT}.
   Frozen orbitals in SCF are specified in the \Sec{SCF INPUT} input module.
 
-\item[\Key{MAX CI}]
+\item[\Key{MAX CI}] \ \\
   \kw{READ (LUINP,*) MAXCIT} \\
   maximum number of CI iterations before MCSCF (default = 3).
 
-\item[\Key{MAX MACRO ITERATIONS}]
+\item[\Key{MAX MACRO ITERATIONS}] \ \\
   \kw{READ (LUINP,*) MAXMAC} \\
   maximum number of macro iterations in MCSCF optimization (default = 25).
 \index{iteration number!MCSCF macro, max}
 
-\item[\Key{MAX MICRO ITERATIONS}]
+\item[\Key{MAX MICRO ITERATIONS}] \ \\
   \kw{READ (LUINP,*) MAXJT} \\
   maximum number of micro iterations per macro iteration in MCSCF optimization
   (default = 24).
 
-\item[\Key{MAXABS}]
+\item[\Key{MAXABS}] \ \\
   \kw{READ (LUINP,*) MAXABS} \\
   maximum number of macro iterations with 
   absorption\index{orbital absorption} (default = 3).
 
-\item[\Key{MAXAPM}]
+\item[\Key{MAXAPM}] \ \\
   \kw{READ (LUINP,*) MAXAPM} \\
   maximum number orbital absorptions\index{orbital absorption} within
   a macro iteration
@@ -1582,7 +1585,7 @@ Some of the options also affect a QC-HF optimization.
   The \quotekw{\Key{SIMULTANEOUS ROOTS}} input will automatically be
   updated if CI vectors are removed.
 
-\item[\Key{THRCGR}]
+\item[\Key{THRCGR}] \ \\
   \kw{READ (LUINP,*) THRCGR} \\
   Threshold for print of CI gradient. Default is 0.1D0.
 
@@ -1695,7 +1698,7 @@ reordering and punching of orbitals.
   integrals in spherical basis, and this option should therefore not
   be needed.
 
-\item[\Key{AO DELETE}]
+\item[\Key{AO DELETE}] \ \\
   \kw{READ (LUINP,*) THROVL } \\
   Delete MO's based on canonical orthonormalization using eigenvalues
   and eigenvectors of the AO overlap matrix.\index{linear dependence} \\
@@ -1703,14 +1706,14 @@ reordering and punching of orbitals.
   set numerical linear dependence (eigenvectors with eigenvalue less
   than THROVL are excluded). Default is 1.0$\cdot$10$^{-6}$.
 
-\item[\Key{CMOMAX}]
+\item[\Key{CMOMAX}] \ \\
   \kw{READ (LUINP,*) CMAXMO} \\
   Abort calculation if the absolute value of any initial MO coefficient is
   greater than CMAXMO (default : CMAXMO = $10^3$).  Large MO coefficients
   can cause significant loss of accuracy in the two-electron integral
   transformation.
 
-\item[\Key{DELETE}]
+\item[\Key{DELETE}] \ \\
   \kw{READ (LUINP,*) (NDEL(I),I = 1,NSYM) } \\
   Delete orbitals\index{deleted orbitals}, {\it i.e.\/} number of molecular orbitals
   in symmetry \quotekw{I} is number of basis functions in symmetry \quotekw{I} minus
@@ -1744,7 +1747,7 @@ reordering and punching of orbitals.
   Default.\\
   Gram--Schmidt orthonormalization\index{orthonormalization!Gram--Schmidt} of input orbitals.
 
-\item[\Key{LOCALIZATION}]
+\item[\Key{LOCALIZATION}] \ \\
   \kw{READ (LUINP,*) REWORD} \\
   Specify that the doubly occupied (inactive) orbitals should be localized after SCF 
   or MCSCF is converged.
@@ -1858,7 +1861,7 @@ For example if orbitals 1 and 5 in symmetry 1 should change place, specify
   Symmetric orthonormalization of input
   orbitals\index{orthonormalization!symmetric}.
 
-\item[\Key{THRSSY}]
+\item[\Key{THRSSY}] \ \\
   \kw{READ (LUINP,*) THRSSY} \\
   Threshold for identification of "super
   symmetry"\index{supersymmetry} and degeneracies among
@@ -1958,7 +1961,7 @@ Requires a set of natural orbitals\index{natural orbital} and their occupation.
 %  integrals are available on the file \verb|AOONEINT|\index{quadrupole moment}
 %Aug 04: not working as far as I know /hjaaj
 
-\item[\Key{VIRIAL}]\index{virial analysis}
+\item[\Key{VIRIAL}]\index{virial analysis} \ \\
   Do virial analysis.
 \end{description}
 
@@ -1970,51 +1973,51 @@ Requires a set of natural orbitals\index{natural orbital} and their occupation.
 To control the printing of output.
 
 \begin{description}
-\item[\Key{CANONI}]
+\item[\Key{CANONI}] \ \\
   Generate canonical/natural orbitals if the wave function has
   converged\index{canonical orbital}\index{natural orbital}.
 
-\item[\Key{IPRAVE}]
+\item[\Key{IPRAVE}] \ \\
   \kw{READ (LUINP,*) IPRAVE} \\
   Sets print level for routines used in "super symmetry" averaging
   (default = 0).
 
-\item[\Key{IPRCIX}]
+\item[\Key{IPRCIX}] \ \\
   \kw{READ (LUINP,*) IPRCIX} \\
   Sets print level for setup of determinant/CSF index information (default = 0).
 
-\item[\Key{IPRCNO}]
+\item[\Key{IPRCNO}] \ \\
   \kw{READ (LUINP,*) IPRCNO} \\
   Sets print level for \quotekw{.TRACI} option (default = 1,
   to print the natural orbital occupations in each iteration set
   IPRCNO = 1, higher values will give more print).
 
-\item[\Key{IPRDIA}]
+\item[\Key{IPRDIA}] \ \\
   \kw{READ (LUINP,*) IPRDIA} \\
   Sets print level for calculation of CI diagonal (default = 0)
 
-\item[\Key{IPRDNS}]
+\item[\Key{IPRDNS}] \ \\
   \kw{READ (LUINP,*) IPRDNS} \\
   Sets print level for calculation of CI density matrices (default = 0)
 
-%\item[\Key{IPRERR}]
+%\item[\Key{IPRERR}] \ \\
 %  \kw{READ (LUINP,*) IPRERR} \\
 %  Sets print level for statistics in error file, LUERR (default = 1)
 
-\item[\Key{IPRFCK}]
+\item[\Key{IPRFCK}] \ \\
   \kw{READ (LUINP,*) IPRFCK} \\
   Sets print level in the supersymmetry section (default=0).
 
-\item[\Key{IPRKAP}]
+\item[\Key{IPRKAP}] \ \\
   \kw{READ (LUINP,*) IPRKAP} \\
   Sets print level in routines for calculation of optimal orbital trial
   vectors (default = 0)
 
-\item[\Key{IPRSIG}]
+\item[\Key{IPRSIG}] \ \\
   \kw{READ (LUINP,*) IPRSIG} \\
   Sets print level for calculation of CI sigma vectors (default = 0)
 
-\item[\Key{IPRSOL}]
+\item[\Key{IPRSOL}] \ \\
   \kw{READ (LUINP,*) IPRSOL} \\
   Sets print level in the solvent contribution parts of the
   calculation (default = 5).
@@ -2022,7 +2025,7 @@ To control the printing of output.
 \item[\Key{NOSUMMARY}]
   No final summary of calculation.
 
-\item[\Key{POPPRI}]
+\item[\Key{POPPRI}] \ \\
   \kw{READ (LUINP,*) LIM\_POPPRI} \\
   Print Mulliken occupation of the first LIM\_POPPRI atoms in
   each SCF iteration. Useful for understanding convergence.
@@ -2047,7 +2050,7 @@ To control the printing of output.
 %  Unit numbers for general output and summary output, respectively
 %  (default: LUW4 = 6 and LUW6 = 6).
 %
-\item[\Key{THRPWF}]
+\item[\Key{THRPWF}] \ \\
   \kw{READ (LUINP,*) THRPWF} \\
   Threshold for printout of wave function CI coefficients (default = 0.05).
  \end{description}
@@ -2094,7 +2097,7 @@ in the \Sec{CONFIGURATION INPUT} section.
   Use Harrell Sellers' C2-DIIS algorithm instead of Pulay's C1-DIIS algorithm
   (see comments).
 
-\item[\Key{COREHOLE}]
+\item[\Key{COREHOLE}] \ \\
   \kw{READ (LUINP,*) JCHSYM,JCHORB} \\
   JCHSYM = symmetry of core orbital\\
   JCHORB = the orbital in symmetry JCHSYM with a single core hole\\
@@ -2120,12 +2123,12 @@ in the \Sec{CONFIGURATION INPUT} section.
   \quotekw{JCHORB} under \quotekw{\Key{COREHOLE}} is ignored (no
   reordering will take place).
 
-%\item[\Key{DIRFOCK}]
+%\item[\Key{DIRFOCK}] \ \\
 %  Direct Fock matrix constructions (recalculate integrals when needed).
 %  Default: AO integrals or P-supermatrix integrals read from disk.
 %\fi
 
-\item[\Key{DOUBLY OCCUPIED}]
+\item[\Key{DOUBLY OCCUPIED}] \ \\
     \kw{READ (LUINP,*) (NRHF(I),I=1,NSYM)} \\
   \index{HF}\index{SCF}\index{Hartree--Fock}\index{MP2}\index{M{\o}ller-Plesset!second-order}
   Explicit specification of number of doubly occupied orbitals in each symmetry
@@ -2135,7 +2138,7 @@ in the \Sec{CONFIGURATION INPUT} section.
   Otherwise the program by default will try to guess the occupation,
   corresponding to the  \quotekw{.AUTOCC} keyword.
 
-\item[\Key{ELECTRONS}]
+\item[\Key{ELECTRONS}] \ \\
   \kw{READ (LUINP,*) NRHFEL} \\
   Number of electrons in the molecule\index{electrons in molecule}.
   By default, this number will be determined on the basis of the nuclear
@@ -2144,7 +2147,7 @@ in the \Sec{CONFIGURATION INPUT} section.
   The keyword is incompatible with the keywords \quotekw{.DOUBLY OCCUPIED},
   \quotekw{.OPEN SHELL}, and \quotekw{.SINGLY OCCUPIED}.
 
-\item[\Key{FC MVO}]
+\item[\Key{FC MVO}] \ \\
   \kw{READ (LUINP,*) (NMVO(I), I = 1,NSYM)} \\
   Modified virtual orbitals using Bauschlichers suggestion
   (see Ref.~\cite{cwbjcp72})
@@ -2159,12 +2162,12 @@ in the \Sec{CONFIGURATION INPUT} section.
   will follow any SCF and MP2 calculations.
   See comments below.
 
-\item[\Key{FOCK ITERATIONS}]
+\item[\Key{FOCK ITERATIONS}] \ \\
   \kw{READ (LUINP,*) MAXFCK} \\
   Maximum number of closed-shell Roothaan\index{Roothaan iteration}
   Fock iterations (default = 0).
 
-\item[\Key{FROZEN CORE ORBITALS}]
+\item[\Key{FROZEN CORE ORBITALS}] \ \\
   \kw{READ (LUINP,*) (NFRRHF(I),I=1,NSYM)} \\
   Frozen orbitals per symmetry (if MP2 follows then at least these orbitals
   must be frozen in the MP2 calculation).
@@ -2173,23 +2176,23 @@ in the \Sec{CONFIGURATION INPUT} section.
 \item[\Key{H1VIRT}] Use the virtual orbitals that diagonalize the
   one-electron Hamiltonian operator.
 
-\item[\Key{MAX DIIS ITERATIONS}]
+\item[\Key{MAX DIIS ITERATIONS}] \ \\
   \kw{READ (LUINP,*) MXDIIS} \\
   Maximum number of DIIS iterations\index{iteration number!DIIS, max}\index{DIIS!max iterations} (default = 60).
 
-\item[\Key{MAX ERROR VECTORS}]
+\item[\Key{MAX ERROR VECTORS}] \ \\
   \kw{READ (LUINP,*) MXEVC} \\
   Maximum number of DIIS error vectors\index{DIIS!error vectors, max}
   (default = 10, if there is sufficient memory available to hold these
   vectors in memory).
 
-\item[\Key{MAX MACRO ITERATIONS}]
+\item[\Key{MAX MACRO ITERATIONS}] \ \\
   \kw{READ (LUINP,*) MXHFMA} \\
   Maximum number of QCSCF macro\index{iteration number!QCSCF macro, max}
  iterations (default = 15).
 
 
-\item[\Key{MAX MICRO ITERATIONS}]
+\item[\Key{MAX MICRO ITERATIONS}] \ \\
   \kw{READ (LUINP,*) MXHFMI} \\
   Maximum number of QCSCF\index{SCF!quadratic convergent} micro iterations per macro iteration (default = 12).
 
@@ -2210,12 +2213,12 @@ in the \Sec{CONFIGURATION INPUT} section.
   calculation. See also \quotekw{.SINGLY OCCUPIED} for high-spin ROHF with more than one
   singly occupied orbital.
 
-\item[\Key{PRINT}]
+\item[\Key{PRINT}] \ \\
   \kw{READ (LUINP,*) IPRRHF} \\
   Resets general print level to \verb|IPRRHF| in Hartree--Fock/DFT calculations
   (if not specified, global print levels will be used).
 
-\item[\Key{SHIFT}] 
+\item[\Key{SHIFT}]  \ \\
   \kw{READ (LUINP,*) SHFTLVL} \\
   Initial value of level-shift parameter in DIIS iterations. 
   The default value is 0.0D0 (no level shift).
@@ -2363,11 +2366,11 @@ will activate this model.
   \kw{READ (LUINP,*) RSOLAV}\\
   Enter radius of spherical cavity\index{cavity!radius} in atomic units (\bohr{}).
 
-\item[\Key{DIELECTRIC CONSTANT}]
+\item[\Key{DIELECTRIC CONSTANT}] \ \\
   \kw{READ (LUINP,*) EPSOL}\\
   Enter relevant dielectric constant\index{dielectric constant} of solvent.
 
-\item[\Key{INERSINITIAL}]
+\item[\Key{INERSINITIAL}] \ \\
   \kw{READ (LUINP,*) EPSOL, EPPN}\\
   Enter static and optical dielectric constant\index{dielectric constant} of solvent for calculation
   of the initial state defining inertial polarization\index{inertial
@@ -2376,7 +2379,7 @@ will activate this model.
   properties, for which this is an alternative input to the use of the
   keyword \Key{INERSFINAL}.
 
-\item[\Key{INERSFINAL}]
+\item[\Key{INERSFINAL}] \ \\
   \kw{READ (LUINP,*) EPSTAT,EPSOL}\\
   Enter static and optical dielectric\index{dielectric constant} constants of solvent
   for calculation of the final state with inertial polarization
@@ -2394,7 +2397,7 @@ will activate this model.
   Enter maximum L quantum number in multipole expansion of charge
   distribution in cavity.
 
-\item[\Key{PRINT}]
+\item[\Key{PRINT}] \ \\
   \kw{READ (LUINP,*) IPRSOL} \\
   Print level in solvent module routines (default = 0).
 \end{description}
@@ -2481,13 +2484,13 @@ User control of the NEO restricted step optimization.
   THQKVA*(norm of gradient)**2
 
 \item[\Key{THQLIN}]
-  Default: 0.2D0\\
+  Default: 0.2\\
   \kw{READ (LUINP,*) THQLIN} \\
   Convergence factor for micro iterations in global (linear) region: \\
   THQLIN*(norm of gradient)
 
 \item[\Key{THQMIN}]
-  Default: 0.1D0\\
+  Default: 0.1\\
   \kw{READ (LUINP,*) THQMIN} \\
   Convergence threshold for auxiliary roots in NEO MCSCF optimization.
 
@@ -2496,13 +2499,13 @@ User control of the NEO restricted step optimization.
   (tight step control is always enforced for excited states)
 
 \item[\Key{TOLERANCE}]
-  Default = 1.1D0\\
+  Default: 1.1\\
   \kw{READ (LUINP,*) RTTOL} \\
   Acceptable tolerance in deviation of actual step from trust radius
   (the default value of 1.1 corresponds to a maximum of 10\% deviation).
 
 \item[\Key{TRUST RADIUS}]
-  Default = STPMAX=0.7D0 or, if restart, trust radius determined by previous
+  Default = STPMAX = 0.7 or, if restart, trust radius determined by previous
             iteration.\index{trust radius}\\
   \kw{READ (LUINP,*) RTRUST} \\
   Initial trust radius.
@@ -2520,24 +2523,24 @@ integrals\index{two-electron integral} to molecular orbital
 basis\index{molecular orbital}.
 
 \begin{description}
-\item[\Key{FINAL LEVEL}]
+\item[\Key{FINAL LEVEL}] \ \\
   \kw{READ (LUINP,*) ITRFIN} \\
   Final integral transformation\index{integral transformation} level (only active if the keyword
   \quotekw{\Key{INTERFACE}} has been specified, or this is an \aba\ or
   \resp\ calculation.
 
-\item[\Key{LEVEL}]
+\item[\Key{LEVEL}] \ \\
   \kw{READ (LUINP,*) ITRLVL} \\
   Integral transformation level (see comments).
 
 \item[\Key{OLD TRANSFORMATION}]
   Use existing transformed integrals
 
-\item[\Key{PRINT}]
+\item[\Key{PRINT}] \ \\
   \kw{READ (LUINP,*) IPRTRA} \\
   Print level in integral transformation module
 
-\item[\Key{RESIDENT MEMORY}]
+\item[\Key{RESIDENT MEMORY}] \ \\
   \kw{READ (LUINP,*) MWORK} \\
   On virtual memory computers, the transformation will run more
   efficiently if it can be kept within the possible resident memory
@@ -2600,23 +2603,23 @@ occupied molecular orbitals.
   Generates cube file ``\kw{lumo.cube}'' with the information of the lowest
 unoccupied molecular orbitals.
 
-\item[\Key{MO}]
+\item[\Key{MO}] \ \\
   \kw{READ (LUINP,*) IDX\_MO} \\
   Generates cube file ``\kw{mo.cube}'' with specified indices of molecular orbitals
 by ``\kw{IDX\_MO}''. For instance, valid format is like ``1-6,7,10-12'' only including
 digits, minus sign and comma.
 
-\item[\Key{FORMAT}]
+\item[\Key{FORMAT}] \ \\
   \kw{READ (LUINP,*) CUBE\_FORMAT} \\
   Specifies cube file format, only ``\kw{GAUSSIAN}'' (Gaussian cube file format,
 see\linebreak \verb|http://www.gaussian.com/g_tech/g_ur/u_cubegen.htm|) for the
 time being.
 
-\item[\Key{ORIGIN}]
+\item[\Key{ORIGIN}] \ \\
   \kw{READ (LUINP,*) CUBE\_ORIGIN} \\
   Reads the coordinates (a.u.) of origin/initial point.
 
-\item[\Key{INCREMENT}]
+\item[\Key{INCREMENT}] \ \\
   \kw{READ (LUINP,*) N1, X1, Y1, Z1} \\
   \kw{READ (LUINP,*) N2, X2, Y2, Z2} \\
   \kw{READ (LUINP,*) N3, X3, Y3, Z3} \\
