@@ -205,7 +205,7 @@ def check_cmake_exists(cmake_command):
             shell=True,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
-    if not ('cmake version' in p.communicate()[0]):
+    if not ('version' in p.communicate()[0]):
         print('   This code is built using CMake')
         print('')
         print('   CMake is not found')
