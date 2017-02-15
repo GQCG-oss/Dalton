@@ -37,9 +37,13 @@ f.add(from_string = 'SUMMARY OF COUPLED CLUSTER CALCULATION',
 # Property calculation
 f.add(string = 'Electronic excitation energies',
       rel_tolerance = 1.0e-2)
-f.add(string = 'AO integral driven RPA',
+f.add(string = 'AO integral driven Higher RPA (HRPA)',
       rel_tolerance = 1.0e-2)
-f.add(string = 'AO integral driven Double corrected RPA',
+f.add(string = 'AO integral driven scaled HRPA(D)',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Conventional rotational strength',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Dipole strength',
       rel_tolerance = 1.0e-2)
 
 f.add(from_string = 'Changes of defaults for .EXCITA',
@@ -67,16 +71,7 @@ f.add(from_string = 'Oscillator and Scalar Rotational Strengths',
       ignore_sign = True,
       rel_tolerance = 1.0e-3)
 
-f.add(from_string = 'Extent of molecular orbitals',
-      num_lines = 19,
-      abs_tolerance = 1.0e-3)
-
-f.add(from_string = 'Change in <R**2> from ground to excited state (au)',
-      num_lines = 15,
-      abs_tolerance = 1.0e-3)
-
-
-test.run(['prop_exci_aorpad.dal'], ['h2o_STO2G.mol'], f={'out': f},
+test.run(['prop_exci_aoshrpad.dal'], ['h2o_STO2G.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.','ERI does not work with Cartesian basis.'])
 
 sys.exit(test.return_code)

@@ -66,10 +66,7 @@ C     and trial vectors.
 C-----------------------------------------------------
 C
       IF (DOUBLES) THEN
-CPi 01.04.16
-C         NVAR   = 2 * (NT1AM(ISYMTR)+NT2AM(ISYMTR))
          NVAR   = 2 * (NT1AM(ISYMTR)+N2P2HOP(ISYMTR))
-Cend-Pi
       ELSE
          NVAR = 2*NT1AM(ISYMTR)
       END IF
@@ -82,12 +79,8 @@ CPi 04.04.16
 C      LDENSAI = NT1AM(1)
 Cend-Pi
       IF (DOUBLES) THEN
-CPi 01.04.16
-C         LTR2E  = NT2AM(ISYMTR)
-C         LTR2D  = NT2AM(ISYMTR)
          LTR2E  = N2P2HOP(ISYMTR)
          LTR2D  = N2P2HOP(ISYMTR)
-Cend-Pi
       ELSE
          LTR2E  = 0
          LTR2D  = 0
@@ -145,10 +138,6 @@ C
          LRESO1E = NT1AM(ISYMTR)
          LRESO1D = NT1AM(ISYMTR)
          IF (DOUBLES) THEN
-C            LRES2E  = NT2AM(ISYMTR)
-C            LRES2D  = NT2AM(ISYMTR)
-C            LRESO2E = NT2AM(ISYMTR)
-C            LRESO2D = NT2AM(ISYMTR)
             LRES2E  = N2P2HOP(ISYMTR)
             LRES2D  = N2P2HOP(ISYMTR)
             LRESO2E = N2P2HOP(ISYMTR)

@@ -69,10 +69,7 @@ C---------------------------------
 C
       LEDIA1 = NT1AM(ISYMTR)
       IF (DOUBLES) THEN
-CPi 08.04.16
-C         LEDIA2 = NT2AM(ISYMTR)
          LEDIA2 = N2P2HOP(ISYMTR)
-Cend-Pi
       ELSE
          LEDIA2 = 0
       ENDIF

@@ -47,7 +47,8 @@ c#include "mxcent.h"
 c#include "nuclei.h"
 c#include "symmet.h"
 c#include "wrkrsp.h"
-C
+C NEED DOCCSD parameter from gnring.h
+#include "gnrinf.h"
 c     PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C
       DIMENSION POLDD(2,3,3,NFRVAL,*), POLDQ(2,3,3,3,NFRVAL,*)
@@ -116,15 +117,15 @@ C---------------------------------------------------------------
 C     If only RPA initialize some pointers and sort AO-integrals
 C     into distributions.
 C---------------------------------------------------------------
-C     On the flip side, this cause a crash if CC has been run
-      IF ( RPA_ONLY ) THEN
+C
+      IF (.NOT. DOCCSD) THEN
          CALL RP_INIT(WORK,LWORK)
 #ifdef VAR_MPI
 C     In pure aorpa calculations, eridi has not been initialized
          herdir = so_get_herdir()
          get_mxcall = so_get_direct()
 #endif
-      ENDIF
+      END IF
 
 #ifdef VAR_MPI
 C
@@ -311,13 +312,14 @@ C-----------------------------------------------------
 C              Get T2 amplitudes and density matrices.
 C-----------------------------------------------------
 C
-               IF(NEED_T2) THEN
-                  CALL SO_GETT2(sop_dens_label(imodel),
-     &                          WORK(KT2AM),LT2AM,WORK(KDENSAI),
+               IF (NEED_T2) THEN
+                  CALL SO_GETT2(SOP_DENS_LABEL(IMODEL),
+     &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
+     &                          WORK(KDENSAI),
      &                          LDENSAI,WORK(KDENSIJ),LDENSIJ,
      &                          WORK(KDENSAB),LDENSAB,
      &                          WORK(KEND1),LWORK1)
-               END IF
+               ENDIF
 #ifdef VAR_MPI
 C
 C---------------------------------------------------------

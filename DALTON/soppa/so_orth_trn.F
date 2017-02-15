@@ -53,12 +53,8 @@ C
       LTR1E   = NT1AM(ISYMTR)
       LTR1D   = NT1AM(ISYMTR)
       IF (DOUBLES) THEN
-CPi 01.04.16
-C         LTR2E   = NT2AM(ISYMTR)
-C         LTR2D   = NT2AM(ISYMTR)
          LTR2E   = N2P2HOP(ISYMTR)
          LTR2D   = N2P2HOP(ISYMTR)
-Cend-Pi
       ELSE
          LTR2E   = 0
          LTR2D   = 0

@@ -90,10 +90,7 @@ C
          LSOLV2 = 0
       ELSE
          LSOLV1 = NT1AM(ISYMTR)
-CPi 01.04.16
-C         LSOLV2 = NT2AM(ISYMTR)
          LSOLV2 = N2P2HOP(ISYMTR)
-Cend-Pi
       ENDIF
       IF ( MODEL.EQ.'AORPA') THEN
          LRDENIJ = 0

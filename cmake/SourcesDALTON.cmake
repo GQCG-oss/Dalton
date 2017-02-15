@@ -647,6 +647,8 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/symchk.F
     DALTON/soppa/ccsd_tcmepkx.F
     DALTON/soppa/dc_calc.F
+    DALTON/soppa/dc_backup1.F
+    DALTON/soppa/dc_backup2.F
     DALTON/soppa/dc_omec.F
     DALTON/soppa/dc_r1vec.F
     DALTON/soppa/dc_res_o.F
@@ -685,6 +687,8 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_getgp.F
     DALTON/soppa/so_getmo.F
     DALTON/soppa/so_gett2.F
+    DALTON/soppa/so_iajb.F
+    DALTON/soppa/so_aibj2.F
     DALTON/soppa/so_incred.F
     DALTON/soppa/so_init.F
     DALTON/soppa/so_initial.F
@@ -740,6 +744,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_stoppw.F
     DALTON/soppa/so_t2m1.F
     DALTON/soppa/so_t2mp.F
+    DALTON/soppa/so_mp2t2.F
     DALTON/soppa/so_test1.F
     DALTON/soppa/so_test.F
     DALTON/soppa/so_tfset.F

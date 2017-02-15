@@ -84,24 +84,16 @@ C
       LRESO1D = NT1AM(ISYMTR)
       LSDIA1  = LRESO1D
       IF(DOUBLES)THEN
-CPi 01.04.16
-C         LRES2E  = NT2AM(ISYMTR)
          LRES2E  = N2P2HOP(ISYMTR)
          LTR2E   = LRES2E
-C         LRES2D  = NT2AM(ISYMTR)
          LRES2D  = N2P2HOP(ISYMTR)
          LTR2D   = LRES2D
-C         LRESI2E = NT2AM(ISYMTR)
          LRESI2E = N2P2HOP(ISYMTR)
-C         LRESI2D = NT2AM(ISYMTR)
          LRESI2D = N2P2HOP(ISYMTR)
-C         LRESO2E = NT2AM(ISYMTR)
          LRESO2E = N2P2HOP(ISYMTR)
          LEDIA2  = LRESO2E
-C         LRESO2D = NT2AM(ISYMTR)
          LRESO2D = N2P2HOP(ISYMTR)
       ELSE
-Cend-Pi
 C   Setting all doubles lengths to zero, should allow us to keep
 C   the following allocations unmodified
          LRES2E  = 0
@@ -118,10 +110,7 @@ C
       IF (LTYPE.EQ.'LINEAR') THEN
          LGPVC1H = NT1AM(ISYMTR)
          IF(DOUBLES)THEN
-CPi 01.04.16
-C            LGPVC2H = NT2AM(ISYMTR)
             LGPVC2H = N2P2HOP(ISYMTR)
-Cend-Pi
          ELSE
             LGPVC2H = 0
          END IF

@@ -2820,6 +2820,8 @@ C
       ELSE
          RSPCI = .FALSE.
       END IF
+Clilli Closing LUSIFC
+      CALL GPCLOSE(LUSIFC,'KEEP')
 C
       NPRLBL = 0
       DO 100 I = 1,MAXLBL

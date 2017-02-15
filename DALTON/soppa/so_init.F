@@ -168,8 +168,8 @@ C
 C-----------------------------------------
 C     Find no. of 2p-2h triplet operators:
 C     T1: for a>b and i>j
-C     T2: for a>b and i>=j
-C     T3: for a>=b and i>j
+C     T2: for a>=b and i>j
+C     T3: for a>b and i>=j
 C-----------------------------------------
 C
       DO ISYM = 1, NSYM

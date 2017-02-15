@@ -39,12 +39,12 @@ C     RPA, HRPA, RPA(D), SOPPA and SOPPA(CCSD) calculations and several
 C     options concerning these calculations.
 C     
 C   
-        use so_info, only: AOSOP, AOSOC, AORPA, AOHRP, AOCC2, DCRPA 
+        use so_info, only: AOSOP, AOSOC, AORPA, AOHRP, AOCC2, DCRPA,
+     &                     DCHRP, SDCHR
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-C      PARAMETER (NTABLE = 13)
-      PARAMETER (NTABLE = 14)
+      PARAMETER (NTABLE = 17)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       LOGICAL LNEXC2
 #include "abainf.h"
@@ -54,13 +54,11 @@ C      PARAMETER (NTABLE = 13)
 C
       CALL QENTER('SOPINP')
 C
-      DATA TABLE /'.HIRPA ', '.SOPW4 ', '.DIRECT', '.AORPA ', '.DCRPA ',
+      DATA TABLE /'.HIRPA ', '.SOPW4 ', '.DIRECT', '.AORPA ', '.RPA(D)',
      &            '.AOSOP ', '.AOSOC ', '.SOPCHK', '.AOTEST', '.NSAVMX',
-CPi
-C     &            '.NEXCI2', '.THREX2', '.AOHRP '/
-     &            '.NEXCI2', '.THREX2', '.AOHRP ', '.AOCC2 '/
-Cend-Pi
-C     
+     &            '.NEXCI2', '.THREX2', '.AOHRP ', '.AOCC2 ', '.HRPA(D',
+     &            '.DCRPA ', '.SHRPA('/
+C
 C------------------
 C     Set defaults.
 C------------------
@@ -92,13 +90,7 @@ C
          ICHANG = ICHANG + 1
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-CPFP
-C               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
-C               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
-Cend-PFP
-CPi
-               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
-Cend-Pi
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), I
             END IF
   200    CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -125,7 +117,7 @@ Cend-Pi
     4    CONTINUE !.AORPA
             AORPA  = .TRUE.
             GOTO 100
-    5    CONTINUE !.DCRPA
+    5    CONTINUE !.RPA(D)
             DCRPA  = .TRUE.
             AORPA  = .TRUE.
             GOTO 100
@@ -159,6 +151,18 @@ C           NSYM is set to 8 since NSYM has not yet been set !!
    14    CONTINUE !.AOCC2
             AOCC2  = .TRUE.
             GOTO 100
+   15    CONTINUE !.HRPA(D
+            DCHRP  = .TRUE.
+            AOHRP  = .TRUE.
+            GOTO 100
+   16    CONTINUE !.DCRPA (keep old keyword just in case)
+            DCRPA  = .TRUE.
+            AORPA  = .TRUE.
+            GOTO 100
+   17    CONTINUE !.SHRPA(
+            SDCHR  = .TRUE.
+            AOHRP  = .TRUE.
+            GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GOTO 300
       ELSE
@@ -182,10 +186,8 @@ C
      &       '    (Ref.: O. Christiansen, K. L. Bak, H. Koch and',
      &       ' S. P. A. Sauer',
      &       '     Chem. Phys. Lett. 284, 47-62 (1998))'
-CPFP
          IF (AOHRP)  WRITE(LUPRI,'(A)')
      &       ' AO integral driven Higher RPA (HRPA) :'
-Cend-PFP
          IF (AOSOP)  WRITE(LUPRI,'(A/,A,A,/,A)')
      &       ' AO integral driven SOPPA :',
      &       '    (Ref.: K. L. Bak, H. Koch, J. Oddershede,',
@@ -194,6 +196,10 @@ Cend-PFP
 CPi
          IF (AOCC2)  WRITE(LUPRI,'(A)')
      &       ' AO integral driven SOPPA(CC2) :'
+         IF (DCHRP)  WRITE(LUPRI,'(A)')
+     &       ' AO integral driven Double corrected HRPA :'
+         IF (SDCHR)  WRITE(LUPRI,'(A)')
+     &       ' AO integral driven scaled HRPA(D) :'
 Cend-Pi
          IF (AOSOC)  WRITE(LUPRI,'(A,/,A,A,/,A,A)')
      &       ' AO integral driven SOPPA(CCSD)',
