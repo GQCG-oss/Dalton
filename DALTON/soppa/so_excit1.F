@@ -59,8 +59,6 @@ C for mxcont
 #include "soppinf.h"
 #include "symmet.h"
 #include "wrkrsp.h"
-C Need DOCCSD parameter from gnring.h
-#include "gnrinf.h"
 C
       PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C
@@ -92,12 +90,8 @@ C
 !
 ! This variable ensures that common blocks are only sent to the slaves
 ! once.
-      LOGICAL update_common_blocks, get_mxcall
-      LOGICAL so_get_herdir, herdir, so_get_direct
-
-C      herdir = so_get_herdir()
+      LOGICAL update_common_blocks
       update_common_blocks = .true.
-      get_mxcall = .false.
 #endif
 C
 C
@@ -137,51 +131,6 @@ C
         TRIPLET = .FALSE.
       END IF
 C
-C-------------------------------------------
-C     Initializes memory statistics routine.
-C-------------------------------------------
-C
-      CALL SO_MEMMAX ('START',LWORK)
-C
-C---------------------------------------------------------------
-C     If only RPA and if SOPPA is calculating the MP2 amplitude without
-C     first doing CCSD calculations, then initialize some pointers and sort AO-integrals
-C     into distributions.
-C---------------------------------------------------------------
-C
-      IF (.NOT. DOCCSD) THEN
-         CALL RP_INIT(WORK,LWORK)
-C
-#ifdef VAR_MPI
-C     In pure aorpa calculations, eridi has not been initialized
-         herdir = so_get_herdir()
-         get_mxcall = so_get_direct()
-#endif
-      END IF
-C
-#ifdef VAR_MPI
-C
-C In AORPA we cannot be sure that the number of integral distributions
-C is known in advance. This is needed in order to allocate memory for
-C load-distribution later on
-      if (get_mxcall) then
-         if (herdir) then
-            call herdi1(work(1), lwork, iprint)
-         else
-            kccfbt  = 1
-            kindxbt = kccfbt + mxprim*mxcont
-            kend3   = kindxbt + 8*mxshel*mxcont/irat
-            lwork3 = lwork - kend3
-            call eridi1(kodcl1, kodcl2, kodbc1, kodbc2,
-     &                  krdbc1, krdbc2, kodpp1, kodpp2,
-     &                  krdpp1, krdpp2, kfree,  lfree,
-     &                  kend3, work(kccfbt), work(kindxbt),
-     &                  work(kend3), lwork3, iprint)
-         endif
-         get_mxcall = .false.
-      endif
-#endif
-C
 C----------------------------------
 C     Set print level for AO-SOPPA.
 C----------------------------------
@@ -193,7 +142,7 @@ C     Initialize a few pointerarrays and dimensions.
 C---------------------------------------------------
 C
       DTIME     = SECOND()
-      CALL SO_INIT
+      CALL SO_INIT(WORK,LWORK)
       DTIME     = SECOND()  - DTIME
       SOTIME(2) = SOTIME(2) + DTIME
 C
