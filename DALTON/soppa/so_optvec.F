@@ -40,12 +40,8 @@ C
       LTR1E  = NT1AM(ISYMTR)
       LTR1D  = NT1AM(ISYMTR)
       IF(DOUBLES)THEN
-CPi 01.04.16
-C         LTR2E  = NT2AM(ISYMTR)
-C         LTR2D  = NT2AM(ISYMTR)
          LTR2E  = N2P2HOP(ISYMTR)
          LTR2D  = N2P2HOP(ISYMTR)
-Cend-Pi
       ELSE
          LTR2E  = 0
          LTR2D  = 0
@@ -96,10 +92,7 @@ C
       KOFF2   = KOFF1 + LOFF1
       KOFF3   = KOFF2 + LOFF2
       KOFF4   = KOFF3 + LOFF3
-CPi 04.04.16 old triplet version has - 1 here
-C      KEND1   = KOFF4 + LOFF4 - 1
       KEND1   = KOFF4 + LOFF4
-Cend-Pi
       LWORK1  = LWORK - KEND1
 C
       CALL SO_MEMMAX ('SO_OPTVEC.1',LWORK1)

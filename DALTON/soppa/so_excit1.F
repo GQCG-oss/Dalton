@@ -28,8 +28,10 @@ C
      &                   so_has_doubles,
      &                   so_singles_second,
      &                   so_needs_densai,
+     &                   so_double_correction,
      &                   sop_dens_label,
-     &                   sop_model_rpa, sop_model_rpad
+     &                   sop_model_rpa, sop_model_rpad,
+     &                   sop_model_hrpad
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
      &                       soppa_release_slaves
@@ -38,9 +40,9 @@ C
 #include "implicit.h"
 C
 #include "priunit.h"
-C
+CPi for NEXCIT() which is nr of excitations requested in .dal input
 #include "cbiexc.h"
-CPi for NT2AMX, NT1AM(), NT2AM() (t2 amplitude vectors?)
+CPi for NT2AMX, NT1AM(), NT2AM()
 #include "ccsdsym.h"
 #include "infdim.h"
 #include "inforb.h"
@@ -61,7 +63,6 @@ C Need DOCCSD parameter from gnring.h
 C
       PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C
-CSPAS:5/11-13: HRPA included
 CRF  Defer last dimension size...
 CRF  actual size will be set to NUM_ACTIVE later
       DIMENSION TRLEN(3,NSYM,MXNEXI,*),
@@ -76,7 +77,6 @@ CRF  actual size will be set to NUM_ACTIVE later
 CClark:11/01/2016
       DIMENSION BETHE(3,LQ,*),STOPP(3,LVEL,2,*)
 CClark:end
-CKeinSPASmehr
       DIMENSION SECMAT(3,MXNEXI,NSYM)
       DIMENSION WORK(LWORK)
 C
@@ -86,7 +86,7 @@ C
 
       integer :: num_active
       logical :: active_models(sop_num_models)
-      logical :: doubles, need_t2, rpa_only
+      logical :: doubles, need_t2, doub_corr, rpa_only
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -105,7 +105,6 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_EXCIT1')
-C
 C
 C     Get the active models and their number
       CALL SO_GET_ACTIVE_MODELS (ACTIVE_MODELS)
@@ -257,7 +256,6 @@ C---------------------------------------------------------------------
 C     Initialize arrays of transition moments and excitation energies.
 C---------------------------------------------------------------------
 C
-C
       CALL DZERO(TRLEN, 3*NSYM*MXNEXI*NUM_ACTIVE)
       CALL DZERO(TRVEL, 3*NSYM*MXNEXI*NUM_ACTIVE)
       CALL DZERO(TQLEN, 3*3*NSYM*MXNEXI*NUM_ACTIVE)
@@ -312,7 +310,7 @@ C           2. allocation of work space.
 C---------------------------------------
 C
             KEXVAL = KEND1
-            KEND2  = KEXVAL  + NEXCIT(ISYM)
+            KEND2  = KEXVAL  + NEXCIT(ISYM) ! CPi NEXCIT() in cbiexc.h
             LWORK2 = LWORK   - KEND2
 C
             CALL SO_MEMMAX ('SO_EXCIT1.2',LWORK2)
@@ -337,6 +335,7 @@ C----------------------------------------
                FULLNAME = SOP_MOD_FULLNAME(IMODEL)
                DOUBLES = SO_HAS_DOUBLES(IMODEL)
                NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
+               DOUB_CORR = SO_DOUBLE_CORRECTION(MODEL)
 C
                IF (IPRSOP .GE. 1) THEN
                   WRITE(LUPRI,9000)
@@ -345,13 +344,9 @@ C
      &            ' Perturbation symmetry     :',ISYM,
      &            ' p-h variables             :',2*NT1AM(ISYM)
                   IF (DOUBLES) THEN
-CPi 01-04-16
-C                     NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
                      NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
                      WRITE(LUPRI,'(A,I8,/,A,I8)')
-C     &               ' 2p-2h variables           :',2*NT2AM(ISYM),
      &               ' 2p-2h variables           :',2*N2P2HOP(ISYM),
-Cend-Pi
      &               ' Total number of variables :',NVARPT
                   ENDIF
                   WRITE(LUPRI,9001)
@@ -360,8 +355,7 @@ C
 C              Adjust number of excitations of this symmetry down to
 C              the highest possible number
 C
-               IF (DOUBLES .AND.(.NOT.IMODEL.EQ.SOP_MODEL_RPAD) ) THEN
-C                  NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM)+NT2AM(ISYM))
+               IF (DOUBLES .AND.(.NOT. DOUB_CORR)) THEN
                   NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM)+N2P2HOP(ISYM))
                ELSE
                   NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM))
@@ -409,26 +403,29 @@ C
                IF ( SO_NEEDS_DENSAI(MODEL))
      &            CALL DZERO(WORK(KDENSAI),LDENSAI)
 C
+CPi 31.01.16
+C----------------------------------------------------------------------
+C              Make backup of eigenvectors if HRPA(D) in order for
+C              s-HRPA(D) method to have HRPA eigenvectors on file
+C----------------------------------------------------------------------
+C
+               IF ( IMODEL .EQ. SOP_MODEL_HRPAD ) THEN
+C
+                   CALL DC_BACKUP1(ISYMTR, NEXCI, WORK(KEND2), LWORK2)
+C
+               END IF
+C
 C------------------------------------------------------------------
 C              Determine excitation energies and excitation
 C              vectors. The excitation vectors are written to file.
 C------------------------------------------------------------------
 C
-               IF ( IMODEL .NE. SOP_MODEL_RPAD) THEN
                   CALL SO_RSPLEX(MODEL,ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
      &                           WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                           LDENSAB,WORK(KDENSAI),LDENSAI,
      &                           WORK(KT2AM),
      &                           LT2AM,WORK(KFOCKD),LFOCKD,
      &                           WORK(KEND2),LWORK2)
-               ELSE ! RPA(D) still has its own driver...
-                  CALL DC_RSPLEX(ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
-     &                           WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-     &                           LDENSAB,WORK(KDENSAI),LDENSAI,
-     &                           WORK(KT2AM),
-     &                           LT2AM,WORK(KFOCKD),LFOCKD,
-     &                           WORK(KEND2),LWORK2)
-               ENDIF
 C
 C-----------------------------------------------------
 C              Copy exciation energies to EXENG.
@@ -459,14 +456,35 @@ CClark:11/01/2016
      &                       BETHE(1,1,IOUT),STOPP(1,1,1,IOUT),
 CClark:end
      &                       WORK(KEND2),LWORK2)
-
+C
 C
 C------------------------------------------------------------------
 C              Determine charge radius of excited states (RPA only)
 C------------------------------------------------------------------
 C
-               IF ( IMODEL .EQ. SOP_MODEL_RPA)
-     &            CALL RP_CHARGE(ISYMTR,NEXCI,SECMAT,WORK(KEND2),LWORK2)
+               IF ( IMODEL .EQ. SOP_MODEL_RPA) THEN
+C
+                  CALL RP_CHARGE(ISYMTR,NEXCI,SECMAT,WORK(KEND2),LWORK2)
+C
+               END IF
+CPi 31.01.16
+C-----------------------------------------------------------------------
+C              Get HRPA excitation vectors and energies if HRPA(D) since
+C              they are needed in an s-HRPA(D) calculation.
+C              (IOUT counts the nr of methods and since HRPA is
+C              before HRPA(D), the HRPA energies are in IOUT-1)
+C-----------------------------------------------------------------------
+C
+               IF ( IMODEL .EQ. SOP_MODEL_HRPAD ) THEN
+C
+                  CALL DC_BACKUP2(ISYMTR, NEXCI, WORK(KEND2), LWORK2)
+C
+                  DO IEXVAL = 1,NEXCI
+                     WORK(KEXVAL-1+IEXVAL) = EXENG(ISYM,IEXVAL,IOUT-1)
+                  END DO
+C
+               END IF
+C
 #ifdef VAR_MPI
 C-------------------------------------------------------
 C              Release slaves to the global node-driver.

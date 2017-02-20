@@ -4,8 +4,11 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2016.alpha
+    This is output from DALTON release Dalton2017.alpha (2016)
+         ( Web site: http://daltonprogram.org )
+
    ----------------------------------------------------------------------------
+
     NOTE:
      
     Dalton is an experimental code for the evaluation of molecular
@@ -24,13 +27,13 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
        T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
        L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
        C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
        H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
        M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
-       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
        T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
        J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
        O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
@@ -45,12 +48,12 @@
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
        and H. Agren,
        "The Dalton quantum chemistry program system",
-       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
-    
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
     and
-    
+     
        Dalton, a Molecular Electronic Structure Program,
-       Release Dalton2016.0 (2015), see http://daltonprogram.org
+       Release Dalton2017.alpha (2016), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -70,6 +73,7 @@
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
   Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -78,12 +82,14 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
   Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
@@ -105,7 +111,7 @@
   Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
-  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex frequency response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
@@ -136,13 +142,13 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Aug 12 11:33:51 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:27:57 2016
+     Host name              : sunray                                  
 
- * Work memory size             :   128000000 =  976.56 megabytes.
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/zth702/source/dalton/DALTON/test/prop_exci_ao
+   1) /home/zth702/source/dalton/build/test/prop_exci_ao
    2) /home/zth702/source/dalton/build/basis
 
 
@@ -167,100 +173,100 @@ Compilation information
  LAPACK                   | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-bas
                           | e/atlas/liblapack.so
  Static linking           | OFF
- Last Git revision        | 6e949b3723a9e5eda84edd2707d61fb1ab9b7722
+ Last Git revision        | b02af27575a4b70d65ece557cdb82d3284d7bdf6
  Git branch               | aosoppa_devel
- Configuration time       | 2016-08-12 11:30:28.559945
+ Configuration time       | 2016-12-06 15:22:50.044960
 
 
    Content of the .dal input file
  ----------------------------------
 
-**DALTON INPUT                                    
-.RUN PROPERTIES                                   
-**WAVE FUNCTIONS                                  
-.HF                                               
-.CC                                               
-*CC INPUT                                         
-.MP2                                              
-.CC2                                              
-.CCSD                                             
-.AO-SOPPA                                         
-**PROPERTIES                                      
-.SOPPA                                            
-.EXCITA                                           
-.PRINT                                            
- 2                                                
-*SOPPA                                            
-.AORPA                                            
-.DCRPA                                            
-.AOSOP                                            
-.AOCC2                                            
-.AOSOC                                            
-.NSAVMX                                           
- 4                                                
-.NEXCI2                                           
-   0    1    0    0    0    0    0    0           
-*EXCITA                                           
-.DIPSTR                                           
-.ROTVEL                                           
-.NEXCITA                                          
-    5    6    5    5    0    0    0    0          
-**END OF DALTON INPUT                             
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.MP2
+.CC2
+.CCSD
+.AO-SOPPA
+**PROPERTIES
+.SOPPA
+.EXCITA
+.PRINT
+ 2
+*SOPPA
+.AORPA
+.DCRPA
+.AOSOP
+.AOCC2
+.AOSOC
+.NSAVMX
+ 4
+.NEXCI2
+   0    1    0    0    0    0    0    0
+*EXCITA
+.DIPSTR
+.ROTVEL
+.NEXCITA
+    5    6    5    5    0    0    0    0
+**END OF DALTON INPUT
 
 
    Content of the .mol file
  ----------------------------
 
-INTGRL                                                                         
-Calculation of excitation energies through ABACUS                              
-                                                                               
-c   2    2  X  Y      0.10D-14                                                 
-      8.00    1    3    6    5    1                                            
-O   0.00000             0.00000              0.1241444240                      
-F  6    1                                                                      
-31195.6 0.00021                                                                
-4669.38 0.001628                                                               
-1062.62 0.00845                                                                
-301.426 0.034191                                                               
-98.5153 0.110311                                                               
-35.4609 .269493                                                                
-F  1    1                                                                      
-13.6179 .423545                                                                
-F  1    1                                                                      
-5.38618 .283038                                                                
-F  1    1                                                                      
-1.53873 .027484                                                                
-F  1    1                                                                      
-.6055 -.005144                                                                 
-F  1    1                                                                      
-.22054 .00164                                                                  
-F  3    1                                                                      
-114.863 .002266                                                                
-26.8767 0.017192                                                               
-8.32077 0.075341                                                               
-F  1    1                                                                      
-2.97237 .212775                                                                
-F  1    1                                                                      
-1.12848 .370478                                                                
-F  1    1                                                                      
-.4236 .398523                                                                  
-F  1    1                                                                      
-.15074 .184703                                                                 
-F  2    1                                                                      
-1.21879 .357851                                                                
-.36102 .759561                                                                 
-      1.00    1    2    3    1                                                 
-H   0.00000             1.43153              -0.985265576                      
-F  3    1                                                                      
-33.865014 .006068                                                              
-5.094788 0.045316                                                              
-1.158786 0.202846                                                              
-F  1    1                                                                      
-0.32584 0.503709                                                               
-F  1    1                                                                      
-.102741 .383568                                                                
-F  1    1                                                                      
-1.16 1.0                                                                       
+INTGRL
+Calculation of excitation energies through ABACUS
+
+c   2    2  X  Y      0.10D-14
+      8.00    1    3    6    5    1
+O   0.00000             0.00000              0.1241444240
+F  6    1
+31195.6 0.00021
+4669.38 0.001628
+1062.62 0.00845
+301.426 0.034191
+98.5153 0.110311
+35.4609 .269493
+F  1    1
+13.6179 .423545
+F  1    1
+5.38618 .283038
+F  1    1
+1.53873 .027484
+F  1    1
+.6055 -.005144
+F  1    1
+.22054 .00164
+F  3    1
+114.863 .002266
+26.8767 0.017192
+8.32077 0.075341
+F  1    1
+2.97237 .212775
+F  1    1
+1.12848 .370478
+F  1    1
+.4236 .398523
+F  1    1
+.15074 .184703
+F  2    1
+1.21879 .357851
+.36102 .759561
+      1.00    1    2    3    1
+H   0.00000             1.43153              -0.985265576
+F  3    1
+33.865014 .006068
+5.094788 0.045316
+1.158786 0.202846
+F  1    1
+0.32584 0.503709
+F  1    1
+.102741 .383568
+F  1    1
+1.16 1.0
 
 
        *******************************************************************
@@ -575,9 +581,9 @@ C   2    2  X  Y      0.10D-14
  HERMIT - Number of two-electron integrals written:       75206 ( 24.7% )
  HERMIT - Megabytes written:                              0.866
 
-  Time used in TWOINT     is       0.20 seconds
-  Total CPU  time used in HERMIT:   0.21 seconds
-  Total wall time used in HERMIT:   0.24 seconds
+  Time used in TWOINT     is       0.12 seconds
+  Total CPU  time used in HERMIT:   0.13 seconds
+  Total wall time used in HERMIT:   0.13 seconds
 
 
                         .----------------------------------.
@@ -611,8 +617,8 @@ C   2    2  X  Y      0.10D-14
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Aug 12 11:33:51 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:27:57 2016
+     Host name              : sunray                                  
 
  Title lines from ".mol" input file:
      Calculation of excitation energies through ABACUS                       
@@ -682,6 +688,7 @@ C   2    2  X  Y      0.10D-14
 
  Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
+ Calculating AOSUPINT
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-15 )
 @  1  -75.8289971698       2.45D+00  -7.58D+01     3   1   1   0
@@ -764,7 +771,7 @@ C   2    2  X  Y      0.10D-14
 
  --- Writing SIRIFC interface file
 
- CPU and wall time for SCF :       0.024       0.019
+ CPU and wall time for SCF :       0.012       0.013
 
 
                        .-----------------------------------.
@@ -783,15 +790,15 @@ C   2    2  X  Y      0.10D-14
 @    Final gradient norm:           0.000000459675
 
  
-     Date and time (Linux)  : Fri Aug 12 11:33:51 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:27:57 2016
+     Host name              : sunray                                  
 
 
  INFO: Sorry, plot of MOs with Molden is only implemented for spherical GTOs
 
-File label for MO orbitals:  12Aug16   FOCKDIIS
+File label for MO orbitals:   6Dec16   FOCKDIIS
 
- (Only coefficients >0.0100 are printed.)
+ (Only coefficients > 0.0100 are printed.)
 
  Molecular orbitals for symmetry species 1  (A1 )
  ------------------------------------------------
@@ -886,12 +893,12 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
    1 O   :dxy    0.9129   0.7003
    2 H   :px     0.1116  -0.8095
 
-  Total CPU  time used in SIRIUS : 264 hours  0 minutes  0 seconds
-  Total wall time used in SIRIUS :   0.00 seconds
+  Total CPU  time used in SIRIUS :   0.02 seconds
+  Total wall time used in SIRIUS :   0.02 seconds
 
  
-     Date and time (Linux)  : Fri Aug 12 11:33:51 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:27:57 2016
+     Host name              : sunray                                  
 
  NOTE:    1 informational messages have been issued.
  Check output, result, and error files for "INFO".
@@ -1111,11 +1118,11 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  *******************************************************************************
 
 
- CPU and wall time for CC :       0.316       0.326
+ CPU and wall time for CC :       0.268       0.269
 
  
-     Date and time (Linux)  : Fri Aug 12 11:33:52 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:27:57 2016
+     Host name              : sunray                                  
 
 
                       .-------------------------------------.
@@ -1200,8 +1207,8 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Fri Aug 12 11:33:52 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:27:57 2016
+     Host name              : sunray                                  
 
 
                             **************************
@@ -1248,7 +1255,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  -----------------------------------
 
   ******************************************************************
-                   RPA  iterations, Excitation symmetry 1
+                   RPA iterations, Excitation symmetry 1
   ******************************************************************
 
   ==================================================================
@@ -1364,7 +1371,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 2   2   |   1       1     |   -0.100550  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1388,7 +1395,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 3   3   |   3       1     |    0.187236  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1414,7 +1421,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 3   3   |   1       1     |    0.473550  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1441,7 +1448,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 3   3   |   3       1     |   -0.153960  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1468,7 +1475,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 3   3   |   3       1     |    0.205643  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1536,26 +1543,29 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  -----------------------------------
 
   ******************************************************************
-               Double corrected RPA calculation, Symmetry 1
+                RPA(D) calculation, Excitation symmetry 1
   ******************************************************************
+ -----------------------------------------------------------------
+ Excitation   Energy (au)      ph(0)        ph(2)       2p2h(2)
+ -----------------------------------------------------------------
+      1        0.36834408   0.42380590   0.06658603  -0.12204785
+      2        0.59150167   0.61178343   0.07250774  -0.09278951
+      3        0.63086021   0.65675071   0.07073260  -0.09662310
+      4        0.71724034   0.78081899   0.06393115  -0.12750980
+      5        0.78428440   0.83882086   0.06759315  -0.12212961
+ -----------------------------------------------------------------
 
-                         ------------------------
-                         Excitation   Energy (au)
-                         ------------------------
-                              1       0.36834408
-                              2       0.59150167
-                              3       0.63086021
-                              4       0.71724034
-                              5       0.78428440
-                         ------------------------
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  1, state no.  1
 
- DCRPA excitation energy :  0.36834408     au
-                             10.023152     eV
-                             80842.180     cm-1
-                             967.08723     kj / mole
+     RPA(D) excitation energy :  0.36834408     au
+                                   10.023152     eV
+                                   80842.180     cm-1
+                                   967.08723     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.83 + -0.11  =  93.72 %
  2p-2h + 2h-2p excitation weight:   6.28 + -0.00  =   6.28 %
@@ -1571,16 +1581,20 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 2 1 2 1 |   1   1   1   3 |    0.115115  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  1, state no.  2
 
- DCRPA excitation energy :  0.59150167     au
-                             16.095579     eV
-                             129819.61     cm-1
-                             1552.9874     kj / mole
+     RPA(D) excitation energy :  0.59150167     au
+                                   16.095579     eV
+                                   129819.61     cm-1
+                                   1552.9874     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.55 + -0.10  =  95.45 %
  2p-2h + 2h-2p excitation weight:   4.55 + -0.00  =   4.55 %
@@ -1622,16 +1636,20 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 1 1 3 3 |   3   1   1   1 |    0.030600  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  1, state no.  3
 
- DCRPA excitation energy :  0.63086021     au
-                             17.166580     eV
-                             138457.81     cm-1
-                             1656.3232     kj / mole
+     RPA(D) excitation energy :  0.63086021     au
+                                   17.166580     eV
+                                   138457.81     cm-1
+                                   1656.3232     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.32 + -0.21  =  95.11 %
  2p-2h + 2h-2p excitation weight:   4.89 + -0.01  =   4.89 %
@@ -1670,16 +1688,20 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 4 3 2 1 |   1   1   1   2 |    0.020640  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  1, state no.  4
 
- DCRPA excitation energy :  0.71724034     au
-                             19.517102     eV
-                             157416.06     cm-1
-                             1883.1142     kj / mole
+     RPA(D) excitation energy :  0.71724034     au
+                                   19.517102     eV
+                                   157416.06     cm-1
+                                   1883.1142     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.15 + -0.66  =  92.49 %
  2p-2h + 2h-2p excitation weight:   7.53 + -0.02  =   7.51 %
@@ -1698,16 +1720,20 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 3 1 3 1 |   1   2   1   3 |   -0.100894  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  1, state no.  5
 
- DCRPA excitation energy :  0.78428440     au
-                             21.341464     eV
-                             172130.53     cm-1
-                             2059.1384     kj / mole
+     RPA(D) excitation energy :  0.78428440     au
+                                   21.341464     eV
+                                   172130.53     cm-1
+                                   2059.1384     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.22 + -0.42  =  93.80 %
  2p-2h + 2h-2p excitation weight:   6.21 + -0.01  =   6.20 %
@@ -1760,7 +1786,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 1 3 3 1 |   3   3   1   3 |    0.035660  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -1769,55 +1795,55 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.73854 +    0.02900 =   -0.70954
-   2    -0.38665 +    0.01334 =   -0.37331
-   3    -0.40829 +    0.02732 =   -0.38097
-   4    -0.05446 +    0.04421 =   -0.01025
-   5     0.02285 +   -0.03392 =   -0.01107
+   1    -0.75484 +    0.02964 =   -0.72519
+   2    -0.39108 +    0.01349 =   -0.37758
+   3    -0.41386 +    0.02770 =   -0.38616
+   4    -0.05606 +    0.04551 =   -0.01055
+   5     0.02334 +   -0.03465 =   -0.01131
  ===================================================================
 
  ZDIPVEL  RPA(D) transition moments for excitation symmetry  1
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.27673 +    0.00901 =    0.28574
-   2     0.19919 +    0.01888 =    0.21807
-   3     0.23575 +    0.00912 =    0.24487
-   4    -0.01428 +    0.03459 =    0.02031
-   5     0.00216 +   -0.01512 =   -0.01295
+   1     0.28283 +    0.00921 =    0.29204
+   2     0.20147 +    0.01910 =    0.22056
+   3     0.23897 +    0.00925 =    0.24821
+   4    -0.01470 +    0.03561 =    0.02091
+   5     0.00221 +   -0.01544 =   -0.01323
  ===================================================================
 
  XXSECMOM RPA(D) transition moments for excitation symmetry  1
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.08795 +   -0.04813 =   -0.13608
-   2    -1.16873 +   -0.03231 =   -1.20104
-   3     1.23282 +   -0.04422 =    1.18861
-   4     1.66479 +   -0.17394 =    1.49086
-   5    -0.80914 +    0.13125 =   -0.67789
+   1    -0.08989 +   -0.04919 =   -0.13908
+   2    -1.18212 +   -0.03268 =   -1.21480
+   3     1.24963 +   -0.04482 =    1.20482
+   4     1.71359 +   -0.17903 =    1.53456
+   5    -0.82639 +    0.13404 =   -0.69234
  ===================================================================
 
  YYSECMOM RPA(D) transition moments for excitation symmetry  1
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.55865 +   -0.07215 =    0.48650
-   2     1.19333 +    0.02221 =    1.21554
-   3     1.09493 +   -0.09200 =    1.00293
-   4     0.97745 +   -0.20860 =    0.76885
-   5    -1.16656 +    0.17800 =   -0.98856
+   1     0.57098 +   -0.07374 =    0.49724
+   2     1.20700 +    0.02246 =    1.22946
+   3     1.10986 +   -0.09326 =    1.01661
+   4     1.00610 +   -0.21471 =    0.79139
+   5    -1.19143 +    0.18180 =   -1.00964
  ===================================================================
 
  ZZSECMOM RPA(D) transition moments for excitation symmetry  1
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.54639 +   -0.03224 =    0.51414
-   2     0.24501 +   -0.00232 =    0.24268
-   3    -0.45111 +   -0.10982 =   -0.56093
-   4     2.23560 +   -0.19628 =    2.03932
-   5    -0.65448 +    0.12594 =   -0.52854
+   1     0.55844 +   -0.03295 =    0.52549
+   2     0.24781 +   -0.00235 =    0.24546
+   3    -0.45726 +   -0.11131 =   -0.56858
+   4     2.30113 +   -0.20203 =    2.09910
+   5    -0.66843 +    0.12862 =   -0.53981
  ===================================================================
 
  -----------------------------------
@@ -1829,7 +1855,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  -----------------------------------
 
   ******************************************************************
-                 SOPPA  iterations, Excitation symmetry 1
+                 SOPPA iterations, Excitation symmetry 1
   ******************************************************************
 
   ==================================================================
@@ -1991,7 +2017,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 2 1 2 1 |   1   1   1   3 |    0.115076  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -2046,7 +2072,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 1 1 3 3 |   3   1   1   1 |    0.029160  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -2076,7 +2102,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 3 2 3 2 |   1   1   1   1 |   -0.102654  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -2107,7 +2133,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 2 1 2 1 |   1   2   1   3 |    0.123090  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -2171,7 +2197,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 1 3 3 1 |   3   3   1   3 |    0.035377  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -2240,7 +2266,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  -----------------------------------
 
   ******************************************************************
-            SOPPA(CC2)  iterations, Excitation symmetry 1
+            SOPPA(CC2) iterations, Excitation symmetry 1
   ******************************************************************
 
   ==================================================================
@@ -2332,7 +2358,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 2 1 2 1 |   1   1   1   3 |    0.115199  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -2387,7 +2413,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 1 1 3 3 |   3   1   1   1 |    0.029265  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -2417,7 +2443,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 3 2 3 2 |   1   1   1   1 |   -0.102621  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -2448,7 +2474,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 2 1 2 1 |   1   2   1   3 |   -0.123157  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -2512,7 +2538,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  |    exci. | 1 3 3 1 |   3   3   1   3 |    0.035354  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -2581,7 +2607,7 @@ File label for MO orbitals:  12Aug16   FOCKDIIS
  -----------------------------------
 
   ******************************************************************
-           SOPPA(CCSD)  iterations, Excitation symmetry 1
+           SOPPA(CCSD) iterations, Excitation symmetry 1
   ******************************************************************
 
   ==================================================================
@@ -2704,7 +2730,7 @@ SOPPA(CCSD) excitation energy :  0.36832353     au
  |    exci. | 2 1 2 1 |   1   1   1   3 |   -0.115295  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -2759,7 +2785,7 @@ SOPPA(CCSD) excitation energy :  0.59016116     au
  |    exci. | 1 1 3 3 |   3   1   1   1 |    0.028964  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -2789,7 +2815,7 @@ SOPPA(CCSD) excitation energy :  0.62907168     au
  |    exci. | 3 2 3 2 |   1   1   1   1 |   -0.103140  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -2820,7 +2846,7 @@ SOPPA(CCSD) excitation energy :  0.72001022     au
  |    exci. | 2 1 2 1 |   1   2   1   3 |    0.123349  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -2883,7 +2909,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 3 3 1 |   3   3   1   3 |    0.035615  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -2950,7 +2976,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  -----------------------------------
 
   ******************************************************************
-                   RPA  iterations, Excitation symmetry 2
+                   RPA iterations, Excitation symmetry 2
   ******************************************************************
 
   ==================================================================
@@ -3056,7 +3082,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1   2   |   3       1     |   -0.182406  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -3080,7 +3106,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1   2   |   3       1     |   -0.213904  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -3102,7 +3128,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 2   1   |   1       3     |    0.995122  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -3126,7 +3152,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1   2   |   3       1     |   -0.951233  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -3148,7 +3174,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1   2   |   4       1     |    0.987853  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -3171,7 +3197,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 2   1   |   2       3     |    0.126958  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -3232,27 +3258,30 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  -----------------------------------
 
   ******************************************************************
-               Double corrected RPA calculation, Symmetry 2
+                RPA(D) calculation, Excitation symmetry 2
   ******************************************************************
+ -----------------------------------------------------------------
+ Excitation   Energy (au)      ph(0)        ph(2)       2p2h(2)
+ -----------------------------------------------------------------
+      1        0.27736779   0.33209935   0.06687747  -0.12160903
+      2        0.58586542   0.61175429   0.06998614  -0.09587501
+      3        0.67908223   0.68970125   0.07591533  -0.08653435
+      4        0.67538911   0.74419781   0.06427212  -0.13308082
+      5        1.02051667   1.06791282   0.06198218  -0.10937832
+      6        1.25454955   1.25956560   0.06209913  -0.06711517
+ -----------------------------------------------------------------
 
-                         ------------------------
-                         Excitation   Energy (au)
-                         ------------------------
-                              1       0.27736779
-                              2       0.58586542
-                              3       0.67908223
-                              4       0.67538911
-                              5       1.02051667
-                              6       1.25454955
-                         ------------------------
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  2, state no.  1
 
- DCRPA excitation energy :  0.27736779     au
-                             7.5475614     eV
-                             60875.192     cm-1
-                             728.22902     kj / mole
+     RPA(D) excitation energy :  0.27736779     au
+                                   7.5475614     eV
+                                   60875.192     cm-1
+                                   728.22902     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.00 + -0.15  =  93.85 %
  2p-2h + 2h-2p excitation weight:   6.15 + -0.00  =   6.15 %
@@ -3268,16 +3297,20 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 1 2 1 |   3   2   1   3 |   -0.100477  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  2, state no.  2
 
- DCRPA excitation energy :  0.58586542     au
-                             15.942209     eV
-                             128582.60     cm-1
-                             1538.1894     kj / mole
+     RPA(D) excitation energy :  0.58586542     au
+                                   15.942209     eV
+                                   128582.60     cm-1
+                                   1538.1894     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.54 + -0.14  =  95.41 %
  2p-2h + 2h-2p excitation weight:   4.60 + -0.00  =   4.59 %
@@ -3294,16 +3327,20 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 1 2 1 |   8   3   1   3 |    0.100261  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  2, state no.  3
 
- DCRPA excitation energy :  0.67908223     au
-                             18.478767     eV
-                             149041.32     cm-1
-                             1782.9301     kj / mole
+     RPA(D) excitation energy :  0.67908223     au
+                                   18.478767     eV
+                                   149041.32     cm-1
+                                   1782.9301     kj / mole
 
  1p-1h + 1h-1p excitation weight:  96.22 + -0.21  =  96.01 %
  2p-2h + 2h-2p excitation weight:   3.99 + -0.01  =   3.99 %
@@ -3317,16 +3354,20 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 1 2 1 |   7   7   1   2 |   -0.113892  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  2, state no.  4
 
- DCRPA excitation energy :  0.67538911     au
-                             18.378272     eV
-                             148230.77     cm-1
-                             1773.2338     kj / mole
+     RPA(D) excitation energy :  0.67538911     au
+                                   18.378272     eV
+                                   148230.77     cm-1
+                                   1773.2338     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.38 + -0.15  =  93.24 %
  2p-2h + 2h-2p excitation weight:   6.76 + -0.00  =   6.76 %
@@ -3342,16 +3383,20 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 1 2 1 |  15   5   1   3 |    0.115148  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  2, state no.  5
 
- DCRPA excitation energy :   1.0205167     au
-                             27.769671     eV
-                             223977.52     cm-1
-                             2679.3661     kj / mole
+     RPA(D) excitation energy :   1.0205167     au
+                                   27.769671     eV
+                                   223977.52     cm-1
+                                   2679.3661     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.97 + -0.05  =  93.92 %
  2p-2h + 2h-2p excitation weight:   6.08 + -0.00  =   6.08 %
@@ -3365,16 +3410,20 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 1 2 1 |   7   7   1   3 |   -0.126120  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  2, state no.  6
 
- DCRPA excitation energy :   1.2545496     au
-                             34.138030     eV
-                             275341.80     cm-1
-                             3293.8193     kj / mole
+     RPA(D) excitation energy :   1.2545496     au
+                                   34.138030     eV
+                                   275341.80     cm-1
+                                   3293.8193     kj / mole
 
  1p-1h + 1h-1p excitation weight:  97.10 + -0.06  =  97.05 %
  2p-2h + 2h-2p excitation weight:   2.95 + -0.00  =   2.95 %
@@ -3412,7 +3461,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 3 3 2 1 |   9   7   1   2 |    0.021817  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -3421,48 +3470,48 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.49390 +    0.01000 =    0.50390
-   2    -0.19476 +    0.00209 =   -0.19267
-   3     0.03793 +    0.00995 =    0.04788
-   4    -0.58377 +    0.05165 =   -0.53213
-   5    -0.65469 +    0.03020 =   -0.62449
-   6    -0.34817 +    0.02466 =   -0.32351
+   1     0.50447 +    0.01022 =    0.51469
+   2    -0.19719 +    0.00212 =   -0.19507
+   3     0.03823 +    0.01003 =    0.04826
+   4    -0.59860 +    0.05296 =   -0.54564
+   5    -0.66924 +    0.03087 =   -0.63838
+   6    -0.34999 +    0.02479 =   -0.32520
  ===================================================================
 
  XDIPVEL  RPA(D) transition moments for excitation symmetry  2
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.19572 +    0.03053 =   -0.16519
-   2     0.07556 +   -0.00654 =    0.06902
-   3    -0.07583 +    0.01406 =   -0.06177
-   4     0.25518 +    0.07240 =    0.32758
-   5     0.52356 +    0.01617 =    0.53973
-   6     0.30609 +    0.02762 =    0.33371
+   1    -0.19991 +    0.03118 =   -0.16873
+   2     0.07650 +   -0.00662 =    0.06988
+   3    -0.07644 +    0.01417 =   -0.06227
+   4     0.26166 +    0.07424 =    0.33590
+   5     0.53520 +    0.01653 =    0.55172
+   6     0.30769 +    0.02776 =    0.33545
  ===================================================================
 
  YANGMOM  RPA(D) transition moments for excitation symmetry  2
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.13318 +   -0.00104 =   -0.13422
-   2     0.00853 +    0.00297 =    0.01151
-   3     0.07131 +   -0.00523 =    0.06608
-   4    -0.20147 +    0.00410 =   -0.19736
-   5    -0.05209 +    0.00654 =   -0.04555
-   6    -0.06419 +    0.00246 =   -0.06174
+   1    -0.13604 +   -0.00106 =   -0.13710
+   2     0.00864 +    0.00301 =    0.01165
+   3     0.07188 +   -0.00527 =    0.06661
+   4    -0.20658 +    0.00421 =   -0.20237
+   5    -0.05325 +    0.00668 =   -0.04656
+   6    -0.06453 +    0.00247 =   -0.06206
  ===================================================================
 
  XZSECMOM RPA(D) transition moments for excitation symmetry  2
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.18915 +   -0.01460 =   -0.20375
-   2    -0.78643 +   -0.01917 =   -0.80560
-   3     0.77387 +    0.02336 =    0.79723
-   4     0.35853 +   -0.01025 =    0.34828
-   5     0.04059 +   -0.00446 =    0.03613
-   6     0.08789 +   -0.00091 =    0.08697
+   1    -0.19320 +   -0.01492 =   -0.20812
+   2    -0.79622 +   -0.01941 =   -0.81563
+   3     0.78005 +    0.02355 =    0.80361
+   4     0.36763 +   -0.01051 =    0.35713
+   5     0.04149 +   -0.00456 =    0.03694
+   6     0.08835 +   -0.00092 =    0.08743
  ===================================================================
 
  -----------------------------------
@@ -3474,7 +3523,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  -----------------------------------
 
   ******************************************************************
-                 SOPPA  iterations, Excitation symmetry 2
+                 SOPPA iterations, Excitation symmetry 2
   ******************************************************************
 
   ==================================================================
@@ -3659,7 +3708,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 2 1 1 1 |   1   2   3   3 |    0.147484  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -3687,7 +3736,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 1 2 1 |   8   3   1   3 |    0.103176  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -3715,7 +3764,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 1 2 1 |   7   7   1   2 |   -0.104225  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -3743,7 +3792,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 1 2 1 |  15   5   1   3 |    0.102475  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -3770,7 +3819,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 1 2 1 |   7   7   1   3 |    0.123978  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -3822,7 +3871,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 3 3 2 1 |   7   6   1   3 |   -0.020592  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -3884,7 +3933,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  -----------------------------------
 
   ******************************************************************
-            SOPPA(CC2)  iterations, Excitation symmetry 2
+            SOPPA(CC2) iterations, Excitation symmetry 2
   ******************************************************************
 
   ==================================================================
@@ -3979,7 +4028,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 2 1 1 1 |   1   2   3   3 |   -0.147647  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -4007,7 +4056,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 1 2 1 |   8   3   1   3 |   -0.103324  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -4035,7 +4084,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 1 2 1 |   7   7   1   2 |    0.102118  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -4063,7 +4112,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 1 2 1 |  15   5   1   3 |   -0.100509  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -4090,7 +4139,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 1 1 2 1 |   7   7   1   3 |    0.124067  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -4142,7 +4191,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  |    exci. | 3 3 2 1 |   7   6   1   3 |    0.020585  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -4204,7 +4253,7 @@ SOPPA(CCSD) excitation energy :  0.78803417     au
  -----------------------------------
 
   ******************************************************************
-           SOPPA(CCSD)  iterations, Excitation symmetry 2
+           SOPPA(CCSD) iterations, Excitation symmetry 2
   ******************************************************************
 
   ==================================================================
@@ -4299,7 +4348,7 @@ SOPPA(CCSD) excitation energy :  0.27659860     au
  |    exci. | 2 1 1 1 |   1   2   3   3 |    0.147665  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -4327,7 +4376,7 @@ SOPPA(CCSD) excitation energy :  0.58383621     au
  |    exci. | 1 1 2 1 |   8   3   1   3 |    0.103135  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -4355,7 +4404,7 @@ SOPPA(CCSD) excitation energy :  0.67580266     au
  |    exci. | 1 1 2 1 |   7   7   1   2 |   -0.105616  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -4383,7 +4432,7 @@ SOPPA(CCSD) excitation energy :  0.68311848     au
  |    exci. | 1 1 2 1 |  15   5   1   3 |   -0.103761  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -4410,7 +4459,7 @@ SOPPA(CCSD) excitation energy :   1.0239287     au
  |    exci. | 1 1 2 1 |   7   7   1   3 |   -0.124048  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -4462,7 +4511,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 3 3 2 1 |   7   6   1   3 |    0.020594  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -4522,7 +4571,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  -----------------------------------
 
   ******************************************************************
-                   RPA  iterations, Excitation symmetry 3
+                   RPA iterations, Excitation symmetry 3
   ******************************************************************
 
   ==================================================================
@@ -4637,7 +4686,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 3   1   |   3       3     |    0.254028  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -4660,7 +4709,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1   3   |   3       1     |    0.146909  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -4683,7 +4732,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 3   1   |   2       3     |   -0.982497  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -4707,7 +4756,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1   3   |   3       1     |   -0.203866  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -4731,7 +4780,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 3   1   |   3       3     |   -0.948489  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -4788,26 +4837,29 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  -----------------------------------
 
   ******************************************************************
-               Double corrected RPA calculation, Symmetry 3
+                RPA(D) calculation, Excitation symmetry 3
   ******************************************************************
+ -----------------------------------------------------------------
+ Excitation   Energy (au)      ph(0)        ph(2)       2p2h(2)
+ -----------------------------------------------------------------
+      1        0.44691147   0.48886138   0.07230047  -0.11425038
+      2        0.51913448   0.54399472   0.06827375  -0.09313398
+      3        0.69692551   0.75461182   0.06110541  -0.11879172
+      4        0.83077151   0.83980409   0.07295506  -0.08198764
+      5        0.82912672   0.87364931   0.06933485  -0.11385744
+ -----------------------------------------------------------------
 
-                         ------------------------
-                         Excitation   Energy (au)
-                         ------------------------
-                              1       0.44691147
-                              2       0.51913448
-                              3       0.69692551
-                              4       0.83077151
-                              5       0.82912672
-                         ------------------------
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  3, state no.  1
 
- DCRPA excitation energy :  0.44691147     au
-                             12.161080     eV
-                             98085.729     cm-1
-                             1173.3659     kj / mole
+     RPA(D) excitation energy :  0.44691147     au
+                                   12.161080     eV
+                                   98085.729     cm-1
+                                   1173.3659     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.27 + -0.18  =  94.09 %
  2p-2h + 2h-2p excitation weight:   5.91 + -0.00  =   5.91 %
@@ -4823,16 +4875,20 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 1 3 1 |   1  12   1   2 |   -0.115149  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  3, state no.  2
 
- DCRPA excitation energy :  0.51913448     au
-                             14.126368     eV
-                             113936.85     cm-1
-                             1362.9874     kj / mole
+     RPA(D) excitation energy :  0.51913448     au
+                                   14.126368     eV
+                                   113936.85     cm-1
+                                   1362.9874     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.46 + -0.09  =  95.37 %
  2p-2h + 2h-2p excitation weight:   4.63 + -0.00  =   4.63 %
@@ -4848,16 +4904,20 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 1 3 1 |   7  12   1   3 |    0.110124  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  3, state no.  3
 
- DCRPA excitation energy :  0.69692551     au
-                             18.964308     eV
-                             152957.47     cm-1
-                             1829.7777     kj / mole
+     RPA(D) excitation energy :  0.69692551     au
+                                   18.964308     eV
+                                   152957.47     cm-1
+                                   1829.7777     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.26 + -0.13  =  94.13 %
  2p-2h + 2h-2p excitation weight:   5.87 + -0.00  =   5.87 %
@@ -4873,16 +4933,20 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 1 3 1 |   2  13   1   2 |    0.128918  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  3, state no.  4
 
- DCRPA excitation energy :  0.83077151     au
-                             22.606443     eV
-                             182333.27     cm-1
-                             2181.1903     kj / mole
+     RPA(D) excitation energy :  0.83077151     au
+                                   22.606443     eV
+                                   182333.27     cm-1
+                                   2181.1903     kj / mole
 
  1p-1h + 1h-1p excitation weight:  96.32 + -0.14  =  96.18 %
  2p-2h + 2h-2p excitation weight:   3.83 + -0.01  =   3.82 %
@@ -4922,16 +4986,20 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 2 3 2 |   2   2   1   1 |    0.023521  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  3, state no.  5
 
- DCRPA excitation energy :  0.82912672     au
-                             22.561686     eV
-                             181972.28     cm-1
-                             2176.8719     kj / mole
+     RPA(D) excitation energy :  0.82912672     au
+                                   22.561686     eV
+                                   181972.28     cm-1
+                                   2176.8719     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.85 + -0.09  =  93.76 %
  2p-2h + 2h-2p excitation weight:   6.25 + -0.00  =   6.24 %
@@ -4982,7 +5050,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 1 3 1 |   4  14   1   2 |   -0.021206  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -4991,44 +5059,44 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.54442 +    0.04237 =   -0.50205
-   2    -0.88116 +    0.02777 =   -0.85339
-   3    -0.69406 +    0.06620 =   -0.62786
-   4    -0.23008 +    0.02628 =   -0.20380
-   5    -0.03027 +   -0.01918 =   -0.04945
+   1    -0.55470 +    0.04317 =   -0.51153
+   2    -0.89248 +    0.02812 =   -0.86436
+   3    -0.70854 +    0.06759 =   -0.64096
+   4    -0.23191 +    0.02649 =   -0.20542
+   5    -0.03093 +   -0.01959 =   -0.05052
  ===================================================================
 
  YDIPVEL  RPA(D) transition moments for excitation symmetry  3
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.18429 +    0.04842 =    0.23271
-   2     0.43196 +    0.01128 =    0.44324
-   3     0.37176 +    0.06624 =    0.43800
-   4     0.14210 +    0.01006 =    0.15216
-   5     0.07148 +   -0.02858 =    0.04290
+   1     0.18777 +    0.04933 =    0.23710
+   2     0.43751 +    0.01143 =    0.44894
+   3     0.37952 +    0.06762 =    0.44714
+   4     0.14323 +    0.01014 =    0.15337
+   5     0.07303 +   -0.02920 =    0.04383
  ===================================================================
 
  XANGMOM  RPA(D) transition moments for excitation symmetry  3
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.20342 +   -0.00352 =    0.19991
-   2    -0.14050 +   -0.00545 =   -0.14595
-   3     0.45191 +   -0.00987 =    0.44204
-   4    -0.10480 +    0.00573 =   -0.09907
-   5    -0.14790 +    0.00404 =   -0.14386
+   1     0.20726 +   -0.00358 =    0.20368
+   2    -0.14231 +   -0.00552 =   -0.14782
+   3     0.46134 +   -0.01007 =    0.45127
+   4    -0.10563 +    0.00578 =   -0.09986
+   5    -0.15110 +    0.00413 =   -0.14697
  ===================================================================
 
  YZSECMOM RPA(D) transition moments for excitation symmetry  3
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.85420 +    0.01385 =    0.86806
-   2     0.83171 +   -0.01290 =    0.81881
-   3    -0.25460 +   -0.01043 =   -0.26503
-   4    -0.54355 +   -0.02300 =   -0.56656
-   5    -0.22956 +   -0.01670 =   -0.24626
+   1     0.87033 +    0.01411 =    0.88444
+   2     0.84240 +   -0.01307 =    0.82933
+   3    -0.25991 +   -0.01065 =   -0.27056
+   4    -0.54789 +   -0.02319 =   -0.57107
+   5    -0.23453 +   -0.01706 =   -0.25159
  ===================================================================
 
  -----------------------------------
@@ -5040,7 +5108,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  -----------------------------------
 
   ******************************************************************
-                 SOPPA  iterations, Excitation symmetry 3
+                 SOPPA iterations, Excitation symmetry 3
   ******************************************************************
 
   ==================================================================
@@ -5216,7 +5284,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 1 3 1 |   1  12   1   2 |   -0.117473  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -5245,7 +5313,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 1 3 1 |   7  12   1   3 |    0.109646  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -5274,7 +5342,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 1 3 1 |   2  13   1   2 |    0.125490  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -5324,7 +5392,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 2 3 2 |   2   2   1   1 |   -0.023823  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -5390,7 +5458,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 1 3 1 |   2   1   1   3 |   -0.020058  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -5448,7 +5516,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  -----------------------------------
 
   ******************************************************************
-            SOPPA(CC2)  iterations, Excitation symmetry 3
+            SOPPA(CC2) iterations, Excitation symmetry 3
   ******************************************************************
 
   ==================================================================
@@ -5540,7 +5608,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 1 3 1 |   1  12   1   2 |    0.117618  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -5569,7 +5637,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 1 3 1 |   7  12   1   3 |    0.109753  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -5598,7 +5666,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 1 3 1 |   2  13   1   2 |    0.125584  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -5648,7 +5716,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 2 3 2 |   2   2   1   1 |   -0.023836  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -5715,7 +5783,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  |    exci. | 1 1 3 1 |   2   1   1   3 |    0.020074  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -5773,7 +5841,7 @@ SOPPA(CCSD) excitation energy :   1.2547055     au
  -----------------------------------
 
   ******************************************************************
-           SOPPA(CCSD)  iterations, Excitation symmetry 3
+           SOPPA(CCSD) iterations, Excitation symmetry 3
   ******************************************************************
 
   ==================================================================
@@ -5879,7 +5947,7 @@ SOPPA(CCSD) excitation energy :  0.44335198     au
  |    exci. | 1 1 3 1 |   1  12   1   2 |   -0.117600  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -5908,7 +5976,7 @@ SOPPA(CCSD) excitation energy :  0.51906202     au
  |    exci. | 1 1 3 1 |   7  12   1   3 |    0.109918  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -5937,7 +6005,7 @@ SOPPA(CCSD) excitation energy :  0.69870366     au
  |    exci. | 1 1 3 1 |   2  13   1   2 |   -0.125791  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -5987,7 +6055,7 @@ SOPPA(CCSD) excitation energy :  0.83070781     au
  |    exci. | 1 2 3 2 |   2   2   1   1 |    0.023842  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -6053,7 +6121,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 1 1 3 1 |   2   1   1   3 |    0.020099  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -6109,7 +6177,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  -----------------------------------
 
   ******************************************************************
-                   RPA  iterations, Excitation symmetry 4
+                   RPA iterations, Excitation symmetry 4
   ******************************************************************
 
   ==================================================================
@@ -6211,7 +6279,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 3   2   |   3       1     |    0.298130  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -6235,7 +6303,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 3   2   |   3       1     |    0.189926  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -6259,7 +6327,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 3   2   |   3       1     |    0.926596  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -6281,7 +6349,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 2   3   |   1       1     |   -0.994574  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -6303,7 +6371,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 4   1   |   1       3     |    0.999805  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -6338,26 +6406,29 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  -----------------------------------
 
   ******************************************************************
-               Double corrected RPA calculation, Symmetry 4
+                RPA(D) calculation, Excitation symmetry 4
   ******************************************************************
+ -----------------------------------------------------------------
+ Excitation   Energy (au)      ph(0)        ph(2)       2p2h(2)
+ -----------------------------------------------------------------
+      1        0.35275939   0.39497370   0.07224615  -0.11446046
+      2        0.59075458   0.65410745   0.06000732  -0.12336019
+      3        0.73460329   0.78672694   0.06617554  -0.11829919
+      4        0.83510469   0.83047692   0.07719468  -0.07256691
+      5        1.35167464   1.34957881   0.06362704  -0.06153121
+ -----------------------------------------------------------------
 
-                         ------------------------
-                         Excitation   Energy (au)
-                         ------------------------
-                              1       0.35275939
-                              2       0.59075458
-                              3       0.73460329
-                              4       0.83510469
-                              5       1.35167464
-                         ------------------------
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  4, state no.  1
 
- DCRPA excitation energy :  0.35275939     au
-                             9.5990713     eV
-                             77421.736     cm-1
-                             926.16963     kj / mole
+     RPA(D) excitation energy :  0.35275939     au
+                                   9.5990713     eV
+                                   77421.736     cm-1
+                                   926.16963     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.42 + -0.17  =  94.25 %
  2p-2h + 2h-2p excitation weight:   5.75 + -0.00  =   5.75 %
@@ -6374,16 +6445,20 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 2 1 3 1 |   5   4   1   2 |   -0.100460  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  4, state no.  2
 
- DCRPA excitation energy :  0.59075458     au
-                             16.075250     eV
-                             129655.64     cm-1
-                             1551.0259     kj / mole
+     RPA(D) excitation energy :  0.59075458     au
+                                   16.075250     eV
+                                   129655.64     cm-1
+                                   1551.0259     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.97 + -0.03  =  93.94 %
  2p-2h + 2h-2p excitation weight:   6.06 + -0.00  =   6.06 %
@@ -6399,16 +6474,20 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 3 1 2 1 |   7   7   1   2 |    0.142576  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  4, state no.  3
 
- DCRPA excitation energy :  0.73460329     au
-                             19.989572     eV
-                             161226.79     cm-1
-                             1928.7006     kj / mole
+     RPA(D) excitation energy :  0.73460329     au
+                                   19.989572     eV
+                                   161226.79     cm-1
+                                   1928.7006     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.45 + -0.08  =  93.36 %
  2p-2h + 2h-2p excitation weight:   6.64 + -0.00  =   6.64 %
@@ -6424,16 +6503,20 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 3 1 2 1 |   9   4   1   2 |    0.109997  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  4, state no.  4
 
- DCRPA excitation energy :  0.83510469     au
-                             22.724355     eV
-                             183284.29     cm-1
-                             2192.5670     kj / mole
+     RPA(D) excitation energy :  0.83510469     au
+                                   22.724355     eV
+                                   183284.29     cm-1
+                                   2192.5670     kj / mole
 
  1p-1h + 1h-1p excitation weight:  97.00 + -0.18  =  96.83 %
  2p-2h + 2h-2p excitation weight:   3.18 + -0.01  =   3.17 %
@@ -6467,16 +6550,20 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 3 3 2 3 |   7   1   1   1 |   -0.025867  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  4, state no.  5
 
- DCRPA excitation energy :   1.3516746     au
-                             36.780938     eV
-                             296658.29     cm-1
-                             3548.8212     kj / mole
+     RPA(D) excitation energy :   1.3516746     au
+                                   36.780938     eV
+                                   296658.29     cm-1
+                                   3548.8212     kj / mole
 
  1p-1h + 1h-1p excitation weight:  97.16 + -0.04  =  97.12 %
  2p-2h + 2h-2p excitation weight:   2.89 + -0.00  =   2.88 %
@@ -6511,7 +6598,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 2 1 3 1 |   5   3   1   2 |   -0.043572  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -6520,22 +6607,22 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.17689 +    0.00563 =   -0.17126
-   2    -0.26950 +    0.00625 =   -0.26325
-   3    -0.07947 +    0.00285 =   -0.07662
-   4     0.08700 +   -0.00867 =    0.07833
-   5     0.28170 +   -0.00699 =    0.27471
+   1    -0.18009 +    0.00573 =   -0.17436
+   2    -0.27546 +    0.00639 =   -0.26907
+   3    -0.08142 +    0.00292 =   -0.07849
+   4     0.08732 +   -0.00870 =    0.07862
+   5     0.28296 +   -0.00702 =    0.27594
  ===================================================================
 
  XYSECMOM RPA(D) transition moments for excitation symmetry  4
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.48987 +    0.02226 =    0.51213
-   2    -0.76285 +    0.00820 =   -0.75465
-   3     0.18075 +    0.01271 =    0.19346
-   4    -0.72576 +   -0.01658 =   -0.74234
-   5     0.05469 +   -0.00197 =    0.05272
+   1     0.49872 +    0.02266 =    0.52138
+   2    -0.77970 +    0.00838 =   -0.77132
+   3     0.18518 +    0.01302 =    0.19820
+   4    -0.72838 +   -0.01664 =   -0.74502
+   5     0.05494 +   -0.00198 =    0.05296
  ===================================================================
 
  -----------------------------------
@@ -6547,7 +6634,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  -----------------------------------
 
   ******************************************************************
-                 SOPPA  iterations, Excitation symmetry 4
+                 SOPPA iterations, Excitation symmetry 4
   ******************************************************************
 
   ==================================================================
@@ -6681,7 +6768,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 2 1 3 1 |   5   4   1   2 |    0.102808  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -6710,7 +6797,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 3 1 2 1 |   7   7   1   2 |   -0.137953  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -6773,7 +6860,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 2 1 3 1 |   3  10   1   2 |   -0.071260  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -6820,7 +6907,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 3 3 2 3 |   7   1   1   1 |   -0.025947  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -6868,7 +6955,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 2 1 3 1 |   5   3   1   2 |    0.044237  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -6904,7 +6991,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  -----------------------------------
 
   ******************************************************************
-            SOPPA(CC2)  iterations, Excitation symmetry 4
+            SOPPA(CC2) iterations, Excitation symmetry 4
   ******************************************************************
 
   ==================================================================
@@ -6982,7 +7069,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 2 1 3 1 |   5   4   1   2 |   -0.102937  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -7011,7 +7098,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 3 1 2 1 |   7   7   1   2 |   -0.138051  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -7075,7 +7162,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 2 1 3 1 |   3  10   1   2 |    0.071314  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -7122,7 +7209,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 3 3 2 3 |   7   1   1   1 |    0.025976  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -7170,7 +7257,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  |    exci. | 2 1 3 1 |   5   3   1   2 |   -0.044486  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -7206,7 +7293,7 @@ SOPPA(CCSD) excitation energy :  0.83522748     au
  -----------------------------------
 
   ******************************************************************
-           SOPPA(CCSD)  iterations, Excitation symmetry 4
+           SOPPA(CCSD) iterations, Excitation symmetry 4
   ******************************************************************
 
   ==================================================================
@@ -7284,7 +7371,7 @@ SOPPA(CCSD) excitation energy :  0.34843166     au
  |    exci. | 2 1 3 1 |   5   4   1   2 |   -0.102865  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -7313,7 +7400,7 @@ SOPPA(CCSD) excitation energy :  0.59422823     au
  |    exci. | 3 1 2 1 |   7   7   1   2 |   -0.138208  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -7377,7 +7464,7 @@ SOPPA(CCSD) excitation energy :  0.74258478     au
  |    exci. | 2 1 3 1 |   3  10   1   2 |   -0.071349  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -7424,7 +7511,7 @@ SOPPA(CCSD) excitation energy :  0.83418297     au
  |    exci. | 3 3 2 3 |   7   1   1   1 |    0.025972  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -7472,7 +7559,7 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
  |    exci. | 2 1 3 1 |   5   3   1   2 |    0.044823  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -7509,16 +7596,16 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
  |  SO_PRPINT                    18187           0.1   |
  |  SO_ERES.3                    20061           0.2   |
  |  SO_ERES.5                    21300           0.2   |
- |  SO_ERES.2                    25504           0.2   |
- |  SO_AODENS                    25562           0.2   |
- |  SO_ERES.3                    34725           0.3   |
- |  SO_ERES.4                    35553           0.3   |
- |  SO_T2M1.1                    35570           0.3   |
- |  SO_ERES.5                    36792           0.3   |
- |  SO_RES_A.1                   37392           0.3   |
- |  SO_RES_A.2                   37449           0.3   |
- |  SO_RES_A.3                   37648           0.3   |
- |  SO_RES_TCB.3                 37897           0.3   |
+ |  SO_ERES.2                    25505           0.2   |
+ |  SO_AODENS                    25563           0.2   |
+ |  SO_ERES.3                    34726           0.3   |
+ |  SO_ERES.4                    35554           0.3   |
+ |  SO_T2M1.1                    35571           0.3   |
+ |  SO_ERES.5                    36793           0.3   |
+ |  SO_RES_A.1                   37393           0.3   |
+ |  SO_RES_A.2                   37450           0.3   |
+ |  SO_RES_A.3                   37649           0.3   |
+ |  SO_RES_TCB.3                 37898           0.3   |
  |  SO_ERES.3                    37942           0.3   |
  |  SO_ERES.4                    38770           0.3   |
  |  SO_T2M1.1                    38787           0.3   |
@@ -7540,39 +7627,36 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
  |=====================================================| 
  |   Routine            cpu time   of total        sum |
  |-----------------------------------------------------| 
- |   SO_OPTVEC           0:00:04     46.1 %     46.1 % |
- |   SO_SIGAI            0:00:01     14.9 %     60.9 % |
- |   SO_RES_A            0:00:01      6.7 %     67.7 % |
- |   SO_RES_TCB          0:00:01      6.5 %     74.2 % |
- |   SO_ORTH_TRN         0:00:01      6.2 %     80.4 % |
- |   SO_RES_CB           0:00:00      5.2 %     85.5 % |
- |   SO_T2M1             0:00:00      4.0 %     89.6 % |
- |   CCTRBT              0:00:00      1.9 %     91.5 % |
- |   CC_AOFOCK           0:00:00      1.9 %     93.4 % |
- |   CCRDAO              0:00:00      1.5 %     94.9 % |
- |   SO_REDEV            0:00:00      1.4 %     96.3 % |
- |   SO_INCRED           0:00:00      0.8 %     97.1 % |
- |   SO_RES_OVL          0:00:00      0.6 %     97.7 % |
- |   SO_TRIAL2           0:00:00      0.6 %     98.3 % |
- |   SO_ERES             0:00:00      0.6 %     98.9 % |
- |   SO_TRIAL1           0:00:00      0.1 %     99.1 % |
- |   SO_DENS             0:00:00      0.1 %     99.2 % |
+ |   SO_OPTVEC           0:00:02     33.9 %     33.9 % |
+ |   SO_SIGAI            0:00:01     17.7 %     51.6 % |
+ |   SO_RES_A            0:00:01      8.3 %     59.9 % |
+ |   SO_ORTH_TRN         0:00:01      7.9 %     67.9 % |
+ |   SO_RES_TCB          0:00:01      7.5 %     75.3 % |
+ |   SO_RES_CB           0:00:00      6.8 %     82.1 % |
+ |   SO_T2M1             0:00:00      4.9 %     86.9 % |
+ |   CCTRBT              0:00:00      2.8 %     89.8 % |
+ |   CC_AOFOCK           0:00:00      2.1 %     91.9 % |
+ |   CCRDAO              0:00:00      1.9 %     93.8 % |
+ |   SO_REDEV            0:00:00      1.4 %     95.3 % |
+ |   SO_INCRED           0:00:00      1.3 %     96.6 % |
+ |   SO_ERES             0:00:00      0.9 %     97.5 % |
+ |   SO_TRIAL2           0:00:00      0.9 %     98.4 % |
+ |   SO_RES_OVL          0:00:00      0.6 %     99.1 % |
+ |   SO_TRIAL1           0:00:00      0.2 %     99.3 % |
  |   SO_RES_SYM          0:00:00      0.1 %     99.4 % |
- |   SO_ORDEIG           0:00:00      0.1 %     99.5 % |
- |   SO_DENSAI           0:00:00      0.1 %     99.6 % |
- |   SO_RES_CD           0:00:00      0.0 %     99.6 % |
- |   SO_RES_FCK          0:00:00      0.0 %     99.7 % |
- |   SO_GETMO            0:00:00      0.0 %     99.7 % |
- |   SO_AODENS           0:00:00      0.0 %     99.8 % |
+ |   SO_DENS             0:00:00      0.1 %     99.5 % |
+ |   SO_AODENS           0:00:00      0.1 %     99.5 % |
+ |   SO_ROPT             0:00:00      0.1 %     99.6 % |
+ |   SO_BCKTR            0:00:00      0.1 %     99.7 % |
  |-----------------------------------------------------| 
- |  Total CPU time       0:00:09                       |
+ |  Total CPU time       0:00:07                       |
  |=====================================================| 
 
  |-----------------------------------------------------| 
- |   SO_READ             0: 0: 0      1.1 %            |
- |   SO_WRITE            0: 0: 0      0.6 %            |
+ |   SO_READ             0: 0: 0      1.4 %            |
+ |   SO_WRITE            0: 0: 0      1.1 %            |
  |   SO_OPEN             0: 0: 0      0.1 %            |
- |   SO_CLOSE            0: 0: 0      0.0 %            |
+ |   SO_CLOSE            0: 0: 0      0.1 %            |
  |-----------------------------------------------------| 
 
  |=====================================================| 
@@ -7580,14 +7664,14 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
  |=====================================================| 
  |   Routine           wall time   of total       sum  |
  |-----------------------------------------------------| 
- |   SO_ERES             0:00:04     40.6 %     40.6 % |
- |   SO_SRES             0:00:00      0.0 %     40.6 % |
- |   SO_REDEV            0:00:04     47.2 %     87.8 % |
- |   SO_TRIAL2           0:00:01      6.9 %     94.6 % |
+ |   SO_ERES             0:00:04     53.5 %     53.5 % |
+ |   SO_SRES             0:00:00      0.0 %     53.5 % |
+ |   SO_REDEV            0:00:02     36.0 %     89.5 % |
+ |   SO_TRIAL2           0:00:01      9.1 %     98.6 % |
  |-----------------------------------------------------| 
- |   Total wall time     0: 0: 9                       |
+ |   Total wall time     0: 0: 7                       |
  |=====================================================| 
-  Time used in EXCITA     is       8.70 seconds
+  Time used in EXCITA     is       6.92 seconds
 
 
    ***************************************************************************
@@ -7596,8 +7680,8 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
 
 
  
-     Date and time (Linux)  : Fri Aug 12 11:34:01 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:28:04 2016
+     Host name              : sunray                                  
 
 
                              Molecular geometry (au)
@@ -7854,21 +7938,6 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
     4    5    36.7239     0.977     0.977    -0.897     1.057
 
 
-          Bethe sum rule                   
-          --------------
-
-  Q value      X Component    Y Component    Z Component
-  ------------------------------------------------------
- LQ=   0 QMAX= 0.000     QMIN= 0.000     QSTEP= 0.000    
-
-
-          Stopping Power                 
-          --------------
-
-  Velocity     X Component    Y Component    Z Component
-  ------------------------------------------------
-
-
  ======================================================================
                                RPA(D) results:
  ----------------------------------------------------------------------
@@ -7915,26 +7984,26 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
 @         No.      (au)          x       y       z         x       y       z
 @==============================================================================
 @  Symmetry of excited state: 1  ( A1 )
-@           1     0.368344     0.0000  0.0000 -0.7757    0.0000  0.0000 -0.7095
-@           2     0.591502     0.0000  0.0000 -0.3687    0.0000  0.0000 -0.3733
-@           3     0.630860     0.0000  0.0000 -0.3882    0.0000  0.0000 -0.3810
-@           4     0.717240     0.0000  0.0000 -0.0283    0.0000  0.0000 -0.0102
-@           5     0.784284     0.0000  0.0000  0.0165    0.0000  0.0000 -0.0111
+@           1     0.368344     0.0000  0.0000 -0.7928    0.0000  0.0000 -0.7252
+@           2     0.591502     0.0000  0.0000 -0.3729    0.0000  0.0000 -0.3776
+@           3     0.630860     0.0000  0.0000 -0.3935    0.0000  0.0000 -0.3862
+@           4     0.717240     0.0000  0.0000 -0.0292    0.0000  0.0000 -0.0106
+@           5     0.784284     0.0000  0.0000  0.0169    0.0000  0.0000 -0.0113
 @------------------------------------------------------------------------------
 @  Symmetry of excited state: 2  ( B1 )
-@           1     0.277368     0.5956  0.0000  0.0000    0.5039  0.0000  0.0000
-@           2     0.585865    -0.1178  0.0000  0.0000   -0.1927  0.0000  0.0000
-@           3     0.679082     0.0910  0.0000  0.0000    0.0479  0.0000  0.0000
-@           4     0.675389    -0.4850  0.0000  0.0000   -0.5321  0.0000  0.0000
-@           5     1.020517    -0.5289  0.0000  0.0000   -0.6245  0.0000  0.0000
-@           6     1.254550    -0.2660  0.0000  0.0000   -0.3235  0.0000  0.0000
+@           1     0.277368     0.6083  0.0000  0.0000    0.5147  0.0000  0.0000
+@           2     0.585865    -0.1193  0.0000  0.0000   -0.1951  0.0000  0.0000
+@           3     0.679082     0.0917  0.0000  0.0000    0.0483  0.0000  0.0000
+@           4     0.675389    -0.4973  0.0000  0.0000   -0.5456  0.0000  0.0000
+@           5     1.020517    -0.5406  0.0000  0.0000   -0.6384  0.0000  0.0000
+@           6     1.254550    -0.2674  0.0000  0.0000   -0.3252  0.0000  0.0000
 @------------------------------------------------------------------------------
 @  Symmetry of excited state: 3  ( B2 )
-@           1     0.446911     0.0000 -0.5207  0.0000    0.0000 -0.5020  0.0000
-@           2     0.519134     0.0000 -0.8538  0.0000    0.0000 -0.8534  0.0000
-@           3     0.696926     0.0000 -0.6285  0.0000    0.0000 -0.6279  0.0000
-@           4     0.830772     0.0000 -0.1832  0.0000    0.0000 -0.2038  0.0000
-@           5     0.829127     0.0000 -0.0517  0.0000    0.0000 -0.0494  0.0000
+@           1     0.446911     0.0000 -0.5305  0.0000    0.0000 -0.5115  0.0000
+@           2     0.519134     0.0000 -0.8648  0.0000    0.0000 -0.8644  0.0000
+@           3     0.696926     0.0000 -0.6416  0.0000    0.0000 -0.6410  0.0000
+@           4     0.830772     0.0000 -0.1846  0.0000    0.0000 -0.2054  0.0000
+@           5     0.829127     0.0000 -0.0529  0.0000    0.0000 -0.0505  0.0000
 @------------------------------------------------------------------------------
 @  Symmetry of excited state: 4  ( A2 )
 @           1     0.352759     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
@@ -7959,24 +8028,24 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
    1      4    19.5171   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    1      5    21.3415   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   2      1     7.5476   -0.00000 -0.06711 -0.00000  -0.00000 -0.00000 -0.00000
-   2      2    15.9422   -0.00000  0.00575 -0.00000  -0.00000 -0.00000 -0.00000
-   2      3    18.4788   -0.00000  0.03304 -0.00000  -0.00000 -0.00000 -0.00000
-   2      4    18.3783   -0.00000 -0.09868 -0.00000  -0.00000 -0.00000 -0.00000
-   2      5    27.7697   -0.00000 -0.02278 -0.00000  -0.00000 -0.00000 -0.00000
-   2      6    34.1380   -0.00000 -0.03087 -0.00000  -0.00000 -0.00000 -0.00000
+   2      1     7.5476   -0.00000 -0.06855 -0.00000  -0.00000 -0.00000 -0.00000
+   2      2    15.9422   -0.00000  0.00582 -0.00000  -0.00000 -0.00000 -0.00000
+   2      3    18.4788   -0.00000  0.03330 -0.00000  -0.00000 -0.00000 -0.00000
+   2      4    18.3783   -0.00000 -0.10119 -0.00000  -0.00000 -0.00000 -0.00000
+   2      5    27.7697   -0.00000 -0.02328 -0.00000  -0.00000 -0.00000 -0.00000
+   2      6    34.1380   -0.00000 -0.03103 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   3      1    12.1611    0.09995 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      2    14.1264   -0.07297 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      3    18.9643    0.22102 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      4    22.6064   -0.04953 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      5    22.5617   -0.07193 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      1    12.1611    0.10184 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      2    14.1264   -0.07391 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      3    18.9643    0.22563 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      4    22.6064   -0.04993 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      5    22.5617   -0.07349 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   4      1     9.5991   -0.00000 -0.00000 -0.08563  -0.00000 -0.00000 -0.00000
-   4      2    16.0752   -0.00000 -0.00000 -0.13163  -0.00000 -0.00000 -0.00000
-   4      3    19.9896   -0.00000 -0.00000 -0.03831  -0.00000 -0.00000 -0.00000
-   4      4    22.7244   -0.00000 -0.00000  0.03917  -0.00000 -0.00000 -0.00000
-   4      5    36.7809   -0.00000 -0.00000  0.13735  -0.00000 -0.00000 -0.00000
+   4      1     9.5991   -0.00000 -0.00000 -0.08718  -0.00000 -0.00000 -0.00000
+   4      2    16.0752   -0.00000 -0.00000 -0.13453  -0.00000 -0.00000 -0.00000
+   4      3    19.9896   -0.00000 -0.00000 -0.03925  -0.00000 -0.00000 -0.00000
+   4      4    22.7244   -0.00000 -0.00000  0.03931  -0.00000 -0.00000 -0.00000
+   4      5    36.7809   -0.00000 -0.00000  0.13797  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
 
 
@@ -7989,23 +8058,23 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
 @ Symm.  Mode   Frequency    Oscillator-strength      Rotational-strength   
 @ ex.st.  No.     (eV)        velocity  length     velocity  length   London
 @ ==========================================================================
-@  1      1    10.0232        0.1478   0.1236      -0.000   -0.000   -0.000
-@  1      2    16.0956        0.0536   0.0550      -0.000   -0.000   -0.000
-@  1      3    17.1666        0.0634   0.0610      -0.000   -0.000   -0.000
+@  1      1    10.0232        0.1544   0.1291      -0.000   -0.000   -0.000
+@  1      2    16.0956        0.0548   0.0562      -0.000   -0.000   -0.000
+@  1      3    17.1666        0.0651   0.0627      -0.000   -0.000   -0.000
 @  1      4    19.5171        0.0004   0.0001      -0.000   -0.000   -0.000
 @  1      5    21.3415        0.0001   0.0001      -0.000   -0.000   -0.000
 @ --------------------------------------------------------------------------
-@  2      1     7.5476        0.0656   0.0470      -0.000   -0.000   -0.000
-@  2      2    15.9422        0.0054   0.0145      -0.000   -0.000   -0.000
-@  2      3    18.4788        0.0037   0.0010      -0.000   -0.000   -0.000
-@  2      4    18.3783        0.1059   0.1275      -0.000   -0.000   -0.000
-@  2      5    27.7697        0.1903   0.2653      -0.000   -0.000   -0.000
-@  2      6    34.1380        0.0592   0.0875      -0.000   -0.000   -0.000
+@  2      1     7.5476        0.0684   0.0490      -0.000   -0.000   -0.000
+@  2      2    15.9422        0.0056   0.0149      -0.000   -0.000   -0.000
+@  2      3    18.4788        0.0038   0.0011      -0.000   -0.000   -0.000
+@  2      4    18.3783        0.1114   0.1341      -0.000   -0.000   -0.000
+@  2      5    27.7697        0.1989   0.2773      -0.000   -0.000   -0.000
+@  2      6    34.1380        0.0598   0.0885      -0.000   -0.000   -0.000
 @ --------------------------------------------------------------------------
-@  3      1    12.1611        0.0808   0.0751      -0.000   -0.000   -0.000
-@  3      2    14.1264        0.2523   0.2521      -0.000   -0.000   -0.000
-@  3      3    18.9643        0.1835   0.1832      -0.000   -0.000   -0.000
-@  3      4    22.6064        0.0186   0.0230      -0.000   -0.000   -0.000
+@  3      1    12.1611        0.0839   0.0780      -0.000   -0.000   -0.000
+@  3      2    14.1264        0.2588   0.2586      -0.000   -0.000   -0.000
+@  3      3    18.9643        0.1913   0.1909      -0.000   -0.000   -0.000
+@  3      4    22.6064        0.0189   0.0234      -0.000   -0.000   -0.000
 @  3      5    22.5617        0.0015   0.0014      -0.000   -0.000   -0.000
 @ --------------------------------------------------------------------------
 @  4      1     9.5991        0.0000   0.0000      -0.000   -0.000   -0.000
@@ -8014,21 +8083,6 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
 @  4      4    22.7244        0.0000   0.0000      -0.000   -0.000   -0.000
 @  4      5    36.7809        0.0000   0.0000      -0.000   -0.000   -0.000
 @ --------------------------------------------------------------------------
-
-
-          Bethe sum rule                   
-          --------------
-
-  Q value      X Component    Y Component    Z Component
-  ------------------------------------------------------
- LQ=   0 QMAX= 0.000     QMIN= 0.000     QSTEP= 0.000    
-
-
-          Stopping Power                 
-          --------------
-
-  Velocity     X Component    Y Component    Z Component
-  ------------------------------------------------
 
 
  ======================================================================
@@ -8178,21 +8232,6 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
 @ --------------------------------------------------------------------------
 
 
-          Bethe sum rule                   
-          --------------
-
-  Q value      X Component    Y Component    Z Component
-  ------------------------------------------------------
- LQ=   0 QMAX= 0.000     QMIN= 0.000     QSTEP= 0.000    
-
-
-          Stopping Power                 
-          --------------
-
-  Velocity     X Component    Y Component    Z Component
-  ------------------------------------------------
-
-
  ======================================================================
                                SOPPA(CC2) results:
  ----------------------------------------------------------------------
@@ -8338,21 +8377,6 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
 @  4      4    22.7167        0.0000   0.0000      -0.000   -0.000   -0.000
 @  4      5    36.7640        0.0000   0.0000      -0.000   -0.000   -0.000
 @ --------------------------------------------------------------------------
-
-
-          Bethe sum rule                   
-          --------------
-
-  Q value      X Component    Y Component    Z Component
-  ------------------------------------------------------
- LQ=   0 QMAX= 0.000     QMIN= 0.000     QSTEP= 0.000    
-
-
-          Stopping Power                 
-          --------------
-
-  Velocity     X Component    Y Component    Z Component
-  ------------------------------------------------
 
 
  ======================================================================
@@ -8502,21 +8526,6 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
 @ --------------------------------------------------------------------------
 
 
-          Bethe sum rule                   
-          --------------
-
-  Q value      X Component    Y Component    Z Component
-  ------------------------------------------------------
- LQ=   0 QMAX= 0.000     QMIN= 0.000     QSTEP= 0.000    
-
-
-          Stopping Power                 
-          --------------
-
-  Velocity     X Component    Y Component    Z Component
-  ------------------------------------------------
-
-
    Interatomic separations (in Angstrom):
    --------------------------------------
 
@@ -8555,22 +8564,22 @@ SOPPA(CCSD) excitation energy :   1.3515502     au
  CPU time statistics for ABACUS
  ------------------------------
 
- EXCITA     00:00:09     100 %
+ EXCITA     00:00:07     100 %
 
- TOTAL      00:00:09     100 %
+ TOTAL      00:00:07     100 %
 
 
-  Total CPU  time used in ABACUS:   8.71 seconds
-  Total wall time used in ABACUS:   8.80 seconds
+  Total CPU  time used in ABACUS:   6.92 seconds
+  Total wall time used in ABACUS:   6.93 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
-  Total CPU  time used in DALTON:   9.28 seconds
-  Total wall time used in DALTON:   9.51 seconds
+  Total CPU  time used in DALTON:   7.35 seconds
+  Total wall time used in DALTON:   7.36 seconds
 
  
-     Date and time (Linux)  : Fri Aug 12 11:34:01 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:28:04 2016
+     Host name              : sunray                                  

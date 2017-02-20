@@ -47,10 +47,7 @@ C--------------------------------------------
 C
       LTR1 = NT1AM(ISYMTR)
       IF (DOUBLES) THEN
-CPi 01.04.16
-C         LTR2 = NT2AM(ISYMTR)
          LTR2 = N2P2HOP(ISYMTR)
-Cend-Pi
       ELSE
          LTR2 = 0
       ENDIF
@@ -75,7 +72,6 @@ C---------------------------------------------------------------------
 C
          CONTINUE
 C
-CPi
       ELSE IF ( (MODEL .EQ. 'AOCC2') .AND. AOSOP ) THEN
 C
 C---------------------------------------------------------------------
@@ -94,7 +90,6 @@ C----------------------------------------------------------------------
 C
          CONTINUE
 C
-CPi
       ELSE IF ((MODEL.EQ.'AOCC2') .AND. DCRPA .AND. (NEXCI.LE.LTR1))THEN
 C
 C----------------------------------------------------------------------
@@ -112,7 +107,6 @@ C--------------------------------------------------------------------
 C
          CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK)
 C
-CPi
       ELSE IF ((MODEL.EQ.'AOCC2') .AND. AORPA .AND. (NEXCI.LE.LTR1))THEN
 C
 C--------------------------------------------------------------------
@@ -139,8 +133,7 @@ C
          CALL SO_TR1RP(NNEWTR,LTR2,WORK,LWORK)
 C
       ELSE IF ((MODEL.EQ.'AOSOC') .OR. (MODEL.EQ.'AOSOP') .OR.
-CPi
-     &         (MODEL.EQ.'AOHRP') .OR. (MODEL.EQ.'AOCC2') ) THEN
+     &         (MODEL.EQ.'AOHRP') .OR. (MODEL.EQ.'AOCC2')) THEN
 C
 C----------------------------------------------------------------------
 C        Create brand new trial vectors for SOPPA, SOPPA(CCSD) or

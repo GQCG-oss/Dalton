@@ -30,6 +30,7 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_GETT2')
+C
 C--------------------------------------------
 C     If Triplet T2AM will get double length
 C--------------------------------------------
@@ -129,6 +130,7 @@ C
          READ(LUTAM) (DENSAI(I), I = 1,LDENSAI)
          CALL DSCAL(LDENSAI,HALF,DENSAI,1)
          READ(LUTAM) (T2AM(I), I = 1,LT2AMH)
+C
          CALL GPCLOSE(LUTAM,'KEEP')
 C
       ELSE IF ( KEY(1:4) .EQ. 'CCSD' ) THEN
@@ -165,7 +167,6 @@ C     (2 * coulomb - exchange of T2-amplitudes).
 C------------------------------------------------------
 C
       DTIME     = SECOND()
-C Using LT2AMH here and do not initialize LT2MPH in so_t2mp
       CALL SO_T2MP(T2AM,LT2AMH)
       DTIME     = SECOND()  - DTIME
       SOTIME(5) = SOTIME(5) + DTIME

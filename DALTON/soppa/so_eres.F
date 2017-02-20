@@ -27,7 +27,8 @@ C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
       use so_info, only: so_singles_first, so_singles_second,
-     &                   so_has_doubles, so_needs_densai
+     &                   so_has_doubles, so_needs_densai,
+     &                   so_double_correction
 
 #ifdef VAR_MPI
       use so_parutils, only: soppa_comm_active, soppa_num_active,
@@ -121,19 +122,16 @@ C
       singles_first = so_singles_first(model)
       singles_second = so_singles_second(model)
       doubles = so_has_doubles(model)
-      tr2_zero = MODEL.EQ.'DCRPA'
+      tr2_zero = so_double_correction(model)
 C
-CPi-140316
 C---------------------------------------------------------
 C     Adjust lengt of T2 amplitudes vector in TRIPLET case
-C     Copied from SPAS/PFP Triplet version
 C---------------------------------------------------------
 C
       LT2MPH = LT2MP
       IF (TRIPLET) THEN
         LT2MPH = INT(LT2MP/2)
       END IF
-Cend-Pi
 C
 C------------------------------------------------------
 C     Write singlet and triplet T2 amplitudes to output
@@ -216,17 +214,11 @@ C
       LBTJ1D  = NMATAV(ISYMTR)
 
       IF(DOUBLES) THEN
-CPi 01.04.16
-C         LTR2E   = NT2AM(ISYMTR)
-C         LRES2E  = NT2AM(ISYMTR)
          LTR2E   = N2P2HOP(ISYMTR)
          LRES2E  = N2P2HOP(ISYMTR)
          IF (DO_DEX) THEN
-C            LTR2D   = NT2AM(ISYMTR)
-C            LRES2D  = NT2AM(ISYMTR)
             LTR2D   = N2P2HOP(ISYMTR)
             LRES2D  = N2P2HOP(ISYMTR)
-Cend-Pi
          ELSE
             LTR2D  = 0
             LRES2D = 0
@@ -350,7 +342,7 @@ C
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
             IF(DO_DEX)
      &               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
-            IF (DOUBLES .AND. MODEL .NE. 'DCRPA') THEN
+            IF (DOUBLES .AND. .NOT. SO_DOUBLE_CORRECTION(MODEL) ) THEN
                      CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
                IF(DO_DEX)
      &               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)

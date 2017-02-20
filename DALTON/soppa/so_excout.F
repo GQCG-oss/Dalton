@@ -18,7 +18,8 @@ C              SOPPA, and SOPPA(CCSD) excitation calculations.
 C
       use so_info, only: sop_num_models, sop_mod_fullname,
      &                   sop_model_rpa, sop_model_rpad,
-     &                   so_get_active_models, so_has_doubles
+     &                   so_get_active_models, so_has_doubles,
+     &                   sop_model_hrpad, sop_model_shrpad
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -81,6 +82,8 @@ C        Check if we there is a treatment of doubly excited states
 C       - RPA(D) has cannot do this!
          TREAT_DOUBLES = SO_HAS_DOUBLES(IMODEL)
      &                   .AND. (.NOT.IMODEL.EQ.SOP_MODEL_RPAD)
+     &                   .AND. (.NOT.IMODEL.EQ.SOP_MODEL_HRPAD)
+     &                   .AND. (.NOT.IMODEL.EQ.SOP_MODEL_SHRPAD)
 C
          DO ISYM = 1, NSYM
 C
