@@ -34,6 +34,8 @@ C
       DIMENSION XAIBJ(*),T1AM(*),WORK(LWORK),INDEXA(MXCORB)
       INTEGER KEND0
 C
+      LOGICAL OPENED
+C
       CHARACTER*8 FNTOC
 C
       CALL QENTER('SO_IAJB')
@@ -45,6 +47,19 @@ C     Initialize the XAIBJ integral array.
 C-----------------------------------------
 C
       CALL DZERO(XAIBJ,NT2AM(ISYMOP))
+C
+C----------------------------------------
+C     Check whether SIRIFC is still open.
+C----------------------------------------
+C
+      CALL GPINQ('SIRIFC','OPENE',OPENED)
+      IF (OPENED) THEN
+         INQUIRE (FILE='SIRIFC',NUMBER=LUSIFC)
+         WRITE(LUPRI,'(2A,I3)') ' RP_INIT: file SIRIFC is already ',
+     &                          'opened with unit number ',LUSIFC
+         CALL GPCLOSE (LUSIFC,'KEEP')
+         WRITE(LUPRI,'(2A,I3)') ' RP_INIT: file SIRIFC was closed again'
+      ENDIF
 C
 C---------------------------------
 C     Dynamic allocation of space.
