@@ -159,7 +159,7 @@ C
          LDENSIJ = 0
          LDENSAB = 0
          LDENSAI = 0
-C        Force a crash of this is used
+C        Force a crash if this is used
          KT2AM   = LWORK + 1
          KDENSIJ = LWORK + 1
          KDENSAB = LWORK + 1
@@ -222,8 +222,10 @@ C-----------------------------------------------------
 C
          IF (NEED_T2) THEN
              CALL SO_GETT2(sop_dens_label(imodel),
-     &                     WORK(KT2AM),LT2AM,WORK(KDENSAI),
-     &                     LDENSAI,WORK(KDENSIJ),LDENSIJ,
+     &                     WORK(KFOCKD),LFOCKD,
+     &                     WORK(KT2AM),LT2AM,
+     &                     WORK(KDENSAI),LDENSAI,
+     &                     WORK(KDENSIJ),LDENSIJ,
      &                     WORK(KDENSAB),LDENSAB,
      &                     WORK(KEND1),LWORK1)
          END IF

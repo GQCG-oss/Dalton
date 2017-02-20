@@ -229,6 +229,15 @@ C
 
             isymbj = isymr
             isymai = muld2h(isymr,isymt)
+C
+C           Calculate the intermediate
+C           ~           _
+C           x(aibj) = -/2 x1(abij) + x2(abij) + x3(abij)
+C
+C           Note that x2 changes sign when permuting i and j, 
+C           x3 when permuting a and b, and x1 change sign on both
+C           these permutations.             
+C         
 
             if (isymt .eq. 1 ) then
                do isymj = 1, nsym
@@ -497,13 +506,13 @@ C                       Handle i = j, a != b
      &                                         x2pack(nabij3) )
                               end do ! a
 C                          Handle a == b, i<j
-                              nbbij2 = ioffbj2+(i-1)*sab2+b
+                              nbbij2 = ioffbj2+(i-1)*nrhfj*sab2+b
                               nbibj = quad_pos(isymbi,nbi,isymbj,nbj)
                               x2sq(nbibj) = fij*factd*x2pack(nbbij2)
                            end do ! i
                         end do ! b
                      end do ! j
-                        
+
                   else ! a != b, i != j
                      if (isyma .lt. isymb ) then
                         nvira = nvir(isyma)
