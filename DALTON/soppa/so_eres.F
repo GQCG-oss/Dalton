@@ -27,7 +27,8 @@ C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
       use so_info, only: so_singles_first, so_singles_second,
-     &                   so_has_doubles, so_needs_densai
+     &                   so_has_doubles, so_needs_densai,
+     &                   so_double_correction
 
 #ifdef VAR_MPI
       use so_parutils, only: soppa_comm_active, soppa_num_active,
@@ -83,7 +84,6 @@ C     properties and first iteration of excitation energies.
 #ifdef VAR_MPI
 #include "iprtyp.h"
 #include "infpar.h"
-C#include "parsoppa.h"
 C     integer, save :: numprocs
       integer :: numprocs
       logical :: loadbal_dyn
@@ -122,12 +122,10 @@ C
       singles_first = so_singles_first(model)
       singles_second = so_singles_second(model)
       doubles = so_has_doubles(model)
-      tr2_zero = MODEL.EQ.'DCRPA'
+      tr2_zero = so_double_correction(model)
 C
-CPi-140316
 C---------------------------------------------------------
 C     Adjust lengt of T2 amplitudes vector in TRIPLET case
-C     Copied from SPAS/PFP Triplet version
 C---------------------------------------------------------
 C
       LT2MPH = LT2MP
@@ -136,7 +134,6 @@ C
         LT2MPH = INT(LT2MP/2)
         IT2MPH = LT2MPH
       END IF
-Cend-Pi
 C
 C------------------------------------------------------
 C     Write singlet and triplet T2 amplitudes to output
@@ -219,17 +216,11 @@ C
       LBTJ1D  = NMATAV(ISYMTR)
 
       IF(DOUBLES) THEN
-CPi 01.04.16
-C         LTR2E   = NT2AM(ISYMTR)
-C         LRES2E  = NT2AM(ISYMTR)
          LTR2E   = N2P2HOP(ISYMTR)
          LRES2E  = N2P2HOP(ISYMTR)
          IF (DO_DEX) THEN
-C            LTR2D   = NT2AM(ISYMTR)
-C            LRES2D  = NT2AM(ISYMTR)
             LTR2D   = N2P2HOP(ISYMTR)
             LRES2D  = N2P2HOP(ISYMTR)
-Cend-Pi
          ELSE
             LTR2D  = 0
             LRES2D = 0
@@ -351,7 +342,7 @@ C
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
             IF(DO_DEX)
      &               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
-            IF (DOUBLES .AND. MODEL .NE. 'DCRPA') THEN
+            IF (DOUBLES .AND. .NOT. SO_DOUBLE_CORRECTION(MODEL) ) THEN
                CALL SO_READ(WORK(KRES2E),LRES2E,LUTR2E,FNTR2E,INEW)
                IF(DO_DEX)
      &              CALL SO_READ(WORK(KRES2D),LRES2D,LUTR2D,FNTR2D,INEW)
@@ -388,12 +379,12 @@ C
          CALL DZERO(WORK(KRES1D),LRES1D)
 
 C
-         IF (TRIPLET.AND.SINGLES_SECOND) THEN
-            CALL DZERO(WORK(KSIGAI1),LSIGAI1)
-            CALL DZERO(WORK(KSIGAI2),LSIGAI2)
-            CALL DZERO(WORK(KSIGDA1),LSIGDA1)
-            CALL DZERO(WORK(KSIGDA2),LSIGDA2)
-         ENDIF
+C         IF (TRIPLET.AND.SINGLES_SECOND) THEN
+C            CALL DZERO(WORK(KSIGAI1),LSIGAI1)
+C            CALL DZERO(WORK(KSIGAI2),LSIGAI2)
+C            CALL DZERO(WORK(KSIGDA1),LSIGDA1)
+C            CALL DZERO(WORK(KSIGDA2),LSIGDA2)
+C         ENDIF
 C
          CALL DZERO(WORK(KFOCK),LFOCK)
 C
@@ -1086,11 +1077,11 @@ C------------------------------------------
      &                '. new E[2] linear transformed trial vector'
             CALL SO_READ(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,INEW)
             CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &           (I,WORK(KRES1E+I-1),WORK(KRES1D+I-1),I=1,LRES1E)
             IF (DOUBLES) THEN
                CALL SO_READ(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
-               IF (DO_DEX) 
+               IF (DO_DEX)
      &            CALL SO_READ(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
                WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &             (I,WORK(KRES2E+I-1),WORK(KRES2D+I-1),I=1,LRES2E)
@@ -1637,7 +1628,6 @@ C F.Beyer Oct. 2014.
 
 #include "implicit.h"
 #include "mpif.h"
-!#include"parsoppa.h" !fetches ntot
 #include "maxorb.h"
 #include "distcl.h"
 #include "priunit.h"
@@ -1732,7 +1722,6 @@ C     F.Beyer Oct. 2014.
 C#include "implicit.h"
 #include "priunit.h"
 #include "mpif.h"
-C#include "parsoppa.h" ! to get the value for NTOT and KINDXB
 #include "maxorb.h"
 #include "iratdef.h"
 C fetch HERDIR

@@ -1,0 +1,2282 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON release Dalton2017.alpha (2016)
+         ( Web site: http://daltonprogram.org )
+
+   ----------------------------------------------------------------------------
+
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
+    and
+     
+       Dalton, a Molecular Electronic Structure Program,
+       Release Dalton2017.alpha (2016), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex frequency response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Thu Dec  1 19:34:40 2016
+     Host name              : spasnode102                             
+
+ * Work memory size             :   128000000 =  976.56 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/zth702/source/dalton/DALTON/test/prop_exci_aohrpad
+   2) /home/zth702/source/dalton/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | zth702
+ Host                     | sunray
+ System                   | Linux-3.16.0-4-amd64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Debian 4.9.2-10) 4.9.2
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Debian 4.9.2-10) 4.9.2
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (Debian 4.9.2-10) 4.9.2
+ BLAS                     | /usr/lib/atlas-base/libf77blas.so;/usr/lib/atlas-b
+                          | ase/libcblas.so;/usr/lib/atlas-base/libatlas.so
+ LAPACK                   | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-bas
+                          | e/atlas/liblapack.so
+ Static linking           | OFF
+ Last Git revision        | 51bacf87b5a11c7214010fd7caf3a02af8eb32f6
+ Git branch               | aosoppa_devel
+ Configuration time       | 2016-12-01 19:34:30.384523
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.MP2
+.AO-SOPPA
+**PROPERTIES
+.SOPPA
+.EXCITA
+.PRINT
+ 2
+*SOPPA
+.AOHRP
+.HRPA(D)
+*EXCITA
+.DIPSTR
+.ROTVEL
+.NEXCITA
+    5    5    5    5    0    0    0    0
+**END OF DALTON INPUT
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS
+STO-2G
+Calculation of excitation energies through ABACUS
+
+Atomtypes=2 Multiplicity=1 Charge=0 Generators=2  X  Y
+Charge=8.0 Atoms=1
+O   0.00000             0.00000              0.1241444240
+Charge=1.0 Atoms=1
+H   0.00000             1.43153              -0.985265576
+FINISH
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Static molecular property section will be executed (ABACUS module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Calculation of excitation energies through ABACUS                       
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/zth702/source/dalton/build/basis/STO-2G"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/zth702/source/dalton/build/basis/STO-2G"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C2v
+
+@  * The irrep name for each symmetry:    1: A1     2: B1     3: B2     4: A2 
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           H   _1      1.007825
+                           H   _2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.000015
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    3
+
+  Basis set used is "STO-2G" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  O           1    8.0000    10     5      [4s2p|2s1p]                                        
+  H           2    1.0000     2     1      [2s|1s]                                            
+  ----------------------------------------------------------------------
+  total:      3   10.0000    14     7
+  ----------------------------------------------------------------------
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    9
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.1241444240
+  H   / 1 :     4  x   0.0000000000    5  y   1.4315300000    6  z  -0.9852655760
+  H   / 2 :     7  x   0.0000000000    8  y  -1.4315300000    9  z  -0.9852655760
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     3    2    3    1
+
+  Symmetry  A1  ( 1)
+
+    1   O     z    3
+    2   H     y    [  5  -    8 ]/2
+    3   H     z    [  6  +    9 ]/2
+
+  Symmetry  B1  ( 2)
+
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
+
+  Symmetry  B2  ( 3)
+
+    6   O     y    2
+    7   H     y    [  5  +    8 ]/2
+    8   H     z    [  6  -    9 ]/2
+
+  Symmetry  A2  ( 4)
+
+    9   H     x    [  4  -    7 ]/2
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           H   _1      H   _2
+            ------      ------      ------
+ O     :    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
+
+
+  Max    interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
+  between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9584 Angstrom (    1.8111 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H   _1     O          H   _2       104.450
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.616959          0.000000    1.000000    0.000000
+   IB       1.156694          0.000000    0.000000    1.000000
+   IC       1.773652          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is planar.
+
+               A                   B                   C
+
+         819145.5126         436916.9575         284936.9149 MHz
+           27.323753           14.573981            9.504472 cm-1
+
+
+@  Nuclear repulsion energy :    9.183706230245 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           4    1    2    0
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        2pz        5
+    4     H        1s         6 +    7
+
+
+  Symmetry  B1 ( 2)
+
+    5     O        2px        3
+
+
+  Symmetry  B2 ( 3)
+
+    6     O        2py        4
+    7     H        1s         6 -    7
+
+
+  No orbitals in symmetry  A2 ( 4)
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.000015049426
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ HERMIT - Number of two-electron integrals written:         138 ( 34.0% )
+ HERMIT - Megabytes written:                              0.007
+
+  Total CPU  time used in HERMIT:   0.00 seconds
+  Total wall time used in HERMIT:   0.03 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:    4    1    2    0
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.705520      -1.505990      -0.670643      -0.292535
+
+ Huckel EHT eigenvalues for symmetry :  2
+           -0.616200
+
+ Huckel EHT eigenvalues for symmetry :  3
+           -0.731199      -0.257813
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Thu Dec  1 19:34:40 2016
+     Host name              : spasnode102                             
+
+ Title lines from ".mol" input file:
+     Calculation of excitation energies through ABACUS                       
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    (Integral direct) CC calculation.
+
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+     Wave function specification
+     ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+@    Wave function type        --- CC ---
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 4 (point group: C2v)
+@    Reference state symmetry                   1 (irrep name : A1 )
+
+     Orbital specifications
+     ======================
+@    Abelian symmetry species          All |    1    2    3    4
+@                                          |  A1   B1   B2   A2 
+                                       --- |  ---  ---  ---  ---
+@    Total number of orbitals            7 |    4    1    2    0
+@    Number of basis functions           7 |    4    1    2    0
+
+      ** Automatic occupation of RHF orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               5 |    3    1    1    0
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-06
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ MP2 Amplitudes written for atom integral direct SOPPA calculations
+  
+
+
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
+
+ C1-DIIS algorithm; max error vectors =    4
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+ Calculating AOSUPINT
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -72.6180974833       2.25D+00  -7.26D+01     3   1   1   0
+      Virial theorem: -V/T =      2.008514
+@      MULPOP O      -0.32; H   _1  0.16; H   _2  0.16; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
+ -----------------------------------------------------------------------------
+@  2  -72.7286159230       3.21D-01  -1.11D-01     3   1   1   0
+      Virial theorem: -V/T =      2.015371
+@      MULPOP O      -0.26; H   _1  0.13; H   _2  0.13; 
+   2  Level shift: doubly occupied orbital energies shifted by -5.00D-02
+ -----------------------------------------------------------------------------
+@  3  -72.7383534472       7.80D-02  -9.74D-03     3   1   1   0
+      Virial theorem: -V/T =      2.014173
+@      MULPOP O      -0.25; H   _1  0.12; H   _2  0.12; 
+   3  Level shift: doubly occupied orbital energies shifted by -1.25D-02
+ -----------------------------------------------------------------------------
+@  4  -72.7390013293       7.60D-03  -6.48D-04     3   1   1   0
+      Virial theorem: -V/T =      2.013411
+@      MULPOP O      -0.25; H   _1  0.13; H   _2  0.13; 
+ -----------------------------------------------------------------------------
+@  5  -72.7390116191       2.03D-03  -1.03D-05     3   1   1   0
+      Virial theorem: -V/T =      2.013381
+@      MULPOP O      -0.25; H   _1  0.13; H   _2  0.13; 
+ -----------------------------------------------------------------------------
+@  6  -72.7390123806       2.30D-05  -7.62D-07     3   1   1   0
+      Virial theorem: -V/T =      2.013366
+@      MULPOP O      -0.25; H   _1  0.13; H   _2  0.13; 
+ -----------------------------------------------------------------------------
+@  7  -72.7390123807       1.68D-07  -3.64D-11     3   1   1   0
+
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:    -72.739012380668    1.68D-07
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Sym       Hartree-Fock orbital energies
+
+1 A1    -19.59045436    -1.24114736    -0.42221206     0.64172156
+
+2 B1     -0.35397685
+
+3 B2     -0.60046818     0.78600111
+
+    E(LUMO) :     0.64172156 au (symmetry 1)
+  - E(HOMO) :    -0.35397685 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.99569841 au
+
+ --- Writing SIRIFC interface file
+
+ CPU and wall time for SCF :       0.004       0.003
+
+
+                       .-----------------------------------.
+                       | --- Final results from SIRIUS --- |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A1  in C2v )
+@    Total charge of molecule:    0
+
+@    Final HF energy:             -72.739012380668                 
+@    Nuclear repulsion:             9.183706230245
+@    Electronic energy:           -81.922718610913
+
+@    Final gradient norm:           0.000000167954
+
+ 
+     Date and time (Linux)  : Thu Dec  1 19:34:40 2016
+     Host name              : spasnode102                             
+
+File label for MO orbitals:   1Dec16   FOCKDIIS
+
+ (Only coefficients > 0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4
+   1 O   :1s     0.9860  -0.2653  -0.1328   0.1692
+   2 O   :1s     0.0553   0.8158   0.5686  -0.8817
+   3 O   :2pz   -0.0077  -0.1257   0.7586   0.7577
+   4 H   :1s    -0.0130   0.1769  -0.2943   0.7826
+
+ Molecular orbitals for symmetry species 2  (B1 )
+ ------------------------------------------------
+
+    Orbital         1
+   1 O   :2px    1.0000
+
+ Molecular orbitals for symmetry species 3  (B2 )
+ ------------------------------------------------
+
+    Orbital         1        2
+   1 O   :2py    0.5888  -0.9939
+   2 H   :1s     0.4612   0.8214
+
+  Total CPU  time used in SIRIUS :   0.00 seconds
+  Total wall time used in SIRIUS :   0.06 seconds
+
+ 
+     Date and time (Linux)  : Thu Dec  1 19:34:40 2016
+     Host name              : spasnode102                             
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *----------                                             >---------*
+ *---------- OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >---------*
+ *----------                                             >---------*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :         4
+          Number of t2 amplitudes                 :        22
+          Total number of amplitudes in ccsd      :        26
+
+ Iter.  1: Coupled cluster MP2   energy :     -72.7738864813979944
+
+
+
+
+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                   -72.7390123807
+
+            Total MP2   energy:                   -72.7738864814
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                   -72.7390123807                
+            Total MP2   energy:                   -72.7738864814                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+ CPU and wall time for CC :       0.000       0.006
+
+ 
+     Date and time (Linux)  : Thu Dec  1 19:34:40 2016
+     Host name              : spasnode102                             
+
+
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+
+
+        *****************************************************************
+        ******** Output from **PROPE input processing for ABACUS ********
+        *****************************************************************
+
+
+
+      SOPPA : Second Order Polarization Propagator Approximation
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+ Default print level:        2
+
+      Electronic excitation energies 
+      No mass-velocity energy correction calculated
+      No Darwin energy correction calculated
+      Natural orbital connection is used
+      for perturbation dependent basis sets.
+
+
+ Changes of defaults in SOPPA:
+ -----------------------------
+
+ AO integral driven Higher RPA (HRPA) :
+ AO integral driven Double corrected HRPA :
+
+
+ Changes of defaults for .EXCITA:
+ --------------------------------
+
+ Number of excitation energies:    5    5    5    5
+ Print level          :    2
+ Integral print level :    2
+ Convergence threshold: 1.00E-04
+ Maximum iterations   :   60
+ Conventional rotational strength
+ Dipole strength
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           H   _1      1.007825
+                           H   _2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.000015
+
+ Center of mass dipole origin  :    0.000000    0.000000   -0.000015
+
+ Center of mass gauge origin   :    0.000000    0.000000   -0.000015
+
+
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
+
+
+ 
+     Date and time (Linux)  : Thu Dec  1 19:34:40 2016
+     Host name              : spasnode102                             
+
+
+                            **************************
+                            *** Output from TROINV ***
+                            **************************
+
+
+
+  Translational and rotational coordinates
+  ----------------------------------------
+
+
+  Symmetry  1
+
+        Translation along Z axis
+
+  Symmetry  2
+
+        Translation along X axis
+        Rotation around Y axis
+
+  Symmetry  3
+
+        Translation along Y axis
+        Rotation around X axis
+
+  Symmetry  4
+
+        Rotation around Z axis
+
+
+                  **********************************************
+                  *** ABACUS - Excitation energies (.EXCITA) ***
+                  **********************************************
+
+
+ Maximum number of trial vectors for each excitation is  3
+
+
+ -----------------------------------
+ Higher RPA:
+ Perturbation symmetry     :       1
+ p-h variables             :       8
+ -----------------------------------
+ NOTICE: The number of excitations are reduced to     4
+ as this is the full dimension of the excitation space
+
+  ******************************************************************
+            Higher RPA iterations, Excitation symmetry 1
+  ******************************************************************
+
+  ==================================================================
+             1. Higher RPA  iteration, Excitation symmetry 1
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.64817651     1.5889D-15      yes
+                 2       1.10377362     3.6951D-15      yes
+                 3       1.48734742     2.7050D-15      yes
+                 4      19.50387194     8.7778D-15      yes
+            --------------------------------------------------
+
+ -------------------------------------------------------------
+ Iterations stopped since: 
+ -------------------------
+ All of the excitations are converged.
+ -------------------------------------------------------------
+
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  1, state no.  1
+
+ Higher RPA excitation energy :  0.64817651     au
+                                   17.637780     eV
+                                   142258.30     cm-1
+                                   1701.7872     kj / mole
+
+ 1p-1h + 1h-1p excitation weight: 100.30 + -0.30  = 100.00 %
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   1   |   1       3     |    0.983472  |
+ |    exci. | 3   3   |   1       1     |    0.207400  |
+ |-----------------------------------------------------|
+
+ Printed all single excitation amplitudes greater than  0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  1, state no.  2
+
+ Higher RPA excitation energy :   1.1037736     au
+                                   30.035208     eV
+                                   242250.31     cm-1
+                                   2897.9572     kj / mole
+
+ 1p-1h + 1h-1p excitation weight: 101.18 + -1.18  = 100.00 %
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   1   |   1       2     |    0.117804  |
+ |    exci. | 1   1   |   1       3     |    0.206148  |
+ |    exci. | 3   3   |   1       1     |   -0.983955  |
+ |-----------------------------------------------------|
+
+ Printed all single excitation amplitudes greater than  0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  1, state no.  3
+
+ Higher RPA excitation energy :   1.4873474     au
+                                   40.472782     eV
+                                   326435.02     cm-1
+                                   3905.0301     kj / mole
+
+ 1p-1h + 1h-1p excitation weight: 100.59 + -0.59  = 100.00 %
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   1   |   1       2     |   -0.997538  |
+ |    exci. | 3   3   |   1       1     |   -0.110796  |
+ |-----------------------------------------------------|
+
+ Printed all single excitation amplitudes greater than  0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  1, state no.  4
+
+ Higher RPA excitation energy :   19.503872     au
+                                   530.72735     eV
+                                   4280605.1     cm-1
+                                   51207.408     kj / mole
+
+ 1p-1h + 1h-1p excitation weight: 100.00 + -0.00  = 100.00 %
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   1   |   1       1     |    1.003126  |
+ |-----------------------------------------------------|
+
+ Printed all single excitation amplitudes greater than  0.100000
+
+ --------------------------------------------------------------
+
+ ZDIPLEN  Higher RPA transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1     0.49882 +   -0.06115 =    0.43767
+   2     1.00762 +   -0.12026 =    0.88735
+   3     0.29603 +   -0.08167 =    0.21436
+   4     0.07354 +   -0.00085 =    0.07269
+ ===================================================================
+
+ ZDIPVEL  Higher RPA transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.38153 +   -0.03915 =   -0.42067
+   2    -0.58392 +   -0.07873 =   -0.66265
+   3    -0.24997 +   -0.05329 =   -0.30326
+   4    -0.86324 +   -0.00107 =   -0.86431
+ ===================================================================
+
+ XXSECMOM Higher RPA transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.16541 +    0.01932 =   -0.14609
+   2    -0.24545 +    0.03877 =   -0.20668
+   3    -0.21024 +    0.02739 =   -0.18285
+   4    -0.01879 +    0.00020 =   -0.01859
+ ===================================================================
+
+ YYSECMOM Higher RPA transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.86506 +    0.14200 =   -0.72306
+   2    -1.96128 +    0.28279 =   -1.67850
+   3    -1.55045 +    0.20118 =   -1.34928
+   4    -0.04676 +    0.00157 =   -0.04519
+ ===================================================================
+
+ ZZSECMOM Higher RPA transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.37332 +    0.07520 =   -0.29813
+   2    -1.01021 +    0.14995 =   -0.86026
+   3    -0.93423 +    0.10802 =   -0.82621
+   4    -0.01999 +    0.00081 =   -0.01918
+ ===================================================================
+
+ -----------------------------------
+ HRPA(D):
+ Perturbation symmetry     :       1
+ p-h variables             :       8
+ 2p-2h variables           :      44
+ Total number of variables :      52
+ -----------------------------------
+ NOTICE: The number of excitations are reduced to     4
+ as this is the full dimension of the excitation space
+
+  ******************************************************************
+               HRPA(D) calculation, Excitation symmetry 1
+  ******************************************************************
+ -----------------------------------------------------------------
+ Excitation   Energy (au)      ph(0)        ph(2)       2p2h(2)
+ -----------------------------------------------------------------
+      1        0.61808398   0.64817651  -0.00000000  -0.03009252
+      2        1.08437930   1.10377362   0.00000000  -0.01939432
+      3        1.44464568   1.48734742   0.00000000  -0.04270174
+      4       19.38780934  19.50387194  -0.00000000  -0.11606260
+ -----------------------------------------------------------------
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  1, state no.  1
+
+    HRPA(D) excitation energy :  0.61808398     au
+                                   16.818921     eV
+                                   135653.75     cm-1
+                                   1622.7792     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  98.66 + -0.29  =  98.36 %
+ 2p-2h + 2h-2p excitation weight:   1.64 + -0.00  =   1.64 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   1   |   1       3     |    0.975388  |
+ |    exci. | 3   3   |   1       1     |    0.205695  |
+ |-----------------------------------------------------|
+ |    exci. | 1 1 1 1 |   1   1   3   2 |    0.036380  |
+ |    exci. | 1 1 1 1 |   1   1   3   3 |    0.072438  |
+ |    exci. | 3 1 3 1 |   1   1   1   2 |   -0.042906  |
+ |    exci. | 3 1 3 1 |   1   1   1   3 |   -0.090387  |
+ |    exci. | 3 3 1 1 |   1   1   3   3 |    0.042579  |
+ |    exci. | 1 3 3 1 |   1   1   1   3 |   -0.045810  |
+ |    exci. | 1 1 3 3 |   1   1   1   1 |   -0.029877  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than  0.100000
+ Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  1, state no.  2
+
+    HRPA(D) excitation energy :   1.0843793     au
+                                   29.507462     eV
+                                   237993.74     cm-1
+                                   2847.0374     kj / mole
+
+ 1p-1h + 1h-1p excitation weight: 100.02 + -1.17  =  98.85 %
+ 2p-2h + 2h-2p excitation weight:   1.16 + -0.01  =   1.15 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   1   |   1       2     |    0.117125  |
+ |    exci. | 1   1   |   1       3     |    0.204959  |
+ |    exci. | 3   3   |   1       1     |   -0.978280  |
+ |-----------------------------------------------------|
+ |    exci. | 1 1 1 1 |   1   1   3   3 |    0.027293  |
+ |    exci. | 3 1 3 1 |   1   1   1   3 |   -0.027110  |
+ |    exci. | 3 3 1 1 |   1   1   3   2 |    0.076961  |
+ |    exci. | 1 3 3 1 |   1   1   1   2 |   -0.034302  |
+ |    exci. | 1 3 3 1 |   1   1   1   3 |   -0.048685  |
+ |    exci. | 1 1 3 3 |   1   1   1   1 |    0.058367  |
+ |    exci. | 3 3 2 2 |   1   1   1   1 |    0.028853  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than  0.100000
+ Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  1, state no.  3
+
+    HRPA(D) excitation energy :   1.4446457     au
+                                   39.310809     eV
+                                   317063.08     cm-1
+                                   3792.9167     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  95.65 + -0.56  =  95.09 %
+ 2p-2h + 2h-2p excitation weight:   4.92 + -0.01  =   4.91 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   1   |   1       2     |   -0.972715  |
+ |    exci. | 3   3   |   1       1     |   -0.108039  |
+ |-----------------------------------------------------|
+ |    exci. | 1 1 2 2 |   1   1   1   1 |    0.158623  |
+ |    exci. | 1 3 3 1 |   1   1   1   3 |    0.101253  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than  0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  1, state no.  4
+
+    HRPA(D) excitation energy :   19.387809     au
+                                   527.56913     eV
+                                   4255132.3     cm-1
+                                   50902.686     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  95.15 + -0.00  =  95.15 %
+ 2p-2h + 2h-2p excitation weight:   4.85 + -0.00  =   4.85 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   1   |   1       1     |    0.978479  |
+ |-----------------------------------------------------|
+ |    exci. | 1 1 1 1 |   1   1   2   1 |   -0.129823  |
+ |    exci. | 1 1 1 1 |   1   1   3   1 |    0.116215  |
+ |    exci. | 3 1 3 1 |   1   1   1   1 |   -0.198527  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than  0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+ ZDIPLEN  HRPA(D) transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1     0.50644 +   -0.06149 =    0.44495
+   2     1.01539 +   -0.12116 =    0.89423
+   3     0.29243 +   -0.08247 =    0.20995
+   4     0.07474 +   -0.00086 =    0.07389
+ ===================================================================
+
+ ZDIPVEL  HRPA(D) transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.38460 +   -0.03920 =   -0.42380
+   2    -0.58568 +   -0.07886 =   -0.66454
+   3    -0.24522 +   -0.05336 =   -0.29858
+   4    -0.87717 +   -0.00108 =   -0.87825
+ ===================================================================
+
+ XXSECMOM HRPA(D) transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.16694 +    0.01933 =   -0.14761
+   2    -0.24627 +    0.03880 =   -0.20748
+   3    -0.20630 +    0.02737 =   -0.17893
+   4    -0.01896 +    0.00020 =   -0.01877
+ ===================================================================
+
+ YYSECMOM HRPA(D) transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.87938 +    0.14265 =   -0.73673
+   2    -1.97122 +    0.28460 =   -1.68663
+   3    -1.55453 +    0.20293 =   -1.35161
+   4    -0.04711 +    0.00157 =   -0.04554
+ ===================================================================
+
+ ZZSECMOM HRPA(D) transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.37435 +    0.07540 =   -0.29895
+   2    -1.01420 +    0.15052 =   -0.86368
+   3    -0.93941 +    0.10864 =   -0.83077
+   4    -0.01996 +    0.00081 =   -0.01915
+ ===================================================================
+
+ -----------------------------------
+ Higher RPA:
+ Perturbation symmetry     :       2
+ p-h variables             :       2
+ -----------------------------------
+ NOTICE: The number of excitations are reduced to     1
+ as this is the full dimension of the excitation space
+
+  ******************************************************************
+            Higher RPA iterations, Excitation symmetry 2
+  ******************************************************************
+
+  ==================================================================
+             1. Higher RPA  iteration, Excitation symmetry 2
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.49744597     1.6805D-16      yes
+            --------------------------------------------------
+
+ -------------------------------------------------------------
+ Iterations stopped since: 
+ -------------------------
+ All of the excitations are converged.
+ -------------------------------------------------------------
+
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  2, state no.  1
+
+ Higher RPA excitation energy :  0.49744597     au
+                                   13.536193     eV
+                                   109176.77     cm-1
+                                   1306.0442     kj / mole
+
+ 1p-1h + 1h-1p excitation weight: 100.09 + -0.09  = 100.00 %
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   2   |   1       1     |    1.003858  |
+ |-----------------------------------------------------|
+
+ Printed all single excitation amplitudes greater than  0.100000
+
+ --------------------------------------------------------------
+
+ XDIPLEN  Higher RPA transition moments for excitation symmetry  2
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.11165 +    0.00337 =   -0.10828
+ ===================================================================
+
+ XDIPVEL  Higher RPA transition moments for excitation symmetry  2
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.15725 +   -0.00475 =   -0.16200
+ ===================================================================
+
+ YANGMOM  Higher RPA transition moments for excitation symmetry  2
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.53067 +   -0.01602 =   -0.54669
+ ===================================================================
+
+ XZSECMOM Higher RPA transition moments for excitation symmetry  2
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1     0.06873 +   -0.00208 =    0.06666
+ ===================================================================
+
+ -----------------------------------
+ HRPA(D):
+ Perturbation symmetry     :       2
+ p-h variables             :       2
+ 2p-2h variables           :      16
+ Total number of variables :      18
+ -----------------------------------
+ NOTICE: The number of excitations are reduced to     1
+ as this is the full dimension of the excitation space
+
+  ******************************************************************
+               HRPA(D) calculation, Excitation symmetry 2
+  ******************************************************************
+ -----------------------------------------------------------------
+ Excitation   Energy (au)      ph(0)        ph(2)       2p2h(2)
+ -----------------------------------------------------------------
+      1        0.47020792   0.49744597  -0.00000000  -0.02723805
+ -----------------------------------------------------------------
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  2, state no.  1
+
+    HRPA(D) excitation energy :  0.47020792     au
+                                   12.795008     eV
+                                   103198.71     cm-1
+                                   1234.5307     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  98.69 + -0.09  =  98.60 %
+ 2p-2h + 2h-2p excitation weight:   1.40 + -0.00  =   1.40 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   2   |   1       1     |    0.996807  |
+ |-----------------------------------------------------|
+ |    exci. | 1 3 2 3 |   1   1   1   1 |   -0.108910  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than  0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+ XDIPLEN  HRPA(D) transition moments for excitation symmetry  2
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.11438 +    0.00345 =   -0.11093
+ ===================================================================
+
+ XDIPVEL  HRPA(D) transition moments for excitation symmetry  2
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.15804 +   -0.00477 =   -0.16281
+ ===================================================================
+
+ YANGMOM  HRPA(D) transition moments for excitation symmetry  2
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.53918 +   -0.01628 =   -0.55546
+ ===================================================================
+
+ XZSECMOM HRPA(D) transition moments for excitation symmetry  2
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1     0.07245 +   -0.00219 =    0.07026
+ ===================================================================
+
+ -----------------------------------
+ Higher RPA:
+ Perturbation symmetry     :       3
+ p-h variables             :       8
+ -----------------------------------
+ NOTICE: The number of excitations are reduced to     4
+ as this is the full dimension of the excitation space
+
+  ******************************************************************
+            Higher RPA iterations, Excitation symmetry 3
+  ******************************************************************
+
+  ==================================================================
+             1. Higher RPA  iteration, Excitation symmetry 3
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.74640694     4.6446D-15      yes
+                 2       0.85615972     2.9150D-15      yes
+                 3       1.55070646     3.7946D-15      yes
+                 4      19.55997704     3.4620D-14      yes
+            --------------------------------------------------
+
+ -------------------------------------------------------------
+ Iterations stopped since: 
+ -------------------------
+ All of the excitations are converged.
+ -------------------------------------------------------------
+
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  1
+
+ Higher RPA excitation energy :  0.74640694     au
+                                   20.310766     eV
+                                   163817.39     cm-1
+                                   1959.6911     kj / mole
+
+ 1p-1h + 1h-1p excitation weight: 100.11 + -0.11  = 100.00 %
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   3   |   1       1     |    0.400842  |
+ |    exci. | 3   1   |   1       3     |    0.922801  |
+ |-----------------------------------------------------|
+
+ Printed all single excitation amplitudes greater than  0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  2
+
+ Higher RPA excitation energy :  0.85615972     au
+                                   23.297291     eV
+                                   187905.34     cm-1
+                                   2247.8470     kj / mole
+
+ 1p-1h + 1h-1p excitation weight: 100.30 + -0.30  = 100.00 %
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   3   |   1       1     |    0.923087  |
+ |    exci. | 3   1   |   1       3     |   -0.401394  |
+ |-----------------------------------------------------|
+
+ Printed all single excitation amplitudes greater than  0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  3
+
+ Higher RPA excitation energy :   1.5507065     au
+                                   42.196869     eV
+                                   340340.72     cm-1
+                                   4071.3792     kj / mole
+
+ 1p-1h + 1h-1p excitation weight: 100.04 + -0.04  = 100.00 %
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 3   1   |   1       2     |   -1.003546  |
+ |-----------------------------------------------------|
+
+ Printed all single excitation amplitudes greater than  0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  4
+
+ Higher RPA excitation energy :   19.559977     au
+                                   532.25405     eV
+                                   4292918.7     cm-1
+                                   51354.712     kj / mole
+
+ 1p-1h + 1h-1p excitation weight: 100.00 + -0.00  = 100.00 %
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 3   1   |   1       1     |    1.003323  |
+ |-----------------------------------------------------|
+
+ Printed all single excitation amplitudes greater than  0.100000
+
+ --------------------------------------------------------------
+
+ YDIPLEN  Higher RPA transition moments for excitation symmetry  3
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.42397 +    0.02844 =   -0.39553
+   2     1.47262 +   -0.08362 =    1.38900
+   3    -0.11928 +    0.00193 =   -0.11734
+   4    -0.08969 +   -0.00025 =   -0.08994
+ ===================================================================
+
+ YDIPVEL  Higher RPA transition moments for excitation symmetry  3
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1     0.19970 +    0.01535 =    0.21505
+   2    -0.86808 +   -0.04856 =   -0.91664
+   3     0.16793 +    0.00243 =    0.17036
+   4     1.12334 +    0.00009 =    1.12343
+ ===================================================================
+
+ XANGMOM  Higher RPA transition moments for excitation symmetry  3
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1     0.70368 +    0.02025 =    0.72393
+   2     0.02804 +   -0.00657 =    0.02147
+   3     0.14017 +   -0.00332 =    0.13685
+   4     0.13675 +    0.00054 =    0.13729
+ ===================================================================
+
+ YZSECMOM Higher RPA transition moments for excitation symmetry  3
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1     0.15157 +   -0.01401 =    0.13756
+   2    -1.37954 +    0.07706 =   -1.30248
+   3     0.74704 +   -0.01486 =    0.73217
+   4     0.00777 +    0.00095 =    0.00872
+ ===================================================================
+
+ -----------------------------------
+ HRPA(D):
+ Perturbation symmetry     :       3
+ p-h variables             :       8
+ 2p-2h variables           :      34
+ Total number of variables :      42
+ -----------------------------------
+ NOTICE: The number of excitations are reduced to     4
+ as this is the full dimension of the excitation space
+
+  ******************************************************************
+               HRPA(D) calculation, Excitation symmetry 3
+  ******************************************************************
+ -----------------------------------------------------------------
+ Excitation   Energy (au)      ph(0)        ph(2)       2p2h(2)
+ -----------------------------------------------------------------
+      1        0.72421732   0.74640694   0.00000000  -0.02218962
+      2        0.84155588   0.85615972  -0.00000000  -0.01460383
+      3        1.50314294   1.55070646  -0.00000000  -0.04756352
+      4       19.46939791  19.55997704   0.00000000  -0.09057913
+ -----------------------------------------------------------------
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  1
+
+    HRPA(D) excitation energy :  0.72421732     au
+                                   19.706956     eV
+                                   158947.33     cm-1
+                                   1901.4323     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  98.89 + -0.11  =  98.77 %
+ 2p-2h + 2h-2p excitation weight:   1.23 + -0.00  =   1.23 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   3   |   1       1     |    0.398379  |
+ |    exci. | 3   1   |   1       3     |    0.917130  |
+ |-----------------------------------------------------|
+ |    exci. | 3 1 1 1 |   1   1   3   3 |    0.111581  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than  0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  2
+
+    HRPA(D) excitation energy :  0.84155588     au
+                                   22.899900     eV
+                                   184700.17     cm-1
+                                   2209.5046     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  99.53 + -0.30  =  99.23 %
+ 2p-2h + 2h-2p excitation weight:   0.77 + -0.00  =   0.77 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 1   3   |   1       1     |    0.919533  |
+ |    exci. | 3   1   |   1       3     |   -0.399848  |
+ |-----------------------------------------------------|
+ |    exci. | 3 1 1 1 |   1   1   2   2 |   -0.021951  |
+ |    exci. | 3 1 1 1 |   1   1   3   2 |   -0.026138  |
+ |    exci. | 3 1 1 1 |   1   1   2   3 |   -0.041513  |
+ |    exci. | 3 1 1 1 |   1   1   3   3 |   -0.052196  |
+ |    exci. | 1 1 3 1 |   1   1   1   3 |    0.052713  |
+ |    exci. | 3 3 1 3 |   1   1   2   1 |    0.039425  |
+ |    exci. | 1 3 3 3 |   1   1   1   1 |   -0.063323  |
+ |    exci. | 3 1 2 2 |   1   1   1   1 |   -0.027394  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than  0.100000
+ Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  3
+
+    HRPA(D) excitation energy :   1.5031429     au
+                                   40.902600     eV
+                                   329901.74     cm-1
+                                   3946.5012     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  95.69 + -0.04  =  95.65 %
+ 2p-2h + 2h-2p excitation weight:   4.35 + -0.00  =   4.35 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 3   1   |   1       2     |   -0.981476  |
+ |-----------------------------------------------------|
+ |    exci. | 1 1 3 1 |   1   1   1   3 |    0.210853  |
+ |    exci. | 3 1 2 2 |   1   1   1   1 |    0.135715  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than  0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  3, state no.  4
+
+    HRPA(D) excitation energy :   19.469398     au
+                                   529.78927     eV
+                                   4273038.9     cm-1
+                                   51116.896     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  96.27 + -0.00  =  96.27 %
+ 2p-2h + 2h-2p excitation weight:   3.73 + -0.00  =   3.73 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 3   1   |   1       1     |    0.984435  |
+ |-----------------------------------------------------|
+ |    exci. | 3 1 1 1 |   1   1   2   1 |   -0.120506  |
+ |    exci. | 3 1 1 1 |   1   1   3   1 |    0.118358  |
+ |    exci. | 1 1 3 1 |   1   1   1   1 |   -0.160921  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than  0.100000
+ Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+ YDIPLEN  HRPA(D) transition moments for excitation symmetry  3
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.43020 +    0.02879 =   -0.40140
+   2     1.48253 +   -0.08421 =    1.39833
+   3    -0.10785 +    0.00167 =   -0.10618
+   4    -0.09062 +   -0.00025 =   -0.09087
+ ===================================================================
+
+ YDIPVEL  HRPA(D) transition moments for excitation symmetry  3
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1     0.20122 +    0.01543 =    0.21665
+   2    -0.86954 +   -0.04865 =   -0.91819
+   3     0.16393 +    0.00234 =    0.16627
+   4     1.13491 +    0.00010 =    1.13501
+ ===================================================================
+
+ XANGMOM  HRPA(D) transition moments for excitation symmetry  3
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1     0.71112 +    0.02047 =    0.73159
+   2     0.02873 +   -0.00662 =    0.02211
+   3     0.13888 +   -0.00346 =    0.13542
+   4     0.13809 +    0.00054 =    0.13863
+ ===================================================================
+
+ YZSECMOM HRPA(D) transition moments for excitation symmetry  3
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1     0.15355 +   -0.01416 =    0.13939
+   2    -1.38770 +    0.07752 =   -1.31018
+   3     0.74640 +   -0.01484 =    0.73156
+   4     0.00753 +    0.00094 =    0.00847
+ ===================================================================
+
+ -----------------------------------
+ Higher RPA:
+ Perturbation symmetry     :       4
+ p-h variables             :       2
+ -----------------------------------
+ NOTICE: The number of excitations are reduced to     1
+ as this is the full dimension of the excitation space
+
+  ******************************************************************
+            Higher RPA iterations, Excitation symmetry 4
+  ******************************************************************
+
+  ==================================================================
+             1. Higher RPA  iteration, Excitation symmetry 4
+  ==================================================================
+
+            --------------------------------------------------
+            Excitation   Energy (au)     Residual    Converged
+            --------------------------------------------------
+                 1       0.57865773     2.2982D-16      yes
+            --------------------------------------------------
+
+ -------------------------------------------------------------
+ Iterations stopped since: 
+ -------------------------
+ All of the excitations are converged.
+ -------------------------------------------------------------
+
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  4, state no.  1
+
+ Higher RPA excitation energy :  0.57865773     au
+                                   15.746078     eV
+                                   127000.69     cm-1
+                                   1519.2656     kj / mole
+
+ 1p-1h + 1h-1p excitation weight: 100.02 + -0.02  = 100.00 %
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 3   2   |   1       1     |    1.003702  |
+ |-----------------------------------------------------|
+
+ Printed all single excitation amplitudes greater than  0.100000
+
+ --------------------------------------------------------------
+
+ ZANGMOM  Higher RPA transition moments for excitation symmetry  4
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.69186 +   -0.00995 =   -0.70181
+ ===================================================================
+
+ XYSECMOM Higher RPA transition moments for excitation symmetry  4
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.09590 +    0.00138 =   -0.09452
+ ===================================================================
+
+ -----------------------------------
+ HRPA(D):
+ Perturbation symmetry     :       4
+ p-h variables             :       2
+ 2p-2h variables           :      16
+ Total number of variables :      18
+ -----------------------------------
+ NOTICE: The number of excitations are reduced to     1
+ as this is the full dimension of the excitation space
+
+  ******************************************************************
+               HRPA(D) calculation, Excitation symmetry 4
+  ******************************************************************
+ -----------------------------------------------------------------
+ Excitation   Energy (au)      ph(0)        ph(2)       2p2h(2)
+ -----------------------------------------------------------------
+      1        0.56029503   0.57865773  -0.00000000  -0.01836270
+ -----------------------------------------------------------------
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
+
+ --------------------------------------------------------------
+ Excitation symmetry  4, state no.  1
+
+    HRPA(D) excitation energy :  0.56029503     au
+                                   15.246403     eV
+                                   122970.54     cm-1
+                                   1471.0544     kj / mole
+
+ 1p-1h + 1h-1p excitation weight:  99.06 + -0.02  =  99.04 %
+ 2p-2h + 2h-2p excitation weight:   0.96 + -0.00  =   0.96 %
+
+ |=====================================================|
+ |          | Symmetry|  Orbital index  |   Amplitude  |
+ |          | index   |   a   b   i   j |              |
+ |=====================================================|
+ |    exci. | 3   2   |   1       1     |    0.998892  |
+ |-----------------------------------------------------|
+ |    exci. | 3 1 1 2 |   1   1   2   1 |   -0.037917  |
+ |    exci. | 3 1 1 2 |   1   1   3   1 |    0.046743  |
+ |    exci. | 1 1 3 2 |   1   1   1   1 |   -0.050583  |
+ |    exci. | 3 1 2 1 |   1   1   1   2 |   -0.047862  |
+ |    exci. | 3 1 2 1 |   1   1   1   3 |    0.062723  |
+ |    exci. | 3 3 2 3 |   1   1   1   1 |   -0.079799  |
+ |=====================================================|
+
+ Printed all single excitation amplitudes greater than  0.100000
+ Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+
+ ZANGMOM  HRPA(D) transition moments for excitation symmetry  4
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.69931 +   -0.01006 =   -0.70937
+ ===================================================================
+
+ XYSECMOM HRPA(D) transition moments for excitation symmetry  4
+ ===================================================================
+ Exci.    1p-1h        1h-1p        Total
+ -------------------------------------------------------------------
+   1    -0.09970 +    0.00143 =   -0.09826
+ ===================================================================
+
+ |=====================================================| 
+ |     Memory statistics for AO-SOPPA subroutines      |
+ |=====================================================| 
+ |   Routine                  in Words         in MB   |
+ |-----------------------------------------------------| 
+ |  START                            0           0.0   |
+ |  SO_EXCIT1.1                     47           0.0   |
+ |  SO_PRPINT                    13548           0.1   |
+ |=====================================================| 
+
+ |=====================================================| 
+ |           Timings for AO-SOPPA subroutines          |
+ |=====================================================| 
+ |   Routine            cpu time   of total        sum |
+ |-----------------------------------------------------| 
+ |   SO_T2M1             0:00:00     16.7 %     16.7 % |
+ |   SO_RES_SYM          0:00:00     16.7 %     33.3 % |
+ |   SO_RES_A            0:00:00     16.7 %     50.0 % |
+ |   SO_OPTVEC           0:00:00     16.7 %     66.7 % |
+ |-----------------------------------------------------| 
+ |  Total CPU time       0:00:00                       |
+ |=====================================================| 
+
+ |-----------------------------------------------------| 
+ |   SO_READ             0: 0: 0      0.0 %            |
+ |   SO_WRITE            0: 0: 0      0.0 %            |
+ |   SO_OPEN             0: 0: 0      0.0 %            |
+ |   SO_CLOSE            0: 0: 0      0.0 %            |
+ |-----------------------------------------------------| 
+
+ |=====================================================| 
+ |        Wall timings for AO-SOPPA subroutines        |
+ |=====================================================| 
+ |   Routine           wall time   of total       sum  |
+ |-----------------------------------------------------| 
+ |   SO_ERES             0:00:00     60.9 %     60.9 % |
+ |   SO_SRES             0:00:00      0.0 %     60.9 % |
+ |   SO_REDEV            0:00:00      0.0 %     60.9 % |
+ |   SO_TRIAL2           0:00:00      0.0 %     60.9 % |
+ |-----------------------------------------------------| 
+ |   Total wall time     0: 0: 0                       |
+ |=====================================================| 
+
+
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Thu Dec  1 19:34:40 2016
+     Host name              : spasnode102                             
+
+
+                             Molecular geometry (au)
+                             -----------------------
+
+ O          0.0000000000            0.0000000000            0.1241444240
+ H   _1     0.0000000000            1.4315300000           -0.9852655760
+ H   _2     0.0000000000           -1.4315300000           -0.9852655760
+
+
+
+
+
+                        Molecular wave function and energy
+                        ----------------------------------
+
+     Spatial symmetry   1 ( A1  )
+     Spin multiplicity  1
+     2 * M_S            0
+     State number       1
+     Total charge       0
+
+     Total energy        -72.7390123807 au (Hartrees)
+                         -1979.32921294 eV
+                           -190976.2476 kJ/mol
+                            -45644.4186 kcal/mol
+
+
+ ======================================================================
+                               Higher RPA results:
+ ----------------------------------------------------------------------
+
+
+@               Singlet electronic excitation energies
+                --------------------------------------
+
+               ========================================
+                 Sym.   Mode   Frequency    Frequency
+                ex. st.  No.      (au)         (eV)
+               ----------------------------------------
+                   1      1     0.648177    17.637780
+                   1      2     1.103774    30.035208
+                   1      3     1.487347    40.472782
+                   1      4    19.503872   530.727353
+               ----------------------------------------
+                   2      1     0.497446    13.536193
+               ----------------------------------------
+                   3      1     0.746407    20.310766
+                   3      2     0.856160    23.297291
+                   3      3     1.550706    42.196869
+                   3      4    19.559977   532.254050
+               ----------------------------------------
+                   4      1     0.578658    15.746078
+               ========================================
+
+
+@               Electric transition dipole moments (au)
+                ---------------------------------------
+
+@        Mode    Frequency       Velocity/Frequency              Length
+@         No.      (au)          x       y       z         x       y       z
+@==============================================================================
+@  Symmetry of excited state: 1  ( A1 )
+@           1     0.648177     0.0000  0.0000  0.6490    0.0000  0.0000  0.4377
+@           2     1.103774     0.0000  0.0000  0.6003    0.0000  0.0000  0.8874
+@           3     1.487347     0.0000  0.0000  0.2039    0.0000  0.0000  0.2144
+@           4    19.503872     0.0000  0.0000  0.0443    0.0000  0.0000  0.0727
+@------------------------------------------------------------------------------
+@  Symmetry of excited state: 2  ( B1 )
+@           1     0.497446     0.3257  0.0000  0.0000   -0.1083  0.0000  0.0000
+@------------------------------------------------------------------------------
+@  Symmetry of excited state: 3  ( B2 )
+@           1     0.746407     0.0000 -0.2881  0.0000    0.0000 -0.3955  0.0000
+@           2     0.856160     0.0000  1.0706  0.0000    0.0000  1.3890  0.0000
+@           3     1.550706     0.0000 -0.1099  0.0000    0.0000 -0.1173  0.0000
+@           4    19.559977     0.0000 -0.0574  0.0000    0.0000 -0.0899  0.0000
+@------------------------------------------------------------------------------
+@  Symmetry of excited state: 4  ( A2 )
+@           1     0.578658     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
+@------------------------------------------------------------------------------
+
+
+@               Magnetic transition dipole moments (au)
+                ---------------------------------------
+
+  ( mu_B*<0|l_i|n>, where mu_B = 0.5 is the Bohr magneton)
+
+ Symm.  Mode   Frequency         Conventional                  London
+ ex.st.  No.     (eV)        x        y       z         x        y        z
+ ==============================================================================
+   1      1    17.6378   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      2    30.0352   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      3    40.4728   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      4   530.7274   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+ ------------------------------------------------------------------------------
+   2      1    13.5362   -0.00000 -0.27335 -0.00000  -0.00000 -0.00000 -0.00000
+ ------------------------------------------------------------------------------
+   3      1    20.3108    0.36196 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      2    23.2973    0.01073 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      3    42.1969    0.06843 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      4   532.2541    0.06864 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+ ------------------------------------------------------------------------------
+   4      1    15.7461   -0.00000 -0.00000 -0.35091  -0.00000 -0.00000 -0.00000
+ ------------------------------------------------------------------------------
+
+
+@                  Oscillator and Scalar Rotational Strengths
+                   ------------------------------------------
+
+@   Units: 10**(-40) (esu**2)*(cm**2) (rotational strength)
+@          dimensionless              (oscillator strength)
+
+@ Symm.  Mode   Frequency    Oscillator-strength      Rotational-strength   
+@ ex.st.  No.     (eV)        velocity  length     velocity  length   London
+@ ==========================================================================
+@  1      1    17.6378        0.1820   0.0828      -0.000   -0.000   -0.000
+@  1      2    30.0352        0.2652   0.5794      -0.000   -0.000   -0.000
+@  1      3    40.4728        0.0412   0.0456      -0.000   -0.000   -0.000
+@  1      4   530.7274        0.0255   0.0687      -0.000   -0.000   -0.000
+@ --------------------------------------------------------------------------
+@  2      1    13.5362        0.0352   0.0039      -0.000   -0.000   -0.000
+@ --------------------------------------------------------------------------
+@  3      1    20.3108        0.0413   0.0778      -0.000   -0.000   -0.000
+@  3      2    23.2973        0.6543   1.1012      -0.000   -0.000   -0.000
+@  3      3    42.1969        0.0125   0.0142      -0.000   -0.000   -0.000
+@  3      4   532.2541        0.0430   0.1055      -0.000   -0.000   -0.000
+@ --------------------------------------------------------------------------
+@  4      1    15.7461        0.0000   0.0000      -0.000   -0.000   -0.000
+@ --------------------------------------------------------------------------
+
+
+ ======================================================================
+                               HRPA(D) results:
+ ----------------------------------------------------------------------
+
+
+@               Singlet electronic excitation energies
+                --------------------------------------
+
+               ========================================
+                 Sym.   Mode   Frequency    Frequency
+                ex. st.  No.      (au)         (eV)
+               ----------------------------------------
+                   1      1     0.618084    16.818921
+                   1      2     1.084379    29.507462
+                   1      3     1.444646    39.310809
+                   1      4    19.387809   527.569129
+               ----------------------------------------
+                   2      1     0.470208    12.795008
+               ----------------------------------------
+                   3      1     0.724217    19.706956
+                   3      2     0.841556    22.899900
+                   3      3     1.503143    40.902600
+                   3      4    19.469398   529.789267
+               ----------------------------------------
+                   4      1     0.560295    15.246403
+               ========================================
+
+
+@               Electric transition dipole moments (au)
+                ---------------------------------------
+
+@        Mode    Frequency       Velocity/Frequency              Length
+@         No.      (au)          x       y       z         x       y       z
+@==============================================================================
+@  Symmetry of excited state: 1  ( A1 )
+@           1     0.618084     0.0000  0.0000  0.6857    0.0000  0.0000  0.4449
+@           2     1.084379     0.0000  0.0000  0.6128    0.0000  0.0000  0.8942
+@           3     1.444646     0.0000  0.0000  0.2067    0.0000  0.0000  0.2100
+@           4    19.387809     0.0000  0.0000  0.0453    0.0000  0.0000  0.0739
+@------------------------------------------------------------------------------
+@  Symmetry of excited state: 2  ( B1 )
+@           1     0.470208     0.3462  0.0000  0.0000   -0.1109  0.0000  0.0000
+@------------------------------------------------------------------------------
+@  Symmetry of excited state: 3  ( B2 )
+@           1     0.724217     0.0000 -0.2992  0.0000    0.0000 -0.4014  0.0000
+@           2     0.841556     0.0000  1.0911  0.0000    0.0000  1.3983  0.0000
+@           3     1.503143     0.0000 -0.1106  0.0000    0.0000 -0.1062  0.0000
+@           4    19.469398     0.0000 -0.0583  0.0000    0.0000 -0.0909  0.0000
+@------------------------------------------------------------------------------
+@  Symmetry of excited state: 4  ( A2 )
+@           1     0.560295     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
+@------------------------------------------------------------------------------
+
+
+@               Magnetic transition dipole moments (au)
+                ---------------------------------------
+
+  ( mu_B*<0|l_i|n>, where mu_B = 0.5 is the Bohr magneton)
+
+ Symm.  Mode   Frequency         Conventional                  London
+ ex.st.  No.     (eV)        x        y       z         x        y        z
+ ==============================================================================
+   1      1    16.8189   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      2    29.5075   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      3    39.3108   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      4   527.5691   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+ ------------------------------------------------------------------------------
+   2      1    12.7950   -0.00000 -0.27773 -0.00000  -0.00000 -0.00000 -0.00000
+ ------------------------------------------------------------------------------
+   3      1    19.7070    0.36580 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      2    22.8999    0.01105 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      3    40.9026    0.06771 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      4   529.7893    0.06931 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+ ------------------------------------------------------------------------------
+   4      1    15.2464   -0.00000 -0.00000 -0.35469  -0.00000 -0.00000 -0.00000
+ ------------------------------------------------------------------------------
+
+
+@                  Oscillator and Scalar Rotational Strengths
+                   ------------------------------------------
+
+@   Units: 10**(-40) (esu**2)*(cm**2) (rotational strength)
+@          dimensionless              (oscillator strength)
+
+@ Symm.  Mode   Frequency    Oscillator-strength      Rotational-strength   
+@ ex.st.  No.     (eV)        velocity  length     velocity  length   London
+@ ==========================================================================
+@  1      1    16.8189        0.1937   0.0816      -0.000   -0.000   -0.000
+@  1      2    29.5075        0.2715   0.5781      -0.000   -0.000   -0.000
+@  1      3    39.3108        0.0411   0.0425      -0.000   -0.000   -0.000
+@  1      4   527.5691        0.0265   0.0706      -0.000   -0.000   -0.000
+@ --------------------------------------------------------------------------
+@  2      1    12.7950        0.0376   0.0039      -0.000   -0.000   -0.000
+@ --------------------------------------------------------------------------
+@  3      1    19.7070        0.0432   0.0778      -0.000   -0.000   -0.000
+@  3      2    22.8999        0.6679   1.0970      -0.000   -0.000   -0.000
+@  3      3    40.9026        0.0123   0.0113      -0.000   -0.000   -0.000
+@  3      4   529.7893        0.0441   0.1072      -0.000   -0.000   -0.000
+@ --------------------------------------------------------------------------
+@  4      1    15.2464        0.0000   0.0000      -0.000   -0.000   -0.000
+@ --------------------------------------------------------------------------
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           H   _1      H   _2
+            ------      ------      ------
+ O     :    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
+
+
+  Max    interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
+  between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9584 Angstrom (    1.8111 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H   _1     O          H   _2       104.450
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+
+
+
+  Total CPU  time used in ABACUS:   0.02 seconds
+  Total wall time used in ABACUS:   0.03 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
+
+  Total CPU  time used in DALTON:   0.04 seconds
+  Total wall time used in DALTON:   0.17 seconds
+
+ 
+     Date and time (Linux)  : Thu Dec  1 19:34:40 2016
+     Host name              : spasnode102                             

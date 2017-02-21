@@ -16,17 +16,30 @@ C              matrices.
 C              The orthogonalization of the new trial vector is
 C              not performed here but in SO_ORTH_TRN.
 C
-#include "implicit.h"
+         use so_info, only:  sop_dp 
+C
+      implicit none
+C#include "implicit.h"
 #include "priunit.h"
 C
 #include "soppinf.h"
 C
-      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      PARAMETER (DTHRES = 1.0D-04)
+      REAL(SOP_DP), PARAMETER :: ZERO = 0.0D0, HALF = 0.5D0, 
+     &                           ONE = 1.0D0, TWO = 2.0D0
 C
-      DIMENSION TR1E(LTR1E),     TR1D(LTR1D)
-      DIMENSION EDIA1(LEDIA1)
-      DIMENSION RESI1E(LRESI1E), RESI1D(LRESI1D)
+C     Array lengths       
+      INTEGER, INTENT(IN) ::  LTR1E, LTR1D, 
+     &                        LEDIA1,
+     &                        LRESI1E, LRESI1D
+
+      INTEGER, INTENT(IN) ::  NNEWTR, NOLDTR
+
+      REAL(SOP_DP), INTENT(OUT) :: TR1E(LTR1E),  TR1D(LTR1D)
+      REAL(SOP_DP), INTENT(IN)  :: EDIA1(LEDIA1), EIVAL1,
+     &                             RESI1E(LRESI1E), RESI1D(LRESI1D)
+C      
+      REAL(SOP_DP) :: DIFF, SUM
+      INTEGER :: I
 C
 C------------------
 C     Add to trace.
@@ -41,20 +54,7 @@ C
       DO 100 I = 1,LTR1E
 C
          DIFF = EDIA1(I) - EIVAL1
-C
-C-----------------------------------------------------------------------
-C        Ensure that the absolute denominator is greater than threshold.
-C-----------------------------------------------------------------------
-C
-         IF ( DABS(DIFF) .GE. DTHRES ) THEN
-C
-            TR1E(I) = RESI1E(I) / DIFF
-C
-         ELSE
-C
-            TR1E(I) = RESI1E(I) / DSIGN(DTHRES,DIFF)
-C
-         END IF
+         TR1E(I) = RESI1E(I) / SAFE_DENOM(DIFF)
 C
   100 CONTINUE
 C
@@ -65,20 +65,7 @@ C
       DO 101 I = 1,LTR1D
 C
          SUM  = EDIA1(I) + EIVAL1
-C
-C-----------------------------------------------------------------------
-C        Ensure that the absolute denominator is greater than threshold.
-C-----------------------------------------------------------------------
-C
-         IF ( DABS(SUM) .GE. DTHRES ) THEN
-C
-            TR1D(I) = RESI1D(I) / SUM
-C
-         ELSE
-C
-            TR1D(I) = RESI1D(I) / DSIGN(DTHRES,SUM)
-C
-         END IF
+         TR1D(I) = RESI1D(I) / SAFE_DENOM(SUM)
 C
   101 CONTINUE
 C
@@ -105,4 +92,17 @@ C
       CALL QEXIT('RP_NEWTRIAL')
 C
       RETURN
+
+      CONTAINS
+
+         ! This function ensures that the denominator is at least
+         ! "sop_dthresh"         
+         pure function safe_denom(x)
+            use so_info, only : sop_dthresh
+            real(sop_dp), intent(in) :: x
+            real(sop_dp) :: safe_denom
+
+            safe_denom = sign(max(abs(x),sop_dthresh),x)
+            return
+         end function
       END

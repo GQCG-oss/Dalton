@@ -18,7 +18,9 @@ C
      &                   so_get_active_models,
      &                   so_has_doubles,
      &                   so_singles_second,
-     &                   sop_dens_label, sop_model_rpad
+     &                   sop_dens_label, sop_model_rpad,
+     &                   sop_model_rpa,
+     &                   sop_conv_thresh
 C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
@@ -45,7 +47,8 @@ c#include "mxcent.h"
 c#include "nuclei.h"
 c#include "symmet.h"
 c#include "wrkrsp.h"
-C
+C NEED DOCCSD parameter from gnring.h
+#include "gnrinf.h"
 c     PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C
       DIMENSION POLDD(2,3,3,NFRVAL,*), POLDQ(2,3,3,3,NFRVAL,*)
@@ -58,16 +61,14 @@ C
 C
       integer :: num_active
       logical :: active_models(sop_num_models)
-      logical :: doubles, need_t2
+      logical :: doubles, need_t2, rpa_only
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
 ! once.
-      LOGICAL update_common_blocks, get_mxcall
-      LOGICAL so_get_herdir, herdir, so_get_direct
+      LOGICAL update_common_blocks
 
       update_common_blocks = .true.
-      get_mxcall = .false.
 #endif
 C
 C------------------
@@ -84,6 +85,15 @@ C
 C     No RPA(D) properties
       ACTIVE_MODELS(SOP_MODEL_RPAD) = .FALSE.
 C
+      RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND. 
+     &           (NUM_ACTIVE.EQ.1) 
+C
+C     Set the correct convergence threshold -- THCLNR from cbilnr.h
+      sop_conv_thresh = THCLNR
+C
+C     Triplet flag not initialized...
+      TRIPLET = .FALSE.
+C
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.
 C-------------------------------------------
@@ -95,59 +105,12 @@ C
       CALL GETTIM (DUMMY,WTIME)
       TIMWTO  = WTIME
 C
-C-------------------------------------------
-C     Initializes memory statistics routine.
-C-------------------------------------------
-C
-      CALL SO_MEMMAX ('START',LWORK)
-C
-C---------------------------------------------------------------
-C     If only RPA initialize some pointers and sort AO-integrals
-C     into distributions.
-C---------------------------------------------------------------
-C     On the flip side, this cause a crash if CC has been run
-      IF ( AORPA .AND. (.NOT.DCRPA) .AND. (.NOT.AOSOP)
-     &           .AND. (.NOT.AOSOC) .AND. (.NOT.AOHRP)
-CPi
-     &           .AND. (.NOT.AOCC2) ) THEN
-         CALL RP_INIT(WORK,LWORK)
-#ifdef VAR_MPI
-C     In pure aorpa calculations, eridi has not been initialized
-         herdir = so_get_herdir()
-         get_mxcall = so_get_direct()
-#endif
-      ENDIF
-
-#ifdef VAR_MPI
-C
-C In AORPA we cannot be sure that the number of integral distributions
-C is known in advance. This is needed in order to allocate memory for
-C load-distribution later on
-C
-      if (get_mxcall) then
-         if (herdir) then
-            call herdi1(work(1), lwork, iprint)
-         else
-            kccfbt  = 1
-            kindxbt = kccfbt + mxprim*mxcont
-            kend3   = kindxbt + 8*mxshel*mxcont/irat
-            lwork3 = lwork - kend3
-            call eridi1(kodcl1, kodcl2, kodbc1, kodbc2,
-     &                  krdbc1, krdbc2, kodpp1, kodpp2,
-     &                  krdpp1, krdpp2, kfree,  lfree,
-     &                  kend3, work(kccfbt), work(kindxbt),
-     &                  work(kend3), lwork3, iprint)
-            endif
-         get_mxcall = .false.
-      endif
-#endif
-C
 C---------------------------------------------------
 C     Initialize a few pointerarrays and dimensions.
 C---------------------------------------------------
 C
       DTIME     = SECOND()
-      CALL SO_INIT
+      CALL SO_INIT(WORK,LWORK)
       DTIME     = SECOND()  - DTIME
       SOTIME(2) = SOTIME(2) + DTIME
 C
@@ -170,8 +133,8 @@ C
       KEND1   = KFOCKD  + LFOCKD
       LWORK1  = LWORK   - KEND1
 C
-CPi
-      IF (DCRPA .OR. AOSOP .OR. AOHRP .OR. AOSOC .OR. AOCC2) THEN
+C
+      IF (.NOT.RPA_ONLY) THEN
 C
          LT2AM   = NT2AMX
          LDENSIJ = NIJDEN(1)
@@ -195,8 +158,6 @@ C        Force a crash of this is used
          KDENSAB = LWORK + 1
          KDENSAI = LWORK + 1
       END IF
-C
-C
 C
       CALL SO_MEMMAX ('SO_LNRABA.1',LWORK1)
       IF (LWORK1 .LT .0) CALL STOPIT('SO_LNRABA.1',' ',KEND1,LWORK)
@@ -265,10 +226,6 @@ C Do only for DIPLEN?
 CRF is there a common pattern here?
             IDIP = ICHAR(LABEL1(1:1)) - ICHAR('X') + 1
 
-C            IF (LABEL1 .EQ.'XDIPLEN') IDIP = 1
-C            IF (LABEL1 .EQ.'YDIPLEN') IDIP = 2
-C            IF (LABEL1 .EQ.'ZDIPLEN') IDIP = 3
-C
             ISYMTR = ISYM
 C
 C========================================
@@ -309,13 +266,14 @@ C-----------------------------------------------------
 C              Get T2 amplitudes and density matrices.
 C-----------------------------------------------------
 C
-               IF(NEED_T2) THEN
-                  CALL SO_GETT2(sop_dens_label(imodel),
-     &                          WORK(KT2AM),LT2AM,WORK(KDENSAI),
+               IF (NEED_T2) THEN
+                  CALL SO_GETT2(SOP_DENS_LABEL(IMODEL),
+     &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
+     &                          WORK(KDENSAI),
      &                          LDENSAI,WORK(KDENSIJ),LDENSIJ,
      &                          WORK(KDENSAB),LDENSAB,
      &                          WORK(KEND1),LWORK1)
-               END IF
+               ENDIF
 #ifdef VAR_MPI
 C
 C---------------------------------------------------------

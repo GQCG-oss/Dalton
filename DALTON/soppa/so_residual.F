@@ -1,6 +1,6 @@
 C
 C  /* Deck so_residual */
-      SUBROUTINE SO_RESIDUAL(DOUBLES,LTYPE,RESINM,
+      SUBROUTINE SO_RESIDUAL(DOUBLES,LTYPE,RESINM,ISYMTR,
      &                       RESI1E,LRESI1E,RESI1D,LRESI1D,
      &                       RESI2E,LRESI2E,RESI2D,LRESI2D,
      &                       EIVAL1,
@@ -38,6 +38,7 @@ C
       DIMENSION REGP2E(LREGP2E)!, REGP2D(LREGP2D)
       LOGICAL IMAGPROP, DOUBLES
       LOGICAL STATIC
+      INTEGER ISYMTR
 C
 C------------------
 C     Add to trace.
@@ -111,26 +112,21 @@ C
       IF(LTYPE.EQ.'LINEAR') THEN
 C
 C---------------------------------------------------------
-C     For linear response properties scale to the original
-C     length of the solution vector and subtract the
-C     property gradient vector.
+C     For linear response properties subtract the property
+C     gradient vector, scaled by the same factor used when
+C     normalizing the trial-vector.
 C---------------------------------------------------------
 C
-          ENORMINV = 1.0D0 / ENORM
-          DFACTOR = 1.0D0
-          IF(IMAGPROP) DFACTOR = -1.0D0
-          CALL DSCAL(LRES1E,ENORMINV,RESI1E,1)
-          CALL DAXPY(LRES1E,-1.0D0,REGP1E,1,RESI1E,1)
+          DFACTOR = ENORM
+          IF(IMAGPROP) DFACTOR = -ENORM
+          CALL DAXPY(LRES1E,-ENORM,REGP1E,1,RESI1E,1)
           IF(.NOT.STATIC) THEN
-            CALL DSCAL(LRES1E,ENORMINV,RESI1D,1)
             CALL DAXPY(LRES1E,DFACTOR,REGP1E,1,RESI1D,1)
           ENDIF
 C
           IF(DOUBLES)THEN
-              CALL DSCAL(LRES2E,ENORMINV,RESI2E,1)
-              CALL DAXPY(LRES2E,-1.0D0,REGP2E,1,RESI2E,1)
+              CALL DAXPY(LRES2E,-ENORM,REGP2E,1,RESI2E,1)
               IF(.NOT.STATIC)THEN
-                  CALL DSCAL(LRES2E,ENORMINV,RESI2D,1)
                   CALL DAXPY(LRES2E,DFACTOR,REGP2E,1,RESI2D,1)
               ENDIF
           ENDIF
@@ -155,23 +151,22 @@ C
 C-----------------------------------------------
 C     Calculate the norm of the residual vector.
 C-----------------------------------------------
-C
-C      RESINM = DDOT(LRESI1E,RESI1E,1,RESI1E,1)
-c     &       + DDOT(LRESI1D,RESI1D,1,RESI1D,1)
-c      IF (DOUBLES) RESINM = RESINM
-C     &       + DDOT(LRESI2E,RESI2E,1,RESI2E,1)
-C     &       + DDOT(LRESI2D,RESI2D,1,RESI2D,1)
 
       RESINM = DNRM2(LRESI1E,RESI1E,1)**2
       IF(.NOT.STATIC) RESINM = RESINM + DNRM2(LRESI1D,RESI1D,1)**2
-      IF (DOUBLES) THEN
+      IF (DOUBLES.AND.TRIPLET) THEN
          RESINM = RESINM + DNRM2(LRESI2E,RESI2E,1)**2
          IF(.NOT.STATIC) RESINM = RESINM + DNRM2(LRESI2D,RESI2D,1)**2
+      ELSEIF (DOUBLES) THEN
+         RESINM = RESINM + SO_DOUBLES_LENGTH(RESI2E,ISYMTR)
+         IF(.NOT.STATIC) RESINM = RESINM +
+     &         SO_DOUBLES_LENGTH(RESI2D,ISYMTR)
       ENDIF
 C
 CRF   For static the norm of the D part would be exactly that of the E
 C     part. Should we scale RESINM apropriately?
 C
+      IF(STATIC) RESINM = 2.0D0*RESINM
       RESINM = DSQRT(RESINM)
 C
 C-----------------------

@@ -10,11 +10,11 @@ C
 C     Rasmus Faber, 2016 : Now calculates the whole of terms (2) and (3)
 C                          of the A^(2) matrix
 C                          This this saves N^5 operations in SO_RES_A
-C         
+C
 C     PURPOSE: Calculate the symmetry corrected terms (2) and (3) of the
 C              A matrix, using the A_{i,j} and A_{a,b} intermediates
 C              calculated in SO_RES_A.
-C         
+C
 C              as expressed in eq. (44).
 C
 #include "implicit.h"

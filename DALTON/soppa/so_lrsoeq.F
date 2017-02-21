@@ -37,7 +37,7 @@ C
      &                       soppa_nint
 #endif
       use so_info, only: sop_linres, so_full_name, so_has_doubles,
-     &                   so_needs_densai
+     &                   so_needs_densai, sop_dp
 
 #include "implicit.h"
 #ifdef VAR_MPI
@@ -61,7 +61,9 @@ C
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
       DIMENSION T2MP(LT2MP),     FOCKD(LFOCKD),   WORK(LWORK)
       DIMENSION REDE(LMXRED),    REDS(LMXRED)
-
+C
+      REAL(sop_dp), parameter :: TWO = 2.0D0, HALF = 0.5D0, ONE = 1.0D0
+C
       INTEGER NIT, NOLDTR, NNEWTR
 #ifdef VAR_MPI
       INTEGER   CP_ISYMTR
@@ -90,6 +92,7 @@ C==============================================================
 C     For checking, calculate E[2] and S[2] matrices explicitly
 C     by using unit vectors as trial vectors.
 C==============================================================
+C
 C
       IF (SOPCHK) THEN
 C
@@ -141,8 +144,8 @@ C     Write banner.
 C------------------
 C
       WRITE(LUPRI,'(A)') ''
-      WRITE(LUPRI,'(/,2X,A)') '*********************************'//
-     &                        '*********************************'
+C      WRITE(LUPRI,'(/,2X,A)') '*********************************'//
+C     &                        '*********************************'
       WRITE(LUPRI,9001)
       WRITE(LUPRI,'(11X,3A)') ADJUSTR(FULL_NAME),
      &        ' iterations, Property ',LABEL
@@ -403,6 +406,11 @@ C--------------------------------------------------------------
 C     Calculate and save the pertubed density matrix
 C-------------------------------------------------------------
 C
+      if (triplet.AND.doubles) THEN 
+         CALL SO_TMLTR(T2MP,ONE,1)
+         CALL DSCAL(LT2MP/2,HALF,T2MP,1)
+      END IF
+C      
       ENORMINV = 1.0D0/ENORM
       CALL SO_PERTDENS(MODEL,SOP_LINRES,1,
      &                 FRVAL(IFREQ),1,LABEL,
@@ -410,6 +418,9 @@ C
      &                 T2MP,LT2MP,DENSIJ,LDENSIJ,
      &                 DENSAB,LDENSAB,DENSAI,LDENSAI,
      &                 WORK(KEND1),LWORK1)
+C
+      if (triplet.and.doubles) CALL CCSD_TCMEPKX(T2MP,ONE,1)
+C
 C
       IF ((NNEWTR .EQ. 0) .AND. (NIT.LT.MAXIT)) THEN
 C

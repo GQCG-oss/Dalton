@@ -42,7 +42,7 @@ module so_parutils
 !
 ! SOPPA communicator (needed if not all nodes participate in soppa)
    integer(mpi_integer_kind) :: soppa_comm_active    ! communicator
-   integer                   :: soppa_num_active     ! number of nodes
+   integer                   :: soppa_num_active = 0 ! number of nodes
 
 ! In order to work with both ERI and HERMITE direct...
    integer            :: soppa_nint   ! number of calls to integral program
@@ -99,7 +99,6 @@ contains
 #include "cbieri.h"
 ! Parameters + stuff initialized in so_init, depends on ccorb.h
 !#include "soppinf.h"
-!#include "parsoppa.h"
 #include "aobtch.h"
 #include "odclss.h"
 #include "ccom.h"
@@ -450,6 +449,7 @@ contains
                  (mynum .lt. soppa_num_active)                ) then
                call mpi_comm_free( soppa_comm_active, ierr )
             endif
+            soppa_num_active = 0
             !
             ! Return to dalton_nodedriver
             return

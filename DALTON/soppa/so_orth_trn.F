@@ -53,12 +53,8 @@ C
       LTR1E   = NT1AM(ISYMTR)
       LTR1D   = NT1AM(ISYMTR)
       IF (DOUBLES) THEN
-CPi 01.04.16
-C         LTR2E   = NT2AM(ISYMTR)
-C         LTR2D   = NT2AM(ISYMTR)
          LTR2E   = N2P2HOP(ISYMTR)
          LTR2D   = N2P2HOP(ISYMTR)
-Cend-Pi
       ELSE
          LTR2E   = 0
          LTR2D   = 0
@@ -175,15 +171,15 @@ C
 C
                   CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
                   CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-                  CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
 C
-                  DOTP = DOTP + DDOT(LTR2E,WORK(KTTR2),1,WORK(KTR2E),1)
+                  DOTP = DOTP +
+     &                   HALF * DDOT(LTR2E,WORK(KTTR2),1,WORK(KTR2E),1)
 C
                   CALL DCOPY(LTR2D,WORK(K1TR2D),1,WORK(KTTR2),1)
                   CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-                  CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
 C
-                  DOTP = DOTP - DDOT(LTR2D,WORK(KTTR2),1,WORK(KTR2D),1)
+                  DOTP = DOTP -
+     &                   HALF * DDOT(LTR2D,WORK(KTTR2),1,WORK(KTR2D),1)
 C
                END IF
 C
@@ -215,15 +211,15 @@ C
 C
                   CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
                   CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-                  CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
 C
-                  DOTP = DOTP + DDOT(LTR2E,WORK(KTTR2),1,WORK(KTR2D),1)
+                  DOTP = DOTP +
+     &                   HALF * DDOT(LTR2E,WORK(KTTR2),1,WORK(KTR2D),1)
 C
                   CALL DCOPY(LTR2D,WORK(K1TR2D),1,WORK(KTTR2),1)
                   CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-                  CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
 C
-                  DOTP = DOTP - DDOT(LTR2D,WORK(KTTR2),1,WORK(KTR2E),1)
+                  DOTP = DOTP -
+     &                   HALF * DDOT(LTR2D,WORK(KTTR2),1,WORK(KTR2E),1)
 C
                END IF
 C
@@ -254,17 +250,8 @@ C
                DNORM = DNORM + DDOT(LTR2E,WORK(K1TR2E),1,WORK(K1TR2E),1)
                DNORM = DNORM - DDOT(LTR2D,WORK(K1TR2D),1,WORK(K1TR2D),1)
             ELSE
-               CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
-               CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-               CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
-C
-               DNORM = DNORM + DDOT(LTR2E,WORK(KTTR2),1,WORK(K1TR2E),1)
-C
-               CALL DCOPY(LTR2E,WORK(K1TR2D),1,WORK(KTTR2),1)
-               CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-               CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
-C
-               DNORM = DNORM - DDOT(LTR2D,WORK(KTTR2),1,WORK(K1TR2D),1)
+               DNORM = DNORM + so_doubles_length(work(k1tr2e),isymtr)
+               DNORM = DNORM - so_doubles_length(work(k1tr2d),isymtr)
             END IF
          ENDIF
 C
@@ -333,15 +320,15 @@ C
               ELSE
                  CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
                  CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-                 CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
 C
-                 DNORM = DNORM +DDOT(LTR2E,WORK(KTTR2),1,WORK(K1TR2E),1)
+                 DNORM = DNORM +
+     &                   HALF * DDOT(LTR2E,WORK(KTTR2),1,WORK(K1TR2E),1)
 C
                  CALL DCOPY(LTR2E,WORK(K1TR2D),1,WORK(KTTR2),1)
                  CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-                 CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
 C
-                 DNORM = DNORM -DDOT(LTR2D,WORK(KTTR2),1,WORK(K1TR2D),1)
+                 DNORM = DNORM -
+     &                   HALF * DDOT(LTR2D,WORK(KTTR2),1,WORK(K1TR2D),1)
               END IF
            ENDIF
 C

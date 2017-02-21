@@ -41,18 +41,12 @@ C-----------------------------------------------------------------
 C
       LTR1E    = NT1AM(ISYMTR)
       LTR1D    = NT1AM(ISYMTR)
-CPi 01.04.16
-C      LTR2E    = NT2AM(ISYMTR)
-C      LTR2D    = NT2AM(ISYMTR)
       LTR2E    = N2P2HOP(ISYMTR)
       LTR2D    = N2P2HOP(ISYMTR)
       LRES1E   = NT1AM(ISYMTR)
       LRES1D   = NT1AM(ISYMTR)
-C      LRES2E   = NT2AM(ISYMTR)
-C      LRES2D   = NT2AM(ISYMTR)
       LRES2E   = N2P2HOP(ISYMTR)
       LRES2D   = N2P2HOP(ISYMTR)
-Cend-Pi
       LRESO1E  = LRES1E
       LRESO1D  = LRES1D
       LRESO2E  = LRES2E
