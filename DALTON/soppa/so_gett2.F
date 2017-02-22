@@ -58,11 +58,10 @@ C----------------------------------------------------------
 C        Check if T2-amplitudes has been calculated in CC:
 C----------------------------------------------------------
 C
-         IF (DOCCSD) THEN
-           INQUIRE (FILE='MP2__TAM',EXIST=LEXIST)
-           IF (LEXIST) THEN
-             WRITE(LUPRI, '(A)') 'The (ai|bj) integrals for the T2
-     & ampliltudes from is read from the file: MP2__TAM'
+         INQUIRE (FILE='MP2__TAM',EXIST=LEXIST)
+         IF (LEXIST) THEN
+             WRITE(LUPRI, '(2A)') 'The (ai|bj) integrals for the T2 ',
+     & 'ampliltudes from is read from the file: MP2__TAM'
 C-----------------------------------------------
 C          Read MP2 T2-amplitudes from disk.
 C------------------------------------------------
@@ -72,13 +71,12 @@ C------------------------------------------------
              REWIND LUTAM
 C
              READ(LUTAM)
-             READ(LUTAM) (T2AM(I), I = 1,LT2AM)
              READ(LUTAM) (T2AM(I), I = 1,LT2AMH)
              CALL GPCLOSE(LUTAM,'KEEP')
 C
-           ELSE IF (.NOT. LEXIST) THEN
-             WRITE(LUPRI, '(A)') 'The (ai|bj) integrals for the T2
-     & amplitudes is calculated in SOPPA'
+         ELSE IF (.NOT. LEXIST) THEN
+             WRITE(LUPRI, '(2A)') 'The (ai|bj) integrals for the T2 ',
+     & 'amplitudes is calculated in SOPPA'
 C
 C----------------------------------------
 C        Calculate (ia|jb) integrals .
@@ -89,32 +87,16 @@ C
              CALL SO_IAJB(T2AM,WORK(KT1AM),WORK,LWORK2)
              DTIME     = SECOND()  - DTIME
              SOTIME(5) = SOTIME(5) + DTIME
-           END IF
-C
-C-------------------------------------------------------
-C        Calculate (ia|jb) integrals .
-C-------------------------------------------------------
-C 
-         ELSE IF (.NOT. DOCCSD) THEN
-           WRITE(LUPRI, '(A)') 'The (ai|bj) integrals for the T2
-     & amplitudes is calculated in SOPPA'
-           CALL DZERO(WORK(KT1AM),NT1AMX)
-C
-           DTIME     = SECOND()
-           CALL SO_IAJB(T2AM,WORK(KT1AM),WORK,LWORK2)
-           DTIME     = SECOND()  - DTIME
-           SOTIME(5) = SOTIME(5) + DTIME
-C
-         END IF
 C
 C-----------------------------------------
 C        Calculate MP2 T2 amplitudes
 C-----------------------------------------
 C
-         DTIME     = SECOND()
-         CALL SO_MP2T2(FOCKD,LFOCKD,T2AM,LT2AMH)
-         DTIME     = SECOND()  - DTIME
-         SOTIME(5) = SOTIME(5) + DTIME
+            DTIME     = SECOND()
+            CALL SO_MP2T2(FOCKD,LFOCKD,T2AM,LT2AMH)
+            DTIME     = SECOND()  - DTIME
+            SOTIME(5) = SOTIME(5) + DTIME
+         END IF
 C
       ELSE IF ( KEY(1:3) .EQ. 'CC2' ) THEN
 C
