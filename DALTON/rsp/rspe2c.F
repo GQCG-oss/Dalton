@@ -5413,7 +5413,7 @@ C
       CALL RSPRED(ICTL,.FALSE.,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *            EIVAL,EIVEC,WRK(KWRK1),WRK(KWRK1),
      *            UDV,WRK(KWRK1),XINDX,WRK(KWRK1),LWRK1)
-      CALL QEXIT('RPES2')
+      CALL QEXIT('RSPES2')
       RETURN
       END
 C  /* Deck oropti */
