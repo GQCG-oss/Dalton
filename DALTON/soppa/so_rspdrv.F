@@ -273,11 +273,11 @@ C     &           NPPCNV(ISYM),
             ENDIF
             WRITE(LUPRI,9001)
 
-C            DO IEXCI = 1, NPPCNV(ISYM)
-C               WRITE(LUPRI,'(2A,/A)') 'Warning: Excitation energies',
-C     &            'not implemented in AO-SOPPA **RESPONSE driver.',
-C     &            'Use **PROPERTIES instead'
-C            END DO
+            IF ( NPPCNV.GT.0) THEN
+               WRITE(LUPRI,'(A,/A)') 'Warning: Excitation energies '//
+     &            'are not implemented in AO-SOPPA **RESPONSE driver.',
+     &            'Use **PROPERTIES or MO-SOPPA instead'
+            END IF
 
             SOP_USE_SELLER = (NGPLR(ISYM).GT.1)
 
@@ -299,7 +299,7 @@ C
      &                        LT2AM,WORK(KFOCKD),LFOCKD,
      &                        WORK(KEND1),LWORK1)
 C
-               CALL FLUSH(LUPRI)
+C               CALL FLUSH(LUPRI)
             END DO ! Loop operators
 C
 C----------------------------------------------
@@ -320,6 +320,9 @@ C
      &                       WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
      &                       WORK(KEND2),LWORK2)
+
+               CALL SO_RSPOUT(WORK(KPROP),ISYM,FREQ,NFREQ,NGPLR(ISYM))
+
             END IF
 
 C

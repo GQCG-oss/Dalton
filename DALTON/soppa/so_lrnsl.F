@@ -22,9 +22,6 @@ C
 C#include "implicit.h"
       implicit none
 #include "priunit.h"
-C From codata we need varius conversion factors, XT*. 
-#include "codata.h"
-C
 C      
 #include "soppinf.h"
 C inflr.h below requires MAXLBL from rspprp.h
@@ -35,7 +32,7 @@ C NGPLR <- Number of operators of each symmetry
 #include "inflr.h"
 #include "ccsdsym.h"
 C REP <- Symbols of the ireducible representations.
-#include "pgroup.h"
+C#include "pgroup.h"
 C
 
 C
@@ -67,7 +64,7 @@ C------------------
 C     Add to trace.
 C------------------
 C
-      CALL QENTER('SO_LRNSL')
+      CALL QENTER(myname)
 C
 C------------------------------
 C     Allocation of work space.
@@ -202,14 +199,6 @@ C
                ENDIF
 C
                PROPAR(IFREQ,ILAB1,ILAB2) = PROPVAL
-C               WRITE(LUPRI,'(/A,2(/A,A10,I4,3A,F10.6),/,/A,F20.12,/)')
-C     &              ' Linear response function in a.u.',
-C     &              ' A operator, symmetry, frequency: ',
-C     &              LABEL1, ISYM,'  (',REP(ISYM-1),')',-FREQ(IFREQ),
-C     &              ' B operator, symmetry, frequency: ',
-C     &              LABEL2, ISYM,'  (',REP(ISYM-1),')', FREQ(IFREQ),
-C     &              ' Value of linear response -<<A;B>>(omega): ',
-C     &              PROPVAL
 C
             END DO
 C
@@ -217,7 +206,47 @@ C
 C
   200 CONTINUE
 C
+C--------------------------------------
+C           Close files with densities.
+C--------------------------------------
 C
+      CALL GPCLOSE(LURDENS,'KEEP')
+C
+C-----------------------
+C     Remove from trace.
+C-----------------------
+C
+      CALL FLSHFO(LUPRI)
+C
+      CALL QEXIT('SO_LRNSL')
+      RETURN
+      END
+
+C
+      SUBROUTINE SO_RSPOUT(PROPAR,ISYM,FREQ,NFREQ,NLAB)
+
+      USE SO_INFO, ONLY: SOP_DP, SOP_STAT_TRH
+      IMPLICIT NONE
+C
+C Get LUPRI, output unit (probably 6)      
+#include "priunit.h"
+C From codata we need varius conversion factors, XT*. 
+#include "codata.h"
+C inflr.h below requires MAXLBL from rspprp.h
+#include "rspprp.h"
+C We need 
+C LBLLR <- Label of operators 
+C NGPLR <- Number of operators of each symmetry
+#include "inflr.h"
+C TRIPLET <- Triplet property flag
+#include "soppinf.h"
+
+      REAL(SOP_DP), INTENT(IN) :: PROPAR(NFREQ,NLAB,NLAB),
+     &                            FREQ(NFREQ)
+      INTEGER, INTENT(IN) :: ISYM, NFREQ, NLAB
+      
+      INTEGER :: ILAB1, ILAB2, IFREQ
+
       CALL HEADER('Final output of second order properties from'//
      &            ' linear response',-1)
       IF (TRIPLET) THEN
@@ -252,25 +281,7 @@ C
          END DO
       END DO
                
-             
-
-
-C
-C--------------------------------------
-C           Close files with densities.
-C--------------------------------------
-C
-      CALL GPCLOSE(LURDENS,'KEEP')
-C
-C-----------------------
-C     Remove from trace.
-C-----------------------
-C
-      CALL FLSHFO(LUPRI)
-C
-      CALL QEXIT('SO_LRNSL')
-      RETURN
-      END
+      END SUBROUTINE
 
       SUBROUTINE SO_GETSOLV(VECT,LVECT,LABEL,FREQ,IOPT,STATIC,DOUBLES,
      &                      ISYM) 

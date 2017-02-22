@@ -334,7 +334,8 @@ C-----------------------------------------------------
 C
                IF (NEED_T2) THEN
                   CALL SO_GETT2(SOP_DENS_LABEL(IMODEL),
-     &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
+     &                          WORK(KFOCKD),LFOCKD,
+     &                          WORK(KT2AM),LT2AM,
      &                          WORK(KDENSAI),
      &                          LDENSAI,WORK(KDENSIJ),LDENSIJ,
      &                          WORK(KDENSAB),LDENSAB,
