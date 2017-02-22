@@ -887,7 +887,11 @@ subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,&
         do i = 1,ncsim
             fuxcs = 0.0d0
             call dsptsi(norbt,fxcs(:,i), fuxcs)
-            call slvsor(.true.,.true., 1, udv, scvecs(1,i), fuxcs)
+            if (trplet) then
+               ! zero for singlet reference state
+            else
+               call slvsor(.true.,.true., 1, udv, scvecs(1,i), fuxcs)
+            end if
             if (locdeb) then
                 write(lupri,*) ' *** After slvsor in pe_rsplnc *** '
                 write(lupri,*) 'Orbital part of lin transf conf vec no ', i
@@ -973,7 +977,7 @@ subroutine pe_rsplno(nosim, bovecs, cref, cmo, cindx, udv, dv,&
         call qexit('pe_rsplno')
         return
     ! triplet response for open shell (and MCSCF) not ready yet
-    else if ((nasht > 0) .and. trplet) then
+    else if (tdhf .and. (nasht > 0) .and. trplet) then
         !write(lupri,*)'WARNING: Triplet code experimental'
         call quit('ERROR: triplet operators for open shell'//&
                  & ' systems not implemented')
@@ -1040,7 +1044,11 @@ subroutine pe_rsplno(nosim, bovecs, cref, cmo, cindx, udv, dv,&
         if (.not. tdhf) then
             call onexh1(ubovecs(:,i), fupemo, evecs(:,i))
             call getacq(evecs(:,i), eacs(:,i))
-            txyo = slvqlm(udv, eacs(:,i), evecs(:,i), txyoacs(i))
+            if (trplet) then
+              ! do nothing (txyoacs should be zero for triplet with singlet cref)
+            else 
+              txyo = slvqlm(udv, eacs(:,i), evecs(:,i), txyoacs(i))
+            end if 
         end if
     end do
 
