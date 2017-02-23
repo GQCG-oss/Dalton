@@ -503,7 +503,7 @@ C
             WRITE(LUPRI,*)' **** BEFORE SLVLNO **** '
             CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
          END IF
-         CALL SLVLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
+         CALL SLVLNO(NOSIM,BOVECS,CREF,CMO,INDXCI,
      *               WRK(KFLVEC),WRK(KFLINR),WRK(KTLMSI),
      *               UDV,DV,UDVTR,DVTR,SOVECS,WRK(KSYRLM),
      *               WRK(KFREE),LFREE)
@@ -750,7 +750,7 @@ C
 C     end of SLVLNC.
       END
 C  /* Deck slvlno */
-      SUBROUTINE SLVLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
+      SUBROUTINE SLVLNO(NOSIM,BOVECS,CREF,CMO,INDXCI,
      *                  FLVEC,FLINR,TLMSI,
      *                  UDV,DV,UDVTR,DVTR,SVEC,ISYRLM,
      *                  WRK,LFREE)
