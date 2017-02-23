@@ -508,7 +508,19 @@ C
       USEDRC = .TRUE.
       IPRTRA = IPRNTR
       IF ((NASHT.GT.1 .AND. .NOT.HSROHF) .OR. H2MO) THEN
-         KTRLVL = 3
+         IF (CTOCD .OR. DOEXCI .OR. ABALNR .OR. VCD .OR.
+     &       SPNSPN .OR. MAGSUS .OR. SHIELD .OR. SPINRO .OR.
+     &       MOLGFA .OR. RNLRSC) THEN
+            KTRLVL = 4  ! linear response with RESPONS module
+         ELSE IF (HYPER .OR. VERDET .OR. MCD) THEN
+            KTRLVL = 10 ! quadratic resonse with RESPONS module
+         ELSE
+            ! ABARSP (calling RESPONS module) is not called
+            ! NB! if some tests should be missing above, then
+            ! ABARSP will call TRACTL again with the necessary
+            ! transformation level.
+            KTRLVL = 3
+         END IF
          ITRLVL = KTRLVL
          FLAG(14) = .TRUE.
          CALL SIR_INTOPEN
