@@ -541,8 +541,8 @@ C        does exist. /980529-hjaaj
       END IF ! .NOT. FLAG(34)
 
       IF (.NOT. FLAG(34)) THEN ! MO integrals not needed
-      IF (FTRCTL .OR. NEWCMO .OR. (ITRLVL .GT. ITRLVL_SAVE) .OR.
-     &    (USEDRC .AND. LVLDRC_SAVE .LT. 0)) THEN
+      IF (FTRCTL .OR. NEWCMO .OR. (ITRLVL .GT. ITRLVL_LAST) .OR.
+     &    (USEDRC .AND. LVLDRC_LAST .LT. 0)) THEN
       ! ... needed integrals not available
          WRITE (LUPRI,1020) KTRLVL
          KCMO  = 1

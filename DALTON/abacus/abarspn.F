@@ -226,8 +226,8 @@ C
          ENDIF
 
          IF (NEWCMO .OR. FTRCTL .OR.
-     &       (ABS(JTRLVL) .GT. ITRLVL_SAVE) .OR.
-     &       (USEDRC .AND. LVLDRC_SAVE .LT. 0) .OR. NEWCMO) THEN
+     &       (ABS(JTRLVL) .GT. ITRLVL_LAST) .OR.
+     &       (USEDRC .AND. LVLDRC_LAST .LT. 0) .OR. NEWCMO) THEN
             FLAGSV = DORSP
             DORSP  = .TRUE.
             CALL SIR_INTOPEN
