@@ -44,6 +44,8 @@ C Symmetry-offsets in amplitudes
 #include "ccsdsym.h"
 C Symmetry-offsets in densities
 #include "soppinf.h"
+C Get irat
+#include "iratdef.h"
 C
 C  Arguments
 C
@@ -76,8 +78,7 @@ C
       INTEGER :: LURDENSE, LURDENSD     ! File handles
       DOUBLE PRECISION, PARAMETER :: ONE = 1.0D0
       DOUBLE PRECISION, PARAMETER :: SQRT2 = SQRT(2.0D0)
-Ctest     &                               SQRT2INV = ONE/SQRT2
-C     &                               SQRT2INV = SQRT2
+      LOGICAL :: DUMMY
       CALL QENTER('SO_PERTDENS')
 C
 C---------------------------------
@@ -132,15 +133,15 @@ C     Density files
       SELECT CASE (CALCTYPE)
 C        Linear response, only one file saved
          CASE ( SOP_LINRES )
-            CALL GPOPEN(LURDENSD,FN_RDENS,'UNKNOWN',' ','UNFORMATTED',
-     &                  IDUMMY,.FALSE.)
+            CALL GPOPEN(LURDENSD,FN_RDENS,'UNKNOWN','DIRECT',' ',
+     &                  IRAT*LRDENTOT,DUMMY)
             LURDENSE = LURDENSD
 C        Excitation energies, two files :
          CASE ( SOP_EXCITA )
-            CALL GPOPEN(LURDENSE,FN_RDENSE,'UNKNOWN',' ','UNFORMATTED',
-     &                  IDUMMY,.FALSE.)
-            CALL GPOPEN(LURDENSD,FN_RDENSD,'UNKNOWN',' ','UNFORMATTED',
-     &                  IDUMMY,.FALSE.)
+            CALL GPOPEN(LURDENSE,FN_RDENSE,'UNKNOWN','DIRECT',' ',
+     &                  IRAT*LRDENTOT,DUMMY)
+            CALL GPOPEN(LURDENSD,FN_RDENSD,'UNKNOWN','DIRECT',' ',
+     &                  IRAT*LRDENTOT,DUMMY)
 C        Any other -- is an error
          CASE DEFAULT
             print *, 'Invalid CALCTYPE argument in so_pertdens'
@@ -201,7 +202,6 @@ C
 C
          IF (CALCTYPE.EQ.SOP_EXCITA) THEN
             DLABEL = DBLE(IDENS)
-            CALL SO_FNDPOS(LABEL,DLABEL,LURDENSE)
             CALL SO_WRTVE(WORK(KRDENIJ),LRDENTOT,ISYMTR,LABEL,
      &                    DLABEL,LURDENSE)
             CALL DZERO( WORK(KRDENIJ), LRDENTOT)
@@ -249,7 +249,6 @@ C           Else label by frequency of the field
             DLABEL = FRVAL(IDENS)
          ENDIF
 C        Write on file
-         CALL SO_FNDPOS(LABEL,DLABEL,LURDENSD)
          CALL SO_WRTVE(WORK(KRDENIJ),LRDENTOT,ISYMTR,LABEL,
      &                  DLABEL,LURDENSD)
       END DO

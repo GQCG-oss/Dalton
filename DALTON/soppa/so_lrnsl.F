@@ -18,6 +18,7 @@ C              integral direct SOPPA program.
 C
       use so_info, only: fn_rdens, sop_stat_trh, sop_dp,
      &                   sop_use_seller, so_has_doubles
+      use so_data, only: fileinf
 C
 C#include "implicit.h"
       implicit none
@@ -33,6 +34,7 @@ C NGPLR <- Number of operators of each symmetry
 #include "ccsdsym.h"
 C REP <- Symbols of the ireducible representations.
 C#include "pgroup.h"
+#include "iratdef.h"
 C
 
 C
@@ -54,7 +56,7 @@ C
      &           KEND3, KSOLV, KRESI
       INTEGER :: IDUMMY, ILAB1, ILAB2, IFREQ, LURDENS
 C
-      LOGICAL   IMAGPROP, doubles, static
+      LOGICAL   IMAGPROP, doubles, static, OLDDX
       REAL(sop_dp), PARAMETER :: DP5=0.5D0
 C
       CHARACTER(len=*), parameter :: myname = 'SO_LRNSL'
@@ -88,9 +90,18 @@ C-----------------------------------------
 C     Open files with perturbed densities.
 C-----------------------------------------
 C
+      LPDENSIJ = NIJDEN(ISYM)
+      LPDENSAI = NAIDEN(ISYM)
+      IF (MODEL.EQ.'AORPA') THEN
+         LPDENSAB = 0
+         LPDENSTOT = LPDENSAI
+      ELSE
+         LPDENSAB = NABDEN(ISYM)
+         LPDENSTOT = LPDENSIJ + LPDENSAI + LPDENSAB
+      ENDIF
       LURDENS = -1
-      CALL GPOPEN(LURDENS, FN_RDENS, 'OLD',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.)
+      CALL GPOPEN(LURDENS, FN_RDENS, 'OLD','DIRECT','UNFORMATTED',
+     &            IRAT*LPDENSTOT,OLDDX)
 C
       doubles = so_has_doubles(model)
 C
@@ -116,13 +127,6 @@ C
          IMAGPROP = RTNLBL(2).EQ.'ANTISYMM'
 C
 C  These allocations as such doesn't change...
-         LPDENSIJ = NIJDEN(ISYM)
-         IF (MODEL.EQ.'AORPA') THEN
-            LPDENSAB = 0
-         ELSE
-            LPDENSAB = NABDEN(ISYM)
-         ENDIF
-         LPDENSAI = NAIDEN(ISYM)
 
          KPDENSIJ = KEND1
          KPDENSAB = KPDENSIJ + LPDENSIJ
@@ -168,7 +172,6 @@ C-----------------------------------------------------------
 C        Get the perturbed density matrix from file
 C-----------------------------------------------------------
 C
-               CALL SO_FNDPOS(LABEL2,FREQ(IFREQ),LURDENS)
                LPDENSTOT = LPDENSIJ + LPDENSAB + LPDENSAI
                IF (MODEL.EQ.'AORPA') THEN
                   CALL SO_REAVE(WORK(KPDENSAI),LPDENSAI,ISYM,
@@ -206,11 +209,17 @@ C
 C
   200 CONTINUE
 C
-C--------------------------------------
-C           Close files with densities.
-C--------------------------------------
+C---------------------------------------------------------
+C     Delete files for this symmetry and dump fileinf list
+C---------------------------------------------------------
 C
-      CALL GPCLOSE(LURDENS,'KEEP')
+      CALL GPCLOSE(LURDENS,'DELETE')
+      STATIC = .TRUE.
+      DO IFREQ = 1, NFREQ
+         STATIC = STATIC.AND.(abs(freq(ifreq)).lt.sop_stat_trh)
+      END DO
+      IF (SOP_USE_SELLER)CALL SO_DELVEC(STATIC,DOUBLES,ISYM)
+      call fileinf%empty 
 C
 C-----------------------
 C     Remove from trace.
@@ -293,6 +302,7 @@ C
       implicit none
 #include "soppinf.h"
 #include "ccsdsym.h"
+#include "iratdef.h"
 C     Arguments
       INTEGER, INTENT(IN)       :: lvect ! length of the vector
       real(sop_dp), intent(out) :: vect(lvect) ! the vector to read
@@ -349,14 +359,63 @@ C
             real(sop_dp), intent(in) :: freq
             real(sop_dp), intent(out) :: vect(length)
 
-            integer :: lufile, idummy
-
+            integer :: lufile
+            logical :: olddx
+         
             lufile = -1
-            call GPOPEN(lufile,fname,'OLD    ',' ','UNFORMATTED',
-     &                 idummy,.FALSE.)
-            call SO_FNDPOS(LABEL,FREQ,LUFILE)
+            call GPOPEN(lufile,fname,'OLD    ','DIRECT','UNFORMATTED',
+     &                 irat*length,olddx)
             call SO_REAVE(vect,length,isym,label,freq,lufile)
             call gpclose(lufile,'KEEP')
          end subroutine
 
+      END SUBROUTINE
+
+      SUBROUTINE SO_DELVEC(STATIC,DOUBLES,ISYM)
+C
+C     Deletes the files containing solution and 
+C     residual vectors
+C
+      implicit none
+#include "soppinf.h"
+#include "ccsdsym.h"
+#include "iratdef.h"
+      
+
+
+      integer, intent(in)       :: isym ! symmetry of pt.
+      logical, intent(in)  :: static, ! only read E part if static
+     &                        doubles ! include doubles excitations
+C      
+      character(len=5) :: froot
+      integer :: iopt 
+
+      do iopt = 1,2
+         IF (IOPT.eq.1) then
+            froot = fnsv1e(1:5)
+         elseif (iopt.eq.2) then
+            froot = fnrv1e(1:5)
+         endif
+
+         CALL DELAVECT(froot//'1E', nt1am(isym))
+         if (.not.static) call delavect(froot//'1D', nt1am(isym))
+         if (doubles) then
+            CALL DELAVECT(froot//'2E', n2p2hop(isym))
+            if (.not.static) CALL DELAVECT(froot//'2D', n2p2hop(isym))
+         end if
+      end do
+
+      contains
+      
+         subroutine delavect(fname,length)
+            integer, intent(in) :: length
+            character(len=7),intent(in)  :: fname
+
+            integer :: lufile
+            logical :: olddx
+            lufile = -1
+            call GPOPEN(lufile,fname,'OLD    ','DIRECT','UNFORMATTED',
+     &                 irat*length,olddx)
+            call gpclose(lufile,'DELETE')
+         end subroutine
       END SUBROUTINE

@@ -23,6 +23,7 @@ C     PURPOSE: Calculate RPA, RPA(D), SOPPA and SOPPA(CCSD) transition
 C              moments.
 C
       use so_info, only: FN_RDENSE, FN_RDENSD
+      use so_data, only: FILEINF
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -59,7 +60,7 @@ C
 C
       CHARACTER*8 LABEL, PDENS_LABEL
       CHARACTER*5 MODEL
-      LOGICAL  IMAGPROP
+      LOGICAL  IMAGPROP, OLDDX
 C
 CClark:7/1/2016
       PARAMETER   ( D2 = 2.0D0 )
@@ -77,13 +78,15 @@ C------------------
 C
       CALL QENTER('SO_TRMOM')
 C
+      LRDENTOT = NIJDEN(ISYMTR) + NABDEN(ISYMTR) + NAIDEN(ISYMTR)
+      IF (MODEL.EQ.'AORPA') LRDENTOT = NAIDEN(ISYMTR)
       WRITE(PDENS_LABEL,'(A7,I1)') 'EXCITA ', ISYMTR
       LURDENSE = -1
       LURDENSD = -1
-      CALL GPOPEN(LURDENSE,FN_RDENSE,'UNKNOWN',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.)
-      CALL GPOPEN(LURDENSD,FN_RDENSD,'UNKNOWN',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.)
+      CALL GPOPEN(LURDENSE,FN_RDENSE,'OLD','DIRECT','UNFORMATTED',
+     &            IRAT*LRDENTOT,OLDDX)
+      CALL GPOPEN(LURDENSD,FN_RDENSD,'OLD','DIRECT','UNFORMATTED',
+     &            IRAT*LRDENTOT,OLDDX)
 C
 C-------------------------------
 C     Loop over property labels.
@@ -355,9 +358,11 @@ C
 C
       ENDIF
 C
-      CALL GPCLOSE(LURDENSE,'KEEP')
-      CALL GPCLOSE(LURDENSD,'KEEP')
+      CALL GPCLOSE(LURDENSE,'DELETE')
+      CALL GPCLOSE(LURDENSD,'DELETE')
 CClark:end
+C
+      CALL FILEINF%EMPTY()
 C
 C-----------------------
 C     Remove from trace.

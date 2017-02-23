@@ -791,6 +791,7 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/cc/dyn_index.F90
     DALTON/soppa/so_parutils.F90
     DALTON/soppa/so_info.F90
+    DALTON/soppa/so_data.F90
     DALTON/qmcmm/herqmnp.F90
     DALTON/qmcmm/fock.F90
     DALTON/qmcmm/response.F90

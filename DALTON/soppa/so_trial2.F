@@ -28,6 +28,7 @@ C
 C
 #include "soppinf.h"
 #include "ccsdsym.h"
+#include "iratdef.h"
 C
       PARAMETER   (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER   (D100 = 100.0D0)
@@ -400,9 +401,8 @@ C
 C
             ENORMINV = 1.0D0/ENORM
             LURV1E = -1
-            CALL GPOPEN(LURV1E,FNRV1E,'UNKNOWN',' ','UNFORMATTED',
-     &                    IDUMMY,.FALSE.)
-            CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1E)
+            CALL GPOPEN(LURV1E,FNRV1E,'UNKNOWN','DIRECT','UNFORMATTED',
+     &                    IRAT*LRESI1E,OLDDX)
             CALL DSCAL(LRESI1E,ENORMINV,WORK(KRESI1E),1)
             CALL SO_WRTVE(WORK(KRESI1E),LRESI1E,ISYMTR,LABEL,
      &                    EIVAL(IEXCI),LURV1E)
@@ -414,9 +414,8 @@ C -- Re-read the trial-vector from file
      &                      IEXCI)
             END IF
             LUSV1E = -1
-            CALL GPOPEN(LUSV1E,FNSV1E,'UNKNOWN',' ','UNFORMATTED',
-     &                  IDUMMY,.FALSE.)
-            CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LUSV1E)
+            CALL GPOPEN(LUSV1E,FNSV1E,'UNKNOWN','DIRECT','UNFORMATTED',
+     &                  IRAT*LRESO1E,OLDDX)
             CALL DSCAL(LRESO1E,ENORMINV,WORK(KRESO1E),1)
             CALL SO_WRTVE(WORK(KRESO1E),LRESO1E,ISYMTR,LABEL,
      &                       EIVAL(IEXCI),LUSV1E)
@@ -425,9 +424,9 @@ C -- Re-read the trial-vector from file
 C
             IF (.NOT.STATIC) THEN
                LURV1D = -1
-               CALL GPOPEN(LURV1D,FNRV1D,'UNKNOWN',' ','UNFORMATTED',
-     &                    IDUMMY,.FALSE.)
-               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1D)
+               CALL GPOPEN(LURV1D,FNRV1D,'UNKNOWN','DIRECT',
+     &                    'UNFORMATTED',
+     &                    IRAT*LRESI1D,OLDDX)
                CALL DSCAL(LRESI1D,ENORMINV,WORK(KRESI1D),1)
                CALL SO_WRTVE(WORK(KRESI1D),LRESI1D,ISYMTR,LABEL,
      &                      EIVAL(IEXCI),LURV1D)
@@ -442,9 +441,9 @@ C
                END IF
 C
                LUSV1D = -1
-               CALL GPOPEN(LUSV1D,FNSV1D,'UNKNOWN',' ','UNFORMATTED',
-     &                     IDUMMY,.FALSE.)
-               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LUSV1D)
+               CALL GPOPEN(LUSV1D,FNSV1D,'UNKNOWN','DIRECT',
+     &                     'UNFORMATTED',
+     &                     IRAT*LRESO1D,OLDDX)
                CALL DSCAL(LRESO1D,DFACT,WORK(KRESO1D),1)
                CALL SO_WRTVE(WORK(KRESO1D),LRESO1D,ISYMTR,LABEL,
      &                       EIVAL(IEXCI),LUSV1D)
@@ -456,10 +455,10 @@ C           For doubles we might as well also save the response vector
 C---------------------------------------------------------------------
             IF(DOUBLES)THEN
                LURV2E = -1
-               CALL GPOPEN(LURV2E,FNRV2E,'UNKNOWN',' ','UNFORMATTED',
-     &                    IDUMMY,.FALSE.)
+               CALL GPOPEN(LURV2E,FNRV2E,'UNKNOWN','DIRECT',
+     &                    'UNFORMATTED',
+     &                    IRAT*LRESI2E,OLDDX)
 C              find the right positions
-               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2E)
                IF (TRIPLET) THEN
                   CALL DSCAL(LRESI2E,ENORMINV,WORK(KRESI2E),1)
                ELSE
@@ -473,10 +472,10 @@ C              We need to scale by one half
                CALL GPCLOSE(LURV2E,'KEEP')
 C
                LUSV2E = -1
-               CALL GPOPEN(LUSV2E,FNSV2E,'UNKNOWN',' ','UNFORMATTED',
-     &                    IDUMMY,.FALSE.)
+               CALL GPOPEN(LUSV2E,FNSV2E,'UNKNOWN','DIRECT',
+     &                    'UNFORMATTED',
+     &                    IRAT*LRESO2E,OLDDX)
 C              find the right positions
-               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LUSV2E)
                CALL DSCAL(LRESO2E,ENORMINV,WORK(KRESO2E),1)
                CALL SO_WRTVE(WORK(KRESO2E),LRESO2E,ISYMTR,LABEL,
      &                       EIVAL(IEXCI),LUSV2E)
@@ -485,9 +484,9 @@ C
             END IF
             IF(DOUBLES.AND..NOT.STATIC) THEN
                LURV2D = -1
-               CALL GPOPEN(LURV2D,FNRV2D,'UNKNOWN',' ','UNFORMATTED',
-     &                    IDUMMY,.FALSE.)
-               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2D)
+               CALL GPOPEN(LURV2D,FNRV2D,'UNKNOWN','DIRECT',
+     &                    'UNFORMATTED',
+     &                    IRAT*LRESI2D,OLDDX)
                IF (TRIPLET) THEN
                   CALL DSCAL(LRESI2D,ENORMINV,WORK(KRESI2D),1)
                ELSE
@@ -501,10 +500,10 @@ C                 We need to scale by one half
                CALL GPCLOSE(LURV2D,'KEEP')
 C
                LUSV2D = -1
-               CALL GPOPEN(LUSV2D,FNSV2D,'UNKNOWN',' ','UNFORMATTED',
-     &                    IDUMMY,.FALSE.)
+               CALL GPOPEN(LUSV2D,FNSV2D,'UNKNOWN','DIRECT',
+     &                    'UNFORMATTED',
+     &                    IRAT*LRESO2D,OLDDX)
 C              find the right positions
-               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LUSV2D)
                CALL DSCAL(LRESO2D,-ENORMINV,WORK(KRESO2D),1)
                CALL SO_WRTVE(WORK(KRESO2D),LRESO2D,ISYMTR,LABEL,
      &                      EIVAL(IEXCI),LUSV2D)
