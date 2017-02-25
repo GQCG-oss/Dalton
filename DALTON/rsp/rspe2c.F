@@ -5288,71 +5288,79 @@ C
             END IF
  160     CONTINUE
  150  CONTINUE
-      IZ=IA
-      JZ=JA
-      IY=IZ+KZVAR
-      JY=JZ+KZVAR
+
       IF ( ZAMAX.GT.DTOL) THEN
+         IZ=IA
+         JZ=JA
+         IY=IZ+KZVAR
+         JY=JZ+KZVAR
          WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
          WRITE(LUPRI,'(4(/A,I5,A,I5,A,1P,G16.8))')
-     *' IZ=',IZ,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JZ),
-     *' IZ=',JZ,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IZ),
-     *' IZ=',IY,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JY),
-     *' IZ=',JY,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IY)
+     *' IZ=',JZ,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JZ),
+     *' IZ=',IZ,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IZ),
+     *' IZ=',JY,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JY),
+     *' IZ=',IY,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IY)
       ELSE
          WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
      *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
       END IF
-      IZ=IB
-      JZ=JB
-      IY=IZ+KZVAR
-      JY=JZ+KZVAR
+
       IF (ZBMAX.GT.DTOL) THEN
+         IZ=IB
+         JZ=JB
+         IY=IZ+KZVAR
+         JY=JZ+KZVAR
          WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
          WRITE(LUPRI,'(4(/A,I5,A,I5,A,1P,G16.8))')
-     *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JY),
-     *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IY),
-     *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JZ),
-     *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IZ)
+     *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JY),
+     *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IY),
+     *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JZ),
+     *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IZ)
       ELSE
          WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
      *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
       END IF
-      IZ=IS
-      JZ=JS
-      IY=IZ+KZVAR
-      JY=JZ+KZVAR
+
       IF (ZSMAX.GT.DTOL) THEN
+         IZ=IS
+         JZ=JS
+         IY=IZ+KZVAR
+         JY=JZ+KZVAR
          WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',JS,' J=',IS,' DEV=',ZSMAX
          WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
-     *' IZ=',IZ,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JZ),
-     *' IZ=',JZ,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IZ),
-     *' IZ=',IY,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JY),
-     *' IZ=',JY,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IY)
+     *' IZ=',JZ,' JZ=',IZ,' S2(IZ,JZ)',WRK(KS2-1+(IZ-1)*KZYVAR+JZ),
+     *' IZ=',IZ,' JZ=',JZ,' S2(IZ,JZ)',WRK(KS2-1+(JZ-1)*KZYVAR+IZ),
+     *' IZ=',JY,' JZ=',IY,' S2(IZ,JZ)',WRK(KS2-1+(IY-1)*KZYVAR+JY),
+     *' IZ=',IY,' JZ=',JY,' S2(IZ,JZ)',WRK(KS2-1+(JY-1)*KZYVAR+IY)
       ELSE
          WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
      *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',JS,' J=',IS,' DEV=',ZSMAX
       END IF
-      IZ=ID
-      JZ=JD
-      IY=IZ+KZVAR
-      JY=JZ+KZVAR
+
       IF (ZDMAX.GT.DTOL) THEN
+         IZ=ID
+         JZ=JD
+         IY=IZ+KZVAR
+         JY=JZ+KZVAR
          WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
          WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
-     *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JY),
-     *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IY),
-     *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JZ),
-     *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IZ)
+     *' IZ=',JY,' JZ=',IZ,' S2(IZ,JZ)',WRK(KS2-1+(IZ-1)*KZYVAR+JY),
+     *' IZ=',IY,' JZ=',JZ,' S2(IZ,JZ)',WRK(KS2-1+(JZ-1)*KZYVAR+IY),
+     *' IZ=',JZ,' JZ=',IY,' S2(IZ,JZ)',WRK(KS2-1+(IY-1)*KZYVAR+JZ),
+     *' IZ=',IZ,' JZ=',JY,' S2(IZ,JZ)',WRK(KS2-1+(JY-1)*KZYVAR+IZ)
       ELSE
          WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
      *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
       END IF
+
       IF ( KZYVAR.GT.MAXRM ) RETURN
+
+      WRITE(LUPRI,'(/A,/A)')' ********************************',
+     *' CHECK EIGENVALUES OF "E2 X = omega S2 X" WITH RSPRED ROUTINE '
       KZYRED = KZYVAR
       KZRED  = KZVAR
       IJ = 0
@@ -5378,7 +5386,7 @@ C
 C CHECK EIGENVALUES OF E2
 C
       WRITE(LUPRI,'(/A,/A)')' ********************************',
-     *' CHECK EIGENVALUES OF E2 WITH RSPRED ROUTINE '
+     *' CHECK EIGENVALUES OF "E2 X = omega X" WITH RSPRED ROUTINE'
       IJ = 0
       DO J = 1,KZYVAR
          DO 600 I = 1,J
@@ -5397,7 +5405,7 @@ C
 C CHECK EIGENVALUES OF S2
 C
       WRITE(LUPRI,'(/A,/A)')' ********************************',
-     *' CHECK EIGENVALUES OF S2 WITH RSPRED ROUTINE '
+     *' CHECK EIGENVALUES OF "S2 X = omega X" WITH RSPRED ROUTINE'
       IJ = 0
       DO 700 I = 1,KZYVAR
          DO 800 J = 1,I
@@ -5413,6 +5421,7 @@ C
       CALL RSPRED(ICTL,.FALSE.,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *            EIVAL,EIVEC,WRK(KWRK1),WRK(KWRK1),
      *            UDV,WRK(KWRK1),XINDX,WRK(KWRK1),LWRK1)
+
       CALL QEXIT('RSPES2')
       RETURN
       END
