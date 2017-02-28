@@ -1,7 +1,7 @@
 C
 C  /* Deck so_lrnsl */
       SUBROUTINE SO_LRNSL(MODEL,ISYM,PROPAR,
-     &                    FREQ,NFREQ,NLAB,
+     &                    FREQ,NFREQ,LABELS,NLAB,
      &                    DENSIJ,LDENSIJ,
      &                    DENSAB,LDENSAB,DENSAI,LDENSAI,
      &                    WORK,LWORK)
@@ -25,12 +25,6 @@ C#include "implicit.h"
 #include "priunit.h"
 C      
 #include "soppinf.h"
-C inflr.h below requires MAXLBL from rspprp.h
-#include "rspprp.h"
-C We need 
-C LBLLR <- Label of operators 
-C NGPLR <- Number of operators of each symmetry
-#include "inflr.h"
 #include "ccsdsym.h"
 C REP <- Symbols of the ireducible representations.
 C#include "pgroup.h"
@@ -45,6 +39,7 @@ C
      &                     DENSAI(LDENSAI), FREQ(NFREQ)
       REAL(sop_dp),INTENT(INOUT) :: WORK(LWORK)
       REAL(sop_dp),intent(inout) :: PROPAR(NFREQ,NLAB,NLAB)
+      CHARACTER(LEN=8), intent(in) ::LABELS(NLAB)
       CHARACTER(len=5), intent(in) :: MODEL
 C
       CHARACTER*8 LABEL1, LABEL2
@@ -109,13 +104,13 @@ C=============================================
 C     Loop over the first property operators.
 C=============================================
 C
-      DO 200 ILAB1 = 1, NGPLR(ISYM)
+      DO 200 ILAB1 = 1, NLAB
 C
 C---------------------------------------------------
 C        Find label and symmetry of second operator.
 C---------------------------------------------------
 C
-         LABEL1 = LBLLR(ISYM,ILAB1)
+         LABEL1 = LABELS(ILAB1)
 C
 C--------------------------------------------------
 C           Get the property integrals in MO basis.
@@ -165,8 +160,8 @@ C-----------------------------------------------------------
      &                         STATIC,DOUBLES,ISYM)
             ENDIF
 
-            DO ILAB2 = 1, NGPLR(ISYM)
-               LABEL2 = LBLLR(ISYM,ILAB2)
+            DO ILAB2 = 1, NLAB
+               LABEL2 = LABELS(ILAB2)
 C
 C-----------------------------------------------------------
 C        Get the perturbed density matrix from file
@@ -232,7 +227,7 @@ C
       END
 
 C
-      SUBROUTINE SO_RSPOUT(PROPAR,ISYM,FREQ,NFREQ,NLAB)
+      SUBROUTINE SO_RSPOUT(PROPAR,ISYM,FREQ,NFREQ,LABELS,NLAB)
 
       USE SO_INFO, ONLY: SOP_DP, SOP_STAT_TRH
       IMPLICIT NONE
@@ -253,6 +248,7 @@ C TRIPLET <- Triplet property flag
       REAL(SOP_DP), INTENT(IN) :: PROPAR(NFREQ,NLAB,NLAB),
      &                            FREQ(NFREQ)
       INTEGER, INTENT(IN) :: ISYM, NFREQ, NLAB
+      CHARACTER(LEN=8) :: LABELS(NLAB)
       
       INTEGER :: ILAB1, ILAB2, IFREQ
 
@@ -284,7 +280,7 @@ C TRIPLET <- Triplet property flag
          DO ILAB1 = 1, NLAB
             DO ILAB2 = ILAB1, NLAB
                WRITE(LUPRI,'(5A,1P,D20.12)')
-     *         '@ -<< ',LBLLR(ISYM,ILAB1),' ; ',LBLLR(ISYM,ILAB2),
+     *         '@ -<< ',LABELS(ILAB1),' ; ',LABELS(ILAB2),
      &         ' >> =',PROPAR(IFREQ,ILAB1,ILAB2)
             END DO
          END DO
