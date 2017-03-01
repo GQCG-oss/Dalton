@@ -465,11 +465,52 @@ C     We now have all info for SO_RSPLRS
          read (lu, end=900)
       end do
       read (lu) rel
-      rel = -0.25D0*rel
+C     This factor is needed for triplet properties...
+      if (imode.eq.3) rel = -0.25D0*rel
 
       CALL GPCLOSE(lu,'KEEP')
       return
 
  900  CALL QUIT('ERROR reading file '//fn_prop(imode))
 
+      END SUBROUTINE
+
+      SUBROUTINE SO_PSODRV(WORK,LWORK)
+C
+C     Wrapper for SO_RSPLRS used for calculating the
+C     PSO contribution to spin-spin coupling constants
+C
+      use so_info, only: sop_dp
+C  Some of the following blocks still don't declare variables
+#include "implicit.h"
+C  NSYM
+#include "inforb.h"
+C  gdvec.h and abares.h requires MXCOOR, MXCENT
+#include "mxcent.h"
+C  IMGLAB <- Vector containing the required labels.
+#include "abares.h"
+C  NGDVEC <- The number of labels in each symmetry
+#include "gdvec.h"
+C  THRCLC <- Convergence criteria
+#include "cbilrs.h"
+      real(sop_dp), intent(inout) :: work(lwork)
+      integer, intent(in) :: lwork
+
+      real(sop_dp), dimension(1), parameter :: freq = (/ 0.0D0 /)
+      integer :: label_offsets(8)
+      integer :: n, ncount
+C
+C     Calculate label offsets
+      ncount = 0
+      do n = 1, nsym
+         label_offsets(n) = ncount
+         ncount = ncount + ngdvec(n,2)
+      end do
+C
+C     We now have all info for SO_RSPLRS
+      CALL SO_RSPLRS(IMGLAB, NGDVEC(1,2), LABEL_OFFSETS,
+     &               .FALSE., THRCLC, FREQ, 1, 2,
+     &               WORK, LWORK)
+
+      RETURN
       END SUBROUTINE
