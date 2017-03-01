@@ -160,7 +160,7 @@ C-----------------------------------------------------------
      &                         STATIC,DOUBLES,ISYM)
             ENDIF
 
-            DO ILAB2 = 1, NLAB
+            DO ILAB2 = ILAB1, NLAB
                LABEL2 = LABELS(ILAB2)
 C
 C-----------------------------------------------------------
@@ -197,6 +197,7 @@ C
                ENDIF
 C
                PROPAR(IFREQ,ILAB1,ILAB2) = PROPVAL
+               PROPAR(IFREQ,ILAB2,ILAB1) = PROPVAL
 C
             END DO
 C

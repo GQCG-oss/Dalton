@@ -56,7 +56,8 @@ module so_info
    character(len=11), parameter :: FN_RDENS  = 'soppa_densp', &
                                    FN_RDENSE = 'soppa_dense', &
                                    FN_RDENSD = 'soppa_densd'
-
+   character(len=10), dimension(3), parameter :: FN_PROP =    &
+      (/ 'soppa_real', 'soppa_imag', 'soppa_trip' /)
    ! Flags stating which models are active
    logical :: AORPA = .false., AOHRP = .false., DCRPA = .false., &
               DCHRP = .false., SDCHR = .false., &

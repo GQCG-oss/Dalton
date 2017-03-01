@@ -133,6 +133,8 @@ C     Rewritten to include dip. grad. and polarizabilities Jan 1990 tuh
 C
 C     Purpose: Calculate response contributions to molecular Hessian
 C
+      use so_info, only: so_any_active_models
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -214,6 +216,7 @@ C
      &          .AND. (.NOT. DOTRPL)
       DOIMAG = (SHIELD .OR. MAGSUS .OR. VCD .OR. SPNSPN .OR. MOLGFA .OR.
      &          SPINRO) .AND. (.NOT. DOTRPL)
+      IF (.NOT. SO_ANY_ACTIVE_MODELS()) THEN ! Skip for aosoppa
 C
 C     **********************
 C     ***** Open units *****
@@ -232,6 +235,7 @@ C
       IF (DOTRPL) THEN
          CALL GPOPEN(LUGDT,ABAGDT,'OLD','DIRECT',' ',IRAT*NVARMA,OLDDX)
          CALL GPOPEN(LURDT,ABARDT,'OLD','DIRECT',' ',IRAT*NVARMA,OLDDX)
+      END IF
       END IF
 C
 C     Allocate extra work space if contribution from triplet
@@ -359,7 +363,14 @@ C
                      END IF
                   END IF
                END IF
-               IF (SELLER) THEN
+               IF (SO_ANY_ACTIVE_MODELS()) THEN
+                  IF (DOTRPL) THEN
+                     IMODE_SO = 3
+                  ELSE
+                     IMODE_SO = ITYPE
+                  END IF 
+                  CALL SO_READPROP(WORK(KREL),NVEC,IMODE_SO,ISYM)
+               ELSE IF (SELLER) THEN
                   CALL ABASEL(WORK(KREL),WORK(KWRK),LWRK,NVEC,DOSEL,
      &                        SYMTST,LUGD,LURD,ITYPE,
      &                        DOTRPL,IPRINT)
@@ -399,6 +410,7 @@ C
       IF (DFTRUN.AND.(MAGSUS.OR.MOLGFA).AND.(.NOT.NOLOND))
      &           CALL DFTBHES(SUSDFT,WORK(KLAST),LWRK1,IPRINT)
 C
+      IF (.NOT.SO_ANY_ACTIVE_MODELS()) THEN
 C     ***********************
 C     ***** Close units *****
 C     ***********************
@@ -430,6 +442,7 @@ CPFP: 27/03-2006: SOS for spin-spin coupling included
          CALL GPCLOSE(LURDT,'KEEP')
       END IF
 C
+      END IF
 C     ******************************************
 C     ***** Add up SD and FC contributions *****
 C     ******************************************
@@ -869,7 +882,7 @@ C
          DO 200 J = 1, I
             JCOOR = ITRCOR(J,LSYMPT)
             RELIJ = REL(I,J)
-            IF (IPRINT .GT. 5) WRITE (LUPRI,'(1X,A,2I5,F12.6)')
+            IF (IPRINT .GT. 5) WRITE (LUPRI,'(1X,A,2I5,F15.6)')
      &           ' Coordinates and element: ',ICOOR,JCOOR,RELIJ
             IF ((ICOOR .GT. 0) .AND. (JCOOR .GT. 0)) THEN
                WRKSD(ICOOR,JCOOR) = RELIJ

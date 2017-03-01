@@ -1,11 +1,12 @@
 C
 C  /* Deck so_rsplrs */
       SUBROUTINE SO_RSPLRS(LABELS,NUM_LABELS,LABEL_OFFSETS,
-     &                     TRIP_INPUT,THRESH,FREQ,NFREQ,WORK,LWORK)
+     &                     TRIP_INPUT,THRESH,FREQ,NFREQ,IMODE,
+     &                     WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
-C     Rasmus Faber, December 2015: Added MPI
+C     Rasmus Faber, Feb. 2017
 C
 C     PURPOSE: A RSP compatible driver for calculating linear response properties with 
 C              the atomic integral direct SOPPA program.
@@ -21,7 +22,8 @@ C
      &                   sop_conv_thresh,
      &                   sop_use_seller,
      &                   sop_dp,
-     &                   so_needs_densai
+     &                   so_needs_densai,
+     &                   FN_PROP
 C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
@@ -52,7 +54,10 @@ C  Input arguments
       INTEGER, INTENT(IN) :: LABEL_OFFSETS(8), NUM_LABELS(8)
       CHARACTER(LEN=8),INTENT(IN) :: LABELS(*)
       LOGICAL, INTENT(IN) :: TRIP_INPUT ! Triplet flag
-
+      INTEGER, INTENT(IN) :: IMODE ! How we are called
+                                   ! IMODE = 0 : from response
+                                   ! IMODE = 1, 2, 3: real, imag,
+                                   ! triplet from abacus
 C
       CHARACTER*5 MODEL
       CHARACTER*8 LABEL1
@@ -65,6 +70,7 @@ C
       integer :: num_active
       logical :: active_models(sop_num_models)
       logical :: doubles, need_t2, rpa_only
+      integer :: lu_dump ! Filenumber of file property values to
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -95,8 +101,19 @@ C
 C     Set the correct convergence threshold 
       sop_conv_thresh = THRESH
 C
-C     Set triplet flag if given -- TRPLET from infrsp.h
+C     Set triplet flag if given
       TRIPLET = TRIP_INPUT
+C
+C     Open file we will output results on
+      IF (IMODE .GT. 0) THEN
+         IF (IMODE .GT. 3) THEN
+            WRITE(LUPRI,'(a,i3,a)') 'ERROR!! imode', imode,' is invalid'
+            RETURN
+         END IF
+         LU_DUMP = -1
+         CALL GPOPEN(LU_DUMP,FN_PROP(IMODE),'NEW',' ',
+     &               'UNFORMATTED',IDUMMY,.FALSE.)
+      END IF
 C
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.
@@ -323,12 +340,16 @@ C
      &                       WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
      &                       WORK(KEND2),LWORK2)
-
-               CALL SO_RSPOUT(WORK(KPROP),ISYM,FREQ,NFREQ,
+C
+               IF (IMODE.GT.0) THEN
+                  WRITE(LU_DUMP) ISYM
+                  WRITE(LU_DUMP) WORK(KPROP:KPROP+LPROP-1)
+               ELSE
+                  CALL SO_RSPOUT(WORK(KPROP),ISYM,FREQ,NFREQ,
      &                        LABELS(ILABOFF+1),NUM_LABELS(ISYM))
-
+               END IF
+C
             END IF
-
 C
          END DO ! LOOP over symmetries
 
@@ -344,6 +365,10 @@ C
          IOUT = IOUT + 1
 C
       END DO ! Loop over models
+C
+      IF (IMODE .GT. 0) THEN
+         CALL GPCLOSE(LU_DUMP,'KEEP')
+      END IF
 C
 C---------------------------------
 C     3. allocation of work space.
@@ -381,3 +406,70 @@ C
  9000 FORMAT(/' -----------------------------------')
  9001 FORMAT(' -----------------------------------')
       END
+
+      SUBROUTINE SO_FCSDDRV(WORK,LWORK)
+C
+C     Wrapper for SO_RSPLRS used for calculating the
+C     FC and SD contribution to spin-spin coupling constants
+C
+      use so_info, only: sop_dp
+C  Some of the following blocks still don't declare variables
+#include "implicit.h"
+C  NSYM
+#include "inforb.h"
+C  gdvec.h and abares.h requires MXCOOR, MXCENT
+#include "mxcent.h"
+C  TRPLAB <- Vector containing the required labels.
+#include "abares.h"
+C  NTRVEC <- The number of labels in each symmetry
+#include "gdvec.h"
+C  THRTRP <- Convergence criteria
+#include "cbitrp.h"
+      real(sop_dp), intent(inout) :: work(lwork)
+      integer, intent(in) :: lwork
+
+      real(sop_dp), dimension(1), parameter :: freq = (/ 0.0D0 /)
+      integer :: label_offsets(8)
+      integer :: n, ncount
+C
+C     Calculate label offsets
+      ncount = 0
+      do n = 1, nsym
+         label_offsets(n) = ncount
+         ncount = ncount + ntrvec(n)
+      end do
+C
+C     We now have all info for SO_RSPLRS
+      CALL SO_RSPLRS(TRPLAB(1), NTRVEC, LABEL_OFFSETS,
+     &               .TRUE., THRTRP, FREQ, 1, 3,
+     &               WORK, LWORK)
+
+      RETURN
+      END SUBROUTINE
+
+      SUBROUTINE SO_READPROP(REL,NOP,IMODE,ISYM)
+
+      use so_info, only: fn_prop, sop_dp
+      implicit none
+      real(sop_dp), intent(out) :: rel(nop,nop)
+      integer, intent(in) :: nop, imode, isym
+      integer :: lu, idummy, this_sym
+      logical :: ldummy
+
+      LU = -1
+      CALL GPOPEN(LU, fn_prop(imode),'OLD',' ',
+     &            'UNFORMATTED',IDUMMY,LDUMMY)
+      do
+         read (lu, end=900) this_sym
+         if (this_sym .eq. isym) exit
+         read (lu, end=900)
+      end do
+      read (lu) rel
+      rel = -0.25D0*rel
+
+      CALL GPCLOSE(lu,'KEEP')
+      return
+
+ 900  CALL QUIT('ERROR reading file '//fn_prop(imode))
+
+      END SUBROUTINE
