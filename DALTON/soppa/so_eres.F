@@ -378,14 +378,6 @@ C
          CALL DZERO(WORK(KRES1E),LRES1E)
          CALL DZERO(WORK(KRES1D),LRES1D)
 
-C
-C         IF (TRIPLET.AND.SINGLES_SECOND) THEN
-C            CALL DZERO(WORK(KSIGAI1),LSIGAI1)
-C            CALL DZERO(WORK(KSIGAI2),LSIGAI2)
-C            CALL DZERO(WORK(KSIGDA1),LSIGDA1)
-C            CALL DZERO(WORK(KSIGDA2),LSIGDA2)
-C         ENDIF
-C
          CALL DZERO(WORK(KFOCK),LFOCK)
 C
 C--------------------------
@@ -1270,16 +1262,16 @@ C
             DTIME      = SECOND()   - DTIME
             SOTIME(14) = SOTIME(14) + DTIME
 C
-C-------------------------------------------------------------------
-C           Construct the partially back-transformed T2 MP-amplitudes
+C--------------------------------------------------------------------
+C           Transform the partially back-transformed T2 MP-amplitudes
+C           Currently they are stored as
+C              t2m1(ai,j) = 2t(ai,j) - t(aj,i)
+C           In the following we need to have
+C              t2m1(ai,j) = -t(aj,i)
 C--------------------------------------------------------------------
 C
             DTIME      = SECOND()
-            CALL SO_T2M1(WORK(KT2M1),LT2M1,
-     &                   T2MP(LT2MPH+1),LT2MPH,
-     &                   WORK(KCMO),LCMO,
-     &                   IDEL,ISYMD,ISYDIS,
-     &                   WORK(KEND5),LWORK5)
+            CALL SO_M1SHUF(WORK(KT2M1),LT2M1,ISYMD,1)
             DTIME      = SECOND()   - DTIME
             SOTIME(12) = SOTIME(12) + DTIME
 C

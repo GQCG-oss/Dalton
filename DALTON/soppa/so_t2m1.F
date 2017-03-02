@@ -499,3 +499,62 @@ C
 C
       RETURN
       END
+
+      SUBROUTINE SO_M1SHUF(T2M1,LT2M1,ISYMD,ISYMTR)
+C
+C     Calculate
+C        v                ~           ~
+C        t(ai,j) = -1/3 ( t(ai,j) + 2 t(aj,i) )
+C     in place.
+      use so_info, only: sop_dp
+      implicit none
+
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+      real(sop_dp), intent(inout) :: T2M1(LT2M1)
+      integer, intent(in) :: LT2M1, ISYMD, ISYMTR
+
+      character(len=*), parameter :: myname = 'SO_M1SHUF'
+      real(sop_dp), parameter :: inv3m = -1.0D0/3.0D0, two = 2.0D0
+
+      integer :: isymi, isymj, isymai, isyma, isymjd, isymaj
+      integer :: ioffj, ioffi, ioffaij, ioffaji
+      integer :: nrhfi
+      real(sop_dp) :: xaij, xaji
+
+      CALL QENTER(MYNAME)
+
+      DO ISYMJ = 1, NSYM
+         isymjd = muld2h(isymj,isymd)
+         do ISYMI = 1, isymj ! Ensure i < j
+            isymai = muld2h(isymjd,isymtr)
+            isyma = muld2h(isymai,isymi)
+            isymaj = muld2h(isymj,isyma)
+
+            do j = 1, nrhf(isymj)
+               ioffj = it2bcd(isymai,isymj) + nt1am(isymai)*(j-1)
+               if (isymi.eq.isymj) then
+                  nrhfi = j
+               else
+                  nrhfi = nrhf(isymi)
+               end if
+               do i = 1, nrhfi
+                  ioffi = it2bcd(isymaj,isymi)+nt1am(isymaj)*(i-1)
+                  ioffaij = ioffj + it1am(isyma,isymi)
+     &                    + nvir(isyma)*(i-1)
+                  ioffaji = ioffi + it1am(isyma,isymj)
+     &                    + nvir(isyma)*(j-1)
+                  do a = 1, nvir(isyma)
+                     xaij = t2m1(ioffaij+a)
+                     xaji = t2m1(ioffaji+a)
+                     t2m1(ioffaij+a) = inv3m * (xaij+two*xaji)
+                     t2m1(ioffaji+a) = inv3m * (xaji+two*xaij)
+                  end do ! a
+               end do ! i
+            end do ! j
+         end do ! isymi
+      END DO ! isymj
+
+      CALL QEXIT(MYNAME)
+      END SUBROUTINE
