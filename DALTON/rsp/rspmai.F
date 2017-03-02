@@ -361,8 +361,7 @@ C
 C
       IF (USE_PELIB()) THEN
          IF (TRPFLG) THEN
-            CALL QUIT('ERROR, triplet response with PEQM is not'//
-     &      ' implemented.')
+         ! edh: Insert quit of CREF have MULTIPLICITY NEQ 0!
          END IF
       END IF
 C
