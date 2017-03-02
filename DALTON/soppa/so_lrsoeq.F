@@ -408,7 +408,7 @@ C-------------------------------------------------------------
 C
       if (triplet.AND.doubles) THEN 
          CALL SO_TMLTR(T2MP,ONE,1)
-         CALL DSCAL(LT2MP/2,HALF,T2MP,1)
+         CALL DSCAL(LT2MP,HALF,T2MP,1)
       END IF
 C      
       ENORMINV = 1.0D0/ENORM

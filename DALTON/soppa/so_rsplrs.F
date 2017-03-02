@@ -158,9 +158,7 @@ C
       IF (.NOT.RPA_ONLY) THEN
 C
          LT2AM   = NT2AMX
-C        Triplet case currently requires
-C        double the memory for MP2 amplitudes         
-         IF(TRIPLET) LT2AM = 2*LT2AM
+C
          LDENSIJ = NIJDEN(1)
          LDENSAB = NABDEN(1)
          LDENSAI = NAIDEN(1)

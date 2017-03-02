@@ -31,12 +31,7 @@ C------------------
 C
       CALL QENTER('SO_GETT2')
 C
-C--------------------------------------------
-C     If Triplet T2AM will get double length
-C--------------------------------------------
-C
       LT2AMH = LT2AM
-      IF (TRIPLET) LT2AMH = INT(LT2AM/2)
 C
 C-----------------------------------------
 C     Memory allocation

@@ -160,12 +160,6 @@ CRF if anything but AORPA
       IF ( .NOT.RPA_ONLY ) THEN
 C
          LT2AM   = NT2AMX
-C
-C        For triplet calculations LT2AM has to be twice as large,
-C        because there are two version of the correlation coefficients
-C
-         IF (TRIPLET) LT2AM = NT2AMX*2
-C
          LDENSIJ = NIJDEN(1)
          LDENSAB = NABDEN(1)
          LDENSAI = NAIDEN(1)

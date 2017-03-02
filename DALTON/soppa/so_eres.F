@@ -124,16 +124,8 @@ C
       doubles = so_has_doubles(model)
       tr2_zero = so_double_correction(model)
 C
-C---------------------------------------------------------
-C     Adjust lengt of T2 amplitudes vector in TRIPLET case
-C---------------------------------------------------------
-C
       LT2MPH = LT2MP
       IT2MPH = 0
-      IF (TRIPLET) THEN
-        LT2MPH = INT(LT2MP/2)
-        IT2MPH = LT2MPH
-      END IF
 C
 C------------------------------------------------------
 C     Write singlet and triplet T2 amplitudes to output
@@ -728,20 +720,22 @@ C                    trial vectors.
 C                    These are scaled by 1/sqrt(2)
 C------------------------------------------------------------
 C
-                        IF(DOUBLES.AND.(.NOT.TRIPLET).AND.
-     &                        (NVIR(ISYMD).GT.0)) THEN
-                           CALL SO_X2M1(WORK(KX2EM1),LX2M1,
-     &                                  WORK(KTR2E),LTR2E,
-     &                                  WORK(KCMO),LCMO,IDEL,ISYMD,
-     &                                  ISYMTR,WORK(KEND4),LWORK4)
-                           CALL SO_X2M1(WORK(KX2DM1),LX2M1,
-     &                                  WORK(KTR2D),LTR2D,
-     &                                  WORK(KCMO),LCMO,IDEL,ISYMD,
-     &                                  ISYMTR,WORK(KEND4),LWORK4)
-                        ELSE
-                           CALL DZERO(WORK(KX2EM1),LX2M1)
-                           CALL DZERO(WORK(KX2DM1),LX2M1)
-                        ENDIF
+                     IF(DOUBLES.AND..NOT.TRIPLET.AND.
+     &                  (NVIR(ISYMD).GT.0)) THEN
+                        CALL SO_X2M1(WORK(KX2EM1),LX2M1,
+     &                               WORK(KTR2E),LTR2E,
+     &                               WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                               ISYMTR,WORK(KEND4),LWORK4)
+                        CALL SO_X2M1(WORK(KX2DM1),LX2M1,
+     &                               WORK(KTR2D),LTR2D,
+     &                               WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                               ISYMTR,WORK(KEND4),LWORK4)
+                     ELSE
+                        CALL DZERO(WORK(KX2EM1),LX2M1)
+                        CALL DZERO(WORK(KX2DM1),LX2M1)
+                     END IF
+
+                     IF (SINGLES_SECOND) THEN
 C
 C---------------------------------------------------------------
 C                    Add T2^(ab)_(ij)*x1(b, delta) intermediates
@@ -749,16 +743,27 @@ C                    to the backtransformed trialvectors.
 C---------------------------------------------------------------
 C                    (This takes care of terms (1), and (5) of the B
 C                    matrix)
+                        CALL SO_T2X1(WORK(KX2EM1),LX2M1,
+     &                               T2MP,LT2MPH,
+     &                               WORK(KBTJ1D),LBTJ1D,IDEL,ISYMD,
+     &                               ISYMTR,WORK(KEND4),LWORK4)
+                        CALL SO_T2X1(WORK(KX2DM1),LX2M1,
+     &                               T2MP,LT2MPH,
+     &                               WORK(KBTJ1E),LBTJ1E,IDEL,ISYMD,
+     &                               ISYMTR,WORK(KEND4),LWORK4)
 C
-                     CALL SO_T2X1(WORK(KX2EM1),LX2M1,
-     &                            T2MP(IT2MPH+1),LT2MPH,
-     &                            WORK(KBTJ1D),LBTJ1D,IDEL,ISYMD,
-     &                            ISYMTR,WORK(KEND4),LWORK4)
+C     For triplet we need to transform the intermediates
+C
+                        IF (TRIPLET.AND.
+     &                      NVIR(MULD2H(ISYMD,ISYMTR)).GE.1) THEN
+                           CALL SO_M1SHUF(WORK(KX2EM1),LX2M1,
+     &                                    ISYMD,ISYMTR)
+                           CALL SO_M1SHUF(WORK(KX2DM1),LX2M1,
+     &                                    ISYMD,ISYMTR)
+                        END IF
 
-                     CALL SO_T2X1(WORK(KX2DM1),LX2M1,
-     &                            T2MP(IT2MPH+1),LT2MPH,
-     &                            WORK(KBTJ1E),LBTJ1E,IDEL,ISYMD,
-     &                            ISYMTR,WORK(KEND4),LWORK4)
+                     END IF
+C
                      DTIME      = SECOND()   - DTIME
                      SOTIME(12) = SOTIME(12) + DTIME
 

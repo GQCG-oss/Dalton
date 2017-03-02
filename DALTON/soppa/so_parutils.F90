@@ -380,7 +380,6 @@ contains
       ! following only if not RPA...
       if ( model .ne. 'AORPA' ) then
          lt2am   = nt2amx             ! from ccsdsym.h
-         if (triplet) lt2am = 2*nt2amx
          ldensij = nijden(1)          ! from soppinf.h
          ldensab = nabden(1)          ! from soppinf.h
          ldensai = naiden(1)          ! from soppinf.h
