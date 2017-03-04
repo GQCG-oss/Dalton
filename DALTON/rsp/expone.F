@@ -139,10 +139,11 @@ C Revised March 2003, Hans Joergen Aa. Jensen.
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 C
       PARAMETER ( D0 = 0.0D0 )
 C
+C inforb.h : N2ORBX
+C wrkrsp.h : KSYMOP
 #include "inforb.h"
 #include "wrkrsp.h"
 C
