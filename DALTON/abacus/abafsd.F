@@ -1588,7 +1588,7 @@ C
 C
 C     Due to the need of square matrices in constructing right-hand
 C     sides when using differentiated creation operators, all matrices
-C     in this routine is square, all packing is to be done outside this
+C     in this routine are square, all packing is to be done outside this
 C     routine, K.Ruud, Nov.-93
 C     
 C     tuh 051088
@@ -1605,8 +1605,6 @@ C
       CALL QENTER('GETSD')
       IF (IPRINT .GT. 05) THEN
          CALL TITLER('Output from GETSD','*',103)
-      END IF
-      IF (IPRINT .GT. 05) THEN
          WRITE (LUPRI, '(A,3L5)') ' DERIV ', (DERIV(I),I=1,3)
          WRITE (LUPRI, '(A,I10)') ' LWORK ', LWORK
          WRITE (LUPRI, '(A,I5)')  ' IATOM ', IATOM
