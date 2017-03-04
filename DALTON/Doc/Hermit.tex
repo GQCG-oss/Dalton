@@ -108,7 +108,7 @@ L}_N\right|\chi_{\nu}\right>$
 
 \item[\Key{ANGMOM}] Angular momentum\index{angular momentum} around the molecular origin.
 This can be adjusted by changing the gauge origin through the use of
-the \Key{GAUGEO} keyword.
+the \Key{GAUGEO} keyword in this input section.
 
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\left|{\bf L}_{O}\right|\chi_{\nu}\right>$
@@ -452,8 +452,9 @@ A direct relativistic perturbation is added to the
 \verb|READ (LUCMD, *) (GAGORG(I), I = 1, 3)|
 
 Specify the gauge origin\index{gauge origin} to be used in the
-calculation. Read one more line containing the three Cartesian
-components (*). Default is~(0,0,0).
+calculations of gauge-dependent magnetic one-electron integrals,
+including angular momentum integrals.
+Read one more line containing the three Cartesian components. Default is~(0,0,0).
 
 \item[\Key{HBDO}] Symmetric combination of half-differentiated
   overlap matrix with respect to an external magnetic field
@@ -635,8 +636,7 @@ of the symmetry-adapted nuclear magnetic moment coordinate, and
 
 \item[\Key{NSTCGO}] Calculate the diamagnetic nuclear shielding\index{diamagnetic nuclear shielding}
 tensor integrals without using London atomic orbitals\index{London
-orbitals}. Note that the gauge origin is controlled by the keyword
-\Key{GAUGEO}.
+orbitals}. Note that the gauge origin is controlled by the keyword \Key{GAUGEO}.
 
 \begin{list}{}{}
 \item Integral:
