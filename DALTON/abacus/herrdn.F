@@ -6849,6 +6849,7 @@ C
       CHARACTER*(len_MLINE) LINE4_in, LINE
       CHARACTER CRT*1, ID3*1, SYMTXT*2
       CHARACTER*1 KASYM(3,3)
+      INTEGER, SAVE :: N_OLD_MOL_INP = 0
 C
 C     Initialize
 C
@@ -7010,11 +7011,12 @@ C     Since the number of atom types have not been specified,
 C     assume old input format
 C
 
-         IF (.NOT. SLAVE) THEN
-            NWARN = NWARN + 1
-            WRITE(LUPRI,'(///A/A/A///)') '@ WARNING - deprecated '//
+         IF (.NOT. SLAVE .AND. N_OLD_MOL_INP.EQ.0) THEN
+            N_OLD_MOL_INP = 1
+            NINFO = NINFO + 1
+            WRITE(LUPRI,'(///A/A/A///)') '@ INFO - deprecated '//
      &      'old .mol fixed format input has been detected:',
-     &      LINE4_in, '@ WARNING - '//
+     &      LINE4_in, '@ INFO - '//
      &      'this input format may not be supported in future releases.'
          END IF
 
