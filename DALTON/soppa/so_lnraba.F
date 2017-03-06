@@ -62,6 +62,7 @@ C
       integer :: num_active
       logical :: active_models(sop_num_models)
       logical :: doubles, need_t2, rpa_only
+      character(len=4) :: old_denslab, denslab
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -94,6 +95,9 @@ C
 C     Triplet flag not initialized...
       TRIPLET = .FALSE.
 C
+C     We have read no amplitudes
+      OLD_DENSLAB = 'NONE'
+C      
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.
 C-------------------------------------------
@@ -246,6 +250,7 @@ C
                FULLNAME = SOP_MOD_FULLNAME(IMODEL)
                DOUBLES = SO_HAS_DOUBLES(IMODEL)
                NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
+               DENSLAB = SOP_DENS_LABEL(IMODEL)
 C
                IF (IPRSOP .GE. 1) THEN
                   WRITE(LUPRI,9000)
@@ -266,13 +271,15 @@ C-----------------------------------------------------
 C              Get T2 amplitudes and density matrices.
 C-----------------------------------------------------
 C
-               IF (NEED_T2) THEN
-                  CALL SO_GETT2(SOP_DENS_LABEL(IMODEL),
+               IF ((NEED_T2).AND.
+     &             (DENSLAB.NE.OLD_DENSLAB)) THEN
+                  CALL SO_GETT2(DENSLAB,
      &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
      &                          WORK(KDENSAI),
      &                          LDENSAI,WORK(KDENSIJ),LDENSIJ,
      &                          WORK(KDENSAB),LDENSAB,
      &                          WORK(KEND1),LWORK1)
+                  OLD_DENSLAB = DENSLAB
                ENDIF
 #ifdef VAR_MPI
 C

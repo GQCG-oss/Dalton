@@ -71,6 +71,7 @@ C
       logical :: active_models(sop_num_models)
       logical :: doubles, need_t2, rpa_only
       integer :: lu_dump ! Filenumber of file property values to
+      character(len=4) :: old_denslab, denslab
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -104,6 +105,8 @@ C
 C     Set triplet flag if given
       TRIPLET = TRIP_INPUT
 C
+C     We have not read in any kind of amplitudes.
+      old_denslab = 'NONE'
 C     Open file we will output results on
       IF (IMODE .GT. 0) THEN
          IF (IMODE .GT. 3) THEN
@@ -217,7 +220,7 @@ C
       IOUT = 1
       DO IMODEL = 1, SOP_NUM_MODELS
 C
-C  Skip methods not treated in this calcultion
+C  Skip methods not treated in this calculation
          IF (.NOT.ACTIVE_MODELS(IMODEL) ) CYCLE
 C
 C  Look up info on this model
@@ -227,6 +230,7 @@ C
          FULLNAME = SOP_MOD_FULLNAME(IMODEL)
          DOUBLES = SO_HAS_DOUBLES(IMODEL)
          NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
+         DENSLAB = SOP_DENS_LABEL(IMODEL)
 
          CALL TITLER( TRIM(FULLNAME) // ' response calculation', 
      &                '*',103)
@@ -235,14 +239,16 @@ C-----------------------------------------------------
 C              Get T2 amplitudes and density matrices.
 C-----------------------------------------------------
 C
-         IF (NEED_T2) THEN
-             CALL SO_GETT2(sop_dens_label(imodel),
+         IF ((NEED_T2).AND.
+     &       (DENSLAB.NE.OLD_DENSLAB)) THEN
+             CALL SO_GETT2(DENSLAB,
      &                     WORK(KFOCKD),LFOCKD,
      &                     WORK(KT2AM),LT2AM,
      &                     WORK(KDENSAI),LDENSAI,
      &                     WORK(KDENSIJ),LDENSIJ,
      &                     WORK(KDENSAB),LDENSAB,
      &                     WORK(KEND1),LWORK1)
+             old_denslab = DENSLAB
          END IF
 #ifdef VAR_MPI
 C

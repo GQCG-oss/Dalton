@@ -86,6 +86,7 @@ C
       integer :: num_active
       logical :: active_models(sop_num_models)
       logical :: doubles, need_t2, doub_corr, rpa_only
+      character(len=4) :: old_denslab, denslab
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -106,6 +107,7 @@ C     Get the active models and their number
       NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
       RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND.
      &           (NUM_ACTIVE.EQ.1)
+      old_denslab = 'NONE'
 C
 C
 C     Set the correct convergence threshold -- THREXC from
@@ -285,6 +287,7 @@ C----------------------------------------
                DOUBLES = SO_HAS_DOUBLES(IMODEL)
                NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
                DOUB_CORR = SO_DOUBLE_CORRECTION(MODEL)
+               DENSLAB = SOP_DENS_LABEL(IMODEL)
 C
                IF (IPRSOP .GE. 1) THEN
                   WRITE(LUPRI,9000)
@@ -326,14 +329,16 @@ C-----------------------------------------------------
 C              Get T2 amplitudes and density matrices.
 C-----------------------------------------------------
 C
-               IF (NEED_T2) THEN
-                  CALL SO_GETT2(SOP_DENS_LABEL(IMODEL),
+               IF ((NEED_T2).AND.
+     &             (DENSLAB.NE.OLD_DENSLAB)) THEN
+                  CALL SO_GETT2(DENSLAB,
      &                          WORK(KFOCKD),LFOCKD,
      &                          WORK(KT2AM),LT2AM,
      &                          WORK(KDENSAI),
      &                          LDENSAI,WORK(KDENSIJ),LDENSIJ,
      &                          WORK(KDENSAB),LDENSAB,
      &                          WORK(KEND2),LWORK2)
+                  old_denslab = DENSLAB
                ENDIF
 C
 C---------------------------------------------------------
