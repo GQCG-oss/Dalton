@@ -729,7 +729,6 @@ C      IF (AOSOPPA) THEN
          CALL GPOPEN(LUTAM,'MP2__TAM',' ',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND LUTAM
-         WRITE(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
          WRITE(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
          CALL GPCLOSE(LUTAM,'KEEP')
       ENDIF

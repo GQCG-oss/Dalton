@@ -28,7 +28,8 @@ C              and E[2] is not constructed explicitly.
 C
       use so_info, only: so_singles_first, so_singles_second,
      &                   so_has_doubles, so_needs_densai,
-     &                   so_double_correction
+     &                   so_double_correction,
+     &                   sop_mp2ai_done
 
 #ifdef VAR_MPI
       use so_parutils, only: soppa_comm_active, soppa_num_active,
@@ -98,7 +99,7 @@ C  average?
 #endif
 C
       do_dex = .true.
-      calc_densai = (NIT.EQ.1) .AND. SO_NEEDS_DENSAI(MODEL)
+      calc_densai = SO_NEEDS_DENSAI(MODEL) .AND. .NOT. SOP_MP2AI_DONE
 C
 C------------------
 C     Add to trace.
@@ -1050,7 +1051,10 @@ C  Recieve the new indices
          endif
       endif
 C Slaves are done
-      IF (MYNUM .NE. 0) RETURN
+      IF (MYNUM .NE. 0) THEN
+         IF ( CALC_DENSAI ) SOP_MP2AI_DONE = .TRUE.
+         RETURN
+      END IF
 #endif
 C----------------------------------------------------------------
 C     Calculate the last part of the second order density matrix.
@@ -1059,6 +1063,7 @@ C
       DTIME      = SECOND()
       IF ( CALC_DENSAI )  THEN
          CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
+         SOP_MP2AI_DONE = .TRUE.
       END IF
 C
       DTIME      = SECOND()   - DTIME

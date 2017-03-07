@@ -32,7 +32,8 @@ C
      &                   sop_dens_label,
      &                   sop_model_rpa, sop_model_rpad,
      &                   sop_model_hrpad,
-     &                   sop_conv_thresh
+     &                   sop_conv_thresh,
+     &                   sop_mp2ai_done
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
      &                       soppa_release_slaves
@@ -87,6 +88,7 @@ C
       logical :: active_models(sop_num_models)
       logical :: doubles, need_t2, doub_corr, rpa_only
       character(len=4) :: old_denslab, denslab
+      logical :: new_densai
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -355,8 +357,13 @@ C-----------------------------------------
 C              Initialize DENSAI if needed
 C-----------------------------------------
 C
-               IF ( SO_NEEDS_DENSAI(MODEL))
-     &            CALL DZERO(WORK(KDENSAI),LDENSAI)
+               IF ( SO_NEEDS_DENSAI(MODEL) .AND.
+     &              (.NOT.SOP_MP2AI_DONE) ) THEN
+                  CALL DZERO(WORK(KDENSAI),LDENSAI)
+                  NEW_DENSAI = .TRUE.
+               ELSE
+                  NEW_DENSAI = .FALSE.
+               ENDIF
 C
 CPi 31.01.16
 C----------------------------------------------------------------------
@@ -438,6 +445,10 @@ C
                      WORK(KEXVAL-1+IEXVAL) = EXENG(ISYM,IEXVAL,IOUT-1)
                   END DO
 C
+               END IF
+C
+               IF (NEW_DENSAI) THEN
+                  CALL SO_DUMP_DENSAI(DENSLAB,WORK(KDENSAI),LDENSAI)
                END IF
 C
 #ifdef VAR_MPI

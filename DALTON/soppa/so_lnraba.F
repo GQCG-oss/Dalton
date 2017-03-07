@@ -20,7 +20,9 @@ C
      &                   so_singles_second,
      &                   sop_dens_label, sop_model_rpad,
      &                   sop_model_rpa,
-     &                   sop_conv_thresh
+     &                   sop_conv_thresh,
+     &                   so_needs_densai,
+     &                   sop_mp2ai_done
 C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
@@ -63,6 +65,7 @@ C
       logical :: active_models(sop_num_models)
       logical :: doubles, need_t2, rpa_only
       character(len=4) :: old_denslab, denslab
+      logical :: new_densai
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -292,6 +295,18 @@ C
                update_common_blocks = .false.
 #endif
 C
+C-----------------------------------------
+C              Initialize DENSAI if needed
+C-----------------------------------------
+C
+               IF ( SO_NEEDS_DENSAI(MODEL) .AND.
+     &              (.NOT.SOP_MP2AI_DONE) ) THEN
+                  CALL DZERO(WORK(KDENSAI),LDENSAI)
+                  NEW_DENSAI = .TRUE.
+               ELSE
+                  NEW_DENSAI = .FALSE.
+               ENDIF
+C
 C------------------------------------------------------------------
 C              Determine SOPPA excitation energies and excitation
 C              vectors. The excitation vectors are written to file.
@@ -303,6 +318,11 @@ C
      &                        WORK(KDENSAI),LDENSAI,WORK(KT2AM),
      &                        LT2AM,WORK(KFOCKD),LFOCKD,
      &                        WORK(KEND1),LWORK1)
+C
+C              Save AI density matrix, if it has been recalculated.
+               IF (NEW_DENSAI) THEN
+                  CALL SO_DUMP_DENSAI(DENSLAB,WORK(KDENSAI),LDENSAI)
+               END IF
 C
 C----------------------------------------------
 C              Calculate second order property.

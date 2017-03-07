@@ -194,12 +194,6 @@ C
 C
       NONEWT = .FALSE.
 C
-C     At the moment SO_ERES will allways calculate DENSAI
-C     when NIT == 1, it has no sense of "IFREQ". Zeroing it
-C     here will compensate
-      IF ( SO_NEEDS_DENSAI(MODEL) )
-     &    CALL DZERO(DENSAI, LDENSAI)
-C
 C----------------------------------------------------------------------
 C     Iteration loop or solving the linear equation/eigenvalue problem
 C----------------------------------------------------------------------

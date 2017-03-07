@@ -23,6 +23,7 @@ C
      &                   sop_use_seller,
      &                   sop_dp,
      &                   so_needs_densai,
+     &                   sop_mp2ai_done,
      &                   FN_PROP
 C
 #ifdef VAR_MPI
@@ -72,6 +73,7 @@ C
       logical :: doubles, need_t2, rpa_only
       integer :: lu_dump ! Filenumber of file property values to
       character(len=4) :: old_denslab, denslab
+      logical :: new_densai
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -265,8 +267,13 @@ C-----------------------------------------
 C              Initialize DENSAI if needed
 C-----------------------------------------
 C        
-         IF ( SO_NEEDS_DENSAI(MODEL))
-     &        CALL DZERO(WORK(KDENSAI),LDENSAI)
+         IF ( SO_NEEDS_DENSAI(MODEL) .AND.
+     &        (.NOT.SOP_MP2AI_DONE) ) THEN
+              CALL DZERO(WORK(KDENSAI),LDENSAI)
+            NEW_DENSAI = .TRUE.
+         ELSE
+            NEW_DENSAI = .FALSE.
+         ENDIF
 C
 C--------------------------------------------------
 C     Loop over symmetry of the property operators.
@@ -356,7 +363,11 @@ C
             END IF
 C
          END DO ! LOOP over symmetries
-
+C
+         IF (NEW_DENSAI) THEN
+            CALL SO_DUMP_DENSAI(DENSLAB,WORK(KDENSAI),LDENSAI)
+         END IF
+C
 #ifdef VAR_MPI
 C-------------------------------------------------------
 C              Release slaves to the global node-driver.

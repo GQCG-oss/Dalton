@@ -11,6 +11,8 @@ C     PURPOSE: Eiter read from disk or calculate the appropriate T2 and possibly
 C              for RPA(D), SOPPA and SOPPA(CCSD) and calculate
 C              the corresponding densities.
 C
+      use so_info, only : sop_mp2ai_done
+C
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -65,8 +67,10 @@ C------------------------------------------------
      &              IDUMMY,.FALSE.)
              REWIND LUTAM
 C
-             READ(LUTAM)
-             READ(LUTAM) (T2AM(I), I = 1,LT2AMH)
+             READ(LUTAM,END=902) (T2AM(I), I = 1,LT2AMH)
+             if (sop_mp2ai_done) then
+                READ(LUTAM,END=901) (DENSAI(I), I = 1,LDENSAI)
+             end if
              CALL GPCLOSE(LUTAM,'KEEP')
 C
          ELSE IF (.NOT. LEXIST) THEN
@@ -155,4 +159,39 @@ C
       CALL QEXIT('SO_GETT2')
 C
       RETURN
+
+901   CALL QUIT('End of file when reading singles amplitudes')
+902   CALL QUIT('End of file when reading doubles amplitudes')
+
+
+      END
+
+      SUBROUTINE SO_DUMP_DENSAI(KEY,DENSAI,LDENSAI)
+C
+C  Dumps the AI density to file
+C
+      use so_info, only : sop_dp
+      implicit none
+      character(len=4), intent(in) :: KEY
+      real(sop_dp), intent(in) :: DENSAI(LDENSAI)
+      integer, intent(in) :: LDENSAI
+C
+      character(len=8) :: FNAME
+      INTEGER :: LUTAM, I, IDUMMY
+C
+C     Set filename from key
+      FNAME = KEY//'_TAM'
+      if (FNAME(4:4).EQ.' ') THEN
+         FNAME(4:4) = '_'
+      end if
+      LUTAM = -1
+C  GPOPEN SEEMS TO NOT ALLOW US TO SPECIFY OPEN FOR APPENDING,
+      CALL GPOPEN(LUTAM,FNAME,'OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND(LUTAM)
+      READ(LUTAM)
+C
+      WRITE(LUTAM) (DENSAI(I), I = 1,LDENSAI)
+      CALL GPCLOSE(LUTAM,'KEEP')
+C
       END

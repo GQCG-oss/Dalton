@@ -62,6 +62,9 @@ module so_info
    logical :: AORPA = .false., AOHRP = .false., DCRPA = .false., &
               DCHRP = .false., SDCHR = .false., &
               AOSOP = .false., AOSOC = .false., AOCC2 = .false.
+   ! Flag for ensuring that second order, first order density is written
+   ! only once
+   logical :: sop_mp2ai_done = .false.
 
    ! Convergence threshold
    real(sop_dp) :: sop_conv_thresh = 1.D-04
