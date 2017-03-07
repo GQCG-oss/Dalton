@@ -24,9 +24,14 @@ C
 #include "soppinf.h"
 C Need DOCCSD parameter from gnring.h
 #include "gnrinf.h"
+C Need irat
+#include "iratdef.h"
+
       DIMENSION WORK(*)
 #ifdef VAR_MPI
-      LOGICAL so_get_herdir, herdir, so_get_direct
+#include "maxorb.h"
+#include "aovec.h"
+      LOGICAL so_get_herdir, herdir, so_get_direct,
      &        get_mxcall
       get_mxcall = .false.
 #endif
