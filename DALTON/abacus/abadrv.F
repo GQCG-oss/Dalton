@@ -140,7 +140,7 @@ C
          LWRK  = LWORK
       END IF
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF (.NOT. PASMAG) THEN
+      IF ((.NOT. PASMAG) .AND. (.NOT. SO_ANY_ACTIVE_MODELS())) THEN
          CALL MAGINT(WORK(KDSO),WORK(KLAST),LWRK,PASMAG)
          IF (PASMAG) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
@@ -278,6 +278,15 @@ C
       END IF
       CALL GETTIM(TIMLRS,TIMDUM)
       TIMLRS = TIMLRS - TIMSTR
+C
+C     ******************************************
+C     ***** AOSOPPA First order properties *****
+C     ******************************************
+C
+      IF (SO_ANY_ACTIVE_MODELS().AND.(SPNSPN.AND.DODSO)) THEN
+          CALL SO_ONEAVE(WORK(KDSO),WORK(KLAST),LWRK)
+      END IF
+C
 cLig added the call to CTOABA
 C
 C     *****************************

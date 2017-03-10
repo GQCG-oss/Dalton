@@ -700,6 +700,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_memmax.F
     DALTON/soppa/so_moenergy.F
     DALTON/soppa/so_newtrial.F
+    DALTON/soppa/so_oneave.F
     DALTON/soppa/so_onefock.F
     DALTON/soppa/so_onep.F
     DALTON/soppa/so_onepmo.F
@@ -734,6 +735,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_rpprp1.F
     DALTON/soppa/so_rspleq.F
     DALTON/soppa/so_rsplex.F
+    DALTON/soppa/so_pkaodens.F
     DALTON/soppa/so_sdiag1.F
     DALTON/soppa/so_secgp.F
     DALTON/soppa/so_sigai.F

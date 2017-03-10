@@ -18,7 +18,7 @@ module so_info
    real(sop_dp), parameter :: sop_dthresh = 1.0D-4  ! Smallest denominator used when 
                                                     ! preconditioning trial-vectors.
 
-   integer, parameter :: sop_num_models = 8
+   integer, parameter :: sop_num_models = 8 ! Number of currently defined methods
 
    ! Parameter for calculation types
    integer, parameter :: sop_linres = 1, & ! linear response
