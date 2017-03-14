@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(re = 'Default 1st order method will be used\: * BFGS update',
+      rel_tolerance = 1.0e-2)
+f.add(re = 'Optimization will be performed in Cartesian coordinates',
+      rel_tolerance = 1.0e-2)
+f.add(re = 'Initial diagonal Hessian will have elements equal to\: * 1\.000000',
+      rel_tolerance = 1.0e-2)
+f.add(re = 'Trust region method will be used to control step \(default\)',
+      rel_tolerance = 1.0e-2)
+f.add(re = 'Freezing of atoms has been requested',
+      rel_tolerance = 1.0e-2)
+f.add(re = 'The following   3 atoms will be held frozen',
+      rel_tolerance = 1.0e-2)
+f.add(re = 'Atom #                 1',
+      rel_tolerance = 1.0e-2)
+f.add(re = 'Atom #                 2',
+      rel_tolerance = 1.0e-2)
+f.add(re = 'Atom #                 3',
+      rel_tolerance = 1.0e-2)
+f.add(re = '1st Order Geometry Optimization',
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 14,
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 12,
+      rel_tolerance = 1.0e-8)
+
+f.add(re = 'Nuclear repulsion energy :',
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = ' Molecular gradient (au)',
+      num_lines = 11,
+      abs_tolerance = 1.0e-4)
+
+f.add(from_string = 'Final geometry (au)',
+      num_lines = 11,
+      abs_tolerance = 1.0e-4)
+
+f.add(string = '@ Geometry converged in',
+      rel_tolerance = 1.0e-2)
+f.add(string = '@ Energy at final geometry is',
+      rel_tolerance = 1.0e-8)
+f.add(string = '@ Energy change during optimization',
+      abs_tolerance = 1.0e-5)
+
+f.add(from_string = 'Bond distances (Angstrom):',
+      num_lines = 12,
+      abs_tolerance = 1.0e-5)
+
+f.add(from_string = 'Bond angles (degrees):',
+      num_lines = 14,
+      abs_tolerance = 1.0e-2)
+
+test.run(['geoopt_freeze.dal'], ['geoopt_freeze.mol'], {'out': f})
+
+sys.exit(test.return_code)

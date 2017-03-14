@@ -51,7 +51,7 @@ C
 C 17/9 - 1990 Hans Agren, Revised Sep 2007-Nov 2009, Hans Joergen Aa. Jensen
 C
 #include "implicit.h"
-      PARAMETER (NTABLE = 11)
+      PARAMETER (NTABLE = 13)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
 C
@@ -67,7 +67,7 @@ C
 C
       DATA TABLE /'.MP2 FR','.PRINT ','.NO OV ','.TDASOP','.SC_SRM',
      &            '.SRINTS','.SCSMP2','.SOSMP2','.MP2 SC','.LEVELS',
-     &            '.DCPT2'/
+     &            '.DCPT2 ','.RSDHF ','.SAVE W'/
 CMAERKE 900918: MP2SAV not implemented, should it be?
 C
 C     ***** PROCESS INPUT FOR MP2INP *****
@@ -81,7 +81,7 @@ C
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
-     &                   111),II
+     &                   111,112,113),II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -163,11 +163,39 @@ C *** Option 9 >MP2 SCALED< Scaled MP2 calculation
      &   'More than one of .SCSMP2, .SOSPMP2, .MP2 SCALED specified.')
       MP2_SCALED = .TRUE.
       GO TO 100
-C *** Option 10 >LEVELSHIFT< Level-shift of  MP2 denominator
+C *** Option 10 >LEVELSHIFT< Level-shift of MP2 denominator
   110 READ(LUCMD,*) MP2_LSHIFT
       GO TO 100
 C FH  Option 11 DCPT2 for MP2 calculation
   111 DCPT2 = .TRUE.
+      GO TO 100
+C *** Option 12 >RSDHF< compute the RSDHf energy
+#ifdef MOD_SRDFT
+  112 DO_RSDHF = .TRUE.
+      SRMP2_SRINTS = .TRUE.   ! .RSDHF activates .SRINTS
+!     LAMSR = 1.0D0           ! original RSDHf model 
+      READ(LUCMD,*) LAMSR     ! read the fraction lambda of srHFX and
+!                               lr-sr MP2 coupling  
+      write(lupri,*)''
+      write(lupri,*)'just after reading, lamsr =', LAMSR
+      write(lupri,*)''
+!
+! Manu: Caution ! what follows cannot be used as such otherwise HF-srDFT
+! is performed with this sr functional ...
+!
+!     SR_FUNCS = 'NULL SRCMDLDA' ! no sr exchange, only (complementary "md") sr correlation
+!                                        functional
+!     CALL SRFUN_INPUT(SR_FUNCS)
+!
+#else
+  112 CONTINUE
+      call quit(
+     &   '.RSDHF option not included in this non-srdft version')
+#endif
+      GO TO 100
+C *** Option 13 .SAVE WF1 : save first order wave function
+  113 CONTINUE
+         SAVE_MP2WF1 = .TRUE.
       GO TO 100
 C ==========================================================================
  2000 CONTINUE
@@ -263,6 +291,12 @@ C
      *,' Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,'
      *,'            J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)'
 C
+      IF (SRMP2_SRINTS .AND. .NOT.DO_RSDHF) THEN
+         FLAG(25) = .FALSE. ! do NOT calculate first order wave function coefficients for SOPPA if we quit after MP2
+      END IF
+      IF (SAVE_MP2WF1) THEN
+         FLAG(25) = .TRUE. ! DO calculaate first order wave function coeffients if requested in input
+      END IF
 C
       KFRSAV= 1
       KFREE = KFRSAV
@@ -346,7 +380,7 @@ C         standard srMP2 "EMP2" from AOTWOINT integrals (i.e. long-range integra
             DOSRIN = .FALSE.
             SRINTS = .FALSE.
             IF (LUINTA .LE. 0) CALL GPOPEN(LUINTA,AO2INTFILE_LABEL,
-     &         'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+     &         'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
             CALL GPCLOSE(LUINTA,'DELETE')
          ELSE
             WRITE(LUPRI,'(/A)')

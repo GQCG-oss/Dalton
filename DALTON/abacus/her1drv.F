@@ -317,6 +317,7 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
+      use pelib_interface, only: use_pelib, pelib_ifc_molgrad
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -402,8 +403,10 @@ Cjth
 #ifndef PRG_DIRAC
 C
 C     ***** Nuclear contributions *****
-C
-      IF (PROPTY.AND..NOT.EXPGRA) CALL DIPNUC(CSTRA,SCTRA,IPRINT,DIFDIP)
+C     Nanna H. List 17/12-2014: Always compute nuclear contrib to dipole moment
+C                    (then we can use it in e.g. SIRIUS and RESPONSE)
+C      IF (PROPTY.AND..NOT.EXPGRA) CALL DIPNUC(CSTRA,SCTRA,IPRINT,DIFDIP)
+      CALL DIPNUC(CSTRA,SCTRA,IPRINT,DIFDIP)
       IF (PROPTY.AND.DIFQDP) CALL SECNUC(CSTRA,SCTRA,IPRINT)
 C
 #endif
@@ -882,10 +885,15 @@ C
 C        CALL HEADER('GRADFT in DFT_MOLGRAD ',-1)
 C        CALL OUTPUT(GRADFT,1,3,1,NATOMS,3,NATOMS,1,LUPRI)
       END IF
-Ckr
-Ckr   Get QMMM gradient/Hessian integrals
-Ckr
-C
+
+C     ****************************************
+C     ***** PE contribution to gradient ******
+C     ****************************************
+C     NHL 03/13
+      IF (PROPTY .AND. USE_PELIB()) THEN
+         CALL PELIB_IFC_MOLGRAD(DENMAT, PEGRAD(1:3*NATOMS))
+      END IF
+
 C     *************************
 C     ***** Print Section *****
 C     *************************
@@ -929,6 +937,10 @@ C
                CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
                CALL HEADER('Cavity solvent part of the gradient',-1)
                CALL PRIGRD(GSOLCV,WORK(KCSTRA),WORK(KSCTRA))
+            END IF
+            IF (USE_PELIB()) THEN
+               CALL HEADER('Polarizable embedding part of gradient',-1)
+               CALL PRIGRD(PEGRAD,WORK(KCSTRA),WORK(KSCTRA))
             END IF
             IF (DFTRUN) THEN
                CALL HEADER('DFT contribution to gradient',-1)

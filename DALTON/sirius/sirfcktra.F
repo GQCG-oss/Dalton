@@ -41,13 +41,13 @@
 ! ===================================================================
 !     sirfcktra.F section 1: calculate MO integrals
 ! ===================================================================
-      subroutine FCKTRA_CTL(ITRSIR, CMO, WORK, LWORK)
+      subroutine FCKTRA_CTL(ITRSIR, THR_MOTWOINT, CMO, WORK, LWORK)
 !
 !  Written by Hans Joergen Aa. Jensen 2016
 !
       implicit none
       integer ITRSIR, LWORK
-      real*8  CMO(*), WORK(LWORK)
+      real*8  THR_MOTWOINT, CMO(*), WORK(LWORK)
 #include "priunit.h"
 
 ! Used from include files:
@@ -55,23 +55,84 @@
 !  inforb.h : NNORBX, NORBT, ???
 !  inftra.h : NCDTRA, IPRTRA, LBUF
 !  inftap.h : LUINTM, LBINTM
+!  cbihr2.h : IFTHRS
+!  ccom.h   : THRS
 #include "iratdef.h"
+#include "maxaqn.h"
+#include "thrzer.h"
 #include "gnrinf.h"
 #include "inforb.h"
 #include "inftra.h"
 #include "inftap.h"
+#include "cbihr2.h"
+#include "ccom.h"
 
-      integer JTRSIR, NTRLVL, MX_NDMAT, LUSUPM_save
-      integer KFREE, LFREE, KFRSAV, KUCMO, KDMAT, KFMAT, I
+      integer JTRSIR, NTRLVL, MX_NDMAT, LUSUPM_save, IFTHRS_save
+      integer KFREE, LFREE, KFRSAV, KUCMO, KDMAT, KFMAT, I, J
+      integer MISH_TEST(8), MASH_TEST(8), IDAMAX
       integer, allocatable :: ICDTRA(:), ITRTYP(:), ICD_NODE(:)
       character*8 TABLE(2),LAB123(3)
       data        TABLE /'MO2INTHJ','END INTM'/
       data        LAB123/'********','********','********'/
-      logical     FEXIST, OLDDX
+      logical     FEXIST, OLDDX, FNDLAB
 
 C --- start of executable code
 
       call QENTER('FCKTRA_CTL')
+
+      JTRSIR = abs(ITRSIR)
+
+#if FCKTRA_DEBUG > 0
+      IPRTRA = MAX(IPRTRA,FCKTRA_DEBUG)
+      write(lupri,*) 'DEBUG: IPRTRA set to',IPRTRA
+#endif
+
+      IF (IPRTRA .GT. 0) THEN
+         CALL TITLER('.FCKTRA AO->MO integral transformation','*',200)
+         WRITE(LUPRI,'(A,I4,1P,D10.2)')
+     &   ' Transformation level & screening threshold:',
+     &   ITRSIR,THR_MOTWOINT
+      END IF
+
+C     Test if MO integrals already available
+
+      REWIND(LUINTM)
+      IF ( FNDLAB('MO2INTHJ',LUINTM) ) THEN
+         REWIND(LUINTM)
+         READ  (LUINTM)
+         READ  (LUINTM) J,NTRLVL
+         IF (NTRLVL .EQ. 3 .AND. JTRSIR .EQ. 2) NTRLVL = -1
+         IF (NTRLVL .EQ. 2 .AND. JTRSIR .EQ. 3) NTRLVL =  3
+         IF (NTRLVL .GE. JTRSIR) THEN
+C           read CMO matrix from LUINTM
+C           and subtract from input CMO matrix
+            READ  (LUINTM) WORK(1:NCMOT)
+            WORK(1:NCMOT) = WORK(1:NCMOT) - CMO(1:NCMOT)
+            I = IDAMAX(NCMOT,WORK,1)
+            READ (LUINTM) MISH_TEST(1:8), MASH_TEST(1:8)
+            MISH_TEST(1:8) = MISH_TEST(1:8) - NISH(1:8)
+            MASH_TEST(1:8) = MASH_TEST(1:8) - NASH(1:8)
+            J = 0
+            DO I = 1,8
+               J = J + ABS(MISH_TEST(I)) + ABS(MASH_TEST(I))
+            END DO
+            IF (ABS(WORK(I)) .LE. THRZER .AND. J .EQ. 0) THEN
+               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A)')
+     &            ' FCKTRA_CTL: Integral transformation abandoned, '//
+     &            'the required MO integrals are already available.'
+               GO TO 9999
+            END IF
+         END IF
+      END IF
+
+      IF (THR_MOTWOINT .LT. THRS) THEN
+         WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
+     &   '.FCKTRA INFO: AO screening threshold raised from',
+     &   THR_MOTWOINT,' to the general integral threshold',THRS
+         THR_MOTWOINT = THRS
+      END IF
+      IFTHRS_save = IFTHRS
+      IFTHRS = NINT(-LOG10(THR_MOTWOINT))
 
       allocate(ICDTRA(NNORBX))
       allocate(ITRTYP(NORBT))
@@ -80,12 +141,11 @@ C --- start of executable code
       KFREE  = 1
       LFREE  = LWORK
       KFRSAV = KFREE
-     
+
       ! call SIR_INTOPEN_FCKTRA()
 
 !     translate sirius integral level code to FCKTRA and NEWTRA integral level code
-      JTRSIR = abs(ITRSIR)
-      call TRALVL(JTRSIR, NTRLVL) 
+      call TRALVL(JTRSIR, NTRLVL)
       IF (JTRSIR .GE. 1 .AND. JTRSIR .LE. 4) NTRLVL = NTRLVL + 1
       ! we need third order, because USEDRC not defined for FCKTRA
 #if FCKTRA_DEBUG > 0
@@ -100,17 +160,12 @@ C --- start of executable code
 !        ITRTYP(1:NORBT) = number of integral indices in which this orbital
 !                          enters (i.e. 0,1,2,3, or 4)
       call TRASET(-1,LWORK)
-#if FCKTRA_DEBUG > 0
-      IPRTRA = MAX(IPRTRA,FCKTRA_DEBUG)
-      write(lupri,*) 'DEBUG: IPRTRA set to',IPRTRA
-#endif
       call TRALIM(NTRLVL,ICDTRA,ITRTYP)
 
-      CALL REWSPL(LUINTM)
+      REWIND(LUINTM)
       WRITE (LUINTM) (0, I=1,8) ! info not used for FCKTRA
       WRITE (LUINTM) LBINTM,ITRSIR,NSYM,NORB,NBAS
       WRITE (LUINTM) CMO(1:NCMOT)
-      ! WRITE (LUINTM) MISH(1:8), MASH(1:8)
       WRITE (LUINTM) NISH(1:8), NASH(1:8)
 
       call GETDAT(LAB123(2),LAB123(3))   ! place date in LAB123(2) and time in LAB123(3)
@@ -134,7 +189,7 @@ C --- start of executable code
       if (FCKTRA_TYPE .eq. 1 .AND. PARCAL) then
 
 #ifdef VAR_MPI
-         CALL FCKTRA_DISTRIBUTED_MASTER(ICDTRA, ITRTYP,
+         CALL FCKTRA_DISTRIBUTED_MASTER(ICDTRA, ITRTYP, IFTHRS,
      &      CMO, WORK, LWORK)
 
 #else
@@ -156,6 +211,8 @@ C --- start of executable code
          ICD_NODE(:) = 0
          LUSUPM_save = LUSUPM
          if (FCKTRA_TYPE .eq. 3) LUSUPM = -9999 ! use RDSUPM
+         if (FCKTRA_TYPE .eq. 4) LUSUPM = -1    ! do not use RDSUPM
+
          call FCKTRA_FCK_DISTRIBUTED(ICDTRA, ITRTYP, ICD_NODE,
      &      WORK(KUCMO), MX_NDMAT,
      &      WORK(KDMAT), WORK(KFMAT), WORK(KFREE), LFREE)
@@ -167,13 +224,14 @@ C --- start of executable code
       end if !  if (FCKTRA_TYPE .eq. 1 .AND. PARCAL) then ... else ...
 
       WRITE (LUINTM) LAB123,TABLE(2)
-      CALL REWSPL(LUINTM)
+      REWIND(LUINTM)
       CALL GPCLOSE(LUINTM, 'KEEP')
 
       deallocate ( ICDTRA )
       deallocate ( ITRTYP )
       deallocate ( ICD_NODE )
-      call QEXIT('FCKTRA_CTL')
+      IFTHRS = IFTHRS_save
+ 9999 call QEXIT('FCKTRA_CTL')
       return
       end
 
@@ -261,7 +319,7 @@ C --- start of executable code
       do IC = 1, NORBT
          do ID = 1, IC
             ICD = ICD + 1
-#if FCKTRA_DEBUG > 2
+#if FCKTRA_DEBUG > 4
             write (lupri,*) 'mynum, icd, icdtra, icd_node',
      &      mynum, icd, icdtra(icd), icd_node(icd) ; flush(lupri)
 #endif
@@ -368,6 +426,12 @@ C --- start of executable code
             TCPU_FCK = TCPU_FCK + TCPU2 - TCPU1
             TWAL_FCK = TWAL_FCK + TWAL2 - TWAL1
          end if
+         ! (**|CD) in AO basis now in FMAT
+         call FCKTRA_AB_TO_MO(UCMO,NDMAT,FMAT,DMAT,ISYMDM)
+         ! (**|CD) in MO basis now in DMAT
+#if FCKTRA_DEBUG > 2
+         write (lupri,*) 'Back from FCKTRA_AB_TO_MO'; flush(lupri)
+#endif
          IF (MYNUM .NE. 0) THEN
             CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG7)
             CALL MPIXSEND(NDMAT,1,'INTEGER',MASTER,MTAG7)
@@ -382,16 +446,16 @@ C --- start of executable code
             TWAL_WR  = TWAL_WR  + TWAL1 - TWAL2
          end if
       end if
-      
+
       if (FCKTRA_TIMING) then
          call GETTIM(TCPU1,TWAL1)
-         write(lupri,*) 'CPU and WALL time (s) AO Fock',
+         write(lupri,'(A,2F20.3)') 'CPU and WALL time (s) AO Fock',
      &      TCPU_FCK,TWAL_FCK
-         write(lupri,*) 'CPU and WALL time (s) AO->MO ',
+         write(lupri,'(A,2F20.3)') 'CPU and WALL time (s) AO->MO ',
      &      TCPU_WR,TWAL_WR
          TCPU2 = TCPU1 - TCPU0 - TCPU_FCK - TCPU_WR
          TWAL2 = TWAL1 - TWAL0 - TWAL_FCK - TWAL_WR
-         write(lupri,*) 'CPU and WALL time (s) rest   ',
+         write(lupri,'(A,2F20.3)') 'CPU and WALL time (s) rest   ',
      &      TCPU2,TWAL2
          flush(lupri)
       end if
@@ -431,6 +495,7 @@ C --- start of executable code
          do JA = 1,NBAST
             DMAT(JA,JB) = 0.5D0*
      &         (UCMO(JA,IC)*UCMO_BD + UCMO(JA,ID)*UCMO_BC) ! symmetrize
+      ! TODO this symmetrization is not needed, and should not be done for Dirac .. 20.aug.16
          end do
       end do
 
@@ -531,37 +596,43 @@ C --- start of executable code
 !     sirfcktra.F section 2: FCKTRA type 1 routines (if VAR_MPI)
 ! ===================================================================
 #ifdef VAR_MPI
-      subroutine FCKTRA_DISTRIBUTED_MASTER(ICDTRA, ITRTYP, CMO,
-     &   WORK, LWORK)
+      subroutine FCKTRA_DISTRIBUTED_MASTER(ICDTRA, ITRTYP, IFTHRS,
+     &   CMO, WORK, LWORK)
 !
 !  Written by Hans Joergen Aa. Jensen 2016
 !
       implicit none
-      integer ICDTRA(NNORBX), ITRTYP(NORBT), LWORK
+      integer ICDTRA(NNORBX), ITRTYP(NORBT), IFTHRS, LWORK
       real*8  CMO(NCMOT), WORK(LWORK)
 
 #include "priunit.h"
+
+#include "mpif.h"
 
 ! Used from include files:
 !  gnrinf.h : CHIVAL
 !  blocks.h : NSYMBL
 !  inforb.h : N2BASX, NORBT,NNORBX, ...
 !  infind.h : ISMO(:)
-!  infpar.h, mpif.h : for MPI: MYNUM
-!  iprtyp.h : defined parallel calculation types  
+!  inftra.h : IPRTRA
+!  infpar.h : MYNUM
+!  iprtyp.h : defined parallel calculation types
+!  mtags.h  : MTAG7
+
 #include "maxorb.h"
 #include "maxash.h"
 #include "gnrinf.h"
 #include "blocks.h"
 #include "inforb.h"
 #include "infind.h"
+#include "inftra.h"
 #include "infpar.h"
-#include "mpif.h"
 #include "iprtyp.h"
 #include "mtags.h"
 
       integer, allocatable :: ICD_NODE(:)
-      integer IPRTYP, IPRINT_slaves, ICD, NCDTRA, IWHO, NWHO
+      integer IPRTYP, IPRINT_slaves, ICD, NCD, IWHO, NWHO
+      integer KFREE, LFREE
       integer NDMAT, IDIST, N2GAB
 
       call qenter('FCKTRA_DISTRIBUTED_MASTER')
@@ -570,20 +641,25 @@ C --- start of executable code
 
       IPRTYP = CALL_FCKTRA_DISTRIBUTED ! get code number from iprtyp.h
       call MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
-      IPRINT_slaves = 29 ! TODO set print level in input
+      IPRINT_slaves = IPRTRA ! TODO set print level in input
       call MPIXBCAST(IPRINT_slaves,1,'INTEGER',MASTER)
 
-!     Now nodes are in subroutine FCKTRA_DISTRIBUITED_NODE.
-!     Transfer information to nodes; we assume basis set information
-!     already has been transferred in a Fock matrix call.
+!     Now nodes are in subroutine FCKTRA_DISTRIBUTED_NODE.
+!     First make sure basis set information is known to nodes
+
+      KFREE = 1
+      LFREE = LWORK
+      CALL HER_sendreceive_molinfo(IPRINT_slaves,WORK,KFREE,LFREE)
+
+!     Transfer integral transformation information to nodes
 
       allocate( ICD_NODE(NNORBX) )
       ICD_NODE(:) = 0
-      NCDTRA = 0
+      NCD = 0
       DO ICD = 1,NNORBX
          IF (ICDTRA(ICD) .EQ. 0) CYCLE
-         ICD_NODE(ICD) = MOD(NCDTRA,NODTOT) + 1
-         NCDTRA = NCDTRA + 1
+         ICD_NODE(ICD) = MOD(NCD,NODTOT) + 1
+         NCD = NCD + 1
       END DO
 
 #if FCKTRA_DEBUG > 2
@@ -594,6 +670,7 @@ C --- start of executable code
       write (lupri,'(10I4,5X,10I4)') ICD_NODE(1:NNORBX)
       flush(lupri)
 #endif
+      call MPIXBCAST(IFTHRS,1,'INTEGER',MASTER)
       call MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
       call MPIXBCAST(ICDTRA,NNORBX,'INTEGER',MASTER)
       call MPIXBCAST(ITRTYP,NORBT,'INTEGER',MASTER)
@@ -618,16 +695,16 @@ C --- start of executable code
       call FCKTRA_WR_LUMINT(NDMAT,WORK,ICD_NODE)
 
 #if FCKTRA_DEBUG > 1
-      write (lupri,*) 'Received from nwho =',nwho 
+      write (lupri,*) 'Received from nwho =',nwho
       write (lupri,*) 'Received and saved ndmat =',ndmat
       write(lupri,'(A,(20I5))') 'The CD records:',ICD_NODE(1:NDMAT)
 #endif
 
       IDIST = IDIST + NDMAT
-      IF (IDIST .GT. NCDTRA) THEN
-         write(lupri,*) 'ERROR: IDIST .gt. NCDTRA',IDIST,NCDTRA
-         call quit('IDIST .gt. NCDTRA, uha')
-      ELSE IF (IDIST .LT. NCDTRA) THEN
+      IF (IDIST .GT. NCD) THEN
+         write(lupri,*) 'ERROR: IDIST .gt. NCD',IDIST,NCD
+         call quit('IDIST .gt. NCD, uha')
+      ELSE IF (IDIST .LT. NCD) THEN
          GO TO 100
       END IF
 
@@ -658,7 +735,7 @@ C --- start of executable code
 !  inforb.h : NORBT, NNORBX, NCMOT
 !  infpar.h : MYNUM,SLAVE,PARHER,?
 !  inftap.h : LUSUPM
-!  mpif.h : for MPI
+!  cbihr2.h : IFTHRS
 #include "maxorb.h"
 #include "maxash.h"
 #include "gnrinf.h"
@@ -667,7 +744,16 @@ C --- start of executable code
 #include "inforb.h"
 #include "infpar.h"
 #include "inftap.h"
+#include "cbihr2.h"
+
+!  mpif.h   : for MPI
 #include "mpif.h"
+
+!     First make sure basis set information is known to this node
+
+      KFREE = 1
+      LFREE = LWORK
+      CALL HER_sendreceive_molinfo(IPRINT,WORK,KFREE,LFREE)
 
 #if FCKTRA_DEBUG > 1
       write (lupri,*)
@@ -677,8 +763,7 @@ C --- start of executable code
       flush(lupri)
 #endif
 
-!    Currently we assume that parallel Fock matrix has been called beforehand,
-!    so orbital information has been transferred to slaves. We check though,
+!    We check that orbital information has been transferred to slaves,
 !    and then we call SETORB to define infind.h (we need ISMO(:))
 
       IF (NORBT .LE. 0) THEN
@@ -711,6 +796,7 @@ C --- start of executable code
       call MEMGET2('REAL','UCMO',  KUCMO,NBAST*NORBT,
      &      WORK,KFREE,LFREE)
 
+      call MPIXBCAST(IFTHRS,1,'INTEGER',MASTER)            ! accuracy of MO integrals (screening)
       call MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
       call MPIXBCAST(ICDTRA,NNORBX,'INTEGER',MASTER)
       call MPIXBCAST(ITRTYP,NORBT,'INTEGER',MASTER)
@@ -727,17 +813,24 @@ C --- start of executable code
 
       IF (NCDTRA .EQ. 0) THEN
       ! nothing to do for me this time ...
-         RETURN
+         GO TO 1000
       END IF
 
       MX_NDMAT = LFREE/(4*N2BASX) ! use up to half of free memory for DMAT and FMAT
       MX_NDMAT = MIN(NCDTRA,MX_NDMAT)
+
+      IF (IPRINT .GT. 0) THEN
+         write(lupri,'(A,2I12)') 'FCKTRA # of distributions and'//
+     &   ' # of distributions per load',NCDTRA, MX_NDMAT
+         flush(lupri)
+      END IF
+
       IF (MX_NDMAT .EQ. 0) THEN
          CALL QUIT('MX_NDMAT = 0, too little memory')
       END IF
-      call MEMGET2('REAL','DMAT',  KDMAT,MX_NDMAT*N2BASX,
+      call MEMGET2('REAL','DMAT', KDMAT,MX_NDMAT*N2BASX,
      &     WORK,KFREE,LFREE)
-      call MEMGET2('REAL','FMAT',  KFMAT,MX_NDMAT*N2BASX,
+      call MEMGET2('REAL','FMAT', KFMAT,MX_NDMAT*N2BASX,
      &     WORK,KFREE,LFREE)
 
 #if FCKTRA_DEBUG > 2
@@ -752,6 +845,9 @@ C --- start of executable code
       CALL  FCKTRA_FCK_DISTRIBUTED(
      &      ICDTRA, ITRTYP, ICD_NODE, WORK(KUCMO), MX_NDMAT,
      &      WORK(KDMAT), WORK(KFMAT), WORK(KFREE), LFREE)
+
+
+ 1000 CONTINUE
 
       deallocate( ICDTRA )
       deallocate( ITRTYP )
@@ -809,20 +905,19 @@ C --- start of executable code
 
       integer       :: MMORBX, ICD, ICD_1, ICDSYM
       integer       :: ITYPC, ITYPD, ITYPCD
-      integer, parameter :: LEN_ICDTRA = 160000
-      integer, save :: ICDTRA(LEN_ICDTRA), ICD_SAVE
+      integer, save :: ICD_SAVE
+      integer, save, allocatable :: ICDTRA(:)
       logical       :: OLDDX
 
 #if FCKTRA_DEBUG > 3
       write(LUPRI,*) 'FCKTRA_NXTH2M called, IC, ID, IDIST =',
      &   IC, ID, IDIST
-      write(LUPRI,*) 'FCKTRA_NXTH2M called, LUINTM, LUMINT =',
-     &   LUINTM, LUMINT
       flush(LUPRI)
 #endif
 
       if (IDIST .le. 0) then
-         !allocate(ICDTRA(1:NNORBX))
+         if (allocated(ICDTRA)) deallocate(ICDTRA)
+         allocate(ICDTRA(1:NNORBX))
          if (LUINTM .le. 0) THEN
             CALL GPOPEN(LUINTM,FNINTM,'OLD',' ',
      &                  'UNFORMATTED',IDUMMY,.FALSE.)
@@ -835,12 +930,13 @@ C --- start of executable code
          rewind (LUINTM)
          call MOLLAB('MO2INTHJ',LUINTM,LUPRI)
          read (LUINTM) MMORBX, NCDTRA, ICDTRA(1:MMORBX)
-         if (MMORBX .gt. LEN_ICDTRA) then
-            write (LUPRI,*) 'NNORBX>LEN_ICDTRA',MMORBX,LEN_ICDTRA
-            call QUIT('NNORBX > LEN_ICDTRA')
+         if (NNORBX .ne. MMORBX) then
+            call QENTER('FCKTRA_NXTH2M')
+            write (LUPRI,'(//A,2I10)')  'FATAL ERROR '//
+     &      'NNORBX on MO2INT_FCKTRA .ne. NNORBX',MMORBX,NNORBX
+            call QUIT(
+     &      'NNORBX on MO2INT_FCKTRA .ne. NNORBX in FCKTRA_NXTH2M')
          end if
-         if (NNORBX.ne.MMORBX)
-     &      call QUIT('NNORBX.ne.MMORBX in FCKTRA_NXTH2M')
          ICD_SAVE = 0
       end if
 
@@ -860,15 +956,15 @@ C --- start of executable code
          if (IDIST .le. 0) then
             call QUIT('IC,ID record no. .le. 0 in FCKTRA_NXTH2M')
          end if
-         !deallocate(ICDTRA)
+         deallocate(ICDTRA)
 
       else ! IDIST .ge. 0
 
   100    continue
          if (IDIST .eq. NCDTRA) then
-            ! finished 
+            ! finished
             IDIST = -1
-            !deallocate(ICDTRA)
+            deallocate(ICDTRA)
             return
          end if
 
@@ -916,7 +1012,7 @@ C --- start of executable code
 !
 !  Written by Hans Joergen Aa. Jensen 2016
 !  This version is interface routine for .FCKTRA integral transformation.
-!  
+!
 ! Purpose:
 !    Read next Dirac two-electron integral distribution <**|cd> = (*c|*d)
 !    where (cd) distribution is needed according to NEEDTP(ITYPCD)
@@ -935,6 +1031,6 @@ C --- start of executable code
 
       call quit('ERROR: FCKTRA_NXTH2D is not implemented')
 
-     
+
       end
 ! -- end of DALTON/sirius/sirfcktra.F --

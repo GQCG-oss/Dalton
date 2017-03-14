@@ -433,6 +433,7 @@ C
          IPRSIR = MPRSIR
          IPRI6  = MPRI6
          IPRI4  = MPRI4
+         FLAG(25)   = FLAGSV(25)
          FLAG(34)   = FLAGSV(34)
          FLAG(14)   = .FALSE.
          FLAGSV(14) = .FALSE.

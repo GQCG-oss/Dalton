@@ -24,7 +24,7 @@ endif()
 if(ENABLE_CHEMSHELL)
     set(DALTON_FIXED_FORTRAN_SOURCES
         ${DALTON_FIXED_FORTRAN_SOURCES}
-        ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F
+        ${CMAKE_SOURCE_DIR}/DALTON/main/dalton.F
         )
 endif()
 
@@ -120,7 +120,7 @@ endif()
 if(NOT ENABLE_CHEMSHELL)
     add_executable(
         dalton.x
-        ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F
+        ${CMAKE_SOURCE_DIR}/DALTON/main/dalton.F
         )
 
     set_property(TARGET dalton.x PROPERTY LINKER_LANGUAGE Fortran)

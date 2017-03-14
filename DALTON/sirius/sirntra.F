@@ -86,7 +86,7 @@ C
 #include "dummy.h"
 C
 C Used from common blocks:
-C   INFTRA : IPRTRA,USEDRC
+C   INFTRA : IPRTRA,NEWTRA_USEDRC
 C CBGETDIS : IAD*
 C   INFTAP : LUORDA
 C
@@ -144,8 +144,8 @@ C     Delete AOORDINT after transformation if ITRSIR .lt. 0
 C
       DELORD = (ITRSIR .LT. 0)
       JTRSIR = ABS(ITRSIR)
-      IF (JTRSIR .GE. 1 .AND. JTRSIR .LE. 4) USEDRC = .TRUE.
-C     ... USEDRC must be true for second order transformation;
+      IF (JTRSIR .GE. 1 .AND. JTRSIR .LE. 4) NEWTRA_USEDRC = .TRUE.
+C     ... NEWTRA_USEDRC must be true for second order transformation;
 C         can be true by input for higher order (e.g. for RESPONS)
 C
 C     Translate from SIRIUS convention for transformation level
@@ -155,7 +155,7 @@ C
 C
       NOTUVX = .TRUE.
       NOCOUL = .FALSE.
-      NOEXCH = .NOT.USEDRC
+      NOEXCH = .NOT.NEWTRA_USEDRC
       MCOPT  = .FALSE.
 C
 
@@ -304,7 +304,7 @@ C
      &         'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
             LUORDA = LUINTA
 
-            CALL REWSPL(LUINTA)
+            REWIND(LUINTA)
             CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
 !           consistency checks before reading of AOTWOINT in RDAO2
             READ (LUINTA) NSYM_x, NBAS_x, LBUF, NIBUF, NBITS, LENINT4
@@ -541,7 +541,11 @@ C            and ICDTRA address
             WRITE (LUPRI,*) 'ICDTRA matrix:'
             DO 10 I = 1,NORBT
                IR = IROW(I)
-               WRITE (LUPRI,'(I5,(T8,10I7))') I,(ICDTRA(IR+J),J=1,I)
+               IF (ISUM(I,ICDTRA(IR+1),1) .EQ. 0) THEN
+                  WRITE (LUPRI,'(I5,A)') I,'   All entries are zero.'
+               ELSE
+                  WRITE (LUPRI,'(I5,(T8,10I7))') I,(ICDTRA(IR+J),J=1,I)
+               END IF
    10       CONTINUE
             WRITE (LUPRI,*) 'Positive addresses in IADRM:'
             WRITE (LUPRI,*)
@@ -649,11 +653,12 @@ C
          WRITE(LUPRI,*) 'IC    ,ID     :',ICNEW,IDNEW
          WRITE(LUPRI,*) 'IYPC  ,ITYPD  : ',COBTYP(ITYPC),
      &                                '  ',COBTYP(ITYPD)
-         WRITE (LUPRI,'(/A)') 'ICDTRA matrix:'
+         WRITE (LUPRI,'(/A)')
+     &   'ICDTRA matrix (rows with only zeroes are not printed):'
          DO I = 1,NORBT
             IR = IROW(I)
             IF (ISUM(I,ICDTRA(IR+1),1) .EQ. 0) THEN
-               WRITE (LUPRI,'(I5,A)') I,'   All entries are zero.'
+             ! WRITE (LUPRI,'(I5,A)') I,'   All entries are zero.'
             ELSE
                WRITE (LUPRI,'(I5,(T8,10I7))') I,(ICDTRA(IR+J),J=1,I)
             END IF
@@ -3168,7 +3173,7 @@ C
       KINT = 1
       KIINT = KINT + LBUF
 C
-      CALL REWSPL(LUINTA)
+      REWIND(LUINTA)
 C
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
  150  CONTINUE

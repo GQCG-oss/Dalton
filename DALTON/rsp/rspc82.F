@@ -1139,7 +1139,7 @@ C
 C  Read in the D-matrix in SOPPA from LURSP4
 C
          IF (SOPPA) THEN
-            CALL REWSPL(LURSP4)
+            REWIND (LURSP4)
             CALL READT(LURSP4,KZCONF,BVECS(KDIA))
          ENDIF
          DO 50 IBX = 1,NBX
@@ -1206,7 +1206,7 @@ C CONSTRUCT  E[2]*X(I) WHERE X(I) IS THE I:th
 C EIGENVECTOR AND EIGENVALUE RESPECTIVELY OF THE REDUCED
 C RSP PROBLEM
 C
-         CALL REWSPL(LURSP5)
+         REWIND (LURSP5)
          IF (KOFFTY.EQ.1) READ(LURSP5)
          DO 600 K = 1,KZRED
 C
@@ -1341,7 +1341,7 @@ C
          NOSIM = 0
          NOTCNV = 0
          KCOFF = 0
-         IF (IPRRSP.GE.3 .AND. IPRRSP.LE.5) THEN
+         IF (IPRRSP.GE.1 .AND. IPRRSP.LE.5) THEN
             IF (LINEQ) THEN
                WRITE(LUPRI,'(/6X,A)')
      &' No.  Residual tot.,    conf., and orb.    Bnorm      Frequency '
@@ -1378,7 +1378,7 @@ C
      *           ' BNORM:',BNORM,' EIVAL:',EIVAL(JROOTJ)
                IF (QCNORM .NE. D0) WRITE(LUPRI,'(1P,T10,2(A,D12.5))')
      *           ' RESIDUAL CONF Z-COMP',QCZNOR,'    Y-COMP',QCYNOR
-            ELSE IF (IPRRSP.GE.3) THEN
+            ELSE IF (IPRRSP.GE.1) THEN
                WRITE(LUPRI,'(I10,1P,D15.5,3D10.2,D15.5)')
      *           JROOTJ,QNORM,QCNORM,QONORM,BNORM,EIVAL(JROOTJ)
             END IF
@@ -1879,7 +1879,10 @@ C
          IF (IPRRSP.GT.20) WRITE(LUPRI,'(/A)')
      &      '      NUMBER      EIGENVALUE      PAIRED EIGENVALUE'
          DO, I=1,IPOS
-            IF (ABS(ABS(ALFAR(I))-ABS(ALFAR(IPOS+I))).GT.ZEROT) THEN
+            RELDIF = ABS(ABS(ALFAR(I))-ABS(ALFAR(IPOS+I)))
+            IF (ABS(ALFAR(I)) .GT. ZEROT)
+     &         RELDIF = RELDIF / ABS(ALFAR(I))
+            IF (RELDIF .GT. ZEROT) THEN
                J = 1
                WRITE(LUPRI,'(/A,I5)')
      &         ' **WARNING**  EIGENVALUES NOT PAIRED.'//
@@ -2051,7 +2054,7 @@ C
 C        Orthogonalize new b-vectors agains previous b-vectors
 C        (both (Z, Y) and (Y, Z))
 C
-         CALL REWSPL(LU3)
+         REWIND (LU3)
          DO 2000 K = 1,NBPREV
             IBTYPK = IBTYP(K)
             IF (IBTYPK .EQ. JBCNDX) THEN
@@ -2748,7 +2751,6 @@ C
 #include "ibndxdef.h"
 C
       PARAMETER (D0 = 0.0D0 , D1 = 1.0D0 , DRTEST = 1.0D-5)
-      PARAMETER (MAXNVE = 200 )
 C
 C Used from common blocks:
 C  /WRKRSP/: KZVAR,KZYRED,KZRED,KZYVAR,?
@@ -2764,7 +2766,7 @@ C
 #include "infind.h"
 #include "infpri.h"
 #include "absorp.h"
-      DIMENSION IVENU(MAXNVE)
+      INTEGER, ALLOCATABLE ::  IVENU(:)
 C
       LOGICAL LINEQ
 C
@@ -2794,14 +2796,8 @@ C            with N new b-vectors
 C
       IF (ICTL.LT.1 .OR. ICTL.GT.3) GO TO 2000
       IF (ICTL.EQ.2) GO TO 1000
-      IF (N .GT. MAXNVE) THEN
-         WRITE(LUPRI,'(//A/A,I5,/A,I5)')
-     &   ' ERROR IN RSPRED ---',
-     &   ' Number of new trial vectors is ',N,
-     &   ' which exceeds the allowed maximum, MAXNVE =',MAXNVE
-         CALL QUIT('RSPRED: TOO MANY NEW TRIAL VECTORS')
-      END IF
       IF (N.LT.1) GO TO 1000
+      allocate( IVENU(1:N) )
       IZRED = KZRED - N
 C
 C Memory check
@@ -2897,7 +2893,7 @@ C  EXTEND REDUCED S- AND E-MATRICES
 C
 C  b-vectors times new S-and E-vectors
 C
-      CALL REWSPL(LURSP3)
+      REWIND (LURSP3)
       IF (KOFFTY.EQ.1) READ (LURSP3)
       KBOVEC = 1
       KBCVEC = 1
@@ -2959,7 +2955,7 @@ C
      *            UDV,EVECS,XINDX,WRK,LWRK)
 C     CALL RSPSLI(NCSIM,NOSIM,ZYCVEC,ZYOVEC,
 C    *                  UDV,SVEC,XINDX,WRK,LWRK)
-      CALL REWSPL(LURSP3)
+      REWIND (LURSP3)
       IF (KOFFTY.EQ.1) READ (LURSP3)
       KBOVEC = 1
       KBCVEC = 1
@@ -3003,6 +2999,8 @@ C    *                  UDV,SVEC,XINDX,WRK,LWRK)
             REDS(2*J-1+IROW(2*(IZRED+K)))   = -X2
    23    CONTINUE
    25 CONTINUE
+
+      deallocate( IVENU )
 C
 C *********************************************************
 C Section 2: find eigenvalues and -vectors of reduced L-matrix
@@ -3367,8 +3365,8 @@ C
       END IF
 
       NOVLMX = 0 ! to become index of CI start vector with max overlap with reference vector
-      CALL REWSPL(LURSP3)
-      CALL REWSPL(LURSP5)
+      REWIND (LURSP3)
+      REWIND (LURSP5)
       IF (KOFFTY.EQ.1) THEN
 C
 C PUT REFERENCE CONFIGURATION AS FIRST RECORD ON LURSP3
@@ -3576,7 +3574,7 @@ C           CALL DCOPY(NTOT,WRK(KDIASO),1,WRK,1)
       ELSE
          BINMEM = .FALSE.
       ENDIF
-      IF (IPRRSP.GT.3) THEN
+      IF (IPRRSP.GT.2) THEN
          IF (DO_PHPVEC) THEN
             WRITE(LUPRI,*)NCTOT,' START configuration VECTORS USING'//
      &         ' LOWEST EIGENVALUES OF PHP'
@@ -3747,7 +3745,7 @@ C
       CALL QENTER('RSPCVE')
 C
       CALL DZERO(BVECS,KZCONF)
-      CALL REWSPL(LURSP3)
+      REWIND (LURSP3)
       IF (KOFFTY.EQ.1) READ (LURSP3)
       DO 200 K = 1,KZRED
          IBTYPK = IBTYP(K+KOFFTY)
@@ -3794,7 +3792,7 @@ C
 C
       CALL QENTER('PHPDSK')
 C
-      CALL REWSPL(LURSP4)
+      REWIND (LURSP4)
       JRSP4 = 0
 C
 C *** now SKIP diagonals of E[2]-matrix needed for RSPLIN

@@ -253,7 +253,6 @@ C
 #include "infmp2.h"
 #include "infpop.h"
 #include "pcmlog.h"
-#include "siripc.h"
 #include "huckel.h"
 #include "cbihrs.h"
 #include "spinfo.h"
@@ -273,7 +272,7 @@ C
 C
 C     Skip next section if processed earlier
 C
-      IF (INPPRC) THEN
+      IF (SIR_INPPRC) THEN
          INPERR = 0
          NUMRUN = 1
 C        ... only highest calculation specification is done
@@ -354,9 +353,11 @@ C         if reading input from a terminal
          END IF
          GO TO 930
   910    CONTINUE
-            CALL QUIT('ERROR: End of file, no Sirius input found')
+            CALL QUIT('ERROR: '//
+     &      'End of .dal input file, no wave function input found')
   920    CONTINUE
-            CALL QUIT('ERROR reading .dal input, no Sirius input found')
+            CALL QUIT('ERROR reading .dal '//
+     &      'input file before finding wave function input')
   930    CONTINUE
       END IF
 C
@@ -390,7 +391,7 @@ C     (most variables are in infinp.h)
 C
 C     Jump again if processed earlier
 C
-      IF (INPPRC) GOTO 124
+      IF (SIR_INPPRC) GOTO 124
 C
       IREST = 0
 C     IREST .ne. 0 for a restart run
@@ -494,6 +495,8 @@ C
       SRMP2_SELFCONSISTENT = .FALSE.
       SRMP2_SRINTS = .FALSE.
       DCPT2        = .FALSE.
+      DO_RSDHF     = .FALSE.
+      SAVE_MP2WF1  = .FALSE.
 C
 C********** Default values section POPINP *****
 C
@@ -860,7 +863,7 @@ C
 C
 C *************************************************************************
 C     "124" is where we jump back in if input has been processed earlier,
-C     i.e. if INPPRC is .true.
+C     i.e. if SIR_INPPRC is .true.
 C
  124  CONTINUE
 C
@@ -986,6 +989,7 @@ C
             NASH(LSYM) = 1
             NASHT  = 1
             NACTEL = 1
+            NROHF(1:8) = NASH(1:8) ! so it will work if HSROHF switched on because open-shell DFT /hjaaj Nov 2016
          ELSE IF (HSROHF) THEN
             LSYM = 1
             DO ISYM = 2, NSYM
@@ -1678,7 +1682,8 @@ C
 C
 C ***  PRINT INPUT DATA *****
 C
-      IF (IPRSIR.GT.2 .OR. IPRI4.GT.7 .OR. IPRI6.GT.2) INPPRC = .FALSE.
+      IF (IPRSIR.GT.2 .OR. IPRI4.GT.7 .OR. IPRI6.GT.2)
+     &   SIR_INPPRC = .FALSE.
 C     ... force output if print level increased by user
       CALL SIR_PRTINP(LUPRI,NUMRUN,IRDMO)
       IF (IREST.NE.0) WRITE (LUPRI,3050)
@@ -1855,7 +1860,7 @@ C
 C
       IF (MCTYPE .GT. 0 .AND. PARCAL) THEN
          ! IF (RNRESP) CALL PARQUIT('MCSCF in RESPONSE')
-         IF (RNABAC) CALL PARQUIT('MCSCF in ABACUS')
+         ! IF (RNABAC) CALL PARQUIT('MCSCF in ABACUS')
       END IF
 
 C
@@ -1872,7 +1877,7 @@ C
 C
 C      
       NEWSYM = .FALSE.
-      INPPRC = .TRUE.
+      SIR_INPPRC = .TRUE.
       CALL QEXIT('SIRRDI')
       RETURN
 C
@@ -2347,7 +2352,7 @@ C
             IF (IABS(NPATH(I)) .GT. NFLAG) THEN
                INPERR = INPERR + 1
                WRITE (LUPRI,'(/A,I10)')
-     *         ' *** ERROR Sirius .FLAGS, illegal value:',NPATH(I)
+     *         ' *** ERROR Sirius .FLAGS, illegal NPATH value:',NPATH(I)
             ELSE IF (NPATH(I).LT.0) THEN
                FLAG(-NPATH(I)) = .FALSE.
             ELSE IF (NPATH(I).GT.0) THEN
@@ -3180,12 +3185,12 @@ C     ... AUTOCC may have been set true by .AUTOCC
       IF (ELECTR) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .OPEN SHELL must not be specified together with .ELECTRONS'
+     &' .OPEN SHELL is not allowed together with .ELECTRONS'
       END IF
       IF (HSROHF) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .OPEN SHELL must not be specified together with .SINGLY'
+     &' .OPEN SHELL is not allowed together with .SINGLY'
       END IF
       IF (IOPRHF .LT. 1 .OR. IOPRHF .GT. NSYM) THEN
          INPERR = INPERR + 1
@@ -5246,8 +5251,7 @@ C   SCBRHF : IOPRHF,NFRRHF(*),MAXFCK
 C   INFMP2 : NFRMP2(*)
 C   DFTCOM : DFTRUN, DOSRBCK, ...
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
-C   siripc : INPPRC
-C   gnrinf : NEWSYM,EMBEDDING,QM3,QMMM,?
+C   gnrinf : NEWSYM,SIR_INPPRC,EMBEDDING,QM3,QMMM,?
 C   infpar.h : PARHER
 C   pgroup : GROUP, REP
 C   pcmlog : PCM
@@ -5257,6 +5261,7 @@ C
 #include "maxash.h"
 #include "maxorb.h"
 C
+#include "gnrinf.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "infind.h"
@@ -5270,8 +5275,6 @@ C
 #include "dftcom.h"
 #include "dfterg.h"
 #include "dftacb.h"
-#include "siripc.h"
-#include "gnrinf.h"
 #include "infpar.h"
 #include "pgroup.h"
 #include "pcmlog.h"
@@ -5304,7 +5307,7 @@ C
       WRITE(IWUNIT,200) STARS,RELEAS,STARS
  200  FORMAT(3(/1X,A))
 
-      IF (INPPRC) THEN
+      IF (SIR_INPPRC) THEN
          IF (NEWSYM) THEN
             WRITE(IWUNIT,'(/A)')
      &   ' (Wave function specification NOT suppressed here,'//

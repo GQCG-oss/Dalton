@@ -34,7 +34,7 @@ C------------------------------
 C     Statement function INDEX.
 C------------------------------
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+!     INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
 C------------------
 C     Add to trace.

@@ -2640,15 +2640,15 @@ C
 C
       CHARACTER*1 STARM, STARE, STARG, STARS, STARH
       CHARACTER*42 WLKTYP(0:8)
-      DATA WLKTYP /'trust-region minimization                 ',
-     *             'mode-following                            ',
-     *             'gradient extremal                         ',
-     *             'dynamic walk                              ',
-     *             'Newton step                               ',
-     *             'eigenvector step                          ',
-     *             'numerical differentiation                 ',
-     &             'IRC path                                  ',
-     &             'TS by minimization on image surface       '/
+      DATA WLKTYP /'trust-region minimization                 ', ! 0
+     &             'mode-following                            ', ! 1
+     &             'gradient extremal                         ', ! 2
+     &             'dynamic walk                              ', ! 3
+     &             'Newton step                               ', ! 4
+     &             'eigenvector step                          ', ! 5
+     &             'numerical differentiation                 ', ! 6
+     &             'IRC path                                  ', ! 7
+     &             'TS by minimization on image surface       '/ ! 8
 C
       CALL TITLER('FINAL RESULTS FROM WALK','*',125)
 C

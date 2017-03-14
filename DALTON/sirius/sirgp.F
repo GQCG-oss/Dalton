@@ -1678,29 +1678,30 @@ C
  100     IF (LUSUPM .LE. 0) CALL GPOPEN(LUSUPM,FNSUPM_local,
      &      'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
          I = I + 1
-         CALL REWSPL(LUSUPM)
+         REWIND(LUSUPM)
 
          FNSUPM_OK = FNDLAB('PXSUPMAT',LUSUPM)
          IF (FNSUPM_OK) THEN
             READ (LUSUPM) XFAC, XPOTNUC, NOSYM
             IF (abs(XFAC-HFXFACSUP) .gt. THRSUP) THEN
+               WRITE(LUPRI,*)
                WRITE(LUPRI,*) 'Calculating ',FNSUPM_local,
      &         ' because HFXFAC changed from',XFAC,' to',HFXFACSUP
                FNSUPM_OK = .FALSE.
             END IF
             IF (abs(XPOTNUC-POTNUC) .gt. THRSUP) THEN
-               WRITE(LUPRI,*) 'Calculating ',FNSUPM_local,
+               WRITE(LUPRI,'(/3A)') 'Calculating ',FNSUPM_local,
      &         ' because geometry has changed.'
                FNSUPM_OK = .FALSE.
             END IF
             IF (NOSSUP .AND. .NOT.NOSYM) THEN
                FNSUPM_OK = .FALSE.
-               WRITE(LUPRI,*) 'Calculating ',FNSUPM_local,
+               WRITE(LUPRI,'(/3A)') 'Calculating ',FNSUPM_local,
      &         ' because .NOSYM requested'
                FNSUPM_OK = .FALSE.
             END IF
          ELSE
-            WRITE(LUPRI,*) 'Calculating ',FNSUPM_local
+            WRITE(LUPRI,'(/2A)') 'Calculating ',FNSUPM_local
          END IF
 
          IF (.NOT. FNSUPM_OK) THEN
@@ -1781,7 +1782,7 @@ C
       INTEGER MBAS(8)
 C
       CALL QENTER('RDSUPP')
-      CALL REWSPL(LUSUPM)
+      REWIND(LUSUPM)
       CALL MOLLAB('PXSUPMAT',LUSUPM,LUPRI)
 C
 C *** Test if LUSUPM file is OK
