@@ -209,10 +209,14 @@ C
       LBTJ1D  = NMATAV(ISYMTR)
 
       IF(DOUBLES) THEN
-         LTR2E   = N2P2HOP(ISYMTR)
+         IF (TRIPLET) THEN
+            LTR2E = NT2SQ(ISYMTR)
+         ELSE
+            LTR2E = N2P2HOP(ISYMTR)
+         ENDIF
          LRES2E  = N2P2HOP(ISYMTR)
          IF (DO_DEX) THEN
-            LTR2D   = N2P2HOP(ISYMTR)
+            LTR2D   = LTR2E
             LRES2D  = N2P2HOP(ISYMTR)
          ELSE
             LTR2D  = 0
@@ -406,17 +410,28 @@ C--------------------------------------------------------------------
      &            .AND.(MYNUM .EQ. 0 )
 #endif
      &                        ) THEN
-C            
+C
                IF (TRIPLET) THEN
-                  CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
-                  IF(DO_DEX)
-     &               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,
+C-----------------------------------------------------------
+C                 For triplet we read the trial-vector into
+C                 solution vector memory. Then we use that
+C                 to create the non-symmetric intermediate on
+C                 KTR2*
+C----------------------------------------------------------
+                  CALL SO_READ(WORK(KRES2E),LRES2E,LUTR2E,FNTR2E,INEW)
+                  CALL SO_TRANTRIP(WORK(KTR2E),WORK(KRES2E),ISYMTR)
+C                  CALL DCOPY(LRES2E,WORK(KRES2E),1,WORK(KTR2E),1)
+                  IF(DO_DEX) THEN
+                     CALL SO_READ(WORK(KRES2D),LRES2D,LUTR2D,
      &                     FNTR2D,INEW)
-
+C                     CALL DCOPY(LRES2E,WORK(KRES2D),1,WORK(KTR2D),1)
+                     CALL SO_TRANTRIP(WORK(KTR2D),WORK(KRES2D),ISYMTR)
+                  END IF
+C
                   DTIME      = SECOND()
                   CALL SO_RES_CDT(WORK(KRES2E),LRES2E,
      &                            WORK(KRES2D),LRES2D,
-     &                            WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
+C     &                            WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
      &                            FOCKD,LFOCKD,ISYRES,
      &                            WORK(KEND2),LWORK2)
                   DTIME      = SECOND()   - DTIME
@@ -427,7 +442,7 @@ C
                   CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
                   IF(DO_DEX)
      &               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)
-C                  
+C
                   DTIME      = SECOND()
                   CALL SO_RES_CD(WORK(KRES2E),LRES2E,
      &                           WORK(KRES2D),LRES2D,
@@ -765,6 +780,21 @@ C
 
                      END IF
 C
+C     In the triplet case we create the partially back-transformed
+C     intermediate last.
+C
+                     IF(DOUBLES.AND.TRIPLET.AND.
+     &                  (NVIR(ISYMD).GT.0)) THEN
+                        CALL SO_X2SM1(WORK(KX2EM1),LX2M1,
+     &                               WORK(KTR2E),LTR2E,
+     &                               WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                               ISYMTR,WORK(KEND4),LWORK4)
+                        CALL SO_X2SM1(WORK(KX2DM1),LX2M1,
+     &                               WORK(KTR2D),LTR2D,
+     &                               WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                               ISYMTR,WORK(KEND4),LWORK4)
+                     END IF
+C
                      DTIME      = SECOND()   - DTIME
                      SOTIME(12) = SOTIME(12) + DTIME
 
@@ -1070,6 +1100,7 @@ C
       SOTIME(41) = SOTIME(41) + DTIME
 C
       IF ( IPRSOP .GE. 7 ) THEN
+C      IF ( NIT .EQ. 2 ) THEN
 C------------------------------------------
 C        Write new resultvectors to output.
 C------------------------------------------
@@ -1284,6 +1315,8 @@ C
             CALL SO_M1SHUF(WORK(KT2M1),LT2M1,ISYMD,1)
             DTIME      = SECOND()   - DTIME
             SOTIME(12) = SOTIME(12) + DTIME
+         END IF
+         IF (DOUBLES.OR.SINGLES_SECOND) THEN
 C
 C-------------------------------------------------------------------
 C        Calculate the part of the result vectors RES1E and
@@ -1306,18 +1339,8 @@ C
             SOTIME(29) = SOTIME(29) + DTIME
 
          END IF
-         IF (DOUBLES) THEN
 C
-            DTIME      = SECOND()
-            CALL SO_RES_TCBT(WORK(KRES1E),LRES1E,
-     &                      WORK(KRES1D),LRES1D,
-     &                      WORK(KTR2E),LTR2E,
-     &                      WORK(KTR2D),LTR2D,
-     &                      WORK(KDSRHF),LDSRHF,
-     &                      WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                      ISYMTR,WORK(KEND5),LWORK5)
-            DTIME      = SECOND()   - DTIME
-            SOTIME(29) = SOTIME(29) + DTIME
+         IF (DOUBLES) THEN
 C
 C----------------------------------------------------------------------
 C           Construct C-contribution to 2p2h result vectors RES2E
@@ -1337,7 +1360,7 @@ C
             DTIME      = SECOND()   - DTIME
             SOTIME(15) = SOTIME(15) + DTIME
 C
-         ENDIF 
+         ENDIF
          IF(SINGLES_SECOND) THEN
             DTIME   = SECOND()
             ISYDIS2 = MULD2H(ISYDIS,ISYMTR)
@@ -1352,7 +1375,7 @@ C                     ~
 C    (2)    - ( c a | j delta ) * T2M1( ci, j)
 C                     ~
 C    (6)      ( k i | j delta ) * T2M1( ak, j)
-
+C
             CALL SO_RES_B26 ( WORK(KRES1E), LRES1E, WORK(KT2M1), LT2M1,
      &                        WORK(KDSRHF),WORK(KCMO),LCMO,IDEL,ISYMD,
      &                        ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)

@@ -1,12 +1,13 @@
 C  /* Deck so_res_cdt */
-      SUBROUTINE SO_RES_CDT(RES2E,LRES2E,RES2D,LRES2D,TR2E,LTR2E,TR2D,
-     &                     LTR2D,FOCKD,LFOCKD,ISYRES,WORK,LWORK)
+      SUBROUTINE SO_RES_CDT(RES2E,LRES2E,RES2D,LRES2D,
+     &                      FOCKD,LFOCKD,ISYRES,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, April 1996
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C     Pi A. B. Haase 29.04.2016: Triplet version
+C     Rasmus Faber, 2017: Now done in-place
 C
 C     PURPOSE: Calculate contribution from D matrix to the 2p2h
 C              result vectors.
@@ -16,7 +17,6 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION RES2E(LRES2E), RES2D(LRES2D)
-      DIMENSION TR2E(LTR2E),   TR2D(LTR2D)
       DIMENSION FOCKD(LFOCKD), WORK(LWORK)
 C
 #include "ccorb.h"
@@ -247,8 +247,8 @@ C
 C
                EABIJ1 = WORK(KFAB1 + NAB - 1) - WORK(KFIJ1 + NIJ - 1)
 C
-               RES2E(NABIJ1) = EABIJ1 * TR2E(NABIJ1)
-               RES2D(NABIJ1) = EABIJ1 * TR2D(NABIJ1)
+               RES2E(NABIJ1) = EABIJ1 * RES2E(NABIJ1)
+               RES2D(NABIJ1) = EABIJ1 * RES2D(NABIJ1)
 C
   502       CONTINUE
 C
@@ -262,8 +262,8 @@ C
 C
                EABIJ2 = WORK(KFAB2 + NAB - 1) - WORK(KFIJ2 + NIJ - 1)
 C
-               RES2E(NABIJ2) = EABIJ2 * TR2E(NABIJ2)
-               RES2D(NABIJ2) = EABIJ2 * TR2D(NABIJ2)
+               RES2E(NABIJ2) = EABIJ2 * RES2E(NABIJ2)
+               RES2D(NABIJ2) = EABIJ2 * RES2D(NABIJ2)
 C
   503       CONTINUE
 C
@@ -283,8 +283,8 @@ C
 C
                EABIJ3 = WORK(KFAB3 + NAB - 1) - WORK(KFIJ3 + NIJ - 1)
 C
-               RES2E(NABIJ3) = EABIJ3 * TR2E(NABIJ3)
-               RES2D(NABIJ3) = EABIJ3 * TR2D(NABIJ3)
+               RES2E(NABIJ3) = EABIJ3 * RES2E(NABIJ3)
+               RES2D(NABIJ3) = EABIJ3 * RES2D(NABIJ3)
 C
   505       CONTINUE
 C
