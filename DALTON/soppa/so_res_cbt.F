@@ -4,7 +4,8 @@ C  /* Deck so_res_cbt */
      &                      DSRHF,LDSRHF,BTR1E,LBTR1E,
      &                      BTR1D,LBTR1D,BTJ1E,LBTJ1E,
      &                      BTJ1D,LBTJ1D,CMO,LCMO,
-     &                      IDEL,ISDEL,ISYDIS,ISYMTR,WORK,LWORK)
+     &                      IDEL,ISDEL,ISYDIS,ISYMTR,DO_DEX,
+     &                      WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -25,6 +26,7 @@ C
       DIMENSION DSRHF(LDSRHF), BTR1E(LBTR1E), BTR1D(LBTR1D)
       DIMENSION BTJ1E(LBTJ1E), BTJ1D(LBTJ1D), CMO(LCMO)
       DIMENSION WORK(LWORK)
+      LOGICAL, INTENT(IN) :: DO_DEX
 C
 #include "ccorb.h"
 #include "ccsdinp.h"
@@ -139,13 +141,16 @@ C---------------------------------
 C              For de-excitations.
 C---------------------------------
 C
-               CALL DGEMM('N','N',NBAS(ISALFA),NRHF(ISYMI),
-     &                    NBAS(ISBETA),ONE,WORK(KOFF2),NTOTAL,
-     &                    BTR1D(KOFF3),NTOTBE,ZERO,WORK(KSCR5),NTOTAL)
+               IF (DO_DEX) THEN
+                  CALL DGEMM('N','N',NBAS(ISALFA),NRHF(ISYMI),
+     &                       NBAS(ISBETA),ONE,WORK(KOFF2),NTOTAL,
+     &                       BTR1D(KOFF3),NTOTBE,ZERO,WORK(KSCR5),
+     &                       NTOTAL)
 C
-               CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                    NBAS(ISALFA),ONE,CMO(KOFF4),NTOTAL,
-     &                    WORK(KSCR5),NTOTAL,ZERO,WORK(KOFF6),NTOTA)
+                  CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
+     &                       NBAS(ISALFA),ONE,CMO(KOFF4),NTOTAL,
+     &                       WORK(KSCR5),NTOTAL,ZERO,WORK(KOFF6),NTOTA)
+               END IF
 C
 C-----------------------------------------------------------------------
 C                                        ~ ~
@@ -193,9 +198,11 @@ C---------------------------------
 C              For de-excitations.
 C---------------------------------
 C
-               CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                    NBAS(ISALFA),-ONE,BTJ1D(KOFF4),NTOTAL,
-     &                    WORK(KSCR4),NTOTAL,ONE,WORK(KOFF6),NTOTA)
+               IF (DO_DEX) THEN
+                  CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
+     &                       NBAS(ISALFA),-ONE,BTJ1D(KOFF4),NTOTAL,
+     &                       WORK(KSCR4),NTOTAL,ONE,WORK(KOFF6),NTOTA)
+               END IF
 C
   300       CONTINUE
 C
@@ -357,22 +364,25 @@ C
                         NABIJ3    = IABIJ3 + NAB3
 C
                  RES2E(NABIJ1) = RES2E(NABIJ1) + SGN1*WORK(KSCR4+NAI-1)
-C     &                           *ONESQ2
-C
-                 RES2D(NABIJ1) = RES2D(NABIJ1) + SGN1*WORK(KSCR5+NAI-1)
-C     &                           *ONESQ2
 C
                  RES2E(NABIJ2) = RES2E(NABIJ2) + SGN2*WORK(KSCR4+NAI-1)
-     &                           *ONESQ2
-C
-                 RES2D(NABIJ2) = RES2D(NABIJ2) + SGN2*WORK(KSCR5+NAI-1)
      &                           *ONESQ2
 C
                  RES2E(NABIJ3) = RES2E(NABIJ3)
      &                         + SGN3*WORK(KSCR4+NAI-1)*ONESQ2
 C
-                 RES2D(NABIJ3) = RES2D(NABIJ3)
+C
+                  IF(DO_DEX) THEN 
+C
+                     RES2D(NABIJ1) = RES2D(NABIJ1) + 
+     &                               SGN1*WORK(KSCR5+NAI-1)
+C
+                     RES2D(NABIJ2) = RES2D(NABIJ2) + 
+     &                           SGN2*WORK(KSCR5+NAI-1)*ONESQ2
+C
+                     RES2D(NABIJ3) = RES2D(NABIJ3)
      &                         + SGN3*WORK(KSCR5+NAI-1)*ONESQ2
+                  END IF
 C
   700         CONTINUE
 C

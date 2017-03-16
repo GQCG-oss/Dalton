@@ -2,7 +2,7 @@ C  /* Deck so_res_a */
       SUBROUTINE SO_RES_A(RES1E,LRES1E,RES1D,LRES1D,TR1E,LTR1E,TR1D,
      &                    LTR1D,DSRHF,LDSRHF,CMO,LCMO,T2M1,LT2M1,
      &                    AIJ,LAIJ,AAB,LAAB,INEWTR,ISDEL,ISYDIS,ISYRES,
-     &                    ISYMTR,WORK,LWORK)
+     &                    ISYMTR,DO_DEX,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -32,6 +32,7 @@ C
       DIMENSION RES1E(LRES1E), RES1D(LRES1D), TR1E(LTR1E), TR1D(LTR1D)
       DIMENSION DSRHF(LDSRHF), CMO(LCMO), T2M1(LT2M1), WORK(LWORK)
       DIMENSION AIJ(LAIJ),     AAB(LAAB)
+      LOGICAL, INTENT(IN) :: DO_DEX
 C
 #include "ccorb.h"
 #include "ccsdinp.h"
@@ -271,6 +272,10 @@ C
                CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
      &                    NRHF(ISYML),ONE,T2M1(KOFF16),NTOTA,
      &                    WORK(KSCR4),NTOTL,ONE,RES1E(KOFF11),NTOTA)
+C
+C              The following is the B*{1E}x => {1D}x part
+C              Skip for static properties
+               IF(.NOT.DO_DEX) GOTO 400
 C
 C==================================
 C              1. term in Eq. (35):

@@ -2,6 +2,7 @@ C  /* Deck so_eres */
       SUBROUTINE SO_ERES(MODEL,  NOLDTR, NNEWTR,  DENSIJ,  LDENSIJ,
      &                   DENSAB, LDENSAB, T2MP,    LT2MP,   FOCKD,
      &                   LFOCKD, DENSAI,  LDENSAI, NIT,     ISYMTR,
+     &                   IDTYPE,
 #ifdef VAR_MPI
      &                   AssignedIndices, maxnumjobs,
 #endif
@@ -53,11 +54,16 @@ C
       DIMENSION INDEXA(MXCORB)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), T2MP(LT2MP)
       DIMENSION FOCKD(LFOCKD)
-      DIMENSION DENSAI(LDENSAI) !intent(out)
+      DIMENSION DENSAI(LDENSAI) !intent(inout)
       DIMENSION WORK(LWORK)
       CHARACTER MODEL*5
       integer :: inewtr, nnewtr, isymd1, ntosym
       integer :: thisinewtr
+C     idtype = 0 for dynamic (handle D part explicitly), 
+C     idtype = 1 for real, static (Tr1D = - Tr1E)
+C     idtype = 2 for imaginary, static ( Tr1D = Tr1E )      
+      integer, intent(in) :: idtype 
+
 #ifdef VAR_MPI
       integer :: maxnumjobs, nloopidx
       integer :: AssignedIndices(maxnumjobs)
@@ -98,7 +104,8 @@ C  average?
       if (nit .eq. 1) loadbal_dyn = .true.
 #endif
 C
-      do_dex = .true.
+      do_dex = idtype .eq. 0
+
       calc_densai = SO_NEEDS_DENSAI(MODEL) .AND. .NOT. SOP_MP2AI_DONE
 C
 C------------------
@@ -195,13 +202,13 @@ C---------------------------------
 C
       LTR1E   = NT1AM(ISYMTR)
       LBTR1E  = NT1AO(ISYMTR)
-      IF (DO_DEX) THEN
-         LTR1D = NT1AM(ISYMTR)
-      ELSE
-         LTR1D = 0
-      ENDIF
+      LTR1D   = NT1AM(ISYMTR)
       LRES1E  = NT1AM(ISYMTR)
-      LRES1D  = NT1AM(ISYMTR)
+      IF (DO_DEX) THEN
+         LRES1D = NT1AM(ISYMTR)
+      ELSE
+         LRES1D = 0
+      END IF
       LFOCK   = N2BST(ISYRES)
       LDENS   = N2BST(ISYMTR)
       LBTR1D  = NT1AO(ISYMTR)
@@ -230,17 +237,9 @@ C
       ENDIF
 
       IF (singles_second) THEN
-         LSIGAI1 = 0
-         LSIGAI2 = 0
-         LSIGDA1 = 0
-         LSIGDA2 = 0
          LAIJ    = NRHFT*NRHFT
          LAAB    = NVIRT*NVIRT
       ELSE
-         LSIGAI1 = 0
-         LSIGAI2 = 0
-         LSIGDA1 = 0
-         LSIGDA2 = 0
          LAIJ    = 0
          LAAB    = 0
       ENDIF
@@ -262,12 +261,7 @@ C
       KBTJ1E  = KBTR1D  + LBTR1D
       KBTJ1D  = KBTJ1E  + LBTJ1E
 
-      KSIGAI1 = KBTJ1D  + LBTJ1D
-      KSIGAI2 = KSIGAI1 + LSIGAI1
-      KSIGDA1 = KSIGAI2 + LSIGAI2
-      KSIGDA2 = KSIGDA1 + LSIGDA1
-
-      KAIJ    = KSIGDA2 + LSIGDA2
+      KAIJ    = KBTJ1D  + LBTJ1D
       KAAB    = KAIJ    + LAIJ
       KEND2   = KAAB    + LAAB
 #ifdef VAR_MPI
@@ -301,9 +295,11 @@ C     Open files with trial and result vectors.
 C----------------------------------------------
 C
       CALL SO_OPEN(LUTR1E,FNTR1E,LTR1E)
-      IF (DO_DEX) CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
       CALL SO_OPEN(LURS1E,FNRS1E,LRES1E)
-      CALL SO_OPEN(LURS1D,FNRS1D,LRES1D)
+      CALL SO_OPEN(LURS1D,FNRS1D,LRES1E)
+      IF (DO_DEX) THEN 
+         CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
+      END IF
 C
 C     Note: open trial-vectors also with length LRES2E
 C          singlet: LRES2E = LTR2E anyway
@@ -313,9 +309,9 @@ C                   TR2 memory
       IF (DOUBLES) THEN
          CALL SO_OPEN(LUTR2E,FNTR2E,LRES2E)
          CALL SO_OPEN(LURS2E,FNRS2E,LRES2E)
+            CALL SO_OPEN(LURS2D,FNRS2D,LRES2E)
          IF (DO_DEX) THEN
             CALL SO_OPEN(LUTR2D,FNTR2D,LRES2D)
-            CALL SO_OPEN(LURS2D,FNRS2D,LRES2D)
          ENDIF
       ENDIF
 #ifdef VAR_MPI
@@ -373,7 +369,7 @@ C                   SIGDA1, SIGDA2 and FOCK
 C--------------------------------------------------------------
 C
          CALL DZERO(WORK(KRES1E),LRES1E)
-         CALL DZERO(WORK(KRES1D),LRES1D)
+         IF (DO_DEX) CALL DZERO(WORK(KRES1D),LRES1D)
 
          CALL DZERO(WORK(KFOCK),LFOCK)
 C
@@ -385,8 +381,13 @@ C
          IF ( MYNUM .EQ. 0 ) THEN
 #endif
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
-            IF (DO_DEX)
-     &               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
+            IF (DO_DEX) THEN
+               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
+            ELSE
+C     Static case: Generate D-vector from E-vector               
+               CALL DCOPY(LTR1E,WORK(KTR1E),1,WORK(KTR1D),1)
+               IF (IDTYPE.EQ.1) CALL DSCAL(LTR1E,-1.0D0,WORK(KTR1D),1)
+            END IF
             IF (DOUBLES) THEN
 C              Quick fix for RPA(D) -> Later use this variable to
 C              speed up first iteration for excitation energies
@@ -420,19 +421,16 @@ C                 KTR2*
 C----------------------------------------------------------
                   CALL SO_READ(WORK(KRES2E),LRES2E,LUTR2E,FNTR2E,INEW)
                   CALL SO_TRANTRIP(WORK(KTR2E),WORK(KRES2E),ISYMTR)
-C                  CALL DCOPY(LRES2E,WORK(KRES2E),1,WORK(KTR2E),1)
                   IF(DO_DEX) THEN
                      CALL SO_READ(WORK(KRES2D),LRES2D,LUTR2D,
      &                     FNTR2D,INEW)
-C                     CALL DCOPY(LRES2E,WORK(KRES2D),1,WORK(KTR2D),1)
                      CALL SO_TRANTRIP(WORK(KTR2D),WORK(KRES2D),ISYMTR)
                   END IF
 C
                   DTIME      = SECOND()
                   CALL SO_RES_CDT(WORK(KRES2E),LRES2E,
      &                            WORK(KRES2D),LRES2D,
-C     &                            WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
-     &                            FOCKD,LFOCKD,ISYRES,
+     &                            FOCKD,LFOCKD,ISYRES,DO_DEX,
      &                            WORK(KEND2),LWORK2)
                   DTIME      = SECOND()   - DTIME
                   SOTIME(30) = SOTIME(30) + DTIME
@@ -447,7 +445,8 @@ C
                   CALL SO_RES_CD(WORK(KRES2E),LRES2E,
      &                           WORK(KRES2D),LRES2D,
      &                           WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
-     &                           FOCKD,LFOCKD,ISYRES,WORK(KEND2),LWORK2)
+     &                           FOCKD,LFOCKD,ISYRES,
+     &                           DO_DEX,WORK(KEND2),LWORK2)
 
                   DTIME      = SECOND()   - DTIME
                   SOTIME(30) = SOTIME(30) + DTIME
@@ -742,13 +741,15 @@ C
      &                               WORK(KTR2E),LTR2E,
      &                               WORK(KCMO),LCMO,IDEL,ISYMD,
      &                               ISYMTR,WORK(KEND4),LWORK4)
-                        CALL SO_X2M1(WORK(KX2DM1),LX2M1,
-     &                               WORK(KTR2D),LTR2D,
-     &                               WORK(KCMO),LCMO,IDEL,ISYMD,
-     &                               ISYMTR,WORK(KEND4),LWORK4)
+                        IF (DO_DEX) THEN
+                           CALL SO_X2M1(WORK(KX2DM1),LX2M1,
+     &                                  WORK(KTR2D),LTR2D,
+     &                                  WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                                  ISYMTR,WORK(KEND4),LWORK4)
+                        END IF
                      ELSE
                         CALL DZERO(WORK(KX2EM1),LX2M1)
-                        CALL DZERO(WORK(KX2DM1),LX2M1)
+                        IF (DO_DEX) CALL DZERO(WORK(KX2DM1),LX2M1)
                      END IF
 
                      IF (SINGLES_SECOND) THEN
@@ -763,10 +764,12 @@ C                    matrix)
      &                               T2MP,LT2MPH,
      &                               WORK(KBTJ1D),LBTJ1D,IDEL,ISYMD,
      &                               ISYMTR,WORK(KEND4),LWORK4)
-                        CALL SO_T2X1(WORK(KX2DM1),LX2M1,
-     &                               T2MP,LT2MPH,
-     &                               WORK(KBTJ1E),LBTJ1E,IDEL,ISYMD,
-     &                               ISYMTR,WORK(KEND4),LWORK4)
+                        IF (DO_DEX) THEN
+                           CALL SO_T2X1(WORK(KX2DM1),LX2M1,
+     &                                  T2MP,LT2MPH,
+     &                                  WORK(KBTJ1E),LBTJ1E,IDEL,ISYMD,
+     &                                  ISYMTR,WORK(KEND4),LWORK4)
+                        END IF
 C
 C     For triplet we need to transform the intermediates
 C
@@ -774,8 +777,10 @@ C
      &                      NVIR(MULD2H(ISYMD,ISYMTR)).GE.1) THEN
                            CALL SO_M1SHUF(WORK(KX2EM1),LX2M1,
      &                                    ISYMD,ISYMTR)
-                           CALL SO_M1SHUF(WORK(KX2DM1),LX2M1,
-     &                                    ISYMD,ISYMTR)
+                           IF (DO_DEX) THEN
+                              CALL SO_M1SHUF(WORK(KX2DM1),LX2M1,
+     &                                       ISYMD,ISYMTR)
+                           END IF
                         END IF
 
                      END IF
@@ -789,10 +794,12 @@ C
      &                               WORK(KTR2E),LTR2E,
      &                               WORK(KCMO),LCMO,IDEL,ISYMD,
      &                               ISYMTR,WORK(KEND4),LWORK4)
-                        CALL SO_X2SM1(WORK(KX2DM1),LX2M1,
-     &                               WORK(KTR2D),LTR2D,
-     &                               WORK(KCMO),LCMO,IDEL,ISYMD,
-     &                               ISYMTR,WORK(KEND4),LWORK4)
+                        IF (DO_DEX) THEN
+                           CALL SO_X2SM1(WORK(KX2DM1),LX2M1,
+     &                                  WORK(KTR2D),LTR2D,
+     &                                  WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                                  ISYMTR,WORK(KEND4),LWORK4)
+                        END IF
                      END IF
 C
                      DTIME      = SECOND()   - DTIME
@@ -959,7 +966,7 @@ C
 
          DTIME      = SECOND()
          CALL SO_TWOFOCK(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
-     &                   WORK(KFOCK),LFOCK,ISYRES)
+     &                   WORK(KFOCK),LFOCK,ISYRES,DO_DEX)
          DTIME      = SECOND()   - DTIME
          SOTIME(25) = SOTIME(25) + DTIME
 C
@@ -973,7 +980,7 @@ C
 
             CALL SO_RES_SYM(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
      &                      WORK(KAIJ),LAIJ,WORK(KAAB),LAAB,WORK(KTR1E),
-     &                      LTR1E,WORK(KTR1D),LTR1D,ISYRES)
+     &                      LTR1E,WORK(KTR1D),LTR1D,ISYRES,DO_DEX)
             DTIME      = SECOND()   - DTIME
             SOTIME(20) = SOTIME(20) + DTIME
 C
@@ -985,7 +992,7 @@ C
             CALL SO_RES_FCK(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
      &                      WORK(KTR1E),LTR1E,WORK(KTR1D),
      &                      LTR1D,FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,
-     &                      LDENSAB,ISYRES,ISYMTR)
+     &                      LDENSAB,ISYRES,ISYMTR,DO_DEX)
 
             DTIME      = SECOND()   - DTIME
             SOTIME(21) = SOTIME(21) + DTIME
@@ -1001,7 +1008,7 @@ C
 
          CALL SO_ONEFOCK(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,FOCKD,
      &                   LFOCKD,WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,
-     &                   ISYRES,ISYMTR)
+     &                   ISYRES,ISYMTR,DO_DEX)
          DTIME      = SECOND()   - DTIME
          SOTIME(26) = SOTIME(26) + DTIME
 C
@@ -1016,12 +1023,23 @@ C        Write new result vectors to file.
 C----------------------------------------
 C
          CALL SO_WRITE(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,INEW)
-         CALL SO_WRITE(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
+         IF (DO_DEX)
+     &      CALL SO_WRITE(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
          IF (DOUBLES) THEN
             CALL SO_WRITE(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
             IF(DO_DEX)
      &            CALL SO_WRITE(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
          ENDIF
+C
+C     Write zeroes to D-solution vectors
+         IF (.NOT. DO_DEX) THEN
+            CALL DZERO(WORK(KRES1E),LRES1E)
+            CALL SO_WRITE(WORK(KRES1E),LRES1E,LURS1D,FNRS1D,INEW)
+            IF (DOUBLES) THEN
+               CALL DZERO(WORK(KRES2E),LRES2E)
+               CALL SO_WRITE(WORK(KRES2E),LRES2E,LURS2D,FNRS2D,INEW)
+            END IF
+         END IF
 C
   100 CONTINUE
 C
@@ -1128,16 +1146,18 @@ C     Close files.
 C-----------------
 C
       CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
-      IF (DO_DEX) CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
       CALL SO_CLOSE(LURS1E,FNRS1E,'KEEP')
-      CALL SO_CLOSE(LURS1D,FNRS1D,'KEEP')
+         CALL SO_CLOSE(LURS1D,FNRS1D,'KEEP')
+      IF (DO_DEX) THEN
+         CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
+      END IF
 C
       IF (DOUBLES) THEN
          CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
          CALL SO_CLOSE(LURS2E,FNRS2E,'KEEP')
+            CALL SO_CLOSE(LURS2D,FNRS2D,'KEEP')
          IF (DO_DEX) THEN
             CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
-            CALL SO_CLOSE(LURS2D,FNRS2D,'KEEP')
          ENDIF
       ENDIF
 C
@@ -1190,7 +1210,8 @@ C
      &                    WORK(KDSRHF),LDSRHF,WORK(KCMO),LCMO,
      &                    WORK(KT2M1),LT2M1,WORK(KAIJ),LAIJ,
      &                    WORK(KAAB),LAAB,INEWTR,ISYMD,ISYDIS,
-     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+     &                    ISYRES,ISYMTR,DO_DEX,
+     &                    WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(14) = SOTIME(14) + DTIME
          ENDIF
@@ -1214,7 +1235,7 @@ C
      &                      WORK(KX2DM1),LX2M1,
      &                      WORK(KDSRHF),LDSRHF,
      &                      WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                      ISYMTR,WORK(KEND5),LWORK5)
+     &                      ISYMTR,DO_DEX,WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(29) = SOTIME(29) + DTIME
          END IF
@@ -1233,8 +1254,8 @@ C
      &                    WORK(KBTR1D),LBTR1D,
      &                    WORK(KBTJ1E),LBTJ1E,
      &                    WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
-     &                    IDEL,ISYMD,ISYDIS,ISYMTR,WORK(KEND5),
-     &                    LWORK5)
+     &                    IDEL,ISYMD,ISYDIS,ISYMTR,DO_DEX,
+     &                    WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(15) = SOTIME(15) + DTIME
 C
@@ -1258,13 +1279,17 @@ C    (6)      ( k i | j delta ) * T2M1( ak, j)
             CALL SO_RES_B26 ( WORK(KRES1E), LRES1E, WORK(KT2M1), LT2M1,
      &                        WORK(KDSRHF),WORK(KCMO),LCMO,IDEL,ISYMD,
      &                        ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
+            IF (DO_DEX) THEN
 C
 C           Same for the D-part
-            CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KBTR1E),
-     &                  ISYMTR,WORK(KEND5),LWORK5,ISYDIS)
-            CALL SO_RES_B26 ( WORK(KRES1D), LRES1D, WORK(KT2M1), LT2M1,
-     &                        WORK(KDSRHF),WORK(KCMO),LCMO,IDEL,ISYMD,
-     &                        ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
+               CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KBTR1E),
+     &                     ISYMTR,WORK(KEND5),LWORK5,ISYDIS)
+               CALL SO_RES_B26 ( WORK(KRES1D), LRES1D,
+     &                           WORK(KT2M1), LT2M1,
+     &                           WORK(KDSRHF),WORK(KCMO),LCMO,
+     &                           IDEL,ISYMD,
+     &                           ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
+            END IF
             DTIME      = SECOND()   - DTIME
             SOTIME(16) = SOTIME(16) + DTIME
          ENDIF
@@ -1299,7 +1324,8 @@ C
      &                    WORK(KDSRHF),LDSRHF,WORK(KCMO),LCMO,
      &                    WORK(KT2M1),LT2M1,WORK(KAIJ),LAIJ,
      &                    WORK(KAAB),LAAB,INEWTR,ISYMD,ISYDIS,
-     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+     &                    ISYRES,ISYMTR,DO_DEX,
+     &                    WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(14) = SOTIME(14) + DTIME
 C
@@ -1334,7 +1360,8 @@ C
      &                      WORK(KX2DM1),LX2M1,
      &                      WORK(KDSRHF),LDSRHF,
      &                      WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                      ISYMTR,WORK(KEND5),LWORK5)
+     &                      ISYMTR,DO_DEX,
+     &                      WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(29) = SOTIME(29) + DTIME
 
@@ -1355,8 +1382,8 @@ C
      &                      WORK(KBTR1D),LBTR1D,
      &                      WORK(KBTJ1E),LBTJ1E,
      &                      WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
-     &                      IDEL,ISYMD,ISYDIS,ISYMTR,WORK(KEND5),
-     &                      LWORK5)
+     &                      IDEL,ISYMD,ISYDIS,ISYMTR,DO_DEX,
+     &                      WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(15) = SOTIME(15) + DTIME
 C
@@ -1380,12 +1407,15 @@ C
      &                        WORK(KDSRHF),WORK(KCMO),LCMO,IDEL,ISYMD,
      &                        ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
 C
+            IF (DO_DEX) THEN
 C           Same for the D-part
-            CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KBTR1E),
-     &                  ISYMTR,WORK(KEND5),LWORK5,ISYDIS)
-            CALL SO_RES_B26 ( WORK(KRES1D), LRES1D, WORK(KT2M1), LT2M1,
-     &                        WORK(KDSRHF),WORK(KCMO),LCMO,IDEL,ISYMD,
-     &                        ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
+               CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KBTR1E),
+     &                    ISYMTR,WORK(KEND5),LWORK5,ISYDIS)
+               CALL SO_RES_B26 (WORK(KRES1D), LRES1D, 
+     &                          WORK(KT2M1), LT2M1,
+     &                          WORK(KDSRHF),WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                          ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
+            END IF
             DTIME      = SECOND()   - DTIME
             SOTIME(16) = SOTIME(16) + DTIME
          ENDIF

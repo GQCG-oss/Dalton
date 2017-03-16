@@ -129,6 +129,7 @@ CPi 18.08.16: Copy from so_lrsolv
       DTIME      = SECOND()
       CALL SO_ERES(MODEL,0,NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &             T2MP,LT2MP,FOCKD,LFOCKD,DENSAI,LDENSAI,1,ISYMTR,
+     &             0,
 #ifdef VAR_MPI
      &             WORK(kAssignedIndices),maxnumjobs,
 #endif

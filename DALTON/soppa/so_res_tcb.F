@@ -1,7 +1,7 @@
 C  /* Deck so_res_tcb */
       SUBROUTINE SO_RES_TCB(RES1E,LRES1E,RES1D,LRES1D,
      &                      TR2EM1,LTR2E,TR2DM1,LTR2D,DSRHF,LDSRHF,
-     &                      CMO,LCMO,IDEL,ISDEL,ISYDIS,ISYMTR,
+     &                      CMO,LCMO,IDEL,ISDEL,ISYDIS,ISYMTR,DO_DEX,
      &                      WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
@@ -20,6 +20,7 @@ C
       DIMENSION RES1E(LRES1E), RES1D(LRES1D), DSRHF(LDSRHF)
       DIMENSION TR2EM1(LTR2E), TR2DM1(LTR2D), CMO(LCMO)
       DIMENSION WORK(LWORK)
+      LOGICAL, INTENT(IN) :: DO_DEX
 C
 #include "ccorb.h"
 #include "ccsdinp.h"
@@ -154,19 +155,24 @@ C               ( a, c | j, delta ) * x( a,k, j, delta ) = > x ( c, k)
                CALL DGEMM('T','N',NVIR(ISYMC),NRHF(ISYMK),NVIR(ISYMA),
      &                    ONE,WORK(KSCR2),NTOTA,TR2EM1(KOFFX2M1),NTOTA,
      &                    ONE,RES1E(KOFF3),NTOTC)
-C              And for D vector
-               CALL DGEMM('T','N',NVIR(ISYMC),NRHF(ISYMK),NVIR(ISYMA),
-     &                    ONE,WORK(KSCR2),NTOTA,TR2DM1(KOFFX2M1),NTOTA,
-     &                    ONE,RES1D(KOFF3),NTOTC)
 C              ~
 C             -x(a,k,j,delta)*(k,i | j,delta) => x( a, i)
                CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMK),
      &                    -ONE,TR2EM1(KOFFX2M1),NTOTA,WORK(KSCR3),
      &                    NTOTK,ONE,RES1E(KOFF4),NTOTA)
 C
-               CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMK),
-     &                    -ONE,TR2DM1(KOFFX2M1),NTOTA,WORK(KSCR3),
-     &                    NTOTK,ONE,RES1D(KOFF4),NTOTA)
+C              And for D vector
+               IF (DO_DEX) THEN
+                  CALL DGEMM('T','N',NVIR(ISYMC),NRHF(ISYMK),
+     &                       NVIR(ISYMA),ONE,WORK(KSCR2),NTOTA,
+     &                       TR2DM1(KOFFX2M1),NTOTA,
+     &                       ONE,RES1D(KOFF3),NTOTC)
+C               
+                  CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
+     &                       NRHF(ISYMK),-ONE,TR2DM1(KOFFX2M1),
+     &                       NTOTA,WORK(KSCR3),
+     &                       NTOTK,ONE,RES1D(KOFF4),NTOTA)
+               END IF
 C
   300       CONTINUE
 C

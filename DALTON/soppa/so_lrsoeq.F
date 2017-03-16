@@ -37,7 +37,7 @@ C
      &                       soppa_nint
 #endif
       use so_info, only: sop_linres, so_full_name, so_has_doubles,
-     &                   so_needs_densai, sop_dp
+     &                   so_needs_densai, sop_dp, sop_stat_trh
 
 #include "implicit.h"
 #ifdef VAR_MPI
@@ -194,6 +194,15 @@ C
 C
       NONEWT = .FALSE.
 C
+      IF (ABS(FRVAL(IFREQ)).GT.sop_stat_trh) then
+         IDTYPE = 0
+      ELSE IF (IMAGPROP) THEN
+         IDTYPE = 2
+      ELSE
+         IDTYPE = 1
+      END IF
+                  
+C
 C----------------------------------------------------------------------
 C     Iteration loop or solving the linear equation/eigenvalue problem
 C----------------------------------------------------------------------
@@ -238,6 +247,7 @@ C ISYMTR is a non-local parameter, we need to copy it to the info-array
          DTIME      = SECOND()
          CALL SO_ERES(MODEL,NOLDTR,NNEWTR,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                T2MP,LT2MP,FOCKD,LFOCKD,DENSAI,LDENSAI,NIT,ISYMTR,
+     &                IDTYPE,
 #ifdef VAR_MPI
      &                WORK(kAssignedIndices),maxnumjobs,
 #endif
