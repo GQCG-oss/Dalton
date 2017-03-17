@@ -543,7 +543,11 @@ C            and ICDTRA address
             WRITE (LUPRI,*) 'ICDTRA matrix:'
             DO 10 I = 1,NORBT
                IR = IROW(I)
-               WRITE (LUPRI,'(I5,(T8,10I7))') I,(ICDTRA(IR+J),J=1,I)
+               IF (ISUM(I,ICDTRA(IR+1),1) .EQ. 0) THEN
+                  WRITE (LUPRI,'(I5,A)') I,'   All entries are zero.'
+               ELSE
+                  WRITE (LUPRI,'(I5,(T8,10I7))') I,(ICDTRA(IR+J),J=1,I)
+               END IF
    10       CONTINUE
             WRITE (LUPRI,*) 'Positive addresses in IADRM:'
             WRITE (LUPRI,*)
@@ -651,11 +655,12 @@ C
          WRITE(LUPRI,*) 'IC    ,ID     :',ICNEW,IDNEW
          WRITE(LUPRI,*) 'IYPC  ,ITYPD  : ',COBTYP(ITYPC),
      &                                '  ',COBTYP(ITYPD)
-         WRITE (LUPRI,'(/A)') 'ICDTRA matrix:'
+         WRITE (LUPRI,'(/A)')
+     &   'ICDTRA matrix (rows with only zeroes are not printed):'
          DO I = 1,NORBT
             IR = IROW(I)
             IF (ISUM(I,ICDTRA(IR+1),1) .EQ. 0) THEN
-               WRITE (LUPRI,'(I5,A)') I,'   All entries are zero.'
+             ! WRITE (LUPRI,'(I5,A)') I,'   All entries are zero.'
             ELSE
                WRITE (LUPRI,'(I5,(T8,10I7))') I,(ICDTRA(IR+J),J=1,I)
             END IF

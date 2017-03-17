@@ -126,12 +126,14 @@ invoking this option.
 \item[\Key{GAUGEO}]\verb| |\newline
 \verb|READ (LUCMD, *) (GAGORG(ICOOR), ICOOR = 1, 3)|
 
-Reads in a user defined gauge origin\index{gauge origin} and overwrite
+Reads in a user defined gauge origin\index{gauge origin} and overwrites
 both the \Key{NOCMC} option, as well as the default value of
 center-of-mass coordinates. Note that an unsymmetric position of the
 gauge origin will lead to wrong results in calculations employing
 symmetry, as the program will not be able to detect that such a choice
 of gauge origin breaks the symmetry of the molecule.
+(NOTE: a specification of \verb|.GAUGEO| in the \verb|**INTEGRALS| section
+is \emph{not} used in this section, the \verb|**PROPERTIES| section.)
 
 \item[\Key{HELLMA}]
 Tells the program to use the Hellman--Feynman approximation when
@@ -422,11 +424,12 @@ results for the paramagnetic and diamagnetic terms. The natural
 connection can be turned off by the keyword \verb|.NODIFC| in which
 case the symmetric connection\index{symmetric connection} is used instead.
 
-
-The gauge origin\index{gauge origin} is chosen to be the center of
+The gauge origin\index{gauge origin} is by default chosen to be the center of
 mass\index{center of mass} of the molecule.
-This origin can be changed by the two keywords \verb|.GAUGEO| and
-\verb|.NOCMC |. This choice of gauge origin will not affect
+This origin can be changed by the two keywords \verb|.NOCMC | and \verb|.GAUGEO|
+(NOTE: specification of \verb|.GAUGEO| in the \verb|**INTEGRALS| section
+is \emph{not} used in this section, the \verb|**PROPERTIES| section).
+This choice of gauge origin will not affect
 the final shieldings if London orbitals are used, only the size of the
 dia- and paramagnetic contributions.
 
@@ -1078,13 +1081,13 @@ value, but it is overwritten by the keywords \verb|.ANGLES| and
 \verb|.DIHEDR|.
 \end{description}
 
-\subsection{Right-hand sides for geometry response equations: \Sec{GETSGY}}
+\subsection{Right-hand sides for geometry response equations: \Sec{RHSIDE}}
 
 Directives affecting the construction of the right-hand
 sides~(RHS)\index{property gradient}\index{right-hand side}---that is,
 wave function gradient terms---for the geometric derivative response
 calculations as well as some matrices needed for reorthonormalization
-contributions appear in the \verb|*GETSGY| section.
+contributions appear in the \verb|*RHSIDE| section.
 
 \begin{description}
 \item[\Key{ALLCOM}] Requests that all paramagnetic

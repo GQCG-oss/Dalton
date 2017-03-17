@@ -1,0 +1,5 @@
+   pemcscf_1
+   -----------
+   Molecule:         Formaldehyde and two classical water molecules
+   Wave Function:    CASSCF / 3-21G
+   Test Purpose:     Test of energy, dipole moment and excitation energy through ABACUS
