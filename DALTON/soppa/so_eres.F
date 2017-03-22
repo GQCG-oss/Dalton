@@ -1118,7 +1118,6 @@ C
       SOTIME(41) = SOTIME(41) + DTIME
 C
       IF ( IPRSOP .GE. 7 ) THEN
-C      IF ( NIT .EQ. 2 ) THEN
 C------------------------------------------
 C        Write new resultvectors to output.
 C------------------------------------------
@@ -1127,13 +1126,13 @@ C------------------------------------------
             WRITE(LUPRI,'(/,I3,A)') INEWTR,
      &                '. new E[2] linear transformed trial vector'
             CALL SO_READ(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,INEW)
-            CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
+            CALL SO_READ(WORK(KRES1D),LRES1E,LURS1D,FNRS1D,INEW)
             WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &           (I,WORK(KRES1E+I-1),WORK(KRES1D+I-1),I=1,LRES1E)
             IF (DOUBLES) THEN
                CALL SO_READ(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
-               IF (DO_DEX)
-     &            CALL SO_READ(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
+C               IF (DO_DEX)
+               CALL SO_READ(WORK(KRES2D),LRES2E,LURS2D,FNRS2D,INEW)
                WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &             (I,WORK(KRES2E+I-1),WORK(KRES2D+I-1),I=1,LRES2E)
             ENDIF
