@@ -73,7 +73,7 @@ C
       logical :: doubles, need_t2, rpa_only
       integer :: lu_dump ! Filenumber of file property values to
       character(len=4) :: old_denslab, denslab
-      logical :: new_densai
+      logical :: new_densai, last_model
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -215,74 +215,77 @@ C==========================================
 C     Determine linear response properties.
 C==========================================
 C
-C========================================
-C     Loop over the posible methods
-C========================================
-C
-      IOUT = 1
-      DO IMODEL = 1, SOP_NUM_MODELS
-C
-C  Skip methods not treated in this calculation
-         IF (.NOT.ACTIVE_MODELS(IMODEL) ) CYCLE
-C
-C  Look up info on this model
-C  (the model number -> model conversion is defined in so_info.F90)
-C
-         MODEL = SOP_MODELS(IMODEL)
-         FULLNAME = SOP_MOD_FULLNAME(IMODEL)
-         DOUBLES = SO_HAS_DOUBLES(IMODEL)
-         NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
-         DENSLAB = SOP_DENS_LABEL(IMODEL)
-
-         CALL TITLER( TRIM(FULLNAME) // ' response calculation', 
-     &                '*',103)
-C
-C-----------------------------------------------------
-C              Get T2 amplitudes and density matrices.
-C-----------------------------------------------------
-C
-         IF ((NEED_T2).AND.
-     &       (DENSLAB.NE.OLD_DENSLAB)) THEN
-             CALL SO_GETT2(DENSLAB,
-     &                     WORK(KFOCKD),LFOCKD,
-     &                     WORK(KT2AM),LT2AM,
-     &                     WORK(KDENSAI),LDENSAI,
-     &                     WORK(KDENSIJ),LDENSIJ,
-     &                     WORK(KDENSAB),LDENSAB,
-     &                     WORK(KEND1),LWORK1)
-             old_denslab = DENSLAB
-         END IF
-#ifdef VAR_MPI
-C
-C---------------------------------------------------------
-C        Ready the slaves for parallel calculations.
-C---------------------------------------------------------
-C
-         call soppa_initialize_slaves ( update_common_blocks,
-     &                                   WORK(KT2AM), LT2AM, model)
-         update_common_blocks = .false.
-#endif
-C
-C-----------------------------------------
-C              Initialize DENSAI if needed
-C-----------------------------------------
-C        
-         IF ( SO_NEEDS_DENSAI(MODEL) .AND.
-     &        (.NOT.SOP_MP2AI_DONE) ) THEN
-              CALL DZERO(WORK(KDENSAI),LDENSAI)
-            NEW_DENSAI = .TRUE.
-         ELSE
-            NEW_DENSAI = .FALSE.
-         ENDIF
 C
 C--------------------------------------------------
 C     Loop over symmetry of the property operators.
 C--------------------------------------------------
 C
-         DO ISYM = 1, NSYM
+      DO ISYM = 1, NSYM
+         IF (NUM_LABELS(ISYM).LE.0) CYCLE ! Nothing to do for this sym
+         ILABOFF = LABEL_OFFSETS(ISYM)
 C
-            IF (NUM_LABELS(ISYM).LE.0) CYCLE ! Nothing to do for this sym
-            ILABOFF = LABEL_OFFSETS(ISYM)
+C========================================
+C        Loop over the posible methods
+C========================================
+C
+         IOUT = 1
+         DO IMODEL = 1, SOP_NUM_MODELS
+C
+C     Skip methods not treated in this calculation
+            IF (.NOT.ACTIVE_MODELS(IMODEL) ) CYCLE
+
+            LAST_MODEL = IOUT .EQ. NUM_ACTIVE
+C
+C     Look up info on this model
+C  (the model number -> model conversion is defined in so_info.F90)
+C
+            MODEL = SOP_MODELS(IMODEL)
+            FULLNAME = SOP_MOD_FULLNAME(IMODEL)
+            DOUBLES = SO_HAS_DOUBLES(IMODEL)
+            NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
+            DENSLAB = SOP_DENS_LABEL(IMODEL)
+
+            CALL TITLER( TRIM(FULLNAME) // ' response calculation',
+     &                '*',103)
+C
+C-----------------------------------------------------
+C                 Get T2 amplitudes and density matrices.
+C-----------------------------------------------------
+C
+            IF ((NEED_T2).AND.
+     &       (DENSLAB.NE.OLD_DENSLAB))    THEN
+                CALL SO_GETT2(DENSLAB,
+     &                        WORK(KFOCKD),LFOCKD,
+     &                        WORK(KT2AM),LT2AM,
+     &                        WORK(KDENSAI),LDENSAI,
+     &                        WORK(KDENSIJ),LDENSIJ,
+     &                        WORK(KDENSAB),LDENSAB,
+     &                        WORK(KEND1),LWORK1)
+               old_denslab = DENSLAB
+            END IF
+#ifdef    VAR_MPI
+C
+C---------------------------------------------------------
+C           Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+            call soppa_initialize_slaves ( update_common_blocks,
+     &                                      WORK(KT2AM), LT2AM, model)
+            update_common_blocks = .false.
+#endif
+C
+C-----------------------------------------
+C           Initialize DENSAI if needed
+C-----------------------------------------
+C        
+            IF ( SO_NEEDS_DENSAI(MODEL) .AND.
+     &        (.NOT.SOP_MP2AI_DONE) )    THEN
+                 CALL DZERO(WORK(KDENSAI),LDENSAI)
+               NEW_DENSAI = .TRUE.
+            ELSE
+               NEW_DENSAI = .FALSE.
+            ENDIF
+C
 C            
             WRITE(LUPRI,'(A)') dashl
             WRITE(LUPRI,'(2A,I5,3A)') dash5,
@@ -345,7 +348,7 @@ C
                IF (LWORK2 .LT.0) CALL STOPIT(myname//'.2',' ',
      &               KEND2,LWORK)
 
-               CALL SO_LRNSL(MODEL,ISYM,WORK(KPROP),
+               CALL SO_LRNSL(MODEL,ISYM,WORK(KPROP),LAST_MODEL,
      &                       FREQ,NFREQ,LABELS(ILABOFF+1),
      &                       NUM_LABELS(ISYM),
      &                       WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
@@ -355,32 +358,32 @@ C
                IF (IMODE.GT.0) THEN
                   WRITE(LU_DUMP) ISYM
                   WRITE(LU_DUMP) WORK(KPROP:KPROP+LPROP-1)
-               ELSE
+               ELSE IF (LAST_MODEL) THEN
                   CALL SO_RSPOUT(WORK(KPROP),ISYM,FREQ,NFREQ,
      &                        LABELS(ILABOFF+1),NUM_LABELS(ISYM))
                END IF
 C
             END IF
 C
-         END DO ! LOOP over symmetries
 C
-         IF (NEW_DENSAI) THEN
-            CALL SO_DUMP_DENSAI(DENSLAB,WORK(KDENSAI),LDENSAI)
-         END IF
+            IF (NEW_DENSAI) THEN
+               CALL SO_DUMP_DENSAI(DENSLAB,WORK(KDENSAI),LDENSAI)
+            END IF
 C
 #ifdef VAR_MPI
 C-------------------------------------------------------
-C              Release slaves to the global node-driver.
+C                 Release slaves to the global node-driver.
 C-------------------------------------------------------
-         call soppa_release_slaves()
+            call soppa_release_slaves()
 #endif
 C
-C        INCREMENT OUTPUT POINTER
+C           INCREMENT OUTPUT POINTER
 C
-         IOUT = IOUT + 1
+            IOUT = IOUT + 1
 C
-      END DO ! Loop over models
+         END DO ! Loop over models
 C
+      END DO ! LOOP over symmetries
       IF (IMODE .GT. 0) THEN
          CALL GPCLOSE(LU_DUMP,'KEEP')
       END IF

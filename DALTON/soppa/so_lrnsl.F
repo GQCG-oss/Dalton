@@ -1,6 +1,6 @@
 C
 C  /* Deck so_lrnsl */
-      SUBROUTINE SO_LRNSL(MODEL,ISYM,PROPAR,
+      SUBROUTINE SO_LRNSL(MODEL,ISYM,PROPAR,DELETE_VECTORS,
      &                    FREQ,NFREQ,LABELS,NLAB,
      &                    DENSIJ,LDENSIJ,
      &                    DENSAB,LDENSAB,DENSAI,LDENSAI,
@@ -41,6 +41,8 @@ C
       REAL(sop_dp),intent(inout) :: PROPAR(NFREQ,NLAB,NLAB)
       CHARACTER(LEN=8), intent(in) ::LABELS(NLAB)
       CHARACTER(len=5), intent(in) :: MODEL
+      LOGICAL, INTENT(IN) :: DELETE_VECTORS ! Whether to delete solution
+                                            ! and residual vectors
 C
       CHARACTER*8 LABEL1, LABEL2
       CHARACTER*8 RTNLBL(2)
@@ -209,13 +211,17 @@ C---------------------------------------------------------
 C     Delete files for this symmetry and dump fileinf list
 C---------------------------------------------------------
 C
-      CALL GPCLOSE(LURDENS,'DELETE')
-      STATIC = .TRUE.
-      DO IFREQ = 1, NFREQ
-         STATIC = STATIC.AND.(abs(freq(ifreq)).lt.sop_stat_trh)
-      END DO
-      IF (SOP_USE_SELLER)CALL SO_DELVEC(STATIC,DOUBLES,ISYM)
-      call fileinf%empty 
+      IF (DELETE_VECTORS) THEN
+         CALL GPCLOSE(LURDENS,'DELETE')
+         STATIC = .TRUE.
+         DO IFREQ = 1, NFREQ
+            STATIC = STATIC.AND.(abs(freq(ifreq)).lt.sop_stat_trh)
+         END DO
+         IF (SOP_USE_SELLER)CALL SO_DELVEC(STATIC,DOUBLES,ISYM)
+         call fileinf%empty
+      ELSE
+         CALL GPCLOSE(LURDENS,'KEEP')
+      END IF
 C
 C-----------------------
 C     Remove from trace.
