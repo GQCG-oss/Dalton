@@ -319,6 +319,6 @@ C              ai > bj ensured, one term!
             END IF
             
             RETURN
-         END
+         END SUBROUTINE
 
       END

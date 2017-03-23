@@ -812,33 +812,41 @@ C
                      LT2M1 = 0
                      LX2M1 = 0
                      KEND4 = KEND3
+                     LWORK4 = LWORK3
                   ENDIF
 C
 C---------------------------------------------
 C                 Work space allocation no. 5.
 C---------------------------------------------
 C
-                  LDSRHF = NDSRHF(ISYMD)
+                  IF (DOUBLES.OR.SINGLES_SECOND) THEN
+                     LDSRHF = NDSRHF(ISYMD)
 C
-                  KDSRHF = KEND4
-                  KEND5  = KDSRHF + LDSRHF
-                  LWORK5 = LWORK  - KEND5
+                     KDSRHF = KEND4
+                     KEND5  = KDSRHF + LDSRHF
+                     LWORK5 = LWORK  - KEND5
 C
-                  CALL SO_MEMMAX ('SO_ERES.5',LWORK5)
-                  IF (LWORK5 .LT. 0)
-     &                CALL STOPIT('SO_ERES.5',' ',KEND5,LWORK)
+                     CALL SO_MEMMAX ('SO_ERES.5',LWORK5)
+                     IF (LWORK5 .LT. 0)
+     &                  CALL STOPIT('SO_ERES.5',' ',KEND5,LWORK)
 C
 C----------------------------------------------------------------
-C                 Transform one index in the integral batch to an
-C                 occupied index.
+C                    Transform one index in the integral batch to an
+C                    occupied index.
 C----------------------------------------------------------------
 C
-                  DTIME  = SECOND()
-                  ISYMLP = 1
-                  CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KCMO),
+                     DTIME  = SECOND()
+                     ISYMLP = 1
+                     CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KCMO),
      &                        ISYMLP,WORK(KEND5),LWORK5,ISYDIS)
-                  DTIME      = SECOND()   - DTIME
-                  SOTIME(13) = SOTIME(13) + DTIME
+                     DTIME      = SECOND()   - DTIME
+                     SOTIME(13) = SOTIME(13) + DTIME
+                  ELSE
+                     LDSRHF = 0
+                     KEND5 = KEND4
+                     LWORK5 = LWORK4
+                     KDSRHF = HUGE(LWORK)
+                  END IF
 C
 C-------------------------------------------------------------------
 C                 Calculate part of the second order density matrix.
