@@ -92,6 +92,7 @@ C --- start of executable code
          WRITE(LUPRI,'(A,I4,1P,D10.2)')
      &   ' Transformation level & screening threshold:',
      &   ITRSIR,THR_MOTWOINT
+         FLUSH(LUPRI)
       END IF
 
 C     Test if MO integrals already available
@@ -130,6 +131,7 @@ C           and subtract from input CMO matrix
      &   '.FCKTRA INFO: AO screening threshold raised from',
      &   THR_MOTWOINT,' to the general integral threshold',THRS
          THR_MOTWOINT = THRS
+         FLUSH(LUPRI)
       END IF
       IFTHRS_save = IFTHRS
       IFTHRS = NINT(-LOG10(THR_MOTWOINT))
@@ -152,6 +154,7 @@ C           and subtract from input CMO matrix
       write(LUPRI,*) 'DEBUG: FCKTRA_CTL called, debug level',
      &   FCKTRA_DEBUG
       write(LUPRI,*) 'DEBUG: ITRSIR, NTRLVL, LWORK:',ITRSIR,NTRLVL,LWORK
+      flush(LUPRI)
 #endif
 
 !     call N_TRASET(sirntra.F) in order to be able to call N_TRALIM(sirntra.F)
