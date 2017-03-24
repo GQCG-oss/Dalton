@@ -48,7 +48,7 @@ C
       DIMENSION T2MP(LT2MP),     FOCKD(LFOCKD),   WORK(LWORK)
       DIMENSION REDE(LMXRED),    REDS(LMXRED)
 
-      INTEGER   NIT, NOLDTR, NNEWTR
+      INTEGER NIT, NOLDTR, NNEWTR, IDTYPE
 #ifdef VAR_MPI
       INTEGER   CP_ISYMTR
       INTEGER   MAXNUMJOBS
@@ -56,10 +56,12 @@ C     This array is only there to ensure that the four above variables
 C     are allocated consecutively, so that it can be send together. Only
 C     use it for this purpose.
 C     The definition must match that in soppa_nodedriver
-      INTEGER   INFO_ARRAY(4)
+      INTEGER   INFO_ARRAY(5)
       EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
-     &            (info_array(3), nnewtr),    (info_array(4),noldtr)
+     &            (info_array(3), nnewtr),    (info_array(4),noldtr),
+     &            (info_array(5), idtype)
       INTEGER(MPI_INTEGER_KIND) :: IERR
+      IDTYPE = 0
 #endif
 C
 C------------------
@@ -207,7 +209,7 @@ C
      &                   mpi_comm_world, ierr )
 C ISYMTR is a non-local parameter, we need to copy it to the info-array
          CP_ISYMTR = ISYMTR
-         CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
+         CALL MPI_BCAST( INFO_ARRAY, 5, MY_MPI_INTEGER, 0,
      &                   MPI_COMM_WORLD, IERR)
 #endif
          CALL GETTIM (DUMMY,WTIMES)
@@ -223,24 +225,6 @@ C ISYMTR is a non-local parameter, we need to copy it to the info-array
          SOTIME(35) = SOTIME(35) + DTIME
          CALL GETTIM (DUMMY,WTIMEE)
          SOWTIM(1)  = SOWTIM(1)  + WTIMEE - WTIMES
-C
-C--------------------------------------------------------------
-C        Make S[2] linear transformation of trialvectors giving
-C        resultvectors.
-C--------------------------------------------------------------
-C        Is this needed?
-         IF (MODEL.NE.'AORPA') THEN
-            CALL GETTIM (DUMMY,WTIMES)
-            DTIME      = SECOND()
-
-            CALL SO_SRES(NOLDTR,NNEWTR,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-     &                   ISYMTR,WORK(KEND1),LWORK1)
-            DTIME      = SECOND()   - DTIME
-            SOTIME(40) = SOTIME(40) + DTIME
-            CALL GETTIM (DUMMY,WTIMEE)
-            SOWTIM(2)  = SOWTIM(2)  + WTIMEE - WTIMES
-C
-         ENDIF
 C
          IF ( AOTEST ) THEN
 C

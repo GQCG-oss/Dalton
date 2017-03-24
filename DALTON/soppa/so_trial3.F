@@ -177,8 +177,6 @@ C           Calculate the 1E part of the trial vector as
 C           (E[2]diag - omega*S[2]diag) * GP and write on file
 C-------------------------------------------------------------
 C
-            CALL DZERO(WORK(KTRIAL),LTRIAL)
-C
             DO IELEM=1,LEDIA1
 C
               TMP = ONE / ( WORK(KEDIA1+IELEM-1) - FRVAL(IFREQ) *
@@ -195,8 +193,6 @@ C           (E[2]diag + omega*S[2]diag) * GP and write on file
 C           Only if not a static calculation.
 C-------------------------------------------------------------
 C
-            CALL DZERO(WORK(KTRIAL),LTRIAL)
-C
             IF(.NOT.STATIC) THEN
 C
               DO IELEM=1,LEDIA1
@@ -207,6 +203,8 @@ C
 C
               END DO
 C
+            ELSE
+               CALL DZERO(WORK(KTRIAL),LTRIAL)
             END IF
 C
             CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
@@ -250,8 +248,6 @@ C           Calculate the 2E part of the trial vector as
 C           (E[2]diag - omega) * GP and write on file
 C-------------------------------------------------------------
 C
-               CALL DZERO(WORK(KTRIAL),LTRIAL)
-C
                DO IELEM=1,LEDIA2
 C
                   TMP = ONE / ( WORK(KEDIA2+IELEM-1) - FRVAL(IFREQ) )
@@ -266,8 +262,6 @@ C           Calculate the 2D part of the trial vector as
 C           (E[2]diag + omega) * GP and write on file
 C-------------------------------------------------------------
 C
-               CALL DZERO(WORK(KTRIAL),LTRIAL)
-C
                IF(.NOT.STATIC) THEN
 C
                   DO IELEM=1,LEDIA2
@@ -278,6 +272,10 @@ C
      &                       WORK(KGPVEC+IELEM-1)
 C
                   END DO
+C
+               ELSE
+C
+                  CALL DZERO(WORK(KTRIAL),LTRIAL)
 C
                END IF
 C

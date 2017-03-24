@@ -64,7 +64,7 @@ C
 C
       REAL(sop_dp), parameter :: TWO = 2.0D0, HALF = 0.5D0, ONE = 1.0D0
 C
-      INTEGER NIT, NOLDTR, NNEWTR
+      INTEGER NIT, NOLDTR, NNEWTR, IDTYPE
 #ifdef VAR_MPI
       INTEGER   CP_ISYMTR
       INTEGER   MAXNUMJOBS
@@ -72,9 +72,10 @@ C     This array is only there to ensure that the four above variables
 C     are allocated consecutively, so that it can be send together. Only
 C     use it for this purpose.
 C     The definition must match that in soppa_nodedriver
-      INTEGER   INFO_ARRAY(4)
+      INTEGER   INFO_ARRAY(5)
       EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
-     &            (info_array(3), nnewtr),    (info_array(4),noldtr)
+     &            (info_array(3), nnewtr),    (info_array(4),noldtr),
+     &            (info_array(5), idtype)
       INTEGER(MPI_INTEGER_KIND) :: IERR
 #endif
 C
@@ -240,7 +241,7 @@ C
      &                   mpi_comm_world, ierr )
 C ISYMTR is a non-local parameter, we need to copy it to the info-array
          CP_ISYMTR = ISYMTR
-         CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
+         CALL MPI_BCAST( INFO_ARRAY, 5, MY_MPI_INTEGER, 0,
      &                   MPI_COMM_WORLD, IERR)
 #endif
          CALL GETTIM (DUMMY,WTIMES)

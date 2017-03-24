@@ -307,14 +307,15 @@ contains
 ! Other integers
       character(len=5) :: model
 ! Some info, that we need in each pass
-      integer :: nnewtr, noldtr, isymtr, nit
+      integer :: nnewtr, noldtr, isymtr, nit, idtype
 ! Need to ensure that the four above variables are stored
 ! consecutively, so we can recieve them with a single bcast.
 ! This is the only purpose of info_array, only address it as
 ! part of communication!
-      integer :: info_array(4)
+      integer :: info_array(5)
       equivalence (info_array(1), isymtr), (info_array(2), nit), &
-                  (info_array(3), nnewtr), (info_array(4), noldtr)
+                  (info_array(3), nnewtr), (info_array(4), noldtr), &
+                  (info_array(5), idtype)
       !
       ! Recieve the method on which to work
       !
@@ -462,7 +463,7 @@ contains
             ! These are joined together in the info_array.
             ! MODEL has allready have been communicated
             !
-            call mpi_bcast( info_array(1), 4, my_mpi_integer, 0,     &
+            call mpi_bcast( info_array(1), 5, my_mpi_integer, 0,     &
                             mpi_comm_world, ierr)
 
             ! Inactive processes do nothing
@@ -477,6 +478,7 @@ contains
                   work(kfockd), lfockd,                   &! Fockd
                   work(kdensai), ldensai,                 &! Densai
                   nit, isymtr,                            &! Info
+                  idtype,                                 &! dynamic or static?
                   work(kassignedindices),maxnumjobs,      &! Load-balancing space
      &            work(kend), lworkf )                     ! Work-array
             !
