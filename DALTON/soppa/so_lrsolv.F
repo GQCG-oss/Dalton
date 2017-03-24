@@ -19,7 +19,8 @@ C
      &                       soppa_nint
 #endif
 C
-      use so_info, only: so_full_name, sop_excita, so_has_doubles
+      use so_info, only: so_full_name, sop_excita, so_has_doubles,
+     &                   so_model_number
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -48,18 +49,18 @@ C
       DIMENSION T2MP(LT2MP),     FOCKD(LFOCKD),   WORK(LWORK)
       DIMENSION REDE(LMXRED),    REDS(LMXRED)
 
-      INTEGER NIT, NOLDTR, NNEWTR, IDTYPE
+      INTEGER NIT, NOLDTR, NNEWTR, IDTYPE, IMODEL
 #ifdef VAR_MPI
       INTEGER   CP_ISYMTR
-      INTEGER   MAXNUMJOBS
+      INTEGER ::  MAXNUMJOBS
 C     This array is only there to ensure that the four above variables
 C     are allocated consecutively, so that it can be send together. Only
 C     use it for this purpose.
 C     The definition must match that in soppa_nodedriver
-      INTEGER   INFO_ARRAY(5)
+      INTEGER   INFO_ARRAY(6)
       EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
      &            (info_array(3), nnewtr),    (info_array(4),noldtr),
-     &            (info_array(5), idtype)
+     &            (info_array(5), idtype), (info_array(6),imodel)
       INTEGER(MPI_INTEGER_KIND) :: IERR
       IDTYPE = 0
 #endif
@@ -73,6 +74,7 @@ C
       DOUBLES = SO_HAS_DOUBLES(MODEL)
 C
       FULL_NAME = SO_FULL_NAME(MODEL)
+      IMODEL = SO_MODEL_NUMBER(MODEL)
 C
 C==============================================================
 C     For checking, calculate E[2] and S[2] matrices explicitly
@@ -209,7 +211,7 @@ C
      &                   mpi_comm_world, ierr )
 C ISYMTR is a non-local parameter, we need to copy it to the info-array
          CP_ISYMTR = ISYMTR
-         CALL MPI_BCAST( INFO_ARRAY, 5, MY_MPI_INTEGER, 0,
+         CALL MPI_BCAST( INFO_ARRAY, 6, MY_MPI_INTEGER, 0,
      &                   MPI_COMM_WORLD, IERR)
 #endif
          CALL GETTIM (DUMMY,WTIMES)

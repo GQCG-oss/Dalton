@@ -1,6 +1,7 @@
 #ifdef VAR_MPI
 module so_parutils
 !
+   use so_info, only: sop_dp
 ! SOPPA parallel/mpi utilities
 !
 ! This module defines some parameters and some subroutines, which are
@@ -35,10 +36,11 @@ module so_parutils
 ! Maybe get this from iso_fortran_env, when supported in most compilers?
 !
 
-   integer, parameter :: real8 = kind(1.0D0)
+   integer, parameter :: real8 = sop_dp !kind(1.0D0)
 !  Flags to be send to slaves to tell them, what work to do
-   integer, parameter :: parsoppa_release_slave = 0,   &! Leave
-     &                   parsoppa_do_eres  = 1  ! Call eres routine
+   integer, parameter :: parsoppa_release_slave = 0,  &! Leave
+     &                   parsoppa_do_eres  = 1,       &! Call eres routine
+     &                   parsoppa_update_amplitudes = 2
 !
 ! SOPPA communicator (needed if not all nodes participate in soppa)
    integer(mpi_integer_kind) :: soppa_comm_active    ! communicator
@@ -289,8 +291,8 @@ contains
 ! Rasmus Faber 13/7 - 2015
 !
 !#include "parsoppa.h"
-! Need MXCALL
-!#include "distcl.h"
+!
+      use so_info, only: sop_models
 !
       integer, intent(in) :: iprint, lwork
       real(real8)         :: work(*)
@@ -308,18 +310,19 @@ contains
       character(len=5) :: model
 ! Some info, that we need in each pass
       integer :: nnewtr, noldtr, isymtr, nit, idtype
+      integer :: imod, imodel
 ! Need to ensure that the four above variables are stored
 ! consecutively, so we can recieve them with a single bcast.
 ! This is the only purpose of info_array, only address it as
 ! part of communication!
-      integer :: info_array(5)
+      integer :: info_array(6)
       equivalence (info_array(1), isymtr), (info_array(2), nit), &
                   (info_array(3), nnewtr), (info_array(4), noldtr), &
-                  (info_array(5), idtype)
+                  (info_array(5), idtype), (info_array(6), imodel)
       !
       ! Recieve the method on which to work
       !
-      call mpi_bcast( model, 5, mpi_character, 0, mpi_comm_world, &
+      call mpi_bcast( imod, 1, my_mpi_integer, 0, mpi_comm_world, &
                       ierr )
       ! Do we need to do an allreduce to check that all
       ! Processes agree not to update the common-blocks?
@@ -379,7 +382,7 @@ contains
       kend   = kfockd + lfockd
 
       ! following only if not RPA...
-      if ( model .ne. 'AORPA' ) then
+      if ( imod .gt. 0 ) then
          lt2am   = nt2amx             ! from ccsdsym.h
          ldensij = nijden(1)          ! from soppinf.h
          ldensab = nabden(1)          ! from soppinf.h
@@ -415,14 +418,6 @@ contains
       if ( kend .gt. lwork ) call stopit('SOPPA_NODEDRIVER', '2',   &
      &                                    kend, lwork )
 
-      ! Recieve the stuff, which is already known.
-      if ( model .ne. 'AORPA' ) then
-         ! The MP2 amplitudes
-         call mpi_bcast( work(kt2am), lt2am, mpi_real8, 0,        &
-     &                   mpi_comm_world, ierr )
-         ! Densab and Densij could be added here, but is currently
-         ! not used by the slaves...
-      endif
 !
 !     Bugfix: need to call er2ini here, so that it does not overwrite
 !             configured values later
@@ -463,11 +458,13 @@ contains
             ! These are joined together in the info_array.
             ! MODEL has allready have been communicated
             !
-            call mpi_bcast( info_array(1), 5, my_mpi_integer, 0,     &
+            call mpi_bcast( info_array(1), 6, my_mpi_integer, 0,     &
                             mpi_comm_world, ierr)
 
             ! Inactive processes do nothing
             if ( soppa_comm_active .eq. MPI_COMM_NULL ) cycle
+            model = sop_models(imodel)
+            print *, 'Model :', model
             !
             ! All should now run through same ERES routine
             !
@@ -482,6 +479,17 @@ contains
                   work(kassignedindices),maxnumjobs,      &! Load-balancing space
      &            work(kend), lworkf )                     ! Work-array
             !
+
+         case (parsoppa_update_amplitudes)
+            !
+            !  The master have read/calculated new amplitudes
+            !
+            if (imod.eq.0) call quit('Error in AOSOPPA nodedriver:'// &
+               ' Slave have not reserved memory for amplitudes')
+
+            call mpi_bcast( work(kt2am), lt2am, mpi_real8, 0,        &
+     &                      mpi_comm_world, ierr )
+
          case default
             !
             ! Anything else
@@ -497,7 +505,7 @@ contains
    end subroutine soppa_nodedriver
 
    subroutine soppa_initialize_slaves( update_common_blocks,         &
-     &             t2mp, lt2mp, model )
+     &             t2mp, lt2mp, rpa_only )
 !    -----------------------------------------------------------
 !     This subroutine tells the slaves that hang in
 !     dalton_nodedriver to enter the soppa node-driver and sends
@@ -507,15 +515,21 @@ contains
 #include "distcl.h"
 !
 ! Arguments
-      logical, intent(in)        :: update_common_blocks
+      logical, intent(in)        :: update_common_blocks, rpa_only
       integer, intent(in)        :: lt2mp
-      real(real8)                :: t2mp(lt2mp)
-      character(len=5),intent(in):: model
+      real(real8),intent(in)     :: t2mp(lt2mp)
+
 !
 ! Locals
       integer(mpi_integer_kind)  :: ierr
       integer                    :: numprocs
+      integer                    :: imodel
 
+      if (rpa_only) then
+         imodel = 0
+      else
+         imodel = 1
+      end if
 !      if (nodtot .eq. 0 ) return
          !
          ! Send the slave to the soppa_nodedriver
@@ -526,7 +540,7 @@ contains
          ! Here the slaves enter soppa_nodedriver
          !
          ! Set the method
-      call mpi_bcast( model, 5, mpi_character, 0, mpi_comm_world, &
+      call mpi_bcast( imodel, 1, my_mpi_integer, 0, mpi_comm_world, &
                       ierr )
          !
          ! Send the various common blocks if needed
@@ -550,19 +564,25 @@ contains
                               soppa_comm_active, ierr)
       endif
       !
-      ! Send allready known stuff such as the
-      !
-      if ( model .ne. 'AORPA' ) then
-         ! The MP2 (or CC T2) amplitudes
-         call mpi_bcast(t2mp, lt2mp, mpi_real8, 0,mpi_comm_world,ierr)
-         ! Densab and Densai could be added here...
-      endif
-
-
-
       return
 
    end subroutine soppa_initialize_slaves
+
+   subroutine soppa_update_amplitudes(t2mp, lt2mp)
+!
+! Send the amplitudes to the slaves. The slaves must be
+! waiting in soppa_nodedriver when this is called.
+!
+      integer, intent(in) :: lt2mp
+      real(sop_dp), intent(in) :: t2mp(lt2mp)
+!
+! Tell slaves that the amplitudes will be send
+      call mpixbcast(parsoppa_update_amplitudes, 1, 'INTEGE', 0)
+!
+! Send the actual amplitudes
+      call mpi_bcast(t2mp, lt2mp, mpi_real8, 0,mpi_comm_world,ierr)
+      return
+   end subroutine soppa_update_amplitudes
 
    subroutine soppa_release_slaves()
 !

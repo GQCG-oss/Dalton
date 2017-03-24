@@ -10,6 +10,9 @@ C
 C     PURPOSE: Eiter read from disk or calculate the appropriate T2 and possibly T1 amplitudes
 C              for RPA(D), SOPPA and SOPPA(CCSD) and calculate
 C              the corresponding densities.
+#ifdef VAR_MPI
+      use so_parutils, only: soppa_update_amplitudes
+#endif
 C
       use so_info, only : sop_mp2ai_done
 C
@@ -167,6 +170,10 @@ C
       CALL SO_T2MP(T2AM,LT2AMH)
       DTIME     = SECOND()  - DTIME
       SOTIME(5) = SOTIME(5) + DTIME
+
+#ifdef VAR_MPI
+      call soppa_update_amplitudes(t2am, lt2am)
+#endif
 C
 C-----------------------
 C     Remove from trace.

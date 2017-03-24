@@ -149,6 +149,17 @@ C
       IF (IPRLNR .GE. 0)
      &     CALL TITLER('Solving Linear Response Equations','#',118)
 C
+#ifdef VAR_MPI
+C
+C---------------------------------------------------------
+C           Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+      call soppa_initialize_slaves ( update_common_blocks,
+     &                               WORK(KT2AM), LT2AM, rpa_only)
+      update_common_blocks = .false.
+#endif
+C
 C---------------------------------
 C     1. allocation of work space.
 C---------------------------------
@@ -263,16 +274,6 @@ C
      &                        WORK(KEND1),LWORK1)
                old_denslab = DENSLAB
             END IF
-#ifdef    VAR_MPI
-C
-C---------------------------------------------------------
-C           Ready the slaves for parallel calculations.
-C---------------------------------------------------------
-C
-            call soppa_initialize_slaves ( update_common_blocks,
-     &                                      WORK(KT2AM), LT2AM, model)
-            update_common_blocks = .false.
-#endif
 C
 C-----------------------------------------
 C           Initialize DENSAI if needed
@@ -370,13 +371,6 @@ C
                CALL SO_DUMP_DENSAI(DENSLAB,WORK(KDENSAI),LDENSAI)
             END IF
 C
-#ifdef VAR_MPI
-C-------------------------------------------------------
-C                 Release slaves to the global node-driver.
-C-------------------------------------------------------
-            call soppa_release_slaves()
-#endif
-C
 C           INCREMENT OUTPUT POINTER
 C
             IOUT = IOUT + 1
@@ -384,9 +378,18 @@ C
          END DO ! Loop over models
 C
       END DO ! LOOP over symmetries
+C
+C
       IF (IMODE .GT. 0) THEN
          CALL GPCLOSE(LU_DUMP,'KEEP')
       END IF
+C
+#ifdef VAR_MPI
+C-------------------------------------------------------
+C                 Release slaves to the global node-driver.
+C-------------------------------------------------------
+      call soppa_release_slaves()
+#endif
 C
 C---------------------------------
 C     3. allocation of work space.

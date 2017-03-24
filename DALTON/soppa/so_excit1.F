@@ -232,6 +232,16 @@ C     Adjust number of trialvectors for each excitation and
 C     write information to output.
 C----------------------------------------------------------
 C
+C
+C---------------------------------------------------------
+C              Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+#ifdef VAR_MPI
+      call soppa_initialize_slaves ( update_common_blocks,
+     &                                     WORK(KT2AM), LT2AM, RPA_ONLY)
+      update_common_blocks = .false.
+#endif
       IF ( NSAVMX .LT. 2 ) THEN
 C
          NSAVMX = 2
@@ -343,16 +353,6 @@ C
                   old_denslab = DENSLAB
                ENDIF
 C
-C---------------------------------------------------------
-C              Ready the slaves for parallel calculations.
-C---------------------------------------------------------
-C
-#ifdef VAR_MPI
-               call soppa_initialize_slaves ( update_common_blocks,
-     &                                       WORK(KT2AM), LT2AM, model)
-               update_common_blocks = .false.
-#endif
-C
 C-----------------------------------------
 C              Initialize DENSAI if needed
 C-----------------------------------------
@@ -451,17 +451,18 @@ C
                   CALL SO_DUMP_DENSAI(DENSLAB,WORK(KDENSAI),LDENSAI)
                END IF
 C
-#ifdef VAR_MPI
-C-------------------------------------------------------
-C              Release slaves to the global node-driver.
-C-------------------------------------------------------
-               call soppa_release_slaves()
-#endif
 
             END DO
          END IF
 C
   100 CONTINUE
+C
+#ifdef VAR_MPI
+C-------------------------------------------------------
+C              Release slaves to the global node-driver.
+C-------------------------------------------------------
+      call soppa_release_slaves()
+#endif
 C
 C---------------------------------
 C     3. allocation of work space.
