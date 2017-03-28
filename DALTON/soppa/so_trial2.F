@@ -450,9 +450,11 @@ C
                CALL GPCLOSE(LUSV1D,'KEEP')
 
             END IF
+C
 C---------------------------------------------------------------------
 C           For doubles we might as well also save the response vector
 C---------------------------------------------------------------------
+C
             IF(DOUBLES)THEN
                LURV2E = -1
                CALL GPOPEN(LURV2E,FNRV2E,'UNKNOWN','DIRECT',
