@@ -65,7 +65,7 @@ C
       logical :: active_models(sop_num_models)
       logical :: doubles, need_t2, rpa_only
       character(len=4) :: old_denslab, denslab
-      logical :: new_densai
+      logical :: new_densai, imagprop
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -313,7 +313,7 @@ C              Determine SOPPA excitation energies and excitation
 C              vectors. The excitation vectors are written to file.
 C------------------------------------------------------------------
 C
-               CALL SO_RSPLEQ(MODEL,LABEL1,ISYMTR,FRVAL,NFRVAL,
+               CALL SO_RSPLEQ(MODEL,LABEL1,IMAGPROP,ISYMTR,FRVAL,NFRVAL,
      &                        WORK(KDENSIJ),LDENSIJ,
      &                        WORK(KDENSAB),LDENSAB,
      &                        WORK(KDENSAI),LDENSAI,WORK(KT2AM),

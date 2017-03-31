@@ -170,7 +170,10 @@ C
       CALL SO_T2MP(T2AM,LT2AMH)
       DTIME     = SECOND()  - DTIME
       SOTIME(5) = SOTIME(5) + DTIME
-
+C
+C-----------------------------------------------------
+C     Send the amplitudes to the slaves
+C-----------------------------------------------------
 #ifdef VAR_MPI
       call soppa_update_amplitudes(t2am, lt2am)
 #endif

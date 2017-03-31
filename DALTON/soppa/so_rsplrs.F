@@ -8,7 +8,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Rasmus Faber, Feb. 2017
 C
-C     PURPOSE: A RSP compatible driver for calculating linear response properties with 
+C     PURPOSE: A RSP compatible driver for calculating linear response properties with
 C              the atomic integral direct SOPPA program.
 C
       use so_info, only: sop_num_models,
@@ -47,13 +47,16 @@ C for mxcont
 C REP <- Symbols of the ireducible representations.
 #include "pgroup.h"
 C
-C  Input arguments      
+C  Input arguments
       REAL(SOP_DP), INTENT(INOUT) :: WORK(LWORK) ! WORK array
       REAL(SOP_DP), INTENT(IN) :: FREQ(NFREQ) ! Array of frequencies
       REAL(SOP_DP), INTENT(IN) :: THRESH ! Convergence treshhold
       INTEGER, INTENT(IN) :: NFREQ, LWORK
+C  LABELS holds the integral labels of the pertubation for which
+C  we calculate the response function. It needs to be in-out in case
+C  we have to sort it.
       INTEGER, INTENT(IN) :: LABEL_OFFSETS(8), NUM_LABELS(8)
-      CHARACTER(LEN=8),INTENT(IN) :: LABELS(*)
+      CHARACTER(LEN=8),INTENT(INOUT) :: LABELS(*)
       LOGICAL, INTENT(IN) :: TRIP_INPUT ! Triplet flag
       INTEGER, INTENT(IN) :: IMODE ! How we are called
                                    ! IMODE = 0 : from response
@@ -74,6 +77,8 @@ C
       integer :: lu_dump ! Filenumber of file property values to
       character(len=4) :: old_denslab, denslab
       logical :: new_densai, last_model
+      logical :: imagprop(maxval(num_labels)), all_imag, LABMIX
+      integer :: numlab, num_imag
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -98,10 +103,10 @@ C     No RPA(D) properties
       ACTIVE_MODELS(SOP_MODEL_RPAD) = .FALSE.
       NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
 C
-      RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND. 
-     &           (NUM_ACTIVE.EQ.1) 
+      RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND.
+     &           (NUM_ACTIVE.EQ.1)
 C
-C     Set the correct convergence threshold 
+C     Set the correct convergence threshold
       sop_conv_thresh = THRESH
 C
 C     Set triplet flag if given
@@ -278,7 +283,7 @@ C
 C-----------------------------------------
 C           Initialize DENSAI if needed
 C-----------------------------------------
-C        
+C
             IF ( SO_NEEDS_DENSAI(MODEL) .AND.
      &        (.NOT.SOP_MP2AI_DONE) )    THEN
                  CALL DZERO(WORK(KDENSAI),LDENSAI)
@@ -287,14 +292,14 @@ C
                NEW_DENSAI = .FALSE.
             ENDIF
 C
-C            
+C
             WRITE(LUPRI,'(A)') dashl
             WRITE(LUPRI,'(2A,I5,3A)') dash5,
      &       'Symmetry of excitation/property operator(s)',
      &           ISYM,'  ( ',REP(ISYM-1),')'
             WRITE(LUPRI,'(A)') dashl
 
-            WRITE(LUPRI,'(2(/A,I5))') 
+            WRITE(LUPRI,'(2(/A,I5))')
      &           ' Number of excitations of this symmetry        ',
 C     &           NPPCNV(ISYM),
      &           0, ! Fix this!!!
@@ -319,14 +324,14 @@ C     &           NPPCNV(ISYM),
 C
                LABEL1 = LABELS(ILABOFF+IOPER)
                ISYMTR = ISYM
-               IOUT = 1
 C
 C------------------------------------------------------------------
 C              Determine SOPPA linear response vectors and density
 C              matrixes. Response density matrix written on file.
 C------------------------------------------------------------------
 C
-               CALL SO_RSPLEQ(MODEL,LABEL1,ISYMTR,FREQ,NFREQ,
+               CALL SO_RSPLEQ(MODEL,LABEL1,IMAGPROP(IOPER),ISYMTR,
+     &                        FREQ,NFREQ,
      &                        WORK(KDENSIJ),LDENSIJ,
      &                        WORK(KDENSAB),LDENSAB,
      &                        WORK(KDENSAI),LDENSAI,WORK(KT2AM),
@@ -336,35 +341,83 @@ C
 C               CALL FLUSH(LUPRI)
             END DO ! Loop operators
 C
+            LABMIX = .FALSE.
+            NUM_IMAG = COUNT(IMAGPROP(1:NUM_LABELS(ISYM)))
+            IF (NUM_IMAG.EQ.NUM_LABELS(ISYM)) THEN ! all imag
+               NUMLAB = NUM_LABELS(ISYM)
+               ALL_IMAG = .TRUE.
+            ELSE IF (NUM_IMAG.EQ.0) THEN ! ALL REAL
+               NUMLAB = NUM_LABELS(ISYM)
+               ALL_IMAG = .FALSE.
+               IF (IMODE.EQ.2) CALL QUIT('Expected imaginary labels'//
+     &               ' in '//myname)
+            ELSE ! We found a mix!!
+               PRINT *, 'LABEL MIX!'
+               IF (IMODE.NE.0) THEN
+                  CALL QUIT('Found mix of imaginary and '
+     &                       //'real labels in '//myname)
+               END IF
+               CALL SORT_LABELS(LABELS(ILABOFF+1),IMAGPROP,NUM_IMAG,
+     &                          NUM_LABELS(ISYM))
+C              We do the real ones first
+               NUMLAB = NUM_LABELS(ISYM) - NUM_IMAG
+               ALL_IMAG = .FALSE.
+               LABMIX = .TRUE.
+            END IF
+C
 C----------------------------------------------
 C              Calculate second order property.
 C----------------------------------------------
 C
-            IF (NUM_LABELS(ISYM).GT.0) THEN
-               KPROP = KEND1
-               LPROP = NFREQ*(NUM_LABELS(ISYM)**2)
-               KEND2 = KPROP + LPROP
-               LWORK2 = LWORK-KEND2
-               CALL SO_MEMMAX (myname//'.2     ',LWORK2)
-               IF (LWORK2 .LT.0) CALL STOPIT(myname//'.2',' ',
-     &               KEND2,LWORK)
+            KPROP = KEND1
+            LPROP = NFREQ*NUMLAB*NUMLAB
+            KEND2 = KPROP + LPROP
+            LWORK2 = LWORK-KEND2
+            CALL SO_MEMMAX (myname//'.2     ',LWORK2)
+            IF (LWORK2 .LT.0) CALL STOPIT(myname//'.2',' ',
+     &                                    KEND2,LWORK)
 
-               CALL SO_LRNSL(MODEL,ISYM,WORK(KPROP),LAST_MODEL,
+               CALL SO_LRNSL(MODEL,ISYM,WORK(KPROP),
+     &                       LAST_MODEL.AND..NOT.LABMIX,
      &                       FREQ,NFREQ,LABELS(ILABOFF+1),
-     &                       NUM_LABELS(ISYM),
+     &                       NUMLAB,
      &                       WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
      &                       WORK(KEND2),LWORK2)
 C
-               IF (IMODE.GT.0) THEN
-                  WRITE(LU_DUMP) ISYM
-                  WRITE(LU_DUMP) WORK(KPROP:KPROP+LPROP-1)
-               ELSE IF (LAST_MODEL) THEN
-                  CALL SO_RSPOUT(WORK(KPROP),ISYM,FREQ,NFREQ,
-     &                        LABELS(ILABOFF+1),NUM_LABELS(ISYM))
-               END IF
-C
+            IF ((IMODE.GT.0).AND.LAST_MODEL) THEN
+               WRITE(LU_DUMP) ISYM
+               WRITE(LU_DUMP) WORK(KPROP:KPROP+LPROP-1)
+            ELSE
+               CALL SO_RSPOUT(WORK(KPROP),ISYM,FREQ,NFREQ,
+     &                     LABELS(ILABOFF+1),NUMLAB)
             END IF
+C
+C---------------------------------------------------------------
+C  In case of a linear response calculation using both imaginary
+C  and real perturbations, handle the imaginary in second call
+C---------------------------------------------------------------
+C
+            IF (IMODE.EQ.0.AND.(NUMLAB.NE.NUM_LABELS(ISYM))) THEN
+!              NUMLAB is now number of real perturbations
+               KPROPI = KEND2
+               LPROPI = NFREQ*NUM_IMAG*NUM_IMAG
+               KEND2B = KPROP + LPROP
+               LWORK2B = LWORK-KEND2B
+               CALL SO_MEMMAX (myname//'.2B    ',LWORK2B)
+               IF (LWORK2 .LT.0) CALL STOPIT(myname//'.2B',' ',
+     &                                    KEND2B,LWORK)
+
+               CALL SO_LRNSL(MODEL,ISYM,WORK(KPROPI),LAST_MODEL,
+     &                       FREQ,NFREQ,LABELS(ILABOFF+NUMLAB+1),
+     &                       NUM_IMAG,
+     &                       WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                       LDENSAB,WORK(KDENSAI),LDENSAI,
+     &                       WORK(KEND2B),LWORK2B)
+               CALL SO_RSPOUT(WORK(KPROPI),ISYM,FREQ,NFREQ,
+     &                     LABELS(ILABOFF+NUMLAB+1),NUM_IMAG)
+            END IF
+C
 C
 C
             IF (NEW_DENSAI) THEN
@@ -426,6 +479,40 @@ C
 C
  9000 FORMAT(/' -----------------------------------')
  9001 FORMAT(' -----------------------------------')
+
+      CONTAINS
+         PURE SUBROUTINE SORT_LABELS(LABELS,IMAGPROP,NUM_IMAG,NUM_TOTAL)
+C
+C        Sorts the integral labels on "LABELS" so all real labels
+C        are before the imaginary labels
+C
+            IMPLICIT NONE
+            CHARACTER(LEN=8), INTENT(INOUT) :: LABELS(*)
+            LOGICAL, INTENT(IN) :: IMAGPROP(:)
+            INTEGER, INTENT(IN) :: NUM_TOTAL, NUM_IMAG
+C
+            CHARACTER(LEN=8) :: IMAG_LABELS(NUM_IMAG)
+            INTEGER ::  I, NR, NI
+C
+            NI = 0
+            NR = 0
+            DO I = 1, NUM_TOTAL
+C
+               IF (IMAGPROP(I)) THEN
+                  NI = NI + 1
+                  IMAG_LABELS(NI) = LABELS(I)
+               ELSE
+                  NR = NR + 1
+                  LABELS(NR) = LABELS(I)
+               END IF
+            END DO
+
+            DO I = 1, NUM_IMAG
+               LABELS(NR+I) = IMAG_LABELS(I)
+            END DO
+
+         END SUBROUTINE
+
       END
 
       SUBROUTINE SO_FCSDDRV(WORK,LWORK)
@@ -535,3 +622,5 @@ C     We now have all info for SO_RSPLRS
 
       RETURN
       END SUBROUTINE
+
+
