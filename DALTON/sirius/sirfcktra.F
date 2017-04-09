@@ -26,6 +26,9 @@
 !  FILE: DALTON/sirius/sirfcktra.F
 !  (c) Copyright Hans Joergen Aa. Jensen, hjj@sdu.dk (2016)
 
+! ===================================================================
+!     sirfcktra.F section 0: Sirius interface
+! ===================================================================
       subroutine SIR_INTOPEN_FCKTRA()
 !
 !  Written by Hans Joergen Aa. Jensen October 2014
@@ -38,12 +41,10 @@
 #endif
 
       end
-! ===================================================================
-!     sirfcktra.F section 1: calculate MO integrals
-! ===================================================================
-      subroutine FCKTRA_CTL(ITRSIR, THR_MOTWOINT, CMO, WORK, LWORK)
+
+      subroutine SIR_FCKTRA_CTL(ITRSIR, THR_MOTWOINT, CMO, WORK, LWORK)
 !
-!  Written by Hans Joergen Aa. Jensen 2016
+!  Written by Hans Joergen Aa. Jensen Apr 2017
 !
       implicit none
       integer ITRSIR, LWORK
@@ -55,7 +56,6 @@
 !  inforb.h : NNORBX, NORBT, ???
 !  inftra.h : NCDTRA, IPRTRA, LBUF
 !  inftap.h : LUINTM, LBINTM
-!  cbihr2.h : IFTHRS
 !  ccom.h   : THRS
 #include "iratdef.h"
 #include "maxaqn.h"
@@ -67,10 +67,10 @@
 #include "cbihr2.h"
 #include "ccom.h"
 
-      integer JTRSIR, NTRLVL, MX_NDMAT, LUSUPM_save, IFTHRS_save
+      integer JTRSIR, NTRLVL, MX_NDMAT
       integer KFREE, LFREE, KFRSAV, KUCMO, KDMAT, KFMAT, I, J
       integer MISH_TEST(8), MASH_TEST(8), IDAMAX
-      integer, allocatable :: ICDTRA(:), ITRTYP(:), ICD_NODE(:)
+      integer, allocatable :: ICDTRA(:), ITRTYP(:)
       character*8 TABLE(2),LAB123(3)
       data        TABLE /'MO2INTHJ','END INTM'/
       data        LAB123/'********','********','********'/
@@ -78,7 +78,7 @@
 
 C --- start of executable code
 
-      call QENTER('FCKTRA_CTL')
+      call QENTER('SIR_FCKTRA_CTL')
 
       JTRSIR = abs(ITRSIR)
 
@@ -90,7 +90,7 @@ C --- start of executable code
       IF (IPRTRA .GT. 0) THEN
          CALL TITLER('.FCKTRA AO->MO integral transformation','*',200)
          WRITE(LUPRI,'(A,I4,1P,D10.2)')
-     &   ' Transformation level & screening threshold:',
+     &   ' Sirius integral transformation level & screening threshold:',
      &   ITRSIR,THR_MOTWOINT
          FLUSH(LUPRI)
       END IF
@@ -119,8 +119,8 @@ C           and subtract from input CMO matrix
             END DO
             IF (ABS(WORK(I)) .LE. THRZER .AND. J .EQ. 0) THEN
                IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A)')
-     &            ' FCKTRA_CTL: Integral transformation abandoned, '//
-     &            'the required MO integrals are already available.'
+     &            ' SIR_FCKTRA_CTL: Integral transformation abandoned,'
+     &          //' the required MO integrals are already available.'
                GO TO 9999
             END IF
          END IF
@@ -133,12 +133,8 @@ C           and subtract from input CMO matrix
          THR_MOTWOINT = THRS
          FLUSH(LUPRI)
       END IF
-      IFTHRS_save = IFTHRS
-      IFTHRS = NINT(-LOG10(THR_MOTWOINT))
 
       allocate(ICDTRA(NNORBX))
-      allocate(ITRTYP(NORBT))
-      allocate(ICD_NODE(NNORBX))
 
       KFREE  = 1
       LFREE  = LWORK
@@ -163,7 +159,10 @@ C           and subtract from input CMO matrix
 !        ITRTYP(1:NORBT) = number of integral indices in which this orbital
 !                          enters (i.e. 0,1,2,3, or 4)
       call TRASET(-1,LWORK)
+
+      allocate(ITRTYP(NORBT))
       call TRALIM(NTRLVL,ICDTRA,ITRTYP)
+      deallocate ( ITRTYP )
 
       REWIND(LUINTM)
       WRITE (LUINTM) (0, I=1,8) ! info not used for FCKTRA
@@ -189,10 +188,87 @@ C           and subtract from input CMO matrix
       CALL GPOPEN(LUMINT,'MO2INT_FCKTRA','NEW',
      &   'DIRECT','UNFORMATTED',LBUF,OLDDX)
 
+
+      CALL FCKTRA_CTL( ICDTRA, THR_MOTWOINT, CMO, WORK, LWORK)
+
+
+      WRITE (LUINTM) LAB123,TABLE(2)
+      REWIND(LUINTM)
+      CALL GPCLOSE(LUINTM, 'KEEP')
+
+      deallocate ( ICDTRA )
+ 9999 call QEXIT('SIR_FCKTRA_CTL')
+      return
+      end
+
+! ===================================================================
+!     sirfcktra.F section 1: calculate MO integrals
+! ===================================================================
+      subroutine FCKTRA_CTL( ICDTRA, THR_MOTWOINT, CMO, WORK, LWORK)
+!
+!  Written by Hans Joergen Aa. Jensen 2016
+!
+      implicit none
+      integer ICDTRA(1:NNORBX), LWORK
+      real*8  THR_MOTWOINT, CMO(*), WORK(LWORK)
+#include "priunit.h"
+
+! Used from include files:
+!  gnrinf.h : PARCAL
+!  inforb.h : NNORBX, NORBT, ???
+!  inftra.h : NCDTRA, IPRTRA, LBUF
+!  inftap.h : LUSUPM
+!  cbihr2.h : IFTHRS
+!  ccom.h   : THRS
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "thrzer.h"
+#include "gnrinf.h"
+#include "inforb.h"
+#include "inftra.h"
+#include "inftap.h"
+#include "cbihr2.h"
+#include "ccom.h"
+
+      integer MX_NDMAT, LUSUPM_save, IFTHRS_save
+      integer KFREE, LFREE, KFRSAV, KUCMO, KDMAT, KFMAT, I, J
+      integer MISH_TEST(8), MASH_TEST(8), IDAMAX
+      integer, allocatable :: ICD_NODE(:)
+      character*8 TABLE(2),LAB123(3)
+      data        TABLE /'MO2INTHJ','END INTM'/
+      data        LAB123/'********','********','********'/
+      logical     FEXIST, OLDDX, FNDLAB
+
+C --- start of executable code
+
+      call QENTER('FCKTRA_CTL')
+
+#if FCKTRA_DEBUG > 0
+      IPRTRA = MAX(IPRTRA,FCKTRA_DEBUG)
+      write(lupri,*) 'FCKTRA_DEBUG: IPRTRA set to',IPRTRA
+      write(lupri,*) 'FCKTRA_DEBUG: THR_MOTWINT  ',THR_MOTWINT
+      flush(lupri)
+#endif
+
+      IF (IPRTRA .GT. 0) THEN
+!        WRITE(LUPRI,'(A,1P,D10.2)')
+!    &   ' Transformation screening threshold:', THR_MOTWOINT
+         FLUSH(LUPRI)
+      END IF
+
+      IFTHRS_save = IFTHRS
+      IFTHRS = NINT(-LOG10(THR_MOTWOINT))
+
+
+      KFREE  = 1
+      LFREE  = LWORK
+      KFRSAV = KFREE
+
+
       if (FCKTRA_TYPE .eq. 1 .AND. PARCAL) then
 
 #ifdef VAR_MPI
-         CALL FCKTRA_DISTRIBUTED_MASTER(ICDTRA, ITRTYP, IFTHRS,
+         CALL FCKTRA_DISTRIBUTED_MASTER(ICDTRA, IFTHRS,
      &      CMO, WORK, LWORK)
 
 #else
@@ -211,40 +287,38 @@ C           and subtract from input CMO matrix
      &      WORK,KFREE,LFREE)
 
          call UPKCMO(CMO,WORK(KUCMO))
+
+         allocate(ICD_NODE(NNORBX))
          ICD_NODE(:) = 0
+
          LUSUPM_save = LUSUPM
          if (FCKTRA_TYPE .eq. 3) LUSUPM = -9999 ! use RDSUPM
          if (FCKTRA_TYPE .eq. 4) LUSUPM = -1    ! do not use RDSUPM
 
-         call FCKTRA_FCK_DISTRIBUTED(ICDTRA, ITRTYP, ICD_NODE,
+         call FCKTRA_FCK_DISTRIBUTED(ICDTRA, ICD_NODE,
      &      WORK(KUCMO), MX_NDMAT,
      &      WORK(KDMAT), WORK(KFMAT), WORK(KFREE), LFREE)
+
          LUSUPM = LUSUPM_save
+         deallocate ( ICD_NODE )
 
          call MEMREL('after FCKTRA_FCK_DISTRIBUTED',WORK,
      &      1,KFRSAV,KFREE,LFREE)
 
       end if !  if (FCKTRA_TYPE .eq. 1 .AND. PARCAL) then ... else ...
 
-      WRITE (LUINTM) LAB123,TABLE(2)
-      REWIND(LUINTM)
-      CALL GPCLOSE(LUINTM, 'KEEP')
-
-      deallocate ( ICDTRA )
-      deallocate ( ITRTYP )
-      deallocate ( ICD_NODE )
       IFTHRS = IFTHRS_save
  9999 call QEXIT('FCKTRA_CTL')
       return
       end
 
-      subroutine FCKTRA_FCK_DISTRIBUTED( ICDTRA, ITRTYP,
+      subroutine FCKTRA_FCK_DISTRIBUTED( ICDTRA,
      &   ICD_NODE, UCMO, MX_NDMAT, DMAT, FMAT, WORK, LWORK)
 !
 !  Written by Hans Joergen Aa. Jensen 2016
 !
       implicit none
-      integer ICDTRA(NNORBX), ITRTYP(NORBT), ICD_NODE(NNORBX)
+      integer ICDTRA(NNORBX), ICD_NODE(NNORBX)
       integer MX_NDMAT, LWORK
       real*8  DMAT(N2BASX,MX_NDMAT), FMAT(N2BASX,MX_NDMAT)
       real*8  UCMO(NBAST,NORBT), WORK(LWORK)
@@ -313,8 +387,8 @@ C           and subtract from input CMO matrix
          ONLY_J      = .true.
       end if
       HFXFAC_SAVE = HFXFAC
-      HFXFAC      = 0.0D0
 
+      HFXFAC      = 0.0D0
       IFCTYP(1:MX_NDMAT) = 11 ! symmetric density matrix, only Coulomb
 
       NDMAT = 0
@@ -599,13 +673,13 @@ C           and subtract from input CMO matrix
 !     sirfcktra.F section 2: FCKTRA type 1 routines (if VAR_MPI)
 ! ===================================================================
 #ifdef VAR_MPI
-      subroutine FCKTRA_DISTRIBUTED_MASTER(ICDTRA, ITRTYP, IFTHRS,
+      subroutine FCKTRA_DISTRIBUTED_MASTER(ICDTRA, IFTHRS,
      &   CMO, WORK, LWORK)
 !
 !  Written by Hans Joergen Aa. Jensen 2016
 !
       implicit none
-      integer ICDTRA(NNORBX), ITRTYP(NORBT), IFTHRS, LWORK
+      integer ICDTRA(NNORBX), IFTHRS, LWORK
       real*8  CMO(NCMOT), WORK(LWORK)
 
 #include "priunit.h"
@@ -676,7 +750,6 @@ C           and subtract from input CMO matrix
       call MPIXBCAST(IFTHRS,1,'INTEGER',MASTER)
       call MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
       call MPIXBCAST(ICDTRA,NNORBX,'INTEGER',MASTER)
-      call MPIXBCAST(ITRTYP,NORBT,'INTEGER',MASTER)
       call MPIXBCAST(ISMO,NORBT,'INTEGER',MASTER)
       call MPIXBCAST(ICD_NODE,NNORBX,'INTEGER',MASTER)
       call MPIXBCAST(CMO,NCMOT,'DOUBLE',MASTER)
@@ -724,7 +797,7 @@ C           and subtract from input CMO matrix
       integer LWORK, IPRINT
       real*8  WORK(LWORK)
 
-      integer, allocatable :: ICDTRA(:), ITRTYP(:), ICD_NODE(:)
+      integer, allocatable :: ICDTRA(:), ICD_NODE(:)
       real*8 , allocatable :: CMO(:)
       integer ICD, NCDTRA, MX_NDMAT
       integer KFREE, LFREE, KDMAT, KFMAT, KUCMO
@@ -792,7 +865,6 @@ C           and subtract from input CMO matrix
 
 
       allocate( ICDTRA(NNORBX) )
-      allocate( ITRTYP(NORBT) )
       allocate( CMO(NCMOT) )
       allocate( ICD_NODE(NNORBX) )
 
@@ -802,7 +874,6 @@ C           and subtract from input CMO matrix
       call MPIXBCAST(IFTHRS,1,'INTEGER',MASTER)            ! accuracy of MO integrals (screening)
       call MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
       call MPIXBCAST(ICDTRA,NNORBX,'INTEGER',MASTER)
-      call MPIXBCAST(ITRTYP,NORBT,'INTEGER',MASTER)
       call MPIXBCAST(ISMO,NORBT,'INTEGER',MASTER)
       call MPIXBCAST(ICD_NODE,NNORBX,'INTEGER',MASTER)
 
@@ -846,14 +917,13 @@ C           and subtract from input CMO matrix
 #endif
 
       CALL  FCKTRA_FCK_DISTRIBUTED(
-     &      ICDTRA, ITRTYP, ICD_NODE, WORK(KUCMO), MX_NDMAT,
+     &      ICDTRA, ICD_NODE, WORK(KUCMO), MX_NDMAT,
      &      WORK(KDMAT), WORK(KFMAT), WORK(KFREE), LFREE)
 
 
  1000 CONTINUE
 
       deallocate( ICDTRA )
-      deallocate( ITRTYP )
       deallocate( CMO )
       deallocate( ICD_NODE )
 

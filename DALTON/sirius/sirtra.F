@@ -1790,7 +1790,7 @@ C     *********** THRQ: THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
 C
       IF (FCKTRA_TYPE .gt. 0) THEN
          NEWTRA_USEDRC = .FALSE. ! FCKTRA_DRCCTL not implemented yet
-         CALL FCKTRA_CTL(KTRLVL,THRP,CMO,WORK,KWORK)
+         CALL SIR_FCKTRA_CTL(KTRLVL,THRP,CMO,WORK,KWORK)
       ELSE IF (NEWTRA) THEN
          IF (ITRLVL .EQ. 0 .OR. ITRLVL .GE. 5) THEN ! zeroth, third or fourth order transformation
             NEWTRA_USEDRC = .FALSE. ! use DRCCTL and not Dirac integrals from N_TRACTL
