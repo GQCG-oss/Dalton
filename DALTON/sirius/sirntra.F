@@ -3375,7 +3375,6 @@ C
             END DO
          END IF
       END DO
-      NCDTRA = IDIST ! save in inftra.h
       IF (IPRTRA .GE. 5) THEN
          WRITE (LUPRI,'(/A)') ' ITRTYP(1:NORBT) = '//
      &      'number of integral indices in which this orbital enters:'
