@@ -1105,11 +1105,11 @@ boxify_save_batch(GridGenMolGrid *mg, FILE *f, integer cnt,
     integer i;
     for(i=0; i<cnt; i+= PARBLLEN) {
         integer bcnt = i+PARBLLEN<cnt ? PARBLLEN : cnt - i;
-        last = (last+1) % nodes;
-        if(last == 0)
+        last = (last+1) % nodes; /* which node should save this batch? */
+        if(last == 0) /* master to do this work */
             boxify_save_batch_local(mg, f, bcnt, nbl, shlbl,
                                     center, atom_nums+i, coorw + i*4);
-        else {
+        else { /* send batch to node no. last */
             integer arr[2]; arr[0] = bcnt; arr[1] = nbl;
             M(MPI_Send(arr,     2,      MPI_INT,   last, 1, MPI_COMM_WORLD));
             M(MPI_Send(shlbl,   2*nbl,  fortran_MPI_INT,   last, 2, MPI_COMM_WORLD));
@@ -1121,6 +1121,7 @@ boxify_save_batch(GridGenMolGrid *mg, FILE *f, integer cnt,
 }
 
 #else
+/* not VAR_MPI */
 #define boxify_save_batch(mg,f,c,b,s,center,an,r) \
         boxify_save_batch_local((mg),(f),(c),(b),(s),(center),(an),(r)) 
 //#define grid_get_fname(base,num) strdup(base)
