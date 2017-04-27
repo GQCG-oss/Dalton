@@ -225,6 +225,7 @@ C Pack INFO_ARRAY variables and send them off
          CALL SO_ERES(MODEL,0, 1, DENSIJ, LDENSIJ, DENSAB, LDENSAB,
      &               T2MP, LT2MP,  FOCKD,   LFOCKD,
      &               DENSAI, LDENSAI, ICOL, ISYMTR,
+     &               0,
 #ifdef VAR_MPI
      &               WORK(kAssignedIndices),lAssignedIndices,
 #endif
