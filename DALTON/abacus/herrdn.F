@@ -486,7 +486,7 @@ C
       CMDOPN = .FALSE.
       IF (SLAVE) THEN
          LUINFO = -MYNUM
-         IPREAD = -1000
+         IF (IPREAD .LE. 0) IPREAD = -1000 ! only output from slaves if explicitly requested
       ELSE
          IF (LUCMD .LT. 0) THEN
             CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
@@ -504,13 +504,13 @@ C           ... must close LUCMD again before RETURN, when opened here
          ELSE
             LUINFO = -1
          END IF
-         IF (IPREAD .GT.  0) THEN
-           CALL TITLER(
+      END IF
+      IF (IPREAD .GT.  0) THEN
+        CALL TITLER(
      &   'Output of molecule and basis set information','*',115)
-         ELSE IF (IPREAD .GT. -999) THEN
-           CALL TITLER(
+      ELSE IF (IPREAD .GT. -999) THEN
+        CALL TITLER(
      &   'Output of molecule and basis set info suppressed','*',118)
-         END IF
       END IF
       IF (IPREAD .GE. 11) CALL TIMER('START ',TIMSTR,TIMEND)
 C
@@ -2119,16 +2119,16 @@ C
 #include "aovec.h"
 #include "maxaqn.h"
 #include "cbirea.h"
+#include "gnrinf.h"
+
       DIMENSION WORK(LWORK)
       LOGICAL SEG,DOOWN
       DIMENSION NONT(KATOM),IQM(KATOM,3),JCO(KANG,KATOM,3),
      &          NBLCK(KATOM,3),NUC(KBLOCK,3),NRC(KBLOCK,3),
      &          SEG(KBLOCK,3),
-     &          ALPHA(KPRIM,KBLOCK,3),CPRIM(KPRIM,KPRIM,KBLOCK,3),
+     &          ALPHA(KPRIM,KBLOCK,3),
+     &          CPRIM(KPRIM,KPRIM,KBLOCK,3),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,3)
-
-#include "gnrinf.h"
-
 #include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
@@ -2139,28 +2139,43 @@ C
 
 #include "veclen.h"
 
+! local arrays:
+      REAL*8    CORD_DEP(3,4) ! (xyz,1:nsymop+1)
 
 C
 C*****************************************************************************
 C       MULK    - bitstring of basic operations that stabilise a center
 C*****************************************************************************
 C
-      II = 1
+      II = 0
       DO 100 I = 1, NONTYP
          DO 110 J = 1, NONT(I)
+            II = II + 1
+            II_DEP = 1
+            CORD_DEP(1:3,II_DEP) = CORD(1:3,II)
             MULK = 0
-            LL = 1
             DO 140 L = 1, NSYMOP
+               LL = 2**(L-1)
+               II_DEP = II_DEP + 1
                DO 150 M = 1,3
                   IF(IAND(LL,ISYMAX(M,1)) .NE. 0) THEN
 C                 Basic operation LL moves coordinate M
-                     IF(ABS(CORD(M,II)).GE.1.0D-06) GOTO 140
+                     CORD_DEP(M,II_DEP) = -CORD(M,II)
+                  ELSE
+                     CORD_DEP(M,II_DEP) =  CORD(M,II)
                   END IF
  150           CONTINUE
-               MULK = MULK + LL
- 140        LL = 2*LL
+               DO K = 1, II_DEP-1
+                  DIST = (CORD_DEP(1,K) - CORD_DEP(1,II_DEP))**2
+     &                 + (CORD_DEP(2,K) - CORD_DEP(2,II_DEP))**2
+     &                 + (CORD_DEP(3,K) - CORD_DEP(3,II_DEP))**2
+                  IF (DIST .LT. 1.D-12) THEN ! not a new center
+                     MULK = MULK + LL
+                     EXIT
+                  END IF
+               END DO
+ 140        CONTINUE
             ISTBNU(II) = MULK
-            II = II + 1
  110     CONTINUE
  100  CONTINUE
 
@@ -2806,10 +2821,8 @@ C
 #include "molinp.h"
 #include "ccom.h"
 C
-      IWARN = 0
       NBLOCK = 0
       DO 100 I = 1, IQM
-         IF (UNCONT .AND. DKTRAN .AND. JCO(I) .GT. 1) IWARN = IWARN + 1
          DO 200 J = 1, JCO(I)
             NBLOCK = NBLOCK + 1
             IF(NBLOCK.GT.KAOVEC) GOTO 5000
@@ -2850,7 +2863,6 @@ Chj-aug99:     if (uncont) force uncontracted in ACPORB
      &                                  'Shells    :  ',MRCIJ
                CALL FLSHFO(LUPRI)
             END IF
-            SEGIJ = NRCIJ .GE. 0
             NUCIJ = ABS(NUCIJ)
             NRCIJ = ABS(NRCIJ)
             IF (NUCIJ.GT.KPRIM) GOTO 5010
@@ -2881,19 +2893,6 @@ C
             NRC(NBLOCK) = NRCIJ
   200    CONTINUE
   100 CONTINUE
-      IF (IWARN .GT. 0) THEN
-C
-C     A small test to avoid Douglas-Kroll problems. However, it is not
-C     sufficient, as it will not stop duplication of AOs within a single
-C     block, as for instance may happen if you use Pople-type basis sets
-C     K.Ruud, Nov.-2006
-C
-         NWARN = NWARN + 1
-         WRITE (LUPRI,'(//A/A/)')
-     &      '@ WARNING GTOINP If primitive exponents'//
-     &         ' are duplicated in several blocks,',
-     &      '@ WARNING GTOINP Douglas-Kroll will not work correctly'
-      END IF
       RETURN
 C
 C     Error messages:
@@ -2928,7 +2927,7 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-      LOGICAL SEG, FREE, SEGIJ
+      LOGICAL SEG, FREE
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC),
@@ -2952,7 +2951,6 @@ C
 C
          NUCI = 0
          NRCI = 0
-         SEGIJ  = .TRUE.
          DO 110 J = NCMSTR, NCMEND
             NUCI = NUCI + 1
             NRCI = NRCI + 1
@@ -2966,7 +2964,7 @@ C
          NRC(NBLOCK) = NRCI
 C
          JCO(I) = 1
-         SEG(NBLOCK) = SEGIJ
+         SEG(NBLOCK) = .TRUE.
 C
 C        Normalize orbitals
 C
@@ -3008,7 +3006,7 @@ C     SONIA CORIANI, 2012
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-      LOGICAL SEG, FREE, SEGIJ
+      LOGICAL SEG, FREE
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC),
@@ -3033,7 +3031,6 @@ C
 C
          NUCI = 0
          NRCI = 0
-         SEGIJ  = .TRUE.
          DO 110 J = NCMSTR, NCMEND
 !            write(lupri,*) 'CNUUM: J=', J
             NUCI = NUCI + 1
@@ -3050,7 +3047,7 @@ C
          NRC(NBLOCK) = NRCI
 C
          JCO(I) = 1
-         SEG(NBLOCK) = SEGIJ
+         SEG(NBLOCK) = .TRUE.
 C
 C        Normalize orbitals
 C
@@ -3137,11 +3134,11 @@ C
            ELSE
               READ (MLINE(NMLINE),FMT1) ALPHA(L),
      &           (CPRIMU(L,M), M = 1, MIN(NRCIJ,NCOL - 1))
-              DO 200 K = 2, (NRCIJ - 1)/(NCOL - 1) + 1
+              DO K = 2, (NRCIJ - 1)/(NCOL - 1) + 1
                  CALL RDLINE(LUINFO)
                  READ (MLINE(NMLINE),FMT2) (CPRIMU(L,M),
      &              M = 1 + (NCOL-1)*(K-1), MIN(NRCIJ,(NCOL-1)*K))
-  200         CONTINUE
+              END DO
            END IF
   100   CONTINUE
 C
@@ -3219,11 +3216,15 @@ C
       END
 C  /* Deck segorb */
       SUBROUTINE SEGORB(SEGIJ,NUCIJ,NRCIJ,CPRIMU,KPRIM,DSM)
+C* SEGORB - A procedure that checks if the contraction   *
+C*          coefficients (for a given (angular quantum   *
+C*          number + 1)) are segmented or not.           *
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL SEGIJ
       DIMENSION CPRIMU(KPRIM,KPRIM)
 C
+      SEGIJ = .TRUE.
       DO L = 1, NUCIJ
          NONZER = 0
          DO M = 1, NRCIJ
@@ -3310,7 +3311,7 @@ C******************************************************************************
      &           DP75 = 0.75D0)
 C
 #include "cbirea.h"
-      LOGICAL SEG,SPHER
+      LOGICAL SEG,SPHER, ANY_DUPLICATES
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
@@ -3336,6 +3337,7 @@ C
             NDEG = NUCDEG(ICENT)
             DO 30 J = 1,IQM(I) ! ang.mom. 1=s, 2=p, 3=d, etc.
                KKK = 0
+               JSTRT_J = IPRIM
                NCOMP = KHK(J)
                NCCMP = KCK(J)
                SPHER = SPH(J)
@@ -3343,7 +3345,7 @@ C
                   KBCH  = KBCH + 1 ! next block
                   NCONT = NRC(KBCH)
                   IF(NCONT.GT.MXCONT) GOTO 5000
-                  DO 50 KK = 1, NCONT ! AO shell conunter for this block
+                  DO 50 KK = 1, NCONT ! AO shell counter for this block
                      KKK    = KKK + 1 ! local AO shell counter for this ang.mom.
                      ISHELL = ISHELL + 1 ! global AO shell couunter
                      !set the pointer to the first shell for density-fitting
@@ -3420,6 +3422,23 @@ C*****************************************************************************
 C
    60             CONTINUE ! DO 60 L = 1, NUC(KBCH)
    40          CONTINUE ! DO 40 K = 1, JCO(J,I)
+               IF (UNCONT .AND. LCOMP.EQ.1) THEN
+                  N_IPRIM_J = IPRIM - JSTRT_J
+                  IF (
+     &               ANY_DUPLICATES(N_IPRIM_J,PRIEXP(JSTRT_J+1),1.D-8)
+     &               ) THEN
+                     WRITE (LUPRI,'(//A/A/A,2I5/A/)')
+     &      '@ ERROR: Duplicates in primitive basis set exponents'//
+     &         ' are not allowed for uncontracted basis sets.',
+     &      '@ ERROR: (Basis set may be temporarily uncontracted '//
+     &         'because you have requested Douglas-Kroll DKH2)',
+     &      '@ ERROR: Problem atom type and ang.mom.',I,J-1,
+     &      '@ ERROR: Dump of problematic exponents:'
+                     WRITE(LUPRI,'(F20.10)') PRIEXP(JSTRT_J+1:IPRIM)
+                     CALL QUIT('Duplicates in primitive exponents not'
+     &                  //' allowed for uncontracted basis set.')
+                  END IF
+               END IF
    30       CONTINUE ! DO 30 J = 1,IQM(I)
    20    CONTINUE ! DO 20 N = 1,NONT(I)
          JBLOCK = JBLOCK + NBLCK(I)
@@ -6830,6 +6849,7 @@ C
       CHARACTER*(len_MLINE) LINE4_in, LINE
       CHARACTER CRT*1, ID3*1, SYMTXT*2
       CHARACTER*1 KASYM(3,3)
+      INTEGER, SAVE :: N_OLD_MOL_INP = 0
 C
 C     Initialize
 C
@@ -6991,11 +7011,14 @@ C     Since the number of atom types have not been specified,
 C     assume old input format
 C
 
-         NWARN = NWARN + 1
-         WRITE(LUPRI,'(///A/A/A///)') '@ WARNING - deprecated '//
-     &   'old .mol fixed format input has been detected:',
-     &   LINE4_in, '@ WARNING - '//
-     &   'this input format may not be supported in future releases.'
+         IF (.NOT. SLAVE .AND. N_OLD_MOL_INP.EQ.0) THEN
+            N_OLD_MOL_INP = 1
+            NINFO = NINFO + 1
+            WRITE(LUPRI,'(///A/A/A///)') '@ INFO - deprecated '//
+     &      'old .mol fixed format input has been detected:',
+     &      LINE4_in, '@ INFO - '//
+     &      'this input format may not be supported in future releases.'
+         END IF
 
          READ (LINE4_in,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)',ERR=199) CRT,
      &        NONTYP,KCHARG1,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
@@ -7436,5 +7459,21 @@ C     line LINE seems to be OK, now we update number of atoms
       LINE(IPOS:) = BKP_LINE
 C
       RETURN
+      END
+      LOGICAL FUNCTION ANY_DUPLICATES(N,ALPHA,THR)
+      ! Check if any duplicates, within THR, in ALPHA(1:N)
+      ! Nov. 2016, hjaaj
+      INTEGER N, I, J
+      REAL*8  ALPHA(*), THR
+      DO I = 2,N
+         DO J = 1, I-1
+            IF (ABS(ALPHA(J)-ALPHA(I)) .LE. THR) THEN
+               ANY_DUPLICATES = .TRUE.
+               GO TO 9000
+            END IF
+         END DO
+      END DO
+      ANY_DUPLICATES = .FALSE.
+ 9000 RETURN
       END
 C --- end of herrdn.F ---

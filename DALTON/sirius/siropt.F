@@ -1306,7 +1306,8 @@ C        hjaaj Dec 2002:
 C        allow printing of orbital energies for open-shell systems.
          WRITE (LUPRI,'(/A/A/A/A)')
      &' Orbital energy analysis for an open-shell system.',
-     &' Orbital energies are not well-defined for open-shell systems',
+     &' Orbital energies are not uniquely defined'//
+     &' for open-shell systems',
      &'   here is used block diagonalization of'//
      &  ' the FD=FC+FV Fock matrix.',
      &" NOTE that Koopmans' theorem is not fulfilled for this case."
@@ -1444,6 +1445,9 @@ C     take care of 1-electron case and no virtuals case
       IF (ELUMO-EHOMO .LT. GAPMIN) THEN
          WRITE(LUPRI,'(/A)')
      &   ' INFO: E(LUMO) - E(HOMO) small or negative.'
+      END IF
+      IF (EHOMO .GT. 0.0d0) THEN
+         WRITE(LUPRI,'(/A)') ' WARNING: E(HOMO) positive!'
       END IF
       IF ( VALCON .GT. EMYCNV ) THEN
          WRITE(LUPRI,'(/A//A,1P,D10.2)') ' NOTE:'//

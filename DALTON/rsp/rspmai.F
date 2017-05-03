@@ -70,7 +70,8 @@ C
 C Driver for RESPONSE.
 C
       USE SO_INFO, ONLY: SO_ANY_ACTIVE_MODELS
-C
+      use pelib_interface, only: use_pelib
+
 #include "implicit.h"
 C
       DIMENSION WRK(LWRK)
@@ -133,6 +134,7 @@ C     *************************
 C
 C Define wave function variables, also if SIRIUS has not been called
 C
+      FLAG(34) = .TRUE. ! no integral transformation by SETSIR
       CALL SETSIR(WRK,LWRK)
 C
 C Define variables that are common for all perturbation symmetries
@@ -253,7 +255,11 @@ C           are needed in rspoli.F (if .not. NEWTRA then
 C           only occ-occ Dirac dist. are saved on MODRCINT).
 C           hjaaj Nov 2001
          ELSE
-            JTRLVL = -4
+            IF (DIRFCK) THEN
+               JTRLVL = -3
+            ELSE
+               JTRLVL = -4
+            END IF
          END IF
          FLAGSV = DORSP
          DORSP = .TRUE.
@@ -337,8 +343,6 @@ C
          CALL TITLER('DFT response calculation (TD-DFT)','*',103)
       ELSE IF (HSROHF) THEN
          CALL TITLER('High-spin ROHF response calculation','*',103)
-      ELSE IF (TDHF) THEN
-         CALL TITLER('RHF response calculation (TDHF)','*',103)
       ELSE IF (CCPPA) THEN
          CALL TITLER('SOPPA(CCSD) response calculation','*',103)
          IF (PARCAL) CALL PARQUIT('SOPPA(CCSD) RESPONSE')
@@ -347,11 +351,18 @@ C
          IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
       ELSE IF (RSPCI) THEN
          CALL TITLER('CI response calculation','*',103)
+      ELSE IF (TDHF) THEN
+         CALL TITLER('RHF response calculation (TDHF)','*',103)
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
          ! IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
       END IF
 C
+      IF (USE_PELIB()) THEN
+         IF (TRPFLG) THEN
+         ! edh: Insert quit of CREF have MULTIPLICITY NEQ 0!
+         END IF
+      END IF
 C
       CALL ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS()
 C
@@ -743,16 +754,17 @@ C     end of this input module
                GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
          END DO
-C
-         WRITE (LUPRI,'(/,3A,/)')
-     *        ' Keyword ',WORD,' not recognized in RSPREA.'
+
+         WRITE (LUPRI,'(/3A/)')
+     &       ' Keyword ',WORD,' not recognized under **RESPONS.'
          CALL PRTAB(NTABLE,TABLE,WORD//' input keywords',LUPRI)
 
-         CALL QUIT(' ILLEGAL "*" OPTION IN RSPREA')
+         CALL QUIT('Illegal "*" option under **RESPONS')
       ELSE
-         WRITE (LUPRI,'(/,3A,/)')
-     *      '@PROMPT "',PROMPT,'" ILLEGAL OR OUT OF ORDER.'
-         CALL QUIT(' PROGRAM STOPPED IN RSPREA, ERROR IN PROMPT')
+         WRITE (LUPRI,'(/3A/)') '@ Prompt "',PROMPT,
+     &      '" illegal or out of order under **RESPONS'
+         CALL PRTAB(NTABLE,TABLE,WORD//' input keywords',LUPRI)
+         CALL QUIT('ERROR IN A **RESPONS PROMPT')
       END IF
  2    WORD = '*RESPON'
       CALL RSPINP(WORD)
@@ -909,9 +921,10 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') '@KEYWORD "',WORD,
-     *            '" NOT RECOGNIZED IN RSPINP.'
-               CALL QUIT(' ILLEGAL KEYWORD IN RSPINP ')
+               WRITE (LUPRI,'(/4A/)') '@ Keyword "',WORD,
+     &            '" not recognized for ',WORD1
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('ILLEGAL KEYWORD FOR **RESPONS ')
     1          CONTINUE ! .INPTEST
                   INPTES = .TRUE.
                GO TO 100
@@ -1294,6 +1307,7 @@ C  Initializing ABSORP
       DATA ABSORP/.FALSE./,ABS_INTERVAL/.FALSE./,ABS_REDUCE/.FALSE./
       DATA ABS_ALPHA/.FALSE./,ABS_BETA/.FALSE./,ABS_GAMMA/.FALSE./
       DATA ABS_SHG/.FALSE./,ABS_MCD/.FALSE./,ABS_ANALYZE/.FALSE./
+      DATA ABS_VELOCI/.FALSE./,ABS_NGD/.FALSE./,ABS_GDCOMPLEX/.FALSE./
       DATA NFREQ_BATCH/10/,MAX_MACRO/30/,MAX_MICRO/10/,MAX_ITORB/5/
       DATA NEXCITED_STATES/2/,IPRABS/0/
       DATA NFREQ_ALPHA/1/,NFREQ_BETA_B/1/,NFREQ_BETA_C/1/
@@ -1339,7 +1353,8 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
-      use pelib_interface, only: use_pelib
+      use pelib_interface, only: use_pelib, pelib_ifc_dolf, 
+     &                                     pelib_ifc_lf
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1422,15 +1437,37 @@ C
                LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
                LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
                LPPOP( INDPRP('ZDIPLEN ')) = .TRUE.
+               IF (USE_PELIB()) THEN
+                 IF (PELIB_IFC_DOLF()) THEN
+                   LPPOP( INDPRP('XLFDIPLN')) = .TRUE.
+                   LPPOP( INDPRP('YLFDIPLN')) = .TRUE.
+                   LPPOP( INDPRP('ZLFDIPLN')) = .TRUE.
+                 END IF
+               END IF
                GO TO 100
  2             CONTINUE   ! .DIPLNX
                LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
+               IF (USE_PELIB()) THEN
+                 IF (PELIB_IFC_DOLF()) THEN
+                   LPPOP( INDPRP('XLFDIPLN')) = .TRUE.
+                 END IF
+               END IF
                GO TO 100
  3             CONTINUE   ! .DIPLNY
                LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
+               IF (USE_PELIB()) THEN
+                 IF (PELIB_IFC_DOLF()) THEN
+                   LPPOP( INDPRP('YLFDIPLN')) = .TRUE.
+                 END IF
+               END IF
                GO TO 100
  4             CONTINUE   ! .DIPLNZ
                LPPOP( INDPRP('ZDIPLEN ')) = .TRUE.
+               IF (USE_PELIB()) THEN
+                 IF (PELIB_IFC_DOLF()) THEN
+                   LPPOP( INDPRP('ZLFDIPLN')) = .TRUE.
+                 END IF
+               END IF
                GO TO 100
  5             CONTINUE   ! .DIPVEL
                LPPOP( INDPRP('XDIPVEL ')) = .TRUE.
@@ -3988,7 +4025,7 @@ C
 C
 C CALCULATE DIAGONAL CONFIGURATION PART OF E[2]
 C
-         CALL REWSPL(LURSP4)
+         REWIND (LURSP4)
          IF (KZCONF.GE.1) THEN
             KECDIA = 1
             KWRK1  = KECDIA + KZCONF
@@ -4189,8 +4226,9 @@ C     CSF's were used in SIRIUS. /hjaaj May 2001
 C
       MCONRF = NCONRF
       IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
-         FLAG(27) = .TRUE.
+         FLAG(27) = .TRUE. ! use determinants, not CSFs
 C        ... call setsir to reset Sirius common blocks to determinants
+         FLAG(34) = .TRUE. ! no integral transformation by SETSIR
          CALL SETSIR(WRK,LWRK)
       END IF
       NCONRF = MAX(1,NCONRF) ! SETSIR(abaset.F) sets NCONRF=0 for Hartree-Fock

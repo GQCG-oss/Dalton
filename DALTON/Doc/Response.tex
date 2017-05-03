@@ -247,10 +247,6 @@ together with quadratic or cubic response.
 
 \begin{description}
 
-\item{\Key{ABOCHK}} Sets up the orbital part of the $E^{\left[2\right]}$
-  and $S^{\left[2\right]}$ used in solving the linear response
-  equation. Mainly for debugging purposes.
-
 \item{\Key{ECD}}
 Sets $A$ and $B$ to the dipole operators,\index{dipole length}
 the dipole-velocity operators,\index{dipole velocity}
@@ -288,11 +284,6 @@ this option must contain 1) The number of frequencies, 2) Frequencies
 in atomic units.
 Remember to increase \Key{MAXRM} if many frequencies are specified.
 
-\item{\Key{ISTOCK}} Selects the starting row in setting up the orbital
-  parts of $E^{\left[2\right]}$
-  and $S^{\left[2\right]}$ using the keyword \Key{ABOCHK}. Default is
-  1. Mainly for debugging purposes.
-
 \item{\Key{MAX IT}}\\
 \verb|READ (LUCMD,*) MAXITL|\\
 Maximum number of iterations for solving a linear response
@@ -304,11 +295,6 @@ Maximum number of iterations in the optimal orbital
 algorithm\index{optimal orbital trial vector}
 \cite{tuhjahjajpjjcp84}.
 Default is 5.
-
-\item{\Key{MAXOCK}} Selects the last row in setting up the orbital
-  parts of $E^{\left[2\right]}$
-  and $S^{\left[2\right]}$ using the keyword \Key{ABOCHK}. Default is
-  6. Mainly for debugging purposes.
 
 \item{\Key{OECD}}
 Sets $A$ and $B$ to the dipole operators,\index{dipole length}
@@ -362,10 +348,6 @@ can only be used if the
 operator specified is the same which was used \textit{last} in the previous
 response calculation.
 
-\item{\Key{SOPRSY}} Calculate both $\alpha_{ij}$ and $\alpha_{ji}$ to
-  test the quadratic accuracy of the calculated property. Mainly for
-  debugging purposes.
-
 \item{\Key{SPIN-D}} Sets $A$ and $B$ to be all spin-dipole operators
   found on the file \verb|AOPROPER|, {\it i.e.\/} all spin-dipole
   operators requested in the \Sec{*INTEGRALS} input module.
@@ -390,9 +372,29 @@ corresponds to convergence to approximately 6 digits.
 Will also make a simultaneous \Sec{LINEAR} \Key{SINGLE RESIDUE} calculation to
 a calculation of triplet excitation energies and transition moments.
 
-%\item{\Key{OLSEN}}
-%CI trial vectors are obtained with Olsen algorithm (for the single
-%residue calculation only).
+\end{description}
+
+Debug keywords
+
+\begin{description}
+
+\item{\Key{ABOCHK}} Sets up the orbital part of the $E^{\left[2\right]}$
+  and $S^{\left[2\right]}$ used in solving the linear response
+  equation. Mainly for debugging purposes.
+
+\item{\Key{ISTOCK}} Selects the starting row in setting up the orbital
+  parts of $E^{\left[2\right]}$
+  and $S^{\left[2\right]}$ using the keyword \Key{ABOCHK}. Default is
+  1. Mainly for debugging purposes.
+
+\item{\Key{MAXOCK}} Selects the last row in setting up the orbital
+  parts of $E^{\left[2\right]}$
+  and $S^{\left[2\right]}$ using the keyword \Key{ABOCHK}. Default is
+  6. Mainly for debugging purposes.
+
+\item{\Key{SOPRSY}} Calculate both $\alpha_{ij}$ and $\alpha_{ji}$ to
+  test the quadratic accuracy of the calculated property. Mainly for
+  debugging purposes.
 
 \end{description}
 
@@ -423,31 +425,29 @@ Optional keywords
 
 \begin{description}
 
-\item{\Key{ABCHK}} Sets up $E^{\left[2\right]}$
-  and $S^{\left[2\right]}$ used in solving the
-  single residue linear response equation. Only for debugging purposes.
-
-\item{\Key{ABSYM}} Tests the symmetry of $E^{\left[2\right]}$
-  and $S^{\left[2\right]}$ in the reduced space.
-  Only for debugging purposes.
-
-\item{\Key{ANTTES}} Test the antisymmetry of the single residue response
-  vector. Only for debugging purposes.
+\item{\Key{CHANNEL}}\\
+\verb|line 1: Number of channel orbitals in each symmetry|\\
+\verb|for each symmetry:|\\
+\verb|   read index of channel orbitals this symmetry (empty line if none)|\\
+Restricted channel RPA (HF or DFT).
+Only the specified occupied orbitals are included in the RPA matrix.
+Primarily intended for core hole RPA calculations.
+See also \Key{VIRTUAL}.
 
 \item{\Key{DIPLEN}}
-Sets $A$ and $B$ to dipole operators\index{dipole length}.
+Sets $A$ and $B$ to the X, Y, and Z components of the dipole length operators\index{dipole length}.
 
 \item{\Key{DIPLNX/Y/Z}}
 Sets $A$ and $B$ to the X, Y, or Z component of the dipole length operators, respectively\index{dipole length}.
 
 \item{\Key{DIPMAG}}
-Sets $A$ and $B$ to angular momentum operators\index{angular momentum}.
+Sets $A$ and $B$ to angular momentum (aka magnetic dipole) operators\index{angular momentum}.
 
 \item{\Key{DIPMGX/Y/Z}}
 Sets $A$ and $B$ to the X, Y, or Z component of the angular momentum operators\index{angular momentum}.
 
 \item{\Key{DIPVEL}}
-Sets $A$ and $B$ to the dipole velocity operators\index{dipole velocity}.
+Sets $A$ and $B$ to the dipole velocity (aka momentum) operators\index{dipole velocity}.
 
 \item{\Key{DIPVLX/Y/Z}}
 Sets $A$ and $B$ to the X, Y, or Z component of the dipole velocity
@@ -550,6 +550,30 @@ Will also make a simultaneous linear response calculation of triplet symmetry.
 
 \item{\Key{OLSEN}}
 CI trial vectors are obtained with Olsen algorithm.
+
+\item{\Key{VIRTUAL}}\\
+\verb|Max number of virtual orbitals in each symmetry|\\
+Only the specified virtual orbitals are included in the RPA matrix.
+Primarily intended for core hole RPA (DFT or HF) calculations,
+but works for all RPA calculations.
+See also \Key{CHANNEL}.
+
+\end{description}
+
+Debug keywords
+
+\begin{description}
+
+\item{\Key{ABCHK}} Sets up $E^{\left[2\right]}$
+  and $S^{\left[2\right]}$ used in solving the
+  single residue linear response equation. Only for debugging purposes.
+
+\item{\Key{ABSYM}} Tests the symmetry of $E^{\left[2\right]}$
+  and $S^{\left[2\right]}$ in the reduced space.
+  Only for debugging purposes.
+
+\item{\Key{ANTTES}} Test the antisymmetry of the single residue response
+  vector. Only for debugging purposes.
 
 \end{description}
 

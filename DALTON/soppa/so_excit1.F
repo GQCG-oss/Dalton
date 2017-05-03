@@ -32,7 +32,8 @@ C
      &                   sop_dens_label,
      &                   sop_model_rpa, sop_model_rpad,
      &                   sop_model_hrpad,
-     &                   sop_conv_thresh
+     &                   sop_conv_thresh,
+     &                   sop_mp2ai_done
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
      &                       soppa_release_slaves
@@ -86,6 +87,8 @@ C
       integer :: num_active
       logical :: active_models(sop_num_models)
       logical :: doubles, need_t2, doub_corr, rpa_only
+      character(len=4) :: old_denslab, denslab
+      logical :: new_densai
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -106,6 +109,7 @@ C     Get the active models and their number
       NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
       RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND.
      &           (NUM_ACTIVE.EQ.1)
+      old_denslab = 'NONE'
 C
 C
 C     Set the correct convergence threshold -- THREXC from
@@ -160,12 +164,6 @@ CRF if anything but AORPA
       IF ( .NOT.RPA_ONLY ) THEN
 C
          LT2AM   = NT2AMX
-C
-C        For triplet calculations LT2AM has to be twice as large,
-C        because there are two version of the correlation coefficients
-C
-         IF (TRIPLET) LT2AM = NT2AMX*2
-C
          LDENSIJ = NIJDEN(1)
          LDENSAB = NABDEN(1)
          LDENSAI = NAIDEN(1)
@@ -234,6 +232,16 @@ C     Adjust number of trialvectors for each excitation and
 C     write information to output.
 C----------------------------------------------------------
 C
+C
+C---------------------------------------------------------
+C              Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+#ifdef VAR_MPI
+      call soppa_initialize_slaves ( update_common_blocks,
+     &                                     WORK(KT2AM), LT2AM, RPA_ONLY)
+      update_common_blocks = .false.
+#endif
       IF ( NSAVMX .LT. 2 ) THEN
 C
          NSAVMX = 2
@@ -291,6 +299,7 @@ C----------------------------------------
                DOUBLES = SO_HAS_DOUBLES(IMODEL)
                NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
                DOUB_CORR = SO_DOUBLE_CORRECTION(MODEL)
+               DENSLAB = SOP_DENS_LABEL(IMODEL)
 C
                IF (IPRSOP .GE. 1) THEN
                   WRITE(LUPRI,9000)
@@ -332,32 +341,29 @@ C-----------------------------------------------------
 C              Get T2 amplitudes and density matrices.
 C-----------------------------------------------------
 C
-               IF (NEED_T2) THEN
-                  CALL SO_GETT2(SOP_DENS_LABEL(IMODEL),
+               IF ((NEED_T2).AND.
+     &             (DENSLAB.NE.OLD_DENSLAB)) THEN
+                  CALL SO_GETT2(DENSLAB,
      &                          WORK(KFOCKD),LFOCKD,
      &                          WORK(KT2AM),LT2AM,
      &                          WORK(KDENSAI),
      &                          LDENSAI,WORK(KDENSIJ),LDENSIJ,
      &                          WORK(KDENSAB),LDENSAB,
      &                          WORK(KEND2),LWORK2)
+                  old_denslab = DENSLAB
                ENDIF
-C
-C---------------------------------------------------------
-C              Ready the slaves for parallel calculations.
-C---------------------------------------------------------
-C
-#ifdef VAR_MPI
-               call soppa_initialize_slaves ( update_common_blocks,
-     &                                       WORK(KT2AM), LT2AM, model)
-               update_common_blocks = .false.
-#endif
 C
 C-----------------------------------------
 C              Initialize DENSAI if needed
 C-----------------------------------------
 C
-               IF ( SO_NEEDS_DENSAI(MODEL))
-     &            CALL DZERO(WORK(KDENSAI),LDENSAI)
+               IF ( SO_NEEDS_DENSAI(MODEL) .AND.
+     &              (.NOT.SOP_MP2AI_DONE) ) THEN
+                  CALL DZERO(WORK(KDENSAI),LDENSAI)
+                  NEW_DENSAI = .TRUE.
+               ELSE
+                  NEW_DENSAI = .FALSE.
+               ENDIF
 C
 CPi 31.01.16
 C----------------------------------------------------------------------
@@ -441,17 +447,22 @@ C
 C
                END IF
 C
-#ifdef VAR_MPI
-C-------------------------------------------------------
-C              Release slaves to the global node-driver.
-C-------------------------------------------------------
-               call soppa_release_slaves()
-#endif
+               IF (NEW_DENSAI) THEN
+                  CALL SO_DUMP_DENSAI(DENSLAB,WORK(KDENSAI),LDENSAI)
+               END IF
+C
 
             END DO
          END IF
 C
   100 CONTINUE
+C
+#ifdef VAR_MPI
+C-------------------------------------------------------
+C              Release slaves to the global node-driver.
+C-------------------------------------------------------
+      call soppa_release_slaves()
+#endif
 C
 C---------------------------------
 C     3. allocation of work space.

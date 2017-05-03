@@ -55,7 +55,7 @@ C  /* Deck rhsinp */
      &            '.STOP  ', '.NODDY ', '.NODPTR',
      &            '.PTRPRI', '.SORPRI', '.PTRSKI'/
 C
-      NEWDEF = WORD .EQ. '*GETSGY'
+      NEWDEF = WORD .EQ. '*GETSGY' .OR. WORD .EQ. '*RHSIDE'
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
@@ -79,10 +79,10 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized under *GETSGY.'
+               WRITE (LUPRI,'(/4A/)') ' Keyword "',WORD,
+     *            '" not recognized under ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword under *GETSGY.')
+               CALL QUIT('Illegal keyword under '//WORD1)
     1          CONTINUE
                   SKIP = .TRUE.
                GO TO 100
@@ -197,10 +197,10 @@ C
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized under *GETSGY.'
+               WRITE (LUPRI,'(/4A/)') ' Prompt "',WORD,
+     *            '" not recognized under ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt under *GETSGY.')
+               CALL QUIT('Illegal prompt under '//WORD1)
             END IF
       END IF
   300 CONTINUE
@@ -1527,8 +1527,7 @@ C
                   IF (IPRGDY .GT. 2)
      &               CALL TIMER('START ',TIMSTR,TIMEND)
                   NGD = 1
-CSPAS : 3/12-98 : changes for SOPPA
-                  IF (ABASOP) THEN
+                  IF (ABASOP) THEN ! SPAS : 3/12-98 : changes for SOPPA
                      CALL ANGRHS(WORK(KFDCSQ),WORK(KGD),WORK(KCINDX),
      &                           WORK(KWKRHS),1,LWKRHS)
                      GRDICT = D0
@@ -1541,7 +1540,6 @@ CSPAS : 3/12-98 : changes for SOPPA
      &                           WORK(KGD),WORK(KCINDX),LONDON,
      &                           WORK(KDFTSQ),WORK(KWKRHS),1,LWKRHS)
                   ENDIF
-CKeinSPASmehr
                   IF (IPRGDY .GT. 2)
      &               CALL TIMER('ABARHS',TIMSTR,TIMEND)
                   IF (SOLVNT .AND. IATOM .GT. 0) THEN
@@ -2860,7 +2858,6 @@ C  /* Deck ofabmo */
       SUBROUTINE OFABMO(CMO,DV,FMAT,WORK,LWORK)
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "inforb.h"
       DIMENSION CMO(NCMOT), DV(NASHT,NASHT), FMAT(N2ORBT), WORK(LWORK)
       LOGICAL FOUND
@@ -2882,7 +2879,6 @@ C
 C  /* Deck ofabhg */
       SUBROUTINE OFABHG(HWORK,UMOG,WORK,LWORK)
 #include "implicit.h"
-#include "iratdef.h"
 #include "inforb.h"
       REAL*8    HWORK(NBAST,NBAST), UMOG(*), WORK(LWORK)
       INTEGER   MBAS(8)
@@ -2920,7 +2916,6 @@ C  /* Deck ofabh1 */
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "inforb.h"
       INTEGER   IINDX4(4,LBUF)
       REAL*8    UMOG(NBAST,NBAST,NBAST,NBAST), AOBUF(LENINT4)
@@ -2972,7 +2967,6 @@ C
 C  /* Deck rumog1 */
       SUBROUTINE RUMOG1(UMOGA,NORBT,NOH2,NOLOND,IINDX4,X,WORK)
 #include "implicit.h"
-#include "iratdef.h"
 #include "priunit.h"
       LOGICAL NOH2, NOLOND
       INTEGER P,Q,R,S,X
@@ -3353,6 +3347,8 @@ C
       END
 C  /* Deck psorhs */
       SUBROUTINE PSORHS(WMAT,LABINT,WORK,LWORK)
+C
+      use so_info, only: so_any_active_models
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
@@ -3377,7 +3373,7 @@ C
       IF (IPRALL .GE. 4) CALL TITLER('Output from PSORHS','*',103)
 C
       IF (SHIELD .OR. SPINRO) CALL DZERO(SIGMAS,9*NUCDEP)
-      IF (ABASOP) THEN
+      IF (ABASOP.AND..NOT.SO_ANY_ACTIVE_MODELS()) THEN
          LUDV   = NORBT * NORBT
          LPVX   = LPVMAT
       ELSE
@@ -3412,6 +3408,7 @@ C  /* Deck psorh1 */
       SUBROUTINE PSORH1(NODV,WMAT,INTADR,LABINT,INTREP,CMO,UDV,PVX,
      &                  XINDX,WORK,LWORK,PSOTST,IPRALL,DOSHI,RALLCO,
      &                  IPRINT)
+      use so_info, only: so_any_active_models
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3468,7 +3465,7 @@ C
 C
       IF (.NOT. ABASOP) THEN
          CALL GETCIX(XINDX,LSYMRF,LSYMRF,WORK,LWORK,0)
-      ELSE
+      ELSE IF (.NOT.SO_ANY_ACTIVE_MODELS()) THEN
 C
 C       SOPPA :
 C
@@ -3562,6 +3559,19 @@ C
       END IF
       NREC = 3*NUCDEP
 C
+C     For AO-SOPPA we just need to copy over labels
+      IF (SO_ANY_ACTIVE_MODELS()) THEN
+         DO ISYM = 1, NSYM
+            NREC = NGDVEC(ISYM,2)
+            DO LREC = 1, NREC
+               IREC = IGDREC(LREC,ISYM,2)
+               ISCOOR = IGDCOR(LREC,ISYM,2)
+               IF (ISCOOR .GT. 0 ) IMGLAB(IREC) = LABINT(ISCOOR)
+            END DO
+         END DO
+         RETURN
+      END IF
+C
 C     Construct right-hand sides and solve response equations and
 C     calculate if nescessary relaxation contributions. One symmetry
 C     at a time.
@@ -3589,6 +3599,7 @@ C
      &                        WORK,LWORK,IPRALL)
                END IF
                IMGLAB(IREC) = LABINT(ISCOOR)
+
                CALL GETGPV(LABINT(ISCOOR),DUMMY,DUMMY,CMO,UDV,PVX,XINDX,
      &                     ANTSYM,WORK,LWORK)
 C

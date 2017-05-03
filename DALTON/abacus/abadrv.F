@@ -25,7 +25,8 @@ C
 C  /* Deck abactl */
       SUBROUTINE ABACTL(WORK,LWORK)
 C
-      USE SO_INFO, ONLY: SO_NUM_ACTIVE_MODELS, SO_ANY_ACTIVE_MODELS 
+      USE SO_INFO, ONLY: SO_NUM_ACTIVE_MODELS, SO_ANY_ACTIVE_MODELS
+      use pelib_interface, only: use_pelib
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -140,7 +141,7 @@ C
          LWRK  = LWORK
       END IF
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF (.NOT. PASMAG) THEN
+      IF ((.NOT. PASMAG) .AND. (.NOT. SO_ANY_ACTIVE_MODELS())) THEN
          CALL MAGINT(WORK(KDSO),WORK(KLAST),LWRK,PASMAG)
          IF (PASMAG) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
@@ -213,7 +214,7 @@ C     ***** Dipole moment gradient *****
 C     **********************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF (.NOT. PASDIP) THEN
+      IF (.NOT. PASDIP .AND. .NOT. USE_PELIB()) THEN
          CALL DIPCTL(WORK(KLAST),LWRK,PASDIP)
          IF (PASDIP) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
@@ -278,6 +279,15 @@ C
       END IF
       CALL GETTIM(TIMLRS,TIMDUM)
       TIMLRS = TIMLRS - TIMSTR
+C
+C     ******************************************
+C     ***** AOSOPPA First order properties *****
+C     ******************************************
+C
+      IF (SO_ANY_ACTIVE_MODELS().AND.(SPNSPN.AND.DODSO)) THEN
+          CALL SO_ONEAVE(WORK(KDSO),WORK(KLAST),LWRK)
+      END IF
+C
 cLig added the call to CTOABA
 C
 C     *****************************
@@ -301,7 +311,8 @@ C
       IF (.NOT. PASREL) THEN
       IF (MOLHES .OR. SHIELD .OR. MAGSUS .OR. VCD .OR.
      &    DIPDER .OR. POLAR .OR. QPGRAD .OR. (SPNSPN .AND. DOPSO) .OR.
-     &    ECD .OR. VROA .OR. MOLGFA .OR. SPINRO .OR. OPTROT) THEN
+     &    ECD .OR. VROA .OR. MOLGFA .OR. SPINRO .OR. OPTROT
+     &    .AND. .NOT. USE_PELIB()) THEN
          CALL RELAX(WORK(KPSO),WORK(KSD),WORK(KFC),WORK(KSDFC),
      &              WORK(KLAST),LWRK,PASREL,.FALSE.)
          IF (PASREL) CALL ABAWRIT_RESTART
@@ -566,6 +577,7 @@ CAMT Add empirical DFT-D gradient...
          IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLTT)
          IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLNN)
          IF (PCM) CALL ADDGRD(GSOLCV)
+         IF (USE_PELIB()) CALL ADDGRD(PEGRAD)
       END IF
 C
 C     Calculated dipole moment
@@ -574,9 +586,9 @@ C
 C
 C     Calculated elements of dipole gradient
 C
-      CALL DZERO(DIP1,9*NUCDEP)
+      IF (.NOT. USE_PELIB()) CALL DZERO(DIP1,9*NUCDEP)
 Clf to be adjusted for PCM IR intensities calculation
-      IF (DIPDER) THEN
+      IF (DIPDER .AND. .NOT. USE_PELIB()) THEN
          CALL DIPADD(DDIPN)
          CALL DIPADD(DDIPE)
          CALL DIPADD(DDIPS)
@@ -617,6 +629,13 @@ C     ***** Fold in contrbutions from floating orbitals *****
 C     *******************************************************
 C
       CALL FLTORB(WORK(KLST2),LWRK1)
+      CALL FLSHFO(LUPRI)
+C
+C     *******************************************************
+C     ***** Freezing any coordinates ???                *****
+C     *******************************************************
+C
+      CALL FREEZE_COORDINATES(WORK(KLST2),LWRK1)
       CALL FLSHFO(LUPRI)
 C
 C     **************************
@@ -674,7 +693,11 @@ C     ***** Vibrational analysis *****
 C     ********************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF (VIB) CALL VIBCTL(WORK(KLAST),LWRK3)
+      IF (VIB) THEN 
+          CALL SET_VIBCTL('Copy_PRJTRO')
+          CALL VIBCTL(WORK(KLAST),LWRK3)
+          CALL SET_VIBCTL('Reset')
+      END IF
       CALL GETTIM(TIMVIB,TIMDUM)
       TIMVIB = TIMVIB - TIMSTR
       CALL FLSHFO(LUPRI)
@@ -725,7 +748,7 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
-      PARAMETER (NDIR = 28, NTABLE = 60, D0 = 0.D0)
+      PARAMETER (NDIR = 29, NTABLE = 60, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP
       LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       LOGICAL   GRDINP, NO_ABACUS_INPUT
@@ -777,7 +800,7 @@ C  jim-gesc 1.0: TABDIR(#17) ="*LROPTS" , TABLE(60)=".LRESC ". check INTRST for 
      &             'xXXXXXX', '*LOCALI', '*SOPPA ', ! *LOCALI: PFP 27/03-2006 - SOS for spin-spin coupling included
      &             '*LINRES', '*EXPECT', '*SPIN-S',
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
-     &             '*ABALNR'/
+     &             '*ABALNR', '*RHSIDE'/
 Caug04-hjaaj: disabled currently inactive .NACME
 Csep08-spas: .NACME reactivated for Vib_g
 C                      1          2          3
@@ -1489,7 +1512,7 @@ CPi 17.08.16: RF: Polarizabilities now work
             IF (
 C All the properties which parallel soppa currently cannot do. I.e all.
 C but Polarizabilities
-     &      ANY( (/  SHIELD, MAGSUS, SPINRO, MOLGFA, SPNSPN, 
+     &      ANY( (/  SHIELD, MAGSUS, SPINRO, MOLGFA,
      &            CTOCD /) ) 
      &         ) THEN
                WRITE(LUPRI,'(3A)')'@ ', WRDSRC, ' SOPPA can only be '
@@ -1500,12 +1523,12 @@ C but Polarizabilities
 C            
 C Parallel soppa should be run using mp2 from the cc module
 C 
-            IF (DOMP2) THEN
-               WRITE(LUPRI,'(3A/A)')'@ ', WRDSRC, ' Parallel SOPPA can'
-     &             //' currently only run using the MP2 amplitudes ',
-     &               'from the CC module'
-               par_soppa_input_errors = .true. 
-            ENDIF
+C            IF (DOMP2) THEN
+C               WRITE(LUPRI,'(3A/A)')'@ ', WRDSRC, ' Parallel SOPPA can'
+C     &             //' currently only run using the MP2 amplitudes ',
+C     &               'from the CC module'
+C               par_soppa_input_errors = .true. 
+C            ENDIF
             IF (par_soppa_input_errors) 
      &         CALL PARQUIT('ABASOP')
 
@@ -1977,8 +2000,12 @@ CAMT--------------
      &                       'to zero.'
          CALL QUIT('ERROR: .POLARI and .PEQM are not compatible'//
      &             ' (see output file for more details)')
-
-        END IF
+        END IF 
+        IF ((MAGSUS.OR.SPINRO) .AND. .NOT. NOLOND) THEN 
+         CALL QUIT('ERROR: .MAGNET (Magnetizability tensor and'//
+     &        ' spin-rotation constants) not implemented for PE'//
+     &        ' with London orbitals')
+        END IF 
       END IF
 C
 C
@@ -1997,7 +2024,7 @@ cs
             IF (WORD .EQ. TABDIR(I)) THEN
                GO TO
      *         (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,
-     *              22,23,24,25,26,27,28), I
+     *              22,23,24,25,26,27,28,29), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -2018,7 +2045,7 @@ cs
       GO TO 200
     5   CALL TWOINP(WORD)
       GO TO 200
-    6   CALL RHSINP(WORD)
+    6   CALL RHSINP(WORD) ! *GETSGY, alias to *RHSIDE; kept for backwards compatibility
       GO TO 200
     7   CALL EXCINP(WORD)
       GO TO 200
@@ -2068,6 +2095,8 @@ C jim-gesc 1.4 : CALL LRSCINP to read OPTNS @ DAL  file
       GO TO 200
    28   CALL LNRINP(WORD) ! *ABALNR
       GO TO 200
+   29   CALL RHSINP(WORD) ! *RHSIDE
+      GO TO 200
 C
     1 CONTINUE
 C
@@ -2099,6 +2128,7 @@ Chj   this call had survived from when ABACUS was a separate program.
 Chj   I have now made sure that READIN always is called in the beginning,
 Chj   also if RNHERM is false. /April 2009 hjaaj
 
+      FLAG(34) = .FALSE. ! make sure integral transformation done if needed
       CALL SETSIR(WORK,LWORK)
 C
 C     If SOPPA calculation, then

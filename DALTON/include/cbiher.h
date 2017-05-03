@@ -27,7 +27,7 @@ C     Selection of specific one-electron (property) integrals:
      &        XDDXR3, PVIOLA, PVPINT, POTENE, QDBINT, QDBTST,
      &        RANGMO, RPSO, PXPINT, OZKE, PSOKE, DNSKE, SDKE, FCKE,
      &        DSOKE,  PSOOZ,  EFBDER, EFB2DR, MAGQDP, MQDPTS,
-     &        DERAM,  DIPANH, RMAOTWO,
+     &        DERAM,  DIPANH, RMAOTWO,LFDIPLN,
      &        S2MBRA, S2MKET, S2MMIX, DOLRINTS
 C
       COMMON /CBIHER/ EXPKR(3), THRESH,                                         ! real*8
@@ -52,6 +52,6 @@ C
      &        XDDXR3, PVIOLA, PVPINT, POTENE, QDBINT, QDBTST,
      &        RANGMO, RPSO, PXPINT, OZKE, PSOKE, DNSKE, SDKE, FCKE,
      &        DSOKE,  PSOOZ,  EFBDER, EFB2DR, MAGQDP, MQDPTS,
-     &        DERAM,  DIPANH, RMAOTWO,
+     &        DERAM,  DIPANH, RMAOTWO,LFDIPLN,
      &        S2MBRA, S2MKET, S2MMIX, DOLRINTS
 C --- end of cbiher.h ---

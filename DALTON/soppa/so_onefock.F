@@ -1,7 +1,7 @@
 C
 C  /* Deck so_onefock */
       SUBROUTINE SO_ONEFOCK(RES1E,LRES1E,RES1D,LRES1D,FOCKD,LFOCKD,
-     &                      TR1E,LTR1E,TR1D,LTR1D,ISYRES,ISYMTR)
+     &                      TR1E,LTR1E,TR1D,LTR1D,ISYRES,ISYMTR,DO_DEX)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -18,6 +18,7 @@ C
 C
       DIMENSION RES1E(LRES1E), RES1D(LRES1D), TR1E(LTR1E), TR1D(LTR1D)
       DIMENSION FOCKD(LFOCKD)
+      LOGICAL, INTENT(IN) :: DO_DEX
 C
 #include "ccorb.h"
 #include "ccsdsym.h"
@@ -43,7 +44,8 @@ C
                FDIFF = FOCKD(KOFF1) - FOCKD(KOFF2)
 C
                RES1E(KOFF3) = RES1E(KOFF3) + FDIFF * TR1E(KOFF3)
-               RES1D(KOFF3) = RES1D(KOFF3) + FDIFF * TR1D(KOFF3)
+               IF (DO_DEX) 
+     &            RES1D(KOFF3) = RES1D(KOFF3) + FDIFF * TR1D(KOFF3)
 C
   300       CONTINUE
 C

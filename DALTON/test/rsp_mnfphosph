@@ -144,17 +144,17 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Integrals
-CRIT1=`$GREP "SO\-integrals are calculated for * C\: \[He\]2s\^2 2p\^2" $log | wc -l`
-CRIT2=`$GREP "SO\-integrals are calculated for * H\: no mean\-field" $log | wc -l`
-CRIT3=`$GREP "\! Integrals of operator\: X1MNF\-SO \!" $log | wc -l`
-CRIT4=`$GREP "\! Integrals of operator\: Y1MNF\-SO \!" $log | wc -l`
-CRIT5=`$GREP "\! Integrals of operator\: Z1MNF\-SO \!" $log | wc -l`
+CRIT1=`$GREP -l "SO\-integrals are calculated for * C\: \[He\]2s\^2 2p\^2" $log | wc -l`
+CRIT2=`$GREP -l "SO\-integrals are calculated for * H\: no mean\-field" $log | wc -l`
+CRIT3=`$GREP -l "\! Integrals of operator\: X1MNF\-SO \!" $log | wc -l`
+CRIT4=`$GREP -l "\! Integrals of operator\: Y1MNF\-SO \!" $log | wc -l`
+CRIT5=`$GREP -l "\! Integrals of operator\: Z1MNF\-SO \!" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[4]=5
 ERROR[4]="INTEGRALS NOT SET UP CORRECTLY"
 
 # Energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-78\.1785072190[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-78\.1785072190" $log | wc -l`
 TEST[5]=`expr	$CRIT1`
 CTRL[5]=1
 ERROR[5]="MCSCF ENERGY NOT CORRECT"

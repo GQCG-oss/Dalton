@@ -1,7 +1,7 @@
 C
 C  /* Deck so_lrnsl */
-      SUBROUTINE SO_LRNSL(MODEL,ISYM,PROPAR,
-     &                    FREQ,NFREQ,NLAB,
+      SUBROUTINE SO_LRNSL(MODEL,ISYM,PROPAR,DELETE_VECTORS,
+     &                    FREQ,NFREQ,LABELS,NLAB,
      &                    DENSIJ,LDENSIJ,
      &                    DENSAB,LDENSAB,DENSAI,LDENSAI,
      &                    WORK,LWORK)
@@ -18,21 +18,17 @@ C              integral direct SOPPA program.
 C
       use so_info, only: fn_rdens, sop_stat_trh, sop_dp,
      &                   sop_use_seller, so_has_doubles
+      use so_data, only: fileinf
 C
 C#include "implicit.h"
       implicit none
 #include "priunit.h"
 C      
 #include "soppinf.h"
-C inflr.h below requires MAXLBL from rspprp.h
-#include "rspprp.h"
-C We need 
-C LBLLR <- Label of operators 
-C NGPLR <- Number of operators of each symmetry
-#include "inflr.h"
 #include "ccsdsym.h"
 C REP <- Symbols of the ireducible representations.
 C#include "pgroup.h"
+#include "iratdef.h"
 C
 
 C
@@ -43,7 +39,10 @@ C
      &                     DENSAI(LDENSAI), FREQ(NFREQ)
       REAL(sop_dp),INTENT(INOUT) :: WORK(LWORK)
       REAL(sop_dp),intent(inout) :: PROPAR(NFREQ,NLAB,NLAB)
+      CHARACTER(LEN=8), intent(in) ::LABELS(NLAB)
       CHARACTER(len=5), intent(in) :: MODEL
+      LOGICAL, INTENT(IN) :: DELETE_VECTORS ! Whether to delete solution
+                                            ! and residual vectors
 C
       CHARACTER*8 LABEL1, LABEL2
       CHARACTER*8 RTNLBL(2)
@@ -54,7 +53,7 @@ C
      &           KEND3, KSOLV, KRESI
       INTEGER :: IDUMMY, ILAB1, ILAB2, IFREQ, LURDENS
 C
-      LOGICAL   IMAGPROP, doubles, static
+      LOGICAL   IMAGPROP, doubles, static, OLDDX
       REAL(sop_dp), PARAMETER :: DP5=0.5D0
 C
       CHARACTER(len=*), parameter :: myname = 'SO_LRNSL'
@@ -88,9 +87,18 @@ C-----------------------------------------
 C     Open files with perturbed densities.
 C-----------------------------------------
 C
+      LPDENSIJ = NIJDEN(ISYM)
+      LPDENSAI = NAIDEN(ISYM)
+      IF (MODEL.EQ.'AORPA') THEN
+         LPDENSAB = 0
+         LPDENSTOT = LPDENSAI
+      ELSE
+         LPDENSAB = NABDEN(ISYM)
+         LPDENSTOT = LPDENSIJ + LPDENSAI + LPDENSAB
+      ENDIF
       LURDENS = -1
-      CALL GPOPEN(LURDENS, FN_RDENS, 'OLD',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.)
+      CALL GPOPEN(LURDENS, FN_RDENS, 'OLD','DIRECT','UNFORMATTED',
+     &            IRAT*LPDENSTOT,OLDDX)
 C
       doubles = so_has_doubles(model)
 C
@@ -98,13 +106,13 @@ C=============================================
 C     Loop over the first property operators.
 C=============================================
 C
-      DO 200 ILAB1 = 1, NGPLR(ISYM)
+      DO 200 ILAB1 = 1, NLAB
 C
 C---------------------------------------------------
 C        Find label and symmetry of second operator.
 C---------------------------------------------------
 C
-         LABEL1 = LBLLR(ISYM,ILAB1)
+         LABEL1 = LABELS(ILAB1)
 C
 C--------------------------------------------------
 C           Get the property integrals in MO basis.
@@ -116,13 +124,6 @@ C
          IMAGPROP = RTNLBL(2).EQ.'ANTISYMM'
 C
 C  These allocations as such doesn't change...
-         LPDENSIJ = NIJDEN(ISYM)
-         IF (MODEL.EQ.'AORPA') THEN
-            LPDENSAB = 0
-         ELSE
-            LPDENSAB = NABDEN(ISYM)
-         ENDIF
-         LPDENSAI = NAIDEN(ISYM)
 
          KPDENSIJ = KEND1
          KPDENSAB = KPDENSIJ + LPDENSIJ
@@ -161,14 +162,13 @@ C-----------------------------------------------------------
      &                         STATIC,DOUBLES,ISYM)
             ENDIF
 
-            DO ILAB2 = 1, NGPLR(ISYM)
-               LABEL2 = LBLLR(ISYM,ILAB2)
+            DO ILAB2 = ILAB1, NLAB
+               LABEL2 = LABELS(ILAB2)
 C
 C-----------------------------------------------------------
 C        Get the perturbed density matrix from file
 C-----------------------------------------------------------
 C
-               CALL SO_FNDPOS(LABEL2,FREQ(IFREQ),LURDENS)
                LPDENSTOT = LPDENSIJ + LPDENSAB + LPDENSAI
                IF (MODEL.EQ.'AORPA') THEN
                   CALL SO_REAVE(WORK(KPDENSAI),LPDENSAI,ISYM,
@@ -199,6 +199,7 @@ C
                ENDIF
 C
                PROPAR(IFREQ,ILAB1,ILAB2) = PROPVAL
+               PROPAR(IFREQ,ILAB2,ILAB1) = PROPVAL
 C
             END DO
 C
@@ -206,11 +207,21 @@ C
 C
   200 CONTINUE
 C
-C--------------------------------------
-C           Close files with densities.
-C--------------------------------------
+C---------------------------------------------------------
+C     Delete files for this symmetry and dump fileinf list
+C---------------------------------------------------------
 C
-      CALL GPCLOSE(LURDENS,'KEEP')
+      IF (DELETE_VECTORS) THEN
+         CALL GPCLOSE(LURDENS,'DELETE')
+         STATIC = .TRUE.
+         DO IFREQ = 1, NFREQ
+            STATIC = STATIC.AND.(abs(freq(ifreq)).lt.sop_stat_trh)
+         END DO
+         IF (SOP_USE_SELLER)CALL SO_DELVEC(STATIC,DOUBLES,ISYM)
+         call fileinf%empty
+      ELSE
+         CALL GPCLOSE(LURDENS,'KEEP')
+      END IF
 C
 C-----------------------
 C     Remove from trace.
@@ -223,7 +234,7 @@ C
       END
 
 C
-      SUBROUTINE SO_RSPOUT(PROPAR,ISYM,FREQ,NFREQ,NLAB)
+      SUBROUTINE SO_RSPOUT(PROPAR,ISYM,FREQ,NFREQ,LABELS,NLAB)
 
       USE SO_INFO, ONLY: SOP_DP, SOP_STAT_TRH
       IMPLICIT NONE
@@ -244,6 +255,7 @@ C TRIPLET <- Triplet property flag
       REAL(SOP_DP), INTENT(IN) :: PROPAR(NFREQ,NLAB,NLAB),
      &                            FREQ(NFREQ)
       INTEGER, INTENT(IN) :: ISYM, NFREQ, NLAB
+      CHARACTER(LEN=8) :: LABELS(NLAB)
       
       INTEGER :: ILAB1, ILAB2, IFREQ
 
@@ -275,7 +287,7 @@ C TRIPLET <- Triplet property flag
          DO ILAB1 = 1, NLAB
             DO ILAB2 = ILAB1, NLAB
                WRITE(LUPRI,'(5A,1P,D20.12)')
-     *         '@ -<< ',LBLLR(ISYM,ILAB1),' ; ',LBLLR(ISYM,ILAB2),
+     *         '@ -<< ',LABELS(ILAB1),' ; ',LABELS(ILAB2),
      &         ' >> =',PROPAR(IFREQ,ILAB1,ILAB2)
             END DO
          END DO
@@ -293,6 +305,7 @@ C
       implicit none
 #include "soppinf.h"
 #include "ccsdsym.h"
+#include "iratdef.h"
 C     Arguments
       INTEGER, INTENT(IN)       :: lvect ! length of the vector
       real(sop_dp), intent(out) :: vect(lvect) ! the vector to read
@@ -349,14 +362,63 @@ C
             real(sop_dp), intent(in) :: freq
             real(sop_dp), intent(out) :: vect(length)
 
-            integer :: lufile, idummy
-
+            integer :: lufile
+            logical :: olddx
+         
             lufile = -1
-            call GPOPEN(lufile,fname,'OLD    ',' ','UNFORMATTED',
-     &                 idummy,.FALSE.)
-            call SO_FNDPOS(LABEL,FREQ,LUFILE)
+            call GPOPEN(lufile,fname,'OLD    ','DIRECT','UNFORMATTED',
+     &                 irat*length,olddx)
             call SO_REAVE(vect,length,isym,label,freq,lufile)
             call gpclose(lufile,'KEEP')
          end subroutine
 
+      END SUBROUTINE
+
+      SUBROUTINE SO_DELVEC(STATIC,DOUBLES,ISYM)
+C
+C     Deletes the files containing solution and 
+C     residual vectors
+C
+      implicit none
+#include "soppinf.h"
+#include "ccsdsym.h"
+#include "iratdef.h"
+      
+
+
+      integer, intent(in)       :: isym ! symmetry of pt.
+      logical, intent(in)  :: static, ! only read E part if static
+     &                        doubles ! include doubles excitations
+C      
+      character(len=5) :: froot
+      integer :: iopt 
+
+      do iopt = 1,2
+         IF (IOPT.eq.1) then
+            froot = fnsv1e(1:5)
+         elseif (iopt.eq.2) then
+            froot = fnrv1e(1:5)
+         endif
+
+         CALL DELAVECT(froot//'1E', nt1am(isym))
+         if (.not.static) call delavect(froot//'1D', nt1am(isym))
+         if (doubles) then
+            CALL DELAVECT(froot//'2E', n2p2hop(isym))
+            if (.not.static) CALL DELAVECT(froot//'2D', n2p2hop(isym))
+         end if
+      end do
+
+      contains
+      
+         subroutine delavect(fname,length)
+            integer, intent(in) :: length
+            character(len=7),intent(in)  :: fname
+
+            integer :: lufile
+            logical :: olddx
+            lufile = -1
+            call GPOPEN(lufile,fname,'OLD    ','DIRECT','UNFORMATTED',
+     &                 irat*length,olddx)
+            call gpclose(lufile,'DELETE')
+         end subroutine
       END SUBROUTINE

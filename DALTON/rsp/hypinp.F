@@ -596,7 +596,7 @@ C  /* Deck smoinp */
 C
 C Sonia: added MCDBTE section (1999)
 C
-      use pelib_interface, only: use_pelib
+      use pelib_interface, only: use_pelib, pelib_ifc_dolf
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -946,15 +946,39 @@ C                 B operators
                GO TO 100
  24            CONTINUE
                   TWOPHO = .TRUE.
-                  LABEL='XDIPLEN'
-                  ASMOP( INDPRP(LABEL)) = .TRUE.
-                  BSMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='YDIPLEN'
-                  ASMOP( INDPRP(LABEL)) = .TRUE.
-                  BSMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='ZDIPLEN'
-                  ASMOP( INDPRP(LABEL)) = .TRUE.
-                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  IF (USE_PELIB()) THEN
+                     IF (PELIB_IFC_DOLF()) THEN
+                        LABEL='XLFDIPLN'
+                        ASMOP( INDPRP(LABEL)) = .TRUE.
+                        BSMOP( INDPRP(LABEL)) = .TRUE.
+                        LABEL='YLFDIPLN'
+                        ASMOP( INDPRP(LABEL)) = .TRUE.
+                        BSMOP( INDPRP(LABEL)) = .TRUE.
+                        LABEL='ZLFDIPLN'
+                        ASMOP( INDPRP(LABEL)) = .TRUE.
+                        BSMOP( INDPRP(LABEL)) = .TRUE.
+                     ELSE
+                        LABEL='XDIPLEN'
+                        ASMOP( INDPRP(LABEL)) = .TRUE.
+                        BSMOP( INDPRP(LABEL)) = .TRUE.
+                        LABEL='YDIPLEN'
+                        ASMOP( INDPRP(LABEL)) = .TRUE.
+                        BSMOP( INDPRP(LABEL)) = .TRUE.
+                        LABEL='ZDIPLEN'
+                        ASMOP( INDPRP(LABEL)) = .TRUE.
+                        BSMOP( INDPRP(LABEL)) = .TRUE.
+                     END IF
+                  ELSE
+                     LABEL='XDIPLEN'
+                     ASMOP( INDPRP(LABEL)) = .TRUE.
+                     BSMOP( INDPRP(LABEL)) = .TRUE.
+                     LABEL='YDIPLEN'
+                     ASMOP( INDPRP(LABEL)) = .TRUE.
+                     BSMOP( INDPRP(LABEL)) = .TRUE.
+                     LABEL='ZDIPLEN'
+                     ASMOP( INDPRP(LABEL)) = .TRUE.
+                     BSMOP( INDPRP(LABEL)) = .TRUE.
+                  END IF
                GO TO 100
  25            CONTINUE
                   MCDCAL=.TRUE.
@@ -1464,7 +1488,7 @@ C
 #include "priunit.h"
 C
 C panor:
-C     DOESA=.TRUE.
+C     If DOESA=.TRUE, then:
 C     For excited state absorption we require the B-state to be the
 C     first state of symmetry ESASYM and that the C-state is separate
 C     from the B-state.

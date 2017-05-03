@@ -18,7 +18,7 @@ module so_info
    real(sop_dp), parameter :: sop_dthresh = 1.0D-4  ! Smallest denominator used when 
                                                     ! preconditioning trial-vectors.
 
-   integer, parameter :: sop_num_models = 8
+   integer, parameter :: sop_num_models = 8 ! Number of currently defined methods
 
    ! Parameter for calculation types
    integer, parameter :: sop_linres = 1, & ! linear response
@@ -56,11 +56,15 @@ module so_info
    character(len=11), parameter :: FN_RDENS  = 'soppa_densp', &
                                    FN_RDENSE = 'soppa_dense', &
                                    FN_RDENSD = 'soppa_densd'
-
+   character(len=10), dimension(3), parameter :: FN_PROP =    &
+      (/ 'soppa_real', 'soppa_imag', 'soppa_trip' /)
    ! Flags stating which models are active
    logical :: AORPA = .false., AOHRP = .false., DCRPA = .false., &
               DCHRP = .false., SDCHR = .false., &
               AOSOP = .false., AOSOC = .false., AOCC2 = .false.
+   ! Flag for ensuring that second order, first order density is written
+   ! only once
+   logical :: sop_mp2ai_done = .false.
 
    ! Convergence threshold
    real(sop_dp) :: sop_conv_thresh = 1.D-04

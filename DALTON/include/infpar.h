@@ -2,7 +2,11 @@
 ! -- infpar.h --
 !     my_MPI_INTEGER is used both in .c and .F routines in MPI calls
 !        so we can handle "-i8" compilations on 32-bit machines,
-!        using VAR_INT64 /Jan-2007 hjaaj
+!        using VAR_INT64 /Jan 2007 hjaaj
+!
+!    MAXNOD is hardcoded max number of nodes (slaves). If you increase it
+!    beyond 9999 you must also allow node file names with more than 4 digits
+!    in GPOPEN etc. in gp/gptrygve.F /Jan 2017 hjaaj
 !
 !    infpar.h depends on maxorb.h
 !    use #include "maxorb.h" before including infpar. - FBeyer 20140302
@@ -18,7 +22,7 @@
 ! NOTE : MXSHEL should have value of MXSHEL in maxorb.h
 #endif
 #define MXSHEL 1500
-#define MAXNOD 999
+#define MAXNOD 9999
 #define NPARI  ((MAXNOD + 1) + 6)
 #define MAXTSK ( MXSHEL * (MXSHEL + 1) / 2 )
 extern struct common_infpar {
@@ -44,7 +48,7 @@ extern struct common_infpar {
 !     THUS: NPARI is length from NODTOT,...,PARIO,rma_model
 !
       INTEGER   MAXNOD, NPARI, MAXTSK
-      PARAMETER ( MAXNOD = 999, NPARI = (MAXNOD + 1) + 7 )
+      PARAMETER ( MAXNOD = 9999, NPARI = (MAXNOD + 1) + 7 )
       PARAMETER ( MAXTSK = (MXSHEL * (MXSHEL + 1))/2 )
       INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID
       INTEGER NODTOT, NODEID(0:MAXNOD), NFMAT, MTOTTK

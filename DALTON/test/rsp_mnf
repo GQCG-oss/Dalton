@@ -126,7 +126,7 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Integrals
-CRIT1=`$GREP "SO\-integrals are calculated for * O\: \[He\]2s\^2 2p\^4" $log | wc -l`
+CRIT1=`$GREP -l "SO\-integrals are calculated for * O\: \[He\]2s\^2 2p\^4" $log | wc -l`
 # hjaaj: I have reduced print level. The headings doesn't say anything about the integrals correct anyway.
 #CRIT2=`$GREP "\! Integrals of operator\: X1MNF\-SO \!" $log | wc -l`
 #CRIT3=`$GREP "\! Integrals of operator\: Y1MNF\-SO \!" $log | wc -l`

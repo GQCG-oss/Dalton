@@ -357,6 +357,94 @@ C
 C
       RETURN
       END
+C  /* Deck so_x2sm1 */
+      SUBROUTINE SO_X2SM1(X2M1,LX2M1,X2SQ,LX2SQ,CMO,LCMO,IDEL,
+     &                    ISYMD,ISYMTR,WORK,LWORK)
+C
+C     This routine is part of the atomic integral direct SOPPA program.
+C
+C     Rasmus Faber 2017: Version of SO_X2M1, that handles squared, non-totally
+C                        symmetric vectors
+C                        ~
+C     PURPOSE: Calculate X2-trial vectors with one back-transformed
+C              index.
+C
+C
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
+      DOUBLE PRECISION, PARAMETER :: INVSQ2 = SQRT(HALF)
+      character(len=*), parameter :: myname = 'SO_X2SM1'
+C
+      DIMENSION X2M1(LX2M1), X2SQ(LX2SQ), CMO(LCMO)
+      DIMENSION WORK(LWORK)
+C
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+C
+C------------------
+C     Add to trace.
+C------------------
+C
+      CALL QENTER(myname)
+C
+      ISYMB = ISYMD
+C
+      LCDB  = NVIR(ISYMB)
+C
+      KCDB    = 1
+      KEND1   = KCDB  + LCDB
+      LWORK1  = LWORK - KEND1
+C
+      CALL SO_MEMMAX (myname//'.1',LWORK1)
+      IF (LWORK1 .LT. 0) CALL STOPIT(myname//'.1',' ',KEND1,LWORK)
+C
+      KOFF1 = ILMVIR(ISYMD) + IDEL - IBAS(ISYMD)
+C
+C--------------------------------------------------
+C     Copy delta MO-coefficients to the vector CDB.
+C--------------------------------------------------
+C
+      CALL DCOPY(NVIR(ISYMB),CMO(KOFF1),NBAS(ISYMD),WORK(KCDB),1)
+C
+C     Incorporate factor 1/sqrt(2)
+      CALL DSCAL(NVIR(ISYMB),INVSQ2,WORK(KCDB),1)
+C
+C------------------------------------------------------------------
+C     Loop over symmetry-blocks, do reductions
+C------------------------------------------------------------------
+C
+      KOFF = 0
+      DO ISYMJ = 1, NSYM
+         ISYMBJ = MULD2H(ISYMJ,ISYMB)
+         ISYMAI = MULD2H(ISYMBJ,ISYMTR)
+         IOFFAIBJ = IT2SQ(ISYMAI,ISYMBJ)
+         KOFFBJ = IT1AM(ISYMB,ISYMJ)
+
+
+         KOFFINP = IOFFAIBJ + NT1AM(ISYMAI)*KOFFBJ
+         DO J = 1, NRHF(ISYMJ)
+            KOUT = KOFF + NT1AM(ISYMAI)*(J-1)+1
+            KINP = KOFFINP + NT1AM(ISYMAI)*NVIR(ISYMB)*(J-1)+1
+            CALL DGEMV('N',NT1AM(ISYMAI),NVIR(ISYMB),ONE,
+     &                 X2SQ(KINP),MAX(1,NT1AM(ISYMAI)),
+     &                 WORK(KCDB),1,ONE,X2M1(KOUT),1)
+         END DO
+
+
+         KOFF = KOFF + NT1AM(ISYMAI)*NRHF(ISYMJ)
+
+      END DO
+C
+C-----------------------
+C     Remove from trace.
+C-----------------------
+C
+      CALL QEXIT(myname)
+C
+      RETURN
+      END
 
 C  /* Deck so_t2x1 */
       SUBROUTINE SO_T2X1(X2M1,LX2M1,T2MP,LT2MP,TJ1,LTJ1,IDEL,
@@ -499,3 +587,62 @@ C
 C
       RETURN
       END
+
+      SUBROUTINE SO_M1SHUF(T2M1,LT2M1,ISYMD,ISYMTR)
+C
+C     Calculate
+C        v                ~           ~
+C        t(ai,j) = -1/3 ( t(ai,j) + 2 t(aj,i) )
+C     in place.
+      use so_info, only: sop_dp
+      implicit none
+
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+      real(sop_dp), intent(inout) :: T2M1(LT2M1)
+      integer, intent(in) :: LT2M1, ISYMD, ISYMTR
+
+      character(len=*), parameter :: myname = 'SO_M1SHUF'
+      real(sop_dp), parameter :: inv3m = -1.0D0/3.0D0, two = 2.0D0
+
+      integer :: isymi, isymj, isymai, isyma, isymjd, isymaj
+      integer :: ioffj, ioffi, ioffaij, ioffaji
+      integer :: nrhfi
+      real(sop_dp) :: xaij, xaji
+
+      CALL QENTER(MYNAME)
+
+      DO ISYMJ = 1, NSYM
+         isymjd = muld2h(isymj,isymd)
+         do ISYMI = 1, isymj ! Ensure i < j
+            isymai = muld2h(isymjd,isymtr)
+            isyma = muld2h(isymai,isymi)
+            isymaj = muld2h(isymj,isyma)
+
+            do j = 1, nrhf(isymj)
+               ioffj = it2bcd(isymai,isymj) + nt1am(isymai)*(j-1)
+               if (isymi.eq.isymj) then
+                  nrhfi = j
+               else
+                  nrhfi = nrhf(isymi)
+               end if
+               do i = 1, nrhfi
+                  ioffi = it2bcd(isymaj,isymi)+nt1am(isymaj)*(i-1)
+                  ioffaij = ioffj + it1am(isyma,isymi)
+     &                    + nvir(isyma)*(i-1)
+                  ioffaji = ioffi + it1am(isyma,isymj)
+     &                    + nvir(isyma)*(j-1)
+                  do a = 1, nvir(isyma)
+                     xaij = t2m1(ioffaij+a)
+                     xaji = t2m1(ioffaji+a)
+                     t2m1(ioffaij+a) = inv3m * (xaij+two*xaji)
+                     t2m1(ioffaji+a) = inv3m * (xaji+two*xaij)
+                  end do ! a
+               end do ! i
+            end do ! j
+         end do ! isymi
+      END DO ! isymj
+
+      CALL QEXIT(MYNAME)
+      END SUBROUTINE

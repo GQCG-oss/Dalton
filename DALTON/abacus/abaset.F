@@ -55,7 +55,7 @@ C
 #include "maxmom.h"
       PARAMETER (D0 = 0.0D0)
 C
-      LOGICAL DIPOK, FNDLAB, MCSSYM
+      LOGICAL DIPOK, FNDLAB, MCSSYM, FLAG_save
       CHARACTER*8 RTNLBL(2)
       DIMENSION WORK(LWORK)
 C
@@ -118,7 +118,9 @@ C
 C
       REWIND LUSIFC
       IF (FNDLAB('SIRFLAGS',LUSIFC)) THEN
+         FLAG_save = FLAG(34) ! flag(34) is used before CALL SETSIR in RESPONS to signal no TRACTL in NSETUP
          READ (LUSIFC) (FLAG(I),I=1,NFLAG)
+         FLAG(34) = FLAG_save
       ELSE
          WRITE (LUPRI,'(/A/A)')
      &      ' FATAL ERROR (ABACUS.SETSIR)',
@@ -500,25 +502,28 @@ C          (FLAG(34) false tells that mo integrals needed)
 C          (FLAG(14) true tells that old mo integral file exists)
 C          Set ITRLVL to minimum transformation level required.
 C
+      IF (.NOT. FLAG(34)) THEN ! flag(34): MO integrals not needed
       AO2INTFILE_LABEL = 'AOTWOINT'
       THRP = MAX(1.D-15,THRS)
       THRQ = MAX(1.D-15,THRS)
       USEDRC = .TRUE.
       IPRTRA = IPRNTR
       IF ((NASHT.GT.1 .AND. .NOT.HSROHF) .OR. H2MO) THEN
-         FLAG(34) = .FALSE.
-         IF (NEWTRA) THEN
-C            ... we need (ia/ (inactive-secondary) Mulliken distributions;
-C            they are only calculated for level 5 in "NEWTRA"
-C            transformation  /hjaaj June 09
-            KTRLVL = 5
-            ITRLVL = KTRLVL
-            FLAG(14) = .FALSE. ! cannot test in SIR_INTOPEN yet for NEWTRA
+         IF (CTOCD .OR. DOEXCI .OR. ABALNR .OR. VCD .OR.
+     &       SPNSPN .OR. MAGSUS .OR. SHIELD .OR. SPINRO .OR.
+     &       MOLGFA .OR. RNLRSC) THEN
+            KTRLVL = 4  ! linear response with RESPONS module
+         ELSE IF (HYPER .OR. VERDET .OR. MCD) THEN
+            KTRLVL = 10 ! quadratic resonse with RESPONS module
          ELSE
-            KTRLVL = 4
-            ITRLVL = KTRLVL
-            FLAG(14) = .TRUE.
+            ! ABARSP (calling RESPONS module) is not called
+            ! NB! if some tests should be missing above, then
+            ! ABARSP will call TRACTL again with the necessary
+            ! transformation level.
+            KTRLVL = 3
          END IF
+         ITRLVL = KTRLVL
+         FLAG(14) = .TRUE.
          CALL SIR_INTOPEN
 C        ... SIR_INTOPEN returns FLAG(14) false if no mo integral file
 C        or if ITRLVL on file too small.
@@ -531,7 +536,6 @@ CPi 15.08.16: AO-SOPPA doesn't need MO integrals
             FLAG(34) = .TRUE.
          ELSE
             KTRLVL = 10
-            FLAG(34) = .FALSE.
          ENDIF
          ITRLVL = KTRLVL
 C
@@ -546,16 +550,17 @@ C        ... Hartree-Fock, MO integral file will normally
 C        not exist, but open to define name 'MOTWOINT' instead
 C        of e.g. 'fort.13', and to avoid problems if it actually
 C        does exist. /980529-hjaaj
-         KTRLVL = 4
+         KTRLVL = 0
          ITRLVL = KTRLVL
          FLAG(14) = .TRUE.
          FLAG(34) = .TRUE.
          CALL SIR_INTOPEN
       END IF
+      END IF ! .NOT. FLAG(34)
 
       IF (.NOT. FLAG(34)) THEN ! MO integrals not needed
-      IF (FTRCTL .OR. NEWCMO .OR. (ITRLVL .GT. ITRLVL_SAVE) .OR.
-     &    (USEDRC .AND. LVLDRC_SAVE .LT. 0)) THEN
+      IF (FTRCTL .OR. NEWCMO .OR. (ITRLVL .GT. ITRLVL_LAST) .OR.
+     &    (USEDRC .AND. LVLDRC_LAST .LT. 0)) THEN
       ! ... needed integrals not available
          WRITE (LUPRI,1020) KTRLVL
          KCMO  = 1
@@ -570,7 +575,7 @@ C        does exist. /980529-hjaaj
          FLAG(14) = .TRUE.
          NEWCMO   = .FALSE.
       END IF
-      END IF
+      END IF ! .NOT. FLAG(34)
 C
 C
 C PART 5 : **** MISCELLANEOUS ******************************************

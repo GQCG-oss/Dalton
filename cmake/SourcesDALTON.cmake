@@ -75,6 +75,8 @@ set(DALTON_C_SOURCES
     DALTON/pdpack/scatter-io.c
     )
 set(DALTON_FIXED_FORTRAN_SOURCES
+    DALTON/main/dalgnr.F
+    DALTON/main/dalpar.F
     DALTON/abacus/aba2eth.F
     DALTON/abacus/aba2r12.F
     DALTON/abacus/aba2tex.F
@@ -121,7 +123,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/abacus/abavib.F
     DALTON/abacus/abavrml.F
     DALTON/abacus/abawalk.F
-    DALTON/abacus/dalgnr.F
     DALTON/abacus/eckart.F
     DALTON/abacus/ecp.F
     DALTON/abacus/her1ave.F
@@ -667,8 +668,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_anal.F
     DALTON/soppa/so_aodens.F
     DALTON/soppa/so_bcktr.F
-    DALTON/soppa/so_bextract.F
-    DALTON/soppa/so_tbextract.F
     DALTON/soppa/so_check.F
     DALTON/soppa/so_close.F
     DALTON/soppa/so_collect_tm.F
@@ -700,6 +699,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_memmax.F
     DALTON/soppa/so_moenergy.F
     DALTON/soppa/so_newtrial.F
+    DALTON/soppa/so_oneave.F
     DALTON/soppa/so_onefock.F
     DALTON/soppa/so_onep.F
     DALTON/soppa/so_onepmo.F
@@ -729,11 +729,11 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_res_ovl.F
     DALTON/soppa/so_res_sym.F
     DALTON/soppa/so_res_tcb.F
-    DALTON/soppa/so_res_tcbt.F
     DALTON/soppa/so_ropt.F
     DALTON/soppa/so_rpprp1.F
     DALTON/soppa/so_rspleq.F
     DALTON/soppa/so_rsplex.F
+    DALTON/soppa/so_pkaodens.F
     DALTON/soppa/so_sdiag1.F
     DALTON/soppa/so_secgp.F
     DALTON/soppa/so_sigai.F
@@ -763,6 +763,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_wrtve.F
     DALTON/soppa/so_lrnsl.F
     DALTON/soppa/so_rspdrv.F
+    DALTON/soppa/so_rsplrs.F
     )
 if(NOT ENABLE_CRAY_WRAPPERS)
     # radovan: CRAY provides these functions
@@ -791,6 +792,7 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/cc/dyn_index.F90
     DALTON/soppa/so_parutils.F90
     DALTON/soppa/so_info.F90
+    DALTON/soppa/so_data.F90
     DALTON/qmcmm/herqmnp.F90
     DALTON/qmcmm/fock.F90
     DALTON/qmcmm/response.F90

@@ -20,7 +20,9 @@ C
      &                   so_singles_second,
      &                   sop_dens_label, sop_model_rpad,
      &                   sop_model_rpa,
-     &                   sop_conv_thresh
+     &                   sop_conv_thresh,
+     &                   so_needs_densai,
+     &                   sop_mp2ai_done
 C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
@@ -62,6 +64,8 @@ C
       integer :: num_active
       logical :: active_models(sop_num_models)
       logical :: doubles, need_t2, rpa_only
+      character(len=4) :: old_denslab, denslab
+      logical :: new_densai, imagprop
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -94,6 +98,9 @@ C
 C     Triplet flag not initialized...
       TRIPLET = .FALSE.
 C
+C     We have read no amplitudes
+      OLD_DENSLAB = 'NONE'
+C      
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.
 C-------------------------------------------
@@ -187,6 +194,17 @@ C      CALL DZERO(SNDPRP,2)
       CALL DZERO(POLDL,2*9*NFRVAL*NUM_ACTIVE)
       CALL DZERO(POLDA,2*9*NFRVAL*NUM_ACTIVE)
 C
+#ifdef VAR_MPI
+C
+C---------------------------------------------------------
+C              Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+      call soppa_initialize_slaves ( update_common_blocks,
+     &                               WORK(KT2AM), LT2AM, rpa_only)
+      update_common_blocks = .false.
+#endif
+C
 C==========================================
 C     Determine linear response properties.
 C==========================================
@@ -246,6 +264,7 @@ C
                FULLNAME = SOP_MOD_FULLNAME(IMODEL)
                DOUBLES = SO_HAS_DOUBLES(IMODEL)
                NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
+               DENSLAB = SOP_DENS_LABEL(IMODEL)
 C
                IF (IPRSOP .GE. 1) THEN
                   WRITE(LUPRI,9000)
@@ -266,36 +285,45 @@ C-----------------------------------------------------
 C              Get T2 amplitudes and density matrices.
 C-----------------------------------------------------
 C
-               IF (NEED_T2) THEN
-                  CALL SO_GETT2(SOP_DENS_LABEL(IMODEL),
+               IF ((NEED_T2).AND.
+     &             (DENSLAB.NE.OLD_DENSLAB)) THEN
+                  CALL SO_GETT2(DENSLAB,
      &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
      &                          WORK(KDENSAI),
      &                          LDENSAI,WORK(KDENSIJ),LDENSIJ,
      &                          WORK(KDENSAB),LDENSAB,
      &                          WORK(KEND1),LWORK1)
+                  OLD_DENSLAB = DENSLAB
                ENDIF
-#ifdef VAR_MPI
 C
-C---------------------------------------------------------
-C              Ready the slaves for parallel calculations.
-C---------------------------------------------------------
+C-----------------------------------------
+C              Initialize DENSAI if needed
+C-----------------------------------------
 C
-               call soppa_initialize_slaves ( update_common_blocks,
-     &                                       WORK(KT2AM), LT2AM, model)
-               update_common_blocks = .false.
-#endif
+               IF ( SO_NEEDS_DENSAI(MODEL) .AND.
+     &              (.NOT.SOP_MP2AI_DONE) ) THEN
+                  CALL DZERO(WORK(KDENSAI),LDENSAI)
+                  NEW_DENSAI = .TRUE.
+               ELSE
+                  NEW_DENSAI = .FALSE.
+               ENDIF
 C
 C------------------------------------------------------------------
 C              Determine SOPPA excitation energies and excitation
 C              vectors. The excitation vectors are written to file.
 C------------------------------------------------------------------
 C
-               CALL SO_RSPLEQ(MODEL,LABEL1,ISYMTR,FRVAL,NFRVAL,
+               CALL SO_RSPLEQ(MODEL,LABEL1,IMAGPROP,ISYMTR,FRVAL,NFRVAL,
      &                        WORK(KDENSIJ),LDENSIJ,
      &                        WORK(KDENSAB),LDENSAB,
      &                        WORK(KDENSAI),LDENSAI,WORK(KT2AM),
      &                        LT2AM,WORK(KFOCKD),LFOCKD,
      &                        WORK(KEND1),LWORK1)
+C
+C              Save AI density matrix, if it has been recalculated.
+               IF (NEW_DENSAI) THEN
+                  CALL SO_DUMP_DENSAI(DENSLAB,WORK(KDENSAI),LDENSAI)
+               END IF
 C
 C----------------------------------------------
 C              Calculate second order property.
@@ -308,12 +336,6 @@ C
      &                       POLDD(1,1,1,1,IOUT),POLDQ(1,1,1,1,1,IOUT),
      &                       POLDL(1,1,1,1,IOUT),POLDA(1,1,1,1,IOUT),
      &                       WORK(KEND1),LWORK1)
-#ifdef VAR_MPI
-C-------------------------------------------------------
-C              Release slaves to the global node-driver.
-C-------------------------------------------------------
-               call soppa_release_slaves()
-#endif
 C              INCREMENT OUTPUT POINTER
                IOUT = IOUT + 1
 C
@@ -323,6 +345,13 @@ C
   100    CONTINUE
 C
   200 CONTINUE
+C
+#ifdef VAR_MPI
+C-------------------------------------------------------
+C              Release slaves to the global node-driver.
+C-------------------------------------------------------
+      call soppa_release_slaves()
+#endif
 C
 C---------------------------------
 C     3. allocation of work space.

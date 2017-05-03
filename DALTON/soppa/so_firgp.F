@@ -51,7 +51,7 @@ C
 C 
 C     We need to change basis on lt2am
 C        
-         lt2amh = lt2am/2 
+         lt2amh = lt2am
          KT2CP = kend1
          kend2 = kt2cp + lt2amh
          lwork2 = lwork - kend2 

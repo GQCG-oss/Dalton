@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(from_string = 'Two-photon transition tensor S',
+      num_lines = 10,
+      ignore_sign = True,
+      rel_tolerance = 1.0e-3)
+
+f.add(from_string = 'Two-photon absorption summary',
+      num_lines = 14,
+      mask = [1,2,3,5,6,7,8],
+      rel_tolerance = 1.0e-3)
+
+
+test.run(['pehf_2pa_lf.dal'], ['pehf_2pa_lf.mol'], ['pehf_2pa_lf.pot'], f={'out': f})
+
+sys.exit(test.return_code)

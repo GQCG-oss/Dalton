@@ -205,12 +205,12 @@ C
             END IF
 C
          END SUBROUTINE
-        
+
          SUBROUTINE SQUAREXT(X2SQ,X2PACK,ISYMR,ISYMT)
             real(sop_dp),intent(out) :: X2SQ(*)
             real(sop_dp),intent(in) :: x2pack(*)
             integer, intent(in) :: isymr, isymt
-         
+
             real(sop_dp),parameter :: factd =  SQRT(2.0D0),
      &                                fact1 =  -SQRT(2.0D0),
      &                                fact23 =  1.D0,
@@ -220,7 +220,7 @@ C
      &                 isyma, isymb, isymi, isymj
             integer :: sab1, sab2, nvira, nrhfi, nvirb, nrhfj
             integer :: nai, naj, nbi, nbj, naibj, najbi, nbiaj, nbjai,
-     &                 nbibj, nbjbi, najbj, nbjaj, nbjbj, 
+     &                 nbibj, nbjbi, najbj, nbjaj, nbjbj,
      &                 nabij1, nabij2, nabij3, nbbij2, nabjj3
             integer :: ioff1, ioffj1, ioffbj1
             integer :: ioff2, ioffj2, ioffbj2
@@ -234,10 +234,10 @@ C           Calculate the intermediate
 C           ~           _
 C           x(aibj) = -/2 x1(abij) + x2(abij) + x3(abij)
 C
-C           Note that x2 changes sign when permuting i and j, 
+C           Note that x2 changes sign when permuting i and j,
 C           x3 when permuting a and b, and x1 change sign on both
-C           these permutations.             
-C         
+C           these permutations.
+C
 
             if (isymt .eq. 1 ) then
                do isymj = 1, nsym
@@ -256,7 +256,7 @@ C
 C
                      sab1 = ntvv(isymab)
                      sab2 = nsvv(isymab)
-                     ioff1 = it2amt1(isymij,isymab) + 
+                     ioff1 = it2amt1(isymij,isymab) +
      &                     sab1*itoo(isymj,isymi) + itvv(isymb,isyma)
                      ioff2 = it2amt2(isymij,isymab) +
      &                     sab2*itoo(isymj,isymi) + isvv(isymb,isyma)
@@ -290,11 +290,11 @@ C
                                  nbjai = quad_pos(isymbj,nbj,isymai,nai)
                                  x2sq(naibj) =  fact1*x2pack(nabij1)
      &                      + fact23*( x2pack(nabij2) + x2pack(nabij3) )
-                                 x2sq(najbi) = -fact1*x2pack(nabij1) 
+                                 x2sq(najbi) = -fact1*x2pack(nabij1)
      &                      - fact23*( x2pack(nabij2) - x2pack(nabij3) )
-                                 x2sq(nbiaj) = -fact1*x2pack(nabij1) 
+                                 x2sq(nbiaj) = -fact1*x2pack(nabij1)
      &                      + fact23*( x2pack(nabij2) - x2pack(nabij3) )
-                                 x2sq(nbjai) =  fact1*x2pack(nabij1) 
+                                 x2sq(nbjai) =  fact1*x2pack(nabij1)
      &                      - fact23*( x2pack(nabij2) + x2pack(nabij3) )
                               end do ! a
 C                          Handle a == b, i<j
@@ -305,7 +305,7 @@ C                          Handle a == b, i<j
                               x2sq(nbjbi) = - factd*x2pack(nbbij2)
                            end do ! i
 C                       Handle i = j, a < b
-                           do a = 1, nvira 
+                           do a = 1, nvira
                               naj = pair_pos(isyma,a,isymj,j)
                               nabjj3 = ioffbj3+(j-1)*sab1+a
                               najbj = quad_pos(isymaj,naj,isymbj,nbj)
@@ -318,7 +318,7 @@ C                           if (isyma.eq.isymb) then
                            nbjbj = quad_pos(isymbj,nbj,isymbj,nbj)
                            x2sq(nbjbj) = zero
 C                           end if
-                          
+
                         end do ! b
                      end do ! j
                   else if (isyma .lt. isymb ) then
@@ -345,20 +345,20 @@ C                           end if
                                  nbjai = quad_pos(isymbj,nbj,isymai,nai)
                                  x2sq(naibj) =  fact1*x2pack(nabij1)
      &                      + fact23*( x2pack(nabij2) + x2pack(nabij3) )
-                                 x2sq(nbjai) =  fact1*x2pack(nabij1) 
+                                 x2sq(nbjai) =  fact1*x2pack(nabij1)
      &                      - fact23*( x2pack(nabij2) + x2pack(nabij3) )
                               end do ! a
                           end do ! i
                        end do ! b
                     end do ! j
                   else ! isyma > isymb -> a > b !
-                     ioff1 = it2amt1(isymij,isymab) + 
+                     ioff1 = it2amt1(isymij,isymab) +
      &                     sab1*itoo(isymj,isymi) + itvv(isyma,isymb)
                      ioff2 = it2amt2(isymij,isymab) +
      &                     sab2*itoo(isymj,isymi) + isvv(isyma,isymb)
                      ioff3 = it2amt3(isymij,isymab) +
      &                     sab1*isoo(isymj,isymi) + itvv(isyma,isymb)
-                     nvirb = nvir(isymb) 
+                     nvirb = nvir(isymb)
                      do j = 1, nrhf(isymj)
                         nrhfi = nrhf(isymi)
                         ioffj1 = ioff1 + (j-1)*nrhfi*sab1
@@ -382,7 +382,7 @@ C                           end if
                                  nbjai = quad_pos(isymbj,nbj,isymai,nai)
                                  x2sq(naibj) = -fact1*x2pack(nabij1)
      &                      + fact23*( x2pack(nabij2) - x2pack(nabij3) )
-                                 x2sq(nbjai) = -fact1*x2pack(nabij1) 
+                                 x2sq(nbjai) = -fact1*x2pack(nabij1)
      &                      - fact23*( x2pack(nabij2) - x2pack(nabij3) )
                               end do ! a1
                           end do ! i
@@ -392,7 +392,7 @@ C                           end if
 
                   end do ! loop isymi
                end do ! loop isymj
-C               
+C
             else ! isymai != isymbj
 C
                do isymj = 1, nsym
@@ -410,7 +410,7 @@ C
 C
                      sab1 = ntvv(isymab)
                      sab2 = nsvv(isymab)
-                     ioff1 = it2amt1(isymij,isymab) + 
+                     ioff1 = it2amt1(isymij,isymab) +
      &                     sab1*itoo(isymj,isymi) + itvv(isymb,isyma)
                      ioff2 = it2amt2(isymij,isymab) +
      &                     sab2*itoo(isymj,isymi) + isvv(isymb,isyma)
@@ -443,9 +443,9 @@ C
                                  nai = pair_pos(isyma,a,isymi,i)
                                  naj = pair_pos(isyma,a,isymj,j)
                                  nabij1 = ioffbj1 + (i-1)*sab1+
-     &                                    (a-1)*nvirb + 1 
+     &                                    (a-1)*nvirb + 1
                                  nabij2 = ioffbj2 + (i-1)*sab2+
-     &                                    (a-1)*nvirb + 1 
+     &                                    (a-1)*nvirb + 1
                                  nabij3 = ioffbj3 + (i-1)*sab1+
      &                                    (a-1)*nvirb + 1
                                  naibj = quad_pos(isymai,nai,isymbj,nbj)
@@ -457,7 +457,7 @@ C
                               end do ! a
                            end do ! i
 C                       Handle i = j, a != b
-                           do a = 1, nvir(isyma) 
+                           do a = 1, nvir(isyma)
                               naj = pair_pos(isyma,a,isymj,j)
                               nabjj3 = ioffbj3+(j-1)*sab1+(a-1)*nvirb+1
                               najbj = quad_pos(isymaj,naj,isymbj,nbj)
@@ -470,7 +470,7 @@ C                       Handle i = j, a != b
                         nrhfi = nrhf(isymi)
                         nrhfj = 1
                         fij = one
-                     else 
+                     else
                         nrhfi = 1
                         nrhfj = nrhf(isymj)
                         fij = onem
@@ -496,13 +496,13 @@ C                       Handle i = j, a != b
                                  nabij3 = ioffbj3+(i-1)*nrhfj*sab1+a
                                  naibj = quad_pos(isymai,nai,isymbj,nbj)
                                  nbiaj = quad_pos(isymbi,nbi,isymaj,naj)
-                                 x2sq(naibj) =  
+                                 x2sq(naibj) =
      &                               fij*fact1*x2pack(nabij1)
-     &                              + fact23*( fij*x2pack(nabij2) + 
+     &                              + fact23*( fij*x2pack(nabij2) +
      &                                         x2pack(nabij3) )
-                                 x2sq(nbiaj) = 
-     &                              -fij*fact1*x2pack(nabij1) 
-     &                              + fact23*( fij*x2pack(nabij2) - 
+                                 x2sq(nbiaj) =
+     &                              -fij*fact1*x2pack(nabij1)
+     &                              + fact23*( fij*x2pack(nabij2) -
      &                                         x2pack(nabij3) )
                               end do ! a
 C                          Handle a == b, i<j
@@ -527,7 +527,7 @@ C                          Handle a == b, i<j
                         nrhfi = nrhf(isymi)
                         nrhfj = 1
                         fij = one
-                     else 
+                     else
                         nrhfi = 1
                         nrhfj = nrhf(isymj)
                         fij = onem
@@ -544,26 +544,26 @@ C                          Handle a == b, i<j
                            do i = 1, nrhf(isymi)
                               do a = 1, nvir(isyma)
                                  nai = pair_pos(isyma,a,isymi,i)
-                                 nabij1 = ioffbj1 + 
+                                 nabij1 = ioffbj1 +
      &                                    (i-1)*nrhfj*sab1+
-     &                                    (a-1)*nvirb + 1 
-                                 nabij2 = ioffbj2 + 
+     &                                    (a-1)*nvirb + 1
+                                 nabij2 = ioffbj2 +
      &                                    (i-1)*nrhfj*sab2+
-     &                                    (a-1)*nvirb + 1 
-                                 nabij3 = ioffbj3 + 
+     &                                    (a-1)*nvirb + 1
+                                 nabij3 = ioffbj3 +
      &                                    (i-1)*nrhfj*sab1+
      &                                    (a-1)*nvirb + 1
                                  naibj = quad_pos(isymai,nai,isymbj,nbj)
-                                 x2sq(naibj) = 
+                                 x2sq(naibj) =
      &                                fab*fij*fact1*x2pack(nabij1)
-     &                                + fact23*( fij*x2pack(nabij2) + 
+     &                                + fact23*( fij*x2pack(nabij2) +
      &                                           fab*x2pack(nabij3) )
                               end do ! a
                            end do ! i
                         end do ! b
                      end do ! j
 
-                  end if 
+                  end if
                   end do ! isymi
                end do ! isymj
             end if

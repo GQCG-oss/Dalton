@@ -19,8 +19,8 @@ f.add(from_string = 'Polarizable embedding energy contributions:',
 f.add(string = 'DIIS converged in',
       abs_tolerance = 1.0e-5)
 
-test.run(['pehf_restart.dal'], ['pehf_restart.mol'], ['pehf_restart.pot'], f={'out': f}, noarch=False)
+test.run(['pehf.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f}, noarch=False)
 
-test.run(['pehf_restart_iter.dal', 'pehf_restart_direct.dal'], ['pehf_restart.mol'], ['pehf_restart.pot'], f={'out': f}, args='-f pehf_restart')
+test.run(['restart_iter.dal', 'restart_direct.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f}, args='-f pehf_acrolein_2h2o')
 
 sys.exit(test.return_code)

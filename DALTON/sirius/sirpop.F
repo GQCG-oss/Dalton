@@ -381,7 +381,7 @@ C     *****   Read in overlap integrals from AOONEINT (unit LUONEL)
      *     '     basic information for POPTRA is missing.'
             RETURN
          END IF
-         POPANA_TYPE = '     MULPOP '
+         POPANA_TYPE = '   MULPOP   '
       ELSE IF (IPOPTYP .EQ. 2) THEN
 C     *****   Read in overlap integrals from AOPROPER (unit LUPROP)
          CALL RDPROP('OVERLAP ',SS,FOUND)
@@ -500,12 +500,16 @@ C
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
+#include "maxaqn.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
 ! aosotr: AOINFO(:,3)
-! nuclei: NAMDEP(:), NATOMS
-#include "maxorb.h"
+! nuclei: NAMDEP(:), NATOMS, CHARGE(:), NUCDEG(:)
+! symmet: FMULT(), ISYMAX()
 #include "aosotr.h"
 #include "nuclei.h"
+#include "symmet.h"
 
       DIMENSION OCCUP(NORBT),
      &          POPNAB(NATOMS,NATOMS),POPABI(NATOMS,NATOMS),
@@ -513,6 +517,7 @@ C
      &          SS(NBAST,NBAST),POPNET(NBAST,NBAST)
 C
 C Used from common blocks:
+C   codata.h : DEBYE, DIPSI
 C   INFPOP ? MAXTYP, ...
 C   INFIND : ISX(:), ISMO(:)
 C   INFORB ? NBAST,
@@ -520,8 +525,7 @@ C   INFTAP : LUTEMP
 C   CCOM   : GTOTYP(:)
 C   SHELLS : NCENT(:)
 C
-#include "maxaqn.h"
-#include "maxash.h"
+#include "codata.h"
 #include "infpop.h"
 #include "infind.h"
 #include "inforb.h"
@@ -530,7 +534,7 @@ C
 #include "ccom.h"
 #include "shells.h"
 C
-      DIMENSION   POPTSM(MXCENT,2)
+      REAL*8      POPTSM(MXCENT,2), DIPTOT(3)
       CHARACTER*1 SPDCAR
 
       IF (IPRMUL.GE.20) THEN
@@ -871,34 +875,65 @@ c1015     FORMAT (4(1X,A6,F10.4))
 C
       POPTOT_E = DSUM(NATOMS,POPNUC,1)
 C
-C     Add effective nuclear charges (nuclear charge minus ECP charge)$
+C     Add effective nuclear charges (nuclear charge minus ECP charge)
+C     Calculate dipole moment based on atomic charges
 C
+      DIPTOT(1:3) = 0.0D0
       NUC = 0
       DO IATOM = 1, NUCIND
+
          Q_EFF = CHARGE(IATOM)
          N_DEG = NUCDEG(IATOM)
          DO I = 1, N_DEG
             NUC = NUC + 1
             POPNUC(NUC) = Q_EFF - POPNUC(NUC)
          END DO
+
+         FAC = FMULT(ISTBNU(IATOM))*POPNUC(NUC)
+         DO ICOOR = 1,3
+            IF (ISYMAX(ICOOR,1) .EQ. 0) THEN
+               DIPTOT(ICOOR) = DIPTOT(ICOOR) + FAC*CORD(ICOOR,IATOM)
+            END IF
+         END DO
+
       END DO
 
       POPTOT = DSUM(NATOMS,POPNUC,1)
+      DIPMOM = SQRT(DIPTOT(1)**2 + DIPTOT(2)**2 + DIPTOT(3)**2)
 
  2015 FORMAT ('@ ',A12,10(A6,F6.2,'; ')/,('@',T15,10(A6,F6.2,'; ')))
       IF (iprmul .lt. 0) then
 C     ... only print max -iprmul populations in each iteration
+
          mnuc = min(NATOMS,-iprmul)
          WRITE (LUPRI,2015) POPANA_TYPE,
      &      (NAMDEP(NUC),POPNUC(NUC),NUC=1,mnuc)
+         IF (mnuc .lt. NATOMS) WRITE (LUPRI,'(3A,F12.4,A,3F12.4)')
+     &      '@ ',POPANA_TYPE,' dipole moment & components:',
+     &      DIPMOM, ';  ',DIPTOT(1:3)
+
       else
+
          CALL HEADER('Total atomic gross populations',10)
          WRITE (LUPRI,2015) POPANA_TYPE,
      &      (NAMDEP(NUC),POPNUC(NUC),NUC=1,NATOMS)
          WRITE (LUPRI,'(/A,F10.4)')
-     &   ' Sum = total charge:',POPTOT
+     &   '@ Sum = total charge:',POPTOT
+
+       IF (IPRMUL .GE. 2) THEN
+       ! note: DIPMOM cannot be expected to be accurate, it will only
+       ! be accurate if the local dipole moments on each atom are zero.
+       ! /hjaaj Mar 2017
+         WRITE (LUPRI,'(/A)') ' Total molecular dipole '//
+     &   ' moment calculated from gross populations'
+         WRITE (LUPRI,'(17X,A,15X,A,10X,A/3X,3F19.6)')
+     &             'au','Debye','C m (/(10**-30)',
+     &             DIPMOM, DEBYE*DIPMOM, DIPSI*DIPMOM
+         WRITE (LUPRI,'(/A)') ' x,y,z components:'
+         CALL DP0PRI(DIPTOT)
+      END IF
+
       end if
- 1016 FORMAT (/' Total gross populations',A/)
 C
 C     NET and overlap populations between cgto basis functions - sum
 
@@ -927,7 +962,7 @@ C
 C
       RETURN
       END
-C  /* Deck dipmom */
+C  /* Deck pop_dipmom */
       SUBROUTINE POP_DIPMOM (MATDIM,CMO,OCCUP,DIPMAT)
 C
 C PURPOSE:

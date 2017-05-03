@@ -2,6 +2,7 @@ C  /* Deck so_eres */
       SUBROUTINE SO_ERES(MODEL,  NOLDTR, NNEWTR,  DENSIJ,  LDENSIJ,
      &                   DENSAB, LDENSAB, T2MP,    LT2MP,   FOCKD,
      &                   LFOCKD, DENSAI,  LDENSAI, NIT,     ISYMTR,
+     &                   IDTYPE,
 #ifdef VAR_MPI
      &                   AssignedIndices, maxnumjobs,
 #endif
@@ -28,7 +29,8 @@ C              and E[2] is not constructed explicitly.
 C
       use so_info, only: so_singles_first, so_singles_second,
      &                   so_has_doubles, so_needs_densai,
-     &                   so_double_correction
+     &                   so_double_correction,
+     &                   sop_mp2ai_done
 
 #ifdef VAR_MPI
       use so_parutils, only: soppa_comm_active, soppa_num_active,
@@ -52,11 +54,16 @@ C
       DIMENSION INDEXA(MXCORB)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), T2MP(LT2MP)
       DIMENSION FOCKD(LFOCKD)
-      DIMENSION DENSAI(LDENSAI) !intent(out)
+      DIMENSION DENSAI(LDENSAI) !intent(inout)
       DIMENSION WORK(LWORK)
       CHARACTER MODEL*5
       integer :: inewtr, nnewtr, isymd1, ntosym
       integer :: thisinewtr
+C     idtype = 0 for dynamic (handle D part explicitly), 
+C     idtype = 1 for real, static (Tr1D = - Tr1E)
+C     idtype = 2 for imaginary, static ( Tr1D = Tr1E )      
+      integer, intent(in) :: idtype 
+
 #ifdef VAR_MPI
       integer :: maxnumjobs, nloopidx
       integer :: AssignedIndices(maxnumjobs)
@@ -97,8 +104,9 @@ C  average?
       if (nit .eq. 1) loadbal_dyn = .true.
 #endif
 C
-      do_dex = .true.
-      calc_densai = (NIT.EQ.1) .AND. SO_NEEDS_DENSAI(MODEL)
+      do_dex = idtype .eq. 0
+
+      calc_densai = SO_NEEDS_DENSAI(MODEL) .AND. .NOT. SOP_MP2AI_DONE
 C
 C------------------
 C     Add to trace.
@@ -124,16 +132,8 @@ C
       doubles = so_has_doubles(model)
       tr2_zero = so_double_correction(model)
 C
-C---------------------------------------------------------
-C     Adjust lengt of T2 amplitudes vector in TRIPLET case
-C---------------------------------------------------------
-C
       LT2MPH = LT2MP
       IT2MPH = 0
-      IF (TRIPLET) THEN
-        LT2MPH = INT(LT2MP/2)
-        IT2MPH = LT2MPH
-      END IF
 C
 C------------------------------------------------------
 C     Write singlet and triplet T2 amplitudes to output
@@ -202,13 +202,13 @@ C---------------------------------
 C
       LTR1E   = NT1AM(ISYMTR)
       LBTR1E  = NT1AO(ISYMTR)
-      IF (DO_DEX) THEN
-         LTR1D = NT1AM(ISYMTR)
-      ELSE
-         LTR1D = 0
-      ENDIF
+      LTR1D   = NT1AM(ISYMTR)
       LRES1E  = NT1AM(ISYMTR)
-      LRES1D  = NT1AM(ISYMTR)
+      IF (DO_DEX) THEN
+         LRES1D = NT1AM(ISYMTR)
+      ELSE
+         LRES1D = 0
+      END IF
       LFOCK   = N2BST(ISYRES)
       LDENS   = N2BST(ISYMTR)
       LBTR1D  = NT1AO(ISYMTR)
@@ -216,10 +216,14 @@ C
       LBTJ1D  = NMATAV(ISYMTR)
 
       IF(DOUBLES) THEN
-         LTR2E   = N2P2HOP(ISYMTR)
+         IF (TRIPLET) THEN
+            LTR2E = NT2SQ(ISYMTR)
+         ELSE
+            LTR2E = N2P2HOP(ISYMTR)
+         ENDIF
          LRES2E  = N2P2HOP(ISYMTR)
          IF (DO_DEX) THEN
-            LTR2D   = N2P2HOP(ISYMTR)
+            LTR2D   = LTR2E
             LRES2D  = N2P2HOP(ISYMTR)
          ELSE
             LTR2D  = 0
@@ -233,17 +237,9 @@ C
       ENDIF
 
       IF (singles_second) THEN
-         LSIGAI1 = 0
-         LSIGAI2 = 0
-         LSIGDA1 = 0
-         LSIGDA2 = 0
          LAIJ    = NRHFT*NRHFT
          LAAB    = NVIRT*NVIRT
       ELSE
-         LSIGAI1 = 0
-         LSIGAI2 = 0
-         LSIGDA1 = 0
-         LSIGDA2 = 0
          LAIJ    = 0
          LAAB    = 0
       ENDIF
@@ -265,12 +261,7 @@ C
       KBTJ1E  = KBTR1D  + LBTR1D
       KBTJ1D  = KBTJ1E  + LBTJ1E
 
-      KSIGAI1 = KBTJ1D  + LBTJ1D
-      KSIGAI2 = KSIGAI1 + LSIGAI1
-      KSIGDA1 = KSIGAI2 + LSIGAI2
-      KSIGDA2 = KSIGDA1 + LSIGDA1
-
-      KAIJ    = KSIGDA2 + LSIGDA2
+      KAIJ    = KBTJ1D  + LBTJ1D
       KAAB    = KAIJ    + LAIJ
       KEND2   = KAAB    + LAAB
 #ifdef VAR_MPI
@@ -304,9 +295,11 @@ C     Open files with trial and result vectors.
 C----------------------------------------------
 C
       CALL SO_OPEN(LUTR1E,FNTR1E,LTR1E)
-      IF (DO_DEX) CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
       CALL SO_OPEN(LURS1E,FNRS1E,LRES1E)
-      CALL SO_OPEN(LURS1D,FNRS1D,LRES1D)
+      CALL SO_OPEN(LURS1D,FNRS1D,LRES1E)
+      IF (DO_DEX) THEN 
+         CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
+      END IF
 C
 C     Note: open trial-vectors also with length LRES2E
 C          singlet: LRES2E = LTR2E anyway
@@ -316,9 +309,9 @@ C                   TR2 memory
       IF (DOUBLES) THEN
          CALL SO_OPEN(LUTR2E,FNTR2E,LRES2E)
          CALL SO_OPEN(LURS2E,FNRS2E,LRES2E)
+            CALL SO_OPEN(LURS2D,FNRS2D,LRES2E)
          IF (DO_DEX) THEN
             CALL SO_OPEN(LUTR2D,FNTR2D,LRES2D)
-            CALL SO_OPEN(LURS2D,FNRS2D,LRES2D)
          ENDIF
       ENDIF
 #ifdef VAR_MPI
@@ -376,16 +369,8 @@ C                   SIGDA1, SIGDA2 and FOCK
 C--------------------------------------------------------------
 C
          CALL DZERO(WORK(KRES1E),LRES1E)
-         CALL DZERO(WORK(KRES1D),LRES1D)
+         IF (DO_DEX) CALL DZERO(WORK(KRES1D),LRES1D)
 
-C
-C         IF (TRIPLET.AND.SINGLES_SECOND) THEN
-C            CALL DZERO(WORK(KSIGAI1),LSIGAI1)
-C            CALL DZERO(WORK(KSIGAI2),LSIGAI2)
-C            CALL DZERO(WORK(KSIGDA1),LSIGDA1)
-C            CALL DZERO(WORK(KSIGDA2),LSIGDA2)
-C         ENDIF
-C
          CALL DZERO(WORK(KFOCK),LFOCK)
 C
 C--------------------------
@@ -396,8 +381,13 @@ C
          IF ( MYNUM .EQ. 0 ) THEN
 #endif
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
-            IF (DO_DEX)
-     &               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
+            IF (DO_DEX) THEN
+               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
+            ELSE
+C     Static case: Generate D-vector from E-vector               
+               CALL DCOPY(LTR1E,WORK(KTR1E),1,WORK(KTR1D),1)
+               IF (IDTYPE.EQ.1) CALL DSCAL(LTR1E,-1.0D0,WORK(KTR1D),1)
+            END IF
             IF (DOUBLES) THEN
 C              Quick fix for RPA(D) -> Later use this variable to
 C              speed up first iteration for excitation energies
@@ -421,18 +411,26 @@ C--------------------------------------------------------------------
      &            .AND.(MYNUM .EQ. 0 )
 #endif
      &                        ) THEN
-C            
+C
                IF (TRIPLET) THEN
-                  CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
-                  IF(DO_DEX)
-     &               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,
+C-----------------------------------------------------------
+C                 For triplet we read the trial-vector into
+C                 solution vector memory. Then we use that
+C                 to create the non-symmetric intermediate on
+C                 KTR2*
+C----------------------------------------------------------
+                  CALL SO_READ(WORK(KRES2E),LRES2E,LUTR2E,FNTR2E,INEW)
+                  CALL SO_TRANTRIP(WORK(KTR2E),WORK(KRES2E),ISYMTR)
+                  IF(DO_DEX) THEN
+                     CALL SO_READ(WORK(KRES2D),LRES2D,LUTR2D,
      &                     FNTR2D,INEW)
-
+                     CALL SO_TRANTRIP(WORK(KTR2D),WORK(KRES2D),ISYMTR)
+                  END IF
+C
                   DTIME      = SECOND()
                   CALL SO_RES_CDT(WORK(KRES2E),LRES2E,
      &                            WORK(KRES2D),LRES2D,
-     &                            WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
-     &                            FOCKD,LFOCKD,ISYRES,
+     &                            FOCKD,LFOCKD,ISYRES,DO_DEX,
      &                            WORK(KEND2),LWORK2)
                   DTIME      = SECOND()   - DTIME
                   SOTIME(30) = SOTIME(30) + DTIME
@@ -442,12 +440,13 @@ C
                   CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
                   IF(DO_DEX)
      &               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)
-C                  
+C
                   DTIME      = SECOND()
                   CALL SO_RES_CD(WORK(KRES2E),LRES2E,
      &                           WORK(KRES2D),LRES2D,
      &                           WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
-     &                           FOCKD,LFOCKD,ISYRES,WORK(KEND2),LWORK2)
+     &                           FOCKD,LFOCKD,ISYRES,
+     &                           DO_DEX,WORK(KEND2),LWORK2)
 
                   DTIME      = SECOND()   - DTIME
                   SOTIME(30) = SOTIME(30) + DTIME
@@ -736,20 +735,24 @@ C                    trial vectors.
 C                    These are scaled by 1/sqrt(2)
 C------------------------------------------------------------
 C
-                        IF(DOUBLES.AND.(.NOT.TRIPLET).AND.
-     &                        (NVIR(ISYMD).GT.0)) THEN
-                           CALL SO_X2M1(WORK(KX2EM1),LX2M1,
-     &                                  WORK(KTR2E),LTR2E,
-     &                                  WORK(KCMO),LCMO,IDEL,ISYMD,
-     &                                  ISYMTR,WORK(KEND4),LWORK4)
+                     IF(DOUBLES.AND..NOT.TRIPLET.AND.
+     &                  (NVIR(ISYMD).GT.0)) THEN
+                        CALL SO_X2M1(WORK(KX2EM1),LX2M1,
+     &                               WORK(KTR2E),LTR2E,
+     &                               WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                               ISYMTR,WORK(KEND4),LWORK4)
+                        IF (DO_DEX) THEN
                            CALL SO_X2M1(WORK(KX2DM1),LX2M1,
      &                                  WORK(KTR2D),LTR2D,
      &                                  WORK(KCMO),LCMO,IDEL,ISYMD,
      &                                  ISYMTR,WORK(KEND4),LWORK4)
-                        ELSE
-                           CALL DZERO(WORK(KX2EM1),LX2M1)
-                           CALL DZERO(WORK(KX2DM1),LX2M1)
-                        ENDIF
+                        END IF
+                     ELSE
+                        CALL DZERO(WORK(KX2EM1),LX2M1)
+                        IF (DO_DEX) CALL DZERO(WORK(KX2DM1),LX2M1)
+                     END IF
+
+                     IF (SINGLES_SECOND) THEN
 C
 C---------------------------------------------------------------
 C                    Add T2^(ab)_(ij)*x1(b, delta) intermediates
@@ -757,16 +760,48 @@ C                    to the backtransformed trialvectors.
 C---------------------------------------------------------------
 C                    (This takes care of terms (1), and (5) of the B
 C                    matrix)
+                        CALL SO_T2X1(WORK(KX2EM1),LX2M1,
+     &                               T2MP,LT2MPH,
+     &                               WORK(KBTJ1D),LBTJ1D,IDEL,ISYMD,
+     &                               ISYMTR,WORK(KEND4),LWORK4)
+                        IF (DO_DEX) THEN
+                           CALL SO_T2X1(WORK(KX2DM1),LX2M1,
+     &                                  T2MP,LT2MPH,
+     &                                  WORK(KBTJ1E),LBTJ1E,IDEL,ISYMD,
+     &                                  ISYMTR,WORK(KEND4),LWORK4)
+                        END IF
 C
-                     CALL SO_T2X1(WORK(KX2EM1),LX2M1,
-     &                            T2MP(IT2MPH+1),LT2MPH,
-     &                            WORK(KBTJ1D),LBTJ1D,IDEL,ISYMD,
-     &                            ISYMTR,WORK(KEND4),LWORK4)
+C     For triplet we need to transform the intermediates
+C
+                        IF (TRIPLET.AND.
+     &                      NVIR(MULD2H(ISYMD,ISYMTR)).GE.1) THEN
+                           CALL SO_M1SHUF(WORK(KX2EM1),LX2M1,
+     &                                    ISYMD,ISYMTR)
+                           IF (DO_DEX) THEN
+                              CALL SO_M1SHUF(WORK(KX2DM1),LX2M1,
+     &                                       ISYMD,ISYMTR)
+                           END IF
+                        END IF
 
-                     CALL SO_T2X1(WORK(KX2DM1),LX2M1,
-     &                            T2MP(IT2MPH+1),LT2MPH,
-     &                            WORK(KBTJ1E),LBTJ1E,IDEL,ISYMD,
-     &                            ISYMTR,WORK(KEND4),LWORK4)
+                     END IF
+C
+C     In the triplet case we create the partially back-transformed
+C     intermediate last.
+C
+                     IF(DOUBLES.AND.TRIPLET.AND.
+     &                  (NVIR(ISYMD).GT.0)) THEN
+                        CALL SO_X2SM1(WORK(KX2EM1),LX2M1,
+     &                               WORK(KTR2E),LTR2E,
+     &                               WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                               ISYMTR,WORK(KEND4),LWORK4)
+                        IF (DO_DEX) THEN
+                           CALL SO_X2SM1(WORK(KX2DM1),LX2M1,
+     &                                  WORK(KTR2D),LTR2D,
+     &                                  WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                                  ISYMTR,WORK(KEND4),LWORK4)
+                        END IF
+                     END IF
+C
                      DTIME      = SECOND()   - DTIME
                      SOTIME(12) = SOTIME(12) + DTIME
 
@@ -777,33 +812,41 @@ C
                      LT2M1 = 0
                      LX2M1 = 0
                      KEND4 = KEND3
+                     LWORK4 = LWORK3
                   ENDIF
 C
 C---------------------------------------------
 C                 Work space allocation no. 5.
 C---------------------------------------------
 C
-                  LDSRHF = NDSRHF(ISYMD)
+                  IF (DOUBLES.OR.SINGLES_SECOND) THEN
+                     LDSRHF = NDSRHF(ISYMD)
 C
-                  KDSRHF = KEND4
-                  KEND5  = KDSRHF + LDSRHF
-                  LWORK5 = LWORK  - KEND5
+                     KDSRHF = KEND4
+                     KEND5  = KDSRHF + LDSRHF
+                     LWORK5 = LWORK  - KEND5
 C
-                  CALL SO_MEMMAX ('SO_ERES.5',LWORK5)
-                  IF (LWORK5 .LT. 0)
-     &                CALL STOPIT('SO_ERES.5',' ',KEND5,LWORK)
+                     CALL SO_MEMMAX ('SO_ERES.5',LWORK5)
+                     IF (LWORK5 .LT. 0)
+     &                  CALL STOPIT('SO_ERES.5',' ',KEND5,LWORK)
 C
 C----------------------------------------------------------------
-C                 Transform one index in the integral batch to an
-C                 occupied index.
+C                    Transform one index in the integral batch to an
+C                    occupied index.
 C----------------------------------------------------------------
 C
-                  DTIME  = SECOND()
-                  ISYMLP = 1
-                  CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KCMO),
+                     DTIME  = SECOND()
+                     ISYMLP = 1
+                     CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KCMO),
      &                        ISYMLP,WORK(KEND5),LWORK5,ISYDIS)
-                  DTIME      = SECOND()   - DTIME
-                  SOTIME(13) = SOTIME(13) + DTIME
+                     DTIME      = SECOND()   - DTIME
+                     SOTIME(13) = SOTIME(13) + DTIME
+                  ELSE
+                     LDSRHF = 0
+                     KEND5 = KEND4
+                     LWORK5 = LWORK4
+                     KDSRHF = HUGE(LWORK)
+                  END IF
 C
 C-------------------------------------------------------------------
 C                 Calculate part of the second order density matrix.
@@ -931,7 +974,7 @@ C
 
          DTIME      = SECOND()
          CALL SO_TWOFOCK(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
-     &                   WORK(KFOCK),LFOCK,ISYRES)
+     &                   WORK(KFOCK),LFOCK,ISYRES,DO_DEX)
          DTIME      = SECOND()   - DTIME
          SOTIME(25) = SOTIME(25) + DTIME
 C
@@ -945,7 +988,7 @@ C
 
             CALL SO_RES_SYM(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
      &                      WORK(KAIJ),LAIJ,WORK(KAAB),LAAB,WORK(KTR1E),
-     &                      LTR1E,WORK(KTR1D),LTR1D,ISYRES)
+     &                      LTR1E,WORK(KTR1D),LTR1D,ISYRES,DO_DEX)
             DTIME      = SECOND()   - DTIME
             SOTIME(20) = SOTIME(20) + DTIME
 C
@@ -957,7 +1000,7 @@ C
             CALL SO_RES_FCK(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
      &                      WORK(KTR1E),LTR1E,WORK(KTR1D),
      &                      LTR1D,FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,
-     &                      LDENSAB,ISYRES,ISYMTR)
+     &                      LDENSAB,ISYRES,ISYMTR,DO_DEX)
 
             DTIME      = SECOND()   - DTIME
             SOTIME(21) = SOTIME(21) + DTIME
@@ -973,7 +1016,7 @@ C
 
          CALL SO_ONEFOCK(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,FOCKD,
      &                   LFOCKD,WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,
-     &                   ISYRES,ISYMTR)
+     &                   ISYRES,ISYMTR,DO_DEX)
          DTIME      = SECOND()   - DTIME
          SOTIME(26) = SOTIME(26) + DTIME
 C
@@ -988,12 +1031,23 @@ C        Write new result vectors to file.
 C----------------------------------------
 C
          CALL SO_WRITE(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,INEW)
-         CALL SO_WRITE(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
+         IF (DO_DEX)
+     &      CALL SO_WRITE(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
          IF (DOUBLES) THEN
             CALL SO_WRITE(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
             IF(DO_DEX)
      &            CALL SO_WRITE(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
          ENDIF
+C
+C     Write zeroes to D-solution vectors
+         IF (.NOT. DO_DEX) THEN
+            CALL DZERO(WORK(KRES1E),LRES1E)
+            CALL SO_WRITE(WORK(KRES1E),LRES1E,LURS1D,FNRS1D,INEW)
+            IF (DOUBLES) THEN
+               CALL DZERO(WORK(KRES2E),LRES2E)
+               CALL SO_WRITE(WORK(KRES2E),LRES2E,LURS2D,FNRS2D,INEW)
+            END IF
+         END IF
 C
   100 CONTINUE
 C
@@ -1053,7 +1107,10 @@ C  Recieve the new indices
          endif
       endif
 C Slaves are done
-      IF (MYNUM .NE. 0) RETURN
+      IF (MYNUM .NE. 0) THEN
+         IF ( CALC_DENSAI ) SOP_MP2AI_DONE = .TRUE.
+         RETURN
+      END IF
 #endif
 C----------------------------------------------------------------
 C     Calculate the last part of the second order density matrix.
@@ -1062,6 +1119,7 @@ C
       DTIME      = SECOND()
       IF ( CALC_DENSAI )  THEN
          CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
+         SOP_MP2AI_DONE = .TRUE.
       END IF
 C
       DTIME      = SECOND()   - DTIME
@@ -1076,13 +1134,13 @@ C------------------------------------------
             WRITE(LUPRI,'(/,I3,A)') INEWTR,
      &                '. new E[2] linear transformed trial vector'
             CALL SO_READ(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,INEW)
-            CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
+            CALL SO_READ(WORK(KRES1D),LRES1E,LURS1D,FNRS1D,INEW)
             WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &           (I,WORK(KRES1E+I-1),WORK(KRES1D+I-1),I=1,LRES1E)
             IF (DOUBLES) THEN
                CALL SO_READ(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
-               IF (DO_DEX)
-     &            CALL SO_READ(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
+C               IF (DO_DEX)
+               CALL SO_READ(WORK(KRES2D),LRES2E,LURS2D,FNRS2D,INEW)
                WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &             (I,WORK(KRES2E+I-1),WORK(KRES2D+I-1),I=1,LRES2E)
             ENDIF
@@ -1095,16 +1153,18 @@ C     Close files.
 C-----------------
 C
       CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
-      IF (DO_DEX) CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
       CALL SO_CLOSE(LURS1E,FNRS1E,'KEEP')
-      CALL SO_CLOSE(LURS1D,FNRS1D,'KEEP')
+         CALL SO_CLOSE(LURS1D,FNRS1D,'KEEP')
+      IF (DO_DEX) THEN
+         CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
+      END IF
 C
       IF (DOUBLES) THEN
          CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
          CALL SO_CLOSE(LURS2E,FNRS2E,'KEEP')
+            CALL SO_CLOSE(LURS2D,FNRS2D,'KEEP')
          IF (DO_DEX) THEN
             CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
-            CALL SO_CLOSE(LURS2D,FNRS2D,'KEEP')
          ENDIF
       ENDIF
 C
@@ -1157,7 +1217,8 @@ C
      &                    WORK(KDSRHF),LDSRHF,WORK(KCMO),LCMO,
      &                    WORK(KT2M1),LT2M1,WORK(KAIJ),LAIJ,
      &                    WORK(KAAB),LAAB,INEWTR,ISYMD,ISYDIS,
-     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+     &                    ISYRES,ISYMTR,DO_DEX,
+     &                    WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(14) = SOTIME(14) + DTIME
          ENDIF
@@ -1181,7 +1242,7 @@ C
      &                      WORK(KX2DM1),LX2M1,
      &                      WORK(KDSRHF),LDSRHF,
      &                      WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                      ISYMTR,WORK(KEND5),LWORK5)
+     &                      ISYMTR,DO_DEX,WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(29) = SOTIME(29) + DTIME
          END IF
@@ -1200,8 +1261,8 @@ C
      &                    WORK(KBTR1D),LBTR1D,
      &                    WORK(KBTJ1E),LBTJ1E,
      &                    WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
-     &                    IDEL,ISYMD,ISYDIS,ISYMTR,WORK(KEND5),
-     &                    LWORK5)
+     &                    IDEL,ISYMD,ISYDIS,ISYMTR,DO_DEX,
+     &                    WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(15) = SOTIME(15) + DTIME
 C
@@ -1225,13 +1286,17 @@ C    (6)      ( k i | j delta ) * T2M1( ak, j)
             CALL SO_RES_B26 ( WORK(KRES1E), LRES1E, WORK(KT2M1), LT2M1,
      &                        WORK(KDSRHF),WORK(KCMO),LCMO,IDEL,ISYMD,
      &                        ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
+            IF (DO_DEX) THEN
 C
 C           Same for the D-part
-            CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KBTR1E),
-     &                  ISYMTR,WORK(KEND5),LWORK5,ISYDIS)
-            CALL SO_RES_B26 ( WORK(KRES1D), LRES1D, WORK(KT2M1), LT2M1,
-     &                        WORK(KDSRHF),WORK(KCMO),LCMO,IDEL,ISYMD,
-     &                        ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
+               CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KBTR1E),
+     &                     ISYMTR,WORK(KEND5),LWORK5,ISYDIS)
+               CALL SO_RES_B26 ( WORK(KRES1D), LRES1D,
+     &                           WORK(KT2M1), LT2M1,
+     &                           WORK(KDSRHF),WORK(KCMO),LCMO,
+     &                           IDEL,ISYMD,
+     &                           ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
+            END IF
             DTIME      = SECOND()   - DTIME
             SOTIME(16) = SOTIME(16) + DTIME
          ENDIF
@@ -1266,22 +1331,25 @@ C
      &                    WORK(KDSRHF),LDSRHF,WORK(KCMO),LCMO,
      &                    WORK(KT2M1),LT2M1,WORK(KAIJ),LAIJ,
      &                    WORK(KAAB),LAAB,INEWTR,ISYMD,ISYDIS,
-     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+     &                    ISYRES,ISYMTR,DO_DEX,
+     &                    WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(14) = SOTIME(14) + DTIME
 C
-C-------------------------------------------------------------------
-C           Construct the partially back-transformed T2 MP-amplitudes
+C--------------------------------------------------------------------
+C           Transform the partially back-transformed T2 MP-amplitudes
+C           Currently they are stored as
+C              t2m1(ai,j) = 2t(ai,j) - t(aj,i)
+C           In the following we need to have
+C              t2m1(ai,j) = -t(aj,i)
 C--------------------------------------------------------------------
 C
             DTIME      = SECOND()
-            CALL SO_T2M1(WORK(KT2M1),LT2M1,
-     &                   T2MP(LT2MPH+1),LT2MPH,
-     &                   WORK(KCMO),LCMO,
-     &                   IDEL,ISYMD,ISYDIS,
-     &                   WORK(KEND5),LWORK5)
+            CALL SO_M1SHUF(WORK(KT2M1),LT2M1,ISYMD,1)
             DTIME      = SECOND()   - DTIME
             SOTIME(12) = SOTIME(12) + DTIME
+         END IF
+         IF (DOUBLES.OR.SINGLES_SECOND) THEN
 C
 C-------------------------------------------------------------------
 C        Calculate the part of the result vectors RES1E and
@@ -1299,23 +1367,14 @@ C
      &                      WORK(KX2DM1),LX2M1,
      &                      WORK(KDSRHF),LDSRHF,
      &                      WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                      ISYMTR,WORK(KEND5),LWORK5)
+     &                      ISYMTR,DO_DEX,
+     &                      WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(29) = SOTIME(29) + DTIME
 
          END IF
-         IF (DOUBLES) THEN
 C
-            DTIME      = SECOND()
-            CALL SO_RES_TCBT(WORK(KRES1E),LRES1E,
-     &                      WORK(KRES1D),LRES1D,
-     &                      WORK(KTR2E),LTR2E,
-     &                      WORK(KTR2D),LTR2D,
-     &                      WORK(KDSRHF),LDSRHF,
-     &                      WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                      ISYMTR,WORK(KEND5),LWORK5)
-            DTIME      = SECOND()   - DTIME
-            SOTIME(29) = SOTIME(29) + DTIME
+         IF (DOUBLES) THEN
 C
 C----------------------------------------------------------------------
 C           Construct C-contribution to 2p2h result vectors RES2E
@@ -1330,12 +1389,12 @@ C
      &                      WORK(KBTR1D),LBTR1D,
      &                      WORK(KBTJ1E),LBTJ1E,
      &                      WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
-     &                      IDEL,ISYMD,ISYDIS,ISYMTR,WORK(KEND5),
-     &                      LWORK5)
+     &                      IDEL,ISYMD,ISYDIS,ISYMTR,DO_DEX,
+     &                      WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(15) = SOTIME(15) + DTIME
 C
-         ENDIF 
+         ENDIF
          IF(SINGLES_SECOND) THEN
             DTIME   = SECOND()
             ISYDIS2 = MULD2H(ISYDIS,ISYMTR)
@@ -1350,17 +1409,20 @@ C                     ~
 C    (2)    - ( c a | j delta ) * T2M1( ci, j)
 C                     ~
 C    (6)      ( k i | j delta ) * T2M1( ak, j)
-
+C
             CALL SO_RES_B26 ( WORK(KRES1E), LRES1E, WORK(KT2M1), LT2M1,
      &                        WORK(KDSRHF),WORK(KCMO),LCMO,IDEL,ISYMD,
      &                        ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
 C
+            IF (DO_DEX) THEN
 C           Same for the D-part
-            CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KBTR1E),
-     &                  ISYMTR,WORK(KEND5),LWORK5,ISYDIS)
-            CALL SO_RES_B26 ( WORK(KRES1D), LRES1D, WORK(KT2M1), LT2M1,
-     &                        WORK(KDSRHF),WORK(KCMO),LCMO,IDEL,ISYMD,
-     &                        ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
+               CALL CCTRBT(WORK(KXINT),WORK(KDSRHF),WORK(KBTR1E),
+     &                    ISYMTR,WORK(KEND5),LWORK5,ISYDIS)
+               CALL SO_RES_B26 (WORK(KRES1D), LRES1D, 
+     &                          WORK(KT2M1), LT2M1,
+     &                          WORK(KDSRHF),WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                          ISYDIS2,ISYMTR,WORK(KEND6),LWORK6)
+            END IF
             DTIME      = SECOND()   - DTIME
             SOTIME(16) = SOTIME(16) + DTIME
          ENDIF
