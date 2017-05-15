@@ -10,8 +10,6 @@ C  /* Deck dc_lrnsl */
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
-C     Stephan P. A. Sauer: 5.12.2003
-C     Rasmus Faber: Nov. 2015 --> Implemented pert. dens. approach.
 C     Anna Kristina Schnack-Petersen: April 2017
 C
 C     PURPOSE: Calculates the frequency dependent linear response
@@ -125,10 +123,6 @@ C
             LABEL1=LABELS(ILAB1)
             CALL SO_GETSOLV(WORK(KTR1E),LSOLV,LABEL1,FREQ(IFREQ),1,
      &                      STATIC,.FALSE.,ISYM)
-            WRITE(*,'(A)')'solvec'
-            DO I=1,LSOLV
-               WRITE(*,'(I5,F16.10)') I,WORK(KTR1E+I-1)
-            END DO
 C-------------------------------------------------------------------------
 C   Save solution vectors in trial vector file, so Reduced E matrix is
 C   calculated correctly.
@@ -189,23 +183,6 @@ C
                CALL SO_READ(WORK(KRES1D),L1VEC,LURS1D,FNRS1D,ILAB1)
                CALL SO_READ(WORK(KRES2D),L2VEC,LURS2D,FNRS2D,ILAB1)
             END IF
-            WRITE(*,'(A)')'Ex'
-            DO I=1,L1VEC
-               WRITE(*,'(I5,F16.10)') I, WORK(KRES1E+I-1)
-            END DO
-            IF(.NOT.STATIC) THEN
-               DO I=1,L1VEC
-                  WRITE(*,'(I5,F16.10)') I, WORK(KRES1D+I-1)
-               END DO
-            END IF
-            DO I=1,L2VEC
-               WRITE(*,'(I5,F16.10)') I, WORK(KRES2E+I-1)
-            END DO
-            IF(.NOT.STATIC) THEN
-               DO I=1,L2VEC
-                  WRITE(*,'(I5,F16.10)') I, WORK(KRES2D+I-1)
-               END DO
-            END IF
 C----------------------------------------------------------
 C    Determine 1p-1h and 1h-1p part of reduced S[2] matrix
 C----------------------------------------------------------
@@ -216,14 +193,6 @@ C
                CALL SO_RES_O(WORK(KRESO1E),L1VEC,WORK(KRESO1D),L1VEC,
      &                      WORK(KTR1E),L1VEC,WORK(KTR1D),L1VEC,
      &                      DENSIJ,LDENSIJ,DENSAB,LDENSAB,ISYM,ISYM)
-               WRITE(*,'(A)')'S*x'
-               DO I=1,L1VEC
-                  WRITE(*,'(I5,F16.10)')I,WORK(KRESO1E+I-1)
-               END DO
-               DO I=1,L1VEC
-                  WRITE(*,'(I5,F16.10)')I,WORK(KRESO1D+I-1)
-               END DO
-C Kan det passe??
                CALL DSCAL(L1VEC,-ONE,WORK(KRESO1E),1)
                CALL DSCAL(L1VEC,-ONE,WORK(KRESO1D),1)
             END IF
@@ -240,21 +209,9 @@ C Check which method is correct!!!
 C               CALL SO_TMLTR(WORK(KGPVC2),ONE,ISYM)
 C               CALL DSCAL(L2VEC,HALF,WORK(KGPVC2),1)
             END IF
-            WRITE(*,'(A,F16.10)')LABEL1,FREQ(IFREQ)
-            WRITE(*,'(A)')'GP1E'
-            DO I=1,L1VEC
-               WRITE(*,'(I5,F16.10)') I, WORK(KGPVC1+I-1)
-            END DO
-            WRITE(*,'(A)')'\n'
-            WRITE(*,'(A)')'GP2E'
-            DO I=1,L2VEC
-               WRITE(*,'(I5,F16.10)') I, WORK(KGPVC2+I-1)
-            END DO
-            WRITE(*,'(A)')'\n'
             IF (IMAGPROP2.NE.IMAGINARY)THEN
               CALL QUIT('Error in DC_LRNSL: Imaginary unclear')
             END IF
-CFind evt bedre fejlmeddelelse
 C--------------------------------------------------------------------------
 C   Determine Y=(Omega*S-E)*X and Z for the singles part:
 C   Z is the sum of the property gradient and -1/2*Y
@@ -264,13 +221,6 @@ C--------------------------------------------------------------------------
      &                    WORK(KRES1E),1)
                CALL DAXPY(L1VEC,FREQ(IFREQ),WORK(KRESO1D),1,
      &                    WORK(KRES1D),1)
-               WRITE(*,'(A)')'-1/2Y'
-               DO I=1,L1VEC
-                  WRITE(*,'(I5,F16.10)') I, WORK(KRESO1E+I-1)
-               END DO
-               DO I=1,L1VEC
-                  WRITE(*,'(I5,F16.10)') I, WORK(KRESO1D+I-1)
-               END DO
             END IF
 C-------------------------------------------------
 C   Determine gradient property deexcitation part 
@@ -396,14 +346,10 @@ C------------------------------------------------------
                Z1ABE = DDOT(L1VEC,WORK(KSV1EA),1,WORK(KZ1EB),1)
                Z1BAE = DDOT(L1VEC,WORK(KSV1EB),1,WORK(KZ1EA),1)
                PROP1E=Z1ABE+Z1BAE
-               WRITE(*,'(A)')'singlespropE'
-               WRITE(*,'(F16.10)')PROP1E
                IF (.NOT.STATIC) THEN
                   Z1ABD = DDOT(L1VEC,WORK(KSV1DA),1,WORK(KZ1DB),1)
                   Z1BAD = DDOT(L1VEC,WORK(KSV1DB),1,WORK(KZ1DA),1)
                   PROP1D=Z1BAD+Z1ABD
-                  WRITE(*,'(A)')'singelspropD'
-                  WRITE(*,'(F16.10)')PROP1D
                ELSE
                   PROP1D=PROP1E
                END IF
@@ -421,8 +367,6 @@ C-----------------------------------------------------
                IF (.NOT.TRIPLET) THEN
                   PROP2E = HALF * PROP2E
                END IF
-               WRITE(*,'(A)')'DoublespropE'
-               WRITE(*,'(F16.10)')PROP2E
 C
                IF(.NOT.STATIC)THEN
                   PROP2D=0.0D0
@@ -432,11 +376,8 @@ C
                      PROP2D=PROP2D+WORK(KZ2DA+I-1)*WORK(KZ2DB+I-1)*XIDEN
                   END DO
                   IF(.NOT.TRIPLET) THEN
-                     WRITE(*,'(A)')'Singlet'
                      PROP2D = HALF * PROP2D
                   END IF
-                  WRITE(*,'(A)')'DoublespropD'
-                  WRITE(*,'(F16.10)')PROP2D
                ELSE
                   PROP2D=PROP2E
                END IF
@@ -444,7 +385,6 @@ C--------------------------------------------
 C   Second order property:
 C--------------------------------------------
                PROPVAL=PROP1E+PROP1D+PROP2E+PROP2D
-               WRITE(*,'(A,F16.10)')'Property:',PROPVAL
                PROPAR(IFREQ,ILAB1,ILAB2)=PROPVAL
                PROPAR(IFREQ,ILAB2,ILAB1)=PROPVAL
                PROPAR1(IFREQ,ILAB1,ILAB2)=PROP1E+PROP1D

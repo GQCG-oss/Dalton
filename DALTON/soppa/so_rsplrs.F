@@ -17,6 +17,7 @@ C
      &                   so_get_active_models,
      &                   so_has_doubles,
      &                   so_singles_second,
+     &                   so_double_correction,
      &                   sop_dens_label, sop_model_rpad,
      &                   sop_model_rpa,
      &                   sop_conv_thresh,
@@ -70,6 +71,7 @@ C
       CHARACTER(len=65), parameter :: dashl = ' -------------------'//
      &               '---------------------------------------------'
 C
+      LOGICAL DOUBLE_CORR
       character(len=9), parameter :: myname = 'SO_RSPLRS'
       integer :: num_active
       logical :: active_models(sop_num_models)
@@ -99,8 +101,13 @@ C
 C     Get the active models and their number
       CALL SO_GET_ACTIVE_MODELS (ACTIVE_MODELS)
 C
-C     No RPA(D) properties
-      ACTIVE_MODELS(SOP_MODEL_RPAD) = .FALSE.
+C AKSP 7-3-17
+C     RPA(D) properties require RPA calcultation
+C      ACTIVE_MODELS(SOP_MODEL_RPAD)=.FALSE.
+      IF (ACTIVE_MODELS(SOP_MODEL_RPAD)) THEN
+         ACTIVE_MODELS(SOP_MODEL_RPA)=.TRUE.
+      END IF
+C end AKSP 7-3-17
       NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
 C
       RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND.
@@ -260,7 +267,8 @@ C
             DOUBLES = SO_HAS_DOUBLES(IMODEL)
             NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
             DENSLAB = SOP_DENS_LABEL(IMODEL)
-
+            DOUBLE_CORR=SO_DOUBLE_CORRECTION(MODEL)
+CAKSP 7-3-17 doubles_corr
             CALL TITLER( TRIM(FULLNAME) // ' response calculation',
      &                '*',103)
 C
@@ -319,18 +327,26 @@ C     &           NPPCNV(ISYM),
             WRITE(LUPRI,9001)
 
             SOP_USE_SELLER = (NUM_LABELS(ISYM).GT.1)
-
-            DO IOPER = 1, NUM_LABELS(ISYM)
+CAKSP 7-3-17 if running an RPA(D) model the RPA calculation must be done
+C while sop_use_seller is true
+            IF (ACTIVE_MODELS(SOP_MODEL_RPAD)
+     &          .AND.(MODEL.EQ.'AORPA'))THEN
+               SOP_USE_SELLER = .TRUE.
+            END IF
+CAKSP 7-3-17 if doubles correction model iterative calculations
+C are not needed - they have been made.
+            IF (.NOT.DOUBLE_CORR) THEN
+               DO IOPER = 1, NUM_LABELS(ISYM)
 C
-               LABEL1 = LABELS(ILABOFF+IOPER)
-               ISYMTR = ISYM
+                  LABEL1 = LABELS(ILABOFF+IOPER)
+                  ISYMTR = ISYM
 C
 C------------------------------------------------------------------
 C              Determine SOPPA linear response vectors and density
 C              matrixes. Response density matrix written on file.
 C------------------------------------------------------------------
 C
-               CALL SO_RSPLEQ(MODEL,LABEL1,IMAGPROP(IOPER),ISYMTR,
+                  CALL SO_RSPLEQ(MODEL,LABEL1,IMAGPROP(IOPER),ISYMTR,
      &                        FREQ,NFREQ,
      &                        WORK(KDENSIJ),LDENSIJ,
      &                        WORK(KDENSAB),LDENSAB,
@@ -338,8 +354,9 @@ C
      &                        LT2AM,WORK(KFOCKD),LFOCKD,
      &                        WORK(KEND1),LWORK1)
 C
-C               CALL FLUSH(LUPRI)
-            END DO ! Loop operators
+C                  CALL FLUSH(LUPRI)
+               END DO ! Loop operators
+            END IF
 C
             LABMIX = .FALSE.
             NUM_IMAG = COUNT(IMAGPROP(1:NUM_LABELS(ISYM)))
@@ -371,26 +388,54 @@ C----------------------------------------------
 C
             KPROP = KEND1
             LPROP = NFREQ*NUMLAB*NUMLAB
-            KEND2 = KPROP + LPROP
+CAKSP If doubles correction model allocate space
+C     for saving singels and doubles contributions
+            IF(DOUBLE_CORR)THEN
+               KPROP1 = KPROP+LPROP
+               KPROP2 = KPROP1+LPROP
+               KEND2 = KPROP2 + LPROP
+            ELSE
+               KEND2 = KPROP + LPROP
+            END IF
             LWORK2 = LWORK-KEND2
             CALL SO_MEMMAX (myname//'.2     ',LWORK2)
             IF (LWORK2 .LT.0) CALL STOPIT(myname//'.2',' ',
      &                                    KEND2,LWORK)
-
-               CALL SO_LRNSL(MODEL,ISYM,WORK(KPROP),
-     &                       LAST_MODEL.AND..NOT.LABMIX,
-     &                       FREQ,NFREQ,LABELS(ILABOFF+1),
-     &                       NUMLAB,
-     &                       WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-     &                       LDENSAB,WORK(KDENSAI),LDENSAI,
-     &                       WORK(KEND2),LWORK2)
+CAKSP 7-3-17 if RPA(D)
+            IF (DOUBLE_CORR)THEN
+                  CALL DC_LRNSL(MODEL,ISYM,WORK(KPROP),
+     &                          WORK(KPROP1),WORK(KPROP2),
+     &                          LAST_MODEL.AND..NOT.LABMIX,
+     &                          FREQ,NFREQ,LABELS(ILABOFF+1),
+     &                          NUMLAB,
+     &                          WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                          LDENSAB,WORK(KDENSAI),LDENSAI,
+     &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
+     &                          ALL_IMAG,WORK(KEND2),LWORK2)
+               ELSE
+                  CALL SO_LRNSL(MODEL,ISYM,WORK(KPROP),
+     &                          LAST_MODEL.AND..NOT.LABMIX,
+     &                          FREQ,NFREQ,LABELS(ILABOFF+1),
+     &                          NUMLAB,
+     &                          WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                          LDENSAB,WORK(KDENSAI),LDENSAI,
+     &                          WORK(KEND2),LWORK2)
+               END IF
 C
             IF ((IMODE.GT.0).AND.LAST_MODEL) THEN
                WRITE(LU_DUMP) ISYM
                WRITE(LU_DUMP) WORK(KPROP:KPROP+LPROP-1)
             ELSE
-               CALL SO_RSPOUT(WORK(KPROP),ISYM,FREQ,NFREQ,
-     &                     LABELS(ILABOFF+1),NUMLAB)
+CAKSP For doubles corrected model write out singles and doubles
+C     contributions
+               IF(DOUBLE_CORR) THEN
+                  CALL DC_RSPOUT(WORK(KPROP),WORK(KPROP1),WORK(KPROP2),
+     &                           ISYM,FREQ,NFREQ,
+     &                           LABELS(ILABOFF+1),NUMLAB)
+               ELSE
+                  CALL SO_RSPOUT(WORK(KPROP),ISYM,FREQ,NFREQ,
+     &                           LABELS(ILABOFF+1),NUMLAB)
+               END IF
             END IF
 C
 C---------------------------------------------------------------
@@ -402,20 +447,43 @@ C
 !              NUMLAB is now number of real perturbations
                KPROPI = KEND2
                LPROPI = NFREQ*NUM_IMAG*NUM_IMAG
-               KEND2B = KPROP + LPROP
+CAKSP Allocate space for doubles and singles contributions
+               IF(DOUBLE_CORR)THEN
+                  KPROPI1 = KPROPI + LPROPI
+                  KPROPI2 = KPROPI1 + LPROPI
+                  KEND2B = KPROPI2 + LPROPI
+               ELSE
+C                  KEND2B = KPROP + LPROP (det er vel de imaginære nu?)
+                  KEND2B = KPROPI + LPROPI
+               END IF
                LWORK2B = LWORK-KEND2B
                CALL SO_MEMMAX (myname//'.2B    ',LWORK2B)
                IF (LWORK2 .LT.0) CALL STOPIT(myname//'.2B',' ',
      &                                    KEND2B,LWORK)
-
-               CALL SO_LRNSL(MODEL,ISYM,WORK(KPROPI),LAST_MODEL,
-     &                       FREQ,NFREQ,LABELS(ILABOFF+NUMLAB+1),
-     &                       NUM_IMAG,
-     &                       WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-     &                       LDENSAB,WORK(KDENSAI),LDENSAI,
-     &                       WORK(KEND2B),LWORK2B)
-               CALL SO_RSPOUT(WORK(KPROPI),ISYM,FREQ,NFREQ,
+CAKSP 7-3-17 For RPA(D) use special routine.
+               IF(DOUBLE_CORR)THEN
+                  CALL DC_LRNSL(MODEL,ISYM,WORK(KPROPI),
+     &                          WORK(KPROPI1),WORK(KPROPI2),LAST_MODEL,
+     &                          FREQ,NFREQ,LABELS(ILABOFF+NUMLAB+1),
+     &                          NUM_IMAG,
+     &                          WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                          LDENSAB,WORK(KDENSAI),LDENSAI,
+     &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
+     &                          .TRUE.,WORK(KEND2B),LWORK2B)
+                  CALL DC_RSPOUT(WORK(KPROPI),WORK(KPROPI1),
+     &                           WORK(KPROPI2),
+     &                           ISYM,FREQ,NFREQ,
+     &                           LABELS(ILABOFF+1),NUMLAB)
+               ELSE
+                  CALL SO_LRNSL(MODEL,ISYM,WORK(KPROPI),LAST_MODEL,
+     &                          FREQ,NFREQ,LABELS(ILABOFF+NUMLAB+1),
+     &                          NUM_IMAG,
+     &                          WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                          LDENSAB,WORK(KDENSAI),LDENSAI,
+     &                          WORK(KEND2B),LWORK2B)
+                  CALL SO_RSPOUT(WORK(KPROPI),ISYM,FREQ,NFREQ,
      &                     LABELS(ILABOFF+NUMLAB+1),NUM_IMAG)
+               END IF
             END IF
 C
 C

@@ -655,6 +655,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/dc_res_o.F
     DALTON/soppa/dc_rsplex.F
     DALTON/soppa/dc_sres.F
+    DALTON/soppa/dc_lrnsl.F
     DALTON/soppa/rp_charge.F
     DALTON/soppa/rp_init.F
     DALTON/soppa/rp_newtrial.F
