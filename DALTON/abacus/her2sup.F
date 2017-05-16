@@ -91,15 +91,20 @@ C
       IF (IPRINT .GT. 1) THEN
          CALL TITLER('Output from FORMSUP','*',125)
          WRITE (LUPRI,'(A,2(/A,1P,D10.2)/A,L10)')
-     &   '    Precalculated two-electron integrals'
+     &   '    Precalculated AO two-electron integrals'
      &   //' are transformed to P-supermatrix elements.',
      &   '    Factor on exchange                            :',HFXFAC,
      &   '    Threshold for discarding integrals            :',THRESH,
      &   '    Include integrals for general density matrices:',NOSYM
+      ELSE IF (HFXFAC .NE. 0.0D0) THEN
+         WRITE (LUPRI,'(A/A,1P,D10.2,A)')
+     &   '     (Precalculated AO two-electron integrals'
+     &   //' are transformed to P-supermatrix elements.',
+     &   '      Threshold for discarding integrals :',THRESH,' )'
       ELSE
          WRITE (LUPRI,'(A/A,1P,D10.2,A)')
-     &   '     (Precalculated two-electron integrals'
-     &   //' are transformed to P-supermatrix elements.',
+     &   '     (Precalculated AO two-electron integrals'
+     &   //' are resorted to new file.',
      &   '      Threshold for discarding integrals :',THRESH,' )'
       END IF
       NBMAX = 255

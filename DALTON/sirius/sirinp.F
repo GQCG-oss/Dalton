@@ -2544,9 +2544,7 @@ C        ... no P-supermatrix for DFT
          ! we save the functional line
          ! we will parse it later
          ! at this moment we do not know the integrator yet
-         do i = 1, 80
-            functional_line(i:i) = titlin(i:i)
-         end do
+         functional_line(1:80) = titlin(1:80)
          functional_line_read = .true.
 
          IF (WDFTMP.NE.0.0D0) THEN
