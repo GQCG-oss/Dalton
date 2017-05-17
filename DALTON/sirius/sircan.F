@@ -392,8 +392,15 @@ C Step 0: WRK space allocation:
 C
       LWRK   = LFRSAV + KFRSAV - 1
 C .. 1.1 .. (MAKDV, TRACI)
+C     If spin-dependent srDFT then both charge and spin density 1-el matrices
+      IF (DFT_SPINDNS) THEN
+         NDV = 2
+      ELSE
+         NDV = 1
+      END IF
       KDV    = KFRSAV
-      KWRK1  = KDV    + NNASHX
+      KWRK1  = KDV    + NDV*NNASHX
+      KDSV   = KDV    + NNASHX
       LWRK1  = LWRK   - KWRK1
 C .. 1.2 .. (FCKMAT)
       KFC    = KWRK1
@@ -422,14 +429,32 @@ C
          CALL MAKDV(CVECS(1,ICREF),WRK(KDV),INDXCI,WRK(KWRK1),LWRK1)
 C        CALL MAKDV(CREF,DV,INDXCI,WRK,LFREE)
          IF (SUPSYM) CALL AVEDV(WRK(KDV))
+         IF (NDV .EQ. 2) THEN
+            IF (DFT_LOCALSPIN) THEN
+#ifdef MOD_SRDFT
+               CALL MAKE_DS_LOCALSPIN(WRK(KDV),WRK(KDSV),
+     &            WRK(KWRK1),LWRK1)
+#else
+               CALL QUIT('Sorry! Local spin not in this version')
+#endif
+            ELSE
+               CALL MAKDSV(CREF(1,ICREF),WRK(KDSV),INDXCI,
+     &            WRK(KWRK1),LWRK1)
+            END IF
+            IF (SUPSYM) CALL AVEDV(WRK(KDSV))
+         END IF
       ELSE IF (HSROHF) THEN
          DO I = 1, NASHT
             II = KDV + I*(I+1)/2 - 1
             WRK(II) = D1
+            IF (NDV.EQ.2) WRK(NNASHX+II)=D1
          END DO 
       ELSE IF (NASHT .EQ. 1) THEN
          WRK(KDV) = NACTEL
          IF (GETOCC) AOCC(1) = WRK(KDV)
+         IF (NDV.EQ.2) WRK(KDSV)=MOD(NACTEL,2)
+      END IF
+      IF (NDV .EQ. 2) THEN
       END IF
       IF (TRTONO) THEN
          TRTONO = .FALSE.

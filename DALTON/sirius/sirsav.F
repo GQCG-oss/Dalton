@@ -813,7 +813,7 @@ C Print XKAP, if so requested.
 C
       IF (P6FLAG(29) .AND. NWOPT .GT. 0) THEN
          WRITE (LUPRI,'(/A/A)') ' MO_ROTATE: Orbital rotation vector',
-     *                         ' -------------------------------'
+     *                          ' ----------------------------------'
          IF (IPRI6.GT.100) THEN
             PRFAC = 0.0D0
          ELSE
