@@ -438,7 +438,7 @@ C        CALL MAKDV(CREF,DV,INDXCI,WRK,LFREE)
                CALL QUIT('Sorry! Local spin not in this version')
 #endif
             ELSE
-               CALL MAKDSV(CREF(1,ICREF),WRK(KDSV),INDXCI,
+               CALL MAKDSV(CVECS(1,ICREF),WRK(KDSV),INDXCI,
      &            WRK(KWRK1),LWRK1)
             END IF
             IF (SUPSYM) CALL AVEDV(WRK(KDSV))
