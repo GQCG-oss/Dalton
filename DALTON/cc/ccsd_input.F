@@ -1227,7 +1227,7 @@ C=====================================================================*
      *            '.JACTST','.LHTR  ','.NOSCOM','.STSD  ','.TOLSC ',
      *            '.OMEINP','.STVEC ','.STOLD ','.CCTREN','.THREXC',
      *            '.CCSPIC','.CC2PIC','.CCSDPI','.MARGIN','.SQROVL',
-     *            '.ANALYS','.CHEXDI','.DV4DIS','.XXXXXX','.XXXXXX'/
+     *            '.ANALYS','.CHEXDI','.DV4DIS','.JACEXT','.XXXXXX'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -1243,6 +1243,7 @@ C
       FDJAC  = .FALSE.
       FDEXCI = .FALSE.
       JACEXP = .FALSE.
+      JACEXT = .FALSE.
       JACTST = .FALSE.
       LHTR   = .FALSE.
       OMESC  = .TRUE.
@@ -1335,7 +1336,7 @@ C           .R3DIIS  use CCDIIS_SOL for iterative triples models
 C---------------------------------------------------------------
 C
 2           CONTINUE
-            CCSDT_DIIS = .TRUE.
+               CCSDT_DIIS = .TRUE.
             GO TO 100
 
 C
@@ -1353,7 +1354,7 @@ C           .FDEXCI Diagonalize finite difference jacobian:
 C----------------------------------------------------------
 C
 4           CONTINUE
-              FDEXCI = .TRUE.
+               FDEXCI = .TRUE.
             GO TO 100
 
 C
@@ -1551,10 +1552,12 @@ C
             GO TO 100
 C
 C----------------------------------------------------------------
-C           .XXXXXX  unused
+C           .JACEXT Explicitly calculate the Jacobian for triplet
 C----------------------------------------------------------------
 C
 24          CONTINUE
+               JACEXP = .TRUE.
+               JACEXT = .TRUE.
             GO TO 100
 C
 C----------------------------------------------------------------
@@ -1675,7 +1678,7 @@ C     ---------------------------------------------------------------
 C     if we are going for triplett states set flag for intermediates:
 C     ---------------------------------------------------------------
 C
-      IF (NTRIP.GT.0) TRIPIM = .TRUE.
+      IF (NTRIP.GT.0.OR.JACEXT) TRIPIM = .TRUE.
 C
 C     ----------------------------------------------------------
 C     initialize eigenvalues with (non-degenerate) dummy values:

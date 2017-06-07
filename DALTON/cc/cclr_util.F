@@ -511,7 +511,7 @@ C
 C
       END
 c*DECK CCLR_JAC
-      SUBROUTINE CCLR_JAC(ISIDE,WORK,LWORK,APROXR12)
+      SUBROUTINE CCLR_JAC(ISIDE,WORK,LWORK,APROXR12,TRIPLET)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -531,8 +531,10 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER*24 CBLOCK
       CHARACTER*(*) APROXR12
+      LOGICAL TRIPLET
 C
 #include "ccsdinp.h"
+C Note cclr.h includes ccexcinf.h
 #include "cclr.h"
 #include "ccsdsym.h"
 #include "ccsdio.h"
@@ -556,9 +558,10 @@ C--------------------
 C
       ISYMTR = 1
       IPRLE  = IPRINT
-      IF (JACTST) THEN
+      IF (JACTST.OR.JACEXP.OR.FDJAC) THEN
          NC1VEC = NT1AM(ISYMTR)
          NC2VEC = NT2AM(ISYMTR)
+         IF (TRIPLET) NC2VEC = 2*NC2VEC
 c        IF (NT1AMX.GT.3) THEN
 c           NC1VEC = 3
 c        ENDIF
@@ -566,15 +569,12 @@ c        IF (NT2AMX.GT.5) THEN
 c           NC2VEC = 5
 c        ENDIF
       ENDIF
-      IF (FDJAC ) THEN
-         NC1VEC = NT1AM(ISYMTR)
-         NC2VEC = NT2AM(ISYMTR)
-      ENDIF
       IF (CCR12) THEN
         NTEMP  = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NTR12AM(ISYMTR)
         NTEMP2 = NTEMP*(NC1VEC + NC2VEC + NTR12AM(ISYMTR))
       ELSE
         NTEMP  = NT1AM(ISYMTR) + NT2AM(ISYMTR)
+        IF (TRIPLET) NTEMP = NTEMP + NT2AM(ISYMTR)
         NTEMP2 = NTEMP*(NC1VEC + NC2VEC)
       END IF
 C
@@ -588,7 +588,7 @@ C------------------------------------------------------------
 C
       IF (IPRINT.GT.10) WRITE(LUPRI,*) 'CCLR_JAC Workspace:',LWORK
 C     
-      IF (JACTST) THEN
+      IF (JACTST.OR.JACEXP) THEN
          KJACAN  = KEND1
          KEND1   = KJACAN + NTEMP2
          LWRK1   = LWORK  - KEND1
@@ -600,7 +600,7 @@ C
          END IF
          CALL AROUND( 'Calculation of analytical CC Jacobian')
          CALL CCLR_JACAN(NC1VEC,NC2VEC,ISIDE,WORK(KJACAN),LWORK,
-     &                   APROXR12)
+     &                   APROXR12,TRIPLET)
       ENDIF
 C
 C-------------------------------------------------------
@@ -609,20 +609,22 @@ C     both for jactst and jacexp.
 C     First elements in workspace contains the jacobian.
 C-------------------------------------------------------
 C
-      KFDJAC  = KEND1
-      KEND2   = KFDJAC + NTEMP2
-      LWRK2   = LWORK - KEND2
-      IF ( LWRK2 .LE. 0 ) THEN
-           WRITE(LUPRI,*) 'out of memory:'
-           WRITE(LUPRI,*) 'need:',KEND1
-           WRITE(LUPRI,*) 'have:',LWORK
-           CALL QUIT('Too little workspace in CCLR_JAC-2')
+      IF (JACTST.OR.FDJAC) THEN
+         KFDJAC  = KEND1
+         KEND2   = KFDJAC + NTEMP2
+         LWRK2   = LWORK - KEND2
+         IF ( LWRK2 .LE. 0 ) THEN
+            WRITE(LUPRI,*) 'out of memory:'
+            WRITE(LUPRI,*) 'need:',KEND1
+            WRITE(LUPRI,*) 'have:',LWORK
+            CALL QUIT('Too little workspace in CCLR_JAC-2')
+         END IF
+         CALL AROUND( 'Calculation of finite difference  CC Jacobian')
+         RSPIM2 =  RSPIM
+         RSPIM  = .FALSE.
+         CALL CCLR_FDJAC(NC1VEC,NC2VEC,WORK(KFDJAC),LWRK1,APROXR12)
+         RSPIM  = RSPIM2
       END IF
-      CALL AROUND( 'Calculation of finite difference  CC Jacobian')
-      RSPIM2 =  RSPIM
-      RSPIM  = .FALSE.
-      CALL CCLR_FDJAC(NC1VEC,NC2VEC,WORK(KFDJAC),LWRK1,APROXR12)
-      RSPIM  = RSPIM2
 C
 C--------------------------------------------------------
 C        calculate difference between the two jacobiants.
@@ -673,7 +675,8 @@ C
       RETURN
       END
 c*DECK CCLR_JACAN
-      SUBROUTINE CCLR_JACAN(NC1VEC,NC2VEC,ISIDE,WORK,LWORK,APROXR12)
+      SUBROUTINE CCLR_JACAN(NC1VEC,NC2VEC,ISIDE,WORK,LWORK,
+     &                      APROXR12,TRIPLET)
 C
 C-------------------------------------------------------------------------
 C     Test routine for calculating the CC Jacobian by Transformation of
@@ -698,6 +701,9 @@ C
       DIMENSION WORK(LWORK)
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, DELTA = 1.0D-08)
       CHARACTER*(*) APROXR12
+      LOGICAL TRIPLET
+C
+      INTEGER :: NT2
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' START OF CCLR_JACAN')
@@ -712,7 +718,9 @@ C
         NTAMP      = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NTR12AM(ISYMTR)
         NTAMP2     = NTAMP*(NC1VEC + NC2VEC + NTR12AM(ISYMTR))
       ELSE
-        NTAMP      = NT1AMX + NT2AMX
+        NT2 = NT2AMX
+        IF (TRIPLET) NT2 = 2*NT2
+        NTAMP      = NT1AMX + NT2
         NTAMP2     = NTAMP*(NC1VEC + NC2VEC )
       END IF
 
@@ -748,10 +756,13 @@ C     elements in work.
 C     Work follows immediately after vectors as it should.
 C---------------------------------------------------------
 C
-      DO I = 1, NC1VEC + NC2VEC + NTR12AM(1)
+      NLOOP = NC1VEC + NC2VEC
+      IF (CCR12) NLOOP = NLOOP + NTR12AM(1)
+
+      DO I = 1, NLOOP
          CALL DCOPY(NTAMP,WORK(KC1+NTAMP*(I-1)),1,WORK(KEND1),1)
          CALL CC_ATRR(0.0D0,ISYMOP,ISIDE,WORK(KEND1),LWRK1,
-     &                .FALSE.,DUMMY,APROXR12)
+     &                .FALSE.,DUMMY,APROXR12,TRIPLET)
          CALL DCOPY(NTAMP,WORK(KEND1),1,WORK(KC1+NTAMP*(I-1)),1)
   
          IF (CCR12) THEN  

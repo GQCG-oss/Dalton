@@ -573,7 +573,7 @@ C---------------------------------------------------------------------*
         iside=-1
       
         call cc_atrr(ecurr,isym,iside,work(krho1),lwrk1,.FALSE.,dummy,
-     &               aproxr12)
+     &               aproxr12,.FALSE.)
 
         call cc_eta(work(keta1),work(kend1),lwrk1)
 

@@ -132,7 +132,9 @@ c
 C
       IF (CCP2)   CCS = .TRUE.
       IF (CHOINT .AND. CC2) CHOEXC = .TRUE.
-      TRIPLET = .FALSE.
+C      TRIPLET = .FALSE.
+      TRIPLET = JACEXT
+C
       LABEL  = "Excita  "
       LABEL1 = "Exctot  "
 C
@@ -187,9 +189,9 @@ C
       IF (LIST(1:2) .EQ. 'RE') ISIDE  = +1
       IF (LIST(1:2) .EQ. 'LE') ISIDE  = -1
 
-      IF (JACTST.OR.FDJAC) THEN
-         CALL CCLR_JAC(ISIDE,WORK,LWORK,APROXR12)
-         IF (JACTST) THEN
+      IF (JACTST.OR.FDJAC.OR.JACEXP) THEN
+         CALL CCLR_JAC(ISIDE,WORK,LWORK,APROXR12,TRIPLET)
+         IF (JACTST.OR.JACEXP) THEN
             CALL AROUND( ' END OF JACTST ' )
             CALL QEXIT('CC_EXCI')
             RETURN
@@ -362,16 +364,6 @@ C
       KEXCPS4 = KEXCP4
       KEXCIS  = KEXCI
       KT1PS   = KT1P
-C
-C---------------------------------
-C     test with explicit jacobian.
-C---------------------------------
-C
-      IF (JACEXP) THEN
-         ISYMTR = 1    
-         CALL CCLR_LEINFI(TRIPLET)
-         CALL CC_JACEXP(WORK(KWRK0),LWRK0)
-      ENDIF
 C
 C-------------------------------------
 C     Start loop over symmetriclasses.
@@ -820,7 +812,7 @@ C
               END IF
 
               CALL CC_ATRR(ECURR,ISYM,1,WORK(KWRK0),LWRK0,.TRUE.,CONT,
-     &                     APROXR12)
+     &                     APROXR12,.FALSE.)
               CALL CC_EXCIT_CONT(I,ISYM,TRIPLET,MODELP,
      *                           CONT(4),CONT(1))
            END DO
@@ -2043,7 +2035,7 @@ C            Output vector replaces vector as first elements in work.
 C--------------------------------------------------------------------
 C
              CALL CC_ATRR(ECURR,ISYMTR,1,WORK,LWORK,.FALSE.,DUMMY,
-     &                     APROXR12)
+     &                     APROXR12,.FALSE.)
 C
              IF (IPRINT .GT.25) THEN
                 CALL AROUND('CC_PCEXCI: partioned A*R(0) vector. ')
@@ -2148,7 +2140,7 @@ C
            ENDIF
 C
            CALL CC_ATRR(ECURR,ISYMTR,1,WORK,LWORK,.FALSE.,DUMMY,
-     &                     APROXR12)
+     &                     APROXR12,.FALSE.)
            IF (IPRINT .GT.15) THEN
               CALL AROUND('CC_PCEXCI: A*C(0) vector. ')
               CALL CC_PRP(WORK(KRV1),WORK(KRV1+NT1AM(ISYMTR)),
@@ -2526,7 +2518,7 @@ C
       END
 c*DECK CC_ATRR
       SUBROUTINE CC_ATRR(ECURR,ISYMV,ISIDE,WORK,LWORK,LCONT,CONT,
-     &                   APROXR12)
+     &                   APROXR12,TRIPLET)
 C
 C----------------------------------------------------------------------
 C     Ove Christiansen December 1996.
@@ -2551,13 +2543,13 @@ C
 #include "ccsdinp.h"
 #include "r12int.h"
 C
-      LOGICAL LCONT,LOCDBG
+      LOGICAL LCONT,LOCDBG, TRIPLET
       CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FR2SD,FRHO12,FC12AM,FS12AM,
      &            FS2AM
       PARAMETER (FC1AM ='CCR_C1AM',FC2AM ='CCR_C2AM',FC12AM='CCR_C12M')
       PARAMETER (FRHO1 ='CCR_RHO1',FRHO2 ='CCR_RHO2',FRHO12='CCR_RH12')
       PARAMETER (                  FS2AM ='CCR_S2DM',FS12AM='CCR_S12M')
-      PARAMETER (TWO = 2.0D00 )
+      PARAMETER (TWO = 2.0D00, ZERO = 0.0D0)
       PARAMETER (LOCDBG = .FALSE.)
       CHARACTER*3 APROXR12
 C
@@ -2568,14 +2560,9 @@ C
          NCCVAR = NT1AM(ISYMV)
       ELSE
          NCCVAR = NT1AM(ISYMV) + NT2AM(ISYMV)
+         IF (TRIPLET) NCCVAR = NCCVAR + NT2AM(ISYMV)
          IF (CCR12) NCCVAR = NCCVAR + NTR12AM(ISYMV)
       END IF
-
-C     IF (CCS .OR. CC2 .OR. CCSD) THEN
-C       ECURR = 0.0D0
-C     ELSE
-C       CALL QUIT('Entered for unknown model CC_ATRR')
-C     END IF
 C
       NSIMTR = 1
       ISYMTR = ISYMV
@@ -2616,7 +2603,6 @@ C     Cheat and do CCS left transformation by right hand transformation.
 C-----------------------------------------------------------------------
 C
       MYSIDE = ISIDE
-C     IF ((ISIDE .EQ. -1 ) .AND. CCS ) ISIDE = 1
       IF ((ISIDE .EQ. -1 ) .AND. CCS ) MYSIDE = 1
 
 C
@@ -2630,6 +2616,7 @@ C
          ITR  = K1
       ENDIF
 C
+C
 C--------------------
 C     Allocations.
 C--------------------
@@ -2641,6 +2628,7 @@ CCH   IF (ISIDE  .EQ. -1) NRHO2 = MAX(NRHO2,2*NT2ORT(1))
       IF ( CC2 ) NRHO2 = MAX(NT2AM(ISYMTR),NT2AM(1))
       IF ( CCS ) NRHO2 = 2
 C
+      IF (TRIPLET) NRHO2 = 2*NRHO2
       NC2AM = MAX(NT2SQ(ISYMTR),NT2SQ(1),
      *           NT2AM(ISYMTR)+2*NT2ORT(1),NT2R12(1))
       IF ( CC2 ) NC2AM = MAX(NT2SQ(ISYMTR),NT2SQ(1))
@@ -2670,9 +2658,12 @@ C
          ENDIF
       ENDIF
 C
-      IF (.NOT. CCS) NRHO2 = NT2AM(ISYMTR)
+      IF (.NOT. CCS) THEN
+         NRHO2 = NT2AM(ISYMTR)
+         IF (TRIPLET) NRHO2 = 2*NRHO2
+      END IF
 C
-      DO 70 IV = 1, NSIMTR
+      DO 70 IV = 1, NSIMTR ! Note that NSIMTR is always one!
          NR1 = IV + K1 - 1
          IF (.NOT. (CCS.OR.CC2)) THEN
             NR2 = IV
@@ -2691,7 +2682,9 @@ C
            ELSE IF (CCR12.AND.IANR12.EQ.2) THEN
              CONT(2) = 0.0D0
            ELSE
-             CONT(2) = DDOT(NT2AM(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
+             LRHO2 = NT2AM(ISYMTR)
+             IF (TRIPLET) LRHO2 = 2*LRHO2
+             CONT(2) = DDOT(LRHO2,WORK(KRHO2),1,WORK(KRHO2),1)
            END IF
            CONT(3) = 0.0D0
          END IF
@@ -2702,18 +2695,20 @@ C
          END IF
   70  CONTINUE
 C
-      CALL DCOPY(NT1AM(ISYMTR),WORK(KRHO1),1,WORK(KC1AM),1)
-      IF ( .NOT. CCS ) THEN
-CCH      IF ( ISIDE .GE. 1) THEN
-         IF ( MYSIDE .GE. 1) THEN
-            CALL CCLR_DIASCL(WORK(KRHO2),TWO,ISYMTR)
+      IF (.NOT.TRIPLET) THEN
+         CALL DCOPY(NT1AM(ISYMTR),WORK(KRHO1),1,WORK(KC1AM),1)
+         IF ( .NOT. CCS ) THEN
+            IF ( MYSIDE .GE. 1) THEN
+               CALL CCLR_DIASCL(WORK(KRHO2),TWO,ISYMTR)
+            ENDIF
+            CALL CC_T2SQ(WORK(KRHO2),WORK(KC2AM),ISYMTR)
          ENDIF
-         CALL CC_T2SQ(WORK(KRHO2),WORK(KC2AM),ISYMTR)
       ENDIF
 C
 C---------------
 C     File open.
 C---------------
+C
 C
       IF (.NOT. (CCS.OR.CC2)) THEN
          CALL WOPEN2(LUFSD,FR2SD,64,0)
@@ -2723,11 +2718,14 @@ C---------------------
 C     Zero rho vector.
 C---------------------
 C
-      NRHO2 = MAX(NT2AM(ISYMTR),2*NT2ORT(ISYMTR))          
+      NRHO2 = MAX(NT2AM(ISYMTR),2*NT2ORT(ISYMTR))
+      IF (TRIPLET) NRHO2 = MAX(NRHO2,2*NT2AM(ISYMTR))
       IF ( CC2 ) NRHO2 = NT2AM(ISYMTR)
       IF ( CCS ) NRHO2 = 2
       CALL DZERO(WORK(KRHO1),NRHO1)
       CALL DZERO(WORK(KRHO2),NRHO2)
+      NRHO2 = NT2AM(ISYMTR)
+      IF(TRIPLET) NRHO2 = 2*NRHO2
       DO 80 IV = 1, NSIMTR
          NR1 = IV + K1 - 1
          IF (.NOT. (CCS.OR.CC2)) THEN
@@ -2750,12 +2748,19 @@ C
 C
       IF (MYSIDE .EQ. 1) THEN
 c        get A*R
-         CALL CC_RHTR(ECURR,FRHO1,LUFR1,FR2SD,LUFSD,FRHO12,LUFR12,
-     *                FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                WORK(KRHO1),WORK(KRHO2),
-     *                WORK(KC1AM),WORK(KC2AM),
-     *                WORK(KEND1),LWRK1,NSIMTR,
-     *                IVEC,ITR,LRHO1,LCONT,CONT(7),APROXR12)
+         IF (.NOT.TRIPLET) THEN
+            CALL CC_RHTR(ECURR,FRHO1,LUFR1,FR2SD,LUFSD,FRHO12,LUFR12,
+     *                   FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                   WORK(KRHO1),WORK(KRHO2),
+     *                   WORK(KC1AM),WORK(KC2AM),
+     *                   WORK(KEND1),LWRK1,NSIMTR,
+     *                   IVEC,ITR,LRHO1,LCONT,CONT(7),APROXR12)
+         ELSE
+            CALL CC_RHTR3(ECURR,FRHO1,LUFR1,FR2SD,LUFSD,
+     &                    FC1AM,LUFC1,FC2AM,LUFC2,
+     &                    WORK,LWORK,NSIMTR,
+     &                    1,1)
+         END IF
       ELSE IF (MYSIDE .EQ. -1) THEN
 c        get R*A
          CALL CC_LHTR(ECURR,
@@ -2765,7 +2770,7 @@ c        get R*A
      *                WORK(KC1AM),WORK(KC2AM),
      *                WORK(KEND1),LWRK1,NSIMTR,
      *                IVEC,ITR,LRHO1,APROXR12)
-      ELSE 
+      ELSE
          CALL QUIT('CC_ATRR; ISIDE should be -1 or +1 ')
       ENDIF
 
@@ -2798,6 +2803,7 @@ c        get R*A
 
       NRHO2 = MAX(NT2AM(ISYMTR),2*NT2ORT(ISYMTR))
       IF (CC2 ) NRHO2 = NT2AM(ISYMTR)
+      IF (TRIPLET) NRHO2 = NT2AM(ISYMTR) + NT2AMA(ISYMTR)
       DO 90 IV = 1, NSIMTR
          NR1 = IV + K1 - 1
          IF (.NOT. (CCS.OR.CC2)) THEN
@@ -2808,7 +2814,7 @@ c        get R*A
          CALL CC_RVEC(LUFR1,FRHO1,NT1AM(ISYMTR),NT1AM(ISYMTR),
      *                NR1,WORK(KRHO1))
          IF (.NOT.CCS) THEN
-            CALL CC_RVEC(LUFSD,FR2SD,NRHO2,NT2AM(ISYMTR),
+            CALL CC_RVEC(LUFSD,FR2SD,NRHO2,NRHO2,
      *                   NR2,WORK(KRHO2))
          END IF
          IF (CCR12) THEN
@@ -2819,7 +2825,7 @@ c        get R*A
 
          IF (LCONT) THEN
            IF (CCS) THEN
-             KSCR12 = NT1AM(ISYMTR)+NT2AM(ISYMTR)+1 
+             KSCR12 = NT1AM(ISYMTR)+NT2AM(ISYMTR)+1
              KEND2  = KSCR12 + NT1AM(ISYMTR)
            ELSE IF (CCR12) THEN
              IF (IANR12.EQ.2) THEN
@@ -2827,7 +2833,7 @@ c        get R*A
              ELSE
                KSCR12 = KS12AM + NTR12AM(ISYMTR)
              END IF
-             KEND2  = KSCR12 + 
+             KEND2  = KSCR12 +
      &                MAX(NT1AM(ISYMTR),NT2AM(ISYMTR),NTR12AM(ISYMTR))
            ELSE
              KSCR12 = NT1AM(ISYMTR)+NT2AM(ISYMTR)+1 

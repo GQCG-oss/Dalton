@@ -3458,7 +3458,7 @@ C-----------------------------------------------
             ENDIF
 !
 !------------------------------------
-!           Scale the diagonal
+!           Zero the diagonal
 !------------------------------------
 !
             IF (ANTISYM) THEN
@@ -3467,8 +3467,8 @@ C-----------------------------------------------
 C
                  DO 190 NAI = IFSTAI,ILSTAI
                     KOFF8 = KSCR2 + NT1AM(ISYMBJ)*(NAI-IFSTAI) + NAI - 1
-                    WORK(KOFF8) = ZERO * WORK(KOFF8)
-  190          CONTINUE
+                    WORK(KOFF8) = ZERO
+  190            CONTINUE
 C
               END IF
 C    
