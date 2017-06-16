@@ -277,6 +277,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/cc_landf2.F
     DALTON/cc/cc_landf3.F
     DALTON/cc/cc_lhtr.F
+    DALTON/cc/cc_lhtr3.F
     DALTON/cc/cc_lhtr_noddy.F
     DALTON/cc/cc_lhtr_rccd.F
     DALTON/cc/cc_lr.F

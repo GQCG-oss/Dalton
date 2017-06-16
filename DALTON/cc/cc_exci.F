@@ -2695,8 +2695,8 @@ C
          END IF
   70  CONTINUE
 C
+      CALL DCOPY(NT1AM(ISYMTR),WORK(KRHO1),1,WORK(KC1AM),1)
       IF (.NOT.TRIPLET) THEN
-         CALL DCOPY(NT1AM(ISYMTR),WORK(KRHO1),1,WORK(KC1AM),1)
          IF ( .NOT. CCS ) THEN
             IF ( MYSIDE .GE. 1) THEN
                CALL CCLR_DIASCL(WORK(KRHO2),TWO,ISYMTR)
@@ -2763,13 +2763,23 @@ c        get A*R
          END IF
       ELSE IF (MYSIDE .EQ. -1) THEN
 c        get R*A
-         CALL CC_LHTR(ECURR,
-     *                FRHO1,LUFR1,FR2SD,LUFSD,FRHO12,LUFR12,
-     *                FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                WORK(KRHO1),WORK(KRHO2),
-     *                WORK(KC1AM),WORK(KC2AM),
-     *                WORK(KEND1),LWRK1,NSIMTR,
-     *                IVEC,ITR,LRHO1,APROXR12)
+         IF (.NOT.TRIPLET) THEN
+            CALL CC_LHTR(ECURR,
+     *                    FRHO1,LUFR1,FR2SD,LUFSD,FRHO12,LUFR12,
+     *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                    WORK(KRHO1),WORK(KRHO2),
+     *                    WORK(KC1AM),WORK(KC2AM),
+     *                    WORK(KEND1),LWRK1,NSIMTR,
+     *                    IVEC,ITR,LRHO1,APROXR12)
+         ELSE
+            CALL CC_LHTR3(ECURR,
+     *                    FRHO1,LUFR1,FR2SD,LUFSD,
+     *                    FC1AM,LUFC1,FC2AM,LUFC2,
+     *                    WORK(KRHO1),WORK(KRHO2),
+     *                    WORK(KC1AM),WORK(KC2AM),
+     *                    WORK(KEND1),LWRK1,NSIMTR,
+     *                    1,1,LRHO1)
+         END IF
       ELSE
          CALL QUIT('CC_ATRR; ISIDE should be -1 or +1 ')
       ENDIF
