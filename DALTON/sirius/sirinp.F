@@ -1396,7 +1396,12 @@ C
          K1   = 1    + NCMOT
          LSCR = LCMO - K1
          JRDMO = -IRDMO
+         IPRSIR_save = IPRSIR
+         IPRSIR = max(1, IPRSIR)
+         ! .ge. 1 to print info about orbitals on SIRIUS.RST when 
+         ! reading initial orbitals from SIRIUS.RST
          CALL READMO(CMO,JRDMO)
+         IPRSIR = IPRSIR_save
 C        JRDMO negative : return with error status in JRDMO
 C        JRDMO positive : abort in READMO if error
          IF (JRDMO .GT. 0) THEN
