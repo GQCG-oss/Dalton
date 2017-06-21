@@ -29,8 +29,8 @@ C
       PARAMETER (ZERO=0.0D0,ONE=1.0D0,HALF=0.5D0,XMHALF=-0.5D0)
       PARAMETER (TWO=2.0D0)
       DIMENSION XINT(*)
-      DIMENSION SCR1(*), SCR2(*),
-      DIMENSION XLAMDH(*),XLAMPC(*)
+      DIMENSION SCR1(*), SCR2(*)
+      DIMENSION XLAMDP(*),XLAMDH(*),XLAMPC(*)
       DIMENSION WORK(LWORK)
       CHARACTER CFIL*(*)
 #include "ccorb.h"
@@ -49,6 +49,9 @@ C
 C----------------------------------------------------------
 C     Transform the two occ. indices to MO-basis: (k i | alfa delta) 
 C----------------------------------------------------------
+      LSCR1 = MAX(NT2BCD(ISYAIK),NT2BCD(ISYDIS))
+      LSCR2 = NT2BGD(ISYDIS)
+      CALL DZERO(SCR1,LSCR1)
 C
       DO 300 ISYMA = 1,NSYM
 C
@@ -65,7 +68,6 @@ C
 C
             KOFF1 = IDSAOG(ISYMA,ISYDIS) + NNBST(ISYMBG)*(A - 1) + 1
             CALL CCSD_SYMSQ(XINT(KOFF1),ISYMBG,WORK(KSCR10))
-C                   XINT -> WORK(KSCR10)
 C
             DO 320 ISYMG = 1,NSYM
 C
@@ -94,14 +96,12 @@ C
      *                    ONE,XLAMDP(KOFF2),NBASB,WORK(KOFF3),NBASB,
      *                    ZERO,WORK(KSCR11),NRHFK)
 C                  (k beta | gamma delta) here (K gamma |alpha beta)
-C
                KOFF5 = ILMRHF(ISYMI) + 1
 C
                CALL DGEMM('N','N',NRHF(ISYMK),NRHF(ISYMI),NBAS(ISYMG),
      *                    ONE,WORK(KSCR11),NRHFK,XLAMDH(KOFF5),NBASG,
      *                    ZERO,WORK(KSCR12),NRHFK)
 C                   (k i| gamma delta ) here ( k i| alpha beta)
-C
                DO 330 I = 1,NRHF(ISYMI)
 C
                   NAI = IT1AO(ISYMA,ISYMI) + NBAS(ISYMA)*(I-1) + A
@@ -111,7 +111,6 @@ C
                   KOFF7 = KSCR12 + NRHF(ISYMK)*(I - 1)
 C
                   CALL DCOPY(NRHF(ISYMK),WORK(KOFF7),1,SCR2(KOFF8),1)
-C                               WORK(KSCR12)->SCR2(KOFF8)
   330          CONTINUE
 C
   320       CONTINUE
@@ -150,7 +149,7 @@ C
 C
                CALL DGEMM('N','N',NRHF(ISYMK),NVIR(ISYMA),NBAS(ISYMAL),
      *                    ONE,SCR2(KOFF1),NRHFK,XLAMPC(KOFF2),NBASAL,
-     *                    FACTC,SCR1(KOFF3),NRHFK)
+     *                    ZERO,SCR1(KOFF3),NRHFK)
 C
   830       CONTINUE
   820    CONTINUE

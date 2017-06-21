@@ -169,7 +169,12 @@ C
          LDENSAI = NAIDEN(1)
 C
          KT2AM   = KFOCKD  + LFOCKD
-         KDENSIJ = KT2AM   + LT2AM
+CLilli need array for 2nd order doules and the squared one
+         K2TAM2  = KT2AM   + LT2AM
+         KT2SQ  = K2TAM2  + MAX(NT2SQ(1),NT2AO(ISYMOP),2*NT2ORT(ISYMOP))
+Cend  THIS NEEDS TO BE PUT IN IF A3(1)-method Keyword!
+         KDENSIJ = KT2SQ  + NT2SQ(1)
+C         KDENSIJ = KT2SQ  + LT2AM
          KDENSAB = KDENSIJ + LDENSIJ
          KDENSAI = KDENSAB + LDENSAB
          KEND1   = KDENSAI + LDENSAI
@@ -328,7 +333,8 @@ C
                END IF
 C
 C-----------------------------------------------------
-C              Get T2 amplitudes and density matrices.
+C              Get T2 amplitudes and density matrices 
+C               This should be changed s.t. is runs parallel.
 C-----------------------------------------------------
 C
                IF ((NEED_T2).AND.
@@ -341,8 +347,24 @@ C
      &                          WORK(KDENSAB),LDENSAB,
      &                          WORK(KEND2),LWORK2)
                   old_denslab = DENSLAB
-               ENDIF
+C               ENDIF
 C
+C
+C---------------------------------------------------------
+C              Calculate second order doubles amplitudes.
+C               This should be changed s.t. is runs parallel.
+C----------------------------------------------------------
+C
+                  WRITE(LUPRI,*) 'T2AM - Before SO_2NDDEWF'
+                  CALL OUTPUT(WORK(KT2AM),1,NT2AMX,1,1,NT2AMX,1,1,LUPRI)
+                  WRITE(LUPRI, '(A)') 'Start calc. of 2nd order doubles'
+                  FLUSH(LUPRI)
+                    CALL SO_2NDDECOEF(WORK(K2TAM2),WORK(KT2AM),
+     *                 WORK(KT2SQ),WORK(KEND2),LWORK2) 
+                  WRITE(LUPRI, '(A)') 'The 2nd order doubles - done'
+                  FLUSH(LUPRI)
+C
+                ENDIF
 C---------------------------------------------------------
 C              Ready the slaves for parallel calculations.
 C---------------------------------------------------------

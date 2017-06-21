@@ -35,6 +35,7 @@ C------------------
 C
       CALL QENTER('SO_MP2T2')
 C
+C
 C-----------------------------------
 C    Creating NAIBJ
 C-----------------------------------
@@ -60,7 +61,10 @@ C
                            IF (NAI .GT. NBJ) GOTO 160
 C
                            NAIBJ = IT2AM(ISYMAI,ISYMBJ)+INDEX(NAI,NBJ)
-C 
+C
+                           WRITE(LUPRI,*) 'A',A,'I',I,'B',B,'J',J
+                           WRITE(LUPRI,*) 'NAI',NAI,'NBJ',NBJ
+                           WRITE(LUPRI,*) 'NAIBJ',NAIBJ
                            T2AM(NAIBJ) = T2AM(NAIBJ) /
      *                                     (FOCKD(KOFFI) + FOCKD(KOFFJ)
      *                                    - FOCKD(KOFFA) - FOCKD(KOFFB))

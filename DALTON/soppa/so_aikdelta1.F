@@ -1,6 +1,6 @@
 C    /* Deck so_aikdelta1 */
       SUBROUTINE SO_AIKDELTA1(DSRHF,SCR1,SCR2,XLAMDH,XLAMPC,ISYMPC,
-     *                    ISYMHC,WORK,LWORK,ISYDIS,IDEL,ISYDEL,FACTD,
+     *                    ISYMHC,WORK,LWORK,ISYDIS,IDEL,ISYDEL,
      *                    LUD,DFIL)
 C
 C     The orignal routine CCRHS_D1 is written by Henrik Koch 3-Jan-1994.
@@ -47,12 +47,23 @@ C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       ISYAIK = MULD2H(ISYDIS,ISYMPC)
+      WRITE(LUPRI,*) 'ENTERING SO_AIKDELTA1'
+C
+      LSCR1 = MAX(NT2BCD(ISYAIK),NT2BCD(ISYDIS))
+      LSCR2 = NT2BGD(ISYDIS)
+C
+C      ISYAIK = MULD2H(ISYDIS,ISYMPC)
+C
+      CALL DZERO(SCR1,LSCR1)
+      CALL DZERO(SCR2,LSCR2)
 C
       DO 340 ISYMK = 1,NSYM
+
 C
          ISYALG = MULD2H(ISYMK,ISYDIS)
          ISYALI = MULD2H(ISYMHC,ISYALG)
          NT1AOM = MAX(NT1AO(ISYALG),NT1AO(ISYALI))
+C
 C
          KSCR10 = 1
          KSCR11 = KSCR10 + N2BST(ISYALG)
@@ -61,9 +72,9 @@ C
          IF (LWRK1 .LT. 0) THEN
             CALL QUIT('Insufficient space for allocation in CCRHS_D1')
          END IF
-C
+
          DO 350 K = 1,NRHF(ISYMK)
-C
+
             KOFF1 = IDSRHF(ISYALG,ISYMK) + NNBST(ISYALG)*(K - 1) + 1
             CALL CCSD_SYMSQ(DSRHF(KOFF1),ISYALG,WORK(KSCR10))
 C
@@ -71,7 +82,7 @@ C
             CALL DZERO(WORK(KSCR11),NT1AO(ISYALI))
 C
 C-------------------------------------------------------------------
-C           Transform the gamma index in (alpha gamma| j delta) to i.
+C           Transform the gamma index in (alpha gamma| k delta) to i.
 C--------------------------------------------------------------------
 C
             DO 360 ISYMI = 1,NSYM
@@ -85,29 +96,42 @@ C
                KOFF2 = KSCR10 + IAODIS(ISYMAL,ISYMG)
                KOFF3 = ILMRHF(ISYMI) + 1
                KOFF4 = KSCR11 + IT1AO(ISYMAL,ISYMI)
+               WRITE(LUPRI,*) 'DSRHF'
+               CALL OUTPUT(WORK(KOFF2),1,N2BST(ISYALG),1,1,
+     *                      N2BST(ISYAL),1,1,LUPRI)
 C
                CALL DGEMM('N','N',NBAS(ISYMAL),NRHF(ISYMI),NBAS(ISYMG),
      *                    ONE,WORK(KOFF2),NBASAL,XLAMDH(KOFF3),NBASG,
      *                    ZERO,WORK(KOFF4),NBASAL)
 C
+               WRITE(LUPRI,*) 'KOFF2',KOFF2,'KOFF3',KOFF3,'KOFF4',KOFF4
+               WRITE(LUPRI,*) '(ALPHA i| k DELTA)'
+               CALL OUTPUT(WORK(KOFF4),1,NT1AOM,1,1,NT1AOM,1,1,LUPRI)
   360       CONTINUE
 C
             NRHFK = MAX(NRHF(ISYMK),1)
             KOFF5 = IT2BGT(ISYMK,ISYALI) + K
-C            CALL DAXPY(NT1AO(ISYALI),TWO,WORK(KSCR11),1,SCR2(KOFF5),
-C     *                 NRHFK)
-            CALL DCOPY(NT1AO(ISYALI),WORK(KSCR11),1,SCR2(KOFF5),NRHFK)
+            WRITE(LUPRI,*) 'before DCOPY','KOFF5',KOFF5
+            CALL OUTPUT(SCR2(KOFF5),1,LSCR2,1,1,LSCR2,1,1,LUPRI)
+            CALL DAXPY(NT1AO(ISYALI),ONE,WORK(KSCR11),1,SCR2(KOFF5),
+     *                 NRHFK)
+C            CALL DCOPY(NT1AO(ISYALI),WORK(KSCR11),1,SCR2(KOFF5),NRHFK)
 C               CHANGE THIS TO DCOPY
+            WRITE(LUPRI,*) 'AFTER DCOPY'
+            CALL OUTPUT(SCR2(KOFF5),1,LSCR2,1,1,LSCR2,1,1,LUPRI)
 C
   350    CONTINUE
 C
   340 CONTINUE
 C
+      WRITE(LUPRI,*) 'SCR2 AFTER LOOPS'
+      CALL OUTPUT(SCR2(1),1,LSCR2,1,1,LSCR2,1,1,LUPRI)
+
 C--------------------------------------------------------------------------
 C     Transform the alpha index of (alpha i| k delta) to a.
 C--------------------------------------------------------------------------
 C
-      ISYAIK = MULD2H(ISYDIS,ISYMPC)
+C      ISYAIK = MULD2H(ISYDIS,ISYMPC)
 C
       DO 710 ISYMAI = 1,NSYM
 C
@@ -129,14 +153,16 @@ C
                KOFF1 = IT2BGT(ISYMK,ISYALI) + NRHF(ISYMK)*(MALI - 1) + 1
                KOFF2 = IGLMVI(ISYMAL,ISYMA) + 1
                KOFF3 = IT2BCT(ISYMK,ISYMAI) + NRHF(ISYMK)*(NAI - 1) + 1
-C
                CALL DGEMM('N','N',NRHF(ISYMK),NVIR(ISYMA),NBAS(ISYMAL),
      *                    ONE,SCR2(KOFF1),NRHFK,XLAMPC(KOFF2),NBASAL,
-     *                    FACTD ,SCR1(KOFF3),NRHFK)
-C
+     *                    ZERO,SCR1(KOFF3),NRHFK)
   730       CONTINUE
   720    CONTINUE
   710 CONTINUE
+
+      WRITE(LUPRI,*) 'SCR1 AFTER LOOPS'
+      CALL OUTPUT(SCR1(1),1,LSCR1,1,1,LSCR1,1,1,LUPRI)
+
 C
 C---------------------------------------
 C     Dump to Disk.

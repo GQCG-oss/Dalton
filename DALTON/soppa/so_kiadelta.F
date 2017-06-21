@@ -28,7 +28,8 @@ C
 #include "maxorb.h"
       DIMENSION XINT(*),WORK(LWORK)
       DIMENSION XLAMDP(*),XLAMPC(*),XLAMDH(*)
-      CHARACTER CFIL*(*),CPFIL*(*)
+      CHARACTER CFIL*(*)
+C,CPFIL*(*)
 #include "ccorb.h"
 #include "symsq.h"
 #include "ccsdsym.h"
@@ -61,7 +62,7 @@ C     Calculate the contribution.
 C--------------------------------
 C
          CALL SO_KIADELTA1(XINT,ISYMT2,WORK(KSCR1),WORK(KSCR2),
-     *                 XLAMDP,XLAMDH,XLAMPC,ISYMPC
+     *                 XLAMDP,XLAMDH,XLAMPC,ISYMPC,
      *                 WORK(KEND1),LWRK1,
      *                 ISYDIS,IDEL,FACTC,LUC,CFIL)
 C

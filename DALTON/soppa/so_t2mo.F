@@ -1,20 +1,18 @@
 C  /* Deck so_t2mo */
-      SUBROUTINE SO_T2MO(OMEGA2,RHO2,GAMMA,XLAMDP,
-     *                   XLAMPC,ISYMTR,WORK,LWORK,ISYMOP)
+      SUBROUTINE SO_T2MO(OMEGA2,RHO2,XLAMDP,
+     *                   XLAMPC,ISYMTR,WORK,LWORK)
 C
 C     The Origial routine CC_T2MO is written by Henrik Koch and Alfredo Sanchez 15-July-1994
 C
-C     Purpose: Transform the Omega2 vector from the AO basis to the MO
+C     Purpose: Transform the contribution in the  Omega2 vector from the AO basis to the MO
 C               basis.
 C
 C     List of variables:
-C       OMEGA2: 
+C       OMEGA2: Containing the contribution to the 2nd order DE coef.
 C       RHO2:   Output array
-C       GAMMA:  
-C       XLAMDP
-C       XLAMDPC
+C       XLAMDP: MO-coeffecients
+C       XLAMPC: MO-coeffecients
 C       ISYMTR: Symmetry of trialvector = 1
-C       ISYMOP: Symmetry of operator. Is 1 in AO-SOPPA
 C
 C     Written by Lilli Irene Ør Kristensen, Spring 2017
 C
@@ -22,13 +20,15 @@ C
 #include "priunit.h"
 #include "maxorb.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      DIMENSION OMEGA2(*), RHO2(*), GAMMA(*),
-     *          XLAMDP(*), WORK(*), XLAMPC(*)
+      DIMENSION OMEGA2(*),RHO2(*),
+     *          XLAMDP(*), WORK(LWORK), XLAMPC(*)
 #include "ccorb.h"
 #include "ccsdsym.h"
 #include "symsq.h"
-#include "cclr.h"
+C#include "cclr.h"
 C
+C      ISYMOP = 1
+C      ISYMTR = 1
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       ISYMO2 = MULD2H(ISYMOP,ISYMTR)
@@ -69,7 +69,7 @@ C
                LWRK1 = LWORK - KEND1
 C
                IF (LWRK1 .LT. 0) THEN
-                  CALL QUIT('Not enough space in CC_T2MO')
+                  CALL QUIT('Not enough space in SO_T2MO')
                END IF
 C
                DO 130 J = 1,NRHF(ISYMJ)
@@ -128,7 +128,6 @@ C
   167                   CONTINUE
   166                CONTINUE
 C
-                     ENDIF
 C
 C------------------------------------------------------------
 C                    Transform the AB block to virtual space.
@@ -158,6 +157,9 @@ C
      *                          WORK(KSCR2),NBASA,ZERO,WORK(KSCR3),
      *                          NVIRA)
 C
+C                     WRITE(LUPRI,*) 'SO_T2MO'
+C                     CALL OUTPUT(WORK(KSCR3),1,NVIR(ISYMA),1,NVIR(ISYMB)
+C     *               ,NVIR(ISYMA),NVIR(ISYMB),2,LUPRI)
 C--------------------------------------------
 C                    Store the omega2 vector.
 C--------------------------------------------
@@ -185,74 +187,16 @@ C
 chjaaj: next two lines are commented because it is dead code
 c                             NAIBJ = IT2AM(ISYMAI,ISYMBJ)
 c    *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
-C                           ENDIF
+                           ENDIF
 C
                            RHO2(NAIBJ) = RHO2(NAIBJ) + WORK(NAB)
 C
+                           WRITE(LUPRI,*) 'NAIBJ',NAIBJ
+                           WRITE(LUPRI,*) 'RHO2(NAIBJ)',RHO2(NAIBJ)
+                           FLUSH(LUPRI)
   180                   CONTINUE
   170                CONTINUE
 C
-C
-C-------------------------------------------------------------
-CDo i really need this?     Transform the AB block to occupied space.
-C-------------------------------------------------------------
-C
-C                     NBASA = MAX(NBAS(ISYAL),1)
-C                     NBASB = MAX(NBAS(ISYBE),1)
-C                     NRHFA1 = MAX(NRHF(ISYAL),1)
-C
-C                     KOFF1 = ILMRHF(ISYBE) + 1
-C
-C                     CALL DGEMM('N','N',NBAS(ISYAL),NRHF(ISYBE),
-C     *                          NBAS(ISYBE),ONE,WORK(KSCR1),NBASA,
-C     *                          XLAMDP(KOFF1),NBASB,ZERO,WORK(KSCR4),
-C     *                          NBASA)
-C
-C
-C                     KOFF2 = ILMRHF(ISYAL) + 1
-C
-C                     CALL DGEMM('T','N',NRHF(ISYAL),NRHF(ISYBE),
-C     *                          NBAS(ISYAL),ONE,XLAMDP(KOFF2),NBASA,
-C     *                          WORK(KSCR4),NBASA,ZERO,WORK(KSCR5),
-C     *                          NRHFA1)
-C
-C-------------------------------------------
-C                    Store the gamma matrix.
-C-------------------------------------------
-C
-C                     ISYMK = ISYAL
-C                     ISYML = ISYBE
-CC
-C                     ISYMKI = MULD2H(ISYMK,ISYMI)
-C                     ISYMLJ = MULD2H(ISYML,ISYMJ)
-CC
-C                     DO 190 L = 1,NRHF(ISYML)
-CC
-C                        NLJ = IMATIJ(ISYML,ISYMJ)
-C     *                      + NRHF(ISYML)*(J - 1) + L
-CC
-C                        DO 200 K = 1,NRHF(ISYMK)
-CC
-C                           NKL = KSCR5 + NRHF(ISYMK)*(L - 1) + K - 1
-CC
-C                           NKI = IMATIJ(ISYMK,ISYMI)
-C     *                         + NRHF(ISYMK)*(I - 1) + K
-CC
-C                           IF (ISYMKI .EQ. ISYMLJ) THEN
-C                              NKILJ = IGAMMA(ISYMKI,ISYMLJ)
-C     *                              + INDEX(NKI,NLJ)
-C                              GAMMA(NKILJ) = WORK(NKL)
-C                           ELSE IF (ISYMKI .LT. ISYMLJ) THEN
-C                              NKILJ = IGAMMA(ISYMKI,ISYMLJ)
-C     *                              + NMATIJ(ISYMKI)*(NLJ - 1) + NKI
-C                              GAMMA(NKILJ) = WORK(NKL)
-C                           ENDIF
-CC
-C  200                   CONTINUE
-C  190                CONTINUE
-C
-C
-  999                CONTINUE
   140             CONTINUE
   130          CONTINUE
   120       CONTINUE
