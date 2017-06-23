@@ -1,0 +1,39 @@
+**DIRAC
+.TITLE
+electric properties for frozen density embedding
+.WAVE F
+.4INDEX
+.PROPERTIES
+**HAMILTONIAN
+.LVCORR
+! frozen density embedding selected
+.FDE
+! one can give the file name for the potential here
+! if ommited, the default filename is EMBPOT. regardless
+! of the name, this file has to be transferred to the
+! scratch directory first
+*FDE
+.EMBPOT
+vemb.grid
+**INTEGRALS
+.PRINT 
+ 1
+*READIN
+.CONTRACTED
+**WAVE FUNCTIONS
+.SCF
+.RELCCSD
+**PROPERTIES
+.DIPOLE
+**MOLTRA
+.ACTIVE
+all
+**RELCCSD
+.GRADIENT
+*CCENER
+.MAXIT
+100
+*CCFOPR
+.MP2G
+.RELAXED
+*END OF

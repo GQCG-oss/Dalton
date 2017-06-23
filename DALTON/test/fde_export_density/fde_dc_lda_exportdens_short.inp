@@ -1,0 +1,42 @@
+**DIRAC
+.TITLE
+electric properties for frozen density embedding
+.WAVE F
+.PROPERTIES
+**HAMILTONIAN
+.LVCORR
+.DFT
+LDA
+! frozen density embedding selected
+.FDE
+! one can give the file name for the potential here
+! if ommited, the default filename is EMBPOT. regardless
+! of the name, this file has to be transferred to the
+! scratch directory first
+*FDE
+.EMBPOT
+vemb.grid
+.GRIDOUT
+GRIDOUT
+.LEVEL
+DHF
+**GRID
+! note that at the moment .IMPORT and .GRIDOUT cannot have the same name
+! (on gfortran) this is because the DFT grid unit remains open which confuses
+! embedding trying to use the same file with another unit
+.IMPORT
+numerical_grid
+**INTEGRALS
+.NUCMOD
+ 1
+*READIN
+.CONTRACTED
+**WAVE FUNCTIONS
+.SCF
+*SCF
+.PRINT
+ 1
+**PROPERTIES
+.DIPOLE
+*END OF
+

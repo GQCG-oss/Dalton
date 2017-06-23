@@ -1,0 +1,29 @@
+**DIRAC
+.TITLE
+Water molecule. tests for frozen density embedding
+.WAVE F
+.PROPERTIES
+**HAMILTONIAN
+.X2COLD
+.DFT
+ LDA
+.FDE
+*FDE
+.EMBPOT
+vemb.grid
+.PRINT
+ 1
+**INTEGRALS
+.NUCMOD
+1
+*READIN
+.UNCONTRACTED
+**WAVE FUNCTIONS
+.SCF
+*SCF
+.PRINT
+2
+**PROPERTIES
+.DIPOLE
+*END OF
+

@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = '* Dipole moment:',
+      num_lines   = 8,
+      rel_tolerance   = 1.0e-6)
+
+test.run(['fde_dc_lda_short.inp'],      ['water.sto6g.mol'], f, args='--mw=80 --nw=80 --aw=90 --put=vemb.grid')
+test.run(['fde_dc_lda_short.inp'],      ['water.sto6g.c2v'], f, args='--mw=80 --nw=80 --aw=90 --put=vemb.grid')
+test.run(['fde_ll_lda_short.inp'],      ['water.sto6g.mol'], f, args='--mw=80 --nw=80 --aw=90 --put=vemb.grid')
+test.run(['fde_ll_lda_short.inp'],      ['water.sto6g.c2v'], f, args='--mw=80 --nw=80 --aw=90 --put=vemb.grid')
+test.run(['fde_twocomp_lda_short.inp'], ['water.sto6g.mol'], f, args='--mw=80 --nw=80 --aw=90 --put=vemb.grid')
+test.run(['fde_twocomp_lda_short.inp'], ['water.sto6g.c2v'], f, args='--mw=80 --nw=80 --aw=90 --put=vemb.grid')
+test.run(['fde_dc_cc_short.inp'],       ['water.sto6g.mol'], f, args='--mw=80 --nw=80 --aw=95 --put=vemb.grid')
+test.run(['fde_dc_cc_short.inp'],       ['water.sto6g.c2v'], f, args='--mw=80 --nw=80 --aw=95 --put=vemb.grid')
+
+sys.exit(test.return_code)
