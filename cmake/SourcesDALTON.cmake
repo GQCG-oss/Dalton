@@ -795,7 +795,7 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/fde/emb_dalton_evaluators.F90
     DALTON/fde/emb_dalton_input.F90
     DALTON/fde/emb_data.F90
-    DALTON/fde/emb_evaluators.F90
+#   DALTON/fde/emb_evaluators.F90
     DALTON/fde/emb_export.F90
     DALTON/fde/emb_input.F90
     DALTON/fde/emb_io.F90

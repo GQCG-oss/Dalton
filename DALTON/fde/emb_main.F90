@@ -27,7 +27,10 @@ module fde_mod
    use fde_data
    use fde_io
    use fde_export_data
-   use fde_evaluators
+! still need to sort out xcfun interface
+!  use fde_evaluators
+!  for the same problem we need to specifically add
+   use fde_evaluators_dalton
    use fde_input
    use fde_input_dalton
 

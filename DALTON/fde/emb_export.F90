@@ -28,7 +28,8 @@ module fde_export_data
    use fde_io
    use xml_parser
    use xml_file
-   use fde_evaluators
+! need to sort out xcfun interface to enable it
+!   use fde_evaluators
    
    public fde_export_to_file
 

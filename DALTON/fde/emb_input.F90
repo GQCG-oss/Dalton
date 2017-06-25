@@ -29,8 +29,8 @@ module fde_input
 ! before the interface to xcfun/xcint is properly set up, anything having to do
 ! with functional derivatives will be disabled
 !  use fde_nadd_derv
-
-   use fde_evaluators
+!  use fde_evaluators
+   use fde_evaluators_dalton
    
    private
 
