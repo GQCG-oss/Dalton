@@ -453,7 +453,7 @@ CAKSP Allocate space for doubles and singles contributions
                   KPROPI2 = KPROPI1 + LPROPI
                   KEND2B = KPROPI2 + LPROPI
                ELSE
-C                  KEND2B = KPROP + LPROP (det er vel de imaginære nu?)
+C                  KEND2B = KPROP + LPROP (imaginary now)
                   KEND2B = KPROPI + LPROPI
                END IF
                LWORK2B = LWORK-KEND2B
