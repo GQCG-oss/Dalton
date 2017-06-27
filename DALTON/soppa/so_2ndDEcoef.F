@@ -423,12 +423,12 @@ C-------------------------------------------------------------
 C              Calculate the gamma matrix entering the A-term.
 C-------------------------------------------------------------
 C
-C               DTIME   = SECOND()
-C               CALL SO_GAMMA(WORK(KDSRHF),WORK(KGAMMA),WORK(KCMO),
-C     *                           WORK(KCMO),WORK(KSCRM),WORK(KEND4),
-C     *                           LWRK4,IDEL,ISYMD)
-C               DTIME   = SECOND() - DTIME
-C               TIMGAM  = TIMGAM   + DTIME
+               DTIME   = SECOND()
+               CALL SO_GAMMA(WORK(KDSRHF),WORK(KGAMMA),WORK(KCMO),
+     *                           WORK(KCMO),WORK(KSCRM),WORK(KEND4),
+     *                           LWRK4,IDEL,ISYMD)
+               DTIME   = SECOND() - DTIME
+               TIMGAM  = TIMGAM   + DTIME
 C
 C------------------------------------------------------------------------------
 C              Calculate (ki|a delta).
@@ -465,26 +465,26 @@ C              CHECK ROUTINE
                WRITE(LUPRI,'(A)') 'Runing CHECK_ROUTINES'
 C------------------------------------------------------------------------------
 C 
-               CALL CHECK_AGBD(WORK(KXINT),
-     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
-     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
-     *                        WORK(KEND3),LWRK3,ILLL,ISYMD,LUPRI)
+C               CALL CHECK_AGBD(WORK(KXINT),
+C     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
+C     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
+C     *                        WORK(KEND3),LWRK3,ILLL,ISYMD,LUPRI)
+CC
+C               CALL CHECK_KILJ(WORK(KXINT),
+C     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
+C     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
+C     *                        WORK(KEND3),LWRK3,ILLL,ISYMD,LUPRI)
+CC
+C               CALL CHECK_KIADELTA(WORK(KXINT),
+C     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
+C     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
+C     *                        WORK(KEND3),LWRK3,ILLL,ISYMD,LUPRI)
 C
-               CALL CHECK_KILJ(WORK(KXINT),
-     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
-     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
-     *                        WORK(KEND3),LWRK3,ILLL,ISYMD,LUPRI)
+C               CALL CHECK_AIKDELTA(WORK(KXINT),
+C     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
+C     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
+C     *                        WORK(KEND3),LWRK3,ILLL,ISYMD,LUPRI)
 C
-               CALL CHECK_KIADELTA(WORK(KXINT),
-     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
-     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
-     *                        WORK(KEND3),LWRK3,ILLL,ISYMD,LUPRI)
-
-               CALL CHECK_AIKDELTA(WORK(KXINT),
-     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
-     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
-     *                        WORK(KEND3),LWRK3,ILLL,ISYMD,LUPRI)
-
   120       CONTINUE
   110    CONTINUE
   100 CONTINUE
@@ -685,8 +685,8 @@ C         WRITE(LUPRI,9999) 'CCRHS_T2BT ', TIMT2BT
 C      ENDIF
 C9999  FORMAT(7x,'Time used in',2x,A12,2x,': ',f10.2,' seconds')
 
-      LUC = -1
-      LUD = -1
+C      LUC = -1
+c      LUD = -1
       CFIL = 'PMAT_C'
       DFIL = 'PMAT_D'
       CALL WCLOSE2(LUC,CFIL,'KEEP')
