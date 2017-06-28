@@ -30,7 +30,7 @@ C  /* Deck cc_lhtr */
      *                   NSIMTR,IVEC,ITR,LRHO1)
 C
 C     Written by Rasmus Faber, summer 2017
-C          
+C
 C     Based on CC_LHTR by Asger Halkier & Henrik Koch.
 C
 C     Purpose:
@@ -91,7 +91,7 @@ C
       CHARACTER*1  LR
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      PARAMETER (FOURTH = 0.25D0, THREE = 3.0D0)
+      PARAMETER (FOURTH = 0.25D0, THREE = 3.0D0, ONEM = -1.0D0)
       DIMENSION INDEXA(MXCORB_CC)
       DIMENSION RHO1(LRHO1,NSIMTR), CTR1(LRHO1,NSIMTR)
       DIMENSION RHO2(*), CTR2(*)
@@ -106,7 +106,7 @@ C
 C
 C
       !set CCSDR12
-      CCSDR12 = CCR12 .AND. .NOT.(CC2.OR.CCS)
+      CCSDR12 = .FALSE.
 C
       SKIPMI = .FALSE.
 C
@@ -322,12 +322,12 @@ C
      *                 ISYMOP,IOPT)
 C
 C--------------------------------------
-C        Read CTR2 from disc into RHO2.
+C        Read CTR2+ from disc into RHO2.
 C--------------------------------------
 C
-         DTIME = SECOND() ! Fix
-         CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
-     *                IVEC+IV-1,RHO2)
+         DTIME = SECOND()
+         CALL CC_RVEC3(LUFC2,FC2AM,2*NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                 IVEC+IV-1,0,RHO2)
          DTIME = SECOND() - DTIME
          TIMIO = TIMIO + DTIME
 C
@@ -335,7 +335,20 @@ C-----------------------
 C        Square up CTR2.
 C-----------------------
 C
+         CALL CCRHS3_R2IJ(RHO2,WORK(KEND1),LWRK1,ISYMTR)
          CALL CC_T2SQ(RHO2,CTR2,ISYMTR)
+C
+C--------------------------------------
+C        Read CTR2- from disc into RHO2.
+C--------------------------------------
+C
+         DTIME = SECOND()
+         CALL CC_RVEC3(LUFC2,FC2AM,2*NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                 IVEC+IV-1,NT2AM(ISYMTR),RHO2)
+         DTIME = SECOND() - DTIME
+         TIMIO = TIMIO + DTIME
+C
+         CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,ONEM)
 C
          IF ( DEBUG ) THEN
             RHO1N = DDOT(NT1AM(ISYMTR),CTR1(1,IV),1,CTR1(1,IV),1)
@@ -351,7 +364,7 @@ C        Calculate Y-intermediate of CTR2 and T2AM.
 C--------------------------------------------------
 C
             KOFFYI = KYMAT + NMATAB(ISYRES)*(IV - 1)
-            KOFFYD = KYDEN + N2BST(ISYRES)*(IV - 1)
+            KOFFYD = KYDEN + N2BST(ISYRES)*(IV - 1) ! Not needed
 C
             TIMEYI = SECOND()
             CALL CC_YI(WORK(KOFFYI),CTR2,ISYMTR,WORK(KT2AM),ISYMOP,
@@ -359,6 +372,9 @@ C
             CALL CC_YD(WORK(KOFFYD),WORK(KOFFYI),ISYRES,WORK(KLAMDH),
      *                 WORK(KLAMDP),ISYMOP,WORK(KEND1),LWRK1)
             TIMEYI = SECOND() - TIMEYI
+
+            CALL DAXPY(N2BST(ISYRES),ONE,
+     &                 WORK(KOFFYD),1,WORK(KOFFCT),1)
 C
 C-----------------------------------------------------
 C           Calculate X-intermediate of CTR2 and T2AM.
@@ -369,6 +385,8 @@ C
             TIMEXI = SECOND()
             CALL CC_XI(WORK(KOFFXI),CTR2,ISYMTR,WORK(KT2AM),ISYMOP,
      *                 WORK(KEND1),LWRK1)
+            CALL CC_XD3(WORK(KOFFCT),WORK(KOFFXI),ISYMTR,WORK(KLAMDH),
+     &                  WORK(KLAMDP),1,WORK(KEND1),LWRK1)
             TIMEXI = SECOND() - TIMEXI
          END IF
 C
@@ -387,7 +405,9 @@ C
                RHO2N = DDOT(NT2AM(ISYMOP),WORK(KT2AM),1,WORK(KT2AM),1)
                WRITE(LUPRI,1) 'Norm of T2AM - before CC_PQI:  ',RHO2N
             ENDIF
-
+C
+C   We need to rearange this for triplet.
+C
             CALL CC_PQI(CTR2,ISYMTR,WORK(KT2AM),ISYMOP,PQFIL,LUPQ,
      *                  IADRPQ,IADRSTRT,IV,WORK(KEND1),LWRK1)
 C
@@ -662,7 +682,7 @@ C
 C
 C-------------------------------------------
 C              Calculate the AO-fock-matrix.
-C              Keep Exchange part only               
+C              Keep Exchange part only
 C-------------------------------------------
 C
                AUTIME = SECOND()
@@ -766,26 +786,6 @@ C
                     RHO1N=DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
                     WRITE(LUPRI,*) 'Norm of RHO1 after CC_21I2:',IV,
      &                   RHO1N,IDEL
-                  ENDIF
-
-               ENDIF
-C
-C--------------------------------------------------
-C                 Calculate the LT21A contribution.
-C--------------------------------------------------
-C
-               IF (.NOT. CC2) THEN
-                  AUTIME = SECOND()
-                  CALL CC_21A(RHO1(1,IV),WORK(KDSRHF),WORK(KOFFYI),
-     *                        ISYRES,WORK(KOFFYD),ISYRES,WORK(KLAMDH),
-     *                        WORK(KLAMDP),ISYMOP,
-     *                        WORK(KEND3),LWRK3,IDEL,ISYMD)
-                  AUTIME = SECOND() - AUTIME
-                  TIMEA = TIMEA + AUTIME
-
-                  IF ( DEBUG ) THEN
-                    RHO1N=DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
-                    WRITE(LUPRI,*) 'Norm of RHO1 after CC_21A:',IV,RHO1N
                   ENDIF
 
                ENDIF
@@ -1000,7 +1000,7 @@ C        Work space allocation.
 C------------------------------
 C
          IF (.NOT.SKIPMI) THEN
-           KMINT = KENDS2 
+           KMINT = KENDS2
            KEND1 = KMINT + N3ORHF(ISYRES)
            LWRK1 = LWORK - KEND1
 C
@@ -1362,10 +1362,10 @@ C     Calculate the LT12C & LT21B contributions.
 C-----------------------------------------------
 C
       TIMEB = SECOND()
-      IOPT  = 2
-      CALL CC_21B12C(RHO1(1,IV),RHO2,CTR1(1,IV),ISYMTR,WORK(KLAMDH),
-     *               ISYMOP,WORK(KOFFXI),ISYRES,ISYMOP,
-     *               WORK(KEND1),LWRK1,LUIN30,'CCINT3O',IOPT)
+C      IOPT  = 2
+C      CALL CC_21B12C(RHO1(1,IV),RHO2,CTR1(1,IV),ISYMTR,WORK(KLAMDH),
+C     *               ISYMOP,WORK(KOFFXI),ISYRES,ISYMOP,
+C     *               WORK(KEND1),LWRK1,LUIN30,'CCINT3O',IOPT)
       TIMEB = SECOND() - TIMEB
 C
       IF ( DEBUG ) THEN
@@ -1421,59 +1421,6 @@ C
          TIMEEM = SECOND() - TIMEEM
 C
       ENDIF
-      IF (((NFIELD .GT.0).OR.CCSLV) .AND. (CC2 .AND. NONHF)) THEN
-         IOPT = 1
-         CALL CC_LCC2FF(RHO1(1,IV),WORK(KLAMDP),WORK(KLAMDH),
-     *                  WORK(KLAMDP),WORK(KLAMDH),ISYMOP,
-     *                  WORK(KOFFXI),WORK(KOFFYI),ISYRES,
-     *                  WORK(KEND1),LWRK1,IOPT)
-      ENDIF
-C
-C-------------------------------------------
-C     SLV98,OC
-C     Calculate T^{gB} solvent contribution.
-C     Unsquared T2 is required!
-C-------------------------------------------
-C
-      IF (CCSLV.AND.LSTBTR.AND. (.NOT. CCMM)) THEN
-         CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
-     *                IVEC+IV-1,CTR2)
-         LR = 'L'
-         DTIME = SECOND()
-         CALL CCSL_LTRB(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,ISYMTR,LR,
-     *                  WORK(KEND1),LWRK1)
-c        TIMMLT = TIMMLT + SECOND() - DTIME
-         IF (IPRINT .GT. 5) THEN
-            WRITE(LUPRI,*)'Time used in CCSL_LTRB (CC_LHTR) 1',
-     *                     SECOND() - DTIME
-         END IF
-      ENDIF
-C
-C
-C-------------------------------------------
-C     CCMM02,JA+AO
-C     Calculate T^{gB} solvent contribution.
-C     Unsquared T2 is required!
-C-------------------------------------------
-C
-      IF (CCMM.AND.LSTBTR) THEN
-         CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
-     *                IVEC+IV-1,CTR2)
-         LR = 'L'
-         DTIME = SECOND()
-         IF (.NOT. NYQMMM) THEN
-            CALL CCMM_LTRB(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,
-     *                  ISYMTR,LR,WORK(KEND1),LWRK1)
-         ELSE IF (NYQMMM) THEN
-             CALL CCMM_TRANSFORMER(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,
-     *                            MODEL,ISYMTR,LR,WORK(KEND1),LWRK1)
-         END IF
-c        TIMMLT = TIMMLT + SECOND() - DTIME
-         IF (IPRINT .GT. 5) THEN
-            WRITE(LUPRI,*)'Time used in CCMM_LTRB (CC_LHTR) 1',
-     *                     SECOND() - DTIME
-         END IF
-      ENDIF
 C
 C--------------------------------------------------------------------
 C     Print out result vectors - zero out single vectors in CCD-calc.
@@ -1524,11 +1471,6 @@ C
          CALL WCLOSE2(LUPQ,PQFIL,'KEEP')
       END IF
 C
-C----------------------------------------
-C     Close files for CC3.
-C----------------------------------------
-C
-C
 C-------------------------------
 C     Delete intermediate files.
 C-------------------------------
@@ -1573,7 +1515,7 @@ C
          WRITE(LUPRI,*) 'Time used in LT_22BF:',TIM2BF
          WRITE(LUPRI,*) 'Time used in CCLT_EM:',TIMEEM
          WRITE(LUPRI,*) 'Time used in CCLT_G :',TIMEG
-         WRITE(LUPRI,*) 'Time used in 21B&12C:',TIMEB
+         WRITE(LUPRI,*) 'Time used in 12C:',TIMEB
          WRITE(LUPRI,*) 'Time used in CC2_FCK:',TIMEC2
          WRITE(LUPRI,*) 'Time used in LT_12B :',TIM12B
          WRITE(LUPRI,*) 'Time used in LT_12A :',TIM12A

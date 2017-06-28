@@ -203,6 +203,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/cc_2hyp.F
     DALTON/cc/cc_3hyp.F
     DALTON/cc/cc_4hyp.F
+    DALTON/cc/cc_3util.F
     DALTON/cc/cc_aamat.F
     DALTON/cc/cc_aodens3.F
     DALTON/cc/cc_aofock2.F
