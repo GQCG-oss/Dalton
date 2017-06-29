@@ -119,8 +119,8 @@ C
       DO 100 I = 1,NDIM
          DO 110 J = 1,I-1
                IJ = IJ + 1
-               SQMAT(I,J) = -FACT * PKMAT(IJ) + SQMAT(I,J)
-               SQMAT(J,I) =  FACT*PKMAT(IJ)
+               SQMAT(I,J) = -FACT*PKMAT(IJ) + SQMAT(I,J)
+               SQMAT(J,I) =  FACT*PKMAT(IJ) + SQMAT(J,I)
   110    CONTINUE
          IJ = IJ + 1
          SQMAT(I,I) = 0.0D0
