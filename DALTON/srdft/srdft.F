@@ -843,10 +843,6 @@ C
       WRITE(LUPRI,*) 'SRDFT1: ERFEXP(0:2) =',ERFEXP(0:2)
 #endif
 
-      IF (HFXFAC .NE. 1.0D0) THEN
-         WRITE(LUPRI,*) 'SRDFT1: illegal HFXFAC ',HFXFAC
-         CALL QUIT('SRDFT1: illegal HFXFAC value')
-      END IF
       IF (ND_SIM .NE. 1) THEN
          WRITE(LUPRI,*) 'SRDFT1: illegal ND_SIM ',ND_SIM
          CALL QUIT('SRDFT1: illegal ND_SIM value')
