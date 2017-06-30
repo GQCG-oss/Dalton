@@ -383,7 +383,7 @@ C
       INTEGER :: NTOTAL, NTOTBE, NTOTM
       INTEGER :: KOFF1, KOFF2, LWRKCH
 
-#include "priunit.h"
+C#include "priunit.h"
 #include "ccorb.h"
 #include "ccsdsym.h"
 #include "cclr.h"
@@ -430,3 +430,81 @@ C
 C
       RETURN
       END
+C
+C
+      SUBROUTINE CC_T2SQTRANSP(X2SQ,ISYMTR)
+C
+C     Transpose the squared doubles amplitude-like array,
+C     x2 (ai,bj) -> (bj,ai)
+C     Needed in the triplet case, when the squared array
+C     typically contain a linear combination of (+) and (-)
+C     components
+      IMPLICIT NONE
+
+#include "ccorb.h"
+#include "ccsdsym.h"
+
+      INTEGER, INTENT(IN) :: ISYMTR
+      DOUBLE PRECISION, INTENT(INOUT) :: X2SQ(*)
+      INTEGER :: ISYMAI, ISYMBJ, IXPOS, IXPOS2
+C
+      IF (ISYMTR.EQ.1) THEN
+
+         DO ISYMBJ = 1, NSYM
+            ISYMAI = ISYMBJ
+            IXPOS = IT2SQ(ISYMAI,ISYMBJ) + 1
+
+            CALL TRANSP(X2SQ(IXPOS),NT1AM(ISYMAI))
+
+         END DO
+
+      ELSE
+
+          DO ISYMBJ = 1, NSYM
+             ISYMAI = MULD2H(ISYMBJ,ISYMTR)
+             IF (ISYMAI .GT. ISYMBJ) CYCLE
+             IXPOS = IT2SQ(ISYMAI,ISYMBJ) + 1
+             IXPOS2 = IT2SQ(ISYMBJ,ISYMAI) + 1
+             CALL TRANSPA(X2SQ(IXPOS),X2SQ(IXPOS2),
+     &                    NT1AM(ISYMAI),NT1AM(ISYMBJ))
+          END DO
+
+      END IF
+C
+      CONTAINS
+C
+         PURE SUBROUTINE TRANSP(A,N)
+C
+         DOUBLE PRECISION, INTENT(INOUT) :: A(N,N)
+         INTEGER, INTENT(IN) :: N
+         DOUBLE PRECISION :: TMP
+         INTEGER I, J
+C
+         DO I = 1, N
+            DO J = 1, I-1
+               TMP = A(I,J)
+               A(I,J) = A(J,I)
+               A(J,I) = TMP
+            END DO
+         END DO
+C
+         END SUBROUTINE
+C
+         PURE SUBROUTINE TRANSPA(A,B,M,N)
+C
+         DOUBLE PRECISION, INTENT(INOUT) :: A(M,N), B(N,M)
+         INTEGER, INTENT(IN) :: N, M
+         INTEGER :: I, J
+         DOUBLE PRECISION TMP
+C
+         DO I = 1, M
+            DO J = 1, N
+               TMP = A(I,J)
+               A(I,J) = B(J,I)
+               B(J,I) = TMP
+            END DO
+         END DO
+C
+         END SUBROUTINE
+
+      END SUBROUTINE

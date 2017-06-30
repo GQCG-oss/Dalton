@@ -408,16 +408,16 @@ C
 C
 C   We need to rearange this for triplet.
 C
-            CALL CC_PQI(CTR2,ISYMTR,WORK(KT2AM),ISYMOP,PQFIL,LUPQ,
-     *                  IADRPQ,IADRSTRT,IV,WORK(KEND1),LWRK1)
+C            CALL CC_PQI(CTR2,ISYMTR,WORK(KT2AM),ISYMOP,PQFIL,LUPQ,
+C     *                  IADRPQ,IADRSTRT,IV,WORK(KEND1),LWRK1)
 C
-            DTIME = SECOND()
-            CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
-     *                   IVEC+IV-1,RHO2)
-            DTIME = SECOND() - DTIME
-            TIMIO = TIMIO + DTIME
+C            DTIME = SECOND()
+C            CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+C     *                   IVEC+IV-1,RHO2)
+C            DTIME = SECOND() - DTIME
+C            TIMIO = TIMIO + DTIME
 C
-            CALL CC_T2SQ(RHO2,CTR2,ISYMTR)
+C            CALL CC_T2SQ(RHO2,CTR2,ISYMTR)
 C
             IF ( DEBUG ) THEN
                RHO1N = DDOT(NT1AM(ISYMTR),CTR1(1,IV),1,CTR1(1,IV),1)
@@ -439,24 +439,28 @@ C---------------------------------------------------------------
 C
       IF (MINSCR) THEN
 C
+C       In the integral loop, we need the + combinations of (+) and (-)
+C       We currently have the - combination, the (-) part is in RHO2
+C
+         CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,TWO)
          CALL DZERO(RHO2,NRHO2)
 C
-         IF (((.NOT. DIRECT) .AND. T2TCOR) .AND. (.NOT. CC2)) THEN
+C         IF (((.NOT. DIRECT) .AND. T2TCOR) .AND. (.NOT. CC2)) THEN
 C
-            KCTR2T = KEND1
-            KEND1  = KCTR2T + NT2SQ(ISYMTR)
-            LWRK1  = LWORK  - KEND1
-            IF (LWRK1 .LT. 0) THEN
-               CALL QUIT('Insufficient core in CCRHSN')
-            END IF
+C            KCTR2T = KEND1
+C            KEND1  = KCTR2T + NT2SQ(ISYMTR)
+C            LWRK1  = LWORK  - KEND1
+C            IF (LWRK1 .LT. 0) THEN
+C               CALL QUIT('Insufficient core in CCRHSN')
+C            END IF
 C
-            JSYM = ISYMTR
-            CALL DCOPY(NT2SQ(ISYMTR),CTR2,1,WORK(KCTR2T),1)
-            AUTIME = SECOND()
-            CALL CCSD_T2TP(WORK(KCTR2T),WORK(KEND1),LWRK1,JSYM)
-            TIMETP = SECOND() - AUTIME
+C            JSYM = ISYMTR
+C            CALL DCOPY(NT2SQ(ISYMTR),CTR2,1,WORK(KCTR2T),1)
+C            AUTIME = SECOND()
+C            CALL CCSD_T2TP(WORK(KCTR2T),WORK(KEND1),LWRK1,JSYM)
+C            TIMETP = SECOND() - AUTIME
 C
-         ENDIF
+C         ENDIF
       ENDIF
 C
 C-------------------------------------------------------------
@@ -580,12 +584,16 @@ C
             DO 115 IV = 1, NSIMTR
 C
                IF (.NOT. MINSCR) THEN
+
+                  CALL QUIT(
+     &               'Triplet LHTR without MINSCR not implemented'
+     &               )
 C
 C-------------------------------------------------------------
 C                 Read CTR2 from disc into RHO2 and square up.
 C-------------------------------------------------------------
 C
-                  DTIME = SECOND()
+C                  DTIME = SECOND()
                   CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
      *                         IVEC+IV-1,RHO2)
                   DTIME = SECOND() - DTIME
@@ -645,10 +653,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
-                  IF (NOAUXB) THEN
-                     IDUM = 1
-                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
-                  END IF
+C                  IF (NOAUXB) THEN
+c                     IDUM = 1
+C                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+C                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -746,13 +754,15 @@ C
                IF (.NOT. CC2) THEN
 
                   IADR = IADRPQ(IDEL,IV)
-                  CALL GETWA2(LUPQ,PQFIL,WORK(KSCRZI),
-     *                        IADR,NT2BCD(ISY21I))
+C                  CALL GETWA2(LUPQ,PQFIL,WORK(KSCRZI),
+C     *                        IADR,NT2BCD(ISY21I))
 
                   IADR = IADRPQ(IDEL,IV) + NT2BCD(ISY21I)
-                  CALL GETWA2(LUPQ,PQFIL,WORK(KSCRVI),
-     *                        IADR,NT2BCD(ISY21I))
+C                  CALL GETWA2(LUPQ,PQFIL,WORK(KSCRVI),
+C     *                        IADR,NT2BCD(ISY21I))
 
+                  CALL DZERO(WORK(KSCRZI),NT2BCD(ISY21I))
+                  CALL DZERO(WORK(KSCRVI),NT2BCD(ISY21I))
 C                 CALL DSCAL(NT2BCD(ISY21I),TWO,WORK(KSCRVI),1)
 C                 CALL DSCAL(NT2BCD(ISY21I),TWO,WORK(KSCRZI),1)
                   CALL DZERO(WORK(KSCRWI),NT2BCD(ISY21I))
@@ -772,13 +782,13 @@ C
                   IOPT   = 1
                   ISYLRD = MULD2H(ISYMD,ISYRES)
                   AUTIME = SECOND()
-                  CALL CC_21I2(RHO1(1,IV),WORK(KXINT),ISYDIS,DUMMY,0,
-     *                         WORK(KSCRZI),WORK(KSCRVI),ISYLRD,
-     *                         DUMMY,       DUMMY,       0,
-     *                         WORK(KLAMDP),WORK(KLAMDH),ISYMOP,
-     *                         WORK(KLAMDP),ISYMOP,
-     *                         WORK(KEND3),LWRK3,IOPT,.FALSE.,.FALSE.,
-     *                         .FALSE.)
+C                  CALL CC_21I2(RHO1(1,IV),WORK(KXINT),ISYDIS,DUMMY,0,
+C     *                         WORK(KSCRZI),WORK(KSCRVI),ISYLRD,
+C     *                         DUMMY,       DUMMY,       0,
+C     *                         WORK(KLAMDP),WORK(KLAMDH),ISYMOP,
+C     *                         WORK(KLAMDP),ISYMOP,
+C     *                         WORK(KEND3),LWRK3,IOPT,.FALSE.,.FALSE.,
+C     *                         .FALSE.)
                   AUTIME = SECOND() - AUTIME
                   TIMEI = TIMEI + AUTIME
 
@@ -796,10 +806,10 @@ C--------------------------------------------------
 C
                IF (.NOT. CC2) THEN
                   AUTIME = SECOND()
-                  CALL CC_21H(RHO1(1,IV),ISYRES,WORK(KSCRVI),
-     *                        WORK(KSCRWI),WORK(KSCRZI),ISYLRD,
-     *                        WORK(K3OINT),ISYMOP,WORK(KEND3),
-     *                        LWRK3,ISYMD)
+C                  CALL CC_21H(RHO1(1,IV),ISYRES,WORK(KSCRVI),
+C     *                        WORK(KSCRWI),WORK(KSCRZI),ISYLRD,
+C     *                        WORK(K3OINT),ISYMOP,WORK(KEND3),
+C     *                        LWRK3,ISYMD)
                   AUTIME = SECOND() - AUTIME
                   TIMEH = TIMEH + AUTIME
 
@@ -841,7 +851,7 @@ C
 C-------------------------------------------------------
 C              Calculate the LT21C- and D contributions.
 C-------------------------------------------------------
-C
+C              Fix for triplet
                AUTIME = SECOND()
                IOPT  = 1
                IF ( CC2 ) THEN
@@ -872,15 +882,15 @@ C--------------------------------------------------------
 C
                IF (.NOT. CC2) THEN
 C
-                  AUTIME = SECOND()
-                  IOPT   = 2
-                  ISYMM  = MULD2H(ISYMD,ISYMTR)
-                  CALL CC_BF(WORK(KXINT),RHO2,WORK(KLAMDP),1,
-     *                         WORK(KOFFAO),ISYMTR,WORK(KLAMDP),1,
-     *                         WORK(KSCRM),ISYMM,DUMMY,1,WORK(KEND4),
-     *                         LWRK4,IDEL,ISYMD,IOPT)
-                  AUTIME = SECOND() - AUTIME
-                  TIM2BF = TIM2BF + AUTIME
+C                  AUTIME = SECOND()
+C                  IOPT   = 2
+C                  ISYMM  = MULD2H(ISYMD,ISYMTR)
+C                  CALL CC_BF(WORK(KXINT),RHO2,WORK(KLAMDP),1,
+C     *                         WORK(KOFFAO),ISYMTR,WORK(KLAMDP),1,
+C     *                         WORK(KSCRM),ISYMM,DUMMY,1,WORK(KEND4),
+C     *                         LWRK4,IDEL,ISYMD,IOPT)
+C                  AUTIME = SECOND() - AUTIME
+C                  TIM2BF = TIM2BF + AUTIME
 C
                ENDIF
 C
@@ -920,61 +930,20 @@ C
 C
          IF (.NOT. MINSCR) THEN
 C
-C------------------------------
-C           Recover work space.
-C------------------------------
-C
-            KEND1 = KENDS2
-            LWRK1 = LWRKS2
-C
-C-------------------------------------------------------
-C           Read CTR2 from disc into RHO2 and square up.
-C-------------------------------------------------------
-C
-            !! Fix
-            DTIME = SECOND()
-            CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
-     *                   IVEC+IV-1,RHO2)
-            DTIME = SECOND() - DTIME
-            TIMIO = TIMIO + DTIME
-C
-            CALL CC_T2SQ(RHO2,CTR2,ISYMTR)
-C
-            IF ( DEBUG ) THEN
-               RHO1N = DDOT(NT1AM(ISYMTR),CTR1(1,IV),1,CTR1(1,IV),1)
-               RHO2N = DDOT(NT2SQ(ISYMTR),CTR2,1,CTR2,1)
-               WRITE(LUPRI,1) 'Norm of CTR1 -Read in after loop:  ',
-     &              RHO1N
-               WRITE(LUPRI,1) 'Norm of CTR2 -Read in after loop:  ',
-     &              RHO2N
-            ENDIF
+C           Read in CTR2+ and CTR. and
+C           construct CTR+ - CTR- intermediate
 C
 C
-C----------------------------------------
-C           Read result vector from disc.
-C----------------------------------------
+         ELSE
 C
-            DTIME = SECOND()
-            CALL CC_RVEC(LUFR2,FRHO2,NRHO2,NRHO2,IV+ITR-1,RHO2)
-            DTIME = SECOND() - DTIME
-            TIMIO = TIMIO + DTIME
+C---------------------------------------
+C        We have in memory CTR2+ + CTR2-
+C        in the following we need
+C        CTR2+ - CTR-
+C---------------------------------------
 C
-            IF (.NOT. CC2) THEN
-C
-C------------------------------------------------------
-C              Reread zero'th order cluster amplitudes.
-C------------------------------------------------------
-C
-               DTIME = SECOND()
+            CALL CC_T2SQTRANSP(CTR2,ISYMTR)
 
-               IOPT = 3
-               CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KEND1),
-     *                       WORK(KT2AM))
-
-               DTIME = SECOND() - DTIME
-               TIMIO = TIMIO + DTIME
-            ENDIF
-C
          ENDIF
 C
          IF ( DEBUG ) THEN
@@ -1045,9 +1014,9 @@ C----------------------------------------------
 C
          AUTIME = SECOND()
          NEWGAM = .FALSE.
-         CALL CC_T2MO(PHONEY,FAKE,ISYMOP,
-     *                RHO2,WORK(KT2AM),DUMMY,WORK(KLAMDH),
-     *                WORK(KLAMDH),1,WORK(KEND1),LWRK1,ISYRES,1)
+C         CALL CC_T2MO(PHONEY,FAKE,ISYMOP,
+C     *                RHO2,WORK(KT2AM),DUMMY,WORK(KLAMDH),
+C     *                WORK(KLAMDH),1,WORK(KEND1),LWRK1,ISYRES,1)
          NEWGAM = .TRUE.
          TIM2MO = SECOND() - AUTIME
 C
@@ -1150,9 +1119,9 @@ C
          ICON = 3
 C
          NEWGAM = .FALSE.
-         CALL CC_T2MO(RHO1(1,IV),CTR2,ISYMTR,RHO2,PHONEY,DUMMY,
-     *                WORK(KLAMDP),WORK(KLAMDP),ISYM,WORK(KEND1),
-     *                LWRK1,ISYMOP,ICON)
+C         CALL CC_T2MO(RHO1(1,IV),CTR2,ISYMTR,RHO2,PHONEY,DUMMY,
+C     *                WORK(KLAMDP),WORK(KLAMDP),ISYM,WORK(KEND1),
+C     *                LWRK1,ISYMOP,ICON)
          NEWGAM = .TRUE.
          TIMEBF = SECOND() - TIMEBF
 C
