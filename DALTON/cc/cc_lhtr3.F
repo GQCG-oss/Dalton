@@ -406,11 +406,46 @@ C
                WRITE(LUPRI,1) 'Norm of T2AM - before CC_PQI:  ',RHO2N
             ENDIF
 C
-C   We need to rearange this for triplet.
+C   Calculate the triplet P-matrix
 C
-C            CALL CC_PQI(CTR2,ISYMTR,WORK(KT2AM),ISYMOP,PQFIL,LUPQ,
-C     *                  IADRPQ,IADRSTRT,IV,WORK(KEND1),LWRK1)
+            CALL CC_PQI3(CTR2,ISYMTR,WORK(KT2AM),ISYMOP,PQFIL,LUPQ,
+     *                  IADRPQ,IADRSTRT,IV,WORK(KLAMDH),0,
+     &                  WORK(KEND1),LWRK1)
 C
+C    We need to rearrange CTR2 in order to calculate triplet Q matrix:
+C    First get -(+)L - (-)L from current (+)L - (-)L by transposing,
+C    then scaling
+
+            CALL CC_T2SQTRANSP(CTR2,ISYMTR)
+C
+            CALL DSCAL(NT2SQ(ISYMTR),ONEM,CTR2,1)
+C
+C    RHO2 still contains (-)L, reorder it so (-)L(ai<bj) to -(-)L(aj<bi)
+C
+            CALL CCSD_TCMEPK(RHO2,ZERO,ISYMTR,2)
+C
+C    Create L'(ai,bj) = -(+)L(ai,bj)-(-)L(ai,bj) + 2(-)L(aj,bi)
+            CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,-TWO)
+C
+            CALL CC_PQI3(CTR2,ISYMTR,WORK(KT2AM),ISYMOP,PQFIL,LUPQ,
+     *                  IADRPQ,IADRSTRT,IV,WORK(KLAMDH),1,
+     &                  WORK(KEND1),LWRK1)
+C
+            CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,FOUR)
+C
+            CALL CC_PQI3(CTR2,ISYMTR,WORK(KT2AM),ISYMOP,PQFIL,LUPQ,
+     *                  IADRPQ,IADRSTRT,IV,WORK(KLAMDH),2,
+     &                  WORK(KEND1),LWRK1)
+
+C
+            IF (MINSCR) THEN
+C
+C    We better clean up the mess....
+C    Restore (+)L + (-)L on CTR2
+               CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,-TWO)
+               CALL DSCAL(NT2SQ(ISYMTR),ONEM,CTR2,1)
+
+            END IF
 C            DTIME = SECOND()
 C            CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
 C     *                   IVEC+IV-1,RHO2)
@@ -442,25 +477,8 @@ C
 C       In the integral loop, we need the + combinations of (+) and (-)
 C       We currently have the - combination, the (-) part is in RHO2
 C
-         CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,TWO)
+C         CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,TWO)
          CALL DZERO(RHO2,NRHO2)
-C
-C         IF (((.NOT. DIRECT) .AND. T2TCOR) .AND. (.NOT. CC2)) THEN
-C
-C            KCTR2T = KEND1
-C            KEND1  = KCTR2T + NT2SQ(ISYMTR)
-C            LWRK1  = LWORK  - KEND1
-C            IF (LWRK1 .LT. 0) THEN
-C               CALL QUIT('Insufficient core in CCRHSN')
-C            END IF
-C
-C            JSYM = ISYMTR
-C            CALL DCOPY(NT2SQ(ISYMTR),CTR2,1,WORK(KCTR2T),1)
-C            AUTIME = SECOND()
-C            CALL CCSD_T2TP(WORK(KCTR2T),WORK(KEND1),LWRK1,JSYM)
-C            TIMETP = SECOND() - AUTIME
-C
-C         ENDIF
       ENDIF
 C
 C-------------------------------------------------------------
@@ -593,7 +611,7 @@ C-------------------------------------------------------------
 C                 Read CTR2 from disc into RHO2 and square up.
 C-------------------------------------------------------------
 C
-C                  DTIME = SECOND()
+                  DTIME = SECOND()
                   CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
      *                         IVEC+IV-1,RHO2)
                   DTIME = SECOND() - DTIME
@@ -752,20 +770,25 @@ C              Calculate intermediates needed for the 21-block.
 C--------------------------------------------------------------
 C
                IF (.NOT. CC2) THEN
-
+C
                   IADR = IADRPQ(IDEL,IV)
-C                  CALL GETWA2(LUPQ,PQFIL,WORK(KSCRZI),
-C     *                        IADR,NT2BCD(ISY21I))
-
+                  CALL GETWA2(LUPQ,PQFIL,WORK(KSCRZI),
+     *                        IADR,NT2BCD(ISY21I))
+C
                   IADR = IADRPQ(IDEL,IV) + NT2BCD(ISY21I)
-C                  CALL GETWA2(LUPQ,PQFIL,WORK(KSCRVI),
-C     *                        IADR,NT2BCD(ISY21I))
+                  CALL GETWA2(LUPQ,PQFIL,WORK(KSCRVI),
+     *                        IADR,NT2BCD(ISY21I))
+C
+                  IADR = IADRPQ(IDEL,IV) + 2*NT2BCD(ISY21I)
+                  CALL GETWA2(LUPQ,PQFIL,WORK(KSCRWI),
+     *                        IADR,NT2BCD(ISY21I))
 
-                  CALL DZERO(WORK(KSCRZI),NT2BCD(ISY21I))
-                  CALL DZERO(WORK(KSCRVI),NT2BCD(ISY21I))
+
+C                  CALL DZERO(WORK(KSCRZI),NT2BCD(ISY21I))
+C                  CALL DZERO(WORK(KSCRVI),NT2BCD(ISY21I))
 C                 CALL DSCAL(NT2BCD(ISY21I),TWO,WORK(KSCRVI),1)
 C                 CALL DSCAL(NT2BCD(ISY21I),TWO,WORK(KSCRZI),1)
-                  CALL DZERO(WORK(KSCRWI),NT2BCD(ISY21I))
+C                  CALL DZERO(WORK(KSCRWI),NT2BCD(ISY21I))
 
                   IF ( DEBUG ) THEN
                    PN=DDOT(NT2BCD(ISY21I),WORK(KSCRZI),1,WORK(KSCRZI),1)
@@ -782,13 +805,13 @@ C
                   IOPT   = 1
                   ISYLRD = MULD2H(ISYMD,ISYRES)
                   AUTIME = SECOND()
-C                  CALL CC_21I2(RHO1(1,IV),WORK(KXINT),ISYDIS,DUMMY,0,
-C     *                         WORK(KSCRZI),WORK(KSCRVI),ISYLRD,
-C     *                         DUMMY,       DUMMY,       0,
-C     *                         WORK(KLAMDP),WORK(KLAMDH),ISYMOP,
-C     *                         WORK(KLAMDP),ISYMOP,
-C     *                         WORK(KEND3),LWRK3,IOPT,.FALSE.,.FALSE.,
-C     *                         .FALSE.)
+                  CALL CC_21I2(RHO1(1,IV),WORK(KXINT),ISYDIS,DUMMY,0,
+     *                         WORK(KSCRZI),WORK(KSCRVI),ISYLRD,
+     *                         DUMMY,       DUMMY,       0,
+     *                         WORK(KLAMDP),WORK(KLAMDH),ISYMOP,
+     *                         WORK(KLAMDP),ISYMOP,
+     *                         WORK(KEND3),LWRK3,IOPT,.FALSE.,.FALSE.,
+     *                         .FALSE.)
                   AUTIME = SECOND() - AUTIME
                   TIMEI = TIMEI + AUTIME
 
@@ -805,11 +828,12 @@ C                 Calculate the LT21H contribution.
 C--------------------------------------------------
 C
                IF (.NOT. CC2) THEN
+                  CALL DZERO(WORK(KSCRVI),NT2BCD(ISY21I))
                   AUTIME = SECOND()
-C                  CALL CC_21H(RHO1(1,IV),ISYRES,WORK(KSCRVI),
-C     *                        WORK(KSCRWI),WORK(KSCRZI),ISYLRD,
-C     *                        WORK(K3OINT),ISYMOP,WORK(KEND3),
-C     *                        LWRK3,ISYMD)
+                  CALL CC_21H(RHO1(1,IV),ISYRES,WORK(KSCRWI),
+     *                        WORK(KSCRVI),WORK(KSCRZI),ISYLRD,
+     *                        WORK(K3OINT),ISYMOP,WORK(KEND3),
+     *                        LWRK3,ISYMD)
                   AUTIME = SECOND() - AUTIME
                   TIMEH = TIMEH + AUTIME
 
@@ -851,7 +875,7 @@ C
 C-------------------------------------------------------
 C              Calculate the LT21C- and D contributions.
 C-------------------------------------------------------
-C              Fix for triplet
+C
                AUTIME = SECOND()
                IOPT  = 1
                IF ( CC2 ) THEN
