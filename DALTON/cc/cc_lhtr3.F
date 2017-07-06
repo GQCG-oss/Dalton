@@ -1139,9 +1139,9 @@ C
          ICON = 3
 C
          NEWGAM = .FALSE.
-C         CALL CC_T2MO(RHO1(1,IV),CTR2,ISYMTR,RHO2,PHONEY,DUMMY,
-C     *                WORK(KLAMDP),WORK(KLAMDP),ISYM,WORK(KEND1),
-C     *                LWRK1,ISYMOP,ICON)
+         CALL CC_T2MO(RHO1(1,IV),CTR2,ISYMTR,RHO2,PHONEY,DUMMY,
+     *                WORK(KLAMDP),WORK(KLAMDP),ISYM,WORK(KEND1),
+     *                LWRK1,ISYMOP,ICON)
          NEWGAM = .TRUE.
          TIMEBF = SECOND() - TIMEBF
 C
