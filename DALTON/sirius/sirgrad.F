@@ -294,13 +294,19 @@ C     from molecular orbitals given in CMO matrix and the occupation
 C     data as contained in NISH array (the closed shells) and the open
 C     shell occupation data in _quadratic_ UDV matrix.
 C
+C HJAaJ July 2017: extended with DFT_SPINDNS code for open-shell MC-srDFT
+C
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
+!
+! inforb.h : ...
+! dftcom.h : DFT_SPINDNS
 #include "inforb.h"
-      DIMENSION UDV(NASHT,NASHT)
+#include "dftcom.h"
+      DIMENSION UDV(NASHT,NASHT,2)
       DIMENSION CMO(*)
       DIMENSION DCAO(NBAST,NBAST)
-      DIMENSION DVAO(NBAST,NBAST)
+      DIMENSION DVAO(NBAST,NBAST,2)
       DIMENSION WRK(*)
 C
       CALL QENTER('GTDMSO')
@@ -310,7 +316,13 @@ C Output: inactive and active density matrix AO (actually SO) basis
 C
 C
       CALL DZERO(DCAO,N2BASX)
-      IF (NASHT.GT.0) CALL DZERO(DVAO,N2BASX)
+      IF (NASHT.GT.0) THEN
+         IF (DFT_SPINDNS) THEN
+            CALL DZERO(DVAO,2*N2BASX)
+         ELSE
+            CALL DZERO(DVAO,N2BASX)
+         END IF
+      END IF
 C
       DO ISYM = 1, NSYM
          ICMOI = ICMO(ISYM) + 1
@@ -340,15 +352,29 @@ C
             CALL DGEMM(
      &         'N', 'N', NBASI, NASHI, NASHI,
      &         D1, CMO(ICMOA), NBASI,
-     &             UDV(IASHI,IASHI), NASHT,
+     &             UDV(IASHI,IASHI,1), NASHT,
      &         D0, WRK,NBASI
      &      )
             CALL DGEMM(
      &         'N', 'T', NBASI, NBASI, NASHI,
      &         D1, WRK,       NBASI,
      &             CMO(ICMOA),NBASI,
-     &         D1, DVAO(IBASI,IBASI),NBAST
+     &         D1, DVAO(IBASI,IBASI,1),NBAST
      &      )
+         IF (DFT_SPINDNS) THEN
+            CALL DGEMM(
+     &         'N', 'N', NBASI, NASHI, NASHI,
+     &         D1, CMO(ICMOA), NBASI,
+     &             UDV(IASHI,IASHI,2), NASHT,
+     &         D0, WRK,NBASI
+     &      )
+            CALL DGEMM(
+     &         'N', 'T', NBASI, NBASI, NASHI,
+     &         D1, WRK,       NBASI,
+     &             CMO(ICMOA),NBASI,
+     &         D1, DVAO(IBASI,IBASI,2),NBAST
+     &      )
+         END IF
          END IF
       END DO
       CALL QEXIT('GTDMSO')
@@ -598,8 +624,8 @@ C         (ESRDFTY is in common block and is calculated inside FCK2AO)
 !reduce to the regular inactive CI one for large mu values. Long-range exchange
 !integrals are now added to FCAO by setting HFXFAC to 1.0 
       IF (DOCISRDFT) THEN
-      HFXFAC_save=HFXFAC
-      HFXFAC=D1
+         HFXFAC_save=HFXFAC
+         HFXFAC=D1
       END IF
 #ifdef SIRGRAD_DEBUG
       write(lupri,*) 'from FCKMAO: ONLYFC =', ONLYFC
@@ -731,7 +757,7 @@ C
 #include "priunit.h"
 #include "scbrhf.h"
 C
-      DIMENSION ISYMDM(3), IFCTYP(3)    !JT Aug 09
+      DIMENSION ISYMDM(3), IFCTYP(3)    ! 3 matrices: DC, DV, DS
 C
       CALL QENTER('FCK2AO')
       KFRSAV = KFREE

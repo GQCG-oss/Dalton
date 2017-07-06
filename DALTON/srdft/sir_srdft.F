@@ -36,6 +36,11 @@ C      Purpose: calculate DCAO and DVAO matrics for srDFT
 C               (done in a new routine for future flexibility
 C                for e.g. also  on-top pair density)
 C
+C      July 2017 hjaaj: If (DFT_SPINDNS) then UDV and DVAO are doubled,
+C      containing both "DV" active charge density matrix
+C      and "DS" active spin density matrix. This is done
+C      inside GTDMSO, thus we do not need to check for DFT_SPINDNS here.
+C
 #include <implicit.h>
 C
 #include <inforb.h>
