@@ -534,7 +534,7 @@ C
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
-      CALL QENTER('CCSD_TCMEPK')
+      CALL QENTER('CCSD_TCMEPK3')
 C
       DO 100 ISYMIJ = 1,NSYM
 C
@@ -629,7 +629,7 @@ C     Scale diagonal elements of result.
 C---------------------------------------
 C
       IF (ISYOPE .NE. 1) THEN
-         CALL QEXIT('CCSD_TCMEPK')
+         CALL QEXIT('CCSD_TCMEPK3')
          RETURN
       ENDIF
 C
@@ -640,7 +640,60 @@ C
   210    CONTINUE
   200 CONTINUE
 C
-      CALL QEXIT('CCSD_TCMEPK')
+      CALL QEXIT('CCSD_TCMEPK3')
 C
+      RETURN
+      END
+C  /* Deck cc_zwvi3 */
+      SUBROUTINE CC_ZWVI3(ZINT,CTR2,ISYMC2 ,TINT,ISYTIN,
+     *                   WORK,LWORK)
+C
+C     Written by Asger Halkier 26/10 - 1995
+C
+C     Version: 1.0
+C
+C     Purpose: To calculate the intermediates entering some of the
+C              terms in the 2.1-block.
+C     Ove Christiansen 1-10-1996:
+C              general symmetry of ctr2 (isymc2)
+C
+#include "implicit.h"
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      DIMENSION ZINT(*), CTR2(*), TINT(*), WORK(LWORK)
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+C
+C-----------------------------
+C     Initialize result array.
+C-----------------------------
+C
+      ISYZIN = MULD2H(ISYMC2,ISYTIN)
+C
+      CALL DZERO(ZINT,NT2BCD(ISYZIN))
+C
+C------------------------
+C     Do the calculation.
+C------------------------
+C
+      DO 100 ISYMDK = 1,NSYM
+C
+         ISYMEI = MULD2H(ISYMDK,ISYMC2)
+         ISYMJ  = MULD2H(ISYMDK,ISYTIN)
+C
+         KOFF1  = IT2SQ(ISYMDK,ISYMEI) + 1
+         KOFF2  = IT2BCD(ISYMDK,ISYMJ) + 1
+         KOFF3  = IT2BCD(ISYMEI,ISYMJ) + 1
+C
+         NTOTEI = MAX(NT1AM(ISYMEI),1)
+         NTOTDK = MAX(NT1AM(ISYMDK),1)
+C
+         CALL DGEMM('T','N',NT1AM(ISYMEI),NRHF(ISYMJ),NT1AM(ISYMDK),
+     *              ONE,CTR2(KOFF1),NTOTDK,TINT(KOFF2),NTOTDK,ZERO,
+     *              ZINT(KOFF3),NTOTEI)
+C
+  100 CONTINUE
+
       RETURN
       END

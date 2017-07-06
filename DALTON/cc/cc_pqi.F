@@ -434,8 +434,8 @@ C       calculate the P intermediate:
 C
         IOPT = 1
         DTIME = SECOND()
-        CALL CC_ZWVI(WORK(KPINT),CTR2,ISYCTR,WORK(KTINT),
-     &               ISYTIN,WORK(KEND2),LWRK2,IOPT)
+        CALL CC_ZWVI3(WORK(KPINT),CTR2,ISYCTR,WORK(KTINT),
+     &               ISYTIN,WORK(KEND2),LWRK2)
         TIMZWV = TIMZWV + SECOND() - DTIME
 
         DTIME = SECOND()
