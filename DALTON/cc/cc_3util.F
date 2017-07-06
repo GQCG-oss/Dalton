@@ -508,3 +508,139 @@ C
          END SUBROUTINE
 
       END SUBROUTINE
+C
+      SUBROUTINE CCSD_TCMEPK3(T2AM,ISYOPE)
+C
+C     Swap I and J in the antisymmetric doubles array
+C     T2AM(ai,bj) -> T2AM(aj,bi)
+C     Since only the lower half is stored,
+C     in practice A and B is swapped instead:
+C     T2AM(ai,bj) -> - T2AM(bi,aj)
+C     only for i != j
+C
+C     Based on CCSD_TCMEPK by
+C     Henrik Koch and Alfredo Sanchez.         Dec 1994
+C
+#include "implicit.h"
+C
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
+C
+      DIMENSION T2AM(*)
+C
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+C
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CCSD_TCMEPK')
+C
+      DO 100 ISYMIJ = 1,NSYM
+C
+         ISYMAB = MULD2H(ISYMIJ,ISYOPE)
+C
+         DO 110 ISYMJ = 1,NSYM
+C
+            ISYMI = MULD2H(ISYMJ,ISYMIJ)
+C
+            IF (ISYMI .GT. ISYMJ) GOTO 110
+C
+            DO 120 ISYMB = 1,NSYM
+C
+               ISYMA = MULD2H(ISYMB,ISYMAB)
+C
+               IF (ISYMA .GT. ISYMB) GOTO 120
+C
+               ISYMAI = MULD2H(ISYMA,ISYMI)
+               ISYMBJ = MULD2H(ISYMB,ISYMJ)
+               ISYMBI = MULD2H(ISYMB,ISYMI)
+               ISYMAJ = MULD2H(ISYMA,ISYMJ)
+C
+C
+               DO 130 J = 1,NRHF(ISYMJ)
+C
+                  IF (ISYMI .EQ. ISYMJ) THEN
+                     NRHFI =  J-1
+                  ELSE
+                     NRHFI = NRHF(ISYMI)
+                  ENDIF
+C
+                  DO 140 I = 1,NRHFI
+C
+                     DO 150 B = 1,NVIR(ISYMB)
+C
+                        IF (ISYMB .EQ. ISYMA) THEN
+                           NVIRA = B
+                        ELSE
+                           NVIRA = NVIR(ISYMA)
+                        ENDIF
+C
+                        NBI = IT1AM(ISYMB,ISYMI)
+     *                      + NVIR(ISYMB)*(I - 1) + B
+                        NBJ = IT1AM(ISYMB,ISYMJ)
+     *                      + NVIR(ISYMB)*(J - 1) + B
+C
+                        DO 160 A = 1,NVIRA
+C
+                           NAI = IT1AM(ISYMA,ISYMI)
+     *                         + NVIR(ISYMA)*(I - 1) + A
+                           NAJ = IT1AM(ISYMA,ISYMJ)
+     *                         + NVIR(ISYMA)*(J - 1) + A
+C
+                         IF (ISYMAI.EQ.ISYMBJ) THEN
+                           NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+     *                           + INDEX(NAI,NBJ)
+                         ELSE IF (ISYMAI.LT.ISYMBJ) THEN
+                           NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+     *                           + NT1AM(ISYMAI)*(NBJ-1)+NAI
+                         ELSE IF (ISYMBJ.LT.ISYMAI) THEN
+                           NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+     *                           + NT1AM(ISYMBJ)*(NAI-1)+NBJ
+                         END IF
+C
+                         IF (ISYMAJ.EQ.ISYMBI) THEN
+                           NAJBI = IT2AM(ISYMAJ,ISYMBI)
+     *                           + INDEX(NAJ,NBI)
+                         ELSE IF (ISYMAJ.LT.ISYMBI) THEN
+                           NAJBI = IT2AM(ISYMAJ,ISYMBI)
+     *                           + NT1AM(ISYMAJ)*(NBI-1)+NAJ
+                         ELSE IF (ISYMBI.LT.ISYMAJ) THEN
+                           NAJBI = IT2AM(ISYMAJ,ISYMBI)
+     *                           + NT1AM(ISYMBI)*(NAJ-1)+NBI
+                         END IF
+C
+                         XAIBJ = - T2AM(NAJBI)
+                         XAJBI = - T2AM(NAIBJ)
+C
+                         T2AM(NAJBI) = XAJBI
+                         T2AM(NAIBJ) = XAIBJ
+C
+  160                   CONTINUE
+  150                CONTINUE
+  140             CONTINUE
+  130          CONTINUE
+  120       CONTINUE
+  110    CONTINUE
+  100 CONTINUE
+C
+C---------------------------------------
+C     Scale diagonal elements of result.
+C---------------------------------------
+C
+      IF (ISYOPE .NE. 1) THEN
+         CALL QEXIT('CCSD_TCMEPK')
+         RETURN
+      ENDIF
+C
+      DO 200 ISYMAI = 1,NSYM
+         DO 210 NAI = 1,NT1AM(ISYMAI)
+            NAIAI = IT2AM(ISYMAI,ISYMAI) + INDEX(NAI,NAI)
+            T2AM(NAIAI) = 0.0D0
+  210    CONTINUE
+  200 CONTINUE
+C
+      CALL QEXIT('CCSD_TCMEPK')
+C
+      RETURN
+      END

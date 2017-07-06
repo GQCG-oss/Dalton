@@ -90,8 +90,10 @@ C
       CHARACTER*3  APROXR12
       CHARACTER*1  LR
 C
-      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      PARAMETER (FOURTH = 0.25D0, THREE = 3.0D0, ONEM = -1.0D0)
+      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
+     &           FOUR = 4.0D0)
+      PARAMETER (FOURTH = 0.25D0, THREE = 3.0D0)
+      PARAMETER (ONEM = -1.0D0, TWOM = -TWO)
       DIMENSION INDEXA(MXCORB_CC)
       DIMENSION RHO1(LRHO1,NSIMTR), CTR1(LRHO1,NSIMTR)
       DIMENSION RHO2(*), CTR2(*)
@@ -422,16 +424,17 @@ C
 C
 C    RHO2 still contains (-)L, reorder it so (-)L(ai<bj) to -(-)L(aj<bi)
 C
-            CALL CCSD_TCMEPK(RHO2,ZERO,ISYMTR,2)
+            CALL CCSD_TCMEPK3(RHO2,ISYMTR)
 C
 C    Create L'(ai,bj) = -(+)L(ai,bj)-(-)L(ai,bj) + 2(-)L(aj,bi)
-            CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,-TWO)
+            CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,TWO)
 C
             CALL CC_PQI3(CTR2,ISYMTR,WORK(KT2AM),ISYMOP,PQFIL,LUPQ,
      *                  IADRPQ,IADRSTRT,IV,WORK(KLAMDH),1,
      &                  WORK(KEND1),LWRK1)
 C
-            CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,FOUR)
+
+            CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,-FOUR)
 C
             CALL CC_PQI3(CTR2,ISYMTR,WORK(KT2AM),ISYMOP,PQFIL,LUPQ,
      *                  IADRPQ,IADRSTRT,IV,WORK(KLAMDH),2,
@@ -442,7 +445,7 @@ C
 C
 C    We better clean up the mess....
 C    Restore (+)L + (-)L on CTR2
-               CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,-TWO)
+               CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,TWO)
                CALL DSCAL(NT2SQ(ISYMTR),ONEM,CTR2,1)
 
             END IF
@@ -782,14 +785,7 @@ C
                   IADR = IADRPQ(IDEL,IV) + 2*NT2BCD(ISY21I)
                   CALL GETWA2(LUPQ,PQFIL,WORK(KSCRWI),
      *                        IADR,NT2BCD(ISY21I))
-
-
-C                  CALL DZERO(WORK(KSCRZI),NT2BCD(ISY21I))
-C                  CALL DZERO(WORK(KSCRVI),NT2BCD(ISY21I))
-C                 CALL DSCAL(NT2BCD(ISY21I),TWO,WORK(KSCRVI),1)
-C                 CALL DSCAL(NT2BCD(ISY21I),TWO,WORK(KSCRZI),1)
-C                  CALL DZERO(WORK(KSCRWI),NT2BCD(ISY21I))
-
+C
                   IF ( DEBUG ) THEN
                    PN=DDOT(NT2BCD(ISY21I),WORK(KSCRZI),1,WORK(KSCRZI),1)
                    QN=DDOT(NT2BCD(ISY21I),WORK(KSCRVI),1,WORK(KSCRVI),1)
@@ -1437,7 +1433,7 @@ C----------------------------------
 C     Write out transformed vector.
 C     Write out in all cases.
 C----------------------------------
-
+C
          CALL CC_WVEC(LUFR1,FRHO1,NT1AM(ISYMTR),NT1AM(ISYMTR),
      *                IV + IVEC -1,RHO1(1,IV))
 C
@@ -1448,6 +1444,7 @@ C
          TIMIO   = TIMIO    + DTIME
 C
   125 CONTINUE
+
 C
 C------------------------------
 C     Close intermediate files.
