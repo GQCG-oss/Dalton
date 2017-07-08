@@ -35,8 +35,8 @@ module pelib_interface
     public :: pelib_ifc_fock, pelib_ifc_energy, pelib_ifc_response, pelib_ifc_london
     public :: pelib_ifc_molgrad, pelib_ifc_infld, pelib_ifc_lf
     public :: pelib_ifc_mep, pelib_ifc_mep_noqm, pelib_ifc_cube
-    ! edh for debug
-    public :: pe_rspmcqr
+    ! edh for debug (make a new one with individual calls to rspgrd
+    !public :: pe_rspmcqr - should be called instead from E3INIT
 #if defined(VAR_MPI)
     public :: pelib_ifc_slave
 #endif
@@ -1942,7 +1942,7 @@ subroutine pelib_ifc_rspmcqr(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
                 allocate(fxo(norbt,norbt))
                 fcmo = 0.0d0
                 fxo = 0.0d0
-               ! Was changed from 0.25 to 1.0 (check this factor!)
+               ! edh: was changed from 0.25 to 1.0 (check this factor!)
                call uthu(1.0d0*fcaos(7*nnbasx+1:8*nnbasx), fcmo, cmo,&
                          & wrk, nbast, norbt)
                 call dsptsi(norbt, fcmo, fxo)
