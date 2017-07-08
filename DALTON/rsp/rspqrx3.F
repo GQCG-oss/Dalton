@@ -244,7 +244,8 @@ C  /* Deck e3init */
 
       use qmcmm_response, only: qmcmm_qr
       use pelib_interface, only: use_pelib, pelib_ifc_qro,
-     &                           pelib_ifc_gspol
+     &                           pelib_ifc_gspol, pelib_ifc_rspmcqr,
+     &                           pe_rspmcqr ! edh for debug
 C
 C
 C
@@ -393,15 +394,16 @@ C
 
       IF (USE_PELIB()) THEN
          IF (.NOT. TDHF .AND. .NOT. TRPLET) THEN 
-!           write(lupri,*) '*** WARNING PE-MCSCF QR ***  '
-!           write(lupri,*) 'Highly experimental version'
-!           write(lupri,*) 'Results *WILL* be wrong'
-            CALL QUIT('ERROR: PE-MCSCF quadratic response not'//
-     &                ' implemented using the PE library.')
-!            CALL PE_RSPMCQR(VECB, VECC, ETRS, XINDX, 
-!     &                      WRK(KZYMB), WRK(KZYMC), WRK(KDEN1), UDV, 
-!     &                      WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
-!     &                      ISYMA, ISYMB, ISYMC, CMO, MJWOP)
+            write(lupri,*) '*** WARNING PE-MCSCF QR ***  '
+            write(lupri,*) 'Highly experimental version'
+            write(lupri,*) 'Results *WILL* be wrong'
+!           CALL QUIT('ERROR: PE-MCSCF quadratic response not'//
+!    &                ' implemented using the PE library.')
+            CALL PELIB_IFC_RSPMCQR(VECB, VECC, VECA, ATEST, ETRS, 
+     &                      XINDX,
+     &                      WRK(KZYMB), WRK(KZYMC), WRK(KDEN1), UDV, 
+     &                      WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
+     &                      ISYMA, ISYMB, ISYMC, CMO, MJWOP)
          ELSE IF (NASHT > 0) THEN
             CALL QUIT('ERROR: quadratic response not implemented for'//
      &                ' open-shell systems using the PE library.')
