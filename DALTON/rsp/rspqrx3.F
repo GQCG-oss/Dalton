@@ -244,8 +244,7 @@ C  /* Deck e3init */
 
       use qmcmm_response, only: qmcmm_qr
       use pelib_interface, only: use_pelib, pelib_ifc_qro,
-     &                           pelib_ifc_gspol, pelib_ifc_rspmcqr,
-     &                           pe_rspmcqr ! edh for debug
+     &                           pelib_ifc_gspol, pelib_ifc_rspmcqr
 C
 C
 C
