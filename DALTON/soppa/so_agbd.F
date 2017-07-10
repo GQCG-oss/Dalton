@@ -45,8 +45,6 @@ C-----------------------------
 C     Prepare the data arrays.
 C-----------------------------
 C
-C      WRITE(LUPRI,*) 'Inside AGBD'
-C
       DO 100 ISYMJ = 1,NSYM
 C
          ISYMCI = MULD2H(ISYMJ,ISYMD)
@@ -76,15 +74,27 @@ C
                CALL DGEMM('N','N',NBAS(ISYMG),NRHF(ISYMI),NVIR(ISYMC),
      *                    ONE,XLAMDH(KOFF1),NBASG,SCRM(KOFF2),NVIRC,
      *                    ZERO,WORK(KOFF3),NBASG)
-C                 Sum_(ij) T_(ij)^(gamma delta) = Sum_(ij) Lamda(gamma c)*T_(ij)^(c delta)
-C               WRITE(LUPRI,*) 'Sum_(ij) T_(ij)^(gamma delta)'
-C               CALL OUTPUT(WORK,KOFF3,KOFF3+NBAS(ISYMG)-1,1,NRHF(ISYMI),
-C     *                          NBAS(ISYMG),NRHF(ISYMI),2,LUPRI)
+C                Sum_(ij) Lamda(gamma c)*T_(ij)^(c delta)
 C
-               IF (ISYMG .EQ. ISYMD) THEN
-                  KOFF4 = KOFF3 + IDEL - IBAS(ISYMD) - 1
-                  CALL DSCAL(NRHF(ISYMI),HALF,WORK(KOFF4),NBAS(ISYMG))
-               ENDIF
+               LWOR3 = NBAS(ISYMG)*NRHF(ISYMI)
+C               WRITE(LUPRI,*)' T_(ij)^(a delta)', KOFF2
+C               CALL OUTPUT(SCRM(KOFF2),1,NBAS(ISYMG)*NRHF(ISYMI),1,1,
+C     *                      NBAS(ISYMG)*NRHF(ISYMI),1,1,LUPRI)
+C               WRITE(LUPRI,*)'CMO', KOFF1
+C               CALL OUTPUT(XLAMDH(KOFF1),1,NRHF(ISYMI)*NVIR(ISYMC),1,1,
+C     *                      NRHF(ISYMI)*NVIR(ISYMC),1,1,LUPRI)
+C               WRITE(LUPRI,*) 'WORK',KOFF3
+C               CALL OUTPUT(WORK(KOFF3),1,LWOR3,1,1,
+C     *                      LWOR3,1,1,LUPRI)
+C
+C
+C               IF (ISYMG .EQ. ISYMD) THEN
+C                  KOFF4 = KOFF3 + IDEL - IBAS(ISYMD) - 1
+C                  CALL DSCAL(NRHF(ISYMI),HALF,WORK(KOFF4),NBAS(ISYMG))
+C                  CALL DCOPY(NRHF(ISYMI),WORK(KOFF3),1,WORK(KOFF4),1)
+C                  WRITE(LUPRI,*)' KOFF4', KOFF4
+C                  CALL OUTPUT(WORK(KOFF4),1,LWOR3,1,1,LWOR3,1,1,LUPRI)
+C               ENDIF
 C
   120       CONTINUE
 C
@@ -92,9 +102,13 @@ C
 C
   100 CONTINUE
 C
+C      WRITE(LUPRI,*) ' T_(ij)^(gamma delta)'
+C      CALL OUTPUT(WORK(1),1,150,1,1,150,1,1,LUPRI)
 C--------------------------------------------------------------------
 C     2) Call routine to calculate the contraction.
 C---------------------------------------------------------------------
+C      WRITE(LUPRI,*) 'KMGD',(WORK(KMGD+I),I=0,NT2BGD(ISYMD)-1)
+      FLUSH(LUPRI)
 C
       CALL SO_AGBD1(XINT,OMEGA2,WORK(KMGD),WORK(KEND1),LWRK1,IDEL,ISYMD)
 C
