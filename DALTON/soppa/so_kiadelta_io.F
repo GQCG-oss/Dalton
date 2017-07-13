@@ -37,11 +37,11 @@ C
 C
 C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
-      IF (OMEGSQ) THEN
-         WRITE(LUPRI,*)
-     &        'I/O in C-term not implemented for square Omega2'
-         CALL QUIT('OMEGSQ = .TRUE.  in CCRHS_CIO')
-      END IF
+C      IF (OMEGSQ) THEN
+C         WRITE(LUPRI,*)
+C     &        'I/O in C-term not implemented for square Omega2'
+C         CALL QUIT('OMEGSQ = .TRUE.  in CCRHS_CIO')
+C      END IF
 C
       ISAIBJ = MULD2H(ISYVEC,ISYCIM)
 C
@@ -171,6 +171,18 @@ C
      *                       NBAS(ISYDEL),ONE,XLAMDH(KOFF4),NBASD,
      *                       WORK(KOFF5),NBASD,ZERO,WORK(KOFF6),
      *                       NVIRC)
+C                  WRITE(LUPRI,*) 'CMO'
+C                  CALL OUTPUT(XLAMDH(KOFF4),1,NBAS(ISYDEL),1,NVIR(ISYMC)
+C     *  ,NBAS(ISYDEL),NVIR(ISYMC),1,LUPRI)
+C
+
+C                  WRITE(LUPRI,*) '(KI|A DELTA)'
+C                  CALL OUTPUT(WORK(KOFF5),1,6,1,5
+C     *  ,6,5,1,LUPRI)
+C
+c                  WRITE(LUPRI,*) '(KI|A C)'
+c                  CALL OUTPUT(WORK(KOFF6),1,NVIR(ISYMC),1,NRHF(ISYMK),
+C     *                      NVIR(ISYMC),NRHF(ISYMK),1,LUPRI)
 C
   160          CONTINUE
   150       CONTINUE
@@ -188,6 +200,15 @@ C
      *                 ONE,T2AM(KOFF7),NT1BJ,WORK(KSCR1),NT1CK,
      *                 ZERO,WORK(KSCR2),NT1BJ)
 C
+C            write(lupri,*) 't2am'
+C            CALL OUTPUT(T2AM(KOFF7),1,NT1AM(ISYMBJ),1,NT1AM(ISYMCK),
+C     *          NT1AM(ISYMBJ),NT1AM(ISYMCK),1,LUPRI)
+C            write(lupri,*) 'kiac'
+C            CALL OUTPUT(WORK(KSCR1),1,NDISAI,1,NT1AM(ISYMCK),
+C     *                      NDISAI,NT1AM(ISYMCK),1,LUPRI)
+C            write(lupri,*) 'kscr2'
+C            CALL OUTPUT(WORK(KSCR2),1,NT1AM(ISYMBJ),1,NDISAI,
+C     *                       NT1AM(ISYMBJ),NDISAI,1,LUPRI)
 C------------------------------
 C           Scale the diagonal.
 C------------------------------

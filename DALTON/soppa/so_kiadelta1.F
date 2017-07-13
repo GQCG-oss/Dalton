@@ -101,7 +101,7 @@ C
                CALL DGEMM('N','N',NRHF(ISYMK),NRHF(ISYMI),NBAS(ISYMG),
      *                    ONE,WORK(KSCR11),NRHFK,XLAMDH(KOFF5),NBASG,
      *                    ZERO,WORK(KSCR12),NRHFK)
-C                   (k i| gamma delta ) here ( k i| alpha beta)
+C
                DO 330 I = 1,NRHF(ISYMI)
 C
                   NAI = IT1AO(ISYMA,ISYMI) + NBAS(ISYMA)*(I-1) + A
@@ -150,6 +150,18 @@ C
                CALL DGEMM('N','N',NRHF(ISYMK),NVIR(ISYMA),NBAS(ISYMAL),
      *                    ONE,SCR2(KOFF1),NRHFK,XLAMPC(KOFF2),NBASAL,
      *                    ZERO,SCR1(KOFF3),NRHFK)
+C
+C               WRITE(LUPRI,*) 'SCR2', KOFF1
+C                CALL OUTPUT(SCR2(KOFF1),1,NRHF(ISYMK),1,NBAS(ISYMAL),
+C     *                  NRHF(ISYMK),NBAS(ISYMAL),1,LUPRI)
+C
+C                WRITE(LUPRI,*) 'BLAH', KOFF3
+C                CALL OUTPUT(SCR1(KOFF3),1,NRHF(ISYMK),1,NVIR(ISYMA),
+c     *                  NRHF(ISYMK),NVIR(ISYMA),1,LUPRI)
+
+C               WRITE(LUPRI,*) 'BLAH', KOFF3
+C                CALL OUTPUT(SCR1(KOFF3),1,NRHF(ISYMK),1,NVIR(ISYMA),
+C     *                  NRHF(ISYMK),NVIR(ISYMA),1,LUPRI)
 C
   830       CONTINUE
   820    CONTINUE
