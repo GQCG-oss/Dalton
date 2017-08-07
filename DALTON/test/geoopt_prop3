@@ -217,11 +217,9 @@ CTRL[14]=12
 ERROR[14]="FINAL GEOMETRY NOT CORRECT"
 
 # Final SCF energy:
-CRIT1=`$GREP "Total energy * \-224\.51875696[2-4][0-9] au \(Hartrees\)" $log | wc -l`
-CRIT2=`$GREP "\-6109\.4661580[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-589473\.905[0-9] kJ\/mol" $log | wc -l`
-TEST[15]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[15]=3
+CRIT1=`$GREP "Total energy * \-224\.51875696" $log | wc -l`
+TEST[15]=`expr $CRIT1`
+CTRL[15]=1
 ERROR[15]="FINAL ENERGY NOT CORRECT"
 
 # Magnetizability:
