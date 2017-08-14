@@ -131,34 +131,21 @@ C
 
       END
 C  /* Deck cc_21b12ca */
-      SUBROUTINE CC_21B12C3(RHO1,RHO2,CTR1,ISYMV,XLAMDH,ISYMH,
-     *                      XMAT,ISYMX,ISINT,WORK,LWORK,
-     *                      LUO3,O3FIL,IOPT)
+      SUBROUTINE CC_21B3(RHO1,RHO2,CTR1,ISYMV,XLAMDH,ISYMH,
+     *                   XMAT,ISYMX,ISINT,WORK,LWORK,
+     *                   LUO3,O3FIL,IOPT)
 C
 C     Rasmus Faber - 2017
 C
 C
 C
 C     Based on CC_21B12C by Asger Halkier & Henrik Koch 13/9 - 1995.
-C     Ove Christiansen 13-6-1996:
-C
-C     Generalised to calculate contributions to F matrix * vector.
-C     ISYMV is symmetry of CTR1.
-C     ISINT is symmetry of intermediate on disk.
-C     ISYMX is symmetry of intermediate on disk and XMAT.
-C     ISYMH is symmetry of lambda matrix.
-C
-C     rho2(ai,bj) = P(ai,bj)(-sum(k)CTR1(a,k)*L(jbik)
-C                   where k may be a barred index.
-C
-C     IOPT controls if both 21B and 12 C are calculated:
-C     if IOPT = 2 both are calculated if IOPT = 1 only
-C     21B is calculated.
 C
 #include "implicit.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO1(*),RHO2(*),CTR1(*),XLAMDH(*),WORK(LWORK),XMAT(*)
       CHARACTER O3FIL*(*)
+      CHARACTER(len=*), PARAMETER :: myname = 'CC_12C3'
 #include "priunit.h"
 #include "ccorb.h"
 #include "ccsdsym.h"
@@ -167,14 +154,14 @@ C
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
-      CALL QENTER('CC_21B12C')
+      CALL QENTER(myname)
 C
       ISYMLI = MULD2H(ISINT,ISYMH)
       ISYRES = MULD2H(ISYMV,ISYMLI)
       IF (IOPT .EQ. 1) ISYRES = MULD2H(ISYMX,ISYMLI)
       IF ((IOPT .EQ. 2) .AND. (ISYMV .NE. ISYMX)) THEN
-         WRITE(LUPRI,*) ' Symmetry mismatch in CC_21B12C '
-         CALL QUIT(' Symmetry mismatch in CC_21B12C ')
+         WRITE(LUPRI,*) ' Symmetry mismatch in '//myname
+         CALL QUIT(' Symmetry mismatch in '//myname)
       ENDIF
 C
       DO 100 ISYMD = 1,NSYM
@@ -195,7 +182,7 @@ C
          LWRK1 = LWORK - KEND1
 C
          IF (LWRK1 .LT. 0) THEN
-            CALL QUIT('Insufficient work space area in CC_21B12C')
+            CALL QUIT('Insufficient work space area in '//myname)
          ENDIF
 C
 C------------------------------------
@@ -245,16 +232,16 @@ C
      *                           + NMATIJ(ISYMIK)*(J - 1)
      *                           + IMATIJ(ISYMI,ISYMK)
      *                           + NRHF(ISYMI)*(K - 1) + I
-                           NJKI  = IMAIJK(ISYMJK,ISYMI)
-     *                           + NMATIJ(ISYMJK)*(I - 1)
-     *                           + IMATIJ(ISYMJ,ISYMK)
-     *                           + NRHF(ISYMJ)*(K - 1) + J
+C                           NJKI  = IMAIJK(ISYMJK,ISYMI)
+C     *                           + NMATIJ(ISYMJK)*(I - 1)
+C     *                           + IMATIJ(ISYMJ,ISYMK)
+C     *                           + NRHF(ISYMJ)*(K - 1) + J
                            NBIKJ = NMAIJK(ISYIKJ)*(B - 1) + NIKJ
                            NBJKI = NMAIJK(ISYIKJ)*(B - 1) + NJKI
 C
                            WORK(KSCR2 + NIKJ - 1) =
-C     *                              TWO*WORK(KSCR1 + NBIKJ - 1) -
-     *                              WORK(KSCR1 + NBJKI - 1)
+     *                              WORK(KSCR1 + NBIKJ - 1)
+C     *                              WORK(KSCR1 + NBJKI - 1)
 C
   160                   CONTINUE
   150                CONTINUE
@@ -271,36 +258,8 @@ C
                LAVL   = LWORK - KSCR3 - NT1AM(ISYMAI)
 C
                IF (LAVL .LT. 0) THEN
-                  CALL QUIT('Insufficient space in CC_21B12C')
+                  CALL QUIT('Insufficient space in'//myname)
                ENDIF
-C
-               DO 180 J = 1,NRHF(ISYMJ)
-C
-C------------------------------------------------
-C                 Calculate the 21B contribution.
-C------------------------------------------------
-C
-                  NBJ = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J - 1) + B
-C
-                  IF (.NOT.(CC2)) THEN
-C
-                     IF (ISYMBJ .EQ. ISYRES) THEN
-C
-                        KOFF1 = KSCR2 + IMAIJK(ISYMIK,ISYMJ)
-     *                                + NMATIJ(ISYMIK)*(J - 1)
-C
-                        RHO1(NBJ) = RHO1(NBJ) - DDOT(NMATIJ(ISYMIK),
-     *                              XMAT,1,WORK(KOFF1),1)
-C
-                     ENDIF
-C
-                  ENDIF
-C
-C-----------------------------------------------------------------
-C                 IF only 21B contributions then goto end of loop.
-C-----------------------------------------------------------------
-C
-                  IF ( IOPT .EQ. 1 ) GOTO 180
 C
 C-----------------------------------------------------------
 C                 Contract integrals with trial vector CTR1.
@@ -356,7 +315,7 @@ C
   110    CONTINUE
   100 CONTINUE
 C
-      CALL QEXIT('CC_21B12C')
+      CALL QEXIT(myname)
 C
       RETURN
       END
@@ -695,5 +654,79 @@ C
 C
   100 CONTINUE
 
+      RETURN
+      END
+
+C  /* Deck cc_t2ao3 */
+      SUBROUTINE CC_T2AO3(T2AM,XLAMDH,ISYMLH,SCRM,WORK,LWORK,
+     *                    IDEL,ISYMD,ISYMTR)
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     Written by Rasmus Faber, 2017
+C     Based on CC_T2AM by H. Kock, A. Sanchez, O. Christiansen and
+C     A. Halkier.
+C     PURPOSE:
+C             Tdjci -> Tci,j (delta)
+C     i.e. transform the other index, than CC_T2AO, needed in case
+C     of non-symmetric T2AM
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+      implicit none
+#include "priunit.h"
+#include "iratdef.h"
+      DOUBLE PRECISION, PARAMETER :: ZERO = 0.0D0, ONE = 1.0D0
+      CHARACTER(LEN=*), PARAMETER :: myname = 'CC_T2AO3'
+C
+      INTEGER, INTENT(IN) :: ISYMLH, LWORK, IDEL, ISYMD, ISYMTR
+      DOUBLE PRECISION, INTENT(IN) ::  T2AM(*),XLAMDH(*)
+      DOUBLE PRECISION, INTENT(OUT) :: SCRM(*)
+      DOUBLE PRECISION, INTENT(INOUT) :: WORK(LWORK)
+C
+#include "ccorb.h"
+#include "ccsdsym.h"
+C
+      INTEGER :: ISYDVI, ISYMM, ISYMCI, ISYMJ, ISYMDJ
+      INTEGER :: KOFF1, KOFF2, KOFF3
+      INTEGER :: NTOTCI, NCI
+C
+C-----------------------------------------------------
+C     Calculate the transformed t2-amplitude and save.
+C-----------------------------------------------------
+C
+      ISYDVI = MULD2H(ISYMLH,ISYMD)
+      ISYMM = MULD2H(ISYMTR,ISYDVI)
+      CALL DZERO(SCRM,NT2BCD(ISYMM))
+C
+      IF ( LWORK .LT. NVIR(ISYDVI)) THEN
+         CALL QUIT('Insufficient core in '//myname)
+      ENDIF
+C
+      CALL DZERO(WORK,NVIR(ISYDVI))
+C
+      KOFF1 = IGLMVI(ISYMD,ISYDVI) + IDEL - IBAS(ISYMD)
+C
+      CALL DCOPY(NVIR(ISYDVI),XLAMDH(KOFF1),NBAS(ISYMD),WORK,1)
+C
+      DO 100 ISYMCI = 1,NSYM
+C
+         ISYMDJ = MULD2H(ISYMTR,ISYMCI)
+         ISYMJ  = MULD2H(ISYMCI,ISYDVI)
+C
+         NTOTCI = MAX(1,NT1AM(ISYMCI))
+C
+         DO 110 NCI = 1, NT1AM(ISYMCI)
+C
+            KOFF2 = IT2SQ(ISYMDJ,ISYMCI)
+     *            + NT1AM(ISYMDJ)*(NCI - 1) + 1
+            KOFF3 = IT2BCD(ISYMCI,ISYMJ)
+     *            + NCI
+C
+            CALL DGEMV('T',NVIR(ISYDVI),NRHF(ISYMJ),ONE,
+     *                 T2AM(KOFF2),1,WORK,1,ZERO,
+     *                 SCRM(KOFF3),NTOTCI)
+C
+  110    CONTINUE
+  100 CONTINUE
+C
       RETURN
       END

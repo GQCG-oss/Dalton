@@ -56,11 +56,6 @@ C
 !
 !     24-9-1996:
 !
-!     IF (IOPT .EQ. 1):
-!                       scrm is ordinary t2: tci,j(delta)
-!                       XLAMD1 and XLAMD2 is ordinary lamda Hole
-!                       matrices.
-!                       (XLAMD1(gam,i)*XLAMD1(del,j))
 !
 !     IF (IOPT .EQ. 2/3)
 !                       scrm is left/right vector transformed
@@ -71,32 +66,6 @@ C
 !                       lambda particle/hole matrix.
 !                       (XLAMD1(gam,i)*XLAMD2(del,j)
 !                       +XLAMD2(gam,i)*XLAMD1(del,j))
-!
-!     IF (IOPT .EQ. 4)
-!                       scrm is left/right vector transformed
-!                       to tci,j(delta): vector general symmetry
-!                       lambda particle matrix is transformed.
-!
-!                       scrm2 is left/right vector transformed
-!                       to tci,j(delta): vector general symmetry
-!                       lambda particle matrix is tot.sym. ordinary
-!                       lambda particle matrixes.
-!
-!                       Total transformed vector to be contracted
-!                       with integrals is therefore
-!
-!                       XLAMD1 is an ordinary lambda particle matrix.
-!                       XLAMD2 is a double transformed
-!                              lambda particle matrix.
-!                              (both R1 and L1)
-!                       XLAMD3 is R1-transformed lambda particle matrix.
-!
-!                       sum(gam,del)(T(gam-bar,i,j,del)+T(gam,i,j,
-!                                                            del-bar)
-!                                   +3(XLAMD1(del,j)*XLAMD2(gam,i)
-!                                     +XLAMD1(del,j)*XLAMD2(gam,i)))
-!
-!     22/2 - 1999
 !
 !   IF (IOPT .EQ. 5)  
 !                     Triplet minus-intermediate.
@@ -126,7 +95,7 @@ C
       IMPLICIT NONE
 !
       INTEGER LWORK, ISYMGD, ISYMM1, ISYML1, ISYML2
-      INTEGER KMGD, KEND1, LWRK1, IDEL, ISYMD
+      INTEGER KMGD, KMGD2, KEND1, LWRK1, IDEL, ISYMD
       INTEGER ISYMJ, ISYMCI, ISYMI, ISYMC, ISYMG, ISYMGI, ISYMM2
       INTEGER NVIRC, NBASG
       INTEGER KOFF1, KOFF2, KOFF3, IOPT, ISYML3
@@ -158,6 +127,12 @@ C
       KMGD   = 1
       KEND1  = KMGD   + NT2BGD(ISYMGD)
       LWRK1  = LWORK  - KEND1
+
+      IF (IOPT .EQ. 2) THEN
+         KMGD2 = KEND1
+         KEND1 = KMGD2 + NT2BGD(ISYMGD)
+         LWRK1 = LWORK - KEND1
+      END IF
 !
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Need : ',KEND1,'Available : ',LWORK
@@ -199,6 +174,42 @@ C
   110    CONTINUE
 !
   100 CONTINUE
+!
+      IF (IOPT .EQ. 2) THEN
+!
+         DO ISYMJ = 1,NSYM
+!
+            ISYMCI = MULD2H(ISYMJ,ISYMM1)
+!
+            DO ISYMI = 1,NSYM
+!
+               ISYMC  = MULD2H(ISYMI,ISYMCI)
+               ISYMG  = MULD2H(ISYMC,ISYML1)
+               ISYMGI = MULD2H(ISYMG,ISYMI)
+!
+               NVIRC = MAX(NVIR(ISYMC),1)
+               NBASG = MAX(NBAS(ISYMG),1)
+!
+               KOFF1 = IGLMVI(ISYMG,ISYMC) + 1
+!
+               DO J = 1,NRHF(ISYMJ)
+!
+                  KOFF2 = IT2BCD(ISYMCI,ISYMJ) + IT1AM(ISYMC,ISYMI)
+     *                  + NT1AM(ISYMCI)*(J - 1) + 1
+                  KOFF3 = IT2BGD(ISYMGI,ISYMJ) + IT1AO(ISYMG,ISYMI)
+     *                  + NT1AO(ISYMGI)*(J - 1) + KMGD2
+!
+                  CALL DGEMM('N','N',NBAS(ISYMG),NRHF(ISYMI),
+     &                       NVIR(ISYMC),
+     *                       ONE,XLAMD1(KOFF1),NBASG,SCRM2(KOFF2),NVIRC,
+     *                       ZERO,WORK(KOFF3),NBASG)
+!
+               END DO
+!
+            END DO
+!
+         END DO
+      END IF
 !
 !---------------------------------------------------------
 !     Calculate extra contribution to T2 double AO transf.
@@ -247,8 +258,9 @@ C
 !--------------------------------
 !     Calculate the contribution.
 !--------------------------------
-!
-      CALL CC_BF31(XINT,OMEGA2,WORK(KMGD),ISYMGD,XLAMD1,ISYML1,
+!     
+      CALL CC_BF31(XINT,OMEGA2,WORK(KMGD),WORK(KMGD2),ISYMGD,
+     *             XLAMD1,ISYML1,
      *             XLAMD2,ISYML2,WORK(KEND1),LWRK1,
      *             IDEL,ISYMD,IOPT)
 !
@@ -257,7 +269,7 @@ C
       RETURN
       END
 C  /* Deck cc_bf3_1 */
-      SUBROUTINE CC_BF31(XINT,OMEGA2,XMGD,ISYMGD,XLAMD1,ISYML1,
+      SUBROUTINE CC_BF31(XINT,OMEGA2,XMGD,XMGD2,ISYMGD,XLAMD1,ISYML1,
      *                   XLAMD2,ISYML2,WORK,LWORK,
      *                   IDEL,ISYMD,IOPT)
 !
@@ -279,19 +291,19 @@ C  /* Deck cc_bf3_1 */
       INTEGER ISYML2, ISYML1, ISYMIJ, ISYMAB, ISYMG, IDEL, KSCRAB
       INTEGER KINDV1, KINDV2, KEND1, LWRK1, NSIZE, IMAXG, NMAXG
       INTEGER NBATCH, IBATCH, NUMG, IG1, IG2, KINTP, KINTM
-      INTEGER KT2MP, KT2MM, KEND2, LWRK2, ISYMI, ISYMJ, ISYMGI
-      INTEGER ISYMGJ, NTOTI, NGIJ, NGJI, NIJ, NGIJPM, KOFFP, KOFFM
-      INTEGER IOPT, KOFF1, KOFF2, ISHELP, KOFF, NUMGM, NTOTAB
+      INTEGER KT2MP, KT2MM, KEND2, LWRK2 
+      INTEGER IOPT, ISHELP, KOFF, KOFF1, KOFF2, NUMGM, NTOTAB
+      INTEGER LT2MM
 !
 #if defined (SYS_CRAY)
       REAL ZERO, HALF, ONE, FOURTH, TWO, THREE
       REAL XTWO, XHALF, XONE, FACT
-      REAL XINT(*), OMEGA2(*), XMGD(*), XLAMD1(*), XLAMD2(*)
+      REAL XINT(*), OMEGA2(*), XMGD(*), XMGD2(*),XLAMD1(*), XLAMD2(*)
       REAL WORK(LWORK)
 #else
       DOUBLE PRECISION ZERO, HALF, ONE, FOURTH, TWO
       DOUBLE PRECISION THREE, XTWO, XHALF, XONE, FACT
-      DOUBLE PRECISION XINT(*), OMEGA2(*), XMGD(*), XLAMD1(*)
+      DOUBLE PRECISION XINT(*), OMEGA2(*), XMGD(*), XMGD2(*),XLAMD1(*)
       DOUBLE PRECISION XLAMD2(*), WORK(LWORK)
 #endif
       PARAMETER(ZERO = 0.0D00, HALF = 0.5D00, ONE = 1.0D00)
@@ -341,7 +353,11 @@ C------------------------------
 C        Work space allocation.
 C------------------------------
 C
-         NSIZE  = 2*(NNBST(ISYMAB) + NMIJP(ISYMIJ))
+         IF (IOPT.EQ.2) THEN
+            NSIZE = 2*NNBST(ISYMAB) + NMIJP(ISYMIJ) + NMATIJ(ISYMIJ)
+         ELSE
+            NSIZE = 2*(NNBST(ISYMAB) + NMIJP(ISYMIJ))
+         END IF
 C
          IF ((NNBST(ISYMAB) .EQ. 0) .OR.
      *       (NMIJP(ISYMIJ) .EQ. 0)) GOTO 100
@@ -373,11 +389,17 @@ C
             IG1 = NMAXG*(IBATCH - 1) + 1
             IG2 = NMAXG*(IBATCH - 1) + NUMG
 C
+            IF (IOPT.EQ.2) THEN
+               LT2MM = NUMG*NMATIJ(ISYMIJ)
+            ELSE
+               LT2MM = NUMG*NMIJP(ISYMIJ)
+            END IF
+C
             KINTP = KEND1
             KINTM = KINTP + NNBST(ISYMAB)*NUMG
             KT2MP = KINTM + NNBST(ISYMAB)*NUMG
             KT2MM = KT2MP + NUMG*NMIJP(ISYMIJ)
-            KEND2 = KT2MM + NUMG*NMIJP(ISYMIJ)
+            KEND2 = KT2MM + LT2MM
             LWRK2 = LWORK - KEND2
 C
             IF (LWRK2 .LT. 0) THEN
@@ -388,6 +410,92 @@ C-----------------------------------
 C           Construct T2MP and T2MM.
 C-----------------------------------
 C
+            IF (IOPT.NE.2) THEN
+                CALL CC_T2MP_T2MM()
+            ELSE
+                CALL CC_T2MP_T2MM3(XMGD,XMGD2,WORK(KT2MP),WORK(KT2MM),
+     &                             ISYMIJ,ISYMG,NUMG,IG1)
+            ENDIF
+
+C
+C-----------------------------------
+C           Construct INTP and INTM.
+C-----------------------------------
+C
+            CALL CCRHS_IPM(XINT,WORK(KINTP),WORK(KINTM),WORK(KSCRAB),
+     *                     WORK(KINDV1),WORK(KINDV2),ISYMAB,ISYMG,
+     *                     NUMG,IG1,IG2)
+C
+C-------------------------------
+C           Scale the diagonals.
+C-------------------------------
+C
+            IF ((ISYMG .EQ. ISYMD) .AND. (IBATCH .EQ. NBATCH)) THEN
+               KOFF = KINTP + NNBST(ISYMAB)*(NUMG - 1)
+               CALL DSCAL(NNBST(ISYMAB),HALF,WORK(KOFF),1)
+            ENDIF
+C
+C----------------------------------------
+C           Add the B-term contributions.
+C----------------------------------------
+C
+            NUMGM  = MAX(NUMG,1)
+            NTOTAB = MAX(NNBST(ISYMAB),1)
+               
+C
+            IF (IOPT.EQ.2) THEN
+               KOFF1 = IT2ORT(ISYMAB,ISYMIJ) + 1
+               KOFF2 = NT2ORT(ISYRES) + IT2ORT3(ISYMAB,ISYMIJ) + 1
+
+               CALL DGEMM('N','N',NNBST(ISYMAB),NMIJP(ISYMIJ),NUMG,
+     *                    ONE,WORK(KINTP),NTOTAB,WORK(KT2MP),NUMGM,
+     *                    ONE,OMEGA2(KOFF1),NTOTAB)
+
+               CALL DGEMM('N','N',NNBST(ISYMAB),NMATIJ(ISYMIJ),NUMG,
+     *                    ONE,WORK(KINTP),NTOTAB,WORK(KT2MM),NUMGM,
+     *                    ONE,OMEGA2(KOFF2),NTOTAB)
+
+            ELSE IF (.NOT. (IOPT .EQ. 5)) THEN
+!
+              KOFF = IT2ORT(ISYMAB,ISYMIJ) + 1
+! 
+              CALL DGEMM('N','N',NNBST(ISYMAB),NMIJP(ISYMIJ),NUMG,
+     *                   ONE,WORK(KINTM),NTOTAB,WORK(KT2MM),NUMGM,
+     *                   ONE,OMEGA2(KOFF),NTOTAB)
+!
+            ELSE
+               KOFF1 = IT2ORT(ISYMAB,ISYMIJ) + 1
+!
+               CALL DGEMM('N','N',NNBST(ISYMAB),NMIJP(ISYMIJ),NUMG,
+     *                    ONE,WORK(KINTM),NTOTAB,WORK(KT2MP),NUMGM,
+     *                    ONE,OMEGA2(KOFF1),NTOTAB)
+!
+               KOFF2 = NT2ORT(ISYRES) + IT2ORT(ISYMAB,ISYMIJ) + 1
+!
+               CALL DGEMM('N','N',NNBST(ISYMAB),NMIJP(ISYMIJ),NUMG,
+     *                    ONE,WORK(KINTP),NTOTAB,WORK(KT2MM),NUMGM,
+     *                    ONE,OMEGA2(KOFF2),NTOTAB)
+!
+            END IF
+  110    CONTINUE
+!
+  100 CONTINUE
+!
+      CALL QEXIT('CC_BF31')
+!
+      RETURN
+      CONTAINS
+         SUBROUTINE CC_T2MP_T2MM()
+C-------------------------------------------------------
+C           Creates the plus and minus versions of
+C           the back transformed plus and minus vectors
+C-------------------------------------------------------
+
+            INTEGER :: NGIJ, NGJI, NTOTI, NIJ, NGIJPM
+            INTEGER :: KOFFP, KOFFM, KOFF1, KOFF2, ISHELP
+            INTEGER :: ISYMI, ISYMJ, ISYMGI, ISYMGJ
+            DOUBLE PRECISION :: FACT
+
             DO 200 ISYMJ = 1 , NSYM
 C
                ISYMI  = MULD2H(ISYMJ,ISYMIJ)
@@ -575,78 +683,232 @@ C
 C
                      ENDIF
 C
-  220          CONTINUE
+  220             CONTINUE
 C
-  210       CONTINUE
+  210          CONTINUE
 C
-  200     CONTINUE
+  200       CONTINUE
+         END SUBROUTINE
+
+         SUBROUTINE CC_T2MP_T2MM3(XMGD,XMGD2,T2P,T2M,
+     &                            ISYMIJ,ISYMG,NUMG,IG1)
+C-------------------------------------------------------
+C           Creates the plus and minus versions of
+C           the back transformed plus and minus vectors
+C           In the case that + and - triplets are treated
+C           simultaniously.
+C-------------------------------------------------------
+
+            DOUBLE PRECISION, INTENT(IN) :: XMGD(*), XMGD2(*)
+            DOUBLE PRECISION, INTENT(OUT):: T2P(*), T2M(*)
+            INTEGER, INTENT(IN) :: ISYMG, ISYMIJ, NUMG, IG1
+
+            INTEGER :: IGIJ, IGJI
+            INTEGER :: NGIJ, NGJI, NTOTI
+            INTEGER :: NIJT, NIJS, NJIS, NG
+            INTEGER :: KOFFP, KOFFM1, KOFFM2, ISHELP
+            INTEGER :: ISYMI, ISYMJ, ISYMGI, ISYMGJ
 C
-C-----------------------------------
-C           Construct INTP and INTM.
-C-----------------------------------
+            DOUBLE PRECISION :: FACT
+
+            DO 200 ISYMJ = 1 , NSYM
 C
-            CALL CCRHS_IPM(XINT,WORK(KINTP),WORK(KINTM),WORK(KSCRAB),
-     *                     WORK(KINDV1),WORK(KINDV2),ISYMAB,ISYMG,
-     *                     NUMG,IG1,IG2)
+               ISYMI  = MULD2H(ISYMJ,ISYMIJ)
+               ISYMGI = MULD2H(ISYMI,ISYMG)
+               ISYMGJ = MULD2H(ISYMJ,ISYMG)
 C
-C-------------------------------
-C           Scale the diagonals.
-C-------------------------------
+               IF (ISYMI .GT. ISYMJ) GOTO 200
 C
-            IF ((ISYMG .EQ. ISYMD) .AND. (IBATCH .EQ. NBATCH)) THEN
-               KOFF = KINTP + NNBST(ISYMAB)*(NUMG - 1)
-               CALL DSCAL(NNBST(ISYMAB),HALF,WORK(KOFF),1)
-            ENDIF
+               NTOTI = NRHF(ISYMI)
 C
-C----------------------------------------
-C           Add the B-term contributions.
-C----------------------------------------
+               DO 210 J = 1 , NRHF(ISYMJ)
 C
-            NUMGM  = MAX(NUMG,1)
-            NTOTAB = MAX(NNBST(ISYMAB),1)
-               
+                  IF (ISYMI .EQ. ISYMJ) NTOTI = J
 C
-            IF (.NOT. (IOPT .EQ. 5)) THEN
-!
-              IF (IOPT .NE. 6) THEN
-                KOFF1 = IT2ORT(ISYMAB,ISYMIJ) + 1
-!
-                CALL DGEMM('N','N',NNBST(ISYMAB),NMIJP(ISYMIJ),NUMG,
-     *                     ONE,WORK(KINTP),NTOTAB,WORK(KT2MP),NUMGM,
-     *                     ONE,OMEGA2(KOFF1),NTOTAB)
-              ENDIF
-!
-              IF (IOPT .NE. 6) THEN
-                KOFF2 = NT2ORT(ISYRES) + IT2ORT(ISYMAB,ISYMIJ) + 1
-              ELSE
-                KOFF2 =IT2ORT(ISYMAB,ISYMIJ) + 1
-              ENDIF
-!
-              CALL DGEMM('N','N',NNBST(ISYMAB),NMIJP(ISYMIJ),NUMG,
-     *                   ONE,WORK(KINTM),NTOTAB,WORK(KT2MM),NUMGM,
-     *                   ONE,OMEGA2(KOFF2),NTOTAB)
-!
-            ELSE
-            KOFF1 = IT2ORT(ISYMAB,ISYMIJ) + 1
-!
-            CALL DGEMM('N','N',NNBST(ISYMAB),NMIJP(ISYMIJ),NUMG,
-     *                 ONE,WORK(KINTM),NTOTAB,WORK(KT2MP),NUMGM,
-     *                 ONE,OMEGA2(KOFF1),NTOTAB)
-!
-            KOFF2 = NT2ORT(ISYRES) + IT2ORT(ISYMAB,ISYMIJ) + 1
-!
-            CALL DGEMM('N','N',NNBST(ISYMAB),NMIJP(ISYMIJ),NUMG,
-     *                 ONE,WORK(KINTP),NTOTAB,WORK(KT2MM),NUMGM,
-     *                 ONE,OMEGA2(KOFF2),NTOTAB)
-!
-            END IF
-  110    CONTINUE
-!
-  100 CONTINUE
-!
-      CALL QEXIT('CC_BF31')
-!
-      RETURN
+                  DO 220 I = 1, NTOTI
+C
+                     IGIJ = IT2BGD(ISYMGI,ISYMJ)
+     *                    + NT1AO(ISYMGI)*(J - 1)
+     *                    + IT1AO(ISYMG,ISYMI)
+     *                    + NBAS(ISYMG)*(I - 1) + IG1 - 1
+C
+                     IGJI = IT2BGD(ISYMGJ,ISYMI)
+     *                    + NT1AO(ISYMGJ)*(I - 1)
+     *                    + IT1AO(ISYMG,ISYMJ)
+     *                    + NBAS(ISYMG)*(J - 1) + IG1 - 1
+C
+                     IF (ISYMI .EQ. ISYMJ) THEN
+                        NIJT = IMIJP(ISYMI,ISYMJ) + J*(J-1)/2 + I
+                     ELSE
+                        NIJT = IMIJP(ISYMI,ISYMJ)
+     *                       + NRHF(ISYMI)*(J - 1) + I
+                     ENDIF
+
+                     NIJS = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMJ)*(J-1) + I
+                     NJIS = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMI)*(I-1) + J
+C
+                     KOFFP  = NUMG*(NIJT-1)
+                     KOFFM1 = NUMG*(NIJS-1)
+                     KOFFM2 = NUMG*(NJIS-1)
+C
+                     DO NG = 1, NUMG
+                        NGIJ = IGIJ + NG
+                        NGJI = IGJI + NG
+                        T2P(KOFFP+NG)  = XMGD(NGIJ) + XMGD2(NGJI)
+                        T2M(KOFFM1+NG) = XMGD(NGIJ) - XMGD2(NGJI)
+                     END DO
+C
+                     IF ( IGIJ .NE. IGJI ) THEN
+                        DO NG = 1, NUMG
+                           NGIJ = IGIJ + NG
+                           NGJI = IGJI + NG
+                           T2M(KOFFM2+NG) = XMGD(NGJI) - XMGD2(NGIJ)
+                        END DO
+                     END IF
+C
+C
+C-------------------------------------------------
+C                    Add the F-term contributions.
+C-------------------------------------------------
+C
+C                     FACT = ONE
+C
+C                     IF ((IOPT .EQ. 2) .OR. (IOPT .EQ. 4)) THEN
+C                        FACT = THREE
+C                     ENDIF
+C
+C                     IF ((ISYMJ .EQ. ISYCH).AND.(ISYMI .EQ. ISYMG)) THEN
+C
+C                       KOFF1 = IGLMRH(ISYMD,ISYMJ)
+C     &                        + NBAS(ISYMD)*(J - 1) + D
+C                        KOFF2 = ILMRHF(ISYMI) + NBAS(ISYMG)*(I - 1) +IG1
+C
+C                        IF (IOPT .EQ. 5) THEN
+C!
+C                           CALL DAXPY(NUMG,XHALF*XLAMD2(KOFF1),
+C     *                                XLAMD1(KOFF2),1,WORK(KOFFP),1)
+C                           CALL DAXPY(NUMG,XHALF*XLAMD2(KOFF1),
+C     &                                XLAMD1(KOFF2),1,WORK(KOFFM),1)
+C                        ELSE
+C!
+C                           IF (IOPT .NE. 6) THEN
+C                            CALL DAXPY(NUMG,XLAMD2(KOFF1),XLAMD1(KOFF2),
+C     &                                 1,WORK(KOFFP),1)
+C                           ENDIF
+C!
+C                           CALL DAXPY(NUMG,FACT*XLAMD2(KOFF1),
+C     &                                XLAMD1(KOFF2),1,WORK(KOFFM),1)
+C!
+C                        ENDIF
+CC
+C                     ENDIF
+CC
+C                     IF ((ISYMI .EQ. ISYCH).AND.(ISYMJ .EQ. ISYMG)) THEN
+CC
+C                        KOFF1 = IGLMRH(ISYMD,ISYMI)
+C     &                        + NBAS(ISYMD)*(I - 1) + D
+C                        KOFF2 = ILMRHF(ISYMJ) + NBAS(ISYMG)*(J - 1) +IG1
+CC
+C                        IF (IOPT .EQ. 5) THEN
+C!
+C                           CALL DAXPY(NUMG,XHALF*XLAMD2(KOFF1),
+C     *                                XLAMD1(KOFF2),1,WORK(KOFFP),1)
+C                           CALL DAXPY(NUMG,HALF*XLAMD2(KOFF1),
+C     *                                XLAMD1(KOFF2),1,WORK(KOFFM),1)
+C!
+C                        ELSE
+C!
+C                           IF (IOPT .NE. 6) THEN
+C                            CALL DAXPY(NUMG,XLAMD2(KOFF1),XLAMD1(KOFF2),
+C     *                                 1,WORK(KOFFP),1)
+C                           ENDIF
+C!
+C                           CALL DAXPY(NUMG,-FACT*XLAMD2(KOFF1),
+C     *                                XLAMD1(KOFF2),1,WORK(KOFFM),1)
+CC
+C                        ENDIF
+C!
+C                     ENDIF
+CC
+CC---------------------------------------------------------------------
+CC                    For response calculation add permuted terms.
+CC---------------------------------------------------------------------
+CC
+C                     IF (IOPT .GE. 2) THEN
+CC
+C                        ISHELP = MULD2H(ISYMG,ISYML2)
+CC
+C                        IF ((IOPT .EQ. 2) .OR. (IOPT .EQ. 4)) THEN
+C                           FACT = THREE
+C                        ENDIF
+CC
+C                        IF ((ISYMJ .EQ. ISYMD) .AND.
+C     &                      (ISYMI .EQ. ISHELP)) THEN
+CC
+C                           KOFF1 = ILMRHF(ISYMJ)
+C     &                           + NBAS(ISYMD)*(J - 1) + D
+C                           KOFF2 = IGLMRH(ISYMG,ISYMI)
+C     &                           + NBAS(ISYMG)*(I - 1) +IG1
+CC
+C                           IF (IOPT .EQ. 5) THEN
+CC
+C                              CALL DAXPY(NUMG,HALF*XLAMD1(KOFF1),
+C     &                                XLAMD2(KOFF2),1,WORK(KOFFP),1)
+C                              CALL DAXPY(NUMG,HALF*XLAMD1(KOFF1),
+C     &                                XLAMD2(KOFF2),1,WORK(KOFFM),1)
+CC
+C                           ELSE
+CC
+C                              IF (IOPT .NE. 6) THEN
+C                                 CALL DAXPY(NUMG,XLAMD1(KOFF1),
+C     &                                   XLAMD2(KOFF2),1,WORK(KOFFP),1)
+C                              ENDIF
+C!
+C                              CALL DAXPY(NUMG,FACT*XLAMD1(KOFF1),
+C     &                                XLAMD2(KOFF2),1,WORK(KOFFM),1)
+CC
+C                           ENDIF
+CC
+C                        ENDIF
+CC
+C                        IF ((ISYMI .EQ. ISYMD) .AND.
+C     &                      (ISYMJ .EQ. ISHELP)) THEN
+CC
+C                           KOFF1 = ILMRHF(ISYMI)
+C     &                           + NBAS(ISYMD)*(I - 1) + D
+C                           KOFF2 = IGLMRH(ISYMG,ISYMJ)
+C     &                           + NBAS(ISYMG)*(J - 1) + IG1
+CC
+C                           IF (IOPT .EQ. 5) THEN
+CC
+C                              CALL DAXPY(NUMG,HALF*XLAMD1(KOFF1),
+C     &                                XLAMD2(KOFF2),1,WORK(KOFFP),1)
+C                              CALL DAXPY(NUMG,XHALF*XLAMD1(KOFF1),
+C     &                                XLAMD2(KOFF2),1,WORK(KOFFM),1)
+CC
+C                           ELSE
+CC
+C                              IF (IOPT .NE. 6) THEN
+C                                 CALL DAXPY(NUMG,XLAMD1(KOFF1),
+C     &                                   XLAMD2(KOFF2),1,WORK(KOFFP),1)
+C                              ENDIF
+C!
+C                              CALL DAXPY(NUMG,-FACT*XLAMD1(KOFF1),
+C     &                                XLAMD2(KOFF2),1,WORK(KOFFM),1)
+CC
+C                           ENDIF
+CC
+C                        ENDIF
+CC
+C                     ENDIF
+C
+  220             CONTINUE
+C
+  210          CONTINUE
+C
+  200       CONTINUE
+         END SUBROUTINE
+
       END
 C  /* Deck ccrhs_d3 */
       SUBROUTINE CCRHS_D3(XINT,DSRHF,OMEGA2,T2AM,ISYMT2,
@@ -5461,6 +5723,7 @@ C  /* Deck ccrhs3_r2ij */
 !------------------------------------------
 !
       CALL DCOPY(NT2AM(ISYVEC),C2AM,1,WORK(KSCR1),1)
+      CALL DZERO(C2AM,NT2AM(ISYVEC))
 !
 !------------------------------------------
 !     Calculate the contribution.

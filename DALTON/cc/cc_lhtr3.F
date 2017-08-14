@@ -817,13 +817,11 @@ C
      &                   RHO1N,IDEL
                   ENDIF
 
-               ENDIF
 C
 C--------------------------------------------------
 C                 Calculate the LT21H contribution.
 C--------------------------------------------------
 C
-               IF (.NOT. CC2) THEN
                   CALL DZERO(WORK(KSCRVI),NT2BCD(ISY21I))
                   AUTIME = SECOND()
                   CALL CC_21H(RHO1(1,IV),ISYRES,WORK(KSCRWI),
@@ -838,7 +836,7 @@ C
                     WRITE(LUPRI,*) 'Norm of RHO1 after CC_21H:',IV,RHO1N
                   ENDIF
 
-               ENDIF
+               ENDIF! (.NOT. CC)
 C
 C------------------------------------------
 C              Work space allocation no. 4.
@@ -847,12 +845,13 @@ C
                ISSCRM = MULD2H(ISYMD,ISYMTR)
 C
                KSCRM = KEND3
-               KEND4 = KSCRM  + NT2BCD(ISSCRM)
+               KSCRM2 = KSCRM  + NT2BCD(ISSCRM)
+               KEND4 = KSCRM2  + NT2BCD(ISSCRM)
                LWRK4 = LWORK  - KEND4
 C
                IF (LWRK4 .LT. 0) THEN
                   WRITE(LUPRI,*) 'Need : ',KEND4,'Available : ',LWORK
-                  CALL QUIT('Insufficient space in CC_LHTR')
+                  CALL QUIT('Insufficient space in'//myname)
                ENDIF
 C
 C--------------------------------------------------------------
@@ -865,6 +864,11 @@ C
                CALL CC_T2AO(CTR2,WORK(KLAMDP),ISYMLP,WORK(KSCRM),
      *                        WORK(KEND4),LWRK4,IDEL,ISYMD,
      *                        ISYMTR,ICON)
+
+               CALL CC_T2AO3(CTR2,WORK(KLAMDP),ISYMLP,WORK(KSCRM2),
+     *                        WORK(KEND4),LWRK4,IDEL,ISYMD,
+     *                        ISYMTR,ICON)
+
                AUTIME = SECOND() - AUTIME
                TIM2AO = TIM2AO + AUTIME
 C
@@ -902,15 +906,15 @@ C--------------------------------------------------------
 C
                IF (.NOT. CC2) THEN
 C
-C                  AUTIME = SECOND()
-C                  IOPT   = 2
-C                  ISYMM  = MULD2H(ISYMD,ISYMTR)
-C                  CALL CC_BF(WORK(KXINT),RHO2,WORK(KLAMDP),1,
-C     *                         WORK(KOFFAO),ISYMTR,WORK(KLAMDP),1,
-C     *                         WORK(KSCRM),ISYMM,DUMMY,1,WORK(KEND4),
-C     *                         LWRK4,IDEL,ISYMD,IOPT)
-C                  AUTIME = SECOND() - AUTIME
-C                  TIM2BF = TIM2BF + AUTIME
+                  AUTIME = SECOND()
+                  IOPT   = 2
+                  ISYMM  = MULD2H(ISYMD,ISYMTR)
+                  CALL CC_BF3(WORK(KXINT),RHO2,WORK(KLAMDP),1,
+     *                         WORK(KOFFAO),ISYMTR,WORK(KLAMDP),1,
+     *                         WORK(KSCRM),ISYMM,WORK(KSRM2),ISYMM,
+     *                         WORK(KEND4),LWRK4,IDEL,ISYMD,IOPT)
+                  AUTIME = SECOND() - AUTIME
+                  TIM2BF = TIM2BF + AUTIME
 C
                ENDIF
 C
