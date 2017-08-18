@@ -102,6 +102,12 @@ C
 C
       LOGICAL ETRAN,FCKCON,CCSDR12,SKIPMI
 C
+C  DEBUGGING VARIABLES
+      LOGICAL LOWC2
+      INTEGER, SAVE :: NUMCALLS = 0
+C
+      NUMCALLS = NUMCALLS + 1
+C
       CALL QENTER(myname)
 C
       THIRD = ONE/THREE
@@ -255,8 +261,8 @@ C----------------------------------------------------------------------
 C     Initialize result-arrays and zero out single-vectors in CCD-calc.
 C----------------------------------------------------------------------
 C
-      NRHO2 = MAX(NT2AM(ISYRES),2*NT2ORT(ISYRES)) ! Fix
-      IF (CC2) NRHO2 = NT2AM(ISYRES)
+      NRHO2 = MAX(NT2SQ(ISYRES),NT2ORT(ISYRES)+NT2ORT3(ISYRES))
+      IF (CC2) NRHO2 = NT2SQ(ISYRES)
 C
       CALL DZERO(RHO1(1,1),NT1AM(ISYRES)*NSIMTR)
       CALL DZERO(RHO2,NRHO2)
@@ -352,6 +358,8 @@ C
 C
          CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,ONEM)
 C
+C
+         LOWC2 = DNRM2(NT2SQ(ISYMTR),CTR2,1).LT.1.0D-8
          IF ( DEBUG ) THEN
             RHO1N = DDOT(NT1AM(ISYMTR),CTR1(1,IV),1,CTR1(1,IV),1)
             RHO2N = DDOT(NT2SQ(ISYMTR),CTR2,1,CTR2,1)
@@ -868,7 +876,16 @@ C
                CALL CC_T2AO3(CTR2,WORK(KLAMDP),ISYMLP,WORK(KSCRM2),
      *                        WORK(KEND4),LWRK4,IDEL,ISYMD,
      *                        ISYMTR,ICON)
-
+C              Debugging
+               IF (LOWC2) THEN
+                  TMPNORM = DNRM2(NT2BCD(ISSCRM),WORK(KSCRM2),1)
+                  IF (TMPNORM.GT.1.0D-5) THEN
+                     TMPNORM2 = DNRM2(NT2BCD(ISSCRM),WORK(KSCRM),1)
+                     PRINT *, 'Odd partially transformed CTR2 : ',
+     &                        TMPNORM, TMPNORM2, IDEL, ISYMD
+                  END IF
+               END IF
+C
                AUTIME = SECOND() - AUTIME
                TIM2AO = TIM2AO + AUTIME
 C
@@ -911,7 +928,7 @@ C
                   ISYMM  = MULD2H(ISYMD,ISYMTR)
                   CALL CC_BF3(WORK(KXINT),RHO2,WORK(KLAMDP),1,
      *                         WORK(KOFFAO),ISYMTR,WORK(KLAMDP),1,
-     *                         WORK(KSCRM),ISYMM,WORK(KSRM2),ISYMM,
+     *                         WORK(KSCRM),ISYMM,WORK(KSCRM2),ISYMM,
      *                         WORK(KEND4),LWRK4,IDEL,ISYMD,IOPT)
                   AUTIME = SECOND() - AUTIME
                   TIM2BF = TIM2BF + AUTIME
@@ -1037,18 +1054,18 @@ C        Transform the RHO2 vector to MO basis.
 C----------------------------------------------
 C
          AUTIME = SECOND()
-         NEWGAM = .FALSE.
-C         CALL CC_T2MO(PHONEY,FAKE,ISYMOP,
-C     *                RHO2,WORK(KT2AM),DUMMY,WORK(KLAMDH),
-C     *                WORK(KLAMDH),1,WORK(KEND1),LWRK1,ISYRES,1)
-         NEWGAM = .TRUE.
+         CALL CC_T2MOT(PHONEY,FAKE,ISYMOP,
+     *                 RHO2,WORK(KT2AM),DUMMY,WORK(KLAMDH),
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1,ISYRES,1)
+
+
          TIM2MO = SECOND() - AUTIME
 C
 C-----------------------------------------------------
 C        Copy the MO vector back to the result vector.
 C-----------------------------------------------------
 C
-         CALL DCOPY(NT2AM(ISYRES),WORK(KT2AM),1,RHO2,1)
+         CALL DCOPY(NT2SQ(ISYRES),WORK(KT2AM),1,RHO2,1)
 C
          IF (IPRINT .GT. 120) THEN
             CALL AROUND('Transformed vector after B-TERM')
@@ -1078,8 +1095,8 @@ C        in the article..?
 C------------------------------------------
 C
          AUTIME = SECOND()
-         CALL CC_22AM(RHO2,WORK(KT2AM),WORK(KMINT),ISYRES,
-     *                WORK(KEND1),LWRK1)
+C         CALL CC_22AM(RHO2,WORK(KT2AM),WORK(KMINT),ISYRES,
+C     *                WORK(KEND1),LWRK1)
          TIMEAM = SECOND() - AUTIME
 C
 C------------------------------------------
@@ -1090,8 +1107,8 @@ C------------------------------------------
 C
          AUTIME = SECOND()
 C        For triplet, we only need "Exchange part"
-         CALL CC_22EE(RHO2,WORK(KT2AM),WORK(KOFFXI),WORK(KOFFYI),
-     *                ISYRES,WORK(KEND1),LWRK1)
+C         CALL CC_22EE(RHO2,WORK(KT2AM),WORK(KOFFXI),WORK(KOFFYI),
+C     *                ISYRES,WORK(KEND1),LWRK1)
          TIM2EM = SECOND() - AUTIME
 C
          IF (IPRINT .GT. 50) THEN
@@ -1121,7 +1138,7 @@ C
          CALL GPOPEN(LURHO2,'LSRHO2','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LURHO2)
-         WRITE(LURHO2) (RHO2(I), I = 1,NT2AM(ISYRES))
+         WRITE(LURHO2) (RHO2(I), I = 1,NT2SQ(ISYRES))
 C
 C-----------------------------------------------------------
 C        Read Omega(albe,ij) written to disc by energy code.
@@ -1154,7 +1171,7 @@ C        Restore RHO2 result vector.
 C-----------------------------------
 C
          REWIND(LURHO2)
-         READ(LURHO2) (RHO2(I), I = 1,NT2AM(ISYRES))
+         READ(LURHO2) (RHO2(I), I = 1,NT2SQ(ISYRES))
          CALL GPCLOSE(LURHO2,'DELETE')
 C
          IF (IPRINT .GT. 50) THEN
@@ -1208,8 +1225,8 @@ C-----------------------------------------
 C        Calculate the LT22E contribution.
 C-----------------------------------------
 C
-         CALL CCRHS_E(RHO2,CTR2,WORK(KE1INT),WORK(KE2INT),WORK(KENDTE),
-     &                LWRKTE,ISYMTR,ISYMOP)
+C         CALL CCRHS_E(RHO2,CTR2,WORK(KE1INT),WORK(KE2INT),WORK(KENDTE),
+C     &                LWRKTE,ISYMTR,ISYMOP)
          TIM22E = SECOND() - AUTIME
 C
          IF (IPRINT .GT. 50) THEN
@@ -1252,8 +1269,8 @@ C
          ISYV = ISYMTR
          IOPT = 2
 C
-         CALL CCRHS_A(RHO2,CTR2,WORK(KGAMMI),WORK(KENDGI),LWRKGI,
-     &                ISYG,ISYV,IOPT)
+C         CALL CCRHS_A(RHO2,CTR2,WORK(KGAMMI),WORK(KENDGI),LWRKGI,
+C     &                ISYG,ISYV,IOPT)
          TIM22A = SECOND() - AUTIME
 C
 C-----------------------------------------
@@ -1263,8 +1280,8 @@ C
          AUTIME = SECOND()
          IOPT = 1
          ISYDIM = 1
-         CALL CC_22D(RHO2,CTR2,ISYMTR,WORK(KLAMDH),WORK(KEND1),
-     *               LWRK1,ISYDIM,LUDIM,DFIL,IV,IOPT)
+C         CALL CC_22D(RHO2,CTR2,ISYMTR,WORK(KLAMDH),WORK(KEND1),
+C     *               LWRK1,ISYDIM,LUDIM,DFIL,IV,IOPT)
          TIM22D = SECOND() - AUTIME
 C
 C-----------------------------------------
@@ -1273,14 +1290,14 @@ C-----------------------------------------
 C
          AUTIME = SECOND()
 C
-         CALL CCRHS_T2BT(CTR2,WORK(KEND1),LWRK1,ISYMTR)
-         CALL DSCAL(NT2SQ(ISYMTR),THREE,CTR2,1)
-         CALL CCSD_T2TP(CTR2,WORK(KEND1),LWRK1,ISYMTR)
+C         CALL CCRHS_T2BT(CTR2,WORK(KEND1),LWRK1,ISYMTR)
+C         CALL DSCAL(NT2SQ(ISYMTR),THREE,CTR2,1)
+C         CALL CCSD_T2TP(CTR2,WORK(KEND1),LWRK1,ISYMTR)
 C
          IOPT = 1
          ISYCIM = 1
-         CALL CC_22C(RHO2,CTR2,ISYMTR,WORK(KLAMDH),WORK(KEND1),
-     *               LWRK1,ISYCIM,LUCIM,CFIL,IV,IOPT)
+C         CALL CC_22C(RHO2,CTR2,ISYMTR,WORK(KLAMDH),WORK(KEND1),
+C     *               LWRK1,ISYCIM,LUCIM,CFIL,IV,IOPT)
 C
          TIM22C = SECOND() - AUTIME
 C
@@ -1338,8 +1355,8 @@ C     Calculate the LT12A contribution.
 C--------------------------------------
 C
       AUTIME = SECOND()
-      CALL CC_L1FCK(RHO2,CTR1(1,IV),WORK(KFOCK),ISYMTR,ISYMOP,
-     *              WORK(KEND1),LWRK1)
+C      CALL CC_L1FCK(RHO2,CTR1(1,IV),WORK(KFOCK),ISYMTR,ISYMOP,
+C     *              WORK(KEND1),LWRK1)
       TIM12A = SECOND() - AUTIME
 C
       IF ( DEBUG ) THEN
@@ -1420,6 +1437,10 @@ C     Print out result vectors - zero out single vectors in CCD-calc.
 C--------------------------------------------------------------------
 C
       IF (CCD) CALL DZERO(RHO1(1,IV),NT1AM(ISYRES))
+
+         DTIME   = SECOND()
+         CALL CC_WVEC(LUFR1,FRHO1,NT1AM(ISYMTR),NT1AM(ISYMTR),
+     *                IV + IVEC -1,RHO1(1,IV))
 C
       IF (IPRINT .GT. 50) THEN
          CALL AROUND('Transformed vectors coming out of CC_LHTR')
@@ -1433,17 +1454,24 @@ C
          WRITE(LUPRI,1) 'Norm of RHO2 coming out of CC_LHTR:', RHO2N
       ENDIF
 C
-C----------------------------------
-C     Write out transformed vector.
-C     Write out in all cases.
-C----------------------------------
+C     Extract the plus combination from the mixed doubles vector, use
+C     CTR2 as scratch
+         CALL CC_TRIP_EXTRACT(RHO2,CTR2,ISYRES,.FALSE.)
+C        Permute indices
+         CALL CCRHS3_IJ(CTR2,WORK(KEND1),LWRK1,ISYRES)
+C        Write out (+) vector
+         CALL CC_WVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
+     &                 NT2AM(ISYMTR),IV+ITR-1,0,CTR2)
+
+
 C
-         CALL CC_WVEC(LUFR1,FRHO1,NT1AM(ISYMTR),NT1AM(ISYMTR),
-     *                IV + IVEC -1,RHO1(1,IV))
+C     Extract the minus combination from the mixed doubles vector, use
+C     CTR2 as scratch
+         CALL CC_TRIP_EXTRACT(RHO2,CTR2,ISYRES,.TRUE.)
+C        Write out (+) vector
+         CALL CC_WVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
+     &                 NT2AM(ISYMTR),IV+ITR-1,NT2AM(ISYMTR),CTR2)
 C
-         DTIME   = SECOND()
-         CALL CC_WVEC(LUFR2,FRHO2,NRHO2,NT2AM(ISYMTR),
-     *                   IV + ITR -1,RHO2)
          DTIME   = SECOND() - DTIME
          TIMIO   = TIMIO    + DTIME
 C

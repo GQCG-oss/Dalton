@@ -687,7 +687,8 @@ C
 C
       INTEGER :: ISYDVI, ISYMM, ISYMCI, ISYMJ, ISYMDJ
       INTEGER :: KOFF1, KOFF2, KOFF3
-      INTEGER :: NTOTCI, NCI
+      INTEGER :: NTOTCI, NCI, NTOTDVI
+
 C
 C-----------------------------------------------------
 C     Calculate the transformed t2-amplitude and save.
@@ -713,6 +714,7 @@ C
          ISYMJ  = MULD2H(ISYMCI,ISYDVI)
 C
          NTOTCI = MAX(1,NT1AM(ISYMCI))
+         NTOTDVI = MAX(1,NVIR(ISYDVI))
 C
          DO 110 NCI = 1, NT1AM(ISYMCI)
 C
@@ -722,7 +724,7 @@ C
      *            + NCI
 C
             CALL DGEMV('T',NVIR(ISYDVI),NRHF(ISYMJ),ONE,
-     *                 T2AM(KOFF2),1,WORK,1,ZERO,
+     *                 T2AM(KOFF2),NTOTDVI,WORK,1,ZERO,
      *                 SCRM(KOFF3),NTOTCI)
 C
   110    CONTINUE
@@ -730,3 +732,331 @@ C
 C
       RETURN
       END
+C  /* Deck cc_t2mot */
+      SUBROUTINE CC_T2MOT(RHO1,CTR2,ISYMC2,OMEGA2,RHO2,GAMMA,XLAMDP,
+     *                    XLAMPC,ISYMPC,WORK,LWORK,ISYMBF,ICON)
+C
+C     Rasmus Faber
+C
+C     Based on cc_t2mo by Henrik Koch and Alfredo Sanchez.
+C
+C     Transform the Omega2 vector from the AO basis to the MO
+C     basis. Triplet version.
+C
+C
+      implicit none
+C
+#include "priunit.h"
+#include "maxorb.h"
+      CHARACTER(len=*), PARAMETER :: myname = "CC_T2MOT"
+      DOUBLE PRECISION, PARAMETER :: ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0
+      DOUBLE PRECISION, PARAMETER :: FOURTH = 0.25D0
+      DOUBLE PRECISION, INTENT(IN):: CTR2(*), OMEGA2(*),
+     &                               GAMMA(*), XLAMDP(*), XLAMPC(*)
+      DOUBLE PRECISION, INTENT(OUT):: RHO1(*), RHO2(*), WORK(*)
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
+C
+      INTEGER, INTENT(IN) :: ISYMC2, ISYMPC, ISYMBF, ICON, LWORK
+
+      integer :: index
+      INTEGER :: ISYMI, ISYMJ, ISYAL, ISYBE, ISALBE, ISYALI, ISYBEJ,
+     &           ISYMA, ISYMB, ISYMAI, ISYMBJ, ISYMO1, ISYMO2,
+     &           ISYMIJ, ISYMAB
+      INTEGER :: NVA, NRA, NVB, NRB, NIJP, NIJM, NABP, NABIJP, NABIJM,
+     &           NAB, NAI, NBJ, NBASA, NBASB, NVIRA, NAIBJ
+      INTEGER :: KSCR1, KSCR2, KSCR3, KSCR4, KSCR5
+      INTEGER :: KEND1, LWRK1
+      INTEGER :: KOFF1, KOFF2
+      DOUBLE PRECISION :: FACP, FACM
+C
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      ISYMO2 = MULD2H(ISYMBF,ISYMPC)
+      ISYMO1 = MULD2H(ISYMO2,ISYMC2)
+C
+      IF ((ICON.EQ.1).OR.(ICON.EQ.2)) THEN
+         CALL DZERO(RHO2,NT2SQ(ISYMO2))
+      ENDIF
+C
+      DO 100 ISYMJ = 1,NSYM
+         DO 110 ISYMI = 1,NSYM
+C
+            ISYMIJ = MULD2H(ISYMI,ISYMJ)
+            ISALBE = MULD2H(ISYMIJ,ISYMBF)
+            ISYMAB = MULD2H(ISYMIJ,ISYMO2)
+C
+            DO 120 ISYBE = 1,NSYM
+C
+               ISYAL  = MULD2H(ISYBE,ISALBE)
+               ISYALI = MULD2H(ISYAL,ISYMI)
+               ISYBEJ = MULD2H(ISYBE,ISYMJ)
+C
+C-----------------------------------------------
+C              Dynamic allocation of work space.
+C-----------------------------------------------
+C
+               ISYMA = MULD2H(ISYAL,ISYMPC)
+               NVA = MAX(NVIR(ISYMA),NVIR(ISYAL))
+               NRA = MAX(NRHF(ISYMA),NRHF(ISYAL))
+               ISYMB = MULD2H(ISYBE,ISYMPC)
+               NVB = MAX(NVIR(ISYMB),NVIR(ISYBE),NRHF(ISYBE))
+               NRB = MAX(NRHF(ISYMB),NRHF(ISYBE))
+C
+               KSCR1 = 1
+               IF (ICON.NE.4) THEN
+                  KSCR2 = KSCR1 + NBAS(ISYAL)*NBAS(ISYBE)
+                  KSCR3 = KSCR2 + NBAS(ISYAL)*NVB
+                  KEND1 = KSCR3 + NVA*NVB
+               ELSE
+                  KSCR4 = KSCR1 + NBAS(ISYAL)*NBAS(ISYBE)
+                  KEND1 = KSCR4 + NBAS(ISYAL)*NRB
+               END IF
+               LWRK1 = LWORK - KEND1
+C
+               IF (LWRK1 .LT. 0) THEN
+                  CALL QUIT('Not enough space in '//myname)
+               END IF
+C
+               DO 130 J = 1,NRHF(ISYMJ)
+                  DO 140 I = 1,NRHF(ISYMI)
+C
+C------------------------------------------
+C                    Squareup the AB block.
+C------------------------------------------
+C                    Plus version is stored for i<j with an implicit
+C                    symmetry i<j = - i>j
+C
+                     IF (ISYMI .EQ. ISYMJ) THEN
+                        NIJP = IMIJP(ISYMI,ISYMJ) + INDEX(I,J)
+                        FACP = ONE
+                        IF (I .EQ. J) FACP = ZERO
+                        IF (I .GT. J) FACP = -ONE
+                     ELSE IF (ISYMI .LT. ISYMJ) THEN
+                        NIJP = IMIJP(ISYMI,ISYMJ)
+     *                       + NRHF(ISYMI)*(J - 1) + I
+                        FACP = ONE
+                     ELSE
+                        NIJP = IMIJP(ISYMJ,ISYMI)
+     *                       + NRHF(ISYMJ)*(I - 1) + J
+                        FACP = -ONE
+                     ENDIF
+C                    Minus version: i,j stored as square array
+                     NIJM = IMATIJ(ISYMI,ISYMJ)
+     &                    + NRHF(ISYMI)*(J-1) + I
+C
+                     DO 166 B = 1, NBAS(ISYBE)
+                        DO 167 A = 1, NBAS(ISYAL)
+C
+                           IF (ISYAL .EQ. ISYBE) THEN
+                              NABP = IAODPK(ISYAL,ISYBE)
+     *                             + INDEX(A,B)
+                              FACM = ONE
+                              IF (A .EQ. B) FACM = ZERO
+                              IF (A .GT. B) FACM = -ONE
+                           ELSE IF (ISYAL .LT. ISYBE) THEN
+                              NABP = IAODPK(ISYAL,ISYBE)
+     *                             + NBAS(ISYAL)*(B - 1) + A
+                              FACM = ONE
+                           ELSE
+                              NABP = IAODPK(ISYAL,ISYBE)
+     *                             + NBAS(ISYBE)*(A - 1) + B
+                              FACM = -ONE
+                           ENDIF
+C
+                           NABIJP = IT2ORT(ISALBE,ISYMIJ)
+     *                            + NNBST(ISALBE)*(NIJP - 1) + NABP
+C
+                           NABIJM = NT2ORT(ISYMBF)
+     *                            + IT2ORT3(ISALBE,ISYMIJ)
+     *                            + NNBST(ISALBE)*(NIJM - 1) + NABP
+C
+                           NAB   = KSCR1 + NBAS(ISYAL)*(B - 1) + A - 1
+C
+                           WORK(NAB) = FOURTH*
+     &                       (FACP*OMEGA2(NABIJP) +
+     &                        FACM*OMEGA2(NABIJM))
+C
+  167                   CONTINUE
+  166                CONTINUE
+C
+C------------------------------------------------------------
+C                    Transform the AB block to virtual space.
+C------------------------------------------------------------
+C
+                     IF ((ICON.EQ.1).OR.(ICON.EQ.2)) THEN
+C
+                     ISYMA = MULD2H(ISYAL,ISYMPC)
+                     ISYMB = ISYBE
+                     ISYMAI = MULD2H(ISYMA,ISYMI)
+                     ISYMBJ = MULD2H(ISYMB,ISYMJ)
+C
+                     NBASA = MAX(NBAS(ISYAL),1)
+                     NBASB = MAX(NBAS(ISYBE),1)
+                     NVIRA = MAX(NVIR(ISYMA),1)
+C
+                     KOFF1 = ILMVIR(ISYBE) + 1
+C
+                     CALL DGEMM('N','N',NBAS(ISYAL),NVIR(ISYMB),
+     *                          NBAS(ISYBE),ONE,WORK(KSCR1),NBASA,
+     *                          XLAMDP(KOFF1),NBASB,ZERO,WORK(KSCR2),
+     *                          NBASA)
+C
+                     KOFF2 = IGLMVI(ISYAL,ISYMA) + 1
+C
+                     CALL DGEMM('T','N',NVIR(ISYMA),NVIR(ISYMB),
+     *                          NBAS(ISYAL),ONE,XLAMPC(KOFF2),NBASA,
+     *                          WORK(KSCR2),NBASA,ZERO,WORK(KSCR3),
+     *                          NVIRA)
+C
+C--------------------------------------------
+C                    Store the omega2 vector.
+C--------------------------------------------
+C
+                     DO 170 B = 1,NVIR(ISYMB)
+                        NBJ   = IT1AM(ISYMB,ISYMJ)
+     *                        + NVIR(ISYMB)*(J-1) + B
+                        DO 180 A = 1,NVIR(ISYMA)
+C
+                           NAI   = IT1AM(ISYMA,ISYMI)
+     *                           + NVIR(ISYMA)*(I-1) + A
+                           NAB   = KSCR3 + NVIR(ISYMA)*(B - 1) + A - 1
+C
+                           NAIBJ = IT2SQ(ISYMAI,ISYMBJ) +
+     &                             NT1AM(ISYMAI)*(NBJ-1) + NAI
+C
+                           RHO2(NAIBJ) = RHO2(NAIBJ) + WORK(NAB)
+C
+  180                   CONTINUE
+  170                CONTINUE
+C
+                     ENDIF
+C
+C--------------------------------------
+C                    CCLR contribution.
+C--------------------------------------
+C
+                     IF (ICON .EQ. 2 ) THEN
+C
+                        CALL DZERO(WORK(KSCR2),NVA*NVB)
+                        ISYMA = ISYAL
+                        ISYMB = MULD2H(ISYBE,ISYMPC)
+                        ISYMAI = MULD2H(ISYMA,ISYMI)
+                        ISYMBJ = MULD2H(ISYMB,ISYMJ)
+C
+                        NBASA = MAX(NBAS(ISYAL),1)
+                        NBASB = MAX(NBAS(ISYBE),1)
+                        NVIRA = MAX(NVIR(ISYMA),1)
+C
+                        KOFF1 = IGLMVI(ISYBE,ISYMB) + 1
+C
+                        CALL DGEMM('N','N',NBAS(ISYAL),NVIR(ISYMB),
+     *                             NBAS(ISYBE),ONE,WORK(KSCR1),NBASA,
+     *                             XLAMPC(KOFF1),NBASB,ZERO,WORK(KSCR2),
+     *                             NBASA)
+C
+                        KOFF2 = ILMVIR(ISYAL) + 1
+C
+                        CALL DGEMM('T','N',NVIR(ISYMA),NVIR(ISYMB),
+     *                             NBAS(ISYAL),ONE,XLAMDP(KOFF2),NBASA,
+     *                             WORK(KSCR2),NBASA,ZERO,WORK(KSCR3),
+     *                             NVIRA)
+C
+C--------------------------------------------
+C                    Store the omega2 vector.
+C--------------------------------------------
+                        DO 171 B = 1,NVIR(ISYMB)
+                           NBJ   = IT1AM(ISYMB,ISYMJ)
+     *                           + NVIR(ISYMB)*(J-1) + B
+                           DO 181 A = 1,NVIR(ISYMA)
+C
+                              NAI   = IT1AM(ISYMA,ISYMI)
+     *                              + NVIR(ISYMA)*(I-1) + A
+                              NAB  = KSCR3 + NVIR(ISYMA)*(B - 1) + A - 1
+C
+                              NAIBJ = IT2SQ(ISYMAI,ISYMBJ) +
+     &                                NT1AM(ISYMAI)*(NBJ-1) + NAI
+C
+                              RHO2(NAIBJ) = RHO2(NAIBJ) + WORK(NAB)
+C
+  181                      CONTINUE
+  171                   CONTINUE
+C
+C
+                     ENDIF
+C
+C
+  999                CONTINUE
+  140             CONTINUE
+  130          CONTINUE
+  120       CONTINUE
+  110    CONTINUE
+  100 CONTINUE
+C
+      RETURN
+      END
+
+      SUBROUTINE CC_TRIP_EXTRACT(X2SQ,X2AMP,ISYMTR,ANTI)
+C
+C     Rasmus Faber, Aug 2017
+C
+C     Extracts the component of the "+" triplet doubles vector from the
+C     square array "X2SQ" and puts it in X2AMP ordered AI<BJ
+C     If anti is true, extract (-) component instead.
+C
+      IMPLICIT NONE
+#include "ccorb.h"
+#include "ccsdsym.h"
+C
+      DOUBLE PRECISION, INTENT(IN) :: X2SQ(*)
+      DOUBLE PRECISION, INTENT(OUT) :: X2AMP(*)
+      INTEGER, INTENT(IN) :: ISYMTR
+      LOGICAL, INTENT(IN) :: ANTI
+C
+      INTEGER :: ISYMAI, ISYMBJ
+      INTEGER :: NAI, NBJ, NAIBJS, NAIBJT, NBJAIS
+      DOUBLE PRECISION :: FACTOR, XAIBJ, XBJAI
+C
+      FACTOR = 1.0D0
+      IF (ANTI) FACTOR = -1.0D0
+C
+      DO ISYMBJ = 1, NSYM
+         ISYMAI = MULD2H(ISYMBJ,ISYMTR)
+
+         IF (ISYMTR.EQ.1) THEN
+            DO NBJ = 1, NT1AM(ISYMBJ)
+               DO NAI = 1, NBJ
+C
+                  NAIBJS = IT2SQ(ISYMAI,ISYMBJ)
+     &                   + NT1AM(ISYMAI)*(NBJ-1) + NAI
+                  NBJAIS = IT2SQ(ISYMBJ,ISYMAI)
+     %                   + NT1AM(ISYMBJ)*(NAI-1) + NBJ
+                  NAIBJT = IT2AM(ISYMAI,ISYMBJ)
+     &                   + NBJ*(NBJ-1)/2 + NAI
+C
+                  XAIBJ  = X2SQ(NAIBJS)
+                  XBJAI  = X2SQ(NBJAIS)
+                  X2AMP(NAIBJT) = XAIBJ + FACTOR*XBJAI
+               END DO
+            END DO
+         ELSE IF ( ISYMAI .LT. ISYMBJ) THEN
+            DO NBJ = 1, NT1AM(ISYMBJ)
+               DO NAI = 1, NT1AM(ISYMAI)
+                  NAIBJS = IT2SQ(ISYMAI,ISYMBJ)
+     &                   + NT1AM(ISYMAI)*(NBJ-1) + NAI
+                  NBJAIS = IT2SQ(ISYMBJ,ISYMAI)
+     %                   + NT1AM(ISYMBJ)*(NAI-1) + NBJ
+                  NAIBJT = IT2AM(ISYMAI,ISYMBJ)
+     &                   + NT1AM(ISYMAI)*(NBJ-1) + NAI
+C
+                  XAIBJ  = X2SQ(NAIBJS)
+                  XBJAI  = X2SQ(NBJAIS)
+                  X2AMP(NAIBJT) = XAIBJ + FACTOR*XBJAI
+               END DO
+            END DO
+         END IF
+
+      END DO
+C
+      END SUBROUTINE

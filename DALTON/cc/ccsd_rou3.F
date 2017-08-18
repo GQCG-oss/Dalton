@@ -452,7 +452,7 @@ C
      *                    ONE,OMEGA2(KOFF1),NTOTAB)
 
                CALL DGEMM('N','N',NNBST(ISYMAB),NMATIJ(ISYMIJ),NUMG,
-     *                    ONE,WORK(KINTP),NTOTAB,WORK(KT2MM),NUMGM,
+     *                    ONE,WORK(KINTM),NTOTAB,WORK(KT2MM),NUMGM,
      *                    ONE,OMEGA2(KOFF2),NTOTAB)
 
             ELSE IF (.NOT. (IOPT .EQ. 5)) THEN
@@ -494,6 +494,7 @@ C-------------------------------------------------------
             INTEGER :: NGIJ, NGJI, NTOTI, NIJ, NGIJPM
             INTEGER :: KOFFP, KOFFM, KOFF1, KOFF2, ISHELP
             INTEGER :: ISYMI, ISYMJ, ISYMGI, ISYMGJ
+            INTEGER :: I,J
             DOUBLE PRECISION :: FACT
 
             DO 200 ISYMJ = 1 , NSYM
@@ -708,6 +709,7 @@ C-------------------------------------------------------
             INTEGER :: NIJT, NIJS, NJIS, NG
             INTEGER :: KOFFP, KOFFM1, KOFFM2, ISHELP
             INTEGER :: ISYMI, ISYMJ, ISYMGI, ISYMGJ
+            INTEGER :: I, J
 C
             DOUBLE PRECISION :: FACT
 
@@ -744,8 +746,8 @@ C
      *                       + NRHF(ISYMI)*(J - 1) + I
                      ENDIF
 
-                     NIJS = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMJ)*(J-1) + I
-                     NJIS = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMI)*(I-1) + J
+                     NIJS = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)*(J-1) + I
+                     NJIS = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)*(I-1) + J
 C
                      KOFFP  = NUMG*(NIJT-1)
                      KOFFM1 = NUMG*(NIJS-1)
