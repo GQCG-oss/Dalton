@@ -244,7 +244,8 @@ C  /* Deck e3init */
 
       use qmcmm_response, only: qmcmm_qr
       use pelib_interface, only: use_pelib, pelib_ifc_qro,
-     &                           pelib_ifc_gspol, pelib_ifc_rspmcqr
+     &                           pelib_ifc_gspol, pelib_ifc_rspmcqr,
+     &                           pelib_ifc_qrtest
 C
 C
 C
@@ -398,7 +399,8 @@ C
             write(lupri,*) 'Results *WILL* be wrong'
 !           CALL QUIT('ERROR: PE-MCSCF quadratic response not'//
 !    &                ' implemented using the PE library.')
-            CALL PELIB_IFC_RSPMCQR(VECB, VECC, VECA, ATEST, ETRS, 
+            ! edh this is for now a debug routine
+            CALL PELIB_IFC_QRTEST(VECB, VECC, VECA, ATEST, ETRS, 
      &                      XINDX,
      &                      WRK(KZYMB), WRK(KZYMC), WRK(KDEN1), UDV, 
      &                      WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
