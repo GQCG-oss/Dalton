@@ -1746,9 +1746,8 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
             write(lupri,*) 'PE-E3TEST case 2 Fxc(1S)', e3test_value-e3test_old
             e3test_old = e3test_value
          end if
-         ! continue from here with rest of case 2 ...
-
-
+         !
+         ! second part
          allocate(fxo2k(norbt,norbt))
          fxo2k = 0.0d0
          if (.not. tdhf) then
@@ -1760,7 +1759,6 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
          call uthu(2.0d0*fcaos(2*nnbasx+1:3*nnbasx),&
               & fcmo, cmo, wrk, nbast, norbt)
          call dsptsi(norbt, fcmo, fxo2k)
-
          if (.not. tdhf) then
             if (mzconf(isymb) .le. 0) return
             !/   0    \
@@ -1818,7 +1816,6 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
 
          deallocate(fcmo)
       endif 
-
 
       call qexit('pe_rspmcqr')
 
