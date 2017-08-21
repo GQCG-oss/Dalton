@@ -1749,8 +1749,76 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
          ! continue from here with rest of case 2 ...
 
 
+         allocate(fxo2k(norbt,norbt))
+         fxo2k = 0.0d0
+         if (.not. tdhf) then
+            allocate(fxc2s(norbt,norbt))
+            fxc2s = 0.0d0
+         end if
+         ! Fxo(2k) = R*<0|[2k,Epq]|0>Fe
+         fcmo = 0.0d0
+         call uthu(2.0d0*fcaos(2*nnbasx+1:3*nnbasx),&
+              & fcmo, cmo, wrk, nbast, norbt)
+         call dsptsi(norbt, fcmo, fxo2k)
+
+         if (.not. tdhf) then
+            if (mzconf(isymb) .le. 0) return
+            !/   0    \
+            !| Sj(1)  | * <0| Fxo(2k) |0>
+            !|   0    |
+            !\ Sj(1)* /
+            if (isyma .eq. isymb) then
+                ovlap = 1.0d0
+                fact = 0.0d0
+                call melone(fxo2k, 1, udv, ovlap, fact,&
+                     & 200,'fact for Fxo(2k)')
+                  nzconf = mzconf(isyma)
+                  nzvar  = mzvar(isyma)
+                  call daxpy(nzconf, fact, vecb, 1, etrs, 1)
+                  call daxpy(nzconf,fact,&
+                       & vecb(nzvar+1), 1, etrs(nzvar+1), 1)
+            end if
+         end if
+         if (atest) then
+            e3test_value = ddot(kzyva,veca,1,etrs,1)
+            write(lupri,*) 'PE-E3TEST, Fxo(2k)', e3test_value-e3test_old
+            e3test_old = e3test_value
+         end if
+         ! Fxc(2S) = ( R*<02LE|0>+<0|E02R> )Fe
+         if (.not. tdhf) then
+            ! edh: Should it be 1.0d0 or 2.0d0 ???
+            fcmo = 0.0d0
+            call uthu(1.0d0*fcaos(5*nnbasx+1:6*nnbasx), fcmo, cmo,&
+                 & wrk, nbast, norbt)
+             call dsptsi(norbt, fcmo, fxc2s)
+         end if
+         if (.not. tdhf) then
+            if (mzconf(isymb) .le. 0) return
+            !/   0    \
+            !| Sj(1)  | * <0| Fxc(2S) |0>
+            !|   0    |
+            !\ Sj(1)* /
+            if (isyma .eq. isymb) then
+                ovlap = 1.0d0
+                fact = 0.0d0
+                call melone(fxc2s, 1, udv, ovlap, fact,&
+                     & 200,'fact for Fxc(2S) ')
+                  nzconf = mzconf(isyma)
+                  nzvar  = mzvar(isyma)
+                  call daxpy(nzconf, fact, vecb, 1, etrs, 1)
+                  call daxpy(nzconf,fact,&
+                       & vecb(nzvar+1), 1, etrs(nzvar+1), 1)
+            end if
+         end if
+         if (atest) then
+            e3test_value = ddot(kzyva,veca,1,etrs,1)
+            write(lupri,*) 'PE-E3TEST, fxc(2S)', e3test_value-e3test_old
+            e3test_old = e3test_value
+         end if
+
          deallocate(fcmo)
       endif 
+
 
       call qexit('pe_rspmcqr')
 
@@ -2217,16 +2285,15 @@ subroutine pelib_ifc_rspmcqr(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
 
          if (.not. tdhf) then
             if (mzconf(isymb) .le. 0) return
-
-           !/   0    \
-           !| Sj(1)  | * <0| Fa[1](2k) |0>
-           !|   0    |
-           !\ Sj(1)* /
-
+            !/   0    \
+            !| Sj(1)  | * <0| Fa[1](2k) |0>
+            !|   0    |
+            !\ Sj(1)* /
             if (isyma .eq. isymb) then
                 ovlap = 1.0d0
+                ! edh should fact not be zeroed??
                 call melone(fcas2_2, 1, udv, ovlap, fact,&
-                     & 200,'fact for Fxo(1k) + Fxc(1S) ')
+                     & 200,'fact for Fxo(2k) + Fxc(2S) ')
                   nzconf = mzconf(isyma)
                   nzvar  = mzvar(isyma)
                   call daxpy(nzconf, fact, vecb, 1, etrs, 1)
