@@ -1726,7 +1726,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
          if (.not. tdhf) then
             if (mzconf(isymc) .le. 0) return
             !/   0    \
-            !| Sj(2)  | * <0| Fxc[1](1S) |0>
+            !| Sj(2)  | * <0| Fxc(1S) |0>
             !|   0    |
             !\ Sj(2)* /
             if (isyma .eq. isymc) then
@@ -1747,7 +1747,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
             e3test_old = e3test_value
          end if
          !
-         ! second part
+         ! second part of case 2
          allocate(fxo2k(norbt,norbt))
          fxo2k = 0.0d0
          if (.not. tdhf) then
