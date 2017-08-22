@@ -1815,7 +1815,50 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
          end if
 
          deallocate(fcmo)
-      endif 
+      endif ! pe_polar 
+      !-----------------------------------------------------------
+      !case 3
+      !-----------------------------------------------------------
+      allocate(fxpeb(norbt,norbt))
+      fxpeb = 0.0d0
+      call oith1(isymb,zymb,fupe,fxpeb,1)
+      if (.not. tdhf) then
+         if (mzconf(isymc) .le. 0) return
+         !/   <0| [qj,TD1] |02R>  + <02L| [qj,TD1] |0>  \
+         !|   <j| TD1 |02R>                             |
+         !|   <0| [qj+,TD1] |02R> + <02L| [qj+,TD1] |0> |
+         !\  -<02L| TD1 |j>                             /
+         !Construct the density matrix <02L|..|0> + <0|..|02R>
+         ilsym  = irefsy
+         irsym  = muld2h(irefsy,isymc)
+         ncl    = mzconf(1)
+         ncr    = mzconf(isymc)
+         kzvarl = mzconf(1)
+         kzvarr = mzyvar(isymc)
+         den1 = 0.0d0
+         call rspgdm(1, ilsym, irsym, ncl, ncr, kzvarl, kzvarr,&
+              & cref, vecc, ovlap, den1, dummy, 0 ,0, .true.,&
+              & .true., xindx, wrk, 1, lfree, .true.)
+         !Make the gradient
+         isymdn = muld2h(ilsym,irsym)
+         isymst = muld2h(isyma,irefsy)
+         if ( isymst .eq. irefsy ) then
+            lcon = ( mzconf(isyma) .gt. 1 )
+         else
+            lcon = ( mzconf(isyma) .gt. 0 )
+         end if
+         lorb    = ( mzwopt(isyma) .gt. 0 )
+         nzyvec = mzyvar(isymc)
+         nzcvec = mzconf(isymc)
+         call rsp1gr(1, kzyva, idummy, 0 , isyma, 0, isymc, etrs,&
+              & vecc, nzyvec, nzcvec, ovlap, isymdn, den1, fxpeb,&
+              & xindx, mjwop, wrk(1), lfree, lorb, lcon, .false.)
+      end if
+      if (atest) then
+         e3test_value = ddot(kzyva,veca,1,etrs,1)
+         write(lupri,*) 'PE-E3TEST, case 3 Fg(1k)', e3test_value-e3test_old
+         e3test_old = e3test_value
+      end if
 
       call qexit('pe_rspmcqr')
 
