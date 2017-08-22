@@ -1377,9 +1377,10 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
       real*8, dimension(:,:), allocatable :: fxpeb,fxpec, fx2pe
       real*8, dimension(:,:), allocatable :: fxo1k, fxc1s
       real*8, dimension(:,:), allocatable :: fxo2k, fxc2s
-      real*8, dimension(:,:), allocatable :: fcas2_1, fcas2_2
-      real*8, dimension(:,:), allocatable :: fcas3_1, fcas3_2
+      !real*8, dimension(:,:), allocatable :: fcas2_1, fcas2_2
+      !real*8, dimension(:,:), allocatable :: fcas3_1, fcas3_2
       real*8, dimension(:,:), allocatable :: fxo, fxo1k2k, fxo2k1k
+      real*8, dimension(:,:), allocatable :: f2kxo1k, f2kxc1s
       real*8, dimension(:,:), allocatable :: fxc1s2s
       real*8, dimension(:,:), allocatable :: fxc1s2k, fxc1k2s
 
@@ -1398,7 +1399,6 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
          e3test_old = ddot(kzyva,veca,1,etrs,1)
          write(lupri,*) 'PE-E3TEST, on entry', e3test_old
       end if
-
       !-----------------------------------------------------------
       ! Get Fg = Vmul - R*<0|F|>Fe from file
       !-----------------------------------------------------------
@@ -1420,7 +1420,6 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
       !-----------------------------------------------------------
       ! Density Factory ...
       !-----------------------------------------------------------
-
       allocate(cref(mzconf(1)))
       call getref(cref, mzconf(1))
 
@@ -1433,7 +1432,6 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
             allocate(dcaos(4*nnbasx))
          end if
          dcaos = 0.0d0
-
          !  DTX = D_pq(k1) = <0|[k1,Epq]|0>
          allocate(udcmo(n2orbx),udvmo(n2orbx))
          udcmo = 0.0d0
@@ -1447,7 +1445,6 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
          call dgefsp(nbast, udcao, dcaos(1:nnbasx))
          ! needed to fit with HF code
          dcaos(1:nnbasx) = 0.5d0*dcaos(1:nnbasx)
-
          !  DT2X = D_pq(k2,k1) = <0|[k2,[k1,Epq]|0>
          udvmo = 0.0d0
          call oitd1(isymc,zymc,udcmo,udvmo,isymb)
@@ -1458,7 +1455,6 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
          call dgefsp(nbast, udcao, dcaos(nnbasx+1:2*nnbasx))
          ! needed to fit with HF code
          dcaos(nnbasx+1:2*nnbasx) = 0.5d0*dcaos(nnbasx+1:2*nnbasx)
-
          !  DTX = D_pq(k2) = <0|[k2,Epq]|0>
          udcmo = 0.0d0
          udvmo = 0.0d0
@@ -1471,7 +1467,6 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
          call dgefsp(nbast, udcao, dcaos(2*nnbasx+1:3*nnbasx))
          ! needed to fit with HF code
          dcaos(2*nnbasx+1:3*nnbasx) = 0.5d0*dcaos(2*nnbasx+1:3*nnbasx)
-
          !  DT2X = D_pq(k1,k2) = <0|[k1,[k2,Epq]|0>
          udvmo = 0.0d0
          call oitd1(isymb,zymb,udcmo,udvmo,isymc)
@@ -1483,13 +1478,11 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
          ! needed to fit with HF code
          dcaos(3*nnbasx+1:4*nnbasx) = 0.5d0*dcaos(3*nnbasx+1:4*nnbasx)
          deallocate(udcmo,udvmo)
-
          if (tdhf) then
             write(lupri,*) 'PE-DFT or HF QR detected: Skipping CI dens.'
          end if
          if (.not. tdhf ) then
             write(lupri,*) 'PE-MCSCF QR detected: Constructing CI dens.'
-
             ! Construct the density matrix <02L|..|0> + <0|..|02R>
             ilsym  = irefsy
             irsym  = muld2h(irefsy,isymc)
@@ -1530,7 +1523,6 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
             dcaos(5*nnbasx+1:6*nnbasx) = 1.0d0*dcaos(5*nnbasx+1:6*nnbasx)
 
             if (mzconf(isymb) .gt. 0 .and. mzconf(isymc) .gt. 0) then
-
                ! Construct <01L|..|02R> + <02L|..|01R> density
                ilsym  = muld2h(irefsy,isymb)
                irsym  = muld2h(irefsy,isymc)
@@ -1608,7 +1600,6 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
          !-----------------------------------------------------------
          ! Calculate PE response operators in AO basis
          !-----------------------------------------------------------
-
          if (.not. tdhf) then
             allocate(fcaos(10*nnbasx))
             fcaos = 0.0d0
@@ -1635,7 +1626,6 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
                  & fckmats=fcaos)
          end if
          deallocate(dcaos)
-
       end if ! pe_polar
 
       if ( .not. tdhf ) then
@@ -2044,10 +2034,105 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
               & xindx, mjwop, wrk(1), lfree, lorb, lcon, .false.)
             if (atest) then
                e3test_value = ddot(kzyva,veca,1,etrs,1)
-               write(lupri,*) 'PE-E3TEST, case 3b', e3test_value-e3test_old
+               write(lupri,*) 'PE-E3TEST, case fxc2s', e3test_value-e3test_old
                e3test_old = e3test_value
             end if
       end if
+!     !-----------------------------------------------------------
+!     !case 4
+!     !-----------------------------------------------------------
+!     !fx2pe = 0.5*Fg(1k,2k) + 0.5*Fg(2k,1k) + ...
+      allocate(fx2pe(norbt,norbt))
+      fx2pe = 0.0d0
+      if (.not. tdhf) then
+         call oith1(isymc, zymc, fxpeb, fx2pe, isymb)
+         call oith1(isymb, zymb, fxpec, fx2pe, isymc)
+         deallocate(fxpeb,fxpec)
+      end if
+      fx2pe = 0.5d0 * fx2pe
+      !/ <0| [qj, Fg(1k,2k) + Fg(2k,1k)] |0>  \
+      !| <j| Fg(1k,2k) + Fg(2k,1k) |0>        |*0.5
+      !| <0| [qj+,Fg(1k,2k) + Fg(2k,1k) ] |0> |
+      !\-<0| Fg(1k,2k) + Fg(2k,1k) |j>        /
+      isymdn = 1
+      ovlap  = 1.0d0
+      isymst = muld2h(isyma, irefsy)
+      if ( isymst .eq. irefsy ) then
+         lcon = ( mzconf(isyma) .gt. 1 )
+      else
+         lcon = ( mzconf(isyma) .gt. 0 )
+      end if
+      lorb   = ( mzwopt(isyma) .gt. 0 )
+      nzyvec = mzconf(1)
+      nzcvec = mzconf(1)
+      call rsp1gr(1 ,kzyva, idummy,0, isyma, 0, irefsy, etrs,&
+           & cref, nzyvec, nzcvec, ovlap, isymdn, udv, fx2pe,&
+           & xindx, mjwop, wrk(1), lfree, lorb, lcon, .true.)
+      deallocate(fx2pe)
+      if (atest) then
+         e3test_value = ddot(kzyva,veca,1,etrs,1)
+         write(lupri,*) 'PE-E3TEST, case 4 Fg(1k,2k) + F(2k,1k) ', e3test_value-e3test_old
+         write(lupri,*) 'PE-E3TEST, total  ', e3test_value
+      end if
+      if (pe_polar) then
+          allocate(f2kxo1k(norbt,norbt))
+          f2kxo1k = 0.0d0
+          call oith1(isymc,zymc,fxo1k,f2kxo1k,isymb)
+          !/ <0| [qj, Fxo[1k](2k)] |0> \
+          !| <j| Fxo[1k](2k) |0>       |
+          !| <0| [qj+,Fxo[1k](2k)] |0> |
+          !\ -<0| Fxo[1k](2k) |j>      /
+          isymdn = 1
+          ovlap  = 1.0d0
+          isymst = muld2h(isyma, irefsy)
+          if ( isymst .eq. irefsy ) then
+             lcon = ( mzconf(isyma) .gt. 1 )
+          else
+             lcon = ( mzconf(isyma) .gt. 0 )
+          end if
+          lorb   = ( mzwopt(isyma) .gt. 0 )
+          nzyvec = mzconf(1)
+          nzcvec = mzconf(1)         
+          call rsp1gr(1 ,kzyva, idummy,0, isyma, 0, irefsy, etrs,&
+               & cref, nzyvec, nzcvec, ovlap, isymdn, udv, f2kxo1k,&
+               & xindx, mjwop, wrk(1), lfree, lorb, lcon, .true.)
+          deallocate(f2kxo1k)
+          if (atest) then
+             e3test_value = ddot(kzyva,veca,1,etrs,1)
+             write(lupri,*) 'PE-E3TEST, case Fxo[2k](1k) ', e3test_value-e3test_old
+             write(lupri,*) 'PE-E3TEST, total  ', e3test_value
+          end if
+          allocate(f2kxc1s(norbt,norbt))
+          f2kxc1s = 0.0d0
+          call oith1(isymc,zymc,fxc1s,f2kxc1s,isymb)
+          !/ <0| [qj ,Fxc[1s](2k)] |0>  \
+          !| <j| Fxc[1s](2k) |0>        |
+          !| <0| [qj+,Fxc[1s](2k)] |0>  |
+          !\ -<0| Fxc[1s](2k) |j>       /         
+          isymdn = 1
+          ovlap  = 1.0d0
+          isymst = muld2h(isyma, irefsy)
+          if ( isymst .eq. irefsy ) then
+             lcon = ( mzconf(isyma) .gt. 1 )
+          else
+             lcon = ( mzconf(isyma) .gt. 0 )
+          end if
+          lorb   = ( mzwopt(isyma) .gt. 0 )
+          nzyvec = mzconf(1)
+          nzcvec = mzconf(1)
+          call rsp1gr(1 ,kzyva, idummy,0, isyma, 0, irefsy, etrs,&
+               & cref, nzyvec, nzcvec, ovlap, isymdn, udv, f2kxc1s,&
+               & xindx, mjwop, wrk(1), lfree, lorb, lcon, .true.)
+          deallocate(f2kxc1s)
+          if (atest) then
+             e3test_value = ddot(kzyva,veca,1,etrs,1)
+             write(lupri,*) 'PE-E3TEST, case 4 ', e3test_value-e3test_old
+             write(lupri,*) 'PE-E3TEST, total  ', e3test_value
+          end if
+
+          !construct case2 and add to gradient...
+          !call oith1(isymb,zymb,fcas2_2, fx2pe,isymc)
+      endif 
 
       call qexit('pe_rspmcqr')
 
@@ -2678,6 +2763,7 @@ subroutine pelib_ifc_rspmcqr(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
                 allocate(fxo(norbt,norbt))
                 fcmo = 0.0d0
                 fxo = 0.0d0
+               ! fact = 0.0d0??
                ! edh: was changed from 0.25 to 1.0 (check this factor!)
                call uthu(1.0d0*fcaos(7*nnbasx+1:8*nnbasx), fcmo, cmo,&
                          & wrk, nbast, norbt)
