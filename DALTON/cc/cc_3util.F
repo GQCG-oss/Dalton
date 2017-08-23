@@ -749,7 +749,7 @@ C
 #include "priunit.h"
 #include "maxorb.h"
       CHARACTER(len=*), PARAMETER :: myname = "CC_T2MOT"
-      DOUBLE PRECISION, PARAMETER :: ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0
+      DOUBLE PRECISION, PARAMETER :: ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0
       DOUBLE PRECISION, PARAMETER :: FOURTH = 0.25D0
       DOUBLE PRECISION, INTENT(IN):: CTR2(*), OMEGA2(*),
      &                               GAMMA(*), XLAMDP(*), XLAMPC(*)
@@ -1060,3 +1060,266 @@ C
       END DO
 C
       END SUBROUTINE
+C
+C  /* Deck cc_22am3 */
+      SUBROUTINE CC_22AM3(RHO2,XIAJB,XMINT,ISYMIM,WORK,LWORK)
+C
+C     Written by Rasmus Faber - 2017
+C     Based on cc_22am3 by Asger Halkier
+C
+C     Purpose: Contract the M intermediate with the (ma|nb) integrals
+C     to obtain the E contribution to the left transformed doubles
+C     vector.
+C
+C
+      IMPLICIT NONE
+C
+      DOUBLE PRECISION, PARAMETER :: ZERO = 0.0D0, ONE = 1.0D0,
+     &                               HALF = 0.5D0
+      DOUBLE PRECISION :: RHO2(*), XIAJB(*), XMINT(*), WORK(LWORK)
+      INTENT(IN) :: XIAJB
+      INTENT(INOUT) :: XMINT
+      INTENT(OUT) :: RHO2, WORK
+      INTEGER, INTENT(IN) :: ISYMIM, LWORK
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+C
+      INTEGER :: INDEX
+      INTEGER :: ISYMJ, ISYMB, ISYMA, ISYMI, ISYMM, ISYMN,
+     &           ISYRES, ISYMIN, ISYMBJ, ISYMAI,
+     &           ISYMAM, ISYMAN, ISYMMI, ISYMBN
+      INTEGER :: KSCR1, KSCR2
+      INTEGER :: LWRK1, LWRK2
+      INTEGER :: KEND1, KEND2
+      INTEGER :: KOFF1, KOFF2, KOFF3
+      INTEGER :: NBJ, NBN, NAM, NAI, NAMBN, NAIBJ
+      INTEGER :: NTOTA, NTOTM
+C
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      ISYRES = ISYMIM
+C
+      CALL TRANSP_MI(XMINT,ISYRES,WORK(1))
+C
+      DO 100 ISYMJ = 1,NSYM
+C
+         ISYMIN = MULD2H(ISYMJ,ISYRES)
+C
+         IF (NRHF(ISYMJ) .EQ. 0) GOTO 100
+C
+         DO 110 J = 1,NRHF(ISYMJ)
+C
+            DO 120 ISYMB = 1,NSYM
+C
+               ISYMBJ = MULD2H(ISYMB,ISYMJ)
+               ISYMAI = MULD2H(ISYMBJ,ISYRES)
+C
+               IF (NVIR(ISYMB) .EQ. 0) GOTO 120
+C
+C----------------------------------------
+C              Work space allocation one.
+C----------------------------------------
+C
+               KSCR1 = 1
+               KEND1 = KSCR1 + NT1AM(ISYMAI)
+               LWRK1 = LWORK - KEND1
+C
+               IF (LWRK1 .LT. 0) THEN
+                  CALL QUIT('Insufficient work space in CC_22AM3')
+               ENDIF
+C
+               DO 130 B = 1,NVIR(ISYMB)
+C
+                  CALL DZERO(WORK(KSCR1),NT1AM(ISYMAI))
+C
+                  NBJ = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J - 1) + B
+C
+                  DO 140 ISYMN = 1,NSYM
+C
+                     ISYMBN = MULD2H(ISYMN,ISYMB)
+                     ISYMAM = MULD2H(ISYMBN,ISYMOP)
+                     ISYMMI = MULD2H(ISYMN,ISYMIN)
+C
+C----------------------------------------------
+C                    Work space allocation two.
+C----------------------------------------------
+C
+                     KSCR2 = KEND1
+                     KEND2 = KSCR2 + NT1AM(ISYMAM)
+                     LWRK2 = LWORK - KEND2
+C
+                     IF (LWRK2 .LT. 0) THEN
+                        CALL QUIT('Insufficient work space in CC_22AM3')
+                     ENDIF
+C
+                     DO 150 N = 1,NRHF(ISYMN)
+C
+                        NBN = IT1AM(ISYMB,ISYMN)
+     &                      + NVIR(ISYMB)*(N - 1) + B
+C
+C-------------------------------------------------------
+C                       Copy submatrix out of integrals.
+C-------------------------------------------------------
+C
+                        DO 160 NAM = 1,NT1AM(ISYMAM)
+C
+                           NAMBN = IT2AM(ISYMAM,ISYMBN)
+     &                           + INDEX(NAM,NBN)
+C
+                           WORK(KSCR2 + NAM - 1) = XIAJB(NAMBN)
+C
+  160                   CONTINUE
+C
+C--------------------------------------------------------------------
+C                       Contraction of integrals with M-intermediate.
+C--------------------------------------------------------------------
+C
+                        DO 170 ISYMA = 1,NSYM
+C
+                           ISYMM = MULD2H(ISYMA,ISYMAM)
+                           ISYMI = MULD2H(ISYMA,ISYMAI)
+C
+                           KOFF1 = KSCR2 + IT1AM(ISYMA,ISYMM)
+                           KOFF2 = I3ORHF(ISYMIN,ISYMJ)
+     &                           + NMAIJK(ISYMIN)*(J - 1)
+     &                           + IMAIJK(ISYMMI,ISYMN)
+     &                           + NMATIJ(ISYMMI)*(N - 1)
+     &                           + IMATIJ(ISYMM,ISYMI) + 1
+                           KOFF3 = KSCR1 + IT1AM(ISYMA,ISYMI)
+C
+                           NTOTA = MAX(NVIR(ISYMA),1)
+                           NTOTM = MAX(NRHF(ISYMM),1)
+C
+                           CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
+     &                                NRHF(ISYMM),ONE,WORK(KOFF1),
+     &                                NTOTA,XMINT(KOFF2),NTOTM,ONE,
+     &                                WORK(KOFF3),NTOTA)
+C
+  170                   CONTINUE
+C
+  150                CONTINUE
+  140             CONTINUE
+C
+C-----------------------------------------------
+C                 Storage in RHO2 result vector.
+C-----------------------------------------------
+C
+                  DO NAI = 1, NT1AM(ISYMAI)
+                     NAIBJ = IT2SQ(ISYMAI,ISYMBJ)
+     &                     + NT1AM(ISYMAI)*(NBJ-1) + NAI
+                     RHO2(NAIBJ) = RHO2(NAIBJ)
+     &                           + HALF*WORK(KSCR1+NAI-1)
+                  END DO
+C
+  130          CONTINUE
+  120       CONTINUE
+  110    CONTINUE
+  100 CONTINUE
+C
+      RETURN
+C
+      CONTAINS
+         SUBROUTINE TRANSP_MI(MINT,ISYMINT,WORK)
+C
+C        Transposes the M intermediate:
+C        M(M,I,N,J) -> M(N,J,M,I)
+C
+         DOUBLE PRECISION, INTENT(INOUT) :: MINT(*), WORK(*)
+         INTEGER, INTENT(IN) :: ISYMINT
+
+         INTEGER :: I, J, N
+         INTEGER :: ISYMI, ISYMJ, ISYMM, ISYMN, ISYMIN, ISYNJM,
+     &              ISYMMI, ISYMNJ, ISYMMN
+         INTEGER :: KOFF1, KOFF2
+         INTEGER :: NTOTI, NTOTM
+
+         DO ISYMJ = 1, NSYM
+            ISYMIN = MULD2H(ISYMJ,ISYMINT)
+            DO ISYMI = 1, ISYMJ
+               ISYMMN = MULD2H(ISYMI,ISYMIN)
+               ISYNJM = MULD2H(ISYMI,ISYMINT)
+               NTOTI = NRHF(ISYMI)
+               DO J = 1, NRHF(ISYMJ)
+                  IF (ISYMI.EQ.ISYMJ) NTOTI = J - 1
+                  DO I = 1, NTOTI
+                     DO ISYMN = 1, NSYM
+                        ISYMM = MULD2H(ISYMN,ISYMMN)
+                        ISYMMI = MULD2H(ISYMIN,ISYMN)
+                        ISYMNJ = MULD2H(ISYNJM,ISYMM)
+                        DO N = 1, NRHF(ISYMN)
+                           KOFF1 = I3ORHF(ISYMIN,ISYMJ)
+     &                           + NMAIJK(ISYMIN)*(J-1)
+     &                           + IMAIJK(ISYMMI,ISYMN)
+     &                           + NMATIJ(ISYMMI)*(N-1)
+     &                           + IMATIJ(ISYMM,ISYMI)
+     &                           + NRHF(ISYMM)*(I-1) + 1
+
+                           KOFF2 = I3ORHF(ISYNJM,ISYMI)
+     &                           + NMAIJK(ISYNJM)*(I-1)
+     &                           + IMAIJK(ISYMNJ,ISYMM)
+!     &                           + NMATIJ(ISYMMI)*(N-1)
+     &                           + IMATIJ(ISYMN,ISYMJ)
+     &                           + NRHF(ISYMN)*(J-1) + N
+
+                           CALL DCOPY(NRHF(ISYMM),
+     &                                MINT(KOFF2),NMATIJ(ISYMNJ),
+     &                                WORK(1),1)
+
+                           CALL DCOPY(NRHF(ISYMM),
+     &                                MINT(KOFF1),1,
+     &                                MINT(KOFF2),NMATIJ(ISYMNJ))
+
+                           CALL DCOPY(NRHF(ISYMM),
+     &                                WORK(1),1,
+     &                                MINT(KOFF1),1)
+                        END DO ! N
+                     END DO ! ISYMN
+                  END DO ! I
+!
+!       Handle I = J case
+                  IF (ISYMI.EQ.ISYMJ) THEN
+                     I = J
+                     DO ISYMN = 1, NSYM
+                        ISYMM = MULD2H(ISYMMN,ISYMN)
+                        IF (ISYMM.GT.ISYMN) CYCLE
+                        NTOTM = NRHF(ISYMM)
+                        ISYMMI = MULD2H(ISYMIN,ISYMN)
+                        ISYMNJ = MULD2H(ISYNJM,ISYMM)
+                        DO N = 1, NRHF(ISYMN)
+                           IF (ISYMM.EQ.ISYMN) NTOTM = N - 1
+                           KOFF1 = I3ORHF(ISYMIN,ISYMJ)
+     &                           + NMAIJK(ISYMIN)*(J-1)
+     &                           + IMAIJK(ISYMMI,ISYMN)
+     &                           + NMATIJ(ISYMMI)*(N-1)
+     &                           + IMATIJ(ISYMM,ISYMI)
+     &                           + NRHF(ISYMM)*(I-1) + 1
+
+                           KOFF2 = I3ORHF(ISYNJM,ISYMI)
+     &                           + NMAIJK(ISYNJM)*(I-1)
+     &                           + IMAIJK(ISYMNJ,ISYMM)
+!     &                           + NMATIJ(ISYMMI)*(N-1)
+     &                           + IMATIJ(ISYMN,ISYMJ)
+     &                           + NRHF(ISYMN)*(J-1) + N
+
+                           CALL DCOPY(NTOTM,
+     &                                MINT(KOFF2),NMATIJ(ISYMNJ),
+     &                                WORK(1),1)
+
+                           CALL DCOPY(NTOTM,
+     &                                MINT(KOFF1),1,
+     &                                MINT(KOFF2),NMATIJ(ISYMNJ))
+
+                           CALL DCOPY(NTOTM,
+     &                                WORK(1),1,
+     &                                MINT(KOFF1),1)
+                        END DO
+                     END DO
+                  END IF
+               END DO ! J
+            END DO ! ISYMI
+         END DO ! ISYMJ
+
+         END SUBROUTINE
+      END

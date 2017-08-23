@@ -973,8 +973,12 @@ C
 C
 C           Read in CTR2+ and CTR. and
 C           construct CTR+ - CTR- intermediate
-C
-C
+C           T2 vectors are overwritten further down
+C           and needs to be read in once more if
+C           not first iteration of the loop.
+C           Alternatively we could calculate and
+C           write out the M intermediate before the
+C           loop over integrals.
          ELSE
 C
 C---------------------------------------
@@ -1010,7 +1014,7 @@ C        Work space allocation.
 C------------------------------
 C
          IF (.NOT.SKIPMI) THEN
-           KMINT = KENDS2
+           KMINT = KT2AM + MAX(NT2SQ(ISYRES),NT2AM(1))
            KEND1 = KMINT + N3ORHF(ISYRES)
            LWRK1 = LWORK - KEND1
 C
@@ -1057,8 +1061,6 @@ C
          CALL CC_T2MOT(PHONEY,FAKE,ISYMOP,
      *                 RHO2,WORK(KT2AM),DUMMY,WORK(KLAMDH),
      *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1,ISYRES,1)
-
-
          TIM2MO = SECOND() - AUTIME
 C
 C-----------------------------------------------------
@@ -1095,8 +1097,8 @@ C        in the article..?
 C------------------------------------------
 C
          AUTIME = SECOND()
-C         CALL CC_22AM(RHO2,WORK(KT2AM),WORK(KMINT),ISYRES,
-C     *                WORK(KEND1),LWRK1)
+         CALL CC_22AM3(RHO2,WORK(KT2AM),WORK(KMINT),ISYRES,
+     *                WORK(KEND1),LWRK1)
          TIMEAM = SECOND() - AUTIME
 C
 C------------------------------------------
