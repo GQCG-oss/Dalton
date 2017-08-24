@@ -1323,3 +1323,191 @@ C
 
          END SUBROUTINE
       END
+C
+      SUBROUTINE CCRHS_ASQ(OMEGA2,T2AM,GAMMA,WORK,LWORK,ISYGAM,ISYVEC,
+     *                     IOPT)
+C
+C     Rasmus Faber 2017
+C     Based on CCRHS_ASQ by Henrik Koch & Ove Christiansen
+C
+C     Purpose: Calculates the doubles A term
+C     Contract the "Gamma" intermediate with the quadratic
+C     trial-vector "T2AM".
+C     Use
+C        IOPT = 1 for right transformation
+C        IOPT = 2 for left transformation
+C
+C     This version uses a quadratic storage on the output vector, OMEGA2
+C
+      IMPLICIT NONE
+C
+      DOUBLE PRECISION, PARAMETER :: ZERO=0.0D0, ONE=1.0D0, HALF=0.5D0
+      CHARACTER(LEN=*), PARAMETER :: myname = "CCRHS_ASQ"
+C
+      DOUBLE PRECISION, INTENT(INOUT) :: OMEGA2(*)
+      DOUBLE PRECISION, INTENT(IN) :: T2AM(*), GAMMA(*)
+      DOUBLE PRECISION, INTENT(OUT) :: WORK(LWORK)
+      INTEGER, INTENT(IN) :: LWORK, ISYGAM, ISYVEC, IOPT
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+C
+      INTEGER :: INDEX
+      INTEGER :: ISYMA, ISYMB, ISYMI, ISYMJ, ISYMK, ISYML,
+     &           ISYMAI, ISYMAK,  ISYMBJ, ISYMBL, ISYMKI, ISYMLJ, ISAIBJ
+      INTEGER :: NAI, NBJ, NBL, NLJ, NKI, NAIBJ, NKILJ, NSTO
+      INTEGER :: NRHFK, NVIRA
+      INTEGER :: KSCR1, KSCR2
+      INTEGER :: KEND1, KEND2
+      INTEGER :: LWRK1, LWRK2
+      INTEGER :: KOFF1, KOFF2, KOFF3
+C
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+C----------------------------
+C     Calculate contribution.
+C----------------------------
+C
+      ISAIBJ = MULD2H(ISYGAM,ISYVEC)
+C
+      DO 100 ISYMLJ = 1,NSYM
+C
+         ISYMKI = MULD2H(ISYMLJ,ISYGAM)
+C
+         KSCR1 = 1
+         KEND1 = KSCR1 + NMATIJ(ISYMKI)
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            CALL QUIT('Insufficient space for allocation in '//myname)
+         END IF
+C
+         DO 110 ISYMJ = 1,NSYM
+C
+            ISYML = MULD2H(ISYMJ,ISYMLJ)
+C
+            DO 120 J = 1,NRHF(ISYMJ)
+C
+               DO 130 L = 1,NRHF(ISYML)
+C
+                  IF (IOPT .EQ. 1) THEN
+C
+                     NLJ = IMATIJ(ISYML,ISYMJ)
+     *                   + NRHF(ISYML)*(J - 1) + L
+C
+                  ELSE IF (IOPT .EQ. 2) THEN
+C
+                     NLJ = IMATIJ(ISYMJ,ISYML)
+     *                   + NRHF(ISYMJ)*(L - 1) + J
+C
+                  ENDIF
+C
+                  DO 140 ISYMK = 1,NSYM
+C
+                     ISYMI = MULD2H(ISYMK,ISYMKI)
+C
+                     DO 150 I = 1,NRHF(ISYMI)
+C
+                        DO 160 K = 1,NRHF(ISYMK)
+C
+                           IF (IOPT .EQ. 1) THEN
+C
+                              NKI = IMATIJ(ISYMK,ISYMI)
+     *                            + NRHF(ISYMK)*(I - 1) + K
+C
+                           ELSE IF (IOPT .EQ. 2) THEN
+C
+                              NKI = IMATIJ(ISYMI,ISYMK)
+     *                            + NRHF(ISYMI)*(K - 1) + I
+C
+                           ENDIF
+C
+                           IF (ISYMKI .EQ. ISYMLJ) THEN
+                              NKILJ = IGAMMA(ISYMKI,ISYMLJ)
+     *                              + INDEX(NKI,NLJ)
+                           ELSE
+                              IF (ISYMKI .LT. ISYMLJ) THEN
+                                 NKILJ = IGAMMA(ISYMKI,ISYMLJ)
+     *                                 + NMATIJ(ISYMKI)*(NLJ - 1) + NKI
+                              ELSE
+                                 NKILJ = IGAMMA(ISYMLJ,ISYMKI)
+     *                                 + NMATIJ(ISYMLJ)*(NKI - 1) + NLJ
+                              ENDIF
+                           ENDIF
+C
+                           NSTO = IMATIJ(ISYMK,ISYMI)
+     *                          + NRHF(ISYMK)*(I - 1) + K
+C
+                           WORK(KSCR1 + NSTO - 1) = GAMMA(NKILJ)
+C
+  160                   CONTINUE
+  150                CONTINUE
+  140             CONTINUE
+C
+                  DO 170 ISYMB = 1,NSYM
+C
+                     ISYMBJ = MULD2H(ISYMB,ISYMJ)
+                     ISYMAI = MULD2H(ISYMBJ,ISAIBJ)
+                     ISYMBL = MULD2H(ISYMB,ISYML)
+                     ISYMAK = MULD2H(ISYVEC,ISYMBL)
+C
+                     KSCR2 = KEND1
+                     KEND2 = KSCR2 + NT1AM(ISYMAI)
+                     LWRK2 = LWORK - KEND2
+C
+                     IF (LWRK2 .LT. 0) THEN
+                        CALL QUIT('Insufficient space in '//myname)
+                     END IF
+C
+C                     IF (ISYMAI .GT. ISYMBJ) GOTO 170
+C
+                     DO 180 B = 1,NVIR(ISYMB)
+C
+                        NBJ = IT1AM(ISYMB,ISYMJ)
+     *                      + NVIR(ISYMB)*(J - 1) + B
+                        NBL = IT1AM(ISYMB,ISYML)
+     *                      + NVIR(ISYMB)*(L - 1) + B
+C
+                        CALL DZERO(WORK(KSCR2),NT1AM(ISYMAI))
+C
+                        DO 190 ISYMI = 1,NSYM
+C
+                           ISYMK = MULD2H(ISYMI,ISYMKI)
+                           ISYMA = MULD2H(ISYMK,ISYMAK)
+C
+                           NVIRA = MAX(NVIR(ISYMA),1)
+                           NRHFK = MAX(NRHF(ISYMK),1)
+C
+                           KOFF1 = IT2SQ(ISYMAK,ISYMBL)
+     *                           + NT1AM(ISYMAK)*(NBL - 1)
+     *                           + IT1AM(ISYMA,ISYMK) + 1
+                           KOFF2 = KSCR1 + IMATIJ(ISYMK,ISYMI)
+                           KOFF3 = KSCR2 + IT1AM(ISYMA,ISYMI)
+C
+                           CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
+     *                                NRHF(ISYMK),ONE,T2AM(KOFF1),
+     *                                NVIRA,WORK(KOFF2),NRHFK,ZERO,
+     *                                WORK(KOFF3),NVIRA)
+C
+  190                   CONTINUE
+C
+                        DO 200 NAI = 1, NT1AM(ISYMAI)
+C
+                           NAIBJ = IT2SQ(ISYMAI,ISYMBJ)
+     &                           + NT1AM(ISYMAI)*(NBJ-1) + NAI
+C
+                           OMEGA2(NAIBJ) = OMEGA2(NAIBJ)
+     *                                   + HALF*WORK(KSCR2 + NAI - 1)
+C
+  200                   CONTINUE
+C
+  180                CONTINUE
+  170             CONTINUE
+C
+  130          CONTINUE
+  120       CONTINUE
+  110    CONTINUE
+  100 CONTINUE
+C
+      RETURN
+      END

@@ -1102,6 +1102,40 @@ C
          TIMEAM = SECOND() - AUTIME
 C
 C------------------------------------------
+C        Read Gamma-intermediate from disc.
+C------------------------------------------
+C
+         KGAMMI = KENDS2
+         KENDGI = KGAMMI + NGAMMA(ISYMOP)
+         LWRKGI = LWORK  - KENDGI
+C
+         IF (LWRKGI .LT. 0) THEN
+            CALL QUIT('Insufficient work space in CC_LHTR')
+         ENDIF
+C
+         AUTIME = SECOND()
+         LUGI = -1
+         CALL GPOPEN(LUGI,'CC_GAMIM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+         REWIND(LUGI)
+         READ(LUGI) (WORK(KGAMMI + J - 1), J = 1,NGAMMA(ISYMOP))
+         CALL GPCLOSE(LUGI,'KEEP')
+C
+C-----------------------------------------
+C        Calculate the LT22A contribution.
+C-----------------------------------------
+C
+         ISYG = ISYMOP
+         ISYV = ISYMTR
+         IOPT = 2
+C
+         CALL CC_T2SQTRANSP(CTR2,ISYMTR)
+C
+         CALL CCRHS_ASQ(RHO2,CTR2,WORK(KGAMMI),WORK(KENDGI),LWRKGI,
+     &                  ISYG,ISYV,IOPT)
+         TIM22A = SECOND() - AUTIME
+C
+C------------------------------------------
 C        Calculate the LT22EM contribution.
 C        This seems to be called the F term
 C        the article?
@@ -1242,38 +1276,6 @@ C
             WRITE(LUPRI,1) 'Norm of RHO1 after E-TERM:        ', RHO1N
             WRITE(LUPRI,1) 'Norm of RHO2 after E-TERM:        ', RHO2N
          ENDIF
-C
-C------------------------------------------
-C        Read Gamma-intermediate from disc.
-C------------------------------------------
-C
-         KGAMMI = KEND1
-         KENDGI = KGAMMI + NGAMMA(ISYMOP)
-         LWRKGI = LWORK  - KENDGI
-C
-         IF (LWRKGI .LT. 0) THEN
-            CALL QUIT('Insufficient work space in CC_LHTR')
-         ENDIF
-C
-         AUTIME = SECOND()
-         LUGI = -1
-         CALL GPOPEN(LUGI,'CC_GAMIM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
-         REWIND(LUGI)
-         READ(LUGI) (WORK(KGAMMI + J - 1), J = 1,NGAMMA(ISYMOP))
-         CALL GPCLOSE(LUGI,'KEEP')
-C
-C-----------------------------------------
-C        Calculate the LT22A contribution.
-C-----------------------------------------
-C
-         ISYG = ISYMOP
-         ISYV = ISYMTR
-         IOPT = 2
-C
-C         CALL CCRHS_A(RHO2,CTR2,WORK(KGAMMI),WORK(KENDGI),LWRKGI,
-C     &                ISYG,ISYV,IOPT)
-         TIM22A = SECOND() - AUTIME
 C
 C-----------------------------------------
 C        Calculate the LT22D contribution.
