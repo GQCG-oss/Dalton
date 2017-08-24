@@ -1135,6 +1135,14 @@ C
      &                  ISYG,ISYV,IOPT)
          TIM22A = SECOND() - AUTIME
 C
+C-----------------------------------------------------------------------
+C        The above terms carries a factor of 1/2 on the (+) contribution
+C        relative to the (-) contribution.
+C        Take care of that by scaling the symmetric part py 1/2
+C-----------------------------------------------------------------------
+C
+         CALL CC_T2SQSYMSCAL(RHO2,ISYMTR)
+C
 C------------------------------------------
 C        Calculate the LT22EM contribution.
 C        This seems to be called the F term

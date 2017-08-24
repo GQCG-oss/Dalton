@@ -468,6 +468,86 @@ C
 
       END SUBROUTINE
 C
+      SUBROUTINE CC_T2SQSYMSCAL(X2SQ,ISYMTR)
+C
+C     Scale the symmetric part of the squared doubles array by 1/2
+C     x2 (ai,bj) <- 3/4 (ai,bj) - 1/4 (bj,ai)
+C     Needed in the triplet case, when the squared array
+C     typically contain a linear combination of (+) and (-)
+C     components
+      IMPLICIT NONE
+
+#include "ccorb.h"
+#include "ccsdsym.h"
+
+      INTEGER, INTENT(IN) :: ISYMTR
+      DOUBLE PRECISION, INTENT(INOUT) :: X2SQ(*)
+      DOUBLE PRECISION, PARAMETER :: FOURTH = 0.25D0, THREEF = 0.75D0
+      INTEGER :: ISYMAI, ISYMBJ, IXPOS, IXPOS2
+C
+      IF (ISYMTR.EQ.1) THEN
+
+         DO ISYMBJ = 1, NSYM
+            ISYMAI = ISYMBJ
+            IXPOS = IT2SQ(ISYMAI,ISYMBJ) + 1
+
+            CALL SCAL1(X2SQ(IXPOS),NT1AM(ISYMAI))
+
+         END DO
+
+      ELSE
+
+          DO ISYMBJ = 1, NSYM
+             ISYMAI = MULD2H(ISYMBJ,ISYMTR)
+             IF (ISYMAI .GT. ISYMBJ) CYCLE
+             IXPOS = IT2SQ(ISYMAI,ISYMBJ) + 1
+             IXPOS2 = IT2SQ(ISYMBJ,ISYMAI) + 1
+             CALL SCAL2(X2SQ(IXPOS),X2SQ(IXPOS2),
+     &                  NT1AM(ISYMAI),NT1AM(ISYMBJ))
+          END DO
+
+      END IF
+C
+      CONTAINS
+C
+         PURE SUBROUTINE SCAL1(A,N)
+C
+         DOUBLE PRECISION, INTENT(INOUT) :: A(N,N)
+         INTEGER, INTENT(IN) :: N
+         DOUBLE PRECISION :: TMP1, TMP2
+         INTEGER I, J
+C
+         DO I = 1, N
+            DO J = 1, I-1
+               TMP1 = A(I,J)
+               TMP2 = A(J,I)
+               A(I,J) = THREEF*TMP1 - FOURTH*TMP2
+               A(J,I) = THREEF*TMP2 - FOURTH*TMP1
+            END DO
+         END DO
+C
+         END SUBROUTINE
+C
+         PURE SUBROUTINE SCAL2(A,B,M,N)
+C
+         DOUBLE PRECISION, INTENT(INOUT) :: A(M,N), B(N,M)
+         INTEGER, INTENT(IN) :: N, M
+         INTEGER :: I, J
+         DOUBLE PRECISION TMP1, TMP2
+C
+         DO I = 1, M
+            DO J = 1, N
+               TMP1 = A(I,J)
+               TMP2 = B(J,I)
+               A(I,J) = THREEF*TMP1 - FOURTH*TMP2
+               B(J,I) = THREEF*TMP2 - FOURTH*TMP1
+            END DO
+         END DO
+C
+         END SUBROUTINE
+
+      END SUBROUTINE
+C
       SUBROUTINE CCSD_TCMEPK3(T2AM,ISYOPE)
 C
 C     Swap I and J in the antisymmetric doubles array
