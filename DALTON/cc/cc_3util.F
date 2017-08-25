@@ -1591,3 +1591,142 @@ C
 C
       RETURN
       END
+C  /* Deck cc_22e3 */
+      SUBROUTINE CC_22E3(RHO2,T2AM,XMAT,YMAT,ISYMXY,WORK,LWORK)
+C
+C     Rasmus Faber - 2017
+C     Based on CC_22EC by Asger Halkier 21/11 - 1995
+C
+C     Purpose: To calculate the triplet doubles F-contribution
+C              to RHO2.
+C
+C
+C
+      IMPLICIT NONE
+C
+      DOUBLE PRECISION, PARAMETER :: ZERO = 0.0D0, ONE = 1.0D0,
+     &                               ONEM = -ONE
+      DOUBLE PRECISION, INTENT(INOUT) :: RHO2(*)
+      DOUBLE PRECISION, INTENT(IN) :: T2AM(*), XMAT(*), YMAT(*)
+      DOUBLE PRECISION, INTENT(OUT) :: WORK(LWORK)
+      INTEGER, INTENT(IN) :: LWORK, ISYMXY
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+C
+      INTEGER :: INDEX
+      INTEGER :: ISYMB, ISYMJ, ISYMAI, ISYMAN, ISYMAT, ISYMAX, ISYMAY,
+     &           ISYMBJ, ISYMFI, ISYMFY, ISYMIX, ISYMIY, ISYMNX, ISYRES
+      INTEGER :: KOFF1, KOFF2, KOFF3, KOFF4, KOFF5, KOFF6
+      INTEGER :: NBJ, NAN, NANBJ
+      INTEGER :: NTOTA, NTOTF, NTOTN
+      INTEGER :: KSCR1, KSCR2, KEND1, LWRK1
+C
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      ISYRES = MULD2H(ISYMOP,ISYMXY)
+      ISYMAT = ISYRES
+C
+      DO 100 ISYMJ = 1,NSYM
+C
+         IF (NRHF(ISYMJ) .EQ. 0) GOTO 100
+C
+         DO 110 J = 1,NRHF(ISYMJ)
+C
+            DO 120 ISYMB = 1,NSYM
+C
+               ISYMBJ = MULD2H(ISYMB,ISYMJ)
+               ISYMAI = MULD2H(ISYMBJ,ISYRES)
+               ISYMAN = MULD2H(ISYMBJ,ISYMOP)
+               ISYMFI = ISYMAN
+C
+               IF (NVIR(ISYMB) .EQ. 0) GOTO 120
+C
+C------------------------------------
+C              Work space allocation.
+C------------------------------------
+C
+               KSCR1 = 1
+               KSCR2 = KSCR1 + NT1AM(ISYMAI)
+               KEND1 = KSCR2 + NT1AM(ISYMAN)
+               LWRK1 = LWORK - KEND1
+C
+               IF (LWRK1 .LT. 0) THEN
+                  CALL QUIT('Insufficient work space in CC_22E3')
+               ENDIF
+C
+               DO 130 B = 1,NVIR(ISYMB)
+C
+                  CALL DZERO(WORK(KSCR1),NT1AM(ISYMAI))
+C
+                  NBJ = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J - 1) + B
+C
+C-------------------------------------------------
+C                 Copy submatrix out of integrals.
+C-------------------------------------------------
+C
+                  DO 140 NAN = 1,NT1AM(ISYMAN)
+C
+                     NANBJ = IT2AM(ISYMAN,ISYMBJ) + INDEX(NAN,NBJ)
+C
+                     WORK(KSCR2 + NAN - 1) = T2AM(NANBJ)
+C
+  140             CONTINUE
+C
+C-----------------------------------------------------------------
+C                 Contraction of integrals with X- and Y-matrices.
+C-----------------------------------------------------------------
+C
+                  DO 150 ISYMAX = 1,NSYM
+C
+                     ISYMNX = MULD2H(ISYMAX,ISYMAN)
+                     ISYMIX = MULD2H(ISYMNX,ISYMAT)
+                     ISYMFY = ISYMAX
+                     ISYMIY = MULD2H(ISYMFY,ISYMFI)
+                     ISYMAY = MULD2H(ISYMFY,ISYMAT)
+C
+                     KOFF1 = KSCR2 + IT1AM(ISYMAX,ISYMNX)
+                     KOFF2 = IMATIJ(ISYMNX,ISYMIX) + 1
+                     KOFF3 = KSCR1 + IT1AM(ISYMAX,ISYMIX)
+C
+                     NTOTA = MAX(NVIR(ISYMAX),1)
+                     NTOTN = MAX(NRHF(ISYMNX),1)
+C
+                     CALL DGEMM('N','N',NVIR(ISYMAX),NRHF(ISYMIX),
+     &                          NRHF(ISYMNX),ONE,WORK(KOFF1),NTOTA,
+     &                          XMAT(KOFF2),NTOTN,ONE,WORK(KOFF3),
+     &                          NTOTA)
+C
+                     KOFF4 = IMATAB(ISYMFY,ISYMAY) + 1
+                     KOFF5 = KSCR2 + IT1AM(ISYMFY,ISYMIY)
+                     KOFF6 = KSCR1 + IT1AM(ISYMAY,ISYMIY)
+C
+                     NTOTF = MAX(NVIR(ISYMFY),1)
+                     NTOTA = MAX(NVIR(ISYMAY),1)
+C
+                     CALL DGEMM('T','N',NVIR(ISYMAY),NRHF(ISYMIY),
+     &                          NVIR(ISYMFY),ONE,YMAT(KOFF4),NTOTF,
+     &                          WORK(KOFF5),NTOTF,ONE,WORK(KOFF6),
+     &                          NTOTA)
+C
+  150             CONTINUE
+C
+C-----------------------------------------------
+C                 Storage in RHO2 result vector.
+C-----------------------------------------------
+C                 Try to rearrange the above DGEMMs to
+C                 do it there directly
+                  KOFF1 = IT2SQ(ISYMAI,ISYMBJ)
+     &                  + NT1AM(ISYMAI)*(NBJ-1) + 1
+                  CALL DAXPY(NT1AM(ISYMAI),ONEM,WORK(KSCR1),1,
+     &                       RHO2(KOFF1),1)
+
+  130          CONTINUE
+  120       CONTINUE
+  110    CONTINUE
+  100 CONTINUE
+C
+      RETURN
+      END
+

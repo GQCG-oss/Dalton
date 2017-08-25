@@ -1150,9 +1150,8 @@ C        the article?
 C------------------------------------------
 C
          AUTIME = SECOND()
-C        For triplet, we only need "Exchange part"
-C         CALL CC_22EE(RHO2,WORK(KT2AM),WORK(KOFFXI),WORK(KOFFYI),
-C     *                ISYRES,WORK(KEND1),LWRK1)
+         CALL CC_22E3(RHO2,WORK(KT2AM),WORK(KOFFXI),WORK(KOFFYI),
+     *                ISYRES,WORK(KEND1),LWRK1)
          TIM2EM = SECOND() - AUTIME
 C
          IF (IPRINT .GT. 50) THEN
