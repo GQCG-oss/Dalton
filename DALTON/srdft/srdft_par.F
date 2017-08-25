@@ -31,7 +31,7 @@
 ! ===================================================================
 #ifdef VAR_MPI
       SUBROUTINE SRDFT_PAR_MASTER(ND_SIM,EXCMAT,DMAT,EDFTY,
-     &                 DOERG,DOGRD,DOATR,
+     &                 DOERG,DOGRD,DOATR,TRIPLET,
      &                 WORK,LWORK,IPRINT_in)
 !
 !  Written by Hans Joergen Aa. Jensen 2017
@@ -42,7 +42,7 @@
 !  see SRDFT for an explanation of the parameters.
 !
       implicit none
-      logical   DOERG,DOGRD,DOATR
+      logical   DOERG,DOGRD,DOATR,TRIPLET
       integer   ND_SIM, LWORK, IPRINT_in
       real*8    EXCMAT(N2BASX,*),DMAT(N2BASX,*),EDFTY,WORK(LWORK)
 
@@ -126,6 +126,8 @@ C     variables for SRCPBERI
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(DOATR,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(TRIPLET,1,MPI_LOGICAL,
+     &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(mu_0,1,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)
 
@@ -167,7 +169,7 @@ C     variables for SRCPBERI
 !  mpif.h   : for MPI
 #include "mpif.h"
 
-      logical   DOERG,DOGRD,DOATR
+      logical   DOERG,DOGRD,DOATR,TRIPLET
       integer   ND_SIM, NDMAT, NEXCMAT, NDMAT_in, IPRINT
       integer   KFREE, LFREE, KDMAT, KEXCMAT
       real*8    EDFTY
@@ -249,6 +251,8 @@ C     variables for SRCPBERI
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(DOATR,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(TRIPLET,1,MPI_LOGICAL,
+     &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(mu_0,1,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)
 
@@ -307,7 +311,8 @@ C     variables for SRCPBERI
       CALL DZERO(WORK(KEXCMAT),NEXCMAT*N2BASX)
       CALL SRDFT(
      &      ND_SIM,WORK(KEXCMAT),WORK(KDMAT),EDFTY,
-     &      DOERG,DOGRD,DOATR, WORK(KFREE),LFREE,IPRINT)
+     &      DOERG,DOGRD,DOATR,TRIPLET,
+     &      WORK(KFREE),LFREE,IPRINT)
 !     SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,
 !    &                 WORK,LWORK,IPRINT)
 

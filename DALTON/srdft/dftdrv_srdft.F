@@ -576,7 +576,8 @@ C        SRDFT ...
 C        CALL SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
 !         WRITE(LUPRI,*) 'DFTATR: calling SRDFT'  !JT
          CALL SRDFT(1,WORK(KFAO),WORK(KDAO),DUMMY,
-     &              .FALSE.,.FALSE.,.TRUE.,WORK(KLST),LWRK,IPRINT)
+     &              .FALSE.,.FALSE.,.TRUE.,.FALSE.,
+     &              WORK(KLST),LWRK,IPRINT)
 C-------------------------------------------------------------------
       END IF
 

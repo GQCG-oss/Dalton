@@ -456,22 +456,27 @@ C        then set HF exchange factor to zero.
       END
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,
-     &                 WORK,LWORK,IPRINT_in)
+      SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,
+     &                 DOERG,DOGRD,DOATR,TRIPLET,WORK,LWORK,IPRINT_in)
 C*****************************************************************************
 C    Purpose : Calculate SR DFT-energy and potential contribution for
 C               SR-DFT hybrid methods.
 C
 C    Input: ND_SIM: number of input density matrices and output potential matrices
+C                  DOERG   true: energy
+C                  DOGRD   true: gradient
+C                  DOATR   true: Hessian
+C                  TRIPLET true: triplet operators
 C                  DMAT(1) = charge density matrix
 C                  DMAT(2) = 1-index transformed charge density matrix (DOATR)
 C                  DMAT(3) = spin density matrix (DFT_SPINDNS)
 C                  DMAT(4) = 1-index transformed spin density matrix (DFT_SPINDNS and DOATR)
 C            (if SRHYBR then different ordering of DMAT matrices)
 C
-C                  EXCMAT(1) = charge density potential matrix
+C    Output:       EXCMAT(1) = charge density potential matrix
 C                  EXCMAT(2) = spin density potential matrix (DFT_SPINDNS)
 C                  EXCMAT(2) = special potential matrix (SRHYBR)
+C                  EDFTY     = DFT energy
 C
 C    Created: Jesper Kielberg Pedersen, Mar. 2003
 C    Modified: 17-08-09, J. Toulouse, add spin density matrix
@@ -495,7 +500,8 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 C
-      LOGICAL   DOGGA,DOLND,DOGRD,DOERG,DOATR, first_call, LSRHYBR
+      LOGICAL   DOGGA,DOLND,DOGRD,DOERG,DOATR,TRIPLET
+      LOGICAL   first_call, LSRHYBR
       DATA      first_call /.true./
       REAL*8    EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),WORK(LWORK)
       REAL*8    RESULTS(11)
@@ -503,6 +509,10 @@ C
       CALL QENTER('SRDFT')
       CALL TIMER('START ',TIMSTR,TIMEND)
       RESULTS(:) = 0.0D0
+
+      IF (TRIPLET) THEN
+         CALL QUIT('SRDFT: TRIPLET not implemented yet')
+      END IF
 
       IPRINT  = max(IPRINT_in, SRDFT_DEBUG)
       LSRHYBR = SRHYBR .AND. .NOT.DOHFSRDFT
@@ -519,7 +529,8 @@ C
          flush(lupri)
 #endif
          CALL SRDFT_PAR_MASTER(
-     &        ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,
+     &        ND_SIM,EXCMAT,DMAT,EDFTY,
+     &        DOERG,DOGRD,DOATR,TRIPLET,
      &        WORK,LWORK,IPRINT)
 #if defined SRDFT_DEBUG > 4
          WRITE(lupri,*) 'returned from srdft_par_master'
@@ -2135,7 +2146,8 @@ c
       CALL DZERO(WRK(KFVAO),N2BASX)
 C
 C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
-      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,.TRUE.,.FALSE.,.FALSE.,
+      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,
+     >           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      >           WRK(KFREE),LFREE,IPRFCK)
       IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
@@ -2300,7 +2312,8 @@ c
       CALL DZERO(WRK(KFVAO),N2BASX)
 C
 C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
-      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,.TRUE.,.FALSE.,.FALSE.,
+      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,
+     >           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      >           WRK(KFREE),LFREE,IPRFCK)
       IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
@@ -2367,7 +2380,8 @@ c
       CALL DZERO(WRK(KFVAO),N2BASX)
 C
 C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
-      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,.TRUE.,.FALSE.,.FALSE.,
+      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,
+     >           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      >           WRK(KFREE),LFREE,IPRFCK)
       IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
