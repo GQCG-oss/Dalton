@@ -1,3 +1,6 @@
+[![pipeline status](https://gitlab.com/dalton/dalton/badges/master/pipeline.svg)](https://gitlab.com/dalton/dalton/commits/master) [![coverage report](https://gitlab.com/dalton/dalton/badges/master/coverage.svg)](https://gitlab.com/dalton/dalton/commits/master)
+
+
 # Quick start
 
 Clone the repository:
@@ -18,23 +21,6 @@ Run the test set:
 $ ctest [-j4]
 ```
 
-Dalton Developer’s Guide: http://dalton-devguide.readthedocs.org
+# How to contribute
 
-## Release tarball creation
-
-First make sure that you have no local modifications
-and no generated files present. For this either clone fresh
-or do a careful `rm -rf *; git checkout .; git submodule update --init --recursive`.
-
-Then switch to the release branch and update submodules:
-```
-$ git submodule update --init --recursive
-$ git status  # verify that the status is clean
-```
-Finally create the tarball:
-```
-$ mkdir build
-$ cd build
-$ cmake ..
-$ make release
-```
+See Dalton Developer’s Guide: http://dalton-devguide.readthedocs.org
