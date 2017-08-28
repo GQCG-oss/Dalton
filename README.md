@@ -23,4 +23,4 @@ $ ctest [-j4]
 
 # How to contribute
 
-See Dalton Developer’s Guide: http://dalton-devguide.readthedocs.org
+See Dalton Developer’s Guide: http://dalton-devguide.readthedocs.io
