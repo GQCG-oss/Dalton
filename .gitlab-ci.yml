@@ -4,11 +4,9 @@ fedora-26_gcc-7.1.1:
     variables:
         GIT_SUBMODULE_STRATEGY: "recursive"
         GIT_SSL_NO_VERIFY: "true"
-    tags:
-        - sdu
     script:
         - python setup --coverage --type=debug
         - cd build
-        - make -j 6
-        - ctest -j 6 -L essential
+        - make
+        - ctest -L essential
         - ctest -D ExperimentalCoverage
