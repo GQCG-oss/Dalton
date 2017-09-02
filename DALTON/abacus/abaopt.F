@@ -2678,6 +2678,8 @@ C     Response excited state calculation
 C     Maybe reset the step control parameters as above
 Cdj moved from gtgrad
       IF (EXESG) THEN
+         CALL HEADER(
+     &   'INFO Calling RESPONS to get excited state gradients')
          MOLGRD = .TRUE.
          CALL RSPDRV(WORK,LWORK)
          ENERGY = ENERGY + EXCITA(ISYME,IESG,1)
@@ -2745,7 +2747,7 @@ chj-e-090516
 #endif
 C
 C     Find out if we are running an excited state calculation
-      IF (.NOT. FNDKEY('*ESG   ')) THEN
+      IF (.NOT. EXESG) THEN
 C
 C     TR: Using FNDANA to find highest order of analytical
 C         derivatives (NAORDR). If this is 0, we use numerical

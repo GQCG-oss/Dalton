@@ -4817,7 +4817,7 @@ C
 C
       PARAMETER ( NTABLE = 1 )
       CHARACTER WORD*7, STRING*7
-      PARAMETER ( STRING = '*ESG' )
+      PARAMETER ( STRING = '*ESG   ' )
       ESG = .TRUE.
 C
 C A single residue of the linear response function is calculated
