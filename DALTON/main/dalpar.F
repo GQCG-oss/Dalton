@@ -77,6 +77,7 @@ C
 #endif
       use so_parutils, only: soppa_nodedriver
       use pelib_interface, only: pelib_ifc_slave
+      use qfitlib_interface, only: qfitlib_ifc_slave
 #if defined (HAS_PCMSOLVER)
       use pcm_parallel, only: j1ints_pcm
 #endif
@@ -272,6 +273,8 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYNUM,MYNUM,IPRINT)
             CALL MEP_SLAVE(WORK(1),MWORK)
          ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
             CALL PELIB_IFC_SLAVE(IPRINT)
+         ELSE IF (IPRTYP == QFIT_WORK) THEN
+            CALL QFITLIB_IFC_SLAVE(LUPRI, IPRINT)
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN
