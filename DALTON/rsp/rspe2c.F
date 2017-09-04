@@ -3635,6 +3635,9 @@ C
 C  /* Deck rsppp */
       SUBROUTINE RSPPP(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
+      use qfitlib_interface, only : qfitlib_ifc_response_fit,
+     *   qfitlib_ifc_results
+C
 C  Purpose:
 C     CONTROL CALCULATION OF EXCITATION ENERGIES AND TRANSITION
 C     MOMENTS
@@ -4169,10 +4172,12 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
 !           END IF
-            IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
-     &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
-     &                             WRK(KWRK2),LWRK2)
-
+            IF (TRDQF) THEN
+              IDX=KBVECS+(INUM-1)*KZYVAR
+              CALL QFITLIB_IFC_RESPONSE_FIT(CMO,WRK(IDX),UDV,
+     &                                      WRK(KWRK2),LWRK2)
+              CALL QFITLIB_IFC_RESULTS
+            END IF
 
             IF (DOMO2) CALL RSPMO2(WRK(KBVECS+(INUM-1)*KZYVAR),
      &                             KZYVAR,KZVAR,CMO,LUPRI,
@@ -6700,121 +6705,6 @@ C Take out the diagonal elements
        WRITE(LUPRI,*)
 
 
-      RETURN
-      END
-C  /* Deck TRCHAR */
-      SUBROUTINE TRCHAR (WOP,NDIM2,NDIM1,CMO,UDV,LUPRI,WRK,LWRK)
-c
-#ifdef BUILD_QFITLIB
-      use qfit
-#endif
-C
-C     NDIM2 = KZYVAR
-C     NDIM1 = KZVAR
-C
-#include "implicit.h"
-      DIMENSION WOP(*),CMO(*),WRK(*), UDV(*)
-      PARAMETER (D0 = 0.0D0)
-      LOGICAL LOCDEB, ANTSYM
-      real*8, dimension(:), allocatable :: dens
-      DIMENSION TRDIP(3)
-C
-#include "mxcent.h"
-#include "codata.h"
-#include "maxorb.h"
-#include "maxash.h"
-#include "infind.h"
-#include "inforb.h"
-#include "infvar.h"
-#include "inflin.h"
-#include "nuclei.h"
-
-      LOCDEB = .FALSE.
-
-      CALL HEADER('Calculation of Transition Density charges',-1)
-
-C     Memory allocation
-      KUBOVE  = 1
-      KDCAO   = KUBOVE + N2ORBX
-      KDVAO   = KDCAO  + N2BASX
-      KDENS   = KDVAO  + N2BASX
-      KINT    = KDENS  + NNBASX
-      KWRK2   = KINT   + 3*NNBASX
-      LWRK2   = LWRK   - KWRK2
-
-      IF (LWRK2 .LT. 0) CALL ERRWRK('TRCHAR',-KWRK2,LWRK2)
-
-      CALL DZERO(WRK(KUBOVE),N2ORBX)
-      CALL DZERO(WRK(KDCAO),N2BASX)
-      CALL DZERO(WRK(KDVAO),N2BASX)
-      CALL DZERO(WRK(KDENS),NNBASX)
-      CALL DZERO(WRK(KINT),3*NNBASX)
-
-      CALL RSPZYM(1,WOP,WRK(KUBOVE))
-      CALL DSCAL(N2ORBX,-1.0D0,WRK(KUBOVE),1)
-
-      CALL DEQ27(CMO,WRK(KUBOVE),UDV,WRK(KDCAO),WRK(KDVAO),
-     &           WRK(KWRK2),LWRK2)
-
-      IF (NASHT .GT. 1) THEN
-        CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)
-        CALL DZERO(WRK(KDVAO),N2BASX)
-      ENDIF
-
-      IF (LOCDEB) THEN
-          WRITE (LUPRI,'(/A)') ' Transition Density Matrix - Full'
-          CALL OUTPUT(WRK(KDCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-      ENDIF
-      CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KDVAO))
-      CALL PKSYM1(WRK(KDVAO),WRK(KDENS),NBAS,NSYM,1)
-
-      IF (LOCDEB)  THEN
-         WRITE (LUPRI,'(/A)') ' Transition Density Matrix - Packed'
-         CALL OUTPAK(WRK(KDENS),NBAST,1,LUPRI)
-      ENDIF
-
-      LU=-1
-      CALL GPOPEN(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
-     &     .FALSE.)
-
-      REWIND LU
-      CALL MOLLAB('XDIPLEN ',LU,LUPRI)
-      CALL READT(LU,NNBASX,WRK(KINT))
-
-      CALL MOLLAB('YDIPLEN ',LU,LUPRI)
-      CALL READT(LU,NNBASX,WRK(KINT+NNBASX))
-
-      CALL MOLLAB('ZDIPLEN ',LU,LUPRI)
-      CALL READT(LU,NNBASX,WRK(KINT+2*NNBASX))
-
-      CALL GPCLOSE(LU,'KEEP')
-
-      IF (LOCDEB) THEN
-          WRITE (LUPRI,'(/A)') ' XDIPLEN AO Basis:'
-          CALL OUTPAK(WRK(KINT),NBAST,1,LUPRI)
-
-          WRITE (LUPRI,'(/A)') ' YDIPLEN AO Basis:'
-          CALL OUTPAK(WRK(KINT+NNBASX),NBAST,1,LUPRI)
-
-          WRITE (LUPRI,'(/A)') ' ZDIPLEN AO Basis:'
-          CALL OUTPAK(WRK(KINT+2*NNBASX),NBAST,1,LUPRI)
-      ENDIF
-
-      TRDIP(1) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT),1)
-      TRDIP(2) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+NNBASX),1)
-      TRDIP(3) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+2*NNBASX),1)
-
-      WRITE (LUPRI,'(/A)') ' Transition Dipole (x,y,z)'
-      WRITE(LUPRI,'(5x,3F12.6)') TRDIP
-
-#ifdef BUILD_QFITLIB
-      allocate( dens( N2BASX ) )
-      call dcopy(n2basx,wrk(kdcao),1,dens,1)
-      call qfit_set_transition_dipole( TRDIP )
-      call qfit_fit( dens )
-      deallocate( dens )
-      CALL QFITRES
-#endif
       RETURN
       END
 ! -- end of rspe2c.F --
