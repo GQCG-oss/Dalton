@@ -1729,4 +1729,148 @@ C                 do it there directly
 C
       RETURN
       END
+C  /* Deck cc_22cd3 */
+      SUBROUTINE CC_22CD3(RHO2,CTR2,ISYVEC,XLAMDH,WORK,LWORK,
+     *                    ISYDIM,LUF,FIL,IV,IOPT,FACT)
+C
+C     Written by Rasmus Faber, 2017
+C     Based on CC_22D by Asger Halkier
+C
+C     Purpose: To calculate the triplet 22C or 22D contribution to RHO2.
+C              If 22D: CTR2 needs to be transposed before this routine.
+C              If 22C: RHO2 must be transposed.
+C
+C                 if iopt = 1 the D intermediate is assumed
+C                 to be as in energy calc.
+C
+C                 if iopt ne. 1 we use the intermediate
+C                 on lud with address given according to
+C                 transformed vector nr iv (iv is not 1
+C                 if several vectors are transformed
+C                 simultaneously.)
+C
+C                 in Lambda vector calc: iv=1,iopt=1
+C
+      IMPLICIT NONE
+      CHARACTER(LEN=*), PARAMETER :: myname = 'CC_22CD3'
+      DOUBLE PRECISION, PARAMETER :: ZERO = 0.0D0, ONE = 1.0D0
+      DOUBLE PRECISION, INTENT(INOUT) ::  RHO2(*),  WORK(LWORK)
+      DOUBLE PRECISION, INTENT(IN) :: CTR2(*), XLAMDH(*), FACT
+      CHARACTER, INTENT(IN) :: FIL*(*)
+      INTEGER, INTENT(IN) :: ISYVEC, LWORK, ISYDIM, LUF, IV, IOPT
+C
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "maxorb.h"
+#include "ccsdio.h"
+C
+      INTEGER :: ISYMB, ISYMD, ISYMJ, ISYMAI, ISYMBJ, ISYMEM,
+     &           ISYAIJ, ISYJEM, ISYRES
+      INTEGER :: IDEL, ID, IOFF, IOFFD, LEN
+      INTEGER :: NTOTD, NTOTJ, NTOTAI, NTOTEM
+      INTEGER :: KOFF1, KOFF2, KOFF3, KOFF4, KOFF5
+      INTEGER :: KPINT, KSCRN, KLAMD, KEND1
+      INTEGER :: LWRK1
 
+
+C
+      ISYRES = MULD2H(ISYVEC,ISYDIM)
+C
+      DO 100 ISYMD = 1,NSYM
+C
+         ISYMB  = ISYMD
+         ISYJEM = MULD2H(ISYMD,ISYDIM)
+         ISYAIJ = MULD2H(ISYMB,ISYRES)
+C
+C------------------------------
+C        Work space allocation.
+C------------------------------
+C
+         KPINT = 1
+         KSCRN = KPINT + NT2BCD(ISYJEM)
+         KLAMD = KSCRN + NT2BCD(ISYAIJ)
+         KEND1 = KLAMD + NVIR(ISYMB)
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            CALL QUIT('Insufficient work space in '//myname)
+         ENDIF
+C
+         LEN = NT2BCD(ISYJEM)
+         IF (LEN .LE. 0) CYCLE ! Nothing to do for this sym
+
+         DO 110 IDEL = 1,NBAS(ISYMD)
+C
+C-----------------------------------------
+C           Copy row "IDEL" out of XLAMDH.
+C-----------------------------------------
+C
+            IOFFD = ILMVIR(ISYMB) + IDEL
+            NTOTD = MAX(NBAS(ISYMD),1)
+            CALL DCOPY(NVIR(ISYMB),XLAMDH(IOFFD),NTOTD,
+     &                 WORK(KLAMD),1)
+
+C
+C---------------------------------------------------
+C           Read P-intermediate submatrix from disc.
+C---------------------------------------------------
+C
+            ID = IDEL + IBAS(ISYMD)
+C
+            IF (IOPT .EQ. 1) THEN
+               IOFF = IT2DEL(ID) + 1
+            ELSE
+               IOFF = IT2DLR(ID,IV) + 1
+            ENDIF
+C
+            CALL GETWA2(LUF,FIL,WORK(KPINT),IOFF,LEN)
+C
+            DO 120 ISYMJ = 1,NSYM
+C
+C--------------------------------------------------------
+C              Contraction of intermediate and trial vector.
+C--------------------------------------------------------
+C
+               ISYMAI = MULD2H(ISYMJ,ISYAIJ)
+               ISYMEM = MULD2H(ISYMAI,ISYVEC)
+               ISYMBJ = MULD2H(ISYMJ,ISYMB)
+C
+               KOFF1  = IT2SQ(ISYMEM,ISYMAI) + 1
+               KOFF2  = KPINT + IT2BCT(ISYMJ,ISYMEM)
+               KOFF3  = KSCRN + IT2BCD(ISYMAI,ISYMJ)
+C
+               NTOTAI = MAX(NT1AM(ISYMAI),1)
+               NTOTEM = MAX(NT1AM(ISYMEM),1)
+               NTOTJ  = MAX(NRHF(ISYMJ),1)
+C
+               CALL DGEMM('T','T',NT1AM(ISYMAI),NRHF(ISYMJ),
+     &                    NT1AM(ISYMEM),ONE,CTR2(KOFF1),NTOTEM,
+     &                    WORK(KOFF2),NTOTJ,ZERO,WORK(KOFF3),NTOTAI)
+C
+C-----------------------------------------------------------------
+C              Final scaling with XLAMDH-element and storage in RHO2.
+C-----------------------------------------------------------------
+C
+               DO J = 1, NRHF(ISYMJ)
+
+                  KOFF4 = KOFF3 + NT1AM(ISYMAI)*(J-1)
+
+                  KOFF5 = IT2SQ(ISYMAI,ISYMBJ) +
+     &           NT1AM(ISYMAI)* (IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J-1))
+     &                  + 1
+
+                  CALL DGER(NT1AM(ISYMAI),NVIR(ISYMB),FACT,
+     &                      WORK(KOFF4),1,WORK(KLAMD),1,
+     &                      RHO2(KOFF5),NTOTAI)
+
+               END DO
+C
+  120       CONTINUE
+
+  110    CONTINUE
+  100 CONTINUE
+C
+      RETURN
+      END

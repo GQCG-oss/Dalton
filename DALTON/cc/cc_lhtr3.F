@@ -1291,24 +1291,25 @@ C
          AUTIME = SECOND()
          IOPT = 1
          ISYDIM = 1
-C         CALL CC_22D(RHO2,CTR2,ISYMTR,WORK(KLAMDH),WORK(KEND1),
-C     *               LWRK1,ISYDIM,LUDIM,DFIL,IV,IOPT)
+         FACT = HALF
+         CALL CC_T2SQTRANSP(CTR2,ISYMTR)
+         CALL CC_22CD3(RHO2,CTR2,ISYMTR,WORK(KLAMDH),WORK(KEND1),
+     *                 LWRK1,ISYDIM,LUDIM,DFIL,1,IOPT,FACT)
          TIM22D = SECOND() - AUTIME
-C
+         CALL CC_T2SQTRANSP(CTR2,ISYMTR)
 C-----------------------------------------
 C        Calculate the LT22C contribution.
 C-----------------------------------------
 C
          AUTIME = SECOND()
-C
-C         CALL CCRHS_T2BT(CTR2,WORK(KEND1),LWRK1,ISYMTR)
-C         CALL DSCAL(NT2SQ(ISYMTR),THREE,CTR2,1)
-C         CALL CCSD_T2TP(CTR2,WORK(KEND1),LWRK1,ISYMTR)
-C
          IOPT = 1
          ISYCIM = 1
-C         CALL CC_22C(RHO2,CTR2,ISYMTR,WORK(KLAMDH),WORK(KEND1),
-C     *               LWRK1,ISYCIM,LUCIM,CFIL,IV,IOPT)
+         FACT = -HALF
+
+         CALL CC_T2SQTRANSP(RHO2,ISYMTR)
+         CALL CC_22CD3(RHO2,CTR2,ISYMTR,WORK(KLAMDH),WORK(KEND1),
+     *                 LWRK1,ISYCIM,LUCIM,CFIL,1,IOPT,FACT)
+         CALL CC_T2SQTRANSP(RHO2,ISYMTR)
 C
          TIM22C = SECOND() - AUTIME
 C
