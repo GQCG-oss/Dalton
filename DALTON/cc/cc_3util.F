@@ -468,10 +468,10 @@ C
 
       END SUBROUTINE
 C
-      SUBROUTINE CC_T2SQSYMSCAL(X2SQ,ISYMTR)
+      SUBROUTINE CC_T2SQSYMSCAL(X2SQ,ISYMTR,FACT)
 C
-C     Scale the symmetric part of the squared doubles array by 1/2
-C     x2 (ai,bj) <- 3/4 (ai,bj) - 1/4 (bj,ai)
+C     Scale the symmetric part of the squared doubles array by FACT:
+C     x2 (ai,bj) <- (1+FACT)/2 (ai,bj) - (1-FACT)/2 (bj,ai)
 C     Needed in the triplet case, when the squared array
 C     typically contain a linear combination of (+) and (-)
 C     components
@@ -482,8 +482,13 @@ C     components
 
       INTEGER, INTENT(IN) :: ISYMTR
       DOUBLE PRECISION, INTENT(INOUT) :: X2SQ(*)
-      DOUBLE PRECISION, PARAMETER :: FOURTH = 0.25D0, THREEF = 0.75D0
+      DOUBLE PRECISION, INTENT(IN) :: FACT
+      DOUBLE PRECISION, PARAMETER :: HALF = 0.5D0, ONE = 1.0D0
       INTEGER :: ISYMAI, ISYMBJ, IXPOS, IXPOS2
+      DOUBLE PRECISION :: FN, FT
+C
+      FN = HALF*(ONE+FACT)
+      FT = HALF*(ONE-FACT)
 C
       IF (ISYMTR.EQ.1) THEN
 
@@ -521,8 +526,8 @@ C
             DO J = 1, I-1
                TMP1 = A(I,J)
                TMP2 = A(J,I)
-               A(I,J) = THREEF*TMP1 - FOURTH*TMP2
-               A(J,I) = THREEF*TMP2 - FOURTH*TMP1
+               A(I,J) = FN*TMP1 - FT*TMP2
+               A(J,I) = FN*TMP2 - FT*TMP1
             END DO
          END DO
 C
@@ -539,8 +544,8 @@ C
             DO J = 1, N
                TMP1 = A(I,J)
                TMP2 = B(J,I)
-               A(I,J) = THREEF*TMP1 - FOURTH*TMP2
-               B(J,I) = THREEF*TMP2 - FOURTH*TMP1
+               A(I,J) = FN*TMP1 - FT*TMP2
+               B(J,I) = FN*TMP2 - FT*TMP1
             END DO
          END DO
 C
@@ -1081,7 +1086,7 @@ C
 C
 C     Rasmus Faber, Aug 2017
 C
-C     Extracts the component of the "+" triplet doubles vector from the
+C     Extracts the components of the "+" triplet doubles vector from the
 C     square array "X2SQ" and puts it in X2AMP ordered AI<BJ
 C     If anti is true, extract (-) component instead.
 C

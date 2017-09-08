@@ -1141,7 +1141,7 @@ C        relative to the (-) contribution.
 C        Take care of that by scaling the symmetric part py 1/2
 C-----------------------------------------------------------------------
 C
-         CALL CC_T2SQSYMSCAL(RHO2,ISYMTR)
+         CALL CC_T2SQSYMSCAL(RHO2,ISYMTR,HALF)
 C
 C------------------------------------------
 C        Calculate the LT22EM contribution.
@@ -1297,6 +1297,7 @@ C
      *                 LWRK1,ISYDIM,LUDIM,DFIL,1,IOPT,FACT)
          TIM22D = SECOND() - AUTIME
          CALL CC_T2SQTRANSP(CTR2,ISYMTR)
+C
 C-----------------------------------------
 C        Calculate the LT22C contribution.
 C-----------------------------------------
@@ -1319,8 +1320,41 @@ C
             WRITE(LUPRI,1) 'Norm of RHO1 after CC_22C:        ', RHO1N
             WRITE(LUPRI,1) 'Norm of RHO2 after CC_22C:        ', RHO2N
          ENDIF
+C----------------------------------------------------------------
+C     Extract the plus combination from the mixed doubles vector,
+C----------------------------------------------------------------
+C     use WORK(KEND1) as scratch
+         CALL CC_TRIP_EXTRACT(RHO2,WORK(KEND1),ISYRES,.FALSE.)
+C        Permute indices
+         CALL CCRHS3_IJ(WORK(KEND1),WORK(KEND1+NT2AM(ISYMTR)),
+     &                 LWRK1,ISYRES)
+C        Write out (+) vector
+         CALL CC_WVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
+     &                 NT2AM(ISYMTR),IV+ITR-1,0,WORK(KEND1))
 C
-       ENDIF
+C   Remove (+) parts from RHO2 and CTR, now they contain (-) parts only
+C
+         CALL CC_T2SQSYMSCAL(RHO2,ISYMTR,ZERO)
+         CALL CC_T2SQSYMSCAL(CTR2,ISYMTR,ZERO)
+C
+C------------------------------------------
+C        Calculate the LT22C- contribution.
+C------------------------------------------
+C
+         CALL CCSD_T2TP(CTR2,WORK(KEND1),LWRK1,ISYMTR)
+         CALL CCSD_T2TP(RHO2,WORK(KEND1),LWRK1,ISYMTR)
+C
+         IOPT = 1
+         ISYCIM = 1
+         FACT = ONE
+C
+         CALL CC_22CD3(RHO2,CTR2,ISYMTR,WORK(KLAMDH),WORK(KEND1),
+     *                 LWRK1,ISYCIM,LUCIM,CFIL,1,IOPT,FACT)
+C
+C         CALL T2TP(CTR2,WOTK(KEND1),LWRK1,ISYMTR)
+         CALL CCSD_T2TP(RHO2,WORK(KEND1),LWRK1,ISYMTR)
+C
+      ENDIF
 C
 C--------------------------------------
 C     Calculate the LT11A contribution.
@@ -1397,38 +1431,6 @@ C
          WRITE(LUPRI,1) 'Norm of RHO2 after CC_12C         ', RHO2N
       ENDIF
 C
-C----------------------------------------------------------------
-C     Calculate the diagonal 2.2-contribution in CC2-calculation.
-C----------------------------------------------------------------
-C
-      IF (CC2) THEN
-C
-         TIMEC2 = SECOND()
-         IF (.NOT. NONHF) THEN
-           ISIDE =  -1
-           CALL CC2_FCK(RHO2,CTR2,WORK(KEND1),LWRK1,ISYMTR,
-     *                  WORK(KLAMDP),WORK(KLAMDH),ISIDE)
-         ELSE
-           KEMAT1 = KEND1
-           KEMAT2 = KEMAT1 + NEMAT1(1)
-           KEND2  = KEMAT2 + NMATIJ(1)
-           LWRK2  = LWORK  - KEND2
-           IF (LWRK2 .LT. 0) THEN
-              CALL QUIT('Insufficient work space in CC_LHTR')
-           ENDIF
-
-           ETRAN  = .FALSE.
-           FCKCON = .TRUE.
-           CALL CCRHS_EFCK(WORK(KEMAT1),WORK(KEMAT2),WORK(KLAMDH),
-     *                   WORK(KFCKHF),WORK(KEND2),LWRK2,FCKCON,ETRAN,1)
-           CALL CC_EITR(WORK(KEMAT1),WORK(KEMAT2),WORK(KEND2),LWRK2,1)
-           CALL CCRHS_E(RHO2,CTR2,WORK(KEMAT1),WORK(KEMAT2),WORK(KEND2),
-     *                  LWRK2,ISYMTR,1)
-         END IF
-         TIMEC2 = SECOND() -TIMEC2
-C
-      ENDIF
-C
 C----------------------------------------
 C     Calculate the LT21EFM contribution.
 C----------------------------------------
@@ -1466,14 +1468,6 @@ C
          WRITE(LUPRI,1) 'Norm of RHO2 coming out of CC_LHTR:', RHO2N
       ENDIF
 C
-C     Extract the plus combination from the mixed doubles vector, use
-C     CTR2 as scratch
-         CALL CC_TRIP_EXTRACT(RHO2,CTR2,ISYRES,.FALSE.)
-C        Permute indices
-         CALL CCRHS3_IJ(CTR2,WORK(KEND1),LWRK1,ISYRES)
-C        Write out (+) vector
-         CALL CC_WVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
-     &                 NT2AM(ISYMTR),IV+ITR-1,0,CTR2)
 
 
 C
