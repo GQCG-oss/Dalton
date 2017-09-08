@@ -1465,6 +1465,7 @@ C
                LPPOP( INDPRP('XZQUADRU')) = .TRUE.
                LPPOP( INDPRP('YYQUADRU')) = .TRUE.
                LPPOP( INDPRP('YZQUADRU')) = .TRUE.
+               LPPOP( INDPRP('ZZQUADRU')) = .TRUE.
                GO TO 100
  14            CONTINUE   ! .QUADXX
                LPPOP( INDPRP('XXQUADRU')) = .TRUE.
