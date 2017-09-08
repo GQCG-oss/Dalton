@@ -1229,61 +1229,6 @@ C
             WRITE(LUPRI,1) 'Norm of RHO2 after 21BF-TERM:     ', RHO2N
          ENDIF
 C
-C---------------------------------------
-C        Read E-intermediates from disc.
-C---------------------------------------
-C
-         KE1INT = KEND1
-         KE2INT = KE1INT + NMATAB(ISYMOP)
-         KENDTE = KE2INT + NMATIJ(ISYMOP)
-         LWRKTE = LWORK  - KENDTE
-C
-         IF (LWRKTE .LT. 0) THEN
-            CALL QUIT('Insufficient work space in CC_LHTR')
-         ENDIF
-C
-         AUTIME = SECOND()
-         LUE1 = -1
-         CALL GPOPEN(LUE1,'CC_E1IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
-         REWIND(LUE1)
-         READ(LUE1) (WORK(KE1INT + J - 1), J = 1,NMATAB(ISYMOP))
-         CALL GPCLOSE(LUE1,'KEEP')
-C
-         LUE2 = -1
-         CALL GPOPEN(LUE2,'CC_E2IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
-         REWIND(LUE2)
-         READ(LUE2) (WORK(KE2INT + J - 1), J = 1,NMATIJ(ISYMOP))
-         CALL GPCLOSE(LUE2,'KEEP')
-C
-C--------------------------------------------------------------
-C        Prepare the E-intermediates for contraction with CTR2.
-C--------------------------------------------------------------
-C
-         CALL CC_EITR(WORK(KE1INT),WORK(KE2INT),WORK(KENDTE),LWRKTE,
-     &                ISYMOP)
-C
-C-----------------------------------------
-C        Calculate the LT22E contribution.
-C-----------------------------------------
-C
-C         CALL CCRHS_E(RHO2,CTR2,WORK(KE1INT),WORK(KE2INT),WORK(KENDTE),
-C     &                LWRKTE,ISYMTR,ISYMOP)
-         TIM22E = SECOND() - AUTIME
-C
-         IF (IPRINT .GT. 50) THEN
-            CALL AROUND('Transformed vector after E-TERM')
-            CALL CC_PRP(RHO1(1,IV),RHO2,ISYRES,0,1)
-         ENDIF
-C
-         IF ( DEBUG ) THEN
-            RHO1N = DDOT(NT1AM(ISYRES),RHO1(1,IV),1,RHO1(1,IV),1)
-            RHO2N = DDOT(NT2AM(ISYRES),RHO2,1,RHO2,1)
-            WRITE(LUPRI,1) 'Norm of RHO1 after E-TERM:        ', RHO1N
-            WRITE(LUPRI,1) 'Norm of RHO2 after E-TERM:        ', RHO2N
-         ENDIF
-C
 C-----------------------------------------
 C        Calculate the LT22D contribution.
 C-----------------------------------------
@@ -1325,9 +1270,6 @@ C     Extract the plus combination from the mixed doubles vector,
 C----------------------------------------------------------------
 C     use WORK(KEND1) as scratch
          CALL CC_TRIP_EXTRACT(RHO2,WORK(KEND1),ISYRES,.FALSE.)
-C        Permute indices
-         CALL CCRHS3_IJ(WORK(KEND1),WORK(KEND1+NT2AM(ISYMTR)),
-     &                 LWRK1,ISYRES)
 C        Write out (+) vector
          CALL CC_WVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
      &                 NT2AM(ISYMTR),IV+ITR-1,0,WORK(KEND1))
@@ -1351,9 +1293,116 @@ C
          CALL CC_22CD3(RHO2,CTR2,ISYMTR,WORK(KLAMDH),WORK(KEND1),
      *                 LWRK1,ISYCIM,LUCIM,CFIL,1,IOPT,FACT)
 C
-C         CALL T2TP(CTR2,WOTK(KEND1),LWRK1,ISYMTR)
+         CALL CCSD_T2TP(CTR2,WORK(KEND1),LWRK1,ISYMTR)
          CALL CCSD_T2TP(RHO2,WORK(KEND1),LWRK1,ISYMTR)
 C
+C------------------------------------------
+C        Pack the RHO2(-) vector as (ai<bj)
+C------------------------------------------
+         CALL CC_TRIP_EXTRACT(RHO2,WORK(KEND1),ISYRES,.TRUE.)
+         CALL DCOPY(NT2AM(ISYMTR),WORK(KEND1),1,RHO2,1)
+C
+C---------------------------------------
+C        Read E-intermediates from disc.
+C---------------------------------------
+C
+         KE1INT = KEND1
+         KE2INT = KE1INT + NMATAB(ISYMOP)
+         KENDTE = KE2INT + NMATIJ(ISYMOP)
+         LWRKTE = LWORK  - KENDTE
+C
+         IF (LWRKTE .LT. 0) THEN
+            CALL QUIT('Insufficient work space in CC_LHTR')
+         ENDIF
+C
+         AUTIME = SECOND()
+         LUE1 = -1
+         CALL GPOPEN(LUE1,'CC_E1IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+         REWIND(LUE1)
+         READ(LUE1) (WORK(KE1INT + J - 1), J = 1,NMATAB(ISYMOP))
+         CALL GPCLOSE(LUE1,'KEEP')
+C
+         LUE2 = -1
+         CALL GPOPEN(LUE2,'CC_E2IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+         REWIND(LUE2)
+         READ(LUE2) (WORK(KE2INT + J - 1), J = 1,NMATIJ(ISYMOP))
+         CALL GPCLOSE(LUE2,'KEEP')
+C
+C--------------------------------------------------------------
+C        Prepare the E-intermediates for contraction with CTR2.
+C--------------------------------------------------------------
+C
+         CALL CC_EITR(WORK(KE1INT),WORK(KE2INT),WORK(KENDTE),LWRKTE,
+     &                ISYMOP)
+C
+C-----------------------------------------
+C        Calculate the LT22E (-) contribution.
+C-----------------------------------------
+C
+         CALL CCRHS_E3(DUMMY,.FALSE.,CTR2,WORK(KE1INT),WORK(KE2INT),
+     &                 WORK(KENDTE),LWRKTE,ISYMTR,ISYMOP,
+     &                 RHO2,.TRUE.)
+         TIM22E = SECOND() - AUTIME
+C
+         IF (IPRINT .GT. 50) THEN
+            CALL AROUND('Transformed vector after E-TERM')
+            CALL CC_PRP(RHO1(1,IV),RHO2,ISYRES,0,1)
+         ENDIF
+C
+         IF ( DEBUG ) THEN
+            RHO1N = DDOT(NT1AM(ISYRES),RHO1(1,IV),1,RHO1(1,IV),1)
+            RHO2N = DDOT(NT2AM(ISYRES),RHO2,1,RHO2,1)
+            WRITE(LUPRI,1) 'Norm of RHO1 after E-TERM:        ', RHO1N
+            WRITE(LUPRI,1) 'Norm of RHO2 after E-TERM:        ', RHO2N
+         ENDIF
+C------------------------------------------
+C        RHO2(-) done: write out (-) vector
+C------------------------------------------
+         CALL CC_WVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
+     &                 NT2AM(ISYMTR),IV+ITR-1,NT2AM(ISYMTR),RHO2)
+C
+C--------------------------------------
+C        Read CTR2+ from disc into RHO2.
+C--------------------------------------
+C
+         DTIME = SECOND()
+         CALL CC_RVEC3(LUFC2,FC2AM,2*NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                 IVEC+IV-1,0,RHO2)
+         DTIME = SECOND() - DTIME
+         TIMIO = TIMIO + DTIME
+C
+C--------------------------
+C        Square up CTR2(+).
+C--------------------------
+C
+         CALL CCRHS3_R2IJ(RHO2,WORK(KENDTE),LWRK1,ISYMTR)
+         CALL CC_T2SQ(RHO2,CTR2,ISYMTR)
+C-----------------------------
+C        Read RHO2 (+) back in
+C-----------------------------
+         CALL CC_RVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
+     &                 NT2AM(ISYMTR),IV+ITR-1,0,RHO2)
+
+C
+C-----------------------------------------
+C        Calculate the LT22E (-) contribution.
+C-----------------------------------------
+C
+         AUTIME = SECOND()
+         CALL CCRHS_E3(RHO2,.TRUE.,CTR2,WORK(KE1INT),WORK(KE2INT),
+     &                 WORK(KENDTE),LWRKTE,ISYMTR,ISYMOP,
+     &                 DUMMY,.FALSE.)
+         TIM22E = TIM22E + SECOND() - AUTIME
+
+C        Permute indices
+         CALL CCRHS3_IJ(RHO2,WORK(KEND1),
+     &                 LWRK1,ISYRES)
+C        Write out (+) vector
+         CALL CC_WVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
+     &                 NT2AM(ISYMTR),IV+ITR-1,0,RHO2)
+
       ENDIF
 C
 C--------------------------------------
@@ -1470,13 +1519,6 @@ C
 C
 
 
-C
-C     Extract the minus combination from the mixed doubles vector, use
-C     CTR2 as scratch
-         CALL CC_TRIP_EXTRACT(RHO2,CTR2,ISYRES,.TRUE.)
-C        Write out (+) vector
-         CALL CC_WVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
-     &                 NT2AM(ISYMTR),IV+ITR-1,NT2AM(ISYMTR),CTR2)
 C
          DTIME   = SECOND() - DTIME
          TIMIO   = TIMIO    + DTIME
