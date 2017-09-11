@@ -2019,6 +2019,8 @@ C
                   LLROP( INDPRP('XZQUADRU')) = .TRUE.
                   LLROP( INDPRP('YYQUADRU')) = .TRUE.
                   LLROP( INDPRP('YZQUADRU')) = .TRUE.
+                  LLROP( INDPRP('ZZQUADRU')) = .TRUE.
+
                GO TO 100
  14            CONTINUE
                   LLROP( INDPRP('XXQUADRU')) = .TRUE.
@@ -2491,6 +2493,7 @@ C
                   LC6OP( INDPRP('XZQUADRU')) = .TRUE.
                   LC6OP( INDPRP('YYQUADRU')) = .TRUE.
                   LC6OP( INDPRP('YZQUADRU')) = .TRUE.
+                  LC6OP( INDPRP('ZZQUADRU')) = .TRUE.
                GO TO 100
    14          CONTINUE
                   LC6OP( INDPRP('XXQUADRU')) = .TRUE.
