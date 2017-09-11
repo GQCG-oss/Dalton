@@ -1229,6 +1229,40 @@ C
             WRITE(LUPRI,1) 'Norm of RHO2 after 21BF-TERM:     ', RHO2N
          ENDIF
 C
+C------------------------------------------
+C     Ove: Read in AO Fock.
+C     Transform AO Fock matrix to MO basis.
+C------------------------------------------
+C
+         LFOCK = -1
+         CALL GPOPEN(LFOCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+         REWIND(LFOCK)
+         READ(LFOCK) (WORK(KFOCK + I - 1) , I = 1,N2BST(ISYMOP))
+         CALL GPCLOSE(LFOCK,'KEEP')
+C
+         IHELP = 1
+C
+         CALL CC_FCKMO(WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
+     *                 WORK(KEND1),LWRK1,IHELP,IHELP,IHELP)
+C
+C------------------------------------------------
+C     Calculate the LT11B and LT11C contribution.
+C------------------------------------------------
+C
+         CALL CCLT_11BC(RHO1(1,IV),CTR1(1,IV),WORK(KFOCK),WORK(KEND1),
+     *                  LWRK1)
+         TIM11B = SECOND() - AUTIME
+C
+C--------------------------------------
+C     Calculate the LT12A contribution.
+C--------------------------------------
+C
+         AUTIME = SECOND()
+         CALL CC_L1FCK3(RHO2,CTR1(1,IV),WORK(KFOCK),ISYMTR,ISYMOP,
+     *                  WORK(KEND1),LWRK1)
+         TIM12A = SECOND() - AUTIME
+C
 C-----------------------------------------
 C        Calculate the LT22D contribution.
 C-----------------------------------------
@@ -1419,48 +1453,6 @@ C
          WRITE(LUPRI,1) 'Norm of RHO1 after CC_11A:        ', RHO1N
 C         WRITE(LUPRI,1) 'Norm of RHO2 after CC_11A:        ', RHO2N
       ENDIF
-C
-C------------------------------------------
-C     Ove: Read in AO Fock.
-C     Transform AO Fock matrix to MO basis.
-C------------------------------------------
-C
-      LFOCK = -1
-      CALL GPOPEN(LFOCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND(LFOCK)
-      READ(LFOCK) (WORK(KFOCK + I - 1) , I = 1,N2BST(ISYMOP))
-      CALL GPCLOSE(LFOCK,'KEEP')
-C
-      IHELP = 1
-C
-      CALL CC_FCKMO(WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
-     *                 WORK(KEND1),LWRK1,IHELP,IHELP,IHELP)
-C
-C------------------------------------------------
-C     Calculate the LT11B and LT11C contribution.
-C------------------------------------------------
-C
-      CALL CCLT_11BC(RHO1(1,IV),CTR1(1,IV),WORK(KFOCK),WORK(KEND1),
-     *               LWRK1)
-      TIM11B = SECOND() - AUTIME
-C
-C--------------------------------------
-C     Calculate the LT12A contribution.
-C--------------------------------------
-C
-      AUTIME = SECOND()
-C      CALL CC_L1FCK(RHO2,CTR1(1,IV),WORK(KFOCK),ISYMTR,ISYMOP,
-C     *              WORK(KEND1),LWRK1)
-      TIM12A = SECOND() - AUTIME
-C
-      IF ( DEBUG ) THEN
-         RHO1N = DDOT(NT1AM(ISYRES),RHO1(1,IV),1,RHO1(1,IV),1)
-C         RHO2N = DDOT(NT2AM(ISYRES),RHO2,1,RHO2,1)
-         WRITE(LUPRI,1) 'Norm of RHO1 after _11BC and _12A:', RHO1N
-C         WRITE(LUPRI,1) 'Norm of RHO2 after _11BC and _12A:', RHO2N
-      ENDIF
-C
 C
 C-----------------------------------------------
 C     Calculate the LT12C & LT21B contributions.

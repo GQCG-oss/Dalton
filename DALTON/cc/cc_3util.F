@@ -131,18 +131,16 @@ C
 
       END
 C  /* Deck cc_21b12ca */
-      SUBROUTINE CC_21B3(RHO1,RHO2,CTR1,ISYMV,XLAMDH,ISYMH,
+      SUBROUTINE CC_12C3(RHO1,RHO2,CTR1,ISYMV,XLAMDH,ISYMH,
      *                   XMAT,ISYMX,ISINT,WORK,LWORK,
      *                   LUO3,O3FIL,IOPT)
 C
 C     Rasmus Faber - 2017
 C
-C
-C
 C     Based on CC_21B12C by Asger Halkier & Henrik Koch 13/9 - 1995.
 C
 #include "implicit.h"
-      PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, ONEM = -1.0D0)
       DIMENSION RHO1(*),RHO2(*),CTR1(*),XLAMDH(*),WORK(LWORK),XMAT(*)
       CHARACTER O3FIL*(*)
       CHARACTER(len=*), PARAMETER :: myname = 'CC_12C3'
@@ -207,47 +205,7 @@ C
      *              ONE,WORK(KSCR3),NTOIKJ,XLAMDH(KOFF1),NTOTD,
      *              ZERO,WORK(KSCR1),NTOIKJ)
 C
-C-------------------------------------------------------------
-C        Calculate 2 coulomb - exchange for (ik|jb) integrals.
-C-------------------------------------------------------------
-C
          DO 110 B = 1,NVIR(ISYMB)
-C
-            DO 120 ISYMJ = 1,NSYM
-C
-               ISYMIK = MULD2H(ISYIKJ,ISYMJ)
-C
-               DO 130 J = 1,NRHF(ISYMJ)
-C
-                  DO 140 ISYMK = 1,NSYM
-C
-                     ISYMI  = MULD2H(ISYMIK,ISYMK)
-                     ISYMJK = MULD2H(ISYMJ,ISYMK)
-C
-                     DO 150 K = 1,NRHF(ISYMK)
-C
-                        DO 160 I = 1,NRHF(ISYMI)
-C
-                           NIKJ  = IMAIJK(ISYMIK,ISYMJ)
-     *                           + NMATIJ(ISYMIK)*(J - 1)
-     *                           + IMATIJ(ISYMI,ISYMK)
-     *                           + NRHF(ISYMI)*(K - 1) + I
-C                           NJKI  = IMAIJK(ISYMJK,ISYMI)
-C     *                           + NMATIJ(ISYMJK)*(I - 1)
-C     *                           + IMATIJ(ISYMJ,ISYMK)
-C     *                           + NRHF(ISYMJ)*(K - 1) + J
-                           NBIKJ = NMAIJK(ISYIKJ)*(B - 1) + NIKJ
-                           NBJKI = NMAIJK(ISYIKJ)*(B - 1) + NJKI
-C
-                           WORK(KSCR2 + NIKJ - 1) =
-     *                              WORK(KSCR1 + NBIKJ - 1)
-C     *                              WORK(KSCR1 + NBJKI - 1)
-C
-  160                   CONTINUE
-  150                CONTINUE
-  140             CONTINUE
-  130          CONTINUE
-  120       CONTINUE
 C
             DO 170 ISYMJ = 1,NSYM
 C
@@ -260,6 +218,8 @@ C
                IF (LAVL .LT. 0) THEN
                   CALL QUIT('Insufficient space in'//myname)
                ENDIF
+
+               DO J = 1, NRHF(ISYMJ)
 C
 C-----------------------------------------------------------
 C                 Contract integrals with trial vector CTR1.
@@ -269,48 +229,28 @@ C
 C
                      ISYMI  = MULD2H(ISYMK,ISYMIK)
                      ISYMA  = MULD2H(ISYMK,ISYMV)
-                     ISYMAJ = MULD2H(ISYMA,ISYMJ)
-                     ISYMBI = MULD2H(ISYMB,ISYMI)
+                     NBJ = IT1AM(ISYMB,ISYMJ)
+     *                   + NVIR(ISYMB)*(J-1) + B
 C
                      KOFF1 = IT1AM(ISYMA,ISYMK) + 1
-                     KOFF2 = KSCR2 + IMAIJK(ISYMIK,ISYMJ)
-     *                             + NMATIJ(ISYMIK)*(J - 1)
+                     KOFF2 = KSCR1 + NMAIJK(ISYIKJ)*(B-1)
+     *                             + IMAIJK(ISYMIK,ISYMJ)
+     *                             + NMATIJ(ISYMIK)*(J-1)
      *                             + IMATIJ(ISYMI,ISYMK)
-                     KOFF3 = KSCR3 + IT1AM(ISYMA,ISYMI)
+                     KOFF3 = IT2SQ(ISYMAI,ISYMBJ)
+     *                     + NT1AM(ISYMAI)*(BJ-1)
+     *                     + IT1AM(ISYMA,ISYMI)
 C
                      NTOTA = MAX(NVIR(ISYMA),1)
                      NTOTI = MAX(NRHF(ISYMI),1)
 C
                      CALL DGEMM('N','T',NVIR(ISYMA),NRHF(ISYMI),
-     *                          NRHF(ISYMK),-ONE,CTR1(KOFF1),NTOTA,
-     *                          WORK(KOFF2),NTOTI,ZERO,WORK(KOFF3),
+     *                          NRHF(ISYMK),ONEM,CTR1(KOFF1),NTOTA,
+     *                          WORK(KOFF2),NTOTI,ONE,RHO2(KOFF3),
      *                          NTOTA)
 C
   190             CONTINUE
-C
-C------------------------------------------------
-C                 Calculate the 12C contribution.
-C------------------------------------------------
-C
-                  IF (ISYMAI .EQ. ISYMBJ)
-     *                      WORK(KSCR3+NBJ-1) = TWO*WORK(KSCR3+NBJ-1)
-C
-                  DO 200 NAI = 1,NT1AM(ISYMAI)
-C
-                     IF (ISYMAI .EQ. ISYMBJ) THEN
-                        NAIBJ = IT2AM(ISYMAI,ISYMBJ) + INDEX(NAI,NBJ)
-                     ELSE IF (ISYMAI .LT. ISYMBJ) THEN
-                        NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     *                        + NT1AM(ISYMAI)*(NBJ - 1) + NAI
-                     ELSE IF (ISYMAI .GT. ISYMBJ) THEN
-                        NAIBJ = IT2AM(ISYMBJ,ISYMAI)
-     *                        + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
-                     ENDIF
-C
-                     RHO2(NAIBJ) = RHO2(NAIBJ) + WORK(KSCR3+NAI-1)
-C
-  200             CONTINUE
-  180          CONTINUE
+               END DO
   170       CONTINUE
   110    CONTINUE
   100 CONTINUE
@@ -1876,6 +1816,80 @@ C
 
   110    CONTINUE
   100 CONTINUE
+C
+      RETURN
+      END
+C  /* Deck cc_L1FCK3 */
+      SUBROUTINE CC_L1FCK3(RHO2,C1AM,FCKMO,ISYMV,ISYMF,WORK,LWORK)
+C
+C     Rasmus Faber 2017,
+C     based on CC_L1FCK by Asger Halkier
+C
+C     Purpose: To calculate the disconnected (first) term
+C              of the H contribution to RHO2. Triplet version
+C
+C     rho2(ai,bj) = L1am(ai)*FCKMO(jb)
+C
+      IMPLICIT NONE
+      DOUBLE PRECISION, PARAMETER ::ONE = 1.0D0, TWO = 2.0D0
+      CHARACTER(LEN=*), PARAMETER :: myname = 'CC_L1FCK3'
+C
+      DOUBLE PRECISION, INTENT(INOUT) :: RHO2(*), WORK(LWORK)
+      DOUBLE PRECISION, INTENT(IN) :: C1AM(*), FCKMO(*)
+      INTEGER, INTENT(IN) :: ISYMV, ISYMF, LWORK
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+      INTEGER :: ISYMC, ISYMK, ISYMAI, ISYMBJ, ISYRES
+      INTEGER :: KOFF1, KOFF2, KOFF3, NTOTAI
+C
+      CALL QENTER(myname)
+C
+      ISYRES = MULD2H(ISYMV,ISYMF)
+C
+      IF (LWORK .LT. NT1AM(ISYMF)) THEN
+         CALL QUIT('Insufficient work-space-area in '//myname)
+      ENDIF
+C
+C-----------------------------------
+C     Extract the fock matrix F(jb).
+C-----------------------------------
+C
+      DO 50 ISYMC = 1,NSYM
+C
+         ISYMK = MULD2H(ISYMC,ISYMF)
+C
+         DO 60 K = 1,NRHF(ISYMK)
+C
+            DO 70 C = 1,NVIR(ISYMC)
+C
+               KOFF1 = IFCVIR(ISYMK,ISYMC) + NORB(ISYMK)*(C - 1) + K
+               KOFF2 = IT1AM(ISYMC,ISYMK) + NVIR(ISYMC)*(K - 1) + C
+C
+               WORK(KOFF2) = FCKMO(KOFF1)
+C
+   70       CONTINUE
+   60    CONTINUE
+   50 CONTINUE
+C
+C
+C
+C--------------------------------------------------------------
+C     Calculate the contraction of C1AM with FCKMO.
+C--------------------------------------------------------------
+C
+      ISYMAI = ISYMV
+      ISYMBJ = ISYMF
+      NTOTAI = MAX(1,NT1AM(ISYMAI))
+
+      KOFF3 = IT2SQ(ISYMAI,ISYMBJ) + 1
+
+      CALL DGER(NT1AM(ISYMAI),NT1AM(ISYMBJ),ONE,C1AM,1,WORK,1,
+     &          RHO2(KOFF3),NTOTAI)
+C
+C     All done
+      CALL QEXIT(myname)
 C
       RETURN
       END
