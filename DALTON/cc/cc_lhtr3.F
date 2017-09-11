@@ -1247,7 +1247,7 @@ C
      *                 WORK(KEND1),LWRK1,IHELP,IHELP,IHELP)
 C
 C------------------------------------------------
-C     Calculate the LT11B and LT11C contribution.
+C        Calculate the LT11B and LT11C contribution.
 C------------------------------------------------
 C
          CALL CCLT_11BC(RHO1(1,IV),CTR1(1,IV),WORK(KFOCK),WORK(KEND1),
@@ -1255,13 +1255,21 @@ C
          TIM11B = SECOND() - AUTIME
 C
 C--------------------------------------
-C     Calculate the LT12A contribution.
+C        Calculate the LT12A (H1) contribution.
 C--------------------------------------
 C
          AUTIME = SECOND()
          CALL CC_L1FCK3(RHO2,CTR1(1,IV),WORK(KFOCK),ISYMTR,ISYMOP,
      *                  WORK(KEND1),LWRK1)
          TIM12A = SECOND() - AUTIME
+C
+C-----------------------------------------
+C        LT12C / H3 conribution
+C-----------------------------------------
+C
+         CALL CC_12C3(RHO2,CTR1(1,IV),ISYMTR,WORK(KLAMDH),1,
+     &                1,WORK(KEND1),LWRK1,LUIN30,'CCINT3O')
+
 C
 C-----------------------------------------
 C        Calculate the LT22D contribution.
@@ -1333,6 +1341,7 @@ C
 C------------------------------------------
 C        Pack the RHO2(-) vector as (ai<bj)
 C------------------------------------------
+C
          CALL CC_TRIP_EXTRACT(RHO2,WORK(KEND1),ISYRES,.TRUE.)
          CALL DCOPY(NT2AM(ISYMTR),WORK(KEND1),1,RHO2,1)
 C

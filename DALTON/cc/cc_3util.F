@@ -130,37 +130,44 @@ C
       END SUBROUTINE
 
       END
-C  /* Deck cc_21b12ca */
-      SUBROUTINE CC_12C3(RHO1,RHO2,CTR1,ISYMV,XLAMDH,ISYMH,
-     *                   XMAT,ISYMX,ISINT,WORK,LWORK,
-     *                   LUO3,O3FIL,IOPT)
+C  /* Deck cc_12c3 */
+      SUBROUTINE CC_12C3(RHO2,CTR1,ISYMV,XLAMDH,ISYMH,
+     *                   ISINT,WORK,LWORK,
+     *                   LUO3,O3FIL)
 C
 C     Rasmus Faber - 2017
 C
 C     Based on CC_21B12C by Asger Halkier & Henrik Koch 13/9 - 1995.
 C
-#include "implicit.h"
-      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, ONEM = -1.0D0)
-      DIMENSION RHO1(*),RHO2(*),CTR1(*),XLAMDH(*),WORK(LWORK),XMAT(*)
-      CHARACTER O3FIL*(*)
+C     Note: the file-read performed here is also done in
+C           CC_21G: we might want to merge those routines.
+C
+      IMPLICIT NONE
+      DOUBLE PRECISION, PARAMETER :: ZERO = 0.0D0, ONE = 1.0D0,
+     &                               ONEM = -1.0D0
       CHARACTER(len=*), PARAMETER :: myname = 'CC_12C3'
+      DOUBLE PRECISION, INTENT(INOUT) :: RHO2(*)
+      DOUBLE PRECISION, INTENT(IN) :: CTR1(*),XLAMDH(*)
+      DOUBLE PRECISION, INTENT(OUT) :: WORK(LWORK)
+      CHARACTER, INTENT(IN) :: O3FIL*(*)
+      INTEGER, INTENT(IN) :: ISYMV, ISYMH, ISINT, LWORK, LUO3
 #include "priunit.h"
 #include "ccorb.h"
 #include "ccsdsym.h"
 #include "ccsdinp.h"
 #include "cclr.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+      INTEGER :: ISYMA, ISYMB, ISYMD, ISYMI, ISYMJ, ISYMK,
+     &           ISYMAI, ISYMBJ, ISYMIK, ISYIKJ,
+     &           ISYMLI, ISYRES
+      INTEGER :: NTOT, NTOTA, NTOTD, NTOTI, NTOIKJ
+      INTEGER :: KSCR1, KSCR3, KOFF1, KOFF2, KOFF3, KEND1
+      INTEGER :: LWRK1, IOFF, NBJ
 C
       CALL QENTER(myname)
 C
       ISYMLI = MULD2H(ISINT,ISYMH)
       ISYRES = MULD2H(ISYMV,ISYMLI)
-      IF (IOPT .EQ. 1) ISYRES = MULD2H(ISYMX,ISYMLI)
-      IF ((IOPT .EQ. 2) .AND. (ISYMV .NE. ISYMX)) THEN
-         WRITE(LUPRI,*) ' Symmetry mismatch in '//myname
-         CALL QUIT(' Symmetry mismatch in '//myname)
-      ENDIF
 C
       DO 100 ISYMD = 1,NSYM
 C
@@ -174,8 +181,7 @@ C        Allocation of work space.
 C---------------------------------
 C
          KSCR1 = 1
-         KSCR2 = KSCR1 + NMAIJK(ISYIKJ)*NVIR(ISYMB)
-         KSCR3 = KSCR2 + NMAIJK(ISYIKJ)
+         KSCR3 = KSCR1 + NMAIJK(ISYIKJ)*NVIR(ISYMB)
          KEND1 = KSCR3 + NMAIJK(ISYIKJ)*NBAS(ISYMD)
          LWRK1 = LWORK - KEND1
 C
@@ -213,12 +219,6 @@ C
                ISYMAI = MULD2H(ISYMBJ,ISYRES)
                ISYMIK = MULD2H(ISYMJ,ISYIKJ)
 C
-               LAVL   = LWORK - KSCR3 - NT1AM(ISYMAI)
-C
-               IF (LAVL .LT. 0) THEN
-                  CALL QUIT('Insufficient space in'//myname)
-               ENDIF
-
                DO J = 1, NRHF(ISYMJ)
 C
 C-----------------------------------------------------------
@@ -238,8 +238,8 @@ C
      *                             + NMATIJ(ISYMIK)*(J-1)
      *                             + IMATIJ(ISYMI,ISYMK)
                      KOFF3 = IT2SQ(ISYMAI,ISYMBJ)
-     *                     + NT1AM(ISYMAI)*(BJ-1)
-     *                     + IT1AM(ISYMA,ISYMI)
+     *                     + NT1AM(ISYMAI)*(NBJ-1)
+     *                     + IT1AM(ISYMA,ISYMI) + 1
 C
                      NTOTA = MAX(NVIR(ISYMA),1)
                      NTOTI = MAX(NRHF(ISYMI),1)
