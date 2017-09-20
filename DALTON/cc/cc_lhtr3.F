@@ -1372,6 +1372,7 @@ C
          REWIND(LUE2)
          READ(LUE2) (WORK(KE2INT + J - 1), J = 1,NMATIJ(ISYMOP))
          CALL GPCLOSE(LUE2,'KEEP')
+
 C
 C--------------------------------------------------------------
 C        Prepare the E-intermediates for contraction with CTR2.
@@ -1420,28 +1421,28 @@ C--------------------------
 C        Square up CTR2(+).
 C--------------------------
 C
-         CALL CCRHS3_R2IJ(RHO2,WORK(KENDTE),LWRK1,ISYMTR)
+         CALL CCRHS3_R2IJ(RHO2,WORK(KENDTE),LWRKTE,ISYMTR)
          CALL CC_T2SQ(RHO2,CTR2,ISYMTR)
 C-----------------------------
 C        Read RHO2 (+) back in
 C-----------------------------
          CALL CC_RVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
      &                 NT2AM(ISYMTR),IV+ITR-1,0,RHO2)
-
 C
-C-----------------------------------------
-C        Calculate the LT22E (-) contribution.
-C-----------------------------------------
+C---------------------------------------------
+C        Calculate the LT22E (+) contribution.
+C---------------------------------------------
+C        This term carries a factor of 1/2: Scale E1, E2
+         CALL DSCAL(NMATAB(1)+NMATIJ(1),HALF,WORK(KE1INT),1)
 C
          AUTIME = SECOND()
-         CALL CCRHS_E3(RHO2,.TRUE.,CTR2,WORK(KE1INT),WORK(KE2INT),
-     &                 WORK(KENDTE),LWRKTE,ISYMTR,ISYMOP,
-     &                 DUMMY,.FALSE.)
+         CALL CCRHS_E(RHO2,CTR2,WORK(KE1INT),WORK(KE2INT),
+     &                WORK(KENDTE),LWRKTE,ISYMTR,ISYMOP)
          TIM22E = TIM22E + SECOND() - AUTIME
 
 C        Permute indices
          CALL CCRHS3_IJ(RHO2,WORK(KEND1),
-     &                 LWRK1,ISYRES)
+     &                  LWRK1,ISYRES)
 C        Write out (+) vector
          CALL CC_WVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
      &                 NT2AM(ISYMTR),IV+ITR-1,0,RHO2)
@@ -1462,17 +1463,6 @@ C
          WRITE(LUPRI,1) 'Norm of RHO1 after CC_11A:        ', RHO1N
 C         WRITE(LUPRI,1) 'Norm of RHO2 after CC_11A:        ', RHO2N
       ENDIF
-C
-C-----------------------------------------------
-C     Calculate the LT12C & LT21B contributions.
-C-----------------------------------------------
-C
-      TIMEB = SECOND()
-C      IOPT  = 2
-C      CALL CC_21B12C(RHO1(1,IV),RHO2,CTR1(1,IV),ISYMTR,WORK(KLAMDH),
-C     *               ISYMOP,WORK(KOFFXI),ISYRES,ISYMOP,
-C     *               WORK(KEND1),LWRK1,LUIN30,'CCINT3O',IOPT)
-      TIMEB = SECOND() - TIMEB
 C
       IF ( DEBUG ) THEN
          RHO1N = DDOT(NT1AM(ISYRES),RHO1(1,IV),1,RHO1(1,IV),1)
