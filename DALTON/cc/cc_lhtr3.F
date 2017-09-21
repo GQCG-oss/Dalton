@@ -1173,62 +1173,6 @@ C
          KEND1 = KT2AM
          LWRK1 = LWORK - KEND1
 C
-C---------------------------------------------
-C        Save RHO2 on disc to gain work space.
-C---------------------------------------------
-C
-         LURHO2 = -1
-         CALL GPOPEN(LURHO2,'LSRHO2','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
-         REWIND(LURHO2)
-         WRITE(LURHO2) (RHO2(I), I = 1,NT2SQ(ISYRES))
-C
-C-----------------------------------------------------------
-C        Read Omega(albe,ij) written to disc by energy code.
-C-----------------------------------------------------------
-C
-         TIMEBF = SECOND()
-         LUOM = -1
-         CALL GPOPEN(LUOM,'CC_BFIM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
-         REWIND(LUOM)
-         READ(LUOM) (RHO2(I),I = 1,2*NT2ORT(1) )
-         CALL GPCLOSE(LUOM,'KEEP')
-C
-C------------------------------------------
-C        Calculate the LT21BF contribution.
-C------------------------------------------
-C
-         ISYM = 1
-         ICON = 3
-C
-         NEWGAM = .FALSE.
-         CALL CC_T2MO(RHO1(1,IV),CTR2,ISYMTR,RHO2,PHONEY,DUMMY,
-     *                WORK(KLAMDP),WORK(KLAMDP),ISYM,WORK(KEND1),
-     *                LWRK1,ISYMOP,ICON)
-         NEWGAM = .TRUE.
-         TIMEBF = SECOND() - TIMEBF
-C
-C-----------------------------------
-C        Restore RHO2 result vector.
-C-----------------------------------
-C
-         REWIND(LURHO2)
-         READ(LURHO2) (RHO2(I), I = 1,NT2SQ(ISYRES))
-         CALL GPCLOSE(LURHO2,'DELETE')
-C
-         IF (IPRINT .GT. 50) THEN
-            CALL AROUND('Transformed vectors after 21BF-TERM')
-            CALL CC_PRP(RHO1(1,IV),RHO2,ISYRES,1,1)
-         ENDIF
-C
-         IF ( DEBUG ) THEN
-            RHO1N = DDOT(NT1AM(ISYRES),RHO1(1,IV),1,RHO1(1,IV),1)
-            RHO2N = DDOT(NT2AM(ISYRES),RHO2,1,RHO2,1)
-            WRITE(LUPRI,1) 'Norm of RHO1 after 21BF-TERM:     ', RHO1N
-            WRITE(LUPRI,1) 'Norm of RHO2 after 21BF-TERM:     ', RHO2N
-         ENDIF
-C
 C------------------------------------------
 C     Ove: Read in AO Fock.
 C     Transform AO Fock matrix to MO basis.
@@ -1264,12 +1208,69 @@ C
          TIM12A = SECOND() - AUTIME
 C
 C-----------------------------------------
-C        LT12C / H3 conribution
+C        LT12C / H3 contribution
 C-----------------------------------------
 C
          CALL CC_12C3(RHO2,CTR1(1,IV),ISYMTR,WORK(KLAMDH),1,
      &                1,WORK(KEND1),LWRK1,LUIN30,'CCINT3O')
-
+C
+C---------------------------------------------
+C        Save RHO2 on disc to gain work space.
+C---------------------------------------------
+C
+         LURHO2 = -1
+         CALL GPOPEN(LURHO2,'LSRHO2','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+         REWIND(LURHO2)
+         WRITE(LURHO2) (RHO2(I), I = 1,NT2SQ(ISYRES))
+C
+C-----------------------------------------------------------
+C        Read Omega(albe,ij) written to disc by energy code.
+C-----------------------------------------------------------
+C
+         TIMEBF = SECOND()
+         LUOM = -1
+         CALL GPOPEN(LUOM,'CC_BFIM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+         REWIND(LUOM)
+         READ(LUOM) (RHO2(I),I = 1,2*NT2ORT(1) )
+         CALL GPCLOSE(LUOM,'KEEP')
+C
+C        Need again C2(+) - C2(-)
+         CALL CC_T2SQTRANSP(CTR2,ISYMTR)
+C------------------------------------------
+C        Calculate the LT21BF contribution.
+C------------------------------------------
+C
+         ISYM = 1
+         ICON = 3
+C
+         NEWGAM = .FALSE.
+         CALL CC_T2MO(RHO1(1,IV),CTR2,ISYMTR,RHO2,PHONEY,DUMMY,
+     *                WORK(KLAMDP),WORK(KLAMDP),ISYM,WORK(KEND1),
+     *                LWRK1,ISYMOP,ICON)
+         NEWGAM = .TRUE.
+         TIMEBF = SECOND() - TIMEBF
+C
+C-----------------------------------
+C        Restore RHO2 result vector.
+C-----------------------------------
+C
+         REWIND(LURHO2)
+         READ(LURHO2) (RHO2(I), I = 1,NT2SQ(ISYRES))
+         CALL GPCLOSE(LURHO2,'DELETE')
+C
+         IF (IPRINT .GT. 50) THEN
+            CALL AROUND('Transformed vectors after 21BF-TERM')
+            CALL CC_PRP(RHO1(1,IV),RHO2,ISYRES,1,1)
+         ENDIF
+C
+         IF ( DEBUG ) THEN
+            RHO1N = DDOT(NT1AM(ISYRES),RHO1(1,IV),1,RHO1(1,IV),1)
+            RHO2N = DDOT(NT2AM(ISYRES),RHO2,1,RHO2,1)
+            WRITE(LUPRI,1) 'Norm of RHO1 after 21BF-TERM:     ', RHO1N
+            WRITE(LUPRI,1) 'Norm of RHO2 after 21BF-TERM:     ', RHO2N
+         ENDIF
 C
 C-----------------------------------------
 C        Calculate the LT22D contribution.
@@ -1279,7 +1280,6 @@ C
          IOPT = 1
          ISYDIM = 1
          FACT = HALF
-         CALL CC_T2SQTRANSP(CTR2,ISYMTR)
          CALL CC_22CD3(RHO2,CTR2,ISYMTR,WORK(KLAMDH),WORK(KEND1),
      *                 LWRK1,ISYDIM,LUDIM,DFIL,1,IOPT,FACT)
          TIM22D = SECOND() - AUTIME
