@@ -1282,8 +1282,8 @@ C     derivative wrt s
       endif
 
 C     Print
-      write(*,'(A,D10.5,A,F25.20,A,F25.20)') 'h=',h,
-     >               ' d1FxHSEdrho=',d1FxHSEdrho,' d1FxHSEds=',d1FxHSEds
+      write(*,'(A,1P,D10.3,0P,A,F25.20,A,F25.20)') 'h=',h,
+     >     ' d1FxHSEdrho=',d1FxHSEdrho,' d1FxHSEds=',d1FxHSEds
       enddo
       stop
       endif
