@@ -78,12 +78,16 @@
 %}{\endlist}
 %\newcommand{\bkw}{\begin{keywords}}
 %\newcommand{\ekw}{\end{keywords}}
+
 %hjorig \newcommand{\kw}[1]{\verb+#1+}
 %hjorig \newcommand{\quotekw}[1]{``\kw{#1}\nolinebreak''}
-\newcommand{\kw}[1]{#1}
-\newcommand{\quotekw}[1]{"#1"}
 %agren \newcommand{\kw}[1]{\tt #1}
 %agren \newcommand{\quotekw}[1]{"{\tt #1}"}
+%\newcommand{\kw}[1]{#1}                  % before 2001 -> Feb. 2017
+%\newcommand{\quotekw}[1]{"#1"}           % before 2001 -> Feb. 2017
+\newcommand{\kw}[1]{{\texttt{#1}}}             % Feb. 2017   -> now
+\newcommand{\quotekw}[1]{{\texttt{"#1"}}}      % Feb. 2017   -> now
+
 \newcommand{\starkey}{\quotekw{*}}
 \newcommand{\dotkey}{\quotekw{.}}
 \newcommand{\f}[1]{{"{f#1}" }}
@@ -103,12 +107,6 @@
 %   \ddfocktrue \solventtrue \abacustrue \responstrue
 %\fi
 
-% Sirius limits for Sirius manual:
-\def\sirver{n07 }
-\def\mxfelt{20 }
-% end of SIRIUS limits file
-%
-%           
 %\renewcommand{\thetable}{\Roman{table}}
 \newcommand{\latestrelease}{Dalton2017.alpha}
 \newcommand{\dalton}{{\sc Dalton}}

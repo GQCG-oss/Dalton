@@ -1,0 +1,10 @@
+BASIS
+6-31++G**
+H2O Close to Eq. Bond length
+using the cc-pVDZ basis
+Atomtypes=2 Angstrom NoSymmetry
+Charge=8.0 Atoms=1
+O       0.0000000000    0.000000000     0.0000000000        
+Charge=1.0 Atoms=2
+H      -0.7567991384    0.000000000     0.5860071813      
+H       0.7567991384    0.000000000     0.5860071813

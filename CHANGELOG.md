@@ -5,6 +5,8 @@
 ### Added
 - New parallel 2-electron integral transformatin .FCKTRA
 - Triplet excitation energies and polarizabilities with the AO-SOPPA code
+- PE-HF/DFT molecular gradients
+- Effective external field (EEF) for one- and two-photon absorption in PE-HF/DFT calculations
 
 ### Fixed
 - Fix .GSPOL for parallel polarizable embedding quadratic response
@@ -22,6 +24,8 @@ Do not make changes below this line! For the relase branch only.
 - OK to run ECD or OECD with SOPPA
 
 ### Fixed
+- open-shell doublet ROKS DFT geometry optimization
+- Fix .GSPOL for parallel polarizable embedding quadratic response
 
 
 ## [2016.2] (2016-07-12)

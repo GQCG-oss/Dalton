@@ -130,7 +130,6 @@ C
          LINTAD = MAXTYP
       END IF
       CALL MEMGET('INTE',KINTAD,LINTAD,WORK,KFREE,LFREE)
-      write(lupri,*) 'WORD in HER1INT', WORD
       CALL PR1IN1(WORK,KFREE,LFREE,WORK(KINTRP),WORK(KINTAD),
      &            WORK(KLBINT),WORD,IORDER,NPQUAD,TRIANG,
      &            PROPRI,IPRINT,DUMMY,NCOMP,TOFILE,'TRIANG',
@@ -208,6 +207,7 @@ C
       DIMENSION WORK(*), INTREP(*), INTADR(*), SINTMA(*), EXPVAL(*),
      &          DENMAT(*)
       CHARACTER*6 FILMME
+      LOGICAL, ALLOCATABLE :: DOATOM(:)
 C
       DIMENSION QMTEST(NMMBA1)
 C
@@ -262,8 +262,9 @@ C
 
 C
       CALL QENTER('PR1IN1')
+
+      allocate( DOATOM(1:MXCENT) )
       KFRSAV = KFREE
-      CALL MEMGET('REAL',KATOM,MXCENT,WORK,KFREE,LFREE)
       RCHRG  = .FALSE.
       RGAUGE = .FALSE. 
       CALL MEMGET('REAL',KCHRG,MXCENT,WORK,KFREE,LFREE) 
@@ -318,7 +319,7 @@ C
             INTREP(1) = 0
          END IF
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          ANTI = .FALSE.
       GO TO 200
 C
@@ -331,7 +332,7 @@ C
          INTTYP = 2
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XDIPLEN '
          LABINT(2) = 'YDIPLEN '
          LABINT(3) = 'ZDIPLEN '
@@ -350,7 +351,7 @@ C
          INTTYP = 3
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XDIPVEL '
          LABINT(2) = 'YDIPVEL '
          LABINT(3) = 'ZDIPVEL '
@@ -369,7 +370,7 @@ C
          INTTYP = 4
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XXQUADRU'
          LABINT(2) = 'XYQUADRU'
          LABINT(3) = 'XZQUADRU'
@@ -394,7 +395,7 @@ C
          INTTYP = 5
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'X1SPNORB'
          LABINT(2) = 'Y1SPNORB'
          LABINT(3) = 'Z1SPNORB'
@@ -413,7 +414,7 @@ C
          INTTYP = 6
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XXSECMOM'
          LABINT(2) = 'XYSECMOM'
          LABINT(3) = 'XZSECMOM'
@@ -438,7 +439,7 @@ C
          INTTYP = 7
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XXTHETA '
          LABINT(2) = 'XYTHETA '
          LABINT(3) = 'XZTHETA '
@@ -471,7 +472,7 @@ C
      &         ' Increase MXQNM to',IORDER + 1,' and recompile.'
             CALL QUIT('Multipole moment order exceeded in PR1IN1.')
          END IF
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          CALL CMTYP(IORDER,NOPTYP,INTREP,LABINT)
          ANTI = .FALSE.
       GO TO 200
@@ -494,7 +495,7 @@ C
      &         ' Increase MXQNM to',IORDER + 1,' and recompile.'
             CALL QUIT('Multipole moment order exceeded in PR1IN1.')
          END IF
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          CALL CMTYP(IORDER,NOPTYP,INTREP,LABINT)
          ANTI = .FALSE.
       GO TO 200
@@ -519,7 +520,7 @@ C
      &         ' Increase MXQNM to',IORDER + 1,' and recompile.'
             CALL QUIT('Multipole moment order exceeded in PR1IN1.')
          END IF
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          CALL CMTYP(IORDER,NOPTYP,INTREP,LABINT)
          ANTI = .FALSE.
       GO TO 200
@@ -531,8 +532,8 @@ C
          INTTYP = 9
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of one-electron Fermi contact integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL FRMTYP(INTTYP,NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL FRMTYP(INTTYP,NOPTYP,INTREP,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.
       GO TO 200
 C
@@ -543,8 +544,8 @@ C
          INTTYP = 10
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of paramagnetic spin-orbit integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL PSOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),INTADR,NATOM,
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL PSOTYP(NOPTYP,INTREP,LABINT,DOATOM,INTADR,NATOM,
      &               INTTYP)
          ANTI = .TRUE.
       GO TO 200
@@ -556,8 +557,8 @@ C
          INTTYP = 11
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of spin-dipole integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL SDTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SDTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,DOATOM,
      &              NATOM)
          ANTI = .FALSE.
       GO TO 200
@@ -569,8 +570,8 @@ C
          INTTYP = 12
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of diamagnetic spin-orbit integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL DSOTYP(NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),NATOM,
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL DSOTYP(NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM,
      &               TRIANG,INTTYP)
          ANTI = .FALSE.
       GO TO 200
@@ -582,8 +583,8 @@ C
          INTTYP = 13
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of spin-dipole + Fermi contact integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL SDTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SDTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,DOATOM,
      &              NATOM)
          ANTI = .FALSE.
       GO TO 200
@@ -595,8 +596,8 @@ C
          INTTYP = 14
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)') ' Calculation of'//
      &      ' antisymmetrized half-derivative overlap integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL HDOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,.TRUE.,
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL HDOTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,.TRUE.,
      &               INTTYP)
          ANTI = .FALSE.
          SQUARE = .TRUE.
@@ -611,7 +612,7 @@ C
          INTTYP = 15
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'dS/dBX  '
          LABINT(2) = 'dS/dBY  '
          LABINT(3) = 'dS/dBZ  '
@@ -630,7 +631,7 @@ C
          INTTYP = 16
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'dS/dB2XX'
          LABINT(2) = 'dS/dB2XY'
          LABINT(3) = 'dS/dB2XZ'
@@ -655,7 +656,7 @@ C
          INTTYP = 17
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XANGLON '
          LABINT(2) = 'YANGLON '
          LABINT(3) = 'ZANGLON '
@@ -675,7 +676,7 @@ C
          INTTYP = 18
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XANGMOM '
          LABINT(2) = 'YANGMOM '
          LABINT(3) = 'ZANGMOM '
@@ -695,7 +696,7 @@ C
          INTTYP = 19
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XLONMOM '
          LABINT(2) = 'YLONMOM '
          LABINT(3) = 'ZLONMOM '
@@ -715,7 +716,7 @@ C
          INTTYP = 20
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'dh/dBX  '
          LABINT(2) = 'dh/dBY  '
          LABINT(3) = 'dh/dBZ  '
@@ -734,7 +735,7 @@ C
          INTTYP = 21
          NOPTYP = 1
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'KINENERG'
          INTREP(1) = 0
          ANTI = .FALSE.
@@ -750,7 +751,7 @@ C
          INTTYP = 22
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XXDSUSNL'
          LABINT(2) = 'XYDSUSNL'
          LABINT(3) = 'XZDSUSNL'
@@ -777,7 +778,7 @@ C
          INTTYP = 23
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XXDSUSLL'
          LABINT(2) = 'XYDSUSLL'
          LABINT(3) = 'XZDSUSLL'
@@ -804,7 +805,7 @@ C
          INTTYP = 24
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XXDSUSLH'
          LABINT(2) = 'XYDSUSLH'
          LABINT(3) = 'XZDSUSLH'
@@ -830,7 +831,7 @@ C
          INTTYP = 25
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XXdh/dB2'
          LABINT(2) = 'XYdh/dB2'
          LABINT(3) = 'XZdh/dB2'
@@ -853,8 +854,8 @@ C
          INTTYP = 26
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        ' Calculation of nuclear shieldings without London contr.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'NSNL',
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'NSNL',
      &               INTADR)
          ANTI = .FALSE.
          SQUARE = .TRUE.
@@ -867,8 +868,8 @@ C
          INTTYP = 27
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &       ' Calculation of London contribution to nuclear shieldings'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'NSLO',
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'NSLO',
      &               INTADR)
          ANTI = .FALSE.
          SQUARE = .TRUE.
@@ -881,8 +882,8 @@ C
          INTTYP = 28
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &       'Calculation of nuclear shielding tensor integrals'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,' NST',
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,' NST',
      &               INTADR)
          ANTI = .FALSE.
       GOTO 200
@@ -895,8 +896,8 @@ C
          IF (FORQM3) LOELFD = .TRUE.
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        'Calculation of electric field strength at the nuclei'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL EFNTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,INTADR,
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR,
      &               INTTYP)
          ANTI = .FALSE.
       GOTO 200
@@ -908,8 +909,8 @@ C
          INTTYP = 30
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        ' Calculation of electric field gradients (cartesian)'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL EFGTYP(NOPTYP,INTREP,INTADR,LABINT,WORK(KATOM),NATOM)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL EFGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.
       GOTO 200
 C
@@ -920,8 +921,8 @@ C
          INTTYP = 31
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        ' Calculation of electric field gradients (spherical)'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL EFGTYP(NOPTYP,INTREP,INTADR,LABINT,WORK(KATOM),NATOM)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL EFGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.
       GOTO 200
 C
@@ -934,7 +935,7 @@ C
          INTTYP = 32
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'd<S|/dBX'
          LABINT(2) = 'd<S|/dBY'
          LABINT(3) = 'd<S|/dBZ'
@@ -954,7 +955,7 @@ C
          INTTYP = 33
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'd|S>/dBX'
          LABINT(2) = 'd|S>/dBY'
          LABINT(3) = 'd|S>/dBZ'
@@ -972,8 +973,8 @@ C
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of ket-magnetic derivative of HDO-integrals'
          INTTYP = 34
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL HDBTYP(NOPTYP,INTREP,INTADR,LABINT,WORK(KATOM),NATOM)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL HDBTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GOTO 200
@@ -992,8 +993,8 @@ C
          ELSE
             IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &           ' Calculation of the potential energy at the nuclei'
-            CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-            CALL NPETYP(NOPTYP,INTREP,INTADR,LABINT,WORK(KATOM),NATOM)
+            CALL SETATM(DOATOM,NATOM,INTTYP)
+            CALL NPETYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
             ANTI = .FALSE.
          END IF
       GOTO 200
@@ -1007,7 +1008,7 @@ C
          INTTYP = 36
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = ' HBDO X '
          LABINT(2) = ' HBDO Y '
          LABINT(3) = ' HBDO Z '
@@ -1024,8 +1025,8 @@ C
          INTTYP = 14
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of bra-half-derivative overlap integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL HDOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,.FALSE.,
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL HDOTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,.FALSE.,
      &               INTTYP)
          ANTI = .FALSE.
          SQUARE = .TRUE.
@@ -1041,7 +1042,7 @@ C
          INTTYP = 37
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XXSUSCGO'
          LABINT(2) = 'XYSUSCGO'
          LABINT(3) = 'XZSUSCGO'
@@ -1064,8 +1065,8 @@ C
          INTTYP = 38
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &     ' Calculation of nuclear shieldings with common gauge origin'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'NSCO',
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'NSCO',
      &               INTADR)
          ANTI = .FALSE.
       GOTO 200
@@ -1079,7 +1080,7 @@ C
          INTTYP = 39
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'COS KX/K'
          LABINT(2) = 'COS KY/K'
          LABINT(3) = 'COS KZ/K'
@@ -1104,7 +1105,7 @@ C
      &      ' Calculation of mass velocity integrals'
          NOPTYP = 1
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'MASSVELO'
          INTREP(1) = 0
          ANTI = .FALSE.
@@ -1119,7 +1120,7 @@ C
      &      ' Calculation of Darwin type integrals'
          NOPTYP  = 1
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'DARWIN  '
          INTREP(1) = 0
          ANTI = .FALSE.
@@ -1134,7 +1135,7 @@ C
      &     ' Calculation of first magnetic derivative of electric field'
          NOPTYP  = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          EFDIR = FIELD1(1:1)
          LABINT(1) = EFDIR//'-CM1 X'
          LABINT(2) = EFDIR//'-CM1 Y'
@@ -1161,7 +1162,7 @@ C
      &   ' Calculation of second magnetic derivatives of electric field'
          NOPTYP  = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          EFDIR      = FIELD2(1:1)
          LABINT(1)  = EFDIR//'-CM2XX'
          LABINT(2)  = EFDIR//'-CM2XY'
@@ -1195,8 +1196,8 @@ C
          INTTYP = 44
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of ket-half-derivative overlap integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL HDOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,.FALSE.,
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL HDOTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,.FALSE.,
      &               INTTYP)
          ANTI = .FALSE.
          SQUARE = .TRUE.
@@ -1211,7 +1212,7 @@ C
          INTTYP = 45
          NOPTYP = 1
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'SQOVLAP'
          INTREP(1) = 0
          ANTI = .FALSE.
@@ -1235,7 +1236,7 @@ C
      &         ' Increase MXQNM to',IORDER + 1,' and recompile.'
             CALL QUIT('Multipole moment order exceeded in PR1IN1.')
          END IF
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          CALL SL1TYP(IORDER,NOPTYP,INTREP,LABINT)
          ANTI = .TRUE.
       GO TO 200
@@ -1257,7 +1258,7 @@ C
      &         ' Increase MXQNM to',IORDER + 1,' and recompile.'
             CALL QUIT('Multipole moment order exceeded in PR1IN1.')
          END IF
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          CALL SL2TYP(IORDER,NOPTYP,INTREP,LABINT)
          ANTI = .FALSE.
       GO TO 200
@@ -1269,8 +1270,8 @@ C
          INTTYP = 48
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &     ' Calculation of nuclear shieldings (gauge at nucleus)'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'NSTK',
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'NSTK',
      &               INTADR)
          ANTI = .FALSE.
       GOTO 200
@@ -1284,7 +1285,7 @@ C     ---------------------------------------------------------
          INTTYP = 49
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'dS/dEXa '
          LABINT(2) = 'dS/dEYa '
          LABINT(3) = 'dS/dEZa '
@@ -1304,7 +1305,7 @@ C     ---------------------------------------------------------
          INTTYP = 50
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'dS/dEXb '
          LABINT(2) = 'dS/dEYb '
          LABINT(3) = 'dS/dEZb '
@@ -1325,7 +1326,7 @@ C
          INTTYP = 51
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'dh1/dEX '
          LABINT(2) = 'dh1/dEY '
          LABINT(3) = 'dh1/dEZ '
@@ -1343,8 +1344,8 @@ C
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of dipole gradient integrals'
          INTTYP = 52
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL DPGTYP(NOPTYP,INTREP,INTADR,LABINT,WORK(KATOM),NATOM)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL DPGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
 CCH
 Cori     ANTI = .TRUE.
          ANTI = .FALSE.
@@ -1359,8 +1360,8 @@ C
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of quadrupole gradient integrals'
          INTTYP = 53
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL QUGTYP(NOPTYP,INTREP,INTADR,LABINT,WORK(KATOM),NATOM)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL QUGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
 CCH
 Cori     ANTI = .TRUE.
          ANTI = .FALSE.
@@ -1375,8 +1376,8 @@ C
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of octupole gradient integrals'
          INTTYP = 54
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL OCGTYP(NOPTYP,INTREP,INTADR,LABINT,WORK(KATOM),NATOM)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL OCGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
 CCH
 Cori     ANTI = .TRUE.
          ANTI = .FALSE.
@@ -1393,7 +1394,7 @@ C
          INTTYP = 55
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XXROTSTR'
          LABINT(2) = 'XYROTSTR'
          LABINT(3) = 'XZROTSTR'
@@ -1419,7 +1420,7 @@ C
          INTTYP = 56
          NOPTYP = 10
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1)  = 'XXX 3MOM'
          LABINT(2)  = 'XXY 3MOM'
          LABINT(3)  = 'XXZ 3MOM'
@@ -1453,7 +1454,7 @@ C
          CALL NTYPTS(NOPTYP)
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &     ' Magnetic-field correction to spin-orbit integrals'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'SOMF  XX'
          LABINT(2) = 'SOMF  XY'
          LABINT(3) = 'SOMF  XZ'
@@ -1483,8 +1484,8 @@ C
          INTTYP = 58
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &     ' Magnetic-moment correction to spin-orbit integrals'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'SOMM',
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'SOMM',
      &               INTADR)
          ANTI = .FALSE.
       GOTO 200
@@ -1496,8 +1497,8 @@ C
          INTTYP = 59
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of derivative overlap integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL HDOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,.FALSE.,
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL HDOTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,.FALSE.,
      &               INTTYP)
          ANTI = .FALSE.
          SQUARE = .FALSE.
@@ -1510,8 +1511,8 @@ C
          INTTYP = 70
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of derivative Hamiltonian integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL EFNTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,INTADR,
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR,
      &               INTTYP)
          ANTI = .FALSE.
          SQUARE = .FALSE.
@@ -1527,7 +1528,7 @@ C
      &        'London contribution'
          NOPTYP = 9
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'D1-SO XX'
          LABINT(2) = 'D1-SO XY'
          LABINT(3) = 'D1-SO XZ'
@@ -1559,7 +1560,7 @@ C
      &        'London contribution'
          NOPTYP = 9
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'D1-SOLXX'
          LABINT(2) = 'D1-SOLXY'
          LABINT(3) = 'D1-SOLXZ'
@@ -1589,7 +1590,7 @@ C     ACH
          INTTYP = 71
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'dd/dxdx '
          LABINT(2) = 'dd/dxdy '
          LABINT(3) = 'dd/dxdz '
@@ -1615,7 +1616,7 @@ C     ACH
          INTTYP = 72
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'DERXXPVP'
          LABINT(2) = 'DERXY+YX'
          LABINT(3) = 'DERXZ+ZX'
@@ -1641,7 +1642,7 @@ C     ACH
          INTTYP = 73
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'DERXY-YX'
          LABINT(2) = 'DERXZ-ZX'
          LABINT(3) = 'DERYZ-ZY'
@@ -1659,10 +1660,10 @@ C
          INTTYP = 74
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of magnetic-dpt integrals ( <(op)(oA)> )'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL ALFTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL ALFTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,DOATOM,
      &              NATOM)
-C         CALL ALFTYP(NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),NATOM,
+C         CALL ALFTYP(NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM,
 C     &        TRIANG)
          SQUARE = .TRUE.
       GO TO 200
@@ -1676,7 +1677,7 @@ C
          INTTYP = 63
          NOPTYP = 1
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'pVpINTEG'
          INTREP(1) = 0
          ANTI = .FALSE.
@@ -1691,7 +1692,7 @@ C
          INTTYP = 64
          NOPTYP = 1
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'POTENERG'
          INTREP(1) = 0
          ANTI = .FALSE.
@@ -1727,7 +1728,7 @@ C
         INTTYP = 80
         NOPTYP  = 3
         CALL NTYPTS(NOPTYP)
-        CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+        CALL SETATM(DOATOM,NATOM,INTTYP)
         LABINT(1) = 'PVIOLA X'
         LABINT(2) = 'PVIOLA Y'
         LABINT(3) = 'PVIOLA Z'
@@ -1756,7 +1757,7 @@ C
      &         ' Increase MXQNM to',IORDER + 1,' and recompile.'
             CALL QUIT('Multipole moment order exceeded in PR1IN1.')
          END IF
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          CALL CMTYP(IORDER,NOPTYP,INTREP,LABINT)
          ANTI = .FALSE.
       GO TO 200
@@ -1771,7 +1772,7 @@ C
      &     'field gradient'
          NOPTYP  = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = FIELD3(1:2)//'-QDB X'
          LABINT(2) = FIELD3(1:2)//'-QDB Y'
          LABINT(3) = FIELD3(1:2)//'-QDB Z'
@@ -1804,7 +1805,7 @@ C
          INTTYP = 5
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'X1SPNSCA'
          LABINT(2) = 'Y1SPNSCA'
          LABINT(3) = 'Z1SPNSCA'
@@ -1828,7 +1829,7 @@ C
      &        ' London contribution'
          NOPTYP = 9
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'D-SSO XX'
          LABINT(2) = 'D-SSO XY'
          LABINT(3) = 'D-SSO XZ'
@@ -1863,7 +1864,7 @@ C
          INTTYP = 18
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          CALL SETECC(WORK,KFREE,LFREE)
          CALL DCOPY(3,GAGORG,1,GAGSAV,1)
          CALL DCOPY(3,ECCORG,1,GAGORG,1)
@@ -1888,7 +1889,7 @@ C
          INTTYP = 81
          NOPTYP = 9
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XXRANG'
          LABINT(2) = 'XYRANG'
          LABINT(3) = 'XZRANG'
@@ -1922,8 +1923,8 @@ C
          INTTYP = 82
          NOPTYP = 9
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'RPSO',
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'RPSO',
      &               INTADR)
 c
          ANTI = .FALSE.
@@ -1938,7 +1939,7 @@ C
          INTTYP = 83 
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'PXPDIPOL'
          LABINT(2) = 'PYPDIPOL'
          LABINT(3) = 'PZPDIPOL'
@@ -1956,7 +1957,7 @@ C
          INTTYP = 84
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'pXpINTEG'
          LABINT(2) = 'pYpINTEG'
          LABINT(3) = 'pZpINTEG'
@@ -1976,7 +1977,7 @@ C
          INTTYP = 91
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XOZKE   '
          LABINT(2) = 'YOZKE   '
          LABINT(3) = 'ZOZKE   '
@@ -1994,8 +1995,8 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of kinetic energy correction to'//
      &      ' paramagnetic spin-orbit integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL PSOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),INTADR,NATOM,
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL PSOTYP(NOPTYP,INTREP,LABINT,DOATOM,INTADR,NATOM,
      &               INTTYP)
          ANTI = .TRUE.
          SQUARE = .TRUE.
@@ -2009,8 +2010,8 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        ' Calculation of kinetic energy contribution to'//
      &        ' diamagnetic shieldings'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'NSKE',
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'NSKE',
      &               INTADR)
          ANTI = .FALSE.
          SQUARE = .TRUE.
@@ -2024,8 +2025,8 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of kinetic energy correction to spin-dipole'//
      &      ' integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL SDTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SDTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,DOATOM,
      &              NATOM)
          ANTI = .FALSE.
          SQUARE = .TRUE.
@@ -2039,8 +2040,8 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of kinetic energy correction to Fermi '//
      &      ' contact integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL FRMTYP(INTTYP,NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL FRMTYP(INTTYP,NOPTYP,INTREP,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GO TO 200
@@ -2053,8 +2054,8 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of kinetic energy correction to '//
      &        'diamagnetic spin-orbit integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL DSOTYP(NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),NATOM,
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL DSOTYP(NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM,
      &               TRIANG,INTTYP)
          ANTI = .FALSE.
          SQUARE = .FALSE.
@@ -2067,8 +2068,8 @@ C
          INTTYP = 97
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        ' Orbital Zeeman correction to PSO integrals'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'PSOZ',
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'PSOZ',
      &               INTADR)
          ANTI = .FALSE.
          SQUARE = .TRUE.
@@ -2084,7 +2085,7 @@ Clf         PCM = .TRUE.
      &        ' Calculation of the potential energy at a point'
          NOPTYP = MAXREP + 1
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          CALL TESTYP(NOPTYP,INTREP,LABINT)
          ANTI = .FALSE.
       GOTO 200
@@ -2101,7 +2102,7 @@ ckr
 ckr      or should we temporarily use noptyp=3*max(nsym) = 3*8 = 24
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XPCMLON '
          LABINT(2) = 'YPCMLON '
          LABINT(3) = 'ZPCMLON '
@@ -2122,7 +2123,7 @@ Clf         PCM = .TRUE.
          INTTYP = 67
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XXMAGPCM'
          LABINT(2) = 'XYMAGPCM'
          LABINT(3) = 'XZMAGPCM'
@@ -2148,7 +2149,7 @@ C
          INTTYP = 2
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XDIPLOC '
          LABINT(2) = 'YDIPLOC '
          LABINT(3) = 'ZDIPLOC '
@@ -2165,8 +2166,8 @@ C
          INTTYP = 98
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of second half-derivative overlap integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL HDOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,.FALSE.,
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL HDOTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,.FALSE.,
      &               INTTYP)
          ANTI = .FALSE.
          SQUARE = .TRUE.
@@ -2181,7 +2182,7 @@ C
          INTTYP = 99
          NOPTYP = 9
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'BX EF X '
          LABINT(2) = 'BY EF X '
          LABINT(3) = 'BZ EF X '
@@ -2218,7 +2219,7 @@ Clf         PCM = .TRUE.
          INTTYP = 100
          NOPTYP = 18
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1)  = 'BXX EF X'
          LABINT(2)  = 'BXY EF X'
          LABINT(3)  = 'BXZ EF X'
@@ -2257,7 +2258,7 @@ C
          INTTYP = 101
          NOPTYP = 9
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XXMAGQDP'
          LABINT(2) = 'XYMAGQDP'
          LABINT(3) = 'XZMAGQDP'
@@ -2287,8 +2288,8 @@ C
          INTTYP = 102
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of derivative angular momentum integrals.'
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'AMDR',
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'AMDR',
      &               INTADR)
          ANTI = .TRUE.
          SQUARE = .FALSE.
@@ -2303,9 +2304,9 @@ C
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of dipole gradient integrals'
          INTTYP = 103
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          call quit('stopping because DPHTYP is missing ...')
-CHJAaJ   CALL DPHTYP(NOPTYP,INTREP,INTADR,LABINT,WORK(KATOM),NATOM)
+CHJAaJ   CALL DPHTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
 CCH
 Cori     ANTI = .TRUE.
          ANTI = .FALSE.
@@ -2325,7 +2326,7 @@ C
          INTREP(1) = 0
          SQUARE = .TRUE.
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          ANTI = .FALSE.
       GOTO 200
 C     Adiabatic kinetic energy KINADIAB
@@ -2339,7 +2340,7 @@ C
          INTTYP = 1002 ! standard kinetic integrals are type 21
          NOPTYP = 1
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'KINADIAB'
          INTREP(1) = 0
          ANTI = .FALSE.
@@ -2356,7 +2357,7 @@ C
          INTTYP = 104
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = '<<S/B2XX'
          LABINT(2) = '<<S/B2XY'
          LABINT(3) = '<<S/B2XZ'
@@ -2380,7 +2381,7 @@ C
          INTTYP = 105
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = '>>S/B2XX'
          LABINT(2) = '>>S/B2XY'
          LABINT(3) = '>>S/B2XZ'
@@ -2404,7 +2405,7 @@ C
          INTTYP = 106
          NOPTYP = 9
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = '<>S/B2XX'
          LABINT(2) = '<>S/B2XY'
          LABINT(3) = '<>S/B2XZ'
@@ -2434,7 +2435,7 @@ C
          INTTYP = 2
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XLFDIPLN'
          LABINT(2) = 'YLFDIPLN'
          LABINT(3) = 'ZLFDIPLN'
@@ -2503,7 +2504,7 @@ C
       END IF
       CALL PR1DRV(WORK(KSOINT),NELMNT,WORK(KFREE),LFREE,
      &            NPQUAD,LABINT,INTTYP,INTREP,NOPTYP,NBAST,ANTI,
-     &            IORDER,WORK(KATOM),INTADR,TRIANG,NATOM,SQUARE,
+     &            IORDER,DOATOM,INTADR,TRIANG,NATOM,SQUARE,
      &            IPRINT,DOINT,EXPVAL,EXP1EL,DENMAT)
 C
       IF (FINDPT .AND. .NOT. NOPICH) THEN 
@@ -2515,7 +2516,7 @@ C
          INTTYP = 2
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
-         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'XDIPLEN '
          LABINT(2) = 'YDIPLEN '
          LABINT(3) = 'ZDIPLEN '
@@ -2547,8 +2548,8 @@ C     *******************************************************
 C
       IF (INTTYP .EQ. 31) THEN
          CALL EFGSPH(WORK(KSOINT),WORK(KFREE),LFREE,NELMNT,NBAST,
-     &               NOPTYP,WORK(KATOM),NATOM,IPRINT)
-         CALL FGSTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM)
+     &               NOPTYP,DOATOM,NATOM,IPRINT)
+         CALL FGSTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
       END IF
 C
 C     ****************************************************
@@ -2576,7 +2577,7 @@ C
       IF (INTTYP .EQ. 12 .AND. .NOT.TRIANG) THEN
          CALL MEMGET('REAL',KDIFF,NELMNT,WORK,KFREE,LFREE)
          CALL DSOTST(WORK(KSOINT),WORK(KDIFF),NBAST,NELMNT,NOPTYP,
-     &               LABINT,WORK(KATOM),NPQUAD,INTADR,IPRINT)
+     &               LABINT,DOATOM,NPQUAD,INTADR,IPRINT)
       END IF
 C
 C     ******************************************************
@@ -2905,6 +2906,7 @@ C     Reset gauge origin and nuclear charges
       IF (RGAUGE) CALL DCOPY(3,GAGSAV,1,GAGORG,1)
  9999 CONTINUE
       CALL MEMREL('PR1IN1 word='//WORD,WORK,1,KFRSAV,KFREE,LFREE)
+      deallocate( DOATOM )
       CALL QEXIT('PR1IN1')
       RETURN
       END
@@ -4859,9 +4861,15 @@ C     when reaching this routine.
 #endif
          REWIND LUPROP
       ELSE
+         IF (LUPROP .LT. 0) THEN
+            CALL QUIT('Programming error, AOPROPER not open in WRTPRO')
+         END IF
          REWIND (LUPROP)
          IF(.NOT.FNDLAB('EOFLABEL',LUPROP)) THEN
             WRITE (LUPRI,'(/A)') ' End of file not found in AOPROPER?'
+            CALL GPINQ_print(LUPROP,'NAME')
+            REWIND LUPROP
+            CALL QDUMP(LUPROP)
             CALL QUIT('Internal error, EOF not found in AOPROPER')
          END IF
          BACKSPACE LUPROP

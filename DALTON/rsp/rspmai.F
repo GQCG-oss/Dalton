@@ -69,6 +69,8 @@ C  /* Deck rspdrv */
 C
 C Driver for RESPONSE.
 C
+      use pelib_interface, only: use_pelib
+
 #include "implicit.h"
 C
       DIMENSION WRK(LWRK)
@@ -131,6 +133,7 @@ C     *************************
 C
 C Define wave function variables, also if SIRIUS has not been called
 C
+      FLAG(34) = .TRUE. ! no integral transformation by SETSIR
       CALL SETSIR(WRK,LWRK)
 C
 C Define variables that are common for all perturbation symmetries
@@ -242,7 +245,11 @@ C           are needed in rspoli.F (if .not. NEWTRA then
 C           only occ-occ Dirac dist. are saved on MODRCINT).
 C           hjaaj Nov 2001
          ELSE
-            JTRLVL = -4
+            IF (DIRFCK) THEN
+               JTRLVL = -3
+            ELSE
+               JTRLVL = -4
+            END IF
          END IF
          FLAGSV = DORSP
          DORSP = .TRUE.
@@ -341,6 +348,11 @@ C
          ! IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
       END IF
 C
+      IF (USE_PELIB()) THEN
+         IF (TRPFLG) THEN
+         ! edh: Insert quit of CREF have MULTIPLICITY NEQ 0!
+         END IF
+      END IF
 C
       CALL ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS()
 C
@@ -731,16 +743,17 @@ C     end of this input module
                GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
          END DO
-C
-         WRITE (LUPRI,'(/,3A,/)')
-     *        ' Keyword ',WORD,' not recognized in RSPREA.'
+
+         WRITE (LUPRI,'(/3A/)')
+     &       ' Keyword ',WORD,' not recognized under **RESPONS.'
          CALL PRTAB(NTABLE,TABLE,WORD//' input keywords',LUPRI)
 
-         CALL QUIT(' ILLEGAL "*" OPTION IN RSPREA')
+         CALL QUIT('Illegal "*" option under **RESPONS')
       ELSE
-         WRITE (LUPRI,'(/,3A,/)')
-     *      '@PROMPT "',PROMPT,'" ILLEGAL OR OUT OF ORDER.'
-         CALL QUIT(' PROGRAM STOPPED IN RSPREA, ERROR IN PROMPT')
+         WRITE (LUPRI,'(/3A/)') '@ Prompt "',PROMPT,
+     &      '" illegal or out of order under **RESPONS'
+         CALL PRTAB(NTABLE,TABLE,WORD//' input keywords',LUPRI)
+         CALL QUIT('ERROR IN A **RESPONS PROMPT')
       END IF
  2    WORD = '*RESPON'
       CALL RSPINP(WORD)
@@ -893,9 +906,10 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') '@KEYWORD "',WORD,
-     *            '" NOT RECOGNIZED IN RSPINP.'
-               CALL QUIT(' ILLEGAL KEYWORD IN RSPINP ')
+               WRITE (LUPRI,'(/4A/)') '@ Keyword "',WORD,
+     &            '" not recognized for ',WORD1
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('ILLEGAL KEYWORD FOR **RESPONS ')
     1          CONTINUE ! .INPTEST
                   INPTES = .TRUE.
                GO TO 100
@@ -3971,7 +3985,7 @@ C
 C
 C CALCULATE DIAGONAL CONFIGURATION PART OF E[2]
 C
-         CALL REWSPL(LURSP4)
+         REWIND (LURSP4)
          IF (KZCONF.GE.1) THEN
             KECDIA = 1
             KWRK1  = KECDIA + KZCONF
@@ -4172,8 +4186,9 @@ C     CSF's were used in SIRIUS. /hjaaj May 2001
 C
       MCONRF = NCONRF
       IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
-         FLAG(27) = .TRUE.
+         FLAG(27) = .TRUE. ! use determinants, not CSFs
 C        ... call setsir to reset Sirius common blocks to determinants
+         FLAG(34) = .TRUE. ! no integral transformation by SETSIR
          CALL SETSIR(WRK,LWRK)
       END IF
       NCONRF = MAX(1,NCONRF) ! SETSIR(abaset.F) sets NCONRF=0 for Hartree-Fock

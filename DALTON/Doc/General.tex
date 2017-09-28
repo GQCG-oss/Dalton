@@ -121,7 +121,7 @@ Fock-matrix based two-electron integral transformation routines
 by Hans J\o rgen Aagaard Jensen (2016) are used.
 
 \item[\Key{NEWTRA}]\index{integral transformation!"new"} Requests that the
-two-electron integral transformation routines of Bj\"{o}rn ROos
+two-electron integral transformation routines of Bj\"{o}rn Roos
 should be used during execution of the program, also if less than
 256 orbitals. The "new" transformation is always used if more than 255 orbitals.
 
@@ -129,8 +129,8 @@ should be used during execution of the program, also if less than
 differentiation. These routines will take advantage of the full
 molecular point group in order to minimize the number of points to be
 calculated. What order of derivatives and whether any analytical
-derivatives are to be used is determined in the \verb|*NMDDRV| input
-module.
+derivatives are to be used is determined in the \verb|**NMDDRV| input
+module (required when \texttt{.NMDDRV} specified).
 
 \item[\Key{OPTIMIZE}] Perform a geometry optimization\index{geometry optimization!.OPTIMIZE module}.
 The default is a geometry minimization\index{geometry minimization!.OPTIMIZE module}:
@@ -1799,10 +1799,10 @@ is the same as the general print level \verb|IPRUSR|.
 
 \item[\Key{PROPAV}]\verb| |\newline
 
-Indicates that a averaging over vibrational motions of a molecular
+Indicates that an averaging over vibrational motions of a molecular
 property (including the energy) is to be performed. The input
 for what kind of a vibrational analysis is to be performed is
-specified in the \Sec{PROPAV} module.
+specified in the \Sec{PROPAV} input submodule.
 
 \item[\Key{PROPER}]\verb| |\newline
 \verb|READ (LUCMD,*) NMRDRP, NARDRP|

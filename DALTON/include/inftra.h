@@ -1,11 +1,11 @@
 C --- File: inftra.h ---
-C     Global information for the sirius/sirtra.F 2-el integral transforamtion modules
+C     Global information for the sirius/sir*tra.F 2-el integral transformation modules
 C
       REAL*8  THRP,   THRQ
-      INTEGER LSRTAO, IPRTRA, LBUF, NIBUF, NBITS, NCDTRA, FCKTRA_TYPE
+      INTEGER LSRTAO, IPRTRA, LBUF, NIBUF, NBITS, FCKTRA_TYPE
       LOGICAL USEDRC, NEWTRA, NEWTRA_USEDRC, USE_INTSORT
       COMMON /INFTRA/ THRP,   THRQ,
-     &        LSRTAO, IPRTRA, LBUF, NIBUF, NBITS, NCDTRA, FCKTRA_TYPE,
+     &        LSRTAO, IPRTRA, LBUF, NIBUF, NBITS, FCKTRA_TYPE,
      &        USEDRC, NEWTRA, NEWTRA_USEDRC, USE_INTSORT
 C
 C     Name of file with 2-el integrals in AO basis.

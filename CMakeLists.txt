@@ -45,7 +45,6 @@ option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                              
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                             OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"                       OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization"                    OFF)
-option(ENABLE_RELEASE        "Test release mode which undefines MOD_UNRELEASED" OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable Polarizable Embedding (PE) library"        ON)
@@ -192,9 +191,6 @@ execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest_dalton.py ${C
 
 # this controlls "make install" target
 include(ConfigMakeInstall)
-
-# this controlls "make release" target
-include(ConfigMakeRelease)
 
 # give information about system, compiler flags, and size of static allocations
 set(STATIC_MEM_INFO_BINARIES dalton)

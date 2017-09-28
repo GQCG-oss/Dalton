@@ -130,6 +130,7 @@ subroutine pelib_ifc_input_reader(word)
 #include "priunit.h"
     character(len=7), intent(inout) :: word
     call qenter('pelib_ifc_input_reader')
+    ! if (.not. use_pelib()) call quit('PElib not active')
     call pe_input_reader(word, lucmd)
     call qexit('pelib_ifc_input_reader')
 end subroutine pelib_ifc_input_reader
@@ -141,6 +142,7 @@ subroutine pelib_ifc_init()
 #include "mxcent.h"
 #include "nuclei.h"
     call qenter('pelib_ifc_init')
+    ! if (.not. use_pelib()) call quit('PElib not active')
     call pe_init(lupri, cord(1:3,1:natoms), charge(1:natoms))
     call qexit('pelib_ifc_init')
 end subroutine pelib_ifc_init
@@ -838,7 +840,7 @@ subroutine pelib_ifc_lr(ncsim, nosim, bcvecs, bovecs, cref, cmo, cindx, udv,&
     end if
 
     if (nosim > 0) then
-        call pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx,&
+        call pe_rsplno(nosim, bovecs, cref, cmo, cindx,&
                       & udv, dv, udvtr, dvtr, sovecs, wrk, nwrk)
     end if
 
@@ -903,7 +905,7 @@ subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,&
     tfxcacs = 0.0d0
 
     ! Fxc = R*(<0(L)|Fe|0> + <0|Fe|0(R)>)Fe
-    if (pe_polar) then
+    if (pe_polar .or. .not. trplet) then
         call getref(cref, ncref)
         ! ...Construct <0(L)|...|0> + <0|...|0(R)>
         allocate(udtv(n2ashx,ncsim))
@@ -980,12 +982,19 @@ subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,&
         call output(scvecs,1,kzyvar,1,ncsim,kzyvar,ncsim,1,lupri)
     end if
 
+    ! edh: The triplet will only work for response from a single reference
+    ! state, where the term from Fxc is 0. Can be generalized (at least to
+    ! dublet) by including Fxc... 
     ! ... orbital part of sigma vector(s)
     if (kzwopt .gt. 0) then
         do i = 1,ncsim
             fuxcs = 0.0d0
             call dsptsi(norbt,fxcs(:,i), fuxcs)
-            call slvsor(.true.,.true., 1, udv, scvecs(1,i), fuxcs)
+            if (trplet) then
+               ! zero for singlet reference state
+            else
+               call slvsor(.true.,.true., 1, udv, scvecs(1,i), fuxcs)
+            end if
             if (locdeb) then
                 write(lupri,*) ' *** After slvsor in pe_rsplnc *** '
                 write(lupri,*) 'Orbital part of lin transf conf vec no ', i
@@ -993,8 +1002,11 @@ subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,&
                 call output(scvecs(1,i), 1, kzyvar, 1, 1, kzyvar, 1, 1,&
                            & lupri)
             end if
-
-            call slvsor(.false., .false., 1, dtv(1,i), scvecs(1,i), fupe)
+            if (trplet) then
+               call slvsor(.false.,.false.,1, dtvtr(1,i),scvecs(1,i),fupe)
+            else 
+               call slvsor(.false., .false., 1, dtv(1,i), scvecs(1,i), fupe)
+            end if 
             if (locdeb) then
                 write(lupri,*) 'Orbital part of lin transf conf vec no ', i
                 write(lupri,*)' Tg contribution'
@@ -1020,7 +1032,7 @@ subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,&
 
 end subroutine pe_rsplnc
 
-subroutine pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx, udv, dv,&
+subroutine pe_rsplno(nosim, bovecs, cref, cmo, cindx, udv, dv,&
                     & udvtr, dvtr, sovecs, wrk, nwrk)
     use pe_variables, only: pe_polar, pe_gspol
     implicit none
@@ -1031,7 +1043,7 @@ subroutine pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx, udv, dv,&
 #include "infrsp.h"
 #include "inftap.h"
 
-    integer :: nosim, ncsim, nwrk
+    integer :: nosim, nwrk
     integer, dimension(*) :: cindx
     real*8, dimension(*) :: bovecs
     real*8, dimension(kzyvar,*) :: sovecs
@@ -1042,13 +1054,10 @@ subroutine pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx, udv, dv,&
     real*8 :: txyo
     real*8 :: ddot, slvqlm
     real*8, dimension(:), allocatable :: dcao, dvao
-!        real*8, dimension(:), allocatable :: dcaotr, dvaotr
     real*8, dimension(:), allocatable :: daos, fckaos
     real*8, dimension(:), allocatable :: daotrs
-!        real*8, dimension(:), allocatable :: daotrs, fckaotrs
     real*8, dimension(:), allocatable :: evec
     real*8, dimension(:,:), allocatable :: ubovecs, evecs, eacs
-!        real*8, dimension(:,:), allocatable :: evectrs, eactrs
     real*8, dimension(:), allocatable :: fpemo,fupemo
     real*8, dimension(:), allocatable :: txyoacs
     real*8, dimension(:), allocatable :: ovlp
@@ -1063,14 +1072,16 @@ subroutine pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx, udv, dv,&
         return
     ! no polarization for triplet excitations in closed shell SCF
     else if ((nasht == 0) .and. trplet) then
+        !write(lupri,*)'WARNING: Triplet PE-response experimental'
         call qexit('pe_rsplno')
         return
     ! ground state polarization approximation
     else if (pe_gspol) then
         call qexit('pe_rsplno')
         return
-    ! triplet response for open shell systems not ready yet
-    else if ((nasht > 0) .and. trplet) then
+    ! triplet response for open shell (and MCSCF) not ready yet
+    else if (tdhf .and. (nasht > 0) .and. trplet) then
+        !write(lupri,*)'WARNING: Triplet code experimental'
         call quit('ERROR: triplet operators for open shell'//&
                  & ' systems not implemented')
     end if
@@ -1099,43 +1110,23 @@ subroutine pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx, udv, dv,&
 
     ubovecs = - ubovecs
 
-    allocate(dcao(n2basx), dvao(n2basx), daos(nosim*nnbasx))
-!        if (trplet) then
-!            allocate(dcaotr(n2basx), dvaotr(n2basx),
-!     &               daotrs(nosim*nnbasx))
-!        end if
-    ! Calculate Fxo = <0|Fe(k)|0>Fe
-    do i = 1, nosim
-        j = (i - 1) * nnbasx + 1
-        call deq27(cmo, ubovecs(:,i), udv, dcao, dvao, wrk, nwrk)
-!            edh: Does deq27 assume symmetric matrix? is this
-!            reasonable?
-!            if (trplet) then
-!                call deq27(cmo, ubovecs(:,i), udvtr, dcaotr, dvaotr,
-!    &                     wrk, nwrk)
-!            end if
-        if (nasht > 0) then
-            dcao = dcao + dvao
-!                if (trplet) then
-!                    dcaotr = dcaotr + dvaotr
-!                end if
-        end if
-        call dgefsp(nbast, dcao, daos(j))
-!            if (trplet) then
-!                call dgefsp(nbast, dcaotr, daotrs(j))
-!            end if
-    end do
-    deallocate(dcao, dvao)
-
-    allocate(fckaos(nosim*nnbasx))
-    call pelib_ifc_response(daos, fckaos, nosim)
-    deallocate(daos)
-!        if (trplet) then
-!            allocate(fckaotrs(nosim*nnbasx))
-!            call pe_master(runtype='response', denmats=daotrs,
-!     &                     fckmats=fckaotrs, nmats=nosim)
-!            deallocate(daotrs)
-!        end if
+    if (.not. trplet) then
+       allocate(dcao(n2basx), dvao(n2basx), daos(nosim*nnbasx))
+       ! Calculate Fxo = <0|Fe(k)|0>Fe
+       do i = 1, nosim
+           j = (i - 1) * nnbasx + 1
+           call deq27(cmo, ubovecs(:,i), udv, dcao, dvao, wrk, nwrk)
+           if (nasht > 0) then
+               dcao = dcao + dvao
+           end if
+           call dgefsp(nbast, dcao, daos(j))
+       end do
+       deallocate(dcao, dvao)
+      
+       allocate(fckaos(nosim*nnbasx))
+       call pelib_ifc_response(daos, fckaos, nosim)
+       deallocate(daos)
+    end if
 
     allocate(evec(nnorbx))
     allocate(evecs(n2orbx,nosim))
@@ -1146,62 +1137,39 @@ subroutine pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx, udv, dv,&
         eacs = 0.0d0
         txyoacs = 0.0d0
     end if
-!        if (trplet) then
-!            allocate(evectrs(n2orbx,nosim), eactrs(n2ashx,nosim))
-!        end if
-
     do i = 1, nosim
         j = (i - 1) * nnbasx + 1
-        call uthu(fckaos(j), evec, cmo, wrk, nbast, norbt)
-        call dsptsi(norbt, evec, evecs(:,i))
-!            if (trplet) then
-!                uthu(fckaotrs(j), evectrs, cmo, wrk, nbast, norbt)
-!                call dsptsi(norbt, evectrs, evecstrs(:,i))
-!            end if
-
+        if (.not. trplet) then 
+           call uthu(fckaos(j), evec, cmo, wrk, nbast, norbt)
+           call dsptsi(norbt, evec, evecs(:,i))
+        end if 
         ! Fyo = V(k) - <0|F|0>Fe(k)
         if (.not. tdhf) then
             call onexh1(ubovecs(:,i), fupemo, evecs(:,i))
             call getacq(evecs(:,i), eacs(:,i))
-            txyo = slvqlm(udv, eacs(:,i), evecs(:,i), txyoacs(i))
-!                if (trplet) then
-!                    call getacq(evecstrs, eacstrs)
-!                    txyot  = slvqlm(udvtr, eacstrs, evecstrs, fyoat(i))
-!                end if
+            if (trplet) then
+              ! do nothing (txyoacs should be zero for triplet with singlet cref)
+            else 
+              txyo = slvqlm(udv, eacs(:,i), evecs(:,i), txyoacs(i))
+            end if 
         end if
-!            if (trplet) then
-!                call uthu(fckaotrs(j), evec, cmo, wrk, nbast, norbt)
-!                call dsptsi(norbt, evec, evectrs(:,i))
-!            end if
-!            if (nasht > 0) then
-!                call getacq(evecs(:,i), eacs(:,i))
-!                if (trplet) then
-!                    call getacq(evectrs(:,i), eactrs(:,i))
-!                end if
-!            end if
-!            tr = solelm(dv, fxyoacs(:,i), fxyos(:,i), txyoacs(i))
     end do
 
     deallocate(evec)
     if (.not. tdhf) then
         deallocate(fupemo)
+        ! Special triplet handling is taken care of inside slvsc! 
         call slvsc(0, nosim, n2ashx, dummy, cref, sovecs, eacs,&
                   & dummy, txyoacs, dummy, cindx, wrk, nwrk)
         deallocate(eacs)
         deallocate(txyoacs)
     end if
-
-!        if (trplet) then
-!            call slvsor(.true., .false., nosim, udvtr, sovecs, evectrs)
-!            call slvsor(.true., .true., nosim, udv, sovecs, evecs)
-!        else
-            call slvsor(.true., .true., nosim, udv, sovecs, evecs)
-!        end if
-
+    ! Note: triplet and singlet calls to slvsor get identical.
+    ! Singlet case: singlet evecs and singlet orbital operator.
+    ! Triplet case: triplet evecs and triplet orbital operator.
+    ! The two cases give the same expressions for gradient elements.
+    call slvsor(.true., .true., nosim, udv, sovecs, evecs)
     deallocate(evecs)
-!        if (trplet) then
-!            deallocate(evectrs, eactrs)
-!        end if
 
     call qexit('pe_rsplno')
 
@@ -3276,38 +3244,13 @@ subroutine pelib_ifc_start_slaves(runtyp)
 #include "infpar.h"
     integer, parameter :: iprtyp = POLARIZABLE_EMBEDDING
     call qenter('pelib_ifc_start_slaves')
+    if (.not. use_pelib()) call quit('PElib not active')
     if (nodtot >= 1) then
         call mpixbcast(iprtyp, 1, 'INTEGER', master)
         call mpixbcast(runtyp, 1, 'INTEGER', master)
     end if
     call qexit('pelib_ifc_start_slaves')
 end subroutine pelib_ifc_start_slaves
-
-!module pelib_ifc_work
-!
-!    use pe_precision
-!
-!    implicit none
-!
-!    real(dp), dimension(:), pointer :: pewrk
-!
-!contains
-!
-!subroutine dalwrk2pewrk(dalwrk)
-!
-!    real(dp), dimension(:), target :: dalwrk
-!
-!    pewrk => dalwrk
-!
-!end subroutine dalwrk2pewrk
-!
-!subroutine nullify_pewrk()
-!
-!    nullify(pewrk)
-!
-!end subroutine nullify_pewrk
-!
-!end module pelib_ifc_work
 
 #else
 

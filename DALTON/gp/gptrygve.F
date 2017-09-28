@@ -1509,6 +1509,32 @@ C
       END IF
       RETURN
       END
+C  /* Deck gpinq_print */
+      SUBROUTINE GPINQ_print(LU, TASK)
+
+C     H. J. Aa. Jensen, Jan. 2017
+
+C     Print requested file information to LUPRI
+
+#include "implicit.h"
+#include "priunit.h"
+      CHARACTER*(*) TASK
+      CHARACTER FILENM*80
+      INTEGER   LU, FILELN
+      CALL QENTER('GPINQ_print')
+      IF (LU .LE. 0) THEN
+         CALL QUIT('Error, file unit < 0')
+      ELSE IF (TASK(1:4) .EQ. 'NAME') THEN
+         INQUIRE(UNIT=LU,NAME=FILENM)
+         FILELN = LNBLNK(FILENM)
+         WRITE(LUPRI,'(/2A)')
+     &      ' GPINQ_print: file name is ',FILENM(1:FILELN)
+      ELSE
+         CALL QUIT('Unknown inquire status requested: '//TASK)
+      END IF
+      CALL QEXIT('GPINQ_print')
+      RETURN
+      END
 C /* Deck UPCASE */
       SUBROUTINE UPCASE(WORD)
 C

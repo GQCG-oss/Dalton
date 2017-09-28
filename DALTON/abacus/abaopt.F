@@ -161,11 +161,12 @@ C
       NOAUX  = .FALSE.
       NODIHE = .FALSE.
       NOADDA = .FALSE.
-      PRJTRO = .TRUE.  ! Project translation-rotation out of gradient and Hessian
       IF (USE_PELIB()) THEN 
-          PRJTRO = .FALSE.  ! no translation and rotation invariance when PE sites are fixed
-          IF (.NOT. CARTCO) CARTCO = .TRUE.
-          IF (EVLINI .LE. 0.0D0) EVLINI = 1.0D0
+         PRJTRO = .FALSE.  ! no translation and rotation invariance when PE sites are fixed
+         IF (.NOT. CARTCO) CARTCO = .TRUE.
+         IF (EVLINI .LE. 0.0D0) EVLINI = 1.0D0
+      ELSE
+         PRJTRO = .TRUE.  ! Project translation-rotation out of gradient and Hessian
       END IF
       REDRED = .FALSE.
       LINDHD = .TRUE.
@@ -2273,7 +2274,7 @@ C        Computation of numerical Hessian NHL 10/13
             DIPDER = .TRUE.
          ELSE IF (IORDR .GT. 2 .OR. IORDR .LT. 0) THEN
             CALL QUIT('The order of analytical derivatives'//
-     &                         'is unexpected')          
+     &                         'is unexpected')
          END IF
 
          CALL EXEABA(WORK,LWORK-1,WRKDLM)
@@ -2531,7 +2532,6 @@ C
 #include "infinp.h"
 #include "optinf.h"
 #include "gnrinf.h"
-#include "siripc.h"
 #include "dftcom.h"
 CRF Added
 #include "inforb.h"
@@ -2764,7 +2764,11 @@ C         NAORDR = 2; Analytical gradients and hessians available.
 C
          CALL FNDANA(NAORDR)
 C
+C
          IF (NAORDR.EQ.0) THEN
+            WRITE (LUPRI,'(/5X,A,I4/5X,A)') 'Order of analytical ' //
+     &          'energy-derivatives available:', NAORDR,
+     &          'Calculating gradient numerically.'
             CALL NUMGRD(WORK,LWORK,WRKDLM)
          ELSE
             WRINDX = .TRUE.
@@ -2853,20 +2857,25 @@ C         NAORDR = 2; Analytical gradients and hessians available.
 C
 
       SAVE_PELIB = .FALSE.
-      IF (USE_PELIB() .AND. INITHS) THEN
+      IF (USE_PELIB()) THEN
          SAVE_PELIB = .TRUE.
          CALL PELIB_IFC_DEACTIVATE()
       END IF
 
       CALL FNDANA(NAORDR)
 
-      IF (SAVE_PELIB .AND. INITHS) THEN
+      IF (SAVE_PELIB) THEN
+         IF (NAORDR .EQ. 2) THEN
+            WRITE(LUPRI,'(//A)')
+     &      '@ WARNING. Analytical molecular Hessian is approximate'//
+     &      ' because PEQM contributions are neglected.'
+         END IF
          CALL PELIB_IFC_ACTIVATE()
       END IF
 
       IF (NAORDR .LT. 2) THEN
          CALL QUIT('2nd order optimization aborted because'//
-     &   ' analytical Hessian not available.')
+     &   ' analytical molecular Hessian is not available.')
       END IF
 
       WRINDX = .TRUE.
@@ -8314,6 +8323,7 @@ C
 C     Get numerical Hessian after optimization if  
 C     **PROPER .VIBANA has been requested.
 C
+#include "implicit.h"
 #include "mxcent.h"
 #include "cbivib.h"
 #include "numder.h"

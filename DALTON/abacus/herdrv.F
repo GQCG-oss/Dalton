@@ -1323,7 +1323,6 @@ cs            ENDIF
             TWOBYTEPACKING = .TRUE.
             GO TO 100 
   246    CONTINUE
-            write(lupri,*) 'Do we get inhere?'
             LFDIPLN = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
@@ -2465,6 +2464,8 @@ C
             CALL TIMER('HUCKEL',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
          END IF
+      END IF ! RUNONE
+      IF (RUNONE .OR. ONEPRP) THEN
 C
 C           ***** Overlap integrals *****
 C
@@ -2552,7 +2553,6 @@ C             using PE library - otherwise they are just
 C             standard dipole integrals
 
             IF (LFDIPLN) THEN
-               write(lupri,*) 'Do we reach this point?'
                CALL TIMER('START ',TIMSTR,TIMEND)
                CALL PR1INT('LFDIPLN',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
@@ -3556,8 +3556,8 @@ C
                CALL FLSHFO(LUPRI)
             END IF
 cLig
-         END IF
-      END IF  ! (RUNONE)
+         END IF ! (ONEPRP)
+      END IF  ! (RUNONE .OR. ONEPRP)
       RUNONE = .TRUE. ! enable one-electron integrals for next iteration if e.g. geometry optimization
 C
 C     Determine number of different integrals in R12 method (WK/UniKA/19-11-2002).
@@ -3859,23 +3859,29 @@ C
 C
 C Used from common blocks:
 C  GNRINF: DIRCAL, DOSRIN
+C  CBIHER: ONEPRP
 C  CBIHR1: RUNONE
 C  CBIHR2: RUNTWO
 C  INFTAP: LUINTA, LUSRINT
+#include "mxcent.h"
 #include "gnrinf.h"
+#include "cbiher.h"
 #include "cbihr1.h"
 #include "cbihr2.h"
 #include "inftap.h"
 C
-      LOGICAL AOEXIST, DIRCAL_SAV, RUNONE_SAV, RUNTWO_SAV !, DOSRIN_SAV
+      LOGICAL AOEXIST, DIRCAL_SAV, RUNONE_SAV, ONEPRP_SAV, RUNTWO_SAV !, DOSRIN_SAV
 C
+      CALL QENTER('MAKE_AOTWOINT')
       CALL GPINQ('AOTWOINT','EXIST',AOEXIST)
       IF (.NOT. AOEXIST) THEN
          RUNONE_SAV = RUNONE
+         ONEPRP_SAV = ONEPRP
          RUNTWO_SAV = RUNTWO
 !        DOSRIN_SAV = DOSRIN
          DIRCAL_SAV = DIRCAL
          RUNONE = .FALSE.
+         ONEPRP = .FALSE.
          RUNTWO = .TRUE.
 !        DOSRIN = DOSRIN .AND. .NOT.DIRCAL
          DIRCAL = .FALSE.
@@ -3890,13 +3896,17 @@ C        Open LUINTA/LUSRINT for new integrals
             CALL GPOPEN(LUSRINT,'AOSR2INT','UNKNOWN',' ',' ',
      &                  IDUMMY,.FALSE.)
          END IF
+         IF (LUPROP .LT. 0)
+     &   CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',' ',IDUMMY,.FALSE.)
          CALL HERINT(WORK,LWORK)
          RUNONE = RUNONE_SAV
+         ONEPRP = ONEPRP_SAV
          RUNTWO = RUNTWO_SAV
 !        DOSRIN = DOSRIN_SAV
          DIRCAL = DIRCAL_SAV
       END IF
 
+      CALL QEXIT('MAKE_AOTWOINT')
       RETURN
       END
 #endif /* ifndef PRG_DIRAC */

@@ -939,7 +939,7 @@ C
                CALL PRIGRD(GSOLCV,WORK(KCSTRA),WORK(KSCTRA))
             END IF
             IF (USE_PELIB()) THEN
-               CALL HEADER('Polarizable Embedding part of gradient',-1)
+               CALL HEADER('Polarizable embedding part of gradient',-1)
                CALL PRIGRD(PEGRAD,WORK(KCSTRA),WORK(KSCTRA))
             END IF
             IF (DFTRUN) THEN

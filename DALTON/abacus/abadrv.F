@@ -743,7 +743,7 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
-      PARAMETER (NDIR = 28, NTABLE = 60, D0 = 0.D0)
+      PARAMETER (NDIR = 29, NTABLE = 60, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP
       LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       LOGICAL   GRDINP, NO_ABACUS_INPUT
@@ -796,7 +796,7 @@ C  jim-gesc 1.0: TABDIR(#17) ="*LROPTS" , TABLE(60)=".LRESC ". check INTRST for 
      &             'xXXXXXX', '*LOCALI', '*SOPPA ', ! *LOCALI: PFP 27/03-2006 - SOS for spin-spin coupling included
      &             '*LINRES', '*EXPECT', '*SPIN-S',
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
-     &             '*ABALNR'/
+     &             '*ABALNR', '*RHSIDE'/
 Caug04-hjaaj: disabled currently inactive .NACME
 Csep08-spas: .NACME reactivated for Vib_g
 C                      1          2          3
@@ -1996,8 +1996,12 @@ CAMT--------------
      &                       'to zero.'
          CALL QUIT('ERROR: .POLARI and .PEQM are not compatible'//
      &             ' (see output file for more details)')
-
-        END IF
+        END IF 
+        IF ((MAGSUS.OR.SPINRO) .AND. .NOT. NOLOND) THEN 
+         CALL QUIT('ERROR: .MAGNET (Magnetizability tensor and'//
+     &        ' spin-rotation constants) not implemented for PE'//
+     &        ' with London orbitals')
+        END IF 
       END IF
 C
 C
@@ -2016,7 +2020,7 @@ cs
             IF (WORD .EQ. TABDIR(I)) THEN
                GO TO
      *         (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,
-     *              22,23,24,25,26,27,28), I
+     *              22,23,24,25,26,27,28,29), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -2037,7 +2041,7 @@ cs
       GO TO 200
     5   CALL TWOINP(WORD)
       GO TO 200
-    6   CALL RHSINP(WORD)
+    6   CALL RHSINP(WORD) ! *GETSGY, alias to *RHSIDE; kept for backwards compatibility
       GO TO 200
     7   CALL EXCINP(WORD)
       GO TO 200
@@ -2087,6 +2091,8 @@ C jim-gesc 1.4 : CALL LRSCINP to read OPTNS @ DAL  file
       GO TO 200
    28   CALL LNRINP(WORD) ! *ABALNR
       GO TO 200
+   29   CALL RHSINP(WORD) ! *RHSIDE
+      GO TO 200
 C
     1 CONTINUE
 C
@@ -2118,6 +2124,7 @@ Chj   this call had survived from when ABACUS was a separate program.
 Chj   I have now made sure that READIN always is called in the beginning,
 Chj   also if RNHERM is false. /April 2009 hjaaj
 
+      FLAG(34) = .FALSE. ! make sure integral transformation done if needed
       CALL SETSIR(WORK,LWORK)
 C
 C     If SOPPA calculation, then

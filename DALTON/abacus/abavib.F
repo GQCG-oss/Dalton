@@ -193,6 +193,11 @@ C
          MAXDIF = 2
       ELSE IF (MOLGRD) THEN
          MAXDIF = 1
+!     ELSE
+!        MAXDIF = 0
+! The two lines above break .VIBANA because
+! after geometry walk is converged then
+! MOLGRD and MOLHES are reset to .false.
       END IF
       DOVCD = VCD
       VIB_PRJTRO = .TRUE.
