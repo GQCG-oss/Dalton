@@ -2260,9 +2260,105 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
                 write(lupri,*) 'PE-E3TEST, case 4 fxo2k1k ', e3test_value-e3test_old
                 write(lupri,*) 'PE-E3TEST, total  ', e3test_value
              end if
+          end if        
+          if (.not. tdhf) then
+             ! fxc(1s2s) = R* ( <01L|..|02R> + <02L|..|01R> )Fe
+             fcmo    = 0.0d0
+             allocate(fxc1s2s(norbt,norbt))
+             fxc1s2s = 0.0d0
+             call uthu(0.125d0*fcaos(6*nnbasx+1:7*nnbasx), fcmo, cmo,&
+                  & wrk, nbast, norbt)
+             call dsptsi(norbt, fcmo, fxc1s2s)
+             !/ <0| [qj ,Fxc[1S,2S]] |0> \
+             !| <j| Fxc[1S,2S] |0>       |
+             !| <0| [qj+,Fxc[1S,2S]] |0> |
+             !\ -<0| Fxc[1S,2S] |j>      /
+             isymdn = 1
+             ovlap  = 1.0d0
+             isymst = muld2h(isyma, irefsy)
+             if ( isymst .eq. irefsy ) then
+                lcon = ( mzconf(isyma) .gt. 1 )
+             else
+                lcon = ( mzconf(isyma) .gt. 0 )
+             end if
+             lorb   = ( mzwopt(isyma) .gt. 0 )
+             nzyvec = mzconf(1)
+             nzcvec = mzconf(1)            
+             call rsp1gr(1 ,kzyva, idummy,0, isyma, 0, irefsy, etrs,&
+                  & cref, nzyvec, nzcvec, ovlap, isymdn, udv, fxc1s2s,&
+                  & xindx, mjwop, wrk(1), lfree, lorb, lcon, .true.)
+             deallocate(fxc1s2s)
+             if (atest) then
+                e3test_value = ddot(kzyva,veca,1,etrs,1)
+                write(lupri,*) 'PE-E3TEST, case 4 fxc1s2s', e3test_value-e3test_old
+                write(lupri,*) 'PE-E3TEST, total  ', e3test_value
+             end if
           end if
-        
-          endif 
+          ! fxc(1s2k) = ( <01L|[k2,Epq]|0> + <0|[k2,Epq]|01R> )Fe
+          allocate(fxc1s2k(norbt,norbt))
+          fcmo    = 0.0d0
+          fxc1s2k = 0.0d0
+          call uthu(2.0d0*fcaos(8*nnbasx+1:9*nnbasx), fcmo, cmo,&
+               & wrk, nbast, norbt)
+          call dsptsi(norbt, fcmo, fxc1s2k)
+          !/ <0| [qj ,Fxc[2k,1S]] |0> \
+          !| <j| Fxc[2k,1S] |0>       |
+          !| <0| [qj+,Fxc[2k,1S]] |0> |
+          !\ -<0| Fxc[2k,1S] |j>      /          
+          isymdn = 1
+          ovlap  = 1.0d0
+          isymst = muld2h(isyma, irefsy)
+          if ( isymst .eq. irefsy ) then
+             lcon = ( mzconf(isyma) .gt. 1 )
+          else
+             lcon = ( mzconf(isyma) .gt. 0 )
+          end if
+          lorb   = ( mzwopt(isyma) .gt. 0 )
+          nzyvec = mzconf(1)
+          nzcvec = mzconf(1)          
+          call rsp1gr(1 ,kzyva, idummy,0, isyma, 0, irefsy, etrs,&
+                  & cref, nzyvec, nzcvec, ovlap, isymdn, udv, fxc1s2k,&
+                  & xindx, mjwop, wrk(1), lfree, lorb, lcon, .true.)
+          deallocate(fxc1s2k)
+          if (atest) then
+             e3test_value = ddot(kzyva,veca,1,etrs,1)
+             write(lupri,*) 'PE-E3TEST, case 4 fxc1s2k ', e3test_value-e3test_old
+             write(lupri,*) 'PE-E3TEST, total  ', e3test_value
+          end if
+          !fxc(1k2s) = ( <02L|[k1,Epq]|0> + <0|[k1,Epq]|02R> )Fe
+          allocate(fxc1k2s(norbt,norbt))
+          fcmo = 0.0d0
+          fxc1k2s = 0.0d0
+          call uthu(2.0d0*fcaos(9*nnbasx+1:10*nnbasx), fcmo, cmo,&
+               & wrk, nbast, norbt)
+          call dsptsi(norbt, fcmo, fxc1k2s)
+          !/ <0| [qj ,Fxc[1k,2S]] |0> \
+          !| <j| Fxc[1k,2S] |0>       |
+          !| <0| [qj+,Fxc[1k,2S]] |0> |
+          !\ -<0| Fxc[1S,2k] |j>      /
+          isymdn = 1
+          ovlap  = 1.0d0
+          isymst = muld2h(isyma, irefsy)
+          if ( isymst .eq. irefsy ) then
+             lcon = ( mzconf(isyma) .gt. 1 )
+          else
+             lcon = ( mzconf(isyma) .gt. 0 )
+          end if
+          lorb   = ( mzwopt(isyma) .gt. 0 )
+          nzyvec = mzconf(1)
+          nzcvec = mzconf(1)         
+          call rsp1gr(1 ,kzyva, idummy,0, isyma, 0, irefsy, etrs,&
+               & cref, nzyvec, nzcvec, ovlap, isymdn, udv, fxc1k2s,&
+               & xindx, mjwop, wrk(1), lfree, lorb, lcon, .true.)
+          deallocate(fxc1k2s)
+          if (atest) then
+             e3test_value = ddot(kzyva,veca,1,etrs,1)
+             write(lupri,*) 'PE-E3TEST, case 4 fxc1k2s ', e3test_value-e3test_old
+             write(lupri,*) 'PE-E3TEST, total  ', e3test_value
+          end if        
+      end if ! pe_polar
+      deallocate(cref)
+      deallocate(fupe)    
 
       call qexit('pe_rspmcqr')
 
@@ -2940,7 +3036,7 @@ subroutine pelib_ifc_rspmcqr(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
              call uthu(0.125d0*fcaos(6*nnbasx+1:7*nnbasx), fcmo, cmo,&
                   & wrk, nbast, norbt)
              call dsptsi(norbt, fcmo, fxc1s2s)
-
+             ! edh should fcmo be re-zeroed or is it done in UTHU??
              ! + ... fxc(1s2k) + fxc(1k2S)
              ! fxc(1s2k) = ( <01L|[k2,Epq]|0> + <0|[k2,Epq]|01R> )Fe
              call uthu(2.0d0*fcaos(8*nnbasx+1:9*nnbasx), fcmo, cmo,&
