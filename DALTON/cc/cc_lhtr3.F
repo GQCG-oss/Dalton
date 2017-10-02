@@ -102,12 +102,6 @@ C
 C
       LOGICAL ETRAN,FCKCON,CCSDR12,SKIPMI
 C
-C  DEBUGGING VARIABLES
-      LOGICAL LOWC2
-      INTEGER, SAVE :: NUMCALLS = 0
-C
-      NUMCALLS = NUMCALLS + 1
-C
       CALL QENTER(myname)
 C
       THIRD = ONE/THREE
@@ -359,7 +353,6 @@ C
          CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,ONEM)
 C
 C
-         LOWC2 = DNRM2(NT2SQ(ISYMTR),CTR2,1).LT.1.0D-8
          IF ( DEBUG ) THEN
             RHO1N = DDOT(NT1AM(ISYMTR),CTR1(1,IV),1,CTR1(1,IV),1)
             RHO2N = DDOT(NT2SQ(ISYMTR),CTR2,1,CTR2,1)
@@ -876,15 +869,6 @@ C
                CALL CC_T2AO3(CTR2,WORK(KLAMDP),ISYMLP,WORK(KSCRM2),
      *                        WORK(KEND4),LWRK4,IDEL,ISYMD,
      *                        ISYMTR,ICON)
-C              Debugging
-               IF (LOWC2) THEN
-                  TMPNORM = DNRM2(NT2BCD(ISSCRM),WORK(KSCRM2),1)
-                  IF (TMPNORM.GT.1.0D-5) THEN
-                     TMPNORM2 = DNRM2(NT2BCD(ISSCRM),WORK(KSCRM),1)
-                     PRINT *, 'Odd partially transformed CTR2 : ',
-     &                        TMPNORM, TMPNORM2, IDEL, ISYMD
-                  END IF
-               END IF
 C
                AUTIME = SECOND() - AUTIME
                TIM2AO = TIM2AO + AUTIME
@@ -1401,9 +1385,13 @@ C
             WRITE(LUPRI,1) 'Norm of RHO1 after E-TERM:        ', RHO1N
             WRITE(LUPRI,1) 'Norm of RHO2 after E-TERM:        ', RHO2N
          ENDIF
+C
+C        For now, explicitly zero (-) diagonal!
+         CALL CCLR_DIASCL(RHO2,ZERO,ISYMTR)
 C------------------------------------------
 C        RHO2(-) done: write out (-) vector
 C------------------------------------------
+C
          CALL CC_WVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
      &                 NT2AM(ISYMTR),IV+ITR-1,NT2AM(ISYMTR),RHO2)
 C
