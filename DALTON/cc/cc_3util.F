@@ -7,7 +7,7 @@ C  /* Deck cc_t2sq3a */
 !     Adds "FACT" times the content of the antisymmetric,
 !     packed array T2AM to the square array T2SQ
 !
-!     Based on CC_T2SQ by Kasper Hald
+!     Based on CC_T2SQ3 by Kasper Hald
 !--------------------------------------------------------
 !
       IMPLICIT NONE
@@ -290,7 +290,7 @@ C
       ISYMXD = MULD2H(ISYMLH,ISYMX)
 C
 C------------------------------------
-C     Transform Y-matrix to AO-basis.
+C     Transform X-matrix to AO-basis.
 C------------------------------------
 C
       DO 100 ISYMAL = 1,NSYM
@@ -311,16 +311,17 @@ C
          NTOTAL = MAX(NBAS(ISYMAL),1)
          NTOTM  = MAX(NRHF(ISYMM),1)
 C
+C        lambdp (alpha,m) * x(m,n) => work(alpha,n)
          CALL DGEMM('N','N',NBAS(ISYMAL),NRHF(ISYMN),NRHF(ISYMM),
      *              ONE,XLAMDP(KOFF1),NTOTAL,XMAT(KOFF2),NTOTM,
      *              ZERO,WORK,NTOTAL)
 C
-         KOFF1 = IGLMRH(ISYMAL,ISYMN) + 1
+         KOFF1 = IGLMRH(ISYMBE,ISYMN) + 1
          KOFF2 = IAODIS(ISYMAL,ISYMBE) + 1
 C
          NTOTAL = MAX(NBAS(ISYMAL),1)
          NTOTBE = MAX(NBAS(ISYMBE),1)
-C
+C        work(alpha,n) * lambdh(beta,n) => xout(alpha,beta)
          CALL DGEMM('N','T',NBAS(ISYMAL),NBAS(ISYMBE),NRHF(ISYMN),
      *              ONEM,WORK,NTOTAL,XLAMDH(KOFF1),NTOTBE,
      *              ONE,XOUT(KOFF2),NTOTAL)
@@ -688,7 +689,7 @@ C  /* Deck cc_t2ao3 */
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     Written by Rasmus Faber, 2017
-C     Based on CC_T2AM by H. Kock, A. Sanchez, O. Christiansen and
+C     Based on CC_T2AO by H. Kock, A. Sanchez, O. Christiansen and
 C     A. Halkier.
 C     PURPOSE:
 C             Tdjci -> Tci,j (delta)
@@ -744,7 +745,8 @@ C
          DO 110 NCI = 1, NT1AM(ISYMCI)
 C
             KOFF2 = IT2SQ(ISYMDJ,ISYMCI)
-     *            + NT1AM(ISYMDJ)*(NCI - 1) + 1
+     *            + NT1AM(ISYMDJ)*(NCI - 1)
+     &            + IT1AM(ISYDVI,ISYMJ) + 1
             KOFF3 = IT2BCD(ISYMCI,ISYMJ)
      *            + NCI
 C
@@ -885,7 +887,7 @@ C
      *                             + NBAS(ISYAL)*(B - 1) + A
                               FACM = ONE
                            ELSE
-                              NABP = IAODPK(ISYAL,ISYBE)
+                              NABP = IAODPK(ISYBE,ISYAL)
      *                             + NBAS(ISYBE)*(A - 1) + B
                               FACM = -ONE
                            ENDIF
