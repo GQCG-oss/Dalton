@@ -74,10 +74,10 @@ C----------------------------------------------------------------
             WRITE(LUPRI,'(A,F7.4)') 'Warning: Very low excitation'//
      &      ' energy in SO_RESIDUAL: ', EIVAL1
          ENDIF
-         DFACTOR=-1.0D0
-         IF(IMAGPROP)DFACTOR=1.0D0
+C         DFACTOR=-1.0D0
+C         IF(IMAGPROP)DFACTOR=1.0D0
 C        Use explicit symmetry in static case
-         CALL DAXPY(LRES1E,DFACTOR,RES1D,1,RES1E,1)
+C         CALL DAXPY(LRES1E,DFACTOR,RES1D,1,RES1E,1)
 C         IF(DOUBLES)
 C     &      CALL DAXPY(LRES2E,DFACTOR,RES2D,1,RES2E,1)
       ENDIF

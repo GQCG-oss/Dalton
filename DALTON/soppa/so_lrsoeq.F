@@ -37,8 +37,9 @@ C
      &                       soppa_nint
 #endif
       use so_info, only: sop_linres, so_full_name, so_has_doubles,
-     &                   so_needs_densai, sop_dp
-
+     &                   so_needs_densai, sop_dp, sop_stat_trh,
+     &                   so_model_number
+C
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -64,17 +65,18 @@ C
 C
       REAL(sop_dp), parameter :: TWO = 2.0D0, HALF = 0.5D0, ONE = 1.0D0
 C
-      INTEGER NIT, NOLDTR, NNEWTR
+      INTEGER NIT, NOLDTR, NNEWTR, IDTYPE, IMODEL
 #ifdef VAR_MPI
       INTEGER   CP_ISYMTR
-      INTEGER   MAXNUMJOBS
+      INTEGER :: MAXNUMJOBS
 C     This array is only there to ensure that the four above variables
 C     are allocated consecutively, so that it can be send together. Only
 C     use it for this purpose.
 C     The definition must match that in soppa_nodedriver
-      INTEGER   INFO_ARRAY(4)
+      INTEGER   INFO_ARRAY(6)
       EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
-     &            (info_array(3), nnewtr),    (info_array(4),noldtr)
+     &            (info_array(3), nnewtr),    (info_array(4),noldtr),
+     &            (info_array(5), idtype), (info_array(6),imodel)
       INTEGER(MPI_INTEGER_KIND) :: IERR
 #endif
 C
@@ -87,6 +89,7 @@ C
       DOUBLES = so_has_doubles(model)
 C
       FULL_NAME = SO_FULL_NAME(MODEL)
+      IMODEL = SO_MODEL_NUMBER(MODEL)
 C
 C==============================================================
 C     For checking, calculate E[2] and S[2] matrices explicitly
@@ -194,6 +197,15 @@ C
 C
       NONEWT = .FALSE.
 C
+      IF (ABS(FRVAL(IFREQ)).GT.sop_stat_trh) then
+         IDTYPE = 0
+      ELSE IF (IMAGPROP) THEN
+         IDTYPE = 2
+      ELSE
+         IDTYPE = 1
+      END IF
+                  
+C
 C----------------------------------------------------------------------
 C     Iteration loop or solving the linear equation/eigenvalue problem
 C----------------------------------------------------------------------
@@ -231,13 +243,14 @@ C
      &                   mpi_comm_world, ierr )
 C ISYMTR is a non-local parameter, we need to copy it to the info-array
          CP_ISYMTR = ISYMTR
-         CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
+         CALL MPI_BCAST( INFO_ARRAY, 6, MY_MPI_INTEGER, 0,
      &                   MPI_COMM_WORLD, IERR)
 #endif
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
          CALL SO_ERES(MODEL,NOLDTR,NNEWTR,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                T2MP,LT2MP,FOCKD,LFOCKD,DENSAI,LDENSAI,NIT,ISYMTR,
+     &                IDTYPE,
 #ifdef VAR_MPI
      &                WORK(kAssignedIndices),maxnumjobs,
 #endif

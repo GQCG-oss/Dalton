@@ -65,7 +65,7 @@ C
       logical :: active_models(sop_num_models)
       logical :: doubles, need_t2, rpa_only
       character(len=4) :: old_denslab, denslab
-      logical :: new_densai
+      logical :: new_densai, imagprop
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -194,6 +194,17 @@ C      CALL DZERO(SNDPRP,2)
       CALL DZERO(POLDL,2*9*NFRVAL*NUM_ACTIVE)
       CALL DZERO(POLDA,2*9*NFRVAL*NUM_ACTIVE)
 C
+#ifdef VAR_MPI
+C
+C---------------------------------------------------------
+C              Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+      call soppa_initialize_slaves ( update_common_blocks,
+     &                               WORK(KT2AM), LT2AM, rpa_only)
+      update_common_blocks = .false.
+#endif
+C
 C==========================================
 C     Determine linear response properties.
 C==========================================
@@ -284,16 +295,6 @@ C
      &                          WORK(KEND1),LWORK1)
                   OLD_DENSLAB = DENSLAB
                ENDIF
-#ifdef VAR_MPI
-C
-C---------------------------------------------------------
-C              Ready the slaves for parallel calculations.
-C---------------------------------------------------------
-C
-               call soppa_initialize_slaves ( update_common_blocks,
-     &                                       WORK(KT2AM), LT2AM, model)
-               update_common_blocks = .false.
-#endif
 C
 C-----------------------------------------
 C              Initialize DENSAI if needed
@@ -312,7 +313,7 @@ C              Determine SOPPA excitation energies and excitation
 C              vectors. The excitation vectors are written to file.
 C------------------------------------------------------------------
 C
-               CALL SO_RSPLEQ(MODEL,LABEL1,ISYMTR,FRVAL,NFRVAL,
+               CALL SO_RSPLEQ(MODEL,LABEL1,IMAGPROP,ISYMTR,FRVAL,NFRVAL,
      &                        WORK(KDENSIJ),LDENSIJ,
      &                        WORK(KDENSAB),LDENSAB,
      &                        WORK(KDENSAI),LDENSAI,WORK(KT2AM),
@@ -335,12 +336,6 @@ C
      &                       POLDD(1,1,1,1,IOUT),POLDQ(1,1,1,1,1,IOUT),
      &                       POLDL(1,1,1,1,IOUT),POLDA(1,1,1,1,IOUT),
      &                       WORK(KEND1),LWORK1)
-#ifdef VAR_MPI
-C-------------------------------------------------------
-C              Release slaves to the global node-driver.
-C-------------------------------------------------------
-               call soppa_release_slaves()
-#endif
 C              INCREMENT OUTPUT POINTER
                IOUT = IOUT + 1
 C
@@ -350,6 +345,13 @@ C
   100    CONTINUE
 C
   200 CONTINUE
+C
+#ifdef VAR_MPI
+C-------------------------------------------------------
+C              Release slaves to the global node-driver.
+C-------------------------------------------------------
+      call soppa_release_slaves()
+#endif
 C
 C---------------------------------
 C     3. allocation of work space.

@@ -17,7 +17,7 @@ C
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
      &                       soppa_nint
 #endif
-      use so_info, only: sop_excita, so_full_name
+      use so_info, only: sop_excita, so_full_name, so_model_number
 C
 #include "implicit.h"
 #ifdef VAR_MPI
@@ -41,6 +41,8 @@ C
       DIMENSION EXVAL(LEXVAL)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
       DIMENSION T2MP(LT2MP),     FOCKD(LFOCKD),   WORK(LWORK)
+C
+      INTEGER NIT, NOLDTR, NNEWTR, IDTYPE, IMODEL
 #ifdef VAR_MPI
       INTEGER   CP_ISYMTR
       INTEGER   MAXNUMJOBS
@@ -48,12 +50,13 @@ C     This array is only there to ensure that the four above variables
 C     are allocated consecutively, so that it can be send together. Only
 C     use it for this purpose.
 C     The definition must match that in soppa_nodedriver
-      INTEGER   INFO_ARRAY(4)
+      INTEGER   INFO_ARRAY(6)
       EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
-     &            (info_array(3), nnewtr),    (info_array(4),noldtr)
+     &            (info_array(3), nnewtr),    (info_array(4),noldtr),
+     &            (info_array(5), idtype), (info_array(6),imodel)
       INTEGER(MPI_INTEGER_KIND) :: IERR
-
 C      IF (NUMPROCS .GT. 1) CALL PARQUIT('RPA(D)')
+      IDTYPE = 0
 #endif
 C
 C------------------
@@ -63,6 +66,7 @@ C
       CALL QENTER('DC_CALC')
 C
       FULL_NAME = SO_FULL_NAME(MODEL)
+      IMODEL = SO_MODEL_NUMBER(MODEL)
 C
       KEND1 = 1
       LWORK1 = LWORK
@@ -121,7 +125,7 @@ C
      &                   mpi_comm_world, ierr )
 C ISYMTR is a non-local parameter, we need to copy it to the info-array
          CP_ISYMTR = ISYMTR
-         CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
+         CALL MPI_BCAST( INFO_ARRAY, 6, MY_MPI_INTEGER, 0,
      &                   MPI_COMM_WORLD, IERR)
 #endif
 CPi 18.08.16: Copy from so_lrsolv
@@ -129,6 +133,7 @@ CPi 18.08.16: Copy from so_lrsolv
       DTIME      = SECOND()
       CALL SO_ERES(MODEL,0,NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &             T2MP,LT2MP,FOCKD,LFOCKD,DENSAI,LDENSAI,1,ISYMTR,
+     &             0,
 #ifdef VAR_MPI
      &             WORK(kAssignedIndices),maxnumjobs,
 #endif

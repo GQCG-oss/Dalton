@@ -1,6 +1,7 @@
 C  /* Deck so_res_cdt */
       SUBROUTINE SO_RES_CDT(RES2E,LRES2E,RES2D,LRES2D,
-     &                      FOCKD,LFOCKD,ISYRES,WORK,LWORK)
+     &                      FOCKD,LFOCKD,ISYRES,
+     &                      DO_DEX,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -18,6 +19,7 @@ C
 C
       DIMENSION RES2E(LRES2E), RES2D(LRES2D)
       DIMENSION FOCKD(LFOCKD), WORK(LWORK)
+      LOGICAL, INTENT(IN) :: DO_DEX
 C
 #include "ccorb.h"
 #include "ccsdinp.h"
@@ -232,65 +234,128 @@ C
          IOFF2 = IT2AMT2(ISYMIJ,ISYMAB)
          IOFF3 = IT2AMT3(ISYMIJ,ISYMAB)
 C
-         DO 501 NIJ = 1,NTOO(ISYMIJ) ! Nr of occ/occ pairs with i>j
+         IF (DO_DEX) THEN
 C
-            IOFFIJ1 = IOFF1 + NTVV(ISYMAB) * (NIJ - 1)
-            IOFFIJ2 = IOFF2 + NSVV(ISYMAB) * (NIJ - 1)
+            DO 501 NIJ = 1,NTOO(ISYMIJ) ! Nr of occ/occ pairs with i>j
 C
-C----------------------------------------------------------------
-C           T1 contribution with i>j and a>b
-C----------------------------------------------------------------
-C
-            DO 502 NAB = 1,NTVV(ISYMAB) !Nr of vir/vir pairs with a>b
-C
-               NABIJ1 = IOFFIJ1 + NAB
-C
-               EABIJ1 = WORK(KFAB1 + NAB - 1) - WORK(KFIJ1 + NIJ - 1)
-C
-               RES2E(NABIJ1) = EABIJ1 * RES2E(NABIJ1)
-               RES2D(NABIJ1) = EABIJ1 * RES2D(NABIJ1)
-C
-  502       CONTINUE
+               IOFFIJ1 = IOFF1 + NTVV(ISYMAB) * (NIJ - 1)
+               IOFFIJ2 = IOFF2 + NSVV(ISYMAB) * (NIJ - 1)
 C
 C----------------------------------------------------------------
-C           T2 contribution with i>j and a>=b
+C              T1 contribution with i>j and a>b
 C----------------------------------------------------------------
 C
-            DO 503 NAB = 1,NSVV(ISYMAB) !Nr of vir/vir pairs with a>=b
+               DO 502 NAB = 1,NTVV(ISYMAB) !Nr of vir/vir pairs with a>b
 C
-               NABIJ2 = IOFFIJ2 + NAB
+                  NABIJ1 = IOFFIJ1 + NAB
 C
-               EABIJ2 = WORK(KFAB2 + NAB - 1) - WORK(KFIJ2 + NIJ - 1)
+                  EABIJ1 = WORK(KFAB1 + NAB - 1) - WORK(KFIJ1 + NIJ - 1)
 C
-               RES2E(NABIJ2) = EABIJ2 * RES2E(NABIJ2)
-               RES2D(NABIJ2) = EABIJ2 * RES2D(NABIJ2)
+                  RES2E(NABIJ1) = EABIJ1 * RES2E(NABIJ1)
+                  RES2D(NABIJ1) = EABIJ1 * RES2D(NABIJ1)
 C
-  503       CONTINUE
-C
-  501    CONTINUE ! Loop over occ/occ pairs with i>j
+  502          CONTINUE
 C
 C----------------------------------------------------------------
-C           T3 contribution with i>=j and a>b
+C              T2 contribution with i>j and a>=b
 C----------------------------------------------------------------
 C
-         DO 504 NIJ = 1,NSOO(ISYMIJ) ! Nr of occ/occ pairs with i>=j
+               DO 503 NAB = 1,NSVV(ISYMAB) !Nr of vir/vir pairs with a>=b
 C
-            IOFFIJ3 = IOFF3 + NTVV(ISYMAB) * (NIJ - 1)
+                  NABIJ2 = IOFFIJ2 + NAB
 C
-            DO 505 NAB = 1,NTVV(ISYMAB) !Nr of vir/vir pairs with a>b
+                  EABIJ2 = WORK(KFAB2 + NAB - 1) - WORK(KFIJ2 + NIJ - 1)
 C
-               NABIJ3 = IOFFIJ3 + NAB
+                  RES2E(NABIJ2) = EABIJ2 * RES2E(NABIJ2)
+                  RES2D(NABIJ2) = EABIJ2 * RES2D(NABIJ2)
 C
-               EABIJ3 = WORK(KFAB3 + NAB - 1) - WORK(KFIJ3 + NIJ - 1)
+  503          CONTINUE
 C
-               RES2E(NABIJ3) = EABIJ3 * RES2E(NABIJ3)
-               RES2D(NABIJ3) = EABIJ3 * RES2D(NABIJ3)
+  501       CONTINUE ! Loop over occ/occ pairs with i>j
 C
-  505       CONTINUE
+C----------------------------------------------------------------
+C              T3 contribution with i>=j and a>b
+C----------------------------------------------------------------
 C
-  504    CONTINUE
+            DO 504 NIJ = 1,NSOO(ISYMIJ) ! Nr of occ/occ pairs with i>=j
 C
+               IOFFIJ3 = IOFF3 + NTVV(ISYMAB) * (NIJ - 1)
+C
+               DO 505 NAB = 1,NTVV(ISYMAB) !Nr of vir/vir pairs with a>b
+C
+                  NABIJ3 = IOFFIJ3 + NAB
+C
+                  EABIJ3 = WORK(KFAB3 + NAB - 1) - WORK(KFIJ3 + NIJ - 1)
+C
+                  RES2E(NABIJ3) = EABIJ3 * RES2E(NABIJ3)
+                  RES2D(NABIJ3) = EABIJ3 * RES2D(NABIJ3)
+C
+  505          CONTINUE
+C
+  504       CONTINUE
+C
+         ELSE ! Static case, one vector only
+C            
+            DO 601 NIJ = 1,NTOO(ISYMIJ) ! Nr of occ/occ pairs with i>j
+C
+               IOFFIJ1 = IOFF1 + NTVV(ISYMAB) * (NIJ - 1)
+               IOFFIJ2 = IOFF2 + NSVV(ISYMAB) * (NIJ - 1)
+C
+C----------------------------------------------------------------
+C              T1 contribution with i>j and a>b
+C----------------------------------------------------------------
+C
+               DO 602 NAB = 1,NTVV(ISYMAB) !Nr of vir/vir pairs with a>b
+C
+                  NABIJ1 = IOFFIJ1 + NAB
+C
+                  EABIJ1 = WORK(KFAB1 + NAB - 1) - WORK(KFIJ1 + NIJ - 1)
+C
+                  RES2E(NABIJ1) = EABIJ1 * RES2E(NABIJ1)
+C
+  602          CONTINUE
+C
+C----------------------------------------------------------------
+C              T2 contribution with i>j and a>=b
+C----------------------------------------------------------------
+C
+               DO 603 NAB = 1,NSVV(ISYMAB) !Nr of vir/vir pairs with a>=b
+C
+                  NABIJ2 = IOFFIJ2 + NAB
+C
+                  EABIJ2 = WORK(KFAB2 + NAB - 1) - WORK(KFIJ2 + NIJ - 1)
+C
+                  RES2E(NABIJ2) = EABIJ2 * RES2E(NABIJ2)
+C
+  603          CONTINUE
+C
+  601       CONTINUE ! Loop over occ/occ pairs with i>j
+C
+C----------------------------------------------------------------
+C              T3 contribution with i>=j and a>b
+C----------------------------------------------------------------
+C
+            DO 604 NIJ = 1,NSOO(ISYMIJ) ! Nr of occ/occ pairs with i>=j
+C
+               IOFFIJ3 = IOFF3 + NTVV(ISYMAB) * (NIJ - 1)
+C
+               DO 605 NAB = 1,NTVV(ISYMAB) !Nr of vir/vir pairs with a>b
+C
+                  NABIJ3 = IOFFIJ3 + NAB
+C
+                  EABIJ3 = WORK(KFAB3 + NAB - 1) - WORK(KFIJ3 + NIJ - 1)
+C
+                  RES2E(NABIJ3) = EABIJ3 * RES2E(NABIJ3)
+C
+  605          CONTINUE
+C
+  604       CONTINUE
+
+
+         END IF
+
   100 CONTINUE ! Loop over ISYMIJ (and corresponding ISYMAB)
+
 C
 C-----------------------
 C     Remove from trace.

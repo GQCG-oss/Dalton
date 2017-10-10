@@ -1,0 +1,5 @@
+cmake/SourcesDALTON.cmake
+DALTON/abacus/abasop.F
+DALTON/include/soppinf.h
+DALTON/soppa/so_eres.F
+DALTON/soppa/so_res_td1b1.F

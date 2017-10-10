@@ -1,6 +1,7 @@
 C
 C  /* Deck so_twofock */
-      SUBROUTINE SO_TWOFOCK(RES1E,LRES1E,RES1D,LRES1D,FOCK,LFOCK,ISYRES)
+      SUBROUTINE SO_TWOFOCK(RES1E,LRES1E,RES1D,LRES1D,
+     &                      FOCK,LFOCK,ISYRES,DO_DEX)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -17,6 +18,7 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION RES1E(LRES1E), RES1D(LRES1D), FOCK(LFOCK)
+      LOGICAL, INTENT(IN) :: DO_DEX
 C
 #include "ccorb.h"
 #include "ccsdsym.h"
@@ -42,8 +44,8 @@ C
             KOFF3 = KOFFC + I
 
             CALL DAXPY(NVIR(ISYMA),ONE,FOCK(KOFF1),1,RES1E(KOFF2),1)
-            CALL DAXPY(NVIR(ISYMA),-ONE,FOCK(KOFF3),NORB(ISYMI),
-     &                 RES1D(KOFF2),1)
+            IF (DO_DEX) CALL DAXPY(NVIR(ISYMA),-ONE,FOCK(KOFF3),
+     &                 NORB(ISYMI),RES1D(KOFF2),1)
 C
   200    CONTINUE
 C

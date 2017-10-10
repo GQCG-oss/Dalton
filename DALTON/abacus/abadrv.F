@@ -1512,7 +1512,7 @@ CPi 17.08.16: RF: Polarizabilities now work
             IF (
 C All the properties which parallel soppa currently cannot do. I.e all.
 C but Polarizabilities
-     &      ANY( (/  SHIELD, MAGSUS, SPINRO, MOLGFA, SPNSPN, 
+     &      ANY( (/  SHIELD, MAGSUS, SPINRO, MOLGFA,
      &            CTOCD /) ) 
      &         ) THEN
                WRITE(LUPRI,'(3A)')'@ ', WRDSRC, ' SOPPA can only be '
@@ -1523,12 +1523,12 @@ C but Polarizabilities
 C            
 C Parallel soppa should be run using mp2 from the cc module
 C 
-            IF (DOMP2) THEN
-               WRITE(LUPRI,'(3A/A)')'@ ', WRDSRC, ' Parallel SOPPA can'
-     &             //' currently only run using the MP2 amplitudes ',
-     &               'from the CC module'
-               par_soppa_input_errors = .true. 
-            ENDIF
+C            IF (DOMP2) THEN
+C               WRITE(LUPRI,'(3A/A)')'@ ', WRDSRC, ' Parallel SOPPA can'
+C     &             //' currently only run using the MP2 amplitudes ',
+C     &               'from the CC module'
+C               par_soppa_input_errors = .true. 
+C            ENDIF
             IF (par_soppa_input_errors) 
      &         CALL PARQUIT('ABASOP')
 

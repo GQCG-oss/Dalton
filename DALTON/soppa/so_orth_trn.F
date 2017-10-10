@@ -110,8 +110,6 @@ C
 C
          ITURN = 0
 C
-C         IF(LTYPE.EQ.'LINEAR') THEN
-C
   200    CONTINUE
 C
          ITURN = ITURN + 1
@@ -169,17 +167,11 @@ C
 C
                ELSE
 C
-                  CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
-                  CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
+                  DOTP = DOTP + SO_DOUBLES_PRODUCT(WORK(K1TR2E),
+     &                                             WORK(KTR2E),ISYMTR)
 C
-                  DOTP = DOTP +
-     &                   HALF * DDOT(LTR2E,WORK(KTTR2),1,WORK(KTR2E),1)
-C
-                  CALL DCOPY(LTR2D,WORK(K1TR2D),1,WORK(KTTR2),1)
-                  CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-C
-                  DOTP = DOTP -
-     &                   HALF * DDOT(LTR2D,WORK(KTTR2),1,WORK(KTR2D),1)
+                  DOTP = DOTP - SO_DOUBLES_PRODUCT(WORK(K1TR2D),
+     &                                             WORK(KTR2D),ISYMTR)
 C
                END IF
 C
@@ -190,7 +182,6 @@ C
 C
             CALL DAXPY(LTR1E,-DOTP,WORK(KTR1E),1,WORK(K1TR1E),1)
             CALL DAXPY(LTR1D,-DOTP,WORK(KTR1D),1,WORK(K1TR1D),1)
-C
 C
             CALL SO_RES_O(WORK(KRSO1D),LRSO1D, WORK(KRSO1E),LRSO1E,
      &                    WORK(KTR1D), LTR1D,  WORK(KTR1E), LTR1E,
@@ -209,17 +200,11 @@ C
 C
                ELSE
 C
-                  CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
-                  CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
+                  DOTP = DOTP + SO_DOUBLES_PRODUCT(WORK(K1TR2E),
+     &                                             WORK(KTR2D),ISYMTR)
 C
-                  DOTP = DOTP +
-     &                   HALF * DDOT(LTR2E,WORK(KTTR2),1,WORK(KTR2D),1)
-C
-                  CALL DCOPY(LTR2D,WORK(K1TR2D),1,WORK(KTTR2),1)
-                  CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-C
-                  DOTP = DOTP -
-     &                   HALF * DDOT(LTR2D,WORK(KTTR2),1,WORK(KTR2E),1)
+                  DOTP = DOTP - SO_DOUBLES_PRODUCT(WORK(K1TR2D),
+     &                                             WORK(KTR2E),ISYMTR)
 C
                END IF
 C

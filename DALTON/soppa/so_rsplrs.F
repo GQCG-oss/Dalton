@@ -8,7 +8,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Rasmus Faber, Feb. 2017
 C
-C     PURPOSE: A RSP compatible driver for calculating linear response properties with 
+C     PURPOSE: A RSP compatible driver for calculating linear response properties with
 C              the atomic integral direct SOPPA program.
 C
       use so_info, only: sop_num_models,
@@ -17,6 +17,7 @@ C
      &                   so_get_active_models,
      &                   so_has_doubles,
      &                   so_singles_second,
+     &                   so_double_correction,
      &                   sop_dens_label, sop_model_rpad,
      &                   sop_model_rpa,
      &                   sop_conv_thresh,
@@ -47,13 +48,16 @@ C for mxcont
 C REP <- Symbols of the ireducible representations.
 #include "pgroup.h"
 C
-C  Input arguments      
+C  Input arguments
       REAL(SOP_DP), INTENT(INOUT) :: WORK(LWORK) ! WORK array
       REAL(SOP_DP), INTENT(IN) :: FREQ(NFREQ) ! Array of frequencies
       REAL(SOP_DP), INTENT(IN) :: THRESH ! Convergence treshhold
       INTEGER, INTENT(IN) :: NFREQ, LWORK
+C  LABELS holds the integral labels of the pertubation for which
+C  we calculate the response function. It needs to be in-out in case
+C  we have to sort it.
       INTEGER, INTENT(IN) :: LABEL_OFFSETS(8), NUM_LABELS(8)
-      CHARACTER(LEN=8),INTENT(IN) :: LABELS(*)
+      CHARACTER(LEN=8),INTENT(INOUT) :: LABELS(*)
       LOGICAL, INTENT(IN) :: TRIP_INPUT ! Triplet flag
       INTEGER, INTENT(IN) :: IMODE ! How we are called
                                    ! IMODE = 0 : from response
@@ -67,13 +71,16 @@ C
       CHARACTER(len=65), parameter :: dashl = ' -------------------'//
      &               '---------------------------------------------'
 C
+      LOGICAL DOUBLE_CORR
       character(len=9), parameter :: myname = 'SO_RSPLRS'
       integer :: num_active
       logical :: active_models(sop_num_models)
       logical :: doubles, need_t2, rpa_only
       integer :: lu_dump ! Filenumber of file property values to
       character(len=4) :: old_denslab, denslab
-      logical :: new_densai
+      logical :: new_densai, last_model
+      logical :: imagprop(maxval(num_labels)), all_imag, LABMIX
+      integer :: numlab, num_imag
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
@@ -94,14 +101,19 @@ C
 C     Get the active models and their number
       CALL SO_GET_ACTIVE_MODELS (ACTIVE_MODELS)
 C
-C     No RPA(D) properties
-      ACTIVE_MODELS(SOP_MODEL_RPAD) = .FALSE.
+C AKSP 7-3-17
+C     RPA(D) properties require RPA calcultation
+C      ACTIVE_MODELS(SOP_MODEL_RPAD)=.FALSE.
+      IF (ACTIVE_MODELS(SOP_MODEL_RPAD)) THEN
+         ACTIVE_MODELS(SOP_MODEL_RPA)=.TRUE.
+      END IF
+C end AKSP 7-3-17
       NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
 C
-      RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND. 
-     &           (NUM_ACTIVE.EQ.1) 
+      RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND.
+     &           (NUM_ACTIVE.EQ.1)
 C
-C     Set the correct convergence threshold 
+C     Set the correct convergence threshold
       sop_conv_thresh = THRESH
 C
 C     Set triplet flag if given
@@ -148,6 +160,17 @@ C
 C
       IF (IPRLNR .GE. 0)
      &     CALL TITLER('Solving Linear Response Equations','#',118)
+C
+#ifdef VAR_MPI
+C
+C---------------------------------------------------------
+C           Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+      call soppa_initialize_slaves ( update_common_blocks,
+     &                               WORK(KT2AM), LT2AM, rpa_only)
+      update_common_blocks = .false.
+#endif
 C
 C---------------------------------
 C     1. allocation of work space.
@@ -215,82 +238,76 @@ C==========================================
 C     Determine linear response properties.
 C==========================================
 C
-C========================================
-C     Loop over the posible methods
-C========================================
-C
-      IOUT = 1
-      DO IMODEL = 1, SOP_NUM_MODELS
-C
-C  Skip methods not treated in this calculation
-         IF (.NOT.ACTIVE_MODELS(IMODEL) ) CYCLE
-C
-C  Look up info on this model
-C  (the model number -> model conversion is defined in so_info.F90)
-C
-         MODEL = SOP_MODELS(IMODEL)
-         FULLNAME = SOP_MOD_FULLNAME(IMODEL)
-         DOUBLES = SO_HAS_DOUBLES(IMODEL)
-         NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
-         DENSLAB = SOP_DENS_LABEL(IMODEL)
-
-         CALL TITLER( TRIM(FULLNAME) // ' response calculation', 
-     &                '*',103)
-C
-C-----------------------------------------------------
-C              Get T2 amplitudes and density matrices.
-C-----------------------------------------------------
-C
-         IF ((NEED_T2).AND.
-     &       (DENSLAB.NE.OLD_DENSLAB)) THEN
-             CALL SO_GETT2(DENSLAB,
-     &                     WORK(KFOCKD),LFOCKD,
-     &                     WORK(KT2AM),LT2AM,
-     &                     WORK(KDENSAI),LDENSAI,
-     &                     WORK(KDENSIJ),LDENSIJ,
-     &                     WORK(KDENSAB),LDENSAB,
-     &                     WORK(KEND1),LWORK1)
-             old_denslab = DENSLAB
-         END IF
-#ifdef VAR_MPI
-C
-C---------------------------------------------------------
-C        Ready the slaves for parallel calculations.
-C---------------------------------------------------------
-C
-         call soppa_initialize_slaves ( update_common_blocks,
-     &                                   WORK(KT2AM), LT2AM, model)
-         update_common_blocks = .false.
-#endif
-C
-C-----------------------------------------
-C              Initialize DENSAI if needed
-C-----------------------------------------
-C        
-         IF ( SO_NEEDS_DENSAI(MODEL) .AND.
-     &        (.NOT.SOP_MP2AI_DONE) ) THEN
-              CALL DZERO(WORK(KDENSAI),LDENSAI)
-            NEW_DENSAI = .TRUE.
-         ELSE
-            NEW_DENSAI = .FALSE.
-         ENDIF
 C
 C--------------------------------------------------
 C     Loop over symmetry of the property operators.
 C--------------------------------------------------
 C
-         DO ISYM = 1, NSYM
+      DO ISYM = 1, NSYM
+         IF (NUM_LABELS(ISYM).LE.0) CYCLE ! Nothing to do for this sym
+         ILABOFF = LABEL_OFFSETS(ISYM)
 C
-            IF (NUM_LABELS(ISYM).LE.0) CYCLE ! Nothing to do for this sym
-            ILABOFF = LABEL_OFFSETS(ISYM)
-C            
+C========================================
+C        Loop over the posible methods
+C========================================
+C
+         IOUT = 1
+         DO IMODEL = 1, SOP_NUM_MODELS
+C
+C     Skip methods not treated in this calculation
+            IF (.NOT.ACTIVE_MODELS(IMODEL) ) CYCLE
+
+            LAST_MODEL = IOUT .EQ. NUM_ACTIVE
+C
+C     Look up info on this model
+C  (the model number -> model conversion is defined in so_info.F90)
+C
+            MODEL = SOP_MODELS(IMODEL)
+            FULLNAME = SOP_MOD_FULLNAME(IMODEL)
+            DOUBLES = SO_HAS_DOUBLES(IMODEL)
+            NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
+            DENSLAB = SOP_DENS_LABEL(IMODEL)
+            DOUBLE_CORR=SO_DOUBLE_CORRECTION(MODEL)
+CAKSP 7-3-17 doubles_corr
+            CALL TITLER( TRIM(FULLNAME) // ' response calculation',
+     &                '*',103)
+C
+C-----------------------------------------------------
+C                 Get T2 amplitudes and density matrices.
+C-----------------------------------------------------
+C
+            IF ((NEED_T2).AND.
+     &       (DENSLAB.NE.OLD_DENSLAB))    THEN
+                CALL SO_GETT2(DENSLAB,
+     &                        WORK(KFOCKD),LFOCKD,
+     &                        WORK(KT2AM),LT2AM,
+     &                        WORK(KDENSAI),LDENSAI,
+     &                        WORK(KDENSIJ),LDENSIJ,
+     &                        WORK(KDENSAB),LDENSAB,
+     &                        WORK(KEND1),LWORK1)
+               old_denslab = DENSLAB
+            END IF
+C
+C-----------------------------------------
+C           Initialize DENSAI if needed
+C-----------------------------------------
+C
+            IF ( SO_NEEDS_DENSAI(MODEL) .AND.
+     &        (.NOT.SOP_MP2AI_DONE) )    THEN
+                 CALL DZERO(WORK(KDENSAI),LDENSAI)
+               NEW_DENSAI = .TRUE.
+            ELSE
+               NEW_DENSAI = .FALSE.
+            ENDIF
+C
+C
             WRITE(LUPRI,'(A)') dashl
             WRITE(LUPRI,'(2A,I5,3A)') dash5,
      &       'Symmetry of excitation/property operator(s)',
      &           ISYM,'  ( ',REP(ISYM-1),')'
             WRITE(LUPRI,'(A)') dashl
 
-            WRITE(LUPRI,'(2(/A,I5))') 
+            WRITE(LUPRI,'(2(/A,I5))')
      &           ' Number of excitations of this symmetry        ',
 C     &           NPPCNV(ISYM),
      &           0, ! Fix this!!!
@@ -310,80 +327,190 @@ C     &           NPPCNV(ISYM),
             WRITE(LUPRI,9001)
 
             SOP_USE_SELLER = (NUM_LABELS(ISYM).GT.1)
-
-            DO IOPER = 1, NUM_LABELS(ISYM)
+CAKSP 7-3-17 if running an RPA(D) model the RPA calculation must be done
+C while sop_use_seller is true
+            IF (ACTIVE_MODELS(SOP_MODEL_RPAD)
+     &          .AND.(MODEL.EQ.'AORPA'))THEN
+               SOP_USE_SELLER = .TRUE.
+            END IF
+CAKSP 7-3-17 if doubles correction model iterative calculations
+C are not needed - they have been made.
+            IF (.NOT.DOUBLE_CORR) THEN
+               DO IOPER = 1, NUM_LABELS(ISYM)
 C
-               LABEL1 = LABELS(ILABOFF+IOPER)
-               ISYMTR = ISYM
-               IOUT = 1
+                  LABEL1 = LABELS(ILABOFF+IOPER)
+                  ISYMTR = ISYM
 C
 C------------------------------------------------------------------
 C              Determine SOPPA linear response vectors and density
 C              matrixes. Response density matrix written on file.
 C------------------------------------------------------------------
 C
-               CALL SO_RSPLEQ(MODEL,LABEL1,ISYMTR,FREQ,NFREQ,
+                  CALL SO_RSPLEQ(MODEL,LABEL1,IMAGPROP(IOPER),ISYMTR,
+     &                        FREQ,NFREQ,
      &                        WORK(KDENSIJ),LDENSIJ,
      &                        WORK(KDENSAB),LDENSAB,
      &                        WORK(KDENSAI),LDENSAI,WORK(KT2AM),
      &                        LT2AM,WORK(KFOCKD),LFOCKD,
      &                        WORK(KEND1),LWORK1)
 C
-C               CALL FLUSH(LUPRI)
-            END DO ! Loop operators
+C                  CALL FLUSH(LUPRI)
+               END DO ! Loop operators
+            END IF
+C
+            LABMIX = .FALSE.
+            NUM_IMAG = COUNT(IMAGPROP(1:NUM_LABELS(ISYM)))
+            IF (NUM_IMAG.EQ.NUM_LABELS(ISYM)) THEN ! all imag
+               NUMLAB = NUM_LABELS(ISYM)
+               ALL_IMAG = .TRUE.
+            ELSE IF (NUM_IMAG.EQ.0) THEN ! ALL REAL
+               NUMLAB = NUM_LABELS(ISYM)
+               ALL_IMAG = .FALSE.
+               IF (IMODE.EQ.2) CALL QUIT('Expected imaginary labels'//
+     &               ' in '//myname)
+            ELSE ! We found a mix!!
+               PRINT *, 'LABEL MIX!'
+               IF (IMODE.NE.0) THEN
+                  CALL QUIT('Found mix of imaginary and '
+     &                       //'real labels in '//myname)
+               END IF
+               CALL SORT_LABELS(LABELS(ILABOFF+1),IMAGPROP,NUM_IMAG,
+     &                          NUM_LABELS(ISYM))
+C              We do the real ones first
+               NUMLAB = NUM_LABELS(ISYM) - NUM_IMAG
+               ALL_IMAG = .FALSE.
+               LABMIX = .TRUE.
+            END IF
 C
 C----------------------------------------------
 C              Calculate second order property.
 C----------------------------------------------
 C
-            IF (NUM_LABELS(ISYM).GT.0) THEN
-               KPROP = KEND1
-               LPROP = NFREQ*(NUM_LABELS(ISYM)**2)
+            KPROP = KEND1
+            LPROP = NFREQ*NUMLAB*NUMLAB
+CAKSP If doubles correction model allocate space
+C     for saving singels and doubles contributions
+            IF(DOUBLE_CORR)THEN
+               KPROP1 = KPROP+LPROP
+               KPROP2 = KPROP1+LPROP
+               KEND2 = KPROP2 + LPROP
+            ELSE
                KEND2 = KPROP + LPROP
-               LWORK2 = LWORK-KEND2
-               CALL SO_MEMMAX (myname//'.2     ',LWORK2)
-               IF (LWORK2 .LT.0) CALL STOPIT(myname//'.2',' ',
-     &               KEND2,LWORK)
-
-               CALL SO_LRNSL(MODEL,ISYM,WORK(KPROP),
-     &                       FREQ,NFREQ,LABELS(ILABOFF+1),
-     &                       NUM_LABELS(ISYM),
-     &                       WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-     &                       LDENSAB,WORK(KDENSAI),LDENSAI,
-     &                       WORK(KEND2),LWORK2)
-C
-               IF (IMODE.GT.0) THEN
-                  WRITE(LU_DUMP) ISYM
-                  WRITE(LU_DUMP) WORK(KPROP:KPROP+LPROP-1)
+            END IF
+            LWORK2 = LWORK-KEND2
+            CALL SO_MEMMAX (myname//'.2     ',LWORK2)
+            IF (LWORK2 .LT.0) CALL STOPIT(myname//'.2',' ',
+     &                                    KEND2,LWORK)
+CAKSP 7-3-17 if RPA(D)
+            IF (DOUBLE_CORR)THEN
+                  CALL DC_LRNSL(MODEL,ISYM,WORK(KPROP),
+     &                          WORK(KPROP1),WORK(KPROP2),
+     &                          LAST_MODEL.AND..NOT.LABMIX,
+     &                          FREQ,NFREQ,LABELS(ILABOFF+1),
+     &                          NUMLAB,
+     &                          WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                          LDENSAB,WORK(KDENSAI),LDENSAI,
+     &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
+     &                          ALL_IMAG,WORK(KEND2),LWORK2)
                ELSE
-                  CALL SO_RSPOUT(WORK(KPROP),ISYM,FREQ,NFREQ,
-     &                        LABELS(ILABOFF+1),NUM_LABELS(ISYM))
+                  CALL SO_LRNSL(MODEL,ISYM,WORK(KPROP),
+     &                          LAST_MODEL.AND..NOT.LABMIX,
+     &                          FREQ,NFREQ,LABELS(ILABOFF+1),
+     &                          NUMLAB,
+     &                          WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                          LDENSAB,WORK(KDENSAI),LDENSAI,
+     &                          WORK(KEND2),LWORK2)
                END IF
 C
+            IF ((IMODE.GT.0).AND.LAST_MODEL) THEN
+               WRITE(LU_DUMP) ISYM
+               WRITE(LU_DUMP) WORK(KPROP:KPROP+LPROP-1)
+            ELSE
+CAKSP For doubles corrected model write out singles and doubles
+C     contributions
+               IF(DOUBLE_CORR) THEN
+                  CALL DC_RSPOUT(WORK(KPROP),WORK(KPROP1),WORK(KPROP2),
+     &                           ISYM,FREQ,NFREQ,
+     &                           LABELS(ILABOFF+1),NUMLAB)
+               ELSE
+                  CALL SO_RSPOUT(WORK(KPROP),ISYM,FREQ,NFREQ,
+     &                           LABELS(ILABOFF+1),NUMLAB)
+               END IF
             END IF
 C
-         END DO ! LOOP over symmetries
+C---------------------------------------------------------------
+C  In case of a linear response calculation using both imaginary
+C  and real perturbations, handle the imaginary in second call
+C---------------------------------------------------------------
 C
-         IF (NEW_DENSAI) THEN
-            CALL SO_DUMP_DENSAI(DENSLAB,WORK(KDENSAI),LDENSAI)
-         END IF
+            IF (IMODE.EQ.0.AND.(NUMLAB.NE.NUM_LABELS(ISYM))) THEN
+!              NUMLAB is now number of real perturbations
+               KPROPI = KEND2
+               LPROPI = NFREQ*NUM_IMAG*NUM_IMAG
+CAKSP Allocate space for doubles and singles contributions
+               IF(DOUBLE_CORR)THEN
+                  KPROPI1 = KPROPI + LPROPI
+                  KPROPI2 = KPROPI1 + LPROPI
+                  KEND2B = KPROPI2 + LPROPI
+               ELSE
+C                  KEND2B = KPROP + LPROP (imaginary now)
+                  KEND2B = KPROPI + LPROPI
+               END IF
+               LWORK2B = LWORK-KEND2B
+               CALL SO_MEMMAX (myname//'.2B    ',LWORK2B)
+               IF (LWORK2 .LT.0) CALL STOPIT(myname//'.2B',' ',
+     &                                    KEND2B,LWORK)
+CAKSP 7-3-17 For RPA(D) use special routine.
+               IF(DOUBLE_CORR)THEN
+                  CALL DC_LRNSL(MODEL,ISYM,WORK(KPROPI),
+     &                          WORK(KPROPI1),WORK(KPROPI2),LAST_MODEL,
+     &                          FREQ,NFREQ,LABELS(ILABOFF+NUMLAB+1),
+     &                          NUM_IMAG,
+     &                          WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                          LDENSAB,WORK(KDENSAI),LDENSAI,
+     &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
+     &                          .TRUE.,WORK(KEND2B),LWORK2B)
+                  CALL DC_RSPOUT(WORK(KPROPI),WORK(KPROPI1),
+     &                           WORK(KPROPI2),
+     &                           ISYM,FREQ,NFREQ,
+     &                           LABELS(ILABOFF+1),NUMLAB)
+               ELSE
+                  CALL SO_LRNSL(MODEL,ISYM,WORK(KPROPI),LAST_MODEL,
+     &                          FREQ,NFREQ,LABELS(ILABOFF+NUMLAB+1),
+     &                          NUM_IMAG,
+     &                          WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                          LDENSAB,WORK(KDENSAI),LDENSAI,
+     &                          WORK(KEND2B),LWORK2B)
+                  CALL SO_RSPOUT(WORK(KPROPI),ISYM,FREQ,NFREQ,
+     &                     LABELS(ILABOFF+NUMLAB+1),NUM_IMAG)
+               END IF
+            END IF
 C
-#ifdef VAR_MPI
-C-------------------------------------------------------
-C              Release slaves to the global node-driver.
-C-------------------------------------------------------
-         call soppa_release_slaves()
-#endif
 C
-C        INCREMENT OUTPUT POINTER
 C
-         IOUT = IOUT + 1
+            IF (NEW_DENSAI) THEN
+               CALL SO_DUMP_DENSAI(DENSLAB,WORK(KDENSAI),LDENSAI)
+            END IF
 C
-      END DO ! Loop over models
+C           INCREMENT OUTPUT POINTER
+C
+            IOUT = IOUT + 1
+C
+         END DO ! Loop over models
+C
+      END DO ! LOOP over symmetries
+C
 C
       IF (IMODE .GT. 0) THEN
          CALL GPCLOSE(LU_DUMP,'KEEP')
       END IF
+C
+#ifdef VAR_MPI
+C-------------------------------------------------------
+C                 Release slaves to the global node-driver.
+C-------------------------------------------------------
+      call soppa_release_slaves()
+#endif
 C
 C---------------------------------
 C     3. allocation of work space.
@@ -420,6 +547,40 @@ C
 C
  9000 FORMAT(/' -----------------------------------')
  9001 FORMAT(' -----------------------------------')
+
+      CONTAINS
+         PURE SUBROUTINE SORT_LABELS(LABELS,IMAGPROP,NUM_IMAG,NUM_TOTAL)
+C
+C        Sorts the integral labels on "LABELS" so all real labels
+C        are before the imaginary labels
+C
+            IMPLICIT NONE
+            CHARACTER(LEN=8), INTENT(INOUT) :: LABELS(*)
+            LOGICAL, INTENT(IN) :: IMAGPROP(:)
+            INTEGER, INTENT(IN) :: NUM_TOTAL, NUM_IMAG
+C
+            CHARACTER(LEN=8) :: IMAG_LABELS(NUM_IMAG)
+            INTEGER ::  I, NR, NI
+C
+            NI = 0
+            NR = 0
+            DO I = 1, NUM_TOTAL
+C
+               IF (IMAGPROP(I)) THEN
+                  NI = NI + 1
+                  IMAG_LABELS(NI) = LABELS(I)
+               ELSE
+                  NR = NR + 1
+                  LABELS(NR) = LABELS(I)
+               END IF
+            END DO
+
+            DO I = 1, NUM_IMAG
+               LABELS(NR+I) = IMAG_LABELS(I)
+            END DO
+
+         END SUBROUTINE
+
       END
 
       SUBROUTINE SO_FCSDDRV(WORK,LWORK)
@@ -529,3 +690,5 @@ C     We now have all info for SO_RSPLRS
 
       RETURN
       END SUBROUTINE
+
+
