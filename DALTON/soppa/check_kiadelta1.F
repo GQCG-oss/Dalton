@@ -67,7 +67,7 @@ C              WRITE(LUPRI,*) 'KIBD',KIBD(K,I,GAM)
   220     CONTINUE
   210  CONTINUE
 C
-        WRITE(LUPRI,*) KIAD(1,1,1) 
+C        WRITE(LUPRI,*) KIAD(1,1,1) 
 C
       DO 320 I = 1,NRHF
       DO 310 A = NRHF+1,NRHF+NVIR
@@ -79,14 +79,14 @@ C
              KIAD(K,I,ADEL) = KIAD(K,I,ADEL) + KIBD(K,I,GAM)
      *                                              *CMO(GAM,A)
 C
-            IF ((K .EQ. 1) .AND. (I .EQ. 1) .AND. (ADEL .EQ. 1)) THEN
-                WRITE(LUPRI,*) 'CMO ', CMO(GAM,A)
-                WRITE(LUPRI,*) 'KIBD', KIBD(K,I,GAM)
-                WRITE(LUPRI,*) 'KIAD', KIAD(K,I,ADEL)
-            ENDIF
+C            IF ((K .EQ. 1) .AND. (I .EQ. 1) .AND. (ADEL .EQ. 1)) THEN
+C                WRITE(LUPRI,*) 'CMO ', CMO(GAM,A)
+C                WRITE(LUPRI,*) 'KIBD', KIBD(K,I,GAM)
+C                WRITE(LUPRI,*) 'KIAD', KIAD(K,I,ADEL)
+C            ENDIF
 
   340          CONTINUE 
-                  WRITE(LUPRI,*) 'KIAD',ADEL,KIAD(K,I,ADEL)
+C                  WRITE(LUPRI,*) 'KIAD',ADEL,KIAD(K,I,ADEL)
   330       CONTINUE
   310    CONTINUE
   320 CONTINUE

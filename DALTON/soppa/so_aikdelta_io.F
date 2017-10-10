@@ -199,7 +199,8 @@ C-----------------------------------------------
 C
             DO 180 NAI = IFSTAI,ILSTAI
 C
-               CALL CC_PUTD(WORK(KSCR2),OMEGA2,ISYMAI,ISYMBJ,NAI,IFSTAI)
+               CALL PUT_AIKDELTA(WORK(KSCR2),OMEGA2,ISYMAI,ISYMBJ,NAI,
+     *                          IFSTAI)
 C
   180       CONTINUE
 C

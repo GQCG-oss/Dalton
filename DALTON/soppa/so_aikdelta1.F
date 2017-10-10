@@ -47,7 +47,6 @@ C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       ISYAIK = MULD2H(ISYDIS,ISYMPC)
-      WRITE(LUPRI,*) 'ENTERING SO_AIKDELTA1'
 C
       LSCR1 = MAX(NT2BCD(ISYAIK),NT2BCD(ISYDIS))
       LSCR2 = NT2BGD(ISYDIS)
@@ -96,36 +95,24 @@ C
                KOFF2 = KSCR10 + IAODIS(ISYMAL,ISYMG)
                KOFF3 = ILMRHF(ISYMI) + 1
                KOFF4 = KSCR11 + IT1AO(ISYMAL,ISYMI)
-               WRITE(LUPRI,*) 'DSRHF'
-               CALL OUTPUT(WORK(KOFF2),1,N2BST(ISYALG),1,1,
-     *                      N2BST(ISYAL),1,1,LUPRI)
 C
                CALL DGEMM('N','N',NBAS(ISYMAL),NRHF(ISYMI),NBAS(ISYMG),
      *                    ONE,WORK(KOFF2),NBASAL,XLAMDH(KOFF3),NBASG,
      *                    ZERO,WORK(KOFF4),NBASAL)
 C
-               WRITE(LUPRI,*) 'KOFF2',KOFF2,'KOFF3',KOFF3,'KOFF4',KOFF4
-               WRITE(LUPRI,*) '(ALPHA i| k DELTA)'
-               CALL OUTPUT(WORK(KOFF4),1,NT1AOM,1,1,NT1AOM,1,1,LUPRI)
   360       CONTINUE
 C
             NRHFK = MAX(NRHF(ISYMK),1)
             KOFF5 = IT2BGT(ISYMK,ISYALI) + K
-            WRITE(LUPRI,*) 'before DCOPY','KOFF5',KOFF5
-            CALL OUTPUT(SCR2(KOFF5),1,LSCR2,1,1,LSCR2,1,1,LUPRI)
             CALL DAXPY(NT1AO(ISYALI),ONE,WORK(KSCR11),1,SCR2(KOFF5),
      *                 NRHFK)
 C            CALL DCOPY(NT1AO(ISYALI),WORK(KSCR11),1,SCR2(KOFF5),NRHFK)
 C               CHANGE THIS TO DCOPY
-            WRITE(LUPRI,*) 'AFTER DCOPY'
-            CALL OUTPUT(SCR2(KOFF5),1,LSCR2,1,1,LSCR2,1,1,LUPRI)
 C
   350    CONTINUE
 C
   340 CONTINUE
 C
-      WRITE(LUPRI,*) 'SCR2 AFTER LOOPS'
-      CALL OUTPUT(SCR2(1),1,LSCR2,1,1,LSCR2,1,1,LUPRI)
 
 C--------------------------------------------------------------------------
 C     Transform the alpha index of (alpha i| k delta) to a.
@@ -156,12 +143,15 @@ C
                CALL DGEMM('N','N',NRHF(ISYMK),NVIR(ISYMA),NBAS(ISYMAL),
      *                    ONE,SCR2(KOFF1),NRHFK,XLAMPC(KOFF2),NBASAL,
      *                    ZERO,SCR1(KOFF3),NRHFK)
+
+C            WRITE(LUPRI,*) '(aikc)'
+C            CALL OUTPUT(SCR1(KOFF3),1,NRHF(ISYMK),1,NVIR(ISYMA),
+C     *          NRHF(ISYMK),NVIR(ISYMA),1,LUPRI)
+C
   730       CONTINUE
   720    CONTINUE
   710 CONTINUE
 
-      WRITE(LUPRI,*) 'SCR1 AFTER LOOPS'
-      CALL OUTPUT(SCR1(1),1,LSCR1,1,1,LSCR1,1,1,LUPRI)
 
 C
 C---------------------------------------

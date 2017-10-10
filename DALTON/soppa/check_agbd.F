@@ -1,6 +1,6 @@
 C   /* Deck check_agbd */
       SUBROUTINE CHECK_AGBD(XINT,LXINT,NBAS,NRHF,NVIR,CMO,
-     *      NLAMDT,T2AMSQ,LT2SQ,WORK,LWORK,DELTA,ISYMD,LUPRI)
+     *      NLAMDT,T2AMSQ,LT2SQ,AGBD,WORK,LWORK,DELTA,ISYMD,LUPRI)
 C
 C   PORPOSE: 1)Set up memory allocation need here and in CHECK_AGBD1
 C            2)Square up ao-integrals and move to 3dim array (INTG)
@@ -24,7 +24,7 @@ C
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       REAL*8 INTG(NBAS,NBAS,NBAS)
       REAL*8 XINT(LXINT),CMO(NLAMDT),T2AMSQ(LT2SQ),WORK(LWORK)
-      REAL*8 XOUT(NBAS,NBAS,NBAS)
+      REAL*8 XOUT(NBAS,NBAS,NBAS),AGBD(NBAS,NVIR,NBAS*NRHF)
       INTEGER DELTA,GAM,LXINT,NBAS,NRHF,NVIR,NLAMDT,LT2SQ
       INTEGER NLTME
 C
@@ -40,16 +40,14 @@ C
       KINTG  = 1
       KC     = KINTG  + LINTG
       KXOUT  = KC     + LKC
-      KPQRDE = KXOUT  + LINTG
-C      KPQDE  = KC + LKC
-      KTIJAD = KPQRDE + LINTG
-      KTIJGD = KTIJAD + LT2SQ
-      KEND1  = KTIJGD + LT2SQ
+      KTIJAD = KXOUT  +  NBAS*NVIR*(NRHF*NBAS)
+      KTIJGD = KTIJAD + (NVIR*NRHF)*(NRHF*NBAS)
+      KEND1  = KTIJGD + (NBAS*NRHF)*(NRHF*NBAS)
 C
       LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
-        WRITE(LUPRI,*) 'NEED:', KEND2,'Available:',LWORK
+        WRITE(LUPRI,*) 'NEED:', KEND1,'Available:',LWORK
         CALL QUIT('Insufficitent space in CHECK_AGBD')
       ENDIF
 C
@@ -66,7 +64,6 @@ C
           KOFF1 = 1 +(GAM-1)*NLTME
           KOFF2 = KXOUT+((NBAS*NBAS)*(GAM-1))
 C
-C          WRITE(LUPRI,*) 'KOFF1',KOFF1,'KOFF2',KOFF2,'NLTME',NLTME
 C
           CALL CCSD_SYMSQ(XINT(KOFF1),ISYMD,WORK(KOFF2)) !square up XINT
 C
@@ -87,7 +84,7 @@ C---------------------------------------------------------------------
 C
 C  Transform the a and b index to gamma and delta. Then multiply on XINT
       CALL CHECK_AGBD1(WORK(KINTG),NBAS,WORK(KC),NVIR,NRHF,T2AMSQ,LT2SQ,
-     *                  WORK(KPQRDE),WORK(KTIJAD),WORK(KTIJGD),
+     *                  WORK(KTIJAD),WORK(KTIJGD),AGBD,
      *                  WORK(KEND1),LWRK1,DELTA,LUPRI)
 C
       RETURN

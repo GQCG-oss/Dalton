@@ -1,6 +1,7 @@
 C   /* Deck check_agbd1 */
       SUBROUTINE CHECK_AGBD1(XINT,NBAS,CMO,NVIR,NRHF,T2AMSQ,LT2SQ,
-     *                   PQRDEL,T2IJAD,T2IJGD,WORK,LWORK,DELTA,LUPRI)
+     *                       T2IJAD,T2IJGD,AGBD,
+     *                       WORK,LWORK,DELTA,LUPRI)
 C
 C   PORPOSE: Calculate Sum_cd T^(c delta)_(ij) (alpha gamma | beta delta)
 C           1) Transform the c index to delta: T_(ij)^(c delta).
@@ -18,17 +19,18 @@ C       PQRDEL:  Array for (alpha beta|gamma delta) T_(ij)^(gamma delta)
 C       T2IJAD:  Array for T_(ij)^(a delta)
 C       T2IJGD:  Array for T_(ij)^(gamma delta)
 C       DELTA:   A loop counter, looping over the ao index, delta.
-C       LUPRI:   Name of output file.
+C       LUPRI:   Logical unit number of output file.
 C
 C   Written by Lilli Irene Ør Kristensen, Summer 2017.
 C
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      REAL*8 XINT(NBAS,NBAS,NBAS),PQRDEL(NBAS,NBAS,NBAS)
+      REAL*8 XINT(NBAS,NBAS,NBAS),AGBD(NBAS,NRHF,NBAS*NRHF)
       REAL*8 CMO(NBAS,NRHF+NVIR),T2AMSQ(NRHF*NVIR,NRHF*NVIR)
       REAL*8 T2IJAD(NRHF*NVIR,NRHF*NBAS),T2IJGD(NRHF*NBAS,NRHF*NBAS)
-      REAL*8 WORK(LWORK)
+      REAL*8 WORK(LWORK)!,NAIBEJ(NVIR,NRHF,NBAS*NRHF)
+C      REAL*8 NAIBJ(NVIR*NRHF,NVIR*NRHF)
       INTEGER A,I,B,J,C,D,AI,BJ,DELTA,GAM,BETA,ALPHA,GA,LXINT,NRHF,NVIR
-      INTEGER DELJ,DEL,GAMI
+      INTEGER DELJ,DEL,GAMI,BETJ
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -38,9 +40,8 @@ C------------------------------------------------------------------------
 C
       ICOUNT = 1
       ICOUN2 = 1
-      WRITE(LUPRI,*) 'T2SQ'
-      CALL OUTPUT(T2AMSQ,1,5,1,5,5,5,1,LUPRI)
 C
+      CALL DZERO(T2IJAD,NRHF*NRHF*NVIR*NVIR)
       LXINT = NBAS*NBAS*NBAS
 C
       DO 110 A = NRHF+1,NRHF+NVIR !Loop over virual orbitals
@@ -52,11 +53,10 @@ C
                   BJ = ICOUN2 
                   ICOUN2 = ICOUN2+1
                   IF (ICOUN2 .GT. NRHF*NVIR) ICOUN2=1
-                  DELJ = DELTA + J - 1
+                  DELJ =  J 
 C
                   T2IJAD(AI,DELJ) = T2IJAD(AI,DELJ)
      *                                      + T2AMSQ(AI,BJ)*CMO(DELTA,B)
-C                  WRITE(LUPRI,*) 'T_(ij)^(c DELTA)',T2IJAD(AI,DELJ)
   140           CONTINUE
   130       CONTINUE
   120   CONTINUE
@@ -76,65 +76,42 @@ C                  WRITE(LUPRI,*) 'T_(ij)^(c DELTA)',T2IJAD(AI,DELJ)
                         T2IJGD(GAMI,DELJ) = T2IJGD(GAMI,DELJ)
      *                                    + T2IJAD(AI,DELJ)*CMO(GAM,A)
 C
-                              WRITE(LUPRI,*) 'T_(ij)^(gamma delta)'
-                              WRITE(LUPRI,*) 'GAMI',GAMI,'DELJ'
-     *                                      ,DELJ,T2IJGD(GAMI,DELJ)
+C                         WRITE(LUPRI,*) 'T_(ij)^(gamma delta)'
+c                         WRITE(LUPRI,*) 'GAMI',GAMI,'DELJ'
+c     *                                      ,DELJ,T2IJGD(GAMI,DELJ)
+c
+c
   250              CONTINUE
   240           CONTINUE
   230       CONTINUE
   220   CONTINUE
   210 CONTINUE
-
-
-
-
-C      DO 110 A = NRHF+1,NRHF+NVIR !Loop over virual orbitals
-C         DO 120 I = 1,NRHF !Loop over occupied orbitals
-C            AI = ICOUNT
-C            ICOUNT = ICOUNT+1
-C            DO 130 B = NRHF+1,NRHF+NVIR !loop over virtual orbitals
-C               DO 140 J = 1,NRHF !Loop over occupied orbitals
-C                  BJ = ICOUN2 
-C                  ICOUN2 = ICOUN2+1
-C                  IF (ICOUN2 .GT. NRHF*NVIR)  ICOUN2 = 1
-C                  DO 150 C = NRHF+1,NRHF+NVIR
-C                     DO 160 D = NRHF+1,NRHF+NVIR
-C                        DO 170 GAM = 1,NBAS
-C                           DO 180 BETA = 1,NBAS
-C                              DO 190 ALPHA = 1,NBAS
-CC   Transforming the b index of the amplitude to delta.
-C                              T2IJAD(AI,BJ) = T2IJAD(AI,BJ)
-C     *                                      + T2AMSQ(AI,BJ)*CMO(DELTA,B)
-CC   Transforming the a index of the amplitude to gamma
-C                              T2IJGD(AI,BJ) = T2IJGD(AI,BJ)
-C     *                                      + T2IJAD(AI,BJ)*CMO(GAM,A)
-CC                              WRITE(LUPRI,*) 'T_(ij)^(gamma delta)'
-CC                              WRITE(LUPRI,*) 'A',A,'GAM',GAM,'AI',AI,
-CC     *                                       'BJ',BJ,T2IJGD(AI,BJ)
-CC Computing the the AGBD-intermediate: T_(ij)^(gamma delta) (alpha beta|gamma delta)
-CC                              PQRDEL(ALPHA,BETA,GAM) =
-CC     *                        PQRDEL(ALPHA,BETA,GAM) + T2IJGD(AI,BJ) *
-CC     *                                              XINT(ALPHA,BETA,GAM)
-CC Tranforming the AGBD-intermediate to MO-basis.
-CC                               WORK  =
-CC     *                         PQRDEL(ALPHA,BETA,GAM)*CMO(ALPHA,A)
-CC     *                          *CMO(BETA,D)*CMO(GAM,B)*CMO(DELTA,D)
-CC                               WRITE(LUPRI,*) 'WORK(LILLI)',WORK
 C
-C  190                   CONTINUE
-C  180                 CONTINUE
-C  170                CONTINUE
-C  160              CONTINUE
-C  150            CONTINUE
-C                              WRITE(LUPRI,*) 'T_(ij)^(gamma delta)'
-C                              WRITE(LUPRI,*) 'AI',AI,
-C     *                                       'BJ',BJ,T2IJGD(AI,BJ)
-C  140           CONTINUE
-C  130       CONTINUE
-C  120   CONTINUE
-C  110 CONTINUE
-CC
-      FLUSH(LUPRI)
+      DO 310 BETA = 1,NBAS
+         DO 320 J = 1,NRHF
+            DELJ =  J
+            BETJ = J + (BETA-1)*NRHF 
+            DO 330 I  = 1,NRHF
+               DO 340 GAM =1,NBAS
+                  GAMI= GAM + (I-1)*NBAS
+C                  IGAM= I + (GAM-1)*NRHF
+                  DO 350 ALPHA = 1,NBAS
+C
+                     AGBD(ALPHA,I,BETJ) = AGBD(ALPHA,I,BETJ)
+     *                          +XINT(ALPHA,GAM,BETA)*T2IJGD(GAMI,DELJ)
+C
+ 350              CONTINUE
+ 340           CONTINUE
+ 330        CONTINUE
+ 320     CONTINUE
+ 310  CONTINUE
+C
+C      WRITE(LUPRI,*) 'AGBD'
+C      DO 370 DELJ = 1,NRHF*NBAS
+C        CALL OUTPUT(AGBD(1,1,DELJ),1,NBAS,1,NRHF,NBAS,NRHF,1,LUPRI)
+C 370  CONTINUE
+C
+C
       RETURN
       END
 

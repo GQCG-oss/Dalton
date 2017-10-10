@@ -1,6 +1,7 @@
 C   /* Deck check_afterloop */
       SUBROUTINE CHECK_AFTERLOOP(AGBD,AIBD,AIBJ,KIAD,KIAC,
-     *                     KTCKBJ,CMO,NBAS,NVIR,NRHF,
+     *                     KTCKBJ,AIKD,AIKC,TAIKC,KILJ,TKILJ,
+     * CMO,NBAS,NVIR,NRHF,
      *                   T2AMSQ,LT2SQ,
      *                     WORK,LWORK,DELTA,LUPRI)
 C
@@ -29,10 +30,12 @@ C
       REAL*8 AGBD(NBAS,NRHF,NRHF*NBAS),AIBD(NBAS,NRHF,NBAS*NVIR)
       REAL*8 AIBJ(NRHF*NVIR,NRHF*NVIR),NAIBJ(NRHF*NVIR,NRHF*NVIR)  
       REAL*8 KIAD(NRHF,NRHF,NVIR*NBAS),KIAC(NRHF,NRHF,NVIR*NVIR)
-      REAL*8 TCKBJ(NRHF*NVIR,NRHF*NVIR)
+      REAL*8 TCKBJ(NRHF*NVIR,NRHF*NVIR),AIKD(NVIR,NRHF,NRHF*NBAS)
+      REAL*8 AIKC(NVIR,NRHF,NRHF*NVIR),TAIKC(NRHF*NVIR,NRHF*NVIR)
+      real*8 KILJ(NRHF*NRHF,NRHF*NRHF),TKILJ(NVIR*NRHF,NVIR*NRHF)
       REAL*8 WORK(LWORK)
       INTEGER A,I,B,J,C,D,AI,BJ,DELTA,GAM,BETA,ALPHA,GA,LXINT,NRHF,NVIR
-      INTEGER DELJ,DEL,GAMI,BETJ,AC,ADEL,CK
+      INTEGER DELJ,DEL,GAMI,BETJ,AC,ADEL,CK,AK,BL
 C
       CALL DZERO(TCKBJ(1,1),NRHF*NRHF*NVIR*NVIR) 
       CALL DZERO(AIBD(1,1,1),NBAS*NRHF*NRHF*NVIR)
@@ -118,7 +121,7 @@ C                  WRITE(LUPRI,*) K,I,A,DELTA
 C                  WRITE(LUPRI,*) 'KIAD ', K,I,ADEL,KIAD(K,I,ADEL)
 c                  WRITE(LUPRI,*) 'CMO  ', DELTA,C ,CMO(DELTA,C)
   440          CONTINUE 
-                WRITE(LUPRI,*) 'KIAC',KIAC(K,I,AC)
+C                WRITE(LUPRI,*) 'KIAC',KIAC(K,I,AC)
   420       CONTINUE
   430 CONTINUE
   450 CONTINUE
@@ -142,13 +145,13 @@ C     *              +(I-1)*NVIR*NRHF*NVIR
 C
       TCKBJ(BJ,AI) = TCKBJ(BJ,AI)
      *             + KIAC(K,I,AC) * T2AMSQ(CK,BJ)
-C      IF ((BJ .EQ. 3) .AND. (AI .EQ. 1)) THEN
-C      WRITE(LUPRI,*) ' CK ',CK,' BJ ',BJ,
+c      IF ((BJ .EQ. 3) .AND. (AI .EQ. 1)) THEN
+c      WRITE(LUPRI,*) ' CK ',CK,' BJ ',BJ,
 c     *              ' K ',K,' I ',I,' AC ',AC
 c      WRITE(LUPRI,*) 'KIAC(K,I,AC) ',KIAC(K,I,AC)
-C      WRITE(LUPRI,*) 'T2AMSQ(CK,BJ)',T2AMSQ(CK,BJ)
-C      WRITE(LUPRI,*) 'TCKBJ(AI,BJ) ',TCKBJ(BJ,AI)
-C      END IF
+c      WRITE(LUPRI,*) 'T2AMSQ(CK,BJ)',T2AMSQ(CK,BJ)
+c      WRITE(LUPRI,*) 'TCKBJ(AI,BJ) ',TCKBJ(BJ,AI)
+c      END IF
   560              CONTINUE
   550            CONTINUE
   540           CONTINUE
@@ -170,16 +173,96 @@ C  531       CONTINUE
 C  521   CONTINUE
 C  511 CONTINUE
 C
-C
+C  THE CODE WORKS UNTIL HERE! NEXT ADD TO RESULT (SEE CC-PUTC)
 C-----------------------------------------------------------------------
-C   KIAC BIDRAGET
+C   AIKC BIDRAGET
 C----------------------------------------------------------------------
 
 
+      DO 610 K = 1,NRHF
+         DO 620 I = 1,NRHF
+            DO 630 A = NRHF+1,NRHF+NVIR !loop over occupied orbitals
+               AI = (A-NRHF) + (I-1)*NVIR
+               DO 640 C = NRHF +1, NRHF+NVIR
+               DO 650 DELTA = 1,NBAS
+        KDELTA = K +(DELTA-1)*NRHF
+C
+                AIKC(C,K,AI) = AIKC(C,K,AI) + AIKD(A,I,KDELTA) 
+     *                                              *CMO(DELTA,C)
+  650        CONTINUE
+C               WRITE(LUPRI,*) 'AIKC',AIKC(C,K,AI)
+  640          CONTINUE 
+  630       CONTINUE
+  620    CONTINUE
+  610 CONTINUE
+
+      DO 710 A = NRHF+1, NRHF+NVIR
+      DO 720 I = 1, NRHF
+        AI = (A-NRHF) + (I-1)*NVIR
+      DO 730 B = NRHF+1, NRHF+NVIR
+      DO 740 J = 1,NRHF
+      DO 750 K = 1, NRHF
+      DO 760 C = NRHF+1,NRHF+NVIR
+        BJ = (B-NRHF) + (J-1)*NVIR
+        CK = (C-NRHF) + (K-1)*NVIR
+C
+        TAIKC(BJ,AI) = TAIKC(BJ,AI) + T2AMSQ(BJ,CK) * AIKC(C,K,AI)
+C
+ 760  CONTINUE
+ 750  CONTINUE
+ 740  CONTINUE
+ 730  CONTINUE
+ 720  CONTINUE
+ 710  CONTINUE
 
 
+C      DO 830 B = NRHF+1, NRHF+NVIR
+C      DO 840 J = 1,NRHF
+C      DO 850 I = 1, NRHF
+C      DO 860 A = NRHF+1,NRHF+NVIR
+C        BJ = (B-NRHF) + (J-1)*NVIR
+C        AI = (A-NRHF) + (I-1)*NVIR
+C      
+C      WRITE(LUPRI,*) ' TAIKC(BJ,AI) ',BJ,AI,TAIKC(BJ,AI) 
+C
+C 860  CONTINUE
+C 850  CONTINUE
+C 840  CONTINUE
+C 830  CONTINUE
+C
+C UNTIL HERE CODE WORKS - NEXT: ADD TO RESULT (SEE CC_PUTD)
+C---------------------------------------------------------------
 
 
+C
+C---------------------------------------------------------------
+C           KILJ BIDRAGET
+C---------------------------------------------------------------
+C
+      DO 910 J = 1, NRHF
+      DO 920 L = 1 ,NRHF
+      DO 930 B = NRHF+1,NRHF+NVIR
+      DO 940 A = NRHF+1,NRHF+NVIR
+      DO 950 I = 1, NRHF
+      DO 960 K = 1, NRHF
+        LJ = J + (L-1)*NRHF
+        KI = K + (I-1)*NRHF
+        AK = (A-NRHF) + (K-1)*NVIR
+        BL = (B-NRHF) + (L-1)*NVIR
+        AI = (A-NRHF) + (I-1)*NVIR
+        BJ = (B-NRHF) + (J-1)*NVIR
+
+      TKILJ(AI,BJ)= TKILJ(AI,BJ) + T2AMSQ(AK,BL) * KILJ(KI,LJ) 
+      WRITE(LUPRI,*) AI,BJ,TKILJ(AI,BJ)
+  960 CONTINUE
+  950 CONTINUE
+  940 CONTINUE
+  930 CONTINUE
+  920 CONTINUE
+  910 CONTINUE
+
+      WRITE(LUPRI,*) 'TKILJ'
+      CALL OUTPUT(TKILJ(1,1),1,5,1,5,5,5,1,LUPRI)
 
 
 

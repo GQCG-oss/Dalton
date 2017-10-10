@@ -1,6 +1,6 @@
 C   /* Deck check_aikdelta1 */
       SUBROUTINE CHECK_AIKDELTA1(XINT,NBAS,CMO,NVIR,NRHF,T2AMSQ,LT2SQ,
-     *              ALGKD,ALIKD,AIKD,AIKC,AIKCT2,WORK,LWORK,DELTA,LUPRI)
+     *              ALGKD,ALIKD,AIKD,WORK,LWORK,DELTA,LUPRI)
 C
 C   PORPOSE: Calculate Sum_cd T^(c delta)_(ij) (alpha gamma | beta delta)
 C           1) Transform the c index to delta: T_(ij)^(c delta).
@@ -21,9 +21,9 @@ C
 C   Written by Lilli Irene Ør Kristensen, Summer 2017.
 C
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      REAL*8 XINT(NBAS,NBAS,NBAS),AIKC(NVIR,NRHF,NRHF)
-      REAL*8 AIKD(NVIR,NRHF,NRHF),ALIKD(NBAS,NRHF,NRHF)
-      REAL*8 ALGKD(NBAS,NBAS,NRHF),AIKCT2(NVIR,NRHF,NRHF)
+      REAL*8 XINT(NBAS,NBAS,NBAS)
+      REAL*8 AIKD(NVIR,NRHF,NRHF*NBAS),ALIKD(NBAS,NRHF,NRHF)
+      REAL*8 ALGKD(NBAS,NBAS,NRHF)
       REAL*8 CMO(NBAS,NRHF+NVIR),T2AMSQ(NRHF*NVIR,NRHF*NVIR)
       REAL*8 WORK(LWORK)
       INTEGER A,B,C,D,DELTA,GAM,BETA,ALPHA,LXINT
@@ -39,6 +39,7 @@ C
       LXINT = NBAS*NBAS*NBAS
 C
       DO 130 K = 1,NRHF
+        KDELTA = K +(DELTA-1)*NRHF
          DO 110 BETA = 1,NBAS
             DO 120 ALPHA = 1,NBAS
                DO 140 GAM = 1,NBAS
@@ -51,41 +52,45 @@ C
   110    CONTINUE
   130 CONTINUE
 C
-      DO 137 K = 1,NRHF
-        WRITE(LUPRI,*) '(ALPHA BETA| K DELTA)'
-        CALL OUTPUT(ALGKD(1,1,K),1,NBAS,1,NBAS,NBAS,NBAS,1,LUPRI)
-  137 CONTINUE
+C      DO 137 K = 1,NRHF
+C        WRITE(LUPRI,*) '(ALPHA BETA| K DELTA)'
+C        CALL OUTPUT(ALGKD(1,1,K),1,NBAS,1,NBAS,NBAS,NBAS,1,LUPRI)
+C  137 CONTINUE
 
       DO 210 K = 1,NRHF
+        KDELTA = K +(DELTA-1)*NRHF
          DO 220 ALPHA = 1,NBAS
             DO 230 I = 1,NRHF
                DO 240 BETA = 1,NBAS 
 C
-                 ALIKD(ALPHA,I,K) = ALIKD(ALPHA,I,K)+ALGKD(ALPHA,BETA,K)
+                 ALIKD(ALPHA,I,K) = ALIKD(ALPHA,I,K)
+     *                                 + ALGKD(ALPHA,BETA,K)
      *                                              *CMO(BETA,I)
   240           CONTINUE
   230        CONTINUE 
   220     CONTINUE
   210  CONTINUE
 C
-      DO 237 K = 1,NRHF
-        WRITE(LUPRI,*) '(ALPHA I| K DELTA)'
-        CALL OUTPUT(ALIKD(1,1,K),1,NBAS,1,NRHF,NBAS,NRHF,1,LUPRI)
-  237 CONTINUE
+C      DO 237 K = 1,NRHF
+C        WRITE(LUPRI,*) '(ALPHA I| K DELTA)'
+C        CALL OUTPUT(ALIKD(1,1,K),1,NBAS,1,NRHF,NBAS,NRHF,1,LUPRI)
+C  237 CONTINUE
 C
 C
       DO 310 K = 1,NRHF
+        KDELTA = K +(DELTA-1)*NRHF
          DO 320 I = 1,NRHF
             DO 330 A = NRHF+1,NRHF+NVIR !loop over occupied orbitals
                DO 340 ALPHA = 1,NBAS
 C
-                  AIKD(A,I,K) = AIKD(A,I,K) + ALIKD(ALPHA,I,K)
+                  AIKD(A,I,KDELTA) = AIKD(A,I,KDELTA) 
+     *                             + ALIKD(ALPHA,I,K)
      *                                              *CMO(ALPHA,A)
 C                  WRITE(LUPRI,*) 'K',K,'I',I,'A',A,'ALPHA',ALPHA
 C                  WRITE(LUPRI,*)'CMO',CMO(ALPHA,A),'(AL I|K D)'
 C     *    ,ALIKD(ALPHA,I,K) 
   340          CONTINUE 
-               WRITE(LUPRI,*) 'AIKD',AIKD(A,I,K)
+C               WRITE(LUPRI,*) 'AIKD',AIKD(A,I,KDELTA)
   330       CONTINUE
   320    CONTINUE
   310 CONTINUE

@@ -1,6 +1,6 @@
 C   /* Deck check_aikdelta */
       SUBROUTINE CHECK_AIKDELTA(XINT,LXINT,NBAS,NRHF,NVIR,CMO,
-     *      NLAMDT,T2AMSQ,LT2SQ,WORK,LWORK,DELTA,ISYMD,LUPRI)
+     *      NLAMDT,T2AMSQ,LT2SQ,AIKD,WORK,LWORK,DELTA,ISYMD,LUPRI)
 C
 C   PORPOSE: 1)Set up memory allocation need here and in CHECK_AGBD1
 C            2)Square up ao-integrals and move to 3dim array (INTG)
@@ -24,7 +24,7 @@ C
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       REAL*8 INTG(NBAS,NBAS,NBAS)
       REAL*8 XINT(LXINT),CMO(NLAMDT),T2AMSQ(LT2SQ),WORK(LWORK)
-      REAL*8 XOUT(NBAS,NBAS,NBAS)
+      REAL*8 XOUT(NBAS,NBAS,NBAS),AIKD(NVIR,NRHF,NRHF*NBAS)
       INTEGER DELTA,GAM,LXINT,NBAS,NRHF,NVIR,NLAMDT,LT2SQ
       INTEGER NLTME
 C
@@ -42,11 +42,8 @@ C
       KXOUT  = KC     + LKC
       KAGBD  = KXOUT  + LINTG
       KAIBD  = KAGBD  + LINTG
-      KAIKD  = KAIBD  + LINTG
-      KAIKC  = KAIKD  + LINTG
-      KAIKT  = KAIKC  + LINTG
-C
-      KEND1  = KAIKT + LINTG
+
+      KEND1  = KAIBD  + LINTG
 C
       LWRK1 = LWORK - KEND1
 C
@@ -89,8 +86,8 @@ C---------------------------------------------------------------------
 C
 C  Transform the a and b index to gamma and delta. Then multiply on XINT
       CALL CHECK_AIKDELTA1(WORK(KINTG),NBAS,WORK(KC),NVIR,NRHF,T2AMSQ,
-     *            LT2SQ,WORK(KAGBD),WORK(KAIBD),WORK(KAIKD),WORK(KAIKC),
-     *                     WORK(KAIKT),WORK(KEND1),LWRK1,DELTA,LUPRI)
+     *            LT2SQ,WORK(KAGBD),WORK(KAIBD),AIKD,
+     *                     WORK(KEND1),LWRK1,DELTA,LUPRI)
 C
       RETURN
       END

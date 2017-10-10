@@ -66,7 +66,7 @@ C
          KSCR2  = KSCR1  + N2BST(ISYMAG)
 C         KSCR3  = KSCR2  + NT1AO(ISYMAG)
 C         KSCR4  = KSCR3  + NT1AM(ISYMAG)
-         KSCR3  = KSCR2  + NT1AM(ISYMAG)
+         KSCR3  = KSCR2  + NT1AO(ISYMAG)
 C         KEND2  = KSCR4  + NMATIJ(ISYMAG)
          KEND2  = KSCR3  + NMATIJ(ISYMAG)
          LWRK2  = LWORK  - KEND2

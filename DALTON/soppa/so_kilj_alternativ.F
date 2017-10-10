@@ -1,5 +1,6 @@
-C  /* Deck so_kilj */
-      SUBROUTINE SO_KILJ(OMEGA2,T2AM,GAMMA,WORK,LWORK,ISYGAM,ISYVEC)
+C  /* Deck so_kilj_alternativ */
+      SUBROUTINE SO_KILJ_ALTERNATIV(OMEGA2,T2AM,GAMMA,WORK,LWORK,ISYGAM,
+     *                                  ISYVEC)
 C
 C     Origanl routine CCRHS_A is written by Henrik Koch & Ove Christiansen 20-Jan-1994
 C         Generalised to non. total sym gamma (isygam) og non. tot. sym
@@ -134,24 +135,95 @@ C
                            KOFF2 = KSCR1 + IMATIJ(ISYMK,ISYMI)
                            KOFF3 = KSCR2 + IT1AM(ISYMA,ISYMI)
 C
+C                           CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
+C     *                                NRHF(ISYMK),ONE,T2AM(KOFF1),
+C     *                                NVIRA,WORK(KOFF2),NRHFK,ZERO,
+C     *                                WORK(KOFF3),NVIRA)
                            CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
      *                                NRHF(ISYMK),ONE,T2AM(KOFF1),
      *                                NVIRA,WORK(KOFF2),NRHFK,ZERO,
      *                                WORK(KOFF3),NVIRA)
-C                      T_(ij)^(ab)*(ki|lj)
-                           WRITE(LUPRI,*) 'DGEMM'
+
+                           WRITE(LUPRI,*) 'DGEMM',KOFF3
                            CALL OUTPUT(WORK(KOFF3),1,NVIR(ISYMA),1,
      *  NRHF(ISYMI),NVIR(ISYMA),NRHF(ISYMI),1,LUPRI)
 C
   190                   CONTINUE
+
+
+C                        IF (ISYMAI .EQ. ISYMBJ) THEN
+C                           NTOT = NBJ
+C                        ELSE
+C                           NTOT = NT1AM(ISYMAI)
+C                        ENDIF
+CC
+C                        DO 200 NAI = 1,NTOT
+CC
+C                           IF (ISYMAI .EQ. ISYMBJ) THEN
+C                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+C     *                              + INDEX(NAI,NBJ)
+C                           ELSE
+C                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+C     *                              + NT1AM(ISYMAI)*(NBJ - 1) + NAI
+C                           ENDIF
+CC
+C                           OMEGA2(NAIBJ) = OMEGA2(NAIBJ)
+C     *                                   + WORK(KSCR2 + NAI - 1)
+Cc                           WRITE(LUPRI,'(A)') 'T_kl^cd (ki|lj)'
+c                           WRITE(LUPRI,*)NAIBJ,OMEGA2(NAIBJ)
+c                           FLUSH(LUPRI)
 C
+c  200                   CONTINUE
+C
+  180                CONTINUE
+  170             CONTINUE
+C
+  130          CONTINUE
+  120       CONTINUE
+  110    CONTINUE
+  100 CONTINUE
+
+
+
+      DO 200 ISYMLJ = 1,NSYM
+C
+         ISYMKI = MULD2H(ISYMLJ,ISYGAM)
+         DO 210 ISYMJ = 1,NSYM
+C
+            ISYML = MULD2H(ISYMJ,ISYMLJ)
+C
+            DO 220 J = 1,NRHF(ISYMJ)
+C
+               DO 230 L = 1,NRHF(ISYML)
+
+
+                  DO 270 ISYMB = 1,NSYM
+C
+                     ISYMBJ = MULD2H(ISYMB,ISYMJ)
+                     ISYMAI = MULD2H(ISYMBJ,ISAIBJ)
+                     ISYMBL = MULD2H(ISYMB,ISYML)
+                     ISYMAK = MULD2H(ISYVEC,ISYMBL)
+C
+                     KSCR2 = KEND1
+                     KEND2 = KSCR2 + NT1AM(ISYMAI)
+                     LWRK2 = LWORK - KEND2
+
+                     IF (LWRK2 .LT. 0) THEN
+                        CALL QUIT('Insufficient space in SO_KILJ')
+                     END IF
+C
+                     IF (ISYMAI .GT. ISYMBJ) GOTO 270
+
+                     DO 280 B = 1,NVIR(ISYMB)
+
+
                         IF (ISYMAI .EQ. ISYMBJ) THEN
                            NTOT = NBJ
                         ELSE
                            NTOT = NT1AM(ISYMAI)
                         ENDIF
 C
-                        DO 200 NAI = 1,NTOT
+                        DO 300 NAI = 1,NTOT
 C
                            IF (ISYMAI .EQ. ISYMBJ) THEN
                               NAIBJ = IT2AM(ISYMAI,ISYMBJ)
@@ -163,23 +235,21 @@ C
 C
                            OMEGA2(NAIBJ) = OMEGA2(NAIBJ)
      *                                   + WORK(KSCR2 + NAI - 1)
-C                          WRITE(LUPRI,'(A)') 'T_kl^cd (ki|lj)'
-C                          WRITE(LUPRI,*) KSCR2,NAI,WORK(KSCR2+NAI-1)
-c                           WRITE(LUPRI,*)NAIBJ,OMEGA2(NAIBJ)
-c                           FLUSH(LUPRI)
+                           WRITE(LUPRI,'(A)') 'ALTERNATIV'
+C                           WRITE(LUPRI,*) NAIBJ,OMEGA2(NAIBJ)
+                           WRITE(LUPRI,*) KSCR2,NAI,WORK(KSCR2+NAI-1)
+                           FLUSH(LUPRI)
+
 C
-  200                   CONTINUE
+  300                   CONTINUE
 C
-  180                CONTINUE
-  170             CONTINUE
+  280                CONTINUE
+  270             CONTINUE
 C
-  130          CONTINUE
-  120       CONTINUE
-  110    CONTINUE
-  100 CONTINUE
+  230          CONTINUE
+  220       CONTINUE
+  210    CONTINUE
+  200 CONTINUE
 C
-C                           WRITE(LUPRI,'(A)') 'T_kl^ab(ki|lj)'
-C                           CALL OUTPUT(OMEGA2(1),1,15,1,1,15,1,1,LUPRI)
-C                           FLUSH(LUPRI)
       RETURN
       END

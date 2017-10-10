@@ -1,6 +1,6 @@
 C   /* Deck check_kilj */
       SUBROUTINE CHECK_KILJ(XINT,LXINT,NBAS,NRHF,NVIR,CMO,
-     *      NLAMDT,T2AMSQ,LT2SQ,WORK,LWORK,DELTA,ISYMD,LUPRI)
+     *      NLAMDT,T2AMSQ,LT2SQ,KILJ,WORK,LWORK,DELTA,ISYMD,LUPRI)
 C
 C   PORPOSE: 1)Set up memory allocation need here and in CHECK_AGBD1
 C            2)Square up ao-integrals and move to 3dim array (INTG)
@@ -24,7 +24,7 @@ C
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       REAL*8 INTG(NBAS,NBAS,NBAS)
       REAL*8 XINT(LXINT),CMO(NLAMDT),T2AMSQ(LT2SQ),WORK(LWORK)
-      REAL*8 XOUT(NBAS,NBAS,NBAS)
+      REAL*8 XOUT(NBAS,NBAS,NBAS),KILJ(NRHF,NRHF,NRHF)
       INTEGER DELTA,GAM,LXINT,NBAS,NRHF,NVIR,NLAMDT,LT2SQ
       INTEGER NLTME
 C
@@ -40,18 +40,17 @@ C
       KINTG  = 1
       KC     = KINTG  + LINTG
       KXOUT  = KC     + LKC
-      KKILJ  = KXOUT  + LINTG
-      KEND1  = KKILJ  + LINTG
+      KABGJ  = KXOUT  + LINTG
+      KKBGJ  = KABGJ  + NBAS*NBAS*NBAS*NRHF
+      KKIGJ  = KKBGJ  + NRHF*NBAS*NBAS*NRHF
+      KKIJLD = KKIGJ  + NRHF*NRHF*NBAS*NRHF
+      KEND1  = KKIJLD + NRHF*NRHF*NRHF*NRHF
 C
       LWRK1 = LWORK - KEND1
 C
 
-C      KTIJAD = KPQRDE + LINTG
-C      KTIJGD = KTIJAD + LT2SQ
-C      KEND1  = KTIJGD + LT2SQ
-
       IF (LWRK1 .LT. 0) THEN
-        WRITE(LUPRI,*) 'NEED:', KEND2,'Available:',LWORK
+        WRITE(LUPRI,*) 'NEED:', KEND1,'Available:',LWORK
         CALL QUIT('Insufficitent space in CHECK_AGBD')
       ENDIF
 C
@@ -89,7 +88,8 @@ C---------------------------------------------------------------------
 C
 C  Transform the a and b index to gamma and delta. Then multiply on XINT
       CALL CHECK_KILJ1(WORK(KINTG),NBAS,WORK(KC),NVIR,NRHF,T2AMSQ,
-     *            LT2SQ,WORK(KKILJ),WORK(KEND1),LWRK1,DELTA,LUPRI)
+     *            LT2SQ,KILJ,WORK(KABGJ),WORK(KKBGJ),WORK(KKIGJ),
+     *             WORK(KKIJLD),WORK(KEND1),LWRK1,DELTA,LUPRI)
 C
       RETURN
       END

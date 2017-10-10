@@ -25,19 +25,10 @@ C
 #include "ccorb.h"
 #include "ccsdsym.h"
 #include "symsq.h"
-C#include "cclr.h"
 C
-C      ISYMOP = 1
-C      ISYMTR = 1
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       ISYMO2 = MULD2H(ISYMOP,ISYMTR)
-C      ISYMO1 = MULD2H(ISYMO2,ISYMC2)
-C      WRITE(LUPRI,*) 'OMEGA2'
-C        CALL OUTPUT(OMEGA2(1),1,15,1,1,15,1,1,LUPRI)
-C 337  CONTINUE
-C
-C      CALL DZERO(RHO2,NT2AM(ISYMO2))
 C
       DO 100 ISYMJ = 1,NSYM
          DO 110 ISYMI = 1,NSYM
@@ -64,7 +55,6 @@ C
                NRB = MAX(NRHF(ISYMB),NRHF(ISYBE))
 C
                KSCR1 = 1
-C               KSCR2 = KSCR1 + NBAS(ISYAL)*NBAS(ISYBE)
                KSCR2 = KSCR1 + NBAS(ISYAL)*NBAS(ISYBE)*NRHF(ISYMI)
      *                         *NRHF(ISYMJ)
                KSCR3 = KSCR2 + NBAS(ISYAL)*NVB
@@ -84,14 +74,6 @@ C
      *                      *NRHF(ISYMJ))
               DO 130 J = 1,NRHF(ISYMJ)
                  DO 140 I = 1,NRHF(ISYMI)
-
-C       WRITE(LUPRI,*) 'OMEGA2',WORK(KSCR1+216),WORK(KSCR1+117),
-C     *          WORK(KSCR1+218),
-C     *                  WORK(KSCR1+219),WORK(KSCR1+220),WORK(KSCR1+221)
-C              LTOT = NBAS(ISYAL)*NBAS(ISYBE)*NRHF(ISYMI)*NRHF(ISYMJ)
-C              DO 137 L = 1,LTOT
-C                  WRITE(LUPRI,*) OMEGA2(L), WORK(KSCR1+L-1)
-C 137          CONTINUE
 C
 C------------------------------------------
 C                    Squareup the AB block.
@@ -170,14 +152,6 @@ C
 C
                      KOFF1 = ILMVIR(ISYBE) + 1
 C
-C                     CALL DGEMM('N','N',NBAS(ISYAL),NVIR(ISYMB),
-C     *                          NBAS(ISYBE),ONE,WORK(KSCR1),NBASA,
-C     *                          XLAMDP(KOFF1),NBASB,ZERO,WORK(KSCR2),
-C     *                          NBASA)
-C                     WRITE(LUPRI,*) 'SO_T2MO 1 - før dgemm '
-C                     CALL OUTPUT(WORK(KSCR2),1,NBAS(ISYAL),1,NVIR(ISYMB)
-C     *               ,NBAS(ISYAL),NVIR(ISYMB),1,LUPRI)
-C
                      KOFF = KSCR1 + (I-1)*NBAS(ISYAL)*NBAS(ISYBE)
      *                     + (J-1)*NBAS(ISYAL)*NBAS(ISYBE)*NRHF(ISYMI)
 C
@@ -185,40 +159,16 @@ C
      *                          NBAS(ISYBE),ONE,WORK(KOFF),NBASA,
      *                          XLAMDP(KOFF1),NBASB,ZERO,WORK(KSCR2),
      *                          NBASA)
-C                     WRITE(LUPRI,*) 'KOFF',KOFF,I,J,NBAS(ISYAL),
-C     *                  NBAS(ISYBE),NVIR(ISYMI)
 C
-C                     WRITE(LUPRI,*) '(ag|bd)', KOFF,OMEGA2(KOFF)
-c                     CALL OUTPUT(WORK(KOFF),1,NBAS(ISYAL),1,
-C     *              NBAS(ISYBE),NBAS(ISYAL),NBAS(ISYBE),1,LUPRI)
 C
-C                     WRITE(LUPRI,*) 'XLAMDP'
-C                     CALL OUTPUT(XLAMDP(KOFF1),1,NBAS(ISYBE),1,
-C     *                  NVIR(ISYMB),NBAS(ISYBE),NVIR(ISYMB),
-C     *                  1,LUPRI)
-C
-C                     WRITE(LUPRI,*) 'SO_T2MO 1'
-C                     CALL OUTPUT(WORK(KSCR2),1,NBAS(ISYAL),1,NVIR(ISYMB)
-c     *               ,NBAS(ISYAL),NVIR(ISYMB),1,LUPRI)
-CcC
-CcC
                      KOFF2 = IGLMVI(ISYAL,ISYMA) + 1
-CC
+C
                      CALL DGEMM('T','N',NVIR(ISYMA),NVIR(ISYMB),
      *                          NBAS(ISYAL),ONE,XLAMPC(KOFF2),NBASA,
      *                          WORK(KSCR2),NBASA,ZERO,WORK(KSCR3),
      *                          NVIRA)
-CC
 C
-C                     WRITE(LUPRI,*) 'XLAMPC'
-C                     CALL OUTPUT(XLAMPC(KOFF2),1,NBAS(ISYAL),1,
-C     *                  NVIR(ISYMA),NBAS(ISYAL),NVIR(ISYMA),1,LUPRI)
 C
-C                     WRITE(LUPRI,*) 'I',I,'B',B,'ISYMJ',ISYMJ,'ISTMI',
-C     *      ISYMI,'ISYBE',ISYBE
-C                     WRITE(LUPRI,*) 'SO_T2MO 2',WORK(KSCR3)
-C                     CALl OUTPUT(WORK(KSCR3),1,NVIR(ISYMA),1,NVIR(ISYMB)
-C     *               ,NVIR(ISYMA),NVIR(ISYMB),1,LUPRI)
 C--------------------------------------------
 C                    Store the omega2 vector.
 C--------------------------------------------
@@ -244,18 +194,12 @@ C
      *                              + NT1AM(ISYMAI)*(NBJ - 1) + NAI
                            ELSEIF (ISYMAI .GT. ISYMBJ) THEN
                               GOTO 180
-chjaaj: next two lines are commented because it is dead code
-c                             NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-c    *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
                            ENDIF
 C
 C                           RHO2(NAIBJ) = RHO2(NAIBJ) + WORK(NAB)
                             OMEGA2(NAIBJ) = OMEGA2(NAIBJ)+ WORK(NAB)
 C
-C                           WRITE(LUPRI,*) 'A',A,'I',I,'B',B,'J',J
-C                           WRITE(LUPRI,*) 'NAIBJ',NAIBJ
-                           WRITE(LUPRI,*) 'OMEGA2',NAIBJ,OMEGA2(NAIBJ)
-C                           FLUSH(LUPRI)
+C                           WRITE(LUPRI,*) 'OMEGA2',NAIBJ,OMEGA2(NAIBJ)
   180                   CONTINUE
   170                CONTINUE
 C

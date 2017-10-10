@@ -51,7 +51,7 @@ C
       PARAMETER (ISYM0 = 1)
 C
       DIMENSION INDEXA(MXCORB_CC)
-      DIMENSION OMEGA2(NT2SQ(1)),T2AM(NT2AMX),T2AMSQ(NT2SQ(1))
+      DIMENSION OMEGA2(6*6*NT2SQ(1)),T2AM(NT2AMX),T2AMSQ(NT2SQ(1))
       DIMENSION WORK(LWORK)
 C
       CHARACTER CFIL*6,DFIL*6
@@ -116,10 +116,37 @@ C     Work space allocation no. 1.
 C--------------------------------------------------------------
 C
       KCMO = 1
-      KGAMMA = KCMO + NLAMDT
-      KEND1 = KGAMMA + NGAMMA(ISYMOP) !længde af kgamma mangler da? 
-c
+      KGAMMA =  KCMO + NLAMDT
+      KEND1  =  KGAMMA + NGAMMA(ISYMOP) 
+C--------------------------------------------------------------
+C Allocation for check routines
+C---------------------------------------------------------------
+      LAGBD  =  NBAS(ISYMD)*NBAS(ISYMD)*NBAS(ISYMD)*NBAS(ISYMD)
+      LKILJ  =  NBAS(ISYMD)*NBAS(ISYMD)*NBAS(ISYMD)
+C
+      KAGBD  =  KEND1
+      KKILJ  =  KAGBD  + LAGBD*NBAS(ISYMD)
+      KKIAD  =  KKILJ  + LAGBD
+      KKIAC  =  KKIAD  + LAGBD
+      KTCKBJ =  KKIAC  + LAGBD
+      KAIKC  =  KTCKBJ + LAGBD
+      KAIKD  =  KAIKC  + LKILJ
+      KTAIKC =  KAIKD  + LAGBD
+      KABET  =  KTAIKC + LKILJ
+      KNAIBJ =  KABET  + LKILJ
+      KTKILJ =  KNAIBJ + LKILJ
+      KEND1  =  KTKILJ + LAGBD
+C
+      CALL DZERO(WORK(KAGBD),LAGBD)
+      CALL DZERO(WORK(KKIAD),LAGBD)
+C
+      CALL DZERO(WORK(KKIAC),LAGBD)
+      CALL DZERO(WORK(KTCKBJ),LAGBD)
+C      CALL DZERO(WORK(KKILJ),LAGBD)
+C-----------------------------------------------------------------
+C
       LWRK1  = LWORK  - KEND1
+
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Need : ',KEND1,'Available : ',LWORK
@@ -146,32 +173,32 @@ C
 C-----------------------------------------
 C     Construct the transposed amplitudes.
 C-----------------------------------------
-C
+CLILLI - kappa tilde
 C      IF ((.NOT. DIRECT) .AND. T2TCOR) THEN
-      IF (.NOT. DIRECT) THEN
+C      IF (.NOT. DIRECT) THEN
 C
-         KT2AMT = KEND1
-         KEND1  = KT2AMT + NT2SQ(1)
-         LWRK1  = LWORK  - KEND1
-         IF (LWRK1 .LT. 0) THEN
-            CALL QUIT('Insufficient core in CCRHSN')
-         END IF
-C
-         JSYM = 1
-         CALL DCOPY(NT2SQ(1),T2AMSQ,1,WORK(KT2AMT),1)
-C               Copies T2AMSQ to WORK(KT2AMT)
-         CALL CCSD_T2TP(WORK(KT2AMT),WORK(KEND1),LWRK1,JSYM)
-C         CALL OUTPUT(T2AMSQ,1,NT2SQ(1),1,1,NT2SQ(1),1,1,LUPRI)
-C         CCSD_T2TP transposes the ij index of the squaed T2-amplitudes.
-C           They are put in WORK(KT2AMT)
-      END IF
+C         KT2AMT = KEND1
+C         KEND1  = KT2AMT + NT2SQ(1)
+C         LWRK1  = LWORK  - KEND1
+C         IF (LWRK1 .LT. 0) THEN
+C            CALL QUIT('Insufficient core in CCRHSN')
+C         END IF
+
+C         JSYM = 1
+C         CALL DCOPY(NT2SQ(1),T2AMSQ,1,WORK(KT2AMT),1)
+Cc               Copies T2AMSQ to WORK(KT2AMT)
+c         CALL CCSD_T2TP(WORK(KT2AMT),WORK(KEND1),LWRK1,JSYM)
+c         CALL OUTPUT(T2AMSQ,1,NT2SQ(1),1,1,NT2SQ(1),1,1,LUPRI)
+c         CCSD_T2TP transposes the ij index of the squaed T2-amplitudes.
+c           They are put in WORK(KT2AMT)
+c      END IF
 C
 C-------------------------------
 C     Initialize  OMEGA2
 C-------------------------------
 C
 C      CALL DZERO(OMEGA2,NT2ORT(ISYMOP))
-      CALL DZERO(OMEGA2,NT2SQ(1))
+      CALL DZERO(OMEGA2,36*NT2SQ(1))
 C      CALL DZERO(OMEGA2,2*NT2ORT(ISYMOP))
 C
 C      WRITE(LUPRI,*) 'OMEGA2'
@@ -264,17 +291,17 @@ C
                   CALL QUIT('Insufficient core in CCRHSN')
                END IF
 C
-C               IF (T2TCOR) THEN
-               KT2AMT = KEND1
-               KEND1  = KT2AMT + NT2SQ(1)
-               LWRK1  = LWORK  - KEND1
-                  IF (LWRK1 .LT. 0) THEN
-                     CALL QUIT('Insufficient core in CCRHSN')
-                  END IF
-C
-               JSYM = 1
-               CALL DCOPY(NT2SQ(1),T2AMSQ,1,WORK(KT2AMT),1)
-               CALL CCSD_T2TP(WORK(KT2AMT),WORK(KEND1),LWRK1,JSYM)
+CLILLI - kappa tilde             C  IF (T2TCOR) THEN
+C               KT2AMT = KEND1
+C               KEND1  = KT2AMT + NT2SQ(1)
+C               LWRK1  = LWORK  - KEND1
+C                  IF (LWRK1 .LT. 0) THEN
+C                     CALL QUIT('Insufficient core in CCRHSN')
+C                  END IF
+CC
+C               JSYM = 1
+C               CALL DCOPY(NT2SQ(1),T2AMSQ,1,WORK(KT2AMT),1)
+C               CALL CCSD_T2TP(WORK(KT2AMT),WORK(KEND1),LWRK1,JSYM)
 C               CALL OUTPUT(T2AMSQ,1,NT2SQ(1),1,1,NT2SQ(1),1,1,LUPRI)
 C               END IF
 C
@@ -289,9 +316,6 @@ C-----------------------------------------------------
 C
             DO 120 IDEL2 = 1,NUMDIS
 c
-               WRITE(LUPRI,*) 'IDEL2',IDEL2
-               FLUSH(LUPRI)
-C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
                   ISYMD = ISAO(IDEL)
@@ -311,6 +335,7 @@ C------------------------------------------
 C
                KXINT  = KEND1
                KEND2  = KXINT + NDISAO(ISYDIS)
+C
                LWRK2  = LWORK - KEND2
 C
                IF (LWRK2 .LT. 0) THEN
@@ -353,8 +378,6 @@ C----------------------------------------------------------------
 C
                DTIME   = SECOND()
 C               ICON = 1
-C               WRITE(LUPRI,*) 'T2AMSQ - før SO_T2AO'
-C               CALL OUTPUT(T2AMSQ,1,NT2SQ(1),1,1,NT2SQ(1),1,1,LUPRI)
                ISYMLH = 1
                CALL SO_T2AO(T2AMSQ,WORK(KCMO),ISYMLH,WORK(KSCRM),
      *                         WORK(KEND3),LWRK3,IDEL,ISYMD,
@@ -368,7 +391,7 @@ C               CALL OUTPUT(T2AMSQ,1,NT2SQ(1),1,1,NT2SQ(1),1,1,LUPRI)
 C
 C               WRITE(LUPRI,*) 'SCRM - før SO_AGBD'
 C               CALL OUTPUT(WORK(KSCRM),1,NT2BCD(ISYMD),1,1,NT2BCD(ISYMD)
-C     *                          ,1,1,LUPRI)
+c     *                          ,1,1,LUPRI)
 C
 C               WRITE(LUPRI,*) 'OMEGA2'
 C               CALL OUTPUT(OMEGA2,1,NT2SQ(1),1,1,NT2SQ(1),1,1,LUPRI)
@@ -384,17 +407,6 @@ C
                DTIME   = SECOND() - DTIME
                TIMB    = TIMB     + DTIME
 C
-C               WRITE(LUPRI,*) 'OMEGA2'
-C               CALL OUTPUT(OMEGA2,1,NT2SQ(1),1,1,NT2SQ(1),1,1,LUPRI)
-C
-C               WRITE(LUPRI,*) 'SCRM - efter SO_AGBD'
-C               CALL OUTPUT(WORK(KSCRM),1,NT2BCD(ISYMD),1,1,NT2BCD(ISYMD)
-C     *                          ,1,1,LUPRI)
-C
-C               WRITE(LUPRI,*) 'T2AMSQ - efter SO_AGBD'
-C               CALL OUTPUT(T2AMSQ,1,NT2SQ(1),1,1,NT2SQ(1),1,1,LUPRI)
-C               WRITE(LUPRI,*) 'NDISAO',NDISAO(ISYDIS)
-C
 C------------------------------------------
 C              Work space allocation no. 4.
 C------------------------------------------
@@ -402,6 +414,7 @@ C
                KDSRHF = KEND3
                KEND4  = KDSRHF + NDSRHF(ISYMD)
                LWRK4  = LWORK  - KEND4
+
 C
                IF (LWRK4 .LT. 0) THEN
                   WRITE(LUPRI,*) 'Need : ',KEND4,'Available : ',LWORK
@@ -435,7 +448,7 @@ C              Calculate (ki|a delta).
 C------------------------------------------------------------------------------
 C
                DTIME   = SECOND()
-
+C
                CALL SO_KIADELTA(WORK(KXINT),ISYMTR,
      *                         WORK(KCMO),WORK(KCMO),WORK(KCMO),
      *                         ISYMTR, WORK(KEND4), LWRK4,
@@ -456,39 +469,48 @@ C
                CALL SO_AIKDELTA(WORK(KDSRHF), ISYMTR, WORK(KCMO),
      *                          WORK(KCMO),ISYMTR,ISYMTR, WORK(KEND4),
      *                          LWRK4,IDEL,ISYMD,ZERO,LUD,DFIL)
-
+C
                DTIME   = SECOND() - DTIME
                TIMD    = TIMD     + DTIME
-
+c
 C------------------------------------------------------------------------------
-C              CHECK ROUTINE
+C              CHECK ROUTINES
+C------------------------------------------------------------------------------
                WRITE(LUPRI,'(A)') 'Runing CHECK_ROUTINES'
-C------------------------------------------------------------------------------
 C 
 C               CALL CHECK_AGBD(WORK(KXINT),
-C     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
-C     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
-C     *                        WORK(KEND3),LWRK3,ILLL,ISYMD,LUPRI)
-CC
-C               CALL CHECK_KILJ(WORK(KXINT),
-C     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
-C     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
-C     *                        WORK(KEND3),LWRK3,ILLL,ISYMD,LUPRI)
-CC
-C               CALL CHECK_KIADELTA(WORK(KXINT),
-C     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
-C     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
-C     *                        WORK(KEND3),LWRK3,ILLL,ISYMD,LUPRI)
+C     *                  NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR,
+C     *                  WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
+C     *                 WORK(KAGBD),WORK(KEND4),LWRK4,ILLL,ISYMD,LUPRI)
+C               CALL DZERO(WORK(KEND4),LWRK4)
 C
-C               CALL CHECK_AIKDELTA(WORK(KXINT),
-C     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
-C     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
-C     *                        WORK(KEND3),LWRK3,ILLL,ISYMD,LUPRI)
+               CALL CHECK_KILJ(WORK(KXINT),
+     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
+     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
+     *                WORK(KKILJ),WORK(KEND4),LWRK4,ILLL,ISYMD,LUPRI)
+C
+               CALL CHECK_KIADELTA(WORK(KXINT),
+     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
+     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
+     *                   WORK(KKIAD),WORK(KEND4),LWRK4,ILLL,ISYMD,LUPRI)
+cC
+               CALL CHECK_AIKDELTA(WORK(KXINT),
+     *                          NDISAO(ISYMD),NBAS(ISYMD),NRHF,NVIR
+     *                         ,WORK(KCMO),NLAMDT,T2AMSQ,NT2SQ(1),
+     *                  WORK(KAIKD),WORK(KEND4),LWRK4,ILLL,ISYMD,LUPRI)
 C
   120       CONTINUE
   110    CONTINUE
   100 CONTINUE
 C
+            WRITE(LUPRI,*) 'AFTER LOOP'
+            FLUSH(LUPRI)
+            CALL CHECK_AFTERLOOP(WORK(KAGBD),WORK(KABET),WORK(KNAIBJ),
+     *                    WORK(KKIAD),WORK(KKIAC),WORK(KTCKBJ),
+     *                    WORK(KAIKD),WORK(KAIKC),WORK(KTAIKC),
+     *                    WORK(KKILJ),WORK(KTKILJ),
+     *                     WORK(KCMO),NBAS(ISYMD),NVIR,NRHF,
+     *                     T2AMSQ,NT2SQ(1),WORK(KEND4),LWRK4,ILLL,LUPRI)
 C
 C------------------------
 C     Recover work space.
@@ -507,7 +529,7 @@ C
          CALL QUIT('Insufficient space in SO_T2MO')
       ENDIF
 C
-      IF ( .NOT. CC2 ) THEN
+c      IF ( .NOT. CC2 ) THEN
 C
 C---------------------------------------
 C        Save the CC amplitudes on disc - WHAT ARE WE SAVEING? CLilli
@@ -552,27 +574,28 @@ C     *                WORK(KEND1),LWRK1)
          CALL DCOPY(NT2AM(ISYMTR),T2AM,1,OMEGA2,1)
          TIMOME2 = SECOND() - TIMOME2
 C
+C         WRITE(LUPRI,*) 'OMEGA2',(OMEGA2(I),I=1,NT2SQ(1))
 C-------------------------------
 C        Print the Gamma matrix.
 C-------------------------------
 C
 C         IF (IPRINT .GT. 120) THEN
-            CALL AROUND('The Gamma matrix')
-            DO 200 ISYM = 1,NSYM
-               KOFF = KGAMMA + IGAMMA(ISYM,ISYM)
-C               CALL OUTPAK(WORK(KOFF),NMATIJ(ISYM),1,LUPRI)
-               CALL OUTPUT(WORK(KOFF),1,NMATIJ(ISYM),1,1,NMATIJ(ISYM),
-     *                    1,1,LUPRI)
-  200       CONTINUE
+c            CALL AROUND('The Gamma matrix')
+c            DO 200 ISYM = 1,NSYM
+c               KOFF = KGAMMA + IGAMMA(ISYM,ISYM)
+cC               CALL OUTPAK(WORK(KOFF),NMATIJ(ISYM),1,LUPRI)
+c               CALL OUTPUT(WORK(KOFF),1,NMATIJ(ISYM),1,1,NMATIJ(ISYM),
+c     *                    1,1,LUPRI)
+c  200       CONTINUE
 C
-            WRITE(LUPRI,*) 'Norm of gamma matrix: ',
-     *              DDOT(NGAMMA(ISYMOP),WORK(KGAMMA),1,WORK(KGAMMA),1)
+c            WRITE(LUPRI,*) 'Norm of gamma matrix: ',
+c     *              DDOT(NGAMMA(ISYMOP),WORK(KGAMMA),1,WORK(KGAMMA),1)
 C         END IF
 C
-      ENDIF
+c      ENDIF
 C
-      WRITE(LUPRI,*) 'Norm of gamma matrix: ',
-     *              DDOT(NGAMMA(ISYMOP),WORK(KGAMMA),1,WORK(KGAMMA),1)
+c      WRITE(LUPRI,*) 'Norm of gamma matrix: ',
+c     *              DDOT(NGAMMA(ISYMOP),WORK(KGAMMA),1,WORK(KGAMMA),1)
       FLUSH(LUPRI)
 C
 C-------------------------------------------------------
@@ -580,9 +603,11 @@ C     Calculate Sum_(kl) t_(kl)^(cd)(ki|lj).
 C-------------------------------------------------------
 C
       TIMA     = SECOND()
-      CALL SO_KILJ(OMEGA2,T2AM,WORK(KGAMMA),WORK(KEND2),LWRK2,
-     *               ISYMTR,ISYMTR)
+C      CALL SO_KILJ(OMEGA2,T2AM,WORK(KGAMMA),WORK(KEND2),LWRK2,
+C    *               ISYMTR,ISYMTR)
 C
+      CALL SO_KILJ_ALTERNATIV(OMEGA2,T2AM,WORK(KGAMMA),WORK(KEND2),LWRK2
+     *               ,ISYMTR,ISYMTR)
       TIMA     = SECOND() - TIMA
 C
 C----------------------------------------------------------
@@ -613,16 +638,16 @@ C------------------------------
 C     Transform T2 to 2T2 - T2.
 C------------------------------
 C
-      DTIME    = SECOND()
+C      DTIME    = SECOND()
 C      IF (T2TCOR) THEN
-      CALL DSCAL(NT2SQ(1),TWO,T2AM,1)
-      CALL DAXPY(NT2SQ(1),-ONE,WORK(KT2AMT),1,T2AM,1)
+C      CALL DSCAL(NT2SQ(1),TWO,T2AM,1)
+C      CALL DAXPY(NT2SQ(1),-ONE,WORK(KT2AMT),1,T2AM,1)
 C      ELSE
 C         ISYM = 1
 C         CALL CCRHS_T2TR(T2AM,WORK(KEND2),LWRK2,ISYM)
 C      END IF
-      DTIME    = SECOND() - DTIME
-      TIMT2TR  = TIMT2TR + DTIME
+C      DTIME    = SECOND() - DTIME
+C      TIMT2TR  = TIMT2TR + DTIME
 C
 C--------------------------------------------------
 C     Calculate Sum_(kc) T_(jk)^(cb)*(ai|kc)
@@ -634,11 +659,11 @@ C
       IVECNR = 1
 C
       TIMDIO = SECOND()
-      CALL SO_AIKDELTA_IO(OMEGA2,T2AM,WORK(KCMO),WORK(KEND2),LWRK2,
+C      CALL SO_AIKDELTA_IO(OMEGA2,T2AM,WORK(KCMO),WORK(KEND2),LWRK2,
+      CALL SO_AIKDELTA_IO(OMEGA2,T2AMSQ,WORK(KCMO),WORK(KEND2),LWRK2,
      *                  ISYVEC,ISYDIM,LUD,DFIL,IVECNR,IOPT)
       TIMDIO  = SECOND() - TIMDIO
 C      END IF
-      WRITE(LUPRI,'(A)') 'SO_AIKDELTA_IO - DONE '
 C      FLUSH(LUPRI)
 C
 C------------------------

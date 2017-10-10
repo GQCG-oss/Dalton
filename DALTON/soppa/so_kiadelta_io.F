@@ -206,9 +206,9 @@ C     *          NT1AM(ISYMBJ),NT1AM(ISYMCK),1,LUPRI)
 C            write(lupri,*) 'kiac'
 C            CALL OUTPUT(WORK(KSCR1),1,NDISAI,1,NT1AM(ISYMCK),
 C     *                      NDISAI,NT1AM(ISYMCK),1,LUPRI)
-C            write(lupri,*) 'kscr2'
-C            CALL OUTPUT(WORK(KSCR2),1,NT1AM(ISYMBJ),1,NDISAI,
-C     *                       NT1AM(ISYMBJ),NDISAI,1,LUPRI)
+            write(lupri,*) 'kiad'
+            CALL OUTPUT(WORK(KSCR2),1,NT1AM(ISYMBJ),1,NDISAI,
+     *                       NT1AM(ISYMBJ),NDISAI,1,LUPRI)
 C------------------------------
 C           Scale the diagonal.
 C------------------------------
@@ -249,7 +249,7 @@ C
                            NAJ = IT1AM(ISYMA,ISYMJ)
      *                         + NVIR(ISYMA)*(J-1) + A
 C
-                           CALL CC_PUTC(WORK(KSCR2),OMEGA2,ISYMAI,
+                           CALL PUT_KIADELTA(WORK(KSCR2),OMEGA2,ISYMAI,
      *                                  ISYMAJ,ISYMBI,ISYMBJ,ISYMB,
      *                                  ISYMI,ISYMJ,NAI,NAJ,I,J,
      *                                  IFSTAI)
