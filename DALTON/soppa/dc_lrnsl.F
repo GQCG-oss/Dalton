@@ -209,7 +209,7 @@ C Check which method is correct!!!
 C               CALL SO_TMLTR(WORK(KGPVC2),ONE,ISYM)
 C               CALL DSCAL(L2VEC,HALF,WORK(KGPVC2),1)
             END IF
-            IF (IMAGPROP2.NE.IMAGINARY)THEN
+            IF (IMAGPROP2.NEQV.IMAGINARY)THEN
               CALL QUIT('Error in DC_LRNSL: Imaginary unclear')
             END IF
 C--------------------------------------------------------------------------
