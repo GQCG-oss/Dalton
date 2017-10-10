@@ -171,7 +171,8 @@ C
          KT2AM   = KFOCKD  + LFOCKD
 CLilli need array for 2nd order doules and the squared one
          K2TAM2  = KT2AM   + LT2AM
-         KT2SQ  = K2TAM2  + MAX(NT2SQ(1),NT2AO(ISYMOP),2*NT2ORT(ISYMOP))
+         KT2SQ  = K2TAM2 + MAX(NT2SQ(1),NT2AO(ISYMOP),4*NT2ORT(ISYMOP))
+         WRITE(LUPRI,*) 
 Cend  THIS NEEDS TO BE PUT IN IF A3(1)-method Keyword!
          KDENSIJ = KT2SQ  + NT2SQ(1)
 C         KDENSIJ = KT2SQ  + LT2AM
@@ -353,16 +354,14 @@ C
 C---------------------------------------------------------
 C              Calculate second order doubles amplitudes.
 C               This should be changed s.t. is runs parallel.
+C    This is not finnished - Lilli's master thesis work.
 C----------------------------------------------------------
 C
-                  WRITE(LUPRI,*) 'T2AM - Before SO_2NDDEWF'
-                  CALL OUTPUT(WORK(KT2AM),1,NT2AMX,1,1,NT2AMX,1,1,LUPRI)
-                  WRITE(LUPRI, '(A)') 'Start calc. of 2nd order doubles'
-                  FLUSH(LUPRI)
-                    CALL SO_2NDDECOEF(WORK(K2TAM2),WORK(KT2AM),
-     *                 WORK(KT2SQ),WORK(KEND2),LWORK2) 
-                  WRITE(LUPRI, '(A)') 'The 2nd order doubles - done'
-                  FLUSH(LUPRI)
+C                  CALL SO_2NDDECOEF(WORK(K2TAM2),WORK(KT2AM),
+C     *                 WORK(KT2SQ),WORK(KEND2),LWORK2) 
+C                  CALL SO_2DOUBLES(WORK(KT2AM2),WORK(KT2AM),
+C     *                  WORK(KT2SQ),WORK(KEND2),LWORK2,
+C     *                  WORK(KFOCKD),LFOCKD)
 C
                 ENDIF
 C---------------------------------------------------------
