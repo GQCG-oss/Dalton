@@ -1630,6 +1630,15 @@ C
          IF (THQKVA .LE. D0) THQKVA = 0.8D0
       END IF
 
+      IF (NSYM .EQ. 1 .AND. LSYM .LT. 0) LSYM = 1 ! if no symmetry, then do not require .SYMMETRY in input
+
+      IF (LSYM .LT. 0) THEN
+         WRITE(LUPRI,'(///A/)') 'FATAL INPUT ERROR: '//
+     &      '.SYMMETRY must be specified for MCSCF/CI calculations.'
+         CALL QUIT( 'FATAL INPUT ERROR: '//
+     &      '.SYMMETRY must be specified for MCSCF/CI calculations.')
+      END IF
+
       IF (MS2 .EQ. -12345) THEN ! MS2 = 2*MS
          IF (MULTS .LE. 0) MULTS = MOD(NACTEL,2) + 1
          IF (FLAG(27) .OR. DOMCSRDFT) THEN ! determinants or open-shell MC-srDFT

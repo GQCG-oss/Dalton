@@ -97,16 +97,14 @@ if(ENABLE_GEN1INT)
         )
 endif()
 
-if(ENABLE_QFITLIB)
-    include(LibsQFITlib)
-    add_dependencies(dalton qfitlib)
-endif()
 
 if(ENABLE_OPENRSP)
     include(LibsOpenRSP)
 endif()
 
 include(LibsPElib)
+
+include(LibsQFITlib)
 
 if(ENABLE_QMMM_CUDA)
     add_subdirectory(external/qmmm_cuda)

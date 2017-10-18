@@ -1,0 +1,60 @@
+variables:
+    GIT_SSL_NO_VERIFY: "true"
+    GIT_SUBMODULE_STRATEGY: "recursive"
+
+after_script:
+    - ps -u `whoami`
+
+fedora-26-serial:
+    image: foeroyingur/fedora:26
+    variables:
+        OMP_NUM_THREADS: "1"
+    before_script:
+        - whoami
+        - ps -u `whoami`
+        - uname -a
+        - lscpu
+        - free -m
+        - df -h
+        - ulimit -a
+        - git --version
+        - cmake --version
+        - python -V
+        - gfortran -v
+        - gcc -v
+        - g++ -v
+    script:
+        - python setup --coverage --type=debug
+        - cd build
+        - make -j 3
+        - ctest -L essential
+        - ctest -D ExperimentalCoverage
+
+fedora-26-mpi:
+    image: foeroyingur/fedora:26
+    variables:
+        DALTON_NUM_MPI_PROCS: "3"
+        OMP_NUM_THREADS: "1"
+    before_script:
+        - whoami
+        - ps -u `whoami`
+        - uname -a
+        - lscpu
+        - free -m
+        - df -h
+        - ulimit -a
+        - git --version
+        - cmake --version
+        - python -V
+        - gfortran -v
+        - gcc -v
+        - g++ -v
+        - mpifort -v
+        - mpicc -v
+        - mpicxx -v
+        - mpirun --version
+    script:
+        - python setup --type=debug --mpi
+        - cd build
+        - make -j 3
+        - ctest -L essential
