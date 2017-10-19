@@ -10,6 +10,8 @@
 
 ### Fixed
 - Fix .GSPOL for parallel polarizable embedding quadratic response
+- Fix text about elimination of some two-photon transitions between excited states
+  because they were dupplicates (text had "Third order" instead of "Second order")
 
 ### Changed
 
