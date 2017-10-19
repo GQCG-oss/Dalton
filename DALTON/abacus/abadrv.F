@@ -3159,6 +3159,7 @@ C  /* Deck timsta */
 #include "mxcent.h"
 #include "infpri.h"
 #include "abainf.h"
+      IF (TIMALL .LE. 1.0D0) RETURN ! only output if > 1s total CPU time
       CALL HEADER('CPU time statistics for ABACUS',0)
       CALL TIMPRI('INPUT ',TIMINP,TIMALL)
       CALL TIMPRI('TRAROT',TIMTRO,TIMALL)
