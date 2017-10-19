@@ -329,8 +329,8 @@ C
             END IF
  16      CONTINUE
          IF (IDIFF .GT. 0) THEN
-            WRITE (LUPRI,'(/,A,/,12X,A)') ' WARNINGCoordinates on'//
-     &           ' DALTON.HES differ from MOLECULE.INP',
+            WRITE (LUPRI,'(/A)') ' WARNING Coordinates on'//
+     &           ' DALTON.HES differ from MOLECULE.INP. '//
      &           'Coordinates from DALTON.HES will be used'
          END IF
  18      CONTINUE

@@ -1,17 +1,23 @@
-# DALTON Change Log All notable changes to the DALTON project will be documented in this file.
+# DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
 ## [2017.alpha Unreleased]
 
-### Added
-- New parallel 2-electron integral transformatin .FCKTRA
-- Triplet excitation energies and polarizabilities with the AO-SOPPA code
-- PE-HF/DFT molecular gradients
-- Effective external field (EEF) for one- and two-photon absorption in PE-HF/DFT calculations
+### New features added
+- New parallel 2-electron integral transformation .FCKTRA  (H. J. Aa. Jensen).
+- Triplet excitation energies and polarizabilities with the AO-SOPPA code (P. A. B. Haase).
+- Analytical PE-HF/DFT molecular gradients (N. H. List).
+  (See e.g. test/pehf_geoopt for example of input.)
+- Freezing atoms in geometry optimization (N. H. List and H. J. Aa. Jensen).
+  For example for freezing capping atoms in PE geometry optimization.
+  (See e.g. test/pehf_geoopt for example of input.)
+- Effective external field (EEF) for one- and two-photon absorption in PE-HF/DFT calculations.
+ - Reference: N. H. List, H. J. Aa. Jensen, and J. Kongsted. Local Electric Fields and Molecular Properties in Heterogeneous Environments through Polarizable Embedding.
+   Phys. Chem. Chem. Phys. 18, 10070 (2016).
 
 ### Fixed
 - Fix .GSPOL for parallel polarizable embedding quadratic response
 - Fix text about elimination of some two-photon transitions between excited states
-  because they were dupplicates (text had "Third order" instead of "Second order")
+  because they were duplicates (text had "Third order" instead of "Second order")
 
 ### Changed
 
