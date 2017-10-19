@@ -133,8 +133,9 @@ C     *************************
 C
 C Define wave function variables, also if SIRIUS has not been called
 C
-      FLAG(34) = .TRUE. ! no integral transformation by SETSIR
-      CALL SETSIR(WRK,LWRK)
+      CALL SETSIR(.FALSE.,WRK,LWRK)
+      ! false means no 2-el. integral transformation by SETSIR
+      ! (done below when we have found out what level is needed)
 C
 C Define variables that are common for all perturbation symmetries
 C
@@ -253,6 +254,12 @@ C           hjaaj Nov 2001
          END IF
          FLAGSV = DORSP
          DORSP = .TRUE.
+C          (FLAG(14) true tells that old mo integral file exists)
+C          (FLAG(34) false tells that mo integrals needed)
+C          SIR_INTOPEN returns FLAG(14) false if no mo integral file
+C              or if ITRLVL on file too small.
+         FLAG(14) = .TRUE.
+         FLAG(34) = .FALSE.
          CALL SIR_INTOPEN
          DORSP = FLAGSV
          CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA)
@@ -265,15 +272,15 @@ C           hjaaj Nov 2001
       END IF
 C
 C     ALLOCATE WORK SPACE FOR MATRICES THAT WILL BE KEPT DURING THE
-C     WHOLE RESPONSE CALCULATION AND READ IN THE MATRICES
+C     WHOLE RESPONSE CALCULATION AND READ IN THESE MATRICES
 C
       NEED_PVX = DORESP .OR. N2AVTOT .GT. 0
       KFREE  = 1
       LFREE  = LWRK
-      CALL MEMGET('REAL',KINDX,LCINDX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCMO ,NCMOT ,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','INDX',KINDX,LCINDX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO' ,KCMO ,NCMOT ,WRK,KFREE,LFREE)
       LUDV   = NACTT*NACTT*2
-      CALL MEMGET('REAL',KUDV ,LUDV  ,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','UDV' ,KUDV ,LUDV  ,WRK,KFREE,LFREE)
       IF (RSPCI) THEN
          CALL MEMGET('REAL',KPVX ,0     ,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KFOCK,0     ,WRK,KFREE,LFREE)
@@ -295,8 +302,8 @@ C NEED ONLY SINGLET TWO ELECTRON DENSITY MATRIX
          CALL MEMGET('REAL',KFC  ,NNORBT,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KFV  ,NNORBT,WRK,KFREE,LFREE)
       END IF
-      CALL MEMGET('REAL',KFCAC,NNASHX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KH2AC,NNASHX*NNASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCAC',KFCAC,NNASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H2AC',KH2AC,NNASHX*NNASHX,WRK,KFREE,LFREE)
       KTOT  =  KFREE
       KWRK1  = KFREE
       LWRK1  = LFREE
@@ -4186,14 +4193,15 @@ C
 C
 C     If any triplet operators, then we must use determinants
 C     in RESPONSE also for the reference symmetry, even if
-C     CSF's were used in SIRIUS. /hjaaj May 2001
+C     CSFs were used in SIRIUS. /hjaaj May 2001
 C
       MCONRF = NCONRF
       IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
          FLAG(27) = .TRUE. ! use determinants, not CSFs
 C        ... call setsir to reset Sirius common blocks to determinants
-         FLAG(34) = .TRUE. ! no integral transformation by SETSIR
-         CALL SETSIR(WRK,LWRK)
+         CALL SETSIR(.FALSE.,WRK,LWRK)
+         ! false means no 2-el. integral transformation by SETSIR
+         ! (already done if needed in RESPONS)
       END IF
       NCONRF = MAX(1,NCONRF) ! SETSIR(abaset.F) sets NCONRF=0 for Hartree-Fock
                              ! in RSP - especially for RSPESR - we want NCREF=1 for HSROHF
