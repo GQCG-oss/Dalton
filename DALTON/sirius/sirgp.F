@@ -1941,6 +1941,7 @@ C
          CALL ERRWRK('RDSUPP.TYP2',LENP,LFREE)
   900 CONTINUE
       IF (IPRSTAT .GT. 5) THEN
+         WRITE (LUERR,*) 'RDSUPP statistics.'
          WRITE (LUERR,*) 'Total number of records :',IREC
          WRITE (LUERR,*) 'No. of records of type 1:',IREC1
          WRITE (LUERR,*) 'No. of records of type 2:',IREC2

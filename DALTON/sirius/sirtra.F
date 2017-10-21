@@ -98,7 +98,6 @@ C
 !891208-hjaaj
 ! SORTA,TRACD,TRAAB: print threshold for discarding integrals
 ! TRACTL: if (thrp.le.0) thrp=1.d-12 (was 1.d-9)
-!         if (thrq.le.0) thrq=1.d-12 (was 1.d-8)
 !891116-hjaaj
 ! NXTH2M,NXTH2D: more tests that buffers are allocated/have not been
 !   corrupted. Release buffer allocation when no more buffers.
@@ -302,7 +301,7 @@ C
 C
 C....    PARAMETERS USED HERE
 C
-C....    THRQ: THRESHOLD TO DISCARD INTEGRALS DURING SORT
+C....    THRP: THRESHOLD TO DISCARD INTEGRALS DURING SORT
 C              -- FROM /INFTRA/ , DEFINED IN INPUT --
 C
 C....    LDAMAX: MAXIMUM DA BUFFER LENGTH (-- now set in TRACTL --)
@@ -474,7 +473,7 @@ C
 C
 C....    CHECK INTEGRAL AGAINST THRESHOLD
 C
-         IF (ABS(VALUE).LT.THRQ) GOTO 3
+         IF (ABS(VALUE).LT.THRP) GOTO 3
 
             JS = IINDX4(4,M)
             JR = IINDX4(3,M)
@@ -593,7 +592,7 @@ C
          PNZ = (LPQRS*2-NMBASX) * 100
          PNZ = ISUM / PNZ
          WRITE (LUPRI,202) NDAREC,(IDISK-1),PNZ
-         WRITE (LUPRI,203) THRQ
+         WRITE (LUPRI,203) THRP
       END IF
       deallocate(IINDX4)
       CALL QEXIT('SORTA ')
@@ -1782,14 +1781,13 @@ C
 
 C     ***** SET THRESHOLDS *****
 C     *********** THRP: THRESHOLD USED IN TRACD AND TRAAB
-C     *********** THRQ: THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
+C     ***********       AND THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
       IF (THRP.LE.1.D-16) THEN
          WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
      &      ' INFO: Changed THRP threshold used in 2-el.'//
      &      ' integral transformation from',THRP,' to',1.D-14
          THRP=1.D-14
       END IF
-      THRQ = THRP * 0.1D0
 C
       IF (FCKTRA_TYPE .gt. 0) THEN
          NEWTRA_USEDRC = .FALSE. ! FCKTRA_DRCCTL not implemented yet

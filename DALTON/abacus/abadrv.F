@@ -2132,8 +2132,8 @@ Chj   this call had survived from when ABACUS was a separate program.
 Chj   I have now made sure that READIN always is called in the beginning,
 Chj   also if RNHERM is false. /April 2009 hjaaj
 
-      FLAG(34) = .FALSE. ! make sure integral transformation done if needed
-      CALL SETSIR(WORK,LWORK)
+      CALL SETSIR(.TRUE.,WORK,LWORK)
+      ! true means do 2-el integral transformation in SETSIR, if needed
 C
 C     If SOPPA calculation, then
 C     1) set SOPPA true in /INFRSP/
@@ -3162,6 +3162,7 @@ C  /* Deck timsta */
 #include "mxcent.h"
 #include "infpri.h"
 #include "abainf.h"
+      IF (TIMALL .LE. 1.0D0) RETURN ! only output if > 1s total CPU time
       CALL HEADER('CPU time statistics for ABACUS',0)
       CALL TIMPRI('INPUT ',TIMINP,TIMALL)
       CALL TIMPRI('TRAROT',TIMTRO,TIMALL)
