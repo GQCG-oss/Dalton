@@ -169,7 +169,13 @@ C
          LDENSAI = NAIDEN(1)
 C
          KT2AM   = KFOCKD  + LFOCKD
-         KDENSIJ = KT2AM   + LT2AM
+CLilli need array for 2nd order doules and the squared one
+         K2TAM2  = KT2AM   + LT2AM
+         KT2SQ  = K2TAM2 + MAX(NT2SQ(1),NT2AO(ISYMOP),4*NT2ORT(ISYMOP))
+         WRITE(LUPRI,*) 
+Cend  THIS NEEDS TO BE PUT IN IF A3(1)-method Keyword!
+         KDENSIJ = KT2SQ  + NT2SQ(1)
+C         KDENSIJ = KT2SQ  + LT2AM
          KDENSAB = KDENSIJ + LDENSIJ
          KDENSAI = KDENSAB + LDENSAB
          KEND1   = KDENSAI + LDENSAI
@@ -338,7 +344,8 @@ C
                END IF
 C
 C-----------------------------------------------------
-C              Get T2 amplitudes and density matrices.
+C              Get T2 amplitudes and density matrices 
+C               This should be changed s.t. is runs parallel.
 C-----------------------------------------------------
 C
                IF ((NEED_T2).AND.
@@ -351,7 +358,30 @@ C
      &                          WORK(KDENSAB),LDENSAB,
      &                          WORK(KEND2),LWORK2)
                   old_denslab = DENSLAB
-               ENDIF
+C
+C
+C---------------------------------------------------------
+C              Calculate second order doubles amplitudes.
+C               This should be changed s.t. is runs parallel.
+C    This is not finnished - Lilli's master thesis work.
+C----------------------------------------------------------
+C
+C                  CALL SO_2NDDECOEF(WORK(K2TAM2),WORK(KT2AM),
+C     *                 WORK(KT2SQ),WORK(KEND2),LWORK2) 
+C                  CALL SO_2DOUBLES(WORK(KT2AM2),WORK(KT2AM),
+C     *                  WORK(KT2SQ),WORK(KEND2),LWORK2,
+C     *                  WORK(KFOCKD),LFOCKD)
+C
+                ENDIF
+C---------------------------------------------------------
+C              Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+#ifdef VAR_MPI
+               call soppa_initialize_slaves ( update_common_blocks,
+     &                                       WORK(KT2AM), LT2AM, model)
+               update_common_blocks = .false.
+#endif
 C
 C-----------------------------------------
 C              Initialize DENSAI if needed

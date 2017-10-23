@@ -647,6 +647,15 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/sirupd.F
     DALTON/sirius/symchk.F
     DALTON/soppa/ccsd_tcmepkx.F
+    DALTON/soppa/check_afterloop.F
+    DALTON/soppa/check_agbd.F
+    DALTON/soppa/check_agbd1.F
+    DALTON/soppa/check_aikdelta.F
+    DALTON/soppa/check_aikdelta1.F
+    DALTON/soppa/check_kiadelta.F
+    DALTON/soppa/check_kiadelta1.F
+    DALTON/soppa/check_kilj.F
+    DALTON/soppa/check_kilj1.F
     DALTON/soppa/dc_calc.F
     DALTON/soppa/dc_backup1.F
     DALTON/soppa/dc_backup2.F
@@ -662,10 +671,17 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/rp_orth_trn.F
     DALTON/soppa/rp_trial1.F
     DALTON/soppa/rp_trial3.F
+    DALTON/soppa/so_2ndDEcoef.F
     DALTON/soppa/so_pertdens.F
     DALTON/soppa/so_pertd1.F
     DALTON/soppa/so_pertd2.F
     DALTON/soppa/so_propmo.F
+    DALTON/soppa/so_agbd.F
+    DALTON/soppa/so_agbd1.F
+    DALTON/soppa/so_aikdelta.F
+    DALTON/soppa/so_aikdelta1.F
+    DALTON/soppa/so_aikdelta_io.F
+    DALTON/soppa/put_aikdelta.F
     DALTON/soppa/so_anal.F
     DALTON/soppa/so_aodens.F
     DALTON/soppa/so_bcktr.F
@@ -684,6 +700,8 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_excout.F
     DALTON/soppa/so_firgp.F
     DALTON/soppa/so_fndpos.F
+    DALTON/soppa/so_gamma.F
+    DALTON/soppa/so_gamma1.F
     DALTON/soppa/so_getgp.F
     DALTON/soppa/so_getmo.F
     DALTON/soppa/so_gett2.F
@@ -693,6 +711,12 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_init.F
     DALTON/soppa/so_initial.F
     DALTON/soppa/so_intrp.F
+    DALTON/soppa/so_kiadelta.F
+    DALTON/soppa/so_kiadelta1.F
+    DALTON/soppa/so_kiadelta_io.F
+    DALTON/soppa/put_kiadelta.F
+    DALTON/soppa/so_kilj.F
+    DALTON/soppa/so_kilj_alternativ.F
     DALTON/soppa/so_lnraba.F
     DALTON/soppa/so_lnrout.F
     DALTON/soppa/so_lrsoeq.F
@@ -743,7 +767,9 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_sqait2.F
     DALTON/soppa/so_sres.F
     DALTON/soppa/so_stoppw.F
+    DALTON/soppa/so_t2ao.F
     DALTON/soppa/so_t2m1.F
+    DALTON/soppa/so_t2mo.F
     DALTON/soppa/so_t2mp.F
     DALTON/soppa/so_mp2t2.F
     DALTON/soppa/so_test1.F

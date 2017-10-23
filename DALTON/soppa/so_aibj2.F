@@ -5,9 +5,12 @@ C  /* Deck so_aibj2 */
 C
 C     The original CCSD_AIBJ2 is written by Henrik Koch 27-Mar-1990.
 C
-C     Purpose: 1) Transformation of the A-index to occupied.
-C              2) Transformation of the B-index  to virtual.
-C              3) Adding contirubution to result vector.
+C     Purpose: 1) Transformation of the alpha-index to occupied.
+C              2) Transformation of the beta-index  to virtual.
+C              3) Adding contirubution to result vector and transforming
+C                  the last index (delta) to virtual.
+C
+C     Written by Lilli Irene Ør Kristensen, Winter 2016
 C
 #include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -41,7 +44,7 @@ C
          END IF
 C
 C--------------------------------------------------
-C        Transformation of the A-index to occupied.
+C  1)  Transformation of the A-index to occupied.
 C--------------------------------------------------
 C
          KOFF3 = 1
@@ -64,7 +67,7 @@ C
   110    CONTINUE
 C
 C-------------------------------------------------
-C        Transformation of the B-index to virtual.
+C    2) Transformation of the B-index to virtual.
 C-------------------------------------------------
 C
          KOFF2 = 1
@@ -86,7 +89,8 @@ C
   120    CONTINUE
 C
 C--------------------------------------------------
-C        Add the contribution to the result vector.
+C        Add the contribution to the result vector and transform
+C           delta to b using DAXPY.
 C--------------------------------------------------
 C
          ISYMB  = ISYMD

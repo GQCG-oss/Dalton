@@ -6,7 +6,7 @@ C
 C     This Routine has been modified such that it can calculate and
 C      transfrom the intregrals in the SOPPA program.
 C
-C     It stile contains the MO integrals needed for gradients and frozen
+C     It still contains the MO integrals needed for gradients and frozen
 C       core FOP.
 C     NB: Frozen core does NOT work when doing SOPPA calculations
 C           without the CC input, i.e. not using the CC program.
@@ -42,15 +42,15 @@ C
 C
       KEND0 = 1
 C
-C-----------------------------------------
+C-------------------------------------------------------
 C     Initialize the XAIBJ integral array.
-C-----------------------------------------
+C-------------------------------------------------------
 C
       CALL DZERO(XAIBJ,NT2AM(ISYMOP))
 C
-C----------------------------------------
-C     Check whether SIRIFC is still open.
-C----------------------------------------
+C-------------------------------------------------------
+C     Check whether SIRIFC is still open and close it.
+C-------------------------------------------------------
 C
       CALL GPINQ('SIRIFC','OPENE',OPENED)
       IF (OPENED) THEN
@@ -61,9 +61,9 @@ C
          WRITE(LUPRI,'(2A,I3)') ' RP_INIT: file SIRIFC was closed again'
       ENDIF
 C
-C---------------------------------
+C-------------------------------------------------------
 C     Dynamic allocation of space.
-C---------------------------------
+C-------------------------------------------------------
 C
       KLAMDP = KEND0
 C
@@ -82,9 +82,9 @@ C
          CALL QUIT('Insufficient space in SO_IAJB')
       ENDIF
 C
-C-----------------------------------------------------
+C-------------------------------------------------------
 C     Calculate the lamda matrices and get CMO vector:
-C-----------------------------------------------------
+C-------------------------------------------------------
 C
       CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),T1AM,WORK(KEND1),LWRK1)
 C
@@ -173,9 +173,9 @@ C
 C
          DO 110 ILLL = 1,NTOT
 C
-C---------------------------------------------
+C-------------------------------------------------------
 C           If direct calculate the integrals.
-C---------------------------------------------
+C-------------------------------------------------------
 C
             IF (DIRECT) THEN
 C
@@ -206,9 +206,9 @@ C
                NUMDIS = 1
             ENDIF
 C
-C-----------------------------------------------------
+C-------------------------------------------------------
 C           Loop over number of distributions in disk.
-C-----------------------------------------------------
+C-------------------------------------------------------
 C
             DO 120 IDEL2 = 1,NUMDIS
 C
@@ -223,9 +223,9 @@ C
                ISYMB  = ISYMD
                ISYDIS = MULD2H(ISYMD,ISYMOP)
 C
-C-----------------------------------------------
+C-------------------------------------------------------
 C              Dynamic allocation of work space.
-C-----------------------------------------------
+C-------------------------------------------------------
 C
                KXINT = KEND1
                KSCR1 = KXINT + NDISAO(ISYDIS)
@@ -237,37 +237,37 @@ C
                   CALL QUIT('Insufficient space in SO_IAJB')
                ENDIF
 C
-C-----------------------------------------
+C-------------------------------------------------------
 C              Read in batch of integrals.
-C-----------------------------------------
+C-------------------------------------------------------
 C
                IOFFU21 = NDISAO(ISYDIS)
                CALL DZERO(WORK(KXINT),2*NDISAO(ISYDIS))
                CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND2),LWRK2,
      *                     WORK(KRECNR),DIRECT)
 C
-C-----------------------------------------
+C-------------------------------------------------------
 C              compute the AO-Fock matrix:
-C-----------------------------------------
+C-------------------------------------------------------
 C
               CALL CC_AOFOCK(WORK(KXINT),WORK(KDNSHF),WORK(KFCKHF),
      *                        WORK(KEND2),LWRK2,IDEL,ISYMD,.FALSE.,
      *                        DUMMY,1)
 C
-C-----------------------------------------------
+C-------------------------------------------------------
 C              Calculate integrals (cJ|dk)
 C              needed for frozen core gradients.
-C-----------------------------------------------
+C-------------------------------------------------------
 C
-              IF ((FROIMP .OR. FROEXP) .AND. (RELORB .OR. MP2)) THEN
+C              IF ((FROIMP .OR. FROEXP) .AND. (RELORB .OR. MP2)) THEN
 C
-                  CALL CC_FRCOIN(WORK(KFRIN),WORK(KXINT),WORK(KCMO),
-     *                              WORK(KEND2),LWRK2,IDEL,ISYMD)
-               END IF
+C                  CALL CC_FRCOIN(WORK(KFRIN),WORK(KXINT),WORK(KCMO),
+C     *                              WORK(KEND2),LWRK2,IDEL,ISYMD)
+C               END IF
 C
-C---------------------------------------------------
-C              Transform one index in the integrals.
-C---------------------------------------------------
+C--------------------------------------------------------------------
+C        Transform (alpha beta|gamma delta) to (alpha beta| j delta).
+C--------------------------------------------------------------------
 C
                DO 130 ISYMG = 1,NSYM
 C
@@ -317,10 +317,11 @@ C
      *                       NBAS(ISYMG),ONE,WORK(KOFF1),NNBSAB,
      *                       WORK(KOFF2),NBASG,ZERO,WORK(KEND2),
      *                       NNBSAB)
+C      (alpha beta|j delta)=(alpha beta| gamma delta)*Lamda(gamma j).
 C
-C------------------------------------------------------------------
+C--------------------------------------------------------------------
 C                 Transform integrals and add to the result vector.
-C------------------------------------------------------------------
+C--------------------------------------------------------------------
 C
                   KOFF4  = IT2AM(ISYMAI,ISYMBJ) + 1
 C
