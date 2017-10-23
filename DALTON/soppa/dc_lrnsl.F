@@ -51,7 +51,8 @@ C
       CHARACTER*8 LABEL1, LABEL2
       CHARACTER*8 RTNLBL(2)
       REAL(sop_dp)  ::  PROPVAL, PROP1E, PROP1D, PROP2E, PROP2D,
-     &                  DEN, XIDEN, Z1ABE,Z1BAE,Z1ABD,Z1BAD, GPFACTOR
+     &                  DEN, XIDEN, Z1ABE,Z1BAE,Z1ABD,Z1BAD, GPFACTOR,
+     &                  MFAC
       INTEGER :: LWORK1, LWORK2, LSOLV, LWORK3, L1VEC, L2VEC
 C
       INTEGER :: KEND1, KEND2, KEND3, KSOLV, KGPVC1, KGPVC2,
@@ -59,7 +60,7 @@ C
      &           KRES1E, KRES1D, KRES2E, KRES2D, KRESO1E, KRESO1D,
      &           KRESO2E, KRESO2D, KEDIA2, KZ1E, KZ1D, KZ2E, KZ2D,
      &           KZ1EA, KZ1DA, KZ2EA, KZ2DA, KZ1EB, KZ1DB, KZ2EB, KZ2DB,
-     &           KAssignedIndices
+     &           KAssignedIndices, LUSV2E
 C
       INTEGER :: ILAB1, ILAB2, IFREQ, IDTYPE,
      &           maxnumjobs, LURDENS
@@ -177,17 +178,26 @@ C---------------------------------------
 C   Read files into array
 C---------------------------------------
 C
-            CALL SO_READ(WORK(KRES1E),L1VEC,LURS1E,FNRS1E,ILAB1)
+            IF (MODEL .NE. 'DCHRP') THEN
+C----------------------------------------------------------
+C The singles result vectors are only used when not HRPA(D)
+C----------------------------------------------------------
+               CALL SO_READ(WORK(KRES1E),L1VEC,LURS1E,FNRS1E,ILAB1)
+               IF (.NOT.STATIC) THEN
+                  CALL SO_READ(WORK(KRES1D),L1VEC,LURS1D,FNRS1D,ILAB1)
+
+               END IF
+            END IF
             CALL SO_READ(WORK(KRES2E),L2VEC,LURS2E,FNRS2E,ILAB1)
-            IF (.NOT.STATIC) THEN
-               CALL SO_READ(WORK(KRES1D),L1VEC,LURS1D,FNRS1D,ILAB1)
+            IF (.NOT.STATIC)THEN
                CALL SO_READ(WORK(KRES2D),L2VEC,LURS2D,FNRS2D,ILAB1)
             END IF
 C----------------------------------------------------------
 C    Determine 1p-1h and 1h-1p part of reduced S[2] matrix
+C     - not necessary for HRPA(D) model
 C----------------------------------------------------------
 C
-            IF (.NOT.STATIC) THEN
+            IF ((.NOT.STATIC).AND.(MODEL.NE.'DCHRP')) THEN
                CALL SO_READ(WORK(KTR1E),L1VEC,LUTR1E,FNTR1E,ILAB1)
                CALL SO_READ(WORK(KTR1D),L1VEC,LUTR1D,FNTR1D,ILAB1)
                CALL SO_RES_O(WORK(KRESO1E),L1VEC,WORK(KRESO1D),L1VEC,
@@ -204,10 +214,7 @@ C---------------------------------
      &                    DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                    DENSAI,LDENSAI,WORK(KEND2),LWORK2)
             IF (.NOT.TRIPLET) THEN
-C Check which method is correct!!!
                CALL SO_TMLTR(WORK(KGPVC2),HALF,ISYM)
-C               CALL SO_TMLTR(WORK(KGPVC2),ONE,ISYM)
-C               CALL DSCAL(L2VEC,HALF,WORK(KGPVC2),1)
             END IF
             IF (IMAGPROP2.NE.IMAGINARY)THEN
               CALL QUIT('Error in DC_LRNSL: Imaginary unclear')
@@ -215,8 +222,9 @@ C               CALL DSCAL(L2VEC,HALF,WORK(KGPVC2),1)
 C--------------------------------------------------------------------------
 C   Determine Y=(Omega*S-E)*X and Z for the singles part:
 C   Z is the sum of the property gradient and -1/2*Y
+C   - Not necessary for HRPA(D).
 C--------------------------------------------------------------------------
-            IF (.NOT.STATIC) THEN
+            IF ((.NOT.STATIC).AND.(MODEL.NE.'DCHRP')) THEN
                CALL DAXPY(L1VEC,FREQ(IFREQ),WORK(KRESO1E),1,
      &                    WORK(KRES1E),1)
                CALL DAXPY(L1VEC,FREQ(IFREQ),WORK(KRESO1D),1,
@@ -232,11 +240,18 @@ C-------------------------------------------------
             END IF
 C---------------------------------------------
 C   Determine singles Z vectors for the label
-C---------------------------------------------
-            CALL DSCAL(L1VEC,-HALF,WORK(KRES1E),1)
+C-----------------------------------------------------------
+C   For the HRPA(D) model we need only the property gradient
+C------------------------------------------------------------
+            IF (MODEL.EQ.'DCRPA')THEN
+               MFAC = -HALF
+            ELSE IF (MODEL.EQ.'DCHRP')THEN
+               MFAC = 0.0D0
+            END IF
+            CALL DSCAL(L1VEC,MFAC,WORK(KRES1E),1)
             CALL DAXPY(L1VEC,ONE,WORK(KGPVC1),1,WORK(KRES1E),1)
             IF (.NOT.STATIC) THEN
-               CALL DSCAL(L1VEC,-HALF,WORK(KRES1D),1)
+               CALL DSCAL(L1VEC,MFAC,WORK(KRES1D),1)
                CALL DAXPY(L1VEC,GPFACTOR,WORK(KGPVC1),1,WORK(KRES1D),1)
             END IF
 C
@@ -262,12 +277,21 @@ C-------------------------------------------
 C
 C-----------------------------------------------------
 C   Write these new Z resultvectors to file:
-C   The result vector singles files are used
+C   The result vector doubles files are used
 C-----------------------------------------------------
 C
             CALL SO_WRITE(WORK(KRES2E),L2VEC,LURS2E,FNRS2E,ILAB1)
             IF (.NOT.STATIC) THEN
                CALL SO_WRITE(WORK(KRES2D),L2VEC,LURS2D,FNRS2D,ILAB1)
+            END IF
+C----------------------------------------------------------
+C Save the doubles part of the property gradient on a file
+C - the doubles part of the solution vector file is used,
+C as it contains nothing else
+C----------------------------------------------------------
+            IF (MODEL.EQ.'DCHRP')THEN
+               CALL SO_OPEN(LUSV2E,FNSV2E,L2VEC)
+               CALL SO_WRITE(WORK(KGPVC2),L2VEC,LUSV2E,FNSV2E,ILAB1)
             END IF
 C
          END DO
@@ -276,7 +300,6 @@ C   Calculate the property for the given frequency
 C---------------------------------------------------
 C   Memory allocation 3:
 C------------------------
-C
          KEDIA2=1
          KZ1EA=KEDIA2+L2VEC
          KZ1DA=KZ1EA+L1VEC
@@ -305,14 +328,24 @@ C--------------------------------------------------------------------
      &                     ISYM,WORK(KEND3),LWORK3)
          END IF
 C
+C
 C-------------------------------
 C   Read the necessary vectors:
 C------------------------------
          DO ILAB1=1,NLAB
             LABEL1=LABELS(ILAB1)
-            CALL SO_READ(WORK(KSV1EA),L1VEC,LUTR1E,FNTR1E,ILAB1)
             CALL SO_READ(WORK(KZ1EA),L1VEC,LURS1E,FNRS1E,ILAB1)
-            CALL SO_READ(WORK(KZ2EA),L2VEC,LURS2E,FNRS2E,ILAB1)
+C-------------------------------------------------------
+C   Read different vectors for the two models:
+C   RPA(D) requires solution vector and Z-vector
+C   HRPA(D) requires only the doubles property gradient
+C-------------------------------------------------------
+            IF (MODEL.EQ.'DCRPA')THEN
+               CALL SO_READ(WORK(KSV1EA),L1VEC,LUTR1E,FNTR1E,ILAB1)
+               CALL SO_READ(WORK(KZ2EA),L2VEC,LURS2E,FNRS2E,ILAB1)
+            ELSE IF (MODEL.EQ.'DCHRP')THEN
+               CALL SO_READ(WORK(KZ2EA),L2VEC,LUSV2E,FNSV2E,ILAB1)
+            END IF
 C---------------------------------------------------------------------------
 C   In the case of the singlet state (one of) the doubles Z vectors must be
 C   modified by spin adaption.
@@ -320,9 +353,23 @@ C---------------------------------------------------------------------------
             IF (.NOT.TRIPLET) CALL CCSD_TCMEPKX(WORK(KZ2EA),TWO,ISYM)
 C
             IF (.NOT.STATIC) THEN
-               CALL SO_READ(WORK(KSV1DA),L1VEC,LUTR1D,FNTR1D,ILAB1)
                CALL SO_READ(WORK(KZ1DA),L1VEC,LURS1D,FNRS1D,ILAB1)
-               CALL SO_READ(WORK(KZ2DA),L2VEC,LURS2D,FNRS2D,ILAB1)
+               IF(MODEL.EQ.'DCRPA')THEN
+                  CALL SO_READ(WORK(KSV1DA),L1VEC,LUTR1D,FNTR1D,ILAB1)
+                  CALL SO_READ(WORK(KZ2DA),L2VEC,LURS2D,FNRS2D,ILAB1)
+               ELSE IF (MODEL.EQ.'DCHRP')THEN
+C-------------------------
+C Make sure KZ2DA is zero
+C-------------------------
+                  CALL DSCAL(L2VEC,0.0D0,WORK(KZ2DA),1)
+C----------------------------------------------------------
+C Multiply doubles part of property gradient with GPFACTOR
+C (construct deexcitation part) and place in WORK(KZ2DA)
+C-----------------------------------------------------------
+                  CALL DAXPY(L2VEC,GPFACTOR,WORK(KGPVC2),
+     &                       1,WORK(KZ2DA),1)
+               END IF
+
 C---------------------------------------------------------------------------
 C   In the case of the singlet state (one of) the doubles Z vectors must be
 C   modified by spin adaption.
@@ -333,25 +380,47 @@ C
             DO ILAB2=ILAB1,NLAB
                LABEL2=LABELS(ILAB2)
                CALL SO_READ(WORK(KSV1EB),L1VEC,LUTR1E,FNTR1E,ILAB2)
-               CALL SO_READ(WORK(KZ1EB),L1VEC,LURS1E,FNRS1E,ILAB2)
+C------------------------------------------------------------
+C Both single excitation 'Z vectors' are not used in HRPA(D)
+C------------------------------------------------------------
+               IF (MODEL.NE.'DCHRP')THEN
+                  CALL SO_READ(WORK(KZ1EB),L1VEC,LURS1E,FNRS1E,ILAB2)
+               END IF
                CALL SO_READ(WORK(KZ2EB),L2VEC,LURS2E,FNRS2E,ILAB2)
                IF (.NOT.STATIC) THEN
-                  CALL SO_READ(WORK(KSV1DB),L1VEC,LUTR1D,FNTR1D,ILAB2)
+                  IF(MODEL.NE.'DCHRP')THEN
+                     CALL SO_READ(WORK(KSV1DB),L1VEC,LUTR1D,
+     &                            FNTR1D,ILAB2)
+                  END IF
                   CALL SO_READ(WORK(KZ1DB),L1VEC,LURS1D,FNRS1D,ILAB2)
                   CALL SO_READ(WORK(KZ2DB),L2VEC,LURS2D,FNRS2D,ILAB2)
                END IF
 C------------------------------------------------------
 C   Determine Singles part of polarization propagator:
 C------------------------------------------------------
-               Z1ABE = DDOT(L1VEC,WORK(KSV1EA),1,WORK(KZ1EB),1)
-               Z1BAE = DDOT(L1VEC,WORK(KSV1EB),1,WORK(KZ1EA),1)
-               PROP1E=Z1ABE+Z1BAE
-               IF (.NOT.STATIC) THEN
-                  Z1ABD = DDOT(L1VEC,WORK(KSV1DA),1,WORK(KZ1DB),1)
-                  Z1BAD = DDOT(L1VEC,WORK(KSV1DB),1,WORK(KZ1DA),1)
-                  PROP1D=Z1BAD+Z1ABD
-               ELSE
-                  PROP1D=PROP1E
+               IF (MODEL.EQ.'DCRPA')THEN
+                  Z1ABE = DDOT(L1VEC,WORK(KSV1EA),1,WORK(KZ1EB),1)
+                  Z1BAE = DDOT(L1VEC,WORK(KSV1EB),1,WORK(KZ1EA),1)
+                  PROP1E=Z1ABE+Z1BAE
+                  IF (.NOT.STATIC) THEN
+                     Z1ABD = DDOT(L1VEC,WORK(KSV1DA),1,WORK(KZ1DB),1)
+                     Z1BAD = DDOT(L1VEC,WORK(KSV1DB),1,WORK(KZ1DA),1)
+                     PROP1D=Z1BAD+Z1ABD
+                  ELSE
+                     PROP1D=PROP1E
+                  END IF
+               ELSE IF (MODEL.EQ.'DCHRP')THEN
+C------------------------------------------------------------------
+C For HRPA(D) PROP1E is the dot-product of the solution vector and
+C the single excitation part of the property gradient (saved in
+C WORK(KZ1EA)
+C-------------------------------------------------------------------
+                  PROP1E = DDOT(L1VEC,WORK(KSV1EB),1,WORK(KZ1EA),1)
+                  IF(.NOT.STATIC)THEN
+                     PROP1D = DDOT(L1VEC,WORK(KSV1DB),1,WORK(KZ1DA),1)
+                  ELSE
+                     PROP1D = PROP1E
+                  END IF
                END IF
 C
 C-----------------------------------------------------
@@ -405,6 +474,9 @@ C
             CALL SO_CLOSE(LURS1D,FNRS1D,L1VEC)
             CALL SO_CLOSE(LURS2D,FNRS2D,L2VEC)
             CALL SO_CLOSE(LUTR1D,FNTR1D,L1VEC)
+         END IF
+         IF (MODEL.EQ.'DCHRP')THEN
+            CALL SO_CLOSE(LUSV2E,FNSV2E,L2VEC)
          END IF
       END DO !Over frequencies
 C
@@ -474,9 +546,7 @@ C TRIPLET <- Triplet property flag
       END IF
       WRITE (LUPRI,'(/A/A)')
      &   ' Note that minus the linear response function:'//
-     &   ' - << A; B >>(omega) is printed.',
-     &   ' The results are of quadratic accuracy using Sellers formula.'
-      
+     &   ' - << A; B >>(omega) is printed.'
       DO IFREQ = 1, NFREQ
          IF ( ABS(FREQ(IFREQ)) .LT. sop_stat_trh) THEN
             WRITE(LUPRI,'(/A/)')

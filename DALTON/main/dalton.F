@@ -412,6 +412,8 @@ C
      &  '(SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)',
      *'Bernd Schimmelpfennig,','Forschungszentrum Karlsruhe,',
      &  'Germany','(AMFI module)',
+     *'Anna K. Schnack-Petersen,','University of Copenhagen,',
+     &'Denmark','(RPA(D) and HRPA(D) properties in AOSOPPA)',
      *'Kristian Sneskov,','Aarhus University,','Denmark',
      &  '(Polarizable embedding model, QM/MM)',
      *'Arnfinn H. Steindal,','UiT The Arctic U. of Norway,',

@@ -849,7 +849,7 @@ C
 C     Read general ".xxx" input options for "**RESPONSE"
 C
       use SO_INFO, only: AORPA, AOHRP, DCRPA, AOSOP, AOSOC, AOCC2, 
-     &                   SO_ANY_ACTIVE_MODELS
+     &                   SO_ANY_ACTIVE_MODELS, DCHRP
 C
 #include "implicit.h"
 C
@@ -871,7 +871,7 @@ C
 #include "abslrs.h"
 C
       LOGICAL NEWDEF, SET, FORCE_AOSOP
-      PARAMETER ( NTABLE = 27 )
+      PARAMETER ( NTABLE = 28 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE TABLE, SET
@@ -884,7 +884,8 @@ C
      *            '.HIRPA ', '.SOPW4 ', '.SOPPA(',
      *            '.NODOIT', '.DFT-SO', '.PROP2A',
      *            '.TDA   ', '.CIS   ', '.SOPRPA',
-     *            '.TRDQF ', '.AO-SOP', '.RPA(D)'/
+     *            '.TRDQF ', '.AO-SOP', '.RPA(D)',
+     *            '.HRPAD'/
       DATA SET /.FALSE./
 C
       FORCE_AOSOP = .FALSE.
@@ -914,7 +915,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,
      *                      11,12,13,14,15,16,17,18,19,20,21,22,23,
-     *                      24,25,26,27), I
+     *                      24,25,26,27,28), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1055,6 +1056,10 @@ C              .PROP2Average
                   FORCE_AOSOP = .TRUE.
                   DCRPA = .TRUE.
                GO TO 100
+   28          CONTINUE ! .HRPAD
+                  FORCE_AOSOP = .TRUE.
+                  DCHRP = .TRUE.
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE

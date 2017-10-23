@@ -3561,12 +3561,21 @@ C
 C
 C     For AO-SOPPA we just need to copy over labels
       IF (SO_ANY_ACTIVE_MODELS()) THEN
+CSPAS: 03.10.2017: removing empty labels
+         ICOUNT = 0
+CKeinSPASmehr
          DO ISYM = 1, NSYM
             NREC = NGDVEC(ISYM,2)
             DO LREC = 1, NREC
                IREC = IGDREC(LREC,ISYM,2)
                ISCOOR = IGDCOR(LREC,ISYM,2)
-               IF (ISCOOR .GT. 0 ) IMGLAB(IREC) = LABINT(ISCOOR)
+CSPAS: 03.10.2017: removing empty labels
+C               IF (ISCOOR .GT. 0 ) IMGLAB(IREC) = LABINT(ISCOOR)
+               IF (ISCOOR .GT. 0 ) THEN
+                  ICOUNT = ICOUNT + 1
+                  IMGLAB(ICOUNT) = LABINT(ISCOOR)
+               END IF
+CKeinSPASmehr
             END DO
          END DO
          RETURN

@@ -44,7 +44,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 17)
+      PARAMETER (NTABLE = 18)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       LOGICAL LNEXC2
 #include "abainf.h"
@@ -55,9 +55,9 @@ C
       CALL QENTER('SOPINP')
 C
       DATA TABLE /'.HIRPA ', '.SOPW4 ', '.DIRECT', '.AORPA ', '.RPA(D)',
-     &            '.AOSOP ', '.AOSOC ', '.SOPCHK', '.AOTEST', '.NSAVMX',
-     &            '.NEXCI2', '.THREX2', '.AOHRP ', '.AOCC2 ', '.HRPA(D',
-     &            '.DCRPA ', '.SHRPA('/
+     &            '.HRPAD', '.AOSOP ', '.AOSOC ', '.SOPCHK', '.AOTEST',
+     &            '.NSAVMX', '.NEXCI2', '.THREX2', '.AOHRP ', '.AOCC2 ',
+     &            '.HRPA(D', '.DCRPA ', '.SHRPA('/
 C
 C------------------
 C     Set defaults.
@@ -90,7 +90,7 @@ C
          ICHANG = ICHANG + 1
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), I
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18), I
             END IF
   200    CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -121,45 +121,49 @@ C
             DCRPA  = .TRUE.
             AORPA  = .TRUE.
             GOTO 100
-    6    CONTINUE !.AOSOP
+    6    CONTINUE !.HRPAD
+            DCHRP = .TRUE.
+            AOHRP = .TRUE.
+            GOTO 100
+    7    CONTINUE !.AOSOP
             AOSOP  = .TRUE.
             GOTO 100
-    7    CONTINUE !.AOSOC
+    8    CONTINUE !.AOSOC
             AOSOC  = .TRUE.
             GOTO 100
-    8    CONTINUE !.SOPCHK
+    9    CONTINUE !.SOPCHK
             SOPCHK = .TRUE.
             GOTO 100
-    9    CONTINUE !.AOTEST
+   10    CONTINUE !.AOTEST
             AOTEST = .TRUE.
             GOTO 100
-   10    CONTINUE !.NSAVMX
+   11    CONTINUE !.NSAVMX
             READ (LUCMD,*) NSAVMX
             NSAVMXORIG = NSAVMX
             GOTO 100
-   11    CONTINUE !.NEXCI2
+   12    CONTINUE !.NEXCI2
             LNEXC2 = .TRUE.
 C           NSYM is set to 8 since NSYM has not yet been set !!
             READ (LUCMD,*) (NEXCI2(I),I=1,NSYM)
             GOTO 100
-   12    CONTINUE !.THREX2
+   13    CONTINUE !.THREX2
             READ (LUCMD,*) THREX2
             GOTO 100
-   13    CONTINUE !.AOHRP
+   14    CONTINUE !.AOHRP
             AOHRP  = .TRUE.
             GOTO 100
-   14    CONTINUE !.AOCC2
+   15    CONTINUE !.AOCC2
             AOCC2  = .TRUE.
             GOTO 100
-   15    CONTINUE !.HRPA(D
+   16    CONTINUE !.HRPA(D(keep old keyword just in case)
             DCHRP  = .TRUE.
             AOHRP  = .TRUE.
             GOTO 100
-   16    CONTINUE !.DCRPA (keep old keyword just in case)
+   17    CONTINUE !.DCRPA (keep old keyword just in case)
             DCRPA  = .TRUE.
             AORPA  = .TRUE.
             GOTO 100
-   17    CONTINUE !.SHRPA(
+   18    CONTINUE !.SHRPA(
             SDCHR  = .TRUE.
             AOHRP  = .TRUE.
             GOTO 100

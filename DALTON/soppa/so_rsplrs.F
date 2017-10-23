@@ -25,7 +25,8 @@ C
      &                   sop_dp,
      &                   so_needs_densai,
      &                   sop_mp2ai_done,
-     &                   FN_PROP
+     &                   FN_PROP,
+     &                   sop_model_hrpad, sop_model_hrpa
 C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
@@ -106,6 +107,8 @@ C     RPA(D) properties require RPA calcultation
 C      ACTIVE_MODELS(SOP_MODEL_RPAD)=.FALSE.
       IF (ACTIVE_MODELS(SOP_MODEL_RPAD)) THEN
          ACTIVE_MODELS(SOP_MODEL_RPA)=.TRUE.
+      ELSE IF (ACTIVE_MODELS(SOP_MODEL_HRPAD))THEN
+         ACTIVE_MODELS(SOP_MODEL_HRPA)=.TRUE.
       END IF
 C end AKSP 7-3-17
       NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
@@ -331,6 +334,10 @@ CAKSP 7-3-17 if running an RPA(D) model the RPA calculation must be done
 C while sop_use_seller is true
             IF (ACTIVE_MODELS(SOP_MODEL_RPAD)
      &          .AND.(MODEL.EQ.'AORPA'))THEN
+               SOP_USE_SELLER =.TRUE.
+            END IF
+            IF(ACTIVE_MODELS(SOP_MODEL_HRPAD)
+     &          .AND.(MODEL.EQ.'AOHRP'))THEN
                SOP_USE_SELLER = .TRUE.
             END IF
 CAKSP 7-3-17 if doubles correction model iterative calculations
