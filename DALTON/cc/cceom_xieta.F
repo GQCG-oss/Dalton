@@ -147,11 +147,11 @@ Cholesky
 *---------------------------------------------------------------------*
 c /* deck ccEOM_xieta1 */
 *=====================================================================*
-       SUBROUTINE CCEOM_XIETA1( IXETRAN, NXETRAN, IOPTRES, 
+       SUBROUTINE CCEOM_XIETA1( IXETRAN, NXETRAN, IOPTRES,
      &                       IORDER,   LISTL,   MXVEC,
-     &                       FILXI,   IXDOTS,  XCONS,  
-     &                       FILETA,  IEDOTS,  ECONS, 
-     &                       ISTART,  IEND,    
+     &                       FILXI,   IXDOTS,  XCONS,
+     &                       FILETA,  IEDOTS,  ECONS,
+     &                       ISTART,  IEND,
      &                       WORK,    LWORK )
 *---------------------------------------------------------------------*
 *   NODDY VERSION OF EOM XIETA
@@ -689,7 +689,7 @@ C
 c*DECK CCCI_ETAC
       SUBROUTINE CCCI_ETAC(ISYMC,LBLC,        !Operator stuff
      &                   ETAC,                !Result vector
-     &                   LIST,ILSTNR,         !Left vector 
+     &                   LIST,ILSTNR,         !Left vector
      &                   IOPTCC2,
      &                   XINT,WORK,LWORK)
 C
@@ -939,30 +939,13 @@ C
        !WRITE(LUPRI,*) 'Integral norm after FCKMO out norm:',DN
 C
 C----------------------------------------------------------
-C     Calculate 2Cia (stored ia) Hartree-Fock contribution.
+C     Calculate 2Cia (stored ai) Hartree-Fock contribution.
 C----------------------------------------------------------
 C
       CALL DZERO(ETAC,NT1AM(ISYRES))
 C
       IF (LIST .EQ. 'L0') THEN
-         DO 100 ISYMI = 1,NSYM
-C
-            ISYMA = MULD2H(ISYMI,ISYMC)
-C
-            DO 110 A = 1,NVIR(ISYMA)
-C
-               DO 120 I = 1,NRHF(ISYMI)
-C
-                  KOFF1 = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I - 1) + A
-                  KOFF2 = KCTMO + IFCVIR(ISYMI,ISYMA)
-     *                  + NORB(ISYMI)*(A - 1) + I - 1
-C
-                  ETAC(KOFF1) = TWO*WORK(KOFF2)
-C
-  120          CONTINUE
-  110       CONTINUE
-  100    CONTINUE
-C
+         CALL DAXPY(TWO,WORK(KINTIA),1,ETAC(1),1)
       ENDIF
 C----------------------------------------
       IF ( DEBUG.or.locdbg ) THEN
@@ -987,8 +970,8 @@ C
       IOPT = 3
       CALL CC_RDRSP(LIST,ILSTNR,ISYML,IOPT,MODEL,
      *              WORK(KL1AM),WORK(KT2AM))
-      skod = DDOT(NT1AM(ISYML),WORK(KL1AM),1,WORK(KL1AM),1)
-      skod = skod+DDOT(NT2AM(ISYML),WORK(KT2AM),1,WORK(KT2AM),1)
+C      skod = DDOT(NT1AM(ISYML),WORK(KL1AM),1,WORK(KL1AM),1)
+C      skod = skod+DDOT(NT2AM(ISYML),WORK(KT2AM),1,WORK(KT2AM),1)
       !WRITE(LUPRI,1) 'Norm of Tbar (full):       ',skod
       IF (.NOT. CCS) CALL CC_T2SQ(WORK(KT2AM),WORK(KL2AM),ISYML)
 C
@@ -1000,7 +983,7 @@ C
          !read in T2AM (packed)
          IOPT = 2
          CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KT2AM))
-         skod = DDOT(NT2AM(1),WORK(KT2AM),1,WORK(KT2AM),1)
+C         skod = DDOT(NT2AM(1),WORK(KT2AM),1,WORK(KT2AM),1)
          ! WRITE(LUPRI,1) 'Norm of T2(0) (full):   ',skod
       ENDIF
 C
@@ -1045,11 +1028,11 @@ C     etac1 = -sum(e)Cie*Yae - sum(l)Cla*Xli
 C----------------------------------------------
 C
       IF ( (.NOT.CCS) .AND. (.NOT.(CC2.AND.IOPTCC2.EQ.1)) ) THEN
-      DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
+C      DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
       !WRITE(LUPRI,*) 'Integral norm before CC_21EFM out norm:',DN
          CALL CC_21EFM(ETAC,WORK(KCTMO),ISYMC,WORK(KXMAT),
      *                 WORK(KYMAT),ISYML,WORK(KEND3),LEND3)
-      DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
+C      DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
       !WRITE(LUPRI,*) 'Integral norm after CC_21EFM out norm:',DN
 C
          IF ( DEBUG.or.locdbg ) THEN
@@ -1067,13 +1050,13 @@ C
       IF (.NOT. CCS) THEN
          CALL DZERO(ETAC(1+NT1AM(ISYRES)),NT2AM(ISYRES))
 
-      DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
+C      DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
       !WRITE(LUPRI,*) 'Integral norm before CC_L1FCK out norm:',DN
 
          CALL CC_L1FCK(ETAC(1+NT1AM(ISYRES)),WORK(KL1AM),WORK(KCTMO),
      *                 ISYML,ISYMC,WORK(KEND2),LEND2)
 
-      DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
+C      DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
 !      WRITE(LUPRI,*) 'Integral norm after CC_L1FCK out norm:',DN
 !     *                 ISYML,ISYMC,WORK(KEND2),LEND2)
 C
@@ -1099,7 +1082,7 @@ C
       FCKCON = .TRUE.
       ETRAN  = .FALSE.
       DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-!      WRITE(LUPRI,*) 'Integral norm before CCRHS_EFCK out norm:',DN
+      WRITE(LUPRI,*) 'Integral norm before CCRHS_EFCK out norm:',DN
       CALL CCRHS_EFCK(WORK(KEI1),WORK(KEI2),WORK(KLAMDH),
      *                WORK(KCTMO),WORK(KEND3),LEND3,FCKCON,
      *                ETRAN,ISYMC)
@@ -1119,20 +1102,7 @@ C
          WRITE(LUPRI,1) 'Norm of L1AM before  CCLR_E1C1:    ',ETA1
       ENDIF
 C
-c test
-c     kei11= kend3
-c     kei21= kei11+ NMATAB(ISYMC)
-c     kend3 = kei21+ NMATIJ(ISYMC)
-c     lend3 = lwork -kend3
-c     call dzero(work(kei11),NMATAB(ISYMC))
-c     call dzero(work(kei21),NMATIJ(ISYMC))
-c     call dcopy(NMATAB(ISYMC),work(kei1),1,work(kei11),1)
-c     call dcopy(NMATIJ(ISYMC),work(kei2),1,work(kei21),1)
-c     CALL CCLR_E1C1(ETAC,WORK(KL1AM),WORK(KEI11),WORK(KEI21),
-c    *               WORK(KEND3),LEND3,ISYML,ISYMC,'T')
-c test
-C
-      CALL CCLR_E1C1(ETAC,WORK(KL1AM),WORK(KEI1),WORK(KEI2),
+      CALL CCLR_E1C1(ETAC,WORK(KL1AM),WORK(KINTAB),WORK(KINTIJ),
      *               WORK(KEND3),LEND3,ISYML,ISYMC,'T')
 C
       IF ( DEBUG.or.locdbg ) THEN
@@ -1153,11 +1123,11 @@ C
      *             WORK(KFCKHF),WORK(KEND3),LEND3,FCKCON,ETRAN,ISYMC)
          END IF
 
-         CALL CC_EITR(WORK(KEI1),WORK(KEI2),WORK(KEND3),LEND3,
+         CALL CC_EITR(WORK(KINTAB),WORK(KINTIJ),WORK(KEND3),LEND3,
      *                ISYMC)
 C
          CALL CCRHS_E(ETAC(1+NT1AM(ISYRES)),WORK(KL2AM),
-     *                WORK(KEI1),WORK(KEI2),WORK(KEND3),
+     *                WORK(KINTAB),WORK(KINTIJ),WORK(KEND3),
      *                LEND3,ISYML,ISYMC)
 C
          IF (IPRINT .GT. 40 ) THEN
@@ -1180,18 +1150,17 @@ C
          !restart from zero to make sure not to mess up
          KETAC = KEND21
          KT2AM = KETAC + NT1AM(ISYRES)
-         KT2SQ = KT2AM + NT2AM(1)
-         KL2AM = KT2SQ + NT2SQ(1)
-         KL2SQ = KL2AM + NT2AM(ISYML)
-         KZint = KL2SQ + NT2SQ(ISYML)
-         KEND3 = KZint + NT2SQ(isyml)
+         KL2AM = KT2AM + NT2AM(1)
+         KCINT = KL2AM + NT2AM(ISYML)
+         KEND3 = KCINT + NT1AM(isymc)
          LEND3 = LWORK - KEND3
          IF (LEND3 .LT. 0 )
      &     CALL QUIT('INSUFFICIENT WORK SPACE IN CC_EOMETA')
 
 C
 C---------------------------------------------------------------
-C     etac1 = 2sum(ei)L(ckei)*Cei 
+C                                       ~
+C     etac = 2sum(ei)L_{ckei}*(C_{ei} + t_{ei,fn}*C_{nf})
 C     requires packed L2, so I reread it into T2AM
 C     can also used it square, if last argument in called routine
 C     is set = 1
@@ -1200,13 +1169,19 @@ C
          IOPT = 2
          CALL CC_RDRSP(LIST,ILSTNR,ISYML,IOPT,MODEL,
      *                 WORK(KEND3),WORK(KL2AM))
-         !CALL DSCAL(NT1AM(isymc),TWO,WORK(KINTAI),1)
-         !
-!         CALL CCG_LXD(ETAC(1),ISYRES,WORK(KINTAI),ISYMC,
-!     &                               WORK(KL2AM),ISYML,0)
-
-         !call dzero(WORK(KETAC),NT1AM(ISYRES))
-         !warning: result vector is zeroed inside!
+         IOPT = 2
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KT2AM))
+         ISYOPE = 1
+         IOPTTCME = 1
+         !get ttilde (overwrites T2am)
+         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE,IOPTTCME)
+C            ~
+C        Add t_{em,fn} *C_{nf} to C_{em}
+         CALL CCG_LXD(WORK(KCINT),ISYMC,WORK(KINTIA),ISYMC,
+     &                WORK(KT2AM),1,0)
+         CALL DAXPY(NT1AM(ISYMC),1.D0,WORK(KCINT),1,WORK(KINTAI),1)
+C
+C        Calculate the term as L_{ai,em} * C'_{em}
          CALL CCG_LXD(WORK(KETAC),ISYRES,WORK(KINTAI),ISYMC,
      &                                   WORK(KL2AM),ISYML,0)
          IF ( DEBUG.or.locdbg ) THEN
@@ -1214,59 +1189,11 @@ C
             WRITE(LUPRI,1) 'Norm of alone Tbar_ck,ei*Cei: ',ETA1
          ENDIF
          !removed factor 2 to get FCI limit!
-         CALL DAXPY(NT1AM(ISYRES),1.0D0,WORK(KETAC),1,ETAC(1),1)  
-         ! add to total tensor 
+         CALL DAXPY(NT1AM(ISYRES),1.0D0,WORK(KETAC),1,ETAC(1),1)
+         ! add to total tensor
          IF ( DEBUG.or.locdbg ) THEN
             ETA1 = DDOT(NT1AM(ISYRES),ETAC(1),1,ETAC(1),1)
             WRITE(LUPRI,1)'Norm Eta^C after +Tbar_ck,ei*Cei:',ETA1
-         ENDIF
-C
-C---------------------------------------------------------------
-C     etac2 = 2(sum(nf)*Cnf(sum(bj)tbar(ck,bj)*ttilde(fn,bj))
-C     the sum(bj)tbar(ck,bj)*ttilde(fn,bj) term is part of the
-C     d_aijb density!!!
-C---------------------------------------------------------------
-C
-         !I reread T2AM 
-         IOPT = 2
-         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KT2AM))
-         ISYOPE = 1
-         IOPTTCME = 1
-         !get ttilde (overwrites T2am)
-         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE,IOPTTCME)
-!         write(lupri,*) ' norm of ttilde ', 
-!     &         ddot(NT2AM(1),WORK(KT2AM),1,WORK(KT2AM),1)
-         !square it up
-         CALL CC_T2SQ(WORK(KT2AM),WORK(KT2SQ),1)
-         !Square up L2 as well
-         IF (.NOT. CCS) CALL CC_T2SQ(WORK(KL2AM),WORK(KL2SQ),ISYML)
-
-         !zero-ed inside the subroutine called
-         call CC_ZIsq(work(KZint),work(kl2sq),ISYML,
-     &                work(kT2sq),1,WORK(kend3),LEND3)
-!         write(lupri,*) ' Norm of Z intermediate ', 
-!     &   ddot(NT2SQ(isyml),WORK(KZINT),1,WORK(KZINT),1)
-
-         !if (iprint.ge.45) then
-         !  write(lupri,*) 'CC_EOMETA: Zint intermediate'
-         !  call cc_prsq(work(kend3),WORK(KZint),1,0,1)
-         !end if
-
-         call dzero(WORK(KETAC),NT1AM(ISYRES))
-         CALL CCG_LXD(WORK(KETAC),ISYRES,WORK(KINTIA),ISYMC,
-     &                               WORK(KZINT),ISYML,1)
-
-         IF ( DEBUG.or.locdbg ) THEN
-            ETA1 = DDOT(NT1AM(ISYRES),WORK(KETAC),1,WORK(KETAC),1)
-            !ETA1 = DDOT(NT1AM(ISYRES),ETAC(1),1,ETAC(1),1)
-            WRITE(LUPRI,1) 'Norm of eta1 (alone) Zint*C: ',ETA1
-         ENDIF
-         !removed factor 2 to get FCI limit
-         CALL DAXPY(NT1AM(ISYRES),1.0D0,WORK(KETAC),1,ETAC(1),1)  
-         !
-         IF ( DEBUG.or.locdbg ) THEN
-            ETA1 = DDOT(NT1AM(ISYRES),ETAC(1),1,ETAC(1),1)
-            WRITE(LUPRI,1) 'Norm of eta after 2*Zint*Cei: ',ETA1
          ENDIF
 
       !end if
@@ -1282,7 +1209,7 @@ C
 c*DECK CCCI_ETAC2
       SUBROUTINE CCCI_ETAC2(ISYMC,LBLC,        !Operator stuff
      &                   ETAC,                !Result vector
-     &                   LIST,ILSTNR,         !Left vector 
+     &                   LIST,ILSTNR,         !Left vector
      &                   IOPTCC2,
      &                   ioptl0,xl0,
      &                   XINT,WORK,LWORK)
@@ -1805,7 +1732,7 @@ C
 
 C
 C---------------------------------------------------------------
-C     etac1 = 2sum(ei)L(ckei)*Cei 
+C     etac1 = 2sum(ei)L(ckei)*Cei
 C     requires packed L2, so I reread it into T2AM
 C     can also used it square, if last argument in called routine
 C     is set = 1
@@ -1832,8 +1759,8 @@ Css
             WRITE(LUPRI,1) 'Norm of alone Tbar_ck,ei*Cei: ',ETA1
          ENDIF
          !removed factor 2 to get FCI limit!
-         CALL DAXPY(NT1AM(ISYRES),1.0D0,WORK(KETAC),1,ETAC(1),1)  
-         ! add to total tensor 
+         CALL DAXPY(NT1AM(ISYRES),1.0D0,WORK(KETAC),1,ETAC(1),1)
+         ! add to total tensor
          IF ( DEBUG.or.locdbg ) THEN
             ETA1 = DDOT(NT1AM(ISYRES),ETAC(1),1,ETAC(1),1)
             WRITE(LUPRI,1)'Norm Eta^C after +Tbar_ck,ei*Cei:',ETA1
