@@ -746,8 +746,8 @@ C
       DIMENSION ETAC(*),WORK(LWORK),XINT(*)
       CHARACTER LBLC*(*),LIST*(*),MODEL*10
       INTEGER IOPTCC2
-      LOGICAL  FCKCON,ETRAN, LOCDBG
-      PARAMETER( LOCDBG = .false. )
+      LOGICAL  FCKCON,ETRAN, LOCDBG, LEOM
+      PARAMETER( LOCDBG = .false., LEOM = .TRUE. )
 C
 !      CALL AROUND( 'IN CCCI_ETAC: Constructing ETAC(L1) vector ')
       IF ( (IPRINT .GT. 10).or.locdbg ) THEN
@@ -795,16 +795,10 @@ C
            !Integrals in MO basis
            !highly redundant, but I need a second check
            !write(lupri,*)'CCCI_ETAC: EOM alloc for X_mo integrals'
-           KINTAI = KEND1
-           KINTAB = KINTAI + NT1AM(ISYMC)
-           KINTIJ = KINTAB + NMATAB(ISYMC)
-           KINTIA = KINTIJ + NMATIJ(ISYMC)
-           KEND1  = KINTIA + NT1AM(ISYMC)
-           LEND1  = LWORK - KEND1
-           CALL DZERO(WORK(KINTAB),NMATAB(isymc))
-           CALL DZERO(WORK(KintIJ),NMATIJ(isymc))
-           CALL DZERO(WORK(KintIA),NT1AM(isymc))
-           CALL DZERO(WORK(KintAI),NT1AM(isymc))
+         KINTIA = KEND1
+         KEND1  = KINTIA + NT1AM(ISYMC)
+         LEND1  = LWORK - KEND1
+         CALL DZERO(WORK(KintIA),NT1AM(isymc))
          !end if
 C
          KL1AM = KEND1
@@ -879,70 +873,35 @@ C-----------------------------------------------
 C     Make MO T1-transformed property integrals.
 C-----------------------------------------------
 C
-      !if (eomccsd.or.cccisd) then
-
-         !DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-         !WRITE(LUPRI,*) 'IN ONEP: FOCK out norm:',DN
-
-         !write(lupri,*) 'X_mo integrals of EOM from CCDINTMO'
-         ISYM = ISYMC
-         CALL CCDINTMO(WORK(KINTIJ),WORK(KINTIA),WORK(KINTAB),
-     *                 WORK(KINTAI),WORK(KCTMO),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND21),LEND21,ISYM)
-         IF ( DEBUG.or.locdbg ) THEN
-            ETA1 = DDOT(NT1AM(ISYMC),WORK(KINTIA),1,WORK(KINTIA),1)
-            WRITE(LUPRI,*) ' '
-            WRITE(LUPRI,1) '4*Norm of C_ie for EOM:',ETA1*4.0d0
-         ENDIF
-         IF ((IPRINT .GT. 50).or.locdbg) THEN
-C
-            CALL AROUND('One electron integrals in MO-basis')
-            DO 10 ISYM = 1,NSYM
-               WRITE(LUPRI,333) 'Symmetry block number:', ISYM
-  333          FORMAT(/3X,A22,2X,I1)
-               KOFFIJ = KINTIJ + IMATIJ(ISYM,ISYM)
-               KOFFAI = KINTAI + IT1AM(ISYM,ISYM)
-               KOFFIA = KINTIA + IT1AM(ISYM,ISYM)
-               KOFFAB = KINTAB + IMATAB(ISYM,ISYM)
-!               CALL AROUND('occ.occ part')
-!               CALL OUTPUT(WORK(KOFFIJ),1,NRHF(ISYM),1,NRHF(ISYM),
-!     *                     NRHF(ISYM),NRHF(ISYM),1,LUPRI)
-!               CALL AROUND('vir.occ part')
-!               CALL OUTPUT(WORK(KOFFAI),1,NVIR(ISYM),1,NRHF(ISYM),
-!     *                     NVIR(ISYM),NRHF(ISYM),1,LUPRI)
-!               CALL AROUND('occ.vir part')
-!               CALL OUTPUT(WORK(KOFFIA),1,NVIR(ISYM),1,NRHF(ISYM),
-!     *                     NVIR(ISYM),NRHF(ISYM),1,LUPRI)
-!               CALL AROUND('vir.vir part')
-!               CALL OUTPUT(WORK(KOFFAB),1,NVIR(ISYM),1,NVIR(ISYM),
-!     *                     NVIR(ISYM),NVIR(ISYM),1,LUPRI)
-C
-  10        CONTINUE
-            HIJNO = DDOT(NMATIJ(isymc),WORK(KINTIJ),1,WORK(KINTIJ),1)
-            HAINO = DDOT(NT1AM(isymc),WORK(KINTAI),1,WORK(KINTAI),1)
-            HIANO = DDOT(NT1AM(isymc),WORK(KINTIA),1,WORK(KINTIA),1)
-            HABNO = DDOT(NMATAB(isymc),WORK(KINTAB),1,WORK(KINTAB),1)
-            WRITE(LUPRI,*) ' '
-            WRITE(LUPRI,*) 'Norm of one electron integrals in MO-basis:'
-            WRITE(LUPRI,*) HIJNO, HAINO, HIANO, HABNO
-            WRITE(LUPRI,*) 'Integrals sum: ', HIJNO+HAINO+HIANO+HABNO
-         ENDIF
-      !end if
-
-       !DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-       !WRITE(LUPRI,*) 'IN ONEP: FOCK out norm:',DN
-
       !X_pq
       CALL CC_FCKMO(WORK(KCTMO),WORK(KLAMDP),WORK(KLAMDH),
      *              WORK(KEND21),LEND21,ISYMC,1,1)
-       !DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-       !WRITE(LUPRI,*) 'Integral norm after FCKMO out norm:',DN
 C
 C----------------------------------------------------------
-C     Calculate 2Cia (stored ai) Hartree-Fock contribution.
+C     Calculate 2Cia (stored ia) Hartree-Fock contribution.
 C----------------------------------------------------------
 C
       CALL DZERO(ETAC,NT1AM(ISYRES))
+
+      DO 100 ISYMI = 1,NSYM
+C
+         ISYMA = MULD2H(ISYMI,ISYMC)
+C
+         DO 110 A = 1,NVIR(ISYMA)
+C
+            DO 120 I = 1,NRHF(ISYMI)
+C
+               KOFF1 = KINTIA + IT1AM(ISYMA,ISYMI)
+     &               + NVIR(ISYMA)*(I - 1) + A-1
+               KOFF2 = KCTMO + IFCVIR(ISYMI,ISYMA)
+     *               + NORB(ISYMI)*(A - 1) + I - 1
+C
+               WORK(KOFF1) = WORK(KOFF2)
+C
+  120       CONTINUE
+  110    CONTINUE
+C
+  100 CONTINUE
 C
       IF (LIST .EQ. 'L0') THEN
          CALL DAXPY(TWO,WORK(KINTIA),1,ETAC(1),1)
@@ -1041,6 +1000,43 @@ C
          ENDIF
       ENDIF
 
+      IF (LEOM) THEN
+C
+C---------------------------------------------------------------
+C     EOM contribution to ETAC:
+C                     ~                  ~
+C     etac = 2sum(ei) L_{ckei}*(C_{ei} + t_{ei,fn}*C_{nf})
+C---------------------------------------------------------------
+         KCINT = KEND21
+         KETAC = KCINT
+         KINTAI = KCINT + MAX(NT1AM(ISYMC),NT1AM(ISYRES))
+C        Extract C_{ai}
+         DO ISYMI = 1, NSYM
+            ISYMA = MULD2H(ISYMI,ISYMC)
+            DO I = 1, NRHF(ISYMI)
+               KOFF1 = KINTAI + IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1)
+               KOFF2 = KCTMO + IFCRHF(ISYMA,ISYMI) +
+     &                 NORB(ISYMA)*(I-1) + NRHF(ISYMA)
+               CALL DCOPY(NVIR(ISYMA),WORK(KOFF2),1,WORK(KOFF1),1)
+            END DO
+         END DO
+         !get ttilde (overwrites T2am)
+         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,1,1)
+C            ~
+C        Add t_{em,fn} *C_{nf} to C_{em}
+         CALL CCG_LXD(WORK(KCINT),ISYMC,WORK(KINTIA),ISYMC,
+     &                WORK(KT2AM),1,0)
+         CALL DAXPY(NT1AM(ISYMC),1.D0,WORK(KCINT),1,WORK(KINTAI),1)
+C        Calculate the term as L_{ai,em} * C'_{em}
+         CALL CCG_LXD(WORK(KETAC),ISYRES,WORK(KINTAI),ISYMC,
+     &                                   WORK(KL2AM),ISYML,1)
+         IF ( DEBUG.or.locdbg ) THEN
+            ETA1 = DDOT(NT1AM(ISYRES),WORK(KETAC),1,WORK(KETAC),1)
+            WRITE(LUPRI,1) 'Norm of alone Tbar_ck,ei*Cei: ',ETA1
+         ENDIF
+         !removed factor 2 to get FCI limit!
+         CALL DAXPY(NT1AM(ISYRES),1.0D0,WORK(KETAC),1,ETAC(1),1)
+      END IF
 C
 C------------------------------------------------
 C     Workspace for T2AM and X and Y is now free.
@@ -1081,8 +1077,8 @@ C--------------------------------
 C
       FCKCON = .TRUE.
       ETRAN  = .FALSE.
-      DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-      WRITE(LUPRI,*) 'Integral norm before CCRHS_EFCK out norm:',DN
+C      DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
+C      WRITE(LUPRI,*) 'Integral norm before CCRHS_EFCK out norm:',DN
       CALL CCRHS_EFCK(WORK(KEI1),WORK(KEI2),WORK(KLAMDH),
      *                WORK(KCTMO),WORK(KEND3),LEND3,FCKCON,
      *                ETRAN,ISYMC)
@@ -1102,7 +1098,7 @@ C
          WRITE(LUPRI,1) 'Norm of L1AM before  CCLR_E1C1:    ',ETA1
       ENDIF
 C
-      CALL CCLR_E1C1(ETAC,WORK(KL1AM),WORK(KINTAB),WORK(KINTIJ),
+      CALL CCLR_E1C1(ETAC,WORK(KL1AM),WORK(KEI1),WORK(KEI2),
      *               WORK(KEND3),LEND3,ISYML,ISYMC,'T')
 C
       IF ( DEBUG.or.locdbg ) THEN
@@ -1123,11 +1119,11 @@ C
      *             WORK(KFCKHF),WORK(KEND3),LEND3,FCKCON,ETRAN,ISYMC)
          END IF
 
-         CALL CC_EITR(WORK(KINTAB),WORK(KINTIJ),WORK(KEND3),LEND3,
+         CALL CC_EITR(WORK(KEI1),WORK(KEI2),WORK(KEND3),LEND3,
      *                ISYMC)
 C
          CALL CCRHS_E(ETAC(1+NT1AM(ISYRES)),WORK(KL2AM),
-     *                WORK(KINTAB),WORK(KINTIJ),WORK(KEND3),
+     *                WORK(KEI1),WORK(KEI2),WORK(KEND3),
      *                LEND3,ISYML,ISYMC)
 C
          IF (IPRINT .GT. 40 ) THEN
@@ -1144,57 +1140,6 @@ C
             CALL AROUND( 'END OF CC_ETAC ')
          ENDIF
       ENDIF
-C
-      !if (cccisd.or.eomccsd) then
-
-         !restart from zero to make sure not to mess up
-         KETAC = KEND21
-         KT2AM = KETAC + NT1AM(ISYRES)
-         KL2AM = KT2AM + NT2AM(1)
-         KCINT = KL2AM + NT2AM(ISYML)
-         KEND3 = KCINT + NT1AM(isymc)
-         LEND3 = LWORK - KEND3
-         IF (LEND3 .LT. 0 )
-     &     CALL QUIT('INSUFFICIENT WORK SPACE IN CC_EOMETA')
-
-C
-C---------------------------------------------------------------
-C                                       ~
-C     etac = 2sum(ei)L_{ckei}*(C_{ei} + t_{ei,fn}*C_{nf})
-C     requires packed L2, so I reread it into T2AM
-C     can also used it square, if last argument in called routine
-C     is set = 1
-C---------------------------------------------------------------
-C
-         IOPT = 2
-         CALL CC_RDRSP(LIST,ILSTNR,ISYML,IOPT,MODEL,
-     *                 WORK(KEND3),WORK(KL2AM))
-         IOPT = 2
-         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KT2AM))
-         ISYOPE = 1
-         IOPTTCME = 1
-         !get ttilde (overwrites T2am)
-         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE,IOPTTCME)
-C            ~
-C        Add t_{em,fn} *C_{nf} to C_{em}
-         CALL CCG_LXD(WORK(KCINT),ISYMC,WORK(KINTIA),ISYMC,
-     &                WORK(KT2AM),1,0)
-         CALL DAXPY(NT1AM(ISYMC),1.D0,WORK(KCINT),1,WORK(KINTAI),1)
-C
-C        Calculate the term as L_{ai,em} * C'_{em}
-         CALL CCG_LXD(WORK(KETAC),ISYRES,WORK(KINTAI),ISYMC,
-     &                                   WORK(KL2AM),ISYML,0)
-         IF ( DEBUG.or.locdbg ) THEN
-            ETA1 = DDOT(NT1AM(ISYRES),WORK(KETAC),1,WORK(KETAC),1)
-            WRITE(LUPRI,1) 'Norm of alone Tbar_ck,ei*Cei: ',ETA1
-         ENDIF
-         !removed factor 2 to get FCI limit!
-         CALL DAXPY(NT1AM(ISYRES),1.0D0,WORK(KETAC),1,ETAC(1),1)
-         ! add to total tensor
-         IF ( DEBUG.or.locdbg ) THEN
-            ETA1 = DDOT(NT1AM(ISYRES),ETAC(1),1,ETAC(1),1)
-            WRITE(LUPRI,1)'Norm Eta^C after +Tbar_ck,ei*Cei:',ETA1
-         ENDIF
 
       !end if
       IF (IPRINT .GT. 5 ) THEN
