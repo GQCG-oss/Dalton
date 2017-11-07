@@ -270,7 +270,7 @@ C
             JWOPSY = 1
             CALL SIRSET(WORK,LWORK,OLDWOP)
             IAVERR = 0
-            CALL AVECHK(WORK,LWORK,IAVERR)
+            CALL AVECHK(IAVERR)
             IF (IAVERR .NE. 0) CALL QUIT(
      &         'SIRCTL RHF error: inconsistency in sup.sym. averaging')
             RHFWOP = .TRUE.
@@ -408,7 +408,7 @@ C              ... orbital super symmetries may have been reordered
                OLDWOP = .FALSE.
                CALL SIRSET(WORK,LWORK,OLDWOP)
                IAVERR = 0
-               CALL AVECHK(WORK,LWORK,IAVERR)
+               CALL AVECHK(IAVERR)
                IF (IAVERR .NE. 0) CALL QUIT('SIRCTL error: '//
      &         'inconsistency in sup.sym. averaging before QC-SCF call')
             END IF
@@ -551,7 +551,7 @@ C           ... orbital super symmetries may have been reordered
             ! SETCI will return NCONF=0 and cause error exit.
             CALL SIRSET(WORK,LWORK,OLDWOP)
             IAVERR = 0
-            CALL AVECHK(WORK,LWORK,IAVERR)
+            CALL AVECHK(IAVERR)
             IF (IAVERR .NE. 0) CALL QUIT(
      &      'SIRCTL CI/MC error: inconsistency in sup.sym. averaging')
          END IF
@@ -591,7 +591,7 @@ C           ... orbital super symmetries may have been reordered
             OLDWOP = .FALSE.
             CALL SIRSET(WORK,LWORK,OLDWOP)
             IAVERR = 0
-            CALL AVECHK(WORK,LWORK,IAVERR)
+            CALL AVECHK(IAVERR)
             IF (IAVERR .NE. 0) CALL QUIT(
      &      'SIRCTL FCVORB error: inconsistency in sup.sym. averaging')
          END IF
@@ -655,7 +655,7 @@ C              ... orbital super symmetries may have been reordered
                OLDWOP = .FALSE.
                CALL SIRSET(WORK,LWORK,OLDWOP)
                IAVERR = 0
-               CALL AVECHK(WORK,LWORK,IAVERR)
+               CALL AVECHK(IAVERR)
                IF (IAVERR .NE. 0) CALL QUIT(
      &         'SIRCTL CINO error: inconsistency in sup.sym. averaging')
             END IF
@@ -736,6 +736,11 @@ C
       END IF
  7070 FORMAT(//'@ ******* WARNING: wave function not converged *******')
 C
+C     -- truncate secondary/virtual orbital space
+C
+      IF (DO_VIRTRUNC) THEN
+         CALL SIR_VIRTRUNC(WORK,LWORK)
+      END IF
 C
 C *** Output sections
 C

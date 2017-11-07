@@ -1610,4 +1610,133 @@ C
 C end of PUNMO
 C
       END
+
+      SUBROUTINE SIR_VIRTRUNC(WORK,LWORK)
+!
+!     7-Nov-2017 Hans Joergen Aa. Jensen
+!
+!     Remove virtual orbitals according to .VIRTRUNC input
+!
+#include "implicit.h"
+#include "priunit.h"
+      REAL*8 WORK(LWORK)
+!
+! gnrinf.h : WRINDX
+! infinp.h : THR_VIRTRUNC
+! inforb.h : NCMOT, ...
+#include "maxorb.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inforb.h"
+      LOGICAL  ANTIS, OLDWOP
+      INTEGER  NORB_NEW(8)
+      CHARACTER*8 RN_LABEL
+
+      IROW(I) = (I*(I-1))/2
+
+      KFREE = 1
+      LFREE = LWORK
+! retrieve CMO
+      CALL MEMGET2('REAL','CMO',KCMO,NCMOT,WORK,KFREE,LFREE)
+      JRDMO = 9
+      CALL READMO(WORK(KCMO),JRDMO)
+! calculate R**n integrals in MO basis over secondary/virtual indices
+! (symmetry packed)
+      CALL MEMGET2('REAL','RN VIRPK ',KRN_VIR,NNORBT,WORK,KFREE,LFREE) ! NNSSHT has not been calculated, but NNORBT .gt. NNSSHT
+      CALL MEMGET2('REAL','RN MO PK ',KRN_MO,NNORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','RN AO PK ',KRN_AO,NNBAST,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','RN AO INT',KRNINT,NNBASX,WORK,KFREE,LFREE)
+      IF (N_in_RN .eq. 2) THEN
+         RN_LABEL = 'R2      '
+         THR_RN = THR_VIRTRUNC ** 2
+      ELSE IF (N_in_RN .eq. 4) THEN
+         RN_LABEL = 'R4      '
+         THR_RN = THR_VIRTRUNC ** 4
+      ELSE
+         WRITE(LUPRI,'(//A,I0)')
+     &   '(SIR_VIRTRUNC) Illegal N_in_RN from .TRUNCVIRT :',N_in_RN
+         CALL QUIT('SIR_VIRTRUNC: Illegal N_in_RN from .TRUNCVIRT')
+      END IF
+      CALL RDPROP(RN_LABEL,WORK(KRNINT),ANTIS)
+      CALL PKSYM1(WORK(KRNINT),WORK(KRN_AO),NBAS,NSYM,1)
+      CALL UTHUB(WORK(KRN_AO),WORK(KRN_MO),WORK(KCMO),
+     &    WORK(KFREE),NSYM,NBAS,NORB)
+      CALL GETVIR(WORK(KRN_MO),WORK(KRN_VIR))
+      CALL MEMREL('RN INT',WORK,1,KRN_MO,KFREE,LFREE)
+
+!     extract virtual (secondary) block in each symmetry,
+!     diagonalize and remove unwanted MO:s
+      NORB_NEW(:) = NORB(:)
+      NORBT_NEW   = NORBT
+      IISSH_I = 0
+      DO ISYM = 1, NSYM
+         NSSH_I = NSSH(ISYM)
+         IF (NSSH_I .EQ. 0) CYCLE
+         NBAS_I = NBAS(ISYM)
+         JRN_VIR = KRN_VIR + IISSH_I
+         JCMO    = KCMO + ICMO(ISYM) + NBAS_I*NOCC(ISYM)
+
+         CALL JACO_THR(WORK(JRN_VIR),WORK(JCMO),NSSH_I,NSSH_I,NBAS_I,
+     &      1.0D-12)
+
+         JCMO_1 = JCMO
+         JCMO_2 = JCMO
+         DO I = 1, NSSH_I
+            II = JRN_VIR-1 + IROW(I+1)
+            IF (WORK(II) .LT. THR_RN) THEN
+               IF (JCMO_1 .ne. JCMO_2) THEN
+                  CALL DCOPY(NBAS_I,WORK(JCMO_1),1,WORK(JCMO_2),1)
+               END IF
+               JCMO_2 = JCMO_2 + NBAS_I
+            ELSE ! remove this virtual/secondary orbital
+               NORB_NEW(ISYM) = NORB_NEW(ISYM) - 1
+               NORBT_NEW = NORBT_NEW - 1
+            END IF
+            JCMO_1 = JCMO_1 + NBAS_I
+         END DO
+
+         IISSH_I = IISSH_I + (NSSH_I*(NSSH_I+1))/2
+      END DO
+
+      IF (NORBT_NEW .EQ. NORBT) THEN
+         WRITE(LUPRI,'(/A)')
+     &' .VIRTRUNC: no orbitals removed, SIRIUS.RST not updated.'
+         GO TO 9000 ! if no orbitals removed, then exit
+      END IF
+
+      WRITE(LUPRI,'(/A,I0,A)') '.VIRTRUNC: ',NORBT-NORBT_NEW,
+     &' virtual/secondary orbitals removed, SIRIUS.RST updated.'
+      WRITE(LUPRI,'(A,8I5)')
+     &' Number of MOs per symmetry reduced from',NORB(1:NSYM)
+      WRITE(LUPRI,'(A,8I5)')
+     &'                                    to  ',NORB_NEW(1:NSYM)
+
+      CALL MEMGET2('REAL','CMO2',KCMO2,NCMOT,WORK,KFREE,LFREE)
+      JCMO2 = KCMO2
+      DO ISYM = 1, NSYM
+         JCMO1 = KCMO + ICMO(ISYM)
+         NCMO_I = NORB_NEW(ISYM)*NBAS(ISYM)
+         CALL DCOPY(NCMO_I,WORK(JCMO1),1,WORK(JCMO2),1)
+         JCMO2 = JCMO2 + NCMO_I
+      END DO
+      NORB(:) = NORB_NEW(:)
+      NORBT   = NORBT_NEW
+
+! update orbital information with the reduced number of molecular orbitals
+      WRINDX = .TRUE.
+      OLDWOP = .FALSE.
+      CALL SIRSET(WORK(KFREE),LFREE,OLDWOP)
+      IAVERR = 0
+      CALL AVECHK(IAVERR)
+      IF (IAVERR .NE. 0) CALL QUIT(
+     &   'SIR_VIRTRUNC error: inconsistency in sup.sym. averaging')
+      ! write new basis size info and CMO on LUIT1
+      CALL NEWORB('VIRTRUNC',WORK(KCMO2),.TRUE.)
+
+ 9000 CONTINUE
+
+      CALL QUIT('Exit because .VIRTRUNC finished.')
+
+      RETURN
+      END
 C --- end of sirius/sircmo.F ---

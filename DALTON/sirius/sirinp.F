@@ -419,6 +419,7 @@ C
       DONEVPT   = .FALSE.
       DOLUCITA  = .FALSE.
       DOAPSG    = .FALSE.
+      DO_VIRTRUNC = .FALSE.
 C  ---> Initialize SR-DFT stuff here !
       DOMCSRDFT = .FALSE.
       DOCISRDFT = .FALSE.
@@ -1670,7 +1671,7 @@ C         SETORB has already been called.
          JWOPSY = 1
          CALL SIRSET(CMO(K1),LCMO-K1,.FALSE.)
 C        CALL SIRSET(WRK,LWRK,OLDWOP)
-         CALL AVECHK(CMO(K1),LCMO-K1,INPERR)
+         CALL AVECHK(INPERR)
       END IF
 C
       IF (LUSUPM.NE.-1 .AND. NBAST .GT. 255) THEN
@@ -2293,7 +2294,7 @@ C
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
      *            '.KSPT2 ','.GASCI ','.XCINT ','.NUMGRI','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
-     *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','xXXXXXX'/
+     *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','.VIRTRU'/
 C
 
       functional_line_read = .false.
@@ -2684,7 +2685,7 @@ C     .COPFAC (for some srDFT testing)
 C
 C *** Option 32: .STEX
   133 CONTINUE
-      DOSTEX = .TRUE.
+         DOSTEX = .TRUE.
       GO TO 100
 C *** Option 34: .APSG
   134 CONTINUE
@@ -2692,7 +2693,10 @@ C *** Option 34: .APSG
         MCTYPE = 11
         NUMRUN   = NUMRUN + 1
       GO TO 100
+C *** Option 35: .VIRTRUNC
   135 CONTINUE
+        READ (LUCMD,*) N_in_RN, THR_VIRTRUNC
+        DO_VIRTRUNC = .TRUE.
       GO TO 100
 C
  8000 CONTINUE
