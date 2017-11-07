@@ -2489,6 +2489,21 @@ C
             CALL TIMER('POPOVLP',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
 C
+C           R**2 and R**4 integrals /hjaaj Nov 2017
+C
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            IORDER = 2
+            CALL PR1INT('R2     ',WORK,LWORK,IORDER,
+     &                  IDUMMY,TRIANG,PROPRI,IPRONE)
+            CALL TIMER('R2     ',TIMSTR,TIMEND)
+            CALL FLSHFO(LUPRI)
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            IORDER = 4
+            CALL PR1INT('R4     ',WORK,LWORK,IORDER,
+     &                  IDUMMY,TRIANG,PROPRI,IPRONE)
+            CALL TIMER('R4     ',TIMSTR,TIMEND)
+            CALL FLSHFO(LUPRI)
+C
 C           ***** Dipole length integrals *****
 C
 ! HJAaJ Jan 2011: Always calculate dipole and quadrupole integrals
