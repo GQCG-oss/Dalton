@@ -27,10 +27,10 @@ c/* Deck cc_rdrsp */
 C---------------------------------------------------------------------*
 C
 C   Purpose:  Read a response vector from file:
-C             - the vector is addressed via a list type LIST and 
-C               its index, IDXLST, with in that list. 
+C             - the vector is addressed via a list type LIST and
+C               its index, IDXLST, with in that list.
 C               IDXLST is calculated from IDXLST and symmetry info.
-C             - it is checked, that the vector has the symmetry ISYM. 
+C             - it is checked, that the vector has the symmetry ISYM.
 C             - according to the value of the read option IOPT and
 C               its compatibility with the CC model MODFIL for which
 C               the vector is stored on file, the single and double
@@ -42,22 +42,28 @@ C                   1  :  read the single excitation part
 C                   2  :  read the double excitation part
 C                   3  :  read both single and double excitation part
 C                   4  :  read the CPHF part (not available here...)
-C                   8  :  read the single excitation part 
+C                   8  :  read the single excitation part
 C                         of the 'effective' vector for triples models
-C                  16  :  read the double excitation part 
+C                  16  :  read the double excitation part
 C                         of the 'effective' vector for triples models
 C                  24  :  read both single and double excitation part
 C                         of the 'effective' vector for triples models
 C                  32  :  read the R12 double excitation part
 C
 C                  33  :  read both single and double excitation part
+C
+C                  64  :  read only the (+) part of doubles vector for
+C                         triplet
+C                 128  :  read only the (-) part of doubles vector for
+C                         triplet
+C
 C                         SUCCES: IOPT is returned as 1 or 3.
-C                         NO SUCCES: opening file fails, 
+C                         NO SUCCES: opening file fails,
 C                         it will not stop but return IOPT 33.
 C                         (out dated, use -IOPT instead)
 C
 C                -IOPT :  as IOPT, but does not stop on failure,
-C                         instead it returns IOPT=33, 
+C                         instead it returns IOPT=33,
 C                         on succes IOPT is returned with positive sign
 C
 C                  if IOPT=3 is obtained, but the double excitation
@@ -66,13 +72,13 @@ C                  vector) IOPT is reset to 1
 C
 C      NOTE: IOPT is input and output!!! do not pass a parameter
 C            or integer constant ...
-C       
+C
 C
 C      List types LIST:
 C
 C          'R0' : right zeroth-order amplitude vector (IDXLST ignored)
-C          'R1' : right first-order response vector 
-C          'R2' : right second-order response vector  
+C          'R1' : right first-order response vector
+C          'R2' : right second-order response vector
 C          'R3' : right third-order response vector  
 C          'R4' : right fourth-order response vector  
 C          'RC' : right first-order Cauchy vectors 
@@ -1499,7 +1505,7 @@ C
       END IF
 
       ! singles cluster amplitudes
-      IF ((IOPT.EQ.1).OR.(IOPT.EQ.3)) THEN
+      IF (MOD(IOPT,2).EQ.1) THEN
          READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC1(I),I=1,NT1AM(ISYM))
       ELSE IF (IOPT.GT.1) THEN
          READ(LUSAVE,IOSTAT=IOS,ERR=993) 
@@ -1513,7 +1519,17 @@ C
      &        (VEC2(NT2AM(ISYM)+I),I=1,NT2AMA(ISYM))
          ELSE
            READ(LUSAVE,IOSTAT=IOS,ERR=993)
-         END IF                                     
+         END IF
+      ELSE IF (IAND(IOPT,64).EQ.64) THEN
+         ! Get only the (+) part
+         READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NT2AM(ISYM))
+         READ(LUSAVE,IOSTAT=IOS,ERR=993)
+         RETURN
+      ELSE IF (IAND(IOPT,128) .EQ. 128) THEN
+         ! Get only the (-) part
+         READ(LUSAVE,IOSTAT=IOS,ERR=993)
+         READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NT2AMA(ISYM))
+         RETURN
       ELSE IF (IOPT .GT. 3) THEN
          READ(LUSAVE,IOSTAT=IOS,ERR=993) 
          READ(LUSAVE,IOSTAT=IOS,ERR=993)

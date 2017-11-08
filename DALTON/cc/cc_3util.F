@@ -693,7 +693,7 @@ C     Based on CC_T2AO by H. Kock, A. Sanchez, O. Christiansen and
 C     A. Halkier.
 C     PURPOSE:
 C             Tdjci -> Tci,j (delta)
-C     i.e. transform the other index, than CC_T2AO, needed in case
+C     i.e. transform the other index than CC_T2AO, needed in case
 C     of non-symmetric T2AM
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -1092,7 +1092,7 @@ C  /* Deck cc_22am3 */
       SUBROUTINE CC_22AM3(RHO2,XIAJB,XMINT,ISYMIM,WORK,LWORK)
 C
 C     Written by Rasmus Faber - 2017
-C     Based on cc_22am3 by Asger Halkier
+C     Based on cc_22am by Asger Halkier
 C
 C     Purpose: Contract the M intermediate with the (ma|nb) integrals
 C     to obtain the E contribution to the left transformed doubles
@@ -1875,8 +1875,6 @@ C
    60    CONTINUE
    50 CONTINUE
 C
-C
-C
 C--------------------------------------------------------------
 C     Calculate the contraction of C1AM with FCKMO.
 C--------------------------------------------------------------
@@ -1889,6 +1887,99 @@ C
 
       CALL DGER(NT1AM(ISYMAI),NT1AM(ISYMBJ),ONE,C1AM,1,WORK,1,
      &          RHO2(KOFF3),NTOTAI)
+C
+C     All done
+      CALL QEXIT(myname)
+C
+      RETURN
+      END
+
+C  /* Deck cc_L1FCK3P */
+      SUBROUTINE CC_L1FCK3P(RHO2,C1AM,FCKMO,ISYMV,ISYMF)
+C
+C     Rasmus Faber 2017,
+C     based on CC_L1FCK by Asger Halkier
+C
+C     Purpose: To calculate the disconnected (first) term
+C              of the H contribution to RHO2.
+C              Triplet version, with packed RHO2
+C
+C     rho2+(ai,bj) = L1am(ai)*FCKMO(jb) + FCKMO(ai)*L1am(bj)
+C     rho2-(ai,bj) = L1am(ai)*FCKMO(jb) - FCKMO(ai)*L1am(bj)
+C
+      IMPLICIT NONE
+      CHARACTER(LEN=*), PARAMETER :: myname = 'CC_L1FCK3P'
+C
+      DOUBLE PRECISION, INTENT(INOUT) :: RHO2(*)
+      DOUBLE PRECISION, INTENT(IN) :: C1AM(*), FCKMO(*)
+      INTEGER, INTENT(IN) :: ISYMV, ISYMF
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+      INTEGER :: ISYMAI, ISYMBJ, ISYRES
+      INTEGER :: NAI, NBJ
+      INTEGER :: KP, KM, KRHOP, KRHOM
+      INTEGER :: KOFFP, KOFFM, KOFF3, NTOTAI
+      DOUBLE PRECISION :: TEMP, TEMP1, TEMP2
+C
+      CALL QENTER(myname)
+C
+      ISYRES = MULD2H(ISYMV,ISYMF)
+      KRHOP = 1
+      KRHOM = NT2AM(ISYRES) + 1
+C
+C--------------------------------------------------------------
+C     Calculate the contraction of C1AM with FCKMO.
+C--------------------------------------------------------------
+C
+      ISYMAI = ISYMV
+      ISYMBJ = ISYMF
+
+      IF (ISYMV.EQ.ISYMF) THEN
+         ISYMAI = ISYMV
+         ISYMBJ = ISYMAI
+         DO NBJ = 1, NT1AM(ISYMBJ)
+            KOFFP = KRHOP + IT2AM(ISYMAI,ISYMBJ) + NBJ*(NBJ-1)/2
+            KOFFP = KRHOM + IT2AM(ISYMAI,ISYMBJ) + NBJ*(NBJ-1)/2
+            DO NAI = 1, NBJ-1
+               KP = KOFFP + (NAI-1)
+               KM = KOFFP + (NAI-1)
+               TEMP1 = C1AM(NAI)*FCKMO(NBJ)
+               TEMP2 = FCKMO(NAI)*C1AM(NBJ)
+               RHO2(KP) = RHO2(KP) + TEMP1 + TEMP2
+               RHO2(KM) = RHO2(KM) + TEMP1 - TEMP2
+            END DO
+        END DO
+      ELSE IF (ISYMV.LT.ISYMF) THEN ! only first term is non-zero
+         ISYMAI = ISYMV
+         ISYMBJ = ISYMF
+         DO NBJ = 1, NT1AM(ISYMBJ)
+            KOFFP = KRHOP + IT2AM(ISYMAI,ISYMBJ) + NT1AM(ISYMAI)*(NBJ-1)
+            KOFFP = KRHOM + IT2AM(ISYMAI,ISYMBJ) + NT1AM(ISYMAI)*(NBJ-1)
+            DO NAI = 1, NT1AM(ISYMAI)
+               KP = KOFFP + (NAI-1)
+               KM = KOFFM + (NAI-1)
+               TEMP = C1AM(NAI)*FCKMO(NBJ)
+               RHO2(KP) = RHO2(KP) + TEMP
+               RHO2(KM) = RHO2(KM) + TEMP
+            END DO
+         END DO
+      ELSE ! Only the second term is stored
+         ISYMAI = ISYMF
+         ISYMBJ = ISYMV
+         DO NBJ = 1, NT1AM(ISYMBJ)
+            KOFFP = KRHOP + IT2AM(ISYMAI,ISYMBJ) + NT1AM(ISYMAI)*(NBJ-1)
+            KOFFP = KRHOM + IT2AM(ISYMAI,ISYMBJ) + NT1AM(ISYMAI)*(NBJ-1)
+            DO NAI = 1, NT1AM(ISYMAI)
+               KP = KOFFP + (NAI-1)
+               KM = KOFFM + (NAI-1)
+               TEMP = C1AM(NBJ)*FCKMO(NAI)
+               RHO2(KP) = RHO2(KP) + TEMP
+               RHO2(KM) = RHO2(KM) - TEMP
+            END DO
+         END DO
+      END IF
 C
 C     All done
       CALL QEXIT(myname)
