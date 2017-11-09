@@ -365,8 +365,8 @@ C-tbp:
         ISYMI   = ISYEXC(ISTATEI)
         ISYMF   = ISYEXC(ISTATEF)
         ISYME   = MULD2H(ISYMI,ISYMF)
-        IMULI   = 1
-        IMULF   = 1
+        IMULI   = IMULTE(ISTATEI)
+        IMULF   = IMULTE(ISTATEF)
         ISTISY  = ISTATEI - ISYOFE(ISYMI)
         ISTFSY  = ISTATEF - ISYOFE(ISYMF)
         EIGVI   = EIGVAL(ISTATEI)

@@ -5268,8 +5268,8 @@ C
 *=====================================================================*
 c /* deck CCDOTRSP */
 *=====================================================================*
-       SUBROUTINE CCDOTRSP(IDOTS,DOTPROD,IOPT,TYPE,ITRAN,MXTRAN,MXVEC,
-     &                     VEC1,VEC2,ISYVEC,WORK,LWORK                )
+       SUBROUTINE CCDOTRSP(IDOTS,DOTPROD,IIOPT,TYPE,ITRAN,MXTRAN,MXVEC,
+     &                     VEC1,VEC2,ISYVEC,WORK,LWORK)
 *---------------------------------------------------------------------*
 *
 *    Purpose: dot vector on a batch of other vectors
@@ -5278,9 +5278,11 @@ c /* deck CCDOTRSP */
 *             IDOTS   --  arrays of vectors to be dotted on
 *             DOTPROD --  array for resulting dot products
 *
-*             IOPT    --  1 : use only singles
+*             IIOPT   --  1 : use only singles
 *                         2 : use only doubles
 *                         3 : use singles and doubles
+*                         4 : triplet case, doubles only
+*                         5 : triplet case, singles and doubles
 *
 *             TYPE    --  type of vectors to be dotted on
 *             ITRAN   --  index of present vector in the
@@ -5306,7 +5308,7 @@ c /* deck CCDOTRSP */
       PARAMETER (LOCDBG = .FALSE.)
 
       CHARACTER TYPE*(*)
-      INTEGER IOPT, ITRAN, MXVEC, MXTRAN, ISYVEC, LWORK
+      INTEGER IIOPT, ITRAN, MXVEC, MXTRAN, ISYVEC, LWORK
       INTEGER IDOTS(MXVEC,MXTRAN)
 
 #if defined (SYS_CRAY)
@@ -5328,22 +5330,26 @@ c /* deck CCDOTRSP */
 
       CHARACTER MODEL*(10)
       INTEGER KZETA1, KZETA2, KEND, LEND, IVEC, ISYCTR, IZETAV
-
+      INTEGER IOPT
 * external functions:
       INTEGER ILSTSYM
 
 
       CALL QENTER('CCDOTRSP')
-
+      IOPT = IIOPT
 *---------------------------------------------------------------------*
 * allocate memory for vectors to be read from file:
 *---------------------------------------------------------------------*
       KZETA1 = 1
       KEND   = KZETA1 + NT1AM(ISYVEC)
-      IF (IOPT.EQ.32) THEN
+      IF (IIOPT.EQ.32) THEN
         KZETA2 = KEND
         KEND   = KZETA2 + NTR12AM(ISYVEC)
-      ELSE IF (IOPT.GT.1) THEN
+      ELSE IF (IAND(IIOPT,4).EQ.4) THEN
+        KZETA2 = KEND
+        KEND   = KZETA2 + 2*NT2AM(ISYVEC)
+        IOPT = IIOPT - 2
+      ELSE IF (IIOPT.GT.1) THEN
         KZETA2 = KEND
         KEND   = KZETA2 + NT2AM(ISYVEC)
       END IF
@@ -5398,9 +5404,11 @@ C
           CON1 = ZERO
         END IF
 
-        IF (IOPT.EQ.2 .OR. IOPT.EQ.3) THEN
+        IF (IIOPT.EQ.2 .OR. IIOPT.EQ.3) THEN
           IF (.NOT.CCS) CALL CCLR_DIASCL(WORK(KZETA2),0.5d0,ISYCTR)
           CON2 = DDOT(NT2AM(ISYCTR),WORK(KZETA2),1,VEC2,1)
+        ELSE IF (IAND(IIOPT,4).EQ.4) THEN
+          CON2 = DDOT(2*NT2AM(ISYCTR),WORK(KZETA2),1,VEC2,1)
         ELSE IF (IOPT.EQ.32) THEN
           CON2 = DDOT(NTR12AM(ISYCTR),WORK(KZETA2),1,VEC2,1)
         ELSE

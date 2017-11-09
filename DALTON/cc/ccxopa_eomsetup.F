@@ -68,7 +68,7 @@ c /* deck ccxopa_eomsetup */
       REAL RESULT(MXOPA)
       REAL FCONS(MXFVEC,MXFTRAN)
       REAL EACONS(MXAVEC,MXATRAN)
-      REAL X2CONS(MXXVEC,MXXTRAN)  
+      REAL X2CONS(MXXVEC,MXXTRAN)
       REAL EOMX2CONS(MXEOMXVEC,MXEOMXTRAN)     !(csi*LE)
       REAL EOML0CONS(MXEOML0VEC,MXEOML0VEC) !(Tbar*RE)
       !REAL EOMCONS(MXXVEC,MXEOMXTRAN)     !(csi*LE).(Tbar*RE)
@@ -94,7 +94,8 @@ c /* deck ccxopa_eomsetup */
       INTEGER ITRAN, I, IRSD, IRSDX, ISTATEI, ISTATEF, ISYMI, ISYMF,
      &        ISTISY, ISTFSY, IOP, IOPER, ISYMO, ISYME, ITURN,
      &        IKAP, MXEAVEC, MXE2VEC, IN2VEC, IR1VEC, MFVEC, 
-     &        ITMIF, IVEC, NBOPA, IDUM
+     &        ITMIF, IVEC, NBOPA, IDUM,
+     &        IMULI, IMULF
 
       INTEGER MXEOME2VEC, MXEOM2
       INTEGER NL0TRAN
@@ -200,6 +201,9 @@ c /* deck ccxopa_eomsetup */
        ISTFSY  = ISTATEF - ISYOFE(ISYMF)
        EIGVI   = EIGVAL(ISTATEI)
        EIGVF   = EIGVAL(ISTATEF)
+CRF    We need to know multiplicities as well.
+       IMULI   = IMULTE(ISTATEI)
+       IMULF   = IMULTE(ISTATEF)
 
        IF (LOCDBG) THEN
          WRITE(LUPRI,*) 'CCXOPA_EOMSETUP:'
@@ -208,6 +212,13 @@ c /* deck ccxopa_eomsetup */
          WRITE(LUPRI,*) 'ISYMI,ISYMF:',ISYMI,ISYMF
          WRITE(LUPRI,*) 'ISTISY,ISTFSY:',ISTISY,ISTFSY
          WRITE(LUPRI,*) 'EIGVI,EIGVF:',EIGVI,EIGVF
+         WRITE(LUPRI,*) 'IMULI,IMULF:',IMULI,IMULF
+       END IF
+
+       IF (IMULI.NE.IMULF) THEN
+          WRITE(LUPRI,*) 'Only singlet operators are currently'
+     &                   //' implemented!'
+          CYCLE
        END IF
 
        DO IOP = 1, NQR2OP
@@ -221,7 +232,7 @@ c /* deck ccxopa_eomsetup */
         IF (LPDBS) CALL QUIT('perturbation-dependent basis sets not '//
      &              'implemented in CCXOPA_EOMSETUP.')
 
-        IF (ISYMO.EQ.ISYME) THEN 
+        IF (ISYMO.EQ.ISYME) THEN
 
           NBOPA = NBOPA + 1
 
@@ -230,7 +241,7 @@ c /* deck ccxopa_eomsetup */
           END IF
 
 *---------------------------------------------------------------------*
-*         in all cases we need LE x A{X} x RE 
+*         in all cases we need LE x A{X} x RE
 *---------------------------------------------------------------------*
           !write(lupri,*) "Call CC_SETXE('Eta')"
           !call flshfo(lupri)
@@ -258,13 +269,12 @@ c /* deck ccxopa_eomsetup */
               NXE2TRAN = MAX(NXE2TRAN,ITRAN)
               MXE2VEC  = MAX(MXE2VEC, IVEC)
               WXINIF   = X2CONS(IVEC,ITRAN)
-            ELSE IF (LEOMXOPA) then
-              !recover index of LE and do dot prod with Xi(X)
-          !write(lupri,*) "Call CC_SETXE('Xi') for LE * Xksi{X}"
-          !write(lupri,*) "IVEC =", IVEC, " ITRAN", ITRAN
-          !write(lupri,*) "ISTATEI", istatei
-          !call flshfo(lupri)
-
+            ELSE IF (LEOMXOPA.AND.(IMULF.EQ.1).AND.(ISYMF.EQ.1)) then
+              ! Only do this term if the F state is totally symmetric in
+              ! both spin and space!
+              !
+              ! recover index of LE and do dot prod with Xi(X)
+              !
               CALL CC_SETXE('Xi ',IEOMXE2TRAN,IEOMX2DOTS,
      &                            MXEOMXTRAN,MXEOMXVEC,
      &             0,IOPER,IKAP,0,0,0,ISTATEI,ITRAN,IVEC)
@@ -282,9 +292,9 @@ c /* deck ccxopa_eomsetup */
               MXEOM2      = MAX(MXEOM2,IVEC)
 
               WL0Rf    = EOML0CONS(IVEC,ITRAN)
-              !write(lupri,*) "WL0Rf:", WL0Rf 
-              WLiXiRf = WLiXi*WL0Rf 
-            ELSE
+              !write(lupri,*) "WL0Rf:", WL0Rf
+              WLiXiRf = WLiXi*WL0Rf
+            ELSE IF(.NOT.LEOMXOPA) THEN
               IR1VEC = IR1TAMP(LABEL,LORX,EIGVI-EIGVF,IDUM)
               CALL CC_SETF12(IFTRAN,IFDOTS,MXFTRAN,MXFVEC,
      &                       ISTATEI,ISTATEF,IR1VEC,ITRAN,IVEC)
@@ -353,7 +363,7 @@ c /* deck ccxopa_eomsetup */
       END IF
 
 *---------------------------------------------------------------------*
-* print the lists: 
+* print the lists:
 *---------------------------------------------------------------------*
 * general statistics:
       IF ((.NOT.LADD) .OR. LOCDBG) THEN

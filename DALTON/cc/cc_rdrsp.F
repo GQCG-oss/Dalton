@@ -1430,7 +1430,7 @@ Cholesky
      *         MODFIL(1:5).EQ.'RTCCD'.OR.
      *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'
      *        ) THEN
-        IOPT = IAND(IOPT,1+2+4+IBIT32)
+        IOPT = IAND(IOPT,1+2+4+IBIT32+64+128)
       ELSE IF (MODFIL(1:3).EQ.'CC3'      .OR.
      *         MODFIL(1:8).EQ.'CCSDT-1a' .OR.
      *         MODFIL(1:8).EQ.'CCSDT-1B' .OR.

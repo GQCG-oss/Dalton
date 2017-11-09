@@ -67,7 +67,7 @@ C
 !                       (XLAMD1(gam,i)*XLAMD2(del,j)
 !                       +XLAMD2(gam,i)*XLAMD1(del,j))
 !
-!   IF (IOPT .EQ. 5)  
+!   IF (IOPT .EQ. 5)
 !                     Triplet minus-intermediate.
 !                     SCRM is right vector transformed
 !                     to t(ci,j)(delta)
@@ -81,7 +81,7 @@ C
 !                     Same as IOPT .EQ. 3 except for the fact
 !                     that the product of PLUS and PLUS
 !                     (See the routine) is zero. (The T-amplitudes
-!                     for the (+)triplet case are antisymmetric 
+!                     for the (+)triplet case are antisymmetric
 !                     with respect to the interchange of i and j )
 !
 !     The symmetry input to this routine is somewhat redundant but
@@ -1001,7 +1001,7 @@ C
 !     17-2-1999 Kasper Hald:
 !
 !     IF ICON = 4 then the triplet intermediate:
-!     
+!
 !     g(a-bar,i,l,c) + g(a,i-bar,l,c) is calculated
 !
 !     IF ICON = 5 then the triplet intermediate:
@@ -1442,7 +1442,7 @@ C
             KOFF5 = IT2BGT(ISYMK,ISYALI) + K
 C
             IF ((ICON .EQ. 4) .OR. (ICON .EQ. 5) .OR. (ICON .EQ. 6)
-     *                                         ) THEN 
+     *                                         ) THEN
                CALL DAXPY(NT1AO(ISYALI),ONE,WORK(KSCR11),1,SCR2(KOFF5),
      *                    NRHFK)
 !
@@ -1455,7 +1455,7 @@ C----------------------------------------------------
 C           In 2C1 linear tronsformation extra  cont.
 C----------------------------------------------------
 C
-            IF ((ICON .EQ. 3) .OR. (ICON .EQ. 1) 
+            IF ((ICON .EQ. 3) .OR. (ICON .EQ. 1)
      &           .OR. (ICON .EQ. 4) .OR. (ICON .EQ. 6)) THEN
 C
                ISYALI = MULD2H(ISYALG,ISYMHC)
@@ -1855,7 +1855,7 @@ C
                IF (ISYMAI .EQ. ISYMBJ) THEN
 !
                 IF (NAI .GE. NT1AM(ISYMBJ)) THEN
-!      
+!
                   DO NBJ = 1, NT1AM(ISYMBJ)
                       NAIBJ = IT2AM(ISYMAI, ISYMBJ) + INDEX(NAI,NBJ)
                      OMEGA22(NAIBJ) = OMEGA22(NAIBJ) + WORK(NBJ)
@@ -2087,7 +2087,7 @@ C--------------------------------------
 C     Transpose the cluster amplitudes.
 C--------------------------------------
 C
-      IF ((ICON .EQ. 2) .OR. (ICON .EQ. 3)) THEN 
+      IF ((ICON .EQ. 2) .OR. (ICON .EQ. 3)) THEN
          IF (.NOT. T2TCOR) THEN
             CALL CCSD_T2TP(T2AM,WORK(KEND1),LWRK1,ISYMT2)
          ENDIF
@@ -2119,11 +2119,11 @@ C     local C-intermediate for F-matrix transformation.
 !
 C     Thus:
 C
-C     Modification to calculate terms in 2C1 right transformation in 
+C     Modification to calculate terms in 2C1 right transformation in
 C     CCLR :
 C
 C                     1. if icon = 2 both contributions are calculated,
-C                        otherwise if ICON =1:only the integral 
+C                        otherwise if ICON =1:only the integral
 C                                       TILDE[(ki | ac)]
 C                              = (k i-bar | a c) + (k i | a-bar c)
 C
@@ -5202,7 +5202,7 @@ C
       RETURN
       END
 C  /* Deck cc_pram3 */
-      SUBROUTINE CC_PRAM3(CAM1,CAMP,CAMM,PT1,PTP,PTM,ISYMTR,LGRS)
+      SUBROUTINE CC_PRAM3(CAM1,CAMP,CAMM,PT1,PTP,PTM,ISYMTR,LGRS,RNORM)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     30-5-1995 Ove Christiansen
@@ -5222,6 +5222,7 @@ C
 #include "ccsdinp.h"
 C
 C
+      LOGICAL, INTENT(IN) :: RNORM
       LOGICAL LGRS
       DIMENSION CAM1(*), CAMP(*), CAMM(*)
 C
@@ -5241,8 +5242,25 @@ C
         C2PNOSQ = 0.0D0
         C2MNOSQ = 0.0D0
       END IF
+      IF (RNORM) THEN
+        C2PNOSQ = 4.0D0*C2PNOSQ
+        C2MNOSQ = 4.0D0*C2MNOSQ
+      END IF
 C
       CNOSQ  = C1NOSQ + C2PNOSQ + C2MNOSQ
+C
+      IF (RNORM) THEN
+C        Scale doubles part by two and renormalize
+         FACT = 1.0D0/SQRT(CNOSQ)
+         CALL DSCAL(NT1AM(ISYMTR),FACT,CAM1,1)
+         FACT = 2.0D0*FACT
+         CALL DSCAL(NT2AM(ISYMTR),FACT,CAMP,1)
+         CALL DSCAL(NT2AM(ISYMTR),FACT,CAMM,1)
+         C1NOSQ = C1NOSQ/CNOSQ
+         C2PNOSQ = C2PNOSQ/CNOSQ
+         C2MNOSQ = C2MNOSQ/CNOSQ
+         CNOSQ = 1.0D0
+      END IF
 C
       IF (CNOSQ .EQ. 0.0D0) THEN
          PT1 = 0.0D0

@@ -22,7 +22,7 @@
 !
 C
 *=====================================================================*
-       SUBROUTINE CCEOM_XIETA( IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL, 
+       SUBROUTINE CCEOM_XIETA( IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL,
      &                      FILXI,   IXDOTS, XCONS, 
      &                      FILETA,  IEDOTS, ECONS, 
      &                      MXVEC,   WORK,    LWORK         )
@@ -62,14 +62,14 @@ Cholesky
       INTEGER NXETRAN, LWORK
       INTEGER IXETRAN(MXDIM_XEVEC,NXETRAN)
       INTEGER IXDOTS(MXVEC,NXETRAN), IEDOTS(MXVEC,NXETRAN)
-      
-#if defined (SYS_CRAY) 
-      REAL WORK(LWORK) 
+
+#if defined (SYS_CRAY)
+      REAL WORK(LWORK)
       REAL XCONS(MXVEC,NXETRAN), ECONS(MXVEC,NXETRAN)
-#else 
-      DOUBLE PRECISION WORK(LWORK) 
+#else
+      DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION XCONS(MXVEC,NXETRAN), ECONS(MXVEC,NXETRAN)
-#endif 
+#endif
 
       INTEGER NTRAN, IFIRST, IBATCH, NBATCH, IDUM
       INTEGER ISTART, IEND, KEND, LEND
@@ -92,7 +92,7 @@ Cholesky
         WRITE (LUPRI,*) 'nb. of batches needed:', NBATCH
         CALL FLSHFO(LUPRI)
       END IF
-  
+
       DO IBATCH = 1, NBATCH
         IFIRST = (IBATCH-1) * MAXXETRAN + 1
         NTRAN  = MIN(NXETRAN-(IFIRST-1),MAXXETRAN)
@@ -118,14 +118,14 @@ Cholesky
           WRITE (LUPRI,*) 'start at :',IFIRST
           WRITE (LUPRI,*) '# transf.:',NTRAN
           WRITE (LUPRI,*) 'kend     :',KEND
-          IDUM = 0 
+          IDUM = 0
           WRITE (LUPRI,*) 'work(0)  :',WORK(IDUM)
         END IF
 
         CALL CCEOM_XIETA1(IXETRAN(1,IFIRST),NTRAN,IOPTRES,
      &                  IORDER,LISTL,MXVEC,
-     &                  FILXI, IXDOTS(1,IFIRST),XCONS(1,IFIRST), 
-     &                  FILETA,IEDOTS(1,IFIRST),ECONS(1,IFIRST), 
+     &                  FILXI, IXDOTS(1,IFIRST),XCONS(1,IFIRST),
+     &                  FILETA,IEDOTS(1,IFIRST),ECONS(1,IFIRST),
      &                  WORK(ISTART),   WORK(IEND),
      &                  WORK(KEND), LEND )
 
@@ -174,11 +174,11 @@ c /* deck ccEOM_xieta1 */
 *
 *       Hbar^(1) = hbar^(1)_pq E_pq + 1/2 gbar^(1)_pqrs e_pqrs
 *
-*       hbar^(1)_pq =  h^[1]_pq + 
+*       hbar^(1)_pq =  h^[1]_pq +
 *                      h^[0]_alp,q LQ^p_alp,p + h^[0]_p,bet LQ^h_bet,q
 *       gbar_pqrs defined analogously
 *
-*    IXETRAN(1,*)  --  operator indices in LBLOPR array 
+*    IXETRAN(1,*)  --  operator indices in LBLOPR array
 *    IXETRAN(2,*)  --  indices for left vectors for ETA result vector
 *    IXETRAN(3,*)  --  indices for output Xi vector on FILXI list
 *    IXETRAN(4,*)  --  indices for output Eta vector on FILETA list
@@ -209,7 +209,7 @@ c /* deck ccEOM_xieta1 */
 *    IOPTRES = 0 : all result vectors are written to direct access
 *                  files. FILXI and FILETA are used as file names,
 *                  the start addresses of the vectors are returned
-*                  in IXETRAN(3,*) and IXETRAN(4,*) 
+*                  in IXETRAN(3,*) and IXETRAN(4,*)
 *
 *    IOPTRES = 3 : each result vector is written to its own file by
 *                  a CALL to CC_WRRSP using FILXI/FILETA as list type
@@ -276,6 +276,7 @@ c /* deck ccEOM_xieta1 */
 #include "ccsections.h"
 #include "qm3.h"
 !#include "qmmm.h"
+#include "ccexci.h"
 #include "ccnoddy.h"
 #include "cch2d.h"
 #include "ccrc1rsp.h"
@@ -313,14 +314,15 @@ c /* deck ccEOM_xieta1 */
       integer lueta,luxi,LWRK1,LWRK1SV ,LWRK2, kzeta1,kzeta2
       integer mscratch0,mscratch1,mwork, nbatch
       CHARACTER*10 MODELW
+      INTEGER :: ISPNETA, ISPNOP, ISPNTR
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
-      REAL AVERAGE, XNORM, FREQ, FREQLST, KTEST
+      REAL AVERAGE, FREQ, FREQLST, KTEST
       REAL XCONS(MXVEC,NXETRAN), ECONS(MXVEC,NXETRAN)
 #else
       DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION AVERAGE, XNORM, FREQ, FREQLST, KTEST
+      DOUBLE PRECISION AVERAGE, FREQ, FREQLST, KTEST
       DOUBLE PRECISION XCONS(MXVEC,NXETRAN), ECONS(MXVEC,NXETRAN)
 #endif
 
@@ -501,6 +503,7 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
         ISYHOP = ISYOPR(IOPER)     ! symmetry of hamiltonian
         LABELH = LBLOPR(IOPER)     ! operator label
         LTWOEL = LPDBSOP(IOPER)    ! two-electron contribution
+        ISPNOP = 1                 ! Only singlet operators for now
 
         SKIPETA = ( IXETRAN(4,ITRAN) .EQ. -1 )
         LRELAX  = LTWOEL .OR. (IRELAX.GE.1)
@@ -510,6 +513,12 @@ C
         IF (.NOT. SKIPETA) THEN
           ISYCTR = ILSTSYM(LISTL,IDLSTL) ! sym. of ZETA vector
           ISYETA = MULD2H(ISYHOP,ISYCTR) ! sym. of ETA result vector
+          IF (LISTL(1:2).EQ.'LE') THEN
+            ISPNTR = IMULTE(IDLSTL)
+          ELSE
+            ISPNTR = 1
+          ENDIF
+          ISPNETA = ISPNTR ! Only singlet operators work for now
         END IF
 
           KZETA1 = KEND1
@@ -520,6 +529,9 @@ C
              !call flshfo(lupri)
              KETA2 = KEND2
              KEND2 = KETA2  + NT2AM(ISYETA)
+             IF (ISPNETA.EQ.3) THEN ! Eta is triplet: twice as long!
+                KEND2 = KEND2 + NT2AM(ISYETA)
+             END IF
           END IF
           LWRK2 = LWORK - KEND2
           !write(lupri,*)'SONIA: KETA1:', KETA1, ' KETA2:', KETA2
@@ -530,8 +542,13 @@ C
             CALL QUIT('Insufficient work space in CC_XIETA. (CCETA2)')
           END IF
 
-          call CCCI_ETAC(ISYHOP,LABELH,WORK(KETA1),LISTL,IDLSTL,
-     &                   0, DUMMY,WORK(KEND2),LWRK2)
+          IF (ISPNTR.EQ.3.AND.ISPNOP.EQ.1) THEN
+             CALL CC_ETAC13(ISYMOP,LABELH,WORK(KETA1),LISTL,IDLSTL,
+     &                     .TRUE., DUMMY,WORK(KEND2),LWRK2)
+          ELSE
+             call CCCI_ETAC(ISYHOP,LABELH,WORK(KETA1),LISTL,IDLSTL,
+     &                      0, DUMMY,WORK(KEND2),LWRK2)
+          END IF
 
         IF (LOCDBG) THEN
           WRITE (LUPRI,*) 'CCEOM_XIETA> IOPER, IRELAX = ',IOPER,IRELAX
@@ -605,11 +622,11 @@ C
              IVEC = 1
              WRITE(LUPRI,*) 'ECONS TRIPLES CONTRIBUTION:'
              DO WHILE (IEDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
-                WRITE (LUPRI,*) 
+                WRITE (LUPRI,*)
      &              '1 ECONS:',IVEC,ITRAN,ECONS(IVEC,ITRAN),IOPTW
                 IVEC = IVEC + 1
              END DO
-           END IF                
+           END IF
 C
            !shall we do it?   EOM, SONIA?
            IF (.NOT.CCS) CALL CCLR_DIASCL(WORK(KETA2),TWO,ISYRES)
@@ -620,7 +637,7 @@ C
            IF (LOCDBG) THEN
              IVEC = 1
              DO WHILE (IEDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
-                WRITE (LUPRI,*) 
+                WRITE (LUPRI,*)
      &              ' 2 ECONS:',IVEC,ITRAN,ECONS(IVEC,ITRAN),IOPTW
                 IVEC = IVEC + 1
              END DO
@@ -629,12 +646,7 @@ C
           ELSE
            CALL QUIT('Illegal value for IOPTRES in CCEOM_XIETA.')
           END IF
-
-          ! X1 vectors store <HF|J^(1)|CC> average on common block
-          !IF (FILETA(1:3).EQ.'X1 ') THEN
-          !  AVEX1(IFILE) = AVERAGE
-          !END IF
-     
+C
           IF (LOCDBG) THEN
             WRITE (LUPRI,*) 'Final result of CCEOM_XIETA:'
             WRITE (LUPRI,*) 'operator label:      ',LBLOPR(IOPER)
@@ -1077,8 +1089,6 @@ C--------------------------------
 C
       FCKCON = .TRUE.
       ETRAN  = .FALSE.
-C      DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-C      WRITE(LUPRI,*) 'Integral norm before CCRHS_EFCK out norm:',DN
       CALL CCRHS_EFCK(WORK(KEI1),WORK(KEI2),WORK(KLAMDH),
      *                WORK(KCTMO),WORK(KEND3),LEND3,FCKCON,
      *                ETRAN,ISYMC)

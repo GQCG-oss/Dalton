@@ -5,7 +5,7 @@ c*DECK CC_ETAC
       SUBROUTINE CC_ETAC13(ISYMC,LBLC,        !Operator stuff
      &                     ETAC,                !Result vector
      &                     LIST,ILSTNR,         !Left vector
-     &                     LEOM,              
+     &                     LEOM,
      &                     XINT,WORK,LWORK)
 C
 C-----------------------------------------------------------------------
@@ -17,8 +17,8 @@ C
 C     eta(tau_nu)= (<HF| + Sum(mu)L(1)<mu|)
 C                         exp(-t)[C,tau_nu]exp(T)|HF>
 C
-C     Input:          
-C   
+C     Input:
+C
 C
 C     LIST= 'L0' for zeroth order left amplitudes.
 C                ISYML should be ISYMOP in this case.
@@ -55,7 +55,7 @@ C
 !Sonia & Filip: find a better place
 #include "ccsections.h"
 
-      DOUBLE PRECISION, PARAMETER :: TWO = 2.0D00, HALF = 0.5D00, 
+      DOUBLE PRECISION, PARAMETER :: TWO = 2.0D00, HALF = 0.5D00,
      &                               ZERO = 0.0D0, ONEM = -1.0D0
       LOGICAL, PARAMETER :: LOCDBG = .false.
 C
@@ -63,7 +63,7 @@ C     Input:
 C
       INTEGER, INTENT(IN) :: ISYMC,  !  Symmetry of C
      &                       ILSTNR, ! List number for input
-     &                       LWORK   ! 
+     &                       LWORK   !
       CHARACTER(LEN=*), INTENT(IN) ::  LBLC, !
      &                                 LIST  ! See above
       DOUBLE PRECISION, INTENT(OUT)::  ETAC(*), ! Output array
@@ -182,7 +182,7 @@ C-----------------------------------------------
 C     Make MO T1-transformed property integrals.
 C-----------------------------------------------
 C
-      CALL CC_FCKMO(WORK(KCTMO),WORK(KLAMDP),WORK(KLAMDH),     
+      CALL CC_FCKMO(WORK(KCTMO),WORK(KLAMDP),WORK(KLAMDH),
      *              WORK(KEND21),LEND21,ISYMC,1,1)
 C
 C----------------------------------------------------------
@@ -209,7 +209,7 @@ C
 C
   100 CONTINUE
 C
-C     Initialize ETAC      
+C     Initialize ETAC
       CALL DZERO(ETAC,NT1AM(ISYRES)+2*NT2AM(ISYRES))
 
 C----------------------------------------------
@@ -218,7 +218,7 @@ C----------------------------------------------
 C
       IOPT = 65
       CALL CC_RDRSP(LIST,ILSTNR,ISYML,IOPT,MODEL,
-     *              WORK(KL1AM),WORK(KT2AM)) 
+     *              WORK(KL1AM),WORK(KT2AM))
 C
 C--------------------------------
 C     Put C into E matrix format.
@@ -237,7 +237,7 @@ C
       CALL CCLR_E1C1(ETAC,WORK(KL1AM),WORK(KEI1),WORK(KEI2),
      *               WORK(KEND3),LEND3,ISYML,ISYMC,'T')
 C
-C Square L2(+) onto 
+C Square L2(+) onto
       IF (.NOT. CCS) THEN
          CALL CCRHS3_R2IJ(WORK(KT2AM),WORK(KEND3),LEND3,ISYML)
          CALL CC_T2SQ(WORK(KT2AM),WORK(KL2AM),ISYML)
@@ -246,7 +246,7 @@ C Calculate the doubles (+)G term
 C---------------------------------
 C Transpose i,j and a,b blocks of C
          CALL CC_EITR(WORK(KEI1),WORK(KEI2),WORK(KEND3),LEND3,ISYMC)
-C Scale C by 1/2, as this term has a factor of 1/2 
+C Scale C by 1/2, as this term has a factor of 1/2
          CALL DSCAL(NMATAB(ISYMC),HALF,WORK(KEI1),1)
          CALL DSCAL(NMATIJ(ISYMC),HALF,WORK(KEI2),1)
 C Calculate actual term
@@ -264,7 +264,7 @@ C----------------------------------------------
 C     The routine needs to be modified to allow this
       IOPT = 128
       CALL CC_RDRSP(LIST,ILSTNR,ISYML,IOPT,MODEL,
-     *              WORK(KL1AM),WORK(KT2AM))  
+     *              WORK(KL1AM),WORK(KT2AM))
 C We need L(+) - L(-) for X and Y in the following.
       CALL CC_T2SQ3A(WORK(KT2AM),WORK(KL2AM),ISYML,ONEM)
 C---------------------------------
@@ -338,7 +338,7 @@ C
       IF (LEOM) THEN
 C
 C---------------------------------------------------------------
-C     EOM contribution to ETAC:                     ~ 
+C     EOM contribution to ETAC:                     ~
 C     etac = 2sum(ei)(L(+) + L(-))_{ckei}*(C_{ei} + t_{ei,fn}*C_{nf})
 C---------------------------------------------------------------
          KCINT = KEND21

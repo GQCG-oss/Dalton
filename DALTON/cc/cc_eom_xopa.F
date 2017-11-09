@@ -123,7 +123,7 @@ c /* deck CC_EOM_XOPA */
       ! number of excited states
       NSTATES = 0
       DO ISYM = 1, NSYM
-        NSTATES = NSTATES + NCCEXCI(ISYM,1)
+        NSTATES = NSTATES + NCCEXCI(ISYM,1) + NCCEXCI(ISYM,3)
       END DO
 
       ! maximum number of transformations or vector calculations
@@ -189,9 +189,6 @@ c /* deck CC_EOM_XOPA */
 *---------------------------------------------------------------------*
       LADD = .FALSE.
 
-      !write (lupri,*) MSGDBG, '            '
-      !write (lupri,*) MSGDBG, ' call CCXOPA_EOMSETUP, LADD=', LADD
-      !write (lupri,*) MSGDBG, '            '
       CALL CCXOPA_EOMSETUP(WORK(KFTRAN),WORK(KFDOTS),WORK(KFCONS),
      &                  NFTRAN,MXFTRAN,MXFVEC,
      &                  WORK(KE1TRAN),WORK(KE1DOTS),WORK(KE1CONS),
@@ -308,9 +305,6 @@ c /* deck CC_EOM_XOPA */
 *---------------------------------------------------------------------*
       LADD = .TRUE.
 
-      !write (lupri,*) MSGDBG, '            '
-      !write (lupri,*) MSGDBG, ' re-call CCXOPA_EOMSETUP, LADD=', LADD
-      !write (lupri,*) MSGDBG, '            '
       CALL CCXOPA_EOMSETUP(WORK(KFTRAN),WORK(KFDOTS),WORK(KFCONS),
      &                  NFTRAN,MXFTRAN,MXFVEC,
      &                  WORK(KE1TRAN),WORK(KE1DOTS),WORK(KE1CONS),

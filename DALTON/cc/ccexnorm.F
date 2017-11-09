@@ -108,7 +108,9 @@ C
       end if
 
       if (triplet .and. nccexci(isym,imult).gt.0) then
-         call quit('Triplet not yet implemented in CCEXNORM.')
+          !call quit('Triplet not yet implemented in CCEXNORM.')
+         call qexit('ccexnorm')
+         return
       end if
 
       ! set index of first and last vector in symmetry class
