@@ -424,7 +424,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
 #    DALTON/cc/cc_lanczos_Tmatrix_v0.F
 #    DALTON/cc/cc_lanczos_Fmatrix.F
 #    DALTON/cc/cc_lanczos_Fmatrix_old.F
-    DALTON/cc/cc_molden.F
+#    DALTON/cc/cc_molden.F
 #    DALTON/cc/cc_molden_dyson.F
     DALTON/cc/rpa_grad.F
     DALTON/cc/cc_active.F

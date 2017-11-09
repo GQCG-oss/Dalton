@@ -492,7 +492,6 @@ C
 C
 #include "ccexcicvs.h"
 
->>>>>>> 7d1f7a1... Better control of CVS and IONIS in std solver
       LOGICAL LOCDBG, LNOREAD
       PARAMETER (LOCDBG = .FALSE.) 
       CHARACTER*(*)  FC1AM,FC2AM,FC12AM,FS12AM,FS2AM

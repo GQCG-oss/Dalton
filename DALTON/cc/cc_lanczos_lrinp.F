@@ -279,14 +279,14 @@ C           ------------------------------------------------------
 C           ------------------------------------------------------
 C           .NEWDRV: use new lanczos drive with alternative F constr
 C           ------------------------------------------------------
-            newdriver = .true.
+!            newdriver = .true.
             GO TO 100
 
 17          CONTINUE
 C           ------------------------------------------------------
 C           .OLDDRV: use old lanczos drive with old F constr
 C           ------------------------------------------------------
-            olddriver = .true.
+!            olddriver = .true.
             GO TO 100
 
 18          CONTINUE
@@ -301,7 +301,7 @@ C           ------------------------------------------------------
 C           .OLDFMAT use dot function in QR F mat build instead
 C           of my own batching strategy
 C           ------------------------------------------------------
-            oldfmat = .true.
+!            oldfmat = .true.
             GO TO 100
 
 20          CONTINUE
@@ -309,41 +309,40 @@ C           ------------------------------------------------------
 C           .SNSEEDS use alternative seeds. 
 C            First case is exc state dependent seeds
 C           ------------------------------------------------------
-            Sn_seeds = .true.
-            READ(LUCMD,*) StateNumber
-            READ(LUCMD,*) StateSymmetry
-            GO TO 100
+!            Sn_seeds = .true.
+!            READ(LUCMD,*) StateNumber
+!            READ(LUCMD,*) StateSymmetry
+!            GO TO 100
 21          CONTINUE
 C           ------------------------------------------------------
 C           .USE_RG use RG routine to diagonalize the T matrix
 C           instead of DGEEV
 C           ------------------------------------------------------
-            USE_RG = .true.
+!            USE_RG = .true.
             GO TO 100
 C           ------------------------------------------------------
 C           .CVSEPAration remove valence only excitations
 C           ------------------------------------------------------
 22          CONTINUE
-            LCVSLCZ = .true.
-            WRITE(LUPRI,*)'LANCZOS_INPUT: CVS approx requested'
-            !how many per symmetry
-            READ(LUCMD,*) (NRHFCORE(I),I=1,MSYM)
-            !which ones
-            DO I = 1, MSYM
-               READ(LUCMD,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
-            END DO
-            WRITE(LUPRI,*)'Requested number of core orbs per sym'
-            write(lupri,*) (NRHFCORE(I),I=1,MSYM)
-            WRITE(LUPRI,*)'Indices of requested core orbs'
-            DO I = 1, MSYM
-               write(LUpri,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
-            END DO
+!            LCVSLCZ = .true.
+!            WRITE(LUPRI,*)'LANCZOS_INPUT: CVS approx requested'
+!            !how many per symmetry
+!            READ(LUCMD,*) (NRHFCORE(I),I=1,MSYM)
+!            !which ones
+!            DO I = 1, MSYM
+!               READ(LUCMD,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
+!            END DO
+!            WRITE(LUPRI,*)'Requested number of core orbs per sym'
+!            write(lupri,*) (NRHFCORE(I),I=1,MSYM)
+!            WRITE(LUPRI,*)'Indices of requested core orbs'
+!            DO I = 1, MSYM
+!               write(LUpri,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
+!            END DO
             GO TO 100
 C
 C----------------------------------------------------------------
 C           .IONISATION  ionisation trick
 C----------------------------------------------------------------
->>>>>>> 918432d... Line moved around
 C
           ELSE
            WRITE (LUPRI,'(/5A/)') ' Prompt "',WORD,

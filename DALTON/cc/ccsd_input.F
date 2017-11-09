@@ -1233,7 +1233,6 @@ C=====================================================================*
      *            '.CCSPIC','.CC2PIC','.CCSDPI','.MARGIN','.SQROVL',
      *            '.ANALYS','.CVSEPA','.IONISA','.CVSPER','.RMCORE',
      *            '.CHEXDI','.DV4DIS','.XXXXXX','.XXXXXX'/
->>>>>>> a904a10... Added input option to remove core orbitals in exc state calculations
 
 *---------------------------------------------------------------------*
 * begin:
