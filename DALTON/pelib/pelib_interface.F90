@@ -33,7 +33,7 @@ module pelib_interface
     public :: pelib_ifc_activate, pelib_ifc_deactivate
     public :: pelib_ifc_init, pelib_ifc_finalize, pelib_ifc_input_reader
     public :: pelib_ifc_fock, pelib_ifc_energy, pelib_ifc_response, pelib_ifc_london
-    public :: pelib_ifc_molgrad, pelib_ifc_infld, pelib_ifc_lf
+    public :: pelib_ifc_molgrad, pelib_ifc_infld, pelib_ifc_lf, pelib_ifc_localfield
     public :: pelib_ifc_mep, pelib_ifc_mep_noqm, pelib_ifc_cube
 #if defined(VAR_MPI)
     public :: pelib_ifc_slave
@@ -130,7 +130,6 @@ subroutine pelib_ifc_input_reader(word)
 #include "priunit.h"
     character(len=7), intent(inout) :: word
     call qenter('pelib_ifc_input_reader')
-    ! if (.not. use_pelib()) call quit('PElib not active')
     call pe_input_reader(word, lucmd)
     call qexit('pelib_ifc_input_reader')
 end subroutine pelib_ifc_input_reader
@@ -142,7 +141,6 @@ subroutine pelib_ifc_init()
 #include "mxcent.h"
 #include "nuclei.h"
     call qenter('pelib_ifc_init')
-    ! if (.not. use_pelib()) call quit('PElib not active')
     call pe_init(lupri, cord(1:3,1:natoms), charge(1:natoms))
     call qexit('pelib_ifc_init')
 end subroutine pelib_ifc_init
@@ -271,6 +269,24 @@ subroutine pelib_ifc_london(fckmats)
     deallocate(fckmats_packed)
     call qexit('pelib_ifc_london')
 end subroutine pelib_ifc_london
+
+subroutine pelib_ifc_localfield(eefmats)
+    use polarizable_embedding, only: pe_master
+    use pe_variables, only: peqm
+#include "inforb.h"
+    real*8, dimension(:), intent(out) :: eefmats
+    integer :: i, ndim
+    call qenter('pelib_ifc_localfield')
+    if (.not. peqm) call quit('PElib not active')
+#if defined(VAR_MPI)
+    call pelib_ifc_start_slaves(8)
+#endif
+    call pe_master(runtype='effdipole', &
+                   triang=.true.,       &
+                   ndim=nbast,          &
+                   fckmats=eefmats)
+    call qexit('pelib_ifc_localfield')
+end subroutine pelib_ifc_localfield
 
 subroutine pelib_ifc_lf()
     use polarizable_embedding, only: pe_master

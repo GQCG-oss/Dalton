@@ -699,8 +699,7 @@ C
       use pelib_interface, only: use_pelib, pelib_ifc_finalize,
      &                           pelib_ifc_deactivate, pelib_ifc_domep,
      &                           pelib_ifc_domep_noqm,
-     &                           pelib_ifc_mep_noqm,
-     &                           pelib_ifc_dolf, pelib_ifc_lf
+     &                           pelib_ifc_mep_noqm, pelib_ifc_dolf
 
 #include "implicit.h"
 #include "dummy.h"
@@ -1180,7 +1179,6 @@ C Request effective dipole integrals using PE library
              IF (PELIB_IFC_DOLF()) THEN
                  WRITE(LUPRI,'(/A)') 'PE-QM calculation includes '//
      &                               'effective external field effects.'
-                 CALL PELIB_IFC_LF()
              END IF
          END IF
 Classical MEP calculations using PE library
