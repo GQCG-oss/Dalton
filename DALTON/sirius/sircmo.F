@@ -1624,13 +1624,17 @@ C
 ! gnrinf.h : WRINDX
 ! infinp.h : THR_VIRTRUNC
 ! inforb.h : NCMOT, ...
+! inforb.h : NCONF
+! inftap.h : LUIT1
 #include "maxorb.h"
 #include "gnrinf.h"
 #include "infinp.h"
 #include "inforb.h"
-      LOGICAL  ANTIS, OLDWOP
-      INTEGER  NORB_NEW(8)
-      CHARACTER*8 RN_LABEL
+#include "infvar.h"
+#include "inftap.h"
+      LOGICAL  ANTIS, OLDWOP, FNDLB2
+      INTEGER  NORB_NEW(8), NORBT_NEW, IROW, I
+      CHARACTER*8 RN_LABEL, STAR8, RTNLBL(2)
 
       IROW(I) = (I*(I-1))/2
 
@@ -1722,6 +1726,20 @@ C
       NORB(:) = NORB_NEW(:)
       NORBT   = NORBT_NEW
 
+      NRS = 0
+      IF (NCONF .GT. 1) THEN
+         REWIND LUIT1
+         IF (FNDLB2('STARTVEC',RTNLBL,LUIT1)) THEN
+            READ (RTNLBL(1),'(2I4)') NRS, I
+            CALL MEMGET2('REAL','CVECS',KCVECS,NRS*NCONF,
+     &         WORK,KFREE,LFREE)
+            DO II = 1, NRS
+               JCVECS = KCVECS + (II-1)*NCONF
+               CALL READT(LUIT1,NCONF,WORK(JCVECS))
+            END DO
+         END IF
+      END IF
+
 ! update orbital information with the reduced number of molecular orbitals
       WRINDX = .TRUE.
       OLDWOP = .FALSE.
@@ -1730,12 +1748,30 @@ C
       CALL AVECHK(IAVERR)
       IF (IAVERR .NE. 0) CALL QUIT(
      &   'SIR_VIRTRUNC error: inconsistency in sup.sym. averaging')
-      ! write new basis size info and CMO on LUIT1
-      CALL NEWORB('VIRTRUNC',WORK(KCMO2),.TRUE.)
+      ! write new basis size info on LUIT1
+      CALL NEWIT1
+C
+C     save NRS CI vectors read above (if any):
+C
+      IF (NRS .GT. 0) THEN
+         WRITE (LUIT1) '********',RTNLBL(1),'VIRTRUNCSTARTVEC'
+         DO II = 1, NRS
+            JCVECS = KCVECS + (II-1)*NCONF
+            CALL WRITT(LUIT1,NCONF,WORK(JCVECS))
+         END DO
+      END IF
+      ! write new reduced set of MO coefficients
+      WRITE (LUIT1) '********        VIRTRUNCNEWORB  '
+      CALL WRITT(LUIT1,NCMOT,WORK(KCMO2))
+      WRITE (LUIT1) '********        VIRTRUNCEODATA  '
+      FLUSH(LUIT1)
+      ! hjaaj 9-Nov-2017: for some strange reason did gfortran 5.5 not empty the output buffer before the QUIT without the flush statement ...
+      REWIND (LUIT1)
 
  9000 CONTINUE
+      CALL MEMREL('VIRTRUNC',WORK,1,1,KFREE,LFREE)
 
-      CALL QUIT('Exit because .VIRTRUNC finished.')
+      CALL QUIT('DALTON: Planned exit because .VIRTRUNC finished.')
 
       RETURN
       END
