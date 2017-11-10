@@ -107,12 +107,6 @@ C
          call quit('Illegal multiplicity in CCEXNORM.')
       end if
 
-      if (triplet .and. nccexci(isym,imult).gt.0) then
-          !call quit('Triplet not yet implemented in CCEXNORM.')
-         call qexit('ccexnorm')
-         return
-      end if
-
       ! set index of first and last vector in symmetry class
       if (triplet) then
         ilstnrst = itrofe(isym) + 1
@@ -163,7 +157,10 @@ C
           write(lupri,'(//1x,a)') 'Found a degeneracy between:'
           write(lupri,'(1x,a)')   '---------------------------'
           write(lupri,'(1x,a)')   'State  Excitation Energy'
-
+          if (triplet) then
+             call quit('Handling of degeneracies not implemented for '//
+     &                 'triplet excitations')
+          end if
           ludeg = -1
           call wopen2(ludeg,fndeg,64,0) 
 

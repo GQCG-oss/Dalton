@@ -1941,22 +1941,24 @@ C
          ISYMBJ = ISYMAI
          DO NBJ = 1, NT1AM(ISYMBJ)
             KOFFP = KRHOP + IT2AM(ISYMAI,ISYMBJ) + NBJ*(NBJ-1)/2
-            KOFFP = KRHOM + IT2AM(ISYMAI,ISYMBJ) + NBJ*(NBJ-1)/2
+            KOFFM = KRHOM + IT2AM(ISYMAI,ISYMBJ) + NBJ*(NBJ-1)/2
             DO NAI = 1, NBJ-1
                KP = KOFFP + (NAI-1)
-               KM = KOFFP + (NAI-1)
+               KM = KOFFM + (NAI-1)
                TEMP1 = C1AM(NAI)*FCKMO(NBJ)
                TEMP2 = FCKMO(NAI)*C1AM(NBJ)
                RHO2(KP) = RHO2(KP) + TEMP1 + TEMP2
                RHO2(KM) = RHO2(KM) + TEMP1 - TEMP2
             END DO
+            RHO2(KOFFP+NBJ-1) = 0.0D0
+            RHO2(KOFFM+NBJ-1) = 0.0D0
         END DO
       ELSE IF (ISYMV.LT.ISYMF) THEN ! only first term is non-zero
          ISYMAI = ISYMV
          ISYMBJ = ISYMF
          DO NBJ = 1, NT1AM(ISYMBJ)
             KOFFP = KRHOP + IT2AM(ISYMAI,ISYMBJ) + NT1AM(ISYMAI)*(NBJ-1)
-            KOFFP = KRHOM + IT2AM(ISYMAI,ISYMBJ) + NT1AM(ISYMAI)*(NBJ-1)
+            KOFFM = KRHOM + IT2AM(ISYMAI,ISYMBJ) + NT1AM(ISYMAI)*(NBJ-1)
             DO NAI = 1, NT1AM(ISYMAI)
                KP = KOFFP + (NAI-1)
                KM = KOFFM + (NAI-1)
@@ -1970,7 +1972,7 @@ C
          ISYMBJ = ISYMV
          DO NBJ = 1, NT1AM(ISYMBJ)
             KOFFP = KRHOP + IT2AM(ISYMAI,ISYMBJ) + NT1AM(ISYMAI)*(NBJ-1)
-            KOFFP = KRHOM + IT2AM(ISYMAI,ISYMBJ) + NT1AM(ISYMAI)*(NBJ-1)
+            KOFFM = KRHOM + IT2AM(ISYMAI,ISYMBJ) + NT1AM(ISYMAI)*(NBJ-1)
             DO NAI = 1, NT1AM(ISYMAI)
                KP = KOFFP + (NAI-1)
                KM = KOFFM + (NAI-1)

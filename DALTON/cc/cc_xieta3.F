@@ -87,9 +87,10 @@ C     EXTERNAL FUNCTIONS
       DOUBLE PRECISION :: DDOT
       INTEGER :: ILSTSYM
 C
-      CALL AROUND( 'IN '//myname//': Constructing ETAC(L1) vector ')
+      CALL AROUND( 'Constructing ETA^{'// LBLC
+     &              //'}('// LIST //') vector ')
 C      IF ( (IPRINT .GT. 10).or.locdbg ) THEN
-C         CALL AROUND( 'IN CCCI_ETAC: Constructing ETAC(L1) vector ')
+C         CALL AROUND( 'IN CCCI_ETAC: Constructing ETAC(LE) vector ')
 C      ENDIF
 C
 C--------------------------------
@@ -236,8 +237,8 @@ C--------------------------------------------
 C
       CALL CCLR_E1C1(ETAC,WORK(KL1AM),WORK(KEI1),WORK(KEI2),
      *               WORK(KEND3),LEND3,ISYML,ISYMC,'T')
-C
-C Square L2(+) onto
+C                   ~
+C Square L2(+) onto L2
       IF (.NOT. CCS) THEN
          CALL CCRHS3_R2IJ(WORK(KT2AM),WORK(KEND3),LEND3,ISYML)
          CALL CC_T2SQ(WORK(KT2AM),WORK(KL2AM),ISYML)
@@ -251,7 +252,7 @@ C Scale C by 1/2, as this term has a factor of 1/2
          CALL DSCAL(NMATIJ(ISYMC),HALF,WORK(KEI2),1)
 C Calculate actual term
          KOFFP = NT1AM(ISYRES) + 1
-         CALL CCRHS_E(ETAC(KOFFP),WORK(KT2AM),WORK(KEI1),WORK(KEI2),
+         CALL CCRHS_E(ETAC(KOFFP),WORK(KL2AM),WORK(KEI1),WORK(KEI2),
      &                WORK(KEND3),LEND3,ISYML,ISYMC)
 C Restore factor of C
          CALL DSCAL(NMATAB(ISYMC),TWO,WORK(KEI1),1)
@@ -267,13 +268,6 @@ C     The routine needs to be modified to allow this
      *              WORK(KL1AM),WORK(KT2AM))
 C We need L(+) - L(-) for X and Y in the following.
       CALL CC_T2SQ3A(WORK(KT2AM),WORK(KL2AM),ISYML,ONEM)
-C---------------------------------
-C Calculate the doubles (-)G term
-C---------------------------------
-      KOFFM = KOFFP + NT2AM(ISYRES)
-      CALL CCRHS_E3(DUMMY,.FALSE.,WORK(KT2AM),WORK(KEI1),WORK(KEI2),
-     &              WORK(KEND3),LEND3,ISYML,ISYMC,
-     &              ETAC(KOFFM),.TRUE.)
 C
 C--------------------------------
 C     Put T2 (packed) amplitudes in etac2.
@@ -334,6 +328,8 @@ C
             WRITE(LUPRI,1) 'Norm of eta1-after X&Y cont:       ',ETA1
          ENDIF
       ENDIF
+C We have L(+)-L(-), we need L(+)+L(-)
+      CALL CC_T2SQTRANSP(WORK(KL2AM),ISYML)
 C
       IF (LEOM) THEN
 C
@@ -361,8 +357,6 @@ C        Add t_{em,fn} *C_{nf} to C_{em}
          CALL CCG_LXD(WORK(KCINT),ISYMC,WORK(KINTIA),ISYMC,
      &                WORK(KT2AM),1,0)
          CALL DAXPY(NT1AM(ISYMC),1.D0,WORK(KCINT),1,WORK(KINTAI),1)
-C We have L(+)-L(-), we need L(+)+L(-)
-         CALL CC_T2SQTRANSP(WORK(KL2AM),ISYML)
 C        Calculate the term as L_{ai,em} * C'_{em}
          CALL CCG_LXD(WORK(KETAC),ISYRES,WORK(KINTAI),ISYMC,
      &                                   WORK(KL2AM),ISYML,1)
@@ -373,6 +367,16 @@ C        Calculate the term as L_{ai,em} * C'_{em}
          !removed factor 2 to get FCI limit!
          CALL DAXPY(NT1AM(ISYRES),1.0D0,WORK(KETAC),1,ETAC(1),1)
       END IF
+C
+C---------------------------------
+C Calculate the doubles (-)G term
+C---------------------------------
+C
+      KOFFM = KOFFP + NT2AM(ISYRES)
+      CALL CC_T2SQSYMSCAL(WORK(KL2AM),ISYML,ZERO)
+      CALL CCRHS_E3(DUMMY,.FALSE.,WORK(KL2AM),WORK(KEI1),WORK(KEI2),
+     &              WORK(KEND3),LEND3,ISYML,ISYMC,
+     &              ETAC(KOFFM),.TRUE.)
 C
 C------------------------------------------------
 C     Workspace for T2AM and X and Y is now free.
