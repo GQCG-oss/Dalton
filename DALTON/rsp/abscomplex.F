@@ -2619,7 +2619,6 @@ C
       KFREE = 1
       LFREE = LWRK
 C
-      CALL DIPLAB(LABEL,INDEX)
       IF (LABEL(2:8).EQ.'DIPLEN') THEN
          ITYPE = 1
       ELSE IF (LABEL(2:8).EQ.'ANGMOM') THEN
@@ -2629,9 +2628,11 @@ C
       ELSE IF (LABEL(2:8).EQ.'DIPVEL') THEN
          ITYPE = 4
       ELSE
-         WRITE(LUPRI,'(A)') ' Warning: Unknown operator!'
+         !WRITE(LUPRI,'(A)') ' Warning: Unknown operator!'
+         ! - could e.g. be PSO for .NSCD
          RETURN
       END IF
+      CALL DIPLAB(LABEL,INDEX)
 C
 
       KZYVAR=2*KZVAR

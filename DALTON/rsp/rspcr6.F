@@ -769,10 +769,9 @@ C
       ELSE IF (LAB(1:1).EQ.'Z') THEN
          I=3
       ELSE
-         CALL QENTER('DIPLAB')
-         WRITE(LUPRI,'(//2A)')
-     &   'FATAL ERROR, DIPLAB called with a non-dipole label: ',LAB
-         CALL QUIT('FATAL ERROR, DIPLAB called with a non-dipole label')
+         I=-123456789 ! very negative number, chosen to give error if used as index
+!        WRITE(LUPRI,'(//2A)')
+!    &   'INFO: DIPLAB called with a non-dipole label: ',LAB
       END IF
 C
       RETURN
