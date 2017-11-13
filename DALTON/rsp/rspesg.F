@@ -143,7 +143,7 @@ C     =========
 C
 
        IF ( IPRRSP .GE. 4 ) THEN
-         CALL HEADER('Molecular gradient (au)',-1)
+         CALL HEADER('Molecular gradient contributions (au)',-1)
          WRITE (LUPRI,'(A,I3,/)') 'For excited state number : ', IESG 
 
          CALL HEADER('Molecular gradient (au) - KE',-1)

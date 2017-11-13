@@ -167,7 +167,7 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/4A/)') ' ERROR: Keyword "',WORD,
-     *            '" not recognized for ',WORD1
+     &            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword for '//WORD1)
     1          CONTINUE ! .PRINT
@@ -178,9 +178,7 @@ C
                   ENDIF
                   IF (IPREAD .EQ. IPREAD_ini) ICHANG = ICHANG - 1
                GO TO 100
-    2          CONTINUE
-C                 'CONTINUUM': generate continuum functions of Kaufmann
-C                 Sonia, 2012
+    2          CONTINUE ! .CONTINUUM: generate continuum functions of Kaufmann (Sonia, 2012)
                   IF (LCMMAX .GT. -1) THEN
                      WRITE (LUPRI,'(/A/)')
      &          ' Input error: .CONTINUUM and .CM FUN not both allowed.'
@@ -304,8 +302,7 @@ C determined symmetry
             end if
             WRITE (LUPRI,'(2(A,F4.1))')
      &           ' Sequence starts at n=',CMSTR,' and ends at n=', CMEND
-            IF (ZCMVAL .NE. D1)
-     &           WRITE (LUPRI,'(A,F10.3)')
+                 WRITE (LUPRI,'(A,F10.3)')
      &         ' Net charge of ionic core',ZCMVAL
                  WRITE(LUPRI,'(/A/A/A/A/A)')
      &         ' Proper reference for these basis functions:'
@@ -316,7 +313,7 @@ C determined symmetry
 
             IF (LCMMAX .GT. 4) THEN
                WRITE (LUPRI,'(/A)')
-     &           ' ERROR: Center of mass basis functions are'//
+     &           ' FATAL ERROR: Center of mass basis functions are'//
      &           ' not defined for l(max) > 4'
                CALL QUIT('Error in input processing for '//WORD1)
             END IF
@@ -708,7 +705,7 @@ C
       real(8), allocatable :: cprim(:, :, :, :)
       real(8), allocatable :: cprimu(:, :, :, :)
       CHARACTER*80 BASREF(10,KATOM,3)
-      CHARACTER*1 KASYM(3,3),ID3,SPDCAR,CRT
+      CHARACTER*1  KASYM(3,3),ID3,CRT
       CHARACTER*72 TTITLE(2)
       CHARACTER*2 SYMTXT
       CHARACTER*15 SYMGROUP

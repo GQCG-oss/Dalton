@@ -201,7 +201,6 @@ C
 C     Calculate polarizability
 C
       DO J=1,NEQ2S
-        CALL DIPLAB(LABEL,INDEX)
         IF (LABEL(2:8).EQ.'DIPLEN') THEN
           ITYPE = 1
         ELSE IF (LABEL(2:8).EQ.'ANGMOM') THEN
@@ -211,10 +210,12 @@ C
         ELSE IF (LABEL(2:8).EQ.'DIPVEL') THEN
           ITYPE = 4
         ELSE
-          WRITE(LUABSPRI,'(2A)') ' Warning : Unknown operator! ',LABEL
+!         WRITE(LUABSPRI,'(2A)') ' Warning : Unknown operator! ',LABEL
+!         - operator might be PSO (for .NSCD)
           GO TO 778
         END IF
 C
+        CALL DIPLAB(LABEL,INDEX)
         RESLRF(1,J,INDEX,INDEX,ITYPE) = 
      &         DDOT(KZYVAR,GD,1,XSOL(1,1,J),1)
         RESLRF(2,J,INDEX,INDEX,ITYPE) = 

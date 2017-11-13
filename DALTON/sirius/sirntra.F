@@ -174,7 +174,7 @@ C     Set TRINP and TRUNIT
 C
       CALL N_TRASET(JRDAO, KWORK)
 C
-      CALL N_TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,DUMMY,
+      CALL N_TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,VDUMMY,
      &            WORK,KWORK)
 C     CALL N_TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
 C    &            WRK,MEMX)
@@ -264,7 +264,7 @@ C  address of ICDTRA from the LUMINT address array
 C  (here IADRM).
 C
 #include "implicit.h"
-      DIMENSION IADRM(3,1297)
+      INTEGER  IADRM(3,1297)
       IADFRE = IADRM(1,1297)
       IADCMO = IADRM(2,1297)
       IADCDT = IADRM(3,1297)
@@ -3429,25 +3429,33 @@ C
 #include "implicit.h"
 C
       CALL QENTER('N_TRALVL')
-      JTRLVL = ABS(ITRSIR)
-      KTRLVL = 0
-      IF (JTRLVL .EQ. 0) THEN
+      ! a: active, o:occupied, g:general in comments for JTRSIR
+      JTRSIR = ABS(ITRSIR)
+      IF (JTRSIR .EQ. 0) THEN      ! (aa|aa)
+         JTRLVL = 0
          KTRLVL = 1
-      ELSE IF (JTRLVL .EQ. 1) THEN
+      ELSE IF (JTRSIR .EQ. 1) THEN ! (ga|aa)
+         JTRLVL = 1
          KTRLVL = 1
-      ELSE IF (JTRLVL .EQ. 2) THEN
-         KTRLVL = 0
-      ELSE IF (JTRLVL .EQ. 3) THEN
-         JTRLVL = 2
-         KTRLVL = 1
-      ELSE IF (JTRLVL .EQ. 4) THEN
+      ELSE IF (JTRSIR .EQ. 2) THEN ! (gg|oo) + <gg|oo> (for (aa|ii) and (ai|ai)
          JTRLVL = 2
          KTRLVL = 0
-      ELSE IF (JTRLVL .EQ. 5) THEN
+      ELSE IF (JTRSIR .EQ. 3) THEN ! (gg|aa) + <gg|aa>
+         JTRLVL = 2
+         KTRLVL = 1
+      ELSE IF (JTR2IR .EQ. 4) THEN ! (gg|oo) + <gg|oo>
+         JTRLVL = 2
+         KTRLVL = 0
+      ELSE IF (JTRSIR .EQ. 5) THEN ! (gg|go)
          JTRLVL = 3
          KTRLVL = 0
-      ELSE IF (JTRLVL .GE. 6) THEN ! KTRLVL is inactive
+      ELSE IF (JTRSIR .EQ. 6) THEN ! (gg|ga)
+      ! hjaaj aug 2017;  new option for abacus: we only need active-general for abatr1
+         JTRLVL = 3
+         KTRLVL = 1
+      ELSE IF (JTRSIR .GE. 7) THEN ! (gg|gg)
          JTRLVL = 4
+         KTRLVL = -1  ! KTRLVL is inactive
       END IF
       NTRLVL = 100*KTRLVL + JTRLVL
       CALL QEXIT('N_TRALVL')
