@@ -217,17 +217,13 @@ C
             JTRLVL = 0
          ELSE IF (SOPPA .OR. NEXVAL.EQ.0) THEN  ! SOPPA or quadratic response
             JTRLVL = -10
-         ELSE IF (FCKTRA_TYPE .gt. 0) THEN
-            JTRLVL = -4
-         ELSE IF (NEWTRA .AND. .NOT.USEDRC) THEN
-            JTRLVL = -5 ! level 5 needed for occ-sec distributions in NEWTRA
          ELSE
             JTRLVL = -4
          ENDIF
 
          IF (NEWCMO .OR. FTRCTL .OR.
      &       (ABS(JTRLVL) .GT. ITRLVL_LAST) .OR.
-     &       (USEDRC .AND. LVLDRC_LAST .LT. 0) .OR. NEWCMO) THEN
+     &       (USEDRC .AND. LVLDRC_LAST .LT. 0) ) THEN
             FLAGSV = DORSP
             DORSP  = .TRUE.
             CALL SIR_INTOPEN

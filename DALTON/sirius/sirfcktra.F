@@ -93,7 +93,7 @@ C --- start of executable code
          CALL TITLER('.FCKTRA AO->MO integral transformation','*',200)
          WRITE(LUPRI,'(A,I4,1P,D10.2)')
      &   ' Sirius integral transformation level & screening threshold:',
-     &   ITRSIR,THR_MOTWOINT
+     &   JTRSIR,THR_MOTWOINT
          FLUSH(LUPRI)
       END IF
 
@@ -115,8 +115,11 @@ C     Test if MO integrals already available
          REWIND(LUINTM)
          READ  (LUINTM)
          READ  (LUINTM) J,NTRLVL
-         IF (NTRLVL .EQ. 3 .AND. JTRSIR .EQ. 2) NTRLVL = -1
-         IF (NTRLVL .EQ. 2 .AND. JTRSIR .EQ. 3) NTRLVL =  3
+         IF (NTRLVL .EQ. 3 .AND. JTRSIR .EQ. 2) JTRSIR = -1
+         IF (NTRLVL .EQ. 2 .AND. JTRSIR .EQ. 3) JTRSIR =  3
+         IF (NTRLVL .EQ. 5 .AND. JTRSIR .EQ. 6) JTRSIR =  6
+         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 4) JTRSIR = -1 ! (gg|ii) and (gi|gi) missing
+         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 5) JTRSIR = -1 ! (gg|gi) missing
          IF (NTRLVL .GE. JTRSIR) THEN
 C           read CMO matrix from LUINTM
 C           and subtract from input CMO matrix
@@ -179,7 +182,7 @@ C           and subtract from input CMO matrix
 
       REWIND(LUINTM)
       WRITE (LUINTM) (0, I=1,8) ! info not used for FCKTRA
-      WRITE (LUINTM) LBINTM,ITRSIR,NSYM,NORB,NBAS
+      WRITE (LUINTM) LBINTM,JTRSIR,NSYM,NORB,NBAS
       WRITE (LUINTM) CMO(1:NCMOT)
       WRITE (LUINTM) NISH(1:8), NASH(1:8)
 
