@@ -2079,7 +2079,7 @@ C
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
-     *            '*AUXILL','*LUCITA','*STEX  ','*CUBE  ','*CHOACT',
+     *            '*AUXILL','*LUCITA','*STEX I','*CUBE  ','*CHOACT',
      *            '*APSG I','*END OF'/
 C
 C
@@ -2177,7 +2177,7 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
  3200  lucita_input_provided = .true.
        call move_to_next_star(word,lucmd)
        GO TO 910
-!      *STEX
+!      *STEX INPUT
  3300  CALL STXINP(WORD,INPERR,ALLOPT)
        GO TO 910
 !      *CUBE
@@ -2402,7 +2402,7 @@ C *** Option 5 >RESTAR< restart SIRIUS, SIRIUS.RST (LUIT1) must be available
         IREST = 1
       GO TO 100
 C
-C *** Option 6 >HARTRE<  Restricted Hartree-Fock SCF
+C *** Option 6 >HF    <  Restricted Hartree-Fock SCF (alias: .SCF)
   106 CONTINUE
          IF (.NOT.DOSCF) THEN
 C           ... DOSCF may also be set with .CC

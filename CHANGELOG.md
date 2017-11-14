@@ -13,28 +13,22 @@
 - Effective external field (EEF) for one- and two-photon absorption in PE-HF/DFT calculations.
  - Reference: N. H. List, H. J. Aa. Jensen, and J. Kongsted. Local Electric Fields and Molecular Properties in Heterogeneous Environments through Polarizable Embedding.
    Phys. Chem. Chem. Phys. 18, 10070 (2016).
+- Remove the most diffuse virtual orbitals after SCF or MCSCF (new .VIRTRUNC option)
 
 ### Fixed
+- open-shell doublet ROKS DFT geometry optimization
 - Fix .GSPOL for parallel polarizable embedding quadratic response
 - Fix text about elimination of some two-photon transitions between excited states
   because they were duplicates (text had "Third order" instead of "Second order")
 
 ### Changed
+- OK to run ECD or OECD with SOPPA
+- More documentation of .STEX in manual.
 
 ### Removed
 
 
 Do not make changes below this line! For the relase branch only.
-
-## [2016.3] (2016-xx-xx)
-
-### Changed
-- OK to run ECD or OECD with SOPPA
-
-### Fixed
-- open-shell doublet ROKS DFT geometry optimization
-- Fix .GSPOL for parallel polarizable embedding quadratic response
-
 
 ## [2016.2] (2016-07-12)
 
