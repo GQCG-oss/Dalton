@@ -3453,7 +3453,7 @@ C
          KTRLVL = 1
       ELSE IF (JTRSIR .GE. 7) THEN ! (gg|gg)
          JTRLVL = 4
-         KTRLVL = -1  ! KTRLVL is inactive
+         KTRLVL = 0  ! KTRLVL is inactive
       END IF
       NTRLVL = 100*KTRLVL + JTRLVL
       CALL QEXIT('TRALVL')

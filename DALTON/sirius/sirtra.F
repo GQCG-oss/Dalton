@@ -2318,6 +2318,7 @@ C
          IF (JTRLVL .EQ. 2 .AND. ITRLVL .EQ. 3) JTRLVL =  3
          IF (JTRLVL .EQ. 5 .AND. ITRLVL .EQ. 6) JTRLVL =  6
          IF (JTRLVL .EQ. 6 .AND. ITRLVL .EQ. 4) JTRLVL = -1 ! (gg|ii) and (gi|gi) missing
+         IF (JTRLVL .EQ. 6 .AND. ITRLVL .EQ. 5) JTRLVL = -1 ! (gg|gi) missing
          IF (JTRLVL .GE. ITRLVL) THEN
 C           read CMO matrix from LUINTM
 C           and subtract from input CMO matrix

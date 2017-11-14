@@ -2371,7 +2371,7 @@ C
       WRITE(LUPRI,'(A,L1,A1)')
      &     ' End of optimization            :       ', GECONV, MARK
       WRITE(LUPRI,678) ' Energy at this geometry is     : ', ENERGY
- 678  FORMAT(A,F14.6)
+ 678  FORMAT(A,F20.12)
       IF ((ITRNMR .GT. 0) .AND. (ITRBRK .LT. (ITRNMR - 1))) THEN
          ERGDIF = ENERGY - ERGOLD
          WRITE(LUPRI,678)' Energy change from last geom.  : ', ERGDIF
@@ -2433,7 +2433,8 @@ C
 C  /* Deck priinf */
       SUBROUTINE PRIINF(GEINFO,WORK,LWORK)
 C
-C     Prints important information at the end of an optimization.
+C     Prints important information at the end of a
+C     geometry optimization.
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -2441,11 +2442,13 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
 #include "optinf.h"
+
       DIMENSION GEINFO(0:ITRMAX,6), WORK(LWORK)
       CHARACTER NWSMRK*1,BRKMRK*1,REDMRK*1
       LOGICAL RED
       TMPNRG = 0.0D0
       RED = .FALSE.
+
       CALL HEADER('Final geometry (bohr)',-1)
       CALL PRIGEO(CORD)
 
@@ -2466,13 +2469,13 @@ C
      & // 'StepLen    TrustRad #Rej',
      & '@ ------------------------------------------------------'
      & // '------------------------'
-      DO, I = 0, ITRNMR
+      DO I = 0, ITRNMR
          IF (I .GT. 0) TMPNRG = GEINFO(I,1) - GEINFO(I-1,1)
 C
-C        There's three special marks for each iteration:
+C        There are three special marks for each iteration:
 C         one (*) for a Newton step (i.e. a step smaller than the trust radius),
 C         one (x) for the breaking of symmetry and
-C         one (#) for dropping half of dihedral angles.
+C         one (#) for dropping half of the dihedral angles.
 C
          NWSMRK = ' '
          IF ((GEINFO(I,4)+1.0D-6) .LT. GEINFO(I,5)) NWSMRK = '*'
@@ -2701,13 +2704,13 @@ C
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
+#include "abainf.h"
+#include "optinf.h"
+#include "gnrinf.h"
 #include "infinp.h"
 #include "inftap.h"
 #include "infpar.h"
 #include "pario.h"
-#include "abainf.h"
-#include "gnrinf.h"
-#include "optinf.h"
 #include "pvibav.h"
 #include "rspprp.h"
 #include "esg.h"
