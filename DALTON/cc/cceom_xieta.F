@@ -315,6 +315,7 @@ c /* deck ccEOM_xieta1 */
       integer mscratch0,mscratch1,mwork, nbatch
       CHARACTER*10 MODELW
       INTEGER :: ISPNETA, ISPNOP, ISPNTR
+      INTEGER :: KEND3, LEND3
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
@@ -521,6 +522,7 @@ C
           ISPNETA = ISPNTR ! Only singlet operators work for now
         END IF
 
+
           KZETA1 = KEND1
           KETA1  = KZETA1 + NT1AM(ISYCTR)
           KEND2  = KETA1  + NT1AM(ISYETA)
@@ -534,6 +536,30 @@ C
              END IF
           END IF
           LWRK2 = LWORK - KEND2
+
+          ! Perform self-test: Calculate Xi and compare!!
+C          IF (ISPNTR.EQ.3) THEN
+          IF (.FALSE.) THEN
+             CALL CC_XIC13(ISYMOP,LABELH,WORK(KETA1),FILETA,IDLSTL,
+     &                     .TRUE.,DUMMY,WORK(KEND2),LWRK2)
+C
+             KEND3 = KEND2 + MXVEC
+             LEND3 = LWRK2 - MXVEC
+             IOPT = 5
+C
+             CALL CCDOTRSP(IEDOTS,WORK(KEND2),IOPT,LISTL,ITRAN,MXVEC,
+     &                     NXETRAN,
+     &                     WORK(KETA1),WORK(KETA2),ISYCTR,
+     &                     WORK(KEND3),LEND3)
+
+             IVEC = 1
+             DO WHILE (IEDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
+                WRITE (LUPRI,*)
+     &              ' 2 ECONS:',ITRAN,IVEC,WORK(KEND2-1+IVEC),IOPT
+                IVEC = IVEC + 1
+             END DO
+
+          END IF
           !write(lupri,*)'SONIA: KETA1:', KETA1, ' KETA2:', KETA2
           !write(lupri,*)'SONIA: KEND2:', KEND2
           !call dzero(WORK(KETA1),NT1AM(ISYETA)+NT2AM(ISYETA))
@@ -543,6 +569,7 @@ C
           END IF
 
           IF (ISPNTR.EQ.3.AND.ISPNOP.EQ.1) THEN
+
              CALL CC_ETAC13(ISYMOP,LABELH,WORK(KETA1),LISTL,IDLSTL,
      &                     .TRUE., DUMMY,WORK(KEND2),LWRK2)
           ELSE
@@ -567,21 +594,12 @@ C
         IF (LOCDBG) THEN
           WRITE (LUPRI,*) 'SKIPETA:',SKIPETA
           WRITE (LUPRI,*) 'IDLSTL :',IDLSTL
-          WRITE (LUPRI,*) 'IXETRAN(4,ITRAN):',IXETRAN(2,ITRAN)  
+          WRITE (LUPRI,*) 'IXETRAN(4,ITRAN):',IXETRAN(2,ITRAN)
         END IF
- 
+
         IF (.NOT. SKIPETA) THEN
 
           ISYRES = ISYETA ! symmetry of result vector
-
-          KZETA1 = KEND1
-          KETA1  = KZETA1 + NT1AM(ISYCTR)
-          KEND2  = KETA1  + NT1AM(ISYRES)
-          IF (CC2 .OR. CCSD .OR. CCSDT) THEN
-             KETA2 = KEND2
-             KEND2 = KETA2  + NT2AM(ISYRES)
-          END IF
-          LWRK2 = LWORK - KEND2
 
           IF (LWRK2 .LT. 0) THEN
             CALL QUIT('Insufficient work space in CC_XIETA. (CCETA2)')
@@ -629,16 +647,19 @@ C
            END IF
 C
            !shall we do it?   EOM, SONIA?
-           IF (.NOT.CCS) CALL CCLR_DIASCL(WORK(KETA2),TWO,ISYRES)
+           IF ((.NOT.CCS).AND.(ISPNETA.EQ.1))
+     &                    CALL CCLR_DIASCL(WORK(KETA2),TWO,ISYRES)
+           iopt = ioptw
+           if (ispneta.eq.3) iopt = 5
            !
-           CALL CCDOTRSP(IEDOTS,ECONS,IOPTW,FILETA,ITRAN,NXETRAN,MXVEC,
+           CALL CCDOTRSP(IEDOTS,ECONS,IOPT,FILETA,ITRAN,NXETRAN,MXVEC,
      &                   WORK(KETA1),WORK(KETA2),ISYRES,
      &                   WORK(KEND2),LWRK2)
            IF (LOCDBG) THEN
              IVEC = 1
              DO WHILE (IEDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
                 WRITE (LUPRI,*)
-     &              ' 2 ECONS:',IVEC,ITRAN,ECONS(IVEC,ITRAN),IOPTW
+     &              ' 2 ECONS:',IVEC,ITRAN,ECONS(IVEC,ITRAN),IOPT
                 IVEC = IVEC + 1
              END DO
            END IF
