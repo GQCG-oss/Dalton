@@ -1068,6 +1068,53 @@ C
 C     End of GETAC2.
 C
       END
+C  /* Deck getvir */
+      SUBROUTINE GETVIR(FC,FCVIR)
+C
+C  7-Nov-2017 Hans Joergen Aa. Jensen (based on GETAC)
+C
+C Module : SIRGP
+C
+C Purpose: Extract blocks with virtual-virtual orbital indices out
+C          of symmetry packed matrix (e.g. the Fock matrix).
+C          Both FC and FCVIR are symmetry packed.
+C
+#include "implicit.h"
+      REAL*8  FC(*), FCVIR(*)
+C
+C INFORB : NSSHT, NNSSHT, NSYM, NSSH(*), IIORB(*), IISH(*), NOCC(*)
+C
+#include "inforb.h"
+
+      IROW(I) = (I*(I-1))/2
+C
+      CALL QENTER('GETVIR ')
+C
+      CALL DZERO(FCVIR,NNSSHT)
+      IISSH_I = 0
+      DO 300 ISYM=1,NSYM
+      IF (NSSH(ISYM).EQ.0) GO TO 300
+         NOCCI = NOCC(ISYM)
+         NORBI = NORB(ISYM)
+         IJFC  = IIORB(ISYM) + IROW(NOCCI+1)
+         IJFCVIR = IISSH_I
+         DO 290 I = (NOCCI+1),NORBI
+            IJFC   = IJFC + NOCCI
+            DO 280 J = (NOCCI+1),I
+               IJFC = IJFC + 1
+               IJFCVIR = IJFCVIR + 1
+               FCVIR(IJFCVIR) = FC(IJFC)
+  280       CONTINUE
+  290    CONTINUE
+         IISSH_I = IISSH_I + IROW(NSSH(ISYM)+1)
+  300 CONTINUE
+C
+      CALL QEXIT('GETVIR ')
+      RETURN
+C
+C     End of GETVIR.
+C
+      END
 C  /* Deck pksym1 */
       SUBROUTINE PKSYM1(ASP,APK,NDIM,NBLK,IWAY)
 C

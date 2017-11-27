@@ -166,14 +166,14 @@ ERROR[6]="FIRST STEP NOT CORRECT"
 
 # Second iteration
 CRIT1=`$GREP "Energy at this geometry is * \: * \-75\.816478" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.076191" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * (0| )\.07619" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="SECOND ITERATION NOT CORRECT"
 
 # Third iteration
-CRIT1=`$GREP "Energy at this geometry is * \: * \-75\.835980" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.056219" $log | wc -l`
+CRIT1=`$GREP "Energy at this geometry is * \: * \-75\.8359(79|80)" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * (0| )\.05621" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[8]=2
 ERROR[8]="THIRD ITERATION NOT CORRECT"
@@ -187,11 +187,11 @@ CTRL[9]=12
 ERROR[9]="LAST GEOMETRY NOT CORRECT"
 
 # Last iteration
-CRIT1=`$GREP "Energy at this geometry is * \: * \-75\.889522" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.00001[4-6]" $log | wc -l`
-CRIT3=`$GREP "Norm of step * \: * (0| )\.00008[3-5]" $log | wc -l`
+CRIT1=`$GREP -l "Energy at this geometry is * \: * \-75\.889522" $log | wc -l`
+CRIT2=`$GREP -l "Norm of gradient * \: * (0| )\.00001[4-6]" $log | wc -l`
+CRIT3=`$GREP -l "Norm of step * \: * (0| )\.00008[3-5]" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[10]=4
+CTRL[10]=3
 ERROR[10]="LAST ITERATION NOT CORRECT"
 
 # Breaking of symmetry

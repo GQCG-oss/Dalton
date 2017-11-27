@@ -23,22 +23,23 @@
      &                IORTO,ICI0,KDEL,ICHECK,NTIT,                      &
      &                MAXMAC,MAXMIC,MAXJT,MAXCIT,MAXUIT,MAXAPM,MAXABS,  &
      &                ITRLVL,ITRFIN,JCHSYM,JCHORB,                      &
-     &                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO,SPINDENS_lvl
-      COMMON /INTINP/ NFIELD, ISPIN,ISTATE,LSYM,NACTEL, MCTYPE,         &
+     &                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO, N_in_RN,    &
+     &                SPINDENS_lvl
+      COMMON /INTINP/ NFIELD, ISPIN,NMCAVER,ISTATE,LSYM,NACTEL, MCTYPE, &
      &                LSOLMX,NLMSOL,NELMN1,NELMX1,NELMN3,NELMX3,        &
      &                LROOTS,NROOTS,IROOT(MAXRTS),                      &
      &                NOROT(MXCORB),IMOORD(MXCORB),                     &
      &                IORTO,ICI0,KDEL,ICHECK,NTIT,                      &
      &                MAXMAC,MAXMIC,MAXJT,MAXCIT,MAXUIT,MAXAPM,MAXABS,  &
      &                ITRLVL,ITRFIN,JCHSYM,JCHORB,                      &
-     &                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO, NMCAVER,    &
+     &                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO, N_in_RN,    &
      &                SPINDENS_lvl
 !
       LOGICAL         FLAG,        DOSCF,DOMP2,DOCINO,DOCI,DOMC,DORSP,  &
      &                FCVORB,LNOROT,LMOORD,DIRFCK,CORHOL,CORRLX,RESPHP, &
      &                JOLSEN,ABAIPH,INERSI,INERSF,DODFT,DONEVPT,HSROHF, &
      &                BOYORB,PIPORB,ADDMP2,DOFCI,DOCISD,DOLUCITA,DOMEP, &
-     &                DO_CUBE, DOAPSG
+     &                DO_CUBE, DOAPSG, DO_VIRTRUNC
 !     variables for srDFT /hjaaj
       LOGICAL         DOCISRDFT,DOHFSRDFT,DOMCSRDFT,ADDSRI,SRHYBR
       COMMON /LOGINP/ FLAG(NFLAG), DOSCF,DOMP2,DOCINO,DOCI,DOMC,DORSP,  &
@@ -46,7 +47,7 @@
      &                JOLSEN,ABAIPH,INERSI,INERSF,DODFT,DONEVPT,HSROHF, &
      &                BOYORB,PIPORB,ADDMP2,DOFCI,DOCISD,DOLUCITA,DOMEP, &
      &                DOCISRDFT,DOHFSRDFT,DOMCSRDFT,ADDSRI,SRHYBR,      &
-     &                DO_CUBE, DOAPSG
+     &                DO_CUBE, DOAPSG, DO_VIRTRUNC
       LOGICAL         LOGINPlast
       COMMON /LOGINP/ LOGINPlast ! for MPI and getbytespan
       LOGICAL         SUPSYM, DORHF
@@ -55,14 +56,14 @@
       REAL*8          SPIN, POTNUC, EPSOL,EPSTAT,EPPN,RSOL,             &
      &                THRGRD, THRPWF, THRCI, THRMC, THRCGR,             &
      &                EFIELD, CMAXMO, THROVL,                           &
-     &                THRSSY, DEFLVL, WEIGHT_MCAVER
+     &                THRSSY, DEFLVL, WEIGHT_MCAVER, THR_VIRTRUNC
 !     variables for srDFT /hjaaj
       REAL*8          THRCIDFT
       COMMON /RELINP/ SPIN, POTNUC, EPSOL,EPSTAT,EPPN,RSOL(3),          &
      &                THRGRD, THRPWF, THRCI, THRMC, THRCGR,             &
      &                EFIELD(MXFELT), CMAXMO, THROVL,                   &
      &                THRSSY, DEFLVL, WEIGHT_MCAVER(MAXRTS),            &
-     &                THRCIDFT
+     &                THR_VIRTRUNC, THRCIDFT
 !
       character (len=60) :: TITLE(6)
       character (len=72) :: TITMOL(2)
