@@ -318,7 +318,7 @@ C       --------------------------------------------------------
 
         IF (GDNORM.GT.THRLDPHF) THEN
 C
-          CALL SETSIR(WORK(KEND0),LWRK0)
+          CALL SETSIR(.FALSE.,WORK(KEND0),LWRK0)
 
           IF (LOCDBG) WRITE (LUPRI,*) 'going to call ABARSP'
           IF (LOCDBG) WRITE (LUPRI,*) '5 MODWR ',MODWR

@@ -1189,7 +1189,9 @@ C
 C*****************************************************************************
 #include <implicit.h>
       LOGICAL MULOCAL(0:2),ERFEXP(*)
-      CALL VCSRLDA(ECV,RHO,RHO13,CHI,MULOCAL,0,ERFEXP)
+      REAL*8  ZKSR(3)
+      CALL VCSRLDA(ZKSR,RHO,RHO13,CHI,MULOCAL,0,ERFEXP)
+      ECV = ZKSR(1)
       RETURN
       END
 C
@@ -1197,10 +1199,13 @@ C Kamal SHARKAS 17-05-11 beg
 C linear complement non-scaled LDA correlation-functional 
       SUBROUTINE VCLALDA (ZKSR,RHO,RHO13,VLAMBDA)
 #include <implicit.h>
-      LOGICAL DOSRMULO,ERFEXP
-      DIMENSION ZKSR(3)
+      REAL*8  ZKSR(3), RHO, RHO13, VLAMBDA
+      LOGICAL MULOCAL(0:2),ERFEXP(0:2)
 
-      CALL VCSRLDA(ZKSR,RHO,RHO13,0.D0,DOSRMULO,1.D0,ERFEXP)
+      MULOCAL(0:2) = .FALSE.
+      ERFEXP(0:2)  = .FALSE.
+
+      CALL VCSRLDA(ZKSR,RHO,RHO13,0.D0,MULOCAL,1,ERFEXP)
       ZKSR(1) = (1.D0 - VLAMBDA**2) * ZKSR(1)
       ZKSR(2) = (1.D0 - VLAMBDA**2) * ZKSR(2)
       ZKSR(3) = (1.D0 - VLAMBDA**2) * ZKSR(3)
@@ -1211,21 +1216,22 @@ C linear complement scaled LDA correlation-functional
 
       SUBROUTINE VCLASLDA (ZKSR,RHO,RHO13,VLAMBDA)
 #include <implicit.h>
-      LOGICAL DOSRMULO,ERFEXP
-      DIMENSION ZKSR(3),ZKSRCOUL(3),ZKSRSCALED(3)
-      double precision RHOSCALED,RHO13SCALED
-      ZKSRCOUL(1) = 0.d0
-      ZKSRCOUL(2) = 0.d0
-      ZKSRCOUL(3) = 0.d0
+      REAL*8  ZKSR(3),ZKSRCOUL(3),ZKSRSCALED(3)
+      REAL*8  RHOSCALED,RHO13SCALED
+      LOGICAL MULOCAL(0:2),ERFEXP(0:2)
 
-      CALL VCSRLDA(ZKSRCOUL,RHO,RHO13,0.D0,DOSRMULO,1.D0,ERFEXP)
+      MULOCAL(0:2)  = .FALSE.
+      ERFEXP(0:2)   = .FALSE.
+      ZKSRCOUL(1:3) = 0.d0
+      ZKSRSCALED(1:3) = 0.d0
       RHOSCALED     = RHO/VLAMBDA**3
       RHO13SCALED   = (RHOSCALED)**(1.D0/3.D0)
-      ZKSRSCALED(1) = 0.d0
-      ZKSRSCALED(2) = 0.d0
-      ZKSRSCALED(3) = 0.d0
 
-      CALL VCSRLDA(ZKSRSCALED,RHOSCALED,RHO13SCALED,0,DOSRMULO,1,ERFEXP)
+      CALL VCSRLDA(ZKSRCOUL,RHO,RHO13,0.D0,MULOCAL,1,ERFEXP)
+
+      CALL VCSRLDA(ZKSRSCALED,RHOSCALED,RHO13SCALED,
+     &   0.0D0,MULOCAL,1,ERFEXP)
+
       ZKSR(1) = ZKSRCOUL(1) - (VLAMBDA**5) * ZKSRSCALED(1)
       ZKSR(2) = ZKSR(2) + (ZKSRCOUL(2) - (VLAMBDA**2) * ZKSRSCALED(2))
       ZKSR(3) = ZKSR(3) + (ZKSRCOUL(3) - (1/VLAMBDA)* ZKSRSCALED(3))
@@ -1480,7 +1486,10 @@ C
 C*****************************************************************************
 #include <implicit.h>
       LOGICAL ERFEXP(*)
-      CALL VXSRLDA (ECV,RHO,RHO13,CHI,0,ERFEXP)
+      REAL*8  ECV, RHO, RHO13, CHI, XKSR(3)
+      XKSR(:) = 0.0D0
+      CALL VXSRLDA (XKSR,RHO,RHO13,CHI,0,ERFEXP)
+      ECV = XKSR(1)
       RETURN
       END
 C
@@ -1488,10 +1497,10 @@ C Kamal SHARKAS 17-05-11 beg
 C linear complement LDA exchange-functional
       SUBROUTINE VXLALDA (XKSR,RHO,RHO13,VLAMBDA)
 #include <implicit.h>
-      LOGICAL ERFEXP
-      DIMENSION XKSR(3)
+      LOGICAL ERFEXP(0:2)
+      REAL*8  XKSR(3)
 
-      CALL VXSRLDA(XKSR,RHO,RHO13,0.D0,1.D0,ERFEXP)
+      CALL VXSRLDA(XKSR,RHO,RHO13,0.D0,1,ERFEXP)
 
       XKSR(1) = (1.D0 - VLAMBDA) * XKSR(1)
       XKSR(2) = (1.D0 - VLAMBDA) * XKSR(2)
@@ -2065,7 +2074,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 C
-      DIMENSION XKSR(2)
+      REAL*8  XKSR(3)
       LOGICAL ERFEXP(0:2)
 C     ... Get regular LDA exchange Energy and Potential (Dirac exchange)
           CALL EDRC(EXLDA,RHO,RHO13)
@@ -2096,9 +2105,12 @@ C linear complement Becke exchange-functional
       SUBROUTINE VLAXBEK(XKSR,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
      >                 VLAMBDA)
 #include <implicit.h>
-      DIMENSION XKSR(2)
+      REAL*8  XKSR(3)
+      LOGICAL ERFEXP(0:2)
+
+      ERFEXP(:) = .FALSE.
       CALL VXSRGGA(XKSR,RHO,RHO13,RHOGRD,RHOLAP,
-     >             RHOGHG,0.D0,.FALSE.)
+     >             RHOGHG,0.D0,ERFEXP)
 
       XKSR(1) = (1.D0 - VLAMBDA) * XKSR(1)
       XKSR(2) = (1.D0 - VLAMBDA) * XKSR(2)
@@ -2126,8 +2138,8 @@ C
 C*****************************************************************************
 #include <implicit.h>
 C
-      LOGICAL ERFEXP(0:2)
-      DIMENSION DENOM(3),ZVWN(2),XKSR(2)
+      LOGICAL ERFEXP(0:2), MULOCAL(0:2)
+      REAL*8  DENOM(3),ZVWN(3),XKSR(3)
 C     ... Get regular LDA exchange Energy and Potential (Dirac exchange)
           CALL EDRC(EXLDA,RHO,RHO13)
           CALL VDRC(VXLDA,RHO13)
@@ -2139,7 +2151,8 @@ C
 C     ... Get Short-range factors
           CALL WVWN(ZVWN(2),RHO,RHO13,ECFAC,.TRUE.,.TRUE.)
           ZVWN(1) = ECFAC*RHO
-          CALL SRLDAFAC(DENOM,RHO,RHO13,ZVWN,CHI,ERFEXP,2,.FALSE.)
+          MULOCAL(:) = .FALSE.
+          CALL SRLDAFAC(DENOM,RHO,RHO13,ZVWN,CHI,ERFEXP,2,MULOCAL)
 C
 C     ... Combine to get gradient corrected SR-LDA E and V
 C
@@ -2167,14 +2180,15 @@ C                 as used for the SR-LDA func. (E_sr,lda ~ A * E_lda)
 C
 C*****************************************************************************
 #include <implicit.h>
-      LOGICAL ERFEXP(0:2)
-      DIMENSION ZKSR(2),DENOM(3),ZVWN(2)
+      LOGICAL ERFEXP(0:2),  MULOCAL(0:2)
+      REAL*8  ZKSR(3),DENOM(3),ZVWN(3)
 C
       CALL ELYP(ECLYP,RHO,RHO13,RHOGRD)
       CALL VLYP(VCLYP,RHO,RHO13,RHOGRD,RHOLAP)
       CALL WVWN(ZVWN(2),RHO,RHO13,ECFAC,.TRUE.,.TRUE.)
       ZVWN(1) = ECFAC*RHO
-      CALL SRLDAFAC(DENOM,RHO,RHO13,ZVWN,CHI,ERFEXP,2,.FALSE.)
+      MULOCAL(0:2) = .FALSE.
+      CALL SRLDAFAC(DENOM,RHO,RHO13,ZVWN,CHI,ERFEXP,2,MULOCAL)
 C     next two lines are for debugging (should give LDA values)
 c     ECLYP = ECFAC
 c     VCLYP = VCFAC
@@ -2197,24 +2211,28 @@ C Kamal SHARKAS 23-05-11 beg
 C linear Non-scaled comlement LYP functional  
       SUBROUTINE VNCLALYP(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,VLAMBDA)
 #include <implicit.h>
-      DIMENSION ZKSR(2),DENOM(3),ZVWN(2)
+      REAL*8  ZKSR(3),DENOM(3),ZVWN(3)
+      LOGICAL ERFEXP(0:2)
+
+      ERFEXP(:) = .FALSE.
       CALL VCSRGGA(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,
-     >             0.D0,.FALSE.)
+     >             0.0D0,ERFEXP)
       ZKSR(1) = (1.D0 - VLAMBDA**2) * ZKSR(1)
       ZKSR(2) = (1.D0 - VLAMBDA**2) * ZKSR(2)
       RETURN
       END
-C Scaled comlement LYP functional
+C Scaled complement LYP functional
       SUBROUTINE VSCLALYP(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,VLAMBDA)
 #include <implicit.h>
-      double precision RHOSCA,RHO13SCA,RHOGRDSCA,RHOLAPSCA
-      DIMENSION ZKSR(2),ZKSRCOUL(2),ZKSRSCA(2)
+      REAL*8  RHOSCA,RHO13SCA,RHOGRDSCA,RHOLAPSCA
+      REAL*8  ZKSR(3),ZKSRCOUL(3),ZKSRSCA(3)
+      LOGICAL ERFEXP(0:2)
 
-      ZKSRCOUL(1) = 0.D0
-      ZKSRCOUL(2) = 0.D0
+      ZKSRCOUL(1:3) = 0.D0
+      ERFEXP(0:2)   = .FALSE.
 
       CALL VCSRGGA(ZKSRCOUL,RHO,RHO13,RHOGRD,RHOLAP,
-     >             0.D0,.FALSE.)
+     >             0.0D0,ERFEXP)
 
       RHOSCA   = RHO/VLAMBDA**3
       RHO13SCA = (RHOSCA)**(1.D0/3.D0)
@@ -2224,7 +2242,7 @@ C Scaled comlement LYP functional
       ZKSRSCA(1) = 0.D0
       ZKSRSCA(2) = 0.D0
       CALL VCSRGGA(ZKSRSCA,RHOSCA,RHO13SCA,RHOGRDSCA,RHOLAPSCA,
-     >             0.D0,.FALSE.)
+     >             0.0D0,ERFEXP)
 
       ZKSR(1) = ZKSRCOUL(1) - (VLAMBDA**5) * ZKSRSCA(1)
       ZKSR(2) = ZKSR(2) + (ZKSRCOUL(2) - (VLAMBDA**2) * ZKSRSCA(2))

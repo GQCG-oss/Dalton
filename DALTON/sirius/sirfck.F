@@ -69,7 +69,7 @@ Cholesky       Overridden by the CHOINT flag
 C
 #include "implicit.h"
       LOGICAL   AO_DIRECT, DOERG, DOATR, LSRHYBR
-      LOGICAL   DO_SPINDNS, DFT_SPINDNS_SAVE
+      LOGICAL   DO_SPINDNS, DFT_SPINDNS_SAVE, TRIPLET_local
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,*)
       DIMENSION ISYMDM(NDMAT), IFCTYP(NDMAT)
       DIMENSION ISYMDM_local(NDMAT),IFCTYP_local(NDMAT) ! automatic, temporary arrays
@@ -419,11 +419,11 @@ C
             IFC_X = IFCTYP(NSR_DMAT) / 10 ! IFCTYP(1) might be 0 for "FTC", thus we go for the FXC/FTV value
                ! as representative for all 1:NSR_DMAT matrices
             IFC_X = 10*IFC_X ! DMAT symmetric, antisymmetric or unsymmetric ?
+            IFC_Y = MOD(IFCTYP(NSR_DMAT),10)
             IF (HFXFAC .EQ. 0.0D0) THEN
-               IFCTYP_local(1:NSR_DMAT) = IFC_X + 1 ! only Coulomb
-            ELSE
-               IFCTYP_local(1:NSR_DMAT) = IFC_X + 3 ! Coulomb + HFXFAC*exchange
+               IF (IFC_Y .GT. 1) IFC_Y = IFC_Y - 2 ! only Coulomb
             END IF
+            IFCTYP_local(1:NSR_DMAT) = IFC_X + IFC_Y
             IF (DO_SPINDNS) THEN
                IF (HFXFAC .NE. D0) THEN
                   NFSRAO = NFSRAO + NSR_DMAT ! also FS
@@ -826,6 +826,7 @@ C            loop over NSRMAT output matrices (later do the loop inside SRDFT fo
 C            efficiency!!!!!) /hjaaj June 2009
 C
          DO JSRMAT = 1, NSR_DMAT
+          TRIPLET_local = MOD(IFCTYP(JSRMAT),10) .EQ. 2 !hjaaj 22aug17 - not checked if OK yet ...
           IF (DOATR) THEN
 #if SIRFCK_DEBUG > 0
               write(lupri,*) 'DOATR in sirfck: ndoff =', ndoff
@@ -902,9 +903,10 @@ C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
                 DFT_SPINDNS_SAVE = DFT_SPINDNS
                 DFT_SPINDNS = DO_SPINDNS 
                 CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),ESRDFT,
-     &                     DOERG,.FALSE.,DOATR,WRK(KLAST),LWRK,IPRSRDFT)
+     &                     DOERG,.FALSE.,DOATR,TRIPLET_local,
+     &                     WRK(KLAST),LWRK,IPRSRDFT)
 C                    SRDFT(NDMAT,EXCMAT,DMAT,ESRDFT,
-C                          DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+C                          DOERG,DOGRD,DOATR,TRIPLET,WORK,LWORK,IPRINT)
                 DFT_SPINDNS = DFT_SPINDNS_SAVE
 C         IF (DOATR)
 C    &      ESRLTR = ESRLTR + DDOT(N2BASX,WRK(KSRAO),1,DMAT(1,JDAO),1)

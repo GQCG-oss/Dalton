@@ -4412,6 +4412,9 @@ C
          STPSYM(I) = STPSYM(I)/SCLVEC(I)
  90   CONTINUE
       CALL WLKCOR(STPSYM,CSTEP,ICRTCR,MXCOOR,IPRINT)
+#if 0
+! Oct 2017 hjaaj: disabled this code. .FREEZE is now used for 
+! freezing atoms in geometry optimization in cartesian coordinates.
 C
 C     Experimental extra stabilization by freezing atoms.
 C     All Cartesian step vector components are simply set to zero
@@ -4452,6 +4455,7 @@ C     the requested number of iterations
          IF ((ITRFRZ .GT. 0) .AND. ((ITRNMR+1) .GE. ITRFRZ))
      &        IFREEZ(0) = 0
       END IF
+#endif
       RETURN
       END
 

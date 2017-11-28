@@ -17,7 +17,7 @@
      &        TRSTRG, RATFUN, GDIIS,  DELINT, RSTARR, LNSRCH,
      &        SADDLE, REBILD, BOFILL, CMBMOD, HFPROP, CONFRM,
      &        NOAUX,  NODIHE, LINDHD, ADDCRD, REDRED, NOADDA,
-     &        NATNRM, NOHSWR, PRJTRO
+     &        NATNRM, NOHESWR,PRJTRO
       COMMON /OPTINF/ TRSTRA, TRSTIN, TRSTDE, RTENBD, RTENGD, RTRJMN,     ! we start with double precision variables
      &                RTRJMX, ENERGY, ERGOLD, ERGPRD, ERGPRO, STPNRM,
      &                STPNRO, GRADNM, THRERG, GRDTHR, THRSTP, THRSYM,
@@ -44,7 +44,7 @@
      &                TRSTRG, RATFUN, GDIIS,  DELINT, RSTARR, LNSRCH,
      &                SADDLE, REBILD, BOFILL, CMBMOD, HFPROP, CONFRM,
      &                NOAUX,  NODIHE, LINDHD, ADDCRD, REDRED, NOADDA,
-     &                NATNRM, NOHSWR, PRJTRO
+     &                NATNRM, NOHESWR,PRJTRO
 
       INTEGER MAXPRE
       PARAMETER (MAXPRE = 10)

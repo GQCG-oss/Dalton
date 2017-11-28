@@ -63,7 +63,7 @@ C
      &            '.NOAUX ', '.BFGSR1', '.STABIL', '.GEOANA', ! 64
      &            '.ADDCRD', '.NOADDA', '.RREDUN', '.NATNRM', ! 68
      &            '.VLOOSE', '.LOOSE ', '.TIGHT ', '.VTIGHT', ! 72
-     &            '.NOHSWR', '.FREEZE', '.FRZITR', '.MEDIUM'/ ! 76
+     &            '.NOHESW', '.FREEZE', '.FRZITR', '.MEDIUM'/ ! 76
 C
       DATA FIRST /.TRUE./
 C
@@ -91,7 +91,7 @@ C
       ITRBRK = -1
       NWSYMM = .FALSE.
       NEWSYM = .FALSE.
-      NOHSWR = .FALSE.
+      NOHESWR= .FALSE.
       DOSPE  = .FALSE.
       DOPRE  = .FALSE.
       FINPRE = .FALSE.
@@ -163,8 +163,8 @@ C
       NOADDA = .FALSE.
       IF (USE_PELIB()) THEN 
          PRJTRO = .FALSE.  ! no translation and rotation invariance when PE sites are fixed
-         IF (.NOT. CARTCO) CARTCO = .TRUE.
-         IF (EVLINI .LE. 0.0D0) EVLINI = 1.0D0
+         CARTCO = .TRUE.   ! force geometry optimization to be in Cartesian coordinates
+         IF (EVLINI .LE. 0.0D0) EVLINI = 8.0D0
       ELSE
          PRJTRO = .TRUE.  ! Project translation-rotation out of gradient and Hessian
       END IF
@@ -522,23 +522,27 @@ C
  72         ICNLVL = 5       ! .VTIGHT
             ICHGTH = ICHGTH + 1
             GOTO 100
- 73         NOHSWR = .TRUE.
+ 73         NOHESWR = .TRUE.  ! .NOHESWR
             GOTO 100
- 74         READ (LUCMD,*) NFREEZ
-            IF ((NFREEZ .LE. 0) .OR. (NFREEZ .GE. MXCENT)) THEN
-               WRITE(LUPRI,'(/A,I6,A/)')
-     &              ' Number of frozen atoms must '
-     &              // 'be between 1 and', MXCENT,'!'
+ 74         READ (LUCMD,*) NFREEZ ! .FREEZE
+            IF ((NFREEZ .LE. 0) .OR. (NFREEZ .GE. MX_IFREEZ)) THEN
+               WRITE(LUPRI,'(/A,I0,A/)')
+     &            ' .FREEZE ERROR: Number of frozen atoms must '
+     &            // 'be between 1 and ', MX_IFREEZ,'!'
                CALL QUIT('Illegal number of frozen atoms.')
             END IF
-            IF (.NOT. CARTCO) CARTCO = .TRUE.
-            IF (EVLINI .LE. 0.0D0) EVLINI = 1.0D0
+            ! force geometry optimization to be in Cartesian coordinates
+            CARTCO = .TRUE.
+            ! Do not project out translation-rotation when some atoms are frozen.
+            PRJTRO = .FALSE.
+            IF (EVLINI .LE. 0.0D0) EVLINI = 8.0D0
             DO I = 1, NFREEZ
                READ (LUCMD,*) NFRZ
                IF ((NFRZ .LE. 0) .OR. (NFRZ .GT. MXCENT)) THEN
-                  WRITE(LUPRI,'(/A,I6,A/)')
-     &                 ' The constrained coordinate should have a '
-     &                 // 'value between 1 and', MXCENT,'!'
+                  WRITE(LUPRI,'(/A,I0,A,I0,A/)')
+     &                 ' Illegal frozen atom for .FREEZE: ',NFRZ,
+     &                 '. The frozen atom should have a '
+     &                 // 'value between 1 and ', MXCENT,'!'
                   CALL QUIT('Illegal frozen atom.')
                END IF
                IFREEZ(0) = IFREEZ(0) + 1
@@ -548,14 +552,11 @@ C
                   CALL QUIT('Too many atoms frozen with .FREEZE')
                END IF
                IFREEZ(IFREEZ(0)) = NFRZ
-               IF (NFRZ .GT. 0) PRJTRO = .FALSE.
             END DO
-            ! Do not project out translation-rotation if some coordinates are frozen.
-            IF (IFREEZ(0) .GT. 0) PRJTRO = .FALSE.
             GOTO 100
- 75         READ (LUCMD,*) ITRFRZ
+ 75         READ (LUCMD,*) ITRFRZ ! .FRZITR
             GOTO 100
- 76         ICNLVL = 3       ! .MEDIUM
+ 76         ICNLVL = 3            ! .MEDIUM
             ICHGTH = ICHGTH + 1
             GOTO 100
          ELSE IF (PROMPT .EQ. '*') THEN
@@ -794,19 +795,18 @@ C
      &        ('More than one coordinate system chosen under '//WORD1)
       END IF
       IF (NOAUX) THEN
-            WRITE(LUPRI,'(A)') ' No extra (auxiliary) bonds will ' //
-     &        'be added.'
+         WRITE(LUPRI,'(A)') ' No extra (auxiliary) bonds will be added.'
       END IF
       IF (NODIHE) THEN
-            WRITE(LUPRI,'(A)') ' No dihedral angles will be used ' //
+         WRITE(LUPRI,'(A)') ' No dihedral angles will be used ' //
      &           'as coordinates (just bonds and angles).'
       END IF
       IF (NOADDA) THEN
-            WRITE(LUPRI,'(A)') ' No stabilizing additional angles ' //
+         WRITE(LUPRI,'(A)') ' No stabilizing additional angles ' //
      &           'will be used.'
       END IF
       IF (REDRED) THEN
-            WRITE(LUPRI,'(A)') ' Redundancy will be decreased by ' //
+         WRITE(LUPRI,'(A)') ' Redundancy will be decreased by ' //
      &           'removing a number of dihedral coordinates.'
       END IF
 C
@@ -950,58 +950,58 @@ C
          END IF
       END IF
       IF (EVLINI .GT. 0.0D0) THEN
+         ! temporary value of 8.0D0 if reset by program without .INITEV specified
          IF (NEWTON .OR. QUADSD) THEN
-            WRITE(LUPRI,'(A)')
+            IF (EVLINI .NE. 8.0D0) WRITE(LUPRI,'(A)')
      &           ' .INITEV only has effect when 1st order ' //
-     &           'method has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
-         ELSE IF (HSFILE) THEN
-            WRITE(LUPRI,'(A)')
-     &           ' .INITEV has no effect when .HESFIL ' //
-     &           'has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
-         ELSE IF (INITHS) THEN
-            WRITE(LUPRI,'(A)')
-     &           ' .INITEV has no effect when initial ' //
-     &           'Hessian is calculated.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
-         ELSE IF (INMDHS) THEN
-            WRITE(LUPRI,'(A)')
-     &           ' .INITEV has no effect when .INIMOD ' //
-     &           'has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'method has been specified. Keyword ignored.'
             EVLINI = -1.0D0
-         ELSE
-            WRITE(LUPRI,'(A,F10.6)') ' Initial diagonal ' //
-     &           'Hessian will have elements equal to: ', EVLINI
+         ELSE IF (HSFILE) THEN
+            IF (EVLINI .NE. 8.0D0) WRITE(LUPRI,'(A)')
+     &           ' .INITEV has no effect when .HESFIL ' //
+     &           'has been specified. Keyword ignored.'
+            EVLINI = -1.0D0
+         ELSE IF (INITHS) THEN
+            IF (EVLINI .NE. 8.0D0) WRITE(LUPRI,'(A)')
+     &           ' .INITEV has no effect when initial ' //
+     &           'Hessian is calculated. Keyword ignored.'
+            EVLINI = -1.0D0
+         ELSE IF (INMDHS) THEN
+            IF (EVLINI .NE. 8.0D0) WRITE(LUPRI,'(A)')
+     &           ' .INITEV has no effect when .INIMOD ' //
+     &           'has been specified. Keyword ignored.'
+            EVLINI = -1.0D0
          END IF
+         IF (EVLINI .EQ. 8.0D0) EVLINI = 1.0D0
       ELSE IF (.NOT. (DELINT .OR. REDINT .OR. INRDHS .OR. INMDHS)) THEN
          EVLINI = 1.0D0
       END IF
+      IF (EVLINI .GT. 0.0D0 ) THEN
+         WRITE(LUPRI,'(A,F10.6)') ' Initial diagonal ' //
+     &        'Hessian will have elements equal to: ', EVLINI
+      END IF
       WRITE(LUPRI,*)
-      IF (NOHSWR) THEN
+      IF (NOHESWR) THEN
          WRITE(LUPRI,'(A/)')
      &        ' Current Hessian will not be written out to DALTON.HES.'
       END IF
       IF (REJINI) THEN
          IF (NEWTON .OR. QUADSD) THEN
-            WRITE(LUPRI,'(A)')
+            WRITE(LUPRI,'(A/)')
      &           ' .REJINI only has effect when 1st order ' //
-     &           'method has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
-            WRITE(LUPRI,*)
+     &           'method has been specified. Keyword ignored.'
+            REJINI = .FALSE.
          ELSE
-            WRITE(LUPRI,'(A)') ' Hessian will be reinitialized' //
+            WRITE(LUPRI,'(A/)') ' Hessian will be reinitialized' //
      &           ' after rejected steps.'
-            WRITE(LUPRI,*)
          END IF
       END IF
       IF (GRDINI) THEN
          IF (NEWTON .OR. QUADSD) THEN
-            WRITE(LUPRI,'(A)')
+            WRITE(LUPRI,'(A/)')
      &           ' .GRDINI only has effect when 1st order ' //
-     &           'method has been specified.'
-            WRITE(LUPRI,'(A/)') ' Keyword ignored.'
+     &           'method has been specified. Keyword ignored.'
+            GRDINI = .FALSE.
          ELSE
             WRITE(LUPRI,'(A/)') ' Hessian will be reinitialized' //
      &           ' when the norm of the gradient increases.'
@@ -1035,14 +1035,14 @@ C
       IF (DOPRE) THEN
          WRITE(LUPRI,'(/A)') ' Preoptimization will be' //
      &        ' performed with the basis set(s):'
-         DO 244 I = 1, NUMPRE
-            WRITE(LUPRI,'(A,A60)') '      ',PREBTX(I)
- 244     CONTINUE
+         DO I = 1, NUMPRE
+            WRITE(LUPRI,'(6X,A)') PREBTX(I)
+         END DO
       END IF
       IF (DOSPE) THEN
          WRITE(LUPRI,'(A)') ' Single point energy will be' //
      &        ' calculated using the basis:'
-         WRITE(LUPRI,'(A,A60)') '      ',SPBSTX
+         WRITE(LUPRI,'(6X,A)') SPBSTX
       END IF
       IF (TRSTCH) THEN
          WRITE(LUPRI,'(/A/A/,(A,F10.4))')
@@ -1058,12 +1058,11 @@ C
       END IF
       WRITE(LUPRI,*)
       IF (NOTRST) THEN
-         WRITE(LUPRI,*) 'No trust region will be used for steps.'
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(A/)') ' No trust region will be used for steps.'
       END IF
       IF (NOBRKS) THEN
-         WRITE(LUPRI,*)
-     &        'Symmetry will not be broken during optimization.'
+         WRITE(LUPRI,'(A/)')
+     &        ' Symmetry will not be broken during optimization.'
          WRITE(LUPRI,*)
       END IF
       IF (THRSYM .NE. MIN(5.0D-3,SQRT(DEFTHE))) THEN
@@ -1323,19 +1322,13 @@ C NB TODO hjaaj Jan09: DISPLA is never used !!!!! Remove ???
          END IF
       END IF
 C
-C     Experimental atom freezing
+C     Atoms frozen ?
 C
       IF (IFREEZ(0) .GT. 0) THEN
-         WRITE(LUPRI,'(A)')
-     &        ' Freezing of atoms has been requested.'
-         WRITE(LUPRI,'(A)') ' WARNING: .FREEZE is an ' //
-     &        'experimental feature, use it at your own risk...'
-         IF (.NOT. CONOPT) THEN
-            WRITE(LUPRI,'(A)') ' WARNING: Freezing of atoms is really '
-     &           // 'intended to be used for constrained optimizations!'
-         END IF
-         WRITE(LUPRI,'(A,I4,A)') ' The following',IFREEZ(0),
-     &        ' atoms will be held frozen: '
+         WRITE(LUPRI,'(/A/A,I0,A)')
+     &   '@ Freezing of atoms in geometry optimization '//
+     &      'has been requested.',
+     &   '@ The following ',IFREEZ(0),' atoms will be held frozen:'
 C     Do a simple bubble sort
          DO 351 I = 1, IFREEZ(0)-1
             DO 352 J = I+1, IFREEZ(0)
@@ -1345,38 +1338,38 @@ C     Do a simple bubble sort
                   IFREEZ(J) = ITMP
                END IF
  352        CONTINUE
-            WRITE(LUPRI,*) '    Atom #      ', IFREEZ(I)
+            WRITE(LUPRI,*) '@   Atom #      ', IFREEZ(I)
  351     CONTINUE
-         WRITE(LUPRI,*) '    Atom #      ', IFREEZ(IFREEZ(0))
-         IF (ITRFRZ .GT. 0) WRITE(LUPRI,'(A,I4,A)')
-     &        '     Atoms will be kept frozen for',ITRFRZ, ' iterations'
+         WRITE(LUPRI,*) '@   Atom #      ', IFREEZ(IFREEZ(0))
+         IF (ITRFRZ .GT. 0) WRITE(LUPRI,'(/A,I0,A)')
+     &  '@ Atoms will be kept frozen for ',ITRFRZ,' geometry iterations'
       END IF
 C
 C     VRML options
 C
       IF (VRML) THEN
-         WRITE(LUPRI,'(A)')
-     &        ' VRML-file of geometry will be created.'
+         WRITE(LUPRI,'(/A)')
+     &      ' VRML-file of geometry will be created.'
          IF (VRBOND) WRITE(LUPRI,'(A)')
-     &        ' Bonds will be drawn between nearby atoms.'
+     &      ' - Bonds will be drawn between nearby atoms.'
          IF (VRCORD) WRITE(LUPRI,'(A)')
-     &        ' Coordinate axes will be drawn.'
+     &      ' - Coordinate axes will be drawn.'
          IF (VRML_SYM) THEN
             WRITE(LUPRI,'(A/A)')
-     &        ' Symmetry elements will be visualized.',
-     &        ' Please note that symmetry should NOT be explicitly' //
-     &        ' specified in the input file.'
+     &      ' - Symmetry elements will be visualized.',
+     &      '   Please note that symmetry should NOT be explicitly' //
+     &      '   specified in the input file.'
          END IF
          IF (VREIGV) WRITE(LUPRI,'(A)')
-     &        ' Eigenvectors will be visualized.'
+     &      ' - Eigenvectors will be visualized.'
          IF (VRVIBA) WRITE(LUPRI,'(A)')
-     &        ' Vibrational modes will be visualized.'
+     &      ' - Vibrational modes will be visualized.'
       END IF
 C
 C     Geometry analysis
 C
       IF (GEOALL) WRITE(LUPRI,'(/A/)')
-     &        ' Geometry analysis will be printed for each iteration.'
+     &   ' Geometry analysis will be printed for each iteration.'
 C
 C     Adjusted accuracy
 C
@@ -1821,7 +1814,7 @@ C
 C
 C     Write Hessian to file (for 1st order restarts).
 C
-      IF (.NOT. NOHSWR)
+      IF (.NOT. NOHESWR)
      &     CALL PNCHES(MXRCRD,MX2CRD,HESINT,WILBMT,BMTRAN,WORK(KTEMP1),
      &     WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),WORK(KWRK2),LWRK2)
 C
@@ -1930,6 +1923,12 @@ C
  10   CONTINUE
       IF ((ITRNMR .LT. ITRMAX) .AND. (.NOT. GECONV)) THEN
          ITRNMR = ITRNMR + 1
+         IF (ITRNMR .GT. ITRFRZ .AND. IFREEZ(0) .GT. 0) THEN
+            WRITE(LUPRI,'(//A/)')
+     &      '@ No atoms frozen from this geometry iteration,'//
+     &      ' as requested with .FRZITR in input.'
+            IFREEZ(0) = 0
+         END IF
          ERGPRO = ERGPRD
          NCRD = NCRTOT
          IF (REDINT .OR. DELINT) NCRD = IINTCR
@@ -2040,7 +2039,7 @@ C
 C
 C     Write Hessian to file
 C
-         IF (.NOT. NOHSWR)
+         IF (.NOT. NOHESWR)
      &      CALL PNCHES(MXRCRD,MX2CRD,HESINT,WILBMT,BMTRAN,WORK(KTEMP1),
      &      WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),WORK(KWRK2),LWRK2)
 C
@@ -2372,7 +2371,7 @@ C
       WRITE(LUPRI,'(A,L1,A1)')
      &     ' End of optimization            :       ', GECONV, MARK
       WRITE(LUPRI,678) ' Energy at this geometry is     : ', ENERGY
- 678  FORMAT(A,F14.6)
+ 678  FORMAT(A,F20.12)
       IF ((ITRNMR .GT. 0) .AND. (ITRBRK .LT. (ITRNMR - 1))) THEN
          ERGDIF = ENERGY - ERGOLD
          WRITE(LUPRI,678)' Energy change from last geom.  : ', ERGDIF
@@ -2434,7 +2433,8 @@ C
 C  /* Deck priinf */
       SUBROUTINE PRIINF(GEINFO,WORK,LWORK)
 C
-C     Prints important information at the end of an optimization.
+C     Prints important information at the end of a
+C     geometry optimization.
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -2442,11 +2442,13 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
 #include "optinf.h"
+
       DIMENSION GEINFO(0:ITRMAX,6), WORK(LWORK)
       CHARACTER NWSMRK*1,BRKMRK*1,REDMRK*1
       LOGICAL RED
       TMPNRG = 0.0D0
       RED = .FALSE.
+
       CALL HEADER('Final geometry (bohr)',-1)
       CALL PRIGEO(CORD)
 
@@ -2467,13 +2469,13 @@ C
      & // 'StepLen    TrustRad #Rej',
      & '@ ------------------------------------------------------'
      & // '------------------------'
-      DO, I = 0, ITRNMR
+      DO I = 0, ITRNMR
          IF (I .GT. 0) TMPNRG = GEINFO(I,1) - GEINFO(I-1,1)
 C
-C        There's three special marks for each iteration:
+C        There are three special marks for each iteration:
 C         one (*) for a Newton step (i.e. a step smaller than the trust radius),
 C         one (x) for the breaking of symmetry and
-C         one (#) for dropping half of dihedral angles.
+C         one (#) for dropping half of the dihedral angles.
 C
          NWSMRK = ' '
          IF ((GEINFO(I,4)+1.0D-6) .LT. GEINFO(I,5)) NWSMRK = '*'
@@ -2682,6 +2684,8 @@ C     Response excited state calculation
 C     Maybe reset the step control parameters as above
 Cdj moved from gtgrad
       IF (EXESG) THEN
+         CALL HEADER(
+     &   'INFO Calling RESPONS to get excited state gradients')
          MOLGRD = .TRUE.
          CALL RSPDRV(WORK,LWORK)
          ENERGY = ENERGY + EXCITA(ISYME,IESG,1)
@@ -2703,13 +2707,13 @@ C
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
+#include "abainf.h"
+#include "optinf.h"
+#include "gnrinf.h"
 #include "infinp.h"
 #include "inftap.h"
 #include "infpar.h"
 #include "pario.h"
-#include "abainf.h"
-#include "gnrinf.h"
-#include "optinf.h"
 #include "pvibav.h"
 #include "rspprp.h"
 #include "esg.h"
@@ -2749,7 +2753,7 @@ chj-e-090516
 #endif
 C
 C     Find out if we are running an excited state calculation
-      IF (.NOT. FNDKEY('*ESG   ')) THEN
+      IF (.NOT. EXESG) THEN
 C
 C     TR: Using FNDANA to find highest order of analytical
 C         derivatives (NAORDR). If this is 0, we use numerical
@@ -2851,6 +2855,9 @@ C         NAORDR = 0; Only energies available
 C         NAORDR = 1; Analytical gradients available
 C         NAORDR = 2; Analytical gradients and hessians available.
 C
+
+      IF (INITHS) WRITE(LUPRI,'(/A)')
+     &   ' Initial molecular Hessian will be calculated now.'
 
       SAVE_PELIB = .FALSE.
       IF (USE_PELIB()) THEN
@@ -8282,14 +8289,13 @@ C
       CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 
       IF (IFREEZ(0) .GT. 0) THEN
-         NCOORD = 3*NUCDEP
 
-         DO, I = 1, IFREEZ(0)
+         DO I = 1, IFREEZ(0)
             IC_OFF = 3*(IFREEZ(I)-1)
-            DO, IC = 1, 3
+            DO IC = 1, 3
                IC_TOT = IC_OFF + IC
                GRDMOL(IC_TOT) = 0.0D0
-               DO, JC = 1, NCOORD
+               DO JC = 1, NCOOR
                   HESMOL(JC,IC_TOT) = 0.0D0
                   HESMOL(IC_TOT,JC) = 0.0D0
                END DO
@@ -8299,11 +8305,11 @@ C
 
          IF (IPRINT .GT. 1) THEN
             WRITE (LUPRI,*) 'Molecular gradient after freeze:'
-            DO I = 1, NCOORD
+            DO I = 1, NCOOR
                 WRITE(LUPRI,*) 'i,grdmol(i)',I,GRDMOL(I)
             END DO
             WRITE (LUPRI,*) 'Molecular Hessian after freeze:'
-            CALL OUTPUT(HESMOL,1,NCOORD,1,NCOORD,MXCOOR,MXCOOR,-1,LUPRI)
+            CALL OUTPUT(HESMOL,1,NCOOR,1,NCOOR,MXCOOR,MXCOOR,-1,LUPRI)
          end if
       END IF
 

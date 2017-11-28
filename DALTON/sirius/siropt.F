@@ -1819,16 +1819,15 @@ C     (but we test to be sure!)
 C
   400 CONTINUE
          REWIND LUIT1
-         IF ( .NOT.FNDLAB(TABLE(2),LUIT1) ) GO TO 490
-            READ (LUIT1,END=490,ERR=490)
          IF ( .NOT.FNDLB2(TABLE(3),LBLINF,LUIT1) ) GO TO 490
-         IF ( ICSTRT.EQ.5 .AND. LBLINF(2).EQ.'NRSAVE  ')
-     &      FLAG(39) = .TRUE.
-C        ... if user has specified .RESTART, then respect shift to NR
+         IF ( ICSTRT.EQ.5 ) THEN
+            IF ( .NOT.FNDLAB(TABLE(2),LUIT1) ) GO TO 490     ! label 'OLDORB  ' for backstep after restart
+            IF ( LBLINF(2).EQ.'NRSAVE  ') FLAG(39) = .TRUE.  ! if user has specified .RESTART, then respect shift to NR
+         END IF
          IF (FLAG(39)) GO TO 495
 C        ... if (ONLYNR) one vector is all that is needed,
 C            so no reason to do more checking.
-C        We now check if sufficient vectors using label information.
+C        We now check if sufficient vectors available using label information.
          READ (LBLINF(1),'(2I4)',ERR=405) LROIT1,JSTA
          IF (LROIT1 .LT. LROOTS) GO TO 493
          GO TO 495
@@ -1843,6 +1842,7 @@ C        error reading LBLINF(1) -- use the old check
 C
   490 CONTINUE
          REWIND LUIT1
+         CALL DMPLAB(LUIT1, LUPRI)
          IF (ICSTRT .EQ. 4) THEN
             NWARN = NWARN + 1
             WRITE (LUPRI,'(//A/A//)')

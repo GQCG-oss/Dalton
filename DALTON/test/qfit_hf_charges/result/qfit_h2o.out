@@ -4,8 +4,11 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2016.alpha
+    This is output from DALTON release Dalton2017.alpha (2016)
+         ( Web site: http://daltonprogram.org )
+
    ----------------------------------------------------------------------------
+
     NOTE:
      
     Dalton is an experimental code for the evaluation of molecular
@@ -24,13 +27,13 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
        T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
        L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
        C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
        H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
        M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
-       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
        T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
        J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
        O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
@@ -45,12 +48,12 @@
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
        and H. Agren,
        "The Dalton quantum chemistry program system",
-       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
-    
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
     and
-    
+     
        Dalton, a Molecular Electronic Structure Program,
-       Release Dalton2016.alpha (2015), see http://daltonprogram.org
+       Release Dalton2017.alpha (2016), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -59,7 +62,7 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
   Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
@@ -70,6 +73,7 @@
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
   Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -78,12 +82,14 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
   Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
@@ -105,7 +111,7 @@
   Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
-  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex frequency response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
@@ -136,78 +142,78 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Jun  1 22:10:28 2015
-     Host name              : sparta                                  
+     Date and time (Darwin) : Wed Aug 30 20:23:02 2017
+     Host name              : adm-106348-mac.local                    
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/cstein/Development/fortran/dalton-gitlab/build_master_gfortran_noblas_nolapack/test/qfit_hf_charges
-   2) /home/cstein/Development/fortran/dalton-gitlab/build_master_gfortran_noblas_nolapack/basis
+   1) /Users/css/Development/fortran/dalton/build_master/test/qfit_hf_charges
+   2) /Users/css/Development/fortran/dalton/build_master/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | cstein
- Host                     | sparta
- System                   | Linux-3.13.0-27-generic
+ Who compiled             | css
+ Host                     | adm-106348-mac.local
+ System                   | Darwin-16.6.0
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /home/cstein/Programs/openmpi-1.8/bin/mpif90
- Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
- C compiler               | /home/cstein/Programs/openmpi-1.8/bin/mpicc
- C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
- C++ compiler             | /home/cstein/Programs/openmpi-1.8/bin/mpicxx
- C++ compiler version     | unknown
+ MPI                      | OFF
+ Fortran compiler         | /usr/local/bin/gfortran
+ Fortran compiler version | GNU Fortran (Homebrew GCC 7.1.0) 7.1.0
+ C compiler               | /Applications/Xcode.app/Contents/Developer/usr/bin
+                          | /gcc
+ C compiler version       | Apple LLVM version 8.1.0 (clang-802.0.42)
+ C++ compiler             | /Applications/Xcode.app/Contents/Developer/usr/bin
+                          | /g++
+ C++ compiler version     | Apple LLVM version 8.1.0 (clang-802.0.42)
  Static linking           | OFF
- Last Git revision        | 758784111c611868304820e928b45a5a43f85adb
- Git branch               | feature/qfitlib-higher-order-moments
- Configuration time       | 2015-06-01 22:02:07.819049
-
- * Sequential calculation.
+ Last Git revision        | 37c732ba691e0812f27d70eed2449a5dc9b17cd1
+ Git branch               | master
+ Configuration time       | 2017-08-30 20:22:40.309787
 
 
    Content of the .dal input file
  ----------------------------------
 
-**DALTON                                          
-.RUN WAVE FUNCTIONS                               
-.DIRECT                                           
-.QFIT                                             
-*QFIT                                             
-.VDWSCL                                           
- 1.4                                              
-.CONSTR                                           
-DIPOLE                                            
-.VDWINC                                           
- 0.2                                              
-.NSHELL                                           
- 4                                                
-.PTDENS                                           
- 0.28                                             
-.MPRANK                                           
-0                                                 
-**WAVE FUNCTIONS                                  
-.HF                                               
-**END OF                                          
+**DALTON
+.RUN WAVE FUNCTIONS
+.DIRECT
+.QFIT
+*QFIT
+.VDWSCL
+ 1.4
+.CONSTR
+DIPOLE
+.VDWINC
+ 0.2
+.NSHELL
+ 4
+.PTDENS
+ 0.28
+.MPRANK
+0
+**WAVE FUNCTIONS
+.HF
+**END OF
 
 
    Content of the .mol file
  ----------------------------
 
-BASIS                                                                          
-STO-3G                                                                         
-                                                                               
-                                                                               
-AtomTypes=2 NoSymmetry Charge=0 Angstrom                                       
-Charge=8.0 Atoms=1                                                             
-O             0.0000000000    0.0000000000    0.0000000000                     
-Charge=1.0 Atoms=2                                                             
-H             0.9000000000    0.0000000000    0.0000000000                     
-H            -0.3600000000    0.8600000000    0.0000000000                     
+BASIS
+STO-3G
+
+
+AtomTypes=2 NoSymmetry Charge=0 Angstrom
+Charge=8.0 Atoms=1
+O             0.0000000000    0.0000000000    0.0000000000
+Charge=1.0 Atoms=2
+H             0.9000000000    0.0000000000    0.0000000000
+H            -0.3600000000    0.8600000000    0.0000000000
 
 
        *******************************************************************
@@ -246,7 +252,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/cstein/Development/fortran/dalton-gitlab/build_master_gfortran_noblas_nolapack/basis/STO-3G"
+     "/Users/css/Development/fortran/dalton/build_master/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -254,7 +260,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/cstein/Development/fortran/dalton-gitlab/build_master_gfortran_noblas_nolapack/basis/STO-3G"
+     "/Users/css/Development/fortran/dalton/build_master/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -390,8 +396,20 @@ H            -0.3600000000    0.8600000000    0.0000000000
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x      1.02045211         2.59373038         8.65175326
+      y      1.62516447         4.13075578        13.77871816
+      z      0.00000000         0.00000000         0.00000000
+
+
+  Total CPU  time used in HERMIT:   0.01 seconds
+  Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -424,8 +442,8 @@ H            -0.3600000000    0.8600000000    0.0000000000
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Jun  1 22:10:28 2015
-     Host name              : sparta                                  
+     Date and time (Darwin) : Wed Aug 30 20:23:02 2017
+     Host name              : adm-106348-mac.local                    
 
  Title lines from ".mol" input file:
                                                                              
@@ -442,7 +460,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
 
      Wave function specification
      ============================
-@    Wave function type        >>> HF <<<
+@    Wave function type        --- HF ---
 @    Number of closed shell electrons          10
 @    Number of electrons in active shells       0
 @    Total charge of the molecule               0
@@ -482,36 +500,44 @@ H            -0.3600000000    0.8600000000    0.0000000000
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    T  4.90D-03  5.00D-03
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    T  2.55D-03  3.00D-03
 @  1    -74.9055801662        7.19374D-01   -7.49D+01    1
       Virial theorem: -V/T =      2.003759
-@      MULPOP O      -0.45; H       0.22; H       0.23; 
+@    MULPOP   O      -0.45; H       0.22; H       0.23; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    2    T  4.64D-03  5.00D-03
-@  2    -74.9444715591        1.60968D-01   -3.89D-02    2
-      Virial theorem: -V/T =      2.004315
-@      MULPOP O      -0.42; H       0.21; H       0.20; 
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    2    T  2.24D-03  3.00D-03
+@  2    -74.9425557975        2.10919D-01   -3.70D-02    2
+      Virial theorem: -V/T =      2.004283
+@    MULPOP   O      -0.43; H       0.22; H       0.21; 
+   2  Level shift: doubly occupied orbital energies shifted by -1.00D-01
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  4.62D-03  4.00D-03
-@  3    -74.9469353925        1.67833D-02   -2.46D-03    3
-      Virial theorem: -V/T =      2.003483
-@      MULPOP O      -0.42; H       0.22; H       0.20; 
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  2.26D-03  2.00D-03
+@  3    -74.9468521211        3.29871D-02   -4.30D-03    3
+      Virial theorem: -V/T =      2.003559
+@    MULPOP   O      -0.42; H       0.22; H       0.20; 
+   3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    T  4.59D-03  5.00D-03
-@  4    -74.9469640583        2.19098D-03   -2.87D-05    4
-      Virial theorem: -V/T =      2.003364
-@      MULPOP O      -0.42; H       0.22; H       0.20; 
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    T  2.21D-03  2.00D-03
+@  4    -74.9469629305        3.26285D-03   -1.11D-04    4
+      Virial theorem: -V/T =      2.003369
+@    MULPOP   O      -0.42; H       0.22; H       0.20; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    T  4.59D-03  5.00D-03
-@  5    -74.9469649686        3.80692D-05   -9.10D-07    5
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    T  2.22D-03  2.00D-03
+@  5    -74.9469649659        1.21618D-04   -2.04D-06    5
       Virial theorem: -V/T =      2.003354
-@      MULPOP O      -0.42; H       0.22; H       0.20; 
+@    MULPOP   O      -0.42; H       0.22; H       0.20; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    T  4.64D-03  4.00D-03
-@  6    -74.9469649688        8.22195D-06   -1.75D-10    6
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    T  3.90D-03  4.00D-03
+@  6    -74.9469649688        1.12640D-05   -2.82D-09    6
+      Virial theorem: -V/T =      2.003354
+@    MULPOP   O      -0.42; H       0.22; H       0.20; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    7    T  2.93D-03  3.00D-03
+@  7    -74.9469649688        2.80364D-06   -1.77D-11    7
 
-@ *** DIIS converged in   6 iterations !
-@     Converged SCF energy, gradient:    -74.946964968766    8.22D-06
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:    -74.946964968775    2.80D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -522,21 +548,21 @@ H            -0.3600000000    0.8600000000    0.0000000000
 
  Sym       Hartree-Fock orbital energies
 
-1 A     -20.22468009    -1.27976268    -0.65291707    -0.43788300    -0.38776609
-          0.62951898     0.82095117
+1 A     -20.22467997    -1.27976267    -0.65291704    -0.43788293    -0.38776604
+          0.62951906     0.82095113
 
-    E(LUMO) :     0.62951898 au (symmetry 1)
-  - E(HOMO) :    -0.38776609 au (symmetry 1)
+    E(LUMO) :     0.62951906 au (symmetry 1)
+  - E(HOMO) :    -0.38776604 au (symmetry 1)
   ------------------------------------------
-    gap     :     1.01728507 au
+    gap     :     1.01728510 au
 
- >>> Writing SIRIFC interface file
+ --- Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.034       0.035
+ CPU and wall time for SCF :       0.022       0.023
 
 
                        .-----------------------------------.
-                       | >>> Final results from SIRIUS <<< |
+                       | --- Final results from SIRIUS --- |
                        `-----------------------------------'
 
 
@@ -544,19 +570,19 @@ H            -0.3600000000    0.8600000000    0.0000000000
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:             -74.946964968766                 
+@    Final HF energy:             -74.946964968775                 
 @    Nuclear repulsion:             9.591469803262
-@    Electronic energy:           -84.538434772028
+@    Electronic energy:           -84.538434772037
 
-@    Final gradient norm:           0.000008221946
+@    Final gradient norm:           0.000002803640
 
  
-     Date and time (Linux)  : Mon Jun  1 22:10:28 2015
-     Host name              : sparta                                  
+     Date and time (Darwin) : Wed Aug 30 20:23:02 2017
+     Host name              : adm-106348-mac.local                    
 
 
-                        Charge fitting (QFITLIB) settings
-                        ---------------------------------
+                   Charge and moment fitting (QFITLIB) settings
+                   --------------------------------------------
 
 
           Fitting charges to the molecular ESP.
@@ -573,20 +599,20 @@ H            -0.3600000000    0.8600000000    0.0000000000
           molecular dipole.
 
 
-                        Potential fitted charges (QFITLIB)
-                        ----------------------------------
+                   Potential fitted multipole moments (QFITLIB)
+                   --------------------------------------------
 
  Charges:
-              Q   
-@ O      -0.703270
-@ H       0.359189
-@ H       0.344081
+                Q   
+@ O        -0.703270
+@ H         0.359190
+@ H         0.344080
 
-  Sum = total charge:    0.000000
+  Sum = total charge:   -0.000000
 
-File label for MO orbitals:   1Jun15   FOCKDIIS
+File label for MO orbitals:  30Aug17   FOCKDIIS
 
- (Only coefficients >0.0100 are printed.)
+ (Only coefficients > 0.0100 are printed.)
 
  Molecular orbitals for symmetry species 1  (A  )
  ------------------------------------------------
@@ -596,27 +622,25 @@ File label for MO orbitals:   1Jun15   FOCKDIIS
    2 O   :1s    -0.0276  -0.8201   0.0258   0.5195   0.0000   0.9717  -0.1293
    3 O   :2px   -0.0027  -0.0829  -0.5045  -0.4452  -0.0000   0.3036  -0.9033
    4 O   :2py   -0.0035  -0.1059   0.3235  -0.6795  -0.0000   0.6279   0.5119
-   5 O   :2pz   -0.0000   0.0000  -0.0000   0.0000  -1.0000  -0.0000   0.0000
+   5 O   :2pz    0.0000  -0.0000  -0.0000   0.0000  -1.0000  -0.0000   0.0000
    6 H   :1s     0.0067  -0.1694  -0.4338  -0.2427   0.0000  -0.7591   0.9702
    7 H   :1s     0.0063  -0.1563   0.4383  -0.2580  -0.0000  -0.9030  -0.7762
 
-
-
- >>>> Total CPU  time used in SIRIUS :      0.11 seconds
- >>>> Total wall time used in SIRIUS :      0.11 seconds
+  Total CPU  time used in SIRIUS :   0.08 seconds
+  Total wall time used in SIRIUS :   0.09 seconds
 
  
-     Date and time (Linux)  : Mon Jun  1 22:10:28 2015
-     Host name              : sparta                                  
+     Date and time (Darwin) : Wed Aug 30 20:23:02 2017
+     Host name              : adm-106348-mac.local                    
 
 
                      .---------------------------------------.
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.13 seconds
- >>>> Total wall time used in DALTON:   0.13 seconds
+  Total CPU  time used in DALTON:   0.09 seconds
+  Total wall time used in DALTON:   0.11 seconds
 
  
-     Date and time (Linux)  : Mon Jun  1 22:10:28 2015
-     Host name              : sparta                                  
+     Date and time (Darwin) : Wed Aug 30 20:23:02 2017
+     Host name              : adm-106348-mac.local                    

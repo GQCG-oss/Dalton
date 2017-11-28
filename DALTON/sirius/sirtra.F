@@ -98,7 +98,6 @@ C
 !891208-hjaaj
 ! SORTA,TRACD,TRAAB: print threshold for discarding integrals
 ! TRACTL: if (thrp.le.0) thrp=1.d-12 (was 1.d-9)
-!         if (thrq.le.0) thrq=1.d-12 (was 1.d-8)
 !891116-hjaaj
 ! NXTH2M,NXTH2D: more tests that buffers are allocated/have not been
 !   corrupted. Release buffer allocation when no more buffers.
@@ -223,12 +222,19 @@ C     ... use of old AOSRTINT.DA may be possible
                REWIND (LUINTM)
                READ (LUINTM)
                READ (LUINTM) LBINTM, JTRLVL
-               IF (JTRLVL .EQ. 3 .AND. KTRLVL .EQ. 2) KTRLVL =  7
-               IF (JTRLVL .EQ. 2 .AND. KTRLVL .EQ. 3) KTRLVL =  2
-               IF (JTRLVL .LT. KTRLVL) THEN
-                  FLAG(14) = .FALSE.
-                  ICASE = 3
+               ! Special tests because JTRLVL .gt. KTRLVL does not always mean all required integrals available
+               IF (JTRLVL .EQ. 3 .AND. KTRLVL .EQ. 2) THEN
+                  FLAG(14) = .FALSE. ! (aa|ii) and (ai|ai) missing
+               ELSE IF (JTRLVL .EQ. 2 .AND. KTRLVL .EQ. 3) THEN
+                  ! OK
+               ELSE IF (JTRLVL .EQ. 6 .AND. KTRLVL .EQ. 4) THEN
+                  FLAG(14) = .FALSE. ! (gg|ii) and (gi|gi) missing
+               ELSE IF (JTRLVL .EQ. 6 .AND. KTRLVL .EQ. 5) THEN
+                  FLAG(14) = .FALSE. ! (gg|gi) missing
+               ELSE IF (JTRLVL .LT. KTRLVL) THEN
+                  FLAG(14) = .FALSE. ! some integrals  missing
                END IF
+               IF (.NOT. FLAG(14)) ICASE = 3
             END IF
          ELSE
             FLAG(14) = .FALSE.
@@ -302,7 +308,7 @@ C
 C
 C....    PARAMETERS USED HERE
 C
-C....    THRQ: THRESHOLD TO DISCARD INTEGRALS DURING SORT
+C....    THRP: THRESHOLD TO DISCARD INTEGRALS DURING SORT
 C              -- FROM /INFTRA/ , DEFINED IN INPUT --
 C
 C....    LDAMAX: MAXIMUM DA BUFFER LENGTH (-- now set in TRACTL --)
@@ -474,7 +480,7 @@ C
 C
 C....    CHECK INTEGRAL AGAINST THRESHOLD
 C
-         IF (ABS(VALUE).LT.THRQ) GOTO 3
+         IF (ABS(VALUE).LT.THRP) GOTO 3
 
             JS = IINDX4(4,M)
             JR = IINDX4(3,M)
@@ -593,7 +599,7 @@ C
          PNZ = (LPQRS*2-NMBASX) * 100
          PNZ = ISUM / PNZ
          WRITE (LUPRI,202) NDAREC,(IDISK-1),PNZ
-         WRITE (LUPRI,203) THRQ
+         WRITE (LUPRI,203) THRP
       END IF
       deallocate(IINDX4)
       CALL QEXIT('SORTA ')
@@ -932,13 +938,12 @@ C
 #include "ibtdef.h"
 C
       CALL QENTER('TRACD ')
-CHJ-START-840726
-      IF (ITRLVL.GE.2 .AND. ITRLVL.LT.4) THEN
+      IF (ITRLVL.EQ.2 .OR. ITRLVL.EQ.3 .OR. ITRLVL.EQ.6) THEN
+CHJ-840726: skip (some) inactive orbitals
          NXISHT = MORBT-MSSHT-MASHT
       ELSE
          NXISHT = 0
       END IF
-CHJ-END-840726
       IF (IPRTRA .GE. 100) THEN
          WRITE (LUPRI,*) 'Test output from TRACD'
          WRITE (LUPRI,*) 'ITRLVL =',ITRLVL
@@ -1067,7 +1072,7 @@ C                 ***** SET LOOP LIMITS FOR ORBITAL C *****
                   ELSE IF (ITRLVL.EQ.10) THEN
                      NCRMIN = 1
                      NDRMIN = 1
-                  ELSE IF (ITRLVL.GE.2 .AND. ITRLVL.LT.4) THEN
+                  ELSE IF (ITRLVL.EQ.2 .OR. ITRLVL.EQ.3) THEN
                      IF (ISS.GT.ISR) THEN
                         NCRMIN = MOCC(ISR)+1
                         NDRMIN = MISH(ISS)+1
@@ -1081,7 +1086,7 @@ C                       ISP=ISQ=ISR=ISS, but we always
 C                       need (iu/ and (ui/, so no gain here )
                      END IF
                   ELSE
-C                 -- ITRLVL.EQ.1 or 4 or 5:
+C                 -- ITRLVL.EQ.1 or 4 or 5 or 6:
                      IF (ISS.GT.ISR) THEN
                         NCRMIN = MOCC(ISR)+1
                      ELSE
@@ -1182,8 +1187,8 @@ C
             ELSE
 C           -- IC .LE. MOCCT
                IF (IC.LE.NXISHT) THEN
-                  IF (ITRLVL.EQ.3) GO TO 170
-C                ( if ITRLVL.eq.3 neglect (ii/aa) integrals )
+                  IF (ITRLVL.NE.2) GO TO 170
+C                ( if ITRLVL.eq.2 include (ii/aa) integrals )
                   IDMIN = IC
 C                ( only (ii/ inac-inac distributions needed )
                ELSE
@@ -1328,13 +1333,11 @@ C
      *   'integrals'/2X,'Int. no.',4X,'C',4X,'D',4X,'A',4X,'B',
      *   10X,'Value')
       END IF
-CHJ-START-840726
-      IF (ITRLVL.GE.2 .AND. ITRLVL.LT.4) THEN
-        NXISHT = MORBT-MASHT-MSSHT
+      IF (ITRLVL.EQ.2 .OR. ITRLVL.EQ.3 .OR. ITRLVL.EQ.6) THEN
+        NXISHT = MORBT-MASHT-MSSHT ! skip inactive
       ELSE
         NXISHT = 0
       END IF
-CHJ-END-840726
 C ************** LENGTH OF BUFFER FOR ABCD on LUINTM
       LOUT  =LBINTM
       LOUTI =IRAT*LOUT
@@ -1373,7 +1376,7 @@ C     should never happen.
       ELSE
          ICMAX=MORBT
       END IF
-      IF (ITRLVL.LE.5) THEN
+      IF (ITRLVL.LE.6) THEN
          MAXID = MOCCT
       ELSE
          MAXID = MORBT
@@ -1492,9 +1495,9 @@ C                     (870628-hjaaj)
                   IF (IC.LE.NXISHT) THEN
 C                 (  we now know IC .eq. ID,
 C                    this distribution is for (ii/aa) integrals )
-                     IF (ITRLVL.EQ.3 .OR. ISPA.NE.ISC) GO TO 150
+                     IF (ITRLVL.NE.2 .OR. ISPA.NE.ISC) GO TO 150
 C                  ( we only need (ii/aa) with sym(a) .eq. sym(i) )
-C                  ( if ITRLVL.eq.3, neglect (ii/aa) integrals )
+C                  ( if ITRLVL.eq.3 or 6, neglect (ii/aa) integrals )
                      NARMIN = MOCCA+1
                      NARMAX = MORBA
                      NBRMIN = NARMIN
@@ -1510,8 +1513,8 @@ CHJ-S-841125
                   IF (ID.LE.NXISHT) THEN
 C                 ( symmetry tested above, this is (ai/,
 C                   used for (ai/ai) )
-C                 ( if ITRLVL.eq.3, neglect (ai/ai) integrals )
-                     IF (ITRLVL.EQ.3 .OR. ISPA.NE.ISC) GO TO 150
+C                 ( if ITRLVL.eq.2 include (ai/ai) integrals )
+                     IF (ITRLVL.NE.2 .OR. ISPA.NE.ISC) GO TO 150
                      NARMIN = NCR
                      NARMAX = NCR
                      NBRMIN = NDR
@@ -1782,14 +1785,13 @@ C
 
 C     ***** SET THRESHOLDS *****
 C     *********** THRP: THRESHOLD USED IN TRACD AND TRAAB
-C     *********** THRQ: THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
+C     ***********       AND THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
       IF (THRP.LE.1.D-16) THEN
          WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
      &      ' INFO: Changed THRP threshold used in 2-el.'//
      &      ' integral transformation from',THRP,' to',1.D-14
          THRP=1.D-14
       END IF
-      THRQ = THRP * 0.1D0
 C
       IF (FCKTRA_TYPE .gt. 0) THEN
          NEWTRA_USEDRC = .FALSE. ! FCKTRA_DRCCTL not implemented yet
@@ -1982,22 +1984,25 @@ C                     (all four indices active orbitals)
 C           ITRLVL=1: first order transformation  (gv|xy)
 C                     (first index all orbitals, other indices active orbitals)
 C           ITRLVL=2: SIRIUS 2. order transformation, include (ii|aa) and (ia|ia)
-C                     (uv|ab), (ua|vb), (ii|aa), and (ia|ia)
+C                     included: (uv|ab), (ua|vb), (ii|aa), and (ia|ia)
 C                     (two indices active orbitals, other indices secondary orbitals)
 C           ITRLVL=3: SIRIUS 2. order transformation, neglect (ii|aa) and (ia|ia)
-C                     (uv|ab) and (ua|vb)
+C                     included: (uv|ab) and (ua|vb)
 C           ITRLVL=4: full 2. order transformation (o1 o2|g1 g2) and (o1 g1|o2 g2)
 C                     (two indices occupied orbitals, other indices general orbitals)
 C
 C           ITRLVL=5: third order transformation (g1 g2|g3 o)
 C                     (Three indices all orbitals, last index occupied orbitals)
 C
+C           ITRLVL=6: third order transformation (g1 g2|g3 u)
+C                     (Three indices all orbitals, last index active orbitals)
+C
 C           ITRLVL=10: Full integral transformation (g1 g2|g3 g4)
 C
       IF (IPRTRA.GT.0) WRITE (LUPRI,'(/A,I4)')
      &   ' 2-ELECTRON INTEGRAL TRANSFORMATION SECTION; PARAMETER =',
      &   ITRLVL
-      IF (ITRLVL.GT.5 .AND. ITRLVL .NE. 10) THEN
+      IF (ITRLVL.GT.6 .AND. ITRLVL .NE. 10) THEN
          WRITE (LUPRI,'(//A)')
      1      ' TRACTL_1, parameter outside valid range'
          CALL QTRACE(LUPRI)
@@ -2005,9 +2010,9 @@ C
       END IF
 C
 C     ***** Assign INTTRA from INFORB *****
-C     Note: index on LUITM are wrong if MFRO(ISYM) .ne. 0 !!
       MSYM = NSYM
       DO 5 ISYM = 1,NSYM
+C     Note: index on LUITM are wrong if MFRO(ISYM) .ne. 0 !!
          MFRO(ISYM) = 0
          MISH(ISYM) = NISH(ISYM) - MFRO(ISYM)
          MASH(ISYM) = NASH(ISYM)
@@ -2119,9 +2124,10 @@ C     ***** ITSX REORDERS BACK                          *****
 C
       IF (ITRLVL.EQ.0) GO TO 42
       IF (ITRLVL.EQ.10) GO TO 43
-      IF (ITRLVL.EQ.1 .OR. ITRLVL.GE.4) GO TO 199
+      IF (ITRLVL.EQ.1 .OR. ITRLVL.EQ.4 .OR. ITRLVL.EQ.5) GO TO 199
 C
-C     --- ITRLVL.EQ.2 .OR. ITRLVL.EQ.3:
+C     --- ITRLVL.EQ.2 .OR. ITRLVL.EQ.3 .OR. ITRLVL.EQ.6:
+C         (inactive, active and secondary orbital lists)
 C
       I    = 0
       IO   = 0
@@ -2153,6 +2159,7 @@ C
       GO TO 44
 C
 C     --- ITRLVL.EQ.1 .OR. ITRLVL.EQ.4 .OR. ITRLVL.EQ.5
+C         (inactive orbitals in occupied list)
 C
   199 CONTINUE
       I    = 0
@@ -2177,6 +2184,7 @@ C
       GO TO 44
 C
 C     --- ITRLVL.EQ.0:
+C         (inactive orbitals in secondary list)
 C
    42 I    = 0
       ISEC = MASHT
@@ -2314,6 +2322,9 @@ C
          READ  (LUINTM) LBINT1,JTRLVL
          IF (JTRLVL .EQ. 3 .AND. ITRLVL .EQ. 2) JTRLVL = -1
          IF (JTRLVL .EQ. 2 .AND. ITRLVL .EQ. 3) JTRLVL =  3
+         IF (JTRLVL .EQ. 5 .AND. ITRLVL .EQ. 6) JTRLVL =  6
+         IF (JTRLVL .EQ. 6 .AND. ITRLVL .EQ. 4) JTRLVL = -1 ! (gg|ii) and (gi|gi) missing
+         IF (JTRLVL .EQ. 6 .AND. ITRLVL .EQ. 5) JTRLVL = -1 ! (gg|gi) missing
          IF (JTRLVL .GE. ITRLVL) THEN
 C           read CMO matrix from LUINTM
 C           and subtract from input CMO matrix

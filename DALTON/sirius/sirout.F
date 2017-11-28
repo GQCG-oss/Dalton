@@ -63,6 +63,8 @@ C
 #endif
       use qmcmm_fock, only: scf_qmnpmm_out
       use pelib_interface, only: use_pelib
+      use qfitlib_interface, only: qfitlib_ifc_sirius_fit,
+     * qfitlib_ifc_initialize, qfitlib_ifc_results
 #include "implicit.h"
 C
 #include "litinfo.h"
@@ -504,7 +506,9 @@ C
       ENDIF
 
       IF (QFIT) THEN
-         CALL QFITGSCALC(WRK(KCMO),WRK,KFREE,LFREE)
+         CALL QFITLIB_IFC_INITIALIZE
+         CALL QFITLIB_IFC_SIRIUS_FIT(WRK(KCMO), WRK(KFREE), LFREE)
+         CALL QFITLIB_IFC_RESULTS
       ENDIF
 
       IF (MOLDEN) THEN

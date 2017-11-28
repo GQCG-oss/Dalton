@@ -724,6 +724,9 @@ C
 
 #ifdef MOD_SRDFT
       IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+        IF (TRPLET) THEN
+          call quit('SRDFT_DENS not checked/fixed for triplet MC-srDFT')
+        END IF
          CALL SRDFT_DENS(WRK(KDTOTAO),UDV,PVX,CMO,WRK,KFREE,LFREE)
 C        Get DtotAO, allocation for DXtotAO in SIRFCK.SRDFT can here be
 C        used temporarily for DVAO if NASHT.gt.0

@@ -93,7 +93,7 @@ C --- start of executable code
          CALL TITLER('.FCKTRA AO->MO integral transformation','*',200)
          WRITE(LUPRI,'(A,I4,1P,D10.2)')
      &   ' Sirius integral transformation level & screening threshold:',
-     &   ITRSIR,THR_MOTWOINT
+     &   JTRSIR,THR_MOTWOINT
          FLUSH(LUPRI)
       END IF
 
@@ -115,8 +115,11 @@ C     Test if MO integrals already available
          REWIND(LUINTM)
          READ  (LUINTM)
          READ  (LUINTM) J,NTRLVL
-         IF (NTRLVL .EQ. 3 .AND. JTRSIR .EQ. 2) NTRLVL = -1
-         IF (NTRLVL .EQ. 2 .AND. JTRSIR .EQ. 3) NTRLVL =  3
+         IF (NTRLVL .EQ. 3 .AND. JTRSIR .EQ. 2) JTRSIR = -1
+         IF (NTRLVL .EQ. 2 .AND. JTRSIR .EQ. 3) JTRSIR =  3
+         IF (NTRLVL .EQ. 5 .AND. JTRSIR .EQ. 6) JTRSIR =  6
+         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 4) JTRSIR = -1 ! (gg|ii) and (gi|gi) missing
+         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 5) JTRSIR = -1 ! (gg|gi) missing
          IF (NTRLVL .GE. JTRSIR) THEN
 C           read CMO matrix from LUINTM
 C           and subtract from input CMO matrix
@@ -182,7 +185,7 @@ C           and subtract from input CMO matrix
 
       REWIND(LUINTM)
       WRITE (LUINTM) (0, I=1,8) ! info not used for FCKTRA
-      WRITE (LUINTM) LBINTM,ITRSIR,NSYM,NORB,NBAS
+      WRITE (LUINTM) LBINTM,JTRSIR,NSYM,NORB,NBAS
       WRITE (LUINTM) CMO(1:NCMOT)
       WRITE (LUINTM) NISH(1:8), NASH(1:8)
 
@@ -779,7 +782,7 @@ C --- start of executable code
 #include "mtags.h"
 
       integer, allocatable :: ICD_NODE(:)
-      integer IPRTYP, IPRINT_slaves, ICD, NCD, IWHO, NWHO
+      integer IPRTYP, IPRINT_slaves, ICD, NCDTRA, IWHO, NWHO
       integer KFREE, LFREE
       integer NDMAT, IDIST, N2GAB, L_H2CD
 
@@ -811,11 +814,11 @@ C --- start of executable code
 
       allocate( ICD_NODE(NNORBX) )
       ICD_NODE(:) = 0
-      NCD = 0
+      NCDTRA = 0
       DO ICD = 1,NNORBX
          IF (ICDTRA(ICD) .EQ. 0) CYCLE
-         ICD_NODE(ICD) = MOD(NCD,NODTOT) + 1
-         NCD = NCD + 1
+         ICD_NODE(ICD) = MOD(NCDTRA,NODTOT) + 1
+         NCDTRA = NCDTRA + 1
       END DO
 
 #if FCKTRA_DEBUG > 2
@@ -860,12 +863,12 @@ C --- start of executable code
 #endif
 
       IDIST = IDIST + NDMAT
-      IF (IDIST .GT. NCD) THEN
-         write(lupri,*) 'ERROR: IDIST .gt. NCD',IDIST,NCD
-         call quit('IDIST .gt. NCD, uha')
-      ELSE IF (IDIST .LT. NCD) THEN
-         GO TO 100
-      END IF
+      IF (IDIST .GT. NCDTRA) THEN
+         write(lupri,*) 'ERROR: IDIST .gt. NCDTRA',IDIST,NCDTRA
+         call quit('IDIST .gt. NCDTRA, uha')
+      else if (IDIST .LT. NCDTRA) then
+         go to 100
+      end if
 
       deallocate( ICD_NODE )
       call qexit('FCKTRA_DISTRIBUTED_MASTER')
@@ -881,7 +884,6 @@ C --- start of executable code
       real*8  WORK(LWORK)
 
       integer, allocatable :: ICDTRA(:), ICD_NODE(:)
-      real*8 , allocatable :: CMO(:)
       integer ICD, NCDTRA, MX_NDMAT
       integer KFREE, LFREE, KDMAT, KFMAT, KUCMO
       logical PARHER_save, SLAVE_save, DIRFCK_save
@@ -937,11 +939,13 @@ C --- start of executable code
       KFREE = 1
       LFREE = LWORK
 
-      PARHER_save = PARHER
       SLAVE_save  = SLAVE
       SLAVE  = .FALSE. ! Be sure the Fock matrices are NOT constructed in parallel,
+
+      PARHER_save = PARHER
       PARHER = .FALSE. ! be sure the Fock matrices are NOT constructed in parallel
                        ! we are parallelizing on the distributions
+
       DIRFCK_save = DIRFCK
       DIRFCK = .TRUE.  ! NEVER read from AOTWOINT when parallel.
 
@@ -949,7 +953,6 @@ C --- start of executable code
 
 
       allocate( ICDTRA(NNORBX) )
-      allocate( CMO(NCMOT) )
       allocate( ICD_NODE(NNORBX) )
 
       call MEMGET2('REAL','UCMO',  KUCMO,NBAST*NORBT,
@@ -1009,7 +1012,6 @@ C --- start of executable code
  1000 CONTINUE
 
       deallocate( ICDTRA )
-      deallocate( CMO )
       deallocate( ICD_NODE )
 
       PARHER = PARHER_save

@@ -621,8 +621,8 @@ C
                   IPRMANU = IPRFCK
 !                 IPRMANU = 10 
                   CALL SRDFT(1,WRK(KVSRAO),WRK(KDHFAO),ESRDFTCMD,
-     &                       .TRUE.,.FALSE.,.FALSE.,WRK(KFREE),
-     &                       LFREE,IPRMANU)
+     &                       .TRUE.,.FALSE.,.FALSE.,.FALSE.,
+     &                       WRK(KFREE),LFREE,IPRMANU)
 C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
 !                            DOGRD,DOATR,WORK,LWORK,IPRINT)
                    write(lupri,*) 'Esrcmd_dft = ', ESRDFTCMD 
