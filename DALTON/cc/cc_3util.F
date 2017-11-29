@@ -47,6 +47,7 @@ C  /* Deck cc_t2sq3a */
             IF (ISYMBJ.LT.ISYMAI) CYCLE
 !
             NAMP = NT1AM(ISYMAI)*NT1AM(ISYMBJ)
+            KOFF = IT2AM(ISYMAI,ISYMBJ) + 1
 !
             IF (NAMP .GT. 0) THEN
                KOFF1 = IT2SQ(ISYMAI,ISYMBJ) + 1
@@ -56,7 +57,7 @@ C  /* Deck cc_t2sq3a */
                KOFF2 = IT2SQ(ISYMBJ,ISYMAI) + 1
                CALL TRM3A(T2AM(KOFF),NT1AM(ISYMAI),NT1AM(ISYMBJ),
      *                    T2SQ(KOFF2),ONEM*FACT)
-               KOFF = KOFF + NAMP
+!               KOFF = KOFF + NAMP
 !
             ENDIF
 !
@@ -69,7 +70,7 @@ C  /* Deck cc_t2sq3a */
       RETURN
       CONTAINS
 !
-      SUBROUTINE TRM3A(A,M,N,B,FACT)
+      SUBROUTINE TRM3A(A,M,N,B,FACTM)
 !
 !---------------------------------------------------------------
 !
@@ -80,7 +81,7 @@ C  /* Deck cc_t2sq3a */
 !---------------------------------------------------------------
 !
       INTEGER, INTENT(IN) :: M, N
-      DOUBLE PRECISION, INTENT(IN) :: A(M,N), FACT
+      DOUBLE PRECISION, INTENT(IN) :: A(M,N), FACTM
       DOUBLE PRECISION, INTENT(INOUT) :: B(N,M)
 !
       DOUBLE PRECISION :: XMONE
@@ -88,7 +89,10 @@ C  /* Deck cc_t2sq3a */
 !
       DO 100 I = 1, M
 !
-         CALL DAXPY(N,FACT,A(I,1),M,B(1,I),1)
+C         CALL DAXPY(N,FACT,A(I,1),M,B(1,I),1)
+         DO J = 1, N
+            B(J,I) = B(J,I) + FACTM*A(I,J)
+         END DO
 !
  100  CONTINUE
 !
@@ -737,7 +741,7 @@ C
       DO 100 ISYMCI = 1,NSYM
 C
          ISYMDJ = MULD2H(ISYMTR,ISYMCI)
-         ISYMJ  = MULD2H(ISYMCI,ISYDVI)
+         ISYMJ  = MULD2H(ISYMDJ,ISYDVI)
 C
          NTOTCI = MAX(1,NT1AM(ISYMCI))
          NTOTDVI = MAX(1,NVIR(ISYDVI))
@@ -1355,7 +1359,7 @@ C
      *                     IOPT)
 C
 C     Rasmus Faber 2017
-C     Based on CCRHS_ASQ by Henrik Koch & Ove Christiansen
+C     Based on CCRHS_A by Henrik Koch & Ove Christiansen
 C
 C     Purpose: Calculates the doubles A term
 C     Contract the "Gamma" intermediate with the quadratic
@@ -1728,7 +1732,7 @@ C
       DO 100 ISYMD = 1,NSYM
 C
          ISYMB  = ISYMD
-         ISYJEM = MULD2H(ISYMD,ISYDIM)
+         ISYJEM = MULD2H(ISYMB,ISYDIM)
          ISYAIJ = MULD2H(ISYMB,ISYRES)
 C
 C------------------------------

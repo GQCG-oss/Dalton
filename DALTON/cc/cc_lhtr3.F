@@ -388,7 +388,7 @@ C
             TIMEXI = SECOND()
             CALL CC_XI(WORK(KOFFXI),CTR2,ISYMTR,WORK(KT2AM),ISYMOP,
      *                 WORK(KEND1),LWRK1)
-            CALL CC_XD3(WORK(KOFFCT),WORK(KOFFXI),ISYMTR,WORK(KLAMDH),
+            CALL CC_XD3(WORK(KOFFCT),WORK(KOFFXI),ISYRES,WORK(KLAMDH),
      &                  WORK(KLAMDP),1,WORK(KEND1),LWRK1)
             TIMEXI = SECOND() - TIMEXI
          END IF
@@ -821,7 +821,7 @@ C
 C
 C--------------------------------------------------
 C                 Calculate the LT21H contribution.
-C--------------------------------------------------
+C-------------------------------------------------
 C
                   CALL DZERO(WORK(KSCRVI),NT2BCD(ISY21I))
                   AUTIME = SECOND()
@@ -868,7 +868,7 @@ C
 
                CALL CC_T2AO3(CTR2,WORK(KLAMDP),ISYMLP,WORK(KSCRM2),
      *                        WORK(KEND4),LWRK4,IDEL,ISYMD,
-     *                        ISYMTR,ICON)
+     *                        ISYMTR)
 C
                AUTIME = SECOND() - AUTIME
                TIM2AO = TIM2AO + AUTIME
@@ -911,9 +911,9 @@ C
                   IOPT   = 2
                   ISYMM  = MULD2H(ISYMD,ISYMTR)
                   CALL CC_BF3(WORK(KXINT),RHO2,WORK(KLAMDP),1,
-     *                         WORK(KOFFAO),ISYMTR,WORK(KLAMDP),1,
-     *                         WORK(KSCRM),ISYMM,WORK(KSCRM2),ISYMM,
-     *                         WORK(KEND4),LWRK4,IDEL,ISYMD,IOPT)
+     *                        WORK(KOFFAO),ISYMTR,WORK(KLAMDP),1,
+     *                        WORK(KSCRM),ISYMM,WORK(KSCRM2),ISYMM,
+     *                        WORK(KEND4),LWRK4,IDEL,ISYMD,IOPT)
                   AUTIME = SECOND() - AUTIME
                   TIM2BF = TIM2BF + AUTIME
 C
@@ -927,11 +927,11 @@ C-----------------------------------------
 C                 Write out result vector.
 C-----------------------------------------
 C
-                  DTIME   = SECOND()
+                  DTIME = SECOND()
                   CALL CC_WVEC(LUFR2,FRHO2,NRHO2,NRHO2,IV + ITR -1,
      *                         RHO2)
-                  DTIME   = SECOND() - DTIME
-                  TIMIO   = TIMIO    + DTIME
+                  DTIME = SECOND() - DTIME
+                  TIMIO = TIMIO    + DTIME
 C
                ENDIF
 C
@@ -1008,8 +1008,8 @@ C
      &                  'in CC_LHTR')
            ENDIF
 C
-C--------------------------------------------------
-C        Calculate M-intermediate of CTR2 and T2AM.
+C-----------------------------------------------------------
+C        Calculate transposed M-intermediate of CTR2 and T2AM.
 C--------------------------------------------------
 C
            TIMEMI = SECOND()
@@ -1036,6 +1036,8 @@ C
          CALL CC_21G(RHO1(1,IV),WORK(KMINT),ISYRES,WORK(KLAMDH),
      *               WORK(KEND1),LWRK1,ISYMOP,LUIN30,'CCINT3O')
          TIMEG = SECOND() - TIMEG
+C
+         CALL CC_T2SQTRANSP(CTR2,ISYMTR)
 C
 C----------------------------------------------
 C        Transform the RHO2 vector to MO basis.
@@ -1113,7 +1115,6 @@ C
          ISYV = ISYMTR
          IOPT = 2
 C
-         CALL CC_T2SQTRANSP(CTR2,ISYMTR)
 C
          CALL CCRHS_ASQ(RHO2,CTR2,WORK(KGAMMI),WORK(KENDGI),LWRKGI,
      &                  ISYG,ISYV,IOPT)
@@ -1387,7 +1388,7 @@ C
          ENDIF
 C
 C        For now, explicitly zero (-) diagonal!
-         CALL CCLR_DIASCL(RHO2,ZERO,ISYMTR)
+         IF (ISYMTR.EQ.1) CALL CCLR_DIASCL(RHO2,ZERO,ISYMTR)
 C------------------------------------------
 C        RHO2(-) done: write out (-) vector
 C------------------------------------------

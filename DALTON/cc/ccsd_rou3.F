@@ -262,7 +262,7 @@ C
 C
             END DO
             ISYMGI = MULD2H(ISYMCI,ISYML1)
-
+C           C(gamma,i)*L(delta,j)
             IF ((IOPT .EQ.2) .AND. (ISYMGI .EQ. ISYML1)) THEN
                KOFF1 = 1
                KOFF2 = IGLMRH(ISYMD,ISYMJ) + D

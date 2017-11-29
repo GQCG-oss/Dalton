@@ -545,7 +545,7 @@ C
          CALL AROUND(' START OF CCLR_JAC ')
       ENDIF
 C
-      IF (NSYM.GT.1) THEN
+      IF ((NSYM.GT.1).AND.(JACTST.OR.FDJAC)) THEN
          WRITE(LUPRI,*) 
      *   'Finite difference Joacobian does only work without symmetry'
          CALL QUIT(
@@ -556,52 +556,58 @@ C--------------------
 C     Initialization.
 C--------------------
 C
-      ISYMTR = 1
-      IPRLE  = IPRINT
-      IF (JACTST.OR.JACEXP.OR.FDJAC) THEN
-         NC1VEC = NT1AM(ISYMTR)
-         NC2VEC = NT2AM(ISYMTR)
-         IF (TRIPLET) NC2VEC = 2*NC2VEC
+      DO ISYMTR = 1, NSYM
+         IPRLE  = IPRINT
+         IF (JACTST.OR.JACEXP.OR.FDJAC) THEN
+            NC1VEC = NT1AM(ISYMTR)
+            NC2VEC = NT2AM(ISYMTR)
+            IF (TRIPLET) NC2VEC = 2*NC2VEC
 c        IF (NT1AMX.GT.3) THEN
 c           NC1VEC = 3
 c        ENDIF
 c        IF (NT2AMX.GT.5) THEN
 c           NC2VEC = 5
 c        ENDIF
-      ENDIF
-      IF (CCR12) THEN
-        NTEMP  = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NTR12AM(ISYMTR)
-        NTEMP2 = NTEMP*(NC1VEC + NC2VEC + NTR12AM(ISYMTR))
-      ELSE
-        NTEMP  = NT1AM(ISYMTR) + NT2AM(ISYMTR)
-        IF (TRIPLET) NTEMP = NTEMP + NT2AM(ISYMTR)
-        NTEMP2 = NTEMP*(NC1VEC + NC2VEC)
-      END IF
+         ENDIF
+         IF (CCR12) THEN
+           NTEMP  = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NTR12AM(ISYMTR)
+           NTEMP2 = NTEMP*(NC1VEC + NC2VEC + NTR12AM(ISYMTR))
+         ELSE
+           NTEMP  = NT1AM(ISYMTR) + NT2AM(ISYMTR)
+           IF (TRIPLET) NTEMP = NTEMP + NT2AM(ISYMTR)
+           NTEMP2 = NTEMP*(NC1VEC + NC2VEC)
+         END IF
 C
-      KEND1 = 1
-      LWRK1 = LWORK
+         KEND1 = 1
+         LWRK1 = LWORK
 C
 C------------------------------------------------------------
 C     Calculate Jacobian by Transformation with unit vectors.
 C     First elements in workspace contains the jacobian.
 C------------------------------------------------------------
 C
-      IF (IPRINT.GT.10) WRITE(LUPRI,*) 'CCLR_JAC Workspace:',LWORK
+         IF (IPRINT.GT.10) WRITE(LUPRI,*) 'CCLR_JAC Workspace:',LWORK
 C     
-      IF (JACTST.OR.JACEXP) THEN
-         KJACAN  = KEND1
-         KEND1   = KJACAN + NTEMP2
-         LWRK1   = LWORK  - KEND1
-         IF ( LWRK1 .LE. 0 ) THEN
-           WRITE(LUPRI,*) 'out of memory:'
-           WRITE(LUPRI,*) 'need:',KEND1
-           WRITE(LUPRI,*) 'have:',LWORK
-           CALL QUIT('Too little workspace in CCLR_JAC')
-         END IF
-         CALL AROUND( 'Calculation of analytical CC Jacobian')
-         CALL CCLR_JACAN(NC1VEC,NC2VEC,ISIDE,WORK(KJACAN),LWORK,
-     &                   APROXR12,TRIPLET)
-      ENDIF
+         IF (JACTST.OR.JACEXP) THEN
+            IF(ISYMTR.EQ.1) THEN
+               CALL AROUND( 'Calculation of analytical CC Jacobian')
+            END IF
+            KJACAN  = KEND1
+            KEND1   = KJACAN + NTEMP2
+            LWRK1   = LWORK  - KEND1
+            IF ( LWRK1 .LE. 0 ) THEN
+              WRITE(LUPRI,*) 'out of memory:'
+              WRITE(LUPRI,*) 'need:',KEND1
+              WRITE(LUPRI,*) 'have:',LWORK
+              CALL QUIT('Too little workspace in CCLR_JAC')
+            END IF
+            CALL CCLR_JACAN(NC1VEC,NC2VEC,ISIDE,WORK(KJACAN),LWORK,
+     &                      APROXR12,TRIPLET)
+         ENDIF
+
+      END DO ! ISYMTR = 1, NSYM
+
+      ISYMTR = 1
 C
 C-------------------------------------------------------
 C     Calculate Jacobian by finite difference.
@@ -619,7 +625,7 @@ C
             WRITE(LUPRI,*) 'have:',LWORK
             CALL QUIT('Too little workspace in CCLR_JAC-2')
          END IF
-         CALL AROUND( 'Calculation of finite difference  CC Jacobian')
+         CALL AROUND('Calculation of finite difference  CC Jacobian')
          RSPIM2 =  RSPIM
          RSPIM  = .FALSE.
          CALL CCLR_FDJAC(NC1VEC,NC2VEC,WORK(KFDJAC),LWRK1,APROXR12)
@@ -713,14 +719,14 @@ C----------------------------
 C     Work space allocations.
 C----------------------------
 C
-      ISYMTR     = 1
+      !ISYMTR     = 1
       IF (CCR12) THEN
         NTAMP      = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NTR12AM(ISYMTR)
         NTAMP2     = NTAMP*(NC1VEC + NC2VEC + NTR12AM(ISYMTR))
       ELSE
-        NT2 = NT2AMX
+        NT2 = NT2AM(ISYMTR)
         IF (TRIPLET) NT2 = 2*NT2
-        NTAMP      = NT1AMX + NT2
+        NTAMP      = NT1AM(ISYMTR) + NT2
         NTAMP2     = NTAMP*(NC1VEC + NC2VEC )
       END IF
 
@@ -731,7 +737,7 @@ C
         KEND1   = KMETRIC + NTAMP2
       END IF
       LWRK1      = LWORK - KEND1
-      IF (LWRK1 .LT. NT1AMX + NT2AMX) 
+      IF (LWRK1 .LT. NTAMP) 
      *        CALL QUIT('INSUFFICIENT WORK SPACE IN CCLR_JACAN')
 C
 C--------------------------------------------------------------
@@ -761,14 +767,14 @@ C
 
       DO I = 1, NLOOP
          CALL DCOPY(NTAMP,WORK(KC1+NTAMP*(I-1)),1,WORK(KEND1),1)
-         CALL CC_ATRR(0.0D0,ISYMOP,ISIDE,WORK(KEND1),LWRK1,
+         CALL CC_ATRR(0.0D0,ISYMTR,ISIDE,WORK(KEND1),LWRK1,
      &                .FALSE.,DUMMY,APROXR12,TRIPLET)
          CALL DCOPY(NTAMP,WORK(KEND1),1,WORK(KC1+NTAMP*(I-1)),1)
   
          IF (CCR12) THEN  
            KS12AM = KEND1 + NTAMP
            KM12AM = KMETRIC + NT1AM(ISYMTR)+NT2AM(ISYMTR)+NTAMP*(I-1)
-           CALL DCOPY(NTR12AM(1),WORK(KS12AM),1,WORK(KM12AM),1)
+           CALL DCOPY(NTR12AM(ISYMTR),WORK(KS12AM),1,WORK(KM12AM),1)
          END IF
       END DO
 C
@@ -860,13 +866,13 @@ C
 
       DO J = 1, NC2VEC
         CALL DZERO(C2AM(1,J),NTAMP)
-        C2AM(J + NT1AMX,J) = 1.0D00
+        C2AM(J + NT1AM(ISYMTR),J) = 1.0D00
       END DO
 
       IF (CCR12) THEN
         DO J = 1, NTR12AM(1)
           CALL DZERO(C12AM(1,J),NTAMP)
-          C12AM(J + NT1AMX+NT2AMX,J) = 1.0D00
+          C12AM(J + NT1AM(ISYMTR)+NT2AM(ISYMTR),J) = 1.0D00
         END DO
       END IF
 C
