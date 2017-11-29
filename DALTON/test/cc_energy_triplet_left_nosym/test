@@ -25,12 +25,6 @@ f.add(from_string = 'Cartesian Coordinates',
       num_lines = 8,
       rel_tolerance = 1.0e-8)
 
-f.add(string = 'Number of coordinates in each symmetry',
-      rel_tolerance = 1.0e-2)
-      
-f.add(string = 'Number of orbitals in each symmetry',
-      rel_tolerance = 1.0e-2)
-
 f.add(from_string = 'Number of t1 amplitudes',
       num_lines = 3,
       rel_tolerance = 10e-2)
@@ -44,12 +38,12 @@ f.add(string = 'Total CCSD  energy',
       rel_tolerance = 1.0e-9)
 #Excitation energies
 f.add(from_string = 'CCSD       Excitation energies',
-      num_lines = 17,
+      num_lines = 12,
       abs_tolerance = 1.0e-7,
       mask = [2]) # Let's just read the numbers in hartree
 
 
-test.run(['cc_energy_triplet_left.dal'], ['water_dz.mol'], f={'out': f},
+test.run(['cc_energy_triplet_left.dal'], ['water_dz_nosym.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

@@ -16,8 +16,8 @@
 *CCEXCI
 .LHTR
 .NCCEXCI
-  0 0 0 0 
-  3 2 3 2
+  0 
+  8
 .THREXC
  1.0D-10
 **END OF DALTON INPUT
