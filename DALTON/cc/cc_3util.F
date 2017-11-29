@@ -512,7 +512,7 @@ C     Henrik Koch and Alfredo Sanchez.         Dec 1994
 C
 #include "implicit.h"
 C
-      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, ONEM = -1.0D0)
 C
       DIMENSION T2AM(*)
 C
@@ -550,7 +550,7 @@ C
                DO 130 J = 1,NRHF(ISYMJ)
 C
                   IF (ISYMI .EQ. ISYMJ) THEN
-                     NRHFI =  J-1
+                     NRHFI = J - 1
                   ELSE
                      NRHFI = NRHF(ISYMI)
                   ENDIF
@@ -577,6 +577,7 @@ C
                            NAJ = IT1AM(ISYMA,ISYMJ)
      *                         + NVIR(ISYMA)*(J - 1) + A
 C
+                         FACT = ONE
                          IF (ISYMAI.EQ.ISYMBJ) THEN
                            NAIBJ = IT2AM(ISYMAI,ISYMBJ)
      *                           + INDEX(NAI,NBJ)
@@ -586,24 +587,27 @@ C
                          ELSE IF (ISYMBJ.LT.ISYMAI) THEN
                            NAIBJ = IT2AM(ISYMAI,ISYMBJ)
      *                           + NT1AM(ISYMBJ)*(NAI-1)+NBJ
+                           FACT = FACT*ONEM
                          END IF
 C
                          IF (ISYMAJ.EQ.ISYMBI) THEN
                            NAJBI = IT2AM(ISYMAJ,ISYMBI)
      *                           + INDEX(NAJ,NBI)
+                           FACT = FACT*ONEM
                          ELSE IF (ISYMAJ.LT.ISYMBI) THEN
                            NAJBI = IT2AM(ISYMAJ,ISYMBI)
      *                           + NT1AM(ISYMAJ)*(NBI-1)+NAJ
                          ELSE IF (ISYMBI.LT.ISYMAJ) THEN
                            NAJBI = IT2AM(ISYMAJ,ISYMBI)
      *                           + NT1AM(ISYMBI)*(NAJ-1)+NBI
+                           FACT = FACT*ONEM
                          END IF
 C
-                         XAIBJ = - T2AM(NAJBI)
-                         XAJBI = - T2AM(NAIBJ)
+                         XAIBJ = T2AM(NAJBI)
+                         XAJBI = T2AM(NAIBJ)
 C
-                         T2AM(NAJBI) = XAJBI
-                         T2AM(NAIBJ) = XAIBJ
+                         T2AM(NAJBI) = FACT*XAJBI
+                         T2AM(NAIBJ) = FACT*XAIBJ
 C
   160                   CONTINUE
   150                CONTINUE

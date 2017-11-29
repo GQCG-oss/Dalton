@@ -391,8 +391,7 @@ C   Based on CCPQI31 by
         KTINT = KEND1
         KTJNT = KTINT + NT2BCD(ISYTIN)
         KPINT = KTJNT + NT2BCD(ISYTIN)
-        KQINT = KPINT + NT2BCD(ISYAIK)
-        KEND2 = KQINT + NT2BCD(ISYAIK)
+        KEND2 = KPINT + NT2BCD(ISYAIK)
         LWRK2 = LWORK  - KEND2
 
         IF  (LWRK2 .LT. 0) THEN

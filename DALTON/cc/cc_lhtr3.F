@@ -434,7 +434,8 @@ C
      *                  IADRPQ,IADRSTRT,IV,WORK(KLAMDH),1,
      &                  WORK(KEND1),LWRK1)
 C
-
+C    Create L'(ai,bj) = -(+)L(ai,bj)-(-)L(ai,bj) - 2(-)L(aj,bi)
+C
             CALL CC_T2SQ3A(RHO2,CTR2,ISYMTR,-FOUR)
 C
             CALL CC_PQI3(CTR2,ISYMTR,WORK(KT2AM),ISYMOP,PQFIL,LUPQ,
@@ -734,7 +735,7 @@ C
                IF (CC2) THEN
                   KEND3  = K3OINT + NMAIJK(ISYMTI)
                ELSE
-                  KSCRTI = K3OINT + NMAIJK(ISYMTI)
+                  KSCRTI = K3OINT + NMAIJK(ISYMTI) ! is KSCRTI ever used?
                   KSCRZI = KSCRTI + NT2BCD(ISYMTI)
                   KSCRWI = KSCRZI + NT2BCD(ISY21I)
                   KSCRVI = KSCRWI + NT2BCD(ISY21I)
@@ -845,7 +846,8 @@ C------------------------------------------
 C
                ISSCRM = MULD2H(ISYMD,ISYMTR)
 C
-               KSCRM = KEND3
+               KSCRM = KEND3 ! KSCR{T,V,W,Z} is not uused beyond this!
+                             ! Reset to KSCRTI?
                KSCRM2 = KSCRM  + NT2BCD(ISSCRM)
                KEND4 = KSCRM2  + NT2BCD(ISSCRM)
                LWRK4 = LWORK  - KEND4
