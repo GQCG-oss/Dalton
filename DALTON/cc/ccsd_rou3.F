@@ -5714,7 +5714,7 @@ C  /* Deck ccrhs3_r2ij */
 !------------------------------------------
 !
       DO 100 ISYMBJ = 1,NSYM
-         ISYMAI = MULD2H(ISYMBJ,ISYMTR)
+         ISYMAI = MULD2H(ISYMBJ,ISYVEC)
 !
          IF (ISYMAI .LE. ISYMBJ) THEN
 !

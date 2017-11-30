@@ -116,7 +116,7 @@ C--------------------
 C
       KCTMO  = 1
       KT1AM  = KCTMO  + N2BST(ISYMC)
-      KLAMDP = KT1AM  + NT1AM(ISYMOP)
+      KLAMDP = KT1AM  + NT1AM(1)
       KLAMDH = KLAMDP + NLAMDT
       KEND1  = KLAMDH + NLAMDT
 C
@@ -402,7 +402,7 @@ C
 C     Permute indices of plus vector
       CALL CCRHS3_IJ(ETAC(KOFFP),WORK(KEND2),LEND2,ISYRES)
 C     For now, explicitly zero (-) diagonal!
-      CALL CCLR_DIASCL(ETAC(KOFFM),ZERO,ISYRES)
+      IF (ISYRES.EQ.1) CALL CCLR_DIASCL(ETAC(KOFFM),ZERO,ISYRES)
 C
       IF (IPRINT .GT. 5 ) THEN
          TIMEC = SECOND() - TIMEC
