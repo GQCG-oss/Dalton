@@ -367,7 +367,7 @@ C
       KT1PS   = KT1P
 C
 C-------------------------------------
-C     Start loop over symmetriclasses.
+C     Start loop over symmetry classes.
 C-------------------------------------
 C
       DO 9000 ISYM = 1, NSYM

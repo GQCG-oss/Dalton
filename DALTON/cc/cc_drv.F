@@ -122,7 +122,13 @@ Cholesky
 #include "ccdeco.h"
 Cholesky
 C
+#include "ccexcicvs.h"
+#include "ccxscvs.h"
+C
       PARAMETER(NMODEL = 22)
+      !sonia: prevent projection in L0
+      logical lcvsbck,lionbck,lrmcorebck
+      !
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
       LOGICAL   MOLGRD, LHTF, NOAUXBSAVE
@@ -657,7 +663,16 @@ C
                        ENDIF
                     ENDDO
                  ELSE
+                    lcvsbck = LCVSEXCI
+                    lionbck = LIONIZEXCI
+                    lrmcorebck = LRMCORE
+                    LCVSEXCI = .false.
+                    LIONIZEXCI = .false.
+                    LRMCORE = .false.
                     CALL CC_FOP(IDUMMY,WORK,LWORK,APROXR12)
+                    LCVSEXCI = lcvsbck
+                    LIONIZEXCI = lionbck 
+                    LRMCORE = lrmcorebck
                  ENDIF
              ENDIF
 C
@@ -808,7 +823,13 @@ C-----------------------------------------------
 C
          !IF (LRSPSYM) THEN
          !Do not enter if Lanczos calculation. Sonia
-         IF ((LRSPSYM).and.(.NOT.CCLRLCZ)) THEN
+         !IF ((LRSPSYM).and.(.NOT.CCLRLCZ)) THEN
+         !reactivate for Excited state calculation
+         IF (LRSPSYM) THEN
+           if (LXSCVS.or.LXRMCORE) then
+              !transfer info for projection
+              call cc_cvs_interface(MSYM)
+           end if
            CALL CC_SOLRSP(WORK,LWORK,APROXR12)
          END IF
 C

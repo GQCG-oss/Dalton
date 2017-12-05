@@ -7439,7 +7439,7 @@ C     Alfredo Sanchez and Henrik Koch 26-July 1994
 C     General non. total sym. Ampl. Ove Christiansen 15-2-1994.
 C
 C     PURPOSE:
-C             Calculate 2 coublomb minus exchange of the T2M-amplitudes.
+C             Calculate 2 Coulomb minus exchange of the T2M-amplitudes.
 C
 #include "implicit.h"
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)

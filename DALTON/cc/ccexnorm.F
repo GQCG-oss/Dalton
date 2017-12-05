@@ -149,7 +149,10 @@ C
 
         ! check if state is degenerate
         ndeg = 1 
-        do while (abs(eigval(ileft)-eigval(ileft+ndeg)).lt.threig) 
+        !Sonia 2 Rolf: you changed this, right????
+        !threig*1.0D-3
+        do while (abs(eigval(ileft)-eigval(ileft+ndeg))
+     &            .lt.threig*1.0D-3) 
            ndeg = ndeg + 1
         end do
 

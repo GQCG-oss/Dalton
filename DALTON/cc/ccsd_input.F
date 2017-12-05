@@ -1185,6 +1185,8 @@ C    else set only defaults
 C 
 C    Ove Christiansen 24-10 1996
 C    Kasper Hald & Christof Haettig 12-08-99, changes for triplet
+C    Sonia Coriani 2015, input for core-valence separation and
+C    ionization
 C
 C=====================================================================*
 #include "implicit.h"
@@ -1198,6 +1200,8 @@ C=====================================================================*
 #include "cclrinf.h"
 #include "ccrspprp.h"
 #include "ccexci.h"
+!SONIA: CVS and IONISATION
+#include "ccexcicvs.h"
 
 #include "maxorb.h"
 #include "ccdeco.h"
@@ -1208,7 +1212,7 @@ C=====================================================================*
 
       LOGICAL LSTVEC
       INTEGER NTABLE
-      PARAMETER (NTABLE = 25)
+      PARAMETER (NTABLE = 29)
 
       DIMENSION NSTAR(8)
 
@@ -1227,7 +1231,8 @@ C=====================================================================*
      *            '.JACTST','.LHTR  ','.NOSCOM','.STSD  ','.TOLSC ',
      *            '.OMEINP','.STVEC ','.STOLD ','.CCTREN','.THREXC',
      *            '.CCSPIC','.CC2PIC','.CCSDPI','.MARGIN','.SQROVL',
-     *            '.ANALYS','.CHEXDI','.DV4DIS','.JACEXT','.XXXXXX'/
+     *            '.ANALYS','.CVSEPA','.IONISA','.CVSPER','.RMCORE',
+     *            '.CHEXDI','.DV4DIS','.JACEXT','.XXXXXX'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -1276,6 +1281,21 @@ C
       NSIDE  = 1
       STCCS  = .FALSE.
 C
+C     Core-valence separation and ionisation
+C     within CCEXCI
+C     Sonia
+C
+      LCVSEXCI   = .FALSE.
+      LIONIZEXCI = .FALSE.
+      LBOTHEXCI  = .FALSE.
+      CALL IZERO(NRHFCORE,8)
+      CALL IZERO(IRHFCORE,8*MAXCORE)
+      CALL IZERO(NVIRION,8)
+      CALL IZERO(IVIRION,8*MAXION)
+      !for the time being I am assuming to compute the correction for all
+      !requested excitations
+      LCVSPTEXCI = .FALSE.
+      LRMCORE    = .FALSE.
 *---------------------------------------------------------------------*
 * read input:
 *---------------------------------------------------------------------*
@@ -1303,7 +1323,7 @@ c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
             GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
-     *            21,22,23,24,25),IJUMP
+     *            21,22,23,24,25,26,27,28,29),IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_EXCINP.')
       
 C           -------------------------------------------
@@ -1323,7 +1343,7 @@ C           -------------------------------------------
                IF (WORD(1:1).NE.'.' .AND. WORD(1:1).NE.'*'
      &                              .AND. WORD(1:1).NE.'!' ) THEN
 
-                  ! read # triplett states
+                  ! read # triplet states
                   READ (LUCMD,*) (NCCEXCI(ISYM,3),ISYM=1,MSYM)
                   WRITE (LUPRI,'(A,8I5)') 'NCCEXCI for triplet:',
      &                 (NCCEXCI(ISYM,3),ISYM=1,MSYM)
@@ -1535,10 +1555,98 @@ C
             GO TO 100
 C
 C----------------------------------------------------------------
-C           .CHEXDI  Use DIIS solver for Cholesky CC2 excitations
+C           Core-Valence Separation (CVS) - freeze valence excs
 C----------------------------------------------------------------
 C
 22          CONTINUE
+               LCVSEXCI = .TRUE.
+               WRITE(LUPRI,*)'CCSD_INPUT: core-val requested'
+               !how many per symmetry
+               READ(LUCMD,*) (NRHFCORE(I),I=1,MSYM)
+               !which ones
+               DO I = 1, MSYM
+                  IF (NRHFCORE(I) .GT. MAXCORE) THEN
+                     WRITE(LUPRI,*)
+                     WRITE(LUPRI,*) 'Too many requested cores'
+                     WRITE(LUPRI,*) 'Symmetry: ', I
+                     WRITE(LUPRI,*) 'Requested cores: ', NRHFCORE(I)
+                     WRITE(LUPRI,*) 'MAXCORE: ', MAXCORE
+                     WRITE(LUPRI,*)
+                     CALL QUIT('Too many requested cores in CC_EXCINP')
+                  END IF
+                 READ(LUCMD,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
+               END DO
+               WRITE(LUPRI,*)'Requested number of core orbs per sym'
+               write(lupri,*) (NRHFCORE(I),I=1,MSYM)
+               WRITE(LUPRI,*)'Indices of requested core orbs'
+               DO I = 1, MSYM
+                  write(LUpri,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
+               END DO
+            GO TO 100
+C
+C----------------------------------------------------------------
+C           .IONISATION
+C----------------------------------------------------------------
+C
+23          CONTINUE
+              LIONIZEXCI = .TRUE.
+              WRITE(LUPRI,*)'CCSD_INPUT: core-val requested'
+              !how many per symmetry
+              READ(LUCMD,*) (NVIRION(I),I=1,MSYM)
+              !which ones
+              DO I = 1, MSYM
+                  IF (NVIRION(I) .GT. MAXION) THEN
+                     WRITE(LUPRI,*)
+                     WRITE(LUPRI,*) 'Too many requested ion orbitals'
+                     WRITE(LUPRI,*) 'Symmetry: ', I
+                     WRITE(LUPRI,*) 'Requested orbitals: ', NVIRION(I)
+                     WRITE(LUPRI,*) 'MAXION: ', MAXION
+                     WRITE(LUPRI,*)
+                     CALL QUIT('Too many ion orbitals in CC_EXCINP')
+                  END IF
+                 READ(LUCMD,*) (IVIRION(J,I),J=1,NVIRION(I))
+              END DO
+              WRITE(LUPRI,*)'Requested number of virtual orbs per sym'
+              write(lupri,*) (NVIRION(I),I=1,MSYM)
+              WRITE(LUPRI,*)'Indices of requested virtual orbs'
+              DO I = 1, MSYM
+                 write(LUpri,*) (IVIRION(J,I),J=1,NVIRION(I))
+              END DO
+C----------------------------------------------------------------
+CDISABLED   .CVSPERTurbation correction
+C----------------------------------------------------------------
+C
+24          CONTINUE
+              !LCVSPTEXCI = .true.
+            GO TO 100
+C
+C----------------------------------------------------------------
+C           .RMCORE  remove the core excitations
+C----------------------------------------------------------------
+C
+25          CONTINUE
+              LRMCORE = .TRUE.
+              WRITE(LUPRI,*)'CCSD_INPUT: core removal requested'
+              !how many per symmetry
+              READ(LUCMD,*) (NRHFCORE(I),I=1,MSYM)
+              !which ones
+              DO I = 1, MSYM
+                 READ(LUCMD,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
+              END DO
+              WRITE(LUPRI,*)'Requested number of core orbs per sym'
+              write(lupri,*) (NRHFCORE(I),I=1,MSYM)
+              WRITE(LUPRI,*)'Indices of requested core orbs'
+              DO I = 1, MSYM
+                 write(LUpri,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
+              END DO
+            GO TO 100
+
+C
+C----------------------------------------------------------------
+C           .CHEXDI  Use DIIS solver for Cholesky CC2 excitations
+C----------------------------------------------------------------
+C
+26          CONTINUE
                CHEXDI = .TRUE.
                MINSCR = .TRUE.
             GO TO 100
@@ -1547,15 +1655,14 @@ C----------------------------------------------------------------
 C           .DV4DIS Use Davidson with omega=zero before CC2/DIIS
 C----------------------------------------------------------------
 C
-23          CONTINUE
+27          CONTINUE
                DV4DIS = .TRUE.
             GO TO 100
-C
 C----------------------------------------------------------------
 C           .JACEXT Explicitly calculate the Jacobian for triplet
 C----------------------------------------------------------------
 C
-24          CONTINUE
+28          CONTINUE
                JACEXP = .TRUE.
                JACEXT = .TRUE.
             GO TO 100
@@ -1564,7 +1671,7 @@ C----------------------------------------------------------------
 C           .XXXXXX  unused
 C----------------------------------------------------------------
 C
-25          CONTINUE
+29          CONTINUE
             GO TO 100
 C
           ELSE
@@ -1692,6 +1799,7 @@ C     Finally if we are to calculate anything at all, put CCEXCI true.
 C---------------------------------------------------------------------
 C
       CCEXCI  = ((NEXCI.GT.0).OR.JACTST.OR.JACEXP.OR.FDJAC.OR.FDEXCI)
+      IF (LCVSEXCI.AND.LIONIZEXCI) LBOTHEXCI=.true.
       IF (CCEXCI) RSPIM = .TRUE.
       IF (NEXCI .EQ. 0) THEN
          OSCSTR = .FALSE.

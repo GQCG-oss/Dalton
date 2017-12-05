@@ -134,6 +134,11 @@ Cholesky
 #include "maxorb.h"
 #include "ccdeco.h"
 C
+#include "ccsdsym.h"
+CSonia:
+! Consider moving the CVSEPARA in the argument list for better control 
+! when not needed
+#include "ccexcicvs.h"
       PARAMETER (TOL = 1.0D-14)
 Cholesky
       PARAMETER (D0 = 0.0D0 )
@@ -159,7 +164,13 @@ C
          WRITE(LUPRI,*) 'CCEQ_SOL: NVEC    =    ',NVEC
          WRITE(LUPRI,*) 'CCEQ_SOL: NUPVEC  =    ',NUPVEC
          WRITE(LUPRI,*) 'CCEQ_SOL: NCCVAR  =    ',NCCVAR
+         WRITE(LUPRI,*) 'CCEQ_SOL: CVSEPARA=    ',LCVSEXCI
+         WRITE(LUPRI,*) 'CCEQ_SOL: LIONISAT=    ',LIONIZEXCI
+         WRITE(LUPRI,*) 'CCEQ_SOL: REMOVE_CORE = ',LRMCORE
       ENDIF
+      WRITE(LUPRI,*) 'CCEQ_SOL: CVSEPARA=    ',LCVSEXCI
+      WRITE(LUPRI,*) 'CCEQ_SOL: LIONISAT=    ',LIONIZEXCI
+      WRITE(LUPRI,*) 'CCEQ_SOL: REMOVE_CORE = ',LRMCORE
 C
       CALL GETTIM(CSTR,WSTR)
 C
@@ -226,7 +237,6 @@ C
 C
          TIM    = SECOND()
 C
-C
 C--------------------------------
 C LINEAR TRANSFORMATIONS ON NUPVEC TRIAL VECTORS ON LUB
 C THE LINEAR TRANSFORMED VECTORS ARE RETURNED ON LUS
@@ -270,7 +280,6 @@ C
      *              EIVAL,SOLEQ,WRK,LWRK,DEBUG)
          CALL FLSHFO(LUPRI)
          TIMRED = TIMRED + SECOND()
-C
 C
 C        CREATE NVEC NEW LINEAR INDEPENDENT TRIAL VECTORS IN CCNEX()
 C        FROM THE SOLUTIONS OF THE REDUCED  EQUATIONS
@@ -385,7 +394,6 @@ C               WRITE(LUPRI,*) 'last - NREDH,NUPVEC:',NREDH,NUPVEC
                CALL QUIT(' *** CCEQ_SOL-MAX. MICROITERATIONS REACHED')
          END IF
 C
-C
 C=====================
 C     End of 100 Loop.
 C=====================
@@ -462,6 +470,7 @@ C Based on original EVALST routine.
 C
 C Modified by Ove Christiansen to calculate diagonal when needed.
 C Included projection, Sonia Coriani 1997
+C Included CVS, Sonia Coriani 2015
 C 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -481,6 +490,8 @@ C
 #include "dummy.h"
 #include "r12int.h"
 C
+#include "ccexcicvs.h"
+
       LOGICAL LOCDBG, LNOREAD
       PARAMETER (LOCDBG = .FALSE.) 
       CHARACTER*(*)  FC1AM,FC2AM,FC12AM,FS12AM,FS2AM
@@ -496,8 +507,18 @@ C
           WRITE(LUPRI,*) 'CCEQ_STR: TRIPLET  =',TRIPLET
           WRITE(LUPRI,*) 'CCEQ_STR: LPROJECT =',LPROJECT
           WRITE(LUPRI,*) 'NCCVAR             =',NCCVAR
+          WRITE(LUPRI,*) 'CCEQ_STR: NCCVAR   =',NCCVAR
+          WRITE(LUPRI,*) 'CCEQ_STR: CVSEPARA =',LCVSEXCI
+          WRITE(LUPRI,*) 'CCEQ_STR: LIONISAT =',LIONIZEXCI
+          WRITE(LUPRI,*) 'CCEQ_STR: REMOVE_CORE = ',LRMCORE
           CALL FLSHFO(LUPRI)
       ENDIF
+!SONIA: control print out
+!      WRITE(LUPRI,*) 'SONIAPRI', lusonia
+      WRITE(LUPRI,*) 'CCEQ_STR: CVSEPARATION = ',LCVSEXCI
+      WRITE(LUPRI,*) 'CCEQ_STR: IONIZATION = ',LIONIZEXCI
+      WRITE(LUPRI,*) 'CCEQ_STR: REMOVE_CORE = ',LRMCORE
+      CALL FLSHFO(LUPRI)
 C
       MODEL = 'CCSD      '
       IF (CCS) MODEL = 'CCS       '
@@ -515,6 +536,7 @@ C
 C     ----------------------------
 C     Initialize NUPVEC and NREDH:
 C     ----------------------------
+C
       NUPVEC = 0
       NREDH  = 0
 C
@@ -536,6 +558,44 @@ C     -------------------------------------
            CALL AROUND(' CCEQ_STR:  approximate diagonal Jacobian')
            CALL OUTPUT(WORK(KDIA),1,NCCVAR,1,1,NCCVAR,1,1,LUPRI)
         ENDIF
+        IF (LCVSEXCI.or.LIONIZEXCI) THEN
+           write(lupri,*)'CCEQ_STR: freeze VALENCE OR VIRT'
+           if (triplet) then
+                KCAM1 = KDIA
+                KCAMP = KCAM1 + NT1AM(ISYMTR)
+                KCAMM = KCAMP + NT2AM(ISYMTR)
+                CALL CC_FREEZE_TRIPLETstart(WORK(KCAM1), 
+     &          WORK(KCAMP),WORK(KCAMM),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,LBOTHEXCI)
+           else 
+                CALL CC_FREEZE_start(WORK(KDIA),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,LBOTHEXCI)
+           end if
+         END IF
+!NOT NEEDED WHEN REMOVING THE CORE, AS VALENCE ARE ALWAYS LOWEST
+!         IF (LRMCORE) THEN
+!           write(lupri,*)'CCEQ_STR: freeze CORE '
+!           if (TRIPLET) then
+!               KCAM1 = KDIA
+!               KCAMP = KCAM1 + NT1AM(ISYMTR)
+!               KCAMM = KCAMP + NT2AM(ISYMTR)
+!               CALL CC_FREEZE_TRIPLETCORE(WORK(KCAM1), WORK(KCAMP), 
+!     &          WORK(KCAMM),ISYMTR,
+!     &          MAXCORE,MAXION,
+!     &          NRHFCORE,IRHFCORE,
+!     &          NVIRION,IVIRION,LBOTHEXCI)
+!           else
+!               CALL CC_FREEZE_CORE(WORK(KDIA),ISYMTR,
+!     &          MAXCORE,MAXION,
+!     &          NRHFCORE,IRHFCORE,
+!     &          NVIRION,IVIRION,.false.)
+!           end if
+!         END IF
+CCN
       ENDIF
 C
 C     ---------------------------------------------------------------
@@ -668,7 +728,6 @@ C              --------------------
      *               ' of symmetry',ISYMTR,' generated from gradient'
                  END IF
                END IF
-
 C              ------------------------------------------
 C              Scale with diagonal.(including frequency).
 C              (not for Cauchy vectors. CH.H. 20-11-97)
@@ -696,7 +755,6 @@ C
          ENDIF
 
          NFIN = 1
-
 C
 C-------------------------------------------------------------
 C        if requested, project excited reference state out:
@@ -712,6 +770,48 @@ C
             CALL PRJDRV(ISIDE,ISTATPRJ,ISYMPR,NFIN,NCCVAR,
      *                             WORK(KV),WORK(KPRJC)) 
          ENDIF
+C
+C-------------------------------------------------------------
+C        if requested, project out valence excitation elements
+C        or core excitation elements or virtuals
+C -------------------------------------------------------------  
+C     
+         IF (LCVSEXCI.or.LIONIZEXCI) THEN
+           write(lupri,*)'CCEQ_STR: freeze VALENCE OR VIRT'
+           if (triplet) then
+                KCAM1 = KV
+                KCAMP = KCAM1 + NT1AM(ISYMTR)
+                KCAMM = KCAMP + NT2AM(ISYMTR)
+                CALL CC_FREEZE_TRIPLETEXCI(WORK(KCAM1), 
+     &          WORK(KCAMP),WORK(KCAMM),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,LBOTHEXCI)
+           else 
+                CALL CC_FREEZE_EXCI(WORK(KV),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,LBOTHEXCI)
+           end if
+         END IF
+         IF (LRMCORE) THEN
+           write(lupri,*)'CCEQ_STR: freeze CORE '
+           if (TRIPLET) then
+               KCAM1 = KV
+               KCAMP = KCAM1 + NT1AM(ISYMTR)
+               KCAMM = KCAMP + NT2AM(ISYMTR)
+               CALL CC_FREEZE_TRIPLETCORE(WORK(KCAM1), WORK(KCAMP), 
+     &          WORK(KCAMM),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,LBOTHEXCI)
+           else
+               CALL CC_FREEZE_CORE(WORK(KV),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,.false.)
+           end if
+         END IF
 CCN
 C
 C        calculate metric for new b-vectors:
@@ -823,6 +923,9 @@ Cholesky
 #include "maxorb.h"
 #include "ccdeco.h"
 Cholesky
+CVS Sonia
+#include "ccexcicvs.h"
+C
       LOGICAL LOCDBG,LNOREAD
       PARAMETER ( LOCDBG = .FALSE. )
       PARAMETER ( THRLDP = 1.D-20 )
@@ -833,7 +936,6 @@ C
       CHARACTER*(*) LIST
       LOGICAL LINQCC,CCRSTRS,LPROJECT,TRIPLET
       DIMENSION EIVAL(*), SOLEQ(MAXRED,*),WRK(*)
-C
 C
 C Space for CCNEX:
 C
@@ -877,8 +979,46 @@ C              ----------------------
                   IF (DEBUG) WRITE(LUPRI,*)
      &                    '--- CCNEX projection from gradient --- '
                   CALL PRJDRV(ISIDE,ISTATPRJ,ISYPR,1,NCCVAR,
-     *                            WRK(LGD),WRK(KWRK1))
+     &                            WRK(LGD),WRK(KWRK1))
                END IF
+               IF (LCVSEXCI.or.LIONIZEXCI) THEN
+               if (triplet) then
+                 KCAM1 = LGD
+                 KCAMP = KCAM1 + NT1AM(ISYMTR)
+                 KCAMM = KCAMP + NT2AM(ISYMTR)
+                 CALL CC_FREEZE_TRIPLETEXCI(WRK(KCAM1), 
+     &                WRK(KCAMP), WRK(KCAMM),ISYMTR,
+     &                MAXCORE,MAXION,
+     &                NRHFCORE,IRHFCORE,
+     &                NVIRION,IVIRION,LBOTHEXCI)
+               else
+                 !write(lupri,*)'CCNEX:CVS or IONISATION (1)'
+                 CALL CC_FREEZE_EXCI(WRK(LGD),ISYMTR,
+     &                MAXCORE,MAXION,
+     &                NRHFCORE,IRHFCORE,
+     &                NVIRION,IVIRION,LBOTHEXCI)
+               end if
+               END IF
+               IF (LRMCORE) THEN
+                  !write(lupri,*)'CCNEX: freeze the core'
+                 IF (TRIPLET) THEN
+C Eirik
+                   KCAM1 = LGD
+                   KCAMP = KCAM1 + NT1AM(ISYMTR)
+                   KCAMM = KCAMP + NT2AM(ISYMTR)
+                   CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), WRK(KCAMP),
+     &              WRK(KCAMM),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,.false.)
+                 ELSE
+                   CALL CC_FREEZE_CORE(WRK(LGD),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,.false.)
+                 END IF
+               END IF
+               !
                LGD = LGD + NCCVAR
             END DO
          ELSE
@@ -904,7 +1044,6 @@ C        -----------------------------------------------------------
             IF (LWRK2 .LT. 0 ) THEN 
                CALL QUIT('Too little work in CCNEX xx')
             END IF
-
 C           ----------------------------------------------------------
 C           Construct the solution vectors in full space:
 C             Save norm of solution vector in WRK(KTST) and the
@@ -972,6 +1111,43 @@ C        -----------------------------------------------
          DO K = 1,NREDH
             CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                     TRIPLET,K,WRK(KWRK1))
+            IF (LCVSEXCI.or.LIONIZEXCI) THEN
+              if (triplet) then
+                 KCAM1 = KWRK1
+                 KCAMP = KCAM1 + NT1AM(ISYMTR)
+                 KCAMM = KCAMP + NT2AM(ISYMTR)
+                 CALL CC_FREEZE_TRIPLETEXCI(WRK(KCAM1), 
+     &                WRK(KCAMP),WRK(KCAMM),ISYMTR,
+     &                MAXCORE,MAXION,
+     &                NRHFCORE,IRHFCORE,
+     &                NVIRION,IVIRION,LBOTHEXCI)
+              else
+                !write(lupri,*)'CCNEX:CVS or IONISATION (1)'
+                 CALL CC_FREEZE_EXCI(WRK(KWRK1),ISYMTR,
+     &           MAXCORE,MAXION,
+     &           NRHFCORE,IRHFCORE,
+     &           NVIRION,IVIRION,LBOTHEXCI)
+              end if
+            END IF
+            IF (LRMCORE) THEN
+               IF (TRIPLET) THEN
+C Eirik
+                 KCAM1 = KWRK1
+                 KCAMP = KCAM1 + NT1AM(ISYMTR)
+                 KCAMM = KCAMP + NT2AM(ISYMTR)
+                 CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), WRK(KCAMP),
+     &            WRK(KCAMM),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,.false.)
+               ELSE               
+!write(lupri,*)'CCNEX: freeze the core'
+                 CALL CC_FREEZE_CORE(WRK(KWRK1),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,.false.)
+               END IF
+            END IF
             DO JR = 1,NBX
                JROOTJ = ISIMC - 1 + JR
                EVAL1  = SOLEQ(K,JROOTJ)
@@ -1003,7 +1179,52 @@ C        -----------------------------------------
            CALL PRJDRV(ISIDE,ISTATPRJ,ISYMPR,NBX,NCCVAR,
      *                             WRK(KRES),WRK(KWRK2))
          ENDIF
-C
+C        -------------------------------------------------------
+C        Remove specific excitations from residual if requested:
+C        -------------------------------------------------------
+         IF (LCVSEXCI.or.LIONIZEXCI) THEN
+            DO JR = 1,NBX
+            !WRITE(LUPRI,*)'CCNEX CVS or IONISATION  (resid)'
+               KOFF = KRES+(JR-1)*NCCVAR
+               if (triplet) then
+                 KCAM1 = Koff
+                 KCAMP = KCAM1 + NT1AM(ISYMTR)
+                 KCAMM = KCAMP + NT2AM(ISYMTR)
+               CALL CC_FREEZE_TRIPLETEXCI(WRK(KCAM1), WRK(KCAMP),
+     &           WRK(KCAMM),ISYMTR,
+     &           MAXCORE,MAXION,
+     &           NRHFCORE,IRHFCORE,
+     &           NVIRION,IVIRION,LBOTHEXCI)
+               else
+                 CALL CC_FREEZE_EXCI(WRK(Koff),ISYMTR,
+     &           MAXCORE,MAXION,
+     &           NRHFCORE,IRHFCORE,
+     &           NVIRION,IVIRION,LBOTHEXCI)
+              end if
+            END DO
+         END IF
+         IF (LRMCORE) THEN
+            DO JR = 1,NBX
+            !WRITE(LUPRI,*)'freeze core in resid'
+               KOFF = KRES+(JR-1)*NCCVAR
+               IF (TRIPLET) THEN
+C Eirik
+                 KCAM1 = KOFF
+                 KCAMP = KCAM1 + NT1AM(ISYMTR)
+                 KCAMM = KCAMP + NT2AM(ISYMTR)
+                 CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), WRK(KCAMP),
+     &            WRK(KCAMM),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,.FALSE.)
+               ELSE
+                 CALL CC_FREEZE_CORE(WRK(Koff),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,.FALSE.)
+               END IF
+            END DO
+         END IF
 C        ------------------------------------------
 C        Test for convergence of the N-R solutions:
 C        ------------------------------------------
@@ -1100,6 +1321,52 @@ C        ------------------------------
            CALL PRJDRV(ISIDE,ISTATPRJ,ISYMPR,NFIN,NCCVAR,
      *                             WRK(KRES),WRK(KPRJ))
          ENDIF
+C        -----------------------------------------------------------
+C        Projection specific orbital excitations from updated trials
+C        -----------------------------------------------------------
+         IF (LCVSEXCI.or.LIONIZEXCI) THEN
+            DO JR = 1,NFIN
+            !write(lupri,*)'CCNEX CVS or IONISATION upd trials'
+               koff = KRES+(JR-1)*NCCVAR
+           if (triplet) then
+                 KCAM1 = Koff
+                 KCAMP = KCAM1 + NT1AM(ISYMTR)
+                 KCAMM = KCAMP + NT2AM(ISYMTR)
+                 CALL CC_FREEZE_TRIPLETEXCI(WRK(KCAM1), WRK(KCAMP),
+     &            WRK(KCAMM),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,LBOTHEXCI)
+           else
+               CALL CC_FREEZE_EXCI(WRK(Koff),ISYMTR,
+     &         MAXCORE,MAXION,
+     &         NRHFCORE,IRHFCORE,
+     &         NVIRION,IVIRION,LBOTHEXCI)
+           end if
+            END DO
+         END IF
+         IF (LRMCORE) THEN
+            DO JR = 1,NFIN
+            !write(lupri,*)'CCNEX CVS or IONISATION upd trials'
+               koff = KRES+(JR-1)*NCCVAR
+               IF (TRIPLET) THEN
+C Eirik
+                 KCAM1 = KOFF
+                 KCAMP = KCAM1 + NT1AM(ISYMTR)
+                 KCAMM = KCAMP + NT2AM(ISYMTR)
+                 CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), WRK(KCAMP),
+     &            WRK(KCAMM),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,.false.)
+               ELSE
+                 CALL CC_FREEZE_CORE(WRK(Koff),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,.false.)
+               END IF
+            END DO
+         END IF
 CCN
 C        -----------------------------------
 C        calculate metric for trial vectors:
@@ -1282,6 +1549,8 @@ C
 #include "ccrc1rsp.h"
 #include "r12int.h"
 #include "ccsdsym.h"
+CSonia: orbital excitations projection
+#include "ccexcicvs.h"
 C
       PARAMETER (D1 = 1.0D0 , D0 = 0.0D0, THRZER = 1.0D-99 )
 C
@@ -1306,6 +1575,9 @@ C
          WRITE(LUPRI,*)' NUPVEC ',NUPVEC
          WRITE(LUPRI,*)' NVEC   ',NVEC
          WRITE(LUPRI,*)' LWRK   ',LWRK
+         WRITE(LUPRI,*)' CVSEPARA', LCVSEXCI
+         WRITE(LUPRI,*)' IONISATI', LIONIZEXCI
+         WRITE(LUPRI,*)' REMOVE_CORE', LRMCORE
       END IF
 C
       IF (NUPVEC.GT.0) THEN 
@@ -1332,6 +1604,49 @@ C
                IVENU = IREDH + IVEC-1 + INUM
                CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                        TRIPLET,IVENU,WRK(LSVEC))
+!sonia
+               !freeze valence or virtual
+               IF (LCVSEXCI.or.LIONIZEXCI) THEN
+               if (triplet) then
+                   KCAM1 = LSVEC
+                   KCAMP = KCAM1 + NT1AM(ISYMTR)
+                   KCAMM = KCAMP + NT2AM(ISYMTR)
+               CALL CC_FREEZE_TRIPLETEXCI(WRK(KCAM1), 
+     &            WRK(KCAMP),WRK(KCAMM),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,LBOTHEXCI)
+               else
+                 write(lupri,*)'CCRED CVS/IONIS sigma_',ivenu,
+     &           'project out valence occupied or virtual'
+                 CALL CC_FREEZE_EXCI(WRK(LSVEC),ISYMTR,
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,LBOTHEXCI)
+               end if
+               END IF
+               !freeze core
+               IF (LRMCORE) THEN
+                 write(lupri,*)'CCRED CVS/IONIS sigma_',ivenu,
+     &           'project out core or virtual'
+                 IF (TRIPLET) THEN
+C Eirik
+                   KCAM1 = LSVEC
+                   KCAMP = KCAM1 + NT1AM(ISYMTR)
+                   KCAMM = KCAMP + NT2AM(ISYMTR)
+                   CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), WRK(KCAMP),
+     &              WRK(KCAMM),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,.false.)
+                 ELSE
+                   CALL CC_FREEZE_CORE(WRK(LSVEC),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,.false.)
+                 END IF
+               END IF
+!sonia
                LSVEC = LSVEC + NCCVAR
             END DO
             IF (LOCDBG) THEN
@@ -1366,12 +1681,21 @@ C
               END IF
             END IF
 C
-C           read in b vectors and extend colomns of the Jacobian 
+C           read in b vectors and extend columns of the Jacobian 
 C           (and the metric) in the reduced space
 C
             DO I = 1,NREDH
                CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
      *                        TRIPLET,I,WRK(KBVEC))
+!sonia
+!               IF (CVSEPARA) THEN
+!                 write(lupri,*)'SONIAREDCVS 2: Project out i=/ core'
+!                 CALL CC_FREEZE_EXCI(WRK(KBVEC),ISYMTR,
+!     &          MAXCORE,MAXION,
+!     &          NRHFCORE,IRHFCORE,
+!     &          NVIRION,IVIRION,LBOTHEXCI)
+!               END IF
+!sonia
                IF (LOCDBG) THEN
                  WRITE(LUPRI,'(a,i3)') 'C for ',I
                  CALL OUTPUT(WRK(KBVEC),1,NCCVAR,1,1,NCCVAR,1,1,LUPRI)
@@ -1410,6 +1734,15 @@ C
                   IVENU = IREDH + IVEC -1 + INUM
                   CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
      *                           TRIPLET,IVENU,WRK(LBVEC))
+!sonia
+!               IF (CVSEPARA) THEN
+!                 write(lupri,*)'SONIAREDCVS 3: Project out i=/ core'
+!                 CALL CC_FREEZE_EXCI(WRK(LBVEC),ISYMTR,
+!     &          MAXCORE,MAXION,
+!     &          NRHFCORE,IRHFCORE,
+!     &          NVIRION,IVIRION,LBOTHEXCI)
+!               END IF
+!sonia
                   LBVEC = LBVEC + NCCVAR
                END DO
                IF (LOCDBG) THEN
@@ -1423,6 +1756,45 @@ C
                DO J = 1,IREDH
                   CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                           TRIPLET,J,WRK(KSVEC))
+                  IF (LCVSEXCI.or.LIONIZEXCI) THEN
+                     if (triplet) then
+                        KCAM1 = KSVEC
+                        KCAMP = KCAM1 + NT1AM(ISYMTR)
+                        KCAMM = KCAMP + NT2AM(ISYMTR)
+                        CALL CC_FREEZE_TRIPLETEXCI(WRK(KCAM1),
+     &                  WRK(KCAMP),WRK(KCAMM),ISYMTR,
+     &                  MAXCORE,MAXION,
+     &                  NRHFCORE,IRHFCORE,
+     &                  NVIRION,IVIRION,LBOTHEXCI)
+                     else
+                    !write(lupri,*)'CCRED CVS or IONISATION sigma_',J
+                        CALL CC_FREEZE_EXCI(WRK(KSVEC),ISYMTR,
+     &                  MAXCORE,MAXION,
+     &                  NRHFCORE,IRHFCORE,
+     &                  NVIRION,IVIRION,LBOTHEXCI)
+                     end if
+                  END IF
+                  IF (LRMCORE) THEN
+                    !write(lupri,*)'CCRED remove core orbitals',J
+                    IF (TRIPLET) THEN
+C Eirik
+                      KCAM1 = KSVEC
+                      KCAMP = KCAM1 + NT1AM(ISYMTR)
+                      KCAMM = KCAMP + NT2AM(ISYMTR)
+                      CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), 
+     &                 WRK(KCAMP),
+     &                 WRK(KCAMM),ISYMTR,
+     &                 MAXCORE,MAXION,
+     &                 NRHFCORE,IRHFCORE,
+     &                 NVIRION,IVIRION,.false.)
+                    ELSE
+                      CALL CC_FREEZE_CORE(WRK(KSVEC),ISYMTR,
+     &                   MAXCORE,MAXION,
+     &                   NRHFCORE,IRHFCORE,
+     &                   NVIRION,IVIRION,.false.)
+                    END IF
+                  END IF
+
                   IF (LREDS) THEN
                    IF (IANR12.EQ.1 .OR. IANR12.EQ.3) THEN
                      CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUFS12,
@@ -1498,9 +1870,9 @@ C GETGD bruger GD + 3 exxtra. NCCVAR - skal vaere foerst i memory.
                   CALL CC_GETGD(WRK(LGDVEC),ILSTNR,ISIDE,LIST,
      *                          WRK(KWRK1),LWRK1)
 C
-cs ------------------
+cs -------------------------------
 C            Project from gradient
-cs ------------------
+cs -------------------------------
                IF (LPROJECT) THEN
                   ISYPR = ILSTSYM(LIST,ILSTNR)
                   IF (DEBUG) THEN
@@ -1510,6 +1882,42 @@ cs ------------------
      *                            WRK(LGDVEC),WRK(KWRK1))
                END IF
 cs ------------------
+               IF (LCVSEXCI.or.LIONIZEXCI) THEN
+                  !write(lupri,*)'CCNEX:CVS or IONISATION (1)'
+                 IF (TRIPLET) THEN
+C Eirik
+                   KCAM1 = LGDVEC
+                   KCAMP = KCAM1 + NT1AM(ISYMTR)
+                   KCAMM = KCAMP + NT2AM(ISYMTR)
+                   CALL CC_FREEZE_TRIPLETEXCI(WRK(KCAM1),WRK(KCAMP),
+     &              WRK(KCAMM),ISYMTR,MAXCORE,MAXION,NRHFCORE,
+     &              IRHFCORE,NVIRION,IVIRION,LBOTHEXCI)
+                 ELSE 
+                   CALL CC_FREEZE_EXCI(WRK(LGDVEC),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,LBOTHEXCI)
+                 END IF
+               END IF
+               IF (LRMCORE) THEN
+               write(lupri,*)'CCRED: freeze the core in grad'
+                 IF (TRIPLET) THEN
+C Eirik
+                   KCAM1 = LGDVEC
+                   KCAMP = KCAM1 + NT1AM(ISYMTR)
+                   KCAMM = KCAMP + NT2AM(ISYMTR)
+                   CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), WRK(KCAMP),
+     &              WRK(KCAMM),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,.false.)
+                 ELSE
+                   CALL CC_FREEZE_CORE(WRK(LGDVEC),ISYMTR,
+     &              MAXCORE,MAXION,
+     &              NRHFCORE,IRHFCORE,
+     &              NVIRION,IVIRION,.false.)
+                 END IF
+               END IF
 C
                   LGDVEC = LGDVEC + NCCVAR
  1100          CONTINUE
