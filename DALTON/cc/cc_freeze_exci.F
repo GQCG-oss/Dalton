@@ -81,7 +81,7 @@ C
             DO 120 A=1,NVIR(ISYMA)
                NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
                MA = IORB(ISYMA) + NRHF(ISYMA) +  A
-	       ikeep = .false.
+               ikeep = .false.
                IF (LBOTH) THEN
                  do ii = 1, NRHFCORE(ISYMI)
                   IF (I==IRHFCORE(II,ISYMI)) THEN
@@ -650,7 +650,7 @@ C
             DO 120 A=1,NVIR(ISYMA)
                NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
                MA = IORB(ISYMA) + NRHF(ISYMA) +  A
-	       ikeep = .false.
+               ikeep = .false.
                IF (LBOTH) THEN
                  do ii = 1, NRHFCORE(ISYMI)
                   IF (I==IRHFCORE(II,ISYMI)) THEN

@@ -1574,7 +1574,7 @@ C
                      WRITE(LUPRI,*)
                      CALL QUIT('Too many requested cores in CC_EXCINP')
                   END IF
-                 READ(LUCMD,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
+                  READ(LUCMD,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
                END DO
                WRITE(LUPRI,*)'Requested number of core orbs per sym'
                write(lupri,*) (NRHFCORE(I),I=1,MSYM)
@@ -2921,7 +2921,7 @@ C           .SKIPLEquation: skip calculation of the term involving
 C           linear equations
 C           ------------------------------------------------------
 19          CONTINUE
-            LSKIPLINEQ = .true.
+              LSKIPLINEQ = .true.
               WRITE(LUPRI,*)'CCSD_INPUT: skip Nij*xksi or TX*B' 
             GO TO 100
 C
