@@ -765,10 +765,10 @@ C     end of this input module
  2    WORD = '*RESPON'
       CALL RSPINP(WORD)
       GO TO 200
- 3    CALL LINEAR(WORD)
+ 3    CALL LINEAR_INPUT(WORD)
       GO TO 200
 
- 4    call quadra(word)
+ 4    call quadra_input(word)
 #ifndef DISABLE_XC_RESPONSE_SANITY_CHECK
       if (dodft) then
          if (.not. fun_is_ready_for_qr()) then
@@ -784,10 +784,12 @@ C     end of this input module
 #endif
       go to 200
 
- 5    call cubic(word)
+ 5    call cubic_input(word)
+
+      IF (CRCAL.OR.TOMOM.OR.TPAMP) THEN
 ! JMHO: quit if CUBIC and PCM (until bug is found)
       if (pcm) then
-        call quit('PCM and cubic response not available')
+         call quit('Cubic response not available for PCM')
       end if
 #ifndef DISABLE_XC_RESPONSE_SANITY_CHECK
       if (dodft) then
@@ -802,6 +804,11 @@ C     end of this input module
          end if
       end if
 #endif
+      IF ( CISRPA .OR. TDA ) THEN
+         CALL QUIT('Cubic response not available for .CISRPA and .TDA')
+      END IF
+      END IF ! cubic response activated
+
       go to 200
 
  6    CALL C6INP(WORD)
@@ -4583,7 +4590,7 @@ C *** End of GETREF
 C
       RETURN
       END
-      SUBROUTINE LINEAR(WORD)
+      SUBROUTINE LINEAR_INPUT(WORD)
 C
 C Linear response input
 C
@@ -4631,7 +4638,7 @@ C
       RETURN
       END
 
-      SUBROUTINE QUADRA(WORD)
+      SUBROUTINE QUADRA_INPUT(WORD)
 C
 C Quadratic response input
 C
@@ -4738,7 +4745,7 @@ C
 C
       RETURN
       END
-      SUBROUTINE CUBIC(WORD)
+      SUBROUTINE CUBIC_INPUT(WORD)
 C
 C Cubic response input
 C
