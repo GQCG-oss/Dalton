@@ -1140,8 +1140,8 @@ C     ... END OF H2XSIG.
 C
       END
 C  /* Deck lrst */
-      SUBROUTINE LRST(BINMEM,MAXSIM,IBTYP,EIVAL,EIVEC,GD,
-     *                REDGD,REDS,REDE,UDV,FCAC,H2AC,XINDX,
+      SUBROUTINE LRST(BINMEM,MAXSIM,IBTYP,EIVAL,EIVEC,GP,
+     *                REDGP,REDS,REDE,UDV,FCAC,H2AC,XINDX,
      *                LAB1,LAB2,WRK,LWRK)
 C
 C PURPOSE: CREATE START VECTOR(S) FOR SOLUTION OF A LINEAR
@@ -1157,7 +1157,7 @@ C
 #include "dummy.h"
       CHARACTER*72 FNAME
       CHARACTER*8 LAB1, LAB2
-      DIMENSION IBTYP(*),EIVAL(*),EIVEC(*),GD(*),REDGD(*)
+      DIMENSION IBTYP(*),EIVAL(*),EIVEC(*),GP(*),REDGP(*)
       DIMENSION REDS(*),REDE(*),UDV(*),FCAC(*),H2AC(*),XINDX(*),WRK(*)
       PARAMETER ( DTEST = 1.0D-4, D0=0.0D0, D1=1.0D0, D1TEST = 1.0D-6)
       PARAMETER ( DM1 = -1.0D0 )
@@ -1165,7 +1165,7 @@ C
 #include "ibndxdef.h"
 C
 C Used from common blocks:
-C   INFRSP : ???,SOPPA
+C   INFRSP : ???,SOPPA, CISRPA, TDA$
 C
 #include "priunit.h"
 #include "wrkrsp.h"
@@ -1321,11 +1321,11 @@ C
 C
 C           CALL RSPRED(1,..) INCREASE DIMENSION OF REDUCED RSP EQUATION
 C
-            CALL RSPRED (1,.TRUE.,NSIM,IBTYP,GD,REDGD,REDE,REDS,
+            CALL RSPRED (1,.TRUE.,NSIM,IBTYP,GP,REDGP,REDE,REDS,
      *                 EIVAL,EIVEC,WRK(KBCVEC),WRK(KBOVEC),
      *                 UDV,WRK(KECVEC),XINDX,WRK(KWRK),LWRKRE)
 C
-C           CALL RSPRED (ICTL,LINEQ,N,IBTYP,GD,REDGD,REDE,REDS,
+C           CALL RSPRED (ICTL,LINEQ,N,IBTYP,GP,REDGP,REDE,REDS,
 C    *                 EIVAL,EIVEC,BCVEC,BOVEC,SVECS,EVECS,XINDX,WRK)
 C
             IF (JLRSTV.LE.0) THEN
@@ -1373,7 +1373,7 @@ C     CALL PHPINI(LPHPMX,KZCONF,KZWOPT,MAXPHP)
       NTSIM = 0
       IF (IPRRSP.GT.110) THEN
          WRITE(LUPRI,*)'  GRADIENT VECTOR (Z-part and Y-part)'
-         CALL OUTPUT(GD,1,KZVAR,1,2,KZVAR,2,1,LUPRI)
+         CALL OUTPUT(GP,1,KZVAR,1,2,KZVAR,2,1,LUPRI)
       ENDIF
       IF (IPRRSP.GT.150) THEN
          WRITE(LUPRI,*)' DIAGONAL HESSIAN MATRIX WVAL=0.0'
@@ -1427,44 +1427,41 @@ C
                GO TO 160
             END IF
             IF (KZCONF.GT.0 .AND. .NOT.SOPPA) THEN
-               TXNRM = DNRM2(KZCONF,GD,1)
-               TYNRM = DNRM2(KZCONF,GD(KZVAR+1),1)
+               TXNRM = DNRM2(KZCONF,GP,1)
+               TYNRM = DNRM2(KZCONF,GP(KZVAR+1),1)
                IF (TXNRM .GT. TYNRM) THEN
-                  KGDC = 1
+                  KGPC = 1
                ELSE
-                  KGDC = KZVAR + 1
+                  KGPC = KZVAR + 1
                END IF
                CALL NEXCI(.FALSE.,WVAL,KZCONF,WRK(ISTBC),DUMMY,
-     *                    GD(KGDC),WRK(KDIAE),IPRRSP,WRK(KWRK1),LWRK1)
+     *                    GP(KGPC),WRK(KDIAE),IPRRSP,WRK(KWRK1),LWRK1)
                NCSIM = NCSIM + 1
                ISTBC = ISTBC + KZCONF
             ENDIF
             IF (KZWOPT.GE.1) THEN
-               DO 105 I=1,KZWOPT
+               DO I = 1,KZWOPT
                   IZ = I + KZCONF
+
                   ZDIA = WRK(KDIAE-1+IZ) - WVAL * WRK(KDIASO-1+I)
+                  IF (ABS(ZDIA).LT.DTEST ) ZDIA = SIGN(DTEST,ZDIA)
+                  WRK(ISTBO-1+I) = GP(IZ) / ZDIA
+
                   YDIA = WRK(KDIAE-1+IZ) + WVAL * WRK(KDIASO-1+I)
-                  IF (ABS(ZDIA).LT.DTEST ) THEN
-                     WRK(ISTBO-1+I) = GD(KZCONF+I)
-     *                           /SIGN(DTEST,ZDIA)
-                  ELSE
-                     WRK(ISTBO-1+I) = GD(KZCONF+I) / ZDIA
-                  ENDIF
-                  IF (ABS(YDIA).LT.DTEST ) THEN
-                     WRK(ISTBO-1+KZWOPT+I) = GD(KZVAR+KZCONF+I)
-     *                          /SIGN(DTEST,YDIA)
-                  ELSE
-                     WRK(ISTBO-1+KZWOPT+I) = GD(I+KZVAR+KZCONF) / YDIA
-                  ENDIF
- 105           CONTINUE
-               NOSIM  = NOSIM  + 1
+                  IF (ABS(YDIA).LT.DTEST ) YDIA = SIGN(DTEST,YDIA)
+                  WRK(ISTBO-1+KZWOPT+I) = GP(KZVAR+IZ) / YDIA
+               END DO
+               IF (CISRPA .OR. TDA) THEN
+                  CALL DZERO(WRK(ISTBO+KZWOPT),KZWOPT)
+               END IF
+               NOSIM = NOSIM  + 1
                ISTBO = ISTBO + KZYWOP
             ENDIF
  160     CONTINUE
          NLSIM = NOSIM + NCSIM
          DO 170 IR = 1 , NLSIM
-            IF (IR.LE.NCSIM) IBTYP(KOFFTY+KZRED+NTSIM+IR)=JBCNDX
-            IF (IR.GT.NCSIM) IBTYP(KOFFTY+KZRED+NTSIM+IR)=JBONDX
+            IF (IR.LE.NCSIM) IBTYP(KOFFTY+KZRED+NTSIM+IR) = JBCNDX
+            IF (IR.GT.NCSIM) IBTYP(KOFFTY+KZRED+NTSIM+IR) = JBONDX
  170     CONTINUE
          IF ((IPRRSP.GT.110).AND.(NCSIM.GT.0)) THEN
             WRITE(LUPRI,'(/A,I5)')' NCSIM CSF TRIAL VECTORS',NCSIM
@@ -1477,7 +1474,7 @@ C
             CALL OUTPUT(WRK(KBOVEC),1,KZWOPT,1,2*NOSIM,
      *                  KZWOPT,2*NOSIM,1,LUPRI)
          ENDIF
-         IF (IPRRSP.GT.80) THEN
+         IF (IPRRSP.GT.30) THEN
             WRITE(LUPRI,'(/A,I5)')
      *         '    I       IBTYP(I)          I=1,NLSIM NLSIM',NLSIM
             DO 3007 I=1+KOFFTY,NLSIM+KOFFTY
@@ -1499,7 +1496,7 @@ C
          CALL RSPORT(WRK(KBCVEC),NLSIM,NBPREV_here,IBTYP,
      *               THRLDV,WRK(KWRK1),LURSP3)
 C        CALL RSPORT (BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
-         IF (IPRRSP.GT.80) THEN
+         IF (IPRRSP.GT.20) THEN
             WRITE(LUPRI,'(/A//A,I5)')' AFTER RSPORT IN LRST',
      *         '    I       IBTYP(I)          I=1,NLSIM NLSIM=',NLSIM
             DO 3008 I=1+KOFFTY,NLSIM+KOFFTY
@@ -1516,17 +1513,17 @@ C        CALL RSPORT (BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
             ENDIF
  3010    CONTINUE
          IF ((IPRRSP.GT.110).AND.(NCSIM.GT.0)) THEN
-            WRITE(LUPRI,*)' NCSIM CSF TRIAL VECTORS',NCSIM
+            WRITE(LUPRI,*)'LRST: NCSIM CSF TRIAL VECTORS',NCSIM
             CALL OUTPUT(WRK(KBCVEC),1,KZCONF,1,NCSIM,KZCONF,NCSIM,1,
      &                  LUPRI)
          ENDIF
          IF ((IPRRSP.GT.110).AND.(NOSIM.GT.0)) THEN
-            WRITE(LUPRI,*)' NOSIM ORBITAL TRIAL VECTORS',NOSIM
+            WRITE(LUPRI,*)'LRST: NOSIM ORBITAL TRIAL VECTORS',NOSIM
             CALL OUTPUT(WRK(KBCVEC+NCSIM*KZCONF),1,KZYWOP,
      *                1,NOSIM,KZYWOP,NOSIM,1,LUPRI)
          ENDIF
          NTSIM = NTSIM + NLSIM
- 150  CONTINUE ! ISIM DO 150 ISIM = 1,KEXSIM,MAXSIM
+ 150  CONTINUE ! DO 150 ISIM = 1,KEXSIM,MAXSIM
       KEXSTV = NTSIM
       IF ((NLOAD.EQ.1).AND.(KEXSTV.LE.MAXSIM)) THEN
          BINMEM = .TRUE.
