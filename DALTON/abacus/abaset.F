@@ -49,6 +49,8 @@ C     Solvent added dec 92
 C     l.r. aug. 98 hjaaj
 C     MAKE_MOTWOINT added oct 2017 hjaaj
 C
+      use pelib_interface, only: use_pelib
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -63,12 +65,13 @@ C
       LOGICAL     DIPOK, FNDLAB, MCSSYM
 C
 C Used from common blocks:
-C   GNRINF : RNRESP, IPRUSR
+C   GNRINF : IPRUSR, EMBEDDING, ?
 C   ABAINF : DIPDER, POLAR,  DOWALK, IPRDEF
 C   INFINP : ISTATE,ISPIN,NACTEL,POTNUC,LSOLMX,RSOL(3)
 C   INFOPT : EMCSCF,EPOT,EMY,EACTIV,ESOLT
 C   PAST   : PASDIP, PASORT, PASRES
 C   CBISOL : SOLVNT, ...
+C   pcmlog.h : PCM
 C
 #include "gnrinf.h"
 #include "abainf.h"
@@ -81,6 +84,7 @@ C
 #include "inftap.h"
 #include "past.h"
 #include "cbisol.h"
+#include "pcmlog.h"
 #include "cbirhs.h"
 #include "spinfo.h"
 C
@@ -345,6 +349,11 @@ C     Set FLAG(23) for calculation of active-active block
 C     of QX matrix
 C
       FLAG(23) = .TRUE.
+C
+C     set EMBEDDING (for restart without calling SIRIUS)
+C
+      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .OR. QMNPMM
+     &            .OR. USE_PELIB()
 C
 C     END OF SETSIR
 C
