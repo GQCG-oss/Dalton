@@ -496,5 +496,6 @@ C
      &       '-----------------')
  9011 FORMAT(1X,'Iteration Frequency    Property (au)   Residual',
      &           '    Converged')
- 9012 FORMAT(2X,I5,4X,F8.6,2X,F15.8,1X,1P,D14.4,6X,A3)
+C Change format of Property to D15.8 (from F15.8) to avoid unreadable
+ 9012 FORMAT(2X,I5,4X,F8.6,2X,D15.8,1X,1P,D14.4,6X,A3)
       END

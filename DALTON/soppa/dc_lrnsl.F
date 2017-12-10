@@ -13,8 +13,8 @@ C
 C     Anna Kristina Schnack-Petersen: April 2017
 C
 C     PURPOSE: Calculates the frequency dependent linear response
-C              properties with an RPA(D) method with the atomic
-C              integral direct SOPPA program.
+C              properties with an RPA(D) or HRPA(D) method with 
+C              the atomic integral direct SOPPA program.
 C
       use so_info, only: fn_rdens, sop_stat_trh, sop_dp,
      &                   sop_use_seller, so_has_doubles
@@ -162,11 +162,15 @@ C----------------------------------------------------------------------------
 C   Open result vector files and in the dynamic case also trial vector files
 C----------------------------------------------------------------------------
 C
-         CALL SO_OPEN(LURS1E,FNRS1E,L1VEC)
+         IF(MODEL.EQ.'DCRPA')THEN
+            CALL SO_OPEN(LURS1E,FNRS1E,L1VEC)
+            IF(.NOT.STATIC)THEN
+               CALL SO_OPEN(LURS1D,FNRS1D,L1VEC)
+            END IF
+         END IF
          CALL SO_OPEN(LURS2E,FNRS2E,L2VEC)
          CALL SO_OPEN(LUTR1E,FNTR1E,L1VEC)
          IF (.NOT.STATIC) THEN
-            CALL SO_OPEN(LURS1D,FNRS1D,L1VEC)
             CALL SO_OPEN(LURS2D,FNRS2D,L2VEC)
             CALL SO_OPEN(LUTR1D,FNTR1D,L1VEC)
          END IF
@@ -467,11 +471,15 @@ C---------------------------------------------
 C   Close result vector and trial vector files
 C---------------------------------------------
 C
-         CALL SO_CLOSE(LURS1E,FNRS1E,L1VEC)
+         IF(MODEL.EQ.'DCRPA')THEN
+            CALL SO_CLOSE(LURS1E,FNRS1E,L1VEC)
+            IF(.NOT.STATIC)THEN
+               CALL SO_CLOSE(LURS1D,FNRS1D,L1VEC)
+            END IF
+         END IF
          CALL SO_CLOSE(LURS2E,FNRS2E,L2VEC)
          CALL SO_CLOSE(LUTR1E,FNRS1E,L1VEC)
          IF (.NOT.STATIC) THEN
-            CALL SO_CLOSE(LURS1D,FNRS1D,L1VEC)
             CALL SO_CLOSE(LURS2D,FNRS2D,L2VEC)
             CALL SO_CLOSE(LUTR1D,FNTR1D,L1VEC)
          END IF
