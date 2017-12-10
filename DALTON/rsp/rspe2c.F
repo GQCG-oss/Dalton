@@ -1140,8 +1140,8 @@ C     ... END OF H2XSIG.
 C
       END
 C  /* Deck lrst */
-      SUBROUTINE LRST(BINMEM,MAXSIM,IBTYP,EIVAL,EIVEC,GD,
-     *                REDGD,REDS,REDE,UDV,FCAC,H2AC,XINDX,
+      SUBROUTINE LRST(BINMEM,MAXSIM,IBTYP,EIVAL,EIVEC,GP,
+     *                REDGP,REDS,REDE,UDV,FCAC,H2AC,XINDX,
      *                LAB1,LAB2,WRK,LWRK)
 C
 C PURPOSE: CREATE START VECTOR(S) FOR SOLUTION OF A LINEAR
@@ -1157,7 +1157,7 @@ C
 #include "dummy.h"
       CHARACTER*72 FNAME
       CHARACTER*8 LAB1, LAB2
-      DIMENSION IBTYP(*),EIVAL(*),EIVEC(*),GD(*),REDGD(*)
+      DIMENSION IBTYP(*),EIVAL(*),EIVEC(*),GP(*),REDGP(*)
       DIMENSION REDS(*),REDE(*),UDV(*),FCAC(*),H2AC(*),XINDX(*),WRK(*)
       PARAMETER ( DTEST = 1.0D-4, D0=0.0D0, D1=1.0D0, D1TEST = 1.0D-6)
       PARAMETER ( DM1 = -1.0D0 )
@@ -1165,7 +1165,7 @@ C
 #include "ibndxdef.h"
 C
 C Used from common blocks:
-C   INFRSP : ???,SOPPA
+C   INFRSP : ???,SOPPA, CISRPA, TDA$
 C
 #include "priunit.h"
 #include "wrkrsp.h"
@@ -1321,11 +1321,11 @@ C
 C
 C           CALL RSPRED(1,..) INCREASE DIMENSION OF REDUCED RSP EQUATION
 C
-            CALL RSPRED (1,.TRUE.,NSIM,IBTYP,GD,REDGD,REDE,REDS,
+            CALL RSPRED (1,.TRUE.,NSIM,IBTYP,GP,REDGP,REDE,REDS,
      *                 EIVAL,EIVEC,WRK(KBCVEC),WRK(KBOVEC),
      *                 UDV,WRK(KECVEC),XINDX,WRK(KWRK),LWRKRE)
 C
-C           CALL RSPRED (ICTL,LINEQ,N,IBTYP,GD,REDGD,REDE,REDS,
+C           CALL RSPRED (ICTL,LINEQ,N,IBTYP,GP,REDGP,REDE,REDS,
 C    *                 EIVAL,EIVEC,BCVEC,BOVEC,SVECS,EVECS,XINDX,WRK)
 C
             IF (JLRSTV.LE.0) THEN
@@ -1373,7 +1373,7 @@ C     CALL PHPINI(LPHPMX,KZCONF,KZWOPT,MAXPHP)
       NTSIM = 0
       IF (IPRRSP.GT.110) THEN
          WRITE(LUPRI,*)'  GRADIENT VECTOR (Z-part and Y-part)'
-         CALL OUTPUT(GD,1,KZVAR,1,2,KZVAR,2,1,LUPRI)
+         CALL OUTPUT(GP,1,KZVAR,1,2,KZVAR,2,1,LUPRI)
       ENDIF
       IF (IPRRSP.GT.150) THEN
          WRITE(LUPRI,*)' DIAGONAL HESSIAN MATRIX WVAL=0.0'
@@ -1427,44 +1427,41 @@ C
                GO TO 160
             END IF
             IF (KZCONF.GT.0 .AND. .NOT.SOPPA) THEN
-               TXNRM = DNRM2(KZCONF,GD,1)
-               TYNRM = DNRM2(KZCONF,GD(KZVAR+1),1)
+               TXNRM = DNRM2(KZCONF,GP,1)
+               TYNRM = DNRM2(KZCONF,GP(KZVAR+1),1)
                IF (TXNRM .GT. TYNRM) THEN
-                  KGDC = 1
+                  KGPC = 1
                ELSE
-                  KGDC = KZVAR + 1
+                  KGPC = KZVAR + 1
                END IF
                CALL NEXCI(.FALSE.,WVAL,KZCONF,WRK(ISTBC),DUMMY,
-     *                    GD(KGDC),WRK(KDIAE),IPRRSP,WRK(KWRK1),LWRK1)
+     *                    GP(KGPC),WRK(KDIAE),IPRRSP,WRK(KWRK1),LWRK1)
                NCSIM = NCSIM + 1
                ISTBC = ISTBC + KZCONF
             ENDIF
             IF (KZWOPT.GE.1) THEN
-               DO 105 I=1,KZWOPT
+               DO I = 1,KZWOPT
                   IZ = I + KZCONF
+
                   ZDIA = WRK(KDIAE-1+IZ) - WVAL * WRK(KDIASO-1+I)
+                  IF (ABS(ZDIA).LT.DTEST ) ZDIA = SIGN(DTEST,ZDIA)
+                  WRK(ISTBO-1+I) = GP(IZ) / ZDIA
+
                   YDIA = WRK(KDIAE-1+IZ) + WVAL * WRK(KDIASO-1+I)
-                  IF (ABS(ZDIA).LT.DTEST ) THEN
-                     WRK(ISTBO-1+I) = GD(KZCONF+I)
-     *                           /SIGN(DTEST,ZDIA)
-                  ELSE
-                     WRK(ISTBO-1+I) = GD(KZCONF+I) / ZDIA
-                  ENDIF
-                  IF (ABS(YDIA).LT.DTEST ) THEN
-                     WRK(ISTBO-1+KZWOPT+I) = GD(KZVAR+KZCONF+I)
-     *                          /SIGN(DTEST,YDIA)
-                  ELSE
-                     WRK(ISTBO-1+KZWOPT+I) = GD(I+KZVAR+KZCONF) / YDIA
-                  ENDIF
- 105           CONTINUE
-               NOSIM  = NOSIM  + 1
+                  IF (ABS(YDIA).LT.DTEST ) YDIA = SIGN(DTEST,YDIA)
+                  WRK(ISTBO-1+KZWOPT+I) = GP(KZVAR+IZ) / YDIA
+               END DO
+               IF (CISRPA .OR. TDA) THEN
+                  CALL DZERO(WRK(ISTBO+KZWOPT),KZWOPT)
+               END IF
+               NOSIM = NOSIM  + 1
                ISTBO = ISTBO + KZYWOP
             ENDIF
  160     CONTINUE
          NLSIM = NOSIM + NCSIM
          DO 170 IR = 1 , NLSIM
-            IF (IR.LE.NCSIM) IBTYP(KOFFTY+KZRED+NTSIM+IR)=JBCNDX
-            IF (IR.GT.NCSIM) IBTYP(KOFFTY+KZRED+NTSIM+IR)=JBONDX
+            IF (IR.LE.NCSIM) IBTYP(KOFFTY+KZRED+NTSIM+IR) = JBCNDX
+            IF (IR.GT.NCSIM) IBTYP(KOFFTY+KZRED+NTSIM+IR) = JBONDX
  170     CONTINUE
          IF ((IPRRSP.GT.110).AND.(NCSIM.GT.0)) THEN
             WRITE(LUPRI,'(/A,I5)')' NCSIM CSF TRIAL VECTORS',NCSIM
@@ -1477,7 +1474,7 @@ C
             CALL OUTPUT(WRK(KBOVEC),1,KZWOPT,1,2*NOSIM,
      *                  KZWOPT,2*NOSIM,1,LUPRI)
          ENDIF
-         IF (IPRRSP.GT.80) THEN
+         IF (IPRRSP.GT.30) THEN
             WRITE(LUPRI,'(/A,I5)')
      *         '    I       IBTYP(I)          I=1,NLSIM NLSIM',NLSIM
             DO 3007 I=1+KOFFTY,NLSIM+KOFFTY
@@ -1499,7 +1496,7 @@ C
          CALL RSPORT(WRK(KBCVEC),NLSIM,NBPREV_here,IBTYP,
      *               THRLDV,WRK(KWRK1),LURSP3)
 C        CALL RSPORT (BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
-         IF (IPRRSP.GT.80) THEN
+         IF (IPRRSP.GT.20) THEN
             WRITE(LUPRI,'(/A//A,I5)')' AFTER RSPORT IN LRST',
      *         '    I       IBTYP(I)          I=1,NLSIM NLSIM=',NLSIM
             DO 3008 I=1+KOFFTY,NLSIM+KOFFTY
@@ -1516,17 +1513,17 @@ C        CALL RSPORT (BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
             ENDIF
  3010    CONTINUE
          IF ((IPRRSP.GT.110).AND.(NCSIM.GT.0)) THEN
-            WRITE(LUPRI,*)' NCSIM CSF TRIAL VECTORS',NCSIM
+            WRITE(LUPRI,*)'LRST: NCSIM CSF TRIAL VECTORS',NCSIM
             CALL OUTPUT(WRK(KBCVEC),1,KZCONF,1,NCSIM,KZCONF,NCSIM,1,
      &                  LUPRI)
          ENDIF
          IF ((IPRRSP.GT.110).AND.(NOSIM.GT.0)) THEN
-            WRITE(LUPRI,*)' NOSIM ORBITAL TRIAL VECTORS',NOSIM
+            WRITE(LUPRI,*)'LRST: NOSIM ORBITAL TRIAL VECTORS',NOSIM
             CALL OUTPUT(WRK(KBCVEC+NCSIM*KZCONF),1,KZYWOP,
      *                1,NOSIM,KZYWOP,NOSIM,1,LUPRI)
          ENDIF
          NTSIM = NTSIM + NLSIM
- 150  CONTINUE ! ISIM DO 150 ISIM = 1,KEXSIM,MAXSIM
+ 150  CONTINUE ! DO 150 ISIM = 1,KEXSIM,MAXSIM
       KEXSTV = NTSIM
       IF ((NLOAD.EQ.1).AND.(KEXSTV.LE.MAXSIM)) THEN
          BINMEM = .TRUE.
@@ -3635,6 +3632,9 @@ C
 C  /* Deck rsppp */
       SUBROUTINE RSPPP(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
+      use qfitlib_interface, only : qfitlib_ifc_response_fit,
+     *   qfitlib_ifc_results
+C
 C  Purpose:
 C     CONTROL CALCULATION OF EXCITATION ENERGIES AND TRANSITION
 C     MOMENTS
@@ -4169,10 +4169,12 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
 !           END IF
-            IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
-     &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
-     &                             WRK(KWRK2),LWRK2)
-
+            IF (TRDQF) THEN
+              IDX=KBVECS+(INUM-1)*KZYVAR
+              CALL QFITLIB_IFC_RESPONSE_FIT(CMO,WRK(IDX),UDV,
+     &                                      WRK(KWRK2),LWRK2)
+              CALL QFITLIB_IFC_RESULTS
+            END IF
 
             IF (DOMO2) CALL RSPMO2(WRK(KBVECS+(INUM-1)*KZYVAR),
      &                             KZYVAR,KZVAR,CMO,LUPRI,
@@ -6700,121 +6702,6 @@ C Take out the diagonal elements
        WRITE(LUPRI,*)
 
 
-      RETURN
-      END
-C  /* Deck TRCHAR */
-      SUBROUTINE TRCHAR (WOP,NDIM2,NDIM1,CMO,UDV,LUPRI,WRK,LWRK)
-c
-#ifdef BUILD_QFITLIB
-      use qfit
-#endif
-C
-C     NDIM2 = KZYVAR
-C     NDIM1 = KZVAR
-C
-#include "implicit.h"
-      DIMENSION WOP(*),CMO(*),WRK(*), UDV(*)
-      PARAMETER (D0 = 0.0D0)
-      LOGICAL LOCDEB, ANTSYM
-      real*8, dimension(:), allocatable :: dens
-      DIMENSION TRDIP(3)
-C
-#include "mxcent.h"
-#include "codata.h"
-#include "maxorb.h"
-#include "maxash.h"
-#include "infind.h"
-#include "inforb.h"
-#include "infvar.h"
-#include "inflin.h"
-#include "nuclei.h"
-
-      LOCDEB = .FALSE.
-
-      CALL HEADER('Calculation of Transition Density charges',-1)
-
-C     Memory allocation
-      KUBOVE  = 1
-      KDCAO   = KUBOVE + N2ORBX
-      KDVAO   = KDCAO  + N2BASX
-      KDENS   = KDVAO  + N2BASX
-      KINT    = KDENS  + NNBASX
-      KWRK2   = KINT   + 3*NNBASX
-      LWRK2   = LWRK   - KWRK2
-
-      IF (LWRK2 .LT. 0) CALL ERRWRK('TRCHAR',-KWRK2,LWRK2)
-
-      CALL DZERO(WRK(KUBOVE),N2ORBX)
-      CALL DZERO(WRK(KDCAO),N2BASX)
-      CALL DZERO(WRK(KDVAO),N2BASX)
-      CALL DZERO(WRK(KDENS),NNBASX)
-      CALL DZERO(WRK(KINT),3*NNBASX)
-
-      CALL RSPZYM(1,WOP,WRK(KUBOVE))
-      CALL DSCAL(N2ORBX,-1.0D0,WRK(KUBOVE),1)
-
-      CALL DEQ27(CMO,WRK(KUBOVE),UDV,WRK(KDCAO),WRK(KDVAO),
-     &           WRK(KWRK2),LWRK2)
-
-      IF (NASHT .GT. 1) THEN
-        CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)
-        CALL DZERO(WRK(KDVAO),N2BASX)
-      ENDIF
-
-      IF (LOCDEB) THEN
-          WRITE (LUPRI,'(/A)') ' Transition Density Matrix - Full'
-          CALL OUTPUT(WRK(KDCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-      ENDIF
-      CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KDVAO))
-      CALL PKSYM1(WRK(KDVAO),WRK(KDENS),NBAS,NSYM,1)
-
-      IF (LOCDEB)  THEN
-         WRITE (LUPRI,'(/A)') ' Transition Density Matrix - Packed'
-         CALL OUTPAK(WRK(KDENS),NBAST,1,LUPRI)
-      ENDIF
-
-      LU=-1
-      CALL GPOPEN(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
-     &     .FALSE.)
-
-      REWIND LU
-      CALL MOLLAB('XDIPLEN ',LU,LUPRI)
-      CALL READT(LU,NNBASX,WRK(KINT))
-
-      CALL MOLLAB('YDIPLEN ',LU,LUPRI)
-      CALL READT(LU,NNBASX,WRK(KINT+NNBASX))
-
-      CALL MOLLAB('ZDIPLEN ',LU,LUPRI)
-      CALL READT(LU,NNBASX,WRK(KINT+2*NNBASX))
-
-      CALL GPCLOSE(LU,'KEEP')
-
-      IF (LOCDEB) THEN
-          WRITE (LUPRI,'(/A)') ' XDIPLEN AO Basis:'
-          CALL OUTPAK(WRK(KINT),NBAST,1,LUPRI)
-
-          WRITE (LUPRI,'(/A)') ' YDIPLEN AO Basis:'
-          CALL OUTPAK(WRK(KINT+NNBASX),NBAST,1,LUPRI)
-
-          WRITE (LUPRI,'(/A)') ' ZDIPLEN AO Basis:'
-          CALL OUTPAK(WRK(KINT+2*NNBASX),NBAST,1,LUPRI)
-      ENDIF
-
-      TRDIP(1) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT),1)
-      TRDIP(2) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+NNBASX),1)
-      TRDIP(3) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+2*NNBASX),1)
-
-      WRITE (LUPRI,'(/A)') ' Transition Dipole (x,y,z)'
-      WRITE(LUPRI,'(5x,3F12.6)') TRDIP
-
-#ifdef BUILD_QFITLIB
-      allocate( dens( N2BASX ) )
-      call dcopy(n2basx,wrk(kdcao),1,dens,1)
-      call qfit_set_transition_dipole( TRDIP )
-      call qfit_fit( dens )
-      deallocate( dens )
-      CALL QFITRES
-#endif
       RETURN
       END
 ! -- end of rspe2c.F --

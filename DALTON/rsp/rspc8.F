@@ -68,7 +68,7 @@ C NUMBER OF MOMENTS IN THE EXPANSION.
 C
 C NUMBER OF VECTORS OF SYMMETRY KSYMOP
 C
-      NGDNUM = NGPC6(KSYMOP)
+      NGPNUM = NGPC6(KSYMOP)
       NGRDMX = MAX(16,NGRID)
 C
       KREDE  = 1
@@ -77,12 +77,12 @@ C
       KEIVAL = KIBTYP + MAXRM
       KRESID = KEIVAL + MAXRM
       KEIVEC = KRESID + MAXRM
-      KREDGD = KEIVEC + MAXRM*MAXRM
-      KGD    = KREDGD + MAXRM
-      KSOL   = KGD    + KZYVAR*NGDNUM
-      KXMOM  = KSOL   + KZYVAR*NGDNUM
-      KOLDAL = KXMOM  + MAXRM*NGDNUM
-      KWRK1  = KOLDAL + NGDNUM*(NGRDMX+1)
+      KREDGP = KEIVEC + MAXRM*MAXRM
+      KGP    = KREDGP + MAXRM
+      KSOL   = KGP    + KZYVAR*NGPNUM
+      KXMOM  = KSOL   + KZYVAR*NGPNUM
+      KOLDAL = KXMOM  + MAXRM*NGPNUM
+      KWRK1  = KOLDAL + NGPNUM*(NGRDMX+1)
       LWRK1  = LWRK   - KWRK1
 C
       LBVMAX = MAX(KZCONF,KZYWOP)
@@ -106,32 +106,32 @@ C
       IPRRSP = IPRC6
       MAXIT  = MAXITC
 C
-      CALL DZERO(WRK(KOLDAL),NGDNUM*(NGRDMX+1))
+      CALL DZERO(WRK(KOLDAL),NGPNUM*(NGRDMX+1))
 C
       IF ( IPRRSP.GT.83) THEN
          WRITE(LUPRI,*)' THCC6,IPRC6,MAXITC',THCC6,IPRC6,MAXITC
-         WRITE(LUPRI,*)' NGDNUM',NGDNUM
+         WRITE(LUPRI,*)' NGPNUM',NGPNUM
          WRITE(LUPRI,*)' MAXMOM',MAXMOM
       END IF
 C
 C     Call RSPCTL to solve linear set of response equations
 C
-      KGDOFF = KGD
+      KGPOFF = KGP
       KSOLOF = KSOL
-      DO 600 IOP = 1,NGDNUM
+      DO 600 IOP = 1,NGPNUM
          WRITE(LUPRI,'(//A)') ' Solving RSPC6 for'
          WRITE(LUPRI,'(A,A/A,I4)')
      *      ' OPERATOR TYPE:    ',LBLC6(KSYMOP,IOP),
      *      ' OPERATOR SYMMETRY:',KSYMOP
          CALL GETGPV(LBLC6(KSYMOP,IOP),FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
-     *               WRK(KGDOFF),LWRK1)
-         KGDOFF = KGDOFF + KZYVAR
+     *               WRK(KGPOFF),LWRK1)
+         KGPOFF = KGPOFF + KZYVAR
  600  CONTINUE
-      NTOTAL = KZYVAR*NGDNUM
+      NTOTAL = KZYVAR*NGPNUM
       DO 610 I = 1,NTOTAL
-         WRK(KSOL-1+I) = WRK(KGD-1+I)
+         WRK(KSOL-1+I) = WRK(KGP-1+I)
  610  CONTINUE
-C     CALL DCOPY(KZYVAR*NGDNUM,WRK(KGD),1,WRK(KSOL),1)
+C     CALL DCOPY(KZYVAR*NGPNUM,WRK(KGP),1,WRK(KSOL),1)
       KEXSIM = 1
       KEXCNV = 1
       ITC6   = 0
@@ -143,8 +143,8 @@ C     CALL DCOPY(KZYVAR*NGDNUM,WRK(KGD),1,WRK(KSOL),1)
          WRITE(LUPRI,'(//A,I3/)')
      &      ' **** RSPC6 moment iteration no.',ITC6
          KSOLOF = KSOL
-         KGDOFF = KGD
-         DO 200 IOP = 1,NGDNUM
+         KGPOFF = KGP
+         DO 200 IOP = 1,NGPNUM
                WRITE(LUPRI,'(A,A/A,I4)')
      *          ' OPERATOR TYPE    :',LBLC6(KSYMOP,IOP),
      *          ' OPERATOR SYMMETRY:',KSYMOP
@@ -163,11 +163,11 @@ C     CALL DCOPY(KZYVAR*NGDNUM,WRK(KGD),1,WRK(KSOL),1)
                END IF
                CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *            .TRUE.,LBLC6(KSYMOP,IOP),BLANK,WRK(KSOLOF),
-     *            WRK(KREDGD),WRK(KREDE),WRK(KREDS),
+     *            WRK(KREDGP),WRK(KREDE),WRK(KREDS),
      *            WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
      *            XINDX,WRK(KWRK1),LWRK1)
 C              CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-C                       LINEQ,GD,REDGD,REDE,REDS,
+C                       LINEQ,GP,REDGP,REDE,REDS,
 C    *                  IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 C
                RESTLR = .TRUE.
@@ -184,11 +184,11 @@ C              CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
      *           ' OPERATOR ',LBLC6(KSYMOP,IOP)
                   CALL OUTPUT(WRK(KBVECS),1,2,1,KZVAR,2,KZVAR,-1,LUPRI)
                END IF
-               GDNORM =  DDOT(KZYVAR,WRK(KSOLOF),1,WRK(KBVECS),1)
+               GPNORM =  DDOT(KZYVAR,WRK(KSOLOF),1,WRK(KBVECS),1)
                IF (IPRRSP.GT.12) WRITE(LUPRI,'(/A,1P,G15.8)')
-     *            ' GDNORM',GDNORM
+     *            ' GPNORM',GPNORM
                IF (IPRRSP.GT.10) THEN
-                  CAUCMO =  DDOT(KZYVAR,WRK(KGDOFF),1,WRK(KBVECS),1)
+                  CAUCMO =  DDOT(KZYVAR,WRK(KGPOFF),1,WRK(KBVECS),1)
                   WRITE(LUPRI,'(/A,I3,A,1P,G15.8)')
      *            ' CAUCHY MOMENT itc6 =',ITC6,'    CAUCMO = ',CAUCMO
                END IF
@@ -214,7 +214,7 @@ C    *                    WRK(KBVECS+KZVAR),1)
                  CALL RSPSLI(0,1,WRK(KBVECS+KZCONF),WRK(KBVECS+KZCONF),
      *                    UDV,WRK(KSOLOF),XINDX,WRK(KWRKE),LWRKE)
                END IF
-               KGDOFF = KGDOFF + KZYVAR
+               KGPOFF = KGPOFF + KZYVAR
                KSOLOF = KSOLOF + KZYVAR
  200     CONTINUE
          ITC6 = ITC6 + 1
@@ -227,7 +227,7 @@ C    *                    WRK(KBVECS+KZVAR),1)
             GO TO 400
          ENDIF
          CALL POLIM(WRK(KIBTYP),WRK(KREDS),WRK(KREDE),
-     *           WRK(KXMOM),WRK(KEIVAL),WRK(KEIVEC),WRK(KGD),
+     *           WRK(KXMOM),WRK(KEIVAL),WRK(KEIVEC),WRK(KGP),
      *           WRK(KOLDAL),UDV,XINDX,WRK(KWRK1),LWRK1,LDONE)
          IF (LDONE) THEN
             WRITE(LUPRI,'(A,/A,I4,/A)') '  ',
@@ -242,7 +242,7 @@ C
       LDONE = .TRUE.
       IF ( MOD(ITC6,2).EQ.0 ) ITC6 = ITC6 - 1
       CALL POLIM(WRK(KIBTYP),WRK(KREDS),WRK(KREDE),
-     *           WRK(KXMOM),WRK(KEIVAL),WRK(KEIVEC),WRK(KGD),
+     *           WRK(KXMOM),WRK(KEIVAL),WRK(KEIVEC),WRK(KGP),
      *           WRK(KOLDAL),UDV,XINDX,WRK(KWRK1),LWRK1,LDONE)
 
       RESTLR = .FALSE.

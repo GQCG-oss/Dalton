@@ -62,9 +62,8 @@ C
      &                   Q, QEFF, DSM, UNCONT, BASNAM, BASREF, IPRBAS)
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       LOGICAL   UNCONT, SEG
-      DIMENSION JCO(MXAQN), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
+      DIMENSION JCO(*), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
      +          ALPHA(KPRIM, KAOVEC), CPRIMU(KPRIM, KPRIM, KAOVEC),
      +          CPRIM(KPRIM,KPRIM, KAOVEC), ISGEN(KAOVEC)
 
@@ -822,7 +821,7 @@ C*********************************************************
 C* This is the subroutine that searches through the file *
 C* and finds the element in question.                    *
 C*********************************************************
-C/* Deck FIND_ELEMENT */
+C/* Deck find_element */
       SUBROUTINE FIND_ELEMENT(BASNAM,INTQ,LUBAS,IPRINT,EMSL_TYPE)
 #include "implicit.h"
 #include "priunit.h"
@@ -1141,7 +1140,7 @@ C
       WRITE (LUPRI,'(/I3,2A)') INTQ,
      &     ' is an unsupported element for basis ',BASNAM
       CALL QUIT('BASLIB FIND_NQD: '//
-     /   'Unsupported element in specified basis set file')
+     &   'Unsupported element in specified basis set file')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
      &  ' FIND_NQD error, number of primitives per block',ISPRIM,
@@ -1246,7 +1245,7 @@ C* coefficients, or if it is a new element. It returns   *
 C* three variables:                                      *
 C*          NEWEL -Logical variable that gives whether it*
 C*                 is a new element or not.              *
-C*          INEXP, INTORB - Number of primitives and     *
+C*          INTEXP, INTORB - Number of primitives and    *
 C*                          columns of contraction       *
 C*                          coefficients                 *
 C*********************************************************

@@ -133,8 +133,9 @@ C     *************************
 C
 C Define wave function variables, also if SIRIUS has not been called
 C
-      FLAG(34) = .TRUE. ! no integral transformation by SETSIR
-      CALL SETSIR(WRK,LWRK)
+      CALL SETSIR(.FALSE.,WRK,LWRK)
+      ! false means no 2-el. integral transformation by SETSIR
+      ! (done below when we have found out what level is needed)
 C
 C Define variables that are common for all perturbation symmetries
 C
@@ -253,6 +254,12 @@ C           hjaaj Nov 2001
          END IF
          FLAGSV = DORSP
          DORSP = .TRUE.
+C          (FLAG(14) true tells that old mo integral file exists)
+C          (FLAG(34) false tells that mo integrals needed)
+C          SIR_INTOPEN returns FLAG(14) false if no mo integral file
+C              or if ITRLVL on file too small.
+         FLAG(14) = .TRUE.
+         FLAG(34) = .FALSE.
          CALL SIR_INTOPEN
          DORSP = FLAGSV
          CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA)
@@ -265,15 +272,15 @@ C           hjaaj Nov 2001
       END IF
 C
 C     ALLOCATE WORK SPACE FOR MATRICES THAT WILL BE KEPT DURING THE
-C     WHOLE RESPONSE CALCULATION AND READ IN THE MATRICES
+C     WHOLE RESPONSE CALCULATION AND READ IN THESE MATRICES
 C
       NEED_PVX = DORESP .OR. N2AVTOT .GT. 0
       KFREE  = 1
       LFREE  = LWRK
-      CALL MEMGET('REAL',KINDX,LCINDX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCMO ,NCMOT ,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','INDX',KINDX,LCINDX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO' ,KCMO ,NCMOT ,WRK,KFREE,LFREE)
       LUDV   = NACTT*NACTT*2
-      CALL MEMGET('REAL',KUDV ,LUDV  ,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','UDV' ,KUDV ,LUDV  ,WRK,KFREE,LFREE)
       IF (RSPCI) THEN
          CALL MEMGET('REAL',KPVX ,0     ,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KFOCK,0     ,WRK,KFREE,LFREE)
@@ -295,8 +302,8 @@ C NEED ONLY SINGLET TWO ELECTRON DENSITY MATRIX
          CALL MEMGET('REAL',KFC  ,NNORBT,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KFV  ,NNORBT,WRK,KFREE,LFREE)
       END IF
-      CALL MEMGET('REAL',KFCAC,NNASHX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KH2AC,NNASHX*NNASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCAC',KFCAC,NNASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H2AC',KH2AC,NNASHX*NNASHX,WRK,KFREE,LFREE)
       KTOT  =  KFREE
       KWRK1  = KFREE
       LWRK1  = LFREE
@@ -758,10 +765,10 @@ C     end of this input module
  2    WORD = '*RESPON'
       CALL RSPINP(WORD)
       GO TO 200
- 3    CALL LINEAR(WORD)
+ 3    CALL LINEAR_INPUT(WORD)
       GO TO 200
 
- 4    call quadra(word)
+ 4    call quadra_input(word)
 #ifndef DISABLE_XC_RESPONSE_SANITY_CHECK
       if (dodft) then
          if (.not. fun_is_ready_for_qr()) then
@@ -777,10 +784,12 @@ C     end of this input module
 #endif
       go to 200
 
- 5    call cubic(word)
+ 5    call cubic_input(word)
+
+      IF (CRCAL.OR.TOMOM.OR.TPAMP) THEN
 ! JMHO: quit if CUBIC and PCM (until bug is found)
       if (pcm) then
-        call quit('PCM and cubic response not available')
+         call quit('Cubic response not available for PCM')
       end if
 #ifndef DISABLE_XC_RESPONSE_SANITY_CHECK
       if (dodft) then
@@ -795,6 +804,11 @@ C     end of this input module
          end if
       end if
 #endif
+      IF ( CISRPA .OR. TDA ) THEN
+         CALL QUIT('Cubic response not available for .CISRPA and .TDA')
+      END IF
+      END IF ! cubic response activated
+
       go to 200
 
  6    CALL C6INP(WORD)
@@ -1465,6 +1479,7 @@ C
                LPPOP( INDPRP('XZQUADRU')) = .TRUE.
                LPPOP( INDPRP('YYQUADRU')) = .TRUE.
                LPPOP( INDPRP('YZQUADRU')) = .TRUE.
+               LPPOP( INDPRP('ZZQUADRU')) = .TRUE.
                GO TO 100
  14            CONTINUE   ! .QUADXX
                LPPOP( INDPRP('XXQUADRU')) = .TRUE.
@@ -2018,6 +2033,8 @@ C
                   LLROP( INDPRP('XZQUADRU')) = .TRUE.
                   LLROP( INDPRP('YYQUADRU')) = .TRUE.
                   LLROP( INDPRP('YZQUADRU')) = .TRUE.
+                  LLROP( INDPRP('ZZQUADRU')) = .TRUE.
+
                GO TO 100
  14            CONTINUE
                   LLROP( INDPRP('XXQUADRU')) = .TRUE.
@@ -2490,6 +2507,7 @@ C
                   LC6OP( INDPRP('XZQUADRU')) = .TRUE.
                   LC6OP( INDPRP('YYQUADRU')) = .TRUE.
                   LC6OP( INDPRP('YZQUADRU')) = .TRUE.
+                  LC6OP( INDPRP('ZZQUADRU')) = .TRUE.
                GO TO 100
    14          CONTINUE
                   LC6OP( INDPRP('XXQUADRU')) = .TRUE.
@@ -4182,14 +4200,15 @@ C
 C
 C     If any triplet operators, then we must use determinants
 C     in RESPONSE also for the reference symmetry, even if
-C     CSF's were used in SIRIUS. /hjaaj May 2001
+C     CSFs were used in SIRIUS. /hjaaj May 2001
 C
       MCONRF = NCONRF
       IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
          FLAG(27) = .TRUE. ! use determinants, not CSFs
 C        ... call setsir to reset Sirius common blocks to determinants
-         FLAG(34) = .TRUE. ! no integral transformation by SETSIR
-         CALL SETSIR(WRK,LWRK)
+         CALL SETSIR(.FALSE.,WRK,LWRK)
+         ! false means no 2-el. integral transformation by SETSIR
+         ! (already done if needed in RESPONS)
       END IF
       NCONRF = MAX(1,NCONRF) ! SETSIR(abaset.F) sets NCONRF=0 for Hartree-Fock
                              ! in RSP - especially for RSPESR - we want NCREF=1 for HSROHF
@@ -4571,7 +4590,7 @@ C *** End of GETREF
 C
       RETURN
       END
-      SUBROUTINE LINEAR(WORD)
+      SUBROUTINE LINEAR_INPUT(WORD)
 C
 C Linear response input
 C
@@ -4619,7 +4638,7 @@ C
       RETURN
       END
 
-      SUBROUTINE QUADRA(WORD)
+      SUBROUTINE QUADRA_INPUT(WORD)
 C
 C Quadratic response input
 C
@@ -4726,7 +4745,7 @@ C
 C
       RETURN
       END
-      SUBROUTINE CUBIC(WORD)
+      SUBROUTINE CUBIC_INPUT(WORD)
 C
 C Cubic response input
 C
@@ -4805,7 +4824,7 @@ C
 C
       PARAMETER ( NTABLE = 1 )
       CHARACTER WORD*7, STRING*7
-      PARAMETER ( STRING = '*ESG' )
+      PARAMETER ( STRING = '*ESG   ' )
       ESG = .TRUE.
 C
 C A single residue of the linear response function is calculated
