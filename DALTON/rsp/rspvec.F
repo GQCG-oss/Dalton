@@ -1161,7 +1161,7 @@ C
      *                           INQRTR(AQRLB(MSYMA,IAOP),BPCFR,MSYMA)
                            END IF
 C
-                           IF ( RSPCI ) THEN
+                           IF ( RSPCI .OR. TDA .OR. CISRPA) THEN
 C                          ... E[3] term is zero for CI
                               CALL DZERO(HYPVAL,NAQROP(MSYMA))
                            ELSE
@@ -1960,7 +1960,7 @@ C
                         ELSE
                            CEXMBF=EXCITA(MSYMC,IC,ISPINC+1)-BSMFR(IBFR)
                         END IF 
-                        IF(.NOT.RSPCI) THEN
+                        IF(.NOT.(RSPCI.OR.TDA.OR.CISRPA)) THEN
                            IF (E3TEST) THEN
                               IAOP   = 1
                               KAVEC  = 1
@@ -2022,7 +2022,7 @@ C
                            ELSE
                               FACMOM = FACB
                            END IF
-                           IF ( RSPCI) THEN
+                           IF ( RSPCI .OR. TDA .OR. CISRPA) THEN
                               SMOM = D0
                            ELSE
                               CALL REARSP(LURSP,KLEN,
@@ -3066,7 +3066,7 @@ C
                      CALL DSWAP(MZVAR(MSYMB),VECB,1,
      *                          VECB(1+MZVAR(MSYMB)),1)
                      CALL FLSHFO(LUPRI)
-                     IF(.NOT.RSPCI) THEN
+                     IF(.NOT.(RSPCI .OR. TDA .OR. CISRPA)) THEN
                         CEXMBE = EXCITA(MSYMC,IC,ISPINC+1)
      *                         - EXCITA(MSYMB,IB,ISPINB+1)
                         IF (E3TEST) THEN
@@ -3114,7 +3114,7 @@ C
      *                   ' SPIN OF OPERATOR A ',ISPINA,
      *                   ' LABEL OF OPERATOR A: ',LBLPP(MSYMA,IAOP),
      *                   ' FOR WHICH TRANSITION MOMENT IS CALCULATED'
-                        IF (RSPCI) THEN
+                        IF (RSPCI .OR. TDA .OR. CISRPA) THEN
                            XMOM   = D0
                         ELSE
                            IF ( ISPINA.EQ.0 ) THEN
