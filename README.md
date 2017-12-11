@@ -1,4 +1,4 @@
-[![pipeline status](https://gitlab.com/dalton/dalton/badges/master/pipeline.svg)](https://gitlab.com/dalton/dalton/commits/master) [![coverage report](https://gitlab.com/dalton/dalton/badges/master/coverage.svg)](https://gitlab.com/dalton/dalton/commits/master)
+[![pipeline status](https://gitlab.com/dalton/dalton/badges/master/pipeline.svg)](https://gitlab.com/dalton/dalton/pipelines) [![coverage report](https://gitlab.com/dalton/dalton/badges/master/coverage.svg)](https://gitlab.com/dalton/dalton/pipelines)
 
 
 # Quick start
@@ -24,3 +24,9 @@ $ ctest [-j4]
 # How to contribute
 
 See Dalton Developer’s Guide: http://dalton-devguide.readthedocs.io
+
+# Dalton links
+
+- [Home page](http://daltonprogram.org/)
+- [Forum](http://forum.daltonprogram.org/)
+- [Article](http://onlinelibrary.wiley.com/doi/10.1002/wcms.1172/abstract)
