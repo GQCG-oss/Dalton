@@ -142,12 +142,14 @@ C
                               if (i==IRHFCORE(II,ISYMI)) then
                                  CAMM(NAIBJ) = zero
                                  CAMP(NAIBJ) = zero
+                                 exit
                               end if
                              end do
                              do jj = 1, nrhfcore(isymj)
                               if (j==IRHFCORE(JJ,ISYMJ)) then
                                  CAMM(NAIBJ) = zero
                                  CAMP(NAIBJ) = zero
+                                 exit
                               end if
                              end do
   260                   CONTINUE

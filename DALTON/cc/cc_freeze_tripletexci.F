@@ -45,66 +45,9 @@ C
 C
       CALL QENTER('CC_FREEZE_TRIPLETEXCI')
 C
-C------------------------
-C     Add up the vectors.
-C------------------------
-C
-!      C1NOSQ = DDOT(NT1AM(ISYMTR),CAM1,1,CAM1,1)
-!      IF (.NOT. CCS) THEN
-!        C2PNOSQ = DDOT(NT2AM(ISYMTR),CAMP,1,CAMP,1)
-!        C2MNOSQ = DDOT(NT2AM(ISYMTR),CAMM,1,CAMM,1)
-!      ELSE
-!        C2PNOSQ = 0.0D0
-!        C2MNOSQ = 0.0D0
-!      END IF
-C
-!      CNOSQ  = C1NOSQ + C2PNOSQ + C2MNOSQ
-C
-!      IF (CNOSQ .EQ. 0.0D0) THEN
-!         PT1 = 0.0D0
-!         PTP = 0.0D0
-!         PTM = 0.0D0
-!      ELSE
-!         PT1 = (C1NOSQ /CNOSQ)*100.0D0
-!         PTP = (C2PNOSQ/CNOSQ)*100.0D0
-!         PTM = (C2MNOSQ/CNOSQ)*100.0D0
-!      END IF
-C
-!      IF (.NOT. CCS .AND. CNOSQ .NE. 0.0D0) THEN
-!        WRITE(LUPRI,'(//5X,A)')
-!     *     'CC_PRAM:Overall Contribution of the Different Components'
-!        WRITE(LUPRI,'(5X,A//)')
-!     *     '--------------------------------------------------------'
-!        WRITE(LUPRI,'(/5X,A,5X,F10.4,A)')
-!     *     'Single Excitation Contribution      : ', PT1,' %'
-!        WRITE(LUPRI,'(/5X,A,5X,F10.4,A,F10.4,A)')
-!     *     'Double Excitation Contribution (+/-): ',
-!     *     PTP,' %    /',PTM,' % '
-!        WRITE(LUPRI,'(/5X,A,5X,F10.4)')
-!     *     '||T1||/||T2||                       : ',
-!     *      SQRT(C1NOSQ/(C2PNOSQ+C2MNOSQ))
-!!        IF (LGRS) WRITE(LUPRI,'(/5X,A,5X,F10.4)')
-!!     *     'Tau1 diagnostic                     : ',
-!!     *      SQRT(C1NOSQ/(TWO*DFLOAT(NRHFT)))
-!      END IF
-!C
-!      WRITE(LUPRI,'(/5X,A,5X,F10.4)')
-!     *  'Norm of Total Amplitude Vector : ',SQRT(CNOSQ)
-C
       CALL FLSHFO(LUPRI)
 C
-C----------------------------------------------
-C     Initialize threshold etc from Printlevel.
-C----------------------------------------------
-C
-!      NL = MAX(1,2*IPRINT)
-!      CNOSQ = MAX(CNOSQ,THPRT)
-!      THR1 = SQRT(C1NOSQ/CNOSQ)/NL
-!      THR2 = SQRT((C2PNOSQ+C2MNOSQ)/CNOSQ)/NL
-!      THR1 = MAX(THR1,1.0D-03)
-!      THR2 = MAX(THR2,1.0D-03)
-!      SUMOFP = 0.0D00
-!C
+
 C---------------------------------------
 C     Loop through single excitation part.
 C---------------------------------------
@@ -200,6 +143,7 @@ C
       ikeep = .false.
       DO 200 ISYMAI = 1,NSYM
          ISYMBJ = MULD2H(ISYMAI,ISYMTR)
+         IF (ISYMAI.LT.ISYMBJ) CYCLE
          DO 210 ISYMJ = 1,NSYM
             ISYMB = MULD2H(ISYMJ,ISYMBJ)
             DO 220 ISYMI = 1,NSYM
@@ -217,9 +161,9 @@ C
      *                         + NVIR(ISYMA)*(I - 1) + A
                            MA = IORB(ISYMA) + NRHF(ISYMA) +  A
 !Sonia: can't remember why we changed this
-!                           IF (((ISYMAI.EQ.ISYMBJ).AND.
-!     *                         (NAI .LT. NBJ)).OR.(ISYMAI.LT.ISYMBJ))
-!     *                          GOTO 260
+!                          IF (((ISYMAI.EQ.ISYMBJ).AND.
+!    *                         (NAI .LT. NBJ)).OR.(ISYMAI.LT.ISYMBJ))
+!    *                          GOTO 260
                            IF ((ISYMAI.EQ.ISYMBJ).AND.
      *                         (NAI .LT. NBJ))
      *                          GOTO 260
@@ -232,26 +176,6 @@ C
                                NAIBJ = IT2AM(ISYMAI,ISYMBJ)
      *                           + NT1AM(ISYMBJ)*(NAI-1)+NBJ
                            ENDIF
-
-!                           KAIBJ = NAIBJ + NT1AM(ISYMTR)  !same vector contains singles and doubles
-!                                                          !skip the singles
-C
-!                           IF (ABS(CAMP(NAIBJ)) .GT. THR2 ) THEN
-!                              WRITE(LUPRI,9991) ISYMA,ISYMB,ISYMI,ISYMJ,
-!     *                                      A,B,I,J,NAI,NBJ,NAIBJ,
-!     *                                      CAMP(NAIBJ)
-!                              N2 = N2 + 1
-!                              SUMOFP = SUMOFP + CAMP(NAIBJ)*CAMP(NAIBJ)
-!                           ENDIF
-C
-!                           IF (ABS(CAMM(NAIBJ)) .GT. THR2 ) THEN
-!                              WRITE(LUPRI,9992) ISYMA,ISYMB,ISYMI,ISYMJ,
-!     *                                      A,B,I,J,NAI,NBJ,NAIBJ,
-!     *                                      CAMM(NAIBJ)
-!                              N2 = N2 + 1
-!                              SUMOFP = SUMOFP + CAMM(NAIBJ)*CAMM(NAIBJ)
-!                           ENDIF
-C
 !***
                            ikeep = .false.
                            if (LBOTH) then
@@ -578,6 +502,7 @@ C
       ikeep = .false.
       DO 200 ISYMAI = 1,NSYM
          ISYMBJ = MULD2H(ISYMAI,ISYMTR)
+         IF (ISYMAI.LT.ISYMBJ) CYCLE
          DO 210 ISYMJ = 1,NSYM
             ISYMB = MULD2H(ISYMJ,ISYMBJ)
             DO 220 ISYMI = 1,NSYM
