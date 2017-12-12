@@ -24,11 +24,12 @@ fedora-26-serial:
         - gcc -v
         - g++ -v
     script:
-        - python setup --coverage --type=debug
+        - python setup --coverage --type=debug -D SITE=GitLabCI
         - cd build
         - make -j 3
         - ctest -L essential
         - ctest -D ExperimentalCoverage
+        - ctest -D ExperimentalSubmit
 
 fedora-26-mpi:
     image: foeroyingur/fedora:26
