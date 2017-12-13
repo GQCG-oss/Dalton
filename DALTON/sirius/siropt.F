@@ -812,7 +812,7 @@ C
             DEPSAV = DEPRED
             EMCOLD = EMCGEO
             DEPRED = DEPGEO
-            CALL SIRSTP(JWSTEP,DUMMY,DUMMY,DUMMY,DUMMY,1)
+            CALL SIRSTP(JWSTEP,VDUMMY,DUMMY,DUMMY,DUMMY,1)
             EMCOLD = EMCSCF
             DEPRED = DEPSAV
             IF (WLKREJ) GO TO 700
@@ -1188,7 +1188,7 @@ C     ... this is RHF which will be followed by MCSCF
             JWSTEP = 1
             EMCOLD = EMCGEO
             DEPRED = DEPGEO
-            CALL SIRSTP(JWSTEP,DUMMY,DUMMY,DUMMY,DUMMY,1)
+            CALL SIRSTP(JWSTEP,VDUMMY,DUMMY,DUMMY,DUMMY,1)
          ELSE
             WLKREJ = .FALSE.
          END IF
