@@ -564,7 +564,7 @@ C MAXRC : Max dimension of reduced CI matrix
       ISTACI = 0
 C     ... do not converge to a specific state.
       NROOCI = 1
-      MXCIMA = 20
+      MXCIMA = 25
       ICICNO = 0
 C
 C********** Default values section SCFINP *****
@@ -5882,13 +5882,13 @@ C
             IF (RESPHP) WRITE(IWUNIT,2570)
          END IF
       ELSE IF (DOCI) THEN
-         WRITE(IWUNIT,1800) MAXMAC, THRCI, NROOCI
+         WRITE(IWUNIT,1800) MXCIMA, THRCI, NROOCI
          IF (JOLSEN) WRITE(IWUNIT,2550)
          IF (MAXPHP.GT.1) THEN
             WRITE(IWUNIT,2560) MAXPHP
             IF (RESPHP) WRITE(IWUNIT,2570)
          END IF
-         IF (DORSP ) THEN
+         IF (DORSP) THEN
             WRITE(IWUNIT,2600) ISTACI
          ELSE IF (ISTACI .GT. 0) THEN
             WRITE(IWUNIT,'(/5X,A,I4)')
