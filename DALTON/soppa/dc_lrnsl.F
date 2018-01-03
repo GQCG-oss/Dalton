@@ -162,17 +162,16 @@ C----------------------------------------------------------------------------
 C   Open result vector files and in the dynamic case also trial vector files
 C----------------------------------------------------------------------------
 C
-         IF(MODEL.EQ.'DCRPA')THEN
-            CALL SO_OPEN(LURS1E,FNRS1E,L1VEC)
-            IF(.NOT.STATIC)THEN
-               CALL SO_OPEN(LURS1D,FNRS1D,L1VEC)
-            END IF
-         END IF
+         CALL SO_OPEN(LURS1E,FNRS1E,L1VEC)
          CALL SO_OPEN(LURS2E,FNRS2E,L2VEC)
          CALL SO_OPEN(LUTR1E,FNTR1E,L1VEC)
          IF (.NOT.STATIC) THEN
+            CALL SO_OPEN(LURS1D,FNRS1D,L1VEC)
             CALL SO_OPEN(LURS2D,FNRS2D,L2VEC)
             CALL SO_OPEN(LUTR1D,FNTR1D,L1VEC)
+         END IF
+         IF (MODEL.EQ.'DCHRP') THEN
+            CALL SO_OPEN(LUSV2E,FNSV2E,L2VEC)
          END IF
 C
          DO ILAB1=1,NLAB
@@ -294,7 +293,6 @@ C - the doubles part of the solution vector file is used,
 C as it contains nothing else
 C----------------------------------------------------------
             IF (MODEL.EQ.'DCHRP')THEN
-               CALL SO_OPEN(LUSV2E,FNSV2E,L2VEC)
                CALL SO_WRITE(WORK(KGPVC2),L2VEC,LUSV2E,FNSV2E,ILAB1)
             END IF
 C
@@ -471,15 +469,11 @@ C---------------------------------------------
 C   Close result vector and trial vector files
 C---------------------------------------------
 C
-         IF(MODEL.EQ.'DCRPA')THEN
-            CALL SO_CLOSE(LURS1E,FNRS1E,L1VEC)
-            IF(.NOT.STATIC)THEN
-               CALL SO_CLOSE(LURS1D,FNRS1D,L1VEC)
-            END IF
-         END IF
+         CALL SO_CLOSE(LURS1E,FNRS1E,L1VEC)
          CALL SO_CLOSE(LURS2E,FNRS2E,L2VEC)
          CALL SO_CLOSE(LUTR1E,FNRS1E,L1VEC)
          IF (.NOT.STATIC) THEN
+            CALL SO_CLOSE(LURS1D,FNRS1D,L1VEC)
             CALL SO_CLOSE(LURS2D,FNRS2D,L2VEC)
             CALL SO_CLOSE(LUTR1D,FNTR1D,L1VEC)
          END IF
