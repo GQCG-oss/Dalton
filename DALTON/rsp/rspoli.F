@@ -776,7 +776,7 @@ C     Transform any transition DMs to the AO basis
       END IF
 C
 C Construct NOSIM Inactive and Active density matrices according to eq.27
-C in Chem Phys 119, 227 (1988).
+C in Chem Phys 119, 297 (1988).
 C
 C They should be consecutive in core. We transpose the inactive
 C and active D-matrices and multiply the inactive D-matrix by 2.0
