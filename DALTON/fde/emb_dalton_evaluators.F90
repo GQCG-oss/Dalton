@@ -212,7 +212,7 @@ module fde_evaluators_dalton
          real(kind=8), allocatable :: gao(:), buffer(:)
          integer, allocatable :: ncnt(:)
 
-         write (*,*) 'dimension: ',mat_dim,'  bla: ',fmat(1:5)
+!        write (*,*) 'dimension: ',mat_dim,'  bla: ',fmat(1:5)
          call setupsos(0,.false.,idum1,idum2)
          call fde_dalton_data_interface
 
