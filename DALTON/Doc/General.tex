@@ -75,6 +75,14 @@ integral indices~\cite{directCC}.
 \item[\Key{DOUGLAS-KROLL}] Include scalar relativistic effects by using the
 Douglas-Kroll-Hess second-order (DKH2) transformed one-electron potential and kinetic energy Hamiltonian.
 
+\item[\Key{FDE}] activates the use of frozen density embedding (FDE) to include environment effects 
+(See Chapter~\ref{ch:fde-embedding} for an introduction to FDE). Further options may be specified via 
+the \Sec{FDE} input section (see subsection~\ref{subsec:fde}).  \index{frozen density embedding} \index{FDE} 
+\index{environment model} \index{embedding model} \index{multiscale modeling} \index{embedding} 
+\index{QM/QM} \index{quantum mechanics / quantum mechanics} \index{solvent effects} \index{enviroment effects} 
+\index{subsystem DFT}
+
+
 %\item[\Key{HERMIT}] Alternative keyword to \verb|.INTEGRALS|. Obsolete, do not use.
 
 \item[\Key{INPTES}] Test the input of the \Sec{*DALTON INPUT} input
@@ -1246,6 +1254,54 @@ contribution, and radii = R(van der Waals) for the cavitation.
 xyz coordinates of the center of cavity spheres, given in \angstrom{}.
 
 \end{description}
+
+
+\subsection{Frozen density embedding model: \Sec{FDE}}
+\label{subsec:fde}
+\index{frozen density embedding}
+\index{FDE}
+\index{environment model}
+\index{embedding model}
+\index{multiscale modeling}
+\index{embedding}
+\index{QM/QM}
+\index{quantum mechanics / quantum mechanics}
+\index{solvent effects}
+\index{enviroment effects}
+\index{subsystem DFT}
+
+This input section controls calculations using the frozen density embedding model.
+See Chapter~\ref{ch:fde-embedding} for more details on the method and implementation details.
+
+\begin{description}
+
+\item[\Key{EMBPOT}]\verb| |\newline
+\verb|READ (LUCMD, '(A60)') name |\verb| |\newline
+Specifies the name of the file containing the embedding potential over an integration grid (used to construct
+the matrix representation of the embedding potential), which is subsequently added to the one-electron Hamiltonian.
+This option can be used to specify a non-default name of the file that contains the embedding potential. The default name is \verb|EMBPOT|.
+
+\item[\Key{GRIDOU}]\verb| |\newline
+\verb|READ (LUCMD, *) name|\verb| |\newline
+Enables the calculation and export of the total electrostatic potential and electron density, gradient and Hessian to the file
+with name \verb|name|. The outputted file will be in XML format.
+
+\item[\Key{LEVEL}]\verb| |\newline
+\verb|READ (LUCMD, *) ex_level|\verb| |\newline
+Defines the wavefunction with which to calculate the total electrostatic potential and electron density, gradient and Hessian 
+which will be exported. Default is \verb|HF|, supported options are: \verb|HF|, \verb|DFT|, \verb|MP22|, \verb|CC2|, \verb|CCSD|, \verb|MCSCF|.
+
+\item[\Key{EXONLY}]\verb| |\newline
+\verb|READ (LUCMD, *) name|\verb| |\newline
+Enables the calculation and export of the total electrostatic potential and electron density, gradient and Hessian to the file
+with name \verb|name|, while disabling the import of embedding potentials. The outputted file will be in XML format.
+
+\item[\Key{EXONLY}]\verb| |\newline
+\verb|READ (LUCMD, *) pl|\verb| |\newline
+Sets the print level for the FDE contributions. The default is \verb|0|.
+
+\end{description}
+
 
 \subsection{Potential derived charges: \Sec{QFIT}}
 \label{subsec:qfit}
