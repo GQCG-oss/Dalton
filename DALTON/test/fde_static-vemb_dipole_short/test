@@ -71,7 +71,7 @@ f.add(from_string = 'Unrelaxed CCSD    First-order one-electron properties',
 f.add(string = 'Final HF energy:',
       rel_tolerance = 1.0e-9)
 
-test.run(['cc_fde.dal'], ['H2o_c2v_sto6g.mol', 'h2o_c1_sto6g.mol'], f={'out': f}, args = '-put EMBPOT.2e-1')
+test.run(['cc_fde.dal'], ['h2o_c2v_sto6g.mol', 'h2o_c1_sto6g.mol'], f={'out': f}, args = '-put EMBPOT.2e-1')
 
 os.system('rm EMBPOT.2e-1')
 
