@@ -10,17 +10,19 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
-f.add(from_string = '  *** Computed FV vector start',
-      to_string = '  *** Computed FV vector end',
-      abs_tolerance = 1.0e-5)
-
-f.add(from_string = '  *** Computed MQ vector start',
-      to_string = '  *** Computed MQ vector end',
-      abs_tolerance = 1.0e-5)
+# hjaaj July 2016: SCF convergence changes when DIIS algorithm is improved,
+#                  therefore bad to check on that
+#f.add(from_string = '  *** Computed FV vector start',
+#      to_string = '  *** Computed FV vector end',
+#      abs_tolerance = 1.0e-5)
+#
+#f.add(from_string = '  *** Computed MQ vector start',
+#      to_string = '  *** Computed MQ vector end',
+#      abs_tolerance = 1.0e-5)
 
 f.add(from_string = '     QM/NP/MM calculation converged     :',
       num_lines = 7,
-      rel_tolerance = 1.0e-7)
+      abs_tolerance = 1.0e-9)
 
 test.run(['qmcmm_damped.dal', 'qmcmm_nppoin.dal', 'qmcmm_nonpca.dal', 'qmcmm_mmpola.dal', 'qmcmm_lr_damped.dal', 'qmcmm_qr_damped.dal',
           'qmcmm_lr_nodamp.dal', 'qmcmm_qr_nodamp.dal'],

@@ -1,7 +1,3 @@
-if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
-    add_definitions(-DMOD_UNRELEASED)
-endif()
-
 if(ENABLE_GEN1INT)
     add_definitions(-DBUILD_GEN1INT)
 endif()

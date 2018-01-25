@@ -4,8 +4,11 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2016.alpha
+    This is output from DALTON release Dalton2017.alpha (2016)
+         ( Web site: http://daltonprogram.org )
+
    ----------------------------------------------------------------------------
+
     NOTE:
      
     Dalton is an experimental code for the evaluation of molecular
@@ -24,13 +27,13 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
        T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
        L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
        C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
        H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
        M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
-       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
        T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
        J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
        O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
@@ -45,12 +48,12 @@
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
        and H. Agren,
        "The Dalton quantum chemistry program system",
-       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
-    
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
     and
-    
+     
        Dalton, a Molecular Electronic Structure Program,
-       Release Dalton2016.alpha (2015), see http://daltonprogram.org
+       Release Dalton2017.alpha (2016), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -59,7 +62,7 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
   Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
@@ -70,6 +73,7 @@
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
   Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -78,12 +82,14 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
   Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
@@ -105,7 +111,7 @@
   Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
-  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex frequency response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
@@ -136,85 +142,77 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Tue Jun  2 08:35:30 2015
-     Host name              : sparta                                  
+     Date and time (Darwin) : Wed Aug 30 21:20:35 2017
+     Host name              : adm-106348-mac.local                    
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/cstein/Development/fortran/dalton-gitlab/build_master_gfortran_noblas_nolapack/test/qfit_dft_transition_charges
-   2) /home/cstein/Development/fortran/dalton-gitlab/build_master_gfortran_noblas_nolapack/basis
+   1) /Users/css/Development/fortran/dalton/build_master/test/qfit_dft_transition_charges
+   2) /Users/css/Development/fortran/dalton/build_master/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | cstein
- Host                     | sparta
- System                   | Linux-3.13.0-27-generic
+ Who compiled             | css
+ Host                     | adm-106348-mac.local
+ System                   | Darwin-16.6.0
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /home/cstein/Programs/openmpi-1.8/bin/mpif90
- Fortran compiler version | unknown
- C compiler               | /home/cstein/Programs/openmpi-1.8/bin/mpicc
- C compiler version       | unknown
- C++ compiler             | /home/cstein/Programs/openmpi-1.8/bin/mpicxx
- C++ compiler version     | unknown
+ MPI                      | OFF
+ Fortran compiler         | /usr/local/bin/gfortran
+ Fortran compiler version | GNU Fortran (Homebrew GCC 7.1.0) 7.1.0
+ C compiler               | /Applications/Xcode.app/Contents/Developer/usr/bin
+                          | /gcc
+ C compiler version       | Apple LLVM version 8.1.0 (clang-802.0.42)
+ C++ compiler             | /Applications/Xcode.app/Contents/Developer/usr/bin
+                          | /g++
+ C++ compiler version     | Apple LLVM version 8.1.0 (clang-802.0.42)
  Static linking           | OFF
- Last Git revision        | 758784111c611868304820e928b45a5a43f85adb
- Git branch               | feature/qfitlib-higher-order-moments
- Configuration time       | 2015-06-02 08:34:25.915254
-
- * Sequential calculation.
+ Last Git revision        | 37c732ba691e0812f27d70eed2449a5dc9b17cd1
+ Git branch               | master
+ Configuration time       | 2017-08-30 21:18:37.897545
 
 
    Content of the .dal input file
  ----------------------------------
 
-**DALTON                                          
-.RUN WAVE FUNCTIONS                               
-.RUN RESPONSE                                     
-.DIRECT                                           
-.QFIT                                             
-*QFIT                                             
-.VDWSCL                                           
- 1.4                                              
-.CONSTR                                           
-DIPOLE                                            
-.VDWINC                                           
- 0.2                                              
-.NSHELL                                           
- 4                                                
-.PTDENS                                           
- 0.28                                             
-**WAVE FUNCTIONS                                  
-.DFT                                              
- B3LYP                                            
-**RESPONSE                                        
-.TRDQF                                            
-*LINEAR                                           
-.DIPLEN                                           
-.SINGLE RESIDUE                                   
-.ROOTS                                            
-4                                                 
-**END OF                                          
+**DALTON
+.RUN WAVE FUNCTIONS
+.RUN RESPONSE
+.DIRECT
+.QFIT
+*QFIT
+.CONSTR
+DIPOLE
+**WAVE FUNCTIONS
+.DFT
+ B3LYP
+**RESPONSE
+.TRDQF
+*LINEAR
+.DIPLEN
+.SINGLE RESIDUE
+.ROOTS
+4
+**END OF
 
 
    Content of the .mol file
  ----------------------------
 
-BASIS                                                                          
-STO-3G                                                                         
-                                                                               
-                                                                               
-AtomTypes=2 NoSymmetry Charge=0 Angstrom                                       
-Charge=8.0 Atoms=1                                                             
-O             0.0000000000    0.0000000000    0.0000000000                     
-Charge=1.0 Atoms=2                                                             
-H             0.9000000000    0.0000000000    0.0000000000                     
-H            -0.3600000000    0.8600000000    0.0000000000                     
+BASIS
+STO-3G
+
+
+AtomTypes=2 NoSymmetry Charge=0 Angstrom
+Charge=8.0 Atoms=1
+O             0.0000000000    0.0000000000    0.0000000000
+Charge=1.0 Atoms=2
+H             0.9000000000    0.0000000000    0.0000000000
+H            -0.3600000000    0.8600000000    0.0000000000
 
 
        *******************************************************************
@@ -254,7 +252,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/cstein/Development/fortran/dalton-gitlab/build_master_gfortran_noblas_nolapack/basis/STO-3G"
+     "/Users/css/Development/fortran/dalton/build_master/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -262,7 +260,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/cstein/Development/fortran/dalton-gitlab/build_master_gfortran_noblas_nolapack/basis/STO-3G"
+     "/Users/css/Development/fortran/dalton/build_master/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -398,8 +396,20 @@ H            -0.3600000000    0.8600000000    0.0000000000
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x      1.02045211         2.59373038         8.65175326
+      y      1.62516447         4.13075578        13.77871816
+      z      0.00000000         0.00000000         0.00000000
+
+
+  Total CPU  time used in HERMIT:   0.01 seconds
+  Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -432,8 +442,8 @@ H            -0.3600000000    0.8600000000    0.0000000000
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Jun  2 08:35:30 2015
-     Host name              : sparta                                  
+     Date and time (Darwin) : Wed Aug 30 21:20:35 2017
+     Host name              : adm-106348-mac.local                    
 
  Title lines from ".mol" input file:
                                                                              
@@ -452,7 +462,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
 
      Wave function specification
      ============================
-@    Wave function type        >>> KS-DFT <<<
+@    Wave function type        --- KS-DFT ---
 @    Number of closed shell electrons          10
 @    Number of electrons in active shells       0
 @    Total charge of the molecule               0
@@ -508,42 +518,45 @@ H            -0.3600000000    0.8600000000    0.0000000000
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    F  1.74D-03  1.00D-03
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    F  2.30D-03  2.00D-03
       K-S energy, electrons, error :     -7.634360493106  10.0000003014    3.01D-07
 @  1    -75.2140113175        7.34684D-01   -7.52D+01    1
       Virial theorem: -V/T =      2.007892
-@      MULPOP O      -0.45; H       0.22; H       0.23; 
+@    MULPOP   O      -0.45; H       0.22; H       0.23; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  1.79D-03  1.00D-03
-      K-S energy, electrons, error :     -7.611976712291  10.0000002802    2.80D-07
-@  2    -75.2529572494        1.01291D-01   -3.89D-02    2
-      Virial theorem: -V/T =      2.008970
-@      MULPOP O      -0.37; H       0.19; H       0.18; 
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  2.18D-03  2.00D-03
+      K-S energy, electrons, error :     -7.618244929694  10.0000002845    2.84D-07
+@  2    -75.2526133326        1.05489D-01   -3.86D-02    2
+      Virial theorem: -V/T =      2.008911
+@    MULPOP   O      -0.40; H       0.21; H       0.19; 
+   2  Level shift: doubly occupied orbital energies shifted by -5.00D-02
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  1.74D-03  2.00D-03
-      K-S energy, electrons, error :     -7.631564707718  10.0000002893    2.89D-07
-@  3    -75.2534944721        5.14923D-02   -5.37D-04    3
-      Virial theorem: -V/T =      2.006988
-@      MULPOP O      -0.45; H       0.23; H       0.22; 
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  2.37D-03  3.00D-03
+      K-S energy, electrons, error :     -7.627664330571  10.0000002875    2.88D-07
+@  3    -75.2536550022        2.25631D-02   -1.04D-03    3
+      Virial theorem: -V/T =      2.007408
+@    MULPOP   O      -0.43; H       0.22; H       0.21; 
+   3  Level shift: doubly occupied orbital energies shifted by -1.25D-02
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    4    F  1.76D-03  1.00D-03
-      K-S energy, electrons, error :     -7.624619298665  10.0000002862    2.86D-07
-@  4    -75.2537052757        1.69590D-03   -2.11D-04    4
-      Virial theorem: -V/T =      2.007647
-@      MULPOP O      -0.42; H       0.22; H       0.20; 
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  2.18D-03  2.00D-03
+      K-S energy, electrons, error :     -7.623732639970  10.0000002858    2.86D-07
+@  4    -75.2537001180        8.50018D-03   -4.51D-05    4
+      Virial theorem: -V/T =      2.007736
+@    MULPOP   O      -0.42; H       0.22; H       0.20; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  1.67D-03  1.00D-03
-      K-S energy, electrons, error :     -7.624813543781  10.0000002863    2.86D-07
-@  5    -75.2537055129        6.39628D-05   -2.37D-07    5
-      Virial theorem: -V/T =      2.007624
-@      MULPOP O      -0.42; H       0.22; H       0.20; 
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    5    F  2.18D-03  2.00D-03
+      K-S energy, electrons, error :     -7.624801720748  10.0000002863    2.86D-07
+@  5    -75.2537055057        2.30060D-04   -5.39D-06    5
+      Virial theorem: -V/T =      2.007626
+@    MULPOP   O      -0.42; H       0.22; H       0.20; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    F  1.79D-03  2.00D-03
-      K-S energy, electrons, error :     -7.624818095912  10.0000002863    2.86D-07
-@  6    -75.2537055134        7.42907D-06   -4.90D-10    6
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    F  2.18D-03  3.00D-03
+      K-S energy, electrons, error :     -7.624818097788  10.0000002863    2.86D-07
+@  6    -75.2537055134        1.90571D-06   -7.74D-09    6
 
 @ *** DIIS converged in   6 iterations !
-@     Converged SCF energy, gradient:    -75.253705513405    7.43D-06
+@     Converged SCF energy, gradient:    -75.253705513411    1.91D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -554,21 +567,21 @@ H            -0.3600000000    0.8600000000    0.0000000000
 
  Sym       Kohn-Sham orbital energies
 
-1 A     -18.81533713    -0.94204240    -0.47030112    -0.20168448    -0.13732670
-          0.38386939     0.54498502
+1 A     -18.81533722    -0.94204249    -0.47030112    -0.20168456    -0.13732678
+          0.38386952     0.54498484
 
-    E(LUMO) :     0.38386939 au (symmetry 1)
-  - E(HOMO) :    -0.13732670 au (symmetry 1)
+    E(LUMO) :     0.38386952 au (symmetry 1)
+  - E(HOMO) :    -0.13732678 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.52119610 au
+    gap     :     0.52119629 au
 
- >>> Writing SIRIFC interface file
+ --- Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.905       0.906
+ CPU and wall time for SCF :       1.039       1.041
 
 
                        .-----------------------------------.
-                       | >>> Final results from SIRIUS <<< |
+                       | --- Final results from SIRIUS --- |
                        `-----------------------------------'
 
 
@@ -576,19 +589,19 @@ H            -0.3600000000    0.8600000000    0.0000000000
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:            -75.253705513405                 
+@    Final DFT energy:            -75.253705513411                 
 @    Nuclear repulsion:             9.591469803262
-@    Electronic energy:           -84.845175316667
+@    Electronic energy:           -84.845175316674
 
-@    Final gradient norm:           0.000007429069
+@    Final gradient norm:           0.000001905706
 
  
-     Date and time (Linux)  : Tue Jun  2 08:35:31 2015
-     Host name              : sparta                                  
+     Date and time (Darwin) : Wed Aug 30 21:20:36 2017
+     Host name              : adm-106348-mac.local                    
 
 
-                        Charge fitting (QFITLIB) settings
-                        ---------------------------------
+                   Charge and moment fitting (QFITLIB) settings
+                   --------------------------------------------
 
 
           Fitting charges to the molecular ESP.
@@ -605,20 +618,20 @@ H            -0.3600000000    0.8600000000    0.0000000000
           molecular dipole.
 
 
-                        Potential fitted charges (QFITLIB)
-                        ----------------------------------
+                   Potential fitted multipole moments (QFITLIB)
+                   --------------------------------------------
 
  Charges:
-              Q   
-@ O      -0.693177
-@ H       0.354700
-@ H       0.338477
+                Q   
+@ O        -0.693176
+@ H         0.354703
+@ H         0.338473
 
-  Sum = total charge:    0.000000
+  Sum = total charge:   -0.000000
 
-File label for MO orbitals:   2Jun15   FOCKDIIS
+File label for MO orbitals:  30Aug17   FOCKDIIS
 
- (Only coefficients >0.0100 are printed.)
+ (Only coefficients > 0.0100 are printed.)
 
  Molecular orbitals for symmetry species 1  (A  )
  ------------------------------------------------
@@ -627,19 +640,17 @@ File label for MO orbitals:   2Jun15   FOCKDIIS
    1 O   :1s    -0.9933   0.2266  -0.0045  -0.1173  -0.0000  -0.1408   0.0176
    2 O   :1s    -0.0311  -0.7848   0.0227   0.5837   0.0000   0.9633  -0.1376
    3 O   :2px   -0.0030  -0.1171  -0.4993  -0.4413  -0.0000   0.2989  -0.9059
-   4 O   :2py   -0.0040  -0.1531   0.3323  -0.6615  -0.0000   0.6375   0.5058
-   5 O   :2pz   -0.0000   0.0000  -0.0000   0.0000  -1.0000  -0.0000   0.0000
+   4 O   :2py   -0.0040  -0.1531   0.3323  -0.6615  -0.0000   0.6376   0.5058
+   5 O   :2pz    0.0000  -0.0000  -0.0000   0.0000  -1.0000  -0.0000   0.0000
    6 H   :1s     0.0081  -0.1855  -0.4296  -0.2421   0.0000  -0.7490   0.9771
-   7 H   :1s     0.0075  -0.1691   0.4417  -0.2486  -0.0000  -0.9083  -0.7684
+   7 H   :1s     0.0075  -0.1691   0.4417  -0.2486  -0.0000  -0.9084  -0.7684
 
-
-
- >>>> Total CPU  time used in SIRIUS :      0.93 seconds
- >>>> Total wall time used in SIRIUS :      0.93 seconds
+  Total CPU  time used in SIRIUS :   1.08 seconds
+  Total wall time used in SIRIUS :   1.09 seconds
 
  
-     Date and time (Linux)  : Tue Jun  2 08:35:31 2015
-     Host name              : sparta                                  
+     Date and time (Darwin) : Wed Aug 30 21:20:36 2017
+     Host name              : adm-106348-mac.local                    
 
 
                      .---------------------------------------.
@@ -658,7 +669,7 @@ File label for MO orbitals:   2Jun15   FOCKDIIS
  ------------------------------------------------------------------------------
 
 
- <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+ -------- OUTPUT FROM RESPONSE INPUT PROCESSING --------
 
 
 
@@ -694,8 +705,8 @@ File label for MO orbitals:   2Jun15   FOCKDIIS
                ZDIPLEN 
 
 
-   SCF energy         :      -75.253705513404583
- -- inactive part     :      -84.845175316666982
+   SCF energy         :      -75.253705513411205
+ -- inactive part     :      -84.845175316673604
  -- nuclear repulsion :        9.591469803262399
 
 
@@ -703,10 +714,10 @@ File label for MO orbitals:   2Jun15   FOCKDIIS
                     *** DFT response calculation (TD-DFT) ***
                     *****************************************
 
-
-
- >>>>>>>>>> Linear response calculation
- >>>>>>>>>> Symmetry of excitation/property operator(s)    1  ( A  )
+ ----------------------------------------------------------------
+ ----- Linear response calculation
+ ----- Symmetry of excitation/property operator(s)    1  ( A  )
+ ----------------------------------------------------------------
 
  Number of excitations of this symmetry            4
  Number of response properties of this symmetry    0
@@ -718,44 +729,80 @@ File label for MO orbitals:   2Jun15   FOCKDIIS
  Orbital variables.         KZWOPT:      10
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :      10
- Electrons in DFTMOMO:   10.00000028626315
+ Electrons in DFTMOMO:   10.00000028626263
 
 
 
- <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+ --- EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) ---
 
  Operator symmetry = 1  ( A  ); triplet =   F
 
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.53550D-16  0.00D+00  2.54D-16  7.09D-01    4.54607D-01
+         2    2.33250D-01  0.00D+00  2.33D-01  7.09D-01    5.45384D-01
+         3    1.58825D-15  0.00D+00  1.59D-15  7.07D-01    5.78459D-01
+         4    1.16778D-01  0.00D+00  1.17D-01  7.09D-01    7.13797D-01
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.76391D-16  0.00D+00  1.76D-16  7.09D-01    4.54607D-01
+         2    4.27990D-03  0.00D+00  4.28D-03  7.09D-01    5.24073D-01
+         3    1.68039D-15  0.00D+00  1.68D-15  7.07D-01    5.78459D-01
+         4    1.80129D-02  0.00D+00  1.80D-02  7.09D-01    6.95868D-01
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    4.50642D-16  0.00D+00  4.51D-16  7.09D-01    4.54607D-01
+         2    1.45856D-04  0.00D+00  1.46D-04  7.09D-01    5.24070D-01
+         3    5.48631D-16  0.00D+00  5.49D-16  7.07D-01    5.78459D-01
+         4    9.63433D-04  0.00D+00  9.63D-04  7.09D-01    6.95748D-01
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    5.44344D-15  0.00D+00  5.44D-15  7.09D-01    4.54607D-01
+         2    1.81539D-05  0.00D+00  1.82D-05  7.09D-01    5.24070D-01
+         3    5.73957D-15  0.00D+00  5.74D-15  7.07D-01    5.78459D-01
+         4    3.99029D-07  0.00D+00  3.99D-07  7.09D-01    6.95748D-01
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   18)
- RSP solution vector no.    1; norm of residual   4.07D-15
+ RSP solution vector no.    1; norm of residual   7.68D-15
  RSP solution vector no.    2; norm of residual   2.56D-05
- RSP solution vector no.    3; norm of residual   1.56D-15
- RSP solution vector no.    4; norm of residual   5.65D-07
+ RSP solution vector no.    3; norm of residual   8.11D-15
+ RSP solution vector no.    4; norm of residual   5.63D-07
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @ Transition operator type:    XDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT:  6.16913924E-16 *ENERGY(eV):   12.370484    
-@ STATE NO:    2 *TRANSITION MOMENT:  0.15094488     *ENERGY(eV):   14.260652    
-@ STATE NO:    3 *TRANSITION MOMENT:  1.35553846E-16 *ENERGY(eV):   15.740673    
-@ STATE NO:    4 *TRANSITION MOMENT: -0.34863148     *ENERGY(eV):   18.932274    
+@ STATE NO:    1 *TRANSITION MOMENT: -3.87604889E-16 *ENERGY(eV):   12.370488    
+@ STATE NO:    2 *TRANSITION MOMENT:  0.15094626     *ENERGY(eV):   14.260660    
+@ STATE NO:    3 *TRANSITION MOMENT: -1.53874539E-16 *ENERGY(eV):   15.740670    
+@ STATE NO:    4 *TRANSITION MOMENT: -0.34863026     *ENERGY(eV):   18.932273    
 
 @ Transition operator type:    YDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT: -1.00719137E-15 *ENERGY(eV):   12.370484    
-@ STATE NO:    2 *TRANSITION MOMENT:  0.32238969     *ENERGY(eV):   14.260652    
-@ STATE NO:    3 *TRANSITION MOMENT:  1.39951080E-15 *ENERGY(eV):   15.740673    
-@ STATE NO:    4 *TRANSITION MOMENT:  0.18606384     *ENERGY(eV):   18.932274    
+@ STATE NO:    1 *TRANSITION MOMENT:  7.65679991E-16 *ENERGY(eV):   12.370488    
+@ STATE NO:    2 *TRANSITION MOMENT:  0.32239018     *ENERGY(eV):   14.260660    
+@ STATE NO:    3 *TRANSITION MOMENT: -4.94709983E-16 *ENERGY(eV):   15.740670    
+@ STATE NO:    4 *TRANSITION MOMENT:  0.18606600     *ENERGY(eV):   18.932273    
 
 @ Transition operator type:    ZDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT:  0.10309815     *ENERGY(eV):   12.370484    
-@ STATE NO:    2 *TRANSITION MOMENT: -3.81791062E-17 *ENERGY(eV):   14.260652    
-@ STATE NO:    3 *TRANSITION MOMENT:  1.40611384E-02 *ENERGY(eV):   15.740673    
-@ STATE NO:    4 *TRANSITION MOMENT:  1.06425294E-16 *ENERGY(eV):   18.932274    
+@ STATE NO:    1 *TRANSITION MOMENT: -0.10309777     *ENERGY(eV):   12.370488    
+@ STATE NO:    2 *TRANSITION MOMENT: -1.66973095E-17 *ENERGY(eV):   14.260660    
+@ STATE NO:    3 *TRANSITION MOMENT: -1.40612960E-02 *ENERGY(eV):   15.740670    
+@ STATE NO:    4 *TRANSITION MOMENT:  1.15354806E-17 *ENERGY(eV):   18.932273    
 
 
  **************************************************************************************
@@ -767,39 +814,47 @@ File label for MO orbitals:   2Jun15   FOCKDIIS
  @ Excited state no:    1 in symmetry 1  ( A  )
  ----------------------------------------------
 
-@ Excitation energy :  0.45460695     au
-@                      12.370484     eV;   99774.691     cm-1;   1193.5704     kJ / mol
+@ Excitation energy :  0.45460708     au
+@                       12.370488     eV;   99774.720     cm-1;   1193.5707     kJ / mol
 
-@ Total energy :      -74.799099     au
+@ Total energy :       -74.799098     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  1.15343720E-31  (Transition moment :  6.16913924E-16 )
+@ Oscillator strength (LENGTH)   :  4.55327022E-32  (Transition moment : -3.87604889E-16 )
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  3.07445965E-31  (Transition moment : -1.00719137E-15 )
+@ Oscillator strength (LENGTH)   :  1.77680402E-31  (Transition moment :  7.65679991E-16 )
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  3.22141404E-03  (Transition moment :  0.10309815     )
+@ Oscillator strength (LENGTH)   :  3.22139148E-03  (Transition moment : -0.10309777     )
+
+ Eigenvector for state no.  1
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+           9         5(1)   6(1)        0.7075814232        0.0348783650        1.0006712451        0.0493254569
+
+        9 elements with absolute value ≤ 1.00D-01 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
 
 
-                    Calculation of Transition Density charges
-                    -----------------------------------------
-
-
- Transition Dipole (x,y,z)
-         0.000000   -0.000000    0.103098
-
-
-                        Potential fitted charges (QFITLIB)
-                        ----------------------------------
+                   Potential fitted multipole moments (QFITLIB)
+                   --------------------------------------------
 
  Charges:
-              Q   
-@ O      -0.000000
-@ H      -0.000000
-@ H       0.000000
+                Q   
+@ O        -0.000000
+@ H        -0.000000
+@ H         0.000000
 
-  Sum = total charge:    0.000000
+  Sum = total charge:   -0.000000
 
 
                               MO Overlap Diagnostic
@@ -822,7 +877,7 @@ Delta_R Diagnostic (Aa):     0.4834
 
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
-      5    6 -0.707581 -0.034878  0.469212  0.326055  0.452529  0.212332
+      5    6  0.707581  0.034878  0.469212  0.326055  0.452529  0.212332
 
 @ Overlap diagnostic LAMBDA =    0.4692
 
@@ -830,37 +885,46 @@ Delta_R Diagnostic (Aa):     0.4834
  @ Excited state no:    2 in symmetry 1  ( A  )
  ----------------------------------------------
 
-@ Excitation energy :  0.52406932     au
-@                      14.260652     eV;   115019.92     cm-1;   1375.9438     kJ / mol
+@ Excitation energy :  0.52406963     au
+@                       14.260660     eV;   115019.99     cm-1;   1375.9446     kJ / mol
 
-@ Total energy :      -74.729636     au
+@ Total energy :       -74.729636     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  7.96038818E-03  (Transition moment :  0.15094488     )
+@ Oscillator strength (LENGTH)   :  7.96053883E-03  (Transition moment :  0.15094626     )
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  3.63128027E-02  (Transition moment :  0.32238969     )
+@ Oscillator strength (LENGTH)   :  3.63129332E-02  (Transition moment :  0.32239018     )
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  5.09271051E-34  (Transition moment : -3.81791062E-17 )
+@ Oscillator strength (LENGTH)   :  9.74071264E-35  (Transition moment : -1.66973095E-17 )
+
+ Eigenvector for state no.  2
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+           6         3(1)   7(1)        0.0889200639       -0.0237730095        0.1257519603       -0.0336201124
+           7         4(1)   6(1)        0.7006211717        0.0251571106        0.9908279631        0.0355775269
+
+        8 elements with absolute value ≤ 9.91D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
 
 
-                    Calculation of Transition Density charges
-                    -----------------------------------------
-
-
- Transition Dipole (x,y,z)
-         0.150945    0.322390   -0.000000
-
-
-                        Potential fitted charges (QFITLIB)
-                        ----------------------------------
+                   Potential fitted multipole moments (QFITLIB)
+                   --------------------------------------------
 
  Charges:
-              Q   
-@ O       0.366475
-@ H      -0.168101
-@ H      -0.198374
+                Q   
+@ O        -0.366476
+@ H         0.168102
+@ H         0.198374
 
   Sum = total charge:   -0.000000
 
@@ -885,8 +949,8 @@ Delta_R Diagnostic (Aa):     0.5879
 
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
-      3    7  0.088920 -0.023773  0.885984  0.813930  0.012700  0.011252
-      4    6  0.700621  0.025157  0.602172  0.287994  0.456252  0.274742
+      3    7  0.088920 -0.023773  0.885983  0.813928  0.012700  0.011252
+      4    6  0.700621  0.025157  0.602173  0.287994  0.456252  0.274742
 
 @ Overlap diagnostic LAMBDA =    0.6114
 
@@ -894,37 +958,45 @@ Delta_R Diagnostic (Aa):     0.5879
  @ Excited state no:    3 in symmetry 1  ( A  )
  ----------------------------------------------
 
-@ Excitation energy :  0.57845912     au
-@                      15.740673     eV;   126957.10     cm-1;   1518.7442     kJ / mol
+@ Excitation energy :  0.57845901     au
+@                       15.740670     eV;   126957.08     cm-1;   1518.7439     kJ / mol
 
-@ Total energy :      -74.675246     au
+@ Total energy :       -74.675247     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  7.08606442E-33  (Transition moment :  1.35553846E-16 )
+@ Oscillator strength (LENGTH)   :  9.13092672E-33  (Transition moment : -1.53874539E-16 )
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  7.55325103E-31  (Transition moment :  1.39951080E-15 )
+@ Oscillator strength (LENGTH)   :  9.43805876E-32  (Transition moment : -4.94709983E-16 )
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  7.62469324E-05  (Transition moment :  1.40611384E-02 )
+@ Oscillator strength (LENGTH)   :  7.62486278E-05  (Transition moment : -1.40612960E-02 )
+
+ Eigenvector for state no.  3
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          10         5(1)   7(1)       -0.7068074894       -0.0110388855       -0.9995767375       -0.0156113416
+
+        9 elements with absolute value ≤ 1.00D-01 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
 
 
-                    Calculation of Transition Density charges
-                    -----------------------------------------
-
-
- Transition Dipole (x,y,z)
-         0.000000    0.000000    0.014061
-
-
-                        Potential fitted charges (QFITLIB)
-                        ----------------------------------
+                   Potential fitted multipole moments (QFITLIB)
+                   --------------------------------------------
 
  Charges:
-              Q   
-@ O       0.000000
-@ H      -0.000000
-@ H      -0.000000
+                Q   
+@ O         0.000000
+@ H        -0.000000
+@ H        -0.000000
 
   Sum = total charge:    0.000000
 
@@ -949,7 +1021,7 @@ Delta_R Diagnostic (Aa):     0.3345
 
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
-      5    7  0.706807  0.011039  0.476759  0.290973  0.484093  0.230796
+      5    7 -0.706807 -0.011039  0.476759  0.290973  0.484094  0.230796
 
 @ Overlap diagnostic LAMBDA =    0.4768
 
@@ -957,37 +1029,46 @@ Delta_R Diagnostic (Aa):     0.3345
  @ Excited state no:    4 in symmetry 1  ( A  )
  ----------------------------------------------
 
-@ Excitation energy :  0.69574830     au
-@                      18.932274     eV;   152699.10     cm-1;   1826.6869     kJ / mol
+@ Excitation energy :  0.69574827     au
+@                       18.932273     eV;   152699.09     cm-1;   1826.6868     kJ / mol
 
-@ Total energy :      -74.557957     au
+@ Total energy :       -74.557957     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  5.63759797E-02  (Transition moment : -0.34863148     )
+@ Oscillator strength (LENGTH)   :  5.63755803E-02  (Transition moment : -0.34863026     )
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  1.60577561E-02  (Transition moment :  0.18606384     )
+@ Oscillator strength (LENGTH)   :  1.60581284E-02  (Transition moment :  0.18606600     )
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  5.25352276E-33  (Transition moment :  1.06425294E-16 )
+@ Oscillator strength (LENGTH)   :  6.17209014E-35  (Transition moment :  1.15354806E-17 )
+
+ Eigenvector for state no.  4
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+           5         3(1)   6(1)        0.2220041668       -0.0064859666        0.3139613036       -0.0091725420
+           8         4(1)   7(1)        0.6708771267        0.0310515529        0.9487635313        0.0439135272
+
+        8 elements with absolute value ≤ 9.49D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
 
 
-                    Calculation of Transition Density charges
-                    -----------------------------------------
-
-
- Transition Dipole (x,y,z)
-        -0.348631    0.186064    0.000000
-
-
-                        Potential fitted charges (QFITLIB)
-                        ----------------------------------
+                   Potential fitted multipole moments (QFITLIB)
+                   --------------------------------------------
 
  Charges:
-              Q   
-@ O      -0.044702
-@ H       0.159191
-@ H      -0.114489
+                Q   
+@ O         0.044699
+@ H        -0.159190
+@ H         0.114491
 
   Sum = total charge:   -0.000000
 
@@ -1013,24 +1094,24 @@ Delta_R Diagnostic (Aa):     0.4299
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
       3    6  0.222004 -0.006486  0.763354  0.460022  0.052208  0.039853
-      4    7  0.670877  0.031052  0.665389  0.362426  0.409377  0.272395
+      4    7  0.670877  0.031052  0.665389  0.362425  0.409377  0.272395
 
 @ Overlap diagnostic LAMBDA =    0.6771
 
 
- Time used in polarization propagator calculation is      1.52 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is      1.81 CPU seconds for symmetry 1
 
- >>>> Total CPU  time used in RESPONSE:   1.52 seconds
- >>>> Total wall time used in RESPONSE:   1.52 seconds
+  Total CPU  time used in RESPONSE:   1.81 seconds
+  Total wall time used in RESPONSE:   1.82 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   2.46 seconds
- >>>> Total wall time used in DALTON:   2.46 seconds
+  Total CPU  time used in DALTON:   2.91 seconds
+  Total wall time used in DALTON:   2.92 seconds
 
  
-     Date and time (Linux)  : Tue Jun  2 08:35:33 2015
-     Host name              : sparta                                  
+     Date and time (Darwin) : Wed Aug 30 21:20:38 2017
+     Host name              : adm-106348-mac.local                    

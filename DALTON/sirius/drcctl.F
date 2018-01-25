@@ -206,14 +206,14 @@ C
      *                            '  ILOWDI:',ILOWDI,'  IHGHDI:',IHGHDI
       ENDIF
       NEEDMU(-4:6) = 0
-      NEEDMU(2) = 1
-      NEEDMU(3) = 1
-      NEEDMU(5) = 1
+      NEEDMU(2) = 1 ! ia
+      NEEDMU(3) = 1 ! aa
+      NEEDMU(5) = 1 ! as
       IF (LVLDRC .GE. 1) THEN
-         NEEDMU(1) = 1
-         NEEDMU(4) = 1
+         NEEDMU(1) = 1 ! ii
+         NEEDMU(4) = 1 ! is
       END IF
-      IF (LVLDRC .EQ. 2) NEEDMU(6) = 1
+      IF (LVLDRC .EQ. 2) NEEDMU(6) = 1 ! ss
 C
 C OFFSET FOR (CD) DISTRIBUTIONS
 C

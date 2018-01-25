@@ -1,9 +1,5 @@
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
     set(CMAKE_CXX_FLAGS         "-g -Wall -fno-rtti -fno-exceptions")
-    if(NOT DEVELOPMENT_CODE)
-        # suppress warnings in exported code
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
-    endif()
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "i386")
         set(CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS} -m32"
@@ -40,12 +36,7 @@ endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
     set(CMAKE_CXX_FLAGS         "-g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177 -fno-rtti -fno-exceptions")
-    if(DEVELOPMENT_CODE)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-    else()
-        # suppress warnings in exported code
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
-    endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
     set(CMAKE_CXX_FLAGS_DEBUG   "-O0")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ip")
     set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")

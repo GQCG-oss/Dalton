@@ -104,8 +104,8 @@ CRIT3=`$GREP "Total CCSD  energy: * -100\.2262264844" $log | wc -l`
 CRIT4=`$GREP "Total energy CCSD\(T\): * -100\.2281469753" $log | wc -l`
 CRIT5=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * 1.6477699502" $log | wc -l`
 CRIT6=`$GREP " F * ( |0)\.0000000000 * ( |0)\.0000000000 * (\-|\-0)\.0894802902" $log | wc -l`
-CRIT7=`$GREP "Energy at this geometry is * : * -100\.228147" $log | wc -l`
-CRIT8=`$GREP "Norm of gradient * : * ( |0)\.004849" $log | wc -l`
+CRIT7=`$GREP "Energy at this geometry is * : * -100\.22814" $log | wc -l`
+CRIT8=`$GREP "Norm of gradient * : * ( |0)\.00484" $log | wc -l`
 CRIT9=`$GREP "Norm of step * : * ( |0)\.004371" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
               $CRIT6  \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
@@ -114,18 +114,18 @@ ERROR[1]="INITIAL ITERATION IS ALREADY NOT CORRECT"
 
 
 #SCF, MP2, CCSD and CCSD(T) energies of 1 iteration:
-CRIT1=`$GREP "Final * HF energy: * -100\.019318707." $log | wc -l`
-CRIT2=`$GREP "Total RSTAR energy: * -100\.226121310." $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy: * -100\.226230618." $log | wc -l`
-CRIT4=`$GREP "Total energy CCSD\(T\): * -100\.228155908." $log | wc -l`
-CRIT5=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * 1\.6482975029" $log | wc -l`
-CRIT6=`$GREP " F * ( |0)\.0000000000 * ( |0)\.0000000000 * (\-|\-0)\.0900078429" $log | wc -l`
-CRIT7=`$GREP "Energy at this geometry is * : * -100\.228156" $log | wc -l`
-CRIT8=`$GREP "Norm of gradient * : * ( |0)\.000943" $log | wc -l`
-CRIT9=`$GREP "Norm of step * : * ( |0)\.001055" $log | wc -l`
+CRIT1=`$GREP -l "Final * HF energy: * -100\.019318707." $log | wc -l`
+CRIT2=`$GREP -l "Total RSTAR energy: * -100\.226121310." $log | wc -l`
+CRIT3=`$GREP -l "Total CCSD  energy: * -100\.226230618." $log | wc -l`
+CRIT4=`$GREP -l "Total energy CCSD\(T\): * -100\.228155908." $log | wc -l`
+CRIT5=`$GREP -l " H * ( |0)\.0000000000 * ( |0)\.0000000000 * 1\.6482975029" $log | wc -l`
+CRIT6=`$GREP -l " F * ( |0)\.0000000000 * ( |0)\.0000000000 * (\-|\-0)\.0900078429" $log | wc -l`
+CRIT7=`$GREP -l "Energy at this geometry is * : * -100\.228156" $log | wc -l`
+CRIT8=`$GREP -l "Norm of gradient * : * ( |0)\.00094" $log | wc -l`
+CRIT9=`$GREP -l "Norm of step * : * ( |0)\.001055" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
               $CRIT6  \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
-CTRL[2]=22
+CTRL[2]=9
 ERROR[2]="FIRST ITERATION IS ALREADY NOT CORRECT"
 #
 # Final summary:

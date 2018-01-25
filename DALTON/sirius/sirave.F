@@ -1857,7 +1857,7 @@ C        --- we have a degeneracy to other supersym.(s)
       RETURN
       END
 C  /* Deck avechk */
-      SUBROUTINE AVECHK(WRK,LWRK,INPERR)
+      SUBROUTINE AVECHK(INPERR)
 C
 C 14-Jul-1992 Hinne Hettema and Hans Joergen Aa. Jensen.
 C
@@ -1881,7 +1881,7 @@ C
 #include "orbtypdef.h"
 C
       PARAMETER (MAXDEG = 20, D1 = 1.0D0)
-      DIMENSION ISSDEG(MAXDEG),ISSOFF(MAXDEG), WRK(LWRK)
+      DIMENSION ISSDEG(MAXDEG),ISSOFF(MAXDEG)
 C
       CALL QENTER('AVECHK')
       IF (.NOT.SUPSYM) GO TO 9999

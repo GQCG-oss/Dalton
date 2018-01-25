@@ -167,7 +167,7 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/4A/)') ' ERROR: Keyword "',WORD,
-     *            '" not recognized for ',WORD1
+     &            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword for '//WORD1)
     1          CONTINUE ! .PRINT
@@ -178,9 +178,7 @@ C
                   ENDIF
                   IF (IPREAD .EQ. IPREAD_ini) ICHANG = ICHANG - 1
                GO TO 100
-    2          CONTINUE
-C                 'CONTINUUM': generate continuum functions of Kaufmann
-C                 Sonia, 2012
+    2          CONTINUE ! .CONTINUUM: generate continuum functions of Kaufmann (Sonia, 2012)
                   IF (LCMMAX .GT. -1) THEN
                      WRITE (LUPRI,'(/A/)')
      &          ' Input error: .CONTINUUM and .CM FUN not both allowed.'
@@ -304,8 +302,7 @@ C determined symmetry
             end if
             WRITE (LUPRI,'(2(A,F4.1))')
      &           ' Sequence starts at n=',CMSTR,' and ends at n=', CMEND
-            IF (ZCMVAL .NE. D1)
-     &           WRITE (LUPRI,'(A,F10.3)')
+                 WRITE (LUPRI,'(A,F10.3)')
      &         ' Net charge of ionic core',ZCMVAL
                  WRITE(LUPRI,'(/A/A/A/A/A)')
      &         ' Proper reference for these basis functions:'
@@ -316,7 +313,7 @@ C determined symmetry
 
             IF (LCMMAX .GT. 4) THEN
                WRITE (LUPRI,'(/A)')
-     &           ' ERROR: Center of mass basis functions are'//
+     &           ' FATAL ERROR: Center of mass basis functions are'//
      &           ' not defined for l(max) > 4'
                CALL QUIT('Error in input processing for '//WORD1)
             END IF
@@ -708,7 +705,7 @@ C
       real(8), allocatable :: cprim(:, :, :, :)
       real(8), allocatable :: cprimu(:, :, :, :)
       CHARACTER*80 BASREF(10,KATOM,3)
-      CHARACTER*1 KASYM(3,3),ID3,SPDCAR,CRT
+      CHARACTER*1  KASYM(3,3),ID3,CRT
       CHARACTER*72 TTITLE(2)
       CHARACTER*2 SYMTXT
       CHARACTER*15 SYMGROUP
@@ -2808,7 +2805,7 @@ C  /* Deck gtoinp */
       CHARACTER*12 FMT2
 C
 C
-      LOGICAL SEG, FREE, SEGIJ
+      LOGICAL SEG, SEGIJ
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
@@ -2917,7 +2914,7 @@ C  /* Deck cmbas */
       SUBROUTINE CMBAS(IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                 CPRIMU,NBLOCK,KAOVEC,KPRIM)
 C
-C     Basis functions according to
+C     Rydberg basis functions according to
 C     K. Kaufmann, W. Baumeister, and M. Jungen
 C     "Universal Gaussian basis sets for an optimum representation
 C     of Rydberg and continuum wavefunctions"
@@ -2927,7 +2924,7 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-      LOGICAL SEG, FREE
+      LOGICAL   SEG
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC),
@@ -2935,10 +2932,8 @@ C
 #include "cbirea.h"
 #include "molinp.h"
 #include "ccom.h"
-      DATA (BASA(I),I=0,4) /0.584342, 0.452615, 0.382362, 0.337027,
-     &                      0.304679/
-      DATA (BASB(I),I=0,4) /0.424483, 0.309805, 0.251333, 0.215013,
-     &                      0.189944/
+      DATA BASA(0:4) /0.584342, 0.452615, 0.382362, 0.337027, 0.304679/
+      DATA BASB(0:4) /0.424483, 0.309805, 0.251333, 0.215013, 0.189944/
 C
       NBLOCK = 0
       DO 100 I = 1, IQM
@@ -2979,34 +2974,35 @@ C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' CMBAS  error, number of AO-blocks            ',NBLOCK,
-     *  '                   current maximum number MXAOVC =',KAOVEC
+     *  '               current maximum number MXAOVC =',KAOVEC
         CALL QUIT('CMBAS: Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' CMBAS  error, number of primitives per block      ',NUCI,
-     *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
+     *  ' current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('CMBAS: Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' CMBAS  error, number of contracted functions      ',NRCI,
-     *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
+     *  ' current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('CMBAS: Too many contracted functions')
       END
 C  /* Deck cmbas_cnuum */
       SUBROUTINE CMBAS_cnuum(IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                 CPRIMU,NBLOCK,KAOVEC,KPRIM)
 C
-C     CONTINUUM Basis functions according to
+C     CONTINUUM basis functions according to
 C     K. Kaufmann, W. Baumeister, and M. Jungen
 C     "Universal Gaussian basis sets for an optimum representation
 C     of Rydberg and continuum wavefunctions"
 C     J. Phys. B: At. Mol. Opt. Phys. 22 (1989) 2223-2240
 C     SONIA CORIANI, 2012
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-      LOGICAL SEG, FREE
+      LOGICAL   SEG
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC),
@@ -3014,10 +3010,8 @@ C     SONIA CORIANI, 2012
 #include "cbirea.h"
 #include "molinp.h"
 #include "ccom.h"
-      DATA (BASA(I),I=0,4) /0.584342, 0.452615, 0.382362, 0.337027,
-     &                      0.304679/
-      DATA (BASB(I),I=0,4) /0.424483, 0.309805, 0.251333, 0.215013,
-     &                      0.189944/
+      DATA BASA(0:4) /0.584342, 0.452615, 0.382362, 0.337027, 0.304679/
+      DATA BASB(0:4) /0.424483, 0.309805, 0.251333, 0.215013, 0.189944/
 C
       write(lupri,*)"CMBAS_CNUUM to generate CONTINUUM bfs"
       NBLOCK = 0
@@ -3062,17 +3056,17 @@ C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' CMBAS_CNUUM error, number of AO-blocks          ',NBLOCK,
-     *  '                   current maximum number MXAOVC =',KAOVEC
+     *  '                  current maximum number MXAOVC =',KAOVEC
         CALL QUIT('CMBAS_CNUUM: Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' CMBAS_CNUUM  error, number of primitives per block ',NUCI,
-     *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
+     *  '  current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('CMBAS_CNUUM: Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' CMBAS_CNUUM  error, number of contracted functions ',NRCI,
-     *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
+     *  '  current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('CMBAS: Too many contracted functions')
       END
 C  /* Deck acporb */
@@ -3087,8 +3081,8 @@ C  /* Deck acporb */
       CHARACTER*11 FMT1
       CHARACTER*15 FMT2
       CHARACTER*10 FMT3
-      LOGICAL FREE
-      DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
+      LOGICAL  FREE_FORMAT
+      REAL*8   ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
 #include "cbirea.h"
 #include "molinp.h"
 C
@@ -3098,15 +3092,15 @@ C     ALPHA  - exponent of primitive
 C     CPRIMU - unnormalized contraction coefficients
 C
       IF (FRMT .EQ. 'F' .OR. FRMT .EQ. 'f') THEN
-         FREE = .TRUE.
+         FREE_FORMAT = .TRUE.
       ELSE IF (FRMT .EQ. 'H' .OR. FRMT .EQ. 'h') THEN
-         FREE = .FALSE.
+         FREE_FORMAT = .FALSE.
          NCOL = 4
          FMT1 = '(BN,4F20.0)'
          FMT2 = '(BN,20X,3F20.0)'
          FMT3 = '(BN,F20.0)'
       ELSE
-         FREE = .FALSE.
+         FREE_FORMAT = .FALSE.
          NCOL = 8
          FMT1 = '(BN,8F10.0)'
          FMT2 = '(BN,10X,7F10.0)'
@@ -3115,7 +3109,7 @@ C
       IF(NRCIJ.NE.0) THEN
         DO 100 L = 1, NUCIJ
            CALL RDLINE(LUINFO)
-           IF (FREE) THEN
+           IF (FREE_FORMAT) THEN
 #if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D) || defined (SYS_T90)
               ISTART = 1
               CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,
@@ -3175,7 +3169,7 @@ C
         NRCIJ = NUCIJ
         DO 300 L = 1, NUCIJ
            CALL RDLINE(LUINFO)
-           IF (FREE) THEN
+           IF (FREE_FORMAT) THEN
 #if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D) || defined (SYS_T90)
               ISTART = 1
               CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,
@@ -3604,11 +3598,11 @@ C
 #include "nuclei.h"
 #include "primit.h"
       CHARACTER*10 CHRSEG
-      LOGICAL SEG, NRMPRI
+      LOGICAL   NRMPRI
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK),
-     &          SEG(KBLOCK)
+     &          CPRIMU(KPRIM,KPRIM,KBLOCK)
+      LOGICAL   SEG(KBLOCK)
       DIMENSION IPCON(KPRIM)
 C
 C     P R I M I T I V E S
@@ -6156,9 +6150,9 @@ C
       DIMENSION U1(3),U2(3),U3(3),U4(3),VJ(3),VP(3),V3(3)
       DIMENSION NONT(KATOM),IQM(KATOM,3),JCO(KANG,KATOM,3),
      &          NBLCK(KATOM,3),NUC(KBLOCK,3),NRC(KBLOCK,3),
-     &          SEG(KBLOCK,3),
      &          ALPHA(KPRIM,KBLOCK,3),CPRIM(KPRIM,KPRIM,KBLOCK,3),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,3), CHNON(MXCENT)
+      LOGICAL   SEG(KBLOCK,3)
       DIMENSION ISGEN(*)
       CHARACTER SPDCAR*1, NAVNK*4, CRT*1
       CHARACTER*80 BASNAM, BASREF(10,KATOM,3)
@@ -6583,11 +6577,12 @@ C
 #include "primit.h"
 #include "gnrinf.h"
 #include "molinp.h"
-      LOGICAL SEG, NRMPRI
+      LOGICAL   NRMPRI
       CHARACTER KASYM(3,3)*1, CRT*1
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &     JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
-     &     CPRIMU(KPRIM,KPRIM,KBLOCK),SEG(KBLOCK)
+     &     CPRIMU(KPRIM,KPRIM,KBLOCK)
+      LOGICAL   SEG(KBLOCK)
       DIMENSION IPCON(KPRIM)
       CHARACTER*8 LTIME, LDATE
       CHARACTER*1 SPD(8)

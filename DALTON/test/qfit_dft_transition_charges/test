@@ -11,8 +11,8 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
-f.add(from_re = 'Potential fitted charges \(QFITLIB\)',
-      num_lines = 7,
+f.add(from_re = 'Potential fitted multipole moments \(QFITLIB\)',
+      num_lines = 8,
       ignore_sign = True,
       rel_tolerance = 1.0e-3)
 

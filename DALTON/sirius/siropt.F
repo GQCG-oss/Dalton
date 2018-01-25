@@ -812,7 +812,7 @@ C
             DEPSAV = DEPRED
             EMCOLD = EMCGEO
             DEPRED = DEPGEO
-            CALL SIRSTP(JWSTEP,DUMMY,DUMMY,DUMMY,DUMMY,1)
+            CALL SIRSTP(JWSTEP,VDUMMY,DUMMY,DUMMY,DUMMY,1)
             EMCOLD = EMCSCF
             DEPRED = DEPSAV
             IF (WLKREJ) GO TO 700
@@ -1188,7 +1188,7 @@ C     ... this is RHF which will be followed by MCSCF
             JWSTEP = 1
             EMCOLD = EMCGEO
             DEPRED = DEPGEO
-            CALL SIRSTP(JWSTEP,DUMMY,DUMMY,DUMMY,DUMMY,1)
+            CALL SIRSTP(JWSTEP,VDUMMY,DUMMY,DUMMY,DUMMY,1)
          ELSE
             WLKREJ = .FALSE.
          END IF
@@ -1815,16 +1815,16 @@ C     (but we test to be sure!)
 C
   400 CONTINUE
          REWIND LUIT1
-         IF ( .NOT.FNDLAB(TABLE(2),LUIT1) ) GO TO 490
-            READ (LUIT1,END=490,ERR=490)
-         IF ( .NOT.FNDLB2(TABLE(3),LBLINF,LUIT1) ) GO TO 490
-         IF ( ICSTRT.EQ.5 .AND. LBLINF(2).EQ.'NRSAVE  ')
-     &      FLAG(39) = .TRUE.
-C        ... if user has specified .RESTART, then respect shift to NR
+         IF ( .NOT.FNDLB2(TABLE(3),LBLINF,LUIT1) ) GO TO 490 ! label 'STARTVEC'
+         IF ( ICSTRT.EQ.5 ) THEN ! .RESTART
+            REWIND LUIT1
+            IF ( .NOT.FNDLAB(TABLE(2),LUIT1) ) GO TO 490     ! label 'OLDORB  ' for backstep after restart
+            IF ( LBLINF(2).EQ.'NRSAVE  ') FLAG(39) = .TRUE.  ! if user has specified .RESTART, then respect shift to NR
+         END IF
          IF (FLAG(39)) GO TO 495
 C        ... if (ONLYNR) one vector is all that is needed,
 C            so no reason to do more checking.
-C        We now check if sufficient vectors using label information.
+C        We now check if sufficient vectors available using label information.
          READ (LBLINF(1),'(2I4)',ERR=405) LROIT1,JSTA
          IF (LROIT1 .LT. LROOTS) GO TO 493
          GO TO 495
@@ -1839,28 +1839,30 @@ C        error reading LBLINF(1) -- use the old check
 C
   490 CONTINUE
          REWIND LUIT1
+         CALL DMPLAB(LUIT1, LUPRI)
          IF (ICSTRT .EQ. 4) THEN
             NWARN = NWARN + 1
             WRITE (LUPRI,'(//A/A//)')
-     *       '@@*** (OPTST) MC start vectors not found on SIRIUS.RST',
-     *       '@@*** WARNING lowest diagonal elements used.'
+     &       '@@*** (OPTST) MC start vectors not found on SIRIUS.RST',
+     &       '@@*** WARNING lowest diagonal elements used.'
             ICSTRT = 1
             GO TO 10
          ELSE IF (ICSTRT .EQ. 5) THEN
             WRITE (LUPRI,'(//A/A//)')
-     *       '@@*** (OPTST) MC start vectors not found on SIRIUS.RST,',
-     *       '@@            .RESTART not possible.'
+     &      '@@*** (OPTST) MC start vectors or OLDORB'//
+     &          ' not found on SIRIUS.RST,',
+     &      '@@            .RESTART not possible.'
             CALL QTRACE(LUPRI)
-            CALL QUIT(
-     &         'MC start vectors for .RESTART not found on SIRIUS.RST.')
+            CALL QUIT( 'ERROR: '//
+     &      ' All necessary info for .RESTART not found on SIRIUS.RST.')
          ELSE
-            WRITE (LUPRI,'(//A/A/A//)')
-     *       ' *** (OPTST) MC start vectors not found on SIRIUS.RST,',
-     *       '             no recover when CISTRT 6 or 7',
-     *       '             optimization abandoned.'
+            WRITE (LUPRI,'(//A/A//)')
+     &       '@@*** (OPTST) Old CI vectors not found on SIRIUS.RST,',
+     &       '@@            no recover when CISTRT 6 or 7,'//
+     &          ' optimization abandoned.'
             CALL QTRACE(LUPRI)
-            CALL QUIT(
-     &     '(OPTST) Start vectors not found on SIRIUS.RST as expected.')
+            CALL QUIT('ERROR: '//
+     &      'Old CI vectors not found on SIRIUS.RST as expected.')
          END IF
   493 CONTINUE
          REWIND LUIT1

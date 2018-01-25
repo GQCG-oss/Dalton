@@ -377,8 +377,7 @@ first iteration of the geometry optimization, then for each subsequent
 iteration the weight of the model Hessian is halved. Only suitable for
 minimizations.
 
-\item[\Key{CONDIT}]\verb| |
-\newline
+\item[\Key{CONDIT}]\verb| | \newline
 \verb|READ (LUCMD,*) ICONDI|
 
 Set the number of convergence criteria\index{convergence criteria!geometry}
@@ -430,11 +429,10 @@ be used during numerical evaluation of the molecular gradient, as is
 needed when doing geometry optimizations with CI or MP2 wave
 functions. Default is $1.0\cdot 10^{-3}$ a.u.
 
-\item[\Key{ENERGY}]\verb| |
-\newline
+\item[\Key{ENERGY}]\verb| | \newline
 \verb|READ(LUCMD,*) THRERG|
 
-Set the convergence threshold for the energy (in a.u.). This is one of the three
+Set the geometry convergence threshold for the energy (in a.u.). This is one of the three
 convergence thresholds\index{convergence!geometry, criteria} (the keywords
 \Key{GRADIE} and \Key{STEP T}
 control the other two). Default value is the maximum of $1.0\cdot
@@ -445,6 +443,25 @@ Determines the redundant internal coordinate system then quits without
 doing an actual calculation. Useful for setting up constrained
 geometry optimizations, where the numbers of individual primitive
 internal coordinates are needed.
+
+\item[\Key{FREEZE}] \verb| |\newline
+\verb|READ (LUCMD, *) NFREEZ|\newline
+\verb|DO I = 1, NFREEZ|\newline
+\verb|   READ(LUCMD,*) IFREEZ(I)|\newline
+\verb|END DO|
+
+Request the \verb|NFREEZ| specified atoms to be frozen in the geometry optimization.
+This option enforces cartesian geometry optimization
+and disables any use of translation and rotation invariance.
+This option was implemented to freeze capping atoms in geometry optimization of
+the QM part of a QM/PE system, using polarizable embedding for the environment.
+It can of course also be used if the user wants to freeze (clamp) atoms for other reasons.
+See also keyword \Key{FRZITR}. Default: all atoms included in geometry optimization.
+
+\item[\Key{FRZITR}]\verb| | \newline
+\verb|READ(LUCMD,*) ITRFRZ|
+
+Stop freezing positions of atoms frozen with \Key{FREEZE} from geometry iteration no. \verb|ITRFRZ|.
 
 \item[\Key{GDIIS}]
 Use the Geometrical DIIS\cite{pcppjms114}\index{geometrical DIIS}
@@ -515,10 +532,9 @@ optimization is run in Cartesian coordinates, the diagonal internal
 molecular Hessian is transformed to Cartesians. Only applies to first-order
 methods\index{first-order geometry optimization}.
 
-\item[\Key{INITEV}]\verb| |
-\newline
-\verb|READ(LUCMD,*) EVLINI|
-\index{molecular Hessian!initial!diagonal}
+\item[\Key{INITEV}]\verb| | \newline
+\verb|READ(LUCMD,*) EVLINI| \index{molecular Hessian!initial!diagonal}
+
 The default initial molecular Hessian for first-order
 minimizations\index{first-order geometry optimization} is the
 identity matrix when Cartesian coordinates are used, and a diagonal
@@ -566,22 +582,19 @@ updating. Only applies to first-order methods\index{first-order
 geometry optimization}, but it can be used for both minimizations and saddle
 point optimizations.
 
-\item[\Key{MAX IT}]\verb| |
-\newline
+\item[\Key{MAX IT}]\verb| | \newline
 \verb|READ(LUCMD,*) ITRMAX|
 
 Read the maximum number of geometry iterations\index{geometry iteration}\index{geometry optimization!iterations}.
 Default value is 25.
 
-\item[\Key{MAX RE}]\verb| |
-\newline
+\item[\Key{MAX RE}]\verb| | \newline
 \verb|READ(LUCMD,*) MAXREJ|
 
 Read maximum number of rejected steps\index{rejected geometry step}\index{geometry optimization!rejected step}
 in each iterations, default is 3.
 
-\item[\Key{MODE}]\verb| |
-\newline
+\item[\Key{MODE}]\verb| | \newline
 \verb|READ(LUCMD,*) NSPMOD|
 
 Only has effect when doing saddle point optimizations\index{mode following}\index{geometry optimization!mode following}.
@@ -751,16 +764,14 @@ with Schlegel's updating scheme\index{Schlegel update!geometry optimization}
 displacements and gradients, not just the last, to update the
 molecular Hessian.
 
-\item[\Key{SP BAS}]\verb| |
-\newline
+\item[\Key{SP BAS}]\verb| | \newline
 \verb|READ(LUCMD,*) SPBSTX|
 
 Read a string containing the name of a basis set. When the geometry
 has converged, a single-point energy will be calculated using this
 basis set\index{basis set!converged geometry}.
 
-\item[\Key{STABILIZE}]\verb| |
-\newline
+\item[\Key{STABILIZE}]\verb| | \newline
 \verb|READ(LUCMD,*) ISTBLZ|
 
 Tries to ``stabilize'' the predicted new molecular geometries (and
@@ -780,18 +791,16 @@ option can be combined with other initial molecular Hessians in Cartesian or
 redundant internal coordinates\index{Cartesian coordinates}\index{redundant internal coordinates},
 giving a method where the main feature is the lack of molecular Hessian updates (static molecular Hessian).
 
-\item[\Key{STEP T}]\verb| |
-\newline
+\item[\Key{STEP T}]\verb| | \newline
 \verb|READ(LUCMD,*) THRSTP|
 
-Set the convergence\index{convergence!geometry, criteria} threshold for
+Set the geometry convergence\index{convergence!geometry, criteria} threshold for
 the norm of the geometry step (in a.u.).
 This is one of the three convergence thresholds (the keywords \Key{ENERGY} and
 \Key{GRADIE} control the other two). Default value is $1.0\cdot
 10^{-4}$.
 
-\item[\Key{SYMTHR}]\verb| |
-\newline
+\item[\Key{SYMTHR}]\verb| | \newline
 \verb|READ(LUCMD,*) THRSYM|
 
 Determines the gradient threshold (in a.u.) for breaking of the
@@ -803,16 +812,14 @@ second-order\index{second-order geometry optimization} methods and when the
 keyword \Key{NOBREA} is not present. The default value of this
 threshold is $5.0\cdot 10^{-3}$.
 
-\item[\Key{TR FAC}]\verb| |
-\newline
+\item[\Key{TR FAC}]\verb| | \newline
 \verb|READ(LUCMD,*) TRSTIN, TRSTDE|
 
 Read two factors that will be used for increasing and decreasing the
-trust radius\index{trust radius!geometry optimization} respectively. Default values are
+trust radius\index{trust radius!geometry optimization}, respectively, in geometry optimization. Default values are
 1.2 and 0.7.
 
-\item[\Key{TR LIM}]\verb| |
-\newline
+\item[\Key{TR LIM}]\verb| | \newline
 \verb|READ(LUCMD,*) RTENBD, RTENGD, RTRJMN, RTRJMX|
 
 Read four limits for the ratio between the actual and predicted
@@ -837,11 +844,10 @@ control the step. This is the default, so the keyword is actually
 redundant at the moment. Alternative step control methods are \Key{RF}
 and \Key{GDIIS}.
 
-\item[\Key{TRUSTR}]\verb| |
-\newline
+\item[\Key{TRUSTR}]\verb| | \newline
 \verb|READ(LUCMD,*) TRSTRA|
 
-Set initial trust radius\index{trust radius!geometry optimization} for calculation. This
+Set initial trust radius\index{trust radius!geometry optimization} for the geometry optimization. This
 will also be the
 maximum step length for the first iteration. The trust radius is
 updated after each iteration depending on the ratio between predicted
@@ -983,11 +989,10 @@ equal to the number of nodes requested when submitting the MPI job minus 1.
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD, *) IPRPAR|
 
-Read in the print level for the parallel calculation. A print level of
-at least 2 is needed in order to be able to evaluate the
+Specify the print level for the parallel control routines in a parallel calculation.
+A print level of at least 2 is needed in order to be able to evaluate the
 parallel efficiency\index{parallel efficiency}. A complete
-timing for all nodes will be
-given if the print level is 4 or higher.
+timing for all nodes will be given if the print level is 4 or higher.
 \end{description}
 
 \subsection{Polarizable embedding model: \Sec{PEQM}}

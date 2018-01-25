@@ -134,18 +134,20 @@ Section~\ref{ref-optinp} \Sec{OPTIMIZATION}
 Section~\ref{ref-stpinp} \Sec{STEP CONTROL}
 
 \noindent
-The next five groups have special input only relevant for the
-respective calculation types:
+The next groups have special input only relevant for the
+specified calculation types:
 
-Section~\ref{ref-rhfinp} \Sec{SCF INPUT}
+Section~\ref{ref-rhfinp} \Sec{SCF INPUT}, for \Key{HF} (or \Key{SCF}) and \Key{DFT}
 
-Section~\ref{ref-dftinp} \Sec{DFT INPUT}
+Section~\ref{ref-dftinp} \Sec{DFT INPUT}, for \Key{DFT}
 
-Section~\ref{ref-mp2inp} \Sec{MP2 INPUT}
+Section~\ref{ref-mp2inp} \Sec{MP2 INPUT}, for \Key{MP2}
 
-Section~\ref{ref-nevpt2inp} \Sec{NEVPT2 INPUT}
+Section~\ref{ref-nevpt2inp} \Sec{NEVPT2 INPUT}, for \Key{NEVPT2}
 
-Section~\ref{ref-cicinp} \Sec{CI INPUT}
+Section~\ref{ref-cicinp} \Sec{CI INPUT}, for \Key{CI}
+
+Section~\ref{ref-stexinp} \Sec{STEX INPUT}, for \Key{STEX}
 
 \noindent
 The next section is used to select some types of analysis of the final
@@ -220,6 +222,9 @@ Specification of which wave function calculation is to be performed.
   \quotekw{*SCF INPUT} submodule.
   Note: you cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
 
+%\item[\Key{SCF}]
+%  Alias for \Key{HF}. Deprecated.
+
 \item[\Key{DFT}] \ \\
   \kw{READ (LUINP,'(A80)') LINE} \\
   Restricted closed-shell, one
@@ -229,8 +234,8 @@ Specification of which wave function calculation is to be performed.
   functional to use.  The occupied orbitals, optimization control
   etc. are specified in the \quotekw{*SCF INPUT} submodule shared with
   the \quotekw{.HF} option.  The DFT specific input options are
-  collected in the \quotekw{*DFT INPUT} input submodule.  Note: you
-  cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
+  collected in the \quotekw{*DFT INPUT} input submodule.
+  Note: you cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
 
 \item[\Key{MP2}]
  \index{M{\o}ller-Plesset!second-order}\index{MP2}
@@ -252,8 +257,22 @@ Specification of which wave function calculation is to be performed.
 \item[\Key{MCSCF}]
   Multiconfiguration self-consistent field (MCSCF) calculation.\index{MCSCF}
 
+\item[\Key{VIRTRUNC}] \ \\
+  \kw{READ (LUINP,*) N, THR\_VIRTUNC} \\
+  Truncate virtual space after SCF or MCSCF, write reduced orbital information to 
+  "\verb|SIRIUS.RST|" and stop \dalton. Start a new \dalton\ calculation with the
+  reduced set of molecular orbitals using ".MOSTART NEWORB" and, if MCSCF, ".STARTOLDCI"
+  in the relevant input sections (the ".RESTART" option cannot be used).
+  In input N is either 2 or 4, and all virtual orbitals with eigenvalues of
+  $r^N$ greater than ( THR\_VIRTRUNC )$^N$ are deleted.
+  The THR\_VIRTRUNC is thus a measure of the maximum extent (diffuseness) of a virtual orbital.
+  All the occupied orbitals are not modified.
+
 \item[\Key{NEVPT2}]
   Multireference second-order perturbation theory calculation.\index{NEVPT2}
+
+\item[\Key{STEX}]
+  Static exchange calculation.\index{Static exchange}
 
 \item[\Key{CC}]
   \index{Coupled Cluster}\index{CC}
@@ -295,8 +314,8 @@ Specification of which wave function calculation is to be performed.
   General {\sir} print level and default for all other print parameters in this module.
 
 \item[\Key{RESTART}]
-  restart {\sir}\index{restart!wave function},
-  the {\sir} restart file (\verb|SIRIUS.RST|) must be available
+  Restart {\sir}\index{restart!wave function} second order optimization,
+  the {\sir} restart file (\verb|SIRIUS.RST|) must be available and contain restart information.
 
 %hjaaj Oct 2003: obsolete, we want the specific .HF or .DFT
 %\item[\Key{SCF}]
@@ -323,7 +342,7 @@ Specification of which wave function calculation is to be performed.
   lines will be discarded.
 
 \item[\Key{WESTA}]
-  Write the "\verb|SIRIFC|" interface file for the WESTA post-processing program.
+  Write the file "\verb|SIRIUS.STRINGINFO|" with CI string information for the WESTA post-processing program.
 
 %hjaaj Oct 2003: obsolete
 %\item[\Key{BASIS SET}]
@@ -402,7 +421,7 @@ Options for a CI calculation.
 
 \item[\Key{MAX ITERATIONS}] \ \\
   \kw{READ (LUINP,*) MXCIMA} \\
-  Max iterations in iterative diagonalization of CI matrix (default = 20).
+  Max iterations in iterative diagonalization of CI matrix (default = 25).
 
 \item[\Key{STATE}]
   Default: not specified\\
@@ -1355,7 +1374,6 @@ perturbation theory (NEVPT2).
  Default = 0.0\\
   \kw{READ (LUINP,*) THRNEVPT} \\
   Threshold to discard small coefficients in the CAS wavefunction
-
 
 \item[\Key{FROZEN}]
   Default = no frozen orbitals\\
@@ -2349,6 +2367,51 @@ calculation was preceded by a frozen core calculation, and that
 the orbital has already been moved to the open shell orbital. Only
 the main peak can be obtained in SCF calculations, for shake-up
 energies MCSCF must be used.
+
+\pagebreak[3]
+\subsection{\label{ref-stexinp}\Sec{STEX}}
+
+{\bf Purpose:}
+
+Options for a STEX static exchange calculation.
+(Note: A STEX calculation may require a sequence of four DALTON calculations, see the test energy\_stex for inspiration.)
+
+\begin{description}
+\item[\Key{XAS}]
+X-ray absorption spectroscopy.
+
+\item[\Key{XES}]
+X-ray emission spectroscopy.
+
+\item[\Key{SHAKE}]
+Electron shake-up/off spectroscopy.
+
+\item[\Key{AUGER}] \ \\
+  \kw{READ (LUINP,*) NAUGER, (IAUGER(I),JAUGER(I), I=1,NAUGER)} \\
+Auger orbital pairs.
+
+\item[\Key{AUGERTEST}]
+Build RPA matrix.
+
+\item[\Key{PRINT}] \ \\
+  \kw{READ (LUINP,*) IPRSTX} \\
+Print level in STEX routines.
+
+\item[\Key{OPEN S}] \ \\
+  \kw{READ (LUINP,*) NOPEN(1:NSYM} \\
+  \kw{READ (LUINP,*) (IOPEN(1:NOPEN(ISYM), ISYM=1,NSYM)} \\
+  Open shells in STEX calculation.
+
+\item[\Key{COEFFI}] \ \\
+  \kw{READ (LUINP,*) (CJ(1:NOPEN(ISYM), ISYM=1,NSYM)} \\
+  \kw{READ (LUINP,*) (CK(1:NOPEN(ISYM), ISYM=1,NSYM)} \\
+  Coefficients for modified J and K Fock matrices.
+
+\item[\Key{AO}]
+  Save STEX matrices in AO basis.
+
+\end{description}
+
 
 \pagebreak[3]
 \subsection{\label{ref-solinp}\Sec{SOLVENT}}

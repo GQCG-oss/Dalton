@@ -419,6 +419,7 @@ C
       DONEVPT   = .FALSE.
       DOLUCITA  = .FALSE.
       DOAPSG    = .FALSE.
+      DO_VIRTRUNC = .FALSE.
 C  ---> Initialize SR-DFT stuff here !
       DOMCSRDFT = .FALSE.
       DOCISRDFT = .FALSE.
@@ -563,7 +564,7 @@ C MAXRC : Max dimension of reduced CI matrix
       ISTACI = 0
 C     ... do not converge to a specific state.
       NROOCI = 1
-      MXCIMA = 20
+      MXCIMA = 25
       ICICNO = 0
 C
 C********** Default values section SCFINP *****
@@ -1396,7 +1397,12 @@ C
          K1   = 1    + NCMOT
          LSCR = LCMO - K1
          JRDMO = -IRDMO
+         IPRSIR_save = IPRSIR
+         IPRSIR = max(1, IPRSIR)
+         ! .ge. 1 to print info about orbitals on SIRIUS.RST when 
+         ! reading initial orbitals from SIRIUS.RST
          CALL READMO(CMO,JRDMO)
+         IPRSIR = IPRSIR_save
 C        JRDMO negative : return with error status in JRDMO
 C        JRDMO positive : abort in READMO if error
          IF (JRDMO .GT. 0) THEN
@@ -1617,6 +1623,15 @@ C
          IF (THQKVA .LE. D0) THQKVA = 0.8D0
       END IF
 
+      IF (NSYM .EQ. 1 .AND. LSYM .LT. 0) LSYM = 1 ! if no symmetry, then do not require .SYMMETRY in input
+
+      IF (LSYM .LT. 0) THEN
+         WRITE(LUPRI,'(///A/)') 'FATAL INPUT ERROR: '//
+     &      '.SYMMETRY must be specified for MCSCF/CI calculations.'
+         CALL QUIT( 'FATAL INPUT ERROR: '//
+     &      '.SYMMETRY must be specified for MCSCF/CI calculations.')
+      END IF
+
       IF (MS2 .EQ. -12345) THEN ! MS2 = 2*MS
          IF (MULTS .LE. 0) MULTS = MOD(NACTEL,2) + 1
          IF (FLAG(27)) THEN ! determinants
@@ -1656,7 +1671,7 @@ C         SETORB has already been called.
          JWOPSY = 1
          CALL SIRSET(CMO(K1),LCMO-K1,.FALSE.)
 C        CALL SIRSET(WRK,LWRK,OLDWOP)
-         CALL AVECHK(CMO(K1),LCMO-K1,INPERR)
+         CALL AVECHK(INPERR)
       END IF
 C
       IF (LUSUPM.NE.-1 .AND. NBAST .GT. 255) THEN
@@ -2064,7 +2079,7 @@ C
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
-     *            '*AUXILL','*LUCITA','*STEX  ','*CUBE  ','*CHOACT',
+     *            '*AUXILL','*LUCITA','*STEX I','*CUBE  ','*CHOACT',
      *            '*APSG I','*END OF'/
 C
 C
@@ -2162,7 +2177,7 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
  3200  lucita_input_provided = .true.
        call move_to_next_star(word,lucmd)
        GO TO 910
-!      *STEX
+!      *STEX INPUT
  3300  CALL STXINP(WORD,INPERR,ALLOPT)
        GO TO 910
 !      *CUBE
@@ -2279,7 +2294,7 @@ C
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
      *            '.KSPT2 ','.GASCI ','.XCINT ','.NUMGRI','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
-     *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','xXXXXXX'/
+     *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','.VIRTRU'/
 C
 
       functional_line_read = .false.
@@ -2387,7 +2402,7 @@ C *** Option 5 >RESTAR< restart SIRIUS, SIRIUS.RST (LUIT1) must be available
         IREST = 1
       GO TO 100
 C
-C *** Option 6 >HARTRE<  Restricted Hartree-Fock SCF
+C *** Option 6 >HF    <  Restricted Hartree-Fock SCF (alias: .SCF)
   106 CONTINUE
          IF (.NOT.DOSCF) THEN
 C           ... DOSCF may also be set with .CC
@@ -2670,7 +2685,7 @@ C     .COPFAC (for some srDFT testing)
 C
 C *** Option 32: .STEX
   133 CONTINUE
-      DOSTEX = .TRUE.
+         DOSTEX = .TRUE.
       GO TO 100
 C *** Option 34: .APSG
   134 CONTINUE
@@ -2678,7 +2693,10 @@ C *** Option 34: .APSG
         MCTYPE = 11
         NUMRUN   = NUMRUN + 1
       GO TO 100
+C *** Option 35: .VIRTRUNC
   135 CONTINUE
+        READ (LUCMD,*) N_in_RN, THR_VIRTRUNC
+        DO_VIRTRUNC = .TRUE.
       GO TO 100
 C
  8000 CONTINUE
@@ -5864,13 +5882,13 @@ C
             IF (RESPHP) WRITE(IWUNIT,2570)
          END IF
       ELSE IF (DOCI) THEN
-         WRITE(IWUNIT,1800) MAXMAC, THRCI, NROOCI
+         WRITE(IWUNIT,1800) MXCIMA, THRCI, NROOCI
          IF (JOLSEN) WRITE(IWUNIT,2550)
          IF (MAXPHP.GT.1) THEN
             WRITE(IWUNIT,2560) MAXPHP
             IF (RESPHP) WRITE(IWUNIT,2570)
          END IF
-         IF (DORSP ) THEN
+         IF (DORSP) THEN
             WRITE(IWUNIT,2600) ISTACI
          ELSE IF (ISTACI .GT. 0) THEN
             WRITE(IWUNIT,'(/5X,A,I4)')
