@@ -81,10 +81,12 @@ set(EXTERNAL_LIBS)
 include(ConfigVersion)
 include(SourcesDALTON)
 include(ConfigArchitecture)
+
+include(ConfigOMP)
+
 include(ConfigCompilerFlags)
 include(CheckFortranStandardCompatibility)
 include(ConfigExternal)
-include(ConfigOMP)
 
 # math detection
 set(BLAS_LANG "Fortran")
