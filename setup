@@ -241,7 +241,7 @@ def gen_cmake_command(args):
 
     command += ' -DENABLE_MPI=%s'            % translate_cmake(args.mpi)
     command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
-    command += ' -DENABLE_OMP=%s'            % translate_cmake(args.omp)
+    command += ' -DENABLE_OPENMP=%s'            % translate_cmake(args.omp)
     command += ' -DENABLE_64BIT_INTEGERS=%s' % translate_cmake(args.int64)
     command += ' -DENABLE_GPU=%s'            % translate_cmake(args.gpu)
     command += ' -DENABLE_CUBLAS=%s'         % translate_cmake(args.cublas)

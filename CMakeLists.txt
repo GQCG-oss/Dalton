@@ -44,7 +44,7 @@ option(ENABLE_COLLAPSE       "Enable COLLAPSE clause for reorderings"           
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                              OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                             OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"                       OFF)
-option(ENABLE_OMP            "Enable OpenMP parallelization"                    OFF)
+option(ENABLE_OPENMP            "Enable OpenMP parallelization"                    OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable Polarizable Embedding (PE) library"        ON)

@@ -22,7 +22,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
             "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
         set (CMAKE_CXX_LINK_FLAGS "-fprofile-arcs -ftest-coverage")
     endif()
-    if(ENABLE_OMP)
+    if(ENABLE_OPENMP)
         set(CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS} -fopenmp"
             )
@@ -46,7 +46,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MKL_FLAG}")
     endif()
 
-    if(ENABLE_OMP)
+    if(ENABLE_OPENMP)
         set(CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS} -openmp"
             )
@@ -58,7 +58,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
     set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0 -c9x")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -fast -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict")
     set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")
-    if(ENABLE_OMP)
+    if(ENABLE_OPENMP)
         set(CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS} -mp"
             )

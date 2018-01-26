@@ -20,7 +20,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
             "${CMAKE_Fortran_FLAGS} -static"
             )
     endif()
-    if(ENABLE_OMP)
+    if(ENABLE_OPENMP)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -fopenmp"
             )
@@ -58,7 +58,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -static-libgcc -static-intel"
             )
     endif()
-    if(ENABLE_OMP)
+    if(ENABLE_OPENMP)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -openmp"
             )
@@ -104,7 +104,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
             "${CMAKE_Fortran_FLAGS} -i8 -i8storage"
             )
     endif()
-    if(ENABLE_OMP) 
+    if(ENABLE_OPENMP) 
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mp " )
         set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -Mconcur")
     endif()
@@ -162,7 +162,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
             )
     endif()
 # WARNING OpenMP (OMP) is activated as default with cray 
-    if(ENABLE_OMP) 
+    if(ENABLE_OPENMP) 
       #do nothing OpenMP activated as default with cray 
     else()
       #can be deactivated using -x omp or -h noomp
