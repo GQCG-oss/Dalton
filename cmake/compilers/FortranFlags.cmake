@@ -20,11 +20,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
             "${CMAKE_Fortran_FLAGS} -static"
             )
     endif()
-    if(ENABLE_OPENMP)
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -fopenmp"
-            )
-    endif()
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -fdefault-integer-8"
@@ -56,11 +51,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     if(ENABLE_STATIC_LINKING)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -static-libgcc -static-intel"
-            )
-    endif()
-    if(ENABLE_OPENMP)
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -openmp"
             )
     endif()
     if(ENABLE_64BIT_INTEGERS)
@@ -103,10 +93,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8 -i8storage"
             )
-    endif()
-    if(ENABLE_OPENMP) 
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mp " )
-        set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -Mconcur")
     endif()
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
@@ -160,15 +146,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -s integer64"
             )
-    endif()
-# WARNING OpenMP (OMP) is activated as default with cray 
-    if(ENABLE_OPENMP) 
-      #do nothing OpenMP activated as default with cray 
-    else()
-      #can be deactivated using -x omp or -h noomp
-      set(CMAKE_Fortran_FLAGS
-        "${CMAKE_Fortran_FLAGS} -h noomp"
-        )
     endif()
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
