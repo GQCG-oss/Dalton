@@ -1269,7 +1269,8 @@ C         WRITE (LUPRI,*) 'NORM: ',DDOT(NCCVAR*NFIN,WRK(KRES),1,
 C     *                                   WRK(KRES),1)
 C         CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NFIN,NCCVAR,NFIN,1,LUPRI)
 CCH
-         CALL CC_PRECOND(WRK(KRES),NFIN,NCCVAR,ISYMTR,TRIPLET,
+         CALL CC_PRECOND(WRK(KRES),EIVAL(ISIMC),
+     &                   NFIN,NCCVAR,ISYMTR,TRIPLET,
      &                   WRK(KWRK1),LWRK1)
        END IF
 C
@@ -2831,7 +2832,7 @@ ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
       RETURN
       END
 *======================================================================*
-      SUBROUTINE CC_PRECOND(VECTORS,NVEC,NCCVAR,ISYMTR,TRIPLET,
+      SUBROUTINE CC_PRECOND(VECTORS,EIVAL,NVEC,NCCVAR,ISYMTR,TRIPLET,
      &                      WORK,LWORK)
       IMPLICIT NONE
 #include "priunit.h"
@@ -2845,9 +2846,11 @@ ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
       INTEGER NVEC, NCCVAR, ISYMTR, LWORK
 
 #if defined (SYS_CRAY)
-      REAL VECTORS(NCCVAR,NVEC), WORK(*), DTEST
+      REAL VECTORS(NCCVAR,NVEC), WORK(*), DTEST,
+     &                 EIVAL(NVEC)
 #else
-      DOUBLE PRECISION VECTORS(NCCVAR,NVEC), WORK(*), DTEST
+      DOUBLE PRECISION VECTORS(NCCVAR,NVEC), WORK(*), DTEST,
+     &                 EIVAL(NVEC)
 #endif
       PARAMETER ( DTEST = 1.0D-04 )
 
@@ -2867,7 +2870,7 @@ ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
       END IF
 
       CALL CCLR_DIA(WORK(KDIA),ISYMTR,TRIPLET,WORK(KEND1),LWRK1)
-      CALL LEDIAG(NCCVAR,WORK(KDIA),DTEST)
+C      CALL LEDIAG(NCCVAR,WORK(KDIA),DTEST)
 
       IF (CCS) THEN
         NCCVAR0 = NT1AM(ISYMTR)
@@ -2879,7 +2882,8 @@ ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
       DO JVEC = 1,NVEC
          ! for conventional part divide by orbital energy differences
          DO I=1,NCCVAR0
-            VECTORS(I,JVEC) = VECTORS(I,JVEC)*WORK(KDIA-1+I)
+            VECTORS(I,JVEC) = VECTORS(I,JVEC)
+     &                      * SAFE_DENOM(WORK(KDIA-1+I)-EIVAL(JVEC))
          END DO
 
          IF (CCR12) THEN
@@ -2893,5 +2897,17 @@ ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
       END DO
 
       RETURN
+
+      CONTAINS
+
+      PURE FUNCTION SAFE_DENOM(A)
+         DOUBLE PRECISION, PARAMETER :: ONE = 1.0D0
+         DOUBLE PRECISION, INTENT(IN) :: A
+         DOUBLE PRECISION :: SAFE_DENOM
+
+         SAFE_DENOM = SIGN(ONE,A)/MAX(ABS(A),DTEST)
+         RETURN
+      END FUNCTION
+
       END
 *======================================================================*
