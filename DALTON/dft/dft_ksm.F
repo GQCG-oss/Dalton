@@ -78,7 +78,7 @@ C
       IF (NODTOT.gt.0) CALL KSMCOLLECT(FKSM,ENERGY_DFTKSM,WORK,LWORK)
       DO I = 1, NBAST
          DO J = 1, I-1
-            AVERAG = 0.5*(FKSM(J,I) + FKSM(I,J))
+            AVERAG = 0.5d0*(FKSM(J,I) + FKSM(I,J))
             FKSM(J,I) = AVERAG
             FKSM(I,J) = AVERAG
          END DO
@@ -117,7 +117,7 @@ C
       COMMON /DKSMPRIV/ ENERGY_DFTKSM
 C
       DIMENSION VXC(NBLEN),VX(5)
-      PARAMETER (DUMMY = 0D0)
+      PARAMETER (DUMMY = 0.D0)
 c     CALL QENTER('DFTKSMLDA')
 c     .. called often - thus QENTER is too much overhead
 C
@@ -191,9 +191,9 @@ C
      &        + DFTENE(RHOA(IPNT),GRD)*WGHT(IPNT)
          VXC(1,IPNT) = VX(1)
          IF(GRD.GT.1D-40) THEN
-            VXC(2,IPNT) = VX(2)/(0.5*GRD)
+            VXC(2,IPNT) = 2.0d0*VX(2)/GRD
          ELSE
-            VXC(2,IPNT) = 0D0
+            VXC(2,IPNT) = 0.D0
          END IF
       END DO
       CALL DISTGGAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
