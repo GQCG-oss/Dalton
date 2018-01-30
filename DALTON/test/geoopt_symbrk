@@ -185,7 +185,7 @@ ERROR[11]="SYMMETRY NOT BROKEN CORRECTLY"
 
 # Symmetry determination
 CRIT1=`$GREP "Symmetry .* found\: C\(2\)" $log | wc -l`
-CRIT2=`$GREP "The following element was found\: * XY" $log | wc -l`
+CRIT2=`$GREP "The following symmetry element was found\: * XY" $log | wc -l`
 CRIT3=`$GREP "Full point group is\: * C\(2\)" $log | wc -l`
 CRIT4=`$GREP "Represented as\: * C2 " $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
