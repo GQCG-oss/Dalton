@@ -60,7 +60,7 @@ C
      &           KRES1E, KRES1D, KRES2E, KRES2D, KRESO1E, KRESO1D,
      &           KRESO2E, KRESO2D, KEDIA2, KZ1E, KZ1D, KZ2E, KZ2D,
      &           KZ1EA, KZ1DA, KZ2EA, KZ2DA, KZ1EB, KZ1DB, KZ2EB, KZ2DB,
-     &           KAssignedIndices, LUSV2E
+     &           KAssignedIndices
 C
       INTEGER :: ILAB1, ILAB2, IFREQ, IDTYPE,
      &           maxnumjobs, LURDENS
@@ -169,9 +169,6 @@ C
             CALL SO_OPEN(LURS1D,FNRS1D,L1VEC)
             CALL SO_OPEN(LURS2D,FNRS2D,L2VEC)
             CALL SO_OPEN(LUTR1D,FNTR1D,L1VEC)
-         END IF
-         IF (MODEL.EQ.'DCHRP') THEN
-            CALL SO_OPEN(LUSV2E,FNSV2E,L2VEC)
          END IF
 C
          DO ILAB1=1,NLAB
@@ -287,14 +284,6 @@ C
             IF (.NOT.STATIC) THEN
                CALL SO_WRITE(WORK(KRES2D),L2VEC,LURS2D,FNRS2D,ILAB1)
             END IF
-C----------------------------------------------------------
-C Save the doubles part of the property gradient on a file
-C - the doubles part of the solution vector file is used,
-C as it contains nothing else
-C----------------------------------------------------------
-            IF (MODEL.EQ.'DCHRP')THEN
-               CALL SO_WRITE(WORK(KGPVC2),L2VEC,LUSV2E,FNSV2E,ILAB1)
-            END IF
 C
          END DO
 C---------------------------------------------------
@@ -339,14 +328,15 @@ C------------------------------
             CALL SO_READ(WORK(KZ1EA),L1VEC,LURS1E,FNRS1E,ILAB1)
 C-------------------------------------------------------
 C   Read different vectors for the two models:
-C   RPA(D) requires solution vector and Z-vector
-C   HRPA(D) requires only the doubles property gradient
+C   RPA(D) requires solution vector and both Z-vectors
+C   HRPA(D) requires only the doubles Z-vector 
+C   (single Z-vector is property gradient).
 C-------------------------------------------------------
             IF (MODEL.EQ.'DCRPA')THEN
                CALL SO_READ(WORK(KSV1EA),L1VEC,LUTR1E,FNTR1E,ILAB1)
                CALL SO_READ(WORK(KZ2EA),L2VEC,LURS2E,FNRS2E,ILAB1)
             ELSE IF (MODEL.EQ.'DCHRP')THEN
-               CALL SO_READ(WORK(KZ2EA),L2VEC,LUSV2E,FNSV2E,ILAB1)
+               CALL SO_READ(WORK(KZ2EA),L2VEC,LURS2E,FNRS2E,ILAB1)
             END IF
 C---------------------------------------------------------------------------
 C   In the case of the singlet state (one of) the doubles Z vectors must be
@@ -360,16 +350,7 @@ C
                   CALL SO_READ(WORK(KSV1DA),L1VEC,LUTR1D,FNTR1D,ILAB1)
                   CALL SO_READ(WORK(KZ2DA),L2VEC,LURS2D,FNRS2D,ILAB1)
                ELSE IF (MODEL.EQ.'DCHRP')THEN
-C-------------------------
-C Make sure KZ2DA is zero
-C-------------------------
-                  CALL DSCAL(L2VEC,0.0D0,WORK(KZ2DA),1)
-C----------------------------------------------------------
-C Multiply doubles part of property gradient with GPFACTOR
-C (construct deexcitation part) and place in WORK(KZ2DA)
-C-----------------------------------------------------------
-                  CALL DAXPY(L2VEC,GPFACTOR,WORK(KGPVC2),
-     &                       1,WORK(KZ2DA),1)
+                  CALL SO_READ(WORK(KZ2DA),L2VEC,LURS2D,FNRS2D,ILAB1)
                END IF
 
 C---------------------------------------------------------------------------
@@ -390,11 +371,11 @@ C------------------------------------------------------------
                END IF
                CALL SO_READ(WORK(KZ2EB),L2VEC,LURS2E,FNRS2E,ILAB2)
                IF (.NOT.STATIC) THEN
-                  IF(MODEL.NE.'DCHRP')THEN
-                     CALL SO_READ(WORK(KSV1DB),L1VEC,LUTR1D,
-     &                            FNTR1D,ILAB2)
+                  CALL SO_READ(WORK(KSV1DB),L1VEC,LUTR1D,
+     &                         FNTR1D,ILAB2)
+                  IF (MODEL.NE.'DCHRP')THEN
+                     CALL SO_READ(WORK(KZ1DB),L1VEC,LURS1D,FNRS1D,ILAB2)
                   END IF
-                  CALL SO_READ(WORK(KZ1DB),L1VEC,LURS1D,FNRS1D,ILAB2)
                   CALL SO_READ(WORK(KZ2DB),L2VEC,LURS2D,FNRS2D,ILAB2)
                END IF
 C------------------------------------------------------
@@ -476,9 +457,6 @@ C
             CALL SO_CLOSE(LURS1D,FNRS1D,L1VEC)
             CALL SO_CLOSE(LURS2D,FNRS2D,L2VEC)
             CALL SO_CLOSE(LUTR1D,FNTR1D,L1VEC)
-         END IF
-         IF (MODEL.EQ.'DCHRP')THEN
-            CALL SO_CLOSE(LUSV2E,FNSV2E,L2VEC)
          END IF
       END DO !Over frequencies
 C
