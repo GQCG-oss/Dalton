@@ -6,7 +6,7 @@ Nightly runs on full testset: https://testboard.org/cdash/index.php?project=Dalt
 
 Clone the repository:
 ```
-$ git clone --recursive git@gitlab.com:dalton/dalton.git
+$ git clone --recursive https://gitlab.com/dalton/dalton.git
 ```
 
 Build the code:
