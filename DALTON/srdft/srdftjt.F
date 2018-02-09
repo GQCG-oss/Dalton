@@ -624,16 +624,11 @@ c  Exchange  ------------------------------------------------------------
 !        CALL QUIT('erfgau not implemented in SRDFTEXCJT')
       END IF
 
-      IF (DFT_SPINDNS) THEN
-         do i = 1,4
-            rhogrd(i) = sqrt(rhg(1,i)**2 + rhg(2,i)**2 + rhg(3,i)**2)
-         end do
-      ELSE
-         rhogrd(1) = sqrt(rhg(1,1)**2 + rhg(2,1)**2 + rhg(3,1)**2)
-         rhogrd(2) = 0.0d0
-         rhogrd(3) = rhogrd(1)
-         rhogrd(4) = rhogrd(1)
-      END IF
+!     calculate the norm of the four forms of grad(rho)
+!     (total = charge, spin density, 2 alpha, 2 beta)
+      do i = 1,4
+         rhogrd(i) = sqrt(rhg(1,i)**2 + rhg(2,i)**2 + rhg(3,i)**2)
+      end do
 
 !     LDA exchange functional (to fit with corresponding correlation
 !     functional) - see explaination with DOSRC_LDA_PW92
