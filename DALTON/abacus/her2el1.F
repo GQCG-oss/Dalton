@@ -1146,10 +1146,10 @@ C
   430                CONTINUE
   400             CONTINUE
                END IF
-               CALL MXMA(SCR2,1,NPR234,CONT2,1,NUCR2,SCR1,1,NPR234,
-     &                   NPR234,NUCR2,NORR2)
-ckr               CALL DGEMM('N','N',NPR234,NORR2,NUCR2,D1,SCR2,NPR234,
-ckr     &              CONT2,NUCR2,D0,SCR1,NPR234)
+c               CALL MXMA(SCR2,1,NPR234,CONT2,1,NUCR2,SCR1,1,NPR234,
+c     &                   NPR234,NUCR2,NORR2)
+               CALL DGEMM('N','N',NPR234,NORR2,NUCR2,D1,SCR2,NPR234,
+     &              CONT2,NUCR2,D0,SCR1,NPR234)
             ELSE
                IF (RPRI12) THEN
                   CALL DZERO(SCR2,NUCR1*NUCR2*NUC34)
@@ -1159,15 +1159,15 @@ ckr     &              CONT2,NUCR2,D0,SCR1,NPR234)
                         SCR2(KL,IOFFIJ) = HCPRIM(KL,IJ,TUV)
   510                CONTINUE
   500             CONTINUE
-                  CALL MXMA(SCR2,1,NPR234,CONT2,1,NUCR2,SCR1,1,NPR234,
-     &                      NPR234,NUCR2,NORR2)
-ckr                  CALL DGEMM('N','N',NPR234,NORR2,NUCR2,D1,SCR2,NPR234,
-ckr     &                 CONT2,NUCR2,D0,SCR1,NPR234)
+c                  CALL MXMA(SCR2,1,NPR234,CONT2,1,NUCR2,SCR1,1,NPR234,
+c     &                      NPR234,NUCR2,NORR2)
+                  CALL DGEMM('N','N',NPR234,NORR2,NUCR2,D1,SCR2,NPR234,
+     &                 CONT2,NUCR2,D0,SCR1,NPR234)
                ELSE
-                  CALL MXMA(HCPRIM(1,1,TUV),1,NPR234,CONT2,1,NUCR2,
-     &                      SCR1,1,NPR234,NPR234,NUCR2,NORR2)
-ckr                 CALL DGEMM('N','N',NPR234,NORR2,NUCR2,D1,
-ckr     &                HCPRIM(1,1,TUV),NPR234,CONT2,NUCR2,D0,SCR1,NPR234)
+c                  CALL MXMA(HCPRIM(1,1,TUV),1,NPR234,CONT2,1,NUCR2,
+c     &                      SCR1,1,NPR234,NPR234,NUCR2,NORR2)
+                 CALL DGEMM('N','N',NPR234,NORR2,NUCR2,D1,
+     &                HCPRIM(1,1,TUV),NPR234,CONT2,NUCR2,D0,SCR1,NPR234)
                END IF
             END IF
 C
@@ -1190,18 +1190,18 @@ C           Transform second index
 C           ======================
 C
             IF (TCON12 .OR. RCNT12) THEN
-               CALL MXMA(SCR2,1,NCT134,CONT1,1,NUCR1,SCR1,1,NCT134,
-     &                   NCT134,NUCR1,NORR1)
-ckr               CALL DGEMM('N','N',NCT134,NORR1,NUCR1,D1,SCR2,NCT134,
-ckr     &              CONT1,NUCR1,D0,SCR1,NCT134)
+c               CALL MXMA(SCR2,1,NCT134,CONT1,1,NUCR1,SCR1,1,NCT134,
+c     &                   NCT134,NUCR1,NORR1)
+               CALL DGEMM('N','N',NCT134,NORR1,NUCR1,D1,SCR2,NCT134,
+     &              CONT1,NUCR1,D0,SCR1,NCT134)
                DO 700 I = 1, NORB12
                  CALL DCOPY(NUC34,SCR1(1,NRED12(I)),1,HCCNT(1,I,TUV),1)
   700          CONTINUE
             ELSE
-               CALL MXMA(SCR2,1,NCT134,CONT1,1,NUCR1,HCCNT(1,1,TUV),1,
-     &                   NCT134,NCT134,NUCR1,NORR1)
-ckr               CALL DGEMM('N','N',NCT134,NORR1,NUCR1,D1,SCR2,NCT134,
-ckr     &              CONT1,NUCR1,D0,HCCNT(1,1,TUV),NCT134)
+c               CALL MXMA(SCR2,1,NCT134,CONT1,1,NUCR1,HCCNT(1,1,TUV),1,
+c     &                   NCT134,NCT134,NUCR1,NORR1)
+               CALL DGEMM('N','N',NCT134,NORR1,NUCR1,D1,SCR2,NCT134,
+     &              CONT1,NUCR1,D0,HCCNT(1,1,TUV),NCT134)
             END IF
          END IF
   200    CONTINUE
