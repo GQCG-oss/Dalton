@@ -514,35 +514,34 @@ qrbl_add_gga_contribution(DftIntegratorBl* grid, QuadBlData* d,
         symmetry and collapse the loops to reduce the overhead.
         1:special case when all three vectors have same symmetry */
         if(can_collapse_loops) {
+            integer nbast = inforb_.nbast;
+            integer jsym = inforb_.muld2h[d->symYZ-1][isym]-1;
+            integer jbl_cnt = grid->bas_bl_cnt[jsym];
             for(ibl=0; ibl<ibl_cnt; ibl++) {
-                for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
-                    integer ioff = i*inforb_.nbast;
-                    real sum;
-                    real * RESTRICT tmpi = tmp  + i*bllen;
-                    real * RESTRICT vyi = d->vy + i*bllen;
-                    real * RESTRICT vzi = d->vz + i*bllen;
-                    integer jsym = inforb_.muld2h[d->symYZ-1][isym]-1;
+                for(jbl=0; jbl<jbl_cnt; jbl++) {
+                    integer lenbl = blend - blstart;
                     integer (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
-                    integer jbl_cnt = grid->bas_bl_cnt[jsym];
-                    for(jbl=0; jbl<jbl_cnt; jbl++) {
-                        for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) {
-                            real * RESTRICT aosj = aos + j*bllen;
-                            real oR = 0, oY = 0, oZ = 0;
-                            for(k=blstart; k<blend; k++) {
-                                oR += aosj[k]*tmpi[k];
-                                oY += aosj[k]*vyi [k];
-                                oZ += aosj[k]*vzi [k];
-                            }
-                            om [j+ioff] += oR;
-                            omY[j+ioff] += oY;
-                            omZ[j+ioff] += oZ;
-                        }
-                    }
+                    integer ilen = iblocks[ibl][1] - iblocks[ibl][0] + 1;
+                    integer jlen = jblocks[jbl][1] - jblocks[jbl][0] + 1;
+
+                    dgemm_("T","N", &jlen, &ilen, &lenbl, &ONER,
+                    aos + (jblocks[jbl][0] - 1)*bllen+blstart, &bllen,
+                    tmp + (iblocks[ibl][0] - 1)*bllen+blstart, &bllen,
+                    &ONER, om + (iblocks[ibl][0]-1)*nbast+jblocks[jbl][0]-1, &nbast);
+
+                    dgemm_("T","N", &jlen, &ilen, &lenbl, &ONER,
+                    aos +   (jblocks[jbl][0] - 1)*bllen+blstart, &bllen,
+                    d->vy + (iblocks[ibl][0] - 1)*bllen+blstart, &bllen,
+                    &ONER, omY + (iblocks[ibl][0]-1)*nbast+jblocks[jbl][0]-1, &nbast);
+
+                    dgemm_("T","N", &jlen, &ilen, &lenbl, &ONER,
+                    aos +   (jblocks[jbl][0] - 1)*bllen+blstart, &bllen,
+                    d->vz + (iblocks[ibl][0] - 1)*bllen+blstart, &bllen,
+                    &ONER, omZ + (iblocks[ibl][0]-1)*nbast+jblocks[jbl][0]-1, &nbast);
                 }
             }
             continue; /* no need to do the general case here */
         }
-
         /* 2:general case */
         for(ibl=0; ibl<ibl_cnt; ibl++) {
             for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 

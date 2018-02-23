@@ -91,7 +91,7 @@ ERROR[1]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Symmetry
 CRIT1=`$GREP "Symmetry point group found\: D\(3d\)" $log | wc -l`
-CRIT2=`$GREP "The following elements were found\: * Y * XZ" $log | wc -l`
+CRIT2=`$GREP "The following symmetry elements were found\: * Y * XZ" $log | wc -l`
 CRIT3=`$GREP "Full point group is\: * D\(3d\)" $log | wc -l`
 CRIT4=`$GREP "Represented as\: * C2h" $log | wc -l`
 CRIT5=`$GREP "Reflection in the xz\-plane" $log | wc -l`
