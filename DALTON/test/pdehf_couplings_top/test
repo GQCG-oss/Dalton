@@ -15,9 +15,9 @@ f.add(from_string = 'Excited state couplings',
       ignore_sign = True,
       rel_tolerance = 1.0e-4)
 
-test.run(['fd-1.dal'], ['top.mol'], ['dummy.pot'], args='-put "core.dat" -get "pe_density_1.bin"')
+test.run(['fd-1.dal'], ['top.mol'], ['dummy.pot'], args='-put "core.dat" -get "pe_density.bin"')
 
-os.rename('fd-1_top_dummy.pe_density_1.bin', 'pe_density.bin')
+os.rename('fd-1_top_dummy.pe_density.bin', 'pe_density.bin')
 
 test.run(['fd-2.dal'], ['step_02.mol'], args='-put "pe_density.bin" -get "pe_fock.bin"')
 
