@@ -7,6 +7,8 @@ after_script:
 
 fedora-26-serial:
     image: foeroyingur/fedora:26
+    tags:
+        - docker
     variables:
         OMP_NUM_THREADS: "1"
     before_script:
@@ -32,6 +34,9 @@ fedora-26-serial:
 
 fedora-26-mpi:
     image: foeroyingur/fedora:26
+    tags:
+        - docker
+        - mpi
     variables:
         DALTON_NUM_MPI_PROCS: "3"
         OMP_NUM_THREADS: "1"
