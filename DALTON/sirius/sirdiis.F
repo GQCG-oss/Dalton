@@ -1722,7 +1722,7 @@ C
          JWOPSY = 1
          CALL SIRSET(WRK(KFREE),LFREE,OLDWOP)
          IAVERR = 0
-         CALL AVECHK(WRK(KFREE),LFREE,IAVERR)
+         CALL AVECHK(IAVERR)
          IF (IAVERR .NE. 0) CALL QUIT(
      &      'SIRCTL DIIS error: inconsistency in sup.sym. after AUTOCC')
          RHFWOP = .TRUE.

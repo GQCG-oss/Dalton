@@ -2,7 +2,7 @@
 
 ################################################################################
 #                                                                              #
-# Shell-script for running (LS)DALTON                                          #
+# Shell-script for running Dalton                                              #
 #                                                                              #
 # Version 1.0 Feb. 1997 by T. Enevoldsen, Odense University                    #
 # Version 1.1 spring 2000 by K.Ruud and H.J.Aa.Jensen                          #
@@ -13,17 +13,10 @@
 #                                                                              #
 ################################################################################
 
-opt_lsdalton=@opt_lsdalton@
 mpi_enabled=@ENABLE_MPI@
 
-if [ $opt_lsdalton -eq 1 ] ; then #LSDALTON only
-  dalton="lsdalton"
-  DALTON="LSDALTON"
-else #DALTON only
-  dalton="dalton"
-  DALTON="DALTON"
-fi
-
+dalton="dalton"
+DALTON="DALTON"
 
 # radovan: this is to figure out the location of this script
 # http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
@@ -36,7 +29,6 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-LSLIB_TEST=$SCRIPT_DIR/lslib_tester.x
 DALTON_EXECUTABLE=$SCRIPT_DIR/$dalton.x
 
 which mpirun > /dev/null # check if mpirun exists, if not, then assume mpiexec
@@ -73,16 +65,13 @@ SCP=scp
 optd=0
 optD=1
 optf=0
-optn=${DALTON_NUM_MPI_PROCS:-1} # default value must be 1 for running Dalton in sequential mode with openMPI.
+optn=${DALTON_NUM_MPI_PROCS:-1} # default value must be 1 for running Dalton in sequential mode with OpenMPI.
 opto=0
 optpg=0
 opt_cpexe=0
 opt_nobackup=0
 opt_noarch=0
 opt_noappend=0
-opt_lslib_test=0
-opt_restart=0
-optdens=0
 optx=0
 #
 # Define usage message
@@ -133,16 +122,10 @@ usage (){
         echo ' -x dalmol1 dalmol2 : calculate NEXAFS spectrum from ground and core hole states'
         echo " -exe exec        : change the executable from default ($DALTON_EXECUTABLE) to exec"
         echo ' -pg              : do profiling with gprof'
-        if [ $opt_lsdalton -eq 1 ] ; then #LSDALTON only
-          echo ' -dens            : copy dens.restart and maybe fock.restart lcm_orbitals.u to dal_mol[_pot].tar.gz'
-          echo ' -restart         : run the calc twice to test restart option'
-          echo ' -lslib_test      : run lslib test'
-        else #DALTON only
-          echo ' -mb mem          : set dalton max usable work memory to mem Megabytes'
-          echo ' -mw mem          : set dalton max usable work memory to mem double precision words'
-          echo ' -nb mem          : set node max usable work memory to mem Megabytes'
-          echo ' -nw mem          : set node max usable work memory to mem double precision words'
-        fi
+        echo ' -mb mem          : set dalton max usable work memory to mem Megabytes'
+        echo ' -mw mem          : set dalton max usable work memory to mem double precision words'
+        echo ' -nb mem          : set node max usable work memory to mem Megabytes'
+        echo ' -nw mem          : set node max usable work memory to mem double precision words'
         echo
         echo "Environment variables understood by the $0 script:"
         echo '    DALTON_TMPDIR             : scratch directory'
@@ -175,13 +158,7 @@ backup () {
       done
   fi
 }
-error_dens=0
-error_restart=0
-error_lslib_test=0
-error_m=0
-error_M=0
-error_nb=0
-error_nw=0
+
 #
 # Interpret input
 #
@@ -199,7 +176,6 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -ext ) OUTEXT=$2; shift;;
       -get ) GET_FILES="$GET_FILES $2"; shift;;
       -put ) PUT_FILES="$PUT_FILES $2"; shift;;
-      -pot ) POT_FILE=$2; shift;;
       -rsh ) SCP=rcp; SSH=rsh;;
       -f ) optf=$2; shift;;
       -N ) optn=$2; shift;;
@@ -214,56 +190,15 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -mol ) molfil=$2; shift;;
       -pot ) potfil=$2; shift;;
       -pcm ) pcmfil=$2; shift;;
-      -lslib_test ) opt_lslib_test=1; if [ $opt_lsdalton -eq 0 ]; then error_lslib_test=1; fi;;
-      -restart ) opt_restart=1; if [ $opt_lsdalton -eq 0 ]; then error_restart=1; fi;;
-      -dens ) optdens=1; if [ $opt_lsdalton -eq 0 ]; then error_dens=1; fi;;
-      -m|-mw ) WRKMEM=$2; export WRKMEM; if [ $opt_lsdalton -eq 1 ]; then error_m=1; fi; shift;;
-      -M|-mb ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; if [ $opt_lsdalton -eq 1 ]; then error_M=1; fi; shift;;
-         -nw ) NODE_WRKMEM=$2; export NODE_WRKMEM; if [ $opt_lsdalton -eq 1 ]; then error_nw=1; fi; shift;;
-         -nb ) NODE_WRKMEM=`expr $2 "*" 128000`; export NODE_WRKMEM; if [ $opt_lsdalton -eq 1 ]; then error_nb=1; fi; shift;;
+      -m|-mw ) WRKMEM=$2; export WRKMEM; shift;;
+      -M|-mb ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
+         -nw ) NODE_WRKMEM=$2; export NODE_WRKMEM; shift;;
+         -nb ) NODE_WRKMEM=`expr $2 "*" 128000`; export NODE_WRKMEM; shift;;
       -x ) optx=1; gs=$2; ch=$3; shift;shift;;
       * ) usage; exit 1;;
    esac
    shift
 done
-
-#Consistency testing
-if [ $opt_lsdalton -eq 1 ]; then
-  if [ $error_m -eq 1 ]; then
-    echo "ERROR: -m or -mw options only available for the dalton script"
-    exit 1
-  fi
-  if [ $error_M -eq 1 ]; then
-    echo "ERROR: -M or -mb options only available for the dalton script"
-    exit 1
-  fi
-  if [ $error_nw -eq 1 ]; then
-    echo "ERROR: -nw option only available for the dalton script"
-    exit 1
-  fi
-  if [ $error_nb -eq 1 ]; then
-    echo "ERROR: -nb option only available for the dalton script"
-    exit 1
-  fi
-else
-  if [ $error_dens -eq 1 ]; then
-    echo "ERROR: -dens options only available for the lsdalton script"
-    exit 1
-  fi
-  if [ $error_restart -eq 1 ]; then
-    echo "ERROR: -restart options only available for the lsdalton script"
-    exit 1
-  fi
-  if [ $error_lslib_test -eq 1 ]; then
-    echo "ERROR: -lslib_test options only available for the lsdalton script"
-    exit 1
-  fi
-fi
-
-if ! [ -s "$DALTON_EXECUTABLE" -a -x "$DALTON_EXECUTABLE" ]; then
-   echo "ERROR: $DALTON_EXECUTABLE does not exist or is not executable"
-   exit 1
-fi
 
 # append default basis set directory
 len_INSTALL_BASDIR=`echo $INSTALL_BASDIR | wc -c`
@@ -467,9 +402,6 @@ if [ -s $WRKDIR/$molfil.$MOLEXT -a -r $WRKDIR/$molfil.$MOLEXT ]; then
 else
    echo "$WRKDIR/$molfil.$MOLEXT does not exist or is not readable"
    echo " => assuming user has written MOLECULE input in dalton input file"
-   if [ $opt_lsdalton -eq 1 ]; then #Copy only for lsdalton
-     cp $WRKDIR/$dalfil.$DALEXT MOLECULE.INP
-   fi
 fi
 if [ "x$potfil" != "x" ]; then
   if [ -s $WRKDIR/$potfil.$POTEXT -a -r $WRKDIR/$potfil.$POTEXT ]; then
@@ -498,19 +430,6 @@ if [ "x$PUT_FILES" != "x" ]; then
    done
 fi
 
-if [ $optdens -eq 1 ] ; then
-   echo "copy $WRKDIR/$molfil.dens.restart"
-   [ -f $WRKDIR/$molfil.dens.restart ] && cp -f $WRKDIR/$molfil.dens.restart dens.restart
-   [ -f $WRKDIR/$molfil.fock.restart ] && cp -f $WRKDIR/$molfil.fock.restart fock.restart
-   [ -f $WRKDIR/$molfil.lcm_orbitals.u ] && cp -f $WRKDIR/$molfil.lcm_orbitals.u lcm_orbitals.u
-fi
-
-# put pot file listed under -pot to scratch directory
-if [ "$POT_FILE" != "" ]; then
-   echo copying $POT_FILE to scratch directory
-   cp $WRKDIR/$POT_FILE POTENTIAL.INP
-fi
-
 if [ "$optf" != "0" ] ; then
    if [ -s $WRKDIR/$optf.tar.gz -a -r $WRKDIR/$optf.tar.gz ] ; then
       echo "====================="
@@ -528,15 +447,6 @@ if [ "$optf" != "0" ] ; then
       echo "$WRKDIR/$optf.tar.gz does not exist or is not readable"
       dalton_exitcode=1
    fi
-fi
-
-if [ $opt_restart -eq 1 ] ; then
- if [ -s $WRKDIR/$dalfil.$DALEXT.2 -a -r $WRKDIR/$dalfil.$DALEXT.2 ]; then
-    cp $WRKDIR/$dalfil.$DALEXT.2 LSDALTON.INP.2
- else
-    echo "$WRKDIR/$dalfil.$DALEXT.2 does not exist or is not readable"
-    exit 1
- fi
 fi
 
 if [ $dalton_exitcode = 1 ]; then
@@ -582,159 +492,89 @@ if [ $opt_cpexe -eq 1 ] ; then
    DALTON_EXECUTABLE=$SCRATCHDIR/dalton.x
 fi
 
-if [ $mpi_enabled = "ON" -o $optn -gt 1 ] ; then # MPI case
-
-   if [ -z "$OMP_NUM_THREADS" ]; then
-      if [ $opt_lsdalton -eq 1 ]; then
-        echo
-        echo ' INFO : OMP_NUM_THREADS is not defined by the user, and default values will be assumed:'
-        echo ' INFO : gnu and intel compilers defaults to all available cores, '
-        echo ' INFO : whereas portland compilers defaults to one'
-        echo
-      else
-        export OMP_NUM_THREADS=1
-        echo
-        echo ' INFO : OMP_NUM_THREADS set to 1 because it was not defined by user'
-        echo ' INFO : and the cores are probably used by MPI'
-        echo
-      fi
-   fi
-
-   if [ -n "$DALTON_USE_GLOBAL_SCRATCH" ] ; then
-      echo ' DALTON_USE_GLOBAL_SCRATCH is defined, so Dalton will use global scratch dir.'
-   fi
-
-   if [ $opt_lslib_test -eq 1 ]; then
-      MPI=$LSLIB_TEST
-   else
-      MPI=$DALTON_EXECUTABLE
-   fi
-
-   if [ -a $MPI -a -x $MPI ]; then
-       $MPIEXEC -np $optn $MPI
-       dalton_exitcode=$?
-       if [ $opt_restart -eq 1 ] ; then
-          cp $DALTON.INP.2 $DALTON.INP
-          $MPIEXEC -np $optn $MPI
-       fi
-   else
-       echo; echo "Fatal error: $MPI does not exist or is not executable"
-       exit 1
-   fi
-   if [ $dalton_exitcode -ne 0 ];then
-      echo "Error in $MPIEXEC -np $optn $MPI, exit code $dalton_exitcode"
-#     No "exit $dalton_exitcode" here, because we want to save output and
-#     tar-file for restart possibilities !!!!!!
-   fi
-
-   if [ $optpg -eq 1 ] ; then
-      gprof $DALTON_EXECUTABLE gmon.out > PROFILE
-   fi
-
-   if [ "$optx" != "0" ] ; then
-      if [ -s $WRKDIR/$gs.tar.gz -a -r $WRKDIR/$gs.tar.gz ] ; then
-         echo "The '-x' option is active, now unpacking $gs.tar.gz into:"
-         gunzip < $WRKDIR/$gs.tar.gz | tar xvf - SIRIFC
-         if [ -s SIRIFC -a -r SIRIFC ] ; then
-            mv -v SIRIFC SIRIFC1
-         else
-            echo $WRKDIR/$gs.tar.gz does not contain interface file SIRIFC
-            dalton_exitcode=1
-         fi
-      else
-         echo "$WRKDIR/$gs.tar.gz does not exist or is not readable"
-         dalton_exitcode=1
-      fi
-      if [ -s $WRKDIR/$ch.tar.gz -a -r $WRKDIR/$ch.tar.gz ] ; then
-         echo "The '-x' option is active, now unpacking $ch.tar.gz into:"
-         gunzip < $WRKDIR/$ch.tar.gz | tar xvf - SIRIFC
-         if [ -s SIRIFC -a -r SIRIFC ] ; then
-            mv -v SIRIFC SIRIFC2
-         else
-            echo $WRKDIR/$ch.tar.gz does not contain interface file SIRIFC
-            dalton_exitcode=1
-         fi
-      else
-         echo "$WRKDIR/$ch.tar.gz does not exist or is not readable"
-         dalton_exitcode=1
-      fi
-   fi
-
-else # non-MPI case
-   if [ -z "$OMP_NUM_THREADS" ]; then
-      echo
-      echo ' INFO : OMP_NUM_THREADS is not defined by the user, and default values will be assumed:'
-      echo ' INFO : gnu and intel compilers defaults to all available cores, '
-      echo ' INFO : whereas portland compilers defaults to one'
-      echo
-   fi
-    if ! [ -s $DALTON_EXECUTABLE -a -x $DALTON_EXECUTABLE ]; then
-       echo; echo  "FATAL ERROR:"
-       echo "$DALTON_EXECUTABLE does not exist or is not executable"
-       exit 1
-    fi
-
-    if [ $opt_lslib_test -eq 1 ]; then
-        $LSLIB_TEST
-        dalton_exitcode=$?
-    else
-        if [ -n "$LSDALTON_LAUNCHER" ] && [ $opt_lsdalton -eq 1 ]; then
-           DALTON_EXE="$LSDALTON_LAUNCHER $DALTON_EXECUTABLE"
-        elif [ -n "$DALTON_LAUNCHER" ] && [ $opt_lsdalton -eq 0 ]; then
-           DALTON_EXE="$DALTON_LAUNCHER $DALTON_EXECUTABLE"
-        else
-           DALTON_EXE=$DALTON_EXECUTABLE
-        fi
-
-
-        $DALTON_EXE
-        dalton_exitcode=$?
-        if [ $dalton_exitcode -ne 0 ]; then
-          echo "Error in $DALTON_EXE, exit code $dalton_exitcode"
- #        No "exit $dalton_exitcode" here, because we want to save output and
- #        tar-file for restart possibilities.
-        fi
-
-        if [ $opt_restart -eq 1 ] ; then
-            cp $DALTON.INP.2 $DALTON.INP
-            $DALTON_EXE
-            restart_exitcode=$?
-            if [ $dalton_exitcode -eq 0 ] ; then
-                dalton_exitcode=$restart_exitcode
-            fi
-        fi
-    fi
-
-    if [ $optpg -eq 1 ] ; then
-        gprof $DALTON_EXECUTABLE gmon.out > PROFILE
-    fi
-
-    if [ $optdens -eq 1 ] ; then
-        echo "copy dens.restart to $WRKDIR/$molfil.dens.restart back"
-        [ -f dens.restart ] && cp -f dens.restart $WRKDIR/$molfil.dens.restart
-        [ -f fock.restart ] && cp -f fock.restart $WRKDIR/$molfil.fock.restart
-        [ -f lcm_orbitals.u ] && cp -f lcm_orbitals.u $WRKDIR/$molfil.lcm_orbitals.u
-    fi
+if ! [ -s "$DALTON_EXECUTABLE" -a -x "$DALTON_EXECUTABLE" ]; then
+   echo "ERROR: $DALTON_EXECUTABLE does not exist or is not executable"
+   exit 1
 fi
 
+if [ -n "$DALTON_USE_GLOBAL_SCRATCH" ] ; then
+   echo ' DALTON_USE_GLOBAL_SCRATCH is defined, so Dalton will use global scratch dir.'
+fi
+
+if [ -z "$OMP_NUM_THREADS" ]; then
+   export OMP_NUM_THREADS=1
+   echo
+   echo ' INFO : OMP_NUM_THREADS set to 1 because it was not defined by user'
+   echo ' INFO : and the cores are probably used by MPI'
+   echo
+fi
+#if [ -z "$OMP_NUM_THREADS" ]; then
+#   echo
+#   echo ' INFO : OMP_NUM_THREADS is not defined by the user, and default values will be assumed:'
+#   echo ' INFO : GCC and Intel compilers default to all available cores, '
+#   echo ' INFO : whereas Portland compilers default to one'
+#   echo
+#fi
+
+if [ -n "$DALTON_LAUNCHER" ] ; then
+    DALTON_EXE="$DALTON_LAUNCHER $DALTON_EXECUTABLE"
+elif [ $mpi_enabled = "ON" -o $optn -gt 1 ] ; then
+    DALTON_EXE="$MPIEXEC -np $optn $DALTON_EXECUTABLE"
+else
+    DALTON_EXE=$DALTON_EXECUTABLE
+fi
+
+$DALTON_EXE
+dalton_exitcode=$?
 if [ $dalton_exitcode -ne 0 ] ; then
    echo; echo  "SERIOUS ERROR:"
-   echo "$DALTON finished with non-zero exit code: $dalton_exitcode"
+   echo "$DALTON_EXE finished with non-zero exit code: $dalton_exitcode"
    echo; echo "File list in scratch directory:";echo
    ls -lt
    du -h
+   # No "exit $dalton_exitcode" here, because we want to save output and
+   # tar-file for restart possibilities !!!!!!
+fi
+
+if [ $optpg -eq 1 ] ; then
+    gprof $DALTON_EXECUTABLE gmon.out > PROFILE
+fi
+
+if [ "$optx" != "0" ] ; then
+   if [ -s $WRKDIR/$gs.tar.gz -a -r $WRKDIR/$gs.tar.gz ] ; then
+      echo "The '-x' option is active, now unpacking $gs.tar.gz into:"
+      gunzip < $WRKDIR/$gs.tar.gz | tar xvf - SIRIFC
+      if [ -s SIRIFC -a -r SIRIFC ] ; then
+         mv -v SIRIFC SIRIFC1
+      else
+         echo $WRKDIR/$gs.tar.gz does not contain interface file SIRIFC
+         dalton_exitcode=1
+      fi
+   else
+      echo "$WRKDIR/$gs.tar.gz does not exist or is not readable"
+      dalton_exitcode=1
+   fi
+   if [ -s $WRKDIR/$ch.tar.gz -a -r $WRKDIR/$ch.tar.gz ] ; then
+      echo "The '-x' option is active, now unpacking $ch.tar.gz into:"
+      gunzip < $WRKDIR/$ch.tar.gz | tar xvf - SIRIFC
+      if [ -s SIRIFC -a -r SIRIFC ] ; then
+         mv -v SIRIFC SIRIFC2
+      else
+         echo $WRKDIR/$ch.tar.gz does not contain interface file SIRIFC
+         dalton_exitcode=1
+      fi
+   else
+      echo "$WRKDIR/$ch.tar.gz does not exist or is not readable"
+      dalton_exitcode=1
+   fi
 fi
 
 # list of files which will be saved in $outnam.tar.gz
 # for subsequent calculations
-if [ $opt_lsdalton -eq 1 ]; then
-  filelist="LSDALTON.ERR SIRIUS.RST RESULTS.RSP RSPVEC SIRIFC DALTON.NCA UNIT1 UNIT2 DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.PHS DALTON.PHS DALTON.WLK molden.inp dens.restart fock.restart lcm_orbitals.u runopt.history MOLECULE.OUT"
-else
-  filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC* "
-  filelist="$filelist DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK"
-  filelist="$filelist molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h"
-  filelist="$filelist gv.off FCIDUMP UNIT1 UNIT2 rsp_tensor_human final_geometry.xyz *.cube"
-fi
+filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC* "
+filelist="$filelist DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK"
+filelist="$filelist molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h"
+filelist="$filelist gv.off FCIDUMP UNIT1 UNIT2 rsp_tensor_human final_geometry.xyz *.cube"
 pcmfiles="cavity.off PCM_matrix PCM_mep_asc PEDRA.OUT *.npy *.npz *.vtk molec_dyadic.dat"
 pelib_files="pe_electrostatics.bin pe_induced_moments.bin pe_induced_charges.bin pe_response_matrix.bin pe_nuclear_potential.bin pe_nuclear_field.bin pe_multipole_potential.bin pe_multipole_field.bin"
 filelist="$filelist $pcmfiles $pelib_files $GET_FILES"

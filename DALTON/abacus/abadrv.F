@@ -1987,21 +1987,26 @@ CAMT quit here to catch this...
       ENDIF
 CAMT--------------
       IF (USE_PELIB()) THEN
-        WRITE(LUPRI,'(6X,A)') 'Environment is modeled using'//
-     &                 ' the polarizable embedding scheme (PE library).'
         IF (POLAR) THEN
          WRITE (LUPRI,'(4A)') 'ERROR: .POLARI and .PEQM are not',
-     &                       'compatible. Please use either .ALPHA',
-     &                       'or the RESPONSE module and set frequency',
-     &                       'to zero.'
+     &                        ' compatible. Please use either .ALPHA',
+     &                        ' or the RESPONSE module and set',
+     &                        ' frequency to zero.'
          CALL QUIT('ERROR: .POLARI and .PEQM are not compatible'//
      &             ' (see output file for more details)')
-        END IF 
-        IF ((MAGSUS.OR.SPINRO) .AND. .NOT. NOLOND) THEN 
-         CALL QUIT('ERROR: .MAGNET (Magnetizability tensor and'//
-     &        ' spin-rotation constants) not implemented for PE'//
-     &        ' with London orbitals')
-        END IF 
+        END IF
+        IF ((MAGSUS .OR. MOLGFA) .AND. .NOT. NOLOND) THEN
+         WRITE (LUPRI,'(4A)') 'ERROR: .MAGNET and .MOLGFA are not',
+     &                        ' implemented for .PEQM with London',
+     &                        ' orbitals. You may consider using',
+     &                        ' .NOLOND to deactivate use of London',
+     &                        ' orbitals.'
+         CALL QUIT('ERROR: .MAGNET and .MOLGFA are not implemented'//
+     &             ' for .PEQM with London orbitals'//
+     &             ' (see output file for more details)')
+        END IF
+        WRITE(LUPRI,'(6X,A)') 'Environment is modeled using'//
+     &                 ' the polarizable embedding scheme (PE library).'
       END IF
 C
 C
@@ -2124,8 +2129,8 @@ Chj   this call had survived from when ABACUS was a separate program.
 Chj   I have now made sure that READIN always is called in the beginning,
 Chj   also if RNHERM is false. /April 2009 hjaaj
 
-      FLAG(34) = .FALSE. ! make sure integral transformation done if needed
-      CALL SETSIR(WORK,LWORK)
+      CALL SETSIR(.TRUE.,WORK,LWORK)
+      ! true means do 2-el integral transformation in SETSIR, if needed
 C
 C     If SOPPA calculation, then
 C     1) set SOPPA true in /INFRSP/
@@ -3154,6 +3159,7 @@ C  /* Deck timsta */
 #include "mxcent.h"
 #include "infpri.h"
 #include "abainf.h"
+      IF (TIMALL .LE. 1.0D0) RETURN ! only output if > 1s total CPU time
       CALL HEADER('CPU time statistics for ABACUS',0)
       CALL TIMPRI('INPUT ',TIMINP,TIMALL)
       CALL TIMPRI('TRAROT',TIMTRO,TIMALL)

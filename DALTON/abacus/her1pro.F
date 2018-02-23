@@ -199,7 +199,7 @@ C
 #include "efield.h"
 #include "ccom.h"
 #include "qm3.h"
-      PARAMETER (NTABLE = 105)
+      PARAMETER (NTABLE = 107)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
@@ -257,7 +257,7 @@ C Bin Gao, December 17, 2009; adds integrals S2MBRA, S2MKET, and S2MMIX
      &            'HUCKEL ', 'SQHD2OR', 'EFIELB1', 'EFIELB2', !  93:96
      &            'MAGQDP ', 'DERANGM', 'DIPANH ', 'POPOVLP', !  97:100
      &            'KINADIA', 'S2MBRA ', 'S2MKET ', 'S2MMIX ', ! 101:104
-     &            'LFDIPLN'/ ! 104:108
+     &            'LFDIPLN', 'R2     ', 'R4     '/ ! 104:108
 C
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
@@ -295,7 +295,7 @@ C
      &             71,72,73,74,75,76,77,78,79,80,
      &             81,82,83,84,85,86,87,88,89,90,
      &             91,92, 1,94,95,96,97,98,99,100,
-     &             101,102,103,104,105), I
+     &             101,102,103,104,105,106,107), I
          END IF
       END DO
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -2448,6 +2448,30 @@ C
          INTREP(1) = ISYMAX(1,1)
          INTREP(2) = ISYMAX(2,1)
          INTREP(3) = ISYMAX(3,1)
+         ANTI = .FALSE.
+      GO TO 200
+C R2 integrals
+  106 CONTINUE
+         INTTYP = 108
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of r**2 integrals'
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         NOPTYP = 1
+         IORDER = 2
+         LABINT(1) = 'R2      '
+         INTREP(1) = 0
+         ANTI = .FALSE.
+      GO TO 200
+C  R4 integrals
+  107 CONTINUE
+         INTTYP = 108
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of r**4 integrals'
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         NOPTYP = 1
+         IORDER = 4
+         LABINT(1) = 'R4      '
+         INTREP(1) = 0
          ANTI = .FALSE.
       GO TO 200
   200 CONTINUE

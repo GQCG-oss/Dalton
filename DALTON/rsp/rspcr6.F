@@ -424,6 +424,7 @@ C
       SAVE LAB, FRQ, N, ISYM
 C
       DATA N/0/
+      CALL QENTER('BCDCHK')
 C
 C     set variables
 C
@@ -498,7 +499,7 @@ C
             WRITE (LUPRI,'(/8A,/A)') ' Component ',ALAB,', ',BLAB,', ',
      &           CLAB,', ',DLAB,'   not calculated because it does'//
      &           ' not contribute to average gamma'
-            RETURN
+            GO TO 9000
          END IF
       END IF
 C
@@ -581,14 +582,14 @@ C
                    END IF
                    IF (DOCAL.AND.TPAMP) THEN
       WRITE(LUPRI,'(//A,2(/A,A10,I4,F10.6),2(/A,I7,F10.6))')
-     *     ' Third order transition moment in a.u. for',
+     *     ' Second order transition moment in a.u. for',
      *     ' A operator, symmetry, frequency: ',ALAB,ISYMA,FREQA,
      *     ' B operator, symmetry, frequency: ',BLAB,ISYMB,-FREQB,
      *     ' State no.,  symmetry, excitation energy:',ISYMC,-FREQC,
      *     ' State no.,  symmetry, excitation energy:',ISYMD,FREQD
       WRITE(LUPRI,'(/A)') ' is equal to the already calculated'
       WRITE(LUPRI,'(/A,4(/A,A10,I4,F10.6))')
-     *' Third order transition moment in a.u. for',
+     *' Second order transition moment in a.u. for',
      *' A operator, symmetry, frequency: ',LAB(I,1),ISYM(I,1),-FRQ(I,1),
      *' B operator, symmetry, frequency: ',LAB(I,2),ISYM(I,2),-FRQ(I,2),
      *' Symmetry, excitation energy:     ','  ',ISYM(I,3),-FRQ(I,3),
@@ -596,10 +597,9 @@ C
 C    This will set up IEQTO used for output analysis
                       CALL DIPLAB(LAB(I,1),I1)
                       CALL DIPLAB(LAB(I,2),I2)
-                      CALL DIPLAB(LAB(I,3),I3)
                       IEQTO(1)=I1
                       IEQTO(2)=I2
-                      IEQTO(3)=I3
+                      IEQTO(3)=ICFR
                       IEQTO(4)=IDFR
                       IEQTO(5)=ISYM(I,4)
 C    End of setting up IEQTO
@@ -750,7 +750,7 @@ C
          FRQ(N,3) = FREQC
          FRQ(N,4) = FREQD
       ELSE
-         RETURN
+         GO TO 9000
       END IF
 C
 C
@@ -801,21 +801,31 @@ C
       VNORM = DNRM2(KZYVD,VECD,1)
       IF ( VNORM .LT. THRSML ) IBCDEQ = 0
 C
+ 9000 CALL QEXIT('BCDCHK')
       RETURN
       END
 
       SUBROUTINE DIPLAB(LAB,I)
 C
-#include "implicit.h"
-C
-      CHARACTER*8 LAB
-C
 C Map dipole operators to integer number
 C X => 1, Y => 2, and Z => 3
 C
-      IF (LAB(1:1).EQ.'X') I=1
-      IF (LAB(1:1).EQ.'Y') I=2
-      IF (LAB(1:1).EQ.'Z') I=3
+#include "implicit.h"
+C
+      CHARACTER*8 LAB
+#include "priunit.h"
+C
+      IF (LAB(1:1).EQ.'X') THEN
+         I=1
+      ELSE IF (LAB(1:1).EQ.'Y') THEN
+         I=2
+      ELSE IF (LAB(1:1).EQ.'Z') THEN
+         I=3
+      ELSE
+         I=-123456789 ! very negative number, chosen to give error if used as index
+!        WRITE(LUPRI,'(//2A)')
+!    &   'INFO: DIPLAB called with a non-dipole label: ',LAB
+      END IF
 C
       RETURN
       END

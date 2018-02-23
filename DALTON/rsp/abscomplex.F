@@ -827,6 +827,7 @@ C   infvar.h : MAXWOP
 C   inforb.h : NSYM
 C   iradef.h : IRAT
 #include "implicit.h"
+#include "dummy.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "abslrs.h"
@@ -937,6 +938,7 @@ C     Solve the linear response equations and store response vectors on
 C     disk.
 C
 #include "implicit.h"
+#include "dummy.h"
 #include "priunit.h"
 #include "abslrs.h"
 c
@@ -948,9 +950,7 @@ c      DIMENSION XINDX(*),MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*),MJWOP(*)
       DIMENSION RESLRF(2,ABS_NFREQ_INTERVAL,3,3,4),WRK(LWRK)
 C     local
-      REAL*8  DUMMY, thd
-      INTEGER IDUMMY
-      PARAMETER ( DUMMY = 1.0D20 , IDUMMY = - 9999999 , thd=1.0D-6  )
+      REAL*8  thd
       logical negf
 C
 C
@@ -1075,7 +1075,6 @@ C
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 C
 C Used from:
 C   infvar.h : MAXWOP
@@ -1136,7 +1135,6 @@ C       inforb.h: NSYM
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "abslrs.h"
 #include "absorp.h"
 #include "infvar.h"
@@ -1194,8 +1192,8 @@ C
 C
 c 
 #include "implicit.h"
-#include "abslrs.h"
 #include "thrzer.h"
+#include "dummy.h"
 #include "priunit.h"
 C
 C Used from:
@@ -1204,6 +1202,7 @@ C   infinp.h: DODFT,HSROHF,DIRFCK
 C   dftcom.h: DFT
 C   thrzer.h: THZER
 C   maxorb.h: MXCORB (needed for inforb)
+#include "abslrs.h"
 #include "maxorb.h"
 #include "inforb.h"
 #include "infinp.h"
@@ -1225,9 +1224,6 @@ c      DIMENSION MJWOP(2,MAXWOP,8)
       PARAMETER (D1 = 1.0D0)
 C     local
       INTEGER KZYVAR
-      REAL*8  DUMMY
-      INTEGER IDUMMY
-      PARAMETER ( DUMMY = 1.0D20 , IDUMMY = - 9999999 )
 C
 #ifdef ENABLE_XCINT
       real(8), allocatable :: dmat_ao(:)
@@ -1279,7 +1275,7 @@ C
      &                  WRK(KDVAO(I)),WRK(KFREE),LFREE)
           ELSE
             CALL ABS_ZYTRA(ZYMB(1,1,I),CMO,UDV,WRK(KDMAO(I)),
-     &                  DUMMY,WRK(KFREE),LFREE)
+     &                  VDUMMY,WRK(KFREE),LFREE)
           ENDIF
         END DO
 C     
@@ -1485,11 +1481,11 @@ c     &                 .FALSE.,ISYMB,WRK(KFREE),LFREE,IPRDFT)
      &              WRK(KDUM),WRK(KDUM),UDV,
      &              XTMP,ZYMB)
       ELSE
-        CALL FCKOIN(NNMAX,FC,DUMMY,ZYMB,WRK(KFMMO(1)),DUMMY)
-        CALL RSPORB(.TRUE.,NNMAX,FC,WRK(KFMMO(1)),DUMMY,
-     &               DUMMY,DUMMY,UDV,XTMP,ZYMB)
-c         CALL ORBEX(ISYMB,ISYMB,KZYVAR,WRK(KFMMO(I)),DUMMY,
-c     &        DUMMY,DUMMY,XTMP(1,I),1.0D0,UDV,MJWOP)
+        CALL FCKOIN(NNMAX,FC,VDUMMY,ZYMB,WRK(KFMMO(1)),VDUMMY)
+        CALL RSPORB(.TRUE.,NNMAX,FC,WRK(KFMMO(1)),VDUMMY,
+     &               VDUMMY,VDUMMY,UDV,XTMP,ZYMB)
+c         CALL ORBEX(ISYMB,ISYMB,KZYVAR,WRK(KFMMO(I)),VDUMMY,
+c     &        VDUMMY,VDUMMY,XTMP(1,I),1.0D0,UDV,MJWOP)
       ENDIF
 C
       CALL QEXIT('ABS_LINE2')
@@ -1505,6 +1501,7 @@ C
 #include "implicit.h"
 #include "abslrs.h"
 #include "thrzer.h"
+#include "dummy.h"
 #include "priunit.h"
 C Used from
 C   inforb.h: NORB,NORBT,NASHT,NISHT,N2BASX,NBAST,NBAS,NSYM,MULD2H,ICMO
@@ -1533,9 +1530,6 @@ c      DIMENSION MJWOP(2,MAXWOP,8)
       PARAMETER (D1 = 1.0D0)
 C     local
       INTEGER KZYVAR
-      REAL*8  DUMMY
-      INTEGER IDUMMY
-      PARAMETER ( DUMMY = 1.0D20 , IDUMMY = - 9999999 )
 C
       CALL QENTER('ABS_LINE2')
 C
@@ -1612,7 +1606,7 @@ c
 C
 C      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMNPMM) THEN
       IF (EMBEDDING .OR. USE_PELIB()) THEN
-         CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
+         CALL RSPSLV(0,NNMAX,VDUMMY,XTEMP,CMO,XINDX,UDV,
      &               XTMP,WRK(KFREE),LFREE)
       ENDIF
       IF (QMMM) THEN
@@ -2619,7 +2613,6 @@ C
       KFREE = 1
       LFREE = LWRK
 C
-      CALL DIPLAB(LABEL,INDEX)
       IF (LABEL(2:8).EQ.'DIPLEN') THEN
          ITYPE = 1
       ELSE IF (LABEL(2:8).EQ.'ANGMOM') THEN
@@ -2629,9 +2622,11 @@ C
       ELSE IF (LABEL(2:8).EQ.'DIPVEL') THEN
          ITYPE = 4
       ELSE
-         WRITE(LUPRI,'(A)') ' Warning: Unknown operator!'
+         !WRITE(LUPRI,'(A)') ' Warning: Unknown operator!'
+         ! - could e.g. be PSO for .NSCD
          RETURN
       END IF
+      CALL DIPLAB(LABEL,INDEX)
 C
 
       KZYVAR=2*KZVAR

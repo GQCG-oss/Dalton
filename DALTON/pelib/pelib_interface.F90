@@ -135,7 +135,6 @@ subroutine pelib_ifc_input_reader(word)
 end subroutine pelib_ifc_input_reader
 
 subroutine pelib_ifc_init()
-    use pe_variables, only: peqm
     use polarizable_embedding, only: pe_init
 #include "priunit.h"
 #include "mxcent.h"
@@ -272,12 +271,11 @@ end subroutine pelib_ifc_london
 
 subroutine pelib_ifc_localfield(eefmats)
     use polarizable_embedding, only: pe_master
-    use pe_variables, only: peqm
 #include "inforb.h"
     real*8, dimension(:), intent(out) :: eefmats
     integer :: i, ndim
     call qenter('pelib_ifc_localfield')
-    if (.not. peqm) call quit('PElib not active')
+    if (.not. use_pelib()) call quit('PElib not active')
 #if defined(VAR_MPI)
     call pelib_ifc_start_slaves(8)
 #endif
@@ -3356,7 +3354,6 @@ subroutine pelib_ifc_start_slaves(runtyp)
 #include "infpar.h"
     integer, parameter :: iprtyp = POLARIZABLE_EMBEDDING
     call qenter('pelib_ifc_start_slaves')
-    if (.not. use_pelib()) call quit('PElib not active')
     if (nodtot >= 1) then
         call mpixbcast(iprtyp, 1, 'INTEGER', master)
         call mpixbcast(runtyp, 1, 'INTEGER', master)

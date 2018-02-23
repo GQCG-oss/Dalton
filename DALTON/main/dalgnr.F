@@ -1342,6 +1342,7 @@ C
       use qmcmm_input, only: qmnpinp
       use pelib_interface, only: use_pelib, pelib_ifc_activate,
      &                           pelib_ifc_input_reader
+      use qfitlib_interface, only : qfitlib_ifc_input_reader
 
 #include "implicit.h"
 #include "dummy.h"
@@ -1884,7 +1885,8 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Environment is modeled using polarizable embedding scheme'//
      &   ' (PE library)'
       IF(QFIT) WRITE(LUPRI,'(4X,A)')
-     &   'Potential derived charges will be calculated (QFITLIB)'
+     &   'Potential derived multipole moments will be calculated'//
+     &   ' (QFITLIB)'
 C
 Cholesky
       IF (CHOINT) THEN
@@ -1989,11 +1991,7 @@ C     "*QMNPMM" input
         CALL QMNPINP(WORD)
       GO TO 200
    13 CONTINUE
-#if defined (BUILD_QFITLIB)
-        CALL QFITINP(WORD)! *QFIT
-#else
-        CALL QUIT('ERROR for *QFIT: QFITLIB not enabled.')
-#endif
+        CALL QFITLIB_IFC_INPUT_READER(WORD)
       GOTO 200
 C     "*END OF" or "**something"
 
