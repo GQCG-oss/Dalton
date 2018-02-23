@@ -6,7 +6,7 @@
   	url = https://github.com/dftlibs/xcfun.git
 [submodule "external/pelib"]
 	path = external/pelib
-	url = git@gitlab.com:pe-software/pelib.git
+	url = ../../pe-software/pelib.git
 [submodule "external/qfitlib"]
 	path = external/qfitlib
 	url = https://github.com/cstein/qfitlib.git
