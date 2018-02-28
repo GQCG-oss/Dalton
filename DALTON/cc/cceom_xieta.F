@@ -937,7 +937,7 @@ C
   100 CONTINUE
 C
       IF (LIST .EQ. 'L0') THEN
-         CALL DAXPY(TWO,WORK(KINTIA),1,ETAC(1),1)
+         CALL DAXPY(NT1AM(ISYRES),TWO,WORK(KINTIA),1,ETAC(1),1)
       ENDIF
 C----------------------------------------
       IF ( DEBUG.or.locdbg ) THEN
