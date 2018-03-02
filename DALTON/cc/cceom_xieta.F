@@ -50,6 +50,8 @@ C
 Cholesky
 #include "ccdeco.h"
 Cholesky
+!sonia
+#include "second.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.false.)

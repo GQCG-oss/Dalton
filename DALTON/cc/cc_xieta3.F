@@ -54,6 +54,8 @@ C
 C
 !Sonia & Filip: find a better place
 #include "ccsections.h"
+!sonia
+#include "second.h"
 
       DOUBLE PRECISION, PARAMETER :: TWO  = 2.0D0, HALF = 0.5D0,
      &                               ZERO = 0.0D0, ONEM = -1.0D0
@@ -458,6 +460,7 @@ C
 C
 !Sonia & Filip: find a better place
 #include "ccsections.h"
+#include "second.h"
 
       DOUBLE PRECISION, PARAMETER :: TWO  = 2.0D0, HALF = 0.5D0,
      &                               ZERO = 0.0D0, ONEM = -1.0D0
