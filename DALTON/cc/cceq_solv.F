@@ -511,6 +511,7 @@ C
           WRITE(LUPRI,*) 'CCEQ_STR: CVSEPARA =',LCVSEXCI
           WRITE(LUPRI,*) 'CCEQ_STR: LIONISAT =',LIONIZEXCI
           WRITE(LUPRI,*) 'CCEQ_STR: REMOVE_CORE = ',LRMCORE
+          WRITE(LUPRI,*) 'CCEQ_STR: LCOR in GS = ',LCOR
           CALL FLSHFO(LUPRI)
       ENDIF
 !SONIA: control print out
@@ -518,6 +519,7 @@ C
       WRITE(LUPRI,*) 'CCEQ_STR: CVSEPARATION = ',LCVSEXCI
       WRITE(LUPRI,*) 'CCEQ_STR: IONIZATION = ',LIONIZEXCI
       WRITE(LUPRI,*) 'CCEQ_STR: REMOVE_CORE = ',LRMCORE
+      WRITE(LUPRI,*) 'CCEQ_STR: LCOR in GS = ',LCOR
       CALL FLSHFO(LUPRI)
 C
       MODEL = 'CCSD      '
@@ -791,10 +793,15 @@ C
      &          NRHFCORE,IRHFCORE)
            end if
          END IF
-CCN
-C
-C        calculate metric for new b-vectors:
-C
+         !SONIA FIXME CHECK IF IT GIVES PROBLEMS WITH CCS
+         IF ((LIST.eq.'L0').and.(LCOR.or.LSEC)) then
+            write(lupri,*) 'Project out core from start vector'
+            call cc_core(WORK(KV),WORK(KV+NT1AM(ISYMTR)),ISYMTR)
+         end if
+!CN
+!
+!        calculate metric for new b-vectors:
+!
          IF (CCR12) THEN
            LNOREAD = .TRUE.
            IF (ISIDE .EQ. 1) THEN
@@ -981,7 +988,7 @@ C              ----------------------
                IF (LRMCORE) THEN
                   !write(lupri,*)'CCNEX: freeze the core'
                  IF (TRIPLET) THEN
-C Eirik
+! Eirik & Sonia
                    KCAM1 = LGD
                    KCAMP = KCAM1 + NT1AM(ISYMTR)
                    KCAMM = KCAMP + NT2AM(ISYMTR)
@@ -996,6 +1003,11 @@ C Eirik
      &              NRHFCORE,IRHFCORE)
                  END IF
                END IF
+!Sonia: fixme check for CCS             
+               IF ((LIST.EQ.'L0').and.(LCOR .OR. LSEC )) THEN
+                   write(lupri,*)'REMOVE CORE FROM L0-RHS (CCNEX)'
+                   CALL CC_CORE(WRK(LGD),WRK(LGD+NT1AM(ISYMTR)),isymtr)
+               ENDIF
                !
                LGD = LGD + NCCVAR
             END DO
@@ -1109,7 +1121,7 @@ C        -----------------------------------------------
             END IF
             IF (LRMCORE) THEN
                IF (TRIPLET) THEN
-C Eirik
+C Eirik & Sonia
                  KCAM1 = KWRK1
                  KCAMP = KCAM1 + NT1AM(ISYMTR)
                  KCAMM = KCAMP + NT2AM(ISYMTR)
@@ -1125,6 +1137,13 @@ C Eirik
      &            NRHFCORE,IRHFCORE)
                END IF
             END IF
+            !Sonia: fixme check for CCS
+            IF ((LIST.EQ.'L0').and.(LCOR .OR. LSEC )) THEN
+              write(lupri,*)'REMOVE CORE FROM L0 in CCNEX'
+              CALL CC_CORE(WRK(KWRK1),
+     &                     WRK(KWRK1+NT1AM(ISYMTR)),isymtr)
+            ENDIF
+!
             DO JR = 1,NBX
                JROOTJ = ISIMC - 1 + JR
                EVAL1  = SOLEQ(K,JROOTJ)
@@ -1201,6 +1220,15 @@ C Eirik
                END IF
             END DO
          END IF
+         !Sonia, fixme CCS!!!!
+         IF ((LIST.EQ.'L0').and.(LCOR .OR. LSEC )) THEN
+            DO JR = 1,NBX
+              KOFF = KRES+(JR-1)*NCCVAR
+              write(lupri,*)'SONIA: REMOVE CORE FROM L0 in CCNEX'
+              CALL CC_CORE(WRK(Koff),
+     &                     WRK(Koff+NT1AM(ISYMTR)),isymtr)
+            end do
+         ENDIF
 C        ------------------------------------------
 C        Test for convergence of the N-R solutions:
 C        ------------------------------------------
@@ -1305,21 +1333,21 @@ C        -----------------------------------------------------------
             DO JR = 1,NFIN
             !write(lupri,*)'CCNEX CVS or IONISATION upd trials'
                koff = KRES+(JR-1)*NCCVAR
-           if (triplet) then
-                 KCAM1 = Koff
-                 KCAMP = KCAM1 + NT1AM(ISYMTR)
-                 KCAMM = KCAMP + NT2AM(ISYMTR)
-                 CALL CC_FREEZE_TRIPLETEXCI(WRK(KCAM1), WRK(KCAMP),
-     &            WRK(KCAMM),ISYMTR,
+               if (triplet) then
+                  KCAM1 = Koff
+                  KCAMP = KCAM1 + NT1AM(ISYMTR)
+                  KCAMM = KCAMP + NT2AM(ISYMTR)
+                  CALL CC_FREEZE_TRIPLETEXCI(WRK(KCAM1),WRK(KCAMP),
+     &                WRK(KCAMM),ISYMTR,
+     &                MAXCORE,MAXION,
+     &                NRHFCORE,IRHFCORE,
+     &                NVIRION,IVIRION,LBOTHEXCI)
+               else
+                  CALL CC_FREEZE_EXCI(WRK(Koff),ISYMTR,
      &            MAXCORE,MAXION,
      &            NRHFCORE,IRHFCORE,
      &            NVIRION,IVIRION,LBOTHEXCI)
-           else
-               CALL CC_FREEZE_EXCI(WRK(Koff),ISYMTR,
-     &         MAXCORE,MAXION,
-     &         NRHFCORE,IRHFCORE,
-     &         NVIRION,IVIRION,LBOTHEXCI)
-           end if
+               end if
             END DO
          END IF
          IF (LRMCORE) THEN
@@ -1332,17 +1360,24 @@ C Eirik
                  KCAMP = KCAM1 + NT1AM(ISYMTR)
                  KCAMM = KCAMP + NT2AM(ISYMTR)
                  CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), WRK(KCAMP),
-     &            WRK(KCAMM),ISYMTR,
-     &            MAXCORE,MAXION,
-     &            NRHFCORE,IRHFCORE,
-     &            NVIRION,IVIRION,.false.)
+     &                WRK(KCAMM),ISYMTR,
+     &                MAXCORE,MAXION,
+     &                NRHFCORE,IRHFCORE,
+     &                NVIRION,IVIRION,.false.)
                ELSE
                  CALL CC_FREEZE_CORE(WRK(Koff),ISYMTR,
-     &            MAXCORE,
-     &            NRHFCORE,IRHFCORE)
+     &                MAXCORE,NRHFCORE,IRHFCORE)
                END IF
             END DO
          END IF
+         IF ((LIST.EQ.'L0').and.(LCOR .OR. LSEC )) THEN
+             do JR = 1,NFIN
+                koff = KRES+(JR-1)*NCCVAR
+                write(lupri,*)'SONIA REMOVE CORE FROM L0 in CCNEX'
+                !Sonia FIXME for CCS
+                CALL CC_CORE(WRK(Koff),WRK(Koff+NT1AM(ISYMTR)),isymtr)
+             end do
+         ENDIF
 CCN
 C        -----------------------------------
 C        calculate metric for trial vectors:
@@ -1515,7 +1550,7 @@ C Flow:
 C 1. if NUPVEC gt 0 update reduced jacobian (and metric) with nupvec 
 C    vectors
 C 2. determine NVEC solution vectors, returned in SOLEQ for eigenvalue 
-C    equation the reduced eigenvalues are returned in EIVAL
+C    equation. The reduced eigenvalues are returned in EIVAL
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1554,6 +1589,7 @@ C
          WRITE(LUPRI,*)' CVSEPARA', LCVSEXCI
          WRITE(LUPRI,*)' IONISATI', LIONIZEXCI
          WRITE(LUPRI,*)' REMOVE_CORE', LRMCORE
+         WRITE(LUPRI,*)' LCOR,LSEC in GS', LCOR, LSEC
       END IF
 C
       IF (NUPVEC.GT.0) THEN 
@@ -1573,7 +1609,7 @@ C
             KBVEC  = KSVEC + NSIM*NCCVAR
             KSBVEC = KBVEC + NCCVAR
 C
-C           read in sig vectors in batches
+C           read in sigma vectors in batches
 C   
             LSVEC = KSVEC
             DO INUM = 1,NSIM
@@ -1601,7 +1637,7 @@ C
      &            NVIRION,IVIRION,LBOTHEXCI)
                end if
                END IF
-               !freeze core
+               !freeze core in exci calculation
                IF (LRMCORE) THEN
                  write(lupri,*)'CCRED CVS/IONIS sigma_',ivenu,
      &           'project out core or virtual'
@@ -1621,6 +1657,12 @@ C Eirik
      &              NRHFCORE,IRHFCORE)
                  END IF
                END IF
+!Sonia: FIXME for CCS
+               IF ((LIST.EQ.'L0').and.(LCOR .OR. LSEC )) THEN
+                  write(lupri,*)'SONIA REMOVE CORE FROM L0 in CCRED'
+                  CALL CC_CORE(WRK(LSVEC),WRK(LSVEC+NT1AM(ISYMTR)),
+     &                         isymtr)
+               ENDIF
 !sonia
                LSVEC = LSVEC + NCCVAR
             END DO
@@ -1727,6 +1769,8 @@ C
                END IF
 C
 C              read in s vectors and extend rows of projected matrices
+!Sonia memo: sigma vectors were not saved on file as projected, so 
+!we need to project again
 C
                DO J = 1,IREDH
                   CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
@@ -1757,8 +1801,7 @@ C Eirik
                       KCAMP = KCAM1 + NT1AM(ISYMTR)
                       KCAMM = KCAMP + NT2AM(ISYMTR)
                       CALL CC_FREEZE_TRIPLETCORE(WRK(KCAM1), 
-     &                 WRK(KCAMP),
-     &                 WRK(KCAMM),ISYMTR,
+     &                 WRK(KCAMP),WRK(KCAMM),ISYMTR,
      &                 MAXCORE,MAXION,
      &                 NRHFCORE,IRHFCORE,
      &                 NVIRION,IVIRION,.false.)
@@ -1768,6 +1811,12 @@ C Eirik
      &                   NRHFCORE,IRHFCORE)
                     END IF
                   END IF
+                  IF ((LIST.EQ.'L0').and.(LCOR .OR. LSEC )) THEN
+                      write(lupri,*)'SONIA REMOVE CORE FROM L0 in CCRED'
+                      !sonia fixme CCS case
+                      CALL CC_CORE(WRK(KSVEC),
+     &                             WRK(KSVEC+NT1AM(ISYMTR)),isymtr)
+                  ENDIF
 
                   IF (LREDS) THEN
                    IF (IANR12.EQ.1 .OR. IANR12.EQ.3) THEN
@@ -1839,7 +1888,7 @@ C-------------------------------
 C           Get gradient vector.
 C-------------------------------
 C
-C GETGD bruger GD + 3 exxtra. NCCVAR - skal vaere foerst i memory.
+C GETGD bruger GD + 3 extra. NCCVAR - skal vaere foerst i memory.
                   ILSTNR = ISTRVE + IVEC -1 + INUM - 1 
                   CALL CC_GETGD(WRK(LGDVEC),ILSTNR,ISIDE,LIST,
      *                          WRK(KWRK1),LWRK1)
@@ -1874,7 +1923,7 @@ C Eirik
                  END IF
                END IF
                IF (LRMCORE) THEN
-               write(lupri,*)'CCRED: freeze the core in grad'
+                 write(lupri,*)'CCRED: freeze core in grad'
                  IF (TRIPLET) THEN
 C Eirik
                    KCAM1 = LGDVEC
@@ -1891,6 +1940,12 @@ C Eirik
      &              NRHFCORE,IRHFCORE)
                  END IF
                END IF
+               IF ((LIST.EQ.'L0').and.(LCOR .OR. LSEC )) THEN
+                  write(lupri,*)'SONIA REMOVE CORE in RHS of L0 CCRED'
+                  !Sonia FIXME for CCS
+                  CALL CC_CORE(WRK(LGDVEC),
+     &                         WRK(LGDVEC+NT1AM(ISYMTR)),isymtr)
+               ENDIF
 C
                   LGDVEC = LGDVEC + NCCVAR
  1100          CONTINUE
@@ -1899,7 +1954,6 @@ C
                KWRK2 = KBVEC  + NCCVAR
                LWRK2 = LWRK   - KWRK2
                IF (LWRK2 .LT. 0 ) CALL QUIT('Too little work in CCRED')
-C
 C
 C read in b vectors and set up reduced gradient in SOLEQ
 C
