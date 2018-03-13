@@ -22,6 +22,7 @@
  - Reference: N. H. List, H. J. Aa. Jensen, and J. Kongsted. Local Electric Fields and Molecular Properties in Heterogeneous Environments through Polarizable Embedding.
    Phys. Chem. Chem. Phys. 18, 10070 (2016).
 - Remove the most diffuse virtual orbitals after SCF or MCSCF (new .VIRTRUNC option)
+- Add purely classical multipole-multipole interaction energy in PE-QM calculations
 
 ### Fixed
 - open-shell doublet ROKS DFT geometry optimization

@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON release Dalton2017.alpha (2016)
+    This is output from DALTON release Dalton2017.alpha (2017)
          ( Web site: http://daltonprogram.org )
 
    ----------------------------------------------------------------------------
@@ -53,7 +53,7 @@
     and
      
        Dalton, a Molecular Electronic Structure Program,
-       Release Dalton2017.alpha (2016), see http://daltonprogram.org
+       Release Dalton2017.alpha (2017), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -142,14 +142,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Oct  7 16:30:19 2016
+     Date and time (Linux)  : Sun Mar 11 23:22:38 2018
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/build/test/pehf_gspol
-   2) /home/magnus/Projects/dalton_devel/dalton/build/basis
+   1) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/test/pehf_gspol
+   2) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis
 
 
 Compilation information
@@ -157,25 +157,34 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-4.7.3-200.fc24.x86_64
+ System                   | Linux-4.15.6-300.fc27.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /usr/lib64/openmpi/bin/mpif90
- Fortran compiler version | GNU Fortran (GCC) 6.2.1 20160916 (Red Hat 6.2.1-2)
- C compiler               | /usr/lib64/openmpi/bin/mpicc
- C compiler version       | gcc (GCC) 6.2.1 20160916 (Red Hat 6.2.1-2)
- C++ compiler             | /usr/lib64/openmpi/bin/mpicxx
- C++ compiler version     | unknown
- BLAS                     | /lib64/libblas.so
- LAPACK                   | /lib64/liblapack.so
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ BLAS                     | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_gf_lp64.
+                          | so;/home/magnus/Programs/intel/compilers_and_libra
+                          | ries_2018.1.163/linux/mkl/lib/intel64/libmkl_seque
+                          | ntial.so;/home/magnus/Programs/intel/compilers_and
+                          | _libraries_2018.1.163/linux/mkl/lib/intel64/libmkl
+                          | _core.so;/usr/lib64/libpthread.so;/usr/lib64/libm.
+                          | so
+ LAPACK                   | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_lapack95
+                          | _lp64.a;/home/magnus/Programs/intel/compilers_and_
+                          | libraries_2018.1.163/linux/mkl/lib/intel64/libmkl_
+                          | gf_lp64.so
  Static linking           | OFF
- Last Git revision        | 6456afd6f7d2243c43190a66fedf129ccbb01af8
- Git branch               | pe/develop
- Configuration time       | 2016-10-07 16:29:52.700217
-
- * MPI parallel run using 4 processes.
+ Last Git revision        | c26c19694269d0231f4416cb83b028f9456ffab8
+ Git branch               | add-multipole-interaction
+ Configuration time       | 2018-03-11 23:22:22.832814
 
 
    Content of the .dal input file
@@ -226,8 +235,6 @@ H              2.675323   -2.516779   -0.000673
    Overall default print level:    0
    Print level for DALTON.STAT:    1
 
-    Parallel calculation using MPI
-    AO-direct calculation (in sections where implemented)
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
     Wave function sections will be executed (SIRIUS module)
@@ -256,7 +263,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -264,7 +271,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -272,7 +279,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    4
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -451,7 +458,7 @@ H              2.675323   -2.516779   -0.000673
 
  * Nuclear model: Point charge
 
- Calculation of one-electron Hamiltonian integrals.
+ Calculation of one- and two-electron Hamiltonian integrals.
 
  Center of mass  (bohr):      0.973773359129     -1.393789716280      0.000424788898
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
@@ -463,8 +470,26 @@ H              2.675323   -2.516779   -0.000673
      ************************** Output from HERINT **************************
      ************************************************************************
 
-  Total CPU  time used in HERMIT:   0.04 seconds
-  Total wall time used in HERMIT:   0.04 seconds
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x     31.66954785        80.49595632       268.50560837
+      y    -45.60874790      -115.92586657      -386.68706791
+      z      0.01223409         0.03109595         0.10372491
+
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ HERMIT - Number of two-electron integrals written:       43383 ( 96.1% )
+ HERMIT - Megabytes written:                              0.502
+
+  Time used in TWOINT     is       0.27 seconds
+  Total CPU  time used in HERMIT:   0.34 seconds
+  Total wall time used in HERMIT:   0.35 seconds
 
 
                         .----------------------------------.
@@ -500,7 +525,7 @@ H              2.675323   -2.516779   -0.000673
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Oct  7 16:30:19 2016
+     Date and time (Linux)  : Sun Mar 11 23:22:39 2018
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -511,7 +536,6 @@ H              2.675323   -2.516779   -0.000673
  Print level on unit LUW4  =   2 is   5
 
 @    Restricted, closed shell Hartree-Fock calculation.
- Fock matrices are calculated directly and in parallel without use of integrals on disk.
 
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option
@@ -566,60 +590,54 @@ H              2.675323   -2.516779   -0.000673
 
  Iter      Total energy     Embedding energy      Error norm     Delta(E)
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  6.08D-02  6.10D-02
-@  1  -187.948501792     -4.868374348978E-02    2.01259D+00   -1.88D+02
-      Virial theorem: -V/T =      2.003056
-@      MULPOP C       0.93; C       0.24; C       0.42; O      -1.03; H      -0.16; H      -0.14; H      -0.12; H      -0.13; 
+
+Calculating AOSUPINT
+     (Precalculated AO two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -187.947474725     -4.766186866774E-02    2.01259D+00   -1.88D+02
+      Virial theorem: -V/T =      2.003051
+@    MULPOP   C       0.93; C       0.24; C       0.42; O      -1.03; H      -0.16; H      -0.14; H      -0.12; H      -0.13; 
    1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    F  5.86D-02  5.90D-02
-@  2  -188.277992064     -9.093782156982E-03    7.39437D-01   -3.29D-01
-      Virial theorem: -V/T =      2.009155
-@      MULPOP C      -0.14; C      -0.12; C      -0.12; O       0.05; H       0.05; H       0.11; H       0.09; H       0.09; 
+@  2  -188.276973427     -8.071962901554E-03    7.39409D-01   -3.29D-01
+      Virial theorem: -V/T =      2.009150
+@    MULPOP   C      -0.14; C      -0.12; C      -0.12; O       0.05; H       0.05; H       0.11; H       0.09; H       0.09; 
    2  Level shift: doubly occupied orbital energies shifted by -1.00D-01
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  5.84D-02  5.80D-02
-@  3  -188.315432291     -1.888555761358E-02    1.08663D-01   -3.74D-02
-      Virial theorem: -V/T =      2.007941
-@      MULPOP C       0.16; C      -0.10; C      -0.11; O      -0.26; H       0.05; H       0.10; H       0.08; H       0.08; 
+@  3  -188.314410540     -1.786373777205E-02    1.08656D-01   -3.74D-02
+      Virial theorem: -V/T =      2.007936
+@    MULPOP   C       0.16; C      -0.10; C      -0.11; O      -0.26; H       0.05; H       0.10; H       0.08; H       0.08; 
    3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  5.84D-02  5.90D-02
-@  4  -188.317193247     -1.925766590459E-02    3.06390D-02   -1.76D-03
-      Virial theorem: -V/T =      2.007863
-@      MULPOP C       0.14; C      -0.10; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+@  4  -188.316171375     -1.823579665735E-02    3.06386D-02   -1.76D-03
+      Virial theorem: -V/T =      2.007857
+@    MULPOP   C       0.14; C      -0.10; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
    4  Level shift: doubly occupied orbital energies shifted by -1.25D-02
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  5.75D-02  5.90D-02
-@  5  -188.317370672     -1.919167042605E-02    1.14751D-02   -1.77D-04
+@  5  -188.316348796     -1.816979583877E-02    1.14753D-02   -1.77D-04
+      Virial theorem: -V/T =      2.007824
+@    MULPOP   C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+@  6  -188.316368177     -1.817701530096E-02    2.95560D-03   -1.94D-05
+      Virial theorem: -V/T =      2.007826
+@    MULPOP   C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+@  7  -188.316369863     -1.816644660421E-02    1.02866D-03   -1.69D-06
+      Virial theorem: -V/T =      2.007829
+@    MULPOP   C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+@  8  -188.316370023     -1.816429099882E-02    3.18858D-04   -1.60D-07
+      Virial theorem: -V/T =      2.007829
+@    MULPOP   C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+@  9  -188.316370041     -1.816281156259E-02    5.62091D-05   -1.75D-08
       Virial theorem: -V/T =      2.007830
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+@    MULPOP   C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    F  5.90D-02  5.90D-02
-@  6  -188.317390052     -1.919889007222E-02    2.95560D-03   -1.94D-05
-      Virial theorem: -V/T =      2.007831
-@      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
- -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    7    F  5.88D-02  5.90D-02
-@  7  -188.317391738     -1.918832084438E-02    1.02861D-03   -1.69D-06
-      Virial theorem: -V/T =      2.007834
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
- -----------------------------------------------------------------------------
-   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    F  5.96D-02  6.00D-02
-@  8  -188.317391898     -1.918616595278E-02    3.18862D-04   -1.60D-07
-      Virial theorem: -V/T =      2.007835
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
- -----------------------------------------------------------------------------
-   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    9    F  5.96D-02  5.90D-02
-@  9  -188.317391916     -1.918468634963E-02    5.62166D-05   -1.75D-08
-      Virial theorem: -V/T =      2.007835
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
- -----------------------------------------------------------------------------
-  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10   10    F  5.95D-02  6.00D-02
-@ 10  -188.317391916     -1.918446173531E-02    9.17614D-06   -5.22D-10
+@ 10  -188.316370041     -1.816258690159E-02    9.18807D-06   -5.22D-10
 
 @ *** DIIS converged in  10 iterations !
-@     Converged SCF energy, gradient:   -188.317391916097    9.18D-06
+@     Converged SCF energy, gradient:   -188.316370041337    9.19D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -650,22 +668,22 @@ H              2.675323   -2.516779   -0.000673
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.467226876813
+            Electronic                -0.467226876803
             Nuclear                    0.448807800596
-            Multipole                  0.000000000000
-            Total                     -0.018419076217
+            Multipole                  0.001021874822
+            Total                     -0.017397201385
 
        Polarization contributions:
-            Electronic                -0.043153863434
-            Nuclear                    0.042259438171
+            Electronic                -0.043153863363
+            Nuclear                    0.042259438101
             Multipole                  0.000129039745
-            Total                     -0.000765385518
+            Total                     -0.000765385517
 
-       Total PE energy:            -0.019184461735
+       Total PE energy:            -0.018162586902
 
  --- Writing SIRIFC interface file
 
- CPU and wall time for SCF :       0.805       0.812
+ CPU and wall time for SCF :       0.461       0.462
 
 
                        .-----------------------------------.
@@ -677,18 +695,18 @@ H              2.675323   -2.516779   -0.000673
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:            -188.317391916097                 
+@    Final HF energy:            -188.316370041337                 
 @    Nuclear repulsion:           102.664846860515
-@    Electronic energy:          -290.963054314876
-@    Embedding energy:             -0.019184461735
+@    Electronic energy:          -290.963054314950
+@    Embedding energy:             -0.018162586902
 
-@    Final gradient norm:           0.000009176138
+@    Final gradient norm:           0.000009188075
 
  
-     Date and time (Linux)  : Fri Oct  7 16:30:20 2016
+     Date and time (Linux)  : Sun Mar 11 23:22:39 2018
      Host name              : foeroyar                                
 
-File label for MO orbitals:   7Oct16   FOCKDIIS
+File label for MO orbitals:  11Mar18   FOCKDIIS
 
  (Only coefficients > 0.0100 are printed.)
 
@@ -791,11 +809,11 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
   23 H   :1s    -0.2205   0.5473   0.0473
   24 H   :1s     0.5319  -0.3795  -0.1527
 
-  Total CPU  time used in SIRIUS :   0.81 seconds
-  Total wall time used in SIRIUS :   0.82 seconds
+  Total CPU  time used in SIRIUS :   0.47 seconds
+  Total wall time used in SIRIUS :   0.47 seconds
 
  
-     Date and time (Linux)  : Fri Oct  7 16:30:20 2016
+     Date and time (Linux)  : Sun Mar 11 23:22:39 2018
      Host name              : foeroyar                                
 
 
@@ -817,8 +835,6 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
  Default print level:        0
 
       Electronic excitation energies 
-      Direct calculation - no two-electron integrals written or read.
-      Two-electron integrals will be calculated in parallel
       Natural orbital connection is used
       for perturbation dependent basis sets.
       Environment is modeled using the polarizable embedding scheme (PE library).
@@ -845,7 +861,7 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Fri Oct  7 16:30:20 2016
+     Date and time (Linux)  : Sun Mar 11 23:22:39 2018
      Host name              : foeroyar                                
 
 
@@ -853,7 +869,11 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
                   *** ABACUS - Excitation energies (.EXCITA) ***
                   **********************************************
 
-  Time used in EXCITA     is       0.72 seconds
+
+ 2-el. integral transformation level 4: Total CPU and WALL times (sec)       0.042       0.042
+
+ Sorting integrals to Dirac format: Total CPU and WALL times (sec)       0.004       0.003
+  Time used in EXCITA     is       0.21 seconds
 
 
    ***************************************************************************
@@ -862,7 +882,7 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Fri Oct  7 16:30:20 2016
+     Date and time (Linux)  : Sun Mar 11 23:22:39 2018
      Host name              : foeroyar                                
 
 
@@ -891,10 +911,10 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
      State number       1
      Total charge       0
 
-     Total energy       -188.3173919161 au (Hartrees)
-                         -5124.37690485 eV
-                           -494427.2363 kJ/mol
-                           -118170.9456 kcal/mol
+     Total energy       -188.3163700413 au (Hartrees)
+                         -5124.34909822 eV
+                           -494424.5533 kJ/mol
+                           -118170.3043 kcal/mol
 
 
                    Scalar Breit-Pauli relativistic corrections
@@ -904,7 +924,7 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
      Mass-velocity correction:                  -0.3142926883 au
 
      Total relativistic correction:             -0.0681178953 au ( 0.0362%)
-     Non-relativistic + relativistic energy:  -188.3855098114 au
+     Non-relativistic + relativistic energy:  -188.3844879367 au
 
 
 
@@ -923,9 +943,9 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.52015775         1.32210904         4.41008105
-      y     -0.93248466        -2.37013943        -7.90593416
-      z     -0.00004035        -0.00010257        -0.00034213
+      x      0.52015775         1.32210904         4.41008104
+      y     -0.93248466        -2.37013943        -7.90593415
+      z     -0.00004038        -0.00010263        -0.00034233
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -956,8 +976,8 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 @==============================================================================
 @           1     0.156268     0.0000 -0.0000  0.0066    0.0000 -0.0000  0.0060
 @           2     0.309710    -0.5249  0.8937  0.0002   -0.9147  1.5789  0.0003
-@           3     0.322024     0.0004 -0.0002  0.3597    0.0004 -0.0004  0.1514
-@           4     0.380702    -0.0000  0.0000 -0.0016   -0.0000  0.0001  0.0041
+@           3     0.322024    -0.0004  0.0002 -0.3597   -0.0004  0.0004 -0.1514
+@           4     0.380702     0.0000 -0.0000  0.0016    0.0000 -0.0001 -0.0041
 @------------------------------------------------------------------------------
 
 
@@ -1033,25 +1053,17 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
   bond angle:     H          C          H            116.971
 
 
-
-
- CPU time statistics for ABACUS
- ------------------------------
-
-
-
-
-  Total CPU  time used in ABACUS:   0.74 seconds
-  Total wall time used in ABACUS:   0.75 seconds
+  Total CPU  time used in ABACUS:   0.25 seconds
+  Total wall time used in ABACUS:   0.25 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
-  Total CPU  time used in DALTON:   1.59 seconds
-  Total wall time used in DALTON:   1.62 seconds
+  Total CPU  time used in DALTON:   1.07 seconds
+  Total wall time used in DALTON:   1.07 seconds
 
  
-     Date and time (Linux)  : Fri Oct  7 16:30:20 2016
+     Date and time (Linux)  : Sun Mar 11 23:22:39 2018
      Host name              : foeroyar                                
