@@ -306,6 +306,7 @@ C           ... IOLD .ge. I after CALL SRTOLD
 C           GNUEXP(I) and MULBSI(I) have been added (WK/UniKA/04-11-2002).
             GNUEXP(I) = GNUEXP(IOLD)
             MULBSI(I) = MULBSI(IOLD)
+            NOORBT(I) = NOORBT(IOLD)
             NCLINE(I) = NCLINE(IOLD)
  250     CONTINUE
 C ::: Then the different elements are counted, and arrays updated. :::
