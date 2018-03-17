@@ -89,7 +89,9 @@ C     ... RHG(1:3,3) = RHG2A(1:3) = 2 grad ( rho_a )
 C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
 
 !     these are not initialized to zero!
-      real*8   d1Ex(6), d1Ec(6), d2Ex(10), d2Ec(10)
+      real*8   Ex,  d1Ex(7),  d2Ex(10)
+      real*8   Ec,  d1Ec(7),  d2Ec(10)
+      real*8   Exc, d1Exc(7), d2Exc(10)
       real*8   d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
       real*8   d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds
       real*8   d1Exdngrd2, d1Exdngrds2
@@ -145,7 +147,7 @@ C     Initializations -------------------------------------------------------
       print_thr = 0.0d0
 #endif
       ! edh the arrays are also zeroed in SRDFTEXCJT
-      d1Ex(1:6)  = 0.0d0
+      d1Ex(1:7)  = 0.0d0
       d1Exdrhot  = 0.0d0
       d1Exdrhos  = 0.0d0
       d1Exdgrdt  = 0.0d0
@@ -153,7 +155,7 @@ C     Initializations -------------------------------------------------------
       d1Exdngrd2 = 0.0d0
       d1Exdngrds2 = 0.0d0
       !----------------
-      d1Ec(1:6)  = 0.0d0
+      d1Ec(1:7)  = 0.0d0
       d1Ecdrhot  = 0.0d0
       d1Ecdrhos  = 0.0d0
       d1Ecdgrdt  = 0.0d0
@@ -438,6 +440,8 @@ C      Potentials with quadrature weigths
        d1Ecdngrds2 = WGHTC*d1Ecdngrd2
 
 C      Sum of exchange and correlation
+       d1Exc(:) = WGHTX*d1Ex(:) + WGHTC*d1Ec(:)
+
        d1Excdrhot  = d1Exdrhot  + d1Ecdrhot
        d1Excdrhos  = d1Exdrhos  + d1Ecdrhos
        d1Excdgrdt  = d1Exdgrdt  + d1Ecdgrdt
@@ -446,7 +450,7 @@ C      Sum of exchange and correlation
        d1Excdngrds2 = d1Exdngrds2 + d1Ecdngrds2
 
 C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin components)
-       ! Ignore spin in start CI ...
+       ! Ignore spin in start CI ...  FIXME TODO
        FROMVX = .FALSE.
        if (domcsrdft .and. docisrdft) then  !  only true for start-CI  (cf. routine OPST)
            CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
@@ -460,9 +464,10 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
 #endif
        else if (domcsrdft .and. .not. docisrdft) then
           if (dogga. and. dft_spindns) then ! special treatment if gga + spin
+          call quit('hjaaj: d1excdgrdtdgrds not implemented yet')
               CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
      &             d1Excdrhot,d1Excdngrd2,d1Excdrhos,d1Excdngrds2,
-     &             DFTHRL)
+     &             d1Excdgrdtgrds,DFTHRL)
           else                              ! pure GGA or pure spin
              CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
      &                d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
@@ -472,7 +477,7 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
              end if
           end if
        else ! if hfsrdft
-          IF (DFT_SPINDNS) CALL QUIT('no HSRDFT with open shells')
+          IF (DFT_SPINDNS) CALL QUIT('no HFsrDFT with open shells')
              CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
      &            d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
        end if
@@ -581,12 +586,16 @@ C*****************************************************************************
 #include "dftcom.h"
 
       real*8  rho(4),rhg(3,4),CHIVAL,VLAMBDA ! input
-      real*8  rhogrd(4) ! local variable for norm of RHG(1:3,*)
+      real*8  rhogrd(6) ! local array for variables derived from grad(rho(k)) in RHG(1:3,k)
       integer NORDER
       logical ERFEXP(0:2)
 
-      real*8   Ex, d1Ex(6), d2Ex(10)
-      real*8   Ec, d1Ec(6), d2Ec(10)
+      real*8   Ex, d1Ex(7), d2Ex(10)
+      real*8   Ec, d1Ec(7), d2Ec(10)
+#ifdef SRDFT_DEBUG > 10
+      real*8   Wx, d1Wx(7), d2Wx(10)
+      real*8   Wc, d1Wc(7), d2Wc(10)
+#endif
 
 C The new terms (edh: mu_new required??)
       real*8   mu !, mu_new
@@ -612,9 +621,9 @@ C     sr mdc func
 
 c  Exchange  ------------------------------------------------------------
 
-      Ex         = 0.0d0
-      d1Ex(1:6)  = 0.0d0
-      d2Ex(1:10) = 0.0d0
+      Ex      = 0.0d0
+      d1Ex(:) = 0.0d0
+      d2Ex(:) = 0.0d0
 
       icall = icall + 1
       IF (ERFEXP(0)) THEN
@@ -624,11 +633,15 @@ c  Exchange  ------------------------------------------------------------
 !        CALL QUIT('erfgau not implemented in SRDFTEXCJT')
       END IF
 
-!     calculate the norm of the four forms of grad(rho)
-!     (total = charge, spin density, 2 alpha, 2 beta)
+!     Calculate the six variables related to four forms of grad(rho)
+!     (grdt, grds, grda, grdb, grdts, grdab)
       do i = 1,4
          rhogrd(i) = sqrt(rhg(1,i)**2 + rhg(2,i)**2 + rhg(3,i)**2)
       end do
+      rhogrd(5) = rhg(1,1)*rhg(1,2) + rhg(2,1)*rhg(2,2)         ! grdts = grad(rhot) . grad(rhos)
+     &          + rhg(3,1)*rhg(3,2)
+      rhogrd(6) = rhg(1,3)*rhg(1,4) + rhg(2,3)*rhg(2,4)         ! grdab = grad(rhoa) . grad(rhob)
+     &          + rhg(3,3)*rhg(3,4)
 
 !     LDA exchange functional (to fit with corresponding correlation
 !     functional) - see explaination with DOSRC_LDA_PW92
@@ -671,8 +684,21 @@ C  Manu 01-02-2006 end
      >             CHIVAL,DFT_SPINDNS,NORDER,Ex,d1Ex,d2Ex)
       ENDIF
       IF(DOSRX_PBEGWS_S) THEN
-        call DESRSPINGGA(ESRX_PBEGWSERFSPIN,rho,RHOGRD,CHIVAL,
-     >                   norder,Ex,d1Ex,d2Ex)
+        call DESRX_SPINGGA(ESRX_PBEGWSERFSPIN,rho,RHOGRD,CHIVAL,
+     >                     norder,Ex,d1Ex,d2Ex)
+#ifdef SRDFT_DEBUG > 10
+        if (norder .eq. 2 .and. abs(rho(2)) .gt. 1.d-2) then
+        call DESRSPINGGA   (ESRX_PBEGWSERFSPIN,rho,RHOGRD,CHIVAL,
+     >                   norder,Wx,d1Wx,d2Wx)
+        write(lupri,*)'rho ',rho(1:4)
+        write(lupri,*)'Ex  ',Ex,Wx, Ex-Wx
+        write(lupri,*)'d1Ex',d1Ex(1:7)
+        write(lupri,*)'d1Wx',d1Wx(1:7)
+        write(lupri,*)'d2Ex',d2Ex(1:10)
+        write(lupri,*)'d2Wx',d2Wx(1:10)
+        end if
+#endif
+
        ENDIF 
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
       IF(DOLAX_LDAS)  THEN
@@ -694,9 +720,9 @@ C linear complement exchange PBE functional, Kamal SHARKAS 19-05-11
 
 C  Correlation  ----------------------------------------------------------
 
-      Ec         = 0.0d0
-      d1Ec(1:6)  = 0.0d0
-      d2Ec(1:10) = 0.0d0
+      Ec      = 0.0d0
+      d1Ec(:) = 0.0d0
+      d2Ec(:) = 0.0d0
 
       IF(DOSRC_LDA_PW92) THEN
         ! d1Ec(3), d1Ec(3) here ...
@@ -766,8 +792,25 @@ C  Correlation  ----------------------------------------------------------
      >             CHIVAL,DFT_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
       IF(DOSRC_PBEGWS_S) THEN
-        call DESRSPINGGA(ESRC_PBEGWSERFSPIN,rho,RHOGRD,CHIVAL,
+        ! PBEGWS_S is of type 3 (no grds and no grds.grdt dependency)
+        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,3,rho,RHOGRD,CHIVAL,
      >                   norder,Ec,d1Ec,d2Ec)
+#ifdef SRDFT_DEBUG > 10
+        if (norder .eq. 2 .and. abs(rho(2)) .gt. 1.d-2) then
+        call DESRSPINGGA   (ESRC_PBEGWSERFSPIN,rho,RHOGRD,CHIVAL,
+     >                   norder,Wc,d1Wc,d2Wc)
+        do i = 1,4
+           write(lupri,*)'i, rhg',i,RHG(1:3,i)
+        end do
+        write(lupri,*)'rhogrd',rhogrd(1:6)
+        write(lupri,*)'Ec  ',Ec,Wc, Ec-Wc
+        write(lupri,*)'d1Ec',d1Ec(1:7)
+        write(lupri,*)'d1Wc',d1Wc(1:7)
+        write(lupri,*)'d2Ec',d2Ec(1:10)
+        write(lupri,*)'d2Wc',d2Wc(1:10)
+        call quit('end of test')
+        end if
+#endif
       ENDIF
 C Kamal SHARKAS 20-05-11 beg
 C linear Complement spin-dependent (NON-Scaled) correlation LDA functional
