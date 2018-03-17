@@ -27,6 +27,10 @@ C  /* Deck getrho */
 C
 C     T. Helgaker feb 01
 C
+C Output:
+C    RHO and RHO13
+C    DMAGAO(i) = sum(j) dmat(i,j) * gso(j)
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -78,35 +82,41 @@ C hjaaj June 09: DSYMV must be faster nowadays than the code below
       END      
 C /* Deck dftksmggaspin */
       SUBROUTINE DFTKSMGGASPIN(EXCMAT,GAO,GAO1,RH,VXC,VXB,
-     &                         VSC,VSB,DFTHRL,IPNT)
+     &                         VSC,VSB,VXSB,DFTHRL,IPNT)
 C
-C     Erik Hedgård (feb. 2016) based on DFTKSM by T. Helgaker
+C     Erik Hedegaard (feb. 2016) based on DFTKSM by T. Helgaker
+C
+C     VXC = d(e_xc) / d(rhot)
+C     VSC = d(e_xc) / d(rhos)
+C     VXB = d(e_xc) / d(grdt)
+C     VSB = d(e_xc) / d(grds)
+C     VXSB = d(e_xc) / d(grds.grdt)
 C
       implicit none
 C
-      integer          I, J, ISYM, ISTR, IEND
-      double precision GAO(NBAST), GAO1(NBAST,3), RH(3,2)
-      double precision EXCMAT(NBAST,NBAST,2)
-      double precision FX, FY, FZ, SX, SY, SZ
-      double precision VXB, VXC, VSB, VSC
-      double precision FC, FCS
-      double precision DFTHRL
-
+      real*8  GAO(NBAST), GAO1(NBAST,3), RH(3,2)
+      real*8  EXCMAT(NBAST,NBAST,2)
+      real*8  VXB, VXC, VSB, VSC, VXSB
+      real*8  DFTHRL
       integer ipnt
 C
-#include <inforb.h>
-#include <dftinf.h>
+#include "inforb.h"
+#include "dftinf.h"
+
+      ! local variables:
+      real*8  FX, FY, FZ, SX, SY, SZ
+      real*8  FC, FCS
+      integer I, J, ISYM, ISTR, IEND
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
+      FX = VXB*RH(1,1) + VXSB*RH(1,2)
+      FY = VXB*RH(2,1) + VXSB*RH(2,2)
+      FZ = VXB*RH(3,1) + VXSB*RH(3,2)
+      SX = VSB*RH(1,2) + VXSB*RH(1,1)
+      SY = VSB*RH(2,2) + VXSB*RH(2,1)
+      SZ = VSB*RH(3,2) + VXSB*RH(3,1)
       IF (NSYM.EQ.1) THEN
-         FX = VXB*RH(1,1)
-         FY = VXB*RH(2,1)
-         FZ = VXB*RH(3,1)
-         SX = VSB*RH(1,2)
-         SY = VSB*RH(2,2)
-         SZ = VSB*RH(3,2)
-         ! chech these .... no coupling terms??
          DO J = 1, NBAST
             FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
             IF (DABS(FC).GT.DFTHRL) THEN
@@ -118,12 +128,6 @@ C
             END IF
          END DO
       ELSE
-         FX = VXB*RH(1,1)
-         FY = VXB*RH(2,1)
-         FZ = VXB*RH(3,1)
-         SX = VSB*RH(1,2)
-         SY = VSB*RH(2,2)
-         SZ = VSB*RH(3,2)
          DO ISYM = 1, NSYM
             ISTR = IBAS(ISYM) + 1
             IEND = IBAS(ISYM) + NBAS(ISYM)

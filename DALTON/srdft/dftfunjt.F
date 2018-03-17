@@ -11,17 +11,17 @@ C            mu     : Interation parameter
 C            norder : order of derivatives
 C
 C     Ouput: E                     : energy
-C            d1E(1) =  d1Edrho     : first derivative wrt to rho
-C            d1E(2) =  d1Edgrd     : first derivative wrt to grd  (for 2nd-order optimisation)
-C            d1E(3) =  d1Edgrda2   : first derivative wrt to grda2 (for HF optimisation)
+C            d1E(1) =  d1Edrho     : first derivative wrt rho
+C            d1E(2) =  d1Edgrd     : first derivative wrt grd  (for 2nd-order optimisation)
+C            d1E(3) =  d1Edgrda2   : first derivative wrt grda2 (for HF optimisation)
 C            (grda2 is the square of gradient of spin-alpha density)
 !            edh: d1Edgrda2 is a very strange name and it is not true
 !            that it is the square of the spin-alpha density!!!!
 !            I have renamed it ngrd2 outside
 
-C            d2E(1) = d2Edrhodrho  : second derivative wrt to rho and rho
-C            d2E(2) = d2Edgrddgrd  : second derivative wrt to grd and grd
-C            d2E(3) = d2Edrhodgrd  : second derivative wrt to rho and grd
+C            d2E(1) = d2Edrhodrho  : second derivative wrt rho and rho
+C            d2E(2) = d2Edgrddgrd  : second derivative wrt grd and grd
+C            d2E(3) = d2Edrhodgrd  : second derivative wrt rho and grd
 C
 C     Author: J. Toulouse
 C     Date  : 16-02-05
@@ -274,12 +274,12 @@ C            dospin : use spin density
 C            mu     : Interation parameter
 C            norder : order of derivatives
 C
-C     Ouput: d1E(1) = d1Edrhot      : first derivative wrt to rhot
-C            d1E(2) = d1Edrhos      : first derivative wrt to rhos
+C     Ouput: d1E(1) = d1Edrhot      : first derivative wrt rhot
+C            d1E(2) = d1Edrhos      : first derivative wrt rhos
 C
-C            d2E(1) = d2Edrhotdrhot : second derivative wrt to rhot and rhot
-C            d2E(2) = d2Edrhotdrhos : second derivative wrt to rhot and rhos
-C            d2E(3) = d2Edrhosdrhos : second derivative wrt to rhos and rhos
+C            d2E(1) = d2Edrhotdrhot : second derivative wrt rhot and rhot
+C            d2E(2) = d2Edrhotdrhos : second derivative wrt rhot and rhos
+C            d2E(3) = d2Edrhosdrhos : second derivative wrt rhos and rhos
 C
 C     Created: 17-08-09, J. Toulouse
 C     Revision: Introduce d1E and d2E arrays (17-02-16), E. D. Hedegård
@@ -412,102 +412,125 @@ C         derivative wrt rhot and rhos -----------------------
 
       return
       end
-      SUBROUTINE DESRSPINGGA(ESRSPINGGA,rho,rhogrd,mu,norder,E,d1E,d2E)
+      SUBROUTINE DESRC_SPINGGA(ESRSPINGGA,itype,rho,rhogrd,mu,norder,
+     &   E,d1E,d2E)
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives 
 C     of a generic spin-dependent short-range GGA functional
 C     ESRSPINGGA(rhot,rhos,grdt,grds,mu,E)
 C
 C     Input: ESRSPINGGA : spin-density GGA functional routine
+C            itype      : how many of rhot, rhos, grdt, grds, grdt.grds contribute to e
+C                         (e.g. LDA: itype=2; PBEGWS: itype=3)
 C            rho(1)     : rhot; total density
 C            rho(2)     : rhos; spin density
-C            rhogrd(1)  : grdt; gradient of rhot
-C            rhogrd(2)  : grds; gradient of rhos
+C            rhogrd(1)  : grdt; norm of gradient of rhot
+C            rhogrd(2)  : grds; norm of gradient of rhos
+C            rhogrd(3)  : grdts = grad(rhot) . grad(rhos)
 C            mu         : Interation parameter
 C            norder     : order of derivatives
 C
-C     Ouput: d1E(1) = d1Edrhot      : first derivative wrt to rhot
-C            d1E(2) = d1Edgrdt      : first derivative wrt to grdt (grad rhot)
-C            d1E(3) = d1Engrdt2     : = (2.0d0/grdt)*d1E(3)
-C            d1E(4) = d1Edrhos      : first derivative wrt to rhos
-C            d1E(5) = d1Edgrds      : first derivative wrt to grds (grad rhos)
-C            d1E(6) = d1Engrds2     : = (2.0d0/grds)*d1E(4)
+C    Output: E      = energy
 C
-C            d2E(1) = d2Edrhotdrhot : second derivative wrt to rhot and rhot
-C            d2E(2) = d2Edrhotdrhos : second derivative wrt to rhot and rhos
-C            d2E(3) = d2Edrhosdrhos : second derivative wrt to rhos and rhos
-C            d2E(4) = d2Edrhotdgrdt : second derivative wrt to rhot and grdt
-C            d2E(5) = d2Edrhosdgrdt : second derivative wrt to rhos and grdt
-C            d2E(6) = d2Edgrdtdgrdt : second derivative wrt to grdt and grdt
-C            d2E(7) = d2Edrhotdgrds : second derivative wrt to rhot and grds
-C            d2E(8) = d2Edrhosdgrds : second derivative wrt to rhos and grds
-C            d2E(9) = d2Edgrdtdgrds : second derivative wrt to grdt and grds
-C            d2E(10)= d2Edgrdsdgrds : second derivative wrt to grds and grds
+C            d1E(1) = d1Edrhot      : first derivative wrt rhot
+C            d1E(2) = d1Edgrdt      : first derivative wrt grdt (grad rhot)
+C            d1E(3) = d1Engrdt2     : = (2.0d0/grdt)*d1E(2)
+C            d1E(4) = d1Edrhos      : first derivative wrt rhos
+C            d1E(5) = d1Edgrds      : first derivative wrt grds (grad rhos)
+C            d1E(6) = d1Edngrds2    : = (2.0d0/grds)*d1E(4)
+C            d1E(7) = d1Edgrdts     : first derivative wrt grdts
+C
+C            d2E(1) = d2Edrhotdrhot : second derivative wrt rhot and rhot
+C            d2E(2) = d2Edrhotdrhos : second derivative wrt rhot and rhos
+C            d2E(3) = d2Edrhosdrhos : second derivative wrt rhos and rhos
+C            d2E(4) = d2Edrhotdgrdt : second derivative wrt rhot and grdt
+C            d2E(5) = d2Edrhosdgrdt : second derivative wrt rhos and grdt
+C            d2E(6) = d2Edgrdtdgrdt : second derivative wrt grdt and grdt
+C            d2E(7) = d2Edrhotdgrds : second derivative wrt rhot and grds
+C            d2E(8) = d2Edrhosdgrds : second derivative wrt rhos and grds
+C            d2E(9) = d2Edgrdtdgrds : second derivative wrt grdt and grds
+C            d2E(10)= d2Edgrdsdgrds : second derivative wrt grds and grds
 C
 C     Created: 29-01-16, H. J. Aa. Jensen + Erik D. Hedegård)
 C     (from routine by J. Toulouse)
 C*****************************************************************************
       implicit none
 
-      external         ESRSPINGGA
-      integer          norder
+      external ESRSPINGGA
+      integer  norder
 
-      double precision rho(2), rhogrd(2), mu
-      double precision rhot, rhos, grdt, grds
-      double precision E, d1E(6), d2E(10)
+      real*8   rho(2), rhogrd(3), mu
+      real*8   E, d1E(7), d2E(10)
 
-      double precision hrt, hrs,  hgt, hgs
-      double precision hrt2, hrtrs, hrs2
-      double precision hrtgt, hrsgt, hgt2, hrtgs, hrsgs, hgtgs, hgs2
-      double precision rhotm, rhotp, rhosp, rhosm
-      double precision grdtm, grdtp, grdsp, grdsm
-      double precision arhos
+      real*8   rhot, rhos, grdt, grds, grdts
+      real*8   hrt, hrs,  hgt, hgs, hgts
+      real*8   hrt2, hrtrs, hrs2
+      real*8   hrtgt, hrsgt, hgt2, hrtgs, hrsgs, hgtgs, hgs2
+      real*8   rhotm, rhotp, rhosp, rhosm
+      real*8   grdtm, grdtp, grdsp, grdsm
+      real*8   arhos, agrdts
 
-      double precision Em000, Ep000, E0m00, E0p00
-      double precision E00m0, E00p0, E000m, E000p
+      real*8   Em000, Ep000, E0m00, E0p00
+      real*8   E00m0, E00p0, E000m, E000p
 
-      double precision Emm00, Epp00, Epm00, Emp00
-      double precision Em0m0, Ep0p0, Ep0m0, Em0p0
-      double precision Em00m, Ep00p, Ep00m, Em00p
-      double precision E0mm0, E0pp0, E0pm0, E0mp0
-      double precision E0m0m, E0p0p, E0p0m, E0m0p
-      double precision E00mm, E00pp, E00pm, E00mp
+      real*8   Emm00, Epp00, Epm00, Emp00
+      real*8   Em0m0, Ep0p0, Ep0m0, Em0p0
+      real*8   Em00m, Ep00p, Ep00m, Em00p
+      real*8   E0mm0, E0pp0, E0pm0, E0mp0
+      real*8   E0m0m, E0p0p, E0p0m, E0m0p
+      real*8   E00mm, E00pp, E00pm, E00mp
+      real*8   E_test
 
       logical  pure_spin
 
 C     check
       if(norder .lt. 0 .or. norder .ge. 3) then
-       print *,'DESRSPINGGA: norder=',norder
-       call quit('DESRSPINGGA: norder must be 0, 1, or 2')
+       print *,'DESRC_SPINGGA: norder=',norder
+       call quit('DESRC_SPINGGA: norder must be 0, 1, or 2')
       endif
 
       if (norder .ge. 1) d1E(:) = 0.0d0
       if (norder .ge. 2) d2E(:) = 0.0d0
       
-      rhot = rho(1)
-      rhos = rho(2)
-      grdt = rhogrd(1)
-      grds = rhogrd(2)
+      rhot  = rho(1)
+      rhos  = rho(2)
+      grdt  = rhogrd(1)
+      grds  = rhogrd(2)
+      grdts = rhogrd(3)
 
       arhos = abs(rhos)
       if (arhos .gt. rhot) then
-         call quit('DESRSPINGGA error: |rhos| > rhot')
+         call quit('DESRC_SPINGGA error: |rhos| > rhot')
       end if
       pure_spin = ((rhot - arhos) .le. 1.d-14 ) ! pure alpha or pure beta
 
       if (rhot .lt. 1.d-10) then ! no significant density in this point
          E = 0.0d0
-         IF (NORDER.ge.1) d1E(:) = 0.0d0
-         IF (NORDER.ge.2) d2E(:) = 0.0d0
          return
       end if
 
 C     energy
-      call ESRSPINGGA(rhot,rhos,grdt,grds,mu,E)
+      call ESRSPINGGA(rhot,rhos,grdt,grds,grdts,mu,E)
+      if (itype .lt. 5) then
+         grdts = 0.0d0
+         if (itype .lt. 4) grds  = 0.0d0
+         if (itype .lt. 3) grdt  = 0.0d0 ! i.e. LSDA type
+         call ESRSPINGGA(rhot,rhos,grdt,grds,grdts,mu,E_test)
+         if (E_test.ne.E) then
+            print *, 'DESRC_SPINGGA error. itype, E, E_test:',
+     &         itype,E,E_test
+            call quit('itype error in DESRC_SPINGGA')
+         end if
+      end if
+      agrdts= abs(grdts)
+      if (itype .ge. 5) then
+         call quit('Sorry, DESRC_SPINGGA not implemented for type 5 yet')
+      end if
 
 C     (optimal?) numerical step
 C     (step length of hx=1.d-4*X should give a relative accuracy of approx. 16 digits
-C      because we use central 2nd-order approximation=)
+C      because we use central 2nd-order approximation)
+C     NB! The zeroing of grdts, grds, grdt depending on type meands these will be skipped below.
 
       hrt = 1.d-4*rhot
       hrs = hrt
@@ -521,6 +544,11 @@ C      because we use central 2nd-order approximation=)
          hgs = 0.0d0
       else
          hgs = 1.d-4*grds
+      end if
+      if (agrdts .lt. 1.d-10) then
+         hgts = 0.0d0
+      else
+         hgts = 1.d-4*agrdts
       end if
       
 !      arhos_min = 1.d-10*max(1.d0,rhot) ! for numerical accuracy
@@ -546,12 +574,12 @@ C Special treatment of pure spin
 
       if (pure_spin) then
 
-       call quit('DESRSPINGGA: pure_spin not implemented yet')
+       call quit('DESRC_SPINGGA: pure_spin not implemented yet')
 
          if (norder .ge. 1) then
            d1E(:) = 0.0d0
-           call ESRSPINGGA(rhotm,rhosm,grdt,grds,mu,Em000)
-           call ESRSPINGGA(rhotp,rhosp,grdt,grds,mu,Ep000)
+           call ESRSPINGGA(rhotm,rhosm,grdt,grds,grdts,mu,Em000)
+           call ESRSPINGGA(rhotp,rhosp,grdt,grds,grdts,mu,Ep000)
            d1E(1) = (Ep000 - Em000)/(2.d0*hrt) ! d1Edrhot
 !         if (rhos .gt. 0.0d0) then
 !            d1Edrhos = d1Edrhot
@@ -576,26 +604,26 @@ C First-order derivatives --------------------------------------------
 
 C     derivatives wrt rhot, rhos, grdt, grds ---------------------
 
-      call ESRSPINGGA(rhotm,rhos,grdt,grds,mu,Em000)
-      call ESRSPINGGA(rhotp,rhos,grdt,grds,mu,Ep000)
+      call ESRSPINGGA(rhotm,rhos,grdt,grds,grdts,mu,Em000)
+      call ESRSPINGGA(rhotp,rhos,grdt,grds,grdts,mu,Ep000)
       d1E(1) = (Ep000 - Em000)/(2.d0*hrt) ! d1Edrhot
 
       if (hgt .gt. 0.0d0) then
-         call ESRSPINGGA(rhot,rhos,grdtm,grds,mu,E00m0)
-         call ESRSPINGGA(rhot,rhos,grdtp,grds,mu,E00p0)
+         call ESRSPINGGA(rhot,rhos,grdtm,grds,grdts,mu,E00m0)
+         call ESRSPINGGA(rhot,rhos,grdtp,grds,grdts,mu,E00p0)
          d1E(2) = (E00p0 - E00m0)/(2.d0*hgt) ! d1Edgrdt
          d1E(3) = (2.0d0/grdt)*d1E(2)        ! d1Engrdt2
       end if
 
       if (hrs .gt. 0.0d0) then
-         call ESRSPINGGA(rhot,rhosm,grdt,grds,mu,E0m00)
-         call ESRSPINGGA(rhot,rhosp,grdt,grds,mu,E0p00)
+         call ESRSPINGGA(rhot,rhosm,grdt,grds,grdts,mu,E0m00)
+         call ESRSPINGGA(rhot,rhosp,grdt,grds,grdts,mu,E0p00)
          d1E(4) = (E0p00 - E0m00)/(2.d0*hrs) ! d1Edrhos
        end if
 
       if (hgs .gt. 0.0d0) then
-         call ESRSPINGGA(rhot,rhos,grdt,grdsm,mu,E000m)
-         call ESRSPINGGA(rhot,rhos,grdt,grdsp,mu,E000p)
+         call ESRSPINGGA(rhot,rhos,grdt,grdsm,grdts,mu,E000m)
+         call ESRSPINGGA(rhot,rhos,grdt,grdsp,grdts,mu,E000p)
          d1E(5) = (E000p - E000m)/(2.d0*hgs) ! d1Edgrds
          d1E(6) = (2.0d0/grds)*d1E(4)        ! d1Engrds2
        end if
@@ -615,10 +643,10 @@ C        derivative wrt rhos and rhos -----------------------
          d2E(3) = (E0p00 - 2.d0*E + E0m00)/(hrs*hrs) ! d2Edrhosdrhos
 
 C        derivative wrt rhot and rhos -----------------------
-         call ESRSPINGGA(rhotp,rhosp,grdt,grds,mu,Epp00)
-         call ESRSPINGGA(rhotm,rhosp,grdt,grds,mu,Emp00)
-         call ESRSPINGGA(rhotp,rhosm,grdt,grds,mu,Epm00)
-         call ESRSPINGGA(rhotm,rhosm,grdt,grds,mu,Emm00)
+         call ESRSPINGGA(rhotp,rhosp,grdt,grds,grdts,mu,Epp00)
+         call ESRSPINGGA(rhotm,rhosp,grdt,grds,grdts,mu,Emp00)
+         call ESRSPINGGA(rhotp,rhosm,grdt,grds,grdts,mu,Epm00)
+         call ESRSPINGGA(rhotm,rhosm,grdt,grds,grdts,mu,Emm00)
          d2E(2) = (Epp00 - Emp00 - Epm00 + Emm00)/(4.d0*hrt*hrs) ! d2Edrhotdrhos
        end if
 
@@ -627,21 +655,20 @@ C        derivative wrt grdt and grdt -----------------------
          d2E(6) = (E00p0 - 2.d0*E + E00m0)/(hgt*hgt) ! d2Edgrdtgrdt
 
 C        derivative wrt rhot and grdt -----------------------
-         call ESRSPINGGA(rhotp,rhos,grdtp,grds,mu,Ep0p0)
-         call ESRSPINGGA(rhotm,rhos,grdtp,grds,mu,Em0p0)
-         call ESRSPINGGA(rhotp,rhos,grdtm,grds,mu,Ep0m0)
-         call ESRSPINGGA(rhotm,rhos,grdtm,grds,mu,Em0m0)
+         call ESRSPINGGA(rhotp,rhos,grdtp,grds,grdts,mu,Ep0p0)
+         call ESRSPINGGA(rhotm,rhos,grdtp,grds,grdts,mu,Em0p0)
+         call ESRSPINGGA(rhotp,rhos,grdtm,grds,grdts,mu,Ep0m0)
+         call ESRSPINGGA(rhotm,rhos,grdtm,grds,grdts,mu,Em0m0)
          d2E(4) = (Ep0p0 - Em0p0 - Ep0m0 + Em0m0)/(4.d0*hrt*hgt) ! d2Edrhotdgrdt
 
-       if (hrs .gt. 0.0d00) then
-
+         if (hrs .gt. 0.0d00) then
 C        derivative wrt rhos and grdt -----------------------
-         call ESRSPINGGA(rhot,rhosp,grdtp,grds,mu,E0pp0)
-         call ESRSPINGGA(rhot,rhosm,grdtp,grds,mu,E0mp0)
-         call ESRSPINGGA(rhot,rhosp,grdtm,grds,mu,E0pm0)
-         call ESRSPINGGA(rhot,rhosm,grdtm,grds,mu,E0mm0)
+         call ESRSPINGGA(rhot,rhosp,grdtp,grds,grdts,mu,E0pp0)
+         call ESRSPINGGA(rhot,rhosm,grdtp,grds,grdts,mu,E0mp0)
+         call ESRSPINGGA(rhot,rhosp,grdtm,grds,grdts,mu,E0pm0)
+         call ESRSPINGGA(rhot,rhosm,grdtm,grds,grdts,mu,E0mm0)
          d2E(5) = (E0pp0 - E0mp0 - E0pm0 + E0mm0)/(4.d0*hrs*hgt) ! d2Edrhosdgrdt
-       end if
+         end if
 
        end if ! hgt .gt. 0
 
@@ -650,67 +677,73 @@ C        derivative wrt grds and grds -----------------------
          d2E(10) = (E000p - 2.d0*E + E000m)/(hgs*hgs) ! d2Edgrdsgrds
 
 C        derivative wrt rhot and grds -----------------------
-         call ESRSPINGGA(rhotp,rhos,grdt,grdsp,mu,Ep00p)
-         call ESRSPINGGA(rhotm,rhos,grdt,grdsp,mu,Em00p)
-         call ESRSPINGGA(rhotp,rhos,grdt,grdsm,mu,Ep00m)
-         call ESRSPINGGA(rhotm,rhos,grdt,grdsm,mu,Em00m)
+         call ESRSPINGGA(rhotp,rhos,grdt,grdsp,grdts,mu,Ep00p)
+         call ESRSPINGGA(rhotm,rhos,grdt,grdsp,grdts,mu,Em00p)
+         call ESRSPINGGA(rhotp,rhos,grdt,grdsm,grdts,mu,Ep00m)
+         call ESRSPINGGA(rhotm,rhos,grdt,grdsm,grdts,mu,Em00m)
          d2E(7) = (Ep00p - Em00p - Ep00m + Em00m)/(4.d0*hrt*hgs) ! d2Edrhotdgrds
 
        if (hrs .gt. 0.0d00) then
 
 C        derivative wrt rhos and grds -----------------------
-         call ESRSPINGGA(rhot,rhosp,grdt,grdsp,mu,E0p0p)
-         call ESRSPINGGA(rhot,rhosm,grdt,grdsp,mu,E0m0p)
-         call ESRSPINGGA(rhot,rhosp,grdt,grdsm,mu,E0p0m)
-         call ESRSPINGGA(rhot,rhosm,grdt,grdsm,mu,E0m0m)
+         call ESRSPINGGA(rhot,rhosp,grdt,grdsp,grdts,mu,E0p0p)
+         call ESRSPINGGA(rhot,rhosm,grdt,grdsp,grdts,mu,E0m0p)
+         call ESRSPINGGA(rhot,rhosp,grdt,grdsm,grdts,mu,E0p0m)
+         call ESRSPINGGA(rhot,rhosm,grdt,grdsm,grdts,mu,E0m0m)
          d2E(8) = (E0p0p - E0m0p - E0p0m + E0m0m)/(4.d0*hrs*hgs) ! d2Edrhosdgrds
        end if
 
        if (hgt .gt. 0.0d00) then
 
 C        derivative wrt grdt and grds -----------------------
-         call ESRSPINGGA(rhot,rhos,grdtp,grdsp,mu,E00pp)
-         call ESRSPINGGA(rhot,rhos,grdtm,grdsp,mu,E00mp)
-         call ESRSPINGGA(rhot,rhos,grdtp,grdsm,mu,E00pm)
-         call ESRSPINGGA(rhot,rhos,grdtm,grdsm,mu,E00mm)
+         call ESRSPINGGA(rhot,rhos,grdtp,grdsp,grdts,mu,E00pp)
+         call ESRSPINGGA(rhot,rhos,grdtm,grdsp,grdts,mu,E00mp)
+         call ESRSPINGGA(rhot,rhos,grdtp,grdsm,grdts,mu,E00pm)
+         call ESRSPINGGA(rhot,rhos,grdtm,grdsm,grdts,mu,E00mm)
          d2E(9) = (E00pp - E00mp - E00pm + E00mm)/(4.d0*hgt*hgs) ! d2Edgrdtdgrds
        end if
 
        end if ! hgs .gt. 0
 
       return
-      end
-      SUBROUTINE DESRSPINGGA_ab(ESRSPINGGA,rho,grd,mu,norder,E,d1E,d2E)
+      end ! SUBROUTINE DESRC_SPINGGA
+
+C****************************************************************************
+      SUBROUTINE DESRX_SPINGGA(ESRSPINGGA,rho,grd,mu,norder,E,d1E,d2E)
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives
-C     of a generic spin-dependent short-range GGA functional
-C     ESRSPINGGA_ab(rhoa,rhob,grda,grdb,mu,E)
+C     of a generic spin-dependent short-range GGA exchange functional
+C     using ESRSPINGGA_ab(rhoa,rhob,grda,grdb,mu,E)
+C
+C     Exchange derivatives will be done based on alpha and beta values
+C     because there are not mixed alpha-beta terms for exchange.
 C
 C     Input: ESRSPINGGA : spin-density GGA functional routine
 C            rho(1:4) : total density, spin density, 2 rho_a, 2 rho_b
-C            grd(1:4) : grd(i) = gradient norm of rho(i)
+C            grd(1:6) : grd(i) = gradient norm of rho(i), grdts, grdab
 C            mu     : Interation parameter
 C            norder : order of derivatives
 C
-C     Ouput: d1E(1) = d1Edrhot      : first derivative wrt to rhot
-C            d1E(2) = d1Edrhos      : first derivative wrt to rhos
-C            d1E(3) = d1Edgrdt      : first derivative wrt to grdt (grad rhot)
-C            d1E(4) = d1Edgrds      : first derivative wrt to grds (grad rhos)
+C    Output: d1E(1) = d1Edrhot      : first derivative wrt rhot
+C            d1E(2) = d1Edgrdt      : first derivative wrt grdt (grad rhot)
+C            d1E(3) = d1Engrdt2     : = (2.0d0/grdt)*d1E(2)
+C            d1E(4) = d1Edrhos      : first derivative wrt rhos
+C            d1E(5) = d1Edgrds      : first derivative wrt grds (grad rhos)
+C            d1E(6) = d1Engrds2     : = (2.0d0/grds)*d1E(4)
+C            d1E(7) = d1Edgrdts     : first derivative wrt grdt.grds
 C
-C            d2E(1) = d2Edrhotdrhot : second derivative wrt to rhot and rhot
-C            d2E(2) = d2Edrhotdrhos : second derivative wrt to rhot and rhos
-C            d2E(3) = d2Edrhosdrhos : second derivative wrt to rhos and rhos
-C            d2E(4) = d2Edrhotdgrdt : second derivative wrt to rhot and grdt
-C            d2E(5) = d2Edrhosdgrdt : second derivative wrt to rhos and grdt
-C            d2E(6) = d2Edgrdtdgrdt : second derivative wrt to grdt and grdt
-C            d2E(7) = d2Edrhotdgrds : second derivative wrt to rhot and grds
-C            d2E(8) = d2Edrhosdgrds : second derivative wrt to rhos and grds
-C            d2E(9) = d2Edgrdtdgrds : second derivative wrt to grdt and grds
-C            d2E(10)= d2Edgrdsdgrds : second derivative wrt to grds and grds
+C            d2E(1) = d2Edrhotdrhot : second derivative wrt rhot and rhot
+C            d2E(2) = d2Edrhotdrhos : second derivative wrt rhot and rhos
+C            d2E(3) = d2Edrhosdrhos : second derivative wrt rhos and rhos
+C            d2E(4) = d2Edrhotdgrdt : second derivative wrt rhot and grdt
+C            d2E(5) = d2Edrhosdgrdt : second derivative wrt rhos and grdt
+C            d2E(6) = d2Edgrdtdgrdt : second derivative wrt grdt and grdt
+C            d2E(7) = d2Edrhotdgrds : second derivative wrt rhot and grds
+C            d2E(8) = d2Edrhosdgrds : second derivative wrt rhos and grds
+C            d2E(9) = d2Edgrdtdgrds : second derivative wrt grdt and grds
+C            d2E(10)= d2Edgrdsdgrds : second derivative wrt grds and grds
 C
-C     Created: 07-02-16, H. J. Aa. Jensen (from routine by J. Toulouse)
-      ! edh Needs to be adapted to DESRSPINGGA (d1E arrays reshuffle and
-      ! make additional gradient array
+C     Created: 07-Feb-16, 20-Feb-18, H. J. Aa. Jensen (based on DESRSPINGGA routine)
 C*****************************************************************************
       implicit none
 
@@ -718,11 +751,10 @@ C*****************************************************************************
       integer          norder
 
       double precision rho(4), grd(4), mu
-      double precision E, d1E(4), d2E(10)
+      double precision E, d1E(7), d2E(10)
       double precision    d1W(4), d2W(10) ! for derivative wrt rhoa, rhob, grda, grdb
 
-!     double precision rhot, rhos, grdt, grds
-!     double precision rhotx, rhosx, grdtx, grdsx ! modified values used in numerical differentiation
+      double precision grdt, grds
 
       double precision rhoa, rhob, grda, grdb
       double precision rhoam, rhoap, rhobp, rhobm ! modified values used in numerical differentiation
@@ -746,8 +778,8 @@ C*****************************************************************************
 
 C     check
       if(norder .lt. 0 .or. norder .ge. 3) then
-        print *,'DESRSPINGGA_ab: norder=',norder
-        call quit('DESRSPINGGA_ab: norder must be 0, 1, or 2')
+        print *,'DESRX_SPINGGA: norder=',norder
+        call quit('DESRX_SPINGGA: norder must be 0, 1, or 2')
       endif
 
       if (norder .ge. 1) d1E(:) = 0.0d0
@@ -763,7 +795,7 @@ C     check
       grda = grd(3)/2
       grdb = grd(4)/2
       if (rhoa .lt. 0.0d0 .or. rhob .lt. 0.0d0) then
-         call quit('DESRSPINGGA_ab error: rhoa or rhob negative')
+         call quit('DESRX_SPINGGA error: rhoa or rhob negative')
       end if
       pure_spin = (rhoa .le. 1.d-14  .or. rhob .le. 1.d-14) ! pure alpha or pure beta
 
@@ -798,7 +830,7 @@ C Special treatment of pure spin
 
       if (pure_spin) then
 
-       call quit('DESRSPINGGA_ab: pure_spin not implemented yet')
+       call quit('DESRX_SPINGGA: pure_spin not implemented yet')
 
          if (norder .ge. 1) then
            d1E(:) = 0.0d0
@@ -824,6 +856,7 @@ C Special treatment of pure spin
 C First-order derivatives --------------------------------------------
       if (norder .lt. 1) return
 
+      d1E(:) = 0.0d0
       d1W(:) = 0.0d0
 
 C     derivatives wrt rhoa, rhob, grda, grdb ---------------------
@@ -852,10 +885,16 @@ C     derivatives wrt rhoa, rhob, grda, grdb ---------------------
          d1W(4) = (E000p - E000m)/(2.d0*hgb) ! d1Edgrdb
        end if
 
-       d1E(1) = d1W(1) + d1W(2)
-       d1E(2) = d1W(1) - d1W(2)
-       d1E(3) = d1W(3) + d1W(4)
-       d1E(4) = d1W(3) - d1W(4)
+       d1E(1) = 0.5d0*(d1W(1) + d1W(2))
+       d1E(2) = 0.5d0*(d1W(3) + d1W(4))
+       grdt = grd(1)
+       IF (grdt .gt. 0.0d0)
+     &    d1E(3) = (2.0d0/grdt)*d1E(2)        ! d1Engrdt2
+       d1E(4) = 0.5d0*(d1W(1) - d1W(2))
+       d1E(5) = 0.5d0*(d1W(3) - d1W(4))
+       grds = grd(2)
+       IF (grds .gt. 0.0d0)
+     &    d1E(6) = (2.0d0/grds)*d1E(4)        ! d1Engrds2
 
 C Second-order derivatives --------------------------------------------
       if (norder .lt. 2) return
@@ -939,31 +978,31 @@ C        derivative wrt grda and grdb -----------------------
 
        END IF ! hgb .gt. 0
 
-!      d2Edrt2   = d2Edra2 + d2Edrb2 + 2 d2Edradrb
-       d2E(1)    = d2W(1)  + d2W(3)  + 2*d2W(2)
-!      d2Edrtdrs = d2Edra2 - d2Edrb2
-       d2E(2)    = d2W(1)  - d2W(3)
-!      d2Edrs2   = d2Edra2 + d2Edrb2 - 2 d2Edradrb
-       d2E(3)    = d2W(1)  + d2W(3)  - 2*d2W(2)
+!      d2Edrt2   = 0.25d0*(d2Edra2 + d2Edrb2 + 2 d2Edradrb)
+       d2E(1)    = 0.25d0*(d2W(1)  + d2W(3)  + 2*d2W(2))
+!      d2Edrtdrs = 0.25d0*(d2Edra2 - d2Edrb2)
+       d2E(2)    = 0.25d0*(d2W(1)  - d2W(3))
+!      d2Edrs2   = 0.25d0*(d2Edra2 + d2Edrb2 - 2 d2Edradrb)
+       d2E(3)    = 0.25d0*(d2W(1)  + d2W(3)  - 2*d2W(2))
 
-!      d2Edrtdgt = d2Edradga + d2Edradgb + d2Edrbdga + d2Edrbdgb
-       d2E(4)    = d2W(4)    + d2W(7)    + d2W(5)    + d2W(8)
-!      d2Edrtdgs = d2Edradga - d2Edradgb + d2Edrbdga - d2Edrbdgb
-       d2E(7)    = d2W(4)    - d2W(7)    + d2W(5)    - d2W(8)
-!      d2Edrsdgt = d2Edradga + d2Edradgb - d2Edrbdga - d2Edrbdgb
-       d2E(5)    = d2W(4)    + d2W(7)    - d2W(5)    - d2W(8)
-!      d2Edrsdgs = d2Edradga - d2Edradgb - d2Edrbdga + d2Edrbdgb
-       d2E(8)    = d2W(4)    - d2W(7)    - d2W(5)    + d2W(8)
+!      d2Edrtdgt = 0.25d0*(d2Edradga + d2Edradgb + d2Edrbdga + d2Edrbdgb)
+       d2E(4)    = 0.25d0*(d2W(4)    + d2W(7)    + d2W(5)    + d2W(8))
+!      d2Edrtdgs = 0.25d0*(d2Edradga - d2Edradgb + d2Edrbdga - d2Edrbdgb)
+       d2E(7)    = 0.25d0*(d2W(4)    - d2W(7)    + d2W(5)    - d2W(8))
+!      d2Edrsdgt = 0.25d0*(d2Edradga + d2Edradgb - d2Edrbdga - d2Edrbdgb)
+       d2E(5)    = 0.25d0*(d2W(4)    + d2W(7)    - d2W(5)    - d2W(8))
+!      d2Edrsdgs = 0.25d0*(d2Edradga - d2Edradgb - d2Edrbdga + d2Edrbdgb)
+       d2E(8)    = 0.25d0*(d2W(4)    - d2W(7)    - d2W(5)    + d2W(8))
 
-!      d2Edgt2   = d2Edga2 + d2Edgb2 + 2 d2Edgadgb
-       d2E(6)    = d2W(6)  + d2W(10) + 2*d2W(9)
-!      d2Edgtdgs = d2Edga2 - d2Edgb2
-       d2E(9)    = d2W(6)  - d2W(10)
-!      d2Edgs2   = d2Edga2 + d2Edgb2 - 2 d2Edgadgb
-       d2E(10)   = d2W(6)  + d2W(10) - 2*d2W(9)
+!      d2Edgt2   = 0.25d0*(d2Edga2 + d2Edgb2 + 2 d2Edgadgb)
+       d2E(6)    = 0.25d0*(d2W(6)  + d2W(10) + 2*d2W(9))
+!      d2Edgtdgs = 0.25d0*(d2Edga2 - d2Edgb2)
+       d2E(9)    = 0.25d0*(d2W(6)  - d2W(10))
+!      d2Edgs2   = 0.25d0*(d2Edga2 + d2Edgb2 - 2 d2Edgadgb)
+       d2E(10)   = 0.25d0*(d2W(6)  + d2W(10) - 2*d2W(9))
 
       return
-      end
+      end ! SUBROUTINE DESRX_SPINGGA
 C****************************************************************************
       SUBROUTINE ESRSPINGGA_ab(ESRSPINGGA,rhoa,rhob,grda,grdb,mu,E)
 
@@ -979,8 +1018,9 @@ C****************************************************************************
       rhos = rhoa - rhob
       grdt = grda + grdb
       grds = grda - grdb
+      grdts = 0.0d0
 
-      CALL ESRSPINGGA(rhot,rhos,grdt,grds,mu,E)
+      CALL ESRSPINGGA(rhot,rhos,grdt,grds,grdts,mu,E)
 
       return
       end
@@ -1150,13 +1190,13 @@ C            norder : Order of derivative
 C            FxSR   : routine for evaluation of Fx(short-range PBE)
 C
 C     Ouput: e             : energy
-C            d1edrho       : first derivative wrt to rho
-C            d1edgrd       : first derivative wrt to grd   (for 2nd-order optimisation)
-C            d1edgrda2     : first derivative wrt to grda2 (for HF optimisation)
+C            d1edrho       : first derivative wrt rho
+C            d1edgrd       : first derivative wrt grd   (for 2nd-order optimisation)
+C            d1edgrda2     : first derivative wrt grda2 (for HF optimisation)
 C            (grda2 is the square of gradient of spin-alpha density)
-C            d2edrhodrho   : second derivative wrt to rho and rho
-C            d2edgrddgrd   : second derivative wrt to grd and grd
-C            d2edrhodgrd   : second derivative wrt to rho and grd
+C            d2edrhodrho   : second derivative wrt rho and rho
+C            d2edgrddgrd   : second derivative wrt grd and grd
+C            d2edrhodgrd   : second derivative wrt rho and grd
 C
 C     Author: J. Toulouse
 C     Date  : 12-02-05
@@ -3136,13 +3176,13 @@ C            mu     : Interation parameter
 C            norder : Order of derivative
 C
 C     Ouput: e             : energy
-C            d1edrho       : first derivative wrt to rho
-C            d1edgrd       : first derivative wrt to grd   (for 2nd-order optimisation)
-C            d1edgrda2     : first derivative wrt to grda2 (for HF optimisation)
+C            d1edrho       : first derivative wrt rho
+C            d1edgrd       : first derivative wrt grd   (for 2nd-order optimisation)
+C            d1edgrda2     : first derivative wrt grda2 (for HF optimisation)
 C            (grda2 is the square of gradient of spin-alpha density)
-C            d2edrhodrho   : second derivative wrt to rho and rho
-C            d2edgrddgrd   : second derivative wrt to grd and grd
-C            d2edrhodgrd   : second derivative wrt to rho and grd
+C            d2edrhodrho   : second derivative wrt rho and rho
+C            d2edgrddgrd   : second derivative wrt grd and grd
+C            d2edrhodgrd   : second derivative wrt rho and grd
 C
 C     Author: J. Toulouse
 C     Date  : 12-02-05
@@ -3555,64 +3595,57 @@ C     LDA energy
       return
       end
 C****************************************************************************
-      subroutine ESRX_PBEGWSERFSPIN(rhot,rhos,grdt,grds,mu,e)
+      subroutine ESRX_PBEGWSERFSPIN(rhoa2,rhob2,grda2,grdb2,mu,e)
 C*****************************************************************************
 C     Short-range PBE exchange functional from
 C       Goll et al. Chem. Phys. 329 (2006), 276
 C
-C     Input: rhot   : density
-C            rhos   : spin-density
-C            grdt   : norm of gradient of density
-C            grds   : norm of gradient of spin-density
+C     Input: rhoa2  : 2 times alpha density
+C            rhob2  : 2 times beta density
+C            grda2  : 2 times alpha density gradient norm
+C            grdb2  : 2 times alpha density gradient norm
 C            mu     : Interation parameter
 C
 C     Ouput: e      : energy
 C
 C     Author: Erik Donovan Hedegård (after original code by J. Toulouse)
-C     Date  : 11-02-16
+C     Date  : 11-02-16; revised 14.feb.2018 hjaaj
 C*****************************************************************************
       implicit none
 
-      double precision rhot, rhos, grdt, grds, mu
-      double precision rhoa, rhob, grda, grdb
-      double precision e, ea, eb
+      real*8   rhoa2, rhob2, grda2, grdb2, mu, e
 
-      double precision kappa,sq,fx
+      real*8   ea, eb, kappa, sq, fx
       
 ! function
-      double precision berf
+      real*8 berf
 
 !     GGA energy
 
       kappa=0.804d0
 
 ! Alpha density
-      rhoa  =max((rhot+rhos),0d0) ! twice the real rho_a density
-      grda = max((grdt+grds),0d0) ! twice the alpha density gradient
-
       !test on density
       !if (abs(rhoa).lt.tol) goto 2
 
 C     LDA alpha exchange energy ----
 C     ! In ESRX_PBEGWS VXSRLDA is used for the same purpose, but     
       ! as VXSRLDA does not include rhos ESRX_LDAERFSPIN is used instead 
-      call ESRX_LDAERFSPIN(rhoa,0.0d0,mu,.false.,ea)
+      call ESRX_LDAERFSPIN(rhoa2,0.0d0,mu,.false.,ea)
 
-      sq=grda*grda*2.6121172985233599567768d-2*rhoa**(-8d0/3d0)
+      sq=grda2*grda2*2.6121172985233599567768d-2*rhoa2**(-8d0/3d0)
       fx=1.d0+kappa
      & -kappa/(1.d0+berf(1.616204596739954813d-1*mu
-     &                   *rhoa**(-1.d0/3.d0))*sq/kappa)
+     &                   *rhoa2**(-1.d0/3.d0))*sq/kappa)
 
       ea = ea*fx
 
 ! Beta density
-      rhob = max((rhot-rhos),0d0) ! twice the real rho_b density
-      grdb = max((grdt-grds),0d0)
-      call ESRX_LDAERFSPIN(rhob,0.0d0,mu,.false.,eb)
-      sq=grdb*grdb*2.6121172985233599567768d-2*rhob**(-8d0/3d0)
+      call ESRX_LDAERFSPIN(rhob2,0.0d0,mu,.false.,eb)
+      sq=grdb2*grdb2*2.6121172985233599567768d-2*rhob2**(-8d0/3d0)
       fx=1.d0+kappa
      & -kappa/(1.d0+berf(1.616204596739954813d-1*mu
-     &                   *rhob**(-1.d0/3.d0))*sq/kappa)
+     &                   *rhob2**(-1.d0/3.d0))*sq/kappa)
 
       eb = eb*fx
 
@@ -3774,29 +3807,29 @@ C*****************************************************************************
       return
       end
 C****************************************************************************
-      subroutine ESRC_PBEGWSERFSPIN(rho,rhos,grd,grds,mu,e)
+      subroutine ESRC_PBEGWSERFSPIN(rho,rhogrd,mu,e)
 C*****************************************************************************
 C     Short-range spin-dependent PBE correlation functional from
 C       Goll et al. Chem. Phys. 329 (2006), 276
 C
-C     Input: rho    : density
-C            rho    : spin-density
-C            grd    : norm of gradient of density
-C            grds   : norm of gradient spin-density
+C       This functional depends only on rhot, rhos, grdt
+C       and _not_ on grds and grdt.grds
+C
+C     Input: rho    : densities
+C            rhogrd : norm of gradient of densities
 C            mu     : Interaction parameter
 C
 C     Ouput: e             : energy
 C
 C     Author: Erik Hedegård (after Molpro code by J. Toulouse + A. Savin)
-C     Date  : 11-02-16
+C     Date  : 11-02-16; revised 14.feb.2018 hjaaj
 C*****************************************************************************
       implicit none
 
+      real*8   rho(4), rhogrd(6), mu, e
       double precision rho13
-      double precision rho, rhos, grd, grds, grd2, mu
-      double precision rhoa,rhob
+      double precision rhot, rhos, grdt, grdt2
       double precision zeta
-      double precision e
 
       double precision tol
       parameter(tol=1d-12)
@@ -3809,28 +3842,29 @@ C*****************************************************************************
       double precision phi, phi2, phi3, phi4
       double precision Aa, Ab, Ac, tq, arglog
 
-      rho13 = rho**(1.d0/3.d0)
+      rhot  = rho(1)
+      rhos  = rho(2)
+      rho13 = rho(1)**(1.d0/3.d0)
 C     LDA energy ----
 !     In ESRC_PBEGWS VCSRLDA is used for the same purpose, but
 !     as VCSRLDA does not include rhos ESRX_LDAERFSPIN is used instead
-      call ESRC_LDAERFSPIN(rho,rhos,mu,.false.,e)
+      call ESRC_LDAERFSPIN(rhot,rhos,mu,.false.,e)
       ecerflda =  e
 
       ! full range LDA energy (mu = 0.0)
-      call ESRC_LDAERFSPIN(rho,rhos,0.0d0,.false.,e)
+      call ESRC_LDAERFSPIN(rhot,rhos,0.0d0,.false.,e)
       eclda = e
 
 !     Spin polarisation
-!     Define rhoa, rhob, zeta
-      rhoa=max((rho + rhos)*.5d0,1.0d-15)
-      rhob=max((rho - rhos)*.5d0,1.0d-15)
-      zeta = (rhoa-rhob)/(rhoa+rhob)
+!     Define zeta
+      zeta = rhos / rhot ! zeta = (rhoa-rhob)/(rhoa+rhob)
 
       alpha=2.78d0
       gamma=3.1091d-2
 
 !     square of density gradient
-      grd2 = grd*grd
+      grdt  = rhogrd(1)
+      grdt2 = grdt*grdt
 
       if ((ecerflda/eclda).le.0d0) then
 !       ! edh define beta and check alpha!
@@ -3842,8 +3876,8 @@ C     LDA energy ----
       phi2=phi*phi
       phi3=phi2*phi
       phi4=phi3*phi
-      tq=grd2*6.346820607d-2*rho**(-7d0/3d0)/phi2
-      Ab=dexp(-ecerflda/(rho*gamma*phi3))-1d0
+      tq=grdt2*6.346820607d-2*rhot**(-7d0/3d0)/phi2
+      Ab=dexp(-ecerflda/(rhot*gamma*phi3))-1d0
       if(dabs(Ab).le.dabs(beta*tol)) then
         ecerfpbe=ecerflda
       else
@@ -3851,7 +3885,7 @@ C     LDA energy ----
         Ac=1d0+Aa*tq+Aa**2*tq**2
         if (Aa.lt.tol) Aa=tol
         arglog=1d0+beta*(1d0-1d0/Ac)/(gamma*Aa)
-        ecerfpbe=ecerflda+rho*phi3*gamma*dlog(arglog)
+        ecerfpbe=ecerflda+rhot*phi3*gamma*dlog(arglog)
       endif
 
        e = ecerfpbe
@@ -3897,7 +3931,7 @@ C*****************************************************************************
 C*****************************************************************************
 
 !-------------------------------------------
-      function berf(a)
+      real*8 function berf(a)
 !-------------------------------------------
 !  Second-order exchange gradient expansion coefficient for erf
 !  interaction
@@ -3910,9 +3944,8 @@ C*****************************************************************************
 !-------------------------------------------
       implicit none
 
-      double precision a
-      double precision eta,fak,berf
-      double precision pi
+      real*8  a
+      real*8  pi, eta, fak
 
 ! function
       double precision derf
