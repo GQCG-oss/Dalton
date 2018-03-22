@@ -1532,6 +1532,16 @@ C
      &                           WORK(KWKRHS),1,LWKRHS)
                      GRDICT = D0
                      GRDACT = D0
+                  ELSE IF (NASHT .GT. 1 .AND. HSROHF) THEN
+                  !  ABARHS expects MOTWOINT if NASHT .gt. 1 /Mar.2018, hjaaj
+                     WRITE (LUPRI,'(///A/A,I0,A)')
+     &   'Fatal error: Requested magnetic or atom derivative'//
+     &   ' property is not implemented for HSROHF. ',
+     &   ' Atom no. ',IATOM, ' ( 0 means external magnetic B field )'
+                     IF (.NOT.DFTADD) WRITE (LUPRI,'(/A)')
+     &   'Note: You can use the .MCSCF path to calculate this property.'
+                     CALL QUIT('Fatal error: Requested property'//
+     &               ' is not implemented for HSROHF')
                   ELSE
                      CALL ABARHS(NGD,DV,PV,WORK(KFC),WORK(KFV),
      &                           WORK(KCREF),CMO,WORK(KTDSQ),

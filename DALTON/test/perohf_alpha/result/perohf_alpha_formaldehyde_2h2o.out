@@ -4,8 +4,11 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2016.alpha
+    This is output from DALTON release Dalton2017.alpha (2017)
+         ( Web site: http://daltonprogram.org )
+
    ----------------------------------------------------------------------------
+
     NOTE:
      
     Dalton is an experimental code for the evaluation of molecular
@@ -24,13 +27,13 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
        T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
        L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
        C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
        H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
        M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
-       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
        T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
        J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
        O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
@@ -45,12 +48,12 @@
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
        and H. Agren,
        "The Dalton quantum chemistry program system",
-       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
-    
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
     and
-    
+     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2015.alpha (2015), see http://daltonprogram.org
+       Release Dalton2017.alpha (2017), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -59,7 +62,7 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
   Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
@@ -70,6 +73,7 @@
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
   Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -78,12 +82,14 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
   Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
@@ -105,7 +111,7 @@
   Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
-  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex frequency response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
@@ -136,14 +142,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Feb 23 15:12:39 2015
+     Date and time (Linux)  : Mon Mar 12 08:57:10 2018
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/build_pelib/test/perohf_alpha
-   2) /home/magnus/Projects/dalton_devel/dalton/build_pelib/basis
+   1) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/test/perohf_alpha
+   2) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis
 
 
 Compilation information
@@ -151,67 +157,76 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-3.18.6-200.fc21.x86_64
+ System                   | Linux-4.15.6-300.fc27.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /usr/local/bin/mpif90
- Fortran compiler version | GNU Fortran (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C compiler               | /usr/local/bin/mpicc
- C compiler version       | gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C++ compiler             | /usr/local/bin/mpicxx
- C++ compiler version     | unknown
- BLAS                     | /lib64/libblas.so
- LAPACK                   | /lib64/liblapack.so
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ BLAS                     | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_gf_lp64.
+                          | so;/home/magnus/Programs/intel/compilers_and_libra
+                          | ries_2018.1.163/linux/mkl/lib/intel64/libmkl_seque
+                          | ntial.so;/home/magnus/Programs/intel/compilers_and
+                          | _libraries_2018.1.163/linux/mkl/lib/intel64/libmkl
+                          | _core.so;/usr/lib64/libpthread.so;/usr/lib64/libm.
+                          | so
+ LAPACK                   | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_lapack95
+                          | _lp64.a;/home/magnus/Programs/intel/compilers_and_
+                          | libraries_2018.1.163/linux/mkl/lib/intel64/libmkl_
+                          | gf_lp64.so
  Static linking           | OFF
- Last Git revision        | 5238537d2eab9c23858149b88466e4eda8e39bfc
- Git branch               | [32mpe/develop[m
- Configuration time       | 2015-02-23 15:06:18.814013
-
- * Sequential calculation.
+ Last Git revision        | c26c19694269d0231f4416cb83b028f9456ffab8
+ Git branch               | add-multipole-interaction
+ Configuration time       | 2018-03-11 23:22:22.832814
 
 
    Content of the .dal input file
  ----------------------------------
 
-**DALTON                                          
-.RUN PROPERTIES                                   
-.DIRECT                                           
-.PEQM                                             
-*PEQM                                             
-.VERBOSE                                          
-**WAVE FUNCTIONS                                  
-.HF                                               
-*SCF INPUT                                        
-.DOUBLY OCCUPIED                                  
-7                                                 
-.SINGLY OCCUPIED                                  
-1                                                 
-**PROPERTIES                                      
-.ALPHA                                            
-*ABALNR                                           
-.FREQUENCY                                        
-2                                                 
-0.0 0.04                                          
-**END OF                                          
+**DALTON
+.RUN PROPERTIES
+.DIRECT
+.PEQM
+*PEQM
+.VERBOSE
+**WAVE FUNCTIONS
+.HF
+*SCF INPUT
+.DOUBLY OCCUPIED
+7
+.SINGLY OCCUPIED
+1
+**PROPERTIES
+.ALPHA
+*ABALNR
+.FREQUENCY
+2
+0.0 0.04
+**END OF
 
 
    Content of the .mol file
  ----------------------------
 
-BASIS                                                                          
-STO-3G                                                                         
-Formaldehyde                                                                   
-------------------------                                                       
-AtomTypes=3 NoSymmetry Angstrom                                                
-Charge=6.0 Atoms=1                                                             
-C           -1.588367    -.770650     .029109                                  
-Charge=8.0 Atoms=1                                                             
-O           -1.657083     .436069    -.009750                                  
-Charge=1.0 Atoms=2                                                             
-H           -.620668   -1.294822      .054251                                  
-H           -2.508043   -1.382001     .040282                                  
+BASIS
+STO-3G
+Formaldehyde
+------------------------
+AtomTypes=3 NoSymmetry Angstrom
+Charge=6.0 Atoms=1
+C           -1.588367    -.770650     .029109
+Charge=8.0 Atoms=1
+O           -1.657083     .436069    -.009750
+Charge=1.0 Atoms=2
+H           -.620668   -1.294822      .054251
+H           -2.508043   -1.382001     .040282
 
 
        *******************************************************************
@@ -251,7 +266,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -259,7 +274,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -267,7 +282,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -396,6 +411,8 @@ H           -2.508043   -1.382001     .040282
 
       Iterative solver for induced moments will be used
       with convergence threshold: 1.0E-08
+      Total charge of classical region:   -0.0000
+ 
 
 
                      .---------------------------------------.
@@ -427,8 +444,20 @@ H           -2.508043   -1.382001     .040282
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   0.02 seconds
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x    -48.97334290      -124.47781350      -415.21329231
+      y     -7.20395913       -18.31063652       -61.07770905
+      z      0.36129107         0.91831024         3.06315324
+
+
+  Total CPU  time used in HERMIT:   0.03 seconds
+  Total wall time used in HERMIT:   0.03 seconds
 
 
                         .----------------------------------.
@@ -462,7 +491,7 @@ H           -2.508043   -1.382001     .040282
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 23 15:12:39 2015
+     Date and time (Linux)  : Mon Mar 12 08:57:10 2018
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -488,7 +517,7 @@ H           -2.508043   -1.382001     .040282
      Wave function environment is modeled using the
      polarizable embedding model (PE library).
 
-@    Wave function type        >>> PE-HF <<<
+@    Wave function type        --- PE-HF ---
 @    Number of closed shell electrons          14
 @    Number of electrons in active shells       1
 @    Total charge of the molecule               1
@@ -529,7 +558,7 @@ H           -2.508043   -1.382001     .040282
 
  Iter      Total energy     Embedding energy      Error norm     Delta(E)
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  2.44D-02  2.50D-02
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  3.33D-02  3.30D-02
       Induced dipole moments converged in  8 iterations.
 
       Info from polarizable embedding library:
@@ -541,11 +570,13 @@ H           -2.508043   -1.382001     .040282
                        X              Y              Z
                   0.22717718     0.55858080     0.00611581
 
-@  1  -111.859491256     -2.141707944075E-02    1.53324D+00   -1.12D+02
-      Virial theorem: -V/T =      2.018564
-@      MULPOP C       1.20; O      -0.23; H       0.01; H       0.02; 
+@  1  -111.872876175     -3.480199811957E-02    1.53324D+00   -1.12D+02
+      Virial theorem: -V/T =      2.018686
+@    MULPOP   C       1.20; O      -0.23; H       0.01; H       0.02; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
+               and singly occupied orbital energies shifted by -1.00D-01
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  2.45D-02  2.40D-02
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  2.98D-02  3.00D-02
       Induced dipole moments converged in  7 iterations.
 
       Info from polarizable embedding library:
@@ -555,13 +586,15 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.40866429     0.49052536     0.00698485
+                  0.37866734     0.50367348     0.00678625
 
-@  2  -112.008183245     -4.386305153746E-03    1.01694D+00   -1.49D-01
-      Virial theorem: -V/T =      2.024706
-@      MULPOP C      -0.24; O       0.65; H       0.32; H       0.27; 
+@  2  -112.059433827     -2.055305388295E-02    7.06248D-01   -1.87D-01
+      Virial theorem: -V/T =      2.024586
+@    MULPOP   C      -0.02; O       0.50; H       0.28; H       0.24; 
+   2  Level shift: doubly occupied orbital energies shifted by -1.00D-01
+               and singly occupied orbital energies shifted by -5.00D-02
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  2.53D-02  2.60D-02
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  2.93D-02  2.90D-02
       Induced dipole moments converged in  7 iterations.
 
       Info from polarizable embedding library:
@@ -571,45 +604,15 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.31608466     0.54104038     0.00649404
+                  0.32422404     0.53659140     0.00649273
 
-@  3  -112.082503325     -1.624755850158E-02    1.58477D-01   -7.43D-02
-      Virial theorem: -V/T =      2.020032
-@      MULPOP C       0.27; O       0.13; H       0.32; H       0.27; 
+@  3  -112.098202501     -2.840217945132E-02    1.34029D-01   -3.88D-02
+      Virial theorem: -V/T =      2.020630
+@    MULPOP   C       0.24; O       0.18; H       0.31; H       0.27; 
+   3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
+               and singly occupied orbital energies shifted by -1.25D-02
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    4    F  2.57D-02  2.60D-02
-      Induced dipole moments converged in  7 iterations.
-
-      Info from polarizable embedding library:
-     ------------------------------------------
-
-       Input density no.:   1
-
-                        Total induced dipole moment
-                       X              Y              Z
-                  0.33155211     0.53427826     0.00639155
-
-@  4  -112.091352347     -1.409537547492E-02    8.19491D-02   -8.85D-03
-      Virial theorem: -V/T =      2.020114
-@      MULPOP C       0.21; O       0.19; H       0.32; H       0.27; 
- -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    5    F  2.44D-02  2.40D-02
-      Induced dipole moments converged in  7 iterations.
-
-      Info from polarizable embedding library:
-     ------------------------------------------
-
-       Input density no.:   1
-
-                        Total induced dipole moment
-                       X              Y              Z
-                  0.32378637     0.53862342     0.00629556
-
-@  5  -112.092629753     -1.509652076938E-02    2.22522D-02   -1.28D-03
-      Virial theorem: -V/T =      2.019393
-@      MULPOP C       0.25; O       0.15; H       0.32; H       0.27; 
- -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    6    F  2.46D-02  2.50D-02
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  3.01D-02  3.10D-02
       Induced dipole moments converged in  6 iterations.
 
       Info from polarizable embedding library:
@@ -619,13 +622,33 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.32314572     0.53876259     0.00629988
+                  0.33047246     0.53492602     0.00637134
 
-@  6  -112.092707794     -1.516675807441E-02    6.15954D-03   -7.80D-05
-      Virial theorem: -V/T =      2.019353
-@      MULPOP C       0.25; O       0.15; H       0.32; H       0.27; 
+@  4  -112.105042503     -2.761428447875E-02    6.89358D-02   -6.84D-03
+      Virial theorem: -V/T =      2.020137
+@    MULPOP   C       0.22; O       0.19; H       0.32; H       0.27; 
+   4  Level shift: doubly occupied orbital energies shifted by -2.50D-02
+               and singly occupied orbital energies shifted by -1.25D-02
  -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    7    F  2.44D-02  2.40D-02
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    5    F  2.97D-02  3.00D-02
+      Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.32366091     0.53868781     0.00629956
+
+@  5  -112.106001052     -2.850461160974E-02    2.36149D-02   -9.59D-04
+      Virial theorem: -V/T =      2.019520
+@    MULPOP   C       0.25; O       0.15; H       0.32; H       0.27; 
+   5  Level shift: doubly occupied orbital energies shifted by -1.25D-02
+               and singly occupied orbital energies shifted by -6.25D-03
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    6    F  3.00D-02  3.10D-02
       Induced dipole moments converged in  5 iterations.
 
       Info from polarizable embedding library:
@@ -635,13 +658,29 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.32315268     0.53868162     0.00630278
+                  0.32328971     0.53869901     0.00629767
 
-@  7  -112.092713087     -1.515804661137E-02    6.55126D-04   -5.29D-06
-      Virial theorem: -V/T =      2.019348
-@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
+@  6  -112.106094100     -2.852921634511E-02    4.99561D-03   -9.30D-05
+      Virial theorem: -V/T =      2.019473
+@    MULPOP   C       0.25; O       0.16; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    F  2.52D-02  2.50D-02
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    7    F  3.15D-02  3.20D-02
+      Induced dipole moments converged in  5 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.32316383     0.53867499     0.00630342
+
+@  7  -112.106097971     -2.854314073856E-02    5.92526D-04   -3.87D-06
+      Virial theorem: -V/T =      2.019473
+@    MULPOP   C       0.25; O       0.16; H       0.32; H       0.27; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    F  3.24D-02  3.30D-02
       Induced dipole moments converged in  4 iterations.
 
       Info from polarizable embedding library:
@@ -651,13 +690,13 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.32315807     0.53866070     0.00630377
+                  0.32315716     0.53866327     0.00630345
 
-@  8  -112.092713159     -1.515617846253E-02    9.67534D-05   -7.14D-08
-      Virial theorem: -V/T =      2.019350
-@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
+@  8  -112.106098072     -2.854122688514E-02    1.42923D-04   -1.02D-07
+      Virial theorem: -V/T =      2.019471
+@    MULPOP   C       0.25; O       0.16; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    9    F  2.64D-02  2.70D-02
+   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    9    F  3.29D-02  3.30D-02
       Induced dipole moments converged in  4 iterations.
 
       Info from polarizable embedding library:
@@ -667,13 +706,13 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.32314892     0.53865878     0.00630382
+                  0.32315046     0.53865853     0.00630384
 
-@  9  -112.092713164     -1.515677329677E-02    4.27034D-05   -5.09D-09
-      Virial theorem: -V/T =      2.019350
-@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
+@  9  -112.106098081     -2.854162471176E-02    5.28944D-05   -9.36D-09
+      Virial theorem: -V/T =      2.019472
+@    MULPOP   C       0.25; O       0.16; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10   10    F  2.47D-02  2.50D-02
+  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10   10    F  3.16D-02  3.10D-02
       Induced dipole moments converged in  4 iterations.
 
       Info from polarizable embedding library:
@@ -683,14 +722,14 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.32314093     0.53865834     0.00630381
+                  0.32314301     0.53865821     0.00630377
 
-@ 10  -112.092713166     -1.515747105195E-02    1.56702D-05   -2.03D-09
-      Virial theorem: -V/T =      2.019351
-@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
+@ 10  -112.106098084     -2.854212583602E-02    2.36242D-05   -2.51D-09
+      Virial theorem: -V/T =      2.019472
+@    MULPOP   C       0.25; O       0.16; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-  11  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10   11    F  2.65D-02  2.60D-02
-      Induced dipole moments converged in  3 iterations.
+  11  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10   11    F  3.57D-02  3.60D-02
+      Induced dipole moments converged in  4 iterations.
 
       Info from polarizable embedding library:
      ------------------------------------------
@@ -699,12 +738,12 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.32313865     0.53865822     0.00630372
+                  0.32313867     0.53865820     0.00630374
 
-@ 11  -112.092713166     -1.515760714882E-02    6.91262D-06   -2.47D-10
+@ 11  -112.106098085     -2.854252546416E-02    7.67101D-06   -5.47D-10
 
 @ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -112.092713165877    6.91D-06
+@     Converged SCF energy, gradient:   -112.106098084535    7.67D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -712,7 +751,7 @@ H           -2.508043   -1.382001     .040282
    (incl. contribution from polarizable embedding potential)
 
  Orbital energy analysis for an open-shell system.
- Orbital energies are not well-defined for open-shell systems
+ Orbital energies are not uniquely defined for open-shell systems
    here is used block diagonalization of the FD=FC+FV Fock matrix.
  NOTE that Koopmans' theorem is not fulfilled for this case.
 
@@ -721,16 +760,16 @@ H           -2.508043   -1.382001     .040282
 
  Sym       Hartree-Fock orbital energies
 
-1 A     -20.92156874   -11.59705230    -1.81577908    -1.18995600    -0.99581058
-         -0.99369614    -0.92817840    -0.55638691    -0.14986656     0.27085101
-          0.36168772     0.44616978
+1 A     -20.92156875   -11.59705218    -1.81577904    -1.18995598    -0.99581063
+         -0.99369619    -0.92817829    -0.55638683    -0.14986651     0.27085098
+          0.36168777     0.44616985
 
-    E(LUMO) :    -0.14986656 au (symmetry 1)
-  - E(HOMO) :    -0.92817840 au (symmetry 1)
+    E(LUMO) :    -0.14986651 au (symmetry 1)
+  - E(HOMO) :    -0.92817829 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.77831185 au
+    gap     :     0.77831178 au
 
-and E(SOMO) :    -0.55638691 au (symmetry 1)
+and E(SOMO) :    -0.55638683 au (symmetry 1)
 
  NOTE: MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS
 
@@ -744,43 +783,43 @@ and E(SOMO) :    -0.55638691 au (symmetry 1)
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.199142075552
+            Electronic                -0.199142075349
             Nuclear                    0.196501001970
-            Multipole                  0.000000000000
-            Total                     -0.002641073582
+            Multipole                 -0.013384918679
+            Total                     -0.016025992058
 
        Polarization contributions:
-            Electronic                 0.107234942520
-            Nuclear                   -0.115487119969
-            Multipole                 -0.004264356121
-            Total                     -0.012516533570
+            Electronic                 0.107234943482
+            Nuclear                   -0.115487120813
+            Multipole                 -0.004264356076
+            Total                     -0.012516533407
 
-       Total PE energy:            -0.015157607153
+       Total PE energy:            -0.028542525465
 
                Polarizable embedding information:
               ------------------------------------
 
                        Induced dipole moments
        site          X              Y              Z
-          1     0.01015078     0.20477385    -0.01183205
-          2     0.05684583     0.06753877    -0.01669237
+          1     0.01015078     0.20477384    -0.01183203
+          2     0.05684584     0.06753875    -0.01669233
           3     0.01151276     0.05669982     0.04021631
-          4     0.17140857     0.04844549    -0.01443040
+          4     0.17140858     0.04844550    -0.01443043
           5     0.02820599     0.16195323    -0.00352959
-          6     0.04501472    -0.00075294     0.01257182
+          6     0.04501473    -0.00075294     0.01257182
 
                       Total induced dipole moment
                      X              Y              Z
-                0.32313865     0.53865822     0.00630372
+                0.32313867     0.53865820     0.00630374
 
 
- >>> Writing SIRIFC interface file
+ --- Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.382       0.382
+ CPU and wall time for SCF :       0.462       0.466
 
 
                        .-----------------------------------.
-                       | >>> Final results from SIRIUS <<< |
+                       | --- Final results from SIRIUS --- |
                        `-----------------------------------'
 
 
@@ -788,20 +827,20 @@ and E(SOMO) :    -0.55638691 au (symmetry 1)
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    1
 
-@    Final HF energy:            -112.092713165877                 
+@    Final HF energy:            -112.106098084535                 
 @    Nuclear repulsion:            31.249215315972
-@    Electronic energy:          -143.326770874700
-@    Embedding energy:             -0.015157607149
+@    Electronic energy:          -143.326770875043
+@    Embedding energy:             -0.028542525464
 
-@    Final gradient norm:           0.000006912618
+@    Final gradient norm:           0.000007671006
 
  
-     Date and time (Linux)  : Mon Feb 23 15:12:39 2015
+     Date and time (Linux)  : Mon Mar 12 08:57:10 2018
      Host name              : foeroyar                                
 
-File label for MO orbitals:  23Feb15   FOCKDIIS
+File label for MO orbitals:  12Mar18   FOCKDIIS
 
- (Only coefficients >0.0100 are printed.)
+ (Only coefficients > 0.0100 are printed.)
 
  Molecular orbitals for symmetry species 1  (A  )
  ------------------------------------------------
@@ -809,15 +848,15 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
     Orbital         1        2        3        4        5        6        7
    1 C   :1s    -0.0005  -0.9928  -0.1158   0.1970   0.0190   0.0119  -0.0002
    2 C   :1s     0.0072  -0.0322   0.2414  -0.6348  -0.0844  -0.0635   0.0005
-   3 C   :2px   -0.0004   0.0002  -0.0104   0.0092  -0.5567   0.3330   0.0018
+   3 C   :2px   -0.0004   0.0002  -0.0104   0.0092  -0.5568   0.3329   0.0018
    4 C   :2py    0.0062  -0.0017   0.1532   0.1502   0.2379   0.4045  -0.0142
    5 C   :2pz   -0.0002   0.0001  -0.0047  -0.0057  -0.0124  -0.0112  -0.4180
    6 O   :1s    -0.9944  -0.0002  -0.2214  -0.1117   0.0379   0.0644  -0.0001
    7 O   :1s    -0.0254   0.0061   0.7842   0.5090  -0.2056  -0.3426   0.0006
    8 O   :2px   -0.0003   0.0001   0.0168  -0.0002  -0.1514   0.1170   0.0084
-   9 O   :2py    0.0057  -0.0018  -0.2064   0.2947  -0.3614  -0.5524  -0.0253
-  10 O   :2pz   -0.0002   0.0001   0.0069  -0.0096   0.0115   0.0162  -0.8236
-  11 H   :1s    -0.0002   0.0061   0.0218  -0.1838  -0.3439   0.0311  -0.0006
+   9 O   :2py    0.0057  -0.0018  -0.2064   0.2947  -0.3614  -0.5525  -0.0253
+  10 O   :2pz   -0.0002   0.0001   0.0069  -0.0096   0.0114   0.0162  -0.8236
+  11 H   :1s    -0.0002   0.0061   0.0218  -0.1838  -0.3439   0.0310  -0.0006
   12 H   :1s    -0.0003   0.0062   0.0236  -0.2106   0.1622  -0.3218   0.0018
 
     Orbital         8        9       10       11       12
@@ -832,15 +871,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
    9 O   :2py   -0.0396  -0.0188  -0.2689  -0.0847  -0.8890
   10 O   :2pz   -0.0088  -0.6063   0.0080   0.0050   0.0284
   11 H   :1s     0.1996  -0.0008   0.7763   0.9860  -0.2634
-  12 H   :1s    -0.2074  -0.0007   0.9976  -0.7742  -0.1219
+  12 H   :1s    -0.2074  -0.0007   0.9976  -0.7742  -0.1220
 
-
-
- >>>> Total CPU  time used in SIRIUS :      0.38 seconds
- >>>> Total wall time used in SIRIUS :      0.38 seconds
+  Total CPU  time used in SIRIUS :   0.47 seconds
+  Total wall time used in SIRIUS :   0.47 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 15:12:39 2015
+     Date and time (Linux)  : Mon Mar 12 08:57:10 2018
      Host name              : foeroyar                                
 
 
@@ -889,7 +926,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Mon Feb 23 15:12:39 2015
+     Date and time (Linux)  : Mon Mar 12 08:57:10 2018
      Host name              : foeroyar                                
 
 
@@ -907,13 +944,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.18911033    -0.14588882     0.00323671
+                 -0.18911010    -0.14588878     0.00323678
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.12095254     0.00786981    -0.00183027
+                  0.12095293     0.00786988    -0.00182997
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  6 iterations.
@@ -925,13 +962,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.12235012    -0.07138406    -0.00012573
+                  0.12235029    -0.07138438    -0.00012554
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.03707383     0.00184864     0.00061140
+                  0.03707454     0.00184827     0.00061084
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -943,13 +980,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.14993067     0.08000239    -0.00320910
+                 -0.14993076     0.08000254    -0.00320872
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.04896857     0.02868294    -0.00017596
+                 -0.04896984     0.02868294    -0.00017470
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  6 iterations.
@@ -961,13 +998,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.08986882    -0.01388250    -0.00232061
+                  0.08986752    -0.01388162    -0.00232004
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.01860387    -0.01435900    -0.00089030
+                  0.01860421    -0.01435854    -0.00088797
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -979,13 +1016,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.03891016     0.00645133    -0.00140626
+                 -0.03891090     0.00645169    -0.00140714
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.01848929     0.02030421    -0.00620999
+                 -0.01848868     0.02030565    -0.00620886
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -997,13 +1034,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.04678953     0.04492004    -0.00849472
+                 -0.04680010     0.04492793    -0.00849530
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.03387740    -0.02007584    -0.00852453
+                  0.03387864    -0.02007426    -0.00852637
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -1015,13 +1052,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.03726035    -0.05732993    -0.00930295
+                  0.03717248    -0.05730212    -0.00931200
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.03768876     0.00811325    -0.00598362
+                 -0.03774380     0.00820756    -0.00596939
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -1033,13 +1070,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.00216610     0.03234013    -0.00456359
+                 -0.00214142     0.03231656    -0.00456952
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.03751320    -0.01391724    -0.00285539
+                  0.03751113    -0.01392345    -0.00284565
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -1051,13 +1088,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.22224345     0.13556821    -0.00038179
+                 -0.22224351     0.13556826    -0.00038178
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.03241231    -0.04041369    -0.00052343
+                  0.03241240    -0.04041366    -0.00052336
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  6 iterations.
@@ -1069,13 +1106,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.07610916     0.00664826    -0.00350072
+                 -0.07610921     0.00664833    -0.00350068
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.00088873    -0.00768721     0.00058585
+                 -0.00088877    -0.00768680     0.00058595
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  6 iterations.
@@ -1087,13 +1124,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.02564899     0.05469722    -0.00562657
+                  0.02564965     0.05469808    -0.00562651
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.07716030    -0.01330339     0.00014309
+                 -0.07716146    -0.01330258     0.00014300
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -1105,13 +1142,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.00232335    -0.01654865     0.00261862
+                 -0.00232532    -0.01654852     0.00261820
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.07974210     0.02692412    -0.00006703
+                 -0.07974337     0.02692454    -0.00006721
 
       Induced dipole moments converged in  6 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -1123,13 +1160,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.04345143    -0.00170499    -0.00440135
+                  0.04344603    -0.00170400    -0.00440233
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.02053189    -0.02933675     0.00751360
+                 -0.02053447    -0.02933769     0.00751129
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  6 iterations.
@@ -1141,13 +1178,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.01558097     0.01022964    -0.00194605
+                 -0.01558998     0.01022715    -0.00194568
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.04484801    -0.02429164     0.01135456
+                 -0.04485135    -0.02429666     0.01135090
 
       Induced dipole moments converged in  6 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -1159,13 +1196,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.00996516    -0.00627250     0.01219359
+                  0.00995200    -0.00628031     0.01219272
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.03419659     0.02792484     0.00803542
+                  0.03417703     0.02791988     0.00803717
 
       Induced dipole moments converged in  6 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -1177,13 +1214,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.04466557     0.01286184    -0.00781193
+                  0.04468176     0.01287731    -0.00781378
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.03630481    -0.03927032     0.01472753
+                 -0.03625900    -0.03925364     0.01472630
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  6 iterations.
@@ -1195,13 +1232,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.03383282     0.00678881    -0.01844654
+                 -0.03381281     0.00679710    -0.01844823
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.04324086    -0.02335279     0.03228439
+                 -0.04326846    -0.02336630     0.03223585
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -1213,13 +1250,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.01958701    -0.01239753     0.09845154
+                  0.01958701    -0.01239773     0.09845155
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.08240635    -0.02796939    -0.00679933
+                  0.08240458    -0.02796993    -0.00679906
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -1231,13 +1268,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.17715370    -0.09439936    -0.00628143
+                  0.17715259    -0.09440006    -0.00628143
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.05235509    -0.01355169     0.00459192
+                  0.05235461    -0.01355137     0.00459180
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  6 iterations.
@@ -1249,13 +1286,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.08973046     0.05132066    -0.00345304
+                 -0.08973445     0.05131999    -0.00345274
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.00385093    -0.01198207     0.00666324
+                  0.00384865    -0.01198206     0.00666334
 
       Induced dipole moments converged in  6 iterations.
       Induced dipole moments converged in  6 iterations.
@@ -1267,13 +1304,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.01306042    -0.00193513    -0.00073028
+                  0.01306157    -0.00193443    -0.00073038
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.00247302    -0.01663619     0.01126157
+                  0.00246839    -0.01663625     0.01126207
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -1285,13 +1322,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.03277739    -0.01631851     0.01865650
+                  0.03278180    -0.01631989     0.01865613
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.07160530     0.07534977     0.00756840
+                 -0.07161489     0.07535152     0.00756862
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -1303,13 +1340,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.06953100     0.00856857    -0.00635846
+                 -0.06950368     0.00856711    -0.00635961
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.02370140    -0.02904443    -0.00637814
+                  0.02369024    -0.02904144    -0.00637739
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  6 iterations.
@@ -1321,13 +1358,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.06881065    -0.01524380    -0.00430744
+                 -0.06882182    -0.01524753    -0.00431202
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.00303555     0.02049326     0.00481364
+                  0.00302510     0.02049153     0.00481536
 
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -1339,13 +1376,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.00561898     0.01574719     0.01016893
+                 -0.00565171     0.01573754     0.01016704
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.02533851    -0.02793779    -0.00367998
+                  0.02531882    -0.02794873    -0.00368225
 
       Induced dipole moments converged in  6 iterations.
       Induced dipole moments converged in  6 iterations.
@@ -1357,15 +1394,15 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.00100194    -0.00011724     0.00717783
+                  0.00099773    -0.00012424     0.00717666
 
        Input density no.:   2
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.04119689     0.00799215    -0.00115026
+                  0.04125589     0.00802570    -0.00115247
 
- >>>  Time used in LNRABA     is   1.02 seconds
+  Time used in LNRABA     is       1.01 seconds
 
 
    ***************************************************************************
@@ -1374,7 +1411,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Mon Feb 23 15:12:40 2015
+     Date and time (Linux)  : Mon Mar 12 08:57:11 2018
      Host name              : foeroyar                                
 
 
@@ -1399,20 +1436,20 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
      State number       1
      Total charge       1
 
-     Total energy       -112.0927131659 au (Hartrees)
-                         -3050.19788509 eV
-                           -294299.3730 kJ/mol
-                            -70339.2383 kcal/mol
+     Total energy       -112.1060980845 au (Hartrees)
+                         -3050.56210726 eV
+                           -294334.5151 kJ/mol
+                            -70347.6375 kcal/mol
 
 
                    Scalar Breit-Pauli relativistic corrections
                    -------------------------------------------
 
-     Darwin correction:                          0.1685880320 au
-     Mass-velocity correction:                  -0.2162438260 au
+     Darwin correction:                          0.1685880328 au
+     Mass-velocity correction:                  -0.2162438271 au
 
-     Total relativistic correction:             -0.0476557939 au (0.0425%)
-     Non-relativistic + relativistic energy:  -112.1403689598 au
+     Total relativistic correction:             -0.0476557943 au ( 0.0425%)
+     Non-relativistic + relativistic energy:  -112.1537538789 au
 
 
 
@@ -1423,7 +1460,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              1.291732           3.283255          10.951760
+              1.291732           3.283256          10.951763
 
 
                              Dipole moment components
@@ -1431,9 +1468,9 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.11513470         0.29264319         0.97615262
-      y     -1.28598372        -3.26864438       -10.90302405
-      z      0.03951663         0.10044124         0.33503591
+      x      0.11513472         0.29264325         0.97615280
+      y     -1.28598406        -3.26864523       -10.90302687
+      z      0.03951706         0.10044234         0.33503958
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -1451,21 +1488,21 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
           ----------------------------------------------------
                             Ex             Ey             Ez
 
-                Ex    6.428383     -0.1580567      3.8443217E-02
-                Ey  -0.1580755       9.495671     -0.2177933    
-                Ez   3.8445198E-02 -0.2177902       2.570059    
+                Ex    6.428384     -0.1580576      3.8446737E-02
+                Ey  -0.1580761       9.495679     -0.2177933    
+                Ez   3.8448452E-02 -0.2177903       2.570059    
 
-Isotropic polarizability:   6.164705    
+Isotropic polarizability:   6.164707    
 
           Polarizability tensor for frequency     0.040000 au
           ----------------------------------------------------
                             Ex             Ey             Ez
 
-                Ex    6.453573     -0.1585372      3.8604053E-02
-                Ey  -0.1585544       9.530984     -0.2186089    
-                Ez   3.8606334E-02 -0.2186049       2.578818    
+                Ex    6.453574     -0.1585381      3.8607539E-02
+                Ey  -0.1585549       9.530992     -0.2186089    
+                Ez   3.8609550E-02 -0.2186051       2.578818    
 
-Isotropic polarizability:   6.187792    
+Isotropic polarizability:   6.187795    
 
 
    Interatomic separations (in Angstrom):
@@ -1512,22 +1549,22 @@ Isotropic polarizability:   6.187792
  CPU time statistics for ABACUS
  ------------------------------
 
- LNRABA     00:00:01      99 %
+ LNRABA     00:00:01      98 %
 
  TOTAL      00:00:01     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   1.04 seconds
- >>>> Total wall time used in ABACUS:   1.04 seconds
+  Total CPU  time used in ABACUS:   1.03 seconds
+  Total wall time used in ABACUS:   1.04 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.45 seconds
- >>>> Total wall time used in DALTON:   1.44 seconds
+  Total CPU  time used in DALTON:   1.54 seconds
+  Total wall time used in DALTON:   1.55 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 15:12:40 2015
+     Date and time (Linux)  : Mon Mar 12 08:57:11 2018
      Host name              : foeroyar                                
