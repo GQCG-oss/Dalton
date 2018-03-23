@@ -26,6 +26,7 @@ module pelib_interface
     implicit none
 
     private
+    logical, public :: simplified_lagrangian
 
     public :: use_pelib, pelib_ifc_gspol
     public :: pelib_ifc_domep, pelib_ifc_domep_noqm, pelib_ifc_docube
@@ -35,12 +36,15 @@ module pelib_interface
     public :: pelib_ifc_fock, pelib_ifc_energy, pelib_ifc_response, pelib_ifc_london
     public :: pelib_ifc_molgrad, pelib_ifc_infld, pelib_ifc_lf, pelib_ifc_localfield
     public :: pelib_ifc_mep, pelib_ifc_mep_noqm, pelib_ifc_cube
+    public :: pelib_ifc_set_mixed, pelib_ifc_mixed
 #if defined(VAR_MPI)
     public :: pelib_ifc_slave
 #endif
     ! TODO: update the following interface routines
     public :: pelib_ifc_grad, pelib_ifc_lin, pelib_ifc_lr, pelib_ifc_qro
     public :: pelib_ifc_cro, pelib_ifc_rspmcqr
+    public :: pelib_ifc_pecc
+    public :: pelib_ifc_transformer, pelib_ifc_qrtransformer
     ! edh for debug purposes
     public :: pelib_ifc_qrtest !called instead from E3INIT
 
@@ -63,6 +67,16 @@ logical function pelib_ifc_gspol()
         pelib_ifc_gspol = .false.
     end if
 end function pelib_ifc_gspol
+
+subroutine pelib_ifc_set_mixed(do_mixed)
+  use pe_variables, only: mixed
+  logical :: do_mixed
+  if (do_mixed) then
+      mixed = .true.
+  else
+      mixed = .false.
+  end if
+end subroutine pelib_ifc_set_mixed
 
 logical function pelib_ifc_domep()
   use pe_variables, only: pe_mep
@@ -176,10 +190,36 @@ subroutine pelib_ifc_fock(denmats, fckmats, energy)
     call qexit('pelib_ifc_fock')
 end subroutine pelib_ifc_fock
 
-subroutine pelib_ifc_energy(denmats)
+subroutine pelib_ifc_mixed(denmats, fckmats, energy)
+    use polarizable_embedding, only: pe_master
+#include "inforb.h"
+    real*8, dimension(2*nnbasx), intent(in) :: denmats
+    real*8, dimension(nnbasx), intent(out) :: fckmats
+    real*8, intent(out) :: energy
+    real*8, dimension(1) :: energies
+    call qenter('pelib_ifc_mixed')
+    if (.not. use_pelib()) call quit('PElib not active')
+#if defined(VAR_MPI)
+    call pelib_ifc_start_slaves(1)
+#endif
+    call pe_master(runtype='full_fock', &
+                   triang=.true.,       &
+                   ndim=nbast,          &
+                   nmats=1,             &
+                   denmats=denmats,     &
+                   fckmats=fckmats,     &
+                   expvals=energies)
+    energy = energies(1)
+    call qexit('pelib_ifc_mixed')
+end subroutine pelib_ifc_mixed
+
+
+subroutine pelib_ifc_energy(denmats, energy)
     use polarizable_embedding, only: pe_master
 #include "inforb.h"
     real*8, dimension(nnbasx), intent(in) :: denmats
+    real*8, intent(out), optional :: energy
+    real*8, dimension(1) :: energies
     call qenter('pelib_ifc_energy')
     if (.not. use_pelib()) call quit('PElib not active')
 #if defined(VAR_MPI)
@@ -189,7 +229,11 @@ subroutine pelib_ifc_energy(denmats)
                    triang=.true.,          &
                    ndim=nbast,             &
                    nmats=1,                &
-                   denmats=denmats)
+                   denmats=denmats,        &
+                   expvals=energies)
+    if (present(energy)) then
+        energy = energies(1)
+    end if
     call qexit('pelib_ifc_energy')
 end subroutine pelib_ifc_energy
 
@@ -998,7 +1042,7 @@ subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,&
 
     ! edh: The triplet will only work for response from a single reference
     ! state, where the term from Fxc is 0. Can be generalized (at least to
-    ! dublet) by including Fxc... 
+    ! dublet) by including Fxc...
     ! ... orbital part of sigma vector(s)
     if (kzwopt .gt. 0) then
         do i = 1,ncsim
@@ -1018,9 +1062,9 @@ subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,&
             end if
             if (trplet) then
                call slvsor(.false.,.false.,1, dtvtr(1,i),scvecs(1,i),fupe)
-            else 
+            else
                call slvsor(.false., .false., 1, dtv(1,i), scvecs(1,i), fupe)
-            end if 
+            end if
             if (locdeb) then
                 write(lupri,*) 'Orbital part of lin transf conf vec no ', i
                 write(lupri,*)' Tg contribution'
@@ -1136,7 +1180,7 @@ subroutine pe_rsplno(nosim, bovecs, cref, cmo, cindx, udv, dv,&
            call dgefsp(nbast, dcao, daos(j))
        end do
        deallocate(dcao, dvao)
-      
+
        allocate(fckaos(nosim*nnbasx))
        call pelib_ifc_response(daos, fckaos, nosim)
        deallocate(daos)
@@ -1153,26 +1197,26 @@ subroutine pe_rsplno(nosim, bovecs, cref, cmo, cindx, udv, dv,&
     end if
     do i = 1, nosim
         j = (i - 1) * nnbasx + 1
-        if (.not. trplet) then 
+        if (.not. trplet) then
            call uthu(fckaos(j), evec, cmo, wrk, nbast, norbt)
            call dsptsi(norbt, evec, evecs(:,i))
-        end if 
+        end if
         ! Fyo = V(k) - <0|F|0>Fe(k)
         if (.not. tdhf) then
             call onexh1(ubovecs(:,i), fupemo, evecs(:,i))
             call getacq(evecs(:,i), eacs(:,i))
             if (trplet) then
               ! do nothing (txyoacs should be zero for triplet with singlet cref)
-            else 
+            else
               txyo = slvqlm(udv, eacs(:,i), evecs(:,i), txyoacs(i))
-            end if 
+            end if
         end if
     end do
 
     deallocate(evec)
     if (.not. tdhf) then
         deallocate(fupemo)
-        ! Special triplet handling is taken care of inside slvsc! 
+        ! Special triplet handling is taken care of inside slvsc!
         call slvsc(0, nosim, n2ashx, dummy, cref, sovecs, eacs,&
                   & dummy, txyoacs, dummy, cindx, wrk, nwrk)
         deallocate(eacs)
@@ -1642,7 +1686,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
                        & isymdn, den1, mjwop, 1, lfree)
             write(lupri,*)'atest:', atest
          end if
-      endif 
+      endif
       if (atest) then
          e3test_value = ddot(kzyva,veca,1,etrs,1)
          write(lupri,*) 'PE-E3TEST, case 1 ', e3test_value-e3test_old
@@ -1713,7 +1757,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
                 call daxpy(nzconf,fact,&
                      & vecc(nzvar+1), 1, etrs(nzvar+1), 1)
             end if
-         endif 
+         endif
          if (atest) then
             e3test_value = ddot(kzyva,veca,1,etrs,1)
             write(lupri,*) 'PE-E3TEST case 2 Fxc(1S)', e3test_value-e3test_old
@@ -1788,7 +1832,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
          end if
 
          deallocate(fcmo)
-      endif ! pe_polar 
+      endif ! pe_polar
       !-----------------------------------------------------------
       !case 3
       !-----------------------------------------------------------
@@ -2075,7 +2119,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
           end if
           lorb   = ( mzwopt(isyma) .gt. 0 )
           nzyvec = mzconf(1)
-          nzcvec = mzconf(1)         
+          nzcvec = mzconf(1)
           call rsp1gr(1 ,kzyva, idummy,0, isyma, 0, irefsy, etrs,&
                & cref, nzyvec, nzcvec, ovlap, isymdn, udv, f1kxo2k,&
                & xindx, mjwop, wrk(1), lfree, lorb, lcon, .true.)
@@ -2091,7 +2135,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
           !/ <0| [qj ,Fxc[1s](2k)] |0>  \
           !| <j| Fxc[1s](2k) |0>        |
           !| <0| [qj+,Fxc[1s](2k)] |0>  |
-          !\ -<0| Fxc[1s](2k) |j>       /         
+          !\ -<0| Fxc[1s](2k) |j>       /
           isymdn = 1
           ovlap  = 1.0d0
           isymst = muld2h(isyma, irefsy)
@@ -2119,7 +2163,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
           !/ <0| [qj ,Fxo[2k](1k)] |0> \
           !| <j| Fxo[2k](1k) |0>       |
           !| <0| [qj+,Fxo[2k](1k)] |0> |
-          !\ -<0| Fxo[2k](1k) |j>      / 
+          !\ -<0| Fxo[2k](1k) |j>      /
           isymdn = 1
           ovlap  = 1.0d0
           isymst = muld2h(isyma, irefsy)
@@ -2146,7 +2190,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
           !/ <0| [qj ,Fxc[2s](1k)] |0> \
           !| <j| Fxc[2s](1k) |0>       |
           !| <0| [qj+,Fxc[2s](1k)] |0> |
-          !\ -<0| Fxc[2s](1k) |j>      /         
+          !\ -<0| Fxc[2s](1k) |j>      /
           isymdn = 1
           ovlap  = 1.0d0
           isymst = muld2h(isyma, irefsy)
@@ -2157,7 +2201,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
           end if
           lorb   = ( mzwopt(isyma) .gt. 0 )
           nzyvec = mzconf(1)
-          nzcvec = mzconf(1)         
+          nzcvec = mzconf(1)
           call rsp1gr(1 ,kzyva, idummy,0, isyma, 0, irefsy, etrs,&
                & cref, nzyvec, nzcvec, ovlap, isymdn, udv, f2sxc1k,&
                & xindx, mjwop, wrk(1), lfree, lorb, lcon, .true.)
@@ -2190,7 +2234,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
           !/ <0| [qj ,TE] |0> \
           !| <j| TE |0>       |
           !| <0| [qj+,TE] |0> |
-          !\ -<0| TE |j>      /        
+          !\ -<0| TE |j>      /
           isymdn = 1
           ovlap  = 1.0d0
           isymst = muld2h(isyma, irefsy)
@@ -2222,7 +2266,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
              !/ <0| [qj ,Fxo(1k,2k)] |0> \
              !| <j| Fxo(1k,2k) |0>       |
              !| <0| [qj+,Fxo(1k,2k)] |0> |
-             !\ -<0| Fxo(1k,2k) |j>      /            
+             !\ -<0| Fxo(1k,2k) |j>      /
              isymdn = 1
              ovlap  = 1.0d0
              isymst = muld2h(isyma, irefsy)
@@ -2233,7 +2277,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
              end if
              lorb   = ( mzwopt(isyma) .gt. 0 )
              nzyvec = mzconf(1)
-             nzcvec = mzconf(1)            
+             nzcvec = mzconf(1)
              call rsp1gr(1 ,kzyva, idummy,0, isyma, 0, irefsy, etrs,&
                   & cref, nzyvec, nzcvec, ovlap, isymdn, udv, fxo1k2k,&
                   & xindx, mjwop, wrk(1), lfree, lorb, lcon, .true.)
@@ -2253,7 +2297,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
              !/ <0| [qj ,Fxo(2k,1k)] |0> \
              !| <j| Fxo(2k,1k) |0>       |
              !| <0| [qj+,Fxo(2k,1k)] |0> |
-             !\ -<0| Fxo(2k,1k) |j>      /         
+             !\ -<0| Fxo(2k,1k) |j>      /
              isymdn = 1
              ovlap  = 1.0d0
              isymst = muld2h(isyma, irefsy)
@@ -2264,7 +2308,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
              end if
              lorb   = ( mzwopt(isyma) .gt. 0 )
              nzyvec = mzconf(1)
-             nzcvec = mzconf(1)         
+             nzcvec = mzconf(1)
              call rsp1gr(1, kzyva, idummy,0, isyma, 0, irefsy, etrs,&
                   & cref, nzyvec, nzcvec, ovlap, isymdn, udv, fxo2k1k,&
                   & xindx, mjwop, wrk(1), lfree, lorb, lcon, .true.)
@@ -2274,7 +2318,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
                 write(lupri,*) 'PE-E3TEST, case 4 fxo2k1k ', e3test_value-e3test_old
                 write(lupri,*) 'PE-E3TEST, total  ', e3test_value
              end if
-          end if        
+          end if
           if (.not. tdhf) then
              ! fxc(1s2s) = R* ( <01L|..|02R> + <02L|..|01R> )Fe
              fcmo    = 0.0d0
@@ -2297,7 +2341,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
              end if
              lorb   = ( mzwopt(isyma) .gt. 0 )
              nzyvec = mzconf(1)
-             nzcvec = mzconf(1)            
+             nzcvec = mzconf(1)
              call rsp1gr(1 ,kzyva, idummy,0, isyma, 0, irefsy, etrs,&
                   & cref, nzyvec, nzcvec, ovlap, isymdn, udv, fxc1s2s,&
                   & xindx, mjwop, wrk(1), lfree, lorb, lcon, .true.)
@@ -2318,7 +2362,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
           !/ <0| [qj ,Fxc[2k,1S]] |0> \
           !| <j| Fxc[2k,1S] |0>       |
           !| <0| [qj+,Fxc[2k,1S]] |0> |
-          !\ -<0| Fxc[2k,1S] |j>      /          
+          !\ -<0| Fxc[2k,1S] |j>      /
           isymdn = 1
           ovlap  = 1.0d0
           isymst = muld2h(isyma, irefsy)
@@ -2329,7 +2373,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
           end if
           lorb   = ( mzwopt(isyma) .gt. 0 )
           nzyvec = mzconf(1)
-          nzcvec = mzconf(1)          
+          nzcvec = mzconf(1)
           call rsp1gr(1 ,kzyva, idummy,0, isyma, 0, irefsy, etrs,&
                   & cref, nzyvec, nzcvec, ovlap, isymdn, udv, fxc1s2k,&
                   & xindx, mjwop, wrk(1), lfree, lorb, lcon, .true.)
@@ -2360,7 +2404,7 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
           end if
           lorb   = ( mzwopt(isyma) .gt. 0 )
           nzyvec = mzconf(1)
-          nzcvec = mzconf(1)         
+          nzcvec = mzconf(1)
           call rsp1gr(1 ,kzyva, idummy,0, isyma, 0, irefsy, etrs,&
                & cref, nzyvec, nzcvec, ovlap, isymdn, udv, fxc1k2s,&
                & xindx, mjwop, wrk(1), lfree, lorb, lcon, .true.)
@@ -2369,10 +2413,10 @@ subroutine pelib_ifc_qrtest(vecb, vecc, veca, atest, etrs, xindx, zymb, zymc,&
              e3test_value = ddot(kzyva,veca,1,etrs,1)
              write(lupri,*) 'PE-E3TEST, case 4 fxc1k2s ', e3test_value-e3test_old
              write(lupri,*) 'PE-E3TEST, total  ', e3test_value
-          end if        
+          end if
       end if ! pe_polar
       deallocate(cref)
-      deallocate(fupe)    
+      deallocate(fupe)
 
       call qexit('pe_rspmcqr')
 
@@ -3344,6 +3388,681 @@ subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
 
 end subroutine pelib_ifc_cro
 
+subroutine pelib_ifc_pecc(aoden, aodencc, converged, t_or_tbar)
+    implicit none
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "qm3.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
+
+    real*8, parameter :: zero = 0.0d0
+    integer, intent(in) :: t_or_tbar
+    logical :: converged
+    real*8, intent(in) :: aoden(n2bst(isymop)), aodencc(n2bst(isymop))
+    real*8 :: energy, ecmcu, eccgrs1
+    real*8, allocatable :: denmat(:), fockmat(:)
+    character*10 :: model, label
+    character*6 :: modelpri
+
+    call qenter('PELIB_IFC_PECC')
+
+    write (lupri,'(1X,A,/)') ' '
+    write (lupri,'(1X,A,/)') &
+   &    '******************************************************************'
+    write (lupri,'(1X,A,/)') &
+   &    '**** Output from Polarizable Embedding Coupled Cluster module ****'
+    write (lupri,'(1X,A,/)') &
+   &    '******************************************************************'
+
+    model = 'CCSD'
+    if (ccsd) then
+        call around('The Coupled Cluster model is CCSD')
+        model = 'CCSD'
+        modelpri = 'CCSD'
+    end if
+    if ((cc2) .and. (.not. mcc2)) then
+        call around('The Coupled Cluster model is CC2')
+        model = 'CC2'
+        modelpri = ' CC2'
+    end if
+    if (.not. (ccsd .or. cc2)) then
+        call quit('PECC only implemented for CCSD and CC2 parametrizations')
+    end if
+    if (simplified_lagrangian) then
+        select case (t_or_tbar)
+            case (1)
+                allocate(denmat(nnbasx), fockmat(nnbasx))
+            case (2)
+                allocate(denmat(2*nnbasx), fockmat(nnbasx))
+            case default
+                call quit('ERROR: T_OR_TBAR must be 1 or 2!')
+        end select
+    else
+        allocate(denmat(nnbasx), fockmat(nnbasx))
+    end if
+    fockmat = 0.0d0
+    if (simplified_lagrangian) then
+        select case (t_or_tbar)
+            case (1)
+                call dgefsp(nbas, aoden, denmat)
+            case (2)
+                call dgefsp(nbas, aoden, denmat(1:nnbasx))
+                call dgefsp(nbas, aodencc, denmat(nnbasx+1:2*nnbasx))
+        end select
+    else
+        call dgefsp(nbas, aoden, denmat)
+    end if
+    if (hffld) then
+        call pelib_ifc_energy(denmat, energy)
+    else
+        if (simplified_lagrangian) then
+            select case (t_or_tbar)
+                case (1)
+                    call pelib_ifc_fock(denmat, fockmat, energy)
+                    call pelib_ifc_energy(denmat)
+                    call around('Writing the Fock matrix to FOCKMAT file')
+                    call put_to_file('FOCKMAT', nnbasx, fockmat)
+                case (2) ! two polarization terms
+                    call pelib_ifc_set_mixed(.true.)
+                    call pelib_ifc_mixed(denmat, fockmat, energy)
+                    call pelib_ifc_energy(denmat(1:nnbasx))
+                    call pelib_ifc_set_mixed(.false.)
+                    call around('Writing the Fock matrix to FOCKMAT file')
+                    call put_to_file('FOCKMAT', nnbasx, fockmat)
+            end select
+        else
+            call pelib_ifc_fock(denmat, fockmat, energy)
+            call pelib_ifc_energy(denmat)
+            call around('Writing the Fock matrix to FOCKMAT file')
+            call put_to_file('FOCKMAT', nnbasx, fockmat)
+        end if
+    end if
+    deallocate(denmat, fockmat)
+    ecmcu = eccgrs + energy
+    if (abs(ecmcu-eccpr).lt.cvgesol) lslecvg = .true.
+    write(lupri,*) 'E(PECC) contribution in iteration', iccslit, ': ', &
+   &                energy
+    eccpr = ecmcu
+    converged = .false.
+    if (simplified_lagrangian) then
+        if (loiter) then
+            write(lupri,'(1X,A,I3,A)') 'Maximum inner iterations for '// &
+   &              't set to', mxtinit, 'in each outer iteration.'
+            write(lupri,'(1X,A,I3,A)') 'Maximum inner iterations for '// &
+   &              't-bar set to', mxlinit, 'in each outer iteration.'
+        end if
+        write(lures,'(12X,A4,A,F20.10)') modelpri, ' Total  energy:             ',&
+                                         ecmcu
+        write(lures,'(12X,A4,A,F20.10)') modelpri, ' E(PE-CC)     :             ',&
+                                         energy
+        eccgrs1 = ecmcu
+        label = 'PE-'//modelpri//' '
+        call wripro(eccgrs1,model,0,label,label,label,label,zero,zero,zero,1,0,0,0)
+        label = 'E(PE-CC) '
+        call wripro(energy,model,0,label,label,label,label,zero,zero,zero,1,0,0,0)
+    else
+        if (lslecvg .and. lsltcvg .and. lsllcvg) then
+            converged = .true.
+            if (loiter) then
+                write(lupri,'(1X,A,I3,A)') 'Maximum inner iterations for '// &
+   &                  't set to', mxtinit, 'in each outer iteration.'
+                write(lupri,'(1X,A,I3,A)') 'Maximum inner iterations for '//&
+   &                  't-bar set to', mxlinit, 'in each outer iteration.'
+            end if
+            write(lupri,*) 'PECC equations are converged in ', iccslit, &
+   &                       ' outer iterations'
+            write(lupri,*) 'PECC equations are converged in ', nslvinit, &
+   &                       ' inner iterations'
+            write(lures,'(12X,A4,A,F20.10)') modelpri, ' Total  energy:             ',&
+                                             ecmcu
+            write(lures,'(12X,A4,A,F20.10)') modelpri, ' E(PE-CC)     :             ',&
+                                             energy
+            eccgrs1 = ecmcu
+            label = 'PE-'//modelpri//' '
+            call wripro(eccgrs1,model,0,label,label,label,label,zero,zero,zero,1,0,0,0)
+            label = 'E(PE-CC) '
+            call wripro(energy,model,0,label,label,label,label,zero,zero,zero,1,0,0,0)
+        else
+            iccslit = iccslit + 1
+            if (iccslit .gt. mxccslit) then
+                write(lupri,*) 'Maximum number of PE-CC iterations:', mxccslit, &
+   &                           'is reached!'
+                call quit('Maximum number of PE-CC iterations reached')
+            end if
+        end if
+    end if
+
+    call qexit('PELIB_IFC_PECC')
+
+end subroutine pelib_ifc_pecc
+
+subroutine pelib_ifc_transformer(rho1,rho2,ctr1,ctr2,model,isymtr,lr,work,lwork)
+    implicit none
+
+#include "mxcent.h"
+#include "qmmm.h"
+#include "qm3.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccslvinf.h"
+#include "ccorb.h"
+
+    real*8, parameter :: zero = 0.0d0, one = 1.0d0, half = 0.5d0, two = 2.0d0
+    integer, parameter :: izero = 0
+    integer :: lwork, ndim, idldum, isydum, idlino, isymtr
+    character*1, intent(in) :: lr
+    character*2 :: list
+    real*8, dimension(lwork) :: work
+    real*8 :: rho1(nt1am(isymtr)), rho2(nt2am(isymtr)), ctr1(nt1am(isymtr)),&
+   &          ctr2(nt2am(isymtr)), ddot, rho1n, rho2n, tal1, tal2, fact
+    real*8, allocatable :: denmats(:), gmat(:), eta(:), denmattemp(:), gmattemp(:)
+    character*2 :: lisdum
+    character*10 :: model
+    logical, parameter :: locdeb = .false.
+    character*8 :: label
+
+    call qenter('PELIB_IFC_TRANSFORMER')
+
+    if (ipqmmm .gt. 10) then
+        write(lupri,*) 'PECC TRANSFORMER : ISYMTR : ', isymtr, ' and LR : ', lr
+    end if
+
+    if (ccs) call quit('PECC TRANSFORMER not implemented for CCS')
+
+    if (discex) call quit('PECC TRANSFORMER not implemented for DISCEX')
+    if (hffld) call quit('HFFLD should not be here')
+    if (ccfixf) then
+        call qexit('PELIB_IFC_TRANSFORMER')
+        return
+    end if
+
+    if (lwork .lt. 0) then
+        write(lupri,*) 'Available LWORK: ', lwork
+        call quit('Too little work in PECC TRANSFORMER')
+    end if
+
+    allocate(denmats(nnbasx),gmat(n2bst(isymtr)),eta(nt1am(isymtr)+nt2am(isymtr)), &
+   &         denmattemp(n2bst(isymtr)),gmattemp(nnbasx))
+    eta = zero
+    denmattemp = zero
+    gmat = zero
+    if ((ipqmmm .gt. 10) .or. (locdeb)) then
+       rho1n = ddot(nt1am(isymtr),rho1,1,rho1,1)
+       rho2n = ddot(nt2am(isymtr),rho2,1,rho2,1)
+       write(lupri,*) 'Norm of RHO1 in PECC TRANSFORMER on input: ', rho1n
+       write(lupri,*) 'Norm of RHO2 in PECC TRANSFORMER on input: ', rho2n
+       rho1n = ddot(nt1am(isymtr),ctr1,1,ctr1,1)
+       rho2n = ddot(nt2am(isymtr),ctr2,1,ctr2,1)
+       write(lupri,*) 'Norm of C1AM in PECC TRANSFORMER on input: ', rho1n
+       write(lupri,*) 'Norm of C2AM in PECC TRANSFORMER on input: ', rho2n
+    end if
+    if (((lr.eq.'L').or.(lr.eq.'F')).and.simplified_lagrangian) then
+        simplified_lagrangian = .false.
+        call ccmm_d1ao(denmattemp,ctr1,ctr2,trim(model),lr,lisdum,idldum, &
+   &               isydum,work,lwork)
+        simplified_lagrangian = .true.
+    else
+        call ccmm_d1ao(denmattemp,ctr1,ctr2,trim(model),lr,lisdum,idldum, &
+   &               isydum,work,lwork)
+    end if
+    call dgefsp(nbas,denmattemp,denmats)
+    call pelib_ifc_response(denmats,gmattemp,1)
+    call dsptsi(nbas,gmattemp,gmat)
+    if ((lr .eq. 'L') .or. (lr .eq. 'F')) then
+        label = 'GIVE INT'
+        list = 'L0'
+        idlino = 1
+        if (simplified_lagrangian) then
+            call cc_etac(isymtr,label,eta,list,idlino,2,gmat,work,lwork)
+        else
+            call cc_etac(isymtr,label,eta,list,idlino,0,gmat,work,lwork)
+        end if
+    else if ((lr .eq. 'R') .or. (lr .eq. 'P')) then
+        label = 'GIVE INT'
+        call cc_xksi(eta,label,isymtr,0,gmat,work,lwork)
+        if (lr .eq. 'R') then
+            call cclr_diascl(eta(nt1am(isymtr)+1),two,isymtr)
+        end if
+    end if
+
+    if ((locdeb) .or. (ipqmmm .gt. 14)) then
+        tal1 = ddot(nt1am(isymtr),eta,1,eta,1)
+        tal2 = ddot(nt2am(isymtr),eta(nt1am(isymtr)+1),1,eta(nt1am(isymtr)+1),1)
+        write(lupri,*) 'Printing TRANSFORMATION contribution. &
+   &                    Norm2 of singles: ', tal1, 'Norm2 of doubles: ', tal2
+    end if
+
+    if (simplified_lagrangian) then
+        fact=half
+    else
+        fact=one
+    end if
+
+    call daxpy(nt1am(isymtr),fact,eta,1,rho1,1)
+    call daxpy(nt2am(isymtr),fact,eta(nt1am(isymtr)+1),1,rho2,1)
+
+    if ((locdeb) .or. (ipqmmm .gt. 14)) then
+        tal1 = ddot(nt1am(isymtr),rho1,1,rho1,1)
+        tal2 = ddot(nt2am(isymtr),rho2,1,rho2,1)
+        write(lupri,*) 'Printing RHO: &
+   &                    Norm2 of singles: ', tal1, 'Norm2 of doubles: ', tal2
+    end if
+    deallocate(denmats,gmat,eta,denmattemp,gmattemp)
+
+    call qexit('PELIB_IFC_TRANSFORMER')
+
+end subroutine pelib_ifc_transformer
+
+subroutine pelib_ifc_qrtransformer(rho1,rho2,isyres,listb,idlstb,isymtb, &
+   &                               listc,idlstc,isymtc,model,rsptyp, &
+   &                               work,lwork)
+    implicit none
+
+#include "mxcent.h"
+#include "qmmm.h"
+#include "qm3.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccslvinf.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+
+    real*8, parameter :: zero = 0.0d0, half = 0.5d0, one = 1.0d0, two = 2.0d0
+    integer, parameter :: izero = 0
+    integer :: lwork, ndim, isycb
+    real*8 :: work(lwork), rho1(*), rho2(*), ddot,rho1n, rho2n, tal1, tal2, &
+   &          factks, fact
+    real*8, allocatable :: b1am(:), b2am(:), c1am(:), c2am(:), denmattemp(:), &
+   &                       denmats(:), eta1(:), eta2(:), eta3(:), gbmat(:), &
+   &                       gbmattemp(:)
+    character*(*) :: listb, listc
+    integer :: idlstb, isymtb, idlstc, isymtc, isyres, iopt
+    logical, parameter :: locdeb = .false.
+    logical :: lsame
+    character*5 :: model, moddum
+    character*8 :: label
+    character*1 :: dentyp, rsptyp
+    character*2 :: listl
+
+    call qenter('PELIB_IFC_QRTRANSFORMER')
+
+    listl = 'L0'
+
+    if (ccs) call quit('PECC QR TRANSFORMER: Not implemented for CCS')
+    if (discex) call quit('PECC QR TRANSFORMER: Not implemented for DISCEX')
+    if ((rsptyp .ne. 'F') .and. (rsptyp .ne. 'G') .and. (rsptyp .ne. 'B') .and. &
+   &    (rsptyp .ne. 'K')) then
+        write(lupri,*) 'Response flag in QRTRANSFORMER is : ', rsptyp
+        write(lupri,*) 'Response flag in QRTRANSFORMER must be F, G, B or K!'
+        call quit('Wrong flag in PECC QR TRANSFORMER')
+    end if
+
+!   if B=C, just multiply by 2 for second contribution
+    if (rsptyp .eq. 'F') then
+        factks = one
+        lsame = .false.
+    else
+        lsame = ((listc .eq. listb) .and. (idlstc .eq. idlstb))
+        if (lsame) then
+            factks = two
+        else
+            factks = one
+        end if
+    end if
+
+    if ((locdeb) .or. (ipqmmm .gt. 10)) then
+        write(lupri,*) 'PECC QR TRANSFORMER: RSPTYP = ', rsptyp
+        write(lupri,*) 'PECC QR TRANSFORMER: ISYRES = ', isyres
+        write(lupri,*) 'PECC QR TRANSFORMER: ISYMTB = ', isymtb
+        write(lupri,*) 'PECC QR TRANSFORMER: ISYMTC = ', isymtc
+        write(lupri,*) 'PECC QR TRANSFORMER: LISTB = ', listb
+        write(lupri,*) 'PECC QR TRANSFORMER: LISTC = ', listc
+        write(lupri,*) 'PECC QR TRANSFORMER: IDLISTB = ', idlstb
+        write(lupri,*) 'PECC QR TRANSFORMER: IDLISTC = ', idlstc
+        write(lupri,*) 'PECC QR TRANSFORMER: LSAME = ', lsame
+        call flshfo(lupri)
+    end if
+
+    isycb = muld2h(isymtb,isymtc)
+    if (isycb .ne. isyres) then
+        call quit('Symmetry problem in PECC QR TRANSFORMER')
+    end if
+    if (lwork .lt. 0) then
+        write(lupri,*) 'Available memory: ', lwork
+        call quit('Too little work in PECC QR TRANSFORMER (1).')
+    end if
+    if ((.not. lsame) .and. (rsptyp .ne. 'K')) then
+        if ((.not.simplified_lagrangian).or.(simplified_lagrangian.and.(rsptyp .ne. 'B'))) then
+            allocate(b1am(nt1am(isymtb)),b2am(nt2am(isymtb)), &
+   &                 c1am(nt1am(isymtc)),c2am(nt2am(isymtc)), &
+   &                 denmattemp(n2bst(isymtb)+n2bst(isymtc)+n2bst(isycb)), &
+   &                 gbmat(n2bst(isymtb)+n2bst(isymtc)+n2bst(isycb)), &
+   &                 denmats(3*nnbasx),gbmattemp(3*nnbasx), &
+   &                 eta1(nt1am(isycb)+nt2am(isycb)), &
+   &                 eta2(nt1am(isycb)+nt2am(isycb)), &
+   &                 eta3(nt1am(isycb)+nt2am(isycb)))
+            ndim = 3
+            denmattemp = zero
+            gbmattemp = zero
+            eta1 = zero
+            eta2 = zero
+            eta3 = zero
+            fact = one
+            if (simplified_lagrangian.and.(rsptyp.eq.'G')) fact = half
+        else if (simplified_lagrangian.and.(rsptyp.eq.'B')) then
+            allocate(b1am(nt1am(isymtb)),b2am(nt2am(isymtb)), &
+   &                 c1am(nt1am(isymtc)),c2am(nt2am(isymtc)), &
+   &                 denmattemp(n2bst(isymtb)+n2bst(isymtc)), &
+   &                 gbmat(n2bst(isymtb)+n2bst(isymtc)), &
+   &                 denmats(2*nnbasx), gbmattemp(2*nnbasx), &
+   &                 eta1(nt1am(isycb)+nt2am(isycb)), &
+   &                 eta2(nt1am(isycb)+nt2am(isycb)))
+            ndim = 2
+            denmattemp = zero
+            gbmattemp = zero
+            eta1 = zero
+            eta2 = zero
+            fact = half
+        end if
+    else if ((lsame) .and. (rsptyp .ne. 'K')) then
+        if ((.not.simplified_lagrangian).or.(simplified_lagrangian &
+   &                                      .and.(rsptyp.eq.'G'))) then
+            allocate(b1am(nt1am(isymtb)),b2am(nt2am(isymtb)), &
+   &                 denmattemp(n2bst(isymtb)+n2bst(isymtc)), &
+   &                 denmats(2*nnbasx),gbmattemp(2*nnbasx),&
+   &                 gbmat(n2bst(isymtb)+n2bst(isymtc)), &
+   &                 eta1(nt1am(isycb)+nt2am(isycb)), &
+   &                 eta2(nt1am(isycb)+nt2am(isycb)))
+            ndim = 2
+            denmattemp = zero
+            gbmattemp = zero
+            eta1 = zero
+            eta2 = zero
+            if (.not.simplified_lagrangian) fact = one
+            if (simplified_lagrangian) fact = half
+        else if (simplified_lagrangian.and.(rsptyp.eq.'B')) then
+            allocate(b1am(nt1am(isymtb)),b2am(nt2am(isymtb)), &
+   &                 denmattemp(n2bst(isymtb)),denmats(nnbasx),&
+   &                 gbmattemp(nnbasx),gbmat(n2bst(isymtb)), &
+   &                 eta1(nt1am(isycb)+nt2am(isycb)))
+            ndim = 1
+            denmattemp = zero
+            gbmattemp = zero
+            eta1 = zero
+            fact = half
+        end if
+    else if ((.not.lsame) .and. ((rsptyp .eq. 'K'))) then
+        allocate(b1am(nt1am(isymtb)),b2am(nt2am(isymtb)), &
+   &             c1am(nt1am(isymtc)),c2am(nt2am(isymtc)), &
+   &             denmattemp(n2bst(isymtb)+n2bst(isymtc)), &
+   &             denmats(2*nnbasx),gbmattemp(2*nnbasx), &
+   &             gbmat(n2bst(isymtb)+n2bst(isymtc)), &
+   &             eta1(nt1am(isycb)+nt2am(isycb)), &
+   &             eta2(nt1am(isycb)+nt2am(isycb)))
+        ndim = 2
+        denmattemp = zero
+        gbmattemp = zero
+        eta1 = zero
+        eta2 = zero
+        fact = one
+    else if ((lsame) .and. ((rsptyp .eq. 'K'))) then
+        allocate(b1am(nt1am(isymtb)),b2am(nt2am(isymtb)), &
+   &             denmattemp(n2bst(isymtb)),denmats(nnbasx), &
+   &             gbmat(n2bst(isycb)),gbmattemp(nnbasx), &
+   &             eta1(nt1am(isycb)+nt2am(isycb)))
+        ndim = 1
+        denmattemp = zero
+        gbmattemp = zero
+        eta1 = zero
+        fact = one
+    end if
+
+    iopt = 3
+    call cc_rdrsp(listb,idlstb,isymtb,iopt,model,b1am,b2am)
+    if (.not. lsame) then
+        call cc_rdrsp(listc,idlstc,isymtc,iopt,model,c1am,c2am)
+    end if
+
+    if ((locdeb) .or. (ipqmmm .gt. 10)) then
+        rho1n = ddot(nt1am(isycb),rho1,1,rho1,1)
+        rho2n = ddot(nt2am(isycb),rho2,1,rho2,1)
+        write(lupri,*) 'Norm of RHO1 in PECC QM TRANSFORMER on input (1): ', &
+   &                   rho1n
+        write(lupri,*) 'Norm of RHO2 in PECC QM TRANSFORMER on input (1): ', &
+   &                   rho2n
+        rho1n = ddot(nt1am(isycb),b1am,1,b1am,1)
+        rho2n = ddot(nt2am(isycb),b2am,1,b2am,1)
+        write(lupri,*) 'Norm of B1AM in PECC QM TRANSFORMER on input (1): ', &
+   &                   rho1n
+        write(lupri,*) 'Norm of B2AM in PECC QM TRANSFORMER on input (1): ', &
+   &                   rho2n
+        if (.not. lsame) then
+            rho1n = ddot(nt1am(isycb),c1am,1,c1am,1)
+            rho2n = ddot(nt2am(isycb),c2am,1,c2am,1)
+            write(lupri,*) 'Norm of C1AM in PECC QM TRANSFORMER on input (1): ', &
+   &                       rho1n
+            write(lupri,*) 'Norm of C2AM in PECC QM TRANSFORMER on input (1): ', &
+   &                       rho2n
+        end if
+    end if
+
+!   check kind of response (for F start with left density)
+    if ((rsptyp .eq. 'G') .or. (rsptyp .eq. 'B')) then
+        dentyp = 'R'
+    else if ((rsptyp .eq. 'K') .or. (rsptyp .eq. 'F')) then
+        dentyp = 'L'
+    end if
+    call ccmm_d1ao(denmattemp,b1am,b2am,model,dentyp,listc,idlstc,isymtc,&
+   &                work,lwork)
+    if (.not. lsame) then
+        if (rsptyp .eq. 'F') dentyp = 'R'
+        call ccmm_d1ao(denmattemp(n2bst(isymtb)+1),c1am,c2am,model,dentyp, &
+   &                    listb,idlstb,isymtb,work,lwork)
+        if ((rsptyp .eq. 'G').or.((rsptyp .eq. 'B').and.(.not.simplified_lagrangian))) then
+            call ccmm_d2ao(denmattemp(n2bst(isymtb)+n2bst(isymtc)+1),isyres, &
+   &                       listb,idlstb,isymtb,listc,idlstc,isymtc,model, &
+   &                       work,lwork)
+        else if (rsptyp .eq. 'F') then
+            dentyp = 'Q'
+            call ccmm_d1ao(denmattemp(n2bst(isymtb)+n2bst(isymtc)+1),c1am,c2am, &
+   &                       model,dentyp,listb,idlstb,isymtb,work,lwork)
+        end if
+    else if (lsame) then
+        if ((rsptyp .eq. 'G') .or. ((rsptyp .eq. 'B').and.(.not.simplified_lagrangian))) then
+            call ccmm_d2ao(denmattemp(n2bst(isymtb)+1),isyres,listb,idlstb, &
+   &                       isymtb,listc,idlstc,isymtc,model,work,lwork)
+        end if
+    end if
+!   construct effective G operator
+    call dgefsp(nbas,denmattemp,denmats)
+    if (.not. lsame) then
+        call dgefsp(nbas,denmattemp(n2bst(isymtb)+1),denmats(nnbasx+1))
+        if ((rsptyp .eq. 'B').and.(.not.simplified_lagrangian)) then
+            call dgefsp(nbas,denmattemp(n2bst(isymtb)+n2bst(isymtc)+1), &
+   &                    denmats(2*nnbasx+1))
+        else if ((rsptyp .eq. 'F').or.(rsptyp.eq.'G')) then
+            call dgefsp(nbas,denmattemp(n2bst(isymtb)+n2bst(isymtc)+1), &
+   &                    denmats(2*nnbasx+1))
+        end if
+    else if (lsame) then
+        if ((rsptyp .eq. 'G') .or. ((rsptyp .eq. 'B').and.(.not.simplified_lagrangian))) then
+            call dgefsp(nbas,denmattemp(n2bst(isymtb)+1),denmats(nnbasx+1))
+        end if
+    end if
+    call pelib_ifc_response(denmats,gbmattemp,ndim)
+    call dsptsi(nbas,gbmattemp,gbmat)
+    if (.not. lsame) then
+        call dsptsi(nbas,gbmattemp(nnbasx+1),gbmat(n2bst(isymtb)+1))
+        if ((rsptyp .eq. 'B').and.(.not.simplified_lagrangian)) then
+            call dsptsi(nbas,gbmattemp(2*nnbasx+1),gbmat(n2bst(isymtb)+ &
+   &                    n2bst(isymtc)+1))
+        else if ((rsptyp .eq. 'F').or.(rsptyp.eq.'G')) then
+            call dsptsi(nbas,gbmattemp(2*nnbasx+1),gbmat(n2bst(isymtb)+ &
+   &                    n2bst(isymtc)+1))
+        end if
+    else if (lsame) then
+        if ((rsptyp .eq. 'G') .or. ((rsptyp .eq. 'B').and.(.not.simplified_lagrangian))) then
+            call dsptsi(nbas,gbmattemp(nnbasx+1),gbmat(n2bst(isymtb)+1))
+        end if
+    end if
+    if ((locdeb) .or. (ipqmmm .gt. 14)) then
+        tal1 = ddot(n2bst(isymtb),gbmat,1,gbmat,1)
+        write(lupri,*) 'Print Norm2 GBMAT (1): ', tal1
+        if (.not. lsame) then
+            tal1 = ddot(n2bst(isymtc),gbmat(n2bst(isymtb)+1),1, &
+   &                    gbmat(n2bst(isymtb)+1),1)
+            write(lupri,*) 'Print Norm2 GBMAT (2): ', tal1
+            if (((rsptyp.eq.'B').and.(.not.simplified_lagrangian)).or.(rsptyp.eq.'G').or.&
+   &             (rsptyp.eq.'F')) then
+                tal1 = ddot(n2bst(isymtb),gbmat(n2bst(isymtb)+n2bst(isymtc)+1), &
+   &                        1,gbmat(n2bst(isymtb)+n2bst(isymtc)+1),1)
+                write(lupri,*) 'Print Norm2 GBCMAT (3): ', tal1
+            end if
+        else if (lsame) then
+            if ((rsptyp .eq. 'G') .or. ((rsptyp .eq. 'B').and.  &
+   &                                 (.not.simplified_lagrangian))) then
+                tal1 = ddot(n2bst(isymtc),gbmat(n2bst(isymtb)+1),1, &
+   &                        gbmat(n2bst(isymtb)+1),1)
+                write(lupri,*) 'Print Norm2 GBMAT (2): ', tal1
+            end if
+        end if
+    end if
+    label = 'GIVE INT'
+    if ((rsptyp .eq. 'G') .or. (rsptyp .eq. 'F')) then
+        call cclr_fa(label,isymtb,listc,idlstc,listl,0,gbmat, &
+   &                 work,lwork)
+        call daxpy(nt1am(isycb)+nt2am(isycb),1.0d0,work,1,eta1,1)
+    else if (rsptyp .eq. 'B') then
+        call cccr_aa(label,isymtb,listc,idlstc,gbmat,work,lwork)
+        call daxpy(nt1am(isycb)+nt2am(isycb),1.0d0,work,1,eta1,1)
+        call cclr_diascl(eta1(nt1am(isycb)+1),two,isycb)
+    else if (rsptyp .eq. 'K') then
+        call cc_etac(isymtb,label,eta1,listc,idlstc,0,gbmat,work,lwork)
+    end if
+    if (locdeb .or.(ipqmmm .gt. 14)) then
+        tal1 = ddot(nt1am(isycb),eta1,1,eta1,1)
+        tal2 = ddot(nt2am(isycb),eta1(nt1am(isycb)+1),1,eta1(nt1am(isycb)+1),1)
+        write(lupri,*) 'Printing transformed G^B*C contribution.'
+        write(lupri,*) 'Norm2 of singles : ', tal1
+        write(lupri,*) 'Norm2 of doubles : ', tal2
+    end if
+    if (.not. lsame) then
+        if (rsptyp .eq. 'G') then
+            call cclr_fa(label,isymtc,listb,idlstb,listl,0,gbmat(n2bst(isymtb)+1), &
+   &                     work,lwork)
+            call daxpy(nt1am(isycb)+nt2am(isycb),1.0d0,work,1,eta2,1)
+        else if (rsptyp .eq. 'B') then
+            call cccr_aa(label,isymtc,listb,idlstb,gbmat(n2bst(isymtb)+1),work, &
+   &                      lwork)
+            call daxpy(nt1am(isycb)+nt2am(isycb),1.0d0,work,1,eta2,1)
+            call cclr_diascl(eta2(nt1am(isycb)+1),two,isycb)
+        else if ((rsptyp .eq. 'K') .or. (rsptyp .eq. 'F')) then
+            call cc_etac(isymtc,label,eta2,listb,idlstb,0,gbmat(n2bst(isymtb)+1), &
+   &                     work,lwork)
+        end if
+        if (locdeb .or.(ipqmmm .gt. 14)) then
+            tal1 = ddot(nt1am(isycb),eta2,1,eta2,1)
+            tal2 = ddot(nt2am(isycb),eta2(nt1am(isycb)+1),1,eta2(nt1am(isycb)+1),1)
+            write(lupri,*) 'Printing transformed G^C*B contribution.'
+            write(lupri,*) 'Norm2 of singles : ', tal1
+            write(lupri,*) 'Norm2 of doubles : ', tal2
+        end if
+        if ((rsptyp .eq. 'G').or.(rsptyp .eq. 'F')) then
+            if (simplified_lagrangian) then
+                call cc_etac(isycb,label,eta3,listl,0,2,gbmat(n2bst(isymtb)+ &
+   &                         n2bst(isymtc)+1),work,lwork)
+            else
+                call cc_etac(isycb,label,eta3,listl,0,0,gbmat(n2bst(isymtb)+ &
+   &                         n2bst(isymtc)+1),work,lwork)
+            end if
+        else if ((rsptyp .eq. 'B') .and. (.not.simplified_lagrangian)) then
+            call cc_xksi(eta3,label,isycb,0,gbmat(n2bst(isymtb)+n2bst(isymtc)+1), &
+   &                     work,lwork)
+            call cclr_diascl(eta3(nt1am(isycb)+1),two,isycb)
+        end if
+        if (locdeb .or.(ipqmmm .gt. 14)) then
+            if ((rsptyp .eq. 'G').or.((rsptyp .eq. 'B').and.(.not.simplified_lagrangian)) &
+   &             .or.(rsptyp.eq.'F')) then
+                tal1 = ddot(nt1am(isycb),eta3,1,eta3,1)
+                tal2 = ddot(nt2am(isycb),eta3(nt1am(isycb)+1),1,eta3(nt1am(isycb)+1),1)
+                write(lupri,*) 'Printing transformed G^{BC} contribution.'
+                write(lupri,*) 'Norm2 of singles : ', tal1
+                write(lupri,*) 'Norm2 of doubles : ', tal2
+            end if
+        end if
+    else if (lsame) then
+        if (rsptyp .eq. 'G') then
+            if (simplified_lagrangian) then
+                call cc_etac(isycb,label,eta2,listl,0,2,gbmat(n2bst(isymtb)+1), &
+   &                         work,lwork)
+            else
+                call cc_etac(isycb,label,eta2,listl,0,0,gbmat(n2bst(isymtb)+1), &
+   &                         work,lwork)
+            end if
+        else if ((rsptyp .eq. 'B').and.(.not.simplified_lagrangian)) then
+            call cc_xksi(eta2,label,isycb,0,gbmat(n2bst(isymtb)+1), &
+   &                     work,lwork)
+            call cclr_diascl(eta2(nt1am(isycb)+1),two,isycb)
+        end if
+        if (locdeb .or.(ipqmmm .gt. 14)) then
+            if ((rsptyp .eq. 'G').or.((rsptyp .eq. 'B').and.(.not.simplified_lagrangian))) then
+                tal1 = ddot(nt1am(isycb),eta2,1,eta2,1)
+                tal2 = ddot(nt2am(isycb),eta2(nt1am(isycb)+1),1,eta2(nt1am(isycb)+1),1)
+                write(lupri,*) 'Printing transformed G^{BC} contribution.'
+                write(lupri,*) 'Norm2 of singles : ', tal1
+                write(lupri,*) 'Norm2 of doubles : ', tal2
+            end if
+        end if
+    end if
+
+    if ((locdeb) .or. (ipqmmm .gt. 14)) then
+        tal1 = ddot(nt1am(isycb),eta1,1,eta1,1)
+        tal2 = ddot(nt2am(isycb),eta1(nt1am(isycb)+1),1,eta1(nt1am(isycb)+1),1)
+        write(lupri,*) 'Printing transformed G^B*C contribution.'
+        write(lupri,*) 'Norm2 of singles: ', tal1
+        write(lupri,*) 'Norm2 of doubles: ', tal2
+    end if
+    call daxpy(nt1am(isycb),factks*fact,eta1,1,rho1,1)
+    call daxpy(nt2am(isycb),factks*fact,eta1(nt1am(isycb)+1),1,rho2,1)
+    if (.not. lsame) then
+        if ((rsptyp .eq. 'F').and.simplified_lagrangian) fact=half
+        call daxpy(nt1am(isycb),one*fact,eta2,1,rho1,1)
+        call daxpy(nt2am(isycb),one*fact,eta2(nt1am(isycb)+1),1,rho2,1)
+        if ((rsptyp.eq.'G').or.((rsptyp.eq.'B').and.(.not.simplified_lagrangian)).or.&
+   &        (rsptyp.eq.'F')) then
+            call daxpy(nt1am(isycb),one*fact,eta3,1,rho1,1)
+            call daxpy(nt2am(isycb),one*fact,eta3(nt1am(isycb)+1),1,rho2,1)
+        end if
+    else if (lsame) then
+        if ((rsptyp .eq. 'G') .or. ((rsptyp .eq. 'B').and.(.not.simplified_lagrangian))) then
+            call daxpy(nt1am(isycb),one*fact,eta2,1,rho1,1)
+            call daxpy(nt2am(isycb),one*fact,eta2(nt1am(isycb)+1),1,rho2,1)
+        end if
+    end if
+
+    if ((locdeb) .or. (ipqmmm .gt. 14)) then
+        tal1 = ddot(nt1am(isycb),rho1,1,rho1,1)
+        tal2 = ddot(nt2am(isycb),rho2,1,rho2,1)
+        write(lupri,*) 'Printing RHO.'
+        write(lupri,*) 'Norm2 of singles: ', tal1
+        write(lupri,*) 'Norm2 of doubles: ', tal2
+    end if
+
+    deallocate(denmattemp,denmats,gbmat,gbmattemp,b1am,b2am,eta1)
+    if (allocated(c1am)) deallocate(c1am)
+    if (allocated(c2am)) deallocate(c2am)
+    if (allocated(eta2)) deallocate(eta2)
+    if (allocated(eta3)) deallocate(eta3)
+
+    call qexit('PELIB_IFC_QRTRANSFORMER')
+
+end subroutine pelib_ifc_qrtransformer
+
 end module pelib_interface
 
 subroutine pelib_ifc_start_slaves(runtyp)
@@ -3382,7 +4101,7 @@ module pelib_interface
 #endif
     ! TODO: update the following interface routines
     public :: pelib_ifc_grad, pelib_ifc_lin, pelib_ifc_lr, pelib_ifc_qro
-    public :: pelib_ifc_cro
+    public :: pelib_ifc_cro, pelib_ifc_pecc
 
 contains
 
@@ -3594,6 +4313,14 @@ subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
     call qexit('pelib_ifc_cro')
 end subroutine pelib_ifc_cro
 
+subroutine pelib_ifc_addg(fock,wrk,nwrk)
+    integer, intent(in) :: nwrk
+    real*8, dimension(nwrk) :: wrk
+    call qenter('pelib_ifc_addg')
+    call quit('using dummy PElib interface routines')
+    call qexit('pelib_ifc_addg')
+end subroutine pelib_ifc_addg
+
 end module pelib_interface
 
 subroutine pelib_ifc_start_slaves(runtyp)
@@ -3602,5 +4329,16 @@ subroutine pelib_ifc_start_slaves(runtyp)
     call quit('using dummy PElib interface routines')
     call qexit('pelib_ifc_start_slaves')
 end subroutine pelib_ifc_start_slaves
+
+subroutine pelib_ifc_pecc(aoden,converged,work,lwork)
+    use pelib_interface, only: pelib_ifc_fock
+    implicit none
+    integer :: lwork
+    real*8 :: work(lwork), aoden(*)
+    logical :: converged
+    call qenter('PELIB_IFC_PECC')
+    call quit('using dummy PElib interface routines')
+    call qexit('PELIB_IFC_PECC')
+end subroutine pelib_ifc_pecc
 
 #endif

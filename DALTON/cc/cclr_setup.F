@@ -42,6 +42,7 @@ c /* deck cclr_setup */
 *     Written by Christof Haettig, may 1999 based on CCCM_SETUP 
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, SIMPLIFIED_LAGRANGIAN
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -233,7 +234,8 @@ C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
                  MFVEC  = MAX(MFVEC, IVEC)
                  WF     = FCONS(IVEC,ITRAN)
 C
-                 IF (CCSLV) THEN
+                 IF (CCSLV.OR.(USE_PELIB().AND.
+     &                         (.NOT.SIMPLIFIED_LAGRANGIAN))) THEN
                  IL1VECA = IL1ZETA(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
                  IL1VECB = IL1ZETA(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
 C                Here, we substitute amplitudes <-> multipilers 

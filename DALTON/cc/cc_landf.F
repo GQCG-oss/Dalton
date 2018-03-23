@@ -2613,6 +2613,7 @@ C
 C     Ove Christiansen - march 1997 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 C
 #include "implicit.h"
 C
@@ -2632,12 +2633,13 @@ C
 !#include "qmmm.h"
 #include "ccfield.h"
 #include "leinf.h"
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 C
 C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CC_RCC2FF')
 C
-      IF (((NFIELD.GT.0).OR.CCSLV).AND.NONHF) THEN
+      IF (((NFIELD.GT.0).OR.CCSLV.OR.USE_PELIB()).AND.NONHF) THEN
 C
          KFOCK1 = 1
          KFOCK2 = KFOCK1 + MAX(N2BST(ISYMTR),N2BST(ISYMOP))
@@ -2696,6 +2698,20 @@ C
      *                       SECOND() - DTIME
             END IF
          ENDIF
+         IF (USE_PELIB()) THEN
+             ALLOCATE(FOCKMAT(NNBASX),
+     &                FOCKTEMP(MAX(N2BST(ISYMTR),N2BST(ISYMOP))))
+             IF (HFFLD) THEN
+                 CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+             ELSE
+             CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+             END IF
+             CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+             CALL DAXPY(MAX(N2BST(ISYMTR),N2BST(ISYMOP)),1.0d0,
+     &                  FOCKTEMP,1,WORK(KFOCK2),1)
+             DEALLOCATE(FOCKMAT,FOCKTEMP)
+         END IF
+C
 C
 C--------------------------------------
 C
@@ -2740,6 +2756,7 @@ C     Ove Christiansen - march 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 C
       DIMENSION RHO1(*),WORK(LWORK)
@@ -2753,6 +2770,7 @@ C
 #include "ccfield.h"
 #include "leinf.h"
 #include "qm3.h"
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 !#include "qmmm.h"
 C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2813,6 +2831,19 @@ C
      *                       SECOND() - DTIME
             END IF
          ENDIF
+         IF (USE_PELIB()) THEN
+             ALLOCATE(FOCKMAT(NNBASX),
+     &                FOCKTEMP(MAX(N2BST(ISYMOP),N2BST(ISYMLA))))
+             IF (HFFLD) THEN
+                 CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+             ELSE
+             CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+             END IF
+             CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+             CALL DAXPY(MAX(N2BST(ISYMOP),N2BST(ISYMLA)),1.0d0,FOCKTEMP,
+     &                  1,WORK(KFOCK1),1)
+             DEALLOCATE(FOCKMAT,FOCKTEMP)
+         END IF
 C
 C--------------------------------------
 C
@@ -2841,6 +2872,7 @@ C     Ove Christiansen - march 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 C
       DIMENSION OMEGA2(*),C2AM(*),WORK(LWORK)
@@ -2854,6 +2886,7 @@ C
 #include "ccfield.h"
 #include "leinf.h"
 #include "qm3.h"
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 !#include "qmmm.h"
 C
       LOGICAL ETRAN,FCKCON
@@ -2924,6 +2957,19 @@ C
          END IF
 
       ENDIF
+      IF (USE_PELIB()) THEN
+          ALLOCATE(FOCKMAT(NNBASX),
+     &             FOCKTEMP(MAX(N2BST(ISYMOP),N2BST(ISYMLA))))
+          IF (HFFLD) THEN
+              CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+          ELSE
+          CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+          END IF
+          CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+          CALL DAXPY(MAX(N2BST(ISYMOP),N2BST(ISYMLA)),1.0d0,FOCKTEMP,
+     &               1,WORK(KFOCK1),1)
+          DEALLOCATE(FOCKMAT,FOCKTEMP)
+      END IF
 C
 C-------------------------------------
 C

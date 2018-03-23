@@ -46,6 +46,7 @@ C
 C     Spring 2002 : CC3 section by K. Hald.
 C     Summer 2010 : CCD + RCCD/DRCCD (RPA) session by Sonia Coriani
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, SIMPLIFIED_LAGRANGIAN
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -264,8 +265,13 @@ C-------------------------------------------
 C
          ISYML = 1
          IOPT = 3
-         CALL CC_RDRSP(LLIST,ILLNR,ISYML,IOPT,MODDUM,
-     *                 WORK(KZ1AM),WORK(KT2AM))
+         IF (USE_PELIB().AND.SIMPLIFIED_LAGRANGIAN) THEN
+            CALL DZERO(WORK(KZ1AM),NT1AM(ISYML))
+            CALL DZERO(WORK(KT2AM),NT2AM(ISYML))
+         ELSE
+            CALL CC_RDRSP(LLIST,ILLNR,ISYML,IOPT,MODDUM,
+     &                    WORK(KZ1AM),WORK(KT2AM))
+         END IF
          IF ( IPRINT .GT. 10 ) THEN
             RHO1N = DDOT(NT1AM(ISYML),WORK(KZ1AM),1,WORK(KZ1AM),1)
             RHO2N = DDOT(NT2AM(ISYML),WORK(KT2AM),1,WORK(KT2AM),1)
@@ -509,14 +515,19 @@ C-------------------------------------------
 C
          ISYML = 1
          IOPT = 2
-         CALL CC_RDRSP(LLIST,ILLNR,ISYML,IOPT,MODDUM,
-     *                 WORK(KZ1AM),WORK(KT2AM))
-!         IF ( IPRINT .GT. 10 ) THEN
-!            RHO1N = DDOT(NT1AM(ISYML),WORK(KZ1AM),1,WORK(KZ1AM),1)
-!            RHO2N = DDOT(NT2AM(ISYML),WORK(KT2AM),1,WORK(KT2AM),1)
-!            WRITE(LUPRI,*) 'CC_D1AO: Norm of L. vector :',RHO1N
-!            WRITE(LUPRI,*) 'CC_D1AO: Norm of L. vector :',RHO2N
-!         ENDIF
+         IF (USE_PELIB().AND.SIMPLIFIED_LAGRANGIAN) THEN
+            CALL DZERO(WORK(KZ1AM),NT1AM(ISYML))
+            CALL DZERO(WORK(KT2AM),NT2AM(ISYML))
+         ELSE
+            CALL CC_RDRSP(LLIST,ILLNR,ISYML,IOPT,MODDUM,
+     &                    WORK(KZ1AM),WORK(KT2AM))
+         END IF
+         IF ( IPRINT .GT. 10 ) THEN
+            RHO1N = DDOT(NT1AM(ISYML),WORK(KZ1AM),1,WORK(KZ1AM),1)
+            RHO2N = DDOT(NT2AM(ISYML),WORK(KT2AM),1,WORK(KT2AM),1)
+            WRITE(LUPRI,*) 'CC_D1AO: Norm of L. vector :',RHO1N
+            WRITE(LUPRI,*) 'CC_D1AO: Norm of L. vector :',RHO2N
+         ENDIF
 
 C
 C-----------------------------------
@@ -739,7 +750,7 @@ C
       CALL CCD1REOR(WORK(KDENFO),WORK(KONEAI),WORK(KONEAB),
      *              WORK(KONEIJ),WORK(KONEIA))
 C
-      IF (IPRINT .GT. 50) THEN
+      IF (IPRINT .GT. 10) THEN
 C
          CALL AROUND('Nondiagonalised CC one electron density')
 C
@@ -3113,6 +3124,7 @@ C              (input), which contributes to the relaxed density.
 C
 C     Important note: NO FROZEN CORE SO FAR!!!
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, SIMPLIFIED_LAGRANGIAN
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3174,8 +3186,13 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-      IOPT   = 3
-      CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KZ1AM),WORK(KZ2AM))
+      IF (USE_PELIB().AND.SIMPLIFIED_LAGRANGIAN) THEN
+         CALL DZERO(WORK(KZ1AM),NT1AMX)
+         CALL DZERO(WORK(KZ2AM),NT2AMX)
+      ELSE
+         IOPT   = 3
+         CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KZ1AM),WORK(KZ2AM))
+      END IF
 C
 C--------------------------------
 C     Square up zeta2 amplitudes.

@@ -2615,6 +2615,7 @@ C
 #include "cbirea.h"
 #include "r12int.h"
 #include "qmmm.h"
+#include "qm3.h"
 #include "gnrinf.h"
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
@@ -2993,7 +2994,7 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          CALL WRITT (LUSIFC,MMORBT,WRK(KMATMO))
       END IF
 
-      IF (USE_PELIB() .AND. (NCONF > 1)) THEN
+      IF (USE_PELIB()) THEN
          ! Calculate ground-state PE contribution which is subtracted from
          ! the full Fock matrix in response for MCSCF and CI wavefunction
          KFCKMO = KWRK1
@@ -3015,6 +3016,10 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          END IF
          CALL DGEFSP(NBAST, WRK(KDCAO), WRK(KFDTAO))
          CALL PELIB_IFC_FOCK(WRK(KFDTAO), WRK(KFCKAO), WRK(KENR))
+         CALL AROUND('Writing FOCKMAT in siropt')
+         IF (.NOT.HFFLD) CALL PUT_TO_FILE('FOCKMAT',NNBASX,
+     &                                         WRK(KFCKAO))
+         CALL PUT_TO_FILE('FOCKMHF',NNBASX,WRK(KFCKAO))
          CALL UTHU(WRK(KFCKAO), WRK(KFCKMO), CMO, WRK(KWRK2),
      &             NBAST, NORBT)
          WRITE (LUSIFC) LAB123, TABLE(12)

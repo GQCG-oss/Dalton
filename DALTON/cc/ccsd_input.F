@@ -103,7 +103,7 @@ C
 #include "center.h"
 Cholesky  
 C
-      PARAMETER (NTABLE = 127)
+      PARAMETER (NTABLE = 128)
       LOGICAL   SET, NEWDEF, SIRFF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*(80) LINE
@@ -138,7 +138,7 @@ Cring-CCD for triplet (rTCCD), and SOSEX added
      &            '.KEPAOI','*CHO(T)','*CHOCC2','*CHOMP2','*CHODBG',
      &            '.D01SKI','.CHO(T)','.T2UPDA','.RCCD  ','.RTCCD ',
      &            '.DRCCD ','.SOSEX ','.T2STAR','.HURWIT','.DCPT2 ',
-     &            '*MLCC3 ','*MLCCPT'/
+     &            '*MLCC3 ','*MLCCPT','*PECC'/
 
       DATA SET/.FALSE./
 C
@@ -213,7 +213,7 @@ C
      *                92,93,94,95,96,97,98,99,100,101,102,103,104,
      *                105,106,107,108,109,110,111,112,113,114,115,
      *                116,117,118,119,120,121,122,123,124,125,126,
-     *                127), I
+     *                127,128), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -787,6 +787,11 @@ C                 Multi-Level CCSD(T)
                   MLCCSDPT = .TRUE.
                   call mlccsdpt_input(word,lucmd)
                GO TO 1000
+ 128           CONTINUE
+C             Polarizable Embedding Coupled Cluster with the PElib implementation
+C             Summer 2016
+                  CALL CC_PEINP(WORD)
+               GO TO 1000
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
      *            '" not recognized in CC2INP.'
@@ -846,6 +851,7 @@ Cho
       END
 C  /* Deck CC_PRTINP */
       SUBROUTINE CC_PRTINP(IWUNIT)
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 C
 C     K.Ruud, Jan.-96. Split from CC_INPUT in order to place CC output more 
 C     adequatly in SIRIUS Print of input processing
@@ -932,11 +938,11 @@ C
      &              'type of calculation ')
             ENDIF
 C
-            IF (CCSLV.AND.CCTPA) THEN
+            IF ((CCSLV.OR.USE_PELIB()).AND.CCTPA) THEN
                IF (CCLR.OR.CCQR.OR.CCCR) THEN
                   WRITE(IQUNIT,*)
      &              'For embedding calcs. avoid TPA and LR/QR/CR simul'
-                  CALL QUIT('FOR CCSLV dont do TPA and '//
+                  CALL QUIT('FOR CCSLV/PE-CC dont do TPA and '//
      &                      'LR/QR/CR at the same time - avoid '//
      &                      'confusion')
                END IF
@@ -10283,5 +10289,153 @@ C
 C
       CALL FLSHFO(LUPRI)
 C
+      RETURN
+      END
+
+
+*=====================================================================*
+c /* deck cc_peinp */
+*=====================================================================*
+       SUBROUTINE CC_PEINP(WORD)
+C---------------------------------------------------------------------*
+C
+C    Purpose: read input for P(D)E CC calculations.
+C
+C    if (WORD .eq. '*PECC  ') read & process input and set defaults,
+C    else set only defaults
+C
+C    PECC16,DH (based on CC_SLVINP)
+C    Dalibor Hršak, July 2016 
+C
+C=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, SIMPLIFIED_LAGRANGIAN
+      IMPLICIT NONE
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccslvinf.h"
+#include "qm3.h"
+
+      CHARACTER*8, PARAMETER :: SECNAM='CC_PEINP'
+      INTEGER, PARAMETER :: NTABLE = 8
+ 
+      LOGICAL :: SET
+      SAVE SET
+
+      CHARACTER*7 :: WORD
+      INTEGER :: IXCCSLIT, IJUMP
+      CHARACTER*8 :: TABLE(NTABLE)
+
+
+      DATA SET /.FALSE./
+      DATA TABLE /'.MXSLIT','.ETOLSL','.TTOLSL','.LTOLSL','.MXINIT',
+     &            '.HFFLD ','.CCFIXF','.SIMPLE'/
+
+*---------------------------------------------------------------------*
+* begin:
+*---------------------------------------------------------------------*
+      IF (.NOT. USE_PELIB()) CALL QUIT('Keyword *PEQM is obligatory!')
+      IF (SET) RETURN
+      SET = .TRUE.
+
+*---------------------------------------------------------------------*
+* initializations & defaults:
+*---------------------------------------------------------------------*
+
+      ICHANG   =  0
+      IXCCSLIT =  0
+      MXCCSLIT = 10
+      CVGESOL  = 1.0D-07
+      CVGTSOL  = 1.0D-07
+      CVGLSOL  = 1.0D-07
+      PTSOLV   = .FALSE.
+      DISCEX   = .FALSE.
+      ECCCU    = 0.0D0
+      XTNCCCU  = 0.0D0
+      XLNCCCU  = 0.0D0
+      MXTINIT  = 200
+      MXLINIT  = 200
+      LOITER   = .FALSE.
+      NREPMT   = 0
+      RELMOM   = .FALSE.
+      SLOTH    = .FALSE.
+      SKIPNC   = .FALSE.
+      HFFLD    = .FALSE. ! Do polarization based on fixed HF/MM reaction field - in doi:10.1039/C0C901075H denoted model 1
+      CCFIXF   = .FALSE.   ! Do polarization based on fixed CC/MM reaction field neglecting resp terms - ie only static polarization. Model 2 in doi:10.1039/C0C901075H 
+      SIMPLIFIED_LAGRANGIAN   = .FALSE. ! Do polarization with <HF|E_pq|CC> density as in doi:10.1063/1.4940895
+
+*---------------------------------------------------------------------*
+* read input:
+*---------------------------------------------------------------------*
+
+      IF (WORD .EQ. '*PECC  ') THEN
+        DO
+          READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
+          DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+            READ (LUCMD,'(A7)') WORD
+            CALL UPCASE(WORD)
+          END DO
+!
+          IF (WORD(1:1) .EQ. '.') THEN
+            IF (WORD .EQ. '.MXSLIT') THEN
+              READ(LUCMD,*) MXCCSLIT
+              CYCLE
+            ELSE IF (WORD .EQ. '.ETOLSL') THEN
+               READ(LUCMD,*) CVGESOL
+              CYCLE
+            ELSE IF (WORD .EQ. '.TTOLSL') THEN
+               READ(LUCMD,*) CVGTSOL
+              CYCLE
+            ELSE IF (WORD .EQ. '.LTOLSL') THEN
+               READ(LUCMD,*) CVGLSOL
+              CYCLE
+            ELSE IF (WORD .EQ. '.MXINIT') THEN
+              READ(LUCMD,*) MXTINIT, MXLINIT
+              LOITER = .TRUE.
+              CYCLE
+            ELSE IF (WORD .EQ. '.HFFLD ') THEN
+              HFFLD = .TRUE.
+              CYCLE
+            ELSE IF (WORD .EQ. '.CCFIXF') THEN
+              CCFIXF = .TRUE.
+              CYCLE
+            ELSE IF (WORD .EQ. '.SIMPLE') THEN
+              SIMPLIFIED_LAGRANGIAN = .TRUE.
+              CYCLE
+            ELSE
+              WRITE (LUPRI,'(/5A/)') ' Prompt "',WORD,
+     &                               '" not recognized in ',SECNAM,'.'
+              CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',LUPRI)
+              CALL QUIT('Illegal Keyword in '//SECNAM//'.')
+            END IF
+          ELSE IF (WORD(1:1) .NE. '*') THEN
+            WRITE (LUPRI,'(/5A/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+            CALL QUIT('Illegal prompt in '//SECNAM//'.')
+          ELSE IF (WORD(1:1) .EQ.'*') THEN
+            BACKSPACE(LUCMD)
+            EXIT
+          END IF
+        END DO
+        IF (USE_PELIB()) RSPIM = .TRUE.
+! 
+        IF (CC2) NONHF = .TRUE.
+!
+        IF ( (HFFLD) .AND. (CCFIXF) ) THEN
+          WRITE(LUPRI,*) 'You have specified both CCFIXF and HFFLD. 
+     &                    Make a choice!'
+          CALL QUIT('Error in PECC input')
+        ENDIF
+!
+        IF ( (LOITER) .AND. (SIMPLIFIED_LAGRANGIAN) ) THEN
+          WRITE(LUPRI,*) 'Iterative procedure for solving ground state'
+          WRITE(LUPRI,*) 't and t_bar turned off, make sure equations' 
+          WRITE(LUPRI,*) 'converge.'
+        ENDIF
+      END IF
+!
       RETURN
       END

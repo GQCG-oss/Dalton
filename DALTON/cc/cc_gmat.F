@@ -231,6 +231,7 @@ c/* Deck CC_GMAT */
 *     included CC-R12: Christian Neiss, november 2005
 * 
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, PELIB_IFC_QRTRANSFORMER
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -1660,6 +1661,12 @@ C
             END IF
           END IF
         END IF
+        IF (USE_PELIB()) THEN
+          RSPTYP='G'
+          CALL PELIB_IFC_QRTRANSFORMER(WORK(KDELTA1(ITRAN)),
+     &               WORK(KDELTA2),ISYRES,LISTB,IDLSTB,ISYMTB,
+     &               LISTC,IDLSTC,ISYMTC,MODEL,RSPTYP,WORK(KEND2),LEND2)
+        END IF
 
 *=====================================================================*
 * CCSD part for CC-R12
@@ -1761,23 +1768,29 @@ C
      *                        LISTC,IDLSTC,ISYMTC,
      *                        MODEL,WORK(KEND1),LEND1)
 C
-              IF (CCMM) THEN 
-                 IF (.NOT.NYQMMM)THEN
-                    CALL CCMM_GTR(WORK(KDELTA1(ITRAN)),
-     *                            WORK(KDELTA2),ISYRES,
-     *                            LISTA,IDLSTA,ISYCTR,
-     *                            LISTB,IDLSTB,ISYMTB,
-     *                            LISTC,IDLSTC,ISYMTC,
-     *                            MODEL,WORK(KEND1),LEND1)
-                 ELSE IF (NYQMMM) THEN
-                    RSPTYP = 'G'
-                    CALL CCMM_QRTRANSFORMER(WORK(KDELTA1(ITRAN)),
-     *                            WORK(KDELTA2),ISYRES,
-     *                            LISTB,IDLSTB,ISYMTB,
-     *                            LISTC,IDLSTC,ISYMTC,
-     *                            MODEL,RSPTYP,WORK(KEND1),LEND1)
-                 END IF
+              IF (CCMM) THEN
+                IF (.NOT.NYQMMM) THEN 
+                  CALL CCMM_GTR(WORK(KDELTA1(ITRAN)),
+     &                  WORK(KDELTA2),ISYRES,
+     &                  LISTA,IDLSTA,ISYCTR,
+     &                  LISTB,IDLSTB,ISYMTB,
+     &                  LISTC,IDLSTC,ISYMTC,
+     &                  MODEL,WORK(KEND1),LEND1)
+                ELSE IF (NYQMMM) THEN
+                  RSPTYP = 'G'
+                  CALL CCMM_QRTRANSFORMER(WORK(KDELTA1(ITRAN)),
+     &                  WORK(KDELTA2),ISYRES,
+     &                  LISTB,IDLSTB,ISYMTB,
+     &                  LISTC,IDLSTC,ISYMTC,
+     &                  MODEL,RSPTYP,WORK(KEND1),LEND1)
+                END IF
               END IF
+            END IF
+            IF (USE_PELIB()) THEN
+              RSPTYP = 'G'
+              CALL PELIB_IFC_QRTRANSFORMER(WORK(KDELTA1(ITRAN)),
+     &               WORK(KDELTA2),ISYRES,LISTB,IDLSTB,ISYMTB,
+     &               LISTC,IDLSTC,ISYMTC,MODEL,RSPTYP,WORK(KEND1),LEND1)
             END IF
          END IF
 C

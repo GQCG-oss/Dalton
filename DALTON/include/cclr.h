@@ -13,14 +13,14 @@
       LOGICAL O2SKIP, R2SKIP, X2SKIP, F2SKIP, L2SKIP
       LOGICAL CO2SKIP,CX2SKIP,CR2SKIP,CF2SKIP,CL2SKIP
       LOGICAL N2SKIP,BRSKIP, ETADSC, D01SKIP
-      COMMON /CCLR   / THREXC,THRLEQ,THRENR,THRVEC,THRLDPHF,
-     &                 MAXRED,
-     &                 EDIA,MAXITE,RESTOM,ISYMTR,ONLY21,STCCS,
-     &                 MINSCR,MINMEM,MXTOMN,NEWCAU,CCSDT_DIIS,
-     &                 NSIMLE,NCCVAR,R1SKIP,L1SKIP,RESKIP,LESKIP,
-     &                 F1SKIP,E0SKIP,M1SKIP,L0SKIP,LISKIP,IMSKIP,
-     &                 FRSKIP,BESKIP, RCSKIP, FCSKIP, LCSKIP,
-     &                 O2SKIP, X2SKIP, R2SKIP, F2SKIP, L2SKIP,
-     &                 CO2SKIP,CX2SKIP,CR2SKIP,CF2SKIP,CL2SKIP,
+      COMMON /CCLR   / THREXC,THRLEQ,THRENR,THRVEC,THRLDPHF,            &
+     &                 MAXRED,                                          &
+     &                 EDIA,MAXITE,RESTOM,ISYMTR,ONLY21,STCCS,          &
+     &                 MINSCR,MINMEM,MXTOMN,NEWCAU,CCSDT_DIIS,          &
+     &                 NSIMLE,NCCVAR,R1SKIP,L1SKIP,RESKIP,LESKIP,       &
+     &                 F1SKIP,E0SKIP,M1SKIP,L0SKIP,LISKIP,IMSKIP,       &
+     &                 FRSKIP,BESKIP, RCSKIP, FCSKIP, LCSKIP,           &
+     &                 O2SKIP, X2SKIP, R2SKIP, F2SKIP, L2SKIP,          &
+     &                 CO2SKIP,CX2SKIP,CR2SKIP,CF2SKIP,CL2SKIP,         &
      &                 N2SKIP,BRSKIP, ETADSC, D01SKIP
 #include <ccexcinf.h>

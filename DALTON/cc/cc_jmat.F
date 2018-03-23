@@ -145,6 +145,7 @@ c/* Deck CC_JMAT */
 *           CCMM JK, modyfied version of CC_FMAT
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -383,8 +384,8 @@ C       Trial vector (A left) one excitation part
 C------------------------------------------------
 C
         KT1AMPA = KEND2
-        KEND3   = KT1AMPA +  NT1AM(ISYMA)
-        LWRK3   = LWORK -  KEND3 
+        KEND3   = KT1AMPA + NT1AM(ISYMA)
+        LWRK3   = LWORK   - KEND3 
         IF (LWRK3 .LT. 0) THEN
           CALL QUIT('Insuff. work in CC_JMAT 2')
         END IF
@@ -394,7 +395,8 @@ C
         CALL CC_RDRSP(LISTA,IDLSTA,ISYMA,IOPT,MODEL,
      *                WORK(KT1AMPA),WORK(KDUM))
 C
-        IF (.NOT. CCMM ) CALL CCSL_TGB(WORK(KT1AMPA),ISYMA,
+        IF (.NOT. (CCMM .OR. USE_PELIB())) 
+     *                      CALL CCSL_TGB(WORK(KT1AMPA),ISYMA,
      *                                 LISTA,IDLSTA,WORK(KTGB),
      *                                 'XI',MODEL,
      *                                 WORK(KEND3),LWRK3)
@@ -404,7 +406,11 @@ C
      *                          LISTA,IDLSTA,WORK(KTGB),
      *                         'XI',MODEL,
      *                          WORK(KEND3),LWRK3)
-
+        IF (USE_PELIB()) CALL CCMM_TGB(WORK(KT1AMPA),ISYMA,
+     &                          LISTA,IDLSTA,WORK(KTGB),
+     &                         'XI',MODEL,
+     &                          WORK(KEND3),LWRK3)
+C
         NAMPF   = NT1AM(ISYMA) + NT2AM(ISYMA)
 C
         KXI    = KEND2

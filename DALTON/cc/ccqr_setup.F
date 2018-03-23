@@ -52,6 +52,7 @@ c /* deck ccqr_setup */
 *     (Orbital relaxation for one operator introduced in 6/99)
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, SIMPLIFIED_LAGRANGIAN
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -329,7 +330,7 @@ c /* deck ccqr_setup */
           CALL QUIT('Error in CC_HYPPOL.')
        END IF
 * K matrix transformations:
-      IF (CCSLV) THEN
+      IF (CCSLV.OR.(USE_PELIB().AND.(.NOT.SIMPLIFIED_LAGRANGIAN))) THEN
         CALL CC_SETB11(IKTRAN,IKDOTS,MXTRAN,MXVEC,
      &                 ITAMPA,IZETVB,IZETVC,ITRAN,IVEC)
         NKTRAN = MAX(NKTRAN,ITRAN)

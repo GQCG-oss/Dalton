@@ -443,7 +443,6 @@ C----------------------------
         CALL CCMM_GEFF(WORK(KDENS),WORK(KGMAT),WORK(KWRK),LWRK)
 
 C
-
       ELSE IF (LR .EQ. '0' ) THEN
         IF (HFFLD ) THEN
           CALL GET_FROM_FILE('G_MATRIXHF',N2BST(ISYMOP),WORK(KGMAT))
@@ -523,6 +522,7 @@ C     Current models: CCS, CC2 and CCSD
 C     KS sep 10: Modified to calculate QR density when LR=Q
 !     Note that the list arguments are only dummy when LR=R,L
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, SIMPLIFIED_LAGRANGIAN
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -616,14 +616,17 @@ C     Read left vector.
 C----------------------
 C
 C
+! DH: bugfix, .OR.(LR.EQ.'Q') was missing
+!      IF((LR.EQ.'R').OR.(LR.EQ.'F')) THEN ! old IF-THEN
       IF((LR.EQ.'R').OR.(LR.EQ.'F').OR.(LR.EQ.'Q')) THEN
          IOPT = 3
-         CALL CC_RDRSP('L0',1,ISYML,IOPT,MODDUM,
-     *             WORK(KL1AM),WORK(KR2AMT))
-C when LR=Q overwrite with B vector
          IF (LR.EQ.'Q') THEN
            CALL CC_RDRSP(LISTB,IDLSTB,ISYMTB,IOPT,MODDUM,
-     *             WORK(KL1AM),WORK(KR2AMT))
+     &             WORK(KL1AM),WORK(KR2AMT))
+         ELSE
+           IF (.NOT.SIMPLIFIED_LAGRANGIAN) 
+     &        CALL CC_RDRSP('L0',1,ISYML,IOPT,MODDUM,WORK(KL1AM),
+     &                      WORK(KR2AMT))
          END IF
 C Read in t1 amplitudes
          IOPT = 1
@@ -786,7 +789,7 @@ C
       KLAMDP = KEND0
       KLAMDH = KLAMDP + NLAMDT
       KEND4  = KLAMDH + NLAMDT
-      LWRK4  = LWORK  - KEND4 
+      LWRK4  = LWORK  - KEND4
       IF (LWRK4 .LT. 0) THEN
          WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
          CALL QUIT('Insufficient memory for 4. alloc. in CCMM_D1AO')
