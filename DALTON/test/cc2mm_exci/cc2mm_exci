@@ -184,41 +184,41 @@ fi
 # MM/MM interaction energy compared:
 CRIT1=`$GREP "Eelec = Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n - R_s\| \]        \| * ( |0)\.00061981" $log | wc -l`
 CRIT2=`$GREP "Epol  = - 1\/2\*Sum_a\[ Pind_a\*E\^site_a \]          \| * (\-|\-0)\.00003482" $log | wc -l`
-CRIT3=`$GREP "Epol  = - 1\/2\*Sum_a\[ MYind_a\*E\^site_a \]         \| * ( |0)\.00005570" $log | wc -l`
+CRIT3=`$GREP "Epol  = - 1\/2\*Sum_a\[ MYind_a\*E\^site_a \]         \| * ( |0)\.00005571" $log | wc -l`
 CRIT4=`$GREP "Evdw  = Sum_a\[ A_ma\/\|R_ma\|\^12 - B_ma\/\|R_ma\|\^6 \] \| * ( |0)\.00000000" $log | wc -l`
 CRIT5=`$GREP "E\(MM\/MM\) = Eelec \+ Epol \+ Evdw                  \| * ( |0)\.00058499" $log | wc -l`
-CRIT6=`$GREP "E\(MM\/MM\) = Eelec \+ Epol \+ Evdw                  \| * ( |0)\.00067551" $log | wc -l`
+CRIT6=`$GREP "E\(MM\/MM\) = Eelec \+ Epol \+ Evdw                  \| * ( |0)\.00067552" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[1]=9
 ERROR[1]="THE CLASSICAL MM/MM ENERGY NOT CORRECT"
 
 # QM/MM interaction energy compared:
-CRIT1=`$GREP "\| * (\-|\-0).01030903.. \| * (\-|\-0)\.00020718.. \| * ( |0)\.00000000.. \| * (\-|\-0)\.01051621.. \|" $log | wc -l`
-CRIT2=`$GREP "\| * \-189\.75182217.. \| * \-189\.7623383... \| * ( |0)\.00009051.. \|" $log | wc -l`
+CRIT1=`$GREP "\| * (\-|\-0).01031056.. \| * (\-|\-0)\.00020727.. \| * ( |0)\.00000000.. \| * (\-|\-0)\.01051784.. \|" $log | wc -l`
+CRIT2=`$GREP "\| * \-189\.75182056.. \| * \-189\.7623384... \| * ( |0)\.00009053.. \|" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2`
 CTRL[2]=2
 ERROR[2]="QM/MM ENERGY NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "x * ( |0)\.692494(8|9). * 1\.7601463." $log | wc -l`
-CRIT2=`$GREP "y * (\-|\-0)\.0033499. * (\-|\-0)\.008514(5|6)." $log | wc -l`
-CRIT3=`$GREP "z * ( |0)\.00062181 * ( |0)\.00158049" $log | wc -l` 
+CRIT1=`$GREP "x * ( |0)\.69265... * 1\.7605532." $log | wc -l`
+CRIT2=`$GREP "y * (\-|\-0)\.0033511. * (\-|\-0)\.008517." $log | wc -l`
+CRIT3=`$GREP "z * ( |0)\.00062292 * ( |0)\.00158331" $log | wc -l` 
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=12
 ERROR[3]="DIPOLE MOMENT NOT CORRECT"
 
 # Three lowest ground state excitation energies compared:
-CRIT1=`$GREP "\^1A   \|    1   \|     ( |0)\.1759967  \|       4\.78911  \|     38626\.813" $log | wc -l`
-CRIT2=`$GREP "\^1A   \|    2   \|     ( |0)\.3707964  \|      10\.08988  \|     81380\.39." $log | wc -l`
-CRIT3=`$GREP "\^1A   \|    3   \|     ( |0)\.4568489  \|      12\.43149  \|    100266\.747" $log | wc -l`
+CRIT1=`$GREP "\^1A   \|    1   \|     ( |0)\.1760158  \|       4\.78963  \|     38631\.003" $log | wc -l`
+CRIT2=`$GREP "\^1A   \|    2   \|     ( |0)\.3708109  \|      10\.08988  \|     81383\.59." $log | wc -l`
+CRIT3=`$GREP "\^1A   \|    3   \|     ( |0)\.4568413  \|      12\.43128  \|    100265\.077" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="LOWEST GROUND STATE EXCITATION ENERGIES NOT CORRECT"
 
 # Transition properties between ground state and excited states compared:
 CRIT1=`$GREP "\^1A   \|    1   \|        ( |0)\.0000041      \|      ( |0)\.0000005" $log | wc -l`
-CRIT2=`$GREP "\^1A   \|    2   \|        ( |0)\.0124246      \|      ( |0)\.0030713" $log | wc -l`
-CRIT3=`$GREP "\^1A   \|    3   \|        ( |0)\.0257497      \|      ( |0)\.0078425" $log | wc -l`
+CRIT2=`$GREP "\^1A   \|    2   \|        ( |0)\.0124143      \|      ( |0)\.0030689" $log | wc -l`
+CRIT3=`$GREP "\^1A   \|    3   \|        ( |0)\.0251965      \|      ( |0)\.0076739" $log | wc -l`
 TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[5]=3
 ERROR[5]="OSCILLATOR STRENGTH NOT CORRECT"

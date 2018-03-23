@@ -1,0 +1,101 @@
+#!/bin/bash
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+#  The classical and QM/MM interaction energies compared:
+CRIT1=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n \- R_s\| \]        \| * (\-|\-0)\.03404007" $log | wc -l`
+CRIT2=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ Pind_a\*E\^site_a \]          \| * (\-|\-0)\.00944547" $log | wc -l`
+CRIT3=`$GREP "Evdw  \= Sum_a\[ A_ma\/\|R_ma\|\^12 \- B_ma\/\|R_ma\|\^6 \] \| * ( |0)\.00000000" $log | wc -l`
+CRIT4=`$GREP "E\(MM\/MM\) \= Eelec \+ Epol \+ Evdw                  \| * (\-|\-0)\.0434855[34]" $log | wc -l`
+CRIT5=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n \- R_s\| \]        \| * (\-|\-0)\.01098929" $log | wc -l`
+CRIT6=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ Pind_a\*E\^\(QMclassic\)_a \]   \| * (\-|\-0).00277913" $log | wc -l`
+CRIT7=`$GREP "E\(\"QM\"\/MM\) \= Eelec \+ Epol \+ Evdw                \| * (\-|\-0)\.01376842" $log | wc -l`
+CRIT8=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ MYind_a\*E\^site_a \]         \| * (\-|\-0)\.00931089" $log | wc -l`
+CRIT9=`$GREP "(\-|\-0)\.00908282.. \| * (\-|\-0)\.00186631.. \| * ( |0)\.00000000.. \| * (\-|\-0)\.01094914.." $log | wc -l`
+CRIT10=`$GREP "\-598\.3548014... \| \-598\.3657505... \|    ( |0)\.00013457.. \|   ( |0)\.00000000.." $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
+CTRL[1]=13
+ERROR[1]="THE CLASSICAL OR QM/MM ENERGY TERMS ARE NOT CORRECT"
+
+# Dipole moment components compared:
+CRIT1=` $GREP "x * ( |0)\.3984969. * 1\.0128781." $log | wc -l`
+CRIT2=` $GREP "y * (\-|\-0)\.4390160. * \-1\.1158673." $log | wc -l`
+CRIT3=` $GREP "z * ( |0)\.0951269. * ( |0)\.241788.." $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=9
+ERROR[2]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"
+
+# Static dipole-dipole polarizability compared:
+CRIT1=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 19\.92943.." $log | wc -l`
+CRIT2=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.215839." $log | wc -l`
+CRIT3=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * \-0*\.874623." $log | wc -l`
+CRIT4=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.215839." $log | wc -l`
+CRIT5=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 7\.112276." $log | wc -l`
+CRIT6=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.706409.." $log | wc -l`
+CRIT7=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.874623.." $log | wc -l`
+CRIT8=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.706409.." $log | wc -l`
+CRIT9=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * 5\.586919." $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[3]=9
+ERROR[3]="STATIC POLARIZABILITY COMPONENTS ARE NOT CORRECT"
+
+# Static dipole-dipole-dipole hyperpolarizability compared:
+CRIT1=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * \-7\.51330.." $log | wc -l`
+CRIT2=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.70959.." $log | wc -l`
+CRIT3=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * \-17\.1970.." $log | wc -l`
+CRIT4=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.70959.." $log | wc -l`
+CRIT5=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 2\.04433.." $log | wc -l`
+CRIT6=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.569230.." $log | wc -l`
+CRIT7=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * \-17\.1970.." $log | wc -l`
+CRIT8=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.569230.." $log | wc -l`
+CRIT9=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.768385..E-01" $log | wc -l`
+CRIT10=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.70959.." $log | wc -l`
+CRIT11=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 2\.04433.." $log | wc -l`
+CRIT12=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.569230.." $log | wc -l`
+CRIT13=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 2\.04433.." $log | wc -l`
+CRIT14=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 5\.86555.." $log | wc -l`
+CRIT15=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * \-8\.33858.." $log | wc -l`
+CRIT16=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.569230.." $log | wc -l`
+CRIT17=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * \-8\.33858.." $log | wc -l`
+CRIT18=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * ( |0)\.383191.." $log | wc -l`
+CRIT19=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * \-17\.1970.." $log | wc -l`
+CRIT20=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.569230.." $log | wc -l`
+CRIT21=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.768385..E-01" $log | wc -l`
+CRIT22=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.569230.." $log | wc -l`
+CRIT23=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * \-8\.33858.." $log | wc -l`
+CRIT24=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * ( |0)\.383191.." $log | wc -l`
+CRIT25=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.768385..E-01" $log | wc -l`
+CRIT26=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * ( |0)\.383191.." $log | wc -l`
+CRIT27=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * 3\.41060.." $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ $CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ $CRIT25 \+ $CRIT26 \+ $CRIT27`
+CTRL[4]=27
+ERROR[4]="STATIC HYPERPOLARIZABILITY COMPONENTS ARE NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+

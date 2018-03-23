@@ -1220,7 +1220,7 @@ C
              CALL GPCLOSE(LUFCK,'KEEP' )
 
              ! SCF  Fock matrix in transformed using CMO vector
-             CALL CC_FCKMO(WORK(KFCKHF),WORK(KCMO),WORK(KCMO),
+             CALL CC_FCKMO(WORK(KFCKHF),WORK(KLAMDP),WORK(KLAMDH),
      *                     WORK(KEND2),LWRK2,1,1,1)
 
 C-------------------------------------
@@ -1895,13 +1895,6 @@ C
      *                 WORK(KOFFYI),ISYRES,WORK(KEND1),LWRK1)
          TIMEEM = SECOND() - TIMEEM
 C
-      ENDIF
-      IF (((NFIELD .GT.0).OR.CCSLV) .AND. (CC2 .AND. NONHF)) THEN
-         IOPT = 1
-         CALL CC_LCC2FF(RHO1(1,IV),WORK(KLAMDP),WORK(KLAMDH),
-     *                  WORK(KLAMDP),WORK(KLAMDH),ISYMOP,
-     *                  WORK(KOFFXI),WORK(KOFFYI),ISYRES,
-     *                  WORK(KEND1),LWRK1,IOPT)
       ENDIF
 C
 C-------------------------------------------

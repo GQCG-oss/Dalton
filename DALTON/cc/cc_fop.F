@@ -3199,6 +3199,10 @@ C
          end if
       ENDIF
 C
+      IF (CCSTST) THEN
+         CALL DZERO(ETA(1+NT1AMX),NT2AMX)
+      END IF
+
       IF ( IPRINT .GT. 10 ) THEN
          ETA1 = DDOT(NT1AMX,ETA(1),1,ETA(1),1)
          ETA2 = DDOT(NT2AMX,ETA(1+NT1AMX),1,ETA(1+NT1AMX),1)

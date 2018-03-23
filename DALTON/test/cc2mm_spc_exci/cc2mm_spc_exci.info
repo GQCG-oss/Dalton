@@ -1,0 +1,9 @@
+   cc2mm_spc_exci
+   ---------------
+   Molecule:            Alanine zwitter ion (QM) and 9 water molecules (MM)
+   Wave Function:       CC2 / STO-3G
+   Molecular Mechanics: SPC model: TIP3P point charges. OLDTG=.TRUE. meaning 
+                        that point charge relaxed HF orbitals are used.
+   Test Purpose:        Run checks energy, dipole moment, 5 lowest 
+                        ground state excitation energies and transition 
+                        properties.
