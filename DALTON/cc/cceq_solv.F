@@ -123,6 +123,7 @@ C JK&OC 080802:
 C Dirty hack to allow small number of iterations for CCSLV/MM calc.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -352,8 +353,8 @@ C           (CONVERGED)
      *         ' SOLUTION VECTORS',
      *         ' IN',ITLE,' ITERATIONS.'
             END IF
-            IF (CCSLV) NSLVINIT = NSLVINIT + NREDH
-            IF (CCSLV) LRSPFUL = .TRUE.
+            IF (CCSLV.OR.USE_PELIB()) NSLVINIT = NSLVINIT + NREDH
+            IF (CCSLV.OR.USE_PELIB()) LRSPFUL = .TRUE.
          ELSE IF (NREDH + NUPVEC .GT. MAXRED) THEN
 C           (NOT CONVERGED)
                WRITE(LUPRI,'(/A,I5,A)')
@@ -363,15 +364,16 @@ C           (NOT CONVERGED)
                CALL QUIT(' ALL SOLUTION VECTORS NOT CONVERGED ')
          ELSE IF (ITLE .LT. MAXLE) THEN
             CALL FLSHFO(LUPRI)
-              IF (LINQCC.AND.CCSLV.AND.(ITLE.GE.MXLINIT).AND.
-     *           (LIST(1:1) .EQ. 'L')) THEN
+              IF (LINQCC.AND.(CCSLV.OR.USE_PELIB()).AND.
+     &            (ITLE.GE.MXLINIT).AND.
+     &            (LIST(1:1) .EQ. 'L')) THEN
 C             additions to reduced space should be ignored.
 C
                NREDH = NREDH-NUPVEC
                NSLVINIT = NSLVINIT + NREDH
                LRSPFUL = .FALSE.
                WRITE(LUPRI,*)
-     *        ' CCSLV: We stop for now though not fully converged yet'
+     *        'CCSLV/PE: We stop for now though not fully converged yet'
                 WRITE(LUPRI,*)
      *        ' Accumulated inner iterations are:', NSLVINIT
 C               WRITE(LUPRI,*) 'last - NREDH,NUPVEC:',NREDH,NUPVEC
@@ -1306,6 +1308,7 @@ C
          WRITE(LUPRI,*)' NUPVEC ',NUPVEC
          WRITE(LUPRI,*)' NVEC   ',NVEC
          WRITE(LUPRI,*)' LWRK   ',LWRK
+         WRITE(LUPRI,*) "NCCVAR = ", NCCVAR
       END IF
 C
       IF (NUPVEC.GT.0) THEN 
@@ -1711,7 +1714,7 @@ C
          END DO
 C
          IF (IPRLE .GE.1 .OR. ICPLX .GT. 0) THEN
-            WRITE (LUPRI,'(/A)') ' REDUCED EIGENVALUES real part:'
+            WRITE (LUPRI,'(/A)') '1. REDUCED EIGENVALUES real part:'
             CALL OUTPUT(EIVAL,1,NVEC,1,1,MAXRED,1,1,LUPRI)
          ENDIF
 C

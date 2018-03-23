@@ -54,6 +54,7 @@ C     Current models are: CC2, CCD, CCSD
 C
 C
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, PELIB_IFC_TRANSFORMER
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -103,6 +104,7 @@ C
       DIMENSION RHO2(*), CTR2(*)
       DIMENSION WORK(LWORK)
       DIMENSION IADRPQ(MXCORB_CC,MAXSIM)
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 C
       LOGICAL ETRAN,FCKCON,CCSDR12,SKIPMI
 C
@@ -1221,7 +1223,7 @@ C
 
              ! SCF  Fock matrix in transformed using CMO vector
              CALL CC_FCKMO(WORK(KFCKHF),WORK(KLAMDP),WORK(KLAMDH),
-     *                     WORK(KEND2),LWRK2,1,1,1)
+     &                  WORK(KEND2),LWRK2,1,1,1)
 
 C-------------------------------------
 C     Solvent contribution.
@@ -1265,6 +1267,19 @@ c          TIMMLT = TIMMLT + SECOND() - DTIME
            END IF
         ENDIF
 C
+        IF (USE_PELIB()) THEN
+            ALLOCATE(FOCKMAT(NNBASX),FOCKTEMP(N2BAST))
+            IF (HFFLD) THEN
+                CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+            ELSE
+                CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+            END IF
+            CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+            CALL DAXPY(N2BAST,1.0d0,FOCKTEMP,1,WORK(KFIELD),1)
+            DEALLOCATE(FOCKMAT,FOCKTEMP)
+        END IF
+C
+C====================================================
 C-------------------------------------
 
              ! unrelaxed fields are transformed using the Lambda matrices
@@ -1940,6 +1955,19 @@ c        TIMMLT = TIMMLT + SECOND() - DTIME
          IF (IPRINT .GT. 5) THEN
             WRITE(LUPRI,*)'Time used in CCMM_LTRB (CC_LHTR) 1',
      *                     SECOND() - DTIME
+         END IF
+      ENDIF
+C
+      IF (USE_PELIB().AND.LSTBTR.AND.(.NOT.HFFLD)) THEN
+         CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     &                IVEC+IV-1,CTR2)
+         LR = 'L'
+         DTIME = SECOND()
+         CALL PELIB_IFC_TRANSFORMER(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,
+     &                         MODEL,ISYMTR,LR,WORK(KEND1),LWRK1)
+         IF (IPRINT .GT. 5) THEN
+            WRITE(LUPRI,*)'Time used in PECC TRANSFORMER (CC_LHTR) 1',
+     &                     SECOND() - DTIME
          END IF
       ENDIF
 C

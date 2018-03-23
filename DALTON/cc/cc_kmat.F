@@ -150,6 +150,7 @@ c/* Deck CC_BMAT */
 *           CCMM JK+OC, modyfied version of CC_BMAT
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, PELIB_IFC_QRTRANSFORMER
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -174,7 +175,7 @@ c/* Deck CC_BMAT */
       PARAMETER (MSGDBG='[debug] CC_KMAT> ')
 
       LOGICAL LOCDBG, LSAME
-      PARAMETER (LOCDBG = .TRUE.)
+      PARAMETER (LOCDBG = .FALSE.)
 
       INTEGER KDUM
       PARAMETER( KDUM = +99 999 999 ) ! dummy address for work space
@@ -395,8 +396,8 @@ C
      *                         LISTB,IDLSTB,ISYMB,
      *                         LISTA,IDLSTA,ISYMA,
      *                         MODELW,RSPTYP,WORK(KEND1),LWRK1)
-
-        ELSE IF (.NOT. NYQMMM) THEN
+C
+        ELSE IF ((.NOT. NYQMMM) .AND. (.NOT. USE_PELIB())) THEN
           KTGB  = KEND1 
           KEND2 = KTGB + N2BST(ISYMB)
           LWRK2 = LWORK   - KEND2 
@@ -537,6 +538,13 @@ C
           END IF
 
         END IF ! NYQMMM
+C
+        IF (USE_PELIB()) THEN
+          RSPTYP='K'
+          CALL PELIB_IFC_QRTRANSFORMER(WORK(KTHETA1),WORK(KTHETA2),
+     &                   ISYMAB,LISTB,IDLSTB,ISYMB,LISTA,IDLSTA,ISYMA,
+     &                   MODELW,RSPTYP,WORK(KEND1),LWRK1)
+        END IF
 
 *---------------------------------------------------------------------*
 * write result vector to output:

@@ -2122,6 +2122,7 @@ c /* deck cc_lrind */
 *    CH  apr. 2002: changes for CC3 freq.-dep. polarizabilities
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 #include "priunit.h"
 #include "ccorb.h"
@@ -2251,11 +2252,13 @@ c /* deck cc_lrind */
 
             INUM  = IR1TAMP(LABELB,LRLXB,FREQB,ISYMB)
             IF (LRLXB.OR.LPDBSB) INUM = IETA1(LABELB,LRLXB,FREQB,ISYMB)
-            IF (CCSLV)        INUM  = IL1ZETA(LABELB,LRLXB,FREQB,ISYMB)
+            IF (CCSLV.OR.USE_PELIB())  
+     &          INUM  = IL1ZETA(LABELB,LRLXB,FREQB,ISYMB)
             IF (.NOT. ASYMSD) THEN
               INUM = IR1TAMP(LABELA,LRLXA,FREQA,ISYMA)
               IF (LRLXA.OR.LPDBSA) INUM=IETA1(LABELA,LRLXA,FREQA,ISYMA)
-              IF (CCSLV)         INUM=IL1ZETA(LABELA,LRLXA,FREQA,ISYMA)
+              IF (CCSLV.OR.USE_PELIB()) 
+     &            INUM=IL1ZETA(LABELA,LRLXA,FREQA,ISYMA)
             ELSE
                INUM  = IL1ZETA(LABELB,LRLXB,FREQB,ISYMB)
             ENDIF
@@ -3741,6 +3744,7 @@ c /* deck cc_tpaind */
 *             of two-photon absorption strength
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -3918,7 +3922,7 @@ c /* deck cc_tpaind */
 
 
 *        request unrelaxed first order zeta response vectors:
-         IF (CCSLV) THEN
+         IF (CCSLV.OR.USE_PELIB()) THEN
            INUM = IL1ZETA(LABELA,.FALSE.,-FREQA,ISYMA)
            INUM = IL1ZETA(LABELB,.FALSE.,-FREQB,ISYMB)
            INUM = IL1ZETA(LABELA,.FALSE.,FREQA,ISYMA)

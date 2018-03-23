@@ -98,11 +98,11 @@ c /* deck CC_TPA */
      & '*                                   ',
      &                               '                             *',
      & '*------    OUTPUT FROM COUPLED CLUST',
-     &                               'ER LINEAR RESPONSE    -------*',
+     &                               'ER QUADRATIC RESPONSE -------*',
      & '*                                   ',
      &                               '                             *',
-     & '*------  CALCULATION OF TWO-PHOTON A',
-     &                               'ABSORPTION STRENGHTS  -------*',
+     & '*------  CALCULATION OF TWO-PHOTON ',
+     &                               'ABSORPTION STRENGTHS  -------*',
      & '*                                   ',
      &                               '                             *',
      & '************************************',
@@ -424,7 +424,7 @@ cch
      &  NBTPA,' quadratic response func.:', SECOND() - TIM0
 
 *---------------------------------------------------------------------*
-* print one-photon absorption properties and return:
+* print two-photon absorption properties and return:
 *---------------------------------------------------------------------*
       CALL  CCTPAPRT(WORK(KRESULT),.FALSE.,NSMOPER,NSMSEL)
 

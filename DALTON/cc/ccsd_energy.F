@@ -1,4 +1,4 @@
-!
+
 !...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
@@ -34,6 +34,8 @@ C     Ove februar    1997: CCS, FD gradient hacks and restart.
 C     Sonia/MFIozzi  2009: rCCD, drCCD 
 C     Sonia          2010: rTCCD
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, PELIB_IFC_PECC, 
+     &                           SIMPLIFIED_LAGRANGIAN
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -68,7 +70,7 @@ Cholesky
 #include "cc_cho.h"
 #include "chocc2.h"
 C
-      LOGICAL CPTDBG
+      LOGICAL CPTDBG, DUMMYCONV
 Cholesky
       LOGICAL LCONVG,RSPIM2,EX,LEXIST,LHTF,MKVABKL
       LOGICAL CCR12RSP, CCR12LIM
@@ -810,7 +812,7 @@ C
          END IF
 
 C
-         IF (CCSLV) THEN
+         IF (CCSLV.OR.USE_PELIB()) THEN
            IF (IPRINT .GE. 3) THEN
               WRITE(LUPRI,529) 'Norm^2 of omega1 in sol. part.:',
      *              DDOT(NT1AM(ISYMOP),WORK(KOMEG1),1,WORK(KOMEG1),1)
@@ -964,12 +966,12 @@ C
          ENDIF
 C
          NSLVINIT = NSLVINIT + 1
-
-         IF (CCSLV.AND.((ITER-1).GE.MXTINIT)) THEN
+C
+         IF ((CCSLV.OR.USE_PELIB()).AND.((ITER-1).GE.MXTINIT)) THEN
            WRITE(LUPRI,241) ETY2
  241       FORMAT(/,1x,A5,
      *    'energy will not be converged further'
-     *     //' right now in CCSLV calc.')
+     *     //' right now in CCSLV/PE-CC calc.')
            WRITE(LUPRI,242) NSLVINIT
  242       FORMAT(' Accumulated inner iterations at this point are ',I5)
 C
@@ -988,6 +990,7 @@ C
               GOTO 200 ! go to next iteration
            END IF
          ENDIF
+C
 C
       CALL CCSD_MODEL(ETYPE,LENET,24,ETY2,5,APROXR12)
 
@@ -1185,7 +1188,7 @@ C
 C
 C SLV98,OC
 C
-      IF (CCSLV) THEN
+      IF (CCSLV.OR.USE_PELIB()) THEN
         XTNCCCU = DDOT(NT2AMX,WORK(KT2AM),1,WORK(KT2AM),1)
      *          + DDOT(NT1AMX,WORK(KT1AM),1,WORK(KT1AM),1)
         IF (ABS(XTNCCPR-XTNCCCU).LT.CVGTSOL) LSLTCVG = .TRUE.
@@ -1194,14 +1197,12 @@ C
      &                  XTNCCCU
           WRITE(LUPRI,*)'Norm^2 of T-amplitudes in prev solvent it.:',
      &                  XTNCCPR
-          WRITE(LUPRI,*)'LSLTCVG: ',LSLTCVG
         ENDIF
         WRITE(LUPRI,*)
      *  ' Change in norm^2 of T-amplitudes in this solvent it.:',
      *  XTNCCCU-XTNCCPR
         XTNCCPR = XTNCCCU
       ENDIF
-C
 C
 C     ---------------------
 C     |Multi-Level CCSD(T)|
@@ -1355,6 +1356,33 @@ C
          ENDIF
 C
       ENDIF  !triples
+!     For sPDECC save embedding operator
+      IF (USE_PELIB().AND.SIMPLIFIED_LAGRANGIAN.AND.(.NOT.CCR3)) THEN
+        KDENS = KEND1
+        KZKAM = KDENS + N2BST(ISYMOP)
+        KWRK3 = KZKAM + N2BST(ISYMOP)
+        LWRK3 = LWORK - KWRK3
+        IF (LWRK3 .LT. 0) THEN
+           WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KWRK3
+           CALL QUIT('Insufficient memory for 1-eldens in CCSD_ENERGY')
+        ENDIF
+        CALL DZERO(WORK(KZKAM),N2BST(ISYMOP))
+        ILSTNR = 1
+        write(lupri,*)'CCSD_ENERGY: call CC_D1AO to recalc the 1e dens'
+        call flshfo(lupri)
+        CALL CC_D1AO(IPDD,R12PRP,WORK(KDENS),WORK(KZKAM),WORK(KWRK3),
+     &           LWRK3,MODEL,'R0',ILSTNR,.FALSE.,
+     &          'DPTIA','DPTIA2','DPTAB','DPTIJ')
+        CALL FLSHFO(LUPRI)
+
+        IF (IPRINT .GT. 50) THEN
+          CALL AROUND('One electron dens. with orb.rel in ccsd_energy')
+          CALL CC_PRFCKAO(WORK(KDENS),1)
+        ENDIF
+        CALL FLSHFO(LUPRI)
+        CALL PELIB_IFC_PECC(WORK(KDENS),VDUMMY,DUMMYCONV,1)
+      END IF
+C
 C
 C------------------------------------------------------------
 C     Print and save (in ECCGRS) final ground state energies.
@@ -1437,14 +1465,14 @@ C----------------------
 
       ECCGRS = EN2
 
-      IF ( (.NOT.CCSLV) .OR. (ICCSLIT.EQ.0)) THEN
+      IF ( (.NOT.(CCSLV.OR.USE_PELIB()) .OR. (ICCSLIT.EQ.0))) THEN
          LABEL1 = 'ENERGY  '
          MODREF = 'SCF       '
          CALL CC_PRPC(ESCF,MODREF,0,
      *                LABEL1,LABEL1,LABEL1,LABEL1,
      *                ZERO,ZERO,ZERO,1,0,0,0)
       ENDIF
-      IF (.NOT.CCSLV) THEN
+      IF (.NOT.(CCSLV.OR.USE_PELIB())) THEN
          LABEL1 = 'ENERGY  '
          CALL CC_PRPC(EN2,MOPRPC,0,
      *                LABEL1,LABEL1,LABEL1,LABEL1,
@@ -2717,7 +2745,7 @@ C
                KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
                LWRK1  = LWORK  - KEND1
                IF (LWRK1 .LT. 0) THEN
-                  CALL QUIT('Insufficient core in CCRHSN')
+                  CALL QUIT('Insufficient core in CCSD_ENERGY')
                END IF
 C
             ELSE

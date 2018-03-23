@@ -157,6 +157,7 @@ c/* Deck CC_BMAT */
 *     CC3 noddy version, April 2002, Christof Haettig
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, PELIB_IFC_QRTRANSFORMER
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -287,6 +288,7 @@ c/* Deck CC_BMAT */
       INTEGER ICCSET1
       INTEGER ICCSET2
       INTEGER ILSTSYM
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 
 #if defined (SYS_CRAY) 
       REAL DTIME, CONVRT, TIMALL, TIMTRN, TIMIO, TIMPRE
@@ -682,8 +684,8 @@ C
             CALL CCMM_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
             ELSE IF (NYQMMM) THEN
               IF (HFFLD) THEN
-                WRITE(LUPRI,*) 'Is it justified to do B transfor with
-     &  with a HFFLD?'
+                WRITE(LUPRI,*) 'Is it justified to do B transformation '
+     &                          //'with a HFFLD?'
                 CALL QUIT('HFFLD not implemented for QR')
               ELSE
                 CALL CCMM_ADDG(WORK(KFOCK0),WORK(KEND0),LWRK0)
@@ -691,6 +693,18 @@ C
             END IF
          ENDIF
       ENDIF
+      IF (USE_PELIB()) THEN
+          IF (HFFLD) THEN
+              CALL QUIT('HFFLD not implemented for QR')
+          ELSE
+              ALLOCATE(FOCKMAT(NNBASX),FOCKTEMP(N2BAST))
+              CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+              CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+              CALL DAXPY(N2BAST,1.0d0,FOCKTEMP,1,WORK(KFOCK0),1)
+              DEALLOCATE(FOCKMAT,FOCKTEMP)
+          END IF
+      END IF
+C
 C
 C------------------------------------------------------------------------
 C
@@ -2004,6 +2018,13 @@ C
           END IF
         END IF
       END IF
+!
+      IF (USE_PELIB()) THEN
+         RSPTYP='B'
+         CALL PELIB_IFC_QRTRANSFORMER(WORK(KTHETA1),WORK(KTHETA2),
+     &                   ISYMAB,LISTA,IDLSTA,ISYMA,LISTB,IDLSTB,ISYMB,
+     &                   MODEL,RSPTYP,WORK(KEND2),LWRK2)
+      END IF
 *---------------------------------------------------------------------*
 * if DO_O2 flag is set include A{x} t^y + A{y} t^x contribution
 * to the second-order rhs vector (here we do the CCS/CC2/CCSD parts):
@@ -2436,6 +2457,7 @@ c/* Deck CCBMAT2 */
 *
 *    Written by Christof Haettig, Januar 1997.
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -2500,6 +2522,7 @@ c/* Deck CCBMAT2 */
       DOUBLE PRECISION TIMIO, TIMBF, TIMA, TIME, TIMI, TIMC, TIMD
       DOUBLE PRECISION DDOT
 #endif
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 
       CALL QENTER('CCBMAT2')
 
@@ -2649,8 +2672,8 @@ C
                CALL CCMM_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
              ELSE IF (NYQMMM) THEN
                IF (HFFLD) THEN
-                 WRITE(LUPRI,*) 'Is it justified to do B transfor with
-     &  with a HFFLD?'
+                 WRITE(LUPRI,*) 'Is it justified to do B transformation'
+     &                           //' with a HFFLD?'
                  CALL QUIT('HFFLD not implemented for QR')
                ELSE
                  CALL CCMM_ADDG(WORK(KONEHR),WORK(KEND1),LWRK1)
@@ -2658,6 +2681,20 @@ C
              END IF
          END IF
       ENDIF
+      IF (USE_PELIB()) THEN
+          IF (HFFLD) THEN
+              CALL QUIT('HFFLD not implemented for QR')
+          ELSE
+              ALLOCATE(FOCKMAT(NNBASX),
+     &                 FOCKTEMP(MAX(N2BST(ISYM0),N2BST(ISYMA))))
+              CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+              CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+              CALL DAXPY(MAX(N2BST(ISYM0),N2BST(ISYMA)),1.0d0,FOCKTEMP,
+     &                   1,WORK(KONEHR),1)
+              DEALLOCATE(FOCKMAT,FOCKTEMP)
+          END IF
+      END IF
+C
 C
 C------------------------------------------------------------------------
 C
@@ -2782,7 +2819,7 @@ C
       DTIME = SECOND()
 
       IF(CC2.AND.(.NOT.CCSTST).AND.
-     &   ((NFIELD.GT.0) .OR. CCSLV)) THEN
+     &   ((NFIELD.GT.0) .OR. CCSLV .OR. USE_PELIB())) THEN
  
          KPERT   = KEND0
          KT1AMPA = KPERT   + N2BST(ISYM0)
@@ -2814,8 +2851,8 @@ C
               CALL CCMM_RHSTG(WORK(KPERT),WORK(KEND1),LWRK1)
                ELSE IF (NYQMMM) THEN
                  IF (HFFLD) THEN
-                   WRITE(LUPRI,*) 'Is it justified to do B transfor with
-     &  with a HFFLD?'
+                   WRITE(LUPRI,*) 'Is it justified to do B '// 
+     &                             'transformation with a HFFLD?'
                    CALL QUIT('HFFLD not implemented for QR')
                  ELSE
                    CALL CCMM_ADDG(WORK(KPERT),WORK(KEND1),LWRK1)
@@ -2823,6 +2860,18 @@ C
                END IF  
            END IF
          ENDIF
+         IF (USE_PELIB()) THEN
+             IF (HFFLD) THEN
+                 CALL QUIT('HFFLD not implemented for QR')
+             ELSE
+                 ALLOCATE(FOCKMAT(NNBASX),FOCKTEMP(N2BST(ISYM0)))
+                 CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+                 CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+                 CALL DAXPY(N2BST(ISYM0),1.0d0,FOCKTEMP,1,WORK(KPERT),1)
+                 DEALLOCATE(FOCKMAT,FOCKTEMP)
+             END IF
+         END IF
+C
 C
 C------------------------------------------------------------------------
 C
@@ -5460,7 +5509,7 @@ c/* Deck CC_BTST */
       PARAMETER (MSGDBG='[debug] CC_BTST> ')
 
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .TRUE.)
+      PARAMETER (LOCDBG = .FALSE.)
       INTEGER MXBTRAN
       PARAMETER (MXBTRAN = 2)
 

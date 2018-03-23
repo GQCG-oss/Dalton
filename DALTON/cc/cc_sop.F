@@ -37,6 +37,7 @@ c /* deck CC_SOP */
 *     Written by Christof Haettig summer/fall 1999.
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, SIMPLIFIED_LAGRANGIAN
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -235,7 +236,7 @@ Cholesky
 *---------------------------------------------------------------------*
 * calculate J matrix contributions:
 *---------------------------------------------------------------------*
-      IF (CCSLV) THEN
+      IF (CCSLV.OR.(USE_PELIB().AND.(.NOT.SIMPLIFIED_LAGRANGIAN))) THEN
         TIM1 = SECOND()
 
         IOPT = 5

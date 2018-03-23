@@ -2624,6 +2624,7 @@ C   in the NYQMMM formulation. This routine is not used for calculating Gc term 
 C   instead CCMM_TRANSFORMER in cc_qmmm
 C-----------------------------------------------------------------------------
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, PELIB_IFC_RESPONSE
 #include "implicit.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -2657,6 +2658,7 @@ C
       CHARACTER*(8) FILMME, FILMMX
       LOGICAL LEXIST, LOCDEB
       PARAMETER (LOCDEB=.FALSE.)
+      REAL*8, ALLOCATABLE :: DENMATS(:), JTERMTEMP(:)
 C
 C
       IF (IPRINT.GT.10) THEN
@@ -2710,7 +2712,7 @@ C
         WRITE(LUPRI,*)'Norm af B2AM in CCMM_TGB on input:,1', RHO2N
       END IF
 C
-      IF (.NOT. NYQMMM) THEN
+      IF (.NOT. (NYQMMM .OR. USE_PELIB())) THEN
 C------------------------------------
 C     Dynamical allocation for CCMM :
 C------------------------------------
@@ -2877,7 +2879,6 @@ C
       CALL GPCLOSE(LUCCEF,'KEEP')
 C
       ELSE IF (NYQMMM) THEN
-
         IF (LR .NE. 'XI' ) CALL QUIT('CCMM_TGB xi flag not allowed')
         KDENS = KWRK1
         KWRK2 = KDENS + N2BST(ISYMTR)
@@ -2897,7 +2898,27 @@ C----------------------------
 
         CALL CCMM_GEFF(WORK(KDENS),TGB(1),WORK(KWRK2),LWRK2)
 
+      ELSE IF (USE_PELIB()) THEN
+
+        IF (LR .NE. 'XI' ) CALL QUIT('CCMM_TGB XI flag now allowed!')
+        KDENS = KWRK1
+        KWRK2 = KDENS + N2BST(ISYMTR)
+        LWRK2 = LWORK - KWRK2
+
+        CALL DZERO(WORK(KDENS),N2BST(ISYMTR))
+
+        ALLOCATE(DENMATS(NNBASX),JTERMTEMP(NNBASX))
+
+        JTERMTEMP = 0.0d0
+        CALL CCMM_D1AO(WORK(KDENS),CTR1,WORK(KT2AMPA),MODEL,'L',
+     &                 LISDUM,IDLDUM,ISYDUM,WORK(KWRK2),LWRK2)
+        CALL DGEFSP(NBAS,WORK(KDENS),DENMATS)
+        CALL PELIB_IFC_RESPONSE(DENMATS,JTERMTEMP,1)
+        CALL DSPTSI(NBAS,JTERMTEMP,TGB(1))
+
+        DEALLOCATE(DENMATS,JTERMTEMP)
       END IF
+
       IF (DISCEX) THEN
         CALL WCLOSE2(LUMMET, FILMME, 'KEEP')
         CALL WCLOSE2(LUMMXI, FILMMX, 'KEEP')
@@ -3908,6 +3929,7 @@ C
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
 C
+      WRITE(LUPRI,*) 'LUCCEF = ', LUCCEF
       LM = 0
       IADR1 = 1 
       IADR2 = 1

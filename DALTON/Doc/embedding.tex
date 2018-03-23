@@ -5,9 +5,7 @@ This chapter introduces the polarizable embedding (PE) model\cite{pemodel1,pemod
 in the PE library~\cite{pelib} included in the \latestrelease\ release.
 Methods available are: PE-HF~\cite{pescf}, PE-DFT~\cite{pescf},
 PE-MP2/SOPPA~\cite{pesoppa}, PE-MCSCF~\cite{pemcscf}
-and PE-CC\footnote{Currently, the PE-CC uses an older implementation
-and not the PE library. Note, that in a future release, the PE-CC
-implementation will use the new PE library (see Sec.~\ref{sec:pecc})}~\cite{pecc}.
+and PE-CC~\cite{pecc,pdecc}.
 The implementation uses the Gen1Int library to calculate one-electron
 integrals~\cite{gen1int} which is also in the \latestrelease\ release. The
 first section gives some general considerations about the model and
@@ -26,10 +24,10 @@ basic examples.
 \item PE-HF/DFT: J.~M.~Olsen, K.~Aidas and J.~Kongsted. \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 6}, 3721 (2010).
 \item PE-MP2/SOPPA: J.~J.~Eriksen, S.~P.~A.~Sauer, K.~V.~Mikkelsen, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock {\em J.~Comp.~Chem.}, {\bf 33}, 2012, (2012).
 \item PE-MCSCF: E.~D.~Hedeg\aa{}rd, N.~H.~List, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock {\em J.~Chem.~Phys.}, {\bf 139}, 044101 (2013).
-\item PE-CC: K.~Sneskov, T.~Schwabe, J.~Kongsted and O.~Christiansen. \newblock {\em J.~ Chem.~Phys.}, {\bf 134}, 104108, (2011).
+\item PE-CC: K.~Sneskov, T.~Schwabe, J.~Kongsted and O.~Christiansen. \newblock {\em J.~ Chem.~Phys.}, {\bf 134}, 104108, (2011) and D.~Hr\v{s}ak, J.~M.~H.~Olsen and J.~Kongsted. \newblock {\em J.~ Chem.~Theor.~Comput.}, {\bf 14}, 1351, (2018).
 \item PE-CPP: M.~N.~Pedersen, E.~D.~Hedeg\aa{}rd, J.~M.~H.~Olsen, J.~Kauczor, P.~Norman and J.~Kongsted \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 1164 (2014).
 \item Magnetic properties with LAOs: C.~Steinmann, J.~M.~H.~Olsen and J.~Kongsted. \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 981 (2014).
-\item Effective external field effects: N.~H.~List, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock{\em Phys.~Chem.~Chem.~Phys.},{\bf 18}, 10070 (2016) and N.~H.~List. PhD thesis, University of Southern Denmark, Odense, Denmark, 2015. 
+\item Effective external field effects: N.~H.~List, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock{\em Phys.~Chem.~Chem.~Phys.},{\bf 18}, 10070 (2016) and N.~H.~List. PhD thesis, University of Southern Denmark, Odense, Denmark, 2015.
 \end{list}
 }}
 \end{center}
@@ -74,15 +72,15 @@ to ensure that only relevant sites can polarize each other. The format of
 the \potinp\ file is demonstrated below.
 
 The PE model is implemented for HF, DFT, MP2, MCSCF and
-CC wave functions. Singlet linear response may be evaluated
+CC (CC2, CCSD, and CCSDR(3)) wave functions. Singlet linear response may be evaluated
 at PE-HF and PE-DFT levels of theory for closed- and open-shell systems,
-and at PE-SOPPA, PE-MCSCF, PE-CC2 and PE-CCSD levels for closed-shell systems.
-Furthermore, the PE library has been coupled with the complex polarization
-propagator (CPP) module to allow damped linear response properties at
+and at PE-SOPPA, PE-MCSCF, PE-CC2, PE-CCSD, and PE-CCSDR(3) levels for closed-shell systems.
+Furthermore, the PE library has been coupled to the complex polarization
+propagator (CPP) module to allow damped response properties at
 PE-HF and PE-DFT levels of theory for closed- and open-shell systems~\cite{pecpp}.
 Triplet linear response properties are
 available at the PE-HF and PE-DFT levels for closed-shell systems
-only. For the calculation of 1PA and 2PA properties, it is furthermore possible to include 
+only. For the calculation of 1PA and 2PA properties, it is furthermore possible to include
 the so-called effective external field (EEF) effect, which models the environment polarization
 induced directly by the presence of an external field \cite{peeef,peeef2}.
 This leads to properties that are defined in terms of the external field and are thus comparable to
@@ -93,22 +91,18 @@ calculated at PE-HF and PE-DFT levels for closed-shell systems.
 In the PE-MP2/SOPPA models, the
 environment response is taken into account at the HF/RPA level
 (see Ref.~\cite{pesoppa} for details). Note, that the current implementation
-does not support point-group symmetry or analytical molecular gradients and Hessians.
-Furthermore, PE-CC uses an older implementation with different input format which
-is briefly described in Sec.~\ref{sec:pecc}. Note, that in a future release, PE-CC
-will use the more general and efficient PE library implementation.)
+does not support point-group symmetry or analytical molecular Hessians.
 
 
 \section{Input description}
-The following input description is relevant only for PE-HF, PE-DFT,
-PE-MP2/SOPPA and PE-MCSCF. The PE-CC input is described in
-subsection~\ref{sec:pecc}. To include environment effects using the PE model it
+To include environment effects using the PE model it
 is necessary to define the core and environment part of the system: the \molinp\
 file specifies the core molecular system and the \potinp\ file, which contains
 the embedding potential, defines the environment. Moreover, additional
 keywords are needed in the \dalinp\ input file to activate the PE model. To use
 default options it is only necessary to include \Key{PEQM} in the \Sec{*DALTON}
-section. All other specifications of wave function, properties etc.\ are
+section (except for PE-CC which requires additional input (see subsection~\ref{subsec:pecc})).
+All other specifications of wave function, properties etc.\ are
 unchanged and thus follow the input described in other chapters. For example, to
 calculate the PE-HF wave function the following input can be used:
 \begin{verbatim}
@@ -269,23 +263,20 @@ to polarize it, e.g.\ \verb|1 2 3 4 5| means that site number 1 cannot be
 polarized by sites 2, 3, 4 and 5.\\
 
 
-\subsection*{PE-CC example}\label{sec:pecc}
-The PE-CC calculations in the current release uses an older implementation and
-therefore requires different input. Note, that in a future release the current
-implementation will be replaced with newer code that takes advantage of the
-PE library. To run a PE-CC calculation an input like the following can be
-used:
+\subsection*{PE-CC example}\label{subsec:pecc}
+To run a PE-CC calculation requires an additional \Sec{PECC} section under
+\Sec{*WAVE FUNCTIONS} where additional options specfic to PE-CC are placed.
+The following input exemplifies the input:
 \begin{verbatim}
 **DALTON
 .RUN WAVEFUNCTION
-*QMMM
-.QMMM
+.PEQM
+*PEQM
 **WAVE FUNCTIONS
 .CC
 *CC INP
 .CCSD
-*CCSLV
-.CCMM
+*PECC
 .MXSLIT ! max. no. t/t-bar iterations in solution of coupled t/bar-t eqs.
  200
 .MXINIT ! max. no. of steps in the t and t-bar solver, respectively
@@ -297,47 +288,10 @@ used:
 .DIPOLE
 **END OF
 \end{verbatim}
-For details regarding the general input for CC calculations we refer to
-Chapters~\ref{ch:ccexamples} and ~\ref{ch:CC}. The required input here is the
-\Sec{QMMM} section and \Key{QMMM} under the general \Sec{*DALTON} input
-section. The default is to use the direct solver for the induced dipoles. Add
-the \Key{MMITER} in the \Sec{QMMM} section to use the iterative solver.
-Furthermore, it is also necessary to include the \Key{CCMM} keyword under the
-\Sec{CCSLV} section. Also given in the example is the maximum number of
-$t$/$\bar{t}$ iterations in the solution of the coupled $t$/$\bar{t}$
-equations (\Key{MXSLIT}) and the maximum number of steps in the $t$ and
-$\bar{t}$ solver (\Key{MXINIT}).
-
-The potential input format is also different in the old implementation.
-Again it is easiest to use an example to describe the format:
-\begin{verbatim}
-AA
-6 2 2 3 1
-1 2 3 8  0.975  1.507 -0.082 -0.739 -0.130  0.053  0.127 -3.891  0.304
-    0.173 -4.459  0.423 -4.191  5.476 -0.086 -0.072  5.582 -0.124  5.513
-2 1 3 1  0.023  1.300 -0.088  0.367  0.206  0.034 -0.015 -0.005  0.100
-   -0.012 -0.496 -0.009 -0.522  3.488  0.298 -0.071  1.739 -0.350  1.360
-3 1 2 1  1.113  2.040  0.704  0.371 -0.012 -0.115 -0.176 -0.512  0.030
-    0.049 -0.348  0.235 -0.153  1.185  0.051  0.313  2.359  0.746  2.948
-4 5 6 8  1.633 -1.233 -0.078 -0.739  0.104  0.119  0.105 -4.353 -0.233
-    0.425 -3.805 -0.203 -4.384  5.555  0.085 -0.120  5.451  0.074  5.566
-5 4 6 1  1.600 -0.258 -0.086  0.367 -0.007 -0.209 -0.012 -0.519 -0.002
-   -0.007  0.013  0.010 -0.519  1.509 -0.036 -0.366  3.554  0.100  1.528
-6 4 5 1  2.303 -1.461  0.570  0.371 -0.149  0.032 -0.145 -0.250 -0.075
-    0.246 -0.497 -0.073 -0.266  2.658 -0.248  0.746  1.223 -0.356  2.608
-\end{verbatim}
-Note that the lines have been wrapped to fit the document width and the numbers
-truncated. The first line specifies the unit of the coordinates (multipoles
-and polarizabilities are always in a.u.). The second line specifies the number
-of sites, the order of the multipoles, the polarizability type, exclusion list
-length and whether nuclear charges are included, respectively. Thus, we have
-six sites with multipoles up to quadrupoles (highest order supported in this
-implementation). The polarizability type can be \verb|0| meaning no
-polarizabilities, \verb|1| indicating isotropic polarizabilities or \verb|2|
-specifying anisotropic polarizabilities. The following lines contain all
-parameters for each site individually. The first integers are the exclusion
-list (in this case three numbers) that are explained in the previous section.
-If nuclear charges are included (indicated by the last number of the second
-line, i.e.\ \verb|0| or missing means no charges and \verb|1| means include
-nuclear charges) then the following integer is the nuclear charge. Following this is
-the coordinates, multipoles and polarizability, in that order.
+For PE-CC calculations
+it is obligatory to include the \Sec{PECC} section. Also given in the example
+is the maximum number of $t$/$\bar{t}$ iterations in the solution of the
+coupled $t$/$\bar{t}$ equations (\Key{MXSLIT}) and the maximum number of
+steps in the $t$ and $\bar{t}$ solver (\Key{MXINIT}). For details regarding
+the general input for CC calculations we refer to
+Chapters~\ref{ch:ccexamples} and ~\ref{ch:CC}.

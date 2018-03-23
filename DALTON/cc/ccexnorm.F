@@ -143,7 +143,6 @@ C
 
       lwrk1 = lwork - kwrk1
       if (lwrk1.lt.0) call quit('out of memory in CCEXNORM (1)')
-
 *---------------------------------------------------------------------*
 * check for degeneracies within this symmetry class and try to get
 * the correct matching of left and right eigenvectors
@@ -152,7 +151,7 @@ C
       do while (ileft .lt. ilstnrnd)
 
         ! check if state is degenerate
-        ndeg = 1 
+        ndeg = 1
         do while (abs(eigval(ileft)-eigval(ileft+ndeg)).lt.threig) 
            ndeg = ndeg + 1
         end do
