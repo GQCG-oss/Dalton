@@ -2446,12 +2446,6 @@ C
 C
       ENDIF
 C
-      IF (CC2 .AND. ((NFIELD .GT. 0) .OR. CCSLV)) THEN
-         CALL CC_RCC2FF(RHO2,C2AM,WORK(KLAMDP),WORK(KLAMDH),
-     *                  WORK(KLPC1),WORK(KLHC1),
-     *                  WORK(KEND1),LWRK1,ISYMTR)
-      ENDIF
-C
       IF ( DEBUG ) THEN
          RHO1N = DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
          RHO2N = DDOT(NT2AM(ISYMTR),RHO2,1,RHO2,1)
