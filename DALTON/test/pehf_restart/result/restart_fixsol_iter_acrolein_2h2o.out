@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON release Dalton2017.alpha (2016)
+    This is output from DALTON release Dalton2017.alpha (2017)
          ( Web site: http://daltonprogram.org )
 
    ----------------------------------------------------------------------------
@@ -53,7 +53,7 @@
     and
      
        Dalton, a Molecular Electronic Structure Program,
-       Release Dalton2017.alpha (2016), see http://daltonprogram.org
+       Release Dalton2017.alpha (2017), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -89,6 +89,7 @@
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
@@ -141,80 +142,88 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Wed Mar 30 19:02:17 2016
-     Host name              : s24p28.deic.sdu.dk                      
+     Date and time (Linux)  : Fri Mar 23 14:09:06 2018
+     Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /gpfs/gss1/work/sdujk/foeroyingur/Programs/dalton/build/pe/develop/test/pehf_restart
-   2) /gpfs/gss1/work/sdujk/foeroyingur/Programs/dalton/build/pe/develop/basis
+   1) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build_test/test/pehf_restart
+   2) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build_test/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | foeroyingur
- Host                     | fe1.deic.sdu.dk
- System                   | Linux-3.10.0-123.20.1.el7.x86_64
+ Who compiled             | magnus
+ Host                     | foeroyar
+ System                   | Linux-4.15.9-300.fc27.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /opt/sys/apps/intel/2015.04/impi_latest/intel64/bi
-                          | n/mpiifort
- Fortran compiler version | unknown
- C compiler               | /opt/sys/apps/intel/2015.04/impi_latest/intel64/bi
-                          | n/mpiicc
- C compiler version       | unknown
- C++ compiler             | /opt/sys/apps/intel/2015.04/impi_latest/intel64/bi
-                          | n/mpiicpc
- C++ compiler version     | unknown
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ BLAS                     | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_gf_lp64.
+                          | so;/home/magnus/Programs/intel/compilers_and_libra
+                          | ries_2018.1.163/linux/mkl/lib/intel64/libmkl_seque
+                          | ntial.so;/home/magnus/Programs/intel/compilers_and
+                          | _libraries_2018.1.163/linux/mkl/lib/intel64/libmkl
+                          | _core.so;/usr/lib64/libpthread.so;/usr/lib64/libm.
+                          | so
+ LAPACK                   | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_lapack95
+                          | _lp64.a;/home/magnus/Programs/intel/compilers_and_
+                          | libraries_2018.1.163/linux/mkl/lib/intel64/libmkl_
+                          | gf_lp64.so
  Static linking           | OFF
- Last Git revision        | f680f13ead38ce3387d61c0eb1466454a86e22ae
- Git branch               | [32mpe/develop[m
- Configuration time       | 2016-03-29 09:08:38.287996
-
- * MPI run using 24 processes.
+ Last Git revision        | 2a8051d4a52c96991fedc786e623936e2e7b814d
+ Git branch               | pe/develop
+ Configuration time       | 2018-03-23 14:06:50.704475
 
 
    Content of the .dal input file
  ----------------------------------
 
-**DALTON                                          
-.RUN WAVE FUNCTION                                
-.PEQM                                             
-*PEQM                                             
-.VERBOSE                                          
-.SOLVAT                                           
-.FIXSOL                                           
-.DIIS                                             
-.RESTART                                          
-**WAVE FUNCTIONS                                  
-.HF                                               
-.RESTART                                          
-**END OF                                          
+**DALTON
+.RUN WAVE FUNCTION
+.PEQM
+*PEQM
+.VERBOSE
+.SOLVAT
+.FIXSOL
+.DIIS
+.RESTART
+**WAVE FUNCTIONS
+.HF
+.RESTART
+**END OF
 
 
    Content of the .mol file
  ----------------------------
 
-BASIS                                                                          
-STO-3G                                                                         
-Acrolein                                                                       
-------------------------                                                       
-AtomTypes=3 NoSymmetry Angstrom                                                
-Charge=6.0 Atoms=3                                                             
-C             -0.145335   -0.546770    0.000607                                
-C              1.274009   -0.912471   -0.000167                                
-C              1.630116   -2.207690   -0.000132                                
-Charge=8.0 Atoms=1                                                             
-O             -0.560104    0.608977    0.000534                                
-Charge=1.0 Atoms=4                                                             
-H             -0.871904   -1.386459    0.001253                                
-H              2.004448   -0.101417   -0.000710                                
-H              0.879028   -3.000685    0.000484                                
-H              2.675323   -2.516779   -0.000673                                
+BASIS
+STO-3G
+Acrolein
+------------------------
+AtomTypes=3 NoSymmetry Angstrom
+Charge=6.0 Atoms=3
+C             -0.145335   -0.546770    0.000607
+C              1.274009   -0.912471   -0.000167
+C              1.630116   -2.207690   -0.000132
+Charge=8.0 Atoms=1
+O             -0.560104    0.608977    0.000534
+Charge=1.0 Atoms=4
+H             -0.871904   -1.386459    0.001253
+H              2.004448   -0.101417   -0.000710
+H              0.879028   -3.000685    0.000484
+H              2.675323   -2.516779   -0.000673
 
 
        *******************************************************************
@@ -225,8 +234,6 @@ H              2.675323   -2.516779   -0.000673
    Overall default print level:    0
    Print level for DALTON.STAT:    1
 
-    Parallel calculation using MPI
-    AO-direct calculation (in sections where implemented)
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
     Wave function sections will be executed (SIRIUS module)
@@ -254,7 +261,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/gpfs/gss1/work/sdujk/foeroyingur/Programs/dalton/build/pe/develop/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build_test/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -262,7 +269,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/gpfs/gss1/work/sdujk/foeroyingur/Programs/dalton/build/pe/develop/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build_test/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -270,7 +277,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    4
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/gpfs/gss1/work/sdujk/foeroyingur/Programs/dalton/build/pe/develop/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build_test/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -413,7 +420,7 @@ H              2.675323   -2.516779   -0.000673
 @  Nuclear repulsion energy :  102.664846860515 Hartree
 
   Reading potential input file for polarizable embedding calculation
- 
+
     .------------------------------------------------.
     | Information from polarizable embedding library |
     `------------------------------------------------´
@@ -455,7 +462,7 @@ H              2.675323   -2.516779   -0.000673
 
  * Nuclear model: Point charge
 
- Calculation of one-electron Hamiltonian integrals.
+ Calculation of one- and two-electron Hamiltonian integrals.
 
  Center of mass  (bohr):      0.973773359129     -1.393789716280      0.000424788898
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
@@ -467,8 +474,26 @@ H              2.675323   -2.516779   -0.000673
      ************************** Output from HERINT **************************
      ************************************************************************
 
-  Total CPU  time used in HERMIT:   0.02 seconds
-  Total wall time used in HERMIT:   0.02 seconds
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x     31.66954785        80.49595632       268.50560837
+      y    -45.60874790      -115.92586657      -386.68706791
+      z      0.01223409         0.03109595         0.10372491
+
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ HERMIT - Number of two-electron integrals written:       43383 ( 96.1% )
+ HERMIT - Megabytes written:                              0.502
+
+  Time used in TWOINT     is       0.18 seconds
+  Total CPU  time used in HERMIT:   0.23 seconds
+  Total wall time used in HERMIT:   0.23 seconds
 
 
                         .----------------------------------.
@@ -481,14 +506,15 @@ H              2.675323   -2.516779   -0.000673
                    | Starting in Wave Function Section (SIRIUS) |
                    `--------------------------------------------'
 
+* Read MO coefficients from SIRIUS.RST with label "NEWORB  " and header info: 23Mar18  FOCKDIIS
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 30 19:02:17 2016
-     Host name              : s24p28.deic.sdu.dk                      
+     Date and time (Linux)  : Fri Mar 23 14:09:06 2018
+     Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
      Acrolein                                                                
@@ -498,7 +524,6 @@ H              2.675323   -2.516779   -0.000673
  Print level on unit LUW4  =   2 is   5
 
 @    Restricted, closed shell Hartree-Fock calculation.
- Fock matrices are calculated directly and in parallel without use of integrals on disk.
 
  Initial molecular orbitals are obtained according to
  ".MOSTART NEWORB" input option
@@ -555,7 +580,10 @@ H              2.675323   -2.516779   -0.000673
 
  Iter      Total energy     Embedding energy      Error norm     Delta(E)
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    1    F  3.26D-01  3.28D-01
+
+Calculating AOSUPINT
+     (Precalculated AO two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
       Induced dipole moments converged in  3 iterations.
       Induced dipole moments converged in  4 iterations.
       Induced dipole moments converged in  4 iterations.
@@ -585,10 +613,10 @@ H              2.675323   -2.516779   -0.000673
 
     Sum of induced charges:     -0.00280446
 
-@  1  -188.332102816     -3.418974214423E-02    7.67961D-06   -1.88D+02
+@  1  -188.331080941     -3.316786723664E-02    7.67276D-06   -1.88D+02
 
 @ *** DIIS converged in   1 iterations !
-@     Converged SCF energy, gradient:   -188.332102815612    7.68D-06
+@     Converged SCF energy, gradient:   -188.331080940852    7.67D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -600,17 +628,16 @@ H              2.675323   -2.516779   -0.000673
 
  Sym       Hartree-Fock orbital energies
 
-1 A     -20.28117253   -11.13560426   -11.05013111   -11.04069483    -1.33873901
+1 A     -20.28117254   -11.13560426   -11.05013111   -11.04069483    -1.33873901
          -1.01814081    -0.82238793    -0.73211439    -0.61149678    -0.59933137
-         -0.51809033    -0.49815761    -0.47432533    -0.35865768    -0.32051399
+         -0.51809033    -0.49815761    -0.47432533    -0.35865768    -0.32051398
           0.20958536     0.38786417     0.60025135     0.63142399     0.66854664
           0.74080569     0.84758858     0.93211419     1.04446452
 
     E(LUMO) :     0.20958536 au (symmetry 1)
-  - E(HOMO) :    -0.32051399 au (symmetry 1)
+  - E(HOMO) :    -0.32051398 au (symmetry 1)
   ------------------------------------------
     gap     :     0.53009935 au
-    Induced surface charges converged in 16 iterations.
 
     .--------------------------------------------------.
     | Final results from polarizable embedding library |
@@ -620,24 +647,24 @@ H              2.675323   -2.516779   -0.000673
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.467376851425
+            Electronic                -0.467376851271
             Nuclear                    0.448807800596
-            Multipole                  0.000000000000
-            Total                     -0.018569050829
+            Multipole                  0.001021874822
+            Total                     -0.017547175852
 
        Polarization contributions:
-            Electronic                -0.034310830341
-            Nuclear                    0.032708037411
+            Electronic                -0.034310830225
+            Nuclear                    0.032708037315
             Multipole                  0.000233748608
-            Total                     -0.001369044322
+            Total                     -0.001369044302
 
        Continuum solvation contributions:
-            Electronic                 0.052320854386
-            Nuclear                   -0.052386966192
-            Multipole                 -0.014185535187
-            Total                     -0.014251646993
+            Electronic                 0.052320853472
+            Nuclear                   -0.052386965332
+            Multipole                 -0.014185535222
+            Total                     -0.014251647082
 
-       Total PE energy:            -0.034189742144
+       Total PE energy:            -0.033167867237
 
                Polarizable embedding information:
               ------------------------------------
@@ -650,7 +677,7 @@ H              2.675323   -2.516779   -0.000673
           4     0.06422512     0.04903144     0.00002400
           5    -0.04069323     0.04573120     0.00004195
           6    -0.03967790     0.02200879     0.00021210
-          7    -0.02116391    -0.00474145     0.00008627
+          7    -0.02116390    -0.00474145     0.00008627
           8    -0.00601006     0.01182408     0.00004072
           9    -0.07804933    -0.01982119     0.00014474
          10    -0.01322366     0.05562425     0.00025222
@@ -662,7 +689,7 @@ H              2.675323   -2.516779   -0.000673
 
  --- Writing SIRIFC interface file
 
- CPU and wall time for SCF :       0.507       0.552
+ CPU and wall time for SCF :       1.034       1.036
 
 
                        .-----------------------------------.
@@ -674,18 +701,18 @@ H              2.675323   -2.516779   -0.000673
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:            -188.332102815612                 
+@    Final HF energy:            -188.331080940852                 
 @    Nuclear repulsion:           102.664846860515
-@    Electronic energy:          -290.962759933983
-@    Embedding energy:             -0.034189742144
+@    Electronic energy:          -290.962759934131
+@    Embedding energy:             -0.033167867237
 
-@    Final gradient norm:           0.000007679609
+@    Final gradient norm:           0.000007672757
 
  
-     Date and time (Linux)  : Wed Mar 30 19:02:18 2016
-     Host name              : s24p28.deic.sdu.dk                      
+     Date and time (Linux)  : Fri Mar 23 14:09:07 2018
+     Host name              : foeroyar                                
 
-File label for MO orbitals:  30Mar16   FOCKDIIS
+File label for MO orbitals:  23Mar18   FOCKDIIS
 
  (Only coefficients > 0.0100 are printed.)
 
@@ -788,21 +815,21 @@ File label for MO orbitals:  30Mar16   FOCKDIIS
   23 H   :1s    -0.2193   0.5553   0.0482
   24 H   :1s     0.5340  -0.3828  -0.1546
 
-  Total CPU  time used in SIRIUS :   0.51 seconds
-  Total wall time used in SIRIUS :   0.56 seconds
+  Total CPU  time used in SIRIUS :   1.04 seconds
+  Total wall time used in SIRIUS :   1.04 seconds
 
  
-     Date and time (Linux)  : Wed Mar 30 19:02:18 2016
-     Host name              : s24p28.deic.sdu.dk                      
+     Date and time (Linux)  : Fri Mar 23 14:09:07 2018
+     Host name              : foeroyar                                
 
 
                      .---------------------------------------.
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
-  Total CPU  time used in DALTON:   0.55 seconds
-  Total wall time used in DALTON:   0.60 seconds
+  Total CPU  time used in DALTON:   1.28 seconds
+  Total wall time used in DALTON:   1.28 seconds
 
  
-     Date and time (Linux)  : Wed Mar 30 19:02:18 2016
-     Host name              : s24p28.deic.sdu.dk                      
+     Date and time (Linux)  : Fri Mar 23 14:09:07 2018
+     Host name              : foeroyar                                

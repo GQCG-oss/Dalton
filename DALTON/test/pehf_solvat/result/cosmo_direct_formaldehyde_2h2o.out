@@ -4,8 +4,11 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2016.alpha
+    This is output from DALTON release Dalton2017.alpha (2017)
+         ( Web site: http://daltonprogram.org )
+
    ----------------------------------------------------------------------------
+
     NOTE:
      
     Dalton is an experimental code for the evaluation of molecular
@@ -24,13 +27,13 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
        T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
        L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
        C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
        H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
        M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
-       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
        T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
        J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
        O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
@@ -45,12 +48,12 @@
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
        and H. Agren,
        "The Dalton quantum chemistry program system",
-       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
-    
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
     and
-    
+     
        Dalton, a Molecular Electronic Structure Program,
-       Release Dalton2016.alpha (2015), see http://daltonprogram.org
+       Release Dalton2017.alpha (2017), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -59,7 +62,7 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
   Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
@@ -70,6 +73,7 @@
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
   Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -78,12 +82,14 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
   Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
@@ -105,7 +111,7 @@
   Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
-  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex frequency response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
@@ -136,83 +142,81 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Dec 13 21:43:53 2015
-     Host name              : fe1.deic.sdu.dk                         
+     Date and time (Linux)  : Fri Mar 23 14:08:47 2018
+     Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /gpfs/gss1/work/sdujk/mortensn/Prog/dalton/build_pe/test/pehf_solvat
-   2) /gpfs/gss1/work/sdujk/mortensn/Prog/dalton/build_pe/basis
+   1) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build_test/test/pehf_solvat
+   2) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build_test/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | mortensn
- Host                     | fe1.deic.sdu.dk
- System                   | Linux-3.10.0-123.20.1.el7.x86_64
+ Who compiled             | magnus
+ Host                     | foeroyar
+ System                   | Linux-4.15.9-300.fc27.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /opt/sys/apps/intel-2015.04/openmpi/1.8.8/bin/mpif
-                          | 90
- Fortran compiler version | ifort (IFORT) 15.0.3 20150407
- C compiler               | /opt/sys/apps/intel-2015.04/openmpi/1.8.8/bin/mpic
-                          | c
- C compiler version       | icc (ICC) 15.0.3 20150407
- C++ compiler             | /opt/sys/apps/intel-2015.04/openmpi/1.8.8/bin/mpic
-                          | xx
- C++ compiler version     | unknown
- BLAS                     | /opt/sys/apps/intel/2015.04/composer_xe/mkl/lib/in
-                          | tel64/libmkl_intel_lp64.so;/opt/sys/apps/intel/201
-                          | 5.04/composer_xe/mkl/lib/intel64/libmkl_sequential
-                          | .so;/opt/sys/apps/intel/2015.04/composer_xe/mkl/li
-                          | b/intel64/libmkl_core.so;/usr/lib64/libpthread.so;
-                          | /usr/lib64/libm.so
- LAPACK                   | /opt/sys/apps/intel/2015.04/composer_xe/mkl/lib/in
-                          | tel64/libmkl_lapack95_lp64.a;/opt/sys/apps/intel/2
-                          | 015.04/composer_xe/mkl/lib/intel64/libmkl_intel_lp
-                          | 64.so
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ BLAS                     | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_gf_lp64.
+                          | so;/home/magnus/Programs/intel/compilers_and_libra
+                          | ries_2018.1.163/linux/mkl/lib/intel64/libmkl_seque
+                          | ntial.so;/home/magnus/Programs/intel/compilers_and
+                          | _libraries_2018.1.163/linux/mkl/lib/intel64/libmkl
+                          | _core.so;/usr/lib64/libpthread.so;/usr/lib64/libm.
+                          | so
+ LAPACK                   | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_lapack95
+                          | _lp64.a;/home/magnus/Programs/intel/compilers_and_
+                          | libraries_2018.1.163/linux/mkl/lib/intel64/libmkl_
+                          | gf_lp64.so
  Static linking           | OFF
- Last Git revision        | 205e5644885dd9bedf6893de156c70f3bd954d38
+ Last Git revision        | 2a8051d4a52c96991fedc786e623936e2e7b814d
  Git branch               | pe/develop
- Configuration time       | 2015-12-13 21:38:51.190708
-
- * Sequential calculation.
+ Configuration time       | 2018-03-23 14:06:50.704475
 
 
    Content of the .dal input file
  ----------------------------------
 
-**DALTON                                          
-.RUN WAVEFUNCTION                                 
-.PEQM                                             
-*PEQM                                             
-.DIRECT                                           
-.SOLVAT                                           
-.VERBOSE                                          
-**WAVE FUNCTIONS                                  
-.HF                                               
-**END OF                                          
+**DALTON
+.RUN WAVEFUNCTION
+.PEQM
+*PEQM
+.DIRECT
+.SOLVAT
+.VERBOSE
+**WAVE FUNCTIONS
+.HF
+**END OF
 
 
    Content of the .mol file
  ----------------------------
 
-BASIS                                                                          
-STO-3G                                                                         
-Formaldehyde                                                                   
-------------------------                                                       
-AtomTypes=3 NoSymmetry Angstrom                                                
-Charge=6.0 Atoms=1                                                             
-C           -1.588367    -.770650     .029109                                  
-Charge=8.0 Atoms=1                                                             
-O           -1.657083     .436069    -.009750                                  
-Charge=1.0 Atoms=2                                                             
-H           -.620668   -1.294822      .054251                                  
-H           -2.508043   -1.382001     .040282                                  
+BASIS
+STO-3G
+Formaldehyde
+------------------------
+AtomTypes=3 NoSymmetry Angstrom
+Charge=6.0 Atoms=1
+C           -1.588367    -.770650     .029109
+Charge=8.0 Atoms=1
+O           -1.657083     .436069    -.009750
+Charge=1.0 Atoms=2
+H           -.620668   -1.294822      .054251
+H           -2.508043   -1.382001     .040282
 
 
        *******************************************************************
@@ -250,7 +254,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/gpfs/gss1/work/sdujk/mortensn/Prog/dalton/build_pe/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build_test/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -258,7 +262,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/gpfs/gss1/work/sdujk/mortensn/Prog/dalton/build_pe/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build_test/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -266,7 +270,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/gpfs/gss1/work/sdujk/mortensn/Prog/dalton/build_pe/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build_test/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -386,9 +390,9 @@ H           -2.508043   -1.382001     .040282
  MEMORY USED TO GENERATE CAVITY =    432802
 
  in pcmtns, vmat is
- -5.682660645149729E-002  0.997867115120820      -3.212409313363758E-002
-  0.998344744053647       5.708050403819188E-002  7.041880374160803E-003
- -8.860520281827614E-003  3.167075337275597E-002  0.999459080983878     
+  -5.6826606451497286E-002  0.99786711512082016       -3.2124093133637580E-002
+  0.99834474405364704        5.7080504038191877E-002   7.0418803741608025E-003
+  -8.8605202818276135E-003   3.1670753372755975E-002  0.99945908098387759     
  Tessera cut in pieces and removed.
  Tessera cut in pieces and removed.
  Tessera cut in pieces and removed.
@@ -413,10 +417,10 @@ H           -2.508043   -1.382001     .040282
  Total number of tesserae =     592
  Surface area =  126.16187644 (A^2)    Cavity volume =   99.18018557 (A^3)
 
- Surface area =  450.53223697446612 (AU^2)    Cavity volume =  669.30104384236859 (AU^3)
+ Surface area =  450.53223697446356 (AU^2)    Cavity volume =  669.30104384236506 (AU^3)
 
           THE SOLUTE IS ENCLOSED IN ONE CAVITY
- 
+
     .------------------------------------------------.
     | Information from polarizable embedding library |
     `------------------------------------------------´
@@ -434,6 +438,8 @@ H           -2.508043   -1.382001     .040282
       Number of surface points:     592
 
       Surface area (in Aa**2):     126.162
+      Total charge of classical region:   -0.0000
+ 
 
 
                      .---------------------------------------.
@@ -466,12 +472,24 @@ H           -2.508043   -1.382001     .040282
      ************************************************************************
 
 
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x    -48.97334290      -124.47781350      -415.21329231
+      y     -7.20395913       -18.31063652       -61.07770905
+      z      0.36129107         0.91831024         3.06315324
+
+
+
  Threshold for neglecting two-electron integrals:  1.00D-12
  HERMIT - Number of two-electron integrals written:        2907 ( 94.4% )
  HERMIT - Megabytes written:                              0.034
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.02 seconds
+  Total CPU  time used in HERMIT:   0.03 seconds
+  Total wall time used in HERMIT:   0.03 seconds
 
 
                         .----------------------------------.
@@ -505,8 +523,8 @@ H           -2.508043   -1.382001     .040282
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Dec 13 21:43:53 2015
-     Host name              : fe1.deic.sdu.dk                         
+     Date and time (Linux)  : Fri Mar 23 14:08:48 2018
+     Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
      Formaldehyde                                                            
@@ -530,7 +548,7 @@ H           -2.508043   -1.382001     .040282
      Wave function environment is modeled using the
      polarizable embedding model (PE library).
 
-@    Wave function type        >>> PE-HF <<<
+@    Wave function type        --- PE-HF ---
 @    Number of closed shell electrons          16
 @    Number of electrons in active shells       0
 @    Total charge of the molecule               0
@@ -570,7 +588,9 @@ H           -2.508043   -1.382001     .040282
 
  Iter      Total energy     Embedding energy      Error norm     Delta(E)
  -----------------------------------------------------------------------------
-     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+
+Calculating AOSUPINT
+     (Precalculated AO two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
 
       Info from polarizable embedding library:
@@ -584,9 +604,9 @@ H           -2.508043   -1.382001     .040282
 
     Sum of induced charges:     -0.00194081
 
-@  1  -112.185683181     -5.725746955118E-02    1.53489D+00   -1.12D+02
-      Virial theorem: -V/T =      2.002870
-@      MULPOP C       1.10; O      -0.82; H      -0.14; H      -0.14; 
+@  1  -112.199068100     -7.064238822999E-02    1.53489D+00   -1.12D+02
+      Virial theorem: -V/T =      2.002989
+@    MULPOP   C       1.10; O      -0.82; H      -0.14; H      -0.14; 
    1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
 
@@ -601,9 +621,9 @@ H           -2.508043   -1.382001     .040282
 
     Sum of induced charges:     -0.00175267
 
-@  2  -112.373281673     -2.834888698059E-02    4.31794D-01   -1.88D-01
-      Virial theorem: -V/T =      2.009832
-@      MULPOP C      -0.12; O      -0.07; H       0.10; H       0.08; 
+@  2  -112.386666592     -4.173380565940E-02    4.31794D-01   -1.88D-01
+      Virial theorem: -V/T =      2.009952
+@    MULPOP   C      -0.12; O      -0.07; H       0.10; H       0.08; 
    2  Level shift: doubly occupied orbital energies shifted by -1.00D-01
  -----------------------------------------------------------------------------
 
@@ -618,9 +638,9 @@ H           -2.508043   -1.382001     .040282
 
     Sum of induced charges:     -0.00173988
 
-@  3  -112.384297349     -3.244036244016E-02    6.37829D-02   -1.10D-02
-      Virial theorem: -V/T =      2.008377
-@      MULPOP C       0.07; O      -0.23; H       0.09; H       0.07; 
+@  3  -112.397682268     -4.582528111898E-02    6.37829D-02   -1.10D-02
+      Virial theorem: -V/T =      2.008497
+@    MULPOP   C       0.07; O      -0.23; H       0.09; H       0.07; 
    3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
  -----------------------------------------------------------------------------
 
@@ -635,9 +655,9 @@ H           -2.508043   -1.382001     .040282
 
     Sum of induced charges:     -0.00173758
 
-@  4  -112.384617856     -3.250747650259E-02    1.24300D-02   -3.21D-04
-      Virial theorem: -V/T =      2.008144
-@      MULPOP C       0.08; O      -0.25; H       0.09; H       0.07; 
+@  4  -112.398002775     -4.589239518141E-02    1.24300D-02   -3.21D-04
+      Virial theorem: -V/T =      2.008264
+@    MULPOP   C       0.08; O      -0.25; H       0.09; H       0.07; 
  -----------------------------------------------------------------------------
 
       Info from polarizable embedding library:
@@ -651,9 +671,9 @@ H           -2.508043   -1.382001     .040282
 
     Sum of induced charges:     -0.00173888
 
-@  5  -112.384637227     -3.246960916081E-02    3.87009D-03   -1.94D-05
-      Virial theorem: -V/T =      2.008140
-@      MULPOP C       0.09; O      -0.25; H       0.09; H       0.07; 
+@  5  -112.398022146     -4.585452783962E-02    3.87009D-03   -1.94D-05
+      Virial theorem: -V/T =      2.008260
+@    MULPOP   C       0.09; O      -0.25; H       0.09; H       0.07; 
  -----------------------------------------------------------------------------
 
       Info from polarizable embedding library:
@@ -667,9 +687,9 @@ H           -2.508043   -1.382001     .040282
 
     Sum of induced charges:     -0.00173931
 
-@  6  -112.384640336     -3.243990904319E-02    4.94997D-04   -3.11D-06
-      Virial theorem: -V/T =      2.008152
-@      MULPOP C       0.09; O      -0.25; H       0.09; H       0.07; 
+@  6  -112.398025254     -4.582482772201E-02    4.94997D-04   -3.11D-06
+      Virial theorem: -V/T =      2.008272
+@    MULPOP   C       0.09; O      -0.25; H       0.09; H       0.07; 
  -----------------------------------------------------------------------------
 
       Info from polarizable embedding library:
@@ -683,9 +703,9 @@ H           -2.508043   -1.382001     .040282
 
     Sum of induced charges:     -0.00173927
 
-@  7  -112.384640379     -3.244025753003E-02    9.93636D-05   -4.34D-08
-      Virial theorem: -V/T =      2.008153
-@      MULPOP C       0.09; O      -0.25; H       0.09; H       0.07; 
+@  7  -112.398025298     -4.582517620884E-02    9.93636D-05   -4.34D-08
+      Virial theorem: -V/T =      2.008273
+@    MULPOP   C       0.09; O      -0.25; H       0.09; H       0.07; 
  -----------------------------------------------------------------------------
 
       Info from polarizable embedding library:
@@ -699,9 +719,9 @@ H           -2.508043   -1.382001     .040282
 
     Sum of induced charges:     -0.00173928
 
-@  8  -112.384640384     -3.243983690573E-02    5.49884D-05   -4.29D-09
-      Virial theorem: -V/T =      2.008153
-@      MULPOP C       0.09; O      -0.25; H       0.09; H       0.07; 
+@  8  -112.398025302     -4.582475558455E-02    5.49884D-05   -4.29D-09
+      Virial theorem: -V/T =      2.008273
+@    MULPOP   C       0.09; O      -0.25; H       0.09; H       0.07; 
  -----------------------------------------------------------------------------
 
       Info from polarizable embedding library:
@@ -715,9 +735,9 @@ H           -2.508043   -1.382001     .040282
 
     Sum of induced charges:     -0.00173928
 
-@  9  -112.384640385     -3.243991572884E-02    1.65554D-05   -1.94D-09
-      Virial theorem: -V/T =      2.008153
-@      MULPOP C       0.09; O      -0.25; H       0.09; H       0.07; 
+@  9  -112.398025304     -4.582483440766E-02    1.65554D-05   -1.94D-09
+      Virial theorem: -V/T =      2.008273
+@    MULPOP   C       0.09; O      -0.25; H       0.09; H       0.07; 
  -----------------------------------------------------------------------------
 
       Info from polarizable embedding library:
@@ -731,10 +751,10 @@ H           -2.508043   -1.382001     .040282
 
     Sum of induced charges:     -0.00173928
 
-@ 10  -112.384640386     -3.243993342576E-02    3.60431D-06   -2.03D-10
+@ 10  -112.398025304     -4.582485210458E-02    3.60431D-06   -2.03D-10
 
 @ *** DIIS converged in  10 iterations !
-@     Converged SCF energy, gradient:   -112.384640385679    3.60D-06
+@     Converged SCF energy, gradient:   -112.398025304357    3.60D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -765,8 +785,8 @@ H           -2.508043   -1.382001     .040282
        Electrostatic contributions:
             Electronic                -0.208878376067
             Nuclear                    0.196501001970
-            Multipole                  0.000000000000
-            Total                     -0.012377374097
+            Multipole                 -0.013384918679
+            Total                     -0.025762292776
 
        Polarization contributions:
             Electronic                -0.045793431904
@@ -780,7 +800,7 @@ H           -2.508043   -1.382001     .040282
             Multipole                 -0.011603051630
             Total                     -0.011786052219
 
-       Total PE energy:            -0.032439933426
+       Total PE energy:            -0.045824852105
 
                Polarizable embedding information:
               ------------------------------------
@@ -799,13 +819,13 @@ H           -2.508043   -1.382001     .040282
                -0.19632040     0.49858071     0.24524659
 
 
- >>> Writing SIRIFC interface file
+ --- Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       3.714       3.717
+ CPU and wall time for SCF :       2.758       2.765
 
 
                        .-----------------------------------.
-                       | >>> Final results from SIRIUS <<< |
+                       | --- Final results from SIRIUS --- |
                        `-----------------------------------'
 
 
@@ -813,20 +833,20 @@ H           -2.508043   -1.382001     .040282
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:            -112.384640385679                 
+@    Final HF energy:            -112.398025304357                 
 @    Nuclear repulsion:            31.249215315972
 @    Electronic energy:          -143.601415768225
-@    Embedding energy:             -0.032439933426
+@    Embedding energy:             -0.045824852105
 
 @    Final gradient norm:           0.000003604308
 
  
-     Date and time (Linux)  : Sun Dec 13 21:43:56 2015
-     Host name              : fe1.deic.sdu.dk                         
+     Date and time (Linux)  : Fri Mar 23 14:08:50 2018
+     Host name              : foeroyar                                
 
-File label for MO orbitals:  13Dec15   FOCKDIIS
+File label for MO orbitals:  23Mar18   FOCKDIIS
 
- (Only coefficients >0.0100 are printed.)
+ (Only coefficients > 0.0100 are printed.)
 
  Molecular orbitals for symmetry species 1  (A  )
  ------------------------------------------------
@@ -859,23 +879,21 @@ File label for MO orbitals:  13Dec15   FOCKDIIS
   11 H   :1s     0.3553   0.0003   0.8693   0.8774  -0.1329
   12 H   :1s    -0.3598  -0.0005   0.9200  -0.8185  -0.0596
 
-
-
- >>>> Total CPU  time used in SIRIUS :      3.72 seconds
- >>>> Total wall time used in SIRIUS :      3.72 seconds
+  Total CPU  time used in SIRIUS :   2.76 seconds
+  Total wall time used in SIRIUS :   2.77 seconds
 
  
-     Date and time (Linux)  : Sun Dec 13 21:43:56 2015
-     Host name              : fe1.deic.sdu.dk                         
+     Date and time (Linux)  : Fri Mar 23 14:08:50 2018
+     Host name              : foeroyar                                
 
 
                      .---------------------------------------.
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   3.79 seconds
- >>>> Total wall time used in DALTON:   3.81 seconds
+  Total CPU  time used in DALTON:   2.85 seconds
+  Total wall time used in DALTON:   2.85 seconds
 
  
-     Date and time (Linux)  : Sun Dec 13 21:43:56 2015
-     Host name              : fe1.deic.sdu.dk                         
+     Date and time (Linux)  : Fri Mar 23 14:08:50 2018
+     Host name              : foeroyar                                
