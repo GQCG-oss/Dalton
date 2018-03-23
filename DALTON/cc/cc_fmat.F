@@ -4122,11 +4122,6 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
          CALL CC_21EFM(THETA1,WORK(KONEH),ISYM0,XINT,YINT,ISYRES,
      &                 WORK(KEND0),LWRK0)
 
-      ELSE IF (CC2.AND.NONHF) THEN
-
-         CALL CC_21EFM(THETA1,WORK(KFIELD),ISYM0,XINT,YINT,ISYRES,
-     &                 WORK(KEND0),LWRK0)
-
       END IF
 
       IF (LOCDBG .AND. .NOT.CCS) THEN
@@ -4156,26 +4151,6 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
         LWRK1 = LWORK  - KEND1
       END IF
 
-*---------------------------------------------------------------------*
-* for CC2/NONHF calculate additional FF term to Theta2:
-*---------------------------------------------------------------------*
-      IF (CC2.AND.NONHF) THEN
-
-         IOPT   = 1
-         ISYLMA = 0
-         CALL CC_EIM(WORK(KEMAT1),WORK(KEMAT2),
-     &               DUMMY,DUMMY,DUMMY,DUMMY,
-     &               WORK(KFIELDR),WORK(KFIELDG),
-     &               DUMMY,DUMMY,ISYLMA,DUMMY,DUMMY,IDUMMY,
-     &               .TRUE.,.FALSE.,.FALSE.,.FALSE.,IOPT,ISYAMP)
-
-         CALL CC_EITR(WORK(KEMAT1),WORK(KEMAT2),WORK(KEND1),LWRK1,
-     &                ISYAMP)
-
-         CALL CCRHS_E(THETA2,WORK(KZETA2),WORK(KEMAT1),WORK(KEMAT2),
-     &                WORK(KEND1),LWRK1,ISYCTR,ISYAMP)
-
-      END IF
 *---------------------------------------------------------------------*
 * calculate the first E2 term contribution from the zero-order BF:
 *---------------------------------------------------------------------*

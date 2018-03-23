@@ -932,6 +932,15 @@ C
      &              'type of calculation ')
             ENDIF
 C
+            IF (CCSLV.AND.CCTPA) THEN
+               IF (CCLR.OR.CCQR.OR.CCCR) THEN
+                  WRITE(IQUNIT,*)
+     &              'For embedding calcs. avoid TPA and LR/QR/CR simul'
+                  CALL QUIT('FOR CCSLV dont do TPA and '//
+     &                      'LR/QR/CR at the same time - avoid '//
+     &                      'confusion')
+               END IF
+            END IF
 C
             IF ( DEBUG ) WRITE(IWUNIT,'(A)')
      *         ' -Debug printout activated '
@@ -2343,7 +2352,7 @@ C=====================================================================*
       PARAMETER (SECNAM='CC_OPAINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 17)
 
 * variables:
       LOGICAL SETGSTOPA, SETGSTTPA, SETXSTOPA
@@ -2370,7 +2379,7 @@ C=====================================================================*
       DATA TABLE / '.SELEXC','.NO2N+1','.OPERAT','.DIPLEN','.DIPVEL',
      *             '.ANGMOM','.HALFFR','.PRINT ','.USE X2','.USE O2',
      *             '.SELSTA','.STATES','.TRANSI','.SECMOM','.ROTSTR',
-     *             '.DIPOLE'/
+     *             '.DIPOLE','.TPOLDW'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -2393,6 +2402,7 @@ C=====================================================================*
          XSTOPA = .FALSE.
          IF (SETGSTTPA) RETURN
          SETGSTTPA = .TRUE.
+         TPOLDW = .FALSE.
       ELSE
          CALL QUIT('CC_OPAINP called for wrong section:'//WORD(1:7))
       END IF
@@ -2444,7 +2454,7 @@ c         table look up:
 
 c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_OPAINP.')
 
 C           ---------------------------------------------------------
@@ -2734,6 +2744,9 @@ C           .DIPOLE is the synonim od .DIPLEN.
 C           ------------------------------------------------------
 16          CONTINUE
             GO TO 4
+17          CONTINUE
+               TPOLDW = .TRUE.
+            GO TO 100
 
 C
           ELSE

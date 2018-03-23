@@ -1,0 +1,76 @@
+#!/bin/bash
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# MM/MM interaction energy compared:
+CRIT1=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n - R_s\| \]        \| * (\-|\-0)\.02355955" $log | wc -l`
+CRIT2=`$GREP "Epol  \= - 1\/2\*Sum_a\[ Pind_a\*E\^site_a \]          \|   * (\-|\-0)\.00570793" $log | wc -l`
+CRIT3=`$GREP "Evdw  \= Sum_a\[ A_ma\/\|R_ma\|\^12 - B_ma\/\|R_ma\|\^6 \] \| * ( |0)\.00465966" $log | wc -l`
+CRIT4=`$GREP "E\(MM\/MM\) \= Eelec \+ Epol \+ Evdw                  \| * (\-|\-0)\.02460781" $log | wc -l`
+CRIT5=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/|R_n - R_s\| \]        \| * ( |0)\.00435354" $log | wc -l`
+CRIT6=`$GREP "Epol  \= - 1\/2\*Sum_a\[ Pind_a\*E\^\(QMclassic\)_a \]   \| * (\-|\-0)\.00006190" $log | wc -l`
+CRIT7=`$GREP "Evdw  \= Sum_a\[ A_ma\/\|R_ma|\^12 - B_ma\/\|R_ma\|\^6 \] \| * (\-|\-0)\.00092224" $log | wc -l`
+CRIT8=`$GREP "E\(\"QM\"\/MM\) \= Eelec \+ Epol \+ Evdw                \| * ( |0)\.00336940" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8`
+CTRL[1]=14
+ERROR[1]="THE CLASSICAL MM/MM ENERGY NOT CORRECT"
+
+# QM/MM interaction energy compared:
+CRIT1=` $GREP "Epol  \= - 1\/2\*Sum_a\[ MYind_a\*E\^site_a \]         \| * (\-|\-0)\.00572354" $log | wc -l`
+CRIT2=` $GREP "( |0)\.00364366.. \| * (\-|\-0)\.00005472.. \| * (\-|\-0)\.00092223.. \| * ( |0)\.00266669.." $log | wc -l`
+CRIT3=` $GREP "\-302\.11398359.. \| \-302\.11131689.. \| * (\-|\-0)\.00001561.. \|   ( |0)\.00000000.." $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=3
+ERROR[2]="THE QM/MM ENERGY TERMS ARE NOT CORRECT"
+
+# Dipole moment components compared:
+CRIT1=` $GREP "x * (\-|\-0)\.00380000 * (\-|\-0)\.00965863" $log | wc -l`
+CRIT2=` $GREP "y * ( |0)\.375402(39|40) * ( |0)\.95417766" $log | wc -l`
+CRIT3=` $GREP "z * (\-|\-0)\.22168041 * (\-|\-0)\.56345537" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=3
+ERROR[3]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"
+
+# Quadrupole moment components compared:
+CRIT1=` $GREP "1 * \-2\.995115.. * ( |0)\.0116340. * ( |0)\.0036497." $log | wc -l`
+CRIT2=` $GREP "2 * ( |0)\.0116340. * 1\.800341.. * \-3\.7964021." $log | wc -l`
+CRIT3=` $GREP "3 * ( |0)\.0036497. * \-3\.7964021. * 1\.194773.." $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[4]=4
+ERROR[4]="QUADRUPOLE MOMENT COMPONENTS ARE NOT CORRECT"
+
+# Lowest excitation energies compared:
+CRIT1=` $GREP "\^1A   \|    1   \|     ( |0)\.21734..  \|       5\.9142.  \|     47701\.95." $log | wc -l`
+CRIT2=` $GREP "\^1A   \|    2   \|     ( |0)\.28834..  \|       7\.8463.  \|     63285\.05." $log | wc -l`
+TEST[5]=`expr $CRIT1 \+ $CRIT2`
+CTRL[5]=2
+ERROR[5]="LOWEST EXCITATION ENERGIES ARE NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
