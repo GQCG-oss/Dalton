@@ -71,6 +71,7 @@ C
 #include "cccl2rsp.h"
 #include "leinf.h"
 #include "ccpl1rsp.h"
+#include "cctpainf.h"
 Cholesky
 #include "ccdeco.h"
 Cholesky
@@ -226,9 +227,13 @@ C       -------------------------------------------------------------
          IF (CCSLV) THEN
             IF (CCSDT) CALL QUIT('Solvent not implemented for triples')
             IF (CCR12) CALL QUIT('Solvent not implemented for CCR12')
-            CALL CC_PTB(GD,LRTLBL(ILSTNR),ISYLRT(ILSTNR),
+            IF (CCTPA.AND.(.NOT.TPOLDW)) THEN
+               WRITE(LUPRI,*) 'No SC SLV/PE response for TPA'
+            ELSE IF (.NOT.(CCTPA.AND.(.NOT.TPOLDW))) THEN
+               CALL CC_PTB(GD,LRTLBL(ILSTNR),ISYLRT(ILSTNR),
      *                  FRQLRT(ILSTNR),LORXLRT(ILSTNR),
      *                  WORK,LWORK)
+            END IF
          ENDIF
          IF (LOCDBG) THEN
            WRITE(LUPRI,*)'CC_GETGD> RHS vector "O1":',ISYMGD,NTAMP

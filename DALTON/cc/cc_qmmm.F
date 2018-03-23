@@ -616,7 +616,7 @@ C     Read left vector.
 C----------------------
 C
 C
-      IF((LR.EQ.'R').OR.(LR.EQ.'F')) THEN
+      IF((LR.EQ.'R').OR.(LR.EQ.'F').OR.(LR.EQ.'Q')) THEN
          IOPT = 3
          CALL CC_RDRSP('L0',1,ISYML,IOPT,MODDUM,
      *             WORK(KL1AM),WORK(KR2AMT))
