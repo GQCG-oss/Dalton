@@ -920,6 +920,7 @@ C
 C
       CHARACTER*(*) FRHO1,FRHO2,FRHO12,FC1AM,FC2AM,FC12AM,FS12AM
       CHARACTER*(*) LIST
+      INTEGER :: NREDHOLD
       LOGICAL LINQCC,CCRSTRS,LPROJECT,TRIPLET
       DIMENSION EIVAL(*), SOLEQ(MAXRED,*),WRK(*)
 C
@@ -932,6 +933,10 @@ C
       MAXNEX = (LWRK-3*NCCVAR)/NCCVAR
       NUPVEC = 0
       NOTCON = 0
+      !RF : Note that NREDH is modified in the following loop
+      !     in CCORT, but we need to know the previous size!
+      NREDHOLD = NREDH
+
       DO 4000 ISIMC = 1,NVEC,MAXNEX
          NBX   = MIN(MAXNEX,(NVEC+1-ISIMC))
 c        NBX   = MIN(MAXNEX,(NVEC+1-ISIMC),(NREDH+1-ISIMC))
@@ -1041,7 +1046,8 @@ C             vectors itself for restart on the files CC//LIST//{ivec}
 C           ----------------------------------------------------------
             IVECNU = ISIMC -1 + JR
             CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,TRIPLET,
-     *               CCR12,NREDH,IVECNU,NBVEC,SOLEQ,WRK(KB),WRK(KWRK2))
+     *               CCR12,NREDHOLD,IVECNU,NBVEC,SOLEQ,WRK(KB),
+     &               WRK(KWRK2))
 
             DO IBVEC = 1, NBVEC
                WRK(KTST+JR-1+IBVEC-1) = 
@@ -1069,11 +1075,11 @@ C           ----------------------------------------------------------
              IVECNU = ISIMC -1 + JR
              IF (IANR12.EQ.1 .OR. IANR12.EQ.3) THEN
                CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,LUFS12,FS12AM,
-     *                     TRIPLET,CCR12,NREDH,IVECNU,NBVEC,SOLEQ,
+     *                     TRIPLET,CCR12,NREDHOLD,IVECNU,NBVEC,SOLEQ,
      *                     WRK(KB),WRK(KWRK2))
              ELSE IF (IANR12.EQ.2) THEN
                CALL CCCONV(LUFC1,FC1AM,LUFS2,FS2AM,LUFS12,FS12AM,
-     *                     TRIPLET,CCR12,NREDH,IVECNU,NBVEC,SOLEQ,
+     *                     TRIPLET,CCR12,NREDHOLD,IVECNU,NBVEC,SOLEQ,
      *                     WRK(KB),WRK(KWRK2))
              ELSE
                CALL QUIT('This R12 ansatz is not implemented yet.')
@@ -1098,7 +1104,7 @@ C        -----------------------------------------------
 C        Add A * X(I) where X(I) is the solution to the
 C        I'th set of Newton-Raphson equations
 C        -----------------------------------------------
-         DO K = 1,NREDH
+         DO K = 1,NREDHOLD
             CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                     TRIPLET,K,WRK(KWRK1))
             IF (LCVSEXCI.or.LIONIZEXCI) THEN
