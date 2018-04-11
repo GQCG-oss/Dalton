@@ -46,6 +46,7 @@ C                  EXCMAT(2) = spin density potential matrix (DFT_SPINDNS)
 C
 C     Created : 15-02-05, J. Toulouse
 C     Modified: 17-08-09, J. Toulouse, add spin density
+C     Modified: Feb. 2016 E. Hedegård  add spin gradient
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -94,11 +95,11 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
       real*8   Exc, d1Exc(7), d2Exc(10)
       real*8   d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
       real*8   d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds
-      real*8   d1Exdngrd2, d1Exdngrds2
-      real*8   d1Ecdngrd2, d1Ecdngrds2
+      real*8   d1Exdngrd2, d1Exdngrds2, d1Exdgrdtgrds
+      real*8   d1Ecdngrd2, d1Ecdngrds2, d1Ecdgrdtgrds
 
       real*8   d1Excdrhot, d1Excdrhos, d1Excdgrdt, d1Excdgrds
-      real*8   d1Excdngrd2, d1Excdngrds2
+      real*8   d1Excdngrd2, d1Excdngrds2, d1Excdgrdtgrds
 
 
 #if SRDFT_DEBUG > 10
@@ -147,28 +148,31 @@ C     Initializations -------------------------------------------------------
       print_thr = 0.0d0
 #endif
       ! edh the arrays are also zeroed in SRDFTEXCJT
-      d1Ex(1:7)  = 0.0d0
-      d1Exdrhot  = 0.0d0
-      d1Exdrhos  = 0.0d0
-      d1Exdgrdt  = 0.0d0
-      d1Exdgrds  = 0.0d0
-      d1Exdngrd2 = 0.0d0
-      d1Exdngrds2 = 0.0d0
+      d1Ex(1:7)      = 0.0d0
+      d1Exdrhot      = 0.0d0
+      d1Exdrhos      = 0.0d0
+      d1Exdgrdt      = 0.0d0
+      d1Exdgrds      = 0.0d0
+      d1Exdngrd2     = 0.0d0
+      d1Exdngrds2    = 0.0d0
+      d1Exdgrdtgrds  = 0.0d0
       !----------------
-      d1Ec(1:7)  = 0.0d0
-      d1Ecdrhot  = 0.0d0
-      d1Ecdrhos  = 0.0d0
-      d1Ecdgrdt  = 0.0d0
-      d1Ecdgrds  = 0.0d0
-      d1Ecdngrd2 = 0.0d0
-      d1Ecdngrds2 = 0.0d0
-      !---------------
-      d1Excdrhot  = 0.0d0
-      d1Excdrhos  = 0.0d0
-      d1Excdgrdt  = 0.0d0
-      d1Excdgrds  = 0.0d0
-      d1Excdngrd2 = 0.0d0
-      d1Excdngrds2 = 0.0d0
+      d1Ec(1:7)      = 0.0d0
+      d1Ecdrhot      = 0.0d0
+      d1Ecdrhos      = 0.0d0
+      d1Ecdgrdt      = 0.0d0
+      d1Ecdgrds      = 0.0d0
+      d1Ecdngrd2     = 0.0d0
+      d1Ecdngrds2    = 0.0d0
+      d1Ecdgrdtgrds  = 0.0d0
+      !---------------------
+      d1Excdrhot     = 0.0d0
+      d1Excdrhos     = 0.0d0
+      d1Excdgrdt     = 0.0d0
+      d1Excdgrds     = 0.0d0
+      d1Excdngrd2    = 0.0d0
+      d1Excdngrds2   = 0.0d0
+      d1Excdgrdtgrds = 0.0d0
 
 
       IF (ND_SIM .NE. 1) THEN
@@ -393,61 +397,67 @@ C      Summation with quadrature weigths
 C      Potentials with quadrature weigths
 !
        if (DOGGA .and. DFT_SPINDNS) then
-           d1Exdrhot   = d1Ex(1)
-           d1Exdgrdt   = d1Ex(2)
-           d1Exdngrd2  = d1Ex(3)
-           d1Exdrhos   = d1Ex(4)
-           d1Exdgrds   = d1Ex(5)
-           d1Exdngrds2 = d1Ex(6)
-           !-----------------
-           d1Ecdrhot   = d1Ec(1)
-           d1Ecdgrdt   = d1Ec(2)
-           d1Ecdngrd2  = d1Ec(3)
-           d1Ecdrhos   = d1Ec(4)
-           d1Ecdgrds   = d1Ec(5)
-           d1Ecdngrds2 = d1Ec(6)
+           d1Exdrhot     = d1Ex(1)
+           d1Exdgrdt     = d1Ex(2)
+           d1Exdngrd2    = d1Ex(3)
+           d1Exdrhos     = d1Ex(4)
+           d1Exdgrds     = d1Ex(5)
+           d1Exdngrds2   = d1Ex(6)
+           d1Exdgrdtgrds = d1Ex(7)
+           !---------------------
+           d1Ecdrhot     = d1Ec(1)
+           d1Ecdgrdt     = d1Ec(2)
+           d1Ecdngrd2    = d1Ec(3)
+           d1Ecdrhos     = d1Ec(4)
+           d1Ecdgrds     = d1Ec(5)
+           d1Ecdngrds2   = d1Ec(6)
+           d1Ecdgrdtgrds = d1Ec(7)
        else if (DFT_SPINDNS .and. .not. DOGGA) then
-           d1Exdrhot  = d1Ex(1)
-           d1Exdrhos  = d1Ex(2)
-           !-----------------
-           d1Ecdrhot  = d1Ec(1)
-           d1Ecdrhos  = d1Ec(2)
+           d1Exdrhot     = d1Ex(1)
+           d1Exdrhos     = d1Ex(2)
+           !---------------------
+           d1Ecdrhot     = d1Ec(1)
+           d1Ecdrhos     = d1Ec(2)
        else if (DOGGA .and. .not. DFT_SPINDNS) then
-           d1Exdrhot  = d1Ex(1)
-           d1Exdgrdt  = d1Ex(2)
-           d1Exdngrd2 = d1Ex(3)
-           !-----------------
-           d1Ecdrhot  = d1Ec(1) 
-           d1Ecdgrdt  = d1Ec(2)
-           d1Ecdngrd2 = d1Ec(3)
+           d1Exdrhot     = d1Ex(1)
+           d1Exdgrdt     = d1Ex(2)
+           d1Exdngrd2    = d1Ex(3)
+           !---------------------
+           d1Ecdrhot     = d1Ec(1) 
+           d1Ecdgrdt     = d1Ec(2)
+           d1Ecdngrd2    = d1Ec(3)
        else
-           d1Exdrhot  = d1Ex(1)
-           d1Ecdrhot  = d1Ec(1)
+           d1Exdrhot     = d1Ex(1)
+           d1Ecdrhot     = d1Ec(1)
        end if
 
-       d1Exdrhot  = WGHTX*d1Exdrhot
-       d1Exdrhos  = WGHTX*d1Exdrhos
-       d1Exdgrdt  = WGHTX*d1Exdgrdt
-       d1Exdngrd2 = WGHTX*d1Exdngrd2
-       d1Exdgrds  = WGHTX*d1Exdgrds
-       d1Exdngrds2 = WGHTX*d1Exdngrd2
+       d1Exdrhot     = WGHTX*d1Exdrhot
+       d1Exdrhos     = WGHTX*d1Exdrhos
+       d1Exdgrdt     = WGHTX*d1Exdgrdt
+       d1Exdngrd2    = WGHTX*d1Exdngrd2
+       d1Exdgrds     = WGHTX*d1Exdgrds
+       d1Exdngrds2   = WGHTX*d1Exdngrd2
+       d1Exdgrdtgrds = WGHTX*d1Exdgrdtgrds
 
-       d1Ecdrhot  = WGHTC*d1Ecdrhot
-       d1Ecdrhos  = WGHTC*d1Ecdrhos
-       d1Ecdgrdt  = WGHTC*d1Ecdgrdt
-       d1Ecdngrd2 = WGHTC*d1Ecdngrd2
-       d1Ecdgrds  = WGHTC*d1Ecdgrds
-       d1Ecdngrds2 = WGHTC*d1Ecdngrd2
+
+       d1Ecdrhot     = WGHTC*d1Ecdrhot
+       d1Ecdrhos     = WGHTC*d1Ecdrhos
+       d1Ecdgrdt     = WGHTC*d1Ecdgrdt
+       d1Ecdngrd2    = WGHTC*d1Ecdngrd2
+       d1Ecdgrds     = WGHTC*d1Ecdgrds
+       d1Ecdngrds2   = WGHTC*d1Ecdngrd2
+       d1Ecdgrdtgrds = WGHTC*d1Ecdgrdtgrds
 
 C      Sum of exchange and correlation
        d1Exc(:) = WGHTX*d1Ex(:) + WGHTC*d1Ec(:)
 
-       d1Excdrhot  = d1Exdrhot  + d1Ecdrhot
-       d1Excdrhos  = d1Exdrhos  + d1Ecdrhos
-       d1Excdgrdt  = d1Exdgrdt  + d1Ecdgrdt
-       d1Excdngrd2 = d1Exdngrd2 + d1Ecdngrd2
-       d1Excdgrds  = d1Exdgrds  + d1Ecdgrds
-       d1Excdngrds2 = d1Exdngrds2 + d1Ecdngrds2
+       d1Excdrhot     = d1Exdrhot  + d1Ecdrhot
+       d1Excdrhos     = d1Exdrhos  + d1Ecdrhos
+       d1Excdgrdt     = d1Exdgrdt  + d1Ecdgrdt
+       d1Excdngrd2    = d1Exdngrd2 + d1Ecdngrd2
+       d1Excdgrds     = d1Exdgrds  + d1Ecdgrds
+       d1Excdngrds2   = d1Exdngrds2 + d1Ecdngrds2
+       d1Excdgrdtgrds = d1Exdgrdtgrds + d1Ecdgrdtgrds
 
 C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin components)
        ! Ignore spin in start CI ...  FIXME TODO
@@ -890,7 +900,7 @@ C     Based on the routine SRDFTLTR of J. K. Pedersen
 C
 C     Created : 15-02-05, J. Toulouse
 C     Modified: 17-08-09, J. Toulouse, add spin density
-C     Modified: 16-02-16, E. Hedegård, add spin-gradient
+C     Modified: 16-02-16, E. Hedegård, add spin gradient
 C*************************************************************************** 
          implicit none
 #include "priunit.h"
@@ -929,11 +939,11 @@ C***************************************************************************
       real*8   G0, GX, GY, GZ
 
 !     XC energies, and derivatives
-      real*8   Ex, Ec, d1Ex(6), d1Ec(6), d2Ex(10), d2Ec(10)
+      real*8   Ex, Ec, d1Ex(7), d1Ec(7), d2Ex(10), d2Ec(10)
       real*8   d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
-      real*8   d1Exdngrd2, d1Exdngrds2 !d1Ex(6)
-      real*8   d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds !d1Ex(6)
-      real*8   d1Ecdngrd2, d1Ecdngrds2
+      real*8   d1Exdngrd2, d1Exdngrds2, d1Exdgrdtgrds !d1Ex(7)
+      real*8   d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds 
+      real*8   d1Ecdngrd2, d1Ecdngrds2, d1Ecdgrdtgrds !d1Ec(7)
 
       real*8   d2Exdrhotdrhot, d2Exdrhotdrhos, d2Exdrhosdrhos
       real*8   d2Exdrhotdgrdt, d2Exdrhosdgrdt, d2Exdgrdtdgrdt
@@ -1006,6 +1016,7 @@ C Exchange and correlation derivatives ------------------------------------
            d1Exdrhos      = d1Ex(4)
            d1Exdgrds      = d1Ex(5)
            d1Exdngrds2    = d1Ex(6)
+           d1Exdgrdtgrds  = d1Ex(7)
            !-----------------------
            d1Ecdrhot      = d1Ec(1)
            d1Ecdgrdt      = d1Ec(2)
@@ -1013,6 +1024,7 @@ C Exchange and correlation derivatives ------------------------------------
            d1Ecdrhos      = d1Ec(4)
            d1Ecdgrds      = d1Ec(5)
            d1Ecdngrds2    = d1Ec(6)
+           d1Ecdgrdtgrds  = d1Ec(7)
            !-----------------------
            d2Exdrhotdrhot = d2Ex(1)
            d2Exdrhotdrhos = d2Ex(2)
@@ -1137,7 +1149,7 @@ C Total contribution -------------------------------------------------------
               write(lupri,*) 'hjaaj: d1Exdngrd2 ',d1Exdngrd2
               write(lupri,*) 'hjaaj: d1Exdrhos  ',d1Exdrhos
               write(lupri,*) 'hjaaj: d1Exdgrds  ',d1Exdgrds
-              write(lupri,*) 'hjaaj: d1Exdngrds2',d1Exdngrds2
+              write(lupri,*) 'hjaaj: d1Exdgrdtgrds',d1Exdgrdtgrds
 
               write(lupri,*) 'hjaaj: d1Ecdrhot  ',d1Ecdrhot
               write(lupri,*) 'hjaaj: d1Ecdgrdt  ',d1Ecdgrdt
@@ -1145,6 +1157,7 @@ C Total contribution -------------------------------------------------------
               write(lupri,*) 'hjaaj: d1Ecdrhos  ',d1Ecdrhos
               write(lupri,*) 'hjaaj: d1Ecdgrds  ',d1Ecdgrds
               write(lupri,*) 'hjaaj: d1Ecdngrds2',d1Ecdngrds2
+              write(lupri,*) 'hjaaj: d1Ecdgrdtgrds',d1Ecdgrdtgrds
 
               write(lupri,*) 'hjaaj: d2Exdrhotdrhot',d2Exdrhotdrhot
               write(lupri,*) 'hjaaj: d2Exdrhotdrhos',d2Exdrhotdrhos
