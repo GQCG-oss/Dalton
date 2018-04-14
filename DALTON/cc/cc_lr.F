@@ -7122,7 +7122,10 @@ C           -----------------------
                !write(lupri,*)'Final contrib', CONTR*CONST
                !write(lupri,*)''
             else
-               call quit('CC_EOMTRRKSI: SYMMETRY NOT WORKING')
+               !call quit('CC_EOMTRRKSI: SYMMETRY NOT WORKING')
+               contr=zero
+               const=zero
+               write(lupri,*)'TB0*Csi^A * TB0*RE zero for this irrep'
             end if
             !write(lupri,*)'TRRMOM before', TRRMOM(IRSD)
             TRRMOM(IRSD) = TRRMOM(IRSD) - CONTR*CONST
