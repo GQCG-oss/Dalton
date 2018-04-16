@@ -1,175 +1,174 @@
+C File: srdft/dftfunjt.F
+
+
+! hjaaj April 2018: search for TODO and fix them all !!!
+
+
 C****************************************************************************
-      SUBROUTINE DESR(ESR,rho,grd,mu,norder,E,d1E,d2E)
+      SUBROUTINE DESR(ESR,rhoc,grdc,mu,norder,E,d1E,d2E)
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives 
-C     of a generic short-range functional ESR(rho,grd,mu,E)
+C     of a generic closed-shell short-range GGA functional ESR(rhoc,grdc,mu,E)
 C
 C     Input: ESR    : functional routine
-C            rho    : density
-C            grd    : norm of gradient of density
+C            rhoc   : charge density = alpha density + beta density
+C            grdc   : norm of gradient of charge density
 C            mu     : Interation parameter
 C            norder : order of derivatives
 C
-C     Ouput: E                     : energy
-C            d1E(1) =  d1Edrho     : first derivative wrt rho
-C            d1E(2) =  d1Edgrd     : first derivative wrt grd  (for 2nd-order optimisation)
-C            d1E(3) =  d1Edgrda2   : first derivative wrt grda2 (for HF optimisation)
-C            (grda2 is the square of gradient of spin-alpha density)
-!            edh: d1Edgrda2 is a very strange name and it is not true
-!            that it is the square of the spin-alpha density!!!!
-!            I have renamed it ngrd2 outside
-
-C            d2E(1) = d2Edrhodrho  : second derivative wrt rho and rho
-C            d2E(2) = d2Edgrddgrd  : second derivative wrt grd and grd
-C            d2E(3) = d2Edrhodgrd  : second derivative wrt rho and grd
+C     Ouput: E                       : energy
+C            d1E(1) =  d1Edrhoc      : first derivative wrt rhoc
+C            d1E(3) =  d1Edgrdc      : first derivative wrt grdc  (for 2nd-order optimisation)
+C            d1E(5) =  d1Edgrdcc     : first derivative wrt grdcc (for HF optimisation)
+C
+C            d2E(1) = d2Edrhocdrhoc  : second derivative wrt rhoc and rhoc
+C            d2E(2) = d2Edgrdcdgrdc  : second derivative wrt grdc and grdc
+C            d2E(3) = d2Edrhocdgrdc  : second derivative wrt rhoc and grdc
 C
 C     Author: J. Toulouse
 C     Date  : 16-02-05
-C     Revision: Introduce d1E and d2E arrays (17-02-16), E. D. Hedegård
+C     Revision: Introduce d1E and d2E arrays (17-02-16), E. D. Hedegaard
 C*****************************************************************************
       implicit none
 
       external ESR
 
       integer  norder
-      double precision rho, grd, mu
-      double precision E, d1E(3), d2E(3)
+      real*8   rhoc, grdc, mu
+      real*8   E, d1E(7), d2E(3)
 
-      double precision hr, hg, hr2, hg2, hrg
-      double precision rhom, rhop, rhopp, grdm, grdp, grdpp
+      real*8   hr, hg, hr2, hg2, hrg
+      real*8   rhocm, rhocp, rhocpp, grdcm, grdcp, grdcpp
 
-      double precision Em0, Ep0, Epp0
-      double precision E0m, E0p, E0pp
-      double precision Emm, Epp, Epm, Emp
-      double precision d1Edgrd2, dsdgrd, dgrddgrd2
+      real*8   Em0, Ep0, Epp0
+      real*8   E0m, E0p, E0pp
+      real*8   Emm, Epp, Epm, Emp
 
 #include "priunit.h"
-C     check
-      if(norder .le. 0 .or. norder .ge. 3) then
-       print *,'DESR: norder=',norder
-       call quit('DESR: norder must be 1 or 2')
+C Check
+      if(norder .lt. 0 .or. norder .gt. 2) then
+       print *,'DESR error: norder=',norder
+       call quit('DESR error: norder must be 0, 1, or 2')
       endif
 
-      if (norder .ge. 1) d1E(:) = 0.0d0
-      if (norder .ge. 2) d2E(:) = 0.0d0
-
-C     energy
-      call ESR(rho,grd,mu,E)
-
-C     (optimal?) numerical step
-      hr = 1.d-4*rho
-      hg = 1.d-4*grd
-
-C     variations of variables
-      rhom = rho-hr
-      rhop = rho+hr
-      grdm = grd-hg
-      grdp = grd+hg
+C Energy -------------------------------------------------------------
+      call ESR(rhoc,grdc,mu,E)
 
 C First-order derivatives --------------------------------------------
+      if (norder .le. 0) go to 9000 ! return
+      d1E(:) = 0.0d0
 
-C     derivative wrt rho ---------------------
-!      if(rhom .ge. 0.d0) then 
+C     (optimal?) numerical step
+      hr = 1.d-4*rhoc
+      hg = 1.d-4*grdc
+
+C     variations of variables
+      rhocm = rhoc-hr
+      rhocp = rhoc+hr
+      grdcm = grdc-hg
+      grdcp = grdc+hg
+
+C     derivative wrt rhoc ---------------------
+!      if(rhocm .ge. 0.d0) then 
 !      central 2nd-order approximation
-       call ESR(rhom,grd,mu,Em0)
-       call ESR(rhop,grd,mu,Ep0)
-       d1E(1) = (Ep0 - Em0)/(2.d0*hr)
+       call ESR(rhocm,grdc,mu,Em0)
+       call ESR(rhocp,grdc,mu,Ep0)
+       d1E(1) = (Ep0 - Em0)/(2.d0*hr) ! d1Edrhoc
 !      else 
-!       stop 'rhom < 0'
+!       stop 'rhocm < 0'
 !!      forward 1st-order approximation
-!       call ESR(rhop,grd,mu,Ep0)
-!       d1Edrho = (Ep0 - E)/hr
+!       call ESR(rhocp,grdc,mu,Ep0)
+!       d1Edrhoc = (Ep0 - E)/hr
 !      endif
-!      print *,'D1SR: d1Edrho=',d1Edrho
+!      print *,'D1SR: d1Edrhoc=',d1Edrhoc
 
-C     derivative wrt grd ---------------------
-!      if(grdm .ge. 0.d0) then
+C     derivative wrt grdc ---------------------
+!      if(grdcm .ge. 0.d0) then
 !      central 2nd-order approximation
-       call ESR(rho,grdm,mu,E0m)
-       call ESR(rho,grdp,mu,E0p)
-       d1E(2) = (E0p - E0m)/(2.d0*hg)
+       call ESR(rhoc,grdcm,mu,E0m)
+       call ESR(rhoc,grdcp,mu,E0p)
+       d1E(3) = (E0p - E0m)/(2.d0*hg) ! d1Edgrdc
 !      else
-!       stop 'grdm < 0'
+!       stop 'grdcm < 0'
 !!      forward 1st-order approximation
-!       call ESR(rho,grdp,mu,E0p)
-!       d1Edgrd = (E0p - E)/hg
+!       call ESR(rhoc,grdcp,mu,E0p)
+!       d1Edgrdc = (E0p - E)/hg
 !      endif
-!      print *,'D1SR: d1Edgrd=',d1Edgrd
+!      print *,'D1SR: d1Edgrdc=',d1Edgrdc
 
-C     derivative wrt grd2
-      dgrddgrd2 = 1.d0/(2.d0*grd)
-      d1Edgrd2 = d1E(2) * dgrddgrd2
-
-C     derivative wrt grda2
-      d1E(3) = 4.d0*d1Edgrd2
+C     derivative wrt grdcc
+      d1E(5) = 2.d0 * d1E(2) / grdc
+!            = 4.d0 * d1E(2) / (2.d0*grdc) ! 4*d1Edgrdcc
 
 C Second-order derivatives --------------------------------------------
-      if(norder .ge. 2) then
+      if (norder .le. 1) go to 9000 ! return
+      if (norder .ge. 2) d2E(:) = 0.0d0
 
       hr2= hr*hr
       hg2= hg*hg
       hrg= hr*hg
 
-C     derivative wrt rho and rho -----------------
-!      if(rhom .ge. 0.d0) then 
+C     derivative wrt rhoc and rhoc -----------------
+!      if(rhocm .ge. 0.d0) then 
 !      central 2nd-order approximation
        
        d2E(1) = (Ep0 - 2.d0*E + Em0)/hr2
 !      else 
-!       stop 'rhom < 0'
+!       stop 'rhocm < 0'
 !!      forward 1st-order approximation
-!       rhopp = rho + 2.d0*hr
-!       call ESR(rhop,grd,mu,Ep0)
-!       call ESR(rhopp,grd,mu,Epp0)
+!       rhocpp = rhoc + 2.d0*hr
+!       call ESR(rhocp,grdc,mu,Ep0)
+!       call ESR(rhocpp,grdc,mu,Epp0)
 !       d2E(1) = (Epp0 -2.d0*Ep0 + E)/hr2
 !      endif
 
-C     derivative wrt grd and grd -----------------------
-!      if(grdm .ge. 0.d0) then
+C     derivative wrt grdc and grdc -----------------------
+!      if(grdcm .ge. 0.d0) then
 !      central 2nd-order approximation
        d2E(2) = (E0p - 2.d0*E + E0m)/hg2
 !      else
-!       stop 'grdm < 0'
+!       stop 'grdcm < 0'
 !!      forward 1st-order approximation
-!       grdpp = grd + 2.d0*hg
-!       call ESR(rho,grdp,mu,E0p)
-!       call ESR(rho,grd,mu,E0pp)
+!       grdcpp = grdc + 2.d0*hg
+!       call ESR(rhoc,grdcp,mu,E0p)
+!       call ESR(rhoc,grdcpp,mu,E0pp)
 !       d2E(2) = (E0pp -2.d0*E0p + E)/hg2
 !      endif
 
-C     derivative wrt rho and grd -----------------------
-!      if(rhom.ge. 0.d0 .and. grdm .ge. 0.d0) then
-       call ESR(rhop,grdp,mu,Epp)
-       call ESR(rhom,grdp,mu,Emp)
-       call ESR(rhop,grdm,mu,Epm)
-       call ESR(rhom,grdm,mu,Emm)
+C     derivative wrt rhoc and grdc -----------------------
+!      if(rhocm.ge. 0.d0 .and. grdcm .ge. 0.d0) then
+       call ESR(rhocp,grdcp,mu,Epp)
+       call ESR(rhocm,grdcp,mu,Emp)
+       call ESR(rhocp,grdcm,mu,Epm)
+       call ESR(rhocm,grdcm,mu,Emm)
 !      central 2nd-order approximation
        d2E(3) = (Epp - Emp - Epm + Emm)/(4.d0*hrg)
 !      else
-!       stop 'rhom < 0 or grdm < 0'
-!       call ESR(rhop,grdp,mu,Epp)
+!       stop 'rhocm < 0 or grdcm < 0'
+!       call ESR(rhocp,grdcp,mu,Epp)
 !!      forward 1st-order approximation
 !       d2E(3) = (Epp - E0p - Ep0 + E)/hrg
 !      endif
-     
-      endif
 
-      return
+ 9000 return
       end
 C****************************************************************************
-      SUBROUTINE DELA(ESR,rhot,grd,VLAMBDA,norder,d1E,d2E)
+      SUBROUTINE DELA(ESR,rhot,grdc,VLAMBDA,norder,d1E,d2E)
 C Linear complement exchange PBE functional, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
 
       implicit none
 
       external ESR
-      integer norder
 
-      double precision rhot, grd, VLAMBDA
-      double precision E, d1E(3), d2E(3) 
+      real*8   rhot, grdc, VLAMBDA
+      integer  norder
+      real*8   E, d1E(7), d2E(3) 
 
-      call   DESR(ESR,rhot,grd,0.d0,norder,E,d1E,d2E)
+      call   DESR(ESR,rhot,grdc,0.d0,norder,E,d1E,d2E)
+
+! TODO HJAAJ 
+      call quit('hjaaj: need to define new d1E and d2E addresses')
 
       d1E(1) = (1.d0- VLAMBDA) * d1E(1)
       d1E(2) = (1.d0- VLAMBDA) * d1E(2)
@@ -183,19 +182,20 @@ C*****************************************************************************
       end
 
 C****************************************************************************
-      SUBROUTINE DELANSC(ESR,rhot,grd,VLAMBDA,norder,d1E,d2E)
+      SUBROUTINE DELANSC(ESR,rhot,grdc,VLAMBDA,norder,d1E,d2E)
 
 C Linear complement (NON-Scaled) correlation PBE GWS functional, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
       implicit none
 
       external ESR
-      integer norder
+      real*8   rhot, grdc, VLAMBDA
+      integer  norder
+      real*8   E, d1E(7), d2E(3)
 
-      double precision rhot, grd, VLAMBDA
-      double precision E, d1E(3), d2E(3)
-
-      call   DESR(ESR,rhot,grd,0.d0,norder,E,d1E,d2E)
+      call   DESR(ESR,rhot,grdc,0.d0,norder,E,d1E,d2E)
+! TODO HJAAJ 
+      call quit('hjaaj: need to define new d1E and d2E addresses')
 
       d1E(1) = (1.d0- VLAMBDA**2) * d1E(1)
       d1E(2) = (1.d0- VLAMBDA**2) * d1E(2)
@@ -209,7 +209,7 @@ C*****************************************************************************
       end
 
 C****************************************************************************
-      SUBROUTINE DELASC(ESR,rhot,grd,VLAMBDA,norder,d1E,d2E)
+      SUBROUTINE DELASC(ESR,rhot,grdc,VLAMBDA,norder,d1E,d2E)
 
 C Linear complement Scaled correlation PBE functional, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
@@ -218,10 +218,13 @@ C*****************************************************************************
       external ESR
       integer norder
 
-      double precision rhot, rhotscaled, grd, grdscaled, VLAMBDA
-      double precision d1E(3), d2E(3)
-      double precision Ecoul, d1Ecoul(3), d2Ecoul(3)
-      double precision Esca, d1Esca(3), d2Esca(3)
+      real*8   rhot, rhotscaled, grdc, grdcscaled, VLAMBDA
+      real*8   d1E(7), d2E(3)
+      real*8   Ecoul, d1Ecoul(7), d2Ecoul(3)
+      real*8   Esca,  d1Esca(7),  d2Esca(3)
+
+! TODO HJAAJ 
+      call quit('hjaaj: need to define new d1E and d2E addresses')
 
 !     d1Ecoul(1) = d1Edrhocoul
 !     d1Ecoul(2) = d1Edgrdcoul
@@ -232,10 +235,10 @@ C*****************************************************************************
       d1Ecoul(:) = 0.0d0
       d2Ecoul(:) = 0.0d0
 
-      call  DESR(ESR,rhot,grd,0.d0,norder,Ecoul,d1Ecoul,d2Ecoul)
+      call  DESR(ESR,rhot,grdc,0.d0,norder,Ecoul,d1Ecoul,d2Ecoul)
 
       rhotscaled = rhot/VLAMBDA**3
-      grdscaled  = grd/VLAMBDA**4
+      grdcscaled  = grdc/VLAMBDA**4
 
 !     d1Esca(1) = d1Edrhosca
 !     d1Esca(2) = d1Edgrdsca 
@@ -246,7 +249,7 @@ C*****************************************************************************
       d1Esca(:) = 0.0d0
       d2Esca(:) = 0.0d0
 
-      call  DESR(ESR,rhotscaled,grdscaled,0.d0,norder,
+      call  DESR(ESR,rhotscaled,grdcscaled,0.d0,norder,
      &   Esca,d1Esca,d2Esca)
 
       d1E(1) = d1E(1) + (d1Ecoul(1) - VLAMBDA**2 * d1Esca(1))
@@ -267,8 +270,8 @@ C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives 
 C     of a generic spin-dependent short-range LDA functional ESRSPIN(rhot,rhos,mu,dospin,E)
 C
-C     Input: ESRSPIN    : functional routine
-C            rhot   : total density
+C     Input: ESRSPIN: functional routine
+C            rhot   : total charge density
 C            rhos   : spin density
 C            dospin : use spin density
 C            mu     : Interation parameter
@@ -282,23 +285,23 @@ C            d2E(2) = d2Edrhotdrhos : second derivative wrt rhot and rhos
 C            d2E(3) = d2Edrhosdrhos : second derivative wrt rhos and rhos
 C
 C     Created: 17-08-09, J. Toulouse
-C     Revision: Introduce d1E and d2E arrays (17-02-16), E. D. Hedegård
+C     Revision: Introduce d1E and d2E arrays (17-02-16), E. D. Hedegaard
 C*****************************************************************************
       implicit none
 
       external ESRSPIN
       integer norder
       logical dospin
-      double precision rhot, rhos, mu
-      double precision E, d1E(2), d2E(3)
+      real*8   rhot, rhos, mu
+      real*8   E, d1E(2), d2E(3)
 
-      double precision hrt, hrs, hrt2, hrs2, hrts
-      double precision rhotm, rhotp, rhosp, rhosm
-      double precision arhos
+      real*8   hrt, hrs, hrt2, hrs2, hrts
+      real*8   rhotm, rhotp, rhosp, rhosm
+      real*8   arhos
 
-      double precision Em0, Ep0, Epp0
-      double precision E0m, E0p, E0pp
-      double precision Emm, Epp, Epm, Emp
+      real*8   Em0, Ep0, Epp0
+      real*8   E0m, E0p, E0pp
+      real*8   Emm, Epp, Epm, Emp
 
       logical  pure_spin
 
@@ -331,15 +334,12 @@ C     (optimal?) numerical step
 !      else
 !         hrs = 0.0d0
 !      end if
-!      hg = 1.d-4*grd
 
 C     variations of variables
       rhotm = rhot-hrt
       rhotp = rhot+hrt
       rhosm = rhos-hrs
       rhosp = rhos+hrs
-!      grdm = grd-hg
-!      grdp = grd+hg
 
 C First-order derivatives --------------------------------------------
 
@@ -417,15 +417,21 @@ C         derivative wrt rhot and rhos -----------------------
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives 
 C     of a generic spin-dependent short-range GGA functional
-C     ESRSPINGGA(rhot,rhos,grdt,grds,mu,E)
+C     ESRSPINGGA(rhot,rhos,grdt,grds,grdts,mu,E)
+C
+C     This routine performes the derivatives with respect to charge and spin variables,
+C     normally best suited for correlation functionals.
+C     The routine DESRX_SPINGGA performs the derivatives with respect to alpha and beta
+C     variables, always best suited for exchange functionals because these never mix
+C     alpha and beta variables, thus all cross derivatives between alpha and beta are zero.
 C
 C     Input: ESRSPINGGA : spin-density GGA functional routine
 C            itype      : how many of rhot, rhos, grdt, grds, grdt.grds contribute to e
 C                         (e.g. LDA: itype=2; PBEGWS: itype=3)
 C            rho(1)     : rhot; total density
 C            rho(2)     : rhos; spin density
-C            rhogrd(1)  : grdt; norm of gradient of rhot
-C            rhogrd(2)  : grds; norm of gradient of rhos
+C            rhogrd(1)  : grdt; norm of gradient(rhot)
+C            rhogrd(2)  : grds; norm of gradient(rhos)
 C            rhogrd(3)  : grdts = grad(rhot) . grad(rhos)
 C            mu         : Interation parameter
 C            norder     : order of derivatives
@@ -433,11 +439,11 @@ C
 C    Output: E      = energy
 C
 C            d1E(1) = d1Edrhot      : first derivative wrt rhot
-C            d1E(2) = d1Edgrdt      : first derivative wrt grdt (grad rhot)
-C            d1E(3) = d1Engrdt2     : = (2.0d0/grdt)*d1E(2)
+C            d1E(2) = d1Edgrdt      : first derivative wrt grdt = grad(rhot)
+C            d1E(3) = d1Engrdtt     : = (2.0d0/grdt)*d1E(2)
 C            d1E(4) = d1Edrhos      : first derivative wrt rhos
-C            d1E(5) = d1Edgrds      : first derivative wrt grds (grad rhos)
-C            d1E(6) = d1Edngrds2    : = (2.0d0/grds)*d1E(4)
+C            d1E(5) = d1Edgrds      : first derivative wrt grds = grad(rhos)
+C            d1E(6) = d1Edngrds2    : = (2.0d0/grds)*d1E(5)
 C            d1E(7) = d1Edgrdts     : first derivative wrt grdts
 C
 C            d2E(1) = d2Edrhotdrhot : second derivative wrt rhot and rhot
@@ -450,17 +456,22 @@ C            d2E(7) = d2Edrhotdgrds : second derivative wrt rhot and grds
 C            d2E(8) = d2Edrhosdgrds : second derivative wrt rhos and grds
 C            d2E(9) = d2Edgrdtdgrds : second derivative wrt grdt and grds
 C            d2E(10)= d2Edgrdsdgrds : second derivative wrt grds and grds
+C            d2E(11)= d2Edrhotdgrdts:
+C            d2E(12)= d2Edrhosdgrdts:
+C            d2E(13)= d2Edgrdtdgrdts:
+C            d2E(14)= d2Edgrdsdgrdts:
+C            d2E(15)= d2Edgrdtsdgrdts:
 C
-C     Created: 29-01-16, H. J. Aa. Jensen + Erik D. Hedegård)
-C     (from routine by J. Toulouse)
+C     Created: 29-01-16, H. J. Aa. Jensen + Erik D. Hedegaard)
+C     (based on DESRSPIN routine by J. Toulouse)
 C*****************************************************************************
       implicit none
 
       external ESRSPINGGA
-      integer  norder, itype
+      integer  itype, norder
 
       real*8   rho(2), rhogrd(3), mu
-      real*8   E, d1E(7), d2E(10)
+      real*8   E, d1E(7), d2E(15)
 
       real*8   rhot, rhos, grdt, grds, grdts
       real*8   hrt, hrs,  hgt, hgs, hgts
@@ -530,7 +541,7 @@ C     energy
 C     (optimal?) numerical step
 C     (step length of hx=1.d-4*X should give a relative accuracy of approx. 16 digits
 C      because we use central 2nd-order approximation)
-C     NB! The zeroing of grdts, grds, grdt depending on type meands these will be skipped below.
+C     NB! The zeroing of grdts, grds, grdt depending on type means these will be skipped below.
 
       hrt = 1.d-4*rhot
       hrs = hrt
@@ -612,7 +623,7 @@ C     derivatives wrt rhot, rhos, grdt, grds ---------------------
          call ESRSPINGGA(rhot,rhos,grdtm,grds,grdts,mu,E00m0)
          call ESRSPINGGA(rhot,rhos,grdtp,grds,grdts,mu,E00p0)
          d1E(2) = (E00p0 - E00m0)/(2.d0*hgt) ! d1Edgrdt
-         d1E(3) = (2.0d0/grdt)*d1E(2)        ! d1Engrdt2
+         d1E(3) = (2.0d0/grdt)*d1E(2)        ! d1Engrdtt
       end if
 
       if (hrs .gt. 0.0d0) then
@@ -713,10 +724,12 @@ C****************************************************************************
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives
 C     of a generic spin-dependent short-range GGA exchange functional
-C     using ESRSPINGGA_ab(rhoa,rhob,grda,grdb,mu,E)
+C     using ESRSPINGGA(rhoa,rhob,grda,grdb,mu,E)
 C
 C     Exchange derivatives will be done based on alpha and beta values
-C     because there are not mixed alpha-beta terms for exchange.
+C     because there are no mixed alpha-beta terms for exchange.
+C     The routine DESRC_SPINGGA performes the derivatives with respect to charge and spin variables,
+C     normally best suited for correlation functionals.
 C
 C     Input: ESRSPINGGA : spin-density GGA functional routine
 C            rho(1:4) : total density, spin density, 2 rho_a, 2 rho_b
@@ -726,7 +739,7 @@ C            norder : order of derivatives
 C
 C    Output: d1E(1) = d1Edrhot      : first derivative wrt rhot
 C            d1E(2) = d1Edgrdt      : first derivative wrt grdt (grad rhot)
-C            d1E(3) = d1Engrdt2     : = (2.0d0/grdt)*d1E(2)
+C            d1E(3) = d1Engrdtt     : = (2.0d0/grdt)*d1E(2)
 C            d1E(4) = d1Edrhos      : first derivative wrt rhos
 C            d1E(5) = d1Edgrds      : first derivative wrt grds (grad rhos)
 C            d1E(6) = d1Engrds2     : = (2.0d0/grds)*d1E(4)
@@ -750,36 +763,36 @@ C*****************************************************************************
       external         ESRSPINGGA
       integer          norder
 
-      double precision rho(4), grd(4), mu
-      double precision E, d1E(7), d2E(10)
-      double precision    d1W(4), d2W(10) ! for derivative wrt rhoa, rhob, grda, grdb
+      real*8   rho(4), grd(4), mu
+      real*8   E, d1E(7), d2E(15)
+      real*8      d1W(4), d2W(15) ! for derivative wrt rhoa, rhob, grda, grdb
 
-      double precision grdt, grds
+      real*8   grdt, grds
 
-      double precision rhoa, rhob, grda, grdb
-      double precision rhoam, rhoap, rhobp, rhobm ! modified values used in numerical differentiation
-      double precision grdam, grdap, grdbp, grdbm ! modified values used in numerical differentiation
+      real*8   rhoa, rhob, grda, grdb
+      real*8   rhoam, rhoap, rhobp, rhobm ! modified values used in numerical differentiation
+      real*8   grdam, grdap, grdbp, grdbm ! modified values used in numerical differentiation
 
-      double precision hra, hrb,  hga, hgb
-      double precision hra2, hrarb, hrb2
-      double precision hraga, hrbga, hga2, hragb, hrbgb, hgagb, hgb2
+      real*8   hra, hrb,  hga, hgb
+      real*8   hra2, hrarb, hrb2
+      real*8   hraga, hrbga, hga2, hragb, hrbgb, hgagb, hgb2
 
-      double precision Em000, Ep000, E0m00, E0p00
-      double precision E00m0, E00p0, E000m, E000p
+      real*8   Em000, Ep000, E0m00, E0p00
+      real*8   E00m0, E00p0, E000m, E000p
 
-      double precision Emm00, Epp00, Epm00, Emp00
-      double precision Em0m0, Ep0p0, Ep0m0, Em0p0
-      double precision Em00m, Ep00p, Ep00m, Em00p
-      double precision E0mm0, E0pp0, E0pm0, E0mp0
-      double precision E0m0m, E0p0p, E0p0m, E0m0p
-      double precision E00mm, E00pp, E00pm, E00mp
+      real*8   Emm00, Epp00, Epm00, Emp00
+      real*8   Em0m0, Ep0p0, Ep0m0, Em0p0
+      real*8   Em00m, Ep00p, Ep00m, Em00p
+      real*8   E0mm0, E0pp0, E0pm0, E0mp0
+      real*8   E0m0m, E0p0p, E0p0m, E0m0p
+      real*8   E00mm, E00pp, E00pm, E00mp
 
       logical  pure_spin
 
 C     check
       if(norder .lt. 0 .or. norder .ge. 3) then
-        print *,'DESRX_SPINGGA: norder=',norder
-        call quit('DESRX_SPINGGA: norder must be 0, 1, or 2')
+        print *,'Fatal error DESRX_SPINGGA: norder=',norder
+        call quit('ERROR DESRX_SPINGGA: norder must be 0, 1, or 2')
       endif
 
       if (norder .ge. 1) d1E(:) = 0.0d0
@@ -889,7 +902,7 @@ C     derivatives wrt rhoa, rhob, grda, grdb ---------------------
        d1E(2) = 0.5d0*(d1W(3) + d1W(4))
        grdt = grd(1)
        IF (grdt .gt. 0.0d0)
-     &    d1E(3) = (2.0d0/grdt)*d1E(2)        ! d1Engrdt2
+     &    d1E(3) = (2.0d0/grdt)*d1E(2)        ! d1Engrdtt
        d1E(4) = 0.5d0*(d1W(1) - d1W(2))
        d1E(5) = 0.5d0*(d1W(3) - d1W(4))
        grds = grd(2)
@@ -1007,12 +1020,14 @@ C****************************************************************************
       SUBROUTINE ESRSPINGGA_ab(ESRSPINGGA,rhoa,rhob,grda,grdb,mu,E)
 
 ! interface from (rhoa,rhob,grda,grdb) to the standard ESRSPINGGA routines
-!           with (rhot,rhos,grdt,grds) in parameter list.
+!           with (rhot,rhos,grdt,grds,grdts) in parameter list.
 
       implicit none
       external ESRSPINGGA
       real*8   rhoa, rhob, grda, grdb, mu, E
       real*8   rhot, rhos, grdt, grds, grdts
+
+      call quit('hjaaj 4-apr-2018: the code below is wrong !!!') ! TODO FIXME 
 
       rhot = rhoa + rhob
       rhos = rhoa - rhob
@@ -1057,7 +1072,7 @@ C            d2E(8) = d2Edrhosdgrds : second derivative wrt to rhos and grds
 C            d2E(9) = d2Edgrdtdgrds : second derivative wrt to grdt and grds
 C            d2E(10)= d2Edgrdsdgrds : second derivative wrt to grds and grds
 C
-C     Created: 29-01-16, H. J. Aa. Jensen + Erik D. Hedegård)
+C     Created: 29-01-16, H. J. Aa. Jensen + Erik D. Hedegaard)
 C     (from routine by J. Toulouse)
 C*****************************************************************************
       implicit none
@@ -1304,8 +1319,8 @@ C*****************************************************************************
       external ESRSPIN
       integer norder
       logical dospin
-      double precision rhot, rhos, VLAMBDA
-      double precision E, d1E(2), d2E(3)
+      real*8   rhot, rhos, VLAMBDA
+      real*8   E, d1E(2), d2E(3)
 
       call  DESRSPIN(ESRSPIN,rhot,rhos,0.d0,dospin,norder,E,d1E,d2E)
 
@@ -1331,8 +1346,8 @@ C*****************************************************************************
       external ESRSPIN
       integer norder
       logical dospin
-      double precision rhot, rhos, VLAMBDA
-      double precision E, d1E(2), d2E(3)
+      real*8   rhot, rhos, VLAMBDA
+      real*8   E, d1E(2), d2E(3)
 
       call  DESRSPIN(ESRSPIN,rhot,rhos,0.d0,dospin,norder,E,d1E,d2E)
 
@@ -1364,21 +1379,21 @@ C     Date  : 19-02-05
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e
+      real*8   rho, grd, mu
+      real*8   e
 
-      double precision rho13
-      double precision drho2
+      real*8   rho13
+      real*8   drho2
 
-      double precision exerflda
-      double precision exerfpbe
-      double precision t1,t2,t3,t4
+      real*8   exerflda
+      real*8   exerfpbe
+      real*8   t1,t2,t3,t4
 
-      double precision XKSR(3)
+      real*8   XKSR(3)
       logical ERFEXP(0:2)
 
 ! function 
-      double precision berft
+      real*8   berft
 
 C     LDA energy
       rho13 = rho**(1.d0/3.d0)
@@ -1418,12 +1433,12 @@ C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e
+      real*8   rho, grd, mu
+      real*8   e
 
-      double precision pi,rho13,kF,s
-      double precision exLDA
-      double precision FxHSE
+      real*8   pi,rho13,kF,s
+      real*8   exLDA
+      real*8   FxHSE
 
 C     constants
       pi = 3.141592653589793d0
@@ -1476,40 +1491,40 @@ C*****************************************************************************
 
       integer norder
 
-      double precision rho, grd, mu
-      double precision e, d1edrho, d1edgrd, d1edgrda2
-      double precision d2edrhodrho,d2edgrddgrd,d2edrhodgrd
+      real*8   rho, grd, mu
+      real*8   e, d1edrho, d1edgrd, d1edgrda2
+      real*8   d2edrhodrho,d2edgrddgrd,d2edrhodgrd
 
-      double precision pi,rho13,kF,s
-      double precision exLDA
-      double precision FxHSE
+      real*8   pi,rho13,kF,s
+      real*8   exLDA
+      real*8   FxHSE
 
       integer i
-      double precision rho1, rho2, s1, s2
-      double precision FxHSE1, FxHSE2
+      real*8   rho1, rho2, s1, s2
+      real*8   FxHSE1, FxHSE2
 
-      double precision h, h2
-      double precision rhom, rhop, rhopp, sm, sp, spp
+      real*8   h, h2
+      real*8   rhom, rhop, rhopp, sm, sp, spp
 
-      double precision d1exLDAdrho
-      double precision FxHSEm0, FxHSEp0, FxHSEpp0
-      double precision FxHSE0m, FxHSE0p, FxHSE0pp
-      double precision FxHSEmm, FxHSEmp, FxHSEpm, FxHSEpp
-      double precision d1FxHSEdrho
-      double precision d1FxHSEds, d1FxHSEdgrd, d1FxHSEdgrd2
-      double precision d1FxHSEdgrda2
-      double precision dsdrho, dsdgrd, dgrddgrd2
+      real*8   d1exLDAdrho
+      real*8   FxHSEm0, FxHSEp0, FxHSEpp0
+      real*8   FxHSE0m, FxHSE0p, FxHSE0pp
+      real*8   FxHSEmm, FxHSEmp, FxHSEpm, FxHSEpp
+      real*8   d1FxHSEdrho
+      real*8   d1FxHSEds, d1FxHSEdgrd, d1FxHSEdgrd2
+      real*8   d1FxHSEdgrda2
+      real*8   dsdrho, dsdgrd, dgrddgrd2
 
-      double precision d2exLDAdrhodrho
-      double precision d2FxHSEdrhodrho
-      double precision d2FxHSEdrhods, d2FxHSEdgrddgrd
-      double precision d2FxHSEdsds, d2FxHSEdrhodgrd
-      double precision dsdgrd2
+      real*8   d2exLDAdrhodrho
+      real*8   d2FxHSEdrhodrho
+      real*8   d2FxHSEdrhods, d2FxHSEdgrddgrd
+      real*8   d2FxHSEdsds, d2FxHSEdrhodgrd
+      real*8   dsdgrd2
 
       external FxSR
 
-      double precision rhom13, rhop13, rhopp13
-      double precision DF1000,DF0010,DF2000,DF1010,DF0020
+      real*8   rhom13, rhop13, rhopp13
+      real*8   DF1000,DF0010,DF2000,DF1010,DF0020
 
 !      print *,'VSRPBEXERF: mu=',mu
 !      print *,'VSRPBEXERF: rho=',rho
@@ -1779,8 +1794,8 @@ C     for debug
 C------------------------------------------------------------------
       implicit none
       
-      double precision Rho,s,Omega,Fx
-      double precision EXLDA, BECKI, RHO13, kF, RHOGRD, pi
+      real*8   Rho,s,Omega,Fx
+      real*8   EXLDA, BECKI, RHO13, kF, RHOGRD, pi
 
 C     constants
       pi = 3.141592653589793d0
@@ -2766,15 +2781,14 @@ C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e
+      real*8   rho, grd, e
 
-      double precision pi, pi2
-      double precision rho13, eLDA, epsLDA
-      double precision gam, bet
-      double precision kF, ks, t, t2
-      double precision A, At2
-      double precision frac, H
+      real*8   pi, pi2
+      real*8   rho13, eLDA, epsLDA
+      real*8   gam, bet
+      real*8   kF, ks, t, t2
+      real*8   A, At2
+      real*8   frac, H
 
 C     General constants
       parameter ( pi = 3.141592653589793d0 )
@@ -2826,15 +2840,14 @@ C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e
+      real*8   rho, grd, e
 
-      double precision rho13
-      double precision exLDA
-      double precision ecLDA
+      real*8   rho13
+      real*8   exLDA
+      real*8   ecLDA
 
-      double precision drho2
-      double precision t1, bPBE
+      real*8   drho2
+      real*8   t1, bPBE
 
 C     LDA energy
       rho13 = rho**(1.d0/3.d0)
@@ -2883,18 +2896,17 @@ C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e
+      real*8   rho, grd, mu, e
 
-      double precision mu2, rs, sqrt2
-      double precision d, a, bet, gam
-      double precision grs12, expgrs12, g0
-      double precision e_pbe, eps_pbe, eps_LDA_fac, mu_ref
-      double precision d1, d2, denom, p6, q7, q8, d2od1, mu6
+      real*8   mu2, rs, sqrt2
+      real*8   d, a, bet, gam
+      real*8   grs12, expgrs12, g0
+      real*8   e_pbe, eps_pbe, eps_LDA_fac, mu_ref
+      real*8   d1, d2, denom, p6, q7, q8, d2od1, mu6
 
 C     General constants
 #include "pi.h"
-      double precision mu_0, mu_0_m6, mu_0_m7, mu_0_m4
+      real*8   mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 
 C     Constants for g0
@@ -3010,18 +3022,17 @@ C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e
+      real*8   rho, grd, mu, e
 
-      double precision mu2, rs, sqrt2
-      double precision d, a, bet, gam
-      double precision grs12, expgrs12, g0, rho13
-      double precision e_lyp, eps_lyp, eps_LDA_fac, mu_ref
-      double precision d1, d2, denom, p6, q7, q8, d2od1, mu6
+      real*8   mu2, rs, sqrt2
+      real*8   d, a, bet, gam
+      real*8   grs12, expgrs12, g0, rho13
+      real*8   e_lyp, eps_lyp, eps_LDA_fac, mu_ref
+      real*8   d1, d2, denom, p6, q7, q8, d2od1, mu6
 
 C     General constants
 #include "pi.h"
-      double precision mu_0, mu_0_m6, mu_0_m7, mu_0_m4
+      real*8   mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srclyp_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 
 C     Constants for g0
@@ -3138,13 +3149,12 @@ C     Date  : 31-01-2006
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e
+      real*8   rho, grd, mu, e
 
-      double precision mu2, mu6, pi, sqrtpi 
-      double precision three53, pi13, pi43, zero 
-      double precision epbe
-      double precision d, d2, denom1, denom2
+      real*8   mu2, mu6, pi, sqrtpi 
+      real*8   three53, pi13, pi43, zero 
+      real*8   epbe
+      real*8   d, d2, denom1, denom2
       
 !      print *,'ESRX_PBERIERF: mu=',mu
 !      print *,'ESRX_PBERIERF: rho=',rho,' grd=',grd
@@ -3197,12 +3207,12 @@ C     Date  : Nov. 2011
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e, e_pbe, e_lda,p,z,Ha,Hb
-      double precision rho13
+      real*8   rho, grd, mu, e
 
-      logical ERFEXP(0:2), MULOCAL(0:2)
-      double precision ZKSR(3)
+      real*8   e_pbe, e_lda,p,z,Ha,Hb
+      real*8   rho13
+      logical  ERFEXP(0:2), MULOCAL(0:2)
+      real*8   ZKSR(3)
 
       rho13 = rho**(1.0d0/3.0d0)
 
@@ -3247,13 +3257,13 @@ C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e, derfc
+      real*8   rho, grd, mu, e
 
-      logical ERFEXP(0:2), MULOCAL(0:2)
-      double precision mu0,rho13, rs, pi
-      double precision elda,epbe,eldamu
-      double precision ZKSR(3)
+      real*8   derfc
+      logical  ERFEXP(0:2), MULOCAL(0:2)
+      real*8   mu0,rho13, rs, pi
+      real*8   elda,epbe,eldamu
+      real*8   ZKSR(3)
 C     
 !      print *,'ESRC_PBEWIERF: mu=',mu
 !      print *,'ESRC_PBEWIERF: rho=',rho,' grd=',grd
@@ -3301,22 +3311,20 @@ C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e
+      real*8   rho, grd, mu, e
 
-      double precision rho13
+      real*8   rho13
+      real*8   drho2
+      real*8   exerflda
+      real*8   ecerflda
+      real*8   ecerfpbe
+      real*8   t1
 
-      double precision drho2
-      double precision exerflda
-      double precision ecerflda
-      double precision ecerfpbe
-      double precision t1
-
-      logical ERFEXP(0:2), MULOCAL(0:2)
-      double precision XKSR(3), ZKSR(3)
+      logical  ERFEXP(0:2), MULOCAL(0:2)
+      real*8   XKSR(3), ZKSR(3)
 
 ! function 
-      double precision berft
+      real*8   berft
 
 !      print *,'ESRC_PBETCSERF: mu=',mu
 !      print *,'ESRC_PBETCSERF: rho=',rho,' grd=',grd
@@ -3373,24 +3381,22 @@ C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e
+      real*8   rho, grd, mu, e
 
-      double precision rho13
+      real*8   rho13
+      real*8   drho2
+      real*8   exerflda
+      real*8   ecerflda
+      real*8   ecerfpbe
+      real*8   t1
 
-      double precision drho2
-      double precision exerflda
-      double precision ecerflda
-      double precision ecerfpbe
-      double precision t1
+      logical  ERFEXP(0:2), MULOCAL(0:2)
+      real*8   XKSR(3), ZKSR(3)
 
-      logical ERFEXP(0:2), MULOCAL(0:2)
-      double precision XKSR(3), ZKSR(3)
-
-      double precision epbe
+      real*8   epbe
 
 ! function 
-      double precision berft
+      real*8   berft
 
 !      print *,'ESRC_PBETCSERF: mu=',mu
 !      print *,'ESRC_PBETCSERF: rho=',rho,' grd=',grd
@@ -3459,27 +3465,27 @@ C*****************************************************************************
       implicit none
 
       integer norder
-      double precision rho, grd, mu
-      double precision e, d1edrho, d1edgrd, d1edgrda2
-      double precision d2edrhodrho, d2edgrddgrd, d2edrhodgrd
+      real*8   rho, grd, mu
+      real*8   e, d1edrho, d1edgrd, d1edgrda2
+      real*8   d2edrhodrho, d2edgrddgrd, d2edrhodgrd
 
-      double precision rho13
-      double precision exLDA, d1exLDAdrho
-      double precision ecLDA, d1ecLDAdrho
+      real*8   rho13
+      real*8   exLDA, d1exLDAdrho
+      real*8   ecLDA, d1ecLDAdrho
 
-      double precision drho2
-      double precision exerflda,dexerfldadrho
-      double precision ecerflda,decerfldadrho
-      double precision ecerfpbe,decerfpbedrho,decerfpbeddrho2 
-      double precision t1,t2,t3,t4,t5,t6,t7,t8,t9,t10
-      double precision t11,t12,t13,t14,t15,t16,t17,t18,t19
+      real*8   drho2
+      real*8   exerflda,dexerfldadrho
+      real*8   ecerflda,decerfldadrho
+      real*8   ecerfpbe,decerfpbedrho,decerfpbeddrho2 
+      real*8   t1,t2,t3,t4,t5,t6,t7,t8,t9,t10
+      real*8   t11,t12,t13,t14,t15,t16,t17,t18,t19
 
       logical ERFEXP(0:2), MULOCAL(0:2)
-      double precision XKSR(3), ZKSR(3)
+      real*8   XKSR(3), ZKSR(3)
 
 ! function 
-      double precision berft
-      double precision dberftda
+      real*8   berft
+      real*8   dberftda
 
 !      print *,'VSRPBECERF: mu=',mu
 !      print *,'VSRPBECERF: rho=',rho,' grd=',grd
@@ -3723,10 +3729,10 @@ C     Second derivative
 !-------------------------------------------
       implicit none
  
-      double precision a
-      double precision berft, derf
+      real*8   a
+      real*8   berft, derf
 
-      double precision pi
+      real*8   pi
 
 C     constants
       pi = 3.141592653589793d0
@@ -3762,10 +3768,10 @@ C     constants
 !-------------------------------------------
       implicit none
  
-      double precision a
-      double precision dberftda, derf
-      double precision t1,t2,t3,t4,t5
-      double precision pi
+      real*8   a
+      real*8   dberftda, derf
+      real*8   t1,t2,t3,t4,t5
+      real*8   pi
 
 C     constants
       pi = 3.141592653589793d0
@@ -3825,21 +3831,21 @@ C     Date  : 11-08-09
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e
+      real*8   rho, grd, mu
+      real*8   e
 
-      double precision rho13
+      real*8   rho13
 
-      double precision exerflda
-      double precision exerfpbe
-      double precision t1,t2,t3,t4
-      double precision kappa,sq,fx
+      real*8   exerflda
+      real*8   exerfpbe
+      real*8   t1,t2,t3,t4
+      real*8   kappa,sq,fx
 
-      double precision XKSR(3)
+      real*8   XKSR(3)
       logical ERFEXP(0:2)
 
 ! function 
-      double precision berf
+      real*8   berf
 
 ! edh debug
 #include "priunit.h"
@@ -3877,7 +3883,7 @@ C            mu     : Interation parameter
 C
 C     Ouput: e      : energy
 C
-C     Author: Erik Donovan Hedegård (after original code by J. Toulouse)
+C     Author: Erik Donovan Hedegaard (after original code by J. Toulouse)
 C     Date  : 11-02-16; revised 14.feb.2018 hjaaj
 C*****************************************************************************
       implicit none
@@ -3927,8 +3933,8 @@ C****************************************************************************
       subroutine ELAX_PBEGWS(rhot,grd,VLAMBDA,e)
 C linear complement exchange PBE energy, Kamal SHARKAS 19/05/2011 beg
 C*****************************************************************************
-      double precision rhot, grd, VLAMBDA
-      double precision e
+      real*8   rhot, grd, VLAMBDA
+      real*8   e
 
       call ESRX_PBEGWSERF(rhot,grd,0.d0,e)
       e = (1.d0 - VLAMBDA) * e
@@ -3953,21 +3959,21 @@ C     Date  : 11-08-09
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e
+      real*8   rho, grd, mu
+      real*8   e
 
-      double precision tol
+      real*8   tol
       parameter(tol=1d-12)
-      double precision rho13
+      real*8   rho13
 
-      double precision drho2
-      double precision ecerflda,eclda
-      double precision ecerfpbe
-      double precision t1
-      double precision alpha, beta, gamma, Aa,Ab, Ac, tq, arglog
+      real*8   drho2
+      real*8   ecerflda,eclda
+      real*8   ecerfpbe
+      real*8   t1
+      real*8   alpha, beta, gamma, Aa,Ab, Ac, tq, arglog
  
       logical ERFEXP(0:2), MULOCAL(0:2)
-      double precision XKSR(3), ZKSR(3)
+      real*8   XKSR(3), ZKSR(3)
 
 !     short-range LDA energy (order = 0)
       rho13 = rho**(1.d0/3.d0)
@@ -4021,23 +4027,23 @@ C            mu     : Interaction parameter
 C
 C     Ouput: e             : energy
 C
-C     Author: E. Hedegård (based on routine by J. Toulouse)
+C     Author: E. Hedegaard (based on routine by J. Toulouse)
 C     Date  : 21-03-16
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu
-      double precision e
+      real*8   rho, grd, mu
+      real*8   e
 
-      double precision tol
+      real*8   tol
       parameter(tol=1d-12)
-      double precision rho13
+      real*8   rho13
 
-      double precision drho2
-      double precision ecerflda,eclda
-      double precision ecerfpbe
-      double precision t1
-      double precision alpha, beta, gamma, Aa,Ab, Ac, tq, arglog
+      real*8   drho2
+      real*8   ecerflda,eclda
+      real*8   ecerfpbe
+      real*8   t1
+      real*8   alpha, beta, gamma, Aa,Ab, Ac, tq, arglog
  
 !     short-range LDA energy (order = 0)
       rho13 = rho**(1.d0/3.d0)
@@ -4090,26 +4096,26 @@ C            mu     : Interaction parameter
 C
 C     Ouput: e             : energy
 C
-C     Author: Erik Hedegård (after Molpro code by J. Toulouse + A. Savin)
+C     Author: Erik Hedegaard (after Molpro code by J. Toulouse + A. Savin)
 C     Date  : 11-02-16; revised 14.feb.2018 hjaaj
 C*****************************************************************************
       implicit none
 
       real*8   rho(4), rhogrd(6), mu, e
-      double precision rho13
-      double precision rhot, rhos, grdt, grdt2
-      double precision zeta
+      real*8   rho13
+      real*8   rhot, rhos, grdt, grdt2
+      real*8   zeta
 
-      double precision tol
+      real*8   tol
       parameter(tol=1d-12)
 
-      double precision ecerflda,eclda
+      real*8   ecerflda,eclda
 
-      double precision ecerfpbe
-      double precision t1
-      double precision alpha, beta, gamma
-      double precision phi, phi2, phi3, phi4
-      double precision Aa, Ab, Ac, tq, arglog
+      real*8   ecerfpbe
+      real*8   t1
+      real*8   alpha, beta, gamma
+      real*8   phi, phi2, phi3, phi4
+      real*8   Aa, Ab, Ac, tq, arglog
 
       rhot  = rho(1)
       rhos  = rho(2)
@@ -4165,8 +4171,8 @@ C****************************************************************************
       subroutine ELAC_PBEGWS(rhot,grd,VLAMBDA,e)
 C linear complement non-scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011 beg
 C*****************************************************************************
-      double precision rhot, grd, VLAMBDA
-      double precision e
+      real*8   rhot, grd, VLAMBDA
+      real*8   e
 
       call ESRC_PBEGWSERF(rhot,grd,0.d0,e)
       e = (1.d0 - VLAMBDA**2) * e
@@ -4178,8 +4184,8 @@ C****************************************************************************
       subroutine ELASC_PBEGWS(rhot,grd,VLAMBDA,e)
 C linear complement Scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
-      double precision rhot, grd, VLAMBDA
-      double precision e, ecoul, escaled,rhotscaled,grdscaled
+      real*8   rhot, grd, VLAMBDA
+      real*8   e, ecoul, escaled,rhotscaled,grdscaled
 
       ecoul = 0.d0
 
@@ -4214,15 +4220,15 @@ C*****************************************************************************
       implicit none
 
       real*8  a
-      real*8  pi, eta, fak
+      real*8  pi, fak, fak2
 
 ! function
-      double precision derf
+      real*8   derf
 
       pi = 3.141592653589793d0
 
-      eta=19.0d0
-      fak=2.540118935556d0*dexp(-eta*a*a)
+      ! eta=19.0d0
+      fak=2.540118935556d0*dexp(-19.0d0*a*a)
 
       if(a .lt. 0.075d0) then
 !      expansion for small mu to avoid numerical problems
@@ -4239,11 +4245,12 @@ C*****************************************************************************
 
 
 !     Code generated by Mathematica
+      fak2 = dexp(0.25d0/a**2)
       berf = (1.851851851851851851851852d-2*(-1.d0 + 1.44d2*a**4*(-1.d0
-     &  + dexp(2.5d-1/a**2)) - 2.d0*a**2*(1.1d1 + 7.d0*dexp(2.5d-1/a**2
-     & ))))/(a**2*(3.2d1*a**4*(-1.d0 + dexp(2.5d-1/a**2)) - 3.d0*dexp(2
-     &  .5d-1/a**2) + 1.417963080724412821838534d1*a*derf(5.d-1/a)*dexp
-     &  (2.5d-1/a**2) - 8.d0*a**2*(-2.d0 + 3.d0*dexp(2.5d-1/a**2))))
+     &  + fak2) - 2.d0*a**2*(1.1d1 + 7.d0*fak2 ))) /
+     &  (a**2*(3.2d1*a**4*(-1.d0 + fak2) - 3.d0*fak2
+     &   + 1.417963080724412821838534d1*a*derf(5.d-1/a)*fak2
+     &   - 8.d0*a**2*(-2.d0 + 3.d0*fak2)))
 
       end if
 
@@ -4271,14 +4278,14 @@ C     Date  : 20-09-11
 C*****************************************************************************
       implicit none
 
-      double precision rho, grd, mu, mu_new, amul
-      double precision e
-      double precision alpha, x, a1, b1, c1
+      real*8   rho, grd, mu, mu_new, amul
+      real*8   e
+      real*8   alpha, x, a1, b1, c1
       parameter(a1 = 0.559463d0, b1 = -0.134086d0, c1 = 0.0296811d0)
-      double precision rho13
+      real*8   rho13
 
       logical ERFEXP(0:2), MULOCAL(0:2)
-      double precision ZKSR(3)
+      real*8   ZKSR(3)
 !     local mu parameter 
       rho13 = rho**(1.0d0/3.0d0)
 !     Multiplication factor for mu parameter
@@ -4311,15 +4318,15 @@ C*****************************************************************************
 
       implicit none
 
-      double precision rho, grd, mu, amul, mu_new
-      double precision e
-      double precision rsfac, rs, x, a, b, c, d
+      real*8   rho, grd, mu, amul, mu_new
+      real*8   e
+      real*8   rsfac, rs, x, a, b, c, d
       parameter(rsfac = 0.62035049089940008660d0)
       parameter(b = 1.741930d0, c = -0.528057d0, d = 0.0720226d0 )
-      double precision rho13
+      real*8   rho13
 
       logical ERFEXP(0:2), MULOCAL(0:2)
-      double precision ZKSR(3)
+      real*8   ZKSR(3)
 
       rho13 = rho**(1.0d0/3.0d0)
       rs   = rsfac/rho13
@@ -4357,15 +4364,15 @@ C*****************************************************************************
 
       implicit none
 
-      double precision rho, grd, mu, amul, mu_new, x, rs, alpha
-      double precision e
-      double precision rsfac, a, b, bfac
+      real*8   rho, grd, mu, amul, mu_new, x, rs, alpha
+      real*8   e
+      real*8   rsfac, a, b, bfac
       parameter(rsfac = 0.62035049089940008660d0, a = 0.878435d0)
       parameter(b = 0.5676020d0, bfac = 0.814516076948D0)
-      double precision rho13
+      real*8   rho13
 
       logical ERFEXP(0:2), MULOCAL(0:2)
-      double precision ZKSR(3)
+      real*8   ZKSR(3)
 
       rho13 = rho**(1.0d0/3.0d0)
       rs   = rsfac/rho13
@@ -4402,17 +4409,17 @@ C     Created: 17-08-09, J. Toulouse
 C*****************************************************************************
       implicit none
 
-      double precision rhot, rhos, mu
+      real*8   rhot, rhos, mu
       logical dospin
-      double precision e
+      real*8   e
 
-      double precision derf
+      real*8   derf
 
-      double precision f13, pi, pisqrt, ckf
-      double precision rho, akf, a, a2, a3
+      real*8   f13, pi, pisqrt, ckf
+      real*8   rho, akf, a, a2, a3
 
-      double precision rhoa, rhob
-      double precision ea, eb
+      real*8   rhoa, rhob
+      real*8   ea, eb
 
       parameter(pi = 3.141592653589793d0)
       parameter(pisqrt = 1.772453850905516d0)
@@ -4525,8 +4532,8 @@ C****************************************************************************
       subroutine ELX_LDALAMSPIN (rhot,rhos,VLAMBDA,dospin,e)
 C linear complement spin-dependent exchange LDA functional energy, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
-      double precision rhot, rhos, VLAMBDA
-      double precision e
+      real*8   rhot, rhos, VLAMBDA
+      real*8   e
       logical dospin
 
       call ESRX_LDAERFSPIN(rhot,rhos,0.d0,dospin,e)
@@ -4555,16 +4562,16 @@ C     Created: 18-08-09, J. Toulouse
 C*****************************************************************************
       implicit none
 
-      double precision rhot, rhos, mu
+      real*8   rhot, rhos, mu
       logical dospin
-      double precision e
+      real*8   e
 
-      double precision f13, pi, rsfac
-      double precision rs
-      double precision ec,ecd,ecz,eclr
+      real*8   f13, pi, rsfac
+      real*8   rs
+      real*8   ec,ecd,ecz,eclr
 
-      double precision rhoa, rhob, z
-      double precision ea, eb
+      real*8   rhoa, rhob, z
+      real*8   ea, eb
 
       parameter(f13 = 0.333333333333333d0)
       parameter(pi = 3.141592653589793d0)
@@ -4602,8 +4609,8 @@ C****************************************************************************
       subroutine ELC_LDALAMSPIN (rhot,rhos,VLAMBDA,dospin,e)
 C linear complement spin-dependent non-scaled correlation LDA functional, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
-      double precision rhot, rhos, VLAMBDA
-      double precision e
+      real*8   rhot, rhos, VLAMBDA
+      real*8   e
       logical dospin
 
       call ESRC_LDAERFSPIN(rhot,rhos,0.d0,dospin,e)
@@ -4630,11 +4637,11 @@ C     Created: 26-08-11, J. Toulouse
 C*****************************************************************************
       implicit none
 
-      double precision rhot, rhos, mu
+      real*8   rhot, rhos, mu
       logical dospin
-      double precision e
+      real*8   e
 
-      double precision e1
+      real*8   e1
 
       call ESRC_LDAERFSPIN (rhot,rhos,mu,dospin,e1)
       call DELTA_LRSR_LDAERF (rhot,rhos,mu,dospin,e)
@@ -4661,20 +4668,20 @@ C     Created: 26-08-11, J. Toulouse
 C*****************************************************************************
       implicit none
 
-      double precision rhot, rhos, mu
+      real*8   rhot, rhos, mu
       logical dospin
-      double precision e
+      real*8   e
 
-      double precision f13, f83, pi, rsfac, alpha2
-      double precision rs, rs2, rs3
+      real*8   f13, f83, pi, rsfac, alpha2
+      real*8   rs, rs2, rs3
 
-      double precision rhoa, rhob, z, z2, onepz, onemz, zp, zm, phi8
-      double precision g0f, g0s
-      double precision bd2, bd3
-      double precision c45, c4, c5
-      double precision bc2, bc4, bc3t, bc5t, d0
-      double precision delta2,delta3,delta4,delta5,delta6
-      double precision delta
+      real*8   rhoa, rhob, z, z2, onepz, onemz, zp, zm, phi8
+      real*8   g0f, g0s
+      real*8   bd2, bd3
+      real*8   c45, c4, c5
+      real*8   bc2, bc4, bc3t, bc5t, d0
+      real*8   delta2,delta3,delta4,delta5,delta6
+      real*8   delta
 
       parameter(f13 = 0.333333333333333d0)
       parameter(f83 = 2.6666666666666665d0)
@@ -4741,12 +4748,12 @@ ccc and cutoff parameter mu
 ccc gives the correlation energy of the LR gas
 ccc  => eclr
       implicit none
-      double precision rs,z,mu,eclr,ec,ecd,ecz
-      double precision alpha,cf,phi
-      double precision g0f,dpol,d2anti,d3anti,Qrpa
-      double precision coe2,coe3,coe4,coe5
-      double precision a1,a2,a3,a4,b0
-      double precision q1a,q2a,q3a,t1a,t2a,t3a,adib
+      real*8   rs,z,mu,eclr,ec,ecd,ecz
+      real*8   alpha,cf,phi
+      real*8   g0f,dpol,d2anti,d3anti,Qrpa
+      real*8   coe2,coe3,coe4,coe5
+      real*8   a1,a2,a3,a4,b0
+      real*8   q1a,q2a,q3a,t1a,t2a,t3a,adib
 #include "pi.h"
 !     pi=dacos(-1.d0)
       alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
@@ -4817,17 +4824,17 @@ ccc for given density parameter rs, spin polarization z
 ccc and cutoff mu it gives the correlation LSD potential for LR interaction
 ccc  => vclrup (spin-up electrons), vclrdown (spin-down electrons)
       implicit none
-      double precision rs,z,mu,eclr,eclrrs,eclrz,vclrup,vclrdown
-      double precision ec,ecd,ecz
-      double precision alpha,cf,phi
-      double precision g0f,dpol,d2anti,d3anti,Qrpa
-      double precision g0d,dpold,d2antid,d3antid,Qrpad,x
-      double precision coe2,coe3,coe4,coe5
-      double precision coe2rs,coe3rs,coe4rs,coe5rs
-      double precision coe2z,coe3z,coe4z,coe5z
-      double precision a1,a2,a3,a4,a5,b0,a1rs,a2rs,a3rs,a4rs,a5rs,
+      real*8   rs,z,mu,eclr,eclrrs,eclrz,vclrup,vclrdown
+      real*8   ec,ecd,ecz
+      real*8   alpha,cf,phi
+      real*8   g0f,dpol,d2anti,d3anti,Qrpa
+      real*8   g0d,dpold,d2antid,d3antid,Qrpad,x
+      real*8   coe2,coe3,coe4,coe5
+      real*8   coe2rs,coe3rs,coe4rs,coe5rs
+      real*8   coe2z,coe3z,coe4z,coe5z
+      real*8   a1,a2,a3,a4,a5,b0,a1rs,a2rs,a3rs,a4rs,a5rs,
      $     b0rs,a1z,a2z,a3z,a4z,a5z,b0z
-      double precision q1a,q2a,q3a,t1a,t2a,t3a,adib
+      real*8   q1a,q2a,q3a,t1a,t2a,t3a,adib
 
 #include "pi.h"
 !     pi=dacos(-1.d0)
@@ -4974,13 +4981,13 @@ cc parameters from the fit
       end
 
 C*****************************************************************************
-      double precision function g0f(x)
+      real*8   function g0f(x)
 C*****************************************************************************
 ccc on-top pair-distribution function
 ccc Gori-Giorgi and Perdew, PRB 64, 155102 (2001)
 ccc x -> rs
       implicit none
-      double precision C0f,D0f,E0f,F0f,x
+      real*8   C0f,D0f,E0f,F0f,x
       C0f             = 0.0819306d0
       D0f             = 0.752411d0
       E0f             = -0.0127713d0
@@ -4991,12 +4998,12 @@ ccc x -> rs
       end
 
 C*****************************************************************************
-      double precision function g0d(rs)
+      real*8   function g0d(rs)
 C*****************************************************************************
 ccc derivative of on-top pair-distribution function
 ccc Gori-Giorgi and Perdew, PRB 64, 155102 (2001)
       implicit none
-      double precision Bg0,Cg0,Dg0,Eg0,Fg0,rs
+      real*8   Bg0,Cg0,Dg0,Eg0,Fg0,rs
       Cg0             = 0.0819306d0
       Fg0             = 0.752411d0
       Dg0             = -0.0127713d0
@@ -5009,10 +5016,10 @@ ccc Gori-Giorgi and Perdew, PRB 64, 155102 (2001)
       end
 
 C*****************************************************************************
-      double precision function dpol(rs)
+      real*8   function dpol(rs)
 C*****************************************************************************
       implicit none
-      double precision cf,rs,p2p,p3p
+      real*8   cf,rs,p2p,p3p
 #include "pi.h"
 !     pi=dacos(-1.d0)
       cf=(9.d0*pi/4.d0)**(1.d0/3.d0)
@@ -5023,9 +5030,9 @@ C*****************************************************************************
       return
       end
 
-      double precision function dpold(rs)
+      real*8   function dpold(rs)
       implicit none
-      double precision cf,rs,p2p,p3p
+      real*8   cf,rs,p2p,p3p
 #include "pi.h"
 !     pi=dacos(-1.d0)
       cf=(9.d0*pi/4.d0)**(1.d0/3.d0)
@@ -5042,10 +5049,10 @@ C*****************************************************************************
       end
 
 C*****************************************************************************
-      double precision function Qrpa(x)
+      real*8   function Qrpa(x)
 C*****************************************************************************
       implicit none
-      double precision a2,b2,c2,d2,x,Acoul
+      real*8   a2,b2,c2,d2,x,Acoul
 #include "pi.h"
 !     pi=dacos(-1.d0)
       Acoul=2.d0*(log(2.d0)-1.d0)/pi**2
@@ -5058,10 +5065,10 @@ C*****************************************************************************
       end
 
 C*****************************************************************************
-      double precision function Qrpad(x)
+      real*8   function Qrpad(x)
 C*****************************************************************************
       implicit none
-      double precision a2,b2,c2,d2,x,Acoul
+      real*8   a2,b2,c2,d2,x,Acoul
 #include "pi.h"
 !     pi=dacos(-1.d0)
       Acoul=2.d0*(log(2.d0)-1.d0)/pi**2
@@ -5087,7 +5094,7 @@ c x -> rs; y -> zeta
 ccc ecd is d/drs ec
 ccc ecz is d/dz ec
       implicit none
-      double precision f02,ff,x,y,ec,ecd,ec0,ec0d,ec1,ec1d,
+      real*8   f02,ff,x,y,ec,ecd,ec0,ec0d,ec1,ec1d,
      $     aaa,G,Gd,alfac,alfacd,ecz
 #include "pi.h"
 !     pi=dacos(-1.d0)
@@ -5130,7 +5137,7 @@ C*****************************************************************************
 C*****************************************************************************
 ccc Gd is d/drs G
       implicit none
-      double precision G,Gd,Ac,alfa1,beta1,beta2,beta3,beta4,x
+      real*8   G,Gd,Ac,alfa1,beta1,beta2,beta3,beta4,x
       G=-2.d0*Ac*(1.d0+alfa1*x)*dlog(1.d0+1.d0/(2.d0*
      $     Ac*(beta1*x**0.5d0+
      $     beta2*x+beta3*x**1.5d0+beta4*x**2)))
@@ -5144,7 +5151,7 @@ ccc Gd is d/drs G
       return
       end
 C*****************************************************************************
-      double precision function g0s(rs)
+      real*8   function g0s(rs)
 C*****************************************************************************
 C     g"(0,rs,z=1) from Eq. 32 of
 C       Paziani, Moroni, Gori-Giorgi and Bachelet, PRB 73, 155111 (2006)
@@ -5152,8 +5159,8 @@ C
 C     Created: 26-08-11, J. Toulouse
 C*****************************************************************************
       implicit none
-      double precision rs
-      double precision rs2, f53, alpha2
+      real*8   rs
+      real*8   rs2, f53, alpha2
       parameter(f53 = 1.6666666666666667d0)
       parameter(alpha2 = 0.2715053589826032d0)
       rs2=rs*rs
@@ -5174,10 +5181,10 @@ C             H
 C
 C*****************************************************************************
 #include "dftcom.h"
-      double precision a,b,z,h,k
+      real*8   a,b,z,h,k
 
       H = 1/(1+k*exp(-heaviside_pvalue*z))
 
       return
       end
-
+C ... end of dftfunjt.F

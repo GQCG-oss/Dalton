@@ -216,11 +216,11 @@ C
 C        If the max. number of iterations is reached ...
 C
          IF (ITERNORM .EQ. MAXITER) THEN
-            WRITE(LUPRI,*) '>>>>>>>>>>    info   <<<<<<<<<<' 
+            WRITE(LUPRI,*) '**************    info    **************' 
             WRITE(LUPRI,*) 'The norm of F is not converged !!!'
             WRITE(LUPRI,*) 'Increase MAXITER (currently', MAXITER, ')'
             WRITE(LUPRI,*) 'Anyway, let us use that one ...'
-            WRITE(LUPRI,*) '>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<' 
+            WRITE(LUPRI,*) '****************************************' 
 C
             GO TO 4000 
 C
