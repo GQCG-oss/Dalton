@@ -524,7 +524,7 @@ C
 
 #ifdef VAR_MPI
       IF (MYNUM .EQ. 0 .AND. NODTOT .GT. 0) THEN
-#if defined SRDFT_DEBUG > 4
+#if SRDFT_DEBUG > 4
          WRITE(lupri,*) 'calling srdft_par_master, iprint',iprint
          flush(lupri)
 #endif
@@ -532,7 +532,7 @@ C
      &        ND_SIM,EXCMAT,DMAT,EDFTY,
      &        DOERG,DOGRD,DOATR,TRIPLET,
      &        WORK,LWORK,IPRINT)
-#if defined SRDFT_DEBUG > 4
+#if SRDFT_DEBUG > 4
          WRITE(lupri,*) 'returned from srdft_par_master'
          flush(lupri)
 #endif
@@ -617,11 +617,11 @@ C     =============================
       END IF
       LWRK  = LWORK + 1 - KWRK
       IF (KWRK .GT. LWORK) CALL ERRWRK('SRDFT',-KWRK,LWORK)
-#if defined SRDFT_DEBUG > 4
+#if SRDFT_DEBUG > 4
       write(lupri,*) 'Entered SRDFT, SDRDT_DEBUG defined'
       write(lupri,*) 'NDER,NTYPSO =',NDER,NTYPSO
 #endif
-#if defined SRDFT_DEBUG > 10
+#if SRDFT_DEBUG > 10
       WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total EXCMAT on entry ---'
       CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total density matrix ---'
@@ -844,7 +844,7 @@ C
 
       INTEGER, SAVE :: NTOT_DFTGRID_save = -1
 
-#if defined SRDFT_DEBUG > 0
+#if SRDFT_DEBUG > 0
       write(lupri,*) 'Entered SRDFT1, SRDFT_DEBUG defined =',SRDFT_DEBUG
       WRITE(LUPRI,*) 'SRDFT1: ND_SIM =',ND_SIM
       WRITE(LUPRI,*) 'SRDFT1: CHIVAL =',CHIVAL
@@ -875,7 +875,7 @@ C
       ELSE
          NEXCMAT = 1
       END IF
-#if defined SRDFT_DEBUG > 10
+#if SRDFT_DEBUG > 10
 !     debug print of quadrature points between IPNTstart and IPNTend
       !IPNTstart = 8168
       IPNTstart = 0
@@ -1097,7 +1097,7 @@ c                 -------------------------------------------------------
 c                 Exchange Correlation energy and potential
 c                 -------------------------------------------------------
 c
-#if defined SRDFT_DEBUG > 10
+#if SRDFT_DEBUG > 10
                   if (IPNT.GE.IPNTstart.AND.IPNT.LE.IPNTend) then
                      ldebug=.true.
                   else
@@ -1132,7 +1132,7 @@ c              IF (RTEST) THEN
                      VXBT  = WGHT*VXB
                   ENDIF
                ENDIF
-#if defined SRDFT_DEBUG > 10
+#if SRDFT_DEBUG > 10
 C               if (mod(IPNT,kpoint) .eq. 0) then
                if (IPNT.GE.IPNTSTART.AND.IPNT.LE.IPNTEND) then
                   write (lupri,*) 'IPNT,ex,ec,vx,vc',IPNT,ex,ec,vx,vc
@@ -2535,7 +2535,7 @@ C
       CALL QENTER('RSP_SRDFTSO ')
 C
 C
-#if defined SRDFT_DEBUG > 15
+#if SRDFT_DEBUG > 15
       write (lupri,*) 'rsp_srdftso: input UDV:'
       call output(udv,1,nasht,1,nasht,nasht,nasht,-1,lupri)
       write (lupri,*) 'rsp_srdftso: input V2C_SR:'
@@ -2601,7 +2601,7 @@ C
          END IF
       END DO ! DO IG = 1, KZWOPT
 C
-#if defined SRDFT_DEBUG > 15
+#if SRDFT_DEBUG > 15
       write (lupri,*) 'rsp_srdftso: output EVEC orbital part:'
       call output(evec(kzconf+1),1,kzwopt,1,2,kzvar,2,1,lupri)
 #endif
