@@ -99,7 +99,7 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
       real*8   d1Excdngrd2, d1Excdngrds2
 
 
-#if defined SRDFT_DEBUG > 10
+#if SRDFT_DEBUG > 10
       !edh debug
       real*8    print_thr
 #endif
@@ -141,7 +141,7 @@ C
 C     Initializations -------------------------------------------------------
 
       ! edh debug
-#if defined SRDFT_DEBUG > 10
+#if SRDFT_DEBUG > 10
       print_thr = 0.0d0
 #endif
       ! edh the arrays are also zeroed in SRDFTEXCJT
@@ -451,7 +451,7 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
        if (domcsrdft .and. docisrdft) then  !  only true for start-CI  (cf. routine OPST)
            CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
      &                 d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
-#if defined SRDFT_DEBUG > 11
+#if SRDFT_DEBUG > 11
           if (ipnt .eq. 1) then
              write(lupri,*)'DOGGA', DOGGA
              write(lupri,*)'DOERG', DOERG
@@ -488,7 +488,7 @@ C        matrix 4 is DXSAO
          JDXTAO = 2
          JDXSAO = 4
 
-#if defined SRDFT_DEBUG > 41
+#if SRDFT_DEBUG > 41
        print_thr = 1000.0d0
        do k = 1,2
          do i = 1, nbast
@@ -507,7 +507,7 @@ C        matrix 4 is DXSAO
      
        ENDIF
 
-#if defined SRDFT_DEBUG > 41
+#if SRDFT_DEBUG > 41
        print_thr = 50000.0d0
        do k = 1,2
          do i = 1, nbast
@@ -531,7 +531,7 @@ C
 
 C Termination --------------------------------------------------------------
 
-#if defined SRDFT_DEBUG > 21
+#if SRDFT_DEBUG > 21
        print_thr = 10.0d0
        write(lupri,*) 'print_thr', print_thr
        do k = 1,2
