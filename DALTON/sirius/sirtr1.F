@@ -637,8 +637,8 @@ C            and SRHYBR extra valence Fock type matrix
          LSRAO = 0
       END IF
       CALL MEMGET2('REAL','DFAO',KDFAO,LDFAO,WRK,KFREE,LFREE)
-C   Note: DXCAO, DXVAO, (DTCAO,) DTVAO (,DAO) must be contiguous.
-C   Note: FXCAO, FXVAO, (FTCAO,) FTVAO must be contiguous.
+C   Note: DXCAO, DXVAO, (DXSAO,) (DTCAO,) DTVAO (,DTSAO) must be contiguous.
+C   Note: FXCAO, FXVAO, (FXSAO,) (FTCAO,) FTVAO (,FTSAO) must be contiguous.
       KDXCAO = KDFAO
       IF (NISHT .GT. 0 .OR. ADDSRI) THEN
          KDXVAO = KDXCAO + MOSIM*N2BASX
@@ -782,9 +782,9 @@ C
 C Algorithm:
 C
 C  Construction of inactive and active parts of the
-C  Fock matrix in AO-basis (FXCAO, FXVAO, and FTVAO).
-C  The matrices are transformed to MO-basis (FXC, FXV, and FTV) in AUTPV.
-C  This completes FTV, to complete the one-index transformation
+C  Fock matrix in AO-basis (FXCAO, FXVAO, (FTCAO,) and FTVAO).
+C  The matrices are transformed to MO-basis (FXC, FXV, (FTC,) and FTV) in AUTPV.
+C  This completes FTV, to complete the one-index transformations
 C  we add the one-index transformed FC and FV matrices to
 C  FXC and FXV, resp. (done outside).
 C
@@ -911,7 +911,7 @@ C
             IOFF_DTVAO = NCSIM
             CALL DZERO(DTVAO,NCSIM*N2BASX)
 C           DTCAO is always a zero matrix,
-C           but we need it for MCSRDFT to handle the srDFT part
+C           but we need it currently for MCSRDFT to handle off-sets when srDFT
          ELSE
             IOFF_DTVAO = 0
          END IF
@@ -944,8 +944,8 @@ C
 C
 C *************************************
 C
-C       Note: FXCAO, FXVAO, FTCAO, FTVAO are assumed to be contiguous
-C             DXCAO, DXVAO, DTCAO, DTVAO are assumed to be contiguous
+C       Note: FXCAO, FXVAO, (FTCAO,) FTVAO are assumed to be contiguous
+C             DXCAO, DXVAO, (DTCAO,) DTVAO are assumed to be contiguous
 C
 C ***** count and initialize atomic Fock matrices
 C       ALso set fock matrix type (Coulomb and/or exchange)
@@ -1047,6 +1047,10 @@ C            IFCTYP = 13 : singlet Fock matrix and DUNP symmetric
             IF (NDXMAT .GT. 0 .AND. NDTMAT .GT. 0) THEN
                CALL QUIT('TR1FCY and MCSRDFT not OK for simultaneous'
      &         //' conf and orb trial vectors')
+               ! The code in SIRFCK does not work when both configuration and orbital
+               ! trial vectors at the same time (because we do not have the information
+               ! in SIRFCK to calculate the right off-sets for adding DCs and DVs to Dtots
+               ! when both types). /hjaaj Oct16
             END IF
             AODRCT_tmp = AODRCT .OR. NOSIM .GT. 1
             ! ADDSRI works only for AO-direct Fock matrices if NOSIM .gt. 1
@@ -1060,7 +1064,7 @@ C            IFCTYP = 13 : singlet Fock matrix and DUNP symmetric
             IF (NDTMAT .GT. 0)
      &      CALL SIRFCK(FTVAO,DTVAO,NDTMAT,ISYMDM(NDXMAT+1),
      &                  IFCTYP(NDXMAT+1),AODRCT_tmp,WRK(KFREE),LFREE)
-         ELSE ! WFT or KS-DFT
+         ELSE ! MCSCF or KS-DFT
             CALL SIRFCK(FXCAO,DXCAO,NDMAT,ISYMDM,IFCTYP,
      &                  AODRCT,WRK(KFREE),LFREE)
          END IF
