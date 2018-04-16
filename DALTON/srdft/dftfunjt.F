@@ -468,7 +468,7 @@ C*****************************************************************************
       implicit none
 
       external ESRSPINGGA
-      integer  norder, itype
+      integer  itype, norder
 
       real*8   rho(2), rhogrd(3), mu
       real*8   E, d1E(7), d2E(15)
@@ -739,7 +739,7 @@ C            norder : order of derivatives
 C
 C    Output: d1E(1) = d1Edrhot      : first derivative wrt rhot
 C            d1E(2) = d1Edgrdt      : first derivative wrt grdt (grad rhot)
-C            d1E(3) = d1Engrdt2     : = (2.0d0/grdt)*d1E(2)
+C            d1E(3) = d1Engrdtt     : = (2.0d0/grdt)*d1E(2)
 C            d1E(4) = d1Edrhos      : first derivative wrt rhos
 C            d1E(5) = d1Edgrds      : first derivative wrt grds (grad rhos)
 C            d1E(6) = d1Engrds2     : = (2.0d0/grds)*d1E(4)
@@ -902,7 +902,7 @@ C     derivatives wrt rhoa, rhob, grda, grdb ---------------------
        d1E(2) = 0.5d0*(d1W(3) + d1W(4))
        grdt = grd(1)
        IF (grdt .gt. 0.0d0)
-     &    d1E(3) = (2.0d0/grdt)*d1E(2)        ! d1Engrdt2
+     &    d1E(3) = (2.0d0/grdt)*d1E(2)        ! d1Engrdtt
        d1E(4) = 0.5d0*(d1W(1) - d1W(2))
        d1E(5) = 0.5d0*(d1W(3) - d1W(4))
        grds = grd(2)
@@ -1027,6 +1027,8 @@ C****************************************************************************
       real*8   rhoa, rhob, grda, grdb, mu, E
       real*8   rhot, rhos, grdt, grds, grdts
 
+      call quit('hjaaj 4-apr-2018: the code below is wrong !!!') ! TODO FIXME 
+
       rhot = rhoa + rhob
       rhos = rhoa - rhob
       grdt = grda + grdb
@@ -1070,7 +1072,7 @@ C            d2E(8) = d2Edrhosdgrds : second derivative wrt to rhos and grds
 C            d2E(9) = d2Edgrdtdgrds : second derivative wrt to grdt and grds
 C            d2E(10)= d2Edgrdsdgrds : second derivative wrt to grds and grds
 C
-C     Created: 29-01-16, H. J. Aa. Jensen + Erik D. Hedegård)
+C     Created: 29-01-16, H. J. Aa. Jensen + Erik D. Hedegaard)
 C     (from routine by J. Toulouse)
 C*****************************************************************************
       implicit none

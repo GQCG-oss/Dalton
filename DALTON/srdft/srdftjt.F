@@ -110,8 +110,8 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
       ! d1Exc(5:7) =  d1Excdgrdtt, d1Excdgrdss, d1Excdgrdts
 
 #if SRDFT_DEBUG > 10
-      !edh debug
-      real*8    print_thr
+      real*8    :: print_thr
+      print_thr = 0.0d0
 #endif
 
       IPRINT = MAX(IPRINT_in,SRDFT_DEBUG)
@@ -386,7 +386,7 @@ C     Summation with quadrature weigths
 C      Sum of exchange and correlation
        d1Exc(1:7) = WGHTX*d1Ex(1:7) + WGHTC*d1Ec(1:7)
 
-#if defined SRDFT_DEBUG > 11
+#if SRDFT_DEBUG > 11
        if (ipnt .eq. 1) then
           write(lupri,*)'Debug output quadrature point 1'
           write(lupri,*)'DOGGA, DOERG, DOATR', DOGGA, DOERG, DOATR
