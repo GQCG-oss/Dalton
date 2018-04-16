@@ -35,18 +35,25 @@ C
 C     Based on the routine SRDFT1 of J. K. Pedersen
 C
 C    Input: ND_SIM: number of input density matrices and output potential matrices
+C                  DOERG   true: energy and Vxc potential matrix
+C                  DOGRD   true: molecular gradient
+C                  DOATR   true: electronic Hessian, non-linear Exc second derivative terms
+C                  TRIPLET true: triplet operators
 C                  DMAT(1) = charge density matrix
 C                  DMAT(2) = 1-index transformed charge density matrix (DOATR)
 C                  DMAT(3) = spin density matrix (DFT_SPINDNS)
 C                  DMAT(4) = 1-index transformed spin density matrix (DFT_SPINDNS and DOATR)
 C            (if SRHYBR then different ordering of DMAT matrices)
+C            (Note that the order of DMATs also fits for gradient calculations, DOATR false:
+C             for energy and gradien calculations DMAT(2) will be the DVAO matrix needed
+C             for Coulomb and exchange Fock matrices and not needed for SRDFT.)
 C
 C                  EXCMAT(1) = charge density potential matrix
 C                  EXCMAT(2) = spin density potential matrix (DFT_SPINDNS)
 C
 C     Created : 15-02-05, J. Toulouse
 C     Modified: 17-08-09, J. Toulouse, add spin density
-C     Modified: Feb. 2016 E. Hedegård  add spin gradient
+C     Modified: Feb. 2016 E. Hedegaard add spin gradient
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -90,21 +97,21 @@ C     ... RHG(1:3,3) = RHG2A(1:3) = 2 grad ( rho_a )
 C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
 
 !     these are not initialized to zero!
-      real*8   Ex,  d1Ex(7),  d2Ex(10)
-      real*8   Ec,  d1Ec(7),  d2Ec(10)
-      real*8   Exc, d1Exc(7), d2Exc(10)
-      real*8   d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
-      real*8   d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds
-      real*8   d1Exdngrd2, d1Exdngrds2, d1Exdgrdtgrds
-      real*8   d1Ecdngrd2, d1Ecdngrds2, d1Ecdgrdtgrds
+      real*8   Ex,  d1Ex(7),  d2Ex(15)
+      ! d1Ex(1:4) =   d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
+      ! d1Ex(5:7) =   d1Exdgrdtt, d1Exdgrdss, d1Exdgrdts
 
-      real*8   d1Excdrhot, d1Excdrhos, d1Excdgrdt, d1Excdgrds
-      real*8   d1Excdngrd2, d1Excdngrds2, d1Excdgrdtgrds
+      real*8   Ec,  d1Ec(7),  d2Ec(15)
+      ! d1Ec(1:4) =   d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds
+      ! d1Ec(5:7) =   d1Ecdgrdtt, d1Ecdgrdss, d1Ecdgrdts
 
+      real*8   Exc, d1Exc(7), d2Exc(15)
+      ! d1Exc(1:4) =  d1Excdrhot, d1Excdrhos, d1Excdgrdt, d1Excdgrds
+      ! d1Exc(5:7) =  d1Excdgrdtt, d1Excdgrdss, d1Excdgrdts
 
 #if SRDFT_DEBUG > 10
-      !edh debug
-      real*8    print_thr
+      real*8    :: print_thr
+      print_thr = 0.0d0
 #endif
 
       IPRINT = MAX(IPRINT_in,SRDFT_DEBUG)
@@ -118,9 +125,9 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
       WRITE(LUPRI,*) 'SRDFT1JT: HFXFAC =',HFXFAC
       WRITE(LUPRI,*) 'SRDFT1JT: DOERG,DOATR,DOGRD,DOGGA  =',
      &   DOERG,DOATR,DOGRD,DOGGA
-      WRITE(LUPRI,*) 'SRDFT1JT: ERFEXP(0:2) =',ERFEXP(0:2)
+      WRITE(LUPRI,*) 'SRDFT1JT: ERFEXP(0:2)=',ERFEXP(0:2)
       WRITE(LUPRI,*) 'SRDFT1JT: DOSRX_PBERI=',DOSRX_PBERI
-      WRITE(LUPRI,*) 'DFT_SPINDNS=',DFT_SPINDNS
+      WRITE(LUPRI,*) 'SRDFT1JT: DFT_SPINDNS=',DFT_SPINDNS
       flush(lupri)
       IF (IPRINT .GE. 12) THEN
       WRITE(LUPRI,*) 'D_TOT_AO matrix:'
@@ -137,43 +144,11 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
             call output(DMAT(1,4),1,nbast,1,nbast,nbast,nbast,-1,lupri)
          END IF
       END IF
+      END IF ! iprint .ge. 12
       flush(lupri)
-      END IF ! iprint 12
-      END IF ! iprint 5
-C
-C     Initializations -------------------------------------------------------
+      END IF ! iprint .ge. 5
 
-      ! edh debug
-#if SRDFT_DEBUG > 10
-      print_thr = 0.0d0
-#endif
-      ! edh the arrays are also zeroed in SRDFTEXCJT
-      d1Ex(1:7)      = 0.0d0
-      d1Exdrhot      = 0.0d0
-      d1Exdrhos      = 0.0d0
-      d1Exdgrdt      = 0.0d0
-      d1Exdgrds      = 0.0d0
-      d1Exdngrd2     = 0.0d0
-      d1Exdngrds2    = 0.0d0
-      d1Exdgrdtgrds  = 0.0d0
-      !----------------
-      d1Ec(1:7)      = 0.0d0
-      d1Ecdrhot      = 0.0d0
-      d1Ecdrhos      = 0.0d0
-      d1Ecdgrdt      = 0.0d0
-      d1Ecdgrds      = 0.0d0
-      d1Ecdngrd2     = 0.0d0
-      d1Ecdngrds2    = 0.0d0
-      d1Ecdgrdtgrds  = 0.0d0
-      !---------------------
-      d1Excdrhot     = 0.0d0
-      d1Excdrhos     = 0.0d0
-      d1Excdgrdt     = 0.0d0
-      d1Excdgrds     = 0.0d0
-      d1Excdngrd2    = 0.0d0
-      d1Excdngrds2   = 0.0d0
-      d1Excdgrdtgrds = 0.0d0
-
+!     Is the requested calculation implemented ?
 
       IF (ND_SIM .NE. 1) THEN
          WRITE(LUPRI,*) 'SRDFT1: illegal ND_SIM ',ND_SIM
@@ -181,8 +156,21 @@ C     Initializations -------------------------------------------------------
       END IF
 
       IF (DOGRD) THEN
-         CALL QUIT('SRDFT1JT: DOGRD not implemented yet')
+         CALL QUIT(
+     &   'SRDFT1JT: molecular gradient (DOGRD) not implemented yet')
       END IF
+
+      IF (DOLND) THEN
+         CALL QUIT(
+     &   'SRDFT1JT: London orbitals (DOLND) not implemented yet')
+      END IF
+C
+C     Initializations -------------------------------------------------------
+
+      ! edh the arrays are also zeroed in SRDFTEXCJT
+      d1Ex(1:7)  = 0.0d0
+      d1Ec(1:7)  = 0.0d0
+      !---------------
 
 !     (Integrated) exchange and correlation energies
       ExInt  = D0
@@ -217,11 +205,11 @@ C     from grid integration less than DFTHR
       DFTHRL    = D0
 
 C     Skipped grid points and nb of electrons
-      NSKIP1 = 0     
-      ELCTRSKIP = D0 
+      NSKIP1 = 0
+      ELCTRSKIP = D0
 C
 C     Counter for how many times RHO(2) > RHO(1)
-      NRSGTR = 0
+      N_RS_GT_RT = 0
 
 C     For quadrature integration
 C
@@ -321,9 +309,9 @@ C        Print grid information
       END IF
 
 C     Screening
-      IF (ABS(DELCTRN).LE.THRELCTRN .OR. 
+      IF (ABS(DELCTRN).LE.THRELCTRN .OR.
      &          RHO(1).LE.THRESRHO) THEN
-         
+
          IF (iprint_x .gt. 10) then
             write(lupri,*) 'Skipping this point'
          END IF
@@ -340,11 +328,11 @@ C        DMAT(1,3) is the spin density matrix
          CALL GETRHO_OLD(DMAT(1,3),GSO(KSO0),RHO(2),RHOS13,
      &                   DMAGAOSR(1,2),THRINT,IPRINT)
 C        In our local spin model we can get unphysical densities
-C        because we allow DS > DV in some regions.          
+C        because we allow DS > DV in some regions.
          IF (DFT_LOCALSPIN) THEN
             IF (RHO(2) .GT. RHO(1)) THEN
                 RHO(2) = RHO(1)
-                NRSGTR = NRSGTR + 1 
+                N_RS_GT_RT = N_RS_GT_RT + 1
             END IF
          END IF
 C        Contribution to spin density (N_alpha - N_beta)
@@ -385,111 +373,59 @@ C     Exchange and correlation energies and derivatives
 C
       CALL SRDFTEXCJT(RHO,RHG,CHIVAL,NORDER,ERFEXP,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
-C      Summation with quadrature weigths
-       ExInt     = ExInt + WGHTX*Ex
-       EcInt     = EcInt + WGHTC*Ec
+C     Summation with quadrature weigths
+      ExInt     = ExInt + WGHTX*Ex
+      EcInt     = EcInt + WGHTC*Ec
+
       IF (iprint_x .gt. 10) then
          write(lupri,*) 'rho, rhg ',rho(1),rhg(1:3,1)
          write(lupri,*) 'Ex, ExInt',Ex,ExInt
          write(lupri,*) 'Ec, EcInt',Ec,EcInt
       end if
 
-C      Potentials with quadrature weigths
-!
-       if (DOGGA .and. DFT_SPINDNS) then
-           d1Exdrhot     = d1Ex(1)
-           d1Exdgrdt     = d1Ex(2)
-           d1Exdngrd2    = d1Ex(3)
-           d1Exdrhos     = d1Ex(4)
-           d1Exdgrds     = d1Ex(5)
-           d1Exdngrds2   = d1Ex(6)
-           d1Exdgrdtgrds = d1Ex(7)
-           !---------------------
-           d1Ecdrhot     = d1Ec(1)
-           d1Ecdgrdt     = d1Ec(2)
-           d1Ecdngrd2    = d1Ec(3)
-           d1Ecdrhos     = d1Ec(4)
-           d1Ecdgrds     = d1Ec(5)
-           d1Ecdngrds2   = d1Ec(6)
-           d1Ecdgrdtgrds = d1Ec(7)
-       else if (DFT_SPINDNS .and. .not. DOGGA) then
-           d1Exdrhot     = d1Ex(1)
-           d1Exdrhos     = d1Ex(2)
-           !---------------------
-           d1Ecdrhot     = d1Ec(1)
-           d1Ecdrhos     = d1Ec(2)
-       else if (DOGGA .and. .not. DFT_SPINDNS) then
-           d1Exdrhot     = d1Ex(1)
-           d1Exdgrdt     = d1Ex(2)
-           d1Exdngrd2    = d1Ex(3)
-           !---------------------
-           d1Ecdrhot     = d1Ec(1) 
-           d1Ecdgrdt     = d1Ec(2)
-           d1Ecdngrd2    = d1Ec(3)
-       else
-           d1Exdrhot     = d1Ex(1)
-           d1Ecdrhot     = d1Ec(1)
-       end if
-
-       d1Exdrhot     = WGHTX*d1Exdrhot
-       d1Exdrhos     = WGHTX*d1Exdrhos
-       d1Exdgrdt     = WGHTX*d1Exdgrdt
-       d1Exdngrd2    = WGHTX*d1Exdngrd2
-       d1Exdgrds     = WGHTX*d1Exdgrds
-       d1Exdngrds2   = WGHTX*d1Exdngrd2
-       d1Exdgrdtgrds = WGHTX*d1Exdgrdtgrds
-
-
-       d1Ecdrhot     = WGHTC*d1Ecdrhot
-       d1Ecdrhos     = WGHTC*d1Ecdrhos
-       d1Ecdgrdt     = WGHTC*d1Ecdgrdt
-       d1Ecdngrd2    = WGHTC*d1Ecdngrd2
-       d1Ecdgrds     = WGHTC*d1Ecdgrds
-       d1Ecdngrds2   = WGHTC*d1Ecdngrd2
-       d1Ecdgrdtgrds = WGHTC*d1Ecdgrdtgrds
-
 C      Sum of exchange and correlation
-       d1Exc(:) = WGHTX*d1Ex(:) + WGHTC*d1Ec(:)
+       d1Exc(1:7) = WGHTX*d1Ex(1:7) + WGHTC*d1Ec(1:7)
 
-       d1Excdrhot     = d1Exdrhot  + d1Ecdrhot
-       d1Excdrhos     = d1Exdrhos  + d1Ecdrhos
-       d1Excdgrdt     = d1Exdgrdt  + d1Ecdgrdt
-       d1Excdngrd2    = d1Exdngrd2 + d1Ecdngrd2
-       d1Excdgrds     = d1Exdgrds  + d1Ecdgrds
-       d1Excdngrds2   = d1Exdngrds2 + d1Ecdngrds2
-       d1Excdgrdtgrds = d1Exdgrdtgrds + d1Ecdgrdtgrds
+#if SRDFT_DEBUG > 11
+       if (ipnt .eq. 1) then
+          write(lupri,*)'Debug output quadrature point 1'
+          write(lupri,*)'DOGGA, DOERG, DOATR', DOGGA, DOERG, DOATR
+          write(lupri,*)'d1Excdrhot ...', d1Exc(1:7)
+          write(lupri,*)'d1Exdrhot  ...', d1Ex(1:7)
+          write(lupri,*)'d1Ecdrhot  ...', d1Ec(1:7)
+          write(lupri,*)'WGHTX, WGHTC  ', WGHTX, WGHTC
+       end if
+#endif
 
 C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin components)
-       ! Ignore spin in start CI ...  FIXME TODO
        FROMVX = .FALSE.
        if (domcsrdft .and. docisrdft) then  !  only true for start-CI  (cf. routine OPST)
+       ! Ignore spin in start CI ...  FIXME TODO
            CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
-     &                 d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
-#if SRDFT_DEBUG > 11
-          if (ipnt .eq. 1) then
-             write(lupri,*)'DOGGA', DOGGA
-             write(lupri,*)'DOERG', DOERG
-             write(lupri,*)'d1Excdrhot', d1Excdrhot
-          end if 
-#endif
+     &                 d1Exc(1)  ,d1Exc(5)    ,DOGGA,FROMVX,DFTHRL)
+!                      d1Excdrhot,d1Excdgrdtt,DOGGA,FROMVX,DFTHRL)
        else if (domcsrdft .and. .not. docisrdft) then
-          if (dogga. and. dft_spindns) then ! special treatment if gga + spin
+          if (dogga .and. dft_spindns) then ! special treatment if gga + spin
           call quit('hjaaj: d1excdgrdtdgrds not implemented yet')
               CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
-     &             d1Excdrhot,d1Excdngrd2,d1Excdrhos,d1Excdngrds2,
-     &             d1Excdgrdtgrds,DFTHRL)
-          else                              ! pure GGA or pure spin
+     &             d1Exc,DFTHRL)
+!    &             d1Excdrhot,d1Excdgrdtt,d1Excdrhos,d1Excdgrdss,
+!    &             d1Excdgrdtgrds,DFTHRL)
+          else                              ! GGA without spin density or LDA
              CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
-     &                d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
-             if (dft_spindns .and. .not. dogga) then
+     &                d1Exc(1)  ,d1Exc(5)    ,DOGGA,FROMVX,DFTHRL)
+!    &                d1Excdrhot,d1Excdgrdtt,DOGGA,FROMVX,DFTHRL)
+             if (dft_spindns .and. .not. dogga) then ! i.e. LDA with spin density
                  CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHG(1,2),
-     &                       d1Excdrhos,0.0d0,DOGGA,FROMVX,DFTHRL)
+     &                 d1Exc(2)  ,0.0d0,DOGGA,FROMVX,DFTHRL)
+!    &                 d1Excdrhos,0.0d0,DOGGA,FROMVX,DFTHRL)
              end if
           end if
        else ! if hfsrdft
           IF (DFT_SPINDNS) CALL QUIT('no HFsrDFT with open shells')
              CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
-     &            d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
+     &            d1Exc(1)  ,d1Exc(5)    ,DOGGA,FROMVX,DFTHRL)
+!    &            d1Excdrhot,d1Excdgrdtt,DOGGA,FROMVX,DFTHRL)
        end if
 
        ENDIF  !DOERG
@@ -513,13 +449,14 @@ C        matrix 4 is DXSAO
              endif
            end do
          end do
-       end do      
+       end do
 #endif
 
+! SRDFTLTRJT: SR short-range DFT density functional theory LTR linear transformation JT Julien Toulouse
         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
      &                 WGHTX,WGHTC, GSO(KSO0),GSO(KSO1),
      &                 CHIVAL,VLAMBDA,ERFEXP,RHO,RHG,DMAGAOSR,DOGGA)
-     
+
        ENDIF
 
 #if SRDFT_DEBUG > 41
@@ -532,7 +469,7 @@ C        matrix 4 is DXSAO
              endif
            end do
          end do
-       end do      
+       end do
 #endif
 
 C
@@ -557,7 +494,7 @@ C Termination --------------------------------------------------------------
              endif
            end do
          end do
-       end do      
+       end do
 #endif
       CALL GPCLOSE(LUQUAD,'KEEP')
 
@@ -566,11 +503,11 @@ C Termination --------------------------------------------------------------
       RESULTS(3) = SPINDEN
       RESULTS(4) = ExInt
       RESULTS(5) = EcInt
-      RESULTS(6) = NRSGTR
+      RESULTS(6) = N_RS_GT_RT
       ! LSRHYBR
       RESULTS(7:11) = 0.0D0
 
-      RETURN 
+      RETURN
       END
 
 C****************************************************************************
@@ -600,11 +537,11 @@ C*****************************************************************************
       integer NORDER
       logical ERFEXP(0:2)
 
-      real*8   Ex, d1Ex(7), d2Ex(10)
-      real*8   Ec, d1Ec(7), d2Ec(10)
-#ifdef SRDFT_DEBUG > 10
-      real*8   Wx, d1Wx(7), d2Wx(10)
-      real*8   Wc, d1Wc(7), d2Wc(10)
+      real*8   Ex, d1Ex(7), d2Ex(15)
+      real*8   Ec, d1Ec(7), d2Ec(15)
+#if SRDFT_DEBUG > 10
+      real*8   Wx, d1Wx(7), d2Wx(15)
+      real*8   Wc, d1Wc(7), d2Wc(15)
 #endif
 
 C The new terms (edh: mu_new required??)
@@ -622,12 +559,12 @@ C     functionals
 C     spin functionals
       external ESRX_LDAERFSPIN, ESRC_LDAERFSPIN
       external ESRX_PBEGWSERFSPIN, ESRC_PBEGWSERFSPIN
-      external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA   
-C     sr mdc func 
+      external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA
+C     sr mdc func
       external ESRC_MD_LDAERF
-       
+
       ! for debug prints (counter for grid points)
-      integer inpt 
+      integer inpt
 
 c  Exchange  ------------------------------------------------------------
 
@@ -654,16 +591,16 @@ c  Exchange  ------------------------------------------------------------
      &          + rhg(3,3)*rhg(3,4)
 
 !     LDA exchange functional (to fit with corresponding correlation
-!     functional) - see explaination with DOSRC_LDA_PW92
+!     functional) - see explanation with DOSRC_LDA_PW92
       IF(DOSRX_LDA_PW92) THEN
         rho(2) = 0.0d0
         call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),CHIVAL,DFT_SPINDNS,
      >                NORDER,Ex,d1Ex,d2Ex)
-      ENDIF 
+      ENDIF
 
 !     short-range exchange PBE of HSE
       IF(DOSRX_PBEHSE) THEN
-        IF(.not. DFT_SPINDNS) THEN     
+        IF(.not. DFT_SPINDNS) THEN
            call DESR(ESRX_PBEHSEERF,rho,RHOGRD,CHIVAL,NORDER,
      >        Ex,d1Ex,d2Ex)
         ELSE
@@ -673,7 +610,7 @@ c  Exchange  ------------------------------------------------------------
 
 !     short-range exchange PBE of TCS
       IF(DOSRX_PBETCS) THEN
-        call DESR(ESRX_PBETCSERF,rho,RHOGRD,CHIVAL,NORDER,Ex,d1Ex,d2Ex) 
+        call DESR(ESRX_PBETCSERF,rho,RHOGRD,CHIVAL,NORDER,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange PBE of GWS ! JT 11-08-09
@@ -696,7 +633,7 @@ C  Manu 01-02-2006 end
       IF(DOSRX_PBEGWS_S) THEN
         call DESRX_SPINGGA(ESRX_PBEGWSERFSPIN,rho,RHOGRD,CHIVAL,
      >                     norder,Ex,d1Ex,d2Ex)
-#ifdef SRDFT_DEBUG > 10
+#if SRDFT_DEBUG > 10
         if (norder .eq. 2 .and. abs(rho(2)) .gt. 1.d-2) then
         call DESRSPINGGA   (ESRX_PBEGWSERFSPIN,rho,RHOGRD,CHIVAL,
      >                   norder,Wx,d1Wx,d2Wx)
@@ -708,8 +645,8 @@ C  Manu 01-02-2006 end
         write(lupri,*)'d2Wx',d2Wx(1:10)
         end if
 #endif
+       ENDIF
 
-       ENDIF 
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
       IF(DOLAX_LDAS)  THEN
         call ELX_LDALAMSPIN (rho(1),rho(2),VLAMBDA,DFT_SPINDNS,Ex)
@@ -720,7 +657,6 @@ C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-
 
 C linear complement exchange PBE functional, Kamal SHARKAS 19-05-11
       IF(DOLAX_PBEGWS) THEN
-
         call ELAX_PBEGWS(rho,RHOGRD,VLAMBDA,Ex)
         ! d1Ex(2), d1Ex(3) here ...
         call DELA(ESRX_PBEGWSERF,rho,RHOGRD,VLAMBDA,NORDER,
@@ -735,7 +671,6 @@ C  Correlation  ----------------------------------------------------------
       d2Ec(:) = 0.0d0
 
       IF(DOSRC_LDA_PW92) THEN
-        ! d1Ec(3), d1Ec(3) here ...
         ! DESRSPIN called with DFT_SPINDNS = false gives LDA functional
         ! for closed shell (but with J. Toulouse new LDA based on PW92)
         rho(2)   = 0.0d0
@@ -805,7 +740,7 @@ C  Correlation  ----------------------------------------------------------
         ! PBEGWS_S is of type 3 (no grds and no grds.grdt dependency)
         call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,3,rho,RHOGRD,CHIVAL,
      >                   norder,Ec,d1Ec,d2Ec)
-#ifdef SRDFT_DEBUG > 10
+#if SRDFT_DEBUG > 10
         if (norder .eq. 2 .and. abs(rho(2)) .gt. 1.d-2) then
         call DESRSPINGGA   (ESRC_PBEGWSERFSPIN,rho,RHOGRD,CHIVAL,
      >                   norder,Wc,d1Wc,d2Wc)
@@ -849,7 +784,7 @@ C Complement Scaled correlation PBE functional
 C Kamal SHARKAS 20-05-11 end
 
 !     short-range spin-dependent correlation LDA with multideterminant reference (for OEP) ! JT 26-08-11
-!     ... or for RSDHf calculations (Manu 06-12-2012)  
+!     ... or for RSDHf calculations (Manu 06-12-2012)
       IF(DOSRC_MD_LDA) THEN
 !CASS        Write(LUPRI,*)'La nouvelle fonctionnelle'
         ! d1Ec(3), d1Ec(3) here ...
@@ -858,12 +793,12 @@ C Kamal SHARKAS 20-05-11 end
       ENDIF
 !CASS      Write(LUPRI,*)'EC=',Ec
 
-!     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11 
+!     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11
       IF(DOSRC_MULOC_GGA) THEN
 C      IF (SRCMULOFAC) THEN
 C         xfac = XMULFAC_READIN
 C      ELSE
-C         xfac = 1.0d0/4.0d0 
+C         xfac = 1.0d0/4.0d0
 C      END IF
 C      mu = RHOGRD(1)/rho(1)
 C      mu = xfac*mu
@@ -874,12 +809,12 @@ C      mu_new = max(mu,CHIVAL)
      >             Ec, d1Ec, d2Ec)
       ENDIF
 
-!     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11 
+!     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11
       IF(DOSRC_MULOD_GGA) THEN
         ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_MULOD_GGA,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
-!     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11 
+!     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11
       IF(DOSRC_MULOE_GGA) THEN
         ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_MULOE_GGA,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
@@ -899,9 +834,9 @@ C
 C     Based on the routine SRDFTLTR of J. K. Pedersen
 C
 C     Created : 15-02-05, J. Toulouse
-C     Modified: 17-08-09, J. Toulouse, add spin density
-C     Modified: 16-02-16, E. Hedegård, add spin gradient
-C*************************************************************************** 
+C     Modified: 17-08-09, J. Toulouse,  add spin density
+C     Modified: 16-02-16, E. Hedegaard, add spin gradient
+C***************************************************************************
          implicit none
 #include "priunit.h"
 #include "mxcent.h"
@@ -916,7 +851,7 @@ C***************************************************************************
       integer KSYMOP
       logical DOGGA,ERFEXP(0:2)
       real*8   RHO(4), RHG(3,4)
-      real*8   CHIVAL,VLAMBDA 
+      real*8   CHIVAL,VLAMBDA
       real*8   rhogrd(4) ! local variable for norm of RHG(1:3,*)
       real*8   DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
       real*8   GAO(NBAST),GAO1(NBAST,3), DGAO(NBAST,2)
@@ -939,28 +874,28 @@ C***************************************************************************
       real*8   G0, GX, GY, GZ
 
 !     XC energies, and derivatives
-      real*8   Ex, Ec, d1Ex(7), d1Ec(7), d2Ex(10), d2Ec(10)
-      real*8   d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
-      real*8   d1Exdngrd2, d1Exdngrds2, d1Exdgrdtgrds !d1Ex(7)
-      real*8   d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds 
-      real*8   d1Ecdngrd2, d1Ecdngrds2, d1Ecdgrdtgrds !d1Ec(7)
+      real*8   Ex, Ec, d1Ex(7), d1Ec(7), d2Ex(15), d2Ec(15)
+!     real*8   d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
+!     real*8   d1Exdgrdtt, d1Exdgrdss, d1Exgrdts !d1Ex(7)
+!     real*8   d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds
+!     real*8   d1Ecdgrdtt, d1Ecdgrdss, d1Ecgrdts !d1Ec(7)
 
-      real*8   d2Exdrhotdrhot, d2Exdrhotdrhos, d2Exdrhosdrhos
-      real*8   d2Exdrhotdgrdt, d2Exdrhosdgrdt, d2Exdgrdtdgrdt
-      real*8   d2Exdrhotdgrds, d2Exdrhosdgrds, d2Exdgrdtdgrds
-      real*8   d2Exdgrdsdgrds ! d2Ex(10)
+!     real*8   d2Exdrhotdrhot, d2Exdrhotdrhos, d2Exdrhosdrhos
+!     real*8   d2Exdrhotdgrdt, d2Exdrhosdgrdt, d2Exdgrdtdgrdt
+!     real*8   d2Exdrhotdgrds, d2Exdrhosdgrds, d2Exdgrdtdgrds
+!     real*8   d2Exdgrdsdgrds, etc ! d2Ex(15)
 
-      real*8   d2Ecdrhotdrhot, d2Ecdrhotdrhos, d2Ecdrhosdrhos
-      real*8   d2Ecdrhotdgrdt, d2Ecdrhosdgrdt, d2Ecdgrdtdgrdt
-      real*8   d2Ecdrhotdgrds, d2Ecdrhosdgrds, d2Ecdgrdtdgrds
-      real*8   d2Ecdgrdsdgrds ! d2Ec(10)
+!     real*8   d2Ecdrhotdrhot, d2Ecdrhotdrhos, d2Ecdrhosdrhos
+!     real*8   d2Ecdrhotdgrdt, d2Ecdrhosdgrdt, d2Ecdgrdtdgrdt
+!     real*8   d2Ecdrhotdgrds, d2Ecdrhosdgrds, d2Ecdgrdtdgrds
+!     real*8   d2Ecdgrdsdgrds, etc ! d2Ec(15)
 
       ! For small values of rho to avoid NaN
       do i = 1,4
          if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
       end do
 
-      ! DGAO(1,1) = DTXMAT*GAO  
+      ! DGAO(1,1) = DTXMAT*GAO
       CALL DGEMV('N',NBAST,NBAST,1.0d0,
      &            DTXMAT,NBAST,GAO,1,0.0d0,DGAO(1,1),1)
       IF (DFT_SPINDNS) THEN
@@ -984,157 +919,87 @@ C           B3(1) = GAO1'*DGAO(1,1); B3(2) = GAO1'*DGAO(1,2)
             CALL DGEMV('T',NBAST,3,1.0d0,GAO1,NBAST,
      &         DGAO(1,I_MAT),1,0.0d0,B3(1,I_MAT),1)
 C           DGAO(1,1)= DTXMAT'*GAO; DGAO(1,2) = DSXMAT'*GAO !!! HJAAJ: is this necessary ? We have D*XMAT symmetrized!
-            IF (I_MAT .EQ. 1) THEN  
+            IF (I_MAT .EQ. 1) THEN
                CALL DGEMV('T',NBAST,NBAST,1.0d0,DTXMAT,NBAST,
      &                    GAO,1,0.0d0,DGAO(1,I_MAT),1)
-            ELSE IF (I_MAT .EQ. 2) THEN 
+            ELSE IF (I_MAT .EQ. 2) THEN
                CALL DGEMV('T',NBAST,NBAST,1.0d0,DSXMAT,NBAST,
      &                    GAO,1,0.0d0,DGAO(1,I_MAT),1)
-            END IF 
-C           B3(1,I_MAT) = B3(1,I_MAT) + GAO1'*DGAO(1, I_MAT)
+            END IF
+C           B3(1:3,I_MAT) = B3(1:3,I_MAT) + GAO1(1:NBAST,1:3)T*DGAO((1:NBAST, I_MAT)
             CALL DGEMV('T',NBAST,3,1.0d0,GAO1,NBAST,
      &         DGAO(1,I_MAT),1,1.0d0,B3(1,I_MAT),1)
             BMAX = MAX(BMAX,
      &       ABS(B3(1,I_MAT)),ABS(B3(2,I_MAT)),ABS(B3(3,I_MAT)))
          END IF
       END DO
-      !edh debug
-      !write(lupri,*)'test B3(1,1); B3(1,2)', B3(1,1), B3(1,2)
+#if SRDFT_DEBUG > 5
+      write(lupri,*)'Debug output of B3 matrix. BMAX =',BMAX
+      call output(b3,3,N_MAT,1,3,1,N_MAT,3,N_MAT,1,lupri)
+#endif
 C
-      IF (BMAX.GT.DFTHRL) THEN 
+      IF (BMAX.GT.DFTHRL) THEN
 C
 
 C Exchange and correlation derivatives ------------------------------------
 
-      NORDER = 2  ! first-order and second-order derivatives
+      NORDER = 2  ! zero-order, first-order and second-order derivatives
       CALL SRDFTEXCJT(RHO,RHG,CHIVAL,NORDER,ERFEXP,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
-       if (DOGGA .and. DFT_SPINDNS) then
-           d1Exdrhot      = d1Ex(1)
-           d1Exdgrdt      = d1Ex(2)
-           d1Exdngrd2     = d1Ex(3)
-           d1Exdrhos      = d1Ex(4)
-           d1Exdgrds      = d1Ex(5)
-           d1Exdngrds2    = d1Ex(6)
-           d1Exdgrdtgrds  = d1Ex(7)
-           !-----------------------
-           d1Ecdrhot      = d1Ec(1)
-           d1Ecdgrdt      = d1Ec(2)
-           d1Ecdngrd2     = d1Ec(3)
-           d1Ecdrhos      = d1Ec(4)
-           d1Ecdgrds      = d1Ec(5)
-           d1Ecdngrds2    = d1Ec(6)
-           d1Ecdgrdtgrds  = d1Ec(7)
-           !-----------------------
-           d2Exdrhotdrhot = d2Ex(1)
-           d2Exdrhotdrhos = d2Ex(2)
-           d2Exdrhosdrhos = d2Ex(3)
-           d2Exdrhotdgrdt = d2Ex(4)
-           d2Exdrhosdgrdt = d2Ex(5)
-           d2Exdgrdtdgrdt = d2Ex(6)
-           d2Exdrhotdgrds = d2Ex(7)
-           d2Exdrhosdgrds = d2Ex(8)
-           d2Exdgrdtdgrds = d2Ex(9)
-           d2Exdgrdsdgrds = d2Ex(10)
-           !-----------------------
-           d2Ecdrhotdrhot = d2Ec(1)
-           d2Ecdrhotdrhos = d2Ec(2)
-           d2Ecdrhosdrhos = d2Ec(3)
-           d2Ecdrhotdgrdt = d2Ec(4)
-           d2Ecdrhosdgrdt = d2Ec(5)
-           d2Ecdgrdtdgrdt = d2Ec(6)
-           d2Ecdrhotdgrds = d2Ec(7)
-           d2Ecdrhosdgrds = d2Ec(8)
-           d2Ecdgrdtdgrds = d2Ec(9)
-           d2Ecdgrdsdgrds = d2Ec(10)
-       else if (DFT_SPINDNS .and. .not. DOGGA) then
-           d1Exdrhot      = d1Ex(1)
-           d1Exdrhos      = d1Ex(2)
-           !----------------------
-           d1Ecdrhot      = d1Ec(1)
-           d1Ecdrhos      = d1Ec(2)
-           !----------------------
-           d2Exdrhotdrhot = d2Ex(1)
-           d2Exdrhotdrhos = d2Ex(2)
-           d2Exdrhosdrhos = d2Ex(3)
-           !----------------------
-           d2Ecdrhotdrhot = d2Ec(1)
-           d2Ecdrhotdrhos = d2Ec(2)
-           d2Ecdrhosdrhos = d2Ec(3)
-       else if (DOGGA .and. .not. DFT_SPINDNS) then
-           d1Exdrhot      = d1Ex(1)
-           d1Exdgrdt      = d1Ex(2)
-           d1Exdngrd2     = d1Ex(3)
-           !----------------------
-           d1Ecdrhot      = d1Ec(1) 
-           d1Ecdgrdt      = d1Ec(2)
-           d1Ecdngrd2     = d1Ec(3)
-           !----------------------
-           d2Exdrhotdrhot = d2Ex(1) 
-           d2Exdgrdtdgrdt = d2Ex(2)
-           d2Exdrhotdgrdt = d2Ex(3)
-           !----------------------
-           d2Ecdrhotdrhot = d2Ec(1)
-           d2Ecdgrdtdgrdt = d2Ec(2)
-           d2Ecdrhotdgrdt = d2Ec(3)
-       else ! (.not. DOGGA .and. .not. DFT_SPINDNS)
-           d1Exdrhot      = d1Ex(1)
-           d1Ecdrhot      = d1Ec(1)
-           d2Exdrhotdrhot = d2Ex(1) 
-           d2Ecdrhotdrhot = d2Ec(1)
-       end if 
-
-
 
 C Total contribution -------------------------------------------------------
 
-      FRR = WGHTX*d2Exdrhotdrhot + WGHTC*d2Ecdrhotdrhot
-      IF (DOGGA .AND. DFT_SPINDNS) THEN
+         FRR = WGHTX*d2Ex(1)        + WGHTC*d2Ec(1)
+!        FRR = WGHTX*d2Exdrhotdrhot + WGHTC*d2Ecdrhotdrhot
+      IF (DFT_SPINDNS) THEN ! LDA and GGA terms
+         FRS = WGHTX*d2Ex(2)        + WGHTC*d2Ec(2)
+!        FRS = WGHTX*d2Exdrhotdrhos + WGHTC*d2Ecdrhotdrhos
+         FSS = WGHTX*d2Ex(3)        + WGHTC*d2Ec(3)
+!        FSS = WGHTX*d2Exdrhosdrhos + WGHTC*d2Ecdrhosdrhos
+      END IF
+      IF (DOGGA) THEN
          ZNV(1) = 1.0d0/RHOGRD(1)
-         IF (RHOGRD(2) > 1.0D-30) THEN
-             ZNV(2) = 1.0d0/RHOGRD(2)
-         ELSE 
-           ZNV(2) = 0.0D0
-         END IF 
-         FZ0   = ZNV(1)*(WGHTX*d1Exdgrdt + WGHTC*d1Ecdgrdt)
-         ! gradient
-         FRZ   = WGHTX*d2Exdrhotdgrdt + WGHTC*d2Ecdrhotdgrdt
-         FZZ   = WGHTX*d2Exdgrdtdgrdt + WGHTC*d2Ecdgrdtdgrdt
-         ! spin
-         FZ0_S = ZNV(2)*(WGHTX*d1Exdgrds + WGHTC*d1Ecdgrds)
-         FSZ   = WGHTX*d2Exdrhosdgrdt + WGHTC*d2Ecdrhosdgrdt
-         ! spin-gradient
-         FSZ_S = WGHTX*d2Exdrhosdgrds + WGHTC*d2Ecdrhosdgrds
-         FRZ_S = WGHTX*d2Exdrhotdgrds + WGHTC*d2Ecdrhotdgrds
-         FZZ_S = WGHTX*d2Exdgrdtdgrds + WGHTC*d2Ecdgrdtdgrds
-         FZZ_SS= WGHTX*d2Exdgrdsdgrds + WGHTC*d2Ecdgrdsdgrds
-
          ! normalized grd[rhot^(X,Y,Z)]
          RX(1) = ZNV(1)*RHG(1,1)
          RY(1) = ZNV(1)*RHG(2,1)
          RZ(1) = ZNV(1)*RHG(3,1)
+
+         FZ0   = ZNV(1)*(WGHTX*d1Ex(3)   + WGHTC*d1Ec(3)  )
+!        FZ0   = ZNV(1)*(WGHTX*d1Exdgrdt + WGHTC*d1Ecdgrdt)
+         ! gradient
+         FRZ   = WGHTX*d2Ex(4)        + WGHTC*d2Ec(4)
+!        FRZ   = WGHTX*d2Exdrhotdgrdt + WGHTC*d2Ecdrhotdgrdt
+         FZZ   = WGHTX*d2Ex(6)        + WGHTC*d2Ec(6)
+!        FZZ   = WGHTX*d2Exdgrdtdgrdt + WGHTC*d2Ecdgrdtdgrdt
+
+      IF (DFT_SPINDNS) THEN ! only GGA terms
+         ! spin
+         IF (RHOGRD(2) > 1.0D-30) THEN
+             ZNV(2) = 1.0d0/RHOGRD(2)
+         ELSE
+           ZNV(2) = 0.0D0
+         END IF
          ! normalized grd[rhos^(X,Y,Z)]
          RX(2) = ZNV(2)*RHG(1,2)
          RY(2) = ZNV(2)*RHG(2,2)
          RZ(2) = ZNV(2)*RHG(3,2)
-         ! pure spin --- SPIN + GGA NOT FINISHED YET!!!
-         FSS = WGHTX*d2Exdrhosdrhos + WGHTC*d2Ecdrhosdrhos
-         FRS = WGHTX*d2Exdrhotdrhos + WGHTC*d2Ecdrhotdrhos
-      ELSE IF (DFT_SPINDNS .AND. .NOT. DOGGA) THEN
-         FSS = WGHTX*d2Exdrhosdrhos + WGHTC*d2Ecdrhosdrhos
-         FRS = WGHTX*d2Exdrhotdrhos + WGHTC*d2Ecdrhotdrhos
-      ELSE IF (DOGGA .AND. .NOT. DFT_SPINDNS) THEN
-         ZNV(1) = 1.0d0/RHOGRD(1)
-         FZ0 = ZNV(1)*(WGHTX*d1Exdgrdt + WGHTC*d1Ecdgrdt)
-         FRZ = WGHTX*d2Exdrhotdgrdt + WGHTC*d2Ecdrhotdgrdt
-         FZZ = WGHTX*d2Exdgrdtdgrdt + WGHTC*d2Ecdgrdtdgrdt
-         ! normalized grd[rhot^(X,Y,Z)]
-         RX(1) = ZNV(1)*RHG(1,1)
-         RY(1) = ZNV(1)*RHG(2,1)
-         RZ(1) = ZNV(1)*RHG(3,1)
-      ELSE 
-         ! do nothing
-      END IF
+
+         FZ0_S = ZNV(2)*(WGHTX*d1Ex(4)   + WGHTC*d1Ec(4)  )
+!        FZ0_S = ZNV(2)*(WGHTX*d1Exdgrds + WGHTC*d1Ecdgrds)
+         FSZ   = WGHTX*d2Ex(5)        + WGHTC*d2Ec(5)
+!        FSZ   = WGHTX*d2Exdrhosdgrdt + WGHTC*d2Ecdrhosdgrdt
+         ! spin-gradient
+         FRZ_S = WGHTX*d2Ex(7)        + WGHTC*d2Ec(7)
+!        FRZ_S = WGHTX*d2Exdrhotdgrds + WGHTC*d2Ecdrhotdgrds
+         FSZ_S = WGHTX*d2Ex(8)        + WGHTC*d2Ec(8)
+!        FSZ_S = WGHTX*d2Exdrhosdgrds + WGHTC*d2Ecdrhosdgrds
+         FZZ_S = WGHTX*d2Ex(9)        + WGHTC*d2Ec(9)
+!        FZZ_S = WGHTX*d2Exdgrdtdgrds + WGHTC*d2Ecdgrdtdgrds
+         FZZ_SS= WGHTX*d2Ex(10)       + WGHTC*d2Ec(10)
+!        FZZ_SS= WGHTX*d2Exdgrdsdgrds + WGHTC*d2Ecdgrdsdgrds
+
+      END IF ! DOGGA .and. DFT_SPINDNS
+      END IF ! DOGGA
 
 #if defined xxxSRDFT_DEBUG
 ! ipnt is not defined here any more ..
@@ -1144,50 +1009,17 @@ C Total contribution -------------------------------------------------------
               write(lupri,*) 'hjaaj: ZNV',ZNV(1:2)
               write(lupri,*) 'hjaaj: B0',B0(1:2)
               write(lupri,*) 'hjaaj: Ex, Ec',Ex, Ec
-              write(lupri,*) 'hjaaj: d1Exdrhot  ',d1Exdrhot
-              write(lupri,*) 'hjaaj: d1Exdgrdt  ',d1Exdgrdt
-              write(lupri,*) 'hjaaj: d1Exdngrd2 ',d1Exdngrd2
-              write(lupri,*) 'hjaaj: d1Exdrhos  ',d1Exdrhos
-              write(lupri,*) 'hjaaj: d1Exdgrds  ',d1Exdgrds
-              write(lupri,*) 'hjaaj: d1Exdgrdtgrds',d1Exdgrdtgrds
+              write(lupri,*) 'hjaaj: d1Ex  ',d1Ex(:)
+              write(lupri,*) 'hjaaj: d1Ec  ',d1Ec(:)
+              write(lupri,*) 'hjaaj: d2Ex(:)',d2Ex(:)
+              write(lupri,*) 'hjaaj: d2Ec(:)',d2Ec(:)
 
-              write(lupri,*) 'hjaaj: d1Ecdrhot  ',d1Ecdrhot
-              write(lupri,*) 'hjaaj: d1Ecdgrdt  ',d1Ecdgrdt
-              write(lupri,*) 'hjaaj: d1Ecdngrd2 ',d1Ecdngrd2
-              write(lupri,*) 'hjaaj: d1Ecdrhos  ',d1Ecdrhos
-              write(lupri,*) 'hjaaj: d1Ecdgrds  ',d1Ecdgrds
-              write(lupri,*) 'hjaaj: d1Ecdngrds2',d1Ecdngrds2
-              write(lupri,*) 'hjaaj: d1Ecdgrdtgrds',d1Ecdgrdtgrds
-
-              write(lupri,*) 'hjaaj: d2Exdrhotdrhot',d2Exdrhotdrhot
-              write(lupri,*) 'hjaaj: d2Exdrhotdrhos',d2Exdrhotdrhos
-              write(lupri,*) 'hjaaj: d2Exdrhosdrhos',d2Exdrhosdrhos
-              write(lupri,*) 'hjaaj: d2Exdrhotdgrdt',d2Exdrhotdgrdt
-              write(lupri,*) 'hjaaj: d2Exdrhosdgrdt',d2Exdrhosdgrdt
-              write(lupri,*) 'hjaaj: d2Exdgrdtdgrdt',d2Exdgrdtdgrdt
-              write(lupri,*) 'hjaaj: d2Exdrhotdgrds',d2Exdrhotdgrds
-              write(lupri,*) 'hjaaj: d2Exdrhosdgrds',d2Exdrhosdgrds
-              write(lupri,*) 'hjaaj: d2Exdgrdtdgrds',d2Exdgrdtdgrds
-              write(lupri,*) 'hjaaj: d2Exdgrdsdgrds',d2Exdgrdsdgrds
-
-              write(lupri,*) 'hjaaj: d2Ecdrhotdrhot',d2Ecdrhotdrhot
-              write(lupri,*) 'hjaaj: d2Ecdrhotdrhos',d2Ecdrhotdrhos
-              write(lupri,*) 'hjaaj: d2Ecdrhosdrhos',d2Ecdrhosdrhos
-              write(lupri,*) 'hjaaj: d2Ecdrhotdgrdt',d2Ecdrhotdgrdt
-              write(lupri,*) 'hjaaj: d2Ecdrhosdgrdt',d2Ecdrhosdgrdt
-              write(lupri,*) 'hjaaj: d2Ecdgrdtdgrdt',d2Ecdgrdtdgrdt
-              write(lupri,*) 'hjaaj: d2Ecdrhotdgrds',d2Ecdrhotdgrds
-              write(lupri,*) 'hjaaj: d2Ecdrhosdgrds',d2Ecdrhosdgrds
-              write(lupri,*) 'hjaaj: d2Ecdgrdtdgrds',d2Ecdgrdtdgrds
-              write(lupri,*) 'hjaaj: d2Ecdgrdsdgrds',d2Ecdgrdsdgrds
-
-              write(lupri,*) 'FZ0', FZ0
               write(lupri,*) 'hjaaj: FRR, FRZ, FZZ,',FRR, FRZ, FZZ
-              write(lupri,*) 'hjaaj: FZ0_S',FZ0_S
+              write(lupri,*) 'hjaaj: FZ0, FZ0_S',FZ0, FZ0_S
               write(lupri,*) 'hjaaj: FSZ_S,FRZ_S,FZZ_S,FZZ_SS',
      &                               FSZ_S,FRZ_S,FZZ_S,FZZ_SS
            !end if
-          end if 
+          end if
 #endif
 
 
@@ -1317,3 +1149,4 @@ C Linear transformation -----------------------------------------------------
 c
       RETURN
       END
+! end of srdftjt.F

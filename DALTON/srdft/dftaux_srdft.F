@@ -156,11 +156,14 @@ C /* Deck dftksm */
 C
 C     T. Helgaker oct 2000
 C
+C     VXC = d(e_xc) / d(rhot)
+C     VXB = d(e_xc) / d(grdt)
+C
 #include <implicit.h>
       PARAMETER (D2 = 2.0D0)
 C
       LOGICAL DOGGA, FROMVX
-      DIMENSION GAO(NBAST), GAO1(NBAST,3), EXCMAT(NBAST,NBAST),RH(3)
+      REAL*8  GAO(NBAST), GAO1(NBAST,3), EXCMAT(NBAST,NBAST),RH(3)
 
       integer ipnt
 C
@@ -231,8 +234,8 @@ C
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
 C
       LOGICAL DOGGA
-      DIMENSION DMAT(NBAST,NBAST), 
-     &          GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6)
+      REAL*8  DMAT(NBAST,NBAST), 
+     &        GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6)
 C
 #include <inforb.h>
 #include <energy.h>
