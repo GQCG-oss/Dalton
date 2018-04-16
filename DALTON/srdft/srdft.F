@@ -463,20 +463,23 @@ C    Purpose : Calculate SR DFT-energy and potential contribution for
 C               SR-DFT hybrid methods.
 C
 C    Input: ND_SIM: number of input density matrices and output potential matrices
-C                  DOERG   true: energy
-C                  DOGRD   true: gradient
-C                  DOATR   true: Hessian
+C                  DOERG   true: energy and Vxc potential matrix
+C                  DOGRD   true: molecular gradient
+C                  DOATR   true: electronic Hessian, non-linear Exc second derivative terms
 C                  TRIPLET true: triplet operators
 C                  DMAT(1) = charge density matrix
 C                  DMAT(2) = 1-index transformed charge density matrix (DOATR)
 C                  DMAT(3) = spin density matrix (DFT_SPINDNS)
 C                  DMAT(4) = 1-index transformed spin density matrix (DFT_SPINDNS and DOATR)
 C            (if SRHYBR then different ordering of DMAT matrices)
+C            (Note that the order of DMATs also fits for gradient calculations, DOATR false:
+C             for energy and gradien calculations DMAT(2) will be the DVAO matrix needed
+C             for Coulomb and exchange Fock matrices and not needed for SRDFT.)
 C
 C    Output:       EXCMAT(1) = charge density potential matrix
 C                  EXCMAT(2) = spin density potential matrix (DFT_SPINDNS)
-C                  EXCMAT(2) = special potential matrix (SRHYBR)
-C                  EDFTY     = DFT energy
+C                            = special potential matrix (SRHYBR)
+C                  EDFTY     = srDFT energy
 C
 C    Created: Jesper Kielberg Pedersen, Mar. 2003
 C    Modified: 17-08-09, J. Toulouse, add spin density matrix

@@ -916,7 +916,7 @@ C
                 CALL DAXPY(N2BASX,D1,WRK(KSRAO),1,FMAT(1,JSRMAT),1) ! add VXsr/VTsr to FXCAO
                 IF (DO_SPINDNS)
      &             CALL DAXPY(N2BASX,1.0d0,WRK(KSRAO+N2BASX),1,
-     &                        FMAT(1,JSRMAT+2*NSR_DMAT),1)              !  add VSXsr to FXSAO
+     &                        FMAT(1,JSRMAT+2*NSR_DMAT),1)          !  add VXSsr/VTSsr to FXSAO
 
                 IF (LSRHYBR) 
      &             CALL DCOPY(N2BASX,WRK(KSRAO+N2BASX),1,
