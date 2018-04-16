@@ -1,4 +1,3 @@
-
 #define SRDFT_DEBUG -1
 #define LDAembed
 
@@ -520,6 +519,39 @@ C
          CALL QUIT('SRDFT: Spin density AND SRHYBR not implemented')
       END IF
 
+#if SRDFT_DEBUG > 4
+      write(lupri,*) 'Entered SRDFT, SDRDT_DEBUG defined'
+      write(lupri,*) 'NDER,NTYPSO =',NDER,NTYPSO
+#endif
+#if SRDFT_DEBUG > 10
+      WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total EXCMAT on entry ---'
+      CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total density matrix ---'
+      CALL OUTPUT(DMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      IF (LSRHYBR) THEN
+        WRITE(LUPRI,'(//A//)') ' --- SRDFT: Valence density matrix ---'
+        CALL OUTPUT(DMAT(1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        IF (DOATR) THEN
+          WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total DTRMAT ---'
+          CALL OUTPUT(DMAT(1,3),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+          WRITE(LUPRI,'(//A//)') ' --- SRDFT: Valence DTRMAT ---'
+          CALL OUTPUT(DMAT(1,4),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        ENDIF
+      ELSE IF (DOATR) THEN
+        WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total DTRMAT ---'
+        CALL OUTPUT(DMAT(1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      END IF
+      IF (DFT_SPINDNS) THEN
+        WRITE(LUPRI,'(//A/)') ' --- SRDFT: Spin density matrix ---'
+        CALL OUTPUT(DMAT(1,3),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        IF (DOATR) THEN
+          WRITE(LUPRI,'(//A/)') ' --- SRDFT: Spin DTRMAT ---'
+          CALL OUTPUT(DMAT(1,4),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        END IF
+        WRITE(LUPRI,'(//A//)')' --- SRDFT: Total spin EXCMAT on entry'
+        CALL OUTPUT(EXCMAT(1,1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      END IF
+#endif
 !     Shall we go in MPI parallel mode for srdft ?
 
 #ifdef VAR_MPI
@@ -617,39 +649,6 @@ C     =============================
       END IF
       LWRK  = LWORK + 1 - KWRK
       IF (KWRK .GT. LWORK) CALL ERRWRK('SRDFT',-KWRK,LWORK)
-#if SRDFT_DEBUG > 4
-      write(lupri,*) 'Entered SRDFT, SDRDT_DEBUG defined'
-      write(lupri,*) 'NDER,NTYPSO =',NDER,NTYPSO
-#endif
-#if SRDFT_DEBUG > 10
-      WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total EXCMAT on entry ---'
-      CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-      WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total density matrix ---'
-      CALL OUTPUT(DMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-      IF (LSRHYBR) THEN
-        WRITE(LUPRI,'(//A//)') ' --- SRDFT: Valence density matrix ---'
-        CALL OUTPUT(DMAT(1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-        IF (DOATR) THEN
-          WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total DTRMAT ---'
-          CALL OUTPUT(DMAT(1,3),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-          WRITE(LUPRI,'(//A//)') ' --- SRDFT: Valence DTRMAT ---'
-          CALL OUTPUT(DMAT(1,4),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-        ENDIF
-      ELSE IF (DOATR) THEN
-        WRITE(LUPRI,'(//A//)') ' --- SRDFT: Total DTRMAT ---'
-        CALL OUTPUT(DMAT(1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-      END IF
-      IF (DFT_SPINDNS) THEN
-        WRITE(LUPRI,'(//A/)') ' --- SRDFT: Spin density matrix ---'
-        CALL OUTPUT(DMAT(1,3),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-        IF (DOATR) THEN
-          WRITE(LUPRI,'(//A/)') ' --- SRDFT: Spin DTRMAT ---'
-          CALL OUTPUT(DMAT(1,4),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-        END IF
-        WRITE(LUPRI,'(//A//)')' --- SRDFT: Total spin EXCMAT on entry'
-        CALL OUTPUT(EXCMAT(1,1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-      END IF
-#endif
 
       IF(ISJT) THEN
 C JT 15-02-05 beg

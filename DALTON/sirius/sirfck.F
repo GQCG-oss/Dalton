@@ -416,10 +416,16 @@ C
 
             NFSRTYP = 1
             NFSRAO = NSR_DMAT ! FT
-            IFC_X = IFCTYP(NSR_DMAT) / 10 ! IFCTYP(1) might be 0 for "FTC", thus we go for the FXC/FTV value
+            IF (NASHT.GT.0 .AND. (.NOT.DOCISRDFT)) THEN
+               ! IFCTYP(1) might be 0 for "FTC", thus we go for the FXC/FTV value
                ! as representative for all 1:NSR_DMAT matrices
+               IFC_base = IFCTYP(2)
+            ELSE
+               IFC_base = IFCTYP(1)
+            END IF
+            IFC_X = IFC_base / 10
             IFC_X = 10*IFC_X ! DMAT symmetric, antisymmetric or unsymmetric ?
-            IFC_Y = MOD(IFCTYP(NSR_DMAT),10)
+            IFC_Y = MOD(IFC_base,10)
             IF (HFXFAC .EQ. 0.0D0) THEN
                IF (IFC_Y .GT. 1) IFC_Y = IFC_Y - 2 ! only Coulomb
             END IF
@@ -913,7 +919,19 @@ C    &      ESRLTR = ESRLTR + DDOT(N2BASX,WRK(KSRAO),1,DMAT(1,JDAO),1)
 C           ... for MCSRDFT csf sigma-vectors : - 2 ESRLTR cref(i)
 C               NOT NEEDED because we project out CREF component in sigma vectors
 C
+#if SIRFCK_DEBUG > 2
+          write(lupri,*) 'EXCMAT before DAXPY'
+          call output(wrk(ksrao),1,10,1,10,nbast,nbast,1,lupri)
+          write(lupri,*) 'FMAT before DAXPY, jsrmat=', JSRMAT
+          call output(fmat(1,jsrmat),1,10,1,10,nbast,nbast,1,lupri)
+#endif
+
                 CALL DAXPY(N2BASX,D1,WRK(KSRAO),1,FMAT(1,JSRMAT),1) ! add VXsr/VTsr to FXCAO
+
+#if SIRFCK_DEBUG > 2        
+         write(lupri,*) 'FMAT after DAXPY, jsrmat=', JSRMAT
+          call output(fmat(1,jsrmat),1,10,1,10,nbast,nbast,1,lupri)
+#endif
                 IF (DO_SPINDNS)
      &             CALL DAXPY(N2BASX,1.0d0,WRK(KSRAO+N2BASX),1,
      &                        FMAT(1,JSRMAT+2*NSR_DMAT),1)              !  add VSXsr to FXSAO
