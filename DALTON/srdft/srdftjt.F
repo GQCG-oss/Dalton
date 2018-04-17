@@ -172,6 +172,18 @@ C     Initializations -------------------------------------------------------
       d1Ec(1:7)  = 0.0d0
       !---------------
 
+      IF (DOLND) THEN
+         CALL QUIT(
+     &   'SRDFT1JT: London orbitals (DOLND) not implemented yet')
+      END IF
+C
+C     Initializations -------------------------------------------------------
+
+      ! edh the arrays are also zeroed in SRDFTEXCJT
+      d1Ex(1:7)  = 0.0d0
+      d1Ec(1:7)  = 0.0d0
+      !---------------
+
 !     (Integrated) exchange and correlation energies
       ExInt  = D0
       EcInt  = D0

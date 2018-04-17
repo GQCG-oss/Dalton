@@ -445,7 +445,7 @@ C
       END IF
 C
       IF (.NOT.HFXSET) THEN
-C        if user hasn't specified HFXFAC with .HFXFAC or implicitly with HFEXCH
+C        if user has not specified HFXFAC with .HFXFAC or implicitly with HFEXCH
 C        then set HF exchange factor to zero.
          HFXFAC = 0.0D0
          HFXSET = .TRUE.
