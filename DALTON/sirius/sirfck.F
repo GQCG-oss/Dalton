@@ -161,7 +161,6 @@ C
       END IF
 
 #if SIRFCK_DEBUG > 0
-      iprsrdft = max(1,iprsrdft)  ! development code, always print
       write(lupri,*)'SIRFCK: entering; dumping qenter call tree'
       call qdump(lupri)
       write(lupri,*)'iprfck,iprsrdft =',iprfck,iprsrdft
@@ -170,7 +169,6 @@ C
       write(lupri,*)'SIRFCK: DO_SPINDNS,DFT_SPINDNS = ',
      & DO_SPINDNS,DFT_SPINDNS
 #endif
-      iprsrdft = iprfck
 C
       IF (DO_SPINDNS) THEN
 C        DC, DV, DS or DXC, DXV, DXS
