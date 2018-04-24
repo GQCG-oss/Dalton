@@ -142,14 +142,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Mar 11 23:23:31 2018
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/test/pehf_molgrad
-   2) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis
+   1) /home/magnus/Projects/dalton_devel/dalton-private/build/test/pehf_molgrad
+   2) /home/magnus/Projects/dalton_devel/dalton-private/build/basis
 
 
 Compilation information
@@ -157,17 +157,17 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-4.15.6-300.fc27.x86_64
+ System                   | Linux-4.15.15-300.fc27.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
+ MPI                      | ON
+ Fortran compiler         | /usr/lib64/mpich/bin/mpif90
  Fortran compiler version | GNU Fortran (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
- C compiler               | /usr/bin/gcc
+ C compiler               | /usr/lib64/mpich/bin/mpicc
  C compiler version       | gcc (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C++ compiler             | /usr/lib64/mpich/bin/mpicxx
+ C++ compiler version     | unknown
  BLAS                     | /home/magnus/Programs/intel/compilers_and_librarie
                           | s_2018.1.163/linux/mkl/lib/intel64/libmkl_gf_lp64.
                           | so;/home/magnus/Programs/intel/compilers_and_libra
@@ -182,9 +182,11 @@ Compilation information
                           | libraries_2018.1.163/linux/mkl/lib/intel64/libmkl_
                           | gf_lp64.so
  Static linking           | OFF
- Last Git revision        | c26c19694269d0231f4416cb83b028f9456ffab8
- Git branch               | add-multipole-interaction
- Configuration time       | 2018-03-11 23:22:22.832814
+ Last Git revision        | 9055103dddfd9c6746ec240c40a8a01c46350288
+ Git branch               | master
+ Configuration time       | 2018-04-24 13:57:14.806869
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
@@ -270,7 +272,7 @@ H    0.451000   -0.462000    0.653000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -278,7 +280,7 @@ H    0.451000   -0.462000    0.653000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -448,8 +450,8 @@ H    0.451000   -0.462000    0.653000
  HERMIT - Number of two-electron integrals written:         319 ( 78.6% )
  HERMIT - Megabytes written:                              0.007
 
-  Total CPU  time used in HERMIT:   0.03 seconds
-  Total wall time used in HERMIT:   0.03 seconds
+  Total CPU  time used in HERMIT:   0.01 seconds
+  Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -482,7 +484,7 @@ H    0.451000   -0.462000    0.653000
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Mar 11 23:23:32 2018
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -551,37 +553,37 @@ H    0.451000   -0.462000    0.653000
 Calculating AOSUPINT
      (Precalculated AO two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-@  1  -75.1110263058     -0.200249637392        7.12574D-01   -7.51D+01
-      Virial theorem: -V/T =      2.006841
+@  1  -74.9917443679     -8.096769945772E-02    7.12574D-01   -7.50D+01
+      Virial theorem: -V/T =      2.005242
 @    MULPOP   O      -0.45; H       0.23; H       0.23; 
    1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
-@  2  -75.1478116658     -0.194663101916        2.09284D-01   -3.68D-02
-      Virial theorem: -V/T =      2.006717
+@  2  -75.0285297279     -7.538116398109E-02    2.09284D-01   -3.68D-02
+      Virial theorem: -V/T =      2.005119
 @    MULPOP   O      -0.45; H       0.23; H       0.22; 
    2  Level shift: doubly occupied orbital energies shifted by -1.00D-01
  -----------------------------------------------------------------------------
-@  3  -75.1520425085     -0.192134317652        3.06670D-02   -4.23D-03
-      Virial theorem: -V/T =      2.006045
+@  3  -75.0327605706     -7.285237971792E-02    3.06670D-02   -4.23D-03
+      Virial theorem: -V/T =      2.004448
 @    MULPOP   O      -0.45; H       0.23; H       0.22; 
    3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
  -----------------------------------------------------------------------------
-@  4  -75.1521324958     -0.191771062378        1.36630D-03   -9.00D-05
-      Virial theorem: -V/T =      2.005890
+@  4  -75.0328505579     -7.248912444383E-02    1.36630D-03   -9.00D-05
+      Virial theorem: -V/T =      2.004293
 @    MULPOP   O      -0.45; H       0.24; H       0.22; 
  -----------------------------------------------------------------------------
-@  5  -75.1521328090     -0.191772094050        3.30258D-04   -3.13D-07
-      Virial theorem: -V/T =      2.005893
+@  5  -75.0328508711     -7.249015611591E-02    3.30258D-04   -3.13D-07
+      Virial theorem: -V/T =      2.004297
 @    MULPOP   O      -0.45; H       0.24; H       0.22; 
  -----------------------------------------------------------------------------
-@  6  -75.1521328300     -0.191776018912        2.65995D-05   -2.10D-08
-      Virial theorem: -V/T =      2.005894
+@  6  -75.0328508921     -7.249408097769E-02    2.65995D-05   -2.10D-08
+      Virial theorem: -V/T =      2.004297
 @    MULPOP   O      -0.45; H       0.24; H       0.22; 
  -----------------------------------------------------------------------------
-@  7  -75.1521328301     -0.191775859064        5.32732D-06   -1.22D-10
+@  7  -75.0328508922     -7.249392112908E-02    5.32732D-06   -1.22D-10
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -75.152132830140    5.33D-06
+@     Converged SCF energy, gradient:    -75.032850892206    5.33D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -623,12 +625,14 @@ Calculating AOSUPINT
        LJ energy contribution:
             Dispersion 6              -0.011141957974
             Repulsion 12               0.018525672071
+            Total                      0.007383714097
 
-       Total PE energy:            -0.191775859066
+       Total PE energy:               -0.072493921132
+            (excl. multipole-multipole interaction energy)
 
  --- Writing SIRIFC interface file
 
- CPU and wall time for SCF :       0.289       0.291
+ CPU and wall time for SCF :       0.152       0.152
 
 
                        .-----------------------------------.
@@ -640,18 +644,18 @@ Calculating AOSUPINT
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:             -75.152132830140                 
+@    Final HF energy:             -75.032850892206                 
 @    Nuclear repulsion:             9.195173291795
 @    Electronic energy:           -84.155530262872
-@    Embedding energy:             -0.191775859064
+@    Embedding energy:             -0.072493921129
 
 @    Final gradient norm:           0.000005327321
 
  
-     Date and time (Linux)  : Sun Mar 11 23:23:32 2018
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
-File label for MO orbitals:  11Mar18   FOCKDIIS
+File label for MO orbitals:  24Apr18   FOCKDIIS
 
  (Only coefficients > 0.0100 are printed.)
 
@@ -667,11 +671,11 @@ File label for MO orbitals:  11Mar18   FOCKDIIS
    6 H   :1s     0.0060  -0.1488   0.4218   0.2608   0.0106   0.7759  -0.8772
    7 H   :1s     0.0060  -0.1531  -0.4312   0.2627   0.0276   0.8307   0.8185
 
-  Total CPU  time used in SIRIUS :   0.29 seconds
-  Total wall time used in SIRIUS :   0.29 seconds
+  Total CPU  time used in SIRIUS :   0.15 seconds
+  Total wall time used in SIRIUS :   0.15 seconds
 
  
-     Date and time (Linux)  : Sun Mar 11 23:23:32 2018
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
 
@@ -766,7 +770,7 @@ File label for MO orbitals:  11Mar18   FOCKDIIS
                    | Starting in Wave Function Section (SIRIUS) |
                    `--------------------------------------------'
 
-* Read MO coefficients from SIRIUS.RST with label "NEWORB  " and header info: 11Mar18  FOCKDIIS
+* Read MO coefficients from SIRIUS.RST with label "NEWORB  " and header info: 24Apr18  FOCKDIIS
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
@@ -787,10 +791,10 @@ File label for MO orbitals:  11Mar18   FOCKDIIS
 Calculating AOSUPINT
      (Precalculated AO two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-@  1  -75.1521328301     -0.191775859064        5.32732D-06   -8.38D-13
+@  1  -75.0328508922     -7.249392112993E-02    5.32732D-06   -8.53D-13
 
 @ *** DIIS converged in   1 iterations !
-@     Converged SCF energy, gradient:    -75.152132830141    5.33D-06
+@     Converged SCF energy, gradient:    -75.032850892206    5.33D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -832,8 +836,10 @@ Calculating AOSUPINT
        LJ energy contribution:
             Dispersion 6              -0.011141957974
             Repulsion 12               0.018525672071
+            Total                      0.007383714097
 
-       Total PE energy:            -0.191775859064
+       Total PE energy:               -0.072493921130
+            (excl. multipole-multipole interaction energy)
 
  --- Writing SIRIFC interface file
 
@@ -846,13 +852,13 @@ Calculating AOSUPINT
 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -7.51521D+01    0.00000D+00
+ Energy difference; actual and predicted:   -7.50329D+01    0.00000D+00
 
 
  *** GEOMETRY WALK STEP TOO LONG,
      DECREASE WALK TRUST RADIUS AND TRY AGAIN
 
- CPU and wall time for SCF :       0.166       0.166
+ CPU and wall time for SCF :       0.100       0.100
 
 
                        .-----------------------------------.
@@ -864,22 +870,22 @@ Calculating AOSUPINT
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:             -75.152132830141                 
+@    Final HF energy:             -75.032850892206                 
 @    Nuclear repulsion:             9.195173291795
 @    Electronic energy:           -84.155530262872
-@    Embedding energy:             -0.191775859064
+@    Embedding energy:             -0.072493921130
 
 @    Final gradient norm:           0.000005327321
 
  
-     Date and time (Linux)  : Sun Mar 11 23:23:32 2018
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
-  Total CPU  time used in SIRIUS :   0.17 seconds
-  Total wall time used in SIRIUS :   0.17 seconds
+  Total CPU  time used in SIRIUS :   0.10 seconds
+  Total wall time used in SIRIUS :   0.10 seconds
 
  
-     Date and time (Linux)  : Sun Mar 11 23:23:32 2018
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
 
@@ -899,7 +905,7 @@ Calculating AOSUPINT
 
 
  
-     Date and time (Linux)  : Sun Mar 11 23:23:32 2018
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
 
@@ -932,12 +938,12 @@ Calculating AOSUPINT
 
 
  
-     Date and time (Linux)  : Sun Mar 11 23:23:32 2018
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
  WARNING: warnings have been issued, please check the output above !
-  Total CPU  time used in ABACUS:   0.11 seconds
-  Total wall time used in ABACUS:   0.11 seconds
+  Total CPU  time used in ABACUS:   0.05 seconds
+  Total wall time used in ABACUS:   0.05 seconds
 
 
                    .-------------------------------------------.
@@ -998,7 +1004,7 @@ Calculating AOSUPINT
 
 
  
-     Date and time (Linux)  : Sun Mar 11 23:23:32 2018
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
 
@@ -1008,7 +1014,7 @@ Calculating AOSUPINT
 
 
  
-     Date and time (Linux)  : Sun Mar 11 23:23:32 2018
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
 
@@ -1032,10 +1038,10 @@ Calculating AOSUPINT
      State number       1
      Total charge       0
 
-     Total energy        -75.1521328301 au (Hartrees)
-                         -2044.99356064 eV
-                           -197311.8943 kJ/mol
-                            -47158.6746 kcal/mol
+     Total energy        -75.0328508922 au (Hartrees)
+                         -2041.74773400 eV
+                           -196998.7196 kJ/mol
+                            -47083.8240 kcal/mol
 
 
                    Scalar Breit-Pauli relativistic corrections
@@ -1044,8 +1050,8 @@ Calculating AOSUPINT
      Darwin correction:                          0.1293614273 au
      Mass-velocity correction:                  -0.1668041734 au
 
-     Total relativistic correction:             -0.0374427460 au ( 0.0498%)
-     Non-relativistic + relativistic energy:   -75.1895755762 au
+     Total relativistic correction:             -0.0374427460 au ( 0.0499%)
+     Non-relativistic + relativistic energy:   -75.0702936382 au
 
 
 
@@ -1108,17 +1114,17 @@ Calculating AOSUPINT
   bond angle:     H          O          H            104.460
 
 
-  Total CPU  time used in ABACUS:   0.01 seconds
-  Total wall time used in ABACUS:   0.01 seconds
+  Total CPU  time used in ABACUS:   0.00 seconds
+  Total wall time used in ABACUS:   0.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
-  Total CPU  time used in DALTON:   0.63 seconds
-  Total wall time used in DALTON:   0.63 seconds
+  Total CPU  time used in DALTON:   0.33 seconds
+  Total wall time used in DALTON:   0.33 seconds
 
  
-     Date and time (Linux)  : Sun Mar 11 23:23:32 2018
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                

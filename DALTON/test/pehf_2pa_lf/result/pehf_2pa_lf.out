@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON release Dalton2017.alpha (2016)
+    This is output from DALTON release Dalton2017.alpha (2017)
          ( Web site: http://daltonprogram.org )
 
    ----------------------------------------------------------------------------
@@ -53,7 +53,7 @@
     and
      
        Dalton, a Molecular Electronic Structure Program,
-       Release Dalton2017.alpha (2016), see http://daltonprogram.org
+       Release Dalton2017.alpha (2017), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -89,6 +89,7 @@
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
@@ -141,49 +142,49 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Oct  7 19:01:24 2016
-     Host name              : gamma                                   
+     Date and time (Linux)  : Tue Apr 24 14:10:00 2018
+     Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/x_nanho/Programs/dalton_020216/build_pe_test_mpi_intel_mkl/test/pehf_2pa_lf
-   2) /home/x_nanho/Programs/dalton_020216/build_pe_test_mpi_intel_mkl/basis
+   1) /home/magnus/Projects/dalton_devel/dalton-private/build/test/pehf_2pa_lf
+   2) /home/magnus/Projects/dalton_devel/dalton-private/build/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | x_nanho
- Host                     | gamma
- System                   | Linux-2.6.32-642.4.2.el6.x86_64
+ Who compiled             | magnus
+ Host                     | foeroyar
+ System                   | Linux-4.15.15-300.fc27.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | ON
- Fortran compiler         | /software/apps/intel/impi/5.0.3.048/intel64/bin/mp
-                          | if90
- Fortran compiler version | ifort (IFORT) 15.0.3 20150407
- C compiler               | /software/apps/intel/impi/5.0.3.048/intel64/bin/mp
-                          | icc
- C compiler version       | icc (ICC) 15.0.3 20150407
- C++ compiler             | /software/apps/intel/impi/5.0.3.048/intel64/bin/mp
-                          | icxx
+ Fortran compiler         | /usr/lib64/mpich/bin/mpif90
+ Fortran compiler version | GNU Fortran (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C compiler               | /usr/lib64/mpich/bin/mpicc
+ C compiler version       | gcc (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C++ compiler             | /usr/lib64/mpich/bin/mpicxx
  C++ compiler version     | unknown
- BLAS                     | /software/apps/intel/composer_xe_2015.3.187/mkl/li
-                          | b/intel64/libmkl_intel_lp64.so;/software/apps/inte
-                          | l/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_se
-                          | quential.so;/software/apps/intel/composer_xe_2015.
-                          | 3.187/mkl/lib/intel64/libmkl_core.so;/usr/lib64/li
-                          | bpthread.so;/usr/lib64/libm.so
- LAPACK                   | /software/apps/intel/composer_xe_2015.3.187/mkl/li
-                          | b/intel64/libmkl_lapack95_lp64.a;/software/apps/in
-                          | tel/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_
-                          | intel_lp64.so
+ BLAS                     | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_gf_lp64.
+                          | so;/home/magnus/Programs/intel/compilers_and_libra
+                          | ries_2018.1.163/linux/mkl/lib/intel64/libmkl_seque
+                          | ntial.so;/home/magnus/Programs/intel/compilers_and
+                          | _libraries_2018.1.163/linux/mkl/lib/intel64/libmkl
+                          | _core.so;/usr/lib64/libpthread.so;/usr/lib64/libm.
+                          | so
+ LAPACK                   | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_lapack95
+                          | _lp64.a;/home/magnus/Programs/intel/compilers_and_
+                          | libraries_2018.1.163/linux/mkl/lib/intel64/libmkl_
+                          | gf_lp64.so
  Static linking           | OFF
- Last Git revision        | 5450d01cecce79d94af846cf115c977ff2f42977
- Git branch               | pe/eff_field
- Configuration time       | 2016-10-07 19:00:47.554745
+ Last Git revision        | 9055103dddfd9c6746ec240c40a8a01c46350288
+ Git branch               | master
+ Configuration time       | 2018-04-24 13:57:14.806869
 
  * Sequential calculation.
 
@@ -191,41 +192,41 @@ Compilation information
    Content of the .dal input file
  ----------------------------------
 
-**DALTON                                          
-.RUN RESPONSE                                     
-.PEQM                                             
-*PEQM                                             
-.EEF                                              
-**WAVE FUNCTIONS                                  
-.HF                                               
-**RESPONSE                                        
-*QUADRATIC                                        
-.SINGLE                                           
-.TWO-PHOTON                                       
-.ROOTS                                            
-4                                                 
-**END OF                                          
+**DALTON
+.RUN RESPONSE
+.PEQM
+*PEQM
+.EEF
+**WAVE FUNCTIONS
+.HF
+**RESPONSE
+*QUADRATIC
+.SINGLE
+.TWO-PHOTON
+.ROOTS
+4
+**END OF
 
 
    Content of the .mol file
  ----------------------------
 
-BASIS                                                                          
-STO-3G                                                                         
-Acrolein                                                                       
-------------------------                                                       
-AtomTypes=3 NoSymmetry Angstrom                                                
-Charge=6.0 Atoms=3                                                             
-C             -0.145335   -0.546770    0.000607                                
-C              1.274009   -0.912471   -0.000167                                
-C              1.630116   -2.207690   -0.000132                                
-Charge=8.0 Atoms=1                                                             
-O             -0.560104    0.608977    0.000534                                
-Charge=1.0 Atoms=4                                                             
-H             -0.871904   -1.386459    0.001253                                
-H              2.004448   -0.101417   -0.000710                                
-H              0.879028   -3.000685    0.000484                                
-H              2.675323   -2.516779   -0.000673                                
+BASIS
+STO-3G
+Acrolein
+------------------------
+AtomTypes=3 NoSymmetry Angstrom
+Charge=6.0 Atoms=3
+C             -0.145335   -0.546770    0.000607
+C              1.274009   -0.912471   -0.000167
+C              1.630116   -2.207690   -0.000132
+Charge=8.0 Atoms=1
+O             -0.560104    0.608977    0.000534
+Charge=1.0 Atoms=4
+H             -0.871904   -1.386459    0.001253
+H              2.004448   -0.101417   -0.000710
+H              0.879028   -3.000685    0.000484
+H              2.675323   -2.516779   -0.000673
 
 
        *******************************************************************
@@ -264,7 +265,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/x_nanho/Programs/dalton_020216/build_pe_test_mpi_intel_mkl/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -272,7 +273,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/x_nanho/Programs/dalton_020216/build_pe_test_mpi_intel_mkl/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -280,7 +281,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    4
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/x_nanho/Programs/dalton_020216/build_pe_test_mpi_intel_mkl/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -423,7 +424,7 @@ H              2.675323   -2.516779   -0.000673
 @  Nuclear repulsion energy :  102.664846860515 Hartree
 
   Reading potential input file for polarizable embedding calculation
- 
+
     .------------------------------------------------.
     | Information from polarizable embedding library |
     `------------------------------------------------´
@@ -481,29 +482,20 @@ H              2.675323   -2.516779   -0.000673
       z      0.01223409         0.03109595         0.10372491
 
 
- WORD in HER1INTHUCKEL 
- WORD in HER1INTOVERLAP
- WORD in HER1INTPOPOVLP
- WORD in HER1INTDIPLEN 
- WORD in HER1INTQUADRUP
- WORD in HER1INTKINENER
 
  Threshold for neglecting two-electron integrals:  1.00D-12
  HERMIT - Number of two-electron integrals written:       43383 ( 96.1% )
  HERMIT - Megabytes written:                              0.502
 
-  Total CPU  time used in HERMIT:   0.12 seconds
-  Total wall time used in HERMIT:   0.12 seconds
+  Time used in TWOINT     is       0.18 seconds
+  Total CPU  time used in HERMIT:   0.23 seconds
+  Total wall time used in HERMIT:   0.23 seconds
 
 
                         .----------------------------------.
                         | End of Integral Section (HERMIT) |
                         `----------------------------------'
 
-
-PEQM calculation includes effective external field effects.
-Reference: Phys. Chem. Chem. Phys. 2016, 18, 10070.
- PEQM: Local field factors are included.
 
          Effective external field (EEF) information:
          -------------------------------------------
@@ -546,8 +538,8 @@ Reference: Phys. Chem. Chem. Phys. 2016, 18, 10070.
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Oct  7 19:01:24 2016
-     Host name              : gamma                                   
+     Date and time (Linux)  : Tue Apr 24 14:10:01 2018
+     Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
      Acrolein                                                                
@@ -613,47 +605,49 @@ Reference: Phys. Chem. Chem. Phys. 2016, 18, 10070.
 
  Iter      Total energy     Embedding energy      Error norm     Delta(E)
  -----------------------------------------------------------------------------
-     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+
+Calculating AOSUPINT
+     (Precalculated AO two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
 @  1  -187.948496600     -4.868374348978E-02    2.01259D+00   -1.88D+02
       Virial theorem: -V/T =      2.003056
-@      MULPOP C       0.93; C       0.24; C       0.42; O      -1.03; H      -0.16; H      -0.14; H      -0.12; H      -0.13; 
+@    MULPOP   C       0.93; C       0.24; C       0.42; O      -1.03; H      -0.16; H      -0.14; H      -0.12; H      -0.13; 
    1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
-@  2  -188.277995302     -9.093837723591E-03    7.39409D-01   -3.29D-01
+@  2  -188.277995302     -9.093837723590E-03    7.39409D-01   -3.29D-01
       Virial theorem: -V/T =      2.009155
-@      MULPOP C      -0.14; C      -0.12; C      -0.12; O       0.05; H       0.05; H       0.11; H       0.09; H       0.09; 
+@    MULPOP   C      -0.14; C      -0.12; C      -0.12; O       0.05; H       0.05; H       0.11; H       0.09; H       0.09; 
    2  Level shift: doubly occupied orbital energies shifted by -1.00D-01
  -----------------------------------------------------------------------------
-@  3  -188.315432415     -1.888561259409E-02    1.08656D-01   -3.74D-02
+@  3  -188.315432415     -1.888561259408E-02    1.08656D-01   -3.74D-02
       Virial theorem: -V/T =      2.007941
-@      MULPOP C       0.16; C      -0.10; C      -0.11; O      -0.26; H       0.05; H       0.10; H       0.08; H       0.08; 
+@    MULPOP   C       0.16; C      -0.10; C      -0.11; O      -0.26; H       0.05; H       0.10; H       0.08; H       0.08; 
    3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
  -----------------------------------------------------------------------------
 @  4  -188.317193250     -1.925767147939E-02    3.06386D-02   -1.76D-03
       Virial theorem: -V/T =      2.007863
-@      MULPOP C       0.14; C      -0.10; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+@    MULPOP   C       0.14; C      -0.10; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
    4  Level shift: doubly occupied orbital energies shifted by -1.25D-02
  -----------------------------------------------------------------------------
 @  5  -188.317370671     -1.919167066081E-02    1.14753D-02   -1.77D-04
       Virial theorem: -V/T =      2.007830
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+@    MULPOP   C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
 @  6  -188.317390052     -1.919889012299E-02    2.95560D-03   -1.94D-05
       Virial theorem: -V/T =      2.007831
-@      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+@    MULPOP   C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
 @  7  -188.317391738     -1.918832142625E-02    1.02866D-03   -1.69D-06
       Virial theorem: -V/T =      2.007834
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+@    MULPOP   C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
 @  8  -188.317391898     -1.918616582085E-02    3.18858D-04   -1.60D-07
       Virial theorem: -V/T =      2.007835
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+@    MULPOP   C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@  9  -188.317391916     -1.918468638463E-02    5.62091D-05   -1.75D-08
+@  9  -188.317391916     -1.918468638462E-02    5.62091D-05   -1.75D-08
       Virial theorem: -V/T =      2.007835
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+@    MULPOP   C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
 @ 10  -188.317391916     -1.918446172362E-02    9.18807D-06   -5.22D-10
 
@@ -691,8 +685,8 @@ Reference: Phys. Chem. Chem. Phys. 2016, 18, 10070.
        Electrostatic contributions:
             Electronic                -0.467226876803
             Nuclear                    0.448807800596
-            Multipole                  0.000000000000
-            Total                     -0.018419076207
+            Multipole                  0.001021874822
+            Total                     -0.017397201385
 
        Polarization contributions:
             Electronic                -0.043153863363
@@ -700,11 +694,12 @@ Reference: Phys. Chem. Chem. Phys. 2016, 18, 10070.
             Multipole                  0.000129039745
             Total                     -0.000765385517
 
-       Total PE energy:            -0.019184461724
+       Total PE energy:               -0.019184461724
+            (excl. multipole-multipole interaction energy)
 
  --- Writing SIRIFC interface file
 
- CPU and wall time for SCF :       0.614       0.614
+ CPU and wall time for SCF :       0.168       0.168
 
 
                        .-----------------------------------.
@@ -724,10 +719,10 @@ Reference: Phys. Chem. Chem. Phys. 2016, 18, 10070.
 @    Final gradient norm:           0.000009188075
 
  
-     Date and time (Linux)  : Fri Oct  7 19:01:25 2016
-     Host name              : gamma                                   
+     Date and time (Linux)  : Tue Apr 24 14:10:01 2018
+     Host name              : foeroyar                                
 
-File label for MO orbitals:   7Oct16   FOCKDIIS
+File label for MO orbitals:  24Apr18   FOCKDIIS
 
  (Only coefficients > 0.0100 are printed.)
 
@@ -830,12 +825,12 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
   23 H   :1s    -0.2205   0.5473   0.0473
   24 H   :1s     0.5319  -0.3795  -0.1527
 
-  Total CPU  time used in SIRIUS :   0.62 seconds
-  Total wall time used in SIRIUS :   0.62 seconds
+  Total CPU  time used in SIRIUS :   0.17 seconds
+  Total wall time used in SIRIUS :   0.17 seconds
 
  
-     Date and time (Linux)  : Fri Oct  7 19:01:25 2016
-     Host name              : gamma                                   
+     Date and time (Linux)  : Tue Apr 24 14:10:01 2018
+     Host name              : foeroyar                                
 
 
                      .---------------------------------------.
@@ -891,9 +886,14 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
           YLFDIPLN
           ZLFDIPLN
 
- Integral transformation: Total CPU and WALL times (sec)       0.036       0.036
+ INFO SIR_INTOPEN, old integral transformation not found as expected, ICASE = 2
+ - ICASE = 1: MO integral file MOTWOINT does not exist
+ - ICASE = 2: no MO integrals on MOTWOINT
+ - ICASE = 3: transformation level on MOTWOINT not sufficient
 
- Sorting integrals to Dirac format: Total CPU and WALL times (sec)       0.004       0.004
+ 2-el. integral transformation level 10: Total CPU and WALL times (sec)       0.035       0.035
+
+ Sorting integrals to Dirac format: Total CPU and WALL times (sec)       0.003       0.003
 
 
    SCF energy         :     -188.317391916158556
@@ -924,6 +924,87 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
  Operator symmetry = 1  ( A  ); triplet =   F
 
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.96947D-01  0.00D+00  1.97D-01  7.08D-01    2.21996D-01
+         2    3.42181D-01  0.00D+00  3.42D-01  7.21D-01    3.56052D-01
+         3    1.39953D-01  0.00D+00  1.40D-01  7.07D-01    4.18630D-01
+         4    4.22510D-01  0.00D+00  4.23D-01  7.16D-01    4.91177D-01
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    4.72233D-02  0.00D+00  4.72D-02  7.11D-01    1.59056D-01
+         2    7.30418D-02  0.00D+00  7.30D-02  7.19D-01    3.13563D-01
+         3    4.45518D-02  0.00D+00  4.46D-02  7.08D-01    3.78962D-01
+         4    7.70821D-02  0.00D+00  7.71D-02  7.16D-01    4.32695D-01
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.59987D-02  0.00D+00  1.60D-02  7.12D-01    1.56383D-01
+         2    3.07977D-02  0.00D+00  3.08D-02  7.20D-01    3.09146D-01
+         3    6.54285D-02  0.00D+00  6.54D-02  7.08D-01    3.72615D-01
+         4    6.48258D-02  0.00D+00  6.48D-02  7.20D-01    4.17111D-01
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    4.98173D-03  0.00D+00  4.98D-03  7.11D-01    1.56251D-01
+         2    7.20793D-03  0.00D+00  7.21D-03  7.20D-01    3.08613D-01
+         3    1.40961D-01  0.00D+00  1.41D-01  7.12D-01    3.35007D-01
+         4    6.89906D-02  0.00D+00  6.90D-02  7.08D-01    3.83795D-01
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.73689D-03  0.00D+00  1.74D-03  7.11D-01    1.56241D-01
+         2    1.54550D-03  0.00D+00  1.55D-03  7.20D-01    3.08588D-01
+         3    6.00730D-02  0.00D+00  6.01D-02  7.13D-01    3.24045D-01
+         4    2.96259D-02  0.00D+00  2.96D-02  7.08D-01    3.81486D-01
+
+ ** RSPCTL MICROITERATION NUMBER    6
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    3.25961D-04  0.00D+00  3.26D-04  7.11D-01    1.56241D-01
+         2    3.03157D-04  0.00D+00  3.03D-04  7.20D-01    3.08587D-01
+         3    1.67747D-02  0.00D+00  1.68D-02  7.14D-01    3.22040D-01
+         4    1.36628D-02  0.00D+00  1.37D-02  7.08D-01    3.80734D-01
+
+ ** RSPCTL MICROITERATION NUMBER    7
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.71315D-04  0.00D+00  1.71D-04  7.11D-01    1.56241D-01
+         2    3.03138D-04  0.00D+00  3.03D-04  7.20D-01    3.08587D-01
+         3    2.97533D-03  0.00D+00  2.98D-03  7.14D-01    3.21978D-01
+         4    2.35787D-03  0.00D+00  2.36D-03  7.08D-01    3.80701D-01
+
+ ** RSPCTL MICROITERATION NUMBER    8
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.73201D-04  0.00D+00  1.73D-04  7.11D-01    1.56241D-01
+         2    3.03137D-04  0.00D+00  3.03D-04  7.20D-01    3.08587D-01
+         3    8.65106D-04  0.00D+00  8.65D-04  7.14D-01    3.21975D-01
+         4    5.92738D-04  0.00D+00  5.93D-04  7.08D-01    3.80699D-01
+
+ ** RSPCTL MICROITERATION NUMBER    9
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.76744D-04  0.00D+00  1.77D-04  7.11D-01    1.56241D-01
+         2    3.03137D-04  0.00D+00  3.03D-04  7.20D-01    3.08587D-01
+         3    1.38394D-04  0.00D+00  1.38D-04  7.14D-01    3.21975D-01
+         4    5.58388D-04  0.00D+00  5.58D-04  7.08D-01    3.80699D-01
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
@@ -973,6 +1054,51 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
  Operator symmetry = 1  ( A  ); triplet =   F
 
 
+ ** RSPCTL MICROITERATION NUMBER    1
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.71928D+00  0.00D+00  1.72D+00  3.73D+00    7.81203D-02
+         2    2.01604D+00  0.00D+00  2.02D+00  4.33D+00    1.54293D-01
+         3    2.05875D+00  0.00D+00  2.06D+00  4.42D+00    1.60988D-01
+         4    2.29769D+00  0.00D+00  2.30D+00  4.90D+00    1.90349D-01
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.36359D-01  0.00D+00  3.36D-01  4.22D+00    7.81203D-02
+         2    4.40436D-01  0.00D+00  4.40D-01  5.21D+00    1.54293D-01
+         3    4.56369D-01  0.00D+00  4.56D-01  5.36D+00    1.60988D-01
+         4    5.50305D-01  0.00D+00  5.50D-01  6.27D+00    1.90349D-01
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    6.24976D-02  0.00D+00  6.25D-02  4.24D+00    7.81203D-02
+         2    8.96214D-02  0.00D+00  8.96D-02  5.27D+00    1.54293D-01
+         3    9.39112D-02  0.00D+00  9.39D-02  5.43D+00    1.60988D-01
+         4    1.19815D-01  0.00D+00  1.20D-01  6.38D+00    1.90349D-01
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.66749D-03  0.00D+00  4.67D-03  4.25D+00    7.81203D-02
+         2    7.41158D-03  0.00D+00  7.41D-03  5.27D+00    1.54293D-01
+         3    7.86128D-03  0.00D+00  7.86D-03  5.43D+00    1.60988D-01
+         4    1.06474D-02  0.00D+00  1.06D-02  6.38D+00    1.90349D-01
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    6.23535D-04  0.00D+00  6.24D-04  4.25D+00    7.81203D-02
+         2    1.01714D-03  0.00D+00  1.02D-03  5.27D+00    1.54293D-01
+         3    1.08424D-03  0.00D+00  1.08D-03  5.43D+00    1.60988D-01
+         4    1.51255D-03  0.00D+00  1.51D-03  6.38D+00    1.90349D-01
+
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -991,7 +1117,7 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
 @ QRLRVE:  << YLFDIPLN ; XLFDIPLN >> (   0.07812):    -9.42501965121    
 
-@ QRLRVE:  << ZLFDIPLN ; XLFDIPLN >> (   0.07812):   -7.159064507844E-03
+@ QRLRVE:  << ZLFDIPLN ; XLFDIPLN >> (   0.07812):   -7.159064508308E-03
 
 @ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A  )    LABEL   XLFDIPLN    FREQUENCY   0.154293D+00
 
@@ -999,7 +1125,7 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
 @ QRLRVE:  << YLFDIPLN ; XLFDIPLN >> (   0.15429):    -11.9528261924    
 
-@ QRLRVE:  << ZLFDIPLN ; XLFDIPLN >> (   0.15429):   -7.575275956475E-03
+@ QRLRVE:  << ZLFDIPLN ; XLFDIPLN >> (   0.15429):   -7.575275956965E-03
 
 @ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A  )    LABEL   XLFDIPLN    FREQUENCY   0.160988D+00
 
@@ -1007,7 +1133,7 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
 @ QRLRVE:  << YLFDIPLN ; XLFDIPLN >> (   0.16099):    -12.3413119249    
 
-@ QRLRVE:  << ZLFDIPLN ; XLFDIPLN >> (   0.16099):   -7.634563672287E-03
+@ QRLRVE:  << ZLFDIPLN ; XLFDIPLN >> (   0.16099):   -7.634563672780E-03
 
 @ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A  )    LABEL   XLFDIPLN    FREQUENCY   0.190349D+00
 
@@ -1015,7 +1141,7 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
 @ QRLRVE:  << YLFDIPLN ; XLFDIPLN >> (   0.19035):    -14.6438679716    
 
-@ QRLRVE:  << ZLFDIPLN ; XLFDIPLN >> (   0.19035):   -7.968646091205E-03
+@ QRLRVE:  << ZLFDIPLN ; XLFDIPLN >> (   0.19035):   -7.968646091718E-03
 
 
  QRLRVE -- linear response calculation for symmetry  1  ( A  )
@@ -1029,6 +1155,51 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
  Operator symmetry = 1  ( A  ); triplet =   F
 
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.35779D+00  0.00D+00  3.36D+00  4.86D+00    7.81203D-02
+         2    3.84366D+00  0.00D+00  3.84D+00  6.15D+00    1.54293D-01
+         3    3.91416D+00  0.00D+00  3.91D+00  6.34D+00    1.60988D-01
+         4    4.31217D+00  0.00D+00  4.31D+00  7.39D+00    1.90349D-01
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.44770D-01  0.00D+00  4.45D-01  5.99D+00    7.81203D-02
+         2    5.60417D-01  0.00D+00  5.60D-01  7.97D+00    1.54293D-01
+         3    5.78349D-01  0.00D+00  5.78D-01  8.27D+00    1.60988D-01
+         4    6.85275D-01  0.00D+00  6.85D-01  1.00D+01    1.90349D-01
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.66651D-02  0.00D+00  4.67D-02  6.02D+00    7.81203D-02
+         2    6.20646D-02  0.00D+00  6.21D-02  8.01D+00    1.54293D-01
+         3    6.44602D-02  0.00D+00  6.45D-02  8.32D+00    1.60988D-01
+         4    7.87794D-02  0.00D+00  7.88D-02  1.01D+01    1.90349D-01
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    6.03943D-03  0.00D+00  6.04D-03  6.02D+00    7.81203D-02
+         2    8.94411D-03  0.00D+00  8.94D-03  8.01D+00    1.54293D-01
+         3    9.39724D-03  0.00D+00  9.40D-03  8.32D+00    1.60988D-01
+         4    1.21184D-02  0.00D+00  1.21D-02  1.01D+01    1.90349D-01
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    5.96616D-04  0.00D+00  5.97D-04  6.02D+00    7.81203D-02
+         2    1.03261D-03  0.00D+00  1.03D-03  8.02D+00    1.54293D-01
+         3    1.10613D-03  0.00D+00  1.11D-03  8.32D+00    1.60988D-01
+         4    1.57154D-03  0.00D+00  1.57D-03  1.01D+01    1.90349D-01
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
@@ -1048,7 +1219,7 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
 @ QRLRVE:  << YLFDIPLN ; YLFDIPLN >> (   0.07812):     35.5663070872    
 
-@ QRLRVE:  << ZLFDIPLN ; YLFDIPLN >> (   0.07812):   -1.329756978297E-03
+@ QRLRVE:  << ZLFDIPLN ; YLFDIPLN >> (   0.07812):   -1.329756978275E-03
 
 @ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A  )    LABEL   YLFDIPLN    FREQUENCY   0.154293D+00
 
@@ -1056,7 +1227,7 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
 @ QRLRVE:  << YLFDIPLN ; YLFDIPLN >> (   0.15429):     40.5373080038    
 
-@ QRLRVE:  << ZLFDIPLN ; YLFDIPLN >> (   0.15429):   -9.193119179447E-04
+@ QRLRVE:  << ZLFDIPLN ; YLFDIPLN >> (   0.15429):   -9.193119178846E-04
 
 @ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A  )    LABEL   YLFDIPLN    FREQUENCY   0.160988D+00
 
@@ -1064,7 +1235,7 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
 @ QRLRVE:  << YLFDIPLN ; YLFDIPLN >> (   0.16099):     41.2847471668    
 
-@ QRLRVE:  << ZLFDIPLN ; YLFDIPLN >> (   0.16099):   -8.535865723423E-04
+@ QRLRVE:  << ZLFDIPLN ; YLFDIPLN >> (   0.16099):   -8.535865722762E-04
 
 @ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A  )    LABEL   YLFDIPLN    FREQUENCY   0.190349D+00
 
@@ -1072,7 +1243,7 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
 @ QRLRVE:  << YLFDIPLN ; YLFDIPLN >> (   0.19035):     45.6514264366    
 
-@ QRLRVE:  << ZLFDIPLN ; YLFDIPLN >> (   0.19035):   -4.537791972993E-04
+@ QRLRVE:  << ZLFDIPLN ; YLFDIPLN >> (   0.19035):   -4.537791971975E-04
 
 
  QRLRVE -- linear response calculation for symmetry  1  ( A  )
@@ -1086,6 +1257,17 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
  Operator symmetry = 1  ( A  ); triplet =   F
 
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.37591D-01  0.00D+00  3.38D-01  1.60D+00    7.81203D-02
+         2    3.83249D-01  0.00D+00  3.83D-01  1.69D+00    1.54293D-01
+         3    3.92819D-01  0.00D+00  3.93D-01  1.71D+00    1.60988D-01
+         4    5.11850D-01  0.00D+00  5.12D-01  1.83D+00    1.90349D-01
+
+ ** RSPCTL MICROITERATION NUMBER    2
 
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F Dimension of reduced matrix =    16
 
@@ -1101,6 +1283,15 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
  INERTIA (POS,ZER,NEG) of reduced matrix is   15    0    1
  Determinant of reduced matrix is -2.27 * 10 **  0.0
 
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    8.72703D-02  0.00D+00  8.73D-02  1.64D+00    7.81203D-02
+         2    1.30504D-01  0.00D+00  1.31D-01  1.89D+00    1.54293D-01
+         3    4.72563D-01  0.00D+00  4.73D-01  4.97D+00    1.60988D-01
+         4    1.39658D-01  0.00D+00  1.40D-01  1.86D+00    1.90349D-01
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F Dimension of reduced matrix =    24
 
  GP * SOLUTION vector at frequency     0.16099 a.u.
@@ -1114,6 +1305,15 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
  after   12 linear transformations is      4.44412468D+00
  INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
  Determinant of reduced matrix is -6.46 * 10 **  1.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.31231D-02  0.00D+00  1.31D-02  1.65D+00    7.81203D-02
+         2    5.02868D-02  0.00D+00  5.03D-02  2.42D+00    1.54293D-01
+         3    2.91576D-02  0.00D+00  2.92D-02  1.94D+00    1.60988D-01
+         4    2.93606D-02  0.00D+00  2.94D-02  1.88D+00    1.90349D-01
+
+ ** RSPCTL MICROITERATION NUMBER    4
 
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F Dimension of reduced matrix =    32
 
@@ -1129,6 +1329,15 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
  INERTIA (POS,ZER,NEG) of reduced matrix is   31    0    1
  Determinant of reduced matrix is -3.78 * 10 **  3.0
 
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.72314D-03  0.00D+00  2.72D-03  1.65D+00    7.81203D-02
+         2    1.56042D-02  0.00D+00  1.56D-02  2.50D+00    1.54293D-01
+         3    1.01802D-02  0.00D+00  1.02D-02  1.93D+00    1.60988D-01
+         4    9.42467D-03  0.00D+00  9.42D-03  1.88D+00    1.90349D-01
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F Dimension of reduced matrix =    40
 
  GP * SOLUTION vector at frequency     0.16099 a.u.
@@ -1142,6 +1351,15 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
  after   20 linear transformations is      4.44470911D+00
  INERTIA (POS,ZER,NEG) of reduced matrix is   39    0    1
  Determinant of reduced matrix is -1.09 * 10 **  5.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    7.94666D-04  0.00D+00  7.95D-04  1.65D+00    7.81203D-02
+         2    4.40442D-03  0.00D+00  4.40D-03  2.50D+00    1.54293D-01
+         3    3.49367D-03  0.00D+00  3.49D-03  1.93D+00    1.60988D-01
+         4    3.64003D-03  0.00D+00  3.64D-03  1.88D+00    1.90349D-01
+
+ ** RSPCTL MICROITERATION NUMBER    6
 
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F Dimension of reduced matrix =    46
 
@@ -1157,6 +1375,13 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
  INERTIA (POS,ZER,NEG) of reduced matrix is   45    0    1
  Determinant of reduced matrix is -4.45 * 10 **  7.0
 
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    9.15025D-05  0.00D+00  9.15D-05  1.65D+00    7.81203D-02
+         2    6.79573D-04  0.00D+00  6.80D-04  2.51D+00    1.54293D-01
+         3    3.44352D-04  0.00D+00  3.44D-04  1.93D+00    1.60988D-01
+         4    4.04694D-04  0.00D+00  4.05D-04  1.88D+00    1.90349D-01
+
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -1171,33 +1396,33 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
 
 @ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A  )    LABEL   ZLFDIPLN    FREQUENCY   0.781203D-01
 
-@ QRLRVE:  << XLFDIPLN ; ZLFDIPLN >> (   0.07812):   -7.153318635183E-03
+@ QRLRVE:  << XLFDIPLN ; ZLFDIPLN >> (   0.07812):   -7.153318634712E-03
 
-@ QRLRVE:  << YLFDIPLN ; ZLFDIPLN >> (   0.07812):   -1.328893831398E-03
+@ QRLRVE:  << YLFDIPLN ; ZLFDIPLN >> (   0.07812):   -1.328893831505E-03
 
 @ QRLRVE:  << ZLFDIPLN ; ZLFDIPLN >> (   0.07812):     4.16260895704    
 
 @ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A  )    LABEL   ZLFDIPLN    FREQUENCY   0.154293D+00
 
-@ QRLRVE:  << XLFDIPLN ; ZLFDIPLN >> (   0.15429):   -7.182693045628E-03
+@ QRLRVE:  << XLFDIPLN ; ZLFDIPLN >> (   0.15429):   -7.182693044356E-03
 
-@ QRLRVE:  << YLFDIPLN ; ZLFDIPLN >> (   0.15429):   -1.252425633120E-03
+@ QRLRVE:  << YLFDIPLN ; ZLFDIPLN >> (   0.15429):   -1.252425634292E-03
 
 @ QRLRVE:  << ZLFDIPLN ; ZLFDIPLN >> (   0.15429):     4.33263581695    
 
 @ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A  )    LABEL   ZLFDIPLN    FREQUENCY   0.160988D+00
 
-@ QRLRVE:  << XLFDIPLN ; ZLFDIPLN >> (   0.16099):   -7.865673824415E-03
+@ QRLRVE:  << XLFDIPLN ; ZLFDIPLN >> (   0.16099):   -7.865673824704E-03
 
-@ QRLRVE:  << YLFDIPLN ; ZLFDIPLN >> (   0.16099):   -5.656559203302E-04
+@ QRLRVE:  << YLFDIPLN ; ZLFDIPLN >> (   0.16099):   -5.656559191807E-04
 
 @ QRLRVE:  << ZLFDIPLN ; ZLFDIPLN >> (   0.16099):     4.33595957810    
 
 @ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A  )    LABEL   ZLFDIPLN    FREQUENCY   0.190349D+00
 
-@ QRLRVE:  << XLFDIPLN ; ZLFDIPLN >> (   0.19035):   -8.104803691075E-03
+@ QRLRVE:  << XLFDIPLN ; ZLFDIPLN >> (   0.19035):   -8.104803691208E-03
 
-@ QRLRVE:  << YLFDIPLN ; ZLFDIPLN >> (   0.19035):   -1.930117698542E-04
+@ QRLRVE:  << YLFDIPLN ; ZLFDIPLN >> (   0.19035):   -1.930117687984E-04
 
 @ QRLRVE:  << ZLFDIPLN ; ZLFDIPLN >> (   0.19035):     4.44471031739    
 
@@ -1555,17 +1780,17 @@ File label for MO orbitals:   7Oct16   FOCKDIIS
      1   4   10.36   Circular     0.749E-07  0.141E+00  0.843E+00  0.663E-01    1.50
    ---------------------------------------------------------------------------------
 
-  Total CPU  time used in RESPONSE:   1.68 seconds
-  Total wall time used in RESPONSE:   1.68 seconds
+  Total CPU  time used in RESPONSE:   0.67 seconds
+  Total wall time used in RESPONSE:   0.67 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
-  Total CPU  time used in DALTON:   2.46 seconds
-  Total wall time used in DALTON:   2.46 seconds
+  Total CPU  time used in DALTON:   1.09 seconds
+  Total wall time used in DALTON:   1.09 seconds
 
  
-     Date and time (Linux)  : Fri Oct  7 19:01:27 2016
-     Host name              : gamma                                   
+     Date and time (Linux)  : Tue Apr 24 14:10:01 2018
+     Host name              : foeroyar                                
