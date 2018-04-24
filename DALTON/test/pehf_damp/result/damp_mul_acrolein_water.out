@@ -142,14 +142,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Mar 11 23:22:45 2018
+     Date and time (Linux)  : Tue Apr 24 14:09:51 2018
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/test/pehf_damp
-   2) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis
+   1) /home/magnus/Projects/dalton_devel/dalton-private/build/test/pehf_damp
+   2) /home/magnus/Projects/dalton_devel/dalton-private/build/basis
 
 
 Compilation information
@@ -157,17 +157,17 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-4.15.6-300.fc27.x86_64
+ System                   | Linux-4.15.15-300.fc27.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
+ MPI                      | ON
+ Fortran compiler         | /usr/lib64/mpich/bin/mpif90
  Fortran compiler version | GNU Fortran (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
- C compiler               | /usr/bin/gcc
+ C compiler               | /usr/lib64/mpich/bin/mpicc
  C compiler version       | gcc (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C++ compiler             | /usr/lib64/mpich/bin/mpicxx
+ C++ compiler version     | unknown
  BLAS                     | /home/magnus/Programs/intel/compilers_and_librarie
                           | s_2018.1.163/linux/mkl/lib/intel64/libmkl_gf_lp64.
                           | so;/home/magnus/Programs/intel/compilers_and_libra
@@ -182,9 +182,11 @@ Compilation information
                           | libraries_2018.1.163/linux/mkl/lib/intel64/libmkl_
                           | gf_lp64.so
  Static linking           | OFF
- Last Git revision        | c26c19694269d0231f4416cb83b028f9456ffab8
- Git branch               | add-multipole-interaction
- Configuration time       | 2018-03-11 23:22:22.832814
+ Last Git revision        | 9055103dddfd9c6746ec240c40a8a01c46350288
+ Git branch               | master
+ Configuration time       | 2018-04-24 13:57:14.806869
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
@@ -260,7 +262,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -268,7 +270,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -276,7 +278,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    4
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -485,9 +487,9 @@ H              2.675323   -2.516779   -0.000673
  HERMIT - Number of two-electron integrals written:       43383 ( 96.1% )
  HERMIT - Megabytes written:                              0.502
 
-  Time used in TWOINT     is       0.26 seconds
-  Total CPU  time used in HERMIT:   0.33 seconds
-  Total wall time used in HERMIT:   0.34 seconds
+  Time used in TWOINT     is       0.18 seconds
+  Total CPU  time used in HERMIT:   0.23 seconds
+  Total wall time used in HERMIT:   0.23 seconds
 
 
                         .----------------------------------.
@@ -523,7 +525,7 @@ H              2.675323   -2.516779   -0.000673
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Mar 11 23:22:45 2018
+     Date and time (Linux)  : Tue Apr 24 14:09:51 2018
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -603,8 +605,8 @@ Calculating AOSUPINT
                        X              Y              Z
                  -0.03675732     0.04731444     0.00010781
 
-@  1  -187.942384853     -4.257199689186E-02    2.01912D+00   -1.88D+02
-      Virial theorem: -V/T =      2.003024
+@  1  -187.943406728     -4.359387164084E-02    2.01912D+00   -1.88D+02
+      Virial theorem: -V/T =      2.003029
 @    MULPOP   C       0.93; C       0.24; C       0.42; O      -1.03; H      -0.16; H      -0.14; H      -0.12; H      -0.13; 
    1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
@@ -619,8 +621,8 @@ Calculating AOSUPINT
                        X              Y              Z
                  -0.01230002     0.00710038     0.00001736
 
-@  2  -188.273976815     -6.477715055464E-03    7.46992D-01   -3.32D-01
-      Virial theorem: -V/T =      2.009164
+@  2  -188.274998690     -7.499589804443E-03    7.46992D-01   -3.32D-01
+      Virial theorem: -V/T =      2.009170
 @    MULPOP   C      -0.14; C      -0.12; C      -0.12; O       0.06; H       0.05; H       0.11; H       0.09; H       0.09; 
    2  Level shift: doubly occupied orbital energies shifted by -1.00D-01
  -----------------------------------------------------------------------------
@@ -635,8 +637,8 @@ Calculating AOSUPINT
                        X              Y              Z
                  -0.02040618     0.02321326     0.00003842
 
-@  3  -188.312119628     -1.538439738506E-02    1.09338D-01   -3.81D-02
-      Virial theorem: -V/T =      2.007953
+@  3  -188.313141502     -1.640627213404E-02    1.09338D-01   -3.81D-02
+      Virial theorem: -V/T =      2.007959
 @    MULPOP   C       0.15; C      -0.10; C      -0.11; O      -0.25; H       0.05; H       0.10; H       0.08; H       0.08; 
    3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
  -----------------------------------------------------------------------------
@@ -651,8 +653,8 @@ Calculating AOSUPINT
                        X              Y              Z
                  -0.01962606     0.02320219     0.00003950
 
-@  4  -188.313897713     -1.575606478362E-02    3.07705D-02   -1.78D-03
-      Virial theorem: -V/T =      2.007873
+@  4  -188.314919588     -1.677793953259E-02    3.07705D-02   -1.78D-03
+      Virial theorem: -V/T =      2.007879
 @    MULPOP   C       0.13; C      -0.10; C      -0.09; O      -0.26; H       0.07; H       0.10; H       0.07; H       0.08; 
    4  Level shift: doubly occupied orbital energies shifted by -1.25D-02
  -----------------------------------------------------------------------------
@@ -667,8 +669,8 @@ Calculating AOSUPINT
                        X              Y              Z
                  -0.01964302     0.02394122     0.00003848
 
-@  5  -188.314076047     -1.568212924140E-02    1.15256D-02   -1.78D-04
-      Virial theorem: -V/T =      2.007840
+@  5  -188.315097921     -1.670400399038E-02    1.15256D-02   -1.78D-04
+      Virial theorem: -V/T =      2.007846
 @    MULPOP   C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.06; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  4 iterations.
@@ -682,8 +684,8 @@ Calculating AOSUPINT
                        X              Y              Z
                  -0.01965878     0.02380108     0.00003797
 
-@  6  -188.314095566     -1.568822614125E-02    2.97815D-03   -1.95D-05
-      Virial theorem: -V/T =      2.007842
+@  6  -188.315117441     -1.671010089023E-02    2.97815D-03   -1.95D-05
+      Virial theorem: -V/T =      2.007847
 @    MULPOP   C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  4 iterations.
@@ -697,8 +699,8 @@ Calculating AOSUPINT
                        X              Y              Z
                  -0.01965041     0.02385655     0.00003765
 
-@  7  -188.314097278     -1.567726732261E-02    1.04907D-03   -1.71D-06
-      Virial theorem: -V/T =      2.007845
+@  7  -188.315119153     -1.669914207159E-02    1.04907D-03   -1.71D-06
+      Virial theorem: -V/T =      2.007850
 @    MULPOP   C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  4 iterations.
@@ -712,8 +714,8 @@ Calculating AOSUPINT
                        X              Y              Z
                  -0.01965970     0.02386058     0.00003739
 
-@  8  -188.314097446     -1.567504964141E-02    3.25137D-04   -1.67D-07
-      Virial theorem: -V/T =      2.007845
+@  8  -188.315119320     -1.669692439039E-02    3.25137D-04   -1.67D-07
+      Virial theorem: -V/T =      2.007851
 @    MULPOP   C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  4 iterations.
@@ -727,8 +729,8 @@ Calculating AOSUPINT
                        X              Y              Z
                  -0.01966190     0.02386426     0.00003729
 
-@  9  -188.314097464     -1.567354804323E-02    5.63667D-05   -1.83D-08
-      Virial theorem: -V/T =      2.007846
+@  9  -188.315119339     -1.669542279221E-02    5.63667D-05   -1.83D-08
+      Virial theorem: -V/T =      2.007851
 @    MULPOP   C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  3 iterations.
@@ -742,10 +744,10 @@ Calculating AOSUPINT
                        X              Y              Z
                  -0.01966220     0.02386477     0.00003729
 
-@ 10  -188.314097464     -1.567331939403E-02    9.06759D-06   -5.20D-10
+@ 10  -188.315119339     -1.669519414301E-02    9.06759D-06   -5.20D-10
 
 @ *** DIIS converged in  10 iterations !
-@     Converged SCF energy, gradient:   -188.314097464307    9.07D-06
+@     Converged SCF energy, gradient:   -188.315119339056    9.07D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -787,7 +789,8 @@ Calculating AOSUPINT
             Multipole                  0.000123078444
             Total                     -0.000754588133
 
-       Total PE energy:            -0.015673319394
+       Total PE energy:               -0.016695194143
+            (excl. multipole-multipole interaction energy)
 
                Polarizable embedding information:
               ------------------------------------
@@ -812,7 +815,7 @@ Calculating AOSUPINT
 
  --- Writing SIRIFC interface file
 
- CPU and wall time for SCF :       0.403       0.404
+ CPU and wall time for SCF :       0.142       0.143
 
 
                        .-----------------------------------.
@@ -824,18 +827,18 @@ Calculating AOSUPINT
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:            -188.314097464307                 
+@    Final HF energy:            -188.315119339056                 
 @    Nuclear repulsion:           102.664846860515
 @    Electronic energy:          -290.963271005428
-@    Embedding energy:             -0.015673319394
+@    Embedding energy:             -0.016695194143
 
 @    Final gradient norm:           0.000009067592
 
  
-     Date and time (Linux)  : Sun Mar 11 23:22:46 2018
+     Date and time (Linux)  : Tue Apr 24 14:09:51 2018
      Host name              : foeroyar                                
 
-File label for MO orbitals:  11Mar18   FOCKDIIS
+File label for MO orbitals:  24Apr18   FOCKDIIS
 
  (Only coefficients > 0.0100 are printed.)
 
@@ -938,11 +941,11 @@ File label for MO orbitals:  11Mar18   FOCKDIIS
   23 H   :1s    -0.2208   0.5470   0.0474
   24 H   :1s     0.5318  -0.3790  -0.1526
 
-  Total CPU  time used in SIRIUS :   0.41 seconds
-  Total wall time used in SIRIUS :   0.41 seconds
+  Total CPU  time used in SIRIUS :   0.15 seconds
+  Total wall time used in SIRIUS :   0.15 seconds
 
  
-     Date and time (Linux)  : Sun Mar 11 23:22:46 2018
+     Date and time (Linux)  : Tue Apr 24 14:09:51 2018
      Host name              : foeroyar                                
 
 
@@ -950,9 +953,9 @@ File label for MO orbitals:  11Mar18   FOCKDIIS
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
-  Total CPU  time used in DALTON:   0.75 seconds
-  Total wall time used in DALTON:   0.75 seconds
+  Total CPU  time used in DALTON:   0.38 seconds
+  Total wall time used in DALTON:   0.38 seconds
 
  
-     Date and time (Linux)  : Sun Mar 11 23:22:46 2018
+     Date and time (Linux)  : Tue Apr 24 14:09:51 2018
      Host name              : foeroyar                                

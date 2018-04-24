@@ -4,8 +4,11 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2015.0
+    This is output from DALTON release Dalton2017.alpha (2017)
+         ( Web site: http://daltonprogram.org )
+
    ----------------------------------------------------------------------------
+
     NOTE:
      
     Dalton is an experimental code for the evaluation of molecular
@@ -24,13 +27,13 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
        T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
        L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
        C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
        H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
        M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
-       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
        T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
        J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
        O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
@@ -45,12 +48,12 @@
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
        and H. Agren,
        "The Dalton quantum chemistry program system",
-       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
-    
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
     and
-    
+     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2014.0 (2015), see http://daltonprogram.org
+       Release Dalton2017.alpha (2017), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -59,7 +62,7 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
   Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
@@ -70,6 +73,7 @@
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
   Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -78,12 +82,14 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
   Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
@@ -105,7 +111,7 @@
   Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
-  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex frequency response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
@@ -136,14 +142,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Feb 23 12:36:26 2015
+     Date and time (Linux)  : Tue Apr 24 14:09:54 2018
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/nonconverted_runtests/pehf_border
-   2) /home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis
+   1) /home/magnus/Projects/dalton_devel/dalton-private/build/test/pehf_border
+   2) /home/magnus/Projects/dalton_devel/dalton-private/build/basis
 
 
 Compilation information
@@ -151,98 +157,112 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-3.18.6-200.fc21.x86_64
+ System                   | Linux-4.15.15-300.fc27.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- BLAS                     | /lib64/libblas.so
- LAPACK                   | /lib64/liblapack.so
+ MPI                      | ON
+ Fortran compiler         | /usr/lib64/mpich/bin/mpif90
+ Fortran compiler version | GNU Fortran (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C compiler               | /usr/lib64/mpich/bin/mpicc
+ C compiler version       | gcc (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C++ compiler             | /usr/lib64/mpich/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_gf_lp64.
+                          | so;/home/magnus/Programs/intel/compilers_and_libra
+                          | ries_2018.1.163/linux/mkl/lib/intel64/libmkl_seque
+                          | ntial.so;/home/magnus/Programs/intel/compilers_and
+                          | _libraries_2018.1.163/linux/mkl/lib/intel64/libmkl
+                          | _core.so;/usr/lib64/libpthread.so;/usr/lib64/libm.
+                          | so
+ LAPACK                   | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_lapack95
+                          | _lp64.a;/home/magnus/Programs/intel/compilers_and_
+                          | libraries_2018.1.163/linux/mkl/lib/intel64/libmkl_
+                          | gf_lp64.so
  Static linking           | OFF
- Last Git revision        | 46c9aaba256772eebe3009de63bb35fbe126d126
- Configuration time       | 2015-02-23 11:42:33.949754
+ Last Git revision        | 9055103dddfd9c6746ec240c40a8a01c46350288
+ Git branch               | master
+ Configuration time       | 2018-04-24 13:57:14.806869
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
  ----------------------------------
 
-**DALTON                                          
-.PEQM                                             
-*PEQM                                             
-.BORDER                                           
-REDIST -1 1.4 AA 2                                
-**END OF                                          
+**DALTON
+.PEQM
+*PEQM
+.BORDER
+REDIST -1 1.4 AA 2
+**END OF
 
 
    Content of the .mol file
  ----------------------------
 
-BASIS                                                                          
-STO-3G                                                                         
-FP chromophore                                                                 
---------------                                                                 
-AtomTypes=15 Angstrom NoSymmetry                                               
-Charge=6.0 Atoms=1                                                             
-C   11.642000   68.057000  -12.147000                                          
-Charge=8.0 Atoms=1                                                             
-O   10.933000   67.241000  -12.738000                                          
-Charge=7.0 Atoms=1                                                             
-N   11.385000   68.446000  -10.896000                                          
-Charge=6.0 Atoms=3                                                             
-C   10.237000   67.920000  -10.172000                                          
-C    9.431000   69.147000   -9.749000                                          
-C   10.723000   67.085000   -8.984000                                          
-Charge=8.0 Atoms=1                                                             
-O    9.652000   66.344000   -8.424000                                          
-Charge=7.0 Atoms=1                                                             
-N    9.543000   69.559000   -8.452000                                          
-Charge=6.0 Atoms=2                                                             
-C    8.729000   70.767000   -8.479000                                          
-C    8.131000   70.900000   -9.852000                                          
-Charge=8.0 Atoms=1                                                             
-O    7.326000   71.733000  -10.289000                                          
-Charge=6.0 Atoms=7                                                             
-C    8.491000   71.711000   -7.501000                                          
-C    8.987000   71.776000   -6.180000                                          
-C    9.853000   70.805000   -5.669000                                          
-C    8.622000   72.829000   -5.348000                                          
-C   10.348000   70.900000   -4.352000                                          
-C    9.098000   72.935000   -4.033000                                          
-C    9.954000   71.973000   -3.543000                                          
-Charge=8.0 Atoms=1                                                             
-O   10.379000   72.087000   -2.245000                                          
-Charge=7.0 Atoms=1                                                             
-N    8.653000   69.907000  -10.550000                                          
-Charge=6.0 Atoms=2                                                             
-C    8.418000   69.770000  -11.975000                                          
-C    7.239000   68.914000  -12.412000                                          
-Charge=8.0 Atoms=1                                                             
-O    6.736000   69.089000  -13.541000                                          
-Charge=7.0 Atoms=1                                                             
-N    6.850000   67.949000  -11.587000                                          
-Charge=1.0 Atoms=16                                                            
-H   12.581000   68.386000  -12.566000                                          
-H   11.991000   69.113000  -10.440000                                          
-H    9.676000   67.246000  -10.819000                                          
-H   11.495000   66.392000   -9.318000                                          
-H   11.134000   67.745000   -8.219000                                          
-H    9.762000   66.291000   -7.472000                                          
-H   10.151000   69.969000   -6.285000                                          
-H    7.953000   73.596000   -5.710000                                          
-H   11.026000   70.149000   -3.974000                                          
-H    8.793000   73.766000   -3.414000                                          
-H   10.650000   71.225000   -1.920000                                          
-H    7.841000   72.549000   -7.706000                                          
-H    8.237000   70.753000  -12.410000                                          
-H    9.292000   69.319000  -12.446000                                          
-H    6.088000   67.330000  -11.824000                                          
-H    7.319000   67.822000  -10.702000                                          
+BASIS
+STO-3G
+FP chromophore
+--------------
+AtomTypes=15 Angstrom NoSymmetry
+Charge=6.0 Atoms=1
+C   11.642000   68.057000  -12.147000
+Charge=8.0 Atoms=1
+O   10.933000   67.241000  -12.738000
+Charge=7.0 Atoms=1
+N   11.385000   68.446000  -10.896000
+Charge=6.0 Atoms=3
+C   10.237000   67.920000  -10.172000
+C    9.431000   69.147000   -9.749000
+C   10.723000   67.085000   -8.984000
+Charge=8.0 Atoms=1
+O    9.652000   66.344000   -8.424000
+Charge=7.0 Atoms=1
+N    9.543000   69.559000   -8.452000
+Charge=6.0 Atoms=2
+C    8.729000   70.767000   -8.479000
+C    8.131000   70.900000   -9.852000
+Charge=8.0 Atoms=1
+O    7.326000   71.733000  -10.289000
+Charge=6.0 Atoms=7
+C    8.491000   71.711000   -7.501000
+C    8.987000   71.776000   -6.180000
+C    9.853000   70.805000   -5.669000
+C    8.622000   72.829000   -5.348000
+C   10.348000   70.900000   -4.352000
+C    9.098000   72.935000   -4.033000
+C    9.954000   71.973000   -3.543000
+Charge=8.0 Atoms=1
+O   10.379000   72.087000   -2.245000
+Charge=7.0 Atoms=1
+N    8.653000   69.907000  -10.550000
+Charge=6.0 Atoms=2
+C    8.418000   69.770000  -11.975000
+C    7.239000   68.914000  -12.412000
+Charge=8.0 Atoms=1
+O    6.736000   69.089000  -13.541000
+Charge=7.0 Atoms=1
+N    6.850000   67.949000  -11.587000
+Charge=1.0 Atoms=16
+H   12.581000   68.386000  -12.566000
+H   11.991000   69.113000  -10.440000
+H    9.676000   67.246000  -10.819000
+H   11.495000   66.392000   -9.318000
+H   11.134000   67.745000   -8.219000
+H    9.762000   66.291000   -7.472000
+H   10.151000   69.969000   -6.285000
+H    7.953000   73.596000   -5.710000
+H   11.026000   70.149000   -3.974000
+H    8.793000   73.766000   -3.414000
+H   10.650000   71.225000   -1.920000
+H    7.841000   72.549000   -7.706000
+H    8.237000   70.753000  -12.410000
+H    9.292000   69.319000  -12.446000
+H    6.088000   67.330000  -11.824000
+H    7.319000   67.822000  -10.702000
 
 
        *******************************************************************
@@ -278,7 +298,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -286,7 +306,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -294,7 +314,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   7 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    4
   --------------------
@@ -302,7 +322,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    5
   --------------------
@@ -310,7 +330,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    6
   --------------------
@@ -318,7 +338,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   7 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    7
   --------------------
@@ -326,7 +346,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    8
   --------------------
@@ -334,7 +354,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    9
   --------------------
@@ -342,7 +362,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    7
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.   10
   --------------------
@@ -350,7 +370,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.   11
   --------------------
@@ -358,7 +378,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   7 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.   12
   --------------------
@@ -366,7 +386,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.   13
   --------------------
@@ -374,7 +394,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.   14
   --------------------
@@ -382,7 +402,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   7 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.   15
   --------------------
@@ -390,7 +410,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:   16
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -693,48 +713,51 @@ H    7.319000   67.822000  -10.702000
 
       Redistributing multipoles upto 0th order and polarizabilities
     from site:    37
-    to neighbouring sites:    25    27
+        to neighbouring sites:    25    27
 
       Redistributing multipoles upto 0th order and polarizabilities
     from site:     9
-    to neighbouring sites:     2     4
+        to neighbouring sites:     2     4
 
       Redistributing multipoles upto 0th order and polarizabilities
     from site:    26
-    to neighbouring sites:    25    27
+        to neighbouring sites:    25    27
 
       Redistributing multipoles upto 0th order and polarizabilities
     from site:    39
-    to neighbouring sites:    42    25
+        to neighbouring sites:    42    25
 
       Redistributing multipoles upto 0th order and polarizabilities
     from site:     1
-    to neighbouring sites:     2     4
+        to neighbouring sites:     2     4
 
       Redistributing multipoles upto 0th order and polarizabilities
     from site:    10
-    to neighbouring sites:     4    13
+        to neighbouring sites:     4    13
 
          Resulting monopoles: 
         ----------------------
-       C       2     0.3206
-       C       4    -0.0699
-       H      13     0.1850
-       N      25    -0.2349
-       C      27    -0.2329
-       H      42     0.2036
+        C       2     0.3206
+        C       4    -0.0699
+        H      13     0.1850
+        N      25    -0.2349
+        C      27    -0.2329
+        H      42     0.2036
 
          Resulting polarizabilities: 
         -----------------------------
-       C       2    13.0581  -2.5964  -4.9244  15.3208   1.8676  11.3839
-       C       4    13.4886  -4.0271  -1.9249  13.8744   0.6621  15.9132
-       H      13     2.3954  -0.9340   1.9542   1.2740  -1.2682   4.6657
-       N      25    12.2237  -5.8994   0.4965  18.1768  -0.6506   8.1848
-       C      27    18.4004  -2.0861  -1.5290  12.7675  -1.4836   7.8363
-       H      42     3.2864  -0.3800   1.7952   0.8611   0.2012   3.5228
- >>>> Total CPU  time used in DALTON:   0.02 seconds
- >>>> Total wall time used in DALTON:   0.02 seconds
+        C       2    13.0581  -2.5964  -4.9244  15.3208   1.8676  11.3839
+        C       4    13.4886  -4.0271  -1.9249  13.8744   0.6621  15.9132
+        H      13     2.3954  -0.9340   1.9542   1.2740  -1.2682   4.6657
+        N      25    12.2237  -5.8994   0.4965  18.1768  -0.6506   8.1848
+        C      27    18.4004  -2.0861  -1.5290  12.7675  -1.4836   7.8363
+        H      42     3.2864  -0.3800   1.7952   0.8611   0.2012   3.5228
+ 
+      Total charge of classical region:    0.0000
+ 
+  Total CPU  time used in DALTON:   0.02 seconds
+  Total wall time used in DALTON:   0.02 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 12:36:26 2015
+     Date and time (Linux)  : Tue Apr 24 14:09:54 2018
      Host name              : foeroyar                                
