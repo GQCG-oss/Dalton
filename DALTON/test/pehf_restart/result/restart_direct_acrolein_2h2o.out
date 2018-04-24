@@ -142,14 +142,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Mar 11 23:22:48 2018
+     Date and time (Linux)  : Tue Apr 24 14:09:53 2018
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/test/pehf_restart
-   2) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis
+   1) /home/magnus/Projects/dalton_devel/dalton-private/build/test/pehf_restart
+   2) /home/magnus/Projects/dalton_devel/dalton-private/build/basis
 
 
 Compilation information
@@ -157,17 +157,17 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-4.15.6-300.fc27.x86_64
+ System                   | Linux-4.15.15-300.fc27.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
+ MPI                      | ON
+ Fortran compiler         | /usr/lib64/mpich/bin/mpif90
  Fortran compiler version | GNU Fortran (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
- C compiler               | /usr/bin/gcc
+ C compiler               | /usr/lib64/mpich/bin/mpicc
  C compiler version       | gcc (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C++ compiler             | /usr/lib64/mpich/bin/mpicxx
+ C++ compiler version     | unknown
  BLAS                     | /home/magnus/Programs/intel/compilers_and_librarie
                           | s_2018.1.163/linux/mkl/lib/intel64/libmkl_gf_lp64.
                           | so;/home/magnus/Programs/intel/compilers_and_libra
@@ -182,9 +182,11 @@ Compilation information
                           | libraries_2018.1.163/linux/mkl/lib/intel64/libmkl_
                           | gf_lp64.so
  Static linking           | OFF
- Last Git revision        | c26c19694269d0231f4416cb83b028f9456ffab8
- Git branch               | add-multipole-interaction
- Configuration time       | 2018-03-11 23:22:22.832814
+ Last Git revision        | 9055103dddfd9c6746ec240c40a8a01c46350288
+ Git branch               | master
+ Configuration time       | 2018-04-24 13:57:14.806869
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
@@ -259,7 +261,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -267,7 +269,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -275,7 +277,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    4
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -482,9 +484,9 @@ H              2.675323   -2.516779   -0.000673
  HERMIT - Number of two-electron integrals written:       43383 ( 96.1% )
  HERMIT - Megabytes written:                              0.502
 
-  Time used in TWOINT     is       0.26 seconds
-  Total CPU  time used in HERMIT:   0.34 seconds
-  Total wall time used in HERMIT:   0.34 seconds
+  Time used in TWOINT     is       0.18 seconds
+  Total CPU  time used in HERMIT:   0.23 seconds
+  Total wall time used in HERMIT:   0.23 seconds
 
 
                         .----------------------------------.
@@ -497,14 +499,14 @@ H              2.675323   -2.516779   -0.000673
                    | Starting in Wave Function Section (SIRIUS) |
                    `--------------------------------------------'
 
-* Read MO coefficients from SIRIUS.RST with label "NEWORB  " and header info: 11Mar18  FOCKDIIS
+* Read MO coefficients from SIRIUS.RST with label "NEWORB  " and header info: 24Apr18  FOCKDIIS
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Mar 11 23:22:48 2018
+     Date and time (Linux)  : Tue Apr 24 14:09:53 2018
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -585,10 +587,10 @@ Calculating AOSUPINT
                        X              Y              Z
                  -0.01989484     0.02419891     0.00003677
 
-@  1  -188.316370041     -1.816258690159E-02    9.18807D-06   -1.88D+02
+@  1  -188.317391916     -1.918446172362E-02    9.18807D-06   -1.88D+02
 
 @ *** DIIS converged in   1 iterations !
-@     Converged SCF energy, gradient:   -188.316370041336    9.19D-06
+@     Converged SCF energy, gradient:   -188.317391916158    9.19D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -630,7 +632,8 @@ Calculating AOSUPINT
             Multipole                  0.000129039745
             Total                     -0.000765385517
 
-       Total PE energy:            -0.018162586902
+       Total PE energy:               -0.019184461724
+            (excl. multipole-multipole interaction energy)
 
                Polarizable embedding information:
               ------------------------------------
@@ -655,7 +658,7 @@ Calculating AOSUPINT
 
  --- Writing SIRIFC interface file
 
- CPU and wall time for SCF :       0.124       0.124
+ CPU and wall time for SCF :       0.045       0.044
 
 
                        .-----------------------------------.
@@ -667,18 +670,18 @@ Calculating AOSUPINT
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:            -188.316370041336                 
+@    Final HF energy:            -188.317391916158                 
 @    Nuclear repulsion:           102.664846860515
 @    Electronic energy:          -290.963054314950
-@    Embedding energy:             -0.018162586902
+@    Embedding energy:             -0.019184461724
 
 @    Final gradient norm:           0.000009188075
 
  
-     Date and time (Linux)  : Sun Mar 11 23:22:48 2018
+     Date and time (Linux)  : Tue Apr 24 14:09:53 2018
      Host name              : foeroyar                                
 
-File label for MO orbitals:  11Mar18   FOCKDIIS
+File label for MO orbitals:  24Apr18   FOCKDIIS
 
  (Only coefficients > 0.0100 are printed.)
 
@@ -781,11 +784,11 @@ File label for MO orbitals:  11Mar18   FOCKDIIS
   23 H   :1s    -0.2205   0.5473   0.0473
   24 H   :1s     0.5319  -0.3795  -0.1527
 
-  Total CPU  time used in SIRIUS :   0.13 seconds
-  Total wall time used in SIRIUS :   0.13 seconds
+  Total CPU  time used in SIRIUS :   0.05 seconds
+  Total wall time used in SIRIUS :   0.05 seconds
 
  
-     Date and time (Linux)  : Sun Mar 11 23:22:48 2018
+     Date and time (Linux)  : Tue Apr 24 14:09:53 2018
      Host name              : foeroyar                                
 
 
@@ -793,9 +796,9 @@ File label for MO orbitals:  11Mar18   FOCKDIIS
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
-  Total CPU  time used in DALTON:   0.48 seconds
-  Total wall time used in DALTON:   0.48 seconds
+  Total CPU  time used in DALTON:   0.28 seconds
+  Total wall time used in DALTON:   0.28 seconds
 
  
-     Date and time (Linux)  : Sun Mar 11 23:22:48 2018
+     Date and time (Linux)  : Tue Apr 24 14:09:53 2018
      Host name              : foeroyar                                
