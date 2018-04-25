@@ -405,13 +405,14 @@ C     of a generic spin-dependent short-range GGA functional
 C     ESRC_SPINGGA(rhoc,rhos,grdcc,grdss,grdcs,mu,E)
 C
 C NOTE: (April 2018, hjaaj)
-C     This generic routine can be called for LDA, LDA_SPIN, GGA, GGA_SPIN;
-C     derivatives for rhos, grdcc, grdss, and grdcs are only calculated
-C     if those which are non-zero.
-C     For example for PBE_SPIN (which does not depend on grdcs) the
-C     grdcs = GRD2(3) should be zero on input to avoid unnecessary derivatives
-C     wrt grdcs, although the true grdcs is non-zero.
-C     For LDA all GRD2 elements should be zero.
+C     This generic routine can be called for any LDA_SPIN and GGA_SPIN;
+C     derivatives for grdcc, grdss, and grdcs are only calculated
+C     for those which are non-zero.
+C     For example for PBE_SPIN (which does not depend on grdss and grdcs) the
+C     grdss = grd2(2) and grdcs = GRD2(3) should be zero on input to avoid unnecssary
+C     derivatives wrt grdss and grdcs, although the true grdss, grdcs are non-zero.
+C     Can also be used for LDA by setting GRD2(1:3) elements to zero.
+C     Derivatives wrt rhoc and rhos are always calculated.
 C
 C     This routine performes the derivatives with respect to charge and spin variables,
 C     normally best suited for correlation functionals.
@@ -504,7 +505,6 @@ C     check
       if (arhos .gt. rhoc) then
          call quit('DESRC_SPINGGA error: |rhos| > rhoc')
       end if
-      pure_spin = ((rhoc - arhos) .le. 1.d-14 ) ! pure alpha or pure beta
 
       if (rhoc .lt. 1.d-10) then ! no significant density in this point
          E = 0.0d0
@@ -515,17 +515,13 @@ C     energy
       call ESRC_SPINGGA(rhoc,rhos,grdcc,grdss,grdcs,mu,E)
 
 C     (optimal?) numerical step
-C     (step length of hx=1.d-4*X should give a relative accuracy of approx. 16 digits
+C     (step length of hx=1.d-4*X should give a relative accuracy of approx. 8 digits
 C      because we use central 2nd-order approximation)
 C     NB! The zeroing of grdcs, grdss, grdcc depending on type means these will be skipped below.
 
       hrc = 1.d-4*rhoc
+      hrs = hrc
 
-      if (arhos .lt. 1.d-10) then
-         hrs = 0.0d0
-      else
-         hrs = hrc
-      end if
       if (grdcc .lt. 1.d-20) then
          hgc = 0.0d0
       else
@@ -563,8 +559,10 @@ C     variations of variables
       grdcsm = grdcs-hgcs
       grdcsp = grdcs+hgcs
 C
-C Special treatment of pure spin
+C     Special treatment of pure spin (because rhosm or rhosp will correspond
+C     to negative rhoa or negative rhob)
 
+      pure_spin = ( rhosp .gt. rhoc .or. -rhosm .gt. rhoc ) ! pure alpha or pure beta needs special handling
       if (pure_spin) then
 
        call quit('DESRC_SPINGGA: pure_spin not implemented yet')

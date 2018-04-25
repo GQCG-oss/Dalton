@@ -88,9 +88,9 @@ C
 C     RHG(1:3,1:4): grad(rhoc), grad(rhos), grad(rhoa), grad(rhob)
 C     VXC  = d1E(1) = d(e_xc) / d(rhoc)
 C     VSC  = d1E(2) = d(e_xc) / d(rhos)
-C     VXB  = d1E(5) = d(e_xc) / d(grdcc)
-C     VSB  = d1E(6) = d(e_xc) / d(grdss)
-C     VXSB = d1E(7) = d(e_xc) / d(grdcs)
+C     VXB  = d1E(3) = d(e_xc) / d(grdcc)
+C     VSB  = d1E(4) = d(e_xc) / d(grdss)
+C     VXSB = d1E(5) = d(e_xc) / d(grdcs)
 C
       implicit none
 C
