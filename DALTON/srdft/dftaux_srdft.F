@@ -41,7 +41,6 @@ C
 C
       DIMENSION DMAT(NBAST,NBAST), GSO(NBAST), DMAGAO(NBAST)
 C
-#include <dftinf.h>
 #include <symmet.h>
 #include <inforb.h>
 C
@@ -81,41 +80,46 @@ C hjaaj June 09: DSYMV must be faster nowadays than the code below
       RETURN
       END      
 C /* Deck dftksmggaspin */
-      SUBROUTINE DFTKSMGGASPIN(EXCMAT,GAO,GAO1,RH,VXC,VXB,
-     &                         VSC,VSB,VXSB,DFTHRL,IPNT)
+      SUBROUTINE DFTKSMGGASPIN(EXCMAT,GAO,GAO1,RHG,d1E,DFTHRL)
 C
 C     Erik Hedegaard (feb. 2016) based on DFTKSM by T. Helgaker
+C     Revised Apr. 2018 by Hans Joergen Aa. Jensen
 C
-C     VXC = d(e_xc) / d(rhot)
-C     VSC = d(e_xc) / d(rhos)
-C     VXB = d(e_xc) / d(grdt)
-C     VSB = d(e_xc) / d(grds)
-C     VXSB = d(e_xc) / d(grds.grdt)
+C     RHG(1:3,1:4): grad(rhoc), grad(rhos), grad(rhoa), grad(rhob)
+C     VXC  = d1E(1) = d(e_xc) / d(rhoc)
+C     VSC  = d1E(2) = d(e_xc) / d(rhos)
+C     VXB  = d1E(5) = d(e_xc) / d(grdcc)
+C     VSB  = d1E(6) = d(e_xc) / d(grdss)
+C     VXSB = d1E(7) = d(e_xc) / d(grdcs)
 C
       implicit none
 C
-      real*8  GAO(NBAST), GAO1(NBAST,3), RH(3,2)
-      real*8  EXCMAT(NBAST,NBAST,2)
-      real*8  VXB, VXC, VSB, VSC, VXSB
+      real*8  GAO(NBAST), GAO1(NBAST,3), RHG(3,2)
+      real*8  EXCMAT(NBAST,NBAST,2), d1E(7)
       real*8  DFTHRL
-      integer ipnt
 C
+! inforb.h : NBAST, NSYM
 #include "inforb.h"
-#include "dftinf.h"
 
       ! local variables:
+      real*8  VXB, VXC, VSB, VSC, VXSB
       real*8  FX, FY, FZ, SX, SY, SZ
       real*8  FC, FCS
       integer I, J, ISYM, ISTR, IEND
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
-      FX = VXB*RH(1,1) + VXSB*RH(1,2)
-      FY = VXB*RH(2,1) + VXSB*RH(2,2)
-      FZ = VXB*RH(3,1) + VXSB*RH(3,2)
-      SX = VSB*RH(1,2) + VXSB*RH(1,1)
-      SY = VSB*RH(2,2) + VXSB*RH(2,1)
-      SZ = VSB*RH(3,2) + VXSB*RH(3,1)
+      VXC  = d1E(1)
+      VSC  = d1E(2)
+      VXB  = d1E(5) * 4.0d0
+      VSB  = d1E(6) * 4.0d0
+      VXSB = d1E(7) * 2.0d0
+      FX = VXB*RHG(1,1) + VXSB*RHG(1,2)
+      FY = VXB*RHG(2,1) + VXSB*RHG(2,2)
+      FZ = VXB*RHG(3,1) + VXSB*RHG(3,2)
+      SX = VSB*RHG(1,2) + VXSB*RHG(1,1)
+      SY = VSB*RHG(2,2) + VXSB*RHG(2,1)
+      SZ = VSB*RHG(3,2) + VXSB*RHG(3,1)
       IF (NSYM.EQ.1) THEN
          DO J = 1, NBAST
             FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
@@ -151,32 +155,30 @@ C
       RETURN
       END
 C /* Deck dftksm */
-      SUBROUTINE DFTKSM(EXCMAT,GAO,GAO1,RH,VXC,VXB,DOGGA,FROMVX,DFTHRL,
-     & IPNT)
+      SUBROUTINE DFTKSM(EXCMAT,GAO,GAO1,RHG,VXC,VXB,DOGGA,FROMVX,DFTHRL)
 C
 C     T. Helgaker oct 2000
 C
-C     VXC = d(e_xc) / d(rhot)
-C     VXB = d(e_xc) / d(grdt)
+C     VXC = d(e_xc) / d(rhoc)
+C     VXB = d(e_xc) / d(grdcc)
 C
 #include <implicit.h>
       PARAMETER (D2 = 2.0D0)
 C
       LOGICAL DOGGA, FROMVX
-      REAL*8  GAO(NBAST), GAO1(NBAST,3), EXCMAT(NBAST,NBAST),RH(3)
+      REAL*8  GAO(NBAST), GAO1(NBAST,3), EXCMAT(NBAST,NBAST), RHG(3)
+      REAL*8  VXC, VXB, DFTHRL
 
-      integer ipnt
-C
-#include <inforb.h>
-#include <dftinf.h>
+#include "inforb.h"
+
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
       IF (DOGGA .AND. .NOT.FROMVX) THEN
+         FX = 4.0d0*VXB*RHG(1)
+         FY = 4.0d0*VXB*RHG(2)
+         FZ = 4.0d0*VXB*RHG(3)
          IF (NSYM.EQ.1) THEN
-            FX = VXB*RH(1)
-            FY = VXB*RH(2)
-            FZ = VXB*RH(3)
             DO J = 1, NBAST
                FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
                IF (DABS(FC).GT.DFTHRL) THEN
@@ -184,9 +186,6 @@ C
                END IF
             END DO
          ELSE
-            FX = VXB*RH(1)
-            FY = VXB*RH(2)
-            FZ = VXB*RH(3)
             DO ISYM = 1, NSYM
                ISTR = IBAS(ISYM) + 1
                IEND = IBAS(ISYM) + NBAS(ISYM)
@@ -316,7 +315,6 @@ C
 C
 #include <inforb.h>
 #include <nuclei.h>
-#include <dftinf.h>
 #include <dftcom.h>
 C
       INTEGER A, B

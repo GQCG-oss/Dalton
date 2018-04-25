@@ -1159,10 +1159,12 @@ C
 C  --- NOTE ! This uses FROMVX.
 !      WRITE(LUPRI,*) 'SRDFT1JT: IPNT=',IPNT,' VXC=',VXC !JT
 
+               VXB = 0.25d0*VXB ! 23-Apr-2018 hjaaj: new definition of VXB
                CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHGSR,VXC,VXB,
      &                     LDOGGA,.true.,DFTHRL,IPNT)
                IF (LSRHYBR) THEN
 c             ... SRHYBR (RHOTOT) contribution
+                  VXBT = 0.25d0*VXBT ! 23-Apr-2018 hjaaj: new definition of VXBT
                   CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHGT,
      &                        VXCT,VXBT,LDOGGA,.true.,DFTHRL,IPNT)
                END IF
