@@ -95,7 +95,7 @@ C
       implicit none
 C
       real*8  GAO(NBAST), GAO1(NBAST,3), RHG(3,2)
-      real*8  EXCMAT(NBAST,NBAST,2), d1E(7)
+      real*8  EXCMAT(NBAST,NBAST,2), d1E(5)
       real*8  DFTHRL
 C
 ! inforb.h : NBAST, NSYM
@@ -111,9 +111,9 @@ C     Exchange-correlation contribution to Kohn-Sham matrix
 C
       VXC  = d1E(1)
       VSC  = d1E(2)
-      VXB  = d1E(5) * 4.0d0
-      VSB  = d1E(6) * 4.0d0
-      VXSB = d1E(7) * 2.0d0
+      VXB  = d1E(3) * 4.0d0
+      VSB  = d1E(4) * 4.0d0
+      VXSB = d1E(5) * 2.0d0
       FX = VXB*RHG(1,1) + VXSB*RHG(1,2)
       FY = VXB*RHG(2,1) + VXSB*RHG(2,2)
       FZ = VXB*RHG(3,1) + VXSB*RHG(3,2)

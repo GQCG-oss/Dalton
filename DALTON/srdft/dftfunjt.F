@@ -502,6 +502,8 @@ C     check
       grdcs = grd2(3)
 
       arhos = abs(rhos)
+      agrdcs = abs(grdcs)
+
       if (arhos .gt. rhoc) then
          call quit('DESRC_SPINGGA error: |rhos| > rhoc')
       end if
@@ -510,6 +512,7 @@ C     check
          E = 0.0d0
          return
       end if
+
 
 C     energy
       call ESRC_SPINGGA(rhoc,rhos,grdcc,grdss,grdcs,mu,E)
@@ -3025,29 +3028,27 @@ C*****************************************************************************
       return
       end
 C****************************************************************************
-      subroutine ESRC_PBEGWSERFSPIN(rho,grd2,mu,e)
+      subroutine ESRC_PBEGWSERFSPIN(rhoc,rhos,grdcc,grdss,grdcs,mu,e)
 C*****************************************************************************
 C     Short-range spin-dependent PBE correlation functional from
 C       Goll et al. Chem. Phys. 329 (2006), 276
 C
 C       This functional depends only on rhoc, rhos, grdcc
-C       and _not_ on grdss and grdcc.grdss
+C       and _not_ on grdss and grdcs
 C
-C     Input: rho    : densities
-C            grd2   : grad rho_i . grad rho_j
+C     Input: rho*   : densities
+C            grd*   : grad rho_i . grad rho_j
 C            mu     : Interaction parameter
 C
-C     Ouput: e             : energy
+C     Ouput: e      : PBEGWS correlation energy density
 C
 C     Author: Erik Hedegaard (after Molpro code by J. Toulouse + A. Savin)
-C     Date  : 11-02-16; revised 14.feb.2018 hjaaj
+C     Date  : 11-02-16; input parameters revised apr.2018 hjaaj
 C*****************************************************************************
       implicit none
 
-      real*8   rho(4), grd2(6), mu, e
-      real*8   rho13
-      real*8   rhoc, rhos, grdcc
-      real*8   zeta
+      real*8   rhoc,rhos,grdcc,grdss,grdcs,mu, e
+      real*8   rho13, zeta
 
       real*8   tol
       parameter(tol=1d-12)
@@ -3060,9 +3061,7 @@ C*****************************************************************************
       real*8   phi, phi2, phi3, phi4
       real*8   Aa, Ab, Ac, tq, arglog
 
-      rhoc  = rho(1)
-      rhos  = rho(2)
-      rho13 = rho(1)**(1.d0/3.d0)
+      rho13 = rhoc**(1.d0/3.d0)
 C     LDA energy ----
 !     In ESRC_PBEGWS VCSRLDA is used for the same purpose, but
 !     as VCSRLDA does not include rhos ESRX_LDAERFSPIN is used instead
@@ -3077,9 +3076,6 @@ C     LDA energy ----
 
       alpha=2.78d0
       gamma=3.1091d-2
-
-!     grdcc = square of density gradient
-      grdcc  = grd2(1)
 
       if ((ecerflda/eclda).le.0d0) then
 !       ! edh define beta and check alpha!

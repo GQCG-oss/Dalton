@@ -420,7 +420,6 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
 !                      d1Excdrhoc,d1Excdgrdcc,DOGGA,FROMVX,DFTHRL)
        else if (domcsrdft .and. .not. docisrdft) then
           if (dogga .and. dft_spindns) then ! special treatment if gga + spin
-          call quit('hjaaj: d1Excdgrdcs not implemented yet')
               CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
      &             d1Exc,DFTHRL)
 !                  d1Exc = (d1Excdrhoc,d1Excdrhos, d1Excdgrdcc,d1Excdgrdss,d1Excdgrdcs)
