@@ -1065,51 +1065,99 @@ C Linear transformation -----------------------------------------------------
           end if
 !!#endif
             IF (NSYM.EQ.1) THEN
-               DO I = 1, NBAST
-                  G0 = GAO(I)
-                  IF (DOGGA) THEN
-                     GX = GAO1(I,1)
-                     GY = GAO1(I,2)
-                     GZ = GAO1(I,3)
-                  END IF
-                  DO J = 1, I
-                     EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
-                     if (dogga .and. dft_spindns) then
-                        EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
+               IF (DOGGA) THEN
+                  IF (TRIPLET) THEN
+                     CALL QUIT('srdftjt.F: No triplet for GGA yet')
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        GX = GAO1(I,1)
+                        GY = GAO1(I,2)
+                        GZ = GAO1(I,3)
+                        DO J = 1, I
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                        END DO
+                     END DO
+                  ELSE IF (DFT_SPINDNS) THEN
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        GX = GAO1(I,1)
+                        GY = GAO1(I,2)
+                        GZ = GAO1(I,3)
+                        DO J = 1, I
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
 
-                        AX = GX*GAO(J) + G0*GAO1(J,1)
-                        AY = GY*GAO(J) + G0*GAO1(J,2)
-                        AZ = GZ*GAO(J) + G0*GAO1(J,3)
-                        AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
-                        AR(2) = AX*RX(2) + AY*RY(2) + AZ*RZ(2)
-                        AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
-     &                        - AR(1)*BR(1)
-                        AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
-     &                        - AR(2)*BR(2)
-                        ! grad + spin-grad
-                        EXCMAT(J,I,1) = EXCMAT(J,I,1)
-     &                                + FACR*AR(1) + FZ0*AB(1)
-                        EXCMAT(J,I,2) = EXCMAT(J,I,2)
-     &                                + FACS*AR(2) + FZ0_S*AB(2)
-                     else if (dft_spindns .and. .not. dogga) then
-                        EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
-                     else if (dogga .and. .not. dft_spindns) then
-                        AX = GX*GAO(J) + G0*GAO1(J,1)
-                        AY = GY*GAO(J) + G0*GAO1(J,2)
-                        AZ = GZ*GAO(J) + G0*GAO1(J,3)
-                        AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
-                        AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
-     &                        - AR(1)*BR(1)
-                        EXCMAT(J,I,1) = EXCMAT(J,I,1)
-     &                                + FACR*AR(1)+FZ0*AB(1)
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AR(2) = AX*RX(2) + AY*RY(2) + AZ*RZ(2)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+     &                             - AR(1)*BR(1)
+                           AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
+     &                             - AR(2)*BR(2)
+                           ! grad + spin-grad
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)
+     &                                   + FACR*AR(1) + FZ0*AB(1)
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2)
+     &                                   + FACS*AR(2) + FZ0_S*AB(2)
+                        END DO
+                     END DO
+                  ELSE
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        GX = GAO1(I,1)
+                        GY = GAO1(I,2)
+                        GZ = GAO1(I,3)
+                        DO J = 1, I
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+     &                             - AR(1)*BR(1)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)
+     &                                     + FACR*AR(1)+FZ0*AB(1)
+      ! Not quite sure where to place the below if in this structure.
+      !    5/7/2018 E.R.K
       if (iprint_x .gt. 10 .and. i.eq.1 .and. j.eq.1) then
          write(lupri,*)'hjaaj1: fac0r,facr,ar,fz0,ab',
      &   fac0r,facr,ar(1),fz0,ab(1)
       end if
-                     end if
-                  END DO
-               END DO
+                        END DO
+                     END DO
+                  END IF
+               ELSE ! LDA
+                  IF (TRIPLET) THEN
+                     CALL QUIT('srdftjt.F: No LDA for triplet yet')
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        DO J = 1, I
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                        END DO
+                     END DO
+                  ELSE IF (DFT_SPINDNS) THEN
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        DO J = 1, I
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
+                        END DO
+                     END DO
+                  ELSE
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        DO J = 1, I
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                        END DO
+                     END DO
+                  END IF
+               END IF ! GGA or LDA check
             ELSE
+               IF (TRIPLET) THEN
+                  CALL QUIT('srdftjt.F: No triplet for symmetry yet')
+               END IF
                DO ISYM = 1, NSYM
                   ISTR = IBAS(ISYM) + 1
                   IEND = IBAS(ISYM) + NBAS(ISYM)
@@ -1181,3 +1229,94 @@ c
       RETURN
       END
 ! end of srdftjt.F
+
+
+
+            IF (NSYM.EQ.1) THEN
+               IF (DOGGA) THEN
+                  IF (TRIPLET) THEN
+                     CALL QUIT('srdftjt.F: No triplet for GGA yet')
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        GX = GAO1(I,1)
+                        GY = GAO1(I,2)
+                        GZ = GAO1(I,3)
+                        DO J = 1, I
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                        END DO
+                     END DO
+                  ELSE IF (DFT_SPINDNS) THEN
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        GX = GAO1(I,1)
+                        GY = GAO1(I,2)
+                        GZ = GAO1(I,3)
+                        DO J = 1, I
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
+
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AR(2) = AX*RX(2) + AY*RY(2) + AZ*RZ(2)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+     &                             - AR(1)*BR(1)
+                           AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
+     &                             - AR(2)*BR(2)
+                           ! grad + spin-grad
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)
+     &                                   + FACR*AR(1) + FZ0*AB(1)
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2)
+     &                                   + FACS*AR(2) + FZ0_S*AB(2)
+                        END DO
+                     END DO
+                  ELSE
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        GX = GAO1(I,1)
+                        GY = GAO1(I,2)
+                        GZ = GAO1(I,3)
+                        DO J = 1, I
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+     &                             - AR(1)*BR(1)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)
+     &                                     + FACR*AR(1)+FZ0*AB(1)
+                        END DO
+                     END DO
+                  END IF
+               ELSE ! LDA
+                  IF (TRIPLET) THEN
+                     CALL QUIT('srdftjt.F: No LDA for triplet yet')
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        DO J = 1, I
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                        END DO
+                     END DO
+                  ELSE IF (DFT_SPINDNS) THEN
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        DO J = 1, I
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
+                        END DO
+                     END DO
+                  ELSE
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        DO J = 1, I
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                        END DO
+                     END DO
+                  END IF
+               END IF ! GGA or LDA check
+            ELSE
+               IF (TRIPLET) THEN
+                  CALL QUIT('srdftjt.F: No triplet for symmetry yet')
+               END IF
