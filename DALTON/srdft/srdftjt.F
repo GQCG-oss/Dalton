@@ -27,7 +27,8 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
      &                  WEIGHT,NBUF,GSO,NCNT,DMAGAOSR,DOGGA,
-     &                  DOERG,DOGRD,DOATR,RESULTS,WORK,LWORK,IPRINT_in)
+     &                  DOERG,DOGRD,DOATR,TRIPLET,RESULTS,
+     &                  WORK,LWORK,IPRINT_in)
 C*****************************************************************************
 C     Calculate DFT energy and potential contributions for
 C     SR-DFT hybrid methods
@@ -74,7 +75,7 @@ C*****************************************************************************
 
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
 
-      LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,FROMVX
+      LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,FROMVX,TRIPLET
 
       REAL*8    EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
@@ -126,8 +127,8 @@ C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
       WRITE(LUPRI,*) 'SRDFT1JT: LUPRI,IPRINT  =',LUPRI, IPRINT
       WRITE(LUPRI,*) 'SRDFT1JT: CHIVAL =',CHIVAL
       WRITE(LUPRI,*) 'SRDFT1JT: HFXFAC =',HFXFAC
-      WRITE(LUPRI,*) 'SRDFT1JT: DOERG,DOATR,DOGRD,DOGGA  =',
-     &   DOERG,DOATR,DOGRD,DOGGA
+      WRITE(LUPRI,*) 'SRDFT1JT: DOERG,DOATR,DOGRD,DOGGA,TRIPLET  =',
+     &   DOERG,DOATR,DOGRD,DOGGA,TRIPLET
       WRITE(LUPRI,*) 'SRDFT1JT: ERFEXP(0:2)=',ERFEXP(0:2)
       WRITE(LUPRI,*) 'SRDFT1JT: DOSRX_PBERI=',DOSRX_PBERI
       WRITE(LUPRI,*) 'SRDFT1JT: DFT_SPINDNS=',DFT_SPINDNS
@@ -166,6 +167,12 @@ C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
       IF (DOLND) THEN
          CALL QUIT(
      &   'SRDFT1JT: London orbitals (DOLND) not implemented yet')
+      END IF
+      
+      IF (DFT_SPINDNS .AND. TRIPLET) THEN
+         CALL QUIT('SRDFT1jt: triplet only for closed shell')
+      END IF
+      IF (DOERG .AND. TRIPLET) THEN
       END IF
 
 C     Initializations -------------------------------------------------------
