@@ -170,9 +170,10 @@ C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
       END IF
       
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
-         CALL QUIT('SRDFT1jt: triplet only for closed shell')
+         CALL QUIT('SRDFT1JT: triplet only for closed shell')
       END IF
       IF (DOERG .AND. TRIPLET) THEN
+         CALL QUIT('SRDFT1JT: triplet only for response')
       END IF
 
 C     Initializations -------------------------------------------------------
@@ -473,8 +474,9 @@ C        matrix 4 is DXSAO or DTSAO
 
 ! SRDFTLTRJT: SR short-range DFT density functional theory LTR linear transformation JT Julien Toulouse
         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
-     &                 WGHTX,WGHTC, GSO(KSO0),GSO(KSO1),CHIVAL,VLAMBDA,
-     &                 ERFEXP,RHO,RHG,GRD2,DMAGAOSR,DOGGA,IPRINT_X)
+     &                 WGHTX,WGHTC,GSO(KSO0),GSO(KSO1),CHIVAL,VLAMBDA,
+     &                 ERFEXP,RHO,RHG,GRD2,DMAGAOSR,
+     &                 DOGGA,TRIPLET,IPRINT_X)
 
       ENDIF ! DOATR
 
@@ -799,7 +801,8 @@ C      mu_new = max(mu,CHIVAL)
 C**************************************************************************
       SUBROUTINE SRDFTLTRJT(KSYMOP,DTXMAT,DSXMAT,EXCMAT,
      &                      WGHTX,WGHTC,GAO,GAO1,CHIVAL,VLAMBDA,
-     &                      ERFEXP,RHO,RHG,GRD2, DGAO,DOGGA,IPRINT_X)
+     &                      ERFEXP,RHO,RHG,GRD2,DGAO,
+     &                      DOGGA,TRIPLET,IPRINT_X)
 C**************************************************************************
 C     Generate the 1-index transformed DFT Hessian
 C     needed in second-order optimization for short-range DFT hybrids.
@@ -823,7 +826,7 @@ C***************************************************************************
 
 !     input
       integer  KSYMOP, IPRINT_X
-      logical  DOGGA,ERFEXP(0:2)
+      logical  DOGGA,ERFEXP(0:2),TRIPLET,USE_SPINDNS
       real*8   RHO(4), RHG(3,4), GRD2(6)
       real*8   CHIVAL,VLAMBDA
       real*8   DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
@@ -863,6 +866,11 @@ C***************************************************************************
 !     real*8   d2Ecdrhocdgrds, d2Ecdrhosdgrds, d2Ecdgrdcdgrds
 !     real*8   d2Ecdgrdsdgrds, etc ! d2Ec(15)
 
+      USE_SPINDNS = DFT_SPINDNS .OR. TRIPLET
+      IF (DFT_SPINDNS .AND. TRIPLET) THEN
+         CALL QUIT('SRDFTJT.F: Triplet and DFT_SPINDNS not implemented')
+      END IF
+
       ! For small values of rho to avoid NaN
       do i = 1,4
          if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
@@ -888,7 +896,7 @@ C        B3(1:3,1) = B3(1:3,1) + GAO1(1:NBAST,1:3)'*DGAO((1:NBAST, 1)
          BMAX = MAX(BMAX, ABS(B3(1,1)),ABS(B3(2,1)),ABS(B3(3,1)))
       END IF
 
-      IF (DFT_SPINDNS) THEN
+      IF (USE_SPINDNS) THEN ! NOTE: I THINK IT IS USE_SPINDNS HERE - E.R.K. 5/7/2018
          ! DGAO(1,2) = DSXMAT*GAO; DSXMAT is 1-index transformed or transition spin density matrix
          CALL DGEMV('N',NBAST,NBAST,1.0d0,DSXMAT,NBAST,
      &              GAO,1,0.0d0,DGAO(1,2),1)
@@ -925,7 +933,8 @@ C Total contribution -------------------------------------------------------
 
          FRR = WGHTX*d2Ex(1)        + WGHTC*d2Ec(1)
 !        FRR = WGHTX*d2Exdrhocdrhoc + WGHTC*d2Ecdrhocdrhoc
-      IF (DFT_SPINDNS) THEN ! LDA and GGA terms
+      !IF (DFT_SPINDNS) THEN ! LDA and GGA terms
+      IF (USE_SPINDNS) THEN ! NOTE: I THINK IT IS USE_SPINDNS HERE - E.R.K. 5/7/2018
          FRS = WGHTX*d2Ex(2)        + WGHTC*d2Ec(2)
 !        FRS = WGHTX*d2Exdrhocdrhos + WGHTC*d2Ecdrhocdrhos
          FSS = WGHTX*d2Ex(3)        + WGHTC*d2Ec(3)
@@ -953,7 +962,8 @@ C Total contribution -------------------------------------------------------
      &         + FZ0
 !        FZZ   = = d2Excdgrdcdgrdc + WGHTC*d2Ecdgrdcdgrdc
 
-      IF (DFT_SPINDNS) THEN ! add GGA spin density terms
+      !IF (DFT_SPINDNS) THEN ! add GGA spin density terms
+      IF (USE_SPINDNS) THEN ! NOTE: I THINK IT IS USE_SPINDNS HERE - E.R.K. 5/7/2018
          ! spin
          grds = sqrt(GRD2(2))
          IF (grds > 1.0D-30) THEN
@@ -1010,7 +1020,7 @@ C Linear transformation -----------------------------------------------------
             ! FACR  = FZR*B0(1) + FZZ*BR(1)   !   d2Edgrdccdrhoc rhoc_x + d2Edgrdcc2 grad(rhoc_x)
             !       + FZS*B0(2) + FZZ_S*BR(2) ! + d2Edgrdccdrhos rhos_x + d2Edgrdccdgrdss grad(rhos_x)
             !?                                ! + d2Edgrdccdgrdcs grad(rhoc_x) + d2Edgrdccdgrdcs grad(rhos_x)
-            if (dogga .and. dft_spindns) then
+            if (dogga .and. use_spindns) then
                BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
                FAC0R = FRR*B0(1) + FRZ*BR(1) + FRS*B0(2) + FRZ_S*BR(2)
@@ -1018,11 +1028,11 @@ C Linear transformation -----------------------------------------------------
                FACR  = FRZ*B0(1) + FZZ*BR(1) + FZZ_S*BR(2) + FSZ*B0(2)
                FACS  = FSZ_S*B0(2) + FRZ_S*B0(1) +
      &                 FZZ_S*BR(1) + FZZ_SS*BR(2)
-            else if (dogga .and. .not. dft_spindns) then
+            else if (dogga .and. .not. use_spindns) then
                BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                FAC0R = FRR*B0(1) + FRZ*BR(1)
                FACR  = FRZ*B0(1) + FZZ*BR(1)
-            else if (dft_spindns .and. .not. dogga) then
+            else if (use_spindns .and. .not. dogga) then
                FAC0R = FRR*B0(1) + FRS*B0(2)
                FAC0S = FRS*B0(1) + FSS*B0(2) ! as FSR = FRS
             else
