@@ -513,7 +513,11 @@ C
       RESULTS(:) = 0.0D0
 
       IF (TRIPLET) THEN
-         CALL QUIT('SRDFT: TRIPLET not implemented yet')
+         !CALL QUIT('SRDFT: TRIPLET not implemented yet')
+#if SRDFT_DEBUG > 4
+         WRITE(lupri,*) 'srdft.F: Calling srDFT with triplet'
+         flush(lupri)
+#endif
       END IF
 
       IPRINT  = max(IPRINT_in, SRDFT_DEBUG)
@@ -657,13 +661,13 @@ C     =============================
 C JT 15-02-05 beg
         CALL SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
-     &            WORK(KDGASR),DOGGA,DOERG,DOGRD,DOATR,
+     &            WORK(KDGASR),DOGGA,DOERG,DOGRD,DOATR,TRIPLET,
      &            RESULTS,WORK(KWRK),LWRK,IPRINT)
       ELSE
         CALL SRDFT1(ND_SIM,EXCMAT,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
      &            WORK(KDGASR),WORK(KDGAT),DOGGA,DOERG,DOGRD,DOATR,
-     &            RESULTS,WORK(KWRK),LWRK,IPRINT)
+     &            TRIPLET,RESULTS,WORK(KWRK),LWRK,IPRINT)
       ENDIF
 
 C
@@ -805,7 +809,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFT1(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
      &                  WEIGHT,NBUF,GSO,NCNT,DMAGAOSR,DMAGAOT,DOGGA,
-     &                  DOERG,DOGRD,DOATR,RESULTS,WORK,LWORK,IPRINT)
+     &                  DOERG,DOGRD,DOATR,TRIPLET,RESULTS,WORK,LWORK,
+     &                  IPRINT)
 C*****************************************************************************
 C
 C     Written by Jesper Kielberg Pedersen, Mar. 2003
@@ -834,7 +839,7 @@ C
 
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
 
-      LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR
+      LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,TRIPLET
       LOGICAL   LDOGGA,LSRHYBR,RTEST,ldebug
       REAL*8    EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
@@ -851,8 +856,8 @@ C
       WRITE(LUPRI,*) 'SRDFT1: ND_SIM =',ND_SIM
       WRITE(LUPRI,*) 'SRDFT1: CHIVAL =',CHIVAL
       WRITE(LUPRI,*) 'SRDFT1: HFXFAC =',HFXFAC
-      WRITE(LUPRI,*) 'SRDFT1: DOERG,DOATR,DOGRD,DOGGA  =',
-     &   DOERG,DOATR,DOGRD,DOGGA
+      WRITE(LUPRI,*) 'SRDFT1: DOERG,DOATR,DOGRD,DOGGA,TRIPLET  =',
+     &   DOERG,DOATR,DOGRD,DOGGA,TRIPLET
       WRITE(LUPRI,*) 'SRDFT1: ERFEXP(0:2) =',ERFEXP(0:2)
 #endif
 
@@ -868,6 +873,9 @@ C
       IF (DFT_SPINDNS) THEN
          CALL QUIT('SRDFT1: spin density not implemented yet')
       END IF
+      IF (TRIPLET) THEN
+         CALL QUIT('SRDFT1: triplet not implemented yet')
+      ENDIF
 
 
       ldebug = .false.
