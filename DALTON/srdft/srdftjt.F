@@ -842,7 +842,7 @@ C***************************************************************************
       real*8   ddot
 
       real*8   grdc,  grds,  ZNV(2)
-      real*8   BR(2), B0(2), B3(3,2), BMAX
+      real*8   BR(4), B0(2), B3(3,2), BMAX
       real*8   AR(2), AB(2), AX, AY, AZ, RX(2), RY(2), RZ(2)
 
       real*8   FAC0R, FAC0S, FACR, FACS
@@ -850,21 +850,16 @@ C***************************************************************************
       real*8   FRS, FSS, FSZ, FSZ_S, FRZ_S, FZZ_S, FZ0_S, FZZ_SS
       real*8   G0, GX, GY, GZ
 
-!     XC energies, and derivatives
+!     X, C, and XC energies, and derivatives
       real*8   Ex, Ec, d1Ex(5), d1Ec(5), d2Ex(15), d2Ec(15)
       real*8   Exc, d1Exc(5), d2Exc(15)
-!     real*8   d1Exdrhoc, d1Exdrhos, d1Exdgrdcc, d1Exdgrdss, d1Exgrdcs !d1Ex(1:5)
-!     real*8   d1Ecdrhoc, d1Ecdrhos, d1Ecdgrdcc, d1Ecdgrdss, d1Ecgrdcs !d1Ec(1:5)
-
-!     real*8   d2Exdrhocdrhoc, d2Exdrhocdrhos, d2Exdrhosdrhos
-!     real*8   d2Exdrhocdgrdc, d2Exdrhosdgrdc, d2Exdgrdcdgrdc
-!     real*8   d2Exdrhocdgrds, d2Exdrhosdgrds, d2Exdgrdcdgrds
-!     real*8   d2Exdgrdsdgrds, etc ! d2Ex(15)
-
-!     real*8   d2Ecdrhocdrhoc, d2Ecdrhocdrhos, d2Ecdrhosdrhos
-!     real*8   d2Ecdrhocdgrdc, d2Ecdrhosdgrdc, d2Ecdgrdcdgrdc
-!     real*8   d2Ecdrhocdgrds, d2Ecdrhosdgrds, d2Ecdgrdcdgrds
-!     real*8   d2Ecdgrdsdgrds, etc ! d2Ec(15)
+! d1E?(1:5)  = d1E?drhoc, d1E?drhos, d1E?dgrdcc, d1E?dgrdss, d1E?grdcs
+! d2E?(1:15) =
+!     d2E?drhocdrhoc,
+!     d2E?drhocdrhos,   d2E?drhosdrhos,
+!     d2E?drhocdgrdcc,  d2E?drhosdgrdcc, d2E?dgrdccdgrdcc,
+!     d2E?drhocdgrdss,  d2E?drhosdgrdss, d2E?dgrdccdgrdss, d2E?dgrdssdgrdss,
+!     d2E?drhocdgrdcs,  d2E?drhosdgrdcs, d2E?dgrdccdgrdcs, d2E?dgrdssdgrdcs, d2E?dgrdcsdgrdcs
 
       USE_SPINDNS = DFT_SPINDNS .OR. TRIPLET
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
@@ -925,20 +920,20 @@ C Exchange and correlation derivatives ------------------------------------
       NORDER = 2  ! zero-order, first-order and second-order derivatives
       CALL SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
-!     d1Exc(1:5)  = WHGTX*d1Ex(1:5)  + WGHTC*d2Ec(1:5)
-!     d2Exc(1:15) = WHGTX*d2Ex(1:15) + WGHTC*d2Ec(1:15)
-! HJAaJ TODO FIXME use these below; multiply with 2 and 4 when needed in d2Exc ??
+      Exc         = WHGTX*  Ex       + WGHTC*  Ec
+      d1Exc(1:5)  = WHGTX*d1Ex(1:5)  + WGHTC*d2Ec(1:5)
+      d2Exc(1:15) = WHGTX*d2Ex(1:15) + WGHTC*d2Ec(1:15)
 
 C Total contribution -------------------------------------------------------
 
-         FRR = WGHTX*d2Ex(1)        + WGHTC*d2Ec(1)
-!        FRR = WGHTX*d2Exdrhocdrhoc + WGHTC*d2Ecdrhocdrhoc
+         FRR = d2Exc(1)
+!        FRR = d2Excdrhocdrhoc
       !IF (DFT_SPINDNS) THEN ! LDA and GGA terms
       IF (USE_SPINDNS) THEN ! NOTE: I THINK IT IS USE_SPINDNS HERE - E.R.K. 5/7/2018
-         FRS = WGHTX*d2Ex(2)        + WGHTC*d2Ec(2)
-!        FRS = WGHTX*d2Exdrhocdrhos + WGHTC*d2Ecdrhocdrhos
-         FSS = WGHTX*d2Ex(3)        + WGHTC*d2Ec(3)
-!        FSS = WGHTX*d2Exdrhosdrhos + WGHTC*d2Ecdrhosdrhos
+         FRS = d2Exc(2)
+!        FRS = d2Excdrhocdrhos
+         FSS = d2Exc(3)
+!        FSS = d2Excdrhosdrhos
       END IF
       IF (DOGGA) THEN
          grdc = sqrt(GRD2(1))
@@ -952,15 +947,13 @@ C Total contribution -------------------------------------------------------
          RY(1) = ZNV(1)*RHG(2,1)
          RZ(1) = ZNV(1)*RHG(3,1)
 
-         FZ0   = (WGHTX*d1Ex(3)    + WGHTC*d1Ec(3))*2.0d0
-!        FZ0   = (WGHTX*d1Exdgrdcc + WGHTC*d1Ecdgrdcc)*2.0d0
-!              = (WGHTX*d1Exdgrdc  + WGHTC*d1Ecdgrdc)*ZNV(1)
+         FZ0   = d1Exc(3) * 2.0d0
+!        FZ0   = d1Excdgrdc / grdc = 2 d1Excdgrdcc
          ! gradient
-         FRZ   = (WGHTX*d2Ex(4)    + WGHTC*d2Ec(4)) * 2.0d0*grdc
-!        FRZ   = = WGHTX*d2Exdrhocdgrdc + WGHTC*d2Ecdrhocdgrdc
-         FZZ   = (WGHTX*d2Ex(6)    + WGHTC*d2Ec(6)) * 4.0d0*grd2(1)
-     &         + FZ0
-!        FZZ   = = d2Excdgrdcdgrdc + WGHTC*d2Ecdgrdcdgrdc
+         FRZ   = d2Exc(4) * 2.0d0*grdc
+!        FRZ   = d2Excdrhocdgrdc = 2 grdc d2Excdrhocdgrdcc
+         FZZ   = d2Exc(6) * 4.0d0*grd2(1) + FZ0
+!        FZZ   = d2Excdgrdcdgrdc = 4 grdcc d2Excdgrdccdgrdcc + 2 d1Excdgrdcc
 
       !IF (DFT_SPINDNS) THEN ! add GGA spin density terms
       IF (USE_SPINDNS) THEN ! NOTE: I THINK IT IS USE_SPINDNS HERE - E.R.K. 5/7/2018
@@ -976,21 +969,19 @@ C Total contribution -------------------------------------------------------
          RY(2) = ZNV(2)*RHG(2,2)
          RZ(2) = ZNV(2)*RHG(3,2)
 
-         FZ0_S = (WGHTX*d1Ex(4)    + WGHTC*d1Ec(4))*2.0d0
-!        FZ0_S = (WGHTX*d1Exdgrdss + WGHTC*d1Ecdgrdss)*2.0d0
-!              = (WGHTX*d1Exdgrds  + WGHTC*d1Ecdgrds)*ZNV(2)
-         FSZ   = (WGHTX*d2Ex(5)        + WGHTC*d2Ec(5))* 2.0d0*grdc
-!        FSZ   = WGHTX*d2Exdrhosdgrdc + WGHTC*d2Ecdrhosdgrdc
+         FZ0_S = d1Exc(4)*2.0d0
+!        FZ0_S = d1Excdgrds / grds = 2 d1Excgrdss
+         FSZ   = d2Exc(5) * 2.0d0*grdc
+!        FSZ   = d2Exdrhosdgrdc = d2Excdrhocdgrdcc * 2 * grdc
          ! spin-gradient
-         FRZ_S = (WGHTX*d2Ex(7)        + WGHTC*d2Ec(7))* 2.0d0*grds
-!        FRZ_S = WGHTX*d2Exdrhocdgrds + WGHTC*d2Ecdrhocdgrds
-         FSZ_S = (WGHTX*d2Ex(8)        + WGHTC*d2Ec(8))* 2.0d0*grds
-!        FSZ_S = WGHTX*d2Exdrhosdgrds + WGHTC*d2Ecdrhosdgrds
-         FZZ_S = (WGHTX*d2Ex(9)        + WGHTC*d2Ec(9))* 4.0d0*grdc*grds
-!        FZZ_S = WGHTX*d2Exdgrdcdgrds + WGHTC*d2Ecdgrdcdgrds
-         FZZ_SS= (WGHTX*d2Ex(10)       + WGHTC*d2Ec(10))* 4.0d0*grd2(2)
-     &         + FZ0_S
-!        FZZ_SS= WGHTX*d2Exdgrdsdgrds + WGHTC*d2Ecdgrdsdgrds
+         FRZ_S = d2Exc(7) * 2.0d0*grds
+!        FRZ_S = d2Excdrhocdgrds = 2 grds d2Excdrhocdgrdss
+         FSZ_S = d2Exc(8) * 2.0d0*grds
+!        FSZ_S = d2Excdrhosdgrds = 2 grds d2Excdrhosdgrdss
+         FZZ_S = d2Exc(9) * 4.0d0*grdc*grds
+!        FZZ_S = d2Excdgrdcdgrds = (2 grdc) (2 grds) d2Excdgrdccdgrdss
+         FZZ_SS= d2Exc(10) * 4.0d0*grd2(2) + FZ0_S
+!        FZZ_SS= d2Excdgrdsdgrds = 4 grdss d2Excdgrdssdgrdss + 2 d1Excdgrdss
 
       END IF ! DOGGA .and. DFT_SPINDNS
       END IF ! DOGGA
@@ -999,30 +990,37 @@ C Total contribution -------------------------------------------------------
 C Linear transformation -----------------------------------------------------
 
             ! It is used that FSR = FRS, FSZ = FZS, FSZ_S = FZS_S, etc.
-            ! "_x" in e.g. rhoc_x is for rhoc calculated from DTXMAT
+            ! "_b" in e.g. rhoc_b is for rhoc calculated from DTXMAT (from trial vector B)
 
-            ! B0(1) = rhoc_x
-            ! B0(2) = rhos_x
-            ! B3(:,1) = grad(rhoc_x)
-            ! B3(:,2) = grad(rhos_x)
-            ! BR(1) = grad(rhoc) . grad(rhoc_x) ZNV(1)
-            ! BR(2) = grad(rhos) . grad(rhos_x) ZNV(2)
-            ! BR(?) = grad(rhos) . grad(rhoc_x) ZNV(2) ny
-            ! BR(?) = grad(rhoc) . grad(rhos_x) ZNV(1) ny
+            ! gradN(rhoc) = grad(rhoc) ZNV(1) = grad(rhoc) / |grad(rhoc)| - unit directional vector
+            ! gradN(rhos) = grad(rhos) ZNV(2) = grad(rhos) / |grad(rhos)| - unit directional vector
+            ! B0(1) = rhoc_b
+            ! B0(2) = rhos_b
+            ! B3(:,1) = grad(rhoc_b)
+            ! B3(:,2) = grad(rhos_b)
+            ! BR(1) = gradN(rhoc) . grad(rhoc_b)
+            ! BR(2) = gradN(rhos) . grad(rhos_b)
+            ! BR(3) = gradN(rhoc) . grad(rhos_b)
+            ! BR(4) = gradN(rhos) . grad(rhoc_b)
             ! AX, AY, AZ : grad(xhi_i xhi_j)
-            ! AR(1) = AX*RX(1)   + AY*RY(1)   + AZ*RZ(1)   ! grad(xhi_i xhi_j) . grad(rhoc) ZNV(1)
-            ! AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1) ! grad(xhi_i xhi_j) . grad(rhoc_x)
-            !       - AR(1)*BR(1)                          ! - [grad(xhi_i xhi_j) . grad(rhoc) ZNV(1)] [grad(rhoc) . grad(rhoc_x) ZNV(1)]
-            ! FAC0R = FRR*B0(1) + FRZ*BR(1)   !   d2Edrhoc2 rhoc_x      + d2Edrhocdgrdcc grad(rhoc_x)
-            !       + FRS*B0(2) + FRZ_S*BR(2) ! + d2Edrhocdrhos rhos_x  + d2Edrhocdgrdss grad(rhos_x)
-            !?                                ! + d2Edrhocdgrdcs grad(rhoc_x) + d2Edrhocdgrdcs grad(rhos_x)
+            ! AR(1) = AX*RX(1)   + AY*RY(1)   + AZ*RZ(1)   ! grad(xhi_i xhi_j) . gradN(rhoc)
+            ! AR(2) = AX*RX(2)   + AY*RY(2)   + AZ*RZ(2)   ! grad(xhi_i xhi_j) . gradN(rhos)
+            ! AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1) ! grad(xhi_i xhi_j) . grad(rhoc_b)
+            !       - AR(1)*BR(1)                          ! - [grad(xhi_i xhi_j) . gradN(rhoc)] [gradN(rhoc) . grad(rhoc_b)]
+            ! AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2) ! grad(xhi_i xhi_j) . grad(rhos_b)
+            !       - AR(2)*BR(2)                          ! - [grad(xhi_i xhi_j) . gradN(rhos)] [gradN(rhos) . grad(rhos_b)]
+            ! FAC0R = FRR*B0(1) + FRZ*BR(1)   !   d2Edrhoc2 rhoc_b      + d2Edrhocdgrdcc gradN(rhoc) . grad(rhoc_b)
+            !       + FRS*B0(2) + FRZ_S*BR(2) ! + d2Edrhocdrhos rhos_b  + d2Edrhocdgrdss gradN(rhos) . grad(rhos_b)
+            !?                                ! + d2Edrhocdgrdcs grad(rhoc_b) + d2Edrhocdgrdcs grad(rhos_b)
 
-            ! FACR  = FZR*B0(1) + FZZ*BR(1)   !   d2Edgrdccdrhoc rhoc_x + d2Edgrdcc2 grad(rhoc_x)
-            !       + FZS*B0(2) + FZZ_S*BR(2) ! + d2Edgrdccdrhos rhos_x + d2Edgrdccdgrdss grad(rhos_x)
-            !?                                ! + d2Edgrdccdgrdcs grad(rhoc_x) + d2Edgrdccdgrdcs grad(rhos_x)
+            ! FACR  = FZR*B0(1) + FZZ*BR(1)   !   d2Edgrdccdrhoc rhoc_b + d2Edgrdcc2 grad(rhoc_b)
+            !       + FZS*B0(2) + FZZ_S*BR(2) ! + d2Edgrdccdrhos rhos_b + d2Edgrdccdgrdss grad(rhos_b)
+            !?                                ! + d2Edgrdccdgrdcs grad(rhoc_b) + d2Edgrdccdgrdcs grad(rhos_b)
             if (dogga .and. use_spindns) then
                BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
+               BR(3) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
+               BR(4) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
                FAC0R = FRR*B0(1) + FRZ*BR(1) + FRS*B0(2) + FRZ_S*BR(2)
                FAC0S = FRS*B0(1) + FSS*B0(2) + FSZ*BR(1) + FSZ_S*BR(2)
                FACR  = FRZ*B0(1) + FZZ*BR(1) + FZZ_S*BR(2) + FSZ*B0(2)
@@ -1045,7 +1043,7 @@ C Linear transformation -----------------------------------------------------
               write(lupri,*) 'hjaaj: rho ',rho(1:4)
               write(lupri,*) 'hjaaj: rhgc',rhg(1:3,1)
               write(lupri,*) 'hjaaj: grd2',grd2(1:6)
-              write(lupri,*) 'hjaaj: ZNV',ZNV(1:2)
+              write(lupri,*) 'hjaaj: ZNV ',ZNV(1:2)
               write(lupri,*) 'hjaaj: Ex, Ec, gga, spindns',
      &          Ex, Ec, dogga, dft_spindns
               write(lupri,*) 'hjaaj: d1Ex  ',d1Ex(:)
@@ -1080,7 +1078,7 @@ C Linear transformation -----------------------------------------------------
                         GY = GAO1(I,2)
                         GZ = GAO1(I,3)
                         DO J = 1, I
-                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0S*G0*GAO(J)
                         END DO
                      END DO
                   ELSE IF (DFT_SPINDNS) THEN
