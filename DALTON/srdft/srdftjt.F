@@ -839,7 +839,7 @@ C***************************************************************************
       real*8   BR(4), B0(2), B3(3,2), BMAX
       real*8   AR(2), AB(2), AX, AY, AZ, RX(2), RY(2), RZ(2)
 
-      real*8   FAC0R, FAC0S, FACR, FACS
+      real*8   FAC0R, FAC0S, FACR, FACS, FACR_AR2, FACS_AR1
       real*8   FRR, FRZ, FZZ, FZ0
       real*8   FRS, FSS, FSZ, FSZ_S, FRZ_S, FZZ_S, FZ0_S, FZZ_SS
       real*8   G0, GX, GY, GZ
@@ -936,12 +936,12 @@ C Total contribution -------------------------------------------------------
          RY(1) = RHG(2,1)
          RZ(1) = RHG(3,1)
 
-         FZ0   = d1Exc(3) * 2.0d0
+         FZ0   = d1Exc(3)*2.0d0
 !        FZ0   = d1Excdgrdc / grdc = 2 d1Excdgrdcc
          ! gradient
-         FRZ   = d2Exc(4) * 2.0d0*grdc
+         FRZ   = d2Exc(4)*2.0d0
 !        FRZ   = d2Excdrhocdgrdc = 2 grdc d2Excdrhocdgrdcc
-         FZZ   = d2Exc(6) * 4.0d0*grd2(1) + FZ0
+         FZZ   = d2Exc(6)*4.0d0
 !        FZZ   = d2Excdgrdcdgrdc = 4 grdcc d2Excdgrdccdgrdcc + 2 d1Excdgrdcc
 
       !IF (DFT_SPINDNS) THEN ! add GGA spin density terms
@@ -954,18 +954,18 @@ C Total contribution -------------------------------------------------------
          RZ(2) = RHG(3,2)
 
          FZ0_S = d1Exc(4)*2.0d0
-!        FZ0_S = d1Excdgrds / grds = 2 d1Excgrdss
-         FSZ   = d2Exc(5) * 2.0d0*grdc
-!        FSZ   = d2Exdrhosdgrdc = d2Excdrhocdgrdcc * 2 * grdc
+!        FZ0_S = 2 d1Excgrdss
+         FSZ   = d2Exc(5)*2.0d0
+!        FSZ   = 2 d2Excdrhosdgrdcc
          ! spin-gradient
-         FRZ_S = d2Exc(7) * 2.0d0*grds
-!        FRZ_S = d2Excdrhocdgrds = 2 grds d2Excdrhocdgrdss
-         FSZ_S = d2Exc(8) * 2.0d0*grds
-!        FSZ_S = d2Excdrhosdgrds = 2 grds d2Excdrhosdgrdss
-         FZZ_S = d2Exc(9) * 4.0d0*grdc*grds
-!        FZZ_S = d2Excdgrdcdgrds = (2 grdc) (2 grds) d2Excdgrdccdgrdss
-         FZZ_SS= d2Exc(10) * 4.0d0*grd2(2) + FZ0_S
-!        FZZ_SS= d2Excdgrdsdgrds = 4 grdss d2Excdgrdssdgrdss + 2 d1Excdgrdss
+         FRZ_S = d2Exc(7)*2.0d0
+!        FRZ_S = 2 d2Excdrhocdgrdss
+         FSZ_S = d2Exc(8)*2.0d0
+!        FSZ_S = 2 dd2Excdrhosdgrdss
+         FZZ_S = d2Exc(9)*4.0d0
+!        FZZ_S = 4 d2Excdgrdccdgrdss
+         FZZ_SS= d2Exc(10)*4.0d0
+!        FZZ_SS= 4 d2Excdgrdssdgrdss
 
       END IF ! DOGGA .and. DFT_SPINDNS
       END IF ! DOGGA
@@ -976,25 +976,23 @@ C Linear transformation -----------------------------------------------------
             ! It is used that FSR = FRS, FSZ = FZS, FSZ_S = FZS_S, etc.
             ! "_b" in e.g. rhoc_b is for rhoc calculated from DTXMAT (from trial vector B)
 
-            ! gradN(rhoc) = grad(rhoc)
-            ! gradN(rhos) = grad(rhos)
             ! B0(1) = rhoc_b
             ! B0(2) = rhos_b
             ! B3(:,1) = grad(rhoc_b)
             ! B3(:,2) = grad(rhos_b)
-            ! BR(1) = gradN(rhoc) . grad(rhoc_b)
-            ! BR(2) = gradN(rhos) . grad(rhos_b)
-            ! BR(3) = gradN(rhoc) . grad(rhos_b)
-            ! BR(4) = gradN(rhos) . grad(rhoc_b)
+            ! BR(1) = grad(rhoc) . grad(rhoc_b)
+            ! BR(2) = grad(rhos) . grad(rhos_b)
+            ! BR(3) = grad(rhoc) . grad(rhos_b)
+            ! BR(4) = grad(rhos) . grad(rhoc_b)
             ! AX, AY, AZ : grad(xhi_i xhi_j)
-            ! AR(1) = AX*RX(1)   + AY*RY(1)   + AZ*RZ(1)   ! grad(xhi_i xhi_j) . gradN(rhoc)
-            ! AR(2) = AX*RX(2)   + AY*RY(2)   + AZ*RZ(2)   ! grad(xhi_i xhi_j) . gradN(rhos)
+            ! AR(1) = AX*RX(1)   + AY*RY(1)   + AZ*RZ(1)   ! grad(xhi_i xhi_j) . grad(rhoc)
+            ! AR(2) = AX*RX(2)   + AY*RY(2)   + AZ*RZ(2)   ! grad(xhi_i xhi_j) . grad(rhos)
             ! AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1) ! grad(xhi_i xhi_j) . grad(rhoc_b)
-            !       - AR(1)*BR(1)                          ! - [grad(xhi_i xhi_j) . gradN(rhoc)] [gradN(rhoc) . grad(rhoc_b)]
+            !       - AR(1)*BR(1)                          ! - [grad(xhi_i xhi_j) . grad(rhoc)] [grad(rhoc) . grad(rhoc_b)]
             ! AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2) ! grad(xhi_i xhi_j) . grad(rhos_b)
-            !       - AR(2)*BR(2)                          ! - [grad(xhi_i xhi_j) . gradN(rhos)] [gradN(rhos) . grad(rhos_b)]
-            ! FAC0R = FRR*B0(1) + FRZ*BR(1)   !   d2Edrhoc2 rhoc_b      + d2Edrhocdgrdcc gradN(rhoc) . grad(rhoc_b)
-            !       + FRS*B0(2) + FRZ_S*BR(2) ! + d2Edrhocdrhos rhos_b  + d2Edrhocdgrdss gradN(rhos) . grad(rhos_b)
+            !       - AR(2)*BR(2)                          ! - [grad(xhi_i xhi_j) . grad(rhos)] [grad(rhos) . grad(rhos_b)]
+            ! FAC0R = FRR*B0(1) + FRZ*BR(1)   !   d2Edrhoc2 rhoc_b      + d2Edrhocdgrdcc grad(rhoc) . grad(rhoc_b)
+            !       + FRS*B0(2) + FRZ_S*BR(2) ! + d2Edrhocdrhos rhos_b  + d2Edrhocdgrdss grad(rhos) . grad(rhos_b)
             !?                                ! + d2Edrhocdgrdcs grad(rhoc_b) + d2Edrhocdgrdcs grad(rhos_b)
 
             ! FACR  = FZR*B0(1) + FZZ*BR(1)   !   d2Edgrdccdrhoc rhoc_b + d2Edgrdcc2 grad(rhoc_b)
@@ -1010,6 +1008,9 @@ C Linear transformation -----------------------------------------------------
                FACR  = FRZ*B0(1) + FZZ*BR(1) + FZZ_S*BR(2) + FSZ*B0(2)
                FACS  = FSZ_S*B0(2) + FRZ_S*B0(1) +
      &                 FZZ_S*BR(1) + FZZ_SS*BR(2)
+               FACR_AR2 = d2Exc(12)*B0(2) + d2Exc(15)*BR(3)
+               FACS_AR1 = d2Exc(12)*B0(2) + d2Exc(15)*BR(3)
+               ! d2Edrhosdgrdcs rhos_b + d2Egrdcs2 (grad(rhos_b) . grad(rhoc))
             else if (dogga .and. .not. use_spindns) then
                BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                FAC0R = FRR*B0(1) + FRZ*BR(1)
@@ -1061,7 +1062,14 @@ C Linear transformation -----------------------------------------------------
                         GY = GAO1(I,2)
                         GZ = GAO1(I,3)
                         DO J = 1, I
-                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0S*G0*GAO(J)
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)
+     &                        + FAC0S*G0*GAO(J) + FZ0_S*AB(2)
+     &                        + FACS_AR1*AR(1)
                         END DO
                      END DO
                   ELSE IF (DFT_SPINDNS) THEN
@@ -1080,14 +1088,12 @@ C Linear transformation -----------------------------------------------------
                            AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
                            AR(2) = AX*RX(2) + AY*RY(2) + AZ*RZ(2)
                            AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
-     &                             - AR(1)*BR(1)
                            AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
-     &                             - AR(2)*BR(2)
                            ! grad + spin-grad
-                           EXCMAT(J,I,1) = EXCMAT(J,I,1)
-     &                                   + FACR*AR(1) + FZ0*AB(1)
-                           EXCMAT(J,I,2) = EXCMAT(J,I,2)
-     &                                   + FACS*AR(2) + FZ0_S*AB(2)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1) +
+     &                        FACR*AR(1) + FZ0*AB(1)
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2) +
+     &                        FACS*AR(2) + FZ0_S*AB(2) + FACS_AR1*AR(1)
                         END DO
                      END DO
                   ELSE
@@ -1103,9 +1109,8 @@ C Linear transformation -----------------------------------------------------
                            AZ = GZ*GAO(J) + G0*GAO1(J,3)
                            AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
                            AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
-     &                             - AR(1)*BR(1)
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)
-     &                                     + FACR*AR(1)+FZ0*AB(1)
+     &                                   + FACR*AR(1)+FZ0*AB(1)
       ! Not quite sure where to place the below if in this structure.
       !    5/7/2018 E.R.K
       if (iprint_x .gt. 10 .and. i.eq.1 .and. j.eq.1) then
@@ -1172,9 +1177,9 @@ C Linear transformation -----------------------------------------------------
                               AR(1) = AX*RX(1)  + AY*RY(1) + AZ*RZ(1)
                               AR(2) = AX*RX(2)  + AY*RY(2) + AZ*RZ(2)
                               AB(1) = AX*B3(1,1) + AY*B3(2,1)
-     &                              + AZ*B3(3,1) - AR(1)*BR(1)
+     &                              + AZ*B3(3,1)
                               AB(2) = AX*B3(1,2) + AY*B3(2,2)
-     &                              + AZ*B3(3,2) - AR(2)*BR(2)
+     &                              + AZ*B3(3,2)
                               EXCMAT(J,I,1) = EXCMAT(J,I,1)
      &                                      + FACR*AR(1)+FZ0*AB(1)
                               EXCMAT(J,I,2) = EXCMAT(J,I,2)
@@ -1188,7 +1193,7 @@ C Linear transformation -----------------------------------------------------
                               AZ = GZ*GAO(J) + G0*GAO1(J,3)
                               AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
                               AB(1) = AX*B3(1,1) + AY*B3(2,1)
-     &                              + AZ*B3(3,1) - AR(1)*BR(1)
+     &                              + AZ*B3(3,1)
                               EXCMAT(J,I,1) = EXCMAT(J,I,1)
      &                                      + FACR*AR(1)+FZ0*AB(1)
                             end if
