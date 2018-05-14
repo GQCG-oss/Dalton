@@ -914,9 +914,9 @@ C Exchange and correlation derivatives ------------------------------------
       NORDER = 2  ! zero-order, first-order and second-order derivatives
       CALL SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
-      Exc         = WHGTX*  Ex       + WGHTC*  Ec
-      d1Exc(1:5)  = WHGTX*d1Ex(1:5)  + WGHTC*d2Ec(1:5)
-      d2Exc(1:15) = WHGTX*d2Ex(1:15) + WGHTC*d2Ec(1:15)
+      Exc         = WGHTX*  Ex       + WGHTC*  Ec
+      d1Exc(1:5)  = WGHTX*d1Ex(1:5)  + WGHTC*d2Ec(1:5)
+      d2Exc(1:15) = WGHTX*d2Ex(1:15) + WGHTC*d2Ec(1:15)
 
 C Total contribution -------------------------------------------------------
 
