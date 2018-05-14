@@ -18,6 +18,6 @@ f.add(string = 'Final MC-SRDFT energy',
 f.add(string = 'DIPLEN  >>',
       rel_tolerance = 1.0e-7)
 
-test.run(['rsp_srpbe_polar.dal'], ['lih.mol'], {'out': f})
+test.run(['rsp_srpbe_polar.dal'], ['lih.mol'], f={'out': f})
 
 sys.exit(test.return_code)
