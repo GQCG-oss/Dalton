@@ -841,7 +841,7 @@ C***************************************************************************
 
       real*8   ddot
 
-      real*8   grdc,  grds,  ZNV(2)
+      real*8   grdc,  grds
       real*8   BR(4), B0(2), B3(3,2), BMAX
       real*8   AR(2), AB(2), AX, AY, AZ, RX(2), RY(2), RZ(2)
 
@@ -937,15 +937,10 @@ C Total contribution -------------------------------------------------------
       END IF
       IF (DOGGA) THEN
          grdc = sqrt(GRD2(1))
-         IF (grdc > 1.0D-30) THEN
-            ZNV(1) = 1.0d0/grdc
-         ELSE
-            ZNV(1) = 0.0D0
-         END IF
-         ! normalized grd[rhoc^(X,Y,Z)]
-         RX(1) = ZNV(1)*RHG(1,1)
-         RY(1) = ZNV(1)*RHG(2,1)
-         RZ(1) = ZNV(1)*RHG(3,1)
+         ! grd[rhoc^(X,Y,Z)]
+         RX(1) = RHG(1,1)
+         RY(1) = RHG(2,1)
+         RZ(1) = RHG(3,1)
 
          FZ0   = d1Exc(3) * 2.0d0
 !        FZ0   = d1Excdgrdc / grdc = 2 d1Excdgrdcc
@@ -959,15 +954,10 @@ C Total contribution -------------------------------------------------------
       IF (USE_SPINDNS) THEN ! NOTE: I THINK IT IS USE_SPINDNS HERE - E.R.K. 5/7/2018
          ! spin
          grds = sqrt(GRD2(2))
-         IF (grds > 1.0D-30) THEN
-            ZNV(2) = 1.0d0/grds
-         ELSE
-            ZNV(2) = 0.0D0
-         END IF
-         ! normalized grd[rhos^(X,Y,Z)]
-         RX(2) = ZNV(2)*RHG(1,2)
-         RY(2) = ZNV(2)*RHG(2,2)
-         RZ(2) = ZNV(2)*RHG(3,2)
+         ! grd[rhos^(X,Y,Z)]
+         RX(2) = RHG(1,2)
+         RY(2) = RHG(2,2)
+         RZ(2) = RHG(3,2)
 
          FZ0_S = d1Exc(4)*2.0d0
 !        FZ0_S = d1Excdgrds / grds = 2 d1Excgrdss
@@ -992,8 +982,8 @@ C Linear transformation -----------------------------------------------------
             ! It is used that FSR = FRS, FSZ = FZS, FSZ_S = FZS_S, etc.
             ! "_b" in e.g. rhoc_b is for rhoc calculated from DTXMAT (from trial vector B)
 
-            ! gradN(rhoc) = grad(rhoc) ZNV(1) = grad(rhoc) / |grad(rhoc)| - unit directional vector
-            ! gradN(rhos) = grad(rhos) ZNV(2) = grad(rhos) / |grad(rhos)| - unit directional vector
+            ! gradN(rhoc) = grad(rhoc)
+            ! gradN(rhos) = grad(rhos)
             ! B0(1) = rhoc_b
             ! B0(2) = rhos_b
             ! B3(:,1) = grad(rhoc_b)
@@ -1043,7 +1033,6 @@ C Linear transformation -----------------------------------------------------
               write(lupri,*) 'hjaaj: rho ',rho(1:4)
               write(lupri,*) 'hjaaj: rhgc',rhg(1:3,1)
               write(lupri,*) 'hjaaj: grd2',grd2(1:6)
-              write(lupri,*) 'hjaaj: ZNV ',ZNV(1:2)
               write(lupri,*) 'hjaaj: Ex, Ec, gga, spindns',
      &          Ex, Ec, dogga, dft_spindns
               write(lupri,*) 'hjaaj: d1Ex  ',d1Ex(:)
