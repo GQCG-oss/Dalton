@@ -53,17 +53,18 @@
 
 ! Used from include files:
 !  gnrinf.h : CHIVAL
-!  dftcom.h : /DFTCOM/ transferred to slaves
 !  infinp.h : /LOGINP/ for DOHFSRDFT, SRHYBR, ?
+!  infvar.h : JWOPSY
 !  inforb.h : N2BASX, ?
 !  infpar.h : MYNUM, MASTER
-!  dftcom.h : ...
+!  dftcom.h : /DFTCOM/ transferred to slaves
 !  iprtyp.h : PAR_SRDFT_INTEGRATION
 
 #include "maxorb.h"
 #include "maxash.h"
 #include "gnrinf.h"
 #include "infinp.h"
+#include "infvar.h"
 #include "inforb.h"
 #include "infpar.h"
 #include "dftcom.h"
@@ -128,6 +129,8 @@ C     variables for SRCPBERI
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(TRIPLET,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(JWOPSY,1,MPI_INTEGER,
+     &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(mu_0,1,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)
 
@@ -181,16 +184,17 @@ C     variables for SRCPBERI
 
 ! Used from include files:
 !  gnrinf.h : CHIVAL
-!  dftcom.h : /DFTCOM/ transferred to slaves
 !  infinp.h : /LOGINP/ for DOHFSRDFT, SRHYBR, ?
+!  infvar.h : JWOPSY
 !  inforb.h : N2BASX, ?
 !  infpar.h : MYNUM, MASTER
-!  dftcom.h : ...
+!  dftcom.h : /DFTCOM/ transferred to slaves
 
 #include "maxorb.h"
 #include "maxash.h"
 #include "gnrinf.h"
 #include "infinp.h"
+#include "infvar.h"
 #include "inforb.h"
 #include "infpar.h"
 #include "dftcom.h"
@@ -231,7 +235,7 @@ C     variables for SRCPBERI
       call mpi_bcast(HFXFAC, bytesize, mpi_byte,
      &   MASTER, mpi_comm_world, ierr)
       ! master does not know if the grid file
-      ! DALTON.QUAD is generated for this node or not
+      ! DALTON.QUAD has been generated for this node or not
       if (first_call .or. NEWGEO .or. NEWBAS) then
          DFTGRID_DONE_OLD = .FALSE.
       else
@@ -252,6 +256,8 @@ C     variables for SRCPBERI
       CALL MPI_BCAST(DOATR,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(TRIPLET,1,MPI_LOGICAL,
+     &     MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(JWOPSY,1,MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(mu_0,1,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)

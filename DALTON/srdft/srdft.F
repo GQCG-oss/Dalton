@@ -697,7 +697,7 @@ C
      &         MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
          END IF
          IF (IPRINT .GE. 1) THEN
-            write(lupri,*) 'srdft results on node',mynum
+            write(lupri,*) 'srdft results on node, DOATR',mynum,DOATR
             write(lupri,'(6F15.10)') RESULTS(1:11)
             flush(lupri)
          END IF
