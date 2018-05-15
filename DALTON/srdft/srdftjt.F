@@ -452,12 +452,26 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
 
 C     Hessian transformation for second-order terms
       IF (DOATR) THEN
-C        matrix 1 is DTAO
-C        matrix 2 is DXTAO or DTTAO (DX*: 1-index transformed, DT*: transition density)
-C        matrix 3 is DSAO
-C        matrix 4 is DXSAO or DTSAO
-         JDXTAO = 2
-         JDXSAO = 4
+C        Notation: "DT" for charge density, "DS" for spin density,
+C                  "DX*" for 1-index transformed or transition density
+C                  "AO" for in AO basis
+C        Three cases:
+         if (dft_spindns) then  ! open-shell non-singlet reference
+         ! four input matrices: DTAO,  DXTAO, DSAO,  DXSAO
+         ! two output matrices: EXCMAT(:,:,1) = W2CAO, EXCMAT(:,:,2) = W2SAO
+            JDXTAO = 2
+            JDXSAO = 4
+         else if (triplet) then !  singlet reference, triplet perturbation
+         ! two input matrices: DTAO,  DXSAO
+         ! one output matrix : EXCMAT(:,:,1) = W2SAO
+            JDXTAO = 2
+            JDXSAO = 2
+         else                   !  singlet reference, singlet perturbation
+         ! two input matrices: DTAO,  DXTAO
+         ! one output matrix : EXCMAT(:,:,1) = W2CAO
+            JDXTAO = 2
+            JDXSAO = 2
+         end if
 
 #if SRDFT_DEBUG > 41
        print_thr = 1000.0d0
@@ -820,7 +834,7 @@ C***************************************************************************
 
 !     input
       integer  KSYMOP, IPRINT_X
-      logical  DOGGA,ERFEXP(0:2),TRIPLET,USE_SPINDNS
+      logical  DOGGA,ERFEXP(0:2),TRIPLET
       real*8   RHO(4), RHG(3,4), GRD2(6)
       real*8   CHIVAL,VLAMBDA
       real*8   DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
@@ -855,7 +869,6 @@ C***************************************************************************
 !     d2E?drhocdgrdss,  d2E?drhosdgrdss, d2E?dgrdccdgrdss, d2E?dgrdssdgrdss,
 !     d2E?drhocdgrdcs,  d2E?drhosdgrdcs, d2E?dgrdccdgrdcs, d2E?dgrdssdgrdcs, d2E?dgrdcsdgrdcs
 
-      USE_SPINDNS = DFT_SPINDNS .OR. TRIPLET
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
          CALL QUIT('SRDFTJT.F: Triplet and DFT_SPINDNS not implemented')
       END IF
@@ -865,27 +878,34 @@ C***************************************************************************
          if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
       end do
 
-      ! DGAO(1,1) = DTXMAT*GAO; DTXMAT is 1-index transformed or transition total (charge) density matrix
+      ! DGAO(1,1) = DTXMAT*GAO;
+      !  if (.not.triplet) DTXMAT is 1-index transformed or transition total (charge) density matrix
+      !  if (     triplet) DTXMAT is in fact 1-index transformed or transition spin (triplet) density matrix = DSXMAT
+      if (triplet .and. .not.dft_spindns) then
+         j = 2 ! triplet (spin)   terms in B0(2), B2(:,2)
+      else
+         j = 1 ! singlet (charge) terms in B0(1), B2(:,1)
+      end if
       CALL DGEMV('N',NBAST,NBAST,1.0d0,
      &           DTXMAT,NBAST,GAO,1,0.0d0,DGAO(1,1),1)
 
-      B0(1) = DDOT(NBAST,DGAO(1,1),1,GAO,1)
-      BMAX = ABS(B0(1))
+      B0(j) = DDOT(NBAST,DGAO(1,1),1,GAO,1)
+      BMAX = ABS(B0(j))
       IF (DOGGA) THEN
-C        B3(1:3,1) = GAO1'*DGAO(1,1)
+C        B3(1:3,j) = GAO1'*DGAO(1,1)
          CALL DGEMV('T',NBAST,3,1.0d0,GAO1,NBAST,
-     &         DGAO(1,1),1,0.0d0,B3(1,1),1)
+     &         DGAO(1,1),1,0.0d0,B3(1,j),1)
 
 C        DGAO(1,1)= DTXMAT'*GAO !!! HJAAJ: is this necessary ? We have D*XMAT symmetrized!
          CALL DGEMV('T',NBAST,NBAST,1.0d0,DTXMAT,NBAST,
      &         GAO,1,0.0d0,DGAO(1,1),1)
-C        B3(1:3,1) = B3(1:3,1) + GAO1(1:NBAST,1:3)'*DGAO((1:NBAST, 1)
+C        B3(1:3,j) = B3(1:3,j) + GAO1(1:NBAST,1:3)'*DGAO((1:NBAST, 1)
          CALL DGEMV('T',NBAST,3,1.0d0,GAO1,NBAST,
-     &         DGAO(1,1),1,1.0d0,B3(1,1),1)
-         BMAX = MAX(BMAX, ABS(B3(1,1)),ABS(B3(2,1)),ABS(B3(3,1)))
+     &         DGAO(1,1),1,1.0d0,B3(1,j),1)
+         BMAX = MAX(BMAX, ABS(B3(1,j)),ABS(B3(2,j)),ABS(B3(3,j)))
       END IF
 
-      IF (USE_SPINDNS) THEN ! NOTE: I THINK IT IS USE_SPINDNS HERE - E.R.K. 5/7/2018
+      IF (DFT_SPINDNS) THEN
          ! DGAO(1,2) = DSXMAT*GAO; DSXMAT is 1-index transformed or transition spin density matrix
          CALL DGEMV('N',NBAST,NBAST,1.0d0,DSXMAT,NBAST,
      &              GAO,1,0.0d0,DGAO(1,2),1)
@@ -915,15 +935,14 @@ C Exchange and correlation derivatives ------------------------------------
       CALL SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
       Exc         = WGHTX*  Ex       + WGHTC*  Ec
-      d1Exc(1:5)  = WGHTX*d1Ex(1:5)  + WGHTC*d2Ec(1:5)
+      d1Exc(1:5)  = WGHTX*d1Ex(1:5)  + WGHTC*d1Ec(1:5)
       d2Exc(1:15) = WGHTX*d2Ex(1:15) + WGHTC*d2Ec(1:15)
 
 C Total contribution -------------------------------------------------------
 
          FRR = d2Exc(1)
 !        FRR = d2Excdrhocdrhoc
-      !IF (DFT_SPINDNS) THEN ! LDA and GGA terms
-      IF (USE_SPINDNS) THEN ! NOTE: I THINK IT IS USE_SPINDNS HERE - E.R.K. 5/7/2018
+      IF (DFT_SPINDNS .OR. TRIPLET) THEN
          FRS = d2Exc(2)
 !        FRS = d2Excdrhocdrhos
          FSS = d2Exc(3)
@@ -944,8 +963,7 @@ C Total contribution -------------------------------------------------------
          FZZ   = d2Exc(6)*4.0d0
 !        FZZ   = d2Excdgrdcdgrdc = 4 d2Excdgrdccdgrdcc
 
-      !IF (DFT_SPINDNS) THEN ! add GGA spin density terms
-      IF (USE_SPINDNS) THEN ! NOTE: I THINK IT IS USE_SPINDNS HERE - E.R.K. 5/7/2018
+      IF (DFT_SPINDNS .OR. TRIPLET) THEN
          ! spin
          grds = sqrt(GRD2(2))
          ! grd[rhos^(X,Y,Z)]
@@ -1059,14 +1077,13 @@ C Linear transformation -----------------------------------------------------
               write(lupri,*) 'hjaaj: FAC0R, FAC0S, FACR, FACS',
      &                               FAC0R, FAC0S, FACR, FACS
               write(lupri,*) 'hjaaj: current EXCMAT left corner; before'
-!             call output(excmat,1,5,1,5,nbast,nbast,1,lupri)
-         call output(excmat,8,9,8,9,nbast,nbast,1,lupri)
+              call output(excmat,1,5,1,5,nbast,nbast,1,lupri)
            !end if
           end if
 !!#endif
             IF (NSYM.EQ.1) THEN
                IF (DOGGA) THEN
-                  IF (TRIPLET) THEN
+                  IF (TRIPLET) THEN ! closed-shell triplet GGA response
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         GX = GAO1(I,1)
@@ -1076,16 +1093,14 @@ C Linear transformation -----------------------------------------------------
                            AX = GX*GAO(J) + G0*GAO1(J,1)
                            AY = GY*GAO(J) + G0*GAO1(J,2)
                            AZ = GZ*GAO(J) + G0*GAO1(J,3)
-                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
                            AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
                            AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
-                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
-     &                                   + FZ0*AB(1) + FAC_AR*AR(1)
-                           EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
+                           ! spin matrix W[b]2s in EXCMAT no. 1
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0S*G0*GAO(J)
      &                                   + FZZ_SS*AB(2) + FAC_AR*AR(1)
                         END DO
                      END DO
-                  ELSE IF (DFT_SPINDNS) THEN
+                  ELSE IF (DFT_SPINDNS) THEN ! open-shell GGA response
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         GX = GAO1(I,1)
@@ -1099,7 +1114,8 @@ C Linear transformation -----------------------------------------------------
                            AR(2) = AX*RX(2) + AY*RY(2) + AZ*RZ(2)
                            AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
                            AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
-                           ! grad + spin-grad
+                           ! charge matrix W[b]2c in EXCMAT no. 1
+                           ! spin   matrix W[b]2s in EXCMAT no. 2
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
      &                       + d1Exc(5)*AB(2) + FZ0*AB(1) + FACR*AR(1)
      &                       + FAC_AR*AR(2)
@@ -1108,7 +1124,7 @@ C Linear transformation -----------------------------------------------------
      &                       + FAC_AR*AR(1)
                         END DO
                      END DO
-                  ELSE ! closed-shell GGA
+                  ELSE ! closed-shell singlet GGA response
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         GX = GAO1(I,1)
@@ -1120,6 +1136,7 @@ C Linear transformation -----------------------------------------------------
                            AZ = GZ*GAO(J) + G0*GAO1(J,3)
                            AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
                            AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+                           ! charge matrix W[b]2c in EXCMAT no. 1
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
      &                                   + FACR*AR(1)+FZ0*AB(1)
                         END DO
@@ -1130,8 +1147,7 @@ C Linear transformation -----------------------------------------------------
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         DO J = 1, I
-                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
-                           EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0S*G0*GAO(J)
                         END DO
                      END DO
                   ELSE IF (DFT_SPINDNS) THEN
@@ -1151,9 +1167,7 @@ C Linear transformation -----------------------------------------------------
                      END DO
                   END IF
                END IF ! GGA or LDA check
-            ELSE
-               WRITE(lupri,*) 'WARNING: gamma_cs terms have not been
-     & added to calculations with symmetry, YET!'
+            ELSE ! NSYM .gt. 1
                IF (TRIPLET) THEN
                   CALL QUIT('srdftjt.F: No triplet for symmetry yet')
                END IF
@@ -1187,10 +1201,16 @@ C Linear transformation -----------------------------------------------------
      &                              + AZ*B3(3,1)
                               AB(2) = AX*B3(1,2) + AY*B3(2,2)
      &                              + AZ*B3(3,2)
-                              EXCMAT(J,I,1) = EXCMAT(J,I,1)
-     &                                      + FACR*AR(1)+FZ0*AB(1)
-                              EXCMAT(J,I,2) = EXCMAT(J,I,2)
-     &                                      + FACS*AR(2) + FZ0_S*AB(2)
+!                             EXCMAT(J,I,1) = EXCMAT(J,I,1)
+!    &                                      + FACR*AR(1)+FZ0*AB(1)
+!                             EXCMAT(J,I,2) = EXCMAT(J,I,2)
+!    &                                      + FACS*AR(2) + FZ0_S*AB(2)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1) ! +FAC0R*G0*GAO(J)
+     &                       + d1Exc(5)*AB(2) + FZ0*AB(1) + FACR*AR(1)
+     &                       + FAC_AR*AR(2)
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2) ! +FAC0S*G0*GAO(J)
+     &                       + d1Exc(5)*AB(1) + FZ0_S*AB(2) + FACS*AR(2)
+     &                       + FAC_AR*AR(1)
                            else if (dft_spindns .and. .not. dogga) then
                               EXCMAT(J,I,2) = EXCMAT(J,I,2)
      &                                      + FAC0S*G0*GAO(J)
@@ -1204,10 +1224,7 @@ C Linear transformation -----------------------------------------------------
                               EXCMAT(J,I,1) = EXCMAT(J,I,1)
      &                                      + FACR*AR(1)+FZ0*AB(1)
                             end if
-!     if (iprint_x .gt. 10 .and. i.eq.1 .and. j.eq.1) then
-      if (iprint_x .gt. 10 .and.
-     &    (i.eq.8 .or. i.eq.9) .and.
-     &    (j.eq.8 .or. j.eq.9)) then
+      if (iprint_x .gt. 10 .and. i.eq.1 .and. j.eq.1) then
          write(lupri,*)'hjaaj2: i,j, ax,ay,az',i,j,ax,ay,az
          write(lupri,*)'hjaaj2: fac0r,facr,ar,fz0,ab',
      &   fac0r,facr,ar(1),fz0,ab(1)
@@ -1221,8 +1238,7 @@ C Linear transformation -----------------------------------------------------
       END IF   ! IF (BMAX.GT.DFTHRL) THEN
       if (iprint_x .gt. 10) then
          write(lupri,*) ':: current EXCMAT left corner - after'
-!        call output(excmat,1,5,1,5,nbast,nbast,1,lupri)
-         call output(excmat,8,9,8,9,nbast,nbast,1,lupri)
+         call output(excmat,1,5,1,5,nbast,nbast,1,lupri)
       end if
 c
       RETURN
