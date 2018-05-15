@@ -27,7 +27,7 @@ fedora-26-serial:
         - python setup --coverage --type=debug -D SITE=GitLabCI
         - cd build
         - make -j 3
-        - ctest -L essential
+        - ctest -L essential --output-on-failure
         - ctest -D ExperimentalCoverage
         - ctest -D ExperimentalSubmit
 
@@ -58,4 +58,4 @@ fedora-26-mpi:
         - python setup --type=debug --mpi
         - cd build
         - make -j 3
-        - ctest -L essential
+        - ctest -L essential --output-on-failure
