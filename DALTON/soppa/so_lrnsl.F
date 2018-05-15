@@ -1,7 +1,8 @@
 C
 C  /* Deck so_lrnsl */
       SUBROUTINE SO_LRNSL(MODEL,ISYM,PROPAR,DELETE_VECTORS,
-     &                    FREQ,NFREQ,LABELS,NLAB,
+     &                    FREQ,NFREQ,LABELS,
+     &                    SOLV_LABELS, NLAB,
      &                    DENSIJ,LDENSIJ,
      &                    DENSAB,LDENSAB,DENSAI,LDENSAI,
      &                    WORK,LWORK)
@@ -23,7 +24,7 @@ C
 C#include "implicit.h"
       implicit none
 #include "priunit.h"
-C      
+C
 #include "soppinf.h"
 #include "ccsdsym.h"
 C REP <- Symbols of the ireducible representations.
@@ -39,21 +40,22 @@ C
      &                     DENSAI(LDENSAI), FREQ(NFREQ)
       REAL(sop_dp),INTENT(INOUT) :: WORK(LWORK)
       REAL(sop_dp),intent(inout) :: PROPAR(NFREQ,NLAB,NLAB)
-      CHARACTER(LEN=8), intent(in) ::LABELS(NLAB)
+      CHARACTER(LEN=8), intent(in) :: LABELS(NLAB) ! Operator lables
       CHARACTER(len=5), intent(in) :: MODEL
-      LOGICAL, INTENT(IN) :: DELETE_VECTORS ! Whether to delete solution
-                                            ! and residual vectors
+      LOGICAL, INTENT(IN) :: DELETE_VECTORS, ! Whether to delete solution and residual vectors
+     &                       SOLV_LABELS(NLAB) ! Whether response equations have been solved
 C
       CHARACTER*8 LABEL1, LABEL2
       CHARACTER*8 RTNLBL(2)
       REAL(sop_dp)  ::  PROPVAL, SELLCOR
       INTEGER :: LPRP1, LWORK1, LPDENSIJ, LPDENSAB, LPDENSAI, LPDENSTOT,
      &           LWORK2, LWORK3, LSOLV, LRESI
-      INTEGER :: KPRP1, KEND1, KPDENSIJ, KPDENSAB, KPDENSAI, KEND2, 
+      INTEGER :: KPRP1, KEND1, KPDENSIJ, KPDENSAB, KPDENSAI, KEND2,
      &           KEND3, KSOLV, KRESI
       INTEGER :: IDUMMY, ILAB1, ILAB2, IFREQ, LURDENS
+      INTEGER :: NSTART
 C
-      LOGICAL   IMAGPROP, doubles, static, OLDDX
+      LOGICAL   IMAGPROP, doubles, static, OLDDX, SOLVED1
       REAL(sop_dp), PARAMETER :: DP5=0.5D0
 C
       CHARACTER(len=*), parameter :: myname = 'SO_LRNSL'
@@ -64,6 +66,8 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER(myname)
+C
+      PROPAR = 0.0D0
 C
 C------------------------------
 C     Allocation of work space.
@@ -113,6 +117,13 @@ C        Find label and symmetry of second operator.
 C---------------------------------------------------
 C
          LABEL1 = LABELS(ILAB1)
+C        Check if we have solved wrt LABEL1
+         SOLVED1 = SOLV_LABELS(ILAB1)
+         IF (SOLVED1) THEN
+            NSTART = ILAB1
+         ELSE
+            NSTART = 1
+         END IF
 C
 C--------------------------------------------------
 C           Get the property integrals in MO basis.
@@ -131,7 +142,7 @@ C  These allocations as such doesn't change...
          KEND2    = KPDENSAI + LPDENSAI
          LWORK2   = LWORK - KEND2
 C
-C         
+C
          CALL SO_MEMMAX (myname//'.2',LWORK2)
          IF (LWORK2 .LT. 0)
      &            CALL STOPIT(myname//'.2',' ',KEND2,LWORK)
@@ -147,7 +158,7 @@ C
 C-----------------------------------------------------------
 C           If using Seller's, get solution vector of LABEL1
 C-----------------------------------------------------------
-            IF (SOP_USE_SELLER) THEN
+            IF (SOP_USE_SELLER.AND.SOLVED1) THEN
                LRESI = NT1AM(ISYM)
                IF (DOUBLES) LRESI = LRESI + N2P2HOP(ISYM)
                IF (.NOT.STATIC) LRESI = LRESI*2
@@ -162,8 +173,11 @@ C-----------------------------------------------------------
      &                         STATIC,DOUBLES,ISYM)
             ENDIF
 
-            DO ILAB2 = ILAB1, NLAB
+            DO ILAB2 = NSTART, NLAB
                LABEL2 = LABELS(ILAB2)
+               ! Only do the following, if solution vector has been
+               ! found
+               IF (.NOT.SOLV_LABELS(ILAB2)) CYCLE
 C
 C-----------------------------------------------------------
 C        Get the perturbed density matrix from file
@@ -190,7 +204,7 @@ C
      &                        WORK(KPDENSAB),LPDENSAB,
      &                        WORK(KPDENSAI),LPDENSAI)
 C
-               IF (SOP_USE_SELLER.AND.(ILAB1.NE.ILAB2)) THEN
+               IF (SOP_USE_SELLER.AND.SOLVED1.AND.(ILAB1.NE.ILAB2)) THEN
                   CALL SO_GETSOLV(WORK(KRESI),LRESI,LABEL2,FREQ(IFREQ),
      &                            2,STATIC,DOUBLES,ISYM)
                   SELLCOR = DDOT(LRESI,WORK(KRESI),1,WORK(KSOLV),1)
@@ -239,14 +253,14 @@ C
       USE SO_INFO, ONLY: SOP_DP, SOP_STAT_TRH
       IMPLICIT NONE
 C
-C Get LUPRI, output unit (probably 6)      
+C Get LUPRI, output unit (probably 6)
 #include "priunit.h"
-C From codata we need varius conversion factors, XT*. 
+C From codata we need varius conversion factors, XT*.
 #include "codata.h"
 C inflr.h below requires MAXLBL from rspprp.h
 #include "rspprp.h"
-C We need 
-C LBLLR <- Label of operators 
+C We need
+C LBLLR <- Label of operators
 C NGPLR <- Number of operators of each symmetry
 #include "inflr.h"
 C TRIPLET <- Triplet property flag
@@ -256,7 +270,7 @@ C TRIPLET <- Triplet property flag
      &                            FREQ(NFREQ)
       INTEGER, INTENT(IN) :: ISYM, NFREQ, NLAB
       CHARACTER(LEN=8) :: LABELS(NLAB)
-      
+
       INTEGER :: ILAB1, ILAB2, IFREQ
 
       CALL HEADER('Final output of second order properties from'//
@@ -270,7 +284,7 @@ C TRIPLET <- Triplet property flag
      &   ' Note that minus the linear response function:'//
      &   ' - << A; B >>(omega) is printed.',
      &   ' The results are of quadratic accuracy using Sellers formula.'
-      
+
       DO IFREQ = 1, NFREQ
          IF ( ABS(FREQ(IFREQ)) .LT. sop_stat_trh) THEN
             WRITE(LUPRI,'(/A/)')
@@ -292,16 +306,16 @@ C TRIPLET <- Triplet property flag
             END DO
          END DO
       END DO
-               
+
       END SUBROUTINE
 
       SUBROUTINE SO_GETSOLV(VECT,LVECT,LABEL,FREQ,IOPT,STATIC,DOUBLES,
-     &                      ISYM) 
+     &                      ISYM)
 C
 C     Gets a converged solution vector or corresponding residual vector
 C
       use so_info, only: sop_dp
-      
+
       implicit none
 #include "soppinf.h"
 #include "ccsdsym.h"
@@ -321,7 +335,7 @@ C     Variables
       character(len=5) :: froot
       integer          :: k1e, k1d, k2e, k2d, kend
 C
-C      
+C
       IF (IOPT.eq.1) then
          froot = fnsv1e(1:5)
       elseif (iopt.eq.2) then
@@ -333,7 +347,7 @@ C     Find positions in VECT
       kend = k1e + nt1am(isym)
       call readavector(froot//'1E', isym, label,
      &                 freq, vect(k1e), nt1am(isym))
-      if (.NOT.STATIC) THEN 
+      if (.NOT.STATIC) THEN
          k1d = kend
          kend = k1d + nt1am(isym)
          call readavector(froot//'1D',isym,
@@ -353,8 +367,8 @@ C     Find positions in VECT
       end if
       !if (kend .ne. lvect+1) print *, 'Odd vector length', kend, lvect
 C
-      contains 
-         
+      contains
+
          subroutine readavector(fname,isym,label,freq,vect,length)
             character(len=7),intent(in)  :: fname
             character(len=8),intent(in)  ::label
@@ -364,7 +378,7 @@ C
 
             integer :: lufile
             logical :: olddx
-         
+
             lufile = -1
             call GPOPEN(lufile,fname,'OLD    ','DIRECT','UNFORMATTED',
      &                 irat*length,olddx)
@@ -376,22 +390,22 @@ C
 
       SUBROUTINE SO_DELVEC(STATIC,DOUBLES,ISYM)
 C
-C     Deletes the files containing solution and 
+C     Deletes the files containing solution and
 C     residual vectors
 C
       implicit none
 #include "soppinf.h"
 #include "ccsdsym.h"
 #include "iratdef.h"
-      
+
 
 
       integer, intent(in)       :: isym ! symmetry of pt.
       logical, intent(in)  :: static, ! only read E part if static
      &                        doubles ! include doubles excitations
-C      
+C
       character(len=5) :: froot
-      integer :: iopt 
+      integer :: iopt
 
       do iopt = 1,2
          IF (IOPT.eq.1) then
@@ -409,7 +423,7 @@ C
       end do
 
       contains
-      
+
          subroutine delavect(fname,length)
             integer, intent(in) :: length
             character(len=7),intent(in)  :: fname

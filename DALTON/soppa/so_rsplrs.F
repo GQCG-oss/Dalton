@@ -1,6 +1,6 @@
 C
 C  /* Deck so_rsplrs */
-      SUBROUTINE SO_RSPLRS(LABELS,NUM_LABELS,LABEL_OFFSETS,
+      SUBROUTINE SO_RSPLRS(LABELS,NUM_LABELS,LABEL_OFFSETS,SOLV_LABELS,
      &                     TRIP_INPUT,THRESH,FREQ,NFREQ,IMODE,
      &                     WORK,LWORK)
 C
@@ -59,6 +59,8 @@ C  we calculate the response function. It needs to be in-out in case
 C  we have to sort it.
       INTEGER, INTENT(IN) :: LABEL_OFFSETS(8), NUM_LABELS(8)
       CHARACTER(LEN=8),INTENT(INOUT) :: LABELS(*)
+      LOGICAL, INTENT(IN) :: SOLV_LABELS(*)! Flag: True for labels where
+                                           ! response equations should be solved
       LOGICAL, INTENT(IN) :: TRIP_INPUT ! Triplet flag
       INTEGER, INTENT(IN) :: IMODE ! How we are called
                                    ! IMODE = 0 : from response
@@ -248,6 +250,10 @@ C
       DO ISYM = 1, NSYM
          IF (NUM_LABELS(ISYM).LE.0) CYCLE ! Nothing to do for this sym
          ILABOFF = LABEL_OFFSETS(ISYM)
+         ! Also skip, if we are not to solve any vectors for this
+         ! symmetry
+         IF (.NOT.ANY(SOLV_LABELS(ILABOFF+1:ILABOFF+NUM_LABELS(ISYM))))
+     &      CYCLE
 C
 C========================================
 C        Loop over the posible methods
@@ -338,6 +344,11 @@ C are not needed - they have been made.
             IF (.NOT.DOUBLE_CORR) THEN
                DO IOPER = 1, NUM_LABELS(ISYM)
 C
+                  ILAB = ILABOFF+IOPER
+                  ! Skip labels for which we don't need to solve
+                  ! response equations
+                  IF (.NOT.SOLV_LABELS(ILAB)) CYCLE
+
                   LABEL1 = LABELS(ILABOFF+IOPER)
                   ISYMTR = ISYM
 C
@@ -360,20 +371,22 @@ C                  CALL FLUSH(LUPRI)
 C
             LABMIX = .FALSE.
             NUM_IMAG = COUNT(IMAGPROP(1:NUM_LABELS(ISYM)))
+            NUMLAB = NUM_LABELS(ISYM)
             IF (NUM_IMAG.EQ.NUM_LABELS(ISYM)) THEN ! all imag
-               NUMLAB = NUM_LABELS(ISYM)
                ALL_IMAG = .TRUE.
             ELSE IF (NUM_IMAG.EQ.0) THEN ! ALL REAL
-               NUMLAB = NUM_LABELS(ISYM)
                ALL_IMAG = .FALSE.
                IF (IMODE.EQ.2) CALL QUIT('Expected imaginary labels'//
      &               ' in '//myname)
+            ELSE IF (IMODE.EQ.2) THEN
+               ALL_IMAG = .TRUE.
+            ELSE IF ((IMODE.EQ.1).OR.(IMODE.EQ.3)) THEN
+               ALL_IMAG = .FALSE.
             ELSE ! We found a mix!!
-               PRINT *, 'LABEL MIX!'
-               IF (IMODE.NE.0) THEN
-                  CALL QUIT('Found mix of imaginary and '
-     &                       //'real labels in '//myname)
-               END IF
+C               IF (IMODE.NE.0) THEN
+C                  CALL QUIT('Found mix of imaginary and '
+C     &                       //'real labels in '//myname)
+C               END IF
                CALL SORT_LABELS(LABELS(ILABOFF+1),IMAGPROP,NUM_IMAG,
      &                          NUM_LABELS(ISYM))
 C              We do the real ones first
@@ -407,7 +420,7 @@ CAKSP 7-3-17 if RPA(D)
      &                          WORK(KPROP1),WORK(KPROP2),
      &                          LAST_MODEL.AND..NOT.LABMIX,
      &                          FREQ,NFREQ,LABELS(ILABOFF+1),
-     &                          NUMLAB,
+     &                          SOLV_LABELS(ILABOFF+1),NUMLAB,
      &                          WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                          LDENSAB,WORK(KDENSAI),LDENSAI,
      &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
@@ -416,7 +429,7 @@ CAKSP 7-3-17 if RPA(D)
                   CALL SO_LRNSL(MODEL,ISYM,WORK(KPROP),
      &                          LAST_MODEL.AND..NOT.LABMIX,
      &                          FREQ,NFREQ,LABELS(ILABOFF+1),
-     &                          NUMLAB,
+     &                          SOLV_LABELS(ILABOFF+1),NUMLAB,
      &                          WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                          LDENSAB,WORK(KDENSAI),LDENSAI,
      &                          WORK(KEND2),LWORK2)
@@ -465,7 +478,7 @@ CAKSP 7-3-17 For RPA(D) use special routine.
                   CALL DC_LRNSL(MODEL,ISYM,WORK(KPROPI),
      &                          WORK(KPROPI1),WORK(KPROPI2),LAST_MODEL,
      &                          FREQ,NFREQ,LABELS(ILABOFF+NUMLAB+1),
-     &                          NUM_IMAG,
+     &                          SOLV_LABELS(ILABOFF+NUMLAB+1),NUM_IMAG,
      &                          WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                          LDENSAB,WORK(KDENSAI),LDENSAI,
      &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
@@ -477,7 +490,7 @@ CAKSP 7-3-17 For RPA(D) use special routine.
                ELSE
                   CALL SO_LRNSL(MODEL,ISYM,WORK(KPROPI),LAST_MODEL,
      &                          FREQ,NFREQ,LABELS(ILABOFF+NUMLAB+1),
-     &                          NUM_IMAG,
+     &                          SOLV_LABELS(ILABOFF+NUMLAB+1),NUM_IMAG,
      &                          WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                          LDENSAB,WORK(KDENSAI),LDENSAI,
      &                          WORK(KEND2B),LWORK2B)
@@ -598,6 +611,7 @@ C  gdvec.h and abares.h requires MXCOOR, MXCENT
 C  TRPLAB <- Vector containing the required labels.
 #include "abares.h"
 C  NTRVEC <- The number of labels in each symmetry
+C  IDORCT <- Which labels to solve for
 #include "gdvec.h"
 C  THRTRP <- Convergence criteria
 #include "cbitrp.h"
@@ -617,6 +631,7 @@ C     Calculate label offsets
 C
 C     We now have all info for SO_RSPLRS
       CALL SO_RSPLRS(TRPLAB(1), NTRVEC, LABEL_OFFSETS,
+     &               IDORCT(1:NCOUNT).EQ.0,
      &               .TRUE., THRTRP, FREQ, 1, 3,
      &               WORK, LWORK)
 
@@ -638,7 +653,7 @@ C     We now have all info for SO_RSPLRS
       do
          read (lu, end=900) this_sym
          if (this_sym .eq. isym) exit
-         read (lu, end=900)
+         read (lu, end=901)
       end do
       read (lu) rel
 C     This factor is needed for triplet properties...
@@ -647,7 +662,11 @@ C     This factor is needed for triplet properties...
       CALL GPCLOSE(lu,'KEEP')
       return
 
- 900  CALL QUIT('ERROR reading file '//fn_prop(imode))
+ 900  rel = 0.0D0
+      CALL GPCLOSE(lu,'KEEP')
+      return
+
+ 901  CALL QUIT('ERROR reading file '//fn_prop(imode))
 
       END SUBROUTINE
 
@@ -666,6 +685,7 @@ C  gdvec.h and abares.h requires MXCOOR, MXCENT
 C  IMGLAB <- Vector containing the required labels.
 #include "abares.h"
 C  NGDVEC <- The number of labels in each symmetry
+C  IDORCI <- Which labels to solve for
 #include "gdvec.h"
 C  THRCLC <- Convergence criteria
 #include "cbilrs.h"
@@ -685,6 +705,7 @@ C     Calculate label offsets
 C
 C     We now have all info for SO_RSPLRS
       CALL SO_RSPLRS(IMGLAB, NGDVEC(1,2), LABEL_OFFSETS,
+     &               IDORCI(1:NCOUNT,2).EQ.0,
      &               .FALSE., THRCLC, FREQ, 1, 2,
      &               WORK, LWORK)
 

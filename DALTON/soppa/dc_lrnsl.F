@@ -2,7 +2,8 @@ C
 C  /* Deck dc_lrnsl */
       SUBROUTINE DC_LRNSL(MODEL,ISYM,PROPAR,PROPAR1,PROPAR2,
      &                    DELETE_VECTORS,
-     &                    FREQ,NFREQ,LABELS,NLAB,
+     &                    FREQ,NFREQ,LABELS,
+     &                    SOLV_LABELS,NLAB,
      &                    DENSIJ,LDENSIJ,
      &                    DENSAB,LDENSAB,DENSAI,LDENSAI,
      &                    FOCKD,LFOCKD,T2AM,LT2AM,
@@ -43,6 +44,7 @@ C
      &                              PROPAR1(NFREQ,NLAB,NLAB),
      &                              PROPAR2(NFREQ,NLAB,NLAB)
       CHARACTER(LEN=8), intent(in) ::LABELS(NLAB)
+      LOGICAL, intent(in) :: SOLV_LABELS(NLAB)
       CHARACTER(len=5), intent(in) :: MODEL
       LOGICAL, INTENT(IN) :: DELETE_VECTORS ! Whether to delete solution
                                             ! and residual vectors
@@ -77,6 +79,11 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER(myname)
+C
+C     Initialize PROPAR
+      PROPAR = 0.0D0
+      PROPAR1 = 0.0D0
+      PROPAR2 = 0.0D0
 C
 C---------------------------
 C       Memory allocation 1
@@ -172,6 +179,8 @@ C
          END IF
 C
          DO ILAB1=1,NLAB
+
+            IF (.NOT.SOLV_LABELS(ILAB1)) CYCLE
             LABEL1=LABELS(ILAB1)
 C
 C---------------------------------------
@@ -324,6 +333,7 @@ C-------------------------------
 C   Read the necessary vectors:
 C------------------------------
          DO ILAB1=1,NLAB
+            IF (.NOT.SOLV_LABELS(ILAB1)) CYCLE
             LABEL1=LABELS(ILAB1)
             CALL SO_READ(WORK(KZ1EA),L1VEC,LURS1E,FNRS1E,ILAB1)
 C-------------------------------------------------------
@@ -361,6 +371,7 @@ C---------------------------------------------------------------------------
             END IF
 C
             DO ILAB2=ILAB1,NLAB
+               IF (.NOT.SOLV_LABELS(ILAB2)) CYCLE
                LABEL2=LABELS(ILAB2)
                CALL SO_READ(WORK(KSV1EB),L1VEC,LUTR1E,FNTR1E,ILAB2)
 C------------------------------------------------------------
