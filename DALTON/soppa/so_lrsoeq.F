@@ -38,7 +38,8 @@ C
 #endif
       use so_info, only: sop_linres, so_full_name, so_has_doubles,
      &                   so_needs_densai, sop_dp, sop_stat_trh,
-     &                   so_model_number
+     &                   so_model_number,
+     &                   sop_mp2ai_done
 C
 #include "implicit.h"
 #ifdef VAR_MPI
@@ -53,6 +54,7 @@ C
 C
       LOGICAL   NONEWT,IMAGPROP, IMAGPROP2
       LOGICAL   DOUBLES
+      LOGICAL   UPDATE_GP
 C
       CHARACTER*3 CONV(LCONV)
       CHARACTER MODEL*5,LABEL*8
@@ -86,10 +88,14 @@ C------------------
 C
       CALL QENTER('SO_LRSOEQ')
 C
+C     Basic info on what we do here
       DOUBLES = so_has_doubles(model)
-C
       FULL_NAME = SO_FULL_NAME(MODEL)
       IMODEL = SO_MODEL_NUMBER(MODEL)
+C
+C     Should we update the GP vector
+      UPDATE_GP = (.NOT. sop_mp2ai_done) .AND.
+     &            SO_NEEDS_DENSAI(MODEL)
 C
 C==============================================================
 C     For checking, calculate E[2] and S[2] matrices explicitly
@@ -204,7 +210,6 @@ C
       ELSE
          IDTYPE = 1
       END IF
-                  
 C
 C----------------------------------------------------------------------
 C     Iteration loop or solving the linear equation/eigenvalue problem
@@ -289,15 +294,15 @@ C
 C
          END IF
 C
-         IF((NIT.EQ.1).AND.(IFREQ.EQ.1).AND.
-     &                   SO_NEEDS_DENSAI(MODEL) ) THEN
+         IF (UPDATE_GP) THEN
+            UPDATE_GP = .FALSE.
 C
 C-----------------------------------------------------------------------
 C          Calculate the gradient property vectors with the right DENSAI
 C-----------------------------------------------------------------------
 C          Only the one-partcle part need to be re-done ->
 C          Maybe pass in MODEL = 'AOHRP'?
-           LGPVC1  =  NT1AM(ISYMTR)
+           LGPVC1  = NT1AM(ISYMTR)
            LGPVC2 = 0
            KGPVC1  = KEND1
            KGPVC2  = KGPVC1 + LGPVC1
@@ -413,11 +418,11 @@ C--------------------------------------------------------------
 C     Calculate and save the pertubed density matrix
 C-------------------------------------------------------------
 C
-      if (triplet.AND.doubles) THEN 
+      if (triplet.AND.doubles) THEN
          CALL SO_TMLTR(T2MP,ONE,1)
          CALL DSCAL(LT2MP,HALF,T2MP,1)
       END IF
-C      
+C
       ENORMINV = 1.0D0/ENORM
       CALL SO_PERTDENS(MODEL,SOP_LINRES,1,
      &                 FRVAL(IFREQ),1,LABEL,

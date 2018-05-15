@@ -104,7 +104,6 @@ C     Get the active models and their number
 C
 C AKSP 7-3-17
 C     RPA(D) properties require RPA calcultation
-C      ACTIVE_MODELS(SOP_MODEL_RPAD)=.FALSE.
       IF (ACTIVE_MODELS(SOP_MODEL_RPAD)) THEN
          ACTIVE_MODELS(SOP_MODEL_RPA)=.TRUE.
       ELSE IF (ACTIVE_MODELS(SOP_MODEL_HRPAD))THEN
@@ -329,18 +328,12 @@ C     &           NPPCNV(ISYM),
             ENDIF
             WRITE(LUPRI,9001)
 
-            SOP_USE_SELLER = (NUM_LABELS(ISYM).GT.1)
 CAKSP 7-3-17 if running an RPA(D) model the RPA calculation must be done
 C while sop_use_seller is true
-            IF (ACTIVE_MODELS(SOP_MODEL_RPAD)
-     &          .AND.(MODEL.EQ.'AORPA'))THEN
-               SOP_USE_SELLER =.TRUE.
-            END IF
-            IF(ACTIVE_MODELS(SOP_MODEL_HRPAD)
-     &          .AND.(MODEL.EQ.'AOHRP'))THEN
-               SOP_USE_SELLER = .TRUE.
-            END IF
-CAKSP 7-3-17 if doubles correction model iterative calculations
+            SOP_USE_SELLER = (NUM_LABELS(ISYM).GT.1).OR.
+     &                       ACTIVE_MODELS(SOP_MODEL_RPAD).OR.
+     &                       ACTIVE_MODELS(SOP_MODEL_HRPAD)
+CAKSP 7-3-17 if doubles correction model, iterative calculations
 C are not needed - they have been made.
             IF (.NOT.DOUBLE_CORR) THEN
                DO IOPER = 1, NUM_LABELS(ISYM)
@@ -419,7 +412,7 @@ CAKSP 7-3-17 if RPA(D)
      &                          LDENSAB,WORK(KDENSAI),LDENSAI,
      &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
      &                          ALL_IMAG,WORK(KEND2),LWORK2)
-               ELSE
+            ELSE
                   CALL SO_LRNSL(MODEL,ISYM,WORK(KPROP),
      &                          LAST_MODEL.AND..NOT.LABMIX,
      &                          FREQ,NFREQ,LABELS(ILABOFF+1),
@@ -427,7 +420,7 @@ CAKSP 7-3-17 if RPA(D)
      &                          WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                          LDENSAB,WORK(KDENSAI),LDENSAI,
      &                          WORK(KEND2),LWORK2)
-               END IF
+            END IF
 C
             IF ((IMODE.GT.0).AND.LAST_MODEL) THEN
                WRITE(LU_DUMP) ISYM

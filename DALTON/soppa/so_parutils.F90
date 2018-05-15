@@ -311,7 +311,7 @@ contains
 ! Some info, that we need in each pass
       integer :: nnewtr, noldtr, isymtr, nit, idtype
       integer :: imod, imodel
-! Need to ensure that the four above variables are stored
+! Need to ensure that the six above variables are stored
 ! consecutively, so we can recieve them with a single bcast.
 ! This is the only purpose of info_array, only address it as
 ! part of communication!

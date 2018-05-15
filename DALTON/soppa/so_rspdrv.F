@@ -24,8 +24,8 @@ C THCLR <- Convergence threshold
 C  nsym
 #include "inforb.h"
       REAL(SOP_DP), INTENT(INOUT) :: WORK(LWORK)
-      INTEGER, INTENT(IN) :: LWORK    
-   
+      INTEGER, INTENT(IN) :: LWORK
+
       character(len=9), parameter :: myname = 'SO_RSPDRV'
       integer :: labcount, klab, kend, lwrk, laboffset(8)
 
@@ -48,10 +48,10 @@ C  Call AO-SOPPA Driver routine
       END SUBROUTINE
 
       SUBROUTINE SO_RSP_LABELCOPY(SOPPA_LABELS,
-     &                            LABEL_OFFSETS, 
+     &                            LABEL_OFFSETS,
      &                            LABCOUNT)
 C
-C  Translate the rsp labels on LBLLR to the list used by aosoppa 
+C  Translate the rsp labels on LBLLR to the list used by aosoppa
 C
 C
       IMPLICIT NONE
@@ -66,9 +66,9 @@ C NGPLR <- Number of operators of each symmetry
       CHARACTER(LEN=8), INTENT(OUT) :: SOPPA_LABELS(LABCOUNT)
       INTEGER,INTENT(OUT) :: LABEL_OFFSETS(8)
       INTEGER,INTENT(IN) :: LABCOUNT
-      
+
       INTEGER :: ISYM, IOPER, ICOUNT
-      
+
       ICOUNT = 0
       DO ISYM = 1, NSYM
          LABEL_OFFSETS(ISYM) = ICOUNT
