@@ -845,7 +845,7 @@ C***************************************************************************
       real*8   BR(4), B0(2), B3(3,2), BMAX
       real*8   AR(2), AB(2), AX, AY, AZ, RX(2), RY(2), RZ(2)
 
-      real*8   FAC0R, FAC0S, FACR, FACS, FACR_AR2, FACS_AR1
+      real*8   FAC0R, FAC0S, FACR, FACS, FAC_AR
       real*8   FRR, FRZ, FZZ, FZ0
       real*8   FRS, FSS, FSZ, FSZ_S, FRZ_S, FZZ_S, FZ0_S, FZZ_SS
       real*8   G0, GX, GY, GZ
@@ -946,9 +946,9 @@ C Total contribution -------------------------------------------------------
 !        FZ0   = d1Excdgrdc / grdc = 2 d1Excdgrdcc
          ! gradient
          FRZ   = d2Exc(4)*2.0d0
-!        FRZ   = d2Excdrhocdgrdc = 2 grdc d2Excdrhocdgrdcc
+!        FRZ   = d2Excdrhocdgrdc = 2 d2Excdrhocdgrdcc
          FZZ   = d2Exc(6)*4.0d0
-!        FZZ   = d2Excdgrdcdgrdc = 4 grdcc d2Excdgrdccdgrdcc + 2 d1Excdgrdcc
+!        FZZ   = d2Excdgrdcdgrdc = 4 d2Excdgrdccdgrdcc
 
       !IF (DFT_SPINDNS) THEN ! add GGA spin density terms
       IF (USE_SPINDNS) THEN ! NOTE: I THINK IT IS USE_SPINDNS HERE - E.R.K. 5/7/2018
@@ -994,9 +994,7 @@ C Linear transformation -----------------------------------------------------
             ! AR(1) = AX*RX(1)   + AY*RY(1)   + AZ*RZ(1)   ! grad(xhi_i xhi_j) . grad(rhoc)
             ! AR(2) = AX*RX(2)   + AY*RY(2)   + AZ*RZ(2)   ! grad(xhi_i xhi_j) . grad(rhos)
             ! AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1) ! grad(xhi_i xhi_j) . grad(rhoc_b)
-            !       - AR(1)*BR(1)                          ! - [grad(xhi_i xhi_j) . grad(rhoc)] [grad(rhoc) . grad(rhoc_b)]
             ! AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2) ! grad(xhi_i xhi_j) . grad(rhos_b)
-            !       - AR(2)*BR(2)                          ! - [grad(xhi_i xhi_j) . grad(rhos)] [grad(rhos) . grad(rhos_b)]
             ! FAC0R = FRR*B0(1) + FRZ*BR(1)   !   d2Edrhoc2 rhoc_b      + d2Edrhocdgrdcc grad(rhoc) . grad(rhoc_b)
             !       + FRS*B0(2) + FRZ_S*BR(2) ! + d2Edrhocdrhos rhos_b  + d2Edrhocdgrdss grad(rhos) . grad(rhos_b)
             !?                                ! + d2Edrhocdgrdcs grad(rhoc_b) + d2Edrhocdgrdcs grad(rhos_b)
@@ -1004,28 +1002,42 @@ C Linear transformation -----------------------------------------------------
             ! FACR  = FZR*B0(1) + FZZ*BR(1)   !   d2Edgrdccdrhoc rhoc_b + d2Edgrdcc2 grad(rhoc_b)
             !       + FZS*B0(2) + FZZ_S*BR(2) ! + d2Edgrdccdrhos rhos_b + d2Edgrdccdgrdss grad(rhos_b)
             !?                                ! + d2Edgrdccdgrdcs grad(rhoc_b) + d2Edgrdccdgrdcs grad(rhos_b)
-            if (dogga .and. use_spindns) then
-               BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
-               BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
-               BR(3) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
-               BR(4) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
-               FAC0R = FRR*B0(1) + FRZ*BR(1) + FRS*B0(2) + FRZ_S*BR(2)
-               FAC0S = FRS*B0(1) + FSS*B0(2) + FSZ*BR(1) + FSZ_S*BR(2)
-               FACR  = FRZ*B0(1) + FZZ*BR(1) + FZZ_S*BR(2) + FSZ*B0(2)
-               FACS  = FSZ_S*B0(2) + FRZ_S*B0(1) +
-     &                 FZZ_S*BR(1) + FZZ_SS*BR(2)
-               FACR_AR2 = d2Exc(12)*B0(2) + d2Exc(15)*BR(3)
-               FACS_AR1 = d2Exc(12)*B0(2) + d2Exc(15)*BR(3)
-               ! d2Edrhosdgrdcs rhos_b + d2Egrdcs2 (grad(rhos_b) . grad(rhoc))
-            else if (dogga .and. .not. use_spindns) then
-               BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
-               FAC0R = FRR*B0(1) + FRZ*BR(1)
-               FACR  = FRZ*B0(1) + FZZ*BR(1)
-            else if (use_spindns .and. .not. dogga) then
-               FAC0R = FRR*B0(1) + FRS*B0(2)
-               FAC0S = FRS*B0(1) + FSS*B0(2) ! as FSR = FRS
-            else
-               FAC0R = FRR*B0(1)
+            if (dogga) then
+               if (dft_spindns) then
+                  BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
+                  BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
+                  BR(3) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
+                  BR(4) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
+                  FAC0R = FRR*B0(1) + FRZ*BR(1) + FRS*B0(2) +FRZ_S*BR(2)
+                  FAC0S = FRS*B0(1) + FSS*B0(2) + FSZ*BR(1) +FSZ_S*BR(2)
+                  FACR  = FRZ*B0(1) + FZZ*BR(1) + FZZ_S*BR(2) +FSZ*B0(2)
+                  FACS  = FSZ_S*B0(2) + FRZ_S*B0(1) +
+     &                    FZZ_S*BR(1) + FZZ_SS*BR(2)
+                  FAC_AR = d2Exc(11)*B0(1) + d2Exc(13)*BR(1) +
+     &                      d2Exc(12)*B0(2) + d2Exc(14)*BR(2) +
+     &                      d2Exc(15)*BR(3) + d2EXC(15)*BR(4)
+               else if (triplet) then
+                  BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
+                  BR(3) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
+                  FAC0R = FRR*B0(1) + FRZ*BR(1)
+                  FAC0S = FSS*B0(2)
+                  FACR  = FRZ*B0(1) + FZZ*BR(1)
+                  FAC_AR = d2Exc(12)*B0(2) + d2Exc(15)*BR(3)
+               else ! normal GGA
+                  BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
+                  FAC0R = FRR*B0(1) + FRZ*BR(1)
+                  FACR  = FRZ*B0(1) + FZZ*BR(1)
+               end if
+            else !LDA
+               if (dft_spindns) then
+                  FAC0R = FRR*B0(1) + FRS*B0(2)
+                  FAC0S = FRS*B0(1) + FSS*B0(2)
+               else if (triplet) then
+                  FAC0R = FRR*B0(1)
+                  FAC0S = FSS*B0(2)
+               else ! normal LDA
+                  FAC0R = FRR*B0(1)
+               end if
             end if
 
 !!#if defined xxxSRDFT_DEBUG
@@ -1061,7 +1073,6 @@ C Linear transformation -----------------------------------------------------
             IF (NSYM.EQ.1) THEN
                IF (DOGGA) THEN
                   IF (TRIPLET) THEN
-                     CALL QUIT('srdftjt.F: No triplet for GGA yet')
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         GX = GAO1(I,1)
@@ -1071,11 +1082,13 @@ C Linear transformation -----------------------------------------------------
                            AX = GX*GAO(J) + G0*GAO1(J,1)
                            AY = GY*GAO(J) + G0*GAO1(J,2)
                            AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
                            AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
                            AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
-                           EXCMAT(J,I,1) = EXCMAT(J,I,1)
-     &                        + FAC0S*G0*GAO(J) + FZ0_S*AB(2)
-     &                        + FACS_AR1*AR(1)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+     &                                   + FZ0*AB(1) + FAC_AR*AR(1)
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
+     &                                   + FZZ_SS*AB(2) + FAC_AR*AR(1)
                         END DO
                      END DO
                   ELSE IF (DFT_SPINDNS) THEN
@@ -1085,9 +1098,6 @@ C Linear transformation -----------------------------------------------------
                         GY = GAO1(I,2)
                         GZ = GAO1(I,3)
                         DO J = 1, I
-                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
-                           EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
-
                            AX = GX*GAO(J) + G0*GAO1(J,1)
                            AY = GY*GAO(J) + G0*GAO1(J,2)
                            AZ = GZ*GAO(J) + G0*GAO1(J,3)
@@ -1096,43 +1106,38 @@ C Linear transformation -----------------------------------------------------
                            AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
                            AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
                            ! grad + spin-grad
-                           EXCMAT(J,I,1) = EXCMAT(J,I,1) +
-     &                        FACR*AR(1) + FZ0*AB(1)
-                           EXCMAT(J,I,2) = EXCMAT(J,I,2) +
-     &                        FACS*AR(2) + FZ0_S*AB(2) + FACS_AR1*AR(1)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+     &                       + d1Exc(5)*AB(2) + FZ0*AB(1) + FACR*AR(1)
+     &                       + FAC_AR*AR(2)
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
+     &                       + d1Exc(5)*AB(1) + FZ0_S*AB(2) + FACS*AR(2)
+     &                       + FAC_AR*AR(1)
                         END DO
                      END DO
-                  ELSE
+                  ELSE ! closed-shell GGA
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         GX = GAO1(I,1)
                         GY = GAO1(I,2)
                         GZ = GAO1(I,3)
                         DO J = 1, I
-                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
                            AX = GX*GAO(J) + G0*GAO1(J,1)
                            AY = GY*GAO(J) + G0*GAO1(J,2)
                            AZ = GZ*GAO(J) + G0*GAO1(J,3)
                            AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
                            AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
-                           EXCMAT(J,I,1) = EXCMAT(J,I,1)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
      &                                   + FACR*AR(1)+FZ0*AB(1)
-      ! Not quite sure where to place the below if in this structure.
-      !    5/7/2018 E.R.K
-      if (iprint_x .gt. 10 .and. i.eq.1 .and. j.eq.1) then
-         write(lupri,*)'hjaaj1: fac0r,facr,ar,fz0,ab',
-     &   fac0r,facr,ar(1),fz0,ab(1)
-      end if
                         END DO
                      END DO
                   END IF
-               ELSE ! LDA
+               ELSE ! Doing LDA calculations from here
                   IF (TRIPLET) THEN
-                     CALL QUIT('srdftjt.F: No LDA for triplet yet')
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         DO J = 1, I
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
                         END DO
                      END DO
                   ELSE IF (DFT_SPINDNS) THEN
@@ -1143,7 +1148,7 @@ C Linear transformation -----------------------------------------------------
                            EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
                         END DO
                      END DO
-                  ELSE
+                  ELSE ! closed-shell LDA
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         DO J = 1, I
@@ -1153,6 +1158,8 @@ C Linear transformation -----------------------------------------------------
                   END IF
                END IF ! GGA or LDA check
             ELSE
+               WRITE(lupri,*) 'WARNING: gamma_cs terms have not been
+     & added to calculations with symmetry, YET!'
                IF (TRIPLET) THEN
                   CALL QUIT('srdftjt.F: No triplet for symmetry yet')
                END IF
