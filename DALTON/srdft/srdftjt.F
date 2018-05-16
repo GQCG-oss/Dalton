@@ -1029,11 +1029,8 @@ C Linear transformation -----------------------------------------------------
      &                      d2Exc(12)*B0(2) + d2Exc(14)*BR(2) +
      &                      d2Exc(15)*BR(3) + d2EXC(15)*BR(4)
                else if (triplet) then
-                  BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                   BR(3) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
-                  FAC0R = FRR*B0(1) + FRZ*BR(1)
                   FAC0S = FSS*B0(2)
-                  FACR  = FRZ*B0(1) + FZZ*BR(1)
                   FAC_AR = d2Exc(12)*B0(2) + d2Exc(15)*BR(3)
                else ! normal GGA
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
@@ -1045,7 +1042,6 @@ C Linear transformation -----------------------------------------------------
                   FAC0R = FRR*B0(1) + FRS*B0(2)
                   FAC0S = FRS*B0(1) + FSS*B0(2)
                else if (triplet) then
-                  FAC0R = FRR*B0(1)
                   FAC0S = FSS*B0(2)
                else ! normal LDA
                   FAC0R = FRR*B0(1)
