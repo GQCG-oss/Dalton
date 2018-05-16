@@ -962,12 +962,12 @@ C Total contribution -------------------------------------------------------
          RZ(1) = RHG(3,1)
 
          FZ0   = d1Exc(3)*2.0d0
-!        FZ0   = d1Excdgrdc / grdc = 2 d1Excdgrdcc
+!        FZ0   = 2 d1Excdgrdcc
          ! gradient
          FRZ   = d2Exc(4)*2.0d0
-!        FRZ   = d2Excdrhocdgrdc = 2 d2Excdrhocdgrdcc
+!        FRZ   = 2 d2Excdrhocdgrdcc
          FZZ   = d2Exc(6)*4.0d0
-!        FZZ   = d2Excdgrdcdgrdc = 4 d2Excdgrdccdgrdcc
+!        FZZ   = 4 d2Excdgrdccdgrdcc
 
       IF (DFT_SPINDNS .OR. TRIPLET) THEN
          ! spin
@@ -1170,69 +1170,100 @@ C Linear transformation -----------------------------------------------------
                   END IF
                END IF ! GGA or LDA check
             ELSE ! NSYM .gt. 1
-               IF (TRIPLET) THEN
-                  CALL QUIT('srdftjt.F: No triplet for symmetry yet')
-               END IF
+               ! Only two indentations is used in symmstry code insted of three.
+               !   This is to not exceed 72 chars all the time. - E.R.K
                DO ISYM = 1, NSYM
-                  ISTR = IBAS(ISYM) + 1
-                  IEND = IBAS(ISYM) + NBAS(ISYM)
-                  JSYM = MULD2H(ISYM,KSYMOP)
-                  IF (ISYM.GE.JSYM) THEN
-                     JSTR = IBAS(JSYM) + 1
-                     JEND = IBAS(JSYM) + NBAS(JSYM)
-                     DO I = ISTR, IEND
-                        G0 = GAO(I)
-                        IF (DOGGA) THEN
-                           GX = GAO1(I,1)
-                           GY = GAO1(I,2)
-                           GZ = GAO1(I,3)
-                        END IF
-                        DO J = JSTR, MIN(I,JEND)
+                 ISTR = IBAS(ISYM) + 1
+                 IEND = IBAS(ISYM) + NBAS(ISYM)
+                 JSYM = MULD2H(ISYM,KSYMOP)
+                 IF (ISYM.GE.JSYM) THEN
+                   JSTR = IBAS(JSYM) + 1
+                   JEND = IBAS(JSYM) + NBAS(JSYM)
+                   IF (DOGGA) THEN
+                     IF (TRIPLET) THEN
+                       DO I = ISTR, IEND
+                         G0 = GAO(I)
+                         GX = GAO1(I,1)
+                         GY = GAO1(I,2)
+                         GZ = GAO1(I,3)
+                         DO J = JSTR, MIN(I,JEND)
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           ! spin matrix W[b]2s in EXCMAT no. 1
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0S*G0*GAO(J)
+     &                                   + FZZ_SS*AB(2) + FAC_AR*AR(1)
+                         END DO
+                       END DO
+                     ELSE IF (DFT_SPINDNS) THEN
+                       DO I = ISTR, IEND
+                         G0 = GAO(I)
+                         GX = GAO1(I,1)
+                         GY = GAO1(I,2)
+                         GZ = GAO1(I,3)
+                         DO J = JSTR, MIN(I,JEND)
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AR(2) = AX*RX(2) + AY*RY(2) + AZ*RZ(2)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+                           AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
+                           ! charge matrix W[b]2c in EXCMAT no. 1
+                           ! spin   matrix W[b]2s in EXCMAT no. 2
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
-                           if (dogga .and. dft_spindns) then
-                              ! spin
-                              EXCMAT(J,I,2) = EXCMAT(J,I,2) +
-     &                                        FAC0S*G0*GAO(J)
-                              ! grad + spin-grad
-                              AX = GX*GAO(J) + G0*GAO1(J,1)
-                              AY = GY*GAO(J) + G0*GAO1(J,2)
-                              AZ = GZ*GAO(J) + G0*GAO1(J,3)
-                              AR(1) = AX*RX(1)  + AY*RY(1) + AZ*RZ(1)
-                              AR(2) = AX*RX(2)  + AY*RY(2) + AZ*RZ(2)
-                              AB(1) = AX*B3(1,1) + AY*B3(2,1)
-     &                              + AZ*B3(3,1)
-                              AB(2) = AX*B3(1,2) + AY*B3(2,2)
-     &                              + AZ*B3(3,2)
-!                             EXCMAT(J,I,1) = EXCMAT(J,I,1)
-!    &                                      + FACR*AR(1)+FZ0*AB(1)
-!                             EXCMAT(J,I,2) = EXCMAT(J,I,2)
-!    &                                      + FACS*AR(2) + FZ0_S*AB(2)
-                           EXCMAT(J,I,1) = EXCMAT(J,I,1) ! +FAC0R*G0*GAO(J)
      &                       + d1Exc(5)*AB(2) + FZ0*AB(1) + FACR*AR(1)
      &                       + FAC_AR*AR(2)
-                           EXCMAT(J,I,2) = EXCMAT(J,I,2) ! +FAC0S*G0*GAO(J)
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
      &                       + d1Exc(5)*AB(1) + FZ0_S*AB(2) + FACS*AR(2)
      &                       + FAC_AR*AR(1)
-                           else if (dft_spindns .and. .not. dogga) then
-                              EXCMAT(J,I,2) = EXCMAT(J,I,2)
-     &                                      + FAC0S*G0*GAO(J)
-                           else if (dogga) then
-                              AX = GX*GAO(J) + G0*GAO1(J,1)
-                              AY = GY*GAO(J) + G0*GAO1(J,2)
-                              AZ = GZ*GAO(J) + G0*GAO1(J,3)
-                              AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
-                              AB(1) = AX*B3(1,1) + AY*B3(2,1)
-     &                              + AZ*B3(3,1)
-                              EXCMAT(J,I,1) = EXCMAT(J,I,1)
-     &                                      + FACR*AR(1)+FZ0*AB(1)
-                            end if
-      if (iprint_x .gt. 10 .and. i.eq.1 .and. j.eq.1) then
-         write(lupri,*)'hjaaj2: i,j, ax,ay,az',i,j,ax,ay,az
-         write(lupri,*)'hjaaj2: fac0r,facr,ar,fz0,ab',
-     &   fac0r,facr,ar(1),fz0,ab(1)
-      end if
-                        END DO
-                     END DO
+                         END DO
+                       END DO
+                     ELSE ! Closed-shell GGA singlet response
+                       DO I = ISTR, IEND
+                         G0 = GAO(I)
+                         GX = GAO1(I,1)
+                         GY = GAO1(I,2)
+                         GZ = GAO1(I,3)
+                         DO J = JSTR, MIN(I,JEND)
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+                           ! charge matrix W[b]2c in EXCMAT no. 1
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+     &                                   + FACR*AR(1)+FZ0*AB(1)
+                         END DO
+                       END DO
+                     END IF
+                   ELSE ! Doing LDA calculations from here
+                     IF (TRIPLET) THEN
+                       DO I = ISTR, IEND
+                         G0 = GAO(I)
+                         DO J = JSTR, MIN(I,JEND)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0S*G0*GAO(J)
+                         END DO
+                       END DO
+                     ELSE IF (DFT_SPINDNS) THEN
+                       DO I = ISTR, IEND
+                         G0 = GAO(I)
+                         DO J = JSTR, MIN(I,JEND)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
+                         END DO
+                       END DO
+                     ELSE
+                       DO I = ISTR, IEND
+                         G0 = GAO(I)
+                         DO J = JSTR, MIN(I,JEND)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                         END DO
+                       END DO
+                     END IF
+                   END IF
                   END IF
                END DO
             END IF
