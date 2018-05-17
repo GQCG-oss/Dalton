@@ -1311,8 +1311,6 @@ C               standard FTV matrices.
 C               In paper: V^([2c]xc-SR) matrix.
 
             IF (TRPLET) THEN
-               CALL QUIT('ERROR: triplet linear response '//
-     &            'not implemented for MC-srDFT yet')
                JSPIN1 = 1
                JSPIN2 = 0
             ELSE
