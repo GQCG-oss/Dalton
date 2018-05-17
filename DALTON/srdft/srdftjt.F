@@ -464,6 +464,7 @@ C        Three cases:
          else if (triplet) then !  singlet reference, triplet perturbation
          ! two input matrices: DTAO,  DXSAO
          ! one output matrix : EXCMAT(:,:,1) = W2SAO
+         ! Note that DMAT(1,2) = DXSAO when TRIPLET = .TRUE.
             JDXTAO = 2
             JDXSAO = 2
          else                   !  singlet reference, singlet perturbation
