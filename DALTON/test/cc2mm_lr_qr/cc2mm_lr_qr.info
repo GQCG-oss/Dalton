@@ -1,0 +1,10 @@
+   cc2mm_lr_qr
+   ---------------
+   Molecule:            SO2 (QM) and 10 water molecules (MM)
+   Wave Function:       CC2 / STO-2G
+   Molecular Mechanics: SPCE01 model: Point charges and isotropic
+                        polarizability introduced in the optimization of 
+                        the CC wave function. OLDTG=.TRUE. meaning that
+                        point charge relaxed HF orbitals are used.
+   Test Purpose:        Run checks energy, dipole moment, static polari-
+                        zability and first hyperpolarizability.

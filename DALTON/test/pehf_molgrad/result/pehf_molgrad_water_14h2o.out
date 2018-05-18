@@ -4,8 +4,11 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2016.alpha
+    This is output from DALTON release Dalton2017.alpha (2017)
+         ( Web site: http://daltonprogram.org )
+
    ----------------------------------------------------------------------------
+
     NOTE:
      
     Dalton is an experimental code for the evaluation of molecular
@@ -24,13 +27,13 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
        T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
        L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
        C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
        H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
        M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
-       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
        T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
        J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
        O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
@@ -45,12 +48,12 @@
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
        and H. Agren,
        "The Dalton quantum chemistry program system",
-       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
-    
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
     and
-    
+     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2015.alpha (2015), see http://daltonprogram.org
+       Release Dalton2017.alpha (2017), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -59,7 +62,7 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
   Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
@@ -70,6 +73,7 @@
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
   Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -78,12 +82,14 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
   Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
@@ -105,7 +111,7 @@
   Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
-  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex frequency response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
@@ -136,14 +142,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Feb 23 16:20:48 2015
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/pehf_molgrad
-   2) /home/magnus/Projects/dalton_devel/dalton/build_pelib/basis
+   1) /home/magnus/Projects/dalton_devel/dalton-private/build/test/pehf_molgrad
+   2) /home/magnus/Projects/dalton_devel/dalton-private/build/basis
 
 
 Compilation information
@@ -151,23 +157,34 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-3.18.6-200.fc21.x86_64
+ System                   | Linux-4.15.15-300.fc27.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | ON
- Fortran compiler         | /usr/local/bin/mpif90
- Fortran compiler version | GNU Fortran (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C compiler               | /usr/local/bin/mpicc
- C compiler version       | gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C++ compiler             | /usr/local/bin/mpicxx
+ Fortran compiler         | /usr/lib64/mpich/bin/mpif90
+ Fortran compiler version | GNU Fortran (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C compiler               | /usr/lib64/mpich/bin/mpicc
+ C compiler version       | gcc (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
+ C++ compiler             | /usr/lib64/mpich/bin/mpicxx
  C++ compiler version     | unknown
- BLAS                     | /lib64/libblas.so
- LAPACK                   | /lib64/liblapack.so
+ BLAS                     | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_gf_lp64.
+                          | so;/home/magnus/Programs/intel/compilers_and_libra
+                          | ries_2018.1.163/linux/mkl/lib/intel64/libmkl_seque
+                          | ntial.so;/home/magnus/Programs/intel/compilers_and
+                          | _libraries_2018.1.163/linux/mkl/lib/intel64/libmkl
+                          | _core.so;/usr/lib64/libpthread.so;/usr/lib64/libm.
+                          | so
+ LAPACK                   | /home/magnus/Programs/intel/compilers_and_librarie
+                          | s_2018.1.163/linux/mkl/lib/intel64/libmkl_lapack95
+                          | _lp64.a;/home/magnus/Programs/intel/compilers_and_
+                          | libraries_2018.1.163/linux/mkl/lib/intel64/libmkl_
+                          | gf_lp64.so
  Static linking           | OFF
- Last Git revision        | 5238537d2eab9c23858149b88466e4eda8e39bfc
- Git branch               | [32mpe/develop[m
- Configuration time       | 2015-02-23 15:06:18.814013
+ Last Git revision        | 9055103dddfd9c6746ec240c40a8a01c46350288
+ Git branch               | master
+ Configuration time       | 2018-04-24 13:57:14.806869
 
  * Sequential calculation.
 
@@ -175,37 +192,37 @@ Compilation information
    Content of the .dal input file
  ----------------------------------
 
-**DALTON                                          
-.NMDDRV                                           
-.PEQM                                             
-*PEQM                                             
-.LJ                                               
-3                                                 
-1.76820000    0.15210000                          
-0.00000000    0.00000000                          
-0.00000000    0.00000000                          
-**NMDDRV                                          
-.DORDR                                            
-0   1                                             
-**WAVE FUNCTIONS                                  
-.HF                                               
-**END OF                                          
+**DALTON
+.NMDDRV
+.PEQM
+*PEQM
+.LJ
+3
+1.76820000    0.15210000
+0.00000000    0.00000000
+0.00000000    0.00000000
+**NMDDRV
+.DORDR
+0   1
+**WAVE FUNCTIONS
+.HF
+**END OF
 
 
    Content of the .mol file
  ----------------------------
 
-BASIS                                                                          
-STO-3G                                                                         
-Generated by PEAS 0.1.0                                                        
-Some informative stuff...                                                      
-AtomTypes=2 Charge=0 Angstrom NoSymmetry                                       
-Charge=8.0 Atoms=1                                                             
-O   -0.065000    0.011000    0.000000                                          
-Charge=1.0 Atoms=2                                                             
-H    0.574000    0.282000   -0.659000                                          
-H    0.451000   -0.462000    0.653000                                          
-                                                                               
+BASIS
+STO-3G
+Generated by PEAS 0.1.0
+Some informative stuff...
+AtomTypes=2 Charge=0 Angstrom NoSymmetry
+Charge=8.0 Atoms=1
+O   -0.065000    0.011000    0.000000
+Charge=1.0 Atoms=2
+H    0.574000    0.282000   -0.659000
+H    0.451000   -0.462000    0.653000
+
 
 
        *******************************************************************
@@ -230,7 +247,7 @@ H    0.451000   -0.462000    0.653000
 
 
 
-     @@>>>>>>>>>> Geometry walk iteration number:    0 <<<<<<<<<<
+     @@---------- Geometry walk iteration number:    0 ----------
 
 
 
@@ -255,7 +272,7 @@ H    0.451000   -0.462000    0.653000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -263,7 +280,7 @@ H    0.451000   -0.462000    0.653000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton-private/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -383,6 +400,8 @@ H    0.451000   -0.462000    0.653000
 
       Iterative solver for induced moments will be used
       with convergence threshold: 1.0E-08
+      Total charge of classical region:    0.0000
+ 
 
 
                      .---------------------------------------.
@@ -415,12 +434,24 @@ H    0.451000   -0.462000    0.653000
      ************************************************************************
 
 
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x      0.95431169         2.42561822         8.09099148
+      y     -0.17385480        -0.44189480        -1.47400241
+      z     -0.01133836        -0.02881923        -0.09613059
+
+
+
  Threshold for neglecting two-electron integrals:  1.00D-12
  HERMIT - Number of two-electron integrals written:         319 ( 78.6% )
  HERMIT - Megabytes written:                              0.007
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+  Total CPU  time used in HERMIT:   0.01 seconds
+  Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -453,7 +484,7 @@ H    0.451000   -0.462000    0.653000
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 23 16:20:48 2015
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -478,7 +509,7 @@ H    0.451000   -0.462000    0.653000
      Wave function environment is modeled using the
      polarizable embedding model (PE library).
 
-@    Wave function type        >>> PE-HF <<<
+@    Wave function type        --- PE-HF ---
 @    Number of closed shell electrons          10
 @    Number of electrons in active shells       0
 @    Total charge of the molecule               0
@@ -518,36 +549,41 @@ H    0.451000   -0.462000    0.653000
 
  Iter      Total energy     Embedding energy      Error norm     Delta(E)
  -----------------------------------------------------------------------------
-     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+
+Calculating AOSUPINT
+     (Precalculated AO two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
 @  1  -74.9917443679     -8.096769945772E-02    7.12574D-01   -7.50D+01
       Virial theorem: -V/T =      2.005242
-@      MULPOP O      -0.45; H       0.23; H       0.23; 
+@    MULPOP   O      -0.45; H       0.23; H       0.23; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
-@  2  -75.0304283858     -7.435876366631E-02    1.58663D-01   -3.87D-02
-      Virial theorem: -V/T =      2.005111
-@      MULPOP O      -0.45; H       0.23; H       0.22; 
+@  2  -75.0285297279     -7.538116398109E-02    2.09284D-01   -3.68D-02
+      Virial theorem: -V/T =      2.005119
+@    MULPOP   O      -0.45; H       0.23; H       0.22; 
+   2  Level shift: doubly occupied orbital energies shifted by -1.00D-01
  -----------------------------------------------------------------------------
-@  3  -75.0328319119     -7.260018195548E-02    1.43649D-02   -2.40D-03
-      Virial theorem: -V/T =      2.004386
-@      MULPOP O      -0.45; H       0.23; H       0.22; 
+@  3  -75.0327605706     -7.285237971792E-02    3.06670D-02   -4.23D-03
+      Virial theorem: -V/T =      2.004448
+@    MULPOP   O      -0.45; H       0.23; H       0.22; 
+   3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
  -----------------------------------------------------------------------------
-@  4  -75.0328506889     -7.248464248488E-02    1.04665D-03   -1.88D-05
+@  4  -75.0328505579     -7.248912444383E-02    1.36630D-03   -9.00D-05
       Virial theorem: -V/T =      2.004293
-@      MULPOP O      -0.45; H       0.24; H       0.22; 
+@    MULPOP   O      -0.45; H       0.24; H       0.22; 
  -----------------------------------------------------------------------------
-@  5  -75.0328508882     -7.249186730701E-02    1.44265D-04   -1.99D-07
+@  5  -75.0328508711     -7.249015611591E-02    3.30258D-04   -3.13D-07
       Virial theorem: -V/T =      2.004297
-@      MULPOP O      -0.45; H       0.24; H       0.22; 
+@    MULPOP   O      -0.45; H       0.24; H       0.22; 
  -----------------------------------------------------------------------------
-@  6  -75.0328508921     -7.249396449150E-02    1.97064D-05   -3.90D-09
+@  6  -75.0328508921     -7.249408097769E-02    2.65995D-05   -2.10D-08
       Virial theorem: -V/T =      2.004297
-@      MULPOP O      -0.45; H       0.24; H       0.22; 
+@    MULPOP   O      -0.45; H       0.24; H       0.22; 
  -----------------------------------------------------------------------------
-@  7  -75.0328508922     -7.249395636206E-02    3.78603D-06   -7.09D-11
+@  7  -75.0328508922     -7.249392112908E-02    5.32732D-06   -1.22D-10
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -75.032850892210    3.79D-06
+@     Converged SCF energy, gradient:    -75.032850892206    5.33D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -559,13 +595,13 @@ H    0.451000   -0.462000    0.653000
 
  Sym       Hartree-Fock orbital energies
 
-1 A     -20.22346524    -1.26916844    -0.61402363    -0.47383121    -0.40033359
-          0.62802781     0.75613375
+1 A     -20.22346552    -1.26916854    -0.61402364    -0.47383133    -0.40033372
+          0.62802776     0.75613373
 
-    E(LUMO) :     0.62802781 au (symmetry 1)
-  - E(HOMO) :    -0.40033359 au (symmetry 1)
+    E(LUMO) :     0.62802776 au (symmetry 1)
+  - E(HOMO) :    -0.40033372 au (symmetry 1)
   ------------------------------------------
-    gap     :     1.02836140 au
+    gap     :     1.02836148 au
 
     .--------------------------------------------------.
     | Final results from polarizable embedding library |
@@ -575,30 +611,32 @@ H    0.451000   -0.462000    0.653000
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.141970063361
+            Electronic                -0.141970036360
             Nuclear                    0.111046874002
-            Multipole                  0.000000000000
-            Total                     -0.030923189359
+            Multipole                 -0.119281937934
+            Total                     -0.150205100293
 
        Polarization contributions:
-            Electronic                -0.068853746932
-            Nuclear                    0.063982137188
-            Multipole                 -0.044082871357
-            Total                     -0.048954481101
+            Electronic                -0.068853691975
+            Nuclear                    0.063982089829
+            Multipole                 -0.044082870724
+            Total                     -0.048954472870
 
        LJ energy contribution:
             Dispersion 6              -0.011141957974
             Repulsion 12               0.018525672071
+            Total                      0.007383714097
 
-       Total PE energy:            -0.072493956363
+       Total PE energy:               -0.072493921132
+            (excl. multipole-multipole interaction energy)
 
- >>> Writing SIRIFC interface file
+ --- Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.220       0.219
+ CPU and wall time for SCF :       0.152       0.152
 
 
                        .-----------------------------------.
-                       | >>> Final results from SIRIUS <<< |
+                       | --- Final results from SIRIUS --- |
                        `-----------------------------------'
 
 
@@ -606,20 +644,20 @@ H    0.451000   -0.462000    0.653000
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:             -75.032850892210                 
+@    Final HF energy:             -75.032850892206                 
 @    Nuclear repulsion:             9.195173291795
-@    Electronic energy:           -84.155530227643
-@    Embedding energy:             -0.072493956362
+@    Electronic energy:           -84.155530262872
+@    Embedding energy:             -0.072493921129
 
-@    Final gradient norm:           0.000003786031
+@    Final gradient norm:           0.000005327321
 
  
-     Date and time (Linux)  : Mon Feb 23 16:20:48 2015
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
-File label for MO orbitals:  23Feb15   FOCKDIIS
+File label for MO orbitals:  24Apr18   FOCKDIIS
 
- (Only coefficients >0.0100 are printed.)
+ (Only coefficients > 0.0100 are printed.)
 
  Molecular orbitals for symmetry species 1  (A  )
  ------------------------------------------------
@@ -629,17 +667,15 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
    2 O   :1s    -0.0267  -0.8478   0.0090  -0.4909  -0.0428  -0.8960   0.0326
    3 O   :2px   -0.0042  -0.1083   0.0538   0.7720   0.2123  -0.7090   0.1006
    4 O   :2py    0.0007   0.0143   0.3206  -0.2003   0.8375   0.1434   0.4737
-   5 O   :2pz   -0.0000  -0.0030  -0.5375  -0.0492   0.5011  -0.0282  -0.8479
+   5 O   :2pz   -0.0000  -0.0030  -0.5375  -0.0492   0.5011  -0.0281  -0.8479
    6 H   :1s     0.0060  -0.1488   0.4218   0.2608   0.0106   0.7759  -0.8772
    7 H   :1s     0.0060  -0.1531  -0.4312   0.2627   0.0276   0.8307   0.8185
 
-
-
- >>>> Total CPU  time used in SIRIUS :      0.22 seconds
- >>>> Total wall time used in SIRIUS :      0.22 seconds
+  Total CPU  time used in SIRIUS :   0.15 seconds
+  Total wall time used in SIRIUS :   0.15 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 16:20:48 2015
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
 
@@ -704,12 +740,24 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
                      `---------------------------------------'
 
 
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x      0.95431169         2.42561822         8.09099148
+      y     -0.17385480        -0.44189480        -1.47400241
+      z     -0.01133836        -0.02881923        -0.09613059
+
+
+
  Threshold for neglecting two-electron integrals:  1.00D-12
  HERMIT - Number of two-electron integrals written:         319 ( 78.6% )
  HERMIT - Megabytes written:                              0.007
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+  Total CPU  time used in HERMIT:   0.01 seconds
+  Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -722,6 +770,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
                    | Starting in Wave Function Section (SIRIUS) |
                    `--------------------------------------------'
 
+* Read MO coefficients from SIRIUS.RST with label "NEWORB  " and header info: 24Apr18  FOCKDIIS
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
@@ -738,12 +787,14 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
  Iter      Total energy     Embedding energy      Error norm     Delta(E)
  -----------------------------------------------------------------------------
-     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+
+Calculating AOSUPINT
+     (Precalculated AO two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-@  1  -75.0328508922     -7.249395636135E-02    3.78603D-06    7.25D-13
+@  1  -75.0328508922     -7.249392112993E-02    5.32732D-06   -8.53D-13
 
 @ *** DIIS converged in   1 iterations !
-@     Converged SCF energy, gradient:    -75.032850892209    3.79D-06
+@     Converged SCF energy, gradient:    -75.032850892206    5.33D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -755,13 +806,13 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
  Sym       Hartree-Fock orbital energies
 
-1 A     -20.22346524    -1.26916844    -0.61402363    -0.47383121    -0.40033359
-          0.62802781     0.75613375
+1 A     -20.22346552    -1.26916854    -0.61402364    -0.47383133    -0.40033372
+          0.62802776     0.75613373
 
-    E(LUMO) :     0.62802781 au (symmetry 1)
-  - E(HOMO) :    -0.40033359 au (symmetry 1)
+    E(LUMO) :     0.62802776 au (symmetry 1)
+  - E(HOMO) :    -0.40033372 au (symmetry 1)
   ------------------------------------------
-    gap     :     1.02836140 au
+    gap     :     1.02836148 au
 
     .--------------------------------------------------.
     | Final results from polarizable embedding library |
@@ -771,31 +822,33 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.141970063361
+            Electronic                -0.141970036360
             Nuclear                    0.111046874002
-            Multipole                  0.000000000000
-            Total                     -0.030923189359
+            Multipole                 -0.119281937934
+            Total                     -0.150205100293
 
        Polarization contributions:
-            Electronic                -0.068853746931
-            Nuclear                    0.063982137187
-            Multipole                 -0.044082871355
-            Total                     -0.048954481099
+            Electronic                -0.068853691974
+            Nuclear                    0.063982089829
+            Multipole                 -0.044082870722
+            Total                     -0.048954472868
 
        LJ energy contribution:
             Dispersion 6              -0.011141957974
             Repulsion 12               0.018525672071
+            Total                      0.007383714097
 
-       Total PE energy:            -0.072493956361
+       Total PE energy:               -0.072493921130
+            (excl. multipole-multipole interaction energy)
 
- >>> Writing SIRIFC interface file
+ --- Writing SIRIFC interface file
 
 
  Check ratio for geometry walk with converged SCF :
 
 
 
- >>> step control for geometry walk (ABACUS interface)
+ --- step control for geometry walk (ABACUS interface)
 
 
  (SIRSTP) Close to convergence, ratio set to one.
@@ -805,11 +858,11 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
  *** GEOMETRY WALK STEP TOO LONG,
      DECREASE WALK TRUST RADIUS AND TRY AGAIN
 
- >>>> CPU and wall time for SCF :       0.117       0.117
+ CPU and wall time for SCF :       0.100       0.100
 
 
                        .-----------------------------------.
-                       | >>> Final results from SIRIUS <<< |
+                       | --- Final results from SIRIUS --- |
                        `-----------------------------------'
 
 
@@ -817,24 +870,22 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:             -75.032850892209                 
+@    Final HF energy:             -75.032850892206                 
 @    Nuclear repulsion:             9.195173291795
-@    Electronic energy:           -84.155530227643
-@    Embedding energy:             -0.072493956361
+@    Electronic energy:           -84.155530262872
+@    Embedding energy:             -0.072493921130
 
-@    Final gradient norm:           0.000003786031
+@    Final gradient norm:           0.000005327321
 
  
-     Date and time (Linux)  : Mon Feb 23 16:20:48 2015
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
-
-
- >>>> Total CPU  time used in SIRIUS :      0.12 seconds
- >>>> Total wall time used in SIRIUS :      0.12 seconds
+  Total CPU  time used in SIRIUS :   0.10 seconds
+  Total wall time used in SIRIUS :   0.10 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 16:20:48 2015
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
 
@@ -842,9 +893,6 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
-
-     Order of analytical energy-derivatives available:   1
-     This will be the default.
 
  Center of mass dipole origin  :   -0.000698   -0.000573   -0.000634
 
@@ -857,7 +905,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Mon Feb 23 16:20:48 2015
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
 
@@ -870,16 +918,16 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
         Coordinate    Direct calc.     Tra.-rot. sym.   Difference
         ----------------------------------------------------------
 
-        O    x        0.0572960681    -0.0014935455     0.0587896137
-        O    y       -0.0048274511     0.0002597254    -0.0050871765
-        O    z       -0.0057807388     0.0000102999    -0.0057910386
-        H    x       -0.0301372672    -0.0014098562    -0.0287274109
-        H    y       -0.0111588178    -0.0131818029     0.0020229852
-        H    x       -0.0250546632     0.0029034018    -0.0279580649
+        O    x        0.0572961818    -0.0014899200     0.0587861018
+        O    y       -0.0048273553     0.0002588211    -0.0050861765
+        O    z       -0.0057802796     0.0000107439    -0.0057910235
+        H    x       -0.0301373618    -0.0014114536    -0.0287259082
+        H    y       -0.0111593222    -0.0131813166     0.0020219944
+        H    x       -0.0250546948     0.0029013736    -0.0279560685
 
 
 
- >>> WARNING from TRAROT:
+ WARNING from TRAROT:
 
  Largest deviation from tra-rot symmetry is in gradient element  1:  5.88E-02
 
@@ -890,20 +938,12 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Mon Feb 23 16:20:48 2015
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
  WARNING: warnings have been issued, please check the output above !
-
-
- CPU time statistics for ABACUS
- ------------------------------
-
-
-
-
- >>>> Total CPU  time used in ABACUS:   0.11 seconds
- >>>> Total wall time used in ABACUS:   0.11 seconds
+  Total CPU  time used in ABACUS:   0.05 seconds
+  Total wall time used in ABACUS:   0.05 seconds
 
 
                    .-------------------------------------------.
@@ -920,26 +960,26 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
                          Gradient in symmetry coordinates
                          --------------------------------
 
-                                     0.05729607
-                                    -0.00482745
-                                    -0.00578074
-                                    -0.03013727
-                                    -0.01115882
-                                     0.02301082
-                                    -0.02505466
-                                     0.01292208
-                                    -0.02302112
+                                     0.05729618
+                                    -0.00482736
+                                    -0.00578028
+                                    -0.03013736
+                                    -0.01115932
+                                     0.02301048
+                                    -0.02505469
+                                     0.01292250
+                                    -0.02302122
 
 
                         Gradient in cartesian coordinates
                         ---------------------------------
 
- O          0.0572960681           -0.0048274511           -0.0057807388
- H         -0.0301372672           -0.0111588178            0.0230108238
- H         -0.0250546632            0.0129220775           -0.0230211237
+ O          0.0572961818           -0.0048273553           -0.0057802796
+ H         -0.0301373618           -0.0111593222            0.0230104775
+ H         -0.0250546948            0.0129224954           -0.0230212214
 
 
-@>>> Number of gradient calculations done:         1
+@Number of gradient calculations done:         1
 
 
  *************************************************************************************
@@ -964,7 +1004,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Mon Feb 23 16:20:48 2015
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
 
@@ -974,7 +1014,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Mon Feb 23 16:20:48 2015
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                
 
 
@@ -1007,11 +1047,11 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
                    Scalar Breit-Pauli relativistic corrections
                    -------------------------------------------
 
-     Darwin correction:                          0.1293614269 au
-     Mass-velocity correction:                  -0.1668041728 au
+     Darwin correction:                          0.1293614273 au
+     Mass-velocity correction:                  -0.1668041734 au
 
-     Total relativistic correction:             -0.0374427459 au (0.0499%)
-     Non-relativistic + relativistic energy:   -75.0702936381 au
+     Total relativistic correction:             -0.0374427460 au ( 0.0499%)
+     Non-relativistic + relativistic energy:   -75.0702936382 au
 
 
 
@@ -1022,7 +1062,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              0.781277           1.985809           6.623945
+              0.781277           1.985807           6.623940
 
 
                              Dipole moment components
@@ -1030,9 +1070,9 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.77131094         1.96047673         6.53944646
-      y     -0.12122199        -0.30811554        -1.02776281
-      z     -0.02790824        -0.07093565        -0.23661587
+      x      0.77131036         1.96047526         6.53944158
+      y     -0.12122165        -0.30811469        -1.02775997
+      z     -0.02790845        -0.07093620        -0.23661769
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -1074,25 +1114,17 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
   bond angle:     H          O          H            104.460
 
 
-
-
- CPU time statistics for ABACUS
- ------------------------------
-
-
-
-
- >>>> Total CPU  time used in ABACUS:   0.01 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+  Total CPU  time used in ABACUS:   0.00 seconds
+  Total wall time used in ABACUS:   0.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.47 seconds
- >>>> Total wall time used in DALTON:   0.47 seconds
+  Total CPU  time used in DALTON:   0.33 seconds
+  Total wall time used in DALTON:   0.33 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 16:20:48 2015
+     Date and time (Linux)  : Tue Apr 24 14:10:18 2018
      Host name              : foeroyar                                

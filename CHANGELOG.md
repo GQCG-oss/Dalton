@@ -14,12 +14,14 @@
  - Reference: N. H. List, H. J. Aa. Jensen, and J. Kongsted. Local Electric Fields and Molecular Properties in Heterogeneous Environments through Polarizable Embedding.
    Phys. Chem. Chem. Phys. 18, 10070 (2016).
 - Remove the most diffuse virtual orbitals after SCF or MCSCF (new .VIRTRUNC option)
+- Add purely classical multipole-multipole interaction energy in PE-QM calculations
 
 ### Fixed
 - open-shell doublet ROKS DFT geometry optimization
 - Fix .GSPOL for parallel polarizable embedding quadratic response
 - Fix text about elimination of some two-photon transitions between excited states
   because they were duplicates (text had "Third order" instead of "Second order")
+- Bugfixes for CC2 in environments (incl. external fields) by Ove Christiansen
 
 ### Changed
 - OK to run ECD or OECD with SOPPA

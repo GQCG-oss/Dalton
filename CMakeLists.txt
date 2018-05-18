@@ -44,7 +44,6 @@ option(ENABLE_COLLAPSE       "Enable COLLAPSE clause for reorderings"           
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                              OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                             OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"                       OFF)
-option(ENABLE_OMP            "Enable OpenMP parallelization"                    OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable Polarizable Embedding (PE) library"        ON)
@@ -81,10 +80,18 @@ set(EXTERNAL_LIBS)
 include(ConfigVersion)
 include(SourcesDALTON)
 include(ConfigArchitecture)
+
+include(ConfigOMP)
+if(ENABLE_OPENMP)
+    add_definitions(-DVAR_OMP)
+    set(ENABLE_THREADED_MKL TRUE)
+else()
+    set(ENABLE_THREADED_MKL FALSE)
+endif()
+
 include(ConfigCompilerFlags)
 include(CheckFortranStandardCompatibility)
 include(ConfigExternal)
-include(ConfigOMP)
 
 # math detection
 set(BLAS_LANG "Fortran")

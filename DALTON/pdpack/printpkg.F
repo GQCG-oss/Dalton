@@ -1,6 +1,6 @@
 C FILE    : printpkg.F
 C
-C...   Dalton, Release DALTON2016, pdpack/printpkg.F
+C...   Dalton, pdpack/printpkg.F
 C...
 C...   These routines are in the public domain and can be
 C...   used freely in other programs.
@@ -106,7 +106,7 @@ C        use F output format
          PFMT = '(A1,I7,2X,8F15.8)'
       ELSE
 C        use 1PD output format
-         PFMT = '(A1,I7,2X,1P,8D15.6)'
+         PFMT = '(A1,I7,2X,1P,8E15.6)'
       END IF
 C
 C LAST IS THE LAST COLUMN NUMBER IN THE ROW CURRENTLY BEING PRINTED
@@ -612,11 +612,11 @@ C
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
 C
+      N_NAN = 0
       IF (ROWHI.LT.ROWLOW) GO TO 3
       IF (COLHI.LT.COLLOW) GO TO 3
 C
       AMAX = ZERO
-      N_NAN = 0
       DO 10 J = COLLOW,COLHI
          DO 10 I = ROWLOW,ROWHI
             IF ( IS_NAN(AMATRX(I,J),AMATRX(I,J)) ) THEN
@@ -636,8 +636,8 @@ C        use F output format
          PFMT = '(A1,I7,2X,8F15.8)'
          thrpri = 0.5D-8
       ELSE
-C        use 1PD output format
-         PFMT = '(A1,I7,2X,1P,8D15.6)'
+C        use 1PE output format
+         PFMT = '(A1,I7,2X,1P,8E15.6)'
          thrpri = 1.0D-8*AMAX
       END IF
 C
