@@ -590,6 +590,7 @@ if (ENABLE_SRDFT)
    add_dalton_test(energy_srpbe_nolr    "dalton;srdft;energy;short;parallel;essential")
    add_dalton_runtest(rsp_srpbe_polar   "dalton;srdft;rsp;short;parallel;essential")
    add_dalton_runtest(energy_srpbe_state2  "dalton;srdft;runtest;energy;medium;parallel")
+   add_dalton_runtest(energy_srlda_openshell  "dalton;srdft;runtest;energy;short;parallel;essential")
    add_dalton_runtest(energy_srpbe_openshell  "dalton;srdft;runtest;energy;short;parallel;essential")
 endif()
 
