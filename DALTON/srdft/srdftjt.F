@@ -567,6 +567,7 @@ C     correlation functionals
       external ESRC_PBEGWSERF_PW92
 
 C     spin functionals
+      external ESRX_LDAERFSPIN
       external ESRC_LDAERFSPIN
       external ESRC_PBEGWSERFSPIN
       external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA
@@ -594,8 +595,13 @@ c  Exchange  ------------------------------------------------------------
 !     LDA exchange functional (to fit with corresponding correlation
 !     functional) - see explanation with DOSRC_LDA_PW92
       IF(DOSRX_LDA_PW92 .OR. DOSRX_LDA_S) THEN
-        call DESRX_SPINGGA(ESRX_LDAERF,rho,grd2,CHIVAL,
-     >                     norder,Ex,d1Ex,d2Ex)
+        ! edh: current DESR_XSPINGGA routine does not work for LDA
+        ! for now, we rely on old DESRSPIN routine
+        ! TODO Generalize DESRX_SPINGGA routine to LDA?
+!       call DESRX_SPINGGA(ESRX_LDAERF,rho,grd2,CHIVAL,
+!    >                     norder,Ex,d1Ex,d2Ex)
+        call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),CHIVAL,
+     >                     DFT_SPINDNS,norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange PBE of HSE

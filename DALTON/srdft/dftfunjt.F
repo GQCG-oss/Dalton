@@ -264,11 +264,15 @@ C            norder : order of derivatives
 C
 C     Ouput: d1E(1) = d1Edrhoc      : first derivative wrt rhoc
 C            d1E(2) = d1Edrhos      : first derivative wrt rhos
+C            d1E(3-5) not calculated, see DESRX_SPINGGA and
+C                     DESRC_SPINGGA routines
 C
 C            d2E(1) = d2Edrhocdrhoc : second derivative wrt rhoc and rhoc
 C            d2E(2) = d2Edrhocdrhos : second derivative wrt rhoc and rhos
 C            d2E(3) = d2Edrhosdrhos : second derivative wrt rhos and rhos
-C
+C            d2E(4-15) not calculated, see DESRX_SPINGGA and
+C                   DESRC_SPINGGA routines
+C              
 C     Created: 17-08-09, J. Toulouse
 C     Revision: Introduce d1E and d2E arrays (17-02-16), E. D. Hedegaard
 C*****************************************************************************
@@ -278,7 +282,7 @@ C*****************************************************************************
       integer norder
       logical dospin
       real*8   rhoc, rhos, mu
-      real*8   E, d1E(2), d2E(3)
+      real*8   E, d1E(5), d2E(15)
 
       real*8   hrc, hrs, hrc2, hrs2, hrcs
       real*8   rhocm, rhocp, rhosp, rhosm
@@ -974,7 +978,7 @@ C*****************************************************************************
       integer norder
       logical dospin
       real*8   rhoc, rhos, VLAMBDA
-      real*8   E, d1E(2), d2E(3)
+      real*8   E, d1E(5), d2E(15)
 
       call  DESRSPIN(ESRSPIN,rhoc,rhos,0.d0,dospin,norder,E,d1E,d2E)
 
@@ -1001,7 +1005,7 @@ C*****************************************************************************
       integer norder
       logical dospin
       real*8   rhoc, rhos, VLAMBDA
-      real*8   E, d1E(2), d2E(3)
+      real*8   E, d1E(5), d2E(15)
 
       call  DESRSPIN(ESRSPIN,rhoc,rhos,0.d0,dospin,norder,E,d1E,d2E)
 
@@ -3384,6 +3388,147 @@ C       Limit for large a
 
 C       divide by two because of spin scaling
         e = 0.5d0 * e
+
+      return
+      end
+C****************************************************************************
+      subroutine ESRX_LDAERFSPIN (rhoc,rhos,mu,dospin,e)
+C*****************************************************************************
+C     Short-range spin-dependent LDA exchange functional
+C       obtained by spin-scaling Ex[na,nb] = 1/2 (Ex[na]+Ex[nb])
+C       where Ex[n] is from Toulouse, Savin, Flad, IJQC 100, 1047 (2004)
+C
+C     subroutine adapted from Molpro
+C
+C     Input: rhoc   : total density
+C            rhos   : spin density
+C            mu     : Interation parameter
+C            dospin : use spin density
+C
+C     Ouput: e      : energy
+C
+C     Created: 17-08-09, J. Toulouse
+C              22-05-18, Re-introduced for LDA exchange as temporary
+C              solution until DESRX_GGA works for both LDA and GGA.              
+C*****************************************************************************
+      implicit none
+
+      real*8   rhoc, rhos, mu
+      logical dospin
+      real*8   e
+
+      real*8   derf
+
+      real*8   f13, pi, pisqrt, ckf
+      real*8   rho, akf, a, a2, a3
+
+      real*8   rhoa, rhob
+      real*8   ea, eb
+
+      parameter(pi = 3.141592653589793d0)
+      parameter(pisqrt = 1.772453850905516d0)
+      parameter(ckf = 3.093667726280136d0)
+      parameter(f13 = 0.333333333333333d0)
+C     Spin-unpolarized case
+      if (.not.dospin) then
+C       Density and kF
+        rho = rhoc
+        akf = ckf*(rho**f13)
+        a = mu/(2.d0*akf)
+        a2 = a*a
+        a3 = a2*a
+
+C       Test on the value of a
+
+C       Limit for small a (expansion not so important as for large a)
+        if (a.lt.1.d-9) then
+          e = -3.d0/8.d0*rho*(24.d0*rho/pi)**f13
+
+C       Intermediate values of a
+        elseif (a.le.100) then
+          e = - (rho*(24.d0*rho/pi)**f13)
+     >       *(3.d0/8.d0-a*(pisqrt*derf(0.5d0/a)+
+     >       (2.d0*a-4.d0*a3)*dexp(-0.25d0/a2)-3.d0*a+4.d0*a3))
+
+C       Expansion for large a
+        elseif (a.lt.1.d+9) then
+          e = - (rho*(24.d0*rho/pi)**f13)*1.d0/(96.d0*a2)
+
+C       Limit for large a
+        else
+          e = 0.d0
+        end if
+
+      
+C     Spin-polarized case
+      else
+
+C       Density and kF for spin alpha
+!       rhoa=max(0.5d0*(rhoc+rhos),0d0)
+!       rhoa=2.d0*rhoa ! spin-scaling
+        rhoa=max((rhoc+rhos),0d0) ! rhoa is twice real rho_a
+        akf = ckf*(rhoa**f13)
+        a = mu/(2.d0*akf)
+        a2 = a*a
+        a3 = a2*a
+
+C       Test on the value of a
+
+C       Limit for small a (expansion not so important as for large a)
+        if (a.lt.1.d-9) then
+          ea = -3.d0/8.d0*rhoa*(24.d0*rhoa/pi)**f13
+
+C       Intermediate values of a
+        elseif (a.le.100) then
+          ea = - (rhoa*(24.d0*rhoa/pi)**f13)
+     >       *(3.d0/8.d0-a*(pisqrt*derf(0.5d0/a)+
+     >       (2.d0*a-4.d0*a3)*dexp(-0.25d0/a2)-3.d0*a+4.d0*a3))
+
+C       Expansion for large a
+        elseif (a.lt.1.d+9) then
+          ea = - (rhoa*(24.d0*rhoa/pi)**f13)*1.d0/(96.d0*a2)
+
+C       Limit for large a
+        else
+          ea = 0.d0
+        end if
+
+
+C       Density and kF for spin beta
+!       rhob = max(0.5d0*(rhoc-rhos),0d0)
+!       rhob = 2.d0*rhob ! spin-scaling
+        rhob=max((rhoc-rhos),0d0) ! rhob is twice real rho_b
+C
+        akf = ckf*(rhob**f13)
+        a = mu/(2.d0*akf)
+        a2 = a*a
+        a3 = a2*a
+
+C       Test on the value of a
+
+C       Limit for small a (expansion not so important as for large a)
+        if (a.lt.1.d-9) then
+          eb = -3.d0/8.d0*rhob*(24.d0*rhob/pi)**f13
+
+C       Intermediate values of a
+        elseif (a.le.100) then
+          eb = - (rhob*(24.d0*rhob/pi)**f13)
+     >       *(3.d0/8.d0-a*(pisqrt*derf(0.5d0/a)+
+     >       (2.d0*a-4.d0*a3)*dexp(-0.25d0/a2)-3.d0*a+4.d0*a3))
+
+C       Expansion for large a
+        elseif (a.lt.1.d+9) then
+          eb = - (rhob*(24.d0*rhob/pi)**f13)*1.d0/(96.d0*a2)
+
+C       Limit for large a
+        else
+          eb = 0.d0
+        end if
+
+C       divide by two because of spin scaling
+        e = 0.5d0 * (ea + eb)
+
+      endif
 
       return
       end
