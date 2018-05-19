@@ -70,7 +70,7 @@ f.add(from_string = 'Unrelaxed CCSD    First-order one-electron properties',
 f.add(string = 'Final HF energy:',
       rel_tolerance = 1.0e-9)
 
-test.run(['cc_fde_large.dal'], ['h2o_c2v_avtz.mol', 'h2o_c1_avtz.mol'], f={'out': f}, args = '-put EMBPOT.acc4')
+test.run(['cc_fde_large.dal'], ['h2o_c2v_avtz.mol', 'h2o_c1_avtz.mol'], f={'out': f}, args = '-put EMBPOT.acc4', accepted_errors=['not implemented for parallel calculations.'])
 
 os.system('rm EMBPOT.acc4')
 
