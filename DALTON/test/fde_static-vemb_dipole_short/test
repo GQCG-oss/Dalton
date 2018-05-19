@@ -17,7 +17,7 @@ from runtest_dalton import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
-os.system('bzip2 -d EMBPOT.2e-1.bz2')
+os.system('gunzip EMBPOT.2e-1.gz')
 
 f = Filter()
 f.add(from_string = 'Atoms and basis sets',
