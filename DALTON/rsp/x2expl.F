@@ -23,11 +23,11 @@
 !
 C
 #ifdef REV_LOG
-===========================================================================
-Revision 1.2  2000/05/24 19:13:57  hjj
-new getref calls with appropriate NDREF instead of NCREF
-(fixing error for triplet with CSF)
-===========================================================================
+!===========================================================================
+!Revision 1.2  2000/05/24 19:13:57  hjj
+!new getref calls with appropriate NDREF instead of NCREF
+!(fixing error for triplet with CSF)
+!===========================================================================
 #endif
 C  /* Deck x2expl */
       SUBROUTINE X2EXPL(NSIM,MZYVA,MZYVC,ISYMA,ISPINA,

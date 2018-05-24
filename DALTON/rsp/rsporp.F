@@ -23,13 +23,13 @@
 !
 C
 #ifdef UNDEF
-===========================================================================
-/* Comdeck rev_log */
-920929-ov    ORPSVE:  work dimension check
-920723-hjaaj ORPLIN: inserted missing CMO in CALL RSPOLI
-920722-hjaaj ORPNEX,ORPST: new THRLDV definition for lin.dep.
-920721-Hinne Hettema ORPORT: inserted averaging code (if RSPSUP)
-===========================================================================
+!===========================================================================
+!/* Comdeck rev_log */
+!920929-ov    ORPSVE:  work dimension check
+!920723-hjaaj ORPLIN: inserted missing CMO in CALL RSPOLI
+!920722-hjaaj ORPNEX,ORPST: new THRLDV definition for lin.dep.
+!920721-Hinne Hettema ORPORT: inserted averaging code (if RSPSUP)
+!===========================================================================
 #endif
 C  /* Deck orpctl */
       SUBROUTINE ORPCTL(MAXORP,KOZRED,AOFREQ,THCORP,A1,REDOE,REDOS,

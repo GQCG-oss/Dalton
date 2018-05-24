@@ -27,15 +27,15 @@ C
 C FILE: rsp/rspoli.F ("Orbital LInear transformation")
 C
 #ifdef rev_log
-========================================================================
-990427-hjaaj: use if DXAO is symmetric or antisymmetric in IFCTYP
-961228-kr Transfered SOPPA particle-hole matrices in paramater list to RSPOLI
-950513-kr Added comdeck INFVAR and and changed to ISYMDM()=JWOPSY
-940708-hjaaj: SOPPA changes
-940602-hjaaj: do not call QONEDI and QTD for nasht.eq.1
-931124-martin packer: added call to HRPA which adds A(2) and B(2) matrices to FCX
-920721-hinne hettema: implemented RSPSUP (super symmetry averaging)
-========================================================================
+!========================================================================
+!990427-hjaaj: use if DXAO is symmetric or antisymmetric in IFCTYP
+!961228-kr Transfered SOPPA particle-hole matrices in paramater list to RSPOLI
+!950513-kr Added comdeck INFVAR and and changed to ISYMDM()=JWOPSY
+!940708-hjaaj: SOPPA changes
+!940602-hjaaj: do not call QONEDI and QTD for nasht.eq.1
+!931124-martin packer: added call to HRPA which adds A(2) and B(2) matrices to FCX
+!920721-hinne hettema: implemented RSPSUP (super symmetry averaging)
+!========================================================================
 #endif
 
 #ifdef ENABLE_EFS

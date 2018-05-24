@@ -23,41 +23,41 @@
 !
 C
 #ifdef UNDEF
-========================================================================
-/* Comdeck rev_log */
-Revision 1.2  2001/01/17 10:41:29  vebjornb
-Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.3  2000/05/24 18:48:53  hjj
-new GETREF calls with NDREF (fixing triplet with CSF)
-do not save S(2) CI diagonal on LURSP4 ( all ones)
-
-revision 1.2 2000/04/14 14:33:01 hjj
-partial bug fix for triplet and CSFs (more need to be done)
-========================================================================
-950208-hjaaj
-RSPORT: s/ZEQLY/OVLMIN/ (OVLMIN = 1.0D-4; ZEQLY was 1.0D-6 but they
-  tested the same thing; Hans Agren had problems for cubic response with
-  ZEQLY=1.0D-6 and OVLMIN=1.0D-4);  improved code for Z=Y or Z=-Y tests.
-940708-hjaaj: SOPPA changes
-931004-pj/hjaaj PPST  : fixed DCOPY problem for RHF
-930910-hjaaj    RSPNEX: always use relative convergence
-930712-hjaaj
-RSPORT: ZEQLY = 1.0D-6 instead of 1.0D-10; lowered print level;
-        discard trial vector for linear dep. if OVLPI close to 1;
-        do symmetric orthonormalization twice
-920929-ov      RSPSLI: fixed work dimension check
-920904-hjaaj
-RSPNEX: 1) fixed error in print statement
-        -- corrected print of solution and residual vectors
-        2) fixed error for multiple orbital trial vectors, when
-        one or more of the lower root(s) converged by
-        setting KEX(i) = -1 for converged roots.
-        3) skip S[2]*X(i) calculation if EIVAL(i) .eq. D0
-        4) only DZERO(BVECS(KINFIX)) if OPTORB
-920721-hinne hettema
-  RSPORT,RSPSOR: implemented RSPSUP (super symmetry averaging)
-========================================================================
+!========================================================================
+!/* Comdeck rev_log */
+!Revision 1.2  2001/01/17 10:41:29  vebjornb
+!Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
+!
+!Revision 1.3  2000/05/24 18:48:53  hjj
+!new GETREF calls with NDREF (fixing triplet with CSF)
+!do not save S(2) CI diagonal on LURSP4 ( all ones)
+!
+!revision 1.2 2000/04/14 14:33:01 hjj
+!partial bug fix for triplet and CSFs (more need to be done)
+!========================================================================
+!950208-hjaaj
+!RSPORT: s/ZEQLY/OVLMIN/ (OVLMIN = 1.0D-4; ZEQLY was 1.0D-6 but they
+!  tested the same thing; Hans Agren had problems for cubic response with
+!  ZEQLY=1.0D-6 and OVLMIN=1.0D-4);  improved code for Z=Y or Z=-Y tests.
+!940708-hjaaj: SOPPA changes
+!931004-pj/hjaaj PPST  : fixed DCOPY problem for RHF
+!930910-hjaaj    RSPNEX: always use relative convergence
+!930712-hjaaj
+!RSPORT: ZEQLY = 1.0D-6 instead of 1.0D-10; lowered print level;
+!        discard trial vector for linear dep. if OVLPI close to 1;
+!        do symmetric orthonormalization twice
+!920929-ov      RSPSLI: fixed work dimension check
+!920904-hjaaj
+!RSPNEX: 1) fixed error in print statement
+!        -- corrected print of solution and residual vectors
+!        2) fixed error for multiple orbital trial vectors, when
+!        one or more of the lower root(s) converged by
+!        setting KEX(i) = -1 for converged roots.
+!        3) skip S[2]*X(i) calculation if EIVAL(i) .eq. D0
+!        4) only DZERO(BVECS(KINFIX)) if OPTORB
+!920721-hinne hettema
+!  RSPORT,RSPSOR: implemented RSPSUP (super symmetry averaging)
+!========================================================================
 #endif
 C  /* Deck rsplin */
       SUBROUTINE RSPLIN(NCSIM,NOSIM,ZYCVEC,ZYOVEC,

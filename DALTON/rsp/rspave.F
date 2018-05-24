@@ -23,25 +23,25 @@
 !
 C
 #ifdef UNDEF
-===========================================================================
-/* Comdeck rev_log */
-Revision 1.2  2001/01/17 10:41:29  vebjornb
-Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.2  2000/05/01 12:13:01  hjj
-Removed obsolete KAVER test.
-
-Written july / august 1992 Hinne Hettema
-
-Purpose of routines :
-=====================
-1. perform averaging of start vectors and linear transformations in response
-   calculations (RSPAVE)
-2. symmetrize the E[2] matrix (RFANTI ... RSPFCA)
-
-List of updates:
-================
-===========================================================================
+!===========================================================================
+!/* Comdeck rev_log */
+!Revision 1.2  2001/01/17 10:41:29  vebjornb
+!Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
+!
+!Revision 1.2  2000/05/01 12:13:01  hjj
+!Removed obsolete KAVER test.
+!
+!Written july / august 1992 Hinne Hettema
+!
+!Purpose of routines :
+!=====================
+!1. perform averaging of start vectors and linear transformations in response
+!   calculations (RSPAVE)
+!2. symmetrize the E[2] matrix (RFANTI ... RSPFCA)
+!
+!List of updates:
+!================
+!===========================================================================
 #endif
 C  /* Deck rspave */
       SUBROUTINE RSPAVE (VECS,NVDIM,NVSIM)
