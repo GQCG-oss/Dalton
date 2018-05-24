@@ -42,6 +42,7 @@ C                  DOATR   true: electronic Hessian, non-linear Exc second deriv
 C                  TRIPLET true: triplet operators
 C                  DMAT(1) = charge density matrix
 C                  DMAT(2) = 1-index transformed charge density matrix (DOATR)
+C                       or = 1-index transformed spin density matrix (TRIPLET and DOATR)
 C                  DMAT(3) = spin density matrix (DFT_SPINDNS)
 C                  DMAT(4) = 1-index transformed spin density matrix (DFT_SPINDNS and DOATR)
 C            (if SRHYBR then different ordering of DMAT matrices)
@@ -168,7 +169,7 @@ C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
          CALL QUIT(
      &   'SRDFT1JT: London orbitals (DOLND) not implemented yet')
       END IF
-      
+
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
          CALL QUIT('SRDFT1JT: triplet only for closed shell')
       END IF
