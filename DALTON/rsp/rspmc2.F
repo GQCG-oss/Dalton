@@ -22,13 +22,12 @@
 !
 !
 C
-#ifdef REV_LOG
-===========================================================================
-Revision 1.2  2000/05/24 19:03:29  hjj
-new getref calls with appropriate NDREF instead of NCREF
-(fixing error for triplet with CSF)
-===========================================================================
-#endif
+!===========================================================================
+!Revision 1.2  2000/05/24 19:03:29  hjj
+!new getref calls with appropriate NDREF instead of NCREF
+!(fixing error for triplet with CSF)
+!===========================================================================
+
       SUBROUTINE E4DRV(VECA,VEC1,VEC2,VEC3,IBCDEQ,
      *                 E4TRS,XINDX,H1,ZYM1,ZYM2,ZYM3,DEN1,DEN2,
      *                 UDV,PV,WRK,LWRK,KZYVR,KZYV1,KZYV2,KZYV3,

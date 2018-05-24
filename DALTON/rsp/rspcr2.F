@@ -22,7 +22,6 @@
 !
 !
 C
-#ifdef REV_LOG
 !===========================================================================
 !Revision 1.2  2001/01/17 16:09:33  vebjornb
 !Added dimension checks before calls to DGEMM in response module
@@ -32,7 +31,7 @@ C
 !change 2 to * in DIMENSION
 !new GETREF calls
 !===========================================================================
-#endif
+
       SUBROUTINE CRLRV1(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
 #include "implicit.h"

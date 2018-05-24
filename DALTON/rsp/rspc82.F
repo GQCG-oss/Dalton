@@ -22,7 +22,6 @@
 !
 !
 C
-#ifdef UNDEF
 !========================================================================
 !/* Comdeck rev_log */
 !Revision 1.2  2001/01/17 10:41:29  vebjornb
@@ -58,7 +57,7 @@ C
 !920721-hinne hettema
 !  RSPORT,RSPSOR: implemented RSPSUP (super symmetry averaging)
 !========================================================================
-#endif
+
 C  /* Deck rsplin */
       SUBROUTINE RSPLIN(NCSIM,NOSIM,ZYCVEC,ZYOVEC,
      *                  CMO,UDV,PVX,FC,FV,FCAC,H2AC,

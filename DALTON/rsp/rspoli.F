@@ -1,4 +1,4 @@
-!define DEBUG_RSPOLI
+!#define DEBUG_RSPOLI
 #undef DEBUG_RSPOLI
 !
 !...   Copyright (c) 2015 by the authors of Dalton (see below).
@@ -26,7 +26,6 @@
 C
 C FILE: rsp/rspoli.F ("Orbital LInear transformation")
 C
-#ifdef rev_log
 !========================================================================
 !990427-hjaaj: use if DXAO is symmetric or antisymmetric in IFCTYP
 !961228-kr Transfered SOPPA particle-hole matrices in paramater list to RSPOLI
@@ -36,7 +35,6 @@ C
 !931124-martin packer: added call to HRPA which adds A(2) and B(2) matrices to FCX
 !920721-hinne hettema: implemented RSPSUP (super symmetry averaging)
 !========================================================================
-#endif
 
 #ifdef ENABLE_EFS
 C Use this hack to correctly pass the arrays to c++

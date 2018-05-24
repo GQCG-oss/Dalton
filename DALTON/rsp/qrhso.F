@@ -28,13 +28,12 @@
 #endif
 
 C
-#ifdef REV_LOG
 C=======================================================================
 C May 2000 hjj:
 C Use MZCONF(1) instead NCREF for CREF (for triplet response w. CSF)
 C Removed delete of LUMHSO which caused trouble because LUMHSO was neeeded later!
 C=======================================================================
-#endif
+
 C  /* Deck x2hso */
       SUBROUTINE X2HSO(NSIM,KZYVR,KZYV,IGRSYM,IGRSPI,ISYMV,ISPINV,
      *                 OPLBL,IOPSYM,IOPSPI,
