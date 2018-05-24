@@ -75,6 +75,7 @@ C
 C
 C Used from common blocks:
 C INFTRA : USEDRC
+C infinp.h : ISPIN, ?
 C dftcom.h : DFT_SPINDNS
 C
 #include "maxorb.h"
@@ -123,12 +124,6 @@ C
      &   '  RESPONSE  -  an MCSCF, MC-srDFT, DFT, '//
      &   'SOPPA and SOPPA-srDFT response property program',
      &   ('-',I=1,88)
-      IF (DFT_SPINDNS) THEN
-         WRITE(LUPRI,'(A)') ' using spin-density in srDFT part'
-         NDV = 2 ! DV,DS and FV,FS
-      ELSE
-         NDV = 1 ! DV and FV (no DS and no FS)
-      END IF
 C
 C     *************************
 C     ***** INPUT SECTION *****
@@ -147,6 +142,22 @@ C
 C Read **RESPONS input
 C
       CALL RSPREA
+
+      IF (DFT_SPINDNS .AND. ISPIN .EQ. 1) THEN
+      ! May2018: DFT_SPINDNS may be true for singlet reference and triplet response
+      ! in current srDFT implementation (spin version of functionals is needed
+      ! for triplet response).
+         WRITE(LUPRI,'(/A)')
+     &     'srDFT INFO: DFT_SPINDNS set to false for singlet reference.'
+         DFT_SPINDNS = .FALSE.
+      END IF
+
+      IF (DFT_SPINDNS) THEN
+         WRITE(LUPRI,'(A)') ' using spin-density in srDFT part'
+         NDV = 2 ! DV,DS and FV,FS
+      ELSE
+         NDV = 1 ! DV and FV (no DS and no FS)
+      END IF
 C
 C  If SOPPA then set up information from MP2 and find number of 2p-2h
 C  excitations and offsets to various index arrays.
