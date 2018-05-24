@@ -23,51 +23,51 @@
 !
 C
 #ifdef OLD_LOG
-===========================================================================
-Revision 1.2  2001/01/17 10:41:29  vebjornb
-Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.3  2000/05/24 19:00:24  hjj
-new GETREF and CREF allocation (fix of triplet problem for CSF:s)
-Do not read S(2) CI diagonal but use implicit that it is 1.0D0
-
-961011-hjaaj
-merged with SOPPA changes by ekd
-LRST  : modification needed for proper handling of cubic response
-950705-hjaaj
-RSPPP : New code for GOS oscillator strengths.
-940523-hjaaj
-RSPCTL: removed CALL FLUSH(LURSP1) (system dependent); instead REWIND LURSP1
-941117-hjaaj
-QONEMU: changed a SMPATB to SMPAB to change DDOT to DAXPY
-FCKOIN: optimized
-940708-hjaaj
-c: SOPPA changes: test KOFFTY.eq.1, not KSYMOP.eq.1 for CREF
-LRST  : only orb (ph) trial vectors for SOPPA (no conf., i.e. no 2p2h)
-RSPDIA: skip S[2] reads if SHIFT .eq. D0
-931119-hjaaj
-RSPCTL: improved output when insufficient memory stop
-931007-hjaaj
-removed RSPMC and GETREF (now in rspmai.u)
-extracted **FILENAME=ORPCTL.UPD module as rsporp.u
-931004-pj+hjaaj
-merged previous updates (including some of the comments below and more),
-merged/inserted solvent and RSPSUP changes
-920613-ov: In rspe2c.u:
-           A lot of explicit DOUBLE PRECISION changed to REAL for CRAY
-           Statement functions DABS(X)=ABS(X) etc.
-920624-ov: New conversion factors in RSPPP from CODATA
-921125-hj: RSPMC  (rspe2c.u) consistency check with NCONRF, LSYMRF
-           instead of NCONF,LSYM (because of problems with calls from
-           ABACUS).  The NWOPT test has been disabled.
-920722-hjaaj
-extracted EISPACK RGG routines to file "rggeis.u"
-RSPNEX: new THRLDV definition for lin.dep.
-LRST: stop if RSPSUP true and restart (need some additional coding)
-920721-Hinne Hettema
-RSPCTL: "NSIM=0" for RSPRED before GO TO 1000 (2 places)
-ORBDIA: inserted averaging code (if RSPSUP)
-===========================================================================
+!===========================================================================
+!Revision 1.2  2001/01/17 10:41:29  vebjornb
+!Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
+!
+!Revision 1.3  2000/05/24 19:00:24  hjj
+!new GETREF and CREF allocation (fix of triplet problem for CSF:s)
+!Do not read S(2) CI diagonal but use implicit that it is 1.0D0
+!
+!961011-hjaaj
+!merged with SOPPA changes by ekd
+!LRST  : modification needed for proper handling of cubic response
+!950705-hjaaj
+!RSPPP : New code for GOS oscillator strengths.
+!940523-hjaaj
+!RSPCTL: removed CALL FLUSH(LURSP1) (system dependent); instead REWIND LURSP1
+!941117-hjaaj
+!QONEMU: changed a SMPATB to SMPAB to change DDOT to DAXPY
+!FCKOIN: optimized
+!940708-hjaaj
+!c: SOPPA changes: test KOFFTY.eq.1, not KSYMOP.eq.1 for CREF
+!LRST  : only orb (ph) trial vectors for SOPPA (no conf., i.e. no 2p2h)
+!RSPDIA: skip S[2] reads if SHIFT .eq. D0
+!931119-hjaaj
+!RSPCTL: improved output when insufficient memory stop
+!931007-hjaaj
+!removed RSPMC and GETREF (now in rspmai.u)
+!extracted **FILENAME=ORPCTL.UPD module as rsporp.u
+!931004-pj+hjaaj
+!merged previous updates (including some of the comments below and more),
+!merged/inserted solvent and RSPSUP changes
+!920613-ov: In rspe2c.u:
+!           A lot of explicit DOUBLE PRECISION changed to REAL for CRAY
+!           Statement functions DABS(X)=ABS(X) etc.
+!920624-ov: New conversion factors in RSPPP from CODATA
+!921125-hj: RSPMC  (rspe2c.u) consistency check with NCONRF, LSYMRF
+!           instead of NCONF,LSYM (because of problems with calls from
+!           ABACUS).  The NWOPT test has been disabled.
+!920722-hjaaj
+!extracted EISPACK RGG routines to file "rggeis.u"
+!RSPNEX: new THRLDV definition for lin.dep.
+!LRST: stop if RSPSUP true and restart (need some additional coding)
+!920721-Hinne Hettema
+!RSPCTL: "NSIM=0" for RSPRED before GO TO 1000 (2 places)
+!ORBDIA: inserted averaging code (if RSPSUP)
+!===========================================================================
 #endif
 C  /* Deck e2sym */
       SUBROUTINE E2SYM(IBTYP,CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,
@@ -518,7 +518,7 @@ C     CALL JACO(F,V,NB,NMAX,NROWV,BIG,JBIG)
 C     CALL ORDER(EVEC,EVAL,N,NEVEC)
       WRITE(LUPRI,'(/A)') '   The eigenvalues of E2 :'
       DO I = 1,KZYDIM,2
-         WRITE(LUPRI,'(1P,2(I10,D20.10))')
+         WRITE(LUPRI,'(1P,2(I10,E20.10))')
      *      I,WRK(KEIVAL-1+I), I+1, WRK(KEIVAL+I)
       END DO
 C
@@ -542,7 +542,7 @@ C     CALL JACO(F,V,NB,NMAX,NROWV,BIG,JBIG)
 C     CALL ORDER(EVEC,EVAL,N,NEVEC)
       WRITE(LUPRI,'(/A)') '   The eigenvalues of S2 :'
       DO 820 I = 1,KZDIM
-         WRITE(LUPRI,'(1P,2(I10,D20.10))')
+         WRITE(LUPRI,'(1P,2(I10,E20.10))')
      *      I,WRK(KEIVAL-1+I), KZYDIM+1-I, WRK(KEIVAL+KZYDIM-I)
  820  CONTINUE
 C
@@ -1666,7 +1666,7 @@ C
 c ach
             DO 600 JOP = JST,NOP
                XPROP = SOPR(IFREQ,IOP,JOP)
-               WRITE(LUPRI,'(5A,1P,D20.12)')
+               WRITE(LUPRI,'(5A,1P,E20.12)')
      * '@ -<< ',LBLLR(KSYMOP,IOP),' ; ',LBLLR(KSYMOP,JOP),' >> =',XPROP
 C JK
                 CALL WRIPRO(XPROP,"LR-SCF/DFT   ",2,
@@ -1679,7 +1679,7 @@ C JK
                   CALL GETGPV(LBLLR(KSYMOP,JOP),FC,DUMMY,CMO,UDV,PV,
      &                        XINDX,ANTSYM,WRK(KGP),LWRKGP)
                   W4TERM = DDOT(KZYVAR,WRK(KGP),1,WRK(KISOL),1)
-                  WRITE(LUPRI,'(A,1P,D20.12)')
+                  WRITE(LUPRI,'(A,1P,E20.12)')
      &            '@ SOPPA W4(E) term  ',W4TERM
                END IF
                IF (GCALC) THEN
