@@ -418,6 +418,7 @@ C           call traorb to generate SO to AO transformation
                NOCCI = NOCC(ISYM)
                DO I = 1,NORB(ISYM)
                   jORB = jORB + 1
+                  IF ( DNRM2(NBAST,UCMO(1,JORB),1).LT.1.D-5) CYCLE
                   II = IORB(ISYM) + I
                   WRITE(LUMOLDEN_MOS,'(2A)')     'Sym= ',REP(ISYM-1)
                   WRITE(LUMOLDEN_MOS,'(A,F9.4)') 'Ene= ',OREN(II)
