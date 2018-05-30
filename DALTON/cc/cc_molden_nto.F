@@ -31,18 +31,18 @@ C
       integer :: isyma, isymi, isym
       integer :: excisym, iexci
       integer :: mindim
-      integer :: nto_count(8), ncount, nfound
+      integer :: nto_count(8), ncount, nfound, ncount2
       integer :: i_info, idummy, ilist, ilistoff, iopt
       integer ludena
-      integer :: icmo(8)
+      integer :: icmo(8), iorbs(8)
       integer :: kend1, kend2, kend3
       integer :: lwrk1, lwrk2, lwrk3
       integer, intent(in) :: lwork
-!      
+!
       character(len=20):: filename
       character(len=10):: model
-      character(len=3), parameter :: list_type = 'RE '
-!      
+      character(len=3), parameter :: list_type = 'RE '!'LE '
+!
 #if defined (SYS_CRAY)
       real, intent(out):: work(lwork)
       real :: one, half, ddot
@@ -58,11 +58,15 @@ C
       model ='CCSD      '
 !
       nto_count = 0
-!     
-      ncount = 0
+!
+      ncount  = 0
+      ncount2 = 0
       do isym = 1, nsym
          icmo(isym) = ncount
-         ncount = ncount + nbas(isym)*norb(isym)
+         iorbs(isym) = ncount2
+         !ncount = ncount + nbas(isym)*norb(isym)
+         ncount = ncount + nbas(isym)*norbs(isym)
+         ncount2 = ncount2 + norbs(isym)
       end do
 
 !     No symmetry allowed
@@ -77,10 +81,10 @@ C
       kcmot = 1
       knto = kcmot + nlamds
       kucmo = knto + nlamds
-      krbtr = kucmo + nbast*norbt
+      krbtr = kucmo + nbast*norbts
       korbv = krbtr + nbast*nbast
-      koccu = korbv + nbast
-      kend1 = koccu + norbt
+      koccu = korbv + norbts
+      kend1 = koccu + norbts
       lwrk1 = lwork - kend1 + 1
       write(lupri,'(6I5)') kcmot, kucmo, krbtr, korbv, koccu, kend1
 !
@@ -90,11 +94,11 @@ C
 
 !     Zero the nto memory
       call dzero(work(knto), nlamds)
-!     
+!
 !     Close molden_MOS, we want new files
 !     -----------------------------------
       call gpclose(LUMOLDEN_MOS,'KEEP')
-!      
+!
 !
 !     Read in MO coefficients
 !     -------------------------
@@ -109,7 +113,8 @@ C
       READ (LUSIFC) (WORK(KCMOT+I-1),I=1,nlamds)
 C
       CALL GPCLOSE(LUSIFC,'KEEP')
-C      
+C
+C     Reorder and delete frozen orbitals
       CALL CMO_REORDER(WORK(KCMOT), WORK(KEND1), LWRK1)
 C
 C
@@ -135,9 +140,9 @@ C
 !
 !     Natural transition orbitals
 !     ---------------------
-!     
+!
       do excisym = 1, nsym
-         
+
          ! symmetry specific entries
          kvec1 = kend1
          kend2 = kvec1 + nt1am(excisym)
@@ -151,8 +156,8 @@ C
             ! Read in actual vector
             call cc_rdrsp(list_type, ilist, excisym, iopt,
      &                     model, work(kvec1), dummy)
-            
-            call dzero(work(koccu), norbt)
+
+            call dzero(work(koccu), norbts)
 
             write(LUPRI,'(F16.6)') DNRM2(NT1AM(EXCISYM),work(kvec1),1)
             write(LUPRI,'(A,I1,I3)') 'NTO singular values for exci ',
@@ -160,7 +165,7 @@ C
             ! Loop over symmetry blocks of the vector
             do isymi = 1, nsym
                isyma = muld2h(isymi,excisym)
-               
+
                mindim = min(nvir(isyma),nrhf(isymi))
                ! Skip if there is no work to do
                if (mindim.lt.1) cycle
@@ -169,9 +174,9 @@ C
                kumat = kend2
                kvmat = kumat + nvir(isyma)**2
                ksval = kvmat + nrhf(isymi)**2
-               kend3 = ksval + mindim 
+               kend3 = ksval + mindim
                lwrk3 = lwork - kend3
-               
+
                kpos = kvec1 + it1am(isyma,isymi)
                write(lupri,*) kpos, kumat, kvmat, ksval
                ! Do the SVD... Maybe we can use 'S' instead of 'A'
@@ -184,15 +189,16 @@ C
      &            work(kend3), lwrk3, i_info
      &         )
                write(LUPRI,'(3I5)') nvir(isyma), nrhf(isymi), mindim
-               if (i_info .ne. 0) then    
-                  print *, 'ERROR in DGSVD ', i_info
+               if (i_info .ne. 0) then
+                  write(LUPRI,'(A,i5)') 'ERROR in DGSVD ', i_info
+                  cycle
                endif
                do n = 1, mindim
                   write(LUPRI,'(F16.10)') work(ksval-1+n)
                end do
                write (LUPRI,'(A)') ''
-                  
-               
+
+
                ! work(kumat) now has the left/virtual eigenvectors on
                ! the columns
                ! work(kvmat) now has the right/occupied eigevectors on
@@ -206,38 +212,38 @@ C
                end do
                ! Ensure that we don't write too many, i.e. more than
                ! half the number ofbitals
-               nfound = min(nfound, norb(isymi)/2, norb(isyma)/2)
+               nfound = min(nfound, norbs(isymi)/2, norbs(isyma)/2)
 
                ! Transform the hole NTOs to AO basis
-               call dgemm('N','T', norb(isymi), nfound, nrhf(isymi),
+               call dgemm('N','T', nbas(isymi), nfound, nrhf(isymi),
      &                    one,
-     &                    work(kcmot+ilmrhf(isymi)), norb(isymi), ! AO x occ-MO matrix
+     &                    work(kcmot+ilmrhf(isymi)), nbas(isymi), ! AO x occ-MO matrix
      &                    work(kvmat), nrhf(isymi), ! NTO x occ-MO matrix
      &                    zero, work(knto+icmo(isymi)), nbas(isymi))
 
                ! Transform the particle NTOs to AO basis
                kpos = knto + icmo(isyma)
-     &              + nbas(isyma)*(norb(isyma)-nfound)
-               call dgemm('N','N', norb(isyma), nfound, nvir(isyma), 
+     &              + nbas(isyma)*(norbs(isyma)-nfound)
+               call dgemm('N','N', nbas(isyma), nfound, nvir(isyma),
      &                    one,
-     &                    work(kcmot+ilmvir(isyma)), norb(isyma),
+     &                    work(kcmot+ilmvir(isyma)), nbas(isyma),
      &                    work(kumat), nvir(isyma),
      &                    zero, work(kpos), nbas(isyma))
 
                ! Put the hole NTO eigenvalues in the occupation vector
-               kpos = koccu + iorb(isymi)
+               kpos = koccu + iorbs(isymi)
                work(kpos:kpos+nfound-1) = - work(ksval:ksval+nfound-1)
-               kpos = koccu + iorb(isyma) + (norb(isyma) - nfound)
+               kpos = koccu + iorbs(isyma) + (norbs(isyma) - nfound)
                work(kpos:kpos+nfound-1) = work(ksval:ksval+nfound-1)
 
             end do
-!         
+!
 !           Create filename
 !           ---------------
-!            
-            write(filename,"(A5,I1,A,I1,A7)") 
+!
+            write(filename,"(A5,I1,A,I1,A7)")
      &         "exci_", excisym, '_', iexci, ".molden"
-!            
+!
 !           Call molden_mos to write MOs in molden format
 !           ---------------------------------------------
             call gpopen(LUMOLDEN_MOS,trim(filename),'NEW',' ',
