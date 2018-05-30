@@ -778,6 +778,8 @@ C
                WRITE(LUPRI,'(/,1X,A)')
      &              ' No MP2 and CCD excitation energies'
             ENDIF
+
+            CALL CC_MOLDEN_NTO(WORK,LWORK)
 C
          ENDIF
 C

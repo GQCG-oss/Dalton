@@ -288,6 +288,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/cc_mmommo.F
     DALTON/cc/cc_mofcon2.F
     DALTON/cc/cc_mofconr12.F
+    DALTON/cc/cc_molden_nto.F
     DALTON/cc/cc_nuccon.F
     DALTON/cc/cc_opa.F
 #    DALTON/cc/cc_transden.F
