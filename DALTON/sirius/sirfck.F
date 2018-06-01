@@ -334,8 +334,11 @@ C        ... full exchange for long range part and for PREHF
             DO I = 1,NDCandDV
             IF (IFCTYP_local(I) .NE. 0) THEN ! skip "FTC" with IFCTYP=0
                IFC_X = IFCTYP_local(I) / 10
-               IFCTYP_local(I) = 10*IFC_X + 3
+               IFC_X = 10*IFC_X
+               IFC_Y = IFCTYP_local(I) - IFC_X
+               if (IFC_Y .lt. 2) IFC_Y = IFC_Y + 2
 C              ... make sure the "do exchange" bit is set in IFCTYP
+               IFCTYP_local(I) = IFC_X + IFC_Y
             END IF
             END DO
          END IF
@@ -421,6 +424,7 @@ C
             ELSE
                IFC_base = IFCTYP(1)
             END IF
+            TRIPLET_local = MOD(IFC_base,10) .EQ. 2 !hjaaj 01jun18 - not checked if OK yet ...
             IFC_X = IFC_base / 10
             IFC_X = 10*IFC_X ! DMAT symmetric, antisymmetric or unsymmetric ?
             IFC_Y = MOD(IFC_base,10)
@@ -830,7 +834,6 @@ C            loop over NSRMAT output matrices (later do the loop inside SRDFT fo
 C            efficiency!!!!!) /hjaaj June 2009
 C
          DO JSRMAT = 1, NSR_DMAT
-          TRIPLET_local = MOD(IFCTYP(JSRMAT),10) .EQ. 2 !hjaaj 22aug17 - not checked if OK yet ...
           IF (DOATR) THEN
 #if SIRFCK_DEBUG > 0
               write(lupri,*) 'DOATR in sirfck: ndoff =', ndoff
