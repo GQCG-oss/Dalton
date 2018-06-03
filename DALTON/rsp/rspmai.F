@@ -23,7 +23,6 @@
 !
 ! FILE: dalton/rsp/rspmai.F ("MAIn routines in response module")
 !
-#ifdef OLD_REVISIONLOG
 !===========================================================================
 !/* Comdeck revision_log */
 !
@@ -57,7 +56,7 @@
 !RSPSET: define new RSPSUP variable (use super symmetry)
 !RSPDRV: initialize arrays for symmetrizing MCSCF gradient.
 !===========================================================================
-#endif
+
 C
 C  /* Deck rspdrv */
       SUBROUTINE RSPDRV(WRK,LWRK)

@@ -917,7 +917,7 @@ C      cross-derivative wrt rhob and grdbb -----------------------
        END IF ! Eb_eq_Ea
 
 ! The following transformations from d2E(a,b) to d2E(c,s) are only valid for exchange energies
-! for which there nevera are cross-derivatives terms between a and b.
+! for which there never are cross-derivatives terms between a and b.
 
        d2E( 1)   = D4I  * (d2W(1) + d2W(2)) !      d2Edrc2   = (d2Edra2 + d2Edrb2) / 4
        d2E( 2)   = D4I  * (d2W(1) - d2W(2)) !      d2Edrcdrs = (d2Edra2 - d2Edrb2) / 4

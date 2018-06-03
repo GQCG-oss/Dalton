@@ -836,6 +836,8 @@ C
               write(lupri,*) 'DOATR in sirfck: ndoff =', ndoff
               write(lupri,*) 'JSRMAT = ', JSRMAT
               write(lupri,*) 'JDXAO  = ', JDXAO
+              write(lupri,*) 'TRIPLET_local  = ', TRIPLET_local
+              write(lupri,*) 'IFCTYP  = ', IFCTYP(1:NSR_DMAT)
 #if SIRFCK_DEBUG > 4
               WRITE(LUPRI,*) 'DMAT(1,JSRMAT) = DCMAT(JSRMAT)'
               call output(DMAT(1,JSRMAT),1,NBAST,1,NBAST,NBAST,

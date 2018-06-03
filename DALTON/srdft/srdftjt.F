@@ -1056,8 +1056,8 @@ C Linear transformation -----------------------------------------------------
                end if
             end if
 
-!!#if defined xxxSRDFT_DEBUG
-          if (IPRINT_X .gt. 10) then
+#if SRDFT_DEBUG > 11
+          !if (IPRINT_X .gt. 10) then
            !if (abs(FSS) .gt. 0.d0 .or. abs(FRS) .gt. 0.d0) then
               write(lupri,*) 'hjaaj: rho ',rho(1:4)
               write(lupri,*) 'hjaaj: rhgc',rhg(1:3,1)
@@ -1083,8 +1083,8 @@ C Linear transformation -----------------------------------------------------
               write(lupri,*) 'hjaaj: current EXCMAT left corner; before'
               call output(excmat,1,5,1,5,nbast,nbast,1,lupri)
            !end if
-          end if
-!!#endif
+          !end if
+#endif
             IF (NSYM.EQ.1) THEN
                IF (DOGGA) THEN
                   IF (TRIPLET) THEN ! closed-shell triplet GGA response
