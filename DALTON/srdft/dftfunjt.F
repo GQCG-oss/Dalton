@@ -2454,7 +2454,7 @@ C*****************************************************************************
 
       real*8   mu2, mu6, pi, sqrtpi 
       real*8   three53, pi13, pi43, zero 
-      real*8   rho, grd, epbe
+      real*8   rho, epbe
       real*8   d, d2, denom1, denom2
       
 !      print *,'ESRX_PBERIERF: mu=',mu
@@ -2469,8 +2469,9 @@ C     General constants
 
 !     Variables
       zero = 0.d0 
-      mu2 =mu*mu
-      mu6 =mu2*mu2*mu2
+      mu2  = mu*mu
+      mu6  = mu2*mu2*mu2
+      rho  = 2.0d0*rhoa ! as if rhoa .eq. rhob
 
       d = -5.d0*(rho**(4.d0/3.d0))/(pi13*three53)      
       d2 = 20.d0/(pi43*three53*(rho**(2.d0/3.d0)))

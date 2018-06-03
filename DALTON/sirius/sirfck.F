@@ -124,6 +124,7 @@ C
          DOATR = .NOT.DFTADD
 C        ... DFTADD tells if add normal DFT Vxc or second order Vxc
       END IF
+      TRIPLET_local = .FALSE. ! initialize
 C
 C     Find out if we have spin-density terms
 C     Find out if we shall and can use Cholesky
@@ -334,8 +335,11 @@ C        ... full exchange for long range part and for PREHF
             DO I = 1,NDCandDV
             IF (IFCTYP_local(I) .NE. 0) THEN ! skip "FTC" with IFCTYP=0
                IFC_X = IFCTYP_local(I) / 10
-               IFCTYP_local(I) = 10*IFC_X + 3
+               IFC_X = 10*IFC_X
+               IFC_Y = IFCTYP_local(I) - IFC_X
+               if (IFC_Y .eq. 1) IFC_Y = IFC_Y + 2
 C              ... make sure the "do exchange" bit is set in IFCTYP
+               IFCTYP_local(I) = IFC_X + IFC_Y
             END IF
             END DO
          END IF
@@ -415,12 +419,17 @@ C
             NFSRTYP = 1
             NFSRAO = NSR_DMAT ! FT
             IF (NASHT.GT.0 .AND. (.NOT.DOCISRDFT)) THEN
-               ! IFCTYP(1) might be 0 for "FTC", thus we go for the FXC/FTV value
+               ! IFCTYP(1) might be 0 for "FTC", thus we go for the FXV/FTV value
                ! as representative for all 1:NSR_DMAT matrices
                IFC_base = IFCTYP(2)
             ELSE
                IFC_base = IFCTYP(1)
             END IF
+            TRIPLET_local = MOD(IFC_base,10) .EQ. 2 !hjaaj 01jun18 - not checked if OK yet ...
+#if SIRFCK_DEBUG > 0
+      write(lupri,*) 'IFC_base, TRIPLET_local',IFC_base,TRIPLET_local
+      write(lupri,*) 'IFCTYP',IFCTYP(1:NSR_DMAT)
+#endif 
             IFC_X = IFC_base / 10
             IFC_X = 10*IFC_X ! DMAT symmetric, antisymmetric or unsymmetric ?
             IFC_Y = MOD(IFC_base,10)
@@ -596,6 +605,33 @@ C
 C        Add Short-range integrals to FC part of FMAT (SRDFT hybrid models)
 C
          IF (ADDSRI) THEN
+
+            IF (DO_SPINDNS) THEN
+               WRITE(lupri,'(//A)') 'SIRFCK ERROR, open-shell srDFT is'
+     &       //' only implemented for direct Fock matrix construction.'
+               CALL QUIT('SIRFCK ERROR, open-shell srDFT only for'//
+     &         ' AO-direct Fock matrices')
+            END IF
+
+            IF (NASHT.GT.0 .AND. (.NOT.DOCISRDFT)) THEN
+               ! IFCTYP(1) might be 0 for "FTC", thus we go for the FXV/FTV value
+               ! as representative for all 1:NSR_DMAT matrices
+               IFC_base = IFCTYP(2)
+            ELSE
+               IFC_base = IFCTYP(1)
+            END IF
+            TRIPLET_local = MOD(IFC_base,10) .EQ. 2 !hjaaj 01jun18 - not checked if OK yet ...
+#if SIRFCK_DEBUG > 0
+      write(lupri,*) 'IFC_base, TRIPLET_local',IFC_base,TRIPLET_local
+      write(lupri,*) 'IFCTYP',IFCTYP(1:NSR_DMAT)
+#endif 
+            IFC_X = IFC_base / 10
+            IFC_X = 10*IFC_X ! DMAT symmetric, antisymmetric or unsymmetric ?
+            IFC_Y = MOD(IFC_base,10)
+            IF (HFXFAC .EQ. 0.0D0) THEN
+               IF (IFC_Y .GT. 1) IFC_Y = IFC_Y - 2 ! only Coulomb
+            END IF
+            IFCTYP_local(1:NSR_DMAT) = IFC_X + IFC_Y
             IF (NASHT.GT.0 .AND. (.NOT.DOCISRDFT))THEN
 C              ... get total DMAT = DC + DV if NASHT.gt.0
 C                  for Hartree SR term
@@ -606,15 +642,6 @@ C                 ... add DV(I) to DC(I)
             END IF
             IF (NSR_DMAT.GT.1) CALL QUIT('NSR_DMAT .GT. 1 for ADDSRI')
 C
-            IF (HFXFAC.NE.D0) THEN
-C           ... for normal/preceding HF and for SRDFT with exact exch.
-C               (add SR coul. and exch. to LR to give full 2-el part)
-                IFCTYP_local(1) = 13
-            ELSE 
-C           ... add only Coul
-C               (only SR Hartree term for SRDFT hybrids)
-                IFCTYP_local(1) = 11
-            END IF
             KFSRAO = 1
             KLAST  = KFSRAO + NSR_DMAT*N2BASX
             LWRK   = LWORK  - KLAST + 1
@@ -830,7 +857,6 @@ C            loop over NSRMAT output matrices (later do the loop inside SRDFT fo
 C            efficiency!!!!!) /hjaaj June 2009
 C
          DO JSRMAT = 1, NSR_DMAT
-          TRIPLET_local = MOD(IFCTYP(JSRMAT),10) .EQ. 2 !hjaaj 22aug17 - not checked if OK yet ...
           IF (DOATR) THEN
 #if SIRFCK_DEBUG > 0
               write(lupri,*) 'DOATR in sirfck: ndoff =', ndoff
