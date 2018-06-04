@@ -92,8 +92,6 @@ C
          stop 'Insufficient work space in '//myname
       endif
 
-!     Zero the nto memory
-      call dzero(work(knto), nlamds)
 !
 !     Close molden_MOS, we want new files
 !     -----------------------------------
@@ -157,11 +155,13 @@ C
             call cc_rdrsp(list_type, ilist, excisym, iopt,
      &                     model, work(kvec1), dummy)
 
+            ! Zero the nto memory
+            call dzero(work(knto), nlamds)
             call dzero(work(koccu), norbts)
 
-            write(LUPRI,'(F16.6)') DNRM2(NT1AM(EXCISYM),work(kvec1),1)
-            write(LUPRI,'(A,I1,I3)') 'NTO singular values for exci ',
-     &            excisym, iexci
+            !write(LUPRI,'(F16.6)') DNRM2(NT1AM(EXCISYM),work(kvec1),1)
+            !write(LUPRI,'(A,I1,I3)') 'NTO singular values for exci ',
+     &      !      excisym, iexci
             ! Loop over symmetry blocks of the vector
             do isymi = 1, nsym
                isyma = muld2h(isymi,excisym)
@@ -178,7 +178,7 @@ C
                lwrk3 = lwork - kend3
 
                kpos = kvec1 + it1am(isyma,isymi)
-               write(lupri,*) kpos, kumat, kvmat, ksval
+               !write(lupri,*) kpos, kumat, kvmat, ksval
                ! Do the SVD... Maybe we can use 'S' instead of 'A'
                CALL DGESVD(
      &            'A','A',nvir(isyma),nrhf(isymi),
@@ -188,15 +188,15 @@ C
      &            work(kvmat), nrhf(isymi),
      &            work(kend3), lwrk3, i_info
      &         )
-               write(LUPRI,'(3I5)') nvir(isyma), nrhf(isymi), mindim
+               !write(LUPRI,'(3I5)') nvir(isyma), nrhf(isymi), mindim
                if (i_info .ne. 0) then
                   write(LUPRI,'(A,i5)') 'ERROR in DGSVD ', i_info
                   cycle
                endif
-               do n = 1, mindim
-                  write(LUPRI,'(F16.10)') work(ksval-1+n)
-               end do
-               write (LUPRI,'(A)') ''
+               !do n = 1, mindim
+               !   write(LUPRI,'(F16.10)') work(ksval-1+n)
+               !end do
+               !write (LUPRI,'(A)') ''
 
 
                ! work(kumat) now has the left/virtual eigenvectors on
@@ -207,7 +207,7 @@ C
                ! Find the number of NTOs to write
                nfound = 0
                do n = 1, mindim
-                  if (work(ksval) .lt. thresh_nto) exit
+                  if (work(ksval-1+n) .lt. thresh_nto) exit
                   nfound = nfound + 1
                end do
                ! Ensure that we don't write too many, i.e. more than
