@@ -133,7 +133,13 @@ C
       DO_CHOINT  = CHOINT .and. CHIVAL .lt. 0.0D0 ! no Cholesky for short-range integrals (yet)
       DO I = 1,NDMAT
          IF (MOD(IFCTYP(I),10) .EQ. 0) IFCTYP(I) = 0 ! "X" does not matter if no contribution
-         IF (IFCTYP(I) .LT. 0) DO_SPINDNS = .TRUE.
+         IF (IFCTYP(I) .LT. 0) THEN
+            IF (DFT_SPINDNS) THEN
+               DO_SPINDNS = .TRUE.
+            ELSE ! else this must be triplet response for singlet wave function
+               TRIPLET_local = .TRUE.
+            END IF
+         END IF
          IF (IFCTYP(I) .ne. 13 .and. IFCTYP(I) .ne. 12 .and.
      &       IFCTYP(I) .ne.  3 .and. IFCTYP(I) .ne.  2 .and.
      &       IFCTYP(I) .ne. 22 .and. IFCTYP(I) .ne. 11 .and.
@@ -425,7 +431,6 @@ C
             ELSE
                IFC_base = IFCTYP(1)
             END IF
-            TRIPLET_local = MOD(IFC_base,10) .EQ. 2 !hjaaj 01jun18 - not checked if OK yet ...
 #if SIRFCK_DEBUG > 0
       write(lupri,*) 'IFC_base, TRIPLET_local',IFC_base,TRIPLET_local
       write(lupri,*) 'IFCTYP',IFCTYP(1:NSR_DMAT)
@@ -620,7 +625,6 @@ C
             ELSE
                IFC_base = IFCTYP(1)
             END IF
-            TRIPLET_local = MOD(IFC_base,10) .EQ. 2 !hjaaj 01jun18 - not checked if OK yet ...
 #if SIRFCK_DEBUG > 0
       write(lupri,*) 'IFC_base, TRIPLET_local',IFC_base,TRIPLET_local
       write(lupri,*) 'IFCTYP',IFCTYP(1:NSR_DMAT)

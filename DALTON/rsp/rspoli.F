@@ -864,6 +864,13 @@ C     Change IFCTYP for all Fa matrices
         END DO
       END IF
 
+      IF (TRPLET) THEN
+         DO I = 1,NFMAT
+            IFCTYP(I) = -IFCTYP(I) ! tell SIRFCK this is triplet
+                                   ! (needed for MC-srDFT)
+         END DO
+      END IF
+
       IF (IPRRSP .GT. 60) THEN
          WRITE(LUPRI,*) 'RSPOLI:SIRFCK NFMAT DIRFCK',NFMAT,DIRFCK
          WRITE(LUPRI,*) 'ISYMDM ',(ISYMDM(I),I=1,NFMAT)
