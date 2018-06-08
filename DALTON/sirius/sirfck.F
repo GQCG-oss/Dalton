@@ -132,14 +132,15 @@ C
       DO_SPINDNS = .FALSE.
       DO_CHOINT  = CHOINT .and. CHIVAL .lt. 0.0D0 ! no Cholesky for short-range integrals (yet)
       DO I = 1,NDMAT
-         IF (MOD(IFCTYP(I),10) .EQ. 0) IFCTYP(I) = 0 ! "X" does not matter if no contribution
          IF (IFCTYP(I) .LT. 0) THEN
             IF (DFT_SPINDNS) THEN
                DO_SPINDNS = .TRUE.
             ELSE ! else this must be triplet response for singlet wave function
                TRIPLET_local = .TRUE.
             END IF
+            IFCTYP(I) = abs(IFCTYP(I))
          END IF
+         IF (MOD(IFCTYP(I),10) .EQ. 0) IFCTYP(I) = 0 ! "X" does not matter if no contribution
          IF (IFCTYP(I) .ne. 13 .and. IFCTYP(I) .ne. 12 .and.
      &       IFCTYP(I) .ne.  3 .and. IFCTYP(I) .ne.  2 .and.
      &       IFCTYP(I) .ne. 22 .and. IFCTYP(I) .ne. 11 .and.
