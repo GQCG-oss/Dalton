@@ -1,24 +1,11 @@
-
-!dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
-!      All Rights Reserved.
+!  Copyright (C) 2018 Andre Severo Pereira Gomes, Christoph Jacob, Lucas Visscher and collaborators
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!  This file is part of Embed, a program implementing the Frozen Density Embedding (FDE) framework
+! 
+!  This Source Code Form is subject to the terms of the Mozilla Public
+!  License, v. 2.0. If a copy of the MPL was not distributed with this
+!  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
-!dirac_copyright_end
 
 module fde_io
 
@@ -26,9 +13,17 @@ module fde_io
       
    private
 
-   public fde_open_file
-   public fde_close_file
+   public fde_file_open
+   public fde_file_close
    public read_grid
+
+   interface fde_file_open
+      module procedure fde_wrapper_file_open
+   end interface fde_file_open
+
+   interface fde_file_close
+      module procedure fde_wrapper_file_close
+   end interface fde_file_close
 
    interface read_grid
       module procedure read_grid_onecol
@@ -39,7 +34,32 @@ module fde_io
 
    contains
 
-     subroutine fde_open_file(name,unit)
+     subroutine fde_wrapper_file_open(name,unit)
+        character(len=60), intent(in) :: name
+        logical                       :: use_qccode_fileops 
+        integer, intent(in)           :: unit
+
+        call fde_get_qccode_fileops(use_qccode_fileops)
+        if (use_qccode_fileops) then
+            call fde_qccode_file_open(unit,name)
+        else
+            call fde_plain_fortran_file_open(name,unit)
+        end if
+     end subroutine 
+
+     subroutine fde_wrapper_file_close(unit)
+        integer, intent(in) :: unit
+        logical             :: use_qccode_fileops 
+
+        call fde_get_qccode_fileops(use_qccode_fileops)
+        if (use_qccode_fileops) then
+            call fde_qccode_file_close(unit)
+        else
+            call fde_plain_fortran_file_close(unit)
+        end if
+     end subroutine
+
+     subroutine fde_plain_fortran_file_open(name,unit)
         character(len=60), intent(in) :: name
         logical                       :: file_found 
         integer, intent(in)           :: unit
@@ -55,13 +75,12 @@ module fde_io
          else
             call fde_quit("File not found!")
          endif
-     end subroutine fde_open_file
+     end subroutine fde_plain_fortran_file_open 
 
-     subroutine fde_close_file(unit)
+     subroutine fde_plain_fortran_file_close(unit)
         integer, intent(in) :: unit
         close(unit)
-     end subroutine fde_close_file
-
+     end subroutine fde_plain_fortran_file_close 
 
 
 ! description : this subroutine will read some operator (i.e. an embedding

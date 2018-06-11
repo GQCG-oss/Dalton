@@ -798,6 +798,7 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/fde/emb_export.F90
     DALTON/fde/emb_input.F90
     DALTON/fde/emb_io.F90
+    DALTON/fde/emb_dalton_io.F
     DALTON/fde/emb_main.F90
     DALTON/fde/emb_max_block_length.F90
 #   DALTON/fde/emb_nadd_derv.F90

@@ -1,24 +1,11 @@
-!dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
-!      All Rights Reserved.
+!  Copyright (C) 2018 Andre Severo Pereira Gomes, Christoph Jacob, Lucas Visscher and collaborators
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!  This file is part of Embed, a program implementing the Frozen Density Embedding (FDE) framework
+! 
+!  This Source Code Form is subject to the terms of the Mozilla Public
+!  License, v. 2.0. If a copy of the MPL was not distributed with this
+!  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
-!dirac_copyright_end
-
 
 module fde_cfg
 ! this module holds all options for the embedding code, and routines to set/access
@@ -68,20 +55,24 @@ module fde_cfg
    public fde_set_import_info
    public fde_set_export_info
    public fde_set_files_info
+   public fde_set_qccode_fileops
+   public fde_set_screening
+   public fde_set_parallel
 
    public fde_get_print_level
    public fde_get_import_info
    public fde_get_export_info
    public fde_get_files_info
+   public fde_get_qccode_fileops
+   public fde_get_screening
+   public fde_get_parallel
    
-   public parallel_fde
-   public fde_cfg_screening
-
    private
 
    integer, save      :: fde_print_level   = 0
    real(kind=8), save :: fde_cfg_screening = 1.0d-9
    logical, save      :: fde_is_parallel   = .false.
+   logical, save      :: fde_use_qccode_fileops = .true.
 
    type(fde_export), save :: fde_ex_control
    type(fde_import), save :: fde_im_control
@@ -90,20 +81,60 @@ module fde_cfg
    contains
    
 !   ----------------------------------------------------------------------------
+      subroutine fde_set_screening(screening_value)
+!   ----------------------------------------------------------------------------
+         real(kind=8), intent(in) :: screening_value
+         fde_cfg_screening = screening_value
+      end subroutine fde_set_screening
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_get_screening(screening_value)
+!   ----------------------------------------------------------------------------
+         real(kind=8), intent(out) :: screening_value
+         screening_value = fde_cfg_screening 
+      end subroutine fde_get_screening
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_set_qccode_fileops(fops_value)
+!   ----------------------------------------------------------------------------
+         logical, intent(in) :: fops_value 
+         fde_use_qccode_fileops = fops_value
+      end subroutine fde_set_qccode_fileops
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_get_qccode_fileops(fops_value)
+!   ----------------------------------------------------------------------------
+         logical, intent(out) :: fops_value
+         fops_value = fde_use_qccode_fileops
+      end subroutine fde_get_qccode_fileops
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_set_parallel(par_value)
+!   ----------------------------------------------------------------------------
+         logical, intent(in) :: par_value
+         fde_is_parallel = par_value
+      end subroutine fde_set_parallel
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_get_parallel(par_value)
+!   ----------------------------------------------------------------------------
+         logical, intent(out) :: par_value
+         par_value = fde_is_parallel 
+      end subroutine fde_get_parallel
+
+!   ----------------------------------------------------------------------------
       subroutine fde_set_print_level(level)
 !   ----------------------------------------------------------------------------
-         integer :: level
+         integer, intent(in) :: level
          fde_print_level = level
       end subroutine fde_set_print_level
-
 
 !   ----------------------------------------------------------------------------
       subroutine fde_get_print_level(level)
 !   ----------------------------------------------------------------------------
-         integer :: level
+         integer, intent(out) :: level
          level = fde_print_level 
       end subroutine fde_get_print_level
-
 
 !   ----------------------------------------------------------------------------
       subroutine fde_initialize_cfg
@@ -118,22 +149,27 @@ module fde_cfg
 !   ----------------------------------------------------------------------------
          type(fde_files) :: f
          
+! file units are initialized to -1, and should be modified to point to a proper
+! unit in each case. codes such as DALTON have routines to open/close files and 
+! dynamically attribute unit, other codes do not...
          f%embpot%name = 'EMBPOT'
-         f%embpot%unit = 45
+         f%embpot%unit = -1
 
          f%frozen%name = 'FRZDNS'
-         f%frozen%unit = 48
+         f%frozen%unit = -1
 
          f%export%name = 'GRIDOUT'
-         f%export%unit = 47
+         f%export%unit = -1
 
-         f%test%name = 'TSTFIL'
-         f%test%unit = 46
+         f%test%name = 'TESTFILE'
+         f%test%unit = -1
 
-         f%logfile%name = 'DIRAC.OUT'
-         f%logfile%unit = 6         
+! this is the output file name, which is set to embed.out but can be modified whenever
+! another evaluator code (DALTON, DIRAC etc) is used, through a call to the fde_CODE_init()  
+! routine
+         f%logfile%name = 'EMBED.OUT'
+         f%logfile%unit = -1         
       end subroutine fde_initialize_files
-      
       
 !   ----------------------------------------------------------------------------
       subroutine fde_initialize_export(ec)
@@ -147,7 +183,6 @@ module fde_cfg
          ec%ex_coulomb   = .false.
          ec%do_grid_out  = .false.
       end subroutine fde_initialize_export
-
 
 !   ----------------------------------------------------------------------------
       subroutine fde_initialize_import(ic)
@@ -164,7 +199,6 @@ module fde_cfg
          ic%im_update_vemb=.false.
       end subroutine fde_initialize_import
 
-
 !   ----------------------------------------------------------------------------
       subroutine fde_set_export_info(tmp)
 !   ----------------------------------------------------------------------------
@@ -177,7 +211,6 @@ module fde_cfg
          fde_ex_control%ex_coulomb   = tmp%ex_coulomb
          fde_ex_control%do_grid_out  = tmp%do_grid_out
       end subroutine fde_set_export_info
-
 
 !   ----------------------------------------------------------------------------
       subroutine fde_set_import_info(tmp)
@@ -193,7 +226,6 @@ module fde_cfg
          fde_im_control%im_frozen    = tmp%im_frozen
          fde_im_control%im_update_vemb=tmp%im_update_vemb
       end subroutine fde_set_import_info
-
 
 !   ----------------------------------------------------------------------------
       subroutine fde_set_files_info(tmp)
@@ -216,7 +248,6 @@ module fde_cfg
          fde_f%logfile%unit = tmp%logfile%unit         
       end subroutine fde_set_files_info
       
-      
 !   ----------------------------------------------------------------------------
       subroutine fde_get_export_info(tmp)
 !   ----------------------------------------------------------------------------
@@ -229,7 +260,6 @@ module fde_cfg
          tmp%ex_coulomb = fde_ex_control%ex_coulomb
          tmp%do_grid_out= fde_ex_control%do_grid_out    
       end subroutine fde_get_export_info
-
 
 !   ----------------------------------------------------------------------------
       subroutine fde_get_import_info(tmp)
@@ -245,7 +275,6 @@ module fde_cfg
          tmp%im_frozen      = fde_im_control%im_frozen      
          tmp%im_update_vemb = fde_im_control%im_update_vemb 
       end subroutine fde_get_import_info
-
       
 !   ----------------------------------------------------------------------------
       subroutine fde_get_files_info(tmp)

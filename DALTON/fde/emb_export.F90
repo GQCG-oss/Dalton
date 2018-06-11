@@ -1,24 +1,11 @@
-
-!dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
-!      All Rights Reserved.
+!  Copyright (C) 2018 Andre Severo Pereira Gomes, Christoph Jacob, Lucas Visscher and collaborators
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!  This file is part of Embed, a program implementing the Frozen Density Embedding (FDE) framework
+! 
+!  This Source Code Form is subject to the terms of the Mozilla Public
+!  License, v. 2.0. If a copy of the MPL was not distributed with this
+!  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
-!dirac_copyright_end
 
 module fde_export_data
 
