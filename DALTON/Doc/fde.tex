@@ -1,0 +1,111 @@
+\chapter{Frozen density embedding}\label{ch:fde-embedding}
+
+\index{frozen density embedding}\index{FDE}\index{environment model}\index{embedding model}\index{multiscale modeling}\index{embedding}\index{QM/QM}\index{quantum mechanics / quantum mechanics}\index{solvent effects}\index{enviroment effects}\index{subsystem DFT}
+
+This chapter provides a brief outline of the frozen density embedding (FDE) approach~\cite{env-gomes-arpcspc2012-108-222,Jacob2013} and
+the capabilities available in the \latestrelease\ release.  
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item DFT-in-DFT/WFT-in-DFT with static potentials: A.~S.~P.~Gomes, C.~R.~Jacob, L.~Visscher, \newblock{\em Phys.~Chem.~Chem.~Phys.},{\bf 10}, 5353 (2008) 
+\item PyADF for subsystem calculations:  C.~R.~Jacob {\em et al}, \newblock{\em J.~Comput.~Chem.},{\bf 32}, 2328 (2011) 
+\item General subsystem response, FDE module : S.~H\"ofener, A.~S.~P.~Gomes, L.~Visscher, \newblock {\em J.~Chem.~Phys.}, {\bf 139}, 044104 (2012).
+\item CC-in-DFT excitation energies : S.~H\"ofener, A.~S.~P.~Gomes, L.~Visscher, \newblock {\em J.~Chem.~Phys.}, {\bf 139}, 104106 (2013).
+\end{list}
+}}
+\end{center} 
+\section{General considerations}
+
+The current implementation is restricted to the import of a static embedding potential, that is, one 
+precalculated over a numerical integration grid with another code implementing the FDE model (see e.g.~\cite{env-Hofener-JCP2012-136-044104,Jacob2011}). 
+Within {\dalton}, a matrix representation of the FDE embedding potential is constructed~\cite{actinide-Gomes-PCCP2008-10-5353}, and 
+as other one-electron operators, added to the one-electron Fock matrix. This allows the model to be used with 
+any of the wavefunctions types available in {\dalton}.
+
+The static potential approach has been shown to work well for certain linear response properties, such as 
+excitation energies, insofar as they are well-localized on the subsystem of interest~\cite{actinide-Gomes-PCCP2008-10-5353,env-Hofener-JCP2013-139-104106}
+and should provide a quantitatively correct picture for such situations.  Oone should keep in mind that other contributions may be important as well. 
+
+One is the response of the embedding potential to external perturbations for the system of interest -- which in the linear response case introduces second-order contributions analogous 
+to the exchange-correlation kernel in TD-DFT calculations to the electronic Hessian~\cite{env-Hofener-JCP2013-139-104106}, and to 
+the property gradient in the case of perturbation-dependent bases (e.g. in NMR shieldings or magnetizabilities~\cite{env-Olejniczak-PCCP2017-19-8400}). Another is the electronic coupling 
+between subsystems (here the subsystem of interest and the environment)~\cite{env-gomes-arpcspc2012-108-222,env-Hofener-JCP2012-136-044104}. 
+These contributions will be made available in future releases.
+
+% Furthermore, the implementation allows for the export of the electron densities (and its first and second 
+% derivatives) and electrostatic potentials for the calculated (active) system over a numerical grid (which
+% can be different than the grid used to import the same quantities or a static potential.
+% The exported quantities can be used by other codes implementing thr FDE model to
+% calculate an embedding potential.
+
+\section{Input description}
+
+All FDE input is controlled through the \Sec{*DALTON} section and \Sec{FDE} subsection, see input options in 
+Chapter~\ref{ch:general} under the \Sec{FDE} input section (subsection~\ref{subsec:fde} for the complete list of 
+allowed kewords), so the following input description is relevant for all wavefunctions types, and all other 
+specifications of wave function, properties etc.\ remain unchanged and thus follow the input described in 
+other chapters. 
+
+
+The simplest type of calculation is perfomed with only a static embedding potential. For example, 
+for a FDE-HF wave function for the ground state would require the definition of the static potential,
+under the \Sec{FDE} subsection:
+\begin{verbatim}
+**DALTON
+.RUN WAVE FUNCTIONS
+.FDE
+*FDE
+EMBPOT
+**WAVE FUNCTIONS
+.HF
+**END OF DALTON
+\end{verbatim}
+As one can see in Chapter~\ref{ch:general} (subsection~\ref{subsec:fde}),
+one can import an embedding potential contained in a file with a non-standard (EMBPOT) name, for instance
+with: 
+\begin{verbatim}
+**DALTON
+.RUN WAVE FUNCTIONS
+.FDE
+*FDE
+vemb
+**WAVE FUNCTIONS
+.HF
+**END OF DALTON
+\end{verbatim}
+%The export of electrostatic potential and electron densities can be made, for instance, via the
+%input:
+%\begin{verbatim}
+%**DALTON
+%.RUN WAVE FUNCTIONS
+%.FDE
+%*FDE
+%vemb
+%.GRIDOUT
+%embout
+%.LEVEL
+%HF
+%**WAVE FUNCTIONS
+%.HF
+%**END OF DALTON
+%\end{verbatim}
+%where apart from the keyword to specify the output grid filename (.GRIDOUT), one may choose the level of theory with which to
+%obtain these quantities (.LEVEL).  
+
+Section~\ref{sec:daltoninp} in Chapter~\ref{ch:starting} provides an introduction to the \dalton\ (and \molinp) 
+input in general. The format of the \molinp\ file is described in detail in \ref{ch:molinp} and requires no
+changes in a FDE calculation. 
+
+However, one must be careful if point group symmetry is exploited: while the code will be able to exploit point group 
+symmetry in the construction of Fock matrices etc, at present it cannot verify whether the symmetry requested is 
+compatible with that of the total system for which the embedding potential has been calculated, or whether  
+the orientation of the subsystem of interest in {\dalton} and that of the (total) system used when generating the import 
+and export grids coincide. It is therefore up to the user to ensure the different components are consistent
+when symmetry is used, or disable it altogether, at the risk of producing meaningless results if such care is not
+taken.
+

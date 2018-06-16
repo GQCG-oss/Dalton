@@ -15,6 +15,7 @@
    Phys. Chem. Chem. Phys. 18, 10070 (2016).
 - Remove the most diffuse virtual orbitals after SCF or MCSCF (new .VIRTRUNC option)
 - Add purely classical multipole-multipole interaction energy in PE-QM calculations
+- Add basic frozen density embedding (FDE) functionality (A. Gomes, C. Jacob, L. Visscher)
 
 ### Fixed
 - open-shell doublet ROKS DFT geometry optimization

@@ -318,6 +318,7 @@ C
 C     Symmetry included  880406  TUH & PRT
 C
       use pelib_interface, only: use_pelib, pelib_ifc_molgrad
+      use fde_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -372,6 +373,7 @@ C
 C... added by Bin Gao, Feb. 16, 2011
 C... for ECP
 #include "ecpinf.h"
+      type(fde_import) :: itmp
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C
       TIMHER = D0
@@ -830,6 +832,17 @@ C
                  STHMAT(I,2) = STHMAT(I,2) + STHMAT(I,3)
  800          CONTINUE
            END IF
+
+           IF (DOFDE) THEN
+C      get the options
+              call fde_get_import_info(itmp)
+C      calculate the potential and add it to 1e-fock, if requested
+              if (itmp%im_vemb) then
+! to check if nnbast
+                 call fde_calculate_emb_pot_mat(nnbast,sthmat(:,2))
+              endif
+           END IF
+
            CALL WRTUND(STHMAT,NNBAST,NNBASX,IPRINT)
         ENDIF
       END IF
