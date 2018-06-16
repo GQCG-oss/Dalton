@@ -756,6 +756,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_write.F
     DALTON/soppa/so_writeset.F
     DALTON/soppa/so_wrtve.F
+    DALTON/fde/emb_quit.F
     )
 if(NOT ENABLE_CRAY_WRAPPERS)
     # radovan: CRAY provides these functions
@@ -788,6 +789,26 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/qmcmm/fock.F90
     DALTON/qmcmm/response.F90
     DALTON/qmcmm/input.F90
+    DALTON/fde/emb_main.F90
+    DALTON/fde/emb_cfg.F90
+    DALTON/fde/emb_dalton_evaluators.F90
+    DALTON/fde/emb_dalton_input.F90
+    DALTON/fde/emb_data.F90
+#   DALTON/fde/emb_evaluators.F90
+    DALTON/fde/emb_export.F90
+    DALTON/fde/emb_input.F90
+    DALTON/fde/emb_io.F90
+    DALTON/fde/emb_dalton_io.F
+    DALTON/fde/emb_main.F90
+    DALTON/fde/emb_max_block_length.F90
+#   DALTON/fde/emb_nadd_derv.F90
+    DALTON/fde/emb_types.F90
+#   DALTON/fde/emb_xcfun_interface.F90
+    DALTON/fde/xcfun_autogen.F90
+#   DALTON/fde/xcfun_module.F90
+    DALTON/fde/xml_file.F90
+    DALTON/fde/xml_parser.F90
+    DALTON/fde/xml_structure.F90
    )
 set(DALTON_OWN_BLAS_SOURCES
     DALTON/pdpack/gp_blas.F

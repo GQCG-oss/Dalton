@@ -569,6 +569,9 @@ add_dalton_runtest(pcm_soppa_excit               "dalton;runtest;pcm;soppa;mediu
 add_dalton_runtest(molden                        "dalton;runtest;short;essential")
 add_dalton_runtest(single_input                  "dalton;runtest;short;essential")
 
+add_dalton_runtest(fde_static-vemb_dipole_short  "dalton;runtest;fde;short;essential")
+add_dalton_runtest(fde_static-vemb_dipole_long   "dalton;runtest;fde;long")
+
 add_dalton_test(benchmark_eri_adz                "weekly;benchmark")
 add_dalton_test(benchmark_eri_adzs               "weekly;benchmark")
 add_dalton_test(benchmark_eri_atzs               "weekly;benchmark")

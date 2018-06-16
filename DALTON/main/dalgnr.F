@@ -1341,6 +1341,7 @@ C
       use pelib_interface, only: use_pelib, pelib_ifc_activate,
      &                           pelib_ifc_input_reader
       use qfitlib_interface, only : qfitlib_ifc_input_reader
+      use fde_mod, only : fde_input_init, fde_dalton_input
 
 #include "implicit.h"
 #include "dummy.h"
@@ -1370,7 +1371,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 14, NTABLE = 35, D0 = 0.D0)
+      PARAMETER (NDIR = 15, NTABLE = 36, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1388,7 +1389,7 @@ C
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', 'XXXXXXX',
      &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
-     &            '*READIN', '*QMNPMM', '*QFIT  ', '*EXTPCM'/
+     &            '*READIN', '*QMNPMM', '*QFIT  ', '*EXTPCM', '*FDE   '/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
      &            '.INTEGR', '.WAVE F', '.PROPER', !  6
      &            '.INPTES', '.PARALL', '.DIRECT',
@@ -1400,7 +1401,7 @@ C
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
      &            '.THRRED', '.DOUGLA', '.PEQM  ',
-     &            '.QFIT  ', '.LSLIB '/
+     &            '.QFIT  ', '.LSLIB ', '.FDE   '/ ! 36
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1426,6 +1427,7 @@ C
       ITERNR = 0
       ITERMX = 20
       IPRUSR = 0
+      DOFDE  = .FALSE.
       SEGBAS = .TRUE.
       SEGAUX = .TRUE.
       WALKIN = .FALSE.
@@ -1588,7 +1590,8 @@ C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.CHOLES', '.EXTPCM', '.FCKTRA',
 C 21-25: '.2TRATY', 'xXXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.NEWTRA', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-35: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  ', '.LSLIB '.
+C 31-35: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  ', '.LSLIB ',
+C 36-40: '.FDE   '.
 C
       IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1602,7 +1605,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
-     &                131,132,133,134,135), I
+     &                131,132,133,134,135,136), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1759,6 +1762,9 @@ C
             CALL QUIT('ERROR for .LSLIB : LSLIB not enabled.')
 #endif
          GOTO 100
+ 136     CONTINUE ! .FDE
+            DOFDE = .TRUE.
+         GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1908,7 +1914,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -2002,6 +2008,11 @@ C     "*END OF" or "**something"
      $           'ERROR: EXTPCM requested but PCM Module not compiled'
             CALL QUIT('Recompile including the PCM Module')
 #endif
+      GOTO 200
+!     *FDE  input
+   15 CONTINUE
+        call fde_input_init(LUPRI,'DALTON.OUT')
+        call fde_dalton_input(word,.true.)
       GOTO 200
 C     "*END OF" or "**something"
     1 CONTINUE
