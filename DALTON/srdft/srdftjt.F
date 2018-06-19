@@ -397,7 +397,7 @@ C
 C      Exchange and correlation energies and derivatives
        NORDER = 1  ! first-order derivatives
 C
-       CALL SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,
+       CALL SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,.false.,
      >                 Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
 C      Summation with quadrature weights
        ExInt     = ExInt + WGHTX*Ex
@@ -547,7 +547,7 @@ C Termination --------------------------------------------------------------
       END
 
 C****************************************************************************
-      SUBROUTINE SRDFTEXCJT(RHO,GRD2, CHIVAL,NORDER,ERFEXP,
+      SUBROUTINE SRDFTEXCJT(RHO,GRD2, CHIVAL,NORDER,ERFEXP,triplet,
      >           Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
 c*****************************************************************************
 C    Driver for short-range DFT exchange and correlation
@@ -571,7 +571,7 @@ C*****************************************************************************
       real*8  rho(4),grd2(6),CHIVAL,VLAMBDA ! input
 !     grd2(1:6) = (grdcc, grdss, grdcs, grdaa, grdbb, grdab)
       integer NORDER
-      logical ERFEXP(0:2)
+      logical ERFEXP(0:2), triplet
 
       real*8   Ex, d1Ex(5), d2Ex(15)
       real*8   Ec, d1Ec(5), d2Ec(15)
@@ -601,6 +601,7 @@ C     sr mdc func
 
       ! for debug prints (counter for grid points)
       integer inpt
+      logical use_spindns
 
 c  Exchange  ------------------------------------------------------------
 
@@ -625,8 +626,9 @@ c  Exchange  ------------------------------------------------------------
         ! TODO Generalize DESRX_SPINGGA routine to LDA?
 !       call DESRX_SPINGGA(ESRX_LDAERF,rho,grd2,CHIVAL,
 !    >                     norder,Ex,d1Ex,d2Ex)
+        use_spindns = triplet .or. dft_spindns
         call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),CHIVAL,
-     >                     DFT_SPINDNS,norder,Ex,d1Ex,d2Ex)
+     >                     use_SPINDNS,norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange PBE of HSE
@@ -680,7 +682,8 @@ C  Correlation  ----------------------------------------------------------
         ! DESRSPIN called with DFT_SPINDNS = false gives LDA functional
         ! for closed shell (but with J. Toulouse new LDA based on PW92)
         rho(2)   = 0.0d0
-        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),CHIVAL,DFT_SPINDNS,
+        use_spindns = triplet .or. dft_spindns
+        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),CHIVAL,use_SPINDNS,
      >                NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !     short-range correlation PBE of TCS
@@ -736,8 +739,9 @@ C  Correlation  ----------------------------------------------------------
 !     short-range spin-dependent correlation LDA ! JT 18-08-09
       IF(DOSRC_LDA_S) THEN
         ! d1Ec(2), d1Ec(3) here ...
+        use_spindns = triplet .or. dft_spindns
         call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
-     >             CHIVAL,DFT_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
+     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
       IF(DOSRC_PBEGWS_S) THEN
         ! PBEGWS_S has no grdss and no grds.grdc dependency,
@@ -940,7 +944,7 @@ C
 C Exchange and correlation derivatives ------------------------------------
 
       NORDER = 2  ! zero-order, first-order and second-order derivatives
-      CALL SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,
+      CALL SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,triplet,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
       Exc         = WGHTX*  Ex       + WGHTC*  Ec
       d1Exc(1:5)  = WGHTX*d1Ex(1:5)  + WGHTC*d1Ec(1:5)
@@ -1062,14 +1066,15 @@ C Linear transformation -----------------------------------------------------
               write(lupri,*) 'hjaaj: rho ',rho(1:4)
               write(lupri,*) 'hjaaj: rhgc',rhg(1:3,1)
               write(lupri,*) 'hjaaj: grd2',grd2(1:6)
-              write(lupri,*) 'hjaaj: Ex, Ec, gga, spindns',
-     &          Ex, Ec, dogga, dft_spindns
+              write(lupri,*) 'hjaaj: Ex, Ec, gga, spindns, triplet',
+     &          Ex, Ec, dogga, dft_spindns, triplet
               write(lupri,*) 'hjaaj: d1Ex  ',d1Ex(:)
               write(lupri,*) 'hjaaj: d1Ec  ',d1Ec(:)
               write(lupri,*) 'hjaaj: d2Ex(:)',d2Ex(:)
               write(lupri,*) 'hjaaj: d2Ec(:)',d2Ec(:)
 
-              write(lupri,*) 'hjaaj: FRR, FRZ, FZZ,',FRR, FRZ, FZZ
+              write(lupri,*) 'hjaaj: FRR, FRZ, FZZ',FRR, FRZ, FZZ
+              write(lupri,*) 'hjaaj: FSS, FRS',FSS, FRS
               write(lupri,*) 'hjaaj: FZ0, FZ0_S',FZ0, FZ0_S
               write(lupri,*) 'hjaaj: FSZ_S,FRZ_S,FZZ_S,FZZ_SS',
      &                               FSZ_S,FRZ_S,FZZ_S,FZZ_SS
