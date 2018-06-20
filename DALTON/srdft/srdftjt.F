@@ -997,6 +997,14 @@ C Total contribution -------------------------------------------------------
          FZZ_SS= d2Exc(10)*4.0d0
 !        FZZ_SS= 4 d2Excdgrdssdgrdss
 
+!        The two lines below is to make the definitions consistent. As
+!        can be seen, for all the other terms the 2 or 4 factor have
+!        been absorbed into the derivates (see lines above). Therefore
+!        this should also be the case for the two derivatives below.
+!        E.R.K, 20 June 2018
+         d2Exc(13) = d2Exc(13)*2.0d0
+         d2Exc(14) = d2Exc(14)*2.0d0
+
       END IF ! DOGGA .and. DFT_SPINDNS
       END IF ! DOGGA
 
@@ -1030,8 +1038,10 @@ C Linear transformation -----------------------------------------------------
                if (dft_spindns) then
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                   BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
-                  BR(3) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
-                  BR(4) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
+                  ! Changed BR(3) and BR(4) accourding to definitions above 
+                  !    E.R.K, 20 June 2018
+                  BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
+                  BR(4) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
                   FAC0R = FRR*B0(1) + FRZ*BR(1) + FRS*B0(2) +FRZ_S*BR(2)
                   FAC0S = FRS*B0(1) + FSS*B0(2) + FSZ*BR(1) +FSZ_S*BR(2)
                   FACR  = FRZ*B0(1) + FZZ*BR(1) + FZZ_S*BR(2) +FSZ*B0(2)
@@ -1041,7 +1051,9 @@ C Linear transformation -----------------------------------------------------
      &                      d2Exc(12)*B0(2) + d2Exc(14)*BR(2) +
      &                      d2Exc(15)*BR(3) + d2EXC(15)*BR(4)
                else if (triplet) then
-                  BR(3) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
+                  ! Changed BR(3) accourding to definitions above 
+                  !    E.R.K, 20 June 2018
+                  BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
                   FAC0S = FSS*B0(2)
                   FAC_AR = d2Exc(12)*B0(2) + d2Exc(15)*BR(3)
                else ! normal GGA
@@ -1078,13 +1090,14 @@ C Linear transformation -----------------------------------------------------
               write(lupri,*) 'hjaaj: FZ0, FZ0_S',FZ0, FZ0_S
               write(lupri,*) 'hjaaj: FSZ_S,FRZ_S,FZZ_S,FZZ_SS',
      &                               FSZ_S,FRZ_S,FZZ_S,FZZ_SS
+              write(lupri,*) 'debug: d2Exc(11:15)', d2Exc(11:15)
               write(lupri,*) 'hjaaj: RX, RY, RZ',RX(1),RY(1),RZ(1)
               write(lupri,*) 'hjaaj: B0, BMAX',B0(1:2), BMAX
               write(lupri,*) 'hjaaj: B3 matrix',B3(1:3,1:2)
               call output(b3,1,3,1,2,3,2,1,lupri)
               write(lupri,*) 'hjaaj: BR',BR(1:2)
-              write(lupri,*) 'hjaaj: FAC0R, FAC0S, FACR, FACS',
-     &                               FAC0R, FAC0S, FACR, FACS
+              write(lupri,*) 'hjaaj: FAC0R, FAC0S, FACR, FACS, FAC_AR',
+     &                               FAC0R, FAC0S, FACR, FACS, FAC_AR
               write(lupri,*) 'hjaaj: current EXCMAT left corner; before'
               call output(excmat,1,5,1,5,nbast,nbast,1,lupri)
            !end if
@@ -1276,10 +1289,12 @@ C Linear transformation -----------------------------------------------------
             END IF
 !        END IF   ! IF (DOHFSRDFT) THEN
       END IF   ! IF (BMAX.GT.DFTHRL) THEN
-      if (iprint_x .gt. 10) then
+#if SRDFT_DEBUG > 11
+      !if (iprint_x .gt. 10) then
          write(lupri,*) ':: current EXCMAT left corner - after'
          call output(excmat,1,5,1,5,nbast,nbast,1,lupri)
-      end if
+      !end if
+#endif
 c
       RETURN
       END
