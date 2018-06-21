@@ -999,7 +999,7 @@ C Total contribution -------------------------------------------------------
 
 !        The two lines below is to make the definitions consistent. As
 !        can be seen, for all the other terms the 2 or 4 factor have
-!        been absorbed into the derivates (see lines above). Therefore
+!        been absorbed into the derivatives (see lines above). Therefore
 !        this should also be the case for the two derivatives below.
 !        E.R.K, 20 June 2018
          d2Exc(13) = d2Exc(13)*2.0d0
@@ -1119,7 +1119,7 @@ C Linear transformation -----------------------------------------------------
                            AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
                            ! spin matrix W[b]2s in EXCMAT no. 1
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0S*G0*GAO(J)
-     &                                   + FZZ_SS*AB(2) + FAC_AR*AR(1)
+     &                                   + FZ0_S*AB(2) + FAC_AR*AR(1)
                         END DO
                      END DO
                   ELSE IF (DFT_SPINDNS) THEN ! open-shell GGA response

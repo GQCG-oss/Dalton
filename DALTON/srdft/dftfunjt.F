@@ -511,6 +511,9 @@ C     check
       if (arhos .gt. rhoc) then
          call quit('DESRC_SPINGGA error: |rhos| > rhoc')
       end if
+      if (grdcc .lt. 0.0d0 .or. grdss .lt. 0.0d0) then
+         call quit('DESRC_SPINGGA error: grdcc or grdss negative')
+      end if
 
       if (rhoc .lt. 1.d-10) then ! no significant density in this point
          E = 0.0d0
@@ -799,6 +802,9 @@ C     check
       grdbb = grd2(5)
       if (rhoa .lt. 0.0d0 .or. rhob .lt. 0.0d0) then
          call quit('DESRX_SPINGGA error: rhoa or rhob negative')
+      end if
+      if (grdaa .lt. 0.0d0 .or. grdbb .lt. 0.0d0) then
+         call quit('DESRX_SPINGGA error: grdaa or grdbb negative')
       end if
       Eb_eq_Ea  = (abs(rhoa-rhob)   .le. 1.d-14
      &       .and. abs(grdaa-grdbb) .le. 1.d-14)
