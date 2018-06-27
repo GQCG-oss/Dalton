@@ -961,6 +961,7 @@ C Total contribution -------------------------------------------------------
 !        FSS = d2Excdrhosdrhos
       END IF
       IF (DOGGA) THEN
+         ! this variable is not used @HJAAJ? E.R.K
          grdc = sqrt(GRD2(1))
          ! grd[rhoc^(X,Y,Z)]
          RX(1) = RHG(1,1)
@@ -976,7 +977,7 @@ C Total contribution -------------------------------------------------------
 !        FZZ   = 4 d2Excdgrdccdgrdcc
 
       IF (DFT_SPINDNS .OR. TRIPLET) THEN
-         ! spin
+         ! spin, this variable is not used @HJAAJ? E.R.K
          grds = sqrt(GRD2(2))
          ! grd[rhos^(X,Y,Z)]
          RX(2) = RHG(1,2)
@@ -1027,15 +1028,14 @@ C Linear transformation -----------------------------------------------------
             ! AR(2) = AX*RX(2)   + AY*RY(2)   + AZ*RZ(2)   ! grad(xhi_i xhi_j) . grad(rhos)
             ! AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1) ! grad(xhi_i xhi_j) . grad(rhoc_b)
             ! AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2) ! grad(xhi_i xhi_j) . grad(rhos_b)
-            ! FAC0R = FRR*B0(1) + FRZ*BR(1)   !   d2Edrhoc2 rhoc_b      + d2Edrhocdgrdcc grad(rhoc) . grad(rhoc_b)
-            !       + FRS*B0(2) + FRZ_S*BR(2) ! + d2Edrhocdrhos rhos_b  + d2Edrhocdgrdss grad(rhos) . grad(rhos_b)
-            !?                                ! + d2Edrhocdgrdcs grad(rhoc_b) + d2Edrhocdgrdcs grad(rhos_b)
+            
+            ! FAC0R  = All terms in EXCMAT(1) multiplied with G0*GAO(J)
+            ! FACR   = All terms in EXCMAT(1) multiplied with AR(1)
+            ! FAC0S  = All terms in EXCMAT(2) multiplied with G0*GA0(J)
+            ! FACS   = All terms in EXCMAT(2) multiplied with AR(2)
+            ! FAC_AR = All terms multiplied with AR(2) for EXCMAT(1),
+            !          and AR(1) for EXCMAT(2)
 
-            ! FACR  = FZR*B0(1) + FZZ*BR(1)   !   d2Edgrdccdrhoc rhoc_b + d2Edgrdcc2 grad(rhoc_b)
-            !       + FZS*B0(2) + FZZ_S*BR(2) ! + d2Edgrdccdrhos rhos_b + d2Edgrdccdgrdss grad(rhos_b)
-            !?                                ! + d2Edgrdccdgrdcs grad(rhoc_b) + d2Edgrdccdgrdcs grad(rhos_b)
-            ! I have not corrected the above equations for terms in
-            ! gamma_cs, E.R.K
             if (dogga) then
                if (dft_spindns) then
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
@@ -1225,7 +1225,7 @@ C Linear transformation -----------------------------------------------------
                            AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
                            ! spin matrix W[b]2s in EXCMAT no. 1
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0S*G0*GAO(J)
-     &                                   + FZZ_SS*AB(2) + FAC_AR*AR(1)
+     &                                   + FZ0_S*AB(2) + FAC_AR*AR(1)
                          END DO
                        END DO
                      ELSE IF (DFT_SPINDNS) THEN
