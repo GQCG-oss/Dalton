@@ -45,7 +45,7 @@ C     variables for SRCPBERI
       real*8   mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C
-      PARAMETER  (NXTABLE = 22, NCTABLE = 33)
+      PARAMETER  (NXTABLE = 22, NCTABLE = 34)
       CHARACTER*10 XTABLE(NXTABLE),CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
       PARAMETER  (maxfld=3)
@@ -66,7 +66,7 @@ C
      &             'NULL_S    ','SRCMDLDA  ','LNSCLDAS  ','LNSCLDA   ', ! 21:24
      &             'LSCLDA    ','LNSCPBEGWS','LSCPBEGWS ','LNCLYP    ', ! 25:28
      &             'LSCLYP    ','SRCLYPRI  ','SRCPBEGWSS','SRCPBEGWSC', ! 29:32
-     &             'SRCLDA_C  '/                                        ! 33:36
+     &             'SRCLDA_C  ','SRCVWN5_S '/                           ! 33:36
 
 C K. Sharkas and J. Toulouse beg
 C List of lambda-dependent complement density functionals for linear separation of the electron-electron interaction.
@@ -263,7 +263,7 @@ C
         IF (CTABLE(II) .EQ. SRCFUN) THEN
           GO TO (201,202,203,204,205,206,207,208,209,210,211,212,213,
      &           214,215,216,217,218,219,220,221,222,223,224,225,226,
-     &           227,228,229,230,231,232,233),II
+     &           227,228,229,230,231,232,233,234),II
         END IF
  200  CONTINUE
       SETCFUN = .FALSE.
@@ -422,6 +422,11 @@ C Modified short-range spin-dependent correlation PBE functional of GWS (edh 21-
       GO TO 20
 C Short-range spin-dependent correlation LDA functional w. PW92 param. (edh 29-03-15)
 233   DOSRC_LDA_PW92 = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+C Short-range spin-dependent correlation LDA functional w. VWN5c param. (edh 02-07-18)
+234   DOSRC_VWN5_S = .TRUE.
+      DFT_SPINDNS = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
 C

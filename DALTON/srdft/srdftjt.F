@@ -593,7 +593,7 @@ C     correlation functionals
 
 C     spin functionals
       external ESRX_LDAERFSPIN
-      external ESRC_LDAERFSPIN
+      external ESRC_LDAERFSPIN, ESRC_LDAERFSPIN_VWN5
       external ESRC_PBEGWSERFSPIN
       external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA
 C     sr mdc func
@@ -741,6 +741,11 @@ C  Correlation  ----------------------------------------------------------
         ! d1Ec(2), d1Ec(3) here ...
         use_spindns = triplet .or. dft_spindns
         call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
+     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
+      ENDIF
+      IF(DOSRC_VWN5_S) THEN
+        use_spindns = triplet .or. dft_spindns
+        call DESRSPIN(ESRC_LDAERFSPIN_VWN5,rho(1),rho(2),
      >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
       IF(DOSRC_PBEGWS_S) THEN

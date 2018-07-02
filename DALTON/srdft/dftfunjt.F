@@ -3588,6 +3588,8 @@ C*****************************************************************************
       real*8   rhoa, rhob, z
       real*8   ea, eb
 
+      real*8   ecVWN5
+
       parameter(f13 = 0.333333333333333d0)
       parameter(pi = 3.141592653589793d0)
       parameter(rsfac = 0.620350490899400d0)
@@ -3598,7 +3600,7 @@ C     Spin-unpolarized case
 
         rs = rsfac/(rhoc**f13)
 
-        call ecPW(rs,0.0d0,ec,ecd,ecz)
+        call ecPW92(rs,0.0d0,ec,ecd,ecz)
         call ecorrlr(rs,0.0d0,mu,eclr)
         e=(ec-eclr)*rhoc
 
@@ -3612,8 +3614,69 @@ C     Spin-polarized case
         if (abs(z) > 1.0d0) 
      &   call quit('in ESRC_LDAERFSPIN numerical problem for |z| = 1.0')
 
-        call ecPW(rs,z,ec,ecd,ecz)
+        call ecPW92(rs,z,ec,ecd,ecz)
         call ecorrlr(rs,z,mu,eclr)
+        e=(ec-eclr)*rhoc
+
+      endif
+
+      return
+      end
+C****************************************************************************
+      subroutine ESRC_LDAERFSPIN_VWN5 (rhoc,rhos,mu,dospin,e)
+C*****************************************************************************
+C     subroutine is modified version of ESRC_LDAERFSPIN
+C
+C     Input: rhoc   : total density
+C            rhos   : spin density
+C            mu     : Interaction parameter
+C            dospin : use spin density
+C
+C     Ouput: e      : energy
+C
+C     Created: 2nd July 2018, Erik Kjellgren
+C*****************************************************************************
+      implicit none
+
+      real*8   rhoc, rhos, mu
+      logical dospin
+      real*8   e
+
+      real*8   f13, pi, rsfac
+      real*8   rs
+      real*8   ec,eclr
+
+      real*8   rhoa, rhob, z
+      real*8   ea, eb
+
+      real*8   ecVWN5
+
+      parameter(f13 = 0.333333333333333d0)
+      parameter(pi = 3.141592653589793d0)
+      parameter(rsfac = 0.620350490899400d0)
+
+C     Spin-unpolarized case
+
+      if (.not.dospin) then
+
+        rs = rsfac/(rhoc**f13)
+
+        ec = ecVWN5(rs,0.0d0)
+        call ecorrlrVWN5(rs,0.0d0,mu,eclr)
+        e=(ec-eclr)*rhoc
+
+C     Spin-polarized case
+      else
+
+        rs=rsfac/(rhoc**f13)
+        rhoa=max((rhoc+rhos)*.5d0,1.0d-15)
+        rhob=max((rhoc-rhos)*.5d0,1.0d-15)
+        z=(rhoa-rhob)/(rhoa+rhob)
+        if (abs(z) > 1.0d0) 
+     &   call quit('in ESRC_LDAERFSPIN numerical problem for |z| = 1.0')
+
+        ec = ecVWN5(rs,z)
+        call ecorrlrVWN5(rs,z,mu,eclr)
         e=(ec-eclr)*rhoc
 
       endif
@@ -3813,7 +3876,7 @@ cc parameters from the fit
      $        d3anti)
       end if
 
-      call ecPW(rs,z,ec,ecd,ecz)
+      call ecPW92(rs,z,ec,ecd,ecz)
 
       a1=4.d0*b0**6*coe3+b0**8*coe5
       a2=4.d0*b0**6*coe2+b0**8*coe4+6.d0*b0**4*ec
@@ -3828,6 +3891,78 @@ cc parameters from the fit
 !      Write(6,*)'phi=',phi
 !      Write(6,*)'mu=',mu
 !      Write(6,*)'mu*sqrt(rs)/phi=',mu*sqrt(rs)/phi
+      return
+      end
+
+C*****************************************************************************
+      subroutine ecorrlrVWN5(rs,z,mu,eclr)
+C
+C     Modified version of ecorrlr for VWN5 functional
+C
+C     Created 2nd July 2018, Erik Kjellgren
+C*****************************************************************************
+      implicit none
+      real*8   rs,z,mu,eclr,ec
+      real*8   alpha,cf,phi
+      real*8   g0f,dpol,d2anti,d3anti,Qrpa
+      real*8   coe2,coe3,coe4,coe5
+      real*8   a1,a2,a3,a4,b0
+      real*8   q1a,q2a,q3a,t1a,t2a,t3a,adib
+      real*8   ecVWN5
+#include "pi.h"
+!     pi=dacos(-1.d0)
+      alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
+      cf=1.d0/alpha
+
+      phi=((1.d0+z)**(2.d0/3.d0)+(1.d0-z)**(2.d0/3.d0))/2.d0
+cc parameters from the fit
+      adib   = 0.784949d0
+      q1a    = -0.388d0
+      q2a    = 0.676d0
+      q3a    = 0.547d0
+      t1a    = -4.95d0
+      t2a    = 1.d0
+      t3a    = 0.31d0
+
+      b0=adib*rs
+
+      d2anti=(q1a*rs+q2a*rs**2)*exp(-abs(q3a)*rs)/rs**2
+      d3anti=(t1a*rs+t2a*rs**2)*exp(-abs(t3a)*rs)/rs**3
+
+      coe2=-3.d0/8.d0/rs**3*(1.d0-z**2)*(g0f(rs)-0.5d0)
+
+      coe3=-(1.d0-z**2)*g0f(rs)/(sqrt(2.d0*pi)*rs**3)
+
+      if(abs(z).eq.1.d0) then
+
+        coe4=-9.d0/64.d0/rs**3*(dpol(rs)
+     $        -cf**2*2**(5.d0/3.d0)/5.d0/rs**2)
+        coe5=-9.d0/40.d0/(sqrt(2.d0*pi)*rs**3)*dpol(rs)
+
+      else
+
+         coe4=-9.d0/64.d0/rs**3*(((1.d0+z)/2.d0)**2*
+     $        dpol(rs*(2/(1.d0+z))**(1.d0/3.d0))+((1.d0-z)/2.d0)**2
+     $        *dpol(rs*(2.d0/(1.d0-z))**(1.d0/3.d0))+
+     $        (1.-z**2)*d2anti-cf**2/10.d0*((1.d0+z)**(8.d0/3.d0)
+     $        +(1.-z)**(8.d0/3.d0))/rs**2)
+
+         coe5=-9.d0/40.d0/(sqrt(2.d0*pi)*rs**3)*(((1.d0+z)/2.d0)**2
+     $        *dpol(rs*(2.d0/(1.d0+z))**(1.d0/3.d0))+((1.d0-z)/2.d0)**2
+     $        *dpol(rs*(2.d0/(1.d0-z))**(1.d0/3.d0))+(1.d0-z**2)*
+     $        d3anti)
+      end if
+
+      ec = ecVWN5(rs,z)
+
+      a1=4.d0*b0**6*coe3+b0**8*coe5
+      a2=4.d0*b0**6*coe2+b0**8*coe4+6.d0*b0**4*ec
+      a3=b0**8*coe3
+      a4=b0**6*(b0**2*coe2+4.d0*ec)
+
+      eclr=(phi**3*Qrpa(mu*sqrt(rs)/phi)+a1*mu**3+a2*mu**4+a3*mu**5+
+     $     a4*mu**6+b0**8*mu**8*ec)/((1.d0+b0**2*mu**2)**4)
+
       return
       end
 
@@ -3939,7 +4074,7 @@ cc parameters from the fit
 
       end if
 
-      call ecPW(rs,z,ec,ecd,ecz)
+      call ecPW92(rs,z,ec,ecd,ecz)
 
       a1=4.d0*b0**6*coe3+b0**8*coe5
       a1rs=24.d0*adib*b0**5*coe3+4.d0*b0**6*coe3rs+8.d0*adib*b0**7*
@@ -4100,7 +4235,7 @@ C*****************************************************************************
       end
 
 C*****************************************************************************
-      subroutine ecPW(x,y,ec,ecd,ecz)
+      subroutine ecPW92(x,y,ec,ecd,ecz)
 C*****************************************************************************
 c correlation energy and its derivative w.r.t. rs and z at mu=infinity
 c Perdew & Wang PRB 45, 13244 (1992)
@@ -4203,4 +4338,79 @@ C*****************************************************************************
 
       return
       end
+
+C*****************************************************************************
+      real*8 function ecVWN5(rs, zeta)
+C
+C     Heavily based on the implementation in libxc
+C     
+C     Input  :
+C              zeta : rhoc / rhos
+C              rs   : Wieger-Seitz radius
+C     Output :
+C              ecVWN5 : Correlation energy
+C
+C     Erik Kjellgren, 2nd July 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rs, zeta
+      real*8 :: t1, t3, t4, t6, t7, t8, t9, t12, t13, t14, t15, t17
+      real*8 :: t18, t19, t20, t22, t23, t25, t26, t29, t31, t32, t34
+      real*8 :: t37, t38, t39, t41, t42, t44, t45, t46, t47, t49, t50
+      real*8 :: t51, t54, t55, t59, t60, t62, t64, t67, t69, t70, t72
+      real*8 :: t74, t75, t76
+
+      t1 = sqrt(rs)
+      t3 = rs + 0.372744d1 * t1 + 0.129352d2
+      t4 = 0.1d1 / t3
+      t6 = log(rs * t4)
+      t7 = 0.310907d-1 * t6
+      t8 = 0.2d1 * t1
+      t9 = t8 + 0.372744d1
+      t12 = atan(0.61519908197590802322d1 / t9)
+      t13 = 0.38783294878113014393d-1 * t12
+      t14 = t1 + 0.10498d0
+      t15 = t14 * t14
+      t17 = log(t15 * t4)
+      t18 = 0.96902277115443742139d-3 * t17
+      t19 = 0.31415926535897932385d1 * 0.31415926535897932385d1
+      t20 = 0.1d1 / t19
+      t22 = rs + 0.113107d1 * t1 + 0.130045d2
+      t23 = 0.1d1 / t22
+      t25 = log(rs * t23)
+      t26 = t8 + 0.113107d1
+      t29 = atan(0.71231089178181179908d1 / t26)
+      t31 = t1 + 0.47584d-2
+      t32 = t31 * t31
+      t34 = log(t32 * t23)
+      t37 = t20 * (t25 + 0.31770800474394146400d0 * t29 + 0.41403379428
+     &206274608d-3 * t34)
+      t38 = 0.1d1 + zeta
+      t39 = (t38)**(1.0d0/3.0d0)
+      t41 = 0.1d1 - zeta
+      t42 = (t41)**(1.0d0/3.0d0)
+      t44 = t39 * t38 + t42 * t41 - 0.2d1
+      t45 = t37 * t44
+      t46 = 2.0d0**(1.0d0/3.0d0)
+      t47 = t46 - 0.1d1
+      t49 = 0.1d1 / t47 / 0.2d1
+      t50 = zeta * zeta
+      t51 = t50 * t50
+      t54 = 0.9d1 * t47
+      t55 = t49 * (-t51 + 0.1d1) * t54
+      t59 = rs + 0.706042d1 * t1 + 0.180578d2
+      t60 = 0.1d1 / t59
+      t62 = log(rs * t60)
+      t64 = t8 + 0.706042d1
+      t67 = atan(0.47309269095601128300d1 / t64)
+      t69 = t1 + 0.32500d0
+      t70 = t69 * t69
+      t72 = log(t70 * t60)
+      t74 = 0.1554535d-1 * t62 + 0.52491393169780936218d-1 * t67 + 0.22
+     &478670955426118383d-2 * t72 - t7 - t13 - t18
+      t75 = t74 * t44
+      t76 = t49 * t51
+      ecVWN5 = t7 + t13 + t18 - t45 * t55 / 0.24d2 + t75 * t76
+      end function
+
 C ... end of dftfunjt.F
