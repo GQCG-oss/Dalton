@@ -1,0 +1,9 @@
+BASIS
+3-21G
+TOP
+KEK
+Atomtypes=2 Angstrom
+Charge=3.0 Atoms=1
+Li 0.0 0.0 0.0
+Charge=1.0 Atoms=1
+H 2.39 0.0 0.0
