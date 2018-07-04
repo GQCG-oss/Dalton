@@ -705,7 +705,7 @@ C        derivative wrt grdcc and grdss -----------------------
        end if
 
 C        derivative wrt grdss and grdss -----------------------
-         d2E(10) = (E000p - 2.d0*E + E000m)/(hgs*hgs) ! d2Edgrdsgrdss
+         d2E(10) = (E000p - 2.d0*E + E000m)/(hgs*hgs) ! d2Edgrdssgrdss
 
       end if ! hgs .gt. 0
        
@@ -3038,6 +3038,65 @@ C*****************************************************************************
 
       return
       end
+
+#if 0
+C*****************************************************************************
+      subroutine ESRC_PBEGWSERFSPIN(rho_c, rho_s, gamma_cc, gamma_ss,
+     & gamma_cs, mu, e)
+C*****************************************************************************
+C    PBEc functional based on the equations from the C-code DFT code in
+C    DALTON. Keeping this around for test cases of mu=0.0.
+C    NOTE: mu is always identical zero when using this subroutine, thus
+C    it should give the same results as "normal" DFT.
+C 
+C    Code generated using Sympy 1.1.1
+C
+C    Created: 4th July 2018, Erik Kjellgren
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, rho_s, gamma_cc, gamma_ss, gamma_cs
+      real*8, intent(in) :: mu
+      real*8, intent(out) :: e
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11
+      real*8 :: x12, x13, x14, x15, x16, x17, x18, x19, x20
+      x0 = 1.46459188756152d0
+      x1 = 1.0/rho_c
+      x2 = x1**0.333333333333333d0/x0
+      x3 = 0.466194077035412d0*x1**0.666666666666667d0
+      x4 = 0.564189583547756d0*sqrt(x1)
+      x5 = 0.826307487110758d0*x1**0.166666666666667d0
+      x6 = (0.194159335344114d0*x2 + 1.0d0)*log(1.0d0 + 16.08182432215
+     &11d0/( 3.25955091942229d0*x2 + 0.406913004517529d0*x3 + 1.4187228
+     &1647967d0*x4 + 7.24010193431683d0*x5))
+      x7 = 0.062182d0*x6
+      x8 = rho_s**4/rho_c**4
+      x9 = rho_s*x1
+      x10 = 1.92366105093154d0*(-x9 + 1.0d0)**1.33333333333333d0 + 1.9
+     &2366105093154d0*(x9 + 1.0d0)**1.33333333333333d0 - 3.847322101863
+     &07d0
+      x11 = x10*(0.101077332976288d0*x2 + 1.0d0)*(-x8 + 1.0d0)*log(1.0
+     &d0 + 29.6085746432167d0/(3.29180480994506d0*x2 + 0.41002507094961
+     &2d0* x3 + 0.76232752193529d0*x4 + 9.87212972256927d0*x5))
+      x12 = x10*x8*(x7 - 0.03109d0*(0.186690969707574d0*x2 + 1.0d0)*lo
+     &g(1.0d0 + 32.1646831778707d0/(5.63098414909788d0*x2 + 0.516066464
+     &547863d0* x3 + 2.91521471421918d0*x4 + 13.4579137143944d0*x5)))
+      x13 = 2.14502939711103d0
+      x14 = rho_c**2.0d0
+      x15 = 0.5d0*(rho_c - 1.0d0*rho_s)**0.666666666666667d0 + 0.5d0*(
+     &rho_c + rho_s) **0.666666666666667d0
+      x16 = x15**3
+      x17 = gamma_cc*rho_c**(-1.0d0)/x15**2
+      x18 = gamma_cc**2*rho_c**(-2.0d0)/x15**4
+      x19 = exp(104.706192869308d0*x13*x14*(-0.00282845628540734d0*x11
+     & - 0.1432d0* x12 + 0.0089044624d0*x6)/x16) - 1.0d0
+      x20 = 1.0/x19
+      e = rho_c*(0.0197517897025652d0*x11 + x12 - x7 + 0.0666936695156
+     &131d0*x16* log(14.9865893973326d0*(0.00620558340543818d0*x0*x17 +
+     & 0.00123794483241921d0*x18*x20)/(0.0634992800779777d0*x13*x17*x20
+     & + 0.0185525709000164d0*x18/x19**2 + 1.0d0) + 1.0d0)/(x13*x14))
+      end subroutine
+#endif
+
 C****************************************************************************
       subroutine ESRC_PBEGWSERFSPIN(rhoc,rhos,grdcc,grdss,grdcs,mu,e)
 C*****************************************************************************
@@ -3055,6 +3114,7 @@ C     Ouput: e      : PBEGWS correlation energy density
 C
 C     Author: Erik Hedegaard (after Molpro code by J. Toulouse + A. Savin)
 C     Date  : 11-02-16; input parameters revised apr.2018 hjaaj
+C     Date  : 4th-July-18; LDA was not doing spin, changed that. E.R.K  
 C*****************************************************************************
       implicit none
 
@@ -3076,10 +3136,10 @@ C*****************************************************************************
 C     LDA energy ----
 !     In ESRC_PBEGWS VCSRLDA is used for the same purpose, but
 !     as VCSRLDA does not include rhos ESRX_LDAERFSPIN is used instead
-      call ESRC_LDAERFSPIN(rhoc,rhos,mu,.false.,ecerflda)
+      call ESRC_LDAERFSPIN(rhoc,rhos,mu,.true.,ecerflda)
 
       ! full range LDA energy (mu = 0.0)
-      call ESRC_LDAERFSPIN(rhoc,rhos,0.0d0,.false.,eclda)
+      call ESRC_LDAERFSPIN(rhoc,rhos,0.0d0,.true.,eclda)
 
 !     Spin polarisation
 !     Define zeta

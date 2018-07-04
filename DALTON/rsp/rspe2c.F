@@ -22,7 +22,6 @@
 !
 !
 C
-#ifdef OLD_LOG
 !===========================================================================
 !Revision 1.2  2001/01/17 10:41:29  vebjornb
 !Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
@@ -68,7 +67,7 @@ C
 !RSPCTL: "NSIM=0" for RSPRED before GO TO 1000 (2 places)
 !ORBDIA: inserted averaging code (if RSPSUP)
 !===========================================================================
-#endif
+C
 C  /* Deck e2sym */
       SUBROUTINE E2SYM(IBTYP,CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,
      &                 WRK,LWRK)

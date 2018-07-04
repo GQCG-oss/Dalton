@@ -1045,13 +1045,8 @@ C Linear transformation -----------------------------------------------------
                if (dft_spindns) then
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                   BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
-                  ! Changed BR(3) and BR(4) accourding to definitions above. 
-                  !    E.R.K, 20 June 2018
                   BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
                   BR(4) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
-                  ! Added missing terms to FAC0R, FAC0S, FACR, FACS.
-                  ! All the missing terms included gamma_cs terms.
-                  !    E.R.K, 25 June 2018
                   FAC0R = FRR*B0(1) + FRZ*BR(1) + FRS*B0(2) +FRZ_S*BR(2)
      &                    + d2Exc(11)*BR(4) + d2Exc(11)*BR(3)
                   FAC0S = FRS*B0(1) + FSS*B0(2) + FSZ*BR(1) +FSZ_S*BR(2)
@@ -1065,11 +1060,7 @@ C Linear transformation -----------------------------------------------------
      &                      d2Exc(12)*B0(2) + d2Exc(14)*BR(2) +
      &                      d2Exc(15)*BR(3) + d2EXC(15)*BR(4)
                else if (triplet) then
-                  ! Changed BR(3) accourding to definitions above 
-                  !    E.R.K, 20 June 2018
                   BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
-                  ! Added missing term to FAC0S
-                  !    E.R.K 25 June 2018
                   FAC0S = FSS*B0(2) + d2Exc(12)*BR(3)
                   FAC_AR = d2Exc(12)*B0(2) + d2Exc(15)*BR(3)
                else ! normal GGA
