@@ -866,7 +866,6 @@ C***************************************************************************
 
       real*8   ddot
 
-      real*8   grdc,  grds
       real*8   BR(4), B0(2), B3(3,2), BMAX
       real*8   AR(2), AB(2), AX, AY, AZ, RX(2), RY(2), RZ(2)
 
@@ -966,8 +965,6 @@ C Total contribution -------------------------------------------------------
 !        FSS = d2Excdrhosdrhos
       END IF
       IF (DOGGA) THEN
-         ! this variable is not used @HJAAJ? E.R.K
-         grdc = sqrt(GRD2(1))
          ! grd[rhoc^(X,Y,Z)]
          RX(1) = RHG(1,1)
          RY(1) = RHG(2,1)
@@ -982,8 +979,6 @@ C Total contribution -------------------------------------------------------
 !        FZZ   = 4 d2Excdgrdccdgrdcc
 
       IF (DFT_SPINDNS .OR. TRIPLET) THEN
-         ! spin, this variable is not used @HJAAJ? E.R.K
-         grds = sqrt(GRD2(2))
          ! grd[rhos^(X,Y,Z)]
          RX(2) = RHG(1,2)
          RY(2) = RHG(2,2)

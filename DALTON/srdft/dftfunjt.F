@@ -36,7 +36,7 @@ C*****************************************************************************
       real*8   rhoc, grdcc, mu
       real*8   E, d1E(5), d2E(15)
 
-      real*8   hr, hg, hr2, hg2, hrg
+      real*8   hr, hg
       real*8   rhocm, rhocp, rhocpp, grdccm, grdccp
 
       real*8   Em0, Ep0, Epp0
@@ -99,15 +99,11 @@ C Second-order derivatives --------------------------------------------
       if (norder .le. 1) go to 9000 ! return
       if (norder .ge. 2) d2E(:) = 0.0d0
 
-      hr2= hr*hr
-      hg2= hg*hg
-      hrg= hr*hg
-
 C     derivative wrt rhoc and rhoc -----------------
 !      if(rhocm .ge. 0.d0) then 
 !      central 2nd-order approximation
        
-       d2E(1) = (Ep0 - 2.d0*E + Em0)/hr2
+       d2E(1) = (Ep0 - 2.d0*E + Em0)/(hr*hr)
 !      else 
 !       stop 'rhocm < 0'
 !!      forward 1st-order approximation
@@ -120,7 +116,7 @@ C     derivative wrt rhoc and rhoc -----------------
 C     derivative wrt grdcc and grdcc -----------------------
 !      if(grdccm .ge. 0.d0) then
 !      central 2nd-order approximation
-       d2E(6) = (E0p - 2.d0*E + E0m)/hg2
+       d2E(6) = (E0p - 2.d0*E + E0m)/(hg*hg)
 !      else
 !       stop 'grdccm < 0'
 !!      forward 1st-order approximation
@@ -137,7 +133,7 @@ C     derivative wrt rhoc and grdcc -----------------------
        call ESR(rhocp,grdccm,mu,Epm)
        call ESR(rhocm,grdccm,mu,Emm)
 !      central 2nd-order approximation
-       d2E(4) = (Epp - Emp - Epm + Emm)/(4.d0*hrg)
+       d2E(4) = (Epp - Emp - Epm + Emm)/(4.d0*hr*hg)
 !      else
 !       stop 'rhocm < 0 or grdccm < 0'
 !       call ESR(rhocp,grdccp,mu,Epp)
@@ -284,7 +280,7 @@ C*****************************************************************************
       real*8   rhoc, rhos, mu
       real*8   E, d1E(5), d2E(15)
 
-      real*8   hrc, hrs, hrc2, hrs2, hrcs
+      real*8   hrc, hrs
       real*8   rhocm, rhocp, rhosp, rhosm
       real*8   arhos
 
@@ -366,15 +362,9 @@ C     derivative wrt rhos ---------------------
 C Second-order derivatives --------------------------------------------
       if(norder .ge. 2) then
 
-        hrc2= hrc*hrc
-        hrs2= hrs*hrs
-        hrcs= hrc*hrs
-!       hg2= hg*hg
-!       hrg= hr*hg
-
 C       derivative wrt rhoc and rhoc -----------------
 !       central 2nd-order approximation
-        d2E(1) = (Ep0 - 2.d0*E + Em0)/hrc2
+        d2E(1) = (Ep0 - 2.d0*E + Em0)/(hrc*hrc)
         if (dospin) then
           if (pure_spin) then
             d2E(3) = 0.0d0
@@ -382,7 +372,7 @@ C       derivative wrt rhoc and rhoc -----------------
           else if (hrs .gt. 0.0d0) then
 C       derivative wrt rhos and rhos -----------------------
 !       central 2nd-order approximation
-            d2E(3) = (E0p - 2.d0*E + E0m)/hrs2
+            d2E(3) = (E0p - 2.d0*E + E0m)/(hrs*hrs)
        
 C         derivative wrt rhoc and rhos -----------------------
           call ESRSPIN(rhocp,rhosp,mu,dospin,Epp)
@@ -390,7 +380,7 @@ C         derivative wrt rhoc and rhos -----------------------
           call ESRSPIN(rhocp,rhosm,mu,dospin,Epm)
           call ESRSPIN(rhocm,rhosm,mu,dospin,Emm)
 !         central 2nd-order approximation
-            d2E(2) = (Epp - Emp - Epm + Emm)/(4.d0*hrcs)
+            d2E(2) = (Epp - Emp - Epm + Emm)/(4.d0*hrc*hrs)
           else
             d2E(3) = 0.0d0
             d2E(2) = 0.0d0
@@ -470,8 +460,6 @@ C*****************************************************************************
       real*8   rhoc,  rhos,  grdcc,  grdss,  grdcs
       real*8   arhos, agrdcs
       real*8   hrc,   hrs,   hgc,   hgs,   hgcs
-      real*8   hrc2,  hrcrs, hrs2
-      real*8   hrcgc, hrsgc, hgc2,  hrcgs, hrsgs, hgcgs, hgs2
       real*8   rhocm, rhocp, rhosp, rhosm
       real*8   grdccm, grdccp, grdssp, grdssm, grdcsm, grdcsp
 
@@ -769,11 +757,11 @@ C*****************************************************************************
       real*8   E, d1E(5), d2E(15)
       real*8   Ea, Eb, d1W(4), d2W(6) ! for derivative wrt rhoa, rhob, grdaa, grdbb
 
-      real*8   rhoa,  rhoam,  rhoap,  hra, hra2
-      real*8   grdaa, grdaam, grdaap, hga, hga2
+      real*8   rhoa,  rhoam,  rhoap,  hra
+      real*8   grdaa, grdaam, grdaap, hga
 
-      real*8   rhob,  rhobm,  rhobp,  hrb, hrb2
-      real*8   grdbb, grdbbp, grdbbm, hgb, hgb2
+      real*8   rhob,  rhobm,  rhobp,  hrb
+      real*8   grdbb, grdbbp, grdbbm, hgb
 
       real*8   Em0, Ep0, E0m, E0p
       real*8   Emm, Epp, Epm, Emp
@@ -2934,7 +2922,7 @@ C*****************************************************************************
       real*8  ecerflda,eclda
       real*8  ecerfpbe
       real*8  t1
-      real*8  alpha, beta, gamma, Aa,Ab, Ac, tq, arglog
+      real*8  alpha, beta, gamma_symbol, Aa,Ab, Ac, tq, arglog
  
       logical ERFEXP(0:2), MULOCAL(0:2)
       real*8  XKSR(3), ZKSR(3)
@@ -2951,7 +2939,7 @@ C*****************************************************************************
       eclda = ZKSR(1)
 
       alpha=2.78d0
-      gamma=3.1091d-2
+      gamma_symbol=3.1091d-2
 
       if ((ecerflda/eclda).le.0.d0) then
          beta=0.d0
@@ -2959,15 +2947,15 @@ C*****************************************************************************
          beta=6.6725d-2*(ecerflda/eclda)**alpha
       endif
       tq=grdcc*6.346820607d-2*rhoc**(-7.d0/3.d0)
-      Ab=dexp(-ecerflda/(rhoc*gamma))-1.d0
+      Ab=dexp(-ecerflda/(rhoc*gamma_symbol))-1.d0
       if (dabs(Ab).le.dabs(beta*tol)) then
          ecerfpbe=ecerflda
        else
-         Aa=beta/(gamma*Ab)
+         Aa=beta/(gamma_symbol*Ab)
          if (Aa.lt.tol) Aa=tol
          Ac=1.d0+Aa*tq+Aa**2*tq**2
-         arglog=1.d0+beta*(1.d0-1.d0/Ac)/(gamma*Aa)
-         ecerfpbe=ecerflda+rhoc*gamma*dlog(arglog)
+         arglog=1.d0+beta*(1.d0-1.d0/Ac)/(gamma_symbol*Aa)
+         ecerfpbe=ecerflda+rhoc*gamma_symbol*dlog(arglog)
        endif
 
       e = ecerfpbe
@@ -3003,7 +2991,7 @@ C*****************************************************************************
       real*8   ecerflda,eclda
       real*8   ecerfpbe
       real*8   t1
-      real*8   alpha, beta, gamma, Aa,Ab, Ac, tq, arglog
+      real*8   alpha, beta, gamma_symbol, Aa,Ab, Ac, tq, arglog
  
 !     short-range LDA energy (order = 0)
       rho13 = rhoc**(1.d0/3.d0)
@@ -3015,7 +3003,7 @@ C*****************************************************************************
       eclda = e
 
       alpha=2.78d0
-      gamma=3.1091d-2
+      gamma_symbol=3.1091d-2
 
       if ((ecerflda/eclda).le.0.d0) then
          beta=0.d0
@@ -3023,15 +3011,15 @@ C*****************************************************************************
          beta=6.6725d-2*(ecerflda/eclda)**alpha
       endif
       tq=grdcc*6.346820607d-2*rhoc**(-7.d0/3.d0)
-      Ab=dexp(-ecerflda/(rhoc*gamma))-1.d0
+      Ab=dexp(-ecerflda/(rhoc*gamma_symbol))-1.d0
       if (dabs(Ab).le.dabs(beta*tol)) then
          ecerfpbe=ecerflda
        else
-         Aa=beta/(gamma*Ab)
+         Aa=beta/(gamma_symbol*Ab)
          if (Aa.lt.tol) Aa=tol
          Ac=1.d0+Aa*tq+Aa**2*tq**2
-         arglog=1.d0+beta*(1.d0-1.d0/Ac)/(gamma*Aa)
-         ecerfpbe=ecerflda+rhoc*gamma*dlog(arglog)
+         arglog=1.d0+beta*(1.d0-1.d0/Ac)/(gamma_symbol*Aa)
+         ecerfpbe=ecerflda+rhoc*gamma_symbol*dlog(arglog)
        endif
 
       e = ecerfpbe
@@ -3128,7 +3116,7 @@ C*****************************************************************************
 
       real*8   ecerfpbe
       real*8   t1
-      real*8   alpha, beta, gamma
+      real*8   alpha, beta, gamma_symbol
       real*8   phi, phi2, phi3, phi4
       real*8   Aa, Ab, Ac, tq, arglog
 
@@ -3146,7 +3134,7 @@ C     LDA energy ----
       zeta = rhos / rhoc ! zeta = (rhoa-rhob)/(rhoa+rhob)
 
       alpha=2.78d0
-      gamma=3.1091d-2
+      gamma_symbol=3.1091d-2
 
       if ((ecerflda/eclda).le.0d0) then
 !       ! edh define beta and check alpha!
@@ -3159,15 +3147,15 @@ C     LDA energy ----
       phi3=phi2*phi
       phi4=phi3*phi
       tq=grdcc*6.346820607d-2*rhoc**(-7d0/3d0)/phi2
-      Ab=dexp(-ecerflda/(rhoc*gamma*phi3))-1d0
+      Ab=dexp(-ecerflda/(rhoc*gamma_symbol*phi3))-1d0
       if(dabs(Ab).le.dabs(beta*tol)) then
         ecerfpbe=ecerflda
       else
-        Aa=beta/(gamma*Ab)
+        Aa=beta/(gamma_symbol*Ab)
         Ac=1d0+Aa*tq+Aa**2*tq**2
         if (Aa.lt.tol) Aa=tol
-        arglog=1d0+beta*(1d0-1d0/Ac)/(gamma*Aa)
-        ecerfpbe=ecerflda+rhoc*phi3*gamma*dlog(arglog)
+        arglog=1d0+beta*(1d0-1d0/Ac)/(gamma_symbol*Aa)
+        ecerfpbe=ecerflda+rhoc*phi3*gamma_symbol*dlog(arglog)
       endif
 
        e = ecerfpbe
