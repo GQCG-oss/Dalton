@@ -568,13 +568,13 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 
-      real*8  rho(4),grd2(6),CHIVAL,VLAMBDA ! input
+      real*8  rho(4), grd2(6), CHIVAL, VLAMBDA ! input
 !     grd2(1:6) = (grdcc, grdss, grdcs, grdaa, grdbb, grdab)
       integer NORDER
       logical ERFEXP(0:2), triplet
 
-      real*8   Ex, d1Ex(5), d2Ex(15)
-      real*8   Ec, d1Ec(5), d2Ec(15)
+      real*8   Ex, d1Ex(9), d2Ex(45)
+      real*8   Ec, d1Ec(9), d2Ec(45)
 
 C The new terms (edh: mu_new required??)
       real*8   mu !, mu_new
@@ -875,15 +875,26 @@ C***************************************************************************
       real*8   G0, GX, GY, GZ
 
 !     X, C, and XC energies, and derivatives
-      real*8   Ex, Ec, d1Ex(5), d1Ec(5), d2Ex(15), d2Ec(15)
-      real*8   Exc, d1Exc(5), d2Exc(15)
-! d1E?(1:5)  = d1E?drhoc, d1E?drhos, d1E?dgrdcc, d1E?dgrdss, d1E?grdcs
-! d2E?(1:15) =
-!     d2E?drhocdrhoc,
-!     d2E?drhocdrhos,   d2E?drhosdrhos,
-!     d2E?drhocdgrdcc,  d2E?drhosdgrdcc, d2E?dgrdccdgrdcc,
-!     d2E?drhocdgrdss,  d2E?drhosdgrdss, d2E?dgrdccdgrdss, d2E?dgrdssdgrdss,
-!     d2E?drhocdgrdcs,  d2E?drhosdgrdcs, d2E?dgrdccdgrdcs, d2E?dgrdssdgrdcs, d2E?dgrdcsdgrdcs
+      real*8   Ex, Ec, d1Ex(9), d1Ec(9), d2Ex(45), d2Ec(45)
+      real*8   Exc, d1Exc(9), d2Exc(45)
+!     
+!     r = rho, g=gamma, t=tau, e=eta
+!     gamma = grd_rho * grd_rho
+!     tau   = kinetic energy density
+!     eta   = nabla_rho
+!  
+!  d2E?(idx)
+!           dr_c   dr_s   dg_cc   dg_ss   dg_cs   dt_c   dt_s   de_c   de_s
+!     dr_c    1
+!     dr_s    2      3
+!     dg_cc   4      5      6
+!     dg_ss   7      8      9      10
+!     dg_cs  11     12     13      14      15
+!     de_c   16     17     18      19      20      21
+!     de_s   22     23     24      25      26      27     28
+!     dt_c   29     30     31      32      33      34     35      36
+!     dt_s   37     38     39      40      41      42     43      44     45
+!  d1E?(idx)  1      2      3       4       5       6      7       8      9
 
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
          CALL QUIT('SRDFTJT.F: Triplet and DFT_SPINDNS not implemented')
@@ -951,8 +962,8 @@ C Exchange and correlation derivatives ------------------------------------
       CALL SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,triplet,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
       Exc         = WGHTX*  Ex       + WGHTC*  Ec
-      d1Exc(1:5)  = WGHTX*d1Ex(1:5)  + WGHTC*d1Ec(1:5)
-      d2Exc(1:15) = WGHTX*d2Ex(1:15) + WGHTC*d2Ec(1:15)
+      d1Exc(1:9)  = WGHTX*d1Ex(1:9)  + WGHTC*d1Ec(1:9)
+      d2Exc(1:45) = WGHTX*d2Ex(1:45) + WGHTC*d2Ec(1:45)
 
 C Total contribution -------------------------------------------------------
 
@@ -964,7 +975,7 @@ C Total contribution -------------------------------------------------------
          FSS = d2Exc(3)
 !        FSS = d2Excdrhosdrhos
       END IF
-      IF (DOGGA) THEN
+      IF (DOGGA .OR. DO_METAGGA) THEN
          ! grd[rhoc^(X,Y,Z)]
          RX(1) = RHG(1,1)
          RY(1) = RHG(2,1)
@@ -1009,6 +1020,11 @@ C Total contribution -------------------------------------------------------
       END IF ! DOGGA .and. DFT_SPINDNS
       END IF ! DOGGA
 
+      if (do_metagga) then
+      if (dft_spindns .or. triplet) then
+      end if ! openshell or triplet
+      end if ! metaGGA
+
 
 C Linear transformation -----------------------------------------------------
 
@@ -1036,7 +1052,12 @@ C Linear transformation -----------------------------------------------------
             ! FAC_AR = All terms multiplied with AR(2) for EXCMAT(1),
             !          and AR(1) for EXCMAT(2)
 
-            if (dogga) then
+            if (do_metagga) then
+               if (dft_spindns) then
+               else if (triplet) then
+               else ! normal metaGGA
+               end if
+            else if (dogga) then
                if (dft_spindns) then
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                   BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
@@ -1106,7 +1127,12 @@ C Linear transformation -----------------------------------------------------
           !end if
 #endif
             IF (NSYM.EQ.1) THEN
-               IF (DOGGA) THEN
+               if (do_metagga) then
+                  if (triplet) then
+                  else if (dft_spindns) then
+                  else
+                  end if
+               ELSE IF (DOGGA) THEN
                   IF (TRIPLET) THEN ! closed-shell triplet GGA response
                      DO I = 1, NBAST
                         G0 = GAO(I)
@@ -1194,6 +1220,9 @@ C Linear transformation -----------------------------------------------------
             ELSE ! NSYM .gt. 1
                ! Only two indentations is used in symmstry code insted of three.
                !   This is to not exceed 72 chars all the time. - E.R.K
+               if (do_metagga) then
+                  call quit('srdftjt.F: No metaGGA for symmetry yet')
+               end if
                DO ISYM = 1, NSYM
                  ISTR = IBAS(ISYM) + 1
                  IEND = IBAS(ISYM) + NBAS(ISYM)

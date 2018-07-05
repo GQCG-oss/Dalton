@@ -34,7 +34,7 @@ C*****************************************************************************
 
       integer  norder
       real*8   rhoc, grdcc, mu
-      real*8   E, d1E(5), d2E(15)
+      real*8   E, d1E(9), d2E(45)
 
       real*8   hr, hg
       real*8   rhocm, rhocp, rhocpp, grdccm, grdccp
@@ -154,7 +154,7 @@ C*****************************************************************************
 
       real*8   rhoc, grdcc, VLAMBDA
       integer  norder
-      real*8   E, d1E(5), d2E(15) 
+      real*8   E, d1E(9), d2E(45) 
 
       call   DESR(ESR,rhoc,grdcc,0.d0,norder,E,d1E,d2E)
 
@@ -178,7 +178,7 @@ C*****************************************************************************
       external ESR
       real*8   rhoc, grdcc, VLAMBDA
       integer  norder
-      real*8   E, d1E(5), d2E(15)
+      real*8   E, d1E(9), d2E(45)
 
       call   DESR(ESR,rhoc,grdcc,0.d0,norder,E,d1E,d2E)
 
@@ -203,7 +203,7 @@ C*****************************************************************************
       integer norder
 
       real*8   rhoc, rhocscaled, grdcc, grdccscaled, VLAMBDA
-      real*8   d1E(5), d2E(15)
+      real*8   d1E(9), d2E(45)
       real*8   Ecoul, d1Ecoul(5), d2Ecoul(15)
       real*8   Esca,  d1Esca(5),  d2Esca(15)
 
@@ -278,7 +278,7 @@ C*****************************************************************************
       integer norder
       logical dospin
       real*8   rhoc, rhos, mu
-      real*8   E, d1E(5), d2E(15)
+      real*8   E, d1E(9), d2E(45)
 
       real*8   hrc, hrs
       real*8   rhocm, rhocp, rhosp, rhosm
@@ -391,6 +391,7 @@ C         derivative wrt rhoc and rhos -----------------------
 
       return
       end
+C*****************************************************************************
       SUBROUTINE DESRC_SPINGGA(ESRC_SPINGGA,rho,grd2,mu,norder,
      &   E,d1E,d2E)
 C*****************************************************************************
@@ -455,7 +456,7 @@ C*****************************************************************************
       external ESRC_SPINGGA
       integer  norder
       real*8   rho(2), grd2(3), mu
-      real*8   E, d1E(5), d2E(15)
+      real*8   E, d1E(5), d2E(45)
 
       real*8   rhoc,  rhos,  grdcc,  grdss,  grdcs
       real*8   arhos, agrdcs
@@ -754,7 +755,7 @@ C*****************************************************************************
       integer          norder
 
       real*8   rho(4), grd2(6), mu
-      real*8   E, d1E(5), d2E(15)
+      real*8   E, d1E(9), d2E(45)
       real*8   Ea, Eb, d1W(4), d2W(6) ! for derivative wrt rhoa, rhob, grdaa, grdbb
 
       real*8   rhoa,  rhoam,  rhoap,  hra
@@ -766,7 +767,7 @@ C*****************************************************************************
       real*8   Em0, Ep0, E0m, E0p
       real*8   Emm, Epp, Epm, Emp
 
-      real*8, parameter :: D4I = 0.25d0, D8I = 0.125d0, D16I = 0.0625
+      real*8, parameter :: D4I = 0.25d0, D8I = 0.125d0, D16I = 0.0625d0
 
       logical  Eb_eq_Ea
 
@@ -936,7 +937,44 @@ C      cross-derivative wrt rhob and grdbb -----------------------
 
       return
       end ! SUBROUTINE DESRX_SPINGGA
-C****************************************************************************
+C*****************************************************************************
+      subroutine DESRC_SPINmetaGGA(ESRC_SPINmetaGGA,rho,grd2,tau,nabla,
+     &   mu,norder,E,d1E,d2E)
+C*****************************************************************************
+      implicit none
+      external ESRC_metaGGA
+
+      real*8 :: hrs, hrc, hgcc, hgss, hgcs, htc, hts, hec, hes
+      ! E_rhoc_rhos_gammacc_gammass_gammacs_tauc_taus_etac_etas
+      ! E = E00_000_00_00
+      real*8 :: E
+      
+      if (norder .lt. 1) return
+      if (norder .lt. 2) return
+      end subroutine
+C*****************************************************************************
+      subroutine DESRX_SPINmetaGGA(ESRC_SPINmetaGGA,rho,grd2,tau,nabla,
+     &   mu,norder,E,d1E,d2E)
+C*****************************************************************************
+      implicit none
+      external ESRC_metaGGA
+
+      integer, intent(in) :: norder
+      real*8, intent(in) :: mu, rho(4), grd2(6), tau(4), nabla(4)
+
+      real*8, intent(inout) :: E, d1E(9), d2E(45)
+
+      real*8, parameter :: D4I = 0.25d0, D8I = 0.125d0, D16I = 0.0625d0
+      real*8 :: d1Eab(9), d2Eab(45)
+      real*8 :: hra, hrb, hgaa, hgbb, hgab, hta, htb, hea, heb
+      ! E_rhoa_rhob_gammaaa_gammabb_gammaab_taua_taub_etaa_etab
+      ! E = E00_000_00_00
+      real*8 :: E
+
+      if (norder .lt. 1) return
+      if (norder .lt. 2) return
+      end subroutine
+C*****************************************************************************
 #ifdef NOT_USED
       SUBROUTINE ESRSPINGGA_ab(
      &   ESRSPINGGA,rhoa,rhob,grdaa,grdbb,grdab,mu,E)
@@ -972,7 +1010,7 @@ C*****************************************************************************
       integer norder
       logical dospin
       real*8   rhoc, rhos, VLAMBDA
-      real*8   E, d1E(5), d2E(15)
+      real*8   E, d1E(9), d2E(45)
 
       call  DESRSPIN(ESRSPIN,rhoc,rhos,0.d0,dospin,norder,E,d1E,d2E)
 
@@ -999,7 +1037,7 @@ C*****************************************************************************
       integer norder
       logical dospin
       real*8   rhoc, rhos, VLAMBDA
-      real*8   E, d1E(5), d2E(15)
+      real*8   E, d1E(9), d2E(45)
 
       call  DESRSPIN(ESRSPIN,rhoc,rhos,0.d0,dospin,norder,E,d1E,d2E)
 
