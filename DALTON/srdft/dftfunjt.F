@@ -204,8 +204,8 @@ C*****************************************************************************
 
       real*8   rhoc, rhocscaled, grdcc, grdccscaled, VLAMBDA
       real*8   d1E(9), d2E(45)
-      real*8   Ecoul, d1Ecoul(5), d2Ecoul(15)
-      real*8   Esca,  d1Esca(5),  d2Esca(15)
+      real*8   Ecoul, d1Ecoul(9), d2Ecoul(45)
+      real*8   Esca,  d1Esca(9),  d2Esca(45)
 
 ! TODO HJAAJ 
       call quit('hjaaj: need to define new d1E and d2E addresses')
@@ -937,43 +937,132 @@ C      cross-derivative wrt rhob and grdbb -----------------------
 
       return
       end ! SUBROUTINE DESRX_SPINGGA
+
+
 C*****************************************************************************
-      subroutine DESRC_SPINmetaGGA(ESRC_SPINmetaGGA,rho,grd2,tau,nabla,
-     &   mu,norder,E,d1E,d2E)
+      subroutine DESRC_SPINmetaGGA(ESRC_SPINmetaGGA,rho,grad2,tau,
+     &                             laplace,mu,norder,E,d1E,d2E)
 C*****************************************************************************
       implicit none
-      external ESRC_metaGGA
+#include "priunit.h"
+      external ESRC_SPINmetaGGA
 
-      real*8 :: hrs, hrc, hgcc, hgss, hgcs, htc, hts, hec, hes
+      integer, intent(in) :: norder
+      real*8, intent(in) :: mu, rho(2), grad2(3), tau(2), laplace(2)
+
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      
+C      real*8 :: hr_s, hr_c, hg_cc, hg_ss, hg_cs, ht_c, ht_s, hl_c, hl_s
+C      real*8 :: rho_c, rho_s, grad_cc, grad_ss, grad_cs, tau_c, tau_s,
+C     &          ¤laplace_c, laplace_s
       ! E_rhoc_rhos_gammacc_gammass_gammacs_tauc_taus_etac_etas
       ! E = E00_000_00_00
-      real*8 :: E
       
+C     Doing checks and assignemnts
+      if(norder .lt. 0 .or. norder .ge. 3) then
+        write(lupri,*) 'Fatal error DESRC_SPINmetaGGA: norder=',norder
+        call quit('ERROR DESRC_SPINmetaGGA: norder must be 0, 1, or 2')
+      endif
+      if (rho(1) .lt. 1.d-10) then ! no significant density in this point
+         E = 0.0d0
+         return
+      end if
+
       if (norder .lt. 1) return
       if (norder .lt. 2) return
       end subroutine
+
+
 C*****************************************************************************
-      subroutine DESRX_SPINmetaGGA(ESRC_SPINmetaGGA,rho,grd2,tau,nabla,
-     &   mu,norder,E,d1E,d2E)
+      subroutine DESRX_SPINmetaGGA(ESRC_SPINmetaGGA,rho,grad2,tau,
+     &                             laplace,mu,norder,E,d1E,d2E)
 C*****************************************************************************
       implicit none
-      external ESRC_metaGGA
+#include "priunit.h"
+      external ESRC_SPINmetaGGA
 
       integer, intent(in) :: norder
-      real*8, intent(in) :: mu, rho(4), grd2(6), tau(4), nabla(4)
+      real*8, intent(in) :: mu, rho(4), grad2(6), tau(4), laplace(4)
 
-      real*8, intent(inout) :: E, d1E(9), d2E(45)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
 
       real*8, parameter :: D4I = 0.25d0, D8I = 0.125d0, D16I = 0.0625d0
       real*8 :: d1Eab(9), d2Eab(45)
-      real*8 :: hra, hrb, hgaa, hgbb, hgab, hta, htb, hea, heb
+      real*8 :: hr_a, hr_b, hg_aa, hg_bb, ht_a, ht_b, hl_a, hl_b
+      real*8 :: rho_a, rho_b, grad_aa, grad_bb, tau_a, tau_b,
+     &          laplace_a, laplace_b
+      real*8 :: rho_ap, rho_am, rho_bp, rho_bm, grad_aap, grad_aam,
+     &          grad_bbp, grad_bbm, tau_ap, tau_am, tau_bp, tau_bm,
+     &          laplace_ap, laplace_am, laplace_bp, laplace_bm
       ! E_rhoa_rhob_gammaaa_gammabb_gammaab_taua_taub_etaa_etab
       ! E = E00_000_00_00
-      real*8 :: E
 
+C     Doing checks and assignemnts
+      if(norder .lt. 0 .or. norder .ge. 3) then
+        write(lupri,*) 'Fatal error DESRX_SPINmetaGGA: norder=',norder
+        call quit('ERROR DESRX_SPINmetaGGA: norder must be 0, 1, or 2')
+      endif
+      if (rho(1) .lt. 1.d-10) then ! no significant density in this point
+         E = 0.0d0
+         return
+      end if
+      rho_a   = rho(3)
+      rho_b   = rho(4)
+      grad_aa = grad2(4)
+      grad_bb = grad2(5)
+      tau_a   = tau(3)
+      tau_b   = tau(4)
+      laplace_a = laplace(3)
+      laplace_b = laplace(4)
+
+      hr_a  = 1.d-4*rho_a
+      hr_b  = 1.d-4*rho_b
+      hg_aa = 1.d-4*grad_aa
+      hg_bb = 1.d-4*grad_bb
+      ht_a  = 1.d-4*tau_a
+      ht_b  = 1.d-4*tau_b
+      hl_a  = 1.d-4*laplace_a
+      hl_b  = 1.d-4*laplace_b
+      if (hr_a .lt. 1.d-12) hr_a = 0.d0
+      if (hr_b .lt. 1.d-12) hr_b = 0.d0
+      if (hg_aa .lt. 1.d-24) hg_aa = 0.d0
+      if (hg_bb .lt. 1.d-24) hg_bb = 0.d0
+      if (ht_a .lt. 1.d-24) ht_a = 0.d0 ! What should the limit be for tau and laplace?
+      if (ht_b .lt. 1.d-24) ht_b = 0.d0
+      if (hl_a .lt. 1.d-24) hl_a = 0.d0
+      if (hl_b .lt. 1.d-24) hl_b = 0.d0
+
+      rho_ap   = rho_a   + hr_a
+      rho_am   = rho_a   - hr_a
+      rho_bp   = rho_b   + hr_b
+      rho_bm   = rho_b   - hr_b
+      grad_aap = grad_aa + hg_aa
+      grad_aam = grad_aa - hg_aa
+      grad_bbp = grad_bb + hg_bb
+      grad_bbm = grad_bb - hg_bb
+      tau_ap   = tau_a   + ht_a
+      tau_am   = tau_a   - ht_a
+      tau_bp   = tau_b   + ht_b
+      tau_bm   = tau_b   - ht_b
+      laplace_ap = laplace_a + hl_a
+      laplace_am = laplace_a - hl_a
+      laplace_bp = laplace_b + hl_b
+      laplace_bm = laplace_b - hl_b
+
+C     Calculate zeroth derivatives (i.e. the energy)
+
+C     Calculate first derivatives
       if (norder .lt. 1) return
+      d1E(:) = 0.0d0
+      d1Eab(:) = 0.0d0
+
+C     Calculate second derivatives
       if (norder .lt. 2) return
+      d2E(:) = 0.0d0
+      d2Eab(:) = 0.0d0
       end subroutine
+
+
 C*****************************************************************************
 #ifdef NOT_USED
       SUBROUTINE ESRSPINGGA_ab(

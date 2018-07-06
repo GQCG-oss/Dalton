@@ -77,6 +77,7 @@ C*****************************************************************************
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
 
       LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,FROMVX,TRIPLET
+      logical :: do_metagga
 
       REAL*8    EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
@@ -88,7 +89,7 @@ C*****************************************************************************
 
       INTEGER, SAVE :: NTOT_DFTGRID_save = -1
 
-      REAL*8    RHO(4), RHG(3,4), GRD2(6)
+      REAL*8    RHO(4), RHG(3,4), GRD2(6), tau(4), laplace(4)
 C     ... RHO(1) = rhoc = rho_a + rho_b
 C     ... RHO(2) = rhos = rho_a - rho_b
 C     ... RHO(3) = rhoa = rho_a
@@ -105,13 +106,13 @@ C     ... GRD2(5) = grdbb = RHG(:,4) . RHG(:,4)
 C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
 
 !     these are not initialized to zero!
-      real*8   Ex,  d1Ex(5),  d2Ex(15)
+      real*8   Ex,  d1Ex(9),  d2Ex(45)
       ! d1Ex(1:5) =   d1Exdrhoc, d1Exdrhos, d1Exdgrdcc, d1Exdgrdss, d1Exdgrdcs
 
-      real*8   Ec,  d1Ec(5),  d2Ec(15)
+      real*8   Ec,  d1Ec(9),  d2Ec(45)
       ! d1Ec(1:5) =   d1Ecdrhoc, d1Ecdrhos, d1Ecdgrdcc, d1Ecdgrdss, d1Ecdgrdcs
 
-      real*8   Exc, d1Exc(5), d2Exc(15)
+      real*8   Exc, d1Exc(9), d2Exc(45)
       ! d1Exc(1:5) =  d1Excdrhoc, d1Excdrhos, d1Excdgrdcc, d1Excdgrdss, d1Excdgrdcs
 
 #if SRDFT_DEBUG > 10
@@ -179,12 +180,12 @@ C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
 
 C     Initializations -------------------------------------------------------
 
-      RHG(1:3,1:4) = 0.0d0 ! so initialized for LDA
-      GRD2(1:6)    = 0.0d0
+      RHG(:,:) = 0.0d0 ! so initialized for LDA
+      GRD2(:)    = 0.0d0
 
       ! edh the arrays are also zeroed in SRDFTEXCJT
-      d1Ex(1:5)  = 0.0d0
-      d1Ec(1:5)  = 0.0d0
+      d1Ex(:)  = 0.0d0
+      d1Ec(:)  = 0.0d0
       !---------------
 
 !     (Integrated) exchange and correlation energies
@@ -387,6 +388,8 @@ C
         grd2(5) = rhg(1,4)**2 + rhg(2,4)**2 + rhg(3,4)**2  ! grdbb
         grd2(6) = rhg(1,3)*rhg(1,4) + rhg(2,3)*rhg(2,4)    ! grdab = grad(rhoa) . grad(rhob)
      &          + rhg(3,3)*rhg(3,4)
+      else if (do_metagga) then
+         call quit('srdftjt.F: No metaGGA yet.')
       ENDIF
 C
 C     Number of electrons
@@ -568,7 +571,7 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 
-      real*8  rho(4), grd2(6), CHIVAL, VLAMBDA ! input
+      real*8  rho(4), grd2(6), tau(4), laplace(4), CHIVAL, VLAMBDA ! input
 !     grd2(1:6) = (grdcc, grdss, grdcs, grdaa, grdbb, grdab)
       integer NORDER
       logical ERFEXP(0:2), triplet
@@ -851,12 +854,12 @@ C***************************************************************************
 
 !     input
       integer  KSYMOP, IPRINT_X
-      logical  DOGGA,ERFEXP(0:2),TRIPLET
-      real*8   RHO(4), RHG(3,4), GRD2(6)
-      real*8   CHIVAL,VLAMBDA
-      real*8   DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
-      real*8   GAO(NBAST),GAO1(NBAST,3), DGAO(NBAST,2)
-      real*8   WGHTX,WGHTC
+      logical  DOGGA, ERFEXP(0:2), TRIPLET, do_metagga
+      real*8   RHO(4), RHG(3,4), GRD2(6), tau(4), laplace(4)
+      real*8   CHIVAL, VLAMBDA
+      real*8   DTXMAT(NBAST,NBAST), DSXMAT(NBAST,NBAST)
+      real*8   GAO(NBAST), GAO1(NBAST,3), DGAO(NBAST,2)
+      real*8   WGHTX, WGHTC
 !     output
       real*8   EXCMAT(NBAST,NBAST,2)
 
@@ -879,9 +882,12 @@ C***************************************************************************
       real*8   Exc, d1Exc(9), d2Exc(45)
 !     
 !     r = rho, g=gamma, t=tau, e=eta
-!     gamma = grd_rho * grd_rho
+!     gamma = grad_rho . grad_rho
 !     tau   = kinetic energy density
-!     eta   = nabla_rho
+!     eta   = laplace_rho
+!
+!           dr_c   dr_s   dg_cc   dg_ss   dg_cs   dt_c   dt_s   de_c   de_s
+!  d1E?(idx)  1      2      3       4       5       6      7       8      9
 !  
 !  d2E?(idx)
 !           dr_c   dr_s   dg_cc   dg_ss   dg_cs   dt_c   dt_s   de_c   de_s
@@ -894,7 +900,6 @@ C***************************************************************************
 !     de_s   22     23     24      25      26      27     28
 !     dt_c   29     30     31      32      33      34     35      36
 !     dt_s   37     38     39      40      41      42     43      44     45
-!  d1E?(idx)  1      2      3       4       5       6      7       8      9
 
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
          CALL QUIT('SRDFTJT.F: Triplet and DFT_SPINDNS not implemented')
@@ -989,40 +994,48 @@ C Total contribution -------------------------------------------------------
          FZZ   = d2Exc(6)*4.0d0
 !        FZZ   = 4 d2Excdgrdccdgrdcc
 
-      IF (DFT_SPINDNS .OR. TRIPLET) THEN
-         ! grd[rhos^(X,Y,Z)]
-         RX(2) = RHG(1,2)
-         RY(2) = RHG(2,2)
-         RZ(2) = RHG(3,2)
+         IF (DFT_SPINDNS .OR. TRIPLET) THEN
+            ! grd[rhos^(X,Y,Z)]
+            RX(2) = RHG(1,2)
+            RY(2) = RHG(2,2)
+            RZ(2) = RHG(3,2)
 
-         FZ0_S = d1Exc(4)*2.0d0
-!        FZ0_S = 2 d1Excgrdss
-         FSZ   = d2Exc(5)*2.0d0
-!        FSZ   = 2 d2Excdrhosdgrdcc
-         ! spin-gradient
-         FRZ_S = d2Exc(7)*2.0d0
-!        FRZ_S = 2 d2Excdrhocdgrdss
-         FSZ_S = d2Exc(8)*2.0d0
-!        FSZ_S = 2 dd2Excdrhosdgrdss
-         FZZ_S = d2Exc(9)*4.0d0
-!        FZZ_S = 4 d2Excdgrdccdgrdss
-         FZZ_SS= d2Exc(10)*4.0d0
-!        FZZ_SS= 4 d2Excdgrdssdgrdss
+            FZ0_S = d1Exc(4)*2.0d0
+!           FZ0_S = 2 d1Excgrdss
+            FSZ   = d2Exc(5)*2.0d0
+!           FSZ   = 2 d2Excdrhosdgrdcc
+            ! spin-gradient
+            FRZ_S = d2Exc(7)*2.0d0
+!           FRZ_S = 2 d2Excdrhocdgrdss
+            FSZ_S = d2Exc(8)*2.0d0
+!           FSZ_S = 2 dd2Excdrhosdgrdss
+            FZZ_S = d2Exc(9)*4.0d0
+!           FZZ_S = 4 d2Excdgrdccdgrdss
+            FZZ_SS= d2Exc(10)*4.0d0
+!           FZZ_SS= 4 d2Excdgrdssdgrdss
 
-!        The two lines below is to make the definitions consistent. As
-!        can be seen, for all the other terms the 2 or 4 factor have
-!        been absorbed into the derivatives (see lines above). Therefore
-!        this should also be the case for the two derivatives below.
-!        E.R.K, 20 June 2018
-         d2Exc(13) = d2Exc(13)*2.0d0
-         d2Exc(14) = d2Exc(14)*2.0d0
-
-      END IF ! DOGGA .and. DFT_SPINDNS
+!           The two lines below is to make the definitions consistent. As
+!           can be seen, for all the other terms the 2 or 4 factor have
+!           been absorbed into the derivatives (see lines above). Therefore
+!           this should also be the case for the two derivatives below.
+!           E.R.K, 20 June 2018
+            d2Exc(13) = d2Exc(13)*2.0d0
+            d2Exc(14) = d2Exc(14)*2.0d0
+         END IF ! DOGGA .and. DFT_SPINDNS
       END IF ! DOGGA
 
       if (do_metagga) then
-      if (dft_spindns .or. triplet) then
-      end if ! openshell or triplet
+         call quit('srdftjt.F: No metaGGA yet.')
+         d2Exc(18) = d2Exc(18)*2.0d0
+         d2Exc(31) = d2Exc(31)*2.0d0
+         if (dft_spindns .or. triplet) then
+            call quit('srdftjt.F: No metaGGA yet.')
+            d2Exc(19) = d2Exc(19)*2.0d0
+            d2Exc(24) = d2Exc(24)*2.0d0
+            d2Exc(32) = d2Exc(32)*2.0d0
+            d2Exc(39) = d2Exc(39)*2.0d0
+            d2Exc(40) = d2Exc(40)*2.0d0
+         end if ! openshell or triplet
       end if ! metaGGA
 
 
@@ -1035,11 +1048,17 @@ C Linear transformation -----------------------------------------------------
             ! B0(2) = rhos_b
             ! B3(:,1) = grad(rhoc_b)
             ! B3(:,2) = grad(rhos_b)
+            ! B4(1) = tauc_b
+            ! B4(2) = taus_b
+            ! B5(1) = laplace(rhoc_b)
+            ! B5(2) = laplace(rhos_b)
             ! BR(1) = grad(rhoc) . grad(rhoc_b)
             ! BR(2) = grad(rhos) . grad(rhos_b)
             ! BR(3) = grad(rhoc) . grad(rhos_b)
             ! BR(4) = grad(rhos) . grad(rhoc_b)
             ! AX, AY, AZ : grad(xhi_i xhi_j)
+            ! BX, BY, BZ : grad(phi_p) . grad(phi_q) 
+            ! CX, AC, CZ : laplace(xhi_i xhi_j)
             ! AR(1) = AX*RX(1)   + AY*RY(1)   + AZ*RZ(1)   ! grad(xhi_i xhi_j) . grad(rhoc)
             ! AR(2) = AX*RX(2)   + AY*RY(2)   + AZ*RZ(2)   ! grad(xhi_i xhi_j) . grad(rhos)
             ! AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1) ! grad(xhi_i xhi_j) . grad(rhoc_b)
@@ -1050,12 +1069,30 @@ C Linear transformation -----------------------------------------------------
             ! FAC0S  = All terms in EXCMAT(2) multiplied with G0*GA0(J)
             ! FACS   = All terms in EXCMAT(2) multiplied with AR(2)
             ! FAC_AR = All terms multiplied with AR(2) for EXCMAT(1),
-            !          and AR(1) for EXCMAT(2)
+            !                                and AR(1) for EXCMAT(2)
 
             if (do_metagga) then
                if (dft_spindns) then
+                  call quit('srdftjt.F: No metaGGA yet.')
+                  BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
+                  BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
+                  BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
+                  BR(4) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
+                  FAC0R = 0.0d0
+                  FAC0S = 0.0d0
+                  FACR  = 0.0d0
+                  FACS  = 0.0d0
+                  FAC_AR = 0.0d0
                else if (triplet) then
+                  call quit('srdftjt.F: No metaGGA yet.')
+                  BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
+                  FAC0S = 0.0d0
+                  FAC_AR = 0.0d0
                else ! normal metaGGA
+                  call quit('srdftjt.F: No metaGGA yet.')
+                  BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
+                  FAC0R = 0.0d0
+                  FACR  = 0.0d0
                end if
             else if (dogga) then
                if (dft_spindns) then
@@ -1129,8 +1166,42 @@ C Linear transformation -----------------------------------------------------
             IF (NSYM.EQ.1) THEN
                if (do_metagga) then
                   if (triplet) then
+                     call quit('srdftjt.F: No metaGGA yet.')
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        GX = GAO1(I,1)
+                        GY = GAO1(I,2)
+                        GZ = GAO1(I,3)
+                        DO J = 1, I
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           EXCMAT(J,I,1) = 0.0d0
                   else if (dft_spindns) then
+                     call quit('srdftjt.F: No metaGGA yet.')
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        GX = GAO1(I,1)
+                        GY = GAO1(I,2)
+                        GZ = GAO1(I,3)
+                        DO J = 1, I
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           EXCMAT(J,I,1) = 0.0d0
+                           EXCMAT(J,I,2) = 0.0d0
                   else
+                     call quit('srdftjt.F: No metaGGA yet.')
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        GX = GAO1(I,1)
+                        GY = GAO1(I,2)
+                        GZ = GAO1(I,3)
+                        DO J = 1, I
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           EXCMAT(J,I,1) = 0.0d0
                   end if
                ELSE IF (DOGGA) THEN
                   IF (TRIPLET) THEN ! closed-shell triplet GGA response

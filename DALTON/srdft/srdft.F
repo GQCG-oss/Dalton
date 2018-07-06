@@ -507,7 +507,7 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 C
-      LOGICAL   DOGGA,DOLND,DOGRD,DOERG,DOATR,TRIPLET
+      LOGICAL   DOGGA,DOLND,DOGRD,DOERG,DOATR,TRIPLET,do_metagga
       LOGICAL   first_call, LSRHYBR
       DATA      first_call /.true./
       REAL*8    EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),WORK(LWORK)
