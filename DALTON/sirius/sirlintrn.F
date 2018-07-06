@@ -475,7 +475,7 @@ C
       CALL GETTIM(T4,W4)
       DFTADX = DFTADD
       DFTADD = .TRUE.
-      IF (DFTRUN) THEN
+      IF (DODFT) THEN
          IF(NASHT.NE.0) CALL QUIT('QC-SCF not implemented for RO-DFT')
          DO IOSIM = 1,NOSIM
            CALL DZERO(WRK(KFXC),N2ORBX)

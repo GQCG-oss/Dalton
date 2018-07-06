@@ -251,38 +251,43 @@ together with quadratic or cubic response.
 Sets $A$ and $B$ to the dipole operators,\index{dipole length}
 the dipole-velocity operators,\index{dipole velocity}
 and the angular momentum operators.\index{angular momentum}
+The necessary property integrals must be requested in the \Sec{*INTEGRALS} input module.
 
 \item{\Key{DIPLEN}}
-Sets $A$ and $B$ to dipole operators\index{dipole length}.
+Add the three dipole component operators to both the $A$ and $B$ operator lists, also known as dipole length operators.\index{dipole length}
 
 \item{\Key{DIPLNX/Y/Z}}
 Sets $A$ and $B$ to the X, Y, or Z component of the dipole length operators, respectively\index{dipole length}.
 
 \item{\Key{DIPMAG}}
-Sets $A$ and $B$ to angular momentum operators\index{angular momentum}.
+Add the three angular momentum component operators to both the $A$ and $B$ operator lists.\index{angular momentum}
 
 \item{\Key{DIPMGX/Y/Z}}
 Sets $A$ and $B$ to the X, Y, or Z component of the angular momentum operators\index{angular momentum}.
 
 \item{\Key{DIPVEL}}
-Sets $A$ and $B$ to the dipole velocity operators\index{dipole velocity}.
+Add the three dipole velocity component operators to both the $A$ and $B$ operator lists.\index{dipole velocity}
 
 \item{\Key{DIPVLX/Y/Z}}
 Sets $A$ and $B$ to the X, Y, or Z component of the dipole velocity
 operator, respectively\index{dipole velocity}.
 
-\item{\Key{FERMI}} Sets $A$ and $B$ to be all Fermi-contact operators
-  found on the file \verb|AOPROPER|, {\it i.e.\/} all Fermi-contact
-  operators requested in the \Sec{*INTEGRALS} input module.
+\item{\Key{FERMI}}
+Add all Fermi-contact operators
+found on the file \verb|AOPROPER| to both the $A$ and $B$ operator lists.
+The calculation of Fermi-contact operator matrices must be requested in the \Sec{*INTEGRALS} input module with \Key{FC},
+optionally restricted to selected nuclei with \Key{SELECT}.
 
 \item{\Key{FREQUE}}\\
 \verb|READ *, NFREQ|\\
 \verb|READ *, FREQ(1:NFREQ)|\\
-Response equations are evaluated at given
-frequencies\index{frequency}. Two lines following
+All linear response equations are evaluated at the \verb|NFREQ| requested
+frequencies\index{frequency}.
+Two lines following
 this option must contain 1) The number of frequencies, 2) Frequencies
 in atomic units.
 Remember to increase \Key{MAXRM} if many frequencies are specified.
+Default: only zero frequency (static calculation).
 
 \item{\Key{MAX IT}}\\
 \verb|READ (LUCMD,*) MAXITL|\\
@@ -303,6 +308,7 @@ the angular momentum operators,\index{angular momentum}
 the second-order moment (Cartesian electric quadrupole
 length) operators, and
 the Cartesian electric quadrupole velocity operators.
+The necessary property integrals must be requested in the \Sec{*INTEGRALS} input module.
 
 \item{\Key{PRINT}}\\
 \verb|READ *,IPRLR|\\
@@ -310,9 +316,10 @@ Sets print level for linear response module. Default is 2.
 
 \item{\Key{PROPRT}}\\
 \verb|READ '(A)', LABEL|\\
-Sets $A$ and $B$ to a given operator with label; LABEL.
-(The calculation of the operator must be specified to the integral
-module, see section \ref{ch:hermit}.)
+Add the operator with label \verb|LABEL| 
+on the file \verb|AOPROPER| to both the $A$ and $B$ operator lists.
+(The calculation of the operator must be specified in the \Sec{*INTEGRALS} input module,
+see section \ref{ch:hermit}.)
 This keyword may be repeated for different properties.
 
 \item{\Key{PV PSO}} Sets $A$ and $B$ in the linear response function
@@ -336,7 +343,8 @@ This keyword may be repeated for different properties.
   also be set by this option.
 
 \item{\Key{QUADMOM}}
-Sets $A$ and $B$ to the quadrupole\index{quadrupole operator} operators.
+Add the six cartesian quadrupole\index{quadrupole operator} component operators
+to both the $A$ and $B$ operator lists.
 
 \item{\Key{QUADXX/XY/XZ/YY/YZ/ZZ}}
 Sets $A$ and $B$ to the XX, XY, XZ, YY, YZ, or ZZ component of the
@@ -353,7 +361,8 @@ response calculation.
   operators requested in the \Sec{*INTEGRALS} input module.
 
 \item{\Key{SPIN-O}}
-Sets $A$ and $B$ to spin-orbit operators\index{spin-orbit}.
+Sets $A$ and $B$ to Breit-Pauli spin-orbit component operators,
+both the one- and two-electron parts\index{spin-orbit}.
 
 \item{\Key{SPNORX/Y/Z}}
 Sets $A$ and $B$ to the X, Y, or Z component of the spin--orbit
