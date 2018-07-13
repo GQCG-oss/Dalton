@@ -142,7 +142,6 @@ C Read **RESPONS input
 C
       CALL RSPREA
 
-      write(lupri,*)'Test output DFT_SPINDNS, DIRFCK',DFT_SPINDNS,DIRFCK
       IF (DFT_SPINDNS) THEN
          WRITE(LUPRI,'(A)') ' using spin-density in srDFT part'
          NDV = 2 ! DV,DS and FV,FS
