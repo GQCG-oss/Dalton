@@ -110,8 +110,6 @@ cREAD_MOL: 'ANG' was not initialized; errors in 'ANG' message format
 c931220-hjaaj
 cWRONEL: corrected calc. of INAMN and IGTO for LUONEL
 c931022-hjaaj
-cREAINP: INPTST = IPREAD .gt. 3 (INPTST was not defined)
-cexpanded tabs with 'expand'
 cREAD_MOL: If ID3 then reset to blank (for abawalk)
 cBASINP: changed format for nuclear charge from F4.1 to F4.0
 c (such that an entry '6' is read as 6. and not as 0.6 )
@@ -371,7 +369,6 @@ C     ... parameter MAXPRD is in cbirea.h
       BIGVC  = .FALSE.
       DIRAC  = RELCAL
       GENCON = .TRUE.
-      INPTST = TSTINP
       IF (TSTINP) IPREAD = MAX(4,IPREAD)
       BASIS  = .FALSE.
       ATOMBA = .FALSE.
@@ -428,7 +425,7 @@ C               - NEW common block FRAME
 C                       - added POTNUC, DPNUC(3)
 C               - common block CBIREA:
 C                       - IPRINT changed to IPREAD
-C                       - added INPTST,FAMILY
+C                       - added FAMILY
 C               - common block SHELLS:
 C                       - added NLRGSH,NSMLSH,NLARGE,NSMALL,NORBS
 C                       - added LCLASS(MXSHEL)

@@ -154,7 +154,7 @@ C
 C     We also need two variables from cbiher.h
 C
       IPREAD_BKP = IPREAD
-      CALL READ_CBIHER(IPREAD, INPTST)
+      CALL READ_CBIHER(IPREAD)
 C
 C     An important input for the READIN procedure is the number of primitives
 C     per block in the input file. First check if this has been reset.
@@ -817,16 +817,14 @@ C
       RETURN
       END
 C/* Deck READ_CBIHER */
-      SUBROUTINE READ_CBIHER(IPRDEF_HER, TSTINP_HER)
+      SUBROUTINE READ_CBIHER(IPRDEF_HER)
 C
-C Fetch two definitions from cbiher.h
+C Fetch print level definition from cbiher.h
 C
 #include "implicit.h"
 #include "mxcent.h"
 #include "cbiher.h"
-      LOGICAL TSTINP_HER
       IPRDEF_HER = IPRDEF
-      TSTINP_HER = TSTINP
       RETURN
       END
 C /* Deck dktrf */
