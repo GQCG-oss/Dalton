@@ -4299,11 +4299,11 @@ C
      &              NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT,
      &              (IDUM,I=1,NDUM),MCTYPE_IFC
       IF (MCTYPE_IFC .GT. 900) THEN
-         IF (.NOT. DFT_SPINDNS) THEN
+         IF ( (.NOT. DFT_SPINDNS) .AND. ISPIN .NE. 1 ) THEN
             CALL QUIT('ERROR in RSPMC:'//
      &      'DFT_SPINDNS true on SIRIFC, but not in input')
          END IF
-         MCTYPE = MCTYPE - 1000
+         MCTYPE_IFC = MCTYPE_IFC - 1000
       END IF
       IF (DFT_SPINDNS) THEN
          NDV = 2 ! DV and DS
