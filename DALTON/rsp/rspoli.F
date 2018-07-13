@@ -170,9 +170,10 @@ C
       CALL QENTER('RSPOLI')
 C
       IF (IPRRSP .GT. 5) THEN
-         write(lupri,'(//A,2I10/A,3L10/A,L10,I10)')
+         write(lupri,'(//A,2I10/A,5L10/A,L10,I10)')
      &   'Output from "RSPOLI". NCSIM,NOSIM=',NCSIM,NOSIM,
-     &   'TRPLET,HSROHF,DFTADD',TRPLET,HSROHF,DFTADD,
+     &   'TRPLET,HSROHF,DOHSRDFT,DOMCSRDFT,DFTADD',
+     &   TRPLET,HSROHF,DOHFSRDFT,DOMCSRDFT,DFTADD,
      &   'TDHF,NASHT',TDHF,NASHT
       END IF
 C
@@ -293,7 +294,7 @@ C If also single determinant, then nothing to do in MO part
 C
       !IF (DIRFCK .AND. (TDHF .OR. DODFT)) GO TO 1000
       !IF (DIRFCK .AND. KZCONF .EQ. 0) GO TO 1000
-      IF (HSROHF.OR.DODFT) GO TO 1000
+      IF (HSROHF .OR. DODFT) GO TO 1000
       ! ... KS-DFT only works with direct code, even if DIRFCK is false /hjaaj
       IF (DIRFCK .AND. TDHF .AND. NASHT.EQ.1) GO TO 1000 ! .OPEN SHELL HF
       IF (DIRFCK .AND. KZCONF.EQ.0 .AND. NASHT.EQ.0) GO TO 1000
@@ -722,9 +723,6 @@ C
 
 #ifdef MOD_SRDFT
       IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
-C        IF (TRPLET) THEN
-C          call quit('SRDFT_DENS not checked/fixed for triplet MC-srDFT')
-C        END IF
          CALL SRDFT_DENS(WRK(KDTOTAO),UDV,PVX,CMO,WRK,KFREE,LFREE)
 C        Get DtotAO, allocation for DXtotAO in SIRFCK.SRDFT can here be
 C        used temporarily for DVAO if NASHT.gt.0
