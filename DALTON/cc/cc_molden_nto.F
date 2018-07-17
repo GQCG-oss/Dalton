@@ -68,12 +68,6 @@ C
          ncount = ncount + nbas(isym)*norbs(isym)
          ncount2 = ncount2 + norbs(isym)
       end do
-
-!     No symmetry allowed
-!     -------------------
-!      if (nsym .ne. 1) then
-!         stop 'Symmetry not implemented'
-!      end if
 !
 !     Dynamic allocation
 !     ------------------
@@ -86,7 +80,7 @@ C
       koccu = korbv + norbts
       kend1 = koccu + norbts
       lwrk1 = lwork - kend1 + 1
-      write(lupri,'(6I5)') kcmot, kucmo, krbtr, korbv, koccu, kend1
+!      write(lupri,'(6I5)') kcmot, kucmo, krbtr, korbv, koccu, kend1
 !
       if (lwrk1 .lt. 0) then
          stop 'Insufficient work space in '//myname
@@ -159,9 +153,6 @@ C
             call dzero(work(knto), nlamds)
             call dzero(work(koccu), norbts)
 
-            !write(LUPRI,'(F16.6)') DNRM2(NT1AM(EXCISYM),work(kvec1),1)
-            !write(LUPRI,'(A,I1,I3)') 'NTO singular values for exci ',
-     &      !      excisym, iexci
             ! Loop over symmetry blocks of the vector
             do isymi = 1, nsym
                isyma = muld2h(isymi,excisym)
@@ -241,7 +232,7 @@ C
 !           Create filename
 !           ---------------
 !
-            write(filename,"(A5,I1,A,I1,A7)")
+            write(filename,"(A5,I1,A,I0,A7)")
      &         "exci_", excisym, '_', iexci, ".molden"
 !
 !           Call molden_mos to write MOs in molden format
