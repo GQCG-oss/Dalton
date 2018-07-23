@@ -52,7 +52,7 @@ if sys.version >= '2.4':
     if compiler_name in command_d:
         p = subprocess.Popen(command_d[compiler_name], shell=True, \
                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out = p.communicate()[0]
+        out = p.communicate()[0].decode('utf-8')
         if out != '':
             if compiler_name != 'pgf90' and compiler_name != 'pgcc' and  compiler_name != 'pgCC':
                 # use only first line, not the copyright stuff
