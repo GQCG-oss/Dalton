@@ -8,6 +8,7 @@ after_script:
 fedora-26-serial:
     image: foeroyingur/fedora:26
     variables:
+        DALTON_NUM_MPI_PROCS: "1"
         OMP_NUM_THREADS: "1"
     before_script:
         - whoami
@@ -26,7 +27,7 @@ fedora-26-serial:
     script:
         - python setup --coverage --type=debug -D SITE=GitLabCI
         - cd build
-        - make -j 3
+        - make -j 4
         - ctest -L essential --output-on-failure
         - ctest -D ExperimentalCoverage
         - ctest -D ExperimentalSubmit
@@ -34,7 +35,7 @@ fedora-26-serial:
 fedora-26-mpi:
     image: foeroyingur/fedora:26
     variables:
-        DALTON_NUM_MPI_PROCS: "3"
+        DALTON_NUM_MPI_PROCS: "4"
         OMP_NUM_THREADS: "1"
     before_script:
         - whoami
@@ -57,5 +58,117 @@ fedora-26-mpi:
     script:
         - python setup --type=debug --mpi
         - cd build
-        - make -j 3
+        - make -j 4
+        - ctest -L essential --output-on-failure
+
+ubuntu-16.04-serial:
+    image: devcafe/ubuntu16.04-gcc5.3.1-openmpi1.10-mkl2017.4.239
+    variables:
+        DALTON_NUM_MPI_PROCS: "1"
+        OMP_NUM_THREADS: "1"
+    before_script:
+        - whoami
+        - ps -u `whoami`
+        - uname -a
+        - lscpu
+        - free -m
+        - df -h
+        - ulimit -a
+        - git --version
+        - cmake --version
+        - python -V
+        - gfortran -v
+        - gcc -v
+        - g++ -v
+    script:
+        - python setup
+        - cd build
+        - make -j 4
+        - ctest -L essential --output-on-failure
+
+ubuntu-16.04-mpi:
+    image: devcafe/ubuntu16.04-gcc5.3.1-openmpi1.10-mkl2017.4.239
+    variables:
+        DALTON_NUM_MPI_PROCS: "4"
+        OMP_NUM_THREADS: "1"
+    before_script:
+        - whoami
+        - ps -u `whoami`
+        - uname -a
+        - lscpu
+        - free -m
+        - df -h
+        - ulimit -a
+        - git --version
+        - cmake --version
+        - python -V
+        - gfortran -v
+        - gcc -v
+        - g++ -v
+        - mpifort -v
+        - mpicc -v
+        - mpicxx -v
+        - mpirun --version
+    script:
+        - python setup --mpi
+        - cd build
+        - make -j 4
+        - ctest -L essential --output-on-failure
+
+ubuntu-18.04-serial:
+    image: devcafe/ubuntu18.04-gcc7.3.0-openmpi2.1.0-mkl2017.4.239
+    variables:
+        DALTON_NUM_MPI_PROCS: "1"
+        OMP_NUM_THREADS: "1"
+    before_script:
+        - whoami
+        - ps -u `whoami`
+        - uname -a
+        - lscpu
+        - free -m
+        - df -h
+        - ulimit -a
+        - virtualenv venv
+        - source venv/bin/activate
+        - git --version
+        - cmake --version
+        - python -V
+        - gfortran -v
+        - gcc -v
+        - g++ -v
+    script:
+        - python setup
+        - cd build
+        - make -j 4
+        - ctest -L essential --output-on-failure
+
+ubuntu-18.04-mpi:
+    image: devcafe/ubuntu18.04-gcc7.3.0-openmpi2.1.0-mkl2017.4.239
+    variables:
+        DALTON_NUM_MPI_PROCS: "4"
+        OMP_NUM_THREADS: "1"
+    before_script:
+        - whoami
+        - ps -u `whoami`
+        - uname -a
+        - lscpu
+        - free -m
+        - df -h
+        - ulimit -a
+        - virtualenv venv
+        - source venv/bin/activate
+        - git --version
+        - cmake --version
+        - python -V
+        - gfortran -v
+        - gcc -v
+        - g++ -v
+        - mpifort -v
+        - mpicc -v
+        - mpicxx -v
+        - mpirun --version
+    script:
+        - python setup --mpi
+        - cd build
+        - make -j 4
         - ctest -L essential --output-on-failure
