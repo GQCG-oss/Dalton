@@ -869,13 +869,14 @@ C***************************************************************************
 
       real*8   ddot
 
-      real*8   BR(4), B0(2), B3(3,2), BMAX
+      real*8   BR(4), B0(2), B3(3,2), BMAX, B4(2), B5(2)
       real*8   AR(2), AB(2), AX, AY, AZ, RX(2), RY(2), RZ(2)
 
-      real*8   FAC0R, FAC0S, FACR, FACS, FAC_AR
+      real*8   FAC0R, FAC0S, FACR, FACS, FAC_AR, FAC_RB, FAC_SB
+      real*8   FAC_RC, FAC_SC
       real*8   FRR, FRZ, FZZ, FZ0
       real*8   FRS, FSS, FSZ, FSZ_S, FRZ_S, FZZ_S, FZ0_S, FZZ_SS
-      real*8   G0, GX, GY, GZ
+      real*8   G0, GX, GY, GZ, Xi
 
 !     X, C, and XC energies, and derivatives
       real*8   Ex, Ec, d1Ex(9), d1Ec(9), d2Ex(45), d2Ec(45)
@@ -1070,6 +1071,16 @@ C Linear transformation -----------------------------------------------------
             ! FACS   = All terms in EXCMAT(2) multiplied with AR(2)
             ! FAC_AR = All terms multiplied with AR(2) for EXCMAT(1),
             !                                and AR(1) for EXCMAT(2)
+            ! FAC_RB = All terms multiplied with G1*GAO1(J) in EXCMAT(1)
+            ! FAC_SB = All terms multiplied with G1*GAO1(J) in EXCMAT(2)
+            ! FAC_RC = All terms multiplied with G2*GAO(J) + G0*GAO2(J)
+            !                                    + 2*G1*GAO1(J) in EXCMAT(1)
+            ! FAC_SC = All terms multiplied with G2*GAO(J) + G0*GAO2(J)
+            !                                    + 2*G1*GAO1(J) in EXCMAT(2)
+            !              FAC_RC and FAC_SC, will be implemented later.
+            !              all terms related to Laplacian rho, will be 
+            !              implemented later. And is therefore commented
+            !              out in the below code.
 
             if (do_metagga) then
                if (dft_spindns) then
@@ -1078,21 +1089,76 @@ C Linear transformation -----------------------------------------------------
                   BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
                   BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
                   BR(4) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
-                  FAC0R = 0.0d0
-                  FAC0S = 0.0d0
-                  FACR  = 0.0d0
-                  FACS  = 0.0d0
-                  FAC_AR = 0.0d0
+                  FAC0R = FRR*B0(1) + FRS*B0(2) + FRZ*BR(1) + 
+     &                    FRZ_S*BR(2) + d2Exc(11)*BR(4) +
+     &                    d2Exc(11)*BR(3) + d2Exc(16)*B4(1) +
+     &                    d2Exc(22)*B4(2)
+      !&                    + d2Exc(29)*B5(1) + d2Exc(37)*B5(2)
+                  FAC0S = FRS*B0(1) + FSS*B0(2) + FSZ*BR(1) +
+     &                    FSZ_S*BR(2) + d2Exc(12)*BR(4) +
+     &                    d2Exc(12)*BR(3) + d2Exc(17)*B4(1) +
+     &                    d2Exc(23)*B4(2)
+      !&                    + d2Exc(30)*B5(1) + d2Exc(38)*B5(2)
+                  FACR  = FRZ*B0(1) + FSZ*B0(2) + FZZ*BR(1) +
+     &                    FZZ_S*BR(2) + d2Exc(13)*BR(4) +
+     &                    d2Exc(13)*BR(3) + d2Exc(18)*B4(1) +
+     &                    d2Exc(24)*B4(2)
+      !&                    + d2Exc(31)*B5(1) + d2Exc(39)*B5(2)
+                  FACS  = FRZ_S*B0(1) + FSZ_S*B0(2) + FZZ_S*BR(1) +
+     &                    FZZ_SS*BR(2) + d2Exc(14)*BR(4) +
+     &                    d2Exc(14)*BR(3) + d2Exc(19)*B4(1) +
+     &                    d2Exc(25)*B4(2)
+      !&                    + d2Exc(32)*B5(1) + d2Exc(40)*B5(2)
+                  FAC_AR = d2Exc(11)*B0(1) + d2Exc(12)*B0(2) +
+     &                     d2Exc(13)*BR(1) + d2Exc(14)*BR(2) +
+     &                     d2Exc(15)*BR(4) + d2Exc(15)*BR(3) +
+     &                     d2Exc(20)*B4(1) + d2Exc(26)*B4(2)
+      !&                     + d2Exc(33)*B5(1) + d2Exc(41)*B5(2)
+                  FAC_RB = d2Exc(16)*B0(1) + d2Exc(17)*B0(2) +
+     &                     d2Exc(18)*BR(1) + d2Exc(19)*BR(2) +
+     &                     d2Exc(20)*BR(4) + d2Exc(20)*BR(3) +
+     &                     d2Exc(21)*B4(1) + d2Exc(27)*B4(2)
+      !&                     + d2Exc(34)*B5(1) + d2Exc(42)*B5(2)
+                  FAC_SB = d2Exc(22)*B0(1) + d2Exc(23)*B0(2) +
+     &                     d2Exc(24)*BR(1) + d2Exc(25)*BR(2) + 
+     &                     d2Exc(26)*BR(4) + d2Exc(26)*BR(3) +
+     &                     d2Exc(27)*B4(1) + d2Exc(28)*B4(2)
+      !&                     + d2Exc(35)*B5(1) + d2Exc(43)*B5(2)
+                  !FAC_RC = d2Exc(29)*B0(1) + d2Exc(30)*B0(2) + 
+      !&                     d2Exc(31)*BR(1) + d2Exc(32)*BR(2) + 
+      !&                     d2Exc(33)*BR(4) + d2Exc(33)*BR(3) + 
+      !&                     d2Exc(36)*B5(1) + d2Exc(44)*B5(2) +
+      !&                     d2Exc(34)*B4(1) + d2Exc(35)*B4(2)
+                  !FAC_SC = d2Exc(37)*B0(1) + d2Exc(38)*B0(2) +
+      !&                     d2Exc(39)*BR(1) + d2Exc(40)*BR(2) +
+      !&                     d2Exc(41)*BR(4) + d2Exc(41)*BR(3) +
+      !&                     d2Exc(44)*B5(1) + d2Exc(45)*B5(2) +
+      !&                     d2Exc(42)*B4(1) + d2Exc(43)*B4(2)
                else if (triplet) then
                   call quit('srdftjt.F: No metaGGA yet.')
                   BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
-                  FAC0S = 0.0d0
-                  FAC_AR = 0.0d0
-               else ! normal metaGGA
+                  FAC0S = FSS*B0(2) + d2Exc(12)*BR(3) + d2Exc(23)*B4(2)
+      !&                    + d2Exc(38)*B5(2)
+                  FAC_AR = d2Exc(12)*B0(2) + d2Exc(15)*BR(3) +
+     &                     d2Exc(26)*B4(2)
+      !&                     + d2Exc(41)*B5(2)
+                  FAC_SB = d2Exc(23)*B0(2) + d2Exc(26)*BR(3) +
+     &                     d2Exc(28)*B4(2)
+      !&                     + d2Exc(43)*B5(2)
+                  !FAC_SC = d2Exc(38)*B0(2) + d2Exc(41)*BR(3) +
+      !&                     d2Exc(45)*B5(2) + d2Exc(43)*B4(2)
+               else ! closed-shell metaGGA
                   call quit('srdftjt.F: No metaGGA yet.')
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
-                  FAC0R = 0.0d0
-                  FACR  = 0.0d0
+                  FAC0R = FRR*B0(1) + FRZ*BR(1) + d2Exc(16)*B4(1)
+      !&                    + d2Exc(29)*B5(1)
+                  FACR  = FRZ*B0(1) + FZZ*BR(1) + d2Exc(18)*B4(1)
+      !&                    + d2Exc(31)*B5(1)
+                  FAC_RB = d2Exc(16)*B0(1) + d2Exc(18)*BR(1) +
+     &                     d2Exc(21)*B4(1)
+      !&                     + d2Exc(34)*B5(1)
+                  !FAC_RC = d2Exc(29)*B0(1) + d2Exc(31)*BR(1) +
+      !&                     d2Exc(36)*B5(1) + d2Exc(34)*B4(1)
                end if
             else if (dogga) then
                if (dft_spindns) then
@@ -1176,7 +1242,17 @@ C Linear transformation -----------------------------------------------------
                            AX = GX*GAO(J) + G0*GAO1(J,1)
                            AY = GY*GAO(J) + G0*GAO1(J,2)
                            AZ = GZ*GAO(J) + G0*GAO1(J,3)
-                           EXCMAT(J,I,1) = 0.0d0
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AR(2) = AX*RX(2) + AY*RY(2) + AZ*RZ(2)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+                           AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
+                           Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1) +
+     &                         FAC0S*G0*GAO(J) + FAC_AR*AR(1) +
+     &                         FZ0_S*AB(2) + FAC_SB*Xi
+      !&                         + FAC_SC*??
+                        END DO
+                     END DO
                   else if (dft_spindns) then
                      call quit('srdftjt.F: No metaGGA yet.')
                      DO I = 1, NBAST
@@ -1188,9 +1264,24 @@ C Linear transformation -----------------------------------------------------
                            AX = GX*GAO(J) + G0*GAO1(J,1)
                            AY = GY*GAO(J) + G0*GAO1(J,2)
                            AZ = GZ*GAO(J) + G0*GAO1(J,3)
-                           EXCMAT(J,I,1) = 0.0d0
-                           EXCMAT(J,I,2) = 0.0d0
-                  else
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AR(2) = AX*RX(2) + AY*RY(2) + AZ*RZ(2)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+                           AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
+                           Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1) +
+     &                         FAC0R*G0*GAO(J) + FACR*AR(1) +
+     &                         FAC_RB*Xi + FAC_AR*AR(2) + 
+     &                         FZ0*AB(1) + d1Exc(5)*AB(2)
+      !&                         + FAC_RC*??
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2) + 
+     &                         FAC0S*G0*GAO(J) + FACS*AR(2) +
+     &                         FAC_SB*Xi + FAC_AR*AR(1) +
+     &                         FZ0_S*AB(2) + d1Exc(5)*AB(1)
+      !&                         + FAC_SC*??
+                        END DO
+                     END DO
+                  else ! Closed-shell meta-GGA
                      call quit('srdftjt.F: No metaGGA yet.')
                      DO I = 1, NBAST
                         G0 = GAO(I)
@@ -1201,7 +1292,13 @@ C Linear transformation -----------------------------------------------------
                            AX = GX*GAO(J) + G0*GAO1(J,1)
                            AY = GY*GAO(J) + G0*GAO1(J,2)
                            AZ = GZ*GAO(J) + G0*GAO1(J,3)
-                           EXCMAT(J,I,1) = 0.0d0
+                           Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1) +
+     &                         FAC0R*G0*GAO(J) + FACR*AR(1) + FZ0*AB(1)
+     &                         + FAC_RB*Xi
+      !&                         + FAC_RC*??
+                        END DO
+                     END DO
                   end if
                ELSE IF (DOGGA) THEN
                   IF (TRIPLET) THEN ! closed-shell triplet GGA response
