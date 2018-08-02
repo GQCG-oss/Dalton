@@ -389,7 +389,7 @@ C
         grd2(6) = rhg(1,3)*rhg(1,4) + rhg(2,3)*rhg(2,4)    ! grdab = grad(rhoa) . grad(rhob)
      &          + rhg(3,3)*rhg(3,4)
       else if (do_metagga) then
-         call quit('srdftjt.F: No metaGGA yet.')
+         call quit('srdftjt.F: No metaGGA yet. ID01')
       ENDIF
 C
 C     Number of electrons
@@ -1026,11 +1026,11 @@ C Total contribution -------------------------------------------------------
       END IF ! DOGGA
 
       if (do_metagga) then
-         call quit('srdftjt.F: No metaGGA yet.')
+         call quit('srdftjt.F: No metaGGA yet. ID02')
          d2Exc(18) = d2Exc(18)*2.0d0
          d2Exc(31) = d2Exc(31)*2.0d0
          if (dft_spindns .or. triplet) then
-            call quit('srdftjt.F: No metaGGA yet.')
+            call quit('srdftjt.F: No metaGGA yet. ID03')
             d2Exc(19) = d2Exc(19)*2.0d0
             d2Exc(24) = d2Exc(24)*2.0d0
             d2Exc(32) = d2Exc(32)*2.0d0
@@ -1084,7 +1084,7 @@ C Linear transformation -----------------------------------------------------
 
             if (do_metagga) then
                if (dft_spindns) then
-                  call quit('srdftjt.F: No metaGGA yet.')
+                  call quit('srdftjt.F: No metaGGA yet. ID04')
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                   BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
                   BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
@@ -1135,7 +1135,7 @@ C Linear transformation -----------------------------------------------------
       !&                     d2Exc(44)*B5(1) + d2Exc(45)*B5(2) +
       !&                     d2Exc(42)*B4(1) + d2Exc(43)*B4(2)
                else if (triplet) then
-                  call quit('srdftjt.F: No metaGGA yet.')
+                  call quit('srdftjt.F: No metaGGA yet. ID05')
                   BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
                   FAC0S = FSS*B0(2) + d2Exc(12)*BR(3) + d2Exc(23)*B4(2)
       !&                    + d2Exc(38)*B5(2)
@@ -1148,7 +1148,7 @@ C Linear transformation -----------------------------------------------------
                   !FAC_SC = d2Exc(38)*B0(2) + d2Exc(41)*BR(3) +
       !&                     d2Exc(45)*B5(2) + d2Exc(43)*B4(2)
                else ! closed-shell metaGGA
-                  call quit('srdftjt.F: No metaGGA yet.')
+                  call quit('srdftjt.F: No metaGGA yet. ID06')
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                   FAC0R = FRR*B0(1) + FRZ*BR(1) + d2Exc(16)*B4(1)
       !&                    + d2Exc(29)*B5(1)
@@ -1232,7 +1232,7 @@ C Linear transformation -----------------------------------------------------
             IF (NSYM.EQ.1) THEN
                if (do_metagga) then
                   if (triplet) then
-                     call quit('srdftjt.F: No metaGGA yet.')
+                     call quit('srdftjt.F: No metaGGA yet. ID07')
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         GX = GAO1(I,1)
@@ -1254,7 +1254,7 @@ C Linear transformation -----------------------------------------------------
                         END DO
                      END DO
                   else if (dft_spindns) then
-                     call quit('srdftjt.F: No metaGGA yet.')
+                     call quit('srdftjt.F: No metaGGA yet. ID08')
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         GX = GAO1(I,1)
@@ -1282,7 +1282,7 @@ C Linear transformation -----------------------------------------------------
                         END DO
                      END DO
                   else ! Closed-shell meta-GGA
-                     call quit('srdftjt.F: No metaGGA yet.')
+                     call quit('srdftjt.F: No metaGGA yet. ID09')
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         GX = GAO1(I,1)
@@ -1389,7 +1389,7 @@ C Linear transformation -----------------------------------------------------
                ! Only two indentations is used in symmstry code insted of three.
                !   This is to not exceed 72 chars all the time. - E.R.K
                if (do_metagga) then
-                  call quit('srdftjt.F: No metaGGA for symmetry yet')
+                  call quit('srdftjt.F:NometaGGA for symmetry yet.ID10')
                end if
                DO ISYM = 1, NSYM
                  ISTR = IBAS(ISYM) + 1
