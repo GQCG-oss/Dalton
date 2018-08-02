@@ -854,8 +854,7 @@ C***************************************************************************
 
 !     input
       integer  KSYMOP, IPRINT_X
-      logical  DOGGA, ERFEXP(0:2), TRIPLET
-      logical  do_metagga = .false.
+      logical  DOGGA, ERFEXP(0:2), TRIPLET, do_metagga
       real*8   RHO(4), RHG(3,4), GRD2(6), tau(4), laplace(4)
       real*8   CHIVAL, VLAMBDA
       real*8   DTXMAT(NBAST,NBAST), DSXMAT(NBAST,NBAST)
@@ -902,6 +901,11 @@ C***************************************************************************
 !     de_s   22     23     24      25      26      27     28
 !     dt_c   29     30     31      32      33      34     35      36
 !     dt_s   37     38     39      40      41      42     43      44     45
+
+
+      do_metagga = .false. ! NOTICE THIS; REMOVE LATER
+
+
 
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
          CALL QUIT('SRDFTJT.F: Triplet and DFT_SPINDNS not implemented')
