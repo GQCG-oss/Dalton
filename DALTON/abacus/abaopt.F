@@ -1401,7 +1401,6 @@ C  /* Deck optmin */
 #include "cbirea.h"
 #include "optinf.h"
       DIMENSION WORK(LWORK)
-      LOGICAL TSTIN
       CALL QENTER('OPTMIN')
       IF (NEWTON) THEN
          CALL TITLER('2nd Order Geometry Optimization','>',110)
@@ -1425,11 +1424,8 @@ C     The input processing in Hermit has to be run to determine
 C     these coordinates.
 C     The call is also necessary for PREOPT with different basis, see
 C     INIPRE.
-C     Using "INPTST true" to only run the necessary parts of READIN.
 C
       IF (NUCIND .LE. 0) THEN ! testing if READIN has already been called
-         TSTIN  = INPTST
-         INPTST = .TRUE.
          IPRUSR_SAV = IPRUSR
          IPREAD_SAV = IPREAD
          IPRUSR = -10
@@ -1438,7 +1434,6 @@ C        Third parameter .FALSE. in call indicates that LUONEL will NOT be writt
          write (lupri,'(/A)') ' Reading .mol file'//
      &      ' to determine number of atoms for parallel runs.'
          CALL READIN(WORK(2),LWORK-2,.FALSE.)
-         INPTST = TSTIN
          IPRUSR = IPRUSR_SAV
          IPREAD = IPREAD_SAV
          HRINPC = .FALSE.

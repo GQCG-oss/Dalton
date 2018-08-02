@@ -434,7 +434,6 @@ C <---
       DOCISD    = .FALSE. ! DO CISD
       DORSP     = RNRESP
       ABAIPH    = RNABAC
-      ADDMP2    = .FALSE.
 C     ... It is followed by an abacus run
       CORHOL    = .FALSE.
       CORRLX    = .FALSE.
@@ -878,13 +877,6 @@ C
 C
       IF (DIRFCK) THEN
          LUSUPM = -1
-c        IF ((DOMP2 .AND..NOT.ADDMP2) .OR. DOCI .OR. DOMC) THEN
-c        IF (DOCI .OR. DOMC) THEN
-c           WRITE (LUPRI,'(/A/A)')
-c    &      'INPUT ERROR: Direct Fock matrix construction',
-c    &      '             not possible for MP2, CI, and MCSCF.'
-c           INPERR = INPERR + 1
-c        END IF
       END IF
 C
 C     set ITRFIN for ABAIPH
@@ -2537,6 +2529,7 @@ C           ... DOSCF may also be set with .CC
 C        ... flag for QCSCF -- quadratically convergent HF or DFT
 
 c     dodft should be enough but it is sometimes necessary to have also dftrun set.
+c     (especially for ABACUS)
          DFTRUN = .TRUE.
          DFTADD = .TRUE.
          LUSUPM   = -1
@@ -2566,7 +2559,6 @@ C        ... no P-supermatrix for DFT
             DOMP2    = .TRUE.
             FLAG(9)  = .TRUE.
             FLAG(3)  = .FALSE.
-            ADDMP2   = .TRUE.
          END IF
       GO TO 100
 C
@@ -2591,7 +2583,6 @@ C *** Option 21: .KSPT2
         NUMRUN   = NUMRUN + 1
         FLAG(9)  = .TRUE.
         FLAG(3)  = .FALSE.
-        ADDMP2   = .TRUE.
         READ (LUCMD,*) WDFTMP
       GO TO 100
 C *** Option 22: .GASCI

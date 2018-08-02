@@ -639,7 +639,7 @@ if [ "x$GET_FILES" != "x" ]; then
    done
 fi
 
-if [ $opto -eq 1 ] ; then
+if [ $opto -ne 0 ] ; then
    if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
       echo "Output is in $WRKDIR/$OUTFIL as requested in input."
    else

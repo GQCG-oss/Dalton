@@ -1,0 +1,11 @@
+BASIS
+STO-6G
+water, testing FDE
+sto-6g basis
+Angstrom Nosymmetry Atomtypes=2
+Charge=8.    Atoms=1
+O    0.0000000          0.0000000         -0.2619247262 
+Charge=1.    Atoms=2
+H    0.0000000000       0.7716276844       0.3426163129
+H    0.0000000000      -0.7716276844       0.3426163129
+

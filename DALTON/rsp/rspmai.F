@@ -142,15 +142,6 @@ C Read **RESPONS input
 C
       CALL RSPREA
 
-      IF (DFT_SPINDNS .AND. ISPIN .EQ. 1) THEN
-      ! May2018: DFT_SPINDNS may be true for singlet reference and triplet response
-      ! in current srDFT implementation (spin version of functionals is needed
-      ! for triplet response).
-         WRITE(LUPRI,'(/A)')
-     &     'srDFT INFO: DFT_SPINDNS set to false for singlet reference.'
-         DFT_SPINDNS = .FALSE.
-      END IF
-
       IF (DFT_SPINDNS) THEN
          WRITE(LUPRI,'(A)') ' using spin-density in srDFT part'
          NDV = 2 ! DV,DS and FV,FS
@@ -929,8 +920,6 @@ C
 C
       IF (.NOT.SET) THEN
          SET = .TRUE.
-         IF (.NOT. DIRFCK)             DIRFCK = DIRCAL
-         IF (DOHFSRDFT .OR. DOMCSRDFT) DIRFCK = .TRUE.
          IF (NASHT .LE. 1 .OR. HSROHF) NOITRA = DIRFCK
          IF (DOMCSRDFT .OR. DOMC)      NOITRA = .FALSE.
          MAXPHP  = 100
@@ -2843,16 +2832,20 @@ C    List of updates:
 C    21-July-1992 : Hinne Hettema : Test RSPSUP added.
 C
 C    Used from common blocks:
-C    INFINP : SUPSYM
-C    INFORB : NSYM, NSSYM
+C    gnrinf.h : DIRCAL
+C    infinp.h : SUPSYM, ISPIN, DIRFCK, DOHFSRDFT, DOMCSRDFT
+C    inforb.h : NSYM, NSSYM
+C    dftcom.h : DFT_SPINDNS
 C
 #include "implicit.h"
 C
 #include "maxorb.h"
 #include "priunit.h"
+#include "gnrinf.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infvar.h"
+#include "dftcom.h"
 C
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -2869,6 +2862,23 @@ C
 #include "infcr.h"
 C
       LOGICAL FNDLAB
+
+      IF (.NOT.DIRFCK) DIRFCK = DIRCAL
+      IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+      IF (.NOT.DIRFCK) THEN
+         WRITE(LUPRI,'(/A)')
+     &   'srDFT INFO: DIRFCK reset because it must be true in **RESPONS'
+         DIRFCK = .TRUE.
+      END IF
+      END IF
+      IF (DFT_SPINDNS .AND. ISPIN .EQ. 1) THEN
+      ! May2018: DFT_SPINDNS may be true for singlet reference and triplet response
+      ! in current srDFT implementation (spin version of functionals is needed
+      ! for triplet response).
+         WRITE(LUPRI,'(/A)')
+     &     'srDFT INFO: DFT_SPINDNS set to false for singlet reference.'
+         DFT_SPINDNS = .FALSE.
+      END IF
 C
 C ****** Used unit names: ******
 C        (the file numbers are now assigned by GPOPEN)
@@ -2887,8 +2897,7 @@ C          LURD   unit for openining ABACUS file with RD vectors.
 C          LUAHSO spin-orbit atomic two-electron integrals
 C          LUMHSO spin-orbit molecular two-electron integrals
 C          LUCRVE response vector information
-C          LUCRV1 one-index linear response vectors
-C          LUCRV2 two-index linear response vectors
+C          LUCRV1 one-index linear response vectors C          LUCRV2 two-index linear response vectors
 C          LUXYVE XY-vectors
 C
       IF (LUSIFC .LE. 0) CALL GPOPEN(LUSIFC,FNSIFC,'OLD',' ',
@@ -4299,11 +4308,11 @@ C
      &              NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT,
      &              (IDUM,I=1,NDUM),MCTYPE_IFC
       IF (MCTYPE_IFC .GT. 900) THEN
-         IF (.NOT. DFT_SPINDNS) THEN
+         IF ( (.NOT. DFT_SPINDNS) .AND. ISPIN .NE. 1 ) THEN
             CALL QUIT('ERROR in RSPMC:'//
      &      'DFT_SPINDNS true on SIRIFC, but not in input')
          END IF
-         MCTYPE = MCTYPE - 1000
+         MCTYPE_IFC = MCTYPE_IFC - 1000
       END IF
       IF (DFT_SPINDNS) THEN
          NDV = 2 ! DV and DS

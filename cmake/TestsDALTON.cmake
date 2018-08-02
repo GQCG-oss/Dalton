@@ -569,18 +569,19 @@ add_dalton_runtest(pcm_soppa_excit               "dalton;runtest;pcm;soppa;mediu
 add_dalton_runtest(molden                        "dalton;runtest;short;essential")
 add_dalton_runtest(single_input                  "dalton;runtest;short;essential")
 
-if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
-    add_dalton_test(benchmark_eri_adz                "weekly;benchmark")
-    add_dalton_test(benchmark_eri_adzs               "weekly;benchmark")
-    add_dalton_test(benchmark_eri_atzs               "weekly;benchmark")
-    add_dalton_test(benchmark_eri_r12                "weekly;benchmark")
-    add_dalton_test(benchmark_eri_r12xl              "weekly;benchmark")
-    add_dalton_test(benchmark_her_adz                "weekly;benchmark")
-    add_dalton_test(benchmark_her_adzs               "weekly;benchmark")
-    add_dalton_test(benchmark_her_atzs               "weekly;benchmark")
-    add_dalton_test(benchmark_her_r12                "weekly;benchmark")
-    add_dalton_test(benchmark_her_r12xl              "weekly;benchmark")
-endif()
+add_dalton_runtest(fde_static-vemb_dipole_short  "dalton;runtest;fde;short;essential")
+add_dalton_runtest(fde_static-vemb_dipole_long   "dalton;runtest;fde;long")
+
+add_dalton_test(benchmark_eri_adz                "weekly;benchmark")
+add_dalton_test(benchmark_eri_adzs               "weekly;benchmark")
+add_dalton_test(benchmark_eri_atzs               "weekly;benchmark")
+add_dalton_test(benchmark_eri_r12                "weekly;benchmark")
+add_dalton_test(benchmark_eri_r12xl              "weekly;benchmark")
+add_dalton_test(benchmark_her_adz                "weekly;benchmark")
+add_dalton_test(benchmark_her_adzs               "weekly;benchmark")
+add_dalton_test(benchmark_her_atzs               "weekly;benchmark")
+add_dalton_test(benchmark_her_r12                "weekly;benchmark")
+add_dalton_test(benchmark_her_r12xl              "weekly;benchmark")
 
 # Mar 2015: extra tests on hjaaj-srdft branch
 # short, less than 1 min on GitLab ci-runner
