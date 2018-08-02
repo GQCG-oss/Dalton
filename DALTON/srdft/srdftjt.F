@@ -854,7 +854,8 @@ C***************************************************************************
 
 !     input
       integer  KSYMOP, IPRINT_X
-      logical  DOGGA, ERFEXP(0:2), TRIPLET, do_metagga
+      logical  DOGGA, ERFEXP(0:2), TRIPLET
+      logical  do_metagga = .false.
       real*8   RHO(4), RHG(3,4), GRD2(6), tau(4), laplace(4)
       real*8   CHIVAL, VLAMBDA
       real*8   DTXMAT(NBAST,NBAST), DSXMAT(NBAST,NBAST)
