@@ -376,7 +376,7 @@ C
      &  '(CCSD(R12))',
      *'Christian B. Nielsen,','University of Copenhagen,','Denmark',
      &  '(QM/MM)',
-     *'Patrick Norman,','Linkoeping University,','Sweden',
+     *'Patrick Norman,','KTH Stockholm,','Sweden',
      &  '(Cubic response and complex frequency response in RESPONS)',
      *'Jeppe Olsen,','Aarhus University,','Denmark',
      &  '(SIRIUS CI/density modules)',
