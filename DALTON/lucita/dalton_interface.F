@@ -1771,7 +1771,7 @@ C    &                  C,CBLK,IEXP,IXCHNG,IKLJ,IKSM,JLSM,SCR)
       END IF
 *
       CALL QEXIT('LGETINT')
-C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
+C     Call Abend2( ' Jeppe forced me to stop in LGETINT ' )
       RETURN
       END
 ***********************************************************************

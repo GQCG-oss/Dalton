@@ -400,7 +400,7 @@ C    &               IXCHNG,0,0,ICOUL)
 
                 CALL GETD2 (WORK(KLDEN),
      &               KSM,KGAS,LSM,LGAS,JSM,JGAS,MSM,MGAS,ICOUL)
-C               GETINT(XINT,JTYP,JSM,ITYP,ISM,KTYP,KSM,
+C                     (XINT,JTYP,JSM,ITYP,ISM,KTYP,KSM,
 C    &                     LTYP,LSM,IXCHNG,0,0,ICOUL)
                 NKL = NK*NL
                 DO M = 1, NM

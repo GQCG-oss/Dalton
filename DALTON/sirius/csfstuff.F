@@ -3403,7 +3403,6 @@ c
       DO 110 KK = 1, NORB
       DO 110 LL = 1, NORB
         CALL GETIN2(IJKL,LL,KK,TUVX,ILTSOB,WIJKL)
-C            GETINT( RIJKL, K1, L1, FIJKL, ILTSOB, WIJKL )
         DO 100 I = KK+1 , NORB
           G(I,LL) = G(I,LL) - IJKL((I-1)*NORB+KK,1 )
   100   CONTINUE
@@ -4196,7 +4195,7 @@ c     ISTASM : First string of given symmetry
 c     MAXSYM : Number of symmetries
 c     IDIM : Row dimension of FACTOR and INDEXS and INDEXG
 c     IJKL : Real Double precision scratch space ,size NORB X NORB
-c     INTFRM : Defines input mode for integrals : 1=> fetch with getint
+c     INTFRM : Defines input mode for integrals : 1=> fetch with getin2
 c                                                 2=> fetch with geth2a
 c                                                 3=> fetch direct from
 c                                                     integral list
