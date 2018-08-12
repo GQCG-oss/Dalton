@@ -779,6 +779,8 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 *
 * Jeppe Olsen, Feb.98
       IMPLICIT REAL*8(A-H,O-Z)
+      REAL*8   H1AO(*)
+      INTEGER  IHSM, NBAS(*)
 *
 #include "priunit.h"
 *
@@ -826,7 +828,7 @@ C            GET_H1AO_DALTON(LABEL,H1AO,IHSM,SCR,NBAS,NSM)
 *
 *. Input
       CHARACTER*8 LABEL
-      DIMENSION NBAS(*)
+      INTEGER     NBAS(*)
 #include "multd2h.inc"
 *. output
       DIMENSION H1AO(*)
@@ -1673,6 +1675,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
 * Outer routine for accessing integral block
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      REAL*8   XINT(*)
 *
 #include "priunit.h"
 *
