@@ -1132,7 +1132,8 @@ C
 C
       IF (BAKER) THEN
          WRITE(LUPRI,'(A/)')
-     &        " Baker's convergence criteria will be used."
+     &        " Baker's convergence criteria will be used"//
+     &        " [J. Comp. Chem. 14 (1993) 1085]."
          IF (NATNRM) THEN
             WRITE(LUPRI,'(A/)')
      &        ' INFO:  .NATNRM is ignored when .BAKER requested!'
@@ -1865,7 +1866,7 @@ C     Determine value of the various coordinates
 C
       IF (REDINT .AND. (IPRINT .GE. 1)) THEN
          CALL ATMINI(WORK(KTEMP1),IATOM,.TRUE.)
-         CALL GETINT(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
+         CALL GET_RINTCRD(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
          CALL HEADER('New internal coordinates',-1)
          CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,-1,LUPRI)
          WRITE(LUPRI,'(//)')
@@ -2060,7 +2061,7 @@ C
 C
          IF (REDINT .AND. (IPRINT .GE. 1)) THEN
             CALL ATMINI(WORK(KTEMP1),IATOM,.TRUE.)
-            CALL GETINT(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
+            CALL GET_RINTCRD(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
             CALL HEADER('New internal coordinates',-1)
             CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,-1,LUPRI)
             WRITE(LUPRI,'(//)')
@@ -2641,7 +2642,7 @@ C hjaaj aug99: no reason to update thresholds as it is
 C an equil. optimization in the geometry although excited in MCSCF
 C
 C     Well, en excited electronic state cannot necessarily be expected to be
-C     as quadratic as the ground state, and thus we should not walk to far
+C     as quadratic as the ground state, and thus we should not walk too far
 C     away. This is necessary for instance to get test15 through....
 C
       IF (ISTATE .GT. 1 .AND. ITRNMR .EQ. 0) THEN
@@ -2869,7 +2870,7 @@ C
       END IF
 
       IF (NAORDR .LT. 2) THEN
-         CALL QUIT('2nd order optimization aborted because'//
+         CALL QUIT('2nd order geometry optimization aborted because'//
      &   ' analytical molecular Hessian is not available.')
       END IF
 
@@ -7255,7 +7256,7 @@ C
 
       END IF
 C
-C     reduce convergence thresholds for the preoptimization steps
+C     Reduce convergence thresholds for the preoptimization steps
 C     (THRFAC_PRE is parameter in optinf.h)
 C
       THRERG = THRERG * THRFAC_PRE**2
@@ -8231,9 +8232,9 @@ C
          THRERG = GRDTHR
          THRSYM = SQRT(THRERG)
          WRITE (LUPRI,'(/A)') ' INFO: Due to limitations '//
-     &        'of the accuracy of the numerical gradients'
-         WRITE (LUPRI,'(A)') ' INFO: thresholds for convergence'
-     &        //' of geometry optimization has been reset'
+     &        'in the accuracy of the numerical gradients'
+         WRITE (LUPRI,'(A)') ' INFO: default thresholds for convergence'
+     &        //' of geometry optimization have been reset.'
          WRITE (LUPRI,'(/A,/,3(/,20X,A,F11.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG

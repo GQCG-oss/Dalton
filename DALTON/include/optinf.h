@@ -4,9 +4,12 @@
 ! Information for geometry optimization
 ! in abaopt.F, abaop2.F, and abarint.F
 !
-! l.r. June 2015 hjaaj: added THRFAC_PRE
+! l.r. June 2015 hjaaj: added THRFAC_PRE=10.0D0, geometry convergence thresholds for preoptimization
+! with smaller basis sets are multiplied with this factor.
+! (tests indicate that it is advantageous to collect more info about the molecular
+!  Hessian in first order optimization with the cheaper basis sets, thus not e.g. THRFAC_PRE=100.0D0)
 !
-      PARAMETER      (MX_IFREEZ = 200, THRFAC_PRE = 1.0D1)
+      PARAMETER      (MX_IFREEZ = 200, THRFAC_PRE = 10.0D0)
       LOGICAL GECONV, NOTRST, NOBRKS, BRKSYM, NWSYMM,           ! please keep same order as below, for easier checking
      &        DOSPE,  DOPRE,  FINPRE, VRML,   VRBOND, VREIGV,
      &        VRCORD, VRVIBA, VRML_SYM,VISUAL,INITHS, HSFILE,

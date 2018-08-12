@@ -137,7 +137,7 @@ CRF This only works if basis set library is used
             IF (MLINE(1)(1:5) .NE. 'BASIS') THEN
                WRITE(LUPRI,'(/A,/A)')
      &           '*** ERROR *** ' //
-     &           'Keyword .P-BASIS only works  when ' //
+     &           'Keyword .P-BASIS only works when ' //
      &           'basis set library is used.',
      &           'The calculation can be split manually ' //
      &           'using the .CUBIC and .ONLY-P keywords'
