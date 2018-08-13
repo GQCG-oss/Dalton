@@ -307,6 +307,10 @@ The implementation of redundant internal coordinates
 follows the work of Peng {\it et al.\/}~\cite{cppyahbsmjfjcc17}.
 In addition to this, several keywords for VRML visualization are included~\cite{VRML}.
 
+For wave function models where analytical molecular gradients and/or Hessians are not implemented,
+the displacements for evaluation of numerical gradients and Hessians
+are controlled by \Key{DISPLA} in module \Sec{*NMDDRV} (see subsection\ref{sec:nmddrv}).
+
 \begin{description}
 
 \item[\Key{1STORD}]
@@ -412,14 +416,6 @@ Specifies that a first-order\index{first-order geometry optimization} method wit
 Davidon-Fletcher-Powell (DFP) update\index{DFP update}\index{molecular Hessian!Hessian update!DFP}
 formula should be used for optimization. May be used for both
 minimizations and transition state optimizations.
-
-\item[\Key{DISPLA}]\verb| |\newline
-\verb|READ (LUCMD,*) DISPLA|
-
-Read one more line containing the norm of the displacement vector to
-be used during numerical evaluation of the molecular gradient, as is
-needed when doing geometry optimizations with CI or MP2 wave
-functions. Default is $1.0\cdot 10^{-3}$ a.u.
 
 \item[\Key{ENERGY}]\verb| | \newline
 \verb|READ(LUCMD,*) THRERG|
@@ -1382,13 +1378,13 @@ Displacement taken in a numerical differentiation\index{numerical
 differentiation!geometry}. This applies both for a numerical molecular
 molecular Hessian\index{molecular Hessian!numerical}, as well as in calculation of Raman
 intensities and optical activity\index{Raman intensity}\index{Raman optical activity}\index{ROA}.
-Read one more
-line specifying value~(*).  Default is~10$^{-4}$ a.u. However,
-note that this variable do not determine the displacements used
+Read one more line specifying value.  Default is~10$^{-4}$~bohr.
+However,
+note that this variable does not determine the displacements used
 when evaluating numerical gradient for use in first-order geometry
-optimizations with MP2 or CI wave\index{MP2}\index{CI}\index{M{\o}ller-Plesset!second-order}\index{Configuration Interaction}
-functions, which is controlled by the \Key{DISPLA} keyword in the
-\Sec{OPTIMIZE} module.
+optimizations controlled by the \Sec{OPTIMIZE} module, for example with
+MP2 or CI wave\index{MP2}\index{CI}\index{M{\o}ller-Plesset!second-order}\index{Configuration Interaction} functions,
+these displacements are controlled by the \Key{DISPLA} keyword in the \Sec{*NMDDRV} module.
 
 \item[\Key{DYNAMI}]
 Perform a ``dynamic walk''\index{dynamics}: integrate the
@@ -1803,6 +1799,8 @@ selected first- and second-order molecular properties.
 
 Reads in the step lengths (in atomic units) that is to be used in the
 numerical differentiation scheme. Default is 1.0D-2.
+This value is also used for any numerical gradients and Hessians for
+geometry optimizations controlled by the \Sec{OPTIMIZE} module.
 
 \item[\Key{DORDR}]\verb| |\newline
 \verb|READ (LUCMD,*) NMORDR, NAORDR|
