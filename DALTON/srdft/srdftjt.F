@@ -648,9 +648,13 @@ c  Exchange  ------------------------------------------------------------
 
 !     short-range exchange PBE of GWS ! JT 11-08-09
       IF(DOSRX_PBEGWS .OR. DOSRX_PBEGWS_S) THEN
-        call DESRX_SPINGGA(ESRX_PBEGWSERF,rho,grd2,CHIVAL,
-     >                     norder,Ex,d1Ex,d2Ex)
-      ENDIF
+!        call DESRX_SPINGGA(ESRX_PBEGWSERF,rho,grd2,CHIVAL,
+!     >                     norder,Ex,d1Ex,d2Ex)
+         tau(:) = 0.0d0
+         laplace(:) = 0.0d0
+         call DESRX_SPINmetaGGA(ESRX_PBEGWSERF, rho, grd2, tau,laplace, 
+     >                       chival, norder, Ex, d1Ex, d2Ex)
+      END IF
 
 !     short-range exchange RI
       IF(DOSRX_PBERI) THEN ! added Manu 01-02-2006
@@ -756,8 +760,12 @@ C  Correlation  ----------------------------------------------------------
         ! therefore zero these before DESRC_SPINGGA call:
         grd2(2) = 0.0d0
         grd2(3) = 0.0d0
-        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,grd2,CHIVAL,norder,
-     >                     Ec,d1Ec,d2Ec)
+!        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,grd2,CHIVAL,norder,
+!     >                     Ec,d1Ec,d2Ec)
+         tau(:) = 0.0d0
+         laplace(:) = 0.0d0
+         call DESRC_SPINmetaGGA(ESRC_PBEGWSERFSPIN, rho, grd2, tau,
+     >                    laplace,  chival, norder, Ex, d1Ex, d2Ex)
       ENDIF
 
 C Kamal SHARKAS 20-05-11 beg

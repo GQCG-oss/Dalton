@@ -750,7 +750,7 @@ C
 C     Created: Apr-18, H. J. Aa. Jensen (based on previous DESRSPINGGA routine, now removed)
 C*****************************************************************************
       implicit none
-
+#include "priunit.h"
       external         ESRX_GGA
       integer          norder
 
@@ -1033,294 +1033,294 @@ C     Doing checks and assignemnts
 
 C     Doing the calculation
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_c,ta
-     &u_s,laplace_c,laplace_s,E)
+     &u_s,laplace_c,laplace_s,mu,E)
       if (norder .ge. 1) then
       if (hr_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_cp,rho_s,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_s,Ep_1)
+     &au_s,laplace_c,laplace_s,mu,Ep_1)
       call ESRC_SPINmetaGGA(rho_cm,rho_s,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_s,Em_1)
+     &au_s,laplace_c,laplace_s,mu,Em_1)
       end if
       if (hr_s .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_sp,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_s,Ep_2)
+     &au_s,laplace_c,laplace_s,mu,Ep_2)
       call ESRC_SPINmetaGGA(rho_c,rho_sm,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_s,Em_2)
+     &au_s,laplace_c,laplace_s,mu,Em_2)
       end if
       if (hg_cc .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccp,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_s,Ep_3)
+     &au_s,laplace_c,laplace_s,mu,Ep_3)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccm,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_s,Em_3)
+     &au_s,laplace_c,laplace_s,mu,Em_3)
       end if
       if (hg_ss .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ssp,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_s,Ep_4)
+     &au_s,laplace_c,laplace_s,mu,Ep_4)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ssm,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_s,Em_4)
+     &au_s,laplace_c,laplace_s,mu,Em_4)
       end if
       if (hg_cs .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_csp,tau_c,t
-     &au_s,laplace_c,laplace_s,Ep_5)
+     &au_s,laplace_c,laplace_s,mu,Ep_5)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_csm,tau_c,t
-     &au_s,laplace_c,laplace_s,Em_5)
+     &au_s,laplace_c,laplace_s,mu,Em_5)
       end if
       if (ht_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_cp,t
-     &au_s,laplace_c,laplace_s,Ep_6)
+     &au_s,laplace_c,laplace_s,mu,Ep_6)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_cm,t
-     &au_s,laplace_c,laplace_s,Em_6)
+     &au_s,laplace_c,laplace_s,mu,Em_6)
       end if
       if (ht_s .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_c,ta
-     &u_sp,laplace_c,laplace_s,Ep_7)
+     &u_sp,laplace_c,laplace_s,mu,Ep_7)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_c,ta
-     &u_sm,laplace_c,laplace_s,Em_7)
+     &u_sm,laplace_c,laplace_s,mu,Em_7)
       end if
       if (hl_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_c,ta
-     &u_s,laplace_cp,laplace_s,Ep_8)
+     &u_s,laplace_cp,laplace_s,mu,Ep_8)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_c,ta
-     &u_s,laplace_cm,laplace_s,Em_8)
+     &u_s,laplace_cm,laplace_s,mu,Em_8)
       end if
       if (hl_s .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_c,ta
-     &u_s,laplace_c,laplace_sp,Ep_9)
+     &u_s,laplace_c,laplace_sp,mu,Ep_9)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_c,ta
-     &u_s,laplace_c,laplace_sm,Em_9)
+     &u_s,laplace_c,laplace_sm,mu,Em_9)
       end if
       end if
       if (norder .ge. 2) then
       if (hr_s .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_cp,rho_sp,grad_cc,grad_ss,grad_cs,tau_c,
-     &tau_s,laplace_c,laplace_s,Epp_2_1)
+     &tau_s,laplace_c,laplace_s,mu,Epp_2_1)
       call ESRC_SPINmetaGGA(rho_cm,rho_sm,grad_cc,grad_ss,grad_cs,tau_c,
-     &tau_s,laplace_c,laplace_s,Emm_2_1)
+     &tau_s,laplace_c,laplace_s,mu,Emm_2_1)
       end if
       end if
       if (hg_cc .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_cp,rho_s,grad_ccp,grad_ss,grad_cs,tau_c,
-     &tau_s,laplace_c,laplace_s,Epp_3_1)
+     &tau_s,laplace_c,laplace_s,mu,Epp_3_1)
       call ESRC_SPINmetaGGA(rho_cm,rho_s,grad_ccm,grad_ss,grad_cs,tau_c,
-     &tau_s,laplace_c,laplace_s,Emm_3_1)
+     &tau_s,laplace_c,laplace_s,mu,Emm_3_1)
       end if
       if (hr_s .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_sp,grad_ccp,grad_ss,grad_cs,tau_c,
-     &tau_s,laplace_c,laplace_s,Epp_3_2)
+     &tau_s,laplace_c,laplace_s,mu,Epp_3_2)
       call ESRC_SPINmetaGGA(rho_c,rho_sm,grad_ccm,grad_ss,grad_cs,tau_c,
-     &tau_s,laplace_c,laplace_s,Emm_3_2)
+     &tau_s,laplace_c,laplace_s,mu,Emm_3_2)
       end if
       end if
       if (hg_ss .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_cp,rho_s,grad_cc,grad_ssp,grad_cs,tau_c,
-     &tau_s,laplace_c,laplace_s,Epp_4_1)
+     &tau_s,laplace_c,laplace_s,mu,Epp_4_1)
       call ESRC_SPINmetaGGA(rho_cm,rho_s,grad_cc,grad_ssm,grad_cs,tau_c,
-     &tau_s,laplace_c,laplace_s,Emm_4_1)
+     &tau_s,laplace_c,laplace_s,mu,Emm_4_1)
       end if
       if (hr_s .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_sp,grad_cc,grad_ssp,grad_cs,tau_c,
-     &tau_s,laplace_c,laplace_s,Epp_4_2)
+     &tau_s,laplace_c,laplace_s,mu,Epp_4_2)
       call ESRC_SPINmetaGGA(rho_c,rho_sm,grad_cc,grad_ssm,grad_cs,tau_c,
-     &tau_s,laplace_c,laplace_s,Emm_4_2)
+     &tau_s,laplace_c,laplace_s,mu,Emm_4_2)
       end if
       if (hg_cc .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccp,grad_ssp,grad_cs,tau_c,
-     &tau_s,laplace_c,laplace_s,Epp_4_3)
+     &tau_s,laplace_c,laplace_s,mu,Epp_4_3)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccm,grad_ssm,grad_cs,tau_c,
-     &tau_s,laplace_c,laplace_s,Emm_4_3)
+     &tau_s,laplace_c,laplace_s,mu,Emm_4_3)
       end if
       end if
       if (hg_cs .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_cp,rho_s,grad_cc,grad_ss,grad_csp,tau_c,
-     &tau_s,laplace_c,laplace_s,Epp_5_1)
+     &tau_s,laplace_c,laplace_s,mu,Epp_5_1)
       call ESRC_SPINmetaGGA(rho_cm,rho_s,grad_cc,grad_ss,grad_csm,tau_c,
-     &tau_s,laplace_c,laplace_s,Emm_5_1)
+     &tau_s,laplace_c,laplace_s,mu,Emm_5_1)
       end if
       if (hr_s .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_sp,grad_cc,grad_ss,grad_csp,tau_c,
-     &tau_s,laplace_c,laplace_s,Epp_5_2)
+     &tau_s,laplace_c,laplace_s,mu,Epp_5_2)
       call ESRC_SPINmetaGGA(rho_c,rho_sm,grad_cc,grad_ss,grad_csm,tau_c,
-     &tau_s,laplace_c,laplace_s,Emm_5_2)
+     &tau_s,laplace_c,laplace_s,mu,Emm_5_2)
       end if
       if (hg_cc .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccp,grad_ss,grad_csp,tau_c,
-     &tau_s,laplace_c,laplace_s,Epp_5_3)
+     &tau_s,laplace_c,laplace_s,mu,Epp_5_3)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccm,grad_ss,grad_csm,tau_c,
-     &tau_s,laplace_c,laplace_s,Emm_5_3)
+     &tau_s,laplace_c,laplace_s,mu,Emm_5_3)
       end if
       if (hg_ss .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ssp,grad_csp,tau_c,
-     &tau_s,laplace_c,laplace_s,Epp_5_4)
+     &tau_s,laplace_c,laplace_s,mu,Epp_5_4)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ssm,grad_csm,tau_c,
-     &tau_s,laplace_c,laplace_s,Emm_5_4)
+     &tau_s,laplace_c,laplace_s,mu,Emm_5_4)
       end if
       end if
       if (ht_c .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_cp,rho_s,grad_cc,grad_ss,grad_cs,tau_cp,
-     &tau_s,laplace_c,laplace_s,Epp_6_1)
+     &tau_s,laplace_c,laplace_s,mu,Epp_6_1)
       call ESRC_SPINmetaGGA(rho_cm,rho_s,grad_cc,grad_ss,grad_cs,tau_cm,
-     &tau_s,laplace_c,laplace_s,Emm_6_1)
+     &tau_s,laplace_c,laplace_s,mu,Emm_6_1)
       end if
       if (hr_s .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_sp,grad_cc,grad_ss,grad_cs,tau_cp,
-     &tau_s,laplace_c,laplace_s,Epp_6_2)
+     &tau_s,laplace_c,laplace_s,mu,Epp_6_2)
       call ESRC_SPINmetaGGA(rho_c,rho_sm,grad_cc,grad_ss,grad_cs,tau_cm,
-     &tau_s,laplace_c,laplace_s,Emm_6_2)
+     &tau_s,laplace_c,laplace_s,mu,Emm_6_2)
       end if
       if (hg_cc .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccp,grad_ss,grad_cs,tau_cp,
-     &tau_s,laplace_c,laplace_s,Epp_6_3)
+     &tau_s,laplace_c,laplace_s,mu,Epp_6_3)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccm,grad_ss,grad_cs,tau_cm,
-     &tau_s,laplace_c,laplace_s,Emm_6_3)
+     &tau_s,laplace_c,laplace_s,mu,Emm_6_3)
       end if
       if (hg_ss .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ssp,grad_cs,tau_cp,
-     &tau_s,laplace_c,laplace_s,Epp_6_4)
+     &tau_s,laplace_c,laplace_s,mu,Epp_6_4)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ssm,grad_cs,tau_cm,
-     &tau_s,laplace_c,laplace_s,Emm_6_4)
+     &tau_s,laplace_c,laplace_s,mu,Emm_6_4)
       end if
       if (hg_cs .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_csp,tau_cp,
-     &tau_s,laplace_c,laplace_s,Epp_6_5)
+     &tau_s,laplace_c,laplace_s,mu,Epp_6_5)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_csm,tau_cm,
-     &tau_s,laplace_c,laplace_s,Emm_6_5)
+     &tau_s,laplace_c,laplace_s,mu,Emm_6_5)
       end if
       end if
       if (ht_s .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_cp,rho_s,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_sp,laplace_c,laplace_s,Epp_7_1)
+     &au_sp,laplace_c,laplace_s,mu,Epp_7_1)
       call ESRC_SPINmetaGGA(rho_cm,rho_s,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_sm,laplace_c,laplace_s,Emm_7_1)
+     &au_sm,laplace_c,laplace_s,mu,Emm_7_1)
       end if
       if (hr_s .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_sp,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_sp,laplace_c,laplace_s,Epp_7_2)
+     &au_sp,laplace_c,laplace_s,mu,Epp_7_2)
       call ESRC_SPINmetaGGA(rho_c,rho_sm,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_sm,laplace_c,laplace_s,Emm_7_2)
+     &au_sm,laplace_c,laplace_s,mu,Emm_7_2)
       end if
       if (hg_cc .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccp,grad_ss,grad_cs,tau_c,t
-     &au_sp,laplace_c,laplace_s,Epp_7_3)
+     &au_sp,laplace_c,laplace_s,mu,Epp_7_3)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccm,grad_ss,grad_cs,tau_c,t
-     &au_sm,laplace_c,laplace_s,Emm_7_3)
+     &au_sm,laplace_c,laplace_s,mu,Emm_7_3)
       end if
       if (hg_ss .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ssp,grad_cs,tau_c,t
-     &au_sp,laplace_c,laplace_s,Epp_7_4)
+     &au_sp,laplace_c,laplace_s,mu,Epp_7_4)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ssm,grad_cs,tau_c,t
-     &au_sm,laplace_c,laplace_s,Emm_7_4)
+     &au_sm,laplace_c,laplace_s,mu,Emm_7_4)
       end if
       if (hg_cs .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_csp,tau_c,t
-     &au_sp,laplace_c,laplace_s,Epp_7_5)
+     &au_sp,laplace_c,laplace_s,mu,Epp_7_5)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_csm,tau_c,t
-     &au_sm,laplace_c,laplace_s,Emm_7_5)
+     &au_sm,laplace_c,laplace_s,mu,Emm_7_5)
       end if
       if (ht_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_cp,t
-     &au_sp,laplace_c,laplace_s,Epp_7_6)
+     &au_sp,laplace_c,laplace_s,mu,Epp_7_6)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_cm,t
-     &au_sm,laplace_c,laplace_s,Emm_7_6)
+     &au_sm,laplace_c,laplace_s,mu,Emm_7_6)
       end if
       end if
       if (hl_c .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_cp,rho_s,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_cp,laplace_s,Epp_8_1)
+     &au_s,laplace_cp,laplace_s,mu,Epp_8_1)
       call ESRC_SPINmetaGGA(rho_cm,rho_s,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_cm,laplace_s,Emm_8_1)
+     &au_s,laplace_cm,laplace_s,mu,Emm_8_1)
       end if
       if (hr_s .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_sp,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_cp,laplace_s,Epp_8_2)
+     &au_s,laplace_cp,laplace_s,mu,Epp_8_2)
       call ESRC_SPINmetaGGA(rho_c,rho_sm,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_cm,laplace_s,Emm_8_2)
+     &au_s,laplace_cm,laplace_s,mu,Emm_8_2)
       end if
       if (hg_cc .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccp,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_cp,laplace_s,Epp_8_3)
+     &au_s,laplace_cp,laplace_s,mu,Epp_8_3)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccm,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_cm,laplace_s,Emm_8_3)
+     &au_s,laplace_cm,laplace_s,mu,Emm_8_3)
       end if
       if (hg_ss .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ssp,grad_cs,tau_c,t
-     &au_s,laplace_cp,laplace_s,Epp_8_4)
+     &au_s,laplace_cp,laplace_s,mu,Epp_8_4)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ssm,grad_cs,tau_c,t
-     &au_s,laplace_cm,laplace_s,Emm_8_4)
+     &au_s,laplace_cm,laplace_s,mu,Emm_8_4)
       end if
       if (hg_cs .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_csp,tau_c,t
-     &au_s,laplace_cp,laplace_s,Epp_8_5)
+     &au_s,laplace_cp,laplace_s,mu,Epp_8_5)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_csm,tau_c,t
-     &au_s,laplace_cm,laplace_s,Emm_8_5)
+     &au_s,laplace_cm,laplace_s,mu,Emm_8_5)
       end if
       if (ht_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_cp,t
-     &au_s,laplace_cp,laplace_s,Epp_8_6)
+     &au_s,laplace_cp,laplace_s,mu,Epp_8_6)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_cm,t
-     &au_s,laplace_cm,laplace_s,Emm_8_6)
+     &au_s,laplace_cm,laplace_s,mu,Emm_8_6)
       end if
       if (ht_s .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_c,ta
-     &u_sp,laplace_cp,laplace_s,Epp_8_7)
+     &u_sp,laplace_cp,laplace_s,mu,Epp_8_7)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_c,ta
-     &u_sm,laplace_cm,laplace_s,Emm_8_7)
+     &u_sm,laplace_cm,laplace_s,mu,Emm_8_7)
       end if
       end if
       if (hl_s .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_cp,rho_s,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_sp,Epp_9_1)
+     &au_s,laplace_c,laplace_sp,mu,Epp_9_1)
       call ESRC_SPINmetaGGA(rho_cm,rho_s,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_sm,Emm_9_1)
+     &au_s,laplace_c,laplace_sm,mu,Emm_9_1)
       end if
       if (hr_s .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_sp,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_sp,Epp_9_2)
+     &au_s,laplace_c,laplace_sp,mu,Epp_9_2)
       call ESRC_SPINmetaGGA(rho_c,rho_sm,grad_cc,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_sm,Emm_9_2)
+     &au_s,laplace_c,laplace_sm,mu,Emm_9_2)
       end if
       if (hg_cc .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccp,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_sp,Epp_9_3)
+     &au_s,laplace_c,laplace_sp,mu,Epp_9_3)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_ccm,grad_ss,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_sm,Emm_9_3)
+     &au_s,laplace_c,laplace_sm,mu,Emm_9_3)
       end if
       if (hg_ss .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ssp,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_sp,Epp_9_4)
+     &au_s,laplace_c,laplace_sp,mu,Epp_9_4)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ssm,grad_cs,tau_c,t
-     &au_s,laplace_c,laplace_sm,Emm_9_4)
+     &au_s,laplace_c,laplace_sm,mu,Emm_9_4)
       end if
       if (hg_cs .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_csp,tau_c,t
-     &au_s,laplace_c,laplace_sp,Epp_9_5)
+     &au_s,laplace_c,laplace_sp,mu,Epp_9_5)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_csm,tau_c,t
-     &au_s,laplace_c,laplace_sm,Emm_9_5)
+     &au_s,laplace_c,laplace_sm,mu,Emm_9_5)
       end if
       if (ht_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_cp,t
-     &au_s,laplace_c,laplace_sp,Epp_9_6)
+     &au_s,laplace_c,laplace_sp,mu,Epp_9_6)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_cm,t
-     &au_s,laplace_c,laplace_sm,Emm_9_6)
+     &au_s,laplace_c,laplace_sm,mu,Emm_9_6)
       end if
       if (ht_s .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_c,ta
-     &u_sp,laplace_c,laplace_sp,Epp_9_7)
+     &u_sp,laplace_c,laplace_sp,mu,Epp_9_7)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_c,ta
-     &u_sm,laplace_c,laplace_sm,Emm_9_7)
+     &u_sm,laplace_c,laplace_sm,mu,Emm_9_7)
       end if
       if (hl_c .gt. 0.0d0) then
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_c,ta
-     &u_s,laplace_cp,laplace_sp,Epp_9_8)
+     &u_s,laplace_cp,laplace_sp,mu,Epp_9_8)
       call ESRC_SPINmetaGGA(rho_c,rho_s,grad_cc,grad_ss,grad_cs,tau_c,ta
-     &u_s,laplace_cm,laplace_sm,Emm_9_8)
+     &u_s,laplace_cm,laplace_sm,mu,Emm_9_8)
       end if
       end if
       end if
@@ -1573,10 +1573,14 @@ C     Doing checks and assignemnts
          E = 0.0d0
          return
       end if
+      if (grad2(6) .ge. 1.d-10) then
+         call quit("grad_ab is different from zero in exchange.")
+      end if
       rho_a   = rho(3)
       rho_b   = rho(4)
       grad_aa = grad2(4)
       grad_bb = grad2(5)
+      grad_ab = grad2(6) ! Shold be zero
       tau_a   = tau(3)
       tau_b   = tau(4)
       laplace_a = laplace(3)
@@ -1624,238 +1628,238 @@ C     Doing checks and assignemnts
 
 C     Doing the calculation
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_a,laplace_b,E)
+     &u_b,laplace_a,laplace_b,mu,E)
       if (norder .ge. 1) then
       if (hr_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,Ep_1)
+     &au_b,laplace_a,laplace_b,mu,Ep_1)
       call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,Em_1)
+     &au_b,laplace_a,laplace_b,mu,Em_1)
       end if
       if (hr_b .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,Ep_2)
+     &au_b,laplace_a,laplace_b,mu,Ep_2)
       call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,Em_2)
+     &au_b,laplace_a,laplace_b,mu,Em_2)
       end if
       if (hg_aa .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,Ep_3)
+     &au_b,laplace_a,laplace_b,mu,Ep_3)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,Em_3)
+     &au_b,laplace_a,laplace_b,mu,Em_3)
       end if
       if (hg_bb .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,Ep_4)
+     &au_b,laplace_a,laplace_b,mu,Ep_4)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,Em_4)
+     &au_b,laplace_a,laplace_b,mu,Em_4)
       end if
       if (ht_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_ap,t
-     &au_b,laplace_a,laplace_b,Ep_6)
+     &au_b,laplace_a,laplace_b,mu,Ep_6)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_am,t
-     &au_b,laplace_a,laplace_b,Em_6)
+     &au_b,laplace_a,laplace_b,mu,Em_6)
       end if
       if (ht_b .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_bp,laplace_a,laplace_b,Ep_7)
+     &u_bp,laplace_a,laplace_b,mu,Ep_7)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_bm,laplace_a,laplace_b,Em_7)
+     &u_bm,laplace_a,laplace_b,mu,Em_7)
       end if
       if (hl_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_ap,laplace_b,Ep_8)
+     &u_b,laplace_ap,laplace_b,mu,Ep_8)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_am,laplace_b,Em_8)
+     &u_b,laplace_am,laplace_b,mu,Em_8)
       end if
       if (hl_b .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_a,laplace_bp,Ep_9)
+     &u_b,laplace_a,laplace_bp,mu,Ep_9)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_a,laplace_bm,Em_9)
+     &u_b,laplace_a,laplace_bm,mu,Em_9)
       end if
       end if
       if (norder .ge. 2) then
       if (hr_b .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_ap,rho_bp,grad_aa,grad_bb,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,Epp_2_1)
+     &tau_b,laplace_a,laplace_b,mu,Epp_2_1)
       call ESRX_SPINmetaGGA(rho_am,rho_bm,grad_aa,grad_bb,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,Emm_2_1)
+     &tau_b,laplace_a,laplace_b,mu,Emm_2_1)
       end if
       end if
       if (hg_aa .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aap,grad_bb,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,Epp_3_1)
+     &tau_b,laplace_a,laplace_b,mu,Epp_3_1)
       call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aam,grad_bb,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,Emm_3_1)
+     &tau_b,laplace_a,laplace_b,mu,Emm_3_1)
       end if
       if (hr_b .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aap,grad_bb,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,Epp_3_2)
+     &tau_b,laplace_a,laplace_b,mu,Epp_3_2)
       call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aam,grad_bb,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,Emm_3_2)
+     &tau_b,laplace_a,laplace_b,mu,Emm_3_2)
       end if
       end if
       if (hg_bb .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bbp,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,Epp_4_1)
+     &tau_b,laplace_a,laplace_b,mu,Epp_4_1)
       call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bbm,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,Emm_4_1)
+     &tau_b,laplace_a,laplace_b,mu,Emm_4_1)
       end if
       if (hr_b .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bbp,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,Epp_4_2)
+     &tau_b,laplace_a,laplace_b,mu,Epp_4_2)
       call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bbm,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,Emm_4_2)
+     &tau_b,laplace_a,laplace_b,mu,Emm_4_2)
       end if
       if (hg_aa .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bbp,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,Epp_4_3)
+     &tau_b,laplace_a,laplace_b,mu,Epp_4_3)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bbm,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,Emm_4_3)
+     &tau_b,laplace_a,laplace_b,mu,Emm_4_3)
       end if
       end if
       if (ht_a .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,grad_ab,tau_ap,
-     &tau_b,laplace_a,laplace_b,Epp_6_1)
+     &tau_b,laplace_a,laplace_b,mu,Epp_6_1)
       call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,grad_ab,tau_am,
-     &tau_b,laplace_a,laplace_b,Emm_6_1)
+     &tau_b,laplace_a,laplace_b,mu,Emm_6_1)
       end if
       if (hr_b .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,grad_ab,tau_ap,
-     &tau_b,laplace_a,laplace_b,Epp_6_2)
+     &tau_b,laplace_a,laplace_b,mu,Epp_6_2)
       call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,grad_ab,tau_am,
-     &tau_b,laplace_a,laplace_b,Emm_6_2)
+     &tau_b,laplace_a,laplace_b,mu,Emm_6_2)
       end if
       if (hg_aa .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,grad_ab,tau_ap,
-     &tau_b,laplace_a,laplace_b,Epp_6_3)
+     &tau_b,laplace_a,laplace_b,mu,Epp_6_3)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,grad_ab,tau_am,
-     &tau_b,laplace_a,laplace_b,Emm_6_3)
+     &tau_b,laplace_a,laplace_b,mu,Emm_6_3)
       end if
       if (hg_bb .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,grad_ab,tau_ap,
-     &tau_b,laplace_a,laplace_b,Epp_6_4)
+     &tau_b,laplace_a,laplace_b,mu,Epp_6_4)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,grad_ab,tau_am,
-     &tau_b,laplace_a,laplace_b,Emm_6_4)
+     &tau_b,laplace_a,laplace_b,mu,Emm_6_4)
       end if
       end if
       if (ht_b .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_bp,laplace_a,laplace_b,Epp_7_1)
+     &au_bp,laplace_a,laplace_b,mu,Epp_7_1)
       call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_bm,laplace_a,laplace_b,Emm_7_1)
+     &au_bm,laplace_a,laplace_b,mu,Emm_7_1)
       end if
       if (hr_b .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_bp,laplace_a,laplace_b,Epp_7_2)
+     &au_bp,laplace_a,laplace_b,mu,Epp_7_2)
       call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_bm,laplace_a,laplace_b,Emm_7_2)
+     &au_bm,laplace_a,laplace_b,mu,Emm_7_2)
       end if
       if (hg_aa .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,grad_ab,tau_a,t
-     &au_bp,laplace_a,laplace_b,Epp_7_3)
+     &au_bp,laplace_a,laplace_b,mu,Epp_7_3)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,grad_ab,tau_a,t
-     &au_bm,laplace_a,laplace_b,Emm_7_3)
+     &au_bm,laplace_a,laplace_b,mu,Emm_7_3)
       end if
       if (hg_bb .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,grad_ab,tau_a,t
-     &au_bp,laplace_a,laplace_b,Epp_7_4)
+     &au_bp,laplace_a,laplace_b,mu,Epp_7_4)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,grad_ab,tau_a,t
-     &au_bm,laplace_a,laplace_b,Emm_7_4)
+     &au_bm,laplace_a,laplace_b,mu,Emm_7_4)
       end if
       if (ht_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_ap,t
-     &au_bp,laplace_a,laplace_b,Epp_7_6)
+     &au_bp,laplace_a,laplace_b,mu,Epp_7_6)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_am,t
-     &au_bm,laplace_a,laplace_b,Emm_7_6)
+     &au_bm,laplace_a,laplace_b,mu,Emm_7_6)
       end if
       end if
       if (hl_a .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_ap,laplace_b,Epp_8_1)
+     &au_b,laplace_ap,laplace_b,mu,Epp_8_1)
       call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_am,laplace_b,Emm_8_1)
+     &au_b,laplace_am,laplace_b,mu,Emm_8_1)
       end if
       if (hr_b .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_ap,laplace_b,Epp_8_2)
+     &au_b,laplace_ap,laplace_b,mu,Epp_8_2)
       call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_am,laplace_b,Emm_8_2)
+     &au_b,laplace_am,laplace_b,mu,Emm_8_2)
       end if
       if (hg_aa .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_ap,laplace_b,Epp_8_3)
+     &au_b,laplace_ap,laplace_b,mu,Epp_8_3)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_am,laplace_b,Emm_8_3)
+     &au_b,laplace_am,laplace_b,mu,Emm_8_3)
       end if
       if (hg_bb .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,grad_ab,tau_a,t
-     &au_b,laplace_ap,laplace_b,Epp_8_4)
+     &au_b,laplace_ap,laplace_b,mu,Epp_8_4)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,grad_ab,tau_a,t
-     &au_b,laplace_am,laplace_b,Emm_8_4)
+     &au_b,laplace_am,laplace_b,mu,Emm_8_4)
       end if
       if (ht_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_ap,t
-     &au_b,laplace_ap,laplace_b,Epp_8_6)
+     &au_b,laplace_ap,laplace_b,mu,Epp_8_6)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_am,t
-     &au_b,laplace_am,laplace_b,Emm_8_6)
+     &au_b,laplace_am,laplace_b,mu,Emm_8_6)
       end if
       if (ht_b .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_bp,laplace_ap,laplace_b,Epp_8_7)
+     &u_bp,laplace_ap,laplace_b,mu,Epp_8_7)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_bm,laplace_am,laplace_b,Emm_8_7)
+     &u_bm,laplace_am,laplace_b,mu,Emm_8_7)
       end if
       end if
       if (hl_b .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bp,Epp_9_1)
+     &au_b,laplace_a,laplace_bp,mu,Epp_9_1)
       call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bm,Emm_9_1)
+     &au_b,laplace_a,laplace_bm,mu,Emm_9_1)
       end if
       if (hr_b .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bp,Epp_9_2)
+     &au_b,laplace_a,laplace_bp,mu,Epp_9_2)
       call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bm,Emm_9_2)
+     &au_b,laplace_a,laplace_bm,mu,Emm_9_2)
       end if
       if (hg_aa .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bp,Epp_9_3)
+     &au_b,laplace_a,laplace_bp,mu,Epp_9_3)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bm,Emm_9_3)
+     &au_b,laplace_a,laplace_bm,mu,Emm_9_3)
       end if
       if (hg_bb .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bp,Epp_9_4)
+     &au_b,laplace_a,laplace_bp,mu,Epp_9_4)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bm,Emm_9_4)
+     &au_b,laplace_a,laplace_bm,mu,Emm_9_4)
       end if
       if (ht_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_ap,t
-     &au_b,laplace_a,laplace_bp,Epp_9_6)
+     &au_b,laplace_a,laplace_bp,mu,Epp_9_6)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_am,t
-     &au_b,laplace_a,laplace_bm,Emm_9_6)
+     &au_b,laplace_a,laplace_bm,mu,Emm_9_6)
       end if
       if (ht_b .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_bp,laplace_a,laplace_bp,Epp_9_7)
+     &u_bp,laplace_a,laplace_bp,mu,Epp_9_7)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_bm,laplace_a,laplace_bm,Emm_9_7)
+     &u_bm,laplace_a,laplace_bm,mu,Emm_9_7)
       end if
       if (hl_a .gt. 0.0d0) then
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_ap,laplace_bp,Epp_9_8)
+     &u_b,laplace_ap,laplace_bp,mu,Epp_9_8)
       call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_am,laplace_bm,Emm_9_8)
+     &u_b,laplace_am,laplace_bm,mu,Emm_9_8)
       end if
       end if
       end if
@@ -2024,7 +2028,9 @@ C     Doing the calculation
       end if
       end if
 
+
 C     Transform from alpha, beta to c, s
+      if (norder .ge. 1) then
       d1E(1)  = D2I*(d1Eab(1) + d1Eab(2))
       d1E(2)  = D2I*(d1Eab(1) - d1Eab(2))
       d1E(3)  = D4I*(d1Eab(3) + d1Eab(4))
@@ -2034,7 +2040,9 @@ C     Transform from alpha, beta to c, s
       d1E(7)  = D2I*(d1Eab(6) - d1Eab(7))
       d1E(8)  = D2I*(d1Eab(8) + d1Eab(9))
       d1E(9)  = D2I*(d1Eab(8) - d1Eab(9))
+      end if
 
+      if (norder .ge. 2) then
       d2E(1) = D4I*(d2Eab(1) + d2Eab(3))
       d2E(2) = D4I*(d2Eab(1) - d2Eab(3))
       d2E(3) = d2E(1)
@@ -2080,7 +2088,7 @@ C     Transform from alpha, beta to c, s
       d2E(43) = d2E(34)
       d2E(44) = D4I*(d2Eab(36) - d2Eab(45))
       d2E(45) = d2E(36)
-
+      end if
       end subroutine
 
 
@@ -3977,7 +3985,9 @@ C     constants
       end
 
 C****************************************************************************
-      subroutine ESRX_PBEGWSERF(rhoa,grdaa,mu,e)
+C      subroutine ESRX_PBEGWSERF(rhoa,grdaa,mu,e)
+       subroutine ESRX_PBEGWSERF(rhoa,rhob,grdaa,grdbb,grdab,taua,taub,
+     & laplacea, laplaceb,mu,e)
 C*****************************************************************************
 C     Short-range PBE exchange functional from 
 C       Goll, Werner, Stoll, PCCP 7, 3917 (2005)
@@ -3994,6 +4004,7 @@ C*****************************************************************************
       implicit none
 
       real*8   rhoa, grdaa, mu, e
+      real*8   rhob,grdbb,grdab,taua,taub,laplacea,laplaceb
 
       real*8   rho, rho13, grd2
       real*8   exerflda, exerfpbe
@@ -4175,66 +4186,10 @@ C*****************************************************************************
       return
       end
 
-#if 0
-C*****************************************************************************
-      subroutine ESRC_PBEGWSERFSPIN(rho_c, rho_s, gamma_cc, gamma_ss,
-     & gamma_cs, mu, e)
-C*****************************************************************************
-C    PBEc functional based on the equations from the C-code DFT code in
-C    DALTON. Keeping this around for test cases of mu=0.0.
-C    NOTE: mu is always identical zero when using this subroutine, thus
-C    it should give the same results as "normal" DFT.
-C 
-C    Code generated using Sympy 1.1.1
-C
-C    Created: 4th July 2018, Erik Kjellgren
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, rho_s, gamma_cc, gamma_ss, gamma_cs
-      real*8, intent(in) :: mu
-      real*8, intent(out) :: e
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11
-      real*8 :: x12, x13, x14, x15, x16, x17, x18, x19, x20
-      x0 = 1.46459188756152d0
-      x1 = 1.0/rho_c
-      x2 = x1**0.333333333333333d0/x0
-      x3 = 0.466194077035412d0*x1**0.666666666666667d0
-      x4 = 0.564189583547756d0*sqrt(x1)
-      x5 = 0.826307487110758d0*x1**0.166666666666667d0
-      x6 = (0.194159335344114d0*x2 + 1.0d0)*log(1.0d0 + 16.08182432215
-     &11d0/( 3.25955091942229d0*x2 + 0.406913004517529d0*x3 + 1.4187228
-     &1647967d0*x4 + 7.24010193431683d0*x5))
-      x7 = 0.062182d0*x6
-      x8 = rho_s**4/rho_c**4
-      x9 = rho_s*x1
-      x10 = 1.92366105093154d0*(-x9 + 1.0d0)**1.33333333333333d0 + 1.9
-     &2366105093154d0*(x9 + 1.0d0)**1.33333333333333d0 - 3.847322101863
-     &07d0
-      x11 = x10*(0.101077332976288d0*x2 + 1.0d0)*(-x8 + 1.0d0)*log(1.0
-     &d0 + 29.6085746432167d0/(3.29180480994506d0*x2 + 0.41002507094961
-     &2d0* x3 + 0.76232752193529d0*x4 + 9.87212972256927d0*x5))
-      x12 = x10*x8*(x7 - 0.03109d0*(0.186690969707574d0*x2 + 1.0d0)*lo
-     &g(1.0d0 + 32.1646831778707d0/(5.63098414909788d0*x2 + 0.516066464
-     &547863d0* x3 + 2.91521471421918d0*x4 + 13.4579137143944d0*x5)))
-      x13 = 2.14502939711103d0
-      x14 = rho_c**2.0d0
-      x15 = 0.5d0*(rho_c - 1.0d0*rho_s)**0.666666666666667d0 + 0.5d0*(
-     &rho_c + rho_s) **0.666666666666667d0
-      x16 = x15**3
-      x17 = gamma_cc*rho_c**(-1.0d0)/x15**2
-      x18 = gamma_cc**2*rho_c**(-2.0d0)/x15**4
-      x19 = exp(104.706192869308d0*x13*x14*(-0.00282845628540734d0*x11
-     & - 0.1432d0* x12 + 0.0089044624d0*x6)/x16) - 1.0d0
-      x20 = 1.0/x19
-      e = rho_c*(0.0197517897025652d0*x11 + x12 - x7 + 0.0666936695156
-     &131d0*x16* log(14.9865893973326d0*(0.00620558340543818d0*x0*x17 +
-     & 0.00123794483241921d0*x18*x20)/(0.0634992800779777d0*x13*x17*x20
-     & + 0.0185525709000164d0*x18/x19**2 + 1.0d0) + 1.0d0)/(x13*x14))
-      end subroutine
-#endif
-
 C****************************************************************************
-      subroutine ESRC_PBEGWSERFSPIN(rhoc,rhos,grdcc,grdss,grdcs,mu,e)
+C      subroutine ESRC_PBEGWSERFSPIN(rhoc,rhos,grdcc,grdss,grdcs,mu,e)
+      subroutine ESRC_PBEGWSERFSPIN(rhoc,rhos,grdcc,grdss,grdcs,
+     & tauc,taus,laplacec,laplaces,mu,e)
 C*****************************************************************************
 C     Short-range spin-dependent PBE correlation functional from
 C       Goll et al. Chem. Phys. 329 (2006), 276
@@ -4254,7 +4209,8 @@ C     Date  : 4th-July-18; LDA was not doing spin, changed that. E.R.K
 C*****************************************************************************
       implicit none
 
-      real*8   rhoc,rhos,grdcc,grdss,grdcs,mu, e
+      real*8   rhoc,rhos,grdcc,grdss,grdcs,mu,e,tauc,taus
+      real*8   laplacec, laplaces
       real*8   rho13, zeta
 
       real*8   tol
