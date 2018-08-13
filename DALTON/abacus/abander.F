@@ -766,7 +766,7 @@ C  /* Deck numdr1 */
 #include "inftap.h"
 #include "molinp.h"
 #include "fcsym.h"
-      LOGICAL EXHER, EXSIR, EXABA, GTCOMP, RSTDON, SYMDET, NPRBKP,
+      LOGICAL EXHER, EXSIR, EXABA, RSTDON, SYMDET, NPRBKP,
      &        NSPNBK
       CHARACTER*(len_MLINE) MBKLIN(NMLINE) ! automatic array for backup of MLINE
       CHARACTER*8 ANDER, PRTEXT
@@ -856,7 +856,7 @@ C
          KEND = 0
          IDIMAX = 0
          IDIMIN = 2
-         CALL RERSTR(FUNVAL,SYMCOR,DUMMY,DUMMY,ICRIRP,NDIME,NINTIN,
+         CALL RERSTR(FUNVAL,SYMCOR,VDUMMY,VDUMMY,ICRIRP,NDIME,NINTIN,
      &               KEND,IDIMAX,IDIMIN,LURSTR,IPRINT,RSTDON)
 C
 C        *** Restart for property derivatives. ***
@@ -1023,7 +1023,9 @@ C
 C
 C
          IF ( ((NAORDR+NMORDR).GT.1) .OR. PRPONL ) THEN
-            IF (.NOT.DRYRUN) THEN
+            IF (DRYRUN) THEN
+               CALL DRNRMC(SYMCOR,ICRIRP,IPRINT)
+            ELSE
                IF (HARMON) THEN
                   KTRAMT = 2
                   KTMPHS = KTRAMT + NCOOR**2
@@ -1068,6 +1070,7 @@ C
                   LWRK   = LWORK  - KLAST + 1
                   IF (KLAST.GT.LWORK)
      &                        CALL QUIT('Memory exceeded in MKNRMC')
+                  ! Make normal coordinates
                   CALL MKNRMC(SYMCOR,CSTART,TRNCCR,TRAMSS,WORK(KEIGNV),
      &                 WORK(KEGNVC),WORK(KHSMWT),WORK(KMT1TP),
      &                 WORK(KMT2TP),WORK(KAMASS),DKIN,WORK(KHTSTM),FREQ,
@@ -1096,11 +1099,9 @@ C
      &                        WORK(KTNRMD),WORK(KFNRMD),WORK(KLAST),
      &                        NCOOR,NDIMF,NDIMT,LWRK,IPRINT)
                END IF
-            ELSE
-               CALL DRNRMC(SYMCOR,ICRIRP,IPRINT)
             END IF
          END IF
-      END IF
+      END IF ! (MYNUM.EQ.0)
 C
 CRF   Also need to take this branch if we evaluate property derivatives only
       IF (NRMCRD .AND. ( ((NAORDR+NMORDR).GT.2) .OR. PRPONL  ) ) THEN
@@ -1143,7 +1144,7 @@ C
                ELSE
                   TXT  = 'cartes'
                END IF
-               CALL WRISPC(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,NDCOOR,
+               CALL WRISPC(FREQ,RNNORM,VDUMMY,VDUMMY,TXT,NCOOR,NDCOOR,
      &                     NTIME,IPRINT)
             END IF
             IF (MIDAS) THEN
@@ -1153,7 +1154,7 @@ C
                ELSE
                   TXT  = 'cartes'
                END IF
-               IF (NRMCRD) CALL WRIMOP(FREQ,RNNORM,DUMMY,DUMMY,TXT,
+               IF (NRMCRD) CALL WRIMOP(FREQ,RNNORM,VDUMMY,VDUMMY,TXT,
      &                                 NCOOR,NDCOOR,NTIME,IPRINT)
             END IF
          ELSE
@@ -1265,8 +1266,8 @@ C
          END IF
 C
          IF (DRYRUN) THEN
-            WRITE (LUPRI,'(//5X,A,I10)') 'Number of ' // ANDER //
-     &              ' calculations needed:', NUMCAL
+            WRITE (LUPRI,'(//5X,A,I10)') '.DRYRUN: Number of ' //
+     &           ANDER // ' calculations needed:', NUMCAL
          ELSE
             WRITE (LUPRI,'(//A,I10)') '@Number of ' // ANDER //
      &        ' calculations done:', NUMCAL
@@ -1350,7 +1351,7 @@ c#if defined (VAR_MPI2)
 c      LUNMCL = -9056
 c#endif
 C
-C     *** Finite field header. ***
+C     *** Numerical derivatives general header. ***
 C
       CALL TITLER('@ Numerical derivatives.','*',118)
       CALL HEADER('@ Derivatives calculated:',0)
@@ -1600,7 +1601,7 @@ c#endif
 C
 c#if defined (VAR_MPI)
 cC
-cC     *** If paralell calculation all energies are ***
+cC     *** If parallel calculation all energies are ***
 cC     *** collected into one array.                ***
 cC
 c#if defined (VAR_MPI2)
@@ -1912,7 +1913,7 @@ C
       END IF
 C
 C     *** Calculate the energy, gradient or hessian. If ***
-C     *** this is a paralell job, we need to find the   ***
+C     *** this is a parallel job, we need to find the   ***
 C     *** proper processor.                             ***
 C
       IF (RUNPNT(CLNRGY,IRSRDR+1,IDIME)) THEN
@@ -1966,11 +1967,7 @@ c     &                     .FALSE.)
 C
 C              *** Update MOLECULE.INP file and molinp.h common block ***
 C
-               KNATOM = 1
-               KNLINE = KNATOM + NUCIND
-               KNATIN = KNLINE + NUCIND
-               CALL UPD_MOLINP(COOR,WORK(KNATOM),WORK(KNLINE),
-     &                         WORK(KNATIN),MBKLIN,NMBKLN,LASTE)
+               CALL UPD_MOLINP(COOR,MBKLIN,NMBKLN,LASTE)
 C
 C              *** Reset necessary variables ***
 C
@@ -2129,7 +2126,7 @@ C
       END
 C
 C  /* Deck upd_molinp */
-      SUBROUTINE UPD_MOLINP(COOR,NATOM,NLINE,NATIND,MBKLIN,NMBKLN,LASTE)
+      SUBROUTINE UPD_MOLINP(COOR,MBKLIN,NMBKLN,LASTE)
 C
 C     Update MOLECULE.INP file and molinp.h commonb block.
 C
@@ -2155,8 +2152,8 @@ C
       CHARACTER*80  BSNM
       CHARACTER*11  TMPTXT
       CHARACTER*1   KASYM(3,3), ID3, CRT
-      DIMENSION COOR(3,NCOOR/3), NATOM(NUCIND), NLINE(NUCIND),
-     &          NATIND(NUCIND), JCO1(MXAQN)
+      REAL*8        COOR(3,NCOOR/3)
+      INTEGER       JCO1(MXAQN)
 
 C
 C     Updates geometry in common block
@@ -2356,7 +2353,6 @@ C
       RETURN
       END
 C
-C  /* Deck numres */
       SUBROUTINE NDER_RESET(EXHER,EXSIR,EXABA)
 #include "implicit.h"
 #include "priunit.h"
@@ -2505,62 +2501,6 @@ C
       RETURN
       END
 C
-C
-C     /* Deck nmpres */
-c      SUBROUTINE NMPRES
-c#include "implicit.h"
-c#include "priunit.h"
-c
-C
-C
-      SUBROUTINE PRNHST(KSCOO1,KSCOO2,DISPLC,I,J,NC)
-C
-C     Prints out headers to the different steps in finite field.
-C
-#include "implicit.h"
-#include "priunit.h"
-      CHARACTER SIGNS*4
-C
-      SIGNS = '    '
-C
-      CALL TITLER('Finite field geometry','*',118)
-C
-      IF (NC .EQ. 1) THEN
-         WRITE (LUPRI,'(A,I4)') '        Distortions in coordinate:',
-     &                           KSCOO2
-      ELSE
-         WRITE (LUPRI,'(A,2I4)') '        Distortions in coordinates:',
-     &                           KSCOO1, KSCOO2
-      END IF
-C
-      WRITE (LUPRI,'(/A,F12.8/)') '        Length of displacement:',
-     &   DISPLC
-C
-      IF (J .EQ. 1) THEN
-         SIGNS(2:2) = '+'
-      ELSE
-         SIGNS(2:2) = '-'
-      END IF
-      IF (NC .NE. 1) THEN
-         IF (I .EQ. 1) THEN
-            SIGNS(4:4) = '+'
-         ELSE
-            SIGNS(4:4) = '-'
-         END IF
-      END IF
-      WRITE (LUPRI,'(A24,A4//)') '        Step directions:', SIGNS
-C
-      RETURN
-      END
-C /* Deck GTCOMP */
-      LOGICAL FUNCTION GTCOMP()
-#include "implicit.h"
-#include "cbitro.h"
-      GTCOMP = COMPAR
-      RETURN
-      END
-C
-C
 C /* Deck NMCOEF */
       SUBROUTINE NMCOEF(COEFF,TCOEFF,WORK,MXCOEF,NMNMDR,LWORK)
 #include "implicit.h"
@@ -2678,6 +2618,7 @@ C
       IDERIV = 0
       DO 100 IORDR = 1, NORDR
 C
+         ! DIAGON = only diagonal needed
          DIAGON = (.NOT.FCCAL ).AND.(IORDR.EQ.NORDR).AND.
      &                  PRPVIB .AND.((NARDRP+NMRDRP).EQ.2)
 
@@ -2857,9 +2798,7 @@ C
 C              *** First indices in INDSTP are kept for the ***
 C              *** analytical derivative.                   ***
 C
-               KITMP = 1
-
-               CALL SRTINS(INDSTP,INDTMP,WORK(KITMP),NTORDR,IPRINT)
+               CALL SRTINS(INDSTP,INDTMP)
 
 C              *** Checking whether this component should ***
 C              *** not be calculated, due to symmetry.    ***
@@ -3025,8 +2964,8 @@ C
                   CLFVAL = .TRUE.
                END IF
 C
-C              *** In some calculations we only need diagonal. ***
-C              *** derivatives.                                ***
+C              *** In some calculations we only need diagonal ***
+C              *** derivatives.                               ***
 C
                IF ((IORDR.GT.1).AND.DIAGON) THEN
                   CLFVAL = (CLFVAL).AND.
@@ -3109,9 +3048,9 @@ C
                      IF (BCOEFF**2 .GT. DMIN) THEN
 C
 C                       ************************************************
-C                       *** This subroutine finds the adress for the ***
-C                       ***      function value, from the indices    ***
-C                       ***   NEIND - The adress in the FUNVAL-array ***
+C                       *** This subroutine finds the address for    ***
+C                       ***  the function value, from the indices    ***
+C                       ***  NEIND - The address in the FUNVAL-array ***
 C                       ************************************************
 C
                         KITCMP = 1
@@ -3918,7 +3857,7 @@ C
          ELSE
             TXT  = 'cartes'
          END IF
-         CALL WRISPC(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,NDCOOR,NTIME,
+         CALL WRISPC(FREQ,RNNORM,VDUMMY,VDUMMY,TXT,NCOOR,NDCOOR,NTIME,
      &               IPRINT)
       END IF
       IF (MIDAS) THEN
@@ -3928,7 +3867,7 @@ C
          ELSE
             TXT  = 'cartes'
          END IF
-         IF (NRMCRD) CALL WRIMOP(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,
+         IF (NRMCRD) CALL WRIMOP(FREQ,RNNORM,VDUMMY,VDUMMY,TXT,NCOOR,
      &                           NDCOOR,NTIME,IPRINT)
       END IF
 C
@@ -4367,12 +4306,12 @@ C     *** Writing to spectro file if requested. ***
 C
       IF (SPECTR) THEN
          NTIME = 2
-         CALL WRISPC(DUMMY,DUMMY,TTMPDR,FTMPDR,TEXT(1:6),NCOOR,NDCOOR,
+         CALL WRISPC(VDUMMY,VDUMMY,TTMPDR,FTMPDR,TEXT(1:6),NCOOR,NDCOOR,
      &               NTIME,IPRINT)
       END IF
       IF (MIDAS) THEN
          NTIME = 2
-         CALL WRIMOP(DUMMY,RNNORM,TTMPDR,FTMPDR,TEXT(1:6),NCOOR,NDCOOR,
+         CALL WRIMOP(VDUMMY,RNNORM,TTMPDR,FTMPDR,TEXT(1:6),NCOOR,NDCOOR,
      &               NTIME,IPRINT)
       END IF
 C
@@ -4497,7 +4436,7 @@ C     /*Deck gsphes*/
 
       REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
-C     *** Print hessian in symmetric coordinates ***
+C     *** Print hessian in symmetry coordinates ***
 C
       CALL HEADER('Hessian in ' // TEXT(1:LTXT) // ' coordinates',-1)
       WRITE(LUPRI,'(/8X,A/)') 'Notation: irrep/coordinate number'
@@ -4871,6 +4810,8 @@ C
 C
 C     /* Deck drnrmc*/
       SUBROUTINE DRNRMC(SYMCOR,ICRIRP,IPRINT)
+      ! DRYRUN version of MKNRMC,
+      ! make normal coordinates
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -4904,7 +4845,7 @@ C
                      IF ((ICRIRP(IC3,1).EQ.IIREP).AND.
      &                   (ICRIRP(IC3,2).EQ.    1).AND.(.NOT.FOUND)) THEN
                         FOUND = .TRUE.
-                        DO 500 II  =     1      2
+                        DO 500 II  =     1,     2
                         DO 500 IC4 = IC3+1, NDCOOR
                            ICRIRP(IC4-1,II) = ICRIRP(IC4,II)
  500                    CONTINUE
@@ -6847,16 +6788,17 @@ C
 C
 C
 C     /* Deck srtins*/
-      SUBROUTINE SRTINS(INDSTP,INDTMP,ITMP,NORDR,IPRINT)
+      SUBROUTINE SRTINS(INDSTP,INDTMP)
 C     *****************************************************************
 C     *** Subroutine that sorts three indices, where two indices    ***
 C     *** are equal, so that the one index not equal the two others ***
-C     *** are put first. The indices are returned in INDSTP.        ***
+C     *** are put first. The indices are returned in INDTMP.        ***
 C     *****************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      LOGICAL EQUAL, FOUND
-      DIMENSION INDSTP(NORDR), INDTMP(NORDR), ITMP(N ORDR)
+      LOGICAL  EQUAL, FOUND
+      INTEGER  INDSTP(3), INDTMP(3)
+      INTEGER  ITMP(3)
 C
       FOUND = .FALSE.
 C

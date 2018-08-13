@@ -1004,7 +1004,7 @@ C
 C H2X ARE ONE INDEX TRANSFORMED INTEGRALS
 C
 C H2XAC CONTAIN HALF TRANSFORMED INTEGRALS. THE ONE INDEX TRANSFORMED
-C INTEGRALS ARE OBTAINED FROM H2XAC IN GETINT.
+C INTEGRALS ARE OBTAINED FROM H2XAC IN GETIN2.
 C
 #include "implicit.h"
 C
@@ -3830,12 +3830,13 @@ C
 C     Call RSPCTL to solve propagator eigen problem
 C
       CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-     *            .FALSE.,BLANK,BLANK,DUMMY,DUMMY,WRK(KREDE),WRK(KREDS),
-     *            WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
-     *            XINDX,WRK(KWRK1),LWRK1)
+     &            .FALSE.,BLANK,BLANK,VDUMMY,
+     &            VDUMMY,WRK(KREDE),WRK(KREDS),
+     &            WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
+     &            XINDX,WRK(KWRK1),LWRK1)
 C     CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-C    *            LINEQ,GD,REDGD,REDE,REDS,
-C    *            IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
+C    &            LINEQ,LAB1,LAB2,GD,REDGD,REDE,REDS,
+C    &            IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 C
 C   Save the excitation energies for excited state gradient
 C   (singlet only for the moment)
@@ -4697,7 +4698,7 @@ C
      *               WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
      *               XINDX,WRK(KWRK1),LWRK1)
 C        CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-C                    LINEQ,GD,REDGD,REDE,REDS,
+C    *               LINEQ,LAB1,LAB2,GD,REDGD,REDE,REDS,
 C    *               IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 C
          DO 700 IFREQ = 1,JFREQ,MXFREQ
