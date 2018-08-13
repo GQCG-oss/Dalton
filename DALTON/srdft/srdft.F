@@ -813,7 +813,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFT1(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
-     &                  WEIGHT,NBUF,GSO,NCNT,DMAGAOSR,DMAGAOT,DOGGA,
+     &                  WEIGHT,NBUF,GSO,NCNT,DMATGAOSR,DMATGAOT,DOGGA,
      &                  DOERG,DOGRD,DOATR,TRIPLET,RESULTS,WORK,LWORK,
      &                  IPRINT)
 C*****************************************************************************
@@ -843,13 +843,15 @@ C
 #include "chrnos.h"
 
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
+      PARAMETER (DP3 = 1.0D0/3.0D0)
 
       LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,TRIPLET
       LOGICAL   LDOGGA,LSRHYBR,RTEST,ldebug
       REAL*8    EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
      &          GSO(NBAST*NTYPSO),NCNT(NBAST),
-     &          DMAGAOSR(NBAST),DMAGAOT(NBAST),RESULTS(11),WORK(LWORK),
+     &          DMATGAOSR(NBAST),DMATGAOT(NBAST),RESULTS(11),
+     &          WORK(LWORK),
      &          RHGT(3),RHGSR(3),ZKSR(3,3),XKSR(3,3), COR(3)
 
       CHARACTER*17 QUADNAME
@@ -1029,16 +1031,19 @@ C           =============================
 C           Density
 C           =============================
             IF (LSRHYBR) THEN
-               CALL GETRHO_OLD(DMAT(1,2),GSO(KSO0),RHOSR,RHOSR13,
-     &                     DMAGAOSR,THRINT,IPRINT)
-               CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHOTOT,RHOT13,
-     &                     DMAGAOT,THRINT,IPRINT)
+               CALL GETRHO_OLD(DMAT(1,2),GSO(KSO0),RHOSR,
+     &                     DMATGAOSR,THRINT,IPRINT)
+               RHOSR13 = RHOSR ** DP3
+               CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHOTOT,
+     &                     DMATGAOT,THRINT,IPRINT)
+               RHOT13 = RHOTOT ** DP3
             ELSE
-               CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHOSR,RHOSR13,
-     &                     DMAGAOSR,THRINT,IPRINT)
+               CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHOSR,
+     &                     DMATGAOSR,THRINT,IPRINT)
+               RHOSR13 = RHOSR ** DP3
                RHOTOT = RHOSR
                RHOT13 = RHOSR13
-               CALL DCOPY(NBAST,DMAGAOSR,1,DMAGAOT,1)
+               CALL DCOPY(NBAST,DMATGAOSR,1,DMATGAOT,1)
             END IF
             DELCTRN = WGHT*RHOTOT
             DELCTSR = WGHT*RHOSR
@@ -1057,12 +1062,12 @@ C                 the hessian of the density for the potential.
 C
 C                 Gradient of density
 C                 ===================
-                  CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMAGAOSR,
+                  CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMATGAOSR,
      &                         1,D0,RHGSR,1)
                   RHOSRGRD = SQRT(RHGSR(1)**2 + RHGSR(2)**2
      &                     + RHGSR(3)**2)
                   IF (LSRHYBR) THEN
-                     CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMAGAOT,
+                     CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMATGAOT,
      &                          1,D0,RHGT,1)
                      RHOTGRD = SQRT(RHGT(1)**2 + RHGT(2)**2
      &                       + RHGT(3)**2)
@@ -1077,12 +1082,13 @@ C                 Hessian of density
 C                 ===================
 C
                   IF (LSRHYBR) THEN
-                     CALL DFTRHH(DMAT(1,2),DMAGAOSR,GSO(KSO0),GSO(KSO1),
-     &                           GSO(KSO2),RHGSR,RHOSRLAP,RHOSRGHG)
-                     CALL DFTRHH(DMAT,DMAGAOT,GSO(KSO0),GSO(KSO1),
+                     CALL DFTRHH(DMAT(1,2),DMATGAOSR,
+     &                           GSO(KSO0),GSO(KSO1),GSO(KSO2),
+     &                           RHGSR,RHOSRLAP,RHOSRGHG)
+                     CALL DFTRHH(DMAT,DMATGAOT,GSO(KSO0),GSO(KSO1),
      &                           GSO(KSO2),RHGT,RHOTLAP,RHOTGHG)
                   ELSE
-                     CALL DFTRHH(DMAT,DMAGAOSR,GSO(KSO0),GSO(KSO1),
+                     CALL DFTRHH(DMAT,DMATGAOSR,GSO(KSO0),GSO(KSO1),
      &                           GSO(KSO2),RHGSR,RHOSRLAP,RHOSRGHG)
                      RHOTLAP = RHOSRLAP
                      RHOTGHG = RHOSRGHG
@@ -1196,12 +1202,13 @@ C                    matrix 3 & 4 are DXTAO and DXVAO
      &                             WGHT, GSO(KSO0),GSO(KSO1),CHIVAL,
      &                             ERFEXP,.TRUE.,RHOSR,RHOSR13,
      &                             RHOSRGRD,RHOSRLAP, RHOSRGHG,RHGSR,
-     &                             DMAGAOSR,VLAMBDA)
+     &                             DMATGAOSR,VLAMBDA)
                      JDXAO = 3
                      CALL SRDFTLTR(JWOPSY,DMAT(1,JDXAO),EXCMAT(1,1,2),
      &                             WGHT, GSO(KSO0),GSO(KSO1),CHIVAL,
      &                             ERFEXP,.FALSE.,RHOTOT,RHOT13,RHOTGRD,
-     &                             RHOTLAP,RHOTGHG,RHGT,DMAGAOT,VLAMBDA)
+     &                             RHOTLAP,RHOTGHG,RHGT,
+     &                             DMATGAOT,VLAMBDA)
                   ELSE
 C                    matrix 1 is DTAO
 C                    matrix 2 is DXTAO
@@ -1209,8 +1216,8 @@ C                    matrix 2 is DXTAO
                      CALL SRDFTLTR(JWOPSY,DMAT(1,JDXAO),EXCMAT,
      &                             WGHT, GSO(KSO0),GSO(KSO1),CHIVAL,
      &                             ERFEXP,.TRUE.,RHOTOT,RHOT13,
-     &                             RHOTGRD,RHOTLAP,RHOTGHG,RHGT,DMAGAOT,
-     &                             VLAMBDA)
+     &                             RHOTGRD,RHOTLAP,RHOTGHG,RHGT,
+     &                             DMATGAOT,VLAMBDA)
                   END IF
                END IF
             ENDIF
@@ -1517,7 +1524,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MCRHO1(CMO,DV,DOLND,CORX,CORY,CORZ,WEIGHT,NBUF,GSO,
-     &                  NCNT,DMAGAO,DOGGA,CREF,INDXCI,DODCAO,DCAO,DVAO,
+     &                  NCNT,DMATGAO,DOGGA,CREF,INDXCI,DODCAO,DCAO,DVAO,
      &                  WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
@@ -1548,7 +1555,7 @@ C
       LOGICAL   DOLND,DOGGA,DODCAO
       DIMENSION CMO(*),DV(NNASHX),CORX(NBUF),CORY(NBUF),
      &          CORZ(NBUF),WEIGHT(NBUF),GSO(NBAST*NTYPSO),
-     &          NCNT(NBAST),DMAGAO(NBAST),CREF(NCONF),
+     &          NCNT(NBAST),DMATGAO(NBAST),CREF(NCONF),
      &          DCAO(NBAST,NBAST),DVAO(NBAST,NBAST),WORK(LWORK), COR(3)
       CHARACTER*17 QUADNAME
 C
@@ -1647,11 +1654,11 @@ C           =============================
 C
 C           ... inactive part
             IF (DODCAO) THEN
-               CALL GETRHO_OLD(DCAO,GSO,RHO,RHO13,DMAGAO,THRINT,IPRINT)
+               CALL GETRHO_OLD(DCAO,GSO,RHO,DMATGAO,THRINT,IPRINT)
                CELCTRN = CELCTRN + WGHT*RHO
             ENDIF
 C           ... active part
-            CALL GETRHO_OLD(DVAO,GSO,RHO,RHO13,DMAGAO,THRINT,IPRINT)
+            CALL GETRHO_OLD(DVAO,GSO,RHO,DMATGAO,THRINT,IPRINT)
             VELCTRN = VELCTRN + WGHT*RHO
 C
 C           Dump active density to file

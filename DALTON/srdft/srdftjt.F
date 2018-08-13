@@ -26,7 +26,7 @@
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
-     &                  WEIGHT,NBUF,GSO,NCNT,DMAGAOSR,DOGGA,
+     &                  WEIGHT,NBUF,GSO,NCNT,DMATGAOSR,DOGGA,
      &                  DOERG,DOGRD,DOATR,TRIPLET,RESULTS,
      &                  WORK,LWORK,IPRINT_in)
 C*****************************************************************************
@@ -82,7 +82,7 @@ C*****************************************************************************
       REAL*8    EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
      &          GSO(NBAST*NTYPSO),NCNT(NBAST),
-     &          DMAGAOSR(NBAST,2),
+     &          DMATGAOSR(NBAST,2),
      &          COR(3),RESULTS(11),WORK(LWORK)
 
       CHARACTER*17 QUADNAME
@@ -312,8 +312,8 @@ C     Get AOs
      &            THRINT,IPRINT_x)
 
 C     Density
-      CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHO(1),rhoc13,
-     &       DMAGAOSR(1,1),THRINT,IPRINT_x)
+      CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHO(1),
+     &       DMATGAOSR(1,1),THRINT,IPRINT_x)
 
 C     Contribution to electron number (N_alpha + N_beta)
       DELCTRN = WGHT*RHO(1)
@@ -343,8 +343,8 @@ C        ... skip this point, go to next grid point
 C     Spin density rho_s ( in RHO(2) )
       IF (DFT_SPINDNS) THEN
 C        DMAT(1,3) is the spin density matrix
-         CALL GETRHO_OLD(DMAT(1,3),GSO(KSO0),RHO(2),RHOS13,
-     &                   DMAGAOSR(1,2),THRINT,IPRINT)
+         CALL GETRHO_OLD(DMAT(1,3),GSO(KSO0),RHO(2),
+     &                   DMATGAOSR(1,2),THRINT,IPRINT)
 
          IF (DFT_LOCALSPIN) THEN
 C        In our local spin model we can get unphysical densities
@@ -364,12 +364,12 @@ C        Contribution to spin density (N_alpha - N_beta)
 
 C     Gradients of densities
       IF (DOGGA) THEN
-C       GSO(KSO1)*DMAGAOSR
-        CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMAGAOSR(1,1),
+C       GSO(KSO1)*DMATGAOSR
+        CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMATGAOSR(1,1),
      &     1,D0,RHG(1,1),1)
 C
         IF (DFT_SPINDNS) THEN
-           CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMAGAOSR(1,2),
+           CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMATGAOSR(1,2),
      &        1,D0,RHG(1,2),1)
         ELSE
            RHG(1:3,2) = 0.0D0 ! RHGS is zero
@@ -388,7 +388,33 @@ C
         grd2(5) = rhg(1,4)**2 + rhg(2,4)**2 + rhg(3,4)**2  ! grdbb
         grd2(6) = rhg(1,3)*rhg(1,4) + rhg(2,3)*rhg(2,4)    ! grdab = grad(rhoa) . grad(rhob)
      &          + rhg(3,3)*rhg(3,4)
-      else if (do_metagga) then
+      END IF
+
+      if (do_metagga) then
+         KSO1_gx = KSO1
+         KSO1_gy = KSO1 + NBAST
+         KSO1_gz = KSO1 + 2*NBAST
+         CALL GETRHO_OLD(DMAT(1,1),GSO(KSO1_gx),TAU_X,
+     &       DMATGAOSR(1,1),THRINT,IPRINT_x)
+         CALL GETRHO_OLD(DMAT(1,1),GSO(KSO1_gy),TAU_Y,
+     &       DMATGAOSR(1,1),THRINT,IPRINT_x)
+         CALL GETRHO_OLD(DMAT(1,1),GSO(KSO1_gz),TAU_Z,
+     &       DMATGAOSR(1,1),THRINT,IPRINT_x)
+         TAU(1) = 0.5D0*(TAU_X + TAU_Y + TAU_Z)
+         IF (DFT_SPINDNS) THEN
+C           DMAT(1,3) is the spin density matrix
+            CALL GETRHO_OLD(DMAT(1,3),GSO(KSO1_gx),TAU_X,
+     &          DMATGAOSR(1,1),THRINT,IPRINT_x)
+            CALL GETRHO_OLD(DMAT(1,3),GSO(KSO1_gy),TAU_Y,
+     &          DMATGAOSR(1,1),THRINT,IPRINT_x)
+            CALL GETRHO_OLD(DMAT(1,3),GSO(KSO1_gz),TAU_Z,
+     &          DMATGAOSR(1,1),THRINT,IPRINT_x)
+            TAU(2) = 0.5D0*(TAU_X + TAU_Y + TAU_Z)
+         ELSE
+            TAU(2) = 0.0D0
+         END IF
+         TAU(3) = 0.5d0 * ( TAU(1) + TAU(2) ) ! tau_a
+         TAU(4) = 0.5d0 * ( TAU(1) - TAU(2) ) ! tau_b
          call quit('srdftjt.F: No metaGGA yet. ID01')
       ENDIF
 C
@@ -407,7 +433,7 @@ C      Summation with quadrature weights
        EcInt     = EcInt + WGHTC*Ec
 
 C      Sum of exchange and correlation
-       d1Exc(1:5) = WGHTX*d1Ex(1:5) + WGHTC*d1Ec(1:5)
+       d1Exc(1:9) = WGHTX*d1Ex(1:9) + WGHTC*d1Ec(1:9)
 
        IF (iprint_x .gt. 10) then
           write(lupri,*)'rhoc, rhcg ',rho(1),rhg(1:3,1)
@@ -494,7 +520,7 @@ C        Three cases:
 ! SRDFTLTRJT: SR short-range DFT density functional theory LTR linear transformation JT Julien Toulouse
         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
      &                 WGHTX,WGHTC,GSO(KSO0),GSO(KSO1),CHIVAL,VLAMBDA,
-     &                 ERFEXP,RHO,RHG,GRD2,DMAGAOSR,
+     &                 ERFEXP,RHO,RHG,GRD2,DMATGAOSR,
      &                 DOGGA,TRIPLET,IPRINT_X)
 
       ENDIF ! DOATR
