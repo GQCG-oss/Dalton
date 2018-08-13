@@ -139,8 +139,10 @@ C
       CALL DZERO(CMO,NCMOT)
       CALL RD_SIRIFC('CMO',FOUND,CMO)
       IF(.NOT.FOUND)CALL QUIT('GETV1MAT error: CMO not found on SIRIFC')
-      IF (NSYM.GT.1)CALL QUIT(
+      IF (NSYM.GT.1)CALL QUIT('ERROR: '//
      &     'DFT analytical Hessians do not work with symmetry')
+      IF (NASHT.GT.0)CALL QUIT('ERROR: '//
+     &     'DFT analytical Hessian not implemented for open-shell DFT')
 C    
       DO ISYM = 1, NSYM
          NISHI  = NISH(ISYM)
