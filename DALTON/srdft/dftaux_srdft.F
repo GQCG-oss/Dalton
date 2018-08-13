@@ -23,23 +23,23 @@
 !
 C
 C  /* Deck getrho */
-      SUBROUTINE GETRHO_OLD(DMAT,GSO,RHO,RHO13,DMAGAO,DFTHRI,IPRINT)
+      SUBROUTINE GETRHO_OLD(DMAT,GSO,RHO,DMATGAO,DFTHRI,IPRINT)
 C
 C     T. Helgaker feb 01
+C     (RHO13 removed Aug 18)
 C
 C Output:
-C    RHO and RHO13
-C    DMAGAO(i) = sum(j) dmat(i,j) * gso(j)
+C    RHO
+C    DMATGAO(i) = sum(j) dmat(i,j) * gso(j)
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <mxcent.h>
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0,
-     &           DP5 = 0.5D0, DP3 = D1/3.0D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
-      DIMENSION DMAT(NBAST,NBAST), GSO(NBAST), DMAGAO(NBAST)
+      DIMENSION DMAT(NBAST,NBAST), GSO(NBAST), DMATGAO(NBAST)
 C
 #include <symmet.h>
 #include <inforb.h>
@@ -52,31 +52,17 @@ C
          write(lupri,*) 'NBAS',nbas(1:nsym)
       END IF
       IF (NSYM.EQ.1) THEN
-         CALL DSYMV('U',NBAST,D1,DMAT,NBAST,GSO,1,D0,DMAGAO,1)
+         CALL DSYMV('U',NBAST,D1,DMAT,NBAST,GSO,1,D0,DMATGAO,1)
       ELSE
-         CALL DZERO(DMAGAO,NBAST)
+         CALL DZERO(DMATGAO,NBAST)
          DO ISYM = 1, NSYM
             ISTR = IBAS(ISYM) + 1
-#ifndef OLD_CODE
             NBASI= NBAS(ISYM)
             CALL DSYMV('U',NBASI,D1,DMAT(ISTR,ISTR),NBAST,GSO(ISTR),1,
-     &                 D0,DMAGAO(ISTR),1)
-#else
-C hjaaj June 09: DSYMV must be faster nowadays than the code below
-            IEND = IBAS(ISYM) + NBAS(ISYM)
-            DO J = ISTR, IEND 
-               GSOJ = GSO(J)
-               IF (DABS(GSOJ).GT.DFTHRI) THEN
-                  DO I = ISTR, IEND 
-                     DMAGAO(I) = DMAGAO(I) + GSOJ*DMAT(I,J)
-                  END DO
-               END IF
-            END DO
-#endif
+     &                 D0,DMATGAO(ISTR),1)
          END DO
       END IF
-      RHO   = DDOT(NBAST,GSO,1,DMAGAO,1)
-      RHO13 = RHO**DP3
+      RHO = DDOT(NBAST,GSO,1,DMATGAO,1)
       RETURN
       END      
 C /* Deck dftksmggaspin */
