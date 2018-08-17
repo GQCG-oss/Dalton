@@ -1573,14 +1573,11 @@ C     Doing checks and assignemnts
          E = 0.0d0
          return
       end if
-      if (grad2(6) .ge. 1.d-10) then
-         call quit("grad_ab is different from zero in exchange.")
-      end if
       rho_a   = rho(3)
       rho_b   = rho(4)
       grad_aa = grad2(4)
       grad_bb = grad2(5)
-      grad_ab = grad2(6) ! Shold be zero
+      grad_ab = grad2(6) ! Shold be zero?
       tau_a   = tau(3)
       tau_b   = tau(4)
       laplace_a = laplace(3)
@@ -2088,6 +2085,7 @@ C     Transform from alpha, beta to c, s
       d2E(43) = d2E(34)
       d2E(44) = D4I*(d2Eab(36) - d2Eab(45))
       d2E(45) = d2E(36)
+
       end if
       end subroutine
 
@@ -4014,14 +4012,24 @@ C*****************************************************************************
       real*8   XKSR(3)
       logical  ERFEXP(0:2)
 
+      integer :: I
+
 ! function 
       real*8   berf
 
 ! edh debug
 !#include "priunit.h"
-
+      e = 0.0d0
+      DO I = 1, 2
+      if (I .eq. 1) then
+         rho = 2.0d0*rhoa
+         grd2 = 4.0d0*grdaa
+      end if
+      if (I .eq. 2) then
+         rho = 2.0d0*rhob
+         grd2 = 4.0d0*grdbb
+      end if
 C     LDA energy
-      rho = 2.0d0*rhoa ! as if rhoa .eq. rhob
       rho13 = rho**(1.d0/3.d0)
       ERFEXP(0:2) = .false.
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
@@ -4029,7 +4037,6 @@ C     LDA energy
 
 !     write(lupri,*)'LDA energy exerflda', exerflda
 
-      grd2 = 4.0d0*grdaa ! as if rhoa .eq. rhob
       kappa=0.804d0
       sq=grd2*2.6121172985233599567768d-2*rho**(-8.d0/3.d0)
       fx=1.d0+kappa
@@ -4037,7 +4044,8 @@ C     LDA energy
      &            *mu*rho**(-1.d0/3.d0))*sq/kappa)
       exerfpbe=exerflda*fx
 
-      e = 0.5d0*exerfpbe ! only sigma exchange energy
+      e = e + 0.5d0*exerfpbe ! only sigma exchange energy
+      END DO
 
       return
       end
