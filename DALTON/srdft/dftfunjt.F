@@ -1359,168 +1359,168 @@ C     Doing the calculation
       end if
       if (hr_s .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
-      d2E(2)=(Epp_2_1-Ep_2-Ep_1+2.0d0*E-Em_2-Em_1+Emm_2_1)/(4.0d0*hr_s*h
+      d2E(2)=(Epp_2_1-Ep_2-Ep_1+2.0d0*E-Em_2-Em_1+Emm_2_1)/(2.0d0*hr_s*h
      &r_c)
       end if
       d2E(3)=(Ep_2-2.0d0*E+Em_2)/(hr_s**2)
       end if
       if (hg_cc .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
-      d2E(4)=(Epp_3_1-Ep_3-Ep_1+2.0d0*E-Em_3-Em_1+Emm_3_1)/(4.0d0*hg_cc*
+      d2E(4)=(Epp_3_1-Ep_3-Ep_1+2.0d0*E-Em_3-Em_1+Emm_3_1)/(2.0d0*hg_cc*
      &hr_c)
       end if
       if (hr_s .gt. 0.0d0) then
-      d2E(5)=(Epp_3_2-Ep_3-Ep_2+2.0d0*E-Em_3-Em_2+Emm_3_2)/(4.0d0*hg_cc*
+      d2E(5)=(Epp_3_2-Ep_3-Ep_2+2.0d0*E-Em_3-Em_2+Emm_3_2)/(2.0d0*hg_cc*
      &hr_s)
       end if
       d2E(6)=(Ep_3-2.0d0*E+Em_3)/(hg_cc**2)
       end if
       if (hg_ss .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
-      d2E(7)=(Epp_4_1-Ep_4-Ep_1+2.0d0*E-Em_4-Em_1+Emm_4_1)/(4.0d0*hg_ss*
+      d2E(7)=(Epp_4_1-Ep_4-Ep_1+2.0d0*E-Em_4-Em_1+Emm_4_1)/(2.0d0*hg_ss*
      &hr_c)
       end if
       if (hr_s .gt. 0.0d0) then
-      d2E(8)=(Epp_4_2-Ep_4-Ep_2+2.0d0*E-Em_4-Em_2+Emm_4_2)/(4.0d0*hg_ss*
+      d2E(8)=(Epp_4_2-Ep_4-Ep_2+2.0d0*E-Em_4-Em_2+Emm_4_2)/(2.0d0*hg_ss*
      &hr_s)
       end if
       if (hg_cc .gt. 0.0d0) then
-      d2E(9)=(Epp_4_3-Ep_4-Ep_3+2.0d0*E-Em_4-Em_3+Emm_4_3)/(4.0d0*hg_ss*
+      d2E(9)=(Epp_4_3-Ep_4-Ep_3+2.0d0*E-Em_4-Em_3+Emm_4_3)/(2.0d0*hg_ss*
      &hg_cc)
       end if
       d2E(10)=(Ep_4-2.0d0*E+Em_4)/(hg_ss**2)
       end if
       if (hg_cs .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
-      d2E(11)=(Epp_5_1-Ep_5-Ep_1+2.0d0*E-Em_5-Em_1+Emm_5_1)/(4.0d0*hg_cs
+      d2E(11)=(Epp_5_1-Ep_5-Ep_1+2.0d0*E-Em_5-Em_1+Emm_5_1)/(2.0d0*hg_cs
      &*hr_c)
       end if
       if (hr_s .gt. 0.0d0) then
-      d2E(12)=(Epp_5_2-Ep_5-Ep_2+2.0d0*E-Em_5-Em_2+Emm_5_2)/(4.0d0*hg_cs
+      d2E(12)=(Epp_5_2-Ep_5-Ep_2+2.0d0*E-Em_5-Em_2+Emm_5_2)/(2.0d0*hg_cs
      &*hr_s)
       end if
       if (hg_cc .gt. 0.0d0) then
-      d2E(13)=(Epp_5_3-Ep_5-Ep_3+2.0d0*E-Em_5-Em_3+Emm_5_3)/(4.0d0*hg_cs
+      d2E(13)=(Epp_5_3-Ep_5-Ep_3+2.0d0*E-Em_5-Em_3+Emm_5_3)/(2.0d0*hg_cs
      &*hg_cc)
       end if
       if (hg_ss .gt. 0.0d0) then
-      d2E(14)=(Epp_5_4-Ep_5-Ep_4+2.0d0*E-Em_5-Em_4+Emm_5_4)/(4.0d0*hg_cs
+      d2E(14)=(Epp_5_4-Ep_5-Ep_4+2.0d0*E-Em_5-Em_4+Emm_5_4)/(2.0d0*hg_cs
      &*hg_ss)
       end if
       d2E(15)=(Ep_5-2.0d0*E+Em_5)/(hg_cs**2)
       end if
       if (ht_c .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
-      d2E(16)=(Epp_6_1-Ep_6-Ep_1+2.0d0*E-Em_6-Em_1+Emm_6_1)/(4.0d0*ht_c*
+      d2E(16)=(Epp_6_1-Ep_6-Ep_1+2.0d0*E-Em_6-Em_1+Emm_6_1)/(2.0d0*ht_c*
      &hr_c)
       end if
       if (hr_s .gt. 0.0d0) then
-      d2E(17)=(Epp_6_2-Ep_6-Ep_2+2.0d0*E-Em_6-Em_2+Emm_6_2)/(4.0d0*ht_c*
+      d2E(17)=(Epp_6_2-Ep_6-Ep_2+2.0d0*E-Em_6-Em_2+Emm_6_2)/(2.0d0*ht_c*
      &hr_s)
       end if
       if (hg_cc .gt. 0.0d0) then
-      d2E(18)=(Epp_6_3-Ep_6-Ep_3+2.0d0*E-Em_6-Em_3+Emm_6_3)/(4.0d0*ht_c*
+      d2E(18)=(Epp_6_3-Ep_6-Ep_3+2.0d0*E-Em_6-Em_3+Emm_6_3)/(2.0d0*ht_c*
      &hg_cc)
       end if
       if (hg_ss .gt. 0.0d0) then
-      d2E(19)=(Epp_6_4-Ep_6-Ep_4+2.0d0*E-Em_6-Em_4+Emm_6_4)/(4.0d0*ht_c*
+      d2E(19)=(Epp_6_4-Ep_6-Ep_4+2.0d0*E-Em_6-Em_4+Emm_6_4)/(2.0d0*ht_c*
      &hg_ss)
       end if
       if (hg_cs .gt. 0.0d0) then
-      d2E(20)=(Epp_6_5-Ep_6-Ep_5+2.0d0*E-Em_6-Em_5+Emm_6_5)/(4.0d0*ht_c*
+      d2E(20)=(Epp_6_5-Ep_6-Ep_5+2.0d0*E-Em_6-Em_5+Emm_6_5)/(2.0d0*ht_c*
      &hg_cs)
       end if
       d2E(21)=(Ep_6-2.0d0*E+Em_6)/(ht_c**2)
       end if
       if (ht_s .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
-      d2E(22)=(Epp_7_1-Ep_7-Ep_1+2.0d0*E-Em_7-Em_1+Emm_7_1)/(4.0d0*ht_s*
+      d2E(22)=(Epp_7_1-Ep_7-Ep_1+2.0d0*E-Em_7-Em_1+Emm_7_1)/(2.0d0*ht_s*
      &hr_c)
       end if
       if (hr_s .gt. 0.0d0) then
-      d2E(23)=(Epp_7_2-Ep_7-Ep_2+2.0d0*E-Em_7-Em_2+Emm_7_2)/(4.0d0*ht_s*
+      d2E(23)=(Epp_7_2-Ep_7-Ep_2+2.0d0*E-Em_7-Em_2+Emm_7_2)/(2.0d0*ht_s*
      &hr_s)
       end if
       if (hg_cc .gt. 0.0d0) then
-      d2E(24)=(Epp_7_3-Ep_7-Ep_3+2.0d0*E-Em_7-Em_3+Emm_7_3)/(4.0d0*ht_s*
+      d2E(24)=(Epp_7_3-Ep_7-Ep_3+2.0d0*E-Em_7-Em_3+Emm_7_3)/(2.0d0*ht_s*
      &hg_cc)
       end if
       if (hg_ss .gt. 0.0d0) then
-      d2E(25)=(Epp_7_4-Ep_7-Ep_4+2.0d0*E-Em_7-Em_4+Emm_7_4)/(4.0d0*ht_s*
+      d2E(25)=(Epp_7_4-Ep_7-Ep_4+2.0d0*E-Em_7-Em_4+Emm_7_4)/(2.0d0*ht_s*
      &hg_ss)
       end if
       if (hg_cs .gt. 0.0d0) then
-      d2E(26)=(Epp_7_5-Ep_7-Ep_5+2.0d0*E-Em_7-Em_5+Emm_7_5)/(4.0d0*ht_s*
+      d2E(26)=(Epp_7_5-Ep_7-Ep_5+2.0d0*E-Em_7-Em_5+Emm_7_5)/(2.0d0*ht_s*
      &hg_cs)
       end if
       if (ht_c .gt. 0.0d0) then
-      d2E(27)=(Epp_7_6-Ep_7-Ep_6+2.0d0*E-Em_7-Em_6+Emm_7_6)/(4.0d0*ht_s*
+      d2E(27)=(Epp_7_6-Ep_7-Ep_6+2.0d0*E-Em_7-Em_6+Emm_7_6)/(2.0d0*ht_s*
      &ht_c)
       end if
       d2E(28)=(Ep_7-2.0d0*E+Em_7)/(ht_s**2)
       end if
       if (hl_c .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
-      d2E(29)=(Epp_8_1-Ep_8-Ep_1+2.0d0*E-Em_8-Em_1+Emm_8_1)/(4.0d0*hl_c*
+      d2E(29)=(Epp_8_1-Ep_8-Ep_1+2.0d0*E-Em_8-Em_1+Emm_8_1)/(2.0d0*hl_c*
      &hr_c)
       end if
       if (hr_s .gt. 0.0d0) then
-      d2E(30)=(Epp_8_2-Ep_8-Ep_2+2.0d0*E-Em_8-Em_2+Emm_8_2)/(4.0d0*hl_c*
+      d2E(30)=(Epp_8_2-Ep_8-Ep_2+2.0d0*E-Em_8-Em_2+Emm_8_2)/(2.0d0*hl_c*
      &hr_s)
       end if
       if (hg_cc .gt. 0.0d0) then
-      d2E(31)=(Epp_8_3-Ep_8-Ep_3+2.0d0*E-Em_8-Em_3+Emm_8_3)/(4.0d0*hl_c*
+      d2E(31)=(Epp_8_3-Ep_8-Ep_3+2.0d0*E-Em_8-Em_3+Emm_8_3)/(2.0d0*hl_c*
      &hg_cc)
       end if
       if (hg_ss .gt. 0.0d0) then
-      d2E(32)=(Epp_8_4-Ep_8-Ep_4+2.0d0*E-Em_8-Em_4+Emm_8_4)/(4.0d0*hl_c*
+      d2E(32)=(Epp_8_4-Ep_8-Ep_4+2.0d0*E-Em_8-Em_4+Emm_8_4)/(2.0d0*hl_c*
      &hg_ss)
       end if
       if (hg_cs .gt. 0.0d0) then
-      d2E(33)=(Epp_8_5-Ep_8-Ep_5+2.0d0*E-Em_8-Em_5+Emm_8_5)/(4.0d0*hl_c*
+      d2E(33)=(Epp_8_5-Ep_8-Ep_5+2.0d0*E-Em_8-Em_5+Emm_8_5)/(2.0d0*hl_c*
      &hg_cs)
       end if
       if (ht_c .gt. 0.0d0) then
-      d2E(34)=(Epp_8_6-Ep_8-Ep_6+2.0d0*E-Em_8-Em_6+Emm_8_6)/(4.0d0*hl_c*
+      d2E(34)=(Epp_8_6-Ep_8-Ep_6+2.0d0*E-Em_8-Em_6+Emm_8_6)/(2.0d0*hl_c*
      &ht_c)
       end if
       if (ht_s .gt. 0.0d0) then
-      d2E(35)=(Epp_8_7-Ep_8-Ep_7+2.0d0*E-Em_8-Em_7+Emm_8_7)/(4.0d0*hl_c*
+      d2E(35)=(Epp_8_7-Ep_8-Ep_7+2.0d0*E-Em_8-Em_7+Emm_8_7)/(2.0d0*hl_c*
      &ht_s)
       end if
       d2E(36)=(Ep_8-2.0d0*E+Em_8)/(hl_c**2)
       end if
       if (hl_s .gt. 0.0d0) then
       if (hr_c .gt. 0.0d0) then
-      d2E(37)=(Epp_9_1-Ep_9-Ep_1+2.0d0*E-Em_9-Em_1+Emm_9_1)/(4.0d0*hl_s*
+      d2E(37)=(Epp_9_1-Ep_9-Ep_1+2.0d0*E-Em_9-Em_1+Emm_9_1)/(2.0d0*hl_s*
      &hr_c)
       end if
       if (hr_s .gt. 0.0d0) then
-      d2E(38)=(Epp_9_2-Ep_9-Ep_2+2.0d0*E-Em_9-Em_2+Emm_9_2)/(4.0d0*hl_s*
+      d2E(38)=(Epp_9_2-Ep_9-Ep_2+2.0d0*E-Em_9-Em_2+Emm_9_2)/(2.0d0*hl_s*
      &hr_s)
       end if
       if (hg_cc .gt. 0.0d0) then
-      d2E(39)=(Epp_9_3-Ep_9-Ep_3+2.0d0*E-Em_9-Em_3+Emm_9_3)/(4.0d0*hl_s*
+      d2E(39)=(Epp_9_3-Ep_9-Ep_3+2.0d0*E-Em_9-Em_3+Emm_9_3)/(2.0d0*hl_s*
      &hg_cc)
       end if
       if (hg_ss .gt. 0.0d0) then
-      d2E(40)=(Epp_9_4-Ep_9-Ep_4+2.0d0*E-Em_9-Em_4+Emm_9_4)/(4.0d0*hl_s*
+      d2E(40)=(Epp_9_4-Ep_9-Ep_4+2.0d0*E-Em_9-Em_4+Emm_9_4)/(2.0d0*hl_s*
      &hg_ss)
       end if
       if (hg_cs .gt. 0.0d0) then
-      d2E(41)=(Epp_9_5-Ep_9-Ep_5+2.0d0*E-Em_9-Em_5+Emm_9_5)/(4.0d0*hl_s*
+      d2E(41)=(Epp_9_5-Ep_9-Ep_5+2.0d0*E-Em_9-Em_5+Emm_9_5)/(2.0d0*hl_s*
      &hg_cs)
       end if
       if (ht_c .gt. 0.0d0) then
-      d2E(42)=(Epp_9_6-Ep_9-Ep_6+2.0d0*E-Em_9-Em_6+Emm_9_6)/(4.0d0*hl_s*
+      d2E(42)=(Epp_9_6-Ep_9-Ep_6+2.0d0*E-Em_9-Em_6+Emm_9_6)/(2.0d0*hl_s*
      &ht_c)
       end if
       if (ht_s .gt. 0.0d0) then
-      d2E(43)=(Epp_9_7-Ep_9-Ep_7+2.0d0*E-Em_9-Em_7+Emm_9_7)/(4.0d0*hl_s*
+      d2E(43)=(Epp_9_7-Ep_9-Ep_7+2.0d0*E-Em_9-Em_7+Emm_9_7)/(2.0d0*hl_s*
      &ht_s)
       end if
       if (hl_c .gt. 0.0d0) then
-      d2E(44)=(Epp_9_8-Ep_9-Ep_8+2.0d0*E-Em_9-Em_8+Emm_9_8)/(4.0d0*hl_s*
+      d2E(44)=(Epp_9_8-Ep_9-Ep_8+2.0d0*E-Em_9-Em_8+Emm_9_8)/(2.0d0*hl_s*
      &hl_c)
       end if
       d2E(45)=(Ep_9-2.0d0*E+Em_9)/(hl_s**2)
@@ -1548,8 +1548,7 @@ C*****************************************************************************
       real*8 :: d1Eab(9), d2Eab(45)
       real*8 :: hr_a, hr_b, hg_aa, hg_bb, ht_a, ht_b, hl_a, hl_b
       real*8 :: rho_a, rho_b, grad_aa, grad_bb, tau_a, tau_b,
-     &          laplace_a, laplace_b, grad_ab
-      ! Need to specify grad_ab? It is not used
+     &          laplace_a, laplace_b
       real*8 :: rho_ap, rho_am, rho_bp, rho_bm, grad_aap, grad_aam,
      &          grad_bbp, grad_bbm, tau_ap, tau_am, tau_bp, tau_bm,
      &          laplace_ap, laplace_am, laplace_bp, laplace_bm
@@ -1577,7 +1576,6 @@ C     Doing checks and assignemnts
       rho_b   = rho(4)
       grad_aa = grad2(4)
       grad_bb = grad2(5)
-      grad_ab = grad2(6) ! Shold be zero?
       tau_a   = tau(3)
       tau_b   = tau(4)
       laplace_a = laplace(3)
@@ -1624,239 +1622,239 @@ C     Doing checks and assignemnts
 
 
 C     Doing the calculation
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_a,laplace_b,mu,E)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_a,tau_b,lapl
+     &ace_a,laplace_b,mu,E)
       if (norder .ge. 1) then
       if (hr_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,mu,Ep_1)
-      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,mu,Em_1)
+      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,tau_a,tau_b,lap
+     &lace_a,laplace_b,mu,Ep_1)
+      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,tau_a,tau_b,lap
+     &lace_a,laplace_b,mu,Em_1)
       end if
       if (hr_b .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,mu,Ep_2)
-      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,mu,Em_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,tau_a,tau_b,lap
+     &lace_a,laplace_b,mu,Ep_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,tau_a,tau_b,lap
+     &lace_a,laplace_b,mu,Em_2)
       end if
       if (hg_aa .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,mu,Ep_3)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,mu,Em_3)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,tau_a,tau_b,lap
+     &lace_a,laplace_b,mu,Ep_3)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,tau_a,tau_b,lap
+     &lace_a,laplace_b,mu,Em_3)
       end if
       if (hg_bb .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,mu,Ep_4)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_b,mu,Em_4)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,tau_a,tau_b,lap
+     &lace_a,laplace_b,mu,Ep_4)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,tau_a,tau_b,lap
+     &lace_a,laplace_b,mu,Em_4)
       end if
       if (ht_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_ap,t
-     &au_b,laplace_a,laplace_b,mu,Ep_6)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_am,t
-     &au_b,laplace_a,laplace_b,mu,Em_6)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_ap,tau_b,lap
+     &lace_a,laplace_b,mu,Ep_6)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_am,tau_b,lap
+     &lace_a,laplace_b,mu,Em_6)
       end if
       if (ht_b .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_bp,laplace_a,laplace_b,mu,Ep_7)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_bm,laplace_a,laplace_b,mu,Em_7)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_a,tau_bp,lap
+     &lace_a,laplace_b,mu,Ep_7)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_a,tau_bm,lap
+     &lace_a,laplace_b,mu,Em_7)
       end if
       if (hl_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_ap,laplace_b,mu,Ep_8)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_am,laplace_b,mu,Em_8)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_a,tau_b,lapl
+     &ace_ap,laplace_b,mu,Ep_8)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_a,tau_b,lapl
+     &ace_am,laplace_b,mu,Em_8)
       end if
       if (hl_b .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_a,laplace_bp,mu,Ep_9)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_a,laplace_bm,mu,Em_9)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_a,tau_b,lapl
+     &ace_a,laplace_bp,mu,Ep_9)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_a,tau_b,lapl
+     &ace_a,laplace_bm,mu,Em_9)
       end if
       end if
       if (norder .ge. 2) then
       if (hr_b .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_ap,rho_bp,grad_aa,grad_bb,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,mu,Epp_2_1)
-      call ESRX_SPINmetaGGA(rho_am,rho_bm,grad_aa,grad_bb,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,mu,Emm_2_1)
+      call ESRX_SPINmetaGGA(rho_ap,rho_bp,grad_aa,grad_bb,tau_a,tau_b,la
+     &place_a,laplace_b,mu,Epp_2_1)
+      call ESRX_SPINmetaGGA(rho_am,rho_bm,grad_aa,grad_bb,tau_a,tau_b,la
+     &place_a,laplace_b,mu,Emm_2_1)
       end if
       end if
       if (hg_aa .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aap,grad_bb,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,mu,Epp_3_1)
-      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aam,grad_bb,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,mu,Emm_3_1)
+      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aap,grad_bb,tau_a,tau_b,la
+     &place_a,laplace_b,mu,Epp_3_1)
+      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aam,grad_bb,tau_a,tau_b,la
+     &place_a,laplace_b,mu,Emm_3_1)
       end if
       if (hr_b .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aap,grad_bb,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,mu,Epp_3_2)
-      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aam,grad_bb,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,mu,Emm_3_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aap,grad_bb,tau_a,tau_b,la
+     &place_a,laplace_b,mu,Epp_3_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aam,grad_bb,tau_a,tau_b,la
+     &place_a,laplace_b,mu,Emm_3_2)
       end if
       end if
       if (hg_bb .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bbp,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,mu,Epp_4_1)
-      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bbm,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,mu,Emm_4_1)
+      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bbp,tau_a,tau_b,la
+     &place_a,laplace_b,mu,Epp_4_1)
+      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bbm,tau_a,tau_b,la
+     &place_a,laplace_b,mu,Emm_4_1)
       end if
       if (hr_b .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bbp,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,mu,Epp_4_2)
-      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bbm,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,mu,Emm_4_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bbp,tau_a,tau_b,la
+     &place_a,laplace_b,mu,Epp_4_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bbm,tau_a,tau_b,la
+     &place_a,laplace_b,mu,Emm_4_2)
       end if
       if (hg_aa .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bbp,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,mu,Epp_4_3)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bbm,grad_ab,tau_a,
-     &tau_b,laplace_a,laplace_b,mu,Emm_4_3)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bbp,tau_a,tau_b,la
+     &place_a,laplace_b,mu,Epp_4_3)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bbm,tau_a,tau_b,la
+     &place_a,laplace_b,mu,Emm_4_3)
       end if
       end if
       if (ht_a .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,grad_ab,tau_ap,
-     &tau_b,laplace_a,laplace_b,mu,Epp_6_1)
-      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,grad_ab,tau_am,
-     &tau_b,laplace_a,laplace_b,mu,Emm_6_1)
+      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,tau_ap,tau_b,la
+     &place_a,laplace_b,mu,Epp_6_1)
+      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,tau_am,tau_b,la
+     &place_a,laplace_b,mu,Emm_6_1)
       end if
       if (hr_b .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,grad_ab,tau_ap,
-     &tau_b,laplace_a,laplace_b,mu,Epp_6_2)
-      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,grad_ab,tau_am,
-     &tau_b,laplace_a,laplace_b,mu,Emm_6_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,tau_ap,tau_b,la
+     &place_a,laplace_b,mu,Epp_6_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,tau_am,tau_b,la
+     &place_a,laplace_b,mu,Emm_6_2)
       end if
       if (hg_aa .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,grad_ab,tau_ap,
-     &tau_b,laplace_a,laplace_b,mu,Epp_6_3)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,grad_ab,tau_am,
-     &tau_b,laplace_a,laplace_b,mu,Emm_6_3)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,tau_ap,tau_b,la
+     &place_a,laplace_b,mu,Epp_6_3)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,tau_am,tau_b,la
+     &place_a,laplace_b,mu,Emm_6_3)
       end if
       if (hg_bb .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,grad_ab,tau_ap,
-     &tau_b,laplace_a,laplace_b,mu,Epp_6_4)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,grad_ab,tau_am,
-     &tau_b,laplace_a,laplace_b,mu,Emm_6_4)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,tau_ap,tau_b,la
+     &place_a,laplace_b,mu,Epp_6_4)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,tau_am,tau_b,la
+     &place_a,laplace_b,mu,Emm_6_4)
       end if
       end if
       if (ht_b .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_bp,laplace_a,laplace_b,mu,Epp_7_1)
-      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_bm,laplace_a,laplace_b,mu,Emm_7_1)
+      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,tau_a,tau_bp,la
+     &place_a,laplace_b,mu,Epp_7_1)
+      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,tau_a,tau_bm,la
+     &place_a,laplace_b,mu,Emm_7_1)
       end if
       if (hr_b .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_bp,laplace_a,laplace_b,mu,Epp_7_2)
-      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_bm,laplace_a,laplace_b,mu,Emm_7_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,tau_a,tau_bp,la
+     &place_a,laplace_b,mu,Epp_7_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,tau_a,tau_bm,la
+     &place_a,laplace_b,mu,Emm_7_2)
       end if
       if (hg_aa .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,grad_ab,tau_a,t
-     &au_bp,laplace_a,laplace_b,mu,Epp_7_3)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,grad_ab,tau_a,t
-     &au_bm,laplace_a,laplace_b,mu,Emm_7_3)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,tau_a,tau_bp,la
+     &place_a,laplace_b,mu,Epp_7_3)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,tau_a,tau_bm,la
+     &place_a,laplace_b,mu,Emm_7_3)
       end if
       if (hg_bb .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,grad_ab,tau_a,t
-     &au_bp,laplace_a,laplace_b,mu,Epp_7_4)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,grad_ab,tau_a,t
-     &au_bm,laplace_a,laplace_b,mu,Emm_7_4)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,tau_a,tau_bp,la
+     &place_a,laplace_b,mu,Epp_7_4)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,tau_a,tau_bm,la
+     &place_a,laplace_b,mu,Emm_7_4)
       end if
       if (ht_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_ap,t
-     &au_bp,laplace_a,laplace_b,mu,Epp_7_6)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_am,t
-     &au_bm,laplace_a,laplace_b,mu,Emm_7_6)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_ap,tau_bp,la
+     &place_a,laplace_b,mu,Epp_7_6)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_am,tau_bm,la
+     &place_a,laplace_b,mu,Emm_7_6)
       end if
       end if
       if (hl_a .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_ap,laplace_b,mu,Epp_8_1)
-      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_am,laplace_b,mu,Emm_8_1)
+      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,tau_a,tau_b,lap
+     &lace_ap,laplace_b,mu,Epp_8_1)
+      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,tau_a,tau_b,lap
+     &lace_am,laplace_b,mu,Emm_8_1)
       end if
       if (hr_b .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_ap,laplace_b,mu,Epp_8_2)
-      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_am,laplace_b,mu,Emm_8_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,tau_a,tau_b,lap
+     &lace_ap,laplace_b,mu,Epp_8_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,tau_a,tau_b,lap
+     &lace_am,laplace_b,mu,Emm_8_2)
       end if
       if (hg_aa .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_ap,laplace_b,mu,Epp_8_3)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_am,laplace_b,mu,Emm_8_3)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,tau_a,tau_b,lap
+     &lace_ap,laplace_b,mu,Epp_8_3)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,tau_a,tau_b,lap
+     &lace_am,laplace_b,mu,Emm_8_3)
       end if
       if (hg_bb .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,grad_ab,tau_a,t
-     &au_b,laplace_ap,laplace_b,mu,Epp_8_4)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,grad_ab,tau_a,t
-     &au_b,laplace_am,laplace_b,mu,Emm_8_4)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,tau_a,tau_b,lap
+     &lace_ap,laplace_b,mu,Epp_8_4)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,tau_a,tau_b,lap
+     &lace_am,laplace_b,mu,Emm_8_4)
       end if
       if (ht_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_ap,t
-     &au_b,laplace_ap,laplace_b,mu,Epp_8_6)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_am,t
-     &au_b,laplace_am,laplace_b,mu,Emm_8_6)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_ap,tau_b,lap
+     &lace_ap,laplace_b,mu,Epp_8_6)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_am,tau_b,lap
+     &lace_am,laplace_b,mu,Emm_8_6)
       end if
       if (ht_b .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_bp,laplace_ap,laplace_b,mu,Epp_8_7)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_bm,laplace_am,laplace_b,mu,Emm_8_7)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_a,tau_bp,lap
+     &lace_ap,laplace_b,mu,Epp_8_7)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_a,tau_bm,lap
+     &lace_am,laplace_b,mu,Emm_8_7)
       end if
       end if
       if (hl_b .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bp,mu,Epp_9_1)
-      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bm,mu,Emm_9_1)
+      call ESRX_SPINmetaGGA(rho_ap,rho_b,grad_aa,grad_bb,tau_a,tau_b,lap
+     &lace_a,laplace_bp,mu,Epp_9_1)
+      call ESRX_SPINmetaGGA(rho_am,rho_b,grad_aa,grad_bb,tau_a,tau_b,lap
+     &lace_a,laplace_bm,mu,Emm_9_1)
       end if
       if (hr_b .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bp,mu,Epp_9_2)
-      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bm,mu,Emm_9_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bp,grad_aa,grad_bb,tau_a,tau_b,lap
+     &lace_a,laplace_bp,mu,Epp_9_2)
+      call ESRX_SPINmetaGGA(rho_a,rho_bm,grad_aa,grad_bb,tau_a,tau_b,lap
+     &lace_a,laplace_bm,mu,Emm_9_2)
       end if
       if (hg_aa .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bp,mu,Epp_9_3)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bm,mu,Emm_9_3)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aap,grad_bb,tau_a,tau_b,lap
+     &lace_a,laplace_bp,mu,Epp_9_3)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aam,grad_bb,tau_a,tau_b,lap
+     &lace_a,laplace_bm,mu,Emm_9_3)
       end if
       if (hg_bb .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bp,mu,Epp_9_4)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,grad_ab,tau_a,t
-     &au_b,laplace_a,laplace_bm,mu,Emm_9_4)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbp,tau_a,tau_b,lap
+     &lace_a,laplace_bp,mu,Epp_9_4)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bbm,tau_a,tau_b,lap
+     &lace_a,laplace_bm,mu,Emm_9_4)
       end if
       if (ht_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_ap,t
-     &au_b,laplace_a,laplace_bp,mu,Epp_9_6)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_am,t
-     &au_b,laplace_a,laplace_bm,mu,Emm_9_6)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_ap,tau_b,lap
+     &lace_a,laplace_bp,mu,Epp_9_6)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_am,tau_b,lap
+     &lace_a,laplace_bm,mu,Emm_9_6)
       end if
       if (ht_b .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_bp,laplace_a,laplace_bp,mu,Epp_9_7)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_bm,laplace_a,laplace_bm,mu,Emm_9_7)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_a,tau_bp,lap
+     &lace_a,laplace_bp,mu,Epp_9_7)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_a,tau_bm,lap
+     &lace_a,laplace_bm,mu,Emm_9_7)
       end if
       if (hl_a .gt. 0.0d0) then
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_ap,laplace_bp,mu,Epp_9_8)
-      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,grad_ab,tau_a,ta
-     &u_b,laplace_am,laplace_bm,mu,Emm_9_8)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_a,tau_b,lapl
+     &ace_ap,laplace_bp,mu,Epp_9_8)
+      call ESRX_SPINmetaGGA(rho_a,rho_b,grad_aa,grad_bb,tau_a,tau_b,lapl
+     &ace_am,laplace_bm,mu,Emm_9_8)
       end if
       end if
       end if
@@ -1892,139 +1890,138 @@ C     Doing the calculation
       end if
       if (hr_b .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      d2Eab(2)=(Epp_2_1-Ep_2-Ep_1+2.0d0*E-Em_2-Em_1+Emm_2_1)/(4.0d0*hr_b
+      d2Eab(2)=(Epp_2_1-Ep_2-Ep_1+2.0d0*E-Em_2-Em_1+Emm_2_1)/(2.0d0*hr_b
      &*hr_a)
       end if
       d2Eab(3)=(Ep_2-2.0d0*E+Em_2)/(hr_b**2)
       end if
       if (hg_aa .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      d2Eab(4)=(Epp_3_1-Ep_3-Ep_1+2.0d0*E-Em_3-Em_1+Emm_3_1)/(4.0d0*hg_a
+      d2Eab(4)=(Epp_3_1-Ep_3-Ep_1+2.0d0*E-Em_3-Em_1+Emm_3_1)/(2.0d0*hg_a
      &a*hr_a)
       end if
       if (hr_b .gt. 0.0d0) then
-      d2Eab(5)=(Epp_3_2-Ep_3-Ep_2+2.0d0*E-Em_3-Em_2+Emm_3_2)/(4.0d0*hg_a
+      d2Eab(5)=(Epp_3_2-Ep_3-Ep_2+2.0d0*E-Em_3-Em_2+Emm_3_2)/(2.0d0*hg_a
      &a*hr_b)
       end if
       d2Eab(6)=(Ep_3-2.0d0*E+Em_3)/(hg_aa**2)
       end if
       if (hg_bb .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      d2Eab(7)=(Epp_4_1-Ep_4-Ep_1+2.0d0*E-Em_4-Em_1+Emm_4_1)/(4.0d0*hg_b
+      d2Eab(7)=(Epp_4_1-Ep_4-Ep_1+2.0d0*E-Em_4-Em_1+Emm_4_1)/(2.0d0*hg_b
      &b*hr_a)
       end if
       if (hr_b .gt. 0.0d0) then
-      d2Eab(8)=(Epp_4_2-Ep_4-Ep_2+2.0d0*E-Em_4-Em_2+Emm_4_2)/(4.0d0*hg_b
+      d2Eab(8)=(Epp_4_2-Ep_4-Ep_2+2.0d0*E-Em_4-Em_2+Emm_4_2)/(2.0d0*hg_b
      &b*hr_b)
       end if
       if (hg_aa .gt. 0.0d0) then
-      d2Eab(9)=(Epp_4_3-Ep_4-Ep_3+2.0d0*E-Em_4-Em_3+Emm_4_3)/(4.0d0*hg_b
+      d2Eab(9)=(Epp_4_3-Ep_4-Ep_3+2.0d0*E-Em_4-Em_3+Emm_4_3)/(2.0d0*hg_b
      &b*hg_aa)
       end if
       d2Eab(10)=(Ep_4-2.0d0*E+Em_4)/(hg_bb**2)
       end if
       if (ht_a .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      d2Eab(16)=(Epp_6_1-Ep_6-Ep_1+2.0d0*E-Em_6-Em_1+Emm_6_1)/(4.0d0*ht_
+      d2Eab(16)=(Epp_6_1-Ep_6-Ep_1+2.0d0*E-Em_6-Em_1+Emm_6_1)/(2.0d0*ht_
      &a*hr_a)
       end if
       if (hr_b .gt. 0.0d0) then
-      d2Eab(17)=(Epp_6_2-Ep_6-Ep_2+2.0d0*E-Em_6-Em_2+Emm_6_2)/(4.0d0*ht_
+      d2Eab(17)=(Epp_6_2-Ep_6-Ep_2+2.0d0*E-Em_6-Em_2+Emm_6_2)/(2.0d0*ht_
      &a*hr_b)
       end if
       if (hg_aa .gt. 0.0d0) then
-      d2Eab(18)=(Epp_6_3-Ep_6-Ep_3+2.0d0*E-Em_6-Em_3+Emm_6_3)/(4.0d0*ht_
+      d2Eab(18)=(Epp_6_3-Ep_6-Ep_3+2.0d0*E-Em_6-Em_3+Emm_6_3)/(2.0d0*ht_
      &a*hg_aa)
       end if
       if (hg_bb .gt. 0.0d0) then
-      d2Eab(19)=(Epp_6_4-Ep_6-Ep_4+2.0d0*E-Em_6-Em_4+Emm_6_4)/(4.0d0*ht_
+      d2Eab(19)=(Epp_6_4-Ep_6-Ep_4+2.0d0*E-Em_6-Em_4+Emm_6_4)/(2.0d0*ht_
      &a*hg_bb)
       end if
       d2Eab(21)=(Ep_6-2.0d0*E+Em_6)/(ht_a**2)
       end if
       if (ht_b .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      d2Eab(22)=(Epp_7_1-Ep_7-Ep_1+2.0d0*E-Em_7-Em_1+Emm_7_1)/(4.0d0*ht_
+      d2Eab(22)=(Epp_7_1-Ep_7-Ep_1+2.0d0*E-Em_7-Em_1+Emm_7_1)/(2.0d0*ht_
      &b*hr_a)
       end if
       if (hr_b .gt. 0.0d0) then
-      d2Eab(23)=(Epp_7_2-Ep_7-Ep_2+2.0d0*E-Em_7-Em_2+Emm_7_2)/(4.0d0*ht_
+      d2Eab(23)=(Epp_7_2-Ep_7-Ep_2+2.0d0*E-Em_7-Em_2+Emm_7_2)/(2.0d0*ht_
      &b*hr_b)
       end if
       if (hg_aa .gt. 0.0d0) then
-      d2Eab(24)=(Epp_7_3-Ep_7-Ep_3+2.0d0*E-Em_7-Em_3+Emm_7_3)/(4.0d0*ht_
+      d2Eab(24)=(Epp_7_3-Ep_7-Ep_3+2.0d0*E-Em_7-Em_3+Emm_7_3)/(2.0d0*ht_
      &b*hg_aa)
       end if
       if (hg_bb .gt. 0.0d0) then
-      d2Eab(25)=(Epp_7_4-Ep_7-Ep_4+2.0d0*E-Em_7-Em_4+Emm_7_4)/(4.0d0*ht_
+      d2Eab(25)=(Epp_7_4-Ep_7-Ep_4+2.0d0*E-Em_7-Em_4+Emm_7_4)/(2.0d0*ht_
      &b*hg_bb)
       end if
       if (ht_a .gt. 0.0d0) then
-      d2Eab(27)=(Epp_7_6-Ep_7-Ep_6+2.0d0*E-Em_7-Em_6+Emm_7_6)/(4.0d0*ht_
+      d2Eab(27)=(Epp_7_6-Ep_7-Ep_6+2.0d0*E-Em_7-Em_6+Emm_7_6)/(2.0d0*ht_
      &b*ht_a)
       end if
       d2Eab(28)=(Ep_7-2.0d0*E+Em_7)/(ht_b**2)
       end if
       if (hl_a .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      d2Eab(29)=(Epp_8_1-Ep_8-Ep_1+2.0d0*E-Em_8-Em_1+Emm_8_1)/(4.0d0*hl_
+      d2Eab(29)=(Epp_8_1-Ep_8-Ep_1+2.0d0*E-Em_8-Em_1+Emm_8_1)/(2.0d0*hl_
      &a*hr_a)
       end if
       if (hr_b .gt. 0.0d0) then
-      d2Eab(30)=(Epp_8_2-Ep_8-Ep_2+2.0d0*E-Em_8-Em_2+Emm_8_2)/(4.0d0*hl_
+      d2Eab(30)=(Epp_8_2-Ep_8-Ep_2+2.0d0*E-Em_8-Em_2+Emm_8_2)/(2.0d0*hl_
      &a*hr_b)
       end if
       if (hg_aa .gt. 0.0d0) then
-      d2Eab(31)=(Epp_8_3-Ep_8-Ep_3+2.0d0*E-Em_8-Em_3+Emm_8_3)/(4.0d0*hl_
+      d2Eab(31)=(Epp_8_3-Ep_8-Ep_3+2.0d0*E-Em_8-Em_3+Emm_8_3)/(2.0d0*hl_
      &a*hg_aa)
       end if
       if (hg_bb .gt. 0.0d0) then
-      d2Eab(32)=(Epp_8_4-Ep_8-Ep_4+2.0d0*E-Em_8-Em_4+Emm_8_4)/(4.0d0*hl_
+      d2Eab(32)=(Epp_8_4-Ep_8-Ep_4+2.0d0*E-Em_8-Em_4+Emm_8_4)/(2.0d0*hl_
      &a*hg_bb)
       end if
       if (ht_a .gt. 0.0d0) then
-      d2Eab(34)=(Epp_8_6-Ep_8-Ep_6+2.0d0*E-Em_8-Em_6+Emm_8_6)/(4.0d0*hl_
+      d2Eab(34)=(Epp_8_6-Ep_8-Ep_6+2.0d0*E-Em_8-Em_6+Emm_8_6)/(2.0d0*hl_
      &a*ht_a)
       end if
       if (ht_b .gt. 0.0d0) then
-      d2Eab(35)=(Epp_8_7-Ep_8-Ep_7+2.0d0*E-Em_8-Em_7+Emm_8_7)/(4.0d0*hl_
+      d2Eab(35)=(Epp_8_7-Ep_8-Ep_7+2.0d0*E-Em_8-Em_7+Emm_8_7)/(2.0d0*hl_
      &a*ht_b)
       end if
       d2Eab(36)=(Ep_8-2.0d0*E+Em_8)/(hl_a**2)
       end if
       if (hl_b .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
-      d2Eab(37)=(Epp_9_1-Ep_9-Ep_1+2.0d0*E-Em_9-Em_1+Emm_9_1)/(4.0d0*hl_
+      d2Eab(37)=(Epp_9_1-Ep_9-Ep_1+2.0d0*E-Em_9-Em_1+Emm_9_1)/(2.0d0*hl_
      &b*hr_a)
       end if
       if (hr_b .gt. 0.0d0) then
-      d2Eab(38)=(Epp_9_2-Ep_9-Ep_2+2.0d0*E-Em_9-Em_2+Emm_9_2)/(4.0d0*hl_
+      d2Eab(38)=(Epp_9_2-Ep_9-Ep_2+2.0d0*E-Em_9-Em_2+Emm_9_2)/(2.0d0*hl_
      &b*hr_b)
       end if
       if (hg_aa .gt. 0.0d0) then
-      d2Eab(39)=(Epp_9_3-Ep_9-Ep_3+2.0d0*E-Em_9-Em_3+Emm_9_3)/(4.0d0*hl_
+      d2Eab(39)=(Epp_9_3-Ep_9-Ep_3+2.0d0*E-Em_9-Em_3+Emm_9_3)/(2.0d0*hl_
      &b*hg_aa)
       end if
       if (hg_bb .gt. 0.0d0) then
-      d2Eab(40)=(Epp_9_4-Ep_9-Ep_4+2.0d0*E-Em_9-Em_4+Emm_9_4)/(4.0d0*hl_
+      d2Eab(40)=(Epp_9_4-Ep_9-Ep_4+2.0d0*E-Em_9-Em_4+Emm_9_4)/(2.0d0*hl_
      &b*hg_bb)
       end if
       if (ht_a .gt. 0.0d0) then
-      d2Eab(42)=(Epp_9_6-Ep_9-Ep_6+2.0d0*E-Em_9-Em_6+Emm_9_6)/(4.0d0*hl_
+      d2Eab(42)=(Epp_9_6-Ep_9-Ep_6+2.0d0*E-Em_9-Em_6+Emm_9_6)/(2.0d0*hl_
      &b*ht_a)
       end if
       if (ht_b .gt. 0.0d0) then
-      d2Eab(43)=(Epp_9_7-Ep_9-Ep_7+2.0d0*E-Em_9-Em_7+Emm_9_7)/(4.0d0*hl_
+      d2Eab(43)=(Epp_9_7-Ep_9-Ep_7+2.0d0*E-Em_9-Em_7+Emm_9_7)/(2.0d0*hl_
      &b*ht_b)
       end if
       if (hl_a .gt. 0.0d0) then
-      d2Eab(44)=(Epp_9_8-Ep_9-Ep_8+2.0d0*E-Em_9-Em_8+Emm_9_8)/(4.0d0*hl_
+      d2Eab(44)=(Epp_9_8-Ep_9-Ep_8+2.0d0*E-Em_9-Em_8+Emm_9_8)/(2.0d0*hl_
      &b*hl_a)
       end if
       d2Eab(45)=(Ep_9-2.0d0*E+Em_9)/(hl_b**2)
       end if
       end if
-
 
 C     Transform from alpha, beta to c, s
       if (norder .ge. 1) then
@@ -3935,7 +3932,7 @@ C     constants
 
 C****************************************************************************
 C      subroutine ESRX_PBEGWSERF(rhoa,grdaa,mu,e)
-       subroutine ESRX_PBEGWSERF(rhoa,rhob,grdaa,grdbb,grdab,taua,taub,
+       subroutine ESRX_PBEGWSERF(rhoa,rhob,grdaa,grdbb,taua,taub,
      & laplacea, laplaceb,mu,e)
 C*****************************************************************************
 C     Short-range PBE exchange functional from 
@@ -3953,7 +3950,7 @@ C*****************************************************************************
       implicit none
 
       real*8   rhoa, grdaa, mu, e
-      real*8   rhob,grdbb,grdab,taua,taub,laplacea,laplaceb
+      real*8   rhob, grdbb, taua, taub, laplacea, laplaceb
 
       real*8   rho, rho13, grd2
       real*8   exerflda, exerfpbe
