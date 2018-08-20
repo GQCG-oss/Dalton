@@ -942,7 +942,7 @@ C***************************************************************************
 
 
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
-         CALL QUIT('SRDFTJT.F: Triplet and DFT_SPINDNS not implemented')
+         CALL QUIT('SRDFTJT.F: Triplet with open-shell not implemented')
       END IF
 
       ! For small values of rho to avoid NaN
