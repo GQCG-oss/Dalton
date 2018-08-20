@@ -3357,44 +3357,6 @@ C        eps_LDA_asymptot3 = 1/d2 *  mu^(-2) - d1/(d2^2) * mu^(-3)
          denom = 1.d0 + d1*mu + d2*mu2
          e = e_pbe
      &     * ( 1.0d0 + ((DERF(mu_0*mu))**5) * (1.0D0/denom - 1.0D0) )
-#ifdef OLD_CODE
-C        using e = e_pbe * ( (1 + p6*mu^6) / (1 + q7*mu^7 + q8*mu^8) )
-C        based on 
-C        1) the asymptotic Taylor expansion to 3. order
-C           eps_LDA_asymptot3 = 1/d2 *  mu^(-2) - d1/(d2^2) * mu^(-3)
-C        2) the condition that eps(mu) = eps(0) + O(mu^6)
-C        2) the condition that eps(mu_0) = eps_LDA_asymptot3(mu_0)
-C        4) mu_0 is determined by the inflection point
-C           d2(eps_LDA_asymptot3)/dmu^2 : mu_0 = 2 d1/d2
-C        (e = eps * rho)
-         d2od1 = d2 / d1
-C ----- first attempt. fixed mu_0, does not work!!!!
-C        p6 = d2od1/d1 * mu_0_m6 - mu_0_m7 / d1 - d2od1**2 * mu_0_m4
-c --- second attmpt
-C        using mu_ref = alfa * d1/d2:
-C        p6 = alfa**(-4) * d2od1**6 * ( alfa**(-3)*(alfa-1.0d0)*d2od1/d1
-C        - 1.0d0 )
-C        with alfa = 2 (the inflection point):
-!        p6 = 0.0625D0 * d2od1**6 * (0.125D0*d2od1/d1 - 1.0D0 )
-!        q7 = d1 * p6
-!        q8 = d2 * p6
-!        mu6 = mu2**3
-!        e = e_pbe * (1.0D0 + p6 * mu6)
-!    &             / (1.0D0 + mu6 * (q7 * mu + q8 * mu2))
-c --- third attmpt
-c        mu_ref = alfa * d1/d2 = 2.D0 * d1/d2 ! the inflection point
-c        eps_LDA = e_pbe/d2 * ( mu_ref**(-2) - d1od2 * mu_ref**(-3))
-c                = e_pbe/d2 * ( 0.25d0 * d2od1**2 - 0.125d0 * d2od1**2)
-         mu_ref  = 2.0d0 / d2od1
-         if (mu .ge. mu_ref) then
-            e = e_pbe/(d2*mu2) * (1.0d0 - d1 / (d2*mu))
-         else
-c           e_pbe * (1 + p6 * mu_ref**6) =  eps_LDA(mu_ref)
-            eps_LDA_fac = 0.125d0/d2 * d2od1**2
-            p6 = (eps_LDA_fac - 1.0d0) * d2od1**6 * 0.015625d0
-            e = e_pbe * (1.0d0 + p6 * mu2**3)
-         end if
-#endif
       end if
 
 !      print *,'ESRC_PBERIERF: e=',e
