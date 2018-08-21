@@ -456,7 +456,7 @@ C*****************************************************************************
       external ESRC_SPINGGA
       integer  norder
       real*8   rho(2), grd2(3), mu
-      real*8   E, d1E(5), d2E(45)
+      real*8   E, d1E(9), d2E(45)
 
       real*8   rhoc,  rhos,  grdcc,  grdss,  grdcs
       real*8   arhos, agrdcs
@@ -2028,24 +2028,6 @@ C     Transform from alpha, beta to c, s
       d2E(44) = D4I*(d2Eab(36) - d2Eab(45))
       d2E(45) = d2E(36)
       
-      !write(lupri,*) "d1Eab", d1Eab
-      !write(lupri,*) "BBBB"
-      !write(lupri,*) "d1E ", d1E
-      !write(lupri,*) "AAAA"
-      !write(lupri,*) "d2Eab", d2Eab
-      !write(lupri,*) "#####"
-      !write(lupri,*) "d2E ", d2E
-      !write(lupri,*) "CCCC"
-      !write(lupri,*) "hra, hrb, hga, hgb", hr_a, hr_b, hg_aa, hg_bb
-      !write(lupri,*) "DDDD"
-      !write(lupri,*) "rho", rho
-      !write(lupri,*) "EEEE"
-      !write(lupri,*) "grd2", grad2
-      !write(lupri,*) "OTHER"
-      !write(lupri,*) "hta, htb, hla, hlb", ht_a, ht_b, hl_a, hl_b
-      !write(lupri,*) "tau, laplace", tau, laplace
-      !call quit("Debugging")
-
       end if
       end subroutine
 

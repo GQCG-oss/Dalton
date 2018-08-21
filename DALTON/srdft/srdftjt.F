@@ -791,7 +791,7 @@ C  Correlation  ----------------------------------------------------------
          tau(:) = 0.0d0
          laplace(:) = 0.0d0
          call DESRC_SPINmetaGGA(ESRC_PBEGWSERFSPIN, rho, grd2, tau,
-     >                    laplace,  chival, norder, Ex, d1Ex, d2Ex)
+     >                    laplace,  chival, norder, Ec, d1Ec, d2Ec)
       ENDIF
 
 C Kamal SHARKAS 20-05-11 beg
