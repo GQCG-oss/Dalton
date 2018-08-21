@@ -981,7 +981,7 @@ C*****************************************************************************
      &_4, Epp_9_5, Epm_9_5, Emp_9_5, Emm_9_5, Epp_9_6, Epm_9_6, Emp_9_6,
      & Emm_9_6, Epp_9_7, Epm_9_7, Emp_9_7, Emm_9_7, Epp_9_8, Epm_9_8, Em
      &p_9_8, Emm_9_8, Ep_9, Em_9
-
+      
 C     Doing checks and assignemnts
       if(norder .lt. 0 .or. norder .ge. 3) then
         write(lupri,*) 'Fatal error DESRC_SPINmetaGGA: norder=',norder
@@ -1670,7 +1670,6 @@ C*****************************************************************************
       real*8 :: rho_ap, rho_am, rho_bp, rho_bm, grad_aap, grad_aam,
      &          grad_bbp, grad_bbm, tau_ap, tau_am, tau_bp, tau_bm,
      &          laplace_ap, laplace_am, laplace_bp, laplace_bm
-
       real*8 :: Ep_1, Em_1, Ep_2, Em_2, Epp_3_1, Epm_3_1, Emp_3_1, Emm_3
      &_1, Ep_3, Em_3, Epp_4_2, Epm_4_2, Emp_4_2, Emm_4_2, Ep_4, Em_4, Ep
      &p_6_1, Epm_6_1, Emp_6_1, Emm_6_1, Epp_6_3, Epm_6_3, Emp_6_3, Emm_6
@@ -1680,6 +1679,7 @@ C*****************************************************************************
      & Emm_8_6, Ep_8, Em_8, Epp_9_2, Epm_9_2, Emp_9_2, Emm_9_2, Epp_9_4,
      & Epm_9_4, Emp_9_4, Emm_9_4, Epp_9_7, Epm_9_7, Emp_9_7, Emm_9_7, Ep
      &_9, Em_9, Ea, Eb
+
 C     Doing checks and assignemnts
       if(norder .lt. 0 .or. norder .ge. 3) then
         write(lupri,*) 'Fatal error DESRX_SPINmetaGGA: norder=',norder
@@ -1736,6 +1736,7 @@ C     Doing checks and assignemnts
       d1Eab(:) = 0.0d0
       d2E(:) = 0.0d0
       d2Eab(:) = 0.0d0
+
 
 C     Doing the calculation
       call ESRX_SPINmetaGGA(rho_a,grad_aa,tau_a,laplace_a,mu,Ea)
@@ -1891,30 +1892,25 @@ C     Doing the calculation
       end if
       if (norder .ge. 2) then
       if (hr_a .gt. 0.0d0) then
-      if (hr_a .gt. 0.0d0) then
       d2Eab(1)=(Ep_1-2.0d0*Ea+Em_1)/(hr_a**2)
       end if
-      end if
-      if (hr_b .gt. 0.0d0) then
       if (hr_b .gt. 0.0d0) then
       d2Eab(3)=(Ep_2-2.0d0*Eb+Em_2)/(hr_b**2)
-      end if
       end if
       if (hg_aa .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
       d2Eab(4)=(Epp_3_1-Epm_3_1-Emp_3_1+Emm_3_1)/(4.0d0*hg_aa*hr_a)
       end if
-      if (hg_aa .gt. 0.0d0) then
       d2Eab(6)=(Ep_3-2.0d0*Ea+Em_3)/(hg_aa**2)
-      end if
+      write(lupri,*) "Ep_3, Ea, Em_3, hg_aa", Ep_3, Ea, Em_3, hg_aa
+      write(lupri,*) "top", Ep_3-2.0d0*Ea+Em_3
+      write(lupri,*) "bottom", hg_aa**2
       end if
       if (hg_bb .gt. 0.0d0) then
       if (hr_b .gt. 0.0d0) then
       d2Eab(8)=(Epp_4_2-Epm_4_2-Emp_4_2+Emm_4_2)/(4.0d0*hg_bb*hr_b)
       end if
-      if (hg_bb .gt. 0.0d0) then
       d2Eab(10)=(Ep_4-2.0d0*Eb+Em_4)/(hg_bb**2)
-      end if
       end if
       if (ht_a .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
@@ -1923,9 +1919,7 @@ C     Doing the calculation
       if (hg_aa .gt. 0.0d0) then
       d2Eab(18)=(Epp_6_3-Epm_6_3-Emp_6_3+Emm_6_3)/(4.0d0*ht_a*hg_aa)
       end if
-      if (ht_a .gt. 0.0d0) then
       d2Eab(21)=(Ep_6-2.0d0*Ea+Em_6)/(ht_a**2)
-      end if
       end if
       if (ht_b .gt. 0.0d0) then
       if (hr_b .gt. 0.0d0) then
@@ -1934,9 +1928,7 @@ C     Doing the calculation
       if (hg_bb .gt. 0.0d0) then
       d2Eab(25)=(Epp_7_4-Epm_7_4-Emp_7_4+Emm_7_4)/(4.0d0*ht_b*hg_bb)
       end if
-      if (ht_b .gt. 0.0d0) then
       d2Eab(28)=(Ep_7-2.0d0*Eb+Em_7)/(ht_b**2)
-      end if
       end if
       if (hl_a .gt. 0.0d0) then
       if (hr_a .gt. 0.0d0) then
@@ -1948,9 +1940,7 @@ C     Doing the calculation
       if (ht_a .gt. 0.0d0) then
       d2Eab(34)=(Epp_8_6-Epm_8_6-Emp_8_6+Emm_8_6)/(4.0d0*hl_a*ht_a)
       end if
-      if (hl_a .gt. 0.0d0) then
       d2Eab(36)=(Ep_8-2.0d0*Ea+Em_8)/(hl_a**2)
-      end if
       end if
       if (hl_b .gt. 0.0d0) then
       if (hr_b .gt. 0.0d0) then
@@ -1962,9 +1952,7 @@ C     Doing the calculation
       if (ht_b .gt. 0.0d0) then
       d2Eab(43)=(Epp_9_7-Epm_9_7-Emp_9_7+Emm_9_7)/(4.0d0*hl_b*ht_b)
       end if
-      if (hl_b .gt. 0.0d0) then
       d2Eab(45)=(Ep_9-2.0d0*Eb+Em_9)/(hl_b**2)
-      end if
       end if
       end if
 
@@ -2028,23 +2016,23 @@ C     Transform from alpha, beta to c, s
       d2E(44) = D4I*(d2Eab(36) - d2Eab(45))
       d2E(45) = d2E(36)
       
-      !write(lupri,*) "d1Eab", d1Eab
-      !write(lupri,*) "BBBB"
-      !write(lupri,*) "d1E ", d1E
-      !write(lupri,*) "AAAA"
-      !write(lupri,*) "d2Eab", d2Eab
-      !write(lupri,*) "#####"
-      !write(lupri,*) "d2E ", d2E
-      !write(lupri,*) "CCCC"
-      !write(lupri,*) "hra, hrb, hga, hgb", hr_a, hr_b, hg_aa, hg_bb
-      !write(lupri,*) "DDDD"
-      !write(lupri,*) "rho", rho
-      !write(lupri,*) "EEEE"
-      !write(lupri,*) "grd2", grad2
-      !write(lupri,*) "OTHER"
-      !write(lupri,*) "hta, htb, hla, hlb", ht_a, ht_b, hl_a, hl_b
-      !write(lupri,*) "tau, laplace", tau, laplace
-      !call quit("Debugging")
+      write(lupri,*) "d1Eab", d1Eab
+      write(lupri,*) "BBBB"
+      write(lupri,*) "d1E ", d1E
+      write(lupri,*) "AAAA"
+      write(lupri,*) "d2Eab", d2Eab
+      write(lupri,*) "#####"
+      write(lupri,*) "d2E ", d2E
+      write(lupri,*) "CCCC"
+      write(lupri,*) "hra, hrb, hga, hgb", hr_a, hr_b, hg_aa, hg_bb
+      write(lupri,*) "DDDD"
+      write(lupri,*) "rho", rho
+      write(lupri,*) "EEEE"
+      write(lupri,*) "grd2", grad2
+      write(lupri,*) "OTHER"
+      write(lupri,*) "hta, htb, hla, hlb", ht_a, ht_b, hl_a, hl_b
+      write(lupri,*) "tau, laplace", tau, laplace
+      call quit("Debugging")
 
       end if
       end subroutine
@@ -3889,13 +3877,13 @@ C*****************************************************************************
       real*8   berf
 
 C     LDA energy
-      rho = 2.0d0*rhoa 
+      rho = 2.0d0*rhoa ! as if rhoa .eq. rhob
       rho13 = rho**(1.d0/3.d0)
       ERFEXP(0:2) = .false.
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
       exerflda = XKSR(1)
 
-      grd2 = 4.0d0*grdaa
+      grd2 = 4.0d0*grdaa ! as if grdaa .eq. grdbb
       kappa=0.804d0
       sq=grd2*2.6121172985233599567768d-2*rho**(-8.d0/3.d0)
       fx=1.d0+kappa
@@ -4052,6 +4040,76 @@ C*****************************************************************************
       return
       end
 
+#if 0
+C*****************************************************************************
+      subroutine ESRC_PBEGWSERFSPIN(rho_c, rho_s, gamma_cc, gamma_ss,
+     & gamma_cs, mu, e)
+C*****************************************************************************
+C    PBEc functional based on the equations from the C-code DFT code in
+C    DALTON. Keeping this around for test cases of mu=0.0.
+C    NOTE: mu is always identical zero when using this subroutine, thus
+C    it should give the same results as "normal" DFT.
+C 
+C    Code generated using Sympy 1.1.1
+C
+C    Created: 4th July 2018, Erik Kjellgren
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, rho_s, gamma_cc, gamma_ss, gamma_cs
+      real*8, intent(in) :: mu
+      real*8, intent(out) :: e
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11
+      real*8 :: x12, x13, x14, x15, x16, x17, x18, x19, x20
+      call quit("Inside test routine, comment this line out to use.")
+      x0 = 1.46459188756152d0
+      x1 = 1.0/rho_c
+      x2 = x1**0.333333333333333d0/x0
+      x3 = 0.466194077035412d0*x1**0.666666666666667d0
+      x4 = 0.564189583547756d0*sqrt(x1)
+      x5 = 0.826307487110758d0*x1**0.166666666666667d0
+      x6 = (0.194159335344114d0*x2 + 1.0d0)*log(1.0d0 + 16.08182432215
+     &11d0/( 3.25955091942229d0*x2 + 0.406913004517529d0*x3 + 1.4187228
+     &1647967d0*x4 + 7.24010193431683d0*x5))
+      x7 = 0.062182d0*x6
+      x8 = rho_s**4/rho_c**4
+      x9 = rho_s*x1
+      x10 = 1.92366105093154d0*(-x9 + 1.0d0)**1.33333333333333d0 + 1.9
+     &2366105093154d0*(x9 + 1.0d0)**1.33333333333333d0 - 3.847322101863
+     &07d0
+      x11 = x10*(0.101077332976288d0*x2 + 1.0d0)*(-x8 + 1.0d0)*log(1.0
+     &d0 + 29.6085746432167d0/(3.29180480994506d0*x2 + 0.41002507094961
+     &2d0* x3 + 0.76232752193529d0*x4 + 9.87212972256927d0*x5))
+      x12 = x10*x8*(x7 - 0.03109d0*(0.186690969707574d0*x2 + 1.0d0)*lo
+     &g(1.0d0 + 32.1646831778707d0/(5.63098414909788d0*x2 + 0.516066464
+     &547863d0* x3 + 2.91521471421918d0*x4 + 13.4579137143944d0*x5)))
+      x13 = 2.14502939711103d0
+      x14 = rho_c**2.0d0
+      x15 = 0.5d0*(rho_c - 1.0d0*rho_s)**0.666666666666667d0 + 0.5d0*(
+     &rho_c + rho_s) **0.666666666666667d0
+      x16 = x15**3
+      x17 = gamma_cc*rho_c**(-1.0d0)/x15**2
+      x18 = gamma_cc**2*rho_c**(-2.0d0)/x15**4
+      x19 = exp(104.706192869308d0*x13*x14*(-0.00282845628540734d0*x11
+     & - 0.1432d0* x12 + 0.0089044624d0*x6)/x16) - 1.0d0
+      x20 = 1.0/x19
+      e = rho_c*(0.0197517897025652d0*x11 + x12 - x7 + 0.0666936695156
+     &131d0*x16* log(14.9865893973326d0*(0.00620558340543818d0*x0*x17 +
+     & 0.00123794483241921d0*x18*x20)/(0.0634992800779777d0*x13*x17*x20
+     & + 0.0185525709000164d0*x18/x19**2 + 1.0d0) + 1.0d0)/(x13*x14))
+      end subroutine
+#endif
+C****************************************************************************
+      subroutine ELAC_PBEGWS(rhoc,grdcc,VLAMBDA,e)
+C linear complement non-scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011 beg
+C*****************************************************************************
+      real*8   rhoc, grdcc, VLAMBDA
+      real*8   e
+
+      call ESRC_PBEGWSERF(rhoc,grdcc,0.d0,e)
+      e = (1.d0 - VLAMBDA**2) * e
+
+      return
+       end
 C****************************************************************************
 C      subroutine ESRC_PBEGWSERFSPIN(rhoc,rhos,grdcc,grdss,grdcs,mu,e)
       subroutine ESRC_PBEGWSERFSPIN(rhoc,rhos,grdcc,grdss,grdcs,
@@ -4132,92 +4190,6 @@ C     LDA energy ----
 
       return
       end
-C****************************************************************************
-      subroutine ELAC_PBEGWS(rhoc,grdcc,VLAMBDA,e)
-C linear complement non-scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011 beg
-C*****************************************************************************
-      real*8   rhoc, grdcc, VLAMBDA
-      real*8   e
-
-      call ESRC_PBEGWSERF(rhoc,grdcc,0.d0,e)
-      e = (1.d0 - VLAMBDA**2) * e
-
-      return
-       end
-
-C****************************************************************************
-      subroutine ELASC_PBEGWS(rhoc,grdcc,VLAMBDA,e)
-C linear complement Scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011
-C*****************************************************************************
-      real*8   rhoc, grdcc, VLAMBDA
-      real*8   e, ecoul, escaled,rhocscaled,grdscaled
-
-      ecoul = 0.d0
-
-      call ESRC_PBEGWSERF(rhoc,grdcc,0.d0,ecoul)
-
-      rhocscaled = rhoc/VLAMBDA**3
-      grdscaled  = grdcc/VLAMBDA**4
-
-      escaled = 0.d0
-
-      call ESRC_PBEGWSERF(rhocscaled,grdscaled,0.d0,escaled)
-
-      e = ecoul - (VLAMBDA**5)*escaled
-
-      return
-       end
-
-C*****************************************************************************
-
-!-------------------------------------------
-      real*8 function berf(a)
-!-------------------------------------------
-!  Second-order exchange gradient expansion coefficient for erf
-!  interaction
-!  a = mu/(2*kF)
-! 
-!  Modified version from Goll, Werner, Stoll, PCCP 7, 3917 (2005)
-!
-!  Author : J. Toulouse
-!  Date   : 11-08-09
-!-------------------------------------------
-      implicit none
-
-      real*8  a
-      real*8  pi, fak, fak2
-
-! function
-      real*8   derf
-
-      pi = 3.141592653589793d0
-
-      ! eta=19.0d0
-      fak=2.540118935556d0*dexp(-19.0d0*a*a)
-
-      if(a .lt. 0.075d0) then
-!      expansion for small mu to avoid numerical problems
-!      denominator becomes zero for a approximately 0.4845801308
-!      (and for one negative and two complex values of a)
-       berf = (-7.d0+72.d0*a*a)
-     >        /(27.d0*(-3.d0-24.d0*a*a+32.d0*a**4+8.d0*dsqrt(pi)*a))
-
-      else if(a .gt. 50.d0) then
-       berf = 1.d0/(72.d0*a*a)-1.d0/(17280.d0*a**4)
-     >        - 23.d0/(358400.d0*a**6)
-
-      else
-
-
-!     Code generated by Mathematica
-      fak2 = dexp(0.25d0/a**2)
-      berf = (1.851851851851851851851852d-2*(-1.d0 + 1.44d2*a**4*(-1.d0
-     &  + fak2) - 2.d0*a**2*(1.1d1 + 7.d0*fak2 ))) /
-     &  (a**2*(3.2d1*a**4*(-1.d0 + fak2) - 3.d0*fak2
-     &   + 1.417963080724412821838534d1*a*derf(5.d-1/a)*fak2
-     &   - 8.d0*a**2*(-2.d0 + 3.d0*fak2)))
-
-      end if
 
       berf=berf*fak
 
