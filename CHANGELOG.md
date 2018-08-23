@@ -1,6 +1,6 @@
 # DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
-## [2017.alpha Unreleased]
+## [2018.alpha Unreleased]
 
 ### New features added
 - New parallel 2-electron integral transformation .FCKTRA  (H. J. Aa. Jensen).
@@ -18,14 +18,15 @@
 - Add basic frozen density embedding (FDE) functionality (A. Gomes, C. Jacob, L. Visscher)
 
 ### Fixed
-- open-shell doublet ROKS DFT geometry optimization
-- Fix .GSPOL for parallel polarizable embedding quadratic response
+- Bugfix for .MNF_SO (mean-field spin-orbit, AMFI) when basis set has big exponents (>10^9).
+- Open-shell doublet ROKS DFT geometry optimization.
+- Fix .GSPOL for parallel polarizable embedding quadratic response.
 - Fix text about elimination of some two-photon transitions between excited states
-  because they were duplicates (text had "Third order" instead of "Second order")
-- Bugfixes for CC2 in environments (incl. external fields) by Ove Christiansen
+  because they were duplicates (text had "Third order" instead of "Second order").
+- Bugfixes for CC2 in environments (incl. external fields) by Ove Christiansen.
 
 ### Changed
-- OK to run ECD or OECD with SOPPA
+- OK to run ECD or OECD with SOPPA.
 - More documentation of .STEX in manual.
 
 ### Removed
