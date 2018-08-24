@@ -46,8 +46,8 @@
      &                BOYORB,PIPORB,DOFCI,DOCISD,DOLUCITA,DOMEP,        &
      &                DOCISRDFT,DOHFSRDFT,DOMCSRDFT,ADDSRI,SRHYBR,      &
      &                DO_CUBE, DOAPSG, DO_VIRTRUNC
-      LOGICAL         SUPSYM, DORHF
-      EQUIVALENCE (SUPSYM,FLAG(17)), (DOSCF,DORHF)
+      LOGICAL         SUPSYM
+      EQUIVALENCE (SUPSYM,FLAG(17))
 !
       REAL*8          SPIN, POTNUC, EPSOL,EPSTAT,EPPN,RSOL,             &
      &                THRGRD, THRPWF, THRCI, THRMC, THRCGR,             &

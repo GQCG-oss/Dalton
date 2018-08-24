@@ -163,7 +163,7 @@ C        2. Most of the remaining parameters are only used
 C           in SIRIUS, except that DIRFCK determines whether
 C           a direct calculations is caried out or not.
 C
-      DORHF  = .FALSE.
+      DOSCF  = .FALSE.
       DOMP2  = .FALSE.
       DOCINO = .FALSE.
       DOCI   = .FALSE.
@@ -184,7 +184,7 @@ C
       ABAIPH = .FALSE.
       INERSI = .FALSE.
       INERSF = .FALSE.
-C     
+C
 C   Check if "SOLVNT" calculation
 C   Read information if so. From WRSIFC in SIRIUS:
 C
