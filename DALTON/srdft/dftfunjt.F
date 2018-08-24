@@ -5411,4 +5411,37 @@ C*****************************************************************************
       ecVWN5 = t7 + t13 + t18 - t45 * t55 / 0.24d2 + t75 * t76
       end function
 
+C*****************************************************************************
+      subroutine ESRX_TPSS(rho_a, gamma_aa, tau_a, laplace_a, mu, Ea)
+C*****************************************************************************
+C   TPSS exchange functional.
+C   This implementation is just for normal DFT, ie. it has no mu dependency.
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: August 24, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, tau_a, laplace_a, mu
+      real*8, intent(out) :: Ea
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7
+      x0 = gamma_aa*rho_a**(-2.66666666666667d0)
+      x1 = gamma_aa**2
+      x2 = rho_a**(-5.33333333333333d0)
+      x3 = x1/(rho_a**2*tau_a**2)
+      x4 = 0.0109702052306804d0*x0
+      x5 = 1.0d0 - 8.0d0*rho_a*tau_a/gamma_aa
+      x6 = x0*x5
+      x7 = (0.0123414808845154d0*x6 + 0.45d0)*(x4*x5*(0.0274255130767009
+     &d0*x6 + 1.0d0) + 1.0d0)**(-0.5d0)
+      Ea = -0.9305257363491d0*rho_a**1.33333333333333d0*(1.804d0 - 0.804
+     &d0/(1.0d0 + (8.51796503887347d-6*gamma_aa**3*mu*rho_a**(-8.0d0) + 
+     &0.0204668008035082d0*x0*(0.02485875d0*x3/(0.015625d0*x3 + 1.0d0) *
+     &*2 + 0.123456790123457d0) + 6.38454405015215d-6*x1*x2 + 0.00214164
+     &94625995d0*x3 - 1.24378109452736d0*sqrt(gamma_aa*( 0.0001353885781
+     &53653d0*gamma_aa*x2 + 0.0375d0/(rho_a*tau_a)))*( 0.001977345634172
+     &02d0*x0 - 0.180246913580247d0*x7) + 0.0896750813832074d0*(x4 - x7)
+     &**2)/(0.0204006002177468d0*x0 + 1.0d0)**2))
+      end subroutine
+
 C ... end of dftfunjt.F
