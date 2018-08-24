@@ -315,8 +315,9 @@ C
 #include "dftcom.h"
 #include "ecpinf.h"
 #include "ccsdinp.h"
-      LOGICAL MCSCF, DMP2, DOHFSRDFT, DOROSCF, DOCISRDFT, DOMCSRDFT,
-     &        WAVTP, DPCM
+      LOGICAL WAVTP ! external function
+      LOGICAL MCSCF, DMP2, DPCM, DOROSCF, DONEVPT
+      LOGICAL DOHFSRDFT, DOCISRDFT, DOMCSRDFT
 C
 C     *** Workaround to many common variables with the same name ***
 C     *** MCSCF is set to DOMC (in infinp.h), and DMP2 is set    ***
@@ -327,6 +328,7 @@ C
       DMP2       = WAVTP('MP2')
       DPCM       = WAVTP('PCM')
       DOROSCF    = WAVTP('ROHF')
+      DONEVPT    = WAVTP('NEVPT')
 #ifdef MOD_SRDFT
       DOHFSRDFT  = WAVTP('HFSRDFT')
       DOCISRDFT  = WAVTP('CISRDFT')
@@ -338,13 +340,13 @@ C
 #endif
 C
       IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2 .OR.
-     &    CC3   .OR. CCP3 .OR. CCRT .OR. CCR3 .OR.
+     &    CC3   .OR. CCP3  .OR. CCRT .OR. CCR3 .OR.
      &    CCR1A .OR. CCR1B .OR. CCT  .OR.
      &    (DOROSCF .AND. NSYM.gt.1 .AND. .NOT.DIRCAL) .OR.  ! high spin HF or DFT, with symmetry
-     &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
+     &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR. DONEVPT .OR.
      &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN) THEN
          NAORDR = 0
-      ELSE IF (CCD. OR. CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR. CCPT .OR.
+      ELSE IF (CCD. OR. CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR. CCPT .OR.  ! MP2 is MP2 from CC code
      &        DOROSCF .OR.  ! high spin HF or DFT, no symmetry
      &        (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0)) .OR.
      &        DRCCD .OR. SOSEX .OR. RCCD .OR.  !RPA Methods with analytic gradient only
@@ -379,8 +381,8 @@ C
          WAVTP = DOMP2
       ELSE IF (STRING.EQ.'ROHF') THEN
          WAVTP = HSROHF
-      ELSE IF (STRING .EQ. 'PCM') THEN
-         WAVTP = PCM
+      ELSE IF (STRING.EQ.'NEVPT') THEN
+         WAVTP = DONEVPT
 #ifdef MOD_SRDFT
       ELSE IF (STRING.EQ.'HFSRDFT') THEN
          WAVTP = DOHFSRDFT
@@ -389,6 +391,8 @@ C
       ELSE IF (STRING.EQ.'MCSRDFT') THEN
          WAVTP = DOMCSRDFT
 #endif
+      ELSE IF (STRING.EQ.'PCM') THEN
+         WAVTP = PCM
       ELSE
          WRITE (LUPRI,'(/2A)')
      &   'Undefined string in WAVTP :', STRING
