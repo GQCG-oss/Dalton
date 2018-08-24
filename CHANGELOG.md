@@ -18,6 +18,7 @@
 - Add basic frozen density embedding (FDE) functionality (A. Gomes, C. Jacob, L. Visscher)
 
 ### Fixed
+- Open-shell DFT is not implemented for many derivative properties in **PROPERTIES, dalton now quits.
 - Bugfix for .MNF_SO (mean-field spin-orbit, AMFI) when basis set has big exponents (>10^9).
 - Open-shell doublet ROKS DFT geometry optimization.
 - Fix .GSPOL for parallel polarizable embedding quadratic response.

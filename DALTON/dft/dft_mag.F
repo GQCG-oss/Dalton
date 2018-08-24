@@ -41,6 +41,11 @@ C
       EXTERNAL DFTBRHS1
       LOGICAL DFT_ISGGA
       EXTERNAL DFT_ISGGA
+
+      IF (NASHT .GT. 0) THEN
+         CALL QUIT('ERROR: open-shell DFT '//
+     &      'not implemented for external magnetic field property')
+      END IF
 C
 C      DOVB = DFT_ISGGA() .AND. .NOT.DFTPOT
 C
@@ -381,6 +386,11 @@ C
       DIMENSION WORK(LWORK)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       EXTERNAL DFTBHES1
+
+      IF (NASHT .GT. 0) THEN
+         CALL QUIT('ERROR: open-shell DFT '//
+     &      'not implemented for external magnetic field property')
+      END IF
 C
       IF (IPRINT.GE.5) CALL TITLER('Output from DFTBHES','*',103)
 C     
