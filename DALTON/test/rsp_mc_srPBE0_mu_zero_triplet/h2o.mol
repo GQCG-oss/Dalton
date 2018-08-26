@@ -1,0 +1,9 @@
+BASIS
+3-21G
+H2O Close to Eq. Bond length
+using the STO-3G  basis
+Atomtypes=2 Generators=2 X Y
+Charge=8.0 Atoms=1
+O      0.0000000000  0.0000000000  -0.1258515023
+        1.    1
+H      0.0000000000  1.4523500000   0.9986773900
