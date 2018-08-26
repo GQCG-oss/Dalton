@@ -97,7 +97,7 @@ CRIT4=`$GREP "Model Hessian will be used as initial Hessian\." $log | wc -l`
 CRIT5=`$GREP "Partitioned rational function method will be used to control step\." $log | wc -l`
 CRIT6=`$GREP "The eigenvector corresponding to the lowest non-zero eigenvalue is chosen" $log | wc -l`
 CRIT7=`$GREP "as reaction mode \(default\)\." $log | wc -l`
-CRIT8=`$GREP "Baker.s convergence criteria will be used\." $log | wc -l`
+CRIT8=`$GREP "Baker.s convergence criteria will be used" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[1]=8
