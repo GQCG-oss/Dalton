@@ -96,7 +96,7 @@ ERROR[1]="CONSTRAINED GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Symmetry
 CRIT1=`$GREP "Symmetry class found\: D\(3d\)" $log | wc -l`
-CRIT2=`$GREP "The following elements were found\: * X * YZ" $log | wc -l`
+CRIT2=`$GREP "The following symmetry elements were found\: * X * YZ" $log | wc -l`
 CRIT3=`$GREP "Number of coordinates in each symmetry\: * 7 * 5 * 7 * 5" $log | wc -l`
 CRIT4=`$GREP "Number of orbitals in each symmetry\: * 6 * 2 * 6 * 2" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
