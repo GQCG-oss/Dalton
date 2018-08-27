@@ -29,7 +29,7 @@ C     Date  : 16-02-05
 C     Revision: Introduce d1E and d2E arrays (17-02-16), E. D. Hedegaard
 C*****************************************************************************
       implicit none
-
+#include "priunit.h"
       external ESR
 
       integer  norder
@@ -43,7 +43,6 @@ C*****************************************************************************
       real*8   E0m, E0p, E0pp
       real*8   Emm, Epp, Epm, Emp
 
-#include "priunit.h"
 C Check
       if(norder .lt. 0 .or. norder .gt. 2) then
        print *,'DESR error: norder=',norder
@@ -2031,31 +2030,6 @@ C     Transform from alpha, beta to c, s
       end if
       end subroutine
 
-
-C*****************************************************************************
-#ifdef NOT_USED
-      SUBROUTINE ESRSPINGGA_ab(
-     &   ESRSPINGGA,rhoa,rhob,grdaa,grdbb,grdab,mu,E)
-
-! interface from (rhoa,rhob,grdaa,grdbb,grdab) to the standard ESRSPINGGA routines
-!           with (rhoc,rhos,grdcc,grdss,grdcs) in parameter list.
-
-      implicit none
-      external ESRSPINGGA
-      real*8   rhoa, rhob, grdaa, grdbb, grdab, mu, E
-      real*8   rhoc, rhos, grdcc, grdss, grdcs
-
-      rhoc  = rhoa  + rhob
-      rhos  = rhoa  - rhob
-      grdcc = grdaa + grdbb + 2.0d0*grdab
-      grdss = grdaa + grdbb - 2.0d0*grdab
-      grdcs = grdaa - grdbb
-
-      CALL ESRSPINGGA(rhoc,rhos,grdcc,grdss,grdcs,mu,E)
-
-      return
-      end
-#endif /* NOT_USED */
 C****************************************************************************
       SUBROUTINE DELSPIN(ESRSPIN,rhoc,rhos,VLAMBDA,dospin,
      &                   norder,d1E,d2E)
@@ -4636,9 +4610,9 @@ C     Created: 2nd July 2018, Erik Kjellgren
 C*****************************************************************************
       implicit none
 
-      real*8   rhoc, rhos, mu
-      logical dospin
-      real*8   e
+      real*8, intent(in) :: rhoc, rhos, mu
+      logical, intent(in) :: dospin
+      real*8, intent(out) :: e
 
       real*8   f13, pi, rsfac
       real*8   rs
@@ -5338,7 +5312,7 @@ C*****************************************************************************
       end
 
 C*****************************************************************************
-      real*8 function ecVWN5(rs, zeta)
+      real*8 pure function ecVWN5(rs, zeta)
 C
 C     Heavily based on the implementation in libxc
 C     

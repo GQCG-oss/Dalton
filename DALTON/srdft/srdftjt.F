@@ -360,6 +360,10 @@ C        Contribution to spin density (N_alpha - N_beta)
       END IF
       RHO(3) = 0.5d0 * ( RHO(1) + RHO(2) ) ! rho_a
       RHO(4) = 0.5d0 * ( RHO(1) - RHO(2) ) ! rho_b
+      ! For small values of rho to avoid NaN
+      do i = 1,4
+         if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
+      end do
 
 C     Gradients of densities
       IF (DOGGA) THEN
@@ -574,7 +578,7 @@ C Termination --------------------------------------------------------------
       END
 
 C****************************************************************************
-      SUBROUTINE SRDFTEXCJT(RHO,GRD2, CHIVAL,NORDER,ERFEXP,triplet,
+      SUBROUTINE SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,triplet,
      >           Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
 c*****************************************************************************
 C    Driver for short-range DFT exchange and correlation
@@ -595,19 +599,25 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 
-      real*8  rho(4), grd2(6), tau(4), laplace(4), CHIVAL, VLAMBDA ! input
+      real*8, intent(in) :: rho(4), grd2(6), tau(4), laplace(4),
+     &                     CHIVAL, VLAMBDA
 !     grd2(1:6) = (grdcc, grdss, grdcs, grdaa, grdbb, grdab)
-      integer NORDER
-      logical ERFEXP(0:2), triplet
+      integer, intent(in) :: NORDER
+      logical, intent(in) :: triplet
 
-      real*8   Ex, d1Ex(9), d2Ex(45)
-      real*8   Ec, d1Ec(9), d2Ec(45)
+      real*8, intent(out) :: Ex, d1Ex(9), d2Ex(45)
+      real*8, intent(out) :: Ec, d1Ec(9), d2Ec(45)
 
-C The new terms (edh: mu_new required??)
-      real*8   mu !, mu_new
+!     Maybe ERFEXP should be set correctly before calling the 
+!     subroutine, such that no input that is not an output is
+!     modified
+!       -- E.R. Kjellgren
+      logical :: ERFEXP(0:2)
 
+      real*8 :: mu, temp_grd2(6)
       save icall
       data icall/0/
+
 C     exchange functionals
       external ESRX_PBEHSEERF,  ESRX_PBETCSERF, ESRX_PBERIERF
       external ESRX_PBEGWSERF
@@ -718,9 +728,9 @@ C  Correlation  ----------------------------------------------------------
       IF(DOSRC_LDA_PW92) THEN
         ! DESRSPIN called with DFT_SPINDNS = false gives LDA functional
         ! for closed shell (but with J. Toulouse new LDA based on PW92)
-        rho(2)   = 0.0d0
         use_spindns = triplet .or. dft_spindns
-        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),CHIVAL,use_SPINDNS,
+        ! rho(2) is always zero for spin unpolarized functionals
+        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),0.0d0,CHIVAL,use_SPINDNS,
      >                NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !     short-range correlation PBE of TCS
@@ -788,12 +798,10 @@ C  Correlation  ----------------------------------------------------------
       IF(DOSRC_PBEGWS_S) THEN
         ! PBEGWS_S has no grdss and no grds.grdc dependency,
         ! therefore zero these before DESRC_SPINGGA call:
-        grd2(2) = 0.0d0
-        grd2(3) = 0.0d0
+        temp_grd2(:) = grd2(:)
+        temp_grd2(2:3) = 0.0d0
 !        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,grd2,CHIVAL,norder,
 !     >                     Ec,d1Ec,d2Ec)
-         tau(:) = 0.0d0
-         laplace(:) = 0.0d0
          call DESRC_SPINmetaGGA(ESRC_PBEGWSERFSPIN, rho, grd2, tau,
      >                    laplace,  chival, norder, Ec, d1Ec, d2Ec)
       ENDIF
@@ -896,16 +904,16 @@ C***************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 
-!     input
-      integer  KSYMOP, IPRINT_X
-      logical  DOGGA, ERFEXP(0:2), TRIPLET, do_metagga
-      real*8   RHO(4), RHG(3,4), GRD2(6), tau(4), laplace(4)
-      real*8   CHIVAL, VLAMBDA
-      real*8   DTXMAT(NBAST,NBAST), DSXMAT(NBAST,NBAST)
-      real*8   GAO(NBAST), GAO1(NBAST,3), DGAO(NBAST,2)
-      real*8   WGHTX, WGHTC
-!     output
-      real*8   EXCMAT(NBAST,NBAST,2)
+      integer, intent(in) :: KSYMOP, IPRINT_X
+      logical, intent(in) :: DOGGA,ERFEXP(0:2),TRIPLET, do_metagga
+      real*8, intent(in) :: rho(4), RHG(3,4), GRD2(6) tau(4),
+     &                      lapalce(4)
+      real*8, intent(in) :: CHIVAL,VLAMBDA
+      real*8, intent(in) :: DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
+      real*8, intent(in) :: GAO(NBAST),GAO1(NBAST,3), DGAO(NBAST,2)
+      real*8, intent(in) :: WGHTX,WGHTC
+      
+      real*8, intent(out) :: EXCMAT(NBAST,NBAST,2)
 
 !     local
       integer I, J, ISYM, JSYM, JEND, JSTR, ISTR, IEND
@@ -950,11 +958,6 @@ C***************************************************************************
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
          CALL QUIT('SRDFTJT.F: Triplet with open-shell not implemented')
       END IF
-
-      ! For small values of rho to avoid NaN
-      do i = 1,4
-         if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
-      end do
 
       ! DGAO(1,1) = DTXMAT*GAO;
       !  if (.not.triplet) DTXMAT is 1-index transformed or transition total (charge) density matrix
