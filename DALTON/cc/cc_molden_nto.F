@@ -142,7 +142,7 @@ C
 
          ilistoff = ISYOFE(excisym)
 
-         do iexci = 1, nccexci(excisym,1)
+         do iexci = 1, nccexci(excisym,1) + nccexci(excisym,3)
             iopt = 1 ! Read only singles part of vector
             ilist = ilistoff + iexci
             ! Read in actual vector

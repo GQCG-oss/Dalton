@@ -774,12 +774,15 @@ C
                    WRITE(LUPRI,*) 'No triples left excitation energies '
                  ENDIF
                ENDIF
+
+               IF ((.NOT. LHTR).AND.(.NOT.RESKIP)) THEN
+                  CALL CC_MOLDEN_NTO(WORK,LWORK)
+               ENDIF
             ELSE
                WRITE(LUPRI,'(/,1X,A)')
      &              ' No MP2 and CCD excitation energies'
             ENDIF
 
-            CALL CC_MOLDEN_NTO(WORK,LWORK)
 C
          ENDIF
 C
