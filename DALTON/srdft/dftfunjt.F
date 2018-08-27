@@ -3570,9 +3570,9 @@ C     Created: 2nd July 2018, Erik Kjellgren
 C*****************************************************************************
       implicit none
 
-      real*8   rhoc, rhos, mu
-      logical dospin
-      real*8   e
+      real*8, intent(in) :: rhoc, rhos, mu
+      logical, intent(in) :: dospin
+      real*8, intent(out) :: e
 
       real*8   f13, pi, rsfac
       real*8   rs
