@@ -45,7 +45,7 @@ C     variables for SRCPBERI
       real*8   mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C
-      PARAMETER  (NXTABLE = 22, NCTABLE = 34)
+      PARAMETER  (NXTABLE = 23, NCTABLE = 35)
       CHARACTER*10 XTABLE(NXTABLE),CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
       PARAMETER  (maxfld=3)
@@ -57,7 +57,7 @@ C
      &             'SRXWI3    ','SRXWI4    ','SRXPBEHSE ','SRXPBETCS ', ! 9:12
      &             'SRXPBERI  ','SRXPBEGWS ','SRXLDA_S  ','NULL_S    ', ! 13:16
      &             'LXLDAS    ','LXLDA     ','LXPBEGWS  ','LXBCK     ', ! 17:20
-     &             'SRXPBEGWSS','SRXLDA_C  '/                           ! 21:25
+     &             'SRXPBEGWSS','SRXLDA_C  ','SRXTPSS_S '/              ! 21:24
       DATA CTABLE /'NULL      ','SRCLDA    ','SRCGGA    ','SRCMULO_A ', ! 1:4
      &             'SRLYPT    ','SRCWIB    ','SRCWI2    ','SRCWI3    ', ! 5:8
      &             'SRCWI4    ','SRCPBETCS ','SRCPBETCSJ','SRCPBERI  ', ! 9:12
@@ -66,7 +66,7 @@ C
      &             'NULL_S    ','SRCMDLDA  ','LNSCLDAS  ','LNSCLDA   ', ! 21:24
      &             'LSCLDA    ','LNSCPBEGWS','LSCPBEGWS ','LNCLYP    ', ! 25:28
      &             'LSCLYP    ','SRCLYPRI  ','SRCPBEGWSS','SRCPBEGWSC', ! 29:32
-     &             'SRCLDA_C  ','SRCVWN5_S '/                           ! 33:36
+     &             'SRCLDA_C  ','SRCVWN5_S ','SRCTPSS_S '/              ! 33:36
 
 C K. Sharkas and J. Toulouse beg
 C List of lambda-dependent complement density functionals for linear separation of the electron-electron interaction.
@@ -147,7 +147,7 @@ C      write (lupri, *) 'SRXFUN,SRCFUN=',SRXFUN,SRCFUN     ! Manu debug
       DO 100 II = 1, NXTABLE
         IF (XTABLE(II) .EQ. SRXFUN) THEN
           GO TO (101,102,103,104,105,106,107,108,109,110,111,112,113,
-     &           114,115,116,117,118,119,120,121,122),II
+     &           114,115,116,117,118,119,120,121,122,123),II
         END IF
  100  CONTINUE
       SETXFUN = .FALSE.
@@ -242,6 +242,11 @@ C Short-range spin-dependent exchange LDA functional to fit with LDA (edh 10-02-
 122   DOSRX_LDA_PW92 = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
+C mu independendt TPSS exchange functional (erk 27 aug. 18)
+123   DOSRX_TPSS_S = .TRUE.
+      DFT_SPINDNS  = .TRUE.
+      ISJT         = .TRUE.
+      GO TO 15
 C
   15  CONTINUE
 
@@ -263,7 +268,7 @@ C
         IF (CTABLE(II) .EQ. SRCFUN) THEN
           GO TO (201,202,203,204,205,206,207,208,209,210,211,212,213,
      &           214,215,216,217,218,219,220,221,222,223,224,225,226,
-     &           227,228,229,230,231,232,233,234),II
+     &           227,228,229,230,231,232,233,234,235),II
         END IF
  200  CONTINUE
       SETCFUN = .FALSE.
@@ -424,10 +429,15 @@ C Short-range spin-dependent correlation LDA functional w. PW92 param. (edh 29-0
 233   DOSRC_LDA_PW92 = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
-C Short-range spin-dependent correlation LDA functional w. VWN5c param. (edh 02-07-18)
+C Short-range spin-dependent correlation LDA functional w. VWN5c param. (erk 07 feb. 18)
 234   DOSRC_VWN5_S = .TRUE.
       DFT_SPINDNS = .TRUE.
       ISJT    = .TRUE.
+      GO TO 20
+C mu independt TPSS correlation functional (erk 27 aug. 18)
+235   DOSRC_TPSS_S = .TRUE.
+      DFT_SPINDNS  = .TRUE.
+      ISJT         = .TRUE.
       GO TO 20
 C
   20  CONTINUE
@@ -594,6 +604,8 @@ C     =================================
       DFTHRI = 1.0D-13
       DOLND  = .FALSE.
 
+C     ... erk : For setting meta-GGAs
+      do_metagga = DOSRC_TPSS_S .OR. DOSRX_TPSS_S 
 C     ... jkp : For gradient correction to SR-LDA
       DOGGA = DOSRX_GGA.OR.DOSRC_GGA.OR.DOSRBCK.OR.DOSRGGA2.OR.
      >        DOSRX_WIB.OR.DOSRC_WIB.OR.DOSRX_PBEHSE.OR.DOSRX_PBETCS.OR.
@@ -603,6 +615,8 @@ C     ... jkp : For gradient correction to SR-LDA
      >        DOLANSC_PBEGWS.OR.DOLASC_PBEGWS.OR.DOLAX_GGABCK.OR.
      >        DOLANC_GGALYP.OR.DOLASC_GGALYP.OR.DOSRC_LYPRI .OR.
      >        DOSRX_PBEGWS_S .OR. DOSRC_PBEGWS_S .OR. DOSRC_PBEGWS_PW92
+C     ... erk : Sets DOGGA active when using meta-GGAs
+     >        .OR. do_metagga
 C
 
       NDER  = 0
@@ -667,6 +681,7 @@ C JT 15-02-05 beg
         CALL SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
      &            WORK(KDGASR),DOGGA,DOERG,DOGRD,DOATR,TRIPLET,
+     &            do_metagga,
      &            RESULTS,WORK(KWRK),LWRK,IPRINT)
       ELSE
         CALL SRDFT1(ND_SIM,EXCMAT,DMAT,DOLND,WORK(KX),WORK(KY),

@@ -27,7 +27,7 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
      &                  WEIGHT,NBUF,GSO,NCNT,DMATGAOSR,DOGGA,
-     &                  DOERG,DOGRD,DOATR,TRIPLET,RESULTS,
+     &                  DOERG,DOGRD,DOATR,TRIPLET,do_metagga,RESULTS,
      &                  WORK,LWORK,IPRINT_in)
 C*****************************************************************************
 C     Calculate DFT energy and potential contributions for
@@ -76,8 +76,7 @@ C*****************************************************************************
 
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
 
-      LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,FROMVX,TRIPLET
-      logical :: do_metagga = .false.
+      LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,FROMVX,TRIPLET,do_metagga
 
       REAL*8    EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
@@ -415,7 +414,6 @@ C           DMAT(1,3) is the spin density matrix
          END IF
          TAU(3) = 0.5d0 * ( TAU(1) + TAU(2) ) ! tau_a
          TAU(4) = 0.5d0 * ( TAU(1) - TAU(2) ) ! tau_b
-         call quit('srdftjt.F: No metaGGA yet. ID01')
       ENDIF
 C
 C     Number of electrons
@@ -521,7 +519,7 @@ C        Three cases:
         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
      &                 WGHTX,WGHTC,GSO(KSO0),GSO(KSO1),CHIVAL,VLAMBDA,
      &                 ERFEXP,RHO,RHG,GRD2,DMATGAOSR,
-     &                 DOGGA,TRIPLET,IPRINT_X)
+     &                 DOGGA,do_metagga,TRIPLET,IPRINT_X)
 
       ENDIF ! DOATR
 
@@ -613,6 +611,7 @@ C The new terms (edh: mu_new required??)
 C     exchange functionals
       external ESRX_PBEHSEERF,  ESRX_PBETCSERF, ESRX_PBERIERF
       external ESRX_PBEGWSERF
+      external ESRX_TPSS
 
 C     correlation functionals
       external ESRC_PBETCSJERF, ESRC_PBETCSERF, ESRC_PBERIERF
@@ -625,6 +624,7 @@ C     spin functionals
       external ESRC_LDAERFSPIN, ESRC_LDAERFSPIN_VWN5
       external ESRC_PBEGWSERFSPIN
       external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA
+      external ESRC_TPSS
 C     sr mdc func
       external ESRC_MD_LDAERF
 
@@ -676,8 +676,6 @@ c  Exchange  ------------------------------------------------------------
       IF(DOSRX_PBEGWS .OR. DOSRX_PBEGWS_S) THEN
 !        call DESRX_SPINGGA(ESRX_PBEGWSERF,rho,grd2,CHIVAL,
 !     >                     norder,Ex,d1Ex,d2Ex)
-         tau(:) = 0.0d0
-         laplace(:) = 0.0d0
          call DESRX_SPINmetaGGA(ESRX_PBEGWSERF, rho, grd2, tau,laplace, 
      >                       chival, norder, Ex, d1Ex, d2Ex)
       END IF
@@ -686,6 +684,12 @@ c  Exchange  ------------------------------------------------------------
       IF(DOSRX_PBERI) THEN ! added Manu 01-02-2006
         call DESRX_SPINGGA(ESRX_PBERIERF,rho,grd2,CHIVAL,
      >                     norder,Ex,d1Ex,d2Ex)
+      ENDIF
+
+!     TPSS exchange functional
+      IF(DOSRX_TPSS_S) THEN
+        call DESRX_SPINmetaGGA(ESRX_TPSS,rho,grd2,tau,laplace,
+     >                     chival,norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
@@ -794,6 +798,12 @@ C  Correlation  ----------------------------------------------------------
      >                    laplace,  chival, norder, Ec, d1Ec, d2Ec)
       ENDIF
 
+!     TPSS correlation functional
+      IF(DOSRC_TPSS_S) THEN
+        call DESRC_SPINmetaGGA(ESRC_TPSS,rho,grd2,tau,laplace,
+     >                     chival,norder,Ex,d1Ex,d2Ex)
+      ENDIF
+
 C Kamal SHARKAS 20-05-11 beg
 C linear Complement spin-dependent (NON-Scaled) correlation LDA functional
        IF(DOLANSC_LDAS) THEN
@@ -864,7 +874,7 @@ C**************************************************************************
       SUBROUTINE SRDFTLTRJT(KSYMOP,DTXMAT,DSXMAT,EXCMAT,
      &                      WGHTX,WGHTC,GAO,GAO1,CHIVAL,VLAMBDA,
      &                      ERFEXP,RHO,RHG,GRD2,DGAO,
-     &                      DOGGA,TRIPLET,IPRINT_X)
+     &                      DOGGA,do_metagga,TRIPLET,IPRINT_X)
 C**************************************************************************
 C     Generate the 1-index transformed DFT Hessian
 C     needed in second-order optimization for short-range DFT hybrids.
@@ -935,10 +945,6 @@ C***************************************************************************
 !     de_s   22     23     24      25      26      27     28
 !     dt_c   29     30     31      32      33      34     35      36
 !     dt_s   37     38     39      40      41      42     43      44     45
-
-
-      do_metagga = .false. ! NOTICE THIS; REMOVE LATER
-
 
 
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
@@ -1065,11 +1071,9 @@ C Total contribution -------------------------------------------------------
       END IF ! DOGGA
 
       if (do_metagga) then
-         call quit('srdftjt.F: No metaGGA yet. ID02')
          d2Exc(18) = d2Exc(18)*2.0d0
          d2Exc(31) = d2Exc(31)*2.0d0
          if (dft_spindns .or. triplet) then
-            call quit('srdftjt.F: No metaGGA yet. ID03')
             d2Exc(19) = d2Exc(19)*2.0d0
             d2Exc(24) = d2Exc(24)*2.0d0
             d2Exc(32) = d2Exc(32)*2.0d0
@@ -1123,7 +1127,6 @@ C Linear transformation -----------------------------------------------------
 
             if (do_metagga) then
                if (dft_spindns) then
-                  call quit('srdftjt.F: No metaGGA yet. ID04')
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                   BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
                   BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
@@ -1174,7 +1177,6 @@ C Linear transformation -----------------------------------------------------
       !&                     d2Exc(44)*B5(1) + d2Exc(45)*B5(2) +
       !&                     d2Exc(42)*B4(1) + d2Exc(43)*B4(2)
                else if (triplet) then
-                  call quit('srdftjt.F: No metaGGA yet. ID05')
                   BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
                   FAC0S = FSS*B0(2) + d2Exc(12)*BR(3) + d2Exc(23)*B4(2)
       !&                    + d2Exc(38)*B5(2)
@@ -1187,7 +1189,6 @@ C Linear transformation -----------------------------------------------------
                   !FAC_SC = d2Exc(38)*B0(2) + d2Exc(41)*BR(3) +
       !&                     d2Exc(45)*B5(2) + d2Exc(43)*B4(2)
                else ! closed-shell metaGGA
-                  call quit('srdftjt.F: No metaGGA yet. ID06')
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                   FAC0R = FRR*B0(1) + FRZ*BR(1) + d2Exc(16)*B4(1)
       !&                    + d2Exc(29)*B5(1)
@@ -1271,7 +1272,6 @@ C Linear transformation -----------------------------------------------------
             IF (NSYM.EQ.1) THEN
                if (do_metagga) then
                   if (triplet) then
-                     call quit('srdftjt.F: No metaGGA yet. ID07')
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         GX = GAO1(I,1)
@@ -1293,7 +1293,6 @@ C Linear transformation -----------------------------------------------------
                         END DO
                      END DO
                   else if (dft_spindns) then
-                     call quit('srdftjt.F: No metaGGA yet. ID08')
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         GX = GAO1(I,1)
@@ -1321,7 +1320,6 @@ C Linear transformation -----------------------------------------------------
                         END DO
                      END DO
                   else ! Closed-shell meta-GGA
-                     call quit('srdftjt.F: No metaGGA yet. ID09')
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         GX = GAO1(I,1)
@@ -1428,7 +1426,7 @@ C Linear transformation -----------------------------------------------------
                ! Only two indentations is used in symmstry code insted of three.
                !   This is to not exceed 72 chars all the time. - E.R.K
                if (do_metagga) then
-                  call quit('srdftjt.F:NometaGGA for symmetry yet.ID10')
+                  call quit('srdftjt.F:No metaGGA for symmetry yet.')
                end if
                DO ISYM = 1, NSYM
                  ISTR = IBAS(ISYM) + 1
