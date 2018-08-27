@@ -6862,6 +6862,8 @@ C     This procedure does the actual breaking of symmetry.
 C
 #include "implicit.h"
 #include "priunit.h"
+
+C numder.h : NOMOVE
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -6874,6 +6876,7 @@ C
 #include "symmet.h"
 #include "trkoor.h"
 #include "huckel.h"
+#include "numder.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS, AUTOSY, NOSYM, DOCART, DOOWN,
      &        ADDSYM
       CHARACTER FILENM*10, TMPTXT*11, BSNM*80
@@ -6965,7 +6968,7 @@ C
       STPNRM = SQRT(DDOT(NCR,TMPMAT,1,TMPMAT,1))
       CALL DZERO(CSTEP,MXCOOR)
       IF (IPRINT .GT. 5) THEN
-         CALL HEADER('Cartesian symmetry step vector',1)
+         CALL HEADER('Cartesian symmetry-breaking step vector',1)
          CALL OUTPUT(TMPMAT,1,1,1,NCR,1,NCR,-1,LUPRI)
          WRITE(LUPRI,'(/A,F15.10/)') ' Norm of step:', STPNRM
       END IF
@@ -7027,6 +7030,7 @@ C
      &        (ABS(ENERGY-GEINFO(J,1)) .LT. THRERG*10)) II=II+1
  49   CONTINUE
       IF (II .GT. 0) BRKALS = .TRUE.
+      NOMOVE = .TRUE. ! do not center and rotate molecule in symmetry detection routine
       TMPLN = MLINE(NMLAU)
       CALL UPCASE(TMPLN)
       IF (INDEX(TMPLN,'ATO') .NE. 0) THEN
