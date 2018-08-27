@@ -434,8 +434,8 @@ C
 C      Exchange and correlation energies and derivatives
        NORDER = 1  ! first-order derivatives
 C
-       CALL SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,.false.,
-     >                 Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
+       CALL SRDFTEXCJT(RHO,GRD2,tau,laplace,CHIVAL,NORDER,ERFEXP,
+     >                 .false.,Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
 C      Summation with quadrature weights
        ExInt     = ExInt + WGHTX*Ex
        EcInt     = EcInt + WGHTC*Ec
