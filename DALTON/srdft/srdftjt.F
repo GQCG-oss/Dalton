@@ -568,21 +568,22 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 
-      real*8, intent(in) :: CHIVAL,VLAMBDA
+      real*8, intent(in) :: rho(4),grd2(6),CHIVAL,VLAMBDA
+!     grd2(1:6) = (grdcc, grdss, grdcs, grdaa, grdbb, grdab)
       integer, intent(in) :: NORDER
       logical, intent(in) :: triplet
-!     input that are modified but not outputs
-!     there might be a better way to treat the below variables
-!     such that no input that is not an output is never modified.
+!     Maybe ERFEXP should be set correctly before calling the 
+!     subroutine, such that no input that is not an output is
+!     modified
 !       -- E.R. Kjellgren
       logical :: ERFEXP(0:2)
-!     grd2(1:6) = (grdcc, grdss, grdcs, grdaa, grdbb, grdab)
-      real*8 :: rho(4), grd2(6)
 
       real*8, intent(out) :: Ex, d1Ex(5), d2Ex(15)
       real*8, intent(out) :: Ec, d1Ec(5), d2Ec(15)
-      
-      real*8 :: mu
+
+!     temp_grd2 is to be used if some grd2 need to be zeroed before
+!     calling finite-differnce.
+      real*8 :: mu, temp_grd2(6)
       save icall
       data icall/0/
 C     exchange functionals
@@ -685,9 +686,9 @@ C  Correlation  ----------------------------------------------------------
       IF(DOSRC_LDA_PW92) THEN
         ! DESRSPIN called with DFT_SPINDNS = false gives LDA functional
         ! for closed shell (but with J. Toulouse new LDA based on PW92)
-        rho(2)   = 0.0d0
         use_spindns = triplet .or. dft_spindns
-        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),CHIVAL,use_SPINDNS,
+        ! rho(2) is always zero for spin unpolarized functionals
+        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),0.0d0,CHIVAL,use_SPINDNS,
      >                NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !     short-range correlation PBE of TCS
@@ -755,8 +756,8 @@ C  Correlation  ----------------------------------------------------------
       IF(DOSRC_PBEGWS_S) THEN
         ! PBEGWS_S has no grdss and no grds.grdc dependency,
         ! therefore zero these before DESRC_SPINGGA call:
-        grd2(2) = 0.0d0
-        grd2(3) = 0.0d0
+        temp_grd2(:) = grd2(:)
+        temp_grd2(2:3) = 0.0d0
         call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,grd2,CHIVAL,norder,
      >                     Ec,d1Ec,d2Ec)
       ENDIF

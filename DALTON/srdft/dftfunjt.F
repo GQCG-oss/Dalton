@@ -4272,7 +4272,7 @@ C*****************************************************************************
       end
 
 C*****************************************************************************
-      real*8 function ecVWN5(rs, zeta)
+      real*8 pure function ecVWN5(rs, zeta)
 C
 C     Heavily based on the implementation in libxc
 C     
