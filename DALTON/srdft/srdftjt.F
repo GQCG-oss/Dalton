@@ -547,7 +547,7 @@ C Termination --------------------------------------------------------------
       END
 
 C****************************************************************************
-      SUBROUTINE SRDFTEXCJT(RHO,GRD2, CHIVAL,NORDER,ERFEXP,triplet,
+      SUBROUTINE SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,triplet,
      >           Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
 c*****************************************************************************
 C    Driver for short-range DFT exchange and correlation
@@ -568,17 +568,21 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 
-      real*8  rho(4),grd2(6),CHIVAL,VLAMBDA ! input
+      real*8, intent(in) :: CHIVAL,VLAMBDA
+      integer, intent(in) :: NORDER
+      logical, intent(in) :: triplet
+!     input that are modified but not outputs
+!     there might be a better way to treat the below variables
+!     such that no input that is not an output is never modified.
+!       -- E.R. Kjellgren
+      logical :: ERFEXP(0:2)
 !     grd2(1:6) = (grdcc, grdss, grdcs, grdaa, grdbb, grdab)
-      integer NORDER
-      logical ERFEXP(0:2), triplet
+      real*8 :: rho(4), grd2(6)
 
-      real*8   Ex, d1Ex(5), d2Ex(15)
-      real*8   Ec, d1Ec(5), d2Ec(15)
-
-C The new terms (edh: mu_new required??)
-      real*8   mu !, mu_new
-
+      real*8, intent(out) :: Ex, d1Ex(5), d2Ex(15)
+      real*8, intent(out) :: Ec, d1Ec(5), d2Ec(15)
+      
+      real*8 :: mu
       save icall
       data icall/0/
 C     exchange functionals
@@ -849,16 +853,20 @@ C***************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 
-!     input
-      integer  KSYMOP, IPRINT_X
-      logical  DOGGA,ERFEXP(0:2),TRIPLET
-      real*8   RHO(4), RHG(3,4), GRD2(6)
-      real*8   CHIVAL,VLAMBDA
-      real*8   DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
-      real*8   GAO(NBAST),GAO1(NBAST,3), DGAO(NBAST,2)
-      real*8   WGHTX,WGHTC
-!     output
-      real*8   EXCMAT(NBAST,NBAST,2)
+      integer, intent(in) :: KSYMOP, IPRINT_X
+      logical, intent(in) :: DOGGA,ERFEXP(0:2),TRIPLET
+      real*8, intent(in) :: RHG(3,4), GRD2(6)
+      real*8, intent(in) :: CHIVAL,VLAMBDA
+      real*8, intent(in) :: DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
+      real*8, intent(in) :: GAO(NBAST),GAO1(NBAST,3), DGAO(NBAST,2)
+      real*8, intent(in) :: WGHTX,WGHTC
+!     rho can be modified even tho it is an input and cannot be
+!     an output. Maybe this modification of rho should happen before
+!     calling this subroutine.
+!       -- E.R. Kjellgren
+      real*8 :: rho(4)
+      
+      real*8, intent(out) :: EXCMAT(NBAST,NBAST,2)
 
 !     local
       integer I, J, ISYM, JSYM, JEND, JSTR, ISTR, IEND
