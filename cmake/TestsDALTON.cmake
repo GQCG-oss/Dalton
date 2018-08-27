@@ -348,7 +348,7 @@ add_dalton_runtest(cc2dc_energy                  "dalton;runtest;cc;short")
 add_dalton_test(cc2dc_resp                       "dalton;cc;short")
 add_dalton_test(cc2dc_exci                       "dalton;cc;short")
 add_dalton_test(cc2dc_resp_newlr                 "dalton;cc;short")
-add_dalton_test(cc_beta_solv                     "dalton;cc;short")
+add_dalton_runtest(cc_beta_solv                  "dalton;runtest;cc;short")
 add_dalton_test(ccr3_exci                        "dalton;cc;short;essential")
 
 add_dalton_test(cc3_LIH1s1p_pol                  "dalton;cc;cc3;short")

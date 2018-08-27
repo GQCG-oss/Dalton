@@ -29,6 +29,7 @@ f.add(from_re = '!  Electronic second moment of charge',
       num_lines = 9,
       abs_tolerance = 1.0e-4)
 
-test.run(['cc2dc_energy.dal'], ['cc2dc_energy.mol'], f={'out': f})
+test.run(['cc2dc_energy.dal'], ['cc2dc_energy.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

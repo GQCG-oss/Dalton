@@ -24,15 +24,13 @@ f.add(from_string = 'FINAL CCSD RESULTS FOR THE FIRST HYPERPOLARIZABILITIES',
      to_string = 'SUMMARY OF COUPLED CLUSTER CALCULATION',
      rel_tolerance = 1.0e-9)
 
+f.add(string = 'CC2      Total energy:',
+      rel_tolerance = 1.0e-10)
 
+f.add(string = 'CCSD     Total energy:',
+      rel_tolerance = 1.0e-10)
 
-f.add(from_string = 'SUMMARY OF COUPLED CLUSTER CALCULATION',
-     to_string = 'END OF COUPLED CLUSTER CALCULATION',
-      abs_tolerance = 1.0e-8)
-
-
-
-test.run(['ccmm_beta.dal'], ['ccmm_beta.mol'], f={'out': f}, args='-put POTENTIAL.INP',
+test.run(['cc_beta_solv.dal'], ['cc_beta_solv.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)
