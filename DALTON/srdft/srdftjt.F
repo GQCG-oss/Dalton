@@ -814,7 +814,7 @@ C  Correlation  ----------------------------------------------------------
 
 !     TPSS correlation functional
       IF(DOSRC_TPSS_S) THEN
-        call DESRC_SPINmetaGGA(ESRC_TPSS,rho,grd2,tau,laplace,
+        call DESRC_SPINmetaGGA(ESRC_TPSS,rho,temp_grd2,tau,laplace,
      >                     chival,norder,Ex,d1Ex,d2Ex)
       ENDIF
 
