@@ -1101,6 +1101,9 @@ C           ... remove CREF component of E[2] vector
 C
 C CREATE Y PART  <0,H2X,J> OF LINEAR TRANSFORMATION WITH E(2)
 C
+C (unless TDA or CISRPA, for which B block is by definition zero)
+      IF (TDA .OR. CISRPA) GO TO 100
+C
 C        Get FCXAC matrix for Y sigma vector
 C
          DO 120 IW = 1,NASHT
