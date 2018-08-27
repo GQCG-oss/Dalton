@@ -84,7 +84,6 @@ C
       PARAMETER(LOCDBG=.FALSE.)
 C
       LOGICAL KAJ,LINQCC,RSPIM2,LTRIP(4),LRST1,LRST2,LPROJECT,TRIPLET
-      LOGICAL RNORM
 Cholesky pablo
       LOGICAL LREDS,CCRSTRS,LREDS_SV
       LOGICAL CCS_DONE
@@ -746,10 +745,9 @@ C
                  KCAM1 = KWRK2 + (J-1)*NCCVAR
                  KCAMP = KCAM1 + NT1AM(ISYMTR)
                  KCAMM = KCAMP + NT2AM(ISYMTR)
-                 RNORM = LIST(1:2).EQ.'RE'
                  CALL CC_PRAM3(WORK(KCAM1), WORK(KCAMP), WORK(KCAMM),
      *                         WORK(KT1PS+(ICOUNT-1)),PTP,PTM,ISYMTR,
-     *                         .FALSE.,RNORM)
+     *                         .FALSE.)
                ELSE
                  CALL CC_PRAM(WORK(KWRK2+(J-1)*NCCVAR),
      *                        WORK(KT1PS+(ICOUNT-1)),ISYMTR,
@@ -1056,10 +1054,9 @@ C
                       KCAM1 = KWRK2 + (ICOUNT-1)*NCCVAR
                       KCAMP = KCAM1 + NT1AM(ISYMTR)
                       KCAMM = KCAMP + NT2AM(ISYMTR)
-                      RNORM = .FALSE. !LIST(1:2).EQ.'RE'
                       CALL CC_PRAM3(WORK(KCAM1), WORK(KCAMP),
      *                              WORK(KCAMM),PT1,
-     *                              PTP,PTM,ISYMTR,.FALSE.,RNORM)
+     *                              PTP,PTM,ISYMTR,.FALSE.)
                     ELSE
                       CALL CC_PRAM(WORK(KWRK2 + (ICOUNT-1)*NCCVAR),
      *                             PT1,ISYMTR,.FALSE.)

@@ -319,6 +319,9 @@ c*DECK CC_RHTR3
      *                NT1AM(ISYMTR),
      *                IV+IVEC-1,WORK(KAMC1))
    25 CONTINUE
+      IF (.NOT.(CC3.OR.CCS)) THEN
+         CALL DSCAL(NT1AM(ISYMTR)*NSIMTR,TWO,WORK(KAMC1),1)
+      END IF
 !
       IF ((.NOT.CCS).AND.( MINSCR).AND.(IPRINT.GT.45)) THEN
          CALL CC_RVEC3(LUFC2,FC2AM,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
@@ -2554,6 +2557,10 @@ C
 !------------------------------------
 !
          DTIME   = SECOND()
+         IF (.NOT.(CC3.OR.CCS)) THEN
+            CALL DSCAL(NT1AM(ISYMTR),HALF,WORK(KOFF1),1)
+         END IF
+
          CALL CC_WVEC(LUFR1,FRHO1,NT1AM(ISYMTR),NT1AM(ISYMTR),
      *                IV+IVEC-1,WORK(KOFF1))
          IF (.NOT. CCS) THEN

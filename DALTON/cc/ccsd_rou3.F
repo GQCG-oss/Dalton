@@ -5202,7 +5202,7 @@ C
       RETURN
       END
 C  /* Deck cc_pram3 */
-      SUBROUTINE CC_PRAM3(CAM1,CAMP,CAMM,PT1,PTP,PTM,ISYMTR,LGRS,RNORM)
+      SUBROUTINE CC_PRAM3(CAM1,CAMP,CAMM,PT1,PTP,PTM,ISYMTR,LGRS)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     30-5-1995 Ove Christiansen
@@ -5222,7 +5222,6 @@ C
 #include "ccsdinp.h"
 C
 C
-      LOGICAL, INTENT(IN) :: RNORM
       LOGICAL LGRS
       DIMENSION CAM1(*), CAMP(*), CAMM(*)
 C
@@ -5242,25 +5241,9 @@ C
         C2PNOSQ = 0.0D0
         C2MNOSQ = 0.0D0
       END IF
-      IF (RNORM) THEN
-        C2PNOSQ = 4.0D0*C2PNOSQ
-        C2MNOSQ = 4.0D0*C2MNOSQ
-      END IF
 C
       CNOSQ  = C1NOSQ + C2PNOSQ + C2MNOSQ
 C
-      IF (RNORM) THEN
-C        Scale doubles part by two and renormalize
-         FACT = 1.0D0/SQRT(CNOSQ)
-         CALL DSCAL(NT1AM(ISYMTR),FACT,CAM1,1)
-         FACT = 2.0D0*FACT
-         CALL DSCAL(NT2AM(ISYMTR),FACT,CAMP,1)
-         CALL DSCAL(NT2AM(ISYMTR),FACT,CAMM,1)
-         C1NOSQ = C1NOSQ/CNOSQ
-         C2PNOSQ = C2PNOSQ/CNOSQ
-         C2MNOSQ = C2MNOSQ/CNOSQ
-         CNOSQ = 1.0D0
-      END IF
 C
       IF (CNOSQ .EQ. 0.0D0) THEN
          PT1 = 0.0D0
