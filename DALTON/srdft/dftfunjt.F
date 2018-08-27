@@ -5412,7 +5412,7 @@ C*****************************************************************************
       end function
 
 C*****************************************************************************
-      pure subroutine ESRX_TPSS(rho_a, gamma_aa, tau_a, laplace_a, mu, 
+      subroutine ESRX_TPSS(rho_a, gamma_aa, tau_a, laplace_a, mu, 
      &Ea)
 C*****************************************************************************
 C   TPSS exchange functional.
@@ -5423,6 +5423,7 @@ C   Subroutine generated using Sympy 1.2
 C   Generated: August 24, 2018
 C*****************************************************************************
       implicit none
+#include "priunit.h"
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, laplace_a, mu
       real*8, intent(out) :: Ea
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7
@@ -5443,10 +5444,11 @@ C*****************************************************************************
      &53653d0*gamma_aa*x2 + 0.0375d0/(rho_a*tau_a)))*( 0.001977345634172
      &02d0*x0 - 0.180246913580247d0*x7) + 0.0896750813832074d0*(x4 - x7)
      &**2)/(0.0204006002177468d0*x0 + 1.0d0)**2))
+
       end subroutine
 
 C*****************************************************************************
-      pure subroutine ESRC_TPSS(rho_c, rho_s, gamma_cc, gamma_ss,
+      subroutine ESRC_TPSS(rho_c, rho_s, gamma_cc, gamma_ss,
      &gamma_cs, tau_c, tau_s, laplace_c, laplace_s, mu, E)
 C*****************************************************************************
 C   TPSS correlation functional.
@@ -5457,6 +5459,7 @@ C   Subroutine generated using Sympy 1.2
 C   Generated: August 27, 2018
 C*****************************************************************************
       implicit none
+#include "priunit.h"
       real*8, intent(in) :: rho_c, rho_s, gamma_cc, gamma_ss, gamma_cs, 
      &tau_c, tau_s, laplace_c, laplace_s, mu
       real*8, intent(out) :: E
