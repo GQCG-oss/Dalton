@@ -419,6 +419,10 @@ C           DMAT(1,3) is the spin density matrix
          TAU(3) = 0.5d0 * ( TAU(1) + TAU(2) ) ! tau_a
          TAU(4) = 0.5d0 * ( TAU(1) - TAU(2) ) ! tau_b
       ENDIF
+      ! For small values of tau to avoid NaN
+      do i = 1,4
+         if (abs(tau(i)) .lt. 1.d-30) tau(i) = 1.d-30
+      end do
 C
 C     Number of electrons
       ELCTRN = ELCTRN + DELCTRN
@@ -522,7 +526,7 @@ C        Three cases:
 ! SRDFTLTRJT: SR short-range DFT density functional theory LTR linear transformation JT Julien Toulouse
         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
      &                 WGHTX,WGHTC,GSO(KSO0),GSO(KSO1),CHIVAL,VLAMBDA,
-     &                 ERFEXP,RHO,RHG,GRD2,DMATGAOSR,
+     &                 ERFEXP,RHO,RHG,GRD2,tau,laplace,DMATGAOSR,
      &                 DOGGA,do_metagga,TRIPLET,IPRINT_X)
 
       ENDIF ! DOATR
@@ -578,8 +582,8 @@ C Termination --------------------------------------------------------------
       END
 
 C****************************************************************************
-      SUBROUTINE SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,triplet,
-     >           Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
+      SUBROUTINE SRDFTEXCJT(RHO,GRD2,tau,laplace,CHIVAL,NORDER,ERFEXP,
+     >           triplet,Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
 c*****************************************************************************
 C    Driver for short-range DFT exchange and correlation
 C    energies and derivatives
@@ -881,7 +885,7 @@ C      mu_new = max(mu,CHIVAL)
 C**************************************************************************
       SUBROUTINE SRDFTLTRJT(KSYMOP,DTXMAT,DSXMAT,EXCMAT,
      &                      WGHTX,WGHTC,GAO,GAO1,CHIVAL,VLAMBDA,
-     &                      ERFEXP,RHO,RHG,GRD2,DGAO,
+     &                      ERFEXP,RHO,RHG,GRD2,tau,laplace,DGAO,
      &                      DOGGA,do_metagga,TRIPLET,IPRINT_X)
 C**************************************************************************
 C     Generate the 1-index transformed DFT Hessian
@@ -906,8 +910,8 @@ C***************************************************************************
 
       integer, intent(in) :: KSYMOP, IPRINT_X
       logical, intent(in) :: DOGGA,ERFEXP(0:2),TRIPLET, do_metagga
-      real*8, intent(in) :: rho(4), RHG(3,4), GRD2(6) tau(4),
-     &                      lapalce(4)
+      real*8, intent(in) :: rho(4), RHG(3,4), GRD2(6), tau(4),
+     &                      laplace(4)
       real*8, intent(in) :: CHIVAL,VLAMBDA
       real*8, intent(in) :: DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
       real*8, intent(in) :: GAO(NBAST),GAO1(NBAST,3), DGAO(NBAST,2)
@@ -1013,7 +1017,7 @@ C
 C Exchange and correlation derivatives ------------------------------------
 
       NORDER = 2  ! zero-order, first-order and second-order derivatives
-      CALL SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,triplet,
+      CALL SRDFTEXCJT(RHO,GRD2,tau,laplace,CHIVAL,NORDER,ERFEXP,triplet,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
       Exc         = WGHTX*  Ex       + WGHTC*  Ec
       d1Exc(1:9)  = WGHTX*d1Ex(1:9)  + WGHTC*d1Ec(1:9)
