@@ -360,6 +360,10 @@ C        Contribution to spin density (N_alpha - N_beta)
       END IF
       RHO(3) = 0.5d0 * ( RHO(1) + RHO(2) ) ! rho_a
       RHO(4) = 0.5d0 * ( RHO(1) - RHO(2) ) ! rho_b
+      ! For small values of rho to avoid NaN
+      do i = 1,4
+         if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
+      end do
 
 C     Gradients of densities
       IF (DOGGA) THEN
@@ -586,6 +590,7 @@ C*****************************************************************************
       real*8 :: mu, temp_grd2(6)
       save icall
       data icall/0/
+
 C     exchange functionals
       external ESRX_PBEHSEERF,  ESRX_PBETCSERF, ESRX_PBERIERF
       external ESRX_PBEGWSERF
@@ -856,16 +861,11 @@ C***************************************************************************
 
       integer, intent(in) :: KSYMOP, IPRINT_X
       logical, intent(in) :: DOGGA,ERFEXP(0:2),TRIPLET
-      real*8, intent(in) :: RHG(3,4), GRD2(6)
+      real*8, intent(in) :: rho(4), RHG(3,4), GRD2(6)
       real*8, intent(in) :: CHIVAL,VLAMBDA
       real*8, intent(in) :: DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
       real*8, intent(in) :: GAO(NBAST),GAO1(NBAST,3), DGAO(NBAST,2)
       real*8, intent(in) :: WGHTX,WGHTC
-!     rho can be modified even tho it is an input and cannot be
-!     an output. Maybe this modification of rho should happen before
-!     calling this subroutine.
-!       -- E.R. Kjellgren
-      real*8 :: rho(4)
       
       real*8, intent(out) :: EXCMAT(NBAST,NBAST,2)
 
@@ -897,11 +897,6 @@ C***************************************************************************
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
          CALL QUIT('SRDFTJT.F: Triplet with open-shell not implemented')
       END IF
-
-      ! For small values of rho to avoid NaN
-      do i = 1,4
-         if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
-      end do
 
       ! DGAO(1,1) = DTXMAT*GAO;
       !  if (.not.triplet) DTXMAT is 1-index transformed or transition total (charge) density matrix
