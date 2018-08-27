@@ -763,8 +763,8 @@ C  Correlation  ----------------------------------------------------------
         ! therefore zero these before DESRC_SPINGGA call:
         temp_grd2(:) = grd2(:)
         temp_grd2(2:3) = 0.0d0
-        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,grd2,CHIVAL,norder,
-     >                     Ec,d1Ec,d2Ec)
+        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,temp_grd2,CHIVAL,
+     >                     norder,Ec,d1Ec,d2Ec)
       ENDIF
 
 C Kamal SHARKAS 20-05-11 beg
