@@ -179,8 +179,10 @@ C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
 
 C     Initializations -------------------------------------------------------
 
-      RHG(:,:) = 0.0d0 ! so initialized for LDA
+      RHG(:,:)   = 0.0d0 ! so initialized for LDA
       GRD2(:)    = 0.0d0
+      tau(:)     = 0.0d0
+      laplace(:) = 0.0d0
 
       ! edh the arrays are also zeroed in SRDFTEXCJT
       d1Ex(:)  = 0.0d0
@@ -418,11 +420,11 @@ C           DMAT(1,3) is the spin density matrix
          END IF
          TAU(3) = 0.5d0 * ( TAU(1) + TAU(2) ) ! tau_a
          TAU(4) = 0.5d0 * ( TAU(1) - TAU(2) ) ! tau_b
+         ! For small values of tau to avoid NaN
+         do i = 1,4
+            if (abs(tau(i)) .lt. 1.d-30) tau(i) = 1.d-30
+         end do
       ENDIF
-      ! For small values of tau to avoid NaN
-      do i = 1,4
-         if (abs(tau(i)) .lt. 1.d-30) tau(i) = 1.d-30
-      end do
 C
 C     Number of electrons
       ELCTRN = ELCTRN + DELCTRN
@@ -604,7 +606,7 @@ C*****************************************************************************
 #include "dftcom.h"
 
       real*8, intent(in) :: rho(4), grd2(6), tau(4), laplace(4),
-     &                     CHIVAL, VLAMBDA
+     &                      CHIVAL, VLAMBDA
 !     grd2(1:6) = (grdcc, grdss, grdcs, grdaa, grdbb, grdab)
       integer, intent(in) :: NORDER
       logical, intent(in) :: triplet
