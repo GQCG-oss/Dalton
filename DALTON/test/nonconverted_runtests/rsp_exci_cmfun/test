@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['rsp_exci_cmfun.dal'], ['rsp_exci_cmfun.mol'], {'out': f})
+test.run(['rsp_exci_cmfun.dal'], ['rsp_exci_cmfun.mol'], f={'out': f})
 
 sys.exit(test.return_code)

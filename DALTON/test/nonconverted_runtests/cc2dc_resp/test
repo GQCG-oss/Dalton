@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['cc2dc_resp.dal'], ['cc2dc_resp.mol'], {'out': f})
+test.run(['cc2dc_resp.dal'], ['cc2dc_resp.mol'], f={'out': f})
 
 sys.exit(test.return_code)

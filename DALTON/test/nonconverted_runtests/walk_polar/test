@@ -102,6 +102,6 @@ f.add(from_string = 'Vibrational Polarizabilities (au)',
 f.add(string = 'Value of linear response',
       rel_tolerance = 1.0e-5)
 
-test.run(['walk_polar.dal'], ['h2o_6-311G_pol.mol'], {'out': f})
+test.run(['walk_polar.dal'], ['h2o_6-311G_pol.mol'], f={'out': f})
 
 sys.exit(test.return_code)
