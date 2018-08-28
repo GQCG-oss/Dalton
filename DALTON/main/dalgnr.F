@@ -26,7 +26,7 @@ C  /* Deck srestr */
       SUBROUTINE SRESTR
 C
 C     Several SIRIUS-variables has to be restored, because they are overwritten
-C     by ABACUS in SIRSET module. Called from SIRRDI.
+C     by ABACUS in SETSIR module. Called from SIRRDI.
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -80,13 +80,13 @@ C
       ICICNO = ICCNOB
       IMCCNO = IMCNOB
       IF (NEWSYM) THEN
-         DORHF  = DORHFB
+         DOSCF  = DOSCFB
          DOMP2  = DOMP2B
          DOCINO = DOCNOB
          DOCI   = DOCIB
          FCVORB = FCVRBB
       ELSE
-         DORHF  = (DORHFB .AND. .NOT. DOMCB)
+         DOSCF  = (DOSCFB .AND. .NOT. DOMCB)
          DOMP2  = (DOMP2B .AND. .NOT. DOMCB)
          DOCINO = (DOCNOB .AND. .NOT. DOMCB)
          DOCI   = (DOCIB  .AND. .NOT. DOMCB)
@@ -172,7 +172,7 @@ C  /* Deck ssave */
       SUBROUTINE SSAVE
 C
 C     Several SIRIUS-variables has to be saved, because they are overwritten
-C     by ABACUS in SIRSET module. Called from SIRRDI.
+C     by ABACUS in SETSIR module. Called from SIRRDI.
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -220,7 +220,7 @@ C
       MXCMAB = MXCIMA
       ICCNOB = ICICNO
       IMCNOB = IMCCNO
-      DORHFB = DORHF
+      DOSCFB = DOSCF
       DOMP2B = DOMP2
       DOCNOB = DOCINO
       DOCIB  = DOCI

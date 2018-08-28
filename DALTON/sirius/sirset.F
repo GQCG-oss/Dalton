@@ -196,7 +196,7 @@ C
 C     Set orbital rotation index vectors JWOP, KLWOP, ? :
 C
       IF ( (DOMP2 .OR. DOCI .OR. DOCINO) .AND.
-     &     .NOT.(DORHF .OR. DOMC)) THEN
+     &     .NOT.(DOSCF .OR. DOMC)) THEN
          NWOPT  = 0
          NWOPH  = 0
          NWOPDI = 1

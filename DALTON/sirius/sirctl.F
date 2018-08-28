@@ -194,9 +194,9 @@ Cbm initialized PCM_save
 C
 C
 C ***************************************************
-C        *** set RHF parameters for RHF and MP2 ***
+C        *** set SCF parameters for RHF/DFT and MP2 ***
 C
-      IF (DORHF .OR. DOMP2) THEN
+      IF (DOSCF .OR. DOMP2) THEN
          MCTYPE   = 0
          IF (HSROHF) MCTYPE = -1
          IF (DOMP2 ) THEN
@@ -286,9 +286,9 @@ C
       END IF
 C
 C ***************************************************
-C        *** RHF ***
+C        *** RHF or DFT ***
 C
-      IF (DORHF) THEN
+      IF (DOSCF) THEN
          NUMRUN = NUMRUN + 1
          IF (IPRRHF .GE. 0) THEN
             IPRSIR = IPRRHF
@@ -460,7 +460,7 @@ C        *** SELACT ***
 C
       IF (ACTSEL .AND. (.NOT. DOCCSD)) THEN
          NUMRUN = NUMRUN + 1
-         IF (DORHF .AND. ICONV .LE. 0) THEN
+         IF (DOSCF .AND. ICONV .LE. 0) THEN
             WRITE (LUPRI,7021)
             WRITE (LUERR ,7021)
             GO TO 8000
@@ -488,7 +488,7 @@ C
          DFT_LOCALSPIN_save = DFT_LOCALSPIN
          DFT_LOCALSPIN = .FALSE.
          NUMRUN = NUMRUN + 1
-         IF (DORHF .AND. ICONV .LE. 0) THEN
+         IF (DOSCF .AND. ICONV .LE. 0) THEN
             WRITE (LUPRI,7020)
             WRITE (LUERR,7020)
             GO TO 8000
@@ -524,7 +524,7 @@ C
 C ***************************************************
 C        *** reset to CI/MCSCF flags ***
 C
-      IF ( (DORHF .OR. DOMP2) .AND.
+      IF ( (DOSCF .OR. DOMP2) .AND.
      &     (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB) ) THEN
          HSROHF = .FALSE.
 C        ... otherwise error in some MCSCF routines
@@ -570,7 +570,7 @@ C
 C ***************************************************
 C        *** FCVORB module ***
 C        (6-May-1994 hjaaj)
-C        (moved from DORHF so that NISH is reset to MCSCF/CI values)
+C        (moved from DOSCF so that NISH is reset to MCSCF/CI values)
 C
 C        (2-Oct-1986)
 C        With canonical Fock orbitals, it is very likely that

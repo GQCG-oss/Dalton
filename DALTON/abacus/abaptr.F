@@ -466,7 +466,7 @@ C
       INTEGER   T, U, V, X, TU, VX, TUVX, SIGMA, SIGMB, ALPHA, ALPHAP,
      *          IT(*)
       INTEGER*8 IBUF(*), IND
-      REAL*8    PV(*), CMO(*), BUF(*), P2(*), P4V(*)
+      REAL*8    PV(*), CMO(*), BUF(*), P2(*), P4V(*), WORK(*)
 C
 #include "priunit.h"
 #include "inftap.h"

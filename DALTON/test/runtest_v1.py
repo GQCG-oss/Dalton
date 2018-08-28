@@ -26,6 +26,7 @@ import subprocess
 import shlex
 import shutil
 import string
+from io import open
 from optparse import OptionParser
 
 
@@ -383,6 +384,9 @@ class TestRun:
                                    stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
 
+        stdout = stdout.decode('utf-8')
+        stderr = stderr.decode('utf-8')
+
         if self.debug:
             print('\nstdout:\n%s' % stdout)
             if stderr != '':
@@ -502,13 +506,13 @@ class Filter:
 
         for f in self.filter_list:
 
-            out_filtered = filter_file(f, out_name, open(out_name).readlines())
+            out_filtered = filter_file(f, out_name, open(out_name, errors='replace').readlines())
             log_out.write(''.join(out_filtered))
             out_numbers, out_locations = extract_numbers(f, out_filtered)
             if f.use_mask and out_numbers == []:
                 raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
 
-            ref_filtered = filter_file(f, ref_name, open(ref_name).readlines())
+            ref_filtered = filter_file(f, ref_name, open(ref_name, errors='replace').readlines())
             log_ref.write(''.join(ref_filtered))
             ref_numbers, ref_locations = extract_numbers(f, ref_filtered)
             if f.use_mask and ref_numbers == []:

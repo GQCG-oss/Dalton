@@ -50,8 +50,8 @@
      &                DO_CUBE, DOAPSG, DO_VIRTRUNC
       LOGICAL         LOGINPlast
       COMMON /LOGINP/ LOGINPlast ! for MPI and getbytespan
-      LOGICAL         SUPSYM, DORHF
-      EQUIVALENCE (SUPSYM,FLAG(17)), (DOSCF,DORHF)
+      LOGICAL         SUPSYM
+      EQUIVALENCE (SUPSYM,FLAG(17))
 !
       REAL*8          SPIN, POTNUC, EPSOL,EPSTAT,EPPN,RSOL,             &
      &                THRGRD, THRPWF, THRCI, THRMC, THRCGR,             &
