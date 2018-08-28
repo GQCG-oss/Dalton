@@ -51,6 +51,9 @@ C*****************************************************************************
       DIMENSION WORK(LWORK), NONT(KATOM)
       CHARACTER KASYM(3,3)*1, CLASS*15
 
+C optinf.h : VRML_SYM
+#include "optinf.h"
+
       CALL QENTER('SYMADD')
 
 C     Set control variables in "mxsymm.h"
@@ -285,10 +288,10 @@ C ::: If there's any Angstrom mark, it's removed.    :::
             WRITE(LUPRI, '(/A)') ' No symmetry elements were found.'
          ELSE IF (NSYMOP .EQ. 1) THEN
             WRITE(LUPRI, '(/2A)')
-     &         ' The following element was found:   ',SYMM
+     &         ' The following symmetry element was found:   ',SYMM
          ELSE
             WRITE(LUPRI, '(/2A)')
-     &         ' The following elements were found:   ',SYMM
+     &         ' The following symmetry elements were found:   ',SYMM
          END IF
 C ::: The reduced coordinates are moved back. :::
          CALL SRTOLD(MXCENT, ATMARR)

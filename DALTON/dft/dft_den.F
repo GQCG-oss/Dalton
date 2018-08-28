@@ -41,6 +41,8 @@ C
 #include "nuclei.h"
 #include "dftcom.h"
 C
+      IF (NASHT .GT. 0)
+     &   CALL QUIT('DFTDNS ERROR: open-shell DFT not implemented')
       IF (NCMOT .GT. LWORK) CALL STOPIT('DFTDNS',' ',NCMOT,LWORK)
       REWIND LUSIFC
       CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)

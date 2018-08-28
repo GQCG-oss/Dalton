@@ -42,7 +42,10 @@ cfrj-end
       EXTERNAL DEXPGC
       LOGICAL DFT_ISGGA
       EXTERNAL DFT_ISGGA
-c
+
+      IF (NASHT .GT. 0) THEN
+         CALL QUIT('ERROR: .EXPGRA not implemented for open-shell DFT')
+      END IF
       DOGGA = DFT_ISGGA()
 C      
 c     CALL DZERO(tmpvec,MXPRIM)

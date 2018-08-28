@@ -1465,7 +1465,7 @@ C
          IDOH2 = 1
       END IF
 C
-C     INTFRM = 1 : use GETINT
+C     INTFRM = 1 : use GETIN2
 C            = 3 : get integrals directly from H2AC
 C
       IF (DISTYP .EQ. 1 .AND. IADINT .LT. 0) THEN

@@ -27,10 +27,14 @@ C     ***** Dirac exchange *****
 C     **************************
 C
 C  /* Deck edrc */
-      SUBROUTINE EDRC(ED,RHO,RHO13)
-#include <implicit.h>
-#include <pi.h>
-      PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D4 = 4.0D0)
+      PURE SUBROUTINE EDRC(ED,RHO,RHO13)
+      implicit none
+      real*8, intent(in) :: RHO, RHO13
+      real*8, intent(out) :: ED
+      real*8, parameter :: D1 = 1.0d0 
+      real*8, parameter :: D3 = 3.0d0 
+      real*8, parameter :: D4 = 4.0d0 
+      real*8, PARAMETER :: PI=3.1415926535898D0
 c     &           CX = -(D3/D4)*((D3/PI)**(D1/D3)))
       ED = -(D3/D4)*((D3/PI)**(D1/D3))*RHO*RHO13
       RETURN

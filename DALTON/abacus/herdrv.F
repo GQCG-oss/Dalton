@@ -1533,7 +1533,7 @@ C copied from linsca abacus/herdrv.F, Bin Gao, December 17, 2009
          IF (ELGDIL) WRITE (LUPRI,'(10X,A)')
      &     '- Diamagnetic one-electron spin-orbit (London)'
          IF (MNF_SO) WRITE (LUPRI,'(10X,A)')
-     &     '- Mean field spin-orbit integrals'
+     &     '- Mean field spin-orbit integrals (AMFI)'
          IF (NELFLD) WRITE (LUPRI,'(10X,A)')
      &     '- Electric field at the nuclei'
          IF (NSNLTS) WRITE(LUPRI,'(10X,A)')
@@ -4374,9 +4374,9 @@ C
 C
 C     Open Mean-field input file generate in READIN
 C
-      LUTMP2   = -1
+      LUAMFI_INP   = -1
       LUMNFPRP = -1
-      CALL GPOPEN(LUTMP2,'AMFI_MNF.INP','OLD',' ','FORMATTED',
+      CALL GPOPEN(LUAMFI_INP,'AMFI_MNF.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       CALL GPOPEN(LUMNFPRP,'AOPROPER.MNF','UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
@@ -4390,7 +4390,7 @@ C     We loop over symmetry-independent centers
 C
       REWIND (LUMNFPRP)
       DO IATOM = 1, NUCIND
-         CALL AMFI(LUTMP2,LUMNFPRP,BREIT,GAUNUC,GNUEXP(IATOM),
+         CALL AMFI(LUAMFI_INP,LUMNFPRP,BREIT,GAUNUC,GNUEXP(IATOM),
      &             WORK,LWORK)
       END DO
 C
@@ -4400,7 +4400,7 @@ C
       REWIND (LUMNFPRP)
       CALL SYMTRAFO(LUMNFPRP,PROPRI,IPRINT,WORK,LWORK)
 C
-      CALL GPCLOSE(LUTMP2,'KEEP')
+      CALL GPCLOSE(LUAMFI_INP,'KEEP')
       CALL GPCLOSE(LUMNFPRP,'DELETE')
       RETURN
       END

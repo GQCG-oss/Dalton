@@ -40,7 +40,7 @@ C  /* Deck opinpu */
 #include "gnrinf.h"
 
       PARAMETER (NTABLE = 76, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
-     &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-4, DEFDSP = 1.0D-3)
+     &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-4)
       LOGICAL NEWDEF, TRSTCH, TRSTFC, FIRST, REMCRD
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
@@ -55,7 +55,7 @@ C
      &            '.BFGS  ', '.NEWTON', '.QUADSD', '.SCHLEG', ! 32
      &            '.HELLMA', '.BAKER ', '.M-BFGS', '.CARTES', ! 36
      &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD', ! 40
-     &            '.GRDINI', '.DISPLA', '.CONSTR', '.MODHES', ! 44
+     &            '.GRDINI', 'xxxxxxx', '.CONSTR', '.MODHES', ! 44
      &            '.REMOVE', '.INIMOD', '.FINDRE', '.CMBMOD', ! 48
      &            '.RF    ', '.GDIIS ', '.DELINT', '.NODIHE', ! 52
      &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ', ! 56
@@ -176,7 +176,6 @@ C     satisfactorily yet.
       ITRNMR = 0
       ITRMAX = ITRMX
       MAXREJ = MXREJ
-      DISPLA = DEFDSP
       GRDTHR = DEFTH2
       THRSTP = DEFTH2
       THRERG = DEFTHE
@@ -386,8 +385,8 @@ C&&&&: 2NDORD:  Use detault 2nd order method
 C&&&&: GRDINI:  Reinitialization of Hessian when increased gradient norm
  41         GRDINI = .TRUE.
             GOTO 100
-C&&&&: DISPLA:  Displacements for numerical gradient
- 42         READ (LUCMD,*) DISPLA
+C&&&&: 
+ 42         CONTINUE
             GOTO 100
 C&&&&: CONSTR:  Constrained coordinates
  43         READ (LUCMD,*) NCON
@@ -1132,7 +1131,8 @@ C
 C
       IF (BAKER) THEN
          WRITE(LUPRI,'(A/)')
-     &        " Baker's convergence criteria will be used."
+     &        " Baker's convergence criteria will be used"//
+     &        " [J. Comp. Chem. 14 (1993) 1085]."
          IF (NATNRM) THEN
             WRITE(LUPRI,'(A/)')
      &        ' INFO:  .NATNRM is ignored when .BAKER requested!'
@@ -1245,12 +1245,6 @@ C
             END IF
       END IF
 C
-      IF (DISPLA .NE. DEFDSP) THEN
-C NB TODO hjaaj Jan09: DISPLA is never used !!!!! Remove ???
-         WRITE (LUPRI,'(A,1P,D13.2)')
-     &        ' In case of numerical gradients, displacements are : ',
-     &        DISPLA
-      END IF
       IF (CONOPT) THEN
          WRITE(LUPRI,'(/A)')
      &        ' Constrained optimization has been requested.'
@@ -1865,7 +1859,7 @@ C     Determine value of the various coordinates
 C
       IF (REDINT .AND. (IPRINT .GE. 1)) THEN
          CALL ATMINI(WORK(KTEMP1),IATOM,.TRUE.)
-         CALL GETINT(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
+         CALL GET_RINTCRD(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
          CALL HEADER('New internal coordinates',-1)
          CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,-1,LUPRI)
          WRITE(LUPRI,'(//)')
@@ -2060,7 +2054,7 @@ C
 C
          IF (REDINT .AND. (IPRINT .GE. 1)) THEN
             CALL ATMINI(WORK(KTEMP1),IATOM,.TRUE.)
-            CALL GETINT(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
+            CALL GET_RINTCRD(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
             CALL HEADER('New internal coordinates',-1)
             CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,-1,LUPRI)
             WRITE(LUPRI,'(//)')
@@ -2644,7 +2638,7 @@ C hjaaj aug99: no reason to update thresholds as it is
 C an equil. optimization in the geometry although excited in MCSCF
 C
 C     Well, en excited electronic state cannot necessarily be expected to be
-C     as quadratic as the ground state, and thus we should not walk to far
+C     as quadratic as the ground state, and thus we should not walk too far
 C     away. This is necessary for instance to get test15 through....
 C
       IF (ISTATE .GT. 1 .AND. ITRNMR .EQ. 0) THEN
@@ -2872,7 +2866,7 @@ C
       END IF
 
       IF (NAORDR .LT. 2) THEN
-         CALL QUIT('2nd order optimization aborted because'//
+         CALL QUIT('2nd order geometry optimization aborted because'//
      &   ' analytical molecular Hessian is not available.')
       END IF
 
@@ -6871,6 +6865,8 @@ C     This procedure does the actual breaking of symmetry.
 C
 #include "implicit.h"
 #include "priunit.h"
+
+C numder.h : NOMOVE
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -6883,6 +6879,7 @@ C
 #include "symmet.h"
 #include "trkoor.h"
 #include "huckel.h"
+#include "numder.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS, AUTOSY, NOSYM, DOCART, DOOWN,
      &        ADDSYM
       CHARACTER FILENM*10, TMPTXT*11, BSNM*80
@@ -6974,7 +6971,7 @@ C
       STPNRM = SQRT(DDOT(NCR,TMPMAT,1,TMPMAT,1))
       CALL DZERO(CSTEP,MXCOOR)
       IF (IPRINT .GT. 5) THEN
-         CALL HEADER('Cartesian symmetry step vector',1)
+         CALL HEADER('Cartesian symmetry-breaking step vector',1)
          CALL OUTPUT(TMPMAT,1,1,1,NCR,1,NCR,-1,LUPRI)
          WRITE(LUPRI,'(/A,F15.10/)') ' Norm of step:', STPNRM
       END IF
@@ -7036,6 +7033,7 @@ C
      &        (ABS(ENERGY-GEINFO(J,1)) .LT. THRERG*10)) II=II+1
  49   CONTINUE
       IF (II .GT. 0) BRKALS = .TRUE.
+      NOMOVE = .TRUE. ! do not center and rotate molecule in symmetry detection routine
       TMPLN = MLINE(NMLAU)
       CALL UPCASE(TMPLN)
       IF (INDEX(TMPLN,'ATO') .NE. 0) THEN
@@ -7258,7 +7256,7 @@ C
 
       END IF
 C
-C     reduce convergence thresholds for the preoptimization steps
+C     Reduce convergence thresholds for the preoptimization steps
 C     (THRFAC_PRE is parameter in optinf.h)
 C
       THRERG = THRERG * THRFAC_PRE**2
@@ -8234,9 +8232,9 @@ C
          THRERG = GRDTHR
          THRSYM = SQRT(THRERG)
          WRITE (LUPRI,'(/A)') ' INFO: Due to limitations '//
-     &        'of the accuracy of the numerical gradients'
-         WRITE (LUPRI,'(A)') ' INFO: thresholds for convergence'
-     &        //' of geometry optimization has been reset'
+     &        'in the accuracy of the numerical gradients'
+         WRITE (LUPRI,'(A)') ' INFO: default thresholds for convergence'
+     &        //' of geometry optimization have been reset.'
          WRITE (LUPRI,'(/A,/,3(/,20X,A,F11.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG

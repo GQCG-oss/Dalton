@@ -240,17 +240,17 @@ C
 C
       IF (DISTYP .NE. 1 .AND. IADINT .GE. 0) THEN
          WRITE(LUERR,'(/A,I5)')
-     &   ' GETINT ERROR: H2AC on disk is not implemented for DISTYP =',
+     &   ' GETIN2 ERROR: H2AC on disk is not implemented for DISTYP =',
      &   DISTYP
-       CALL QUIT('GETINT: H2AC on disk not implemented for DISTYP.ne.1')
+       CALL QUIT('GETIN2: H2AC on disk not implemented for DISTYP.ne.1')
       END IF
       GO TO (1,2,3,4,5,6,99,8,9,10,11,12,13,14,15,16,17,18,
      *       19,20,13,14,23,24,25,26,27,28), DISTYP
 C            19,20,21,22,23,24,25,26), DISTYP
  99      WRITE(LUERR,'(/A,I5)')
-     *      ' GETINT: INCORRECT SPECIFICATION OF DISTYP, DISTYP:',DISTYP
+     *      ' GETIN2: INCORRECT SPECIFICATION OF DISTYP, DISTYP:',DISTYP
          CALL QTRACE(LUERR)
-         CALL QUIT('GETINT INCORRECT SPECIFICATION OF DISTYP')
+         CALL QUIT('GETIN2 INCORRECT SPECIFICATION OF DISTYP')
 C     ... DISTYP = 1
 C     ... 2-electron integrals have full index symmetry
 C         (ij/kl) = (ji/kl) = (kl/ij) = ...
@@ -718,5 +718,5 @@ C        CALL REORMT(AIN  ,AOUT ,NROW ,NCOL ,IROW  ,ICOL  )
       END IF
 C
       RETURN
-C     ... end of getint.
+C     ... end of GETIN2.
       END

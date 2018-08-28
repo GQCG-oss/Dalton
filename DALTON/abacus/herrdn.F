@@ -6586,12 +6586,12 @@ C
       DATA SPD/'S','P','D','F','G','H','I','J'/
 C
       LUTMP1 = -1
-      LUTMP2 = -1
+      LUAMFI_INP = -1
       LUSHB  = -1
-      CALL GPOPEN(
-     &     LUTMP1,'DALTON.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-      CALL GPOPEN(
-     &     LUTMP2, 'AMFI_MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUTMP1,
+     &     'DALTON.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUAMFI_INP,
+     &      'AMFI_MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       CALL GPOPEN(LUSHB, 'LUSH.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUSHB)
 C
@@ -6647,7 +6647,7 @@ Chj:  skip any additional comment lines before title lines
             ICENT = ICENT + 1
             NDEG  = NUCDEG(ICENT)
             KBCH  = JBLOCK
-            WRITE (LUTMP2,*) CHARGE(MNCENT),IQM(I)-1
+            WRITE (LUAMFI_INP,*) CHARGE(MNCENT),IQM(I)-1
             II = 0
             DO 200 J = 1, IQM(I)
                DO 210 K = 1, JCO(J,I)
@@ -6655,15 +6655,15 @@ Chj:  skip any additional comment lines before title lines
                   NNUC  = NUC(KBCH)
                   NNRC  = NRC(KBCH)
                   IF (NNUC .EQ. 0) GO TO 200
-                  WRITE (LUTMP2,*) NNUC,NNRC
+                  WRITE (LUAMFI_INP,*) NNUC,NNRC
                   ITYP = NHKOFF(J)
                   IPSTRT = IPRIM + 1
                   IPRIM =  IPRIM + NNUC
                   ITYP = ITYP + 1
                   IPRIMD = IPRIMD + 1
-                     IF (N.EQ.1) THEN
+                  IF (N.EQ.1) THEN
                      WRITE (LUTMP1,'(A1,I4,I5)') 'H', NNUC, NNRC
-                     ENDIF
+                  ENDIF
                      DO 410 M = 1, NNUC
                         IPRIMD = IPRIMD + 1
                         IF (NNRC.LE.3) THEN
@@ -6671,21 +6671,23 @@ Chj:  skip any additional comment lines before title lines
                            WRITE (LUTMP1,1050) PRIEXP(IPSTRT-1+M),
      &                          (CPRIMU(M,MM,KBCH),MM=1,NNRC)
                         ENDIF
-                           WRITE (LUTMP2,1050) PRIEXP(IPSTRT-1+M),
+                           WRITE (LUAMFI_INP,1050) PRIEXP(IPSTRT-1+M),
      &                          (CPRIMU(M,MM,KBCH),MM=1,NNRC)
                         ELSE
                         IF (N.EQ.1) THEN
                            WRITE (LUTMP1,1050) PRIEXP(IPSTRT - 1 + M),
      &                          (CPRIMU(M,MM,KBCH),MM = 1,3)
                         ENDIF
-                           WRITE (LUTMP2,1050) PRIEXP(IPSTRT - 1 + M),
+                           WRITE (LUAMFI_INP,1050)
+     &                          PRIEXP(IPSTRT - 1 + M),
      &                          (CPRIMU(M,MM,KBCH),MM = 1,3)
                            DO NLOOP = 1, INT(NNRC/3) - 1
                            IF (N.EQ.1) THEN
                               WRITE (LUTMP1,1040) (CPRIMU(M,MM,KBCH),
      &                             MM = NLOOP*3 + 1, (NLOOP + 1)*3)
                            ENDIF
-                              WRITE (LUTMP2,1040) (CPRIMU(M,MM,KBCH),
+                              WRITE (LUAMFI_INP,1040)
+     &                             (CPRIMU(M,MM,KBCH),
      &                             MM = NLOOP*3 + 1, (NLOOP + 1)*3)
                            END DO
                            IF (MOD(NNRC,3) .NE. 0) THEN
@@ -6693,7 +6695,8 @@ Chj:  skip any additional comment lines before title lines
                               WRITE (LUTMP1,1040) (CPRIMU(M,MM,KBCH),
      &                             MM = NNRC - MOD(NNRC,3) + 1, NNRC)
                            ENDIF
-                              WRITE (LUTMP2,1040) (CPRIMU(M,MM,KBCH),
+                              WRITE (LUAMFI_INP,1040)
+     &                             (CPRIMU(M,MM,KBCH),
      &                             MM = NNRC - MOD(NNRC,3) + 1, NNRC)
                            END IF
                         ENDIF
@@ -6712,13 +6715,13 @@ Chj:  skip any additional comment lines before title lines
          JBLOCK = JBLOCK + NBLCK(I)
  100  CONTINUE
 C
-      WRITE (LUTMP2,'(A)') 'END'
+      WRITE (LUAMFI_INP,'(A)') 'END'
       CALL GPCLOSE(LUTMP1,'KEEP')
-      CALL GPCLOSE(LUTMP2,'KEEP')
+      CALL GPCLOSE(LUAMFI_INP,'KEEP')
       CALL GPCLOSE(LUSHB ,'KEEP')
  1010 FORMAT(/2X,A4,3X,A4,3X,A10)
  1040 FORMAT(20X,3F20.10)
- 1050 FORMAT(F20.10,3F20.10)
+ 1050 FORMAT(G20.10,3F20.10)
       RETURN
       END
 C  /* Deck crtest */
