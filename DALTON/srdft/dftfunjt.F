@@ -32,9 +32,9 @@ C*****************************************************************************
 #include "priunit.h"
       external ESR
 
-      integer  norder
-      real*8   rhoc, grdcc, mu
-      real*8   E, d1E(5), d2E(15)
+      integer, intent(in) :: norder
+      real*8, intent(in) :: rhoc, grdcc, mu
+      real*8, intent(out) :: E, d1E(5), d2E(15)
 
       real*8   hr, hg
       real*8   rhocm, rhocp, rhocpp, grdccm, grdccp
@@ -274,10 +274,10 @@ C*****************************************************************************
       implicit none
 
       external ESRSPIN
-      integer norder
-      logical dospin
-      real*8   rhoc, rhos, mu
-      real*8   E, d1E(5), d2E(15)
+      integer, intent(in) :: norder
+      logical, intent(in) :: dospin
+      real*8, intent(in) :: rhoc, rhos, mu
+      real*8, intent(out) :: E, d1E(5), d2E(15)
 
       real*8   hrc, hrs
       real*8   rhocm, rhocp, rhosp, rhosm
@@ -390,6 +390,7 @@ C         derivative wrt rhoc and rhos -----------------------
 
       return
       end
+C*****************************************************************************
       SUBROUTINE DESRC_SPINGGA(ESRC_SPINGGA,rho,grd2,mu,norder,
      &   E,d1E,d2E)
 C*****************************************************************************
@@ -452,9 +453,9 @@ C*****************************************************************************
       implicit none
 
       external ESRC_SPINGGA
-      integer  norder
-      real*8   rho(2), grd2(3), mu
-      real*8   E, d1E(5), d2E(15)
+      integer, intent(in) :: norder
+      real*8, intent(in) :: rho(2), grd2(3), mu
+      real*8, intent(out) :: E, d1E(5), d2E(15)
 
       real*8   rhoc,  rhos,  grdcc,  grdss,  grdcs
       real*8   arhos, agrdcs
@@ -750,10 +751,10 @@ C*****************************************************************************
       implicit none
 
       external         ESRX_GGA
-      integer          norder
+      integer, intent(in) :: norder
 
-      real*8   rho(4), grd2(6), mu
-      real*8   E, d1E(5), d2E(15)
+      real*8, intent(in) :: rho(4), grd2(6), mu
+      real*8, intent(out) :: E, d1E(5), d2E(15)
       real*8   Ea, Eb, d1W(4), d2W(6) ! for derivative wrt rhoa, rhob, grdaa, grdbb
 
       real*8   rhoa,  rhoam,  rhoap,  hra
@@ -1060,13 +1061,14 @@ C     Date  : 12-02-05; revised 22-Apr-18 hjaaj
 C*****************************************************************************
       implicit none
 
-      real*8   rhoa, grdaa, mu, e
+      real*8, intent(in) :: rhoa, grdaa, mu
+      real*8, intent(out) :: e
 
-      real*8   pi,rho13,kF,s
+      real*8   rho13,kF,s
       real*8   rho, grd, exLDA, FxHSE
 
 C     constants
-      pi = 3.141592653589793d0
+      real*8, parameter :: pi = 3.141592653589793d0
 
 C     LDA exchange
       rho = 2.0d0*rhoa
@@ -2058,21 +2060,20 @@ C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
 
-      real*8   rho, grdcc, e
+      real*8, intent(in) :: rho, grdcc
+      real*8, intent(out) :: e
 
-      real*8   pi, pi2
       real*8   rho13, eLDA, epsLDA
-      real*8   gam, bet
       real*8   kF, ks, t2
       real*8   A, At2
       real*8   frac, H
 
 C     General constants
-      parameter ( pi = 3.141592653589793d0 )
-      parameter ( pi2 = 9.869604401089358d0 )
+      real*8, parameter :: pi = 3.141592653589793d0
+      real*8, parameter :: pi2 = 9.869604401089358d0
 C     PBE constants
-      parameter (gam = 0.031090690869654897d0)
-      parameter (bet = 0.066725d0)
+      real*8, parameter :: gam = 0.031090690869654897d0
+      real*8, parameter :: bet = 0.066725d0
 
 C     LDA energy
       rho13 = rho**(1.d0/3.d0)
@@ -2735,7 +2736,8 @@ C     Date  : 11-08-09
 C*****************************************************************************
       implicit none
 
-      real*8   rhoa, grdaa, mu, e
+      real*8, intent(in) :: rhoa, grdaa, mu
+      real*8, intent(out) :: e
 
       real*8   rho, rho13, grd2
       real*8   exerflda, exerfpbe
@@ -2798,10 +2800,10 @@ C     Date  : 11-08-09
 C*****************************************************************************
       implicit none
 
-      real*8  rhoc, grdcc, mu, e
+      real*8, intent(in) :: rhoc, grdcc, mu
+      real*8, intent(out) :: e
 
-      real*8  tol
-      parameter(tol=1d-12)
+      real*8, parameter :: tol=1d-12
       real*8  rho13
 
       real*8  ecerflda,eclda
@@ -2912,65 +2914,6 @@ C*****************************************************************************
       return
       end
 
-#if 0
-C*****************************************************************************
-      subroutine ESRC_PBEGWSERFSPIN(rho_c, rho_s, gamma_cc, gamma_ss,
-     & gamma_cs, mu, e)
-C*****************************************************************************
-C    PBEc functional based on the equations from the C-code DFT code in
-C    DALTON. Keeping this around for test cases of mu=0.0.
-C    NOTE: mu is always identical zero when using this subroutine, thus
-C    it should give the same results as "normal" DFT.
-C 
-C    Code generated using Sympy 1.1.1
-C
-C    Created: 4th July 2018, Erik Kjellgren
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, rho_s, gamma_cc, gamma_ss, gamma_cs
-      real*8, intent(in) :: mu
-      real*8, intent(out) :: e
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11
-      real*8 :: x12, x13, x14, x15, x16, x17, x18, x19, x20
-      call quit("Inside test routine, comment this line out to use.")
-      x0 = 1.46459188756152d0
-      x1 = 1.0/rho_c
-      x2 = x1**0.333333333333333d0/x0
-      x3 = 0.466194077035412d0*x1**0.666666666666667d0
-      x4 = 0.564189583547756d0*sqrt(x1)
-      x5 = 0.826307487110758d0*x1**0.166666666666667d0
-      x6 = (0.194159335344114d0*x2 + 1.0d0)*log(1.0d0 + 16.08182432215
-     &11d0/( 3.25955091942229d0*x2 + 0.406913004517529d0*x3 + 1.4187228
-     &1647967d0*x4 + 7.24010193431683d0*x5))
-      x7 = 0.062182d0*x6
-      x8 = rho_s**4/rho_c**4
-      x9 = rho_s*x1
-      x10 = 1.92366105093154d0*(-x9 + 1.0d0)**1.33333333333333d0 + 1.9
-     &2366105093154d0*(x9 + 1.0d0)**1.33333333333333d0 - 3.847322101863
-     &07d0
-      x11 = x10*(0.101077332976288d0*x2 + 1.0d0)*(-x8 + 1.0d0)*log(1.0
-     &d0 + 29.6085746432167d0/(3.29180480994506d0*x2 + 0.41002507094961
-     &2d0* x3 + 0.76232752193529d0*x4 + 9.87212972256927d0*x5))
-      x12 = x10*x8*(x7 - 0.03109d0*(0.186690969707574d0*x2 + 1.0d0)*lo
-     &g(1.0d0 + 32.1646831778707d0/(5.63098414909788d0*x2 + 0.516066464
-     &547863d0* x3 + 2.91521471421918d0*x4 + 13.4579137143944d0*x5)))
-      x13 = 2.14502939711103d0
-      x14 = rho_c**2.0d0
-      x15 = 0.5d0*(rho_c - 1.0d0*rho_s)**0.666666666666667d0 + 0.5d0*(
-     &rho_c + rho_s) **0.666666666666667d0
-      x16 = x15**3
-      x17 = gamma_cc*rho_c**(-1.0d0)/x15**2
-      x18 = gamma_cc**2*rho_c**(-2.0d0)/x15**4
-      x19 = exp(104.706192869308d0*x13*x14*(-0.00282845628540734d0*x11
-     & - 0.1432d0* x12 + 0.0089044624d0*x6)/x16) - 1.0d0
-      x20 = 1.0/x19
-      e = rho_c*(0.0197517897025652d0*x11 + x12 - x7 + 0.0666936695156
-     &131d0*x16* log(14.9865893973326d0*(0.00620558340543818d0*x0*x17 +
-     & 0.00123794483241921d0*x18*x20)/(0.0634992800779777d0*x13*x17*x20
-     & + 0.0185525709000164d0*x18/x19**2 + 1.0d0) + 1.0d0)/(x13*x14))
-      end subroutine
-#endif
-
 C****************************************************************************
       subroutine ESRC_PBEGWSERFSPIN(rhoc,rhos,grdcc,grdss,grdcs,mu,e)
 C*****************************************************************************
@@ -2992,11 +2935,11 @@ C     Date  : 4th-July-18; LDA was not doing spin, changed that. E.R.K
 C*****************************************************************************
       implicit none
 
-      real*8   rhoc,rhos,grdcc,grdss,grdcs,mu, e
+      real*8, intent(in) :: rhoc,rhos,grdcc,grdss,grdcs,mu
+      real*8, intent(out) :: e
       real*8   rho13, zeta
 
-      real*8   tol
-      parameter(tol=1d-12)
+      real*8, parameter :: tol=1d-12
 
       real*8   ecerflda, eclda
 
@@ -3100,13 +3043,12 @@ C*****************************************************************************
 !-------------------------------------------
       implicit none
 
-      real*8  a
-      real*8  pi, fak, fak2
+      real*8, intent(in) :: a
+      real*8, parameter :: pi = 3.141592653589793d0
+      real*8  fak, fak2
 
 ! function
       real*8   derf
-
-      pi = 3.141592653589793d0
 
       ! eta=19.0d0
       fak=2.540118935556d0*dexp(-19.0d0*a*a)
@@ -3287,17 +3229,17 @@ C     Created: 17-08-09, J. Toulouse, subroutine adapted from Molpro
 C*****************************************************************************
       implicit none
 
-      real*8   rhoa, grdaa, mu, e
+      real*8, intent(in) :: rhoa, grdaa, mu
+      real*8, intent(out) :: e
 
       real*8   derf
 
-      real*8   f13, pi, pisqrt, ckf
       real*8   rho, akf, a, a2, a3, ea
 
-      parameter(pi = 3.141592653589793d0)
-      parameter(pisqrt = 1.772453850905516d0)
-      parameter(ckf = 3.093667726280136d0)
-      parameter(f13 = 0.333333333333333d0)
+      real*8, parameter :: pi = 3.141592653589793d0
+      real*8, parameter :: pisqrt = 1.772453850905516d0
+      real*8, parameter :: ckf = 3.093667726280136d0
+      real*8, parameter :: f13 = 0.333333333333333d0
 
 C       Density and kF
         rho = 2*rhoa ! spin scaling, rho is twice the real rhoa
@@ -3354,22 +3296,21 @@ C              solution until DESRX_GGA works for both LDA and GGA.
 C*****************************************************************************
       implicit none
 
-      real*8   rhoc, rhos, mu
-      logical dospin
-      real*8   e
+      real*8, intent(in) :: rhoc, rhos, mu
+      logical, intent(in) :: dospin
+      real*8, intent(out) :: e
 
       real*8   derf
 
-      real*8   f13, pi, pisqrt, ckf
       real*8   rho, akf, a, a2, a3
 
       real*8   rhoa, rhob
       real*8   ea, eb
 
-      parameter(pi = 3.141592653589793d0)
-      parameter(pisqrt = 1.772453850905516d0)
-      parameter(ckf = 3.093667726280136d0)
-      parameter(f13 = 0.333333333333333d0)
+      real*8, parameter :: pi = 3.141592653589793d0
+      real*8, parameter :: pisqrt = 1.772453850905516d0
+      real*8, parameter :: ckf = 3.093667726280136d0
+      real*8, parameter :: f13 = 0.333333333333333d0
 C     Spin-unpolarized case
       if (.not.dospin) then
 C       Density and kF
@@ -3493,7 +3434,7 @@ C*****************************************************************************
 C*****************************************************************************
 
 C****************************************************************************
-      subroutine ESRC_LDAERFSPIN (rhoc,rhos,mu,dospin,e)
+      subroutine ESRC_LDAERFSPIN(rhoc,rhos,mu,dospin,e)
 C*****************************************************************************
 C     Short-range spin-dependent LDA correlation functional from 
 C       Paziani, Moroni, Gori-Giorgi and Bachelet, PRB 73, 155111 (2006)
@@ -3511,20 +3452,19 @@ C     Created: 18-08-09, J. Toulouse
 C*****************************************************************************
       implicit none
 
-      real*8   rhoc, rhos, mu
-      logical dospin
-      real*8   e
+      real*8, intent(in) :: rhoc, rhos, mu
+      logical, intent(in) :: dospin
+      real*8, intent(out) :: e
 
-      real*8   f13, pi, rsfac
       real*8   rs
       real*8   ec,ecd,ecz,eclr
 
       real*8   rhoa, rhob, z
       real*8   ea, eb
 
-      parameter(f13 = 0.333333333333333d0)
-      parameter(pi = 3.141592653589793d0)
-      parameter(rsfac = 0.620350490899400d0)
+      real*8, parameter :: f13 = 0.333333333333333d0
+      real*8, parameter :: pi = 3.141592653589793d0
+      real*8, parameter :: rsfac = 0.620350490899400d0
 
 C     Spin-unpolarized case
 
@@ -3555,7 +3495,7 @@ C     Spin-polarized case
       return
       end
 C****************************************************************************
-      subroutine ESRC_LDAERFSPIN_VWN5 (rhoc,rhos,mu,dospin,e)
+      subroutine ESRC_LDAERFSPIN_VWN5(rhoc,rhos,mu,dospin,e)
 C*****************************************************************************
 C     subroutine is modified version of ESRC_LDAERFSPIN
 C
@@ -3758,26 +3698,27 @@ ccc and cutoff parameter mu
 ccc gives the correlation energy of the LR gas
 ccc  => eclr
       implicit none
-      real*8   rs,z,mu,eclr,ec,ecd,ecz
+      real*8, intent(in) :: rs, z, mu
+      real*8, intent(out) :: eclr
+      real*8   ec,ecd,ecz
       real*8   alpha,cf,phi
       real*8   g0f,dpol,d2anti,d3anti,Qrpa
       real*8   coe2,coe3,coe4,coe5
       real*8   a1,a2,a3,a4,b0
-      real*8   q1a,q2a,q3a,t1a,t2a,t3a,adib
-#include "pi.h"
-!     pi=dacos(-1.d0)
+      real*8, parameter :: pi = 3.141592653589793d0
+cc parameters from the fit
+      real*8, parameter :: adib = 0.784949d0
+      real*8, parameter :: q1a  = -0.388d0
+      real*8, parameter :: q2a  = 0.676d0
+      real*8, parameter :: q3a  = 0.547d0
+      real*8, parameter :: t1a  = -4.95d0
+      real*8, parameter :: t2a  = 1.d0
+      real*8, parameter :: t3a  = 0.31d0
+      
       alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
       cf=1.d0/alpha
 
       phi=((1.d0+z)**(2.d0/3.d0)+(1.d0-z)**(2.d0/3.d0))/2.d0
-cc parameters from the fit
-      adib   = 0.784949d0
-      q1a    = -0.388d0
-      q2a    = 0.676d0
-      q3a    = 0.547d0
-      t1a    = -4.95d0
-      t2a    = 1.d0
-      t3a    = 0.31d0
 
       b0=adib*rs
 
@@ -3834,27 +3775,28 @@ C
 C     Created 2nd July 2018, Erik Kjellgren
 C*****************************************************************************
       implicit none
-      real*8   rs,z,mu,eclr,ec
+      real*8, intent(in) :: rs, z, mu
+      real*8, intent(out) :: eclr
+      real*8   ec
       real*8   alpha,cf,phi
       real*8   g0f,dpol,d2anti,d3anti,Qrpa
       real*8   coe2,coe3,coe4,coe5
       real*8   a1,a2,a3,a4,b0
-      real*8   q1a,q2a,q3a,t1a,t2a,t3a,adib
       real*8   ecVWN5
-#include "pi.h"
-!     pi=dacos(-1.d0)
+      real*8, parameter :: pi = 3.141592653589793d0
+cc parameters from the fit
+      real*8, parameter :: adib = 0.784949d0
+      real*8, parameter :: q1a  = -0.388d0
+      real*8, parameter :: q2a  = 0.676d0
+      real*8, parameter :: q3a  = 0.547d0
+      real*8, parameter :: t1a  = -4.95d0
+      real*8, parameter :: t2a  = 1.d0
+      real*8, parameter :: t3a  = 0.31d0
+
       alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
       cf=1.d0/alpha
 
       phi=((1.d0+z)**(2.d0/3.d0)+(1.d0-z)**(2.d0/3.d0))/2.d0
-cc parameters from the fit
-      adib   = 0.784949d0
-      q1a    = -0.388d0
-      q2a    = 0.676d0
-      q3a    = 0.547d0
-      t1a    = -4.95d0
-      t2a    = 1.d0
-      t3a    = 0.31d0
 
       b0=adib*rs
 
@@ -4063,17 +4005,17 @@ cc parameters from the fit
       end
 
 C*****************************************************************************
-      real*8   function g0f(x)
+      real*8 pure function g0f(x)
 C*****************************************************************************
 ccc on-top pair-distribution function
 ccc Gori-Giorgi and Perdew, PRB 64, 155102 (2001)
 ccc x -> rs
       implicit none
-      real*8   C0f,D0f,E0f,F0f,x
-      C0f             = 0.0819306d0
-      D0f             = 0.752411d0
-      E0f             = -0.0127713d0
-      F0f             = 0.00185898d0
+      real*8, intent(in) :: x
+      real*8, parameter :: C0f = 0.0819306d0
+      real*8, parameter :: D0f = 0.752411d0
+      real*8, parameter :: E0f = -0.0127713d0
+      real*8, parameter :: F0f = 0.00185898d0
       g0f=(1.d0-(0.7317d0-D0f)*x+C0f*x**2+E0f*x**3+
      $     F0f*x**4)*exp(-abs(D0f)*x)/2.d0
       return
@@ -4176,10 +4118,11 @@ c x -> rs; y -> zeta
 ccc ecd is d/drs ec
 ccc ecz is d/dz ec
       implicit none
-      real*8   f02,ff,x,y,ec,ecd,ec0,ec0d,ec1,ec1d,
-     $     aaa,G,Gd,alfac,alfacd,ecz
-#include "pi.h"
-!     pi=dacos(-1.d0)
+      real*8, intent(in) :: x, y
+      real*8, intent(out) :: ec, ecd, ecz
+      real*8   f02,ff,ec0,ec0d,ec1,ec1d,
+     $     aaa,G,Gd,alfac,alfacd
+      real*8, parameter :: pi = 3.141592653589793d0
 
       f02=4.d0/(9.d0*(2.d0**(1.d0/3.d0)-1.d0))
 
@@ -4215,11 +4158,12 @@ ccc ecz is d/dz ec
       end
 
 C*****************************************************************************
-      subroutine GPW(x,Ac,alfa1,beta1,beta2,beta3,beta4,G,Gd)
+      pure subroutine GPW(x,Ac,alfa1,beta1,beta2,beta3,beta4,G,Gd)
 C*****************************************************************************
 ccc Gd is d/drs G
       implicit none
-      real*8   G,Gd,Ac,alfa1,beta1,beta2,beta3,beta4,x
+      real*8, intent(in) :: Ac,alfa1,beta1,beta2,beta3,beta4,x
+      real*8, intent(out) :: G, Gd
       G=-2.d0*Ac*(1.d0+alfa1*x)*dlog(1.d0+1.d0/(2.d0*
      $     Ac*(beta1*x**0.5d0+
      $     beta2*x+beta3*x**1.5d0+beta4*x**2)))
