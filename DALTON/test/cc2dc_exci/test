@@ -6,11 +6,11 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dalton import Filter, TestRun
 
-#   cc2dc_exci  
+#   cc2dc_exci
 #   --------------
 #   Molecule:         H2O in a spherical cavity of radius 4.00 au
 #   Wave Function:    CC2 / cc-pVDZ
-#   Test Purpose:     Check energy, dipole moment, the first four 
+#   Test Purpose:     Check energy, dipole moment, the first four
 #                     excitation energies and transition properties.
 
 

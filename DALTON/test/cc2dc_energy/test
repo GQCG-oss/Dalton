@@ -7,6 +7,13 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dalton import Filter, TestRun
 
+#   cc2dc_energy
+#   --------------
+#   Molecule:         H2O in a spherical cavity of radius 4.00 au
+#   Wave Function:    CC2 / cc-pVDZ
+#   Test Purpose:     Check energy, dipole moment quadrupole moment and
+#                     second order electric moment.
+
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
