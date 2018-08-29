@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['cc2mm_atmvdw.dal'], ['cc2mm_atmvdw.mol'], {'out': f})
+test.run(['cc2mm_atmvdw.dal'], ['cc2mm_atmvdw.mol'], f={'out': f})
 
 sys.exit(test.return_code)

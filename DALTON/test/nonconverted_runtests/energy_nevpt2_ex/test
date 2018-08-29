@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['energy_nevpt2_ex.dal'], ['energy_nevpt2_ex.mol'], {'out': f})
+test.run(['energy_nevpt2_ex.dal'], ['energy_nevpt2_ex.mol'], f={'out': f})
 
 sys.exit(test.return_code)

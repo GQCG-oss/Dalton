@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['energy_direct_eri.dal'], ['energy_direct_eri.mol'], {'out': f})
+test.run(['energy_direct_eri.dal'], ['energy_direct_eri.mol'], f={'out': f})
 
 sys.exit(test.return_code)

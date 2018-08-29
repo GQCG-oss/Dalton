@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['rsp_g_cas.dal'], ['rsp_g_cas.mol'], {'out': f})
+test.run(['rsp_g_cas.dal'], ['rsp_g_cas.mol'], f={'out': f})
 
 sys.exit(test.return_code)

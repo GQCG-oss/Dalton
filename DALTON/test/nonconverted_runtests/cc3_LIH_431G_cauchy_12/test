@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['cc3_LIH_431G_cauchy_12.dal'], ['cc3_LIH_431G_cauchy_12.mol'], {'out': f})
+test.run(['cc3_LIH_431G_cauchy_12.dal'], ['cc3_LIH_431G_cauchy_12.mol'], f={'out': f})
 
 sys.exit(test.return_code)
