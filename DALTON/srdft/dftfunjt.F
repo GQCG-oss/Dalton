@@ -21,6 +21,7 @@ C
 C   Written by, Erik R. Kjellgren
 C   Based DESRC_SPINGGA by H. J. Aa. Jensen and Erik D. Hedegaard
 C   Generated: August 29, 2018
+C   Code have been modified to be different from the generated.
 C*****************************************************************************
       implicit none
       external ESRC_LDA
@@ -48,12 +49,15 @@ C*****************************************************************************
       end if
       
       hr_c = 1.d-4*rho_c
+
+      rho_cp = rho_c + hr_c
+      rho_cm = rho_c - hr_c
       
       call ESRC_LDA(rho_c,dummy_rho_s,mu,E)
       if (norder .ge. 1) then
          if (hr_c .gt. 0.0d0) then
             call ESRC_LDA(rho_cp,dummy_rho_s,mu,Ep_1)
-            call ESRC_LDA(rho_c,dummy_rho_s,mu,Em_1)
+            call ESRC_LDA(rho_cm,dummy_rho_s,mu,Em_1)
          end if
       end if
       if (norder .ge. 1) then
@@ -105,6 +109,7 @@ C*****************************************************************************
       if (dabs(rho_s) .gt. rho_c) then
          call quit('DESRC_SPINLDA ERROR: |rho_s| > rho_c')
       end if
+      
       if (norder .ge. 1) then
          d1E(:) = 0.0d0
       end if
@@ -119,22 +124,27 @@ C*****************************************************************************
       hr_c = 1.d-4*rho_c
       hr_s = 1.d-4*rho_c
       
+      rho_cp = rho_c + hr_c
+      rho_cm = rho_c - hr_c
+      rho_sp = rho_s + hr_s
+      rho_sm = rho_s - hr_s
+      
       call ESRC_SPINLDA(rho_c,rho_s,mu,E)
       if (norder .ge. 1) then
          if (hr_c .gt. 0.0d0) then
             call ESRC_SPINLDA(rho_cp,rho_s,mu,Ep_1)
-            call ESRC_SPINLDA(rho_c,rho_s,mu,Em_1)
+            call ESRC_SPINLDA(rho_cm,rho_s,mu,Em_1)
          end if
          if (hr_s .gt. 0.0d0) then
             call ESRC_SPINLDA(rho_c,rho_sp,mu,Ep_2)
-            call ESRC_SPINLDA(rho_c,rho_s,mu,Em_2)
+            call ESRC_SPINLDA(rho_c,rho_sm,mu,Em_2)
          end if
       end if
       if (norder .ge. 2) then
          if (hr_s .gt. 0.0d0) then
             if (hr_c .gt. 0.0d0) then
                call ESRC_SPINLDA(rho_cp,rho_sp,mu,Epp_2_1)
-               call ESRC_SPINLDA(rho_cm,rho_s,mu,Emm_2_1)
+               call ESRC_SPINLDA(rho_cm,rho_sm,mu,Emm_2_1)
             end if
          end if
       end if
@@ -156,6 +166,108 @@ C*****************************************************************************
      &         d0*hr_s*hr_c)
             end if
             d2E(3)=(Ep_2-2.0d0*E+Em_2)/(hr_s**2)
+         end if
+      end if
+      
+      end subroutine
+
+C*****************************************************************************
+      subroutine DESRC_GGA(ESRC_GGA, rho, grad2, mu, norder, E, d1E, d2E
+     &)
+C*****************************************************************************
+C   Finite difference code for spin-unpolarized GGA functiontionals.
+C   Return up to second order derivative.
+C   
+C   Input  : rho(1) : total density
+C            grad2(1) : grad_c . grad_c
+C            mu     : range seperation parameter
+C            norder : order of derivative (up to two)
+C            ESRC_GGA : Functional routine
+C   Output : E      : energy
+C            d1E    : first derivative of energy
+C            d2E    : second derivative of energy
+C   See notes in SRDFTLTRJT() for ordering of derivatives.
+C   
+C   Written by, Erik R. Kjellgren
+C   Based DESRC_SPINGGA by H. J. Aa. Jensen and Erik D. Hedegaard
+C   Generated: August 29, 2018
+C*****************************************************************************
+      implicit none
+      external ESRC_GGA
+      
+      integer, intent(in) :: norder
+      real*8, intent(in) :: mu, rho(2), grad2(3)
+      real*8, intent(out) :: E, d1E(5), d2E(15)
+      
+      real*8 :: rho_c, rho_cp, rho_cm, gamma_cc, gamma_ccp, gamma_ccm, E
+     &p_1, Em_1, Epp_3_1, Emm_3_1, Ep_3, Em_3, hr_c, hg_cc
+      
+      rho_c = rho(1)
+      gamma_cc = grad2(1)
+      if (gamma_cc .lt. 0.0d0) then
+         call quit('DESRC_GGA ERROR: gamma_cc negative')
+      end if
+      
+      if (norder .ge. 1) then
+         d1E(:) = 0.0d0
+      end if
+      if (norder .ge. 2) then
+         d2E(:) = 0.0d0
+      end if
+      if (rho_c .lt. 1.d-10) then
+         E = 0.0d0
+         return
+      end if
+      
+      hr_c = 1.d-4*rho_c
+      if (gamma_cc .lt. 1.d-10) then
+         hg_cc = 0.0d0
+         else
+         hg_cc = 1.d-4*gamma_cc
+      end if
+      
+      rho_cp = rho_c + hr_c
+      rho_cm = rho_c - hr_c
+      gamma_ccp = gamma_cc + hg_cc
+      gamma_ccm = gamma_cc - hg_cc
+      
+      call ESRC_GGA(rho_c,gamma_cc,mu,E)
+      if (norder .ge. 1) then
+         if (hr_c .gt. 0.0d0) then
+            call ESRC_GGA(rho_cp,gamma_cc,mu,Ep_1)
+            call ESRC_GGA(rho_cm,gamma_cc,mu,Em_1)
+         end if
+         if (hg_cc .gt. 0.0d0) then
+            call ESRC_GGA(rho_c,gamma_ccp,mu,Ep_3)
+            call ESRC_GGA(rho_c,gamma_ccm,mu,Em_3)
+         end if
+      end if
+      if (norder .ge. 2) then
+         if (hg_cc .gt. 0.0d0) then
+            if (hr_c .gt. 0.0d0) then
+               call ESRC_GGA(rho_cp,gamma_ccp,mu,Epp_3_1)
+               call ESRC_GGA(rho_cm,gamma_ccm,mu,Emm_3_1)
+            end if
+         end if
+      end if
+      if (norder .ge. 1) then
+         if (hr_c .gt. 0.0d0) then
+            d1E(1)=(Ep_1-Em_1)/(2.0d0*hr_c)
+         end if
+         if (hg_cc .gt. 0.0d0) then
+            d1E(3)=(Ep_3-Em_3)/(2.0d0*hg_cc)
+         end if
+      end if
+      if (norder .ge. 2) then
+         if (hr_c .gt. 0.0d0) then
+            d2E(1)=(Ep_1-2.0d0*E+Em_1)/(hr_c**2)
+         end if
+         if (hg_cc .gt. 0.0d0) then
+            if (hr_c .gt. 0.0d0) then
+               d2E(4)=(Epp_3_1-Ep_3-Ep_1+2.0d0*E-Em_3-Em_1+Emm_3_1)/(2.0
+     &         d0*hg_cc*hr_c)
+            end if
+            d2E(6)=(Ep_3-2.0d0*E+Em_3)/(hg_cc**2)
          end if
       end if
       
@@ -214,6 +326,7 @@ C*****************************************************************************
       if (gamma_ss .lt. 0.0d0) then
          call quit('DESRC_SPINGGA ERROR: gamma_ss negative')
       end if
+      
       if (norder .ge. 1) then
          d1E(:) = 0.0d0
       end if
@@ -227,53 +340,64 @@ C*****************************************************************************
       
       hr_c = 1.d-4*rho_c
       hr_s = 1.d-4*rho_c
-      if (gamma_cc .lt. 1.d-20) then
+      if (gamma_cc .lt. 1.d-10) then
          hg_cc = 0.0d0
          else
          hg_cc = 1.d-4*gamma_cc
       end if
-      if (gamma_ss .lt. 1.d-20) then
+      if (gamma_ss .lt. 1.d-10) then
          hg_ss = 0.0d0
          else
          hg_ss = 1.d-4*gamma_ss
       end if
-      if (dabs(gamma_cs) .lt. 1.d-20) then
+      if (dabs(gamma_cs) .lt. 1.d-10) then
          hg_cs = 0.0d0
          else
          hg_cs = 1.d-4*dabs(gamma_cs)
       end if
+      
+      rho_cp = rho_c + hr_c
+      rho_cm = rho_c - hr_c
+      rho_sp = rho_s + hr_s
+      rho_sm = rho_s - hr_s
+      gamma_ccp = gamma_cc + hg_cc
+      gamma_ccm = gamma_cc - hg_cc
+      gamma_ssp = gamma_ss + hg_ss
+      gamma_ssm = gamma_ss - hg_ss
+      gamma_csp = gamma_cs + hg_cs
+      gamma_csm = gamma_cs - hg_cs
       
       call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ss,gamma_cs,mu,E)
       if (norder .ge. 1) then
          if (hr_c .gt. 0.0d0) then
             call ESRC_SPINGGA(rho_cp,rho_s,gamma_cc,gamma_ss,gamma_cs,mu
      &      ,Ep_1)
-            call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ss,gamma_cs,mu,
-     &      Em_1)
+            call ESRC_SPINGGA(rho_cm,rho_s,gamma_cc,gamma_ss,gamma_cs,mu
+     &      ,Em_1)
          end if
          if (hr_s .gt. 0.0d0) then
             call ESRC_SPINGGA(rho_c,rho_sp,gamma_cc,gamma_ss,gamma_cs,mu
      &      ,Ep_2)
-            call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ss,gamma_cs,mu,
-     &      Em_2)
+            call ESRC_SPINGGA(rho_c,rho_sm,gamma_cc,gamma_ss,gamma_cs,mu
+     &      ,Em_2)
          end if
          if (hg_cc .gt. 0.0d0) then
             call ESRC_SPINGGA(rho_c,rho_s,gamma_ccp,gamma_ss,gamma_cs,mu
      &      ,Ep_3)
-            call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ss,gamma_cs,mu,
-     &      Em_3)
+            call ESRC_SPINGGA(rho_c,rho_s,gamma_ccm,gamma_ss,gamma_cs,mu
+     &      ,Em_3)
          end if
          if (hg_ss .gt. 0.0d0) then
             call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ssp,gamma_cs,mu
      &      ,Ep_4)
-            call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ss,gamma_cs,mu,
-     &      Em_4)
+            call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ssm,gamma_cs,mu
+     &      ,Em_4)
          end if
          if (hg_cs .gt. 0.0d0) then
             call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ss,gamma_csp,mu
      &      ,Ep_5)
-            call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ss,gamma_cs,mu,
-     &      Em_5)
+            call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ss,gamma_csm,mu
+     &      ,Em_5)
          end if
       end if
       if (norder .ge. 2) then
@@ -281,42 +405,42 @@ C*****************************************************************************
             if (hr_c .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_cp,rho_sp,gamma_cc,gamma_ss,gamma_c
      &         s,mu,Epp_2_1)
-               call ESRC_SPINGGA(rho_cm,rho_s,gamma_cc,gamma_ss,gamma_cs
-     &         ,mu,Emm_2_1)
+               call ESRC_SPINGGA(rho_cm,rho_sm,gamma_cc,gamma_ss,gamma_c
+     &         s,mu,Emm_2_1)
             end if
          end if
          if (hg_cc .gt. 0.0d0) then
             if (hr_c .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_cp,rho_s,gamma_ccp,gamma_ss,gamma_c
      &         s,mu,Epp_3_1)
-               call ESRC_SPINGGA(rho_cm,rho_s,gamma_cc,gamma_ss,gamma_cs
-     &         ,mu,Emm_3_1)
+               call ESRC_SPINGGA(rho_cm,rho_s,gamma_ccm,gamma_ss,gamma_c
+     &         s,mu,Emm_3_1)
             end if
             if (hr_s .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_c,rho_sp,gamma_ccp,gamma_ss,gamma_c
      &         s,mu,Epp_3_2)
-               call ESRC_SPINGGA(rho_c,rho_sm,gamma_cc,gamma_ss,gamma_cs
-     &         ,mu,Emm_3_2)
+               call ESRC_SPINGGA(rho_c,rho_sm,gamma_ccm,gamma_ss,gamma_c
+     &         s,mu,Emm_3_2)
             end if
          end if
          if (hg_ss .gt. 0.0d0) then
             if (hr_c .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_cp,rho_s,gamma_cc,gamma_ssp,gamma_c
      &         s,mu,Epp_4_1)
-               call ESRC_SPINGGA(rho_cm,rho_s,gamma_cc,gamma_ss,gamma_cs
-     &         ,mu,Emm_4_1)
+               call ESRC_SPINGGA(rho_cm,rho_s,gamma_cc,gamma_ssm,gamma_c
+     &         s,mu,Emm_4_1)
             end if
             if (hr_s .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_c,rho_sp,gamma_cc,gamma_ssp,gamma_c
      &         s,mu,Epp_4_2)
-               call ESRC_SPINGGA(rho_c,rho_sm,gamma_cc,gamma_ss,gamma_cs
-     &         ,mu,Emm_4_2)
+               call ESRC_SPINGGA(rho_c,rho_sm,gamma_cc,gamma_ssm,gamma_c
+     &         s,mu,Emm_4_2)
             end if
             if (hg_cc .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_c,rho_s,gamma_ccp,gamma_ssp,gamma_c
      &         s,mu,Epp_4_3)
-               call ESRC_SPINGGA(rho_c,rho_s,gamma_ccm,gamma_ss,gamma_cs
-     &         ,mu,Emm_4_3)
+               call ESRC_SPINGGA(rho_c,rho_s,gamma_ccm,gamma_ssm,gamma_c
+     &         s,mu,Emm_4_3)
             end if
          end if
          if (hg_cs .gt. 0.0d0) then
@@ -324,25 +448,25 @@ C*****************************************************************************
                call ESRC_SPINGGA(rho_cp,rho_s,gamma_cc,gamma_ss,gamma_cs
      &         p,mu,Epp_5_1)
                call ESRC_SPINGGA(rho_cm,rho_s,gamma_cc,gamma_ss,gamma_cs
-     &         ,mu,Emm_5_1)
+     &         m,mu,Emm_5_1)
             end if
             if (hr_s .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_c,rho_sp,gamma_cc,gamma_ss,gamma_cs
      &         p,mu,Epp_5_2)
                call ESRC_SPINGGA(rho_c,rho_sm,gamma_cc,gamma_ss,gamma_cs
-     &         ,mu,Emm_5_2)
+     &         m,mu,Emm_5_2)
             end if
             if (hg_cc .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_c,rho_s,gamma_ccp,gamma_ss,gamma_cs
      &         p,mu,Epp_5_3)
                call ESRC_SPINGGA(rho_c,rho_s,gamma_ccm,gamma_ss,gamma_cs
-     &         ,mu,Emm_5_3)
+     &         m,mu,Emm_5_3)
             end if
             if (hg_ss .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ssp,gamma_cs
      &         p,mu,Epp_5_4)
                call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ssm,gamma_cs
-     &         ,mu,Emm_5_4)
+     &         m,mu,Emm_5_4)
             end if
          end if
       end if
@@ -418,102 +542,6 @@ C*****************************************************************************
      &         0d0*hg_cs*hg_ss)
             end if
             d2E(15)=(Ep_5-2.0d0*E+Em_5)/(hg_cs**2)
-         end if
-      end if
-      
-      end subroutine
-
-C*****************************************************************************
-      subroutine DESRC_GGA(ESRC_GGA, rho, grad2, mu, norder, E, d1E, d2E
-     &)
-C*****************************************************************************
-C   Finite difference code for spin-unpolarized GGA functiontionals.
-C   Return up to second order derivative.
-C   
-C   Input  : rho(1) : total density
-C            grad2(1) : grad_c . grad_c
-C            mu     : range seperation parameter
-C            norder : order of derivative (up to two)
-C            ESRC_GGA : Functional routine
-C   Output : E      : energy
-C            d1E    : first derivative of energy
-C            d2E    : second derivative of energy
-C   See notes in SRDFTLTRJT() for ordering of derivatives.
-C   
-C   Written by, Erik R. Kjellgren
-C   Based DESRC_SPINGGA by H. J. Aa. Jensen and Erik D. Hedegaard
-C   Generated: August 29, 2018
-C*****************************************************************************
-      implicit none
-      external ESRC_GGA
-      
-      integer, intent(in) :: norder
-      real*8, intent(in) :: mu, rho(2), grad2(3)
-      real*8, intent(out) :: E, d1E(5), d2E(15)
-      
-      real*8 :: rho_c, rho_cp, rho_cm, gamma_cc, gamma_ccp, gamma_ccm, E
-     &p_1, Em_1, Epp_3_1, Emm_3_1, Ep_3, Em_3, hr_c, hg_cc
-      
-      rho_c = rho(1)
-      gamma_cc = grad2(1)
-      if (gamma_cc .lt. 0.0d0) then
-         call quit('DESRC_GGA ERROR: gamma_cc negative')
-      end if
-      if (norder .ge. 1) then
-         d1E(:) = 0.0d0
-      end if
-      if (norder .ge. 2) then
-         d2E(:) = 0.0d0
-      end if
-      if (rho_c .lt. 1.d-10) then
-         E = 0.0d0
-         return
-      end if
-      
-      hr_c = 1.d-4*rho_c
-      if (gamma_cc .lt. 1.d-20) then
-         hg_cc = 0.0d0
-         else
-         hg_cc = 1.d-4*gamma_cc
-      end if
-      
-      call ESRC_GGA(rho_c,gamma_cc,mu,E)
-      if (norder .ge. 1) then
-         if (hr_c .gt. 0.0d0) then
-            call ESRC_GGA(rho_cp,gamma_cc,mu,Ep_1)
-            call ESRC_GGA(rho_c,gamma_cc,mu,Em_1)
-         end if
-         if (hg_cc .gt. 0.0d0) then
-            call ESRC_GGA(rho_c,gamma_ccp,mu,Ep_3)
-            call ESRC_GGA(rho_c,gamma_cc,mu,Em_3)
-         end if
-      end if
-      if (norder .ge. 2) then
-         if (hg_cc .gt. 0.0d0) then
-            if (hr_c .gt. 0.0d0) then
-               call ESRC_GGA(rho_cp,gamma_ccp,mu,Epp_3_1)
-               call ESRC_GGA(rho_cm,gamma_cc,mu,Emm_3_1)
-            end if
-         end if
-      end if
-      if (norder .ge. 1) then
-         if (hr_c .gt. 0.0d0) then
-            d1E(1)=(Ep_1-Em_1)/(2.0d0*hr_c)
-         end if
-         if (hg_cc .gt. 0.0d0) then
-            d1E(3)=(Ep_3-Em_3)/(2.0d0*hg_cc)
-         end if
-      end if
-      if (norder .ge. 2) then
-         if (hr_c .gt. 0.0d0) then
-            d2E(1)=(Ep_1-2.0d0*E+Em_1)/(hr_c**2)
-         end if
-         if (hg_cc .gt. 0.0d0) then
-            if (hr_c .gt. 0.0d0) then
-               d2E(4)=(Epp_3_1-Ep_3-Ep_1+2.0d0*E-Em_3-Em_1+Emm_3_1)/(2.0
-     &         d0*hg_cc*hr_c)
-            end if
-            d2E(6)=(Ep_3-2.0d0*E+Em_3)/(hg_cc**2)
          end if
       end if
       
@@ -2808,11 +2836,11 @@ C*****************************************************************************
  
 !     short-range LDA energy (order = 0)
       rho13 = rhoc**(1.d0/3.d0)
-      call ESRC_LDAERFSPIN(rhoc,0.0d0,mu,.false.,e)
+      call ESRC_LDAERFSPIN(rhoc,0.0d0,mu,e)
       ecerflda =  e
 
 !     full-range LDA energy
-      call ESRC_LDAERFSPIN(rhoc,0.0d0,0.0d0,.false.,e)
+      call ESRC_LDAERFSPIN(rhoc,0.0d0,0.0d0,e)
       eclda = e
 
       alpha=2.78d0
@@ -2879,10 +2907,10 @@ C*****************************************************************************
 C     LDA energy ----
 !     In ESRC_PBEGWS VCSRLDA is used for the same purpose, but
 !     as VCSRLDA does not include rhos ESRX_LDAERFSPIN is used instead
-      call ESRC_LDAERFSPIN(rhoc,rhos,mu,.true.,ecerflda)
+      call ESRC_LDAERFSPIN(rhoc,rhos,mu,ecerflda)
 
       ! full range LDA energy (mu = 0.0)
-      call ESRC_LDAERFSPIN(rhoc,rhos,0.0d0,.true.,eclda)
+      call ESRC_LDAERFSPIN(rhoc,rhos,0.0d0,eclda)
 
 !     Spin polarisation
 !     Define zeta
@@ -3201,7 +3229,7 @@ C       divide by two because of spin scaling
       return
       end
 C****************************************************************************
-      subroutine ESRX_LDAERFSPIN (rhoc,rhos,mu,dospin,e)
+      subroutine ESRX_LDAERFSPIN(rhoc,rhos,mu,e)
 C*****************************************************************************
 C     Short-range spin-dependent LDA exchange functional
 C       obtained by spin-scaling Ex[na,nb] = 1/2 (Ex[na]+Ex[nb])
@@ -3223,22 +3251,20 @@ C*****************************************************************************
       implicit none
 
       real*8, intent(in) :: rhoc, rhos, mu
-      logical, intent(in) :: dospin
       real*8, intent(out) :: e
 
       real*8   derf
-
       real*8   rho, akf, a, a2, a3
-
       real*8   rhoa, rhob
       real*8   ea, eb
-
       real*8, parameter :: pi = 3.141592653589793d0
       real*8, parameter :: pisqrt = 1.772453850905516d0
       real*8, parameter :: ckf = 3.093667726280136d0
       real*8, parameter :: f13 = 0.333333333333333d0
+
 C     Spin-unpolarized case
-      if (.not.dospin) then
+      ! 1.0d-15 is basically zero
+      if (rhos .lt. 1.0d-15) then
 C       Density and kF
         rho = rhoc
         akf = ckf*(rho**f13)
@@ -3360,7 +3386,7 @@ C*****************************************************************************
 C*****************************************************************************
 
 C****************************************************************************
-      subroutine ESRC_LDAERFSPIN(rhoc,rhos,mu,dospin,e)
+      subroutine ESRC_LDAERFSPIN(rhoc,rhos,mu,e)
 C*****************************************************************************
 C     Short-range spin-dependent LDA correlation functional from 
 C       Paziani, Moroni, Gori-Giorgi and Bachelet, PRB 73, 155111 (2006)
@@ -3379,25 +3405,24 @@ C*****************************************************************************
       implicit none
 
       real*8, intent(in) :: rhoc, rhos, mu
-      logical, intent(in) :: dospin
       real*8, intent(out) :: e
 
       real*8   rs
       real*8   ec,ecd,ecz,eclr
-
       real*8   rhoa, rhob, z
       real*8   ea, eb
-
       real*8, parameter :: f13 = 0.333333333333333d0
       real*8, parameter :: pi = 3.141592653589793d0
       real*8, parameter :: rsfac = 0.620350490899400d0
 
 C     Spin-unpolarized case
-
-      if (.not.dospin) then
+      ! this should be the condition instead
+      ! of giving it as an input
+      !  - E.R.K
+      ! 1.0d-15 is basically zero
+      if (rhos .lt. 1.0d-15) then
 
         rs = rsfac/(rhoc**f13)
-
         call ecPW92(rs,0.0d0,ec,ecd,ecz)
         call ecorrlr(rs,0.0d0,mu,eclr)
         e=(ec-eclr)*rhoc
@@ -3421,7 +3446,7 @@ C     Spin-polarized case
       return
       end
 C****************************************************************************
-      subroutine ESRC_LDAERFSPIN_VWN5(rhoc,rhos,mu,dospin,e)
+      subroutine ESRC_LDAERFSPIN_VWN5(rhoc,rhos,mu,e)
 C*****************************************************************************
 C     subroutine is modified version of ESRC_LDAERFSPIN
 C
@@ -3437,28 +3462,23 @@ C*****************************************************************************
       implicit none
 
       real*8, intent(in) :: rhoc, rhos, mu
-      logical, intent(in) :: dospin
       real*8, intent(out) :: e
 
-      real*8   f13, pi, rsfac
       real*8   rs
       real*8   ec,eclr
-
       real*8   rhoa, rhob, z
       real*8   ea, eb
-
       real*8   ecVWN5
-
-      parameter(f13 = 0.333333333333333d0)
-      parameter(pi = 3.141592653589793d0)
-      parameter(rsfac = 0.620350490899400d0)
+      real*8, parameter :: f13 = 0.333333333333333d0
+      real*8, parameter :: pi = 3.141592653589793d0
+      real*8, parameter :: rsfac = 0.620350490899400d0
 
 C     Spin-unpolarized case
 
-      if (.not.dospin) then
+      ! 1.0d-15 is basically zero
+      if (rhos .lt. 1.0d-15) then
 
         rs = rsfac/(rhoc**f13)
-
         ec = ecVWN5(rs,0.0d0)
         call ecorrlrVWN5(rs,0.0d0,mu,eclr)
         e=(ec-eclr)*rhoc
@@ -3488,8 +3508,11 @@ C*****************************************************************************
       real*8   rhoc, rhos, VLAMBDA
       real*8   e
       logical dospin
-
-      call ESRC_LDAERFSPIN(rhoc,rhos,0.d0,dospin,e)
+      if (dospin) then
+         call ESRC_LDAERFSPIN(rhoc,rhos,0.d0,e)
+      else
+         call ESRC_LDAERFSPIN(rhoc,0.0d0,0.d0,e)
+      end if 
       e = (1.d0 - VLAMBDA**2) * e
 
       return
