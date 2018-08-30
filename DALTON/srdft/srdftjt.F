@@ -121,7 +121,6 @@ C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
 #endif
 
       IPRINT = MAX(IPRINT_in,SRDFT_DEBUG)
-
 !     Debug
       IF (IPRINT .GE. 5) THEN
       WRITE(LUPRI,*) 'SRDFT1JT: entering, ND_SIM = ',ND_SIM
