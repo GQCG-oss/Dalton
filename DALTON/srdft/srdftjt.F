@@ -631,11 +631,10 @@ c  Exchange  ------------------------------------------------------------
 !     LDA exchange functional (to fit with corresponding correlation
 !     functional) - see explanation with DOSRC_LDA_PW92
       IF(DOSRX_LDA_PW92 .OR. DOSRX_LDA_S) THEN
-        ! edh: current DESR_XSPINGGA routine does not work for LDA
-        ! for now, we rely on old DESRSPIN routine
-        ! TODO Generalize DESRX_SPINGGA routine to LDA?
-!       call DESRX_SPINGGA(ESRX_LDAERF,rho,grd2,CHIVAL,
-!    >                     norder,Ex,d1Ex,d2Ex)
+        ! these LDA exchange functional are programmed with
+        ! total- and spin densities instead of alpha-
+        ! and beta densities. Therefore use DESRC instead
+        ! of DESRX.
         if (triplet .or. dft_spindns) then
            call DESRC_SPINLDA(ESRX_LDAERFSPIN,rho,CHIVAL,
      >                        norder,Ex,d1Ex,d2Ex)
@@ -647,25 +646,25 @@ c  Exchange  ------------------------------------------------------------
 
 !     short-range exchange PBE of HSE
       IF(DOSRX_PBEHSE) THEN
-        call DESRX_SPINGGA(ESRX_PBEHSEERF,rho,grd2,CHIVAL,
+        call DESRX_BOTHGGA(ESRX_PBEHSEERF,rho,grd2,CHIVAL,
      >                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange PBE of TCS
       IF(DOSRX_PBETCS) THEN
-        call DESRX_SPINGGA(ESRX_PBETCSERF,rho,grd2,CHIVAL,
+        call DESRX_BOTHGGA(ESRX_PBETCSERF,rho,grd2,CHIVAL,
      >                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange PBE of GWS ! JT 11-08-09
       IF(DOSRX_PBEGWS .OR. DOSRX_PBEGWS_S) THEN
-        call DESRX_SPINGGA(ESRX_PBEGWSERF,rho,grd2,CHIVAL,
+        call DESRX_BOTHGGA(ESRX_PBEGWSERF,rho,grd2,CHIVAL,
      >                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange RI
       IF(DOSRX_PBERI) THEN ! added Manu 01-02-2006
-        call DESRX_SPINGGA(ESRX_PBERIERF,rho,grd2,CHIVAL,
+        call DESRX_BOTHGGA(ESRX_PBERIERF,rho,grd2,CHIVAL,
      >                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 

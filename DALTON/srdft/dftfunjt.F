@@ -6,7 +6,7 @@ C File: srdft/dftfunjt.F
 C*****************************************************************************
       subroutine DESRC_LDA(ESRC_LDA, rho, mu, norder, E, d1E, d2E)
 C*****************************************************************************
-C   Finite difference code for spin-unpolarized LDA functiontionals.
+C   Finite difference code for spin-unpolarized LDA correlation functiontionals.
 C   Return up to second order derivative.
 C   
 C   Input  : rho(1) : total density
@@ -21,7 +21,7 @@ C
 C   Written by, Erik R. Kjellgren
 C   Based DESRC_SPINGGA by H. J. Aa. Jensen and Erik D. Hedegaard
 C   Generated: August 29, 2018
-C   Code have been modified to be different from the generated.
+C   Modified after generation: dummy_rho_s
 C*****************************************************************************
       implicit none
       external ESRC_LDA
@@ -77,7 +77,7 @@ C*****************************************************************************
       subroutine DESRC_SPINLDA(ESRC_SPINLDA, rho, mu, norder, E, d1E, d2
      &E)
 C*****************************************************************************
-C   Finite difference code for spin-polarized LDA functiontionals.
+C   Finite difference code for spin-polarized LDA correlation functiontionals.
 C   Return up to second order derivative.
 C   
 C   Input  : rho(1) : total density
@@ -175,7 +175,7 @@ C*****************************************************************************
       subroutine DESRC_GGA(ESRC_GGA, rho, grad2, mu, norder, E, d1E, d2E
      &)
 C*****************************************************************************
-C   Finite difference code for spin-unpolarized GGA functiontionals.
+C   Finite difference code for spin-unpolarized GGA correlation functiontionals.
 C   Return up to second order derivative.
 C   
 C   Input  : rho(1) : total density
@@ -222,7 +222,7 @@ C*****************************************************************************
       hr_c = 1.d-4*rho_c
       if (gamma_cc .lt. 1.d-10) then
          hg_cc = 0.0d0
-         else
+      else
          hg_cc = 1.d-4*gamma_cc
       end if
       
@@ -277,7 +277,7 @@ C*****************************************************************************
       subroutine DESRC_SPINGGA(ESRC_SPINGGA, rho, grad2, mu, norder, E, 
      &d1E, d2E)
 C*****************************************************************************
-C   Finite difference code for spin-polarized GGA functiontionals.
+C   Finite difference code for spin-polarized GGA correlation functiontionals.
 C   Return up to second order derivative.
 C   
 C   Input  : rho(1) : total density
@@ -342,17 +342,17 @@ C*****************************************************************************
       hr_s = 1.d-4*rho_c
       if (gamma_cc .lt. 1.d-10) then
          hg_cc = 0.0d0
-         else
+      else
          hg_cc = 1.d-4*gamma_cc
       end if
       if (gamma_ss .lt. 1.d-10) then
          hg_ss = 0.0d0
-         else
+      else
          hg_ss = 1.d-4*gamma_ss
       end if
       if (dabs(gamma_cs) .lt. 1.d-10) then
          hg_cs = 0.0d0
-         else
+      else
          hg_cs = 1.d-4*dabs(gamma_cs)
       end if
       
@@ -547,6 +547,358 @@ C*****************************************************************************
       
       end subroutine
 
+C*****************************************************************************
+      subroutine DESRX_BOTHLDA(ESRX_BOTHLDA, rho, mu, norder, E, d1E, d2
+     &E)
+C*****************************************************************************
+C   Finite difference code for spin-polarized and spin-unpolarized LDA exchange functiontionals.
+C   Return up to second order derivative.
+C   
+C   Input  : rho(3) : alpha density
+C            rho(4) : beta density
+C            mu     : range seperation parameter
+C            norder : order of derivative (up to two)
+C            ESRX_BOTHLDA : Functional routine
+C   Output : E      : energy
+C            d1E    : first derivative of energy
+C            d2E    : second derivative of energy
+C   See notes in SRDFTLTRJT() for ordering of derivatives.
+C   
+C   Written by, Erik R. Kjellgren
+C   Based DESRX_SPINGGA by H. J. Aa. Jensen and Erik D. Hedegaard
+C   Generated: August 30, 2018
+C   Modified after generation: call_counter
+C*****************************************************************************
+      implicit none
+      external ESRX_BOTHLDA
+#include "priunit.h"      
+      integer, intent(in) :: norder
+      real*8, intent(in) :: mu, rho(4)
+      real*8, intent(out) :: E, d1E(5), d2E(15)
+      
+      integer, save :: call_counter = 0
+      logical :: alpha_not_equal_beta
+      real*8 :: rho_a, rho_ap, rho_am, rho_b, rho_bp, rho_bm, Ep_1, Em_1
+     &, Epp_2_1, Emm_2_1, Ep_2, Em_2, hr_a, hr_b, Ea, Eb, d1Eab(5), d2Ea
+     &b(15)
+      
+      call_counter = call_counter + 1
+      if (call_counter .eq. 1) then
+        write(lupri,*) 'DESRX_BOTHLDA: WARNING!'
+        write(lupri,*) 'DESRX_BOTHLDA: Routine not covered by ctest set'
+      end if
+
+      rho_a = rho(3)
+      rho_b = rho(4)
+      
+      if (dabs(rho_a - rho_b) .le. 1.d-14) then
+         alpha_not_equal_beta = .false.
+      else
+         alpha_not_equal_beta = .true.
+      end if
+      
+      E = 0.0d0
+      Ea = 0.0d0
+      if (norder .ge. 1) then
+         d1Eab(:) = 0.0d0
+         d1E(:) = 0.0d0
+      end if
+      if (norder .ge. 2) then
+         d2Eab(:) = 0.0d0
+         d2E(:) = 0.0d0
+      end if
+      
+      if (rho_a .lt. 1.d-10) then
+         hr_a = 0.0d0
+      else
+         hr_a = 1.d-4*rho_a
+      end if
+      rho_ap = rho_a + hr_a
+      rho_am = rho_a - hr_a
+      
+      if (alpha_not_equal_beta) then
+         Eb = 0.0d0
+         if (rho_b .lt. 1.d-10) then
+            hr_b = 0.0d0
+         else
+            hr_b = 1.d-4*rho_b
+         end if
+         rho_bp = rho_b + hr_b
+         rho_bm = rho_b - hr_b
+      end if
+      
+      call ESRX_BOTHLDA(rho_a,mu,Ea)
+      if (alpha_not_equal_beta) then
+         call ESRX_BOTHLDA(rho_b,mu,Eb)
+         E = Ea + Eb
+      else
+         E = 2.0d0*Ea
+      end if
+      if (norder .ge. 1) then
+         if (hr_a .gt. 0.0d0) then
+            call ESRX_BOTHLDA(rho_ap,mu,Ep_1)
+            call ESRX_BOTHLDA(rho_am,mu,Em_1)
+         end if
+         if (hr_b .gt. 0.0d0 .and. alpha_not_equal_beta) then
+            call ESRX_BOTHLDA(rho_bp,mu,Ep_2)
+            call ESRX_BOTHLDA(rho_bm,mu,Em_2)
+         end if
+      end if
+      if (norder .ge. 1) then
+         if (hr_a .gt. 0.0d0) then
+            d1Eab(1)=(Ep_1-Em_1)/(2.0d0*hr_a)
+         end if
+         if (hr_b .gt. 0.0d0 .and. alpha_not_equal_beta) then
+            d1Eab(2)=(Ep_2-Em_2)/(2.0d0*hr_b)
+         end if
+      end if
+      if (norder .ge. 2) then
+         if (hr_a .gt. 0.0d0) then
+            d2Eab(1)=(Ep_1-2.0d0*Ea+Em_1)/(hr_a**2)
+         end if
+         if (hr_b .gt. 0.0d0 .and. alpha_not_equal_beta) then
+            d2Eab(3)=(Ep_2-2.0d0*Eb+Em_2)/(hr_b**2)
+         end if
+      end if
+      
+      if (.not. alpha_not_equal_beta) then
+         if (norder .ge. 1) then
+            d1Eab(2)=d1Eab(1)
+         end if
+         if (norder .ge. 2) then
+            d2Eab(3)=d2Eab(1)
+         end if
+      end if
+      
+      if (norder .ge. 1) then
+         d1E(1) = 0.5d0*(d1Eab(1) + d1Eab(2))
+         d1E(2) = 0.5d0*(d1Eab(1) - d1Eab(2))
+      end if
+      
+      if (norder .ge. 2) then
+         d2E(1) = 0.25d0*(d2Eab(1) + d2Eab(3))
+         d2E(2) = 0.25d0*(d2Eab(1) - d2Eab(3))
+         d2E(3) = d2E(1)
+      end if
+      
+      end subroutine
+
+C*****************************************************************************
+      subroutine DESRX_BOTHGGA(ESRX_BOTHGGA, rho, grad2, mu, norder, E, 
+     &d1E, d2E)
+C*****************************************************************************
+C   Finite difference code for spin-polarized and spin-unpolarized GGA exchange functiontionals.
+C   Return up to second order derivative.
+C   
+C   Input  : rho(3) : alpha density
+C            rho(4) : beta density
+C            grad2(4) : grad_alpha . grad_alpha
+C            grad2(5) : grad_beta . grad_beta
+C            mu     : range seperation parameter
+C            norder : order of derivative (up to two)
+C            ESRX_BOTHGGA : Functional routine
+C   Output : E      : energy
+C            d1E    : first derivative of energy
+C            d2E    : second derivative of energy
+C   See notes in SRDFTLTRJT() for ordering of derivatives.
+C   
+C   Written by, Erik R. Kjellgren
+C   Based DESRX_SPINGGA by H. J. Aa. Jensen and Erik D. Hedegaard
+C   Generated: August 30, 2018
+C*****************************************************************************
+      implicit none
+      external ESRX_BOTHGGA
+      
+      integer, intent(in) :: norder
+      real*8, intent(in) :: mu, rho(4), grad2(6)
+      real*8, intent(out) :: E, d1E(5), d2E(15)
+      
+      logical :: alpha_not_equal_beta
+      real*8 :: rho_a, rho_ap, rho_am, rho_b, rho_bp, rho_bm, gamma_aa, 
+     &gamma_aap, gamma_aam, gamma_bb, gamma_bbp, gamma_bbm, Ep_1, Em_1, 
+     &Epp_2_1, Emm_2_1, Ep_2, Em_2, Epp_3_1, Emm_3_1, Epp_3_2, Emm_3_2, 
+     &Ep_3, Em_3, Epp_4_1, Emm_4_1, Epp_4_2, Emm_4_2, Epp_4_3, Emm_4_3, 
+     &Ep_4, Em_4, hr_a, hr_b, hg_aa, hg_bb, hg_ab, Ea, Eb, d1Eab(5), d2E
+     &ab(15)
+      
+      rho_a = rho(3)
+      rho_b = rho(4)
+      gamma_aa = grad2(4)
+      gamma_bb = grad2(5)
+      
+      if (dabs(gamma_aa - gamma_bb) .le. 1.d-14 .and. dabs(rho_a - rho_b
+     &   ) .le. 1.d-14) then
+         alpha_not_equal_beta = .false.
+      else
+         alpha_not_equal_beta = .true.
+      end if
+      
+      E = 0.0d0
+      Ea = 0.0d0
+      if (norder .ge. 1) then
+         d1Eab(:) = 0.0d0
+         d1E(:) = 0.0d0
+      end if
+      if (norder .ge. 2) then
+         d2Eab(:) = 0.0d0
+         d2E(:) = 0.0d0
+      end if
+      
+      if (rho_a .lt. 1.d-10) then
+         hr_a = 0.0d0
+      else
+         hr_a = 1.d-4*rho_a
+      end if
+      if (gamma_aa .lt. 1.d-10) then
+         hg_aa = 0.0d0
+      else
+         hg_aa = 1.d-4*gamma_aa
+      end if
+      rho_ap = rho_a + hr_a
+      rho_am = rho_a - hr_a
+      gamma_aap = gamma_aa + hg_aa
+      gamma_aam = gamma_aa - hg_aa
+      
+      if (alpha_not_equal_beta) then
+         Eb = 0.0d0
+         if (rho_b .lt. 1.d-10) then
+            hr_b = 0.0d0
+         else
+            hr_b = 1.d-4*rho_b
+         end if
+         if (gamma_bb .lt. 1.d-10) then
+            hg_bb = 0.0d0
+         else
+            hg_bb = 1.d-4*gamma_bb
+         end if
+         rho_bp = rho_b + hr_b
+         rho_bm = rho_b - hr_b
+         gamma_bbp = gamma_bb + hg_bb
+         gamma_bbm = gamma_bb - hg_bb
+      end if
+      
+      call ESRX_BOTHGGA(rho_a,gamma_aa,mu,Ea)
+      if (alpha_not_equal_beta) then
+         call ESRX_BOTHGGA(rho_b,gamma_bb,mu,Eb)
+         E = Ea + Eb
+      else
+         E = 2.0d0*Ea
+      end if
+      if (norder .ge. 1) then
+         if (hr_a .gt. 0.0d0) then
+            call ESRX_BOTHGGA(rho_ap,gamma_aa,mu,Ep_1)
+            call ESRX_BOTHGGA(rho_am,gamma_aa,mu,Em_1)
+         end if
+         if (hr_b .gt. 0.0d0 .and. alpha_not_equal_beta) then
+            call ESRX_BOTHGGA(rho_bp,gamma_bb,mu,Ep_2)
+            call ESRX_BOTHGGA(rho_bm,gamma_bb,mu,Em_2)
+         end if
+         if (hg_aa .gt. 0.0d0) then
+            call ESRX_BOTHGGA(rho_a,gamma_aap,mu,Ep_3)
+            call ESRX_BOTHGGA(rho_a,gamma_aam,mu,Em_3)
+         end if
+         if (hg_bb .gt. 0.0d0 .and. alpha_not_equal_beta) then
+            call ESRX_BOTHGGA(rho_b,gamma_bbp,mu,Ep_4)
+            call ESRX_BOTHGGA(rho_b,gamma_bbm,mu,Em_4)
+         end if
+      end if
+      if (norder .ge. 2) then
+         if (hr_b .gt. 0.0d0 .and. alpha_not_equal_beta) then
+         end if
+         if (hg_aa .gt. 0.0d0) then
+            if (hr_a .gt. 0.0d0) then
+               call ESRX_BOTHGGA(rho_ap,gamma_aap,mu,Epp_3_1)
+               call ESRX_BOTHGGA(rho_am,gamma_aam,mu,Emm_3_1)
+            end if
+         end if
+         if (hg_bb .gt. 0.0d0 .and. alpha_not_equal_beta) then
+            if (hr_b .gt. 0.0d0) then
+               call ESRX_BOTHGGA(rho_bp,gamma_bbp,mu,Epp_4_2)
+               call ESRX_BOTHGGA(rho_bm,gamma_bbm,mu,Emm_4_2)
+            end if
+         end if
+      end if
+      if (norder .ge. 1) then
+         if (hr_a .gt. 0.0d0) then
+            d1Eab(1)=(Ep_1-Em_1)/(2.0d0*hr_a)
+         end if
+         if (hr_b .gt. 0.0d0 .and. alpha_not_equal_beta) then
+            d1Eab(2)=(Ep_2-Em_2)/(2.0d0*hr_b)
+         end if
+         if (hg_aa .gt. 0.0d0) then
+            d1Eab(3)=(Ep_3-Em_3)/(2.0d0*hg_aa)
+         end if
+         if (hg_bb .gt. 0.0d0 .and. alpha_not_equal_beta) then
+            d1Eab(4)=(Ep_4-Em_4)/(2.0d0*hg_bb)
+         end if
+      end if
+      if (norder .ge. 2) then
+         if (hr_a .gt. 0.0d0) then
+            d2Eab(1)=(Ep_1-2.0d0*Ea+Em_1)/(hr_a**2)
+         end if
+         if (hr_b .gt. 0.0d0 .and. alpha_not_equal_beta) then
+            d2Eab(3)=(Ep_2-2.0d0*Eb+Em_2)/(hr_b**2)
+         end if
+         if (hg_aa .gt. 0.0d0) then
+            if (hr_a .gt. 0.0d0) then
+               d2Eab(4)=(Epp_3_1-Ep_3-Ep_1+2.0d0*Ea-Em_3-Em_1+Emm_3_1)/(
+     &         2.0d0*hg_aa*hr_a)
+            end if
+            d2Eab(6)=(Ep_3-2.0d0*Ea+Em_3)/(hg_aa**2)
+         end if
+         if (hg_bb .gt. 0.0d0 .and. alpha_not_equal_beta) then
+            if (hr_b .gt. 0.0d0) then
+               d2Eab(8)=(Epp_4_2-Ep_4-Ep_2+2.0d0*Eb-Em_4-Em_2+Emm_4_2)/(
+     &         2.0d0*hg_bb*hr_b)
+            end if
+            d2Eab(10)=(Ep_4-2.0d0*Eb+Em_4)/(hg_bb**2)
+         end if
+      end if
+      
+      if (.not. alpha_not_equal_beta) then
+         if (norder .ge. 1) then
+            d1Eab(2)=d1Eab(1)
+            d1Eab(4)=d1Eab(3)
+         end if
+         if (norder .ge. 2) then
+            d2Eab(3)=d2Eab(1)
+            d2Eab(8)=d2Eab(4)
+            d2Eab(10)=d2Eab(6)
+         end if
+      end if
+      
+      if (norder .ge. 1) then
+         d1E(1) = 0.5d0*(d1Eab(1) + d1Eab(2))
+         d1E(2) = 0.5d0*(d1Eab(1) - d1Eab(2))
+         if (hg_aa .gt. 0.0d0 .or. hg_bb .gt. 0.0d0) then
+            d1E(3) = 0.25d0*(d1Eab(3) + d1Eab(4))
+            d1E(4) = d1E(3)
+            d1E(5) = 0.5d0*(d1Eab(3) - d1Eab(4))
+         end if
+      end if
+      
+      if (norder .ge. 2) then
+         d2E(1) = 0.25d0*(d2Eab(1) + d2Eab(3))
+         d2E(2) = 0.25d0*(d2Eab(1) - d2Eab(3))
+         d2E(3) = d2E(1)
+         if (hg_aa .gt. 0.0d0 .or. hg_bb .gt. 0.0d0) then
+            d2E(4) = 0.125d0*(d2Eab(4) + d2Eab(8))
+            d2E(5) = 0.125d0*(d2Eab(4) - d2Eab(8))
+            d2E(6) = 0.0625d0*(d2Eab(6) + d2Eab(10))
+            d2E(7) = d2E(4)
+            d2E(8) = d2E(5)
+            d2E(9) = d2E(6)
+            d2E(10) = d2E(6)
+            d2E(11) = 2.0d0*d2E(5)
+            d2E(12) = 2.0d0*d2E(4)
+            d2E(13) = 0.125d0*(d2Eab(6) - d2Eab(10))
+            d2E(14) = d2E(13)
+            d2E(15) = 4.0d0*d2E(6)
+         end if
+      end if
+      
+      end subroutine
+
 C****************************************************************************
       SUBROUTINE DELA(ESR,rhoc,grdcc,VLAMBDA,norder,d1E,d2E)
 C Linear complement exchange PBE functional, Kamal SHARKAS 20/05/2011
@@ -649,238 +1001,6 @@ C*****************************************************************************
       end
 
 C****************************************************************************
-      SUBROUTINE DESRX_SPINGGA(ESRX_GGA,rho,grd2,mu,norder,E,d1E,d2E)
-C*****************************************************************************
-C     Compute first-order and/or second-order numerical derivatives
-C     of a generic spin-dependent short-range GGA exchange functional
-C     using ESRX_GGA(rhoa,grdaa,mu,Ea) and ESRX_GGA(rhob,grdbb,mu,Eb)
-C
-C     Exchange derivatives will be done based on alpha and beta values
-C     because there are no mixed alpha-beta terms for exchange.
-C     The routine DESRC_SPINGGA performes the derivatives with respect to charge and spin variables
-C     for correlation functionals.
-C
-C Input: ESRX_GGA  : GGA exchange functional routine for ESRX_GGA(rhoa,grdaa,mu,Ea) and ESRX_GGA(rhob,grdbb,mu,Eb)
-C        rho(1:4)  : total density, spin density, rho_a, rho_b (rho(3:4) used)
-C        grd2(1:6) : grdcc, grdss, grdcs, grdaa, grdbbb, grdab (grd2(4:5) used)
-C        mu        : Interaction parameter
-C        norder    : order of derivatives
-C
-C Output:    d1E(1) = d1Edrhoc        : first derivative wrt rhoc
-C            d1E(2) = d1Edrhos        : first derivative wrt rhos
-C            d1E(3) = d1Edgrdcc       : first derivative wrt grdcc
-C            d1E(4) = d1Edgrdss       : first derivative wrt grdss
-C            d1E(5) = d1Edgrdcs       : first derivative wrt grdcs
-C
-C            d2E(1) = d2Edrhocdrhoc   : second derivative wrt rhoc and rhoc
-C            d2E(2) = d2Edrhocdrhos   : second derivative wrt rhoc and rhos
-C            d2E(3) = d2Edrhosdrhos   : second derivative wrt rhos and rhos
-C            d2E(4) = d2Edrhocdgrdcc  : second derivative wrt rhoc and grdcc
-C            d2E(5) = d2Edrhosdgrdcc  : second derivative wrt rhos and grdcc
-C            d2E(6) = d2Edgrdccdgrdcc : second derivative wrt grdcc and grdcc
-C            d2E(7) = d2Edrhocdgrdss  : second derivative wrt rhoc and grdss
-C            d2E(8) = d2Edrhosdgrdss  : second derivative wrt rhos and grdss
-C            d2E(9) = d2Edgrdccdgrdss : second derivative wrt grdcc and grdss
-C            d2E(10)= d2Edgrdssdgrdss : second derivative wrt grdss and grdss
-C            d2E(11)= d2Edrhocdgrdcs
-C            d2E(12)= d2Edrhosdgrdcs
-C            d2E(13)= d2Edgrdccdgrdcs
-C            d2E(14)= d2Edgrdssdgrdcs
-C            d2E(15)= d2Edgrdcsdgrdcs
-C
-C     Created: Apr-18, H. J. Aa. Jensen (based on previous DESRSPINGGA routine, now removed)
-C*****************************************************************************
-      implicit none
-
-      external         ESRX_GGA
-      integer, intent(in) :: norder
-
-      real*8, intent(in) :: rho(4), grd2(6), mu
-      real*8, intent(out) :: E, d1E(5), d2E(15)
-      real*8   Ea, Eb, d1W(4), d2W(6) ! for derivative wrt rhoa, rhob, grdaa, grdbb
-
-      real*8   rhoa,  rhoam,  rhoap,  hra
-      real*8   grdaa, grdaam, grdaap, hga
-
-      real*8   rhob,  rhobm,  rhobp,  hrb
-      real*8   grdbb, grdbbp, grdbbm, hgb
-
-      real*8   Em0, Ep0, E0m, E0p
-      real*8   Emm, Epp, Epm, Emp
-
-      real*8, parameter :: D4I = 0.25d0, D8I = 0.125d0, D16I = 0.0625
-
-      logical  Eb_eq_Ea
-
-C     check
-      if(norder .lt. 0 .or. norder .ge. 3) then
-        print *,'Fatal error DESRX_SPINGGA: norder=',norder
-        call quit('ERROR DESRX_SPINGGA: norder must be 0, 1, or 2')
-      endif
-
-      if (norder .ge. 1) d1E(:) = 0.0d0
-      if (norder .ge. 2) d2E(:) = 0.0d0
-
-      if (rho(1) .lt. 1.d-10) then ! no significant density in this point
-         E = 0.0d0
-         return
-      end if
-
-      rhoa  = rho(3)
-      rhob  = rho(4)
-      grdaa = grd2(4)
-      grdbb = grd2(5)
-      if (rhoa .lt. 0.0d0 .or. rhob .lt. 0.0d0) then
-         call quit('DESRX_SPINGGA error: rhoa or rhob negative')
-      end if
-      if (grdaa .lt. 0.0d0 .or. grdbb .lt. 0.0d0) then
-         call quit('DESRX_SPINGGA error: grdaa or grdbb negative')
-      end if
-      Eb_eq_Ea  = (abs(rhoa-rhob)   .le. 1.d-14
-     &       .and. abs(grdaa-grdbb) .le. 1.d-14)
-
-C     energy
-      call ESRX_GGA(rhoa,grdaa,mu,Ea)
-      if (Eb_eq_Ea) then
-         E = 2.0d0 * Ea
-      else
-         call ESRX_GGA(rhob,grdbb,mu,Eb)
-         E = Ea + Eb
-      end if
-!     print *,'DESRX_SPINGGA: E=',E
-
-C     (optimal?) numerical step
-C     (step length of hx=1.d-4*X should give a relative accuracy of approx. 16 digits
-C      because we use central 2nd-order approximation=)
-
-      hra = 1.d-4*rhoa
-      hrb = 1.d-4*rhob
-      hga = 1.d-4*grdaa
-      hgb = 1.d-4*grdbb
-      if (hra .lt. 1.d-12) hra = 0.d0
-      if (hrb .lt. 1.d-12) hrb = 0.d0
-      if (hga .lt. 1.d-24) hga = 0.d0
-      if (hgb .lt. 1.d-24) hgb = 0.d0
-
-C     variations of variables for numerical differentiation
-      rhoam  = rhoa-hra
-      rhoap  = rhoa+hra
-      rhobm  = rhob-hrb
-      rhobp  = rhob+hrb
-      grdaam = grdaa-hga
-      grdaap = grdaa+hga
-      grdbbm = grdbb-hgb
-      grdbbp = grdbb+hgb
-
-! (All derivatives in the following calculated with central 2nd-order approximation)
-
-C First-order derivatives --------------------------------------------
-      if (norder .lt. 1) return
-
-      d1W(:) = 0.0d0
-      d2W(:) = 0.0d0
-
-C     derivatives wrt rhoa, rhob, grdaa, grdbb ---------------------
-
-      if (hra .gt. 0.0d0) then
-         call ESRX_GGA(rhoam,grdaa,mu,Em0)
-         call ESRX_GGA(rhoap,grdaa,mu,Ep0)
-         d1W(1) = (Ep0 - Em0)/(2.d0*hra) ! d1Edrhoa
-         d2W(1) = (Ep0 - 2.d0*Ea + Em0)/(hra*hra) ! d2Edrhoadrhoa
-      end if
-
-      if (hga .gt. 0.0d0) then
-         call ESRX_GGA(rhoa,grdaam,mu,E0m)
-         call ESRX_GGA(rhoa,grdaap,mu,E0p)
-         d1W(3) = (E0p - E0m)/(2.d0*hga) ! d1Edgrdaa
-         d2W(3) = (E0p - 2.d0*Ea + E0m)/(hga*hga) ! d2Edgrdaagrdaa
-      end if
-
-      IF (Eb_eq_Ea) THEN
-         d1W(2) = d1W(1)
-         d2W(2) = d2W(1)
-         d1W(4) = d1W(3)
-         d2W(4) = d2W(3)
-      ELSE
-       if (hrb .gt. 0.0d0) then
-         call ESRX_GGA(rhobm,grdbb,mu,Em0)
-         call ESRX_GGA(rhobp,grdbb,mu,Ep0)
-         d1W(2) = (Ep0 - Em0)/(2.d0*hrb) ! d1Edrhob
-         d2W(2) = (Ep0 - 2.d0*Eb + Em0)/(hrb*hrb) ! d2Edrhobdrhob
-       end if
-
-       if (hgb .gt. 0.0d0) then
-         call ESRX_GGA(rhob,grdbbm,mu,E0m)
-         call ESRX_GGA(rhob,grdbbp,mu,E0p)
-         d1W(4) = (E0p - E0m)/(2.d0*hgb) ! d1Edgrdbb
-         d2W(4) = (E0p - 2.d0*Eb + E0m)/(hgb*hgb) ! d2Edgrdbbdgrdbb
-       end if
-
-      END IF ! Eb_eq_Ea
-
-       d1E(1) = 0.50d0*(d1W(1) + d1W(2)) ! d1Edrhoc
-       d1E(2) = 0.50d0*(d1W(1) - d1W(2)) ! d1Edrhos
-       d1E(3) = 0.25d0*(d1W(3) + d1W(4)) ! d1Edgrdcc
-       d1E(4) = d1E(3)                   ! d1Edgrdss
-       d1E(5) = 0.50d0*(d1W(3) - d1W(4)) ! d1Edgrdcs
-
-
-C Second-order derivatives --------------------------------------------
-      if (norder .lt. 2) return
-
-C      cross-derivative wrt rhoa and grdaa -----------------------
-       IF (hga .gt. 0.0d0) then
-       if (hra .gt. 0.0d0) then
-         call ESRX_GGA(rhoap,grdaap,mu,Epp)
-         call ESRX_GGA(rhoam,grdaap,mu,Emp)
-         call ESRX_GGA(rhoap,grdaam,mu,Epm)
-         call ESRX_GGA(rhoam,grdaam,mu,Emm)
-         d2W(5) = (Epp - Emp - Epm + Emm)/(4.d0*hra*hga) ! d2Edrhoadgrdaa
-       end if
-       END IF
-
-C      cross-derivative wrt rhob and grdbb -----------------------
-       IF (Eb_eq_Ea) THEN
-          d2W(6) = d2W(5)
-       ELSE
-        IF (hgb .gt. 0.0d0 .and. hrb .gt. 0.0d0) then
-          call ESRX_GGA(rhobp,grdbbp,mu,Epp)
-          call ESRX_GGA(rhobm,grdbbp,mu,Emp)
-          call ESRX_GGA(rhobp,grdbbm,mu,Epm)
-          call ESRX_GGA(rhobm,grdbbm,mu,Emm)
-          d2W(6) = (Epp - Emp - Epm + Emm)/(4.d0*hrb*hgb) ! d2Edrhobdgrdbb
-        END IF
-       END IF ! Eb_eq_Ea
-
-! The following transformations from d2E(a,b) to d2E(c,s) are only valid for exchange energies
-! for which there never are cross-derivatives terms between a and b.
-
-       d2E( 1)   = D4I  * (d2W(1) + d2W(2)) !      d2Edrc2   = (d2Edra2 + d2Edrb2) / 4
-       d2E( 2)   = D4I  * (d2W(1) - d2W(2)) !      d2Edrcdrs = (d2Edra2 - d2Edrb2) / 4
-       d2E( 3)   = d2E(1)                   !      d2Edrs2   = d2Edrc2
-
-       IF (hga .gt. 0.0d0 .or. hgb .gt. 0.0d0) THEN
-
-       d2E( 4)   = D8I  * (d2W(5) + d2W(6)) !      d2Edrcdgcc = (d2Edradgaa + d2Edrbdgbb) / 8
-       d2E( 5)   = D8I  * (d2W(5) - d2W(6)) !      d2Edrsdgcc = (d2Edradgaa - d2Edrbdgbb) / 8
-       d2E( 6)   = D16I * (d2W(3) + d2W(4)) !      d2Edgcc2   = (d2Edgaa2 + d2Edgbb2) / 16
-       d2E( 7)   = d2E(4)                   !      d2Edrcdgss = d2Edrcdgcc
-       d2E( 8)   = d2E(5)                   !      d2Edrsdgss = d2Edrsdgcc
-       d2E( 9)   = d2E(6)                   !      d2Edgccdgss= d2Edgcc2
-       d2E(10)   = d2E(6)                   !      d2Edgss2   = d2Edgcc2
-       d2E(11)   = 2.0d0 * d2E(5)           !      d2Edrcgcs  = (d2Edradgaa - d2Edrbdgbb) / 4 = 2 d2Edrsdgcc
-       d2E(12)   = 2.0d0 * d2E(4)           !      d2Edrsgcs  = (d2Edradgaa + d2Edrbdgbb) / 4 = 2 d2Edrcdgcc
-       d2E(13)   = D8I  * (d2W(3) - d2W(4)) !      d2Edgccdgcs= (d2Edgaa2 - d2Edgbb2) / 8
-       d2E(14)   = d2E(13)                  !      d2Edgssdgcs= d2EDgccdgcs
-       d2E(15)   = 4.0d0 * d2E(6)           !      d2Edgcs2   = (d2Edgaa2 + d2Edgbb2) / 4 = 4 d2Edgc2
-
-       END IF
-
-      return
-      end ! SUBROUTINE DESRX_SPINGGA
-C****************************************************************************
-
-C****************************************************************************
       SUBROUTINE DELSPIN(ESRSPIN,rhoc,rhos,VLAMBDA,dospin,
      &                   norder,d1E,d2E)
 
@@ -944,7 +1064,6 @@ C*****************************************************************************
 
       return
       end
-C****************************************************************************
 
 C****************************************************************************
       subroutine ESRX_PBETCSERF(rhoa,grdaa,mu,e)
@@ -998,6 +1117,7 @@ C     LDA energy
 
       return
       end
+
 C****************************************************************************
       subroutine ESRX_PBEHSEERF(rhoa,grdaa,mu,e)
 C*****************************************************************************
@@ -3264,7 +3384,7 @@ C*****************************************************************************
 
 C     Spin-unpolarized case
       ! 1.0d-15 is basically zero
-      if (rhos .lt. 1.0d-15) then
+      if (rhos .eq. 0.0d0) then
 C       Density and kF
         rho = rhoc
         akf = ckf*(rho**f13)
@@ -3419,8 +3539,7 @@ C     Spin-unpolarized case
       ! this should be the condition instead
       ! of giving it as an input
       !  - E.R.K
-      ! 1.0d-15 is basically zero
-      if (rhos .lt. 1.0d-15) then
+      if (rhos .eq. 0.0d0) then
 
         rs = rsfac/(rhoc**f13)
         call ecPW92(rs,0.0d0,ec,ecd,ecz)
@@ -3476,7 +3595,7 @@ C*****************************************************************************
 C     Spin-unpolarized case
 
       ! 1.0d-15 is basically zero
-      if (rhos .lt. 1.0d-15) then
+      if (rhos .eq. 0.0d0) then
 
         rs = rsfac/(rhoc**f13)
         ec = ecVWN5(rs,0.0d0)
