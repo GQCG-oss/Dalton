@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+#   cc2dc_resp_newlr
+#   --------------
+#   Molecule:         H2O in a spherical cavity of radius 4.00 au
+#   Wave Function:    CC2 / cc-pVDZ
+#   Test Purpose:     Check energy, dipole moment and static
+#                     polarizability. Not OLD_LR
+
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(string = 'CC2      Total energy:',
+     abs_tolerance = 1.0e-8)
+
+f.add(string = 'CC2      Solvation energy:',
+      abs_tolerance = 1.0e-8)
+
+f.add(from_re = 'Total Molecular Dipole Moment',
+      num_lines = 8,
+      abs_tolerance = 1.0e-4)
+
+f.add(from_string = 'FINAL CC2 RESULTS FOR THE SECOND-ORDER PROPERTIES',
+      num_lines = 25,
+      rel_tolerance = 1.0e-7,
+      ignore_below =  1.0e-10)
+
+
+test.run(['cc2dc_resp_newlr.dal'], ['cc2dc_resp_newlr.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

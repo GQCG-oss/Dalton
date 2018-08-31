@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['choles_cc2_polar.dal'], ['choles_cc2_polar.mol'], {'out': f})
+test.run(['choles_cc2_polar.dal'], ['choles_cc2_polar.mol'], f={'out': f})
 
 sys.exit(test.return_code)

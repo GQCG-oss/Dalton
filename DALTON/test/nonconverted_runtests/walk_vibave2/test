@@ -71,6 +71,6 @@ f.add(from_string = 'Vibrationally averaged molecular properties',
       ignore_below = 1.0e-8,
       rel_tolerance = 1.0e-8)
 
-test.run(['walk_vibave2.dal'], ['hf_ano-4.mol'], {'out': f})
+test.run(['walk_vibave2.dal'], ['hf_ano-4.mol'], f={'out': f})
 
 sys.exit(test.return_code)

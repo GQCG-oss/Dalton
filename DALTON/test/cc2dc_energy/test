@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+#   cc2dc_energy
+#   --------------
+#   Molecule:         H2O in a spherical cavity of radius 4.00 au
+#   Wave Function:    CC2 / cc-pVDZ
+#   Test Purpose:     Check energy, dipole moment quadrupole moment and
+#                     second order electric moment.
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(string = 'CC2      Total energy:',
+     abs_tolerance = 1.0e-8)
+
+f.add(string = 'CC2      Solvation energy:',
+      rel_tolerance = 1.0e-7)
+
+f.add(from_re = 'Total Molecular Dipole Moment',
+      num_lines = 8,
+      abs_tolerance = 1.0e-4)
+
+f.add(from_re = 'Total Molecular quadrupole moment',
+      num_lines = 9,
+      abs_tolerance = 1.0e-4)
+
+f.add(from_re = '!  Electronic second moment of charge',
+      num_lines = 9,
+      abs_tolerance = 1.0e-4)
+
+test.run(['cc2dc_energy.dal'], ['cc2dc_energy.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

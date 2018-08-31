@@ -59,6 +59,6 @@ f.add(re = 'Number of orbitals in each symmetry:',
       rel_tolerance = 1.0e-6)
 
 
-test.run(['walk_polar2.dal'], ['o2_aug-cc-pvdz.mol'], {'out': f})
+test.run(['walk_polar2.dal'], ['o2_aug-cc-pvdz.mol'], f={'out': f})
 
 sys.exit(test.return_code)
