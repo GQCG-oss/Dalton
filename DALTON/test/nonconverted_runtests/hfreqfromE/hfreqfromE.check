@@ -9,7 +9,7 @@ fi
 
 # Starting geometry and energy.
 CRIT1=`$GREP "bond distance\: * H * O * (0| )\.946283" $log | wc -l`
-CRIT2=`$GREP "Final * HF energy\: * \-76\.02705351272" $log | wc -l`
+CRIT2=`$GREP "Final * HF energy\: * \-76\.0270535127(2|3)" $log | wc -l`
 CRIT3=`$GREP "Nuclear repulsion\: *    9\.30082413736" $log | wc -l`
 CRIT4=`$GREP "Electronic energy\: * \-85\.32787765009" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`

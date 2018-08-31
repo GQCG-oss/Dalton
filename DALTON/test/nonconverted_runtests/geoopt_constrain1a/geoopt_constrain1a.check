@@ -16,7 +16,7 @@ ERROR[1]="INTERNAL COORDINATE DETERMINATION NOT SET UP CORRECTLY"
 
 # Symmetry
 CRIT1=`$GREP "Symmetry class found\: D\(3d\)" $log | wc -l`
-CRIT2=`$GREP "The following elements were found\: * X * YZ" $log | wc -l`
+CRIT2=`$GREP "The following symmetry elements were found\: * X * YZ" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[2]=2
 ERROR[2]="SYMMETRY NOT CORRECT"

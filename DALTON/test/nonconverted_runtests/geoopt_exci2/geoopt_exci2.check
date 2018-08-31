@@ -14,13 +14,13 @@ fi
 
 # Optimization setup
 CRIT1=`$GREP "Default 1st order method will be used\: * BFGS update\." $log | wc -l`
-CRIT2=`$GREP "Optimization will be performed in redundant internal coordinates\." $log | wc -l`
+CRIT2=`$GREP "Optimization will be performed in redundant internal coordinates" $log | wc -l`
 CRIT3=`$GREP "Model Hessian will be used as initial Hessian\." $log | wc -l`
 CRIT4=`$GREP "The model Hessian parameters of Roland Lindh will be used\." $log | wc -l`
 CRIT5=`$GREP "Trust region method will be used to control step \(default\)\." $log | wc -l`
 CRIT6=`$GREP "1st Order Geometry Optimization" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
-CTRL[1]=4 ! no redundant internal coordinates for diatomics any more
+CTRL[1]=6
 ERROR[1]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Basis set
@@ -75,22 +75,22 @@ CTRL[8]=2
 ERROR[8]="SECOND ITERATION NOT CORRECT"
 
 # Third iteration
-CRIT1=`$GREP "Energy at this geometry is * \: * \-7\.897813" $log | wc -l`
+CRIT1=`$GREP "Energy at this geometry is * \: * \-7\.89781" $log | wc -l`
 CRIT2=`$GREP "Norm of gradient * \: * (0| )\.01433." $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[9]=2
 ERROR[9]="THIRD ITERATION NOT CORRECT"
 
 # Fourth iteration
-CRIT1=`$GREP "Energy at this geometry is * \: * \-7\.899451" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.00966." $log | wc -l`
+CRIT1=`$GREP "Energy at this geometry is * \: * \-7\.89945" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * (0| )\.0096" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[10]=2
 ERROR[10]="FOURTH ITERATION NOT CORRECT"
 
 # Final iteration
-CRIT1=`$GREP "Energy at this geometry is * \: * \-7\.902356" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.0000(0|1)." $log | wc -l`
+CRIT1=`$GREP "Energy at this geometry is * \: * \-7\.902355" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * (0| )\.0000" $log | wc -l`
 TEST[11]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[11]=4
 ERROR[11]="FINAL ITERATION NOT CORRECT"

@@ -53,17 +53,17 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Integrals
-CRIT1=`$GREP "SO\-integrals are calculated for * C\: \[He\]2s\^2 2p\^2" $log | wc -l`
-CRIT2=`$GREP "SO\-integrals are calculated for * H\: no mean\-field" $log | wc -l`
-CRIT3=`$GREP "\! Integrals of operator\: X1MNF\-SO \!" $log | wc -l`
-CRIT4=`$GREP "\! Integrals of operator\: Y1MNF\-SO \!" $log | wc -l`
-CRIT5=`$GREP "\! Integrals of operator\: Z1MNF\-SO \!" $log | wc -l`
+CRIT1=`$GREP -l "SO\-integrals are calculated for * C\: \[He\]2s\^2 2p\^2" $log | wc -l`
+CRIT2=`$GREP -l "SO\-integrals are calculated for * H\: no mean\-field" $log | wc -l`
+CRIT3=`$GREP -l "\! Integrals of operator\: X1MNF\-SO \!" $log | wc -l`
+CRIT4=`$GREP -l "\! Integrals of operator\: Y1MNF\-SO \!" $log | wc -l`
+CRIT5=`$GREP -l "\! Integrals of operator\: Z1MNF\-SO \!" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[4]=5
 ERROR[4]="INTEGRALS NOT SET UP CORRECTLY"
 
 # Energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-78\.1785072190[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-78\.1785072190" $log | wc -l`
 TEST[5]=`expr	$CRIT1`
 CTRL[5]=1
 ERROR[5]="MCSCF ENERGY NOT CORRECT"
@@ -84,8 +84,8 @@ CTRL[6]=9
 ERROR[6]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Quadratic response
-CRIT1=`$GREP "\@ *QRLRVE\: * << XDIPLEN * \; XDIPLEN * >> \( * (0| )\.16645\)\: * 15\.23880...[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\@ *QRLRVE\: * << YDIPLEN * \; YDIPLEN * >> \( * (0| )\.16645\)\: * 2(0| )\.73402...[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ *QRLRVE\: * << XDIPLEN * \; XDIPLEN * >> \( * (0| )\.16645\)\: * 15\.238...[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "\@ *QRLRVE\: * << YDIPLEN * \; YDIPLEN * >> \( * (0| )\.16645\)\: * 2(0| )\.734...[0-9][0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="QUADRATIC RESPONSE NOT CORRECT"
@@ -94,8 +94,8 @@ ERROR[7]="QUADRATIC RESPONSE NOT CORRECT"
 CRIT1=`$GREP "Partial rates \(AMFI\)\: X\-polarization * 1\.74[6-7]..(D|E)\-02" $log | wc -l`
 CRIT2=`$GREP "Partial rates \(AMFI\)\: Y\-polarization * 1\.98(3|4)..(D|E)\-03" $log | wc -l`
 CRIT3=`$GREP "Partial rates \(AMFI\)\: Z\-polarization * (0| )\.(    |000)" $log | wc -l`
-CRIT4=`$GREP "Total transition * rate * \(AMFI\) * 6\.48.(D|E)\-03 s\-1" $log | wc -l`
-CRIT5=`$GREP "Total phosphorescence lifetime \(AMFI\) * 1\.54.(D|E)\+02 * s" $log | wc -l`
+CRIT4=`$GREP "Total transition * rate * \(AMFI\) * 6\.48[0-9]*(D|E)\-03 s\-1" $log | wc -l`
+CRIT5=`$GREP "Total phosphorescence lifetime \(AMFI\) * 1\.54[0-9]*(D|E)\+02 * s" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[8]=5
 ERROR[8]="PHOSPHORESCENCE NOT CORRECT"
