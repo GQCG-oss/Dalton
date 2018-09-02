@@ -1000,6 +1000,7 @@ C*****************************************************************************
 
 C****************************************************************************
       SUBROUTINE DELA(ESR,rhoc,grdcc,VLAMBDA,norder,d1E,d2E)
+C****************************************************************************
 C Linear complement exchange PBE functional, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
 
@@ -1025,7 +1026,7 @@ C*****************************************************************************
 
 C****************************************************************************
       SUBROUTINE DELANSC(ESR,rhoc,grdcc,VLAMBDA,norder,d1E,d2E)
-
+C****************************************************************************
 C Linear complement (NON-Scaled) correlation PBE GWS functional, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
       implicit none
@@ -1049,7 +1050,7 @@ C*****************************************************************************
 
 C****************************************************************************
       SUBROUTINE DELASC(ESR,rhoc,grdcc,VLAMBDA,norder,d1E,d2E)
-
+C****************************************************************************
 C Linear complement Scaled correlation PBE functional, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
       implicit none
@@ -1102,7 +1103,7 @@ C*****************************************************************************
 C****************************************************************************
       SUBROUTINE DELSPIN(ESRSPIN,rhoc,rhos,VLAMBDA,dospin,
      &                   norder,d1E,d2E)
-
+C****************************************************************************
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
       implicit none
@@ -1136,6 +1137,7 @@ C*****************************************************************************
 C****************************************************************************
       SUBROUTINE DELSPINnSC(ESRSPIN,rhoc,rhos,VLAMBDA,dospin,
      &                      norder,d1E,d2E)
+C****************************************************************************
 C linear complement non-scaled spin-dependent correlation LDA functional, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
       implicit none
@@ -1263,9 +1265,10 @@ C     Energy
        
       return
       end
-C------------------------------------------------------------------
+
+C****************************************************************************
       Subroutine HSEFx(Rho,s,Omega,FxHSE)
-C------------------------------------------------------------------
+C****************************************************************************
 C    Short-range exchange PBE enhancement factor
 C    from Heyd and Scuseria, JCP 120, 7274 (2004)
 C
@@ -1280,7 +1283,7 @@ C    gerfc -> derfc
 C    gei(x)-> ei
 C
 C    Should be the same as wpbe_analytical_erfc_approx
-C------------------------------------------------------------------
+C****************************************************************************
       Implicit Real*8(A-H,O-Z)
       Real*8 rho,s,omega,Fxhse
 C
@@ -1589,9 +1592,9 @@ C
 C
       end
 
-C------------------------------------------------------------------
+C****************************************************************************
       subroutine wpbe_analytical(rho,s,omega,Fx_wpbe)
-C------------------------------------------------------------------
+C****************************************************************************
 C    Short-range exchange PBE enhancement factor
 C    from Heyd, Scuseria, Ernzerhof, JCP 118, 8207 (2003)
 C
@@ -1602,7 +1605,7 @@ c    'wPBE Enhancement Factor (analytical, no gradients)'
 C    routine from J. Heyd
 C
 C    Gives sligthly different results compared to wpbe_analytical_erfc_approx
-c--------------------------------------------------------------------
+C****************************************************************************
       Implicit None
 
       Real*8 rho,s,omega,Fx_wpbe
@@ -1833,20 +1836,20 @@ c     Calculate wPBE enhancement factor
 
       end
 
-C------------------------------------------------------------------
+C****************************************************************************
       subroutine wpbe_analytical_erfc_approx(rho,s,omega,Fx_wpbe)
-C------------------------------------------------------------------
+C****************************************************************************
 C    Short-range exchange PBE enhancement factor
 C    from Heyd and Scuseria, JCP 120, 7274 (2004)
 C
 C    The Erfc function is approximated instead of the PBE exchange hole
 C    to perform the integration over r12
 C    
-c    'wPBE Enhancement Factor (erfc approx.,analytical, no gradients)'
+C    'wPBE Enhancement Factor (erfc approx.,analytical, no gradients)'
 C    routine from J. Heyd
 C
 C    It is the preferred routine. Should be the same as HSEFx
-c--------------------------------------------------------------------
+C****************************************************************************
       Implicit None
 
       Real*8 rho,s,omega,Fx_wpbe
@@ -2657,6 +2660,7 @@ C
 !      print *,'ESRC_PBEWIERF: e=',e
       return
       end
+
 C****************************************************************************
       subroutine ESRC_PBETCSERF(rho,grdcc,mu,e)
 C*****************************************************************************
@@ -2722,6 +2726,7 @@ C     Energy
 
       return
       end
+
 C****************************************************************************
       subroutine ESRC_PBETCSJERF(rho,grdcc,mu,e)
 C*****************************************************************************
@@ -2793,16 +2798,17 @@ C     Energy
 
       return
       end
-!-------------------------------------------
+
+C*****************************************************************************
       real*8 function berft(a)
-!-------------------------------------------
-!  Second-order exchange gradient expansion coefficient for erf 
-!  interaction
-!  a = mu/(2*kF)
-!
-!  Author : J. Toulouse
-!  Date   : 10-03-04
-!-------------------------------------------
+C*****************************************************************************
+C  Second-order exchange gradient expansion coefficient for erf 
+C  interaction
+C  a = mu/(2*kF)
+C
+C  Author : J. Toulouse
+C  Date   : 10-03-04
+C*****************************************************************************
       implicit none
  
       real*8   a
@@ -2834,16 +2840,16 @@ C     constants
       return
       end
 
-!-------------------------------------------
+C*****************************************************************************
       function dberftda(a)
-!-------------------------------------------
+C*****************************************************************************
 !  Derivative of second-order exchange gradient
 !  expansion coefficient for erf interaction
 !  a = mu/(2*kF)
 !
 !  Author : J. Toulouse
 !  Date   : 10-03-04
-!-------------------------------------------
+C*****************************************************************************
       implicit none
  
       real*8   a
@@ -2942,8 +2948,10 @@ C     LDA energy
 
       return
       end
+
 C****************************************************************************
       subroutine ELAX_PBEGWS(rho,grd2,VLAMBDA,e)
+C****************************************************************************
 C linear complement exchange PBE energy, Kamal SHARKAS 19/05/2011 beg
 C*****************************************************************************
       real*8  rho(4), grd2(6), VLAMBDA
@@ -2955,6 +2963,7 @@ C*****************************************************************************
 
       return
        end
+
 C****************************************************************************
       subroutine ESRC_PBEGWSERF(rhoc,grdcc,mu,e)
 C*****************************************************************************
@@ -3022,6 +3031,7 @@ C*****************************************************************************
 
       return
       end
+
 C****************************************************************************
       subroutine ESRC_PBEGWSERF_PW92(rhoc,grdcc,mu,e)
 C*****************************************************************************
@@ -3164,8 +3174,10 @@ C     LDA energy ----
 
       return
       end
+
 C****************************************************************************
       subroutine ELAC_PBEGWS(rhoc,grdcc,VLAMBDA,e)
+C****************************************************************************
 C linear complement non-scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011 beg
 C*****************************************************************************
       real*8   rhoc, grdcc, VLAMBDA
@@ -3179,6 +3191,7 @@ C*****************************************************************************
 
 C****************************************************************************
       subroutine ELASC_PBEGWS(rhoc,grdcc,VLAMBDA,e)
+C****************************************************************************
 C linear complement Scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
       real*8   rhoc, grdcc, VLAMBDA
@@ -3201,19 +3214,17 @@ C*****************************************************************************
        end
 
 C*****************************************************************************
-
-!-------------------------------------------
       real*8 function berf(a)
-!-------------------------------------------
-!  Second-order exchange gradient expansion coefficient for erf
-!  interaction
-!  a = mu/(2*kF)
-! 
-!  Modified version from Goll, Werner, Stoll, PCCP 7, 3917 (2005)
-!
-!  Author : J. Toulouse
-!  Date   : 11-08-09
-!-------------------------------------------
+C*****************************************************************************
+C  Second-order exchange gradient expansion coefficient for erf
+C  interaction
+C  a = mu/(2*kF)
+C 
+C  Modified version from Goll, Werner, Stoll, PCCP 7, 3917 (2005)
+C
+C  Author : J. Toulouse
+C  Date   : 11-08-09
+C*****************************************************************************
       implicit none
 
       real*8, intent(in) :: a
@@ -3296,6 +3307,7 @@ C*****************************************************************************
       e = ZKSR(1)
       return
       end
+
 C****************************************************************************
       subroutine ESRC_MULOD_GGA(rho,grd,mu,e)
 C*****************************************************************************
@@ -3385,6 +3397,7 @@ C*****************************************************************************
       e = ZKSR(1)
       return
       end
+
 C****************************************************************************
       subroutine ESRX_LDAERF(rhoa,grdaa,mu,e)
 C*****************************************************************************
@@ -3447,6 +3460,7 @@ C       divide by two because of spin scaling
 
       return
       end
+
 C****************************************************************************
       subroutine ESRX_LDAERFSPIN(rhoc,rhos,mu,e)
 C*****************************************************************************
@@ -3585,8 +3599,10 @@ C       divide by two because of spin scaling
 
       return
       end
+
 C****************************************************************************
       subroutine ELX_LDALAMSPIN (rhoc,rhos,VLAMBDA,e)
+C****************************************************************************
 C linear complement spin-dependent exchange LDA functional energy, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
       real*8   rhoc, rhos, VLAMBDA, e
@@ -3601,8 +3617,7 @@ C*****************************************************************************
       e = (1.d0 - VLAMBDA) * (ea + eb)
 
       return
-       end
-C*****************************************************************************
+      end
 
 C****************************************************************************
       subroutine ESRC_LDAERFSPIN(rhoc,rhos,mu,e)
@@ -3662,6 +3677,7 @@ C     Spin-polarized case
 
       return
       end
+
 C****************************************************************************
       subroutine ESRC_LDAERFSPIN_VWN5(rhoc,rhos,mu,e)
 C*****************************************************************************
@@ -3718,8 +3734,10 @@ C     Spin-polarized case
 
       return
       end
+
 C****************************************************************************
       subroutine ELC_LDALAMSPIN (rhoc,rhos,VLAMBDA,dospin,e)
+C****************************************************************************
 C linear complement spin-dependent non-scaled correlation LDA functional, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
       real*8   rhoc, rhos, VLAMBDA
@@ -3734,7 +3752,7 @@ C*****************************************************************************
 
       return
        end
-C*****************************************************************************
+
 C****************************************************************************
       subroutine ESRC_MD_LDAERF (rhoc,rhos,mu,dospin,e)
 C*****************************************************************************
@@ -3858,11 +3876,12 @@ C     multiply by rhoc to get energy density
 C*****************************************************************************
       subroutine ecorrlr(rs,z,mu,eclr)
 C*****************************************************************************
-ccc Hartree atomic units used
-ccc for given density parameter rs, spin polarization z
-ccc and cutoff parameter mu
-ccc gives the correlation energy of the LR gas
-ccc  => eclr
+C     Hartree atomic units used
+C     for given density parameter rs, spin polarization z
+C     and cutoff parameter mu
+C     gives the correlation energy of the LR gas
+C     => eclr
+C****************************************************************************
       implicit none
       real*8, intent(in) :: rs, z, mu
       real*8, intent(out) :: eclr
@@ -3872,7 +3891,7 @@ ccc  => eclr
       real*8   coe2,coe3,coe4,coe5
       real*8   a1,a2,a3,a4,b0
       real*8, parameter :: pi = 3.141592653589793d0
-cc parameters from the fit
+C     parameters from the fit
       real*8, parameter :: adib = 0.784949d0
       real*8, parameter :: q1a  = -0.388d0
       real*8, parameter :: q2a  = 0.676d0
@@ -3935,7 +3954,7 @@ cc parameters from the fit
 
 C*****************************************************************************
       subroutine ecorrlrVWN5(rs,z,mu,eclr)
-C
+C*****************************************************************************
 C     Modified version of ecorrlr for VWN5 functional
 C
 C     Created 2nd July 2018, Erik Kjellgren
@@ -3950,7 +3969,7 @@ C*****************************************************************************
       real*8   a1,a2,a3,a4,b0
       real*8   ecVWN5
       real*8, parameter :: pi = 3.141592653589793d0
-cc parameters from the fit
+C     parameters from the fit
       real*8, parameter :: adib = 0.784949d0
       real*8, parameter :: q1a  = -0.388d0
       real*8, parameter :: q2a  = 0.676d0
@@ -4009,10 +4028,11 @@ cc parameters from the fit
 C*****************************************************************************
       subroutine vcorrlr(rs,z,mu,vclrup,vclrdown)
 C*****************************************************************************
-ccc Hartree atomic units used
-ccc for given density parameter rs, spin polarization z
-ccc and cutoff mu it gives the correlation LSD potential for LR interaction
-ccc  => vclrup (spin-up electrons), vclrdown (spin-down electrons)
+C     Hartree atomic units used
+C     for given density parameter rs, spin polarization z
+C     and cutoff mu it gives the correlation LSD potential for LR interaction
+C     => vclrup (spin-up electrons), vclrdown (spin-down electrons)
+C****************************************************************************
       implicit none
       real*8   rs,z,mu,eclr,eclrrs,eclrz,vclrup,vclrdown
       real*8   ec,ecd,ecz
@@ -4027,12 +4047,11 @@ ccc  => vclrup (spin-up electrons), vclrdown (spin-down electrons)
       real*8   q1a,q2a,q3a,t1a,t2a,t3a,adib
 
 #include "pi.h"
-!     pi=dacos(-1.d0)
       alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
       cf=1.d0/alpha
 
       phi=((1.d0+z)**(2.d0/3.d0)+(1.d0-z)**(2.d0/3.d0))/2.d0
-cc parameters from the fit
+C     parameters from the fit
       adib   = 0.784949d0
       q1a    = -0.388d0
       q2a    = 0.676d0
@@ -4173,9 +4192,10 @@ cc parameters from the fit
 C*****************************************************************************
       real*8 pure function g0f(x)
 C*****************************************************************************
-ccc on-top pair-distribution function
-ccc Gori-Giorgi and Perdew, PRB 64, 155102 (2001)
-ccc x -> rs
+C     on-top pair-distribution function
+C     Gori-Giorgi and Perdew, PRB 64, 155102 (2001)
+C     x -> rs
+C****************************************************************************
       implicit none
       real*8, intent(in) :: x
       real*8, parameter :: C0f = 0.0819306d0
@@ -4190,8 +4210,9 @@ ccc x -> rs
 C*****************************************************************************
       real*8   function g0d(rs)
 C*****************************************************************************
-ccc derivative of on-top pair-distribution function
-ccc Gori-Giorgi and Perdew, PRB 64, 155102 (2001)
+C     derivative of on-top pair-distribution function
+C     Gori-Giorgi and Perdew, PRB 64, 155102 (2001)
+C****************************************************************************
       implicit none
       real*8   Bg0,Cg0,Dg0,Eg0,Fg0,rs
       Cg0             = 0.0819306d0
@@ -4211,7 +4232,6 @@ C*****************************************************************************
       implicit none
       real*8   cf,rs,p2p,p3p
 #include "pi.h"
-!     pi=dacos(-1.d0)
       cf=(9.d0*pi/4.d0)**(1.d0/3.d0)
       p2p    = 0.04d0
       p3p    = 0.4319d0
@@ -4220,11 +4240,12 @@ C*****************************************************************************
       return
       end
 
+C*****************************************************************************
       real*8   function dpold(rs)
+C*****************************************************************************
       implicit none
       real*8   cf,rs,p2p,p3p
 #include "pi.h"
-!     pi=dacos(-1.d0)
       cf=(9.d0*pi/4.d0)**(1.d0/3.d0)
       p2p    = 0.04d0
       p3p    = 0.4319d0
@@ -4244,7 +4265,6 @@ C*****************************************************************************
       implicit none
       real*8   a2,b2,c2,d2,x,Acoul
 #include "pi.h"
-!     pi=dacos(-1.d0)
       Acoul=2.d0*(log(2.d0)-1.d0)/pi**2
       a2              = 5.84605d0
       c2              = 3.91744d0
@@ -4260,7 +4280,6 @@ C*****************************************************************************
       implicit none
       real*8   a2,b2,c2,d2,x,Acoul
 #include "pi.h"
-!     pi=dacos(-1.d0)
       Acoul=2.d0*(log(2.d0)-1.d0)/pi**2
       a2              = 5.84605d0
       c2              = 3.91744d0
@@ -4277,17 +4296,18 @@ C*****************************************************************************
 C*****************************************************************************
       subroutine ecPW92(x,y,ec,ecd,ecz)
 C*****************************************************************************
-c correlation energy and its derivative w.r.t. rs and z at mu=infinity
-c Perdew & Wang PRB 45, 13244 (1992)
-c in Hartree; ec=ec(rs,zeta)
-c x -> rs; y -> zeta
-ccc ecd is d/drs ec
-ccc ecz is d/dz ec
+C     correlation energy and its derivative w.r.t. rs and z at mu=infinity
+C     Perdew & Wang PRB 45, 13244 (1992)
+C     in Hartree; ec=ec(rs,zeta)
+C     x -> rs; y -> zeta
+C     ecd is d/drs ec
+C     ecz is d/dz ec
+C****************************************************************************
       implicit none
       real*8, intent(in) :: x, y
       real*8, intent(out) :: ec, ecd, ecz
-      real*8   f02,ff,ec0,ec0d,ec1,ec1d,
-     $     aaa,G,Gd,alfac,alfacd
+      real*8 :: f02,ff,ec0,ec0d,ec1,ec1d,
+     $          aaa,G,Gd,alfac,alfacd
       real*8, parameter :: pi = 3.141592653589793d0
 
       f02=4.d0/(9.d0*(2.d0**(1.d0/3.d0)-1.d0))
@@ -4296,7 +4316,7 @@ ccc ecz is d/dz ec
      $     2.d0)/(2.d0**(4.d0/3.d0)-2.d0)
 
       aaa=(1.d0-log(2.d0))/pi**2
-      call  GPW(x,aaa,0.21370d0,7.5957d0,3.5876d0,
+      call GPW(x,aaa,0.21370d0,7.5957d0,3.5876d0,
      $     1.6382d0,0.49294d0,G,Gd)
       ec0 =G
       ec0d=Gd
@@ -4326,7 +4346,8 @@ ccc ecz is d/dz ec
 C*****************************************************************************
       pure subroutine GPW(x,Ac,alfa1,beta1,beta2,beta3,beta4,G,Gd)
 C*****************************************************************************
-ccc Gd is d/drs G
+C     Gd is d/drs G
+C****************************************************************************
       implicit none
       real*8, intent(in) :: Ac,alfa1,beta1,beta2,beta3,beta4,x
       real*8, intent(out) :: G, Gd
@@ -4342,6 +4363,7 @@ ccc Gd is d/drs G
      $     beta4*x**2)))
       return
       end
+
 C*****************************************************************************
       real*8   function g0s(rs)
 C*****************************************************************************
@@ -4359,9 +4381,10 @@ C*****************************************************************************
       g0s=(2.d0**f53)*(1.d0-0.02267d0*rs)/((5.d0*alpha2*rs2)
      >    *(1.d0+0.4319d0*rs+0.04d0*rs2))
       end
+
 C*****************************************************************************
       subroutine HS(z,k,H)
-C
+C*****************************************************************************
 C     Smoothening formula for the SRCMULO and SRCPBELO functionals 
 C     Cancels the discontinuety arising from the max() function.
 C
@@ -4370,7 +4393,6 @@ C             z   :   max(a,b)
 C             k   :   
 C     OUTPUT:
 C             H  
-C
 C*****************************************************************************
       real*8   z,h,k
 ! dftcom.h : heaviside_pvalue
@@ -4383,7 +4405,7 @@ C*****************************************************************************
 
 C*****************************************************************************
       real*8 pure function ecVWN5(rs, zeta)
-C
+C*****************************************************************************
 C     Heavily based on the implementation in libxc
 C     
 C     Input  :
