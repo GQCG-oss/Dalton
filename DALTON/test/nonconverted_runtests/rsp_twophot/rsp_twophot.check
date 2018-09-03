@@ -35,7 +35,7 @@ CTRL[4]=2
 ERROR[4]="SYMMETRY NOT CORRECT"
 
 # Energy
-CRIT1=`$GREP "Final * HF energy\: * \-456\.34109108." $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-456\.3410910(7|8)." $log | wc -l`
 TEST[5]=`expr   $CRIT1`
 CTRL[5]=1
 ERROR[5]="FINAL HF ENERGY NOT CORRECT"

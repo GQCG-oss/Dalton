@@ -42,8 +42,8 @@ CTRL[4]=1
 ERROR[4]="ENERGY NOT CORRECT"
 
 # Zero-field splitting
-CRIT1=`$GREP "\@ZFS parameter D =   1.50937[0-1] cm\-1" $log | wc -l`
-CRIT2=`$GREP "\@ZFS parameter E =   (0| ).000000 cm\-1" $log | wc -l`
+CRIT1=`$GREP "\@ZFS parameter D = * 1.5093.. cm\-1" $log | wc -l`
+CRIT2=`$GREP "\@ZFS parameter E = *0*.000000 cm\-1" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[5]=2
 ERROR[5]="ZERO-FIELD-SPLITTING NOT CORRECT"
