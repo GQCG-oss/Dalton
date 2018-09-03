@@ -1,5 +1,5 @@
 #define SIRFCK_DEBUG -1
-#define SIRFCK_DEBUG_HERMIT -1
+#define SIRFCK_HERMIT_DEBUG -1
 !
 !...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -329,7 +329,7 @@ C           CALL SETHER(IPRHER,NEWGEO,WORK,LWORK)
          DO I = 1,NDMAT
             ISYMDM_local(I) = ISYMDM(I) - 1 ! 1:8 -> 0:7 range for Hermit
          END DO
-         IPRHER = MAX(IPRFCK/100, SIRFCK_DEBUG_HERMIT/10)
+         IPRHER = MAX(IPRFCK/100, SIRFCK_HERMIT_DEBUG/10)
 C
 C        Special code for short range/long range integrals
 C        ... never short-range integrals in first call of HERFCK
@@ -425,12 +425,11 @@ C
 
             NFSRTYP = 1
             NFSRAO = NSR_DMAT ! FT
+            IFC_base = IFCTYP(1)
             IF (NASHT.GT.0 .AND. (.NOT.DOCISRDFT)) THEN
                ! IFCTYP(1) might be 0 for "FTC", thus we go for the FXV/FTV value
                ! as representative for all 1:NSR_DMAT matrices
-               IFC_base = IFCTYP(2)
-            ELSE
-               IFC_base = IFCTYP(1)
+               IF (IFC_base .EQ. 0) IFC_base = IFCTYP(2)
             END IF
 #if SIRFCK_DEBUG > 0
       write(lupri,*) 'IFC_base, TRIPLET_local',IFC_base,TRIPLET_local
