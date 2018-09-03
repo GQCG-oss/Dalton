@@ -43,3 +43,6 @@ output_test.run(
     ['singci.dal'], ['h.mol'], f={'out': output_filter},
     accepted_errors=['not implemented for parallel calculations'],
     )
+
+sys.exit(output_test.return_code)
+
