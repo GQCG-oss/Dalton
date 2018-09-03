@@ -635,14 +635,14 @@ C     correlation functionals
       external ESRC_PBETCSJERF, ESRC_PBETCSERF, ESRC_PBERIERF
       external ESRC_LYPRIERF
       external ESRC_PBEWIERF,   ESRC_PBEGWSERF, ESRC_PBELOERF
-      external ESRC_PBEGWSERF_PW92
+      external ESRC_PBEGWSERF_PW92, ESRC_TPSS
 
 C     spin functionals
       external ESRX_LDAERFSPIN
       external ESRC_LDAERFSPIN, ESRC_LDAERFSPIN_VWN5
       external ESRC_PBEGWSERFSPIN
       external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA
-      external ESRC_TPSS
+      external ESRC_SPINTPSS
 C     sr mdc func
       external ESRC_MD_LDAERF
 
@@ -694,7 +694,7 @@ c  Exchange  ------------------------------------------------------------
       IF(DOSRX_PBEGWS .OR. DOSRX_PBEGWS_S) THEN
 !        call DESRX_SPINGGA(ESRX_PBEGWSERF,rho,grd2,CHIVAL,
 !     >                     norder,Ex,d1Ex,d2Ex)
-         call DESRX_SPINmetaGGA(ESRX_PBEGWSERF, rho, grd2, tau,laplace, 
+         call DESRX_BOTHMGGA(ESRX_PBEGWSERF, rho, grd2, tau,laplace, 
      >                       chival, norder, Ex, d1Ex, d2Ex)
       END IF
 
@@ -705,8 +705,8 @@ c  Exchange  ------------------------------------------------------------
       ENDIF
 
 !     TPSS exchange functional
-      IF(DOSRX_TPSS_S) THEN
-        call DESRX_SPINmetaGGA(ESRX_TPSS,rho,grd2,tau,laplace,
+      IF(DOSRX_TPSS_S .OR. DOSRX_TPSS) THEN
+        call DESRX_BOTHMGGA(ESRX_TPSS,rho,grd2,tau,laplace,
      >                     chival,norder,Ex,d1Ex,d2Ex)
       ENDIF
 
@@ -810,14 +810,20 @@ C  Correlation  ----------------------------------------------------------
         temp_grd2(2:3) = 0.0d0
 !        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,grd2,CHIVAL,norder,
 !     >                     Ec,d1Ec,d2Ec)
-         call DESRC_SPINmetaGGA(ESRC_PBEGWSERFSPIN, rho, grd2, tau,
+         call DESRC_SPINMGGA(ESRC_PBEGWSERFSPIN, rho, grd2, tau,
      >                    laplace,  chival, norder, Ec, d1Ec, d2Ec)
       ENDIF
 
-!     TPSS correlation functional
+!     TPSS correlation spin-polarized functional
       IF(DOSRC_TPSS_S) THEN
-        call DESRC_SPINmetaGGA(ESRC_TPSS,rho,temp_grd2,tau,laplace,
-     >                     chival,norder,Ex,d1Ex,d2Ex)
+        call DESRC_SPINMGGA(ESRC_SPINTPSS,rho,grd2,tau,laplace,
+     >                     chival,norder,Ec,d1Ec,d2Ec)
+      ENDIF
+
+!     TPSS correlation spin-unpolarized functional
+      IF(DOSRC_TPSS) THEN
+        call DESRC_MGGA(ESRC_TPSS,rho,grd2,tau,laplace,
+     >                     chival,norder,Ec,d1Ec,d2Ec)
       ENDIF
 
 C Kamal SHARKAS 20-05-11 beg

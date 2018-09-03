@@ -22,7 +22,7 @@
      &        DOSRC_PBETCSJ, DOSRC_PBERI, DOSRC_PBEWI, DOSRX_PBERI,     &
      &        DOSRX_PBEGWS, DOSRC_PBEGWS, DOSRX_LDA_S, DOSRC_LDA_S,     &
      &        DOSRC_LDA_PW92, DOSRX_LDA_PW92, DOSRC_VWN5_S,             &
-     &        DOSRC_TPSS_S, DOSRX_TPSS_S,                               &
+     &        DOSRC_TPSS_S, DOSRC_TPSS, DOSRX_TPSS_S, DOSRX_TPSS,       &
      &        DOSRX_PBEGWS_S, DOSRC_PBEGWS_S, DOSRC_PBEGWS_PW92,        &
      &        DOSRC_MULOC_GGA, DOSRC_MULOD_GGA, DOSRC_MULOE_GGA,        &
      &        DFT_SPINDNS,  DFT_LOCALSPIN, DOSRC_MD_LDA, DOSRC_PBELO,   &
@@ -46,7 +46,7 @@
      &        DOSRC_PBETCSJ, DOSRC_PBERI, DOSRC_PBEWI, DOSRX_PBERI,     &
      &        DOSRX_PBEGWS, DOSRC_PBEGWS, DOSRX_LDA_S,  DOSRC_LDA_S,    &
      &        DOSRC_LDA_PW92, DOSRX_LDA_PW92, DOSRC_VWN5_S,             &
-     &        DOSRC_TPSS_S, DOSRX_TPSS_S,                               &
+     &        DOSRC_TPSS_S, DOSRC_TPSS, DOSRX_TPSS_S, DOSRX_TPSS,       &
      &        DOSRX_PBEGWS_S,  DOSRC_PBEGWS_S, DOSRC_PBEGWS_PW92,       &
      &        DOSRC_MULOC_GGA, DOSRC_MULOD_GGA, DOSRC_MULOE_GGA,        &
      &        DFT_SPINDNS,  DFT_LOCALSPIN, DOSRC_MD_LDA, DOSRC_PBELO,   &
