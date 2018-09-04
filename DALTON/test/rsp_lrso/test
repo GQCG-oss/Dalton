@@ -41,3 +41,6 @@ output_test.run(
     ['rsp_lrso.dal'], ['rsp_lrso.mol'], f={'out': output_filter},
     accepted_errors=['not implemented for parallel calculations'],
     )
+
+sys.exit(output_test.return_code)
+
