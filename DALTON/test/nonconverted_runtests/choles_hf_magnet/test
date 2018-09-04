@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['choles_hf_magnet.dal'], ['choles_hf_magnet.mol'], {'out': f})
+test.run(['choles_hf_magnet.dal'], ['choles_hf_magnet.mol'], f={'out': f})
 
 sys.exit(test.return_code)

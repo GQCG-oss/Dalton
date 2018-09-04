@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['rpa_cis.dal'], ['rpa_cis.mol'], {'out': f})
+test.run(['rpa_cis.dal'], ['rpa_cis.mol'], f={'out': f})
 
 sys.exit(test.return_code)

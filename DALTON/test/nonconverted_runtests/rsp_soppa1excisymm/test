@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['rsp_soppa1excisymm.dal'], ['rsp_soppa1excisymm.mol'], {'out': f})
+test.run(['rsp_soppa1excisymm.dal'], ['rsp_soppa1excisymm.mol'], f={'out': f})
 
 sys.exit(test.return_code)

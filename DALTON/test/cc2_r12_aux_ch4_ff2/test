@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+#   cc2_r12_aux_ch4_ff2
+#   -------------
+#   Molecule:         Methane (CH4)
+#   Wave Function:    CC2-R12 / 6-311G**
+#   Test Purpose:     - Check CC2-R12 finite field implementation
+#                     - Check .ASYMSD and .NOBMAT options
+#                     - non-direct mode
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(string = 'Total SCF   energy:',
+      rel_tolerance = 1.0e-10)
+
+f.add(string = 'Total MP2-R12/A energy:',
+      rel_tolerance = 1.0e-10)
+
+f.add(string = 'Total CC2-R12/A energy:',
+      rel_tolerance = 1.0e-10)
+
+f.add(from_string = 'Total Molecular Dipole Moment',
+      num_lines = 8,
+      abs_tolerance = 1.0e-6)
+
+f.add(from_string = 'FINAL CC2 RESULTS FOR THE FIRST HYPERPOLARIZABILITIES',
+      num_lines = 11,
+      abs_tolerance = 1.0e-7)
+
+test.run(['cc2_r12_aux_ch4_ff2.dal'], ['cc2_r12_aux_ch4_ff2.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

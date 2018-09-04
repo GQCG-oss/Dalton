@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['cc_energy_triples.dal'], ['cc_energy_triples.mol'], {'out': f})
+test.run(['cc_energy_triples.dal'], ['cc_energy_triples.mol'], f={'out': f})
 
 sys.exit(test.return_code)

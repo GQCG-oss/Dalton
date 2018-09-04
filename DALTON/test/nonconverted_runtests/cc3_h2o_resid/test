@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['cc3_h2o_resid.dal'], ['cc3_h2o_resid.mol'], {'out': f})
+test.run(['cc3_h2o_resid.dal'], ['cc3_h2o_resid.mol'], f={'out': f})
 
 sys.exit(test.return_code)
