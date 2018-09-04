@@ -1265,7 +1265,7 @@ C
          END IF
 C
          IF (IPRRSP.GT.30) THEN
-            DO, ICSIM = 1,NCSIM
+            DO ICSIM = 1,NCSIM
                WRITE(LUPRI,'(/A,I5)')
      *         ' FVTD total contribution FOR VECTOR ',ICSIM
                CALL OUTPUT(FVTD(1,1,ICSIM),
@@ -1282,7 +1282,7 @@ C
             END IF
             IF (DOMCSRDFT) THEN
                WRITE(LUPRI,'(/A,I5)')
-     *         'V^[2c]sr_Hxc total contribution FOR VECTOR ',ICSIM
+     *         'V^[2c]sr_Hxc total contribution for conf vector',ICSIM
                CALL OUTPUT(FVTD(1,1,NCSIM+ICSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
             END IF
@@ -1383,10 +1383,8 @@ C
 ! Manu: build the Y part of the sigma vector (due to the Vsr[2c] operator)
 C
 C
+            IF (.NOT. (TDA .OR. CISRPA)) THEN
                JYEVECS=JEVECS+KZVAR
-!
-C
-C
                CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,WRK(KCREF),
      &                  EVECS(JYEVECS),WRK(KSRW),DUMMY,
      &                  .TRUE.,.FALSE.,XINDX,JSPIN1,JSPIN2,
@@ -1412,6 +1410,7 @@ C
                     CALL OUTPUT(EVECS(JEVECS),1,KZVAR,1,2,
      *                          KZVAR,2,-1,LUPRI)
                END IF
+            END IF ! not (TDA or CISRPA)
 C
 C
 C     Special MCSRDFT correction, corresponding to the effective operator
