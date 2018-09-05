@@ -1104,25 +1104,6 @@ Chj      ... this ought never to happen ...
    20 CONTINUE
       RETURN
       END
-C  /* Deck defopn */
-      SUBROUTINE DEFOPN(LU)
-C
-C 29-Sep-1986 Hans Joergen Aa. Jensen
-C
-C DEFAULT OPEN :
-C
-C     OPEN(LU,STATUS='UNKNOWN',FORM='UNFORMATTED') with
-C     default file name, following CWBOPN by C.W.Bauschlicher.
-C
-C     This is especially useful for CRAY machines which do not
-C     allow for default names in the OPEN statement (i.e.
-C     FILE='name' must be specified if you use OPEN).
-C
-      REWIND (LU)
-      READ   (LU,ERR=1,END=1) A
-    1 REWIND (LU)
-      RETURN
-      END
 C  /* Deck readi */
       SUBROUTINE READI (IT,N,INTX)
 C
@@ -1192,17 +1173,17 @@ C  /* Deck readt */
       RETURN
  10   CONTINUE
       INQUIRE(UNIT=IT,NAME=FNAME)
-      WRITE (LUPRI,*) 'READT: END reading file ',FNAME,
-     & ' UNIT ',IT, ' record length ',N
-      WRITE (  0  ,*) 'READT: END reading file ',FNAME,
-     & ' UNIT ',IT, ' record length ',N
+      WRITE (LUPRI,*) 'READT: END reading file ',FNAME
+      WRITE (LUPRI,*) 'UNIT ',IT, ' record length ',N
+      WRITE (  0  ,*) 'READT: END reading file ',FNAME
+      WRITE (  0  ,*) 'UNIT ',IT, ' record length ',N
       CALL QUIT('READT: END reading file')
  20   CONTINUE
       INQUIRE(UNIT=IT,NAME=FNAME)
-      WRITE (LUPRI,*) 'READT: ERROR reading file ',FNAME,
-     & ' UNIT ',IT, ' record length ',N,' error code ',IERR
-      WRITE (  0  ,*) 'READT: ERROR reading file ',FNAME,
-     & ' UNIT ',IT, ' record length ',N,' error code ',IERR
+      WRITE (LUPRI,*) 'READT: ERROR reading file ',FNAME
+      WRITE (LUPRI,*) 'UNIT ',IT, ' record length ',N,' error code ',IERR
+      WRITE (  0  ,*) 'READT: ERROR reading file ',FNAME
+      WRITE (  0  ,*) 'UNIT ',IT, ' record length ',N,' error code ',IERR
       CALL QUIT('READT: Error reading file')
  30   CONTINUE
       WRITE (LUPRI,*) 'READT ERRROR: non-positive file unit number ',IT
