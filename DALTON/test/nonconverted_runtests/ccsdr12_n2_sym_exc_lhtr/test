@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['ccsdr12_n2_sym_exc_lhtr.dal'], ['ccsdr12_n2_sym_exc_lhtr.mol'], {'out': f})
+test.run(['ccsdr12_n2_sym_exc_lhtr.dal'], ['ccsdr12_n2_sym_exc_lhtr.mol'], f={'out': f})
 
 sys.exit(test.return_code)

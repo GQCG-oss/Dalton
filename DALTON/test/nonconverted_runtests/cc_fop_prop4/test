@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['cc_fop_prop4.dal'], ['cc_fop_prop4.mol'], {'out': f})
+test.run(['cc_fop_prop4.dal'], ['cc_fop_prop4.mol'], f={'out': f})
 
 sys.exit(test.return_code)

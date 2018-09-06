@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(string = 'Atoms and their geometry are read in Z-matrix format')
 f.add(string = 'Symmetry class found:')
-f.add(string = 'The following elements were found:')
+f.add(string = 'The following symmetry elements were found:')
 f.add(string = 'Full point group is:')
 f.add(string = 'Represented as:')
 

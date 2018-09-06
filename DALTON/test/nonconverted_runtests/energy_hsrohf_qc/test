@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['energy_hsrohf_qc.dal'], ['energy_hsrohf_qc.mol'], {'out': f})
+test.run(['energy_hsrohf_qc.dal'], ['energy_hsrohf_qc.mol'], f={'out': f})
 
 sys.exit(test.return_code)
