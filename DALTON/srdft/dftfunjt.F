@@ -20,7 +20,7 @@ C   See notes in SRDFTLTRJT() for ordering of derivatives.
 C   
 C   Written by, Erik R. Kjellgren
 C   Based DESRC_SPINGGA by H. J. Aa. Jensen and Erik D. Hedegaard
-C   Generated: August 30, 2018
+C   Generated: September 06, 2018
 C*****************************************************************************
       implicit none
       external ESRC_LDA
@@ -35,6 +35,7 @@ C*****************************************************************************
       real*8, parameter :: dummy_rho_s = 0.0d0
       
       rho_c = rho(1)
+      ! Do checks of input
       
       E = 0.0d0
       if (norder .ge. 1) then
@@ -98,7 +99,7 @@ C   See notes in SRDFTLTRJT() for ordering of derivatives.
 C   
 C   Written by, Erik R. Kjellgren
 C   Based DESRC_SPINGGA by H. J. Aa. Jensen and Erik D. Hedegaard
-C   Generated: August 30, 2018
+C   Generated: September 06, 2018
 C*****************************************************************************
       implicit none
       external ESRC_SPINLDA
@@ -108,7 +109,8 @@ C*****************************************************************************
       real*8, intent(out) :: E, d1E(5), d2E(15)
       
       real*8 :: rho_c, rho_cp, rho_cm, rho_s, rho_sp, rho_sm, Ep_1,
-     & Em_1, Epp_2_1, Emm_2_1, Ep_2, Em_2, hr_c, hr_s
+     & Em_1, Epp_2_1, Emm_2_1, Epm_2_1, Emp_2_1, Ep_2, Em_2, hr_c,
+     & hr_s
       
       rho_c = rho(1)
       rho_s = rho(2)
@@ -155,6 +157,8 @@ C*****************************************************************************
          if (hr_s .gt. 0.0d0) then
             if (hr_c .gt. 0.0d0) then
                call ESRC_SPINLDA(rho_cp,rho_sp,mu,Epp_2_1)
+               call ESRC_SPINLDA(rho_cm,rho_sp,mu,Epm_2_1)
+               call ESRC_SPINLDA(rho_cp,rho_sm,mu,Emp_2_1)
                call ESRC_SPINLDA(rho_cm,rho_sm,mu,Emm_2_1)
             end if
          end if
@@ -179,8 +183,8 @@ C*****************************************************************************
          if (hr_s .gt. 0.0d0) then
             ! d2E / (drho_s * drho_c)
             if (hr_c .gt. 0.0d0) then
-               d2E(2)=(Epp_2_1-Ep_2-Ep_1+2.0d0*E-Em_2-Em_1+Emm_2_1)/
-     &                     (2.0d0*hr_s*hr_c)
+               d2E(2)=(Epp_2_1-Epm_2_1-Emp_2_1+Emm_2_1)/(4.0d0*hr_s*
+     &                     hr_c)
             end if
             ! d2E / (drho_s**2)
             d2E(3)=(Ep_2-2.0d0*E+Em_2)/(hr_s**2)
@@ -208,7 +212,7 @@ C   See notes in SRDFTLTRJT() for ordering of derivatives.
 C   
 C   Written by, Erik R. Kjellgren
 C   Based DESRC_SPINGGA by H. J. Aa. Jensen and Erik D. Hedegaard
-C   Generated: August 30, 2018
+C   Generated: September 06, 2018
 C*****************************************************************************
       implicit none
       external ESRC_GGA
@@ -218,7 +222,8 @@ C*****************************************************************************
       real*8, intent(out) :: E, d1E(5), d2E(15)
       
       real*8 :: rho_c, rho_cp, rho_cm, gamma_cc, gamma_ccp, gamma_ccm,
-     & Ep_1, Em_1, Epp_3_1, Emm_3_1, Ep_3, Em_3, hr_c, hg_cc
+     & Ep_1, Em_1, Epp_3_1, Emm_3_1, Epm_3_1, Emp_3_1, Ep_3, Em_3,
+     & hr_c, hg_cc
       
       rho_c = rho(1)
       gamma_cc = grad2(1)
@@ -269,6 +274,8 @@ C*****************************************************************************
          if (hg_cc .gt. 0.0d0) then
             if (hr_c .gt. 0.0d0) then
                call ESRC_GGA(rho_cp,gamma_ccp,mu,Epp_3_1)
+               call ESRC_GGA(rho_cm,gamma_ccp,mu,Epm_3_1)
+               call ESRC_GGA(rho_cp,gamma_ccm,mu,Emp_3_1)
                call ESRC_GGA(rho_cm,gamma_ccm,mu,Emm_3_1)
             end if
          end if
@@ -293,8 +300,8 @@ C*****************************************************************************
          if (hg_cc .gt. 0.0d0) then
             ! d2E / (dgamma_cc * drho_c)
             if (hr_c .gt. 0.0d0) then
-               d2E(4)=(Epp_3_1-Ep_3-Ep_1+2.0d0*E-Em_3-Em_1+Emm_3_1)/
-     &                     (2.0d0*hg_cc*hr_c)
+               d2E(4)=(Epp_3_1-Epm_3_1-Emp_3_1+Emm_3_1)/(4.0d0*hg_cc*
+     &                     hr_c)
             end if
             ! d2E / (dgamma_cc**2)
             d2E(6)=(Ep_3-2.0d0*E+Em_3)/(hg_cc**2)
@@ -325,7 +332,7 @@ C   See notes in SRDFTLTRJT() for ordering of derivatives.
 C   
 C   Written by, Erik R. Kjellgren
 C   Based DESRC_SPINGGA by H. J. Aa. Jensen and Erik D. Hedegaard
-C   Generated: August 30, 2018
+C   Generated: September 06, 2018
 C*****************************************************************************
       implicit none
       external ESRC_SPINGGA
@@ -336,11 +343,14 @@ C*****************************************************************************
       
       real*8 :: rho_c, rho_cp, rho_cm, rho_s, rho_sp, rho_sm, gamma_cc,
      & gamma_ccp, gamma_ccm, gamma_ss, gamma_ssp, gamma_ssm, gamma_cs,
-     & gamma_csp, gamma_csm, Ep_1, Em_1, Epp_2_1, Emm_2_1, Ep_2, Em_2,
-     & Epp_3_1, Emm_3_1, Epp_3_2, Emm_3_2, Ep_3, Em_3, Epp_4_1, Emm_4_1,
-     & Epp_4_2, Emm_4_2, Epp_4_3, Emm_4_3, Ep_4, Em_4, Epp_5_1, Emm_5_1,
-     & Epp_5_2, Emm_5_2, Epp_5_3, Emm_5_3, Epp_5_4, Emm_5_4, Ep_5,
-     & Em_5, hr_c, hr_s, hg_cc, hg_ss, hg_cs
+     & gamma_csp, gamma_csm, Ep_1, Em_1, Epp_2_1, Emm_2_1, Epm_2_1,
+     & Emp_2_1, Ep_2, Em_2, Epp_3_1, Emm_3_1, Epm_3_1, Emp_3_1, Epp_3_2,
+     & Emm_3_2, Epm_3_2, Emp_3_2, Ep_3, Em_3, Epp_4_1, Emm_4_1, Epm_4_1,
+     & Emp_4_1, Epp_4_2, Emm_4_2, Epm_4_2, Emp_4_2, Epp_4_3, Emm_4_3,
+     & Epm_4_3, Emp_4_3, Ep_4, Em_4, Epp_5_1, Emm_5_1, Epm_5_1, Emp_5_1,
+     & Epp_5_2, Emm_5_2, Epm_5_2, Emp_5_2, Epp_5_3, Emm_5_3, Epm_5_3,
+     & Emp_5_3, Epp_5_4, Emm_5_4, Epm_5_4, Emp_5_4, Ep_5, Em_5, hr_c,
+     & hr_s, hg_cc, hg_ss, hg_cs
       
       rho_c = rho(1)
       rho_s = rho(2)
@@ -442,6 +452,10 @@ C*****************************************************************************
             if (hr_c .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_cp,rho_sp,gamma_cc,gamma_ss,
      &                     gamma_cs,mu,Epp_2_1)
+               call ESRC_SPINGGA(rho_cm,rho_sp,gamma_cc,gamma_ss,
+     &                     gamma_cs,mu,Epm_2_1)
+               call ESRC_SPINGGA(rho_cp,rho_sm,gamma_cc,gamma_ss,
+     &                     gamma_cs,mu,Emp_2_1)
                call ESRC_SPINGGA(rho_cm,rho_sm,gamma_cc,gamma_ss,
      &                     gamma_cs,mu,Emm_2_1)
             end if
@@ -450,12 +464,20 @@ C*****************************************************************************
             if (hr_c .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_cp,rho_s,gamma_ccp,gamma_ss,
      &                     gamma_cs,mu,Epp_3_1)
+               call ESRC_SPINGGA(rho_cm,rho_s,gamma_ccp,gamma_ss,
+     &                     gamma_cs,mu,Epm_3_1)
+               call ESRC_SPINGGA(rho_cp,rho_s,gamma_ccm,gamma_ss,
+     &                     gamma_cs,mu,Emp_3_1)
                call ESRC_SPINGGA(rho_cm,rho_s,gamma_ccm,gamma_ss,
      &                     gamma_cs,mu,Emm_3_1)
             end if
             if (hr_s .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_c,rho_sp,gamma_ccp,gamma_ss,
      &                     gamma_cs,mu,Epp_3_2)
+               call ESRC_SPINGGA(rho_c,rho_sm,gamma_ccp,gamma_ss,
+     &                     gamma_cs,mu,Epm_3_2)
+               call ESRC_SPINGGA(rho_c,rho_sp,gamma_ccm,gamma_ss,
+     &                     gamma_cs,mu,Emp_3_2)
                call ESRC_SPINGGA(rho_c,rho_sm,gamma_ccm,gamma_ss,
      &                     gamma_cs,mu,Emm_3_2)
             end if
@@ -464,18 +486,30 @@ C*****************************************************************************
             if (hr_c .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_cp,rho_s,gamma_cc,gamma_ssp,
      &                     gamma_cs,mu,Epp_4_1)
+               call ESRC_SPINGGA(rho_cm,rho_s,gamma_cc,gamma_ssp,
+     &                     gamma_cs,mu,Epm_4_1)
+               call ESRC_SPINGGA(rho_cp,rho_s,gamma_cc,gamma_ssm,
+     &                     gamma_cs,mu,Emp_4_1)
                call ESRC_SPINGGA(rho_cm,rho_s,gamma_cc,gamma_ssm,
      &                     gamma_cs,mu,Emm_4_1)
             end if
             if (hr_s .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_c,rho_sp,gamma_cc,gamma_ssp,
      &                     gamma_cs,mu,Epp_4_2)
+               call ESRC_SPINGGA(rho_c,rho_sm,gamma_cc,gamma_ssp,
+     &                     gamma_cs,mu,Epm_4_2)
+               call ESRC_SPINGGA(rho_c,rho_sp,gamma_cc,gamma_ssm,
+     &                     gamma_cs,mu,Emp_4_2)
                call ESRC_SPINGGA(rho_c,rho_sm,gamma_cc,gamma_ssm,
      &                     gamma_cs,mu,Emm_4_2)
             end if
             if (hg_cc .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_c,rho_s,gamma_ccp,gamma_ssp,
      &                     gamma_cs,mu,Epp_4_3)
+               call ESRC_SPINGGA(rho_c,rho_s,gamma_ccm,gamma_ssp,
+     &                     gamma_cs,mu,Epm_4_3)
+               call ESRC_SPINGGA(rho_c,rho_s,gamma_ccp,gamma_ssm,
+     &                     gamma_cs,mu,Emp_4_3)
                call ESRC_SPINGGA(rho_c,rho_s,gamma_ccm,gamma_ssm,
      &                     gamma_cs,mu,Emm_4_3)
             end if
@@ -485,11 +519,19 @@ C*****************************************************************************
                call ESRC_SPINGGA(rho_cp,rho_s,gamma_cc,gamma_ss,gamma_cs
      &         p,mu,Epp_5_1)
                call ESRC_SPINGGA(rho_cm,rho_s,gamma_cc,gamma_ss,gamma_cs
+     &         p,mu,Epm_5_1)
+               call ESRC_SPINGGA(rho_cp,rho_s,gamma_cc,gamma_ss,gamma_cs
+     &         m,mu,Emp_5_1)
+               call ESRC_SPINGGA(rho_cm,rho_s,gamma_cc,gamma_ss,gamma_cs
      &         m,mu,Emm_5_1)
             end if
             if (hr_s .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_c,rho_sp,gamma_cc,gamma_ss,gamma_cs
      &         p,mu,Epp_5_2)
+               call ESRC_SPINGGA(rho_c,rho_sm,gamma_cc,gamma_ss,gamma_cs
+     &         p,mu,Epm_5_2)
+               call ESRC_SPINGGA(rho_c,rho_sp,gamma_cc,gamma_ss,gamma_cs
+     &         m,mu,Emp_5_2)
                call ESRC_SPINGGA(rho_c,rho_sm,gamma_cc,gamma_ss,gamma_cs
      &         m,mu,Emm_5_2)
             end if
@@ -497,11 +539,19 @@ C*****************************************************************************
                call ESRC_SPINGGA(rho_c,rho_s,gamma_ccp,gamma_ss,gamma_cs
      &         p,mu,Epp_5_3)
                call ESRC_SPINGGA(rho_c,rho_s,gamma_ccm,gamma_ss,gamma_cs
+     &         p,mu,Epm_5_3)
+               call ESRC_SPINGGA(rho_c,rho_s,gamma_ccp,gamma_ss,gamma_cs
+     &         m,mu,Emp_5_3)
+               call ESRC_SPINGGA(rho_c,rho_s,gamma_ccm,gamma_ss,gamma_cs
      &         m,mu,Emm_5_3)
             end if
             if (hg_ss .gt. 0.0d0) then
                call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ssp,gamma_cs
      &         p,mu,Epp_5_4)
+               call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ssm,gamma_cs
+     &         p,mu,Epm_5_4)
+               call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ssp,gamma_cs
+     &         m,mu,Emp_5_4)
                call ESRC_SPINGGA(rho_c,rho_s,gamma_cc,gamma_ssm,gamma_cs
      &         m,mu,Emm_5_4)
             end if
@@ -539,8 +589,8 @@ C*****************************************************************************
          if (hr_s .gt. 0.0d0) then
             ! d2E / (drho_s * drho_c)
             if (hr_c .gt. 0.0d0) then
-               d2E(2)=(Epp_2_1-Ep_2-Ep_1+2.0d0*E-Em_2-Em_1+Emm_2_1)/
-     &                     (2.0d0*hr_s*hr_c)
+               d2E(2)=(Epp_2_1-Epm_2_1-Emp_2_1+Emm_2_1)/(4.0d0*hr_s*
+     &                     hr_c)
             end if
             ! d2E / (drho_s**2)
             d2E(3)=(Ep_2-2.0d0*E+Em_2)/(hr_s**2)
@@ -548,13 +598,13 @@ C*****************************************************************************
          if (hg_cc .gt. 0.0d0) then
             ! d2E / (dgamma_cc * drho_c)
             if (hr_c .gt. 0.0d0) then
-               d2E(4)=(Epp_3_1-Ep_3-Ep_1+2.0d0*E-Em_3-Em_1+Emm_3_1)/
-     &                     (2.0d0*hg_cc*hr_c)
+               d2E(4)=(Epp_3_1-Epm_3_1-Emp_3_1+Emm_3_1)/(4.0d0*hg_cc*
+     &                     hr_c)
             end if
             ! d2E / (dgamma_cc * drho_s)
             if (hr_s .gt. 0.0d0) then
-               d2E(5)=(Epp_3_2-Ep_3-Ep_2+2.0d0*E-Em_3-Em_2+Emm_3_2)/
-     &                     (2.0d0*hg_cc*hr_s)
+               d2E(5)=(Epp_3_2-Epm_3_2-Emp_3_2+Emm_3_2)/(4.0d0*hg_cc*
+     &                     hr_s)
             end if
             ! d2E / (dgamma_cc**2)
             d2E(6)=(Ep_3-2.0d0*E+Em_3)/(hg_cc**2)
@@ -562,18 +612,18 @@ C*****************************************************************************
          if (hg_ss .gt. 0.0d0) then
             ! d2E / (dgamma_ss * drho_c)
             if (hr_c .gt. 0.0d0) then
-               d2E(7)=(Epp_4_1-Ep_4-Ep_1+2.0d0*E-Em_4-Em_1+Emm_4_1)/
-     &                     (2.0d0*hg_ss*hr_c)
+               d2E(7)=(Epp_4_1-Epm_4_1-Emp_4_1+Emm_4_1)/(4.0d0*hg_ss*
+     &                     hr_c)
             end if
             ! d2E / (dgamma_ss * drho_s)
             if (hr_s .gt. 0.0d0) then
-               d2E(8)=(Epp_4_2-Ep_4-Ep_2+2.0d0*E-Em_4-Em_2+Emm_4_2)/
-     &                     (2.0d0*hg_ss*hr_s)
+               d2E(8)=(Epp_4_2-Epm_4_2-Emp_4_2+Emm_4_2)/(4.0d0*hg_ss*
+     &                     hr_s)
             end if
             ! d2E / (dgamma_ss * dgamma_cc)
             if (hg_cc .gt. 0.0d0) then
-               d2E(9)=(Epp_4_3-Ep_4-Ep_3+2.0d0*E-Em_4-Em_3+Emm_4_3)/
-     &                     (2.0d0*hg_ss*hg_cc)
+               d2E(9)=(Epp_4_3-Epm_4_3-Emp_4_3+Emm_4_3)/(4.0d0*hg_ss*
+     &                     hg_cc)
             end if
             ! d2E / (dgamma_ss**2)
             d2E(10)=(Ep_4-2.0d0*E+Em_4)/(hg_ss**2)
@@ -581,23 +631,23 @@ C*****************************************************************************
          if (hg_cs .gt. 0.0d0) then
             ! d2E / (dgamma_cs * drho_c)
             if (hr_c .gt. 0.0d0) then
-               d2E(11)=(Epp_5_1-Ep_5-Ep_1+2.0d0*E-Em_5-Em_1+Emm_5_1)/
-     &                     (2.0d0*hg_cs*hr_c)
+               d2E(11)=(Epp_5_1-Epm_5_1-Emp_5_1+Emm_5_1)/(4.0d0*hg_cs*
+     &                     hr_c)
             end if
             ! d2E / (dgamma_cs * drho_s)
             if (hr_s .gt. 0.0d0) then
-               d2E(12)=(Epp_5_2-Ep_5-Ep_2+2.0d0*E-Em_5-Em_2+Emm_5_2)/
-     &                     (2.0d0*hg_cs*hr_s)
+               d2E(12)=(Epp_5_2-Epm_5_2-Emp_5_2+Emm_5_2)/(4.0d0*hg_cs*
+     &                     hr_s)
             end if
             ! d2E / (dgamma_cs * dgamma_cc)
             if (hg_cc .gt. 0.0d0) then
-               d2E(13)=(Epp_5_3-Ep_5-Ep_3+2.0d0*E-Em_5-Em_3+Emm_5_3)/
-     &                     (2.0d0*hg_cs*hg_cc)
+               d2E(13)=(Epp_5_3-Epm_5_3-Emp_5_3+Emm_5_3)/(4.0d0*hg_cs*
+     &                     hg_cc)
             end if
             ! d2E / (dgamma_cs * dgamma_ss)
             if (hg_ss .gt. 0.0d0) then
-               d2E(14)=(Epp_5_4-Ep_5-Ep_4+2.0d0*E-Em_5-Em_4+Emm_5_4)/
-     &                     (2.0d0*hg_cs*hg_ss)
+               d2E(14)=(Epp_5_4-Epm_5_4-Emp_5_4+Emm_5_4)/(4.0d0*hg_cs*
+     &                     hg_ss)
             end if
             ! d2E / (dgamma_cs**2)
             d2E(15)=(Ep_5-2.0d0*E+Em_5)/(hg_cs**2)
@@ -625,7 +675,7 @@ C   See notes in SRDFTLTRJT() for ordering of derivatives.
 C   
 C   Written by, Erik R. Kjellgren
 C   Based DESRX_SPINGGA by H. J. Aa. Jensen and Erik D. Hedegaard
-C   Generated: August 30, 2018
+C   Generated: September 06, 2018
 C*****************************************************************************
       implicit none
       external ESRX_BOTHLDA
@@ -636,8 +686,8 @@ C*****************************************************************************
       
       logical :: alpha_not_equal_beta
       real*8 :: rho_a, rho_ap, rho_am, rho_b, rho_bp, rho_bm, Ep_1,
-     & Em_1, Epp_2_1, Emm_2_1, Ep_2, Em_2, hr_a, hr_b, Ea, Eb, d1Eab(5),
-     & d2Eab(15)
+     & Em_1, Epp_2_1, Emm_2_1, Epm_2_1, Emp_2_1, Ep_2, Em_2, hr_a,
+     & hr_b, Ea, Eb, d1Eab(5), d2Eab(15)
       integer, save :: call_counter = 0
       
       call_counter = call_counter +1
@@ -779,7 +829,7 @@ C   See notes in SRDFTLTRJT() for ordering of derivatives.
 C   
 C   Written by, Erik R. Kjellgren
 C   Based DESRX_SPINGGA by H. J. Aa. Jensen and Erik D. Hedegaard
-C   Generated: August 30, 2018
+C   Generated: September 06, 2018
 C*****************************************************************************
       implicit none
       external ESRX_BOTHGGA
@@ -791,10 +841,12 @@ C*****************************************************************************
       logical :: alpha_not_equal_beta
       real*8 :: rho_a, rho_ap, rho_am, rho_b, rho_bp, rho_bm, gamma_aa,
      & gamma_aap, gamma_aam, gamma_bb, gamma_bbp, gamma_bbm, Ep_1,
-     & Em_1, Epp_2_1, Emm_2_1, Ep_2, Em_2, Epp_3_1, Emm_3_1, Epp_3_2,
-     & Emm_3_2, Ep_3, Em_3, Epp_4_1, Emm_4_1, Epp_4_2, Emm_4_2, Epp_4_3,
-     & Emm_4_3, Ep_4, Em_4, hr_a, hr_b, hg_aa, hg_bb, hg_ab, Ea, Eb,
-     & d1Eab(5), d2Eab(15)
+     & Em_1, Epp_2_1, Emm_2_1, Epm_2_1, Emp_2_1, Ep_2, Em_2, Epp_3_1,
+     & Emm_3_1, Epm_3_1, Emp_3_1, Epp_3_2, Emm_3_2, Epm_3_2, Emp_3_2,
+     & Ep_3, Em_3, Epp_4_1, Emm_4_1, Epm_4_1, Emp_4_1, Epp_4_2, Emm_4_2,
+     & Epm_4_2, Emp_4_2, Epp_4_3, Emm_4_3, Epm_4_3, Emp_4_3, Ep_4,
+     & Em_4, hr_a, hr_b, hg_aa, hg_bb, hg_ab, Ea, Eb, d1Eab(5), d2Eab(15
+     &)
       
       rho_a = rho(3)
       rho_b = rho(4)
@@ -888,12 +940,16 @@ C*****************************************************************************
          if (hg_aa .gt. 0.0d0) then
             if (hr_a .gt. 0.0d0) then
                call ESRX_BOTHGGA(rho_ap,gamma_aap,mu,Epp_3_1)
+               call ESRX_BOTHGGA(rho_am,gamma_aap,mu,Epm_3_1)
+               call ESRX_BOTHGGA(rho_ap,gamma_aam,mu,Emp_3_1)
                call ESRX_BOTHGGA(rho_am,gamma_aam,mu,Emm_3_1)
             end if
          end if
          if (hg_bb .gt. 0.0d0 .and. alpha_not_equal_beta) then
             if (hr_b .gt. 0.0d0) then
                call ESRX_BOTHGGA(rho_bp,gamma_bbp,mu,Epp_4_2)
+               call ESRX_BOTHGGA(rho_bm,gamma_bbp,mu,Epm_4_2)
+               call ESRX_BOTHGGA(rho_bp,gamma_bbm,mu,Emp_4_2)
                call ESRX_BOTHGGA(rho_bm,gamma_bbm,mu,Emm_4_2)
             end if
          end if
@@ -930,8 +986,8 @@ C*****************************************************************************
          if (hg_aa .gt. 0.0d0) then
             ! d2E / (dgamma_aa * drho_a)
             if (hr_a .gt. 0.0d0) then
-               d2Eab(4)=(Epp_3_1-Ep_3-Ep_1+2.0d0*Ea-Em_3-Em_1+Emm_3_1)/
-     &                     (2.0d0*hg_aa*hr_a)
+               d2Eab(4)=(Epp_3_1-Epm_3_1-Emp_3_1+Emm_3_1)/(4.0d0*
+     &                     hg_aa*hr_a)
             end if
             ! d2E / (dgamma_aa**2)
             d2Eab(6)=(Ep_3-2.0d0*Ea+Em_3)/(hg_aa**2)
@@ -939,8 +995,8 @@ C*****************************************************************************
          if (hg_bb .gt. 0.0d0 .and. alpha_not_equal_beta) then
             ! d2E / (dgamma_bb * drho_b)
             if (hr_b .gt. 0.0d0) then
-               d2Eab(8)=(Epp_4_2-Ep_4-Ep_2+2.0d0*Eb-Em_4-Em_2+Emm_4_2)/
-     &                     (2.0d0*hg_bb*hr_b)
+               d2Eab(8)=(Epp_4_2-Epm_4_2-Emp_4_2+Emm_4_2)/(4.0d0*
+     &                     hg_bb*hr_b)
             end if
             ! d2E / (dgamma_bb**2)
             d2Eab(10)=(Ep_4-2.0d0*Eb+Em_4)/(hg_bb**2)
@@ -1201,7 +1257,6 @@ C     LDA energy
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
       exerflda = XKSR(1)
 
-
       grd2 = 4.0d0*grdaa
 !     Code generated by Mathematica
       exerfpbe = (-5.521381337364587693627982d1*exerflda*(1.63580000000
@@ -1320,7 +1375,6 @@ C
 C
 C         Constants for PBE hole
 C
-
       Data A,B,C,D,E
      $     / 1.0161144D0,-3.7170836D-1,-7.7215461D-2,
      $        5.7786348D-1,-5.1955731D-2 /
@@ -3129,7 +3183,7 @@ C*****************************************************************************
       real*8   ecerfpbe
       real*8   t1
       real*8   alpha, beta, gamma_symbol
-      real*8   phi, phi2, phi3, phi4
+      real*8   phi, phi2, phi3
       real*8   Aa, Ab, Ac, tq, arglog
 
       rho13 = rhoc**(1.d0/3.d0)
@@ -3157,7 +3211,6 @@ C     LDA energy ----
       phi=((1d0+zeta)**(2d0/3d0)+(1d0-zeta)**(2d0/3d0))/2d0
       phi2=phi*phi
       phi3=phi2*phi
-      phi4=phi3*phi
       tq=grdcc*6.346820607d-2*rhoc**(-7d0/3d0)/phi2
       Ab=dexp(-ecerflda/(rhoc*gamma_symbol*phi3))-1d0
       if(dabs(Ab).le.dabs(beta*tol)) then
@@ -3414,15 +3467,14 @@ C
 C     Created: 17-08-09, J. Toulouse, subroutine adapted from Molpro
 C*****************************************************************************
       implicit none
-
+#include "pi.h"
       real*8, intent(in) :: rhoa, grdaa, mu
       real*8, intent(out) :: e
 
-      real*8   derf
+      real*8 :: derf
 
-      real*8   rho, akf, a, a2, a3, ea
+      real*8 :: rho, akf, a, a2, a3, ea
 
-      real*8, parameter :: pi = 3.141592653589793d0
       real*8, parameter :: pisqrt = 1.772453850905516d0
       real*8, parameter :: ckf = 3.093667726280136d0
       real*8, parameter :: f13 = 0.333333333333333d0
@@ -3482,15 +3534,14 @@ C              22-05-18, Re-introduced for LDA exchange as temporary
 C              solution until DESRX_GGA works for both LDA and GGA.              
 C*****************************************************************************
       implicit none
-
+#include "pi.h"
       real*8, intent(in) :: rhoc, rhos, mu
       real*8, intent(out) :: e
 
-      real*8   derf
-      real*8   rho, akf, a, a2, a3
-      real*8   rhoa, rhob
-      real*8   ea, eb
-      real*8, parameter :: pi = 3.141592653589793d0
+      real*8 :: derf
+      real*8 :: rho, akf, a, a2, a3
+      real*8 :: rhoa, rhob
+      real*8 :: ea, eb
       real*8, parameter :: pisqrt = 1.772453850905516d0
       real*8, parameter :: ckf = 3.093667726280136d0
       real*8, parameter :: f13 = 0.333333333333333d0
@@ -3606,7 +3657,6 @@ C****************************************************************************
 C linear complement spin-dependent exchange LDA functional energy, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
       real*8   rhoc, rhos, VLAMBDA, e
-
       real*8   rhoa, rhob, ea, eb
 
       rhoa=0.5d0*max((rhoc+rhos),0d0)
@@ -3637,16 +3687,15 @@ C
 C     Created: 18-08-09, J. Toulouse
 C*****************************************************************************
       implicit none
-
+#include "pi.h"
       real*8, intent(in) :: rhoc, rhos, mu
       real*8, intent(out) :: e
 
-      real*8   rs
-      real*8   ec,ecd,ecz,eclr
-      real*8   rhoa, rhob, z
-      real*8   ea, eb
+      real*8 :: rs
+      real*8 :: ec, ecd, ecz, eclr
+      real*8 :: rhoa, rhob, z
+      real*8 :: ea, eb
       real*8, parameter :: f13 = 0.333333333333333d0
-      real*8, parameter :: pi = 3.141592653589793d0
       real*8, parameter :: rsfac = 0.620350490899400d0
 
 C     Spin-unpolarized case
@@ -3693,17 +3742,16 @@ C
 C     Created: 2nd July 2018, Erik Kjellgren
 C*****************************************************************************
       implicit none
-
+#include "pi.h"
       real*8, intent(in) :: rhoc, rhos, mu
       real*8, intent(out) :: e
 
-      real*8   rs
-      real*8   ec,eclr
-      real*8   rhoa, rhob, z
-      real*8   ea, eb
-      real*8   ecVWN5
+      real*8 :: rs
+      real*8 :: ec, eclr
+      real*8 :: rhoa, rhob, z
+      real*8 :: ea, eb
+      real*8 :: ecVWN5
       real*8, parameter :: f13 = 0.333333333333333d0
-      real*8, parameter :: pi = 3.141592653589793d0
       real*8, parameter :: rsfac = 0.620350490899400d0
 
 C     Spin-unpolarized case
@@ -3883,14 +3931,14 @@ C     gives the correlation energy of the LR gas
 C     => eclr
 C****************************************************************************
       implicit none
+#include "pi.h"
       real*8, intent(in) :: rs, z, mu
       real*8, intent(out) :: eclr
-      real*8   ec,ecd,ecz
-      real*8   alpha,cf,phi
-      real*8   g0f,dpol,d2anti,d3anti,Qrpa
-      real*8   coe2,coe3,coe4,coe5
-      real*8   a1,a2,a3,a4,b0
-      real*8, parameter :: pi = 3.141592653589793d0
+      real*8 :: ec,ecd,ecz
+      real*8 :: phi
+      real*8 :: g0f,dpol,d2anti,d3anti,Qrpa
+      real*8 :: coe2,coe3,coe4,coe5
+      real*8 :: a1,a2,a3,a4,b0
 C     parameters from the fit
       real*8, parameter :: adib = 0.784949d0
       real*8, parameter :: q1a  = -0.388d0
@@ -3900,8 +3948,8 @@ C     parameters from the fit
       real*8, parameter :: t2a  = 1.d0
       real*8, parameter :: t3a  = 0.31d0
       
-      alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
-      cf=1.d0/alpha
+      real*8, parameter :: alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
+      real*8, parameter :: cf=1.d0/alpha
 
       phi=((1.d0+z)**(2.d0/3.d0)+(1.d0-z)**(2.d0/3.d0))/2.d0
 
@@ -3960,15 +4008,15 @@ C
 C     Created 2nd July 2018, Erik Kjellgren
 C*****************************************************************************
       implicit none
+#include "pi.h"
       real*8, intent(in) :: rs, z, mu
       real*8, intent(out) :: eclr
-      real*8   ec
-      real*8   alpha,cf,phi
-      real*8   g0f,dpol,d2anti,d3anti,Qrpa
-      real*8   coe2,coe3,coe4,coe5
-      real*8   a1,a2,a3,a4,b0
-      real*8   ecVWN5
-      real*8, parameter :: pi = 3.141592653589793d0
+      real*8 :: ec
+      real*8 :: phi
+      real*8 :: g0f,dpol,d2anti,d3anti,Qrpa
+      real*8 :: coe2,coe3,coe4,coe5
+      real*8 :: a1,a2,a3,a4,b0
+      real*8 :: ecVWN5
 C     parameters from the fit
       real*8, parameter :: adib = 0.784949d0
       real*8, parameter :: q1a  = -0.388d0
@@ -3978,8 +4026,8 @@ C     parameters from the fit
       real*8, parameter :: t2a  = 1.d0
       real*8, parameter :: t3a  = 0.31d0
 
-      alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
-      cf=1.d0/alpha
+      real*8, parameter :: alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
+      real*8, parameter :: cf=1.d0/alpha
 
       phi=((1.d0+z)**(2.d0/3.d0)+(1.d0-z)**(2.d0/3.d0))/2.d0
 
@@ -4034,6 +4082,7 @@ C     and cutoff mu it gives the correlation LSD potential for LR interaction
 C     => vclrup (spin-up electrons), vclrdown (spin-down electrons)
 C****************************************************************************
       implicit none
+#include "pi.h"
       real*8   rs,z,mu,eclr,eclrrs,eclrz,vclrup,vclrdown
       real*8   ec,ecd,ecz
       real*8   alpha,cf,phi
@@ -4046,7 +4095,6 @@ C****************************************************************************
      $     b0rs,a1z,a2z,a3z,a4z,a5z,b0z
       real*8   q1a,q2a,q3a,t1a,t2a,t3a,adib
 
-#include "pi.h"
       alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
       cf=1.d0/alpha
 
@@ -4208,7 +4256,7 @@ C****************************************************************************
       end
 
 C*****************************************************************************
-      real*8   function g0d(rs)
+      real*8 function g0d(rs)
 C*****************************************************************************
 C     derivative of on-top pair-distribution function
 C     Gori-Giorgi and Perdew, PRB 64, 155102 (2001)
@@ -4227,7 +4275,7 @@ C****************************************************************************
       end
 
 C*****************************************************************************
-      real*8   function dpol(rs)
+      real*8 function dpol(rs)
 C*****************************************************************************
       implicit none
       real*8   cf,rs,p2p,p3p
@@ -4241,7 +4289,7 @@ C*****************************************************************************
       end
 
 C*****************************************************************************
-      real*8   function dpold(rs)
+      real*8 function dpold(rs)
 C*****************************************************************************
       implicit none
       real*8   cf,rs,p2p,p3p
@@ -4260,22 +4308,23 @@ C*****************************************************************************
       end
 
 C*****************************************************************************
-      real*8   function Qrpa(x)
+      real*8 pure function Qrpa(x)
 C*****************************************************************************
       implicit none
-      real*8   a2,b2,c2,d2,x,Acoul
 #include "pi.h"
-      Acoul=2.d0*(log(2.d0)-1.d0)/pi**2
-      a2              = 5.84605d0
-      c2              = 3.91744d0
-      d2              = 3.44851d0
-      b2=d2-3.d0/(2.d0*pi*Acoul)*(4.d0/(9.d0*pi))**(1.d0/3.d0)
+      real*8, intent(in) :: x
+      real*8, parameter :: Acoul = 2.d0*(log(2.d0)-1.d0)/pi2
+      real*8, parameter :: a2 = 5.84605d0
+      real*8, parameter :: c2 = 3.91744d0
+      real*8, parameter :: d2 = 3.44851d0
+      real*8, parameter :: b2 = d2-3.d0/(2.d0*pi*Acoul)*
+     &                           (4.d0/(9.d0*pi))**(1.d0/3.d0)
       Qrpa=Acoul*log((1.d0+a2*x+b2*x**2+c2*x**3)/(1.d0+a2*x+d2*x**2))
       return
       end
 
 C*****************************************************************************
-      real*8   function Qrpad(x)
+      real*8 function Qrpad(x)
 C*****************************************************************************
       implicit none
       real*8   a2,b2,c2,d2,x,Acoul
