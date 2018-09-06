@@ -611,6 +611,7 @@ C     sr mdc func
 
       ! for debug prints (counter for grid points)
       integer inpt
+      logical use_spindns
 
 c  Exchange  ------------------------------------------------------------
 
@@ -630,40 +631,37 @@ c  Exchange  ------------------------------------------------------------
 !     LDA exchange functional (to fit with corresponding correlation
 !     functional) - see explanation with DOSRC_LDA_PW92
       IF(DOSRX_LDA_PW92 .OR. DOSRX_LDA_S) THEN
-        ! these LDA exchange functional are programmed with
-        ! total- and spin densities instead of alpha-
-        ! and beta densities. Therefore use DESRC instead
-        ! of DESRX.
-        if (triplet .or. dft_spindns) then
-           call DESRC_SPINLDA(ESRX_LDAERFSPIN,rho,CHIVAL,
-     >                        norder,Ex,d1Ex,d2Ex)
-        else
-           call DESRC_LDA(ESRX_LDAERFSPIN,rho,CHIVAL,
-     >                        norder,Ex,d1Ex,d2Ex)
-        end if
+        ! edh: current DESR_XSPINGGA routine does not work for LDA
+        ! for now, we rely on old DESRSPIN routine
+        ! TODO Generalize DESRX_SPINGGA routine to LDA?
+!       call DESRX_SPINGGA(ESRX_LDAERF,rho,grd2,CHIVAL,
+!    >                     norder,Ex,d1Ex,d2Ex)
+        use_spindns = triplet .or. dft_spindns
+        call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),CHIVAL,
+     >                     use_SPINDNS,norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange PBE of HSE
       IF(DOSRX_PBEHSE) THEN
-        call DESRX_BOTHGGA(ESRX_PBEHSEERF,rho,grd2,CHIVAL,
+        call DESRX_SPINGGA(ESRX_PBEHSEERF,rho,grd2,CHIVAL,
      >                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange PBE of TCS
       IF(DOSRX_PBETCS) THEN
-        call DESRX_BOTHGGA(ESRX_PBETCSERF,rho,grd2,CHIVAL,
+        call DESRX_SPINGGA(ESRX_PBETCSERF,rho,grd2,CHIVAL,
      >                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange PBE of GWS ! JT 11-08-09
       IF(DOSRX_PBEGWS .OR. DOSRX_PBEGWS_S) THEN
-        call DESRX_BOTHGGA(ESRX_PBEGWSERF,rho,grd2,CHIVAL,
+        call DESRX_SPINGGA(ESRX_PBEGWSERF,rho,grd2,CHIVAL,
      >                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange RI
       IF(DOSRX_PBERI) THEN ! added Manu 01-02-2006
-        call DESRX_BOTHGGA(ESRX_PBERIERF,rho,grd2,CHIVAL,
+        call DESRX_SPINGGA(ESRX_PBERIERF,rho,grd2,CHIVAL,
      >                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 
@@ -693,84 +691,72 @@ C  Correlation  ----------------------------------------------------------
       IF(DOSRC_LDA_PW92) THEN
         ! DESRSPIN called with DFT_SPINDNS = false gives LDA functional
         ! for closed shell (but with J. Toulouse new LDA based on PW92)
-        if (triplet .or. dft_spindns) then
-           call DESRC_SPINLDA(ESRC_LDAERFSPIN,rho,CHIVAL,
-     >                   NORDER,Ec,d1Ec,d2Ec)
-        else
-           call DESRC_LDA(ESRC_LDAERFSPIN,rho,CHIVAL,
-     >                   NORDER,Ec,d1Ec,d2Ec)
-        end if
+        use_spindns = triplet .or. dft_spindns
         ! rho(2) is always zero for spin unpolarized functionals
+        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),0.0d0,CHIVAL,use_SPINDNS,
+     >                NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !     short-range correlation PBE of TCS
       IF(DOSRC_PBETCS) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESRC_GGA(ESRC_PBETCSERF,rho,grd2,CHIVAL,NORDER,
+        call DESR(ESRC_PBETCSERF,rho,grd2,CHIVAL,NORDER,
      >            Ec,d1Ec,d2Ec)
       ENDIF
 
 !     short-range correlation PBE of TCSJ
       IF(DOSRC_PBETCSJ) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESRC_GGA(ESRC_PBETCSJERF,rho,grd2,CHIVAL,NORDER,
+        call DESR(ESRC_PBETCSJERF,rho,grd2,CHIVAL,NORDER,
      >            Ec,d1Ec,d2Ec)
       ENDIF
 
 !     short-range correlation PBE of GWS
       IF(DOSRC_PBEGWS) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESRC_GGA(ESRC_PBEGWSERF,rho,grd2,CHIVAL,NORDER,
+        call DESR(ESRC_PBEGWSERF,rho,grd2,CHIVAL,NORDER,
      >            Ec,d1Ec,d2Ec)
       ENDIF
 
 !     Modified short-range correlation PBE of GWS
       IF(DOSRC_PBEGWS_PW92) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESRC_GGA(ESRC_PBEGWSERF_PW92,rho,grd2,CHIVAL,NORDER,
+        call DESR(ESRC_PBEGWSERF_PW92,rho,grd2,CHIVAL,NORDER,
      >            Ec,d1Ec,d2Ec)
       ENDIF
 
 !     rational interpolation
       IF(DOSRC_PBERI) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESRC_GGA(ESRC_PBERIERF,rho,grd2,CHIVAL,NORDER,
+        call DESR(ESRC_PBERIERF,rho,grd2,CHIVAL,NORDER,
      >             Ec,d1Ec,d2Ec)
       ENDIF
 
 !     rational interpolation LYP
       IF(DOSRC_LYPRI) THEN
         ! d1Ec(3), d1Ec(3) here ...
-       call DESRC_GGA(ESRC_LYPRIERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
+        call DESR(ESRC_LYPRIERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !     PBE local energy formula
       IF(DOSRC_PBELO) THEN
-       call DESRC_GGA(ESRC_PBELOERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
+        call DESR(ESRC_PBELOERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !     weighted interpolation
       IF(DOSRC_PBEWI) THEN
         ! d1Ec(3), d1Ec(3) here ...
-       call DESRC_GGA(ESRC_PBEWIERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
+        call DESR(ESRC_PBEWIERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 
 !     short-range spin-dependent correlation LDA ! JT 18-08-09
       IF(DOSRC_LDA_S) THEN
         ! d1Ec(2), d1Ec(3) here ...
-        if (triplet .or. dft_spindns) then
-           call DESRC_SPINLDA(ESRC_LDAERFSPIN,rho,
-     >                CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-        else
-           call DESRC_LDA(ESRC_LDAERFSPIN,rho,
-     >                CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-        end if
+        use_spindns = triplet .or. dft_spindns
+        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
+     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
       IF(DOSRC_VWN5_S) THEN
-        if (triplet .or. dft_spindns) then
-           call DESRC_SPINLDA(ESRC_LDAERFSPIN_VWN5,rho,
-     >                CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-        else
-           call DESRC_LDA(ESRC_LDAERFSPIN_VWN5,rho,
-     >                CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-        end if
+        use_spindns = triplet .or. dft_spindns
+        call DESRSPIN(ESRC_LDAERFSPIN_VWN5,rho(1),rho(2),
+     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
       IF(DOSRC_PBEGWS_S) THEN
         ! PBEGWS_S has no grdss and no grds.grdc dependency,
@@ -812,13 +798,8 @@ C Kamal SHARKAS 20-05-11 end
       IF(DOSRC_MD_LDA) THEN
 !CASS        Write(LUPRI,*)'La nouvelle fonctionnelle'
         ! d1Ec(3), d1Ec(3) here ...
-        if (DFT_SPINDNS) then
-           call DESRC_SPINLDA(ESRC_MD_LDAERF,rho,
-     >                CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-        else
-           call DESRC_LDA(ESRC_MD_LDAERF,rho,
-     >                CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-        end if
+        call DESRSPIN(ESRC_MD_LDAERF,rho(1),rho(2),
+     >             CHIVAL,DFT_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !CASS      Write(LUPRI,*)'EC=',Ec
 
@@ -834,21 +815,19 @@ C      mu = xfac*mu
 C      mu_new = max(mu,CHIVAL)
 !      print *,'xfac,SRCMULOFAC,mu_new ==>', xfac, SRCMULOFAC,mu_new
         call ESRC_MULOC_GGA(rho,grd2,CHIVAL,Ec)
-        call DESRC_GGA(ESRC_MULOC_GGA,rho,grd2,CHIVAL,NORDER,
+        call DESR(ESRC_MULOC_GGA,rho,grd2,CHIVAL,NORDER,
      >             Ec, d1Ec, d2Ec)
       ENDIF
 
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11
       IF(DOSRC_MULOD_GGA) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESRC_GGA(ESRC_MULOD_GGA,rho,grd2,CHIVAL,NORDER,
-     >                 Ec,d1Ec,d2Ec)
+        call DESR(ESRC_MULOD_GGA,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11
       IF(DOSRC_MULOE_GGA) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESRC_GGA(ESRC_MULOE_GGA,rho,grd2,CHIVAL,NORDER,
-     >                 Ec,d1Ec,d2Ec)
+        call DESR(ESRC_MULOE_GGA,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 
       RETURN
