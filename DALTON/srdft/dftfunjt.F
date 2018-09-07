@@ -36,12 +36,12 @@ C*****************************************************************************
       real*8, intent(in) :: rhoc, grdcc, mu
       real*8, intent(out) :: E, d1E(5), d2E(15)
 
-      real*8   hr, hg
-      real*8   rhocm, rhocp, rhocpp, grdccm, grdccp
+      real*8 :: hr, hg
+      real*8 :: rhocm, rhocp, rhocpp, grdccm, grdccp
 
-      real*8   Em0, Ep0, Epp0
-      real*8   E0m, E0p, E0pp
-      real*8   Emm, Epp, Epm, Emp
+      real*8 :: Em0, Ep0, Epp0
+      real*8 :: E0m, E0p, E0pp
+      real*8 :: Emm, Epp, Epm, Emp
 
 C Check
       if(norder .lt. 0 .or. norder .gt. 2) then
@@ -148,16 +148,16 @@ C****************************************************************************
 C****************************************************************************
 C Linear complement exchange PBE functional, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
-
       implicit none
 
       external ESR
 
-      real*8   rhoc, grdcc, VLAMBDA
-      integer  norder
-      real*8   E, d1E(5), d2E(15) 
+      real*8, intent(in) :: rhoc, grdcc, VLAMBDA
+      integer, intent(in) :: norder
+      real*8, intent(out) :: d1E(5), d2E(15)
+      real*8 :: E
 
-      call   DESR(ESR,rhoc,grdcc,0.d0,norder,E,d1E,d2E)
+      call DESR(ESR,rhoc,grdcc,0.d0,norder,E,d1E,d2E)
 
       d1E(1) = (1.d0- VLAMBDA) * d1E(1)
       d1E(3) = (1.d0- VLAMBDA) * d1E(3)
@@ -177,11 +177,12 @@ C*****************************************************************************
       implicit none
 
       external ESR
-      real*8   rhoc, grdcc, VLAMBDA
-      integer  norder
-      real*8   E, d1E(5), d2E(15)
+      real*8, intent(in) :: rhoc, grdcc, VLAMBDA
+      integer, intent(in) :: norder
+      real*8, intent(out) :: d1E(5), d2E(15)
+      real*8 :: E
 
-      call   DESR(ESR,rhoc,grdcc,0.d0,norder,E,d1E,d2E)
+      call DESR(ESR,rhoc,grdcc,0.d0,norder,E,d1E,d2E)
 
       d1E(1) = (1.d0- VLAMBDA**2) * d1E(1)
       d1E(3) = (1.d0- VLAMBDA**2) * d1E(3)
@@ -201,12 +202,12 @@ C*****************************************************************************
       implicit none
 
       external ESR
-      integer norder
-
-      real*8   rhoc, rhocscaled, grdcc, grdccscaled, VLAMBDA
-      real*8   d1E(5), d2E(15)
-      real*8   Ecoul, d1Ecoul(5), d2Ecoul(15)
-      real*8   Esca,  d1Esca(5),  d2Esca(15)
+      integer, intent(in) :: norder
+      real*8, intent(in) :: rhoc, grdcc, VLAMBDA
+      real*8, intent(out) :: d1E(5), d2E(15)
+      real*8 :: rhocscaled, grdccscaled
+      real*8 :: Ecoul, d1Ecoul(5), d2Ecoul(15)
+      real*8 :: Esca,  d1Esca(5),  d2Esca(15)
 
 ! TODO HJAAJ 
       call quit('hjaaj: need to define new d1E and d2E addresses')
@@ -280,15 +281,15 @@ C*****************************************************************************
       real*8, intent(in) :: rhoc, rhos, mu
       real*8, intent(out) :: E, d1E(5), d2E(15)
 
-      real*8   hrc, hrs
-      real*8   rhocm, rhocp, rhosp, rhosm
-      real*8   arhos
+      real*8 :: hrc, hrs
+      real*8 :: rhocm, rhocp, rhosp, rhosm
+      real*8 :: arhos
 
-      real*8   Em0, Ep0, Epp0
-      real*8   E0m, E0p, E0pp
-      real*8   Emm, Epp, Epm, Emp
+      real*8 :: Em0, Ep0, Epp0
+      real*8 :: E0m, E0p, E0pp
+      real*8 :: Emm, Epp, Epm, Emp
 
-      logical  pure_spin
+      logical :: pure_spin
 
 C     check
       if(norder .le. 0 .or. norder .ge. 3) then
@@ -459,25 +460,25 @@ C*****************************************************************************
       real*8, intent(in) :: rho(2), grd2(3), mu
       real*8, intent(out) :: E, d1E(5), d2E(15)
 
-      real*8   rhoc,  rhos,  grdcc,  grdss,  grdcs
-      real*8   arhos, agrdcs
-      real*8   hrc,   hrs,   hgc,   hgs,   hgcs
-      real*8   rhocm, rhocp, rhosp, rhosm
-      real*8   grdccm, grdccp, grdssp, grdssm, grdcsm, grdcsp
+      real*8 :: rhoc, rhos, grdcc, grdss, grdcs
+      real*8 :: arhos, agrdcs
+      real*8 :: hrc, hrs, hgc, hgs, hgcs
+      real*8 :: rhocm, rhocp, rhosp, rhosm
+      real*8 :: grdccm, grdccp, grdssp, grdssm, grdcsm, grdcsp
 
-      real*8   Em000, Ep000, E0m00, E0p00
-      real*8   E00m0, E00p0, E000m, E000p
-      real*8   E0000m,E0000p
+      real*8 :: Em000, Ep000, E0m00, E0p00
+      real*8 :: E00m0, E00p0, E000m, E000p
+      real*8 :: E0000m,E0000p
 
-      real*8   Emm00, Epp00, Epm00, Emp00
-      real*8   Em0m0, Ep0p0, Ep0m0, Em0p0
-      real*8   Em00m, Ep00p, Ep00m, Em00p
-      real*8   E0mm0, E0pp0, E0pm0, E0mp0
-      real*8   E0m0m, E0p0p, E0p0m, E0m0p
-      real*8   E00mm, E00pp, E00pm, E00mp
-      real*8   E_test
+      real*8 :: Emm00, Epp00, Epm00, Emp00
+      real*8 :: Em0m0, Ep0p0, Ep0m0, Em0p0
+      real*8 :: Em00m, Ep00p, Ep00m, Em00p
+      real*8 :: E0mm0, E0pp0, E0pm0, E0mp0
+      real*8 :: E0m0m, E0p0p, E0p0m, E0m0p
+      real*8 :: E00mm, E00pp, E00pm, E00mp
+      real*8 :: E_test
 
-      logical  pure_spin
+      logical :: pure_spin
 
 C     check
 
@@ -752,25 +753,25 @@ C     Created: Apr-18, H. J. Aa. Jensen (based on previous DESRSPINGGA routine, 
 C*****************************************************************************
       implicit none
 
-      external         ESRX_GGA
+      external ESRX_GGA
       integer, intent(in) :: norder
 
       real*8, intent(in) :: rho(4), grd2(6), mu
       real*8, intent(out) :: E, d1E(5), d2E(15)
-      real*8   Ea, Eb, d1W(4), d2W(6) ! for derivative wrt rhoa, rhob, grdaa, grdbb
+      real*8 :: Ea, Eb, d1W(4), d2W(6) ! for derivative wrt rhoa, rhob, grdaa, grdbb
 
-      real*8   rhoa,  rhoam,  rhoap,  hra
-      real*8   grdaa, grdaam, grdaap, hga
+      real*8 :: rhoa,  rhoam,  rhoap,  hra
+      real*8 :: grdaa, grdaam, grdaap, hga
 
-      real*8   rhob,  rhobm,  rhobp,  hrb
-      real*8   grdbb, grdbbp, grdbbm, hgb
+      real*8 :: rhob,  rhobm,  rhobp,  hrb
+      real*8 :: grdbb, grdbbp, grdbbm, hgb
 
-      real*8   Em0, Ep0, E0m, E0p
-      real*8   Emm, Epp, Epm, Emp
+      real*8 :: Em0, Ep0, E0m, E0p
+      real*8 :: Emm, Epp, Epm, Emp
 
       real*8, parameter :: D4I = 0.25d0, D8I = 0.125d0, D16I = 0.0625
 
-      logical  Eb_eq_Ea
+      logical :: Eb_eq_Ea
 
 C     check
       if(norder .lt. 0 .or. norder .ge. 3) then
@@ -948,12 +949,13 @@ C*****************************************************************************
       implicit none
 
       external ESRSPIN
-      integer norder
-      logical dospin
-      real*8   rhoc, rhos, VLAMBDA
-      real*8   E, d1E(5), d2E(15)
+      integer, intent(in) :: norder
+      logical, intent(in) :: dospin
+      real*8, intent(in) :: rhoc, rhos, VLAMBDA
+      real*8, intent(out) :: d1E(5), d2E(15)
+      real*8 :: E
 
-      call  DESRSPIN(ESRSPIN,rhoc,rhos,0.d0,dospin,norder,E,d1E,d2E)
+      call DESRSPIN(ESRSPIN,rhoc,rhos,0.d0,dospin,norder,E,d1E,d2E)
 
       d1E(1) = (1.d0- VLAMBDA) * d1E(1)
 
@@ -976,12 +978,13 @@ C*****************************************************************************
       implicit none
 
       external ESRSPIN
-      integer norder
-      logical dospin
-      real*8   rhoc, rhos, VLAMBDA
-      real*8   E, d1E(5), d2E(15)
+      integer, intent(in) :: norder
+      logical, intent(in) :: dospin
+      real*8, intent(in) :: rhoc, rhos, VLAMBDA
+      real*8, intent(out) :: d1E(5), d2E(15)
+      real*8 :: E
 
-      call  DESRSPIN(ESRSPIN,rhoc,rhos,0.d0,dospin,norder,E,d1E,d2E)
+      call DESRSPIN(ESRSPIN,rhoc,rhos,0.d0,dospin,norder,E,d1E,d2E)
 
       d1E(1) = (1.d0- VLAMBDA**2)* d1E(1)
       if (dospin) d1E(2) = (1.d0- VLAMBDA**2)* d1E(2)
@@ -1010,16 +1013,17 @@ C     Date  : 19-02-05; revised 22-Apr-18 hjaaj
 C*****************************************************************************
       implicit none
 
-      real*8  rhoa, grdaa, mu, e
+      real*8, intent(in) :: rhoa, grdaa, mu
+      real*8, intent(out) :: e
 
-      real*8  exerflda, exerfpbe
-      real*8  rho,rho13,grd2,t1,t2,t3,t4
+      real*8 :: exerflda, exerfpbe
+      real*8 :: rho, rho13, grd2, t1, t2, t3, t4
 
-      real*8  XKSR(3)
-      logical ERFEXP(0:2)
+      real*8 :: XKSR(3)
+      logical :: ERFEXP(0:2)
 
 ! function 
-      real*8  berft
+      real*8 :: berft
 
 C     LDA energy
       rho = 2.0d0*rhoa ! VXSRLDA assumes rhoa .eq. rhob and rho = rhoc = rhoa + rhob
@@ -1061,15 +1065,12 @@ C     Author: J. Toulouse
 C     Date  : 12-02-05; revised 22-Apr-18 hjaaj
 C*****************************************************************************
       implicit none
-
+#include "pi.h"
       real*8, intent(in) :: rhoa, grdaa, mu
       real*8, intent(out) :: e
 
-      real*8   rho13,kF,s
-      real*8   rho, grd, exLDA, FxHSE
-
-C     constants
-      real*8, parameter :: pi = 3.141592653589793d0
+      real*8 :: rho13, kF, s
+      real*8 :: rho, grd, exLDA, FxHSE
 
 C     LDA exchange
       rho = 2.0d0*rhoa
@@ -2060,18 +2061,15 @@ C     Author: J. Toulouse
 C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
-
+#include "pi.h"
       real*8, intent(in) :: rho, grdcc
       real*8, intent(out) :: e
 
-      real*8   rho13, eLDA, epsLDA
-      real*8   kF, ks, t2
-      real*8   A, At2
-      real*8   frac, H
+      real*8 :: rho13, eLDA, epsLDA
+      real*8 :: kF, ks, t2
+      real*8 :: A, At2
+      real*8 :: frac, H
 
-C     General constants
-      real*8, parameter :: pi = 3.141592653589793d0
-      real*8, parameter :: pi2 = 9.869604401089358d0
 C     PBE constants
       real*8, parameter :: gam = 0.031090690869654897d0
       real*8, parameter :: bet = 0.066725d0
@@ -2119,26 +2117,25 @@ C     Author: J. Toulouse
 C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
+#include "pi.h"
+      real*8, intent(in) :: rho, grdcc, mu
+      real*8, intent(out) :: e
 
-      real*8   rho, grdcc, mu, e
-
-      real*8   mu2, rs, sqrt2
-      real*8   d, a, bet, gam
-      real*8   grs12, expgrs12, g0
-      real*8   e_pbe, eps_pbe, eps_LDA_fac, mu_ref
-      real*8   d1, d2, denom, p6, q7, q8, d2od1, mu6
+      real*8 :: mu2, rs
+      real*8 :: grs12, expgrs12, g0
+      real*8 :: e_pbe, eps_pbe, eps_LDA_fac, mu_ref
+      real*8 :: d1, d2, denom, p6, q7, q8, d2od1, mu6
 
 C     General constants
-#include "pi.h"
-      real*8   mu_0, mu_0_m6, mu_0_m7, mu_0_m4
+      real*8 :: mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 
 C     Constants for g0
-      parameter ( d = 32.D0/(3.D0*pi) )
-      parameter ( a = 3.2581D0 )
-      parameter ( bet = 163.44D0 )
-      parameter ( gam = 4.7125D0 )
-      sqrt2 = sqrt(2.0d0)
+      real*8, parameter :: d = 32.D0/(3.D0*pi)
+      real*8, parameter :: a = 3.2581D0
+      real*8, parameter :: bet = 163.44D0
+      real*8, parameter :: gam = 4.7125D0
+      real*8, parameter :: sqrt2 = sqrt(2.0d0)
       
 !      print *,'ESRC_PBERIERF: mu=',mu
 !      print *,'ESRC_PBERIERF: rho=',rho,' grdcc=',grdcc
@@ -2207,26 +2204,26 @@ C     Author: J. Toulouse
 C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
+#include "pi.h"
+      real*8, intent(in) :: rho, grdcc, mu
+      real*8, intent(out) :: e
 
-      real*8   rho, grdcc, mu, e
-
-      real*8   mu2, rs, sqrt2
-      real*8   d, a, bet, gam, rhogrd
-      real*8   grs12, expgrs12, g0, rho13
-      real*8   e_lyp, eps_lyp, eps_LDA_fac, mu_ref
-      real*8   d1, d2, denom, p6, q7, q8, d2od1, mu6
+      real*8 :: mu2, rs
+      real*8 :: rhogrd
+      real*8 :: grs12, expgrs12, g0, rho13
+      real*8 :: e_lyp, eps_lyp, eps_LDA_fac, mu_ref
+      real*8 :: d1, d2, denom, p6, q7, q8, d2od1, mu6
 
 C     General constants
-#include "pi.h"
-      real*8   mu_0, mu_0_m6, mu_0_m7, mu_0_m4
+      real*8 :: mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srclyp_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 
 C     Constants for g0
-      parameter ( d = 32.D0/(3.D0*pi) )
-      parameter ( a = 3.2581D0 )
-      parameter ( bet = 163.44D0 )
-      parameter ( gam = 4.7125D0 )
-      sqrt2 = sqrt(2.0d0)
+      real*8, parameter :: d = 32.D0/(3.D0*pi)
+      real*8, parameter :: a = 3.2581D0
+      real*8, parameter :: bet = 163.44D0
+      real*8, parameter :: gam = 4.7125D0
+      real*8, parameter :: sqrt2 = sqrt(2.0d0)
       
 !      print *,'ESRC_LYPRIERF: mu=',mu
 !      print *,'ESRC_LYPRIERF: rho=',rho,' grdcc=',grdcc
@@ -2625,7 +2622,7 @@ C     Energy
       end
 
 C*****************************************************************************
-      real*8 function berft(a)
+      real*8 pure function berft(a)
 C*****************************************************************************
 C  Second-order exchange gradient expansion coefficient for erf 
 C  interaction
@@ -2635,14 +2632,8 @@ C  Author : J. Toulouse
 C  Date   : 10-03-04
 C*****************************************************************************
       implicit none
- 
-      real*8   a
-      real*8   derf
-
-      real*8   pi
-
-C     constants
-      pi = 3.141592653589793d0
+#include "pi.h"
+      real*8, intent(in) :: a
 
       if(a .lt. 0.02d0) then
 !      expansion for small mu to avoid numerical problems
@@ -2657,7 +2648,7 @@ C     constants
      &  ))) )/
      & (a**2*(3.2d1*a**4*(-1.d0 + dexp(2.5d-1/a**2))
      &  - 3.d0*dexp(2.5d-1/a**2)
-     &  + 1.417963080724412821838534d1*a*derf(5.d-1/a)*dexp(2.5d-1/a**2)
+     &  + 1.417963080724412821838534d1*a*erf(5.d-1/a)*dexp(2.5d-1/a**2)
      &  - 8.d0*a**2*(-2.d0 + 3.d0*dexp(2.5d-1/a**2)) ) )
 
       endif
@@ -2666,7 +2657,7 @@ C     constants
       end
 
 C*****************************************************************************
-      function dberftda(a)
+      real*8 pure function dberftda(a)
 C*****************************************************************************
 !  Derivative of second-order exchange gradient
 !  expansion coefficient for erf interaction
@@ -2676,14 +2667,9 @@ C*****************************************************************************
 !  Date   : 10-03-04
 C*****************************************************************************
       implicit none
- 
-      real*8   a
-      real*8   dberftda, derf
-      real*8   t1,t2,t3,t4,t5
-      real*8   pi
-
-C     constants
-      pi = 3.141592653589793d0
+#include "pi.h"
+      real*8, intent(in) :: a
+      real*8 :: t1,t2,t3,t4,t5
 
       if(a .lt. 0.02d0) then
 !      expansion for small mu to avoid numerical problems
@@ -2697,24 +2683,24 @@ C     constants
      &  5d-1/a**2)) + (7.d0*dexp(2.5d-1/a**2))/a - 7.2d1*a*dexp(2.5d-1/a
      &  **2) - 4.d0*a*(1.1d1 + 7.d0*dexp(2.5d-1/a**2))))/(a**2*(3.2d1*a*
      &  *4*(-1.d0 + dexp(2.5d-1/a**2)) - 3.d0*dexp(2.5d-1/a**2) + 1.4179
-     &  63080724412821838534d1*a*derf(5.d-1/a)*dexp(2.5d-1/a**2) - 8.d0
+     &  63080724412821838534d1*a*erf(5.d-1/a)*dexp(2.5d-1/a**2) - 8.d0
      &  *a**2*(-2.d0 + 3.d0*dexp(2.5d-1/a**2))))
        t2 = -1.851851851851851851851852d-2/a**2
        t3 = -8.d0/a + 1.28d2*a**3*(-1.d0 + dexp(2.5d-1/a**2)) + (1.5d0*d
      &  exp(2.5d-1/a**2))/a**3 + (1.2d1*dexp(2.5d-1/a**2))/a - 1.6d1*a*d
-     &  exp(2.5d-1/a**2) + 1.417963080724412821838534d1*derf(5.d-1/a)*d
-     &  exp(2.5d-1/a**2) - (7.08981540362206410919267d0*derf(5.d-1/a)*d
+     &  exp(2.5d-1/a**2) + 1.417963080724412821838534d1*erf(5.d-1/a)*d
+     &  exp(2.5d-1/a**2) - (7.08981540362206410919267d0*erf(5.d-1/a)*d
      &  exp(2.5d-1/a**2))/a**2 - 1.6d1*a*(-2.d0 + 3.d0*dexp(2.5d-1/a**2)
      &  )
        t4 = (-1.d0 + 1.44d2*a**4*(-1.d0 + dexp(2.5d-1/a**2)) - 2.d0*a**2
      &  *(1.1d1 + 7.d0*dexp(2.5d-1/a**2)))/(3.2d1*a**4*(-1.d0 + dexp(2.5
      &  d-1/a**2)) - 3.d0*dexp(2.5d-1/a**2) + 1.417963080724412821838534
-     &  d1*a*derf(5.d-1/a)*dexp(2.5d-1/a**2) - 8.d0*a**2*(-2.d0 + 3.d0*
+     &  d1*a*erf(5.d-1/a)*dexp(2.5d-1/a**2) - 8.d0*a**2*(-2.d0 + 3.d0*
      &  dexp(2.5d-1/a**2)))**2
        t5 = (-3.703703703703703703703704d-2*(-1.d0 + 1.44d2*a**4*(-1.d0 
      &  + dexp(2.5d-1/a**2)) - 2.d0*a**2*(1.1d1 + 7.d0*dexp(2.5d-1/a**2)
      &  )))/(a**3*(3.2d1*a**4*(-1.d0 + dexp(2.5d-1/a**2)) - 3.d0*dexp(2.
-     &  5d-1/a**2) + 1.417963080724412821838534d1*a*derf(5.d-1/a)*dexp(
+     &  5d-1/a**2) + 1.417963080724412821838534d1*a*erf(5.d-1/a)*dexp(
      &  2.5d-1/a**2) - 8.d0*a**2*(-2.d0 + 3.d0*dexp(2.5d-1/a**2))))
        dberftda = t1 + t2*t3*t4 + t5
 
@@ -2743,26 +2729,24 @@ C*****************************************************************************
       real*8, intent(in) :: rhoa, grdaa, mu
       real*8, intent(out) :: e
 
-      real*8   rho, rho13, grd2
-      real*8   exerflda, exerfpbe
-      real*8   t1,t2,t3,t4
-      real*8   kappa,sq,fx
+      real*8 :: rho, rho13, grd2
+      real*8 :: exerflda, exerfpbe
+      real*8 :: sq, fx
 
-      real*8   XKSR(3)
-      logical  ERFEXP(0:2)
-
+      real*8 :: XKSR(3)
 ! function 
-      real*8   berf
+      real*8 :: berf
+! parameters
+      real*8, parameter :: kappa=0.804d0
+      logical, parameter :: ERFEXP(0:2) = .false.
 
 C     LDA energy
       rho = 2.0d0*rhoa ! as if rhoa .eq. rhob
       rho13 = rho**(1.d0/3.d0)
-      ERFEXP(0:2) = .false.
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
       exerflda = XKSR(1)
 
       grd2 = 4.0d0*grdaa ! as if grdaa .eq. grdbb
-      kappa=0.804d0
       sq=grd2*2.6121172985233599567768d-2*rho**(-8.d0/3.d0)
       fx=1.d0+kappa
      &    -kappa/(1.d0+berf(1.616204596739954813d-1
@@ -2811,15 +2795,15 @@ C*****************************************************************************
       real*8, intent(out) :: e
 
       real*8, parameter :: tol=1d-12
-      real*8  rho13
+      real*8 :: rho13
 
-      real*8  ecerflda,eclda
-      real*8  ecerfpbe
-      real*8  t1
-      real*8  alpha, beta, gamma_symbol, Aa,Ab, Ac, tq, arglog
- 
-      logical ERFEXP(0:2), MULOCAL(0:2)
-      real*8  XKSR(3), ZKSR(3)
+      real*8 :: ecerflda,eclda
+      real*8 :: ecerfpbe
+      real*8 :: beta, Aa, Ab, Ac, tq, arglog
+      logical :: ERFEXP(0:2), MULOCAL(0:2)
+      real*8 :: XKSR(3), ZKSR(3)
+      real*8, parameter :: alpha=2.78d0
+      real*8, parameter :: gamma_symbol=3.1091d-2
 
 !     short-range LDA energy (order = 0)
       rho13 = rhoc**(1.d0/3.d0)
@@ -2832,24 +2816,21 @@ C*****************************************************************************
       call VCSRLDA(ZKSR,rhoc,rho13,0.d0,MULOCAL,0,ERFEXP)
       eclda = ZKSR(1)
 
-      alpha=2.78d0
-      gamma_symbol=3.1091d-2
-
       if ((ecerflda/eclda).le.0.d0) then
          beta=0.d0
       else
          beta=6.6725d-2*(ecerflda/eclda)**alpha
       endif
       tq=grdcc*6.346820607d-2*rhoc**(-7.d0/3.d0)
-      Ab=dexp(-ecerflda/(rhoc*gamma_symbol))-1.d0
-      if (dabs(Ab).le.dabs(beta*tol)) then
+      Ab=exp(-ecerflda/(rhoc*gamma_symbol))-1.d0
+      if (abs(Ab).le.abs(beta*tol)) then
          ecerfpbe=ecerflda
        else
          Aa=beta/(gamma_symbol*Ab)
          if (Aa.lt.tol) Aa=tol
          Ac=1.d0+Aa*tq+Aa**2*tq**2
          arglog=1.d0+beta*(1.d0-1.d0/Ac)/(gamma_symbol*Aa)
-         ecerfpbe=ecerflda+rhoc*gamma_symbol*dlog(arglog)
+         ecerfpbe=ecerflda+rhoc*gamma_symbol*log(arglog)
        endif
 
       e = ecerfpbe
@@ -2876,17 +2857,17 @@ C     Date  : 21-03-16
 C*****************************************************************************
       implicit none
 
-      real*8   rhoc, grdcc, mu
-      real*8   e
+      real*8, intent(in) :: rhoc, grdcc, mu
+      real*8, intent(out) :: e
 
-      real*8   tol
-      parameter(tol=1d-12)
-      real*8   rho13
+      real*8, parameter :: tol=1d-12
+      real*8 :: rho13
 
-      real*8   ecerflda,eclda
-      real*8   ecerfpbe
-      real*8   t1
-      real*8   alpha, beta, gamma_symbol, Aa,Ab, Ac, tq, arglog
+      real*8 :: ecerflda,eclda
+      real*8 :: ecerfpbe
+      real*8 :: beta, Aa, Ab, Ac, tq, arglog
+      real*8, parameter :: alpha = 2.78d0
+      real*8, parameter :: gamma_symbol = 3.1091d-2
  
 !     short-range LDA energy (order = 0)
       rho13 = rhoc**(1.d0/3.d0)
@@ -2897,24 +2878,21 @@ C*****************************************************************************
       call ESRC_LDAERFSPIN(rhoc,0.0d0,0.0d0,.false.,e)
       eclda = e
 
-      alpha=2.78d0
-      gamma_symbol=3.1091d-2
-
       if ((ecerflda/eclda).le.0.d0) then
          beta=0.d0
       else
          beta=6.6725d-2*(ecerflda/eclda)**alpha
       endif
       tq=grdcc*6.346820607d-2*rhoc**(-7.d0/3.d0)
-      Ab=dexp(-ecerflda/(rhoc*gamma_symbol))-1.d0
-      if (dabs(Ab).le.dabs(beta*tol)) then
+      Ab=exp(-ecerflda/(rhoc*gamma_symbol))-1.d0
+      if (abs(Ab).le.abs(beta*tol)) then
          ecerfpbe=ecerflda
        else
          Aa=beta/(gamma_symbol*Ab)
          if (Aa.lt.tol) Aa=tol
          Ac=1.d0+Aa*tq+Aa**2*tq**2
          arglog=1.d0+beta*(1.d0-1.d0/Ac)/(gamma_symbol*Aa)
-         ecerfpbe=ecerflda+rhoc*gamma_symbol*dlog(arglog)
+         ecerfpbe=ecerflda+rhoc*gamma_symbol*log(arglog)
        endif
 
       e = ecerfpbe
@@ -2945,17 +2923,19 @@ C*****************************************************************************
 
       real*8, intent(in) :: rhoc,rhos,grdcc,grdss,grdcs,mu
       real*8, intent(out) :: e
-      real*8   rho13, zeta
+      real*8 :: rho13, zeta
 
       real*8, parameter :: tol=1d-12
 
-      real*8   ecerflda, eclda
+      real*8 :: ecerflda, eclda
 
-      real*8   ecerfpbe
-      real*8   t1
-      real*8   alpha, beta, gamma_symbol
-      real*8   phi, phi2, phi3
-      real*8   Aa, Ab, Ac, tq, arglog
+      real*8 :: ecerfpbe
+      real*8 :: beta
+      real*8 :: phi, phi2, phi3
+      real*8 :: Aa, Ab, Ac, tq, arglog
+
+      real*8, parameter :: alpha=2.78d0
+      real*8, parameter :: gamma_symbol=3.1091d-2
 
       rho13 = rhoc**(1.d0/3.d0)
 C     LDA energy ----
@@ -2969,9 +2949,6 @@ C     LDA energy ----
 !     Spin polarisation
 !     Define zeta
       zeta = rhos / rhoc ! zeta = (rhoa-rhob)/(rhoa+rhob)
-
-      alpha=2.78d0
-      gamma_symbol=3.1091d-2
 
       if ((ecerflda/eclda).le.0d0) then
 !       ! edh define beta and check alpha!
@@ -3038,7 +3015,7 @@ C*****************************************************************************
        end
 
 C*****************************************************************************
-      real*8 function berf(a)
+      real*8 pure function berf(a)
 C*****************************************************************************
 C  Second-order exchange gradient expansion coefficient for erf
 C  interaction
@@ -3050,14 +3027,11 @@ C  Author : J. Toulouse
 C  Date   : 11-08-09
 C*****************************************************************************
       implicit none
-
+#include "pi.h"
       real*8, intent(in) :: a
-      real*8, parameter :: pi = 3.141592653589793d0
-      real*8  fak, fak2
-
+      real*8 :: fak, fak2
 ! function
-      real*8   derf
-
+      real*8 :: derf
       ! eta=19.0d0
       fak=2.540118935556d0*dexp(-19.0d0*a*a)
 
@@ -3066,7 +3040,7 @@ C*****************************************************************************
 !      denominator becomes zero for a approximately 0.4845801308
 !      (and for one negative and two complex values of a)
        berf = (-7.d0+72.d0*a*a)
-     >        /(27.d0*(-3.d0-24.d0*a*a+32.d0*a**4+8.d0*dsqrt(pi)*a))
+     >        /(27.d0*(-3.d0-24.d0*a*a+32.d0*a**4+8.d0*sqrt(pi)*a))
 
       else if(a .gt. 50.d0) then
        berf = 1.d0/(72.d0*a*a)-1.d0/(17280.d0*a**4)
@@ -3076,7 +3050,7 @@ C*****************************************************************************
 
 
 !     Code generated by Mathematica
-      fak2 = dexp(0.25d0/a**2)
+      fak2 = exp(0.25d0/a**2)
       berf = (1.851851851851851851851852d-2*(-1.d0 + 1.44d2*a**4*(-1.d0
      &  + fak2) - 2.d0*a**2*(1.1d1 + 7.d0*fak2 ))) /
      &  (a**2*(3.2d1*a**4*(-1.d0 + fak2) - 3.d0*fak2
@@ -3600,7 +3574,7 @@ C*****************************************************************************
       end
 
 C****************************************************************************
-      subroutine DELTA_LRSR_LDAERF (rhoc,rhos,mu,dospin,e)
+      subroutine DELTA_LRSR_LDAERF(rhoc,rhos,mu,dospin,e)
 C*****************************************************************************
 C     LDA approximation to term Delta_(LR-SR) from  Eq. 42 of
 C       Paziani, Moroni, Gori-Giorgi and Bachelet, PRB 73, 155111 (2006)
@@ -3851,31 +3825,32 @@ C     => vclrup (spin-up electrons), vclrdown (spin-down electrons)
 C****************************************************************************
       implicit none
 #include "pi.h"
-      real*8   rs,z,mu,eclr,eclrrs,eclrz,vclrup,vclrdown
-      real*8   ec,ecd,ecz
-      real*8   alpha,cf,phi
-      real*8   g0f,dpol,d2anti,d3anti,Qrpa
-      real*8   g0d,dpold,d2antid,d3antid,Qrpad,x
-      real*8   coe2,coe3,coe4,coe5
-      real*8   coe2rs,coe3rs,coe4rs,coe5rs
-      real*8   coe2z,coe3z,coe4z,coe5z
-      real*8   a1,a2,a3,a4,a5,b0,a1rs,a2rs,a3rs,a4rs,a5rs,
+      real*8, intent(in) :: rs,z,mu
+      real*8, intent(out) :: vclrup, vclrdown
+      real*8 :: eclr,eclrrs,eclrz
+      real*8 :: ec,ecd,ecz
+      real*8 :: phi
+      real*8 :: g0f,dpol,d2anti,d3anti,Qrpa
+      real*8 :: g0d,dpold,d2antid,d3antid,Qrpad,x
+      real*8 :: coe2,coe3,coe4,coe5
+      real*8 :: coe2rs,coe3rs,coe4rs,coe5rs
+      real*8 :: coe2z,coe3z,coe4z,coe5z
+      real*8 :: a1,a2,a3,a4,a5,b0,a1rs,a2rs,a3rs,a4rs,a5rs,
      $     b0rs,a1z,a2z,a3z,a4z,a5z,b0z
-      real*8   q1a,q2a,q3a,t1a,t2a,t3a,adib
 
-      alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
-      cf=1.d0/alpha
+      real*8, parameter :: alpha = (4.d0/9.d0/pi)**(1.d0/3.d0)
+      real*8, parameter :: cf = 1.d0/alpha
+
+C     parameters from the fit
+      real*8, parameter :: adib = 0.784949d0
+      real*8, parameter :: q1a = -0.388d0
+      real*8, parameter :: q2a = 0.676d0
+      real*8, parameter :: q3a = 0.547d0
+      real*8, parameter :: t1a = -4.95d0
+      real*8, parameter :: t2a = 1.d0
+      real*8, parameter :: t3a = 0.31d0
 
       phi=((1.d0+z)**(2.d0/3.d0)+(1.d0-z)**(2.d0/3.d0))/2.d0
-C     parameters from the fit
-      adib   = 0.784949d0
-      q1a    = -0.388d0
-      q2a    = 0.676d0
-      q3a    = 0.547d0
-      t1a    = -4.95d0
-      t2a    = 1.d0
-      t3a    = 0.31d0
-
       b0=adib*rs
 
       d2anti=(q1a+q2a*rs)*exp(-q3a*rs)/rs
@@ -4024,18 +3999,18 @@ C****************************************************************************
       end
 
 C*****************************************************************************
-      real*8 function g0d(rs)
+      real*8 pure function g0d(rs)
 C*****************************************************************************
 C     derivative of on-top pair-distribution function
 C     Gori-Giorgi and Perdew, PRB 64, 155102 (2001)
 C****************************************************************************
       implicit none
-      real*8   Bg0,Cg0,Dg0,Eg0,Fg0,rs
-      Cg0             = 0.0819306d0
-      Fg0             = 0.752411d0
-      Dg0             = -0.0127713d0
-      Eg0             = 0.00185898d0
-      Bg0             =0.7317d0-Fg0
+      real*8, intent(in) :: rs
+      real*8, parameter :: Cg0 = 0.0819306d0
+      real*8, parameter :: Fg0 = 0.752411d0
+      real*8, parameter :: Dg0 = -0.0127713d0
+      real*8, parameter :: Eg0 = 0.00185898d0
+      real*8, parameter :: Bg0 =0.7317d0-Fg0
       g0d=(-Bg0+2*Cg0*rs+3*Dg0*rs**2+4*Eg0*rs**3)/2.d0*exp(-Fg0*rs)
      -   - (Fg0*(1 - Bg0*rs + Cg0*rs**2 + Dg0*rs**3 + Eg0*rs**4))/
      -   2.d0*exp(-Fg0*rs)
@@ -4043,28 +4018,28 @@ C****************************************************************************
       end
 
 C*****************************************************************************
-      real*8 function dpol(rs)
+      real*8 pure function dpol(rs)
 C*****************************************************************************
       implicit none
-      real*8   cf,rs,p2p,p3p
 #include "pi.h"
-      cf=(9.d0*pi/4.d0)**(1.d0/3.d0)
-      p2p    = 0.04d0
-      p3p    = 0.4319d0
+      real*8, intent(in) :: rs
+      real*8, parameter :: cf = (9.d0*pi/4.d0)**(1.d0/3.d0)
+      real*8, parameter :: p2p = 0.04d0
+      real*8, parameter :: p3p = 0.4319d0
       dpol=2.d0**(5.d0/3.d0)/5.d0*cf**2/rs**2*(1.d0+(p3p-0.454555d0)*rs)
      $     /(1.d0+p3p*rs+p2p*rs**2)
       return
       end
 
 C*****************************************************************************
-      real*8 function dpold(rs)
+      real*8 pure function dpold(rs)
 C*****************************************************************************
       implicit none
-      real*8   cf,rs,p2p,p3p
 #include "pi.h"
-      cf=(9.d0*pi/4.d0)**(1.d0/3.d0)
-      p2p    = 0.04d0
-      p3p    = 0.4319d0
+      real*8, intent(in) :: rs
+      real*8, parameter :: cf = (9.d0*pi/4.d0)**(1.d0/3.d0)
+      real*8, parameter :: p2p = 0.04d0
+      real*8, parameter :: p3p = 0.4319d0
       dpold=2.d0**(5.d0/3.d0)/5.d0*cf**2*
      - (-2. + (0.454555 - 4.*p3p)*rs +
      -    (-4.*p2p +
@@ -4092,16 +4067,17 @@ C*****************************************************************************
       end
 
 C*****************************************************************************
-      real*8 function Qrpad(x)
+      real*8 pure function Qrpad(x)
 C*****************************************************************************
       implicit none
-      real*8   a2,b2,c2,d2,x,Acoul
 #include "pi.h"
-      Acoul=2.d0*(log(2.d0)-1.d0)/pi**2
-      a2              = 5.84605d0
-      c2              = 3.91744d0
-      d2              = 3.44851d0
-      b2=d2-3.d0/(2.d0*pi*Acoul)*(4.d0/(9.d0*pi))**(1.d0/3.d0)
+      real, intent(in) :: x
+      real*8, parameter :: Acoul = 2.d0*(log(2.d0)-1.d0)/pi2
+      real*8, parameter :: a2 = 5.84605d0
+      real*8, parameter :: c2 = 3.91744d0
+      real*8, parameter :: d2 = 3.44851d0
+      real*8, parameter :: b2 = d2-3.d0/(2.d0*pi*Acoul) * 
+     &                           (4.d0/(9.d0*pi))**(1.d0/3.d0)
       Qrpad=Acoul*((x*(b2*(2.d0 + a2*x) +
      -      c2*x*(3.d0 + 2.d0*a2*x) +
      -      d2*(-2.d0 - a2*x + c2*x**3)))/
@@ -4121,11 +4097,11 @@ C     ecd is d/drs ec
 C     ecz is d/dz ec
 C****************************************************************************
       implicit none
+#include "pi.h"
       real*8, intent(in) :: x, y
       real*8, intent(out) :: ec, ecd, ecz
       real*8 :: f02,ff,ec0,ec0d,ec1,ec1d,
      $          aaa,G,Gd,alfac,alfacd
-      real*8, parameter :: pi = 3.141592653589793d0
 
       f02=4.d0/(9.d0*(2.d0**(1.d0/3.d0)-1.d0))
 
@@ -4182,7 +4158,7 @@ C****************************************************************************
       end
 
 C*****************************************************************************
-      real*8   function g0s(rs)
+      real*8 pure function g0s(rs)
 C*****************************************************************************
 C     g"(0,rs,z=1) from Eq. 32 of
 C       Paziani, Moroni, Gori-Giorgi and Bachelet, PRB 73, 155111 (2006)
@@ -4190,17 +4166,17 @@ C
 C     Created: 26-08-11, J. Toulouse
 C*****************************************************************************
       implicit none
-      real*8   rs
-      real*8   rs2, f53, alpha2
-      parameter(f53 = 1.6666666666666667d0)
-      parameter(alpha2 = 0.2715053589826032d0)
-      rs2=rs*rs
+      real*8, intent(in) :: rs
+      real*8, parameter :: f53 = 1.6666666666666667d0
+      real*8, parameter :: alpha2 = 0.2715053589826032d0
+      real*8 :: rs2
+      rs2 = rs*rs
       g0s=(2.d0**f53)*(1.d0-0.02267d0*rs)/((5.d0*alpha2*rs2)
      >    *(1.d0+0.4319d0*rs+0.04d0*rs2))
       end
 
 C*****************************************************************************
-      subroutine HS(z,k,H)
+      pure subroutine HS(z,k,H)
 C*****************************************************************************
 C     Smoothening formula for the SRCMULO and SRCPBELO functionals 
 C     Cancels the discontinuety arising from the max() function.
@@ -4211,7 +4187,8 @@ C             k   :
 C     OUTPUT:
 C             H  
 C*****************************************************************************
-      real*8   z,h,k
+      real*8, intent(in) :: z, k
+      real*8, intent(out) :: H
 ! dftcom.h : heaviside_pvalue
 #include "dftcom.h"
 
