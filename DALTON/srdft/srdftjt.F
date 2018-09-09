@@ -364,6 +364,14 @@ C        Contribution to spin density (N_alpha - N_beta)
       do i = 1,4
          if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
       end do
+      if (rho(1) .gt. 1.d-10) then
+         if ((rho(1) - abs(rho(2))) .le. 0.0d0) then
+            call quit('rho_c is less or equal to |rho_s|')
+         end if
+         if ((rho(1) - abs(rho(2)) - 1.d-4*rho(1)) .le. 0.0d0 ) then
+            call quit('rho_c and rho_s are to close for finite diff.')
+         end if
+      end if
 
 C     Gradients of densities
       IF (DOGGA) THEN
@@ -750,8 +758,9 @@ C  Correlation  ----------------------------------------------------------
       IF(DOSRC_LDA_S) THEN
         ! d1Ec(2), d1Ec(3) here ...
         use_spindns = triplet .or. dft_spindns
-        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
-     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
+C        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
+C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
+        call SPIN_PW92_ERF(rho, NORDER, chival, Ec, d1Ec, d2Ec)
       ENDIF
       IF(DOSRC_VWN5_S) THEN
         use_spindns = triplet .or. dft_spindns
