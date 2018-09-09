@@ -2332,26 +2332,24 @@ C     Author: Emmanuel Fromager (Southern Denmark University)
 C     Date  : 31-01-2006
 C*****************************************************************************
       implicit none
+#include "pi.h"
+      real*8, intent(in) :: rhoa, grdaa, mu
+      real*8, intent(out) :: e
 
-      real*8   rhoa, grdaa, mu, e
-
-      real*8   mu2, mu6, pi, sqrtpi 
-      real*8   three53, pi13, pi43, zero 
-      real*8   rho, epbe
-      real*8   d, d2, denom1, denom2
+      real*8 :: mu2, mu6
+      real*8 :: rho, epbe
+      real*8 :: d, d2, denom1, denom2
       
 !      print *,'ESRX_PBERIERF: mu=',mu
 !      print *,'ESRX_PBERIERF: rho=',rho,' grd=',grd
      
 C     General constants
-      pi = 3.141592653589793d0
-      sqrtpi = dsqrt(pi)
-      three53 = 3.d0**(5.d0/3.d0) 
-      pi13 = pi**(1.d0/3.d0)
-      pi43 = pi**(4.d0/3.d0) 
+      real*8, parameter :: three53 = 3.d0**(5.d0/3.d0) 
+      real*8, parameter :: pi13 = pi**(1.d0/3.d0)
+      real*8, parameter :: pi43 = pi**(4.d0/3.d0) 
 
 !     Variables
-      zero = 0.d0 
+      real*8, parameter :: zero = 0.d0 
       mu2  = mu*mu
       mu6  = mu2*mu2*mu2
       rho  = 2.0d0*rhoa ! as if rhoa .eq. rhob
@@ -2395,12 +2393,14 @@ C     Date  : Nov. 2011
 C*****************************************************************************
       implicit none
 
-      real*8   rho, grdcc, mu, e
+      real*8, intent(in) :: rho, grdcc, mu
+      real*8, intent(out) :: e
 
-      real*8   e_pbe, e_lda,p,z,Ha,Hb
-      real*8   rho13
-      logical  ERFEXP(0:2), MULOCAL(0:2)
-      real*8   ZKSR(3)
+      real*8 :: e_pbe, e_lda,p,z,Ha,Hb
+      real*8 :: rho13
+      real*8 :: ZKSR(3)
+      logical, parameter :: ERFEXP(0:2) = .false.
+      logical, parameter :: MULOCAL(0:2) = .false.
 
       rho13 = rho**(1.0d0/3.0d0)
 
@@ -2412,8 +2412,6 @@ C*****************************************************************************
       end if
 
 !    short-range LDA energy
-      ERFEXP(0:2) = .false.
-      MULOCAL(0:2) = .false.
       call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
       e_lda = ZKSR(1)
 
@@ -2444,26 +2442,25 @@ C     Author: J. Toulouse
 C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
+#include "pi.h"
+      real*8, intent(in) :: rho, grdcc, mu
+      real*8, intent(out) :: e
 
-      real*8   rho, grdcc, mu, e
-
-      real*8   derfc
-      logical  ERFEXP(0:2), MULOCAL(0:2)
-      real*8   mu0,rho13, rs, pi
-      real*8   elda,epbe,eldamu
-      real*8   ZKSR(3)
+      real*8 :: derfc
+      real*8 :: rho13, rs
+      real*8 :: elda, epbe, eldamu
+      real*8 :: ZKSR(3)
+      real*8, parameter :: mu0 = 0.d0
+      logical, parameter :: ERFEXP(0:2) = .false.
+      logical, parameter :: MULOCAL(0:2) = .false.
 C     
 !      print *,'ESRC_PBEWIERF: mu=',mu
 !      print *,'ESRC_PBEWIERF: rho=',rho,' grdcc=',grdcc
 
-      pi = 3.141592653589793d0
-      ERFEXP(0:2) = .false.
-      MULOCAL(0:2) = .false.
       rho13 = rho**(1.d0/3.d0)
       rs = (3.d0/(4.d0*pi*rho))**(1.d0/3.d0)
 
 !     LDA energy
-      mu0 = 0.d0
       call VCSRLDA(ZKSR,rho,rho13,mu0,MULOCAL,0,ERFEXP)
       elda = ZKSR(1)
 !      print *,'ESRC_PBEWIERF: elda=',elda
@@ -2500,24 +2497,23 @@ C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
 
-      real*8   rho, grdcc, mu, e
+      real*8, intent(in) :: rho, grdcc, mu
+      real*8, intent(out) :: e
 
-      real*8   rho13
-      real*8   exerflda, ecerflda, ecerfpbe, t1
+      real*8 :: rho13
+      real*8 :: exerflda, ecerflda, ecerfpbe, t1
+      real*8 :: XKSR(3), ZKSR(3)
 
-      logical  ERFEXP(0:2), MULOCAL(0:2)
-      real*8   XKSR(3), ZKSR(3)
-
+      logical, parameter :: ERFEXP(0:2) = .false.
+      logical, parameter :: MULOCAL(0:2) = .false.
 ! function 
-      real*8   berft
+      real*8  :: berft
 
 !      print *,'ESRC_PBETCSERF: mu=',mu
 !      print *,'ESRC_PBETCSERF: rho=',rho,' grdcc=',grdcc
 
 C     LDA energy
       rho13 = rho**(1.d0/3.d0)
-      ERFEXP(0:2) = .false.
-      MULOCAL(0:2) = .false.
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
       call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
       exerflda = XKSR(1)
@@ -2567,24 +2563,24 @@ C     Date  : 12-02-05
 C*****************************************************************************
       implicit none
 
-      real*8   rho, grdcc, mu, e
+      real*8, intent(in) :: rho, grdcc, mu
+      real*8, intent(out) :: e
 
-      real*8   rho13, t1
-      real*8   exerflda, ecerflda, ecerfpbe, epbe
+      real*8 :: rho13, t1
+      real*8 :: exerflda, ecerflda, ecerfpbe, epbe
 
-      logical  ERFEXP(0:2), MULOCAL(0:2)
-      real*8   XKSR(3), ZKSR(3)
+      real*8 :: XKSR(3), ZKSR(3)
 
+      logical, parameter :: ERFEXP(0:2) = .false.
+      logical, parameter :: MULOCAL(0:2) = .false.
 ! function 
-      real*8   berft
+      real*8 :: berft
 
 !      print *,'ESRC_PBETCSERF: mu=',mu
 !      print *,'ESRC_PBETCSERF: rho=',rho,' grdcc=',grdcc
 
 C     LDA energy
       rho13 = rho**(1.d0/3.d0)
-      ERFEXP(0:2) = .false.
-      MULOCAL(0:2) = .false.
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
       call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
       exerflda = XKSR(1)
@@ -2669,7 +2665,7 @@ C*****************************************************************************
       implicit none
 #include "pi.h"
       real*8, intent(in) :: a
-      real*8 :: t1,t2,t3,t4,t5
+      real*8 :: t1, t2, t3, t4, t5
 
       if(a .lt. 0.02d0) then
 !      expansion for small mu to avoid numerical problems
@@ -2763,8 +2759,8 @@ C****************************************************************************
 C****************************************************************************
 C linear complement exchange PBE energy, Kamal SHARKAS 19/05/2011 beg
 C*****************************************************************************
-      real*8  rho(4), grd2(6), VLAMBDA
-      real*8  e
+      real*8, intent(in) :: rho(4), grd2(6), VLAMBDA
+      real*8, intent(out) :: e
 
       call ESRX_PBEGWSERF(rho(3),grd2(4),0.d0,e)
 !     call ESRX_PBEGWSERF(rhoa  ,grdaa  ,0.d0,e)
@@ -2800,15 +2796,14 @@ C*****************************************************************************
       real*8 :: ecerflda,eclda
       real*8 :: ecerfpbe
       real*8 :: beta, Aa, Ab, Ac, tq, arglog
-      logical :: ERFEXP(0:2), MULOCAL(0:2)
       real*8 :: XKSR(3), ZKSR(3)
       real*8, parameter :: alpha=2.78d0
       real*8, parameter :: gamma_symbol=3.1091d-2
+      logical, parameter :: ERFEXP(0:2) = .false.
+      logical, parameter :: MULOCAL(0:2) = .false.
 
 !     short-range LDA energy (order = 0)
       rho13 = rhoc**(1.d0/3.d0)
-      ERFEXP(0:2) = .false.
-      MULOCAL(0:2) = .false.
       call VCSRLDA(ZKSR,rhoc,rho13,mu,MULOCAL,0,ERFEXP)
       ecerflda = ZKSR(1)
 
@@ -2981,8 +2976,8 @@ C****************************************************************************
 C****************************************************************************
 C linear complement non-scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011 beg
 C*****************************************************************************
-      real*8   rhoc, grdcc, VLAMBDA
-      real*8   e
+      real*8, intent(in) :: rhoc, grdcc, VLAMBDA
+      real*8, intent(out) :: e
 
       call ESRC_PBEGWSERF(rhoc,grdcc,0.d0,e)
       e = (1.d0 - VLAMBDA**2) * e
@@ -2995,8 +2990,9 @@ C****************************************************************************
 C****************************************************************************
 C linear complement Scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
-      real*8   rhoc, grdcc, VLAMBDA
-      real*8   e, ecoul, escaled,rhocscaled,grdscaled
+      real*8, intent(in) :: rhoc, grdcc, VLAMBDA
+      real*8, intent(out) :: e
+      real*8 :: ecoul, escaled,rhocscaled,grdscaled
 
       ecoul = 0.d0
 
@@ -3083,13 +3079,17 @@ C     Date  : 20-09-11
 C*****************************************************************************
       implicit none
 
-      real*8   rho, grd, mu, mu_new, amul
-      real*8   e
-      real*8   alpha, x, a1, b1, c1
-      parameter(a1 = 0.559463d0, b1 = -0.134086d0, c1 = 0.0296811d0)
-      real*8   rho13
+      real*8, intent(in) :: rho, grd, mu
+      real*8, intent(out) :: e
+      real*8 :: mu_new, amul
+      real*8 :: alpha, x
+      real*8, parameter :: a1 = 0.559463d0
+      real*8, parameter :: b1 = -0.134086d0
+      real*8, parameter :: c1 = 0.0296811d0
+      real*8 :: rho13
 
-      logical ERFEXP(0:2), MULOCAL(0:2)
+      logical, parameter :: ERFEXP(0:2) = .false.
+      logical, parameter :: MULOCAL(0:2) = .false.
       real*8   ZKSR(3)
 !     local mu parameter 
       rho13 = rho**(1.0d0/3.0d0)
@@ -3099,8 +3099,6 @@ C*****************************************************************************
       amul = x*alpha
       mu_new = max(amul,mu)
 !     short-range LDA energy
-      ERFEXP(0:2) = .false.
-      MULOCAL(0:2) = .false.
       call VCSRLDA(ZKSR,rho,rho13,mu_new,MULOCAL,0,ERFEXP)
       e = ZKSR(1)
       return
@@ -3124,15 +3122,19 @@ C*****************************************************************************
 
       implicit none
 
-      real*8   rho, grd, mu, amul, mu_new
-      real*8   e
-      real*8   rsfac, rs, x, a, b, c, d
-      parameter(rsfac = 0.62035049089940008660d0)
-      parameter(b = 1.741930d0, c = -0.528057d0, d = 0.0720226d0 )
-      real*8   rho13
+      real*8, intent(in) :: rho, grd, mu
+      real*8, intent(out) :: e
+      real*8 :: amul, mu_new
+      real*8 :: rs, x, a
+      real*8, parameter :: rsfac = 0.62035049089940008660d0
+      real*8, parameter :: b = 1.741930d0
+      real*8, parameter :: c = -0.528057d0
+      real*8, parameter :: d = 0.0720226d0
+      real*8 :: rho13
 
-      logical ERFEXP(0:2), MULOCAL(0:2)
-      real*8   ZKSR(3)
+      real*8 :: ZKSR(3)
+      logical, parameter :: ERFEXP(0:2) = .false.
+      logical, parameter :: MULOCAL(0:2) = .false.
 
       rho13 = rho**(1.0d0/3.0d0)
       rs   = rsfac/rho13
@@ -3143,8 +3145,6 @@ C*****************************************************************************
       amul = a/rs
       mu_new = max(amul,mu)
 !     short-range LDA energy
-      ERFEXP(0:2) = .false.
-      MULOCAL(0:2) = .false.
 !      print *,'mu = 0.1' , mu
       call VCSRLDA(ZKSR,rho,rho13,mu_new,MULOCAL,0,ERFEXP)
       e = ZKSR(1)
@@ -3167,18 +3167,20 @@ C
 C     Author: M.N.P
 C     Date  : 20-09-11
 C*****************************************************************************
-
       implicit none
 
-      real*8   rhoc, grdcc, mu, e
-      real*8   amul, mu_new, x, rs, alpha
-      real*8   rsfac, a, b, bfac
-      parameter(rsfac = 0.62035049089940008660d0, a = 0.878435d0)
-      parameter(b = 0.5676020d0, bfac = 0.814516076948D0)
-      real*8   rho13
+      real*8, intent(in) :: rhoc, grdcc, mu
+      real*8, intent(out) :: e
+      real*8 :: amul, mu_new, x, rs, alpha
+      real*8, parameter :: rsfac = 0.62035049089940008660d0
+      real*8, parameter :: a = 0.878435d0
+      real*8, parameter :: b = 0.5676020d0
+      real*8, parameter :: bfac = 0.814516076948D0
+      real*8 :: rho13
 
-      logical ERFEXP(0:2), MULOCAL(0:2)
-      real*8   ZKSR(3)
+      real*8 :: ZKSR(3)
+      logical, parameter :: ERFEXP(0:2) = .false.
+      logical, parameter :: MULOCAL(0:2) = .false.
 
       rho13 = rhoc**(1.0d0/3.0d0)
       rs   = rsfac/rho13
@@ -3188,8 +3190,6 @@ C*****************************************************************************
       amul = (alpha*bfac)/sqrt(rs)
       mu_new = max(amul,mu)
 !     short-range LDA energy
-      ERFEXP(0:2) = .false.
-      MULOCAL(0:2) = .false.
 !      print *,'mu = 0.1' , mu
       call VCSRLDA(ZKSR,rhoc,rho13,mu_new,MULOCAL,0,ERFEXP)
       e = ZKSR(1)
@@ -3401,8 +3401,9 @@ C****************************************************************************
 C****************************************************************************
 C linear complement spin-dependent exchange LDA functional energy, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
-      real*8   rhoc, rhos, VLAMBDA, e
-      real*8   rhoa, rhob, ea, eb
+      real*8, intent(in) :: rhoc, rhos, VLAMBDA
+      real*8, intent(out) :: e
+      real*8 :: rhoa, rhob, ea, eb
 
       rhoa=0.5d0*max((rhoc+rhos),0d0)
       call ESRX_LDAERF(rhoa,0.0d0,0.d0,ea)
@@ -3533,9 +3534,9 @@ C****************************************************************************
 C****************************************************************************
 C linear complement spin-dependent non-scaled correlation LDA functional, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
-      real*8   rhoc, rhos, VLAMBDA
-      real*8   e
-      logical dospin
+      real*8, intent(in) :: rhoc, rhos, VLAMBDA
+      logical, intent(in) :: dospin
+      real*8, intent(out) :: e
 
       call ESRC_LDAERFSPIN(rhoc,rhos,0.d0,dospin,e)
       e = (1.d0 - VLAMBDA**2) * e
@@ -3561,11 +3562,11 @@ C     Created: 26-08-11, J. Toulouse
 C*****************************************************************************
       implicit none
 
-      real*8   rhoc, rhos, mu
-      logical dospin
-      real*8   e
+      real*8, intent(in) :: rhoc, rhos, mu
+      logical, intent(in) :: dospin
+      real*8, intent(out) :: e
 
-      real*8   e1
+      real*8 :: e1
 
       call ESRC_LDAERFSPIN (rhoc,rhos,mu,dospin,e1)
       call DELTA_LRSR_LDAERF (rhoc,rhos,mu,dospin,e)
@@ -3591,12 +3592,11 @@ C
 C     Created: 26-08-11, J. Toulouse
 C*****************************************************************************
       implicit none
+#include "pi.h"
+      real*8, intent(in) :: rhoc, rhos, mu
+      logical, intent(in) :: dospin
+      real*8, intent(out) :: e
 
-      real*8   rhoc, rhos, mu
-      logical dospin
-      real*8   e
-
-      real*8   f13, f83, pi, rsfac, alpha2
       real*8   rs, rs2, rs3
 
       real*8   rhoa, rhob, z, z2, onepz, onemz, zp, zm, phi8
@@ -3607,11 +3607,10 @@ C*****************************************************************************
       real*8   delta2,delta3,delta4,delta5,delta6
       real*8   delta
 
-      parameter(f13 = 0.333333333333333d0)
-      parameter(f83 = 2.6666666666666665d0)
-      parameter(pi = 3.141592653589793d0)
-      parameter(rsfac = 0.620350490899400d0)
-      parameter(alpha2 = 0.2715053589826032d0)
+      real*8, parameter :: f13 = 0.333333333333333d0
+      real*8, parameter :: f83 = 2.6666666666666665d0
+      real*8, parameter :: rsfac = 0.620350490899400d0
+      real*8, parameter :: alpha2 = 0.2715053589826032d0
 
       rs = rsfac/(rhoc**f13)
       rs2 = rs*rs
