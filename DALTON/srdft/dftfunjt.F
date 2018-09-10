@@ -4070,7 +4070,7 @@ C*****************************************************************************
 C*****************************************************************************
       implicit none
 #include "pi.h"
-      real, intent(in) :: x
+      real*8, intent(in) :: x
       real*8, parameter :: Acoul = 2.d0*(log(2.d0)-1.d0)/pi2
       real*8, parameter :: a2 = 5.84605d0
       real*8, parameter :: c2 = 3.91744d0

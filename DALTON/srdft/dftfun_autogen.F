@@ -34,7 +34,7 @@ C*****************************************************************************
       rho_a = rho(3)
       rho_b = rho(4)
       
-      if ((rho_a + rho_b) .le. 10**-10) then
+      if ((rho_a + rho_b) .le. 1.d-10) then
          ! Are we completely sure this check is valid
          !  for derivatives? - E. R. K
          return
@@ -120,7 +120,7 @@ C*****************************************************************************
       rho_c = rho(1)
       rho_s = rho(2)
 
-      if (rho_c .le. 10**-10) then
+      if (rho_c .le. 1.d-10) then
          ! Are we completely sure this check is valid
          !  for derivatives? - E. R. K
          return
@@ -171,7 +171,7 @@ C*****************************************************************************
       rho_s = rho(2)
       gamma_cc = gamma_xx(1)
 
-      if (rho_c .le. 10**-10) then
+      if (rho_c .le. 1.d-10) then
          ! Are we completely sure this check is valid
          !  for derivatives? - E. R. K
          return
