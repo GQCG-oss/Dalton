@@ -620,6 +620,7 @@ C     sr mdc func
       ! for debug prints (counter for grid points)
       integer inpt
       logical use_spindns
+      integer, save :: call_number = 0
 
 c  Exchange  ------------------------------------------------------------
 
@@ -760,7 +761,7 @@ C  Correlation  ----------------------------------------------------------
         use_spindns = triplet .or. dft_spindns
 C        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
 C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
-        call SPIN_PW92_ERF(rho, NORDER, chival, Ec, d1Ec, d2Ec)
+        call SPIN_PW92_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
       IF(DOSRC_VWN5_S) THEN
         use_spindns = triplet .or. dft_spindns
@@ -772,8 +773,17 @@ C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
         ! therefore zero these before DESRC_SPINGGA call:
         temp_grd2(:) = grd2(:)
         temp_grd2(2:3) = 0.0d0
-        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,temp_grd2,CHIVAL,
-     >                     norder,Ec,d1Ec,d2Ec)
+C        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,temp_grd2,CHIVAL,
+C     >                     norder,Ec,d1Ec,d2Ec)
+        call SPIN_PBE_GWS_ERF(rho, temp_grd2, norder, chival,
+     >                             Ec, d1Ec, d2Ec)
+        !call_number = call_number + 1
+        !if (modulo(call_number, 5000) .eq. 1) then
+        !write(lupri,*) "rho, mu, norder: ", rho, mu, norder
+        !write(lupri,*) "Ec: ", Ec
+        !write(lupri,*) "d1Ec: ",d1Ec
+        !write(lupri,*) "d2Ec: ",d2Ec
+        !end if
       ENDIF
 
 C Kamal SHARKAS 20-05-11 beg
