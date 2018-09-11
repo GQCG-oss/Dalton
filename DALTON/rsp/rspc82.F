@@ -533,7 +533,7 @@ C
       IF (RSPSUP .AND. (KSYMOP .EQ. 1)) THEN
          IF (IPRRSP.GT.210) THEN
             WRITE(LUPRI,*)' TRANSFORMATION WITH S(2) BEFORE RSPAVE'//
-     &      ' (Z1 Y1 Z1 Y2 ...)'
+     &      ' (Z1 Y1 Z2 Y2 ...)'
             CALL OUTPUT(SVECS,1,KZVAR,1,2*NSIM,KZVAR,2*NSIM,-1,LUPRI)
          END IF
          CALL RSPAVE(SVECS(KZCONF+1,1),KZVAR,2*NSIM)
@@ -541,7 +541,7 @@ C
 C
       IF (IPRRSP.GT.110) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  S(2)'//
-     &      ' (Z1 Y1 Z1 Y2 ...)'
+     &      ' (Z1 Y1 Z2 Y2 ...)'
          CALL OUTPUT(SVECS,1,KZVAR,1,2*NSIM,KZVAR,2*NSIM,-1,LUPRI)
       END IF
 C
@@ -1001,7 +1001,7 @@ C
 C
       IF (IPRRSP.GT.110) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  E(2)'//
-     &      ' (Z1 Y1 Z1 Y2 ...)'
+     &      ' (Z1 Y1 Z2 Y2 ...)'
          CALL OUTPUT(EVECS,1,KZVAR,1,2*NSIM,KZVAR,2*NSIM,-1,LUPRI)
       END IF
 C
@@ -2721,9 +2721,9 @@ C trial vectors
 C
 C PURPOSE:
 C Solve mcrsp/rpa problem in reduced subspace.
-C the structue of E[2] and S[2] is used to obtain
+C The structue of E[2] and S[2] is used to obtain
 C a reduced problem with pairing of eigensolutions.
-C Allthough only KZRED vectors are known, a reduced
+C Although only KZRED vectors are known, a reduced
 C problem with KZRED*2 vectors is used.
 C
 C Input:
@@ -2731,17 +2731,24 @@ C  ICTL, flow control
 C         =1, extend the reduced E2 and S2 matrices
 C         =2, find the new eigenvalues and -vectors
 C         =3, both
+C  LINEQ, true for linear equations, false for eigenvalues
+C  N, number of new b-vectors
+C  IBTYP, types of the N new b-vectors (in BCVEC or BOVEC)
 C  REDE,REDS, the old reduced matrices (dimension: KZYRED-2*N)
-C  BCVEC,BOVEC, the N new vectors
-C  EVECS, E times the N b-vectors
-C  S times the N b-vectors are created in RSPSLI and
+C  BCVEC,BOVEC, the N new b-vectors
+C  EVECS, E[2] times the N b-vectors
+C  S[2] times the N b-vectors are created in RSPSLI and
 C    stored in EVECS after EVECS is used
-C  N, number of new vectors
+C  GP, the property gradient (when LINEQ true)
+C  REDGP, the old reduced GP vector (dimension: KZYRED-2*N) when LINEQ
+C  UDV, square (unpacked) active density matrix
+C  XINDX, information for CI module
 C
 C
 C Output:
 C  REDE, the new, extended reduced E[2]-matrix (dimension: KZYRED)
 C  REDS, rhe new, extended reduced S[2]-matrix (dimension: KZYRED)
+C  REDGP, rhe new, extended reduced GP vector (dimension: KZYRED) when LINEQ true
 C  EIVEC, eigenvectors of the new reduced mcrsp/rpa eq.
 C  EVALR, real part of eigenvalues of the new reduced  mcrsp/rpa eq.
 C
