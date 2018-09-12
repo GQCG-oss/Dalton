@@ -19,4 +19,5 @@ output_test.run(
     accepted_errors=['not implemented for parallel calculations'],
     )
 
+sys.exit(output_test.return_code)
 

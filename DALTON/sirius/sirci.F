@@ -2288,14 +2288,13 @@ C
 C
 C
 C
-#if !defined (VAR_OLDCIST)
       NCSIM = NCSIM0 + MCSIM
 C     ... (870804-hjaaj) Until now we used IFRST = MCSIM + 1
 C         and no change in NCSIM, however, it gave bad convergence
 C         in roots MCSIM+1 to NCSIM not to include the lowest
 C         MCSIM diagonal elements explicitly.
 C     940511-hjaaj MAERKE: Maybe this can be done with .OLSEN ??
-#endif
+
       GO TO (100,200) JCI1
 C
 C *** JCI1 = 1 ***
@@ -2354,20 +2353,11 @@ C
      *      ' *** CI control: start vectors not found on LUIT1,'//
      *      ' lowest diagonal elements used.'
          ELSE
-#if defined (VAR_OLDCIST)
-            WRITE (LUW4,'(//A,I4,A,/2A//)')
-     *      ' *** CI control: only',MCSIM,
-     *      ' start vectors found on LUIT1,',
-     *      ' diagonal elements used for remaining',
-     *      ' requested trial vectors.'
-         END IF
-#else
             WRITE (LUW4,'(//A,I4,A,/A/A//)')
      *      ' *** CI control: only',MCSIM,
      *      ' start vectors found on LUIT1,',
      *      ' In addition to these start vectors, lowest diagonal',
      *      ' elements used for requested trial vectors.'
-#endif
          END IF
          JCI1 = 1
       GO TO 10
@@ -2394,13 +2384,11 @@ C  Block of old CIST, purpose: find start vectors corresponding
 C  to lowest diagonal elements and write these to LUIT1.
 C
 #include "implicit.h"
-      LOGICAL PLUSCB
-      DIMENSION HDIAG(*), WRK(*)
-      PARAMETER (MXNLIS = 220)
-      PARAMETER (THRSIM = 0.000 01 D0, THRDEG = 0.000 000 001 D0)
+      LOGICAL   PLUSCB
+      REAL*8    HDIAG(*), WRK(*)
+      PARAMETER (THRSIM = 0.05D0, THRDEG = 1.0D-6)
 C     ... THRSIM is threshold for two values are similar
 C         THRDEG is threshold for two values are degenerate
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
 C Used from common blocks:
 C   INFTAP : LUIT1
@@ -2412,7 +2400,7 @@ C
 C
 C *** Local variables:
 C
-      DIMENSION NLIST(MXNLIS)
+      INTEGER, ALLOCATABLE :: NLIST(:)
       CHARACTER*8 LBLIT1(4)
 C
 C *** data:
@@ -2427,36 +2415,27 @@ C
 C        ... take plus combination of degenerate diagonal elements
 C            we thus need more ...
          NRS = MIN( NCONF, 2 * NCSIM + 6)
-         IF (NRS .GT. MXNLIS .AND. MXNLIS .GT. NCSIM) NRS = MXNLIS
          WRITE (LUPRI,'(//A/A/)')
      *   ' --- SIRCI.CIST1: plus combination of all degenerate',
      *   '                 configurations is used as start vectors.'
       ELSE
-         NRS = MIN(NCSIM + 3,NCONF)
-C        ... we add 3 so we can expand if degeneracy.
-      END IF
-      IF (NRS .GT. MXNLIS) THEN
-         WRITE (LUPRI,'(//A,I4,A/I9,A/)')
-     1      ' --- SIRCI.CIST1 ERROR, LOCAL DIMENSION ONLY ALLOWS',
-     2      MXNLIS,' DIAGONAL ELEMENTS,', NRS,' WERE REQUESTED.'
-         CALL QTRACE(LUPRI)
-         CALL QUIT('--- SIRCI.CIST1 ERROR, MXNLIS PARAMETER TOO SMALL.')
+         NRS = MIN(NCSIM + 5,NCONF)
+C        ... we add 5 so we can expand if degeneracy.
       END IF
       IF (LWRK .LT. NRS+NCONF) CALL ERRWRK('CIST1',(NRS+NCONF),LWRK)
+
+      allocate(NLIST(NRS))
       CALL CIFNMN(NRS,NLIST,HDIAG,NCONF,WRK,LWRK)
 C     CALL CIFNMN(NELMNT,IPLACE,VEC,NVEC,WRK,LWRK)
       IF (IPRI4 .GT. 2) WRITE (LUW4,1410)
      *   NRS,(I,NLIST(I),WRK(I)-EMY,WRK(I),I=1,NRS)
       IF (LUPRI .NE. LUW4 .AND. IPRSIR .GT. 0) WRITE (LUPRI,1410)
      *   NRS,(I,NLIST(I),WRK(I)-EMY,WRK(I),I=1,NRS)
- 1410 FORMAT(/' (CIST1)',I3,' lowest diagonal elements:',
+ 1410 FORMAT(/' (CIST1) ',I0,' lowest diagonal elements:',
      *      //' Element no. Config.no.    Active energy',
      *        '      Total energy',
      *      //,(I10,' : ',I10,2F18.10))
-C
-C
-C
-#if !defined (VAR_OLDCIST)
+
       IFRST = 1
       IF (.NOT.PLUSCB) THEN
 C        ... include the degenerate configurations separately,
@@ -2470,9 +2449,8 @@ C            check if last element is degenerate with next element(s)
             NCSIM = LAST
          END IF
  1500    FORMAT(//' (CIST1) number of start vectors is increased from',
-     *          I3,' to',I3,' because of degeneracy')
+     *          I3,' to',I3,' because of (near) degeneracy')
       END IF
-#endif
 C
 C === Write start guess on LUIT1
 C
@@ -2509,14 +2487,14 @@ C           ... 170: repeat until (MCSIM .GE. NCSIM .OR. NRS .GE. LAST)
                IF (LAST .LT. NRS) GO TO 172
             END IF
             FAC = 1 + LAST - IFRST ! yields degeneracy
-            FAC = D1 / SQRT(FAC)
+            FAC = 1.0D0 / SQRT(FAC)
             DO 174 I = IFRST,LAST
                WRK(NRS + NLIST(I)) = FAC
   174       CONTINUE
             CALL WRITT(LUIT1,NC4,WRK(NRS+1))
             MCSIM = MCSIM + 1
             DO 176 I = IFRST,LAST
-               WRK(NRS + NLIST(I)) = D0
+               WRK(NRS + NLIST(I)) = 0.0D0
   176       CONTINUE
             IFRST = LAST + 1
          IF (MCSIM .LT. NCSIM .AND. LAST .LT. NRS) GOTO 170
@@ -2524,14 +2502,13 @@ C           ... end repeat
       ELSE
          DO 185 I = IFRST,LAST
             MCSIM = MCSIM + 1
-            call dzero(wrk(nrs+1),nconf)
-            WRK(NRS + NLIST(I)) = 1.0d0
+            WRK(NRS + NLIST(I)) = 1.0D0
             CALL WRITT(LUIT1,NC4,WRK(NRS+1))
-            WRK(NRS + NLIST(I)) = D0
+            WRK(NRS + NLIST(I)) = 0.0D0
   185    CONTINUE
       END IF
       IF (NCSIM .GT. MCSIM .AND. LAST .LT. NCONF) THEN
-C        ... MXNLIS too small, or NRS too small compared to NCSIM.
+C        ... NRS too small compared to NCSIM.
          WRITE (LUPRI,1850) MCSIM, NCSIM
  1850    FORMAT(
      *   //' (CIST1) INTERNAL ERROR, we only got',I4,' start vectors',
@@ -2540,6 +2517,7 @@ C        ... MXNLIS too small, or NRS too small compared to NCSIM.
          CALL QUIT('CIST1 internal error, found too few start vectors.')
       END IF
       NCSIM = MCSIM
+      deallocate(NLIST)
       CALL QEXIT('CIST1 ')
       RETURN
       END

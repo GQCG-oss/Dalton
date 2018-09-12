@@ -57,10 +57,10 @@ CTRL[5]=2
 ERROR[5]="SYMMETRY IS NOT CORRECT"
 
 # Relativistic corrections:
-CRIT1=`$GREP "Darwin correction\: * (0| )\.19745142.[0-9] au" $log | wc -l`
-CRIT2=`$GREP "Mass\-velocity correction\: * (\-0|\-)\.2489637(5|6).[0-9] au" $log | wc -l`
-CRIT3=`$GREP "Total relativistic correction\: * (\-0|\-)\.05151233.[0-9] au \((0| ).0677\%\)" $log | wc -l`
-CRIT4=`$GREP "Non\-relativistic \+ relativistic energy\: * \-76\.10297185[5-7][0-9] au" $log | wc -l`
+CRIT1=`$GREP "Darwin correction\: *           0*\.19745142.. au" $log | wc -l`
+CRIT2=`$GREP "Mass\-velocity correction\: * \-0*\.2489637(5|6).. au" $log | wc -l`
+CRIT3=`$GREP "Total relativistic correction\: * \-0*\.05151233.. au \(\ (0| ).0677\%\)" $log | wc -l`
+CRIT4=`$GREP "Non\-relativistic \+ relativistic energy\: * \-76\.10297185.. au" $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[6]=4
 ERROR[6]="RELATIVISTIC CORRECTIONS NOT CORRECT"
@@ -110,7 +110,7 @@ CTRL[12]=6
 ERROR[12]="SECOND GEOMETRY NOT CORRECT"
 
 # SCF energy, 2nd iteration:
-CRIT1=`$GREP "Total energy * \-76\.0533977(7|8).[0-9] au \(Hartrees\)" $log | wc -l`
+CRIT1=`$GREP "Total energy * \-76\.0533977[6-8].. au \(Hartrees\)" $log | wc -l`
 TEST[13]=`expr $CRIT1`
 CTRL[13]=1
 ERROR[13]="SECOND ENERGY NOT CORRECT"
@@ -142,7 +142,7 @@ CRIT1=`$GREP "Total energy * \-76\.053423553[0-9] au \(Hartrees\)" $log | wc -l`
 #ERROR[17]="FOURTH ENERGY NOT CORRECT"
 
 # Geometry optimization converged:
-CRIT1=`$GREP "Norm of molecular gradient: * (0| )\.00008[23].[0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Norm of molecular gradient: * (0| )\.00008" $log | wc -l`
 CRIT2=`$GREP "Change in energy since start of walk:(\-0| \-)\.00196403.[0-9] au" $log | wc -l`
 CRIT3=`$GREP "Geometry optimization has converged." $log | wc -l`
 TEST[18]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
@@ -164,9 +164,9 @@ CTRL[19]=9
 ERROR[19]="DIPOLE MOMENT GRADIENT NOT CORRECT"
 
 # Cioslowski charges:
-CRIT1=`$GREP "O * (\-0|\-)\.61865." $log | wc -l`
-CRIT2=`$GREP "H * _1 * (0| )\.30932." $log | wc -l`
-CRIT3=`$GREP "H * _2 * (0| )\.30932." $log | wc -l`
+CRIT1=`$GREP "O      *  \-0*\.6186.." $log | wc -l`
+CRIT2=`$GREP "H * _1 * (0| )\.3093.." $log | wc -l`
+CRIT3=`$GREP "H * _2 * (0| )\.3093.." $log | wc -l`
 TEST[20]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[20]=3
 ERROR[20]="CIOSLOWSKI CHARGES NOT CORRECT"
@@ -226,18 +226,18 @@ CTRL[26]=3
 ERROR[26]="IR INTENSITIES NOT CORRECT"
 
 # Molecular partition function:
-CRIT1=`$GREP "50\.00 * 3\.4600(D\+|E\+)04 * 6\.07 * 1\.0000 * 2\.1006..(D\+|E\+)05" $log | wc -l`
-CRIT2=`$GREP "273\.15 * 2\.4136(D\+|E\+)06 * 72\.06 * 1\.0001 * 1\.7394..(D\+|E\+)08" $log | wc -l`
-CRIT3=`$GREP "298\.15 * 3\.0043(D\+|E\+)06 * 82\.06 * 1\.0002 * 2\.465(8|9)..(D\+|E\+)08" $log | wc -l`
-CRIT4=`$GREP "1000\.00 * 6\.1895(D\+|E\+)07 * 498\.5. * 1\.0963 * 3\.3829..(D\+|E\+)10" $log | wc -l`
-CRIT5=`$GREP "2000\.00 * 3\.5013(D\+|E\+)08 * 1406\.7. * 1\.5548 * 7\.6582..(D\+|E\+)11" $log | wc -l`
+CRIT1=`$GREP   "50\.00 * 3\.4600(D\+|E\+)04 *    6\.07 * 1\.0000 * 2\.100...(D\+|E\+)05" $log | wc -l`
+CRIT2=`$GREP  "273\.15 * 2\.4136(D\+|E\+)06 *   72\.06 * 1\.0001 * 1\.739...(D\+|E\+)08" $log | wc -l`
+CRIT3=`$GREP  "298\.15 * 3\.0043(D\+|E\+)06 *   82\.06 * 1\.0002 * 2\.465...(D\+|E\+)08" $log | wc -l`
+CRIT4=`$GREP "1000\.00 * 6\.1895(D\+|E\+)07 *  498\.5. * 1\.0963 * 3\.382...(D\+|E\+)10" $log | wc -l`
+CRIT5=`$GREP "2000\.00 * 3\.5013(D\+|E\+)08 * 1406\.7. * 1\.5548 * 7\.658...(D\+|E\+)11" $log | wc -l`
 TEST[27]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`
 CTRL[27]=5
 ERROR[27]="PARTITION FUNCTION NOT CORRECT"
 
 # Total polarizabilities
 CRIT1=`$GREP "EA * 1\.119(2|3).. * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000" $log | wc -l`
-CRIT2=`$GREP "EB * (\-0|\-|0| )\.000000 * (0| )\.98812. * (\-0|\-|0| )\.000000" $log | wc -l`
+CRIT2=`$GREP "EB * (\-0|\-|0| )\.000000 * (0| )\.9881[23]. * (\-0|\-|0| )\.000000" $log | wc -l`
 CRIT3=`$GREP "EC * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000 * (0| )\.8151(8|9)." $log | wc -l`
 TEST[28]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[28]=4
