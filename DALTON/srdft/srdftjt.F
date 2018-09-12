@@ -702,10 +702,19 @@ C  Correlation  ----------------------------------------------------------
       IF(DOSRC_LDA_PW92) THEN
         ! DESRSPIN called with DFT_SPINDNS = false gives LDA functional
         ! for closed shell (but with J. Toulouse new LDA based on PW92)
-        use_spindns = triplet .or. dft_spindns
+!        use_spindns = triplet .or. dft_spindns
         ! rho(2) is always zero for spin unpolarized functionals
-        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),0.0d0,CHIVAL,use_SPINDNS,
-     >                NORDER,Ec,d1Ec,d2Ec)
+!        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),0.0d0,CHIVAL,use_SPINDNS,
+!     >                NORDER,Ec,d1Ec,d2Ec)
+        ! DOSCR_LDA_PW92, is the keyword for both spin-polarized and
+        ! spin-unpolarized ?? - E. R. K.
+
+        ! This check it to keep the code working the same way. Should be changed
+        if (triplet .or. dft_spindns) then 
+           call SPIN_PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
+        else
+           call PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
+        end if
       ENDIF
 !     short-range correlation PBE of TCS
       IF(DOSRC_PBETCS) THEN
@@ -731,8 +740,10 @@ C  Correlation  ----------------------------------------------------------
 !     Modified short-range correlation PBE of GWS
       IF(DOSRC_PBEGWS_PW92) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESR(ESRC_PBEGWSERF_PW92,rho,grd2,CHIVAL,NORDER,
-     >            Ec,d1Ec,d2Ec)
+!        call DESR(ESRC_PBEGWSERF_PW92,rho,grd2,CHIVAL,NORDER,
+!     >            Ec,d1Ec,d2Ec)
+        call PBEC_GWS_ERF(rho, grd2, norder, chival,
+     >                         Ec, d1Ec, d2Ec)
       ENDIF
 
 !     rational interpolation
@@ -760,7 +771,7 @@ C  Correlation  ----------------------------------------------------------
 !     short-range spin-dependent correlation LDA ! JT 18-08-09
       IF(DOSRC_LDA_S) THEN
         ! d1Ec(2), d1Ec(3) here ...
-        use_spindns = triplet .or. dft_spindns
+C        use_spindns = triplet .or. dft_spindns
 C        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
 C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
         call SPIN_PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
