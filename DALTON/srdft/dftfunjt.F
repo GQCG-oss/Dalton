@@ -3597,15 +3597,15 @@ C*****************************************************************************
       logical, intent(in) :: dospin
       real*8, intent(out) :: e
 
-      real*8   rs, rs2, rs3
+      real*8 :: rs, rs2, rs3
 
-      real*8   rhoa, rhob, z, z2, onepz, onemz, zp, zm, phi8
-      real*8   g0f, g0s
-      real*8   bd2, bd3
-      real*8   c45, c4, c5
-      real*8   bc2, bc4, bc3t, bc5t, d0
-      real*8   delta2,delta3,delta4,delta5,delta6
-      real*8   delta
+      real*8 :: rhoa, rhob, z, z2, onepz, onemz, zp, zm, phi8
+      real*8 :: g0f, g0s
+      real*8 :: bd2, bd3
+      real*8 :: c45, c4, c5
+      real*8 :: bc2, bc4, bc3t, bc5t, d0
+      real*8 :: delta2, delta3, delta4, delta5, delta6
+      real*8 :: delta
 
       real*8, parameter :: f13 = 0.333333333333333d0
       real*8, parameter :: f83 = 2.6666666666666665d0

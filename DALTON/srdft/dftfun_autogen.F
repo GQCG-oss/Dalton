@@ -10,8 +10,8 @@ C
 C  Subroutine to convert the derivatives in terms of alpha and beta
 C  density to be formulated in terms of charge and spin density
 C 
-C  functional_type = 1 is LDA
-C  functional_type = 2 is GGA
+C  functional_type = 0 is LDA
+C  functional_type = 1 is GGA
 C
 C            drho_x, dgamma_xx, dtau_x, dlaplace_x
 C  d1Ex(idx)    1,      2,        3,        4
@@ -25,7 +25,7 @@ C****************************************************************************
 
       d1E(1) = 0.5d0 * (d1Ea(1) + d1Eb(1))
       d1E(2) = 0.5d0 * (d1Ea(1) - d1Eb(1))
-      if (functional_type .ge. 2) then ! GGA
+      if (functional_type .ge. 1) then ! GGA
          d1E(3) = 0.25d0 * (d1Ea(2) + d1Eb(2))
          d1E(4) = d1E(3)
          d1E(5) = 0.5d0 * (d1Ea(2) - d1Eb(2))
@@ -62,17 +62,17 @@ C****************************************************************************
       d2E(1) = 0.25d0*(d2Ea(1) + d2Eb(1))
       d2E(2) = 0.25d0*(d2Ea(1) - d2Eb(1))
       d2E(3) = d2E(1)
-      if (functional_type .ge. 2) then ! GGA ! NOT WORKING RIGHT NOW..
-         d2E(4) = 0.125d0*(d2Ea(4) + d2Ea(8))
-         d2E(5) = 0.125d0*(d2Ea(4) - d2Ea(8))
-         d2E(6) = 0.0625d0*(d2Ea(6) + d2Ea(10))
+      if (functional_type .ge. 1) then ! GGA
+         d2E(4) = 0.125d0*(d2Ea(2) + d2Eb(2))
+         d2E(5) = 0.125d0*(d2Ea(2) - d2Eb(2))
+         d2E(6) = 0.0625d0*(d2Ea(3) + d2Eb(3))
          d2E(7) = d2E(4)
          d2E(8) = d2E(5)
          d2E(9) = d2E(6)
          d2E(10) = d2E(6)
          d2E(11) = 2.0d0*d2E(5)
          d2E(12) = 2.0d0*d2E(4)
-         d2E(13) = 0.125d0*(d2Ea(6) - d2Ea(10))
+         d2E(13) = 0.125d0*(d2Ea(3) - d2Eb(3))
          d2E(14) = d2E(13)
          d2E(15) = 4.0d0*d2E(6)
       end if
@@ -95,15 +95,13 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-#include "pi.h"
+#include "pi.h" ! pi and pi2
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(4), mu
       real*8, intent(out) :: E, d1E(5), d2E(15)
       logical :: alpha_eq_beta
       real*8 :: A, kF, Ea, Eb, d1Ea(5), d2Ea(15), d1Eb(5), d2Eb(15),
      &          rho_a, rho_b, d1Eab(5), d2Eab(15)
-      integer, save :: number_of_calls = 0
-      number_of_calls = number_of_calls + 1
 
       E = 0.0d0
       Ea = 0.0d0
@@ -165,7 +163,6 @@ C*****************************************************************************
             end if
          elseif (A .lt. 1.d+9) then
             call D1ESRX_LDA_ERF_case_3(rho_a, mu, Ea, d1Ea)
-            return
             if (.not.alpha_eq_beta) then
                call D1ESRX_LDA_ERF_case_3(rho_b, mu, Eb, d1Eb)
             end if
@@ -184,7 +181,6 @@ C*****************************************************************************
             end if
          elseif (A .lt. 1.d+9) then
             call D2ESRX_LDA_ERF_case_3(rho_a, mu, Ea, d1Ea, d2Ea)
-            return
             if (.not.alpha_eq_beta) then
                call D2ESRX_LDA_ERF_case_3(rho_b, mu, Eb, d1Eb, d2Eb)
             end if
@@ -204,6 +200,7 @@ C     Do the convertion from alpha, beta to charge, spin
             d2Eb(:) = d2Ea(:)
          end if
       end if
+      ! Spin splitting realtion
       E = 0.5d0*Ea + 0.5d0*Eb
       if (diff_order .ge. 1) then
          call Convert_d1_alpha_beta_to_C_S(0.5d0*d1Ea, 0.5d0*d1Eb, 0,
@@ -217,7 +214,190 @@ C     Do the convertion from alpha, beta to charge, spin
 
 
 C****************************************************************************
-      subroutine SPIN_PW92_ERF(rho, diff_order, mu, E, d1E, d2E)
+      subroutine BOTH_PBEX_ERF(rho, gamma_vec, diff_order, mu, E, d1E, 
+     &                         d2E)
+C*****************************************************************************
+C Implemented by E. R. Kjellgren
+C
+C Subroutine to to control calling of Exchange PBE functional
+C
+C   Input : rho_a, alpha-spin density
+C           rho_b, beta-spin density
+C           gamma_vec, is called gamma_vec, becuase "gamma" is an
+C              intrinsic function and therefore a bad name.
+C           diff_order, max order of differentation
+C           mu, range-seperation parameter
+C   Output : E, energy
+C            d1E, vector of first derivatives of energy
+C            d2E, vector of second derivatives of energy
+C*****************************************************************************
+      implicit none
+#include "pi.h" ! pi and pi2
+      integer, intent(in) :: diff_order
+      real*8, intent(in) :: rho(4), gamma_vec(6), mu
+      real*8, intent(out) :: E, d1E(5), d2E(15)
+      logical :: alpha_eq_beta
+      real*8 :: A, kF, Ea, Eb, d1Ea(5), d2Ea(15), d1Eb(5), d2Eb(15),
+     &          rho_a, rho_b, d1Eab(5), d2Eab(15), gamma_aa, gamma_bb
+
+      E = 0.0d0
+      Ea = 0.0d0
+      d1E(:) = 0.0d0
+      d1Ea(:) = 0.0d0
+      d1Eab(:) = 0.0d0
+      d2E(:) = 0.0d0
+      d2Ea(:) = 0.0d0
+      d2Eab(:) = 0.0d0
+      rho_a = rho(3)
+      rho_b = rho(4)
+      gamma_aa = gamma_vec(4)
+      gamma_bb = gamma_vec(5)
+      
+      if (((rho_a + rho_b) .le. 1.d-10) 
+     &     .and. ((gamma_aa + gamma_bb) .lt. 1.0d-10)) then
+         ! Are we completely sure this check is valid
+         !  for derivatives? - E. R. K
+         return
+      end if
+
+      if ((rho_a .eq. rho_b) .and. (gamma_aa .eq. gamma_bb)) then
+         alpha_eq_beta = .true.
+      else
+         alpha_eq_beta = .false.
+         Eb = 0.0d0
+         d1Eb(:) = 0.0d0
+         d2Eb(:) = 0.0d0
+      end if
+
+      kF = (rho_a + rho_b)**(1.0d0/3.0d0)*((3.0d0*pi2)**(1.0d0/3.0d0))
+      A = mu / (2.0d0*kF)
+
+      if (diff_order .eq. 0) then
+         if (A .lt. 1.d-9) then
+            call ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea)
+            if (.not.alpha_eq_beta) then
+               call ESRX_PBE_ERF_case_1(rho_b, gamma_bb, mu, Eb)
+            end if
+         elseif (A .lt. 0.075d0) then ! case_2_1
+            call ESRX_PBE_ERF_case_2_1(rho_a, gamma_aa, mu, Ea)
+            if (.not.alpha_eq_beta) then
+               call ESRX_PBE_ERF_case_2_1(rho_b, gamma_bb, mu, Eb)
+            end if
+         elseif (A .lt. 50d0) then ! case_2_3
+            call ESRX_PBE_ERF_case_2_3(rho_a, gamma_aa, mu, Ea)
+            if (.not.alpha_eq_beta) then
+               call ESRX_PBE_ERF_case_2_3(rho_b, gamma_bb, mu, Eb)
+            end if
+         elseif (A .le. 1.d+2) then ! case_2_2
+            call ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea)
+            if (.not.alpha_eq_beta) then
+               call ESRX_PBE_ERF_case_2_2(rho_b, gamma_bb, mu, Eb)
+            end if
+         elseif (A .lt. 1.d+9) then
+            call ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea)
+            if (.not.alpha_eq_beta) then
+               call ESRX_PBE_ERF_case_3(rho_b, gamma_bb, mu, Eb)
+            end if
+         end if
+
+      elseif (diff_order .eq. 1) then
+         if (A .lt. 1.d-9) then
+            call D1ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea, d1Ea)
+            if (.not.alpha_eq_beta) then
+               call D1ESRX_PBE_ERF_case_1(rho_b, gamma_bb, mu, Eb, d1Eb)
+            end if
+         elseif (A .lt. 0.075d0) then ! case_2_1
+            call D1ESRX_PBE_ERF_case_2_1(rho_a, gamma_aa, mu, Ea, d1Ea)
+            if (.not.alpha_eq_beta) then
+               call D1ESRX_PBE_ERF_case_2_1(rho_b, gamma_bb, mu, Eb,
+     &                                      d1Eb)
+            end if
+         elseif (A .lt. 50d0) then ! case_2_3
+            call D1ESRX_PBE_ERF_case_2_3(rho_a, gamma_aa, mu, Ea, d1Ea)
+            if (.not.alpha_eq_beta) then
+               call D1ESRX_PBE_ERF_case_2_3(rho_b, gamma_bb, mu, Eb,
+     &                                      d1Eb)
+            end if
+         elseif (A .le. 1.d+2) then ! case_2_2
+            call D1ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea, d1Ea)
+            if (.not.alpha_eq_beta) then
+               call D1ESRX_PBE_ERF_case_2_2(rho_b, gamma_bb, mu, Eb,
+     &                                      d1Eb)
+            end if
+         elseif (A .lt. 1.d+9) then
+            call D1ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea, d1Ea)
+            if (.not.alpha_eq_beta) then
+               call D1ESRX_PBE_ERF_case_3(rho_b, gamma_bb, mu, Eb, d1Eb)
+            end if
+         end if
+
+      elseif (diff_order .eq. 2) then
+         if (A .lt. 1.d-9) then
+            call D2ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea,
+     &                                   d1Ea, d2Ea)
+            if (.not.alpha_eq_beta) then
+               call D2ESRX_PBE_ERF_case_1(rho_b, gamma_bb, mu, Eb,
+     &                                    d1Eb, d2Eb)
+            end if
+         elseif (A .lt. 0.075d0) then ! case_2_1
+            call D2ESRX_PBE_ERF_case_2_1(rho_a, gamma_aa, mu, Ea,
+     &                                   d1Ea, d2Ea)
+            if (.not.alpha_eq_beta) then
+               call D2ESRX_PBE_ERF_case_2_1(rho_b, gamma_bb, mu, Eb,
+     &                                    d1Eb, d2Eb)
+            end if
+         elseif (A .lt. 50d0) then ! case_2_3
+            call D2ESRX_PBE_ERF_case_2_3(rho_a, gamma_aa, mu, Ea,
+     &                                   d1Ea, d2Ea)
+            if (.not.alpha_eq_beta) then
+               call D2ESRX_PBE_ERF_case_2_3(rho_b, gamma_bb, mu, Eb,
+     &                                    d1Eb, d2Eb)
+            end if
+         elseif (A .le. 1.d+2) then ! case_2_2
+            call D2ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea,
+     &                                   d1Ea, d2Ea)
+            if (.not.alpha_eq_beta) then
+               call D2ESRX_PBE_ERF_case_2_2(rho_b, gamma_bb, mu, Eb,
+     &                                    d1Eb, d2Eb)
+            end if
+         elseif (A .lt. 1.d+9) then
+            call D2ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea,
+     &                                   d1Ea, d2Ea)
+            if (.not.alpha_eq_beta) then
+               call D2ESRX_PBE_ERF_case_3(rho_b, gamma_bb, mu, Eb,
+     &                                    d1Eb, d2Eb)
+            end if
+         end if
+
+      else
+         call quit('Requested to high order derivative: ',diff_order)
+      end if
+
+C     Do the convertion from alpha, beta to charge, spin
+      if (alpha_eq_beta) then
+         Eb = Ea
+         if (diff_order .ge. 1) then
+            d1Eb(:) = d1Ea(:)
+         end if
+         if (diff_order .ge. 2) then
+            d2Eb(:) = d2Ea(:)
+         end if
+      end if
+      ! Spin splitting realtion
+      E = 0.5d0*Ea + 0.5d0*Eb
+      if (diff_order .ge. 1) then
+         call Convert_d1_alpha_beta_to_C_S(0.5d0*d1Ea, 0.5d0*d1Eb, 1,
+     &                                     d1E)
+      end if
+      if (diff_order .ge. 2) then
+         call Convert_d2_alpha_beta_to_C_S(0.5d0*d2Ea, 0.5d0*d2Eb, 1,
+     &                                     d2E)
+      end if
+      end subroutine
+
+
+C****************************************************************************
+      subroutine SPIN_PW92C_ERF(rho, diff_order, mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
@@ -266,8 +446,8 @@ C*****************************************************************************
 
 
 C****************************************************************************
-      subroutine SPIN_PBE_GWS_ERF(rho, gamma_xx, diff_order, mu, E, d1E,
-     &                            d2E)
+      subroutine SPIN_PBEC_GWS_ERF(rho, gamma_xx, diff_order, mu, E,
+     &                             d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
@@ -4533,4 +4713,1093 @@ C*****************************************************************************
       Ea = -3.14159265358979d0*rho_a**2.0d0*x0
       d1Ea(1) = -rho_a**1.0d0*x1
       d2Ea(1) = -x1
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea
+      real*8 :: x0, x1
+      Ea = 0.0d0
+      x0 = rho_a**1.33333333333333d0
+      x1 = mu**2*rho_a**(-0.666666666666667d0)
+      Ea = -1.8610514726982d0*x0*(1.804d0 - 0.804d0/(0.0519881082712438d
+     &0*gamma_aa* rho_a**(-2.66666666666667d0)*(1.18478216491348d0*x1 - 
+     &7.0d0)*exp( -0.31265084907439067d0*x1)/(0.233951463049512d0*mu**4/
+     &x0 + 49.1113297378198d0*mu*rho_a**(-0.333333333333333d0) - 10.6630
+     &394842213d0*x1 - 81.0d0) + 1.0d0))
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine ESRX_PBE_ERF_case_2_1(rho_a, gamma_aa, mu, Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7
+      Ea = 0.0d0
+      x0 = rho_a**1.33333333333333d0
+      x1 = mu**2
+      x2 = rho_a**0.666666666666667d0
+      x3 = x1/x2
+      x4 = rho_a**0.333333333333333d0
+      x5 = 1d0/x4
+      x6 = mu*x5
+      x7 = 0.00844343197019482d0*1d0/rho_a
+      Ea = 4.9628039271952d0*x0*(1.804d0 - 0.804d0/(0.0519881082712438d0
+     &*gamma_aa* rho_a**(-2.66666666666667d0)*(1.18478216491348d0*x3 - 7
+     &.0d0)*exp( -0.31265084907439067d0*x3)/(0.233951463049512d0*mu**4/x
+     &0 - 10.6630394842213d0*x3 + 49.1113297378198d0*x6 - 81.0d0) + 1.0d
+     &0)) *(0.128278243853042d0*x6*(mu**3*x7 - mu*(x1*x7 - 0.25655648770
+     &6084d0*x5)*exp(-15.192666241151986d0*x2/x1) - 0.384834731559127d0*
+     &x6 + 1.77245385090552d0*erf( 3.8977770897207535d0*x4/mu)) - 0.375d
+     &0)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7
+      Ea = 0.0d0
+      x0 = rho_a**1.33333333333333d0
+      x1 = mu**2
+      x2 = 1d0/x1
+      x3 = rho_a**0.666666666666667d0
+      x4 = rho_a**0.333333333333333d0
+      x5 = 1d0/x4
+      x6 = mu*x5
+      x7 = 0.00844343197019482d0*1d0/rho_a
+      Ea = 4.9628039271952d0*x0*(1.804d0 + 0.804d0/(0.0519881082712438d0
+     &*gamma_aa* rho_a**(-2.66666666666667d0)*x2*(0.213719543995407d0*x0
+     &*x2 - 0.844037013397333d0*x3 + 14.4026298885989d0*rho_a**2.0d0/mu*
+     &*4)* exp(-0.31265084907439067d0*x1/x3) - 1.0d0))*(0.12827824385304
+     &2d0* x6*(mu**3*x7 - mu*(x1*x7 - 0.256556487706084d0*x5)*exp( -15.1
+     &92666241151986d0*x2*x3) - 0.384834731559127d0*x6 + 1.7724538509055
+     &2d0*erf(3.8977770897207535d0*x4/mu)) - 0.375d0)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine ESRX_PBE_ERF_case_2_3(rho_a, gamma_aa, mu, Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13
+      Ea = 0.0d0
+      x0 = rho_a**1.33333333333333d0
+      x1 = rho_a**0.333333333333333d0
+      x2 = 1d0/x1
+      x3 = mu*x2
+      x4 = 0.00844343197019482d0*1d0/rho_a
+      x5 = erf(3.8977770897207535d0*x1/mu)
+      x6 = mu**2
+      x7 = 1d0/x6
+      x8 = rho_a**0.666666666666667d0
+      x9 = 15.192666241152d0*x7*x8
+      x10 = x6/x8
+      x11 = exp(x9)
+      x12 = mu**4*(x11 - 1.0d0)/x0
+      x13 = 3.0d0*x11
+      Ea = 4.9628039271952d0*x0*(1.804d0 + 0.804d0/(3.15935190989552d0*g
+     &amma_aa* rho_a**(-2.0d0)*x7*(0.00060945584614891d0*x10*(7.0d0*x11 
+     &+ 11.0d0 ) - 0.000722072416819482d0*x12 + 0.0185185185185185d0)*ex
+     &p( -0.31265084907439067d0*x10)/(-0.131642462768164d0*x10*(x13 - 2.
+     &0d0) + 1.81893813843777d0*x11*x3*x5 + 0.00866486900183379d0*x12 - 
+     &x13) - 1.0d0))*(0.128278243853042d0*x3*(mu**3*x4 - mu*( -0.2565564
+     &87706084d0*x2 + x4*x6)*exp(-x9) - 0.384834731559127d0* x3 + 1.7724
+     &5385090552d0*x5) - 0.375d0)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea
+      real*8 :: x0, x1, x2, x3
+      Ea = 0.0d0
+      x0 = mu**2
+      x1 = 1d0/x0
+      x2 = rho_a**2.0d0
+      x3 = rho_a**0.666666666666667d0
+      Ea = -3.14159265358979d0*x1*x2*(1.804d0 + 0.804d0/(0.0519881082712
+     &438d0* gamma_aa*rho_a**(-2.66666666666667d0)*x1*(0.213719543995407
+     &d0* rho_a**1.33333333333333d0*x1 - 0.844037013397333d0*x3 + 14.402
+     &6298885989d0*x2/mu**4)*exp(-0.31265084907439067d0*x0/x3) - 1.0d0))
+     &
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D1ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea, d1E
+     &a)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      x0 = rho_a**1.33333333333333d0
+      x1 = mu**2
+      x2 = rho_a**(-0.666666666666667d0)*x1
+      x3 = 1.18478216491348d0*x2 - 7.0d0
+      x4 = 1d0/x0
+      x5 = 1d0/(0.233951463049512d0*mu**4*x4 + 49.1113297378198d0*mu*rho
+     &_a**( -0.333333333333333d0) - 10.6630394842213d0*x2 - 81.0d0)
+      x6 = exp(-0.31265084907439067d0*x2)
+      x7 = x3*x5*x6
+      x8 = 0.0519881082712438d0*rho_a**(-2.66666666666667d0)
+      x9 = gamma_aa*x7*x8 + 1.0d0
+      x10 = 1.804d0 - 0.804d0/x9
+      x11 = x9**(-2)
+      x12 = rho_a**(-4.33333333333333d0)*x1
+      Ea = -1.8610514726982d0*x0*x10
+      d1Ea(1) = -1.49628538404935d0*gamma_aa*x0*x11*x5*x6*(mu*x3*x5*x8*(
+     & 0.311935284066016d0*mu**3*rho_a**(-2.33333333333333d0) - 7.108692
+     &98948088d0*mu*rho_a**(-1.66666666666667d0) + 16.3704432459399d0*x4
+     &) - 0.138634955389984d0*rho_a**( -3.66666666666667d0)*x3 + 0.01083
+     &60841285172d0*x12*x3 - 0.0410630556449071d0*x12) - 2.4814019635976
+     &d0*rho_a** 0.333333333333333d0*x10
+      d1Ea(2) = -0.0777890465506374d0*x11*x4*x7
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D1ESRX_PBE_ERF_case_2_1(rho_a, gamma_aa, mu, Ea, d
+     &1Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      x0 = rho_a**0.333333333333333d0
+      x1 = 1d0/x0
+      x2 = 0.256556487706084d0*x1
+      x3 = mu**2
+      x4 = 0.00844343197019482d0*1d0/rho_a
+      x5 = x3*x4
+      x6 = -x2 + x5
+      x7 = rho_a**0.666666666666667d0
+      x8 = exp(-15.192666241151986d0*x7/x3)
+      x9 = mu*x8
+      x10 = 1d0/mu
+      x11 = mu**3
+      x12 = mu*x1
+      x13 = x11*x4 - 0.384834731559127d0*x12 + 1.77245385090552d0*erf( 3
+     &.8977770897207535d0*x0*x10)
+      x14 = x13 - x6*x9
+      x15 = 0.128278243853042d0*x12
+      x16 = x14*x15 - 0.375d0
+      x17 = rho_a**1.33333333333333d0
+      x18 = x3/x7
+      x19 = 1.18478216491348d0*x18 - 7.0d0
+      x20 = 1d0/x17
+      x21 = 1d0/(0.233951463049512d0*mu**4*x20 + 49.1113297378198d0*x12 
+     &- 10.6630394842213d0*x18 - 81.0d0)
+      x22 = exp(-0.31265084907439067d0*x18)
+      x23 = x19*x21*x22
+      x24 = 0.0519881082712438d0*rho_a**(-2.66666666666667d0)
+      x25 = gamma_aa*x23*x24 + 1.0d0
+      x26 = 1.804d0 - 0.804d0/x25
+      x27 = 4.9628039271952d0*x17*x26
+      x28 = x15*(x13 + x9*(x2 - x5)) - 0.375d0
+      x29 = 0.00844343197019482d0*rho_a**(-2.0d0)
+      x30 = x10*x8
+      x31 = x25**(-2)
+      x32 = rho_a**(-4.33333333333333d0)*x3
+      Ea = x16*x27
+      d1Ea(1) = 3.99009435746494d0*gamma_aa*x17*x21*x22*x28*x31*(mu*x19*
+     &x21*x24*( -7.10869298948088d0*mu*rho_a**(-1.66666666666667d0) + 0.
+     &311935284066016d0*rho_a**(-2.33333333333333d0)*x11 + 16.3704432459
+     &399d0*x20) - 0.138634955389984d0*rho_a**( -3.66666666666667d0)*x19
+     & + 0.0108360841285172d0*x19*x32 - 0.0410630556449071d0*x32) - mu*x
+     &27*(-0.128278243853042d0*x1*( 0.128278243853042d0*mu*x20 + 2.59851
+     &805981384d0*rho_a**( -0.666666666666667d0)*x30 + 10.128444160768d0
+     &*rho_a**( -0.333333333333333d0)*x30*x6 - x11*x29 + x9*( -0.0855188
+     &292353615d0*x20 + x29*x3)) + 0.0427594146176807d0*x14* x20) + 6.61
+     &707190292693d0*rho_a**0.333333333333333d0*x26*x28
+      d1Ea(2) = 0.207437457468366d0*x16*x20*x23*x31
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D1ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea, d
+     &1Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      x0 = rho_a**0.666666666666667d0
+      x1 = 0.844037013397333d0*x0
+      x2 = mu**(-4)
+      x3 = rho_a**2.0d0
+      x4 = 14.4026298885989d0*x2*x3
+      x5 = mu**2
+      x6 = 1d0/x5
+      x7 = rho_a**1.33333333333333d0
+      x8 = 0.213719543995407d0*x6*x7
+      x9 = -x1 + x4 + x8
+      x10 = 0.0519881082712438d0*rho_a**(-2.66666666666667d0)*x6
+      x11 = exp(-0.31265084907439067d0*x5/x0)
+      x12 = gamma_aa*x11
+      x13 = x10*x12*x9
+      x14 = x13 - 1.0d0
+      x15 = rho_a**0.333333333333333d0
+      x16 = 1d0/x15
+      x17 = 0.256556487706084d0*x16
+      x18 = rho_a**1.0d0
+      x19 = 0.00844343197019482d0/x18
+      x20 = x19*x5
+      x21 = -x17 + x20
+      x22 = exp(-15.192666241151986d0*x0*x6)
+      x23 = mu*x22
+      x24 = 1d0/mu
+      x25 = mu**3
+      x26 = mu*x16
+      x27 = x19*x25 - 0.384834731559127d0*x26 + 1.77245385090552d0*erf( 
+     &3.8977770897207535d0*x15*x24)
+      x28 = -x21*x23 + x27
+      x29 = 0.128278243853042d0*x26
+      x30 = x28*x29 - 0.375d0
+      x31 = 4.9628039271952d0*x7
+      x32 = rho_a**0.333333333333333d0
+      x33 = -x13 + 1.0d0
+      x34 = 1.804d0 - 0.804d0/x33
+      x35 = x29*(x23*(x17 - x20) + x27) - 0.375d0
+      x36 = x1 - x4 - x8
+      x37 = rho_a**(-0.333333333333333d0)
+      x38 = 1d0/x7
+      x39 = 0.00844343197019482d0/x3
+      x40 = x22*x24
+      Ea = x30*x31*(1.804d0 + 0.804d0/x14)
+      d1Ea(1) = -mu*x31*x34*(-0.128278243853042d0*x16*(0.128278243853042
+     &d0*mu*x38 + 2.59851805981384d0*rho_a**(-0.666666666666667d0)*x40 +
+     & 10.128444160768d0*x21*x37*x40 + x23*(-0.0855188292353615d0*x38 + 
+     &x39*x5) - x25*x39) + 0.0427594146176807d0*x28*x38) + 3.99009435746
+     &494d0*x12*x35*x7*(0.0108360841285172d0*rho_a**( -4.33333333333333d
+     &0)*x36 - 0.138634955389984d0*rho_a**( -3.66666666666667d0)*x36*x6 
+     &+ x10*(-28.8052597771978d0*x18*x2 - 0.284959391993876d0*x32*x6 + 0
+     &.562691342264888d0*x37))/x33**2 + 6.61707190292693d0*x32*x34*x35
+      d1Ea(2) = -0.207437457468366d0*x11*x30*x38*x6*x9/x14**2
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D1ESRX_PBE_ERF_case_2_3(rho_a, gamma_aa, mu, Ea, d
+     &1Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      x0 = rho_a**1.33333333333333d0
+      x1 = 1d0/x0
+      x2 = mu**2
+      x3 = 1d0/x2
+      x4 = rho_a**0.666666666666667d0
+      x5 = 15.192666241152d0*x3*x4
+      x6 = exp(x5)
+      x7 = mu**4*(x6 - 1.0d0)
+      x8 = x1*x7
+      x9 = 0.000722072416819482d0*x8
+      x10 = 7.0d0*x6 + 11.0d0
+      x11 = x2/x4
+      x12 = 0.00060945584614891d0*x10*x11
+      x13 = x12 - x9 + 0.0185185185185185d0
+      x14 = 3.0d0*x6
+      x15 = x14 - 2.0d0
+      x16 = rho_a**0.333333333333333d0
+      x17 = 1d0/x16
+      x18 = mu*x17
+      x19 = 1d0/mu
+      x20 = erf(3.8977770897207535d0*x16*x19)
+      x21 = x20*x6
+      x22 = 1d0/(-0.131642462768164d0*x11*x15 - x14 + 1.81893813843777d0
+     &*x18*x21 + 0.00866486900183379d0*x8)
+      x23 = rho_a**(-2.0d0)
+      x24 = 3.15935190989552d0*x23*x3
+      x25 = x22*x24
+      x26 = exp(-0.31265084907439067d0*x11)
+      x27 = gamma_aa*x26
+      x28 = x13*x25*x27
+      x29 = x28 - 1.0d0
+      x30 = 0.256556487706084d0*x17
+      x31 = 1d0/rho_a
+      x32 = 0.00844343197019482d0*x31
+      x33 = x2*x32
+      x34 = -x30 + x33
+      x35 = exp(-x5)
+      x36 = mu*x35
+      x37 = mu**3
+      x38 = -0.384834731559127d0*x18 + 1.77245385090552d0*x20 + x32*x37
+      x39 = -x34*x36 + x38
+      x40 = 0.128278243853042d0*x18
+      x41 = x39*x40 - 0.375d0
+      x42 = 4.9628039271952d0*x0
+      x43 = x40*(x36*(x30 - x33) + x38) - 0.375d0
+      x44 = -x28 + 1.0d0
+      x45 = 1.804d0 - 0.804d0/x44
+      x46 = mu*x1
+      x47 = 0.00844343197019482d0*x23
+      x48 = 0.564189583547756d0
+      x49 = rho_a**(-0.666666666666667d0)
+      x50 = x19*x35
+      x51 = rho_a**(-0.333333333333333d0)
+      x52 = -x12 + x9 - 0.0185185185185185d0
+      x53 = x31*x6
+      x54 = rho_a**(-1.66666666666667d0)*x2
+      x55 = x54*x6
+      x56 = rho_a**(-2.33333333333333d0)*x7
+      Ea = x41*x42*(1.804d0 + 0.804d0/x29)
+      d1Ea(1) = -mu*x42*x45*(0.0427594146176807d0*x1*x39 - 0.12827824385
+     &3042d0*x17*( 10.128444160768d0*x34*x50*x51 + x36*(-0.0855188292353
+     &615d0*x1 + x2*x47) - x37*x47 + 0.128278243853042d0*x46 + 4.6057533
+     &4176456d0* x48*x49*x50)) + 6.61707190292693d0*rho_a**0.33333333333
+     &3333d0*x43 *x45 + 3.99009435746494d0*x0*x22*x27*x43*(0.65851603810
+     &2422d0* rho_a**(-3.66666666666667d0)*x52 - 6.31870381979104d0*rho_
+     &a**( -3.0d0)*x3*x52 + x24*(0.000406303897432606d0*x10*x54 - 0.0432
+     &098765432099d0*x53 + 0.00731347015378692d0*x55 - 0.000962763222425
+     &976d0*x56) + x25*x52*(-0.087761641845443d0*x15* x54 - 18.423013367
+     &0582d0*x19*x21*x49 + 0.606312712812591d0*x21* x46 + 30.38533248230
+     &4d0*x3*x51*x6 - 4.72654360241471d0*x31*x48 + 4.0d0*x53 - 0.0877616
+     &41845443d0*x55 + 0.0115531586691117d0*x56))/ x44**2
+      d1Ea(2) = -12.6061122289202d0*x13*x22*x26*x3*x41*x49/x29**2
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D1ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea, d1E
+     &a)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      x0 = mu**2
+      x1 = 1d0/x0
+      x2 = rho_a**2.0d0
+      x3 = rho_a**0.666666666666667d0
+      x4 = 0.844037013397333d0*x3
+      x5 = mu**(-4)
+      x6 = 14.4026298885989d0*x2*x5
+      x7 = 0.213719543995407d0*rho_a**1.33333333333333d0*x1
+      x8 = -x4 + x6 + x7
+      x9 = 0.0519881082712438d0*rho_a**(-2.66666666666667d0)*x1
+      x10 = exp(-0.31265084907439067d0*x0/x3)
+      x11 = gamma_aa*x10
+      x12 = x11*x8*x9
+      x13 = x12 - 1.0d0
+      x14 = rho_a**1.0d0
+      x15 = -x12 + 1.0d0
+      x16 = x4 - x6 - x7
+      Ea = -3.14159265358979d0*x1*x2*(1.804d0 + 0.804d0/x13)
+      d1Ea(1) = -x1*(2.52584049348619d0*x11*x2*(0.0108360841285172d0*rho
+     &_a**( -4.33333333333333d0)*x16 - 0.138634955389984d0*rho_a**( -3.6
+     &6666666666667d0)*x1*x16 + x9*(0.562691342264888d0*rho_a**( -0.3333
+     &33333333333d0) - 0.284959391993876d0*rho_a** 0.333333333333333d0*x
+     &1 - 28.8052597771978d0*x14*x5))/x15**2 + 6.28318530717958d0*x14*(1
+     &.804d0 - 0.804d0/x15))
+      d1Ea(2) = 0.131313669051252d0*rho_a**(-0.666666666666667d0)*x10*x5
+     &*x8/x13**2
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea, d1E
+     &a, d2Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      d2Ea(:) = 0.0d0
+      x0 = rho_a**1.33333333333333d0
+      x1 = rho_a**(-2.66666666666667d0)
+      x2 = mu**2
+      x3 = rho_a**(-0.666666666666667d0)*x2
+      x4 = 1.18478216491348d0*x3 - 7.0d0
+      x5 = exp(-0.31265084907439067d0*x3)
+      x6 = x4*x5
+      x7 = mu**4
+      x8 = 1d0/x0
+      x9 = 49.1113297378198d0*mu*rho_a**(-0.333333333333333d0) - 10.6630
+     &394842213d0 *x3 + 0.233951463049512d0*x7*x8 - 81.0d0
+      x10 = 1d0/x9
+      x11 = 0.0519881082712438d0*x10
+      x12 = gamma_aa*x1*x11*x6 + 1.0d0
+      x13 = 1d0/x12
+      x14 = -0.804d0*x13 + 1.804d0
+      x15 = rho_a**0.333333333333333d0
+      x16 = rho_a**(-4.33333333333333d0)
+      x17 = x16*x2
+      x18 = rho_a**(-3.66666666666667d0)*x4
+      x19 = x17*x4
+      x20 = mu*rho_a**(-1.66666666666667d0)
+      x21 = rho_a**(-2.33333333333333d0)
+      x22 = mu**3
+      x23 = x21*x22
+      x24 = -7.10869298948088d0*x20 + 0.311935284066016d0*x23 + 16.37044
+     &32459399d0* x8
+      x25 = x10*x24
+      x26 = mu*x1
+      x27 = x26*x4
+      x28 = x25*x27
+      x29 = -0.0410630556449071d0*x17 - 0.138634955389984d0*x18 + 0.0108
+     &360841285172d0*x19 + 0.0519881082712438d0*x28
+      x30 = x29*x5
+      x31 = 1.49628538404935d0*x0
+      x32 = x30*x31
+      x33 = x10/x12**2
+      x34 = gamma_aa*x33
+      x35 = 0.277269910779967d0*x18
+      x36 = x9**(-2)
+      x37 = exp(-0.62530169814878134d0*x3)
+      x38 = x36*x37/x12**3
+      x39 = rho_a**(-5.33333333333333d0)*x2
+      x40 = rho_a**(-6.0d0)*x7
+      x41 = x16*x22*x25
+      Ea = -1.8610514726982d0*x0*x14
+      d1Ea(1) = -2.4814019635976d0*x14*x15 - x32*x34
+      d1Ea(2) = -0.0777890465506374d0*x33*x6*x8
+      d2Ea(1) = gamma_aa**2*x29*x31*x38*(-0.0821261112898142d0*x17 + 0.0
+     &216721682570343d0*x19 + 0.103976216542488d0*x28 - x35) - 0.8271339
+     &87865866d0*rho_a**(-0.666666666666667d0)*x14 - 3.99009435746494d0*
+     &x15*x30*x34 - x31*x34*x5*(-mu*x25*x35 + 0.508328169763273d0*rho_a*
+     &*(-4.66666666666667d0)*x4 + 0.0519881082712438d0*x1*x2*x24*x36*x4*
+     &(-14.2173859789618d0*x20 + 0.623870568132033d0*x23 + 32.7408864918
+     &799d0*x8) + x11*x27*( -0.727848996154038d0*rho_a**(-3.333333333333
+     &33d0)*x22 - 21.8272576612533d0*x21 + 11.8478216491348d0*x26) - 0.0
+     &758525888996201d0*x39*x4 + 0.28744138951435d0*x39 + 0.002258607268
+     &94828d0*x4*x40 + 0.0216721682570343d0*x4*x41 - 0.0171178656172922d
+     &0*x40 - 0.0821261112898142d0*x41)
+      d2Ea(2) = x33*(0.155578093101275d0*gamma_aa*x10*x13*x29*x37*x4*x8 
+     &- 0.103718728734183d0*x21*x6 - x32)
+      d2Ea(3) = 0.00808821074878273d0*rho_a**(-4.0d0)*x38*x4**2
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRX_PBE_ERF_case_2_1(rho_a, gamma_aa, mu, Ea, d
+     &1Ea, d2Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
+     &79, x80
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      d2Ea(:) = 0.0d0
+      x0 = rho_a**(-2.66666666666667d0)
+      x1 = mu**2
+      x2 = rho_a**0.666666666666667d0
+      x3 = x1/x2
+      x4 = exp(-0.31265084907439067d0*x3)
+      x5 = gamma_aa*x4
+      x6 = rho_a**0.333333333333333d0
+      x7 = 1d0/x6
+      x8 = mu*x7
+      x9 = mu**4
+      x10 = rho_a**1.33333333333333d0
+      x11 = 1d0/x10
+      x12 = 0.233951463049512d0*x11*x9 - 10.6630394842213d0*x3 + 49.1113
+     &297378198d0* x8 - 81.0d0
+      x13 = 1d0/x12
+      x14 = 1.18478216491348d0*x3 - 7.0d0
+      x15 = 0.0519881082712438d0*x14
+      x16 = x13*x15
+      x17 = x0*x16*x5 + 1.0d0
+      x18 = 1d0/x17
+      x19 = -0.804d0*x18 + 1.804d0
+      x20 = 0.256556487706084d0*x7
+      x21 = 1d0/rho_a
+      x22 = 0.00844343197019482d0*x21
+      x23 = x1*x22
+      x24 = -x20 + x23
+      x25 = exp(-15.192666241151986d0*x2/x1)
+      x26 = mu*x25
+      x27 = 1d0/mu
+      x28 = mu**3
+      x29 = x22*x28 - 0.384834731559127d0*x8 + 1.77245385090552d0*erf( 3
+     &.8977770897207535d0*x27*x6)
+      x30 = -x24*x26 + x29
+      x31 = 0.128278243853042d0*x8
+      x32 = x30*x31 - 0.375d0
+      x33 = x19*x32
+      x34 = 4.9628039271952d0*x10
+      x35 = x31*(x26*(x20 - x23) + x29) - 0.375d0
+      x36 = rho_a**0.333333333333333d0
+      x37 = x19*x36
+      x38 = mu*x11
+      x39 = 0.00844343197019482d0*rho_a**(-2.0d0)
+      x40 = rho_a**(-0.666666666666667d0)
+      x41 = 0.564189583547756d0
+      x42 = x25*x27
+      x43 = x41*x42
+      x44 = 0.0855188292353615d0*x11
+      x45 = x1*x39 - x44
+      x46 = rho_a**(-0.333333333333333d0)*x42
+      x47 = 10.128444160768d0*x24*x46 + x26*x45 - x28*x39 + 0.1282782438
+     &53042d0*x38 + 4.60575334176456d0*x40*x43
+      x48 = 0.128278243853042d0*x7
+      x49 = 0.0427594146176807d0*x11*x30 - x47*x48
+      x50 = mu*x49
+      x51 = x19*x34
+      x52 = x13/x17**2
+      x53 = x35*x4
+      x54 = rho_a**(-4.33333333333333d0)
+      x55 = x1*x54
+      x56 = rho_a**(-3.66666666666667d0)*x14
+      x57 = x14*x55
+      x58 = mu*x0
+      x59 = mu*rho_a**(-1.66666666666667d0)
+      x60 = rho_a**(-2.33333333333333d0)
+      x61 = x28*x60
+      x62 = 16.3704432459399d0*x11 - 7.10869298948088d0*x59 + 0.31193528
+     &4066016d0* x61
+      x63 = x13*x62
+      x64 = x58*x63
+      x65 = x15*x64 - 0.0410630556449071d0*x55 - 0.138634955389984d0*x56
+     & + 0.0108360841285172d0*x57
+      x66 = 3.99009435746494d0*x10
+      x67 = x65*x66
+      x68 = x53*x67
+      x69 = 0.207437457468366d0*x14*x4
+      x70 = x32*x52
+      x71 = x5*x70
+      x72 = 0.277269910779967d0*x56
+      x73 = x12**(-2)
+      x74 = exp(-0.62530169814878134d0*x3)
+      x75 = x32*x73*x74/x17**3
+      x76 = 0.0168868639403896d0*rho_a**(-3.0d0)
+      x77 = x25/x28
+      x78 = rho_a**(-5.33333333333333d0)*x1
+      x79 = rho_a**(-6.0d0)*x9
+      x80 = x28*x54*x63
+      Ea = x33*x34
+      d1Ea(1) = gamma_aa*x52*x68 + 6.61707190292693d0*x35*x37 - x50*x51
+      d1Ea(2) = x11*x69*x70
+      d2Ea(1) = -gamma_aa**2*x67*x75*(0.103976216542488d0*x14*x64 - 0.08
+     &21261112898142d0 *x55 + 0.0216721682570343d0*x57 - x72) + mu*x51*(
+     & 0.0570125528235743d0*x30*x60 - x44*x47 + x48*( -0.171037658470723
+     &d0*mu*x60 - 3.07050222784304d0*rho_a**( -1.66666666666667d0)*x43 -
+     & 3.37614805358933d0*rho_a**( -1.33333333333333d0)*x24*x42 - 46.649
+     &1155403329d0*x21*x41*x77 - 102.585381117795d0*x24*x40*x77 - x26*(x
+     &1*x76 - 0.114025105647149d0*x60) + x28*x76 - 20.256888321536d0*x45
+     &*x46)) - 7.98018871492988d0*x10*x5*x50*x52*x65 + 2.20569063430898d
+     &0*x33* x40 + 10.6402516199065d0*x36*x65*x71 - 13.2341438058539d0*x
+     &37*x50 + x66*x71*(-mu*x63*x72 + 0.508328169763273d0*rho_a**( -4.66
+     &666666666667d0)*x14 + x0*x1*x15*x62*x73*(32.7408864918799d0* x11 -
+     & 14.2173859789618d0*x59 + 0.623870568132033d0*x61) - 0.07585258889
+     &96201d0*x14*x78 + 0.00225860726894828d0*x14*x79 + 0.02167216825703
+     &43d0*x14*x80 - x16*x58*(0.727848996154038d0*rho_a **(-3.3333333333
+     &3333d0)*x28 - 11.8478216491348d0*x58 + 21.8272576612533d0*x60) + 0
+     &.28744138951435d0*x78 - 0.0171178656172922d0*x79 - 0.0821261112898
+     &142d0*x80)
+      d2Ea(2) = x52*(-0.414874914936733d0*gamma_aa*x11*x13*x14*x18*x35*x
+     &65*x74 + 0.276583276624489d0*x14*x53*x60 - x38*x49*x69 + x68)
+      d2Ea(3) = -0.0215685619967539d0*rho_a**(-4.0d0)*x14**2*x75
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea, d
+     &1Ea, d2Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
+     &79, x80, x81, x82, x83, x84, x85
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      d2Ea(:) = 0.0d0
+      x0 = mu**2
+      x1 = 1d0/x0
+      x2 = rho_a**(-2.66666666666667d0)*x1
+      x3 = 0.0519881082712438d0*x2
+      x4 = rho_a**0.666666666666667d0
+      x5 = 0.844037013397333d0*x4
+      x6 = mu**(-4)
+      x7 = rho_a**2.0d0
+      x8 = 14.4026298885989d0*x6*x7
+      x9 = rho_a**1.33333333333333d0
+      x10 = 0.213719543995407d0*x1*x9
+      x11 = x10 - x5 + x8
+      x12 = x0/x4
+      x13 = exp(-0.31265084907439067d0*x12)
+      x14 = x11*x13
+      x15 = gamma_aa*x14*x3
+      x16 = x15 - 1.0d0
+      x17 = 1.804d0 + 0.804d0/x16
+      x18 = rho_a**0.333333333333333d0
+      x19 = 1d0/x18
+      x20 = 0.256556487706084d0*x19
+      x21 = rho_a**1.0d0
+      x22 = 1d0/x21
+      x23 = 0.00844343197019482d0*x22
+      x24 = x0*x23
+      x25 = -x20 + x24
+      x26 = exp(-15.192666241151986d0*x1*x4)
+      x27 = mu*x26
+      x28 = 1d0/mu
+      x29 = mu**3
+      x30 = mu*x19
+      x31 = x23*x29 - 0.384834731559127d0*x30 + 1.77245385090552d0*erf( 
+     &3.8977770897207535d0*x18*x28)
+      x32 = -x25*x27 + x31
+      x33 = 0.128278243853042d0*x30
+      x34 = x32*x33 - 0.375d0
+      x35 = x17*x34
+      x36 = 4.9628039271952d0*x9
+      x37 = rho_a**0.333333333333333d0
+      x38 = -x15 + 1.0d0
+      x39 = 1d0/x38
+      x40 = -0.804d0*x39 + 1.804d0
+      x41 = x33*(x27*(x20 - x24) + x31) - 0.375d0
+      x42 = x38**(-2)
+      x43 = -x10 + x5 - x8
+      x44 = rho_a**(-4.33333333333333d0)
+      x45 = 0.0108360841285172d0*x44
+      x46 = rho_a**(-3.66666666666667d0)*x1
+      x47 = 0.138634955389984d0*x46
+      x48 = rho_a**(-0.333333333333333d0)
+      x49 = 0.562691342264888d0*x48
+      x50 = 28.8052597771978d0*x6
+      x51 = x21*x50
+      x52 = 0.284959391993876d0*x1*x37
+      x53 = x3*(x49 - x51 - x52) + x43*x45 - x43*x47
+      x54 = x13*x41
+      x55 = 3.99009435746494d0*x9
+      x56 = x53*x54*x55
+      x57 = 1d0/x9
+      x58 = 0.00844343197019482d0/x7
+      x59 = rho_a**(-0.666666666666667d0)
+      x60 = 0.564189583547756d0
+      x61 = x26*x28
+      x62 = x60*x61
+      x63 = 0.0855188292353615d0*x57
+      x64 = x0*x58 - x63
+      x65 = x48*x61
+      x66 = 0.128278243853042d0*mu*x57 + 10.128444160768d0*x25*x65 + x27
+     &*x64 - x29* x58 + 4.60575334176456d0*x59*x62
+      x67 = 0.128278243853042d0*x19
+      x68 = 0.0427594146176807d0*x32*x57 - x66*x67
+      x69 = mu*x36
+      x70 = x1*x11
+      x71 = 0.207437457468366d0*x57
+      x72 = x13/x16**2
+      x73 = x34*x72
+      x74 = -x49 + x51 + x52
+      x75 = -x11*x45 + x11*x47 - x3*x74
+      x76 = gamma_aa*x73
+      x77 = mu*x68
+      x78 = 0.0216721682570343d0*x44
+      x79 = rho_a**(-1.33333333333333d0)
+      x80 = 0.277269910779967d0*x46
+      x81 = exp(-0.62530169814878134d0*x12)
+      x82 = x34*x81/x16**3
+      x83 = rho_a**(-2.33333333333333d0)
+      x84 = 0.0168868639403896d0*rho_a**(-3.0d0)
+      x85 = x26/x29
+      Ea = x35*x36
+      d1Ea(1) = gamma_aa*x42*x56 + 6.61707190292693d0*x37*x40*x41 - x40*
+     &x68*x69
+      d1Ea(2) = -x70*x71*x73
+      d2Ea(1) = gamma_aa**2*x55*x75*x82*(-x11*x78 + x11*x80 - 0.10397621
+     &6542488d0*x2*x74 ) - 7.98018871492988d0*gamma_aa*x72*x75*x77*x9 - 
+     &13.2341438058539d0*x17*x37*x77 + x17*x69*(0.0570125528235743d0* x3
+     &2*x83 - x63*x66 + x67*(-0.171037658470723d0*mu*x83 - 3.07050222784
+     &304d0*rho_a**(-1.66666666666667d0)*x62 - 46.6491155403329d0*x22*x6
+     &0*x85 - 102.585381117795d0*x25*x59*x85 - 3.37614805358933d0*x25*x6
+     &1*x79 - x27*(x0*x84 - 0.114025105647149d0*x83) + x29*x84 - 20.2568
+     &88321536d0*x64*x65)) + 2.20569063430898d0*x35*x59 + 10.64025161990
+     &65d0*x37*x75*x76 + x55*x76*(-0.00225860726894828d0*rho_a**(-6.0d0)
+     &*x0*x11 + 0.0758525888996201d0*rho_a**(-5.33333333333333d0)*x11 - 
+     &0.508328169763273d0*rho_a**(-4.66666666666667d0)*x70 - x3*( 0.0949
+     &864639979585d0*x1*x59 + x50 + 0.187563780754963d0*x79) - x74*x78 +
+     & x74*x80)
+      d2Ea(2) = x42*(0.414874914936733d0*gamma_aa*x39*x41*x53*x57*x70*x8
+     &1 + x14*x28*x68* x71 - 0.276583276624489d0*x54*x70*x83 + x56)
+      d2Ea(3) = 0.0215685619967539d0*rho_a**(-4.0d0)*x11**2*x6*x82
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRX_PBE_ERF_case_2_3(rho_a, gamma_aa, mu, Ea, d
+     &1Ea, d2Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
+     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
+     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
+     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
+     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
+     &, x127
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      d2Ea(:) = 0.0d0
+      x0 = mu**2
+      x1 = 1d0/x0
+      x2 = rho_a**0.666666666666667d0
+      x3 = 15.192666241152d0*x1*x2
+      x4 = exp(x3)
+      x5 = 3.0d0*x4
+      x6 = rho_a**1.33333333333333d0
+      x7 = 1d0/x6
+      x8 = mu**4
+      x9 = x8*(x4 - 1.0d0)
+      x10 = x7*x9
+      x11 = x5 - 2.0d0
+      x12 = x0/x2
+      x13 = rho_a**0.333333333333333d0
+      x14 = 1d0/x13
+      x15 = mu*x14
+      x16 = 1d0/mu
+      x17 = erf(3.8977770897207535d0*x13*x16)
+      x18 = x17*x4
+      x19 = 0.00866486900183379d0*x10 - 0.131642462768164d0*x11*x12 + 1.
+     &81893813843777d0*x15*x18 - x5
+      x20 = 1d0/x19
+      x21 = 0.000722072416819482d0*x10
+      x22 = 7.0d0*x4 + 11.0d0
+      x23 = 0.00060945584614891d0*x12*x22
+      x24 = -x21 + x23 + 0.0185185185185185d0
+      x25 = rho_a**(-2.0d0)
+      x26 = x1*x25
+      x27 = 3.15935190989552d0*x26
+      x28 = x24*x27
+      x29 = x20*x28
+      x30 = exp(-0.31265084907439067d0*x12)
+      x31 = gamma_aa*x30
+      x32 = x29*x31
+      x33 = x32 - 1.0d0
+      x34 = 1.804d0 + 0.804d0/x33
+      x35 = 0.256556487706084d0*x14
+      x36 = 1d0/rho_a
+      x37 = 0.00844343197019482d0*x36
+      x38 = x0*x37
+      x39 = -x35 + x38
+      x40 = exp(-x3)
+      x41 = mu*x40
+      x42 = mu**3
+      x43 = -0.384834731559127d0*x15 + 1.77245385090552d0*x17 + x37*x42
+      x44 = -x39*x41 + x43
+      x45 = 0.128278243853042d0*x15
+      x46 = x44*x45 - 0.375d0
+      x47 = x34*x46
+      x48 = 4.9628039271952d0*x6
+      x49 = rho_a**0.333333333333333d0
+      x50 = x45*(x41*(x35 - x38) + x43) - 0.375d0
+      x51 = -x32 + 1.0d0
+      x52 = 1d0/x51
+      x53 = -0.804d0*x52 + 1.804d0
+      x54 = mu*x7
+      x55 = 0.00844343197019482d0*x25
+      x56 = rho_a**(-0.666666666666667d0)
+      x57 = 0.564189583547756d0
+      x58 = x16*x40
+      x59 = x57*x58
+      x60 = 0.0855188292353615d0*x7
+      x61 = x0*x55 - x60
+      x62 = rho_a**(-0.333333333333333d0)
+      x63 = x58*x62
+      x64 = 10.128444160768d0*x39*x63 + x41*x61 - x42*x55 + 0.1282782438
+     &53042d0*x54 + 4.60575334176456d0*x56*x59
+      x65 = 0.128278243853042d0*x14
+      x66 = 0.0427594146176807d0*x44*x7 - x64*x65
+      x67 = mu*x48
+      x68 = x20/x51**2
+      x69 = x21 - x23 - 0.0185185185185185d0
+      x70 = rho_a**(-3.66666666666667d0)
+      x71 = 0.658516038102422d0*x70
+      x72 = rho_a**(-3.0d0)
+      x73 = x1*x72
+      x74 = 6.31870381979104d0*x73
+      x75 = x36*x4
+      x76 = 0.0432098765432099d0*x75
+      x77 = rho_a**(-1.66666666666667d0)
+      x78 = x0*x77
+      x79 = x4*x78
+      x80 = 0.00731347015378692d0*x79
+      x81 = rho_a**(-2.33333333333333d0)
+      x82 = x81*x9
+      x83 = 0.000962763222425976d0*x82
+      x84 = 0.000406303897432606d0*x22*x78
+      x85 = x36*x57
+      x86 = x1*x4
+      x87 = 30.385332482304d0*x86
+      x88 = x11*x78
+      x89 = x18*x54
+      x90 = x4*x56
+      x91 = x16*x17*x90
+      x92 = x62*x87 + 4.0d0*x75 - 0.087761641845443d0*x79 + 0.0115531586
+     &691117d0*x82 - 4.72654360241471d0*x85 - 0.087761641845443d0*x88 + 
+     &0.606312712812591d0*x89 - 18.4230133670582d0*x91
+      x93 = x20*x92
+      x94 = x27*x93
+      x95 = x27*(-x76 + x80 - x83 + x84) + x69*x71 - x69*x74 + x69*x94
+      x96 = x30*x50
+      x97 = 3.99009435746494d0*x6
+      x98 = x95*x96*x97
+      x99 = x1*x24
+      x100 = 12.6061122289202d0*x30*x56
+      x101 = x20/x33**2
+      x102 = x101*x46
+      x103 = mu*x66
+      x104 = mu*x81
+      x105 = 0.0168868639403896d0*x72
+      x106 = 1d0/x42
+      x107 = x106*x40
+      x108 = rho_a**(-1.66666666666667d0)
+      x109 = rho_a**(-1.33333333333333d0)
+      x110 = x76 - x80 + x83 - x84
+      x111 = -x110*x27 - x24*x71 + x24*x74 - x24*x94
+      x112 = x102*x31
+      x113 = 1.31703207620484d0*x70
+      x114 = x113*x24
+      x115 = 12.6374076395821d0*x73
+      x116 = x115*x24
+      x117 = 6.31870381979104d0*x26
+      x118 = x110*x117
+      x119 = x19**(-2)
+      x120 = exp(-0.62530169814878134d0*x12)
+      x121 = x119*x120*x46/x33**3
+      x122 = x25*x4
+      x123 = rho_a**(-2.66666666666667d0)*x0
+      x124 = x123*x4
+      x125 = rho_a**(-3.33333333333333d0)*x9
+      x126 = 1d0/x8
+      x127 = x16*x18
+      Ea = x47*x48
+      d1Ea(1) = gamma_aa*x68*x98 + 6.61707190292693d0*x49*x50*x53 - x53*
+     &x66*x67
+      d1Ea(2) = -x100*x102*x99
+      d2Ea(1) = gamma_aa**2*x111*x121*x97*(-x114 + x116 - x117*x24*x93 -
+     & x118) - 7.98018871492988d0*x101*x103*x111*x31*x6 - 13.23414380585
+     &39d0* x103*x34*x49 + 10.6402516199065d0*x111*x112*x49 + x112*x97*(
+     & -0.137257065627884d0*rho_a**(-5.33333333333333d0)*x0*x24 + 3.7315
+     &9088258039d0*rho_a**(-4.66666666666667d0)*x24 - 18.9561114593731d0
+     &*rho_a**(-4.0d0)*x99 - x110*x113 + x110*x115 - x114*x93 + x116*x93
+     & - x118*x93 - x119*x28*x92*(60.7706649646079d0 *x62*x86 + 8.0d0*x7
+     &5 - 0.175523283690886d0*x79 + 0.0231063173382234d0*x82 - 9.4530872
+     &0482942d0*x85 - 0.175523283690886d0*x88 + 1.21262542562518d0*x89 -
+     & 36.8460267341165d0*x91) - x27*(0.43764882176158d0*x109*x86 - 0.14
+     &6090534979424d0*x122 + 0.000677173162387677d0*x123*x22 + 0.0219404
+     &104613607d0*x124 - 0.00224644751899394d0*x125) - x29*( -47.8725329
+     &504926d0*x1*x109*x57 - 0.808416950416787d0*x104*x18 - 186.59646216
+     &1332d0*x106*x17*x75 + 12.2820089113722d0*x108*x127 + x109*x87 + 0.
+     &146269403075738d0*x11*x123 - 7.55555555555556d0*x122 + 0.263284925
+     &536329d0*x124 - 0.0269573702279273d0*x125 + 307.756143353386d0*x12
+     &6*x90 + 6.14100445568608d0*x127*x77 + 6.30205813655294d0*x25*x57))
+     & + x34*x67*(0.0570125528235743d0*x44* x81 - x60*x64 + x65*(-0.1710
+     &37658470723d0*x104 + x105*x42 - 102.585381117795d0*x107*x39*x56 - 
+     &46.6491155403329d0*x107*x85 - 3.07050222784304d0*x108*x59 - 3.3761
+     &4805358933d0*x109*x39*x58 - x41*(x0*x105 - 0.114025105647149d0*x81
+     &) - 20.256888321536d0*x61* x63)) + 2.20569063430898d0*x47*x56
+      d2Ea(2) = x68*(25.2122244578404d0*gamma_aa*x120*x20*x50*x52*x56*x9
+     &5*x99 + x100*x16 *x24*x66 - 16.8081496385603d0*x108*x96*x99 + x98)
+     &
+      d2Ea(3) = 79.6542894935927d0*rho_a**(-2.66666666666667d0)*x121*x12
+     &6*x24**2
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea, d1E
+     &a, d2Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, gamma_aa, mu
+      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      d2Ea(:) = 0.0d0
+      x0 = mu**2
+      x1 = 1d0/x0
+      x2 = rho_a**2.0d0
+      x3 = rho_a**(-2.66666666666667d0)
+      x4 = 0.0519881082712438d0*x3
+      x5 = x1*x4
+      x6 = rho_a**0.666666666666667d0
+      x7 = x0/x6
+      x8 = exp(-0.31265084907439067d0*x7)
+      x9 = 0.844037013397333d0*x6
+      x10 = mu**(-4)
+      x11 = 14.4026298885989d0*x10*x2
+      x12 = 0.213719543995407d0*rho_a**1.33333333333333d0*x1
+      x13 = x11 + x12 - x9
+      x14 = x13*x8
+      x15 = gamma_aa*x14*x5
+      x16 = x15 - 1.0d0
+      x17 = rho_a**1.0d0
+      x18 = -x15 + 1.0d0
+      x19 = 1d0/x18
+      x20 = rho_a**(-4.33333333333333d0)
+      x21 = -x11 - x12 + x9
+      x22 = x20*x21
+      x23 = rho_a**(-3.66666666666667d0)
+      x24 = x1*x21
+      x25 = x23*x24
+      x26 = 28.8052597771978d0*x10
+      x27 = 0.562691342264888d0*rho_a**(-0.333333333333333d0) - 0.284959
+     &391993876d0* rho_a**0.333333333333333d0*x1 - x17*x26
+      x28 = x1*x27
+      x29 = 0.0108360841285172d0*x22 - 0.138634955389984d0*x25 + x28*x4
+      x30 = x29*x8
+      x31 = 2.52584049348619d0*x2
+      x32 = x30*x31
+      x33 = x18**(-2)
+      x34 = gamma_aa*x33
+      x35 = rho_a**(-0.666666666666667d0)
+      x36 = exp(-0.62530169814878134d0*x7)
+      x37 = x29*x36
+      Ea = -3.14159265358979d0*x1*x2*(1.804d0 + 0.804d0/x16)
+      d1Ea(1) = -x1*(6.28318530717958d0*x17*(-0.804d0*x19 + 1.804d0) + x
+     &32*x34)
+      d1Ea(2) = 0.131313669051252d0*x10*x14*x35/x16**2
+      d2Ea(1) = x1*(gamma_aa**2*x31*x37*(0.0216721682570343d0*x22 - 0.27
+     &7269910779967d0* x25 + 0.103976216542488d0*x28*x3)/x18**3 - 10.103
+     &3619739448d0*x17 *x30*x34 + 5.05168098697239d0*x19 - x31*x34*x8*( 
+     &0.00225860726894828d0*rho_a**(-6.0d0)*x0*x21 - 0.0758525888996201d
+     &0*rho_a**(-5.33333333333333d0)*x21 + 0.508328169763273d0*rho_a**(-
+     &4.66666666666667d0)*x24 + 0.0216721682570343d0*x20*x27 - 0.2772699
+     &10779967d0*x23*x28 - x5*( 0.187563780754963d0*rho_a**(-1.333333333
+     &33333d0) + 0.0949864639979585d0*rho_a**(-0.666666666666667d0)*x1 +
+     & x26)) - 11.334866294152d0)
+      d2Ea(2) = x1*x33*(-0.262627338102504d0*gamma_aa*x1*x13*x19*x35*x37
+     & + 0.262627338102504d0*rho_a**(-1.66666666666667d0)*x1*x14 - x32)
+      d2Ea(3) = -0.0136534984882616d0*rho_a**(-3.33333333333333d0)*x13**
+     &2*x36/(mu**6*x16 **3)
       end subroutine

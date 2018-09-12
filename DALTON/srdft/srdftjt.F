@@ -623,7 +623,6 @@ C     sr mdc func
       ! for debug prints (counter for grid points)
       integer :: inpt
       logical :: use_spindns
-      integer, save :: call_number = 0
 
 c  Exchange  ------------------------------------------------------------
 
@@ -649,13 +648,6 @@ c  Exchange  ------------------------------------------------------------
 !        call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),CHIVAL,
 !     >                     use_SPINDNS,norder,Ex,d1Ex,d2Ex)
          call BOTH_LDAX_ERF(rho, norder, chival, Ex, d1Ex, d2Ex)
-        call_number = call_number + 1
-        if (modulo(call_number, 5000) .eq. 1) then
-        write(lupri,*) "rho, mu, norder: ", rho, chival, norder
-        write(lupri,*) "Ex: ", Ex
-        write(lupri,*) "d1Ex: ",d1Ex
-        write(lupri,*) "d2Ex: ",d2Ex
-        end if
       ENDIF
 
 !     short-range exchange PBE of HSE
@@ -672,8 +664,10 @@ c  Exchange  ------------------------------------------------------------
 
 !     short-range exchange PBE of GWS ! JT 11-08-09
       IF(DOSRX_PBEGWS .OR. DOSRX_PBEGWS_S) THEN
-        call DESRX_SPINGGA(ESRX_PBEGWSERF,rho,grd2,CHIVAL,
-     >                     norder,Ex,d1Ex,d2Ex)
+!        call DESRX_SPINGGA(ESRX_PBEGWSERF,rho,grd2,CHIVAL,
+!     >                     norder,Ex,d1Ex,d2Ex)
+         call BOTH_PBEX_ERF(rho, grd2, norder, chival,
+     >                      Ex, d1Ex, d2Ex)
       ENDIF
 
 !     short-range exchange RI
@@ -769,7 +763,7 @@ C  Correlation  ----------------------------------------------------------
         use_spindns = triplet .or. dft_spindns
 C        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
 C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
-        call SPIN_PW92_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
+        call SPIN_PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
       IF(DOSRC_VWN5_S) THEN
         use_spindns = triplet .or. dft_spindns
@@ -783,8 +777,8 @@ C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
         temp_grd2(2:3) = 0.0d0
 C        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,temp_grd2,CHIVAL,
 C     >                     norder,Ec,d1Ec,d2Ec)
-        call SPIN_PBE_GWS_ERF(rho, temp_grd2, norder, chival,
-     >                             Ec, d1Ec, d2Ec)
+        call SPIN_PBEC_GWS_ERF(rho, temp_grd2, norder, chival,
+     >                         Ec, d1Ec, d2Ec)
       ENDIF
 
 C Kamal SHARKAS 20-05-11 beg
