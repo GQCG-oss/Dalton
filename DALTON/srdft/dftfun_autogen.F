@@ -2,6 +2,84 @@ C File: srdft/dftfun_autogen.F
 
 
 C****************************************************************************
+      pure subroutine Convert_d1_alpha_beta_to_C_S(d1Ea, d1Eb,
+     &                  functional_type, d1E) 
+C****************************************************************************
+C  Implemented by E. R. Kjellgren
+C
+C  Subroutine to convert the derivatives in terms of alpha and beta
+C  density to be formulated in terms of charge and spin density
+C 
+C  functional_type = 1 is LDA
+C  functional_type = 2 is GGA
+C
+C            drho_x, dgamma_xx, dtau_x, dlaplace_x
+C  d1Ex(idx)    1,      2,        3,        4
+C****************************************************************************
+      implicit none
+
+      integer, intent(in) :: functional_type
+      real*8, intent(in) :: d1Ea(5), d1Eb(5)
+      real*8, intent(out) :: d1E(5)
+      d1E(:) = 0.0d0
+
+      d1E(1) = 0.5d0 * (d1Ea(1) + d1Eb(1))
+      d1E(2) = 0.5d0 * (d1Ea(1) - d1Eb(1))
+      if (functional_type .ge. 2) then ! GGA
+         d1E(3) = 0.25d0 * (d1Ea(2) + d1Eb(2))
+         d1E(4) = d1E(3)
+         d1E(5) = 0.5d0 * (d1Ea(2) - d1Eb(2))
+      end if
+      end subroutine
+
+
+C****************************************************************************
+      pure subroutine Convert_d2_alpha_beta_to_C_S(d2Ea, d2Eb,
+     &                  functional_type, d2E) 
+C****************************************************************************
+C  Implemented by E. R. Kjellgren
+C
+C  Subroutine to convert the derivatives in terms of alpha and beta
+C  density to be formulated in terms of charge and spin density
+C
+C  functional_type = 1 is LDA
+C  functional_type = 2 is GGA
+C
+C  d2Ex(idx) 
+C              drho_x, dgamma_xx, dtau_x, dlaplace_x
+C drho_x         1
+C dgamma_xx      2         3
+C dtau_x         4         5        6
+C dlaplace_x     7         8        9        10
+C****************************************************************************
+      implicit none
+
+      integer, intent(in) :: functional_type
+      real*8, intent(in) :: d2Ea(15), d2Eb(15)
+      real*8, intent(out) :: d2E(15)
+      d2E(:) = 0.0d0
+
+      d2E(1) = 0.25d0*(d2Ea(1) + d2Eb(1))
+      d2E(2) = 0.25d0*(d2Ea(1) - d2Eb(1))
+      d2E(3) = d2E(1)
+      if (functional_type .ge. 2) then ! GGA ! NOT WORKING RIGHT NOW..
+         d2E(4) = 0.125d0*(d2Ea(4) + d2Ea(8))
+         d2E(5) = 0.125d0*(d2Ea(4) - d2Ea(8))
+         d2E(6) = 0.0625d0*(d2Ea(6) + d2Ea(10))
+         d2E(7) = d2E(4)
+         d2E(8) = d2E(5)
+         d2E(9) = d2E(6)
+         d2E(10) = d2E(6)
+         d2E(11) = 2.0d0*d2E(5)
+         d2E(12) = 2.0d0*d2E(4)
+         d2E(13) = 0.125d0*(d2Ea(6) - d2Ea(10))
+         d2E(14) = d2E(13)
+         d2E(15) = 4.0d0*d2E(6)
+      end if
+      end subroutine
+
+
+C****************************************************************************
       subroutine BOTH_LDAX_ERF(rho, diff_order, mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
@@ -23,14 +101,18 @@ C*****************************************************************************
       real*8, intent(out) :: E, d1E(5), d2E(15)
       logical :: alpha_eq_beta
       real*8 :: A, kF, Ea, Eb, d1Ea(5), d2Ea(15), d1Eb(5), d2Eb(15),
-     &          rho_a, rho_b
+     &          rho_a, rho_b, d1Eab(5), d2Eab(15)
+      integer, save :: number_of_calls = 0
+      number_of_calls = number_of_calls + 1
 
       E = 0.0d0
       Ea = 0.0d0
       d1E(:) = 0.0d0
       d1Ea(:) = 0.0d0
+      d1Eab(:) = 0.0d0
       d2E(:) = 0.0d0
       d2Ea(:) = 0.0d0
+      d2Eab(:) = 0.0d0
       rho_a = rho(3)
       rho_b = rho(4)
       
@@ -54,29 +136,58 @@ C*****************************************************************************
 
       if (diff_order .eq. 0) then
          if (A .lt. 1.d-9) then
-            !call ESRX_LDA_case1(rho_a, mu, Ea)
-            return
+            call ESRX_LDA_ERF_case_1(rho_a, mu, Ea)
             if (.not.alpha_eq_beta) then
-               !call ESRX_LDA_case1(rho_b, mu, Eb)
-               return
+               call ESRX_LDA_ERF_case_1(rho_b, mu, Eb)
             end if
          elseif (A .le. 1.d+2) then
-            !call ESRX_LDA_case2(rho_a, mu, Ea)
-            return
+            call ESRX_LDA_ERF_case_2(rho_a, mu, Ea)
             if (.not.alpha_eq_beta) then
-               !call ESRX_LDA_case2(rho_b, mu, Eb)
-               return
+               call ESRX_LDA_ERF_case_2(rho_b, mu, Eb)
             end if
          elseif (A .lt. 1.d+9) then
-            !call ESRX_LDA_case3(rho_a, mu, Ea)
+            call ESRX_LDA_ERF_case_3(rho_a, mu, Ea)
+            if (.not.alpha_eq_beta) then
+               call ESRX_LDA_ERF_case_3(rho_b, mu, Eb)
+            end if
+         end if
+
+      elseif (diff_order .eq. 1) then
+         if (A .lt. 1.d-9) then
+            call D1ESRX_LDA_ERF_case_1(rho_a, mu, Ea, d1Ea)
+            if (.not.alpha_eq_beta) then
+               call D1ESRX_LDA_ERF_case_1(rho_b, mu, Eb, d1Eb)
+            end if
+         elseif (A .le. 1.d+2) then
+            call D1ESRX_LDA_ERF_case_2(rho_a, mu, Ea, d1Ea)
+            if (.not.alpha_eq_beta) then
+               call D1ESRX_LDA_ERF_case_2(rho_b, mu, Eb, d1Eb)
+            end if
+         elseif (A .lt. 1.d+9) then
+            call D1ESRX_LDA_ERF_case_3(rho_a, mu, Ea, d1Ea)
             return
             if (.not.alpha_eq_beta) then
-               !call ESRX_LDA_case3(rho_b, mu, Eb)
-               return
+               call D1ESRX_LDA_ERF_case_3(rho_b, mu, Eb, d1Eb)
             end if
-         else
-            Ea = 0.0d0
-            Eb = 0.0d0
+         end if
+
+      elseif (diff_order .eq. 2) then
+         if (A .lt. 1.d-9) then
+            call D2ESRX_LDA_ERF_case_1(rho_a, mu, Ea, d1Ea, d2Ea)
+            if (.not.alpha_eq_beta) then
+               call D2ESRX_LDA_ERF_case_1(rho_b, mu, Eb, d1Eb, d2Eb)
+            end if
+         elseif (A .le. 1.d+2) then
+            call D2ESRX_LDA_ERF_case_2(rho_a, mu, Ea, d1Ea, d2Ea)
+            if (.not.alpha_eq_beta) then
+               call D2ESRX_LDA_ERF_case_2(rho_b, mu, Eb, d1Eb, d2Eb)
+            end if
+         elseif (A .lt. 1.d+9) then
+            call D2ESRX_LDA_ERF_case_3(rho_a, mu, Ea, d1Ea, d2Ea)
+            return
+            if (.not.alpha_eq_beta) then
+               call D2ESRX_LDA_ERF_case_3(rho_b, mu, Eb, d1Eb, d2Eb)
+            end if
          end if
 
       else
@@ -85,9 +196,22 @@ C*****************************************************************************
 
 C     Do the convertion from alpha, beta to charge, spin
       if (alpha_eq_beta) then
-         E = 2.0d0*Ea
-      else
-         E = Ea + Eb
+         Eb = Ea
+         if (diff_order .ge. 1) then
+            d1Eb(:) = d1Ea(:)
+         end if
+         if (diff_order .ge. 2) then
+            d2Eb(:) = d2Ea(:)
+         end if
+      end if
+      E = 0.5d0*Ea + 0.5d0*Eb
+      if (diff_order .ge. 1) then
+         call Convert_d1_alpha_beta_to_C_S(0.5d0*d1Ea, 0.5d0*d1Eb, 0,
+     &                                     d1E)
+      end if
+      if (diff_order .ge. 2) then
+         call Convert_d2_alpha_beta_to_C_S(0.5d0*d2Ea, 0.5d0*d2Eb, 0,
+     &                                     d2E)
       end if
       end subroutine
 
@@ -4154,4 +4278,259 @@ C*****************************************************************************
       d2E(6) = -rho_c*x1528*(x1005*x1516*x1527 + x540*(0.32347469700879d
      &0*rho_c**( -7.0d0)*x1009*x1017*x500**8.34d0 + x1009*x1520*x1525 + 
      &x1526* x1529 - x1529 - x1016*x1515*x1523*x548/x1010**2))
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine ESRX_LDA_ERF_case_1(rho_a, mu, Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, mu
+      real*8, intent(out) :: Ea
+      Ea = 0.0d0
+      Ea = -1.8610514726982d0*rho_a**1.33333333333333d0
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine ESRX_LDA_ERF_case_2(rho_a, mu, Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, mu
+      real*8, intent(out) :: Ea
+      real*8 :: x0, x1, x2, x3, x4
+      Ea = 0.0d0
+      x0 = rho_a**0.333333333333333d0
+      x1 = 1d0/x0
+      x2 = mu*x1
+      x3 = 0.00844343197019482d0*1d0/rho_a
+      x4 = mu**2
+      Ea = 4.9628039271952d0*rho_a**1.33333333333333d0*(0.12827824385304
+     &2d0*x2*(mu **3*x3 - mu*(-0.256556487706084d0*x1 + x3*x4)*exp( -15.
+     &192666241151986d0*rho_a**0.66666666666666663d0/x4) - 0.38483473155
+     &9127d0*x2 + 1.77245385090552d0*erf( 3.8977770897207535d0*x0/mu)) -
+     & 0.375d0)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine ESRX_LDA_ERF_case_3(rho_a, mu, Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, mu
+      real*8, intent(out) :: Ea
+      Ea = 0.0d0
+      Ea = -3.14159265358979d0*rho_a**2.0d0/mu**2
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D1ESRX_LDA_ERF_case_1(rho_a, mu, Ea, d1Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, mu
+      real*8, intent(out) :: Ea, d1Ea(5)
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      Ea = -1.8610514726982d0*rho_a**1.33333333333333d0
+      d1Ea(1) = -2.4814019635976d0*rho_a**0.333333333333333d0
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D1ESRX_LDA_ERF_case_2(rho_a, mu, Ea, d1Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, mu
+      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      x0 = rho_a**0.333333333333333d0
+      x1 = 1d0/x0
+      x2 = 0.256556487706084d0*x1
+      x3 = mu**2
+      x4 = 0.00844343197019482d0*1d0/rho_a
+      x5 = x3*x4
+      x6 = -x2 + x5
+      x7 = exp(-15.192666241151986d0*rho_a**0.66666666666666663d0/x3)
+      x8 = mu*x7
+      x9 = 1d0/mu
+      x10 = mu**3
+      x11 = mu*x1
+      x12 = x10*x4 - 0.384834731559127d0*x11 + 1.77245385090552d0*erf( 3
+     &.8977770897207535d0*x0*x9)
+      x13 = x12 - x6*x8
+      x14 = 0.128278243853042d0*x11
+      x15 = rho_a**1.33333333333333d0
+      x16 = 4.9628039271952d0*x15
+      x17 = 1d0/x15
+      x18 = 0.00844343197019482d0*rho_a**(-2.0d0)
+      x19 = x7*x9
+      Ea = x16*(x13*x14 - 0.375d0)
+      d1Ea(1) = -mu*x16*(-0.128278243853042d0*x1*(0.128278243853042d0*mu
+     &*x17 + 2.59851805981384d0*rho_a**(-0.666666666666667d0)*x19 + 10.1
+     &28444160768d0*rho_a**(-0.333333333333333d0)*x19*x6 - x10*x18 + x8*
+     &(-0.0855188292353615d0*x17 + x18*x3)) + 0.0427594146176807d0 *x13*
+     &x17) + 6.61707190292693d0*rho_a**0.333333333333333d0*(x14*( x12 + 
+     &x8*(x2 - x5)) - 0.375d0)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D1ESRX_LDA_ERF_case_3(rho_a, mu, Ea, d1Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, mu
+      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8 :: x0
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      x0 = mu**(-2)
+      Ea = -3.14159265358979d0*rho_a**2.0d0*x0
+      d1Ea(1) = -6.28318530717958d0*rho_a**1.0d0*x0
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRX_LDA_ERF_case_1(rho_a, mu, Ea, d1Ea, d2Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, mu
+      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      d2Ea(:) = 0.0d0
+      Ea = -1.8610514726982d0*rho_a**1.33333333333333d0
+      d1Ea(1) = -2.4814019635976d0*rho_a**0.333333333333333d0
+      d2Ea(1) = -0.827133987865866d0*rho_a**(-0.666666666666667d0)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRX_LDA_ERF_case_2(rho_a, mu, Ea, d1Ea, d2Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, mu
+      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      d2Ea(:) = 0.0d0
+      x0 = rho_a**0.333333333333333d0
+      x1 = 1d0/x0
+      x2 = 0.256556487706084d0*x1
+      x3 = mu**2
+      x4 = 1d0/rho_a
+      x5 = 0.00844343197019482d0*x4
+      x6 = x3*x5
+      x7 = -x2 + x6
+      x8 = exp(-15.192666241151986d0*rho_a**0.66666666666666663d0/x3)
+      x9 = mu*x8
+      x10 = 1d0/mu
+      x11 = mu**3
+      x12 = mu*x1
+      x13 = x11*x5 - 0.384834731559127d0*x12 + 1.77245385090552d0*erf( 3
+     &.8977770897207535d0*x0*x10)
+      x14 = x13 - x7*x9
+      x15 = 0.128278243853042d0*x12
+      x16 = rho_a**1.33333333333333d0
+      x17 = 4.9628039271952d0*x16
+      x18 = rho_a**0.333333333333333d0
+      x19 = x2 - x6
+      x20 = x13 + x19*x9
+      x21 = x15*x20 - 0.375d0
+      x22 = 1d0/x16
+      x23 = x10*x8
+      x24 = rho_a**(-0.333333333333333d0)*x23
+      x25 = 10.128444160768d0*x24
+      x26 = 0.00844343197019482d0*rho_a**(-2.0d0)
+      x27 = 0.0855188292353615d0*x22
+      x28 = x26*x3 - x27
+      x29 = rho_a**(-0.666666666666667d0)
+      x30 = 0.564189583547756d0
+      x31 = x23*x30
+      x32 = 0.128278243853042d0*mu*x22 - x11*x26 + x28*x9 + 4.6057533417
+     &6456d0*x29* x31
+      x33 = 0.128278243853042d0*x1
+      x34 = 0.0427594146176807d0*x14*x22 - x33*(x25*x7 + x32)
+      x35 = mu*x17
+      x36 = rho_a**(-2.33333333333333d0)
+      x37 = 0.0168868639403896d0*rho_a**(-3.0d0)
+      x38 = x8/x11
+      Ea = x17*(x14*x15 - 0.375d0)
+      d1Ea(1) = 6.61707190292693d0*x18*x21 - x34*x35
+      d2Ea(1) = -13.2341438058539d0*mu*x18*x34 + 2.20569063430898d0*x21*
+     &x29 + x35*( 0.0570125528235743d0*x20*x36 - x27*(-x19*x25 + x32) + 
+     &x33*( -0.171037658470723d0*mu*x36 - 3.07050222784304d0*rho_a**( -1
+     &.66666666666667d0)*x31 + 3.37614805358933d0*rho_a**( -1.3333333333
+     &3333d0)*x19*x23 + x11*x37 + 102.585381117795d0*x19* x29*x38 - 20.2
+     &56888321536d0*x24*x28 - 46.6491155403329d0*x30*x38* x4 + x9*(-x3*x
+     &37 + 0.114025105647149d0*x36)))
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRX_LDA_ERF_case_3(rho_a, mu, Ea, d1Ea, d2Ea)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.2
+C   Generated: September 12, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_a, mu
+      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8 :: x0, x1
+      Ea = 0.0d0
+      d1Ea(:) = 0.0d0
+      d2Ea(:) = 0.0d0
+      x0 = mu**(-2)
+      x1 = 6.28318530717958d0*x0
+      Ea = -3.14159265358979d0*rho_a**2.0d0*x0
+      d1Ea(1) = -rho_a**1.0d0*x1
+      d2Ea(1) = -x1
       end subroutine

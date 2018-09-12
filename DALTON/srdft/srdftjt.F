@@ -74,12 +74,15 @@ C*****************************************************************************
 #include "dftcom.h"
 #include "chrnos.h"
 
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
+      real*8, parameter :: D0 = 0.0D0
+      real*8, parameter :: DP5 = 0.5D0
+      real*8, parameter :: D1 = 1.0D0
+      real*8, parameter :: D2 = 2.0D0
 
-      LOGICAL, intent(in) :: DOLND,DOGGA,DOERG,DOGRD,DOATR,TRIPLET
+      logical, intent(in) :: DOLND,DOGGA,DOERG,DOGRD,DOATR,TRIPLET
 
       logical :: FROMVX
-      REAL*8    EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
+      REAL*8 :: EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
      &          GSO(NBAST*NTYPSO),NCNT(NBAST),
      &          DMAGAOSR(NBAST,2),
@@ -89,7 +92,7 @@ C*****************************************************************************
 
       INTEGER, SAVE :: NTOT_DFTGRID_save = -1
 
-      REAL*8    RHO(4), RHG(3,4), GRD2(6)
+      REAL*8 :: RHO(4), RHG(3,4), GRD2(6)
 C     ... RHO(1) = rhoc = rho_a + rho_b
 C     ... RHO(2) = rhos = rho_a - rho_b
 C     ... RHO(3) = rhoa = rho_a
@@ -106,17 +109,17 @@ C     ... GRD2(5) = grdbb = RHG(:,4) . RHG(:,4)
 C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
 
 !     these are not initialized to zero!
-      real*8   Ex,  d1Ex(5),  d2Ex(15)
+      real*8 :: Ex,  d1Ex(5),  d2Ex(15)
       ! d1Ex(1:5) =   d1Exdrhoc, d1Exdrhos, d1Exdgrdcc, d1Exdgrdss, d1Exdgrdcs
 
-      real*8   Ec,  d1Ec(5),  d2Ec(15)
+      real*8 :: Ec,  d1Ec(5),  d2Ec(15)
       ! d1Ec(1:5) =   d1Ecdrhoc, d1Ecdrhos, d1Ecdgrdcc, d1Ecdgrdss, d1Ecdgrdcs
 
-      real*8   Exc, d1Exc(5), d2Exc(15)
+      real*8 :: Exc, d1Exc(5), d2Exc(15)
       ! d1Exc(1:5) =  d1Excdrhoc, d1Excdrhos, d1Excdgrdcc, d1Excdgrdss, d1Excdgrdcs
 
 #if SRDFT_DEBUG > 10
-      real*8    :: print_thr
+      real*8 :: print_thr
       print_thr = 0.0d0
 #endif
 
@@ -600,13 +603,13 @@ C*****************************************************************************
       data icall/0/
 
 C     exchange functionals
-      external ESRX_PBEHSEERF,  ESRX_PBETCSERF, ESRX_PBERIERF
+      external ESRX_PBEHSEERF, ESRX_PBETCSERF, ESRX_PBERIERF
       external ESRX_PBEGWSERF
 
 C     correlation functionals
       external ESRC_PBETCSJERF, ESRC_PBETCSERF, ESRC_PBERIERF
       external ESRC_LYPRIERF
-      external ESRC_PBEWIERF,   ESRC_PBEGWSERF, ESRC_PBELOERF
+      external ESRC_PBEWIERF, ESRC_PBEGWSERF, ESRC_PBELOERF
       external ESRC_PBEGWSERF_PW92
 
 C     spin functionals
@@ -618,8 +621,8 @@ C     sr mdc func
       external ESRC_MD_LDAERF
 
       ! for debug prints (counter for grid points)
-      integer inpt
-      logical use_spindns
+      integer :: inpt
+      logical :: use_spindns
       integer, save :: call_number = 0
 
 c  Exchange  ------------------------------------------------------------
@@ -640,14 +643,19 @@ c  Exchange  ------------------------------------------------------------
 !     LDA exchange functional (to fit with corresponding correlation
 !     functional) - see explanation with DOSRC_LDA_PW92
       IF(DOSRX_LDA_PW92 .OR. DOSRX_LDA_S) THEN
-        ! edh: current DESR_XSPINGGA routine does not work for LDA
-        ! for now, we rely on old DESRSPIN routine
-        ! TODO Generalize DESRX_SPINGGA routine to LDA?
 !       call DESRX_SPINGGA(ESRX_LDAERF,rho,grd2,CHIVAL,
 !    >                     norder,Ex,d1Ex,d2Ex)
-        use_spindns = triplet .or. dft_spindns
-        call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),CHIVAL,
-     >                     use_SPINDNS,norder,Ex,d1Ex,d2Ex)
+!        use_spindns = triplet .or. dft_spindns
+!        call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),CHIVAL,
+!     >                     use_SPINDNS,norder,Ex,d1Ex,d2Ex)
+         call BOTH_LDAX_ERF(rho, norder, chival, Ex, d1Ex, d2Ex)
+        call_number = call_number + 1
+        if (modulo(call_number, 5000) .eq. 1) then
+        write(lupri,*) "rho, mu, norder: ", rho, chival, norder
+        write(lupri,*) "Ex: ", Ex
+        write(lupri,*) "d1Ex: ",d1Ex
+        write(lupri,*) "d2Ex: ",d2Ex
+        end if
       ENDIF
 
 !     short-range exchange PBE of HSE
@@ -777,13 +785,6 @@ C        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,temp_grd2,CHIVAL,
 C     >                     norder,Ec,d1Ec,d2Ec)
         call SPIN_PBE_GWS_ERF(rho, temp_grd2, norder, chival,
      >                             Ec, d1Ec, d2Ec)
-        !call_number = call_number + 1
-        !if (modulo(call_number, 5000) .eq. 1) then
-        !write(lupri,*) "rho, mu, norder: ", rho, mu, norder
-        !write(lupri,*) "Ec: ", Ec
-        !write(lupri,*) "d1Ec: ",d1Ec
-        !write(lupri,*) "d2Ec: ",d2Ec
-        !end if
       ENDIF
 
 C Kamal SHARKAS 20-05-11 beg
@@ -889,22 +890,22 @@ C***************************************************************************
       real*8, intent(out) :: EXCMAT(NBAST,NBAST,2)
 
 !     local
-      integer I, J, ISYM, JSYM, JEND, JSTR, ISTR, IEND
-      integer NORDER
+      integer :: I, J, ISYM, JSYM, JEND, JSTR, ISTR, IEND
+      integer :: NORDER
 
-      real*8   ddot
+      real*8 :: ddot
 
-      real*8   BR(4), B0(2), B3(3,2), BMAX
-      real*8   AR(2), AB(2), AX, AY, AZ, RX(2), RY(2), RZ(2)
+      real*8 :: BR(4), B0(2), B3(3,2), BMAX
+      real*8 :: AR(2), AB(2), AX, AY, AZ, RX(2), RY(2), RZ(2)
 
-      real*8   FAC0R, FAC0S, FACR, FACS, FAC_AR
-      real*8   FRR, FRZ, FZZ, FZ0
-      real*8   FRS, FSS, FSZ, FSZ_S, FRZ_S, FZZ_S, FZ0_S, FZZ_SS
-      real*8   G0, GX, GY, GZ
+      real*8 :: FAC0R, FAC0S, FACR, FACS, FAC_AR
+      real*8 :: FRR, FRZ, FZZ, FZ0
+      real*8 :: FRS, FSS, FSZ, FSZ_S, FRZ_S, FZZ_S, FZ0_S, FZZ_SS
+      real*8 :: G0, GX, GY, GZ
 
 !     X, C, and XC energies, and derivatives
-      real*8   Ex, Ec, d1Ex(5), d1Ec(5), d2Ex(15), d2Ec(15)
-      real*8   Exc, d1Exc(5), d2Exc(15)
+      real*8 :: Ex, Ec, d1Ex(5), d1Ec(5), d2Ex(15), d2Ec(15)
+      real*8 :: Exc, d1Exc(5), d2Exc(15)
 ! d1E?(1:5)  = d1E?drhoc, d1E?drhos, d1E?dgrdcc, d1E?dgrdss, d1E?grdcs
 ! d2E?(1:15) =
 !     d2E?drhocdrhoc,
