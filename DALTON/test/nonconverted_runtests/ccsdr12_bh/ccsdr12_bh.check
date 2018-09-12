@@ -13,12 +13,12 @@ if $GREP -q "not implemented for parallel calculations" $log; then
 fi
 
 #            Total SCF   energy:                   -25.1264273369
-#            Total MP2-R12/B energy:               -25.2006815211
+#            Total MP2-R12/B energy:               -25.2006[78]
 #            Total CCSD(R12)/B energy:             -25.2240489668
 
 
 
-CRIT1=`$GREP "Total MP2-R12/B energy: *  \-25\.2006815211" $log | wc -l`
+CRIT1=`$GREP "Total MP2-R12/B energy: *  \-25\.2006[78]" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=2
 ERROR[1]="MP2-R12/B ENERGY NOT CORRECT"

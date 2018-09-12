@@ -35,8 +35,7 @@ ERROR[3]="SCF ENERGY NOT CORRECT"
 
 # Localization:
 CRIT1=`$GREP "Boys orbital localization" $log | wc -l `
-#CRIT2=`$GREP "C.*1s.*0.9921" $log | wc -l`
-CRIT2=`$GREP "0.9921" $log | wc -l`
+CRIT2=`$GREP "C.*1s.*0*\.9921" $log | wc -l`
 TEST[4]=`expr $CRIT1 + $CRIT2`
 CTRL[4]=7
 ERROR[4]="LOCALIZED CORE NOT CORRECT"

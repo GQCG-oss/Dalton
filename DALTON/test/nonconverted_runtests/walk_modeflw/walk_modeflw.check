@@ -63,7 +63,7 @@ ERROR[6]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Initial gradient
 CRIT1=`$GREP "N * (0| )\.000000.... * (\-0|\-|0| )\.000000.... * (0| )\.000003...." $log | wc -l`
-CRIT2=`$GREP "H * (0| )\.000000.... * (\-0|\-|0| )\.000000.... * (\-0|\-)\.000000...." $log | wc -l`
+CRIT2=`$GREP "H * (0| )\.000000.... * (\-0|\-|0| )\.000000.... * (\-0|\-)\.00000[01]...." $log | wc -l`
 CRIT3=`$GREP "H * (\-0|\-)\.000000.... * (0| )\.000000.... * (\-0|\-)\.000001...." $log | wc -l`
 CRIT4=`$GREP "H * (\-0|\-)\.000000.... * (\-0|\-)\.000000.... * (\-0|\-)\.000001...." $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
@@ -111,10 +111,10 @@ CTRL[10]=1
 ERROR[10]="SECOND ENERGY NOT CORRECT"
 
 # Second gradient
-CRIT1=`$GREP "N * \-0*\.000460.... * 0*\.000000.... * \-0*\.008837...." $log | wc -l`
-CRIT2=`$GREP "H * 0*\.020483.... * \-0*\.000000.... * 0*\.001885...." $log | wc -l`
-CRIT3=`$GREP "H * \-0*\.010011.... * 0*\.017630.... * 0*\.003475...." $log | wc -l`
-CRIT4=`$GREP "H * \-0*\.010011.... * \-0*\.017630.... * 0*\.003475...." $log | wc -l`
+CRIT1=`$GREP "N * \-0*\.000460.... *   0*\.000000.... * \-0*\.00883....." $log | wc -l`
+CRIT2=`$GREP "H *   0*\.02048[34].... * \-0*\.000000.... *   0*\.001885...." $log | wc -l`
+CRIT3=`$GREP "H * \-0*\.010011.... *   0*\.017630.... *   0*\.003475...." $log | wc -l`
+CRIT4=`$GREP "H * \-0*\.010011.... * \-0*\.017630.... *   0*\.003475...." $log | wc -l`
 TEST[11]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[11]=4
 ERROR[11]="SECOND GRADIENT NOT CORRECT"
@@ -164,7 +164,7 @@ ERROR[15]="GEOMETRY OPTIMIZATION NOT CONVERGED"
 
 # Final gradient and Hessian eigenvalues
 CRIT1=`$GREP "\@ 1 * 1 * 0*\.00000(1|2).... * \-0*\.10375....." $log | wc -l`
-CRIT2=`$GREP "\@ 1 * 2 * \-*0*\.000000.... * 0*\.15783....." $log | wc -l`
+CRIT2=`$GREP "\@ 1 * 2 * \-*0*\.000000.... * 0*\.1578[34]....." $log | wc -l`
 CRIT3=`$GREP "\@ 1 * 3 * \-*0*\.000000.... * 0*\.15784....." $log | wc -l`
 CRIT4=`$GREP "\@ 1 * 4 * \-*0*\.000007.... * 0*\.56255....." $log | wc -l`
 CRIT5=`$GREP "\@ 1 * 5 * \-*0*\.000000.... * 1*\.47295....." $log | wc -l`
@@ -174,10 +174,10 @@ CTRL[16]=6
 ERROR[16]="FINAL GRADIENT AND HESSIAN EIGENVALUES NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "N * \-0\.267050.... * \-0\.000000.... * \-0*\.00001....." $log | wc -l`
-CRIT2=`$GREP "H * 1\.594707.... * 0\.000000.... * \-0*\.09707(7|8)...." $log | wc -l`
-CRIT3=`$GREP "H * \-1\.197928.... * 1\.614519.... * 0*\.04854(5|6)...." $log | wc -l`
-CRIT4=`$GREP "H * \-1\.197928.... * \-1\.614520.... * 0*\.04854(5|6)...." $log | wc -l`
+CRIT1=`$GREP "N * \-0\.26705..... * \-0\.000000.... * \-0*\.00001....." $log | wc -l`
+CRIT2=`$GREP "H *   1\.59470..... *   0\.000000.... * \-0*\.09707(7|8)...." $log | wc -l`
+CRIT3=`$GREP "H * \-1\.19792..... *   1\.614519.... * 0*\.04854(5|6)...." $log | wc -l`
+CRIT4=`$GREP "H * \-1\.19792..... * \-1\.614520.... * 0*\.04854(5|6)...." $log | wc -l`
 TEST[17]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[17]=16
 ERROR[17]="FINAL GEOMETRY NOT CORRECT"
@@ -223,8 +223,8 @@ CTRL[21]=3
 ERROR[21]="STATIC POLARIZABILITIES NOT CORRECT"
 
 # Rotational constants
-CRIT1=`$GREP "343489\.0[56].. * 343489\.0[56].. * 171744\.5[23].. MHz" $log | wc -l`
-CRIT2=`$GREP "11\.45756. * 11\.45756. * 5\.72878. cm\-1" $log | wc -l`
+CRIT1=`$GREP "343489\..... * 343489\..... * 171744\..... MHz" $log | wc -l`
+CRIT2=`$GREP "11\.4575.. * 11\.4575.. * 5\.7287.. cm\-1" $log | wc -l`
 TEST[22]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[22]=2
 ERROR[22]="ROTATIONAL CONSTANTS NOT CORRECT"
@@ -246,7 +246,7 @@ CRIT2=`$GREP "200\.00 * 1\.017.(D|E)\+06 * 107\.3. * 1\.0000 * 1\.09284.(D|E)\+0
 CRIT3=`$GREP "273\.15 * 2\.218.(D|E)\+06 * 170\.7. * 1\.000. * 3\.78935.(D|E)\+08" $log | wc -l`
 CRIT4=`$GREP "298\.15 * 2\.761.(D|E)\+06 * 194\.5. * 1\.000. * 5\.37594.(D|E)\+08" $log | wc -l`
 CRIT5=`$GREP "500\.00 * 1\.005.(D|E)\+07 * 421\.0. * 1\.014. * 4\.29600.(D|E)\+09" $log | wc -l`
-CRIT6=`$GREP "2000\.00 * 3\.218.(D|E)\+08 * 3354\.2. * 2\.373. * 2\.5620(0|1).(D|E)\+12" $log | wc -l`
+CRIT6=`$GREP "2000\.00 * 3\.218.(D|E)\+08 * 3354\.2. * 2\.373. * 2\.56(19|20)..(D|E)\+12" $log | wc -l`
 TEST[24]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[24]=6
 ERROR[24]="MOLECULAR PARTITION FUNCTION NOT CORRECT"

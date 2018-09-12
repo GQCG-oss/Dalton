@@ -19,7 +19,7 @@ CRIT4=`$GREP "Initial Hessian will be calculated\." $log | wc -l`
 CRIT5=`$GREP "Partitioned rational function method will be used to control step\." $log | wc -l`
 CRIT6=`$GREP "The eigenvector corresponding to the lowest non-zero eigenvalue is chosen" $log | wc -l`
 CRIT7=`$GREP "as reaction mode \(default\)\." $log | wc -l`
-CRIT8=`$GREP "Baker.s convergence criteria will be used\." $log | wc -l`
+CRIT8=`$GREP "Baker.s convergence criteria will be used" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[1]=8
@@ -83,7 +83,7 @@ TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[5]=8
 
-CRIT1=`$GREP "Norm of gradient * \:  * 0*\.097518" $log | wc -l`
+CRIT1=`$GREP "Norm of gradient * \:  * 0*\.09751" $log | wc -l`
 TEST[5]=`expr	$CRIT1 `
 CTRL[5]=1
 
@@ -188,9 +188,9 @@ CTRL[8]=3
 ERROR[8]="SECOND ITERATION NOT CORRECT"
 
 # Third iteration
-CRIT1=`$GREP "Energy at this geometry is * \: * \-78\.30378[0-9]" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.0054[5-6][0-9]" $log | wc -l`
-CRIT3=`$GREP "Norm of step * \: * (0| )\.3699[6-7][0-9]" $log | wc -l`
+CRIT1=`$GREP "Energy at this geometry is * \: * \-78\.30378" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * (0| )\.0054" $log | wc -l`
+CRIT3=`$GREP "Norm of step * \: * (0| )\.3699" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="THIRD ITERATION NOT CORRECT"

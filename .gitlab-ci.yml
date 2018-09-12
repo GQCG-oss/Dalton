@@ -1,6 +1,7 @@
 variables:
     GIT_SSL_NO_VERIFY: "true"
     GIT_SUBMODULE_STRATEGY: "recursive"
+    GET_SOURCES_ATTEMPTS: "10"
 
 after_script:
     - ps -u `whoami`
