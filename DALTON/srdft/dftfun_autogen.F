@@ -12,6 +12,7 @@ C  density to be formulated in terms of charge and spin density
 C 
 C  functional_type = 0 is LDA
 C  functional_type = 1 is GGA
+C  functional_type = 2 is MGGA
 C
 C            drho_x, dgamma_xx, dtau_x, dlaplace_x
 C  d1Ex(idx)    1,      2,        3,        4
@@ -19,8 +20,8 @@ C****************************************************************************
       implicit none
 
       integer, intent(in) :: functional_type
-      real*8, intent(in) :: d1Ea(5), d1Eb(5)
-      real*8, intent(out) :: d1E(5)
+      real*8, intent(in) :: d1Ea(4), d1Eb(4)
+      real*8, intent(out) :: d1E(9)
       d1E(:) = 0.0d0
 
       d1E(1) = 0.5d0 * (d1Ea(1) + d1Eb(1))
@@ -29,6 +30,12 @@ C****************************************************************************
          d1E(3) = 0.25d0 * (d1Ea(2) + d1Eb(2))
          d1E(4) = d1E(3)
          d1E(5) = 0.5d0 * (d1Ea(2) - d1Eb(2))
+      end if
+      if (functional_type .ge. 2) then ! MGGA
+         d1E(6) = 0.5d0*(d1Ea(3) + d1Eb(3))
+         d1E(7) = 0.5d0*(d1Ea(3) - d1Eb(3))
+         d1E(8) = 0.5d0*(d1Ea(4) + d1Eb(4))
+         d1E(9) = 0.5d0*(d1Ea(4) - d1Eb(4))
       end if
       end subroutine
 
@@ -42,8 +49,9 @@ C
 C  Subroutine to convert the derivatives in terms of alpha and beta
 C  density to be formulated in terms of charge and spin density
 C
-C  functional_type = 1 is LDA
-C  functional_type = 2 is GGA
+C  functional_type = 0 is LDA
+C  functional_type = 1 is GGA
+C  functional_type = 2 is MGGA
 C
 C  d2Ex(idx) 
 C              drho_x, dgamma_xx, dtau_x, dlaplace_x
@@ -55,8 +63,8 @@ C****************************************************************************
       implicit none
 
       integer, intent(in) :: functional_type
-      real*8, intent(in) :: d2Ea(15), d2Eb(15)
-      real*8, intent(out) :: d2E(15)
+      real*8, intent(in) :: d2Ea(10), d2Eb(10)
+      real*8, intent(out) :: d2E(45)
       d2E(:) = 0.0d0
 
       d2E(1) = 0.25d0*(d2Ea(1) + d2Eb(1))
@@ -75,6 +83,38 @@ C****************************************************************************
          d2E(13) = 0.125d0*(d2Ea(3) - d2Eb(3))
          d2E(14) = d2E(13)
          d2E(15) = 4.0d0*d2E(6)
+      end if
+      if (functional_type .ge. 2) then !MGGA
+         d2E(16) = 0.25d0*(d2Ea(4) + d2Eb(4))
+         d2E(17) = 0.25d0*(d2Ea(4) - d2Eb(4))
+         d2E(18) = 0.125d0*(d2Ea(5) + d2Eb(5))
+         d2E(19) = d2E(18)
+         d2E(20) = 2.0d0*d2E(24)
+         d2E(21) = 0.25d0*(d2Ea(6) + d2Eb(6))
+         d2E(22) = 0.25d0*(d2Ea(4) - d2Eb(4))
+         d2E(23) = d2E(16)
+         d2E(24) = 0.125d0*(d2Ea(5) - d2Eb(5))
+         d2E(25) = d2E(24)
+         d2E(26) = 2.0d0*d2E(18)
+         d2E(27) = 0.25d0*(d2Ea(6) - d2Eb(6))
+         d2E(28) = d2E(21)
+         d2E(29) = 0.25d0*(d2Ea(7) + d2Eb(7))
+         d2E(30) = 0.25d0*(d2Ea(7) - d2Eb(7))
+         d2E(31) = 0.125d0*(d2Ea(8) + d2Eb(8))
+         d2E(32) = d2E(31)
+         d2E(33) = 2.0d0*d2E(39)
+         d2E(34) = 0.25d0*(d2Ea(9) + d2Eb(9))
+         d2E(35) = 0.25d0*(d2Ea(9) - d2Eb(9))
+         d2E(36) = 0.25d0*(d2Ea(10) + d2Eb(10))
+         d2E(37) = 0.25d0*(d2Ea(7) - d2Eb(7))
+         d2E(38) = d2E(29)
+         d2E(39) = 0.125d0*(d2Ea(8) - d2Eb(8))
+         d2E(40) = d2E(39)
+         d2E(41) = 2.0d0*d2E(31)
+         d2E(42) = 0.25d0*(d2Ea(9) - d2Eb(9))
+         d2E(43) = d2E(34)
+         d2E(44) = 0.25d0*(d2Ea(10) - d2Eb(10))
+         d2E(45) = d2E(36)
       end if
       end subroutine
 
@@ -99,19 +139,17 @@ C*****************************************************************************
 #include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(4), mu
-      real*8, intent(out) :: E, d1E(5), d2E(15)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
       logical :: alpha_eq_beta
-      real*8 :: A, kF, Ea, Eb, d1Ea(5), d2Ea(15), d1Eb(5), d2Eb(15),
-     &          rho_a, rho_b, d1Eab(5), d2Eab(15)
+      real*8 :: A, kF, Ea, Eb, d1Ea(4), d2Ea(10), d1Eb(4), d2Eb(10),
+     &          rho_a, rho_b
 
       E = 0.0d0
       Ea = 0.0d0
       d1E(:) = 0.0d0
       d1Ea(:) = 0.0d0
-      d1Eab(:) = 0.0d0
       d2E(:) = 0.0d0
       d2Ea(:) = 0.0d0
-      d2Eab(:) = 0.0d0
       rho_a = rho(3)
       rho_b = rho(4)
       
@@ -247,19 +285,17 @@ C*****************************************************************************
 #include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(4), gamma_vec(6), mu
-      real*8, intent(out) :: E, d1E(5), d2E(15)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
       logical :: alpha_eq_beta
-      real*8 :: A, kF, Ea, Eb, d1Ea(5), d2Ea(15), d1Eb(5), d2Eb(15),
-     &          rho_a, rho_b, d1Eab(5), d2Eab(15), gamma_aa, gamma_bb
+      real*8 :: A, kF, Ea, Eb, d1Ea(4), d2Ea(10), d1Eb(4), d2Eb(10),
+     &          rho_a, rho_b, gamma_aa, gamma_bb
 
       E = 0.0d0
       Ea = 0.0d0
       d1E(:) = 0.0d0
       d1Ea(:) = 0.0d0
-      d1Eab(:) = 0.0d0
       d2E(:) = 0.0d0
       d2Ea(:) = 0.0d0
-      d2Eab(:) = 0.0d0
       rho_a = rho(3)
       rho_b = rho(4)
       gamma_aa = gamma_vec(4)
@@ -441,7 +477,7 @@ C*****************************************************************************
 #include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), mu
-      real*8, intent(out) :: E, d1E(5), d2E(15)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
       real*8 :: rho_c, rho_s
       
       E = 0.0d0
@@ -492,7 +528,7 @@ C*****************************************************************************
 #include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), mu
-      real*8, intent(out) :: E, d1E(5), d2E(15)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
       real*8 :: rho_c
       
       write(lupri,*)'PW92C_ERF:'
@@ -544,7 +580,7 @@ C*****************************************************************************
 #include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), gamma_xx(3), mu
-      real*8, intent(out) :: E, d1E(5), d2E(15)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
       real*8 :: rho_c, rho_s, gamma_cc
       
       E = 0.0d0
@@ -599,7 +635,7 @@ C*****************************************************************************
 #include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), gamma_xx(3), mu
-      real*8, intent(out) :: E, d1E(5), d2E(15)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
       real*8 :: rho_c, gamma_cc
       
       write(lupri,*)'PBEC_GWS_ERF:'
@@ -734,7 +770,7 @@ C   Generated: September 09, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_c, rho_s, mu
-      real*8, intent(out) :: E, d1E(5)
+      real*8, intent(out) :: E, d1E(9)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
@@ -1032,7 +1068,7 @@ C   Generated: September 09, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_c, rho_s, mu
-      real*8, intent(out) :: E, d1E(5), d2E(15)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
@@ -1988,7 +2024,7 @@ C   Generated: September 09, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_c, rho_s, gamma_cc, mu
-      real*8, intent(out) :: E, d1E(5)
+      real*8, intent(out) :: E, d1E(9)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
@@ -2561,7 +2597,7 @@ C   Generated: September 10, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_c, rho_s, gamma_cc, mu
-      real*8, intent(out) :: E, d1E(5), d2E(15)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
@@ -4663,7 +4699,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
-      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8, intent(out) :: Ea, d1Ea(4)
       Ea = 0.0d0
       d1Ea(:) = 0.0d0
       Ea = -1.8610514726982d0*rho_a**1.33333333333333d0
@@ -4681,7 +4717,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
-      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8, intent(out) :: Ea, d1Ea(4)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19
       Ea = 0.0d0
@@ -4727,7 +4763,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
-      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8, intent(out) :: Ea, d1Ea(4)
       real*8 :: x0
       Ea = 0.0d0
       d1Ea(:) = 0.0d0
@@ -4747,7 +4783,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
-      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8, intent(out) :: Ea, d1Ea(4), d2Ea(10)
       Ea = 0.0d0
       d1Ea(:) = 0.0d0
       d2Ea(:) = 0.0d0
@@ -4767,7 +4803,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
-      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8, intent(out) :: Ea, d1Ea(4), d2Ea(10)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38
@@ -4837,7 +4873,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
-      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8, intent(out) :: Ea, d1Ea(4), d2Ea(10)
       real*8 :: x0, x1
       Ea = 0.0d0
       d1Ea(:) = 0.0d0
@@ -5011,7 +5047,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
-      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8, intent(out) :: Ea, d1Ea(4)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12
       Ea = 0.0d0
       d1Ea(:) = 0.0d0
@@ -5051,7 +5087,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
-      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8, intent(out) :: Ea, d1Ea(4)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32
@@ -5118,7 +5154,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
-      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8, intent(out) :: Ea, d1Ea(4)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
@@ -5191,7 +5227,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
-      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8, intent(out) :: Ea, d1Ea(4)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
@@ -5285,7 +5321,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
-      real*8, intent(out) :: Ea, d1Ea(5)
+      real*8, intent(out) :: Ea, d1Ea(4)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16
       Ea = 0.0d0
@@ -5330,7 +5366,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
-      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8, intent(out) :: Ea, d1Ea(4), d2Ea(10)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
@@ -5414,7 +5450,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
-      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8, intent(out) :: Ea, d1Ea(4), d2Ea(10)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
@@ -5548,7 +5584,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
-      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8, intent(out) :: Ea, d1Ea(4), d2Ea(10)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
@@ -5681,7 +5717,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
-      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8, intent(out) :: Ea, d1Ea(4), d2Ea(10)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
@@ -5873,7 +5909,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
-      real*8, intent(out) :: Ea, d1Ea(5), d2Ea(15)
+      real*8, intent(out) :: Ea, d1Ea(4), d2Ea(10)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37
@@ -6005,7 +6041,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_c, mu
-      real*8, intent(out) :: E, d1E(5)
+      real*8, intent(out) :: E, d1E(9)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
@@ -6135,7 +6171,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_c, mu
-      real*8, intent(out) :: E, d1E(5), d2E(15)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
@@ -6484,7 +6520,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_c, gamma_cc, mu
-      real*8, intent(out) :: E, d1E(5)
+      real*8, intent(out) :: E, d1E(9)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
@@ -6713,7 +6749,7 @@ C   Generated: September 12, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_c, gamma_cc, mu
-      real*8, intent(out) :: E, d1E(5), d2E(15)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
      &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
