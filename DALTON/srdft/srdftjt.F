@@ -715,8 +715,10 @@ c  Exchange  ------------------------------------------------------------
 
 !     TPSS exchange functional
       IF(DOSRX_TPSS_S .OR. DOSRX_TPSS) THEN
-        call DESRX_BOTHMGGA(ESRX_TPSS,rho,grd2,tau,laplace,
-     >                     chival,norder,Ex,d1Ex,d2Ex)
+!        call DESRX_BOTHMGGA(ESRX_TPSS,rho,grd2,tau,laplace,
+!     >                     chival,norder,Ex,d1Ex,d2Ex)
+         call BOTH_TPSSX_ERF(rho, grd2, tau, norder, chival,
+     >                       Ex, d1Ex, d2Ex)
       ENDIF
 
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
