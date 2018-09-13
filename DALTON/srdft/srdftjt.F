@@ -631,6 +631,7 @@ c  Exchange  ------------------------------------------------------------
       d2Ex(:) = 0.0d0
 
       icall = icall + 1
+      ! Doesnt seem like this do anything? Should be removed?
       IF (ERFEXP(0)) THEN
          write (lupri,*)
      &   'WARNING srdftexcjt: erfexp true in call no. ',icall
@@ -1178,6 +1179,8 @@ C Linear transformation -----------------------------------------------------
                         END DO
                      END DO
                   ELSE ! closed-shell singlet GGA response
+                     write(lupri,*)'Closed-shell singlet srGGA response'
+                     write(lupri,*)'WARNING: Code not covered in ctest'
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         GX = GAO1(I,1)
@@ -1212,6 +1215,8 @@ C Linear transformation -----------------------------------------------------
                         END DO
                      END DO
                   ELSE ! closed-shell LDA
+                     write(lupri,*)'Closed-shell singlet srLDA response'
+                     write(lupri,*)'WARNING: Code not covered in ctest'
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         DO J = 1, I

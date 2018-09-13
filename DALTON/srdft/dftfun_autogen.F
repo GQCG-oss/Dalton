@@ -96,6 +96,7 @@ C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
 #include "pi.h" ! pi and pi2
+#include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(4), mu
       real*8, intent(out) :: E, d1E(5), d2E(15)
@@ -133,6 +134,8 @@ C*****************************************************************************
       A = mu / (2.0d0*kF)
 
       if (diff_order .eq. 0) then
+         write(lupri,*)'ESRX_LDA_ERF_case_x:'
+         write(lupri,*)'WARNING: Code not covered in ctest'
          if (A .lt. 1.d-9) then
             call ESRX_LDA_ERF_case_1(rho_a, mu, Ea)
             if (.not.alpha_eq_beta) then
@@ -152,6 +155,8 @@ C*****************************************************************************
 
       elseif (diff_order .eq. 1) then
          if (A .lt. 1.d-9) then
+            write(lupri,*)'D1ESRX_LDA_ERF_case_1:'
+            write(lupri,*)'WARNING: Code not covered in ctest'
             call D1ESRX_LDA_ERF_case_1(rho_a, mu, Ea, d1Ea)
             if (.not.alpha_eq_beta) then
                call D1ESRX_LDA_ERF_case_1(rho_b, mu, Eb, d1Eb)
@@ -162,6 +167,8 @@ C*****************************************************************************
                call D1ESRX_LDA_ERF_case_2(rho_b, mu, Eb, d1Eb)
             end if
          elseif (A .lt. 1.d+9) then
+            write(lupri,*)'D1ESRX_LDA_ERF_case_3:'
+            write(lupri,*)'WARNING: Code not covered in ctest'
             call D1ESRX_LDA_ERF_case_3(rho_a, mu, Ea, d1Ea)
             if (.not.alpha_eq_beta) then
                call D1ESRX_LDA_ERF_case_3(rho_b, mu, Eb, d1Eb)
@@ -170,6 +177,8 @@ C*****************************************************************************
 
       elseif (diff_order .eq. 2) then
          if (A .lt. 1.d-9) then
+            write(lupri,*)'D2ESRX_LDA_ERF_case_1:'
+            write(lupri,*)'WARNING: Code not covered in ctest'
             call D2ESRX_LDA_ERF_case_1(rho_a, mu, Ea, d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
                call D2ESRX_LDA_ERF_case_1(rho_b, mu, Eb, d1Eb, d2Eb)
@@ -180,6 +189,8 @@ C*****************************************************************************
                call D2ESRX_LDA_ERF_case_2(rho_b, mu, Eb, d1Eb, d2Eb)
             end if
          elseif (A .lt. 1.d+9) then
+            write(lupri,*)'D2ESRX_LDA_ERF_case_3:'
+            write(lupri,*)'WARNING: Code not covered in ctest'
             call D2ESRX_LDA_ERF_case_3(rho_a, mu, Ea, d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
                call D2ESRX_LDA_ERF_case_3(rho_b, mu, Eb, d1Eb, d2Eb)
@@ -233,6 +244,7 @@ C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
 #include "pi.h" ! pi and pi2
+#include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(4), gamma_vec(6), mu
       real*8, intent(out) :: E, d1E(5), d2E(15)
@@ -274,6 +286,8 @@ C*****************************************************************************
 
       if (diff_order .eq. 0) then
          if (A .lt. 1.d-9) then
+            write(lupri,*)'ESRX_PBE_ERF_case_x:'
+            write(lupri,*)'WARNING: Code not covered in ctest'
             call ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea)
             if (.not.alpha_eq_beta) then
                call ESRX_PBE_ERF_case_1(rho_b, gamma_bb, mu, Eb)
@@ -302,6 +316,8 @@ C*****************************************************************************
 
       elseif (diff_order .eq. 1) then
          if (A .lt. 1.d-9) then
+            write(lupri,*)'D1ESRX_PBE_ERF_case_1:'
+            write(lupri,*)'WARNING: Code not covered in ctest'
             call D1ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea, d1Ea)
             if (.not.alpha_eq_beta) then
                call D1ESRX_PBE_ERF_case_1(rho_b, gamma_bb, mu, Eb, d1Eb)
@@ -319,12 +335,16 @@ C*****************************************************************************
      &                                      d1Eb)
             end if
          elseif (A .le. 1.d+2) then ! case_2_2
+            write(lupri,*)'D1ESRX_PBE_ERF_case_2_2:'
+            write(lupri,*)'WARNING: Code not covered in ctest'
             call D1ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea, d1Ea)
             if (.not.alpha_eq_beta) then
                call D1ESRX_PBE_ERF_case_2_2(rho_b, gamma_bb, mu, Eb,
      &                                      d1Eb)
             end if
          elseif (A .lt. 1.d+9) then
+            write(lupri,*)'D1ESRX_PBE_ERF_case_3:'
+            write(lupri,*)'WARNING: Code not covered in ctest'
             call D1ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea, d1Ea)
             if (.not.alpha_eq_beta) then
                call D1ESRX_PBE_ERF_case_3(rho_b, gamma_bb, mu, Eb, d1Eb)
@@ -333,6 +353,8 @@ C*****************************************************************************
 
       elseif (diff_order .eq. 2) then
          if (A .lt. 1.d-9) then
+            write(lupri,*)'D2ESRX_PBE_ERF_case_1:'
+            write(lupri,*)'WARNING: Code not covered in ctest'
             call D2ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea,
      &                                   d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
@@ -354,6 +376,8 @@ C*****************************************************************************
      &                                    d1Eb, d2Eb)
             end if
          elseif (A .le. 1.d+2) then ! case_2_2
+            write(lupri,*)'D2ESRX_PBE_ERF_case_2_2:'
+            write(lupri,*)'WARNING: Code not covered in ctest'
             call D2ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea,
      &                                   d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
@@ -361,6 +385,8 @@ C*****************************************************************************
      &                                    d1Eb, d2Eb)
             end if
          elseif (A .lt. 1.d+9) then
+            write(lupri,*)'D2ESRX_PBE_ERF_case_3:'
+            write(lupri,*)'WARNING: Code not covered in ctest'
             call D2ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea,
      &                                   d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
@@ -412,7 +438,7 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-
+#include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), mu
       real*8, intent(out) :: E, d1E(5), d2E(15)
@@ -431,6 +457,8 @@ C*****************************************************************************
       end if
 
       if (diff_order .eq. 0) then
+         write(lupri,*)'ESRC_PW92_ERF:'
+         write(lupri,*)'WARNING: Code not covered in ctest'
          call ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E)
 
       elseif (diff_order .eq. 1) then
@@ -461,12 +489,15 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-
+#include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), mu
       real*8, intent(out) :: E, d1E(5), d2E(15)
       real*8 :: rho_c
       
+      write(lupri,*)'PW92C_ERF:'
+      write(lupri,*)'WARNING: Code not covered in ctest'
+
       E = 0.0d0
       d1E(:) = 0.0d0
       d2E(:) = 0.0d0
@@ -510,7 +541,7 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-
+#include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), gamma_xx(3), mu
       real*8, intent(out) :: E, d1E(5), d2E(15)
@@ -530,6 +561,8 @@ C*****************************************************************************
       end if
 
       if (diff_order .eq. 0) then
+         write(lupri,*)'ESRC_SPIN_PBE_GWS_ERF:'
+         write(lupri,*)'WARNING: Code not covered in ctest'
          call ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu, E)
 
       elseif (diff_order .eq. 1) then
@@ -563,12 +596,15 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-
+#include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), gamma_xx(3), mu
       real*8, intent(out) :: E, d1E(5), d2E(15)
       real*8 :: rho_c, gamma_cc
       
+      write(lupri,*)'PBEC_GWS_ERF:'
+      write(lupri,*)'WARNING: Code not covered in ctest'
+
       E = 0.0d0
       d1E(:) = 0.0d0
       d2E(:) = 0.0d0
