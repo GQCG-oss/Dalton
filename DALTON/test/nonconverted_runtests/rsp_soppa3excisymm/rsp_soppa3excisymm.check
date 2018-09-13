@@ -63,8 +63,8 @@ CTRL[5]=4
 ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Sym 1 State 1
-CRIT1=`$GREP "\@ *Excitation energy \: * (0| )\.3473645[0-9] * au" $log | wc -l`
-CRIT2=`$GREP "\@ *Total energy \: * \-75\.678317 * au" $log | wc -l`
+CRIT1=`$GREP "\@ *Excitation energy \: * 0*\.347364" $log | wc -l`
+CRIT2=`$GREP "\@ *Total energy \:    * \-75\.678317" $log | wc -l`
 CRIT3=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 96\.29 \%" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 3\.71 \%" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
@@ -72,8 +72,8 @@ CTRL[6]=4
 ERROR[6]="STATE 1 (SYM 1) NOT CORRECT"
 
 # Sym 1 State 2
-CRIT1=`$GREP "\@ *Excitation energy \: * (0| )\.5482453[0-9] * au" $log | wc -l`
-CRIT2=`$GREP "\@ *Total energy \: * \-75\.477436 * au" $log | wc -l`
+CRIT1=`$GREP "\@ *Excitation energy \: * 0*\.548245" $log | wc -l`
+CRIT2=`$GREP "\@ *Total energy \: *    \-75\.477436" $log | wc -l`
 CRIT3=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 97\.59 \%" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 2\.41 \%" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
@@ -81,8 +81,8 @@ CTRL[7]=4
 ERROR[7]="STATE 2 (SYM 1) NOT CORRECT"
 
 # Sym 2 State 1
-CRIT1=`$GREP "\@ *Excitation energy \: * (0| )\.4219158[0-9] * au" $log | wc -l`
-CRIT2=`$GREP "\@ *Total energy \: * \-75\.603766 * au" $log | wc -l`
+CRIT1=`$GREP "\@ *Excitation energy \: * 0*\.421915" $log | wc -l`
+CRIT2=`$GREP "\@ *Total energy \: *    \-75\.603766" $log | wc -l`
 CRIT3=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 96\.78 \%" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 3\.22 \%" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
@@ -90,8 +90,8 @@ CTRL[8]=4
 ERROR[8]="STATE 1 (SYM 2) NOT CORRECT"
 
 # Sym 2 State 2
-CRIT1=`$GREP "\@ *Excitation energy \: * (0| )\.4843853[0-9] * au" $log | wc -l`
-CRIT2=`$GREP "\@ *Total energy \: * \-75\.541296 * au" $log | wc -l`
+CRIT1=`$GREP "\@ *Excitation energy \: * 0*\.484385" $log | wc -l`
+CRIT2=`$GREP "\@ *Total energy \: *    \-75\.541296" $log | wc -l`
 CRIT3=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 97\.14 \%" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 2\.86 \%" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
@@ -99,8 +99,8 @@ CTRL[9]=4
 ERROR[9]="STATE 2 (SYM 2) NOT CORRECT"
 
 # Sym 3 State 1
-CRIT1=`$GREP "\@ *Excitation energy \: * (0| )\.2589028[0-9] * au" $log | wc -l`
-CRIT2=`$GREP "\@ *Total energy \: * \-75\.766779 * au" $log | wc -l`
+CRIT1=`$GREP "\@ *Excitation energy \: * 0*\.258902" $log | wc -l`
+CRIT2=`$GREP "\@ *Total energy \: *    \-75\.766779" $log | wc -l`
 CRIT3=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.75 \%" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 4\.25 \%" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
@@ -108,8 +108,8 @@ CTRL[10]=4
 ERROR[10]="STATE 1 (SYM 3) NOT CORRECT"
 
 # Sym 3 State 2
-CRIT1=`$GREP "\@ *Excitation energy \: * (0| )\.8172585[0-9] * au" $log | wc -l`
-CRIT2=`$GREP "\@ *Total energy \: * \-75\.208423 * au" $log | wc -l`
+CRIT1=`$GREP "\@ *Excitation energy \: * 0*\.817258" $log | wc -l`
+CRIT2=`$GREP "\@ *Total energy \: *    \-75\.208423" $log | wc -l`
 CRIT3=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.04 \%" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 4\.96 \%" $log | wc -l`
 TEST[11]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
@@ -117,8 +117,8 @@ CTRL[11]=4
 ERROR[11]="STATE 2 (SYM 3) NOT CORRECT"
 
 # Sym 4 State 1
-CRIT1=`$GREP "\@ *Excitation energy \: * (0| )\.3434040[0-9] * au" $log | wc -l`
-CRIT2=`$GREP "\@ *Total energy \: * \-75\.682277 * au" $log | wc -l`
+CRIT1=`$GREP "\@ *Excitation energy \: * 0*\.34340[34]" $log | wc -l`
+CRIT2=`$GREP "\@ *Total energy \: *    \-75\.682277" $log | wc -l`
 CRIT3=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.92 \%" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 4\.08 \%" $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
@@ -126,8 +126,8 @@ CTRL[12]=4
 ERROR[12]="STATE 1 (SYM 4) NOT CORRECT"
 
 # Sym 4 State 2
-CRIT1=`$GREP "\@ *Excitation energy \: * (0| )\.7735277[0-9] * au" $log | wc -l`
-CRIT2=`$GREP "\@ *Total energy \: * \-75\.252154 * au" $log | wc -l`
+CRIT1=`$GREP "\@ *Excitation energy \: * 0*\.773527" $log | wc -l`
+CRIT2=`$GREP "\@ *Total energy \: *    \-75\.252154" $log | wc -l`
 CRIT3=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.19 \%" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 4\.81 \%" $log | wc -l`
 TEST[13]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`

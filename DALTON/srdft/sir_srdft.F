@@ -32,7 +32,7 @@ C  /* Deck srdft_dens */
 
 C      Hans Joergen Aa. Jensen, 2-Jun-2009
 C
-C      Purpose: calculate DCAO and DVAO matrics for srDFT
+C      Purpose: calculate DCAO and DVAO matrices for srDFT
 C               (done in a new routine for future flexibility
 C                for e.g. also  on-top pair density)
 C

@@ -66,7 +66,7 @@ ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 # Transition moments
 CRIT1=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.09996. * \-*0*\.00001." $log | wc -l`
 CRIT2=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.09996. * \-*0*\.00001." $log | wc -l`
-CRIT3=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.13362. * \-*0*\.00001." $log | wc -l`
+CRIT3=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.13362. * \-*0*\.00002." $log | wc -l`
 CRIT4=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.13362. * \-*0*\.00011." $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[6]=6
@@ -76,13 +76,13 @@ ERROR[6]="TRANSITION MOMENTS NOT CORRECT"
 CRIT1=`$GREP "Partial rates \(H_SO\)\: X\-polarization * 5\.079[0-9]*(D|E)\-03" $log | wc -l`
 CRIT2=`$GREP "Partial rates \(H_SO\)\: Y\-polarization * 5\.100[0-9]*(D|E)\-03" $log | wc -l`
 CRIT3=`$GREP "Partial rates \(H_SO\)\: Z\-polarization * (0\.0000|\.0000|0\.00000D\+00|0\.00000E\+00|\.00000D\+00|\.00000E\+00|0\.    )" $log | wc -l`
-CRIT4=`$GREP "Total transition * rate * \(H_SO\) * 3\.39.(D|E)\-03 s\-1" $log | wc -l`
-CRIT5=`$GREP "Total phosphorescence lifetime \(H_SO\) * 2\.94.(D|E)\+02 * s" $log | wc -l`
+CRIT4=`$GREP "Total transition * rate * \(H_SO\) * 3\.39[0-9]*(D|E)\-03 s\-1" $log | wc -l`
+CRIT5=`$GREP "Total phosphorescence lifetime \(H_SO\) * 2\.94[0-9]*(D|E)\+02 * s" $log | wc -l`
 CRIT6=`$GREP "Partial rates \(H_SO\)\: X\-polarization * (0\.0000|\.0000|0\.00000D\+00|0\.00000E\+00|\.00000D\+00|\.00000E\+00|0\.    )" $log | wc -l`
 CRIT7=`$GREP "Partial rates \(H_SO\)\: Y\-polarization * 0*\.6778[0-9]" $log | wc -l`
-CRIT8=`$GREP "Partial rates \(H_SO\)\: Z\-polarization * 1\.[89][0-9]*(D|E)\-02" $log | wc -l`
-CRIT9=`$GREP "Total transition * rate * \(H_SO\) * 2\.32.(D|E)\-01 * s\-1" $log | wc -l`
-CRIT10=`$GREP "Total phosphorescence lifetime \(H_SO\) * 4\.3[01].(D|E)\+00 * s" $log | wc -l`
+CRIT8=`$GREP "Partial rates \(H_SO\)\: Z\-polarization * 4\.08.*(D|E)\-02" $log | wc -l`
+CRIT9=`$GREP "Total transition * rate * \(H_SO\) * 2\.39[0-9]*(D|E)\-01 * s\-1" $log | wc -l`
+CRIT10=`$GREP "Total phosphorescence lifetime \(H_SO\) * 4\.17.*(D|E)\+00 * s" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
 CTRL[7]=10

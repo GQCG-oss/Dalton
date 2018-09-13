@@ -74,13 +74,16 @@ C*****************************************************************************
 #include "dftcom.h"
 #include "chrnos.h"
 
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
+      real*8, parameter :: D0 = 0.0D0
+      real*8, parameter :: DP5 = 0.5D0
+      real*8, parameter :: D1 = 1.0D0
+      real*8, parameter :: D2 = 2.0D0
 
-      LOGICAL, intent(in) :: DOLND,DOGGA,DOERG,DOGRD,DOATR,TRIPLET,
+      logical, intent(in) :: DOLND,DOGGA,DOERG,DOGRD,DOATR,TRIPLET,
      &                       do_metagga
 
       logical :: FROMVX
-      REAL*8    EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
+      REAL*8 :: EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
      &          GSO(NBAST*NTYPSO),NCNT(NBAST),
      &          DMATGAOSR(NBAST,2),
@@ -107,22 +110,21 @@ C     ... GRD2(5) = grdbb = RHG(:,4) . RHG(:,4)
 C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
 
 !     these are not initialized to zero!
-      real*8   Ex,  d1Ex(9),  d2Ex(45)
+      real*8 :: Ex,  d1Ex(9),  d2Ex(45)
       ! d1Ex(1:5) =   d1Exdrhoc, d1Exdrhos, d1Exdgrdcc, d1Exdgrdss, d1Exdgrdcs
 
-      real*8   Ec,  d1Ec(9),  d2Ec(45)
+      real*8 :: Ec,  d1Ec(9),  d2Ec(45)
       ! d1Ec(1:5) =   d1Ecdrhoc, d1Ecdrhos, d1Ecdgrdcc, d1Ecdgrdss, d1Ecdgrdcs
 
-      real*8   Exc, d1Exc(9), d2Exc(45)
+      real*8 :: Exc, d1Exc(9), d2Exc(45)
       ! d1Exc(1:5) =  d1Excdrhoc, d1Excdrhos, d1Excdgrdcc, d1Excdgrdss, d1Excdgrdcs
 
 #if SRDFT_DEBUG > 10
-      real*8    :: print_thr
+      real*8 :: print_thr
       print_thr = 0.0d0
 #endif
 
       IPRINT = MAX(IPRINT_in,SRDFT_DEBUG)
-
 !     Debug
       IF (IPRINT .GE. 5) THEN
       WRITE(LUPRI,*) 'SRDFT1JT: entering, ND_SIM = ',ND_SIM
@@ -368,6 +370,14 @@ C        Contribution to spin density (N_alpha - N_beta)
       do i = 1,4
          if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
       end do
+      if (rho(1) .gt. 1.d-10) then
+         if ((rho(1) - abs(rho(2))) .le. 0.0d0) then
+            call quit('rho_c is less or equal to |rho_s|')
+         end if
+         if ((rho(1) - abs(rho(2)) - 1.d-4*rho(1)) .le. 0.0d0 ) then
+            call quit('rho_c and rho_s are to close for finite diff.')
+         end if
+      end if
 
 C     Gradients of densities
       IF (DOGGA) THEN
@@ -627,14 +637,14 @@ C*****************************************************************************
       data icall/0/
 
 C     exchange functionals
-      external ESRX_PBEHSEERF,  ESRX_PBETCSERF, ESRX_PBERIERF
+      external ESRX_PBEHSEERF, ESRX_PBETCSERF, ESRX_PBERIERF
       external ESRX_PBEGWSERF
       external ESRX_TPSS
 
 C     correlation functionals
       external ESRC_PBETCSJERF, ESRC_PBETCSERF, ESRC_PBERIERF
       external ESRC_LYPRIERF
-      external ESRC_PBEWIERF,   ESRC_PBEGWSERF, ESRC_PBELOERF
+      external ESRC_PBEWIERF, ESRC_PBEGWSERF, ESRC_PBELOERF
       external ESRC_PBEGWSERF_PW92, ESRC_TPSS
 
 C     spin functionals
@@ -647,8 +657,8 @@ C     sr mdc func
       external ESRC_MD_LDAERF
 
       ! for debug prints (counter for grid points)
-      integer inpt
-      logical use_spindns
+      integer :: inpt
+      logical :: use_spindns
 
 c  Exchange  ------------------------------------------------------------
 
@@ -657,6 +667,7 @@ c  Exchange  ------------------------------------------------------------
       d2Ex(:) = 0.0d0
 
       icall = icall + 1
+      ! Doesnt seem like this do anything? Should be removed?
       IF (ERFEXP(0)) THEN
          write (lupri,*)
      &   'WARNING srdftexcjt: erfexp true in call no. ',icall
@@ -668,14 +679,12 @@ c  Exchange  ------------------------------------------------------------
 !     LDA exchange functional (to fit with corresponding correlation
 !     functional) - see explanation with DOSRC_LDA_PW92
       IF(DOSRX_LDA_PW92 .OR. DOSRX_LDA_S) THEN
-        ! edh: current DESR_XSPINGGA routine does not work for LDA
-        ! for now, we rely on old DESRSPIN routine
-        ! TODO Generalize DESRX_SPINGGA routine to LDA?
 !       call DESRX_SPINGGA(ESRX_LDAERF,rho,grd2,CHIVAL,
 !    >                     norder,Ex,d1Ex,d2Ex)
-        use_spindns = triplet .or. dft_spindns
-        call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),CHIVAL,
-     >                     use_SPINDNS,norder,Ex,d1Ex,d2Ex)
+!        use_spindns = triplet .or. dft_spindns
+!        call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),CHIVAL,
+!     >                     use_SPINDNS,norder,Ex,d1Ex,d2Ex)
+         call BOTH_LDAX_ERF(rho, norder, chival, Ex, d1Ex, d2Ex)
       ENDIF
 
 !     short-range exchange PBE of HSE
@@ -694,9 +703,9 @@ c  Exchange  ------------------------------------------------------------
       IF(DOSRX_PBEGWS .OR. DOSRX_PBEGWS_S) THEN
 !        call DESRX_SPINGGA(ESRX_PBEGWSERF,rho,grd2,CHIVAL,
 !     >                     norder,Ex,d1Ex,d2Ex)
-         call DESRX_BOTHMGGA(ESRX_PBEGWSERF, rho, grd2, tau,laplace, 
-     >                       chival, norder, Ex, d1Ex, d2Ex)
-      END IF
+         call BOTH_PBEX_ERF(rho, grd2, norder, chival,
+     >                      Ex, d1Ex, d2Ex)
+      ENDIF
 
 !     short-range exchange RI
       IF(DOSRX_PBERI) THEN ! added Manu 01-02-2006
@@ -736,10 +745,19 @@ C  Correlation  ----------------------------------------------------------
       IF(DOSRC_LDA_PW92) THEN
         ! DESRSPIN called with DFT_SPINDNS = false gives LDA functional
         ! for closed shell (but with J. Toulouse new LDA based on PW92)
-        use_spindns = triplet .or. dft_spindns
+!        use_spindns = triplet .or. dft_spindns
         ! rho(2) is always zero for spin unpolarized functionals
-        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),0.0d0,CHIVAL,use_SPINDNS,
-     >                NORDER,Ec,d1Ec,d2Ec)
+!        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),0.0d0,CHIVAL,use_SPINDNS,
+!     >                NORDER,Ec,d1Ec,d2Ec)
+        ! DOSCR_LDA_PW92, is the keyword for both spin-polarized and
+        ! spin-unpolarized ?? - E. R. K.
+
+        ! This check it to keep the code working the same way. Should be changed
+        if (triplet .or. dft_spindns) then 
+           call SPIN_PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
+        else
+           call PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
+        end if
       ENDIF
 !     short-range correlation PBE of TCS
       IF(DOSRC_PBETCS) THEN
@@ -765,8 +783,10 @@ C  Correlation  ----------------------------------------------------------
 !     Modified short-range correlation PBE of GWS
       IF(DOSRC_PBEGWS_PW92) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESR(ESRC_PBEGWSERF_PW92,rho,grd2,CHIVAL,NORDER,
-     >            Ec,d1Ec,d2Ec)
+!        call DESR(ESRC_PBEGWSERF_PW92,rho,grd2,CHIVAL,NORDER,
+!     >            Ec,d1Ec,d2Ec)
+        call PBEC_GWS_ERF(rho, grd2, norder, chival,
+     >                         Ec, d1Ec, d2Ec)
       ENDIF
 
 !     rational interpolation
@@ -794,9 +814,10 @@ C  Correlation  ----------------------------------------------------------
 !     short-range spin-dependent correlation LDA ! JT 18-08-09
       IF(DOSRC_LDA_S) THEN
         ! d1Ec(2), d1Ec(3) here ...
-        use_spindns = triplet .or. dft_spindns
-        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
-     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
+C        use_spindns = triplet .or. dft_spindns
+C        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
+C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
+        call SPIN_PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
       IF(DOSRC_VWN5_S) THEN
         use_spindns = triplet .or. dft_spindns
@@ -810,8 +831,10 @@ C  Correlation  ----------------------------------------------------------
         temp_grd2(2:3) = 0.0d0
 !        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,grd2,CHIVAL,norder,
 !     >                     Ec,d1Ec,d2Ec)
-         call DESRC_SPINMGGA(ESRC_PBEGWSERFSPIN, rho, grd2, tau,
-     >                    laplace,  chival, norder, Ec, d1Ec, d2Ec)
+C        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,temp_grd2,CHIVAL,
+C     >                     norder,Ec,d1Ec,d2Ec)
+        call SPIN_PBEC_GWS_ERF(rho, temp_grd2, norder, chival,
+     >                         Ec, d1Ec, d2Ec)
       ENDIF
 
 !     TPSS correlation spin-polarized functional
@@ -930,23 +953,23 @@ C***************************************************************************
       real*8, intent(out) :: EXCMAT(NBAST,NBAST,2)
 
 !     local
-      integer I, J, ISYM, JSYM, JEND, JSTR, ISTR, IEND
-      integer NORDER
+      integer :: I, J, ISYM, JSYM, JEND, JSTR, ISTR, IEND
+      integer :: NORDER
 
-      real*8   ddot
+      real*8 :: ddot
 
-      real*8   BR(4), B0(2), B3(3,2), BMAX, B4(2), B5(2)
-      real*8   AR(2), AB(2), AX, AY, AZ, RX(2), RY(2), RZ(2)
+      real*8 :: BR(4), B0(2), B3(3,2), BMAX, B4(2), B5(2)
+      real*8 :: AR(2), AB(2), AX, AY, AZ, RX(2), RY(2), RZ(2)
 
-      real*8   FAC0R, FAC0S, FACR, FACS, FAC_AR, FAC_RB, FAC_SB
-      real*8   FAC_RC, FAC_SC
-      real*8   FRR, FRZ, FZZ, FZ0
-      real*8   FRS, FSS, FSZ, FSZ_S, FRZ_S, FZZ_S, FZ0_S, FZZ_SS
-      real*8   G0, GX, GY, GZ, Xi
+      real*8 :: FAC0R, FAC0S, FACR, FACS, FAC_AR, FAC_RB, FAC_SB
+      real*8 :: FAC_RC, FAC_SC
+      real*8 :: FRR, FRZ, FZZ, FZ0
+      real*8 :: FRS, FSS, FSZ, FSZ_S, FRZ_S, FZZ_S, FZ0_S, FZZ_SS
+      real*8 :: G0, GX, GY, GZ, Xi
 
 !     X, C, and XC energies, and derivatives
-      real*8   Ex, Ec, d1Ex(9), d1Ec(9), d2Ex(45), d2Ec(45)
-      real*8   Exc, d1Exc(9), d2Exc(45)
+      real*8 :: Ex, Ec, d1Ex(9), d1Ec(9), d2Ex(45), d2Ec(45)
+      real*8 :: Exc, d1Exc(9), d2Exc(45)
 !     
 !     r = rho, g=gamma, t=tau, e=eta
 !     gamma = grad_rho . grad_rho
@@ -967,7 +990,6 @@ C***************************************************************************
 !     de_s   22     23     24      25      26      27     28
 !     dt_c   29     30     31      32      33      34     35      36
 !     dt_s   37     38     39      40      41      42     43      44     45
-
 
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
          CALL QUIT('SRDFTJT.F: Triplet with open-shell not implemented')
@@ -1397,6 +1419,8 @@ C Linear transformation -----------------------------------------------------
                         END DO
                      END DO
                   ELSE ! closed-shell singlet GGA response
+                     write(lupri,*)'Closed-shell singlet srGGA response'
+                     write(lupri,*)'WARNING: Code not covered in ctest'
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         GX = GAO1(I,1)
@@ -1431,6 +1455,8 @@ C Linear transformation -----------------------------------------------------
                         END DO
                      END DO
                   ELSE ! closed-shell LDA
+                     write(lupri,*)'Closed-shell singlet srLDA response'
+                     write(lupri,*)'WARNING: Code not covered in ctest'
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         DO J = 1, I

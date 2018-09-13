@@ -861,7 +861,8 @@ if(ENABLE_SRDFT)
         DALTON/srdft/sir_srdft.F
         DALTON/srdft/srdft.F
         DALTON/srdft/srdftjt.F
-        DALTON/srdft/srdft_par.F)
+        DALTON/srdft/srdft_par.F
+        DALTON/srdft/dftfun_autogen.F)
     set(DALTON_srdft_FREE_SOURCES
         DALTON/sirius/sir_ensembledft.F90)
     set(DALTON_FIXED_FORTRAN_SOURCES

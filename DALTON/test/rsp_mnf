@@ -152,7 +152,7 @@ CTRL[6]=3
 ERROR[6]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Transition moment
-CRIT1=`$GREP "\@ *Transition operator type\: * Z1MNF\-SO" $log | wc -l`
+CRIT1=`$GREP "\@ *Triplet transition operator label\: * Z1MNF\-SO" $log | wc -l`
 CRIT2=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: *\-*8\.70408[0-9]*(D|E)\-04 \*ENERGY\(eV\)\: * \-2\.91254" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[7]=2

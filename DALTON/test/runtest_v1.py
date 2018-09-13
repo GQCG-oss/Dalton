@@ -507,13 +507,13 @@ class Filter:
         for f in self.filter_list:
 
             out_filtered = filter_file(f, out_name, open(out_name, errors='replace').readlines())
-            log_out.write(''.join(out_filtered))
+            log_out.write(u''.join(out_filtered))
             out_numbers, out_locations = extract_numbers(f, out_filtered)
             if f.use_mask and out_numbers == []:
                 raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
 
             ref_filtered = filter_file(f, ref_name, open(ref_name, errors='replace').readlines())
-            log_ref.write(''.join(ref_filtered))
+            log_ref.write(u''.join(ref_filtered))
             ref_numbers, ref_locations = extract_numbers(f, ref_filtered)
             if f.use_mask and ref_numbers == []:
                 raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
@@ -521,11 +521,11 @@ class Filter:
             if out_numbers == [] and ref_numbers == []:
                 # no numbers are extracted
                 if out_filtered != ref_filtered:
-                    log_diff.write('ERROR: extracted strings do not match\n')
-                    log_diff.write('own gave:\n')
-                    log_diff.write(''.join(out_filtered) + '\n')
-                    log_diff.write('reference gave:\n')
-                    log_diff.write(''.join(ref_filtered) + '\n')
+                    log_diff.write(u'ERROR: extracted strings do not match\n')
+                    log_diff.write(u'own gave:\n')
+                    log_diff.write(u''.join(out_filtered) + '\n')
+                    log_diff.write(u'reference gave:\n')
+                    log_diff.write(u''.join(ref_filtered) + '\n')
 
             # we need to check for len(out_numbers) > 0
             # for pure strings len(out_numbers) is 0
@@ -536,21 +536,21 @@ class Filter:
                 l = map(lambda t: tuple_matches(f, t), zip(out_numbers, ref_numbers))
                 matching, errors = zip(*l)  # unzip tuples to two lists
                 if not all(matching):
-                    log_diff.write('\n')
+                    log_diff.write(u'\n')
                     for k, line in enumerate(out_filtered):
-                        log_diff.write('.       %s' % line)
+                        log_diff.write(u'.       %s' % line)
                         for i, num in enumerate(out_numbers):
                             (line_num, start_char, length) = out_locations[i]
                             if line_num == k:
                                 if errors[i]:
-                                    log_diff.write('ERROR   %s%s %s\n' % (' ' * start_char, '#' * length, errors[i]))
+                                    log_diff.write(u'ERROR   %s%s %s\n' % (' ' * start_char, '#' * length, errors[i]))
 
             if len(out_numbers) != len(ref_numbers):
-                log_diff.write('ERROR: extracted sizes do not match\n')
-                log_diff.write('own gave %i numbers:\n' % len(out_numbers))
-                log_diff.write(''.join(out_filtered) + '\n')
-                log_diff.write('reference gave %i numbers:\n' % len(ref_numbers))
-                log_diff.write(''.join(ref_filtered) + '\n')
+                log_diff.write(u'ERROR: extracted sizes do not match\n')
+                log_diff.write(u'own gave %i numbers:\n' % len(out_numbers))
+                log_diff.write(u''.join(out_filtered) + '\n')
+                log_diff.write(u'reference gave %i numbers:\n' % len(ref_numbers))
+                log_diff.write(u''.join(ref_filtered) + '\n')
 
         log_out.close()
         log_ref.close()

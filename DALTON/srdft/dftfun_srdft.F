@@ -41,23 +41,27 @@ c     &           CX = -(D3/D4)*((D3/PI)**(D1/D3)))
       END
 C
 C  /* Deck vdrc */
-      SUBROUTINE VDRC(VD,RHO13)
-#include <implicit.h>
-#include <pi.h>
-      PARAMETER (D1 = 1.0D0, D3 = 3.0D0)
-c      , CXV = -(D3/PI)**(D1/D3))
+      PURE SUBROUTINE VDRC(VD,RHO13)
+      implicit none
+      real*8, intent(in) :: RHO13
+      real*8, intent(out) :: VD
+      real*8, parameter :: D1 = 1.0d0 
+      real*8, parameter :: D3 = 3.0d0 
+      real*8, PARAMETER :: PI=3.1415926535898D0
       VD = -((D3/PI)**(D1/D3))*RHO13
       RETURN
       END
 C
 C  /* Deck V1DRC */ 
-      SUBROUTINE V1DRC(VD0,VD1,RHO,RHO13)
-#include <implicit.h>
-#include <pi.h>
-      PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, 
-     &           D13 = D1/D3)
-c, CXV = -(D3/PI)**D13)
-C
+      PURE SUBROUTINE V1DRC(VD0,VD1,RHO,RHO13)
+      implicit none
+      real*8, intent(in) :: RHO, RHO13
+      real*8, intent(out) :: VD0, VD1
+      real*8, PARAMETER :: PI=3.1415926535898D0
+      real*8, parameter :: D1 = 1.0d0 
+      real*8, parameter :: D2 = 2.0d0 
+      real*8, parameter :: D3 = 3.0d0 
+      real*8, parameter :: D13 = D1/D3
       VD0 = (-(D3/PI)**D13)*RHO13
       VD1 = (-(D3/PI)**D13)*D13*RHO13/RHO
       RETURN
@@ -1474,7 +1478,7 @@ C
 C
 C /* Deck exsrlda */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE EXSRLDA (ECV,RHO,RHO13,CHI,ERFEXP)
+      SUBROUTINE EXSRLDA(ECV,RHO,RHO13,CHI,ERFEXP)
 C*****************************************************************************
 C
 C     Written by Jesper Kielberg Pedersen, Mar. 2003

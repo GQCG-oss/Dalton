@@ -2618,7 +2618,9 @@ C
          ITYPL = IOBTYP(L)
          IF (ITYPK .EQ. JTINAC) THEN ! first index inactive
             EVEC(KZCONF+IG) = EVEC(KZCONF+IG) + D2*V2C_SR(K,L)
+           IF (.NOT. (TDA .OR. CISRPA)) THEN
             EVEC(KYCONF+IG) = EVEC(KYCONF+IG) - D2*V2C_SR(L,K)
+           END IF
          ELSE                        ! first index active
             NK    = ICH(K)
             TEMPZ = D0
@@ -2631,7 +2633,9 @@ C
                TEMPY = TEMPY + DVXK*V2C_SR(L,IX)
             END DO
             EVEC(KZCONF+IG) = EVEC(KZCONF+IG) + TEMPZ
+           IF (.NOT. (TDA .OR. CISRPA)) THEN
             EVEC(KYCONF+IG) = EVEC(KYCONF+IG) - TEMPY
+           END IF
          END IF
          IF (ITYPL .EQ. JTACT) THEN ! second index active
             NL    = ICH(L)
@@ -2645,7 +2649,9 @@ C
                TEMPY = TEMPY + DVLX*V2C_SR(IX,K)
             END DO
             EVEC(KZCONF+IG) = EVEC(KZCONF+IG) - TEMPZ
+           IF (.NOT. (TDA .OR. CISRPA)) THEN
             EVEC(KYCONF+IG) = EVEC(KYCONF+IG) + TEMPY
+           END IF
          END IF
       END DO ! DO IG = 1, KZWOPT
 C
