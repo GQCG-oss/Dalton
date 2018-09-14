@@ -639,20 +639,31 @@ C*****************************************************************************
 C     exchange functionals
       external ESRX_PBEHSEERF, ESRX_PBETCSERF, ESRX_PBERIERF
       external ESRX_PBEGWSERF
+
+
       external ESRX_TPSS
+
 
 C     correlation functionals
       external ESRC_PBETCSJERF, ESRC_PBETCSERF, ESRC_PBERIERF
       external ESRC_LYPRIERF
       external ESRC_PBEWIERF, ESRC_PBEGWSERF, ESRC_PBELOERF
-      external ESRC_PBEGWSERF_PW92, ESRC_TPSS
+      external ESRC_PBEGWSERF_PW92
+
+
+      external ESRC_TPSS
+
 
 C     spin functionals
       external ESRX_LDAERFSPIN
       external ESRC_LDAERFSPIN, ESRC_LDAERFSPIN_VWN5
       external ESRC_PBEGWSERFSPIN
       external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA
+
+
       external ESRC_SPINTPSS
+
+
 C     sr mdc func
       external ESRC_MD_LDAERF
 
@@ -841,14 +852,18 @@ C     >                     norder,Ec,d1Ec,d2Ec)
 
 !     TPSS correlation spin-polarized functional
       IF(DOSRC_TPSS_S) THEN
-        call DESRC_SPINMGGA(ESRC_SPINTPSS,rho,grd2,tau,laplace,
-     >                     chival,norder,Ec,d1Ec,d2Ec)
+!        call DESRC_SPINMGGA(ESRC_SPINTPSS,rho,grd2,tau,laplace,
+!     >                     chival,norder,Ec,d1Ec,d2Ec)
+         call SPIN_TPSSC_GWS_ERF(rho, grd2, tau, norder, chival,
+     >                           Ec, d1Ec, d2Ec)
       ENDIF
 
 !     TPSS correlation spin-unpolarized functional
       IF(DOSRC_TPSS) THEN
-        call DESRC_MGGA(ESRC_TPSS,rho,grd2,tau,laplace,
-     >                     chival,norder,Ec,d1Ec,d2Ec)
+!        call DESRC_MGGA(ESRC_TPSS,rho,grd2,tau,laplace,
+!     >                     chival,norder,Ec,d1Ec,d2Ec)
+         call TPSSC_GWS_ERF(rho, grd2, tau, norder, chival,
+     >                      Ec, d1Ec, d2Ec)
       ENDIF
 
 C Kamal SHARKAS 20-05-11 beg
