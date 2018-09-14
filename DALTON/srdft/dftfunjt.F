@@ -31,7 +31,7 @@ C*****************************************************************************
       
       integer, intent(in) :: norder
       real*8, intent(in) :: mu, rho(2), grad2(3), tau(2), laplace(2)
-      real*8, intent(out) :: E, d1E(5), d2E(15)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
       
       real*8 :: rho_c, rho_cp, rho_cm, gamma_cc, gamma_ccp, gamma_ccm,
      & tau_c, tau_cp, tau_cm, laplace_c, laplace_cp, laplace_cm, Ep_1,
@@ -283,7 +283,7 @@ C*****************************************************************************
       
       integer, intent(in) :: norder
       real*8, intent(in) :: mu, rho(2), grad2(3), tau(2), laplace(2)
-      real*8, intent(out) :: E, d1E(5), d2E(15)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
       
       real*8 :: rho_c, rho_cp, rho_cm, rho_s, rho_sp, rho_sm, gamma_cc,
      & gamma_ccp, gamma_ccm, gamma_ss, gamma_ssp, gamma_ssm, gamma_cs,
@@ -1241,7 +1241,7 @@ C*****************************************************************************
       
       integer, intent(in) :: norder
       real*8, intent(in) :: mu, rho(4), grad2(6), tau(4), laplace(4)
-      real*8, intent(out) :: E, d1E(5), d2E(15)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
       
       logical :: alpha_not_equal_beta
       real*8 :: rho_a, rho_ap, rho_am, rho_b, rho_bp, rho_bm, gamma_aa,
@@ -1266,7 +1266,7 @@ C*****************************************************************************
      & Emm_9_4, Epm_9_4, Emp_9_4, Epp_9_6, Emm_9_6, Epm_9_6, Emp_9_6,
      & Epp_9_7, Emm_9_7, Epm_9_7, Emp_9_7, Epp_9_8, Emm_9_8, Epm_9_8,
      & Emp_9_8, Ep_9, Em_9, hr_a, hr_b, hg_aa, hg_bb, hg_ab, ht_a,
-     & ht_b, hl_a, hl_b, Ea, Eb, d1Eab(5), d2Eab(15)
+     & ht_b, hl_a, hl_b, Ea, Eb, d1Eab(9), d2Eab(45)
       
       rho_a = rho(3)
       rho_b = rho(4)
