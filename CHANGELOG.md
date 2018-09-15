@@ -13,9 +13,10 @@
 - Effective external field (EEF) for one- and two-photon absorption in PE-HF/DFT calculations.
  - Reference: N. H. List, H. J. Aa. Jensen, and J. Kongsted. Local Electric Fields and Molecular Properties in Heterogeneous Environments through Polarizable Embedding.
    Phys. Chem. Chem. Phys. 18, 10070 (2016).
-- Remove the most diffuse virtual orbitals after SCF or MCSCF (new .VIRTRUNC option)
-- Add purely classical multipole-multipole interaction energy in PE-QM calculations
-- Add basic frozen density embedding (FDE) functionality (A. Gomes, C. Jacob, L. Visscher)
+- Remove the most diffuse virtual orbitals after SCF or MCSCF (new .VIRTRUNC option).
+- Add purely classical multipole-multipole interaction energy in PE-QM calculations.
+- Add basic frozen density embedding (FDE) functionality (A. Gomes, C. Jacob, L. Visscher).
+- Dipole velocity complex linear polarizability with test rsp_cpp_veloci (N. H. List).
 
 ### Fixed
 - Open-shell DFT is not implemented for many derivative properties in **PROPERTIES, dalton now quits.
