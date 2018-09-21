@@ -1105,8 +1105,8 @@ C
 C    routine taken from PhD thesis of J. Heyd
 C    modified by J. Toulouse:
 C    gexp  -> dexp
-C    gerf  -> derf
-C    gerfc -> derfc
+C    gerf  -> erf
+C    gerfc -> erfc
 C    gei(x)-> ei
 C
 C    Should be the same as wpbe_analytical_erfc_approx
@@ -1310,7 +1310,7 @@ C
      $                           Four*B*(DHs2) + Eight*A*(DHs3))
      $                    * (One / (Sixteen * DHs72))
      $                    - f34*pi*sqrt(A) * exp(f94*H*s2/A) *
-     $                          (One - derf(f32*s*sqrt(H/A)))
+     $                          (One - erf(f32*s*sqrt(H/A)))
            G_b     = (f1516 * srpi * s2) / DHs72
            EG      = - (f34*pi + G_a) / G_b
           else
@@ -1337,7 +1337,7 @@ C
 C         Calculate exp(x)*f(x) depending on size of x
 C
           If(HA94 .lt. expcut) then
-           exer      = pi*exp(HA94)*derfc(HA9412)
+           exer      = pi*exp(HA94)*erfc(HA9412)
            exHA94 = exp(HA94)
            eiHA94 = ei(-HA94)
            exei      = exHA94*eiHA94
@@ -1466,8 +1466,6 @@ C****************************************************************************
 
       Real*8 ax,um,uk,ul
       Real*8 gc1,gc2
-
-      Real*8 derf
 
       Real*8 One,Two,Three,Four,Six,Eight,Nine,Ten
       Real*8 Fifteen,Sixteen
@@ -1600,7 +1598,7 @@ c     Calculate wPBE enhancement factor
      1                   Four*B*(DH_0**2) + Eight*A*(DH_0**3))
      2                * (One / (Sixteen * DH_072))
      3                 - f34*pi*sqrt(A) * exp(f94*H_0/A) *
-     4                   (One - derf(f32*s*sqrt(H/A)))
+     4                   (One - erf(f32*s*sqrt(H/A)))
 
         G_b    = (f1516 * srpi * s2) / DH_072
 
@@ -1722,7 +1720,7 @@ c     Real*8 term1p,p0,p1,p2,p3,p4,p5,p6,p7,p8
       Real*8 ax,um,uk,ul
       Real*8 gc1,gc2
 
-      Real*8 derf,derfc,ei,fexpei
+      Real*8 ei,fexpei
 
       Real*8 Zero,One,Two,Three,Four,Six,Eight,Nine,Ten
       Real*8 Fifteen,Sixteen
@@ -1879,7 +1877,7 @@ c     Calculate wPBE enhancement factor
      1                   Four*B*(DH_0**2) + Eight*A*(DH_0**3))
      2                * (One / (Sixteen * DH_072))
      3                 - f34*pi*sqrt(A) * exp(f94*H_0/A) *
-     4                   (One - derf(f32*s*sqrt(H/A)))
+     4                   (One - erf(f32*s*sqrt(H/A)))
 
         G_b    = (f1516 * srpi * s2) / DH_072
 
@@ -1944,7 +1942,7 @@ c     Calculate exp(x)*f(x) depending on size of x
 
       if(HsbwA94 .lt. expfcutoff) then
 
-        experf = Exp(HsbwA94)*dErfc(HsbwA9412)
+        experf = Exp(HsbwA94)*erfc(HsbwA9412)
         expei  = Exp(HsbwA94)*Ei(-HsbwA94)
 
       else
@@ -2181,7 +2179,7 @@ C        eps_LDA_asymptot3 = 1/d2 *  mu^(-2) - d1/(d2^2) * mu^(-3)
       else
          denom = 1.d0 + d1*mu + d2*mu2
          e = e_pbe
-     &     * ( 1.0d0 + ((DERF(mu_0*mu))**5) * (1.0D0/denom - 1.0D0) )
+     &     * ( 1.0d0 + ((erf(mu_0*mu))**5) * (1.0D0/denom - 1.0D0) )
       end if
 
 !      print *,'ESRC_PBERIERF: e=',e
@@ -2446,7 +2444,6 @@ C*****************************************************************************
       real*8, intent(in) :: rho, grdcc, mu
       real*8, intent(out) :: e
 
-      real*8 :: derfc
       real*8 :: rho13, rs
       real*8 :: elda, epbe, eldamu
       real*8 :: ZKSR(3)
@@ -2474,7 +2471,7 @@ C
       eldamu = ZKSR(1)
 !      print *,'ESRC_PBEWIERF: eldamu=',eldamu
 
-      e = (epbe - elda)*derfc(mu*rs) + eldamu
+      e = (epbe - elda)*erfc(mu*rs) + eldamu
 
 !      print *,'ESRC_PBEWIERF: e=',e
       return
@@ -3027,7 +3024,6 @@ C*****************************************************************************
       real*8, intent(in) :: a
       real*8 :: fak, fak2
 ! function
-      real*8 :: derf
       ! eta=19.0d0
       fak=2.540118935556d0*exp(-19.0d0*a*a)
 
@@ -3050,7 +3046,7 @@ C*****************************************************************************
       berf = (1.851851851851851851851852d-2*(-1.d0 + 1.44d2*a**4*(-1.d0
      &  + fak2) - 2.d0*a**2*(1.1d1 + 7.d0*fak2 ))) /
      &  (a**2*(3.2d1*a**4*(-1.d0 + fak2) - 3.d0*fak2
-     &   + 1.417963080724412821838534d1*a*derf(5.d-1/a)*fak2
+     &   + 1.417963080724412821838534d1*a*erf(5.d-1/a)*fak2
      &   - 8.d0*a**2*(-2.d0 + 3.d0*fak2)))
 
       end if
@@ -3090,7 +3086,7 @@ C*****************************************************************************
 
       logical, parameter :: ERFEXP(0:2) = .false.
       logical, parameter :: MULOCAL(0:2) = .false.
-      real*8   ZKSR(3)
+      real*8 :: ZKSR(3)
 !     local mu parameter 
       rho13 = rho**(1.0d0/3.0d0)
 !     Multiplication factor for mu parameter
@@ -3216,11 +3212,8 @@ C*****************************************************************************
       real*8, intent(in) :: rhoa, grdaa, mu
       real*8, intent(out) :: e
 
-      real*8 :: derf
-
       real*8 :: rho, akf, a, a2, a3, ea
 
-      real*8, parameter :: pisqrt = 1.772453850905516d0
       real*8, parameter :: ckf = 3.093667726280136d0
       real*8, parameter :: f13 = 0.333333333333333d0
 
@@ -3240,7 +3233,7 @@ C       Limit for small a (expansion not so important as for large a)
 C       Intermediate values of a
         elseif (a.le.100) then
           e = - (rho*(24.d0*rho/pi)**f13)
-     >       *(3.d0/8.d0-a*(pisqrt*derf(0.5d0/a)+
+     >       *(3.d0/8.d0-a*(sqrtpi*erf(0.5d0/a)+
      >       (2.d0*a-4.d0*a3)*exp(-0.25d0/a2)-3.d0*a+4.d0*a3))
 
 C       Expansion for large a
@@ -3279,16 +3272,15 @@ C              22-05-18, Re-introduced for LDA exchange as temporary
 C              solution until DESRX_GGA works for both LDA and GGA.              
 C*****************************************************************************
       implicit none
+!pi, sqrtpi
 #include "pi.h"
       logical, intent(in) :: dospin
       real*8, intent(in) :: rhoc, rhos, mu
       real*8, intent(out) :: e
 
-      real*8 :: derf
       real*8 :: rho, akf, a, a2, a3
       real*8 :: rhoa, rhob
       real*8 :: ea, eb
-      real*8, parameter :: pisqrt = 1.772453850905516d0
       real*8, parameter :: ckf = 3.093667726280136d0
       real*8, parameter :: f13 = 0.333333333333333d0
 
@@ -3310,7 +3302,7 @@ C       Limit for small a (expansion not so important as for large a)
 C       Intermediate values of a
         elseif (a.le.100) then
           e = - (rho*(24.d0*rho/pi)**f13)
-     >       *(3.d0/8.d0-a*(pisqrt*derf(0.5d0/a)+
+     >       *(3.d0/8.d0-a*(sqrtpi*erf(0.5d0/a)+
      >       (2.d0*a-4.d0*a3)*exp(-0.25d0/a2)-3.d0*a+4.d0*a3))
 
 C       Expansion for large a
@@ -3344,7 +3336,7 @@ C       Limit for small a (expansion not so important as for large a)
 C       Intermediate values of a
         elseif (a.le.100) then
           ea = - (rhoa*(24.d0*rhoa/pi)**f13)
-     >       *(3.d0/8.d0-a*(pisqrt*derf(0.5d0/a)+
+     >       *(3.d0/8.d0-a*(sqrtpi*erf(0.5d0/a)+
      >       (2.d0*a-4.d0*a3)*exp(-0.25d0/a2)-3.d0*a+4.d0*a3))
 
 C       Expansion for large a
@@ -3376,7 +3368,7 @@ C       Limit for small a (expansion not so important as for large a)
 C       Intermediate values of a
         elseif (a.le.100) then
           eb = - (rhob*(24.d0*rhob/pi)**f13)
-     >       *(3.d0/8.d0-a*(pisqrt*derf(0.5d0/a)+
+     >       *(3.d0/8.d0-a*(sqrtpi*erf(0.5d0/a)+
      >       (2.d0*a-4.d0*a3)*exp(-0.25d0/a2)-3.d0*a+4.d0*a3))
 
 C       Expansion for large a

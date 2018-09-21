@@ -42,16 +42,16 @@ C**************************************************************
 #include "priunit.h"
 #include "dftcom.h"
 C     variables for SRCPBERI
-      real*8   mu_0, mu_0_m6, mu_0_m7, mu_0_m4
+      real*8 :: mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C
       PARAMETER  (NXTABLE = 22, NCTABLE = 34)
-      CHARACTER*10 XTABLE(NXTABLE),CTABLE(NCTABLE)
+      character(len=10) :: XTABLE(NXTABLE), CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
       PARAMETER  (maxfld=3)
-      CHARACTER*(10) fields(maxfld)
-      integer lenfld(maxfld)
-      LOGICAL SETXFUN,SETCFUN
+      character(len=10) :: fields(maxfld)
+      integer :: lenfld(maxfld)
+      logical :: SETXFUN, SETCFUN
       DATA XTABLE /'NULL      ','SRXLDA    ','SRXGGA    ','SRBCK     ', ! 1:4
      &             'HFEXCH    ','SRGGA2    ','SRXWIB    ','SRXWI2    ', ! 5:8
      &             'SRXWI3    ','SRXWI4    ','SRXPBEHSE ','SRXPBETCS ', ! 9:12
@@ -507,11 +507,12 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 C
-      LOGICAL   DOGGA,DOLND,DOGRD,DOERG,DOATR,TRIPLET
-      LOGICAL   first_call, LSRHYBR
-      DATA      first_call /.true./
-      REAL*8    EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),WORK(LWORK)
-      REAL*8    RESULTS(11)
+      logical, intent(in) :: DOGRD, DOERG, DOATR, TRIPLET
+      logical :: DOLND, DOGGA
+      logical :: first_call, LSRHYBR
+      DATA       first_call /.true./
+      real*8 :: EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),WORK(LWORK)
+      real*8 :: RESULTS(11)
 
       CALL QENTER('SRDFT')
       CALL TIMER('START ',TIMSTR,TIMEND)
