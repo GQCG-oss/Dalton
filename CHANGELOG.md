@@ -22,12 +22,14 @@
 - Open-shell DFT is not implemented for many derivative properties in \*\*PROPERTIES, dalton now quits.
 - Bugfix for .MNF\_SO (mean-field spin-orbit, AMFI) when basis set has big exponents (>10^9).
 - Open-shell doublet ROKS DFT geometry optimization.
-- Fix .GSPOL for parallel PE-QM quadratic response.
-- Fix text about elimination of some two-photon transitions between excited states
+- Fix of .GSPOL for parallel PE-QM quadratic response.
+- Corrected text about elimination of some two-photon transitions between excited states
   because they were duplicates (text had "Third order" instead of "Second order").
 - Bugfixes for CC2 in environments (incl. external fields) by Ove Christiansen.
-- Bugfix for .TDA for MCSCF (i.e. zero B matrix in linear response in \*\*RESPONSE)
+- Bugfix for .TDA for MCSCF (i.e. zero B matrix in linear response in \*\*RESPONSE).
 - Bugfix for .GASCI after .HSROHF
+- Fix of several library basis sets that were not read correctly for some atoms, which caused Dalton to abort.
+- Now a .G-TENSOR calculation in **RESPONSE:*ESR module with a CI wave function does not abort.
 
 ### Changed
 - OK to run ECD or OECD with SOPPA.
