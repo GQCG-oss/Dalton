@@ -64,10 +64,10 @@ C
       FACBCK = WDFTB
       FACLYP = WDFTL
 C
-      DODRC = DABS(FACDRC) .GT. FACTHR
-      DOVWN = DABS(FACVWN) .GT. FACTHR 
-      DOBCK = DABS(FACBCK) .GT. FACTHR 
-      DOLYP = DABS(FACLYP) .GT. FACTHR 
+      DODRC = abs(FACDRC) .GT. FACTHR
+      DOVWN = abs(FACVWN) .GT. FACTHR 
+      DOBCK = abs(FACBCK) .GT. FACTHR 
+      DOLYP = abs(FACLYP) .GT. FACTHR 
       DOGGA = DOBCK .OR. DOLYP
 C
 C     Number of AOs and their addresses

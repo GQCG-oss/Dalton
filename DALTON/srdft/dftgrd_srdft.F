@@ -45,6 +45,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       PARAMETER (D0=0.0D0)
       LOGICAL TEST
+      INTEGER NAT, NUM, ZAN
       COMMON /INFOA/ NAT,NUM,ZAN(MXCENT),C(3,MXCENT)
 
 #include "dftwrk.h"
@@ -67,19 +68,20 @@ CTROND: Modified to handle symmetry dependent atoms as well
       NUM = NBASIS
       DO ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
-         ZCNT   = CHARGE(ICENT)
          IF(NAMN(ICENT)(1:2).NE.'Gh' .AND.
      &      NAMN(ICENT)(1:2).NE.'IP' .AND.
      &      .NOT. NOORBT(ICENT)) THEN
+         IF(IZATOM(ICENT).GT.0) THEN ! omit ghost centers
            DO ISYMOP = 0, MAXOPR         
            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
              NAT = NAT + 1
-             ZAN(NAT) = ZCNT
+             ZAN(NAT) = IZATOM(ICENT)
              C(1,NAT) = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
              C(2,NAT) = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
              C(3,NAT) = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
            ENDIF
            ENDDO
+         ENDIF
          ENDIF
       ENDDO
 C
@@ -185,6 +187,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dftwrk.h"
 #include "mxcent.h"
 
+      INTEGER NAT, NUM, ZAN
       COMMON /INFOA/ NAT,NUM,ZAN(MXCENT),C(3,MXCENT)
 
 #include "dummy.h"
@@ -285,12 +288,12 @@ C
       DO 7 INA=1,NAT
       DO 7 JNA=1,INA-1
           ITEMP=ITEMP+1
-          RIJ(ITEMP) = 1.0D0/(DSQRT((C(1,INA)-C(1,JNA))**2
+          RIJ(ITEMP) = 1.0D0/(sqrt((C(1,INA)-C(1,JNA))**2
      &                             +(C(2,INA)-C(2,JNA))**2
      &                             +(C(3,INA)-C(3,JNA))**2))
           RBC(INA,JNA) = 1.0D0/RIJ(ITEMP)
           RBC(JNA,INA) = 1.0D0/RIJ(ITEMP)
-          CHI=BRAGG(NINT(ZAN(INA)))/BRAGG(NINT(ZAN(JNA)))
+          CHI=BRAGG(ZAN(INA))/BRAGG(ZAN(JNA))
           TEMP=(CHI-1.0D0)/(CHI+1.0D0)
           AIJ(ITEMP)=TEMP/(TEMP*TEMP-1.0D0)
           IF (AIJ(ITEMP).GT.0.5D0) AIJ(ITEMP)=0.5D0
@@ -312,7 +315,7 @@ C
       NATOM = 1
 CTROND: define scaling factor for Bragg: set to one !!!!
       TFAC = 1.0D0
-      DO 10 IATOM = 1, NUCIND
+      DO 15 IATOM = 1, NUCIND
          IF(NOORBT(IATOM)) GOTO 15
          ! Skip if no orbitals.
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 15
@@ -323,6 +326,7 @@ CTROND: define scaling factor for Bragg: set to one !!!!
          ! Anyway, the necessary grid points for points with significant
          ! density will be available from the other grid points.
          ! /hjaaj-2016
+         IF(IZATOM(IATOM) .LE. 0) GOTO 15
       DO 10 ISYMOP = 0, MXOPR         
       IF (IAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
          NDEG  = MULT(ISTBNU(IATOM))
@@ -400,7 +404,7 @@ C        loop over radial points
 C        =======================
 C
          SWITCH = .FALSE.
-         RBRAGG = BRAGG(NINT(ZAN(NATOM)))/(5.0D0*BOHR)
+         RBRAGG = BRAGG(ZAN(NATOM))/(5.0D0*BOHR)
          DO 20 IR = 1, NR
             RWT   = RADWT(IR)
             RNODE = RADNDE(IR)
@@ -800,13 +804,13 @@ C     the surface of the unit sphere. It is then divided by NCOUNT.
       EABS=0.0D0
       WTERROR=1.0D0
       DO I=1,NCOUNT
-         XDEV=DABS(1-DSQRT(X(I)**2 + Y(I)**2 + Z(I)**2))
+         XDEV=abs(1-sqrt(X(I)**2 + Y(I)**2 + Z(I)**2))
          EABS=EABS+XDEV
          IF (XDEV.GT.1D-8) THEN
             WRITE(LUPRI,*) 'NODE ERROR(1) AT I',I,' deviation ',xdev
             CALL QUIT('Error 2 in subroutine_SLEB, get Aaron.')
          ENDIF
-         IF (DABS(WT(I)).LT.1D-5) THEN
+         IF (abs(WT(I)).LT.1D-5) THEN
             WTERROR=0
             WRITE(LUPRI,*) 'BWGHT ERROR(1) AT I',I,' weight ',wt(I)
             CALL QUIT('Error 3 in subroutine_SLEB, get Aaron.')
@@ -823,7 +827,7 @@ C     the surface of the unit sphere. It is then divided by NCOUNT.
       EABS=0.0D0
       WTERROR=0.0D0
       DO I=1,NCOUNT
-         XDEV=DABS(1.0D0 - DSQRT(X(I)**2 + Y(I)**2 + Z(I)**2))
+         XDEV=abs(1.0D0 - sqrt(X(I)**2 + Y(I)**2 + Z(I)**2))
          EABS=EABS+XDEV
          WTERROR=WTERROR+WT(I)
          IF (XDEV.GT.1D-8) THEN
@@ -831,7 +835,7 @@ C     the surface of the unit sphere. It is then divided by NCOUNT.
             CALL QUIT('NODE ERROR')
          ENDIF
       ENDDO
-      XDEV=DABS(WTERROR/4.0D0/PI-1.0D0)
+      XDEV=abs(WTERROR/4.0D0/PI-1.0D0)
       IF (XDEV.GT.1D-9) THEN
          WRITE(LUPRI,*) 'SUM OF WEIGHTS NOT EQUAL TO 1',XDEV
          CALL QUIT('SUM OF WEIGHTS IN LEBEDEV NOT EQUAL TO 1')
@@ -867,13 +871,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &          X(IVECL),Y(IVECL),Z(IVECL),WT(IVECL),
      &          XMUIJN(IVECL),XMUIJ2(IVECL),ACCUM(IVECL),XPASC(20)
 
+      INTEGER NAT, NUM, ZAN
       COMMON /INFOA/ NAT,NUM,ZAN(MXCENT),C(3,MXCENT)
 C
 C     WORK OUT THE WEIGHT FUNCTION BY BECKE PARTITIONING
 C
       DO 100 INA=1,NAT
       DO 100 M=1,IPT
-         RJ(M,INA)=DSQRT((C(1,INA)-X(M))**2
+         RJ(M,INA)=sqrt((C(1,INA)-X(M))**2
      &                  +(C(2,INA)-Y(M))**2
      &                  +(C(3,INA)-Z(M))**2)
          PSMU(M,INA)=1.0D0

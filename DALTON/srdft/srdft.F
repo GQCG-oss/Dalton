@@ -42,16 +42,16 @@ C**************************************************************
 #include "priunit.h"
 #include "dftcom.h"
 C     variables for SRCPBERI
-      real*8   mu_0, mu_0_m6, mu_0_m7, mu_0_m4
+      real*8 :: mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C
       PARAMETER  (NXTABLE = 24, NCTABLE = 36)
-      CHARACTER*10 XTABLE(NXTABLE),CTABLE(NCTABLE)
+      character(len=10) :: XTABLE(NXTABLE), CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
       PARAMETER  (maxfld=3)
-      CHARACTER*(10) fields(maxfld)
-      integer lenfld(maxfld)
-      LOGICAL SETXFUN,SETCFUN
+      character(len=10) :: fields(maxfld)
+      integer :: lenfld(maxfld)
+      logical :: SETXFUN, SETCFUN
       DATA XTABLE /'NULL      ','SRXLDA    ','SRXGGA    ','SRBCK     ', ! 1:4
      &             'HFEXCH    ','SRGGA2    ','SRXWIB    ','SRXWI2    ', ! 5:8
      &             'SRXWI3    ','SRXWI4    ','SRXPBEHSE ','SRXPBETCS ', ! 9:12
@@ -525,11 +525,12 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 C
-      LOGICAL   DOGGA,DOLND,DOGRD,DOERG,DOATR,TRIPLET,do_metagga
-      LOGICAL   first_call, LSRHYBR
-      DATA      first_call /.true./
-      REAL*8    EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),WORK(LWORK)
-      REAL*8    RESULTS(11)
+      logical, intent(in) :: DOGRD, DOERG, DOATR, TRIPLET
+      logical :: DOLND, DOGGA, do_metagga
+      logical :: first_call, LSRHYBR
+      DATA       first_call /.true./
+      real*8 :: EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),WORK(LWORK)
+      real*8 :: RESULTS(11)
 
       CALL QENTER('SRDFT')
       CALL TIMER('START ',TIMSTR,TIMEND)
@@ -1791,7 +1792,7 @@ C        DTGAO= DTRMAT'*GAO
          CALL DGEMV('T',NBAST,NBAST,D1,DTRMAT,NBAST,GAO,1,D0,DTGAO,1)
 C        B3 = B3 + GAO1'*DTGAO
          CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,DTGAO,1,D1,B3,1)
-         BMAX = MAX(DABS(B0),DABS(B3(1)),DABS(B3(2)),DABS(B3(3)))
+         BMAX = MAX(abs(B0),abs(B3(1)),abs(B3(2)),abs(B3(3)))
 C
          IF (IWINT .GT. 0) THEN ! used for DOSRX_WIB and DOSRC_WIB
             RS   = RSFAC/RHO13
@@ -1800,7 +1801,7 @@ C
             GAUX=(D2/SQRTPI)*X*EXP(-D13*X**2) ! for IWINT .eq. 3
          END IF
       ELSE
-         BMAX = DABS(B0)
+         BMAX = abs(B0)
          CALL DZERO(B3,3)
       END IF
 C

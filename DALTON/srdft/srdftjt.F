@@ -24,7 +24,7 @@
 !
 
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C*****************************************************************************
       SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
      &                  WEIGHT,NBUF,GSO,NCNT,DMATGAOSR,DOGGA,
      &                  DOERG,DOGRD,DOATR,TRIPLET,do_metagga,RESULTS,
@@ -89,7 +89,7 @@ C*****************************************************************************
      &          DMATGAOSR(NBAST,2),
      &          COR(3),RESULTS(11),WORK(LWORK)
 
-      CHARACTER*17 QUADNAME
+      character(len=17) :: QUADNAME
 
       integer, save :: NTOT_DFTGRID_save = -1
 
@@ -639,7 +639,7 @@ C*****************************************************************************
 !       -- E.R. Kjellgren
       logical :: ERFEXP(0:2)
 
-      real*8 :: mu, temp_grd2(6)
+      real*8 :: mu
       save icall
       data icall/0/
 
@@ -847,13 +847,13 @@ C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
       IF(DOSRC_PBEGWS_S) THEN
         ! PBEGWS_S has no grdss and no grds.grdc dependency,
         ! therefore zero these before DESRC_SPINGGA call:
-        temp_grd2(:) = grd2(:)
-        temp_grd2(2:3) = 0.0d0
 !        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,grd2,CHIVAL,norder,
 !     >                     Ec,d1Ec,d2Ec)
+        !temp_grd2(:) = grd2(:)
+        !temp_grd2(2:3) = 0.0d0
 C        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,temp_grd2,CHIVAL,
 C     >                     norder,Ec,d1Ec,d2Ec)
-        call SPIN_PBEC_GWS_ERF(rho, temp_grd2, norder, chival,
+        call SPIN_PBEC_GWS_ERF(rho, grd2, norder, chival,
      >                         Ec, d1Ec, d2Ec)
       ENDIF
 

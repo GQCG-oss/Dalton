@@ -23,7 +23,9 @@
 !
 C
 C  /* Deck getrho */
+C*****************************************************************************
       SUBROUTINE GETRHO_OLD(DMAT,GSO,RHO,DMATGAO,DFTHRI,IPRINT)
+C*****************************************************************************
 C
 C     T. Helgaker feb 01
 C     (RHO13 removed Aug 18)
@@ -32,6 +34,7 @@ C Output:
 C    RHO
 C    DMATGAO(i) = sum(j) dmat(i,j) * gso(j)
 C
+C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -64,9 +67,13 @@ C
       END IF
       RHO = DDOT(NBAST,GSO,1,DMATGAO,1)
       RETURN
-      END      
+      END    
+
+
 C /* Deck dftksmggaspin */
+C*****************************************************************************
       SUBROUTINE DFTKSMGGASPIN(EXCMAT,GAO,GAO1,RHG,d1E,DFTHRL)
+C*****************************************************************************
 C
 C     Erik Hedegaard (feb. 2016) based on DFTKSM by T. Helgaker
 C     Revised Apr. 2018 by Hans Joergen Aa. Jensen
@@ -78,6 +85,7 @@ C     VXB  = d1E(3) = d(e_xc) / d(grdcc)
 C     VSB  = d1E(4) = d(e_xc) / d(grdss)
 C     VXSB = d1E(5) = d(e_xc) / d(grdcs)
 C
+C*****************************************************************************
       implicit none
 C
       real*8, intent(in) :: GAO(NBAST), GAO1(NBAST,3), RHG(3,2)
@@ -109,11 +117,11 @@ C
       IF (NSYM.EQ.1) THEN
          DO J = 1, NBAST
             FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
-            IF (DABS(FC).GT.DFTHRL) THEN
+            IF (abs(FC).GT.DFTHRL) THEN
                CALL DAXPY(NBAST,FC,GAO,1,EXCMAT(1,J,1),1)
             END IF
             FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
-            IF (DABS(FCS).GT.DFTHRL) THEN
+            IF (abs(FCS).GT.DFTHRL) THEN
                CALL DAXPY(NBAST,FCS,GAO,1,EXCMAT(1,J,2),1)
             END IF
          END DO
@@ -124,13 +132,13 @@ C
             DO J = ISTR, IEND
                FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
                ! spin
-               IF (DABS(FC).GT.DFTHRL) THEN
+               IF (abs(FC).GT.DFTHRL) THEN
                   DO I = ISTR, IEND
                      EXCMAT(I,J,1) = EXCMAT(I,J,1) + FC*GAO(I)
                   END DO
                END IF
                FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
-               IF (DABS(FCS).GT.DFTHRL) THEN
+               IF (abs(FCS).GT.DFTHRL) THEN
                   DO I = ISTR, IEND
                   EXCMAT(I,J,2) = EXCMAT(I,J,2) + FCS*GAO(I)
                   END DO
@@ -140,14 +148,19 @@ C
       END IF
       RETURN
       END
+
+
 C /* Deck dftksm */
+C*****************************************************************************
       SUBROUTINE DFTKSM(EXCMAT,GAO,GAO1,RHG,VXC,VXB,DOGGA,FROMVX,DFTHRL)
+C*****************************************************************************
 C
 C     T. Helgaker oct 2000
 C
 C     VXC = d(e_xc) / d(rhoc)
 C     VXB = d(e_xc) / d(grdcc)
 C
+C*****************************************************************************
 #include <implicit.h>
       PARAMETER (D2 = 2.0D0)
 C
@@ -167,7 +180,7 @@ C
          IF (NSYM.EQ.1) THEN
             DO J = 1, NBAST
                FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
-               IF (DABS(FC).GT.DFTHRL) THEN
+               IF (abs(FC).GT.DFTHRL) THEN
                   CALL DAXPY(NBAST,FC,GAO,1,EXCMAT(1,J),1)
                END IF
             END DO
@@ -177,7 +190,7 @@ C
                IEND = IBAS(ISYM) + NBAS(ISYM)
                DO J = ISTR, IEND 
                   FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
-                  IF (DABS(FC).GT.DFTHRL) THEN
+                  IF (abs(FC).GT.DFTHRL) THEN
                      DO I = ISTR, IEND 
                         EXCMAT(I,J) = EXCMAT(I,J) + FC*GAO(I)
                      END DO
@@ -192,7 +205,7 @@ C
             DO J = ISTR, IEND 
                GJ   = GAO(J)
                GVXC = D2*VXC*GJ
-               IF (DABS(GVXC).GT.DFTHRL) THEN
+               IF (abs(GVXC).GT.DFTHRL) THEN
                   DO I = ISTR, J - 1
                      EXCMAT(I,J) = EXCMAT(I,J) + GVXC*GAO(I)
                   END DO
@@ -203,13 +216,18 @@ C
       END IF
       RETURN
       END
+
+
 C /* Deck dftfrc */
+C*****************************************************************************
       SUBROUTINE DFTFRC(DMAT,GAO,GAO1,GAO2,VXC,VXB,RHX,RHY,RHZ,DOGGA)
+C*****************************************************************************
 C
 C     Exchange-correlation contribution to molecular gradient
 C
 C     T. Helgaker sep 99/oct 00/feb 01
 C
+C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -286,13 +304,18 @@ C
       END DO
       RETURN
       END
+
+
 C /* Deck dftltr */
+C*****************************************************************************
       SUBROUTINE DFTLTR(KSYMOP,DTRMAT,EXCMAT,GAO,GAO1,C0,C1,C2,HES,
      &                  RHO,RHO13,RHOGRD,RHG,WDRC,WVWN,WBCK,WLYP,DODRC,
      &                  DOVWN,DOBCK,DOLYP,DOGGA,TRPLET,DOHES,DTGAO)
+C*****************************************************************************
 C
 C     T. Helgaker sep 99/oct 00
 C
+C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -330,7 +353,7 @@ C     ***** LDA *****
 C     ***************
 C
       IF (.NOT.DOGGA) THEN
-         IF (DABS(B0).GT.DFTHRL) THEN 
+         IF (abs(B0).GT.DFTHRL) THEN 
 C
 C           Calculated VT
 C
@@ -416,7 +439,7 @@ C           DTGAO= DTRMAT'*GAO
             CALL DGEMV('T',NBAST,NBAST,D1,DTRMAT,NBAST,GAO,1,D0,DTGAO,1)
 C           B3 = B3 + GAO1'*DTGAO
             CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,DTGAO,1,D1,B3,1)
-            BMAX = MAX(DABS(B0),DABS(B3(1)),DABS(B3(2)),DABS(B3(3)))
+            BMAX = MAX(abs(B0),abs(B3(1)),abs(B3(2)),abs(B3(3)))
          END IF
 C
          IF (BMAX.GT.DFTHRL) THEN
