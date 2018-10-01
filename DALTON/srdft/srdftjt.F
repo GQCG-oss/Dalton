@@ -974,7 +974,7 @@ C***************************************************************************
       real*8, intent(in) :: GAO(NBAST),GAO1(NBAST,3), DGAO(NBAST,2)
       real*8, intent(in) :: WGHTX,WGHTC
       
-      real*8, intent(out) :: EXCMAT(NBAST,NBAST,2)
+      real*8, intent(inout) :: EXCMAT(NBAST,NBAST,2)
 
 !     local
       integer :: I, J, ISYM, JSYM, JEND, JSTR, ISTR, IEND
