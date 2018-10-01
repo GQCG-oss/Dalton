@@ -1104,7 +1104,7 @@ C    to perform the integration over r12
 C
 C    routine taken from PhD thesis of J. Heyd
 C    modified by J. Toulouse:
-C    gexp  -> dexp
+C    gexp  -> exp
 C    gerf  -> erf
 C    gerfc -> erfc
 C    gei(x)-> ei
@@ -1209,7 +1209,6 @@ C
           f13      = One/Three
           pi       = ACos(-One)
           pi2      = pi*pi
-          srpi = sqrt(pi)
           X        = -Eight/Nine
 C
 C         Cutoff criterion to enforce local Lieb-Oxford bound
@@ -1306,12 +1305,12 @@ C
 C         Calculate EG(s), using expansion for small s If necessary
 C
           If(s .gt. EGscut) then
-           G_a     = srpi * (FIfteen*E + Six*C*(One+F*s2)*DHs +
+           G_a     = sqrtpi * (FIfteen*E + Six*C*(One+F*s2)*DHs +
      $                           Four*B*(DHs2) + Eight*A*(DHs3))
      $                    * (One / (Sixteen * DHs72))
      $                    - f34*pi*sqrt(A) * exp(f94*H*s2/A) *
      $                          (One - erf(f32*s*sqrt(H/A)))
-           G_b     = (f1516 * srpi * s2) / DHs72
+           G_b     = (f1516 * sqrtpi * s2) / DHs72
            EG      = - (f34*pi + G_a) / G_b
           else
            EG      = EGa1 + EGa2*s2 + EGa3*s4
@@ -1342,7 +1341,7 @@ C
            eiHA94 = ei(-HA94)
            exei      = exHA94*eiHA94
           else
-           exer      = pi*(One/(srpi*HA9412)
+           exer      = pi*(One/(sqrtpi*HA9412)
      $                      - One/(Two*Sqrt(pi*HA943))
      $                      + Three/(Four*Sqrt(pi*HA945)))
            exei      = - (One/HA94) *
@@ -1386,18 +1385,18 @@ C
 C
 C         The factors for the main polynomoal in w
 C
-          f2      = (f12)*ea1*srpi*A / DHsb12
+          f2      = (f12)*ea1*sqrtpi*A / DHsb12
           f3      = (f12)*ea2*A / DHsb
-          f4      =    ea3*srpi*(-f98 / Hsbw12
+          f4      =    ea3*sqrtpi*(-f98 / Hsbw12
      $                  + f14*A / DHsb32)
           f5      = ea4*(One/r128) * (-r144*(One/Hsbw)
      $                  + r64*(One/DHsb2)*A)
-          f6      = ea5*(Three*srpi*(Three*DHsb52*(Nine*Hsbw-Two*A)
+          f6      = ea5*(Three*sqrtpi*(Three*DHsb52*(Nine*Hsbw-Two*A)
      $                 + Four*Hsbw32*A2))
      $                 / (r32*DHsb52*Hsbw32*A)
           f7      = ea6*(((r32*A)/DHsb3
      $                  + (-r36 + (r81*s2*H)/A)/Hsbw2)) / r32
-          f8      = ea7*(-Three*srpi*(-r40*Hsbw52*A3
+          f8      = ea7*(-Three*sqrtpi*(-r40*Hsbw52*A3
      $                  +Nine*DHsb72*(r27*Hsbw2-Six*Hsbw*A+Four*A2)))
      $                  / (r128 * DHsb72*Hsbw52*A2)
        f9      = (r324*ea6*eb1*DHsb4*Hsbw*A
@@ -1433,11 +1432,11 @@ C
 C    Gives sligthly different results compared to wpbe_analytical_erfc_approx
 C****************************************************************************
       Implicit None
-
+#include "pi.h"
       Real*8 rho,s,omega,Fx_wpbe
 
       Real*8 f12,f13,f14,f18,f23,f43,f32,f72,f34,f94,f1516
-      Real*8 pi,pi2,pi_23,srpi
+      Real*8 pi_23
       Real*8 Three_13
     
       Real*8 fa1,fa2,fa3,fa4,fa5
@@ -1492,10 +1491,7 @@ c     General constants
       f94    = 2.25d0
       f1516  = Fifteen / Sixteen
 
-      pi     = ACos(-One)
-      pi2    = pi*pi
       pi_23  = pi2**f13
-      srpi   = sqrt(pi)
 
       Three_13 = Three**f13
 
@@ -1594,13 +1590,13 @@ c     Calculate wPBE enhancement factor
 
       if(s .gt. EGscut) then
 
-        G_a    = srpi * (Fifteen*E + Six*C_0*DH_0 +
+        G_a    = sqrtpi * (Fifteen*E + Six*C_0*DH_0 +
      1                   Four*B*(DH_0**2) + Eight*A*(DH_0**3))
      2                * (One / (Sixteen * DH_072))
      3                 - f34*pi*sqrt(A) * exp(f94*H_0/A) *
      4                   (One - erf(f32*s*sqrt(H/A)))
 
-        G_b    = (f1516 * srpi * s2) / DH_072
+        G_b    = (f1516 * sqrtpi * s2) / DH_072
 
         EG     = - (f34*pi + G_a) / G_b
 
@@ -1635,12 +1631,12 @@ c     Calculate wPBE enhancement factor
       atb3H  = atan(srb3H / wk)
 
       term3  = f12 * (fa3 * (atb3H*wk2 + atb3H*b3H - wk*srb3H)) /
-     1               (srpi*srb3H3*(wk2 + b3H))
+     1               (sqrtpi*srb3H3*(wk2 + b3H))
 
       atb4H  = atan(srb4H / wk)
 
       term4  = f12 * (fa4 * (atb4H*wk2 + atb4H*b4H - wk*srb4H)) /
-     1               (srpi*srb4H3*(wk2 + b4H))
+     1               (sqrtpi*srb4H3*(wk2 + b4H))
 
       term5  = f14 * (fa5 * (wk3 - Three*ab5H*wk + Two*srb5H3)) / 
      1               (srb5H3 * (wk2 - ab5H)**2)
@@ -1675,11 +1671,11 @@ C
 C    It is the preferred routine. Should be the same as HSEFx
 C****************************************************************************
       Implicit None
-
+#include "pi.h"
       Real*8 rho,s,omega,Fx_wpbe
 
       Real*8 f12,f13,f14,f18,f23,f43,f32,f72,f34,f94,f1516,f98
-      Real*8 pi,pi2,pi_23,srpi
+      Real*8 pi_23
       Real*8 Three_13
     
       Real*8 ea1,ea2,ea3,ea4,ea5,ea6,ea7,ea8
@@ -1760,10 +1756,7 @@ c     General constants
       f98    = 1.125d0
       f1516  = Fifteen / Sixteen
 
-      pi     = ACos(-One)
-      pi2    = pi*pi
       pi_23  = pi2**f13
-      srpi   = sqrt(pi)
 
       Three_13 = Three**f13
 
@@ -1873,13 +1866,13 @@ c     Calculate wPBE enhancement factor
 
       if(s .gt. EGscut) then
 
-        G_a    = srpi * (Fifteen*E + Six*C_0*DH_0 +
+        G_a    = sqrtpi * (Fifteen*E + Six*C_0*DH_0 +
      1                   Four*B*(DH_0**2) + Eight*A*(DH_0**3))
      2                * (One / (Sixteen * DH_072))
      3                 - f34*pi*sqrt(A) * exp(f94*H_0/A) *
      4                   (One - erf(f32*s*sqrt(H/A)))
 
-        G_b    = (f1516 * srpi * s2) / DH_072
+        G_b    = (f1516 * sqrtpi * s2) / DH_072
 
         EG     = - (f34*pi + G_a) / G_b
 
@@ -1949,7 +1942,7 @@ c     Calculate exp(x)*f(x) depending on size of x
 
 c       print *,rho,s," LARGE HsbwA94"
 
-        experf = One/(srpi*HsbwA9412) 
+        experf = One/(sqrtpi*HsbwA9412) 
      1           - One/(Two*Sqrt(pi*HsbwA943))
      2           + Three/(Four*Sqrt(pi*HsbwA945))
 
@@ -2008,24 +2001,24 @@ c       For everything else, use the full blown expression
 
         factor1 = One / (r128*DHsbw4*Hsbw3*A2)
         
-        t2f1 = (f12)*ea1*srpi*A*w / DHsbw12
+        t2f1 = (f12)*ea1*sqrtpi*A*w / DHsbw12
         
         t3f1 = (f12)*ea2*A*w2 / DHsbw
         
-        t4f1 = srpi*(-f98*ea3 / Hsbw12 
+        t4f1 = sqrtpi*(-f98*ea3 / Hsbw12 
      $           + f14*ea3*A / DHsbw32)*w3
         
         t5f1 = (One/r128) * (-r144*(One/Hsbw) 
      $        + r64*(One/DHsbw2)*A)*ea4*w4
         
-        t6f1 = (Three*ea5*srpi*(Three*DHsbw52*(Nine*Hsbw-Two*A)
+        t6f1 = (Three*ea5*sqrtpi*(Three*DHsbw52*(Nine*Hsbw-Two*A)
      $           + Four*Hsbw32*A2) * w5)
      $           / (r32*DHsbw52*Hsbw32*A)
         
         t7f1 = (ea6*((r32*A)/DHsbw3
      $         + (-r36 + (r81*s2*H)/A)/Hsbw2) * w6) / r32
         
-        t8f1 = (-Three*ea7*srpi*(-r40*Hsbw52*A3
+        t8f1 = (-Three*ea7*sqrtpi*(-r40*Hsbw52*A3
      $          +Nine*DHsbw72*(r27*Hsbw2-Six*Hsbw*A+Four*A2)) * w7)
      $         / (r128 * DHsbw72*Hsbw52*A2)
         

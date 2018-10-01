@@ -285,7 +285,7 @@ C
       DO 7 INA=1,NAT
       DO 7 JNA=1,INA-1
           ITEMP=ITEMP+1
-          RIJ(ITEMP) = 1.0D0/(DSQRT((C(1,INA)-C(1,JNA))**2
+          RIJ(ITEMP) = 1.0D0/(sqrt((C(1,INA)-C(1,JNA))**2
      &                             +(C(2,INA)-C(2,JNA))**2
      &                             +(C(3,INA)-C(3,JNA))**2))
           RBC(INA,JNA) = 1.0D0/RIJ(ITEMP)
@@ -800,13 +800,13 @@ C     the surface of the unit sphere. It is then divided by NCOUNT.
       EABS=0.0D0
       WTERROR=1.0D0
       DO I=1,NCOUNT
-         XDEV=DABS(1-DSQRT(X(I)**2 + Y(I)**2 + Z(I)**2))
+         XDEV=abs(1-sqrt(X(I)**2 + Y(I)**2 + Z(I)**2))
          EABS=EABS+XDEV
          IF (XDEV.GT.1D-8) THEN
             WRITE(LUPRI,*) 'NODE ERROR(1) AT I',I,' deviation ',xdev
             CALL QUIT('Error 2 in subroutine_SLEB, get Aaron.')
          ENDIF
-         IF (DABS(WT(I)).LT.1D-5) THEN
+         IF (abs(WT(I)).LT.1D-5) THEN
             WTERROR=0
             WRITE(LUPRI,*) 'BWGHT ERROR(1) AT I',I,' weight ',wt(I)
             CALL QUIT('Error 3 in subroutine_SLEB, get Aaron.')
@@ -823,7 +823,7 @@ C     the surface of the unit sphere. It is then divided by NCOUNT.
       EABS=0.0D0
       WTERROR=0.0D0
       DO I=1,NCOUNT
-         XDEV=DABS(1.0D0 - DSQRT(X(I)**2 + Y(I)**2 + Z(I)**2))
+         XDEV=abs(1.0D0 - sqrt(X(I)**2 + Y(I)**2 + Z(I)**2))
          EABS=EABS+XDEV
          WTERROR=WTERROR+WT(I)
          IF (XDEV.GT.1D-8) THEN
@@ -831,7 +831,7 @@ C     the surface of the unit sphere. It is then divided by NCOUNT.
             CALL QUIT('NODE ERROR')
          ENDIF
       ENDDO
-      XDEV=DABS(WTERROR/4.0D0/PI-1.0D0)
+      XDEV=abs(WTERROR/4.0D0/PI-1.0D0)
       IF (XDEV.GT.1D-9) THEN
          WRITE(LUPRI,*) 'SUM OF WEIGHTS NOT EQUAL TO 1',XDEV
          CALL QUIT('SUM OF WEIGHTS IN LEBEDEV NOT EQUAL TO 1')
@@ -873,7 +873,7 @@ C     WORK OUT THE WEIGHT FUNCTION BY BECKE PARTITIONING
 C
       DO 100 INA=1,NAT
       DO 100 M=1,IPT
-         RJ(M,INA)=DSQRT((C(1,INA)-X(M))**2
+         RJ(M,INA)=sqrt((C(1,INA)-X(M))**2
      &                  +(C(2,INA)-Y(M))**2
      &                  +(C(3,INA)-Z(M))**2)
          PSMU(M,INA)=1.0D0

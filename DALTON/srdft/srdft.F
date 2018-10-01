@@ -1761,7 +1761,7 @@ C        DTGAO= DTRMAT'*GAO
          CALL DGEMV('T',NBAST,NBAST,D1,DTRMAT,NBAST,GAO,1,D0,DTGAO,1)
 C        B3 = B3 + GAO1'*DTGAO
          CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,DTGAO,1,D1,B3,1)
-         BMAX = MAX(DABS(B0),DABS(B3(1)),DABS(B3(2)),DABS(B3(3)))
+         BMAX = MAX(abs(B0),abs(B3(1)),abs(B3(2)),abs(B3(3)))
 C
          IF (IWINT .GT. 0) THEN ! used for DOSRX_WIB and DOSRC_WIB
             RS   = RSFAC/RHO13
@@ -1770,7 +1770,7 @@ C
             GAUX=(D2/SQRTPI)*X*EXP(-D13*X**2) ! for IWINT .eq. 3
          END IF
       ELSE
-         BMAX = DABS(B0)
+         BMAX = abs(B0)
          CALL DZERO(B3,3)
       END IF
 C

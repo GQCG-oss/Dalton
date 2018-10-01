@@ -175,7 +175,7 @@ C
 C     Calculate FOPNORMF2 = || F(D^{(2),LR}) ||_F / || D^{(2),LR} ||_F     
 C     
       FOPNORMF1 = D2 * DDOT(NRFMO,WRK(KRFMO),1,WRK(KRFMO),1)    
-      FOPNORMF1 = DSQRT(FOPNORMF1)
+      FOPNORMF1 = sqrt(FOPNORMF1)
       FOPNORMF2  = FOPNORMF1 / FOPNORMF0 
       FOPNORMF0 = FOPNORMF1
 C     
@@ -190,7 +190,7 @@ C
 C     Calculate FOPNORMF = || F^{i+1}(D^{(2),LR}) ||_F / || F^{i}(D^{(2),LR}) ||_F, i>= 1     
 C     
       FOPNORMF1 = D2 * DDOT(NRFMO,WRK(KRFMO),1,WRK(KRFMO),1)    
-      FOPNORMF1 = DSQRT(FOPNORMF1)
+      FOPNORMF1 = sqrt(FOPNORMF1)
       FOPNORMF  = FOPNORMF1 / FOPNORMF0 
       FOPNORMF0 = FOPNORMF1
 C Manu debug b      
@@ -428,7 +428,7 @@ C
 C     Calculate GOPNORMF = || G^{i+1}(TD^{(2),LR}) ||_F / || G^{i}(TD^{(2),LR}) ||_F, i>= 0     
 C     
       GOPNORMF1 = D2 * DDOT(NRFMO,WRK(KRFMO),1,WRK(KRFMO),1)    
-      GOPNORMF1 = DSQRT(GOPNORMF1)
+      GOPNORMF1 = sqrt(GOPNORMF1)
 C Manu debug b      
 C     write(lupri,*) 'GOPNORMF0 =', GOPNORMF0
 C     write(lupri,*) 'GOPNORMF1 =', GOPNORMF1
@@ -567,7 +567,7 @@ C        Compute the Frobenius norm of the self-consistency contribution
 C
          RFMOTOTNORMF = D2 * 
      &                  DDOT(NRFMO,WRK(KRFMOTOT),1,WRK(KRFMOTOT),1) 
-         RFMOTOTNORMF = DSQRT(RFMOTOTNORMF)
+         RFMOTOTNORMF = sqrt(RFMOTOTNORMF)
 C
 C        ... and its ratio with the Frobenius norm of the purely
 C        long-range contribution  
@@ -1460,7 +1460,7 @@ C Manu debug b
 C     write(lupri,*) 'in MATNORMF : trace of DONE2 =', XXX
 C Manu debug e      
 C      
-      XXX = DSQRT(XXX) 
+      XXX = sqrt(XXX) 
 C Manu debug b      
 C     write(lupri,*) 'in MATNORMF : sqrt of trace of DONE2 =', XXX
 C     write(lupri,*) 'in MATNORMF : sqrt of trace of DONE2 mul =', 
