@@ -95,7 +95,8 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-#include "pi.h" ! pi and pi2
+! pi and pi2
+#include "pi.h"
 #include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(4), mu
@@ -243,7 +244,8 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-#include "pi.h" ! pi and pi2
+! pi and pi2
+#include "pi.h"
 #include "priunit.h"
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(4), gamma_vec(6), mu
