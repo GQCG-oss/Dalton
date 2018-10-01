@@ -83,7 +83,7 @@ C*****************************************************************************
      &                       do_metagga
 
       logical :: FROMVX
-      REAL*8 :: EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
+      real*8 :: EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
      &          GSO(NBAST*NTYPSO),NCNT(NBAST),
      &          DMATGAOSR(NBAST,2),
@@ -91,9 +91,9 @@ C*****************************************************************************
 
       CHARACTER*17 QUADNAME
 
-      INTEGER, SAVE :: NTOT_DFTGRID_save = -1
+      integer, save :: NTOT_DFTGRID_save = -1
 
-      REAL*8    RHO(4), RHG(3,4), GRD2(6), tau(4), laplace(4)
+      real*8 :: RHO(4), RHG(3,4), GRD2(6), tau(4), laplace(4)
 C     ... RHO(1) = rhoc = rho_a + rho_b
 C     ... RHO(2) = rhos = rho_a - rho_b
 C     ... RHO(3) = rhoa = rho_a
@@ -477,6 +477,13 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
      &                 d1Exc(1)  ,d1Exc(3)    ,DOGGA,FROMVX,DFTHRL)
 !                      d1Excdrhoc,d1Excdgrdcc,DOGGA,FROMVX,DFTHRL)
        else if (domcsrdft .and. .not. docisrdft) then
+          
+          
+          
+          ! MAKE A CASE FOR META GGAs
+
+
+
           if (dogga .and. dft_spindns) then ! special treatment if gga + spin
               CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
      &             d1Exc,DFTHRL)

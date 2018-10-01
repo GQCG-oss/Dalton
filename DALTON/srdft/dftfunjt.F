@@ -4876,11 +4876,10 @@ C*****************************************************************************
       real*8, parameter :: a1 = 0.559463d0
       real*8, parameter :: b1 = -0.134086d0
       real*8, parameter :: c1 = 0.0296811d0
-      real*8 :: rho13
+      real*8 :: rho13, ZKSR(3)
 
       logical, parameter :: ERFEXP(0:2) = .false.
       logical, parameter :: MULOCAL(0:2) = .false.
-      real*8   ZKSR(3)
 !     local mu parameter 
       rho13 = rho**(1.0d0/3.0d0)
 !     Multiplication factor for mu parameter

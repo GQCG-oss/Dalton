@@ -928,11 +928,11 @@ C*****************************************************************************
 
       elseif (diff_order .eq. 1) then
          call D1ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc, gamma_ss,
-     &                                 gamma_cs, mu, E, d1E)
+     &                                 gamma_cs, tau_c, mu, E, d1E)
 
       elseif (diff_order .eq. 2) then
          call D2ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc, gamma_ss,
-     &                                 gamma_cs, mu, E, d1E, d2E)
+     &                                 gamma_cs, tau_c, mu, E, d1E, d2E)
 
       else
          call quit('Requested to high order derivative: ',diff_order)

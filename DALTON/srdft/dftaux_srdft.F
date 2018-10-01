@@ -80,18 +80,18 @@ C     VXSB = d1E(5) = d(e_xc) / d(grdcs)
 C
       implicit none
 C
-      real*8  GAO(NBAST), GAO1(NBAST,3), RHG(3,2)
-      real*8  EXCMAT(NBAST,NBAST,2), d1E(5)
-      real*8  DFTHRL
+      real*8, intent(in) :: GAO(NBAST), GAO1(NBAST,3), RHG(3,2)
+      real*8, intent(in) :: d1E(5), DFTHRL
+      real*8, intent(inout) :: EXCMAT(NBAST,NBAST,2)
 C
 ! inforb.h : NBAST, NSYM
 #include "inforb.h"
 
       ! local variables:
-      real*8  VXB, VXC, VSB, VSC, VXSB
-      real*8  FX, FY, FZ, SX, SY, SZ
-      real*8  FC, FCS
-      integer I, J, ISYM, ISTR, IEND
+      real*8 :: VXB, VXC, VSB, VSC, VXSB
+      real*8 :: FX, FY, FZ, SX, SY, SZ
+      real*8 :: FC, FCS
+      integer :: I, J, ISYM, ISTR, IEND
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
