@@ -20,14 +20,14 @@ We also refer to our tutorial review on the use of polarizable embedding for mod
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
-\item PE model: J.~M.~Olsen, K.~Aidas and J.~Kongsted, \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 6}, 3721 (2010) and J.~M.~H.~Olsen and J.~Kongsted, \newblock {\em Adv. Quantum Chem.}, {\bf 61}, 107 (2011).
+\item General references: J.~M.~Olsen, K.~Aidas and J.~Kongsted, \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 6}, 3721 (2010) and J.~M.~H.~Olsen and J.~Kongsted, \newblock {\em Adv. Quantum Chem.}, {\bf 61}, 107 (2011).
 \item PE-HF/DFT: J.~M.~Olsen, K.~Aidas and J.~Kongsted, \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 6}, 3721 (2010).
 \item PE-MP2/SOPPA: J.~J.~Eriksen, S.~P.~A.~Sauer, K.~V.~Mikkelsen, H.~J.~Aa.~Jensen and J.~Kongsted, \newblock {\em J.~Comp.~Chem.}, {\bf 33}, 2012, (2012).
 \item PE-MCSCF: E.~D.~Hedeg\aa{}rd, N.~H.~List, H.~J.~Aa.~Jensen and J.~Kongsted, \newblock {\em J.~Chem.~Phys.}, {\bf 139}, 044101 (2013).
 \item PE-CC: K.~Sneskov, T.~Schwabe, J.~Kongsted and O.~Christiansen, \newblock {\em J.~ Chem.~Phys.}, {\bf 134}, 104108, (2011).
 \item Damped response (CPP) with PE: M.~N.~Pedersen, E.~D.~Hedeg\aa{}rd, J.~M.~H.~Olsen, J.~Kauczor, P.~Norman and J.~Kongsted, \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 1164 (2014).
 \item Magnetic properties with LAOs: C.~Steinmann, J.~M.~H.~Olsen and J.~Kongsted, \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 981 (2014).
-\item Effective external field effects: N.~H.~List, H.~J.~Aa.~Jensen and J.~Kongsted, \newblock{\em Phys.~Chem.~Chem.~Phys.},{\bf 18}, 10070 (2016) and N.~H.~List, PhD thesis, University of Southern Denmark, Odense, Denmark, 2015.
+\item Effective external field (EEF) effects: N.~H.~List, H.~J.~Aa.~Jensen and J.~Kongsted, \newblock{\em Phys.~Chem.~Chem.~Phys.},{\bf 18}, 10070 (2016) and N.~H.~List, PhD thesis, University of Southern Denmark, Odense, Denmark, 2015.
 \item Tutorial review: C.~Steinmann, P.~Reinholdt, M.~S.~N\o{}rby, J.~Kongsted and J.~M.~H.~Olsen, \newblock{\em Int.~J.~Quantum~Chem.}, 2016, \url{https://doi.org/10.1002/qua.25717}.
 \end{list}
 }}
@@ -81,18 +81,20 @@ propagator (CPP) module to allow damped response properties at
 PE-HF and PE-DFT levels of theory for closed- and open-shell systems~\cite{pecpp}.
 Triplet linear response properties are
 available at the PE-HF and PE-DFT levels for closed-shell systems
-only. For the calculation of 1PA and 2PA properties, it is furthermore possible to include
-the so-called effective external field (EEF) effect, which models the environment polarization
+only.
+Singlet quadratic and cubic response properties are available for PE-HF and PE-DFT levels of theory
+for closed-shell systems.
+It is furthermore possible to include the effective external field (EEF) effect,
+which models the environment polarization
 induced directly by the presence of an external field \cite{peeef,peeef2}.
 This leads to properties that are defined in terms of the external field and are thus comparable to
 supermolecular calculations.
 Magnetic linear response properties using London atomic
-orbitals (LAOs) are also available. Singlet quadratic response properties can be
-calculated at PE-HF and PE-DFT levels for closed-shell systems.
+orbitals (LAOs) are also available.
 In the PE-MP2/SOPPA models, the
 environment response is taken into account at the HF/RPA level
-(see Ref.~\cite{pesoppa} for details). Note, that the current implementation
-does not support point-group symmetry or analytical molecular Hessians.
+(see Ref.~\cite{pesoppa} for details). Note, that
+point-group symmetry and analytical molecular Hessians are not supported.
 
 
 \section{Input description}
