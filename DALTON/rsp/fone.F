@@ -71,22 +71,22 @@ C
  400     CONTINUE
  100  CONTINUE
       DO 500 IPSYM = 1,NSYM
-         IORBP = IORB(IPSYM) + 1
+         IORBP = IORB(IPSYM)
          NORBP = NORB(IPSYM)
          IQSYM = MULD2H(IPSYM,KSYMOP)
-         IORBQ = IORB(IQSYM) + 1
+         IORBQ = IORB(IQSYM)
          NORBQ = NORB(IQSYM)
          IF ((NORBQ.EQ.0).OR.(NORBP.EQ.0)) GO TO 500
-         DO 800 ISIM = 1,NSIM
-            DO 600 IP = IORBP,IORBP+NORBP-1
-               DO 700 IQ = IORBQ,IORBQ+NORBQ-1
+         DO ISIM = 1,NSIM
+            DO IQ = IORBQ+1,IORBQ+NORBQ
+               DO IP = IORBP+1,IORBP+NORBP
                   FCOEX(IP,IQ,ISIM) = FCOCO(IP,IQ,ISIM)
      *                              + FCOEX(IP,IQ,ISIM)
                   IF (NASHT.GT.0) FVOEX(IP,IQ,ISIM) = FVOCO(IP,IQ,ISIM)
      *                              + FVOEX(IP,IQ,ISIM)
- 700           CONTINUE
- 600        CONTINUE
- 800     CONTINUE
+               END DO
+            END DO
+         END DO
  500  CONTINUE
       RETURN
       END

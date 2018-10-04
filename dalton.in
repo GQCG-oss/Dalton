@@ -133,7 +133,7 @@ usage (){
         echo '    DALTON_NODELIST           : list of nodes, '$dalton'.x will be copied to DALTON_TMPDIR on each node'
         echo '                                unless DALTON_USE_GLOBAL_SCRATCH is defined'
         echo '    DALTON_NUM_MPI_PROCS      : number of MPI processes (overridden by -N flag)'
-        echo '    DALTON_LAUNCHER           : launcher for the '$dalton'.x binary'
+        echo '    DALTON_LAUNCHER           : launcher for the '$dalton'.x binary (if defined, DALTON_NUM_MPI_PROCS or -N flag not allowed)'
          }
 #
 # Define backup function
@@ -517,6 +517,13 @@ fi
 #fi
 
 if [ -n "$DALTON_LAUNCHER" ] ; then
+    if [ $optn -gt 1 ] ; then
+       echo; echo  "*** JOB SPECIFICATION ERROR:"
+       echo "    DALTON_LAUNCHER was defined as: $DALTON_LAUNCHER"
+       echo "    Definition of DALTON_LAUNCHER is not compatible with -N flag nor definition of DALTON_NUM_MPI_PROCS"
+       echo "--> Include instead number of MPI processes in your definition of DALTON_LAUNCHER"; echo
+       exit 1
+    fi
     DALTON_EXE="$DALTON_LAUNCHER $DALTON_EXECUTABLE"
 elif [ $mpi_enabled = "ON" -o $optn -gt 1 ] ; then
     DALTON_EXE="$MPIEXEC -np $optn $DALTON_EXECUTABLE"
@@ -609,13 +616,13 @@ fi
 
 # copy files listed under -get back from scratch directory
 if [ "x$GET_FILES" != "x" ]; then
-   echo Copying files requested with --get back from scratch directory
+   echo Copying files requested with -get back from scratch directory
    for file in $GET_FILES; do
        cp -v -p $file $WRKDIR/$outnam.$file
    done
 fi
 
-if [ $opto -eq 1 ] ; then
+if [ $opto -ne 0 ] ; then
    if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
       echo "Output is in $WRKDIR/$OUTFIL as requested in input."
    else

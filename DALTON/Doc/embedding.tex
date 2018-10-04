@@ -7,10 +7,11 @@ Methods available are: PE-HF~\cite{pescf}, PE-DFT~\cite{pescf},
 PE-MP2/SOPPA~\cite{pesoppa}, PE-MCSCF~\cite{pemcscf}
 and PE-CC~\cite{pecc,pdecc}.
 The implementation uses the Gen1Int library to calculate one-electron
-integrals~\cite{gen1int} which is also in the \latestrelease\ release. The
+integrals~\cite{gen1int} which is also included in the \latestrelease\ release. The
 first section gives some general considerations about the model and
 implementation. In the second section we introduce the input format using
 basic examples.
+We also refer to our tutorial review on the use of polarizable embedding for modeling of response properties of embedded molecules~\cite{petutorial} (see \url{https://doi.org/10.1002/qua.25717} or alternatively \url{https://arxiv.org/abs/1804.03598}).
 
 \begin{center}
 \fbox{
@@ -19,15 +20,15 @@ basic examples.
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
-\item PE library: J.~M.~H.~Olsen. The polarizable embedding (PE) library (version 1.2), 2014
-\item PE model: J.~M.~H.~Olsen and J.~Kongsted. \newblock {\em Adv. Quantum Chem.}, {\bf 61}, 107 (2011) and J.~M.~H.~Olsen. PhD thesis, University of Southern Denmark, Odense, Denmark, 2012. DOI: 10.6084/m9.figshare.156852.
-\item PE-HF/DFT: J.~M.~Olsen, K.~Aidas and J.~Kongsted. \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 6}, 3721 (2010).
-\item PE-MP2/SOPPA: J.~J.~Eriksen, S.~P.~A.~Sauer, K.~V.~Mikkelsen, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock {\em J.~Comp.~Chem.}, {\bf 33}, 2012, (2012).
-\item PE-MCSCF: E.~D.~Hedeg\aa{}rd, N.~H.~List, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock {\em J.~Chem.~Phys.}, {\bf 139}, 044101 (2013).
-\item PE-CC: K.~Sneskov, T.~Schwabe, J.~Kongsted and O.~Christiansen. \newblock {\em J.~ Chem.~Phys.}, {\bf 134}, 104108, (2011) and D.~Hr\v{s}ak, J.~M.~H.~Olsen and J.~Kongsted. \newblock {\em J.~ Chem.~Theor.~Comput.}, {\bf 14}, 1351, (2018).
-\item PE-CPP: M.~N.~Pedersen, E.~D.~Hedeg\aa{}rd, J.~M.~H.~Olsen, J.~Kauczor, P.~Norman and J.~Kongsted \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 1164 (2014).
-\item Magnetic properties with LAOs: C.~Steinmann, J.~M.~H.~Olsen and J.~Kongsted. \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 981 (2014).
-\item Effective external field effects: N.~H.~List, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock{\em Phys.~Chem.~Chem.~Phys.},{\bf 18}, 10070 (2016) and N.~H.~List. PhD thesis, University of Southern Denmark, Odense, Denmark, 2015.
+\item PE model: J.~M.~Olsen, K.~Aidas and J.~Kongsted, \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 6}, 3721 (2010) and J.~M.~H.~Olsen and J.~Kongsted, \newblock {\em Adv. Quantum Chem.}, {\bf 61}, 107 (2011).
+\item PE-HF/DFT: J.~M.~Olsen, K.~Aidas and J.~Kongsted, \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 6}, 3721 (2010).
+\item PE-MP2/SOPPA: J.~J.~Eriksen, S.~P.~A.~Sauer, K.~V.~Mikkelsen, H.~J.~Aa.~Jensen and J.~Kongsted, \newblock {\em J.~Comp.~Chem.}, {\bf 33}, 2012, (2012).
+\item PE-MCSCF: E.~D.~Hedeg\aa{}rd, N.~H.~List, H.~J.~Aa.~Jensen and J.~Kongsted, \newblock {\em J.~Chem.~Phys.}, {\bf 139}, 044101 (2013).
+\item PE-CC: K.~Sneskov, T.~Schwabe, J.~Kongsted and O.~Christiansen, \newblock {\em J.~ Chem.~Phys.}, {\bf 134}, 104108, (2011).
+\item Damped response (CPP) with PE: M.~N.~Pedersen, E.~D.~Hedeg\aa{}rd, J.~M.~H.~Olsen, J.~Kauczor, P.~Norman and J.~Kongsted, \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 1164 (2014).
+\item Magnetic properties with LAOs: C.~Steinmann, J.~M.~H.~Olsen and J.~Kongsted, \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 981 (2014).
+\item Effective external field effects: N.~H.~List, H.~J.~Aa.~Jensen and J.~Kongsted, \newblock{\em Phys.~Chem.~Chem.~Phys.},{\bf 18}, 10070 (2016) and N.~H.~List, PhD thesis, University of Southern Denmark, Odense, Denmark, 2015.
+\item Tutorial review: C.~Steinmann, P.~Reinholdt, M.~S.~N\o{}rby, J.~Kongsted and J.~M.~H.~Olsen, \newblock{\em Int.~J.~Quantum~Chem.}, 2016, \url{https://doi.org/10.1002/qua.25717}.
 \end{list}
 }}
 \end{center}

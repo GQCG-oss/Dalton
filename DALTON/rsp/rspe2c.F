@@ -36,8 +36,6 @@ merged with SOPPA changes by ekd
 LRST  : modification needed for proper handling of cubic response
 950705-hjaaj
 RSPPP : New code for GOS oscillator strengths.
-940523-hjaaj
-RSPCTL: removed CALL FLUSH(LURSP1) (system dependent); instead REWIND LURSP1
 941117-hjaaj
 QONEMU: changed a SMPATB to SMPAB to change DDOT to DAXPY
 FCKOIN: optimized
@@ -45,23 +43,17 @@ FCKOIN: optimized
 c: SOPPA changes: test KOFFTY.eq.1, not KSYMOP.eq.1 for CREF
 LRST  : only orb (ph) trial vectors for SOPPA (no conf., i.e. no 2p2h)
 RSPDIA: skip S[2] reads if SHIFT .eq. D0
-931119-hjaaj
-RSPCTL: improved output when insufficient memory stop
 931007-hjaaj
 removed RSPMC and GETREF (now in rspmai.u)
 extracted **FILENAME=ORPCTL.UPD module as rsporp.u
 931004-pj+hjaaj
 merged previous updates (including some of the comments below and more),
 merged/inserted solvent and RSPSUP changes
-920613-ov: In rspe2c.u:
-           A lot of explicit DOUBLE PRECISION changed to REAL for CRAY
-           Statement functions DABS(X)=ABS(X) etc.
 920624-ov: New conversion factors in RSPPP from CODATA
 921125-hj: RSPMC  (rspe2c.u) consistency check with NCONRF, LSYMRF
            instead of NCONF,LSYM (because of problems with calls from
            ABACUS).  The NWOPT test has been disabled.
 920722-hjaaj
-extracted EISPACK RGG routines to file "rggeis.u"
 RSPNEX: new THRLDV definition for lin.dep.
 LRST: stop if RSPSUP true and restart (need some additional coding)
 920721-Hinne Hettema
@@ -1004,7 +996,7 @@ C
 C H2X ARE ONE INDEX TRANSFORMED INTEGRALS
 C
 C H2XAC CONTAIN HALF TRANSFORMED INTEGRALS. THE ONE INDEX TRANSFORMED
-C INTEGRALS ARE OBTAINED FROM H2XAC IN GETINT.
+C INTEGRALS ARE OBTAINED FROM H2XAC IN GETIN2.
 C
 #include "implicit.h"
 C
@@ -1100,6 +1092,9 @@ C           ... remove CREF component of E[2] vector
          END IF
 C
 C CREATE Y PART  <0,H2X,J> OF LINEAR TRANSFORMATION WITH E(2)
+C
+C (unless TDA or CISRPA, for which B block is by definition zero)
+      IF (TDA .OR. CISRPA) GO TO 100
 C
 C        Get FCXAC matrix for Y sigma vector
 C
@@ -1372,11 +1367,11 @@ C     CALL PHPINI(LPHPMX,KZCONF,KZWOPT,MAXPHP)
       NLOAD = 0
       NTSIM = 0
       IF (IPRRSP.GT.110) THEN
-         WRITE(LUPRI,*)'  GRADIENT VECTOR (Z-part and Y-part)'
+         WRITE(LUPRI,*)'LRST:  GRADIENT VECTOR (Z-part and Y-part)'
          CALL OUTPUT(GP,1,KZVAR,1,2,KZVAR,2,1,LUPRI)
       ENDIF
       IF (IPRRSP.GT.150) THEN
-         WRITE(LUPRI,*)' DIAGONAL HESSIAN MATRIX WVAL=0.0'
+         WRITE(LUPRI,*)'LRST: DIAGONAL HESSIAN MATRIX WVAL=0.0'
          CALL OUTPUT(WRK(KDIAE),1,KZVAR,1,1,KZVAR,1,1,LUPRI)
       ENDIF
       DO 150 ISIM = 1,KEXSIM,MAXSIM
@@ -3830,12 +3825,13 @@ C
 C     Call RSPCTL to solve propagator eigen problem
 C
       CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-     *            .FALSE.,BLANK,BLANK,DUMMY,DUMMY,WRK(KREDE),WRK(KREDS),
-     *            WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
-     *            XINDX,WRK(KWRK1),LWRK1)
+     &            .FALSE.,BLANK,BLANK,VDUMMY,
+     &            VDUMMY,WRK(KREDE),WRK(KREDS),
+     &            WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
+     &            XINDX,WRK(KWRK1),LWRK1)
 C     CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-C    *            LINEQ,GD,REDGD,REDE,REDS,
-C    *            IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
+C    &            LINEQ,LAB1,LAB2,GD,REDGD,REDE,REDS,
+C    &            IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 C
 C   Save the excitation energies for excited state gradient
 C   (singlet only for the moment)
@@ -3895,10 +3891,15 @@ C ---------------------------- test for non-adiabatic coupling:
                END IF
 C ---------------------------- not non-adiabatic coupling:
                JOP = JOP + 1
-               IF (IPRRSP.GT.0) WRITE(LUPRI,'(/A,A)')
-     *            '@ Transition operator type:    ',LBLPP(KSYMOP,IOP)
-               IF (IPRRSP.GT.11) WRITE(LUPRI,'(A,I4,A,L4)')
-     *              ' Operator symmetry:',KSYMOP,'; triplet = ',TRPLET
+               IF (IPRRSP.GT.0) THEN
+                  IF (TRPLET) THEN
+                     WRITE(LUPRI,'(/A,A)')
+     &        '@ Triplet transition operator label: ',LBLPP(KSYMOP,IOP)
+                  ELSE
+                     WRITE(LUPRI,'(/A,A)')
+     &        '@ Singlet transition operator label: ',LBLPP(KSYMOP,IOP)
+                  END IF
+               END IF
                DO 550 INUM = 1,NBX
                  LOCST = ISIM-1+INUM
                   IF ((RSPECD.OR.RSPOCD) .AND. (LOCST.GT.NPPCNV(KSYMOP))
@@ -4087,10 +4088,26 @@ C ---------------------------- not non-adiabatic coupling:
          CALL TITLER(PRI_LINE,'*',103)
          DO 555 INUM = 1,NBX
             PRI_LINE = ' '
-            WRITE (PRI_LINE,'(A,I5,A,I2,3A)')
+            IF (TRPLET) THEN
+               WRITE (PRI_LINE,'(A,I5,A,I2,3A)')
      &      '@ Excited state no:',(ISIM-1+INUM),' in symmetry',KSYMST,
-     &      '  ( ',REP(KSYMST-1),')'
+     &      '  ( ',REP(KSYMST-1),') - triplet excitation'
+            ELSE
+               WRITE (PRI_LINE,'(A,I5,A,I2,3A)')
+     &      '@ Excited state no:',(ISIM-1+INUM),' in symmetry',KSYMST,
+     &      '  ( ',REP(KSYMST-1),') - singlet excitation'
+            END IF
             CALL HEADER(PRI_LINE,0)
+            IF (KZCONF .GT. 1) THEN
+               EXCIT_TEST =
+     &         DNRM2(KZWOPT,WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),1) +
+     &         DNRM2(KZWOPT,WRK(KBVECS+(INUM-1)*KZYVAR+KZVAR+KZCONF),1)
+               IF (EXCIT_TEST .LT. 1.D-10) THEN
+                  WRITE(LUPRI,'(/A/A/)')
+     & '@ INFO: Excitation vector is only in configuration space',
+     & '@ INFO: thus this excited state is of a different spin symmetry'
+               END IF
+            END IF
             WRITE(LUPRI,'( A,1P,G16.8,A
      &                    /A,T22,3(G16.8,A)
      &                   //A,T22,G16.8,A)')
@@ -4697,7 +4714,7 @@ C
      *               WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
      *               XINDX,WRK(KWRK1),LWRK1)
 C        CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-C                    LINEQ,GD,REDGD,REDE,REDS,
+C    *               LINEQ,LAB1,LAB2,GD,REDGD,REDE,REDS,
 C    *               IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 C
          DO 700 IFREQ = 1,JFREQ,MXFREQ

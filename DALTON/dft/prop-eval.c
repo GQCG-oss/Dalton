@@ -1444,9 +1444,8 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
                         integer jtop = jblocks[jbl][1];
                         for(j=jblocks[jbl][0]-1; j<jtop; j++) { 
                             real *RESTRICT g0j = &aos[j*bllen];
-                            real s = 0;
-                            for(k=blstart; k<blend; k++)
-                                s += g0j[k]*tmp[k];
+                            int bllen = blend - blstart;
+                            real s = ddot_(&bllen, g0j+blstart, &ONEI, tmp+blstart, &ONEI);
                             excmat[j+ioff] += s;
                         }
                     }

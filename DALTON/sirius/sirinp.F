@@ -434,7 +434,6 @@ C <---
       DOCISD    = .FALSE. ! DO CISD
       DORSP     = RNRESP
       ABAIPH    = RNABAC
-      ADDMP2    = .FALSE.
 C     ... It is followed by an abacus run
       CORHOL    = .FALSE.
       CORRLX    = .FALSE.
@@ -848,6 +847,14 @@ C        ... active rotations will be deleted when
 C            SETWOP is called again because orbitals
 C            have been reordered after ORDRSS or ORD2SS /hjaaj aug 04
       END IF
+      IF (HFXMU .NE. 0.0D0 .AND. .NOT.DIRCAL) THEN
+         NINFO = NINFO + 1
+         IF (.NOT.DIRFCK) WRITE (LUPRI,'(/A)')
+     &   'INFO: switched to AO-direct Fock matrices because long-range'
+     &   //' corrected models as CAM-B3LYP will not work otherwise.'
+         DIRCAL = .TRUE.
+         DIRFCK = .TRUE.
+      END IF
 C
 C *** Open print unit(s).
 C     and initialize units for memory allocation routines
@@ -870,13 +877,6 @@ C
 C
       IF (DIRFCK) THEN
          LUSUPM = -1
-c        IF ((DOMP2 .AND..NOT.ADDMP2) .OR. DOCI .OR. DOMC) THEN
-c        IF (DOCI .OR. DOMC) THEN
-c           WRITE (LUPRI,'(/A/A)')
-c    &      'INPUT ERROR: Direct Fock matrix construction',
-c    &      '             not possible for MP2, CI, and MCSCF.'
-c           INPERR = INPERR + 1
-c        END IF
       END IF
 C
 C     set ITRFIN for ABAIPH
@@ -2525,6 +2525,7 @@ C           ... DOSCF may also be set with .CC
 C        ... flag for QCSCF -- quadratically convergent HF or DFT
 
 c     dodft should be enough but it is sometimes necessary to have also dftrun set.
+c     (especially for ABACUS)
          DFTRUN = .TRUE.
          DFTADD = .TRUE.
          LUSUPM   = -1
@@ -2554,7 +2555,6 @@ C        ... no P-supermatrix for DFT
             DOMP2    = .TRUE.
             FLAG(9)  = .TRUE.
             FLAG(3)  = .FALSE.
-            ADDMP2   = .TRUE.
          END IF
       GO TO 100
 C
@@ -2579,7 +2579,6 @@ C *** Option 21: .KSPT2
         NUMRUN   = NUMRUN + 1
         FLAG(9)  = .TRUE.
         FLAG(3)  = .FALSE.
-        ADDMP2   = .TRUE.
         READ (LUCMD,*) WDFTMP
       GO TO 100
 C *** Option 22: .GASCI

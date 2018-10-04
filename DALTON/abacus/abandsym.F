@@ -340,9 +340,8 @@ C
  100  CONTINUE
 C
       IF (IPRINT .GT. 7) THEN
-         WRITE (LUPRI,'(A)') '                            '
-         WRITE (LUPRI,'(A)') 'The transformed cyclic group' //
-     &                       'degenerate representations'
+         WRITE (LUPRI,'(/A)')
+     &      'The transformed cyclic group degenerate representations'
          DO 200 L = 1, NDEGIR
          DO 200 J = 1, NDEG
          DO 200 I = 1, NDEG
@@ -385,9 +384,8 @@ C
  100  CONTINUE
 C
       IF (IPRINT .GT. 7) THEN
-         WRITE (LUPRI,'(A)') '                            '
-         WRITE (LUPRI,'(A)') 'The transformed improper rotational' //
-     &                       'group degenerate representations'
+         WRITE (LUPRI,'(/A)') 'The transformed improper rotational' //
+     &                        ' group degenerate representations'
          DO 200 L = 1, NDEGIR
             WRITE (LUPRI,'(A,i4)') 'Degenerate irep', L
             DO 300 J = 1, NDEG
@@ -991,7 +989,7 @@ C
          IF (EXIST) GOTO 2700
 C
 C        *** We have now found a new symmetry coordinate, and find ***
-C        *** an adress for it.                                     ***
+C        *** an address for it.                                    ***
 C
          ISYMCO = ISYMCO + 1
 C
@@ -1074,16 +1072,13 @@ C
             WRITE (LUPRI,'(A,10F8.4)') '      ',
      &             (SYMCOR(ICOOR1,ICOOR2),ICOOR2=ISTRT,IEND)
          END DO
-         WRITE (LUPRI,'(A)') '                             '
-         WRITE (LUPRI,'(A)') '                             '
+         WRITE (LUPRI,'(/)')
       END DO
-      WRITE (LUPRI,'(A)') '                                '
+      WRITE (LUPRI,'()')
 C
       IF (IPRINT .GT. 20) THEN
-         WRITE (LUPRI,'(A)') '                                '
-         WRITE (LUPRI,'(A)') 'Transformation matrices for the ' //
+         WRITE (LUPRI,'(/A/)') 'Transformation matrices for the ' //
      &                       'different symmetry operations.'
-         WRITE (LUPRI,'(A)') '                                '
          DO IGORDR = 1, NGORDR
             WRITE (LUPRI,'(A,I4)') ' Matrix number: ', IGORDR
             DO I = 1, NUMTIM
@@ -1094,10 +1089,9 @@ C
                   WRITE (LUPRI,'(18F8.4)')
      &               (TRAMTX(IORDR1,IORDR2,IGORDR),IORDR1=ISTRT,IEND)
                END DO
-               WRITE (LUPRI,'(A)') '                              '
-               WRITE (LUPRI,'(A)') '                              '
+               WRITE (LUPRI,'(/)')
             END DO
-            WRITE (LUPRI,'(A)') '                              '
+            WRITE (LUPRI,'()')
          END DO
       END IF
 C
@@ -1320,7 +1314,7 @@ C
      &               WORK(KIDDEG),WORK(KIDEGI),NMORDR,NTORDR,IRSRDR,
      &               IORDR,IPRINT,C2NRGY)
 C
-C        *** Checkicng whether this is a dependent force constant ***
+C        *** Checking whether this is a dependent force constant  ***
 C        *** (as a result of using groups with degenerate ireps)  ***
 C
          DEPFC = .FALSE.

@@ -13,50 +13,50 @@ if $GREP -q "not implemented for parallel calculations" $log; then
 fi
 
 # SCF, MP2 and CCSD energies of 0 iteration:
-CRIT1=`$GREP "Final * HF energy: * -100\.01388196" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy: * -100\.22012568" $log | wc -l`
-CRIT3=`$GREP " H * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( |0)\.054453" $log | wc -l`
-CRIT4=`$GREP " F * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( \-|\-0)\.054453" $log | wc -l`
-CRIT5=`$GREP "Energy at this geometry is * : * -100\.220126" $log | wc -l`
-CRIT6=`$GREP "Norm of gradient * : * ( |0)\.077009" $log | wc -l`
-CRIT7=`$GREP "Norm of step * : * ( |0)\.081086" $log | wc -l`
+CRIT1=`$GREP -l "Final * HF energy: * -100\.01388196" $log | wc -l`
+CRIT2=`$GREP -l "Total MP2   energy: * -100\.22012568" $log | wc -l`
+CRIT3=`$GREP -l " H * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( |0)\.054453" $log | wc -l`
+CRIT4=`$GREP -l " F * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( \-|\-0)\.054453" $log | wc -l`
+CRIT5=`$GREP -l "Energy at this geometry is * : * -100\.220125" $log | wc -l`
+CRIT6=`$GREP -l "Norm of gradient * : * ( |0)\.07700" $log | wc -l`
+CRIT7=`$GREP -l "Norm of step * : * ( |0)\.08108" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7` 
-CTRL[1]=9
-ERROR[1]="INITIAL ITERATION IS ALLREADY NOT CORRECT"
+CTRL[1]=7
+ERROR[1]="INITIAL ITERATION IS ALREADY NOT CORRECT"
 
 
 # SCF, MP2 and CCSD energies of 1 iteration:
-CRIT1=`$GREP "Final * HF energy: *-100\.01858250" $log | wc -l`
-CRIT3=`$GREP "Total MP2   energy: *-100\.22301642" $log | wc -l`
-CRIT4=`$GREP " H * ( |0|\-0|-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( |0)\.014716" $log | wc -l`
-CRIT5=`$GREP " F * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( \-|\-0)\.014716" $log | wc -l`
-CRIT6=`$GREP "Energy at this geometry is * : * -100\.223016" $log | wc -l`
-CRIT7=`$GREP "Norm of gradient * : * ( |0)\.020812" $log | wc -l`
-CRIT8=`$GREP "Norm of step * : * ( |0)\.030029" $log | wc -l`
+CRIT1=`$GREP -l "Final * HF energy: *-100\.01858250" $log | wc -l`
+CRIT3=`$GREP -l "Total MP2   energy: *-100\.22301642" $log | wc -l`
+CRIT4=`$GREP -l " H * ( |0|\-0|-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( |0)\.014716" $log | wc -l`
+CRIT5=`$GREP -l " F * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( \-|\-0)\.014716" $log | wc -l`
+CRIT6=`$GREP -l "Energy at this geometry is * : * -100\.22301" $log | wc -l`
+CRIT7=`$GREP -l "Norm of gradient * : * ( |0)\.02081" $log | wc -l`
+CRIT8=`$GREP -l " Norm of step * : * ( |0)\.03002" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8` 
-CTRL[2]=9
-ERROR[2]="FIRST ITERATION IS ALLREADY NOT CORRECT"
+CTRL[2]=7
+ERROR[2]="FIRST ITERATION IS ALREADY NOT CORRECT"
 
 
 # SCF, MP2 and CCSD energies of 2 iteration:
-CRIT1=`$GREP "Final * HF energy: *-100\.01943291" $log | wc -l`
-CRIT3=`$GREP "Total MP2   energy: *-100\.22318964" $log | wc -l`
-CRIT4=`$GREP " H * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( \-|\-0)\.003535" $log | wc -l`
-CRIT5=`$GREP " F * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( |0)\.003535" $log | wc -l`
-CRIT6=`$GREP "Energy at this geometry is * : * -100\.223190" $log | wc -l`
-CRIT7=`$GREP "Norm of gradient * : * ( |0)\.005000" $log | wc -l`
-CRIT8=`$GREP "Norm of step * : * ( |0)\.00581[5-8]" $log | wc -l`
+CRIT1=`$GREP -l "Final * HF energy: *-100\.01943291" $log | wc -l`
+CRIT3=`$GREP -l "Total MP2   energy: *-100\.22318964" $log | wc -l`
+CRIT4=`$GREP -l " H * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( \-|\-0)\.003535" $log | wc -l`
+CRIT5=`$GREP -l " F * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( |0)\.003535" $log | wc -l`
+CRIT6=`$GREP -l "Energy at this geometry is * : * -100\.2231" $log | wc -l`
+CRIT7=`$GREP -l "Norm of gradient * : * ( |0)\.00(499|500)" $log | wc -l`
+CRIT8=`$GREP -l "Norm of step * : * ( |0)\.00581[5-8]" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8` 
-CTRL[3]=9
+CTRL[3]=7
 ERROR[3]="SECOND ITERATION IS NOT CORRECT"
 
 # Final summary:
-CRIT1=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * 1\.60280[23]" $log | wc -l`
-CRIT2=`$GREP " F * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.134513" $log | wc -l`
-CRIT3=`$GREP "Geometry converged in * 5 *iterations!" $log | wc -l`
-CRIT4=`$GREP "Energy at final geometry is * : *-100\.223199 a.u." $log | wc -l`
+CRIT1=`$GREP -l " H * ( |0)\.0000000000 * ( |0)\.0000000000 * 1\.60280[23]" $log | wc -l`
+CRIT2=`$GREP -l " F * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.134513" $log | wc -l`
+CRIT3=`$GREP -l "Geometry converged in * 5 *iterations!" $log | wc -l`
+CRIT4=`$GREP -l "Energy at final geometry is * : *-100\.223199 a.u." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 + $CRIT3 \+ $CRIT4` 
-CTRL[4]=10
+CTRL[4]=4
 ERROR[4]="FINAL SUMMARY IS NOT CORRECT"
 
 

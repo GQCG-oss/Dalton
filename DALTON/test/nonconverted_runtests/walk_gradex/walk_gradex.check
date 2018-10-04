@@ -2,9 +2,9 @@
 log=$1
 
 if [ `uname` = Linux ]; then
-   GREP="egrep -a"
+   GREP="egrep -a -l"
 else
-   GREP="egrep"
+   GREP="egrep -l"
 fi
 
 # WALK module
@@ -58,16 +58,14 @@ CRIT1=`$GREP "Walk type\: Gradient\-extremal walk" $log | wc -l`
 CRIT2=`$GREP "Index of critical point searched\: 1" $log | wc -l`
 CRIT3=`$GREP "Hessian mode selection \: * 1" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[6]=6
+CTRL[6]=3
 ERROR[6]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Initial gradient
-CRIT1=`$GREP "N * 0*\.000000.... * \-0*\.000000.... * 0*\.000003...." $log | wc -l`
-#CRIT2=`$GREP "H * 0*\.000000.... * 0*\.000000.... * \-0*\.000000...." $log | wc -l`
-CRIT3=`$GREP "H * \-0*\.000000.... * 0*\.000000.... * \-0*\.000001...." $log | wc -l`
-CRIT4=`$GREP "H * \-0*\.000000.... * \-0*\.000000.... * \-0*\.000001...." $log | wc -l`
-TEST[7]=`expr	$CRIT1 \+ $CRIT3 \+ $CRIT4`
-CTRL[7]=3
+# Norm of molecular gradient:     0.0000019026
+CRIT1=`$GREP "Norm of molecular gradient: * 0*\.00000[12]" $log | wc -l`
+TEST[7]=`expr	$CRIT1 `
+CTRL[7]=1
 ERROR[7]="INITIAL GRADIENT NOT CORRECT"
 
 # Initial Hessian
@@ -174,19 +172,19 @@ CTRL[16]=6
 ERROR[16]="FINAL GRADIENT AND HESSIAN EIGENVALUES NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "N * \-0*\.242169.... * (\-0|\-|0| )\.000000.... * 0*\.477136...." $log | wc -l`
-CRIT2=`$GREP "H *  1\.619596.... *  (\-0|\-|0| )\.000000.... * 0*\.38005....." $log | wc -l`
-CRIT3=`$GREP "H * \-1\.173052.... *  1\.614526.... * 0*\.52567....." $log | wc -l`
-CRIT4=`$GREP "H * \-1\.17305(1|2).... * \-1\.614527.... * 0*\.52567....." $log | wc -l`
+CRIT1=`$GREP "N * \-0*\.24216..... * (\-0|\-|0| )\.000000.... * 0*\.47713....." $log | wc -l`
+CRIT2=`$GREP "H *    1\.61959..... * (\-0|\-|0| )\.000000.... * 0*\.38005....." $log | wc -l`
+CRIT3=`$GREP "H *  \-1\.17305..... *   1\.614526.... * 0*\.52567....." $log | wc -l`
+CRIT4=`$GREP "H *  \-1\.17305..... * \-1\.614527.... * 0*\.52567....." $log | wc -l`
 TEST[17]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[17]=16
+CTRL[17]=4
 ERROR[17]="FINAL GEOMETRY NOT CORRECT"
 
 # Final analysis
 CRIT1=`$GREP "Vibrational analysis" $log | wc -l`
 CRIT2=`$GREP "Cioslowski population analysis and static polarizabilities only\." $log | wc -l`
 TEST[18]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[18]=3
+CTRL[18]=2
 ERROR[18]="FINAL ANALYSIS NOT SET UP CORRECTLY"
 
 # Dipole moment gradient
@@ -211,7 +209,7 @@ ERROR[19]="DIPOLE MOMENT GRADIENT NOT CORRECT"
 CRIT1=`$GREP "N * (\-0|\-)\.71633[0-9]" $log | wc -l`
 CRIT2=`$GREP "H * (0| )\.23878[0-9]" $log | wc -l`
 TEST[20]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[20]=4
+CTRL[20]=2
 ERROR[20]="CIOSLOWSKI CHARGES NOT CORRECT"
 
 # Static polarizabilities
@@ -223,8 +221,8 @@ CTRL[21]=3
 ERROR[21]="STATIC POLARIZABILITIES NOT CORRECT"
 
 # Rotational constants
-CRIT1=`$GREP "343485\.9(8|9).[0-9] * 343485\.9(8|9).[0-9] * 171742\.99.[0-9] MHz" $log | wc -l`
-CRIT2=`$GREP "11\.4574[5-6][0-9] * 11\.4574[5-6][0-9] * 5\.72873[0-9] cm\-1" $log | wc -l`
+CRIT1=`$GREP "34348[56]\..... * 343485\..... * 171742\..... MHz" $log | wc -l`
+CRIT2=`$GREP "11\.4574.. * 11\.4574.. * 5\.7287.. cm\-1" $log | wc -l`
 TEST[22]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[22]=2
 ERROR[22]="ROTATIONAL CONSTANTS NOT CORRECT"
@@ -241,14 +239,14 @@ CTRL[23]=6
 ERROR[23]="VIBRATIONAL FREQUENCIES NOT CORRECT"
 
 # Partition function
-CRIT1=`$GREP "50\.00 * 3\.180[0-9](D|E)\+04 * 13\.9[0-9] * 1\.0000 * 4\.44249[0-9](D|E)\+05" $log | wc -l`
-CRIT2=`$GREP "100\.00 * 1\.799[0-9](D|E)\+05 * 38\.4[0-9] * 1\.0000 * 6\.92287[0-9](D|E)\+06" $log | wc -l`
-CRIT3=`$GREP "200\.00 * 1\.017[0-9](D|E)\+06 * 107\.3[0-9] * 1\.000[0-9] * 1\.09286[0-9](D|E)\+08" $log | wc -l`
-CRIT4=`$GREP "273\.15 * 2\.218[0-9](D|E)\+06 * 170\.7[0-9] * 1\.000[0-9] * 3\.78940[0-9](D|E)\+08" $log | wc -l`
-CRIT5=`$GREP "298\.15 * 2\.761[0-9](D|E)\+06 * 194\.5[0-9] * 1\.000[0-9] * 5\.37601[0-9](D|E)\+08" $log | wc -l`
-CRIT6=`$GREP "300\.00 * 2\.804[0-9](D|E)\+06 * 196\.3[0-9] * 1\.000[0-9] * 5\.51052[0-9](D|E)\+08" $log | wc -l`
-CRIT7=`$GREP "800\.00 * 3\.256[0-9](D|E)\+07 * 850\.3[0-9] * 1\.100[0-9] * 3\.04869[0-9](D|E)\+10" $log | wc -l`
-CRIT8=`$GREP "1500\.00 * 1\.567[0-9](D|E)\+08 * 2179\.6[0-9] * 1\.641[0-9] * 5\.60913[0-9](D|E)\+11" $log | wc -l`
+CRIT1=`$GREP " 50\.00 * 3\.180[0-9](D|E)\+04 *  13\.9[0-9] * 1\.0000 * 4\.4424..(D|E)\+05" $log | wc -l`
+CRIT2=`$GREP "100\.00 * 1\.799[0-9](D|E)\+05 *  38\.4[0-9] * 1\.0000 * 6\.9228..(D|E)\+06" $log | wc -l`
+CRIT3=`$GREP "200\.00 * 1\.017[0-9](D|E)\+06 * 107\.3[0-9] * 1\.000. * 1\.0928..(D|E)\+08" $log | wc -l`
+CRIT4=`$GREP "273\.15 * 2\.218[0-9](D|E)\+06 * 170\.7[0-9] * 1\.000. * 3\.7894..(D|E)\+08" $log | wc -l`
+CRIT5=`$GREP "298\.15 * 2\.761[0-9](D|E)\+06 * 194\.5[0-9] * 1\.000. * 5\.3760..(D|E)\+08" $log | wc -l`
+CRIT6=`$GREP "300\.00 * 2\.804[0-9](D|E)\+06 * 196\.3[0-9] * 1\.000. * 5\.5105..(D|E)\+08" $log | wc -l`
+CRIT7=`$GREP "800\.00 * 3\.256[0-9](D|E)\+07 * 850\.3[0-9] * 1\.100. * 3\.0486..(D|E)\+10" $log | wc -l`
+CRIT8=`$GREP "1500\.00 * 1\.567[0-9](D|E)\+08 * 2179\.6.   * 1\.641. * 5\.6091..(D|E)\+11" $log | wc -l`
 TEST[24]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[24]=8

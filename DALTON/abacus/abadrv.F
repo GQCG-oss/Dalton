@@ -1484,7 +1484,7 @@ cs    write session
 cs
       IF (.NOT. ABASOP .AND. DOMP2 .AND. (NASHT .EQ. 0)) THEN
          WRITE(LUPRI,'(3A/A)') '@ ',WRDSRC,' properties not ' //
-     &        'available for MP2 wave functions!',
+     &        'available for MP2 wave functions! **PROPERTIES skipped.',
      &      '@ You may consider using SOPPA instead.'
          SKIPAB = .TRUE.
          GOTO 789
@@ -1964,26 +1964,24 @@ CAMT quit here to catch this...
       IF ((NSYM.GT.1).AND.
      &    (MAGSUS.OR.MOLGFA.OR.SPINRO).AND.(DFTRUN)) THEN
             IF (MAGSUS) THEN
-              WRITE(LUPRI,'(5X,A50)')
-     &           'WARNING: Magnetic Suceptibilities requested with '
-              WRITE(LUPRI,'(5X,A50)')
+              WRITE(LUPRI,'(5X,A)')
+     &           'WARNING: Magnetic Suceptibilities requested with ',
      &           '         DFT and symmetry but not yet implemented'
             ENDIF
             IF (MOLGFA) THEN
-              WRITE(LUPRI,'(5X,A50)')
-     &           'WARNING: Rotational g-tensors requested with     '
-              WRITE(LUPRI,'(5X,A50)')
+              WRITE(LUPRI,'(5X,A)')
+     &           'WARNING: Rotational g-tensors requested with     ',
      &           '         DFT and symmetry but not yet implemented'
             ENDIF
             IF (SPINRO) THEN
-              WRITE(LUPRI,'(5X,A50)')
-     &           'WARNING: Spin-rotation constants requested with  '
-              WRITE(LUPRI,'(5X,A50)')
+              WRITE(LUPRI,'(5X,A)')
+     &           'WARNING: Spin-rotation constants requested with  ',
      &           '         DFT and symmetry but not yet implemented'
             ENDIF
-              WRITE(LUPRI,'(5X,A50)')
+            WRITE(LUPRI,'(5X,A)')
      &           '         Please re-run with NoSymmetry...        '
-            CALL QUIT('Specified Mag. Props. NYI with Symm for DFT')
+            CALL QUIT('ERROR: Specified magnetic properties'//
+     &           ' not implemented with symmetry for DFT')
       ENDIF
 CAMT--------------
       IF (USE_PELIB()) THEN
@@ -2106,7 +2104,7 @@ C
       IF (.NOT. ABASOP .AND. DOMP2 .AND. (NASHT .EQ. 0)) THEN
          IF (.NOT. NO_ABACUS_INPUT)
      &   WRITE(LUPRI,'(/3A/A)') '@ INFO ',WRDSRC,' properties not ' //
-     &        'available for MP2 wave functions!',
+     &        'available for MP2 wave functions! **PROPERTIES skipped.',
      &      '@ INFO You may consider using SOPPA instead.'
          SKIPAB = .TRUE.
          GOTO 789

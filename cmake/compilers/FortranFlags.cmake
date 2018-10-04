@@ -1,7 +1,7 @@
 set(reorder_definitions "")
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     add_definitions(-DVAR_GFORTRAN)
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DVAR_GFORTRAN -ffloat-store -fcray-pointer")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DVAR_GFORTRAN -ffloat-store -fcray-pointer -std=legacy")
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "i386")
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -m32"

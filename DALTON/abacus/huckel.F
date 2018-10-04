@@ -398,9 +398,9 @@ C           (e.g. a 3d on Aluminium, not included in basis sets w/o pol)
 C        ... hjaaj sep 07: decrease if huckel basis bigger than user basis,
 C            e.g. if user is calculating with S-atom without d-orbitals.
          IF (NHUCAOI .NE. MHUCAOI) THEN
-            WRITE(LUPRI,'(/A,I2,A,I3,A,I3)')
+            WRITE(LUPRI,'(/A,I2,A,I0,A,I0)')
      &      'HUCDRV: reduced number of huckel orbitals in sym',ISYM,
-     &      ' from',NHUCAOI,' to',MHUCAOI
+     &      ' from ',NHUCAOI,' to ',MHUCAOI
             NHUCAOI = MHUCAOI
          END IF
 C        3) Do (CMO_{Nn})^{T}* (work(kscra2)) part

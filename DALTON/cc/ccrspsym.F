@@ -5862,7 +5862,7 @@ C  /* Deck cclstswap */
 *=====================================================================*
 C  /* Deck ilstsym */
 *=====================================================================*
-      INTEGER FUNCTION ILSTSYM(LIST, INDEX)
+      INTEGER FUNCTION ILSTSYM(LIST_in, INDEX)
 *---------------------------------------------------------------------*
 * PURPOSE: get symmetry for vector on list
 *
@@ -5910,11 +5910,16 @@ C  /* Deck ilstsym */
 !Lanczos
 #include "ccqlrlcz.h"
 
-      CHARACTER*(3) LIST
+      CHARACTER*(*) LIST_In
       INTEGER INDEX
+      CHARACTER*(3) LIST
       LOGICAL LEOOR
 
       LEOOR = .FALSE.
+
+!     Make sure LIST is defined for 3 characters;
+!     in some calls of ILSTSYM the LIST_in is only 2 characters. /hjaaj-May-2018
+      LIST  = LIST_in
 
 * begin:
       IF (LIST(1:2).EQ.'o1') THEN

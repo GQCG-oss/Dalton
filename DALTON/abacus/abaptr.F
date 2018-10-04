@@ -284,10 +284,12 @@ C
      2                LSMAX, MOFF(MXCORB), NCMOT, MXBAS1, MXBAS2, NNASHX
       COMMON /PTRINF/ THR1, THR2, DAWEIG, SQWEIG, IPRINT
       COMMON /PTRSYM/ NSYM, MUL(8,8), NENT(8,8), ISYOFF(8,8)
-      INTEGER    NDUM(8)
 #include "abainf.h"
 #include "inftap.h"
 #include "ccom.h"
+      INTEGER NDUM(8)
+      LOGICAL FNDLAB
+
       CALL QENTER('PTRMOS')
       THR1 = THRS
       THR2 = THRS
@@ -296,7 +298,11 @@ C     Modified to read full symmetry data     881006  PRT
 C     Used from LUSIFC: NCMOT_I, NNASHX, NSYM, MUL, NISH, NASH, NORB, NBAS
 C
       REWIND LUSIFC
-      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      IF ( .NOT.FNDLAB('SIR IPH ',LUSIFC) ) THEN
+      ! this might be a CI calculation
+         REWIND LUSIFC
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+      END IF
       READ (LUSIFC)
       READ (LUSIFC) NISHI,NASHI,NOCCI,NORBI,NBASI,NCONF,NWOPT,NWOPH,
      *              NCDETS,NCMOT_I,NNASHX,NNASHY,NNORBT,N2ORBT,
@@ -466,7 +472,7 @@ C
       INTEGER   T, U, V, X, TU, VX, TUVX, SIGMA, SIGMB, ALPHA, ALPHAP,
      *          IT(*)
       INTEGER*8 IBUF(*), IND
-      REAL*8    PV(*), CMO(*), BUF(*), P2(*), P4V(*)
+      REAL*8    PV(*), CMO(*), BUF(*), P2(*), P4V(*), WORK(*)
 C
 #include "priunit.h"
 #include "inftap.h"
@@ -478,7 +484,9 @@ C
      2                LSMAX, MOFF(MXCORB), NCMOT, MXBAS1, MXBAS2, NNASHX
       COMMON /PTRINF/ THR1, THR2, DAWEIG, SQWEIG, IPRINT
       COMMON /PTRSYM/ NSYM, MUL(8,8), NENT(8,8), ISYOFF(8,8)
-C
+
+      LOGICAL FNDLAB
+
       CALL QENTER('PT1TRA')
 C
 C     Initialize counters and rewind half-transformed 2-matrix
@@ -496,7 +504,11 @@ C
 C     Read PMAT and MOs.  This form will handle symmetry as is.
 C
       REWIND LUSIFC
-      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      IF ( .NOT.FNDLAB('SIR IPH ',LUSIFC) ) THEN
+      ! this might be a CI calculation
+         REWIND LUSIFC
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+      END IF
       READ (LUSIFC)
       READ (LUSIFC)
       CALL RD_SIRIFC('CMO',FOUND,CMO)
@@ -1992,10 +2004,16 @@ C  /* Deck ptrnod */
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
 #include "inftap.h"
 #include "inforb.h"
-C
+
+      LOGICAL FNDLAB
+
       CALL QENTER('PTRNOD')
       REWIND LUSIFC
-      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      IF ( .NOT.FNDLAB('SIR IPH ',LUSIFC) ) THEN
+      ! this might be a CI calculation
+         REWIND LUSIFC
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+      END IF
       READ (LUSIFC)
       READ (LUSIFC) (IDUM, I = 1,9), NCMOT,NNASHX
 C
@@ -2222,11 +2240,17 @@ C  /* Deck makpv1 */
 #include "infdim.h"
 #include "inforb.h"
 #include "inftap.h"
-C
+
+      LOGICAL FNDLAB
+
       CALL QENTER('MAKPV1')
 C
       REWIND LUSIFC
-      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      IF ( .NOT.FNDLAB('SIR IPH ',LUSIFC) ) THEN
+      ! this might be a CI calculation
+         REWIND LUSIFC
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+      END IF
       READ (LUSIFC)
       READ (LUSIFC)
       READ (LUSIFC)
@@ -2280,14 +2304,20 @@ C  /* Deck makpv2 */
 #include "infdim.h"
 #include "inforb.h"
 #include "inftap.h"
-C
+
+      LOGICAL FNDLAB
+
       CALL QENTER('MAKPV2')
 C
       KFREE  = 1
       LFREE = LWORK
       CALL MEMGET('REAL',KPV,N2ASHX*N2ASHX,WORK,KFREE,LFREE)
       REWIND LUSIFC
-      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      IF ( .NOT.FNDLAB('SIR IPH ',LUSIFC) ) THEN
+      ! this might be a CI calculation
+         REWIND LUSIFC
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+      END IF
       READ (LUSIFC)
       READ (LUSIFC)
       READ (LUSIFC)
@@ -2427,11 +2457,17 @@ C  /* Deck makpvq */
 #include "inforb.h"
 #include "inftap.h"
 #include "infinp.h"
-C
+
+      LOGICAL FNDLAB
+
       CALL QENTER('MAKPVQ')
 C
       REWIND LUSIFC
-      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      IF ( .NOT.FNDLAB('SIR IPH ',LUSIFC) ) THEN
+      ! this might be a CI calculation
+         REWIND LUSIFC
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+      END IF
       READ (LUSIFC)
       READ (LUSIFC)
       READ (LUSIFC)

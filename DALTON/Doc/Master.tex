@@ -13,7 +13,7 @@
  {hyperref}
 \usepackage[dvipsnames,svgnames,x11names,hyperref]{xcolor}
 \hypersetup{
- urlcolor=webbrown,linkcolor=blue,citecolor=red}
+ urlcolor=brown,linkcolor=blue,citecolor=red}
 
 \newcommand{\ignore}[1]{}
 \newcommand{\nobibentry}[1]{{\let\nocite\ignore\bibentry{#1}}}
@@ -108,7 +108,7 @@
 %\fi
 
 %\renewcommand{\thetable}{\Roman{table}}
-\newcommand{\latestrelease}{Dalton2017.alpha}
+\newcommand{\latestrelease}{Dalton2018.alpha}
 \newcommand{\dalton}{{\sc Dalton}}
 \newcommand{\her}{{\sc Hermit}\index{\sc Hermit}}
 \newcommand{\hermit}{{\sc Hermit}\index{\sc Hermit}}
@@ -186,7 +186,7 @@
 
 %
 \author{
-K.~Aidas
+K.~Aidas,
 C.~Angeli,
 K.~L.~Bak,
 V.~Bakken,
@@ -201,42 +201,45 @@ E.~K.~Dalskov,
 T.~Enevoldsen,
 J.~J.~Eriksen,
 R.~Faber,
-B.~Fern\'{a}ndez,
-L.~Ferrighi,\\
+B.~Fern\'{a}ndez,\\
+L.~Ferrighi,
 H.~Fliegl,
 L.~Frediani,
 B.~Gao,
-K.~Hald,
+A.~S.~P.~Gomes,
+K.~Hald,\\
 A.~Halkier,
 F.~B.~K.~Hansen,
-E.~D.~Hedeg\aa{}rd,\\
+E.~D.~Hedeg\aa{}rd,
 C.~H{\"a}ttig,
-H.~Heiberg,
+H.~Heiberg,\\
 T.~Helgaker,
 A.~C.~Hennum,
 H.~Hettema,
 E.~Hjerten\ae{}s,
 D.~Hr\v{s}ak,\\
 P.~A.~B.~Haase,
+S.~H{\"o}fener,
 M.~F.~Iozzi,
-B.~Jansik,
+C.~R.~Jacob,
+B.~Jansik,\\
 H.~J.~Aa.~Jensen,
 D.~Jonsson,
-P.~J{\o}rgensen,\\
+P.~J{\o}rgensen,
 M.~Kami{\'n}ski,
-J.~Kauczor,
+J.~Kauczor,\\
 S.~Kirpekar,
 W.~Klopper,
 S.~Knecht,
 R.~Kobayashi,
-H.~Koch,\\
-J.~Kongsted,
+H.~Koch,
+J.~Kongsted,\\
 A.~Ligabue,
 N.~H.~List,
 O.~B.~Lutn\ae{}s,
 J.~I.~Melo,
-K.~V.~Mikkelsen,\\
-R.~H.~Myhre,
+K.~V.~Mikkelsen,
+R.~H.~Myhre,\\
 C.~Neiss,
 C.~B.~Nielsen,
 P.~Norman,
@@ -266,6 +269,7 @@ P.~R.~Taylor,
 A.~M.~Teale,\\
 D.~P.~Tew,
 O.~Vahtras,
+L.~Visscher,
 D.~J.~D.~Wilson
 and H.~{\AA}gren.
 }
@@ -296,6 +300,7 @@ and H.~{\AA}gren.
 \include{finitefield}
 \include{Solvent}
 \include{embedding}
+\include{fde}
 \include{vibave}
 \include{relativity}
 \include{soppa}
@@ -342,7 +347,7 @@ and H.~{\AA}gren.
 \include{Appendix}
 \part{References}
 \bibliographystyle{unsrt}
-\bibliography{dalton,dft,Symm_tut}
+\bibliography{dalton,dft,Symm_tut,fde}
 %
 % Index
 %

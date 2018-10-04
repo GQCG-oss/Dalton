@@ -75,6 +75,14 @@ integral indices~\cite{directCC}.
 \item[\Key{DOUGLAS-KROLL}] Include scalar relativistic effects by using the
 Douglas-Kroll-Hess second-order (DKH2) transformed one-electron potential and kinetic energy Hamiltonian.
 
+\item[\Key{FDE}] activates the use of frozen density embedding (FDE) to include environment effects 
+(See Chapter~\ref{ch:fde-embedding} for an introduction to FDE). Further options may be specified via 
+the \Sec{FDE} input section (see subsection~\ref{subsec:fde}).  \index{frozen density embedding} \index{FDE} 
+\index{environment model} \index{embedding model} \index{multiscale modeling} \index{embedding} 
+\index{QM/QM} \index{quantum mechanics / quantum mechanics} \index{solvent effects} \index{enviroment effects} 
+\index{subsystem DFT}
+
+
 %\item[\Key{HERMIT}] Alternative keyword to \verb|.INTEGRALS|. Obsolete, do not use.
 
 \item[\Key{INPTES}] Test the input of the \Sec{*DALTON INPUT} input
@@ -211,27 +219,19 @@ and dynamic properties, using a previously converged and saved wave function and
 the molecular electrostatic potential after the wave function has converged.
 
 \item[\Key{RESPONSE}]
-
 Invoke the \resp\ module for the evaluation of static and dynamic
 properties, using a previously converged and saved wave function and saved integral files. See Chapter~\ref{ch:response}.
 
 \item[\Key{RUN ALL}]
-
-Invoke all the modules {\her}, {\sir}, {\resp}, and {\aba} for a single point
-     calculation.
+Invoke all the modules {\her}, {\sir}, {\resp}, and {\aba} for a single point calculation.
 
 \item[\Key{RUN PROPERTIES}]
-
-Invoke the modules {\her}, {\sir}, and {\aba} for a single point
-calculation.
+Invoke the modules {\her}, {\sir}, and {\aba} for a single point calculation.
 
 \item[\Key{RUN RESPONSE}]
-
-Invoke all the modules {\her}, {\sir}, and {\resp} for a single point
-calculation.
+Invoke all the modules {\her}, {\sir}, and {\resp} for a single point calculation.
 
 \item[\Key{RUN WAVE FUNCTIONS}]
-
 Invoke the modules {\her} and {\sir} for a single point energy calculation.
 
 %\item[\Key{RUNABA}] Alternative keyword to \verb|.RUN PROPERTIES|. Obsolete, do not use.
@@ -306,6 +306,10 @@ The implementation of redundant internal coordinates
 \index{redundant internal coordinates}\index{coordinate system!redundant internal coordinates}
 follows the work of Peng {\it et al.\/}~\cite{cppyahbsmjfjcc17}.
 In addition to this, several keywords for VRML visualization are included~\cite{VRML}.
+
+For wave function models where analytical molecular gradients and/or Hessians are not implemented,
+the displacements for evaluation of numerical gradients and Hessians
+are controlled by \Key{DISPLA} in module \Sec{*NMDDRV} (see subsection\ref{sec:nmddrv}).
 
 \begin{description}
 
@@ -412,14 +416,6 @@ Specifies that a first-order\index{first-order geometry optimization} method wit
 Davidon-Fletcher-Powell (DFP) update\index{DFP update}\index{molecular Hessian!Hessian update!DFP}
 formula should be used for optimization. May be used for both
 minimizations and transition state optimizations.
-
-\item[\Key{DISPLA}]\verb| |\newline
-\verb|READ (LUCMD,*) DISPLA|
-
-Read one more line containing the norm of the displacement vector to
-be used during numerical evaluation of the molecular gradient, as is
-needed when doing geometry optimizations with CI or MP2 wave
-functions. Default is $1.0\cdot 10^{-3}$ a.u.
 
 \item[\Key{ENERGY}]\verb| | \newline
 \verb|READ(LUCMD,*) THRERG|
@@ -1013,7 +1009,7 @@ Use the direct solver to determine the induced dipole moments. It will explicitl
 
 \item[\Key{ITERATIVE}]\verb| |\newline
 \verb|READ (LUCMD, *) THRITER| (optional)\verb| |\newline
-Use the iterative solver to determine the induced dipole moments. This is the default. The convergence threshold defaults to $1.0\cdot10^{-8} > \sum_{s=1}^{S}|\mu_s^{(k)} - \mu_s^{(k-1)}|$, where $k$ is the current iteration, but can also be provided with this option.
+Use the iterative solver to determine the induced dipole moments. This is the default. The convergence threshold defaults to $1.0\cdot10^{-8} > |\mu^{[k]} - \mu^{[]k-1]}|$, where $\mu$ is a vector containing all induced dipoles and $k$ is the iteration index, but can also be provided with this option.
 
 \item[\Key{BORDER}]\verb| |\newline
 1) \verb|READ (LUCMD, *) BORDER_TYPE, RMIN, AUORAA|\verb| |\newline
@@ -1043,7 +1039,7 @@ nearest site and removing all other parameters.
 
 \item[\Key{DAMP}] (deprecated)\verb| |\newline
 \verb|READ (LUCMD, *) DAMP| (optional)\verb| |\newline
-\textbf{This option has been deprecated and will be removed in a future release (see below for other options).} Damp the interactions between inducible dipole moments using Thole's exponential damping scheme~\cite{thole_damp_1,thole_damp_2}. The default damping coefficient is the standard 2.1304~\cite{thole_damp_2}.
+\textbf{This option has been deprecated and will be removed in a future release (see below for other options).} Damp the interactions between induced dipole moments using Thole's exponential damping scheme~\cite{thole_damp_1,thole_damp_2}. The default damping coefficient is the standard 2.1304~\cite{thole_damp_2}.
 
 \item[\Key{DAMP INDUCED}]\verb| |\newline
 \verb|READ (LUCMD, *) IND_DAMP| (optional)\verb| |\newline
@@ -1065,7 +1061,12 @@ Damp the electric fields from the electrons and nuclei in the core region based 
 Activate the ground-state polarization approximation, i.e.\ freeze the embedding potential according to the ground-state density. This means that the polarizable environment is self-consistently relaxed during the optimization of the ground-state density/wave function of the core molecular system and then kept frozen in any following response calculations.
 
 \item[\Key{NOMB}]\verb| |\newline
-Remove many-body effects in the environment. This is done by deactivating interactions between inducible dipole moments. 
+Remove many-body effects in the environment. This is done by deactivating interactions between induced dipole moments. 
+
+\item[\Key{EEF}]\verb| |\newline
+Request the calculation of effective dipole integrals (\verb|XLFDIPLN,YLFDIPLN,ZLFDIPLN|), i.e., 
+include the effective external field effect in property calculations in the \resp\ module. 
+NOTE: Does currently only affect 1PA and 2PA properties (.SINGLE RESIDUE and .DIPLEN or .TWO-PHOTON).
 
 \item[\Key{RESTART}]\verb| |\newline
 Use any existing files to restart calculation.
@@ -1093,6 +1094,9 @@ If the \verb|FIELD| option is given then also three cube files
 containing the Cartesian components of the electric field from the
 embedding potential will be created.
 
+\item[\Key{SKIPMUL}]\verb| |\newline
+Skip calculation of multipole--multipole interaction energy.
+
 \item[\Key{ISOPOL}]\verb| |\newline
 Converts all anisotropic polarizabilities into isotropic polarizabilities.
 
@@ -1102,11 +1106,6 @@ Remove all polarizabilities.
 \item[\Key{ZEROMUL}]\verb| |\newline
 \verb|READ (LUCMD, *) ZEROMUL_ORDER| (optional) \verb| |\newline
 Remove all multipoles of order \verb|ZEROMUL_ORDER| and up. The default is to remove all dipoles and higher-order multipoles (i.e. \verb|ZEROMUL_ORDER| = 1).
-
-\item[\Key{EEF}]\verb| |\newline
-Request the calculation of effective dipole integrals (\verb|XLFDIPLN,YLFDIPLN,ZLFDIPLN|), i.e., 
-include the effective external field effect in property calculations in the \resp\ module. 
-NOTE: Does currently only affect 1PA and 2PA properties (.SINGLE RESIDUE and .DIPLEN or .TWO-PHOTON).
 
 \item[\Key{VERBOSE}]\verb| |\newline
 Verbose output. Currently this will print the final converged induced dipole moments.
@@ -1250,6 +1249,54 @@ xyz coordinates of the center of cavity spheres, given in \angstrom{}.
 
 \end{description}
 
+
+\subsection{Frozen density embedding model: \Sec{FDE}}
+\label{subsec:fde}
+\index{frozen density embedding}
+\index{FDE}
+\index{environment model}
+\index{embedding model}
+\index{multiscale modeling}
+\index{embedding}
+\index{QM/QM}
+\index{quantum mechanics / quantum mechanics}
+\index{solvent effects}
+\index{enviroment effects}
+\index{subsystem DFT}
+
+This input section controls calculations using the frozen density embedding model.
+See Chapter~\ref{ch:fde-embedding} for more details on the method and implementation details.
+
+\begin{description}
+
+\item[\Key{EMBPOT}]\verb| |\newline
+\verb|READ (LUCMD, '(A60)') name |\verb| |\newline
+Specifies the name of the file containing the embedding potential over an integration grid (used to construct
+the matrix representation of the embedding potential), which is subsequently added to the one-electron Hamiltonian.
+This option can be used to specify a non-default name of the file that contains the embedding potential. The default name is \verb|EMBPOT|.
+
+%\item[\Key{GRIDOU}]\verb| |\newline
+%\verb|READ (LUCMD, *) name|\verb| |\newline
+%Enables the calculation and export of the total electrostatic potential and electron density, gradient and Hessian to the file
+%with name \verb|name|. The outputted file will be in XML format.
+%
+%\item[\Key{LEVEL}]\verb| |\newline
+%\verb|READ (LUCMD, *) ex_level|\verb| |\newline
+%Defines the wavefunction with which to calculate the total electrostatic potential and electron density, gradient and Hessian 
+%which will be exported. Default is \verb|HF|, supported options are: \verb|HF|, \verb|DFT|, \verb|MP22|, \verb|CC2|, \verb|CCSD|, \verb|MCSCF|.
+%
+%\item[\Key{EXONLY}]\verb| |\newline
+%\verb|READ (LUCMD, *) name|\verb| |\newline
+%Enables the calculation and export of the total electrostatic potential and electron density, gradient and Hessian to the file
+%with name \verb|name|, while disabling the import of embedding potentials. The outputted file will be in XML format.
+%
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD, *) pl|\verb| |\newline
+Sets the print level for the FDE contributions. The default is \verb|0|.
+
+\end{description}
+
+
 \subsection{Potential derived charges: \Sec{QFIT}}
 \label{subsec:qfit}
 
@@ -1332,13 +1379,13 @@ Displacement taken in a numerical differentiation\index{numerical
 differentiation!geometry}. This applies both for a numerical molecular
 molecular Hessian\index{molecular Hessian!numerical}, as well as in calculation of Raman
 intensities and optical activity\index{Raman intensity}\index{Raman optical activity}\index{ROA}.
-Read one more
-line specifying value~(*).  Default is~10$^{-4}$ a.u. However,
-note that this variable do not determine the displacements used
+Read one more line specifying value.  Default is~10$^{-4}$~bohr.
+However,
+note that this variable does not determine the displacements used
 when evaluating numerical gradient for use in first-order geometry
-optimizations with MP2 or CI wave\index{MP2}\index{CI}\index{M{\o}ller-Plesset!second-order}\index{Configuration Interaction}
-functions, which is controlled by the \Key{DISPLA} keyword in the
-\Sec{OPTIMIZE} module.
+optimizations controlled by the \Sec{OPTIMIZE} module, for example with
+MP2 or CI wave\index{MP2}\index{CI}\index{M{\o}ller-Plesset!second-order}\index{Configuration Interaction} functions,
+these displacements are controlled by the \Key{DISPLA} keyword in the \Sec{*NMDDRV} module.
 
 \item[\Key{DYNAMI}]
 Perform a ``dynamic walk''\index{dynamics}: integrate the
@@ -1696,7 +1743,8 @@ is~25, except for the Cray-T3D/E, where the default is 14.
 %end of the current file.
 %Default is that the molecular input is to be read from unit~9.
 
-\item[\Key{NOMOVE}] Do not move molecule to center-of-mass if doing automatic symmetry detection.
+\item[\Key{NOMOVE}]\verb| |\newline
+Do not move molecule to center-of-mass if doing automatic symmetry detection.
 Do not rotate the molecule after automatic symmetry detection to get maximum symmetry in the calculation
 (a rotation axis or a mirror plane normal vector must be along a coordinate axis for \dalton\ to use it).
 
@@ -1719,12 +1767,15 @@ Read threshold for considering atoms to be related by symmetry. Used
 in the automatic symmetry detection routines. Default is $5.0\cdot
 10^{-6}$.
 
-\item[\Key{UNCONT}] Force the program to use all input basis sets as primitive (completely decontracted) sets.
+\item[\Key{UNCONT}]
 
-\item[\Key{WRTLIN}] Write out the lines read in during the input
-  processing of the \molinp\ file. Primarily for debugging
-  purposes or for analyzing input errors in the \molinp\
-  file.
+Force the program to use all input basis sets as primitive (completely decontracted) sets.
+
+\item[\Key{WRTLIN}]
+
+Write out the lines read in during the input
+processing of the \molinp\ file. Primarily for debugging
+purposes or for analyzing input errors in the \molinp\ file.
 
 \item[\Key{ZCMVAL}]\verb| |\newline
 \verb|READ (LUCMD,*) ZCMVAL|
@@ -1749,6 +1800,8 @@ selected first- and second-order molecular properties.
 
 Reads in the step lengths (in atomic units) that is to be used in the
 numerical differentiation scheme. Default is 1.0D-2.
+This value is also used for any numerical gradients and Hessians for
+geometry optimizations controlled by the \Sec{OPTIMIZE} module.
 
 \item[\Key{DORDR}]\verb| |\newline
 \verb|READ (LUCMD,*) NMORDR, NAORDR|
@@ -1771,16 +1824,14 @@ coordinate displacements can be specified, corresponding to translational and
 rotational degrees of freedom.
 
 \item[\Key{HARMONIC FORCE FIELD}]\verb| |\newline
-
 At the end of the calculation, perform a vibrational analysis using
 the calculated molecular Hessian matrix.
 
 \item[\Key{MANUAL}]\verb| |\newline
-
 Dump each individual geometry input file to the \verb|DALTON.OUT|
 file. Primarily of interest for debugging purposes.
 
-\item[\Key{NORMAL}]
+\item[\Key{NORMAL}]\verb| |\newline
 Using this keyword the numerical differentiation will be carried out
 with respect to normal coordinates. The program will then do the
 necessary numerical differentiation to get the molecular Hessian (and thus
@@ -1789,7 +1840,6 @@ higher-order force field requested with respect to the calculated normal
 coordinates.
 
 \item[\Key{PRECALCULATED HESSIAN}]\verb| |\newline
-
 Use a precalculated molecular Hessian available on the \verb|DALTON.HES| file
 when defining normal coordinates. Only active in combination with the
 keyword \Key{NORMAL}.
@@ -1801,7 +1851,6 @@ Control the print level in the numerical derivative routines. Default
 is the same as the general print level \verb|IPRUSR|.
 
 \item[\Key{PROPAV}]\verb| |\newline
-
 Indicates that an averaging over vibrational motions of a molecular
 property (including the energy) is to be performed. The input
 for what kind of a vibrational analysis is to be performed is
@@ -1821,7 +1870,7 @@ functions\index{CC}\index{Coupled Cluster}. Notice that vibrationally
 averaged spin--spin coupling constants also can be calculated using
 the \Key{VIBANA} and \Sec{VIBANA} keywords and input section.
 
-\item[\Key{RESTRT}]
+\item[\Key{RESTRT}]\ \newline
 Controls the restart procedure. If a calculation crashes during a
 force constant calculation, there will be a file in the work directory
 called RSTRT.FC. This will contain all of the information necessary to
@@ -1829,7 +1878,6 @@ restart the calculation. If this file is available and the keyword is
 used, \dalton\ will attempt to restart the calculation.
 
 \item[\Key{REUSE HESSIAN}]\verb| |\newline
-
 If a (mixed) numerical molecular Hessian has been calculated, it will be saved
 in the file \verb|DALTON.HES| for possible future use.
 
@@ -1839,7 +1887,6 @@ numerical derivatives, a comparison of the numerical and analytical
 molecular Hessians will be done. Primarily used for testing.
 
 \item[\Key{SPECTRO INTERFACE}]\verb| |\newline
-
 Write an interface file \verb|DALTON.SPC| containing force fields of
 different orders suited for analysis with the SPECTRO
 program~\cite{spectroref}.
@@ -1855,7 +1902,6 @@ xy plane for a mirror plane. The current implementation only allows
 for symmetry use, when differentiating from energies.
 
 \item[\Key{TEST N}]\verb| |\newline
-
 Test if the normal coordinates used for calculated geometrical
 derivatives give rise to force fields with appropriate
 symmetries. Mainly for debugging purposes.
@@ -1873,7 +1919,6 @@ terms of zero-point vibrationally averaged properties.
 \begin{description}
 
 \item[\Key{ANHA-P}]\verb| |\newline
-
 Requests the calculation of the anharmonic contribution to a
 vibrationally averaged molecular property, requiring the use of the
 first-order perturbed vibrational wave function (requiring knowledge
@@ -1882,21 +1927,18 @@ molecular property. See also the keyword \Key{HARM-P}. Currently only
 implemented for spin--spin coupling constants.
 
 \item[\Key{CUBIC }]\verb| |\newline
-
 Calculate the molecular Hessian and third derivatives and write the files
 \verb|DALTON.HES| and \verb|DALTON.WLK| for use in future 
 calculation of the vibrationally averaged properties using the
 \Key{ONLY-P} keyword.
 
 \item[\Key{EFFECTIVE GEOMETRY}]\verb| |\newline
-
 The effective geometry is calculated. This geometry corresponds to the
 zero-point vibrationally averaged geometry and is thus often referred
 to as the $r_z$ geometry. For more information on the effective
 geometry, see Refs.~\cite{poakrprtjcp112,krpoaprtjcp112}.
 
 \item[\Key{HARM-P}]\verb| |\newline
-
 Requests the calculation of the harmonic contribution to a
 vibrationally averaged molecular property, requiring the use of the
 unperturbed vibrational wave function and the second derivative of the
@@ -1904,12 +1946,10 @@ molecular property. See also the keyword \Key{ANHA-P}. Currently only
 implemented for spin--spin coupling constants.
 
 \item[\Key{MODE ANALYSIS}]\verb| |\newline
-
 Request an analysis of the contribution of the different vibrational modes
 to the total zero-point vibrational corrections to a molecular property.
 
 \item[\Key{ONLY-P}]\verb| |\newline
-
 Calculate only the equilibrium value and derivatives of the molecular property
 required to calculate the (harmonic and anharmonic) vibrational average. 
 In order for this to work, \verb|DALTON.HES| and \verb|DALTON.WLK| files containing the molecular Hessian 
@@ -1923,7 +1963,6 @@ When calculating vibrationally averaged properties use the basis set in the
 calculating the property and property derivatives.
 
 \item[\Key{SPIN-SPIN COUPLINGS}]\verb| |\newline
-
 Requests the calculation of indirect spin--spin coupling constants.
 If combined with the keywords \Key{HARM-P} and \Key{ANHA-P}, the
 zero-point vibrational corrections to these coupling constants will be

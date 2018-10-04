@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['cc_fop_freeze.dal'], ['cc_fop_freeze.mol'], {'out': f})
+test.run(['cc_fop_freeze.dal'], ['cc_fop_freeze.mol'], f={'out': f})
 
 sys.exit(test.return_code)
