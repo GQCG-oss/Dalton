@@ -1590,6 +1590,15 @@ C
       DATA STAR8/'********'/
 C
       CALL QENTER('OPTST ')
+
+      IF (ISTATE .GT. NCONF) THEN
+         WRITE(LUPRI,'(//A,I0,A,I0)')
+     &   'FATAL ERROR: requested .STATE ',ISTATE,
+     &   ' is greater than number of configurations: ',NCONF
+         CALL QUIT('ERROR: '//
+     &   'requested .STATE is greater than number of configurations')
+      END IF
+
 C     Transfer ICI0 to local variable ICSTRT
       ICSTRT = ICI0
 C

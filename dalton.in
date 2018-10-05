@@ -640,7 +640,7 @@ fi
 
 # copy files listed under -get back from scratch directory
 if [ "x$GET_FILES" != "x" ]; then
-   echo Copying files requested with --get back from scratch directory
+   echo Copying files requested with -get back from scratch directory
    for file in $GET_FILES; do
        cp -v -p $file $WRKDIR/$outnam.$file
    done

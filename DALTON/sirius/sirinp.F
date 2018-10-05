@@ -855,6 +855,14 @@ C        ... active rotations will be deleted when
 C            SETWOP is called again because orbitals
 C            have been reordered after ORDRSS or ORD2SS /hjaaj aug 04
       END IF
+      IF (HFXMU .NE. 0.0D0 .AND. .NOT.DIRCAL) THEN
+         NINFO = NINFO + 1
+         IF (.NOT.DIRFCK) WRITE (LUPRI,'(/A)')
+     &   'INFO: switched to AO-direct Fock matrices because long-range'
+     &   //' corrected models as CAM-B3LYP will not work otherwise.'
+         DIRCAL = .TRUE.
+         DIRFCK = .TRUE.
+      END IF
 C
 C *** Open print unit(s).
 C     and initialize units for memory allocation routines
