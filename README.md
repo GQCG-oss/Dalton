@@ -1,4 +1,4 @@
-[![pipeline status](https://gitlab.com/dalton/dalton/badges/master/pipeline.svg)](https://gitlab.com/dalton/dalton/pipelines) [![coverage report](https://gitlab.com/dalton/dalton/badges/master/coverage.svg)](https://gitlab.com/dalton/dalton/pipelines)
+[![pipeline status](https://gitlab.com/dalton/dalton/badges/master/pipeline.svg)](https://gitlab.com/dalton/dalton/pipelines) [![coverage report](https://gitlab.com/dalton/dalton/badges/master/coverage.svg?job=nightly-coverage)](https://gitlab.com/dalton/dalton/pipelines)
 
 Nightly runs on full testset: https://testboard.org/cdash/index.php?project=Dalton
 
