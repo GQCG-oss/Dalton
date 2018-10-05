@@ -3,9 +3,6 @@ variables:
     GIT_SUBMODULE_STRATEGY: "recursive"
     GET_SOURCES_ATTEMPTS: "10"
 
-after_script:
-    - ps -u `whoami`
-
 fedora-26-serial:
     image: foeroyingur/fedora:26
     variables:
@@ -26,12 +23,14 @@ fedora-26-serial:
         - gcc -v
         - g++ -v
     script:
-        - python setup --coverage --type=debug -D SITE=GitLabCI
+        - python setup --coverage --type=debug -D SITE=GitLabCI -D BUILDNAME=$CI_COMMIT_REF_NAME
         - cd build
         - make -j 4
         - ctest -L essential --output-on-failure
         - ctest -D ExperimentalCoverage
         - ctest -D ExperimentalSubmit
+    except:
+        - schedules
 
 fedora-26-mpi:
     image: foeroyingur/fedora:26
@@ -61,6 +60,8 @@ fedora-26-mpi:
         - cd build
         - make -j 4
         - ctest -L essential --output-on-failure
+    except:
+        - schedules
 
 ubuntu-16.04-serial:
     image: devcafe/ubuntu16.04-gcc5.3.1-openmpi1.10-mkl2017.4.239
@@ -86,6 +87,8 @@ ubuntu-16.04-serial:
         - cd build
         - make -j 4
         - ctest -L essential --output-on-failure
+    except:
+        - schedules
 
 ubuntu-16.04-mpi:
     image: devcafe/ubuntu16.04-gcc5.3.1-openmpi1.10-mkl2017.4.239
@@ -115,6 +118,8 @@ ubuntu-16.04-mpi:
         - cd build
         - make -j 4
         - ctest -L essential --output-on-failure
+    except:
+        - schedules
 
 ubuntu-18.04-serial:
     image: devcafe/ubuntu18.04-gcc7.3.0-openmpi2.1.0-mkl2017.4.239
@@ -142,6 +147,8 @@ ubuntu-18.04-serial:
         - cd build
         - make -j 4
         - ctest -L essential --output-on-failure
+    except:
+        - schedules
 
 ubuntu-18.04-mpi:
     image: devcafe/ubuntu18.04-gcc7.3.0-openmpi2.1.0-mkl2017.4.239
@@ -173,3 +180,36 @@ ubuntu-18.04-mpi:
         - cd build
         - make -j 4
         - ctest -L essential --output-on-failure
+    except:
+        - schedules
+
+nightly-coverage:
+    only:
+        - schedules
+    allow_failure: true
+    tags:
+        - dalton
+    image: foeroyingur/fedora:26
+    variables:
+        DALTON_NUM_MPI_PROCS: "1"
+        OMP_NUM_THREADS: "1"
+    before_script:
+        - whoami
+        - ps -u `whoami`
+        - uname -a
+        - lscpu
+        - free -m
+        - df -h
+        - ulimit -a
+        - git --version
+        - cmake --version
+        - python -V
+        - gfortran -v
+        - gcc -v
+        - g++ -v
+    script:
+        - python setup --coverage --type=release -D SITE=GitLabCI -D BUILDNAME=$CI_COMMIT_REF_NAME
+        - cd build
+        - export CTEST_MAKE_NUM_PROCS=4
+        - make -j 4
+        - ctest -L dalton -j 4 --output-on-failure -D Nightly
