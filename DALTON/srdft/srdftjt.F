@@ -599,8 +599,7 @@ C*****************************************************************************
 !     temp_grd2 is to be used if some grd2 need to be zeroed before
 !     calling finite-differnce.
       real*8 :: mu
-      save icall
-      data icall/0/
+      save icall = 0
 
 C     exchange functionals
       external ESRX_PBEHSEERF, ESRX_PBETCSERF, ESRX_PBERIERF
@@ -619,10 +618,6 @@ C     spin functionals
       external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA
 C     sr mdc func
       external ESRC_MD_LDAERF
-
-      ! for debug prints (counter for grid points)
-      integer :: inpt
-      logical :: use_spindns
 
 c  Exchange  ------------------------------------------------------------
 
@@ -778,9 +773,13 @@ C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
         call SPIN_PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
       IF(DOSRC_VWN5_S) THEN
-        use_spindns = triplet .or. dft_spindns
-        call DESRSPIN(ESRC_LDAERFSPIN_VWN5,rho(1),rho(2),
-     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
+        if (triplet .or. dft_spindns) then
+           call DESRSPIN(ESRC_LDAERFSPIN_VWN5,rho(1),rho(2),
+     >             CHIVAL,.true.,NORDER,Ec,d1Ec,d2Ec)
+        else
+           call DESRSPIN(ESRC_LDAERFSPIN_VWN5,rho(1),rho(2),
+     >             CHIVAL,.false.,NORDER,Ec,d1Ec,d2Ec)
+        end if
       ENDIF
       IF(DOSRC_PBEGWS_S) THEN
         ! PBEGWS_S has no grdss and no grds.grdc dependency,
