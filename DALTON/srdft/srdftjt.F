@@ -57,7 +57,7 @@ C     Created : 15-02-05, J. Toulouse
 C     Modified: 17-08-09, J. Toulouse, add spin density
 C     Modified: Feb. 2016 E. Hedegaard add spin gradient
 C*****************************************************************************
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
 #include "mxcent.h"
 #include "dummy.h"
@@ -80,19 +80,27 @@ C*****************************************************************************
       real*8, parameter :: D2 = 2.0D0
 
       logical, intent(in) :: DOLND,DOGGA,DOERG,DOGRD,DOATR,TRIPLET
+      integer, intent(in) :: IPRINT_in, ND_SIM
 
       logical :: FROMVX
-      REAL*8 :: EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
+      integer :: IPRINT, NSKIP1, N_RS_GT_RT, LUQUAD, LDUMMY,
+     &           NPNTS_PER_NODE, MY_FIRST_POINT, MY_LAST_POINT, NPNTS,
+     &           NPOINT, NPNT1, IPNT_ST, IPNT_END, THRINT, IPRINT_x, I,
+     &           NORDER, LWORK, JDXTAO, JDXSAO, NBUF, IPNT
+      real*8 :: EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
      &          GSO(NBAST*NTYPSO),NCNT(NBAST),
      &          DMAGAOSR(NBAST,2),
-     &          COR(3),RESULTS(11),WORK(LWORK)
+     &          COR(3),RESULTS(11),WORK(LWORK),
+     &          ExInt, EcInt, ELCTRN, SPINDEN, THRELCTOT, THRSRHO,
+     &          THRDRHO, ELCTRSKIP, THRELCTRN, THRESRHO, WGHT, WGHTX,
+     &          WGHTC, RHOC13, DELCTRN, RHOS13
 
       character(len=17) :: QUADNAME
 
-      INTEGER, SAVE :: NTOT_DFTGRID_save = -1
+      integer, save :: NTOT_DFTGRID_save = -1
 
-      REAL*8 :: RHO(4), RHG(3,4), GRD2(6)
+      real*8 :: RHO(4), RHG(3,4), GRD2(6)
 C     ... RHO(1) = rhoc = rho_a + rho_b
 C     ... RHO(2) = rhos = rho_a - rho_b
 C     ... RHO(3) = rhoa = rho_a
@@ -444,7 +452,7 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
 !                      d1Excdrhoc,d1Excdgrdcc,DOGGA,FROMVX,DFTHRL)
        else if (domcsrdft .and. .not. docisrdft) then
           if (dogga .and. dft_spindns) then ! special treatment if gga + spin
-              CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
+             CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
      &             d1Exc,DFTHRL)
 !                  d1Exc = (d1Excdrhoc,d1Excdrhos, d1Excdgrdcc,d1Excdgrdss,d1Excdgrdcs)
           else                              ! GGA without spin density or LDA
@@ -459,7 +467,7 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
           end if
        else ! if hfsrdft
           IF (DFT_SPINDNS) CALL QUIT('no HFsrDFT with open shells')
-             CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
+          CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
      &                d1Exc(1)  ,d1Exc(3)    ,DOGGA,FROMVX,DFTHRL)
 !                     d1Excdrhoc,d1Excdgrdcc,DOGGA,FROMVX,DFTHRL)
        end if
@@ -574,7 +582,7 @@ C    Created : 15-02-05, J. Toulouse
 C    Modified: 17-08-09, J. Toulouse, add spin density
 C    Modified: 15-08-16, E. Hedegaard, add spin density gradient
 C*****************************************************************************
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -598,9 +606,8 @@ C*****************************************************************************
 
 !     temp_grd2 is to be used if some grd2 need to be zeroed before
 !     calling finite-differnce.
+      integer, save :: icall=0
       real*8 :: mu
-      save icall
-      data icall/0/
 
 C     exchange functionals
       external ESRX_PBEHSEERF, ESRX_PBETCSERF, ESRX_PBERIERF
@@ -620,9 +627,6 @@ C     spin functionals
 C     sr mdc func
       external ESRC_MD_LDAERF
 
-      ! for debug prints (counter for grid points)
-      integer :: inpt
-      logical :: use_spindns
 
 c  Exchange  ------------------------------------------------------------
 
@@ -778,9 +782,13 @@ C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
         call SPIN_PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
       IF(DOSRC_VWN5_S) THEN
-        use_spindns = triplet .or. dft_spindns
-        call DESRSPIN(ESRC_LDAERFSPIN_VWN5,rho(1),rho(2),
-     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
+        if (triplet .or. dft_spindns) then 
+           call DESRSPIN(ESRC_LDAERFSPIN_VWN5,rho(1),rho(2),
+     >             CHIVAL,.true.,NORDER,Ec,d1Ec,d2Ec)
+        else
+           call DESRSPIN(ESRC_LDAERFSPIN_VWN5,rho(1),rho(2),
+     >             CHIVAL,.false.,NORDER,Ec,d1Ec,d2Ec)
+        end if
       ENDIF
       IF(DOSRC_PBEGWS_S) THEN
         ! PBEGWS_S has no grdss and no grds.grdc dependency,
@@ -875,7 +883,7 @@ C     Modified: 17-08-09, J. Toulouse,  add spin density
 C     Modified: 16-02-16, E. Hedegaard, add spin gradient
 C     Modified: April-18, H. J. Aa. Jensen, new simpler structure for ESRX_ *and ESRC_*
 C***************************************************************************
-         implicit none
+      implicit none
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"

@@ -25,10 +25,10 @@
 !
 !
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C*****************************************************************************
 C  /* Deck srfun_input */
       SUBROUTINE SRFUN_INPUT(SRFTMP)
-C**************************************************************
+C*****************************************************************************
 C
 C     Written by Jesper Kielberg Pedersen, Sep. 2003
 C
@@ -37,7 +37,7 @@ C     Process input from .SRFUN keyword in *SCF INPUT
 C     which defines the Exchange and Correlation functionals
 C     to be used for the DFT-hybrid model in question.
 C
-C**************************************************************
+C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dftcom.h"
@@ -459,7 +459,7 @@ C        then set HF exchange factor to zero.
       RETURN
       END
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C*****************************************************************************
       SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,
      &                 DOERG,DOGRD,DOATR,TRIPLET,WORK,LWORK,IPRINT_in)
 C*****************************************************************************
@@ -812,7 +812,7 @@ C
       CALL QEXIT('SRDFT')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C*****************************************************************************
       SUBROUTINE SRDFT1(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
      &                  WEIGHT,NBUF,GSO,NCNT,DMAGAOSR,DMAGAOT,DOGGA,
      &                  DOERG,DOGRD,DOATR,TRIPLET,RESULTS,WORK,LWORK,
@@ -1242,7 +1242,7 @@ C
       RETURN
       END
 C /* Deck srdftexc */
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C*****************************************************************************
       SUBROUTINE SRDFTEXC(XKSR,ZKSR,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
      &                    CHIVAL,ERFEXP,LSRLDA,VXB,ldebug,VLAMBDA)
 C*****************************************************************************
@@ -1428,7 +1428,7 @@ c
       END
 #ifdef JKP_DEBUG
 C /* Deck mcrho */
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C*****************************************************************************
       SUBROUTINE MCRHO(CMO,INDXCI,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
@@ -1516,7 +1516,7 @@ C
       CALL TIMER('MCRHO',TIMSTR,TIMEND)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C*****************************************************************************
       SUBROUTINE MCRHO1(CMO,DV,DOLND,CORX,CORY,CORZ,WEIGHT,NBUF,GSO,
      &                  NCNT,DMAGAO,DOGGA,CREF,INDXCI,DODCAO,DCAO,DVAO,
      &                  WORK,LWORK,IPRINT)
@@ -1702,15 +1702,18 @@ C
       END
 #endif  /* JKP_DEBUG */
 C /* Deck srdftltr */
+C*****************************************************************************
       SUBROUTINE SRDFTLTR(KSYMOP,DTRMAT,EXCMAT,WGHT,GAO,GAO1,CHIVAL,
      &                    ERFEXP,LSRLDA,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
      &                    RHG,DTGAO,VLAMBDA)
+C*****************************************************************************
 C
 C     Jesper K. Pedersen. Nov. 2003
 C     Purpose : Generate the 1-index transformed dft Hessian
 C               needed for short-range DFT hybrids.
 C     Based on DFTLTR used in regular DFT.
 C
+C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2041,8 +2044,10 @@ c
       END
 
 C  /* Deck srfmat */
+C*****************************************************************************
       SUBROUTINE SRFMAT(FMAT,CMO,DVREF,EJCSR,EJVSR,EDSR,EDFT,
      >                  EMYDFTAUX,UEJCVSR,WRK,LWRK,IPRINT)
+C*****************************************************************************
 C
 C     20-Mar-2003 Jesper K. Pedersen
 C
@@ -2066,6 +2071,7 @@ C                  +1.0 * Tr (V^{sr,ref}_{xc} . D^c)
 
 C     * Note that for ensemble CI-srDFT, D^{v,ref} should be, here, equal to the
 C       ensemble density matrix
+C*****************************************************************************
 C                
 C
 C
@@ -2227,9 +2233,11 @@ C
       RETURN
       END
 
+C*****************************************************************************
       SUBROUTINE SRFMAT_vensemble(FMAT,CMO,UDVREF,DVREF,DIFFDVREF,
      &                            diff_ejvsr,diff_edsr,uEDFT,
      >                            WRK,LWRK,IPRINT)
+C*****************************************************************************
 !
 !     !> brief: calculate various terms needed to make a variational ensemble energy
 !     !> author: S. Knecht and E. Fromager based on the routine by J. K. Pedersen
@@ -2240,6 +2248,7 @@ C
 !     EDFT  = E^{sr}_{xc} [D^c+D^{v,ref}] 
 !
 !     !> input: ensemble density matrices D^{v,ref}, D^{v,upd} and D^{v,diff} = D^{v,upd}-D^{v,ref}
+C*****************************************************************************
  
 #include "implicit.h"
       DIMENSION FMAT(*),CMO(*),UDVREF(*),DVREF(*),DIFFDVREF(*),WRK(*)
@@ -2448,13 +2457,16 @@ c
       RETURN
       END
 C  /* Deck srdftso */
+C*****************************************************************************
       SUBROUTINE SRDFTSO(DCVAL,UDV,V2C_SR,EOVEC)
+C*****************************************************************************
 C
 C  Copyright Dec-2003 Hans Joergen Aa. Jensen
 C  for MCSRDFT (based on SOLGO code).
 C
 C  Purpose: Add V2C_SR orbital sigma vector contribution to EOVEC.
 C
+C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION UDV(NASHT,*), V2C_SR(NORBT,*), EOVEC(*)
@@ -2516,7 +2528,9 @@ C
 C     end of srdftso.
       END
 C  /* Deck rsp_srdftso */
+C*****************************************************************************
       SUBROUTINE RSP_SRDFTSO(UDV,V2C_SR,EVEC)
+C*****************************************************************************
 C
 C  Copyright June 2010 Hans Joergen Aa. Jensen
 C
@@ -2529,6 +2543,7 @@ C        <0| [q_KL, V^([2c],xc-SR) ] |0>
 C
 C  UDV    : active density matrix of reference state |0>
 C
+C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION UDV(NASHDI,*), V2C_SR(NORBT,*), EVEC(*)
