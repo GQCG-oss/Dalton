@@ -501,9 +501,9 @@ C              .ELEMNT
                      ABS_GAMMA_ELEMENT = .TRUE.
                      READ (LUCMD,*) ABS_NELEMENTS_GAMMA
                      IF (ABS_NELEMENTS_GAMMA .GT. 81) THEN
-                       CALL QUIT(' Too many elements specified for                              
-     &                             gamma tensor: ',ABS_NELEMENTS_GAMMA,
-     &                             ', maximum = 81) ')
+                       CALL QUIT(' Too many elements specified for'//
+     &                           ' gamma tensor: ',ABS_NELEMENTS_GAMMA,
+     &                           ', maximum = 81) ')
                      END IF
                      READ (LUCMD,*)
      &               (ABS_ELEMENTS_GAMMA(J),J=1,ABS_NELEMENTS_GAMMA)

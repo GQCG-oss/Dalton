@@ -2875,8 +2875,8 @@ C EXTEND REDUCED GRADIENTS
 C
          IZYRED= 2*IZRED
          IF (IPRRSP.GT.100) THEN
-            WRITE(LUPRI,*)'  GRADIENT VECTOR (Z-part and Y-part)'
-            CALL OUTPUT(GP,1,2,1,KZVAR,2,KZVAR,-1,LUPRI)
+            WRITE(LUPRI,*)'RSPRED: GRADIENT VECTOR (Z-part and Y-part)'
+            CALL OUTPUT(GP,1,KZVAR,1,2,KZVAR,2,1,LUPRI)
             WRITE(LUPRI,*)KEXSIM,' REDUCED GRADIENT VECTORS DIM IZYRED',
      &         IZYRED
          ENDIF
@@ -2913,7 +2913,7 @@ C
          IF (IPRRSP.GE.15) THEN
             DO I = 1,KEXSIM
                WRITE(LUPRI,'(/I3,A,I5)') I,
-     &            ' REDUCED GRADIENT VECTORS (GZ, GY) DIM KZRED', KZRED
+     &            '. REDUCED GRADIENT VECTOR (GZ, GY) DIM KZRED', KZRED
                CALL OUTPUT(REDGP(1+(I-1)*KZYRED),1,2,1,KZRED,
      &            2,KZRED,-1,LUPRI)
             END DO
@@ -3174,7 +3174,7 @@ C           CALL JACO(F,V,NB,NMAX,NROWV,BIG,JBIG)
                BCVEC(I) = BCVEC( (I*I+I)/2 )
             END DO
             ! CALL ORDER(WRK,BCVEC,KZYRED,0)
-            WRITE(LUPRI,*) 'The eigenvalues of S[2] reduced matri'
+            WRITE(LUPRI,*) 'The eigenvalues of S[2] reduced matrix'
             CALL OUTPUT(BCVEC,1,2,1,KZRED,2,KZRED,-1,LUPRI)
 
             CALL DCOPY(NNZYRED,REDE,1,BCVEC,1)
