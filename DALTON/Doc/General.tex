@@ -1011,7 +1011,7 @@ Use the direct solver to determine the induced dipole moments. It will explicitl
 
 \item[\Key{ITERATIVE}]\verb| |\newline
 \verb|READ (LUCMD, *) THRITER| (optional)\verb| |\newline
-Use the iterative solver to determine the induced dipole moments. This is the default. The convergence threshold defaults to $1.0\cdot10^{-8} > \sum_{s=1}^{S}|\mu_s^{(k)} - \mu_s^{(k-1)}|$, where $k$ is the current iteration, but can also be provided with this option.
+Use the iterative solver to determine the induced dipole moments. This is the default. The convergence threshold defaults to $1.0\cdot10^{-8} > |\mu^{[k]} - \mu^{[]k-1]}|$, where $\mu$ is a vector containing all induced dipoles and $k$ is the iteration index, but can also be provided with this option.
 
 \item[\Key{BORDER}]\verb| |\newline
 1) \verb|READ (LUCMD, *) BORDER_TYPE, RMIN, AUORAA|\verb| |\newline
@@ -1041,7 +1041,7 @@ nearest site and removing all other parameters.
 
 \item[\Key{DAMP}] (deprecated)\verb| |\newline
 \verb|READ (LUCMD, *) DAMP| (optional)\verb| |\newline
-\textbf{This option has been deprecated and will be removed in a future release (see below for other options).} Damp the interactions between inducible dipole moments using Thole's exponential damping scheme~\cite{thole_damp_1,thole_damp_2}. The default damping coefficient is the standard 2.1304~\cite{thole_damp_2}.
+\textbf{This option has been deprecated and will be removed in a future release (see below for other options).} Damp the interactions between induced dipole moments using Thole's exponential damping scheme~\cite{thole_damp_1,thole_damp_2}. The default damping coefficient is the standard 2.1304~\cite{thole_damp_2}.
 
 \item[\Key{DAMP INDUCED}]\verb| |\newline
 \verb|READ (LUCMD, *) IND_DAMP| (optional)\verb| |\newline
@@ -1063,7 +1063,12 @@ Damp the electric fields from the electrons and nuclei in the core region based 
 Activate the ground-state polarization approximation, i.e.\ freeze the embedding potential according to the ground-state density. This means that the polarizable environment is self-consistently relaxed during the optimization of the ground-state density/wave function of the core molecular system and then kept frozen in any following response calculations.
 
 \item[\Key{NOMB}]\verb| |\newline
-Remove many-body effects in the environment. This is done by deactivating interactions between inducible dipole moments. 
+Remove many-body effects in the environment. This is done by deactivating interactions between induced dipole moments. 
+
+\item[\Key{EEF}]\verb| |\newline
+Request the calculation of effective dipole integrals (\verb|XLFDIPLN,YLFDIPLN,ZLFDIPLN|), i.e., 
+include the effective external field effect in property calculations in the \resp\ module. 
+NOTE: Does currently only affect 1PA and 2PA properties (.SINGLE RESIDUE and .DIPLEN or .TWO-PHOTON).
 
 \item[\Key{RESTART}]\verb| |\newline
 Use any existing files to restart calculation.
@@ -1091,6 +1096,9 @@ If the \verb|FIELD| option is given then also three cube files
 containing the Cartesian components of the electric field from the
 embedding potential will be created.
 
+\item[\Key{SKIPMUL}]\verb| |\newline
+Skip calculation of multipole--multipole interaction energy.
+
 \item[\Key{ISOPOL}]\verb| |\newline
 Converts all anisotropic polarizabilities into isotropic polarizabilities.
 
@@ -1100,11 +1108,6 @@ Remove all polarizabilities.
 \item[\Key{ZEROMUL}]\verb| |\newline
 \verb|READ (LUCMD, *) ZEROMUL_ORDER| (optional) \verb| |\newline
 Remove all multipoles of order \verb|ZEROMUL_ORDER| and up. The default is to remove all dipoles and higher-order multipoles (i.e. \verb|ZEROMUL_ORDER| = 1).
-
-\item[\Key{EEF}]\verb| |\newline
-Request the calculation of effective dipole integrals (\verb|XLFDIPLN,YLFDIPLN,ZLFDIPLN|), i.e., 
-include the effective external field effect in property calculations in the \resp\ module. 
-NOTE: Does currently only affect 1PA and 2PA properties (.SINGLE RESIDUE and .DIPLEN or .TWO-PHOTON).
 
 \item[\Key{VERBOSE}]\verb| |\newline
 Verbose output. Currently this will print the final converged induced dipole moments.
