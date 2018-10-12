@@ -23,12 +23,14 @@ fedora-26-serial:
         - gcc -v
         - g++ -v
     script:
+        - dnf install -y findutils
         - python setup --coverage --type=debug -D SITE=GitLabCI -D BUILDNAME=$CI_COMMIT_REF_NAME
         - cd build
         - make -j 4
         - ctest -L essential --output-on-failure
         - ctest -D ExperimentalCoverage
         - ctest -D ExperimentalSubmit
+        - bash <(curl -s https://codecov.io/bash) -t 69d70b17-576f-459e-8f6c-409607c9f06b
     except:
         - schedules
 
@@ -208,8 +210,10 @@ nightly-coverage:
         - gcc -v
         - g++ -v
     script:
+        - dnf install -y findutils
         - python setup --coverage --type=release -D SITE=GitLabCI -D BUILDNAME=$CI_COMMIT_REF_NAME
         - cd build
         - export CTEST_MAKE_NUM_PROCS=4
         - make -j 4
         - ctest -L dalton -j 4 --output-on-failure -D Nightly
+        - bash <(curl -s https://codecov.io/bash) -t 69d70b17-576f-459e-8f6c-409607c9f06b
