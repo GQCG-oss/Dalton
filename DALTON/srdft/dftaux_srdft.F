@@ -107,19 +107,18 @@ C     VXSB = d1E(5) = d(e_xc) / d(grdcs)
 C
 C*****************************************************************************
       implicit none
-C
-      real*8  GAO(NBAST), GAO1(NBAST,3), RHG(3,2)
-      real*8  EXCMAT(NBAST,NBAST,2), d1E(5)
-      real*8  DFTHRL
-C
 ! inforb.h : NBAST, NSYM
 #include "inforb.h"
-
+C
+      real*8, intent(in) :: GAO(NBAST), GAO1(NBAST,3), RHG(3,2),
+     &                      d1E(5), DFTHRL
+      real*8, intent(inout) :: EXCMAT(NBAST,NBAST,2)
+C
       ! local variables:
-      real*8  VXB, VXC, VSB, VSC, VXSB
-      real*8  FX, FY, FZ, SX, SY, SZ
-      real*8  FC, FCS
-      integer I, J, ISYM, ISTR, IEND
+      real*8 :: VXB, VXC, VSB, VSC, VXSB
+      real*8 :: FX, FY, FZ, SX, SY, SZ
+      real*8 :: FC, FCS
+      integer :: I, J, ISYM, ISTR, IEND
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
@@ -181,15 +180,17 @@ C     VXC = d(e_xc) / d(rhoc)
 C     VXB = d(e_xc) / d(grdcc)
 C
 C*****************************************************************************
-#include <implicit.h>
-      PARAMETER (D2 = 2.0D0)
-C
-      LOGICAL DOGGA, FROMVX
-      REAL*8  GAO(NBAST), GAO1(NBAST,3), EXCMAT(NBAST,NBAST), RHG(3)
-      REAL*8  VXC, VXB, DFTHRL
-
+      implicit none
 #include "inforb.h"
-
+      real*8, parameter :: D2 = 2.0D0
+C
+      logical, intent(in) :: DOGGA, FROMVX
+      real*8, intent(in) :: GAO(NBAST), GAO1(NBAST,3), RHG(3),
+     &                      VXC, VXB, DFTHRL
+      real*8, intent(inout) :: EXCMAT(NBAST,NBAST)
+C
+      integer :: I, IEND, ISTR, ISYM, J
+      real*8 :: FC, FX, FY, FZ, GJ, GVXC
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
