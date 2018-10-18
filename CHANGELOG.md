@@ -36,6 +36,9 @@
 - More documentation of .STEX in manual.
 - Default induced-dipole solver in polarizable embedding (through .PEQM keyword) is changed to JI/DIIS method, which improves parallel scaling performance, and default convergence threshold for induced dipoles is changed $`1.0\cdot10^{-8}>|\mu^{[k]}-\mu^{[k-1]}|`$ where $`\mu`$ is a vector containing all induced dipoles and $`k`$ is the iteration index.
 
+### Deprecated
+- Environment variable DALTON_NUM_MPI_PROCS is deprecated and will be removed in future releases, use DALTON_LAUNCHER instead
+
 ### Removed
 
 

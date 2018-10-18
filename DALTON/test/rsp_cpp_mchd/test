@@ -15,7 +15,7 @@ f.add(string = 'Final HF energy:',
 f.add(re = '[XYZ]DIPLEN * [XYZ]DIPLEN',
       rel_tolerance = 1.0e-4)
 
-f.add(re = 'DBGJC',
+f.add(re = '#MCHD#',
       rel_tolerance = 1.0e-4)
 
 test.run(['mchd.dal'], ['h2o2.mol'], f={'out': f})

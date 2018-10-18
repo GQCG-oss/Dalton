@@ -2199,9 +2199,9 @@ C           Add contribution to orientational average
      &        DAMPING*XTEV,' eV =',
      &        DAMPING*XTKAYS,' cm-1'
       END IF
-! -------------------------------------------------------------------
-!     Magneto-Chiral Dichroism and Birefringence (J. Cukras, 2013)
-! -------------------------------------------------------------------
+c -------------------------------------------------------------------
+c     Magneto-Chiral Dichroism and Birefringence (J. Cukras, 2013)
+c -------------------------------------------------------------------
 
       IF ( ABSLRS_MCHD ) THEN
          LUFU=-1
@@ -2315,15 +2315,15 @@ C Loop for A
                   A2TERMRE = 0.0
                   A2TERMIM = 0.0
                END IF
-!               WRITE(LUPRI,'(A)') ' '
+c               WRITE(LUPRI,'(A)') ' '
                BTMP = QRFFRQ(IQRF,1)
                CTMP = QRFFRQ(IQRF,2)
             END IF
             WRITE(LUFU,'(I5,3A10,3F10.6,2F16.6)') IQRF,
      &              (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
      &              RES_BETA(IQRF,2),RES_BETA(IQRF,1)
-! Orientational avarage form
-! A_{\alpha,\alpha\beta,\beta}         
+c Orientational avarage form
+c A_{\alpha,\alpha\beta,\beta}         
                IF ((QRFLAB(IQRF,1)(:1).EQ.'X')
      &              .AND.(QRFLAB(IQRF,2)(:2).EQ.'XX')
      &              .AND.(QRFLAB(IQRF,3)(:1).EQ.'X')) THEN
@@ -2448,39 +2448,27 @@ C                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
      &        DAMPING*XTEV,' eV =',
      &        DAMPING*XTKAYS,' cm-1'
          WRITE(LUPRI,*) ''
-         CALL PRSYMB(LUPRI,'-',94,1)
-!          WRITE(LUPRI,'(A13,A13,A13,A13,A13,A13,A13)') 'FREQ',
-!      &   'Re(G_abg)','Im(G_abg)','Re(A_aabb)','Im(A_aabb)',
-!      &   "B(A')+B(G)",'Dichro'
-         WRITE(LUPRI,'(A5,A10,A13,A13,A13,A13,A13,A13,A13)') '',
-     &   'DAMPING','FREQ',
+         CALL PRSYMB(LUPRI,'-',99,1)
+         WRITE(LUPRI,'(A6,A10,A10,A10,A11,A11,A11,A11,A10,A10,A10)') '',
+     &   'FREQ',
      &   'Re(G_abg)','Im(G_abg)',
      &   'Re(A_aabb)','Im(A_aabb)',
-     &   "B(A')+B(G)",'Dichro'
-         CALL PRSYMB(LUPRI,'-',94,1)
+     &   'Re(A_abba)','Im(A_abba)',
+     &   "Birefr",'Dichro'
+         CALL PRSYMB(LUPRI,'-',99,1)
          DO IFREQ=1,NFREQ_BETA_B
          BIREFR(IFREQ)=(FREQ_BETA_B(IFREQ)/5.0D0)*AIMAABB(IFREQ)*
      &   0.5D0+
      &   GREABG(IFREQ)*0.25D0
          DICHRO(IFREQ)=(FREQ_BETA_B(IFREQ)/5.0D0)*AREAABB(IFREQ)*0.5D0+
      &   GIMABG(IFREQ)*0.25D0
-!          WRITE(LUPRI,'(F13.6,F13.6,F13.6,F13.6,F13.6,F13.6,F13.6)')
-!      &   FREQ_BETA_B(IFREQ),0.25*GREABG(IFREQ),
-!      &   0.25*GIMABG(IFREQ),0.5*AREAABB(IFREQ),0.5*AIMAABB(IFREQ),
-!      &   BIREFR(IFREQ),
-!      &   DICHRO(IFREQ)
-!          WRITE(LUPRI,'(A15,F13.6)') "DBGJC B(A')=",
-!      &   0.5*AIMAABB(IFREQ)*
-!      &   FREQ_BETA_B(IFREQ)/5
-         WRITE(LUPRI,'(A5,F10.6,F13.6,F13.6,
-     &   F13.6,F13.6,F13.6,F13.6,F13.6)')
-     &   "DBGJC",DAMPING,FREQ_BETA_B(IFREQ),0.25D0*GREABG(IFREQ),
+         WRITE(LUPRI,'(A6,F10.6,F10.6,F10.6,
+     &   F11.6,F11.6,F11.6,F11.6,F10.6,F10.6,F10.6)')
+     &   "#MCHD#",FREQ_BETA_B(IFREQ),0.25D0*GREABG(IFREQ),
      &   0.25D0*GIMABG(IFREQ),0.5D0*AREAABB(IFREQ),0.5D0*AIMAABB(IFREQ),
+     &   0.5D0*AREABBA(IFREQ),0.5D0*AIMABBA(IFREQ),
      &   BIREFR(IFREQ),
      &   DICHRO(IFREQ)
-         WRITE(LUPRI,'(A15,F13.6)') "DBGJC B(A')=",
-     &   0.5D0*AIMAABB(IFREQ)*
-     &   FREQ_BETA_B(IFREQ)/5.0D0
          END DO
          CALL GPCLOSE(LUFU,'KEEP')
       END IF
