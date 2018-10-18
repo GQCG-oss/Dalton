@@ -574,7 +574,7 @@ C    Created : 15-02-05, J. Toulouse
 C    Modified: 17-08-09, J. Toulouse, add spin density
 C    Modified: 15-08-16, E. Hedegaard, add spin density gradient
 C*****************************************************************************
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -583,7 +583,7 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 
-      real*8, intent(in) :: rho(4),grd2(6),CHIVAL,VLAMBDA
+      real*8, intent(in) :: rho(4), grd2(6), CHIVAL, VLAMBDA
 !     grd2(1:6) = (grdcc, grdss, grdcs, grdaa, grdbb, grdab)
       integer, intent(in) :: NORDER
       logical, intent(in) :: triplet
@@ -596,10 +596,8 @@ C*****************************************************************************
       real*8, intent(out) :: Ex, d1Ex(5), d2Ex(15)
       real*8, intent(out) :: Ec, d1Ec(5), d2Ec(15)
 
-!     temp_grd2 is to be used if some grd2 need to be zeroed before
-!     calling finite-differnce.
       real*8 :: mu
-      save icall = 0
+      integer, save :: icall = 0
 
 C     exchange functionals
       external ESRX_PBEHSEERF, ESRX_PBETCSERF, ESRX_PBERIERF
