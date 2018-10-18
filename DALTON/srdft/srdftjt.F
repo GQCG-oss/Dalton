@@ -74,32 +74,35 @@ C*****************************************************************************
 #include "dftcom.h"
 #include "chrnos.h"
 
+      ! Need intention on many of the inputs for this subroutine!
       real*8, parameter :: D0 = 0.0D0
       real*8, parameter :: DP5 = 0.5D0
       real*8, parameter :: D1 = 1.0D0
       real*8, parameter :: D2 = 2.0D0
+      real*8, parameter :: THRELCTOT = 1.0D-7
+      real*8, parameter :: THRESRHO  = 1.0D-8
 
-      logical, intent(in) :: DOLND,DOGGA,DOERG,DOGRD,DOATR,TRIPLET
+      logical, intent(in) :: DOLND, DOGGA, DOERG, DOGRD, DOATR, TRIPLET
+      integer, intent(in) :: ND_SIM, NBUF, IPRINT_in
 
       logical :: FROMVX
       real*8 :: EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
-     &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
-     &          GSO(NBAST*NTYPSO),NCNT(NBAST),
+     &          CORX(NBUF), CORY(NBUF), CORZ(NBUF), WEIGHT(NBUF),
+     &          GSO(NBAST*NTYPSO), NCNT(NBAST),
      &          DMAGAOSR(NBAST,2),
-     &          COR(3),RESULTS(11),WORK(LWORK)
+     &          COR(3), RESULTS(11), WORK(LWORK)
 
       character(len=17) :: QUADNAME
 
       integer, save :: NTOT_DFTGRID_save = -1
 
-!     From removing implicit.h
-      integer :: ND_SIM, NBUF, LWORK, IPRINT_in, i, IPNT, IPNT_END,
+      integer :: LWORK, i, IPNT, IPNT_END,
      &           IPNT_ST, IPRINT, IPRINT_x, JDXSAO, JDXTAO, LDUMMY,
      &           LUQUAD, my_first_point, my_last_point, N_RS_GT_RT,
      &           NORDER, NPNT1, NPNTS, NPNTS_PER_NODE, NPOINT, NSKIP1
       real*8 :: DELCTRN, EcInt, ELCTRN, ELCTRSKIP, ExInt, rhoc13,
-     &          rhos13, SPINDEN, THRDRHO, THRELCTOT, THRELCTRN,
-     &          THRESRHO, THRINT, WGHT, WGHTC, WGHTX
+     &          rhos13, SPINDEN, THRELCTRN,
+     &          THRINT, WGHT, WGHTC, WGHTX
 
       real*8 :: RHO(4), RHG(3,4), GRD2(6)
 C     ... RHO(1) = rhoc = rho_a + rho_b
@@ -128,6 +131,7 @@ C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
       ! d1Exc(1:5) =  d1Excdrhoc, d1Excdrhos, d1Excdgrdcc, d1Excdgrdss, d1Excdgrdcs
 
 #if SRDFT_DEBUG > 10
+      integer :: j, k
       real*8 :: print_thr
       print_thr = 0.0d0
 #endif
@@ -223,13 +227,11 @@ C     Integrated spin density
 C     Thresholds for screening
 C     THRELCTRN makes sure that error in no. of electrons
 C     from grid integration less than DFTHR
-      THRELCTOT = 1.0D-7
+      !real*8, parameter :: THRELCTOT = 1.0D-7
+      !real*8, parameter :: THRESRHO  = 1.0D-8
+      DFTHRI    = D0 ! real*8 from dftcom.h
+      DFTHRL    = D0 ! real*8 from dftcom.h
       THRELCTRN = D0
-      THRESRHO  = 1.0D-8
-      THRDRHO   = D0
-      DFTHR0    = D0
-      DFTHRI    = D0
-      DFTHRL    = D0
 
 C     Skipped grid points and nb of electrons
       NSKIP1 = 0
@@ -304,6 +306,8 @@ C     Quadrature weight
       WGHTC = WGHT
 
 C     Get AOs
+C     DFTHRI is always zero, thus THRINT is always zero
+C       Is this a bug or feature?
       THRINT = DFTHRI/WGHT
       COR(1) = CORX(IPNT)
       COR(2) = CORY(IPNT)
