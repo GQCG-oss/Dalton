@@ -57,7 +57,7 @@ C     Created : 15-02-05, J. Toulouse
 C     Modified: 17-08-09, J. Toulouse, add spin density
 C     Modified: Feb. 2016 E. Hedegaard add spin gradient
 C*****************************************************************************
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
 #include "mxcent.h"
 #include "dummy.h"
@@ -82,7 +82,7 @@ C*****************************************************************************
       logical, intent(in) :: DOLND,DOGGA,DOERG,DOGRD,DOATR,TRIPLET
 
       logical :: FROMVX
-      REAL*8 :: EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
+      real*8 :: EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
      &          GSO(NBAST*NTYPSO),NCNT(NBAST),
      &          DMAGAOSR(NBAST,2),
@@ -90,9 +90,18 @@ C*****************************************************************************
 
       character(len=17) :: QUADNAME
 
-      INTEGER, SAVE :: NTOT_DFTGRID_save = -1
+      integer, save :: NTOT_DFTGRID_save = -1
 
-      REAL*8 :: RHO(4), RHG(3,4), GRD2(6)
+!     From removing implicit.h
+      integer :: ND_SIM, NBUF, LWORK, IPRINT_in, i, IPNT, IPNT_END,
+     &           IPNT_ST, IPRINT, IPRINT_x, JDXSAO, JDXTAO, LDUMMY,
+     &           LUQUAD, my_first_point, my_last_point, N_RS_GT_RT,
+     &           NORDER, NPNT1, NPNTS, NPNTS_PER_NODE, NPOINT, NSKIP1
+      real*8 :: DELCTRN, EcInt, ELCTRN, ELCTRSKIP, ExInt, rhoc13,
+     &          rhos13, SPINDEN, THRDRHO, THRELCTOT, THRELCTRN,
+     &          THRESRHO, THRINT, WGHT, WGHTC, WGHTX
+
+      real*8 :: RHO(4), RHG(3,4), GRD2(6)
 C     ... RHO(1) = rhoc = rho_a + rho_b
 C     ... RHO(2) = rhos = rho_a - rho_b
 C     ... RHO(3) = rhoa = rho_a
