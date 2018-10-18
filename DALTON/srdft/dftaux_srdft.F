@@ -218,9 +218,14 @@ C
             ! Meta-GGA tau part of FC
             DO I = 1, NBAST
                EXCMAT(1,J,1) = EXCMAT(1,J,1) 
-     &                        + 0.5d0*VXT*GAO1(J,1)*GAO1(I,1)
-     &                        + 0.5d0*VXT*GAO1(J,2)*GAO1(I,2)
-     &                        + 0.5d0*VXT*GAO1(J,3)*GAO1(I,3)
+     &                        + 0.5d0*VXT * (GAO1(J,1)*GAO1(I,1)
+     &                                     + GAO1(J,2)*GAO1(I,2)
+     &                                     + GAO1(J,3)*GAO1(I,3))
+C     &                        + VXL * (GAO2(J)*GAO(I)
+C     &                               + GAO(J)*GAO2(I)
+C     &                               + 2.0d0*GAO1(J,1)*GAO1(I,1)
+C     &                               + 2.0d0*GAO1(J,2)*GAO1(I,2)
+C     &                               + 2.0d0*GAO1(J,3)*GAO1(I,3)
             END DO
 
             FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
@@ -230,9 +235,14 @@ C
             ! Meta-GGA tau part of FCS
             DO I = 1, NBAST
                EXCMAT(1,J,2) = EXCMAT(1,J,2) 
-     &                        + 0.5d0*VST*GAO1(J,1)*GAO1(I,1)
-     &                        + 0.5d0*VST*GAO1(J,2)*GAO1(I,2)
-     &                        + 0.5d0*VST*GAO1(J,3)*GAO1(I,3)
+     &                        + 0.5d0*VST * (GAO1(J,1)*GAO1(I,1)
+     &                                     + GAO1(J,2)*GAO1(I,2)
+     &                                     + GAO1(J,3)*GAO1(I,3))
+C     &                        + VSL * (GAO2(J)*GAO(I)
+C     &                               + GAO(J)*GAO2(I)
+C     &                               + 2.0d0*GAO1(J,1)*GAO1(I,1)
+C     &                               + 2.0d0*GAO1(J,2)*GAO1(I,2)
+C     &                               + 2.0d0*GAO1(J,3)*GAO1(I,3)
             END DO
          END DO
       ELSE
@@ -245,18 +255,28 @@ C
                IF (abs(FC).GT.DFTHRL) THEN
                   DO I = ISTR, IEND
                      EXCMAT(I,J,1) = EXCMAT(I,J,1) + FC*GAO(I)
-     &                              + 0.5d0*VXT*GAO1(J,1)*GAO1(I,1)
-     &                              + 0.5d0*VXT*GAO1(J,2)*GAO1(I,2)
-     &                              + 0.5d0*VXT*GAO1(J,3)*GAO1(I,3)
+     &                              + 0.5d0*VXT * (GAO1(J,1)*GAO1(I,1)
+     &                                           + GAO1(J,2)*GAO1(I,2)
+     &                                           + GAO1(J,3)*GAO1(I,3))
+C     &                              + VXL * (GAO2(J)*GAO(I)
+C     &                                     + GAO(J)*GAO2(I)
+C     &                                     + 2.0d0*GAO1(J,1)*GAO1(I,1)
+C     &                                     + 2.0d0*GAO1(J,2)*GAO1(I,2)
+C     &                                     + 2.0d0*GAO1(J,3)*GAO1(I,3)
                   END DO
                END IF
                FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
                IF (abs(FCS).GT.DFTHRL) THEN
                   DO I = ISTR, IEND
                      EXCMAT(I,J,2) = EXCMAT(I,J,2) + FCS*GAO(I)
-     &                              + 0.5d0*VST*GAO1(J,1)*GAO1(I,1)
-     &                              + 0.5d0*VST*GAO1(J,2)*GAO1(I,2)
-     &                              + 0.5d0*VST*GAO1(J,3)*GAO1(I,3)
+     &                              + 0.5d0*VST * (GAO1(J,1)*GAO1(I,1)
+     &                                           + GAO1(J,2)*GAO1(I,2)
+     &                                           + GAO1(J,3)*GAO1(I,3))
+C     &                               + VSL * (GAO2(J)*GAO(I)
+C     &                                      + GAO(J)*GAO2(I)
+C     &                                      + 2.0d0*GAO1(J,1)*GAO1(I,1)
+C     &                                      + 2.0d0*GAO1(J,2)*GAO1(I,2)
+C     &                                      + 2.0d0*GAO1(J,3)*GAO1(I,3)
                   END DO
                END IF
             END DO

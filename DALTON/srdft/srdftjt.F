@@ -477,14 +477,11 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
      &                 d1Exc(1)  ,d1Exc(3)    ,DOGGA,FROMVX,DFTHRL)
 !                      d1Excdrhoc,d1Excdgrdcc,DOGGA,FROMVX,DFTHRL)
        else if (domcsrdft .and. .not. docisrdft) then
-          
-          
-          
-          ! MAKE A CASE FOR META GGAs
-
-
-
-          if (dogga .and. dft_spindns) then ! special treatment if gga + spin
+          if (do_metagga) then ! MGGA, spin and closed shell is handled
+!                                in the same  subroutine for now
+             CALL DFTKSM_MGGASPIN(EXCMAT, GSO(KSO0), GSO(KSO1), 0.0d0,
+     &                            RHG, d1Exc, DFTHRL)
+          else if (dogga .and. dft_spindns) then ! special treatment if gga + spin
               CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
      &             d1Exc,DFTHRL)
 !                  d1Exc = (d1Excdrhoc,d1Excdrhos, d1Excdgrdcc,d1Excdgrdss,d1Excdgrdcs)
