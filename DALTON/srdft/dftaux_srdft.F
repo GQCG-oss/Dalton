@@ -35,22 +35,29 @@ C    RHO
 C    DMATGAO(i) = sum(j) dmat(i,j) * gso(j)
 C
 C*****************************************************************************
-#include <implicit.h>
+      implicit none
 #include <priunit.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <mxcent.h>
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-C
-      DIMENSION DMAT(NBAST,NBAST), GSO(NBAST), DMATGAO(NBAST)
-C
 #include <symmet.h>
 #include <inforb.h>
+      real*8, parameter :: D0 = 0.0d0
+      real*8, parameter :: D1 = 1.0d0
+      real*8, parameter :: D2 = 2.0d0
+      real*8, parameter :: DP5 = 0.5d0
+      real*8, parameter :: DP3 = D1/3.0d0
 C
+      integer, intent(in) :: IPRINT
+      real*8, intent(in) :: DMAT(NBAST,NBAST), GSO(NBAST), DFTHRI
+      real*8, intent(out) :: RHO, DMAGAO(NBAST)
+C
+      integer :: ISTR, ISYM, NBASI
+      real*8 :: DDOT
 C
       IF (IPRINT .GT. 100) THEN
          write(lupri,*) 'GETRHO_OLD NBAST, NSYM',NBAST,NSYM
-         write(lupri,*) 'DFTHRI, DMAT(1,1)',FTHRI,DMAT(1,1),GSO(1)
+         write(lupri,*) 'DFTHRI, DMAT(1,1)',DFTHRI,DMAT(1,1),GSO(1)
          write(lupri,*) 'IBAS',ibas(1:nsym)
          write(lupri,*) 'NBAS',nbas(1:nsym)
       END IF
@@ -297,15 +304,17 @@ C     VXC = d(e_xc) / d(rhoc)
 C     VXB = d(e_xc) / d(grdcc)
 C
 C*****************************************************************************
-#include <implicit.h>
-      PARAMETER (D2 = 2.0D0)
-C
-      LOGICAL DOGGA, FROMVX
-      REAL*8  GAO(NBAST), GAO1(NBAST,3), EXCMAT(NBAST,NBAST), RHG(3)
-      REAL*8  VXC, VXB, DFTHRL
-
+      implicit none
 #include "inforb.h"
-
+      real*8, parameter :: D2 = 2.0D0
+C
+      logical, intent(in) :: DOGGA, FROMVX
+      real*8, intent(in) :: GAO(NBAST), GAO1(NBAST,3), RHG(3),
+     &                      VXC, VXB, DFTHRL
+      real*8, intent(inout) :: EXCMAT(NBAST,NBAST)
+C
+      integer :: I, IEND, ISTR, ISYM, J
+      real*8 :: FC, FX, FY, FZ, GJ, GVXC
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
