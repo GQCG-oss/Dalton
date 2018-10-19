@@ -82,7 +82,7 @@ C*****************************************************************************
       real*8, parameter :: THRELCTOT = 1.0D-7
       real*8, parameter :: THRESRHO  = 1.0D-8
 
-      logical, intent(in) :: DOLND, DOGGA, DOERG, DOGRD, DOATR, TRIPLET
+      logical, intent(in) :: DOLND, DOGGA, DOERG, DOGRD, DOATR, TRIPLET,
      &                       do_metagga
       integer, intent(in) :: ND_SIM, NBUF, IPRINT_in
 
@@ -90,7 +90,7 @@ C*****************************************************************************
       real*8 :: EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF), CORY(NBUF), CORZ(NBUF), WEIGHT(NBUF),
      &          GSO(NBAST*NTYPSO), NCNT(NBAST),
-     &          DMAGAOSR(NBAST,2),
+     &          DMATGAOSR(NBAST,2),
      &          COR(3), RESULTS(11), WORK(LWORK)
 
       character(len=17) :: QUADNAME
@@ -100,9 +100,11 @@ C*****************************************************************************
       integer :: LWORK, i, IPNT, IPNT_END,
      &           IPNT_ST, IPRINT, IPRINT_x, JDXSAO, JDXTAO, LDUMMY,
      &           LUQUAD, my_first_point, my_last_point, N_RS_GT_RT,
-     &           NORDER, NPNT1, NPNTS, NPNTS_PER_NODE, NPOINT, NSKIP1
+     &           NORDER, NPNT1, NPNTS, NPNTS_PER_NODE, NPOINT, NSKIP1,
+     &           KSO1_gx, KSO1_gy, KSO1_gz
       real*8 :: DELCTRN, EcInt, ELCTRN, ELCTRSKIP, ExInt,
-     &          SPINDEN, THRELCTRN, THRINT, WGHT, WGHTC, WGHTX
+     &          SPINDEN, THRELCTRN, THRINT, WGHT, WGHTC, WGHTX,
+     &          TAU_X, TAU_Y, TAU_Z
 
       real*8 :: RHO(4), RHG(3,4), GRD2(6), tau(4), laplace(4)
 C     ... RHO(1) = rhoc = rho_a + rho_b

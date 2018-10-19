@@ -50,7 +50,7 @@ C*****************************************************************************
 C
       integer, intent(in) :: IPRINT
       real*8, intent(in) :: DMAT(NBAST,NBAST), GSO(NBAST), DFTHRI
-      real*8, intent(out) :: RHO, DMAGAO(NBAST)
+      real*8, intent(out) :: RHO, DMATGAO(NBAST)
 C
       integer :: ISTR, ISYM, NBASI
       real*8 :: DDOT
@@ -157,7 +157,7 @@ C
 
 C /* Deck dftksm_mggaspin */
 C*****************************************************************************
-      SUBROUTINE DFTKSM_MGGASPIN(EXCMAT, GAO, GAO1 GAO2, RHG, d1E,
+      SUBROUTINE DFTKSM_MGGASPIN(EXCMAT, GAO, GAO1, GAO2, RHG, d1E,
      &                           DFTHRL)
 C*****************************************************************************
 C
