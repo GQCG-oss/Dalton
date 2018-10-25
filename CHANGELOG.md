@@ -1,6 +1,6 @@
 # DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
-## [2018.alpha Unreleased]
+## [2018.0] (2018 release)
 
 ### New features added
 - New parallel 2-electron integral transformation .FCKTRA  (H. J. Aa. Jensen).
@@ -39,10 +39,6 @@
 ### Deprecated
 - Environment variable DALTON_NUM_MPI_PROCS is deprecated and will be removed in future releases, use DALTON_LAUNCHER instead
 
-### Removed
-
-
-Do not make changes below this line! For the relase branch only.
 
 ## [2016.2] (2016-07-12)
 
