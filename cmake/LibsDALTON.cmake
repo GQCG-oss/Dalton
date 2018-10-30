@@ -36,6 +36,20 @@ add_library(
     ${CMAKE_BINARY_DIR}/binary_info.F90
     )
 
+add_subdirectory(DALTON/dft)
+add_subdirectory(DALTON/soppa)
+add_subdirectory(DALTON/gp)
+add_subdirectory(DALTON/lucita)
+
+target_link_libraries(
+  dalton
+  PRIVATE
+    dft
+    soppa
+    gp
+    lucita
+  )
+
 if(ENABLE_PCMSOLVER)
   add_dependencies(dalton pcmsolver)
   get_target_property(_incdirs dalton INCLUDE_DIRECTORIES)

@@ -1,77 +1,5 @@
 set(DALTON_C_SOURCES
     DALTON/cc/crayio.c
-    DALTON/dft/basisinfo.c
-    DALTON/dft/cube-fast.c
-    DALTON/dft/dft_dftd.F
-    DALTON/dft/eval-dso.c
-    DALTON/dft/fun-b86.c
-    DALTON/dft/fun-b86mx.c
-    DALTON/dft/fun-b97-1.c
-    DALTON/dft/fun-b97-2.c
-    DALTON/dft/fun-b97-3.c
-    DALTON/dft/fun-b97-d.c
-    DALTON/dft/fun-b97-k.c
-    DALTON/dft/fun-b97.c
-    DALTON/dft/fun-becke.c
-    DALTON/dft/fun-becke35.c
-    DALTON/dft/fun-cam-b3lyp.c
-    DALTON/dft/fun-dk87x.c
-    DALTON/dft/fun-example.c
-    DALTON/dft/fun-example2.c
-    DALTON/dft/fun-example3.c
-    DALTON/dft/fun-example4.c
-    DALTON/dft/fun-example5.c
-    DALTON/dft/fun-example6.c
-    DALTON/dft/fun-example7.c
-    DALTON/dft/fun-example8.c
-    DALTON/dft/fun-example9.c
-    DALTON/dft/fun-1-4.c
-    DALTON/dft/fun-g96.c
-    DALTON/dft/fun-gga.c
-    DALTON/dft/fun-hcth120.c
-    DALTON/dft/fun-hcth147.c
-    DALTON/dft/fun-hcth407.c
-    DALTON/dft/fun-hcth407p.c
-    DALTON/dft/fun-hcth93.c
-    DALTON/dft/fun-hcth93m.c
-    DALTON/dft/fun-kt.c
-    DALTON/dft/fun-lb94.c
-    DALTON/dft/fun-lg93.c
-    DALTON/dft/fun-lrc95x.c
-    DALTON/dft/fun-lyp.c
-    DALTON/dft/fun-lypr.c
-    DALTON/dft/fun-mpbex.c
-    DALTON/dft/fun-mpwx.c
-    DALTON/dft/fun-optx.c
-    DALTON/dft/fun-p86c.c
-    DALTON/dft/fun-pbec.c
-    DALTON/dft/fun-pbex.c
-    DALTON/dft/fun-pw86x.c
-    DALTON/dft/fun-pw91c.c
-    DALTON/dft/fun-pw91nc.c
-    DALTON/dft/fun-pw91x.c
-    DALTON/dft/fun-pw91x2.c
-    DALTON/dft/fun-pw92ac.c
-    DALTON/dft/fun-pw92c.c
-    DALTON/dft/fun-pz81.c
-    DALTON/dft/fun-rcam-b3lyp.c
-    DALTON/dft/fun-revpbex.c
-    DALTON/dft/fun-rpbex.c
-    DALTON/dft/fun-slater.c
-    DALTON/dft/fun-vwn.c
-    DALTON/dft/fun-wignerc.c
-    DALTON/dft/fun-wl90c.c
-    DALTON/dft/functionals.c
-    DALTON/dft/gen-so-int.c
-    DALTON/dft/general.c
-    DALTON/dft/grid-gen.c
-    DALTON/dft/grid-gen2.c
-    DALTON/dft/integrator.c
-    DALTON/dft/prop-eval.c
-    DALTON/dft/quad-fast.c
-    DALTON/dft/quad-faster.c
-    DALTON/dft/quad-open.c
-    DALTON/dft/quad-strict.c
     DALTON/pdpack/scatter-io.c
     )
 set(DALTON_FIXED_FORTRAN_SOURCES
@@ -430,22 +358,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/choles/nocc_util.F
     DALTON/densfit/denfit_noddy.F
     DALTON/densfit/df_dirac.F
-    DALTON/dft/dft_aos.F
-    DALTON/dft/dft_ac.F
-    DALTON/dft/dft_aux.F
-    DALTON/dft/dft_den.F
-    DALTON/dft/dft_exp.F
-    DALTON/dft/dft_grad.F
-    DALTON/dft/dft_grid.F
-    DALTON/dft/dft_gridLL.F
-    DALTON/dft/dft_hes.F
-    DALTON/dft/dft_inp.F
-    DALTON/dft/dft_int.F
-    DALTON/dft/dft_ksm.F
-    DALTON/dft/dft_mag.F
-    DALTON/dft/dft_mos.F
-    DALTON/dft/dft_rho.F
-    DALTON/dft/dso_cb.F
     DALTON/eri/eri2aob.F
     DALTON/eri/eri2ave.F
     DALTON/eri/eri2car1.F
@@ -465,41 +377,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/eri/eri2sym.F
     DALTON/eri/eri2vec.F
     DALTON/eri/erisph.F
-    DALTON/gp/gpdahle.F
-    DALTON/gp/gphjj.F
-    DALTON/gp/gpjeppe.F
-    DALTON/gp/gpjkp.F
-    DALTON/gp/gpjt.F
-    DALTON/gp/gplucia.F
-    DALTON/gp/gplucia_io.F
-    DALTON/gp/gplupar.F
-    DALTON/gp/gpsaue.F
-    DALTON/gp/gpsimen.F
-    DALTON/gp/gptrygve.F
-    DALTON/gp/graphic.F
-    DALTON/gp/intf7790.F
-    DALTON/gp/mempkg.F
-    DALTON/gp/mpimacro.F
-    DALTON/gp/pvmmacro.F
-    DALTON/gp/qpack.F
-    DALTON/gp/vcraypack.F
-    DALTON/lucita/ciinfo.F
-    DALTON/lucita/dalton_interface.F
-    DALTON/lucita/density.F
-    DALTON/lucita/diagonal.F
-    DALTON/lucita/diagonalize.F
-    DALTON/lucita/fock.F
-    DALTON/lucita/io.F
-    DALTON/lucita/memory.F
-    DALTON/lucita/par_lucia.F
-    DALTON/lucita/par_solver.F
-    DALTON/lucita/program.F
-    DALTON/lucita/property.F
-    DALTON/lucita/sigma.F
-    DALTON/lucita/strings.F
-    DALTON/lucita/transform.F
-    DALTON/lucita/utils.F
-    DALTON/lucita/vecmat.F
     DALTON/mlcc/mlcc_work.F90
     DALTON/mlcc/mlcc_block_import.F90
     DALTON/mlcc/mlcc_typedef.F90
@@ -645,117 +522,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/sirtra.F
     DALTON/sirius/sirupd.F
     DALTON/sirius/symchk.F
-    DALTON/soppa/ccsd_tcmepkx.F
-    DALTON/soppa/dc_calc.F
-    DALTON/soppa/dc_omec.F
-    DALTON/soppa/dc_r1vec.F
-    DALTON/soppa/dc_res_o.F
-    DALTON/soppa/dc_rsplex.F
-    DALTON/soppa/dc_sres.F
-    DALTON/soppa/rp_charge.F
-    DALTON/soppa/rp_init.F
-    DALTON/soppa/rp_newtrial.F
-    DALTON/soppa/rp_orth_trn.F
-    DALTON/soppa/rp_trial1.F
-    DALTON/soppa/rp_trial3.F
-    DALTON/soppa/so_pertdens.F
-    DALTON/soppa/so_pertd1.F
-    DALTON/soppa/so_pertd2.F
-    DALTON/soppa/so_propmo.F
-    DALTON/soppa/so_anal.F
-    DALTON/soppa/so_aodens.F
-    DALTON/soppa/so_bcktr.F
-    DALTON/soppa/so_bextract.F
-    DALTON/soppa/so_tbextract.F
-    DALTON/soppa/so_check.F
-    DALTON/soppa/so_close.F
-    DALTON/soppa/so_collect_tm.F
-    DALTON/soppa/so_densai1.F
-    DALTON/soppa/so_densai2.F
-    DALTON/soppa/so_dens.F
-    DALTON/soppa/so_diag.F
-    DALTON/soppa/so_ediag1.F
-    DALTON/soppa/so_ediag2.F
-    DALTON/soppa/so_ediag2t.F
-    DALTON/soppa/so_eres.F
-    DALTON/soppa/so_excit1.F
-    DALTON/soppa/so_excout.F
-    DALTON/soppa/so_firgp.F
-    DALTON/soppa/so_fndpos.F
-    DALTON/soppa/so_getgp.F
-    DALTON/soppa/so_getmo.F
-    DALTON/soppa/so_gett2.F
-    DALTON/soppa/so_incred.F
-    DALTON/soppa/so_init.F
-    DALTON/soppa/so_initial.F
-    DALTON/soppa/so_intrp.F
-    DALTON/soppa/so_lnraba.F
-    DALTON/soppa/so_lnrout.F
-    DALTON/soppa/so_lrsoeq.F
-    DALTON/soppa/so_lrsolv.F
-    DALTON/soppa/so_memmax.F
-    DALTON/soppa/so_moenergy.F
-    DALTON/soppa/so_newtrial.F
-    DALTON/soppa/so_onefock.F
-    DALTON/soppa/so_onep.F
-    DALTON/soppa/so_onepmo.F
-    DALTON/soppa/so_open.F
-    DALTON/soppa/so_optvec.F
-    DALTON/soppa/so_ordeig.F
-    DALTON/soppa/so_orth_trn.F
-    DALTON/soppa/so_polar.F
-    DALTON/soppa/so_prpint.F
-    DALTON/soppa/so_read.F
-    DALTON/soppa/so_readset.F
-    DALTON/soppa/so_reave.F
-    DALTON/soppa/so_redev.F
-    DALTON/soppa/so_redgp.F
-    DALTON/soppa/so_redle.F
-    DALTON/soppa/so_res_a.F
-    DALTON/soppa/so_res_b.F
-    DALTON/soppa/so_res_cb.F
-    DALTON/soppa/so_res_cbt.F
-    DALTON/soppa/so_res_cd.F
-    DALTON/soppa/so_res_cdt.F
-    DALTON/soppa/so_res_c.F
-    DALTON/soppa/so_res_cp.F
-    DALTON/soppa/so_res_fck.F
-    DALTON/soppa/so_residual.F
-    DALTON/soppa/so_res_o.F
-    DALTON/soppa/so_res_ovl.F
-    DALTON/soppa/so_res_sym.F
-    DALTON/soppa/so_res_tcb.F
-    DALTON/soppa/so_res_tcbt.F
-    DALTON/soppa/so_ropt.F
-    DALTON/soppa/so_rpprp1.F
-    DALTON/soppa/so_rspleq.F
-    DALTON/soppa/so_rsplex.F
-    DALTON/soppa/so_sdiag1.F
-    DALTON/soppa/so_secgp.F
-    DALTON/soppa/so_sigai.F
-    DALTON/soppa/so_sigda.F
-    DALTON/soppa/so_sort.F
-    DALTON/soppa/so_sqait2.F
-    DALTON/soppa/so_sres.F
-    DALTON/soppa/so_stoppw.F
-    DALTON/soppa/so_t2m1.F
-    DALTON/soppa/so_t2mp.F
-    DALTON/soppa/so_test1.F
-    DALTON/soppa/so_test.F
-    DALTON/soppa/so_tfset.F
-    DALTON/soppa/so_time.F
-    DALTON/soppa/so_tmltr.F
-    DALTON/soppa/so_tr1new.F
-    DALTON/soppa/so_tr1rp.F
-    DALTON/soppa/so_trial1.F
-    DALTON/soppa/so_trial2.F
-    DALTON/soppa/so_trial3.F
-    DALTON/soppa/so_trmom.F
-    DALTON/soppa/so_trmom_1.F
-    DALTON/soppa/so_twofock.F
-    DALTON/soppa/so_write.F
-    DALTON/soppa/so_writeset.F
-    DALTON/soppa/so_wrtve.F
     DALTON/fde/emb_quit.F
     )
 if(NOT ENABLE_CRAY_WRAPPERS)
@@ -769,22 +535,10 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/input/input_reader_sections.F90
     DALTON/input/input_reader.F90
     DALTON/input/parse_input.F90
-    DALTON/lucita/dalton_mpi.F90
-    DALTON/lucita/lucita_cfg.F90
-    DALTON/lucita/lucita_mcscf_ci_cfg.F90
-    DALTON/lucita/lucita_orbitalspaces.F90
-    DALTON/lucita/par_communication_model.F90
-    DALTON/lucita/par_io.F90
-    DALTON/lucita/par_io_fh.F90
-    DALTON/lucita/par_sync_cw.F90
     DALTON/abacus/parallel_models_mpi.F90
     DALTON/abacus/parallel_communication_models_mpi.F90
-    DALTON/gp/one_sided_communication_wrappers.F90
-    DALTON/gp/memory_parallel.F90
     DALTON/abacus/rma_windows.F90
     DALTON/cc/dyn_index.F90
-    DALTON/soppa/so_parutils.F90
-    DALTON/soppa/so_info.F90
     DALTON/qmcmm/herqmnp.F90
     DALTON/qmcmm/fock.F90
     DALTON/qmcmm/response.F90
@@ -812,13 +566,3 @@ set(DALTON_OWN_BLAS_SOURCES
 set(DALTON_OWN_LAPACK_SOURCES
     DALTON/pdpack/gp_lapack.F
     )
-if(NOT ENABLE_MPI)
-    set(DALTON_C_SOURCES
-        ${DALTON_C_SOURCES}
-        DALTON/gp/mpi_dummyc.c
-        )
-    set(DALTON_FIXED_FORTRAN_SOURCES
-        ${DALTON_FIXED_FORTRAN_SOURCES}
-        DALTON/gp/mpi_dummy.F
-        )
-endif()
