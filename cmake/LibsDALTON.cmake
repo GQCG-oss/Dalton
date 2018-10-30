@@ -161,5 +161,3 @@ target_link_libraries(tools/distances   peter_utils_blocks)
 
 add_executable(tools/FChk2HES ${CMAKE_SOURCE_DIR}/DALTON/tools/FChk2HES.f)
 add_executable(tools/labread  ${CMAKE_SOURCE_DIR}/DALTON/tools/labread.f)
-# radovan: compilation broken
-#add_executable(tools/ODCPRG   ${CMAKE_SOURCE_DIR}/DALTON/tools/ODCPRG.f)
