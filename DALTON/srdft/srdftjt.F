@@ -657,29 +657,17 @@ C     exchange functionals
       external ESRX_PBEHSEERF, ESRX_PBETCSERF, ESRX_PBERIERF
       external ESRX_PBEGWSERF
 
-
-      external ESRX_TPSS
-
-
 C     correlation functionals
       external ESRC_PBETCSJERF, ESRC_PBETCSERF, ESRC_PBERIERF
       external ESRC_LYPRIERF
       external ESRC_PBEWIERF, ESRC_PBEGWSERF, ESRC_PBELOERF
       external ESRC_PBEGWSERF_PW92
 
-
-      external ESRC_TPSS
-
-
 C     spin functionals
       external ESRX_LDAERFSPIN
       external ESRC_LDAERFSPIN, ESRC_LDAERFSPIN_VWN5
       external ESRC_PBEGWSERFSPIN
       external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA
-
-
-      external ESRC_SPINTPSS
-
 
 C     sr mdc func
       external ESRC_MD_LDAERF
@@ -739,8 +727,6 @@ c  Exchange  ------------------------------------------------------------
 
 !     TPSS exchange functional
       IF(DOSRX_TPSS_S .OR. DOSRX_TPSS) THEN
-!        call DESRX_BOTHMGGA(ESRX_TPSS,rho,grd2,tau,laplace,
-!     >                     chival,norder,Ex,d1Ex,d2Ex)
          call BOTH_TPSSX_ERF(rho, grd2, tau, norder, chival,
      >                       Ex, d1Ex, d2Ex)
       ENDIF
@@ -869,16 +855,12 @@ C     >                     norder,Ec,d1Ec,d2Ec)
 
 !     TPSS correlation spin-polarized functional
       IF(DOSRC_TPSS_S) THEN
-!        call DESRC_SPINMGGA(ESRC_SPINTPSS,rho,grd2,tau,laplace,
-!     >                     chival,norder,Ec,d1Ec,d2Ec)
          call SPIN_TPSSC_GWS_ERF(rho, grd2, tau, norder, chival,
      >                           Ec, d1Ec, d2Ec)
       ENDIF
 
 !     TPSS correlation spin-unpolarized functional
       IF(DOSRC_TPSS) THEN
-!        call DESRC_MGGA(ESRC_TPSS,rho,grd2,tau,laplace,
-!     >                     chival,norder,Ec,d1Ec,d2Ec)
          call TPSSC_GWS_ERF(rho, grd2, tau, norder, chival,
      >                      Ec, d1Ec, d2Ec)
       ENDIF
@@ -1107,7 +1089,6 @@ C Total contribution -------------------------------------------------------
 
          FZ0   = d1Exc(3)*2.0d0
 !        FZ0   = 2 d1Excdgrdcc
-         ! gradient
          FRZ   = d2Exc(4)*2.0d0
 !        FRZ   = 2 d2Excdrhocdgrdcc
          FZZ   = d2Exc(6)*4.0d0
@@ -1123,7 +1104,6 @@ C Total contribution -------------------------------------------------------
 !           FZ0_S = 2 d1Excgrdss
             FSZ   = d2Exc(5)*2.0d0
 !           FSZ   = 2 d2Excdrhosdgrdcc
-            ! spin-gradient
             FRZ_S = d2Exc(7)*2.0d0
 !           FRZ_S = 2 d2Excdrhocdgrdss
             FSZ_S = d2Exc(8)*2.0d0
@@ -1132,12 +1112,6 @@ C Total contribution -------------------------------------------------------
 !           FZZ_S = 4 d2Excdgrdccdgrdss
             FZZ_SS= d2Exc(10)*4.0d0
 !           FZZ_SS= 4 d2Excdgrdssdgrdss
-
-!           The two lines below is to make the definitions consistent. As
-!           can be seen, for all the other terms the 2 or 4 factor have
-!           been absorbed into the derivatives (see lines above). Therefore
-!           this should also be the case for the two derivatives below.
-!           E.R.K, 20 June 2018
             d2Exc(13) = d2Exc(13)*2.0d0
             d2Exc(14) = d2Exc(14)*2.0d0
          END IF ! DOGGA .and. DFT_SPINDNS
@@ -1173,13 +1147,13 @@ C Linear transformation -----------------------------------------------------
             ! BR(2) = grad(rhos) . grad(rhos_b)
             ! BR(3) = grad(rhoc) . grad(rhos_b)
             ! BR(4) = grad(rhos) . grad(rhoc_b)
-            ! AX, AY, AZ : grad(xhi_i xhi_j)
+            ! AX, AY, AZ : grad(chi_i chi_j)
             ! BX, BY, BZ : grad(phi_p) . grad(phi_q) 
-            ! CX, AC, CZ : laplace(xhi_i xhi_j)
-            ! AR(1) = AX*RX(1)   + AY*RY(1)   + AZ*RZ(1)   ! grad(xhi_i xhi_j) . grad(rhoc)
-            ! AR(2) = AX*RX(2)   + AY*RY(2)   + AZ*RZ(2)   ! grad(xhi_i xhi_j) . grad(rhos)
-            ! AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1) ! grad(xhi_i xhi_j) . grad(rhoc_b)
-            ! AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2) ! grad(xhi_i xhi_j) . grad(rhos_b)
+            ! CX, AC, CZ : laplace(chi_i chi_j)
+            ! AR(1) = AX*RX(1)   + AY*RY(1)   + AZ*RZ(1)   ! grad(chi_i chi_j) . grad(rhoc)
+            ! AR(2) = AX*RX(2)   + AY*RY(2)   + AZ*RZ(2)   ! grad(chi_i chi_j) . grad(rhos)
+            ! AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1) ! grad(chi_i chi_j) . grad(rhoc_b)
+            ! AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2) ! grad(chi_i chi_j) . grad(rhos_b)
             
             ! FAC0R  = All terms in EXCMAT(1) multiplied with G0*GAO(J)
             ! FACR   = All terms in EXCMAT(1) multiplied with AR(1)
