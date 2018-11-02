@@ -2,12 +2,6 @@ if(ENABLE_GEN1INT)
     add_definitions(-DBUILD_GEN1INT)
 endif()
 
-
-if(ENABLE_DEC)
-  add_definitions(-DVAR_DEC)
-  set(ENABLE_TENSORS ON)
-endif()
-
 if(ENABLE_CHEMSHELL)
     add_definitions(-DVAR_CHEMSHELL)
 endif()
