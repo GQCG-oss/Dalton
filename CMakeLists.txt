@@ -53,7 +53,6 @@ option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 
 option(ENABLE_XCFUN          "Enable XCFUN"                                     ON)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
-option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          OFF)
 option(ENABLE_QMMM_CUDA      "Enable QMMM CUDA library"                         OFF) # radovan: untested
 option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
