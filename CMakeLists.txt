@@ -81,7 +81,6 @@ else()
 endif()
 
 include(ConfigCompilerFlags)
-include(CheckFortranStandardCompatibility)
 include(ConfigExternal)
 
 # math detection
