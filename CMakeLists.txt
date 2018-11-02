@@ -94,7 +94,6 @@ include(ConfigMPI)
 include(ConfigSafeGuards)
 include(GenericMacros)
 include(BinaryInfo)
-include(mergestaticlibs)
 
 # set code coverage
 if(ENABLE_CODE_COVERAGE)
