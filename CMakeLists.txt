@@ -58,7 +58,6 @@ option(ENABLE_QMMM_CUDA      "Enable QMMM CUDA library"                         
 option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
 option(ENABLE_QCMATRIX       "Enable QcMatrix library"                          OFF)
 option(ENABLE_OPENRSP        "Enable OPENRSP library (need QcMatrix library)"   OFF)
-option(ENABLE_TDRSP          "Enable TDRSP library (need QcMatrix library)"     OFF)
 option(ENABLE_EFS            "Enable Echidna Fock Solver"                       OFF)
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
@@ -66,12 +65,6 @@ option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 option(ENABLE_LARGE_TEST     "Enable Large-scale (long) test cases"             OFF)
 option(ENABLE_DEVELOPER      "Enable Developer test cases and features"         OFF)
-
-# Gen1Int interface, OpenRSP and TDRSP needs QcMatrix library
-# Gao: please leave this comment here, and I am going to fix it after repo split
-#if(ENABLE_GEN1INT OR ENABLE_OPENRSP OR ENABLE_TDRSP)
-#    set(ENABLE_QCMATRIX ON)
-#endif()
 
 set(EXTERNAL_LIBS)
 
