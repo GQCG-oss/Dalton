@@ -31,7 +31,7 @@ c
       integer, dimension(:), allocatable :: indexb
 c
 casm
-      DIMENSION IDNTC1(MAXQUA)
+      DIMENSION IDNTC1(MXCHRD)
       DIMENSION IQUVAB(MAXQUA,8), IQUVEA(MAXQUA,8), IQUVEB(MAXQUA,8)
       DIMENSION NQUAL(8), ITMP(8)
 #include "ccorb.h"
