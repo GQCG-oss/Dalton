@@ -1441,8 +1441,10 @@ C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
              EMCDIF_test = EMCDIF
          END IF
 C        Do not try that with open-shell - it does not work./pawsa
-!        IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
-         IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND. J_removed.EQ.0 .AND.
+C        Nov. 2018 jmho: disable again for open-shell because it really
+C        does not work.
+         IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+     &       J_removed.EQ.0 .AND.
      &       GRDNRM .LE. 10.0D0 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
