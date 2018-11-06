@@ -1912,7 +1912,8 @@ C
  10   CONTINUE
       IF ((ITRNMR .LT. ITRMAX) .AND. (.NOT. GECONV)) THEN
          ITRNMR = ITRNMR + 1
-         IF (ITRNMR .GT. ITRFRZ .AND. IFREEZ(0) .GT. 0) THEN
+         IF ((ITRFRZ .GT. 0) .AND. (ITRNMR .GT. ITRFRZ) .AND. 
+     &       (IFREEZ(0) .GT. 0)) THEN
             WRITE(LUPRI,'(//A/)')
      &      '@ No atoms frozen from this geometry iteration,'//
      &      ' as requested with .FRZITR in input.'
