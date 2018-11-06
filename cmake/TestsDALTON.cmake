@@ -123,6 +123,7 @@ add_dalton_test(geoopt_cartmin                   "dalton;geo;medium")
 add_dalton_test(geoopt_dckerr                    "dalton;geo;short")
 add_dalton_runtest(geoopt_mp2froz                "dalton;runtest;geo;short")
 add_dalton_test(geoopt_symbrk                    "dalton;geo;short")
+add_dalton_runtest(geoopt_freeze                 "dalton;runtest;geo;short;essential")
 
 add_dalton_runtest(aba_prop_file                 "dalton;runtest;prop;short;essential")
 add_dalton_runtest(prop_ecd                      "dalton;runtest;prop;short")
