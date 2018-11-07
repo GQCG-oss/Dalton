@@ -32,6 +32,7 @@ endmacro()
 # tests which are run only on master
 
 add_dalton_runtest(dft_ac_grac                   "dalton;runtest;dft;medium")
+add_dalton_runtest(dft_ac_multpole               "dalton;runtest;dft;medium")
 add_dalton_runtest(dft_b3lyp_cart                "dalton;runtest;dft;short")
 add_dalton_runtest(dft_b3lyp_magsus_nosym        "dalton;runtest;dft;short")
 add_dalton_runtest(dft_b3lyp_molhes_nosym        "dalton;runtest;dft;medium")
