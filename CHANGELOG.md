@@ -1,5 +1,7 @@
 # DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
+## [2019.alpha] (Dalton2019 alpha)
+
 ## [2018.0-rc] (Dalton2018 release candidate)
 
 ### New features added
