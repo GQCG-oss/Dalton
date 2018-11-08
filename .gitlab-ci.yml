@@ -23,6 +23,7 @@ fedora-26-serial:
         - gcc -v
         - g++ -v
     script:
+        - dnf install -y which
         - python setup --coverage --type=debug -D SITE=GitLabCI -D BUILDNAME=$CI_COMMIT_REF_NAME
         - cd build
         - make -j 4
@@ -56,6 +57,7 @@ fedora-26-mpi:
         - mpicxx -v
         - mpirun --version
     script:
+        - dnf install -y which
         - python setup --type=debug --mpi
         - cd build
         - make -j 4
@@ -208,6 +210,7 @@ nightly-coverage:
         - gcc -v
         - g++ -v
     script:
+        - dnf install -y which
         - python setup --coverage --type=release -D SITE=GitLabCI -D BUILDNAME=$CI_COMMIT_REF_NAME
         - cd build
         - export CTEST_MAKE_NUM_PROCS=4
