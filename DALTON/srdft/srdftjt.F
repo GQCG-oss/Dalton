@@ -1,4 +1,4 @@
-#define SRDFT_DEBUG -1
+#define SRDFT_DEBUG 20
 !
 !...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -968,9 +968,11 @@ C***************************************************************************
       
       real*8, intent(inout) :: EXCMAT(NBAST,NBAST,2)
 
+      integer, save :: n_call = 0
+
 !     local
       integer :: I, J, ISYM, JSYM, JEND, JSTR, ISTR, IEND
-      integer :: NORDER
+      integer :: NORDER, p, q
 
       real*8 :: ddot
 
@@ -1007,6 +1009,8 @@ C***************************************************************************
 !     de_c   29     30     31      32      33      34     35      36
 !     de_s   37     38     39      40      41      42     43      44     45
 
+      n_call = n_call + 1
+
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
          CALL QUIT('SRDFTJT.F: Triplet with open-shell not implemented')
       END IF
@@ -1037,6 +1041,19 @@ C        B3(1:3,j) = B3(1:3,j) + GAO1(1:NBAST,1:3)'*DGAO((1:NBAST, 1)
      &         DGAO(1,1),1,1.0d0,B3(1,j),1)
          BMAX = MAX(BMAX, ABS(B3(1,j)),ABS(B3(2,j)),ABS(B3(3,j)))
       END IF
+      if (do_metagga) then
+         B4(j) = 0.0d0
+         do p = 1, nbast
+            GX = GAO1(p,1)
+            GY = GAO1(p,2)
+            GZ = GAO1(p,3)
+            do q = 1, nbast
+               B4(j) = B4(j) + ( GX*GAO1(q,1) + GY*GAO1(q,2) +
+     &                           GZ*GAO1(q,3) ) * DTXMAT(p,q)
+            end do
+         end do
+         B4(j) = B4(j)*0.5d0
+      end if
 
       IF (DFT_SPINDNS) THEN
          ! DGAO(1,2) = DSXMAT*GAO; DSXMAT is 1-index transformed or transition spin density matrix
@@ -1057,6 +1074,19 @@ C           B3(1:3,2) = B3(1:3,2) + GAO1(1:NBAST,1:3)T*DGAO((1:NBAST, 2)
      &         DGAO(1,2),1,1.0d0,B3(1,2),1)
             BMAX = MAX(BMAX, ABS(B3(1,2)),ABS(B3(2,2)),ABS(B3(3,2)))
          END IF
+         if (do_metagga) then
+            B4(2) = 0.0d0
+            do p = 1, nbast
+               GX = GAO1(p,1)
+               GY = GAO1(p,2)
+               GZ = GAO1(p,3)
+               do q = 1, nbast
+                  B4(2) = B4(2) + ( GX*GAO1(q,1) + GY*GAO1(q,2) +
+     &                              GZ*GAO1(q,3) ) * DSXMAT(p,q)
+               end do
+            end do
+            B4(2) = B4(2)*0.5d0
+         end if
       END IF
 C
       IF (BMAX.GT.DFTHRL) THEN
@@ -1081,7 +1111,7 @@ C Total contribution -------------------------------------------------------
          FSS = d2Exc(3)
 !        FSS = d2Excdrhosdrhos
       END IF
-      IF (DOGGA .OR. DO_METAGGA) THEN
+      IF (DOGGA) THEN
          ! grd[rhoc^(X,Y,Z)]
          RX(1) = RHG(1,1)
          RY(1) = RHG(2,1)
@@ -1172,6 +1202,8 @@ C Linear transformation -----------------------------------------------------
             !              implemented later. And is therefore commented
             !              out in the below code.
 
+            ! important to check for meta-gga before gga, becuase they
+            ! are both true in the case of meta-ggas
             if (do_metagga) then
                if (dft_spindns) then
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
@@ -1288,11 +1320,14 @@ C Linear transformation -----------------------------------------------------
 #if SRDFT_DEBUG > 11
           !if (IPRINT_X .gt. 10) then
            !if (abs(FSS) .gt. 0.d0 .or. abs(FRS) .gt. 0.d0) then
+           if (modulo(n_call, 1000) .eq. 0) then
               write(lupri,*) 'hjaaj: rho ',rho(1:4)
               write(lupri,*) 'hjaaj: rhgc',rhg(1:3,1)
               write(lupri,*) 'hjaaj: grd2',grd2(1:6)
+              write(lupri,*) 'hjaaj: debug',tau(1:4)
               write(lupri,*) 'hjaaj: Ex, Ec, gga, spindns, triplet',
      &          Ex, Ec, dogga, dft_spindns, triplet
+              write(lupri,*) 'debug: do_metagga',do_metagga
               write(lupri,*) 'hjaaj: d1Ex  ',d1Ex(:)
               write(lupri,*) 'hjaaj: d1Ec  ',d1Ec(:)
               write(lupri,*) 'hjaaj: d2Ex(:)',d2Ex(:)
@@ -1303,16 +1338,20 @@ C Linear transformation -----------------------------------------------------
               write(lupri,*) 'hjaaj: FZ0, FZ0_S',FZ0, FZ0_S
               write(lupri,*) 'hjaaj: FSZ_S,FRZ_S,FZZ_S,FZZ_SS',
      &                               FSZ_S,FRZ_S,FZZ_S,FZZ_SS
-              write(lupri,*) 'debug: d2Exc(11:15)', d2Exc(11:15)
+              write(lupri,*) 'debug: d1Exc(1:9)', d1Exc(1:9)
+              write(lupri,*) 'debug: d2Exc(1:45)', d2Exc(1:45)
               write(lupri,*) 'hjaaj: RX, RY, RZ',RX(1),RY(1),RZ(1)
               write(lupri,*) 'hjaaj: B0, BMAX',B0(1:2), BMAX
+              write(lupri,*) 'hjaaj: B4',B4(1:2)
               write(lupri,*) 'hjaaj: B3 matrix',B3(1:3,1:2)
               call output(b3,1,3,1,2,3,2,1,lupri)
               write(lupri,*) 'hjaaj: BR',BR(1:2)
               write(lupri,*) 'hjaaj: FAC0R, FAC0S, FACR, FACS, FAC_AR',
      &                               FAC0R, FAC0S, FACR, FACS, FAC_AR
+              write(lupri,*) 'debug: FAC_RB, FAC_SB',FAC_RB, FAC_SB
               write(lupri,*) 'hjaaj: current EXCMAT left corner; before'
               call output(excmat,1,5,1,5,nbast,nbast,1,lupri)
+           end if
            !end if
           !end if
 #endif
@@ -1577,9 +1616,11 @@ C Linear transformation -----------------------------------------------------
 !        END IF   ! IF (DOHFSRDFT) THEN
       END IF   ! IF (BMAX.GT.DFTHRL) THEN
 #if SRDFT_DEBUG > 11
+           if (modulo(n_call, 1000) .eq. 0) then
       !if (iprint_x .gt. 10) then
          write(lupri,*) ':: current EXCMAT left corner - after'
          call output(excmat,1,5,1,5,nbast,nbast,1,lupri)
+           end if
       !end if
 #endif
 c
