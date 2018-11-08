@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+#   geoopt_prop3_ex
+#   ---------------
+#   Molecule:         O3
+#   Wave Function:    MCSCF (CAS) / aug-cc-pVDZ / excited state
+#   Test Purpose:     Geometry optimization using .OPTIMIZE module
+#                     (2nd order) of the first excited state,
+#                     with a calculation of quadrupole moment,
+#                     magnetizabilit,y and nuclear shieldings at the
+#                     optimized geometry, along with a vibrational analysis.
+#
+#                     Also test the use of "new" integral transformation
+#                     for geometry optimization and properties.
+#
+
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from runtest import version_info, get_filter, cli, run
+from runtest_config import configure
+
+assert version_info.major == 2
+
+f = [
+    get_filter(string='@  Nuclear repulsion energy',
+               abs_tolerance=1.0e-8),
+    get_filter(string='Number of coordinates in each symmetry',
+               abs_tolerance=1.0e-8),
+    get_filter(string='Number of orbitals in each symmetry',
+               abs_tolerance=1.0e-8),
+    get_filter(string='@   Hartree-Fock total energy',
+               abs_tolerance=1.0e-8),
+    get_filter(string='@   = MP2 second order energy',
+               abs_tolerance=1.0e-8),
+    get_filter(string='@    Final MCSCF energy',
+               abs_tolerance=1.0e-8),
+    # this is to get total energy
+    get_filter(string='au (Hartrees)',
+               abs_tolerance=1.0e-8),
+    get_filter(string='Energy at this geometry is',
+               abs_tolerance=1.0e-8),
+    get_filter(string='@ Geometry converged in',
+               abs_tolerance=1.0e-8),
+    get_filter(string='@ Energy at final geometry is',
+               abs_tolerance=1.0e-8),
+    get_filter(from_string='Cartesian Coordinates (a.u.)',
+               num_lines=6,
+               abs_tolerance=1.0e-5),
+    get_filter(from_string='Occupancies of natural orbitals',
+               num_lines=19,
+               abs_tolerance=1.0e-5),
+    get_filter(from_string='Molecular gradient (au)',
+               num_lines=5,
+               abs_tolerance=1.0e-5),
+    get_filter(from_string='Molecular Hessian (au)',
+               num_lines=36,
+               abs_tolerance=1.0e-5),
+    get_filter(from_string='Dipole moment components',
+               num_lines=5,
+               abs_tolerance=1.0e-5),
+    get_filter(from_string='Next geometry (au)',
+               num_lines=6,
+               abs_tolerance=1.0e-5),
+    get_filter(from_string='Final geometry (au)',
+               num_lines=6,
+               abs_tolerance=1.0e-5),
+    get_filter(from_string='Dipole moment gradient (au)',
+               num_lines=24,
+               abs_tolerance=1.0e-5),
+    get_filter(from_string='Magnetizabilities',
+               num_lines=8,
+               abs_tolerance=1.0e-5),
+    get_filter(from_string='ABACUS - MOLECULAR ROTATIONAL g-TENSOR',
+               num_lines=26,
+               abs_tolerance=1.0e-5),
+    get_filter(from_string='Summary of chemical shieldings',
+               num_lines=12,
+               abs_tolerance=1.0e-5),
+    get_filter(from_string='Vibrational Frequencies and IR Intensities',
+               num_lines=12,
+               abs_tolerance=1.0e-5),
+    get_filter(from_string='Vibrational Polarizabilities (au)',
+               num_lines=8,
+               abs_tolerance=1.0e-5)
+]
+
+options = cli()
+
+ierr = 0
+for inp in ['geoopt_prop3_ex.dal']:
+    for mol in ['geoopt_prop3_ex.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    filters={'out': f})
+
+sys.exit(ierr)
