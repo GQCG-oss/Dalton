@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
 # set not CYGWIN_WIN32, to quench warning messages from CYGWIN cmake
 # will do no harm if not CYGWIN
