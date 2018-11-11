@@ -11,10 +11,7 @@ coverage:
         base: auto
     patch:
       default:
-        enabled: yes
-        target: auto
-        threshold: 1%
-        base: auto
+        enabled: no
     changes:
       default:
         enabled: no
