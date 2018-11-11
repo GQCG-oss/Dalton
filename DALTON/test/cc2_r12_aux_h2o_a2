@@ -77,6 +77,10 @@ cat > cc2_r12_aux_h2o_a2.dal <<'%EOF%'
  1.0D-12
 .MAX IT
  100
+.MAXRED
+ 400
+.MXLRV
+ 400
 *CCEXCI
 .THREXC
  1.D-10
