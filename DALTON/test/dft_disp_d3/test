@@ -25,13 +25,17 @@ f.add(string = 'Final DFT energy',
 f.add(string = 'E_disp',
       abs_tolerance = 1.0e-6)
 
-f.add(from_string = 'Final geometry (xyz format; angstrom)',
-      num_lines = 16,
+f.add(from_string = 'Cart. DFT-D Gradient Contribution',
+      num_lines = 13,
       abs_tolerance = 1.0e-5)
 
-f.add(from_string = 'Interatomic separations (in Angstrom):',
-      num_lines = 16,
-      abs_tolerance = 1.0e-5)
+#f.add(from_string = 'Final geometry (xyz format; angstrom)',
+#      num_lines = 16,
+#      abs_tolerance = 1.0e-5)
+
+#f.add(from_string = 'Interatomic separations (in Angstrom):',
+#      num_lines = 16,
+#      abs_tolerance = 1.0e-5)
 
 test.run(['dft_disp_d3.dal'], ['CH4-dimer_STO-3G.mol'], f={'out': f})
 

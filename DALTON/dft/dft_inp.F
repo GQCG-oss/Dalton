@@ -29,7 +29,7 @@
 #include "priunit.h"
 #include "mxcent.h"
 #include "dftd.h"
-      PARAMETER ( NTABLE = 26 )
+      PARAMETER ( NTABLE = 27 )
 #include "dftacb.h"
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, LINE*80
       LOGICAL ALLOPT
@@ -41,7 +41,7 @@
      &            '.COARSE','.NORMAL','.FINE  ','.ULTRAF','.GRID1 ',
      &            '.GRID2 ','.GRID3 ','.GRID4 ','.GRID5 ','.DFTD2 ',
      &            '.D2PAR ','.DFTD3 ','.DFD3BJ','.3BODY ','.D3PAR ',
-     &            '.DFTVXC'/
+     &            '.DFTVXC','.DFDTST'/
 C
       WORD1 = WORD
 C
@@ -56,7 +56,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
-     &                      17,18,19,20,21,22,23,24,25,26), I
+     &                      17,18,19,20,21,22,23,24,25,26,27), I
                   END IF
  200           CONTINUE
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -195,6 +195,10 @@ c   >.D3PAR < Read in custom DFT-D3 parameters
 CAMT >.DFTVXC< Consruct V_xc Explicitly and Use in KS Matrix for SCF
  26   CONTINUE
       LDFTVXC = .TRUE.
+      GO TO 100
+CAMT >.DFDTST< Test keyword for DFTD models
+ 27   CONTINUE
+      DFTD_TEST = .TRUE.
       GO TO 100
 
  300  CONTINUE

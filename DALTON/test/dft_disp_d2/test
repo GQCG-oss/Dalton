@@ -25,15 +25,19 @@ f.add(string = 'Final DFT energy',
 f.add(string = 'E_disp',
       abs_tolerance = 1.0e-5)
 
+f.add(from_string = 'Cart. DFT-D Gradient Contribution',
+      num_lines = 13,
+      abs_tolerance = 1.0e-5)
+
 #f.add(from_string = 'Final geometry (xyz format; angstrom)',
 #      num_lines = 16,
 #      abs_tolerance = 1.0e-5)
 
-f.add(string = 'bond distance:',
-      abs_tolerance = 1.0e-4)
+#f.add(string = 'bond distance:',
+#      abs_tolerance = 1.0e-4)
 
-f.add(string = 'bond angle:',
-      abs_tolerance = 1.0e-2)
+#f.add(string = 'bond angle:',
+#      abs_tolerance = 1.0e-2)
 
 test.run(['dft_disp_d2.dal'], ['CH4-dimer_STO-3G.mol'], f={'out': f})
 
