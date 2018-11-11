@@ -131,4 +131,4 @@ if(NOT ENABLE_CHEMSHELL)
         )
 endif()
 
-add_subdirectory(DALTON/tools)
+add_subdirectory(DALTON/tools ${CMAKE_BINARY_DIR}/tools)
