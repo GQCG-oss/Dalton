@@ -114,6 +114,7 @@ C JT 17-08-09 end
 
 CAMT --- DFT-D correction initialize
       DODFTD = .FALSE.
+      DFTD_TEST = .FALSE.
       L_INP_D2PAR=.FALSE.
       L_INP_D3PAR=.FALSE.
       DO_DFTD2 = .FALSE.
