@@ -87,7 +87,6 @@ C
 #include "inftap.h"
 #include "huckel.h"
 #include "r12int.h"
-#include "nuclei.h"
 #include "pcmlog.h"
 C
 Cholesky
@@ -903,21 +902,9 @@ c ach
             THETA  = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
-  177    CONTINUE
-C&&& Nuclear model
-            READ (LUCMD, *,IOSTAT=IOS) INUC
-            IF (IOS.NE.0) THEN
-              CALL QUIT('Error in reading nuclear model INUC  !')
-            ENDIF
-            IF    (INUC.EQ.1) THEN
-              GAUNUC = .FALSE.
-            ELSEIF(INUC.EQ.2) THEN
-              GAUNUC = .TRUE.
-            ELSE
-              WRITE(LUPRI,'(//3A,I5)')
-     &         '*** ERROR ',WORD1,' *** Unknown nuclear model:',INUC
-              CALL QUIT('*** ERROR '//WORD1//': Unknown nuclear model')
-            ENDIF
+  177    CONTINUE ! .NUCMOD
+            CALL QUIT(
+     &      'ERROR, .NUCMOD has been moved to *MOLBAS input section')
             GO TO 100
 !      .SORT Integrals
   178    CONTINUE
@@ -1341,12 +1328,6 @@ cLig <>
      &               .OR. RPSO
       IF (TSTINP) WRITE (LUPRI,'(/A/)') ' @@ Input test run only !!!'
       WRITE (LUPRI,'(/A,I5)') ' Default print level:    ',IPRDEF
-      IF(GAUNUC) THEN
-        WRITE(LUPRI,'(/A)') ' * Nuclear model: '//
-     &    'Gaussian charge distribution.'
-      ELSE
-        WRITE(LUPRI,'(/A)') ' * Nuclear model: Point charge'
-      ENDIF
       IF (SPNORB .AND. SOTEST) THEN
          WRITE (LUPRI,'(/A)')
      *    ' FATAL ERROR in input: .SPIN-ORBIT and .SOTEST cannot '/
@@ -4289,17 +4270,6 @@ C
 Cholesky
       IF (CHOINT) NOTWO = .TRUE.
 Cholesky
-C
-CTSAUE
-C    Initialize nuclear model in NUCLEI
-C      1 - Point nucleus
-C      2 - Gaussian nucleus
-C
-      IF(RELCAL) THEN
-        GAUNUC = .TRUE.
-      ELSE
-        GAUNUC = .FALSE.
-      ENDIF
 C     
 C     Initialize /CBISOL/ (10-Dec-92 th+hjaaj)
 C     -- not used in Hermit; SOLVNT must be false

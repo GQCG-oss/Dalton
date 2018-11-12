@@ -19,6 +19,7 @@
   - Reference: T. Fahleson and P. Norman. J. Chem. Phys. 147, 144109 (2017).
 
 ### Fixed
+- Nuclear model keyword .NUCMOD was ignored, now the Gaussian nuclear model used in the Dirac program can be used in Dalton.
 - Open-shell DFT is not implemented for many derivative properties in \*\*PROPERTIES, dalton now quits.
 - Bugfix for .MNF\_SO (mean-field spin-orbit, AMFI) when basis set has big exponents (>10^9).
 - Open-shell doublet ROKS DFT geometry optimization.

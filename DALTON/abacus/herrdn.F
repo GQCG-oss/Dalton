@@ -123,13 +123,16 @@ C  /* Deck reainp */
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-      PARAMETER ( NTABLE = 13, D1 = 1.0D0)
+#include "mxcent.h"
+      PARAMETER ( NTABLE = 14, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 !
 !     Parameter MAXPRD in cbirea.h is default for MAXPRI
 ! numder.h : NOMOVE
+! nuclei.h : GAUNUC
 #include "cbirea.h"
+#include "nuclei.h"
 #include "numder.h"
 #include "r12int.h"
 #include "qm3.h"
@@ -137,7 +140,7 @@ C
       DATA TABLE /'.PRINT ', '.CONTIN', '.MAXPRI', '.BIGVEC',
      *            '.ONLYOV', '.SYMTHR', '.CM FUN', '.ZCMVAL',
      *            '.WRTLIN', '.UNCONT', '.ANGSTR', '.R12AUX',
-     &            '.NOMOVE'/
+     &            '.NOMOVE', '.NUCMOD'/
 C
 C     ... in qm3.h, for QM3:
       ONLYOV = .FALSE.
@@ -157,7 +160,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -246,6 +249,23 @@ C setting NOMOVE to true disables redefinition of coordinates for automatically
 C determined symmetry
                   NOMOVE = .TRUE.
                GO TO 100
+   14          CONTINUE ! .NUCMOD
+C Nuclear model
+               READ (LUCMD, *,IOSTAT=IOS) INUC
+               IF (IOS.NE.0) THEN
+                 CALL QUIT('Error in reading nuclear model .NUCMOD')
+               ENDIF
+               IF    (INUC.EQ.1) THEN
+                 GAUNUC = .FALSE.
+               ELSEIF(INUC.EQ.2) THEN
+                 GAUNUC = .TRUE.
+               ELSE
+                 WRITE(LUPRI,'(//3A,I0)')
+     &           '*** ERROR ',WORD1,' *** Unknown nuclear model: ',INUC
+                 CALL QUIT(
+     &           '*** ERROR '//WORD1//': Unknown nuclear model')
+               ENDIF
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -262,6 +282,12 @@ C determined symmetry
             WRITE (LUPRI,'(A,I5)')
      &         ' Print level in molecule setup (READIN):',IPREAD
          END IF
+         IF(GAUNUC) THEN
+            WRITE(LUPRI,'(/A)') ' * Nuclear model: '//
+     &         'Gaussian charge distribution.'
+         ELSE
+            WRITE(LUPRI,'(/A)') ' * Nuclear model: Point charge'
+         ENDIF
          IF (ONLYOV) WRITE (LUPRI,'(A)')
      &  ' Stop after calculation of overlap integrals (.ONLYOV) for QM3'
          IF (TOL_SYMADD .NE. 0.0D0) THEN
@@ -386,6 +412,16 @@ C
 C     nuclei.h:
 C
       NUCIND = -1 ! to tell that READIN has never been called
+C
+C     Initialize nuclear model
+C       1 - Point nucleus
+C       2 - Gaussian nucleus
+C
+      IF(RELCAL) THEN
+        GAUNUC = .TRUE.
+      ELSE
+        GAUNUC = .FALSE.
+      ENDIF
 C
 C     Initialize effective core potential parameters (ecpinf.h)
 C
