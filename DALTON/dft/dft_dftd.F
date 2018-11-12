@@ -321,7 +321,7 @@ CAMT  Calculate the Gradient Contributions
         ENDIF
 
         IPRLOC=0
-        IF (IPRLOC.GT.1) THEN
+        IF (IPRLOC.GT.1 .OR. DFTD_TEST) THEN
           CALL HEADER('Cart. DFT-D Gradient Contribution',-1)
           IOFF = 0
           DO IATOM = 1, NUCDEP
@@ -329,6 +329,10 @@ CAMT  Calculate the Gradient Contributions
      &             NAMDEP(IATOM), (GRADFTD(IOFF+J),J=1,3)
                    IOFF = IOFF + 3
           END DO
+          IF (DFTD_TEST) THEN
+              WRITE (LUPRI,*) 'DFT-D TEST: Completed'
+              STOP 'DFT-D TEST: Completed'
+          ENDIF
         ENDIF
 
 CAMT If we are running with symmetry re-pack the cartesian gradient
