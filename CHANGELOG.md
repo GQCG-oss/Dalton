@@ -10,12 +10,13 @@
 - Freezing atoms in geometry optimization (N. H. List and H. J. Aa. Jensen).
   (See e.g. test/geoopt\_freeze for example of input.)
 - Effective external field (EEF) for one- and two-photon absorption in PE-HF/DFT calculations.
-  - Reference: N. H. List, H. J. Aa. Jensen, and J. Kongsted. Local Electric Fields and Molecular Properties in Heterogeneous Environments through Polarizable Embedding.
-   Phys. Chem. Chem. Phys. 18, 10070 (2016).
+  - Reference: N. H. List, H. J. Aa. Jensen, and J. Kongsted. Phys. Chem. Chem. Phys. 18, 10070 (2016).
 - Remove the most diffuse virtual orbitals after SCF or MCSCF (new .VIRTRUNC option).
 - Add purely classical multipole-multipole interaction energy in PE-QM calculations (which can be skipped using the .SKIPMUL keyword under the \*PEQM section).
 - Add basic frozen density embedding (FDE) functionality (A. Gomes, C. Jacob, L. Visscher).
 - Dipole velocity complex linear polarizability with test rsp\_cpp\_veloci (N. H. List).
+- Resonant-convergent (damped) cubic response at HF/DFT levels (T. Fahleson and P. Norman)
+  - Reference: T. Fahleson and P. Norman. J. Chem. Phys. 147, 144109 (2017).
 
 ### Fixed
 - Open-shell DFT is not implemented for many derivative properties in \*\*PROPERTIES, dalton now quits.
