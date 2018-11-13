@@ -331,7 +331,7 @@ CAMT  Calculate the Gradient Contributions
           END DO
           IF (DFTD_TEST) THEN
               WRITE (LUPRI,*) 'DFT-D TEST: Completed'
-              CALL QUIT('DFT-D TEST: Completed')
+              CALL QUIT_NO_ERROR('DFT-D TEST completed')
           ENDIF
         ENDIF
 

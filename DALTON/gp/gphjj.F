@@ -91,6 +91,8 @@ C
       END
 
       subroutine gettim(cputime,walltime)
+      ! returns used CPU time and elapsed wall time
+      ! since first call of GETTIM
       implicit none
       real*8      cputime, walltime
 
