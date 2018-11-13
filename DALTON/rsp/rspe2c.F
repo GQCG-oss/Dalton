@@ -4209,7 +4209,8 @@ C     Print oscillator/rotatory strengths
 C
       IF (RSPOCD .OR. RSPECD) THEN
 
-         CALL AROUND('@  Absorption and Circular Dichroism Spectra')
+         CALL AROUND(
+     &  '@  Absorption and Electronic Circular Dichroism (ECD) Spectra')
 
          WRITE (LUPRI,'(3(/A,I3,3A))')
      &'@  Reference  state    symmetry:',IREFSY,
@@ -4472,11 +4473,12 @@ C
          END DO
 
          CALL HEADER('Total Rotatory Strength Tensor',18)
-         WRITE(LUPRI,'(/A/A/A)')
-     &' State Gauge                 Total Rotatory Strength Tensor ',
-     &'                  xx        xy        xz        yy        yz'//
+         WRITE(LUPRI,'(/A//A/A/A)')
+     &'@ Output for .OECD : Oriented electronic circular dichroism',
+     &'@ State Gauge                 Total Rotatory Strength Tensor ',
+     &'@                  xx        xy        xz        yy        yz'//
      &'        zz',
-     &' -----------------------------------------------------------'//
+     &'@ -----------------------------------------------------------'//
      &'------------'
          LENTOT = 3*3*NPPCNV(KSYMOP)
          CALL DCOPY(LENTOT,RMVEL,1,RTVEL,1)
@@ -4489,8 +4491,8 @@ C
 
             IF (ABS(EXENG) .GT. 0.0D0) THEN
 
-               WRITE(LUPRI,'(I5,3X,A,6(1X,F9.4))')
-     &         LOCST,'Vel ',RTVEL(1,1,LOCST),RTVEL(1,2,LOCST),
+               WRITE(LUPRI,'(A,I5,3X,A,6F10.4)')
+     &         '@',LOCST,'Vel ',RTVEL(1,1,LOCST),RTVEL(1,2,LOCST),
      &                      RTVEL(1,3,LOCST),
      &                      RTVEL(2,2,LOCST),RTVEL(2,3,LOCST),
      &                      RTVEL(3,3,LOCST)
@@ -4498,8 +4500,8 @@ C
             ELSE
 
                CALL DZERO(RTVEL(1,1,LOCST),3*3)
-               WRITE(LUPRI,'(I5,3X,A,1X,A)')
-     &         LOCST,'Vel ','    ------ undefined ------'
+               WRITE(LUPRI,'(A,I5,3X,A,1X,A)')
+     &         '@',LOCST,'Vel ','    ------ undefined ------'
 
             END IF
 
@@ -4521,8 +4523,8 @@ C
                LOCWRN = LOCWRN + 1
             END IF
 
-            WRITE(LUPRI,'(8X,A,6(1X,F9.4))')
-     &            'Len ',RTLEN(1,1,LOCST),RTLEN(1,2,LOCST),
+            WRITE(LUPRI,'(A,8X,A,6F10.4)')
+     &           '@','Len ',RTLEN(1,1,LOCST),RTLEN(1,2,LOCST),
      &                   RTLEN(1,3,LOCST),
      &                   RTLEN(2,2,LOCST),RTLEN(2,3,LOCST),
      &                   RTLEN(3,3,LOCST)

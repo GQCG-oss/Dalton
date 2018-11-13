@@ -332,6 +332,67 @@ C
       STOP 100
 #endif
       END
+C  /* quit_no_error */
+      SUBROUTINE QUIT_NO_ERROR(TEXT)
+C
+C exit with error code of zero
+C (QUIT exits with error code of 100)
+C
+#include "implicit.h"
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+#endif
+#include "priunit.h"
+#include "maxorb.h"
+C INFPAR: MYNUM
+#include "infpar.h"
+      CHARACTER TEXT*(*)
+C
+C     Stamp date and time and hostname to output
+C     (if output unit has been defined yet)
+C
+      IF (LUPRI .GE. 0) THEN
+         LUPRIN = LUPRI
+      ELSE IF (LUERR .GE. 0) THEN
+         LUPRIN = LUERR
+      ELSE
+         LUPRIN = 6
+      END IF
+      CALL TSTAMP('  --- Requested STOP by user input ---',LUPRIN)
+#if defined (VAR_MPI)
+      IF (MYNUM .GT. 0) THEN
+         WRITE (LUPRIN,'(/A,I6/2A/)')
+     &   '@ MPI SLAVE, node no.:',MYNUM, '@ Reason: ',TEXT
+         IF (LUPRIN .NE. LUERR)
+     &   WRITE (LUERR,'(/A,I6/2A/)')
+     &   ' MPI SLAVE, node no.:',MYNUM, ' Reason: ',TEXT
+      ELSE
+         WRITE (LUPRIN,'(/A,I6/2A/)')
+     &   '@ MPI MASTER, node no.:',MYNUM, '@ Reason: ',TEXT
+         IF (LUPRIN .NE. LUERR)
+     &   WRITE (LUERR,'(/A,I6/2A/)')
+     &   ' MPI MASTER, node no.:',MYNUM, ' Reason: ',TEXT
+      END IF
+#else
+      WRITE (LUPRIN,'(/2A/)') '@ Reason: ',TEXT
+      IF (LUPRIN .NE. LUERR) THEN
+         CALL TSTAMP('  --- Requested STOP by user input---',LUERR)
+         WRITE (LUERR,'(/2A/)') '@ Reason: ',TEXT
+      END IF
+#endif
+      CALL GETTIM(CTOT,WTOT)
+      CALL TIMTXT(' Total CPU  time used in DALTON:',CTOT,LUPRIN)
+      CALL TIMTXT(' Total wall time used in DALTON:',WTOT,LUPRIN)
+      CALL QTRACE(LUPRIN)
+      flush(LUPRIN)
+C
+#if defined (VAR_MPI)
+      IERR = 0
+C     ... define exit code to the environment for MPI_ABORT
+      CALL MPI_ABORT(MPI_COMM_WORLD,IERR,IERROR)
+#endif
+      STOP 0
+      END
 C  /* Deck parquit */
       SUBROUTINE PARQUIT(TEXT)
 C Purpose:

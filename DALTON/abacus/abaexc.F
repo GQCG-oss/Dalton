@@ -1202,7 +1202,7 @@ C
       END IF
 CSPAS:23/5-11: second and third moment sum rules
       IF (SUMRUL) THEN
-         CALL HEADER_A('Electric octapole transition '
+         CALL HEADER_A('Electric octupole transition '
      &               //'moments (in a.u.)',15)
          WRITE (LUPRI,'(A,2(/A))')
      &   '  Sym.   Mode    Frequency                Length     '//
