@@ -231,7 +231,7 @@ For cubic response triplet excitations are not implemented.
 
 \end{description}
 
-\subsection{Linear response calculation: \Sec{LINEAR}}
+\subsection{Linear response calculation: \Sec{LINEAR} without \Key{SINGLE RESIDUE}}
 \label{sec:linearrsp}
 
 A\index{linear response}\index{response!linear} linear response
@@ -245,13 +245,13 @@ together with excitation energies
 and with long range dispersion coefficients, but not
 together with quadratic or cubic response.
 
-\begin{description}
+Excitation energies and transition properties are requested with the keyword \.Key{SINGLE RESIDUE}.
+Some keywords are specific for excitation properties,
+some keywords are specific for linear response properties.
+This subsection describes the keywords for linear response properties,
+the next subsection describes the keywords for excitation properties.
 
-\item{\Key{ECD}}
-Sets $A$ and $B$ to the dipole operators,\index{dipole length}
-the dipole-velocity operators,\index{dipole velocity}
-and the angular momentum operators.\index{angular momentum}
-The necessary property integrals must be requested in the \Sec{*INTEGRALS} input module.
+\begin{description}
 
 \item{\Key{DIPLEN}}
 Add the three dipole component operators to both the $A$ and $B$ operator lists, also known as dipole length operators.\index{dipole length}
@@ -300,15 +300,6 @@ Maximum number of iterations in the optimal orbital
 algorithm\index{optimal orbital trial vector}
 \cite{tuhjahjajpjjcp84}.
 Default is 5.
-
-\item{\Key{OECD}}
-Sets $A$ and $B$ to the dipole operators,\index{dipole length}
-the dipole-velocity operators,\index{dipole velocity}
-the angular momentum operators,\index{angular momentum}
-the second-order moment (Cartesian electric quadrupole
-length) operators, and
-the Cartesian electric quadrupole velocity operators.
-The necessary property integrals must be requested in the \Sec{*INTEGRALS} input module.
 
 \item{\Key{PRINT}}\\
 \verb|READ *,IPRLR|\\
@@ -443,6 +434,26 @@ Only the specified occupied orbitals are included in the RPA matrix.
 Primarily intended for core hole RPA calculations.
 See also \Key{VIRTUAL}.
 
+\item{\Key{ECD}}
+Electronic circular dicrhoism.
+Sets $A$ and $B$ to the dipole operators,\index{dipole length}
+the dipole-velocity operators,\index{dipole velocity}
+and the angular momentum operators.\index{angular momentum}
+The needed property integrals must be requested in the \Sec{*INTEGRALS} input module.
+%The property integrals \Key{ROTSTR} must be requested in the \Sec{*INTEGRALS} input module.
+
+\item{\Key{OECD}}
+Oriented Electronic circular dichroism.
+(This option includes also all of the \Key{ECD} option.)
+Sets $A$ and $B$ to the dipole operators,\index{dipole length}
+the dipole-velocity operators,\index{dipole velocity}
+the angular momentum operators,\index{angular momentum}
+the second-order moment (Cartesian electric quadrupole
+length) operators, and
+the Cartesian electric quadrupole velocity operators.
+The needed property integrals must be requested in the \Sec{*INTEGRALS} input module.
+%The property integrals \Key{ROTSTR} and \Key{SECMOM} must be requested in the \Sec{*INTEGRALS} input module.
+
 \item{\Key{DIPLEN}}
 Sets $A$ and $B$ to the X, Y, and Z components of the dipole length operators\index{dipole length}.
 
@@ -484,7 +495,6 @@ Default is 5.
   for example if the molecule has higher symmetry than used in the
   calculation. In this case one might need more start vectors to
   get a representative of each symmetry.
-
 
 \item{\Key{NSIMUL}}\\
 \verb|READ (LUCMD,*) (NPPSIM(J),J=1,NSYM)|\\
