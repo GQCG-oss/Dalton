@@ -9,11 +9,13 @@
 !     HFXSET: used in input to determine if HFXFAC has been specified by user with .HFXFAC
       REAL*8  HFXFAC, HFXATT, HFXMU,                                    &
      &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC,   &
-     &        XMULFAC_READIN, DSFAC, HEAVISIDE_PVALUE
+     &        XMULFAC_READIN, DSFAC,  HEAVISIDE_PVALUE
       INTEGER IPRDFT, ANGINT, ANGMIN, LEBMIN, IWINT, NTOT_DFTGRID
       LOGICAL DFTADD, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES,           &
      &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG, HFXSET,   &
-     &        DODFTD, DFTGRID_DONE, DFTGRID_DONE_OLD                                          ! DFTGRID_DONE for REAQUA, DFTGRID_DONE_OLD for REAQUA_OLD ("grid done")
+     &        DODFTD, DFTD_TEST,                                        &
+     &        DFTGRID_DONE,   DFTGRID_DONE_OLD    
+              ! DFTGRID_DONE for REAQUA, DFTGRID_DONE_OLD for REAQUA_OLD ("grid done")
 !     variables for srDFT /hjaaj
       LOGICAL DOSRX_LDA, DOSRX_GGA, DOSRBCK, DOHFEXCH, DOSRX_WIB,       &
      &        DOSRC_LDA, DOSRC_GGA, DOSRC_MULOCAL,                      &
@@ -36,7 +38,8 @@
 ! logical:
      &        DFTADD, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES,           &
      &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG, HFXSET,   &
-     &        DODFTD, DFTGRID_DONE, DFTGRID_DONE_OLD,                   &
+     &        DODFTD, DFTD_TEST,                                        &
+     &        DFTGRID_DONE,   DFTGRID_DONE_OLD,                         &
 ! srDFT (logical):
      &        DOSRX_LDA, DOSRX_GGA, DOSRBCK, DOHFEXCH, DOSRX_WIB,       &
      &        DOSRC_LDA, DOSRC_GGA, DOSRC_MULOCAL(0:3),                 &

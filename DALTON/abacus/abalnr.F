@@ -2431,6 +2431,9 @@ cmbh end
             WRITE(LUPRI,'(2(/,10X,A))')
      &           'Optical rotation summary',
      &           '------------------------'
+            WRITE(LUPRI,'(/,10X,A)')
+     &           'ORD is given in units:'//
+     &           ' degrees/(dm g/cm^3)'
          END IF
          DO IFRVAL = 1, NFRVAL
             TSTFR = ABS(FRVAL(IFRVAL))
@@ -2516,7 +2519,7 @@ cmbh end
                END IF
             ELSE
                IF (MVEOR) THEN
-                  WRITE(LUPRI,'(8(/10X,A,F15.6))')
+                  WRITE(LUPRI,'(8(/10X,A,F16.6))')
      &              'Beta (London)                :',BETAL(1),
      &              'Beta (No-London)             :',BETANL(1),
      &              'Beta (Velocity)              :',BETAVL(1),
@@ -2526,7 +2529,7 @@ cmbh end
      &              'Optical rotation (Velocity)  :',ALPHVL(1),
      &              'Optical rotation (Mod. Vel.) :',ALPHVV(1)
                ELSE
-                  WRITE(LUPRI,'(4(/10X,A,F12.6))')
+                  WRITE(LUPRI,'(4(/10X,A,F16.6))')
      &              'Beta (London)                :',BETAL(1),
      &              'Beta (No-London)             :',BETANL(1),
      &              'Optical rotation (London)    :',ALPHAL(1),

@@ -34,6 +34,7 @@ C
       PARAMETER (D0 = 0.0D0) 
       LOGICAL INSIDE 
       DIMENSION DST(NATOMS)
+#include "inforb.h"
 #include "dfterg.h"
 #include "dftcom.h"
 #include "dftacb.h"
@@ -51,7 +52,17 @@ C
      &1.30D0,1.25D0,1.15D0,1.15D0,1.15D0,1.15D0,
      &18*1.3D0/
 
-      SHIFT = DFTIPTA + EHOMO - SHF 
+
+      IF (NASHT .GT. 0 ) THEN
+         WRITE (LUPRI,*) 
+     &    'Fatal error: AC not implemented for 
+     &     restricted open-shell DFT'
+         CALL QUIT(
+     &    'Fatal error: is not implemented for 
+     &     restricted open-shell DFT')
+      ENDIF
+
+      SHIFT = DFTIPTA + EHOMO  
 
       IF (DOLB94) THEN
         BETA_LB = 0.05d0

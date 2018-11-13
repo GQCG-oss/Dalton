@@ -131,13 +131,14 @@ C MNP 30.01.12
       HEAVISIDE_PVALUE = 4.0d0
 
 CAMT --- DFT-D correction initialize
-      DODFTD    = .FALSE.
-      L_INP_D2PAR =.FALSE.
-      L_INP_D3PAR =.FALSE.
-      DO_DFTD2  = .FALSE.
-      DO_DFTD3  = .FALSE.
-      DO_BJDAMP = .FALSE.
-      DO_3BODY  = .FALSE.
+      DODFTD     = .FALSE.
+      DFTD_TEST  = .FALSE.
+      L_INP_D2PAR= .FALSE.
+      L_INP_D3PAR= .FALSE.
+      DO_DFTD2   = .FALSE.
+      DO_DFTD3   = .FALSE.
+      DO_BJDAMP  = .FALSE.
+      DO_3BODY   = .FALSE.
       D2_s6_inp  = 0.0d0
       D2_alp_inp = 0.0d0
       D2_rs6_inp = 0.0d0
