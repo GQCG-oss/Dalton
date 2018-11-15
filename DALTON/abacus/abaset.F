@@ -117,7 +117,9 @@ C
      *            NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
      *            NAS1, NAS2, NAS3
       IF (MCTYPE .GT. 900) THEN
-         IF (.NOT. DFT_SPINDNS) THEN
+         IF (.NOT. DFT_SPINDNS .AND. ISPIN.NE.1) THEN
+         ! it is OK to have reset DFT_SPINDNS to false in RESPONS or ABACUS
+         ! for singlet reference states.
             CALL QUIT('ERROR in SETSIR:'//
      &      'DFT_SPINDNS true on SIRIFC, but not in input')
          END IF

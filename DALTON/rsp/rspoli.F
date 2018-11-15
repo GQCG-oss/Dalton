@@ -835,7 +835,7 @@ C           Coulomb+exchange
          END IF
          JDXCAO = JDXCAO + N2BASX
 C
-         IF (IPRRSP .GT. 60) write(lupri,*)
+         IF (IPRRSP .GT. 10) write(lupri,*)
      &      'Fock matrix I, IX, IFCTYP(I) = ', I, IX ,IFCTYP(I)
 
       END DO ! I = 1,NFMAT
