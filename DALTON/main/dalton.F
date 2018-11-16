@@ -280,7 +280,7 @@ C
      &  '(CC module)',
      *'Renzo Cimiraglia,','University of Ferrara,','Italy',
      &  '(NEVPT2)',
-     *'Sonia Coriani,','University of Trieste,','Italy',
+     *'Sonia Coriani,','Technical University of Denmark,','Denmark',
      &  '(CC module, MCD in RESPONS)',
      *'Janusz Cukras,','University of Trieste,','Italy',
      &  '(MChD in RESPONS)',
