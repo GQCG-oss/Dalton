@@ -365,7 +365,7 @@ C
      *'Kurt V. Mikkelsen,','University of Copenhagen,','Denmark',
      &  '(MC-SCRF and QM/MM)',
      *'Rolf H. Myhre,', 'NTNU,','Norway',
-     &  '(Cholesky, subsystems and ECC2)',
+     &  '(Subsystems and CC3)',
      *'Christian Neiss,','Univ. Erlangen-Nuernberg,','Germany',
      &  '(CCSD(R12))',
      *'Christian B. Nielsen,','University of Copenhagen,','Denmark',
