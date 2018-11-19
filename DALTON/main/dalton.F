@@ -253,7 +253,7 @@ C
      &' ',
      &'and',
      &' ',
-     &'   Dalton, a Molecular Electronic Structure Program,',
+     &'   Dalton, a molecular electronic structure program,',
      &'   Release '//
      &DALTON_VERSION
      &//', see http://daltonprogram.org'
@@ -294,6 +294,8 @@ C
      &  '(Polarizable embedding model, TDA)',
      *'Rasmus Faber,','University of Copenhagen,','Denmark',
      &  '(Vib.avg. NMR with SOPPA, parallel AO-SOPPA)',
+     *'Tobias Fahleson,','KTH Stockholm,','Sweden',
+     &  '(Damped cubic response)',
      *'Berta Fernandez,','U. of Santiago de Compostela,','Spain',
      &  '(doublet spin, ESR in RESPONS)',
      *'Lara Ferrighi,','Aarhus University,','Denmark',
