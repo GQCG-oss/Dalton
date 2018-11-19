@@ -3,7 +3,7 @@
 #    -----------
 #    Molecule:         H2O
 #    Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ
-#    Test Purpose:     Check energy calculation with symmetry
+#    Test Purpose:     Check energy calculation with symmetry and .NUCMOD option
 
 import os
 import sys
