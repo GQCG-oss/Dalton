@@ -77,13 +77,13 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     add_definitions(-DVAR_PGI)
 
 # Patrick: mcmodel=medium is not available on PGI Free for MacOS X
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DVAR_PGF90")
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DVAR_PGI")
     if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mcmodel=medium")
     endif()
 
 # Simen: added to include c++ libraries needed for the final linking 
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -pgcpplibs")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -pgc++libs")
 
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
 # I would like to add -fast but this makes certain dec tests fails
