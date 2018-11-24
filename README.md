@@ -1,6 +1,5 @@
 [![pipeline status](https://gitlab.com/dalton/dalton/badges/master/pipeline.svg)](https://gitlab.com/dalton/dalton/pipelines)
 [![coverage report](https://gitlab.com/dalton/dalton/badges/master/coverage.svg?job=nightly-coverage)](https://gitlab.com/dalton/dalton/pipelines)
-[![codecov](https://codecov.io/gl/dalton/dalton/branch/master/graph/badge.svg)](https://codecov.io/gl/dalton/dalton)
 
 Nightly runs on full testset: https://testboard.org/cdash/index.php?project=Dalton
 
@@ -43,7 +42,10 @@ This can also be achieved in one step when you clone the repository:
 ```
 $ git clone --recursive -b feature-branch https://gitlab.com/dalton/dalton.git
 ```
-In case you did not include the `--recursive` argument when you cloned the repository, it is necessary to run the following two commands from the *dalton* directory before entering the *build* directory and running `make`:
+
+In case you did not include the `--recursive` argument when you cloned the
+repository, it is necessary to run the following two commands from the *dalton*
+directory before entering the *build* directory and running `make`:
 ```
 $ git submodule init
 $ git submodule update --recursive

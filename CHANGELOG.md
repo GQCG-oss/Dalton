@@ -10,7 +10,7 @@
 
 ## [2019.alpha] (Dalton2019 alpha)
 
-## [2018.0-rc] (Dalton2018 release candidate)
+## [2018.0] (2018-11-19)
 
 ### New features added
 - New parallel 2-electron integral transformation .FCKTRA  (H. J. Aa. Jensen).
