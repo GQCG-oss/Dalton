@@ -24,9 +24,9 @@ fedora-26-serial:
         - g++ -v
     script:
         - dnf install -y findutils which
-        - python setup --coverage --type=debug -D SITE=GitLabCI -D BUILDNAME=$CI_COMMIT_REF_NAME
+        - python setup --coverage --type=release -D SITE=GitLabCI -D BUILDNAME=$CI_COMMIT_REF_NAME
         - cd build
-        - make -j 4
+        - make
         - ctest -L essential --output-on-failure
         - ctest -D ExperimentalCoverage
         - ctest -D ExperimentalSubmit
@@ -37,7 +37,7 @@ fedora-26-serial:
 fedora-26-mpi:
     image: foeroyingur/fedora:26
     variables:
-        DALTON_NUM_MPI_PROCS: "4"
+        DALTON_NUM_MPI_PROCS: "3"
         OMP_NUM_THREADS: "1"
     before_script:
         - whoami
@@ -59,9 +59,9 @@ fedora-26-mpi:
         - mpirun --version
     script:
         - dnf install -y which
-        - python setup --type=debug --mpi
+        - python setup --type=release --mpi
         - cd build
-        - make -j 4
+        - make
         - ctest -L essential --output-on-failure
     except:
         - schedules
@@ -86,9 +86,9 @@ ubuntu-16.04-serial:
         - gcc -v
         - g++ -v
     script:
-        - python setup
+        - python setup --type=release
         - cd build
-        - make -j 4
+        - make
         - ctest -L essential --output-on-failure
     except:
         - schedules
@@ -96,7 +96,7 @@ ubuntu-16.04-serial:
 ubuntu-16.04-mpi:
     image: devcafe/ubuntu16.04-gcc5.3.1-openmpi1.10-mkl2017.4.239
     variables:
-        DALTON_NUM_MPI_PROCS: "4"
+        DALTON_NUM_MPI_PROCS: "3"
         OMP_NUM_THREADS: "1"
     before_script:
         - whoami
@@ -117,9 +117,9 @@ ubuntu-16.04-mpi:
         - mpicxx -v
         - mpirun --version
     script:
-        - python setup --mpi
+        - python setup --type=release --mpi
         - cd build
-        - make -j 4
+        - make
         - ctest -L essential --output-on-failure
     except:
         - schedules
@@ -146,9 +146,9 @@ ubuntu-18.04-serial:
         - gcc -v
         - g++ -v
     script:
-        - python setup
+        - python setup --type=release
         - cd build
-        - make -j 4
+        - make
         - ctest -L essential --output-on-failure
     except:
         - schedules
@@ -156,7 +156,7 @@ ubuntu-18.04-serial:
 ubuntu-18.04-mpi:
     image: devcafe/ubuntu18.04-gcc7.3.0-openmpi2.1.0-mkl2017.4.239
     variables:
-        DALTON_NUM_MPI_PROCS: "4"
+        DALTON_NUM_MPI_PROCS: "3"
         OMP_NUM_THREADS: "1"
     before_script:
         - whoami
@@ -179,9 +179,9 @@ ubuntu-18.04-mpi:
         - mpicxx -v
         - mpirun --version
     script:
-        - python setup --mpi
+        - python setup --mpi --type=release
         - cd build
-        - make -j 4
+        - make
         - ctest -L essential --output-on-failure
     except:
         - schedules
@@ -196,6 +196,7 @@ nightly-coverage:
     variables:
         DALTON_NUM_MPI_PROCS: "1"
         OMP_NUM_THREADS: "1"
+        CTEST_MAKE_NUM_PROCS: "4"
     before_script:
         - whoami
         - ps -u `whoami`
@@ -212,9 +213,73 @@ nightly-coverage:
         - g++ -v
     script:
         - dnf install -y findutils which
-        - python setup --coverage --type=release -D SITE=GitLabCI -D BUILDNAME=$CI_COMMIT_REF_NAME
+        - python setup --coverage --type=release -D SITE=GitLabCI -D BUILDNAME=${CI_COMMIT_REF_NAME}-coverage
         - cd build
-        - export CTEST_MAKE_NUM_PROCS=4
-        - make -j 4
         - ctest -L dalton -j 4 --output-on-failure -D Nightly
         - bash <(curl -s https://codecov.io/bash) -t 69d70b17-576f-459e-8f6c-409607c9f06b
+
+nightly-debug:
+    only:
+        - schedules
+    allow_failure: true
+    tags:
+        - dalton
+    image: foeroyingur/fedora:26
+    variables:
+        DALTON_NUM_MPI_PROCS: "1"
+        OMP_NUM_THREADS: "1"
+        CTEST_MAKE_NUM_PROCS: "4"
+    before_script:
+        - whoami
+        - ps -u `whoami`
+        - uname -a
+        - lscpu
+        - free -m
+        - df -h
+        - ulimit -a
+        - git --version
+        - cmake --version
+        - python -V
+        - gfortran -v
+        - gcc -v
+        - g++ -v
+    script:
+        - dnf install -y findutils which
+        - python setup --type=debug -D SITE=GitLabCI -D BUILDNAME=${CI_COMMIT_REF_NAME}-debug
+        - cd build
+        - ctest -L dalton -j 4 --output-on-failure -D Nightly
+
+nightly-mpi:
+    only:
+        - schedules
+    allow_failure: true
+    tags:
+        - dalton
+    image: foeroyingur/fedora:26
+    variables:
+        DALTON_NUM_MPI_PROCS: "4"
+        OMP_NUM_THREADS: "1"
+        CTEST_MAKE_NUM_PROCS: "4"
+    before_script:
+        - whoami
+        - ps -u `whoami`
+        - uname -a
+        - lscpu
+        - free -m
+        - df -h
+        - ulimit -a
+        - git --version
+        - cmake --version
+        - python -V
+        - gfortran -v
+        - gcc -v
+        - g++ -v
+        - mpifort -v
+        - mpicc -v
+        - mpicxx -v
+        - mpirun --version
+    script:
+        - dnf install -y findutils which
+        - python setup --mpi --type=release -D SITE=GitLabCI -D BUILDNAME=${CI_COMMIT_REF_NAME}-mpi
+        - cd build
+        - ctest -L dalton --output-on-failure -D Nightly
