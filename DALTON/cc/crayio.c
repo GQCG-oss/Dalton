@@ -45,7 +45,7 @@
    CALL PUTWA(UNIT, SOURCE, ADDR, COUNT, IERR) 
 
    Currently the I/O is syncronous and unbuffered */
-#define _BSD_SOURCE 1
+#define _DEFAULT_SOURCE 1
 #define _LARGEFILE64_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
