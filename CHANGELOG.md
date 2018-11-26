@@ -2,6 +2,13 @@
 
 ## [2019.alpha] (Dalton2019 alpha)
 
+
+## [2018.1] (WIP on patch no. 1)
+
+### Fixed
+- Error in export for FDE fixed.
+- Compilation with PGI compilers now possible (but code with pelib or qfit using gen1int is not working).
+
 ## [2018.0] (2018-11-19)
 
 ### New features added

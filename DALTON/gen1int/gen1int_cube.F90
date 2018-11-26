@@ -36,8 +36,8 @@ module gen1int_cube
   integer, save, public :: num_cube_mo = 0                          !number of MOs to generate
   integer, save, allocatable, public :: idx_cube_mo(:)              !indices of MOs
   character(MAX_LEN_STR), save, public :: cube_format = "GAUSSIAN"  !format of cube file
-  real(REALK), save, public :: cube_origin(3) = 0.0_REALK           !origin of cube file
-  real(REALK), save, public :: cube_increment(3,3) = 0.0_REALK      !increments of cube file
+  real(REALK), save, public :: cube_origin(3) = 0.0_8           !origin of cube file
+  real(REALK), save, public :: cube_increment(3,3) = 0.0_8      !increments of cube file
   integer, save, public :: cube_num_inc(3) = 0                      !number of increments of cube file
 
 end module gen1int_cube

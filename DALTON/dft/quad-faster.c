@@ -254,11 +254,7 @@ qrbl_add_lda_contribution(DftIntegratorBl* grid, QuadBlData* d,
 {
     static const real sgn[2]={1.0,-1.0};
     integer i, j, k, isym, ibl, jbl;
-#if defined(VAR_PGF77) || defined(SYS_DEC)
     real pref2b[DFT_BLLEN], pref2c[DFT_BLLEN], pref3[DFT_BLLEN];
-#else
-    real pref2b[bllen], pref2c[bllen], pref3[bllen];
-#endif
     real * RESTRICT aos = grid->atv;
     integer sY = d->spinY, sZ = d->spinZ;
     real *om = d->res_omega, *omY = d->res_omY, *omZ = d->res_omZ;
@@ -385,11 +381,7 @@ qrbl_add_gga_contribution(DftIntegratorBl* grid, QuadBlData* d,
     /* pref3 is the prefactor of the double-commuted term, pref2a is
      * the prefactor of commuted with Z, and pref2b - with commuted
      * with Y. */
-#if 1 || defined(VAR_PGF77)
     real pref2b[DFT_BLLEN][4], pref2c[DFT_BLLEN][4], pref3[DFT_BLLEN][4];
-#else
-    real pref2b[bllen][4], pref2c[bllen][4], pref3[bllen][4];
-#endif
     real * RESTRICT aos = grid->atv;
     real * RESTRICT aox = grid->atv+bllen*inforb_.nbast;
     real * RESTRICT aoy = grid->atv+bllen*inforb_.nbast*2;
