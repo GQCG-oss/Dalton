@@ -85,7 +85,7 @@ set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DVAR_PGI")
 # Simen: added to include c++ libraries needed for the final linking 
     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -pgc++libs")
 
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe -traceback")
 # I would like to add -fast but this makes certain dec tests fails
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -Mipa=fast")
     set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")

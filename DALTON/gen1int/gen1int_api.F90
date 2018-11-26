@@ -686,7 +686,7 @@ module gen1int_api
     end select
     if (ierr/=0) then
       write(STDOUT,999) "failed to create operator of "//trim(prop_name)//"!"
-      call quit('failed to create propert operator')
+      call quit('failed to create property operator')
     end if
     ! sets magnetic derivatives
     call OnePropSetMag(one_prop=prop_comp%one_prop, &
