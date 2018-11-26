@@ -34,7 +34,7 @@ Pawel Salek, 2004.06, Himmelbjerg.
 #define _XOPEN_SOURCE_EXTENDED 1
 #endif
 /* Use BSD's strncasecmp() */
-#define _BSD_SOURCE 1
+#define _DEFAULT_SOURCE 1
 
 #include <math.h>
 
