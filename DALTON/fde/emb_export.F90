@@ -17,6 +17,7 @@ module fde_export_data
    use xml_file
 ! need to sort out xcfun interface to enable it
 !   use fde_evaluators
+   use fde_evaluators_dalton
    
    public fde_export_to_file
 
@@ -57,8 +58,8 @@ module fde_export_data
          type(fde_grid), intent(in)         :: grid
          character(len=4)                   :: level
 
-        call fde_calculate_elpot(level,grid,gf)
-        call fde_get_density(level,grid,gf)
+         call fde_calculate_elpot(level,grid,gf)
+         call fde_get_density(level,grid,gf)
 
       end subroutine fde_prepare_export
 
@@ -110,7 +111,7 @@ module fde_export_data
             gnp => gf%gn
          else
             call fde_quit('density gradient not available in fde export')
-         endif   
+         endif
 
          if (associated(gf%hn)) then
             hes => gf%hn

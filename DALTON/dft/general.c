@@ -40,7 +40,7 @@
 
 /* Use BSD's strncasecmp(); if there is a platform that has no strncasecmp()
  * ask pawsa@theochem.kth.se for replacement */
-#define _BSD_SOURCE 1
+#define _DEFAULT_SOURCE 1
 
 #include <ctype.h>
 #include <math.h>
