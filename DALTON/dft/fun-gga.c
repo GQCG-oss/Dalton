@@ -35,7 +35,7 @@
 #define _XOPEN_SOURCE_EXTENDED 1
 
 /* Use BSD's strncasecmp() */
-#define _BSD_SOURCE 1
+#define _DEFAULT_SOURCE 1
 
 #include <ctype.h>
 #include <math.h>

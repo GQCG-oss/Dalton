@@ -23,7 +23,7 @@
 */
 #define __CVERSION__
 /* Written by Elias Rudberg, KTH, Stockholm */
-#define _BSD_SOURCE 1
+#define _DEFAULT_SOURCE 1
 
 #include <stdlib.h>
 #include <math.h>

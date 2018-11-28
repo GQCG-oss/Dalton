@@ -622,7 +622,7 @@ module gen1int_matrix
     else
       p_trans = .false.
     end if
-    blocked_trace = 0.0_REALK
+    blocked_trace = 0.0_8
     ! matrix element storage in triangular format (only upper and diagonal parts stored)
     if (A%triangular) then
       ! transposes the \var(values)
@@ -683,7 +683,7 @@ module gen1int_matrix
       end if
     end if
     ! closed-shell, then additional factor 2
-    trace = trace+2.0_REALK*blocked_trace
+    trace = trace+2.0_8*blocked_trace
   end subroutine MatMultBlockedTrace
 
   !> \brief creates a matrix
@@ -821,14 +821,14 @@ module gen1int_matrix
     if (present(threshold)) then
       p_threshold = threshold
     else
-      p_threshold = 10.0_REALK**(-8)
+      p_threshold = 10.0_8**(-8)
     end if
     if (present(ratio_thrsh)) then
-      p_ratio_thrsh(1) = 1.0_REALK-ratio_thrsh
-      p_ratio_thrsh(2) = 1.0_REALK+ratio_thrsh
+      p_ratio_thrsh(1) = 1.0_8-ratio_thrsh
+      p_ratio_thrsh(2) = 1.0_8+ratio_thrsh
     else
-      p_ratio_thrsh(1) = 1.0_REALK-10.0_REALK**(-6)
-      p_ratio_thrsh(2) = 1.0_REALK+10.0_REALK**(-6)
+      p_ratio_thrsh(1) = 1.0_8-10.0_8**(-6)
+      p_ratio_thrsh(2) = 1.0_8+10.0_8**(-6)
     end if
     if (present(triangular)) then
       p_triangular = triangular
@@ -1061,7 +1061,7 @@ module gen1int_matrix
     if (present(threshold)) then
       p_threshold = threshold
     else
-      p_threshold = 10.0_REALK**(-8)
+      p_threshold = 10.0_8**(-8)
     end if
     ! sets up referenced elements
     allocate(ref_tr_sym(DIM_TR_MAT), stat=ierr)
@@ -1096,7 +1096,7 @@ module gen1int_matrix
     do icol = 1, NUM_MAT_ROW
       do irow = 1, icol-1
         addr_elm = addr_elm+1
-        ref_tr_sym(addr_elm) = 0.1_REALK*ref_tr_sym(addr_elm)
+        ref_tr_sym(addr_elm) = 0.1_8*ref_tr_sym(addr_elm)
         ref_tr_anti(addr_elm) = ref_tr_sym(addr_elm)
         ref_sq_sym(irow,icol) = ref_tr_sym(addr_elm)
         ref_sq_sym(icol,irow) = ref_tr_sym(addr_elm)
@@ -1104,10 +1104,10 @@ module gen1int_matrix
         ref_sq_anti(icol,irow) = -ref_tr_sym(addr_elm)
       end do
       addr_elm = addr_elm+1
-      ref_tr_sym(addr_elm) = 0.1_REALK*ref_tr_sym(addr_elm)
-      ref_tr_anti(addr_elm) = 0.0_REALK
+      ref_tr_sym(addr_elm) = 0.1_8*ref_tr_sym(addr_elm)
+      ref_tr_anti(addr_elm) = 0.0_8
       ref_sq_sym(icol,icol) = ref_tr_sym(addr_elm)
-      ref_sq_anti(icol,icol) = 0.0_REALK
+      ref_sq_anti(icol,icol) = 0.0_8
     end do
     ! sets up test matrices
     allocate(tr_sym_elms(DIM_TR_MAT), stat=ierr)
@@ -1119,7 +1119,7 @@ module gen1int_matrix
       test_failed = .true.
       return
     end if
-    tr_sym_elms = 0.0_REALK
+    tr_sym_elms = 0.0_8
     call MatAssociate(work_alpha=tr_sym_elms, num_row=NUM_MAT_ROW, A=TrSym, &
                       info_mat=ierr, triangular=.true., symmetric=.true.)
     if (ierr/=0) then
@@ -1141,7 +1141,7 @@ module gen1int_matrix
       test_failed = .true.
       return
     end if
-    tr_anti_elms = 0.0_REALK
+    tr_anti_elms = 0.0_8
     call MatAssociate(work_alpha=tr_anti_elms, num_row=NUM_MAT_ROW, A=TrAnti, &
                       info_mat=ierr, triangular=.true., symmetric=.false.)
     if (ierr/=0) then
@@ -1165,7 +1165,7 @@ module gen1int_matrix
       test_failed = .true.
       return
     end if
-    sq_sym_elms = 0.0_REALK
+    sq_sym_elms = 0.0_8
     call MatAssociate(work_alpha=sq_sym_elms, num_row=NUM_MAT_ROW, &
                       A=SqSym, info_mat=ierr)
     if (ierr/=0) then
@@ -1191,7 +1191,7 @@ module gen1int_matrix
       test_failed = .true.
       return
     end if
-    sq_anti_elms = 0.0_REALK
+    sq_anti_elms = 0.0_8
     call MatAssociate(work_alpha=sq_anti_elms, num_row=NUM_MAT_ROW, A=SqAnti, &
                       info_mat=ierr)
     if (ierr/=0) then
@@ -1329,14 +1329,14 @@ module gen1int_matrix
       end if
     end do
     ! evaluates expectation values
-    trace_tr_ss = 0.0_REALK
-    trace_tr_sa = 0.0_REALK
-    trace_tr_as = 0.0_REALK
-    trace_tr_aa = 0.0_REALK
-    trace_sq_ss = 0.0_REALK
-    trace_sq_sa = 0.0_REALK
-    trace_sq_as = 0.0_REALK
-    trace_sq_aa = 0.0_REALK
+    trace_tr_ss = 0.0_8
+    trace_tr_sa = 0.0_8
+    trace_tr_as = 0.0_8
+    trace_tr_aa = 0.0_8
+    trace_sq_ss = 0.0_8
+    trace_sq_sa = 0.0_8
+    trace_sq_as = 0.0_8
+    trace_sq_aa = 0.0_8
     do icol = 1, NUM_BLOCK
       ! sets the minimum and maximum of indices of columns of matrices
       min_col_idx = (icol-1)*NUM_BLOCK_ROW+1
@@ -1444,8 +1444,8 @@ module gen1int_matrix
       end do
     end do
     ! referenced expectation values
-    ref_trace_ss = 0.0_REALK
-    ref_trace_aa = 0.0_REALK
+    ref_trace_ss = 0.0_8
+    ref_trace_aa = 0.0_8
     do irow = 1, NUM_MAT_ROW
       do icol = 1, NUM_MAT_ROW
         ref_trace_ss = ref_trace_ss+ref_sq_sym(icol,irow)*ref_sq_sym(irow,icol)
@@ -1453,19 +1453,19 @@ module gen1int_matrix
       end do
     end do
     ! closed-shell, then additional factor 2
-    ref_trace_ss = 2.0_REALK*ref_trace_ss
-    ref_trace_aa = 2.0_REALK*ref_trace_aa
+    ref_trace_ss = 2.0_8*ref_trace_ss
+    ref_trace_aa = 2.0_8*ref_trace_aa
     ! checks expectation values
     if (abs(trace_tr_ss-ref_trace_ss)>p_threshold) then
       write(io_viewer,110) "TRACE-TR-SS", trace_tr_ss, ref_trace_ss
       test_failed = .true.
     end if
     if (abs(trace_tr_sa)>p_threshold) then
-      write(io_viewer,110) "TRACE-TR-SA", trace_tr_sa, 0.0_REALK
+      write(io_viewer,110) "TRACE-TR-SA", trace_tr_sa, 0.0_8
       test_failed = .true.
     end if
     if (abs(trace_tr_as)>p_threshold) then
-      write(io_viewer,110) "TRACE-TR-AS", trace_tr_as, 0.0_REALK
+      write(io_viewer,110) "TRACE-TR-AS", trace_tr_as, 0.0_8
       test_failed = .true.
     end if
     if (abs(trace_tr_aa-ref_trace_aa)>p_threshold) then
@@ -1477,11 +1477,11 @@ module gen1int_matrix
       test_failed = .true.
     end if
     if (abs(trace_sq_sa)>p_threshold) then
-      write(io_viewer,110) "TRACE-SQ-SA", trace_sq_sa, 0.0_REALK
+      write(io_viewer,110) "TRACE-SQ-SA", trace_sq_sa, 0.0_8
       test_failed = .true.
     end if
     if (abs(trace_sq_as)>p_threshold) then
-      write(io_viewer,110) "TRACE-SQ-AS", trace_sq_as, 0.0_REALK
+      write(io_viewer,110) "TRACE-SQ-AS", trace_sq_as, 0.0_8
       test_failed = .true.
     end if
     if (abs(trace_sq_aa-ref_trace_aa)>p_threshold) then
