@@ -136,8 +136,8 @@ C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
 !#include "pi.h" --> pi, pi2
-#include "pi.h"
-#include "priunit.h"
+#include "pi.h" 
+#include "priunit.h" 
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(4), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
@@ -173,8 +173,8 @@ C*****************************************************************************
       A = mu / (2.0d0*kF)
 
       if (diff_order .eq. 0) then
-         write(lupri,*)'ESRX_LDA_ERF_case_x:'
-         write(lupri,*)'WARNING: Code not covered in ctest'
+         write(lupri,*)'ESRX_LDA_ERF_case_x:' 
+         write(lupri,*)'WARNING: Code not covered in ctest' 
          if (A .lt. 1.d-9) then
             call ESRX_LDA_ERF_case_1(rho_a, mu, Ea)
             if (.not.alpha_eq_beta) then
@@ -194,8 +194,8 @@ C*****************************************************************************
 
       elseif (diff_order .eq. 1) then
          if (A .lt. 1.d-9) then
-            write(lupri,*)'D1ESRX_LDA_ERF_case_1:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D1ESRX_LDA_ERF_case_1:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D1ESRX_LDA_ERF_case_1(rho_a, mu, Ea, d1Ea)
             if (.not.alpha_eq_beta) then
                call D1ESRX_LDA_ERF_case_1(rho_b, mu, Eb, d1Eb)
@@ -206,8 +206,8 @@ C*****************************************************************************
                call D1ESRX_LDA_ERF_case_2(rho_b, mu, Eb, d1Eb)
             end if
          elseif (A .lt. 1.d+9) then
-            write(lupri,*)'D1ESRX_LDA_ERF_case_3:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D1ESRX_LDA_ERF_case_3:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D1ESRX_LDA_ERF_case_3(rho_a, mu, Ea, d1Ea)
             if (.not.alpha_eq_beta) then
                call D1ESRX_LDA_ERF_case_3(rho_b, mu, Eb, d1Eb)
@@ -216,8 +216,8 @@ C*****************************************************************************
 
       elseif (diff_order .eq. 2) then
          if (A .lt. 1.d-9) then
-            write(lupri,*)'D2ESRX_LDA_ERF_case_1:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D2ESRX_LDA_ERF_case_1:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D2ESRX_LDA_ERF_case_1(rho_a, mu, Ea, d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
                call D2ESRX_LDA_ERF_case_1(rho_b, mu, Eb, d1Eb, d2Eb)
@@ -228,16 +228,16 @@ C*****************************************************************************
                call D2ESRX_LDA_ERF_case_2(rho_b, mu, Eb, d1Eb, d2Eb)
             end if
          elseif (A .lt. 1.d+9) then
-            write(lupri,*)'D2ESRX_LDA_ERF_case_3:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D2ESRX_LDA_ERF_case_3:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D2ESRX_LDA_ERF_case_3(rho_a, mu, Ea, d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
                call D2ESRX_LDA_ERF_case_3(rho_b, mu, Eb, d1Eb, d2Eb)
             end if
          end if
 
-      else
-         call quit('Requested to high order derivative: ',diff_order)
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
       end if
 
 C     Do the convertion from alpha, beta to charge, spin
@@ -283,8 +283,8 @@ C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
 !#include "pi.h" --> pi, pi2
-#include "pi.h"
-#include "priunit.h"
+#include "pi.h" 
+#include "priunit.h" 
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(4), gamma_vec(6), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
@@ -323,8 +323,8 @@ C*****************************************************************************
       A = mu / (2.0d0*kF)
 
       if (diff_order .eq. 0) then
-         write(lupri,*)'ESRX_PBE_ERF_case_x:'
-         write(lupri,*)'WARNING: Code not covered in ctest'
+         write(lupri,*)'ESRX_PBE_ERF_case_x:' 
+         write(lupri,*)'WARNING: Code not covered in ctest' 
          if (A .lt. 1.d-9) then
             call ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea)
             if (.not.alpha_eq_beta) then
@@ -354,8 +354,8 @@ C*****************************************************************************
 
       elseif (diff_order .eq. 1) then
          if (A .lt. 1.d-9) then
-            write(lupri,*)'D1ESRX_PBE_ERF_case_1:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D1ESRX_PBE_ERF_case_1:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D1ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea, d1Ea)
             if (.not.alpha_eq_beta) then
                call D1ESRX_PBE_ERF_case_1(rho_b, gamma_bb, mu, Eb, d1Eb)
@@ -373,16 +373,16 @@ C*****************************************************************************
      &                                      d1Eb)
             end if
          elseif (A .le. 1.d+2) then ! case_2_2
-            write(lupri,*)'D1ESRX_PBE_ERF_case_2_2:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D1ESRX_PBE_ERF_case_2_2:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D1ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea, d1Ea)
             if (.not.alpha_eq_beta) then
                call D1ESRX_PBE_ERF_case_2_2(rho_b, gamma_bb, mu, Eb,
      &                                      d1Eb)
             end if
          elseif (A .lt. 1.d+9) then
-            write(lupri,*)'D1ESRX_PBE_ERF_case_3:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D1ESRX_PBE_ERF_case_3:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D1ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea, d1Ea)
             if (.not.alpha_eq_beta) then
                call D1ESRX_PBE_ERF_case_3(rho_b, gamma_bb, mu, Eb, d1Eb)
@@ -391,8 +391,8 @@ C*****************************************************************************
 
       elseif (diff_order .eq. 2) then
          if (A .lt. 1.d-9) then
-            write(lupri,*)'D2ESRX_PBE_ERF_case_1:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D2ESRX_PBE_ERF_case_1:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D2ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea,
      &                                   d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
@@ -414,8 +414,8 @@ C*****************************************************************************
      &                                    d1Eb, d2Eb)
             end if
          elseif (A .le. 1.d+2) then ! case_2_2
-            write(lupri,*)'D2ESRX_PBE_ERF_case_2_2:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D2ESRX_PBE_ERF_case_2_2:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D2ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea,
      &                                   d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
@@ -423,8 +423,8 @@ C*****************************************************************************
      &                                    d1Eb, d2Eb)
             end if
          elseif (A .lt. 1.d+9) then
-            write(lupri,*)'D2ESRX_PBE_ERF_case_3:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D2ESRX_PBE_ERF_case_3:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D2ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea,
      &                                   d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
@@ -433,8 +433,8 @@ C*****************************************************************************
             end if
          end if
 
-      else
-         call quit('Requested to high order derivative: ',diff_order)
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
       end if
 
 C     Do the convertion from alpha, beta to charge, spin
@@ -480,8 +480,8 @@ C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
 !#include "pi.h" --> pi, pi2
-#include "pi.h"
-#include "priunit.h"
+#include "pi.h" 
+#include "priunit.h" 
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(4), gamma_vec(6), tau(4), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
@@ -524,8 +524,8 @@ C*****************************************************************************
       A = mu / (2.0d0*kF)
 
       if (diff_order .eq. 0) then
-         write(lupri,*)'ESRX_TPSS_ERF_case_x:'
-         write(lupri,*)'WARNING: Code not covered in ctest'
+         write(lupri,*)'ESRX_TPSS_ERF_case_x:' 
+         write(lupri,*)'WARNING: Code not covered in ctest' 
          if (A .lt. 1.d-9) then
             call ESRX_TPSS_ERF_case_1(rho_a, gamma_aa, tau_a, mu, Ea)
             if (.not.alpha_eq_beta) then
@@ -558,8 +558,8 @@ C*****************************************************************************
 
       elseif (diff_order .eq. 1) then
          if (A .lt. 1.d-9) then
-            write(lupri,*)'D1ESRX_TPSS_ERF_case_1:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D1ESRX_TPSS_ERF_case_1:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D1ESRX_TPSS_ERF_case_1(rho_a, gamma_aa, tau_a, mu,
      &                                  Ea, d1Ea)
             if (.not.alpha_eq_beta) then
@@ -581,8 +581,8 @@ C*****************************************************************************
      &                                       Eb, d1Eb)
             end if
          elseif (A .le. 1.d+2) then ! case_2_2
-            write(lupri,*)'D1ESRX_TPSS_ERF_case_2_2:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D1ESRX_TPSS_ERF_case_2_2:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D1ESRX_TPSS_ERF_case_2_2(rho_a, gamma_aa, tau_a, mu,
      &                                    Ea, d1Ea)
             if (.not.alpha_eq_beta) then
@@ -590,8 +590,8 @@ C*****************************************************************************
      &                                       Eb, d1Eb)
             end if
          elseif (A .lt. 1.d+9) then
-            write(lupri,*)'D1ESRX_TPSS_ERF_case_3:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D1ESRX_TPSS_ERF_case_3:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D1ESRX_TPSS_ERF_case_3(rho_a, gamma_aa, tau_a, mu,
      &                                  Ea, d1Ea)
             if (.not.alpha_eq_beta) then
@@ -602,8 +602,8 @@ C*****************************************************************************
 
       elseif (diff_order .eq. 2) then
          if (A .lt. 1.d-9) then
-            write(lupri,*)'D2ESRX_TPSS_ERF_case_1:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D2ESRX_TPSS_ERF_case_1:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D2ESRX_TPSS_ERF_case_1(rho_a, gamma_aa, tau_a, mu,
      &                                  Ea, d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
@@ -625,8 +625,8 @@ C*****************************************************************************
      &                                       Eb, d1Eb, d2Eb)
             end if
          elseif (A .le. 1.d+2) then ! case_2_2
-            write(lupri,*)'D2ESRX_TPSS_ERF_case_2_2:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D2ESRX_TPSS_ERF_case_2_2:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D2ESRX_TPSS_ERF_case_2_2(rho_a, gamma_aa, tau_a, mu,
      &                                    Ea, d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
@@ -634,8 +634,8 @@ C*****************************************************************************
      &                                       Eb, d1Eb, d2Eb)
             end if
          elseif (A .lt. 1.d+9) then
-            write(lupri,*)'D2ESRX_TPSS_ERF_case_3:'
-            write(lupri,*)'WARNING: Code not covered in ctest'
+            write(lupri,*)'D2ESRX_TPSS_ERF_case_3:' 
+            write(lupri,*)'WARNING: Code not covered in ctest' 
             call D2ESRX_TPSS_ERF_case_3(rho_a, gamma_aa, tau_a, mu,
      &                                  Ea, d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
@@ -644,8 +644,8 @@ C*****************************************************************************
             end if
          end if
 
-      else
-         call quit('Requested to high order derivative: ',diff_order)
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
       end if
 
 C     Do the convertion from alpha, beta to charge, spin
@@ -687,7 +687,7 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-#include "priunit.h"
+#include "priunit.h" 
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
@@ -706,8 +706,8 @@ C*****************************************************************************
       end if
 
       if (diff_order .eq. 0) then
-         write(lupri,*)'ESRC_PW92_ERF:'
-         write(lupri,*)'WARNING: Code not covered in ctest'
+         write(lupri,*)'ESRC_PW92_ERF:' 
+         write(lupri,*)'WARNING: Code not covered in ctest' 
          call ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E)
 
       elseif (diff_order .eq. 1) then
@@ -716,8 +716,8 @@ C*****************************************************************************
       elseif (diff_order .eq. 2) then
          call D2ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E, d1E, d2E)
 
-      else
-         call quit('Requested to high order derivative: ',diff_order)
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
       end if
       end subroutine
 
@@ -738,14 +738,14 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-#include "priunit.h"
+#include "priunit.h" 
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
       real*8 :: rho_c
       
-      write(lupri,*)'PW92C_ERF:'
-      write(lupri,*)'WARNING: Code not covered in ctest'
+      write(lupri,*)'PW92C_ERF:' 
+      write(lupri,*)'WARNING: Code not covered in ctest' 
 
       E = 0.0d0
       d1E(:) = 0.0d0
@@ -767,8 +767,8 @@ C*****************************************************************************
       elseif (diff_order .eq. 2) then
          call D2ESRC_PW92_ERF(rho_c, mu, E, d1E, d2E)
 
-      else
-         call quit('Requested to high order derivative: ',diff_order)
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
       end if
       end subroutine
 
@@ -790,7 +790,7 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-#include "priunit.h"
+#include "priunit.h" 
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), gamma_xx(3), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
@@ -810,8 +810,8 @@ C*****************************************************************************
       end if
 
       if (diff_order .eq. 0) then
-         write(lupri,*)'ESRC_SPIN_PBE_GWS_ERF:'
-         write(lupri,*)'WARNING: Code not covered in ctest'
+         write(lupri,*)'ESRC_SPIN_PBE_GWS_ERF:' 
+         write(lupri,*)'WARNING: Code not covered in ctest' 
          call ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu, E)
 
       elseif (diff_order .eq. 1) then
@@ -822,8 +822,8 @@ C*****************************************************************************
          call D2ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu, E,
      &                                d1E, d2E)
 
-      else
-         call quit('Requested to high order derivative: ',diff_order)
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
       end if
       end subroutine
 
@@ -845,14 +845,14 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-#include "priunit.h"
+#include "priunit.h" 
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), gamma_xx(3), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
       real*8 :: rho_c, gamma_cc
       
-      write(lupri,*)'PBEC_GWS_ERF:'
-      write(lupri,*)'WARNING: Code not covered in ctest'
+      write(lupri,*)'PBEC_GWS_ERF:' 
+      write(lupri,*)'WARNING: Code not covered in ctest' 
 
       E = 0.0d0
       d1E(:) = 0.0d0
@@ -875,8 +875,8 @@ C*****************************************************************************
       elseif (diff_order .eq. 2) then
          call D2ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E, d1E, d2E)
 
-      else
-         call quit('Requested to high order derivative: ',diff_order)
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
       end if
       end subroutine
 
@@ -898,7 +898,7 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-#include "priunit.h"
+#include "priunit.h" 
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), gamma_xx(3), tau(2), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
@@ -921,8 +921,8 @@ C*****************************************************************************
       end if
 
       if (diff_order .eq. 0) then
-         write(lupri,*)'ESRC_SPIN_TPSS_GWS_ERF:'
-         write(lupri,*)'WARNING: Code not covered in ctest'
+         write(lupri,*)'ESRC_SPIN_TPSS_GWS_ERF:' 
+         write(lupri,*)'WARNING: Code not covered in ctest' 
          call ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc, gamma_ss,
      &                               gamma_cs, tau_c, mu, E)
 
@@ -934,8 +934,8 @@ C*****************************************************************************
          call D2ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc, gamma_ss,
      &                                 gamma_cs, tau_c, mu, E, d1E, d2E)
 
-      else
-         call quit('Requested to high order derivative: ',diff_order)
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
       end if
       end subroutine
 
@@ -957,14 +957,14 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-#include "priunit.h"
+#include "priunit.h" 
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), gamma_xx(3), tau(2), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
       real*8 :: rho_c, gamma_cc, tau_c
       
-      write(lupri,*)'PBEC_GWS_ERF:'
-      write(lupri,*)'WARNING: Code not covered in ctest'
+      write(lupri,*)'PBEC_GWS_ERF:' 
+      write(lupri,*)'WARNING: Code not covered in ctest' 
 
       E = 0.0d0
       d1E(:) = 0.0d0
@@ -989,3972 +989,9 @@ C*****************************************************************************
          call D2ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E, d1E,
      &                           d2E)
 
-      else
-         call quit('Requested to high order derivative: ',diff_order)
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
       end if
-      end subroutine
-
-
-C*****************************************************************************
-      pure subroutine ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 09, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, rho_s, mu
-      real*8, intent(out) :: E
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
-     &, x40, x41, x42, x43, x44
-      E = 0.0d0
-      x0 = 0.693147180559945d0
-      x1 = -x0 + 1.0d0
-      x2 = 1d0/rho_c
-      x3 = x2**0.333333333333333d0
-      x4 = 1d0/x1
-      x5 = x2**0.166666666666667d0
-      x6 = sqrt(x2)
-      x7 = x2**0.666666666666667d0
-      x8 = (0.132568899905202d0*x3 + 1.0d0)*log(4.934802200544679d0*x4/(
-     & 2.2255694211506878d0*x3 + 5.9825504357710795d0*x5 + 0.80042863499
-     &936356d0*x6 + 0.18970043257475591d0*x7) + 1.0d0)
-      x9 = 0.202642367284676d0*x1*x8
-      x10 = rho_s**4/rho_c**4
-      x11 = rho_s*x2
-      x12 = x11 + 1.0d0
-      x13 = -x11 + 1.0d0
-      x14 = 1.92366105093154d0*x12**1.33333333333333d0 + 1.9236610509315
-     &4d0*x13** 1.33333333333333d0 - 3.84732210186307d0
-      x15 = 0.0197517897025652d0*x14*(-x10 + 1.0d0)*(0.0690139921125583d
-     &0*x3 + 1.0d0 )*log(1.0d0 + 29.608574643216677d0/(2.247591863577616
-     &4d0*x3 + 8.1574147034876408d0*x5 + 0.43009724712766434d0*x6 + 0.19
-     &115125951273382d0*x7))
-      x16 = 0.0506605918211689d0*(0.127469618870009d0*x3 + 1.0d0)*log( 9
-     &.869604401089358d0*x4/(3.8447462374472119d0*x3 + 11.12037486309468
-     &5d0*x5 + 1.6447337755676092d0*x6 + 0.24058712912881922d0*x7) + 1.0
-     &d0)
-      x17 = 0.101321183642338d0*x8
-      x18 = 2.0d0*x1*x10*x14
-      x19 = x18*(x16 - x17)
-      x20 = mu**2
-      x21 = x2**1.66666666666667d0
-      x22 = 1.0d0 - rho_s**2/rho_c**2
-      x23 = x2**1.0d0
-      x24 = x2**1.33333333333333d0
-      x25 = (-0.00304892328706429d0*x23 + 0.000275310793616358d0*x24 + 0
-     &.0128480790170175d0*x3 + 0.0315297404574782d0*x7 + 1.0d0)*exp( -0.
-     &46675853320810856d0*x3)
-      x26 = x22*x25
-      x27 = x12**0.666666666666667d0 + x13**0.666666666666667d0
-      x28 = x27**3
-      x29 = x20*x3/x27**2
-      x30 = 9.20897059521559d0*mu*x5/x27 + 1.0d0
-      x31 = mu**3
-      x32 = 1d0/x7
-      x33 = 1d0/x12
-      x34 = x33**0.666666666666667d0
-      x35 = x3*x33**0.333333333333333d0
-      x36 = 0.0244354823084343d0*x7
-      x37 = 8.61370200056457d0*x12**2*(-0.0177069812999059d0*x35 + 1.0d0
-     &)/(x34*(x34* x36 + 0.337569861992026d0*x35 + 1.0d0))
-      x38 = 1d0/x13
-      x39 = x38**0.666666666666667d0
-      x40 = x3*x38**0.333333333333333d0
-      x41 = 8.61370200056457d0*x13**2*(-0.0177069812999059d0*x40 + 1.0d0
-     &)/(x39*(x36* x39 + 0.337569861992026d0*x40 + 1.0d0))
-      x42 = x15 - x9
-      x43 = -x19 + x42
-      x44 = x22*(x25 - 1.0d0)
-      E = -rho_c*(-x15 + x19 + x9 + (0.00316102962473761d0*mu**8*x2** 2.
-     &66666666666667d0*x43 - mu**6*(-0.0533250677421794d0*x2**2.0d0*( x1
-     &8*(-x16 + x17) + x42) + 0.00248266686171384d0*x21*x44) - 0.0026411
-     &7541143784d0*mu**5*x21*x26 + mu**4*( -0.00020688890514282d0*x2**1.
-     &0d0*(-8.61370200056457d0*x12** 2.66666666666667d0 - 8.613702000564
-     &57d0*x13**2.66666666666667d0 + 23.3866625383245d0*x22*(-0.24069599
-     &0468967d0*x3 + 0.26014827853397d0*x7)*exp(-0.33933171852197186d0*x
-     &3) + x37 + x41 ) - 0.0418814102677522d0*x23*x44 + 0.33733820787238
-     &7d0*x24*x43) - 0.0253302959105844d0*x1*x28*log((-2.481401963597600
-     &3d0*x29*( -3.4485100000000002d0 + 1.227722850784289d0/(x0 - 1.0d0)
-     &) + x30 + 15.312568193831799d0*x31*x6/x28)/(8.5571394854859619d0*x
-     &29 + x30 )) - x31*(0.000132058770571892d0*x21*(37.6991118430775d0*
-     &x22*( -3.07073492995203d0*x3 + 0.384834731559127d0*x7)*exp( -0.192
-     &30865217881402d0*x3)/x23 + x32*x37 + x32*x41) + 0.0445553741830535
-     &d0*x23*x26))/(0.237113969739022d0*x20*x7 + 1.0d0)**4)
-      end subroutine
-
-
-C*****************************************************************************
-      pure subroutine D1ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E, d1E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 09, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, rho_s, mu
-      real*8, intent(out) :: E, d1E(9)
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
-     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
-     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
-     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
-     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
-     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
-     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
-     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
-     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
-     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
-     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
-     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
-     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
-     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
-     &, x193, x194, x195, x196, x197, x198, x199, x200, x201, x202, x203
-     &, x204, x205, x206, x207, x208
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      x0 = 0.693147180559945d0
-      x1 = -x0 + 1.0d0
-      x2 = 1d0/rho_c
-      x3 = x2**0.333333333333333d0
-      x4 = 1d0/x1
-      x5 = x2**0.166666666666667d0
-      x6 = sqrt(x2)
-      x7 = x2**0.666666666666667d0
-      x8 = 2.22556942115069d0*x3 + 5.98255043577108d0*x5 + 0.80042863499
-     &9364d0*x6 + 0.189700432574756d0*x7
-      x9 = 4.93480220054468d0*x4/x8 + 1.0d0
-      x10 = log(x9)
-      x11 = x10*(0.132568899905202d0*x3 + 1.0d0)
-      x12 = 0.202642367284676d0*x1*x11
-      x13 = rho_s*x2
-      x14 = x13 + 1.0d0
-      x15 = -x13 + 1.0d0
-      x16 = 1.92366105093154d0*x14**1.33333333333333d0 + 1.9236610509315
-     &4d0*x15** 1.33333333333333d0 - 3.84732210186307d0
-      x17 = rho_s**4/rho_c**4
-      x18 = -x17 + 1.0d0
-      x19 = 2.24759186357762d0*x3 + 8.15741470348764d0*x5 + 0.4300972471
-     &27664d0*x6 + 0.191151259512734d0*x7
-      x20 = 1.0d0 + 29.6085746432167d0/x19
-      x21 = log(x20)
-      x22 = x18*x21
-      x23 = x16*x22
-      x24 = 0.0197517897025652d0*x23*(0.0690139921125583d0*x3 + 1.0d0)
-      x25 = 3.84474623744721d0*x3 + 11.1203748630947d0*x5 + 1.6447337755
-     &6761d0*x6 + 0.240587129128819d0*x7
-      x26 = 1.0d0 + 9.86960440108936d0*x4/x25
-      x27 = log(x26)
-      x28 = 0.0506605918211689d0*x27*(0.127469618870009d0*x3 + 1.0d0)
-      x29 = 0.101321183642338d0*x11
-      x30 = x28 - x29
-      x31 = x16*x17
-      x32 = x1*x31
-      x33 = 2.0d0*x32
-      x34 = x30*x33
-      x35 = mu**2
-      x36 = x35*x7
-      x37 = 0.237113969739022d0*x36 + 1.0d0
-      x38 = x37**(-4)
-      x39 = rho_s**2/rho_c**2
-      x40 = -x39 + 1.0d0
-      x41 = exp(-0.46675853320810856d0*x3)
-      x42 = x2**1.0d0
-      x43 = -0.00304892328706429d0*x42
-      x44 = x2**1.33333333333333d0
-      x45 = 0.0128480790170175d0*x3 + x43 + 0.000275310793616358d0*x44 +
-     & 0.0315297404574782d0*x7 + 1.0d0
-      x46 = x41*x45
-      x47 = x40*x46
-      x48 = x2**1.66666666666667d0
-      x49 = mu**5
-      x50 = x48*x49
-      x51 = x47*x50
-      x52 = x14**0.666666666666667d0 + x15**0.666666666666667d0
-      x53 = x52**3
-      x54 = x52**2
-      x55 = 1d0/x54
-      x56 = x35*x55
-      x57 = x3*x56
-      x58 = 1d0/x52
-      x59 = mu*x58
-      x60 = 9.20897059521559d0*x5*x59 + 1.0d0
-      x61 = mu**3
-      x62 = x6/x53
-      x63 = -3.44851d0 + 1.22772285078429d0/(x0 - 1.0d0)
-      x64 = -2.4814019635976d0*x57*x63 + x60 + 15.3125681938318d0*x61*x6
-     &2
-      x65 = x64/(8.55713948548596d0*x57 + x60)
-      x66 = x1*log(x65)
-      x67 = x40*x42
-      x68 = 0.0445553741830535d0*x67
-      x69 = x46*x68
-      x70 = -3.07073492995203d0*x3 + 0.384834731559127d0*x7
-      x71 = exp(-0.19230865217881402d0*x3)
-      x72 = x40*x70*x71
-      x73 = 1d0/x42
-      x74 = 37.6991118430775d0*x73
-      x75 = x72*x74
-      x76 = 1d0/x7
-      x77 = x14**2
-      x78 = 1d0/x14
-      x79 = x78**0.333333333333333d0
-      x80 = x3*x79
-      x81 = x78**0.666666666666667d0
-      x82 = 0.0244354823084343d0*x7
-      x83 = 0.337569861992026d0*x80 + x81*x82 + 1.0d0
-      x84 = 1d0/x83
-      x85 = x77*x84
-      x86 = (-0.0177069812999059d0*x80 + 1.0d0)/x81
-      x87 = 8.61370200056457d0*x86
-      x88 = x85*x87
-      x89 = x15**2
-      x90 = 1d0/x15
-      x91 = x90**0.333333333333333d0
-      x92 = x3*x91
-      x93 = x90**0.666666666666667d0
-      x94 = x82*x93 + 0.337569861992026d0*x92 + 1.0d0
-      x95 = 1d0/x94
-      x96 = x89*x95
-      x97 = (-0.0177069812999059d0*x92 + 1.0d0)/x93
-      x98 = 8.61370200056457d0*x97
-      x99 = x96*x98
-      x100 = x48*(x75 + x76*x88 + x76*x99)
-      x101 = -x12 + x24
-      x102 = x101 - x34
-      x103 = mu**8
-      x104 = x2**2.66666666666667d0
-      x105 = 0.00316102962473761d0*x103*x104
-      x106 = mu**6
-      x107 = x46 - 1.0d0
-      x108 = x107*x40
-      x109 = x108*x48
-      x110 = x2**2.0d0
-      x111 = -x28 + x29
-      x112 = x101 + x111*x33
-      x113 = x110*x112
-      x114 = mu**4
-      x115 = x108*x42
-      x116 = x2**1.0d0
-      x117 = x14**2.66666666666667d0
-      x118 = 8.61370200056457d0*x117
-      x119 = x15**2.66666666666667d0
-      x120 = 8.61370200056457d0*x119
-      x121 = exp(-0.33933171852197186d0*x3)
-      x122 = x121*(-0.240695990468967d0*x3 + 0.26014827853397d0*x7)
-      x123 = x122*x40
-      x124 = 23.3866625383245d0*x123
-      x125 = 0.337338207872387d0*x44
-      x126 = x102*x105 - x106*(0.00248266686171384d0*x109 - 0.0533250677
-     &421794d0*x113 ) + x114*(x102*x125 - 0.0418814102677522d0*x115 - 0.
-     &00020688890514282d0*x116*(-x118 - x120 + x124 + x88 + x99)) - 0.00
-     &264117541143784d0*x51 - 0.0253302959105844d0*x53*x66 - x61*( 0.000
-     &132058770571892d0*x100 + x69)
-      x127 = x126*x38
-      x128 = x39*x46
-      x129 = x41*(0.0042826930056725d0*x3 + x43 + 0.000367081058155144d0
-     &*x44 + 0.0210198269716521d0*x7)
-      x130 = 0.00528235082287567d0*x50
-      x131 = x14**(-0.333333333333333d0)
-      x132 = x15**(-0.333333333333333d0)
-      x133 = x131 - x132
-      x134 = x133*x66
-      x135 = x3*x59
-      x136 = x13*x133
-      x137 = mu*x136*x3*x55
-      x138 = 6.13931373014372d0*x5
-      x139 = x136*x138*x58 - 1.53482843253593d0*x5
-      x140 = x56*x6
-      x141 = x135*x63
-      x142 = 0.0506605918211689d0*x54
-      x143 = mu*x1/x64
-      x144 = 16.0d0*x32
-      x145 = -x14**0.333333333333333d0 + x15**0.333333333333333d0
-      x146 = x1*x145
-      x147 = rho_s**5*x146/rho_c**5
-      x148 = 10.2595256049682d0*x147
-      x149 = x1*x3
-      x150 = x10*x149
-      x151 = 0.0179093838034102d0*x150
-      x152 = (0.265137799810404d0*x3 + 2.0d0)*(0.741856473716896d0*x3 + 
-     &0.99709173929518d0*x5 + 0.400214317499682d0*x6 + 0.126466955049837
-     &d0*x7)/(x8**2*x9)
-      x153 = x31*(0.00861024844156464d0*x149*x27 - x151 + x152 - (0.2549
-     &39237740017d0 *x3 + 2.0d0)*(1.28158207914907d0*x3 + 1.853395810515
-     &78d0*x5 + 0.822366887783805d0*x6 + 0.160391419419213d0*x7)/(x25**2
-     &*x26))
-      x154 = x23*x3
-      x155 = 0.00136314985874174d0*x3 + 0.0197517897025652d0
-      x156 = x155*x21
-      x157 = x156*x31
-      x158 = x145*x155*x22
-      x159 = x155*x16*x18*(0.749197287859205d0*x3 + 1.35956911724794d0*x
-     &5 + 0.215048623563832d0*x6 + 0.127434173008489d0*x7)/(x19**2*x20)
-      x160 = 5.1297628024841d0*x13*x158 + x151 - x152 + x153 - 0.0009087
-     &66572494496d0 *x154 + 8.0d0*x157 + 59.2171492864334d0*x159
-      x161 = 0.0891107483661069d0*x42
-      x162 = 75.398223686155d0*x70*x71*x73
-      x163 = x13*x78
-      x164 = 1d0/x3
-      x165 = 0.0508408867489862d0*x164
-      x166 = x165/x79
-      x167 = x166*x85*(-x163 + 1.0d0)
-      x168 = 5.74246800037638d0*x76
-      x169 = x168*x85*x86
-      x170 = x13*x90
-      x171 = x165/x91
-      x172 = x171*x96*(x170 + 1.0d0)
-      x173 = x14*x84
-      x174 = 22.9698720015055d0*x76
-      x175 = x173*x174*x86
-      x176 = x13*x175
-      x177 = x168*x96*x97
-      x178 = x15*x95
-      x179 = x174*x178*x97
-      x180 = x13*x179
-      x181 = 0.112523287330675d0*x80
-      x182 = 0.0162903215389562d0*x7
-      x183 = x182*x81
-      x184 = x181 + x183
-      x185 = x76*x87/x83**2
-      x186 = x185*x77*(-x163*x181 - x163*x183 + x184)
-      x187 = 0.112523287330675d0*x92
-      x188 = x182*x93
-      x189 = x187 + x188
-      x190 = x76*x98/x94**2
-      x191 = x190*x89*(x170*x187 + x170*x188 + x189)
-      x192 = 0.000132058770571892d0*x48
-      x193 = x107*x39
-      x194 = 0.00993066744685536d0*x48
-      x195 = x41*(0.0777930888680181d0*x3*x45 - 0.00214134650283625d0*x3
-     & + 0.00152446164353214d0*x42 - 0.000183540529077572d0*x44 - 0.0105
-     &099134858261d0*x7)
-      x196 = -x111*x144 + x111*x148 + x160
-      x197 = 0.0533250677421794d0*x110
-      x198 = x15**1.66666666666667d0
-      x199 = x14**1.66666666666667d0
-      x200 = 22.9698720015055d0*x76
-      x201 = 46.773325076649d0*x122*x76
-      x202 = 5.1297628024841d0*x30
-      x203 = 2.56488140124205d0*x158
-      x204 = x13*x46
-      x205 = rho_s**3*x16/rho_c**3
-      x206 = -8.0d0*x1*x205*x30 + x146*x17*x202 - 4.0d0*x156*x205 - x203
-     &
-      x207 = x107*x13
-      x208 = x14*x184*x185 - x15*x189*x190 + x166*x173 - x171*x178 + x17
-     &5 - x179
-      E = -rho_c*(x12 + x127 - x24 + x34)
-      d1E(1) = x101 - 0.632303919304059d0*x126*x36/x37**5 - x127 + x13*x
-     &203 - x147*x202 + 0.0089546919017051d0*x150 - 0.5d0*x152 + 0.5d0*x
-     &153 - 0.000454383286247248d0*x154 + 4.0d0*x157 + 29.6085746432167d
-     &0* x159 + 6.0d0*x30*x32 - 0.5d0*x38*(-0.0168588246652672d0*x102*x1
-     &03 *x104 + x105*(x144*x30 - x148*x30 + x160) - x106*( -0.008275556
-     &2057128d0*x109 + 0.213300270968718d0*x113 + x193*x194 + x194*x195*
-     &x40 - x196*x197) - x114*(0.899568554326366d0*x112*x44 - 0.08376282
-     &05355044d0*x115 + 0.0006896296838094d0*x116*(x118 + x120 - x124 - 
-     &x88 - x99) - x125*x196 + 0.167525641071009d0*x193* x42 + 0.1675256
-     &41071009d0*x195*x67 - 0.00041377781028564d0*x48*( -23.386662538324
-     &5d0*x121*x40*x76*(0.0802319968229891d0*x3 - 0.173432185689313d0*x7
-     &) - 2.64527879654103d0*x123*x164 - 15.591108358883d0*x123*x76 + x1
-     &3*x200*(x198 - x199) - x167 - x169 - x172 + x176 - x177 - x180 - x
-     &186 - x191 - x201*x39 + 5.74246800037638d0*x76*(x117 + x119))) - 0
-     &.0105647016457513d0* x128*x50 + x129*x130*x40 + 0.101321183642338d
-     &0*x13*x134*x54 - x142*x143*(30.6251363876636d0*x136*x35*x62 - 3.30
-     &853595146347d0* x137*x63 + x139 - 7.6562840969159d0*x140 + 0.82713
-     &3987865867d0* x141 - x65*(-2.85237982849532d0*x135 + 11.4095193139
-     &813d0*x137 + x139)) - 0.000821860773992031d0*x2**2.0d0*x47*x49 + 0
-     &.00880391803812612d0*x51 + 2.0d0*x61*(0.000220097950953153d0* x100
-     & - x128*x161 + x129*x68 - x192*(x162*x39 + x167 + x169 + x172 - x1
-     &76 + x177 + x180 + x186 + x191 + 2.41662179562687d0*x2**( -0.66666
-     &6666666667d0)*x72 + x40*x71*x74*(1.02357830998401d0*x3 - 0.2565564
-     &87706084d0*x7) + x75) - 0.00693220036674015d0*x44*x47 + x69))
-      d1E(2) = x206 - x38*(x105*x206 + x106*(x197*x206 + 0.0049653337234
-     &2768d0*x207*x48 ) + x114*(x125*x206 + 0.0837628205355044d0*x207*x4
-     &2 - 0.00020688890514282d0*x48*(-x13*x201 - x200*(-x198 + x199) + x
-     &208 )) + x130*x204 - x134*x142 - 0.0253302959105844d0*x143*x52*(x1
-     &33* (-x138 - 30.6251363876636d0*x140 + 3.30853595146347d0*x141) - 
-     &x65 *(-x131 + x132)*(11.4095193139813d0*x135 + x138)) + x61*(x161*
-     & x204 - x192*(-x13*x162 + x208)))
-      end subroutine
-
-
-C*****************************************************************************
-      pure subroutine D2ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E, d1E, d2E
-     &)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 09, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, rho_s, mu
-      real*8, intent(out) :: E, d1E(9), d2E(45)
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
-     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
-     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
-     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
-     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
-     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
-     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
-     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
-     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
-     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
-     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
-     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
-     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
-     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
-     &, x193, x194, x195, x196, x197, x198, x199, x200, x201, x202, x203
-     &, x204, x205, x206, x207, x208, x209, x210, x211, x212, x213, x214
-     &, x215, x216, x217, x218, x219, x220, x221, x222, x223, x224, x225
-     &, x226, x227, x228, x229, x230, x231, x232, x233, x234, x235, x236
-     &, x237, x238, x239, x240, x241, x242, x243, x244, x245, x246, x247
-     &, x248, x249, x250, x251, x252, x253, x254, x255, x256, x257, x258
-     &, x259, x260, x261, x262, x263, x264, x265, x266, x267, x268, x269
-     &, x270, x271, x272, x273, x274, x275, x276, x277, x278, x279, x280
-     &, x281, x282, x283, x284, x285, x286, x287, x288, x289, x290, x291
-     &, x292, x293, x294, x295, x296, x297, x298, x299, x300, x301, x302
-     &, x303, x304, x305, x306, x307, x308, x309, x310, x311, x312, x313
-     &, x314, x315, x316, x317, x318, x319, x320, x321, x322, x323, x324
-     &, x325, x326, x327, x328, x329, x330, x331, x332, x333, x334, x335
-     &, x336, x337, x338, x339, x340, x341, x342, x343, x344, x345, x346
-     &, x347, x348, x349, x350, x351, x352, x353, x354, x355, x356, x357
-     &, x358, x359, x360, x361, x362, x363, x364, x365, x366, x367, x368
-     &, x369, x370, x371, x372, x373, x374, x375, x376, x377, x378, x379
-     &, x380, x381, x382, x383, x384, x385, x386, x387, x388, x389, x390
-     &, x391, x392, x393, x394, x395, x396, x397, x398, x399, x400, x401
-     &, x402, x403, x404, x405, x406, x407, x408, x409, x410, x411, x412
-     &, x413, x414, x415, x416, x417, x418, x419, x420, x421, x422, x423
-     &, x424, x425, x426, x427, x428, x429, x430, x431, x432, x433, x434
-     &, x435, x436, x437, x438, x439, x440, x441, x442, x443, x444, x445
-     &, x446, x447, x448, x449, x450, x451, x452, x453, x454, x455, x456
-     &, x457, x458, x459, x460, x461, x462, x463, x464, x465, x466, x467
-     &, x468, x469, x470, x471, x472, x473, x474, x475, x476, x477, x478
-     &, x479, x480, x481, x482, x483, x484, x485, x486, x487, x488, x489
-     &, x490, x491, x492, x493, x494, x495, x496, x497, x498, x499, x500
-     &, x501, x502, x503, x504, x505, x506, x507, x508, x509, x510, x511
-     &, x512, x513, x514, x515, x516, x517, x518, x519, x520, x521, x522
-     &, x523, x524, x525, x526, x527, x528, x529, x530, x531, x532, x533
-     &, x534, x535, x536, x537, x538, x539, x540, x541, x542, x543, x544
-     &, x545, x546, x547, x548, x549, x550, x551, x552, x553, x554, x555
-     &, x556, x557, x558, x559, x560, x561, x562, x563, x564, x565, x566
-     &, x567, x568, x569, x570, x571, x572, x573, x574, x575, x576, x577
-     &, x578, x579, x580, x581, x582, x583, x584, x585, x586, x587, x588
-     &, x589, x590, x591, x592, x593, x594, x595, x596, x597, x598, x599
-     &, x600, x601, x602, x603, x604, x605, x606, x607
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      d2E(:) = 0.0d0
-      x0 = 0.693147180559945d0
-      x1 = -x0 + 1.0d0
-      x2 = 1d0/rho_c
-      x3 = x2**0.333333333333333d0
-      x4 = 1d0/x1
-      x5 = x2**0.166666666666667d0
-      x6 = sqrt(x2)
-      x7 = 0.800428634999364d0*x6
-      x8 = x2**0.666666666666667d0
-      x9 = 2.22556942115069d0*x3 + 5.98255043577108d0*x5 + x7 + 0.189700
-     &432574756d0 *x8
-      x10 = 4.93480220054468d0*x4/x9 + 1.0d0
-      x11 = log(x10)
-      x12 = x11*(0.132568899905202d0*x3 + 1.0d0)
-      x13 = 0.202642367284676d0*x1*x12
-      x14 = rho_s*x2
-      x15 = x14 + 1.0d0
-      x16 = -x14 + 1.0d0
-      x17 = 1.92366105093154d0*x15**1.33333333333333d0 + 1.9236610509315
-     &4d0*x16** 1.33333333333333d0 - 3.84732210186307d0
-      x18 = rho_s**4/rho_c**4
-      x19 = -x18 + 1.0d0
-      x20 = 0.430097247127664d0*x6
-      x21 = x20 + 2.24759186357762d0*x3 + 8.15741470348764d0*x5 + 0.1911
-     &51259512734d0*x8
-      x22 = 1.0d0 + 29.6085746432167d0/x21
-      x23 = log(x22)
-      x24 = x19*x23
-      x25 = x17*x24
-      x26 = 0.0197517897025652d0*x25*(0.0690139921125583d0*x3 + 1.0d0)
-      x27 = 1.64473377556761d0*x6
-      x28 = x27 + 3.84474623744721d0*x3 + 11.1203748630947d0*x5 + 0.2405
-     &87129128819d0*x8
-      x29 = 9.86960440108936d0*x4
-      x30 = 1.0d0 + x29/x28
-      x31 = log(x30)
-      x32 = 0.0506605918211689d0*x31*(0.127469618870009d0*x3 + 1.0d0)
-      x33 = 0.101321183642338d0*x12
-      x34 = x32 - x33
-      x35 = x17*x18
-      x36 = x1*x35
-      x37 = 2.0d0*x36
-      x38 = x34*x37
-      x39 = mu**2
-      x40 = x39*x8
-      x41 = 0.237113969739022d0*x40 + 1.0d0
-      x42 = x41**(-4)
-      x43 = mu**5
-      x44 = rho_s**2/rho_c**2
-      x45 = -x44 + 1.0d0
-      x46 = x2**1.66666666666667d0
-      x47 = exp(-0.46675853320810856d0*x3)
-      x48 = x2**1.0d0
-      x49 = -0.00304892328706429d0*x48
-      x50 = x2**1.33333333333333d0
-      x51 = 0.0128480790170175d0*x3 + x49 + 0.000275310793616358d0*x50 +
-     & 0.0315297404574782d0*x8 + 1.0d0
-      x52 = x47*x51
-      x53 = x46*x52
-      x54 = x45*x53
-      x55 = x43*x54
-      x56 = 0.00264117541143784d0*x55
-      x57 = x15**0.666666666666667d0
-      x58 = x16**0.666666666666667d0
-      x59 = x57 + x58
-      x60 = x59**3
-      x61 = x59**2
-      x62 = 1d0/x61
-      x63 = x39*x62
-      x64 = x3*x63
-      x65 = 1d0/x59
-      x66 = mu*x65
-      x67 = 9.20897059521559d0*x5*x66 + 1.0d0
-      x68 = 8.55713948548596d0*x64 + x67
-      x69 = 1d0/x68
-      x70 = mu**3
-      x71 = 1d0/x60
-      x72 = x6*x71
-      x73 = 1.22772285078429d0/(x0 - 1.0d0)
-      x74 = x73 - 3.44851d0
-      x75 = -2.4814019635976d0*x64*x74 + x67 + 15.3125681938318d0*x70*x7
-     &2
-      x76 = x69*x75
-      x77 = x1*log(x76)
-      x78 = 0.0253302959105844d0*x60*x77
-      x79 = x48*x52
-      x80 = 0.0445553741830535d0*x45
-      x81 = x79*x80
-      x82 = -3.07073492995203d0*x3 + 0.384834731559127d0*x8
-      x83 = exp(-0.19230865217881402d0*x3)
-      x84 = x83/x48
-      x85 = x82*x84
-      x86 = 37.6991118430775d0*x45
-      x87 = x85*x86
-      x88 = 1d0/x8
-      x89 = x15**2
-      x90 = 8.61370200056457d0*x89
-      x91 = 1d0/x15
-      x92 = x91**0.333333333333333d0
-      x93 = x3*x92
-      x94 = 0.0177069812999059d0*x93
-      x95 = -x94 + 1.0d0
-      x96 = x91**0.666666666666667d0
-      x97 = 0.0244354823084343d0*x8
-      x98 = 0.337569861992026d0*x93 + x96*x97 + 1.0d0
-      x99 = 1d0/x98
-      x100 = 1d0/x96
-      x101 = x100*x99
-      x102 = x101*x95
-      x103 = x102*x90
-      x104 = x16**2
-      x105 = 8.61370200056457d0*x104
-      x106 = 1d0/x16
-      x107 = x106**0.333333333333333d0
-      x108 = x107*x3
-      x109 = 0.0177069812999059d0*x108
-      x110 = -x109 + 1.0d0
-      x111 = x106**0.666666666666667d0
-      x112 = 0.337569861992026d0*x108 + x111*x97 + 1.0d0
-      x113 = 1d0/x112
-      x114 = 1d0/x111
-      x115 = x113*x114
-      x116 = x110*x115
-      x117 = x105*x116
-      x118 = x46*(x103*x88 + x117*x88 + x87)
-      x119 = x70*(0.000132058770571892d0*x118 + x81)
-      x120 = -x13 + x26
-      x121 = x120 - x38
-      x122 = mu**8*x2**2.66666666666667d0
-      x123 = 0.00316102962473761d0*x122
-      x124 = x121*x123
-      x125 = mu**6
-      x126 = x52 - 1.0d0
-      x127 = x126*x46
-      x128 = x127*x45
-      x129 = x2**2.0d0
-      x130 = -x32 + x33
-      x131 = x120 + x130*x37
-      x132 = x129*x131
-      x133 = x125*(0.00248266686171384d0*x128 - 0.0533250677421794d0*x13
-     &2)
-      x134 = mu**4
-      x135 = x126*x48
-      x136 = x135*x45
-      x137 = x2**1.0d0
-      x138 = x15**2.66666666666667d0
-      x139 = 8.61370200056457d0*x138
-      x140 = x16**2.66666666666667d0
-      x141 = 8.61370200056457d0*x140
-      x142 = 0.240695990468967d0*x3
-      x143 = 0.26014827853397d0*x8
-      x144 = exp(-0.33933171852197186d0*x3)
-      x145 = x144*(-x142 + x143)
-      x146 = x145*x45
-      x147 = 23.3866625383245d0*x146
-      x148 = x137*(x103 + x117 - x139 - x141 + x147)
-      x149 = 0.337338207872387d0*x50
-      x150 = x134*(x121*x149 - 0.0418814102677522d0*x136 - 0.00020688890
-     &514282d0*x148 )
-      x151 = -x119 + x124 - x133 + x150 - x56 - x78
-      x152 = x151*x42
-      x153 = 0.0105647016457513d0*x43
-      x154 = x44*x53
-      x155 = x153*x154
-      x156 = 0.00528235082287567d0*x43
-      x157 = 0.0042826930056725d0*x3 + x49 + 0.000367081058155144d0*x50 
-     &+ 0.0210198269716521d0*x8
-      x158 = x46*x47
-      x159 = x158*x45
-      x160 = x157*x159
-      x161 = x156*x160
-      x162 = 0.00880391803812612d0*x55
-      x163 = x2**2.0d0
-      x164 = x163*x43*x45
-      x165 = x164*x52
-      x166 = 0.000821860773992031d0*x165
-      x167 = x15**(-0.333333333333333d0)
-      x168 = x16**(-0.333333333333333d0)
-      x169 = x167 - x168
-      x170 = 0.101321183642338d0*x169
-      x171 = x61*x77
-      x172 = x14*x171
-      x173 = x170*x172
-      x174 = x121*x122
-      x175 = 0.0168588246652672d0*x174
-      x176 = x3*x66
-      x177 = mu*x3
-      x178 = x177*x62
-      x179 = x14*x169
-      x180 = x178*x179
-      x181 = 6.13931373014372d0*x5
-      x182 = x14*x65
-      x183 = x169*x182
-      x184 = x181*x183 - 1.53482843253593d0*x5
-      x185 = -2.85237982849532d0*x176 + 11.4095193139813d0*x180 + x184
-      x186 = x176*x74
-      x187 = x178*x74
-      x188 = x179*x187
-      x189 = x6*x63
-      x190 = x39*x72
-      x191 = x179*x190
-      x192 = x184 - 7.6562840969159d0*x189 + 30.6251363876636d0*x191
-      x193 = 0.827133987865867d0*x186 - 3.30853595146347d0*x188 + x192
-      x194 = x1*(-x185*x76 + x193)
-      x195 = 1d0/x75
-      x196 = mu*x195
-      x197 = x196*x61
-      x198 = 0.0506605918211689d0*x194*x197
-      x199 = 16.0d0*x36
-      x200 = rho_s**5/rho_c**5
-      x201 = 10.2595256049682d0*x200
-      x202 = x16**0.333333333333333d0
-      x203 = x15**0.333333333333333d0
-      x204 = x202 - x203
-      x205 = x1*x204
-      x206 = x201*x205
-      x207 = x1*x3
-      x208 = x11*x207
-      x209 = 0.0179093838034102d0*x208
-      x210 = x207*x31
-      x211 = 0.00861024844156464d0*x210
-      x212 = 0.741856473716896d0*x3 + 0.99709173929518d0*x5 + 0.40021431
-     &7499682d0*x6 + 0.126466955049837d0*x8
-      x213 = 1d0/x10
-      x214 = x9**(-2)
-      x215 = 0.265137799810404d0*x3 + 2.0d0
-      x216 = x213*x214*x215
-      x217 = x212*x216
-      x218 = 1.28158207914907d0*x3 + 1.85339581051578d0*x5 + 0.822366887
-     &783805d0*x6 + 0.160391419419213d0*x8
-      x219 = 1d0/x30
-      x220 = x28**(-2)
-      x221 = 0.254939237740017d0*x3 + 2.0d0
-      x222 = x219*x220*x221
-      x223 = x218*x222
-      x224 = -x209 + x211 + x217 - x223
-      x225 = x224*x35
-      x226 = x25*x3
-      x227 = 0.00136314985874174d0*x3 + 0.0197517897025652d0
-      x228 = x227*x23
-      x229 = x228*x35
-      x230 = -x217
-      x231 = x209 + x230
-      x232 = x227*x24
-      x233 = x14*x232
-      x234 = x17*x19*x227
-      x235 = 1d0/x22
-      x236 = x21**(-2)
-      x237 = 0.749197287859205d0*x3 + 1.35956911724794d0*x5 + 0.21504862
-     &3563832d0*x6 + 0.127434173008489d0*x8
-      x238 = x235*x236*x237
-      x239 = x234*x238
-      x240 = 5.1297628024841d0*x204*x233 + 59.2171492864334d0*x239
-      x241 = x225 - 0.000908766572494496d0*x226 + 8.0d0*x229 + x231 + x2
-     &40
-      x242 = x199*x34 - x206*x34 + x241
-      x243 = x123*x242
-      x244 = 0.0891107483661069d0*x79
-      x245 = x47*x48
-      x246 = x245*x80
-      x247 = x45*x50
-      x248 = x247*x52
-      x249 = 1.02357830998401d0*x3 - 0.256556487706084d0*x8
-      x250 = x84*x86
-      x251 = x2**(-0.666666666666667d0)
-      x252 = x45*x82*x83
-      x253 = x251*x252
-      x254 = 75.398223686155d0*x85
-      x255 = x254*x44
-      x256 = 5.74246800037638d0*x88
-      x257 = x102*x89
-      x258 = x256*x257
-      x259 = x104*x116
-      x260 = x256*x259
-      x261 = 1d0/x3
-      x262 = 0.0508408867489862d0*x261
-      x263 = 1d0/x92
-      x264 = x263*x99
-      x265 = x14*x91
-      x266 = -x265 + 1.0d0
-      x267 = x266*x89
-      x268 = x264*x267
-      x269 = x262*x268
-      x270 = 1d0/x107
-      x271 = x113*x270
-      x272 = x106*x14
-      x273 = x272 + 1.0d0
-      x274 = x104*x273
-      x275 = x271*x274
-      x276 = x262*x275
-      x277 = 0.112523287330675d0*x93
-      x278 = 0.0162903215389562d0*x8
-      x279 = x278*x96
-      x280 = x277 + x279
-      x281 = -x265*x277 - x265*x279 + x280
-      x282 = x98**(-2)
-      x283 = x100*x282
-      x284 = x283*x95
-      x285 = x281*x284
-      x286 = x285*x88
-      x287 = x286*x90
-      x288 = 0.112523287330675d0*x108
-      x289 = x111*x278
-      x290 = x288 + x289
-      x291 = x272*x288 + x272*x289 + x290
-      x292 = x112**(-2)
-      x293 = x114*x292
-      x294 = x110*x293
-      x295 = x291*x294*x88
-      x296 = x105*x295
-      x297 = 22.9698720015055d0*x88
-      x298 = x116*x16
-      x299 = x297*x298
-      x300 = x14*x299
-      x301 = x102*x15
-      x302 = x297*x301
-      x303 = x14*x302
-      x304 = x258 + x260 + x269 + x276 + x287 + x296 + x300 - x303
-      x305 = x249*x250 + 2.41662179562687d0*x253 + x255 + x304 + x87
-      x306 = 0.000132058770571892d0*x46
-      x307 = 2.0d0*x70*(0.000220097950953153d0*x118 + x157*x246 - x244*x
-     &44 - 0.00693220036674015d0*x248 - x305*x306 + x81)
-      x308 = x127*x44
-      x309 = x3*x51
-      x310 = 0.00214134650283625d0*x3
-      x311 = 0.0105099134858261d0*x8
-      x312 = 0.00152446164353214d0*x48
-      x313 = 0.000183540529077572d0*x50
-      x314 = -x310 - x311 + x312 - x313
-      x315 = 0.0777930888680181d0*x309 + x314
-      x316 = x315*x45
-      x317 = x158*x316
-      x318 = -x130*x199 + x130*x206 + x241
-      x319 = 0.0533250677421794d0*x129
-      x320 = x125*(-0.0082755562057128d0*x128 + 0.213300270968718d0*x132
-     & + 0.00993066744685536d0*x308 + 0.00993066744685536d0*x317 - x318*
-     & x319)
-      x321 = x135*x44
-      x322 = 0.0837628205355044d0*x135
-      x323 = x245*x316
-      x324 = x88*(x138 + x140)
-      x325 = 5.74246800037638d0*x324
-      x326 = x16**1.66666666666667d0
-      x327 = x15**1.66666666666667d0
-      x328 = x326 - x327
-      x329 = 22.9698720015055d0*x88
-      x330 = x14*x328*x329
-      x331 = x145*x88
-      x332 = 46.773325076649d0*x331
-      x333 = x332*x44
-      x334 = x146*x88
-      x335 = 15.591108358883d0*x334
-      x336 = 2.64527879654103d0*x146*x261
-      x337 = x144*x88
-      x338 = 0.0802319968229891d0*x3 - 0.173432185689313d0*x8
-      x339 = x338*x45
-      x340 = x337*x339
-      x341 = 23.3866625383245d0*x340
-      x342 = x134*(0.899568554326366d0*x131*x50 + 0.0006896296838094d0*x
-     &137*(-x103 - x117 + x139 + x141 - x147) - x149*x318 + 0.1675256410
-     &71009d0*x321 - x322*x45 + 0.167525641071009d0*x323 - 0.00041377781
-     &028564d0*x46 *(-x258 - x260 - x269 - x276 - x287 - x296 - x300 + x
-     &303 + x325 + x330 - x333 - x335 - x336 - x341))
-      x343 = -x155 + x161 + x162 - x166 + x173 - x175 - x198 + x243 + x3
-     &07 - x320 - x342
-      x344 = x40/x41**5
-      x345 = x151*x344
-      x346 = x34*x36
-      x347 = x200*x34
-      x348 = 5.1297628024841d0*x205
-      x349 = 2.56488140124205d0*x204
-      x350 = x232*x349
-      x351 = x156*x53
-      x352 = 0.0506605918211689d0*x169
-      x353 = rho_s**3/rho_c**3
-      x354 = x17*x353
-      x355 = x228*x354
-      x356 = -x350
-      x357 = x18*x34
-      x358 = 8.0d0*x1
-      x359 = x34*x354
-      x360 = x348*x357 - 4.0d0*x355 + x356 - x358*x359
-      x361 = x196*x59
-      x362 = 30.6251363876636d0*x189
-      x363 = x169*(-x181 + 3.30853595146347d0*x186 - x362)
-      x364 = -x167 + x168
-      x365 = 11.4095193139813d0*x176 + x181
-      x366 = x364*x365
-      x367 = x1*(x363 - x366*x76)
-      x368 = 0.0253302959105844d0*x367
-      x369 = 0.00496533372342768d0*x127
-      x370 = x14*x254
-      x371 = x15*x264
-      x372 = x16*x271
-      x373 = 8.61370200056457d0*x88
-      x374 = x280*x284
-      x375 = x15*x374
-      x376 = x290*x294
-      x377 = x16*x376
-      x378 = x262*x371 - x262*x372 - x299 + x302 + x373*x375 - x373*x377
-     &
-      x379 = -x370 + x378
-      x380 = -x14*x332 - x329*(-x326 + x327) + x378
-      x381 = 0.00020688890514282d0*x46
-      x382 = x123*x360 + x125*(x14*x369 + x319*x360) + x134*(x14*x322 + 
-     &x149*x360 - x380*x381) + x14*x351 - x171*x352 - x361*x368 + x70*(x
-     &14*x244 - x306*x379)
-      x383 = -x382*x42
-      x384 = x157*x44
-      x385 = x43*x52
-      x386 = x163*x385
-      x387 = x157*x47
-      x388 = 0.00571025734089666d0*x3 - 0.00609784657412857d0*x48 + 0.00
-     &0856522469028669d0*x50 + 0.0350330449527535d0*x8
-      x389 = x169**2
-      x390 = x389*x59*x77
-      x391 = x15**(-1.33333333333333d0)
-      x392 = x14*x391
-      x393 = x16**(-1.33333333333333d0)
-      x394 = x14*x393
-      x395 = x392 + x394
-      x396 = -6.0d0*x167 + 6.0d0*x168 + x395
-      x397 = x194*x361
-      x398 = 0.101321183642338d0*x59
-      x399 = x194*x39
-      x400 = x195*x69
-      x401 = x399*x400
-      x402 = -x73 + 3.44851d0
-      x403 = x176*x402
-      x404 = x75**(-2)
-      x405 = x399*x404
-      x406 = 3.80317310466043d0*x176
-      x407 = x14*x396
-      x408 = x389*x44
-      x409 = x177*x408*x71
-      x410 = 2.04643791004791d0*x5
-      x411 = 8.18575164019163d0*x5
-      x412 = x182*x396*x410 - x183*x410 + x408*x411*x62
-      x413 = 1.10284531715449d0*x186
-      x414 = x185*x66
-      x415 = 2.0d0*x69
-      x416 = 12.2786274602874d0*x5
-      x417 = 22.8190386279626d0*x178
-      x418 = x179*x417
-      x419 = x75/x68**2
-      x420 = x414*x419
-      x421 = x15**(-0.666666666666667d0)
-      x422 = 0.854960467080683d0*x14
-      x423 = x16**(-0.666666666666667d0)
-      x424 = x421*x422 + x422*x423
-      x425 = -5.1297628024841d0*x202 + 5.1297628024841d0*x203 + x424
-      x426 = x358*x425
-      x427 = 164.152409679491d0*x205
-      x428 = 0.0477583568090938d0*x208
-      x429 = x212*x213
-      x430 = x214*x3*x429
-      x431 = 0.353517066413871d0*x430
-      x432 = x218*x219
-      x433 = x216*(0.989141964955861d0*x3 + 1.16327369584438d0*x5 + 0.60
-     &0321476249523d0*x6 + 0.210778258416395d0*x8)
-      x434 = 2.0d0*x433
-      x435 = x212**2*x215/(x10**2*x9**4)
-      x436 = x29*x435
-      x437 = x215*x429*(1.48371294743379d0*x3 + 1.99418347859036d0*x5 + 
-     &x7 + 0.252933910099675d0*x8)/x9**3
-      x438 = 2.0d0*x437
-      x439 = x35*(-0.022960662510839d0*x210 + 19.7392088021787d0*x218**2
-     &*x221*x4/(x28 **4*x30**2) + 0.339918983653357d0*x220*x3*x432 - 2.0
-     &d0*x221*x432* (x27 + 2.56316415829814d0*x3 + 3.70679162103156d0*x5
-     & + 0.320782838838426d0*x8)/x28**3 + 2.0d0*x222*(1.70877610553209d0
-     &* x3 + 2.16229511226841d0*x5 + 1.23355033167571d0*x6 + 0.267319032
-     &365355d0*x8) + x428 - x431 - x434 - x436 + x438)
-      x440 = x204*x224
-      x441 = x204*x228
-      x442 = x200*x441
-      x443 = x23*x3
-      x444 = x35*x443
-      x445 = x233*x425
-      x446 = x204*x24*x3
-      x447 = x14*x446
-      x448 = x19*x238
-      x449 = x17*x3*x448
-      x450 = x234*x235
-      x451 = 118.434298572867d0*x450
-      x452 = x236*(0.998929717145607d0*x3 + 1.5861639701226d0*x5 + 0.322
-     &572935345748d0*x6 + 0.212390288347482d0*x8)
-      x453 = x234*x237**2/(x21**4*x22**2)
-      x454 = x237*(x20 + 1.49839457571841d0*x3 + 2.71913823449588d0*x5 +
-     & 0.254868346016978d0*x8)/x21**3
-      x455 = x227*x238
-      x456 = x35*x455
-      x457 = x204*x227*x448
-      x458 = x14*x457
-      x459 = x201*x440 - 16.0d0*x225 + 0.00242337752665199d0*x226 - 80.0
-     &d0*x229 - x428 + x431 + x434 + x436 - x438 + x439 + 82.07620483974
-     &55d0*x442 - 0.0145402651599119d0*x444 + 4.0d0*x445 - 0.00932351391
-     &944647d0* x447 - 0.107629131579854d0*x449 - x451*x452 + x451*x454 
-     &- 3506.67076961173d0*x453 + 947.474388582934d0*x456 + 607.53985935
-     &7387d0*x458
-      x460 = -160.0d0*x346 - x347*x426 + x347*x427 + x459
-      x461 = 0.00316102962473761d0*x122
-      x462 = x50*x52
-      x463 = x245*x45
-      x464 = 0.0891107483661069d0*x157
-      x465 = x249*x45
-      x466 = 75.398223686155d0*x84
-      x467 = x251*x83
-      x468 = 4.83324359125373d0*x467
-      x469 = 0.0677878489986482d0*x261
-      x470 = 1d0/x89
-      x471 = 0.00786976946662482d0*x44
-      x472 = x261*x264
-      x473 = 1.91415600012546d0*x88
-      x474 = 1d0/x104
-      x475 = x261*x271
-      x476 = 38.2831200025092d0*x88
-      x477 = x102*x476
-      x478 = x116*x476
-      x479 = 0.0543010717965206d0*x8
-      x480 = 0.150031049774234d0*x93
-      x481 = x44*x470
-      x482 = 0.0271505358982603d0*x8
-      x483 = x482*x96
-      x484 = -x480 - x483
-      x485 = x88*x90
-      x486 = 0.101681773497972d0*x261
-      x487 = x263*x282
-      x488 = x281*x487
-      x489 = x270*x292
-      x490 = x486*x489
-      x491 = 0.150031049774234d0*x108
-      x492 = x44*x474
-      x493 = x111*x482
-      x494 = x491 + x493
-      x495 = x105*x88
-      x496 = x261*x273*x372
-      x497 = 0.271151395994593d0*x14
-      x498 = x14*x88
-      x499 = 15.3132480010037d0*x498
-      x500 = 0.225046574661351d0*x93
-      x501 = 0.0325806430779124d0*x8
-      x502 = x501*x96
-      x503 = x500 + x502
-      x504 = x98**(-3)
-      x505 = x100*x504*x95
-      x506 = 0.225046574661351d0*x108
-      x507 = x111*x501
-      x508 = x506 + x507
-      x509 = x112**(-3)
-      x510 = x110*x114*x509
-      x511 = x261*x371
-      x512 = x266*x511
-      x513 = x16*x291
-      x514 = 45.939744003011d0*x88
-      x515 = x14*x514
-      x516 = x15*x285
-      x517 = 11.4849360007528d0*x104*x295 - x105*x475*(0.015739538933249
-     &6d0*x272 + x471*x474 + 0.00786976946662482d0) - x257*x473 - x259*x
-     &473 + x267 *x486*x488 + x268*x469 + x274*x291*x490 + x275*x469 + x
-     &281*x485* x505*(-x265*x500 - x265*x502 + x503) + x284*x485*(x265*x
-     &479*x96 + 0.300062099548467d0*x265*x93 - x480*x481 - x481*x483 + x
-     &484) + 11.4849360007528d0*x286*x89 + x291*x495*x510*(x272*x506 + x
-     &272* x507 + x508) - x294*x495*(0.300062099548467d0*x108*x272 + x11
-     &1* x272*x479 + x491*x492 + x492*x493 + x494) + x294*x513*x515 - x2
-     &98 *x499 + x301*x499 + x44*x477 + x44*x478 + x472*x90*( 0.01573953
-     &89332496d0*x265 - x470*x471 - 0.00786976946662482d0) + x496*x497 -
-     & x497*x512 - x515*x516
-      x518 = x315*x44
-      x519 = 0.311172355472072d0*x3
-      x520 = 0.00285512867044833d0*x3 - 0.103724118490691d0*x309 + x49 +
-     & 0.000428261234514334d0*x50 + 0.0121035293512547d0*x51*x8 + 0.0175
-     &165224763768d0*x8
-      x521 = x130*x200
-      x522 = 5.29055759308205d0*x144*x261
-      x523 = x328*x88
-      x524 = 5.0d0*x14
-      x525 = x524*x57 + x524*x58
-      x526 = 7.65662400050184d0*x88
-      x527 = x337*x338
-      x528 = 0.632303919304059d0*x344
-      x529 = 2.0d0*x1
-      x530 = 29.6085746432167d0*x450
-      x531 = x14*x158
-      x532 = 0.0675474557615585d0*x390
-      x533 = 3.0d0*x167
-      x534 = 3.0d0*x168
-      x535 = x395 - x533 + x534
-      x536 = 0.0168868639403896d0*x171
-      x537 = x196*x367
-      x538 = x364*(x181 + x362 + 3.30853595146347d0*x403)
-      x539 = x169*x365
-      x540 = x1*x359
-      x541 = x205*x357
-      x542 = -2.56488140124205d0*x202 + 2.56488140124205d0*x203 + x424
-      x543 = 20.5190512099364d0*x441
-      x544 = -1.28244070062102d0*x18*x440 - x18*x543 + 2.0d0*x224*x354 -
-     & x232*x542 + 0.00181753314498899d0*x354*x443 - 118.434298572867d0*
-     &x354*x455 + x357*x529*x542 + 0.00116543923993081d0*x446 - 75.94248
-     &24196734d0* x457
-      x545 = 16.0d0*x355 + 32.0d0*x540 - 41.0381024198728d0*x541 + x544
-      x546 = 1.02321895502395d0*x5
-      x547 = x411*x65
-      x548 = x389*x547
-      x549 = x190*x389
-      x550 = 6.61707190292693d0*x187*x389
-      x551 = 10.2083787958879d0*x189
-      x552 = 22.8190386279626d0*x176 + x416
-      x553 = -x392 - x394 + x533 - x534
-      x554 = 0.0253302959105844d0*x1*x361
-      x555 = x14*x245
-      x556 = 0.135575697997296d0*x14
-      x557 = x472*x556
-      x558 = 0.0338939244993241d0*x261
-      x559 = x371*x558
-      x560 = x475*x556
-      x561 = x372*x558
-      x562 = 38.2831200025092d0*x498
-      x563 = 7.65662400050184d0*x88
-      x564 = 0.0677878489986482d0*x496
-      x565 = x280*x487
-      x566 = x15*x262
-      x567 = x266*x565*x566
-      x568 = x14*x297
-      x569 = x262*x489
-      x570 = x16*x273*x290*x569
-      x571 = x488*x566
-      x572 = x513*x569
-      x573 = x265*x480
-      x574 = x265*x483
-      x575 = x284*x373
-      x576 = x297*x513
-      x577 = x272*x491 + x272*x493 + x494
-      x578 = x294*x373
-      x579 = x373*x503
-      x580 = x505*x579
-      x581 = x373*x508
-      x582 = x510*x581
-      x583 = x14*(x142 - x143)
-      x584 = x94 - 1.0d0
-      x585 = x15*x584
-      x586 = x109 - 1.0d0
-      x587 = x16*x586
-      x588 = x283*x585
-      x589 = x293*x586
-      x590 = x293*x587
-      x591 = x480 + x483
-      x592 = x353*x543
-      x593 = x421 + x423
-      x594 = 0.854960467080683d0*x232*x593
-      x595 = x17*x44
-      x596 = 12.0d0*x228*x595
-      x597 = 1.70992093416137d0*x1*x357*x593
-      x598 = 41.0381024198728d0*x205*x34*x353
-      x599 = 24.0d0*x1*x34*x595
-      x600 = x391 + x393
-      x601 = x368*x39*x65
-      x602 = x592 + x594 - x596 - x597 + x598 - x599
-      x603 = 0.203363546995945d0*x261
-      x604 = x264*x603 + x271*x603 + x280*x580 + x290*x490 + x290*x582 +
-     & x374*x514 + x376*x514 + x477 + x478 + x486*x565 - x494*x578 - x57
-     &5*x591
-      x605 = x410*x600
-      x606 = mu*x62
-      x607 = x364**2
-      E = -rho_c*(x13 + x152 - x26 + x38)
-      d1E(1) = x120 + x14*x350 - x152 + 0.0089546919017051d0*x208 - 0.5d
-     &0*x217 + 0.5d0* x225 - 0.000454383286247248d0*x226 + 4.0d0*x229 + 
-     &29.6085746432167d0*x239 - 0.5d0*x343*x42 - 0.632303919304059d0* x3
-     &45 + 6.0d0*x346 - x347*x348
-      d1E(2) = x360 + x383
-      d2E(1) = x2*(-0.499760307959092d0*x134*x151*x50/x41**6 + x200*x224
-     &*x349 + 30.7785768149046d0*x205*x347 + 0.00596979460113673d0*x208 
-     &- 4.0d0 *x225 - 0.000302922190831499d0*x226 - 12.0d0*x229 + x230 +
-     & x240 - x343*x528 + 1.26460783860812d0*x344*(x119 - x124 + x133 - 
-     &x150 + x56 + x78) + 1.05383986550676d0*x345 - 24.0d0*x346 - x347*x
-     &425* x529 - x35*(-x211 + x223 + x231) + 2.46740110027234d0*x4*x435
-     & + x42*(x155 - x161 - x162 + x166 - x173 + x175 + x198 - x243 - x3
-     &07 + x320 + x342) - 0.25d0*x42*(-0.101321183642338d0*x1*x197*( -1.
-     &10284531715449d0*x187*x407 + 2.20569063430898d0*x188 + 11.48442614
-     &53738d0*x189 + 10.2083787958879d0*x190*x407 - 30.6251363876636d0*x
-     &191 - x193*x414*x415 + 81.6670303671029d0*x39 *x408*x6/x59**4 - 6.
-     &61707190292693d0*x409*x74 + x412 - x413 + x420*(-5.70475965699064d
-     &0*x176 + x183*x416 + x418 - 3.06965686507186d0*x5) + 1.79063317129
-     &192d0*x5 - x76*( 3.80317310466043d0*x178*x407 - 7.60634620932085d0
-     &*x180 + x406 + 22.8190386279626d0*x409 + x412 + 1.79063317129192d0
-     &*x5)) - 0.0337176493305345d0*x122*x242 - x125*(0.0441362997638016d
-     &0*x128 + 0.426600541937435d0*x129*x318 - 1.27980162581231d0*x132 +
-     & 0.0794453395748429d0*x158*x518 + 0.0198613348937107d0*x159*(x314*
-     & x519 + x520) - 0.125788454326835d0*x308 - 0.0662044496457024d0* x
-     &317 - x319*(160.0d0*x130*x36 + x426*x521 - x427*x521 + x459)) + x1
-     &34*(4.19798658685637d0*x121*x50 - 0.335051282142018d0*x136 - 0.003
-     &6780249803168d0*x148 + x149*x460 - 1.79913710865273d0*x242* x50 - 
-     &1.34020512856807d0*x245*x518 + 1.67525641071009d0*x321 + 0.6701025
-     &64284035d0*x323 + 0.0027585187352376d0*x46*(x304 - x325 - x330 + x
-     &333 + x335 + x336 + x341) - 0.00082755562057128d0*x46*( -30.626496
-     &0020074d0*x14*x523 - x14*x526*(-6.0d0*x326 + 6.0d0*x327 + x525) + 
-     &10.5811151861641d0*x145*x261*x44 + 0.299209d0*x146 + 1.91415600012
-     &546d0*x324 - 77.9555417944151d0*x331*x44 - 5.19703611962767d0*x334
-     & + 23.3866625383245d0*x337*x45*( -0.106975995763985d0*x3 + 0.28905
-     &3642815522d0*x8) + x339*x522 + 31.182216717766d0*x340 + 93.5466501
-     &532981d0*x44*x527 + x517) - 0.335051282142018d0*x463*(-x519*(x310 
-     &+ x311 - x312 + x313) + x520)) - x153*x159*x388 + 0.13381955417951
-     &7d0*x154*x43 + 0.0422588065830054d0*x158*x384*x43 - 0.035215672152
-     &5045d0*x160* x43 + 0.00328744309596812d0*x164*x387 + 0.00767070055
-     &725895d0* x165 + 0.0675474557615585d0*x172*x396 + 0.12363138087862
-     &6d0*x174 + 0.405284734569351d0*x179*x397 - x185*x398*x401 - 0.0002
-     &55740352913201d0*x2**2.33333333333333d0*x385*x45 - 0.0065748861919
-     &3625d0*x386*x44 - 0.270189823046234d0*x390*x44 + x398*x405*(3.3085
-     &3595146347d0*x180*x402 + x192 - 0.827133987865867d0*x403) + x460*x
-     &461 - 0.0469542295366726d0*x55 + 4.0d0*x70*(-0.000586927869208408d
-     &0*x118 - x244*x45 + 0.178221496732214d0*x245*x384 - x246*x388 + 0.
-     &0138644007334803d0* x247*x387 + 0.0231073345558005d0*x248 + 0.0004
-     &40195901906306d0* x305*x46 - x306*(0.154912426780983d0*x2**(-0.333
-     &333333333333d0)* x252 + 150.79644737231d0*x249*x44*x84 + x250*(-1.
-     &36477107997868d0 *x3 + 0.427594146176807d0*x8) + 1.61108119708458d
-     &0*x253 - x255 + 9.66648718250747d0*x44*x467*x82 + x465*x466 + x465
-     &*x468 + x517) - 0.0277288014669606d0*x44*x462 + 0.445553741830535d
-     &0*x44*x79 - x463*x464 - 0.00107855455836145d0*x54)) + 0.0883792666
-     &034679d0* x430 + 0.5d0*x433 - 0.5d0*x437 + 0.25d0*x439 + 20.519051
-     &2099364d0 *x442 - 0.00363506628997799d0*x444 + x445 - 0.0023308784
-     &7986162d0 *x447 - 0.0269072828949635d0*x449 - x452*x530 - 876.6676
-     &92402934d0*x453 + x454*x530 + 236.868597145733d0*x456 + 151.884964
-     &839347d0*x458)
-      d2E(2) = x2*(12.0d0*x355 + x356 - x382*x528 + x383 - x42*(-0.00842
-     &941233263362d0* x122*x360 + x125*(-0.0182062236525682d0*x127*x14 -
-     & 0.106650135484359d0*x129*x360 + 0.00993066744685536d0*x315*x531 +
-     & x319*x545) + x134*(-0.251288461606513d0*x135*x14 + x149*x545 + 0.
-     &167525641071009d0*x315*x555 - 0.449784277163183d0*x360*x50 + 0.000
-     &3448148419047d0*x380*x46 + x381*(x100*x281*x504*x579*x585 - x101*x
-     &562*x584 - x101*x563*x585 - x114*x509*x513*x581*x586 - x115 *x562*
-     &x586 + x115*x563*x587 + 46.773325076649d0*x14*x527 + x256* x280*x5
-     &88 - x256*x290*x590 - x280*x283*x568*x584 + x281*x297*x588 - x290*
-     &x568*x589 + 62.364433435532d0*x337*x583 + x373*x577*x590 - x373*x5
-     &88*(-x573 - x574 + x591) - 0.0677878489986482d0*x512 - x522*x583 -
-     & 15.3132480010037d0*x523 - x526*(-3.0d0*x326 + 3.0d0* x327 + x525)
-     & + x557 - x559 + x560 + x561 + x564 - x567 + x570 - x571 + x572 - 
-     &x576*x589)) + x14*x352*x537 + 0.000821860773992031d0*x14*x386 - 0.
-     &0193686196838775d0*x14*x43* x53 + x14*x532 - x156*x157*x531 - x352
-     &*x397 + 0.0253302959105844d0*x401*x539 + 0.0253302959105844d0*x405
-     &*x538 + x461*x545 - x535*x536 - x554*(-x14*x548 - 81.6670303671029
-     &d0*x14* x549 + x14*x550 + 15.3125681938318d0*x169*x189 - x169*x413
-     & + x169 *x546 - x193*x366*x66*x69 - x363*x414*x69 + x364*x420*x552
-     & - x410 *x535 + x413*x535 - x535*x551 - x76*(x179*x364*x547 - x364
-     &*x406 + x364*x418 - x364*x546 + x406*x553 + x410*x553)) + x70*( 0.
-     &0138644007334803d0*x14*x462 - 0.267332245098321d0*x14*x79 - x306*(
-     &-x102*x562 - x116*x562 - x14*x249*x466 - x14*x468*x82 + x15 *x281*
-     &x580 + x15*x575*(x484 + x573 + x574) + x16*x577*x578 + x256 *x375 
-     &- x256*x377 - x294*x576 + x297*x516 + x298*x563 - x301*x563 + x370
-     & - x374*x568 - x376*x568 + 0.0677878489986482d0*x511*(x265 - 1.0d0
-     &) + 0.135575697997296d0*x512 - x513*x582 - x557 + x559 - x560 - x5
-     &61 - x564 + x567 - x570 + x571 - x572) + 0.000220097950953153d0*x3
-     &79*x46 - x464*x555)) + 24.0d0*x540 - 35.9083396173887d0*x541 + x54
-     &4)
-      d2E(3) = -x2*(x42*(x125*(x319*x602 + x369) + x134*(x149*x602 + x32
-     &2 - x381*(-x332 - 38.2831200025092d0*x59*x88 + x604)) - x170*x537 
-     &+ x351 + x400* x539*x601 + x404*x538*x601 + x461*x602 - x532 + x53
-     &6*x600 - x554* (-x363*x366*x415*x606 + x365*x419*x552*x606*x607 - 
-     &x413*x600 + x548 + 81.6670303671029d0*x549 - x550 + x551*x600 + x6
-     &05 - x76*( x406*x600 + x417*x607 + x547*x607 + x605)) + x70*(x244 
-     &- x306*( -x254 + x604))) - x592 - x594 + x596 + x597 - x598 + x599
-     &)
-      end subroutine
-    
-
-C*****************************************************************************
-      pure subroutine ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu,
-     &                                      E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 09, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, rho_s, gamma_cc, mu
-      real*8, intent(out) :: E
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
-     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
-     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
-     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75
-      E = 0.0d0
-      x0 = 0.693147180559945d0
-      x1 = -x0 + 1.0d0
-      x2 = 1d0/rho_c
-      x3 = x2**0.333333333333333d0
-      x4 = 1d0/x1
-      x5 = x2**0.166666666666667d0
-      x6 = sqrt(x2)
-      x7 = x2**0.666666666666667d0
-      x8 = (0.132568899905202d0*x3 + 1.0d0)*log(4.934802200544679d0*x4/(
-     & 2.2255694211506878d0*x3 + 5.9825504357710795d0*x5 + 0.80042863499
-     &936356d0*x6 + 0.18970043257475591d0*x7) + 1.0d0)
-      x9 = 0.202642367284676d0*x1*x8
-      x10 = rho_s**4/rho_c**4
-      x11 = rho_s*x2
-      x12 = x11 + 1.0d0
-      x13 = -x11 + 1.0d0
-      x14 = 1.92366105093154d0*x12**1.33333333333333d0 + 1.9236610509315
-     &4d0*x13** 1.33333333333333d0 - 3.84732210186307d0
-      x15 = 0.0197517897025652d0*x14*(-x10 + 1.0d0)*(0.0690139921125583d
-     &0*x3 + 1.0d0 )*log(1.0d0 + 29.608574643216677d0/(2.247591863577616
-     &4d0*x3 + 8.1574147034876408d0*x5 + 0.43009724712766434d0*x6 + 0.19
-     &115125951273382d0*x7))
-      x16 = 0.0506605918211689d0*(0.127469618870009d0*x3 + 1.0d0)*log( 9
-     &.869604401089358d0*x4/(3.8447462374472119d0*x3 + 11.12037486309468
-     &5d0*x5 + 1.6447337755676092d0*x6 + 0.24058712912881922d0*x7) + 1.0
-     &d0)
-      x17 = 0.101321183642338d0*x8
-      x18 = 2.0d0*x1*x10*x14
-      x19 = x18*(x16 - x17)
-      x20 = mu**2
-      x21 = (0.237113969739022d0*x20*x7 + 1.0d0)**(-4)
-      x22 = rho_s**2/rho_c**2
-      x23 = -x22 + 1.0d0
-      x24 = x2**1.0d0
-      x25 = x2**1.33333333333333d0
-      x26 = (-0.00304892328706429d0*x24 + 0.000275310793616358d0*x25 + 0
-     &.0128480790170175d0*x3 + 0.0315297404574782d0*x7 + 1.0d0)*exp( -0.
-     &46675853320810856d0*x3)
-      x27 = x23*x26
-      x28 = x2**1.66666666666667d0
-      x29 = 0.00264117541143784d0*mu**5*x28
-      x30 = x12**0.666666666666667d0 + x13**0.666666666666667d0
-      x31 = x20*x3/x30**2
-      x32 = 9.20897059521559d0*mu*x5/x30 + 1.0d0
-      x33 = 1d0/(8.55713948548596d0*x31 + x32)
-      x34 = x0 - 1.0d0
-      x35 = 1.22772285078429d0/x34
-      x36 = 2.4814019635976d0*x31
-      x37 = mu**3
-      x38 = x30**3
-      x39 = x32 + 15.3125681938318d0*x37*x6/x38
-      x40 = 0.0253302959105844d0*x38
-      x41 = 0.0445553741830535d0*x24
-      x42 = 1d0/x7
-      x43 = 1d0/x12
-      x44 = x43**0.666666666666667d0
-      x45 = x3*x43**0.333333333333333d0
-      x46 = 0.0244354823084343d0*x7
-      x47 = 8.61370200056457d0*x12**2*(-0.0177069812999059d0*x45 + 1.0d0
-     &)/(x44*(x44* x46 + 0.337569861992026d0*x45 + 1.0d0))
-      x48 = 1d0/x13
-      x49 = x48**0.666666666666667d0
-      x50 = x3*x48**0.333333333333333d0
-      x51 = 8.61370200056457d0*x13**2*(-0.0177069812999059d0*x50 + 1.0d0
-     &)/(x49*(x46* x49 + 0.337569861992026d0*x50 + 1.0d0))
-      x52 = 0.000132058770571892d0*x28*(37.6991118430775d0*x23*(-3.07073
-     &492995203d0* x3 + 0.384834731559127d0*x7)*exp(-0.19230865217881402
-     &d0*x3)/x24 + x42*x47 + x42*x51)
-      x53 = x15 - x9
-      x54 = -x19 + x53
-      x55 = 0.00316102962473761d0*mu**8*x2**2.66666666666667d0
-      x56 = mu**6
-      x57 = x23*(x26 - 1.0d0)
-      x58 = 0.00248266686171384d0*x28*x57
-      x59 = x18*(-x16 + x17) + x53
-      x60 = 0.0533250677421794d0*x2**2.0d0*x59
-      x61 = mu**4
-      x62 = -0.0418814102677522d0*x24*x57
-      x63 = 8.61370200056457d0*x12**2.66666666666667d0
-      x64 = 8.61370200056457d0*x13**2.66666666666667d0
-      x65 = 23.3866625383245d0*x23*(-0.240695990468967d0*x3 + 0.26014827
-     &853397d0*x7) *exp(-0.33933171852197186d0*x3)
-      x66 = 0.00020688890514282d0*x2**1.0d0
-      x67 = 0.337338207872387d0*x25
-      x68 = x21*(-x1*x40*log(x33*(-x36*(x35 - 3.4485100000000002d0) + x3
-     &9)) - x27* x29 - x37*(x27*x41 + x52) + x54*x55 - x56*(x58 - x60) +
-     & x61*(x54* x67 + x62 - x66*(x47 + x51 - x63 - x64 + x65)))
-      x69 = x12**0.666666666666667d0 + x13**0.666666666666667d0
-      x70 = x69**3
-      x71 = x26*(x22 - 1.0d0)
-      x72 = -1.0d0 + exp(-257.30918915441765d0*(-x21*(x29*x71 + x34*x40*
-     &log(x33*(x36 *(-x35 + 3.4485100000000002d0) + x39)) + x37*(x41*x71
-     & - x52) + x55*x59 + x56*(-x58 + x60) + x61*(x59*x67 + x62 + x66*(-
-     &x47 - x51 + x63 + x64 - x65))) + x59)/x70)
-      x73 = (x54 - x68)/x54
-      x74 = 0.544841407721756d0*gamma_cc*rho_c**(-2.33333333333333d0)*x7
-     &3**2.78d0/ x69**2
-      x75 = 1.0d0 + x74/x72
-      E = -rho_c*(-x15 + x19 + x68 - 0.003886375d0*x70*log(x74*x75/( 0.2
-     &9685215956822486d0*gamma_cc**2*rho_c**(-4.666666666666667d0)* x73*
-     &*5.5599999999999996d0/(x69**4*x72**2) + x75) + 1.0d0) + x9)
-      end subroutine
-
-
-C*****************************************************************************
-      pure subroutine D1ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc,
-     &                                        mu, E, d1E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 09, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, rho_s, gamma_cc, mu
-      real*8, intent(out) :: E, d1E(9)
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
-     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
-     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
-     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
-     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
-     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
-     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
-     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
-     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
-     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
-     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
-     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
-     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
-     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
-     &, x193, x194, x195, x196, x197, x198, x199, x200, x201, x202, x203
-     &, x204, x205, x206, x207, x208, x209, x210, x211, x212, x213, x214
-     &, x215, x216, x217, x218, x219, x220, x221, x222, x223, x224, x225
-     &, x226, x227, x228, x229, x230, x231, x232, x233, x234, x235, x236
-     &, x237, x238, x239, x240, x241, x242, x243, x244, x245, x246, x247
-     &, x248, x249, x250, x251, x252, x253, x254, x255, x256, x257, x258
-     &, x259, x260, x261, x262, x263, x264, x265, x266, x267, x268, x269
-     &, x270, x271, x272, x273, x274, x275, x276, x277, x278, x279, x280
-     &, x281, x282, x283, x284, x285, x286, x287, x288, x289, x290, x291
-     &, x292, x293, x294, x295, x296, x297, x298, x299, x300, x301, x302
-     &, x303, x304, x305, x306, x307, x308, x309, x310, x311, x312, x313
-     &, x314, x315, x316, x317, x318, x319, x320, x321, x322, x323, x324
-     &, x325, x326, x327, x328, x329, x330, x331, x332, x333, x334, x335
-     &, x336, x337, x338, x339, x340, x341, x342, x343, x344, x345, x346
-     &, x347, x348, x349, x350, x351, x352, x353, x354, x355, x356, x357
-     &, x358, x359, x360, x361, x362, x363, x364, x365, x366, x367, x368
-     &, x369, x370, x371, x372, x373, x374, x375, x376, x377, x378, x379
-     &, x380, x381, x382, x383, x384, x385, x386, x387, x388, x389, x390
-     &, x391, x392, x393, x394, x395, x396, x397, x398, x399, x400, x401
-     &, x402, x403, x404, x405, x406, x407, x408, x409, x410, x411, x412
-     &, x413, x414, x415, x416, x417, x418, x419, x420, x421, x422, x423
-     &, x424, x425, x426, x427, x428, x429, x430, x431, x432, x433, x434
-     &, x435, x436, x437, x438, x439, x440, x441, x442, x443, x444, x445
-     &, x446
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      x0 = 1d0/rho_c
-      x1 = x0**0.333333333333333d0
-      x2 = 0.693147180559945d0
-      x3 = -x2 + 1.0d0
-      x4 = 1d0/x3
-      x5 = x0**0.166666666666667d0
-      x6 = sqrt(x0)
-      x7 = x0**0.666666666666667d0
-      x8 = 3.84474623744721d0*x1 + 11.1203748630947d0*x5 + 1.64473377556
-     &761d0*x6 + 0.240587129128819d0*x7
-      x9 = 9.86960440108936d0*x4/x8 + 1.0d0
-      x10 = log(x9)
-      x11 = 0.0506605918211689d0*x10*(0.127469618870009d0*x1 + 1.0d0)
-      x12 = 2.22556942115069d0*x1 + 5.98255043577108d0*x5 + 0.8004286349
-     &99364d0*x6 + 0.189700432574756d0*x7
-      x13 = 1.0d0 + 4.93480220054468d0*x4/x12
-      x14 = log(x13)
-      x15 = x14*(0.132568899905202d0*x1 + 1.0d0)
-      x16 = 0.101321183642338d0*x15
-      x17 = x11 - x16
-      x18 = rho_s*x0
-      x19 = x18 + 1.0d0
-      x20 = -x18 + 1.0d0
-      x21 = 1.92366105093154d0*x19**1.33333333333333d0 + 1.9236610509315
-     &4d0*x20** 1.33333333333333d0 - 3.84732210186307d0
-      x22 = rho_c**(-4)
-      x23 = rho_s**4
-      x24 = x22*x23
-      x25 = x21*x24
-      x26 = x25*x3
-      x27 = 2.0d0*x26
-      x28 = x17*x27
-      x29 = 0.202642367284676d0*x15*x3
-      x30 = -x24 + 1.0d0
-      x31 = 2.24759186357762d0*x1 + 8.15741470348764d0*x5 + 0.4300972471
-     &27664d0*x6 + 0.191151259512734d0*x7
-      x32 = 1.0d0 + 29.6085746432167d0/x31
-      x33 = log(x32)
-      x34 = x30*x33
-      x35 = x21*x34
-      x36 = 0.0197517897025652d0*x35*(0.0690139921125583d0*x1 + 1.0d0)
-      x37 = -x29 + x36
-      x38 = -x28 + x37
-      x39 = mu**2
-      x40 = x39*x7
-      x41 = 0.237113969739022d0*x40 + 1.0d0
-      x42 = x41**(-4)
-      x43 = mu**5
-      x44 = rho_c**(-2)
-      x45 = rho_s**2*x44
-      x46 = -x45 + 1.0d0
-      x47 = exp(-0.46675853320810856d0*x1)
-      x48 = x0**1.0d0
-      x49 = 0.00304892328706429d0*x48
-      x50 = -x49
-      x51 = x0**1.33333333333333d0
-      x52 = 0.0128480790170175d0*x1 + x50 + 0.000275310793616358d0*x51 +
-     & 0.0315297404574782d0*x7 + 1.0d0
-      x53 = x47*x52
-      x54 = x46*x53
-      x55 = x43*x54
-      x56 = x0**1.66666666666667d0
-      x57 = 0.00264117541143784d0*x56
-      x58 = x55*x57
-      x59 = x19**0.666666666666667d0 + x20**0.666666666666667d0
-      x60 = x59**3
-      x61 = 0.0253302959105844d0*x60
-      x62 = x59**2
-      x63 = 1d0/x62
-      x64 = x39*x63
-      x65 = x1*x64
-      x66 = 1d0/x59
-      x67 = mu*x66
-      x68 = 9.20897059521559d0*x5*x67 + 1.0d0
-      x69 = 1d0/(8.55713948548596d0*x65 + x68)
-      x70 = x2 - 1.0d0
-      x71 = 1.22772285078429d0/x70
-      x72 = x71 - 3.44851d0
-      x73 = 2.4814019635976d0*x65
-      x74 = mu**3
-      x75 = x6/x60
-      x76 = x68 + 15.3125681938318d0*x74*x75
-      x77 = -x72*x73 + x76
-      x78 = x69*x77
-      x79 = x3*log(x78)
-      x80 = x61*x79
-      x81 = x46*x48
-      x82 = 0.0445553741830535d0*x53
-      x83 = x81*x82
-      x84 = -3.07073492995203d0*x1 + 0.384834731559127d0*x7
-      x85 = exp(-0.19230865217881402d0*x1)
-      x86 = x46*x84*x85
-      x87 = 1d0/x48
-      x88 = 37.6991118430775d0*x87
-      x89 = x86*x88
-      x90 = 1d0/x7
-      x91 = x19**2
-      x92 = 1d0/x19
-      x93 = x92**0.333333333333333d0
-      x94 = x1*x93
-      x95 = x92**0.666666666666667d0
-      x96 = 0.0244354823084343d0*x7
-      x97 = 0.337569861992026d0*x94 + x95*x96 + 1.0d0
-      x98 = 1d0/x97
-      x99 = x91*x98
-      x100 = (-0.0177069812999059d0*x94 + 1.0d0)/x95
-      x101 = 8.61370200056457d0*x100
-      x102 = x101*x99
-      x103 = x20**2
-      x104 = 1d0/x20
-      x105 = x104**0.333333333333333d0
-      x106 = x1*x105
-      x107 = x104**0.666666666666667d0
-      x108 = 0.337569861992026d0*x106 + x107*x96 + 1.0d0
-      x109 = 1d0/x108
-      x110 = x103*x109
-      x111 = (-0.0177069812999059d0*x106 + 1.0d0)/x107
-      x112 = 8.61370200056457d0*x111
-      x113 = x110*x112
-      x114 = x56*(x102*x90 + x113*x90 + x89)
-      x115 = 0.000132058770571892d0*x114
-      x116 = x74*(x115 + x83)
-      x117 = mu**8*x0**2.66666666666667d0
-      x118 = 0.00316102962473761d0*x117
-      x119 = x118*x38
-      x120 = mu**6
-      x121 = x53 - 1.0d0
-      x122 = x121*x46
-      x123 = x122*x56
-      x124 = 0.00248266686171384d0*x123
-      x125 = x0**2.0d0
-      x126 = -x11 + x16
-      x127 = x126*x27
-      x128 = x127 + x37
-      x129 = x125*x128
-      x130 = 0.0533250677421794d0*x129
-      x131 = x120*(x124 - x130)
-      x132 = mu**4
-      x133 = x122*x48
-      x134 = -0.0418814102677522d0*x133
-      x135 = x19**2.66666666666667d0
-      x136 = 8.61370200056457d0*x135
-      x137 = x20**2.66666666666667d0
-      x138 = 8.61370200056457d0*x137
-      x139 = exp(-0.33933171852197186d0*x1)
-      x140 = x139*(-0.240695990468967d0*x1 + 0.26014827853397d0*x7)
-      x141 = x140*x46
-      x142 = 23.3866625383245d0*x141
-      x143 = x0**1.0d0
-      x144 = 0.00020688890514282d0*x143
-      x145 = 0.337338207872387d0*x51
-      x146 = x132*(x134 - x144*(x102 + x113 - x136 - x138 + x142) + x145
-     &*x38)
-      x147 = -x116 + x119 - x131 + x146 - x58 - x80
-      x148 = x147*x42
-      x149 = -x148 + x38
-      x150 = x149/x38
-      x151 = x150**2.78d0
-      x152 = 0.544841407721756d0*rho_c**(-2.33333333333333d0)
-      x153 = x151*x152
-      x154 = x19**0.666666666666667d0 + x20**0.666666666666667d0
-      x155 = x154**2
-      x156 = gamma_cc/x155
-      x157 = x45 - 1.0d0
-      x158 = x157*x53
-      x159 = x158*x43
-      x160 = -x71 + 3.44851d0
-      x161 = x160*x73 + x76
-      x162 = x161*x69
-      x163 = x70*log(x162)
-      x164 = x157*x48
-      x165 = x164*x82
-      x166 = -x102 - x113 + x136 + x138 - x142
-      x167 = x118*x128 + x120*(-x124 + x130) + x132*(x128*x145 + x134 + 
-     &x144*x166) + x159*x57 + x163*x61 + x74*(-x115 + x165)
-      x168 = x167*x42
-      x169 = x128 - x168
-      x170 = x154**3
-      x171 = 1d0/x170
-      x172 = 257.309189154418d0*x171
-      x173 = exp(-x169*x172)
-      x174 = x173 - 1.0d0
-      x175 = 1d0/x174
-      x176 = x156*x175
-      x177 = x153*x176 + 1.0d0
-      x178 = rho_c**(-4.66666666666667d0)
-      x179 = x150**5.56d0
-      x180 = x178*x179
-      x181 = 0.296852159568225d0/x174**2
-      x182 = gamma_cc**2/x154**4
-      x183 = 1d0/(x177 + x180*x181*x182)
-      x184 = x177*x183
-      x185 = x153*x156*x184
-      x186 = x185 + 1.0d0
-      x187 = log(x186)
-      x188 = 0.003886375d0*x170
-      x189 = x29 - x36
-      x190 = x189 + x28
-      x191 = x148 + x190
-      x192 = x116 - x119 + x131 - x146 + x58 + x80
-      x193 = x1*x3
-      x194 = x14*x193
-      x195 = 0.0179093838034102d0*x194
-      x196 = rho_c**(-5)
-      x197 = x196*x23
-      x198 = x197*x21
-      x199 = 0.00136314985874174d0*x1 + 0.0197517897025652d0
-      x200 = x199*x33
-      x201 = 8.0d0*x200
-      x202 = x1*x35
-      x203 = 0.000908766572494496d0*x202
-      x204 = rho_s*x44
-      x205 = x20**0.333333333333333d0
-      x206 = x19**0.333333333333333d0
-      x207 = x205 - x206
-      x208 = x199*x34
-      x209 = x207*x208
-      x210 = 5.1297628024841d0*x209
-      x211 = (0.265137799810404d0*x1 + 2.0d0)*(0.741856473716896d0*x1 + 
-     &0.99709173929518d0*x5 + 0.400214317499682d0*x6 + 0.126466955049837
-     &d0*x7)/(x12**2*x13)
-      x212 = x199*x21*x30*(0.749197287859205d0*x1 + 1.35956911724794d0*x
-     &5 + 0.215048623563832d0*x6 + 0.127434173008489d0*x7)/(x31**2*x32)
-      x213 = 59.2171492864334d0*x212
-      x214 = rho_s**5
-      x215 = x207*x3
-      x216 = 10.2595256049682d0*x214*x215
-      x217 = x17*x3
-      x218 = 0.00861024844156464d0*x10*x193
-      x219 = (0.254939237740017d0*x1 + 2.0d0)*(1.28158207914907d0*x1 + 1
-     &.85339581051578d0*x5 + 0.822366887783805d0*x6 + 0.160391419419213d
-     &0*x7)/(x8**2*x9)
-      x220 = x195 - x211
-      x221 = x40/x41**5
-      x222 = 1.26460783860812d0*x221
-      x223 = x45*x53
-      x224 = x43*x56
-      x225 = 0.0105647016457513d0*x223*x224
-      x226 = 0.0042826930056725d0*x1
-      x227 = 0.0210198269716521d0*x7
-      x228 = 0.000367081058155144d0*x51
-      x229 = x226 + x227 + x228 + x50
-      x230 = 0.00528235082287567d0*x224
-      x231 = x230*x47
-      x232 = x229*x231*x46
-      x233 = 0.00880391803812612d0*x56
-      x234 = x233*x55
-      x235 = 0.000821860773992031d0*x0**2.0d0
-      x236 = x235*x55
-      x237 = x19**(-0.333333333333333d0)
-      x238 = x20**(-0.333333333333333d0)
-      x239 = x237 - x238
-      x240 = x18*x239
-      x241 = 0.101321183642338d0*x62
-      x242 = x240*x241*x79
-      x243 = 0.0168588246652672d0*x117
-      x244 = x243*x38
-      x245 = x1*x67
-      x246 = 2.85237982849532d0*x245
-      x247 = mu*x1*x240*x63
-      x248 = 11.4095193139813d0*x247
-      x249 = 1.53482843253593d0*x5
-      x250 = 6.13931373014372d0*x5
-      x251 = x240*x250*x66
-      x252 = -x249 + x251
-      x253 = 0.827133987865867d0*x245
-      x254 = 3.30853595146347d0*x247
-      x255 = x6*x64
-      x256 = 30.6251363876636d0*x240*x39*x75 + x252 - 7.6562840969159d0*
-     &x255
-      x257 = 0.0506605918211689d0*x62
-      x258 = mu*x257
-      x259 = x3/x77
-      x260 = x258*x259*(x253*x72 - x254*x72 + x256 - x78*(-x246 + x248 +
-     & x252))
-      x261 = 16.0d0*x26
-      x262 = x196*x216
-      x263 = -x195 + x211
-      x264 = x25*(x218 - x219 + x263)
-      x265 = x201*x25
-      x266 = x18*x210
-      x267 = -x203 + x213 + x220 + x264 + x265 + x266
-      x268 = x17*x261 - x17*x262 + x267
-      x269 = x118*x268
-      x270 = 75.398223686155d0*x84*x85*x87
-      x271 = x270*x45
-      x272 = 2.41662179562687d0*x0**(-0.666666666666667d0)*x86
-      x273 = x46*x85*x88*(1.02357830998401d0*x1 - 0.256556487706084d0*x7
-     &)
-      x274 = x18*x92
-      x275 = 1d0/x1
-      x276 = 0.0508408867489862d0*x275
-      x277 = x276/x93
-      x278 = x277*x99*(-x274 + 1.0d0)
-      x279 = 5.74246800037638d0*x90
-      x280 = x100*x279*x99
-      x281 = x104*x18
-      x282 = x276/x105
-      x283 = x110*x282*(x281 + 1.0d0)
-      x284 = x19*x98
-      x285 = 22.9698720015055d0*x90
-      x286 = x100*x284*x285
-      x287 = x18*x286
-      x288 = x110*x111*x279
-      x289 = x109*x20
-      x290 = x111*x285*x289
-      x291 = x18*x290
-      x292 = 0.112523287330675d0*x94
-      x293 = 0.0162903215389562d0*x7
-      x294 = x293*x95
-      x295 = x292 + x294
-      x296 = x101*x90/x97**2
-      x297 = x296*x91*(-x274*x292 - x274*x294 + x295)
-      x298 = 0.112523287330675d0*x106
-      x299 = x107*x293
-      x300 = x298 + x299
-      x301 = x112*x90/x108**2
-      x302 = x103*x301*(x281*x298 + x281*x299 + x300)
-      x303 = 0.000132058770571892d0*x56
-      x304 = 0.0445553741830535d0*x47
-      x305 = 0.00693220036674015d0*x51
-      x306 = 0.0891107483661069d0*x48
-      x307 = 0.000220097950953153d0*x114 - x223*x306
-      x308 = 2.0d0*x74
-      x309 = x308*(x229*x304*x81 - x303*(x271 + x272 + x273 + x278 + x28
-     &0 + x283 - x287 + x288 + x291 + x297 + x302 + x89) - x305*x54 + x3
-     &07 + x83)
-      x310 = x121*x45
-      x311 = 0.00993066744685536d0*x56
-      x312 = x310*x311
-      x313 = 0.0082755562057128d0*x123
-      x314 = x47*(0.0777930888680181d0*x1*x52 - 0.00214134650283625d0*x1
-     & + 0.00152446164353214d0*x48 - 0.000183540529077572d0*x51 - 0.0105
-     &099134858261d0*x7)
-      x315 = x311*x314*x46
-      x316 = 0.213300270968718d0*x129
-      x317 = x126*x261
-      x318 = x126*x262
-      x319 = x267 - x317 + x318
-      x320 = 0.0533250677421794d0*x125
-      x321 = x319*x320
-      x322 = x120*(x312 - x313 + x315 + x316 - x321)
-      x323 = 0.167525641071009d0*x310*x48
-      x324 = 0.0837628205355044d0*x133
-      x325 = 0.167525641071009d0*x314*x81
-      x326 = 0.0006896296838094d0*x143*x166
-      x327 = 0.899568554326366d0*x128*x51
-      x328 = x20**1.66666666666667d0
-      x329 = x19**1.66666666666667d0
-      x330 = 22.9698720015055d0*x90
-      x331 = 46.773325076649d0*x140*x90
-      x332 = -x278 - x280 - x283 + x287 - x288 - x291 - x297 - x302
-      x333 = 0.00041377781028564d0*x56*(-23.3866625383245d0*x139*x46*x90
-     &*( 0.0802319968229891d0*x1 - 0.173432185689313d0*x7) - 2.645278796
-     &54103d0*x141*x275 - 15.591108358883d0*x141*x90 + x18* x330*(x328 -
-     & x329) - x331*x45 + x332 + 5.74246800037638d0*x90*( x135 + x137))
-      x334 = x145*x319
-      x335 = x132*(x323 - x324 + x325 + x326 + x327 - x333 - x334)
-      x336 = -x173 + 1.0d0
-      x337 = x191/x190
-      x338 = x178*x337**5.56d0
-      x339 = x152*x337**2.78d0
-      x340 = x156/x336
-      x341 = -x339*x340 + 1.0d0
-      x342 = 1d0/(0.296852159568225d0*x182*x338/x336**2 + x341)
-      x343 = x339*x341
-      x344 = x342*x343
-      x345 = x156*x344 + 1.0d0
-      x346 = log(x345)
-      x347 = x20**(-0.333333333333333d0)
-      x348 = x19**(-0.333333333333333d0)
-      x349 = x347 - 1.0d0*x348
-      x350 = 1d0/x345
-      x351 = rho_c**(-3.33333333333333d0)
-      x352 = x177*x351
-      x353 = -x348
-      x354 = x347 + x353
-      x355 = 1d0/x154
-      x356 = 0.726455210295675d0*x355
-      x357 = rho_c**(-4.33333333333333d0)*rho_s*x356
-      x358 = x354*x357
-      x359 = 1d0/x149
-      x360 = -x225
-      x361 = x359*(-x147*x222 - x150*x319 + x268 - x42*(x232 + x234 - x2
-     &36 + x242 - x244 - x260 + x269 + x309 - x322 - x335 + x360))
-      x362 = x169/x128
-      x363 = x362**2.78d0
-      x364 = 1.27129661801743d0*x351
-      x365 = 1d0/x169
-      x366 = -x226 - x227 - x228 + x49
-      x367 = -x237 + x238
-      x368 = x70/x161
-      x369 = x42*(x118*x319 + x120*(-x312 + x313 - x315 - x316 + x321) -
-     & x128*x243 + x132*(-x323 + x324 - x325 - x326 - x327 + x333 + x334
-     &) + x157* x231*x366 - x159*x233 + x159*x235 + x163*x18*x241*x367 +
-     & x258* x368*(-x160*x253 + x160*x254 + x162*(x246 - x248 + x249 - x
-     &251) + x256) + x308*(x158*x305 + x164*x304*x366 - x165 + x303*(-x2
-     &71 - x272 - x273 + x332 - x89) + x307) + x360)
-      x370 = 0.757329556733241d0*x351
-      x371 = -x127 + x168 + x189
-      x372 = 1.0d0*x347
-      x373 = 1029.23675661767d0*x18*x355
-      x374 = -2639.87021452335d0*x126*x196*x214*x215 + 4116.94702647068d
-     &0*x126*x26 + 325.395217550575d0*x167*x221 - 1319.93510726168d0*x18
-     &*x209 - 4.60824902471074d0*x194 - 2058.47351323534d0*x200*x25 + 0.
-     &233833989899198d0*x202 + 257.309189154418d0*x211 - 15237.116666928
-     &3d0*x212 - 257.309189154418d0*x264 + 257.309189154418d0*x369
-      x375 = 0.272420703860878d0*x351
-      x376 = exp(x172*x371)
-      x377 = x376 - 1.0d0
-      x378 = 1d0/x377
-      x379 = x171*x378
-      x380 = x376*x379
-      x381 = x156*x378
-      x382 = rho_c**(-5.66666666666667d0)
-      x383 = x179*x382
-      x384 = x176*x383
-      x385 = x171*x175
-      x386 = 0.7916057588486d0*gamma_cc*x354
-      x387 = x353 + x372
-      x388 = x169*x373*x387 + x374
-      x389 = x173*x385
-      x390 = gamma_cc/x154**5
-      x391 = gamma_cc*x183
-      x392 = 4.0d0*x200
-      x393 = rho_s**3*x21
-      x394 = x22*x393
-      x395 = 2.56488140124205d0*x208
-      x396 = x207*x395
-      x397 = x17*x215
-      x398 = 8.0d0*x217
-      x399 = x18*x53
-      x400 = x230*x399
-      x401 = x239*x257
-      x402 = x393/rho_c**3
-      x403 = x392*x402
-      x404 = -x403
-      x405 = 5.1297628024841d0*x24
-      x406 = -x396 + x397*x405 - x398*x402 + x404
-      x407 = 30.6251363876636d0*x255
-      x408 = 3.30853595146347d0*x245
-      x409 = 11.4095193139813d0*x245 + x250
-      x410 = 0.0253302959105844d0*mu*x59
-      x411 = x121*x18
-      x412 = 0.00496533372342768d0*x411*x56
-      x413 = x306*x399
-      x414 = x18*x270
-      x415 = x277*x284
-      x416 = x282*x289
-      x417 = x19*x295*x296
-      x418 = x20*x300*x301
-      x419 = x286 - x290 + x415 - x416 + x417 - x418
-      x420 = 0.0837628205355044d0*x411*x48
-      x421 = x330*(-x328 + x329)
-      x422 = x18*x331
-      x423 = 0.00020688890514282d0*x56
-      x424 = x42*(x118*x406 + x120*(x320*x406 + x412) + x132*(x145*x406 
-     &+ x420 - x423 *(x419 - x421 - x422)) - x259*x410*(x239*(-x250 - x4
-     &07 + x408*x72 ) - x367*x409*x78) + x400 - x401*x79 + x74*(-x303*(-
-     &x414 + x419) + x413))
-      x425 = x354*x356
-      x426 = x151*x352
-      x427 = -x205 + x206
-      x428 = x395*x427
-      x429 = x126*x3
-      x430 = x427*x429
-      x431 = x405*x430
-      x432 = x402*x429
-      x433 = 8.0d0*x432
-      x434 = x404 + x428 + x431 + x433
-      x435 = x150*x434
-      x436 = x200*x402
-      x437 = x24*x397
-      x438 = x217*x402
-      x439 = x349*x355
-      x440 = x351*x363
-      x441 = x362**5.56d0*x382
-      x442 = -x286 + x290 - x415 + x416 - x417 + x418
-      x443 = x42*(x118*x434 + x120*(x320*x434 + x412) + x132*(x145*x434 
-     &+ x420 + x423 *(x421 + x422 + x442)) + x163*x401 + x367*x368*x410*
-     &(x160*x408 - x162*x409 + x250 + x407) + x400 + x74*(x303*(x414 + x
-     &442) + x413 ))
-      x444 = x365*(x362*(x403 - x428 - x431 - x433) + x434 - x443)
-      x445 = -659.967553630838d0*x208*x427 - 1319.93510726168d0*x24*x430
-     & + 514.618378308835d0*x371*x439 - 2058.47351323534d0*x432 + 1029.2
-     &3675661767d0*x436 + 257.309189154418d0*x443
-      x446 = 0.003886375d0*x154
-      E = -rho_c*(-x187*x188 + x191)
-      d1E(1) = 0.5d0*rho_c*(x0*x192*x222 + x0*x195 - x0*x203 - x0*x211 +
-     & x0*x213 + x0* x42*(x225 - x232 - x234 + x236 - x242 + x244 + x260
-     & - x269 - x309 + x322 + x335) - 0.00777275d0*x151*x154*x350*x391*(
-     &-x152*x176* x184*(rho_c**(-6.66666666666667d0)*rho_s*x179*x385*x38
-     &6 + x151* x358 - x151*x361*x370 + x151*x364 + x151*x375*x388*x389 
-     &+ x173* x181*x383*x388*x390 - 0.825249003599665d0*x361*x384 + 1.38
-     &531007798505d0*x384) + x152*x363*x381*(-x357*(-x347 + x348) + x364
-     & - x365*x370*(-x167*x222 + x319 + x362*(x203 - x213 + x263 - x264 
-     &- x265 - x266 + x317 - x318) - x369) + x375*x380*(x371*x373* (x348
-     & - x372) + x374)) + x177*x358 - 0.757329556733241d0*x352* x361 + 1
-     &.27129661801743d0*x352) + 0.0155455d0*x155*x204*x346*x349 + x198*x
-     &201 + 16.0d0*x198*x217 - x198*(-x218 + x219 + x220) + x204*x210 - 
-     &x17*x216/rho_c**6) + x188*x346 + x192*x42 + x38
-      d1E(2) = -rho_c*(0.00777275d0*x0*x155*x187*x387 + x0*x396 + x0*x42
-     &4 - 5.1297628024841d0*x197*x397 + x392*x394 + x394*x398 - x391*x44
-     &6*( -x185*x378*(-0.59370431913645d0*x376*x390*x441*x445/x377**2 + 
-     &x379*x386*x441 - 0.544841407721756d0*x380*x440*x445 + 1.6504980071
-     &9933d0*x381*x441*x444 + x425*x440 + 1.51465911346648d0*x440*x444) 
-     &+ 1.51465911346648d0*x359*x426*( x406 - x424 - x435) + 0.544841407
-     &721756d0*x384*(x355*( 0.726455210295675d0*x347 - 0.726455210295675
-     &d0*x348) + x359*( -3.88492098935195d0*x209 - 1.51465911346648d0*x4
-     &24 - 1.51465911346648d0*x435 - 6.05863645386593d0*x436 + 7.7698419
-     &7870389d0*x437 - 12.1172729077319d0*x438) - x389*( -280.3854016772
-     &73d0*x169*x439 + 359.577650970909d0*x209 + 140.192700838636d0*x424
-     & + 560.770803354546d0*x436 - 719.155301941818d0*x437 + 1121.541606
-     &70909d0*x438)) + x425*x426)/ x186)
-      d1E(3) = rho_c*x342*x350*x446*(-x176*x344*(x153 + 0.59370431913645
-     &d0*x176*x180) - 0.296852159568225d0*x338*x340 + x343)
-      end subroutine
-
-
-C*****************************************************************************
-      pure subroutine D2ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu
-     &, E, d1E, d2E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 10, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, rho_s, gamma_cc, mu
-      real*8, intent(out) :: E, d1E(9), d2E(45)
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
-     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
-     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
-     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
-     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
-     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
-     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
-     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
-     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
-     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
-     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
-     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
-     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
-     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
-     &, x193, x194, x195, x196, x197, x198, x199, x200, x201, x202, x203
-     &, x204, x205, x206, x207, x208, x209, x210, x211, x212, x213, x214
-     &, x215, x216, x217, x218, x219, x220, x221, x222, x223, x224, x225
-     &, x226, x227, x228, x229, x230, x231, x232, x233, x234, x235, x236
-     &, x237, x238, x239, x240, x241, x242, x243, x244, x245, x246, x247
-     &, x248, x249, x250, x251, x252, x253, x254, x255, x256, x257, x258
-     &, x259, x260, x261, x262, x263, x264, x265, x266, x267, x268, x269
-     &, x270, x271, x272, x273, x274, x275, x276, x277, x278, x279, x280
-     &, x281, x282, x283, x284, x285, x286, x287, x288, x289, x290, x291
-     &, x292, x293, x294, x295, x296, x297, x298, x299, x300, x301, x302
-     &, x303, x304, x305, x306, x307, x308, x309, x310, x311, x312, x313
-     &, x314, x315, x316, x317, x318, x319, x320, x321, x322, x323, x324
-     &, x325, x326, x327, x328, x329, x330, x331, x332, x333, x334, x335
-     &, x336, x337, x338, x339, x340, x341, x342, x343, x344, x345, x346
-     &, x347, x348, x349, x350, x351, x352, x353, x354, x355, x356, x357
-     &, x358, x359, x360, x361, x362, x363, x364, x365, x366, x367, x368
-     &, x369, x370, x371, x372, x373, x374, x375, x376, x377, x378, x379
-     &, x380, x381, x382, x383, x384, x385, x386, x387, x388, x389, x390
-     &, x391, x392, x393, x394, x395, x396, x397, x398, x399, x400, x401
-     &, x402, x403, x404, x405, x406, x407, x408, x409, x410, x411, x412
-     &, x413, x414, x415, x416, x417, x418, x419, x420, x421, x422, x423
-     &, x424, x425, x426, x427, x428, x429, x430, x431, x432, x433, x434
-     &, x435, x436, x437, x438, x439, x440, x441, x442, x443, x444, x445
-     &, x446, x447, x448, x449, x450, x451, x452, x453, x454, x455, x456
-     &, x457, x458, x459, x460, x461, x462, x463, x464, x465, x466, x467
-     &, x468, x469, x470, x471, x472, x473, x474, x475, x476, x477, x478
-     &, x479, x480, x481, x482, x483, x484, x485, x486, x487, x488, x489
-     &, x490, x491, x492, x493, x494, x495, x496, x497, x498, x499, x500
-     &, x501, x502, x503, x504, x505, x506, x507, x508, x509, x510, x511
-     &, x512, x513, x514, x515, x516, x517, x518, x519, x520, x521, x522
-     &, x523, x524, x525, x526, x527, x528, x529, x530, x531, x532, x533
-     &, x534, x535, x536, x537, x538, x539, x540, x541, x542, x543, x544
-     &, x545, x546, x547, x548, x549, x550, x551, x552, x553, x554, x555
-     &, x556, x557, x558, x559, x560, x561, x562, x563, x564, x565, x566
-     &, x567, x568, x569, x570, x571, x572, x573, x574, x575, x576, x577
-     &, x578, x579, x580, x581, x582, x583, x584, x585, x586, x587, x588
-     &, x589, x590, x591, x592, x593, x594, x595, x596, x597, x598, x599
-     &, x600, x601, x602, x603, x604, x605, x606, x607, x608, x609, x610
-     &, x611, x612, x613, x614, x615, x616, x617, x618, x619, x620, x621
-     &, x622, x623, x624, x625, x626, x627, x628, x629, x630, x631, x632
-     &, x633, x634, x635, x636, x637, x638, x639, x640, x641, x642, x643
-     &, x644, x645, x646, x647, x648, x649, x650, x651, x652, x653, x654
-     &, x655, x656, x657, x658, x659, x660, x661, x662, x663, x664, x665
-     &, x666, x667, x668, x669, x670, x671, x672, x673, x674, x675, x676
-     &, x677, x678, x679, x680, x681, x682, x683, x684, x685, x686, x687
-     &, x688, x689, x690, x691, x692, x693, x694, x695, x696, x697, x698
-     &, x699, x700, x701, x702, x703, x704, x705, x706, x707, x708, x709
-     &, x710, x711, x712, x713, x714, x715, x716, x717, x718, x719, x720
-     &, x721, x722, x723, x724, x725, x726, x727, x728, x729, x730, x731
-     &, x732, x733, x734, x735, x736, x737, x738, x739, x740, x741, x742
-     &, x743, x744, x745, x746, x747, x748, x749, x750, x751, x752, x753
-     &, x754, x755, x756, x757, x758, x759, x760, x761, x762, x763, x764
-     &, x765, x766, x767, x768, x769, x770, x771, x772, x773, x774, x775
-     &, x776, x777, x778, x779, x780, x781, x782, x783, x784, x785, x786
-     &, x787, x788, x789, x790, x791, x792, x793, x794, x795, x796, x797
-     &, x798, x799, x800, x801, x802, x803, x804, x805, x806, x807, x808
-     &, x809, x810, x811, x812, x813, x814, x815, x816, x817, x818, x819
-     &, x820, x821, x822, x823, x824, x825, x826, x827, x828, x829, x830
-     &, x831, x832, x833, x834, x835, x836, x837, x838, x839, x840, x841
-     &, x842, x843, x844, x845, x846, x847, x848, x849, x850, x851, x852
-     &, x853, x854, x855, x856, x857, x858, x859, x860, x861, x862, x863
-     &, x864, x865, x866, x867, x868, x869, x870, x871, x872, x873, x874
-     &, x875, x876, x877, x878, x879, x880, x881, x882, x883, x884, x885
-     &, x886, x887, x888, x889, x890, x891, x892, x893, x894, x895, x896
-     &, x897, x898, x899, x900, x901, x902, x903, x904, x905, x906, x907
-     &, x908, x909, x910, x911, x912, x913, x914, x915, x916, x917, x918
-     &, x919, x920, x921, x922, x923, x924, x925, x926, x927, x928, x929
-     &, x930, x931, x932, x933, x934, x935, x936, x937, x938, x939, x940
-     &, x941, x942, x943, x944, x945, x946, x947, x948, x949, x950, x951
-     &, x952, x953, x954, x955, x956, x957, x958, x959, x960, x961, x962
-     &, x963, x964, x965, x966, x967, x968, x969, x970, x971, x972, x973
-     &, x974, x975, x976, x977, x978, x979, x980, x981, x982, x983, x984
-     &, x985, x986, x987, x988, x989, x990, x991, x992, x993, x994, x995
-     &, x996, x997, x998, x999, x1000, x1001, x1002, x1003, x1004, x1005
-     &, x1006, x1007, x1008, x1009, x1010, x1011, x1012, x1013, x1014, x
-     &1015, x1016, x1017, x1018, x1019, x1020, x1021, x1022, x1023, x102
-     &4, x1025, x1026, x1027, x1028, x1029, x1030, x1031, x1032, x1033, 
-     &x1034, x1035, x1036, x1037, x1038, x1039, x1040, x1041, x1042, x10
-     &43, x1044, x1045, x1046, x1047, x1048, x1049, x1050, x1051, x1052,
-     & x1053, x1054, x1055, x1056, x1057, x1058, x1059, x1060, x1061, x1
-     &062, x1063, x1064, x1065, x1066, x1067, x1068, x1069, x1070, x1071
-     &, x1072, x1073, x1074, x1075, x1076, x1077, x1078, x1079, x1080, x
-     &1081, x1082, x1083, x1084, x1085, x1086, x1087, x1088, x1089, x109
-     &0, x1091, x1092, x1093, x1094, x1095, x1096, x1097, x1098, x1099, 
-     &x1100, x1101, x1102, x1103, x1104, x1105, x1106, x1107, x1108, x11
-     &09, x1110, x1111, x1112, x1113, x1114, x1115, x1116, x1117, x1118,
-     & x1119, x1120, x1121, x1122, x1123, x1124, x1125, x1126, x1127, x1
-     &128, x1129, x1130, x1131, x1132, x1133, x1134, x1135, x1136, x1137
-     &, x1138, x1139, x1140, x1141, x1142, x1143, x1144, x1145, x1146, x
-     &1147, x1148, x1149, x1150, x1151, x1152, x1153, x1154, x1155, x115
-     &6, x1157, x1158, x1159, x1160, x1161, x1162, x1163, x1164, x1165, 
-     &x1166, x1167, x1168, x1169, x1170, x1171, x1172, x1173, x1174, x11
-     &75, x1176, x1177, x1178, x1179, x1180, x1181, x1182, x1183, x1184,
-     & x1185, x1186, x1187, x1188, x1189, x1190, x1191, x1192, x1193, x1
-     &194, x1195, x1196, x1197, x1198, x1199, x1200, x1201, x1202, x1203
-     &, x1204, x1205, x1206, x1207, x1208, x1209, x1210, x1211, x1212, x
-     &1213, x1214, x1215, x1216, x1217, x1218, x1219, x1220, x1221, x122
-     &2, x1223, x1224, x1225, x1226, x1227, x1228, x1229, x1230, x1231, 
-     &x1232, x1233, x1234, x1235, x1236, x1237, x1238, x1239, x1240, x12
-     &41, x1242, x1243, x1244, x1245, x1246, x1247, x1248, x1249, x1250,
-     & x1251, x1252, x1253, x1254, x1255, x1256, x1257, x1258, x1259, x1
-     &260, x1261, x1262, x1263, x1264, x1265, x1266, x1267, x1268, x1269
-     &, x1270, x1271, x1272, x1273, x1274, x1275, x1276, x1277, x1278, x
-     &1279, x1280, x1281, x1282, x1283, x1284, x1285, x1286, x1287, x128
-     &8, x1289, x1290, x1291, x1292, x1293, x1294, x1295, x1296, x1297, 
-     &x1298, x1299, x1300, x1301, x1302, x1303, x1304, x1305, x1306, x13
-     &07, x1308, x1309, x1310, x1311, x1312, x1313, x1314, x1315, x1316,
-     & x1317, x1318, x1319, x1320, x1321, x1322, x1323, x1324, x1325, x1
-     &326, x1327, x1328, x1329, x1330, x1331, x1332, x1333, x1334, x1335
-     &, x1336, x1337, x1338, x1339, x1340, x1341, x1342, x1343, x1344, x
-     &1345, x1346, x1347, x1348, x1349, x1350, x1351, x1352, x1353, x135
-     &4, x1355, x1356, x1357, x1358, x1359, x1360, x1361, x1362, x1363, 
-     &x1364, x1365, x1366, x1367, x1368, x1369, x1370, x1371, x1372, x13
-     &73, x1374, x1375, x1376, x1377, x1378, x1379, x1380, x1381, x1382,
-     & x1383, x1384, x1385, x1386, x1387, x1388, x1389, x1390, x1391, x1
-     &392, x1393, x1394, x1395, x1396, x1397, x1398, x1399, x1400, x1401
-     &, x1402, x1403, x1404, x1405, x1406, x1407, x1408, x1409, x1410, x
-     &1411, x1412, x1413, x1414, x1415, x1416, x1417, x1418, x1419, x142
-     &0, x1421, x1422, x1423, x1424, x1425, x1426, x1427, x1428, x1429, 
-     &x1430, x1431, x1432, x1433, x1434, x1435, x1436, x1437, x1438, x14
-     &39, x1440, x1441, x1442, x1443, x1444, x1445, x1446, x1447, x1448,
-     & x1449, x1450, x1451, x1452, x1453, x1454, x1455, x1456, x1457, x1
-     &458, x1459, x1460, x1461, x1462, x1463, x1464, x1465, x1466, x1467
-     &, x1468, x1469, x1470, x1471, x1472, x1473, x1474, x1475, x1476, x
-     &1477, x1478, x1479, x1480, x1481, x1482, x1483, x1484, x1485, x148
-     &6, x1487, x1488, x1489, x1490, x1491, x1492, x1493, x1494, x1495, 
-     &x1496, x1497, x1498, x1499, x1500, x1501, x1502, x1503, x1504, x15
-     &05, x1506, x1507, x1508, x1509, x1510, x1511, x1512, x1513, x1514,
-     & x1515, x1516, x1517, x1518, x1519, x1520, x1521, x1522, x1523, x1
-     &524, x1525, x1526, x1527, x1528, x1529
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      d2E(:) = 0.0d0
-      x0 = 1d0/rho_c
-      x1 = rho_s*x0
-      x2 = x1 + 1.0d0
-      x3 = -x1 + 1.0d0
-      x4 = x2**0.666666666666667d0 + x3**0.666666666666667d0
-      x5 = x4**2
-      x6 = 1d0/x5
-      x7 = gamma_cc*x6
-      x8 = gamma_cc**2
-      x9 = x4**(-4)
-      x10 = x8*x9
-      x11 = 0.296852159568225d0*x10
-      x12 = x0**0.666666666666667d0
-      x13 = mu**2
-      x14 = x12*x13
-      x15 = 0.237113969739022d0*x14 + 1.0d0
-      x16 = x15**(-4)
-      x17 = rho_c**(-2)
-      x18 = rho_s**2
-      x19 = x17*x18
-      x20 = x19 - 1.0d0
-      x21 = x0**0.333333333333333d0
-      x22 = exp(-0.46675853320810856d0*x21)
-      x23 = x0**1.0d0
-      x24 = 0.00304892328706429d0*x23
-      x25 = -x24
-      x26 = x0**1.33333333333333d0
-      x27 = 0.0315297404574782d0*x12 + 0.0128480790170175d0*x21 + x25 + 
-     &0.000275310793616358d0*x26 + 1.0d0
-      x28 = x22*x27
-      x29 = x20*x28
-      x30 = x0**1.66666666666667d0
-      x31 = mu**5
-      x32 = x30*x31
-      x33 = 0.00264117541143784d0*x32
-      x34 = x2**0.666666666666667d0
-      x35 = x3**0.666666666666667d0
-      x36 = x34 + x35
-      x37 = x36**3
-      x38 = 0.0253302959105844d0*x37
-      x39 = 0.693147180559945d0
-      x40 = x39 - 1.0d0
-      x41 = x36**2
-      x42 = 1d0/x41
-      x43 = x13*x42
-      x44 = x21*x43
-      x45 = x0**0.166666666666667d0
-      x46 = 1d0/x36
-      x47 = mu*x46
-      x48 = 9.20897059521559d0*x45*x47 + 1.0d0
-      x49 = 8.55713948548596d0*x44 + x48
-      x50 = 1d0/x49
-      x51 = 1.22772285078429d0/x40
-      x52 = -x51 + 3.44851d0
-      x53 = 2.4814019635976d0*x44
-      x54 = mu**3
-      x55 = sqrt(x0)
-      x56 = 1d0/x37
-      x57 = x55*x56
-      x58 = x48 + 15.3125681938318d0*x54*x57
-      x59 = x52*x53 + x58
-      x60 = x50*x59
-      x61 = x40*log(x60)
-      x62 = x23*x28
-      x63 = 0.0445553741830535d0*x62
-      x64 = x20*x63
-      x65 = 0.384834731559127d0*x12 - 3.07073492995203d0*x21
-      x66 = exp(-0.19230865217881402d0*x21)
-      x67 = x66/x23
-      x68 = x65*x67
-      x69 = -x19 + 1.0d0
-      x70 = 37.6991118430775d0*x69
-      x71 = x68*x70
-      x72 = 1d0/x12
-      x73 = x2**2
-      x74 = 8.61370200056457d0*x73
-      x75 = 1d0/x2
-      x76 = x75**0.333333333333333d0
-      x77 = x21*x76
-      x78 = 0.0177069812999059d0*x77
-      x79 = -x78 + 1.0d0
-      x80 = x75**0.666666666666667d0
-      x81 = 0.0244354823084343d0*x12
-      x82 = 0.337569861992026d0*x77 + x80*x81 + 1.0d0
-      x83 = 1d0/x82
-      x84 = 1d0/x80
-      x85 = x83*x84
-      x86 = x79*x85
-      x87 = x74*x86
-      x88 = x3**2
-      x89 = 8.61370200056457d0*x88
-      x90 = 1d0/x3
-      x91 = x90**0.333333333333333d0
-      x92 = x21*x91
-      x93 = 0.0177069812999059d0*x92
-      x94 = -x93 + 1.0d0
-      x95 = x90**0.666666666666667d0
-      x96 = x81*x95 + 0.337569861992026d0*x92 + 1.0d0
-      x97 = 1d0/x96
-      x98 = 1d0/x95
-      x99 = x97*x98
-      x100 = x94*x99
-      x101 = x100*x89
-      x102 = x30*(x101*x72 + x71 + x72*x87)
-      x103 = 0.000132058770571892d0*x102
-      x104 = 1.64473377556761d0*x55
-      x105 = x104 + 0.240587129128819d0*x12 + 3.84474623744721d0*x21 + 1
-     &1.1203748630947d0*x45
-      x106 = -x39 + 1.0d0
-      x107 = 1d0/x106
-      x108 = 9.86960440108936d0*x107
-      x109 = 1.0d0 + x108/x105
-      x110 = log(x109)
-      x111 = 0.0506605918211689d0*x110*(0.127469618870009d0*x21 + 1.0d0)
-     &
-      x112 = 0.800428634999364d0*x55
-      x113 = x112 + 0.189700432574756d0*x12 + 2.22556942115069d0*x21 + 5
-     &.98255043577108d0*x45
-      x114 = 4.93480220054468d0*x107/x113 + 1.0d0
-      x115 = log(x114)
-      x116 = x115*(0.132568899905202d0*x21 + 1.0d0)
-      x117 = 0.101321183642338d0*x116
-      x118 = -x111 + x117
-      x119 = 1.92366105093154d0*x2**1.33333333333333d0 + 1.9236610509315
-     &4d0*x3** 1.33333333333333d0 - 3.84732210186307d0
-      x120 = rho_c**(-4)
-      x121 = rho_s**4
-      x122 = x120*x121
-      x123 = x119*x122
-      x124 = x106*x123
-      x125 = 2.0d0*x124
-      x126 = x118*x125
-      x127 = 0.202642367284676d0*x106*x116
-      x128 = -x122 + 1.0d0
-      x129 = 0.430097247127664d0*x55
-      x130 = 0.191151259512734d0*x12 + x129 + 2.24759186357762d0*x21 + 8
-     &.15741470348764d0*x45
-      x131 = 1.0d0 + 29.6085746432167d0/x130
-      x132 = log(x131)
-      x133 = x128*x132
-      x134 = x119*x133
-      x135 = 0.0197517897025652d0*x134*(0.0690139921125583d0*x21 + 1.0d0
-     &)
-      x136 = -x127 + x135
-      x137 = x126 + x136
-      x138 = mu**8*x0**2.66666666666667d0
-      x139 = 0.00316102962473761d0*x138
-      x140 = mu**6
-      x141 = x28 - 1.0d0
-      x142 = x141*x30
-      x143 = x142*x69
-      x144 = 0.00248266686171384d0*x143
-      x145 = x0**2.0d0
-      x146 = x137*x145
-      x147 = 0.0533250677421794d0*x146
-      x148 = mu**4
-      x149 = x141*x23
-      x150 = x149*x69
-      x151 = -0.0418814102677522d0*x150
-      x152 = x2**2.66666666666667d0
-      x153 = 8.61370200056457d0*x152
-      x154 = x3**2.66666666666667d0
-      x155 = 8.61370200056457d0*x154
-      x156 = 0.240695990468967d0*x21
-      x157 = 0.26014827853397d0*x12
-      x158 = exp(-0.33933171852197186d0*x21)
-      x159 = x158*(-x156 + x157)
-      x160 = x159*x69
-      x161 = 23.3866625383245d0*x160
-      x162 = -x101 + x153 + x155 - x161 - x87
-      x163 = x0**1.0d0
-      x164 = 0.00020688890514282d0*x163
-      x165 = 0.337338207872387d0*x26
-      x166 = x137*x139 + x140*(-x144 + x147) + x148*(x137*x165 + x151 + 
-     &x162*x164) + x29*x33 + x38*x61 + x54*(-x103 + x64)
-      x167 = x16*x166
-      x168 = x137 - x167
-      x169 = x4**3
-      x170 = 1d0/x169
-      x171 = 257.309189154418d0*x170
-      x172 = exp(-x168*x171)
-      x173 = x172 - 1.0d0
-      x174 = x173**(-2)
-      x175 = rho_c**(-4.66666666666667d0)
-      x176 = x111 - x117
-      x177 = x125*x176
-      x178 = x136 - x177
-      x179 = 1d0/x178
-      x180 = x28*x69
-      x181 = x180*x33
-      x182 = x51 - 3.44851d0
-      x183 = -x182*x53 + x58
-      x184 = x183*x50
-      x185 = x106*log(x184)
-      x186 = x185*x38
-      x187 = x63*x69
-      x188 = x54*(x103 + x187)
-      x189 = x139*x178
-      x190 = x140*(x144 - x147)
-      x191 = x101 - x153 - x155 + x161 + x87
-      x192 = x148*(x151 - x164*x191 + x165*x178)
-      x193 = -x181 - x186 - x188 + x189 - x190 + x192
-      x194 = x16*x193
-      x195 = x178 - x194
-      x196 = x179*x195
-      x197 = x196**5.56d0
-      x198 = x175*x197
-      x199 = x174*x198
-      x200 = x196**2.78d0
-      x201 = rho_c**(-2.33333333333333d0)
-      x202 = 0.544841407721756d0*x201
-      x203 = x200*x202
-      x204 = 1d0/x173
-      x205 = x204*x7
-      x206 = x203*x205 + 1.0d0
-      x207 = x11*x199 + x206
-      x208 = 1d0/x207
-      x209 = x203*x206
-      x210 = x208*x209
-      x211 = x210*x7 + 1.0d0
-      x212 = log(x211)
-      x213 = 0.003886375d0*x169
-      x214 = x127 - x135
-      x215 = x177 + x214
-      x216 = x194 + x215
-      x217 = x181 + x186 + x188 - x189 + x190 - x192
-      x218 = x106*x21
-      x219 = x115*x218
-      x220 = 0.0179093838034102d0*x219
-      x221 = rho_c**(-5)
-      x222 = x119*x121
-      x223 = x221*x222
-      x224 = 0.00136314985874174d0*x21 + 0.0197517897025652d0
-      x225 = x132*x224
-      x226 = 8.0d0*x225
-      x227 = x134*x21
-      x228 = 0.000908766572494496d0*x227
-      x229 = rho_s*x17
-      x230 = x3**0.333333333333333d0
-      x231 = x2**0.333333333333333d0
-      x232 = x230 - x231
-      x233 = x128*x225
-      x234 = x232*x233
-      x235 = 5.1297628024841d0*x234
-      x236 = 0.126466955049837d0*x12 + 0.741856473716896d0*x21 + 0.99709
-     &173929518d0* x45 + 0.400214317499682d0*x55
-      x237 = 1d0/x114
-      x238 = x113**(-2)
-      x239 = 0.265137799810404d0*x21 + 2.0d0
-      x240 = x237*x238*x239
-      x241 = x236*x240
-      x242 = x119*x128*x224
-      x243 = 1d0/x131
-      x244 = x130**(-2)
-      x245 = 0.127434173008489d0*x12 + 0.749197287859205d0*x21 + 1.35956
-     &911724794d0* x45 + 0.215048623563832d0*x55
-      x246 = x243*x244*x245
-      x247 = x242*x246
-      x248 = 59.2171492864334d0*x247
-      x249 = rho_c**(-6)
-      x250 = rho_s**5
-      x251 = x106*x232
-      x252 = 10.2595256049682d0*x251
-      x253 = x176*x252
-      x254 = x106*x176
-      x255 = x110*x218
-      x256 = 0.00861024844156464d0*x255
-      x257 = 0.160391419419213d0*x12 + 1.28158207914907d0*x21 + 1.853395
-     &81051578d0* x45 + 0.822366887783805d0*x55
-      x258 = 1d0/x109
-      x259 = x105**(-2)
-      x260 = 0.254939237740017d0*x21 + 2.0d0
-      x261 = x258*x259*x260
-      x262 = x257*x261
-      x263 = x220 - x241
-      x264 = x14/x15**5
-      x265 = 1.26460783860812d0*x264
-      x266 = x28*x32
-      x267 = x19*x266
-      x268 = 0.0105647016457513d0*x267
-      x269 = 0.0042826930056725d0*x21
-      x270 = 0.0210198269716521d0*x12
-      x271 = 0.000367081058155144d0*x26
-      x272 = x25 + x269 + x270 + x271
-      x273 = x272*x69
-      x274 = x22*x30
-      x275 = x274*x31
-      x276 = 0.00528235082287567d0*x275
-      x277 = x273*x276
-      x278 = 0.00880391803812612d0*x32
-      x279 = x180*x278
-      x280 = x0**2.0d0*x31
-      x281 = 0.000821860773992031d0*x280
-      x282 = x180*x281
-      x283 = x2**(-0.333333333333333d0)
-      x284 = x3**(-0.333333333333333d0)
-      x285 = x283 - x284
-      x286 = 0.101321183642338d0*x285
-      x287 = x185*x41
-      x288 = x1*x287
-      x289 = x286*x288
-      x290 = 0.0168588246652672d0*x138
-      x291 = x178*x290
-      x292 = mu*x41
-      x293 = 0.0506605918211689d0*x292
-      x294 = 1d0/x183
-      x295 = x21*x47
-      x296 = 2.85237982849532d0*x295
-      x297 = mu*x21
-      x298 = x297*x42
-      x299 = x1*x285
-      x300 = x298*x299
-      x301 = 11.4095193139813d0*x300
-      x302 = 1.53482843253593d0*x45
-      x303 = 6.13931373014372d0*x45
-      x304 = x1*x46
-      x305 = x285*x304
-      x306 = x303*x305
-      x307 = -x302 + x306
-      x308 = -x296 + x301 + x307
-      x309 = 0.827133987865867d0*x295
-      x310 = x182*x298
-      x311 = x299*x310
-      x312 = x43*x55
-      x313 = 7.6562840969159d0*x312
-      x314 = x13*x57
-      x315 = x299*x314
-      x316 = 30.6251363876636d0*x315
-      x317 = x307 - x313 + x316
-      x318 = x182*x309 - 3.30853595146347d0*x311 + x317
-      x319 = x106*(-x184*x308 + x318)
-      x320 = x294*x319
-      x321 = x293*x320
-      x322 = 16.0d0*x124
-      x323 = x221*x250
-      x324 = -x220 + x241
-      x325 = x256 - x262 + x324
-      x326 = x123*x325
-      x327 = x123*x226
-      x328 = x1*x235
-      x329 = -x228 + x248 + x263 + x326 + x327 + x328
-      x330 = x176*x322 - x253*x323 + x329
-      x331 = x139*x330
-      x332 = -0.256556487706084d0*x12 + 1.02357830998401d0*x21
-      x333 = x67*x70
-      x334 = x332*x333
-      x335 = x0**(-0.666666666666667d0)
-      x336 = x65*x66*x69
-      x337 = x335*x336
-      x338 = 2.41662179562687d0*x337
-      x339 = 75.398223686155d0*x68
-      x340 = x19*x339
-      x341 = 5.74246800037638d0*x72
-      x342 = x73*x86
-      x343 = x341*x342
-      x344 = x100*x88
-      x345 = x341*x344
-      x346 = 1d0/x21
-      x347 = 0.0508408867489862d0*x346
-      x348 = 1d0/x76
-      x349 = x348*x83
-      x350 = x1*x75
-      x351 = -x350 + 1.0d0
-      x352 = x351*x73
-      x353 = x349*x352
-      x354 = x347*x353
-      x355 = 1d0/x91
-      x356 = x355*x97
-      x357 = x1*x90
-      x358 = x357 + 1.0d0
-      x359 = x358*x88
-      x360 = x356*x359
-      x361 = x347*x360
-      x362 = 0.112523287330675d0*x77
-      x363 = 0.0162903215389562d0*x12
-      x364 = x363*x80
-      x365 = x362 + x364
-      x366 = -x350*x362 - x350*x364 + x365
-      x367 = x82**(-2)
-      x368 = x367*x84
-      x369 = x368*x79
-      x370 = x366*x369
-      x371 = x370*x72
-      x372 = x371*x74
-      x373 = 0.112523287330675d0*x92
-      x374 = x363*x95
-      x375 = x373 + x374
-      x376 = x357*x373 + x357*x374 + x375
-      x377 = x96**(-2)
-      x378 = x377*x98
-      x379 = x378*x94
-      x380 = x376*x379*x72
-      x381 = x380*x89
-      x382 = 22.9698720015055d0*x72
-      x383 = x100*x3
-      x384 = x382*x383
-      x385 = x1*x384
-      x386 = x2*x86
-      x387 = x382*x386
-      x388 = x1*x387
-      x389 = x343 + x345 + x354 + x361 + x372 + x381 + x385 - x388
-      x390 = x334 + x338 + x340 + x389 + x71
-      x391 = 0.000132058770571892d0*x30
-      x392 = x22*x23
-      x393 = 0.0445553741830535d0*x392
-      x394 = 0.00693220036674015d0*x26
-      x395 = 0.0891107483661069d0*x62
-      x396 = 0.000220097950953153d0*x102 - x19*x395
-      x397 = 2.0d0*x54
-      x398 = x397*(-x180*x394 + x187 + x273*x393 - x390*x391 + x396)
-      x399 = x142*x19
-      x400 = 0.00993066744685536d0*x399
-      x401 = 0.0082755562057128d0*x143
-      x402 = x21*x27
-      x403 = 0.00214134650283625d0*x21
-      x404 = 0.0105099134858261d0*x12
-      x405 = 0.00152446164353214d0*x23
-      x406 = 0.000183540529077572d0*x26
-      x407 = -x403 - x404 + x405 - x406
-      x408 = 0.0777930888680181d0*x402 + x407
-      x409 = x408*x69
-      x410 = x274*x409
-      x411 = 0.00993066744685536d0*x410
-      x412 = 0.213300270968718d0*x146
-      x413 = x118*x322
-      x414 = x118*x323
-      x415 = x252*x414
-      x416 = x329 - x413 + x415
-      x417 = 0.0533250677421794d0*x145
-      x418 = x416*x417
-      x419 = x140*(x400 - x401 + x411 + x412 - x418)
-      x420 = x149*x19
-      x421 = 0.167525641071009d0*x420
-      x422 = 0.0837628205355044d0*x149
-      x423 = x422*x69
-      x424 = x392*x409
-      x425 = 0.167525641071009d0*x424
-      x426 = x162*x163
-      x427 = 0.0006896296838094d0*x426
-      x428 = x137*x26
-      x429 = 0.899568554326366d0*x428
-      x430 = x72*(x152 + x154)
-      x431 = 5.74246800037638d0*x430
-      x432 = x3**1.66666666666667d0
-      x433 = x2**1.66666666666667d0
-      x434 = x72*(x432 - x433)
-      x435 = x1*x434
-      x436 = 22.9698720015055d0*x435
-      x437 = 2.64527879654103d0*x160*x346
-      x438 = x160*x72
-      x439 = 15.591108358883d0*x438
-      x440 = x158*x72
-      x441 = -0.173432185689313d0*x12 + 0.0802319968229891d0*x21
-      x442 = x441*x69
-      x443 = x440*x442
-      x444 = 23.3866625383245d0*x443
-      x445 = x159*x72
-      x446 = 46.773325076649d0*x445
-      x447 = x19*x446
-      x448 = -x343 - x345 - x354 - x361 - x372 - x381 - x385 + x388
-      x449 = x30*(x431 + x436 - x437 - x439 - x444 - x447 + x448)
-      x450 = 0.00041377781028564d0*x449
-      x451 = x165*x416
-      x452 = x148*(x421 - x423 + x425 + x427 + x429 - x450 - x451)
-      x453 = -x172 + 1.0d0
-      x454 = x216/x215
-      x455 = x175*x454**5.56d0
-      x456 = x202*x454**2.78d0
-      x457 = x7/x453
-      x458 = -x456*x457 + 1.0d0
-      x459 = 1d0/(x11*x455/x453**2 + x458)
-      x460 = x456*x458
-      x461 = x459*x460
-      x462 = x461*x7 + 1.0d0
-      x463 = log(x462)
-      x464 = x3**(-0.333333333333333d0)
-      x465 = x2**(-0.333333333333333d0)
-      x466 = x464 - 1.0d0*x465
-      x467 = x229*x466
-      x468 = gamma_cc*x4
-      x469 = x200*x208
-      x470 = 1d0/x462
-      x471 = rho_c**(-3.33333333333333d0)
-      x472 = 1.27129661801743d0*x471
-      x473 = x206*x472
-      x474 = rho_c**(-4.33333333333333d0)
-      x475 = x206*x474
-      x476 = 0.726455210295675d0*rho_s
-      x477 = 1d0/x4
-      x478 = -x465
-      x479 = x464 + x478
-      x480 = x477*x479
-      x481 = x476*x480
-      x482 = x475*x481
-      x483 = 0.757329556733241d0*x471
-      x484 = 1d0/x195
-      x485 = -x268
-      x486 = x277 + x279 - x282 + x289 - x291 - x321 + x331 + x398 - x41
-     &9 - x452 + x485
-      x487 = -x16*x486 - x193*x265 + x330
-      x488 = -x196*x416 + x487
-      x489 = x484*x488
-      x490 = x206*x489
-      x491 = x483*x490
-      x492 = 1.27129661801743d0*x471
-      x493 = x474*x477
-      x494 = -x464 + x465
-      x495 = x476*x494
-      x496 = x493*x495
-      x497 = 1d0/x168
-      x498 = x228 - x248 + x324 - x326 - x327 - x328 + x413 - x415
-      x499 = 1d0/x137
-      x500 = x168*x499
-      x501 = x24 - x269 - x270 - x271
-      x502 = x20*x501
-      x503 = -x283 + x284
-      x504 = x41*x61
-      x505 = x1*x504
-      x506 = x302 - x306
-      x507 = x296 - x301 + x506
-      x508 = x309*x52
-      x509 = x300*x52
-      x510 = 3.30853595146347d0*x509
-      x511 = x317 - x508 + x510
-      x512 = x507*x60 + x511
-      x513 = x40/x59
-      x514 = x512*x513
-      x515 = -x340
-      x516 = -x334 - x338 + x448 + x515 - x71
-      x517 = x20*x393
-      x518 = -x137*x290 + x139*x416 + x140*(-x400 + x401 - x411 - x412 +
-     & x418) + x148 *(-x421 + x423 - x425 - x427 - x429 + x450 + x451) +
-     & x276*x502 - x278*x29 + x281*x29 + x293*x514 + x397*(x29*x394 + x3
-     &91*x516 + x396 + x501*x517 - x64) + x485 + 0.101321183642338d0*x50
-     &3*x505
-      x519 = x16*x518
-      x520 = x166*x265
-      x521 = x416 - x519 - x520
-      x522 = x498*x500 + x521
-      x523 = x497*x522
-      x524 = x483*x523
-      x525 = -x126 + x167 + x214
-      x526 = exp(x171*x525)
-      x527 = 0.272420703860878d0*x526
-      x528 = 1029.23675661767d0*x477
-      x529 = x525*x528
-      x530 = 1.0d0*x464
-      x531 = x465 - x530
-      x532 = x1*x531
-      x533 = x166*x264
-      x534 = x118*x124
-      x535 = x251*x414
-      x536 = x123*x225
-      x537 = -1319.93510726168d0*x1*x234 - 4.60824902471074d0*x219 + 0.2
-     &33833989899198d0*x227 + 257.309189154418d0*x241 - 15237.1166669283
-     &d0*x247 - 257.309189154418d0*x326 + 257.309189154418d0*x519 + 325.
-     &395217550575d0*x533 + 4116.94702647068d0*x534 - 2639.87021452335d0
-     &*x535 - 2058.47351323534d0*x536
-      x538 = x529*x532 + x537
-      x539 = x526 - 1.0d0
-      x540 = 1d0/x539
-      x541 = x170*x540
-      x542 = x538*x541
-      x543 = x527*x542
-      x544 = x471*x543
-      x545 = x492 - x496 - x524 + x544
-      x546 = x500**2.78d0
-      x547 = x202*x546
-      x548 = x540*x7
-      x549 = x547*x548
-      x550 = x545*x549
-      x551 = rho_c**(-5.66666666666667d0)
-      x552 = 1.38531007798505d0*x551
-      x553 = x197*x205
-      x554 = 0.7916057588486d0*rho_s
-      x555 = rho_c**(-6.66666666666667d0)
-      x556 = gamma_cc*x479
-      x557 = x170*x556
-      x558 = x197*x204
-      x559 = x557*x558
-      x560 = x555*x559
-      x561 = x4**(-5)
-      x562 = gamma_cc*x561
-      x563 = 0.296852159568225d0*x562
-      x564 = x168*x528
-      x565 = x478 + x530
-      x566 = x1*x565
-      x567 = x537 + x564*x566
-      x568 = x197*x551
-      x569 = x174*x568
-      x570 = x172*x567*x569
-      x571 = x551*x553
-      x572 = x489*x571
-      x573 = x200*x471
-      x574 = x489*x573
-      x575 = x479*x493
-      x576 = x200*x575
-      x577 = x172*x204
-      x578 = x170*x577
-      x579 = x567*x578
-      x580 = x573*x579
-      x581 = x200*x492 + x476*x576 - 0.757329556733241d0*x574 + 0.272420
-     &703860878d0* x580
-      x582 = x552*x553 + x554*x560 + x563*x570 - 0.825249003599665d0*x57
-     &2 + x581
-      x583 = x208*x582
-      x584 = x205*x583
-      x585 = x202*x206*x584
-      x586 = x470*(x473 + x482 - x491 + x550 - x585)
-      x587 = x0*x16*(x268 - x277 - x279 + x282 - x289 + x291 + x321 - x3
-     &31 - x398 + x419 + x452) + x0*x217*x265 + x0*x220 - x0*x228 - x0*x
-     &241 + x0* x248 + x223*x226 + 16.0d0*x223*x254 - x223*(-x256 + x262
-     & + x263) + x229*x235 - x249*x250*x253 + 0.0155455d0*x463*x467*x5 -
-     & 0.00777275d0*x468*x469*x586
-      x588 = 4.0d0*x225
-      x589 = rho_s**3
-      x590 = x119*x589
-      x591 = x120*x590
-      x592 = x588*x591
-      x593 = 2.56488140124205d0*x233
-      x594 = x232*x593
-      x595 = x0*x594
-      x596 = x176*x251
-      x597 = x221*x596
-      x598 = 5.1297628024841d0*x121*x597
-      x599 = 8.0d0*x254
-      x600 = x591*x599
-      x601 = 0.00528235082287567d0*x266
-      x602 = x1*x601
-      x603 = 0.0506605918211689d0*x285
-      x604 = rho_c**(-3)
-      x605 = x590*x604
-      x606 = x588*x605
-      x607 = -x606
-      x608 = 5.1297628024841d0*x122
-      x609 = x596*x608
-      x610 = x599*x605
-      x611 = -x594 + x607 + x609 - x610
-      x612 = mu*x36
-      x613 = 0.0253302959105844d0*x612
-      x614 = 30.6251363876636d0*x312
-      x615 = 3.30853595146347d0*x295
-      x616 = x285*(x182*x615 - x303 - x614)
-      x617 = 11.4095193139813d0*x295 + x303
-      x618 = x503*x617
-      x619 = -x184*x618 + x616
-      x620 = x106*x294
-      x621 = x619*x620
-      x622 = 0.00496533372342768d0*x142
-      x623 = x1*x622
-      x624 = x1*x395
-      x625 = x1*x339
-      x626 = -x625
-      x627 = x2*x349
-      x628 = x347*x627
-      x629 = x3*x356
-      x630 = x347*x629
-      x631 = 8.61370200056457d0*x72
-      x632 = x365*x369
-      x633 = x2*x632
-      x634 = x631*x633
-      x635 = x375*x379
-      x636 = x3*x635
-      x637 = x631*x636
-      x638 = -x384 + x387 + x628 - x630 + x634 - x637
-      x639 = x626 + x638
-      x640 = x1*x422
-      x641 = x72*(-x432 + x433)
-      x642 = 22.9698720015055d0*x641
-      x643 = x1*x446
-      x644 = x638 - x642 - x643
-      x645 = 0.00020688890514282d0*x30
-      x646 = x139*x611 + x140*(x417*x611 + x623) + x148*(x165*x611 + x64
-     &0 - x644*x645 ) - x287*x603 + x54*(-x391*x639 + x624) + x602 - x61
-     &3*x621
-      x647 = x16*x646
-      x648 = x0*x647
-      x649 = x0*x565
-      x650 = 0.00777275d0*x649
-      x651 = x212*x5
-      x652 = x650*x651
-      x653 = x477*(0.726455210295675d0*x464 - 0.726455210295675d0*x465)
-      x654 = x225*x605
-      x655 = -6.05863645386593d0*x654
-      x656 = x122*x596
-      x657 = x254*x605
-      x658 = -x230 + x231
-      x659 = x593*x658
-      x660 = x106*x118
-      x661 = x658*x660
-      x662 = x608*x661
-      x663 = x605*x660
-      x664 = 8.0d0*x663
-      x665 = x607 + x659 + x662 + x664
-      x666 = x196*x665
-      x667 = x466*x477
-      x668 = x168*x667
-      x669 = x484*(-3.88492098935195d0*x234 - 1.51465911346648d0*x647 + 
-     &x655 + 7.76984197870389d0*x656 - 12.1172729077319d0*x657 - 1.51465
-     &911346648d0*x666) - x578*(359.577650970909d0*x234 + 140.1927008386
-     &36d0*x647 + 560.770803354546d0*x654 - 719.155301941818d0*x656 + 11
-     &21.54160670909d0*x657 - 280.385401677273d0*x668) + x653
-      x670 = x571*x669
-      x671 = 0.726455210295675d0*x480
-      x672 = x206*x573
-      x673 = x611 - x647
-      x674 = -x666 + x673
-      x675 = 1.51465911346648d0*x674
-      x676 = x484*x675
-      x677 = x672*x676
-      x678 = gamma_cc*x541
-      x679 = x479*x678
-      x680 = x500**5.56d0
-      x681 = x551*x680
-      x682 = x679*x681
-      x683 = 0.7916057588486d0*x682
-      x684 = x606 - x659 - x662 - x664
-      x685 = x500*x684
-      x686 = x513*x613
-      x687 = x303 + x52*x615 + x614
-      x688 = -x60*x617 + x687
-      x689 = x503*x688
-      x690 = x384 - x387 - x628 + x630 - x634 + x637
-      x691 = x625 + x690
-      x692 = x642 + x643 + x690
-      x693 = x139*x665 + x140*(x417*x665 + x623) + x148*(x165*x665 + x64
-     &0 + x645*x692 ) + x504*x603 + x54*(x391*x691 + x624) + x602 + x686
-     &*x689
-      x694 = x16*x693
-      x695 = x665 - x694
-      x696 = x685 + x695
-      x697 = x497*x696
-      x698 = x548*x680
-      x699 = x551*x698
-      x700 = x697*x699
-      x701 = 1.65049800719933d0*x700
-      x702 = 0.59370431913645d0*x562
-      x703 = 1029.23675661767d0*x654
-      x704 = 659.967553630838d0*x658
-      x705 = x122*x661
-      x706 = 514.618378308835d0*x667
-      x707 = -x233*x704 + x525*x706 - 2058.47351323534d0*x663 + 257.3091
-     &89154418d0* x694 + x703 - 1319.93510726168d0*x705
-      x708 = x526*x707
-      x709 = x539**(-2)
-      x710 = x681*x709
-      x711 = x708*x710
-      x712 = x702*x711
-      x713 = x471*x546
-      x714 = x671*x713
-      x715 = x697*x713
-      x716 = 1.51465911346648d0*x715
-      x717 = x541*x708
-      x718 = 0.544841407721756d0*x717
-      x719 = x713*x718
-      x720 = x714 + x716 - x719
-      x721 = x683 + x701 - x712 + x720
-      x722 = x210*x548
-      x723 = x671*x672 + x677 - x721*x722
-      x724 = 0.544841407721756d0*x670 + x723
-      x725 = gamma_cc*x724
-      x726 = 1d0/x211
-      x727 = 0.003886375d0*x4
-      x728 = x208*x727
-      x729 = x726*x728
-      x730 = x725*x729
-      x731 = x198*x205
-      x732 = x459*(-x205*x461*(x203 + 0.59370431913645d0*x731) - 0.29685
-     &2159568225d0* x455*x457 + x460)
-      x733 = x727*x732
-      x734 = 0.0477583568090938d0*x219
-      x735 = x222*x249
-      x736 = x132*x21
-      x737 = 0.0145402651599119d0*x736
-      x738 = x250/rho_c**7
-      x739 = x225*x232
-      x740 = 82.0762048397455d0*x739
-      x741 = x133*x21
-      x742 = x232*x741
-      x743 = rho_s*x604
-      x744 = 0.00242337752665199d0*x227
-      x745 = x236*x237
-      x746 = x21*x238*x745
-      x747 = 0.353517066413871d0*x746
-      x748 = x2**(-0.666666666666667d0)
-      x749 = 0.854960467080683d0*x1
-      x750 = x748*x749
-      x751 = x3**(-0.666666666666667d0)
-      x752 = x749*x751
-      x753 = x750 + x752
-      x754 = -5.1297628024841d0*x230 + 5.1297628024841d0*x231 + x753
-      x755 = 4.0d0*x754
-      x756 = x240*(0.210778258416395d0*x12 + 0.989141964955861d0*x21 + 1
-     &.16327369584438d0*x45 + 0.600321476249523d0*x55)
-      x757 = 2.0d0*x756
-      x758 = x236**2*x239/(x113**4*x114**2)
-      x759 = x108*x758
-      x760 = x224*x246
-      x761 = x128*x246
-      x762 = x119*x21*x761
-      x763 = 0.107629131579854d0*x762
-      x764 = x224*x761
-      x765 = x232*x764
-      x766 = x242*x243
-      x767 = 118.434298572867d0*x766
-      x768 = x244*(0.212390288347482d0*x12 + 0.998929717145607d0*x21 + 1
-     &.5861639701226d0*x45 + 0.322572935345748d0*x55)
-      x769 = x767*x768
-      x770 = 164.152409679491d0*x596
-      x771 = x239*x745*(x112 + 0.252933910099675d0*x12 + 1.4837129474337
-     &9d0*x21 + 1.99418347859036d0*x45)/x113**3
-      x772 = 2.0d0*x771
-      x773 = x242*x245**2/(x130**4*x131**2)
-      x774 = 3506.67076961173d0*x773
-      x775 = x245*(0.254868346016978d0*x12 + x129 + 1.49839457571841d0*x
-     &21 + 2.71913823449588d0*x45)/x130**3
-      x776 = x767*x775
-      x777 = x599*x754
-      x778 = x232*x325
-      x779 = 10.2595256049682d0*x778
-      x780 = x257*x258
-      x781 = x734 - x747 - x757 - x759 + x772
-      x782 = 0.339918983653357d0*x21*x259*x780 - 0.022960662510839d0*x25
-     &5 + 2.0d0* x261*(0.267319032365355d0*x12 + 1.70877610553209d0*x21 
-     &+ 2.16229511226841d0*x45 + 1.23355033167571d0*x55) + x781 - 2.0d0*
-     & x260*x780*(x104 + 0.320782838838426d0*x12 + 2.56316415829814d0* x
-     &21 + 3.70679162103156d0*x45)/x105**3 + 19.7392088021787d0*x107* x2
-     &57**2*x260/(x105**4*x109**2)
-      x783 = x193*x264
-      x784 = x148*x26/x15**6
-      x785 = x466*x479
-      x786 = x120*x18
-      x787 = x212*x4
-      x788 = x2**(-1.33333333333333d0)
-      x789 = 0.333333333333333d0*x1
-      x790 = x788*x789
-      x791 = x3**(-1.33333333333333d0)
-      x792 = x789*x791
-      x793 = x790 + x792
-      x794 = x124*x176
-      x795 = x1*x233
-      x796 = x1*x742
-      x797 = x1*x232
-      x798 = x764*x797
-      x799 = x123*x782
-      x800 = 16.0d0*x326
-      x801 = x323*x779
-      x802 = 80.0d0*x536
-      x803 = x323*x740
-      x804 = x123*x737
-      x805 = x123*x760
-      x806 = 947.474388582934d0*x805
-      x807 = -x734 + x744 + x747 + x757 + x759 - x763 - x769 - x772 - x7
-     &74 + x776 + x799 - x800 + x801 - x802 + x803 - x804 + x806
-      x808 = x755*x795 - 0.00932351391944647d0*x796 + 607.539859357387d0
-     &*x798 + x807
-      x809 = x323*x770 - x323*x777 - 160.0d0*x794 + x808
-      x810 = 1.79913710865273d0*x26
-      x811 = 1.91415600012546d0*x430
-      x812 = 0.299209d0*x160
-      x813 = 5.29055759308205d0*x346
-      x814 = x158*x813
-      x815 = x442*x814
-      x816 = 31.182216717766d0*x443
-      x817 = 23.3866625383245d0*x440*x69*(0.289053642815522d0*x12 - 0.10
-     &6975995763985d0*x21)
-      x818 = 5.19703611962767d0*x438
-      x819 = 30.6264960020074d0*x435
-      x820 = 5.0d0*x1
-      x821 = x34*x820
-      x822 = x35*x820
-      x823 = x821 + x822
-      x824 = 7.65662400050184d0*x72
-      x825 = x1*x824*(-6.0d0*x432 + 6.0d0*x433 + x823)
-      x826 = 10.5811151861641d0*x159*x19*x346
-      x827 = x440*x441
-      x828 = 93.5466501532981d0*x19*x827
-      x829 = 77.9555417944151d0*x19*x445
-      x830 = 0.0677878489986482d0*x346
-      x831 = x353*x830
-      x832 = x360*x830
-      x833 = 1d0/x73
-      x834 = 0.00786976946662482d0*x19
-      x835 = x346*x349
-      x836 = x74*x835*(0.0157395389332496d0*x350 - x833*x834 - 0.0078697
-     &6946662482d0)
-      x837 = 1.91415600012546d0*x72
-      x838 = x342*x837
-      x839 = x344*x837
-      x840 = 1d0/x88
-      x841 = x346*x356
-      x842 = x841*x89*(0.0157395389332496d0*x357 + x834*x840 + 0.0078697
-     &6946662482d0)
-      x843 = 38.2831200025092d0*x72
-      x844 = x843*x86
-      x845 = x100*x843
-      x846 = 11.4849360007528d0*x371*x73
-      x847 = 11.4849360007528d0*x380*x88
-      x848 = 0.0543010717965206d0*x12
-      x849 = 0.150031049774234d0*x77
-      x850 = x19*x833
-      x851 = 0.0271505358982603d0*x12
-      x852 = x80*x851
-      x853 = -x849 - x852
-      x854 = x72*x74
-      x855 = x369*x854*(0.300062099548467d0*x350*x77 + x350*x80*x848 - x
-     &849*x850 - x850*x852 + x853)
-      x856 = 0.101681773497972d0*x346
-      x857 = x348*x367
-      x858 = x366*x857
-      x859 = x352*x856*x858
-      x860 = x355*x377
-      x861 = x856*x860
-      x862 = x359*x376*x861
-      x863 = 0.150031049774234d0*x92
-      x864 = x19*x840
-      x865 = x851*x95
-      x866 = x863 + x865
-      x867 = x72*x89
-      x868 = x379*x867*(x357*x848*x95 + 0.300062099548467d0*x357*x92 + x
-     &863*x864 + x864*x865 + x866)
-      x869 = x346*x358*x629
-      x870 = 0.271151395994593d0*x1
-      x871 = x869*x870
-      x872 = 15.3132480010037d0*x1*x72
-      x873 = x386*x872
-      x874 = 0.225046574661351d0*x77
-      x875 = 0.0325806430779124d0*x12
-      x876 = x80*x875
-      x877 = x874 + x876
-      x878 = x82**(-3)
-      x879 = x79*x84*x878
-      x880 = x366*x854*x879*(-x350*x874 - x350*x876 + x877)
-      x881 = 0.225046574661351d0*x92
-      x882 = x875*x95
-      x883 = x881 + x882
-      x884 = x96**(-3)
-      x885 = x884*x94*x98
-      x886 = x376*x867*x885*(x357*x881 + x357*x882 + x883)
-      x887 = x346*x627
-      x888 = x351*x887
-      x889 = x870*x888
-      x890 = x383*x872
-      x891 = x3*x376
-      x892 = 45.939744003011d0*x72
-      x893 = x1*x892
-      x894 = x379*x891*x893
-      x895 = x2*x370
-      x896 = x893*x895
-      x897 = x19*x844 + x19*x845 + x831 + x832 + x836 - x838 - x839 - x8
-     &42 + x846 + x847 + x855 + x859 + x862 - x868 + x871 + x873 + x880 
-     &+ x886 - x889 - x890 + x894 - x896
-      x898 = 0.00082755562057128d0*x30
-      x899 = 0.311172355472072d0*x21
-      x900 = 0.0121035293512547d0*x12*x27 + 0.0175165224763768d0*x12 + 0
-     &.00285512867044833d0*x21 + x25 + 0.000428261234514334d0*x26 - 0.10
-     &3724118490691d0*x402
-      x901 = 0.335051282142018d0*x392*x69
-      x902 = x19*x408
-      x903 = -0.335051282142018d0*x150 - 1.34020512856807d0*x392*x902 + 
-     &1.67525641071009d0*x420 + 0.670102564284035d0*x424
-      x904 = 0.125788454326835d0*x399
-      x905 = 0.0441362997638016d0*x143
-      x906 = 0.0794453395748429d0*x274*x902
-      x907 = 0.0662044496457024d0*x410
-      x908 = x407*x899 + x900
-      x909 = x274*x69
-      x910 = 0.0198613348937107d0*x908*x909
-      x911 = 1.27980162581231d0*x146
-      x912 = 0.426600541937435d0*x145*x416
-      x913 = x106*x414*x754
-      x914 = 8.0d0*x913
-      x915 = 160.0d0*x534
-      x916 = 164.152409679491d0*x535
-      x917 = x914 + x915 - x916
-      x918 = x808 + x917
-      x919 = x417*x918
-      x920 = 0.000440195901906306d0*x30
-      x921 = x333*(0.427594146176807d0*x12 - 1.36477107997868d0*x21)
-      x922 = x332*x69
-      x923 = 75.398223686155d0*x67
-      x924 = x922*x923
-      x925 = 0.154912426780983d0*x0**(-0.333333333333333d0)*x336
-      x926 = x335*x66
-      x927 = 4.83324359125373d0*x926
-      x928 = x922*x927
-      x929 = 1.61108119708458d0*x337
-      x930 = 150.79644737231d0*x19*x332*x67
-      x931 = 9.66648718250747d0*x19*x65*x926
-      x932 = 0.0231073345558005d0*x26
-      x933 = x22*x273
-      x934 = 0.0138644007334803d0*x26
-      x935 = 0.00107855455836145d0*x30
-      x936 = 0.0350330449527535d0*x12 + 0.00571025734089666d0*x21 - 0.00
-     &609784657412857d0*x23 + 0.000856522469028669d0*x26
-      x937 = 0.0891107483661069d0*x392
-      x938 = x19*x272
-      x939 = 0.178221496732214d0*x392
-      x940 = x19*x28
-      x941 = -0.000586927869208408d0*x102 + 0.445553741830535d0*x19*x62 
-     &- 0.0277288014669606d0*x26*x940
-      x942 = 4.0d0*x54
-      x943 = 0.123631380878626d0*x138
-      x944 = 0.00316102962473761d0*x138
-      x945 = 0.0337176493305345d0*x138
-      x946 = 0.00328744309596812d0*x280
-      x947 = 0.00767070055725895d0*x280
-      x948 = 1.79063317129192d0*x45
-      x949 = 3.80317310466043d0*x295
-      x950 = 6.0d0*x283
-      x951 = 6.0d0*x284
-      x952 = x2**(-1.33333333333333d0)
-      x953 = x1*x952
-      x954 = x3**(-1.33333333333333d0)
-      x955 = x1*x954
-      x956 = x953 + x955
-      x957 = -x950 + x951 + x956
-      x958 = x1*x957
-      x959 = x298*x958
-      x960 = 3.80317310466043d0*x959
-      x961 = x285**2
-      x962 = x19*x961
-      x963 = x297*x56
-      x964 = 22.8190386279626d0*x962*x963
-      x965 = 7.60634620932085d0*x300
-      x966 = 2.04643791004791d0*x45
-      x967 = x304*x957*x966
-      x968 = 8.18575164019163d0*x45
-      x969 = x961*x968
-      x970 = x19*x42*x969
-      x971 = x305*x966
-      x972 = x967 + x970 - x971
-      x973 = 1.10284531715449d0*x295
-      x974 = x182*x973
-      x975 = x308*x47
-      x976 = 2.0d0*x50
-      x977 = 3.06965686507186d0*x45
-      x978 = 5.70475965699064d0*x295
-      x979 = 12.2786274602874d0*x45
-      x980 = x305*x979
-      x981 = 22.8190386279626d0*x300
-      x982 = x49**(-2)
-      x983 = x183*x982
-      x984 = x975*x983
-      x985 = 6.61707190292693d0*x961
-      x986 = x19*x963*x985
-      x987 = 81.6670303671029d0*x13*x55*x962/x36**4 + 11.4844261453738d0
-     &*x312 + 10.2083787958879d0*x314*x958 - 30.6251363876636d0*x315 + 1
-     &.79063317129192d0*x45 + x972
-      x988 = 0.101321183642338d0*x292
-      x989 = 0.000255740352913201d0*x0**2.33333333333333d0*x31
-      x990 = 0.0105647016457513d0*x936
-      x991 = 0.0352156721525045d0*x275
-      x992 = 0.0469542295366726d0*x32
-      x993 = 0.101321183642338d0*x36
-      x994 = x13/x183**2
-      x995 = x319*x994
-      x996 = 0.0422588065830054d0*x275
-      x997 = 0.270189823046234d0*x36
-      x998 = x320*x50
-      x999 = x13*x993
-      x1000 = x308*x999
-      x1001 = 0.405284734569351d0*x612
-      x1002 = 0.133819554179517d0*x267 - 0.00657488619193625d0*x280*x940
-     &
-      x1003 = x16*(-x1000*x998 + x1001*x299*x320 + x1002 - x140*(-x904 +
-     & x905 + x906 - x907 + x910 - x911 + x912 - x919) + x148*(-0.003678
-     &0249803168d0* x163*x191 + x165*x809 + 4.19798658685637d0*x178*x26 
-     &+ 0.0027585187352376d0*x30*(x389 - x431 - x436 + x437 + x439 + x44
-     &4 + x447) - x330*x810 - x898*(x811 + x812 + x815 + x816 + x817 - x
-     &818 - x819 - x825 + x826 + x828 - x829 + x897) - x901*(-x899*( x40
-     &3 + x404 - x405 + x406) + x900) + x903) + x178*x943 + x180* x947 -
-     & x180*x989 - x180*x992 - x185*x962*x997 - x273*x991 + 0.0675474557
-     &615585d0*x288*x957 - x31*x909*x990 - x330*x945 + x511 *x993*x995 -
-     & x620*x988*(-x182*x986 - x184*(x948 + x949 + x960 + x964 - x965 + 
-     &x972) - 1.10284531715449d0*x310*x958 + 2.20569063430898d0*x311 - x
-     &318*x975*x976 - x974 + x984*(-x977 - x978 + x980 + x981) + x987) +
-     & x809*x944 + x933*x946 + x938*x996 + x942*(x180*x932 - x180*x935 -
-     & x273*x937 + x390*x920 - x391*(x515 + x897 + x921 + x924 + x925 + 
-     &x928 + x929 + x930 + x931) - x393* x69*x936 - x395*x69 + x933*x934
-     & + x938*x939 + x941))
-      x1004 = -x473 - x482 + x491 - x550 + x585
-      x1005 = x208*x726
-      x1006 = gamma_cc*x200
-      x1007 = x1004*x1005*x1006
-      x1008 = x175*x680
-      x1009 = x549 + 1.0d0
-      x1010 = x1008*x11*x709 + x1009
-      x1011 = 1d0/x1010
-      x1012 = x1009*x546
-      x1013 = x555*x680
-      x1014 = x1013*x678
-      x1015 = x526*x538
-      x1016 = x1009*x547
-      x1017 = x1011*x548
-      x1018 = x1016*x1017
-      x1019 = x8/x211**2
-      x1020 = x1004*x469
-      x1021 = x200*x475
-      x1022 = rho_c**(-5.33333333333333d0)
-      x1023 = rho_s*x1022
-      x1024 = x1023*x480
-      x1025 = x200*x206
-      x1026 = x1024*x1025
-      x1027 = x479**2
-      x1028 = x1027*x6
-      x1029 = 2.9058208411827d0*rho_c**(-6.33333333333333d0)*x18
-      x1030 = x1028*x1029
-      x1031 = 2.66666666666667d0*x464
-      x1032 = 2.66666666666667d0*x465
-      x1033 = 0.444444444444444d0*x1
-      x1034 = x1033*x788
-      x1035 = x1033*x791
-      x1036 = x1034 + x1035
-      x1037 = x1023*x477
-      x1038 = x1037*(x1031 - x1032 + x1036)
-      x1039 = 1.08968281544351d0*x1038
-      x1040 = x1021*x489
-      x1041 = x488**2
-      x1042 = x195**(-2)
-      x1043 = x1021*x1042
-      x1044 = 2.10537616771841d0*x1043
-      x1045 = 4.03909096924395d0*x1024
-      x1046 = x179*x330
-      x1047 = 0.757329556733241d0*x1040
-      x1048 = 0.757329556733241d0*x488
-      x1049 = x545*x548
-      x1050 = x546*x573
-      x1051 = x1049*x1050
-      x1052 = x474*x546
-      x1053 = x545*x679
-      x1054 = 2.9058208411827d0*rho_s
-      x1055 = x195/x178**2
-      x1056 = 5.56d0*x1055
-      x1057 = x122 - 1.0d0
-      x1058 = x1057*x225
-      x1059 = x1*x1058*x755
-      x1060 = x1057*x797
-      x1061 = 0.00466175695972324d0*x1060*x736
-      x1062 = 0.00466175695972323d0*x796
-      x1063 = 303.769929678693d0*x798
-      x1064 = 303.769929678693d0*x1060*x760
-      x1065 = 2.78d0*x196
-      x1066 = x179*x487
-      x1067 = 5.5573346245051d0*x784
-      x1068 = 7.03121958266113d0*x264
-      x1069 = 22.24d0*x754
-      x1070 = x323*x778
-      x1071 = x323*x739
-      x1072 = x107*x758
-      x1073 = x123*x736
-      x1074 = x754*x795
-      x1075 = x766*x768
-      x1076 = x766*x775
-      x1077 = 28.5214811818116d0*x1070 + 228.171849454493d0*x1071 + 27.4
-     &375002350284d0 *x1072 - 0.0404219371445552d0*x1073 + 11.12d0*x1074
-     & - 329.247350032569d0*x1075 + 329.247350032569d0*x1076 - 0.1327682
-     &31929281d0*x219 + 0.00673698952409253d0*x227 - 44.48d0* x326 - 222
-     &.4d0*x536 + 0.982777444630562d0*x746 + 5.56d0*x756 - 0.29920898579
-     &1994d0*x762 - 5.56d0*x771 - 9748.54473952062d0*x773 - 0.0259193686
-     &960612d0*x796 + 1688.96080901354d0*x798 + 2.78d0* x799 + 2633.9788
-     &0026056d0*x805
-      x1078 = -2.78d0*x1003 + x1056*x416**2 - x1065*(-x1059 + x1061 - x1
-     &062 + x1063 - x1064 + x807 + x917) - 5.56d0*x1066*x416 - x1067*x19
-     &3 - x1068* x486 - x1069*x254*x323 + x1077 + 456.343698908985d0*x32
-     &3*x596 + 11.7186993044352d0*x783 - 444.8d0*x794
-      x1079 = x1021*x484
-      x1080 = 0.272420703860878d0*x1079
-      x1081 = x204*x557*x583
-      x1082 = x490*x573
-      x1083 = x201*x582
-      x1084 = x545*x546
-      x1085 = x204*x540
-      x1086 = 1.5832115176972d0*rho_s*x560 + x570*x702 + 2.7706201559701
-     &d0*x571 - 1.65049800719933d0*x572
-      x1087 = 1.08968281544351d0*x174
-      x1088 = x207**(-2)
-      x1089 = x10*x1088
-      x1090 = 8.47531078678287d0*x474
-      x1091 = x474*x484
-      x1092 = x1091*x488
-      x1093 = x1042*x474
-      x1094 = 2.10537616771841d0*x1093
-      x1095 = x474*x578
-      x1096 = x474*x567**2
-      x1097 = 514.618378308835d0*x170
-      x1098 = exp(-x1097*x168)
-      x1099 = x4**(-6)
-      x1100 = 0.544841407721756d0*x1099
-      x1101 = x1098*x1100*x174
-      x1102 = 0.272420703860878d0*x1099
-      x1103 = x1102*x577
-      x1104 = 1.45291042059135d0*x479
-      x1105 = x577*x9
-      x1106 = x1104*x1105
-      x1107 = 0.757329556733241d0*x1092
-      x1108 = x1048*x1093
-      x1109 = 2058.47351323534d0*x477
-      x1110 = x1*x1109*(2.0d0*x464 - 2.0d0*x465 + x793)
-      x1111 = x479*x565
-      x1112 = x168*x6
-      x1113 = 5489.26270196091d0*x19
-      x1114 = 38.2831200025092d0*x72
-      x1115 = x1114*x86
-      x1116 = x100*x1114
-      x1117 = -x1115*x19 - x1116*x19 - x831 - x832 - x836 + x838 + x839 
-     &+ x842 - x846 - x847 - x855 - x859 - x862 + x868 - x871 - x873 - x
-     &880 - x886 + x889 + x890 - x894 + x896
-      x1118 = x22*x502
-      x1119 = x19*x501
-      x1120 = x52*x973
-      x1121 = x47*x507
-      x1122 = x59*x982
-      x1123 = x1121*x1122
-      x1124 = -x953 - x955
-      x1125 = x503**2
-      x1126 = x40/x59**2
-      x1127 = x1126*x512
-      x1128 = x16*(x1*x1001*x503*x514 + x1000*x50*x514 + x1002 + x1118*x
-     &946 - x1119* x996 + x1125*x19*x61*x997 + x1127*x999*(x313 - x316 +
-     & x506 + x508 - x510) + x137*x943 + x140*(x904 - x905 - x906 + x907
-     & - x910 + x911 - x912 + x919) + x148*(x165*x918 - x416*x810 + 0.00
-     &36780249803168d0*x426 + 4.19798658685637d0*x428 - 0.00275851873523
-     &76d0*x449 + x898*(x1117 - x811 - x812 - x815 - x816 - x817 + x818 
-     &+ x819 + x825 - x826 - x828 + x829) - x901* x908 + x903) + x20*x27
-     &5*x990 - x29*x947 + x29*x989 + x29*x992 - x416*x945 - x502*x991 + 
-     &0.0675474557615585d0*x505*(x1124 + x950 - x951) + x513*x988*(x1120
-     & + x1121*x511*x976 + x1123*(x977 + x978 - x980 - x981) - 2.2056906
-     &3430898d0*x509 + 1.10284531715449d0*x52* x959 + x52*x986 + x60*(-x
-     &948 - x949 - x960 - x964 + x965 - x967 - x970 + x971) + x987) + x9
-     &18*x944 + x942*(x1118*x934 - x1119*x939 + x20*x395 - x29*x932 + x2
-     &9*x935 + x391*(x1117 + x340 - x921 - x924 - x925 - x928 - x929 - x
-     &930 - x931) - x502*x937 - x516*x920 + x517*x936 + x941))
-      x1129 = x264*x518
-      x1130 = x166*x784
-      x1131 = -2639.87021452335d0*x1070 - 21118.9617161868d0*x1071 - 253
-     &9.53990571917d0*x1072 + 3.74134383838717d0*x1073 - 1029.2367566176
-     &7d0*x1074 + 30474.2333338565d0*x1075 - 30474.2333338565d0*x1076 + 
-     &257.309189154418d0*x1128 + 650.790435101151d0*x1129 + 514.37167845
-     &0064d0*x1130 + 12.2886640658953d0*x219 - 0.623557306397862d0*x227 
-     &+ 4116.94702647068d0*x326 - 1084.65072516858d0*x533 - 41169.470264
-     &7068d0*x534 + 42237.9234323736d0*x535 + 20584.7351323534d0*x536 - 
-     &90.9631897112017d0*x746 - 514.618378308835d0*x756 + 27.69396457620
-     &63d0*x762 + 514.618378308835d0*x771 + 902298.612360293d0*x773 + 2.
-     &3990258066827d0*x796 - 156325.588590238d0*x798 - 257.309189154418d
-     &0*x799 - 243793.866670852d0*x805 - 2058.47351323534d0*x913
-      x1132 = 0.272420703860878d0*x1095
-      x1133 = 0.272420703860878d0*x1091
-      x1134 = x202*x553
-      x1135 = x494*x546
-      x1136 = x1037*x1135
-      x1137 = x494**2
-      x1138 = x546*x6
-      x1139 = 1.08968281544351d0*x546
-      x1140 = x1013*x548
-      x1141 = rho_c**(-7.66666666666667d0)*rho_s*x680
-      x1142 = x1141*x678
-      x1143 = x1142*x494
-      x1144 = x540*x9
-      x1145 = 0.888888888888889d0*x1
-      x1146 = x1145*x788
-      x1147 = x1145*x791
-      x1148 = x1052*x523
-      x1149 = x168**(-2)
-      x1150 = x1149*x522**2
-      x1151 = 2.10537616771841d0*x1052
-      x1152 = x1052*x526
-      x1153 = gamma_cc*x1013
-      x1154 = x1153*x709
-      x1155 = x1154*x561
-      x1156 = x1015*x1155
-      x1157 = x538**2
-      x1158 = x1052*x1157
-      x1159 = exp(x1097*x525)
-      x1160 = x1159*x709
-      x1161 = x1100*x1160
-      x1162 = x4**(-8)
-      x1163 = x1157*x1162
-      x1164 = x1153*x1159/x539**3
-      x1165 = 0.890556478704675d0*x1164
-      x1166 = 0.296852159568225d0*x526
-      x1167 = x1015*x1099
-      x1168 = x1141*x494
-      x1169 = gamma_cc*x1168*x709
-      x1170 = 0.757329556733241d0*x1148
-      x1171 = x416*x499
-      x1172 = x1140*x523
-      x1173 = 4.58838446001414d0*x1140
-      x1174 = 0.825249003599665d0*x1172
-      x1175 = x498 + x519 + x520
-      x1176 = x1175*x522
-      x1177 = x1052*x1149
-      x1178 = 0.757329556733241d0*x1177
-      x1179 = x1140*x1149
-      x1180 = x526*x542
-      x1181 = x525*x6
-      x1182 = x1109*x1175*x532 + x1110*x525 + x1113*x1181*x494*x531 + x1
-     &131
-      x1183 = x1052*x527*x541
-      x1184 = x1155*x1166
-      x1185 = x500*(x1059 - x1061 + x1062 - x1063 + x1064 - x744 + x763 
-     &+ x769 + x774 - x776 + x781 - x799 + x800 - x801 + x802 - x803 + x
-     &804 - x806 - x914 - x915 + x916)
-      x1186 = x499*x521
-      x1187 = 5.56d0*x498
-      x1188 = x168/x137**2
-      x1189 = x1188*x498**2
-      x1190 = x1052*x497
-      x1191 = 0.272420703860878d0*x1190
-      x1192 = 11.12d0*x498
-      x1193 = x1140*x497
-      x1194 = 0.148426079784112d0*x1193
-      x1195 = 0.00777275d0*x1005
-      x1196 = x221*x590
-      x1197 = 0.00181753314498899d0*x736
-      x1198 = x121*x249
-      x1199 = 20.5190512099364d0*x739
-      x1200 = 0.00116543923993081d0*x741
-      x1201 = x1200*x232
-      x1202 = 2.56488140124205d0*x231
-      x1203 = 2.56488140124205d0*x230
-      x1204 = x1202 - x1203 + x753
-      x1205 = x1204*x233
-      x1206 = 75.9424824196734d0*x764
-      x1207 = x1206*x232
-      x1208 = 41.0381024198728d0*x596
-      x1209 = x1204*x254
-      x1210 = 1.28244070062102d0*x778
-      x1211 = 2.0d0*x325
-      x1212 = x264*x646
-      x1213 = 0.0103636666666667d0*x787
-      x1214 = x17*x651
-      x1215 = 0.000220097950953153d0*x30
-      x1216 = x1*x65*x927
-      x1217 = x1*x332*x923
-      x1218 = 0.135575697997296d0*x1
-      x1219 = x1218*x835
-      x1220 = 0.0338939244993241d0*x346
-      x1221 = x1220*x627
-      x1222 = x1218*x841
-      x1223 = x1220*x629
-      x1224 = 0.0677878489986482d0*x887*(x350 - 1.0d0)
-      x1225 = 0.135575697997296d0*x888
-      x1226 = 7.65662400050184d0*x72
-      x1227 = x1226*x386
-      x1228 = 0.0677878489986482d0*x869
-      x1229 = x1226*x383
-      x1230 = x365*x857
-      x1231 = x2*x347
-      x1232 = x1230*x1231*x351
-      x1233 = x1*x382
-      x1234 = x1233*x632
-      x1235 = x341*x633
-      x1236 = x347*x860
-      x1237 = x1236*x3*x358*x375
-      x1238 = x1233*x635
-      x1239 = x341*x636
-      x1240 = x1231*x858
-      x1241 = x1236*x891
-      x1242 = x350*x849
-      x1243 = x350*x852
-      x1244 = x369*x631
-      x1245 = x1244*x2*(x1242 + x1243 + x853)
-      x1246 = x382*x895
-      x1247 = x382*x891
-      x1248 = x1247*x379
-      x1249 = x357*x863 + x357*x865 + x866
-      x1250 = x379*x631
-      x1251 = x1249*x1250*x3
-      x1252 = x631*x877
-      x1253 = x1252*x879
-      x1254 = x1253*x2*x366
-      x1255 = x631*x883
-      x1256 = x1255*x885
-      x1257 = x1256*x891
-      x1258 = x1*x937
-      x1259 = x1*x28
-      x1260 = -0.267332245098321d0*x1*x62 + x1259*x934
-      x1261 = 3.0d0*x432
-      x1262 = 3.0d0*x433
-      x1263 = x1*(x156 - x157)
-      x1264 = x93 - 1.0d0
-      x1265 = x1264*x3
-      x1266 = 46.773325076649d0*x1*x827
-      x1267 = x78 - 1.0d0
-      x1268 = x1267*x2
-      x1269 = x1268*x368
-      x1270 = x1265*x378
-      x1271 = x1264*x378
-      x1272 = x849 + x852
-      x1273 = x1*x1114
-      x1274 = x1219 - x1221 + x1222 + x1223 + x1228 - x1232 + x1237 - x1
-     &240 + x1241
-      x1275 = 2.0d0*x122
-      x1276 = 20.5190512099364d0*x122
-      x1277 = x1211*x605
-      x1278 = 16.0d0*x654
-      x1279 = x1197*x605
-      x1280 = x605*x760
-      x1281 = 118.434298572867d0*x1280
-      x1282 = x1277 + x1278 + x1279 - x1281
-      x1283 = x1201 - x1205 - x1207 + x1209*x1275 - x1210*x122 - x1276*x
-     &739 + x1282 - 41.0381024198728d0*x656 + 32.0d0*x657
-      x1284 = 0.0003448148419047d0*x30
-      x1285 = 0.449784277163183d0*x26
-      x1286 = x1*x408
-      x1287 = -0.251288461606513d0*x1*x149 + 0.167525641071009d0*x1286*x
-     &392
-      x1288 = 0.106650135484359d0*x145
-      x1289 = -0.0182062236525682d0*x1*x142 + 0.00993066744685536d0*x128
-     &6*x274
-      x1290 = 0.00842941233263362d0*x138
-      x1291 = 3.0d0*x283
-      x1292 = 3.0d0*x284
-      x1293 = -x1291 + x1292 + x956
-      x1294 = 0.0168868639403896d0*x1293
-      x1295 = 1.02321895502395d0*x45
-      x1296 = 15.3125681938318d0*x312
-      x1297 = x46*x969
-      x1298 = x310*x985
-      x1299 = 10.2083787958879d0*x312
-      x1300 = 22.8190386279626d0*x295 + x979
-      x1301 = x1300*x503
-      x1302 = x50*x618
-      x1303 = x1302*x47
-      x1304 = x1124 + x1291 - x1292
-      x1305 = x1304*x949
-      x1306 = x503*x949
-      x1307 = x503*x981
-      x1308 = x1304*x966
-      x1309 = x1295*x503
-      x1310 = x305*x503*x968
-      x1311 = x1308 - x1309 + x1310
-      x1312 = x613*x620
-      x1313 = 0.0675474557615585d0*x36
-      x1314 = x1313*x961
-      x1315 = x1314*x185
-      x1316 = x503*x687
-      x1317 = 0.0253302959105844d0*x1316
-      x1318 = x603*x612
-      x1319 = x1*x276
-      x1320 = 0.0253302959105844d0*x13
-      x1321 = x1320*x617
-      x1322 = x1321*x285
-      x1323 = mu*x621
-      x1324 = -0.0193686196838775d0*x1*x266 + x1259*x281
-      x1325 = x16*(x1*x1315 + x1*x1323*x603 + x1283*x944 - x1290*x611 - 
-     &x1294*x287 - x1312*(-x1*x1297 + x1*x1298 - 81.6670303671029d0*x1*x
-     &314*x961 - x1293*x1299 - x1293*x966 + x1293*x974 + x1295*x285 + x1
-     &296*x285 + x1301*x984 - x1303*x318 - x184*(x1305 - x1306 + x1307 +
-     & x1311) - x285*x974 - x50*x616*x975) + x1317*x995 - x1318*x320 - x
-     &1319*x272 + x1322*x998 + x1324 + x140*(x1283*x417 - x1288*x611 + x
-     &1289) + x148*(x1283*x165 + x1284*x644 - x1285*x611 + x1287 + x645*
-     &(x1226* x1265*x99 - x1226*x1268*x85 - x1233*x1267*x365*x368 - x123
-     &3*x1271 *x375 - x1247*x1271 + x1249*x1270*x631 + x1252*x1268*x366*
-     &x84* x878 - x1255*x1264*x884*x891*x98 + 62.364433435532d0*x1263*x4
-     &40 - x1263*x814 - x1264*x1273*x99 + x1266 - x1267*x1273*x85 + x126
-     &9* x341*x365 + x1269*x366*x382 - x1269*x631*(-x1242 - x1243 + x127
-     &2 ) - x1270*x341*x375 + x1274 - 15.3132480010037d0*x434 - x824*( -
-     &x1261 + x1262 + x823) - 0.0677878489986482d0*x888)) + x54*(x1215 *
-     &x639 - x1258*x272 + x1260 - x391*(-x1*x1115 - x1*x1116 - x1216 - x
-     &1217 - x1219 + x1221 - x1222 - x1223 + x1224 + x1225 - x1227 - x12
-     &28 + x1229 + x1232 - x1234 + x1235 - x1237 - x1238 - x1239 + x1240
-     & - x1241 + x1245 + x1246 - x1248 + x1251 + x1254 - x1257 + x625)))
-     &
-      x1326 = x1012*x471
-      x1327 = 0.003886375d0*x477
-      x1328 = x1011*x1327
-      x1329 = x1019*x1328*(x1018*(-x683 - x701 + x712 - x714 - x716 + x7
-     &19) + x1326* x671 + 1.51465911346648d0*x1326*x697 + 0.544841407721
-     &756d0*x699*( x497*(3.88492098935195d0*x233*x658 + x655 + 12.117272
-     &9077319d0* x663 + 1.51465911346648d0*x685 - 1.51465911346648d0*x69
-     &4 + 7.76984197870389d0*x705) + x653 - x718))
-      x1330 = 1.45291042059135d0*x1028
-      x1331 = x1023*x1330
-      x1332 = 1.33333333333333d0*x464
-      x1333 = 1.33333333333333d0*x465
-      x1334 = x1036 + x1332 - x1333
-      x1335 = x484*x674
-      x1336 = 2.01954548462197d0*x1335
-      x1337 = x555*x669
-      x1338 = x1337*x553
-      x1339 = 1.00977274231099d0*x480
-      x1340 = x179*x611
-      x1341 = x1042*x695
-      x1342 = x488*x674
-      x1343 = x179*x673
-      x1344 = -x1202 + x1203 - x750 - x752
-      x1345 = x1058*x1344
-      x1346 = x122*x325
-      x1347 = x1346*x658
-      x1348 = 1.28244070062102d0*x1347
-      x1349 = x1200*x658
-      x1350 = 32.0d0*x663
-      x1351 = x1344*x660
-      x1352 = x1275*x1351
-      x1353 = 10.2595256049682d0*x122
-      x1354 = x225*x658
-      x1355 = x1353*x1354
-      x1356 = x118*x251
-      x1357 = x1276*x1356
-      x1358 = x1353*x739
-      x1359 = 20.5190512099364d0*x705
-      x1360 = x1206*x658
-      x1361 = x1282 + x1348 - x1349 - x1350 + x1352 + x1355 + x1357 - x1
-     &358 - x1359 + x1360
-      x1362 = x122*x778
-      x1363 = x1209*x122
-      x1364 = x122*x739
-      x1365 = -114.085924727246d0*x1364
-      x1366 = x325*x605
-      x1367 = x605*x736
-      x1368 = -658.494700065139d0*x1280 + 11.12d0*x1366 + 0.010105484286
-     &1388d0*x1367 + 88.96d0*x654
-      x1369 = x1056*x416*x665 - 2.78d0*x1066*x665 - 5.56d0*x1205 - 3.515
-     &60979133057d0* x1212 - 5.56d0*x1325 - 2.78d0*x1343*x416 - 7.130370
-     &29545289d0* x1362 + 11.12d0*x1363 + x1365 + x1368 - 5.56d0*x196*(-
-     &x1345 + x1361) - 228.171849454493d0*x656 + 177.92d0*x657 + 0.00647
-     &98421740153d0*x742 - 422.240202253384d0*x765
-      x1370 = x208*x721
-      x1371 = x200*x473
-      x1372 = x1371*x548
-      x1373 = x1021*x476
-      x1374 = 0.757329556733241d0*x1082
-      x1375 = x1374*x548
-      x1376 = x10*x1370
-      x1377 = x1084*x203*x709
-      x1378 = 0.726455210295675d0*x672
-      x1379 = x10*x583
-      x1380 = 0.544841407721756d0*x669
-      x1381 = -1.1874086382729d0*x562*x711 + 1.5832115176972d0*x682 + 3.
-     &30099601439866d0*x700
-      x1382 = x1089*x209
-      x1383 = x1382*(-x1139*x471*x717 + x1381 + 1.45291042059135d0*x480*
-     &x713 + 3.02931822693296d0*x715)
-      x1384 = x1085*x582
-      x1385 = 1.69506215735657d0*x575
-      x1386 = 0.544841407721756d0*x493
-      x1387 = x1091*x674
-      x1388 = 659.967553630838d0*x234 + 257.309189154418d0*x647 - 1319.9
-     &3510726168d0* x656 + 2058.47351323534d0*x657 - 514.618378308835d0*
-     &x668 + x703
-      x1389 = x1105*x479
-      x1390 = x474*x567
-      x1391 = x1388*x1390
-      x1392 = x1388*x578
-      x1393 = x594 + x606 - x609 + x610 + x647
-      x1394 = 2744.63135098045d0*x479
-      x1395 = 60948.4666677131d0*x1280 - 1029.23675661767d0*x1366 - 0.93
-     &5335959596793d0*x1367 - 8233.89405294136d0*x654
-      x1396 = x1013*x679
-      x1397 = 2.63868586282867d0*x1144
-      x1398 = x1052*x697
-      x1399 = x1155*x708
-      x1400 = x1144*x708
-      x1401 = x1099*x708
-      x1402 = x1140*x697
-      x1403 = x546*x575
-      x1404 = x1154*x479
-      x1405 = x499*x665
-      x1406 = x684 + x694
-      x1407 = x1149*x522
-      x1408 = x1407*x696
-      x1409 = x1052*x538
-      x1410 = x1162*x538
-      x1411 = x1*x844 + x1*x845 - x1224 - x1225 + x1227 - x1229 + x1234 
-     &- x1235 + x1238 + x1239 - x1245 - x1246 + x1248 - x1251 - x1254 + 
-     &x1257 + x1274
-      x1412 = x1344*x233
-      x1413 = x1361 + x1412
-      x1414 = 6.61707190292693d0*x52
-      x1415 = mu*x1125
-      x1416 = x513*x688
-      x1417 = x16*(0.0506605918211689d0*x1*x1415*x1416 - x1127*x13*x1317
-     & - x1290*x665 + x1294*x504 + x1302*x1320*x514 + x1313*x299*x503*x6
-     &1 + x1318* x514 + x1319*x501 + x1324 + x140*(-x1288*x665 + x1289 +
-     & x1413* x417) + x1413*x944 + x148*(-x1284*x692 - x1285*x665 + x128
-     &7 + x1413*x165 + x645*(x1*x159*x813 - 62.364433435532d0*x1*x445 + 
-     &x1266 + x1411 + 15.3132480010037d0*x641 + x824*(x1261 - x1262 - x8
-     &21 - x822))) + x54*(-x1215*x691 + x1258*x501 + x1260 + x391*( x121
-     &6 + x1217 + x1411 + x626)) + x686*(x1120*x1304 - x1120*x503 + x112
-     &1*x1316*x50 - x1123*x1301 - x1296*x503 + x1299*x1304 - x1303* x511
-     & + x1311 + x1414*x300*x503 + 81.6670303671029d0*x315*x503 + x60*(-
-     &x1305 + x1306 - x1307 - x1308 + x1309 - x1310)))
-      x1418 = x658*x741
-      x1419 = x264*x693
-      x1420 = x122*x1354
-      x1421 = x122*x1356
-      x1422 = x122*x1351
-      x1423 = x658*x764
-      x1424 = x1175*x706 + x1181*x1394*x532 - x1346*x704 + 5279.74042904
-     &67d0*x1364 + x1395 + x1406*x528*x532 - 514.618378308835d0*x1412 + 
-     &514.618378308835d0*x1417 + 0.599756451670674d0*x1418 + 325.3952175
-     &50575d0*x1419 - 5279.7404290467d0*x1420 - 10559.4808580934d0*x1421
-     & - 1029.23675661767d0*x1422 - 39081.3971475595d0*x1423 + x529*(x53
-     &1 - x790 - x792) + 16467.7881058827d0*x663 + 10559.4808580934d0*x7
-     &05
-      x1425 = x1186*x684
-      x1426 = x499*x695
-      x1427 = x500*(-x1277 - x1278 - x1279 + x1281 + x1345 - x1348 + x13
-     &49 + x1350 - x1352 - x1355 - x1357 + x1358 + x1359 - x1360)
-      x1428 = x1188*x684
-      x1429 = gamma_cc*x729
-      x1430 = 12.0d0*x225
-      x1431 = x119*x786
-      x1432 = x748 + x751
-      x1433 = x1432*x233
-      x1434 = 0.854960467080683d0*x1433
-      x1435 = 1.70992093416137d0*x254
-      x1436 = 24.0d0*x254
-      x1437 = x952 + x954
-      x1438 = 0.0168868639403896d0*x1437
-      x1439 = x119*x19
-      x1440 = x1436*x1439
-      x1441 = x589*x604
-      x1442 = x1199*x1441
-      x1443 = x1208*x1441
-      x1444 = x122*x1432
-      x1445 = x1435*x1444
-      x1446 = x1430*x1439
-      x1447 = x1434 - x1446
-      x1448 = -x1440 + x1442 + x1443 - x1445 + x1447
-      x1449 = 0.203363546995945d0*x346
-      x1450 = x1449*x349
-      x1451 = x1449*x356
-      x1452 = x1230*x856
-      x1453 = x375*x861
-      x1454 = x632*x892
-      x1455 = x635*x892
-      x1456 = x1244*x1272
-      x1457 = x1250*x866
-      x1458 = x1253*x365
-      x1459 = x1256*x375
-      x1460 = x1450 + x1451 + x1452 + x1453 + x1454 + x1455 - x1456 - x1
-     &457 + x1458 + x1459 + x844 + x845
-      x1461 = x1437*x966
-      x1462 = x1299*x1437
-      x1463 = 81.6670303671029d0*x314
-      x1464 = x1415*x42*x617
-      x1465 = x1300*x1464
-      x1466 = x1125*x298
-      x1467 = x1125*x46
-      x1468 = x1461 + x1467*x968
-      x1469 = x1437*x949 + 22.8190386279626d0*x1466 + x1468
-      x1470 = 38.2831200025092d0*x36*x72
-      x1471 = x16*(x106*x1317*x46*x619*x994 - x1312*(-mu*x42*x616*x618*x
-     &976 + x1297 - x1298 - x1437*x974 + x1461 + x1462 + x1463*x961 + x1
-     &465*x983 - x1469*x184) - x1315 + x1322*x46*x50*x621 - x1323*x286 +
-     & x140*( x1448*x417 + x622) + x1438*x287 + x1448*x944 + x148*(x1448
-     &*x165 + x422 - x645*(x1460 - x1470 - x446)) + x54*(-x391*(x1460 - 
-     &x339) + x395) + x601)
-      x1472 = x788 + x791
-      x1473 = x1472*x477
-      x1474 = 4.21075233543682d0*x1042*x674**2
-      x1475 = 4.03909096924395d0*x1335*x480
-      x1476 = x1340*x676
-      x1477 = x1341*x675
-      x1478 = -x1434 + x1440 - x1442 - x1443 + x1445 + x1446
-      x1479 = x665**2
-      x1480 = x1343*x665
-      x1481 = x1441*x739
-      x1482 = x1441*x596
-      x1483 = x1439*x254
-      x1484 = x1444*x254
-      x1485 = x1439*x225
-      x1486 = 2.3767900984843d0*x1433 - 33.36d0*x1485
-      x1487 = 3.02931822693296d0*x1335
-      x1488 = x1370*x672
-      x1489 = x204*x568
-      x1490 = x1376*x540
-      x1491 = x709*x721
-      x1492 = x1099*x1388**2
-      x1493 = x1354*x1441
-      x1494 = x1444*x660
-      x1495 = x1441*x661
-      x1496 = x1439*x660
-      x1497 = x6*x785
-      x1498 = 24.0d0*x1496
-      x1499 = 41.0381024198728d0*x1495
-      x1500 = 1.70992093416137d0*x1494
-      x1501 = 20.5190512099364d0*x1493
-      x1502 = x1447 + x1498 + x1499 + x1500 - x1501
-      x1503 = -x1115 - x1116 - x1450 - x1451 - x1452 - x1453 - x1454 - x
-     &1455 + x1456 + x1457 - x1458 - x1459
-      x1504 = x16*(mu*x286*x513*x689 - x1126*x1320*x1467*x687*x688 + x13
-     &14*x61 + x1321 *x1416*x1467*x50 + x140*(x1502*x417 + x622) - x1438
-     &*x504 + x148*( x1502*x165 + x422 + x645*(x1470 + x1503 + x446)) + 
-     &x1502*x944 + x54*(x391*(x1503 + x339) + x395) + x601 + x686*(x1120
-     &*x1437 + x1122*x1465 + x1125*x1463 + x1414*x1466 + x1462 - x1464*x
-     &687*x976 + x1468 - x1469*x60))
-      x1505 = x696**2
-      x1506 = x707**2
-      x1507 = x1162*x1506
-      x1508 = 0.59370431913645d0*x526
-      x1509 = x1406*x696
-      x1510 = 1029.23675661767d0*x1406*x667 - 219.989184543613d0*x1433 +
-     & 171.539459436278d0*x1473*x525 + 3087.71026985301d0*x1485 + 5279.7
-     &404290467d0*x1493 - 439.978369087225d0*x1494 - 10559.4808580934d0*
-     &x1495 - 6175.42053970602d0*x1496 + 1372.31567549023d0*x1497*x525 +
-     & 257.309189154418d0*x1504
-      x1511 = x500*(0.854960467080683d0*x1058*x1432 + x1446 - x1498 - x1
-     &499 - x1500 + x1501)
-      x1512 = x1426*x684
-      x1513 = x1188*x684**2
-      x1514 = x1008*x548
-      x1515 = 0.59370431913645d0*x1514 + x547
-      x1516 = -x1515*x722 + x209 + 0.296852159568225d0*x731
-      x1517 = 0.3958028794243d0*x557
-      x1518 = x1515*x208
-      x1519 = x1518*x679
-      x1520 = x1139*x201
-      x1521 = x10*x1518
-      x1522 = x205*x210
-      x1523 = 1.1874086382729d0*x1514 + x1520
-      x1524 = x1382*x1523
-      x1525 = x1011*x1515
-      x1526 = x1525*x548
-      x1527 = -x1016*x1526 + x1016 + 0.296852159568225d0*x1514
-      x1528 = x1328*x726
-      x1529 = 0.593704319136449d0*x1008
-      E = -rho_c*(-x212*x213 + x216)
-      d1E(1) = 0.5d0*rho_c*x587 + x16*x217 + x178 + x213*x463
-      d1E(2) = -rho_c*(x592 + x595 - x598 + x600 + x648 + x652 - x730)
-      d1E(3) = rho_c*x470*x733
-      d2E(1) = -0.25d0*rho_c*(x1003*x17 - 0.062182d0*x1007*x467 + 0.0155
-     &455d0*x1011* x1019*x1020*x477*(-x1012*x472 + x1012*x496 + x1012*x5
-     &24 + x1018*( -x1014*x494*x554 + x1015*x563*x710 + x492*x546 - x496
-     &*x546 - 0.825249003599665d0*x523*x699 - x524*x546 + x543*x713 + x5
-     &52*x698 ) + x202*x698*(-x492 + x496 + x524 - x544)) - x1195*x468*(
-     & -2.17936563088702d0*x10*x1083*x1084*x1085*x469 - x1021*x1054* x10
-     &81 + 8.47531078678287d0*x1021 + x1025*x1030 + x1025*x1039 + x1025*
-     &x1083*x1087*x1089*(1.45291042059135d0*rho_s*x576 + x1086 + 2.54259
-     &323603486d0*x573 - 1.51465911346648d0*x574 + 0.544841407721756d0*x
-     &580) + 6.7802486294263d0*x1026 - 7.06840919617691d0*x1040 + x1041*
-     &x1044 - x1043*x1048*x521 - x1045 *x200*x490 + x1046*x1047 - 3.0293
-     &1822693296d0*x1049*x546*x574 + 5.08518647206972d0*x1051 + x1052*x1
-     &053*x1054*x200 + x1078*x1080 + 3.02931822693296d0*x1082*x584 + x11
-     &34*(x1023*x1106*x567 + 6.7802486294263d0*x1024 + x1030 + x1039 + x
-     &1041*x1094 - x1045* x489 + x1046*x1107 + x1078*x1133 + x1090 - 1.5
-     &1465911346648d0* x1092*x579 - 7.06840919617691d0*x1092 + 2.5425932
-     &3603486d0*x1095* x567 + x1096*x1101 - x1096*x1103 - x1108*x521 - x
-     &1132*(x1109*x521 *x566 - x1110*x168 - x1111*x1112*x1113 + x1131)) 
-     &- 5.08518647206972d0*x584*x672 - x722*(5.27737172565733d0*gamma_cc
-     &* rho_c**(-8.66666666666667d0)*x1137*x1144*x18*x680 - 1.4529104205
-     &9135d0*x1015*x1023*x1135*x1144 + x1029*x1137*x1138 + x1038*x1139 +
-     & x1090*x546 - x1099*x1158*x527*x540 + 4.03909096924395d0*x1136*x52
-     &3 - 6.7802486294263d0*x1136 + 15.7001808838306d0*x1140 + 0.5937043
-     &1913645d0*x1142*(x1146 + x1147 + 5.33333333333333d0*x464 - 5.33333
-     &333333333d0*x465) + 8.80265603839643d0*x1143*x523 - 14.77664083184
-     &05d0*x1143 - 1.51465911346648d0*x1148*x1180 - 7.06840919617691d0*x
-     &1148 + x1150 *x1151 + x1150*x1173 + 2.54259323603486d0*x1152*x542 
-     &- x1154* x1163*x1166 - 3.30099601439866d0*x1156*x523 + 5.541240311
-     &9402d0* x1156 + x1158*x1161 + x1163*x1165 - 3.1664230353944d0*x116
-     &7*x1169 + x1170*x1171 + x1171*x1174 - 15.4046480671938d0*x1172 + x
-     &1176* x1178 + 0.825249003599665d0*x1176*x1179 - x1182*x1183 - x118
-     &2* x1184 + x1191*(-x1067*x166 - x1068*x518 + x1077 - 2.78d0*x1128 
-     &+ 2.78d0*x1185 + x1186*x1187 + 5.56d0*x1189 + 11.7186993044352d0* 
-     &x533 + 444.8d0*x534 - 456.343698908985d0*x535 + 22.24d0*x913) + x1
-     &194*(x1069*x795 + 57.0429623636231d0*x1070 + 456.343698908985d0 *x
-     &1071 + 54.8750004700568d0*x1072 - 0.0808438742891104d0*x1073 - 658
-     &.494700065139d0*x1075 + 658.494700065139d0*x1076 - 5.56d0* x1128 -
-     & 14.0624391653223d0*x1129 - 11.1146692490102d0*x1130 + 5.56d0*x118
-     &5 + x1186*x1192 + 11.12d0*x1189 - 0.265536463858562d0* x219 + 0.01
-     &34739790481851d0*x227 - 88.96d0*x326 + 23.4373986088704d0*x533 + 8
-     &89.6d0*x534 - 912.68739781797d0*x535 - 444.8d0*x536 + 1.9655548892
-     &6112d0*x746 + 11.12d0*x756 - 0.598417971583988d0*x762 - 11.12d0*x7
-     &71 - 19497.0894790412d0*x773 - 0.0518387373921224d0*x796 + 3377.92
-     &161802707d0*x798 + 5.56d0* x799 + 5267.95760052111d0*x805 + 44.48d
-     &0*x913))) + 1.99904123183637d0*x17*x193*x784 + 2.52921567721623d0*
-     &x17*x264* x486 + x17*x734 - x17*x744 - x17*x747 - x17*x757 - x17*x
-     &759 + x17 *x763 + x17*x769 + x17*x772 + x17*x774 - x17*x776 - 4.21
-     &535946202706d0*x17*x783 + 80.0d0*x225*x735 - x233*x743*x755 + 160.
-     &0d0*x254*x735 + 16.0d0*x325*x735 + 0.031091d0*x651*x743*( 2.0d0*x4
-     &64 - 2.0d0*x465 + x793) + x735*x737 - 947.474388582934d0* x735*x76
-     &0 - x735*x782 - x738*x740 - x738*x770 + x738*x777 - x738* x779 + 0
-     &.00932351391944647d0*x742*x743 - 607.539859357387d0*x743* x765 - 0
-     &.0414546666666667d0*x785*x786*x787) + x587
-      d2E(2) = rho_c*(-x1007*x650 - x1020*x1329 + x1195*x467*x725 + x119
-     &6*x1197 + x1196 *x1211 + 16.0d0*x1196*x225 + 32.0d0*x1196*x254 - 1
-     &18.434298572867d0*x1196*x760 - x1198*x1199 - x1198*x1208 + 2.0d0 *
-     &x1198*x1209 - x1198*x1210 + x1201*x17 - x1205*x17 - x1207*x17 - 0.
-     &632303919304059d0*x1212*x17 - x1213*x743*x785 + 0.00777275d0* x121
-     &4*(x466 + x793) - x1325*x17 + x1429*(-rho_c**( -7.66666666666667d0
-     &)*x476*x559*x669 - x1021*x1048*x1341 - 0.544841407721756d0*x1021*x
-     &1334*x477 - 3.53420459808846d0*x1021* x1335 - 1.69506215735657d0*x
-     &1021*x480 - x1025*x1331 - x1026*x1336 + x1040*x1339 + x1044*x1342 
-     &+ x1047*x1340 - 0.726455210295675d0* x1050*x1053 - x1051*x676 + x1
-     &080*x1369 + x1081*x1378 + x1134*( x1022*x1388*x1389*x476 - x1024*x
-     &1336 + x1092*x1339 + x1094*x1342 + 1.27129661801743d0*x1095*x1388 
-     &+ x1101*x1391 - x1103*x1391 + x1107*x1340 - x1107*x1392 - x1108*x6
-     &95 - x1132*(x1112*x1394*x566 + 514.618378308835d0*x1205 + 325.3952
-     &17550575d0*x1212 + 514.618378308835d0*x1325 + 659.967553630838d0*x
-     &1362 - 1029.23675661767d0*x1363 + 10559.4808580934d0*x1364 - x1393
-     &*x528* x566 + x1395 - x521*x706 + x564*(x565 + x793) + 21118.96171
-     &61868d0*x656 - 16467.7881058827d0*x657 - 0.599756451670674d0*x742 
-     &+ 39081.3971475595d0*x765) + x1133*x1369 - x1331 - x1334*x1386 - x
-     &1385 - 0.757329556733241d0*x1387*x579 - 3.53420459808846d0*x1387 -
-     & 0.363227605147837d0*x1389*x1390) + 0.757329556733241d0*x1338*x489
-     & - 1.27129661801743d0*x1338 + x1370 *x1372 + x1370*x1373*x679 - x1
-     &370*x1375 + x1376*x1377 + x1379* x1380*x569 - x1383*x1384 + x584*x
-     &677 - x722*(0.296852159568225d0* x1014*(-x1031 + x1032 - x1146 - x
-     &1147) - x1022*x1400*x495*x546 + x1023*x1104*x1138*x494 + 1.2712966
-     &1801743d0*x1052*x717 - x1102* x1409*x540*x708 + 2.01954548462197d0
-     &*x1136*x697 + 0.825249003599665d0*x1140*x1406*x1407 + 4.4013280191
-     &9821d0*x1143* x697 - 0.363227605147837d0*x1144*x1152*x479*x538 + x
-     &1151*x1408 - 0.296852159568225d0*x1154*x1410*x708 - 1.650498007199
-     &33d0*x1156* x697 + x1161*x1409*x707 + x1165*x1410*x707 - 0.7916057
-     &588486d0* x1167*x1404 + x1168*x1397*x556 - 1.5832115176972d0*x1169
-     &*x1401 + x1170*x1405 - x1170*x717 + x1173*x1408 + x1174*x1405 + x1
-     &178* x1406*x522 - 0.757329556733241d0*x1180*x1398 - x1183*x1424 - 
-     &x1184*x1424 + x1191*(x1187*x1428 + 7.13037029545289d0*x1347 - 57.0
-     &429623636231d0*x1364 + x1368 + 5.56d0*x1412 - 5.56d0*x1417 - 0.006
-     &4798421740153d0*x1418 - 3.51560979133057d0*x1419 + 57.042962363623
-     &1d0*x1420 + 114.085924727246d0*x1421 + 11.12d0* x1422 + 422.240202
-     &253384d0*x1423 + 2.78d0*x1425 + 2.78d0*x1426* x498 + 5.56d0*x1427 
-     &- 177.92d0*x663 - 114.085924727246d0*x705) + x1194*(-x1068*x693 + 
-     &x1187*x1426 + x1192*x1428 - 1316.98940013028d0*x1280 + 14.26074059
-     &09058d0*x1347 + x1365 + 22.24d0*x1366 + 0.0202109685722776d0*x1367
-     & + 11.12d0*x1412 - 11.12d0*x1417 - 0.0129596843480306d0*x1418 + 11
-     &4.085924727246d0* x1420 + 228.171849454493d0*x1421 + 22.24d0*x1422
-     & + 844.480404506768d0*x1423 + 5.56d0*x1425 + 11.12d0*x1427 + 177.9
-     &2d0*x654 - 355.84d0*x663 - 228.171849454493d0*x705) - x1385* x546 
-     &+ x1386*x546*(-x1034 - x1035 - x1332 + x1333) + 2.20066400959911d0
-     &*x1396*x523 - 3.69416020796013d0*x1396 - 3.53420459808846d0*x1398 
-     &- 1.65049800719933d0*x1399*x523 + 2.7706201559701d0*x1399 - 7.7023
-     &2403359688d0*x1402 + 1.00977274231099d0*x1403*x523))) - x592 - x59
-     &5 + x598 - x600 - x648 - x652 + x730
-      d2E(3) = -rho_c*(0.0155455d0*x1005*x649*x725 - x1111*x1213*x17 + x
-     &1198*x1432* x1435 - x1199*x221*x589 + 0.00259091666666667d0*x1214*
-     &x1472 + x1329*x208*x724 - x1429*(gamma_cc*x1104*x1337*x170*x558 + 
-     &0.544841407721756d0*rho_c**(-6.66666666666667d0)*x553*(x1087* x109
-     &8*x1492 - x1106*x1388 + x1330 - x1392*x1487 + x1474 + x1475 + x147
-     &6 - x1477 - 0.544841407721756d0*x1492*x577 + x477*( 0.242151736765
-     &225d0*x788 + 0.242151736765225d0*x791) + x484*( 3.02931822693296d0
-     &*x1055*x1479 + 1.29497366311732d0*x1433 - 1.51465911346648d0*x1471
-     & + 1.51465911346648d0*x1478*x196 - 3.02931822693296d0*x1480 + 31.0
-     &793679148156d0*x1481 + 62.1587358296312d0*x1482 - 36.3518187231956
-     &d0*x1483 - 2.58994732623463d0*x1484 - 18.1759093615978d0*x1485) - 
-     &x578*( 560.770803354546d0*x1393*x667 - 119.859216990303d0*x1433 - 
-     &93.461800559091d0*x1473*x168 + 1682.31241006364d0*x1485 + 2876.621
-     &20776727d0*x1493 - 239.718433980606d0*x1494 - 5753.24241553455d0*x
-     &1495 - 3364.62482012728d0*x1496 - 747.694404472728d0*x1497*x168 + 
-     &140.192700838636d0*x1504)) + x1021*x1330 + 0.242151736765225d0*x10
-     &21*x1473 + x1021*x1474 + x1021*x1475 + x1021*x1476 - x1021*x1477 +
-     & 0.544841407721756d0* x1079*(x1056*x1479 + x1065*x1478 - 2.78d0*x1
-     &471 - 5.56d0*x1480 + 57.0429623636231d0*x1481 + 114.085924727246d0
-     &*x1482 - 66.72d0* x1483 - 4.75358019696859d0*x1484 + x1486) - x110
-     &4*x1488*x678 + x1338*x1487 + x1383*x1491 - x1487*x1488*x548 - 1.08
-     &968281544351d0 *x1489*x1490*x669 - x722*(0.263868586282867d0*x1014
-     &*x1472 + x1027 *x1153*x1397 - x1052*x1104*x1400 + x1052*x1330 + x1
-     &099*x1139* x1160*x1506*x474 - x1100*x1152*x1506*x540 - 0.544841407
-     &721756d0* x1152*x1510*x541 - x1154*x1507*x1508 - x1155*x1508*x1510
-     & + 1.78111295740935d0*x1164*x1507 + 4.21075233543682d0*x1177*x1505
-     & + 1.51465911346648d0*x1177*x1509 + 9.17676892002827d0*x1179*x1505
-     & + 1.65049800719933d0*x1179*x1509 + 0.544841407721756d0*x1190*(x14
-     &86 - 57.0429623636231d0*x1493 + 4.75358019696859d0*x1494 + 114.085
-     &924727246d0*x1495 + 66.72d0*x1496 - 2.78d0*x1504 + 2.78d0* x1511 +
-     & 5.56d0*x1512 + 5.56d0*x1513) + 0.296852159568225d0*x1193* (4.7535
-     &8019696859d0*x1433 - 66.72d0*x1485 - 114.085924727246d0* x1493 + 9
-     &.50716039393719d0*x1494 + 228.171849454493d0*x1495 + 133.44d0*x149
-     &6 - 5.56d0*x1504 + 5.56d0*x1511 + 11.12d0*x1512 + 11.12d0*x1513) +
-     & 8.80265603839643d0*x1396*x697 + 1.51465911346648d0*x1398*x1405 - 
-     &3.02931822693296d0*x1398*x717 - 6.60199202879732d0*x1399*x697 - 3.
-     &1664230353944d0*x1401*x1404 + 1.65049800719933d0*x1402*x1405 + 4.0
-     &3909096924395d0*x1403*x697 + 0.242151736765225d0*x1472*x493*x546))
-     & + x1430*x1431 + x1431*x1436 - x1434*x17 + x1471*x17 - 41.03810241
-     &98728d0*x589*x597)
-      d2E(4) = x470*(rho_c*(x1006*x1088*x1327*x1516*x586 + 0.00777275d0*
-     &x467*x732 - x728*(rho_s*x1517*x555*x558 + x1021*x481 + x1049*x1520
-     &*x200 + x1371 - x1372*x1518 - x1373*x1519 - x1374 + x1375*x1518 - 
-     &x1377* x1521 - 0.296852159568225d0*x1379*x199 + x1384*x1524 - x152
-     &2*x582 - x1522*(x1086 + x581) + 0.692655038992524d0*x571 - 0.41262
-     &4501799832d0*x572)) + x733)
-      d2E(5) = -rho_c*x1005*(x1516*x650 + x1527*x1528*x725 - x727*(0.825
-     &249003599665d0* x1335*x571 - x1378*x1519 - x1380*x1489*x1521*x540 
-     &+ x1489*x1517 - 0.296852159568225d0*x1490*x198*x204 + x1491*x1524 
-     &- x1518*x548* x677 + 1.08968281544351d0*x670 - x722*(x1381 + x720)
-     & + x723))
-      d2E(6) = -rho_c*x1528*(x1005*x1516*x1527 + x540*(0.32347469700879d
-     &0*rho_c**( -7.0d0)*x1009*x1017*x500**8.34d0 + x1009*x1520*x1525 + 
-     &x1526* x1529 - x1529 - x1016*x1515*x1523*x548/x1010**2))
       end subroutine
 
 
@@ -4963,8 +1000,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -4979,8 +1016,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -5005,8 +1042,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -5021,8 +1058,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -5039,8 +1076,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -5085,8 +1122,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -5105,8 +1142,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -5125,8 +1162,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -5195,8 +1232,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -5218,8 +1255,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -5241,8 +1278,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -5273,8 +1310,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -5304,8 +1341,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -5343,8 +1380,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -5369,8 +1406,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -5409,8 +1446,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -5476,8 +1513,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -5549,8 +1586,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -5643,8 +1680,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -5688,8 +1725,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -5772,8 +1809,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -5906,8 +1943,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -6039,8 +2076,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -6231,8 +2268,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -6303,1447 +2340,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine ESRC_PW92_ERF(rho_c, mu, E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, mu
-      real*8, intent(out) :: E
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18
-      E = 0.0d0
-      x0 = 0.693147180559945d0
-      x1 = -x0 + 1.0d0
-      x2 = 1d0/rho_c
-      x3 = x2**0.333333333333333d0
-      x4 = x2**0.166666666666667d0
-      x5 = sqrt(x2)
-      x6 = x2**0.666666666666667d0
-      x7 = x1*(0.132568899905202d0*x3 + 1.0d0)*log(1.0d0 + 4.93480220054
-     &4679d0/(x1* (2.2255694211506878d0*x3 + 5.9825504357710795d0*x4 + 0
-     &.80042863499936356d0*x5 + 0.18970043257475591d0*x6)))
-      x8 = mu**2
-      x9 = x2**1.66666666666667d0
-      x10 = x2**1.0d0
-      x11 = x2**1.33333333333333d0
-      x12 = (-0.00304892328706429d0*x10 + 0.000275310793616358d0*x11 + 0
-     &.0128480790170175d0*x3 + 0.0315297404574782d0*x6 + 1.0d0)*exp( -0.
-     &46675853320810856d0*x3)
-      x13 = x0 - 1.0d0
-      x14 = x3*x8
-      x15 = 4.60448529760779d0*mu*x4 + 1.0d0
-      x16 = mu**3
-      x17 = x12 - 1.0d0
-      x18 = 1d0/(0.337569861992026d0*x3 + 0.0244354823084343d0*x6 + 1.0d
-     &0)
-      E = -rho_c*(0.202642367284676d0*x7 - (0.000640558526213818d0*mu**8
-     &*x2** 2.66666666666667d0*x7 + mu**6*(0.00248266686171384d0*x17*x9 
-     &+ 0.0108059179628909d0*x2**2.0d0*x7) + 0.00264117541143784d0*mu**5
-     &* x12*x9 - mu**4*(-0.0418814102677522d0*x10*x17 - 0.06835901301883
-     &05d0*x11*x7 + 0.00020688890514282d0*x2**1.0d0*( -x18*(-0.305045320
-     &493917d0*x3 + 17.2274040011291d0) - ( -5.62907590342551d0*x3 + 6.0
-     &84d0*x6)*exp(-0.33933171852197186d0* x3) + 17.2274040011291d0)) - 
-     &0.202642367284676d0*x13*log(( 0.62035049089940009d0*x14*(3.4485100
-     &000000002d0 - 1.227722850784289d0/x13) + x15 + 1.9140710242289749d
-     &0*x16*x5)/( 2.1392848713714905d0*x14 + x15)) + x16*(0.044555374183
-     &0535d0*x10* x12 + 0.000132058770571892d0*x9*(17.2274040011291d0*x1
-     &8*( -0.0177069812999059d0*x3 + 1.0d0)/x6 + 37.6991118430775d0*( -3
-     &.07073492995203d0*x3 + 0.384834731559127d0*x6)*exp( -0.19230865217
-     &881402d0*x3)/x10)))/(0.237113969739022d0*x6*x8 + 1.0d0)**4)
-      end subroutine
-
-
-
-C*****************************************************************************
-      pure subroutine D1ESRC_PW92_ERF(rho_c, mu, E, d1E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, mu
-      real*8, intent(out) :: E, d1E(9)
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
-     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
-     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
-     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      x0 = 1d0/rho_c
-      x1 = x0**0.333333333333333d0
-      x2 = 0.132568899905202d0*x1 + 1.0d0
-      x3 = 0.693147180559945d0
-      x4 = -x3 + 1.0d0
-      x5 = x0**0.166666666666667d0
-      x6 = sqrt(x0)
-      x7 = x0**0.666666666666667d0
-      x8 = 2.22556942115069d0*x1 + 5.98255043577108d0*x5 + 0.80042863499
-     &9364d0*x6 + 0.189700432574756d0*x7
-      x9 = 1.0d0 + 4.93480220054468d0/(x4*x8)
-      x10 = x4*log(x9)
-      x11 = x10*x2
-      x12 = 0.202642367284676d0*x11
-      x13 = mu**2
-      x14 = x13*x7
-      x15 = 0.237113969739022d0*x14 + 1.0d0
-      x16 = x15**(-4)
-      x17 = mu**5
-      x18 = x0**1.66666666666667d0
-      x19 = exp(-0.46675853320810856d0*x1)
-      x20 = x0**1.0d0
-      x21 = 0.00304892328706429d0*x20
-      x22 = x0**1.33333333333333d0
-      x23 = 0.0128480790170175d0*x1 - x21 + 0.000275310793616358d0*x22 +
-     & 0.0315297404574782d0*x7 + 1.0d0
-      x24 = x19*x23
-      x25 = x18*x24
-      x26 = 0.00264117541143784d0*x17*x25
-      x27 = x0**2.66666666666667d0
-      x28 = x11*x27
-      x29 = 0.000640558526213818d0*mu**8*x28
-      x30 = x1*x13
-      x31 = 4.60448529760779d0*mu*x5 + 1.0d0
-      x32 = mu**3
-      x33 = x3 - 1.0d0
-      x34 = 3.44851d0 - 1.22772285078429d0/x33
-      x35 = 0.6203504908994d0*x30*x34 + x31 + 1.91407102422897d0*x32*x6
-      x36 = x35/(2.13928487137149d0*x30 + x31)
-      x37 = 0.202642367284676d0*x33
-      x38 = x37*log(x36)
-      x39 = x24 - 1.0d0
-      x40 = x18*x39
-      x41 = x0**2.0d0
-      x42 = x11*x41
-      x43 = mu**6*(0.00248266686171384d0*x40 + 0.0108059179628909d0*x42)
-     &
-      x44 = 0.0445553741830535d0*x20
-      x45 = x24*x44
-      x46 = exp(-0.19230865217881402d0*x1)
-      x47 = x46*(-3.07073492995203d0*x1 + 0.384834731559127d0*x7)
-      x48 = 37.6991118430775d0/x20
-      x49 = x47*x48
-      x50 = 0.337569861992026d0*x1 + 0.0244354823084343d0*x7 + 1.0d0
-      x51 = 1d0/x50
-      x52 = 1d0/x7
-      x53 = -0.0177069812999059d0*x1 + 1.0d0
-      x54 = x51*x52*x53
-      x55 = x18*(x49 + 17.2274040011291d0*x54)
-      x56 = x32*(x45 + 0.000132058770571892d0*x55)
-      x57 = mu**4
-      x58 = 0.0418814102677522d0*x20*x39
-      x59 = exp(-0.33933171852197186d0*x1)
-      x60 = x0**1.0d0*(-x51*(-0.305045320493917d0*x1 + 17.2274040011291d
-     &0) - x59*( -5.62907590342551d0*x1 + 6.084d0*x7) + 17.2274040011291
-     &d0)
-      x61 = x11*x22
-      x62 = x57*(-x58 + 0.00020688890514282d0*x60 - 0.0683590130188305d0
-     &*x61)
-      x63 = x16*(x26 + x29 - x38 + x43 + x56 - x62)
-      x64 = (0.741856473716896d0*x1 + 0.99709173929518d0*x5 + 0.40021431
-     &7499682d0*x6 + 0.126466955049837d0*x7)/(x8**2*x9)
-      x65 = x19*(-0.0042826930056725d0*x1 + x21 - 0.000367081058155144d0
-     &*x22 - 0.0210198269716521d0*x7)
-      x66 = mu**7
-      x67 = x2*x64
-      x68 = 0.767414216267966d0*x5
-      x69 = mu*x1
-      x70 = x19*(0.0777930888680181d0*x1*x23 - 0.00214134650283625d0*x1 
-     &+ 0.00152446164353214d0*x20 - 0.000183540529077572d0*x22 - 0.01050
-     &99134858261d0*x7)
-      x71 = 1d0/x1
-      x72 = 0.101681773497972d0*x51*x71
-      x73 = 11.4849360007528d0*x54
-      x74 = 17.2274040011291d0*x52*x53*(0.112523287330675d0*x1 + 0.01629
-     &03215389562d0*x7)/x50**2
-      x75 = x59*(-0.240695990468967d0*x1 + 0.26014827853397d0*x7)
-      E = -rho_c*(x12 - x63)
-      d1E(1) = -mu*x16*(-0.000410930386996015d0*x0**2.0d0*x24*x57 + 2.83
-     &060463816878d-5 *x0**3.0d0*x10*x66 + x13*(-0.000132058770571892d0*
-     &x18*( 2.41662179562687d0*x0**(-0.666666666666667d0)*x47 + x46*x48*
-     &( 1.02357830998401d0*x1 - 0.256556487706084d0*x7) + x49 + x72 + x7
-     &3 + x74) - 0.00693220036674015d0*x22*x24 - x44*x65 + x45 + 0.00022
-     &0097950953153d0*x55) + x17*(0.00047750955226877d0*x0** 2.333333333
-     &33333d0*x10 - 0.00496533372342768d0*x18*x70 + 0.0041377781028564d0
-     &*x40 - 0.0533250677421794d0*x41*x67 + 0.0216118359257818d0*x42) - 
-     &0.00264117541143784d0*x18*x57*x65 + 0.00440195901906306d0*x25*x57 
-     &- 0.00316102962473761d0*x27*x66*x67 + 0.00170815606990352d0*x28*x6
-     &6 + x32*(0.00302075971817058d0*x10* x18 + 0.00020688890514282d0*x1
-     &8*(-23.3866625383245d0*x52*x59*( 0.0802319968229891d0*x1 - 0.17343
-     &2185689313d0*x7) - 15.591108358883d0*x52*x75 + 11.4849360007528d0*
-     &x52 - 2.64527879654103d0*x71*x75 - x72 - x73 - x74) - 0.0837628205
-     &355044d0*x20*x70 - 0.337338207872387d0*x22*x67 + x58 - 0.000344814
-     &8419047d0*x60 + 0.091145350691774d0*x61) + x37*( -0.95703551211448
-     &7d0*x13*x6 - 0.206783496966467d0*x34*x69 + x36*( x68 + 0.713094957
-     &12383d0*x69) - x68)/x35) + 0.0089546919017051d0* x1*x10 - x12 - 0.
-     &632303919304059d0*x14*(-x26 - x29 + x38 - x43 - x56 + x62)/x15**5 
-     &+ x63 - 0.5d0*x64*(0.265137799810404d0*x1 + 2.0d0)
-      end subroutine
-
-
-C*****************************************************************************
-      pure subroutine D2ESRC_PW92_ERF(rho_c, mu, E, d1E, d2E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, mu
-      real*8, intent(out) :: E, d1E(9), d2E(45)
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
-     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
-     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
-     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
-     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
-     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
-     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
-     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
-     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
-     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
-     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
-     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
-     &, x171, x172, x173, x174, x175, x176, x177, x178, x179
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      d2E(:) = 0.0d0
-      x0 = 1d0/rho_c
-      x1 = x0**0.333333333333333d0
-      x2 = 0.132568899905202d0*x1 + 1.0d0
-      x3 = 0.693147180559945d0
-      x4 = -x3 + 1.0d0
-      x5 = 1d0/x4
-      x6 = x0**0.166666666666667d0
-      x7 = sqrt(x0)
-      x8 = 0.800428634999364d0*x7
-      x9 = x0**0.666666666666667d0
-      x10 = 2.22556942115069d0*x1 + 5.98255043577108d0*x6 + x8 + 0.18970
-     &0432574756d0 *x9
-      x11 = 1.0d0 + 4.93480220054468d0*x5/x10
-      x12 = x4*log(x11)
-      x13 = x12*x2
-      x14 = 0.202642367284676d0*x13
-      x15 = mu**2
-      x16 = x15*x9
-      x17 = 0.237113969739022d0*x16 + 1.0d0
-      x18 = x17**(-4)
-      x19 = mu**5
-      x20 = x0**1.66666666666667d0
-      x21 = exp(-0.46675853320810856d0*x1)
-      x22 = x0**1.0d0
-      x23 = 0.00304892328706429d0*x22
-      x24 = -x23
-      x25 = x0**1.33333333333333d0
-      x26 = 0.0128480790170175d0*x1 + x24 + 0.000275310793616358d0*x25 +
-     & 0.0315297404574782d0*x9 + 1.0d0
-      x27 = x21*x26
-      x28 = x20*x27
-      x29 = 0.00264117541143784d0*x19*x28
-      x30 = x0**2.66666666666667d0
-      x31 = x13*x30
-      x32 = 0.000640558526213818d0*mu**8*x31
-      x33 = x1*x15
-      x34 = 4.60448529760779d0*mu*x6 + 1.0d0
-      x35 = 2.13928487137149d0*x33 + x34
-      x36 = 1d0/x35
-      x37 = x3 - 1.0d0
-      x38 = 1.22772285078429d0/x37
-      x39 = -x38 + 3.44851d0
-      x40 = 0.6203504908994d0*x33
-      x41 = mu**3
-      x42 = x34 + 1.91407102422897d0*x41*x7
-      x43 = x39*x40 + x42
-      x44 = x36*x43
-      x45 = 0.202642367284676d0*x37
-      x46 = x45*log(x44)
-      x47 = x27 - 1.0d0
-      x48 = x20*x47
-      x49 = x0**2.0d0
-      x50 = x13*x49
-      x51 = mu**6*(0.00248266686171384d0*x48 + 0.0108059179628909d0*x50)
-     &
-      x52 = 0.0445553741830535d0*x22
-      x53 = x27*x52
-      x54 = exp(-0.19230865217881402d0*x1)
-      x55 = x54*(-3.07073492995203d0*x1 + 0.384834731559127d0*x9)
-      x56 = 1d0/x22
-      x57 = 37.6991118430775d0*x56
-      x58 = x55*x57
-      x59 = 0.337569861992026d0*x1 + 0.0244354823084343d0*x9 + 1.0d0
-      x60 = 1d0/x59
-      x61 = 1d0/x9
-      x62 = x61*(-0.0177069812999059d0*x1 + 1.0d0)
-      x63 = x60*x62
-      x64 = x20*(x58 + 17.2274040011291d0*x63)
-      x65 = x41*(x53 + 0.000132058770571892d0*x64)
-      x66 = mu**4
-      x67 = x22*x47
-      x68 = 0.0418814102677522d0*x67
-      x69 = x0**1.0d0
-      x70 = exp(-0.33933171852197186d0*x1)
-      x71 = x70*(-5.62907590342551d0*x1 + 6.084d0*x9)
-      x72 = x60*(-0.305045320493917d0*x1 + 17.2274040011291d0)
-      x73 = x69*(-x71 - x72 + 17.2274040011291d0)
-      x74 = x13*x25
-      x75 = x66*(-x68 + 0.00020688890514282d0*x73 - 0.0683590130188305d0
-     &*x74)
-      x76 = x29 + x32 - x46 + x51 + x65 - x75
-      x77 = x18*x76
-      x78 = x1*x12
-      x79 = 0.265137799810404d0*x1 + 2.0d0
-      x80 = 0.741856473716896d0*x1 + 0.99709173929518d0*x6 + 0.400214317
-     &499682d0*x7 + 0.126466955049837d0*x9
-      x81 = 1d0/x11
-      x82 = x81/x10**2
-      x83 = x80*x82
-      x84 = x79*x83
-      x85 = -x29 - x32 + x46 - x51 - x65 + x75
-      x86 = x17**(-5)
-      x87 = x16*x86
-      x88 = x85*x87
-      x89 = 0.0042826930056725d0*x1
-      x90 = 0.0210198269716521d0*x9
-      x91 = 0.000367081058155144d0*x25
-      x92 = x21*(x23 - x89 - x90 - x91)
-      x93 = x52*x92
-      x94 = x25*x27
-      x95 = 0.00693220036674015d0*x94
-      x96 = 0.000220097950953153d0*x64
-      x97 = 1.02357830998401d0*x1 - 0.256556487706084d0*x9
-      x98 = x54*x57
-      x99 = x0**(-0.666666666666667d0)
-      x100 = x55*x99
-      x101 = 1d0/x1
-      x102 = 0.101681773497972d0*x101*x60
-      x103 = 11.4849360007528d0*x63
-      x104 = x59**(-2)
-      x105 = 0.112523287330675d0*x1 + 0.0162903215389562d0*x9
-      x106 = x104*x105
-      x107 = 17.2274040011291d0*x62
-      x108 = x106*x107
-      x109 = x102 + x103 + x108
-      x110 = 2.41662179562687d0*x100 + x109 + x58 + x97*x98
-      x111 = 0.000132058770571892d0*x20
-      x112 = x110*x111
-      x113 = 11.4849360007528d0*x61
-      x114 = x70*(-0.240695990468967d0*x1 + 0.26014827853397d0*x9)
-      x115 = x114*x61
-      x116 = 15.591108358883d0*x115
-      x117 = 2.64527879654103d0*x101*x114
-      x118 = x70*(0.0802319968229891d0*x1 - 0.173432185689313d0*x9)
-      x119 = x118*x61
-      x120 = 23.3866625383245d0*x119
-      x121 = -x102 - x103 - x108 + x113 - x116 - x117 - x120
-      x122 = 0.00020688890514282d0*x20
-      x123 = x12*x20
-      x124 = x1*x26
-      x125 = -0.00214134650283625d0*x1 + 0.00152446164353214d0*x22 - 0.0
-     &00183540529077572d0*x25 - 0.0105099134858261d0*x9
-      x126 = x21*(0.0777930888680181d0*x124 + x125)
-      x127 = x126*x22
-      x128 = x2*x83
-      x129 = x128*x25
-      x130 = 0.00302075971817058d0*x123 - 0.0837628205355044d0*x127 - 0.
-     &337338207872387d0*x129 + x68 + 0.091145350691774d0*x74
-      x131 = 0.767414216267966d0*x6
-      x132 = mu*x1
-      x133 = x131 + 0.71309495712383d0*x132
-      x134 = x15*x7
-      x135 = 0.957035512114487d0*x134
-      x136 = x132*x39
-      x137 = 0.206783496966467d0*x136
-      x138 = -x131 - x135 - x137
-      x139 = x133*x44 + x138
-      x140 = x45/x43
-      x141 = x139*x140
-      x142 = x66*x92
-      x143 = x142*x20
-      x144 = x0**2.33333333333333d0
-      x145 = x12*x144
-      x146 = x126*x20
-      x147 = 0.0533250677421794d0*x49
-      x148 = mu**7
-      x149 = x0**3.0d0*x148
-      x150 = x12*x149
-      x151 = x28*x66
-      x152 = x0**2.0d0
-      x153 = x27*x66
-      x154 = x152*x153
-      x155 = x148*x31
-      x156 = x148*x30
-      x157 = x128*x156
-      x158 = 2.83060463816878d-5*x150 + 0.00440195901906306d0*x151 - 0.0
-     &00410930386996015d0*x154 + 0.00170815606990352d0*x155 - 0.00316102
-     &962473761d0*x157 + x19*(-x128*x147 + 0.00047750955226877d0*x145 - 
-     &0.00496533372342768d0*x146 + 0.0041377781028564d0*x48 + 0.02161183
-     &59257818d0*x50)
-      x159 = x141 - 0.00264117541143784d0*x143 + x15*(-x112 + x53 - x93 
-     &- x95 + x96) + x158 + x41*(x121*x122 + x130 - 0.0003448148419047d0
-     &*x73)
-      x160 = mu*x18
-      x161 = x82*(0.989141964955861d0*x1 + 1.16327369584438d0*x6 + 0.600
-     &321476249523d0*x7 + 0.210778258416395d0*x9)
-      x162 = 0.5d0*x79
-      x163 = x5*x80**2/(x10**4*x11**2)
-      x164 = x80*x81*(1.48371294743379d0*x1 + 1.99418347859036d0*x6 + x8
-     & + 0.252933910099675d0*x9)/x10**3
-      x165 = -x40*(x38 - 3.44851d0) + x42
-      x166 = x133*x36
-      x167 = 0.00264117541143784d0*x20*x66
-      x168 = x21*(0.00571025734089666d0*x1 - 0.00609784657412857d0*x22 +
-     & 0.000856522469028669d0*x25 + 0.0350330449527535d0*x9)
-      x169 = x161*x2
-      x170 = 0.00316102962473761d0*x156
-      x171 = x163*x2
-      x172 = x164*x2
-      x173 = mu*(x131 + x135 + x137)
-      x174 = 0.89531658564596d0*x6
-      x175 = 0.0891107483661069d0*x22
-      x176 = x54*x97
-      x177 = -0.203363546995945d0*x101*x106 + x104*x107*(0.1500310497742
-     &34d0*x1 + 0.0271505358982603d0*x9) - x105*x107*(0.225046574661351d
-     &0*x1 + 0.0325806430779124d0*x9)/x59**3 - 22.9698720015055d0*x106*x
-     &62 + 3.82831200025092d0*x63
-      x178 = x21*(0.311172355472072d0*x1*x125 + 0.00285512867044833d0*x1
-     & - 0.103724118490691d0*x124 + x24 + 0.000428261234514334d0*x25 + 0
-     &.0121035293512547d0*x26*x9 + 0.0175165224763768d0*x9)
-      x179 = 0.337338207872387d0*x25
-      E = -rho_c*(x14 - x77)
-      d1E(1) = -x14 - x159*x160 + x77 + 0.0089546919017051d0*x78 - 0.5d0
-     &*x84 - 0.632303919304059d0*x88
-      d2E(1) = x0*(0.0883792666034679d0*x1*x83 - 1.26460783860812d0*x159
-     &*x41*x86*x9 - 2.0d0*x160*(-x15*(x112 - x53 + x93 + x95 - x96) + x1
-     &58 + x167*x21 *(x24 + x89 + x90 + x91) + x41*(-x122*(x109 - x113 +
-     & x116 + x117 + x120) + x130 + 0.0003448148419047d0*x69*(x71 + x72 
-     &- 17.2274040011291d0)) - 0.202642367284676d0*x4*(x138 + x165*x166)
-     &/ x165) - x160*(-mu*x141*x166 - 6.39350882283002d-5*x0** 2.3333333
-     &3333333d0*x153 + x139*x173*x45/x43**2 + x140*(mu*x133* x43*(1.4261
-     &8991424766d0*x132 + 1.53482843253593d0*x6)/x35**2 + 1.435553268171
-     &73d0*x134 + 0.275711329288622d0*x136 - 2.0d0*x166* x173 + x174 - x
-     &44*(0.950793276165107d0*x132 + x174)) - 0.000821860773992031d0*x14
-     &2*x152 + 0.00880391803812612d0*x143 + 0.000279369479946145d0*x149*
-     &x83 + x15*(0.000440195901906306d0* x110*x20 + x111*(-0.15491242678
-     &0983d0*x0**(-0.333333333333333d0)* x55 - 1.61108119708458d0*x100 -
-     & 75.398223686155d0*x176*x56 - 4.83324359125373d0*x176*x99 + x177 -
-     & x98*(-1.36477107997868d0*x1 + 0.427594146176807d0*x9)) - x168*x52
-     & - x175*x27 + x175*x92 - 0.0138644007334803d0*x25*x92 - 0.00107855
-     &455836145d0*x28 - 0.000586927869208408d0*x64 + 0.0231073345558005d
-     &0*x94) - 0.000188706975877918d0*x150 - 0.0117385573841682d0*x151 +
-     & 0.00191767513931474d0*x154 - 0.00626323892297956d0*x155 + 0.01559
-     &90559481421d0*x156*x171 + 0.0168588246652672d0*x157 - x167 *x168 +
-     & x169*x170 - x170*x172 + x19*(0.213300270968718d0*x128*x49 + 0.004
-     &71283037863406d0*x144*x83 - 0.0025467176121001d0*x145 + 0.01655111
-     &24114256d0*x146 + x147*x169 - x147*x172 + 0.263148661638301d0*x171
-     &*x49 - 0.00496533372342768d0*x178*x20 - 0.0110340749409504d0*x48 -
-     & 0.0648355077773455d0*x50) + x41*( -0.0006896296838094d0*x121*x20 
-     &+ x122*(-5.29055759308205d0*x101* x118 + 5.19703611962767d0*x115 -
-     & 31.182216717766d0*x119 + x177 - 23.3866625383245d0*x61*x70*(-0.10
-     &6975995763985d0*x1 + 0.289053642815522d0*x9) - 3.82831200025092d0*
-     &x61 - x70*( -0.0720184066122292d0*x1 + 0.0778387062718705d0*x9)) -
-     & 0.0120830388726823d0*x123 + 0.167525641071009d0*x127 + 0.89956855
-     &4326366d0*x129 + x169*x179 + 1.66469733053645d0*x171* x25 - x172*x
-     &179 - 0.0837628205355044d0*x178*x22 + 0.0298137034090898d0*x20*x83
-     & - 0.0837628205355044d0*x67 + 0.0009195062450792d0*x73 - 0.2126724
-     &84947473d0*x74)) + x161*x162 - x162*x164 + 2.46740110027234d0*x163
-     &*x79 + 1.26460783860812d0* x76*x87 + 0.00596979460113673d0*x78 - x
-     &84 + 1.05383986550676d0* x88 - 0.499760307959092d0*x25*x66*x85/x17
-     &**6)
-      end subroutine
-
-
-C*****************************************************************************
-      pure subroutine ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, gamma_cc, mu
-      real*8, intent(out) :: E
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35
-      E = 0.0d0
-      x0 = 0.693147180559945d0
-      x1 = -x0 + 1.0d0
-      x2 = 1d0/rho_c
-      x3 = x2**0.333333333333333d0
-      x4 = 0.132568899905202d0*x3 + 1.0d0
-      x5 = x2**0.166666666666667d0
-      x6 = sqrt(x2)
-      x7 = x2**0.666666666666667d0
-      x8 = log(1.0d0 + 4.934802200544679d0/(x1*(2.2255694211506878d0*x3 
-     &+ 5.9825504357710795d0*x5 + 0.80042863499936356d0*x6 + 0.189700432
-     &57475591d0*x7)))
-      x9 = x1*x4*x8
-      x10 = 0.202642367284676d0*x9
-      x11 = mu**2
-      x12 = (0.237113969739022d0*x11*x7 + 1.0d0)**(-4)
-      x13 = x2**1.66666666666667d0
-      x14 = x2**1.0d0
-      x15 = x2**1.33333333333333d0
-      x16 = (-0.00304892328706429d0*x14 + 0.000275310793616358d0*x15 + 0
-     &.0128480790170175d0*x3 + 0.0315297404574782d0*x7 + 1.0d0)*exp( -0.
-     &46675853320810856d0*x3)
-      x17 = mu**5*x13*x16
-      x18 = 0.00264117541143784d0*x17
-      x19 = mu**8*x2**2.66666666666667d0*x9
-      x20 = 0.000640558526213818d0*x19
-      x21 = x0 - 1.0d0
-      x22 = x11*x3
-      x23 = 4.60448529760779d0*mu*x5 + 1.0d0
-      x24 = mu**3
-      x25 = x21*log((0.62035049089940009d0*x22*(3.4485100000000002d0 - 1
-     &.227722850784289d0/x21) + x23 + 1.9140710242289749d0*x24*x6)/( 2.1
-     &392848713714905d0*x22 + x23))
-      x26 = 0.202642367284676d0*x25
-      x27 = x16 - 1.0d0
-      x28 = mu**6*(0.00248266686171384d0*x13*x27 + 0.0108059179628909d0*
-     &x2**2.0d0*x9 )
-      x29 = 1d0/(0.337569861992026d0*x3 + 0.0244354823084343d0*x7 + 1.0d
-     &0)
-      x30 = x24*(0.000132058770571892d0*x13*(17.2274040011291d0*x29*( -0
-     &.0177069812999059d0*x3 + 1.0d0)/x7 + 37.6991118430775d0*( -3.07073
-     &492995203d0*x3 + 0.384834731559127d0*x7)*exp( -0.19230865217881402
-     &d0*x3)/x14) + 0.0445553741830535d0*x14*x16)
-      x31 = mu**4*(-0.0418814102677522d0*x14*x27 - 0.0683590130188305d0*
-     &x15*x9 + 0.00020688890514282d0*x2**1.0d0*(-x29*(-0.305045320493917
-     &d0*x3 + 17.2274040011291d0) - (-5.62907590342551d0*x3 + 6.084d0*x7
-     &)*exp( -0.33933171852197186d0*x3) + 17.2274040011291d0))
-      x32 = exp(-x12*(0.084949837941456843d0*x17 + 0.020602699373253298d
-     &0*x19 - 6.5177179017939446d0*x25 + 32.163648644302206d0*x28 + 32.1
-     &63648644302206d0*x30 - 32.163648644302206d0*x31) + 6.5177179017939
-     &446d0*x9) - 1.0d0
-      x33 = (x10 + x12*(-x18 - x20 + x26 - x28 - x30 + x31))/(x4*x8)
-      x34 = 11.5212611093509d0*gamma_cc*rho_c**(-2.33333333333333d0)*x1*
-     &*(-2.78d0)* x33**2.78d0
-      x35 = 1.0d0 + x34/x32
-      E = -rho_c*(x10 - x12*(x18 + x20 - x26 + x28 + x30 - x31) - 0.0310
-     &91d0*log( x34*x35/(132.73945754984086d0*gamma_cc**2*rho_c**( -4.66
-     &6666666666667d0)*x1**(-5.5599999999999996d0)*x33** 5.5599999999999
-     &996d0/x32**2 + x35) + 1.0d0))
-      end subroutine
-
-
-C*****************************************************************************
-      pure subroutine D1ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E, d1E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, gamma_cc, mu
-      real*8, intent(out) :: E, d1E(9)
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
-     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
-     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
-     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
-     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
-     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
-     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
-     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
-     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
-     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
-     &
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      x0 = 0.693147180559945d0
-      x1 = -x0 + 1.0d0
-      x2 = 6.51771790179394d0*x1
-      x3 = 1d0/rho_c
-      x4 = x3**0.333333333333333d0
-      x5 = 0.132568899905202d0*x4 + 1.0d0
-      x6 = 1d0/x1
-      x7 = x3**0.166666666666667d0
-      x8 = sqrt(x3)
-      x9 = x3**0.666666666666667d0
-      x10 = 2.22556942115069d0*x4 + 5.98255043577108d0*x7 + 0.8004286349
-     &99364d0*x8 + 0.189700432574756d0*x9
-      x11 = 1.0d0 + 4.93480220054468d0*x6/x10
-      x12 = log(x11)
-      x13 = x12*x5
-      x14 = x13*x2
-      x15 = mu**2
-      x16 = x15*x9
-      x17 = 0.237113969739022d0*x16 + 1.0d0
-      x18 = x17**(-4)
-      x19 = mu**4
-      x20 = x3**1.0d0
-      x21 = exp(-0.46675853320810856d0*x4)
-      x22 = 0.00304892328706429d0*x20
-      x23 = x3**1.33333333333333d0
-      x24 = -x22 + 0.000275310793616358d0*x23 + 0.0128480790170175d0*x4 
-     &+ 0.0315297404574782d0*x9 + 1.0d0
-      x25 = x21*x24
-      x26 = x25 - 1.0d0
-      x27 = 0.0418814102677522d0*x20*x26
-      x28 = exp(-0.33933171852197186d0*x4)
-      x29 = 0.337569861992026d0*x4 + 0.0244354823084343d0*x9 + 1.0d0
-      x30 = 1d0/x29
-      x31 = x3**1.0d0*(-x28*(-5.62907590342551d0*x4 + 6.084d0*x9) - x30*
-     &( -0.305045320493917d0*x4 + 17.2274040011291d0) + 17.2274040011291
-     &d0)
-      x32 = 0.00020688890514282d0*x31
-      x33 = x1*x13
-      x34 = x23*x33
-      x35 = 0.0683590130188305d0*x34
-      x36 = x19*(-x27 + x32 - x35)
-      x37 = 32.1636486443022d0*x36
-      x38 = x0 - 1.0d0
-      x39 = x15*x4
-      x40 = 4.60448529760779d0*mu*x7 + 1.0d0
-      x41 = 1d0/(2.13928487137149d0*x39 + x40)
-      x42 = 1.22772285078429d0/x38
-      x43 = -x42 + 3.44851d0
-      x44 = 0.6203504908994d0*x39
-      x45 = mu**3
-      x46 = x40 + 1.91407102422897d0*x45*x8
-      x47 = x43*x44 + x46
-      x48 = x41*x47
-      x49 = x38*log(x48)
-      x50 = 6.51771790179394d0*x49
-      x51 = 0.0445553741830535d0*x20
-      x52 = x25*x51
-      x53 = x3**1.66666666666667d0
-      x54 = exp(-0.19230865217881402d0*x4)
-      x55 = x54*(-3.07073492995203d0*x4 + 0.384834731559127d0*x9)
-      x56 = 37.6991118430775d0/x20
-      x57 = x55*x56
-      x58 = 1d0/x9
-      x59 = -0.0177069812999059d0*x4 + 1.0d0
-      x60 = x30*x58*x59
-      x61 = x53*(x57 + 17.2274040011291d0*x60)
-      x62 = x45*(x52 + 0.000132058770571892d0*x61)
-      x63 = 32.1636486443022d0*x62
-      x64 = x26*x53
-      x65 = x3**2.0d0
-      x66 = x33*x65
-      x67 = mu**6*(0.00248266686171384d0*x64 + 0.0108059179628909d0*x66)
-     &
-      x68 = 32.1636486443022d0*x67
-      x69 = mu**5
-      x70 = x25*x53
-      x71 = x69*x70
-      x72 = 0.0849498379414568d0*x71
-      x73 = x3**2.66666666666667d0
-      x74 = x33*x73
-      x75 = mu**8*x74
-      x76 = 0.0206026993732533d0*x75
-      x77 = x63 + x68 + x72 + x76
-      x78 = exp(x14 - x18*(-x37 - x50 + x77)) - 1.0d0
-      x79 = rho_c**(-4.66666666666667d0)
-      x80 = 0.202642367284676d0*x33
-      x81 = 0.00264117541143784d0*x71
-      x82 = 0.000640558526213818d0*x75
-      x83 = 0.202642367284676d0*x49
-      x84 = x36 - x62 - x67 - x81 - x82 + x83
-      x85 = x18*x84 + x80
-      x86 = 1d0/x5
-      x87 = 1d0/x12
-      x88 = x86*x87
-      x89 = x85*x88
-      x90 = x1**(-5.56d0)
-      x91 = x89**5.56d0*x90
-      x92 = x79*x91
-      x93 = 132.739457549841d0*gamma_cc**2
-      x94 = x92*x93
-      x95 = 1d0/x78
-      x96 = x1**(-2.78d0)
-      x97 = x89**2.78d0*x96
-      x98 = 11.5212611093509d0*rho_c**(-2.33333333333333d0)
-      x99 = x97*x98
-      x100 = gamma_cc*x99
-      x101 = x100*x95 + 1.0d0
-      x102 = 0.031091d0*log(x100*x101/(x101 + x94/x78**2) + 1.0d0)
-      x103 = x18*(-x36 + x62 + x67 + x81 + x82 - x83)
-      x104 = -x103 + x80
-      x105 = x1*x12
-      x106 = x105*x4
-      x107 = (0.741856473716896d0*x4 + 0.99709173929518d0*x7 + 0.4002143
-     &17499682d0*x8 + 0.126466955049837d0*x9)/(x10**2*x11)
-      x108 = x107*(0.265137799810404d0*x4 + 2.0d0)
-      x109 = x16*x84/x17**5
-      x110 = x21*(x22 - 0.000367081058155144d0*x23 - 0.0042826930056725d
-     &0*x4 - 0.0210198269716521d0*x9)
-      x111 = mu**7
-      x112 = x107*x5
-      x113 = 0.767414216267966d0*x7
-      x114 = mu*x4
-      x115 = x21*(0.00152446164353214d0*x20 - 0.000183540529077572d0*x23
-     & + 0.0777930888680181d0*x24*x4 - 0.00214134650283625d0*x4 - 0.0105
-     &099134858261d0*x9)
-      x116 = 1d0/x4
-      x117 = 0.101681773497972d0*x116*x30
-      x118 = 11.4849360007528d0*x60
-      x119 = 17.2274040011291d0*x58*x59*(0.112523287330675d0*x4 + 0.0162
-     &903215389562d0*x9)/x29**2
-      x120 = x28*(-0.240695990468967d0*x4 + 0.26014827853397d0*x9)
-      x121 = mu*x18*(2.83060463816878d-5*x105*x111*x3**3.0d0 - 0.0026411
-     &7541143784d0* x110*x19*x53 - 0.00316102962473761d0*x111*x112*x73 +
-     & 0.00170815606990352d0*x111*x74 + x15*(-x110*x51 - 0.0069322003667
-     &4015d0*x23*x25 + x52 - 0.000132058770571892d0*x53* (x117 + x118 + 
-     &x119 + 2.41662179562687d0*x3**( -0.666666666666667d0)*x55 + x54*x5
-     &6*(1.02357830998401d0*x4 - 0.256556487706084d0*x9) + x57) + 0.0002
-     &20097950953153d0*x61) - 0.000410930386996015d0*x19*x25*x3**2.0d0 +
-     & 0.00440195901906306d0* x19*x70 + 0.202642367284676d0*x38*(-x113 -
-     & 0.206783496966467d0* x114*x43 - 0.957035512114487d0*x15*x8 + x48*
-     &(x113 + 0.71309495712383d0*x114))/x47 + x45*(0.00302075971817058d0
-     &*x105* x53 - 0.337338207872387d0*x112*x23 - 0.0837628205355044d0*x
-     &115* x20 + x27 - 0.0003448148419047d0*x31 + 0.091145350691774d0*x3
-     &4 + 0.00020688890514282d0*x53*(-2.64527879654103d0*x116*x120 - x11
-     &7 - x118 - x119 - 15.591108358883d0*x120*x58 - 23.3866625383245d0*
-     &x28 *x58*(0.0802319968229891d0*x4 - 0.173432185689313d0*x9) + 11.4
-     &849360007528d0*x58)) + x69*(0.00047750955226877d0*x105*x3** 2.3333
-     &3333333333d0 - 0.0533250677421794d0*x112*x65 - 0.00496533372342768
-     &d0*x115*x53 + 0.0041377781028564d0*x64 + 0.0216118359257818d0*x66)
-     &)
-      x122 = exp(x14 + x18*(x37 + x50 - x63 - x68 - x72 - x76))
-      x123 = x122 - 1.0d0
-      x124 = 1d0/x123
-      x125 = x100*x124 + 1.0d0
-      x126 = x123**(-2)
-      x127 = gamma_cc/(x125 + x126*x94)
-      x128 = x125*x127*x99
-      x129 = rho_c**(-3.33333333333333d0)*x97
-      x130 = 26.8829425884854d0*x129
-      x131 = 1d0/x85
-      x132 = x4*x85*x86
-      x133 = x107*x6*x85*x87
-      x134 = 5.76063055467543d0*x129*x131*(-0.0497880869734803d0*x106 + 
-     &2.78d0*x108 + 3.51560979133057d0*x109 + 5.56d0*x121 + 0.2456943611
-     &57641d0*x132 - 27.4375002350284d0*x133)
-      x135 = x122*(-0.576031128088842d0*x106 + x107*(8.52779903542516d0*
-     &x4 + 64.3272972886044d0) + 40.6744021938219d0*x109 + 64.3272972886
-     &044d0*x121)
-      x136 = 5.76063055467543d0*x124*x135
-      x137 = gamma_cc*rho_c**(-5.66666666666667d0)*x91
-      x138 = x124*x137
-      x139 = exp(x14 - x18*(32.163648644302206d0*x19*(x27 - x32 + x35) +
-     & x2*log(x41*( -x44*(x42 - 3.4485100000000002d0) + x46)) + x77)) - 
-     &1.0d0
-      x140 = x104*x88
-      x141 = x140**5.56d0*x79*x90
-      x142 = x140**2.78d0*x96*x98
-      x143 = gamma_cc/x139
-      x144 = x142*x143 + 1.0d0
-      x145 = 1d0/(x144 + x141*x93/x139**2)
-      x146 = x142*x144
-      x147 = x145*x146
-      x148 = gamma_cc*x95
-      E = -rho_c*(-x102 + x104)
-      d1E(1) = -0.5d0*rho_c*(-0.0179093838034102d0*x106*x3 + x108*x3 + 1
-     &.26460783860812d0*x109*x3 + 2.0d0*x121*x3 - 0.062182d0*x127*( x124
-     &*x128*(132.739457549841d0*x126*x135*x137 + x129*x136 + x130 - 66.3
-     &697287749204d0*x131*x138*(-0.0995761739469607d0*x106 + 5.56d0 *x10
-     &8 + 7.03121958266113d0*x109 + 11.12d0*x121 + 0.491388722315281d0*x
-     &132 - 54.8750004700568d0*x133) - x134 + 619.450801899257d0*x138) -
-     & x125*x130 + x125*x134 + 11.5212611093509d0*x138*(x131*(-0.2868107
-     &75078269d0*x106 + 16.0145529419977d0*x108 + 20.252129182255d0*x109
-     & + 32.0291058839954d0*x121 + 1.41535444399617d0*x132 - 158.0573021
-     &97819d0*x133) - x136 - 26.8829425884854d0))/(x128 + 1.0d0)) + x102
-     & + x103 - x80
-      d1E(3) = 0.031091d0*rho_c*x145*(132.739457549841d0*x141*x143 + x14
-     &6 - x147*x148*( 265.478915099682d0*x148*x92 + x99))/(gamma_cc*x147
-     & + 1.0d0)
-      end subroutine
-
-
-
-C*****************************************************************************
-      pure subroutine D2ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E, d1E, d2
-     &E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 12, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, gamma_cc, mu
-      real*8, intent(out) :: E, d1E(9), d2E(45)
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
-     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
-     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
-     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
-     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
-     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
-     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
-     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
-     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
-     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
-     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
-     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
-     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
-     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
-     &, x193, x194, x195, x196, x197, x198, x199, x200, x201, x202, x203
-     &, x204, x205, x206, x207, x208, x209, x210, x211, x212, x213, x214
-     &, x215, x216, x217, x218, x219, x220, x221, x222, x223, x224, x225
-     &, x226, x227, x228, x229, x230, x231, x232, x233, x234, x235, x236
-     &, x237, x238, x239, x240, x241, x242, x243, x244, x245, x246, x247
-     &, x248, x249, x250, x251, x252, x253, x254, x255, x256, x257, x258
-     &, x259, x260, x261, x262, x263, x264, x265, x266, x267, x268, x269
-     &, x270, x271, x272, x273, x274, x275, x276, x277, x278, x279, x280
-     &, x281, x282, x283, x284, x285, x286, x287, x288, x289, x290, x291
-     &, x292, x293, x294, x295, x296, x297, x298, x299, x300, x301, x302
-     &, x303, x304, x305, x306, x307, x308, x309, x310, x311, x312, x313
-     &, x314, x315, x316, x317, x318, x319, x320, x321, x322, x323, x324
-     &, x325, x326, x327, x328, x329, x330, x331, x332, x333, x334, x335
-     &, x336, x337, x338, x339, x340, x341, x342, x343, x344, x345, x346
-     &, x347, x348, x349, x350, x351, x352, x353, x354, x355, x356, x357
-     &, x358, x359, x360, x361, x362, x363, x364, x365, x366, x367, x368
-     &, x369, x370, x371, x372, x373, x374, x375, x376, x377, x378, x379
-     &, x380, x381, x382, x383, x384, x385, x386, x387, x388, x389, x390
-     &, x391, x392, x393, x394, x395, x396, x397, x398, x399, x400, x401
-     &, x402, x403, x404, x405, x406, x407, x408, x409, x410, x411, x412
-     &, x413, x414, x415, x416, x417, x418, x419, x420, x421, x422, x423
-     &, x424, x425, x426, x427, x428, x429, x430, x431, x432, x433, x434
-     &, x435, x436, x437, x438, x439, x440, x441, x442, x443, x444, x445
-     &, x446, x447, x448, x449, x450, x451, x452, x453, x454, x455, x456
-     &, x457, x458, x459, x460, x461, x462, x463, x464, x465, x466, x467
-     &, x468, x469, x470, x471, x472, x473, x474, x475, x476, x477, x478
-     &, x479, x480, x481, x482, x483, x484, x485, x486, x487, x488, x489
-     &, x490, x491, x492, x493, x494, x495, x496, x497, x498, x499, x500
-     &, x501, x502, x503
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      d2E(:) = 0.0d0
-      x0 = 0.693147180559945d0
-      x1 = -x0 + 1.0d0
-      x2 = 6.51771790179394d0*x1
-      x3 = 1d0/rho_c
-      x4 = x3**0.333333333333333d0
-      x5 = 0.132568899905202d0*x4 + 1.0d0
-      x6 = x3**0.166666666666667d0
-      x7 = sqrt(x3)
-      x8 = 0.800428634999364d0*x7
-      x9 = x3**0.666666666666667d0
-      x10 = 2.22556942115069d0*x4 + 5.98255043577108d0*x6 + x8 + 0.18970
-     &0432574756d0 *x9
-      x11 = 1d0/x1
-      x12 = 4.93480220054468d0*x11
-      x13 = 1.0d0 + x12/x10
-      x14 = log(x13)
-      x15 = x14*x5
-      x16 = x15*x2
-      x17 = mu**2
-      x18 = x17*x9
-      x19 = 0.237113969739022d0*x18 + 1.0d0
-      x20 = x19**(-4)
-      x21 = mu**4
-      x22 = x3**1.0d0
-      x23 = exp(-0.46675853320810856d0*x4)
-      x24 = 0.00304892328706429d0*x22
-      x25 = -x24
-      x26 = x3**1.33333333333333d0
-      x27 = x25 + 0.000275310793616358d0*x26 + 0.0128480790170175d0*x4 +
-     & 0.0315297404574782d0*x9 + 1.0d0
-      x28 = x23*x27
-      x29 = x28 - 1.0d0
-      x30 = x22*x29
-      x31 = 0.0418814102677522d0*x30
-      x32 = x3**1.0d0
-      x33 = exp(-0.33933171852197186d0*x4)
-      x34 = x33*(-5.62907590342551d0*x4 + 6.084d0*x9)
-      x35 = 0.337569861992026d0*x4 + 0.0244354823084343d0*x9 + 1.0d0
-      x36 = 1d0/x35
-      x37 = x36*(-0.305045320493917d0*x4 + 17.2274040011291d0)
-      x38 = x32*(-x34 - x37 + 17.2274040011291d0)
-      x39 = 0.00020688890514282d0*x38
-      x40 = x1*x15
-      x41 = x26*x40
-      x42 = 0.0683590130188305d0*x41
-      x43 = x21*(-x31 + x39 - x42)
-      x44 = 32.1636486443022d0*x43
-      x45 = x0 - 1.0d0
-      x46 = x17*x4
-      x47 = 4.60448529760779d0*mu*x6 + 1.0d0
-      x48 = 2.13928487137149d0*x46 + x47
-      x49 = 1d0/x48
-      x50 = 1.22772285078429d0/x45
-      x51 = -x50 + 3.44851d0
-      x52 = 0.6203504908994d0*x46
-      x53 = mu**3
-      x54 = x47 + 1.91407102422897d0*x53*x7
-      x55 = x51*x52 + x54
-      x56 = x49*x55
-      x57 = x45*log(x56)
-      x58 = 6.51771790179394d0*x57
-      x59 = 0.0445553741830535d0*x22
-      x60 = x28*x59
-      x61 = x3**1.66666666666667d0
-      x62 = exp(-0.19230865217881402d0*x4)
-      x63 = x62*(-3.07073492995203d0*x4 + 0.384834731559127d0*x9)
-      x64 = 1d0/x22
-      x65 = 37.6991118430775d0*x64
-      x66 = x63*x65
-      x67 = 1d0/x9
-      x68 = x67*(-0.0177069812999059d0*x4 + 1.0d0)
-      x69 = x36*x68
-      x70 = x61*(x66 + 17.2274040011291d0*x69)
-      x71 = x53*(x60 + 0.000132058770571892d0*x70)
-      x72 = 32.1636486443022d0*x71
-      x73 = x29*x61
-      x74 = x3**2.0d0
-      x75 = x40*x74
-      x76 = mu**6*(0.00248266686171384d0*x73 + 0.0108059179628909d0*x75)
-     &
-      x77 = 32.1636486443022d0*x76
-      x78 = mu**5
-      x79 = x28*x61
-      x80 = x78*x79
-      x81 = 0.0849498379414568d0*x80
-      x82 = x3**2.66666666666667d0
-      x83 = x40*x82
-      x84 = mu**8*x83
-      x85 = 0.0206026993732533d0*x84
-      x86 = x72 + x77 + x81 + x85
-      x87 = exp(x16 - x20*(-x44 - x58 + x86))
-      x88 = x87 - 1.0d0
-      x89 = 1d0/x88
-      x90 = rho_c**(-2.33333333333333d0)
-      x91 = x1**(-2.78d0)
-      x92 = 0.202642367284676d0*x1
-      x93 = x15*x92
-      x94 = 0.00264117541143784d0*x80
-      x95 = 0.000640558526213818d0*x84
-      x96 = 0.202642367284676d0*x57
-      x97 = x43 - x71 - x76 - x94 - x95 + x96
-      x98 = x20*x97 + x93
-      x99 = 1d0/x5
-      x100 = 1d0/x14
-      x101 = x100*x99
-      x102 = x101*x98
-      x103 = x102**2.78d0
-      x104 = x103*x91
-      x105 = x104*x90
-      x106 = 11.5212611093509d0*x105
-      x107 = gamma_cc*x106
-      x108 = x107*x89 + 1.0d0
-      x109 = x106*x108
-      x110 = x88**(-2)
-      x111 = rho_c**(-4.66666666666667d0)
-      x112 = x102**5.56d0
-      x113 = x1**(-5.56d0)
-      x114 = x112*x113
-      x115 = x111*x114
-      x116 = gamma_cc**2
-      x117 = 132.739457549841d0*x116
-      x118 = x115*x117
-      x119 = x108 + x110*x118
-      x120 = 1d0/x119
-      x121 = gamma_cc*x120
-      x122 = x109*x121
-      x123 = x122 + 1.0d0
-      x124 = 0.031091d0*log(x123)
-      x125 = -x43 + x71 + x76 + x94 + x95 - x96
-      x126 = x125*x20
-      x127 = -x126 + x93
-      x128 = x1*x14
-      x129 = x128*x4
-      x130 = 0.0179093838034102d0*x129
-      x131 = x130*x3
-      x132 = 0.265137799810404d0*x4 + 2.0d0
-      x133 = 0.741856473716896d0*x4 + 0.99709173929518d0*x6 + 0.40021431
-     &7499682d0*x7 + 0.126466955049837d0*x9
-      x134 = 1d0/x13
-      x135 = x134/x10**2
-      x136 = x133*x135
-      x137 = x132*x136
-      x138 = x137*x3
-      x139 = x19**(-5)
-      x140 = x139*x18
-      x141 = x140*x97
-      x142 = 1.26460783860812d0*x141
-      x143 = 0.0042826930056725d0*x4
-      x144 = 0.0210198269716521d0*x9
-      x145 = 0.000367081058155144d0*x26
-      x146 = -x143 - x144 - x145 + x24
-      x147 = x23*x59
-      x148 = x146*x147
-      x149 = x26*x28
-      x150 = 0.00693220036674015d0*x149
-      x151 = 0.000220097950953153d0*x70
-      x152 = 1.02357830998401d0*x4 - 0.256556487706084d0*x9
-      x153 = x62*x65
-      x154 = x3**(-0.666666666666667d0)
-      x155 = x154*x63
-      x156 = 1d0/x4
-      x157 = 0.101681773497972d0*x156*x36
-      x158 = 11.4849360007528d0*x69
-      x159 = x35**(-2)
-      x160 = 0.112523287330675d0*x4 + 0.0162903215389562d0*x9
-      x161 = x159*x160
-      x162 = x161*x68
-      x163 = 17.2274040011291d0*x162
-      x164 = x157 + x158 + x163
-      x165 = x152*x153 + 2.41662179562687d0*x155 + x164 + x66
-      x166 = 0.000132058770571892d0*x61
-      x167 = x165*x166
-      x168 = 11.4849360007528d0*x67
-      x169 = x33*(-0.240695990468967d0*x4 + 0.26014827853397d0*x9)
-      x170 = x169*x67
-      x171 = 15.591108358883d0*x170
-      x172 = 2.64527879654103d0*x156*x169
-      x173 = x33*(0.0802319968229891d0*x4 - 0.173432185689313d0*x9)
-      x174 = x173*x67
-      x175 = 23.3866625383245d0*x174
-      x176 = -x157 - x158 - x163 + x168 - x171 - x172 - x175
-      x177 = 0.00020688890514282d0*x61
-      x178 = x128*x61
-      x179 = x27*x4
-      x180 = 0.00214134650283625d0*x4
-      x181 = 0.0105099134858261d0*x9
-      x182 = 0.00152446164353214d0*x22
-      x183 = 0.000183540529077572d0*x26
-      x184 = -x180 - x181 + x182 - x183
-      x185 = x23*(0.0777930888680181d0*x179 + x184)
-      x186 = x185*x22
-      x187 = x136*x5
-      x188 = x187*x26
-      x189 = 0.00302075971817058d0*x178 - 0.0837628205355044d0*x186 - 0.
-     &337338207872387d0*x188 + x31 + 0.091145350691774d0*x41
-      x190 = 0.767414216267966d0*x6
-      x191 = mu*x4
-      x192 = x190 + 0.71309495712383d0*x191
-      x193 = x17*x7
-      x194 = 0.957035512114487d0*x193
-      x195 = 0.206783496966467d0*x191
-      x196 = x195*x51
-      x197 = -x190 - x194 - x196
-      x198 = x192*x56 + x197
-      x199 = 0.202642367284676d0*x45/x55
-      x200 = x198*x199
-      x201 = x146*x23
-      x202 = x21*x61
-      x203 = 0.00264117541143784d0*x202
-      x204 = x3**2.33333333333333d0
-      x205 = x128*x204
-      x206 = 0.00496533372342768d0*x61
-      x207 = 0.0533250677421794d0*x74
-      x208 = mu**7
-      x209 = x208*x3**3.0d0
-      x210 = x128*x209
-      x211 = x21*x79
-      x212 = x21*x3**2.0d0
-      x213 = x212*x28
-      x214 = x208*x83
-      x215 = x208*x82
-      x216 = x187*x215
-      x217 = 2.83060463816878d-5*x210 + 0.00440195901906306d0*x211 - 0.0
-     &00410930386996015d0*x213 + 0.00170815606990352d0*x214 - 0.00316102
-     &962473761d0*x216 + x78*(-x185*x206 - x187*x207 + 0.000477509552268
-     &77d0*x205 + 0.0041377781028564d0*x73 + 0.0216118359257818d0*x75)
-      x218 = x17*(-x148 - x150 + x151 - x167 + x60) + x200 - x201*x203 +
-     & x217 + x53*( x176*x177 + x189 - 0.0003448148419047d0*x38)
-      x219 = mu*x20
-      x220 = x218*x219
-      x221 = 2.0d0*x220
-      x222 = exp(x16 + x20*(x44 + x58 - x72 - x77 - x81 - x85))
-      x223 = x222 - 1.0d0
-      x224 = x223**(-2)
-      x225 = 1d0/x223
-      x226 = x107*x225 + 1.0d0
-      x227 = x118*x224 + x226
-      x228 = 1d0/x227
-      x229 = gamma_cc*x228
-      x230 = x106*x226
-      x231 = x229*x230
-      x232 = rho_c**(-3.33333333333333d0)*x104
-      x233 = 26.8829425884854d0*x232
-      x234 = x226*x233
-      x235 = 1d0/x98
-      x236 = 0.0497880869734803d0*x129
-      x237 = 2.78d0*x137
-      x238 = 3.51560979133057d0*x141
-      x239 = x4*x99
-      x240 = x239*x98
-      x241 = 0.245694361157641d0*x240
-      x242 = x100*x98
-      x243 = x11*x242
-      x244 = x136*x243
-      x245 = 27.4375002350284d0*x244
-      x246 = 5.56d0*x220
-      x247 = -x236 + x237 + x238 + x241 - x245 + x246
-      x248 = x235*x247
-      x249 = 5.76063055467543d0*x232
-      x250 = x248*x249
-      x251 = x226*x250
-      x252 = 8.52779903542516d0*x4 + 64.3272972886044d0
-      x253 = -0.576031128088842d0*x129 + x136*x252
-      x254 = 40.6744021938219d0*x141 + 64.3272972886044d0*x220 + x253
-      x255 = x222*x254
-      x256 = 5.76063055467543d0*x225
-      x257 = x255*x256
-      x258 = x235*(-0.286810775078269d0*x129 + 16.0145529419977d0*x137 +
-     & 20.252129182255d0*x141 + 32.0291058839954d0*x220 + 1.415354443996
-     &17d0*x240 - 158.057302197819d0*x244)
-      x259 = gamma_cc*x225
-      x260 = rho_c**(-5.66666666666667d0)*x114
-      x261 = x259*x260
-      x262 = 11.5212611093509d0*x261
-      x263 = x262*(-x257 + x258 - 26.8829425884854d0)
-      x264 = 619.450801899257d0*x260
-      x265 = gamma_cc*x260
-      x266 = 132.739457549841d0*x265
-      x267 = x224*x255
-      x268 = 0.0995761739469607d0*x129
-      x269 = 5.56d0*x137
-      x270 = 7.03121958266113d0*x141
-      x271 = 0.491388722315281d0*x240
-      x272 = 54.8750004700568d0*x244
-      x273 = 11.12d0*x220
-      x274 = -x268 + x269 + x270 + x271 - x272 + x273
-      x275 = 66.3697287749204d0*x235
-      x276 = x225*x231
-      x277 = x276*(x232*x257 + x233 - x250 + x259*x264 - x261*x274*x275 
-     &+ x266*x267)
-      x278 = 0.062182d0*x229
-      x279 = 0.5d0*rho_c
-      x280 = x50 - 3.44851d0
-      x281 = -x280*x52 + x54
-      x282 = x281*x49
-      x283 = exp(x16 - x20*(x2*log(x282) + 32.163648644302206d0*x21*(x31
-     & - x39 + x42 ) + x86)) - 1.0d0
-      x284 = x101*x127
-      x285 = x111*x113*x284**5.56d0
-      x286 = 11.5212611093509d0*x91
-      x287 = x284**2.78d0*x286*x90
-      x288 = gamma_cc/x283
-      x289 = x287*x288 + 1.0d0
-      x290 = 1d0/(x117*x285/x283**2 + x289)
-      x291 = x287*x289
-      x292 = gamma_cc*x89
-      x293 = 265.478915099682d0*x115
-      x294 = x290*x291
-      x295 = x290*(132.739457549841d0*x285*x288 + x291 - x292*x294*(x106
-     & + x292*x293 ))
-      x296 = 1d0/(gamma_cc*x294 + 1.0d0)
-      x297 = 0.031091d0*x296
-      x298 = x125*x140
-      x299 = 1.26460783860812d0*x298
-      x300 = x32*(x34 + x37 - 17.2274040011291d0)
-      x301 = x164 - x168 + x171 + x172 + x175
-      x302 = x192*x282 + x197
-      x303 = x92/x281
-      x304 = x302*x303
-      x305 = x23*(x143 + x144 + x145 + x25)
-      x306 = -x17*(x148 + x150 - x151 + x167 - x60) + x203*x305 + x217 -
-     & x304 + x53*( -x177*x301 + x189 + 0.0003448148419047d0*x300)
-      x307 = x219*x306
-      x308 = 2.0d0*x307
-      x309 = 1d0/x123
-      x310 = x234 - x251 - x263 - x277
-      x311 = rho_c**(-2)
-      x312 = x136*x4
-      x313 = x135*(0.989141964955861d0*x4 + 1.16327369584438d0*x6 + 0.60
-     &0321476249523d0*x7 + 0.210778258416395d0*x9)
-      x314 = x132*x313
-      x315 = x133**2/(x10**4*x13**2)
-      x316 = x133*x134*(1.48371294743379d0*x4 + 1.99418347859036d0*x6 + 
-     &x8 + 0.252933910099675d0*x9)/x10**3
-      x317 = x132*x316
-      x318 = x21*x26/x19**6
-      x319 = x125*x318
-      x320 = x139*x53*x9
-      x321 = x306*x320
-      x322 = 0.0006896296838094d0*x61
-      x323 = 3.82831200025092d0*x67
-      x324 = x33*(-0.0720184066122292d0*x4 + 0.0778387062718705d0*x9)
-      x325 = 5.19703611962767d0*x170
-      x326 = 23.3866625383245d0*x33*x67*(-0.106975995763985d0*x4 + 0.289
-     &053642815522d0*x9)
-      x327 = 31.182216717766d0*x174
-      x328 = 5.29055759308205d0*x156*x173
-      x329 = 3.82831200025092d0*x69
-      x330 = 0.203363546995945d0*x156*x161
-      x331 = 22.9698720015055d0*x162
-      x332 = 17.2274040011291d0*x68
-      x333 = x159*x332*(0.150031049774234d0*x4 + 0.0271505358982603d0*x9
-     &)
-      x334 = x160*x332*(0.225046574661351d0*x4 + 0.0325806430779124d0*x9
-     &)/x35**3
-      x335 = 0.311172355472072d0*x4
-      x336 = -0.103724118490691d0*x179 + x25 + 0.000428261234514334d0*x2
-     &6 + 0.0121035293512547d0*x27*x9 + 0.00285512867044833d0*x4 + 0.017
-     &5165224763768d0*x9
-      x337 = x22*x23
-      x338 = 0.0837628205355044d0*x337
-      x339 = x313*x5
-      x340 = 0.337338207872387d0*x26
-      x341 = x11*x315
-      x342 = x341*x5
-      x343 = x316*x5
-      x344 = 0.0298137034090898d0*x136*x61 - 0.0120830388726823d0*x178 +
-     & 0.167525641071009d0*x186 + 0.899568554326366d0*x188 + 1.664697330
-     &53645d0*x26*x342 - 0.0837628205355044d0*x30 + x339* x340 - x340*x3
-     &43 - 0.212672484947473d0*x41
-      x345 = 0.0891107483661069d0*x146*x337
-      x346 = 0.0138644007334803d0*x201*x26
-      x347 = -0.00609784657412857d0*x22 + 0.000856522469028669d0*x26 + 0
-     &.00571025734089666d0*x4 + 0.0350330449527535d0*x9
-      x348 = x147*x347
-      x349 = 0.0891107483661069d0*x22*x28
-      x350 = 0.0231073345558005d0*x149
-      x351 = 0.00107855455836145d0*x79
-      x352 = 0.000586927869208408d0*x70
-      x353 = 0.000440195901906306d0*x165*x61
-      x354 = x152*x62
-      x355 = x329 - x330 - x331 + x333 - x334
-      x356 = x166*(-x153*(-1.36477107997868d0*x4 + 0.427594146176807d0*x
-     &9) - 4.83324359125373d0*x154*x354 - 1.61108119708458d0*x155 - 0.15
-     &4912426780983d0*x3**(-0.333333333333333d0)*x63 - 75.398223686155d0
-     &*x354*x64 + x355)
-      x357 = 0.0110340749409504d0*x73
-      x358 = 0.0025467176121001d0*x205
-      x359 = 0.0648355077773455d0*x75
-      x360 = 0.0165511124114256d0*x185*x61
-      x361 = 0.00471283037863406d0*x136*x204
-      x362 = 0.213300270968718d0*x187*x74
-      x363 = x207*x339
-      x364 = 0.263148661638301d0*x342*x74
-      x365 = x207*x343
-      x366 = x184*x335 + x336
-      x367 = x206*x23*x366
-      x368 = 0.89531658564596d0*x6
-      x369 = 0.950793276165107d0*x191 + x368
-      x370 = 0.275711329288622d0*x191
-      x371 = mu*x192
-      x372 = x371*(1.42618991424766d0*x191 + 1.53482843253593d0*x6)/x48*
-     &*2
-      x373 = x190 + x194
-      x374 = x196 + x373
-      x375 = x371*x49
-      x376 = 1.43555326817173d0*x193 + x368 - 2.0d0*x374*x375
-      x377 = 0.000821860773992031d0*x212
-      x378 = 0.00880391803812612d0*x202
-      x379 = 0.00316102962473761d0*x215
-      x380 = 0.000279369479946145d0*x136*x209 - x203*x23*x347 - 6.393508
-     &82283002d-5* x21*x28*x3**2.33333333333333d0 - 0.000188706975877918
-     &d0*x210 - 0.0117385573841682d0*x211 + 0.00191767513931474d0*x213 -
-     & 0.00626323892297956d0*x214 + 0.0155990559481421d0*x215*x342 + 0.0
-     &168588246652672d0*x216 + x339*x379 - x343*x379
-      x381 = x219*(-mu*x302*x92*(-x195*x280 + x373)/x281**2 - x17*(-x345
-     & + x346 + x348 + x349 - x350 + x351 + x352 - x353 - x356) - x303*(
-     &-x280* x370 + x281*x372 - x282*x369 + x376) + x304*x375 + x305*x37
-     &7 - x305*x378 + x380 + x53*(-x177*(x323 + x324 - x325 + x326 + x32
-     &7 + x328 - x329 + x330 + x331 - x333 + x334) - 0.0009195062450792d
-     &0* x300 + x301*x322 - x338*(-x335*(x180 + x181 - x182 + x183) + x3
-     &36 ) + x344) - x78*(x357 + x358 + x359 - x360 - x361 - x362 - x363
-     & - x364 + x365 + x367))
-      x382 = x108*x233
-      x383 = x236 - x237 - x238 - x241 + x245 - x246
-      x384 = x235*x383
-      x385 = x249*x384
-      x386 = x108*x385
-      x387 = x257 - x258 + 26.8829425884854d0
-      x388 = x260*x292
-      x389 = x388*(x268 - x269 - x270 - x271 + x272 - x273)
-      x390 = x253 - 40.6744021938219d0*x298 + 64.3272972886044d0*x307
-      x391 = x110*x390*x87
-      x392 = x87*x89
-      x393 = x390*x392
-      x394 = x233 + x249*x393 + x385
-      x395 = x264*x292 + x266*x391 + x275*x389 + x394
-      x396 = x395*x89
-      x397 = x122*x396
-      x398 = x262*x387 + x382 + x386 - x397
-      x399 = x116*x120
-      x400 = rho_c**(-4.33333333333333d0)
-      x401 = x104*x400
-      x402 = x108*x401
-      x403 = x384*x402
-      x404 = x383**2
-      x405 = x98**(-2)
-      x406 = 5.76063055467543d0*x405
-      x407 = x402*x406
-      x408 = 0.509120303595743d0*x239
-      x409 = x1**(-3.78d0)
-      x410 = x103*x400
-      x411 = x100*x136
-      x412 = -x130 + x137
-      x413 = x383*(-x299 + x308 + x412)
-      x414 = rho_c**(-6.66666666666667d0)
-      x415 = x114*x414
-      x416 = x259*x415
-      x417 = x387*x416
-      x418 = 23.0425222187017d0*x384
-      x419 = 0.0663841159646404d0*x129
-      x420 = 0.491388722315281d0*x312
-      x421 = 2.78d0*x132
-      x422 = x313*x421
-      x423 = x132*x341
-      x424 = 13.7187501175142d0*x423
-      x425 = x316*x421
-      x426 = 5.85934965221761d0*x141
-      x427 = x318*x97
-      x428 = 2.77866731225255d0*x427
-      x429 = x9*x98/x5**2
-      x430 = 0.0217142874477198d0*x429
-      x431 = 0.327592481543521d0*x240
-      x432 = x243*x313
-      x433 = 27.4375002350284d0*x432
-      x434 = x315/x1**2
-      x435 = x434*x98/x14**2
-      x436 = 270.797273074527d0*x435
-      x437 = x242*x434
-      x438 = 135.398636537263d0*x437
-      x439 = x102*x11*x312
-      x440 = 2.42490614820429d0*x439
-      x441 = x243*x316
-      x442 = 27.4375002350284d0*x441
-      x443 = x218*x320
-      x444 = 7.03121958266113d0*x443
-      x445 = x130 - x137 - x142 - x221
-      x446 = x239*x445
-      x447 = 0.245694361157641d0*x446
-      x448 = x11*x411*x445
-      x449 = 27.4375002350284d0*x448
-      x450 = x219*(0.202642367284676d0*mu*x198*x374*x45/x55**2 + x17*(x3
-     &45 - x346 - x348 - x349 + x350 - x351 - x352 + x353 + x356) + x199
-     &*(-x369*x56 + x370*x51 + x372*x55 + x376) - x200*x375 - x201*x377 
-     &+ x201*x378 + x380 + x53*(-x176*x322 + x177*(-x323 - x324 + x325 -
-     & x326 - x327 - x328 + x355) - x338*x366 + x344 + 0.000919506245079
-     &2d0*x38 ) + x78*(-x357 - x358 - x359 + x360 + x361 + x362 + x363 +
-     & x364 - x365 - x367))
-      x451 = 5.56d0*x450
-      x452 = -11.5212611093509d0*x419 + 11.5212611093509d0*x420 + 11.521
-     &2611093509d0* x422 + 11.5212611093509d0*x424 - 11.5212611093509d0*
-     &x425 + 11.5212611093509d0*x426 - 11.5212611093509d0*x428 - 11.5212
-     &611093509d0*x430 + 11.5212611093509d0*x431 - 11.5212611093509d0*x4
-     &33 - 11.5212611093509d0*x436 - 11.5212611093509d0*x438 + 11.521261
-     &1093509d0*x440 + 11.5212611093509d0*x442 - 11.5212611093509d0*x444
-     & + 11.5212611093509d0*x447 - 11.5212611093509d0*x449 - 11.52126110
-     &93509d0*x451
-      x453 = x108*x121*x232
-      x454 = x396*x453
-      x455 = x260*x387*x399
-      x456 = x225*x396
-      x457 = 11.5212611093509d0*x232
-      x458 = 132.739457549841d0*x235*x389 + 265.478915099682d0*x265*x391
-     & + 1238.90160379851d0*x388
-      x459 = 23.0425222187017d0*x105
-      x460 = x110*x395
-      x461 = x116/x119**2
-      x462 = 179.219617256569d0*x91
-      x463 = x390**2
-      x464 = 13.0354358035879d0*x40
-      x465 = 0.169899675882914d0*x80
-      x466 = 0.0412053987465066d0*x84
-      x467 = 13.0354358035879d0*x57
-      x468 = 64.3272972886044d0*x76
-      x469 = 64.3272972886044d0*x71
-      x470 = 64.3272972886044d0*x43
-      x471 = 5.76063055467543d0*x91
-      x472 = x392*x471
-      x473 = x235*x91
-      x474 = x383*x473
-      x475 = x405*x471
-      x476 = 56.8551446754745d0*x409*x411
-      x477 = 2.0d0*x252
-      x478 = 1.53608300823691d0*x129 - 9.86960440108936d0*x252*x341 - 11
-     &.3703987139002d0*x312 - x313*x477 + x316*x477
-      x479 = 53.7658851769707d0*x401
-      x480 = x225*x255
-      x481 = gamma_cc*x415
-      x482 = x267*x481
-      x483 = 11.5212611093509d0*x401
-      x484 = x254**2
-      x485 = x484*exp(x20*(-x465 - x466 + x467 - x468 - x469 + x470) + x
-     &464)
-      x486 = x222*x484
-      x487 = x256*x401
-      x488 = 132.739457549841d0*x224*x481
-      x489 = x401*x406
-      x490 = x235*x416
-      x491 = x274*x490
-      x492 = 66.3697287749204d0*x405*x416
-      x493 = x235*x274
-      x494 = x142 + x221 + x412
-      x495 = x222*(-135.581340646073d0*x141 + 64.296459806258d0*x427 + 1
-     &62.697608775288d0*x443 + 128.654594577209d0*x450 + x478)
-      x496 = x122*x225
-      x497 = x120*x309
-      x498 = x106 + x259*x293
-      x499 = 132.739457549841d0*x115
-      x500 = 530.957830199363d0*x115*x259 + x459
-      x501 = x109 + x292*x499 - x496*x498
-      x502 = 265.478915099682d0*x115
-      x503 = x225*x229
-      E = -rho_c*(-x124 + x127)
-      d1E(1) = x124 + x126 - x279*(-x131 + x138 + x142*x3 + x221*x3 - x2
-     &78*(-x234 + x251 + x263 + x277)/(x231 + 1.0d0)) - x93
-      d1E(3) = rho_c*x295*x297
-      d2E(1) = x131 - x138 - x278*x309*x310 + x279*(0.031091d0*gamma_cc*
-     &x497*(rho_c**( -6.66666666666667d0)*x112*x286*x292*(x110*x286*x463
-     &*exp(-x20*( x465 + x466 - x467 + x468 + x469 - x470) + x464) - x38
-     &4*x476 + 11.5212611093509d0*x393*x474 + 53.7658851769707d0*x393*x9
-     &1 + x404 *x475 + x408*x474 + x413*x475 - x452*x473 + x462 - x463*x
-     &472 - x472*(135.581340646073d0*x298 - 64.296459806258d0*x319 + 162
-     &.697608775288d0*x321 + 128.654594577209d0*x381 + x478) + 53.765885
-     &1769707d0*x474) - 56.8551446754745d0*x108*x384*x409*x410 *x411 + x
-     &108*x459*x460*x461*(53.7658851769707d0*x232 + x384*x457 + x393*x45
-     &7 + x458) - x235*x402*x452 + 179.219617256569d0*x402 + x403*x408 +
-     & 53.7658851769707d0*x403 + x404*x407 + x407*x413 + x417*x418 + 107
-     &.531770353941d0*x417 - x418*x454 - 107.531770353941d0*x454 - 46.08
-     &50444374035d0*x455*x456 - x496*( 655.042967216062d0*x1**(-6.56d0)*
-     &x112*x259*x411*x414*x493 + x224* x483*x485 + x235*x483*(x419 - x42
-     &0 - x422 - x424 + x425 - x426 + x428 + x430 - x431 + x433 + x436 +
-     & x438 - x440 - x442 + x444 - x447 + x449 + x451) - 5.8657079537985
-     &5d0*x239*x491 + x247**2*x489 - x247*x489*x494 - x248*x401*x408 + x
-     &248*x410*x476 - x248*x479 - x248*x480*x483 + x274**2*x492 - x274*x
-     &492*x494 + x410*x462 + 7020.44242152492d0*x416 + x479*x480 - 265.4
-     &78915099682d0*x482* x493 + 2477.80320759703d0*x482 - x486*x487 - x
-     &486*x488 - x487* x495 - x488*x495 + 132.739457549841d0*x490*(0.132
-     &768231929281d0* x129 - 11.7186993044352d0*x141 - 0.655184963087042
-     &d0*x240 - 0.982777444630562d0*x312 - 5.56d0*x314 + 5.56d0*x317 - 2
-     &7.4375002350284d0*x423 + 5.5573346245051d0*x427 + 0.04342857489543
-     &97d0*x429 + 54.8750004700568d0*x432 + 541.594546149053d0*x435 + 27
-     &0.797273074527d0*x437 - 4.84981229640858d0*x439 - 54.8750004700568
-     &d0*x441 + 14.0624391653223d0*x443 - 0.491388722315281d0*x446 + 54.
-     &8750004700568d0*x448 + 11.12d0*x450) - 1238.90160379851d0*x491 + 3
-     &98.218372649523d0*x481*x485/x223**3)) + x12*x132*x311*x315 - 0.023
-     &8791784045469d0*x129*x311 - 2.10767973101353d0*x298*x311 + 0.17675
-     &8533206936d0*x311*x312 + x311*x314 - x311*x317 + 0.999520615918184
-     &d0*x311*x319 - 2.52921567721623d0*x311*x321 - 2.0d0*x311*x381 - 0.
-     &062182d0*x228*x310*x398*x399/x123**2) + x299* x3 - x3*x308
-      d2E(4) = x297*(rho_c*x120*(-x109*x456*x461*x500 + x121*x225*x382*x
-     &498 + x121*x296 *x398*x501 + x122*x89*(x394 + x458) + 11.521261109
-     &3509d0*x224* x455*x498 + x256*x384*x453*x498 - 23.0425222187017d0*
-     &x261*x387 - x382 - 66.3697287749204d0*x384*x388 - x386 - 309.72540
-     &0949629d0* x388 + x397 + x399*x460*x499) + x295)
-      d2E(6) = -0.031091d0*rho_c*x228*x309*(x225*(3058.65189989063d0*rho
-     &_c**(-7.0d0)*x1 **(-8.34d0)*x102**8.34d0*x226*x503 + x226*x228*x45
-     &9*x498 + x498* x502*x503 - x502 - x230*x259*x498*x500/x227**2) + x
-     &497*x501*(x230 + x259*x499 - x276*x498))
-      end subroutine
-
-
-C*****************************************************************************
       pure subroutine ESRX_TPSS_ERF_case_1(rho_a, gamma_aa, tau_a, mu, E
      &a)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -7785,8 +2388,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -7837,8 +2440,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -7889,8 +2492,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -7948,8 +2551,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -7993,8 +2596,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -8165,8 +2768,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -8367,8 +2970,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -8575,8 +3178,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -8804,8 +3407,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -8977,8 +3580,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -9498,8 +4101,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -10078,8 +4681,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -10663,8 +5266,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -11298,8 +5901,8 @@ C*****************************************************************************
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, tau_a, mu
@@ -11814,13 +6417,6862 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc,
-     & gamma_ss, gamma_cs, tau_c, mu, E)
+      pure subroutine ESRC_PW92_ERF(rho_c, mu, E)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 14, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, mu
+      real*8, intent(out) :: E
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15
+      E = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = x0**0.166666666666667d0
+      x3 = sqrt(x0)
+      x4 = x0**0.666666666666667d0
+      x5 = (0.132568899905202d0*x1 + 1.0d0)*log(1.0d0 + 16.0819842214574
+     &07d0/( 2.2255694211506878d0*x1 + 5.9825504357710795d0*x2 + 0.80042
+     &863499936356d0*x3 + 0.18970043257475591d0*x4))
+      x6 = mu**2
+      x7 = x0**1.66666666666667d0
+      x8 = x0**1.0d0
+      x9 = x0**1.33333333333333d0
+      x10 = (0.0128480790170175d0*x1 + 0.0315297404574782d0*x4 - 0.00304
+     &892328706429d0*x8 + 0.000275310793616358d0*x9 + 1.0d0)*exp (-0.466
+     &75853320810856d0*x1)
+      x11 = x1*x6
+      x12 = 4.60448529760779d0*mu*x2 + 1.0d0
+      x13 = mu**3
+      x14 = x10 - 1.0d0
+      x15 = 1d0/(0.337569861992026d0*x1 + 0.0244354823084343d0*x4 + 1.0d
+     &0)
+      E = -rho_c*(0.0621813817393098d0*x5 - (0.000196557189785076d0*mu**
+     &8*x0** 2.66666666666667d0*x5 + mu**6*(0.00331582639355101d0*x0**2.
+     &0d0*x5 + 0.00248266686171384d0*x14*x7) + 0.00264117541143784d0*mu*
+     &*5*x10 *x7 - mu**4*(0.00020688890514282d0*x0**1.0d0*(-x15*( -0.305
+     &045320493918d0*x1 + 17.2274040011292d0) - ( -5.62907590342551d0*x1
+     & + 6.084d0*x4)*exp(-0.33933171852197186d0* x1) + 17.2274040011292d
+     &0) - 0.0418814102677522d0*x14*x8 - 0.0209761558789675d0*x5*x9) + x
+     &13*(0.0445553741830535d0*x10*x8 + 0.000132058770571892d0*x7*(17.22
+     &74040011292d0*x15*( -0.0177069812999059d0*x1 + 1.0d0)/x4 + 37.6991
+     &118430775d0*( -3.07073492995203d0*x1 + 0.384834731559127d0*x4)*exp
+     &( -0.19230865217881402d0*x1)/x8)) + 0.0621813817393098d0*log(( 4.6
+     &213167280845804d0*x11 + x12 + 1.9140710242289749d0*x13*x3)/( 2.139
+     &2848713714905d0*x11 + x12)))/(0.237113969739022d0*x4*x6 + 1.0d0)**
+     &4)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D1ESRC_PW92_ERF(rho_c, mu, E, d1E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, mu
+      real*8, intent(out) :: E, d1E(9)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67, x68, x69, x70, x71, x72, x73
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = 0.132568899905202d0*x1 + 1.0d0
+      x3 = x0**0.166666666666667d0
+      x4 = sqrt(x0)
+      x5 = x0**0.666666666666667d0
+      x6 = 2.22556942115069d0*x1 + 5.98255043577108d0*x3 + 0.80042863499
+     &9364d0*x4 + 0.189700432574756d0*x5
+      x7 = 1.0d0 + 16.0819842214574d0/x6
+      x8 = log(x7)
+      x9 = x2*x8
+      x10 = 0.0621813817393098d0*x9
+      x11 = mu**2
+      x12 = x11*x5
+      x13 = 0.237113969739022d0*x12 + 1.0d0
+      x14 = x13**(-4)
+      x15 = mu**5
+      x16 = x0**1.66666666666667d0
+      x17 = exp(-0.46675853320810856d0*x1)
+      x18 = x0**1.0d0
+      x19 = 0.00304892328706429d0*x18
+      x20 = x0**1.33333333333333d0
+      x21 = 0.0128480790170175d0*x1 - x19 + 0.000275310793616358d0*x20 +
+     & 0.0315297404574782d0*x5 + 1.0d0
+      x22 = x17*x21
+      x23 = x16*x22
+      x24 = 0.00264117541143784d0*x15*x23
+      x25 = x0**2.66666666666667d0
+      x26 = x25*x9
+      x27 = 0.000196557189785076d0*mu**8*x26
+      x28 = x1*x11
+      x29 = 4.60448529760779d0*mu*x3 + 1.0d0
+      x30 = mu**3
+      x31 = 4.62131672808458d0*x28 + x29 + 1.91407102422897d0*x30*x4
+      x32 = x31/(2.13928487137149d0*x28 + x29)
+      x33 = -0.0621813817393098d0
+      x34 = x33*log(x32)
+      x35 = x22 - 1.0d0
+      x36 = x16*x35
+      x37 = x0**2.0d0
+      x38 = x37*x9
+      x39 = mu**6*(0.00248266686171384d0*x36 + 0.00331582639355101d0*x38
+     &)
+      x40 = 0.0445553741830535d0*x18
+      x41 = x22*x40
+      x42 = exp(-0.19230865217881402d0*x1)
+      x43 = x42*(-3.07073492995203d0*x1 + 0.384834731559127d0*x5)
+      x44 = 37.6991118430775d0/x18
+      x45 = x43*x44
+      x46 = 0.337569861992026d0*x1 + 0.0244354823084343d0*x5 + 1.0d0
+      x47 = 1d0/x46
+      x48 = -0.0177069812999059d0*x1 + 1.0d0
+      x49 = x47*x48
+      x50 = 1d0/x5
+      x51 = 17.2274040011292d0*x50
+      x52 = x16*(x45 + x49*x51)
+      x53 = x30*(x41 + 0.000132058770571892d0*x52)
+      x54 = mu**4
+      x55 = 0.0418814102677522d0*x18*x35
+      x56 = x20*x9
+      x57 = exp(-0.33933171852197186d0*x1)
+      x58 = x0**1.0d0*(-x47*(-0.305045320493918d0*x1 + 17.2274040011292d
+     &0) - x57*( -5.62907590342551d0*x1 + 6.084d0*x5) + 17.2274040011292
+     &d0)
+      x59 = x54*(-x55 - 0.0209761558789675d0*x56 + 0.00020688890514282d0
+     &*x58)
+      x60 = x14*(x24 + x27 - x34 + x39 + x53 - x59)
+      x61 = (0.741856473716896d0*x1 + 0.99709173929518d0*x3 + 0.40021431
+     &7499682d0*x4 + 0.126466955049837d0*x5)/(x6**2*x7)
+      x62 = mu**7
+      x63 = x17*(-0.00428269300567249d0*x1 + x19 - 0.000367081058155144d
+     &0*x20 - 0.0210198269716521d0*x5)
+      x64 = x2*x61
+      x65 = 0.767414216267966d0*x3
+      x66 = mu*x1
+      x67 = x17*(0.0777930888680181d0*x1*x21 - 0.00214134650283625d0*x1 
+     &+ 0.00152446164353214d0*x18 - 0.000183540529077572d0*x20 - 0.01050
+     &99134858261d0*x5)
+      x68 = 1d0/x1
+      x69 = 0.101681773497972d0*x47*x68
+      x70 = 11.4849360007528d0*x50
+      x71 = x49*x70
+      x72 = x48*x51*(0.112523287330675d0*x1 + 0.0162903215389562d0*x5)/x
+     &46**2
+      x73 = x57*(-0.240695990468967d0*x1 + 0.26014827853397d0*x5)
+      E = -rho_c*(x10 - x60)
+      d1E(1) = -mu*x14*(-0.000410930386996015d0*x0**2.0d0*x22*x54 + 8.68
+     &579013942185d-6 *x0**3.0d0*x62*x8 + x11*(-0.000132058770571892d0*x
+     &16*( 2.41662179562687d0*x0**(-0.666666666666667d0)*x43 + x42*x44*(
+     & 1.02357830998401d0*x1 - 0.256556487706084d0*x5) + x45 + x69 + x71
+     & + x72) - 0.00693220036674015d0*x20*x22 - x40*x63 + x41 + 0.000220
+     &097950953153d0*x52) + x15*(0.00014652515242323d0*x0** 2.3333333333
+     &3333d0*x8 - 0.00496533372342768d0*x16*x67 + 0.0041377781028564d0*x
+     &36 - 0.0533250677421794d0*x37*x64 + 0.00663165278710203d0*x38) - 0
+     &.00264117541143784d0*x16*x54*x63 + 0.00440195901906306d0*x23*x54 -
+     & 0.00316102962473761d0*x25*x62*x64 + 0.000524152506093537d0*x26*x6
+     &2 + x30*(0.000926928636371586d0* x16*x8 + 0.00020688890514282d0*x1
+     &6*(-23.3866625383245d0*x50*x57*( 0.0802319968229891d0*x1 - 0.17343
+     &2185689313d0*x5) - 15.591108358883d0*x50*x73 - 2.64527879654103d0*
+     &x68*x73 - x69 + x70 - x71 - x72) - 0.0837628205355044d0*x18*x67 - 
+     &0.337338207872387d0*x20*x64 + x55 + 0.0279682078386234d0*x56 - 0.0
+     &003448148419047d0*x58) + x33*(-0.957035512114487d0*x11*x4 + x32*(x
+     &65 + 0.71309495712383d0*x66) - x65 - 1.54043890936153d0*x66 )/x31)
+     & + 0.00274777245725523d0*x1*x8 - x10 - 0.632303919304059d0* x12*(-
+     &x24 - x27 + x34 - x39 - x53 + x59)/x13**5 + x60 - 16.0819842214574
+     &d0*x61*(0.0082433173717657d0*x1 + 0.0621813817393098d0)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRC_PW92_ERF(rho_c, mu, E, d1E, d2E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, mu
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
+     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
+     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
+     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
+     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
+     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
+     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
+     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
+     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
+     &, x171, x172, x173
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      d2E(:) = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = 0.132568899905202d0*x1 + 1.0d0
+      x3 = x0**0.166666666666667d0
+      x4 = sqrt(x0)
+      x5 = 0.800428634999364d0*x4
+      x6 = x0**0.666666666666667d0
+      x7 = 2.22556942115069d0*x1 + 5.98255043577108d0*x3 + x5 + 0.189700
+     &432574756d0 *x6
+      x8 = 1.0d0 + 16.0819842214574d0/x7
+      x9 = log(x8)
+      x10 = x2*x9
+      x11 = 0.0621813817393098d0*x10
+      x12 = mu**2
+      x13 = x12*x6
+      x14 = 0.237113969739022d0*x13 + 1.0d0
+      x15 = x14**(-4)
+      x16 = mu**5
+      x17 = x0**1.66666666666667d0
+      x18 = exp(-0.46675853320810856d0*x1)
+      x19 = x0**1.0d0
+      x20 = 0.00304892328706429d0*x19
+      x21 = -x20
+      x22 = x0**1.33333333333333d0
+      x23 = 0.0128480790170175d0*x1 + x21 + 0.000275310793616358d0*x22 +
+     & 0.0315297404574782d0*x6 + 1.0d0
+      x24 = x18*x23
+      x25 = x17*x24
+      x26 = 0.00264117541143784d0*x16*x25
+      x27 = x0**2.66666666666667d0
+      x28 = x10*x27
+      x29 = 0.000196557189785076d0*mu**8*x28
+      x30 = x1*x12
+      x31 = 4.60448529760779d0*mu*x3 + 1.0d0
+      x32 = 2.13928487137149d0*x30 + x31
+      x33 = 1d0/x32
+      x34 = mu**3
+      x35 = 4.62131672808458d0*x30 + x31 + 1.91407102422897d0*x34*x4
+      x36 = x33*x35
+      x37 = 0.693147180559945d0
+      x38 = 0.202642367284676d0*x37 - 0.202642367284676d0
+      x39 = x38*log(x36)
+      x40 = x24 - 1.0d0
+      x41 = x17*x40
+      x42 = x0**2.0d0
+      x43 = x10*x42
+      x44 = mu**6*(0.00248266686171384d0*x41 + 0.00331582639355101d0*x43
+     &)
+      x45 = 0.0445553741830535d0*x19
+      x46 = x24*x45
+      x47 = exp(-0.19230865217881402d0*x1)
+      x48 = x47*(-3.07073492995203d0*x1 + 0.384834731559127d0*x6)
+      x49 = 1d0/x19
+      x50 = 37.6991118430775d0*x49
+      x51 = x48*x50
+      x52 = 0.337569861992026d0*x1 + 0.0244354823084343d0*x6 + 1.0d0
+      x53 = 1d0/x52
+      x54 = -0.0177069812999059d0*x1 + 1.0d0
+      x55 = x53*x54
+      x56 = 1d0/x6
+      x57 = 17.2274040011292d0*x56
+      x58 = x17*(x51 + x55*x57)
+      x59 = x34*(x46 + 0.000132058770571892d0*x58)
+      x60 = mu**4
+      x61 = x19*x40
+      x62 = 0.0418814102677522d0*x61
+      x63 = x10*x22
+      x64 = x0**1.0d0
+      x65 = exp(-0.33933171852197186d0*x1)
+      x66 = x65*(-5.62907590342551d0*x1 + 6.084d0*x6)
+      x67 = x53*(-0.305045320493918d0*x1 + 17.2274040011292d0)
+      x68 = x64*(-x66 - x67 + 17.2274040011292d0)
+      x69 = x60*(-x62 - 0.0209761558789675d0*x63 + 0.00020688890514282d0
+     &*x68)
+      x70 = x26 + x29 - x39 + x44 + x59 - x69
+      x71 = x15*x70
+      x72 = x1*x9
+      x73 = 0.741856473716896d0*x1 + 0.99709173929518d0*x3 + 0.400214317
+     &499682d0*x4 + 0.126466955049837d0*x6
+      x74 = 1d0/x8
+      x75 = x74/x7**2
+      x76 = x73*x75
+      x77 = 0.0082433173717657d0*x1 + 0.0621813817393098d0
+      x78 = 16.0819842214574d0*x77
+      x79 = -x26 - x29 + x39 - x44 - x59 + x69
+      x80 = x14**(-5)
+      x81 = x13*x80
+      x82 = x79*x81
+      x83 = 0.00428269300567249d0*x1
+      x84 = 0.0210198269716521d0*x6
+      x85 = 0.000367081058155144d0*x22
+      x86 = x18*(x20 - x83 - x84 - x85)
+      x87 = x45*x86
+      x88 = x22*x24
+      x89 = 0.00693220036674015d0*x88
+      x90 = 0.000220097950953153d0*x58
+      x91 = 1.02357830998401d0*x1 - 0.256556487706084d0*x6
+      x92 = x47*x50
+      x93 = x0**(-0.666666666666667d0)
+      x94 = x48*x93
+      x95 = 1d0/x1
+      x96 = x53*x95
+      x97 = 0.101681773497972d0*x96
+      x98 = 11.4849360007528d0*x56
+      x99 = x55*x98
+      x100 = x52**(-2)
+      x101 = 0.112523287330675d0*x1 + 0.0162903215389562d0*x6
+      x102 = x100*x101
+      x103 = x54*x57
+      x104 = x102*x103
+      x105 = x104 + x97 + x99
+      x106 = x105 + x51 + x91*x92 + 2.41662179562687d0*x94
+      x107 = 0.000132058770571892d0*x17
+      x108 = x106*x107
+      x109 = x65*(-0.240695990468967d0*x1 + 0.26014827853397d0*x6)
+      x110 = x109*x56
+      x111 = 15.591108358883d0*x110
+      x112 = 2.64527879654103d0*x109*x95
+      x113 = x65*(0.0802319968229891d0*x1 - 0.173432185689313d0*x6)
+      x114 = x113*x56
+      x115 = 23.3866625383245d0*x114
+      x116 = -x104 - x111 - x112 - x115 - x97 + x98 - x99
+      x117 = 0.00020688890514282d0*x17
+      x118 = x17*x9
+      x119 = x1*x23
+      x120 = -0.00214134650283625d0*x1 + 0.00152446164353214d0*x19 - 0.0
+     &00183540529077572d0*x22 - 0.0105099134858261d0*x6
+      x121 = x18*(0.0777930888680181d0*x119 + x120)
+      x122 = x121*x19
+      x123 = x2*x76
+      x124 = x123*x22
+      x125 = 0.000926928636371586d0*x118 - 0.0837628205355044d0*x122 - 0
+     &.337338207872387d0*x124 + x62 + 0.0279682078386234d0*x63
+      x126 = 0.767414216267966d0*x3
+      x127 = mu*x1
+      x128 = 1.54043890936153d0*x127
+      x129 = x12*x4
+      x130 = 0.957035512114487d0*x129
+      x131 = x126 + 0.71309495712383d0*x127
+      x132 = -x126 - x128 - x130 + x131*x36
+      x133 = 1d0/x35
+      x134 = x133*x38
+      x135 = x132*x134
+      x136 = x60*x86
+      x137 = x136*x17
+      x138 = x0**2.33333333333333d0
+      x139 = x138*x9
+      x140 = x121*x17
+      x141 = 0.0533250677421794d0*x42
+      x142 = mu**7
+      x143 = x0**3.0d0*x142
+      x144 = x143*x9
+      x145 = x142*x28
+      x146 = x25*x60
+      x147 = x0**2.0d0
+      x148 = x24*x60
+      x149 = x147*x148
+      x150 = x142*x27
+      x151 = x123*x150
+      x152 = 8.68579013942185d-6*x144 + 0.000524152506093537d0*x145 + 0.
+     &00440195901906306d0*x146 - 0.000410930386996015d0*x149 - 0.0031610
+     &2962473761d0*x151 + x16*(-x123*x141 + 0.00014652515242323d0*x139 -
+     & 0.00496533372342768d0*x140 + 0.0041377781028564d0*x41 + 0.0066316
+     &5278710203d0*x43)
+      x153 = x12*(-x108 + x46 - x87 - x89 + x90) + x135 - 0.002641175411
+     &43784d0*x137 + x152 + x34*(x116*x117 + x125 - 0.0003448148419047d0
+     &*x68)
+      x154 = mu*x15
+      x155 = x75*(0.989141964955861d0*x1 + 1.16327369584438d0*x3 + 0.600
+     &321476249523d0*x4 + 0.210778258416395d0*x6)
+      x156 = x73**2/(x7**4*x8**2)
+      x157 = x73*x74*(1.48371294743379d0*x1 + 1.99418347859036d0*x3 + x5
+     & + 0.252933910099675d0*x6)/x7**3
+      x158 = 0.00264117541143784d0*x17*x60
+      x159 = x18*(0.00571025734089666d0*x1 - 0.00609784657412857d0*x19 +
+     & 0.000856522469028669d0*x22 + 0.0350330449527535d0*x6)
+      x160 = 0.00316102962473761d0*x150*x2
+      x161 = x156*x2
+      x162 = x126 + x128 + x130
+      x163 = mu*x131
+      x164 = x163*x33
+      x165 = 0.89531658564596d0*x3
+      x166 = 0.0891107483661069d0*x19
+      x167 = x47*x91
+      x168 = 3.82831200025092d0*x56
+      x169 = x100*x103*(0.150031049774234d0*x1 + 0.0271505358982603d0*x6
+     &) - x101*x103 *(0.225046574661351d0*x1 + 0.0325806430779124d0*x6)/
+     &x52**3 - 22.9698720015055d0*x102*x54*x56 - 0.203363546995945d0*x10
+     &2*x95 + x168*x55 + 1.38777878078145d-17*x96
+      x170 = x141*x2
+      x171 = x18*(0.311172355472072d0*x1*x120 + 0.00285512867044833d0*x1
+     & - 0.103724118490691d0*x119 + x21 + 0.000428261234514334d0*x22 + 0
+     &.0121035293512547d0*x23*x6 + 0.0175165224763768d0*x6)
+      x172 = x2*x22
+      x173 = 0.337338207872387d0*x172
+      E = -rho_c*(x11 - x71)
+      d1E(1) = -x11 - x153*x154 + x71 + 0.00274777245725523d0*x72 - x76*
+     &x78 - 0.632303919304059d0*x82
+      d2E(1) = x0*(0.0883792666034679d0*x1*x76 - 1.26460783860812d0*x153
+     &*x34*x6*x80 - 2.0d0*x154*(-x12*(x108 - x46 + x87 + x89 - x90) - 0.
+     &202642367284676d0*x132*x133*(-x37 + 1.0d0) + x152 + x158*x18*( x21
+     & + x83 + x84 + x85) + x34*(-x117*(x105 + x111 + x112 + x115 - x98)
+     & + x125 + 0.0003448148419047d0*x64*(x66 + x67 - 17.2274040011292d0
+     &))) - x154*(mu*x132*x162*x38/x35**2 - 6.39350882283002d-5*x0**2.33
+     &333333333333d0*x148 + x12*( 0.000440195901906306d0*x106*x17 + x107
+     &*(-0.154912426780983d0*x0** (-0.333333333333333d0)*x48 - 75.398223
+     &686155d0*x167*x49 - 4.83324359125373d0*x167*x93 + x169 - x92*(-1.3
+     &6477107997868d0*x1 + 0.427594146176807d0*x6) - 1.61108119708458d0*
+     &x94) - x159*x45 - x166*x24 + x166*x86 - 0.0138644007334803d0*x22*x
+     &86 - 0.00107855455836145d0*x25 - 0.000586927869208408d0*x58 + 0.02
+     &31073345558005d0*x88) + x134*(2.05391854581537d0*x127 + 1.43555326
+     &817173d0*x129 - 2.0d0*x162*x164 + x163*x35*( 1.42618991424766d0*x1
+     &27 + 1.53482843253593d0*x3)/x32**2 + x165 - x36*(0.950793276165107
+     &d0*x127 + x165)) - x135*x164 - 0.000821860773992031d0*x136*x147 + 
+     &0.00880391803812612d0*x137 + 0.000279369479946145d0*x143*x76 - 5.7
+     &9052675961456d-5*x144 - 0.00192189252234297d0*x145 - 0.01173855738
+     &41682d0*x146 + 0.00191767513931474d0*x149 + 0.0508356285485896d0*x
+     &150*x161 + 0.0168588246652672d0*x151 + x155*x160 - x157*x160 - x15
+     &8*x159 + x16*(0.213300270968718d0*x123*x42 + 0.00471283037863406d0
+     &*x138* x76 - 0.000781467479590561d0*x139 + 0.0165511124114256d0*x1
+     &40 + x155*x170 - x157*x170 + 0.857572898037877d0*x161*x42 - 0.0049
+     &6533372342768d0*x17*x171 - 0.0110340749409504d0*x41 - 0.0198949583
+     &613061d0*x43) + x34*(-0.0006896296838094d0*x116*x17 + x117*(5.1970
+     &3611962767d0*x110 - 5.29055759308205d0*x113*x95 - 31.182216717766d
+     &0*x114 - x168 + x169 - 23.3866625383245d0*x56*x65 *(-0.10697599576
+     &3985d0*x1 + 0.289053642815522d0*x6) - x65*( -0.0720184066122292d0*
+     &x1 + 0.0778387062718705d0*x6)) - 0.00370771454548634d0*x118 + 0.16
+     &7525641071009d0*x122 + 0.899568554326366d0*x124 + x155*x173 + 5.42
+     &506773629845d0*x156* x172 - x157*x173 + 0.0298137034090898d0*x17*x
+     &76 - 0.0837628205355044d0*x171*x19 - 0.0837628205355044d0*x61 - 0.
+     &0652591516234546d0*x63 + 0.0009195062450792d0*x68)) + x155*x78 + 2
+     &58.630216499205d0*x156*x77 - x157*x78 + 1.26460783860812d0*x70 *x8
+     &1 + 0.00183184830483682d0*x72 - 32.1639684429148d0*x76*x77 + 1.053
+     &83986550676d0*x82 - 0.499760307959092d0*x22*x60*x79/x14**6)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, rho_s, mu
+      real*8, intent(out) :: E
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40
+      E = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = x0**0.166666666666667d0
+      x3 = sqrt(x0)
+      x4 = x0**0.666666666666667d0
+      x5 = 0.0621813817393098d0*(0.132568899905202d0*x1 + 1.0d0)*log(1.0
+     &d0 + 16.081984221457407d0/(2.2255694211506878d0*x1 + 5.98255043577
+     &10795d0*x2 + 0.80042863499936356d0*x3 + 0.18970043257475591d0*x4))
+     &
+      x6 = rho_s**4/rho_c**4
+      x7 = rho_s*x0
+      x8 = x7 + 1.0d0
+      x9 = -x7 + 1.0d0
+      x10 = 1.92366105093154d0*x8**1.33333333333333d0 + 1.92366105093154
+     &d0*x9** 1.33333333333333d0 - 3.84732210186307d0
+      x11 = 0.0197517897025652d0*x10*(0.0690139921125583d0*x1 + 1.0d0)*(
+     &-x6 + 1.0d0) *log(1.0d0 + 29.608574643216677d0/(2.2475918635776164
+     &d0*x1 + 8.1574147034876408d0*x2 + 0.43009724712766434d0*x3 + 0.191
+     &15125951273382d0*x4))
+      x12 = 0.0310906908696548d0*(0.127469618870009d0*x1 + 1.0d0)*log(1.
+     &0d0 + 32.163968442914921d0/(3.8447462374472119d0*x1 + 11.120374863
+     &094685d0*x2 + 1.6447337755676092d0*x3 + 0.24058712912881922d0*x4))
+     &
+      x13 = -x5
+      x14 = x10*x6
+      x15 = x14*(x12 + x13)
+      x16 = mu**2
+      x17 = x0**1.66666666666667d0
+      x18 = 1.0d0 - rho_s**2/rho_c**2
+      x19 = x0**1.0d0
+      x20 = x0**1.33333333333333d0
+      x21 = (0.0128480790170175d0*x1 - 0.00304892328706429d0*x19 + 0.000
+     &275310793616358d0*x20 + 0.0315297404574782d0*x4 + 1.0d0)*exp (-0.4
+     &6675853320810856d0*x1)
+      x22 = x18*x21
+      x23 = x8**0.666666666666667d0 + x9**0.666666666666667d0
+      x24 = x23**3
+      x25 = x1*x16/x23**2
+      x26 = 9.20897059521559d0*mu*x2/x23 + 1.0d0
+      x27 = mu**3
+      x28 = x11 + x13
+      x29 = -x15 + x28
+      x30 = 1d0/x4
+      x31 = 1d0/x8
+      x32 = x31**0.666666666666667d0
+      x33 = x1*x31**0.333333333333333d0
+      x34 = 0.0244354823084343d0*x4
+      x35 = 8.61370200056458d0*x8**2*(-0.0177069812999059d0*x33 + 1.0d0)
+     &/(x32*(x32* x34 + 0.337569861992026d0*x33 + 1.0d0))
+      x36 = 1d0/x9
+      x37 = x36**0.666666666666667d0
+      x38 = x1*x36**0.333333333333333d0
+      x39 = 8.61370200056458d0*x9**2*(-0.0177069812999059d0*x38 + 1.0d0)
+     &/(x37*(x34* x37 + 0.337569861992026d0*x38 + 1.0d0))
+      x40 = x18*(x21 - 1.0d0)
+      E = -rho_c*(-x11 + x15 + x5 + (0.00316102962473761d0*mu**8*x0** 2.
+     &66666666666667d0*x29 - mu**6*(-0.0533250677421794d0*x0**2.0d0*( x1
+     &4*(-x12 + x5) + x28) + 0.00248266686171384d0*x17*x40) - 0.00264117
+     &541143784d0*mu**5*x17*x22 + mu**4*( -0.00020688890514282d0*x0**1.0
+     &d0*(23.3866625383245d0*x18*( -0.240695990468967d0*x1 + 0.260148278
+     &53397d0*x4)*exp( -0.33933171852197186d0*x1) + x35 + x39 - 8.613702
+     &00056458d0*x8** 2.66666666666667d0 - 8.61370200056458d0*x9**2.6666
+     &6666666667d0) - 0.0418814102677522d0*x19*x40 + 0.337338207872387d0
+     &*x20*x29) - 0.00777267271741372d0*x24*log((18.485266912338322d0*x2
+     &5 + x26 + 15.312568193831799d0*x27*x3/x24)/(8.5571394854859619d0*x
+     &25 + x26 )) - x27*(0.000132058770571892d0*x17*(37.6991118430775d0*
+     &x18*( -3.07073492995203d0*x1 + 0.384834731559127d0*x4)*exp( -0.192
+     &30865217881402d0*x1)/x19 + x30*x35 + x30*x39) + 0.0445553741830535
+     &d0*x19*x22))/(0.237113969739022d0*x16*x4 + 1.0d0)**4)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D1ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E, d1E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, rho_s, mu
+      real*8, intent(out) :: E, d1E(9)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
+     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
+     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
+     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
+     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
+     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
+     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
+     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
+     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
+     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
+     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
+     &, x193
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = x0**0.166666666666667d0
+      x3 = sqrt(x0)
+      x4 = x0**0.666666666666667d0
+      x5 = 2.22556942115069d0*x1 + 5.98255043577108d0*x2 + 0.80042863499
+     &9364d0*x3 + 0.189700432574756d0*x4
+      x6 = 1.0d0 + 16.0819842214574d0/x5
+      x7 = log(x6)
+      x8 = 0.0621813817393098d0*x7*(0.132568899905202d0*x1 + 1.0d0)
+      x9 = rho_s*x0
+      x10 = x9 + 1.0d0
+      x11 = -x9 + 1.0d0
+      x12 = 1.92366105093154d0*x10**1.33333333333333d0 + 1.9236610509315
+     &4d0*x11** 1.33333333333333d0 - 3.84732210186307d0
+      x13 = rho_s**4/rho_c**4
+      x14 = -x13 + 1.0d0
+      x15 = 2.24759186357762d0*x1 + 8.15741470348764d0*x2 + 0.4300972471
+     &27664d0*x3 + 0.191151259512734d0*x4
+      x16 = 1.0d0 + 29.6085746432167d0/x15
+      x17 = log(x16)
+      x18 = x14*x17
+      x19 = x12*x18
+      x20 = 0.0197517897025652d0*x19*(0.0690139921125583d0*x1 + 1.0d0)
+      x21 = 3.84474623744721d0*x1 + 11.1203748630947d0*x2 + 1.6447337755
+     &6761d0*x3 + 0.240587129128819d0*x4
+      x22 = 1.0d0 + 32.1639684429149d0/x21
+      x23 = log(x22)
+      x24 = 0.0310906908696548d0*x23*(0.127469618870009d0*x1 + 1.0d0)
+      x25 = -x8
+      x26 = x24 + x25
+      x27 = x12*x13
+      x28 = x26*x27
+      x29 = mu**2
+      x30 = x29*x4
+      x31 = 0.237113969739022d0*x30 + 1.0d0
+      x32 = x31**(-4)
+      x33 = mu**5
+      x34 = rho_s**2/rho_c**2
+      x35 = -x34 + 1.0d0
+      x36 = exp(-0.46675853320810856d0*x1)
+      x37 = x0**1.0d0
+      x38 = -0.00304892328706429d0*x37
+      x39 = x0**1.33333333333333d0
+      x40 = 0.0128480790170175d0*x1 + x38 + 0.000275310793616358d0*x39 +
+     & 0.0315297404574782d0*x4 + 1.0d0
+      x41 = x36*x40
+      x42 = x35*x41
+      x43 = x33*x42
+      x44 = x0**1.66666666666667d0
+      x45 = 0.00264117541143784d0*x44
+      x46 = x10**0.666666666666667d0 + x11**0.666666666666667d0
+      x47 = x46**3
+      x48 = 0.306852819440055d0
+      x49 = x46**2
+      x50 = 1d0/x49
+      x51 = x29*x50
+      x52 = x1*x51
+      x53 = 1d0/x46
+      x54 = mu*x53
+      x55 = 9.20897059521559d0*x2*x54 + 1.0d0
+      x56 = mu**3
+      x57 = x3/x47
+      x58 = 18.4852669123383d0*x52 + x55 + 15.3125681938318d0*x56*x57
+      x59 = x58/(8.55713948548596d0*x52 + x55)
+      x60 = x48*log(x59)
+      x61 = x20 + x25
+      x62 = -x28 + x61
+      x63 = mu**8
+      x64 = x0**2.66666666666667d0
+      x65 = 0.00316102962473761d0*x63*x64
+      x66 = 0.0445553741830535d0*x37
+      x67 = x42*x66
+      x68 = -3.07073492995203d0*x1 + 0.384834731559127d0*x4
+      x69 = exp(-0.19230865217881402d0*x1)
+      x70 = x35*x68*x69
+      x71 = 1d0/x37
+      x72 = 37.6991118430775d0*x71
+      x73 = x70*x72
+      x74 = 1d0/x4
+      x75 = x10**2
+      x76 = 1d0/x10
+      x77 = x76**0.333333333333333d0
+      x78 = x1*x77
+      x79 = x76**0.666666666666667d0
+      x80 = 0.0244354823084343d0*x4
+      x81 = 0.337569861992026d0*x78 + x79*x80 + 1.0d0
+      x82 = 1d0/x81
+      x83 = x75*x82
+      x84 = (-0.0177069812999059d0*x78 + 1.0d0)/x79
+      x85 = 8.61370200056458d0*x84
+      x86 = x83*x85
+      x87 = x11**2
+      x88 = 1d0/x11
+      x89 = x88**0.333333333333333d0
+      x90 = x1*x89
+      x91 = x88**0.666666666666667d0
+      x92 = x80*x91 + 0.337569861992026d0*x90 + 1.0d0
+      x93 = 1d0/x92
+      x94 = x87*x93
+      x95 = (-0.0177069812999059d0*x90 + 1.0d0)/x91
+      x96 = 8.61370200056458d0*x95
+      x97 = x94*x96
+      x98 = x44*(x73 + x74*x86 + x74*x97)
+      x99 = mu**6
+      x100 = x41 - 1.0d0
+      x101 = x100*x35
+      x102 = x101*x44
+      x103 = x0**2.0d0
+      x104 = -x24 + x8
+      x105 = x104*x27
+      x106 = x105 + x61
+      x107 = x103*x106
+      x108 = mu**4
+      x109 = -0.0418814102677522d0*x101*x37
+      x110 = x0**1.0d0
+      x111 = x10**2.66666666666667d0
+      x112 = 8.61370200056458d0*x111
+      x113 = x11**2.66666666666667d0
+      x114 = 8.61370200056458d0*x113
+      x115 = exp(-0.33933171852197186d0*x1)
+      x116 = x115*(-0.240695990468967d0*x1 + 0.26014827853397d0*x4)
+      x117 = x116*x35
+      x118 = 23.3866625383245d0*x117
+      x119 = 0.337338207872387d0*x39
+      x120 = x108*(x109 - 0.00020688890514282d0*x110*(-x112 - x114 + x11
+     &8 + x86 + x97 ) + x119*x62) - x43*x45 - 0.0253302959105844d0*x47*x
+     &60 - x56*(x67 + 0.000132058770571892d0*x98) + x62*x65 - x99*( 0.00
+     &248266686171384d0*x102 - 0.0533250677421794d0*x107)
+      x121 = x120*x32
+      x122 = x34*x41
+      x123 = 0.00528235082287567d0*x33*x44
+      x124 = x35*x36
+      x125 = x124*(0.00428269300567249d0*x1 + x38 + 0.000367081058155144
+     &d0*x39 + 0.0210198269716521d0*x4)
+      x126 = x10**(-0.333333333333333d0)
+      x127 = x11**(-0.333333333333333d0)
+      x128 = x126 - x127
+      x129 = 0.0506605918211689d0*x128*x49*x60
+      x130 = x1*x54
+      x131 = x128*x9
+      x132 = mu*x1*x131*x50
+      x133 = 6.13931373014372d0*x2
+      x134 = x131*x133*x53 - 1.53482843253593d0*x2
+      x135 = x3*x51
+      x136 = 0.0253302959105844d0*mu*x48/x58
+      x137 = -2.56488140124205d0*x10**0.333333333333333d0 + 2.5648814012
+     &4205d0*x11** 0.333333333333333d0
+      x138 = rho_s**5*x137/rho_c**5
+      x139 = 0.00274777245725523d0*x1*x7
+      x140 = 16.0819842214574d0*(0.0082433173717657d0*x1 + 0.06218138173
+     &93098d0)*( 0.741856473716896d0*x1 + 0.99709173929518d0*x2 + 0.4002
+     &14317499682d0*x3 + 0.126466955049837d0*x4)/(x5**2*x6)
+      x141 = 0.00136314985874174d0*x1 + 0.0197517897025652d0
+      x142 = x141*x17
+      x143 = x137*x141*x18
+      x144 = -0.000454383286247248d0*x1*x19 + 29.6085746432167d0*x12*x14
+     &*x141*( 0.749197287859205d0*x1 + 1.35956911724794d0*x2 + 0.2150486
+     &23563832d0*x3 + 0.127434173008489d0*x4)/(x15**2*x16) + x139 - x140
+     & + 4.0d0*x142*x27 + x143*x9 + x27*( 0.00132103950518672d0*x1*x23 -
+     & x139 + x140 - 32.1639684429149d0*( 0.00396311851556016d0*x1 + 0.0
+     &310906908696548d0)*( 1.28158207914907d0*x1 + 1.85339581051578d0*x2
+     & + 0.822366887783805d0*x3 + 0.160391419419213d0*x4)/(x21**2*x22))
+      x145 = -x138*x26 + x144
+      x146 = 0.0891107483661069d0*x37
+      x147 = 75.398223686155d0*x68*x69*x71
+      x148 = x76*x9
+      x149 = 1d0/x1
+      x150 = 0.0508408867489862d0*x149
+      x151 = x150/x77
+      x152 = x151*x83*(-x148 + 1.0d0)
+      x153 = 5.74246800037638d0*x74
+      x154 = x153*x83*x84
+      x155 = x88*x9
+      x156 = x150/x89
+      x157 = x156*x94*(x155 + 1.0d0)
+      x158 = 22.9698720015055d0*x74
+      x159 = x158*x9
+      x160 = x10*x82
+      x161 = x160*x84
+      x162 = x159*x161
+      x163 = x153*x94*x95
+      x164 = x11*x93
+      x165 = x164*x95
+      x166 = x159*x165
+      x167 = 0.112523287330675d0*x78
+      x168 = 0.0162903215389562d0*x4
+      x169 = x168*x79
+      x170 = x167 + x169
+      x171 = x74*x85/x81**2
+      x172 = x171*x75*(-x148*x167 - x148*x169 + x170)
+      x173 = 0.112523287330675d0*x90
+      x174 = x168*x91
+      x175 = x173 + x174
+      x176 = x74*x96/x92**2
+      x177 = x176*x87*(x155*x173 + x155*x174 + x175)
+      x178 = 0.000132058770571892d0*x44
+      x179 = x100*x34
+      x180 = 0.00496533372342768d0*x44
+      x181 = x124*(0.0777930888680181d0*x1*x40 - 0.00214134650283625d0*x
+     &1 + 0.00152446164353214d0*x37 - 0.000183540529077572d0*x39 - 0.010
+     &5099134858261d0*x4)
+      x182 = x104*x138 - 4.0d0*x105 + x144
+      x183 = 0.0533250677421794d0*x103
+      x184 = 0.0837628205355044d0*x37
+      x185 = x11**1.66666666666667d0
+      x186 = x10**1.66666666666667d0
+      x187 = 46.773325076649d0*x116*x74
+      x188 = 0.00020688890514282d0*x44
+      x189 = x41*x9
+      x190 = 4.0d0*rho_s**3*x12/rho_c**3
+      x191 = x13*x137*x26 - x142*x190 - x143 - x190*x26
+      x192 = x100*x9
+      x193 = x10*x170*x171 - x11*x175*x176 + x151*x160 - x156*x164 + x15
+     &8*x161 - x158 *x165
+      E = -rho_c*(x121 - x20 + x28 + x8)
+      d1E(1) = -0.632303919304059d0*x120*x30/x31**5 - x121 + x145 + 3.0d
+     &0*x28 - x32*( -0.000410930386996015d0*x0**2.0d0*x43 - x108*(0.4497
+     &84277163183d0 *x106*x39 + x109 + 0.0003448148419047d0*x110*(x112 +
+     & x114 - x118 - x86 - x97) - x119*x182 + x179*x184 + x181*x184 - x1
+     &88*( -23.3866625383245d0*x115*x35*x74*(0.0802319968229891d0*x1 - 0
+     &.173432185689313d0*x4) - 2.64527879654103d0*x117*x149 - 15.5911083
+     &58883d0*x117*x74 - x152 + x153*(x111 + x113) - x154 - x157 + x159*
+     &(x185 - x186) + x162 - x163 - x166 - x172 - x177 - x187*x34)) - x1
+     &22*x123 + x125*x33*x45 + x129*x9 - x136*x49*( -6.16175563744611d0*
+     &x130 + 30.6251363876636d0*x131*x29*x57 + 24.6470225497844d0*x132 +
+     & x134 - 7.6562840969159d0*x135 - x59*( -2.85237982849532d0*x130 + 
+     &11.4095193139813d0*x132 + x134)) + 0.00440195901906306d0*x43*x44 +
+     & x56*(-x122*x146 + x125*x66 - x178 *(2.41662179562687d0*x0**(-0.66
+     &6666666666667d0)*x70 + x147*x34 + x152 + x154 + x157 - x162 + x163
+     & + x166 + x172 + x177 + x35*x69* x72*(1.02357830998401d0*x1 - 0.25
+     &6556487706084d0*x4) + x73) - 0.00693220036674015d0*x39*x42 + x67 +
+     & 0.000220097950953153d0*x98 ) - 0.00842941233263362d0*x62*x63*x64 
+     &+ x65*(x145 + 4.0d0*x28) - x99*(-0.0041377781028564d0*x102 + 0.106
+     &650135484359d0*x107 + x179 *x180 + x180*x181 - x182*x183)) + x61
+      d1E(2) = x191 - x32*(x108*(x119*x191 + x184*x192 - x188*(-x158*(-x
+     &185 + x186) - x187*x9 + x193)) + x123*x189 - x129 + x136*x46*(x128
+     &*( 24.6470225497844d0*x130 + x133 + 30.6251363876636d0*x135) + x59
+     &*( -x126 + x127)*(11.4095193139813d0*x130 + x133)) + x191*x65 + x5
+     &6* (x146*x189 - x178*(-x147*x9 + x193)) + x99*(x180*x192 + x183*x1
+     &91 ))
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E, d1E, d2E
+     &)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, rho_s, mu
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
+     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
+     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
+     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
+     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
+     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
+     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
+     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
+     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
+     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
+     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
+     &, x193, x194, x195, x196, x197, x198, x199, x200, x201, x202, x203
+     &, x204, x205, x206, x207, x208, x209, x210, x211, x212, x213, x214
+     &, x215, x216, x217, x218, x219, x220, x221, x222, x223, x224, x225
+     &, x226, x227, x228, x229, x230, x231, x232, x233, x234, x235, x236
+     &, x237, x238, x239, x240, x241, x242, x243, x244, x245, x246, x247
+     &, x248, x249, x250, x251, x252, x253, x254, x255, x256, x257, x258
+     &, x259, x260, x261, x262, x263, x264, x265, x266, x267, x268, x269
+     &, x270, x271, x272, x273, x274, x275, x276, x277, x278, x279, x280
+     &, x281, x282, x283, x284, x285, x286, x287, x288, x289, x290, x291
+     &, x292, x293, x294, x295, x296, x297, x298, x299, x300, x301, x302
+     &, x303, x304, x305, x306, x307, x308, x309, x310, x311, x312, x313
+     &, x314, x315, x316, x317, x318, x319, x320, x321, x322, x323, x324
+     &, x325, x326, x327, x328, x329, x330, x331, x332, x333, x334, x335
+     &, x336, x337, x338, x339, x340, x341, x342, x343, x344, x345, x346
+     &, x347, x348, x349, x350, x351, x352, x353, x354, x355, x356, x357
+     &, x358, x359, x360, x361, x362, x363, x364, x365, x366, x367, x368
+     &, x369, x370, x371, x372, x373, x374, x375, x376, x377, x378, x379
+     &, x380, x381, x382, x383, x384, x385, x386, x387, x388, x389, x390
+     &, x391, x392, x393, x394, x395, x396, x397, x398, x399, x400, x401
+     &, x402, x403, x404, x405, x406, x407, x408, x409, x410, x411, x412
+     &, x413, x414, x415, x416, x417, x418, x419, x420, x421, x422, x423
+     &, x424, x425, x426, x427, x428, x429, x430, x431, x432, x433, x434
+     &, x435, x436, x437, x438, x439, x440, x441, x442, x443, x444, x445
+     &, x446, x447, x448, x449, x450, x451, x452, x453, x454, x455, x456
+     &, x457, x458, x459, x460, x461, x462, x463, x464, x465, x466, x467
+     &, x468, x469, x470, x471, x472, x473, x474, x475, x476, x477, x478
+     &, x479, x480, x481, x482, x483, x484, x485, x486, x487, x488, x489
+     &, x490, x491, x492, x493, x494, x495, x496, x497, x498, x499, x500
+     &, x501, x502, x503, x504, x505, x506, x507, x508, x509, x510, x511
+     &, x512, x513, x514, x515, x516, x517, x518, x519, x520, x521, x522
+     &, x523, x524, x525, x526, x527, x528, x529, x530, x531, x532, x533
+     &, x534, x535, x536, x537, x538, x539, x540, x541, x542, x543, x544
+     &, x545, x546, x547, x548, x549, x550, x551, x552, x553, x554, x555
+     &, x556, x557, x558, x559, x560, x561, x562, x563, x564, x565, x566
+     &, x567, x568, x569, x570, x571, x572, x573, x574, x575, x576, x577
+     &, x578, x579, x580, x581, x582, x583
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      d2E(:) = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = x0**0.166666666666667d0
+      x3 = sqrt(x0)
+      x4 = 0.800428634999364d0*x3
+      x5 = x0**0.666666666666667d0
+      x6 = 2.22556942115069d0*x1 + 5.98255043577108d0*x2 + x4 + 0.189700
+     &432574756d0 *x5
+      x7 = 1.0d0 + 16.0819842214574d0/x6
+      x8 = log(x7)
+      x9 = 0.0621813817393098d0*x8*(0.132568899905202d0*x1 + 1.0d0)
+      x10 = rho_s*x0
+      x11 = x10 + 1.0d0
+      x12 = -x10 + 1.0d0
+      x13 = 1.92366105093154d0*x11**1.33333333333333d0 + 1.9236610509315
+     &4d0*x12** 1.33333333333333d0 - 3.84732210186307d0
+      x14 = rho_s**4/rho_c**4
+      x15 = -x14 + 1.0d0
+      x16 = 0.430097247127664d0*x3
+      x17 = 2.24759186357762d0*x1 + x16 + 8.15741470348764d0*x2 + 0.1911
+     &51259512734d0*x5
+      x18 = 1.0d0 + 29.6085746432167d0/x17
+      x19 = log(x18)
+      x20 = x15*x19
+      x21 = x13*x20
+      x22 = 0.0197517897025652d0*x21*(0.0690139921125583d0*x1 + 1.0d0)
+      x23 = 1.64473377556761d0*x3
+      x24 = 3.84474623744721d0*x1 + 11.1203748630947d0*x2 + x23 + 0.2405
+     &87129128819d0*x5
+      x25 = 1.0d0 + 32.1639684429149d0/x24
+      x26 = log(x25)
+      x27 = 0.0310906908696548d0*x26*(0.127469618870009d0*x1 + 1.0d0)
+      x28 = -x9
+      x29 = x27 + x28
+      x30 = x13*x14
+      x31 = x29*x30
+      x32 = mu**2
+      x33 = x32*x5
+      x34 = 0.237113969739022d0*x33 + 1.0d0
+      x35 = x34**(-4)
+      x36 = rho_s**2/rho_c**2
+      x37 = -x36 + 1.0d0
+      x38 = x0**1.66666666666667d0
+      x39 = exp(-0.46675853320810856d0*x1)
+      x40 = x0**1.0d0
+      x41 = -0.00304892328706429d0*x40
+      x42 = x0**1.33333333333333d0
+      x43 = 0.0128480790170175d0*x1 + x41 + 0.000275310793616358d0*x42 +
+     & 0.0315297404574782d0*x5 + 1.0d0
+      x44 = x39*x43
+      x45 = x38*x44
+      x46 = x37*x45
+      x47 = mu**5
+      x48 = 0.00264117541143784d0*x47
+      x49 = x46*x48
+      x50 = x11**0.666666666666667d0
+      x51 = x12**0.666666666666667d0
+      x52 = x50 + x51
+      x53 = x52**3
+      x54 = 0.306852819440055d0
+      x55 = x52**2
+      x56 = 1d0/x55
+      x57 = x32*x56
+      x58 = x1*x57
+      x59 = 1d0/x52
+      x60 = mu*x59
+      x61 = 9.20897059521559d0*x2*x60 + 1.0d0
+      x62 = 8.55713948548596d0*x58 + x61
+      x63 = 1d0/x62
+      x64 = mu**3
+      x65 = 1d0/x53
+      x66 = x3*x65
+      x67 = 18.4852669123383d0*x58 + x61 + 15.3125681938318d0*x64*x66
+      x68 = x63*x67
+      x69 = x54*log(x68)
+      x70 = 0.0253302959105844d0*x53*x69
+      x71 = x22 + x28
+      x72 = -x31 + x71
+      x73 = mu**8*x0**2.66666666666667d0
+      x74 = 0.00316102962473761d0*x73
+      x75 = x72*x74
+      x76 = x40*x44
+      x77 = 0.0445553741830535d0*x37
+      x78 = x76*x77
+      x79 = -3.07073492995203d0*x1 + 0.384834731559127d0*x5
+      x80 = exp(-0.19230865217881402d0*x1)
+      x81 = x80/x40
+      x82 = x79*x81
+      x83 = 37.6991118430775d0*x37
+      x84 = x82*x83
+      x85 = 1d0/x5
+      x86 = x11**2
+      x87 = 8.61370200056458d0*x86
+      x88 = 1d0/x11
+      x89 = x88**0.333333333333333d0
+      x90 = x1*x89
+      x91 = 0.0177069812999059d0*x90
+      x92 = -x91 + 1.0d0
+      x93 = x88**0.666666666666667d0
+      x94 = 0.0244354823084343d0*x5
+      x95 = 0.337569861992026d0*x90 + x93*x94 + 1.0d0
+      x96 = 1d0/x95
+      x97 = 1d0/x93
+      x98 = x96*x97
+      x99 = x92*x98
+      x100 = x87*x99
+      x101 = x12**2
+      x102 = 8.61370200056458d0*x101
+      x103 = 1d0/x12
+      x104 = x103**0.333333333333333d0
+      x105 = x1*x104
+      x106 = 0.0177069812999059d0*x105
+      x107 = -x106 + 1.0d0
+      x108 = x103**0.666666666666667d0
+      x109 = 0.337569861992026d0*x105 + x108*x94 + 1.0d0
+      x110 = 1d0/x109
+      x111 = 1d0/x108
+      x112 = x110*x111
+      x113 = x107*x112
+      x114 = x102*x113
+      x115 = x38*(x100*x85 + x114*x85 + x84)
+      x116 = x64*(0.000132058770571892d0*x115 + x78)
+      x117 = mu**6
+      x118 = x44 - 1.0d0
+      x119 = x118*x38
+      x120 = x119*x37
+      x121 = x0**2.0d0
+      x122 = -x27 + x9
+      x123 = x122*x30
+      x124 = x123 + x71
+      x125 = x121*x124
+      x126 = x117*(0.00248266686171384d0*x120 - 0.0533250677421794d0*x12
+     &5)
+      x127 = mu**4
+      x128 = x118*x40
+      x129 = -0.0418814102677522d0*x128*x37
+      x130 = x0**1.0d0
+      x131 = x11**2.66666666666667d0
+      x132 = 8.61370200056458d0*x131
+      x133 = x12**2.66666666666667d0
+      x134 = 8.61370200056458d0*x133
+      x135 = 0.240695990468967d0*x1
+      x136 = 0.26014827853397d0*x5
+      x137 = exp(-0.33933171852197186d0*x1)
+      x138 = x137*(-x135 + x136)
+      x139 = x138*x37
+      x140 = 23.3866625383245d0*x139
+      x141 = x130*(x100 + x114 - x132 - x134 + x140)
+      x142 = 0.337338207872387d0*x42
+      x143 = x127*(x129 - 0.00020688890514282d0*x141 + x142*x72)
+      x144 = -x116 - x126 + x143 - x49 - x70 + x75
+      x145 = x144*x35
+      x146 = x45*x47
+      x147 = 0.00528235082287567d0*x146
+      x148 = x147*x36
+      x149 = 0.00428269300567249d0*x1 + x41 + 0.000367081058155144d0*x42
+     & + 0.0210198269716521d0*x5
+      x150 = x38*x39
+      x151 = x149*x150
+      x152 = x37*x48
+      x153 = x151*x152
+      x154 = x46*x47
+      x155 = 0.00440195901906306d0*x154
+      x156 = x0**2.0d0
+      x157 = x37*x47
+      x158 = x156*x157
+      x159 = x158*x44
+      x160 = 0.000410930386996015d0*x159
+      x161 = x55*x69
+      x162 = x11**(-0.333333333333333d0)
+      x163 = x12**(-0.333333333333333d0)
+      x164 = x162 - x163
+      x165 = 0.0506605918211689d0*x164
+      x166 = x161*x165
+      x167 = x10*x166
+      x168 = x72*x73
+      x169 = 0.00842941233263362d0*x168
+      x170 = x1*x60
+      x171 = mu*x1
+      x172 = x171*x56
+      x173 = x10*x164
+      x174 = x172*x173
+      x175 = 6.13931373014372d0*x2
+      x176 = x10*x59
+      x177 = x164*x176
+      x178 = x175*x177 - 1.53482843253593d0*x2
+      x179 = -2.85237982849532d0*x170 + 11.4095193139813d0*x174 + x178
+      x180 = x3*x57
+      x181 = x32*x66
+      x182 = x173*x181
+      x183 = -6.16175563744611d0*x170 + 24.6470225497844d0*x174 + x178 -
+     & 7.6562840969159d0*x180 + 30.6251363876636d0*x182
+      x184 = -x179*x68 + x183
+      x185 = 0.0253302959105844d0*x54
+      x186 = x184*x185
+      x187 = 1d0/x67
+      x188 = mu*x187
+      x189 = x188*x55
+      x190 = x186*x189
+      x191 = rho_s**5/rho_c**5
+      x192 = x12**0.333333333333333d0
+      x193 = x11**0.333333333333333d0
+      x194 = x192 - x193
+      x195 = 2.56488140124205d0*x194
+      x196 = x191*x195
+      x197 = x1*x8
+      x198 = 0.00274777245725523d0*x197
+      x199 = x1*x26
+      x200 = 0.00132103950518672d0*x199
+      x201 = 1d0/x7
+      x202 = x6**(-2)
+      x203 = 0.741856473716896d0*x1 + 0.99709173929518d0*x2 + 0.40021431
+     &7499682d0*x3 + 0.126466955049837d0*x5
+      x204 = x201*x202*x203
+      x205 = 0.0082433173717657d0*x1 + 0.0621813817393098d0
+      x206 = 16.0819842214574d0*x205
+      x207 = x204*x206
+      x208 = 1d0/x25
+      x209 = x24**(-2)
+      x210 = 1.28158207914907d0*x1 + 1.85339581051578d0*x2 + 0.822366887
+     &783805d0*x3 + 0.160391419419213d0*x5
+      x211 = x208*x209*x210
+      x212 = 0.00396311851556016d0*x1 + 0.0310906908696548d0
+      x213 = 32.1639684429149d0*x212
+      x214 = x211*x213
+      x215 = -x198 + x200 + x207 - x214
+      x216 = x215*x30
+      x217 = x1*x21
+      x218 = 0.00136314985874174d0*x1 + 0.0197517897025652d0
+      x219 = x19*x218
+      x220 = x219*x30
+      x221 = x20*x218
+      x222 = x195*x221
+      x223 = 1d0/x18
+      x224 = x17**(-2)
+      x225 = 0.749197287859205d0*x1 + 1.35956911724794d0*x2 + 0.21504862
+     &3563832d0*x3 + 0.127434173008489d0*x5
+      x226 = x223*x224*x225
+      x227 = x13*x15*x218
+      x228 = 29.6085746432167d0*x227
+      x229 = x198 - x207
+      x230 = x10*x222 + x216 - 0.000454383286247248d0*x217 + 4.0d0*x220 
+     &+ x226*x228 + x229
+      x231 = -x196*x29 + x230
+      x232 = x231 + 4.0d0*x31
+      x233 = x232*x74
+      x234 = 0.0891107483661069d0*x76
+      x235 = x39*x40
+      x236 = x235*x77
+      x237 = x37*x42
+      x238 = x237*x44
+      x239 = 1.02357830998401d0*x1 - 0.256556487706084d0*x5
+      x240 = x81*x83
+      x241 = x0**(-0.666666666666667d0)
+      x242 = x37*x79*x80
+      x243 = x241*x242
+      x244 = 75.398223686155d0*x82
+      x245 = x244*x36
+      x246 = 5.74246800037638d0*x85
+      x247 = x86*x99
+      x248 = x246*x247
+      x249 = x101*x113
+      x250 = x246*x249
+      x251 = 1d0/x1
+      x252 = 0.0508408867489862d0*x251
+      x253 = 1d0/x89
+      x254 = x253*x96
+      x255 = x10*x88
+      x256 = -x255 + 1.0d0
+      x257 = x256*x86
+      x258 = x254*x257
+      x259 = x252*x258
+      x260 = 1d0/x104
+      x261 = x110*x260
+      x262 = x10*x103
+      x263 = x262 + 1.0d0
+      x264 = x101*x263
+      x265 = x261*x264
+      x266 = x252*x265
+      x267 = 0.112523287330675d0*x90
+      x268 = 0.0162903215389562d0*x5
+      x269 = x268*x93
+      x270 = x267 + x269
+      x271 = -x255*x267 - x255*x269 + x270
+      x272 = x95**(-2)
+      x273 = x272*x97
+      x274 = x273*x92
+      x275 = x271*x274
+      x276 = x275*x85
+      x277 = x276*x87
+      x278 = 0.112523287330675d0*x105
+      x279 = x108*x268
+      x280 = x278 + x279
+      x281 = x262*x278 + x262*x279 + x280
+      x282 = x109**(-2)
+      x283 = x111*x282
+      x284 = x107*x283
+      x285 = x281*x284*x85
+      x286 = x102*x285
+      x287 = 22.9698720015055d0*x85
+      x288 = x10*x287
+      x289 = x113*x12
+      x290 = x288*x289
+      x291 = x11*x99
+      x292 = x288*x291
+      x293 = x248 + x250 + x259 + x266 + x277 + x286 + x290 - x292
+      x294 = x239*x240 + 2.41662179562687d0*x243 + x245 + x293 + x84
+      x295 = 0.000132058770571892d0*x38
+      x296 = x64*(0.000220097950953153d0*x115 + x149*x236 - x234*x36 - 0
+     &.00693220036674015d0*x238 - x294*x295 + x78)
+      x297 = 0.00496533372342768d0*x119
+      x298 = x1*x43
+      x299 = 0.00214134650283625d0*x1
+      x300 = 0.0105099134858261d0*x5
+      x301 = 0.00152446164353214d0*x40
+      x302 = 0.000183540529077572d0*x42
+      x303 = -x299 - x300 + x301 - x302
+      x304 = 0.0777930888680181d0*x298 + x303
+      x305 = x304*x37
+      x306 = 0.00496533372342768d0*x150
+      x307 = x122*x196 - 4.0d0*x123 + x230
+      x308 = 0.0533250677421794d0*x121
+      x309 = x117*(-0.0041377781028564d0*x120 + 0.106650135484359d0*x125
+     & + x297*x36 + x305*x306 - x307*x308)
+      x310 = 0.0837628205355044d0*x128
+      x311 = x235*x305
+      x312 = 0.449784277163183d0*x42
+      x313 = x85*(x131 + x133)
+      x314 = 5.74246800037638d0*x313
+      x315 = x12**1.66666666666667d0
+      x316 = x11**1.66666666666667d0
+      x317 = x315 - x316
+      x318 = x288*x317
+      x319 = x138*x85
+      x320 = 46.773325076649d0*x319
+      x321 = x320*x36
+      x322 = x139*x85
+      x323 = 15.591108358883d0*x322
+      x324 = 2.64527879654103d0*x139*x251
+      x325 = x137*x85
+      x326 = 0.0802319968229891d0*x1 - 0.173432185689313d0*x5
+      x327 = x326*x37
+      x328 = x325*x327
+      x329 = 23.3866625383245d0*x328
+      x330 = 0.00020688890514282d0*x38
+      x331 = x127*(x124*x312 + x129 + 0.0003448148419047d0*x130*(-x100 -
+     & x114 + x132 + x134 - x140) - x142*x307 + x310*x36 + 0.08376282053
+     &55044d0*x311 - x330*(-x248 - x250 - x259 - x266 - x277 - x286 - x2
+     &90 + x292 + x314 + x318 - x321 - x323 - x324 - x329))
+      x332 = -x148 + x153 + x155 - x160 + x167 - x169 - x190 + x233 + x2
+     &96 - x309 - x331
+      x333 = x33/x34**5
+      x334 = x144*x333
+      x335 = rho_s**3/rho_c**3
+      x336 = 4.0d0*x335
+      x337 = x13*x336
+      x338 = -x222
+      x339 = x14*x29
+      x340 = x13*x29
+      x341 = x195*x339 - x219*x337 - x336*x340 + x338
+      x342 = 24.6470225497844d0*x170 + x175 + 30.6251363876636d0*x180
+      x343 = x164*x342
+      x344 = -x162 + x163
+      x345 = 11.4095193139813d0*x170 + x175
+      x346 = x344*x345
+      x347 = x343 + x346*x68
+      x348 = x188*x347
+      x349 = x185*x52
+      x350 = x10*x244
+      x351 = x11*x254
+      x352 = x12*x261
+      x353 = 8.61370200056458d0*x85
+      x354 = x270*x274
+      x355 = x11*x354
+      x356 = x280*x284
+      x357 = x12*x356
+      x358 = x252*x351 - x252*x352 - x287*x289 + x287*x291 + x353*x355 -
+     & x353*x357
+      x359 = -x350 + x358
+      x360 = -x10*x320 - x287*(-x315 + x316) + x358
+      x361 = x10*x147 + x117*(x10*x297 + x308*x341) + x127*(x10*x310 + x
+     &142*x341 - x330*x360) - x166 + x341*x74 + x348*x349 + x64*(x10*x23
+     &4 - x295* x359)
+      x362 = -x35*x361
+      x363 = x36*x47
+      x364 = x156*x44
+      x365 = x149*x39
+      x366 = 0.00571025734089666d0*x1 - 0.00609784657412857d0*x40 + 0.00
+     &0856522469028669d0*x42 + 0.0350330449527535d0*x5
+      x367 = x164**2
+      x368 = 0.0675474557615585d0*x367*x52*x69
+      x369 = 0.0168868639403896d0*x161
+      x370 = x11**(-1.33333333333333d0)
+      x371 = x10*x370
+      x372 = x12**(-1.33333333333333d0)
+      x373 = x10*x372
+      x374 = x371 + x373
+      x375 = -6.0d0*x162 + 6.0d0*x163 + x374
+      x376 = x10*x375
+      x377 = 0.101321183642338d0*x164
+      x378 = x184*x188*x52*x54
+      x379 = x186*x32
+      x380 = x187*x63
+      x381 = x379*x380
+      x382 = x67**(-2)
+      x383 = x379*x382
+      x384 = 3.80317310466043d0*x170
+      x385 = x172*x376
+      x386 = x36*x367
+      x387 = x171*x65
+      x388 = 2.04643791004791d0*x2
+      x389 = 8.18575164019163d0*x2
+      x390 = x176*x375*x388 - x177*x388 + x386*x389*x56
+      x391 = 8.21567418326147d0*x170
+      x392 = x179*x60
+      x393 = 2.0d0*x63
+      x394 = 12.2786274602874d0*x2
+      x395 = 22.8190386279626d0*x172
+      x396 = x173*x395
+      x397 = x67/x62**2
+      x398 = x392*x397
+      x399 = 49.2940450995689d0*x367
+      x400 = x191*x194
+      x401 = 20.5190512099364d0*x400
+      x402 = 0.00366369660967365d0*x197
+      x403 = 0.0883792666034679d0*x1*x204
+      x404 = x201*x206
+      x405 = x202*x404*(0.989141964955861d0*x1 + 1.16327369584438d0*x2 +
+     & 0.600321476249523d0*x3 + 0.210778258416395d0*x5)
+      x406 = x208*x213
+      x407 = 258.630216499205d0*x203**2*x205/(x6**4*x7**2)
+      x408 = x203*x404*(1.48371294743379d0*x1 + 1.99418347859036d0*x2 + 
+     &x4 + 0.252933910099675d0*x5)/x6**3
+      x409 = x30*(0.0849797459133392d0*x1*x211 - 0.00176138600691563d0*x
+     &199 + x209* x406*(1.70877610553209d0*x1 + 2.16229511226841d0*x2 + 
+     &1.23355033167571d0*x3 + 0.267319032365355d0*x5) + 1034.52086599683
+     &d0*x210**2*x212/(x24**4*x25**2) - x210*x406*( 2.56316415829814d0*x
+     &1 + 3.70679162103156d0*x2 + x23 + 0.320782838838426d0*x5)/x24**3 +
+     & x402 - x403 - x405 - x407 + x408 )
+      x410 = x11**(-0.666666666666667d0)
+      x411 = 0.854960467080683d0*x10
+      x412 = x12**(-0.666666666666667d0)
+      x413 = x410*x411 + x411*x412
+      x414 = -5.1297628024841d0*x192 + 5.1297628024841d0*x193 + x413
+      x415 = x191*x414
+      x416 = -8.0d0*x216
+      x417 = 5.1297628024841d0*x215*x400
+      x418 = x219*x401
+      x419 = x1*x19
+      x420 = -0.00363506628997799d0*x30*x419
+      x421 = -x408
+      x422 = x10*x221
+      x423 = x414*x422
+      x424 = x1*x194*x20
+      x425 = -0.00233087847986162d0*x10*x424
+      x426 = x15*x226
+      x427 = -0.0269072828949635d0*x1*x13*x426
+      x428 = x223*x228
+      x429 = -x224*x428*(0.998929717145607d0*x1 + 1.5861639701226d0*x2 +
+     & 0.322572935345748d0*x3 + 0.212390288347482d0*x5)
+      x430 = -876.667692402934d0*x225**2*x227/(x17**4*x18**2)
+      x431 = x225*x428*(1.49839457571841d0*x1 + x16 + 2.71913823449588d0
+     &*x2 + 0.254868346016978d0*x5)/x17**3
+      x432 = x218*x226
+      x433 = 236.868597145733d0*x30*x432
+      x434 = x194*x218*x426
+      x435 = 151.884964839347d0*x10*x434
+      x436 = -x29*x415 + x403 + x405 + x407 + x409 + x416 + x417 + x418 
+     &+ x420 + x421 + x423 + x425 + x427 + x429 + x430 + x431 + x433 + x
+     &435
+      x437 = 0.000605844381662998d0*x217 - 20.0d0*x220 - x402
+      x438 = x29*x401 - 20.0d0*x31 + x436 + x437
+      x439 = 0.00316102962473761d0*x73
+      x440 = x235*x36
+      x441 = x42*x44
+      x442 = x235*x37
+      x443 = 0.0891107483661069d0*x149
+      x444 = x239*x37
+      x445 = 75.398223686155d0*x81
+      x446 = x241*x80
+      x447 = 4.83324359125373d0*x446
+      x448 = 1d0/x86
+      x449 = 0.00786976946662483d0*x36
+      x450 = x251*x254
+      x451 = 0.0677878489986483d0*x251
+      x452 = 1.91415600012546d0*x85
+      x453 = 1d0/x101
+      x454 = x251*x261
+      x455 = 0.0543010717965206d0*x5
+      x456 = 0.150031049774234d0*x90
+      x457 = x36*x448
+      x458 = 0.0271505358982603d0*x5
+      x459 = x458*x93
+      x460 = -x456 - x459
+      x461 = x85*x87
+      x462 = 0.101681773497972d0*x251
+      x463 = x253*x272
+      x464 = x271*x463
+      x465 = x260*x282
+      x466 = x462*x465
+      x467 = 38.2831200025092d0*x85
+      x468 = x467*x99
+      x469 = x113*x467
+      x470 = 0.150031049774234d0*x105
+      x471 = x36*x453
+      x472 = x108*x458
+      x473 = x470 + x472
+      x474 = x102*x85
+      x475 = 0.225046574661351d0*x90
+      x476 = 0.0325806430779124d0*x5
+      x477 = x476*x93
+      x478 = x475 + x477
+      x479 = x95**(-3)
+      x480 = x479*x92*x97
+      x481 = 0.225046574661351d0*x105
+      x482 = x108*x476
+      x483 = x481 + x482
+      x484 = x109**(-3)
+      x485 = x107*x111*x484
+      x486 = x263*x352
+      x487 = 0.271151395994593d0*x10
+      x488 = x10*x85
+      x489 = 15.3132480010037d0*x488
+      x490 = x251*x256*x351
+      x491 = x12*x281
+      x492 = 45.9397440030111d0*x85
+      x493 = x10*x492
+      x494 = x11*x275
+      x495 = 11.4849360007528d0*x101*x285 - x102*x454*(0.015739538933249
+     &7d0*x262 + x449*x453 + 0.00786976946662483d0) - x247*x452 - x249*x
+     &452 + x251 *x486*x487 + x257*x462*x464 + x258*x451 + x264*x281*x46
+     &6 + x265* x451 + x271*x461*x480*(-x255*x475 - x255*x477 + x478) + 
+     &x274*x461 *(x255*x455*x93 + 0.300062099548467d0*x255*x90 - x456*x4
+     &57 - x457 *x459 + x460) + 11.4849360007528d0*x276*x86 + x281*x474*
+     &x485*( x262*x481 + x262*x482 + x483) - x284*x474*(0.30006209954846
+     &7d0* x105*x262 + x108*x262*x455 + x470*x471 + x471*x472 + x473) + 
+     &x284 *x491*x493 - x289*x489 + x291*x489 + x36*x468 + x36*x469 + x4
+     &50* x87*(0.0157395389332497d0*x255 - x448*x449 - 0.007869769466624
+     &83d0) - x487*x490 - x493*x494
+      x496 = x150*x304
+      x497 = 0.311172355472072d0*x1
+      x498 = 0.00285512867044833d0*x1 - 0.103724118490691d0*x298 + x41 +
+     & 0.000428261234514334d0*x42 + 0.0121035293512547d0*x43*x5 + 0.0175
+     &165224763768d0*x5
+      x499 = 5.29055759308205d0*x137*x251
+      x500 = 5.0d0*x10
+      x501 = x50*x500 + x500*x51
+      x502 = 7.65662400050184d0*x85
+      x503 = x317*x85
+      x504 = x325*x326
+      x505 = 1.26460783860812d0*x333
+      x506 = x10*x47
+      x507 = 3.0d0*x162
+      x508 = 3.0d0*x163
+      x509 = x374 - x507 + x508
+      x510 = x348*x54
+      x511 = x342*x344
+      x512 = x164*x345
+      x513 = x335*x340
+      x514 = x194*x339
+      x515 = x13*x335
+      x516 = x219*x515
+      x517 = -2.56488140124205d0*x192 + 2.56488140124205d0*x193 + x413
+      x518 = 20.5190512099364d0*x194
+      x519 = -x14*x195*x215 - x14*x219*x518 + x215*x337 - x221*x517 + x3
+     &39*x517 + 0.00181753314498899d0*x419*x515 + 0.00116543923993081d0*
+     &x424 - 118.434298572867d0*x432*x515 - 75.9424824196734d0*x434
+      x520 = 16.0d0*x513 - 20.5190512099364d0*x514 + 16.0d0*x516 + x519
+      x521 = 1.02321895502395d0*x2
+      x522 = x389*x59
+      x523 = x367*x522
+      x524 = x172*x399
+      x525 = x181*x367
+      x526 = 10.2083787958879d0*x180
+      x527 = 22.8190386279626d0*x170 + x394
+      x528 = -x371 - x373 + x507 - x508
+      x529 = x188*x349
+      x530 = x10*x235
+      x531 = 0.135575697997297d0*x10
+      x532 = x450*x531
+      x533 = 0.0338939244993242d0*x251
+      x534 = x351*x533
+      x535 = x454*x531
+      x536 = x352*x533
+      x537 = x351*x451
+      x538 = 38.2831200025092d0*x488
+      x539 = 7.65662400050185d0*x85
+      x540 = x451*x486
+      x541 = x270*x463
+      x542 = x11*x252
+      x543 = x256*x541*x542
+      x544 = x252*x465
+      x545 = x12*x263*x280*x544
+      x546 = x464*x542
+      x547 = x491*x544
+      x548 = x255*x456
+      x549 = x255*x459
+      x550 = x274*x353
+      x551 = x287*x491
+      x552 = x262*x470 + x262*x472 + x473
+      x553 = x284*x353
+      x554 = x353*x478
+      x555 = x480*x554
+      x556 = x353*x483
+      x557 = x485*x556
+      x558 = x10*(x135 - x136)
+      x559 = x91 - 1.0d0
+      x560 = x11*x559
+      x561 = x106 - 1.0d0
+      x562 = x12*x561
+      x563 = x273*x560
+      x564 = x283*x561
+      x565 = x283*x562
+      x566 = x456 + x459
+      x567 = x335*x518
+      x568 = x219*x567
+      x569 = 0.854960467080683d0*x410 + 0.854960467080683d0*x412
+      x570 = x221*x569
+      x571 = 12.0d0*x36
+      x572 = x13*x219*x571
+      x573 = x339*x569
+      x574 = x29*x567
+      x575 = x340*x571
+      x576 = x370 + x372
+      x577 = x185*x32*x347*x59
+      x578 = x568 + x570 - x572 - x573 + x574 - x575
+      x579 = x388*x576
+      x580 = mu*x56
+      x581 = x344**2
+      x582 = 0.203363546995945d0*x251
+      x583 = x254*x582 + x261*x582 + x270*x555 + x280*x466 + x280*x557 +
+     & x354*x492 + x356*x492 + x462*x541 + x468 + x469 - x473*x553 - x55
+     &0*x566
+      E = -rho_c*(x145 - x22 + x31 + x9)
+      d1E(1) = -x145 + x231 + 3.0d0*x31 - x332*x35 - 0.632303919304059d0
+     &*x334 + x71
+      d1E(2) = x341 + x362
+      d2E(1) = x0*(-0.499760307959092d0*x127*x144*x42/x34**6 + 5.1297628
+     &024841d0*x194* x422 + 0.00183184830483682d0*x197 - 32.163968442914
+     &8d0*x204*x205 - 0.000302922190831499d0*x217 - 12.0d0*x220 + 59.217
+     &1492864334d0* x226*x227 + 15.3892884074523d0*x29*x400 - 2.0d0*x30*
+     &(-x200 + x214 + x229) - 12.0d0*x31 - x332*x505 + 1.05383986550676d
+     &0*x334 + 2.0d0*x35*(x148 - x153 - x155 + x160 - x167 + x169 + x190
+     & - x233 - x296 + x309 + x331) - x35*(-6.39350882283002d-5*x0** 2.3
+     &3333333333333d0*x157*x44 + x10*x377*x378 - x117*( -0.0314471135817
+     &087d0*x119*x36 + 0.0110340749409504d0*x120 + 0.213300270968718d0*x
+     &121*x307 - 0.319950406453076d0*x125 - 0.0165511124114256d0*x150*x3
+     &05 + x306*x37*(x303*x497 + x498) - x308*(-x122*x401 + x122*x415 + 
+     &20.0d0*x123 + x403 + x405 + x407 + x409 + x416 + x417 + x418 + x42
+     &0 + x421 + x423 + x425 + x427 + x429 + x430 + x431 + x433 + x435 +
+     & x437) + 0.0198613348937107d0* x36*x496) + x127*(0.418814102677522
+     &d0*x128*x36 - 0.0009195062450792d0*x141 + x142*x438 - 0.8995685543
+     &26366d0*x232* x42 - 0.335051282142018d0*x304*x440 - x310*x37 + 0.1
+     &67525641071009d0*x311 - x330*(-x10*x502*(-6.0d0*x315 + 6.0d0* x316
+     & + x501) - 30.6264960020074d0*x10*x503 + 10.5811151861641d0* x138*
+     &x251*x36 + 0.299209d0*x139 + 1.91415600012546d0*x313 - 77.95554179
+     &44151d0*x319*x36 - 5.19703611962767d0*x322 + 23.3866625383245d0*x3
+     &25*x37*(-0.106975995763985d0*x1 + 0.289053642815522d0*x5) + x327*x
+     &499 + 31.182216717766d0*x328 + 93.5466501532981d0*x36*x504 + x495)
+     & + 0.0006896296838094d0*x38*( x293 - x314 - x318 + x321 + x323 + x
+     &324 + x329) + 1.04949664671409d0*x42*x72 - 0.0837628205355044d0*x4
+     &42*(-x497*( x299 + x300 - x301 + x302) + x498)) + 0.03345488854487
+     &92d0*x146* x36 - x150*x152*x366 - 0.00880391803812612d0*x151*x157 
+     &+ 0.0105647016457513d0*x151*x363 - 0.0117385573841682d0*x154 + 0.0
+     &00821860773992031d0*x158*x365 + 0.00191767513931474d0*x159 + 0.030
+     &9078452196566d0*x168 - x179*x381*x52 + x183*x383*x52 - x185* x189*
+     &(-16.4313483665229d0*x174 + 11.4844261453738d0*x180 + 10.208378795
+     &8879d0*x181*x376 - 30.6251363876636d0*x182 - x183* x392*x393 + 1.7
+     &9063317129192d0*x2 + 81.6670303671029d0*x3*x32* x386/x52**4 + x36*
+     &x387*x399 + 8.21567418326147d0*x385 + x390 + x391 + x398*(-5.70475
+     &965699064d0*x170 + x177*x394 - 3.06965686507186d0*x2 + x396) - x68
+     &*(-7.60634620932085d0*x174 + 1.79063317129192d0*x2 + x384 + 3.8031
+     &7310466043d0*x385 + 22.8190386279626d0*x386*x387 + x390)) - 0.0168
+     &588246652672d0*x232 *x73 - x36*x368 - 0.00164372154798406d0*x363*x
+     &364 + x369*x376 + x438*x439 + x64*(-0.000586927869208408d0*x115 + 
+     &0.178221496732214d0*x149*x440 - x234*x37 - x236*x366 + 0.013864400
+     &7334803d0*x237*x365 + 0.0231073345558005d0*x238 + 0.00044019590190
+     &6306d0*x294*x38 - x295*(0.154912426780983d0*x0**( -0.3333333333333
+     &33d0)*x242 + 150.79644737231d0*x239*x36*x81 + x240*(-1.36477107997
+     &868d0*x1 + 0.427594146176807d0*x5) + 1.61108119708458d0*x243 - x24
+     &5 + 9.66648718250747d0*x36*x446*x79 + x444*x445 + x444*x447 + x495
+     &) - 0.0277288014669606d0*x36*x441 + 0.445553741830535d0*x36*x76 - 
+     &x442*x443 - 0.00107855455836145d0* x46)) + x436 + x505*(x116 + x12
+     &6 - x143 + x49 + x70 - x75))
+      d2E(2) = x0*(-0.632303919304059d0*x333*x361 + x338 - x35*(-0.01936
+     &86196838775d0* x10*x146 - x10*x165*x510 + x10*x368 + x117*(-0.0182
+     &062236525682d0 *x10*x119 + 0.00993066744685536d0*x10*x496 - 0.1066
+     &50135484359d0* x121*x341 + x308*x520) + x127*(-0.251288461606513d0
+     &*x10*x128 + x142*x520 + 0.167525641071009d0*x304*x530 - x312*x341 
+     &+ x330*( 46.773325076649d0*x10*x504 - x111*x484*x491*x556*x561 - x
+     &112*x538 *x561 + x112*x539*x562 + x246*x270*x563 - x246*x280*x565 
+     &- x256* x537 - x270*x273*x288*x559 + x271*x287*x563 + x271*x479*x5
+     &54*x560 *x97 - x280*x288*x564 + 62.364433435532d0*x325*x558 + x353
+     &*x552* x565 - x353*x563*(-x548 - x549 + x566) - x499*x558 - x502*(
+     &-3.0d0 *x315 + 3.0d0*x316 + x501) - 15.3132480010037d0*x503 + x532
+     & - x534 + x535 + x536 - x538*x559*x98 - x539*x560*x98 + x540 - x54
+     &3 + x545 - x546 + x547 - x551*x564) + 0.0003448148419047d0*x360*x3
+     &8 ) - 0.00528235082287567d0*x151*x506 - x165*x378 - 0.008429412332
+     &63362d0*x341*x73 + 0.000821860773992031d0*x364*x506 - x369*x509 + 
+     &x381*x512 + x383*x511 + x439*x520 - x529*(-x10*x523 - x10*x524 - 8
+     &1.6670303671029d0*x10*x525 + 15.3125681938318d0* x164*x180 + x164*
+     &x391 + x164*x521 - x183*x346*x60*x63 + x343*x392 *x63 + x344*x398*
+     &x527 - x388*x509 - x391*x509 - x509*x526 - x68*( x173*x344*x522 - 
+     &x344*x384 + x344*x396 - x344*x521 + x384*x528 + x388*x528)) + x64*
+     &(0.0138644007334803d0*x10*x441 - 0.267332245098321d0*x10*x76 - x29
+     &5*(-x10*x239*x445 - x10*x447*x79 + x11*x271*x555 + x11*x550*(x460 
+     &+ x548 + x549) - x113*x538 + x12 *x552*x553 + x246*x355 - x246*x35
+     &7 - x284*x551 + x287*x494 - x288 *x354 - x288*x356 + x289*x539 - x
+     &291*x539 + x350 + 0.135575697997297d0*x490 - x491*x557 - x532 + x5
+     &34 - x535 - x536 + x537*(x255 - 1.0d0) - x538*x99 - x540 + x543 - 
+     &x545 + x546 - x547) + 0.000220097950953153d0*x359*x38 - x443*x530)
+     &) + x362 + 12.0d0*x513 - 17.9541698086943d0*x514 + 12.0d0*x516 + x
+     &519)
+      d2E(3) = -x0*(x35*(x117*(x297 + x308*x578) + x127*(x142*x578 + x31
+     &0 - x330*(-x320 - x467*x52 + x583)) + x147 - x368 + x369*x576 + x3
+     &77*x510 - x380* x512*x577 - x382*x511*x577 + x439*x578 - x529*(8.2
+     &1567418326148d0 *x170*x576 + x343*x346*x393*x580 + x345*x397*x527*
+     &x580*x581 + x523 + x524 + 81.6670303671029d0*x525 + x526*x576 + x5
+     &79 - x68*( x384*x576 + x395*x581 + x522*x581 + x579)) + x64*(x234 
+     &- x295*( -x244 + x583))) - x568 - x570 + x572 + x573 - x574 + x575
+     &)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, gamma_cc, mu
+      real*8, intent(out) :: E
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32
+      E = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = 0.132568899905202d0*x1 + 1.0d0
+      x3 = x0**0.166666666666667d0
+      x4 = sqrt(x0)
+      x5 = x0**0.666666666666667d0
+      x6 = log(1.0d0 + 16.081984221457407d0/(2.2255694211506878d0*x1 + 5
+     &.9825504357710795d0*x3 + 0.80042863499936356d0*x4 + 0.189700432574
+     &75591d0*x5))
+      x7 = x2*x6
+      x8 = 0.0621813817393098d0*x7
+      x9 = mu**2
+      x10 = (0.237113969739022d0*x5*x9 + 1.0d0)**(-4)
+      x11 = x0**1.66666666666667d0
+      x12 = x0**1.0d0
+      x13 = x0**1.33333333333333d0
+      x14 = (0.0128480790170175d0*x1 - 0.00304892328706429d0*x12 + 0.000
+     &275310793616358d0*x13 + 0.0315297404574782d0*x5 + 1.0d0)*exp (-0.4
+     &6675853320810856d0*x1)
+      x15 = mu**5*x11*x14
+      x16 = 0.00264117541143784d0*x15
+      x17 = mu**8*x0**2.66666666666667d0*x7
+      x18 = 0.000196557189785076d0*x17
+      x19 = x1*x9
+      x20 = 4.60448529760779d0*mu*x3 + 1.0d0
+      x21 = mu**3
+      x22 = -0.306852819440055d0*log((4.6213167280845804d0*x19 + x20 + 1
+     &.9140710242289749d0*x21*x4)/(2.1392848713714905d0*x19 + x20))
+      x23 = 0.202642367284676d0*x22
+      x24 = x14 - 1.0d0
+      x25 = mu**6*(0.00331582639355101d0*x0**2.0d0*x7 + 0.00248266686171
+     &384d0*x11* x24)
+      x26 = 1d0/(0.337569861992026d0*x1 + 0.0244354823084343d0*x5 + 1.0d
+     &0)
+      x27 = x21*(0.000132058770571892d0*x11*(17.2274040011292d0*x26*( -0
+     &.0177069812999059d0*x1 + 1.0d0)/x5 + 37.6991118430775d0*( -3.07073
+     &492995203d0*x1 + 0.384834731559127d0*x5)*exp( -0.19230865217881402
+     &d0*x1)/x12) + 0.0445553741830535d0*x12*x14)
+      x28 = mu**4*(0.00020688890514282d0*x0**1.0d0*(-x26*(-0.30504532049
+     &3918d0*x1 + 17.2274040011292d0) - (-5.62907590342551d0*x1 + 6.084d
+     &0*x5)*exp( -0.33933171852197186d0*x1) + 17.2274040011292d0) - 0.04
+     &18814102677522d0*x12*x24 - 0.0209761558789675d0*x13*x7)
+      x29 = exp(-x10*(0.08495068258568908d0*x15 + 0.0063220592494752145d
+     &0*x17 - 6.5177827065418574d0*x22 + 32.163968442914815d0*x25 + 32.1
+     &63968442914815d0*x27 - 32.163968442914815d0*x28) + 2.0d0*x7) - 1.0
+     &d0
+      x30 = (x10*(-x16 - x18 + x23 - x25 - x27 + x28) + x8)/(x2*x6)
+      x31 = 307.49539002419d0*gamma_cc*rho_c**(-2.33333333333333d0)*x30*
+     &*2.78d0
+      x32 = 1.0d0 + x31/x29
+      E = -rho_c*(-x10*(x16 + x18 - x23 + x25 + x27 - x28) + x8 - 0.0310
+     &906908696549d0*log(x31*x32/(94553.414886128725d0*gamma_cc** 2*rho_
+     &c**(-4.666666666666667d0)*x30**5.5599999999999996d0/x29**2 + x32) 
+     &+ 1.0d0))
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D1ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E, d1E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, gamma_cc, mu
+      real*8, intent(out) :: E, d1E(9)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
+     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
+     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
+     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
+     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
+     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
+     &, x138, x139, x140, x141
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = 0.132568899905202d0*x1 + 1.0d0
+      x3 = x0**0.166666666666667d0
+      x4 = sqrt(x0)
+      x5 = x0**0.666666666666667d0
+      x6 = 2.22556942115069d0*x1 + 5.98255043577108d0*x3 + 0.80042863499
+     &9364d0*x4 + 0.189700432574756d0*x5
+      x7 = 1.0d0 + 16.0819842214574d0/x6
+      x8 = log(x7)
+      x9 = x2*x8
+      x10 = 2.0d0*x9
+      x11 = mu**2
+      x12 = x11*x5
+      x13 = 0.237113969739022d0*x12 + 1.0d0
+      x14 = x13**(-4)
+      x15 = mu**4
+      x16 = x0**1.0d0
+      x17 = exp(-0.46675853320810856d0*x1)
+      x18 = 0.00304892328706429d0*x16
+      x19 = x0**1.33333333333333d0
+      x20 = 0.0128480790170175d0*x1 - x18 + 0.000275310793616358d0*x19 +
+     & 0.0315297404574782d0*x5 + 1.0d0
+      x21 = x17*x20
+      x22 = x21 - 1.0d0
+      x23 = 0.0418814102677522d0*x16*x22
+      x24 = x19*x9
+      x25 = 0.0209761558789675d0*x24
+      x26 = exp(-0.33933171852197186d0*x1)
+      x27 = 0.337569861992026d0*x1 + 0.0244354823084343d0*x5 + 1.0d0
+      x28 = 1d0/x27
+      x29 = x0**1.0d0*(-x26*(-5.62907590342551d0*x1 + 6.084d0*x5) - x28*
+     &( -0.305045320493918d0*x1 + 17.2274040011292d0) + 17.2274040011292
+     &d0)
+      x30 = 0.00020688890514282d0*x29
+      x31 = x15*(-x23 - x25 + x30)
+      x32 = 32.1639684429148d0*x31
+      x33 = 0.693147180559945d0
+      x34 = x33 - 1.0d0
+      x35 = x1*x11
+      x36 = 4.60448529760779d0*mu*x3 + 1.0d0
+      x37 = mu**3
+      x38 = 4.62131672808458d0*x35 + x36 + 1.91407102422897d0*x37*x4
+      x39 = x38/(2.13928487137149d0*x35 + x36)
+      x40 = log(x39)
+      x41 = x34*x40
+      x42 = 6.51778270654186d0*x41
+      x43 = 0.0445553741830535d0*x16
+      x44 = x21*x43
+      x45 = x0**1.66666666666667d0
+      x46 = exp(-0.19230865217881402d0*x1)
+      x47 = x46*(-3.07073492995203d0*x1 + 0.384834731559127d0*x5)
+      x48 = 37.6991118430775d0/x16
+      x49 = x47*x48
+      x50 = -0.0177069812999059d0*x1 + 1.0d0
+      x51 = x28*x50
+      x52 = 1d0/x5
+      x53 = 17.2274040011292d0*x52
+      x54 = x45*(x49 + x51*x53)
+      x55 = x37*(x44 + 0.000132058770571892d0*x54)
+      x56 = 32.1639684429148d0*x55
+      x57 = x22*x45
+      x58 = x0**2.0d0
+      x59 = x58*x9
+      x60 = mu**6*(0.00248266686171384d0*x57 + 0.00331582639355101d0*x59
+     &)
+      x61 = 32.1639684429148d0*x60
+      x62 = mu**5
+      x63 = x21*x45
+      x64 = x62*x63
+      x65 = 0.0849506825856891d0*x64
+      x66 = x0**2.66666666666667d0
+      x67 = x66*x9
+      x68 = mu**8*x67
+      x69 = 0.00632205924947521d0*x68
+      x70 = x56 + x61 + x65 + x69
+      x71 = exp(x10 - x14*(-x32 - x42 + x70)) - 1.0d0
+      x72 = rho_c**(-4.66666666666667d0)
+      x73 = 0.0621813817393098d0*x9
+      x74 = 0.00264117541143784d0*x64
+      x75 = 0.000196557189785076d0*x68
+      x76 = 0.202642367284676d0*x41
+      x77 = x31 - x55 - x60 - x74 - x75 + x76
+      x78 = x14*x77 + x73
+      x79 = 1d0/x2
+      x80 = 1d0/x8
+      x81 = x79*x80
+      x82 = x78*x81
+      x83 = x82**5.56d0
+      x84 = x72*x83
+      x85 = 94553.4148861287d0*gamma_cc**2
+      x86 = x84*x85
+      x87 = 1d0/x71
+      x88 = x82**2.78d0
+      x89 = 307.49539002419d0*rho_c**(-2.33333333333333d0)
+      x90 = x88*x89
+      x91 = gamma_cc*x90
+      x92 = x87*x91 + 1.0d0
+      x93 = 0.0310906908696549d0*log(x91*x92/(x92 + x86/x71**2) + 1.0d0)
+     &
+      x94 = x14*(-x31 + x55 + x60 + x74 + x75 - x76)
+      x95 = x73 - x94
+      x96 = x1*x8
+      x97 = (0.741856473716896d0*x1 + 0.99709173929518d0*x3 + 0.40021431
+     &7499682d0*x4 + 0.126466955049837d0*x5)/(x6**2*x7)
+      x98 = x97*(0.0082433173717657d0*x1 + 0.0621813817393098d0)
+      x99 = x12*x77/x13**5
+      x100 = mu**7
+      x101 = x17*(-0.00428269300567249d0*x1 + x18 - 0.000367081058155144
+     &d0*x19 - 0.0210198269716521d0*x5)
+      x102 = x2*x97
+      x103 = 0.767414216267966d0*x3
+      x104 = mu*x1
+      x105 = x17*(0.0777930888680181d0*x1*x20 - 0.00214134650283625d0*x1
+     & + 0.00152446164353214d0*x16 - 0.000183540529077572d0*x19 - 0.0105
+     &099134858261d0*x5)
+      x106 = 1d0/x1
+      x107 = 0.101681773497972d0*x106*x28
+      x108 = 11.4849360007528d0*x52
+      x109 = x108*x51
+      x110 = x50*x53*(0.112523287330675d0*x1 + 0.0162903215389562d0*x5)/
+     &x27**2
+      x111 = x26*(-0.240695990468967d0*x1 + 0.26014827853397d0*x5)
+      x112 = mu*x14*(-0.000410930386996015d0*x0**2.0d0*x15*x21 + 8.68579
+     &013942185d-6* x0**3.0d0*x100*x8 - 0.00316102962473761d0*x100*x102*
+     &x66 + 0.000524152506093537d0*x100*x67 - 0.00264117541143784d0*x101
+     &*x15* x45 + x11*(-x101*x43 - 0.00693220036674015d0*x19*x21 + x44 -
+     & 0.000132058770571892d0*x45*(2.41662179562687d0*x0**( -0.666666666
+     &666667d0)*x47 + x107 + x109 + x110 + x46*x48*( 1.02357830998401d0*
+     &x1 - 0.256556487706084d0*x5) + x49) + 0.000220097950953153d0*x54) 
+     &+ 0.00440195901906306d0*x15*x63 + 0.202642367284676d0*x34*(-x103 -
+     & 1.54043890936153d0*x104 - 0.957035512114487d0*x11*x4 + x39*(x103 
+     &+ 0.71309495712383d0*x104 ))/x38 + x37*(-0.337338207872387d0*x102*
+     &x19 - 0.0837628205355044d0*x105*x16 + x23 + 0.0279682078386234d0*x
+     &24 - 0.0003448148419047d0*x29 + 0.000926928636371586d0*x45*x8 + 0.
+     &00020688890514282d0*x45*(-2.64527879654103d0*x106*x111 - x107 + x1
+     &08 - x109 - x110 - 15.591108358883d0*x111*x52 - 23.3866625383245d0
+     &*x26*x52*(0.0802319968229891d0*x1 - 0.173432185689313d0*x5))) + x6
+     &2*(0.00014652515242323d0*x0** 2.33333333333333d0*x8 - 0.0533250677
+     &421794d0*x102*x58 - 0.00496533372342768d0*x105*x45 + 0.00413777810
+     &28564d0*x57 + 0.00663165278710203d0*x59))
+      x113 = exp(x10 + x14*(x32 + x42 - x56 - x61 - x65 - x69))
+      x114 = x113 - 1.0d0
+      x115 = x114**(-2)
+      x116 = 1d0/x114
+      x117 = x116*x91
+      x118 = x117 + 1.0d0
+      x119 = 1d0/(x115*x86 + x118)
+      x120 = x118*x119
+      x121 = rho_c**(-3.33333333333333d0)*x88
+      x122 = 717.489243389776d0*x121
+      x123 = 1d0/x78
+      x124 = x1*x78*x79
+      x125 = x78*x80*x97
+      x126 = 307.49539002419d0*x121*x123*(2.78d0*x112 + 0.12284718057882
+     &d0*x124 - 44.7079161356516d0*x125 - 0.00763880743116955d0*x96 + 44
+     &.7079161356516d0*x98 + 1.75780489566528d0*x99)
+      x127 = 307.49539002419d0*x116
+      x128 = x113*(32.1639684429148d0*x112 - 0.0883792666034679d0*x96 + 
+     &16.0819842214574d0*x97*(0.265137799810404d0*x1 + 2.0d0) + 20.33740
+     &33068271d0*x99)
+      x129 = x127*x128
+      x130 = gamma_cc*rho_c**(-5.66666666666667d0)*x83
+      x131 = x116*x130
+      x132 = exp(x10 - x14*(32.163968442914815d0*x15*(x23 + x25 - x30) +
+     & 6.5177827065418574d0*x40*(-x33 + 1.0d0) + x70)) - 1.0d0
+      x133 = x81*x95
+      x134 = x133**5.56d0*x72
+      x135 = x133**2.78d0*x89
+      x136 = gamma_cc/x132
+      x137 = x135*x136 + 1.0d0
+      x138 = 1d0/(x137 + x134*x85/x132**2)
+      x139 = x135*x137
+      x140 = x138*x139
+      x141 = gamma_cc*x87
+      E = -rho_c*(-x93 + x95)
+      d1E(1) = -rho_c*(-0.0310906908696549d0*gamma_cc*x119*(x117*x120*( 
+     &189106.829772257d0*x115*x128*x130 + x121*x129 + x122 - 94553.41488
+     &61287d0*x123*x131*(5.56d0*x112 + 0.245694361157641d0* x124 - 89.41
+     &58322713032d0*x125 - 0.0152776148623391d0*x96 + 89.4158322713032d0
+     &*x98 + 3.51560979133057d0*x99) - x126 + 441249.269468601d0*x131) -
+     & x118*x122 + x118*x126 + x127*x130*( x123*(854.837184267248d0*x112
+     & + 37.7749417054564d0*x124 - 13747.478109301d0*x125 - 2.3488980703
+     &6716d0*x96 + 13747.478109301d0*x98 + 540.516901979027d0*x99) - x12
+     &9 - 717.489243389776d0))/(x120*x91 + 1.0d0) + x0*x112 - 0.00274777
+     &245725523d0*x0*x96 + 16.0819842214574d0*x0*x98 + 0.632303919304059
+     &d0*x0*x99) - x73 + x93 + x94
+      d1E(3) = 0.0310906908696549d0*rho_c*x138*(94553.4148861287d0*x134*
+     &x136 + x139 - x140*x141*(189106.829772257d0*x141*x84 + x90))/(gamm
+     &a_cc*x140 + 1.0d0)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E, d1E, d2
+     &E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, gamma_cc, mu
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
+     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
+     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
+     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
+     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
+     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
+     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
+     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
+     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
+     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
+     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
+     &, x193, x194, x195, x196, x197, x198, x199, x200, x201, x202, x203
+     &, x204, x205, x206, x207, x208, x209, x210, x211, x212, x213, x214
+     &, x215, x216, x217, x218, x219, x220, x221, x222, x223, x224, x225
+     &, x226, x227, x228, x229, x230, x231, x232, x233, x234, x235, x236
+     &, x237, x238, x239, x240, x241, x242, x243, x244, x245, x246, x247
+     &, x248, x249, x250, x251, x252, x253, x254, x255, x256, x257, x258
+     &, x259, x260, x261, x262, x263, x264, x265, x266, x267, x268, x269
+     &, x270, x271, x272, x273, x274, x275, x276, x277, x278, x279, x280
+     &, x281, x282, x283, x284, x285, x286, x287, x288, x289, x290, x291
+     &, x292, x293, x294, x295, x296, x297, x298, x299, x300, x301, x302
+     &, x303, x304, x305, x306, x307, x308, x309, x310, x311, x312, x313
+     &, x314, x315, x316, x317, x318, x319, x320, x321, x322, x323, x324
+     &, x325, x326, x327, x328, x329, x330, x331, x332, x333, x334, x335
+     &, x336, x337, x338, x339, x340, x341, x342, x343, x344, x345, x346
+     &, x347, x348, x349, x350, x351, x352, x353, x354, x355, x356, x357
+     &, x358, x359, x360, x361, x362, x363, x364, x365, x366, x367, x368
+     &, x369, x370, x371, x372, x373, x374, x375, x376, x377, x378, x379
+     &, x380, x381, x382, x383, x384, x385, x386, x387, x388, x389, x390
+     &, x391, x392, x393, x394, x395, x396, x397, x398, x399, x400, x401
+     &, x402, x403, x404, x405, x406, x407, x408, x409, x410, x411, x412
+     &, x413, x414, x415, x416, x417, x418, x419, x420, x421, x422, x423
+     &, x424, x425, x426, x427, x428, x429, x430, x431, x432, x433, x434
+     &, x435, x436, x437, x438
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      d2E(:) = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = 0.132568899905202d0*x1 + 1.0d0
+      x3 = x0**0.166666666666667d0
+      x4 = sqrt(x0)
+      x5 = 0.800428634999364d0*x4
+      x6 = x0**0.666666666666667d0
+      x7 = 2.22556942115069d0*x1 + 5.98255043577108d0*x3 + x5 + 0.189700
+     &432574756d0 *x6
+      x8 = 1.0d0 + 16.0819842214574d0/x7
+      x9 = log(x8)
+      x10 = x2*x9
+      x11 = 2.0d0*x10
+      x12 = mu**2
+      x13 = x12*x6
+      x14 = 0.237113969739022d0*x13 + 1.0d0
+      x15 = x14**(-4)
+      x16 = mu**4
+      x17 = x0**1.0d0
+      x18 = exp(-0.46675853320810856d0*x1)
+      x19 = 0.00304892328706429d0*x17
+      x20 = -x19
+      x21 = x0**1.33333333333333d0
+      x22 = 0.0128480790170175d0*x1 + x20 + 0.000275310793616358d0*x21 +
+     & 0.0315297404574782d0*x6 + 1.0d0
+      x23 = x18*x22
+      x24 = x23 - 1.0d0
+      x25 = x17*x24
+      x26 = 0.0418814102677522d0*x25
+      x27 = x10*x21
+      x28 = 0.0209761558789675d0*x27
+      x29 = x0**1.0d0
+      x30 = exp(-0.33933171852197186d0*x1)
+      x31 = x30*(-5.62907590342551d0*x1 + 6.084d0*x6)
+      x32 = 0.337569861992026d0*x1 + 0.0244354823084343d0*x6 + 1.0d0
+      x33 = 1d0/x32
+      x34 = x33*(-0.305045320493918d0*x1 + 17.2274040011292d0)
+      x35 = x29*(-x31 - x34 + 17.2274040011292d0)
+      x36 = 0.00020688890514282d0*x35
+      x37 = x16*(-x26 - x28 + x36)
+      x38 = 32.1639684429148d0*x37
+      x39 = 0.693147180559945d0
+      x40 = x39 - 1.0d0
+      x41 = x1*x12
+      x42 = 4.60448529760779d0*mu*x3 + 1.0d0
+      x43 = 2.13928487137149d0*x41 + x42
+      x44 = 1d0/x43
+      x45 = mu**3
+      x46 = 1.91407102422897d0*x4*x45 + 4.62131672808458d0*x41 + x42
+      x47 = x44*x46
+      x48 = log(x47)
+      x49 = x40*x48
+      x50 = 6.51778270654186d0*x49
+      x51 = 0.0445553741830535d0*x17
+      x52 = x23*x51
+      x53 = x0**1.66666666666667d0
+      x54 = exp(-0.19230865217881402d0*x1)
+      x55 = x54*(-3.07073492995203d0*x1 + 0.384834731559127d0*x6)
+      x56 = 1d0/x17
+      x57 = 37.6991118430775d0*x56
+      x58 = x55*x57
+      x59 = -0.0177069812999059d0*x1 + 1.0d0
+      x60 = x33*x59
+      x61 = 1d0/x6
+      x62 = 17.2274040011292d0*x61
+      x63 = x53*(x58 + x60*x62)
+      x64 = x45*(x52 + 0.000132058770571892d0*x63)
+      x65 = 32.1639684429148d0*x64
+      x66 = x24*x53
+      x67 = x0**2.0d0
+      x68 = x10*x67
+      x69 = mu**6*(0.00248266686171384d0*x66 + 0.00331582639355101d0*x68
+     &)
+      x70 = 32.1639684429148d0*x69
+      x71 = mu**5
+      x72 = x23*x53
+      x73 = x71*x72
+      x74 = 0.0849506825856891d0*x73
+      x75 = x0**2.66666666666667d0
+      x76 = x10*x75
+      x77 = mu**8*x76
+      x78 = 0.00632205924947521d0*x77
+      x79 = x65 + x70 + x74 + x78
+      x80 = exp(x11 - x15*(-x38 - x50 + x79))
+      x81 = x80 - 1.0d0
+      x82 = 1d0/x81
+      x83 = 0.0621813817393098d0*x10
+      x84 = 0.00264117541143784d0*x73
+      x85 = 0.000196557189785076d0*x77
+      x86 = 0.202642367284676d0*x49
+      x87 = x37 - x64 - x69 - x84 - x85 + x86
+      x88 = x15*x87 + x83
+      x89 = 1d0/x2
+      x90 = 1d0/x9
+      x91 = x89*x90
+      x92 = x88*x91
+      x93 = x92**2.78d0
+      x94 = rho_c**(-2.33333333333333d0)
+      x95 = x93*x94
+      x96 = 307.49539002419d0*x95
+      x97 = gamma_cc*x96
+      x98 = x82*x97 + 1.0d0
+      x99 = x96*x98
+      x100 = x81**(-2)
+      x101 = rho_c**(-4.66666666666667d0)
+      x102 = x92**5.56d0
+      x103 = x101*x102
+      x104 = gamma_cc**2
+      x105 = 94553.4148861287d0*x104
+      x106 = x103*x105
+      x107 = x100*x106 + x98
+      x108 = 1d0/x107
+      x109 = gamma_cc*x108
+      x110 = x109*x99 + 1.0d0
+      x111 = 0.0310906908696549d0*log(x110)
+      x112 = -x37 + x64 + x69 + x84 + x85 - x86
+      x113 = x112*x15
+      x114 = -x113 + x83
+      x115 = x1*x9
+      x116 = 0.00274777245725523d0*x115
+      x117 = 0.0082433173717657d0*x1 + 0.0621813817393098d0
+      x118 = 0.741856473716896d0*x1 + 0.99709173929518d0*x3 + 0.40021431
+     &7499682d0*x4 + 0.126466955049837d0*x6
+      x119 = 1d0/x8
+      x120 = x119/x7**2
+      x121 = x118*x120
+      x122 = x117*x121
+      x123 = 16.0819842214574d0*x122
+      x124 = x14**(-5)
+      x125 = x124*x13
+      x126 = x125*x87
+      x127 = 0.632303919304059d0*x126
+      x128 = 0.00428269300567249d0*x1
+      x129 = 0.0210198269716521d0*x6
+      x130 = 0.000367081058155144d0*x21
+      x131 = -x128 - x129 - x130 + x19
+      x132 = x18*x51
+      x133 = x131*x132
+      x134 = x21*x23
+      x135 = 0.00693220036674015d0*x134
+      x136 = 0.000220097950953153d0*x63
+      x137 = 1.02357830998401d0*x1 - 0.256556487706084d0*x6
+      x138 = x54*x57
+      x139 = x0**(-0.666666666666667d0)
+      x140 = x139*x55
+      x141 = 1d0/x1
+      x142 = x141*x33
+      x143 = 0.101681773497972d0*x142
+      x144 = 11.4849360007528d0*x61
+      x145 = x144*x60
+      x146 = x32**(-2)
+      x147 = 0.112523287330675d0*x1 + 0.0162903215389562d0*x6
+      x148 = x146*x147
+      x149 = x148*x59
+      x150 = x149*x62
+      x151 = x143 + x145 + x150
+      x152 = x137*x138 + 2.41662179562687d0*x140 + x151 + x58
+      x153 = 0.000132058770571892d0*x53
+      x154 = x152*x153
+      x155 = x30*(-0.240695990468967d0*x1 + 0.26014827853397d0*x6)
+      x156 = x155*x61
+      x157 = 15.591108358883d0*x156
+      x158 = 2.64527879654103d0*x141*x155
+      x159 = x30*(0.0802319968229891d0*x1 - 0.173432185689313d0*x6)
+      x160 = x159*x61
+      x161 = 23.3866625383245d0*x160
+      x162 = -x143 + x144 - x145 - x150 - x157 - x158 - x161
+      x163 = 0.00020688890514282d0*x53
+      x164 = x53*x9
+      x165 = x1*x22
+      x166 = 0.00214134650283625d0*x1
+      x167 = 0.0105099134858261d0*x6
+      x168 = 0.00152446164353214d0*x17
+      x169 = 0.000183540529077572d0*x21
+      x170 = -x166 - x167 + x168 - x169
+      x171 = x18*(0.0777930888680181d0*x165 + x170)
+      x172 = x17*x171
+      x173 = x121*x2
+      x174 = x173*x21
+      x175 = 0.000926928636371586d0*x164 - 0.0837628205355044d0*x172 - 0
+     &.337338207872387d0*x174 + x26 + 0.0279682078386234d0*x27
+      x176 = 0.767414216267966d0*x3
+      x177 = mu*x1
+      x178 = 1.54043890936153d0*x177
+      x179 = x12*x4
+      x180 = 0.957035512114487d0*x179
+      x181 = x176 + 0.71309495712383d0*x177
+      x182 = -x176 - x178 - x180 + x181*x47
+      x183 = 0.202642367284676d0/x46
+      x184 = x183*x40
+      x185 = x182*x184
+      x186 = x131*x18
+      x187 = x16*x53
+      x188 = 0.00264117541143784d0*x187
+      x189 = x0**2.33333333333333d0
+      x190 = x189*x9
+      x191 = 0.00496533372342768d0*x53
+      x192 = 0.0533250677421794d0*x67
+      x193 = mu**7
+      x194 = x0**3.0d0*x193
+      x195 = x194*x9
+      x196 = x193*x76
+      x197 = x16*x72
+      x198 = x0**2.0d0*x16
+      x199 = x198*x23
+      x200 = x193*x75
+      x201 = x173*x200
+      x202 = 8.68579013942185d-6*x195 + 0.000524152506093537d0*x196 + 0.
+     &00440195901906306d0*x197 - 0.000410930386996015d0*x199 - 0.0031610
+     &2962473761d0*x201 + x71*(-x171*x191 - x173*x192 + 0.00014652515242
+     &323d0*x190 + 0.0041377781028564d0*x66 + 0.00663165278710203d0*x68)
+     &
+      x203 = x12*(-x133 - x135 + x136 - x154 + x52) + x185 - x186*x188 +
+     & x202 + x45*( x162*x163 + x175 - 0.0003448148419047d0*x35)
+      x204 = mu*x15
+      x205 = x203*x204
+      x206 = exp(x11 + x15*(x38 + x50 - x65 - x70 - x74 - x78))
+      x207 = x206 - 1.0d0
+      x208 = x207**(-2)
+      x209 = 1d0/x207
+      x210 = x209*x97 + 1.0d0
+      x211 = x106*x208 + x210
+      x212 = 1d0/x211
+      x213 = x210*x96
+      x214 = x212*x213
+      x215 = rho_c**(-3.33333333333333d0)*x93
+      x216 = 717.489243389776d0*x215
+      x217 = 1d0/x88
+      x218 = 0.00763880743116955d0*x115
+      x219 = 44.7079161356516d0*x122
+      x220 = 1.75780489566528d0*x126
+      x221 = x1*x89
+      x222 = x221*x88
+      x223 = 0.12284718057882d0*x222
+      x224 = x88*x90
+      x225 = x121*x224
+      x226 = 44.7079161356516d0*x225
+      x227 = 2.78d0*x205
+      x228 = -x218 + x219 + x220 + x223 - x226 + x227
+      x229 = x217*x228
+      x230 = 307.49539002419d0*x215
+      x231 = x229*x230
+      x232 = 307.49539002419d0*x209
+      x233 = 0.265137799810404d0*x1 + 2.0d0
+      x234 = 16.0819842214574d0*x233
+      x235 = -0.0883792666034679d0*x115 + x121*x234
+      x236 = 20.3374033068271d0*x126 + 32.1639684429148d0*x205 + x235
+      x237 = x206*x236
+      x238 = x232*x237
+      x239 = x217*(-2.34889807036716d0*x115 + 13747.478109301d0*x122 + 5
+     &40.516901979027d0*x126 + 854.837184267248d0*x205 + 37.774941705456
+     &4d0*x222 - 13747.478109301d0*x225)
+      x240 = -x238 + x239 - 717.489243389776d0
+      x241 = gamma_cc*x240
+      x242 = rho_c**(-5.66666666666667d0)*x102
+      x243 = x232*x242
+      x244 = gamma_cc*x209
+      x245 = x242*x244
+      x246 = 189106.829772257d0*gamma_cc
+      x247 = x208*x242
+      x248 = x237*x247
+      x249 = 0.0152776148623391d0*x115
+      x250 = 89.4158322713032d0*x122
+      x251 = 3.51560979133057d0*x126
+      x252 = 0.245694361157641d0*x222
+      x253 = 89.4158322713032d0*x225
+      x254 = 5.56d0*x205
+      x255 = -x249 + x250 + x251 + x252 - x253 + x254
+      x256 = x217*x255
+      x257 = x245*x256
+      x258 = x215*x238 + x216 - x231 + 441249.269468601d0*x245 + x246*x2
+     &48 - 94553.4148861287d0*x257
+      x259 = x214*x244
+      x260 = -x210*x216 + x210*x231 + x241*x243 + x258*x259
+      x261 = 0.0310906908696549d0*x212
+      x262 = gamma_cc*x261
+      x263 = -x39 + 1.0d0
+      x264 = exp(x11 - x15*(32.163968442914815d0*x16*(x26 + x28 - x36) +
+     & 6.5177827065418574d0*x263*x48 + x79)) - 1.0d0
+      x265 = x114*x91
+      x266 = x101*x265**5.56d0
+      x267 = 307.49539002419d0*x265**2.78d0*x94
+      x268 = gamma_cc/x264
+      x269 = x267*x268 + 1.0d0
+      x270 = 1d0/(x105*x266/x264**2 + x269)
+      x271 = x267*x269
+      x272 = gamma_cc*x82
+      x273 = 189106.829772257d0*x103
+      x274 = x270*x271
+      x275 = x270*(94553.4148861287d0*x266*x268 + x271 - x272*x274*(x272
+     &*x273 + x96))
+      x276 = 1d0/(gamma_cc*x274 + 1.0d0)
+      x277 = 0.0310906908696549d0*x276
+      x278 = x112*x125
+      x279 = x29*(x31 + x34 - 17.2274040011292d0)
+      x280 = -x144 + x151 + x157 + x158 + x161
+      x281 = x183*x263
+      x282 = x182*x281
+      x283 = x18*(x128 + x129 + x130 + x20)
+      x284 = -x12*(x133 + x135 - x136 + x154 - x52) + x188*x283 + x202 -
+     & x282 + x45*( -x163*x280 + x175 + 0.0003448148419047d0*x279)
+      x285 = x204*x284
+      x286 = x238 - x239 + 717.489243389776d0
+      x287 = gamma_cc*x243*x286
+      x288 = x216*x98
+      x289 = x217*(x218 - x219 - x220 - x223 + x226 - x227)
+      x290 = x230*x289
+      x291 = x290*x98
+      x292 = x242*x272
+      x293 = x217*x292*(x249 - x250 - x251 - x252 + x253 - x254)
+      x294 = x80*(x235 - 20.3374033068271d0*x278 + 32.1639684429148d0*x2
+     &85)
+      x295 = x100*x242*x294
+      x296 = x216 + x230*x294*x82 + x290
+      x297 = x246*x295 + 441249.269468601d0*x292 + 94553.4148861287d0*x2
+     &93 + x296
+      x298 = x108*x99
+      x299 = x272*x298
+      x300 = x297*x299
+      x301 = -x288 - x291 + x300
+      x302 = -x287 + x301
+      x303 = 1d0/x110
+      x304 = x108*x303
+      x305 = rho_c**(-2)
+      x306 = x1*x121
+      x307 = x120*(0.989141964955861d0*x1 + 1.16327369584438d0*x3 + 0.60
+     &0321476249523d0*x4 + 0.210778258416395d0*x6)
+      x308 = x117*x307
+      x309 = 16.0819842214574d0*x305
+      x310 = x118**2/(x7**4*x8**2)
+      x311 = x117*x310
+      x312 = x118*x119*(1.48371294743379d0*x1 + 1.99418347859036d0*x3 + 
+     &x5 + 0.252933910099675d0*x6)/x7**3
+      x313 = x117*x312
+      x314 = x16*x21/x14**6
+      x315 = x124*x45*x6
+      x316 = 0.0006896296838094d0*x53
+      x317 = 3.82831200025092d0*x61
+      x318 = x30*(-0.0720184066122292d0*x1 + 0.0778387062718705d0*x6)
+      x319 = 1.38777878078145d-17*x142
+      x320 = 5.19703611962767d0*x156
+      x321 = 23.3866625383245d0*x30*x61*(-0.106975995763985d0*x1 + 0.289
+     &053642815522d0*x6)
+      x322 = 31.182216717766d0*x160
+      x323 = 5.29055759308205d0*x141*x159
+      x324 = x317*x60
+      x325 = 0.203363546995945d0*x141*x148
+      x326 = 22.9698720015055d0*x149*x61
+      x327 = x59*x62
+      x328 = x146*x327*(0.150031049774234d0*x1 + 0.0271505358982603d0*x6
+     &)
+      x329 = x147*x327*(0.225046574661351d0*x1 + 0.0325806430779124d0*x6
+     &)/x32**3
+      x330 = 0.311172355472072d0*x1
+      x331 = 0.00285512867044833d0*x1 - 0.103724118490691d0*x165 + x20 +
+     & 0.000428261234514334d0*x21 + 0.0121035293512547d0*x22*x6 + 0.0175
+     &165224763768d0*x6
+      x332 = x17*x18
+      x333 = 0.0837628205355044d0*x332
+      x334 = x2*x21
+      x335 = 0.337338207872387d0*x334
+      x336 = 0.0298137034090898d0*x121*x53 - 0.00370771454548634d0*x164 
+     &+ 0.167525641071009d0*x172 + 0.899568554326366d0*x174 - 0.08376282
+     &05355044d0*x25 - 0.0652591516234546d0*x27 + x307*x335 + 5.42506773
+     &629845d0*x310*x334 - x312*x335
+      x337 = 0.0891107483661069d0*x131*x332
+      x338 = 0.0138644007334803d0*x186*x21
+      x339 = 0.00571025734089666d0*x1 - 0.00609784657412857d0*x17 + 0.00
+     &0856522469028669d0*x21 + 0.0350330449527535d0*x6
+      x340 = x132*x339
+      x341 = 0.0891107483661069d0*x17*x23
+      x342 = 0.0231073345558005d0*x134
+      x343 = 0.00107855455836145d0*x72
+      x344 = 0.000586927869208408d0*x63
+      x345 = 0.000440195901906306d0*x152*x53
+      x346 = x137*x54
+      x347 = x319 + x324 - x325 - x326 + x328 - x329
+      x348 = x153*(-0.154912426780983d0*x0**(-0.333333333333333d0)*x55 -
+     & x138*( -1.36477107997868d0*x1 + 0.427594146176807d0*x6) - 4.83324
+     &359125373d0*x139*x346 - 1.61108119708458d0*x140 - 75.398223686155d
+     &0*x346*x56 + x347)
+      x349 = 0.000781467479590561d0*x190
+      x350 = 0.0110340749409504d0*x66
+      x351 = 0.0198949583613061d0*x68
+      x352 = 0.0165511124114256d0*x171*x53
+      x353 = 0.00471283037863406d0*x121*x189
+      x354 = 0.213300270968718d0*x173*x67
+      x355 = x192*x2
+      x356 = x307*x355
+      x357 = x2*x310
+      x358 = 0.857572898037877d0*x357*x67
+      x359 = x312*x355
+      x360 = x170*x330 + x331
+      x361 = x18*x191*x360
+      x362 = 0.89531658564596d0*x3
+      x363 = x176 + x178 + x180
+      x364 = mu*x181
+      x365 = x364*x44
+      x366 = 2.05391854581537d0*x177 + 1.43555326817173d0*x179 + x362 - 
+     &2.0d0*x363* x365 + x364*x46*(1.42618991424766d0*x177 + 1.534828432
+     &53593d0*x3) /x43**2 - x47*(0.950793276165107d0*x177 + x362)
+      x367 = 0.000821860773992031d0*x198
+      x368 = 0.00880391803812612d0*x187
+      x369 = 0.202642367284676d0*mu*x182*x363/x46**2
+      x370 = 0.00316102962473761d0*x2*x200
+      x371 = -6.39350882283002d-5*x0**2.33333333333333d0*x16*x23 + 0.000
+     &279369479946145d0*x121*x194 - x18*x188*x339 - 5.79052675961456d-5*
+     &x195 - 0.00192189252234297d0*x196 - 0.0117385573841682d0*x197 + 0.
+     &00191767513931474d0*x199 + 0.0508356285485896d0*x200*x357 + 0.0168
+     &588246652672d0*x201 + x307 *x370 - x312*x370
+      x372 = x104*x108
+      x373 = rho_c**(-4.33333333333333d0)*x93
+      x374 = 2391.63081129926d0*x373
+      x375 = x229*x373
+      x376 = 1434.97848677955d0*x375
+      x377 = x88**(-2)
+      x378 = 307.49539002419d0*x377
+      x379 = x228**2*x378
+      x380 = x373*x379
+      x381 = 13.5881085271426d0*x221*x229
+      x382 = x373*x381
+      x383 = x121*x90
+      x384 = 4945.13601053991d0*x383
+      x385 = x375*x384
+      x386 = -x116 + x123 + x127 + x205
+      x387 = x228*x378*x386
+      x388 = x373*x387
+      x389 = 1434.97848677955d0*x209
+      x390 = rho_c**(-6.66666666666667d0)*x102
+      x391 = x244*x390
+      x392 = 614.99078004838d0*x229
+      x393 = x314*x87
+      x394 = x6*x88/x2**2
+      x395 = x224*x307
+      x396 = x310*x88/x9**2
+      x397 = x224*x310
+      x398 = x306*x92
+      x399 = x224*x312
+      x400 = x203*x315
+      x401 = x116 - x123 - x127 - x205
+      x402 = x221*x401
+      x403 = x383*x401
+      x404 = x204*(x12*(x337 - x338 - x340 - x341 + x342 - x343 - x344 +
+     & x345 + x348 ) + x184*x366 - x185*x365 - x186*x367 + x186*x368 + x
+     &369*x40 + x371 + x45*(-x162*x316 + x163*(-x317 - x318 + x320 - x32
+     &1 - x322 - x323 + x347) - x333*x360 + x336 + 0.0009195062450792d0*
+     &x35) + x71*(-x349 - x350 - x351 + x352 + x353 + x354 + x356 + x358
+     & - x359 - x361))
+      x405 = 307.49539002419d0*x217*x373*(0.0101850765748927d0*x115 - 2.
+     &9296748261088d0*x126 - 0.16379624077176d0*x222 - 0.245694361157641
+     &d0*x306 - 44.7079161356516d0*x308 - 718.99200186779d0*x311 + 44.70
+     &79161356516d0*x313 + 1.38933365612628d0*x393 + 0.0108571437238599d
+     &0*x394 + 44.7079161356516d0*x395 + 1437.98400373558d0*x396 + 718.9
+     &9200186779d0*x397 - 3.95125283943823d0*x398 - 44.7079161356516d0*x
+     &399 + 3.51560979133057d0*x400 - 0.245694361157641d0*x402 + 89.4158
+     &322713032d0*x403 + 2.78d0*x404)
+      x406 = 1434.97848677955d0*x215
+      x407 = x210*x212
+      x408 = x244*x407
+      x409 = x258*x408
+      x410 = x215*x392
+      x411 = x104*x258
+      x412 = x209*x237
+      x413 = 614.99078004838d0*x412
+      x414 = 378213.659544515d0*gamma_cc
+      x415 = x213/x211**2
+      x416 = x237*x389
+      x417 = exp(4.0d0*x10 + x15*(64.327936885829629d0*x37 + 13.03556541
+     &3083715d0*x49 - 64.327936885829629d0*x64 - 64.327936885829629d0*x6
+     &9 - 0.16990136517137816d0*x73 - 0.012644118498950429d0*x77))
+      x418 = x236**2
+      x419 = x208*x418
+      x420 = 614.99078004838d0*x417*x419
+      x421 = x206*x232
+      x422 = x418*x421
+      x423 = 0.117839022137957d0*x115 - 33.8956721780452d0*x126 - 258.63
+     &0216499205d0* x233*x310 - x234*x307 + x234*x312 - 2.8426279420419d
+     &0*x306 + 16.0742747742176d0*x393 + 40.6748066136542d0*x400 + 32.16
+     &39684429148d0*x404
+      x424 = x421*x423
+      x425 = 13747.478109301d0*x117
+      x426 = gamma_cc*x390
+      x427 = x208*x237*x426
+      x428 = x206*x246*x390
+      x429 = x256*x391
+      x430 = 94553.4148861287d0*x391
+      x431 = x377*x430
+      x432 = 94553.4148861287d0*x103
+      x433 = x244*x273 + x96
+      x434 = x244*x433
+      x435 = x272*x432 - x298*x434 + x99
+      x436 = 614.99078004838d0*x95
+      x437 = 378213.659544515d0*x103*x244 + x436
+      x438 = 189106.829772257d0*x103
+      E = -rho_c*(-x111 + x114)
+      d1E(1) = -rho_c*(-x0*x116 + x0*x123 + x0*x127 + x0*x205 - x260*x26
+     &2/(gamma_cc* x214 + 1.0d0)) + x111 + x113 - x83
+      d1E(3) = rho_c*x275*x277
+      d2E(1) = 0.0621813817393098d0*gamma_cc*x302*x304 + rho_c*(0.499760
+     &307959092d0* x112*x305*x314 - 0.00366369660967365d0*x115*x305 - x2
+     &04*x305*( -x12*(-x337 + x338 + x340 + x341 - x342 + x343 + x344 - 
+     &x345 - x348) - x263*x369 - x281*x366 + x282*x365 + x283*x367 - x28
+     &3*x368 + x371 + x45*(-x163*(x317 + x318 - x319 - x320 + x321 + x32
+     &2 + x323 - x324 + x325 + x326 - x328 + x329) - 0.0009195062450792d
+     &0* x279 + x280*x316 - x333*(-x330*(x166 + x167 - x168 + x169) + x3
+     &31 ) + x336) - x71*(x349 + x350 + x351 - x352 - x353 - x354 - x356
+     & - x358 + x359 + x361)) - x262*x303*(-gamma_cc*rho_c**( -6.6666666
+     &6666667d0)*x102*x232*(-x217*(-10.9615243283801d0*x115 + 64154.8978
+     &434045d0*x122 + 2522.41220923546d0*x126 + 3989.24019324716d0*x205 
+     &+ 176.28306129213d0*x222 - 64154.8978434045d0*x225) + x217*(3.1318
+     &6409382288d0*x115 - 900.861503298378d0*x126 - 50.3665889406086d0*x
+     &222 - 75.5498834109129d0*x306 - x307*x425 - 221086.726038609d0*x31
+     &1 + x312*x425 + 427.213694464283d0*x393 + 3.33852164391699d0*x394 
+     &+ 13747.478109301d0*x395 + 442173.452077218d0*x396 + 221086.726038
+     &609d0*x397 - 1214.99203294725d0*x398 - 13747.478109301d0*x399 + 10
+     &81.03380395805d0*x400 - 75.5498834109129d0*x402 + 27494.9562186019
+     &d0*x403 + 854.837184267248d0*x404) + x229*x384 + x379 - x381 - x38
+     &7 - x392* x412 + x416 + x420 - x422 - x424 + 2391.63081129926d0) -
+     & x208* x411*x415*(x215*x413 + 882498.538937201d0*x245 + x248*x414 
+     &- 189106.829772257d0*x257 + x406 - x410) - x210*x374 + x210*x376 -
+     & x210*x380 + x210*x382 - x210*x385 + x210*x388 - x210*x405 - 614.9
+     &9078004838d0*x212*x240*x247*x411 - x240*x391*x392 + x241* x389*x39
+     &0 - x259*(x208*x423*x428 - x217*x430*( 0.0203701531497855d0*x115 -
+     & 5.85934965221761d0*x126 - 0.327592481543521d0*x222 - 0.4913887223
+     &15281d0*x306 - 89.4158322713032d0*x308 - 1437.98400373558d0*x311 +
+     & 89.4158322713032d0*x313 + 2.77866731225255d0*x393 + 0.02171428744
+     &77198d0*x394 + 89.4158322713032d0*x395 + 2875.96800747116d0*x396 +
+     & 1437.98400373558d0*x397 - 7.90250567887647d0*x398 - 89.4158322713
+     &032d0*x399 + 7.03121958266113d0*x400 - 0.491388722315281d0*x402 + 
+     &178.831664542606d0*x403 + 5.56d0*x404) + 4178.28073124474d0*x221* 
+     &x429 - x255**2*x431 + x255*x386*x431 + 378213.659544515d0*x256* x4
+     &27 - x373*x416 - x373*x420 + x373*x422 + x373*x424 - x374 + x375*x
+     &413 + x376 - x380 + x382 - 1520606.52628364d0*x383*x429 - x385 + x
+     &388 - 2500412.52698874d0*x391 - x405 + x419*x428 - 1764997.0778744
+     &d0*x427 + 882498.538937201d0*x429 - 567320.489316772d0*x417*x418*x
+     &426/x207**3) + x406*x409 - x409* x410) - 1.05383986550676d0*x278*x
+     &305 - 1.26460783860812d0*x284* x305*x315 + 0.0883792666034679d0*x3
+     &05*x306 + 258.630216499205d0* x305*x311 + x308*x309 - x309*x313 - 
+     &x260*x261*x302*x372/x110**2) + 0.00549554491451047d0*x0*x115 - 32.
+     &1639684429148d0*x0*x122 + 1.26460783860812d0*x0*x278 - 2.0d0*x0*x2
+     &85
+      d2E(4) = x277*(rho_c*x108*(x100*x297*x372*x432 - x104*x209*x297*x4
+     &37*x82*x99/x107 **2 + x108*x288*x434 + x109*x215*x232*x289*x433*x9
+     &8 + x109*x276* x435*(x287 + x288 + x291 - x300) - 614.99078004838d
+     &0*x245*x286 + 307.49539002419d0*x247*x286*x372*x433 - 94553.414886
+     &1287d0*x289* x292 - 220624.6347343d0*x292 + x299*(882498.538937201
+     &d0*x292 + 189106.829772257d0*x293 + x295*x414 + x296) + x301) + x2
+     &75)
+      d2E(6) = -rho_c*x261*x303*(x209*(58149478.3770584d0*rho_c**(-7.0d0
+     &)*x408*x92** 8.34d0 + x212*x434*x438 + x407*x433*x436 - x415*x434*
+     &x437 - x438 ) + x304*x435*(x213 - x214*x434 + x244*x432))
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu, 
+     &E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, rho_s, gamma_cc, mu
+      real*8, intent(out) :: E
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67
+      E = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = x0**0.166666666666667d0
+      x3 = sqrt(x0)
+      x4 = x0**0.666666666666667d0
+      x5 = 0.0621813817393098d0*(0.132568899905202d0*x1 + 1.0d0)*log(1.0
+     &d0 + 16.081984221457407d0/(2.2255694211506878d0*x1 + 5.98255043577
+     &10795d0*x2 + 0.80042863499936356d0*x3 + 0.18970043257475591d0*x4))
+     &
+      x6 = rho_s**4/rho_c**4
+      x7 = rho_s*x0
+      x8 = x7 + 1.0d0
+      x9 = -x7 + 1.0d0
+      x10 = 1.92366105093154d0*x8**1.33333333333333d0 + 1.92366105093154
+     &d0*x9** 1.33333333333333d0 - 3.84732210186307d0
+      x11 = 0.0197517897025652d0*x10*(0.0690139921125583d0*x1 + 1.0d0)*(
+     &-x6 + 1.0d0) *log(1.0d0 + 29.608574643216677d0/(2.2475918635776164
+     &d0*x1 + 8.1574147034876408d0*x2 + 0.43009724712766434d0*x3 + 0.191
+     &15125951273382d0*x4))
+      x12 = 0.0310906908696548d0*(0.127469618870009d0*x1 + 1.0d0)*log(1.
+     &0d0 + 32.163968442914921d0/(3.8447462374472119d0*x1 + 11.120374863
+     &094685d0*x2 + 1.6447337755676092d0*x3 + 0.24058712912881922d0*x4))
+     &
+      x13 = -x5
+      x14 = x10*x6
+      x15 = x14*(x12 + x13)
+      x16 = mu**2
+      x17 = (0.237113969739022d0*x16*x4 + 1.0d0)**(-4)
+      x18 = rho_s**2/rho_c**2
+      x19 = -x18 + 1.0d0
+      x20 = x0**1.0d0
+      x21 = x0**1.33333333333333d0
+      x22 = (0.0128480790170175d0*x1 - 0.00304892328706429d0*x20 + 0.000
+     &275310793616358d0*x21 + 0.0315297404574782d0*x4 + 1.0d0)*exp (-0.4
+     &6675853320810856d0*x1)
+      x23 = x19*x22
+      x24 = x0**1.66666666666667d0
+      x25 = 0.00264117541143784d0*mu**5*x24
+      x26 = 0.693147180559945d0
+      x27 = x8**0.666666666666667d0 + x9**0.666666666666667d0
+      x28 = x27**3
+      x29 = x1*x16/x27**2
+      x30 = 9.20897059521559d0*mu*x2/x27 + 1.0d0
+      x31 = mu**3
+      x32 = 0.0253302959105844d0*x28*log((18.485266912338322d0*x29 + x30
+     & + 15.312568193831799d0*x3*x31/x28)/(8.5571394854859619d0*x29 + x3
+     &0 ))
+      x33 = x11 + x13
+      x34 = -x15 + x33
+      x35 = 0.00316102962473761d0*mu**8*x0**2.66666666666667d0
+      x36 = 0.0445553741830535d0*x20
+      x37 = 1d0/x4
+      x38 = 1d0/x8
+      x39 = x38**0.666666666666667d0
+      x40 = x1*x38**0.333333333333333d0
+      x41 = 0.0244354823084343d0*x4
+      x42 = 8.61370200056458d0*x8**2*(-0.0177069812999059d0*x40 + 1.0d0)
+     &/(x39*(x39* x41 + 0.337569861992026d0*x40 + 1.0d0))
+      x43 = 1d0/x9
+      x44 = x43**0.666666666666667d0
+      x45 = x1*x43**0.333333333333333d0
+      x46 = 8.61370200056458d0*x9**2*(-0.0177069812999059d0*x45 + 1.0d0)
+     &/(x44*(x41* x44 + 0.337569861992026d0*x45 + 1.0d0))
+      x47 = 0.000132058770571892d0*x24*(37.6991118430775d0*x19*(-3.07073
+     &492995203d0* x1 + 0.384834731559127d0*x4)*exp(-0.19230865217881402
+     &d0*x1)/x20 + x37*x42 + x37*x46)
+      x48 = mu**6
+      x49 = x19*(x22 - 1.0d0)
+      x50 = 0.00248266686171384d0*x24*x49
+      x51 = x14*(-x12 + x5) + x33
+      x52 = 0.0533250677421794d0*x0**2.0d0*x51
+      x53 = mu**4
+      x54 = -0.0418814102677522d0*x20*x49
+      x55 = 8.61370200056458d0*x8**2.66666666666667d0
+      x56 = 8.61370200056458d0*x9**2.66666666666667d0
+      x57 = 23.3866625383245d0*x19*(-0.240695990468967d0*x1 + 0.26014827
+     &853397d0*x4) *exp(-0.33933171852197186d0*x1)
+      x58 = 0.00020688890514282d0*x0**1.0d0
+      x59 = 0.337338207872387d0*x21
+      x60 = x17*(-x23*x25 - x31*(x23*x36 + x47) - x32*(-x26 + 1.0d0) + x
+     &34*x35 - x48 *(x50 - x52) + x53*(x34*x59 + x54 - x58*(x42 + x46 - 
+     &x55 - x56 + x57)))
+      x61 = x8**0.666666666666667d0 + x9**0.666666666666667d0
+      x62 = x61**3
+      x63 = x22*(x18 - 1.0d0)
+      x64 = -1.0d0 + exp(-257.31174754331852d0*(-x17*(x25*x63 + x31*(x36
+     &*x63 - x47) + x32*(x26 - 1.0d0) + x35*x51 + x48*(-x50 + x52) + x53
+     &*(x51*x59 + x54 + x58*(-x42 - x46 + x55 + x56 - x57))) + x51)/x62)
+     &
+      x65 = (x34 - x60)/x34
+      x66 = 0.544846825002868d0*gamma_cc*rho_c**(-2.33333333333333d0)*x6
+     &5**2.78d0/ x61**2
+      x67 = 1.0d0 + x66/x64
+      E = -rho_c*(-x11 + x15 + x5 + x60 - 0.00388633635870686d0*x62*log(
+     &x66*x67/( 0.29685806271570547d0*gamma_cc**2*rho_c**(-4.66666666666
+     &6667d0)* x65**5.5599999999999996d0/(x61**4*x64**2) + x67) + 1.0d0)
+     &)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D1ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu
+     &, E, d1E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, rho_s, gamma_cc, mu
+      real*8, intent(out) :: E, d1E(9)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
+     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
+     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
+     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
+     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
+     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
+     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
+     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
+     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
+     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
+     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
+     &, x193, x194, x195, x196, x197, x198, x199, x200, x201, x202, x203
+     &, x204, x205, x206, x207, x208, x209, x210, x211, x212, x213, x214
+     &, x215, x216, x217, x218, x219, x220, x221, x222, x223, x224, x225
+     &, x226, x227, x228, x229, x230, x231, x232, x233, x234, x235, x236
+     &, x237, x238, x239, x240, x241, x242, x243, x244, x245, x246, x247
+     &, x248, x249, x250, x251, x252, x253, x254, x255, x256, x257, x258
+     &, x259, x260, x261, x262, x263, x264, x265, x266, x267, x268, x269
+     &, x270, x271, x272, x273, x274, x275, x276, x277, x278, x279, x280
+     &, x281, x282, x283, x284, x285, x286, x287, x288, x289, x290, x291
+     &, x292, x293, x294, x295, x296, x297, x298, x299, x300, x301, x302
+     &, x303, x304, x305, x306, x307, x308, x309, x310, x311, x312, x313
+     &, x314, x315, x316, x317, x318, x319, x320, x321, x322, x323, x324
+     &, x325, x326, x327, x328, x329, x330, x331, x332, x333, x334, x335
+     &, x336, x337, x338, x339, x340, x341, x342, x343, x344, x345, x346
+     &, x347, x348, x349, x350, x351, x352, x353, x354, x355, x356, x357
+     &, x358, x359, x360, x361, x362, x363, x364, x365, x366, x367, x368
+     &, x369, x370, x371, x372, x373, x374, x375, x376, x377, x378, x379
+     &, x380, x381, x382, x383, x384, x385, x386, x387, x388, x389, x390
+     &, x391, x392, x393, x394, x395, x396, x397, x398, x399, x400, x401
+     &, x402, x403, x404, x405, x406, x407, x408, x409, x410, x411, x412
+     &, x413, x414, x415, x416, x417, x418, x419, x420, x421, x422, x423
+     &, x424, x425, x426, x427, x428, x429, x430, x431, x432, x433
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = x0**0.166666666666667d0
+      x3 = sqrt(x0)
+      x4 = x0**0.666666666666667d0
+      x5 = 3.84474623744721d0*x1 + 11.1203748630947d0*x2 + 1.64473377556
+     &761d0*x3 + 0.240587129128819d0*x4
+      x6 = 1.0d0 + 32.1639684429149d0/x5
+      x7 = log(x6)
+      x8 = 0.0310906908696548d0*x7*(0.127469618870009d0*x1 + 1.0d0)
+      x9 = 2.22556942115069d0*x1 + 5.98255043577108d0*x2 + 0.80042863499
+     &9364d0*x3 + 0.189700432574756d0*x4
+      x10 = 1.0d0 + 16.0819842214574d0/x9
+      x11 = log(x10)
+      x12 = 0.0621813817393098d0*x11*(0.132568899905202d0*x1 + 1.0d0)
+      x13 = -x12
+      x14 = x13 + x8
+      x15 = rho_s*x0
+      x16 = x15 + 1.0d0
+      x17 = -x15 + 1.0d0
+      x18 = 1.92366105093154d0*x16**1.33333333333333d0 + 1.9236610509315
+     &4d0*x17** 1.33333333333333d0 - 3.84732210186307d0
+      x19 = rho_c**(-4)
+      x20 = rho_s**4
+      x21 = x19*x20
+      x22 = x18*x21
+      x23 = x14*x22
+      x24 = -x21 + 1.0d0
+      x25 = 2.24759186357762d0*x1 + 8.15741470348764d0*x2 + 0.4300972471
+     &27664d0*x3 + 0.191151259512734d0*x4
+      x26 = 1.0d0 + 29.6085746432167d0/x25
+      x27 = log(x26)
+      x28 = x24*x27
+      x29 = x18*x28
+      x30 = 0.0197517897025652d0*x29*(0.0690139921125583d0*x1 + 1.0d0)
+      x31 = x13 + x30
+      x32 = -x23 + x31
+      x33 = mu**2
+      x34 = x33*x4
+      x35 = 0.237113969739022d0*x34 + 1.0d0
+      x36 = x35**(-4)
+      x37 = mu**5
+      x38 = rho_c**(-2)
+      x39 = rho_s**2*x38
+      x40 = -x39 + 1.0d0
+      x41 = exp(-0.46675853320810856d0*x1)
+      x42 = x0**1.0d0
+      x43 = 0.00304892328706429d0*x42
+      x44 = -x43
+      x45 = x0**1.33333333333333d0
+      x46 = 0.0128480790170175d0*x1 + 0.0315297404574782d0*x4 + x44 + 0.
+     &000275310793616358d0*x45 + 1.0d0
+      x47 = x41*x46
+      x48 = x40*x47
+      x49 = x37*x48
+      x50 = x0**1.66666666666667d0
+      x51 = 0.00264117541143784d0*x50
+      x52 = x49*x51
+      x53 = 0.693147180559945d0
+      x54 = -x53 + 1.0d0
+      x55 = x16**0.666666666666667d0 + x17**0.666666666666667d0
+      x56 = x55**2
+      x57 = 1d0/x56
+      x58 = x33*x57
+      x59 = x1*x58
+      x60 = 1d0/x55
+      x61 = mu*x60
+      x62 = 9.20897059521559d0*x2*x61 + 1.0d0
+      x63 = mu**3
+      x64 = x55**3
+      x65 = x3/x64
+      x66 = 18.4852669123383d0*x59 + x62 + 15.3125681938318d0*x63*x65
+      x67 = x66/(8.55713948548596d0*x59 + x62)
+      x68 = log(x67)
+      x69 = x54*x68
+      x70 = 0.0253302959105844d0*x64
+      x71 = x69*x70
+      x72 = mu**8*x0**2.66666666666667d0
+      x73 = 0.00316102962473761d0*x72
+      x74 = x32*x73
+      x75 = x40*x42
+      x76 = 0.0445553741830535d0*x47
+      x77 = x75*x76
+      x78 = -3.07073492995203d0*x1 + 0.384834731559127d0*x4
+      x79 = exp(-0.19230865217881402d0*x1)
+      x80 = x40*x78*x79
+      x81 = 1d0/x42
+      x82 = 37.6991118430775d0*x81
+      x83 = x80*x82
+      x84 = 1d0/x4
+      x85 = x16**2
+      x86 = 1d0/x16
+      x87 = x86**0.333333333333333d0
+      x88 = x1*x87
+      x89 = x86**0.666666666666667d0
+      x90 = 0.0244354823084343d0*x4
+      x91 = 0.337569861992026d0*x88 + x89*x90 + 1.0d0
+      x92 = 1d0/x91
+      x93 = x85*x92
+      x94 = (-0.0177069812999059d0*x88 + 1.0d0)/x89
+      x95 = 8.61370200056458d0*x94
+      x96 = x93*x95
+      x97 = x17**2
+      x98 = 1d0/x17
+      x99 = x98**0.333333333333333d0
+      x100 = x1*x99
+      x101 = x98**0.666666666666667d0
+      x102 = 0.337569861992026d0*x100 + x101*x90 + 1.0d0
+      x103 = 1d0/x102
+      x104 = x103*x97
+      x105 = (-0.0177069812999059d0*x100 + 1.0d0)/x101
+      x106 = 8.61370200056458d0*x105
+      x107 = x104*x106
+      x108 = x50*(x107*x84 + x83 + x84*x96)
+      x109 = 0.000132058770571892d0*x108
+      x110 = x63*(x109 + x77)
+      x111 = mu**6
+      x112 = x47 - 1.0d0
+      x113 = x112*x40
+      x114 = x113*x50
+      x115 = 0.00248266686171384d0*x114
+      x116 = x0**2.0d0
+      x117 = x12 - x8
+      x118 = x117*x22
+      x119 = x118 + x31
+      x120 = x116*x119
+      x121 = 0.0533250677421794d0*x120
+      x122 = x111*(x115 - x121)
+      x123 = mu**4
+      x124 = 0.0418814102677522d0*x113*x42
+      x125 = -x124
+      x126 = x16**2.66666666666667d0
+      x127 = 8.61370200056458d0*x126
+      x128 = x17**2.66666666666667d0
+      x129 = 8.61370200056458d0*x128
+      x130 = exp(-0.33933171852197186d0*x1)
+      x131 = x130*(-0.240695990468967d0*x1 + 0.26014827853397d0*x4)
+      x132 = x131*x40
+      x133 = 23.3866625383245d0*x132
+      x134 = x0**1.0d0
+      x135 = 0.00020688890514282d0*x134
+      x136 = 0.337338207872387d0*x45
+      x137 = x123*(x125 - x135*(x107 - x127 - x129 + x133 + x96) + x136*
+     &x32)
+      x138 = -x110 - x122 + x137 - x52 - x71 + x74
+      x139 = x138*x36
+      x140 = -x139 + x32
+      x141 = x140/x32
+      x142 = x141**2.78d0
+      x143 = 0.544846825002868d0*rho_c**(-2.33333333333333d0)
+      x144 = x142*x143
+      x145 = x16**0.666666666666667d0 + x17**0.666666666666667d0
+      x146 = x145**2
+      x147 = gamma_cc/x146
+      x148 = x39 - 1.0d0
+      x149 = x148*x47
+      x150 = x37*x51
+      x151 = x53 - 1.0d0
+      x152 = x151*x68
+      x153 = x148*x42
+      x154 = x153*x76
+      x155 = -x107 + x127 + x129 - x133 - x96
+      x156 = x111*(-x115 + x121) + x119*x73 + x123*(x119*x136 + x125 + x
+     &135*x155) + x149*x150 + x152*x70 + x63*(-x109 + x154)
+      x157 = x156*x36
+      x158 = x119 - x157
+      x159 = x145**3
+      x160 = 1d0/x159
+      x161 = 257.311747543319d0*x160
+      x162 = exp(-x158*x161)
+      x163 = x162 - 1.0d0
+      x164 = 1d0/x163
+      x165 = x147*x164
+      x166 = x144*x165 + 1.0d0
+      x167 = x163**(-2)
+      x168 = rho_c**(-4.66666666666667d0)
+      x169 = x141**5.56d0
+      x170 = x168*x169
+      x171 = 0.296858062715705d0*gamma_cc**2/x145**4
+      x172 = 1d0/(x166 + x167*x170*x171)
+      x173 = x166*x172
+      x174 = x144*x147*x173
+      x175 = x174 + 1.0d0
+      x176 = log(x175)
+      x177 = 0.00388633635870686d0*x159
+      x178 = x12 - x30
+      x179 = x178 + x23
+      x180 = x139 + x179
+      x181 = x1*x11
+      x182 = 0.00274777245725523d0*x181
+      x183 = rho_c**(-5)
+      x184 = x183*x20
+      x185 = x18*x184
+      x186 = 0.00136314985874174d0*x1 + 0.0197517897025652d0
+      x187 = x186*x27
+      x188 = 4.0d0*x187
+      x189 = x1*x29
+      x190 = 0.000454383286247248d0*x189
+      x191 = x17**0.333333333333333d0
+      x192 = x16**0.333333333333333d0
+      x193 = x191 - x192
+      x194 = 2.56488140124205d0*x193
+      x195 = x186*x28
+      x196 = x194*x195
+      x197 = rho_s*x38
+      x198 = (0.0082433173717657d0*x1 + 0.0621813817393098d0)*(0.7418564
+     &73716896d0*x1 + 0.99709173929518d0*x2 + 0.400214317499682d0*x3 + 0
+     &.126466955049837d0*x4)/(x10*x9**2)
+      x199 = 16.0819842214574d0*x198
+      x200 = rho_s**5
+      x201 = x194*x200
+      x202 = 4.0d0*x14
+      x203 = x18*x186*x24*(0.749197287859205d0*x1 + 1.35956911724794d0*x
+     &2 + 0.215048623563832d0*x3 + 0.127434173008489d0*x4)/(x25**2*x26)
+      x204 = 29.6085746432167d0*x203
+      x205 = 0.00132103950518672d0*x1*x7
+      x206 = 32.1639684429149d0*(0.00396311851556016d0*x1 + 0.0310906908
+     &696548d0)*( 1.28158207914907d0*x1 + 1.85339581051578d0*x2 + 0.8223
+     &66887783805d0*x3 + 0.160391419419213d0*x4)/(x5**2*x6)
+      x207 = x182 - x199
+      x208 = x110 + x122 - x137 + x52 + x71 - x74
+      x209 = x34/x35**5
+      x210 = 0.632303919304059d0*x209
+      x211 = x39*x47
+      x212 = 0.00528235082287567d0*x37*x50
+      x213 = x211*x212
+      x214 = 0.00428269300567249d0*x1
+      x215 = 0.0210198269716521d0*x4
+      x216 = 0.000367081058155144d0*x45
+      x217 = x214 + x215 + x216 + x44
+      x218 = x150*x41
+      x219 = x217*x218*x40
+      x220 = 0.00440195901906306d0*x50
+      x221 = x220*x49
+      x222 = 0.000410930386996015d0*x0**2.0d0
+      x223 = x222*x49
+      x224 = x16**(-0.333333333333333d0)
+      x225 = x17**(-0.333333333333333d0)
+      x226 = x224 - x225
+      x227 = 0.0506605918211689d0*x56
+      x228 = x226*x227
+      x229 = x228*x69
+      x230 = x15*x229
+      x231 = 0.00842941233263362d0*x72
+      x232 = x231*x32
+      x233 = x1*x61
+      x234 = 2.85237982849532d0*x233
+      x235 = x15*x226
+      x236 = mu*x1*x235*x57
+      x237 = 11.4095193139813d0*x236
+      x238 = 1.53482843253593d0*x2
+      x239 = 6.13931373014372d0*x2
+      x240 = x235*x239*x60
+      x241 = -x238 + x240
+      x242 = x3*x58
+      x243 = -6.16175563744611d0*x233 + 30.6251363876636d0*x235*x33*x65 
+     &+ 24.6470225497844d0*x236 + x241 - 7.6562840969159d0*x242
+      x244 = 0.0253302959105844d0*mu/x66
+      x245 = x244*x56
+      x246 = x245*x54*(x243 - x67*(-x234 + x237 + x241))
+      x247 = x183*x201
+      x248 = -x182 + x199
+      x249 = x22*(x205 - x206 + x248)
+      x250 = x188*x22
+      x251 = x15*x196
+      x252 = -x190 + x204 + x207 + x249 + x250 + x251
+      x253 = -x14*x247 + 4.0d0*x23 + x252
+      x254 = x253*x73
+      x255 = 75.398223686155d0*x78*x79*x81
+      x256 = x255*x39
+      x257 = 2.41662179562687d0*x0**(-0.666666666666667d0)*x80
+      x258 = x40*x79*x82*(1.02357830998401d0*x1 - 0.256556487706084d0*x4
+     &)
+      x259 = x15*x86
+      x260 = 1d0/x1
+      x261 = 0.0508408867489862d0*x260
+      x262 = x261/x87
+      x263 = x262*x93*(-x259 + 1.0d0)
+      x264 = 5.74246800037638d0*x84
+      x265 = x264*x93*x94
+      x266 = x15*x98
+      x267 = x261/x99
+      x268 = x104*x267*(x266 + 1.0d0)
+      x269 = 22.9698720015055d0*x84
+      x270 = x15*x269
+      x271 = x16*x92
+      x272 = x271*x94
+      x273 = x270*x272
+      x274 = x104*x105*x264
+      x275 = x103*x17
+      x276 = x105*x275
+      x277 = x270*x276
+      x278 = 0.112523287330675d0*x88
+      x279 = 0.0162903215389562d0*x4
+      x280 = x279*x89
+      x281 = x278 + x280
+      x282 = x84*x95/x91**2
+      x283 = x282*x85*(-x259*x278 - x259*x280 + x281)
+      x284 = 0.112523287330675d0*x100
+      x285 = x101*x279
+      x286 = x284 + x285
+      x287 = x106*x84/x102**2
+      x288 = x287*x97*(x266*x284 + x266*x285 + x286)
+      x289 = 0.000132058770571892d0*x50
+      x290 = 0.0445553741830535d0*x41
+      x291 = 0.00693220036674015d0*x45
+      x292 = 0.0891107483661069d0*x42
+      x293 = 0.000220097950953153d0*x108 - x211*x292
+      x294 = x63*(x217*x290*x75 - x289*(x256 + x257 + x258 + x263 + x265
+     & + x268 - x273 + x274 + x277 + x283 + x288 + x83) - x291*x48 + x29
+     &3 + x77)
+      x295 = x112*x39
+      x296 = 0.00496533372342768d0*x50
+      x297 = x295*x296
+      x298 = 0.0041377781028564d0*x114
+      x299 = x41*(0.0777930888680181d0*x1*x46 - 0.00214134650283625d0*x1
+     & - 0.0105099134858261d0*x4 + 0.00152446164353214d0*x42 - 0.0001835
+     &40529077572d0*x45)
+      x300 = x296*x299*x40
+      x301 = 0.106650135484359d0*x120
+      x302 = 4.0d0*x118
+      x303 = x117*x247
+      x304 = x252 - x302 + x303
+      x305 = 0.0533250677421794d0*x116
+      x306 = x304*x305
+      x307 = x111*(x297 - x298 + x300 + x301 - x306)
+      x308 = 0.0837628205355044d0*x42
+      x309 = x295*x308
+      x310 = 0.0837628205355044d0*x299*x75
+      x311 = 0.0003448148419047d0*x134*x155
+      x312 = 0.449784277163183d0*x119*x45
+      x313 = x136*x304
+      x314 = x17**1.66666666666667d0
+      x315 = x16**1.66666666666667d0
+      x316 = 46.773325076649d0*x131*x84
+      x317 = -x263 - x265 - x268 + x273 - x274 - x277 - x283 - x288
+      x318 = 0.00020688890514282d0*x50
+      x319 = x318*(-23.3866625383245d0*x130*x40*x84*(0.0802319968229891d
+     &0*x1 - 0.173432185689313d0*x4) - 2.64527879654103d0*x132*x260 - 15
+     &.591108358883d0*x132*x84 + x264*(x126 + x128) + x270*(x314 - x315)
+     & - x316*x39 + x317)
+      x320 = x123*(x125 + x309 + x310 + x311 + x312 - x313 - x319)
+      x321 = -x162 + 1.0d0
+      x322 = x180/x179
+      x323 = x168*x322**5.56d0
+      x324 = x143*x322**2.78d0
+      x325 = x147/x321
+      x326 = -x324*x325 + 1.0d0
+      x327 = 1d0/(x171*x323/x321**2 + x326)
+      x328 = x324*x326
+      x329 = x327*x328
+      x330 = x147*x329 + 1.0d0
+      x331 = log(x330)
+      x332 = x17**(-0.333333333333333d0)
+      x333 = x16**(-0.333333333333333d0)
+      x334 = x332 - 1.0d0*x333
+      x335 = 0.00777267271741373d0*x146
+      x336 = 1d0/x330
+      x337 = rho_c**(-3.33333333333333d0)
+      x338 = x166*x337
+      x339 = -x333
+      x340 = x332 + x339
+      x341 = 1d0/x145
+      x342 = 0.726462433337157d0*x341
+      x343 = rho_c**(-4.33333333333333d0)*rho_s*x342
+      x344 = x340*x343
+      x345 = 1d0/x140
+      x346 = -x213
+      x347 = x345*(-x138*x210 - x141*x304 + x253 - x36*(x219 + x221 - x2
+     &23 + x230 - x232 - x246 + x254 + x294 - x307 - x320 + x346))
+      x348 = 1.51467417350797d0*x338
+      x349 = x158/x119
+      x350 = x349**2.78d0
+      x351 = 1.27130925834002d0*x337
+      x352 = -x214 - x215 - x216 + x43
+      x353 = x149*x37
+      x354 = -x224 + x225
+      x355 = x36*(x111*(-x297 + x298 - x300 - x301 + x306) - x119*x231 +
+     & x123*(x124 - x309 - x310 - x311 - x312 + x313 + x319) + x148*x218
+     &*x352 + x15* x152*x227*x354 + x151*x245*(x243 + x67*(x234 - x237 +
+     & x238 - x240 )) - x220*x353 + x222*x353 + x304*x73 + x346 + x63*(x
+     &149*x291 + x153*x290*x352 - x154 + x289*(-x256 - x257 - x258 + x31
+     &7 - x83) + x293))
+      x356 = 1d0/x158
+      x357 = 1.51467417350797d0*x337
+      x358 = x356*x357
+      x359 = 1.0d0*x332
+      x360 = -x118 + x157 + x178
+      x361 = 514.623495086637d0*x360
+      x362 = x15*x341
+      x363 = 659.974115594947d0*x117
+      x364 = 1029.24699017327d0*x187
+      x365 = 659.974115594947d0*x195
+      x366 = 1029.24699017327d0*x118 - x15*x193*x365 + 162.699226454617d
+     &0*x156*x209 - 0.707034132827743d0*x181 - x183*x193*x200*x363 + 0.1
+     &16918157438755d0*x189 + 4138.08346398728d0*x198 - 7618.63408371287
+     &d0*x203 - x22*x364 - 257.311747543319d0*x249 + 257.311747543319d0*
+     &x355
+      x367 = 0.544846825002867d0*x337
+      x368 = exp(x161*x360)
+      x369 = x368 - 1.0d0
+      x370 = 1d0/x369
+      x371 = x160*x370
+      x372 = x368*x371
+      x373 = x147*x370
+      x374 = rho_c**(-5.66666666666667d0)
+      x375 = x169*x374
+      x376 = x165*x375
+      x377 = x160*x164
+      x378 = 0.791621500575215d0*gamma_cc*x340
+      x379 = x339 + x359
+      x380 = 514.623495086637d0*x158*x362*x379 + x366
+      x381 = x162*x377
+      x382 = 0.593716125431411d0*gamma_cc/x145**5
+      x383 = 0.00388633635870686d0*x145
+      x384 = gamma_cc*x172*x383
+      x385 = rho_s**3*x18
+      x386 = x14*x194
+      x387 = x202*x385
+      x388 = x15*x47
+      x389 = x212*x388
+      x390 = rho_c**(-3)
+      x391 = x385*x390
+      x392 = x188*x391
+      x393 = -x392
+      x394 = -x196 + x21*x386 - x387*x390 + x393
+      x395 = 24.6470225497844d0*x233 + x239 + 30.6251363876636d0*x242
+      x396 = x67*(11.4095193139813d0*x233 + x239)
+      x397 = x244*x55
+      x398 = x112*x15
+      x399 = x296*x398
+      x400 = x292*x388
+      x401 = x15*x255
+      x402 = x262*x271
+      x403 = x267*x275
+      x404 = x269*x272
+      x405 = x269*x276
+      x406 = x16*x281*x282
+      x407 = x17*x286*x287
+      x408 = x402 - x403 + x404 - x405 + x406 - x407
+      x409 = x308*x398
+      x410 = x269*(-x314 + x315)
+      x411 = x15*x316
+      x412 = x36*(x111*(x305*x394 + x399) + x123*(x136*x394 - x318*(x408
+     & - x410 - x411) + x409) - x229 + x389 + x394*x73 + x397*x54*(x226*
+     &x395 + x354*x396) + x63*(-x289*(-x401 + x408) + x400))
+      x413 = x340*x342
+      x414 = -x191 + x192
+      x415 = 2.56488140124205d0*x414
+      x416 = x195*x415
+      x417 = x117*x21*x415
+      x418 = x117*x391
+      x419 = 4.0d0*x418
+      x420 = x393 + x416 + x417 + x419
+      x421 = x141*x420
+      x422 = x187*x391
+      x423 = 3.88495961657227d0*x193
+      x424 = x14*x21
+      x425 = x14*x391
+      x426 = 359.584801465982d0*x193
+      x427 = x334*x341
+      x428 = x337*x350
+      x429 = x349**5.56d0*x374
+      x430 = -x402 + x403 - x404 + x405 - x406 + x407
+      x431 = x36*(x111*(x305*x420 + x399) + x123*(x136*x420 + x318*(x410
+     & + x411 + x430) + x409) + x151*x354*x397*(x395 - x396) + x152*x228
+     & + x389 + x420*x73 + x63*(x289*(x401 + x430) + x400))
+      x432 = x349*(x392 - x416 - x417 - x419) + x420 - x431
+      x433 = -x21*x363*x414 + x361*x427 + x364*x391 - x365*x414 - 1029.2
+     &4699017327d0* x418 + 257.311747543319d0*x431
+      E = -rho_c*(-x176*x177 + x180)
+      d1E(1) = rho_c*(x0*x182 - x0*x190 - x0*x199 + x0*x204 + x0*x208*x2
+     &10 + x0*x36*( x213 - x219 - x221 + x223 - x230 + x232 + x246 - x25
+     &4 - x294 + x307 + x320) - x142*x336*x384*(-x143*x165*x173*(rho_c**
+     &( -6.66666666666667d0)*rho_s*x169*x377*x378 + x142*x344 - x142*x34
+     &7 *x357 + x142*x351 + x142*x367*x380*x381 + x162*x167*x375*x380* x
+     &382 - 1.65053082869932d0*x347*x376 + 1.38533762600663d0*x376) + x1
+     &43*x350*x373*(-x343*(-x332 + x333) + x351 - x358*(-x156*x210 + x30
+     &4 + x349*(x190 - x204 + x248 - x249 - x250 - x251 + x302 - x303) -
+     & x355) + x367*x372*(x361*x362*(x333 - x359) + x366)) + x166*x344 +
+     & 1.27130925834002d0*x338 - x347*x348) + x185*x188 + x185*x202 - x1
+     &85*(-x205 + x206 + x207) + x196*x197 + x197*x331* x334*x335 - x14*
+     &x201/rho_c**6) + x177*x331 + x208*x36 + x32
+      d1E(2) = -rho_c*(x0*x176*x335*x379 + x0*x196 + x0*x412 - x184*x386
+     & + x188*x19* x385 + x19*x387 - x384*(x142*x338*x413 + x142*x345*x3
+     &48*(x394 - x412 - x421) - x174*x370*(x350*x358*x432 + 1.6505308286
+     &9932d0* x356*x373*x429*x432 - x368*x382*x429*x433/x369**2 + x371*x
+     &378* x429 - 0.544846825002867d0*x372*x428*x433 + x413*x428) + 0.54
+     &4846825002868d0*x376*(x341*(0.726462433337157d0*x332 - 0.726462433
+     &337157d0*x333) + x345*(-x195*x423 - 1.51467417350797d0 *x412 - 1.5
+     &1467417350797d0*x421 - 6.05869669403189d0*x422 + x423* x424 - 6.05
+     &869669403189d0*x425) - x381*(-280.390977369833d0*x158* x427 + x195
+     &*x426 + 140.195488684916d0*x412 + 560.781954739666d0* x422 - x424*
+     &x426 + 560.781954739666d0*x425)))/x175)
+      d1E(3) = rho_c*x327*x336*x383*(-x165*x329*(x144 + 0.59371612543141
+     &1d0*x165*x170) - 0.296858062715705d0*x323*x325 + x328)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu
+     &, E, d1E, d2E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, rho_s, gamma_cc, mu
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
+     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
+     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
+     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
+     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
+     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
+     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
+     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
+     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
+     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
+     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
+     &, x193, x194, x195, x196, x197, x198, x199, x200, x201, x202, x203
+     &, x204, x205, x206, x207, x208, x209, x210, x211, x212, x213, x214
+     &, x215, x216, x217, x218, x219, x220, x221, x222, x223, x224, x225
+     &, x226, x227, x228, x229, x230, x231, x232, x233, x234, x235, x236
+     &, x237, x238, x239, x240, x241, x242, x243, x244, x245, x246, x247
+     &, x248, x249, x250, x251, x252, x253, x254, x255, x256, x257, x258
+     &, x259, x260, x261, x262, x263, x264, x265, x266, x267, x268, x269
+     &, x270, x271, x272, x273, x274, x275, x276, x277, x278, x279, x280
+     &, x281, x282, x283, x284, x285, x286, x287, x288, x289, x290, x291
+     &, x292, x293, x294, x295, x296, x297, x298, x299, x300, x301, x302
+     &, x303, x304, x305, x306, x307, x308, x309, x310, x311, x312, x313
+     &, x314, x315, x316, x317, x318, x319, x320, x321, x322, x323, x324
+     &, x325, x326, x327, x328, x329, x330, x331, x332, x333, x334, x335
+     &, x336, x337, x338, x339, x340, x341, x342, x343, x344, x345, x346
+     &, x347, x348, x349, x350, x351, x352, x353, x354, x355, x356, x357
+     &, x358, x359, x360, x361, x362, x363, x364, x365, x366, x367, x368
+     &, x369, x370, x371, x372, x373, x374, x375, x376, x377, x378, x379
+     &, x380, x381, x382, x383, x384, x385, x386, x387, x388, x389, x390
+     &, x391, x392, x393, x394, x395, x396, x397, x398, x399, x400, x401
+     &, x402, x403, x404, x405, x406, x407, x408, x409, x410, x411, x412
+     &, x413, x414, x415, x416, x417, x418, x419, x420, x421, x422, x423
+     &, x424, x425, x426, x427, x428, x429, x430, x431, x432, x433, x434
+     &, x435, x436, x437, x438, x439, x440, x441, x442, x443, x444, x445
+     &, x446, x447, x448, x449, x450, x451, x452, x453, x454, x455, x456
+     &, x457, x458, x459, x460, x461, x462, x463, x464, x465, x466, x467
+     &, x468, x469, x470, x471, x472, x473, x474, x475, x476, x477, x478
+     &, x479, x480, x481, x482, x483, x484, x485, x486, x487, x488, x489
+     &, x490, x491, x492, x493, x494, x495, x496, x497, x498, x499, x500
+     &, x501, x502, x503, x504, x505, x506, x507, x508, x509, x510, x511
+     &, x512, x513, x514, x515, x516, x517, x518, x519, x520, x521, x522
+     &, x523, x524, x525, x526, x527, x528, x529, x530, x531, x532, x533
+     &, x534, x535, x536, x537, x538, x539, x540, x541, x542, x543, x544
+     &, x545, x546, x547, x548, x549, x550, x551, x552, x553, x554, x555
+     &, x556, x557, x558, x559, x560, x561, x562, x563, x564, x565, x566
+     &, x567, x568, x569, x570, x571, x572, x573, x574, x575, x576, x577
+     &, x578, x579, x580, x581, x582, x583, x584, x585, x586, x587, x588
+     &, x589, x590, x591, x592, x593, x594, x595, x596, x597, x598, x599
+     &, x600, x601, x602, x603, x604, x605, x606, x607, x608, x609, x610
+     &, x611, x612, x613, x614, x615, x616, x617, x618, x619, x620, x621
+     &, x622, x623, x624, x625, x626, x627, x628, x629, x630, x631, x632
+     &, x633, x634, x635, x636, x637, x638, x639, x640, x641, x642, x643
+     &, x644, x645, x646, x647, x648, x649, x650, x651, x652, x653, x654
+     &, x655, x656, x657, x658, x659, x660, x661, x662, x663, x664, x665
+     &, x666, x667, x668, x669, x670, x671, x672, x673, x674, x675, x676
+     &, x677, x678, x679, x680, x681, x682, x683, x684, x685, x686, x687
+     &, x688, x689, x690, x691, x692, x693, x694, x695, x696, x697, x698
+     &, x699, x700, x701, x702, x703, x704, x705, x706, x707, x708, x709
+     &, x710, x711, x712, x713, x714, x715, x716, x717, x718, x719, x720
+     &, x721, x722, x723, x724, x725, x726, x727, x728, x729, x730, x731
+     &, x732, x733, x734, x735, x736, x737, x738, x739, x740, x741, x742
+     &, x743, x744, x745, x746, x747, x748, x749, x750, x751, x752, x753
+     &, x754, x755, x756, x757, x758, x759, x760, x761, x762, x763, x764
+     &, x765, x766, x767, x768, x769, x770, x771, x772, x773, x774, x775
+     &, x776, x777, x778, x779, x780, x781, x782, x783, x784, x785, x786
+     &, x787, x788, x789, x790, x791, x792, x793, x794, x795, x796, x797
+     &, x798, x799, x800, x801, x802, x803, x804, x805, x806, x807, x808
+     &, x809, x810, x811, x812, x813, x814, x815, x816, x817, x818, x819
+     &, x820, x821, x822, x823, x824, x825, x826, x827, x828, x829, x830
+     &, x831, x832, x833, x834, x835, x836, x837, x838, x839, x840, x841
+     &, x842, x843, x844, x845, x846, x847, x848, x849, x850, x851, x852
+     &, x853, x854, x855, x856, x857, x858, x859, x860, x861, x862, x863
+     &, x864, x865, x866, x867, x868, x869, x870, x871, x872, x873, x874
+     &, x875, x876, x877, x878, x879, x880, x881, x882, x883, x884, x885
+     &, x886, x887, x888, x889, x890, x891, x892, x893, x894, x895, x896
+     &, x897, x898, x899, x900, x901, x902, x903, x904, x905, x906, x907
+     &, x908, x909, x910, x911, x912, x913, x914, x915, x916, x917, x918
+     &, x919, x920, x921, x922, x923, x924, x925, x926, x927, x928, x929
+     &, x930, x931, x932, x933, x934, x935, x936, x937, x938, x939, x940
+     &, x941, x942, x943, x944, x945, x946, x947, x948, x949, x950, x951
+     &, x952, x953, x954, x955, x956, x957, x958, x959, x960, x961, x962
+     &, x963, x964, x965, x966, x967, x968, x969, x970, x971, x972, x973
+     &, x974, x975, x976, x977, x978, x979, x980, x981, x982, x983, x984
+     &, x985, x986, x987, x988, x989, x990, x991, x992, x993, x994, x995
+     &, x996, x997, x998, x999, x1000, x1001, x1002, x1003, x1004, x1005
+     &, x1006, x1007, x1008, x1009, x1010, x1011, x1012, x1013, x1014, x
+     &1015, x1016, x1017, x1018, x1019, x1020, x1021, x1022, x1023, x102
+     &4, x1025, x1026, x1027, x1028, x1029, x1030, x1031, x1032, x1033, 
+     &x1034, x1035, x1036, x1037, x1038, x1039, x1040, x1041, x1042, x10
+     &43, x1044, x1045, x1046, x1047, x1048, x1049, x1050, x1051, x1052,
+     & x1053, x1054, x1055, x1056, x1057, x1058, x1059, x1060, x1061, x1
+     &062, x1063, x1064, x1065, x1066, x1067, x1068, x1069, x1070, x1071
+     &, x1072, x1073, x1074, x1075, x1076, x1077, x1078, x1079, x1080, x
+     &1081, x1082, x1083, x1084, x1085, x1086, x1087, x1088, x1089, x109
+     &0, x1091, x1092, x1093, x1094, x1095, x1096, x1097, x1098, x1099, 
+     &x1100, x1101, x1102, x1103, x1104, x1105, x1106, x1107, x1108, x11
+     &09, x1110, x1111, x1112, x1113, x1114, x1115, x1116, x1117, x1118,
+     & x1119, x1120, x1121, x1122, x1123, x1124, x1125, x1126, x1127, x1
+     &128, x1129, x1130, x1131, x1132, x1133, x1134, x1135, x1136, x1137
+     &, x1138, x1139, x1140, x1141, x1142, x1143, x1144, x1145, x1146, x
+     &1147, x1148, x1149, x1150, x1151, x1152, x1153, x1154, x1155, x115
+     &6, x1157, x1158, x1159, x1160, x1161, x1162, x1163, x1164, x1165, 
+     &x1166, x1167, x1168, x1169, x1170, x1171, x1172, x1173, x1174, x11
+     &75, x1176, x1177, x1178, x1179, x1180, x1181, x1182, x1183, x1184,
+     & x1185, x1186, x1187, x1188, x1189, x1190, x1191, x1192, x1193, x1
+     &194, x1195, x1196, x1197, x1198, x1199, x1200, x1201, x1202, x1203
+     &, x1204, x1205, x1206, x1207, x1208, x1209, x1210, x1211, x1212, x
+     &1213, x1214, x1215, x1216, x1217, x1218, x1219, x1220, x1221, x122
+     &2, x1223, x1224, x1225, x1226, x1227, x1228, x1229, x1230, x1231, 
+     &x1232, x1233, x1234, x1235, x1236, x1237, x1238, x1239, x1240, x12
+     &41, x1242, x1243, x1244, x1245, x1246, x1247, x1248, x1249, x1250,
+     & x1251, x1252, x1253, x1254, x1255, x1256, x1257, x1258, x1259, x1
+     &260, x1261, x1262, x1263, x1264, x1265, x1266, x1267, x1268, x1269
+     &, x1270, x1271, x1272, x1273, x1274, x1275, x1276, x1277, x1278, x
+     &1279, x1280, x1281, x1282, x1283, x1284, x1285, x1286, x1287, x128
+     &8, x1289, x1290, x1291, x1292, x1293, x1294, x1295, x1296, x1297, 
+     &x1298, x1299, x1300, x1301, x1302, x1303, x1304, x1305, x1306, x13
+     &07, x1308, x1309, x1310, x1311, x1312, x1313, x1314, x1315, x1316,
+     & x1317, x1318, x1319, x1320, x1321, x1322, x1323, x1324, x1325, x1
+     &326, x1327, x1328, x1329, x1330, x1331, x1332, x1333, x1334, x1335
+     &, x1336, x1337, x1338, x1339, x1340, x1341, x1342, x1343, x1344, x
+     &1345, x1346, x1347, x1348, x1349, x1350, x1351, x1352, x1353, x135
+     &4, x1355, x1356, x1357, x1358, x1359, x1360, x1361, x1362, x1363, 
+     &x1364, x1365, x1366, x1367, x1368, x1369, x1370, x1371, x1372, x13
+     &73, x1374, x1375, x1376, x1377, x1378, x1379, x1380, x1381, x1382,
+     & x1383, x1384, x1385, x1386, x1387, x1388, x1389, x1390, x1391, x1
+     &392, x1393, x1394, x1395, x1396, x1397, x1398, x1399, x1400, x1401
+     &, x1402, x1403, x1404, x1405, x1406, x1407, x1408, x1409, x1410, x
+     &1411, x1412, x1413, x1414, x1415, x1416, x1417, x1418, x1419, x142
+     &0, x1421, x1422, x1423, x1424, x1425, x1426, x1427, x1428, x1429, 
+     &x1430, x1431, x1432, x1433, x1434, x1435, x1436, x1437, x1438, x14
+     &39, x1440, x1441, x1442, x1443, x1444, x1445, x1446, x1447, x1448,
+     & x1449, x1450, x1451, x1452, x1453, x1454, x1455, x1456, x1457, x1
+     &458, x1459, x1460, x1461, x1462, x1463, x1464, x1465, x1466, x1467
+     &, x1468, x1469, x1470, x1471, x1472, x1473, x1474, x1475, x1476, x
+     &1477, x1478, x1479, x1480, x1481, x1482, x1483, x1484, x1485, x148
+     &6, x1487, x1488, x1489, x1490, x1491, x1492, x1493, x1494, x1495, 
+     &x1496, x1497, x1498, x1499, x1500, x1501, x1502, x1503, x1504, x15
+     &05, x1506, x1507, x1508, x1509, x1510, x1511, x1512
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      d2E(:) = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = rho_s*x0
+      x2 = x1 + 1.0d0
+      x3 = -x1 + 1.0d0
+      x4 = x2**0.666666666666667d0 + x3**0.666666666666667d0
+      x5 = x4**2
+      x6 = 1d0/x5
+      x7 = gamma_cc*x6
+      x8 = gamma_cc**2
+      x9 = x4**(-4)
+      x10 = x8*x9
+      x11 = 0.296858062715705d0*x10
+      x12 = x0**0.666666666666667d0
+      x13 = mu**2
+      x14 = x12*x13
+      x15 = 0.237113969739022d0*x14 + 1.0d0
+      x16 = x15**(-4)
+      x17 = rho_c**(-2)
+      x18 = rho_s**2
+      x19 = x17*x18
+      x20 = x19 - 1.0d0
+      x21 = x0**0.333333333333333d0
+      x22 = exp(-0.46675853320810856d0*x21)
+      x23 = x0**1.0d0
+      x24 = 0.00304892328706429d0*x23
+      x25 = -x24
+      x26 = x0**1.33333333333333d0
+      x27 = 0.0315297404574782d0*x12 + 0.0128480790170175d0*x21 + x25 + 
+     &0.000275310793616358d0*x26 + 1.0d0
+      x28 = x22*x27
+      x29 = x20*x28
+      x30 = x0**1.66666666666667d0
+      x31 = mu**5
+      x32 = x30*x31
+      x33 = 0.00264117541143784d0*x32
+      x34 = x2**0.666666666666667d0
+      x35 = x3**0.666666666666667d0
+      x36 = x34 + x35
+      x37 = x36**3
+      x38 = 0.0253302959105844d0*x37
+      x39 = x36**2
+      x40 = 1d0/x39
+      x41 = x13*x40
+      x42 = x21*x41
+      x43 = x0**0.166666666666667d0
+      x44 = 1d0/x36
+      x45 = mu*x44
+      x46 = 9.20897059521559d0*x43*x45 + 1.0d0
+      x47 = 8.55713948548596d0*x42 + x46
+      x48 = 1d0/x47
+      x49 = mu**3
+      x50 = sqrt(x0)
+      x51 = 1d0/x37
+      x52 = x50*x51
+      x53 = 18.4852669123383d0*x42 + x46 + 15.3125681938318d0*x49*x52
+      x54 = x48*x53
+      x55 = log(x54)
+      x56 = 0.693147180559945d0
+      x57 = x56 - 1.0d0
+      x58 = x55*x57
+      x59 = 1.64473377556761d0*x50
+      x60 = 0.240587129128819d0*x12 + 3.84474623744721d0*x21 + 11.120374
+     &8630947d0* x43 + x59
+      x61 = 1.0d0 + 32.1639684429149d0/x60
+      x62 = log(x61)
+      x63 = 0.0310906908696548d0*x62*(0.127469618870009d0*x21 + 1.0d0)
+      x64 = 0.800428634999364d0*x50
+      x65 = 0.189700432574756d0*x12 + 2.22556942115069d0*x21 + 5.9825504
+     &3577108d0* x43 + x64
+      x66 = 1.0d0 + 16.0819842214574d0/x65
+      x67 = log(x66)
+      x68 = 0.0621813817393098d0*x67*(0.132568899905202d0*x21 + 1.0d0)
+      x69 = -x63 + x68
+      x70 = 1.92366105093154d0*x2**1.33333333333333d0 + 1.92366105093154
+     &d0*x3** 1.33333333333333d0 - 3.84732210186307d0
+      x71 = rho_c**(-4)
+      x72 = rho_s**4
+      x73 = x71*x72
+      x74 = x70*x73
+      x75 = x69*x74
+      x76 = -x68
+      x77 = -x73 + 1.0d0
+      x78 = 0.430097247127664d0*x50
+      x79 = 0.191151259512734d0*x12 + 2.24759186357762d0*x21 + 8.1574147
+     &0348764d0* x43 + x78
+      x80 = 1.0d0 + 29.6085746432167d0/x79
+      x81 = log(x80)
+      x82 = x77*x81
+      x83 = x70*x82
+      x84 = 0.0197517897025652d0*x83*(0.0690139921125583d0*x21 + 1.0d0)
+      x85 = x76 + x84
+      x86 = x75 + x85
+      x87 = mu**8*x0**2.66666666666667d0
+      x88 = 0.00316102962473761d0*x87
+      x89 = x23*x28
+      x90 = 0.0445553741830535d0*x89
+      x91 = x20*x90
+      x92 = 0.384834731559127d0*x12 - 3.07073492995203d0*x21
+      x93 = exp(-0.19230865217881402d0*x21)
+      x94 = x93/x23
+      x95 = x92*x94
+      x96 = -x19 + 1.0d0
+      x97 = 37.6991118430775d0*x96
+      x98 = x95*x97
+      x99 = 1d0/x12
+      x100 = x2**2
+      x101 = 8.61370200056458d0*x100
+      x102 = 1d0/x2
+      x103 = x102**0.333333333333333d0
+      x104 = x103*x21
+      x105 = 0.0177069812999059d0*x104
+      x106 = -x105 + 1.0d0
+      x107 = x102**0.666666666666667d0
+      x108 = 0.0244354823084343d0*x12
+      x109 = 0.337569861992026d0*x104 + x107*x108 + 1.0d0
+      x110 = 1d0/x109
+      x111 = 1d0/x107
+      x112 = x110*x111
+      x113 = x106*x112
+      x114 = x101*x113
+      x115 = x3**2
+      x116 = 8.61370200056458d0*x115
+      x117 = 1d0/x3
+      x118 = x117**0.333333333333333d0
+      x119 = x118*x21
+      x120 = 0.0177069812999059d0*x119
+      x121 = -x120 + 1.0d0
+      x122 = x117**0.666666666666667d0
+      x123 = x108*x122 + 0.337569861992026d0*x119 + 1.0d0
+      x124 = 1d0/x123
+      x125 = 1d0/x122
+      x126 = x124*x125
+      x127 = x121*x126
+      x128 = x116*x127
+      x129 = x30*(x114*x99 + x128*x99 + x98)
+      x130 = 0.000132058770571892d0*x129
+      x131 = mu**6
+      x132 = x28 - 1.0d0
+      x133 = x132*x30
+      x134 = x133*x96
+      x135 = 0.00248266686171384d0*x134
+      x136 = x0**2.0d0
+      x137 = x136*x86
+      x138 = 0.0533250677421794d0*x137
+      x139 = mu**4
+      x140 = x132*x23
+      x141 = 0.0418814102677522d0*x140*x96
+      x142 = -x141
+      x143 = x2**2.66666666666667d0
+      x144 = 8.61370200056458d0*x143
+      x145 = x3**2.66666666666667d0
+      x146 = 8.61370200056458d0*x145
+      x147 = 0.240695990468967d0*x21
+      x148 = 0.26014827853397d0*x12
+      x149 = exp(-0.33933171852197186d0*x21)
+      x150 = x149*(-x147 + x148)
+      x151 = x150*x96
+      x152 = 23.3866625383245d0*x151
+      x153 = -x114 - x128 + x144 + x146 - x152
+      x154 = x0**1.0d0
+      x155 = 0.00020688890514282d0*x154
+      x156 = 0.337338207872387d0*x26
+      x157 = x131*(-x135 + x138) + x139*(x142 + x153*x155 + x156*x86) + 
+     &x29*x33 + x38 *x58 + x49*(-x130 + x91) + x86*x88
+      x158 = x157*x16
+      x159 = -x158 + x86
+      x160 = x4**3
+      x161 = 1d0/x160
+      x162 = 257.311747543319d0*x161
+      x163 = exp(-x159*x162)
+      x164 = x163 - 1.0d0
+      x165 = x164**(-2)
+      x166 = rho_c**(-4.66666666666667d0)
+      x167 = x63 + x76
+      x168 = x167*x74
+      x169 = -x168 + x85
+      x170 = 1d0/x169
+      x171 = x28*x96
+      x172 = x171*x33
+      x173 = -x56 + 1.0d0
+      x174 = x173*x55
+      x175 = x174*x38
+      x176 = x169*x88
+      x177 = x90*x96
+      x178 = x49*(x130 + x177)
+      x179 = x131*(x135 - x138)
+      x180 = x114 + x128 - x144 - x146 + x152
+      x181 = x139*(x142 - x155*x180 + x156*x169)
+      x182 = -x172 - x175 + x176 - x178 - x179 + x181
+      x183 = x16*x182
+      x184 = x169 - x183
+      x185 = x170*x184
+      x186 = x185**5.56d0
+      x187 = x166*x186
+      x188 = x165*x187
+      x189 = x185**2.78d0
+      x190 = rho_c**(-2.33333333333333d0)
+      x191 = 0.544846825002868d0*x190
+      x192 = x189*x191
+      x193 = 1d0/x164
+      x194 = x193*x7
+      x195 = x192*x194 + 1.0d0
+      x196 = x11*x188 + x195
+      x197 = 1d0/x196
+      x198 = x192*x195
+      x199 = x197*x198
+      x200 = x199*x7 + 1.0d0
+      x201 = log(x200)
+      x202 = 0.00388633635870686d0*x160
+      x203 = x68 - x84
+      x204 = x168 + x203
+      x205 = x183 + x204
+      x206 = x21*x67
+      x207 = 0.00274777245725523d0*x206
+      x208 = rho_c**(-5)
+      x209 = x70*x72
+      x210 = x208*x209
+      x211 = 0.00136314985874174d0*x21 + 0.0197517897025652d0
+      x212 = x211*x81
+      x213 = 4.0d0*x212
+      x214 = x21*x83
+      x215 = 0.000454383286247248d0*x214
+      x216 = x212*x77
+      x217 = x3**0.333333333333333d0
+      x218 = x2**0.333333333333333d0
+      x219 = x217 - x218
+      x220 = 2.56488140124205d0*x219
+      x221 = x216*x220
+      x222 = rho_s*x17
+      x223 = 0.0082433173717657d0*x21 + 0.0621813817393098d0
+      x224 = 1d0/x66
+      x225 = x65**(-2)
+      x226 = 0.126466955049837d0*x12 + 0.741856473716896d0*x21 + 0.99709
+     &173929518d0* x43 + 0.400214317499682d0*x50
+      x227 = x224*x225*x226
+      x228 = x223*x227
+      x229 = 16.0819842214574d0*x228
+      x230 = rho_c**(-6)
+      x231 = rho_s**5
+      x232 = x167*x231
+      x233 = x230*x232
+      x234 = 4.0d0*x167
+      x235 = x211*x70*x77
+      x236 = 1d0/x80
+      x237 = x79**(-2)
+      x238 = 0.127434173008489d0*x12 + 0.749197287859205d0*x21 + 1.35956
+     &911724794d0* x43 + 0.215048623563832d0*x50
+      x239 = x236*x237*x238
+      x240 = x235*x239
+      x241 = 29.6085746432167d0*x240
+      x242 = x21*x62
+      x243 = 0.00132103950518672d0*x242
+      x244 = 1d0/x61
+      x245 = x60**(-2)
+      x246 = 0.160391419419213d0*x12 + 1.28158207914907d0*x21 + 1.853395
+     &81051578d0* x43 + 0.822366887783805d0*x50
+      x247 = x244*x245*x246
+      x248 = 0.00396311851556016d0*x21 + 0.0310906908696548d0
+      x249 = 32.1639684429149d0*x248
+      x250 = x247*x249
+      x251 = x207 - x229
+      x252 = x210*(-x243 + x250 + x251)
+      x253 = x14/x15**5
+      x254 = 0.632303919304059d0*x253
+      x255 = x172 + x175 - x176 + x178 + x179 - x181
+      x256 = x0*x255
+      x257 = x28*x32
+      x258 = 0.00528235082287567d0*x257
+      x259 = x19*x258
+      x260 = 0.00428269300567249d0*x21
+      x261 = 0.0210198269716521d0*x12
+      x262 = 0.000367081058155144d0*x26
+      x263 = x25 + x260 + x261 + x262
+      x264 = x263*x96
+      x265 = x22*x30
+      x266 = x265*x31
+      x267 = 0.00264117541143784d0*x266
+      x268 = x264*x267
+      x269 = 0.00440195901906306d0*x32
+      x270 = x171*x269
+      x271 = x0**2.0d0*x31
+      x272 = 0.000410930386996015d0*x271
+      x273 = x171*x272
+      x274 = x174*x39
+      x275 = x2**(-0.333333333333333d0)
+      x276 = x3**(-0.333333333333333d0)
+      x277 = x275 - x276
+      x278 = 0.0506605918211689d0*x277
+      x279 = x274*x278
+      x280 = x1*x279
+      x281 = 0.00842941233263362d0*x87
+      x282 = x169*x281
+      x283 = x21*x45
+      x284 = 2.85237982849532d0*x283
+      x285 = mu*x21
+      x286 = x285*x40
+      x287 = x1*x277
+      x288 = x286*x287
+      x289 = 11.4095193139813d0*x288
+      x290 = 1.53482843253593d0*x43
+      x291 = 6.13931373014372d0*x43
+      x292 = x1*x44
+      x293 = x277*x292
+      x294 = x291*x293
+      x295 = -x290 + x294
+      x296 = -x284 + x289 + x295
+      x297 = 6.16175563744611d0*x283
+      x298 = x41*x50
+      x299 = 7.6562840969159d0*x298
+      x300 = 24.6470225497844d0*x288
+      x301 = x13*x52
+      x302 = x287*x301
+      x303 = 30.6251363876636d0*x302
+      x304 = x295 - x297 - x299 + x300 + x303
+      x305 = -x296*x54 + x304
+      x306 = 0.0253302959105844d0*x173
+      x307 = x305*x306
+      x308 = 1d0/x53
+      x309 = mu*x308
+      x310 = x309*x39
+      x311 = x307*x310
+      x312 = x208*x231
+      x313 = x220*x312
+      x314 = -x207 + x229
+      x315 = x243 - x250 + x314
+      x316 = x315*x74
+      x317 = x213*x74
+      x318 = x1*x221
+      x319 = -x215 + x241 + x251 + x316 + x317 + x318
+      x320 = -x167*x313 + 4.0d0*x168 + x319
+      x321 = x320*x88
+      x322 = -0.256556487706084d0*x12 + 1.02357830998401d0*x21
+      x323 = x94*x97
+      x324 = x322*x323
+      x325 = x0**(-0.666666666666667d0)
+      x326 = x92*x93*x96
+      x327 = x325*x326
+      x328 = 2.41662179562687d0*x327
+      x329 = 75.398223686155d0*x95
+      x330 = x19*x329
+      x331 = 5.74246800037638d0*x99
+      x332 = x100*x113
+      x333 = x331*x332
+      x334 = x115*x127
+      x335 = x331*x334
+      x336 = 1d0/x21
+      x337 = 0.0508408867489862d0*x336
+      x338 = 1d0/x103
+      x339 = x110*x338
+      x340 = x1*x102
+      x341 = -x340 + 1.0d0
+      x342 = x100*x341
+      x343 = x339*x342
+      x344 = x337*x343
+      x345 = 1d0/x118
+      x346 = x124*x345
+      x347 = x1*x117
+      x348 = x347 + 1.0d0
+      x349 = x115*x348
+      x350 = x346*x349
+      x351 = x337*x350
+      x352 = 0.112523287330675d0*x104
+      x353 = 0.0162903215389562d0*x12
+      x354 = x107*x353
+      x355 = x352 + x354
+      x356 = -x340*x352 - x340*x354 + x355
+      x357 = x109**(-2)
+      x358 = x111*x357
+      x359 = x106*x358
+      x360 = x356*x359
+      x361 = x360*x99
+      x362 = x101*x361
+      x363 = 0.112523287330675d0*x119
+      x364 = x122*x353
+      x365 = x363 + x364
+      x366 = x347*x363 + x347*x364 + x365
+      x367 = x123**(-2)
+      x368 = x125*x367
+      x369 = x121*x368
+      x370 = x366*x369*x99
+      x371 = x116*x370
+      x372 = 22.9698720015055d0*x99
+      x373 = x127*x3
+      x374 = x372*x373
+      x375 = x1*x374
+      x376 = x113*x2
+      x377 = x372*x376
+      x378 = x1*x377
+      x379 = x333 + x335 + x344 + x351 + x362 + x371 + x375 - x378
+      x380 = x324 + x328 + x330 + x379 + x98
+      x381 = 0.000132058770571892d0*x30
+      x382 = x22*x23
+      x383 = 0.0445553741830535d0*x382
+      x384 = 0.00693220036674015d0*x26
+      x385 = 0.0891107483661069d0*x89
+      x386 = 0.000220097950953153d0*x129 - x19*x385
+      x387 = x49*(-x171*x384 + x177 + x264*x383 - x380*x381 + x386)
+      x388 = 0.00496533372342768d0*x133
+      x389 = x19*x388
+      x390 = 0.0041377781028564d0*x134
+      x391 = x21*x27
+      x392 = 0.00214134650283625d0*x21
+      x393 = 0.0105099134858261d0*x12
+      x394 = 0.00152446164353214d0*x23
+      x395 = 0.000183540529077572d0*x26
+      x396 = -x392 - x393 + x394 - x395
+      x397 = 0.0777930888680181d0*x391 + x396
+      x398 = x397*x96
+      x399 = 0.00496533372342768d0*x265
+      x400 = x398*x399
+      x401 = 0.106650135484359d0*x137
+      x402 = 4.0d0*x75
+      x403 = x313*x69
+      x404 = x319 - x402 + x403
+      x405 = 0.0533250677421794d0*x136
+      x406 = x404*x405
+      x407 = x131*(x389 - x390 + x400 + x401 - x406)
+      x408 = 0.0837628205355044d0*x140
+      x409 = x19*x408
+      x410 = x382*x398
+      x411 = 0.0837628205355044d0*x410
+      x412 = x153*x154
+      x413 = 0.0003448148419047d0*x412
+      x414 = x26*x86
+      x415 = 0.449784277163183d0*x414
+      x416 = x156*x404
+      x417 = x99*(x143 + x145)
+      x418 = 5.74246800037638d0*x417
+      x419 = x3**1.66666666666667d0
+      x420 = x2**1.66666666666667d0
+      x421 = x99*(x419 - x420)
+      x422 = x1*x421
+      x423 = 22.9698720015055d0*x422
+      x424 = 2.64527879654103d0*x151*x336
+      x425 = x151*x99
+      x426 = 15.591108358883d0*x425
+      x427 = x149*x99
+      x428 = -0.173432185689313d0*x12 + 0.0802319968229891d0*x21
+      x429 = x428*x96
+      x430 = x427*x429
+      x431 = 23.3866625383245d0*x430
+      x432 = x150*x99
+      x433 = 46.773325076649d0*x432
+      x434 = x19*x433
+      x435 = -x333 - x335 - x344 - x351 - x362 - x371 - x375 + x378
+      x436 = x418 + x423 - x424 - x426 - x431 - x434 + x435
+      x437 = 0.00020688890514282d0*x30
+      x438 = x436*x437
+      x439 = x139*(x142 + x409 + x411 + x413 + x415 - x416 - x438)
+      x440 = x0*x16*(x259 - x268 - x270 + x273 - x280 + x282 + x311 - x3
+     &21 - x387 + x407 + x439)
+      x441 = 0.00777267271741373d0*rho_s
+      x442 = x3**(-0.333333333333333d0)
+      x443 = x2**(-0.333333333333333d0)
+      x444 = x442 - 1.0d0*x443
+      x445 = x17*x444
+      x446 = x441*x445
+      x447 = -x163 + 1.0d0
+      x448 = x205/x204
+      x449 = x166*x448**5.56d0
+      x450 = x191*x448**2.78d0
+      x451 = x7/x447
+      x452 = -x450*x451 + 1.0d0
+      x453 = 1d0/(x11*x449/x447**2 + x452)
+      x454 = x450*x452
+      x455 = x453*x454
+      x456 = x455*x7 + 1.0d0
+      x457 = log(x456)
+      x458 = x457*x5
+      x459 = 0.00388633635870686d0*x4
+      x460 = x197*x459
+      x461 = gamma_cc*x460
+      x462 = 1d0/x456
+      x463 = rho_c**(-3.33333333333333d0)
+      x464 = 1.27130925834002d0*x463
+      x465 = x195*x464
+      x466 = rho_c**(-4.33333333333333d0)
+      x467 = x195*x466
+      x468 = 0.726462433337157d0*rho_s
+      x469 = 1d0/x4
+      x470 = -x443
+      x471 = x442 + x470
+      x472 = x469*x471
+      x473 = x468*x472
+      x474 = x467*x473
+      x475 = 1.51467417350797d0*x463
+      x476 = 1d0/x184
+      x477 = -x259
+      x478 = x268 + x270 - x273 + x280 - x282 - x311 + x321 + x387 - x40
+     &7 - x439 + x477
+      x479 = -x16*x478 - x182*x254 + x320
+      x480 = -x185*x404 + x479
+      x481 = x476*x480
+      x482 = x195*x481
+      x483 = x475*x482
+      x484 = 1.27130925834002d0*x463
+      x485 = -x442 + x443
+      x486 = x466*x469
+      x487 = x468*x485*x486
+      x488 = 1d0/x159
+      x489 = x215 - x241 + x314 - x316 - x317 - x318 + x402 - x403
+      x490 = 1d0/x86
+      x491 = x159*x490
+      x492 = x24 - x260 - x261 - x262
+      x493 = x20*x492
+      x494 = -x275 + x276
+      x495 = x39*x58
+      x496 = x1*x495
+      x497 = x290 - x294
+      x498 = x284 - x289 + x497
+      x499 = x304 + x498*x54
+      x500 = 0.0253302959105844d0*x57
+      x501 = x310*x500
+      x502 = -x330
+      x503 = -x324 - x328 + x435 + x502 - x98
+      x504 = x20*x383
+      x505 = x131*(-x389 + x390 - x400 - x401 + x406) + x139*(x141 - x40
+     &9 - x411 - x413 - x415 + x416 + x438) + x267*x493 - x269*x29 + x27
+     &2*x29 - x281*x86 + x404*x88 + x477 + x49*(x29*x384 + x381*x503 + x
+     &386 + x492*x504 - x91) + 0.0506605918211689d0*x494*x496 + x499*x50
+     &1
+      x506 = x16*x505
+      x507 = x157*x254
+      x508 = x404 - x506 - x507
+      x509 = x489*x491 + x508
+      x510 = x488*x509
+      x511 = x475*x510
+      x512 = x158 + x203 - x75
+      x513 = exp(x162*x512)
+      x514 = x513 - 1.0d0
+      x515 = 1d0/x514
+      x516 = x161*x515
+      x517 = 0.544846825002867d0*x516
+      x518 = 1.0d0*x442
+      x519 = x443 - x518
+      x520 = 514.623495086637d0*x469
+      x521 = x512*x520
+      x522 = x1*x521
+      x523 = x157*x253
+      x524 = x219*x312
+      x525 = x524*x69
+      x526 = 1029.24699017327d0*x212
+      x527 = 659.974115594947d0*x216*x219
+      x528 = -x1*x527 - 0.707034132827743d0*x206 + 0.116918157438755d0*x
+     &214 + 4138.08346398728d0*x228 - 7618.63408371287d0*x240 - 257.3117
+     &47543319d0*x316 + 257.311747543319d0*x506 + 162.699226454617d0*x52
+     &3 - 659.974115594947d0*x525 - x526*x74 + 1029.24699017327d0*x75
+      x529 = x519*x522 + x528
+      x530 = x513*x529
+      x531 = x517*x530
+      x532 = x463*x531
+      x533 = x484 - x487 - x511 + x532
+      x534 = x491**2.78d0
+      x535 = x191*x534
+      x536 = x515*x7
+      x537 = x535*x536
+      x538 = x533*x537
+      x539 = rho_c**(-5.66666666666667d0)
+      x540 = 1.38533762600663d0*x539
+      x541 = x186*x194
+      x542 = x4**(-5)
+      x543 = 0.593716125431411d0*x542
+      x544 = x159*x520
+      x545 = x470 + x518
+      x546 = x1*x545
+      x547 = x528 + x544*x546
+      x548 = x186*x539
+      x549 = gamma_cc*x548
+      x550 = x163*x165*x547*x549
+      x551 = 0.791621500575215d0*rho_s
+      x552 = rho_c**(-6.66666666666667d0)
+      x553 = x161*x193*x471
+      x554 = gamma_cc*x553
+      x555 = x186*x554
+      x556 = x552*x555
+      x557 = x539*x541
+      x558 = x481*x557
+      x559 = x189*x463
+      x560 = x481*x559
+      x561 = x471*x486
+      x562 = x189*x561
+      x563 = x163*x193
+      x564 = x161*x563
+      x565 = x547*x564
+      x566 = x559*x565
+      x567 = x189*x484 + x468*x562 - 1.51467417350797d0*x560 + 0.5448468
+     &25002867d0* x566
+      x568 = x540*x541 + x543*x550 + x551*x556 - 1.65053082869932d0*x558
+     & + x567
+      x569 = x197*x568
+      x570 = x194*x569
+      x571 = x191*x195*x570
+      x572 = x189*x462*(x465 + x474 - x483 + x538 - x571)
+      x573 = rho_s**3
+      x574 = x573*x70
+      x575 = x213*x574*x71
+      x576 = x0*x221
+      x577 = x167*x220
+      x578 = x208*x577*x72
+      x579 = x234*x574
+      x580 = x579*x71
+      x581 = x1*x258
+      x582 = rho_c**(-3)
+      x583 = x574*x582
+      x584 = x213*x583
+      x585 = -x584
+      x586 = x577*x73
+      x587 = x579*x582
+      x588 = -x221 + x585 + x586 - x587
+      x589 = x309*x36
+      x590 = 24.6470225497844d0*x283 + x291 + 30.6251363876636d0*x298
+      x591 = x277*x590
+      x592 = 11.4095193139813d0*x283 + x291
+      x593 = x54*x592
+      x594 = x494*x593 + x591
+      x595 = x306*x594
+      x596 = x1*x388
+      x597 = x1*x385
+      x598 = x1*x329
+      x599 = -x598
+      x600 = x2*x339
+      x601 = x337*x600
+      x602 = x3*x346
+      x603 = x337*x602
+      x604 = 8.61370200056458d0*x99
+      x605 = x355*x359
+      x606 = x2*x605
+      x607 = x604*x606
+      x608 = x365*x369
+      x609 = x3*x608
+      x610 = x604*x609
+      x611 = -x374 + x377 + x601 - x603 + x607 - x610
+      x612 = x599 + x611
+      x613 = x1*x408
+      x614 = x99*(-x419 + x420)
+      x615 = 22.9698720015055d0*x614
+      x616 = x1*x433
+      x617 = x611 - x615 - x616
+      x618 = x131*(x405*x588 + x596) + x139*(x156*x588 - x437*x617 + x61
+     &3) - x279 + x49*(-x381*x612 + x597) + x581 + x588*x88 + x589*x595
+      x619 = x16*x618
+      x620 = x0*x619
+      x621 = x0*x545
+      x622 = 0.00777267271741373d0*x621
+      x623 = x201*x5
+      x624 = x622*x623
+      x625 = x469*(0.726462433337157d0*x442 - 0.726462433337157d0*x443)
+      x626 = x212*x583
+      x627 = -6.05869669403189d0*x626
+      x628 = 3.88495961657227d0*x219
+      x629 = x167*x73
+      x630 = x167*x583
+      x631 = -x217 + x218
+      x632 = 2.56488140124205d0*x631
+      x633 = x216*x632
+      x634 = x69*x73
+      x635 = x632*x634
+      x636 = x583*x69
+      x637 = 4.0d0*x636
+      x638 = x585 + x633 + x635 + x637
+      x639 = x185*x638
+      x640 = 359.584801465982d0*x219
+      x641 = x444*x469
+      x642 = x159*x641
+      x643 = x476*(-x216*x628 - 1.51467417350797d0*x619 + x627 + x628*x6
+     &29 - 6.05869669403189d0*x630 - 1.51467417350797d0*x639) - x564*(x2
+     &16* x640 + 140.195488684916d0*x619 + 560.781954739666d0*x626 - x62
+     &9* x640 + 560.781954739666d0*x630 - 280.390977369833d0*x642) + x62
+     &5
+      x644 = x557*x643
+      x645 = 0.726462433337157d0*x472
+      x646 = x195*x559
+      x647 = x588 - x619
+      x648 = -x639 + x647
+      x649 = x476*x648
+      x650 = 1.51467417350797d0*x649
+      x651 = x646*x650
+      x652 = gamma_cc*x516
+      x653 = x471*x652
+      x654 = x491**5.56d0
+      x655 = x539*x654
+      x656 = x653*x655
+      x657 = 0.791621500575215d0*x656
+      x658 = x584 - x633 - x635 - x637
+      x659 = x491*x658
+      x660 = x500*x589
+      x661 = x590 - x593
+      x662 = x494*x661
+      x663 = x374 - x377 - x601 + x603 - x607 + x610
+      x664 = x598 + x663
+      x665 = x615 + x616 + x663
+      x666 = x131*(x405*x638 + x596) + x139*(x156*x638 + x437*x665 + x61
+     &3) + x278* x495 + x49*(x381*x664 + x597) + x581 + x638*x88 + x660*
+     &x662
+      x667 = x16*x666
+      x668 = x638 - x667
+      x669 = x659 + x668
+      x670 = x488*x669
+      x671 = x536*x654
+      x672 = x539*x671
+      x673 = 1.65053082869932d0*x672
+      x674 = x670*x673
+      x675 = x526*x583
+      x676 = 659.974115594947d0*x631
+      x677 = 514.623495086637d0*x641
+      x678 = -x216*x676 + x512*x677 - x634*x676 - 1029.24699017327d0*x63
+     &6 + 257.311747543319d0*x667 + x675
+      x679 = x513*x678
+      x680 = gamma_cc*x679
+      x681 = x514**(-2)
+      x682 = x543*x681
+      x683 = x655*x682
+      x684 = x680*x683
+      x685 = x463*x534
+      x686 = x645*x685
+      x687 = x488*x534
+      x688 = x669*x687
+      x689 = x475*x688
+      x690 = x517*x679
+      x691 = x685*x690
+      x692 = x686 + x689 - x691
+      x693 = x657 + x674 - x684 + x692
+      x694 = x199*x536
+      x695 = x645*x646 + x651 - x693*x694
+      x696 = 0.544846825002868d0*x644 + x695
+      x697 = 1d0/x200
+      x698 = x461*x697
+      x699 = x696*x698
+      x700 = x187*x194
+      x701 = x453*(-x194*x455*(x192 + 0.593716125431411d0*x700) - 0.2968
+     &58062715705d0 *x449*x451 + x454)
+      x702 = x459*x701
+      x703 = 0.00549554491451047d0*x206
+      x704 = 8.0d0*x210
+      x705 = 0.000908766572494496d0*x214
+      x706 = 5.1297628024841d0*x219
+      x707 = x216*x706
+      x708 = 32.1639684429148d0*x228
+      x709 = 59.2171492864334d0*x240
+      x710 = 1.26460783860812d0*x253
+      x711 = 0.0155453454348275d0*rho_s*x445
+      x712 = gamma_cc*x572
+      x713 = 0.00366369660967365d0*x206
+      x714 = x209*x230
+      x715 = x21*x81
+      x716 = 0.00363506628997799d0*x715
+      x717 = rho_c**(-7)
+      x718 = x219*x231*x717
+      x719 = 20.5190512099364d0*x212
+      x720 = 20.0d0*x714
+      x721 = x21*x82
+      x722 = x219*x721
+      x723 = rho_s*x582
+      x724 = 0.000605844381662998d0*x214
+      x725 = x21*x227
+      x726 = 0.0883792666034679d0*x725
+      x727 = x223*x224
+      x728 = 16.0819842214574d0*x727
+      x729 = x225*(0.210778258416395d0*x12 + 0.989141964955861d0*x21 + 1
+     &.16327369584438d0*x43 + 0.600321476249523d0*x50)
+      x730 = x728*x729
+      x731 = x223*x226**2/(x65**4*x66**2)
+      x732 = 258.630216499205d0*x731
+      x733 = x2**(-0.666666666666667d0)
+      x734 = 0.854960467080683d0*x1
+      x735 = x733*x734
+      x736 = x3**(-0.666666666666667d0)
+      x737 = x734*x736
+      x738 = x735 + x737
+      x739 = -5.1297628024841d0*x217 + 5.1297628024841d0*x218 + x738
+      x740 = x232*x717
+      x741 = 20.5190512099364d0*x219
+      x742 = x211*x239
+      x743 = x226*(0.252933910099675d0*x12 + 1.48371294743379d0*x21 + 1.
+     &99418347859036d0*x43 + x64)/x65**3
+      x744 = x728*x743
+      x745 = x239*x77
+      x746 = x21*x70*x745
+      x747 = 0.0269072828949635d0*x746
+      x748 = x211*x745
+      x749 = x219*x748
+      x750 = x235*x236
+      x751 = 29.6085746432167d0*x750
+      x752 = x237*(0.212390288347482d0*x12 + 0.998929717145607d0*x21 + 1
+     &.5861639701226d0*x43 + 0.322572935345748d0*x50)
+      x753 = x751*x752
+      x754 = x235*x238**2/(x79**4*x80**2)
+      x755 = 876.667692402934d0*x754
+      x756 = x238*(0.254868346016978d0*x12 + 1.49839457571841d0*x21 + 2.
+     &71913823449588d0*x43 + x78)/x79**3
+      x757 = x751*x756
+      x758 = 5.1297628024841d0*x315
+      x759 = x244*x249
+      x760 = x713 - x726 - x730 - x732 + x744
+      x761 = 0.0849797459133392d0*x21*x247 - 0.00176138600691563d0*x242 
+     &+ x245*x759*( 0.267319032365355d0*x12 + 1.70877610553209d0*x21 + 2
+     &.16229511226841d0*x43 + 1.23355033167571d0*x50) + 1034.52086599683
+     &d0*x246**2*x248/(x60**4*x61**2) - x246*x759*( 0.320782838838426d0*
+     &x12 + 2.56316415829814d0*x21 + 3.70679162103156d0*x43 + x59)/x60**
+     &3 + x760
+      x762 = x182*x253
+      x763 = x139*x26/x15**6
+      x764 = x18*x71
+      x765 = x444*x471
+      x766 = 0.0103635636232183d0*x201*x4
+      x767 = x765*x766
+      x768 = x2**(-1.33333333333333d0)
+      x769 = 0.333333333333333d0*x1
+      x770 = x768*x769
+      x771 = x3**(-1.33333333333333d0)
+      x772 = x769*x771
+      x773 = x770 + x772
+      x774 = 0.000440195901906306d0*x30
+      x775 = x323*(0.427594146176807d0*x12 - 1.36477107997868d0*x21)
+      x776 = x322*x96
+      x777 = 75.398223686155d0*x94
+      x778 = x776*x777
+      x779 = 0.154912426780983d0*x0**(-0.333333333333333d0)*x326
+      x780 = x325*x93
+      x781 = 4.83324359125373d0*x780
+      x782 = x776*x781
+      x783 = 1.61108119708458d0*x327
+      x784 = 150.79644737231d0*x19*x322*x94
+      x785 = 9.66648718250747d0*x19*x780*x92
+      x786 = 1d0/x100
+      x787 = 0.00786976946662483d0*x19
+      x788 = x336*x339
+      x789 = x101*x788*(0.0157395389332497d0*x340 - x786*x787 - 0.007869
+     &76946662483d0 )
+      x790 = 0.0677878489986483d0*x336
+      x791 = x343*x790
+      x792 = x350*x790
+      x793 = 1.91415600012546d0*x99
+      x794 = x332*x793
+      x795 = x334*x793
+      x796 = 1d0/x115
+      x797 = x336*x346
+      x798 = x116*x797*(0.0157395389332497d0*x347 + x787*x796 + 0.007869
+     &76946662483d0 )
+      x799 = 11.4849360007528d0*x100*x361
+      x800 = 11.4849360007528d0*x115*x370
+      x801 = 0.0543010717965206d0*x12
+      x802 = 0.150031049774234d0*x104
+      x803 = x19*x786
+      x804 = 0.0271505358982603d0*x12
+      x805 = x107*x804
+      x806 = -x802 - x805
+      x807 = x101*x99
+      x808 = x359*x807*(0.300062099548467d0*x104*x340 + x107*x340*x801 -
+     & x802*x803 - x803*x805 + x806)
+      x809 = 0.101681773497972d0*x336
+      x810 = x338*x357
+      x811 = x356*x810
+      x812 = x342*x809*x811
+      x813 = x345*x367
+      x814 = x809*x813
+      x815 = x349*x366*x814
+      x816 = 38.2831200025092d0*x99
+      x817 = x113*x816
+      x818 = x127*x816
+      x819 = 0.150031049774234d0*x119
+      x820 = x19*x796
+      x821 = x122*x804
+      x822 = x819 + x821
+      x823 = x116*x99
+      x824 = x369*x823*(0.300062099548467d0*x119*x347 + x122*x347*x801 +
+     & x819*x820 + x820*x821 + x822)
+      x825 = 0.225046574661351d0*x104
+      x826 = 0.0325806430779124d0*x12
+      x827 = x107*x826
+      x828 = x825 + x827
+      x829 = x109**(-3)
+      x830 = x106*x111*x829
+      x831 = x356*x807*x830*(-x340*x825 - x340*x827 + x828)
+      x832 = 0.225046574661351d0*x119
+      x833 = x122*x826
+      x834 = x832 + x833
+      x835 = x123**(-3)
+      x836 = x121*x125*x835
+      x837 = x366*x823*x836*(x347*x832 + x347*x833 + x834)
+      x838 = x348*x602
+      x839 = 0.271151395994593d0*x1
+      x840 = x336*x838*x839
+      x841 = 15.3132480010037d0*x1*x99
+      x842 = x376*x841
+      x843 = x336*x341*x600
+      x844 = x839*x843
+      x845 = x373*x841
+      x846 = x3*x366
+      x847 = 45.9397440030111d0*x99
+      x848 = x1*x847
+      x849 = x369*x846*x848
+      x850 = x2*x360
+      x851 = x848*x850
+      x852 = x19*x817 + x19*x818 + x789 + x791 + x792 - x794 - x795 - x7
+     &98 + x799 + x800 + x808 + x812 + x815 - x824 + x831 + x837 + x840 
+     &+ x842 - x844 - x845 + x849 - x851
+      x853 = 0.0231073345558005d0*x26
+      x854 = x22*x264
+      x855 = 0.0138644007334803d0*x26
+      x856 = 0.00107855455836145d0*x30
+      x857 = 0.0350330449527535d0*x12 + 0.00571025734089666d0*x21 - 0.00
+     &609784657412857d0*x23 + 0.000856522469028669d0*x26
+      x858 = x857*x96
+      x859 = 0.0891107483661069d0*x382
+      x860 = x19*x382
+      x861 = 0.178221496732214d0*x860
+      x862 = x19*x28
+      x863 = -0.000586927869208408d0*x129 + 0.445553741830535d0*x19*x89 
+     &- 0.0277288014669606d0*x26*x862
+      x864 = x312*x739
+      x865 = x167*x864
+      x866 = x167*x524
+      x867 = x1*x739
+      x868 = x216*x867
+      x869 = x1*x722
+      x870 = x1*x219
+      x871 = x748*x870
+      x872 = x74*x761
+      x873 = 8.0d0*x316
+      x874 = x524*x758
+      x875 = x212*x74
+      x876 = 20.0d0*x875
+      x877 = x524*x719
+      x878 = x716*x74
+      x879 = x74*x742
+      x880 = 236.868597145733d0*x879
+      x881 = -x713 + x724 + x726 + x730 + x732 - x744 - x747 - x753 - x7
+     &55 + x757 + x872 - x873 + x874 - x876 + x877 - x878 + x880
+      x882 = x868 - 0.00233087847986162d0*x869 + 151.884964839347d0*x871
+     & + x881
+      x883 = -20.0d0*x168 - x865 + 20.5190512099364d0*x866 + x882
+      x884 = 0.0006896296838094d0*x30
+      x885 = 0.899568554326366d0*x26
+      x886 = 1.91415600012546d0*x417
+      x887 = 0.299209d0*x151
+      x888 = 5.29055759308205d0*x336
+      x889 = x149*x888
+      x890 = x429*x889
+      x891 = 31.182216717766d0*x430
+      x892 = 23.3866625383245d0*x427*x96*(0.289053642815522d0*x12 - 0.10
+     &6975995763985d0*x21)
+      x893 = 5.19703611962767d0*x425
+      x894 = 5.0d0*x1
+      x895 = x34*x894
+      x896 = x35*x894
+      x897 = x895 + x896
+      x898 = 7.65662400050184d0*x99
+      x899 = x1*x898*(-6.0d0*x419 + 6.0d0*x420 + x897)
+      x900 = 30.6264960020074d0*x422
+      x901 = 10.5811151861641d0*x150*x19*x336
+      x902 = x427*x428
+      x903 = 93.5466501532981d0*x19*x902
+      x904 = 77.9555417944151d0*x19*x432
+      x905 = 0.311172355472072d0*x21
+      x906 = 0.0121035293512547d0*x12*x27 + 0.0175165224763768d0*x12 + 0
+     &.00285512867044833d0*x21 + x25 + 0.000428261234514334d0*x26 - 0.10
+     &3724118490691d0*x391
+      x907 = 0.0837628205355044d0*x382*x96
+      x908 = 0.418814102677522d0*x140*x19 - 0.335051282142018d0*x397*x86
+     &0 - x408*x96 + 0.167525641071009d0*x410
+      x909 = 0.0314471135817087d0*x133*x19
+      x910 = 0.0110340749409504d0*x134
+      x911 = x265*x397
+      x912 = 0.0198613348937107d0*x19*x911
+      x913 = 0.0165511124114256d0*x265*x398
+      x914 = x396*x905 + x906
+      x915 = x399*x914*x96
+      x916 = 0.319950406453076d0*x137
+      x917 = 0.213300270968718d0*x136*x404
+      x918 = x69*x864
+      x919 = 20.0d0*x75
+      x920 = 20.5190512099364d0*x525
+      x921 = x918 + x919 - x920
+      x922 = x882 + x921
+      x923 = x405*x922
+      x924 = 0.0309078452196566d0*x87
+      x925 = 0.00316102962473761d0*x87
+      x926 = 0.0168588246652672d0*x87
+      x927 = 0.000821860773992031d0*x271
+      x928 = 0.00191767513931474d0*x271
+      x929 = 1.79063317129192d0*x43
+      x930 = 3.80317310466043d0*x283
+      x931 = 6.0d0*x275
+      x932 = 6.0d0*x276
+      x933 = x2**(-1.33333333333333d0)
+      x934 = x1*x933
+      x935 = x3**(-1.33333333333333d0)
+      x936 = x1*x935
+      x937 = x934 + x936
+      x938 = -x931 + x932 + x937
+      x939 = x1*x938
+      x940 = x286*x939
+      x941 = 3.80317310466043d0*x940
+      x942 = x277**2
+      x943 = x19*x942
+      x944 = x285*x51
+      x945 = 22.8190386279626d0*x943*x944
+      x946 = 7.60634620932085d0*x288
+      x947 = 2.04643791004791d0*x43
+      x948 = x292*x938*x947
+      x949 = 8.18575164019163d0*x43
+      x950 = x942*x949
+      x951 = x19*x40*x950
+      x952 = x293*x947
+      x953 = x948 + x951 - x952
+      x954 = x296*x45
+      x955 = 2.0d0*x48
+      x956 = x304*x955
+      x957 = 3.06965686507186d0*x43
+      x958 = 5.70475965699064d0*x283
+      x959 = 12.2786274602874d0*x43
+      x960 = x293*x959
+      x961 = 22.8190386279626d0*x288
+      x962 = x53/x47**2
+      x963 = x954*x962
+      x964 = 8.21567418326147d0*x283
+      x965 = 49.2940450995689d0*x942
+      x966 = 81.6670303671029d0*x13*x50*x943/x36**4 + x19*x944*x965 - 16
+     &.4313483665229d0*x288 + 11.4844261453738d0*x298 + 10.2083787958879
+     &d0*x301*x939 - 30.6251363876636d0*x302 + 1.79063317129192d0*x43 + 
+     &8.21567418326147d0*x940 + x953 + x964
+      x967 = 6.39350882283002d-5*x0**2.33333333333333d0*x31
+      x968 = 0.00880391803812612d0*x266
+      x969 = 0.0117385573841682d0*x32
+      x970 = x13/x53**2
+      x971 = x36*x970
+      x972 = x263*x266
+      x973 = 0.0105647016457513d0*x19
+      x974 = 0.0675474557615585d0*x36
+      x975 = x942*x974
+      x976 = x174*x975
+      x977 = x13*x308
+      x978 = x48*x977
+      x979 = x307*x978
+      x980 = x296*x36
+      x981 = x173*x305
+      x982 = 0.101321183642338d0*x589
+      x983 = 0.0334548885448792d0*x19*x257 - 0.00164372154798406d0*x271*
+     &x862
+      x984 = x16*(-x131*(-x909 + x910 + x912 - x913 + x915 - x916 + x917
+     & - x923) + x139*(-0.0009195062450792d0*x154*x180 + x156*x883 + 1.0
+     &4949664671409d0*x169*x26 - x320*x885 - x437*(x852 + x886 + x887 + 
+     &x890 + x891 + x892 - x893 - x899 - x900 + x901 + x903 - x904) + x8
+     &84*(x379 - x418 - x423 + x424 + x426 + x431 + x434) - x907*(-x905*
+     &(x392 + x393 - x394 + x395) + x906) + x908) + x169* x924 + x171*x9
+     &28 - x171*x967 - x171*x969 - x19*x976 - x264*x968 - x267*x858 + 0.
+     &0168868639403896d0*x274*x939 + x287*x981*x982 + x304*x307*x971 - x
+     &306*x310*(-x54*(x929 + x930 + x941 + x945 - x946 + x953) - x954*x9
+     &56 + x963*(-x957 - x958 + x960 + x961) + x966) - x320*x926 + x49*(
+     &x171*x853 - x171*x856 + x263*x861 - x264 *x859 + x380*x774 - x381*
+     &(x502 + x775 + x778 + x779 + x782 + x783 + x784 + x785 + x852) - x
+     &383*x858 - x385*x96 + x854*x855 + x863) + x854*x927 + x883*x925 + 
+     &x972*x973 - x979*x980 + x983)
+      x985 = x197*x697
+      x986 = x189*(-x465 - x474 + x483 - x538 + x571)
+      x987 = gamma_cc*x985*x986
+      x988 = x537 + 1.0d0
+      x989 = x534*x988
+      x990 = x552*x654
+      x991 = x652*x990
+      x992 = gamma_cc*x530
+      x993 = x535*x988
+      x994 = x166*x654
+      x995 = x11*x681*x994 + x988
+      x996 = 1d0/x995
+      x997 = x536*x996
+      x998 = x993*x997
+      x999 = 0.00388633635870686d0*x469
+      x1000 = x996*x999
+      x1001 = x1000*x197*x8/x200**2
+      x1002 = x189*x467
+      x1003 = rho_c**(-5.33333333333333d0)*rho_s
+      x1004 = x189*x195
+      x1005 = x1003*x1004
+      x1006 = x471**2
+      x1007 = 1.45292486667431d0*x6
+      x1008 = x1006*x1007
+      x1009 = rho_c**(-6.33333333333333d0)*x18
+      x1010 = x1008*x1009
+      x1011 = 2.66666666666667d0*x442
+      x1012 = 2.66666666666667d0*x443
+      x1013 = 0.444444444444444d0*x1
+      x1014 = x1013*x768
+      x1015 = x1013*x771
+      x1016 = x1014 + x1015
+      x1017 = 0.544846825002868d0*x469
+      x1018 = x1003*x1017*(x1011 - x1012 + x1016)
+      x1019 = x1002*x481
+      x1020 = x480**2
+      x1021 = x184**(-2)
+      x1022 = 4.21079420235216d0*x1021
+      x1023 = x1002*x1022
+      x1024 = 4.03913112935459d0*x472
+      x1025 = x1003*x1024
+      x1026 = x170*x320
+      x1027 = 1.51467417350797d0*x1019
+      x1028 = 1.51467417350797d0*x1021
+      x1029 = x1028*x508
+      x1030 = x1002*x480
+      x1031 = x533*x536
+      x1032 = x534*x559
+      x1033 = x1031*x1032
+      x1034 = x466*x534
+      x1035 = 1.45292486667431d0*rho_s
+      x1036 = x533*x653
+      x1037 = 3.02934834701594d0*x560
+      x1038 = x73 - 1.0d0
+      x1039 = x1038*x212
+      x1040 = x1039*x867
+      x1041 = x1038*x870
+      x1042 = 0.00116543923993081d0*x1041*x715
+      x1043 = 0.00116543923993081d0*x721
+      x1044 = x1043*x219
+      x1045 = x1*x1044
+      x1046 = 75.9424824196734d0*x748
+      x1047 = x1046*x870
+      x1048 = 75.9424824196734d0*x1041*x742
+      x1049 = 2.78d0*x185
+      x1050 = x170*x479
+      x1051 = 5.56d0*x404
+      x1052 = 8.0d0*x875
+      x1053 = x1*x707
+      x1054 = 5.1297628024841d0*x525
+      x1055 = 8.0d0*x75
+      x1056 = 2.0d0*x316
+      x1057 = 2.78d0*x404
+      x1058 = x184/x169**2
+      x1059 = 1.38933365612628d0*x763
+      x1060 = 3.51560979133057d0*x253
+      x1061 = x727*x729
+      x1062 = x315*x524
+      x1063 = x212*x524
+      x1064 = x715*x74
+      x1065 = x727*x743
+      x1066 = x750*x752
+      x1067 = x750*x756
+      x1068 = 44.7079161356516d0*x1061 + 14.2607405909058d0*x1062 + 57.0
+     &429623636231d0 *x1063 - 0.0101054842861388d0*x1064 - 44.7079161356
+     &516d0*x1065 - 82.3118375081424d0*x1066 + 82.3118375081424d0*x1067 
+     &- 0.0101850765748927d0*x206 + 0.00168424738102313d0*x214 - 22.24d0
+     &* x316 + 0.245694361157641d0*x725 + 718.99200186779d0*x731 - 0.074
+     &8022464479985d0*x746 - 2437.13618488016d0*x754 + 2.78d0*x868 - 0.0
+     &064798421740153d0*x869 + 422.240202253384d0*x871 + 2.78d0* x872 - 
+     &55.6d0*x875 + 658.494700065139d0*x879
+      x1069 = -x1049*(-x1040 + x1042 - x1045 + x1047 - x1048 + x881 + x9
+     &21) - x1050* x1051 + x1057*x1058*(x1052 + x1053 + x1054 - x1055 + 
+     &x1056 + x703 - x705 - x708 + x709) - x1059*x182 - x1060*x478 + x10
+     &68 - 55.6d0* x168 + 2.9296748261088d0*x762 - 2.78d0*x865 + 57.0429
+     &623636231d0* x866 - 2.78d0*x984
+      x1070 = 0.544846825002868d0*x1002*x476
+      x1071 = x554*x569
+      x1072 = x482*x559
+      x1073 = 1.08969365000574d0*x190*x534
+      x1074 = x1073*x189
+      x1075 = x10*x569
+      x1076 = x193*x515
+      x1077 = 1.58324300115043d0*rho_s*x556 + 1.18743225086282d0*x542*x5
+     &50 + 2.77067525201325d0*x557 - 3.30106165739864d0*x558
+      x1078 = x196**(-2)
+      x1079 = x10*x1078*x198
+      x1080 = x1079*x568
+      x1081 = 4.23769752780008d0*x466
+      x1082 = 3.39015802224007d0*x1003
+      x1083 = x466*x476
+      x1084 = x1083*x480
+      x1085 = x1022*x466
+      x1086 = x466*x564
+      x1087 = 514.623495086637d0*x161
+      x1088 = 1.08969365000573d0*x165*exp(-x1087*x159)
+      x1089 = x4**(-6)
+      x1090 = x1089*x466
+      x1091 = x1090*x547**2
+      x1092 = 0.544846825002867d0*x563
+      x1093 = x471*x9
+      x1094 = x1093*x563
+      x1095 = 1.45292486667431d0*x1094
+      x1096 = 1.51467417350797d0*x1084
+      x1097 = x466*x480
+      x1098 = 1029.24699017327d0*x469
+      x1099 = 2.0d0*x442 - 2.0d0*x443 + x773
+      x1100 = x471*x545
+      x1101 = x19*x6
+      x1102 = 1372.32932023103d0*x159
+      x1103 = 38.2831200025092d0*x99
+      x1104 = x1103*x113
+      x1105 = x1103*x127
+      x1106 = -x1104*x19 - x1105*x19 - x789 - x791 - x792 + x794 + x795 
+     &+ x798 - x799 - x800 - x808 - x812 - x815 + x824 - x831 - x837 - x
+     &840 - x842 + x844 + x845 - x849 + x851
+      x1107 = x22*x493
+      x1108 = x45*x498
+      x1109 = x1108*x962
+      x1110 = -x934 - x936
+      x1111 = x494**2
+      x1112 = x58*x974
+      x1113 = x499*x500
+      x1114 = x266*x492
+      x1115 = x499*x57
+      x1116 = x16*(x1*x1115*x494*x982 + x1107*x927 + x1111*x1112*x19 + x
+     &1113*x971*( x297 + x299 - x300 - x303 + x497) + x1113*x978*x980 - 
+     &x1114*x973 + x131*(x909 - x910 - x912 + x913 - x915 + x916 - x917 
+     &+ x923) + x139*(x156*x922 - x404*x885 + 0.0009195062450792d0*x412 
+     &+ 1.04949664671409d0*x414 - x436*x884 + x437*(x1106 - x886 - x887 
+     &- x890 - x891 - x892 + x893 + x899 + x900 - x901 - x903 + x904) - 
+     &x907*x914 + x908) + x20*x267*x857 - x29*x928 + x29*x967 + x29* x96
+     &9 - x404*x926 + x49*(x1107*x855 + x20*x385 - x29*x853 + x29* x856 
+     &+ x381*(x1106 + x330 - x775 - x778 - x779 - x782 - x783 - x784 - x
+     &785) - x492*x861 - x493*x859 - x503*x774 + x504*x857 + x863) - x49
+     &3*x968 + 0.0168868639403896d0*x496*(x1110 + x931 - x932) + x501*(x
+     &1108*x956 + x1109*(x957 + x958 - x960 - x961) + x54*(-x929 - x930 
+     &- x941 - x945 + x946 - x948 - x951 + x952) + x966) + x86*x924 + x9
+     &22*x925 + x983)
+      x1117 = x157*x763
+      x1118 = x253*x505
+      x1119 = -4138.08346398728d0*x1061 - 1319.94823118989d0*x1062 - 527
+     &9.79292475958d0*x1063 + 0.935345259510043d0*x1064 + 4138.083463987
+     &28d0*x1065 + 7618.63408371287d0*x1066 - 7618.63408371287d0*x1067 +
+     & 257.311747543319d0*x1116 + 128.594198193741d0*x1117 + 325.3984529
+     &09234d0*x1118 + 0.942712177103657d0*x206 - 0.155890876585007d0*x21
+     &4 + 2058.49398034655d0*x316 - 271.165377424361d0*x523 + 5279.79292
+     &475958d0*x525 - 22.7410235363352d0*x725 - 66548.5929749173d0*x731 
+     &+ 6.92355998334549d0*x746 - 5146.23495086637d0*x75 + 225576.895946
+     &967d0*x754 - 257.311747543319d0*x868 + 0.599762414964306d0*x869 - 
+     &39081.7857283678d0*x871 - 257.311747543319d0*x872 + 5146.234950866
+     &37d0*x875 - 60949.072669703d0*x879 - 257.311747543319d0*x918
+      x1120 = 0.544846825002867d0*x1086
+      x1121 = 0.544846825002868d0*x1083
+      x1122 = x191*x541
+      x1123 = x469*x485
+      x1124 = x1123*x534
+      x1125 = x485**2
+      x1126 = x1007*x534
+      x1127 = x536*x990
+      x1128 = rho_c**(-7.66666666666667d0)*rho_s*x654
+      x1129 = x1128*x652
+      x1130 = x1129*x485
+      x1131 = x515*x9
+      x1132 = 2.63873833525072d0*x1131
+      x1133 = 0.888888888888889d0*x1
+      x1134 = x1133*x768
+      x1135 = x1133*x771
+      x1136 = x1034*x510
+      x1137 = x159**(-2)
+      x1138 = x1137*x509**2
+      x1139 = 4.21079420235216d0*x1034
+      x1140 = x1034*x516
+      x1141 = gamma_cc*x990
+      x1142 = x542*x681
+      x1143 = x1141*x1142
+      x1144 = x1143*x530
+      x1145 = x529**2
+      x1146 = exp(x1087*x512)
+      x1147 = x1145*x1146
+      x1148 = x1034*x1089
+      x1149 = 1.08969365000573d0*x1148*x681
+      x1150 = x1145*x513
+      x1151 = 0.544846825002867d0*x1148*x515
+      x1152 = x1141/x4**8
+      x1153 = 1.78114837629423d0*x1152/x514**3
+      x1154 = 0.593716125431411d0*x1152*x681
+      x1155 = x1003*x485
+      x1156 = x1131*x1155*x534
+      x1157 = x1128*x485
+      x1158 = x1089*x681
+      x1159 = 3.16648600230086d0*x1158
+      x1160 = 1.51467417350797d0*x490
+      x1161 = x1136*x1160
+      x1162 = x1127*x510
+      x1163 = 9.17695140756823d0*x1127
+      x1164 = 1.65053082869932d0*x490
+      x1165 = x1162*x1164
+      x1166 = 1.51467417350797d0*x1034
+      x1167 = x489 + x506 + x507
+      x1168 = x1137*x509
+      x1169 = x1167*x1168
+      x1170 = 1.65053082869932d0*x1127
+      x1171 = x516*x530
+      x1172 = x1*x519
+      x1173 = 1372.32932023103d0*x512
+      x1174 = x513*(x1098*x1167*x1172 + x1099*x522 + x1101*x1173*x485*x5
+     &19 + x1119)
+      x1175 = x1034*x517
+      x1176 = x1141*x682
+      x1177 = x491*(x1040 - x1042 + x1045 - x1047 + x1048 - x724 + x747 
+     &+ x753 + x755 - x757 + x760 - x872 + x873 - x874 + x876 - x877 + x
+     &878 - x880 - x918 - x919 + x920)
+      x1178 = x490*x508
+      x1179 = 5.56d0*x489
+      x1180 = 2.78d0*x489
+      x1181 = x159/x86**2
+      x1182 = x1181*(-x1052 - x1053 - x1054 + x1055 - x1056 - x703 + x70
+     &5 + x708 - x709)
+      x1183 = 0.544846825002868d0*x466*x687
+      x1184 = 11.12d0*x489
+      x1185 = 0.296858062715705d0*x1127*x488
+      x1186 = x208*x574
+      x1187 = 0.00181753314498899d0*x715
+      x1188 = x230*x72
+      x1189 = x212*x741
+      x1190 = 16.0d0*x1186
+      x1191 = 2.56488140124205d0*x218
+      x1192 = 2.56488140124205d0*x217
+      x1193 = x1191 - x1192 + x738
+      x1194 = x1193*x216
+      x1195 = x167*x741
+      x1196 = x1046*x219
+      x1197 = x1193*x167
+      x1198 = x220*x315
+      x1199 = 4.0d0*x315
+      x1200 = x17*x623
+      x1201 = 0.000220097950953153d0*x30
+      x1202 = x1*x781*x92
+      x1203 = x1*x322*x777
+      x1204 = 0.135575697997297d0*x1
+      x1205 = x1204*x788
+      x1206 = 0.0338939244993242d0*x336
+      x1207 = x1206*x600
+      x1208 = x1204*x797
+      x1209 = x1206*x602
+      x1210 = x600*x790
+      x1211 = x1210*(x340 - 1.0d0)
+      x1212 = 0.135575697997297d0*x843
+      x1213 = 7.65662400050185d0*x99
+      x1214 = x1213*x376
+      x1215 = x790*x838
+      x1216 = x1213*x373
+      x1217 = x355*x810
+      x1218 = x2*x337
+      x1219 = x1217*x1218*x341
+      x1220 = x1*x372
+      x1221 = x1220*x605
+      x1222 = x331*x606
+      x1223 = x337*x813
+      x1224 = x1223*x3*x348*x365
+      x1225 = x1220*x608
+      x1226 = x331*x609
+      x1227 = x1218*x811
+      x1228 = x1223*x846
+      x1229 = x340*x802
+      x1230 = x340*x805
+      x1231 = x359*x604
+      x1232 = x1231*x2*(x1229 + x1230 + x806)
+      x1233 = x372*x850
+      x1234 = x372*x846
+      x1235 = x1234*x369
+      x1236 = x347*x819 + x347*x821 + x822
+      x1237 = x369*x604
+      x1238 = x1236*x1237*x3
+      x1239 = x604*x828
+      x1240 = x1239*x830
+      x1241 = x1240*x2*x356
+      x1242 = x604*x834
+      x1243 = x1242*x836
+      x1244 = x1243*x846
+      x1245 = x1*x859
+      x1246 = x1*x28
+      x1247 = -0.267332245098321d0*x1*x89 + x1246*x855
+      x1248 = 3.0d0*x419
+      x1249 = 3.0d0*x420
+      x1250 = x1*(x147 - x148)
+      x1251 = 46.773325076649d0*x1*x902
+      x1252 = x120 - 1.0d0
+      x1253 = x1252*x3
+      x1254 = x105 - 1.0d0
+      x1255 = x1254*x2
+      x1256 = x1255*x358
+      x1257 = x1253*x368
+      x1258 = x1252*x368
+      x1259 = x802 + x805
+      x1260 = x1*x1103
+      x1261 = x1205 - x1207 + x1208 + x1209 + x1215 - x1219 + x1224 - x1
+     &227 + x1228
+      x1262 = x1197*x73
+      x1263 = x212*x73
+      x1264 = x1199*x583
+      x1265 = 16.0d0*x626
+      x1266 = x1187*x583
+      x1267 = x583*x742
+      x1268 = 118.434298572867d0*x1267
+      x1269 = x1264 + x1265 + x1266 - x1268
+      x1270 = x1044 - x1194 - x1196 - x1198*x73 + x1262 - x1263*x741 + x
+     &1269 - x629* x741 + 16.0d0*x630
+      x1271 = 0.0003448148419047d0*x30
+      x1272 = 0.449784277163183d0*x26
+      x1273 = -0.251288461606513d0*x1*x140 + 0.167525641071009d0*x1*x382
+     &*x397
+      x1274 = 0.106650135484359d0*x136
+      x1275 = -0.0182062236525682d0*x1*x133 + 0.00993066744685536d0*x1*x
+     &911
+      x1276 = 3.0d0*x275
+      x1277 = 3.0d0*x276
+      x1278 = -x1276 + x1277 + x937
+      x1279 = 0.0168868639403896d0*x1278
+      x1280 = 1.02321895502395d0*x43
+      x1281 = 15.3125681938318d0*x298
+      x1282 = x44*x950
+      x1283 = x286*x965
+      x1284 = 10.2083787958879d0*x298
+      x1285 = x48*x494
+      x1286 = x1285*x592
+      x1287 = -x1286*x304*x45
+      x1288 = 22.8190386279626d0*x283 + x959
+      x1289 = x1288*x494
+      x1290 = x1110 + x1276 - x1277
+      x1291 = x1290*x930
+      x1292 = x494*x930
+      x1293 = x494*x961
+      x1294 = x1290*x947
+      x1295 = x1280*x494
+      x1296 = x293*x494*x949
+      x1297 = x1294 - x1295 + x1296
+      x1298 = x306*x589
+      x1299 = x590*x970
+      x1300 = x1299*x494
+      x1301 = x278*x589
+      x1302 = 0.00528235082287567d0*x1
+      x1303 = x277*x592
+      x1304 = x173*x594
+      x1305 = x1*x309
+      x1306 = -0.0193686196838775d0*x1*x257 + x1246*x927
+      x1307 = x16*(x1*x976 + x1270*x925 - x1279*x274 - x1298*(-x1*x1282 
+     &- x1*x1283 - 81.6670303671029d0*x1*x301*x942 - x1278*x1284 - x1278
+     &*x947 - x1278*x964 + x1280*x277 + x1281*x277 + x1287 + x1289*x963 
+     &+ x277* x964 + x48*x591*x954 - x54*(x1291 - x1292 + x1293 + x1297)
+     &) + x1300*x307 - x1301*x981 - x1302*x972 + x1303*x979 - x1304*x130
+     &5* x278 + x1306 + x131*(x1270*x405 - x1274*x588 + x1275) + x139*( 
+     &x1270*x156 + x1271*x617 - x1272*x588 + x1273 + x437*(x111*x1239* x
+     &1255*x356*x829 - x112*x1213*x1255 - x112*x1254*x1260 - x1210* x341
+     & + x1213*x1253*x126 - x1220*x1254*x355*x358 - x1220*x1258* x365 - 
+     &x1234*x1258 + x1236*x1257*x604 - x1242*x125*x1252*x835* x846 + 62.
+     &364433435532d0*x1250*x427 - x1250*x889 + x1251 - x1252* x126*x1260
+     & + x1256*x331*x355 + x1256*x356*x372 - x1256*x604*( -x1229 - x1230
+     & + x1259) - x1257*x331*x365 + x1261 - 15.3132480010037d0*x421 - x8
+     &98*(-x1248 + x1249 + x897))) - x281* x588 + x49*(x1201*x612 - x124
+     &5*x263 + x1247 - x381*(-x1*x1104 - x1*x1105 - x1202 - x1203 - x120
+     &5 + x1207 - x1208 - x1209 + x1211 + x1212 - x1214 - x1215 + x1216 
+     &+ x1219 - x1221 + x1222 - x1224 - x1225 - x1226 + x1227 - x1228 + 
+     &x1232 + x1233 - x1235 + x1238 + x1241 - x1244 + x598)))
+      x1308 = gamma_cc*x696
+      x1309 = x1308*x985
+      x1310 = 3.88495961657227d0*x631
+      x1311 = x1001*(x463*x645*x989 + x475*x670*x989 + 0.544846825002868
+     &d0*x672*(x488* (x1310*x216 + x1310*x634 + x627 + 6.05869669403189d
+     &0*x636 + 1.51467417350797d0*x659 - 1.51467417350797d0*x667) + x625
+     & - x690 ) + x998*(-x657 - x674 + x684 - x686 - x689 + x691))
+      x1312 = x1003*x1008
+      x1313 = 1.33333333333333d0*x442
+      x1314 = 1.33333333333333d0*x443
+      x1315 = x1016 + x1313 - x1314
+      x1316 = 2.0195655646773d0*x472
+      x1317 = x1316*x649
+      x1318 = x552*x643
+      x1319 = x1318*x541
+      x1320 = x170*x588
+      x1321 = x1028*x668
+      x1322 = x480*x648
+      x1323 = -x1191 + x1192 - x735 - x737
+      x1324 = x1039*x1323
+      x1325 = x1323*x634
+      x1326 = 16.0d0*x636
+      x1327 = x315*x73
+      x1328 = x1327*x632
+      x1329 = 10.2595256049682d0*x634
+      x1330 = x1329*x219
+      x1331 = x1043*x631
+      x1332 = x1329*x631
+      x1333 = 10.2595256049682d0*x1263
+      x1334 = x1333*x631
+      x1335 = x1333*x219
+      x1336 = x1046*x631
+      x1337 = x1269 + x1325 - x1326 + x1328 + x1330 - x1331 - x1332 + x1
+     &334 - x1335 + x1336
+      x1338 = x170*x647
+      x1339 = x1327*x219
+      x1340 = x219*x629
+      x1341 = x253*x618
+      x1342 = 57.0429623636231d0*x219
+      x1343 = -x1263*x1342
+      x1344 = x315*x583
+      x1345 = x583*x715
+      x1346 = -329.247350032569d0*x1267 + 11.12d0*x1344 + 0.005052742143
+     &0694d0*x1345 + 44.48d0*x626
+      x1347 = -x1049*(-x1324 + x1337) - 2.78d0*x1050*x638 + x1051*x1058*
+     &x638 - x1057* x1338 - 2.78d0*x1194 + 2.78d0*x1262 - 2.78d0*x1307 -
+     & 7.13037029545289d0*x1339 - 57.0429623636231d0*x1340 - 1.757804895
+     &66528d0*x1341 + x1343 + x1346 + 44.48d0*x630 + 0.00323992108700765
+     &d0*x722 - 211.120101126692d0*x749
+      x1348 = x197*x693
+      x1349 = x189*x465
+      x1350 = x1349*x536
+      x1351 = x1348*x653
+      x1352 = x1002*x468
+      x1353 = 1.51467417350797d0*x1072
+      x1354 = x1348*x536
+      x1355 = x10*x1348
+      x1356 = x192*x533*x534*x681
+      x1357 = 0.726462433337157d0*x646
+      x1358 = x548*x643
+      x1359 = 0.544846825002868d0*x1358
+      x1360 = x516*x679
+      x1361 = 3.30106165739864d0*x670
+      x1362 = -1.18743225086282d0*x1142*x655*x680 + x1361*x672 + 1.58324
+     &300115043d0* x656
+      x1363 = -1.08969365000573d0*x1360*x685 + x1362 + 1.45292486667431d
+     &0*x472*x685 + 3.02934834701594d0*x670*x685
+      x1364 = x1076*x1080
+      x1365 = 1.69507901112003d0*x561
+      x1366 = 0.544846825002868d0*x486
+      x1367 = x1083*x648
+      x1368 = -659.974115594947d0*x1340 + x527 + 257.311747543319d0*x619
+     & + 1029.24699017327d0*x630 - 514.623495086637d0*x642 + x675
+      x1369 = 0.726462433337157d0*x1094
+      x1370 = x1090*x1368*x547
+      x1371 = x1368*x564
+      x1372 = x1263*x219
+      x1373 = x221 + x584 - x586 + x587 + x619
+      x1374 = x471*x6
+      x1375 = 30474.5363348515d0*x1267 - 1029.24699017327d0*x1344 - 0.46
+     &7672629755021d0*x1345 - 4116.9879606931d0*x626
+      x1376 = x653*x990
+      x1377 = x1093*x515
+      x1378 = x466*x688
+      x1379 = x1143*x679
+      x1380 = 1.58324300115043d0*x1158
+      x1381 = x1127*x670
+      x1382 = x1034*x1377
+      x1383 = x1141*x471
+      x1384 = x658 + x667
+      x1385 = x1166*x1384
+      x1386 = x1170*x1384
+      x1387 = x1137*x1139
+      x1388 = x1146*x1149
+      x1389 = x529*x678
+      x1390 = x529*x679
+      x1391 = x1146*x1153
+      x1392 = x1*x817 + x1*x818 - x1211 - x1212 + x1214 - x1216 + x1221 
+     &- x1222 + x1225 + x1226 - x1232 - x1233 + x1235 - x1238 - x1241 + 
+     &x1244 + x1261
+      x1393 = x1323*x216
+      x1394 = x1337 + x1393
+      x1395 = x16*(0.0506605918211689d0*x1111*x1305*x57*x661 + x1112*x28
+     &7*x494 + x1113 *x1286*x977 - x1113*x1300 + x1114*x1302 + x1115*x13
+     &01 + x1279* x495 + x1306 + x131*(-x1274*x638 + x1275 + x1394*x405)
+     & + x139*( -x1271*x665 - x1272*x638 + x1273 + x1394*x156 + x437*(x1
+     &*x150* x888 - 62.364433435532d0*x1*x432 + x1251 + x1392 + 15.31324
+     &80010037d0*x614 + x898*(x1248 - x1249 - x895 - x896))) + x1394*x92
+     &5 - x281*x638 + x49*(-x1201*x664 + x1245*x492 + x1247 + x381*(x120
+     &2 + x1203 + x1392 + x599)) + x660*(x1108*x1285*x590 - x1109*x1289 
+     &- x1281*x494 + x1284*x1290 + x1287 + x1290*x964 + x1297 + 49.29404
+     &50995689d0*x288*x494 + 81.6670303671029d0*x302* x494 - x494*x964 +
+     & x54*(-x1291 + x1292 - x1293 - x1294 + x1295 - x1296)))
+      x1396 = x253*x666
+      x1397 = x631*x721
+      x1398 = 2639.89646237979d0*x634
+      x1399 = x1263*x631
+      x1400 = x631*x748
+      x1401 = x1167*x677 + x1172*x1173*x1374 + x1172*x1384*x520 - 257.31
+     &1747543319d0* x1325 - x1327*x676 + 2639.89646237979d0*x1372 + x137
+     &5 - 257.311747543319d0*x1393 + 257.311747543319d0*x1395 + 162.6992
+     &26454617d0*x1396 + 0.299881207482153d0*x1397 - x1398*x219 + x1398*
+     &x631 - 2639.89646237979d0*x1399 - 19540.8928641839d0* x1400 + x521
+     &*(x519 - x770 - x772) + 4116.9879606931d0*x636
+      x1402 = x1175*x513
+      x1403 = x1176*x513
+      x1404 = x491*(-x1264 - x1265 - x1266 + x1268 + x1324 - x1325 + x13
+     &26 - x1328 - x1330 + x1331 + x1332 - x1334 + x1335 - x1336)
+      x1405 = x1178*x658
+      x1406 = x490*x668
+      x1407 = x1327*x631
+      x1408 = 28.5214811818116d0*x634
+      x1409 = x1181*x658
+      x1410 = 57.0429623636231d0*x634
+      x1411 = x70*x764
+      x1412 = 12.0d0*x212
+      x1413 = x733 + x736
+      x1414 = 0.854960467080683d0*x1413
+      x1415 = x1414*x216
+      x1416 = x1195*x573
+      x1417 = 12.0d0*x167
+      x1418 = x933 + x935
+      x1419 = 0.0168868639403896d0*x1418
+      x1420 = 0.101321183642338d0*x277*x309
+      x1421 = x44*x595
+      x1422 = x19*x70
+      x1423 = x1417*x1422
+      x1424 = x1416*x582
+      x1425 = x1414*x629
+      x1426 = x573*x582
+      x1427 = x1189*x1426
+      x1428 = x1412*x1422
+      x1429 = x1415 - x1428
+      x1430 = -x1423 + x1424 - x1425 + x1427 + x1429
+      x1431 = x1418*x947
+      x1432 = 81.6670303671029d0*x301
+      x1433 = mu*x40*x592
+      x1434 = x1111*x286
+      x1435 = x1111*x44
+      x1436 = x1431 + x1435*x949
+      x1437 = x1111*x1433
+      x1438 = x1284*x1418 + x1288*x1437*x962 + 8.21567418326148d0*x1418*
+     &x283 - x54*( x1418*x930 + 22.8190386279626d0*x1434 + x1436)
+      x1439 = 0.203363546995945d0*x336
+      x1440 = x1439*x339
+      x1441 = x1439*x346
+      x1442 = x1217*x809
+      x1443 = x365*x814
+      x1444 = x605*x847
+      x1445 = x608*x847
+      x1446 = x1231*x1259
+      x1447 = x1237*x822
+      x1448 = x1240*x355
+      x1449 = x1243*x365
+      x1450 = x1440 + x1441 + x1442 + x1443 + x1444 + x1445 - x1446 - x1
+     &447 + x1448 + x1449 + x817 + x818
+      x1451 = x36*x816
+      x1452 = x16*(-x1298*(x1282 + x1283 + x1431 + x1432*x942 + x1433*x4
+     &94*x591*x955 + x1438) - x1300*x1421 - x1303*x1421*x978 + x1304*x14
+     &20 + x131*( x1430*x405 + x388) + x139*(x1430*x156 + x408 - x437*(x
+     &1450 - x1451 - x433)) + x1419*x274 + x1430*x925 + x258 + x49*(-x38
+     &1*( x1450 - x329) + x385) - x976)
+      x1453 = x768 + x771
+      x1454 = x1453*x469
+      x1455 = x1022*x648**2
+      x1456 = x1024*x649
+      x1457 = x1320*x650
+      x1458 = x1321*x648
+      x1459 = -x1415 + x1423 - x1424 + x1425 - x1427 + x1428
+      x1460 = x1058*x638**2
+      x1461 = x1338*x638
+      x1462 = x1426*x167
+      x1463 = x1422*x167
+      x1464 = 2.3767900984843d0*x1413
+      x1465 = x1426*x212
+      x1466 = x1422*x212
+      x1467 = x1464*x216 - 33.36d0*x1466
+      x1468 = 3.02934834701594d0*x649
+      x1469 = x1076*x1355
+      x1470 = x1079*x681*x693
+      x1471 = x1089*x1368**2
+      x1472 = x1426*x631
+      x1473 = x1472*x212
+      x1474 = 119.861600488661d0*x1413
+      x1475 = x1472*x69
+      x1476 = x1422*x69
+      x1477 = x6*x765
+      x1478 = x1435*x500*x661
+      x1479 = 12.0d0*x1476
+      x1480 = 20.5190512099364d0*x1475
+      x1481 = x1414*x634
+      x1482 = x1472*x719
+      x1483 = x1429 + x1479 + x1480 + x1481 - x1482
+      x1484 = -x1104 - x1105 - x1440 - x1441 - x1442 - x1443 - x1444 - x
+     &1445 + x1446 + x1447 - x1448 - x1449
+      x1485 = x16*(-x1299*x1478 + x131*(x1483*x405 + x388) + x139*(x1483
+     &*x156 + x408 + x437*(x1451 + x1484 + x433)) - x1419*x495 + x1420*x
+     &57*x662 + x1478*x592*x978 + x1483*x925 + x258 + x49*(x381*(x1484 +
+     & x329) + x385) + x58*x975 + x660*(x1111*x1432 + 49.2940450995689d0
+     &*x1434 + x1436 - x1437*x590*x955 + x1438))
+      x1486 = 31.0796769325781d0*x219
+      x1487 = 1.29498653885742d0*x1413
+      x1488 = x669**2
+      x1489 = x678**2
+      x1490 = x1489*x513
+      x1491 = x1137*x669
+      x1492 = 219.991371864982d0*x1413
+      x1493 = x1173*x1477 + 1029.24699017327d0*x1384*x641 + 171.54116502
+     &8879d0*x1454* x512 + 3087.74097051982d0*x1466 + 5279.79292475958d0
+     &*x1473 - 5279.79292475958d0*x1475 - 3087.74097051982d0*x1476 + 257
+     &.311747543319d0*x1485 - x1492*x216 - x1492*x634
+      x1494 = x491*(x1039*x1414 + x1428 - x1479 - x1480 - x1481 + x1482)
+     &
+      x1495 = x1406*x658
+      x1496 = x1181*x658**2
+      x1497 = 4.75358019696859d0*x1413
+      x1498 = x536*x994
+      x1499 = 0.593716125431411d0*x1498 + x535
+      x1500 = -x1499*x694 + x198 + 0.296858062715705d0*x700
+      x1501 = 0.395810750287607d0*x553
+      x1502 = x1499*x197
+      x1503 = x1502*x653
+      x1504 = x1502*x536
+      x1505 = x10*x1502
+      x1506 = x194*x199
+      x1507 = x1073 + 1.18743225086282d0*x1498
+      x1508 = x1499*x996
+      x1509 = x1508*x536
+      x1510 = 0.296858062715705d0*x1498 - x1509*x993 + x993
+      x1511 = x1000*x697
+      x1512 = 0.593716125431411d0*x994
+      E = -rho_c*(-x201*x202 + x205)
+      d1E(1) = rho_c*(x0*x207 - x0*x215 - x0*x229 + x0*x241 + x210*x213 
+     &+ x210*x234 - x220*x233 + x221*x222 - x252 + x254*x256 + x440 + x4
+     &46*x458 - x461*x572) + x16*x255 + x169 + x202*x457
+      d1E(2) = -rho_c*(x575 + x576 - x578 + x580 + x620 + x624 - x699)
+      d1E(3) = rho_c*x462*x702
+      d2E(1) = -rho_c*(x1001*x986*(x191*x671*(-x484 + x487 + x511 - x532
+     &) - x464*x989 + x487*x989 + x511*x989 + x998*(x484*x534 - x485*x55
+     &1*x991 - x487* x534 - x510*x673 - x511*x534 + x531*x685 + x540*x67
+     &1 + x683*x992 )) + x167*x720 + 0.499760307959092d0*x17*x182*x763 +
+     & x17*x478* x710 + x17*x713 - x17*x724 - x17*x726 - x17*x730 - x17*
+     &x732 + x17 *x744 + x17*x747 + x17*x753 + x17*x755 - x17*x757 - 1.0
+     &5383986550676d0*x17*x762 + x17*x984 + x212*x720 - x216*x723* x739 
+     &+ 8.0d0*x315*x714 + x441*x582*x623*(2.0d0*x442 - 2.0d0*x443 + x773
+     &) - x698*(-x1002*x1035*x1071 + 4.23769752780008d0*x1002 + x1004*x1
+     &010 + x1004*x1018 + 3.39015802224006d0*x1005*x472 - 7.068479476370
+     &53d0*x1019 + x1020*x1023 - x1025*x189*x482 + x1026* x1027 - x1029*
+     &x1030 - x1031*x1037*x534 + 2.54261851668005d0*x1033 + x1034*x1035*
+     &x1036*x189 + x1069*x1070 + 3.02934834701594d0*x1072 *x570 - x1074*
+     &x1075*x1076*x533 + x1080*x165*(x1035*x562 - x1037 + x1077 + 2.5426
+     &1851668005d0*x559 + 1.08969365000573d0*x566) + x1122*(x1003*x1095*
+     &x547 + x1010 + x1018 + x1020*x1085 - x1025* x481 + x1026*x1096 - x
+     &1029*x1097 + x1069*x1121 + x1081 + x1082* x472 - 3.02934834701594d
+     &0*x1084*x565 - 7.06847947637054d0*x1084 + 2.54261851668005d0*x1086
+     &*x547 + x1088*x1091 - x1091*x1092 - x1120 *(-x1*x1099*x544 + x1098
+     &*x508*x546 - x1100*x1101*x1102 + x1119)) - 2.54261851668005d0*x570
+     &*x646 - x694*(gamma_cc*rho_c**( -8.66666666666667d0)*x1125*x1132*x
+     &18*x654 + 4.03913112935459d0* x1003*x1124*x510 + x1009*x1125*x1126
+     & + x1018*x534 + x1081*x534 - x1082*x1124 + 7.85024654737088d0*x112
+     &7 + 0.296858062715705d0* x1129*(x1134 + x1135 + 5.33333333333333d0
+     &*x442 - 5.33333333333333d0*x443) + 8.80283108639638d0*x1130*x510 -
+     & 7.388467338702d0*x1130 - 3.02934834701594d0*x1136*x1171 - 7.06847
+     &947637054d0*x1136 + x1138*x1139 + x1138*x1163 + 2.54261851668005d0
+     &*x1140*x530 - 6.60212331479729d0*x1144*x510 + 5.5413505040265d0*x1
+     &144 + x1147*x1149 + x1147*x1153 - x1150*x1151 - x1150*x1154 - 1.45
+     &292486667431d0*x1156*x530 - x1157*x1159*x992 + x1161*x404 - 15.404
+     &9544011937d0*x1162 + x1165*x404 + x1166* x1169 + x1169*x1170 - x11
+     &74*x1175 - x1174*x1176 + x1183*(-x1059* x157 - x1060*x505 + x1068 
+     &- 2.78d0*x1116 + 2.78d0*x1177 + x1178* x1179 + x1180*x1182 + 2.929
+     &6748261088d0*x523 - 57.0429623636231d0 *x525 + 55.6d0*x75 + 2.78d0
+     &*x918) + x1185*(89.4158322713032d0* x1061 + 28.5214811818116d0*x10
+     &62 + 114.085924727246d0*x1063 - 0.0202109685722776d0*x1064 - 89.41
+     &58322713032d0*x1065 - 164.623675016285d0*x1066 + 164.623675016285d
+     &0*x1067 - 5.56d0* x1116 - 2.77866731225255d0*x1117 - 7.03121958266
+     &113d0*x1118 + 5.56d0*x1177 + x1178*x1184 + x1179*x1182 - 0.0203701
+     &531497855d0* x206 + 0.00336849476204627d0*x214 - 44.48d0*x316 + 5.
+     &85934965221761d0*x523 - 114.085924727246d0*x525 + 0.49138872231528
+     &1d0*x725 + 1437.98400373558d0*x731 - 0.149604492895997d0*x746 + 11
+     &1.2d0*x75 - 4874.27236976031d0*x754 + 5.56d0*x868 - 0.012959684348
+     &0306d0*x869 + 844.480404506768d0* x871 + 5.56d0*x872 - 111.2d0*x87
+     &5 + 1316.98940013028d0*x879 + 5.56d0*x918))) - x711*x987 + x714*x7
+     &16 - 236.868597145733d0*x714* x742 - x714*x761 - x718*x719 - x718*
+     &x758 + 0.00233087847986162d0* x722*x723 - 151.884964839347d0*x723*
+     &x749 + x739*x740 - x740*x741 - x764*x767) + x0*x703 - x0*x705 - x0
+     &*x708 + x0*x709 + x167*x704 - 0.00777267271741373d0*x197*x4*x712 +
+     & x212*x704 + x222*x707 - x233*x706 - 2.0d0*x252 + x256*x710 + 2.0d
+     &0*x440 + x458*x711
+      d2E(2) = rho_c*(x1044*x17 + x1186*x1187 + x1186*x1199 - 118.434298
+     &572867d0*x1186* x742 - x1188*x1189 - x1188*x1195 + x1188*x1197 - x
+     &1188*x1198 + x1190*x167 + x1190*x212 - x1194*x17 - x1196*x17 + 0.0
+     &0777267271741373d0*x1200*(x444 + x773) - x1307*x17 + x1309* x446 -
+     & x1311*x986 - x17*x254*x618 - x622*x987 + x698*(-rho_c**( -7.66666
+     &666666667d0)*x468*x555*x643 - x1002*x1017*x1315 - 1.69507901112003
+     &d0*x1002*x472 - 3.53423973818527d0*x1002*x649 - x1004*x1312 - x100
+     &5*x1317 + x1019*x1316 + x1023*x1322 + x1027* x1320 - x1030*x1321 -
+     & 0.726462433337157d0*x1032*x1036 - x1033* x650 + x1070*x1347 + x10
+     &71*x1357 + x1075*x1359*x165 + x1122*( -x1003*x1317 + x1003*x1368*x
+     &1369 + x1084*x1316 - 1.51467417350797d0*x1084*x1371 + x1085*x1322 
+     &+ 1.27130925834002d0 *x1086*x1368 + x1088*x1370 - x1092*x1370 + x1
+     &096*x1320 - x1097* x1321 - x1120*(x1102*x1374*x546 + 257.311747543
+     &319d0*x1194 - 257.311747543319d0*x1262 + 257.311747543319d0*x1307 
+     &+ 659.974115594947d0*x1339 + 5279.79292475958d0*x1340 + 162.699226
+     &454617d0*x1341 + 5279.79292475958d0*x1372 - x1373*x520* x546 + x13
+     &75 - x508*x677 + x544*(x545 + x773) - 4116.9879606931d0 *x630 - 0.
+     &299881207482153d0*x722 + 19540.8928641839d0*x749) + x1121*x1347 - 
+     &x1312 - x1315*x1366 - x1365 - 1.51467417350797d0* x1367*x565 - 3.5
+     &3423973818527d0*x1367 - x1369*x466*x547) + 1.51467417350797d0*x131
+     &9*x481 - 1.27130925834002d0*x1319 + x1348* x1350 + x1351*x1352 - x
+     &1353*x1354 + x1355*x1356 - x1363*x1364 + x570*x651 - x694*(2.63873
+     &833525072d0*gamma_cc*x1157*x1377 + 2.0195655646773d0*x1003*x1123*x
+     &688 + x1126*x1155*x471 + 9.17695140756823d0*x1127*x1168*x669 + 4.4
+     &0141554319819d0*x1130* x670 - 1.51467417350797d0*x1136*x1360 + 1.2
+     &7130925834002d0*x1140* x679 - x1144*x1361 - x1151*x1390 - x1154*x1
+     &390 - 0.726462433337157d0*x1156*x679 - x1157*x1380*x680 + x1161*x6
+     &38 + x1165*x638 + x1168*x1385 + x1168*x1386 - 1.51467417350797d0*x
+     &1171 *x1378 + x1183*(x1179*x1409 + x1180*x1406 + 2.78d0*x1325 + x1
+     &346 - 28.5214811818116d0*x1372 + 2.78d0*x1393 - 2.78d0*x1395 - 1.7
+     &5780489566528d0*x1396 - 0.00323992108700765d0*x1397 + 28.521481181
+     &8116d0*x1399 + 211.120101126692d0*x1400 + 2.78d0* x1404 + 2.78d0*x
+     &1405 + 7.13037029545289d0*x1407 + x1408*x219 - x1408*x631 - 44.48d
+     &0*x636) + x1185*(-x1060*x666 + x1179*x1406 + x1184*x1409 - 658.494
+     &700065139d0*x1267 + 5.56d0*x1325 + x1343 + 22.24d0*x1344 + 0.01010
+     &54842861388d0*x1345 + 5.56d0*x1393 - 5.56d0*x1395 - 0.006479842174
+     &0153d0*x1397 + 57.0429623636231d0* x1399 + 422.240202253384d0*x140
+     &0 + 5.56d0*x1404 + 5.56d0*x1405 + 14.2607405909058d0*x1407 + x1410
+     &*x219 - x1410*x631 + 88.96d0*x626 - 88.96d0*x636) - x1365*x534 + x
+     &1366*x534*(-x1014 - x1015 - x1313 + x1314) + 4.40141554319819d0*x1
+     &376*x510 - 3.694233669351d0*x1376 - 3.53423973818527d0*x1378 - 3.3
+     &0106165739864d0*x1379*x510 + 2.77067525201325d0*x1379 - x1380*x138
+     &3*x530 - 7.70247720059684d0* x1381 - 0.726462433337157d0*x1382*x53
+     &0 + x1387*x509*x669 + x1388* x1389 + x1389*x1391 - x1401*x1402 - x
+     &1401*x1403 + 2.0195655646773d0*x510*x534*x561 + 0.296858062715705d
+     &0*x991*( -x1011 + x1012 - x1134 - x1135))) - x723*x767) - x575 - x
+     &576 + x578 - x580 - x620 - x624 + x699
+      d2E(3) = -rho_c*(-x1100*x17*x766 + x1188*x1414*x167 - x1189*x208*x
+     &573 + 0.00259089090580458d0*x1200*x1453 + 0.0155453454348275d0*x13
+     &09* x621 + x1311*x696 + x1411*x1412 + x1411*x1417 - x1415*x17 - x1
+     &416 *x208 + x1452*x17 - x698*(0.544846825002868d0*rho_c**( -6.6666
+     &6666666667d0)*x541*(x1008 + x1088*x1471 - x1092*x1471 - x1095*x136
+     &8 - 3.02934834701594d0*x1371*x649 + x1455 + x1456 + x1457 - x1458 
+     &+ x469*(0.242154144445719d0*x768 + 0.242154144445719d0*x771) + x47
+     &6*(-1.51467417350797d0*x1452 + 1.51467417350797d0*x1459*x185 + 3.0
+     &2934834701594d0*x1460 - 3.02934834701594d0*x1461 + x1462*x1486 - 1
+     &8.1760900820957d0*x1463 + x1465*x1486 - 18.1760900820957d0*x1466 +
+     & x1487*x216 - x1487* x629) - x564*(560.781954739666d0*x1373*x641 -
+     & 93.4636591232777d0* x1454*x159 + 1682.345864219d0*x1466 + 2876.67
+     &841172786d0*x1473 - x1474*x216 - x1474*x634 - 2876.67841172786d0*x
+     &1475 - 1682.345864219d0*x1476 - 747.709272986221d0*x1477*x159 + 14
+     &0.195488684916d0*x1485)) + x1002*x1008 + 0.242154144445719d0* x100
+     &2*x1454 + x1002*x1455 + x1002*x1456 + x1002*x1457 - x1002* x1458 +
+     & x1070*(x1049*x1459 + x1342*x1462 + x1342*x1465 - 2.78d0* x1452 + 
+     &5.56d0*x1460 - 5.56d0*x1461 - 33.36d0*x1463 - x1464*x629 + x1467) 
+     &+ 1.45292486667431d0*x1318*x555 + x1319*x1468 - 1.45292486667431d0
+     &*x1351*x646 - x1354*x1468*x646 - 1.08969365000574d0*x1358*x1469 + 
+     &x1363*x1470 - x694*(x1006*x1132* x1141 + x1008*x1034 + x1137*x1163
+     &*x1488 - x1151*x1490 - x1154* x1490 - x1159*x1383*x679 + x1160*x13
+     &78*x638 + x1164*x1381*x638 + x1183*(x1464*x634 + x1467 - 57.042962
+     &3636231d0*x1473 + 57.0429623636231d0*x1475 + 33.36d0*x1476 - 2.78d
+     &0*x1485 + 2.78d0* x1494 + 5.56d0*x1495 + 5.56d0*x1496) + x1185*(-6
+     &6.72d0*x1466 - 114.085924727246d0*x1473 + 114.085924727246d0*x1475
+     & + 66.72d0* x1476 - 5.56d0*x1485 + 5.56d0*x1494 + 11.12d0*x1495 + 
+     &11.12d0* x1496 + x1497*x216 + x1497*x634) - 3.02934834701594d0*x13
+     &60*x1378 + 8.80283108639638d0*x1376*x670 - 6.60212331479729d0*x137
+     &9*x670 - 1.45292486667431d0*x1382*x679 + x1385*x1491 + x1386*x1491
+     & + x1387 *x1488 + x1388*x1489 + x1391*x1489 - x1402*x1493 - x1403*
+     &x1493 + 0.242154144445719d0*x1453*x486*x534 + 0.263873833525072d0*
+     &x1453* x991 + 4.03913112935459d0*x561*x688)))
+      d2E(4) = x462*(rho_c*(x1078*x1500*x712*x999 + x446*x701 - x460*(ga
+     &mma_cc*rho_s* x1501*x186*x552 + x1002*x473 + x1031*x1074 - 0.29685
+     &8062715705d0* x1075*x188 + x1349 - x1350*x1502 - x1352*x1503 + x13
+     &53*x1504 - x1353 - x1356*x1505 + x1364*x1507 - x1506*x568 - x1506*
+     &(x1077 + x567) + 0.692668813003313d0*x557 - 0.825265414349661d0*x5
+     &58)) + x702)
+      d2E(5) = -rho_c*x985*(x1308*x1510*x1511 + x1500*x622 - x459*(-x107
+     &6*x1359*x1505 - x1357*x1503 - 0.296858062715705d0*x1469*x187 + x14
+     &70*x1507 + x1501*x549 - x1504*x651 + 0.825265414349661d0*x557*x649
+     & + 1.08969365000574d0*x644 - x694*(x1362 + x692) + x695))
+      d2E(6) = -rho_c*x1511*(x1500*x1510*x985 + x515*(0.323484345894309d
+     &0*rho_c**( -7.0d0)*x491**8.34d0*x988*x997 + x1073*x1508*x988 - x14
+     &99*x1507* x536*x993/x995**2 + x1509*x1512 - x1512))
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, gamma_cc, tau_c, mu
+      real*8, intent(out) :: E
+      real*8 :: PBE_value, PBE_alpha_value, PBE_beta_value
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55
+      E = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = 0.132568899905202d0*x1 + 1.0d0
+      x3 = x0**0.166666666666667d0
+      x4 = sqrt(x0)
+      x5 = x0**0.666666666666667d0
+      x6 = log(1.0d0 + 16.081984221457407d0/(2.2255694211506878d0*x1 + 5
+     &.9825504357710795d0*x3 + 0.80042863499936356d0*x4 + 0.189700432574
+     &75591d0*x5))
+      x7 = x2*x6
+      x8 = 0.0621813817393098d0*x7
+      x9 = -x8
+      x10 = 2.0d0*x7
+      x11 = exp(x10) - 1.0d0
+      x12 = gamma_cc**2
+      x13 = rho_c**(-4.66666666666667d0)*x12
+      x14 = gamma_cc*rho_c**(-2.33333333333333d0)
+      x15 = 0.136211706250717d0*x14
+      x16 = 1.0d0 + x15/x11
+      x17 = 0.0310906908696549d0*log(x15*x16/(x16 + 0.018553628919731596
+     &d0*x13/x11** 2) + 1.0d0)
+      x18 = x17 + x9
+      x19 = (0.160601656036401d0*x1 + 1.0d0)*log(1.0d0 + 32.163968442914
+     &921d0/( 4.8440767160638538d0*x1 + 12.482198746797325d0*x3 + 2.3260
+     &048119008192d0*x4 + 0.3819082618690966d0*x5))
+      x20 = exp(1.999999999999994d0*x19) - 1.0d0
+      x21 = 0.272423412501434d0*x14
+      x22 = 1.0d0 + x21/x20
+      x23 = -0.0310906908696548d0*x19 + 0.0155453454348274d0*log(x21*x22
+     &/( 0.074214515678926424d0*x13/x20**2 + x22) + 1.0d0)
+      x24 = exp(-0.46869933305458689d0*mu*rho_c**(-0.33333333333333331d0
+     &))
+      x25 = x12/tau_c**2
+      x26 = x25/rho_c**2
+      x27 = x23*x26
+      x28 = x18*(0.00828125d0*x26 + 1.0d0)
+      x29 = 2.8d0*x28
+      x30 = rho_c**(-3)
+      x31 = 0.001953125d0*gamma_cc**3*x30/tau_c**3
+      x32 = -x17 + x8
+      x33 = mu**2
+      x34 = x0**1.66666666666667d0
+      x35 = x0**1.0d0
+      x36 = x0**1.33333333333333d0
+      x37 = (0.0128480790170175d0*x1 - 0.00304892328706429d0*x35 + 0.000
+     &275310793616358d0*x36 + 0.0315297404574782d0*x5 + 1.0d0)*exp (-0.4
+     &6675853320810856d0*x1)
+      x38 = x1*x33
+      x39 = 4.60448529760779d0*mu*x3 + 1.0d0
+      x40 = mu**3
+      x41 = 0.5d0*x37 - 0.5d0
+      x42 = 1d0/x5
+      x43 = 17.2274040011292d0*x42
+      x44 = -x43*(-0.0177069812999059d0*x1 + 1.0d0)/(0.337569861992026d0
+     &*x1 + 0.0244354823084343d0*x5 + 1.0d0)
+      x45 = (-0.000196557189785076d0*mu**8*x0**2.66666666666667d0*x7 + m
+     &u**6*( -0.00331582639355101d0*x0**2.0d0*x7 - 0.00496533372342768d0
+     &*x34* x41) - 0.00264117541143784d0*mu**5*x34*x37 + mu**4*( 0.00020
+     &688890514282d0*x34*(-23.3866625383245d0*x42*( -0.240695990468967d0
+     &*x1 + 0.26014827853397d0*x5)*exp( -0.33933171852197186d0*x1) + x43
+     & + x44) - 0.0837628205355044d0* x35*x41 - 0.0209761558789675d0*x36
+     &*x7) + x40*( 0.000132058770571892d0*x34*(x44 - 37.6991118430775d0*
+     &( -3.07073492995203d0*x1 + 0.384834731559127d0*x5)*exp( -0.1923086
+     &5217881402d0*x1)/x35) - 0.0445553741830535d0*x35*x37) - 0.06218138
+     &17393098d0*log((4.6213167280845804d0*x38 + x39 + 1.914071024228974
+     &9d0*x4*x40)/(2.1392848713714905d0*x38 + x39)))/( 0.237113969739022
+     &d0*x33*x5 + 1.0d0)**4
+      x46 = -x45 + x9
+      x47 = -x46/(x2*x6)
+      x48 = 0.0310906908696549d0*exp(x10 + 32.163968442914815d0*x45) - 0
+     &.0310906908696549d0
+      x49 = x14*x47**2.78d0
+      x50 = 1.0d0 + 9.56024411508605d0*x49/x48
+      x51 = x46 + 0.0310906908696549d0*log(307.49539002418987d0*x49*x50/
+     &( 91.39826754003758d0*x13*x47**5.5599999999999996d0/x48**2 + x50) 
+     &+ 1.0d0)
+      x52 = 0.5d0*rho_c
+      x53 = x25*x30*(x18*x52 + x23*x52)
+      x54 = rho_c*(x24*(x32 + (x28 - 0.02390625d0*x53)*(x31*(x29 - 0.066
+     &9375d0*x53) + 1.0d0)) + x51)
+      x55 = x18*x26
+      PBE_value = x18
+      PBE_beta_value = x23
+      PBE_alpha_value = x23
+      if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .ge. PB
+     &E_value)) then
+      E = rho_c*(x24*(x32 + (-0.02390625d0*x27 + x28)*(x31*(-0.0669375d0
+     &*x27 + x29 ) + 1.0d0)) + x51)
+      end if
+      if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .lt. PB
+     &E_value)) then
+      E = x54
+      end if
+      if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .ge. PB
+     &E_value)) then
+      E = x54
+      end if
+      if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .lt. PB
+     &E_value)) then
+      E = rho_c*(x24*(x32 + (x28 - 0.02390625d0*x55)*(x31*(x29 - 0.06693
+     &75d0*x55) + 1.0d0)) + x51)
+      end if
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D1ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E,
+     & d1E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, gamma_cc, tau_c, mu
+      real*8, intent(out) :: E, d1E(9)
+      real*8 :: PBE_value, PBE_alpha_value, PBE_beta_value
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
+     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
+     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
+     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
+     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
+     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
+     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
+     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
+     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
+     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
+     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
+     &, x193, x194, x195, x196, x197, x198, x199, x200, x201, x202, x203
+     &, x204, x205, x206, x207, x208, x209, x210, x211, x212, x213, x214
+     &, x215, x216, x217, x218, x219, x220, x221, x222, x223, x224, x225
+     &, x226, x227, x228, x229, x230, x231, x232, x233, x234, x235, x236
+     &, x237, x238, x239, x240, x241, x242, x243, x244, x245, x246, x247
+     &, x248, x249, x250, x251, x252, x253, x254, x255, x256, x257, x258
+     &, x259, x260, x261, x262, x263, x264, x265, x266, x267, x268, x269
+     &, x270, x271, x272, x273, x274, x275, x276, x277, x278, x279, x280
+     &, x281, x282, x283
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = 0.132568899905202d0*x1 + 1.0d0
+      x3 = x0**0.166666666666667d0
+      x4 = sqrt(x0)
+      x5 = x0**0.666666666666667d0
+      x6 = 2.22556942115069d0*x1 + 5.98255043577108d0*x3 + 0.80042863499
+     &9364d0*x4 + 0.189700432574756d0*x5
+      x7 = 1.0d0 + 16.0819842214574d0/x6
+      x8 = log(x7)
+      x9 = x2*x8
+      x10 = 0.0621813817393098d0*x9
+      x11 = -x10
+      x12 = 2.0d0*x9
+      x13 = exp(x12)
+      x14 = x13 - 1.0d0
+      x15 = 1d0/x14
+      x16 = rho_c**(-2.33333333333333d0)
+      x17 = 0.136211706250717d0*x16
+      x18 = x15*x17
+      x19 = gamma_cc*x18 + 1.0d0
+      x20 = x14**(-2)
+      x21 = gamma_cc**2
+      x22 = rho_c**(-4.66666666666667d0)
+      x23 = x21*x22
+      x24 = x19 + 0.0185536289197316d0*x20*x23
+      x25 = 1d0/x24
+      x26 = x17*x25
+      x27 = x19*x26
+      x28 = gamma_cc*x27 + 1.0d0
+      x29 = log(x28)
+      x30 = 0.0310906908696549d0*x29
+      x31 = x11 + x30
+      x32 = 4.84407671606385d0*x1 + 12.4821987467973d0*x3 + 2.3260048119
+     &0082d0*x4 + 0.381908261869097d0*x5
+      x33 = 1.0d0 + 32.1639684429149d0/x32
+      x34 = log(x33)
+      x35 = x34*(0.160601656036401d0*x1 + 1.0d0)
+      x36 = exp(1.999999999999994d0*x35)
+      x37 = x36 - 1.0d0
+      x38 = 1d0/x37
+      x39 = 0.272423412501434d0*x16
+      x40 = x38*x39
+      x41 = gamma_cc*x40 + 1.0d0
+      x42 = x37**(-2)
+      x43 = 0.0742145156789264d0*x23*x42 + x41
+      x44 = 1d0/x43
+      x45 = x39*x44
+      x46 = x41*x45
+      x47 = gamma_cc*x46 + 1.0d0
+      x48 = log(x47)
+      x49 = -0.0310906908696548d0*x35 + 0.0155453454348274d0*x48
+      x50 = exp(-0.46869933305458689d0*mu*rho_c**(-0.33333333333333331d0
+     &))
+      x51 = rho_c**(-2)
+      x52 = tau_c**(-2)
+      x53 = x21*x52
+      x54 = x51*x53
+      x55 = x49*x54
+      x56 = 0.00828125d0*x54 + 1.0d0
+      x57 = x31*x56
+      x58 = -0.02390625d0*x55 + x57
+      x59 = 2.8d0*x57
+      x60 = -0.0669375d0*x55 + x59
+      x61 = gamma_cc**3
+      x62 = tau_c**(-3)
+      x63 = x61*x62
+      x64 = x60*x63
+      x65 = rho_c**(-3)
+      x66 = 0.001953125d0*x65
+      x67 = x64*x66 + 1.0d0
+      x68 = x10 - x30
+      x69 = x50*(x58*x67 + x68)
+      x70 = mu**2
+      x71 = x5*x70
+      x72 = 0.237113969739022d0*x71 + 1.0d0
+      x73 = x72**(-4)
+      x74 = mu**5
+      x75 = exp(-0.46675853320810856d0*x1)
+      x76 = x0**1.0d0
+      x77 = 0.00304892328706429d0*x76
+      x78 = x0**1.33333333333333d0
+      x79 = x75*(0.0128480790170175d0*x1 + 0.0315297404574782d0*x5 - x77
+     & + 0.000275310793616358d0*x78 + 1.0d0)
+      x80 = x74*x79
+      x81 = x0**1.66666666666667d0
+      x82 = 0.00264117541143784d0*x81
+      x83 = mu**8
+      x84 = x0**2.66666666666667d0*x83
+      x85 = x84*x9
+      x86 = -0.0621813817393098d0
+      x87 = x1*x70
+      x88 = mu*x3
+      x89 = 4.60448529760779d0*x88 + 1.0d0
+      x90 = 2.13928487137149d0*x87 + x89
+      x91 = 1d0/x90
+      x92 = mu**3
+      x93 = x4*x92
+      x94 = 4.62131672808458d0*x87 + x89 + 1.91407102422897d0*x93
+      x95 = mu**6
+      x96 = 0.5d0*x79 - 0.5d0
+      x97 = 0.00496533372342768d0*x81
+      x98 = x0**2.0d0
+      x99 = x9*x98
+      x100 = 0.0445553741830535d0*x76
+      x101 = x100*x79
+      x102 = exp(-0.19230865217881402d0*x1)
+      x103 = x102*(-3.07073492995203d0*x1 + 0.384834731559127d0*x5)
+      x104 = 37.6991118430775d0/x76
+      x105 = x103*x104
+      x106 = 1d0/x5
+      x107 = 17.2274040011292d0*x106
+      x108 = 0.337569861992026d0*x1 + 0.0244354823084343d0*x5 + 1.0d0
+      x109 = 1d0/x108
+      x110 = -0.0177069812999059d0*x1 + 1.0d0
+      x111 = x109*x110
+      x112 = -x107*x111
+      x113 = -x105 + x112
+      x114 = 0.000132058770571892d0*x81
+      x115 = mu**4
+      x116 = 0.0837628205355044d0*x76
+      x117 = x116*x96
+      x118 = exp(-0.33933171852197186d0*x1)
+      x119 = x118*(-0.240695990468967d0*x1 + 0.26014827853397d0*x5)
+      x120 = 23.3866625383245d0*x106
+      x121 = x107 + x112 - x119*x120
+      x122 = 0.00020688890514282d0*x81
+      x123 = x115*(-x117 + x121*x122 - 0.0209761558789675d0*x78*x9) - x8
+     &0*x82 - 0.000196557189785076d0*x85 + x86*log(x91*x94) + x92*(-x101
+     & + x113 *x114) + x95*(-x96*x97 - 0.00331582639355101d0*x99)
+      x124 = x123*x73
+      x125 = x11 - x124
+      x126 = 1d0/x2
+      x127 = 1d0/x8
+      x128 = x126*x127
+      x129 = -x125*x128
+      x130 = x129**5.56d0
+      x131 = exp(x12 + 32.163968442914815d0*x124)
+      x132 = 0.0310906908696549d0*x131 - 0.0310906908696549d0
+      x133 = x132**(-2)
+      x134 = x130*x133
+      x135 = 91.3982675400376d0*x134*x23
+      x136 = x129**2.78d0
+      x137 = 1d0/x132
+      x138 = x136*x137
+      x139 = 9.56024411508605d0*x138*x16
+      x140 = gamma_cc*x139
+      x141 = x140 + 1.0d0
+      x142 = x135 + x141
+      x143 = 1d0/x142
+      x144 = x141*x143
+      x145 = x136*x16
+      x146 = 307.49539002419d0*x145
+      x147 = x144*x146
+      x148 = gamma_cc*x147
+      x149 = x148 + 1.0d0
+      x150 = x125 + 0.0310906908696549d0*log(x149)
+      x151 = x150 + x69
+      x152 = x53*x65
+      x153 = 0.0478125d0*x49
+      x154 = x0*x1
+      x155 = x154*x34
+      x156 = x0*x3
+      x157 = x0*x4
+      x158 = x0*x5
+      x159 = 32.1639684429149d0*(1.61469223868795d0*x154 + 2.08036645779
+     &955d0*x156 + 1.16300240595041d0*x157 + 0.254605507912731d0*x158)/(
+     &x32**2*x33)
+      x160 = 1d0/x47
+      x161 = gamma_cc*rho_c**(-3.33333333333333d0)
+      x162 = 0.635654629170013d0*x161
+      x163 = x162*x38
+      x164 = x36*(-0.107067770690933d0*x155 + x159*(0.321203312072801d0*
+     &x1 + 1.99999999999999d0))
+      x165 = gamma_cc*x39
+      x166 = x164*x165*x42
+      x167 = rho_c**(-5.66666666666667d0)*x21
+      x168 = x165*x41/x43**2
+      x169 = 0.00166440548032745d0*x155 + x159*(-0.00499321644098237d0*x
+     &1 - 0.0310906908696548d0) + 0.0155453454348274d0*x160*(gamma_cc*x4
+     &5*( -x163 - x166) - x162*x41*x44 + x168*(x163 + 0.148429031357853d
+     &0* x164*x23/x37**3 + x166 + 0.346334406501657d0*x167*x42))
+      x170 = x169*x54
+      x171 = 0.317827314585006d0*x161
+      x172 = x15*x171
+      x173 = x154*x8
+      x174 = (0.741856473716896d0*x154 + 0.99709173929518d0*x156 + 0.400
+     &214317499682d0*x157 + 0.126466955049837d0*x158)/(x6**2*x7)
+      x175 = 16.0819842214574d0*x174
+      x176 = -0.0883792666034679d0*x173 + x175*(0.265137799810404d0*x1 +
+     & 2.0d0)
+      x177 = x13*x176
+      x178 = gamma_cc*x17
+      x179 = x177*x178*x20
+      x180 = x178*x19/x24**2
+      x181 = 1d0/x28
+      x182 = 0.0310906908696549d0*x181
+      x183 = x182*(gamma_cc*x26*(-x172 - x179) - x171*x19*x25 + x180*( 0
+     &.0865836016254141d0*x167*x20 + x172 + x179 + 0.0371072578394632d0*
+     &x177*x23/x14**3))
+      x184 = 0.00274777245725523d0*x173
+      x185 = 0.0082433173717657d0*x1
+      x186 = x175*(-x185 - 0.0621813817393098d0) + x184
+      x187 = x183 + x186
+      x188 = x187*x56
+      x189 = x152*x31
+      x190 = x188 - 0.0165625d0*x189
+      x191 = rho_c**(-4)
+      x192 = 0.005859375d0*x191
+      x193 = 0.133875d0*x49
+      x194 = 0.0231875d0*x54 + 2.8d0
+      x195 = x187*x194
+      x196 = -0.046375d0*x189 + x195
+      x197 = x63*x66
+      x198 = x175*(x185 + 0.0621813817393098d0) - x183 - x184
+      x199 = 0.156233111018196d0*mu*rho_c**(-1.33333333333333d0)
+      x200 = x125*x127*x154/x2**2
+      x201 = x125*x126*x174/x8**2
+      x202 = x0*x8
+      x203 = x0*x81
+      x204 = x0*x78
+      x205 = x75*(x0*x77 - 0.00428269300567249d0*x154 - 0.02101982697165
+     &21d0*x158 - 0.000367081058155144d0*x204)
+      x206 = x174*x2
+      x207 = 0.767414216267966d0*x0*x88
+      x208 = x0*x87
+      x209 = 0.00152446164353214d0*x76
+      x210 = 0.155586177736036d0*x154*x75*(0.00642403950850874d0*x1 - x2
+     &09 + 0.0157648702287391d0*x5 + 0.000137655396808179d0*x78 + 0.5d0)
+     & + x75*(x0*x209 - 0.00214134650283625d0*x154 - 0.0105099134858261d
+     &0* x158 - 0.000183540529077572d0*x204)
+      x211 = x0/x1
+      x212 = x0*x106
+      x213 = 11.4849360007528d0*x212
+      x214 = -x107*x110*(0.112523287330675d0*x154 + 0.0162903215389562d0
+     &*x158)/x108** 2 - 0.101681773497972d0*x109*x211 - x111*x213
+      x215 = x73*(0.000524152506093537d0*x0*x85 + 8.68579013942185d-6*x0
+     &**3.0d0*x202* x83 - 0.000410930386996015d0*x0**3.0d0*x80 + x115*(x
+     &0*x117 - x116 *x210 - 0.0003448148419047d0*x121*x203 + x122*(-x118
+     &*x120*( 0.0802319968229891d0*x154 - 0.173432185689313d0*x158) - 2.
+     &64527879654103d0*x119*x211 - 15.591108358883d0*x119*x212 + x213 + 
+     &x214) + 0.000926928636371586d0*x203*x8 + 0.0279682078386234d0* x20
+     &4*x9 - 0.337338207872387d0*x206*x78) + 0.00440195901906306d0* x203
+     &*x80 - x205*x74*x82 - 0.00316102962473761d0*x206*x84 + x86* x90*(x
+     &91*(-0.957035512114487d0*x0*x93 - x207 - 1.54043890936153d0 *x208)
+     & + x94*(x207 + 0.71309495712383d0*x208)/x90**2)/x94 + x92*( x0*x10
+     &1 - x100*x205 - 0.000220097950953153d0*x113*x203 + x114*( -2.41662
+     &179562687d0*x0**0.333333333333333d0*x103 - x0*x105 - x102 *x104*(1
+     &.02357830998401d0*x154 - 0.256556487706084d0*x158) + x214 ) - 0.00
+     &693220036674015d0*x204*x79) + x95*(0.00663165278710203d0* x0*x99 +
+     & 0.00014652515242323d0*x0**2.33333333333333d0*x202 + 0.00827555620
+     &57128d0*x203*x96 - 0.0533250677421794d0*x206*x98 - x210*x97))
+      x216 = x0*x123*x71/x72**5
+      x217 = x186 - x215 - 0.632303919304059d0*x216
+      x218 = x128*x217
+      x219 = x9/x125
+      x220 = x219*(-0.12284718057882d0*x200 + 44.7079161356516d0*x201 - 
+     &2.78d0*x218)
+      x221 = 22.3072362685341d0*x138*x161
+      x222 = x131*(x176 + 32.1639684429148d0*x215 + 20.3374033068271d0*x
+     &216)
+      x223 = 0.297234594420578d0*gamma_cc*x133*x145*x222
+      x224 = x140*x220
+      x225 = gamma_cc*x146
+      x226 = x141*x225/x142**2
+      x227 = 0.0310906908696549d0/x149
+      x228 = x217 + x227*(-717.489243389776d0*x136*x144*x161 + x143*x225
+     &*(-x221 - x223 - x224) - x148*x220 + x226*(5.68327056421864d0*x130
+     &*x222*x23 /x132**3 + 426.525248520175d0*x134*x167 + x135*x219*( -0
+     &.245694361157641d0*x200 + 89.4158322713032d0*x201 - 5.56d0*x218 ) 
+     &+ x221 + x223 + x224))
+      x229 = gamma_cc*x22
+      x230 = 0.0185536289197316d0*x15*x229*x25 + x180*(-x18 - 0.03710725
+     &78394632d0* x20*x229) + x27
+      x231 = x182*x230
+      x232 = -x231
+      x233 = gamma_cc*x52
+      x234 = x233*x51
+      x235 = x160*(x168*(-0.148429031357853d0*x229*x42 - x40) + 0.074214
+     &5156789264d0* x229*x38*x44 + x46)
+      x236 = x235*x54
+      x237 = x231*x56
+      x238 = 0.0165625d0*x51
+      x239 = x238*x31
+      x240 = x233*x239 + x237
+      x241 = x21*x62
+      x242 = 0.005859375d0*x65
+      x243 = x242*x60
+      x244 = x194*x231
+      x245 = x234*x31
+      x246 = x244 + 0.046375d0*x245
+      x247 = x227*(2939.73099289485d0*x130*x137*x143*x229 + x147 + x226*
+     &( -182.796535080075d0*x134*x229 - x139))
+      x248 = -x239*x241
+      x249 = x241*x51
+      x250 = -x238*x241*(0.0870539344350337d0*x29 - 0.174107868870067d0*
+     &x9)
+      x251 = x61/tau_c**4
+      x252 = rho_c*x50
+      x253 = 0.5d0*rho_c
+      x254 = x253*x31 + x253*x49
+      x255 = x152*x254
+      x256 = -0.02390625d0*x255 + x57
+      x257 = -0.0669375d0*x255 + x59
+      x258 = x197*x257 + 1.0d0
+      x259 = x50*(x256*x258 + x68)
+      x260 = x150 + x259
+      x261 = rho_c*x260
+      x262 = x191*x254*x53
+      x263 = x152*(x169*x253 + x187*x253 + 0.0155453454348275d0*x29 - 0.
+     &0155453454348274d0*x35 + 0.00777267271741372d0*x48 - 0.03109069086
+     &96549d0*x9)
+      x264 = x192*x63
+      x265 = rho_c*(x199*x259 + x228 + x50*(x198 + x256*(x197*(x196 + 0.
+     &2008125d0* x262 - 0.0669375d0*x263) - x257*x264) + x258*(x190 + 0.
+     &07171875d0 *x262 - 0.02390625d0*x263))) + x260
+      x266 = x181*x230
+      x267 = x152*(0.00777267271741372d0*rho_c*x235 + 0.0155453454348275
+     &d0*rho_c*x266 )
+      x268 = x254*x65
+      x269 = x233*x268
+      x270 = x242*x257
+      x271 = rho_c*(x247 + x50*(x232 + x256*(x197*(x246 - 0.0669375d0*x2
+     &67 - 0.133875d0*x269) + x241*x270) + x258*(x240 - 0.02390625d0*x26
+     &7 - 0.0478125d0*x269)))
+      x272 = x241*x268
+      x273 = x252*(x256*(x197*(x250 + 0.133875d0*x272) - x251*x270) + x2
+     &58*(x248 + 0.0478125d0*x272))
+      x274 = x31*x54
+      x275 = -0.02390625d0*x274 + x57
+      x276 = -0.0669375d0*x274 + x59
+      x277 = x197*x276 + 1.0d0
+      x278 = x50*(x275*x277 + x68)
+      x279 = x150 + x278
+      x280 = x187*x54
+      x281 = x266*x54
+      x282 = x242*x276
+      x283 = x249*x31
+      PBE_value = x31
+      PBE_beta_value = x49
+      PBE_alpha_value = x49
+      if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .ge. PB
+     &E_value)) then
+      E = rho_c*x151
+      d1E(1) = rho_c*(x199*x69 + x228 + x50*(x198 + x58*(-x192*x64 + x19
+     &7*(x152*x193 - 0.0669375d0*x170 + x196)) + x67*(x152*x153 - 0.0239
+     &0625d0*x170 + x190))) + x151
+      d1E(3) = rho_c*(x247 + x50*(x232 + x58*(x197*(-x193*x234 - 0.00104
+     &056656004376d0* x236 + x246) + x241*x243) + x67*(-x153*x234 - 0.00
+     &0371630914301344d0*x236 + x240)))
+      d1E(6) = x252*(x58*(x197*(x193*x249 + x250) - x243*x251) + x67*(x1
+     &53*x249 + x248 ))
+      end if
+      if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .lt. PB
+     &E_value)) then
+      E = x261
+      d1E(1) = x265
+      d1E(3) = x271
+      d1E(6) = x273
+      end if
+      if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .ge. PB
+     &E_value)) then
+      E = x261
+      d1E(1) = x265
+      d1E(3) = x271
+      d1E(6) = x273
+      end if
+      if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .lt. PB
+     &E_value)) then
+      E = rho_c*x279
+      d1E(1) = rho_c*(x199*x278 + x228 + x50*(x198 + x275*(x197*(0.0875d
+     &0*x189 + x195 - 0.0669375d0*x280) - x264*x276) + x277*(x188 + 0.03
+     &125d0*x189 - 0.02390625d0*x280))) + x279
+      d1E(3) = rho_c*(x247 + x50*(x232 + x275*(x197*(x244 - 0.0875d0*x24
+     &5 - 0.00208113312008752d0*x281) + x241*x282) + x277*(x237 - 0.0312
+     &5d0 *x245 - 0.000743261828602687d0*x281)))
+      d1E(6) = x252*(x275*(x197*(x250 + 0.133875d0*x283) - x251*x282) + 
+     &0.03125d0*x277* x283)
+      end if
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E,
+     & d1E, d2E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c, gamma_cc, tau_c, mu
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      real*8 :: PBE_value, PBE_alpha_value, PBE_beta_value
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
+     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
+     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
+     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
+     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
+     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
+     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
+     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
+     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
+     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
+     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
+     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
+     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
+     &, x193, x194, x195, x196, x197, x198, x199, x200, x201, x202, x203
+     &, x204, x205, x206, x207, x208, x209, x210, x211, x212, x213, x214
+     &, x215, x216, x217, x218, x219, x220, x221, x222, x223, x224, x225
+     &, x226, x227, x228, x229, x230, x231, x232, x233, x234, x235, x236
+     &, x237, x238, x239, x240, x241, x242, x243, x244, x245, x246, x247
+     &, x248, x249, x250, x251, x252, x253, x254, x255, x256, x257, x258
+     &, x259, x260, x261, x262, x263, x264, x265, x266, x267, x268, x269
+     &, x270, x271, x272, x273, x274, x275, x276, x277, x278, x279, x280
+     &, x281, x282, x283, x284, x285, x286, x287, x288, x289, x290, x291
+     &, x292, x293, x294, x295, x296, x297, x298, x299, x300, x301, x302
+     &, x303, x304, x305, x306, x307, x308, x309, x310, x311, x312, x313
+     &, x314, x315, x316, x317, x318, x319, x320, x321, x322, x323, x324
+     &, x325, x326, x327, x328, x329, x330, x331, x332, x333, x334, x335
+     &, x336, x337, x338, x339, x340, x341, x342, x343, x344, x345, x346
+     &, x347, x348, x349, x350, x351, x352, x353, x354, x355, x356, x357
+     &, x358, x359, x360, x361, x362, x363, x364, x365, x366, x367, x368
+     &, x369, x370, x371, x372, x373, x374, x375, x376, x377, x378, x379
+     &, x380, x381, x382, x383, x384, x385, x386, x387, x388, x389, x390
+     &, x391, x392, x393, x394, x395, x396, x397, x398, x399, x400, x401
+     &, x402, x403, x404, x405, x406, x407, x408, x409, x410, x411, x412
+     &, x413, x414, x415, x416, x417, x418, x419, x420, x421, x422, x423
+     &, x424, x425, x426, x427, x428, x429, x430, x431, x432, x433, x434
+     &, x435, x436, x437, x438, x439, x440, x441, x442, x443, x444, x445
+     &, x446, x447, x448, x449, x450, x451, x452, x453, x454, x455, x456
+     &, x457, x458, x459, x460, x461, x462, x463, x464, x465, x466, x467
+     &, x468, x469, x470, x471, x472, x473, x474, x475, x476, x477, x478
+     &, x479, x480, x481, x482, x483, x484, x485, x486, x487, x488, x489
+     &, x490, x491, x492, x493, x494, x495, x496, x497, x498, x499, x500
+     &, x501, x502, x503, x504, x505, x506, x507, x508, x509, x510, x511
+     &, x512, x513, x514, x515, x516, x517, x518, x519, x520, x521, x522
+     &, x523, x524, x525, x526, x527, x528, x529, x530, x531, x532, x533
+     &, x534, x535, x536, x537, x538, x539, x540, x541, x542, x543, x544
+     &, x545, x546, x547, x548, x549, x550, x551, x552, x553, x554, x555
+     &, x556, x557, x558, x559, x560, x561, x562, x563, x564, x565, x566
+     &, x567, x568, x569, x570, x571, x572, x573, x574, x575, x576, x577
+     &, x578, x579, x580, x581, x582, x583, x584, x585, x586, x587, x588
+     &, x589, x590, x591, x592, x593, x594, x595, x596, x597, x598, x599
+     &, x600, x601, x602, x603, x604, x605, x606, x607, x608, x609, x610
+     &, x611, x612, x613, x614, x615, x616, x617, x618, x619, x620, x621
+     &, x622, x623, x624, x625, x626, x627, x628, x629, x630, x631, x632
+     &, x633, x634, x635, x636, x637, x638, x639, x640, x641, x642, x643
+     &, x644, x645, x646, x647, x648, x649, x650, x651, x652, x653, x654
+     &, x655, x656, x657, x658, x659, x660, x661, x662, x663, x664, x665
+     &, x666, x667, x668, x669, x670, x671, x672, x673, x674, x675, x676
+     &, x677, x678, x679, x680, x681, x682, x683, x684, x685, x686, x687
+     &, x688, x689, x690, x691, x692, x693, x694, x695, x696, x697, x698
+     &, x699, x700, x701, x702, x703, x704, x705, x706, x707, x708, x709
+     &, x710, x711, x712, x713, x714, x715, x716, x717, x718, x719, x720
+     &, x721, x722, x723, x724, x725, x726, x727, x728, x729, x730, x731
+     &, x732, x733, x734, x735, x736, x737, x738, x739, x740, x741, x742
+     &, x743, x744, x745, x746, x747, x748, x749, x750, x751, x752, x753
+     &, x754, x755, x756, x757, x758, x759, x760, x761, x762, x763, x764
+     &, x765, x766, x767, x768, x769, x770, x771, x772, x773, x774, x775
+     &, x776, x777, x778, x779, x780, x781, x782, x783, x784, x785, x786
+     &, x787, x788, x789, x790, x791, x792, x793, x794, x795, x796, x797
+     &, x798, x799, x800, x801, x802, x803, x804, x805, x806, x807, x808
+     &, x809, x810, x811, x812, x813, x814, x815
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      d2E(:) = 0.0d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = 0.132568899905202d0*x1 + 1.0d0
+      x3 = x0**0.166666666666667d0
+      x4 = sqrt(x0)
+      x5 = 0.800428634999364d0*x4
+      x6 = x0**0.666666666666667d0
+      x7 = 2.22556942115069d0*x1 + 5.98255043577108d0*x3 + x5 + 0.189700
+     &432574756d0 *x6
+      x8 = 1.0d0 + 16.0819842214574d0/x7
+      x9 = log(x8)
+      x10 = x2*x9
+      x11 = 0.0621813817393098d0*x10
+      x12 = -x11
+      x13 = 2.0d0*x10
+      x14 = exp(x13)
+      x15 = x14 - 1.0d0
+      x16 = x15**(-2)
+      x17 = gamma_cc**2
+      x18 = rho_c**(-4.66666666666667d0)
+      x19 = x17*x18
+      x20 = rho_c**(-2.33333333333333d0)
+      x21 = 1d0/x15
+      x22 = x20*x21
+      x23 = 0.136211706250717d0*x22
+      x24 = gamma_cc*x23 + 1.0d0
+      x25 = 0.0185536289197316d0*x16*x19 + x24
+      x26 = 1d0/x25
+      x27 = x24*x26
+      x28 = 0.136211706250717d0*x20
+      x29 = x27*x28
+      x30 = gamma_cc*x29 + 1.0d0
+      x31 = log(x30)
+      x32 = 0.0310906908696549d0*x31
+      x33 = x12 + x32
+      x34 = 2.32600481190082d0*x4
+      x35 = 4.84407671606385d0*x1 + 12.4821987467973d0*x3 + x34 + 0.3819
+     &08261869097d0*x6
+      x36 = 1.0d0 + 32.1639684429149d0/x35
+      x37 = log(x36)
+      x38 = x37*(0.160601656036401d0*x1 + 1.0d0)
+      x39 = exp(1.999999999999994d0*x38)
+      x40 = x39 - 1.0d0
+      x41 = x40**(-2)
+      x42 = 1d0/x40
+      x43 = x20*x42
+      x44 = 0.272423412501434d0*x43
+      x45 = gamma_cc*x44 + 1.0d0
+      x46 = 0.0742145156789264d0*x19*x41 + x45
+      x47 = 1d0/x46
+      x48 = x45*x47
+      x49 = 0.272423412501434d0*x20
+      x50 = x48*x49
+      x51 = gamma_cc*x50 + 1.0d0
+      x52 = log(x51)
+      x53 = -0.0310906908696548d0*x38 + 0.0155453454348274d0*x52
+      x54 = exp(-0.46869933305458689d0*mu*rho_c**(-0.33333333333333331d0
+     &))
+      x55 = rho_c**(-2)
+      x56 = tau_c**(-2)
+      x57 = x55*x56
+      x58 = x17*x57
+      x59 = x53*x58
+      x60 = 0.00828125d0*x58 + 1.0d0
+      x61 = x33*x60
+      x62 = -0.02390625d0*x59 + x61
+      x63 = rho_c**(-3)
+      x64 = 2.8d0*x61
+      x65 = -0.0669375d0*x59 + x64
+      x66 = x63*x65
+      x67 = gamma_cc**3
+      x68 = tau_c**(-3)
+      x69 = x67*x68
+      x70 = 0.001953125d0*x69
+      x71 = x66*x70 + 1.0d0
+      x72 = x11 - x32
+      x73 = x54*(x62*x71 + x72)
+      x74 = mu**2
+      x75 = x6*x74
+      x76 = 0.237113969739022d0*x75 + 1.0d0
+      x77 = x76**(-4)
+      x78 = mu**5
+      x79 = exp(-0.46675853320810856d0*x1)
+      x80 = x0**1.0d0
+      x81 = 0.00304892328706429d0*x80
+      x82 = x0**1.33333333333333d0
+      x83 = x79*(0.0128480790170175d0*x1 + 0.0315297404574782d0*x6 - x81
+     & + 0.000275310793616358d0*x82 + 1.0d0)
+      x84 = x78*x83
+      x85 = x0**1.66666666666667d0
+      x86 = 0.00264117541143784d0*x85
+      x87 = mu**8
+      x88 = x0**2.66666666666667d0*x87
+      x89 = x10*x88
+      x90 = -0.0621813817393098d0
+      x91 = x1*x74
+      x92 = mu*x3
+      x93 = 4.60448529760779d0*x92 + 1.0d0
+      x94 = 2.13928487137149d0*x91 + x93
+      x95 = 1d0/x94
+      x96 = mu**3
+      x97 = x4*x96
+      x98 = 4.62131672808458d0*x91 + x93 + 1.91407102422897d0*x97
+      x99 = mu**6
+      x100 = 0.5d0*x83 - 0.5d0
+      x101 = 0.00496533372342768d0*x85
+      x102 = x0**2.0d0
+      x103 = x10*x102
+      x104 = 0.0445553741830535d0*x80
+      x105 = x104*x83
+      x106 = exp(-0.19230865217881402d0*x1)
+      x107 = x106*(-3.07073492995203d0*x1 + 0.384834731559127d0*x6)
+      x108 = 1d0/x80
+      x109 = 37.6991118430775d0*x108
+      x110 = x107*x109
+      x111 = 1d0/x6
+      x112 = 17.2274040011292d0*x111
+      x113 = 0.337569861992026d0*x1 + 0.0244354823084343d0*x6 + 1.0d0
+      x114 = 1d0/x113
+      x115 = -0.0177069812999059d0*x1 + 1.0d0
+      x116 = x114*x115
+      x117 = -x112*x116
+      x118 = -x110 + x117
+      x119 = 0.000132058770571892d0*x85
+      x120 = mu**4
+      x121 = 0.0837628205355044d0*x80
+      x122 = x100*x121
+      x123 = exp(-0.33933171852197186d0*x1)
+      x124 = x123*(-0.240695990468967d0*x1 + 0.26014827853397d0*x6)
+      x125 = 23.3866625383245d0*x111
+      x126 = x112 + x117 - x124*x125
+      x127 = 0.00020688890514282d0*x85
+      x128 = x120*(-0.0209761558789675d0*x10*x82 - x122 + x126*x127) - x
+     &84*x86 - 0.000196557189785076d0*x89 + x90*log(x95*x98) + x96*(-x10
+     &5 + x118 *x119) + x99*(-x100*x101 - 0.00331582639355101d0*x103)
+      x129 = x128*x77
+      x130 = x12 - x129
+      x131 = 1d0/x2
+      x132 = 1d0/x9
+      x133 = x131*x132
+      x134 = -x130*x133
+      x135 = x134**2.78d0
+      x136 = exp(32.163968442914815d0*x129 + x13)
+      x137 = 0.0310906908696549d0*x136 - 0.0310906908696549d0
+      x138 = 1d0/x137
+      x139 = x135*x138
+      x140 = x139*x20
+      x141 = 9.56024411508605d0*x140
+      x142 = gamma_cc*x141
+      x143 = x142 + 1.0d0
+      x144 = x134**5.56d0
+      x145 = x137**(-2)
+      x146 = x144*x145
+      x147 = x146*x19
+      x148 = 91.3982675400376d0*x147
+      x149 = x143 + x148
+      x150 = 1d0/x149
+      x151 = x135*x150
+      x152 = x143*x151
+      x153 = 307.49539002419d0*x20
+      x154 = x152*x153
+      x155 = gamma_cc*x154
+      x156 = x155 + 1.0d0
+      x157 = x130 + 0.0310906908696549d0*log(x156)
+      x158 = x157 + x73
+      x159 = x56*x63
+      x160 = x159*x17
+      x161 = x160*x53
+      x162 = -0.00499321644098237d0*x1 - 0.0310906908696548d0
+      x163 = x0*x3
+      x164 = x0*x1
+      x165 = x0*x4
+      x166 = x0*x6
+      x167 = 2.08036645779955d0*x163 + 1.61469223868795d0*x164 + 1.16300
+     &240595041d0* x165 + 0.254605507912731d0*x166
+      x168 = 1d0/x36
+      x169 = x35**(-2)
+      x170 = 32.1639684429149d0*x168*x169
+      x171 = x167*x170
+      x172 = rho_c**(-3.33333333333333d0)
+      x173 = 0.635654629170013d0*x172
+      x174 = x173*x48
+      x175 = gamma_cc*x174
+      x176 = x172*x42
+      x177 = 0.635654629170013d0*x176
+      x178 = gamma_cc*x177
+      x179 = x164*x37
+      x180 = 0.321203312072801d0*x1 + 1.99999999999999d0
+      x181 = x171*x180 - 0.107067770690933d0*x179
+      x182 = x181*x39
+      x183 = x182*x41
+      x184 = x183*x49
+      x185 = gamma_cc*x184
+      x186 = -x178 - x185
+      x187 = x47*x49
+      x188 = x186*x187
+      x189 = gamma_cc*x188
+      x190 = rho_c**(-5.66666666666667d0)
+      x191 = x17*x190
+      x192 = x191*x41
+      x193 = x40**(-3)
+      x194 = x182*x193
+      x195 = 0.148429031357853d0*x19
+      x196 = x178 + x185 + 0.346334406501657d0*x192 + x194*x195
+      x197 = x46**(-2)
+      x198 = x197*x45
+      x199 = x198*x49
+      x200 = x196*x199
+      x201 = gamma_cc*x200
+      x202 = -x175 + x189 + x201
+      x203 = 1d0/x51
+      x204 = 0.0155453454348274d0*x203
+      x205 = 0.00166440548032745d0*x179 + x202*x204
+      x206 = x162*x171 + x205
+      x207 = x206*x58
+      x208 = 0.317827314585006d0*x172
+      x209 = x208*x27
+      x210 = gamma_cc*x209
+      x211 = x172*x21
+      x212 = 0.317827314585006d0*x211
+      x213 = gamma_cc*x212
+      x214 = x164*x9
+      x215 = 0.265137799810404d0*x1 + 2.0d0
+      x216 = 0.99709173929518d0*x163 + 0.741856473716896d0*x164 + 0.4002
+     &14317499682d0 *x165 + 0.126466955049837d0*x166
+      x217 = 1d0/x8
+      x218 = x217/x7**2
+      x219 = 16.0819842214574d0*x218
+      x220 = x216*x219
+      x221 = -0.0883792666034679d0*x214 + x215*x220
+      x222 = x14*x221
+      x223 = x16*x222
+      x224 = x223*x28
+      x225 = gamma_cc*x224
+      x226 = -x213 - x225
+      x227 = x26*x28
+      x228 = x226*x227
+      x229 = gamma_cc*x228
+      x230 = x16*x191
+      x231 = x15**(-3)
+      x232 = x222*x231
+      x233 = 0.0371072578394632d0*x19
+      x234 = x213 + x225 + 0.0865836016254141d0*x230 + x232*x233
+      x235 = x25**(-2)
+      x236 = x235*x24
+      x237 = x236*x28
+      x238 = x234*x237
+      x239 = gamma_cc*x238
+      x240 = -x210 + x229 + x239
+      x241 = 1d0/x30
+      x242 = 0.0310906908696549d0*x241
+      x243 = x240*x242
+      x244 = 0.00274777245725523d0*x214
+      x245 = 0.0082433173717657d0*x1
+      x246 = -x245 - 0.0621813817393098d0
+      x247 = x220*x246
+      x248 = x244 + x247
+      x249 = x243 + x248
+      x250 = x249*x60
+      x251 = x160*x33
+      x252 = x250 - 0.0165625d0*x251
+      x253 = 0.0478125d0*x161 - 0.02390625d0*x207 + x252
+      x254 = rho_c**(-4)
+      x255 = x254*x69
+      x256 = 0.005859375d0*x255
+      x257 = 0.0231875d0*x58 + 2.8d0
+      x258 = x249*x257
+      x259 = -0.046375d0*x251 + x258
+      x260 = 0.133875d0*x161 - 0.0669375d0*x207 + x259
+      x261 = x63*x70
+      x262 = -x256*x65 + x260*x261
+      x263 = -x244
+      x264 = x245 + 0.0621813817393098d0
+      x265 = x220*x264 - x243 + x263
+      x266 = x54*(x253*x71 + x262*x62 + x265)
+      x267 = mu*rho_c**(-1.33333333333333d0)
+      x268 = x267*x73
+      x269 = 717.489243389776d0*x172
+      x270 = x152*x269
+      x271 = gamma_cc*x270
+      x272 = x2**2
+      x273 = 1d0/x272
+      x274 = x130*x132
+      x275 = x273*x274
+      x276 = x164*x275
+      x277 = x130*x131
+      x278 = x9**2
+      x279 = 1d0/x278
+      x280 = x216*x218
+      x281 = x279*x280
+      x282 = x277*x281
+      x283 = x0**3.0d0
+      x284 = x283*x87*x9
+      x285 = x0*x85
+      x286 = x0**2.0d0
+      x287 = x286*x84
+      x288 = x0*x82
+      x289 = x0*x81 - 0.00428269300567249d0*x164 - 0.0210198269716521d0*
+     &x166 - 0.000367081058155144d0*x288
+      x290 = x289*x79
+      x291 = x78*x86
+      x292 = x2*x280
+      x293 = 0.00316102962473761d0*x88
+      x294 = 1d0/x98
+      x295 = x0*x92
+      x296 = 0.767414216267966d0*x295
+      x297 = -x296
+      x298 = x0*x91
+      x299 = 1.54043890936153d0*x298
+      x300 = 0.957035512114487d0*x0*x97
+      x301 = x297 - x299 - x300
+      x302 = 0.71309495712383d0*x298
+      x303 = x296 + x302
+      x304 = x94**(-2)
+      x305 = x304*x98
+      x306 = x301*x95 + x303*x305
+      x307 = x294*x306*x90
+      x308 = x0**2.33333333333333d0
+      x309 = x308*x9
+      x310 = 0.00152446164353214d0*x80
+      x311 = x79*(0.00642403950850874d0*x1 - x310 + 0.0157648702287391d0
+     &*x6 + 0.000137655396808179d0*x82 + 0.5d0)
+      x312 = x79*(x0*x310 - 0.00214134650283625d0*x164 - 0.0105099134858
+     &261d0*x166 - 0.000183540529077572d0*x288)
+      x313 = 0.155586177736036d0*x164*x311 + x312
+      x314 = 0.0533250677421794d0*x102
+      x315 = x104*x79
+      x316 = 1.02357830998401d0*x164 - 0.256556487706084d0*x166
+      x317 = x106*x109
+      x318 = x0**(-0.666666666666667d0)
+      x319 = x0*x318
+      x320 = 1d0/x1
+      x321 = x114*x320
+      x322 = x0*x111
+      x323 = 11.4849360007528d0*x322
+      x324 = x113**(-2)
+      x325 = 0.112523287330675d0*x164 + 0.0162903215389562d0*x166
+      x326 = x324*x325
+      x327 = x112*x115
+      x328 = -0.101681773497972d0*x0*x321 - x116*x323 - x326*x327
+      x329 = -x0*x110 - 2.41662179562687d0*x107*x319 - x316*x317 + x328
+      x330 = 0.337338207872387d0*x82
+      x331 = 0.0802319968229891d0*x164 - 0.173432185689313d0*x166
+      x332 = x123*x125
+      x333 = x0*x320
+      x334 = -15.591108358883d0*x124*x322 - 2.64527879654103d0*x124*x333
+     & + x323 + x328 - x331*x332
+      x335 = 8.68579013942185d-6*x0*x284 - 0.000410930386996015d0*x0*x28
+     &7 + 0.000524152506093537d0*x0*x89 + x120*(x0*x122 + 0.027968207838
+     &6234d0*x10*x288 - x121*x313 - 0.0003448148419047d0* x126*x285 + x1
+     &27*x334 + 0.000926928636371586d0*x285*x9 - x292* x330) + 0.0044019
+     &5901906306d0*x285*x84 - x290*x291 - x292*x293 + x307*x94 + x96*(x0
+     &*x105 - 0.000220097950953153d0*x118*x285 + x119 *x329 - 0.00693220
+     &036674015d0*x288*x83 - x289*x315) + x99*( 0.00663165278710203d0*x0
+     &*x103 + 0.00014652515242323d0*x0*x309 + 0.0082755562057128d0*x100*
+     &x285 - x101*x313 - x292*x314)
+      x336 = x335*x77
+      x337 = x76**(-5)
+      x338 = x0*x337*x75
+      x339 = x128*x338
+      x340 = 0.632303919304059d0*x339
+      x341 = x248 - x336 - x340
+      x342 = x133*x341
+      x343 = -0.12284718057882d0*x276 + 44.7079161356516d0*x282 - 2.78d0
+     &*x342
+      x344 = 1d0/x130
+      x345 = x10*x344
+      x346 = x343*x345
+      x347 = x155*x346
+      x348 = x139*x172
+      x349 = 22.3072362685341d0*x348
+      x350 = gamma_cc*x349
+      x351 = x221 + 32.1639684429148d0*x336 + 20.3374033068271d0*x339
+      x352 = x136*x351
+      x353 = x145*x352
+      x354 = x135*x20
+      x355 = 0.297234594420578d0*x354
+      x356 = x353*x355
+      x357 = gamma_cc*x356
+      x358 = x142*x346
+      x359 = -x350 - x357 - x358
+      x360 = x151*x153
+      x361 = x359*x360
+      x362 = gamma_cc*x361
+      x363 = x135*x153
+      x364 = x146*x191
+      x365 = x137**(-3)
+      x366 = x352*x365
+      x367 = x144*x19
+      x368 = 5.68327056421864d0*x367
+      x369 = -0.245694361157641d0*x276 + 89.4158322713032d0*x282 - 5.56d
+     &0*x342
+      x370 = x148*x345
+      x371 = x350 + x357 + x358 + 426.525248520175d0*x364 + x366*x368 + 
+     &x369*x370
+      x372 = x149**(-2)
+      x373 = x143*x372
+      x374 = x371*x373
+      x375 = x363*x374
+      x376 = gamma_cc*x375
+      x377 = -x271 - x347 + x362 + x376
+      x378 = 1d0/x156
+      x379 = 0.0310906908696549d0*x378
+      x380 = x341 + x377*x379
+      x381 = x21*x26
+      x382 = gamma_cc*x18
+      x383 = 0.0185536289197316d0*x382
+      x384 = x381*x383
+      x385 = x16*x382
+      x386 = -x23 - 0.0371072578394632d0*x385
+      x387 = gamma_cc*x237
+      x388 = x386*x387
+      x389 = x29 + x384 + x388
+      x390 = x242*x389
+      x391 = -x390
+      x392 = x53*x57
+      x393 = 0.0478125d0*x392
+      x394 = x42*x47
+      x395 = 0.0742145156789264d0*x382
+      x396 = x394*x395
+      x397 = x382*x41
+      x398 = -0.148429031357853d0*x397 - x44
+      x399 = gamma_cc*x199
+      x400 = x398*x399
+      x401 = x396 + x400 + x50
+      x402 = x203*x401
+      x403 = 0.000371630914301344d0*x58
+      x404 = x390*x60
+      x405 = x33*x57
+      x406 = 0.0165625d0*x405
+      x407 = gamma_cc*x406 + x404
+      x408 = -gamma_cc*x393 - x402*x403 + x407
+      x409 = x17*x68
+      x410 = 0.005859375d0*x66
+      x411 = 0.133875d0*x392
+      x412 = 0.00104056656004376d0*x58
+      x413 = x257*x390
+      x414 = 0.046375d0*x405
+      x415 = gamma_cc*x414 + x413
+      x416 = -gamma_cc*x411 - x402*x412 + x415
+      x417 = x261*x416 + x409*x410
+      x418 = x54*(x391 + x408*x71 + x417*x62)
+      x419 = x138*x144
+      x420 = x150*x419
+      x421 = 2939.73099289485d0*x382
+      x422 = x420*x421
+      x423 = x146*x382
+      x424 = 182.796535080075d0*x423
+      x425 = -x141 - x424
+      x426 = x373*x425
+      x427 = gamma_cc*x363
+      x428 = x426*x427
+      x429 = x154 + x422 + x428
+      x430 = x379*x429
+      x431 = x418 + x430
+      x432 = x409*x55
+      x433 = 0.0165625d0*x432
+      x434 = -x33*x433
+      x435 = x432*x53
+      x436 = x434 + 0.0478125d0*x435
+      x437 = -0.174107868870067d0*x10 + 0.0870539344350337d0*x31
+      x438 = -x433*x437
+      x439 = 0.133875d0*x435 + x438
+      x440 = tau_c**(-4)
+      x441 = x440*x67
+      x442 = x261*x439 - x410*x441
+      x443 = x54*(x436*x71 + x442*x62)
+      x444 = x160*x206
+      x445 = x254*x56
+      x446 = x17*x445
+      x447 = x446*x53
+      x448 = x1*x55
+      x449 = x37*x448
+      x450 = x167*x168
+      x451 = x169*x450
+      x452 = x164*x451
+      x453 = x3*x55
+      x454 = x4*x55
+      x455 = x55*x6
+      x456 = x170*(-2.15292298491727d0*x448 - 2.42709420076615d0*x453 - 
+     &1.74450360892561d0*x454 - 0.424342513187885d0*x455)
+      x457 = 1034.52086599683d0*x167**2/(x35**4*x36**2)
+      x458 = 32.1639684429149d0*x450*(x0*x34 + 4.16073291559911d0*x163 +
+     & 3.2293844773759d0*x164 + 0.509211015825462d0*x166)/x35**3
+      x459 = x51**(-2)
+      x460 = 0.0155453454348274d0*x202*x459
+      x461 = gamma_cc*rho_c**(-4.33333333333333d0)
+      x462 = 2.11884876390004d0*x461
+      x463 = 1.27130925834003d0*gamma_cc
+      x464 = x172*x463
+      x465 = 0.544846825002868d0*x20
+      x466 = gamma_cc*x465
+      x467 = x196*x197
+      x468 = 0.296858062715706d0*x194
+      x469 = gamma_cc*x49
+      x470 = x45*x469/x46**3
+      x471 = x196*x470
+      x472 = x42*x462
+      x473 = x183*x464
+      x474 = exp(3.999999999999988d0*x38)
+      x475 = x181**2
+      x476 = gamma_cc*x475
+      x477 = x193*x465*x474*x476
+      x478 = x39*x41*x49
+      x479 = x476*x478
+      x480 = x180*x456 - x180*x457 + x180*x458 + 0.142757027587911d0*x44
+     &9 - 6.88744879551287d0*x452
+      x481 = gamma_cc*x478*x480
+      x482 = gamma_cc*x187
+      x483 = rho_c**(-6.66666666666667d0)*x17
+      x484 = x193*x195*x39
+      x485 = x162*x456 - x162*x457 + x162*x458 + x204*(-x186*x464*x47 + 
+     &x186*x466* x467 - x196*x198*x464 + x399*(-0.445287094073559d0*x19*
+     &x474*x475/ x40**4 - 1.38533762600663d0*x191*x194 - 1.9625616368427
+     &2d0*x41* x483 - x472 - x473 + x475*x484 - x477 + x479 + x480*x484 
+     &+ x481) + x462*x48 + x471*(x176*x463 + x183*x466 + x19*x468 + 0.69
+     &2668813003313d0*x192) + x482*(x472 + x473 + x477 - x479 - x481)) -
+     & 0.00221920730710327d0*x449 + 0.107067770690934d0*x452 + x460*(x17
+     &5 - x189 - x201)
+      x486 = x485*x58
+      x487 = 1.05942438195002d0*x461
+      x488 = 0.635654629170012d0*gamma_cc
+      x489 = x172*x488
+      x490 = 0.272423412501434d0*x20
+      x491 = gamma_cc*x490
+      x492 = x234*x235
+      x493 = 0.0742145156789264d0*x232
+      x494 = gamma_cc*x28
+      x495 = x24*x494/x25**3
+      x496 = x234*x495
+      x497 = x21*x487
+      x498 = x223*x489
+      x499 = 4.0d0*x10
+      x500 = exp(x499)
+      x501 = x221**2
+      x502 = gamma_cc*x501
+      x503 = x231*x490*x500*x502
+      x504 = x14*x16*x28
+      x505 = x502*x504
+      x506 = x448*x9
+      x507 = x164*x280
+      x508 = -0.989141964955861d0*x448 - 1.16327369584438d0*x453 - 0.600
+     &321476249523d0*x454 - 0.210778258416395d0*x455
+      x509 = x219*x508
+      x510 = x216**2/(x7**4*x8**2)
+      x511 = 258.630216499205d0*x510
+      x512 = x216*x217*(x0*x5 + 1.99418347859036d0*x163 + 1.483712947433
+     &79d0*x164 + 0.252933910099675d0*x166)/x7**3
+      x513 = 16.0819842214574d0*x512
+      x514 = x215*x509 - x215*x511 + x215*x513 + 0.117839022137957d0*x50
+     &6 - 2.8426279420419d0*x507
+      x515 = gamma_cc*x504*x514
+      x516 = gamma_cc*x227
+      x517 = x14*x231*x233
+      x518 = x242*(-x226*x26*x489 + x226*x491*x492 - x234*x236*x489 + x2
+     &7*x487 + x387 *(-0.49064040921068d0*x16*x483 - 0.346334406501656d0
+     &*x191*x232 - x497 - x498 + x501*x517 - x503 + x505 + x514*x517 + x
+     &515 - 0.11132177351839d0*x19*x500*x501/x15**4) + x496*(x19*x493 + 
+     &x211* x488 + x223*x491 + 0.173167203250828d0*x230) + x516*(x497 + 
+     &x498 + x503 - x505 - x515))
+      x519 = x30**(-2)
+      x520 = 0.0310906908696549d0*x519
+      x521 = x240*x520
+      x522 = x521*(x210 - x229 - x239)
+      x523 = 0.00366369660967365d0*x506
+      x524 = 0.0883792666034679d0*x507
+      x525 = x246*x509 - x246*x511 + x246*x513 - x523 + x524
+      x526 = x518 + x522 + x525
+      x527 = x526*x60
+      x528 = 0.0496875d0*x17
+      x529 = x33*x528
+      x530 = x160*x249
+      x531 = x445*x529 + x527 - 0.033125d0*x530
+      x532 = rho_c**(-5)
+      x533 = 0.0234375d0*x532*x69
+      x534 = 0.01171875d0*x255
+      x535 = x257*x526
+      x536 = x33*x446
+      x537 = -0.09275d0*x530 + x535 + 0.139125d0*x536
+      x538 = x264*x509 - x264*x511 + x264*x513 - x518 - x522 + x523 - x5
+     &24
+      x539 = 0.0244087849784238d0*rho_c**(-2.66666666666667d0)*x74
+      x540 = 0.312466222036391d0*x267
+      x541 = 0.208310814690927d0*mu*rho_c**(-2.33333333333333d0)
+      x542 = gamma_cc*x172
+      x543 = x343*x344
+      x544 = x1*x9
+      x545 = x543*x544
+      x546 = 1434.97848677955d0*x542
+      x547 = x272*x278
+      x548 = x343**2*x547
+      x549 = x130**(-2)
+      x550 = x155*x549
+      x551 = gamma_cc*x292*x543
+      x552 = x10*(-x247 + x263 + x336 + x340)
+      x553 = x343*x552
+      x554 = x151*x359
+      x555 = gamma_cc*x346
+      x556 = x274*x455/x2**3
+      x557 = x275*x448
+      x558 = x218*x508
+      x559 = x277*x279
+      x560 = x558*x559
+      x561 = x277*x510/x9**3
+      x562 = x510*x559
+      x563 = x130*x273*x279*x507
+      x564 = x512*x559
+      x565 = x132*x164*x273*x341
+      x566 = x131*x281*x341
+      x567 = x55*x85
+      x568 = x55*x80
+      x569 = x55*x82
+      x570 = 0.00571025734089666d0*x448 + 0.0350330449527535d0*x455 - 0.
+     &00609784657412857d0*x568 + 0.000856522469028669d0*x569
+      x571 = x290*x78
+      x572 = x0*x280
+      x573 = x2*x293
+      x574 = x2*x510
+      x575 = x0*x292
+      x576 = x90*x94
+      x577 = 0.89531658564596d0*x55*x92
+      x578 = x55*x91
+      x579 = x0*x80
+      x580 = x106*x316
+      x581 = x107*x55
+      x582 = x111*x55
+      x583 = 3.82831200025092d0*x582
+      x584 = -22.9698720015055d0*x115*x322*x326 + x116*x583 + 1.38777878
+     &078145d-17* x321*x55 - x324*x327*(-0.150031049774234d0*x448 - 0.02
+     &71505358982603d0*x455) - 0.203363546995945d0*x326*x333 - x325 *x32
+     &7*(0.225046574661351d0*x164 + 0.0325806430779124d0*x166)/x113 **3
+      x585 = x2*x314
+      x586 = 0.311172355472072d0*x164*x312 - 0.207448236981382d0*x311*x4
+     &48 + 0.0242070587025094d0*x311*x455 + x79*(0.00285512867044833d0*x
+     &448 + 0.0175165224763768d0*x455 - x55*x81 + 0.000428261234514334d0
+     &* x569)
+      x587 = x2*x330
+      x588 = x123*x331
+      x589 = x77*(-0.000821860773992031d0*x0*x286*x571 - 6.3935088228300
+     &2d-5*x0** 2.33333333333333d0*x55*x84 + x120*(-0.0652591516234546d0
+     &*x10*x569 - 0.167525641071009d0*x100*x568 - x121*x586 + 0.00091950
+     &62450792d0*x126*x567 + x127*(-0.299209d0*x124*x55 + 5.197036119627
+     &67d0*x124*x582 - 31.182216717766d0*x322*x588 - x332 *(-0.106975995
+     &763985d0*x448 + 0.289053642815522d0*x455) - 5.29055759308205d0*x33
+     &3*x588 - x583 + x584) + 0.0298137034090898d0*x280*x285 - 0.0006896
+     &296838094d0*x285*x334 + 0.899568554326366d0*x288*x292 + 0.16752564
+     &1071009d0*x313*x579 - x512*x587 - x558*x587 - 0.00370771454548634d
+     &0*x567*x9 + 5.42506773629845d0*x574*x82) + 0.000279369479946145d0*
+     &x283*x572* x87 - 5.79052675961456d-5*x284*x55 + 0.0088039180381261
+     &2d0*x285* x571 + 0.00191767513931474d0*x287*x55 - x291*x570*x79 + 
+     &x294*x576 *(2.0d0*x301*x303*x304 + x303*x98*(1.53482843253593d0*x2
+     &95 + 1.42618991424766d0*x298)/x94**3 + x305*(-x577 - 0.95079327616
+     &5107d0*x578) + x95*(1.43555326817173d0*x55*x97 + x577 + 2.05391854
+     &581537d0*x578)) + x306*x576*(x296 + x299 + x300) /x98**2 + x307*(x
+     &297 - x302) - x512*x573 - 0.00192189252234297d0* x55*x89 - x558*x5
+     &73 - 0.0117385573841682d0*x567*x84 + 0.0508356285485896d0*x574*x88
+     & + 0.0168588246652672d0*x575*x88 + x96*(0.000586927869208408d0*x11
+     &8*x567 + x119*( -0.154912426780983d0*x0**(-0.333333333333333d0)*x5
+     &81 - 75.398223686155d0*x0*x108*x580 - x317*(-1.36477107997868d0*x4
+     &48 + 0.427594146176807d0*x455) - 1.61108119708458d0*x318*x581 - 4.
+     &83324359125373d0*x319*x580 + x584) - 0.000440195901906306d0* x285*
+     &x329 - 0.0138644007334803d0*x288*x290 + 0.0891107483661069d0 *x290
+     &*x579 - x315*x570 - 0.00107855455836145d0*x567*x83 - 0.08911074836
+     &61069d0*x568*x83 + 0.0231073345558005d0*x569*x83) + x99*(-0.022068
+     &1498819008d0*x100*x567 - x101*x586 + 0.857572898037877d0*x102*x574
+     & + 0.213300270968718d0*x102*x575 - 0.0198949583613061d0*x103*x55 +
+     & 0.0165511124114256d0*x285*x313 + 0.00471283037863406d0*x308*x572 
+     &- 0.000781467479590561d0*x309*x55 - x512*x585 - x558*x585))
+      x590 = x128*x337*x55*x75
+      x591 = x335*x338
+      x592 = x120*x128*x569/x76**6
+      x593 = x525 - x589 + 1.05383986550676d0*x590 - 1.26460783860812d0*
+     &x591 - 0.499760307959092d0*x592
+      x594 = x133*x593
+      x595 = x345*(-0.0108571437238599d0*x556 + 0.16379624077176d0*x557 
+     &+ 44.7079161356516d0*x560 - 1437.98400373558d0*x561 - 718.99200186
+     &779d0*x562 + 3.95125283943823d0*x563 + 44.7079161356516d0*x564 - 0
+     &.245694361157641d0*x565 + 89.4158322713032d0*x566 - 2.78d0*x594)
+      x596 = 614.99078004838d0*x354
+      x597 = gamma_cc*x596
+      x598 = x359*x372
+      x599 = gamma_cc*x348
+      x600 = 44.6144725370683d0*x599
+      x601 = 853.050497040351d0*x364
+      x602 = 0.594469188841156d0*gamma_cc*x353*x354
+      x603 = 11.3665411284373d0*x366*x367
+      x604 = 19.1204882301721d0*x140
+      x605 = x345*x369
+      x606 = x143/x149**3
+      x607 = x371*x427*x606
+      x608 = 74.3574542284471d0*x139*x461
+      x609 = 1.3870947739627d0*x135*x353*x542
+      x610 = exp(64.327936885829629d0*x129 + x499)
+      x611 = x351**2
+      x612 = gamma_cc*x611
+      x613 = 0.0184824577817949d0*x354*x365*x610*x612
+      x614 = x136*x145*x355
+      x615 = x612*x614
+      x616 = 0.422463681720712d0*x545*x599
+      x617 = x346*x600
+      x618 = x142*x549
+      x619 = x548*x618
+      x620 = 153.747695012095d0*x140*x551
+      x621 = x553*x618
+      x622 = x346*x602
+      x623 = x514 + 32.1639684429148d0*x589 - 33.8956721780452d0*x590 + 
+     &40.6748066136542d0*x591 + 16.0742747742176d0*x592
+      x624 = gamma_cc*x614*x623
+      x625 = x142*x595
+      x626 = gamma_cc*x360
+      x627 = x144*x366
+      x628 = x136*x365*x368
+      x629 = x344*x369
+      x630 = x148*x549
+      x631 = x373*x427
+      x632 = 0.0310906908696549d0/x156**2
+      x633 = x377*x632
+      x634 = x379*(-x135*x374*x546 - 4945.13601053991d0*x152*x20*x551 + 
+     &x152*x346* x546 + 2391.63081129926d0*x152*x461 + 13.5881085271426d
+     &0*x152* x542*x545 - x155*x595 - 614.99078004838d0*x20*x554*x555 - 
+     &x346* x374*x597 + x371*x597*x598 - x546*x554 + x548*x550 - x550*x5
+     &53 + x607*(182.796535080075d0*x147*x605 + x555*x604 + x600 + x601 
+     &+ x602 + x603) + x626*(x608 + x609 + x613 - x615 + x616 + x617 + x
+     &619 - x620 - x621 + x622 - x624 - x625) + x631*( -2416.97640828099
+     &d0*x146*x483 + 1469.86549644743d0*x147*x292*x629 - 53.043858599374
+     &d0*x191*x627 - 4.03885592700803d0*x364*x544*x629 - x369**2*x547*x6
+     &30 + x369*x552*x630 + x370*( -0.0217142874477198d0*x556 + 0.327592
+     &481543521d0*x557 + 89.4158322713032d0*x560 - 2875.96800747116d0*x5
+     &61 - 1437.98400373558d0*x562 + 7.90250567887647d0*x563 + 89.415832
+     &2713032d0*x564 - 0.491388722315281d0*x565 + 178.831664542606d0*x56
+     &6 - 5.56d0*x594) - x601*x605 - x603*x605 - x608 - x609 + x611*x628
+     & - x613 + x615 - x616 - x617 - x619 + x620 + x621 - x622 + x623*x6
+     &28 + x624 + x625 - 0.530090424722193d0* x367*x610*x611/x137**4)) +
+     & x593 + x633*(x271 + x347 - x362 - x376 )
+      x635 = x246*x280
+      x636 = 0.00549554491451047d0*x214 - 2.0d0*x336 - 1.26460783860812d
+     &0*x339 + 0.0621813817393098d0*x377*x378 + 32.1639684429148d0*x635
+      x637 = gamma_cc*x159
+      x638 = 0.095625d0*x53
+      x639 = -x396 - x400 - x50
+      x640 = gamma_cc*x190
+      x641 = x198*x398
+      x642 = x197*x398
+      x643 = -0.296858062715706d0*x397 - 0.544846825002868d0*x43
+      x644 = x204*(-gamma_cc*x173*x641 - x174 + x186*x469*x642 + x188 + 
+     &x200 - 0.173167203250828d0*x394*x640 + x395*x42*x467 + x399*(x177 
+     &+ x184 + x382*x468 + 0.692668813003313d0*x41*x640) + x471*x643 + x
+     &482*( -x177 - x184)) + x460*x639
+      x645 = x58*x644
+      x646 = gamma_cc*x57
+      x647 = x206*x646
+      x648 = x160*x402
+      x649 = -x29 - x384 - x388
+      x650 = x521*x649
+      x651 = x236*x386
+      x652 = x235*x386
+      x653 = -0.272423412501434d0*x22 - 0.0742145156789264d0*x385
+      x654 = x242*(-gamma_cc*x208*x651 - x209 + x21*x383*x492 + x226*x49
+     &4*x652 + x228 + x238 - 0.043291800812707d0*x381*x640 + x387*( 0.17
+     &3167203250828d0*x16*x640 + x212 + x224 + x382*x493) + x496* x653 +
+     & x516*(-x212 - x224))
+      x655 = x650 + x654
+      x656 = x60*x655
+      x657 = x249*x646
+      x658 = x33*x637
+      x659 = x241*x389
+      x660 = x160*x659
+      x661 = x656 + 0.0165625d0*x657 - 0.033125d0*x658 - 0.0005149395675
+     &28659d0*x660
+      x662 = x254*x409
+      x663 = 0.017578125d0*x65
+      x664 = x409*x63
+      x665 = 0.005859375d0*x260
+      x666 = 0.26775d0*x53
+      x667 = x257*x655
+      x668 = 0.046375d0*x657 - 0.09275d0*x658 - 0.00144183078908025d0*x6
+     &60 + x667
+      x669 = -x650 - x654
+      x670 = 0.156233111018196d0*x267
+      x671 = x141*x346
+      x672 = x425*x427
+      x673 = x372*x419
+      x674 = -365.59307016015d0*x423 - x604
+      x675 = -x154 - x422 - x428
+      x676 = x379*(-gamma_cc*x135*x269*x426 - x154*x346 - x270 - x346*x4
+     &22 - x346* x428 + x361 + x371*x421*x673 + x375 - 6859.37231675466d
+     &0*x420* x640 + x598*x672 + x607*x674 + x626*(-x349 - x356 - x671) 
+     &+ x631* (853.050497040351d0*x146*x640 + x349 + x356 + 11.366541128
+     &4373d0* x382*x627 + x424*x605 + x671)) + x633*x675
+      x677 = gamma_cc*rho_c**(-7.0d0)
+      x678 = 0.148429031357853d0*x18*x394 - 0.0404355432367886d0*x198*x4
+     &1*x677 + 0.148429031357853d0*x382*x42*x642 + x398*x470*x643 + x465
+     &*x641
+      x679 = x203*x678
+      x680 = x402*x646
+      x681 = x401*x459*x639
+      x682 = x646*x659
+      x683 = -0.00505444290459857d0*x16*x236*x677 + 0.0371072578394632d0
+     &*x18*x381 + 0.0371072578394632d0*x21*x382*x652 + x386*x495*x653 + 
+     &x490*x651
+      x684 = x242*x683
+      x685 = x389*x649
+      x686 = x520*x685
+      x687 = x60*x684 + x60*x686
+      x688 = x406 + 0.00102987913505732d0*x682 + x687
+      x689 = gamma_cc*x68
+      x690 = 0.01171875d0*x689
+      x691 = 0.01171875d0*x664
+      x692 = x257*x684 + x257*x686
+      x693 = x414 + 0.00288366157816049d0*x682 + x692
+      x694 = -x684 - x686
+      x695 = x379*(-56209.0918495182d0*x134**8.34d0*x145*x373*x677 + 587
+     &9.4619857897d0*x18*x420 + 5879.4619857897d0*x382*x425*x673 + x426*
+     &x596 + x606*x672*x674) + x429*x632*x675
+      x696 = x206*x432
+      x697 = x33*x664
+      x698 = -x249*x433 + 0.033125d0*x697
+      x699 = x254*x441
+      x700 = x249*x432
+      x701 = 0.09275d0*x697 - 0.046375d0*x700
+      x702 = x441*x63
+      x703 = x55*x689
+      x704 = x402*x432
+      x705 = x33*x703
+      x706 = x432*x659
+      x707 = -0.033125d0*x705 - 0.000514939567528659d0*x706
+      x708 = 0.005859375d0*x664
+      x709 = x17*x440
+      x710 = 0.017578125d0*x709
+      x711 = -0.09275d0*x705 - 0.00144183078908025d0*x706
+      x712 = 0.005859375d0*x702
+      x713 = rho_c*x54
+      x714 = x440*x55
+      x715 = x529*x714
+      x716 = 0.1434375d0*x709
+      x717 = x53*x55
+      x718 = 0.01171875d0*x702
+      x719 = x437*x528*x714
+      x720 = 0.401625d0*x709
+      x721 = 0.0234375d0*x67/tau_c**5
+      x722 = 0.5d0*rho_c
+      x723 = x33*x722 + x53*x722
+      x724 = x159*x723
+      x725 = x17*x724
+      x726 = x61 - 0.02390625d0*x725
+      x727 = x64 - 0.0669375d0*x725
+      x728 = x261*x727 + 1.0d0
+      x729 = x54*(x72 + x726*x728)
+      x730 = x157 + x729
+      x731 = rho_c*x730
+      x732 = x446*x723
+      x733 = -0.0310906908696549d0*x10 + x206*x722 + x249*x722 + 0.01554
+     &53454348275d0 *x31 - 0.0155453454348274d0*x38 + 0.0077726727174137
+     &2d0*x52
+      x734 = x160*x733
+      x735 = x252 + 0.07171875d0*x732 - 0.02390625d0*x734
+      x736 = x259 + 0.2008125d0*x732 - 0.0669375d0*x734
+      x737 = -x256*x727 + x261*x736
+      x738 = x54*(x265 + x726*x737 + x728*x735)
+      x739 = rho_c*(x380 + x670*x729 + x738) + x730
+      x740 = 0.0155453454348275d0*x241
+      x741 = x389*x740
+      x742 = 0.00777267271741372d0*x203
+      x743 = x401*x742
+      x744 = rho_c*x741 + rho_c*x743
+      x745 = x160*x744
+      x746 = 0.0478125d0*x724
+      x747 = -gamma_cc*x746 + x407 - 0.02390625d0*x745
+      x748 = 0.133875d0*x724
+      x749 = -gamma_cc*x748 + x415 - 0.0669375d0*x745
+      x750 = x261*x749 + x708*x727
+      x751 = x54*(x391 + x726*x750 + x728*x747)
+      x752 = x430 + x751
+      x753 = rho_c*x752
+      x754 = x664*x723
+      x755 = x434 + 0.0478125d0*x754
+      x756 = x438 + 0.133875d0*x754
+      x757 = x261*x756 - x712*x727
+      x758 = x54*(x726*x757 + x728*x755)
+      x759 = rho_c*x758
+      x760 = x446*x733
+      x761 = x17*x532*x56*x723
+      x762 = x160*(16.0819842214575d0*x162*x451 + x171*(-0.0024966082204
+     &9118d0*x1 - 0.0155453454348274d0) + x205 + x220*(-0.00412165868588
+     &285d0*x1 - 0.0310906908696549d0) + x243 + x244 + x485*x722 + x526*
+     &x722 + 8.0409921107287d0*x635)
+      x763 = rho_c*(x539*x729 + x54*(x538 + x726*(x261*(x537 + 0.401625d
+     &0*x760 - 0.80325d0*x761 - 0.0669375d0*x762) + x533*x727 - x534*x73
+     &6) + x728*(x531 + 0.1434375d0*x760 - 0.286875d0*x761 - 0.02390625d
+     &0* x762) + 2.0d0*x735*x737) + x540*x738 - x541*x729 + x634) + x540
+     &* x729 + x636 + 2.0d0*x738
+      x764 = x446*x744
+      x765 = 0.1434375d0*x723
+      x766 = gamma_cc*x445
+      x767 = x160*(x644*x722 + x655*x722 + x741 + x743)
+      x768 = x637*x733
+      x769 = 0.017578125d0*x727
+      x770 = 0.401625d0*x723
+      x771 = rho_c*(x54*(x669 + x726*(-x256*x749 + x261*(x668 + 0.200812
+     &5d0*x764 + x766*x770 - 0.0669375d0*x767 - 0.133875d0*x768) - x662*
+     &x769 + x708*x736) + x728*(x661 + 0.07171875d0*x764 + x765*x766 - 0
+     &.02390625d0*x767 - 0.0478125d0*x768) + x735*x750 + x737*x747) + x6
+     &70*x751 + x676) + x752
+      x772 = x519*x685
+      x773 = x160*(rho_c*x678*x742 + 0.00777267271741372d0*rho_c*x681 + 
+     &rho_c*x683* x740 + 0.0155453454348275d0*rho_c*x772)
+      x774 = x637*x744
+      x775 = x63*x727
+      x776 = rho_c*(x54*(x694 + x726*(x261*(x693 - x748 - 0.0669375d0*x7
+     &73 - 0.26775d0*x774) + x690*x775 + x691*x749) + x728*(x688 - x746 
+     &- 0.02390625d0*x773 - 0.095625d0*x774) + 2.0d0*x747*x750) + x695)
+      x777 = x664*x733
+      x778 = rho_c*(x54*(x726*(-x256*x756 + x261*(-x662*x770 + x701 + 0.
+     &133875d0*x777 ) + x699*x769 - x712*x736) + x728*(-x662*x765 + x698
+     & + 0.0478125d0*x777) + x735*x757 + x737*x755) + x670*x758) + x758
+      x779 = x664*x744
+      x780 = x63*x723
+      x781 = x689*x780
+      x782 = x713*(x726*(x261*(x711 + 0.133875d0*x779 + 0.26775d0*x781) 
+     &+ x708*x756 - x710*x775 - x712*x749) + x728*(x707 + 0.0478125d0*x7
+     &79 + 0.095625d0*x781) + x747*x757 + x750*x755)
+      x783 = x713*(x726*(x261*(x719 - x720*x780) - x718*x756 + x721*x775
+     &) + x728*( x715 - x716*x780) + 2.0d0*x755*x757)
+      x784 = x33*x58
+      x785 = x61 - 0.02390625d0*x784
+      x786 = x64 - 0.0669375d0*x784
+      x787 = x261*x786 + 1.0d0
+      x788 = x54*(x72 + x785*x787)
+      x789 = x157 + x788
+      x790 = x249*x58
+      x791 = x250 + 0.03125d0*x251 - 0.02390625d0*x790
+      x792 = 0.0875d0*x251 + x258 - 0.0669375d0*x790
+      x793 = -x256*x786 + x261*x792
+      x794 = x54*(x265 + x785*x793 + x787*x791)
+      x795 = 0.03125d0*x405
+      x796 = x58*x659
+      x797 = -gamma_cc*x795 + x404 - 0.000743261828602687d0*x796
+      x798 = 0.0875d0*x405
+      x799 = -gamma_cc*x798 + x413 - 0.00208113312008752d0*x796
+      x800 = x261*x799 + x708*x786
+      x801 = x54*(x391 + x785*x800 + x787*x797)
+      x802 = x430 + x801
+      x803 = x33*x432
+      x804 = 0.03125d0*x803
+      x805 = x438 + 0.133875d0*x803
+      x806 = x261*x805 - x712*x786
+      x807 = x54*(x785*x806 + x787*x804)
+      x808 = x526*x58
+      x809 = x58*x655
+      x810 = 0.017578125d0*x786
+      x811 = 0.000743261828602687d0*x58
+      x812 = x241*x683
+      x813 = x63*x786
+      x814 = 0.00208113312008752d0*x58
+      x815 = x33*x55
+      PBE_value = x33
+      PBE_beta_value = x53
+      PBE_alpha_value = x53
+      if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .ge. PB
+     &E_value)) then
+      E = rho_c*x158
+      d1E(1) = rho_c*(x266 + 0.156233111018196d0*x268 + x380) + x158
+      d1E(3) = rho_c*x431
+      d1E(6) = rho_c*x443
+      d2E(1) = rho_c*(x266*x540 + x539*x73 + x54*(2.0d0*x253*x262 + x538
+     & + x62*(-x260* x534 + x261*(0.26775d0*x444 - 0.401625d0*x447 - 0.0
+     &669375d0*x486 + x537) + x533*x65) + x71*(0.095625d0*x444 - 0.14343
+     &75d0*x447 - 0.02390625d0*x486 + x531)) - x541*x73 + x634) + 2.0d0*
+     &x266 + 0.312466222036391d0*x268 + x636
+      d2E(4) = rho_c*(x418*x670 + x54*(x253*x417 + x262*x408 + x62*(-x25
+     &6*x416 + x261*( x637*x666 - 0.0669375d0*x645 - 0.133875d0*x647 + 0
+     &.00208113312008752d0*x648 + x668) - x662*x663 + x664*x665) + x669 
+     &+ x71*(x637*x638 - 0.02390625d0*x645 - 0.0478125d0*x647 + 0.000743
+     &261828602687d0*x648 + x661)) + x676) + x431
+      d2E(6) = rho_c*(x54*(2.0d0*x408*x417 + x62*(x261*(-x411 - x412*x67
+     &9 - x412*x681 - 0.00416226624017505d0*x680 + x693) + x416*x691 + x
+     &66*x690) + x694 + x71*(-x393 - x403*x679 - x403*x681 - 0.001486523
+     &65720537d0*x680 + x688)) + x695)
+      d2E(16) = rho_c*(x443*x670 + x54*(x253*x442 + x262*x436 + x62*(-x2
+     &56*x439 + x261*( -x664*x666 + 0.133875d0*x696 + x701) + x663*x699 
+     &- x665*x702) + x71*(-x638*x664 + 0.0478125d0*x696 + x698))) + x443
+     &
+      d2E(18) = x713*(x408*x442 + x417*x436 + x62*(x261*(x666*x703 + 0.0
+     &0208113312008752d0*x704 + x711) - x416*x712 + x439*x708 - x66* x71
+     &0) + x71*(x638*x703 + 0.000743261828602687d0*x704 + x707))
+      d2E(21) = x713*(2.0d0*x436*x442 + x62*(x261*(-x717*x720 + x719) - 
+     &x439*x718 + x66* x721) + x71*(x715 - x716*x717))
+      end if
+      if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .lt. PB
+     &E_value)) then
+      E = x731
+      d1E(1) = x739
+      d1E(3) = x753
+      d1E(6) = x759
+      d2E(1) = x763
+      d2E(4) = x771
+      d2E(6) = x776
+      d2E(16) = x778
+      d2E(18) = x782
+      d2E(21) = x783
+      end if
+      if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .ge. PB
+     &E_value)) then
+      E = x731
+      d1E(1) = x739
+      d1E(3) = x753
+      d1E(6) = x759
+      d2E(1) = x763
+      d2E(4) = x771
+      d2E(6) = x776
+      d2E(16) = x778
+      d2E(18) = x782
+      d2E(21) = x783
+      end if
+      if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .lt. PB
+     &E_value)) then
+      E = rho_c*x789
+      d1E(1) = rho_c*(x380 + x670*x788 + x794) + x789
+      d1E(3) = rho_c*x802
+      d1E(6) = rho_c*x807
+      d2E(1) = rho_c*(x539*x788 + x54*(x538 + x785*(x261*(0.175d0*x530 +
+     & x535 - 0.2625d0*x536 - 0.0669375d0*x808) + x533*x786 - x534*x792)
+     & + x787 *(x527 + 0.0625d0*x530 - 0.09375d0*x536 - 0.02390625d0*x80
+     &8) + 2.0d0*x791*x793) + x540*x794 - x541*x788 + x634) + x540*x788 
+     &+ x636 + 2.0d0*x794
+      d2E(4) = rho_c*(x54*(x669 + x785*(-x256*x799 + x261*(-0.0875d0*x65
+     &7 + 0.175d0* x658 + 0.0027204354510948d0*x660 + x667 - 0.0669375d0
+     &*x809) - x662*x810 + x708*x792) + x787*(x656 - 0.03125d0*x657 + 0.
+     &0625d0* x658 + 0.000971584089676716d0*x660 - 0.02390625d0*x809) + 
+     &x791* x800 + x793*x797) + x670*x801 + x676) + x802
+      d2E(6) = rho_c*(x54*(x694 + x785*(x261*(-0.00544087090218961d0*x68
+     &2 + x692 - x772 *x814 - x798 - x812*x814) + x690*x813 + x691*x799)
+     & + x787*( -0.00194316817935343d0*x682 + x687 - x772*x811 - x795 - 
+     &x811*x812 ) + 2.0d0*x797*x800) + x695)
+      d2E(16) = rho_c*(x54*(x785*(-x256*x805 + x261*(-0.175d0*x697 + 0.0
+     &875d0*x700) + x699*x810 - x712*x792) + x787*(-0.0625d0*x697 + 0.03
+     &125d0*x700) + x791*x806 + x793*x804) + x670*x807) + x807
+      d2E(18) = x713*(x785*(x261*(0.175d0*x705 + 0.0027204354510948d0*x7
+     &06) + x708*x805 - x710*x813 - x712*x799) + x787*(0.0625d0*x705 + 0
+     &.000971584089676716d0*x706) + x797*x806 + x800*x804)
+      d2E(21) = x713*(-0.09375d0*x709*x787*x815 + x785*(x261*(x719 - x72
+     &0*x815) - x718* x805 + x721*x813) + 0.0625d0*x803*x806)
+      end if
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc, gam
+     &ma_ss, gamma_cs, tau_c, mu, E)
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_c, rho_s, gamma_cc, gamma_ss, gamma_cs, 
@@ -11835,209 +13287,201 @@ C*****************************************************************************
      &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
      &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
      &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
-     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
-     &, x116, x117, x118, x119, x120, x121, x122, x123, x124
+     &, x105, x106, x107, x108, x109, x110, x111, x112, x113
       E = 0.0d0
-      x0 = 0.693147180559945d0
-      x1 = -0.101321183642338d0*x0 + 0.101321183642338d0
-      x2 = 1d0/rho_c
-      x3 = rho_s*x2
-      x4 = x3 + 1.0d0
-      x5 = x4**0.666666666666667d0
-      x6 = -x3 + 1.0d0
-      x7 = x6**0.666666666666667d0
-      x8 = (0.5d0*x5 + 0.5d0*x7)**3
-      x9 = 1d0/x1
-      x10 = 1d0/x8
-      x11 = x2**0.333333333333333d0
-      x12 = x2**0.166666666666667d0
-      x13 = sqrt(x2)
-      x14 = x2**0.666666666666667d0
-      x15 = 2.0d0*x1*(0.132568899905202d0*x11 + 1.0d0)*log(0.5d0*x9/( 2.
-     &2255694211506878d0*x11 + 5.9825504357710795d0*x12 + 0.800428634999
-     &36356d0*x13 + 0.18970043257475591d0*x14) + 1.0d0)
-      x16 = rho_s**4/rho_c**4
-      x17 = x4**1.33333333333333d0
-      x18 = x6**1.33333333333333d0
-      x19 = 1.92366105093154d0*x17 + 1.92366105093154d0*x18 - 3.84732210
-     &186307d0
-      x20 = 0.0197517897025652d0*x19*(0.0690139921125583d0*x11 + 1.0d0)*
-     &(-x16 + 1.0d0)*log(1.0d0 + 29.608574643216677d0/(2.247591863577616
-     &4d0*x11 + 8.1574147034876408d0*x12 + 0.43009724712766434d0*x13 + 0
-     &.19115125951273382d0*x14))
-      x21 = -0.0506605918211689d0*x0 + 0.0506605918211689d0
-      x22 = 0.5d0/x21
-      x23 = x16*x19*(x15 - 2.0d0*x21*(0.127469618870009d0*x11 + 1.0d0)*l
-     &og(x22/( 3.8447462374472119d0*x11 + 11.120374863094685d0*x12 + 1.6
-     &447337755676092d0*x13 + 0.24058712912881922d0*x14) + 1.0d0))
-      x24 = x15 - x20 - x23
-      x25 = exp(x10*x24*x9) - 1.0d0
-      x26 = x1**(-2)
-      x27 = rho_c**(-4.66666666666667d0)
-      x28 = gamma_cc**2
-      x29 = x5 + x7
-      x30 = 0.000286952223462081d0*x27*x28/x29**4
-      x31 = gamma_cc*rho_c**(-2.33333333333333d0)/x29**2
-      x32 = 0.0169396642074771d0*x31
-      x33 = x32*x9
-      x34 = 1.0d0 + x33/x25
-      x35 = x1*x8*log(x33*x34/(x34 + x26*x30/x25**2) + 1.0d0)
-      x36 = -x15 + x20 + x23
-      x37 = x35 + x36
-      x38 = 6.28318530717959d0*rho_c
-      x39 = 6.28318530717959d0*rho_s
-      x40 = 1d0/(x38 + x39)
-      x41 = x40**0.333333333333333d0
-      x42 = 2.0d0*x21
-      x43 = x42*(0.296353441706766d0*x41 + 1.0d0)*log(x22/(16.9559087764
-     &34466d0*x40 **0.16666666666666666d0 + 5.8304294284383547d0*sqrt(x4
-     &0) + 1.3004060036573588d0*x40**0.66666666666666663d0 + 8.938630161
-     &8942241d0*x41) + 1.0d0)
-      x44 = -0.0506605918211689d0*x0 + 0.0506605918211689d0
-      x45 = 1d0/x44
-      x46 = exp(x43*x45) - 1.0d0
-      x47 = 0.5d0*rho_c
-      x48 = 0.5d0*rho_s
-      x49 = x47 + x48
-      x50 = 14.804406601634d0*rho_c
-      x51 = 14.804406601634d0*rho_s
-      x52 = x50 + x51
-      x53 = 0.5d0*gamma_cs
-      x54 = 0.25d0*gamma_cc + 0.25d0*gamma_ss
-      x55 = x53 + x54
-      x56 = 0.000432524061585012d0*x26
-      x57 = 0.0207972128321324d0*x9
-      x58 = x52**(-0.333333333333333d0)*x55*x57/x49**2
-      x59 = 1.0d0 + x58/x46
-      x60 = -x43 + x44*log(x58*x59/(x59 + x52**(-0.66666666666666663d0)*
-     &x55**2*x56/( x46**2*x49**4)) + 1.0d0)
-      x61 = 1d0/(x38 - x39)
-      x62 = x61**0.333333333333333d0
-      x63 = x42*(0.296353441706766d0*x62 + 1.0d0)*log(x22/(16.9559087764
-     &34466d0*x61 **0.16666666666666666d0 + 5.8304294284383547d0*sqrt(x6
-     &1) + 1.3004060036573588d0*x61**0.66666666666666663d0 + 8.938630161
-     &8942241d0*x62) + 1.0d0)
-      x64 = exp(x45*x63) - 1.0d0
-      x65 = x47 - x48
-      x66 = x50 - x51
-      x67 = -x53 + x54
-      x68 = x57*x66**(-0.333333333333333d0)*x67/x65**2
-      x69 = 1.0d0 + x68/x64
-      x70 = x44*log(x68*x69/(x56*x66**(-0.66666666666666663d0)*x67**2/(x
-     &64**2*x65**4 ) + x69) + 1.0d0) - x63
-      x71 = exp(-0.46869933305458689d0*mu*rho_c**(-0.33333333333333331d0
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = x0**0.166666666666667d0
+      x3 = sqrt(x0)
+      x4 = x0**0.666666666666667d0
+      x5 = 0.0621813817393098d0*(0.132568899905202d0*x1 + 1.0d0)*log(1.0
+     &d0 + 16.081984221457407d0/(2.2255694211506878d0*x1 + 5.98255043577
+     &10795d0*x2 + 0.80042863499936356d0*x3 + 0.18970043257475591d0*x4))
+     &
+      x6 = rho_s**4/rho_c**4
+      x7 = rho_s*x0
+      x8 = x7 + 1.0d0
+      x9 = x8**1.33333333333333d0
+      x10 = -x7 + 1.0d0
+      x11 = x10**1.33333333333333d0
+      x12 = 1.92366105093154d0*x11 + 1.92366105093154d0*x9 - 3.847322101
+     &86307d0
+      x13 = 0.0197517897025652d0*x12*(0.0690139921125583d0*x1 + 1.0d0)*(
+     &-x6 + 1.0d0) *log(1.0d0 + 29.608574643216677d0/(2.2475918635776164
+     &d0*x1 + 8.1574147034876408d0*x2 + 0.43009724712766434d0*x3 + 0.191
+     &15125951273382d0*x4))
+      x14 = x12*x6*(x5 - 0.0310906908696548d0*(0.127469618870009d0*x1 + 
+     &1.0d0)*log( 1.0d0 + 32.163968442914921d0/(3.8447462374472119d0*x1 
+     &+ 11.120374863094685d0*x2 + 1.6447337755676092d0*x3 + 0.2405871291
+     &2881922d0*x4)))
+      x15 = -x13 - x14 + x5
+      x16 = x8**0.666666666666667d0
+      x17 = x10**0.666666666666667d0
+      x18 = (0.5d0*x16 + 0.5d0*x17)**3
+      x19 = 32.1639684429148d0/x18
+      x20 = exp(x15*x19) - 1.0d0
+      x21 = rho_c**(-4.66666666666667d0)
+      x22 = gamma_cc**2
+      x23 = x16 + x17
+      x24 = x21*x22/x23**4
+      x25 = gamma_cc*rho_c**(-2.33333333333333d0)/x23**2
+      x26 = 0.544846825002868d0*x25
+      x27 = 1.0d0 + x26/x20
+      x28 = 0.0310906908696549d0*x18
+      x29 = x28*log(x26*x27/(x27 + 0.29685806271570553d0*x24/x20**2) + 1
+     &.0d0)
+      x30 = x13 + x14 - x5
+      x31 = x29 + x30
+      x32 = 6.28318530717959d0*rho_c
+      x33 = 6.28318530717959d0*rho_s
+      x34 = 1d0/(x32 + x33)
+      x35 = x34**0.333333333333333d0
+      x36 = (0.296353441706766d0*x35 + 1.0d0)*log(1.0d0 + 32.16396844291
+     &4921d0/( 16.955908776434466d0*x34**0.16666666666666666d0 + 5.83042
+     &94284383547d0*sqrt(x34) + 1.3004060036573588d0*x34** 0.66666666666
+     &666663d0 + 8.9386301618942241d0*x35))
+      x37 = 0.5d0*rho_c
+      x38 = 0.5d0*rho_s
+      x39 = x37 + x38
+      x40 = 14.804406601634d0*rho_c
+      x41 = 14.804406601634d0*rho_s
+      x42 = x40 + x41
+      x43 = 0.5d0*gamma_cs
+      x44 = 0.25d0*gamma_cc + 0.25d0*gamma_ss
+      x45 = x43 + x44
+      x46 = exp(1.999999999999994d0*x36) - 1.0d0
+      x47 = 0.668920897233289d0*x42**(-0.333333333333333d0)*x45/x39**2
+      x48 = 1.0d0 + x47/x46
+      x49 = -0.0310906908696548d0*x36 + 0.0155453454348274d0*log(x47*x48
+     &/(x48 + 0.44745516675538899d0*x42**(-0.66666666666666663d0)*x45**2
+     &/(x39** 4*x46**2)) + 1.0d0)
+      x50 = 1d0/(x32 - x33)
+      x51 = x50**0.333333333333333d0
+      x52 = (0.296353441706766d0*x51 + 1.0d0)*log(1.0d0 + 32.16396844291
+     &4921d0/( 16.955908776434466d0*x50**0.16666666666666666d0 + 5.83042
+     &94284383547d0*sqrt(x50) + 1.3004060036573588d0*x50** 0.66666666666
+     &666663d0 + 8.9386301618942241d0*x51))
+      x53 = x37 - x38
+      x54 = x40 - x41
+      x55 = -x43 + x44
+      x56 = exp(1.999999999999994d0*x52) - 1.0d0
+      x57 = 0.668920897233289d0*x54**(-0.333333333333333d0)*x55/x53**2
+      x58 = 1.0d0 + x57/x56
+      x59 = -0.0310906908696548d0*x52 + 0.0155453454348274d0*log(x57*x58
+     &/(x58 + 0.44745516675538899d0*x54**(-0.66666666666666663d0)*x55**2
+     &/(x53** 4*x56**2)) + 1.0d0)
+      x60 = exp(-0.46869933305458689d0*mu*rho_c**(-0.33333333333333331d0
      &))
-      x72 = x28/tau_c**2
-      x73 = 0.015625d0*x72
-      x74 = x65*x70
-      x75 = x49*x60
-      x76 = rho_c**(-3)
-      x77 = rho_c**2
-      x78 = 1d0/x77
-      x79 = rho_s**2
-      x80 = x78*x79
-      x81 = (0.5d0*x16 + 0.87d0*x80 + 0.53d0 + 2.26d0*rho_s**6/rho_c**6)
-     &/( 0.0130605864926168d0*x27*(1d0/x18 + 1d0/x17)*(gamma_cc*x79 - 2.
-     &0d0*gamma_cs*rho_c*rho_s + gamma_ss*x77) + 1.0d0)**4
-      x82 = x76*(x81 + 1.0d0)
-      x83 = x82*(x74 + x75)
-      x84 = x37*(x73*x78*x81 + 1.0d0)
-      x85 = 0.04375d0*x72
-      x86 = 2.8d0*x84
-      x87 = 0.001953125d0*gamma_cc**3*x76/tau_c**3
-      x88 = x24 - x35
-      x89 = mu**2
-      x90 = x2**1.66666666666667d0
-      x91 = x2**1.0d0
-      x92 = x2**1.33333333333333d0
-      x93 = (0.0128480790170175d0*x11 + 0.0315297404574782d0*x14 - 0.003
-     &04892328706429d0*x91 + 0.000275310793616358d0*x92 + 1.0d0)* exp(-0
-     &.46675853320810856d0*x11)
-      x94 = x93*(x80 - 1.0d0)
-      x95 = 0.5d0*x4**0.666666666666667d0 + 0.5d0*x6**0.666666666666667d
-     &0
-      x96 = x95**3
-      x97 = x11*x89/x95**2
-      x98 = 4.60448529760779d0*mu*x12/x95 + 1.0d0
-      x99 = mu**3
-      x100 = -x80 + 1.0d0
-      x101 = 1d0/x4
-      x102 = x101**0.666666666666667d0
-      x103 = 0.5d0*x3
-      x104 = x101**0.333333333333333d0*x11
-      x105 = 0.0244354823084343d0*x14
-      x106 = 1d0/x14
-      x107 = 34.4548080022583d0*x106
-      x108 = 1d0/x6
-      x109 = x108**0.666666666666667d0
-      x110 = x108**0.333333333333333d0*x11
-      x111 = -x107*(-x103 + 0.5d0)**2*(-0.0177069812999059d0*x110 + 1.0d
-     &0)/(x109*( x105*x109 + 0.337569861992026d0*x110 + 1.0d0)) - x107*(
-     &x103 + 0.5d0)**2*(-0.0177069812999059d0*x104 + 1.0d0)/(x102*(x102*
-     &x105 + 0.337569861992026d0*x104 + 1.0d0))
-      x112 = (-3.0d0*x80 + 3.0d0)*(0.5d0*x93 - 0.5d0)
-      x113 = (0.00316102962473761d0*mu**8*x2**2.66666666666667d0*x36 + m
-     &u**6*( -0.00165511124114256d0*x112*x90 + 0.0533250677421794d0*x2**
-     &2.0d0* x36) + 0.00264117541143784d0*mu**5*x90*x94 + mu**4*( -0.027
-     &9209401785015d0*x112*x91 + 0.337338207872387d0*x36*x92 + 0.0002068
-     &8890514282d0*x90*(-23.3866625383245d0*x100*x106*( -0.2406959904689
-     &67d0*x11 + 0.26014827853397d0*x14)*exp( -0.33933171852197186d0*x11
-     &) + 17.2274040011291d0*x106*(0.5d0*x4** 2.66666666666667d0 + 0.5d0
-     &*x6**2.66666666666667d0) + x111)) + x96 *(0.202642367284676d0*x0 -
-     & 0.202642367284676d0)*log(( 1.9140710242289749d0*x13*x99/x96 + 0.6
-     &2035049089940009d0*x97*( 3.4485100000000002d0 - 4.910891403137156d
-     &0/(4.0d0*x0 - 4.0d0)) + x98)/(2.1392848713714905d0*x97 + x98)) + x
-     &99*( 0.000132058770571892d0*x90*(-37.6991118430775d0*x100*( -3.070
-     &73492995203d0*x11 + 0.384834731559127d0*x14)*exp( -0.1923086521788
-     &1402d0*x11)/x91 + x111) + 0.0445553741830535d0* x91*x94))/(0.23711
-     &3969739022d0*x14*x89 + 1.0d0)**4
-      x114 = -x113 + x36
-      x115 = x114/x36
-      x116 = x115**2.78d0
-      x117 = 0.031091d0*exp(32.163648644302206d0*x10*(x113 + x24)) - 0.0
-     &31091d0
-      x118 = x116*x32/x117 + 1.0d0
-      x119 = x114 + 0.031091d0*x8*log(0.54484140772175593d0*x116*x118*x3
-     &1/(x115** 5.5599999999999996d0*x30/x117**2 + x118) + 1.0d0)
-      x120 = x37*x65
-      x121 = x82*(x120 + x75)
-      x122 = x37*x49
-      x123 = x82*(x122 + x74)
-      x124 = x82*(x120 + x122)
-      PBE_value = x37
-      PBE_beta_value = x60
-      PBE_alpha_value = x70
+      x61 = x22/tau_c**2
+      x62 = 0.015625d0*x61
+      x63 = x53*x59
+      x64 = x39*x49
+      x65 = rho_c**(-3)
+      x66 = rho_c**2
+      x67 = 1d0/x66
+      x68 = rho_s**2
+      x69 = x67*x68
+      x70 = (0.5d0*x6 + 0.87d0*x69 + 0.53d0 + 2.26d0*rho_s**6/rho_c**6)/
+     &( 0.0130605864926168d0*x21*(1d0/x9 + 1d0/x11)*(gamma_cc*x68 - 2.0d
+     &0 *gamma_cs*rho_c*rho_s + gamma_ss*x66) + 1.0d0)**4
+      x71 = x65*(x70 + 1.0d0)
+      x72 = x71*(x63 + x64)
+      x73 = x31*(x62*x67*x70 + 1.0d0)
+      x74 = 0.04375d0*x61
+      x75 = 2.8d0*x73
+      x76 = 0.001953125d0*gamma_cc**3*x65/tau_c**3
+      x77 = x15 - x29
+      x78 = mu**2
+      x79 = x0**1.66666666666667d0
+      x80 = x0**1.0d0
+      x81 = x0**1.33333333333333d0
+      x82 = (0.0128480790170175d0*x1 + 0.0315297404574782d0*x4 - 0.00304
+     &892328706429d0*x80 + 0.000275310793616358d0*x81 + 1.0d0)* exp(-0.4
+     &6675853320810856d0*x1)
+      x83 = x82*(x69 - 1.0d0)
+      x84 = 0.5d0*x10**0.666666666666667d0 + 0.5d0*x8**0.666666666666667
+     &d0
+      x85 = x84**3
+      x86 = x1*x78/x84**2
+      x87 = 4.60448529760779d0*mu*x2/x84 + 1.0d0
+      x88 = mu**3
+      x89 = -x69 + 1.0d0
+      x90 = 1d0/x8
+      x91 = x90**0.666666666666667d0
+      x92 = 0.5d0*x7
+      x93 = x1*x90**0.333333333333333d0
+      x94 = 0.0244354823084343d0*x4
+      x95 = 1d0/x4
+      x96 = 34.4548080022583d0*x95
+      x97 = 1d0/x10
+      x98 = x97**0.666666666666667d0
+      x99 = x1*x97**0.333333333333333d0
+      x100 = -x96*(-x92 + 0.5d0)**2*(-0.0177069812999059d0*x99 + 1.0d0)/
+     &(x98*(x94*x98 + 0.337569861992026d0*x99 + 1.0d0)) - x96*(x92 + 0.5
+     &d0)**2*( -0.0177069812999059d0*x93 + 1.0d0)/(x91*(x91*x94 + 0.3375
+     &69861992026d0*x93 + 1.0d0))
+      x101 = (-3.0d0*x69 + 3.0d0)*(0.5d0*x82 - 0.5d0)
+      x102 = (0.00316102962473761d0*mu**8*x0**2.66666666666667d0*x30 + m
+     &u**6*( 0.0533250677421794d0*x0**2.0d0*x30 - 0.00165511124114256d0*
+     &x101* x79) + 0.00264117541143784d0*mu**5*x79*x83 + mu**4*( -0.0279
+     &209401785015d0*x101*x80 + 0.337338207872387d0*x30*x81 + 0.00020688
+     &890514282d0*x79*(x100 - 23.3866625383245d0*x89*x95*( -0.2406959904
+     &68967d0*x1 + 0.26014827853397d0*x4)*exp( -0.33933171852197186d0*x1
+     &) + 17.2274040011292d0*x95*(0.5d0*x10** 2.66666666666667d0 + 0.5d0
+     &*x8**2.66666666666667d0))) - 0.0621813817393098d0*x85*log((1.91407
+     &10242289749d0*x3*x88/x85 + 4.6213167280845804d0*x86 + x87)/(2.1392
+     &848713714905d0*x86 + x87 )) + x88*(0.000132058770571892d0*x79*(x10
+     &0 - 37.6991118430775d0* x89*(-3.07073492995203d0*x1 + 0.3848347315
+     &59127d0*x4)*exp( -0.19230865217881402d0*x1)/x80) + 0.0445553741830
+     &535d0*x80*x83))/ (0.237113969739022d0*x4*x78 + 1.0d0)**4
+      x103 = -x102 + x30
+      x104 = x103/x30
+      x105 = 0.0310906908696549d0*exp(x19*(x102 + x15)) - 0.031090690869
+     &6549d0
+      x106 = x104**2.78d0*x25
+      x107 = 1.0d0 + 0.0169396642074771d0*x106/x105
+      x108 = x103 + x28*log(0.54484682500286752d0*x106*x107/(0.000286952
+     &2234620814d0* x104**5.5599999999999996d0*x24/x105**2 + x107) + 1.0
+     &d0)
+      x109 = x31*x53
+      x110 = x71*(x109 + x64)
+      x111 = x31*x39
+      x112 = x71*(x111 + x63)
+      x113 = x71*(x109 + x111)
+      PBE_value = x31
+      PBE_beta_value = x49
+      PBE_alpha_value = x59
       if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .ge. PB
      &E_value)) then
-      E = rho_c*(x119 + x71*(x88 + (-x73*x83 + x84)*(x87*(-x83*x85 + x86
+      E = rho_c*(x108 + x60*(x77 + (-x62*x72 + x73)*(x76*(-x72*x74 + x75
      &) + 1.0d0 )))
       end if
       if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .lt. PB
      &E_value)) then
-      E = rho_c*(x119 + x71*(x88 + (-x121*x73 + x84)*(x87*(-x121*x85 + x
-     &86) + 1.0d0)))
+      E = rho_c*(x108 + x60*(x77 + (-x110*x62 + x73)*(x76*(-x110*x74 + x
+     &75) + 1.0d0)))
       end if
       if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .ge. PB
      &E_value)) then
-      E = rho_c*(x119 + x71*(x88 + (-x123*x73 + x84)*(x87*(-x123*x85 + x
-     &86) + 1.0d0)))
+      E = rho_c*(x108 + x60*(x77 + (-x112*x62 + x73)*(x76*(-x112*x74 + x
+     &75) + 1.0d0)))
       end if
       if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .lt. PB
      &E_value)) then
-      E = rho_c*(x119 + x71*(x88 + (-x124*x73 + x84)*(x87*(-x124*x85 + x
-     &86) + 1.0d0)))
+      E = rho_c*(x108 + x60*(x77 + (-x113*x62 + x73)*(x76*(-x113*x74 + x
+     &75) + 1.0d0)))
       end if
       end subroutine
 
 
 C*****************************************************************************
-      pure subroutine D1ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc,
-     & gamma_ss, gamma_cs, tau_c, mu, E, d1E)
+      pure subroutine D1ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc, g
+     &amma_ss, gamma_cs, tau_c, mu, E, d1E)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 14, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_c, rho_s, gamma_cc, gamma_ss, gamma_cs, 
@@ -12111,930 +13555,940 @@ C*****************************************************************************
      &, x721, x722, x723, x724, x725, x726, x727, x728, x729, x730, x731
      &, x732, x733, x734, x735, x736, x737, x738, x739, x740, x741, x742
      &, x743, x744, x745, x746, x747, x748, x749, x750, x751, x752, x753
-     &, x754, x755, x756, x757, x758, x759, x760, x761
+     &, x754, x755, x756, x757, x758, x759, x760
       E = 0.0d0
       d1E(:) = 0.0d0
-      x0 = rho_c**(-2.33333333333333d0)
-      x1 = 1d0/rho_c
-      x2 = rho_s*x1
-      x3 = x2 + 1.0d0
-      x4 = x3**0.666666666666667d0
-      x5 = -x2 + 1.0d0
-      x6 = x5**0.666666666666667d0
-      x7 = x4 + x6
-      x8 = x7**(-2)
-      x9 = x0*x8
-      x10 = 0.0169396642074771d0*x9
-      x11 = 0.693147180559945d0
-      x12 = -0.101321183642338d0*x11 + 0.101321183642338d0
-      x13 = 1d0/x12
-      x14 = x1**0.333333333333333d0
-      x15 = x1**0.166666666666667d0
-      x16 = sqrt(x1)
-      x17 = x1**0.666666666666667d0
-      x18 = 2.22556942115069d0*x14 + 5.98255043577108d0*x15 + 0.80042863
-     &4999364d0* x16 + 0.189700432574756d0*x17
-      x19 = 0.5d0*x13/x18 + 1.0d0
-      x20 = x12*log(x19)
-      x21 = x20*(0.132568899905202d0*x14 + 1.0d0)
-      x22 = 2.0d0*x21
-      x23 = x3**1.33333333333333d0
-      x24 = x5**1.33333333333333d0
-      x25 = 1.92366105093154d0*x23 + 1.92366105093154d0*x24 - 3.84732210
+      x0 = 1d0/rho_c
+      x1 = x0**0.333333333333333d0
+      x2 = x0**0.166666666666667d0
+      x3 = sqrt(x0)
+      x4 = x0**0.666666666666667d0
+      x5 = 2.22556942115069d0*x1 + 5.98255043577108d0*x2 + 0.80042863499
+     &9364d0*x3 + 0.189700432574756d0*x4
+      x6 = 1.0d0 + 16.0819842214574d0/x5
+      x7 = log(x6)
+      x8 = x7*(0.132568899905202d0*x1 + 1.0d0)
+      x9 = 0.0621813817393098d0*x8
+      x10 = rho_s*x0
+      x11 = x10 + 1.0d0
+      x12 = x11**1.33333333333333d0
+      x13 = -x10 + 1.0d0
+      x14 = x13**1.33333333333333d0
+      x15 = 1.92366105093154d0*x12 + 1.92366105093154d0*x14 - 3.84732210
      &186307d0
-      x26 = rho_c**(-4)
-      x27 = rho_s**4
-      x28 = x26*x27
-      x29 = -x28 + 1.0d0
-      x30 = 2.24759186357762d0*x14 + 8.15741470348764d0*x15 + 0.43009724
-     &7127664d0* x16 + 0.191151259512734d0*x17
-      x31 = 1.0d0 + 29.6085746432167d0/x30
-      x32 = log(x31)
-      x33 = x29*x32
-      x34 = x25*x33
-      x35 = x34*(0.0690139921125583d0*x14 + 1.0d0)
-      x36 = 0.0197517897025652d0*x35
-      x37 = -0.0506605918211689d0*x11 + 0.0506605918211689d0
-      x38 = 3.84474623744721d0*x14 + 11.1203748630947d0*x15 + 1.64473377
-     &556761d0*x16 + 0.240587129128819d0*x17
-      x39 = 0.5d0/x37
-      x40 = 1.0d0 + x39/x38
-      x41 = x37*log(x40)
-      x42 = x22 - 2.0d0*x41*(0.127469618870009d0*x14 + 1.0d0)
-      x43 = x28*x42
-      x44 = x25*x43
-      x45 = x22 - x36 - x44
-      x46 = 0.5d0*x4 + 0.5d0*x6
-      x47 = x46**3
-      x48 = 1d0/x47
-      x49 = x13*x48
-      x50 = exp(x45*x49)
-      x51 = x50 - 1.0d0
-      x52 = 1d0/x51
-      x53 = x13*x52
-      x54 = x10*x53
-      x55 = gamma_cc*x54 + 1.0d0
-      x56 = gamma_cc**2
-      x57 = x7**(-4)
-      x58 = x56*x57
-      x59 = rho_c**(-4.66666666666667d0)
-      x60 = 0.000286952223462081d0*x59
-      x61 = x58*x60
-      x62 = x51**(-2)
-      x63 = x12**(-2)
+      x16 = rho_c**(-4)
+      x17 = rho_s**4
+      x18 = x16*x17
+      x19 = -x18 + 1.0d0
+      x20 = 2.24759186357762d0*x1 + 8.15741470348764d0*x2 + 0.4300972471
+     &27664d0*x3 + 0.191151259512734d0*x4
+      x21 = 1.0d0 + 29.6085746432167d0/x20
+      x22 = log(x21)
+      x23 = x19*x22
+      x24 = x15*x23
+      x25 = x24*(0.0690139921125583d0*x1 + 1.0d0)
+      x26 = 0.0197517897025652d0*x25
+      x27 = 3.84474623744721d0*x1 + 11.1203748630947d0*x2 + 1.6447337755
+     &6761d0*x3 + 0.240587129128819d0*x4
+      x28 = 1.0d0 + 32.1639684429149d0/x27
+      x29 = log(x28)
+      x30 = -0.0310906908696548d0*x29*(0.127469618870009d0*x1 + 1.0d0) +
+     & x9
+      x31 = x18*x30
+      x32 = x15*x31
+      x33 = -x26 - x32 + x9
+      x34 = x11**0.666666666666667d0
+      x35 = x13**0.666666666666667d0
+      x36 = 0.5d0*x34 + 0.5d0*x35
+      x37 = x36**3
+      x38 = 32.1639684429148d0/x37
+      x39 = exp(x33*x38)
+      x40 = x39 - 1.0d0
+      x41 = 1d0/x40
+      x42 = x34 + x35
+      x43 = x42**(-2)
+      x44 = x41*x43
+      x45 = rho_c**(-2.33333333333333d0)
+      x46 = 0.544846825002868d0*x45
+      x47 = x44*x46
+      x48 = gamma_cc*x47 + 1.0d0
+      x49 = x40**(-2)
+      x50 = gamma_cc**2
+      x51 = x42**(-4)
+      x52 = x50*x51
+      x53 = x49*x52
+      x54 = rho_c**(-4.66666666666667d0)
+      x55 = 0.296858062715706d0*x54
+      x56 = x48 + x53*x55
+      x57 = 1d0/x56
+      x58 = x43*x46
+      x59 = x57*x58
+      x60 = x48*x59
+      x61 = gamma_cc*x60 + 1.0d0
+      x62 = log(x61)
+      x63 = 0.0310906908696549d0*x37
       x64 = x62*x63
-      x65 = x55 + x61*x64
-      x66 = 1d0/x65
-      x67 = x10*x13
-      x68 = x66*x67
-      x69 = x55*x68
-      x70 = gamma_cc*x69 + 1.0d0
-      x71 = log(x70)
-      x72 = x12*x47
-      x73 = x71*x72
-      x74 = -x22 + x36 + x44
-      x75 = x73 + x74
-      x76 = 2.0d0*x37
-      x77 = 6.28318530717959d0*rho_c
-      x78 = 6.28318530717959d0*rho_s
-      x79 = 1d0/(x77 + x78)
-      x80 = x79**0.333333333333333d0
-      x81 = 0.296353441706766d0*x80 + 1.0d0
-      x82 = x79**0.166666666666667d0
-      x83 = sqrt(x79)
-      x84 = x79**0.666666666666667d0
-      x85 = 8.93863016189422d0*x80 + 16.9559087764345d0*x82 + 5.83042942
-     &843835d0*x83 + 1.30040600365736d0*x84
-      x86 = x39/x85 + 1.0d0
-      x87 = log(x86)
-      x88 = x81*x87
-      x89 = x76*x88
-      x90 = -0.0506605918211689d0*x11 + 0.0506605918211689d0
-      x91 = 0.5d0*gamma_cs
-      x92 = 0.25d0*gamma_cc + 0.25d0*gamma_ss
-      x93 = x91 + x92
-      x94 = 0.0207972128321324d0*x13
-      x95 = x93*x94
-      x96 = 1d0/x90
-      x97 = exp(x89*x96)
-      x98 = x97 - 1.0d0
-      x99 = x98**(-2)
-      x100 = x93**2
-      x101 = x100*x99
-      x102 = 0.000432524061585012d0*x63
-      x103 = 0.5d0*rho_c
-      x104 = 0.5d0*rho_s
-      x105 = x103 + x104
-      x106 = x105**(-4)
-      x107 = 14.804406601634d0*rho_c
-      x108 = 14.804406601634d0*rho_s
-      x109 = x107 + x108
-      x110 = x109**(-0.666666666666667d0)
-      x111 = x106*x110
-      x112 = x102*x111
-      x113 = x105**(-2)
-      x114 = 1d0/x98
-      x115 = x109**(-0.333333333333333d0)
-      x116 = x114*x115
-      x117 = x113*x116
-      x118 = x117*x95 + 1.0d0
-      x119 = x101*x112 + x118
-      x120 = 1d0/x119
-      x121 = x118*x120
-      x122 = x113*x115
-      x123 = x121*x122
-      x124 = x123*x95 + 1.0d0
-      x125 = x90*log(x124)
-      x126 = x125 - x89
-      x127 = 1d0/(x77 - x78)
-      x128 = x127**0.333333333333333d0
-      x129 = 0.296353441706766d0*x128 + 1.0d0
-      x130 = x127**0.166666666666667d0
-      x131 = sqrt(x127)
-      x132 = x127**0.666666666666667d0
-      x133 = 8.93863016189422d0*x128 + 16.9559087764345d0*x130 + 5.83042
-     &942843835d0* x131 + 1.30040600365736d0*x132
-      x134 = 1.0d0 + x39/x133
-      x135 = log(x134)
-      x136 = x129*x135
-      x137 = x136*x76
-      x138 = -x91 + x92
-      x139 = x138*x94
-      x140 = exp(x137*x96)
-      x141 = x140 - 1.0d0
-      x142 = x141**(-2)
-      x143 = x138**2
-      x144 = x142*x143
-      x145 = x103 - x104
-      x146 = x145**(-4)
-      x147 = x107 - x108
-      x148 = x147**(-0.666666666666667d0)
-      x149 = x146*x148
-      x150 = x102*x149
-      x151 = x145**(-2)
-      x152 = 1d0/x141
-      x153 = x147**(-0.333333333333333d0)
-      x154 = x152*x153
-      x155 = x151*x154
-      x156 = x139*x155 + 1.0d0
-      x157 = x144*x150 + x156
-      x158 = 1d0/x157
-      x159 = x156*x158
-      x160 = x151*x153
-      x161 = x159*x160
-      x162 = x139*x161 + 1.0d0
-      x163 = x90*log(x162)
-      x164 = -x137 + x163
-      x165 = exp(-0.46869933305458689d0*mu*rho_c**(-0.33333333333333331d
+      x65 = x26 - x9
+      x66 = x32 + x65
+      x67 = x64 + x66
+      x68 = 6.28318530717959d0*rho_c
+      x69 = 6.28318530717959d0*rho_s
+      x70 = 1d0/(x68 + x69)
+      x71 = x70**0.333333333333333d0
+      x72 = x70**0.166666666666667d0
+      x73 = sqrt(x70)
+      x74 = x70**0.666666666666667d0
+      x75 = 8.93863016189422d0*x71 + 16.9559087764345d0*x72 + 5.83042942
+     &843835d0*x73 + 1.30040600365736d0*x74
+      x76 = 1.0d0 + 32.1639684429149d0/x75
+      x77 = log(x76)
+      x78 = x77*(0.296353441706766d0*x71 + 1.0d0)
+      x79 = 0.5d0*gamma_cs
+      x80 = 0.25d0*gamma_cc
+      x81 = 0.25d0*gamma_ss
+      x82 = x80 + x81
+      x83 = x79 + x82
+      x84 = 0.668920897233289d0*x83
+      x85 = exp(1.999999999999994d0*x78)
+      x86 = x85 - 1.0d0
+      x87 = x86**(-2)
+      x88 = x83**2
+      x89 = x87*x88
+      x90 = 0.5d0*rho_c
+      x91 = 0.5d0*rho_s
+      x92 = x90 + x91
+      x93 = x92**(-4)
+      x94 = 14.804406601634d0*rho_c
+      x95 = 14.804406601634d0*rho_s
+      x96 = x94 + x95
+      x97 = x96**(-0.666666666666667d0)
+      x98 = x93*x97
+      x99 = 0.447455166755389d0*x98
+      x100 = x92**(-2)
+      x101 = 1d0/x86
+      x102 = x96**(-0.333333333333333d0)
+      x103 = x101*x102
+      x104 = x100*x103
+      x105 = x104*x84 + 1.0d0
+      x106 = x105 + x89*x99
+      x107 = 1d0/x106
+      x108 = x105*x107
+      x109 = x100*x102
+      x110 = x108*x109
+      x111 = x110*x84 + 1.0d0
+      x112 = log(x111)
+      x113 = 0.0155453454348274d0*x112 - 0.0310906908696548d0*x78
+      x114 = 1d0/(x68 - x69)
+      x115 = x114**0.333333333333333d0
+      x116 = x114**0.166666666666667d0
+      x117 = sqrt(x114)
+      x118 = x114**0.666666666666667d0
+      x119 = 8.93863016189422d0*x115 + 16.9559087764345d0*x116 + 5.83042
+     &942843835d0* x117 + 1.30040600365736d0*x118
+      x120 = 1.0d0 + 32.1639684429149d0/x119
+      x121 = log(x120)
+      x122 = x121*(0.296353441706766d0*x115 + 1.0d0)
+      x123 = -x79 + x82
+      x124 = 0.668920897233289d0*x123
+      x125 = exp(1.999999999999994d0*x122)
+      x126 = x125 - 1.0d0
+      x127 = x126**(-2)
+      x128 = x123**2
+      x129 = x127*x128
+      x130 = x90 - x91
+      x131 = x130**(-4)
+      x132 = x94 - x95
+      x133 = x132**(-0.666666666666667d0)
+      x134 = x131*x133
+      x135 = 0.447455166755389d0*x134
+      x136 = x130**(-2)
+      x137 = 1d0/x126
+      x138 = x132**(-0.333333333333333d0)
+      x139 = x137*x138
+      x140 = x136*x139
+      x141 = x124*x140 + 1.0d0
+      x142 = x129*x135 + x141
+      x143 = 1d0/x142
+      x144 = x141*x143
+      x145 = x136*x138
+      x146 = x144*x145
+      x147 = x124*x146 + 1.0d0
+      x148 = log(x147)
+      x149 = -0.0310906908696548d0*x122 + 0.0155453454348274d0*x148
+      x150 = exp(-0.46869933305458689d0*mu*rho_c**(-0.33333333333333331d
      &0))
-      x166 = rho_c**(-6)
-      x167 = rho_s**6
-      x168 = 0.5d0*x28
-      x169 = rho_c**2
-      x170 = 1d0/x169
-      x171 = rho_s**2
-      x172 = x170*x171
-      x173 = 2.26d0*x166*x167 + x168 + 0.87d0*x172 + 0.53d0
-      x174 = 1d0/x24 + 1d0/x23
-      x175 = 2.0d0*gamma_cs
-      x176 = rho_s*x175
-      x177 = gamma_cc*x171 + gamma_ss*x169 - rho_c*x176
-      x178 = x174*x177
-      x179 = 0.0130605864926168d0*x178*x59 + 1.0d0
-      x180 = x179**(-4)
-      x181 = x173*x180
-      x182 = x181 + 1.0d0
-      x183 = x145*x164
-      x184 = x105*x126
-      x185 = x183 + x184
-      x186 = x182*x185
-      x187 = rho_c**(-3)
-      x188 = tau_c**(-2)
-      x189 = x188*x56
-      x190 = 0.015625d0*x189
-      x191 = x187*x190
-      x192 = x170*x181
-      x193 = x190*x192 + 1.0d0
-      x194 = x193*x75
-      x195 = -x186*x191 + x194
-      x196 = x187*x189
-      x197 = 0.04375d0*x196
-      x198 = 2.8d0*x194
-      x199 = -x186*x197 + x198
-      x200 = gamma_cc**3
-      x201 = tau_c**(-3)
-      x202 = x200*x201
-      x203 = x199*x202
-      x204 = 0.001953125d0*x187
-      x205 = x203*x204 + 1.0d0
-      x206 = x45 - x73
-      x207 = x165*(x195*x205 + x206)
-      x208 = 1d0/x74
-      x209 = mu**2
-      x210 = x17*x209
-      x211 = 0.237113969739022d0*x210 + 1.0d0
-      x212 = x211**(-4)
-      x213 = mu**5
-      x214 = x172 - 1.0d0
-      x215 = exp(-0.46675853320810856d0*x14)
-      x216 = x1**1.0d0
-      x217 = 0.00304892328706429d0*x216
-      x218 = x1**1.33333333333333d0
-      x219 = x215*(0.0128480790170175d0*x14 + 0.0315297404574782d0*x17 -
-     & x217 + 0.000275310793616358d0*x218 + 1.0d0)
-      x220 = x214*x219
-      x221 = x213*x220
-      x222 = x1**1.66666666666667d0
-      x223 = 0.00264117541143784d0*x222
-      x224 = 0.5d0*x3**0.666666666666667d0 + 0.5d0*x5**0.666666666666667
+      x151 = rho_c**(-6)
+      x152 = rho_s**6
+      x153 = 0.5d0*x18
+      x154 = rho_c**2
+      x155 = 1d0/x154
+      x156 = rho_s**2
+      x157 = x155*x156
+      x158 = 2.26d0*x151*x152 + x153 + 0.87d0*x157 + 0.53d0
+      x159 = 1d0/x14 + 1d0/x12
+      x160 = 2.0d0*gamma_cs
+      x161 = rho_s*x160
+      x162 = gamma_cc*x156 + gamma_ss*x154 - rho_c*x161
+      x163 = x159*x162
+      x164 = 0.0130605864926168d0*x163*x54 + 1.0d0
+      x165 = x164**(-4)
+      x166 = x158*x165
+      x167 = x166 + 1.0d0
+      x168 = x130*x149
+      x169 = x113*x92
+      x170 = x168 + x169
+      x171 = x167*x170
+      x172 = rho_c**(-3)
+      x173 = tau_c**(-2)
+      x174 = x173*x50
+      x175 = 0.015625d0*x174
+      x176 = x172*x175
+      x177 = x155*x166
+      x178 = x175*x177 + 1.0d0
+      x179 = x178*x67
+      x180 = -x171*x176 + x179
+      x181 = x172*x174
+      x182 = 0.04375d0*x181
+      x183 = 2.8d0*x179
+      x184 = -x171*x182 + x183
+      x185 = gamma_cc**3
+      x186 = tau_c**(-3)
+      x187 = x185*x186
+      x188 = x184*x187
+      x189 = 0.001953125d0*x172
+      x190 = x188*x189 + 1.0d0
+      x191 = x33 - x64
+      x192 = x150*(x180*x190 + x191)
+      x193 = mu**2
+      x194 = x193*x4
+      x195 = 0.237113969739022d0*x194 + 1.0d0
+      x196 = x195**(-4)
+      x197 = mu**5
+      x198 = x157 - 1.0d0
+      x199 = exp(-0.46675853320810856d0*x1)
+      x200 = x0**1.0d0
+      x201 = 0.00304892328706429d0*x200
+      x202 = x0**1.33333333333333d0
+      x203 = x199*(0.0128480790170175d0*x1 - x201 + 0.000275310793616358
+     &d0*x202 + 0.0315297404574782d0*x4 + 1.0d0)
+      x204 = x198*x203
+      x205 = x197*x204
+      x206 = x0**1.66666666666667d0
+      x207 = 0.00264117541143784d0*x206
+      x208 = 0.5d0*x11**0.666666666666667d0 + 0.5d0*x13**0.6666666666666
+     &67d0
+      x209 = x208**3
+      x210 = -0.0621813817393098d0
+      x211 = x208**2
+      x212 = 1d0/x211
+      x213 = x1*x193
+      x214 = x212*x213
+      x215 = mu/x208
+      x216 = 4.60448529760779d0*x2
+      x217 = x215*x216 + 1.0d0
+      x218 = 2.13928487137149d0*x214 + x217
+      x219 = 1d0/x218
+      x220 = mu**3
+      x221 = 1d0/x209
+      x222 = x220*x221
+      x223 = 1.91407102422897d0*x3
+      x224 = 4.62131672808458d0*x214 + x217 + x222*x223
+      x225 = x210*log(x219*x224)
+      x226 = mu**8
+      x227 = x0**2.66666666666667d0
+      x228 = 0.00316102962473761d0*x226*x227
+      x229 = 0.0445553741830535d0*x200
+      x230 = x204*x229
+      x231 = 1d0/x200
+      x232 = -3.07073492995203d0*x1 + 0.384834731559127d0*x4
+      x233 = exp(-0.19230865217881402d0*x1)
+      x234 = x231*x232*x233
+      x235 = -x157 + 1.0d0
+      x236 = 37.6991118430775d0*x235
+      x237 = x234*x236
+      x238 = 1d0/x4
+      x239 = 34.4548080022583d0*x238
+      x240 = 1d0/x11
+      x241 = x240**0.666666666666667d0
+      x242 = 1d0/x241
+      x243 = x240**0.333333333333333d0
+      x244 = x1*x243
+      x245 = -0.0177069812999059d0*x244 + 1.0d0
+      x246 = 0.5d0*x10
+      x247 = x246 + 0.5d0
+      x248 = x247**2
+      x249 = 0.0244354823084343d0*x4
+      x250 = x241*x249 + 0.337569861992026d0*x244 + 1.0d0
+      x251 = 1d0/x250
+      x252 = x248*x251
+      x253 = x242*x245*x252
+      x254 = 1d0/x13
+      x255 = x254**0.666666666666667d0
+      x256 = 1d0/x255
+      x257 = x254**0.333333333333333d0
+      x258 = x1*x257
+      x259 = x256*(-0.0177069812999059d0*x258 + 1.0d0)
+      x260 = -x246 + 0.5d0
+      x261 = x260**2
+      x262 = x249*x255 + 0.337569861992026d0*x258 + 1.0d0
+      x263 = 1d0/x262
+      x264 = x261*x263
+      x265 = x239*x264
+      x266 = -x239*x253 - x259*x265
+      x267 = -x237 + x266
+      x268 = 0.000132058770571892d0*x206
+      x269 = mu**6
+      x270 = -3.0d0*x157 + 3.0d0
+      x271 = 0.5d0*x203 - 0.5d0
+      x272 = x270*x271
+      x273 = 0.00165511124114256d0*x206
+      x274 = x0**2.0d0
+      x275 = 0.0533250677421794d0*x274
+      x276 = mu**4
+      x277 = 0.0279209401785015d0*x200
+      x278 = x272*x277
+      x279 = 0.5d0*x11**2.66666666666667d0 + 0.5d0*x13**2.66666666666667
      &d0
-      x225 = x224**3
-      x226 = 0.202642367284676d0*x11 - 0.202642367284676d0
-      x227 = x224**2
-      x228 = 1d0/x227
-      x229 = x209*x228
-      x230 = x14*x229
-      x231 = mu/x224
-      x232 = 4.60448529760779d0*x15
-      x233 = x231*x232 + 1.0d0
-      x234 = 2.13928487137149d0*x230 + x233
-      x235 = 1d0/x234
-      x236 = mu**3
-      x237 = 1d0/x225
-      x238 = x236*x237
-      x239 = 1.91407102422897d0*x16
-      x240 = 3.44851d0 - 4.91089140313716d0/(4.0d0*x11 - 4.0d0)
-      x241 = 0.6203504908994d0*x240
-      x242 = x230*x241 + x233 + x238*x239
-      x243 = x226*log(x235*x242)
-      x244 = 0.0445553741830535d0*x216
-      x245 = x220*x244
-      x246 = 1d0/x216
-      x247 = -3.07073492995203d0*x14 + 0.384834731559127d0*x17
-      x248 = exp(-0.19230865217881402d0*x14)
-      x249 = x246*x247*x248
-      x250 = -x172 + 1.0d0
-      x251 = 37.6991118430775d0*x250
-      x252 = x249*x251
-      x253 = 1d0/x17
-      x254 = 34.4548080022583d0*x253
-      x255 = 1d0/x3
-      x256 = x255**0.666666666666667d0
-      x257 = 1d0/x256
-      x258 = x255**0.333333333333333d0
-      x259 = x14*x258
-      x260 = -0.0177069812999059d0*x259 + 1.0d0
-      x261 = 0.5d0*x2
-      x262 = x261 + 0.5d0
-      x263 = x262**2
-      x264 = 0.0244354823084343d0*x17
-      x265 = x256*x264 + 0.337569861992026d0*x259 + 1.0d0
-      x266 = 1d0/x265
-      x267 = x263*x266
-      x268 = x257*x260*x267
-      x269 = 1d0/x5
-      x270 = x269**0.666666666666667d0
-      x271 = 1d0/x270
-      x272 = x269**0.333333333333333d0
-      x273 = x14*x272
-      x274 = x271*(-0.0177069812999059d0*x273 + 1.0d0)
-      x275 = -x261 + 0.5d0
-      x276 = x275**2
-      x277 = x264*x270 + 0.337569861992026d0*x273 + 1.0d0
-      x278 = 1d0/x277
-      x279 = x276*x278
-      x280 = x254*x279
-      x281 = -x254*x268 - x274*x280
-      x282 = -x252 + x281
-      x283 = 0.000132058770571892d0*x222
-      x284 = mu**8
-      x285 = x1**2.66666666666667d0
-      x286 = 0.00316102962473761d0*x284*x285
-      x287 = mu**6
-      x288 = -3.0d0*x172 + 3.0d0
-      x289 = 0.5d0*x219 - 0.5d0
-      x290 = x288*x289
-      x291 = 0.00165511124114256d0*x222
-      x292 = x1**2.0d0
-      x293 = 0.0533250677421794d0*x292
-      x294 = mu**4
-      x295 = 0.0279209401785015d0*x216
-      x296 = x290*x295
-      x297 = 0.5d0*x3**2.66666666666667d0 + 0.5d0*x5**2.66666666666667d0
+      x280 = 17.2274040011292d0*x238
+      x281 = -0.240695990468967d0*x1 + 0.26014827853397d0*x4
+      x282 = exp(-0.33933171852197186d0*x1)
+      x283 = x235*x281*x282
+      x284 = 23.3866625383245d0*x238
+      x285 = x266 + x279*x280 - x283*x284
+      x286 = 0.00020688890514282d0*x206
+      x287 = 0.337338207872387d0*x202
+      x288 = x205*x207 + x209*x225 + x220*(x230 + x267*x268) + x228*x66 
+     &+ x269*(-x272 *x273 + x275*x66) + x276*(-x278 + x285*x286 + x287*x
+     &66)
+      x289 = x196*x288
+      x290 = x289 + x33
+      x291 = exp(x290*x38)
+      x292 = 0.0310906908696549d0*x291 - 0.0310906908696549d0
+      x293 = x292**(-2)
+      x294 = x293*x52
+      x295 = 1d0/x66
+      x296 = -x289 + x66
+      x297 = x295*x296
+      x298 = x297**5.56d0
+      x299 = x298*x54
+      x300 = 0.000286952223462081d0*x299
+      x301 = x294*x300
+      x302 = 1d0/x292
+      x303 = x297**2.78d0
+      x304 = x303*x43
+      x305 = x302*x304
+      x306 = 0.0169396642074771d0*x45
+      x307 = x305*x306
+      x308 = gamma_cc*x307
+      x309 = x308 + 1.0d0
+      x310 = x301 + x309
+      x311 = 1d0/x310
+      x312 = x309*x311
+      x313 = x304*x45
+      x314 = 0.544846825002868d0*x313
+      x315 = x312*x314
+      x316 = gamma_cc*x315
+      x317 = x316 + 1.0d0
+      x318 = log(x317)
+      x319 = x296 + x318*x63
+      x320 = x192 + x319
+      x321 = x70*x71
+      x322 = x321*x77
+      x323 = 32.1639684429149d0*(18.7210232331754d0*x321 + 17.7561861489
+     &951d0*x70*x72 + 18.3168342596557d0*x70*x73 + 5.44712793036536d0*x7
+     &0*x74)/(x75** 2*x76)
+      x324 = x84/x92**3
+      x325 = 3.30099231565716d0*x100*x96**(-1.33333333333333d0)
+      x326 = x103*x324
+      x327 = x101*x83
+      x328 = x325*x327
+      x329 = x109*x84
+      x330 = x85*(-1.24136239377603d0*x322 + x323*(0.592706883413531d0*x
+     &71 + 1.99999999999999d0))
+      x331 = x329*x330*x87
+      x332 = x105*x329/x106**2
+      x333 = 1d0/x111
+      x334 = 0.0155453454348274d0*x333
+      x335 = 0.00777267271741372d0*x112 - 0.0155453454348274d0*x78 + x92
+     &*( 0.0192974072210527d0*x322 + x323*(-0.00921383324426333d0*x71 - 
+     &0.0310906908696548d0) + x334*(-x102*x108*x324 + x107*x329*(-x326 -
+     & x328 - x331) - x108*x325*x83 + x332*(x326 + x328 + 0.894910333510
+     &778d0*x330*x88*x98/x86**3 + x331 + 4.41620548309916d0*x89*x93*x96*
+     &*(-1.66666666666667d0) + 0.894910333510778d0*x89*x97/x92**5)))
+      x336 = 0.00777267271741372d0*x148
+      x337 = x114*x115
+      x338 = x121*x337
+      x339 = 0.0192974072210527d0*x338
+      x340 = -0.00921383324426333d0*x115 - 0.0310906908696548d0
+      x341 = 17.7561861489951d0*x114*x116
+      x342 = 18.7210232331754d0*x337
+      x343 = 18.3168342596557d0*x114*x117
+      x344 = 5.44712793036536d0*x114*x118
+      x345 = 32.1639684429149d0/(x119**2*x120)
+      x346 = x345*(x341 + x342 + x343 + x344)
+      x347 = x124/x130**3
+      x348 = x138*x144*x347
+      x349 = 3.30099231565716d0*x132**(-1.33333333333333d0)*x136
+      x350 = x123*x144*x349
+      x351 = 1.24136239377603d0*x338
+      x352 = 0.592706883413531d0*x115 + 1.99999999999999d0
+      x353 = x125*(x346*x352 - x351)
+      x354 = x124*x145
+      x355 = x127*x354
+      x356 = x353*x355
+      x357 = x139*x347
+      x358 = x123*x137
+      x359 = x349*x358
+      x360 = -x357 - x359
+      x361 = x143*x354
+      x362 = 0.894910333510778d0*x129*x133/x130**5
+      x363 = 4.41620548309916d0*x129*x131*x132**(-1.66666666666667d0)
+      x364 = 0.894910333510778d0*x128*x134/x126**3
+      x365 = x357 + x359
+      x366 = x141*x354/x142**2
+      x367 = 1d0/x147
+      x368 = 0.0155453454348274d0*x367
+      x369 = 0.0155453454348274d0*x122
+      x370 = x130*(x339 + x340*x346 + x368*(-x348 - x350 + x361*(-x356 +
+     & x360) + x366 *(x353*x364 + x356 + x362 + x363 + x365))) + x336 - 
+     &x369
+      x371 = x167*(x335 + x370)
+      x372 = x17/rho_c**5
+      x373 = x156*x172
+      x374 = x165*(-2.0d0*x372 - 1.74d0*x373 - 13.56d0*x152/rho_c**7)
+      x375 = 0.0522423459704672d0*x54
+      x376 = x159*x375
+      x377 = rho_c**(-5.66666666666667d0)
+      x378 = x11**(-2.33333333333333d0)
+      x379 = rho_s*x155
+      x380 = 1.33333333333333d0*x379
+      x381 = x13**(-2.33333333333333d0)
+      x382 = x162*x375
+      x383 = x158/x164**5
+      x384 = x383*(0.243797614528847d0*x163*x377 - x376*(2.0d0*gamma_ss*
+     &rho_c - x161 ) - x382*(x378*x380 - x380*x381))
+      x385 = x374 + x384
+      x386 = x170*x385
+      x387 = x16*x174
+      x388 = x171*x387
+      x389 = gamma_cc*rho_c**(-3.33333333333333d0)
+      x390 = 1.27130925834002d0*x389
+      x391 = x48*x57
+      x392 = x42**(-3)
+      x393 = x11**(-0.333333333333333d0)
+      x394 = x379*x393
+      x395 = x13**(-0.333333333333333d0)
+      x396 = x379*x395
+      x397 = x392*(1.33333333333333d0*x394 - 1.33333333333333d0*x396)
+      x398 = gamma_cc*x397
+      x399 = x391*x46
+      x400 = x390*x44
+      x401 = gamma_cc*x41
+      x402 = x401*x46
+      x403 = x397*x402
+      x404 = 32.1639684429148d0/x36**4
+      x405 = x404*(x394 - 1.0d0*x396)
+      x406 = 0.00136314985874174d0*x1
+      x407 = -x406 - 0.0197517897025652d0
+      x408 = x11**0.333333333333333d0
+      x409 = 2.56488140124205d0*x379
+      x410 = x13**0.333333333333333d0
+      x411 = -x408*x409 + x409*x410
+      x412 = x23*x411
+      x413 = x15*x407
+      x414 = 4.0d0*x22
+      x415 = x372*x414
+      x416 = x0*x2
+      x417 = x0*x1
+      x418 = x0*x3
+      x419 = x0*x4
+      x420 = 29.6085746432167d0*x19*(1.35956911724794d0*x416 + 0.7491972
+     &87859205d0* x417 + 0.215048623563832d0*x418 + 0.127434173008489d0*
+     &x419)/(x20 **2*x21)
+      x421 = 0.00274777245725523d0*x417*x7
+      x422 = -x421
+      x423 = 0.0082433173717657d0*x1
+      x424 = 16.0819842214574d0*(0.99709173929518d0*x416 + 0.74185647371
+     &6896d0*x417 + 0.400214317499682d0*x418 + 0.126466955049837d0*x419)
+     &/(x5**2*x6)
+      x425 = x422 + x424*(x423 + 0.0621813817393098d0)
+      x426 = x31*x411
+      x427 = x15*x18*(0.00132103950518672d0*x29*x417 + x425 + 32.1639684
+     &429149d0*( -0.00396311851556016d0*x1 - 0.0310906908696548d0)*( 1.8
+     &5339581051578d0*x416 + 1.28158207914907d0*x417 + 0.822366887783805
+     &d0*x418 + 0.160391419419213d0*x419)/(x27**2*x28 ))
+      x428 = x15*x30
+      x429 = 4.0d0*x428
+      x430 = x372*x429
+      x431 = 0.000454383286247248d0*x24*x417
+      x432 = -x426 - x427 + x430 + x431
+      x433 = x407*x412 + x413*x415 + x413*x420 + x425 + x432
+      x434 = x39*(x33*x405 + x38*x433)
+      x435 = gamma_cc*x49
+      x436 = x435*x58
+      x437 = x434*x436
+      x438 = gamma_cc*x59
+      x439 = x50/x42**5
+      x440 = x439*(2.66666666666667d0*x394 - 2.66666666666667d0*x396)
+      x441 = x49*x55
+      x442 = 0.593716125431411d0*x54
+      x443 = x442*x52/x40**3
+      x444 = gamma_cc*x48*x58/x56**2
+      x445 = x63/x61
+      x446 = x445*(-x390*x391*x43 + x398*x399 + x438*(-x400 + x403 - x43
+     &7) + x444*( 1.38533762600663d0*x377*x53 + x400 - x403 + x434*x443 
+     &+ x437 - x440*x441))
+      x447 = 0.0310906908696549d0*x36**2
+      x448 = x447*(-1.0d0*x394 + x396)
+      x449 = x448*x62
+      x450 = x406 + 0.0197517897025652d0
+      x451 = x15*x450
+      x452 = x415*x451
+      x453 = x412*x450
+      x454 = x424*(-x423 - 0.0621813817393098d0)
+      x455 = x420*x451
+      x456 = x421 + x426 + x427 - x430 - x431 + x452 + x453 + x454 + x45
+     &5
+      x457 = x446 + x449 + x456
+      x458 = x155*x374
+      x459 = x166*x181
+      x460 = x155*x384
+      x461 = x178*x457 + x67*(x175*x458 + x175*x460 - 0.03125d0*x459)
+      x462 = 0.005859375d0*x16
+      x463 = 0.04375d0*x174
+      x464 = x177*x463 + 2.8d0
+      x465 = x457*x464 + x67*(x458*x463 - 0.0875d0*x459 + x460*x463)
+      x466 = x187*x189
+      x467 = x433 - x446 - x449
+      x468 = 0.156233111018196d0*mu*rho_c**(-1.33333333333333d0)
+      x469 = x303*x398
+      x470 = 0.544846825002868d0*x312*x45
+      x471 = x296/x66**2
+      x472 = x471*(x422 + x432 - x452 - x453 - x454 - x455)
+      x473 = x203*x373
+      x474 = 0.00528235082287567d0*x197*x206
+      x475 = x0*x206
+      x476 = x0*x202
+      x477 = x198*x199*(x0*x201 - 0.00428269300567249d0*x417 - 0.0210198
+     &269716521d0* x419 - 0.000367081058155144d0*x476)
+      x478 = x13**(-0.333333333333333d0)
+      x479 = x379*x478
+      x480 = x11**(-0.333333333333333d0)
+      x481 = x379*x480
+      x482 = x211*x225
+      x483 = x0*x66
+      x484 = 0.767414216267966d0*x215*x416
+      x485 = x193*x212*x417
+      x486 = mu*x212*x216
+      x487 = x486*(-0.333333333333333d0*x479 + 0.333333333333333d0*x481)
      &
-      x298 = 17.2274040011291d0*x253
-      x299 = -0.240695990468967d0*x14 + 0.26014827853397d0*x17
-      x300 = exp(-0.33933171852197186d0*x14)
-      x301 = x250*x299*x300
-      x302 = 23.3866625383245d0*x253
-      x303 = x281 + x297*x298 - x301*x302
-      x304 = 0.00020688890514282d0*x222
-      x305 = 0.337338207872387d0*x218
-      x306 = x221*x223 + x225*x243 + x236*(x245 + x282*x283) + x286*x74 
-     &+ x287*(-x290 *x291 + x293*x74) + x294*(-x296 + x303*x304 + x305*x
-     &74)
-      x307 = x212*x306
-      x308 = -x307 + x74
-      x309 = x208*x308
-      x310 = x309**5.56d0
-      x311 = x307 + x45
-      x312 = 32.1636486443022d0*x48
-      x313 = exp(x311*x312)
-      x314 = 0.031091d0*x313 - 0.031091d0
-      x315 = x314**(-2)
-      x316 = x310*x315
-      x317 = x316*x61
-      x318 = x309**2.78d0
-      x319 = 1d0/x314
-      x320 = x318*x319
-      x321 = x10*x320
-      x322 = gamma_cc*x321
-      x323 = x322 + 1.0d0
-      x324 = x317 + x323
-      x325 = 1d0/x324
-      x326 = x323*x325
-      x327 = x318*x9
-      x328 = 0.544841407721756d0*x327
-      x329 = x326*x328
-      x330 = gamma_cc*x329
-      x331 = x330 + 1.0d0
-      x332 = log(x331)
-      x333 = 0.031091d0*x47
-      x334 = x308 + x332*x333
-      x335 = x207 + x334
-      x336 = x79*x80
-      x337 = 1.24136239377604d0*x37
-      x338 = x336*x337*x87
-      x339 = (18.7210232331754d0*x336 + 17.7561861489951d0*x79*x82 + 18.
-     &3168342596557d0*x79*x83 + 5.44712793036536d0*x79*x84)/(x85**2* x86
-     &)
-      x340 = x95/x105**3
-      x341 = 0.102630131649203d0*x13
-      x342 = x109**(-1.33333333333333d0)*x113*x341
-      x343 = x116*x340
-      x344 = x114*x93
-      x345 = x342*x344
-      x346 = x122*x95
-      x347 = 1.0d0*x96
-      x348 = x97*(-x338*x96 + x339*x347*x81)
-      x349 = x346*x348*x99
-      x350 = x101*x63
-      x351 = 0.000865048123170025d0*x63
-      x352 = x118*x346/x119**2
-      x353 = x90/x124
-      x354 = 1.0d0*x37
-      x355 = x105*(x338 + 0.5d0*x339*(-0.592706883413533d0*x80 - 2.0d0) 
-     &+ x353*(-x115 *x121*x340 + x120*x346*(-x343 - x345 - x349) - x121*
-     &x342*x93 + x352*(x100*x111*x348*x351/x98**3 + 0.00426884138179648d
-     &0*x106* x109**(-1.66666666666667d0)*x350 + x343 + x345 + x349 + 0.
-     &000865048123170025d0*x110*x350/x105**5))) + 0.5d0*x125 - x354* x88
+      x488 = x220*x223/x208**4
+      x489 = x213*x221
+      x490 = x489*(-0.666666666666667d0*x479 + 0.666666666666667d0*x481)
      &
-      x356 = x127*x128
-      x357 = x135*x337*x356
-      x358 = 17.7561861489951d0*x127*x130
-      x359 = 18.7210232331754d0*x356
-      x360 = 18.3168342596557d0*x127*x131
-      x361 = 5.44712793036536d0*x127*x132
-      x362 = 1/(x133**2*x134)
-      x363 = x362*(x358 + x359 + x360 + x361)
-      x364 = -0.296353441706766d0*x128 - 1.0d0
-      x365 = x139/x145**3
-      x366 = x153*x159*x365
-      x367 = x147**(-1.33333333333333d0)*x151*x341
-      x368 = x138*x159*x367
-      x369 = x357*x96
-      x370 = x129*x347
-      x371 = x140*(x363*x370 - x369)
-      x372 = x139*x160
-      x373 = x142*x372
-      x374 = x371*x373
-      x375 = x154*x365
-      x376 = x138*x152
-      x377 = x367*x376
-      x378 = -x375 - x377
-      x379 = x158*x372
-      x380 = x144*x63
-      x381 = 0.000865048123170025d0*x148*x380/x145**5
-      x382 = 0.00426884138179648d0*x146*x147**(-1.66666666666667d0)*x380
+      x491 = x224/x218**2
+      x492 = x209*x210*x218/x224
+      x493 = x271*x373
+      x494 = 0.00993066744685536d0*x206
+      x495 = 0.00152446164353214d0*x200
+      x496 = x270*(0.155586177736036d0*x199*x417*(0.00642403950850874d0*
+     &x1 + 0.000137655396808179d0*x202 + 0.0157648702287391d0*x4 - x495 
+     &+ 0.5d0) + x199*(x0*x495 - 0.00214134650283625d0*x417 - 0.01050991
+     &34858261d0*x419 - 0.000183540529077572d0*x476))
+      x497 = 0.0891107483661069d0*x200
+      x498 = 75.398223686155d0*x234
+      x499 = 0.00590232709996862d0*x0
+      x500 = 0.00590232709996862d0*x379
+      x501 = x240*x244
+      x502 = x239*x242
+      x503 = x254*x258
+      x504 = x0*x238
+      x505 = 22.9698720015055d0*x504
+      x506 = x253*x505
+      x507 = x259*x264
+      x508 = x505*x507
+      x509 = 0.112523287330675d0*x0
+      x510 = x244*x509
+      x511 = 0.0162903215389562d0*x419
+      x512 = x241*x511
+      x513 = 0.112523287330675d0*x379
+      x514 = x240*x379
+      x515 = 0.0162903215389562d0*x4
+      x516 = x245*x502
+      x517 = x248*x516/x250**2
+      x518 = x258*x509
+      x519 = x255*x511
+      x520 = x254*x379
+      x521 = x239*x259
+      x522 = x261*x521/x262**2
+      x523 = x247*x251
+      x524 = x260*x263
+      x525 = 22.9698720015055d0*x238
+      x526 = -x252*x502*(x244*x499 - x500*x501) + x253*x514*x525 - x256*
+     &x265*(x258* x499 + x500*x503) + x379*x516*x523 - x379*x521*x524 - 
+     &x506 - x507 *x520*x525 - x508 - x517*(-x241*x514*x515 - x501*x513 
+     &+ x510 + x512) - x522*(x255*x515*x520 + x503*x513 + x518 + x519)
+      x527 = 0.167525641071009d0*x200
+      x528 = x11**1.66666666666667d0
+      x529 = 1.33333333333333d0*x379
+      x530 = x13**1.66666666666667d0
+      x531 = x0/x1
+      x532 = 46.773325076649d0*x238*x281*x282
+      x533 = x196*(0.000410930386996015d0*x0**3.0d0*x205 + x197*x207*x47
+     &7 - 0.00440195901906306d0*x205*x475 + x220*(-x0*x230 + 0.006932200
+     &36674015d0*x204*x476 + x229*x477 - 0.000220097950953153d0*x267*x47
+     &5 + x268*(-2.41662179562687d0*x0** 0.333333333333333d0*x232*x233*x
+     &235 - x0*x237 - x231*x233*x236*( 1.02357830998401d0*x417 - 0.25655
+     &6487706084d0*x419) - x373*x498 + x526) - x473*x497) - 0.0084294123
+     &3263362d0*x226*x227*x483 + x228* x456 + x269*(0.0027585187352376d0
+     &*x272*x475 - x273*x496 - 0.106650135484359d0*x274*x483 + x275*x456
+     & - x493*x494) + x276*(x0 *x278 - x277*x496 - 0.0003448148419047d0*
+     &x285*x475 + x286*(-x235* x282*x284*(0.0802319968229891d0*x417 - 0.
+     &173432185689313d0*x419) + 11.4849360007528d0*x279*x504 + x280*(-x5
+     &28*x529 + x529*x530) - 15.591108358883d0*x283*x504 - 2.64527879654
+     &103d0*x283*x531 - x373 *x532 + x526) + x287*x456 - 0.4497842771631
+     &83d0*x476*x66 - x493* x527) - x473*x474 + x482*(x479 - x481) + x49
+     &2*(x219*( -0.957035512114487d0*x222*x418 - x484 - 1.54043890936153
+     &d0*x485 + x487 + x488*(-x479 + x481) + 4.62131672808458d0*x490) + 
+     &x491*( x484 + 0.71309495712383d0*x485 - x487 - 2.13928487137149d0*
+     &x490 )))
+      x534 = 0.632303919304059d0*x0*x194*x288/x195**5
+      x535 = x456 - x533 - x534
+      x536 = x295*x535
+      x537 = 2.78d0*x472 + 2.78d0*x536
+      x538 = x66/x296
+      x539 = x316*x538
+      x540 = 0.0395258831507799d0*x305*x389
+      x541 = x302*x306
+      x542 = x469*x541
+      x543 = x291*(x290*x405 + x38*(x433 + x533 + x534))
+      x544 = gamma_cc*x293
+      x545 = 0.000526665863310429d0*x313*x544
+      x546 = x543*x545
+      x547 = x308*x538
+      x548 = x537*x547
+      x549 = gamma_cc*x311
+      x550 = x314*x549
+      x551 = x293*x300
+      x552 = 1.78430857480394d-5*x299*x52/x292**3
+      x553 = x301*x538
+      x554 = gamma_cc*x309*x314/x310**2
+      x555 = x63/x317
+      x556 = x318*x448 + x535 + x555*(-1.27130925834002d0*x304*x312*x389
+     & + x469*x470 + x537*x539 + x550*(-x540 + x542 - x546 + x548) + x55
+     &4*( 0.00133911037615638d0*x294*x298*x377 - x440*x551 + x540 - x542
+     & + x543*x552 + x546 - x548 - x553*(5.56d0*x472 + 5.56d0*x536)))
+      x557 = x345*(-x341 - x342 - x343 - x344)
+      x558 = x125*(x351 + x352*x557)
+      x559 = x355*x558
+      x560 = x130*(-x339 + x340*x557 + x368*(x348 + x350 + x361*(x365 - 
+     &x559) + x366* (x360 - x362 - x363 + x364*x558 + x559))) - x336 + x
+     &369
+      x561 = x167*(x335 + x560)
+      x562 = rho_s**3*x16
+      x563 = x165*(13.56d0*rho_s**5*x151 + 1.74d0*x379 + 2.0d0*x562)
+      x564 = 1.33333333333333d0*x0
+      x565 = x383*(-x376*(2.0d0*gamma_cc*rho_s - rho_c*x160) - x382*(-x3
+     &78*x564 + x381*x564))
+      x566 = x563 + x565
+      x567 = x170*x566
+      x568 = x0*x393
+      x569 = x0*x395
+      x570 = x392*(-1.33333333333333d0*x568 + 1.33333333333333d0*x569)
+      x571 = gamma_cc*x570
+      x572 = x402*x570
+      x573 = x404*(-1.0d0*x568 + x569)
+      x574 = 2.56488140124205d0*x0
+      x575 = x408*x574 - x410*x574
+      x576 = x23*x575
+      x577 = x414*x562
+      x578 = x31*x575
+      x579 = x429*x562
+      x580 = -x578 - x579
+      x581 = x407*x576 - x413*x577 + x580
+      x582 = x39*(x33*x573 + x38*x581)
+      x583 = x436*x582
+      x584 = x439*(-2.66666666666667d0*x568 + 2.66666666666667d0*x569)
+      x585 = x445*(x399*x571 + x438*(x572 - x583) + x444*(-x441*x584 + x
+     &443*x582 - x572 + x583))
+      x586 = x447*(x568 - 1.0d0*x569)
+      x587 = x586*x62
+      x588 = x451*x577
+      x589 = x450*x576
+      x590 = x578 + x579 - x588 + x589
+      x591 = x585 + x587 + x590
+      x592 = x155*x563
+      x593 = x155*x565
+      x594 = x178*x591 + x67*(x175*x592 + x175*x593)
+      x595 = x464*x591 + x67*(x463*x592 + x463*x593)
+      x596 = x180*x466
+      x597 = x581 - x585 - x587
+      x598 = x303*x571
+      x599 = x471*(x580 + x588 - x589)
+      x600 = x203*x379
+      x601 = x0*x480
+      x602 = x0*x478
+      x603 = x271*x379
+      x604 = x486*(-0.333333333333333d0*x601 + 0.333333333333333d0*x602)
      &
-      x383 = x143*x149*x351/x141**3
-      x384 = x375 + x377
-      x385 = x156*x372/x157**2
-      x386 = x90/x162
-      x387 = 0.5d0*x163
-      x388 = x136*x354
-      x389 = x145*(x357 + x363*x364 + x386*(-x366 - x368 + x379*(-x374 +
-     & x378) + x385 *(x371*x383 + x374 + x381 + x382 + x384))) + x387 - 
-     &x388
-      x390 = x182*(x355 + x389)
-      x391 = x27/rho_c**5
-      x392 = x171*x187
-      x393 = x180*(-2.0d0*x391 - 1.74d0*x392 - 13.56d0*x167/rho_c**7)
-      x394 = 0.0522423459704672d0*x59
-      x395 = x174*x394
-      x396 = rho_c**(-5.66666666666667d0)
-      x397 = x3**(-2.33333333333333d0)
-      x398 = rho_s*x170
-      x399 = 1.33333333333333d0*x398
-      x400 = x5**(-2.33333333333333d0)
-      x401 = x177*x394
-      x402 = x173/x179**5
-      x403 = x402*(0.243797614528847d0*x178*x396 - x395*(2.0d0*gamma_ss*
-     &rho_c - x176 ) - x401*(x397*x399 - x399*x400))
-      x404 = x393 + x403
-      x405 = x185*x404
-      x406 = x189*x26
-      x407 = x186*x406
-      x408 = rho_c**(-3.33333333333333d0)*x8
-      x409 = 0.0395258831507799d0*x408
-      x410 = gamma_cc*x409
-      x411 = x13*x55*x66
-      x412 = x3**(-0.333333333333333d0)
-      x413 = x398*x412
-      x414 = x5**(-0.333333333333333d0)
-      x415 = x398*x414
-      x416 = 1.33333333333333d0*x413 - 1.33333333333333d0*x415
-      x417 = x0/x7**3
-      x418 = 0.0169396642074771d0*x417
-      x419 = x416*x418
-      x420 = gamma_cc*x411
-      x421 = gamma_cc*x53
-      x422 = x409*x421
-      x423 = x419*x421
-      x424 = x46**(-4)
-      x425 = x424*(x413 - 1.0d0*x415)
-      x426 = x13*x45
-      x427 = 0.00136314985874174d0*x14
-      x428 = -x427 - 0.0197517897025652d0
-      x429 = x3**0.333333333333333d0
-      x430 = 2.56488140124205d0*x398
-      x431 = x5**0.333333333333333d0
-      x432 = -x429*x430 + x430*x431
-      x433 = x33*x432
-      x434 = x25*x428
-      x435 = 4.0d0*x32
-      x436 = x391*x435
-      x437 = x1*x15
-      x438 = x1*x14
-      x439 = x1*x16
-      x440 = x1*x17
-      x441 = 29.6085746432167d0*x29*(1.35956911724794d0*x437 + 0.7491972
-     &87859205d0* x438 + 0.215048623563832d0*x439 + 0.127434173008489d0*
-     &x440)/(x30 **2*x31)
-      x442 = 0.265137799810404d0*x14
-      x443 = 0.5d0*(0.99709173929518d0*x437 + 0.741856473716896d0*x438 +
-     & 0.400214317499682d0*x439 + 0.126466955049837d0*x440)/(x18**2*x19)
+      x605 = x489*(-0.666666666666667d0*x601 + 0.666666666666667d0*x602)
      &
-      x444 = 0.0883792666034679d0*x20*x438
-      x445 = -x444
-      x446 = x443*(x442 + 2.0d0) + x445
-      x447 = x43*x432
-      x448 = x25*x28*(0.0849797459133391d0*x41*x438 + x446 + 0.5d0*( -0.
-     &254939237740017d0*x14 - 2.0d0)*(1.85339581051578d0*x437 + 1.281582
-     &07914907d0*x438 + 0.822366887783805d0*x439 + 0.160391419419213d0*x
-     &440)/(x38**2*x40))
-      x449 = x25*x42
-      x450 = 4.0d0*x449
-      x451 = x391*x450
-      x452 = 0.000454383286247248d0*x34*x438
-      x453 = -x447 - x448 + x451 + x452
-      x454 = x428*x433 + x434*x436 + x434*x441 + x446 + x453
-      x455 = x50*(x425*x426 + x454*x49)
-      x456 = gamma_cc*x67
-      x457 = x456*x62
-      x458 = x455*x457
-      x459 = gamma_cc*x68
-      x460 = 0.00133911037615638d0*x396*x58
-      x461 = x56*x60/x7**5
-      x462 = x461*(2.66666666666667d0*x413 - 2.66666666666667d0*x415)
-      x463 = 0.000573904446924163d0*x59
-      x464 = x463*x58*x63/x51**3
-      x465 = x456*x55/x65**2
-      x466 = x72/x70
-      x467 = x466*(-x410*x411 + x419*x420 + x459*(-x422 + x423 - x458) +
-     & x465*(x422 - x423 + x455*x464 + x458 + x460*x64 - x462*x64))
-      x468 = x46**2
-      x469 = x468*(-1.0d0*x413 + x415)
-      x470 = x12*x71
-      x471 = x469*x470
-      x472 = x427 + 0.0197517897025652d0
-      x473 = x25*x472
-      x474 = x436*x473
-      x475 = x433*x472
-      x476 = x443*(-x442 - 2.0d0)
-      x477 = x441*x473
-      x478 = x444 + x447 + x448 - x451 - x452 + x474 + x475 + x476 + x47
-     &7
-      x479 = x467 + x471 + x478
-      x480 = x170*x393
-      x481 = x181*x196
-      x482 = x170*x403
-      x483 = x193*x479 + x75*(x190*x480 + x190*x482 - 0.03125d0*x481)
-      x484 = 0.005859375d0*x26
-      x485 = 0.04375d0*x189
-      x486 = x192*x485 + 2.8d0
-      x487 = x479*x486 + x75*(x480*x485 - 0.0875d0*x481 + x482*x485)
-      x488 = x202*x204
-      x489 = x454 - x467 - x471
-      x490 = 0.156233111018196d0*mu*rho_c**(-1.33333333333333d0)
-      x491 = gamma_cc*x318*x326
-      x492 = 0.544841407721756d0*x417*x491
-      x493 = x308/x74**2
-      x494 = x493*(x445 + x453 - x474 - x475 - x476 - x477)
-      x495 = x219*x392
-      x496 = 0.00528235082287567d0*x213*x222
-      x497 = x1*x222
-      x498 = x1*x218
-      x499 = x214*x215*(x1*x217 - 0.0042826930056725d0*x438 - 0.02101982
-     &69716521d0* x440 - 0.000367081058155144d0*x498)
-      x500 = x5**(-0.333333333333333d0)
-      x501 = x398*x500
-      x502 = x3**(-0.333333333333333d0)
-      x503 = x398*x502
-      x504 = x227*x243
-      x505 = x1*x74
-      x506 = 0.767414216267966d0*x231*x437
-      x507 = x229*x438
-      x508 = mu*x228*x232
-      x509 = x508*(-0.333333333333333d0*x501 + 0.333333333333333d0*x503)
-     &
-      x510 = -0.666666666666667d0*x501 + 0.666666666666667d0*x503
-      x511 = x14*x209*x237
-      x512 = 2.13928487137149d0*x511
-      x513 = x242/x234**2
-      x514 = x236*x239/x224**4
-      x515 = x241*x511
-      x516 = x225*x226*x234/x242
-      x517 = 0.0891107483661069d0*x216
-      x518 = 75.398223686155d0*x249
-      x519 = 0.00590232709996862d0*x1
-      x520 = 0.00590232709996862d0*x398
-      x521 = x255*x259
-      x522 = x254*x257
-      x523 = x269*x273
-      x524 = x1*x253
-      x525 = 22.9698720015055d0*x524
-      x526 = x268*x525
-      x527 = x274*x279
-      x528 = x525*x527
-      x529 = 0.112523287330675d0*x1
-      x530 = x259*x529
-      x531 = 0.0162903215389562d0*x440
-      x532 = x256*x531
-      x533 = 0.112523287330675d0*x398
-      x534 = x255*x398
-      x535 = 0.0162903215389562d0*x17
-      x536 = x260*x522
-      x537 = x263*x536/x265**2
-      x538 = x273*x529
-      x539 = x270*x531
-      x540 = x269*x398
-      x541 = x254*x274
-      x542 = x276*x541/x277**2
-      x543 = x262*x266
-      x544 = x275*x278
-      x545 = 22.9698720015055d0*x253
-      x546 = -x267*x522*(x259*x519 - x520*x521) + x268*x534*x545 - x271*
-     &x280*(x273* x519 + x520*x523) + x398*x536*x543 - x398*x541*x544 - 
-     &x526 - x527 *x540*x545 - x528 - x537*(-x256*x534*x535 - x521*x533 
-     &+ x530 + x532) - x542*(x270*x535*x540 + x523*x533 + x538 + x539)
-      x547 = x289*x392
-      x548 = 0.00993066744685536d0*x222
-      x549 = 0.00152446164353214d0*x216
-      x550 = x288*(0.155586177736036d0*x215*x438*(0.00642403950850875d0*
-     &x14 + 0.0157648702287391d0*x17 + 0.000137655396808179d0*x218 - x54
-     &9 + 0.5d0) + x215*(x1*x549 - 0.00214134650283625d0*x438 - 0.010509
-     &9134858261d0*x440 - 0.000183540529077572d0*x498))
-      x551 = 0.167525641071009d0*x216
-      x552 = x3**1.66666666666667d0
-      x553 = 1.33333333333333d0*x398
-      x554 = x5**1.66666666666667d0
-      x555 = x1/x14
-      x556 = 46.773325076649d0*x253*x299*x300
-      x557 = x212*(0.000410930386996015d0*x1**3.0d0*x221 + x213*x223*x49
-     &9 - 0.00440195901906306d0*x221*x497 + x236*(-x1*x245 + 0.006932200
-     &36674015d0*x220*x498 + x244*x499 - 0.000220097950953153d0*x282*x49
-     &7 + x283*(-2.41662179562687d0*x1** 0.333333333333333d0*x247*x248*x
-     &250 - x1*x252 - x246*x248*x251*( 1.02357830998401d0*x438 - 0.25655
-     &6487706084d0*x440) - x392*x518 + x546) - x495*x517) - 0.0084294123
-     &3263362d0*x284*x285*x505 + x286* x478 + x287*(0.0027585187352376d0
-     &*x290*x497 - x291*x550 - 0.106650135484359d0*x292*x505 + x293*x478
-     & - x547*x548) + x294*(x1 *x296 - x295*x550 - 0.0003448148419047d0*
-     &x303*x497 + x304*(-x250* x300*x302*(0.0802319968229891d0*x438 - 0.
-     &173432185689313d0*x440) + 11.4849360007528d0*x297*x524 + x298*(-x5
-     &52*x553 + x553*x554) - 15.591108358883d0*x301*x524 - 2.64527879654
-     &103d0*x301*x555 - x392 *x556 + x546) + x305*x478 - 0.4497842771631
-     &83d0*x498*x74 - x547* x551) - x495*x496 + x504*(x501 - x503) + x51
-     &6*(x235*( -0.957035512114487d0*x238*x439 - 0.206783496966467d0*x24
-     &0*x507 - x506 + x509 + x510*x515 + x514*(-x501 + x503)) + x513*(x5
-     &06 + 0.71309495712383d0*x507 - x509 - x510*x512)))
-      x558 = 0.632303919304059d0*x1*x210*x306/x211**5
-      x559 = x478 - x557 - x558
-      x560 = x208*x559
-      x561 = 2.78d0*x494 + 2.78d0*x560
-      x562 = x74/x308
-      x563 = x330*x562
-      x564 = x320*x410
-      x565 = gamma_cc*x320
-      x566 = x419*x565
-      x567 = 32.1636486443022d0*x311
-      x568 = x313*(x312*(x454 + x557 + x558) + x425*x567)
-      x569 = 0.000526671099874671d0*gamma_cc*x315*x327
-      x570 = x568*x569
-      x571 = x322*x562
-      x572 = x561*x571
-      x573 = gamma_cc*x328
-      x574 = x325*x573
-      x575 = 1.78432631593191d-5*x310*x58*x59/x314**3
-      x576 = x317*x562
-      x577 = x323*x573/x324**2
-      x578 = x333/x331
-      x579 = 0.031091d0*x332
-      x580 = x469*x579 + x559 + x578*(-1.27129661801743d0*x408*x491 + x4
-     &16*x492 + x561*x563 + x574*(-x564 + x566 - x570 + x572) + x577*(x3
-     &16*x460 - x316*x462 + x564 - x566 + x568*x575 + x570 - x572 - x576
-     &*(5.56d0* x494 + 5.56d0*x560)))
-      x581 = x362*(-x358 - x359 - x360 - x361)
-      x582 = x140*(x369 + x370*x581)
-      x583 = x373*x582
-      x584 = x145*(-x357 + x364*x581 + x386*(x366 + x368 + x379*(x384 - 
-     &x583) + x385* (x378 - x381 - x382 + x383*x582 + x583))) - x387 + x
-     &388
-      x585 = x182*(x355 + x584)
-      x586 = rho_s**3*x26
-      x587 = x180*(13.56d0*rho_s**5*x166 + 1.74d0*x398 + 2.0d0*x586)
-      x588 = 1.33333333333333d0*x1
-      x589 = x402*(-x395*(2.0d0*gamma_cc*rho_s - rho_c*x175) - x401*(-x3
-     &97*x588 + x400*x588))
-      x590 = x587 + x589
-      x591 = x185*x590
-      x592 = x1*x412
-      x593 = x1*x414
-      x594 = -1.33333333333333d0*x592 + 1.33333333333333d0*x593
-      x595 = x418*x594
-      x596 = x421*x595
-      x597 = x424*(-1.0d0*x592 + x593)
-      x598 = 2.56488140124205d0*x1
-      x599 = x429*x598 - x431*x598
-      x600 = x33*x599
-      x601 = x435*x586
-      x602 = x43*x599
-      x603 = x450*x586
-      x604 = -x602 - x603
-      x605 = x428*x600 - x434*x601 + x604
-      x606 = x50*(x426*x597 + x49*x605)
-      x607 = x457*x606
-      x608 = x461*(-2.66666666666667d0*x592 + 2.66666666666667d0*x593)
-      x609 = x466*(x420*x595 + x459*(x596 - x607) + x465*(x464*x606 - x5
-     &96 + x607 - x608*x64))
-      x610 = x468*(x592 - 1.0d0*x593)
-      x611 = x470*x610
-      x612 = x473*x601
-      x613 = x472*x600
-      x614 = x602 + x603 - x612 + x613
-      x615 = x609 + x611 + x614
-      x616 = x170*x587
-      x617 = x170*x589
-      x618 = x193*x615 + x75*(x190*x616 + x190*x617)
-      x619 = x486*x615 + x75*(x485*x616 + x485*x617)
-      x620 = x195*x488
-      x621 = x605 - x609 - x611
-      x622 = x493*(x604 + x612 - x613)
-      x623 = x219*x398
-      x624 = x1*x502
-      x625 = x1*x500
-      x626 = x289*x398
-      x627 = x508*(-0.333333333333333d0*x624 + 0.333333333333333d0*x625)
-     &
-      x628 = -0.666666666666667d0*x624 + 0.666666666666667d0*x625
-      x629 = 34.4548080022583d0*x524
-      x630 = 0.203363546995945d0*x555
-      x631 = -x255*x526 - x255*x267*x630/x258 - x257*x260*x543*x629 + x2
-     &69*x528 + x269*x279*x630/x272 + x274*x544*x629 - x537*(x255*x530 +
-     & x255* x532) - x542*(-x269*x538 - x269*x539)
-      x632 = 1.33333333333333d0*x1
-      x633 = x212*(x236*(x283*(x398*x518 + x631) + x517*x623) + x286*x61
-     &4 + x287*( x293*x614 + x548*x626) + x294*(x304*(x298*(x552*x632 - 
-     &x554*x632 ) + x398*x556 + x631) + x305*x614 + x551*x626) + x496*x6
-     &23 + x504 *(x624 - x625) + x516*(x235*(x514*(-x624 + x625) + x515*
-     &x628 + x627) + x513*(-x512*x628 - x627)))
-      x634 = x614 - x633
-      x635 = x208*x634
-      x636 = 2.78d0*x622 + 2.78d0*x635
-      x637 = x565*x595
-      x638 = x313*(x312*(x605 + x633) + x567*x597)
-      x639 = x569*x638
-      x640 = x571*x636
-      x641 = x578*(x492*x594 + x563*x636 + x574*(x637 - x639 + x640) + x
-     &577*(-x316* x608 + x575*x638 - x576*(5.56d0*x622 + 5.56d0*x635) - 
-     &x637 + x639 - x640)) + x579*x610 + x634
-      x642 = gamma_cc*x57
-      x643 = x59*x642
-      x644 = x463*x642
-      x645 = x466*(x465*(-x54 - x64*x644) + 0.000286952223462081d0*x52*x
-     &63*x643*x66 + x69)
-      x646 = -x645
-      x647 = 0.000108131015396253d0*x63
-      x648 = 0.0051993032080331d0*x13
-      x649 = 0.25d0*gamma_cs
-      x650 = 0.125d0*gamma_cc + 0.125d0*gamma_ss
-      x651 = x145*x386*(x149*x158*x376*x647 + x161*x648 + x385*(-x142*x1
-     &50*(-x649 + x650) - x155*x648))
-      x652 = x105*x353*(x111*x120*x344*x647 + x123*x648 + x352*(-x112*x9
-     &9*(x649 + x650) - x117*x648))
-      x653 = x182*(x651 + x652)
-      x654 = -x191*x653
-      x655 = gamma_cc*x188
-      x656 = x186*x187
-      x657 = x655*x656
-      x658 = x174*x189*x402
-      x659 = 0.00081628665578855d0*x658
-      x660 = rho_c**(-7.66666666666667d0)*x171
-      x661 = x185*x660
-      x662 = 0.03125d0*x192
-      x663 = rho_c**(-6.66666666666667d0)*x171
-      x664 = x193*x645 + x75*(x655*x662 - x659*x663)
-      x665 = x201*x56
-      x666 = 0.005859375d0*x187
-      x667 = x199*x666
-      x668 = -x197*x653
-      x669 = 0.00228560263620794d0*x658
-      x670 = 0.0875d0*x655
-      x671 = x486*x645 + x75*(x192*x670 - x663*x669)
-      x672 = x578*(0.00922943049313567d0*x310*x319*x325*x643 + x329 + x5
-     &77*(-x316* x644 - x321))
-      x673 = rho_c*(x165*(x195*(x488*(-0.0875d0*x657 + x661*x669 + x668 
-     &+ x671) + x665*x667) + x205*(x654 - 0.03125d0*x657 + x659*x661 + x
-     &664) + x646) + x672)
-      x674 = x185*x396
-      x675 = -5.6d0*x21 + 0.0553050111671826d0*x35 + 2.8d0*x44 + 2.8d0*x
-     &73
-      x676 = x59*x659
-      x677 = -x675*x676
-      x678 = -x676*x75
-      x679 = rho_c*x165
-      x680 = x656*x665
-      x681 = x662*x665
-      x682 = -x681*x75
-      x683 = -x675*x681
-      x684 = x200/tau_c**4
-      x685 = x145*x75
-      x686 = x184 + x685
-      x687 = x182*x686
-      x688 = -x191*x687 + x194
-      x689 = -x197*x687 + x198
-      x690 = x488*x689 + 1.0d0
-      x691 = x165*(x206 + x688*x690)
-      x692 = x334 + x691
-      x693 = x145*x479
-      x694 = 0.5d0*x73
-      x695 = 1.0d0*x21
-      x696 = x168*x449
-      x697 = 0.0098758948512826d0*x35
-      x698 = x694 - x695 + x696 + x697
-      x699 = x182*(x355 + x693 + x698)
-      x700 = x404*x686
-      x701 = x406*x687
-      x702 = x202*x484
-      x703 = x145*x615
-      x704 = x182*(x355 - x694 + x695 - x696 - x697 + x703)
-      x705 = x590*x686
-      x706 = x488*x688
-      x707 = x187*x687
-      x708 = 0.03125d0*x707
-      x709 = x145*x645
-      x710 = x182*(x652 + x709)
-      x711 = x660*x686
-      x712 = x666*x689
-      x713 = rho_c*(x165*(x646 + x688*(x488*(-x197*x710 + x669*x711 - x6
-     &70*x707 + x671) + x665*x712) + x690*(-x191*x710 - x655*x708 + x659
-     &*x711 + x664)) + x672)
-      x714 = x396*x686
-      x715 = x182*x652
-      x716 = 0.0875d0*x665
-      x717 = x105*x75
-      x718 = x183 + x717
-      x719 = x182*x718
-      x720 = -x191*x719 + x194
-      x721 = -x197*x719 + x198
-      x722 = x488*x721 + 1.0d0
-      x723 = x165*(x206 + x720*x722)
-      x724 = x334 + x723
-      x725 = x105*x479
-      x726 = x182*(x389 + x698 + x725)
-      x727 = x404*x718
-      x728 = x406*x719
-      x729 = x105*x615
-      x730 = x182*(x584 + x698 + x729)
-      x731 = x590*x718
-      x732 = x488*x720
-      x733 = x187*x719
-      x734 = 0.03125d0*x733
-      x735 = x105*x645
-      x736 = x182*(x651 + x735)
-      x737 = x660*x718
-      x738 = x666*x721
-      x739 = rho_c*(x165*(x646 + x720*(x488*(-x197*x736 + x669*x737 - x6
-     &70*x733 + x671) + x665*x738) + x722*(-x191*x736 - x655*x734 + x659
-     &*x737 + x664)) + x672)
-      x740 = x396*x718
-      x741 = x182*x651
-      x742 = x685 + x717
-      x743 = x182*x742
-      x744 = -x191*x743 + x194
-      x745 = -x197*x743 + x198
-      x746 = x488*x745 + 1.0d0
-      x747 = x165*(x206 + x744*x746)
-      x748 = x334 + x747
-      x749 = x182*(-2.0d0*x21 + x36 + 1.0d0*x44 + x693 + x725 + 1.0d0*x7
-     &3)
-      x750 = x404*x742
-      x751 = x406*x743
-      x752 = x182*(x703 + x729)
-      x753 = x590*x742
-      x754 = x488*x744
-      x755 = x187*x743
-      x756 = 0.03125d0*x755
-      x757 = x182*(x709 + x735)
-      x758 = x660*x742
-      x759 = x666*x745
-      x760 = rho_c*(x165*(x646 + x744*(x488*(-x197*x757 + x669*x758 - x6
-     &70*x755 + x671) + x665*x759) + x746*(-x191*x757 - x655*x756 + x659
-     &*x758 + x664)) + x672)
-      x761 = x396*x742
-      PBE_value = x75
-      PBE_beta_value = x126
-      PBE_alpha_value = x164
+      x606 = 34.4548080022583d0*x504
+      x607 = 0.203363546995945d0*x531
+      x608 = -x240*x506 - x240*x252*x607/x243 - x242*x245*x523*x606 + x2
+     &54*x508 + x254*x264*x607/x257 + x259*x524*x606 - x517*(x240*x510 +
+     & x240* x512) - x522*(-x254*x518 - x254*x519)
+      x609 = 1.33333333333333d0*x0
+      x610 = x196*(x220*(x268*(x379*x498 + x608) + x497*x600) + x228*x59
+     &0 + x269*( x275*x590 + x494*x603) + x276*(x286*(x280*(x528*x609 - 
+     &x530*x609 ) + x379*x532 + x608) + x287*x590 + x527*x603) + x474*x6
+     &00 + x482 *(x601 - x602) + x492*(x219*(x488*(-x601 + x602) + x604 
+     &+ 4.62131672808458d0*x605) + x491*(-x604 - 2.13928487137149d0*x605
+     & )))
+      x611 = x590 - x610
+      x612 = x295*x611
+      x613 = 2.78d0*x599 + 2.78d0*x612
+      x614 = x541*x598
+      x615 = x291*(x290*x573 + x38*(x581 + x610))
+      x616 = x545*x615
+      x617 = x547*x613
+      x618 = x318*x586 + x555*(x470*x598 + x539*x613 + x550*(x614 - x616
+     & + x617) + x554*(-x551*x584 + x552*x615 - x553*(5.56d0*x599 + 5.56
+     &d0*x612) - x614 + x616 - x617)) + x611
+      x619 = x445*(0.296858062715705d0*x401*x51*x54*x57 + x444*(-x435*x4
+     &42*x51 - x47 ) + x60)
+      x620 = -x619
+      x621 = x134*x143*x358
+      x622 = 0.25d0*gamma_cs
+      x623 = 0.125d0*gamma_cc + 0.125d0*gamma_ss
+      x624 = x127*x135
+      x625 = 0.167230224308322d0*x146 + x366*(-0.167230224308322d0*x140 
+     &- x624*(-x622 + x623)) + 0.111863791688847d0*x621
+      x626 = x130*x368
+      x627 = x625*x626
+      x628 = x107*x327*x98
+      x629 = x87*x99
+      x630 = 0.167230224308322d0*x110 + x332*(-0.167230224308322d0*x104 
+     &- x629*(x622 + x623)) + 0.111863791688847d0*x628
+      x631 = x334*x92
+      x632 = x630*x631
+      x633 = x167*(x627 + x632)
+      x634 = -x176*x633
+      x635 = gamma_cc*x173
+      x636 = x171*x172
+      x637 = x635*x636
+      x638 = x159*x174*x383
+      x639 = 0.00081628665578855d0*x638
+      x640 = rho_c**(-7.66666666666667d0)*x156
+      x641 = x170*x640
+      x642 = 0.03125d0*x177
+      x643 = rho_c**(-6.66666666666667d0)
+      x644 = x156*x643
+      x645 = x178*x619 + x67*(x635*x642 - x639*x644)
+      x646 = x186*x50
+      x647 = 0.005859375d0*x172
+      x648 = x184*x647
+      x649 = -x182*x633
+      x650 = 0.00228560263620794d0*x638
+      x651 = 0.0875d0*x635
+      x652 = x464*x619 + x67*(x177*x651 - x644*x650)
+      x653 = x299*x51
+      x654 = x555*(0.00922952226005862d0*x302*x549*x653 + x315 + x554*(-
+     &x307 - 0.000573904446924163d0*x544*x653))
+      x655 = x170*x377
+      x656 = x37*x62
+      x657 = 0.0553050111671826d0*x25 + 2.8d0*x32 + 0.0870539344350337d0
+     &*x656 - 0.174107868870067d0*x8
+      x658 = x54*x639
+      x659 = -x657*x658
+      x660 = -x658*x67
+      x661 = rho_c*x150
+      x662 = x170*x643
+      x663 = rho_s*x638
+      x664 = 0.00457120527241588d0*x663
+      x665 = 0.0016325733115771d0*x663
+      x666 = x377*x665
+      x667 = x657*x666
+      x668 = -0.334460448616645d0*x146 + x366*(0.334460448616645d0*x140 
+     &- x624*(x79 - x80 - x81)) - 0.223727583377694d0*x621
+      x669 = 0.334460448616645d0*x110 + x332*(-0.334460448616645d0*x104 
+     &- x629*x83) + 0.223727583377694d0*x628
+      x670 = x167*(x626*x668 + x631*x669)
+      x671 = x666*x67
+      x672 = x636*x646
+      x673 = x642*x646
+      x674 = -x67*x673
+      x675 = -x657*x673
+      x676 = x185/tau_c**4
+      x677 = x130*x67
+      x678 = x169 + x677
+      x679 = x167*x678
+      x680 = -x176*x679 + x179
+      x681 = -x182*x679 + x183
+      x682 = x466*x681 + 1.0d0
+      x683 = x150*(x191 + x680*x682)
+      x684 = x319 + x683
+      x685 = x130*x457
+      x686 = 0.0155453454348275d0*x656
+      x687 = 0.0310906908696549d0*x8
+      x688 = x153*x428
+      x689 = 0.0098758948512826d0*x25
+      x690 = x686 - x687 + x688 + x689
+      x691 = x167*(x335 + x685 + x690)
+      x692 = x385*x678
+      x693 = x387*x679
+      x694 = x187*x462
+      x695 = x130*x591
+      x696 = x167*(x335 - x686 + x687 - x688 - x689 + x695)
+      x697 = x566*x678
+      x698 = x466*x680
+      x699 = x172*x679
+      x700 = 0.03125d0*x699
+      x701 = x130*x619
+      x702 = x167*(x632 + x701)
+      x703 = x640*x678
+      x704 = x647*x681
+      x705 = x333*x92
+      x706 = x630*x705
+      x707 = x167*x181
+      x708 = 0.000680108862773701d0*x707
+      x709 = x377*x678
+      x710 = 0.000242896022419179d0*x707
+      x711 = x669*x705
+      x712 = x643*x678
+      x713 = 0.0875d0*x646
+      x714 = x67*x92
+      x715 = x168 + x714
+      x716 = x167*x715
+      x717 = -x176*x716 + x179
+      x718 = -x182*x716 + x183
+      x719 = x466*x718 + 1.0d0
+      x720 = x150*(x191 + x717*x719)
+      x721 = x319 + x720
+      x722 = x457*x92
+      x723 = x167*(x370 + x690 + x722)
+      x724 = x385*x715
+      x725 = x387*x716
+      x726 = x591*x92
+      x727 = x167*(x560 + x690 + x726)
+      x728 = x566*x715
+      x729 = x466*x717
+      x730 = x172*x716
+      x731 = 0.03125d0*x730
+      x732 = x619*x92
+      x733 = x167*(x627 + x732)
+      x734 = x640*x715
+      x735 = x647*x718
+      x736 = x130*x367
+      x737 = x625*x736
+      x738 = x377*x715
+      x739 = x668*x736
+      x740 = x643*x715
+      x741 = x677 + x714
+      x742 = x167*x741
+      x743 = -x176*x742 + x179
+      x744 = -x182*x742 + x183
+      x745 = x466*x744 + 1.0d0
+      x746 = x150*(x191 + x743*x745)
+      x747 = x319 + x746
+      x748 = x167*(1.0d0*x32 + x64 + x65 + x685 + x722)
+      x749 = x385*x741
+      x750 = x387*x742
+      x751 = x167*(x695 + x726)
+      x752 = x566*x741
+      x753 = x466*x743
+      x754 = x172*x742
+      x755 = 0.03125d0*x754
+      x756 = x167*(x701 + x732)
+      x757 = x640*x741
+      x758 = x647*x744
+      x759 = x377*x741
+      x760 = x643*x741
+      PBE_value = x67
+      PBE_beta_value = x113
+      PBE_alpha_value = x149
       if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .ge. PB
      &E_value)) then
-      E = rho_c*x335
-      d1E(1) = rho_c*(x165*(x195*(-x203*x484 + x488*(-x197*x390 - x197*x
-     &405 + 0.13125d0 *x407 + x487)) + x205*(-x191*x390 - x191*x405 + 0.
-     &046875d0*x407 + x483) + x489) + x207*x490 + x580) + x335
-      d1E(2) = rho_c*(x165*(x205*(-x191*x585 - x191*x591 + x618) + x620*
-     &(-x197*x585 - x197*x591 + x619) + x621) + x641)
-      d1E(3) = x673
-      d1E(4) = x679*(x205*(x654 + x659*x674 + x678) + x620*(x668 + x669*
-     &x674 + x677))
-      d1E(5) = x673
-      d1E(6) = x679*(x195*(x488*(0.0875d0*x680 + x683) - x667*x684) + x2
-     &05*(0.03125d0* x680 + x682))
+      E = rho_c*x320
+      d1E(1) = rho_c*(x150*(x180*(-x188*x462 + x466*(-x182*x371 - x182*x
+     &386 + 0.13125d0 *x388 + x465)) + x190*(-x176*x371 - x176*x386 + 0.
+     &046875d0*x388 + x461) + x467) + x192*x468 + x556) + x320
+      d1E(2) = rho_c*(x150*(x190*(-x176*x561 - x176*x567 + x594) + x596*
+     &(-x182*x561 - x182*x567 + x595) + x597) + x618)
+      d1E(3) = rho_c*(x150*(x180*(x466*(-0.0875d0*x637 + x641*x650 + x64
+     &9 + x652) + x646*x648) + x190*(x634 - 0.03125d0*x637 + x639*x641 +
+     & x645) + x620) + x654)
+      d1E(4) = x661*(x190*(x634 + x639*x655 + x660) + x596*(x649 + x650*
+     &x655 + x659))
+      d1E(5) = x661*(x190*(-x176*x670 - x662*x665 + x671) + x596*(-x182*
+     &x670 - x662* x664 + x667))
+      d1E(6) = x661*(x180*(x466*(0.0875d0*x672 + x675) - x648*x676) + x1
+     &90*(0.03125d0* x672 + x674))
       end if
       if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .lt. PB
      &E_value)) then
-      E = rho_c*x692
-      d1E(1) = rho_c*(x165*(x489 + x688*(x488*(-x197*x699 - x197*x700 + 
-     &x487 + 0.13125d0*x701) - x689*x702) + x690*(-x191*x699 - x191*x700
-     & + x483 + 0.046875d0*x701)) + x490*x691 + x580) + x692
-      d1E(2) = rho_c*(x165*(x621 + x690*(-x191*x704 - x191*x705 + x618) 
-     &+ x706*(-x197* x704 - x197*x705 + x619)) + x641)
-      d1E(3) = x713
-      d1E(4) = x679*(x690*(-x191*x715 + x659*x714 + x678) + x706*(-x197*
-     &x715 + x669* x714 + x677))
-      d1E(5) = x713
-      d1E(6) = x679*(x688*(x488*(x683 + x707*x716) - x684*x712) + x690*(
-     &x665*x708 + x682))
+      E = rho_c*x684
+      d1E(1) = rho_c*(x150*(x467 + x680*(x466*(-x182*x691 - x182*x692 + 
+     &x465 + 0.13125d0*x693) - x681*x694) + x682*(-x176*x691 - x176*x692
+     & + x461 + 0.046875d0*x693)) + x468*x683 + x556) + x684
+      d1E(2) = rho_c*(x150*(x597 + x682*(-x176*x696 - x176*x697 + x594) 
+     &+ x698*(-x182* x696 - x182*x697 + x595)) + x618)
+      d1E(3) = rho_c*(x150*(x620 + x680*(x466*(-x182*x702 + x650*x703 - 
+     &x651*x699 + x652) + x646*x704) + x682*(-x176*x702 - x635*x700 + x6
+     &39*x703 + x645)) + x654)
+      d1E(4) = x661*(x682*(x639*x709 + x660 - x706*x710) + x698*(x650*x7
+     &09 + x659 - x706*x708))
+      d1E(5) = x661*(x682*(-x665*x712 + x671 - x710*x711) + x698*(-x664*
+     &x712 + x667 - x708*x711))
+      d1E(6) = x661*(x680*(x466*(x675 + x699*x713) - x676*x704) + x682*(
+     &x646*x700 + x674))
       end if
       if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .ge. PB
      &E_value)) then
-      E = rho_c*x724
-      d1E(1) = rho_c*(x165*(x489 + x720*(x488*(-x197*x726 - x197*x727 + 
-     &x487 + 0.13125d0*x728) - x702*x721) + x722*(-x191*x726 - x191*x727
-     & + x483 + 0.046875d0*x728)) + x490*x723 + x580) + x724
-      d1E(2) = rho_c*(x165*(x621 + x722*(-x191*x730 - x191*x731 + x618) 
-     &+ x732*(-x197* x730 - x197*x731 + x619)) + x641)
-      d1E(3) = x739
-      d1E(4) = x679*(x722*(-x191*x741 + x659*x740 + x678) + x732*(-x197*
-     &x741 + x669* x740 + x677))
-      d1E(5) = x739
-      d1E(6) = x679*(x720*(x488*(x683 + x716*x733) - x684*x738) + x722*(
-     &x665*x734 + x682))
+      E = rho_c*x721
+      d1E(1) = rho_c*(x150*(x467 + x717*(x466*(-x182*x723 - x182*x724 + 
+     &x465 + 0.13125d0*x725) - x694*x718) + x719*(-x176*x723 - x176*x724
+     & + x461 + 0.046875d0*x725)) + x468*x720 + x556) + x721
+      d1E(2) = rho_c*(x150*(x597 + x719*(-x176*x727 - x176*x728 + x594) 
+     &+ x729*(-x182* x727 - x182*x728 + x595)) + x618)
+      d1E(3) = rho_c*(x150*(x620 + x717*(x466*(-x182*x733 + x650*x734 - 
+     &x651*x730 + x652) + x646*x735) + x719*(-x176*x733 - x635*x731 + x6
+     &39*x734 + x645)) + x654)
+      d1E(4) = x661*(x719*(x639*x738 + x660 - x710*x737) + x729*(x650*x7
+     &38 + x659 - x708*x737))
+      d1E(5) = x661*(x719*(-x665*x740 + x671 - x710*x739) + x729*(-x664*
+     &x740 + x667 - x708*x739))
+      d1E(6) = x661*(x717*(x466*(x675 + x713*x730) - x676*x735) + x719*(
+     &x646*x731 + x674))
       end if
       if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .lt. PB
      &E_value)) then
-      E = rho_c*x748
-      d1E(1) = rho_c*(x165*(x489 + x744*(x488*(-x197*x749 - x197*x750 + 
-     &x487 + 0.13125d0*x751) - x702*x745) + x746*(-x191*x749 - x191*x750
-     & + x483 + 0.046875d0*x751)) + x490*x747 + x580) + x748
-      d1E(2) = rho_c*(x165*(x621 + x746*(-x191*x752 - x191*x753 + x618) 
-     &+ x754*(-x197* x752 - x197*x753 + x619)) + x641)
-      d1E(3) = x760
-      d1E(4) = x679*(x746*(x659*x761 + x678) + x754*(x669*x761 + x677))
-      d1E(5) = x760
-      d1E(6) = x679*(x744*(x488*(x683 + x716*x755) - x684*x759) + x746*(
-     &x665*x756 + x682))
+      E = rho_c*x747
+      d1E(1) = rho_c*(x150*(x467 + x743*(x466*(-x182*x748 - x182*x749 + 
+     &x465 + 0.13125d0*x750) - x694*x744) + x745*(-x176*x748 - x176*x749
+     & + x461 + 0.046875d0*x750)) + x468*x746 + x556) + x747
+      d1E(2) = rho_c*(x150*(x597 + x745*(-x176*x751 - x176*x752 + x594) 
+     &+ x753*(-x182* x751 - x182*x752 + x595)) + x618)
+      d1E(3) = rho_c*(x150*(x620 + x743*(x466*(-x182*x756 + x650*x757 - 
+     &x651*x754 + x652) + x646*x758) + x745*(-x176*x756 - x635*x755 + x6
+     &39*x757 + x645)) + x654)
+      d1E(4) = x661*(x745*(x639*x759 + x660) + x753*(x650*x759 + x659))
+      d1E(5) = x661*(x745*(-x665*x760 + x671) + x753*(-x664*x760 + x667)
+     &)
+      d1E(6) = x661*(x743*(x466*(x675 + x713*x754) - x676*x758) + x745*(
+     &x646*x755 + x674))
       end if
       end subroutine
 
 
 C*****************************************************************************
-      pure subroutine D2ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc,
-     & gamma_ss, gamma_cs, tau_c, mu, E, d1E, d2E)
+      pure subroutine D2ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc, g
+     &amma_ss, gamma_cs, tau_c, mu, E, d1E, d2E)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 13, 2018
+C   Subroutine generated using Sympy 1.3
+C   Generated: November 27, 2018
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_c, rho_s, gamma_cc, gamma_ss, gamma_cs, 
@@ -13336,5402 +14790,3729 @@ C*****************************************************************************
      &910, x2911, x2912, x2913, x2914, x2915, x2916, x2917, x2918, x2919
      &, x2920, x2921, x2922, x2923, x2924, x2925, x2926, x2927, x2928, x
      &2929, x2930, x2931, x2932, x2933, x2934, x2935, x2936, x2937, x293
-     &8, x2939, x2940, x2941
+     &8, x2939, x2940, x2941, x2942, x2943, x2944, x2945, x2946, x2947, 
+     &x2948, x2949, x2950, x2951, x2952, x2953, x2954, x2955, x2956, x29
+     &57, x2958, x2959, x2960, x2961, x2962, x2963, x2964
       E = 0.0d0
       d1E(:) = 0.0d0
       d2E(:) = 0.0d0
-      x0 = 0.693147180559945d0
-      x1 = -0.101321183642338d0*x0 + 0.101321183642338d0
-      x2 = 1d0/x1
-      x3 = 1d0/rho_c
-      x4 = x3**0.333333333333333d0
-      x5 = 0.132568899905202d0*x4
-      x6 = x3**0.166666666666667d0
-      x7 = sqrt(x3)
-      x8 = 0.800428634999364d0*x7
-      x9 = x3**0.666666666666667d0
-      x10 = 2.22556942115069d0*x4 + 5.98255043577108d0*x6 + x8 + 0.18970
-     &0432574756d0 *x9
-      x11 = 1.0d0 + 0.5d0*x2/x10
-      x12 = x1*log(x11)
-      x13 = x12*(x5 + 1.0d0)
-      x14 = 2.0d0*x13
-      x15 = rho_s*x3
-      x16 = x15 + 1.0d0
-      x17 = x16**1.33333333333333d0
-      x18 = -x15 + 1.0d0
-      x19 = x18**1.33333333333333d0
-      x20 = 1.92366105093154d0*x17 + 1.92366105093154d0*x19 - 3.84732210
+      x0 = 1d0/rho_c
+      x1 = rho_s*x0
+      x2 = x1 + 1.0d0
+      x3 = x2**0.666666666666667d0
+      x4 = -x1 + 1.0d0
+      x5 = x4**0.666666666666667d0
+      x6 = x3 + x5
+      x7 = x6**(-2)
+      x8 = x0**0.333333333333333d0
+      x9 = x0**0.166666666666667d0
+      x10 = sqrt(x0)
+      x11 = 0.800428634999364d0*x10
+      x12 = x0**0.666666666666667d0
+      x13 = x11 + 0.189700432574756d0*x12 + 2.22556942115069d0*x8 + 5.98
+     &255043577108d0*x9
+      x14 = 1.0d0 + 16.0819842214574d0/x13
+      x15 = log(x14)
+      x16 = x15*(0.132568899905202d0*x8 + 1.0d0)
+      x17 = 0.0621813817393098d0*x16
+      x18 = x2**1.33333333333333d0
+      x19 = x4**1.33333333333333d0
+      x20 = 1.92366105093154d0*x18 + 1.92366105093154d0*x19 - 3.84732210
      &186307d0
       x21 = rho_c**(-4)
       x22 = rho_s**4
       x23 = x21*x22
       x24 = -x23 + 1.0d0
-      x25 = 0.430097247127664d0*x7
-      x26 = x25 + 2.24759186357762d0*x4 + 8.15741470348764d0*x6 + 0.1911
-     &51259512734d0*x9
+      x25 = 0.430097247127664d0*x10
+      x26 = 0.191151259512734d0*x12 + x25 + 2.24759186357762d0*x8 + 8.15
+     &741470348764d0*x9
       x27 = 1.0d0 + 29.6085746432167d0/x26
       x28 = log(x27)
       x29 = x24*x28
       x30 = x20*x29
-      x31 = x30*(0.0690139921125583d0*x4 + 1.0d0)
+      x31 = x30*(0.0690139921125583d0*x8 + 1.0d0)
       x32 = 0.0197517897025652d0*x31
-      x33 = -0.0506605918211689d0*x0 + 0.0506605918211689d0
-      x34 = 1.64473377556761d0*x7
-      x35 = x34 + 3.84474623744721d0*x4 + 11.1203748630947d0*x6 + 0.2405
-     &87129128819d0*x9
-      x36 = 1d0/x33
-      x37 = 0.5d0*x36
-      x38 = 1.0d0 + x37/x35
-      x39 = x33*log(x38)
-      x40 = x14 - 2.0d0*x39*(0.127469618870009d0*x4 + 1.0d0)
-      x41 = x23*x40
-      x42 = x20*x41
-      x43 = x14 - x32 - x42
-      x44 = x16**0.666666666666667d0
-      x45 = x18**0.666666666666667d0
-      x46 = 0.5d0*x44 + 0.5d0*x45
-      x47 = x46**3
-      x48 = 1d0/x47
-      x49 = x2*x48
-      x50 = x43*x49
-      x51 = exp(x50)
-      x52 = x51 - 1.0d0
-      x53 = 1d0/x52
-      x54 = x2*x53
-      x55 = rho_c**(-2.33333333333333d0)
-      x56 = x44 + x45
-      x57 = x56**(-2)
-      x58 = x55*x57
-      x59 = 0.0169396642074771d0*x58
-      x60 = x54*x59
-      x61 = gamma_cc*x60 + 1.0d0
-      x62 = x52**(-2)
-      x63 = rho_c**(-4.66666666666667d0)
-      x64 = x1**(-2)
-      x65 = x63*x64
-      x66 = x62*x65
-      x67 = gamma_cc**2
-      x68 = x56**(-4)
-      x69 = x67*x68
-      x70 = 0.000286952223462081d0*x69
-      x71 = x61 + x66*x70
-      x72 = 1d0/x71
-      x73 = x2*x72
-      x74 = x59*x73
-      x75 = x61*x74
-      x76 = gamma_cc*x75 + 1.0d0
-      x77 = log(x76)
-      x78 = x1*x47
-      x79 = x77*x78
-      x80 = -x14 + x32 + x42
-      x81 = x79 + x80
-      x82 = 2.0d0*x33
-      x83 = 6.28318530717959d0*rho_c
-      x84 = 6.28318530717959d0*rho_s
-      x85 = x83 + x84
-      x86 = 1d0/x85
-      x87 = x86**0.333333333333333d0
-      x88 = 0.296353441706766d0*x87
-      x89 = x88 + 1.0d0
-      x90 = x86**0.166666666666667d0
-      x91 = sqrt(x86)
-      x92 = x86**0.666666666666667d0
-      x93 = 8.93863016189422d0*x87 + 16.9559087764345d0*x90 + 5.83042942
-     &843835d0*x91 + 1.30040600365736d0*x92
-      x94 = x37/x93 + 1.0d0
-      x95 = log(x94)
-      x96 = x89*x95
-      x97 = x82*x96
-      x98 = -0.0506605918211689d0*x0 + 0.0506605918211689d0
-      x99 = 0.5d0*gamma_cs
-      x100 = 0.25d0*gamma_cc
-      x101 = 0.25d0*gamma_ss
-      x102 = x100 + x101
-      x103 = x102 + x99
-      x104 = 1d0/x98
-      x105 = exp(x104*x97)
-      x106 = x105 - 1.0d0
-      x107 = 1d0/x106
-      x108 = 0.5d0*rho_c
-      x109 = 0.5d0*rho_s
-      x110 = x108 + x109
-      x111 = x110**(-2)
-      x112 = x107*x111
-      x113 = x112*x2
-      x114 = 14.804406601634d0*rho_c
-      x115 = 14.804406601634d0*rho_s
-      x116 = x114 + x115
-      x117 = x116**(-0.333333333333333d0)
-      x118 = 0.0207972128321324d0*x117
-      x119 = x113*x118
-      x120 = x103*x119 + 1.0d0
-      x121 = x106**(-2)
-      x122 = x103**2
-      x123 = x121*x122
-      x124 = 0.000432524061585012d0*x64
-      x125 = x110**(-4)
-      x126 = x116**(-0.666666666666667d0)
-      x127 = x125*x126
-      x128 = x124*x127
-      x129 = x120 + x123*x128
-      x130 = 1d0/x129
-      x131 = x111*x130
-      x132 = x120*x131
-      x133 = x103*x2
-      x134 = x118*x133
-      x135 = x132*x134 + 1.0d0
-      x136 = x98*log(x135)
-      x137 = x136 - x97
-      x138 = x83 - x84
-      x139 = 1d0/x138
-      x140 = x139**0.333333333333333d0
-      x141 = 0.296353441706766d0*x140
-      x142 = x141 + 1.0d0
-      x143 = x139**0.166666666666667d0
-      x144 = sqrt(x139)
-      x145 = x139**0.666666666666667d0
-      x146 = 8.93863016189422d0*x140 + 16.9559087764345d0*x143 + 5.83042
-     &942843835d0* x144 + 1.30040600365736d0*x145
-      x147 = 1.0d0 + x37/x146
-      x148 = log(x147)
-      x149 = x142*x148
-      x150 = x149*x82
-      x151 = x108 - x109
-      x152 = x151**(-2)
-      x153 = exp(x104*x150)
-      x154 = x153 - 1.0d0
-      x155 = x154**(-2)
-      x156 = x102 - x99
-      x157 = x156**2
-      x158 = x155*x157
-      x159 = x151**(-4)
-      x160 = x114 - x115
-      x161 = x160**(-0.666666666666667d0)
-      x162 = x159*x161
-      x163 = x124*x162
-      x164 = 1d0/x154
-      x165 = x152*x164
-      x166 = x165*x2
-      x167 = x160**(-0.333333333333333d0)
-      x168 = 0.0207972128321324d0*x167
-      x169 = x166*x168
-      x170 = x156*x169 + 1.0d0
-      x171 = x158*x163 + x170
-      x172 = 1d0/x171
-      x173 = x170*x172
-      x174 = x152*x173
-      x175 = x156*x2
-      x176 = x168*x175
-      x177 = x174*x176 + 1.0d0
-      x178 = x98*log(x177)
-      x179 = -x150 + x178
-      x180 = exp(-0.46869933305458689d0*mu*rho_c**(-0.33333333333333331d
-     &0))
-      x181 = x151*x179
-      x182 = x110*x137
-      x183 = x181 + x182
-      x184 = rho_c**(-3)
-      x185 = rho_c**(-6)
-      x186 = rho_s**6
-      x187 = 0.5d0*x23
-      x188 = rho_c**2
-      x189 = 1d0/x188
-      x190 = rho_s**2
-      x191 = x189*x190
-      x192 = 2.26d0*x185*x186 + x187 + 0.87d0*x191 + 0.53d0
-      x193 = 1d0/x19 + 1d0/x17
-      x194 = gamma_cc*x190
-      x195 = 2.0d0*gamma_cs
-      x196 = rho_s*x195
-      x197 = gamma_ss*x188 - rho_c*x196 + x194
-      x198 = x193*x197
-      x199 = 0.0130605864926168d0*x198*x63 + 1.0d0
-      x200 = x199**(-4)
-      x201 = x192*x200
-      x202 = x201 + 1.0d0
-      x203 = x184*x202
-      x204 = x183*x203
-      x205 = tau_c**(-2)
-      x206 = x205*x67
-      x207 = 0.015625d0*x206
-      x208 = x189*x201
-      x209 = x207*x208 + 1.0d0
-      x210 = x209*x81
-      x211 = -x204*x207 + x210
-      x212 = 0.04375d0*x206
-      x213 = 2.8d0*x210
-      x214 = -x204*x212 + x213
-      x215 = x184*x214
-      x216 = gamma_cc**3
-      x217 = tau_c**(-3)
-      x218 = x216*x217
-      x219 = 0.001953125d0*x218
-      x220 = x215*x219 + 1.0d0
-      x221 = x43 - x79
-      x222 = x180*(x211*x220 + x221)
-      x223 = 1d0/x80
-      x224 = mu**2
-      x225 = x224*x9
-      x226 = 0.237113969739022d0*x225 + 1.0d0
-      x227 = x226**(-4)
-      x228 = mu**5
-      x229 = x191 - 1.0d0
-      x230 = exp(-0.46675853320810856d0*x4)
-      x231 = x3**1.0d0
-      x232 = 0.00304892328706429d0*x231
-      x233 = x3**1.33333333333333d0
-      x234 = x230*(-x232 + 0.000275310793616358d0*x233 + 0.0128480790170
-     &175d0*x4 + 0.0315297404574782d0*x9 + 1.0d0)
-      x235 = x229*x234
-      x236 = x228*x235
-      x237 = x3**1.66666666666667d0
-      x238 = 0.00264117541143784d0*x237
-      x239 = x16**0.666666666666667d0
-      x240 = x18**0.666666666666667d0
-      x241 = 0.5d0*x239 + 0.5d0*x240
-      x242 = x241**3
-      x243 = 0.202642367284676d0*x0 - 0.202642367284676d0
-      x244 = x241**2
-      x245 = 1d0/x244
-      x246 = x224*x245
-      x247 = x246*x4
-      x248 = mu/x241
-      x249 = 4.60448529760779d0*x6
-      x250 = x248*x249 + 1.0d0
-      x251 = 2.13928487137149d0*x247 + x250
-      x252 = 1d0/x251
-      x253 = mu**3
-      x254 = 1d0/x242
-      x255 = x253*x254
-      x256 = 1.91407102422897d0*x7
-      x257 = 3.44851d0 - 4.91089140313716d0/(4.0d0*x0 - 4.0d0)
-      x258 = 0.6203504908994d0*x257
-      x259 = x247*x258 + x250 + x255*x256
-      x260 = x243*log(x252*x259)
-      x261 = 0.0445553741830535d0*x231
-      x262 = x235*x261
-      x263 = -3.07073492995203d0*x4 + 0.384834731559127d0*x9
-      x264 = exp(-0.19230865217881402d0*x4)
-      x265 = x264/x231
-      x266 = x263*x265
-      x267 = -x191 + 1.0d0
-      x268 = 37.6991118430775d0*x267
-      x269 = x266*x268
-      x270 = 1d0/x9
-      x271 = 34.4548080022583d0*x270
-      x272 = 0.5d0*x15
-      x273 = x272 + 0.5d0
-      x274 = x273**2
-      x275 = 1d0/x16
-      x276 = x275**0.333333333333333d0
-      x277 = x276*x4
-      x278 = x275**0.666666666666667d0
-      x279 = 0.0244354823084343d0*x9
-      x280 = 0.337569861992026d0*x277 + x278*x279 + 1.0d0
-      x281 = 1d0/x280
-      x282 = x274*x281
-      x283 = 1d0/x278
-      x284 = x283*(-0.0177069812999059d0*x277 + 1.0d0)
-      x285 = x282*x284
-      x286 = 1d0/x18
-      x287 = x286**0.666666666666667d0
-      x288 = 1d0/x287
-      x289 = x286**0.333333333333333d0
-      x290 = x289*x4
-      x291 = x288*(-0.0177069812999059d0*x290 + 1.0d0)
-      x292 = -x272 + 0.5d0
-      x293 = x292**2
-      x294 = x279*x287 + 0.337569861992026d0*x290 + 1.0d0
-      x295 = 1d0/x294
-      x296 = x293*x295
-      x297 = x271*x296
-      x298 = -x271*x285 - x291*x297
-      x299 = -x269 + x298
-      x300 = 0.000132058770571892d0*x237
-      x301 = mu**8*x3**2.66666666666667d0
-      x302 = 0.00316102962473761d0*x301
-      x303 = mu**6
-      x304 = -3.0d0*x191 + 3.0d0
-      x305 = 0.5d0*x234 - 0.5d0
-      x306 = x304*x305
-      x307 = 0.00165511124114256d0*x237
-      x308 = x3**2.0d0
-      x309 = 0.0533250677421794d0*x308
-      x310 = mu**4
-      x311 = 0.0279209401785015d0*x231
-      x312 = x306*x311
-      x313 = 0.5d0*x16**2.66666666666667d0 + 0.5d0*x18**2.66666666666667
-     &d0
-      x314 = 17.2274040011291d0*x270
-      x315 = exp(-0.33933171852197186d0*x4)
-      x316 = x315*(-0.240695990468967d0*x4 + 0.26014827853397d0*x9)
-      x317 = x267*x316
-      x318 = 23.3866625383245d0*x270
-      x319 = x298 + x313*x314 - x317*x318
-      x320 = 0.00020688890514282d0*x237
-      x321 = 0.337338207872387d0*x233
-      x322 = x236*x238 + x242*x260 + x253*(x262 + x299*x300) + x302*x80 
-     &+ x303*(-x306 *x307 + x309*x80) + x310*(-x312 + x319*x320 + x321*x
-     &80)
-      x323 = x227*x322
-      x324 = -x323 + x80
-      x325 = x223*x324
-      x326 = x325**2.78d0
-      x327 = x323 + x43
-      x328 = 32.1636486443022d0*x48
-      x329 = exp(x327*x328)
-      x330 = 0.031091d0*x329 - 0.031091d0
-      x331 = 1d0/x330
-      x332 = x326*x331
-      x333 = x332*x59
-      x334 = gamma_cc*x333
-      x335 = x334 + 1.0d0
-      x336 = x325**5.56d0
-      x337 = x330**(-2)
-      x338 = x336*x337
-      x339 = x338*x63
-      x340 = x339*x70
-      x341 = x335 + x340
-      x342 = 1d0/x341
-      x343 = x326*x342
-      x344 = x335*x343
-      x345 = 0.544841407721756d0*x58
-      x346 = x344*x345
-      x347 = gamma_cc*x346
-      x348 = x347 + 1.0d0
-      x349 = log(x348)
-      x350 = 0.031091d0*x47
-      x351 = x324 + x349*x350
-      x352 = x222 + x351
-      x353 = x86*x87
-      x354 = 1.24136239377604d0*x33
-      x355 = x353*x354*x95
-      x356 = x86*x90
-      x357 = x86*x91
-      x358 = x86*x92
-      x359 = 18.7210232331754d0*x353 + 17.7561861489951d0*x356 + 18.3168
-     &342596557d0* x357 + 5.44712793036536d0*x358
-      x360 = 1d0/x94
-      x361 = x360/x93**2
-      x362 = x359*x361
-      x363 = -0.592706883413533d0*x87 - 2.0d0
-      x364 = 0.5d0*x363
-      x365 = x110**(-3)
-      x366 = x120*x130
-      x367 = x365*x366
-      x368 = x134*x367
-      x369 = x116**(-1.33333333333333d0)
-      x370 = x132*x369
-      x371 = 0.102630131649203d0*x133
-      x372 = x370*x371
-      x373 = x107*x365
-      x374 = x2*x373
-      x375 = x103*x374
-      x376 = x118*x375
-      x377 = x113*x369
-      x378 = x103*x377
-      x379 = 0.102630131649203d0*x378
-      x380 = x103*x121
-      x381 = 1.0d0*x104
-      x382 = x381*x89
-      x383 = -x104*x355 + x362*x382
-      x384 = x105*x383
-      x385 = x2*x380*x384
-      x386 = x111*x385
-      x387 = x118*x386
-      x388 = -x376 - x379 - x387
-      x389 = x131*x388
-      x390 = x134*x389
-      x391 = x129**(-2)
-      x392 = x110**(-5)
-      x393 = x123*x64
-      x394 = x392*x393
-      x395 = x126*x394
-      x396 = x116**(-1.66666666666667d0)
-      x397 = x125*x393
-      x398 = x396*x397
-      x399 = x122*x127*x64
-      x400 = x106**(-3)
-      x401 = x384*x400
-      x402 = 0.000865048123170025d0*x401
-      x403 = x376 + x379 + x387 + 0.000865048123170025d0*x395 + 0.004268
-     &84138179648d0 *x398 + x399*x402
-      x404 = x391*x403
-      x405 = x120*x404
-      x406 = x111*x134
-      x407 = x405*x406
-      x408 = -x368 - x372 + x390 + x407
-      x409 = 1d0/x135
-      x410 = x409*x98
-      x411 = x408*x410
-      x412 = 1.0d0*x33
-      x413 = x110*(x355 + x362*x364 + x411) + 0.5d0*x136 - x412*x96
-      x414 = x139*x140
-      x415 = x148*x354*x414
-      x416 = -0.592706883413533d0*x140 - 2.0d0
-      x417 = x139*x143
-      x418 = 17.7561861489951d0*x417
-      x419 = 18.7210232331754d0*x414
-      x420 = x139*x144
-      x421 = 18.3168342596557d0*x420
-      x422 = x139*x145
-      x423 = 5.44712793036536d0*x422
-      x424 = x418 + x419 + x421 + x423
-      x425 = x416*x424
-      x426 = 1d0/x147
-      x427 = x426/x146**2
-      x428 = 0.5d0*x427
-      x429 = x152*x176
-      x430 = x104*x415
-      x431 = x424*x427
-      x432 = x142*x381
-      x433 = -x430 + x431*x432
-      x434 = x153*x155
-      x435 = x433*x434
-      x436 = x429*x435
-      x437 = x151**(-3)
-      x438 = x164*x437
-      x439 = x2*x438
-      x440 = x156*x439
-      x441 = x168*x440
-      x442 = x160**(-1.33333333333333d0)
-      x443 = x166*x442
-      x444 = x156*x443
-      x445 = 0.102630131649203d0*x444
-      x446 = -x441 - x445
-      x447 = -x436 + x446
-      x448 = x152*x172
-      x449 = x176*x448
-      x450 = x447*x449
-      x451 = x151**(-5)
-      x452 = x158*x64
-      x453 = x451*x452
-      x454 = x161*x453
-      x455 = 0.000865048123170025d0*x454
-      x456 = x160**(-1.66666666666667d0)
-      x457 = x159*x452
-      x458 = x456*x457
-      x459 = 0.00426884138179648d0*x458
-      x460 = x154**(-3)
-      x461 = x433*x460
-      x462 = x153*x461
-      x463 = x162*x64
-      x464 = x157*x463
-      x465 = 0.000865048123170025d0*x464
-      x466 = x462*x465
-      x467 = x441 + x445
-      x468 = x436 + x455 + x459 + x466 + x467
-      x469 = x171**(-2)
-      x470 = x170*x469
-      x471 = x429*x470
-      x472 = x468*x471
-      x473 = x173*x437
-      x474 = x176*x473
-      x475 = x174*x442
-      x476 = 0.102630131649203d0*x175
-      x477 = x475*x476
-      x478 = -x474 - x477
-      x479 = x450 + x472 + x478
-      x480 = 1d0/x177
-      x481 = x480*x98
-      x482 = x479*x481
-      x483 = 0.5d0*x178
-      x484 = x149*x412
-      x485 = x151*(x415 + x425*x428 + x482) + x483 - x484
-      x486 = x413 + x485
-      x487 = x203*x486
-      x488 = rho_c**(-7)
-      x489 = rho_c**(-5)
-      x490 = x22*x489
-      x491 = 2.0d0*x490
-      x492 = x184*x190
-      x493 = -13.56d0*x186*x488 - x491 - 1.74d0*x492
-      x494 = x200*x493
-      x495 = 0.0522423459704672d0*x63
-      x496 = 2.0d0*gamma_ss*rho_c - x196
-      x497 = x193*x496
-      x498 = rho_c**(-5.66666666666667d0)
-      x499 = x198*x498
-      x500 = x16**(-2.33333333333333d0)
-      x501 = 1.33333333333333d0*x189
-      x502 = x500*x501
-      x503 = x18**(-2.33333333333333d0)
-      x504 = x501*x503
-      x505 = rho_s*x502 - rho_s*x504
-      x506 = 0.0522423459704672d0*x505
-      x507 = x197*x63
-      x508 = -x495*x497 + 0.243797614528847d0*x499 - x506*x507
-      x509 = x199**(-5)
-      x510 = x192*x509
-      x511 = x508*x510
-      x512 = x494 + x511
-      x513 = x183*x184
-      x514 = x512*x513
-      x515 = x183*x202
-      x516 = x206*x21
-      x517 = 0.046875d0*x516
-      x518 = rho_c**(-3.33333333333333d0)
-      x519 = 0.0395258831507799d0*x518
-      x520 = x57*x73
-      x521 = x520*x61
-      x522 = x519*x521
-      x523 = gamma_cc*x522
-      x524 = x16**(-0.333333333333333d0)
-      x525 = x189*x524
-      x526 = rho_s*x525
-      x527 = x18**(-0.333333333333333d0)
-      x528 = x189*x527
-      x529 = rho_s*x528
-      x530 = 1.33333333333333d0*x526 - 1.33333333333333d0*x529
-      x531 = x56**(-3)
-      x532 = x530*x531
-      x533 = x532*x73
-      x534 = 0.0169396642074771d0*x55
-      x535 = x534*x61
-      x536 = x533*x535
-      x537 = gamma_cc*x536
-      x538 = x54*x57
-      x539 = x519*x538
-      x540 = gamma_cc*x539
-      x541 = x532*x54
-      x542 = x534*x541
-      x543 = gamma_cc*x542
-      x544 = x46**(-4)
-      x545 = x526 - 1.0d0*x529
-      x546 = x544*x545
-      x547 = x2*x43
-      x548 = 0.00136314985874174d0*x4
-      x549 = -x548 - 0.0197517897025652d0
-      x550 = x16**0.333333333333333d0
-      x551 = 2.56488140124205d0*x189
-      x552 = x550*x551
-      x553 = x18**0.333333333333333d0
-      x554 = x551*x553
-      x555 = -rho_s*x552 + rho_s*x554
-      x556 = x29*x555
-      x557 = 4.0d0*x490
-      x558 = x20*x557
-      x559 = x28*x549
-      x560 = x20*x24
-      x561 = x549*x560
-      x562 = 1d0/x27
-      x563 = x26**(-2)
-      x564 = x3*x6
-      x565 = x3*x4
-      x566 = x3*x7
-      x567 = x3*x9
-      x568 = 1.35956911724794d0*x564 + 0.749197287859205d0*x565 + 0.2150
-     &48623563832d0 *x566 + 0.127434173008489d0*x567
-      x569 = x562*x563*x568
-      x570 = 29.6085746432167d0*x569
-      x571 = 0.99709173929518d0*x564 + 0.741856473716896d0*x565 + 0.4002
-     &14317499682d0 *x566 + 0.126466955049837d0*x567
-      x572 = 1d0/x11
-      x573 = x572/x10**2
-      x574 = x571*x573
-      x575 = 0.265137799810404d0*x4
-      x576 = x575 + 2.0d0
-      x577 = 0.5d0*x576
-      x578 = x12*x565
-      x579 = 0.0883792666034679d0*x578
-      x580 = -x579
-      x581 = x574*x577 + x580
-      x582 = x41*x555
-      x583 = 1d0/x38
-      x584 = x35**(-2)
-      x585 = 1.85339581051578d0*x564 + 1.28158207914907d0*x565 + 0.82236
-     &6887783805d0* x566 + 0.160391419419213d0*x567
-      x586 = x583*x584*x585
-      x587 = -0.254939237740017d0*x4 - 2.0d0
-      x588 = 0.5d0*x587
-      x589 = 0.0849797459133391d0*x565
-      x590 = x39*x589 + x581 + x586*x588
-      x591 = x20*x23
-      x592 = x590*x591
-      x593 = x20*x40
-      x594 = x557*x593
-      x595 = 0.000454383286247248d0*x565
-      x596 = x30*x595
-      x597 = -x582 - x592 + x594 + x596
-      x598 = x549*x556 + x558*x559 + x561*x570 + x581 + x597
-      x599 = x49*x598 + x546*x547
-      x600 = x51*x599
-      x601 = x2*x59
-      x602 = x601*x62
-      x603 = x600*x602
-      x604 = gamma_cc*x603
-      x605 = -x540 + x543 - x604
-      x606 = x605*x74
-      x607 = gamma_cc*x606
-      x608 = x498*x69
-      x609 = 0.00133911037615638d0*x608
-      x610 = x62*x64
-      x611 = 2.66666666666667d0*x526 - 2.66666666666667d0*x529
-      x612 = x56**(-5)
-      x613 = x612*x67
-      x614 = 0.000286952223462081d0*x613
-      x615 = x611*x614
-      x616 = x52**(-3)
-      x617 = x600*x616
-      x618 = x65*x69
-      x619 = 0.000573904446924163d0*x618
-      x620 = x617*x619
-      x621 = x540 - x543 + x604 + x609*x610 - x615*x66 + x620
-      x622 = x71**(-2)
-      x623 = x61*x622
-      x624 = x601*x623
-      x625 = x621*x624
-      x626 = gamma_cc*x625
-      x627 = -x523 + x537 + x607 + x626
-      x628 = 1d0/x76
-      x629 = x628*x78
-      x630 = x627*x629
-      x631 = x46**2
-      x632 = -1.0d0*x526 + x529
-      x633 = x631*x632
-      x634 = x1*x77
-      x635 = x633*x634
-      x636 = x548 + 0.0197517897025652d0
-      x637 = x556*x636
-      x638 = -x575
-      x639 = x638 - 2.0d0
-      x640 = x574*x639
-      x641 = 0.5d0*x640
-      x642 = x28*x636
-      x643 = x558*x642
-      x644 = x560*x636
-      x645 = x570*x644
-      x646 = x579 - x596
-      x647 = x582 + x592 - x594 + x637 + x641 + x643 + x645 + x646
-      x648 = x630 + x635 + x647
-      x649 = x189*x494
-      x650 = 0.03125d0*x205
-      x651 = x184*x67
-      x652 = x201*x651
-      x653 = x189*x511
-      x654 = x207*x649 + x207*x653 - x650*x652
-      x655 = x209*x648 + x654*x81
-      x656 = -x207*x487 - x207*x514 + x515*x517 + x655
-      x657 = x21*x218
-      x658 = 0.005859375d0*x657
-      x659 = 0.13125d0*x516
-      x660 = x208*x212 + 2.8d0
-      x661 = 0.0875d0*x205
-      x662 = x212*x649 + x212*x653 - x652*x661
-      x663 = x648*x660 + x662*x81
-      x664 = -x212*x487 - x212*x514 + x515*x659 + x663
-      x665 = x184*x219
-      x666 = -x214*x658 + x664*x665
-      x667 = x598 - x630 - x635
-      x668 = x180*(x211*x666 + x220*x656 + x667)
-      x669 = mu*rho_c**(-1.33333333333333d0)
-      x670 = x222*x669
-      x671 = x344*x57
-      x672 = 1.27129661801743d0*x518
-      x673 = x671*x672
-      x674 = gamma_cc*x673
-      x675 = gamma_cc*x55
-      x676 = 0.544841407721756d0*x344
-      x677 = x675*x676
-      x678 = x532*x677
-      x679 = x580 + x597 - x637 - x641 - x643 - x645
-      x680 = x80**2
-      x681 = 1d0/x680
-      x682 = x324*x681
-      x683 = x679*x682
-      x684 = x237*x492
-      x685 = 0.00528235082287567d0*x228*x234
-      x686 = x237*x3
-      x687 = x3**2.0d0
-      x688 = x3*x687
-      x689 = x233*x3
-      x690 = x230*(x232*x3 - 0.0042826930056725d0*x565 - 0.0210198269716
-     &521d0*x567 - 0.000367081058155144d0*x689)
-      x691 = x229*x690
-      x692 = x228*x238
-      x693 = x18**(-0.333333333333333d0)
-      x694 = x189*x693
-      x695 = rho_s*x694
-      x696 = x16**(-0.333333333333333d0)
-      x697 = x189*x696
-      x698 = rho_s*x697
-      x699 = x695 - x698
-      x700 = x244*x260
-      x701 = x301*x80
-      x702 = 0.00842941233263362d0*x3
-      x703 = x246*x565
-      x704 = 0.71309495712383d0*x703
-      x705 = 0.666666666666667d0*x698
-      x706 = 0.666666666666667d0*x695
-      x707 = x705 - x706
-      x708 = x254*x707
-      x709 = x224*x4
-      x710 = 2.13928487137149d0*x709
-      x711 = x708*x710
-      x712 = x248*x564
-      x713 = 0.767414216267966d0*x712
-      x714 = -0.333333333333333d0*x695 + 0.333333333333333d0*x698
-      x715 = mu*x245
-      x716 = x249*x715
-      x717 = x714*x716
-      x718 = x713 - x717
-      x719 = x704 - x711 + x718
-      x720 = x251**(-2)
-      x721 = x259*x720
-      x722 = x241**(-4)
-      x723 = -x695 + x698
-      x724 = x722*x723
-      x725 = x253*x256
-      x726 = x724*x725
-      x727 = 0.957035512114487d0*x566
-      x728 = x255*x727
-      x729 = x258*x709
-      x730 = x708*x729
-      x731 = 0.206783496966467d0*x257
-      x732 = x703*x731
-      x733 = -x713 + x717
-      x734 = x726 - x728 + x730 - x732 + x733
-      x735 = x252*x734 + x719*x721
-      x736 = 1d0/x259
-      x737 = x242*x243*x736
-      x738 = x251*x737
-      x739 = x231*x492
-      x740 = 0.0891107483661069d0*x234
-      x741 = x229*x261
-      x742 = 0.000220097950953153d0*x686
-      x743 = 1.02357830998401d0*x565 - 0.256556487706084d0*x567
-      x744 = x265*x268
-      x745 = 75.398223686155d0*x266
-      x746 = x267*x3
-      x747 = x3**(-0.666666666666667d0)
-      x748 = x263*x264
-      x749 = x747*x748
-      x750 = 0.00590232709996862d0*x3
-      x751 = 0.00590232709996862d0*x189
-      x752 = rho_s*x275
-      x753 = x277*x752
-      x754 = x283*(x277*x750 - x751*x753)
-      x755 = x271*x282
-      x756 = rho_s*x286
-      x757 = x290*x756
-      x758 = x290*x750 + x751*x757
-      x759 = x288*x297
-      x760 = x270*x3
-      x761 = 22.9698720015055d0*x760
-      x762 = x285*x761
-      x763 = x291*x296
-      x764 = x761*x763
-      x765 = 0.112523287330675d0*x3
-      x766 = x277*x765
-      x767 = 0.0162903215389562d0*x567
-      x768 = x278*x767
-      x769 = 0.112523287330675d0*x189
-      x770 = x189*x9
-      x771 = 0.0162903215389562d0*x770
-      x772 = x278*x752
-      x773 = -x753*x769 + x766 + x768 - x771*x772
-      x774 = x274*x773
-      x775 = x280**(-2)
-      x776 = x284*x775
-      x777 = x271*x776
-      x778 = x290*x765
-      x779 = x287*x767
-      x780 = x287*x756
-      x781 = x757*x769 + x771*x780 + x778 + x779
-      x782 = x293*x781
-      x783 = x294**(-2)
-      x784 = x291*x783
-      x785 = x271*x784
-      x786 = x281*x284
-      x787 = x273*x786
-      x788 = x189*x270
-      x789 = rho_s*x788
-      x790 = 34.4548080022583d0*x789
-      x791 = x291*x295
-      x792 = x292*x791
-      x793 = 22.9698720015055d0*x788
-      x794 = x752*x793
-      x795 = x756*x793
-      x796 = x285*x794 - x754*x755 - x758*x759 - x762 - x763*x795 - x764
-     & - x774*x777 - x782*x785 + x787*x790 - x790*x792
-      x797 = -x269*x3 - x492*x745 - x743*x744 - 2.41662179562687d0*x746*
-     &x749 + x796
-      x798 = 0.00993066744685536d0*x305
-      x799 = 0.00152446164353214d0*x231
-      x800 = x230*(0.000137655396808179d0*x233 + 0.00642403950850875d0*x
-     &4 - x799 + 0.0157648702287391d0*x9 + 0.5d0)
-      x801 = x230*(x3*x799 - 0.00214134650283625d0*x565 - 0.010509913485
-     &8261d0*x567 - 0.000183540529077572d0*x689)
-      x802 = 0.155586177736036d0*x565*x800 + x801
-      x803 = x304*x802
-      x804 = x308*x80
-      x805 = 0.106650135484359d0*x3
-      x806 = 0.167525641071009d0*x305
-      x807 = 0.0003448148419047d0*x686
-      x808 = 0.449784277163183d0*x689
-      x809 = x16**1.66666666666667d0
-      x810 = 1.33333333333333d0*x189
-      x811 = x809*x810
-      x812 = x18**1.66666666666667d0
-      x813 = x810*x812
-      x814 = -rho_s*x811 + rho_s*x813
-      x815 = 11.4849360007528d0*x760
-      x816 = x315*(0.0802319968229891d0*x565 - 0.173432185689313d0*x567)
-     &
-      x817 = x267*x318
-      x818 = 1d0/x4
-      x819 = x3*x818
-      x820 = 46.773325076649d0*x316
-      x821 = x270*x492
-      x822 = x313*x815 + x314*x814 - 15.591108358883d0*x317*x760 - 2.645
-     &27879654103d0 *x317*x819 + x796 - x816*x817 - x820*x821
-      x823 = -0.00440195901906306d0*x236*x686 + 0.000410930386996015d0*x
-     &236*x688 + x253*(0.00693220036674015d0*x235*x689 - x262*x3 - x299*
-     &x742 + x300*x797 + x690*x741 - x739*x740) + x302*x647 + x303*( 0.0
-     &027585187352376d0*x306*x686 - x307*x803 + x309*x647 - x684* x798 -
-     & x804*x805) + x310*(x3*x312 - x311*x803 - x319*x807 + x320* x822 +
-     & x321*x647 - x739*x806 - x80*x808) - x684*x685 + x691*x692 + x699*
-     &x700 - x701*x702 + x735*x738
-      x824 = x227*x823
-      x825 = x226**(-5)
-      x826 = x225*x3*x825
-      x827 = x322*x826
-      x828 = 0.632303919304059d0*x827
-      x829 = x647 - x824 - x828
-      x830 = x223*x829
-      x831 = 2.78d0*x683 + 2.78d0*x830
-      x832 = 1d0/x324
-      x833 = x80*x832
-      x834 = x831*x833
-      x835 = x347*x834
-      x836 = x332*x57
-      x837 = x519*x836
-      x838 = gamma_cc*x837
-      x839 = x332*x534
-      x840 = x532*x839
-      x841 = gamma_cc*x840
-      x842 = 32.1636486443022d0*x327
-      x843 = x824 + x828
-      x844 = x598 + x843
-      x845 = x328*x844 + x546*x842
-      x846 = x329*x845
-      x847 = x337*x846
-      x848 = x326*x58
-      x849 = 0.000526671099874671d0*x848
-      x850 = x847*x849
-      x851 = gamma_cc*x850
-      x852 = x334*x833
-      x853 = x831*x852
-      x854 = -x838 + x841 - x851 + x853
-      x855 = x343*x345
-      x856 = x854*x855
-      x857 = gamma_cc*x856
-      x858 = x326*x345
-      x859 = x338*x609
-      x860 = x339*x615
-      x861 = x330**(-3)
-      x862 = x846*x861
-      x863 = x336*x63
-      x864 = x69*x863
-      x865 = 1.78432631593191d-5*x864
-      x866 = x862*x865
-      x867 = 5.56d0*x683 + 5.56d0*x830
-      x868 = x340*x833
-      x869 = x838 - x841 + x851 - x853 + x859 - x860 + x866 - x867*x868
-      x870 = x341**(-2)
-      x871 = x335*x870
-      x872 = x869*x871
-      x873 = x858*x872
-      x874 = gamma_cc*x873
-      x875 = -x674 + x678 + x835 + x857 + x874
-      x876 = 1d0/x348
-      x877 = x350*x876
-      x878 = 0.031091d0*x349
-      x879 = x633*x878 + x829 + x875*x877
-      x880 = -x415
-      x881 = -x418 - x419 - x421 - x423
-      x882 = x416*x428
-      x883 = x427*x432
-      x884 = x430 + x881*x883
-      x885 = x429*x434
-      x886 = x884*x885
-      x887 = x467 - x886
-      x888 = x449*x887
-      x889 = x153*x460*x465
-      x890 = x446 - x455 - x459 + x884*x889 + x886
-      x891 = x471*x890
-      x892 = x474 + x477
-      x893 = x888 + x891 + x892
-      x894 = x481*x893
-      x895 = x151*(x880 + x881*x882 + x894) - x483 + x484
-      x896 = x413 + x895
-      x897 = x203*x896
-      x898 = 1.74d0*x189
-      x899 = rho_s**5
-      x900 = rho_s**3
-      x901 = x21*x900
-      x902 = 2.0d0*x901
-      x903 = rho_s*x898 + 13.56d0*x185*x899 + x902
-      x904 = x200*x903
-      x905 = 2.0d0*rho_s
-      x906 = gamma_cc*x905 - rho_c*x195
-      x907 = x193*x906
-      x908 = 1.33333333333333d0*x3
-      x909 = -x500*x908 + x503*x908
-      x910 = x197*x495
-      x911 = -x495*x907 - x909*x910
-      x912 = x510*x911
-      x913 = x904 + x912
-      x914 = x513*x913
-      x915 = x3*x524
-      x916 = x3*x527
-      x917 = -1.33333333333333d0*x915 + 1.33333333333333d0*x916
-      x918 = x531*x917
-      x919 = x535*x73
-      x920 = x918*x919
-      x921 = gamma_cc*x920
-      x922 = x534*x54
-      x923 = x918*x922
-      x924 = gamma_cc*x923
-      x925 = -1.0d0*x915 + x916
-      x926 = x544*x925
-      x927 = 2.56488140124205d0*x3
-      x928 = x550*x927 - x553*x927
-      x929 = x29*x928
-      x930 = 4.0d0*x901
-      x931 = x20*x930
-      x932 = x41*x928
-      x933 = x593*x930
-      x934 = -x932 - x933
-      x935 = x549*x929 - x559*x931 + x934
-      x936 = x49*x935 + x547*x926
-      x937 = x51*x936
-      x938 = x602*x937
-      x939 = gamma_cc*x938
-      x940 = x924 - x939
-      x941 = x74*x940
-      x942 = gamma_cc*x941
-      x943 = -2.66666666666667d0*x915 + 2.66666666666667d0*x916
-      x944 = x614*x943
-      x945 = x616*x619
-      x946 = -x66*x944 - x924 + x937*x945 + x939
-      x947 = x624*x946
-      x948 = gamma_cc*x947
-      x949 = x921 + x942 + x948
-      x950 = x629*x949
-      x951 = x915 - 1.0d0*x916
-      x952 = x631*x951
-      x953 = x634*x952
-      x954 = x636*x929
-      x955 = x642*x931
-      x956 = x954 - x955
-      x957 = x932 + x933 + x956
-      x958 = x950 + x953 + x957
-      x959 = x189*x904
-      x960 = x189*x912
-      x961 = x207*x959 + x207*x960
-      x962 = x209*x958 + x81*x961
-      x963 = -x207*x897 - x207*x914 + x962
-      x964 = x212*x959 + x212*x960
-      x965 = x660*x958 + x81*x964
-      x966 = -x212*x897 - x212*x914 + x965
-      x967 = x211*x665
-      x968 = x935 - x950 - x953
-      x969 = x180*(x220*x963 + x966*x967 + x968)
-      x970 = x677*x918
-      x971 = x934 - x954 + x955
-      x972 = x682*x971
-      x973 = x189*x237
-      x974 = x685*x973
-      x975 = x3*x696
-      x976 = x3*x693
-      x977 = x975 - x976
-      x978 = x798*x973
-      x979 = -0.333333333333333d0*x975 + 0.333333333333333d0*x976
-      x980 = x716*x979
-      x981 = -x975 + x976
-      x982 = x722*x725
-      x983 = x981*x982
-      x984 = 0.666666666666667d0*x975
-      x985 = 0.666666666666667d0*x976
-      x986 = -x984 + x985
-      x987 = x254*x986
-      x988 = x729*x987
-      x989 = x980 + x983 + x988
-      x990 = -x980
-      x991 = x254*x710
-      x992 = x986*x991
-      x993 = x990 - x992
-      x994 = x252*x989 + x721*x993
-      x995 = x189*x231
-      x996 = x740*x995
-      x997 = x189*x745
-      x998 = 34.4548080022583d0*x760
-      x999 = 0.203363546995945d0*x819
-      x1000 = 1d0/x289
-      x1001 = x1000*x286
-      x1002 = x1001*x296
-      x1003 = x275*x766 + x275*x768
-      x1004 = x274*x777
-      x1005 = -x286*x778 - x286*x779
-      x1006 = x293*x785
-      x1007 = 1d0/x276
-      x1008 = x1007*x275
-      x1009 = x1008*x282
-      x1010 = x1002*x999 - x1003*x1004 - x1005*x1006 - x1009*x999 - x275
-     &*x762 + x286* x764 - x787*x998 + x792*x998
-      x1011 = rho_s*x997 + x1010
-      x1012 = x806*x995
-      x1013 = 1.33333333333333d0*x3
-      x1014 = x1013*x809 - x1013*x812
-      x1015 = x788*x820
-      x1016 = rho_s*x1015 + x1010 + x1014*x314
-      x1017 = rho_s*x974 + x253*(rho_s*x996 + x1011*x300) + x302*x957 + 
-     &x303*(rho_s* x978 + x309*x957) + x310*(rho_s*x1012 + x1016*x320 + 
-     &x321*x957) + x700*x977 + x738*x994
-      x1018 = x1017*x227
-      x1019 = -x1018 + x957
-      x1020 = x1019*x223
-      x1021 = 2.78d0*x1020 + 2.78d0*x972
-      x1022 = x1021*x833
-      x1023 = x1022*x347
-      x1024 = x839*x918
-      x1025 = gamma_cc*x1024
-      x1026 = x1018 + x935
-      x1027 = x1026*x328 + x842*x926
-      x1028 = x1027*x329
-      x1029 = x337*x849
-      x1030 = x1028*x1029
-      x1031 = gamma_cc*x1030
-      x1032 = x1021*x852
-      x1033 = x1025 - x1031 + x1032
-      x1034 = x1033*x855
-      x1035 = gamma_cc*x1034
-      x1036 = x339*x944
-      x1037 = x861*x865
-      x1038 = x1028*x1037
-      x1039 = 5.56d0*x1020 + 5.56d0*x972
-      x1040 = -x1025 + x1031 - x1032 - x1036 + x1038 - x1039*x868
-      x1041 = x858*x871
-      x1042 = x1040*x1041
-      x1043 = gamma_cc*x1042
-      x1044 = x1023 + x1035 + x1043 + x970
-      x1045 = x1019 + x1044*x877 + x878*x952
-      x1046 = x1045 + x969
-      x1047 = gamma_cc*x68
-      x1048 = x53*x72
-      x1049 = x1048*x65
-      x1050 = 0.000286952223462081d0*x1049
-      x1051 = x1047*x1050
-      x1052 = 0.000573904446924163d0*x66
-      x1053 = -x1047*x1052 - x60
-      x1054 = gamma_cc*x624
-      x1055 = x1053*x1054
-      x1056 = x1051 + x1055 + x75
-      x1057 = x1056*x629
-      x1058 = -x1057
-      x1059 = 0.000108131015396253d0*x64
-      x1060 = x156*x164
-      x1061 = x162*x172
-      x1062 = x1060*x1061
-      x1063 = x1059*x1062
-      x1064 = 0.0051993032080331d0*x2
-      x1065 = x1064*x167
-      x1066 = x1065*x152
-      x1067 = x1066*x173
-      x1068 = 0.25d0*gamma_cs
-      x1069 = 0.125d0*gamma_cc + 0.125d0*gamma_ss
-      x1070 = -x1068 + x1069
-      x1071 = x1070*x155
-      x1072 = -x1065*x165 - x1071*x163
-      x1073 = x1072*x470
-      x1074 = x1073*x429
-      x1075 = x1063 + x1067 + x1074
-      x1076 = x151*x481
-      x1077 = x1075*x1076
-      x1078 = x107*x130
-      x1079 = x1078*x127
-      x1080 = x1059*x1079
-      x1081 = x103*x1080
-      x1082 = x1064*x117
-      x1083 = x1082*x131
-      x1084 = x1083*x120
-      x1085 = x1068 + x1069
-      x1086 = x1085*x121
-      x1087 = -x1082*x112 - x1086*x128
-      x1088 = x120*x391
-      x1089 = x1087*x1088
-      x1090 = x1089*x406
-      x1091 = x1081 + x1084 + x1090
-      x1092 = x110*x410
-      x1093 = x1091*x1092
-      x1094 = x1077 + x1093
-      x1095 = x1094*x203
-      x1096 = -x1095*x207
-      x1097 = x204*x650
-      x1098 = 0.00081628665578855d0*x206
-      x1099 = x1098*x510
-      x1100 = rho_c**(-7.66666666666667d0)
-      x1101 = x190*x193
-      x1102 = x1100*x1101
-      x1103 = x1099*x1102
-      x1104 = x208*x650
-      x1105 = rho_c**(-6.66666666666667d0)
-      x1106 = x1101*x1105
-      x1107 = gamma_cc*x1104 - x1099*x1106
-      x1108 = x1057*x209 + x1107*x81
-      x1109 = -gamma_cc*x1097 + x1096 + x1103*x183 + x1108
-      x1110 = 0.005859375d0*x215
-      x1111 = x217*x67
-      x1112 = -x1095*x212
-      x1113 = x204*x661
-      x1114 = 0.00228560263620794d0*x206
-      x1115 = x183*x510
-      x1116 = x208*x661
-      x1117 = x1106*x1114
-      x1118 = gamma_cc*x1116 - x1117*x510
-      x1119 = x1057*x660 + x1118*x81
-      x1120 = -gamma_cc*x1113 + x1102*x1114*x1115 + x1112 + x1119
-      x1121 = x1110*x1111 + x1120*x665
-      x1122 = x180*(x1058 + x1109*x220 + x1121*x211)
-      x1123 = x331*x342
-      x1124 = x1123*x863
-      x1125 = 0.00922943049313567d0*x1124
-      x1126 = x1047*x1125
-      x1127 = x1047*x339
-      x1128 = 0.000573904446924163d0*x1127
-      x1129 = -x1128 - x333
-      x1130 = gamma_cc*x1041
-      x1131 = x1129*x1130
-      x1132 = x1126 + x1131 + x346
-      x1133 = x1132*x877
-      x1134 = x1122 + x1133
-      x1135 = rho_c*x1134
-      x1136 = x206*x498
-      x1137 = x1136*x193
-      x1138 = x1115*x1137
-      x1139 = -5.6d0*x13 + 0.0553050111671826d0*x31 + 2.8d0*x42 + 2.8d0*
-     &x79
-      x1140 = x193*x63
-      x1141 = x1099*x1140
-      x1142 = -x1139*x1141
-      x1143 = x1112 + 0.00228560263620794d0*x1138 + x1142
-      x1144 = -x1141*x81
-      x1145 = x1096 + 0.00081628665578855d0*x1138 + x1144
-      x1146 = x180*(x1143*x967 + x1145*x220)
-      x1147 = x1111*x184
-      x1148 = x1147*x515
-      x1149 = 0.03125d0*x1111
-      x1150 = x208*x81
-      x1151 = -x1149*x1150
-      x1152 = 0.03125d0*x1148 + x1151
-      x1153 = x1149*x208
-      x1154 = -x1139*x1153
-      x1155 = 0.0875d0*x1148 + x1154
-      x1156 = tau_c**(-4)
-      x1157 = x1156*x216
-      x1158 = -x1110*x1157 + x1155*x665
-      x1159 = x180*(x1152*x220 + x1158*x211)
-      x1160 = x206*x489
-      x1161 = x1160*x515
-      x1162 = x650*x651
-      x1163 = x486*x512
-      x1164 = 10.3996132712785d0*x33
-      x1165 = x85**(-2)
-      x1166 = x1165*x87
-      x1167 = x1166*x95
-      x1168 = x361*(-130.15964257673d0*x1165*x90 - 172.632095841468d0*x1
-     &165*x91 - 57.042190297332d0*x1165*x92 - 156.836877485407d0*x1166)
-      x1169 = 1.24136239377604d0*x353*x362
-      x1170 = 0.25d0*x36
-      x1171 = x359**2/(x93**4*x94**2)
-      x1172 = x359*x360*(37.4420464663507d0*x353 + 35.5123722979901d0*x3
-     &56 + 36.6336685193113d0*x357 + 10.8942558607307d0*x358)/x93**3
-      x1173 = x98/x135**2
-      x1174 = x1173*x408
-      x1175 = x103*x125
-      x1176 = 0.0311958192481986d0*x2
-      x1177 = x117*x1176
-      x1178 = 0.205260263298406d0*x369
-      x1179 = x1178*x133
-      x1180 = 2.02583759801871d0*x103*x116**(-2.33333333333333d0)
-      x1181 = 0.0415944256642648d0*x117
-      x1182 = x1181*x133
-      x1183 = x1182*x388
-      x1184 = x120*x406/x129**3
-      x1185 = x1184*x403
-      x1186 = x107*x1175
-      x1187 = x1177*x1186
-      x1188 = x1178*x375
-      x1189 = x113*x1180
-      x1190 = x1181*x365*x385
-      x1191 = x1178*x386
-      x1192 = x104*x33
-      x1193 = 4.0d0*x1192
-      x1194 = exp(x1193*x96)
-      x1195 = x383**2
-      x1196 = x111*x1195
-      x1197 = x1182*x1194*x1196*x400
-      x1198 = x105*x118*x2*x380
-      x1199 = x1196*x1198
-      x1200 = 10.3996132712785d0*x1192
-      x1201 = 0.5d0*x104*x36
-      x1202 = -x104*x1169 + x1167*x1200 + x1168*x382 - x1171*x1201*x89 +
-     & x1172*x382
-      x1203 = x111*x1198*x1202
-      x1204 = x131*x134
-      x1205 = x110**(-6)
-      x1206 = 0.0170753655271859d0*x396
-      x1207 = x126*x392
-      x1208 = x122*x401*x64
-      x1209 = x1195*x399
-      x1210 = 0.000865048123170025d0*x105*x400
-      x1211 = x1088*x406
-      x1212 = 0.0253302959105844d0*x0
-      x1213 = -x1212 + 0.0253302959105844d0
-      x1214 = x1213*x409
-      x1215 = x110*(-x1164*x1167 + x1168*x364 + x1169 - x1170*x1171*x363
-     & + x1172*x364 + x1174*(x368 + x372 - x390 - x407) + x410*(-x111*x1
-     &179*x405 + x111*x1183*x404 + x1175*x1177*x366 + x1179*x367 - x1179
-     &*x389 + x1180*x132*x2 - x1182*x365*x405 - x1183*x130*x365 + x1185*
-     &(x1181* x375 + x1181*x386 + 0.205260263298406d0*x378 + 0.001730096
-     &24634005d0*x395 + 0.00853768276359296d0*x398 + 0.00173009624634005
-     &d0*x399*x401) + x1204*(x1187 + x1188 + x1189 + x1190 + x1191 + x11
-     &97 - x1199 - x1203) + x1211*( -0.105329439223327d0*x116**(-2.66666
-     &666666667d0)*x397 - x1187 - x1188 - x1189 - x1190 - x1191 - x1197 
-     &+ x1199 + x1202*x1210*x399 + x1203 - 0.00216262030792506d0*x1205*x
-     &126*x393 - x1206*x1208* x125 - x1206*x394 - 0.0034601924926801d0*x
-     &1207*x1208 + x1209* x1210 - 0.00259514436951007d0*x1194*x1209/x106
-     &**4))) + x1214*x408 + x355 + 0.25d0*x362*x363 + 0.5d0*x362*(-x88 -
-     & 1.0d0) + 0.5d0* x411
-      x1216 = x433**2
-      x1217 = exp(x1193*x149)
-      x1218 = x1216*x1217
-      x1219 = 0.0415944256642648d0*x167
-      x1220 = x1219*x175
-      x1221 = x1220*x152
-      x1222 = x1221*x460
-      x1223 = x1218*x1222
-      x1224 = x1220*x437
-      x1225 = x1224*x435
-      x1226 = 0.205260263298406d0*x442
-      x1227 = x1226*x175
-      x1228 = x1227*x152
-      x1229 = x1228*x435
-      x1230 = x1216*x885
-      x1231 = 35.5123722979901d0*x417
-      x1232 = 37.4420464663507d0*x414
-      x1233 = 36.6336685193113d0*x420
-      x1234 = 10.8942558607307d0*x422
-      x1235 = x1231 + x1232 + x1233 + x1234
-      x1236 = x426/x146**3
-      x1237 = x1236*x432
-      x1238 = x1237*x424
-      x1239 = 1/(x146**4*x147**2)
-      x1240 = x1239*x424**2
-      x1241 = x1201*x142
-      x1242 = x414*x431
-      x1243 = 1.24136239377604d0*x1242
-      x1244 = x138**(-2)
-      x1245 = 130.15964257673d0*x1244*x143
-      x1246 = x1244*x140
-      x1247 = 156.836877485407d0*x1246
-      x1248 = 172.632095841468d0*x1244*x144
-      x1249 = 57.042190297332d0*x1244*x145
-      x1250 = -x1245 - x1247 - x1248 - x1249
-      x1251 = x1246*x148
-      x1252 = x1200*x1251
-      x1253 = x1250*x883 + x1252
-      x1254 = -x104*x1243 + x1235*x1238 - x1240*x1241 + x1253
-      x1255 = x1254*x885
-      x1256 = 2.02583759801871d0*x156*x160**(-2.33333333333333d0)
-      x1257 = x1256*x166
-      x1258 = x1226*x440
-      x1259 = x1060*x159
-      x1260 = x1176*x167
-      x1261 = x1259*x1260
-      x1262 = x1257 + x1258 + x1261
-      x1263 = x172*x437
-      x1264 = x1263*x447
-      x1265 = x447*x448
-      x1266 = x161*x451
-      x1267 = x1266*x64
-      x1268 = x157*x462
-      x1269 = x1267*x1268
-      x1270 = x1268*x64
-      x1271 = 0.0170753655271859d0*x456
-      x1272 = x1271*x159
-      x1273 = 0.00259514436951007d0*x464/x154**4
-      x1274 = x1271*x453
-      x1275 = x151**(-6)
-      x1276 = 0.00216262030792506d0*x1275*x161*x452
-      x1277 = 0.105329439223327d0*x160**(-2.66666666666667d0)*x457
-      x1278 = -x1257 - x1258 - x1261
-      x1279 = -x1274 - x1276 - x1277 + x1278
-      x1280 = x468*x469
-      x1281 = x468*x470
-      x1282 = x1219*x440
-      x1283 = 0.205260263298406d0*x444
-      x1284 = 0.00173009624634005d0*x454
-      x1285 = 0.00853768276359296d0*x458
-      x1286 = 0.00173009624634005d0*x464
-      x1287 = x170*x429/x171**3
-      x1288 = x1287*x468
-      x1289 = x1256*x174*x2
-      x1290 = x1227*x473
-      x1291 = x1260*x156*x159*x173
-      x1292 = x1289 + x1290 + x1291
-      x1293 = x98/x177**2
-      x1294 = x1293*x479
-      x1295 = 0.5d0*x1236
-      x1296 = x1295*x425
-      x1297 = x1170*x416
-      x1298 = x1164*x1251
-      x1299 = x1250*x882 - x1298
-      x1300 = x1213*x480
-      x1301 = 0.5d0*x482
-      x1302 = x428*(-x141 - 1.0d0)
-      x1303 = 0.25d0*x427
-      x1304 = x1303*x425
-      x1305 = x1300*x479 + x1301 + x1302*x424 + x1304 + x151*(x1235*x129
-     &6 - x1240* x1297 + x1243 + x1294*(-x450 - x472 + x892) + x1299 + x
-     &481*( -x1220*x1264 + x1221*x1280*x447 - x1224*x1281 - x1227*x1265 
-     &- x1228*x1281 + x1288*(x1221*x435 + x1282 + x1283 + x1284 + x1285 
-     &+ x1286*x462) + x1292 + x449*(x1223 + x1225 + x1229 - x1230 - x125
-     &5 + x1262) + x471*(x1216*x889 - x1218*x1273 - x1223 - x1225 - x122
-     &9 + x1230 + x1254*x889 + x1255 - 0.0034601924926801d0*x1269 - x127
-     &0 *x1272 + x1279))) + x415
-      x1306 = x203*(x1215 + x1305)
-      x1307 = x185*x22
-      x1308 = x190*x21
-      x1309 = x200*(10.0d0*x1307 + 5.22d0*x1308 + 94.92d0*x186/rho_c**8)
-     &
-      x1310 = x493*x509
-      x1311 = x1310*x508
-      x1312 = 0.065302932463084d0*x63
-      x1313 = 0.065302932463084d0*x507
-      x1314 = x192/x199**6
-      x1315 = x1314*x508
-      x1316 = x1315*(-x1312*x497 - x1313*x505 + 0.304747018161059d0*x499
-     &)
-      x1317 = 0.104484691940934d0*x63
-      x1318 = x1317*x193
-      x1319 = 0.487595229057694d0*x498
-      x1320 = rho_s*x184
-      x1321 = 2.66666666666667d0*x1320
-      x1322 = x16**(-3.33333333333333d0)
-      x1323 = 3.11111111111111d0*x1308
-      x1324 = x18**(-3.33333333333333d0)
-      x1325 = x510*(-gamma_ss*x1318 - 1.38151981566347d0*x1105*x198 - x1
-     &317*x496*x505 + x1319*x197*x505 + x1319*x497 - x910*(-x1321*x500 +
-     & x1321*x503 + x1322*x1323 + x1323*x1324))
-      x1326 = x1309 + 2.0d0*x1311 + x1316 + x1325
-      x1327 = x1326*x513
-      x1328 = 0.09375d0*x516
-      x1329 = x202*x486
-      x1330 = x183*x512
-      x1331 = rho_c**(-4.33333333333333d0)
-      x1332 = 0.131752943835933d0*x1331
-      x1333 = 0.0790517663015599d0*x518
-      x1334 = gamma_cc*x1333
-      x1335 = x1047*x530
-      x1336 = x1335*(2.0d0*x526 - 2.0d0*x529)
-      x1337 = x16**(-1.33333333333333d0)
-      x1338 = 0.444444444444444d0*x1308
-      x1339 = x18**(-1.33333333333333d0)
-      x1340 = gamma_cc*x531
-      x1341 = x1340*(-x1321*x524 + x1321*x527 + x1337*x1338 + x1338*x133
-     &9)
-      x1342 = 0.0338793284149542d0*x675
-      x1343 = x1334*x2*x57
-      x1344 = x621*x623
-      x1345 = x1342*x532
-      x1346 = 0.0338793284149542d0*x58
-      x1347 = x1346*x2
-      x1348 = gamma_cc*x1347
-      x1349 = x621*x622
-      x1350 = gamma_cc*x538
-      x1351 = 0.00267822075231276d0*x608
-      x1352 = x611*x613
-      x1353 = x600*x62
-      x1354 = 0.00114780889384833d0*x618
-      x1355 = gamma_cc*x601
-      x1356 = x1355*x61/x71**3
-      x1357 = x1356*x621
-      x1358 = x1332*x1350
-      x1359 = x1334*x541
-      x1360 = x1336*x922
-      x1361 = x1341*x922
-      x1362 = x1343*x1353
-      x1363 = x599**2
-      x1364 = gamma_cc*x1363
-      x1365 = x51*x602
-      x1366 = x1364*x1365
-      x1367 = exp(2.0d0*x50)
-      x1368 = x1347*x1367*x616
-      x1369 = x1364*x1368
-      x1370 = x1353*x2
-      x1371 = x1345*x1370
-      x1372 = x46**(-5)
-      x1373 = x1372*x545
-      x1374 = x1373*x530
-      x1375 = x184*x905
-      x1376 = x1320*x527
-      x1377 = 0.333333333333333d0*x1308
-      x1378 = x1337*x1377
-      x1379 = x1339*x1377
-      x1380 = x544*(-x1375*x524 + 2.0d0*x1376 + x1378 + x1379)
-      x1381 = x2*x598
-      x1382 = 5.1297628024841d0*x1320
-      x1383 = x16**(-0.666666666666667d0)
-      x1384 = 0.854960467080683d0*x1308
-      x1385 = x18**(-0.666666666666667d0)
-      x1386 = x1382*x550 - x1382*x553 + x1383*x1384 + x1384*x1385
-      x1387 = x1386*x29
-      x1388 = 20.0d0*x1307
-      x1389 = x1388*x20
-      x1390 = 8.0d0*x490
-      x1391 = x1390*x555
-      x1392 = 0.000908766572494496d0*x565
-      x1393 = x1392*x556
-      x1394 = 29.6085746432167d0*x562
-      x1395 = x1394*x561
-      x1396 = x189*x6
-      x1397 = x189*x4
-      x1398 = x189*x7
-      x1399 = x563*(-1.5861639701226d0*x1396 - 0.998929717145607d0*x1397
-     & - 0.322572935345748d0*x1398 - 0.212390288347482d0*x770)
-      x1400 = x24*x555
-      x1401 = 59.2171492864334d0*x569
-      x1402 = x1400*x1401
-      x1403 = 876.667692402934d0*x568**2/(x26**4*x27**2)
-      x1404 = x568*(x25*x3 + 2.71913823449588d0*x564 + 1.49839457571841d
-     &0*x565 + 0.254868346016978d0*x567)/x26**3
-      x1405 = x20*x569
-      x1406 = x1405*x549
-      x1407 = 236.868597145733d0*x490
-      x1408 = x573*(-1.16327369584438d0*x1396 - 0.989141964955861d0*x139
-     &7 - 0.600321476249523d0*x1398 - 0.210778258416395d0*x770)
-      x1409 = x571*x572*(x3*x8 + 1.99418347859036d0*x564 + 1.48371294743
-     &379d0*x565 + 0.252933910099675d0*x567)/x10**3
-      x1410 = 0.25d0*x2*x571**2/(x10**4*x11**2)
-      x1411 = 0.117839022137957d0*x12*x1397
-      x1412 = 0.0883792666034679d0*x565*x574
-      x1413 = x1411 - x1412
-      x1414 = x1408*x577 + x1409*x577 - x1410*x576 + x1413
-      x1415 = x1386*x41
-      x1416 = x583*x588
-      x1417 = x591*(-x1170*x585**2*x587/(x35**4*x38**2) - 0.113306327884
-     &452d0*x1397* x39 + x1414 + x1416*x584*(-2.16229511226841d0*x1396 -
-     & 1.70877610553209d0*x1397 - 1.23355033167571d0*x1398 - 0.267319032
-     &365355d0*x770) + x1416*x585*(x3*x34 + 3.70679162103156d0*x564 + 2.
-     &56316415829814d0*x565 + 0.320782838838426d0*x567)/x35**3 + x586*x5
-     &89)
-      x1418 = x1388*x593
-      x1419 = x23*x590
-      x1420 = 2.0d0*x1419*x555
-      x1421 = x40*x555
-      x1422 = x1390*x1421
-      x1423 = x20*x590
-      x1424 = x1390*x1423
-      x1425 = x20*x28*x4
-      x1426 = 0.00363506628997799d0*x1307*x1425
-      x1427 = 0.000605844381662998d0*x1397*x30
-      x1428 = 0.0269072828949635d0*x560*x565*x569
-      x1429 = -x1415 - x1417 - x1418 - x1420 + x1422 + x1424 + x1426 - x
-     &1427 + x1428
-      x1430 = x1387*x549 - x1389*x559 + x1391*x559 + x1393 + x1395*x1399
-     & + x1395*x1404 + x1402*x549 - x1403*x561 + x1406*x1407 + x1414 + x
-     &1429
-      x1431 = x1374*x547 + x1380*x547 + 2.0d0*x1381*x546 + x1430*x49
-      x1432 = gamma_cc*x1365
-      x1433 = x1431*x1432
-      x1434 = gamma_cc*x74
-      x1435 = 0.00758829213155282d0*x1105*x69
-      x1436 = 0.00267822075231276d0*x498
-      x1437 = x1352*x1436
-      x1438 = x56**(-6)
-      x1439 = 0.000286952223462081d0*x1438*x67
-      x1440 = x1439*x611
-      x1441 = x1440*(3.33333333333333d0*x526 - 3.33333333333333d0*x529)
-      x1442 = x1320*x524
-      x1443 = 0.888888888888889d0*x1308
-      x1444 = x614*(x1337*x1443 + x1339*x1443 + 5.33333333333333d0*x1376
-     & - 5.33333333333333d0*x1442)
-      x1445 = x51*x945
-      x1446 = 0.00172171334077249d0*x1367*x618/x52**4
-      x1447 = x617*x65
-      x1448 = x629*(gamma_cc*x1332*x521 + x1054*(0.00114780889384833d0*x
-     &1352*x1447 - x1358 + x1359 - x1360 - x1361 - x1362 + x1363*x1445 -
-     & x1363*x1446 + x1366 - x1369 + x1371 + x1431*x1445 + x1433 - x1435
-     &*x610 + x1437*x610 - x1441*x66 - x1444*x66 - 0.00535644150462552d0
-     &*x608* x617*x64) - x1334*x520*x605 - x1334*x533*x61 + x1336*x919 +
-     & x1341 *x919 + x1342*x533*x605 - x1343*x1344 + x1344*x1345*x2 + x1
-     &348* x1349*x605 + x1357*(-x1052*x1352 + x1333*x1350 - x1342*x541 +
-     & x1348*x1353 + x1351*x610 + x1354*x617) + x1434*(x1358 - x1359 + x
-     &1360 + x1361 + x1362 - x1366 + x1369 - x1371 - x1433))
-      x1449 = x631*(-x1375*x527 - x1378 - x1379 + 2.0d0*x1442)
-      x1450 = x1449*x634
-      x1451 = x78/x76**2
-      x1452 = x1451*x627
-      x1453 = x1452*(x523 - x537 - x607 - x626)
-      x1454 = x46*x632
-      x1455 = x1454*(-0.666666666666667d0*x526 + 0.666666666666667d0*x52
-     &9)
-      x1456 = x1455*x634
-      x1457 = x1*x628
-      x1458 = x1457*x633
-      x1459 = 2.0d0*x1458*x627
-      x1460 = x1389*x642
-      x1461 = x1391*x642
-      x1462 = 0.5d0*x639
-      x1463 = x1408*x1462
-      x1464 = x1410*x639
-      x1465 = x1405*x636
-      x1466 = x1407*x1465
-      x1467 = x1394*x644
-      x1468 = x1399*x1467
-      x1469 = x1403*x644
-      x1470 = x1409*x1462
-      x1471 = x1404*x1467
-      x1472 = x1387*x636 - x1393 + x1402*x636 - x1411 + x1412 + x1415 + 
-     &x1417 + x1418 + x1420 - x1422 - x1424 - x1426 + x1427 - x1428 - x1
-     &460 + x1461 + x1463 - x1464 + x1466 + x1468 - x1469 + x1470 + x147
-     &1
-      x1473 = x1448 + x1450 + x1453 + x1456 + x1459 + x1472
-      x1474 = 0.0625d0*x184
-      x1475 = x206*x494
-      x1476 = x1309*x189
-      x1477 = x189*x67
-      x1478 = x1311*x1477
-      x1479 = x206*x511
-      x1480 = x189*x207
-      x1481 = x1325*x189
-      x1482 = 2.0d0*x648
-      x1483 = x1473*x209 + x1482*x654 + x81*(x1316*x1480 + x1328*x201 - 
-     &x1474*x1475 - x1474*x1479 + x1476*x207 + x1478*x650 + x1481*x207)
-      x1484 = 0.0234375d0*x218*x489
-      x1485 = 0.01171875d0*x657
-      x1486 = 0.2625d0*x516
-      x1487 = x651*x661
-      x1488 = 0.175d0*x184
-      x1489 = x189*x212
-      x1490 = x1473*x660 + x1482*x662 + x81*(x1316*x1489 - x1475*x1488 +
-     & x1476*x212 + x1478*x661 - x1479*x1488 + x1481*x212 + x1486*x201)
-      x1491 = x1430 - x1448 - x1450 - x1453 - x1456 - x1459
-      x1492 = 0.0244087849784238d0*rho_c**(-2.66666666666667d0)*x224
-      x1493 = 0.312466222036391d0*x669
-      x1494 = 0.208310814690927d0*mu*rho_c**(-2.33333333333333d0)
-      x1495 = gamma_cc*x671
-      x1496 = 2.54259323603486d0*x518
-      x1497 = gamma_cc*x344
-      x1498 = x55*x676
-      x1499 = x831**2
-      x1500 = x324**(-2)
-      x1501 = x1500*x680
-      x1502 = x1501*x347
-      x1503 = 1.08968281544351d0*x532
-      x1504 = x344*x675
-      x1505 = x647*x832
-      x1506 = x347*x831
-      x1507 = x1500*x80
-      x1508 = x1507*(x679 + x843)
-      x1509 = x343*x854
-      x1510 = gamma_cc*x57
-      x1511 = x1496*x1510
-      x1512 = x1509*x675
-      x1513 = 1.08968281544351d0*gamma_cc*x58
-      x1514 = 2.78d0*x679
-      x1515 = 0.176758533206936d0*x578
-      x1516 = x20*x642
-      x1517 = x1390*x1516
-      x1518 = x1392*x30
-      x1519 = 2.0d0*x637
-      x1520 = x1401*x644
-      x1521 = x1390*x593
-      x1522 = 2.0d0*x582
-      x1523 = 2.0d0*x592
-      x1524 = x324/x80**3
-      x1525 = x1524*(-x1515 - x1517 + x1518 - x1519 - x1520 + x1521 - x1
-     &522 - x1523 - x640)
-      x1526 = x23 - 1.0d0
-      x1527 = x1526*x642
-      x1528 = x1526*x555
-      x1529 = x570*x636
-      x1530 = x682*(x1386*x1527 - x1400*x1529 + x1413 + x1429 + x1460 - 
-     &x1461 - x1463 + x1464 - x1466 - x1468 + x1469 - x1470 - x1471 + x1
-     &528*x1529 - 0.000454383286247248d0*x1528*x28*x565 + x556*x595)
-      x1531 = x681*x829
-      x1532 = 5.56d0*x679
-      x1533 = x1308*x234
-      x1534 = x1533*x228
-      x1535 = x189*x236
-      x1536 = x189*x233
-      x1537 = x230*(0.00571025734089666d0*x1397 + 0.000856522469028669d0
-     &*x1536 + 0.0350330449527535d0*x770 - 0.00609784657412857d0*x995)
-      x1538 = x228*x691
-      x1539 = x241*x260
-      x1540 = x1539*x699
-      x1541 = x1375*x696
-      x1542 = x1375*x693
-      x1543 = x16**(-1.33333333333333d0)
-      x1544 = 0.333333333333333d0*x1308
-      x1545 = x1543*x1544
-      x1546 = x18**(-1.33333333333333d0)
-      x1547 = x1544*x1546
-      x1548 = x243*x251
-      x1549 = x1548*x735
-      x1550 = x244*x736
-      x1551 = x1549*x1550
-      x1552 = x735*x737
-      x1553 = x3*x647
-      x1554 = x242/x259**2
-      x1555 = x1549*x1554
-      x1556 = x714*x715
-      x1557 = 9.20897059521559d0*x6
-      x1558 = 4.27856974274298d0*x709
-      x1559 = x259/x251**3
-      x1560 = x1559*x719
-      x1561 = x720*x734
-      x1562 = 0.89531658564596d0*x1396*x248
-      x1563 = x1397*x246
-      x1564 = 1.53482843253593d0*x1556*x564
-      x1565 = x224*x565
-      x1566 = x1565*x708
-      x1567 = mu*x249
-      x1568 = x1567*x714
-      x1569 = x1568*x708
-      x1570 = x707*x710
-      x1571 = 0.666666666666667d0*x1320
-      x1572 = 0.111111111111111d0*x1308
-      x1573 = x716*(x1543*x1572 + x1546*x1572 + x1571*x693 - x1571*x696)
-     &
-      x1574 = 1.33333333333333d0*x1320
-      x1575 = 0.222222222222222d0*x1308
-      x1576 = x1543*x1575 + x1546*x1575 + x1574*x693 - x1574*x696
-      x1577 = x725/x241**5
-      x1578 = x1577*x723
-      x1579 = x707*x729
-      x1580 = x254*x729
-      x1581 = x1308*x305
-      x1582 = x304*(-0.207448236981382d0*x1397*x800 + x230*(0.0028551286
-     &7044833d0* x1397 + 0.000428261234514334d0*x1536 - x189*x232 + 0.01
-     &75165224763768d0*x770) + 0.311172355472072d0*x565*x801 + 0.0242070
-     &587025094d0*x770*x800)
-      x1583 = 0.0891107483661069d0*x995
-      x1584 = x231*x3
-      x1585 = x265*x743
-      x1586 = 75.398223686155d0*x1585
-      x1587 = x189*x267
-      x1588 = 0.00786976946662482d0*x189
-      x1589 = x1588*x277
-      x1590 = 0.0157395389332496d0*x1320
-      x1591 = x275*x277
-      x1592 = 0.00786976946662482d0*x1308
-      x1593 = x16**(-2)
-      x1594 = x1593*x277
-      x1595 = x283*x755
-      x1596 = x1588*x290
-      x1597 = x286*x290
-      x1598 = x18**(-2)
-      x1599 = x1598*x290
-      x1600 = 7.65662400050184d0*x788
-      x1601 = x1600*x285
-      x1602 = x1600*x763
-      x1603 = 45.939744003011d0*x760
-      x1604 = x282*x754
-      x1605 = x288*x758
-      x1606 = x1605*x296
-      x1607 = 17.2274040011291d0*x270
-      x1608 = x1308*x1607
-      x1609 = 0.150031049774234d0*x189
-      x1610 = x1609*x277
-      x1611 = 0.0271505358982603d0*x770
-      x1612 = x1611*x278
-      x1613 = 0.300062099548467d0*x1320
-      x1614 = x278*x9
-      x1615 = x1320*x275
-      x1616 = 0.150031049774234d0*x1308
-      x1617 = 0.0271505358982603d0*x1308
-      x1618 = x1593*x1614
-      x1619 = x1609*x290
-      x1620 = x1611*x287
-      x1621 = x287*x9
-      x1622 = x1320*x286
-      x1623 = x1598*x1621
-      x1624 = 68.9096160045166d0*x270
-      x1625 = x754*x775
-      x1626 = x1605*x783
-      x1627 = x270*x792
-      x1628 = 22.9698720015055d0*x1320
-      x1629 = x273*x281
-      x1630 = x1629*x754
-      x1631 = 68.9096160045166d0*x789
-      x1632 = x270*x787
-      x1633 = x774*x776
-      x1634 = x782*x784
-      x1635 = 0.225046574661351d0*x3
-      x1636 = x1635*x277
-      x1637 = 0.0325806430779124d0*x567
-      x1638 = x1637*x278
-      x1639 = 0.225046574661351d0*x189
-      x1640 = 0.0325806430779124d0*x770
-      x1641 = x284/x280**3
-      x1642 = x1641*x271*x774
-      x1643 = x1635*x290
-      x1644 = x1637*x287
-      x1645 = x291/x294**3
-      x1646 = x1645*x271*x782
-      x1647 = x292*x295
-      x1648 = x1605*x1647
-      x1649 = 45.939744003011d0*x788
-      x1650 = x1649*x752
-      x1651 = x270*x285
-      x1652 = 7.65662400050184d0*x1308
-      x1653 = x270*x763
-      x1654 = x273*x776
-      x1655 = x1654*x773
-      x1656 = x1649*x756
-      x1657 = 45.939744003011d0*x1308
-      x1658 = x292*x784
-      x1659 = x1658*x781
-      x1660 = -x1004*(x1591*x1613 - x1594*x1616 - x1610 - x1612 + 0.0543
-     &010717965206d0 *x1614*x1615 - x1617*x1618) - x1006*(-x1597*x1613 -
-     & x1599*x1616 - x1617*x1623 - x1619 - x1620 - 0.0543010717965206d0*
-     &x1621*x1622) + x1593*x1651*x1652 - x1595*(-x1589 + x1590*x1591 - x
-     &1592*x1594) + x1598*x1652*x1653 + x1601 + x1602 - x1603*x1604 - x1
-     &603*x1606 - x1603*x1633 - x1603*x1634 + x1604*x1650 - x1606*x1656 
-     &- x1608* x786 - x1608*x791 - 15.3132480010037d0*x1615*x1651 + 15.3
-     &132480010037d0*x1622*x1653 - x1624*x1625*x774 - x1624*x1626* x782 
-     &+ x1627*x1628 - x1627*x1657*x286 - x1628*x1632 + x1630*x1631 - x16
-     &31*x1648 + x1631*x1655 - x1631*x1659 - x1632*x1657*x275 + x1633*x1
-     &650 - x1634*x1656 - x1642*(x1636 + x1638 - x1639*x753 - x1640*x772
-     &) - x1646*(x1639*x757 + x1640*x780 + x1643 + x1644) - x759*(-x1590
-     &*x1597 - x1592*x1599 - x1596)
-      x1661 = 2.66666666666667d0*x1320
-      x1662 = 2.22222222222222d0*x1308
-      x1663 = x1308*x316
-      x1664 = 5.29055759308205d0*x818
-      x1665 = x227*(x1472*x302 + 0.0334548885448792d0*x1534*x237 - 0.001
-     &64372154798406d0*x1534*x687 + 6.39350882283002d-5*x1535*x3** 2.333
-     &33333333333d0 - 0.00191767513931474d0*x1535*x687 + x1537* x229*x69
-     &2 - 0.00880391803812612d0*x1538*x686 + 0.000821860773992031d0*x153
-     &8*x688 + x1540*(-x705 + x706) + 2.0d0* x1551*x699 + x1552*(-x704 +
-     & x711 + x733) - 0.0168588246652672d0* x1553*x301 + x1555*(x718 - x
-     &726 + x728 - x730 + x732) + 0.0309078452196566d0*x189*x701 - 0.010
-     &5647016457513d0*x228*x684* x690 + 0.0117385573841682d0*x236*x973 +
-     & x253*(0.445553741830535d0 *x1533*x231 - 0.0277288014669606d0*x153
-     &3*x233 - 0.0231073345558005d0*x1536*x235 + x1537*x741 + x1583*x235
-     & - 0.0891107483661069d0*x1584*x691 + 0.00107855455836145d0*x235*x9
-     &73 + 0.000586927869208408d0*x299*x973 + x300*(x1308*x745 - 9.66648
-     &718250747d0*x1308*x749 - 150.79644737231d0*x1585*x492 - x1586*x746
-     & - 0.154912426780983d0*x1587*x3**(-0.333333333333333d0) *x748 - 1.
-     &61108119708458d0*x1587*x749 + x1660 - 4.83324359125373d0*x264*x743
-     &*x746*x747 - x744*( -1.36477107997868d0*x1397 + 0.427594146176807d
-     &0*x770)) - 0.000440195901906306d0*x686*x797 + 0.0138644007334803d0
-     &*x689*x691 - 0.178221496732214d0*x690*x739) + x303*(x1472*x309 - 0
-     &.213300270968718d0*x1553*x308 + 0.0628942271634173d0*x1581*x237 - 
-     &x1582*x307 + 0.319950406453076d0*x189*x804 - 0.0073560499606336d0*
-     &x306*x973 - 0.0198613348937107d0*x684*x802 + 0.0055170374704752d0*
-     &x686*x803) + x310*(x1472*x321 + 1.04949664671409d0*x1536*x80 + 0.8
-     &37628205355044d0*x1581*x231 - x1582*x311 + 0.055841880357003d0*x15
-     &84*x803 - 0.055841880357003d0 *x306*x995 + 0.0009195062450792d0*x3
-     &19*x973 + x320*(x1660 + 77.9555417944151d0*x1663*x270 - 10.5811151
-     &861641d0*x1663*x818 - x1664*x746*x816 - 0.299209d0*x189*x317 - 31.
-     &182216717766d0*x267* x760*x816 - 3.82831200025092d0*x313*x788 + x3
-     &14*(x1661*x809 - x1661*x812 + x1662*x239 + x1662*x240) - x315*x817
-     &*( -0.106975995763985d0*x1397 + 0.289053642815522d0*x770) + 5.1970
-     &3611962767d0*x317*x788 + 22.9698720015055d0*x760*x814 - 93.5466501
-     &532981d0*x816*x821) - 0.899568554326366d0*x647*x689 - 0.0006896296
-     &838094d0*x686*x822 - 0.335051282142018d0*x739*x802) + x700*(x1541 
-     &- x1542 - x1545 - x1547) + x738*(x1560*(-x1556*x1557 - x1558*x708 
-     &+ 1.42618991424766d0*x703 + 1.53482843253593d0*x712 ) + 2.0d0*x156
-     &1*x719 + x252*(1.43555326817173d0*x1398*x255 + x1562 + 0.275711329
-     &288622d0*x1563*x257 - x1564 - 0.413566993932933d0*x1566*x257 + x15
-     &69 + x1573 + x1576*x1580 + x1578*(-1.33333333333333d0*x695 + 1.333
-     &33333333333d0*x698) + x1579*x724 - 1.91407102422897d0*x253*x566*x7
-     &24 + x982*(-x1541 + x1542 + x1545 + x1547)) + x721*(-x1562 - 0.950
-     &793276165107d0* x1563 + x1564 + 1.42618991424766d0*x1566 - x1569 -
-     & x1570*x724 - x1573 - x1576*x991)))
-      x1666 = 1.05383986550676d0*x189*x225*x322*x825
-      x1667 = 1.26460783860812d0*x823*x826
-      x1668 = 0.499760307959092d0*x1536*x310*x322/x226**6
-      x1669 = x1472 - x1665 + x1666 - x1667 - x1668
-      x1670 = x1669*x223
-      x1671 = x1514*x1525 + 2.78d0*x1530 + x1531*x1532 + 2.78d0*x1670
-      x1672 = x347*x833
-      x1673 = x326*x872
-      x1674 = x1673*x675
-      x1675 = 1.08968281544351d0*x848
-      x1676 = gamma_cc*x1675
-      x1677 = x869*x870
-      x1678 = gamma_cc*x836
-      x1679 = x1333*x1678
-      x1680 = x1351*x338
-      x1681 = x332*x532
-      x1682 = x1342*x1681
-      x1683 = 0.000573904446924163d0*x339
-      x1684 = x1352*x1683
-      x1685 = 0.00105334219974934d0*gamma_cc*x848
-      x1686 = x1685*x847
-      x1687 = 3.56865263186383d-5*x864
-      x1688 = x1687*x862
-      x1689 = x1346*x332
-      x1690 = gamma_cc*x1689
-      x1691 = x833*x867
-      x1692 = x1683*x69
-      x1693 = gamma_cc*x858
-      x1694 = x1693*x335/x341**3
-      x1695 = x1694*x869
-      x1696 = x1332*x1678
-      x1697 = x1334*x1681
-      x1698 = x1336*x839
-      x1699 = x1341*x839
-      x1700 = x326*x847
-      x1701 = x1510*x518
-      x1702 = 0.0024577984660818d0*x1700*x1701
-      x1703 = x845**2
-      x1704 = gamma_cc*x1703
-      x1705 = exp(64.327297288604413d0*x327*x48)
-      x1706 = 3.27494623324068d-5*x1705*x848*x861
-      x1707 = x1704*x1706
-      x1708 = x1029*x329
-      x1709 = x1704*x1708
-      x1710 = x532*x675
-      x1711 = 0.00105334219974934d0*x1700*x1710
-      x1712 = x1679*x834
-      x1713 = x1501*x334
-      x1714 = x1499*x1713
-      x1715 = x1682*x834
-      x1716 = x334*x831
-      x1717 = x1505*x1716
-      x1718 = x1508*x1716
-      x1719 = x1686*x834
-      x1720 = x1374*x842 + x1380*x842 + x328*(x1430 + x1665 - x1666 + x1
-     &667 + x1668) + 64.3272972886044d0*x546*x844
-      x1721 = gamma_cc*x1708
-      x1722 = x1720*x1721
-      x1723 = x1671*x852
-      x1724 = gamma_cc*x855
-      x1725 = x336*x608
-      x1726 = 1.66429468465917d-6*x1705*x864/x330**4
-      x1727 = x1037*x329
-      x1728 = x1352*x863
-      x1729 = x1501*x340
-      x1730 = x340*x867
-      x1731 = x350/x348**2
-      x1732 = x1731*x875
-      x1733 = x875*x876
-      x1734 = 0.062182d0*x1733
-      x1735 = x1449*x878 + x1455*x878 + x1669 + x1732*(x674 - x678 - x83
-     &5 - x857 - x874) + x1734*x633 + x877*(x1130*(-x1435*x338 + x1437*x
-     &338 - x1441*x339 - x1444*x339 - x1505*x1730 - x1508*x1730 + x1680*
-     &x1691 - x1684*x1691 + x1688*x1691 - x1696 + x1697 - x1698 - x1699 
-     &- x1702 - x1703*x1726 + x1703*x1727 - x1707 + x1709 + x1711 + x171
-     &2 - x1714 - x1715 - x1717 - x1718 + x1719 + x1720*x1727 + x1722 - 
-     &x1723 - 0.000166537122820312d0*x1725*x862 + 3.56865263186383d-5* x
-     &1728*x862 - x1729*x867**2 - x868*(x1525*x1532 + 5.56d0*x1530 + 11.
-     &12d0*x1531*x679 + 5.56d0*x1670)) + 4.23765539339144d0*x1331* x1495
-     & + x1336*x1498 + x1341*x1498 - x1495*x1496*x834 - x1496* x1497*x53
-     &2 + x1499*x1502 + x1503*x1504*x834 + x1503*x1512 + x1503 *x1674 + 
-     &x1505*x1506 + x1506*x1508 - x1509*x1511 + x1509*x1513* x834 - x151
-     &1*x1673 + x1671*x1672 + x1676*x1677*x854 + x1676*x834* x872 + x169
-     &5*(x1679 + x1680 - x1682 - x1684 + x1686 + x1688 - x1690*x834 - x1
-     &691*x1692) + x1724*(x1696 - x1697 + x1698 + x1699 + x1702 + x1707 
-     &- x1709 - x1711 - x1712 + x1714 + x1715 + x1717 + x1718 - x1719 - 
-     &x1722 + x1723))
-      x1736 = x1515 - x1518 + x1520
-      x1737 = x1517 + x1519 - x1521 + x1522 + x1523 + x1734*x47 + x1736 
-     &+ 0.062182d0* x349*x633 + x640 - 2.0d0*x824 - 1.26460783860812d0*x
-     &827
-      x1738 = x1245 + x1247 + x1248 + x1249
-      x1739 = x414*x427*x881
-      x1740 = 0.620681196888018d0*x1739
-      x1741 = 0.620681196888018d0*x1242
-      x1742 = -x1231 - x1232 - x1233 - x1234
-      x1743 = x1239*x881
-      x1744 = x478 - x888 - x891
-      x1745 = x1263*x887
-      x1746 = x442*x476
-      x1747 = x448*x887
-      x1748 = x176*x437
-      x1749 = x470*x890
-      x1750 = x152*x1746
-      x1751 = x469*x890
-      x1752 = x429*x447
-      x1753 = x429*x887
-      x1754 = x434*x884
-      x1755 = x153*x460*x884
-      x1756 = x1221*x1754 - x1282 - x1283 - x1284 - x1285 + x1286*x1755
-      x1757 = x1748*x1754
-      x1758 = x1750*x1754
-      x1759 = x1748*x435
-      x1760 = -x104*x1740 + x104*x1741 + x1238*x1742 - x1241*x1743*x424 
-     &- x1252 + x1738*x883
-      x1761 = x1760*x885
-      x1762 = x1750*x435
-      x1763 = x1217*x884
-      x1764 = x1221*x1763*x461
-      x1765 = x436*x884
-      x1766 = x159*x456
-      x1767 = 0.00853768276359296d0*x1766
-      x1768 = x157*x1755
-      x1769 = x1267*x1768
-      x1770 = x1768*x64
-      x1771 = x1300*x893 - x1301 + x1302*x881 - x1304 + x151*(-x1170*x17
-     &43*x425 + x1294*x1744 + x1296*x1742 + x1298 + x1738*x882 + x1740 -
-     & x1741 + x481*(x1264*x176 + x1265*x1746 + x1280*x1753 + x1281*x174
-     &8 + x1281*x1750 + x1288*x1756 - x1289 - x1290 - x1291 - x1745*x176
-     & - x1746*x1747 - x1748*x1749 - x1749*x1750 + x1751*x1752 + x449*( 
-     &x1278 + x1757 + x1758 - x1759 - x1761 - x1762 + x1764 - x1765) + x
-     &471*(x1262 + 0.00173009624634005d0*x1269 + x1270*x1767 - x1273* x1
-     &763*x433 + x1274 + x1276 + x1277 - x1757 - x1758 + x1759 + x1760*x
-     &889 + x1761 + x1762 - x1764 + x1765 - x1767*x1770 - 0.001730096246
-     &34005d0*x1769 + x466*x884))) + x880
-      x1772 = x203*(x1215 + x1771)
-      x1773 = x184*x207
-      x1774 = x486*x913
-      x1775 = x512*x896
-      x1776 = x489*x900
-      x1777 = x200*(-3.48d0*x1320 - 8.0d0*x1776 - 81.36d0*x488*x899)
-      x1778 = x1310*x911
-      x1779 = x509*x903
-      x1780 = x1779*x508
-      x1781 = -x1312*x907 - x1313*x909
-      x1782 = x1315*x1781
-      x1783 = 0.243797614528847d0*x498
-      x1784 = x495*x909
-      x1785 = x506*x63
-      x1786 = 3.11111111111111d0*x1320
-      x1787 = x510*(gamma_cs*x1318 + x1783*x197*x909 + x1783*x907 - x178
-     &4*x496 - x1785 *x906 - x910*(-x1322*x1786 - x1324*x1786 + x502 - x
-     &504))
-      x1788 = x1777 + x1778 + x1780 + x1782 + x1787
-      x1789 = x1788*x513
-      x1790 = x202*x896
-      x1791 = x183*x913
-      x1792 = gamma_cc*x519
-      x1793 = x73*x918
-      x1794 = 0.444444444444444d0*x1320
-      x1795 = x1340*(-x1337*x1794 - x1339*x1794 + 1.33333333333333d0*x52
-     &5 - 1.33333333333333d0*x528)
-      x1796 = -2.0d0*x915 + 2.0d0*x916
-      x1797 = x1335*x1796
-      x1798 = gamma_cc*x534
-      x1799 = x1510*x2*x519
-      x1800 = x623*x946
-      x1801 = x622*x946
-      x1802 = x2*x532
-      x1803 = gamma_cc*x535
-      x1804 = x1802*x1803
-      x1805 = x2*x918
-      x1806 = x1803*x1805
-      x1807 = x1355*x605
-      x1808 = x1355*x940
-      x1809 = x54*x918
-      x1810 = x613*x943
-      x1811 = x62*x937
-      x1812 = x616*x937
-      x1813 = -x1052*x1810 - x1342*x1809 + x1348*x1811 + x1354*x1812
-      x1814 = x1792*x1809
-      x1815 = x1795*x922
-      x1816 = x1797*x922
-      x1817 = x1799*x1811
-      x1818 = x1798*x1802*x1811
-      x1819 = x1370*x1798*x918
-      x1820 = x604*x936
-      x1821 = gamma_cc*x1368
-      x1822 = x599*x936
-      x1823 = x1821*x1822
-      x1824 = 0.333333333333333d0*x1320
-      x1825 = x1337*x1824
-      x1826 = x1339*x1824
-      x1827 = x544*(-x1825 - x1826 + x525 - 1.0d0*x528)
-      x1828 = x1373*x917
-      x1829 = x2*x935
-      x1830 = 0.854960467080683d0*x1320
-      x1831 = -x1383*x1830 - x1385*x1830 - x552 + x554
-      x1832 = x1831*x29
-      x1833 = x555*x930
-      x1834 = x557*x928
-      x1835 = 16.0d0*x1776
-      x1836 = x20*x559
-      x1837 = x24*x928
-      x1838 = 118.434298572867d0*x901
-      x1839 = x1419*x928
-      x1840 = x1831*x41
-      x1841 = x1421*x930
-      x1842 = x1423*x930
-      x1843 = x40*x928
-      x1844 = x1843*x557
-      x1845 = x1835*x593
-      x1846 = x595*x929
-      x1847 = 0.00181753314498899d0*x1425*x1776
-      x1848 = -x1839 - x1840 - x1841 - x1842 + x1844 + x1845 + x1846 - x
-     &1847
-      x1849 = -x1406*x1838 + x1832*x549 - x1833*x559 + x1834*x559 + x183
-     &5*x1836 + x1837*x549*x570 + x1848
-      x1850 = x1381*x926 + x1827*x547 + x1828*x547 + x1829*x546 + x1849*
-     &x49
-      x1851 = x1432*x1850
-      x1852 = 0.00133911037615638d0*x1810*x498
-      x1853 = 0.888888888888889d0*x1320
-      x1854 = x614*(-x1337*x1853 - x1339*x1853 + 2.66666666666667d0*x525
-     & - 2.66666666666667d0*x528)
-      x1855 = -3.33333333333333d0*x915 + 3.33333333333333d0*x916
-      x1856 = x1440*x1855
-      x1857 = x1812*x65
-      x1858 = x629*(x1054*(-x1351*x1812*x64 + 0.000573904446924163d0*x13
-     &52*x1857 + x1445*x1850 - x1446*x1822 + 0.000573904446924163d0*x144
-     &7*x1810 + x1814 - x1815 - x1816 - x1817 + x1818 + x1819 + x1820 - 
-     &x1823 + x1851 + x1852*x610 - x1854*x66 - x1856*x66 + x620*x936) + 
-     &x1349* x1806 + x1349*x1808 + x1357*x1813 + x1434*(-x1814 + x1815 +
-     & x1816 + x1817 - x1818 - x1819 - x1820 + x1823 - x1851) - x1792*x1
-     &793* x61 - x1792*x520*x940 + x1793*x1798*x605 + x1795*x919 + x1797
-     &* x919 + x1798*x533*x940 - x1799*x1800 + x1801*x1804 + x1801*x1807
-     &)
-      x1859 = x631*(x1825 + x1826 - 1.0d0*x525 + x528)
-      x1860 = x1859*x634
-      x1861 = x1457*x952
-      x1862 = x1861*x627
-      x1863 = x1458*x949
-      x1864 = -x921 - x942 - x948
-      x1865 = x1452*x1864
-      x1866 = 0.666666666666667d0*x915 - 0.666666666666667d0*x916
-      x1867 = x1454*x1866
-      x1868 = x1867*x634
-      x1869 = x1516*x1835
-      x1870 = x1834*x642
-      x1871 = x1833*x642
-      x1872 = x1465*x1838
-      x1873 = x1529*x1837
-      x1874 = x1832*x636 + x1839 + x1840 + x1841 + x1842 - x1844 - x1845
-     & - x1846 + x1847 + x1869 + x1870 - x1871 - x1872 + x1873
-      x1875 = x1858 + x1860 + x1862 + x1863 + x1865 + x1868 + x1874
-      x1876 = x1777*x189
-      x1877 = x1875*x209 + x648*x961 + x654*x958 + x81*(-x1162*x904 - x1
-     &162*x912 + x1480*x1778 + x1480*x1780 + x1480*x1782 + x1480*x1787 +
-     & x1876* x207)
-      x1878 = x184*x212
-      x1879 = x1875*x660 + x648*x964 + x662*x958 + x81*(-x1487*x904 - x1
-     &487*x912 + x1489*x1778 + x1489*x1780 + x1489*x1782 + x1489*x1787 +
-     & x1876* x212)
-      x1880 = x665*x966
-      x1881 = x1849 - x1858 - x1860 - x1862 - x1863 - x1865 - x1868
-      x1882 = 0.156233111018196d0*x669
-      x1883 = x832*x957
-      x1884 = x1507*(x1018 + x971)
-      x1885 = x1021*x831
-      x1886 = x1033*x343
-      x1887 = x1510*x672
-      x1888 = x1886*x675
-      x1889 = 0.544841407721756d0*x532
-      x1890 = 0.544841407721756d0*x918
-      x1891 = x1887*x326
-      x1892 = x1040*x871
-      x1893 = x326*x675
-      x1894 = x1892*x1893
-      x1895 = 8.0d0*x901
-      x1896 = x1524*(x1516*x1895 - x1895*x593 - 2.0d0*x932 - 2.0d0*x954)
-     &
-      x1897 = x682*(x1527*x1831 + x1848 - x1869 - x1870 + x1871 + x1872 
-     &- x1873)
-      x1898 = x1019*x681
-      x1899 = x1531*x971
-      x1900 = x1320*x234
-      x1901 = x1900*x228
-      x1902 = rho_s*x690
-      x1903 = x984 - x985
-      x1904 = 0.333333333333333d0*x1320
-      x1905 = x1543*x1904
-      x1906 = x1546*x1904
-      x1907 = x1548*x994
-      x1908 = x1550*x1907
-      x1909 = x980 + x992
-      x1910 = -x983 - x988 + x990
-      x1911 = x1320*x305
-      x1912 = rho_s*x802
-      x1913 = x720*x989
-      x1914 = x715*x979
-      x1915 = -x1557*x1914 - x1558*x987
-      x1916 = 0.767414216267966d0*x1914*x564
-      x1917 = x1565*x987
-      x1918 = 0.111111111111111d0*x1320
-      x1919 = x716*(-x1543*x1918 - x1546*x1918 - 0.333333333333333d0*x69
-     &4 + 0.333333333333333d0*x697)
-      x1920 = x1568*x987
-      x1921 = 0.222222222222222d0*x1320
-      x1922 = -x1543*x1921 - x1546*x1921 - 0.666666666666667d0*x694 + 0.
-     &666666666666667d0*x697
-      x1923 = x722*x981
-      x1924 = -1.33333333333333d0*x975 + 1.33333333333333d0*x976
-      x1925 = 0.00786976946662482d0*x1320
-      x1926 = 11.4849360007528d0*x788
-      x1927 = x189*x818
-      x1928 = 0.135575697997296d0*x1927
-      x1929 = x1320*x1607
-      x1930 = 0.150031049774234d0*x1320
-      x1931 = 0.0271505358982603d0*x1320
-      x1932 = x1003*x274
-      x1933 = x1932*x271
-      x1934 = x1005*x293
-      x1935 = x1934*x271
-      x1936 = x286*x761
-      x1937 = x1007*x818
-      x1938 = x1320*x1593
-      x1939 = x1000*x818
-      x1940 = x1320*x1598
-      x1941 = x1001*x783
-      x1942 = x275*x761
-      x1943 = x1932*x776
-      x1944 = x1934*x784
-      x1945 = x1636*x275 + x1638*x275
-      x1946 = -x1643*x286 - x1644*x286
-      x1947 = x1008*x775
-      x1948 = x1003*x1654
-      x1949 = x1005*x1658
-      x1950 = x1002*x1928 - x1004*(x1594*x1930 - x1610*x275 - x1612*x275
-     & + x1618*x1931 ) - x1006*(x1599*x1930 + x1619*x286 + x1620*x286 + 
-     &x1623*x1931) - x1009*x1928 - x1595*(-x1589*x275 + x1594*x1925) + x
-     &1601*x275 - x1602*x286 - x1604*x1942 + x1606*x1936 + 0.20336354699
-     &5945d0* x1615*x1629*x1937 + 45.939744003011d0*x1615*x1632 + 45.939
-     &744003011d0*x1622*x1627 + 0.203363546995945d0*x1622*x1647* x1939 -
-     & x1625*x1933 - x1626*x1935 - x1630*x998 - x1633*x1942 + x1634*x193
-     &6 - x1642*x1945 - x1646*x1946 + x1648*x998 - 7.65662400050184d0*x1
-     &651*x1938 - 7.65662400050184d0*x1653*x1940 - x1655*x998 + x1659*x9
-     &98 + x1926*x787 - x1926*x792 + x1929*x786 + x1929*x791 + 0.1355756
-     &97997296d0*x1937*x1938*x282 + 0.135575697997296d0*x1939*x1940*x296
-     & + x1941*x782*x999 - x1943* x761 + x1943*x794 - x1944*x761 - x1944
-     &*x795 - x1947*x774*x999 + x1948*x790 - x1949*x790 - x759*(x1596*x2
-     &86 + x1599*x1925)
-      x1951 = 2.22222222222222d0*x1320
-      x1952 = x1320*x316
-      x1953 = x227*(x1540*x1903 + x1551*x977 + x1552*x1909 + x1555*x1910
-     & + x1874*x302 - 0.0193686196838775d0*x1901*x237 + 0.00082186077399
-     &2031d0*x1901* x687 + 0.00528235082287567d0*x1902*x228*x973 + x1908
-     &*x699 + x253* (-x1011*x742 + x1583*x1902 - 0.267332245098321d0*x19
-     &00*x231 + 0.0138644007334803d0*x1900*x233 + x300*(rho_s*x1586*x189
-     & - x1320* x745 + 4.83324359125373d0*x1320*x749 + x1950)) - x301*x7
-     &02*x957 + x303*(x1874*x309 - 0.0364124473051363d0*x1911*x237 + 0.0
-     &0993066744685536d0*x1912*x973 - x308*x805*x957) + x310*(-x1016 *x8
-     &07 + x1874*x321 - 0.502576923213027d0*x1911*x231 + 0.1675256410710
-     &09d0*x1912*x995 + x320*(x1014*x815 + x1664*x1952 + x1950 - 62.3644
-     &33435532d0*x1952*x270 + x314*(-x1951*x239 - x1951* x240 - x811 + x
-     &813) + 46.773325076649d0*x789*x816) - x808*x957) + x700*(x1905 + x
-     &1906 + x694 - x697) + x738*(x1560*x1915 + x1561* x993 + x1913*x719
-     & + x252*(x1578*x1924 + x1579*x1923 + x1580*x1922 - x1916 - x1917*x
-     &731 + x1919 + x1920 - x1923*x253*x727 + x982*( -x1905 - x1906 - x6
-     &94 + x697)) + x721*(-x1570*x1923 + x1916 + 0.71309495712383d0*x191
-     &7 - x1919 - x1920 - x1922*x991)))
-      x1954 = 0.632303919304059d0*x1017*x826
-      x1955 = x1874 - x1953 - x1954
-      x1956 = x1955*x223
-      x1957 = x1514*x1896 + x1514*x1898 + 2.78d0*x1897 + 2.78d0*x1899 + 
-     &2.78d0*x1956
-      x1958 = x1040*x870
-      x1959 = x1693*x854
-      x1960 = x1033*x1693
-      x1961 = x332*x918
-      x1962 = x1342*x1961
-      x1963 = x1683*x1810
-      x1964 = x1028*x337
-      x1965 = x1685*x1964
-      x1966 = x1028*x861
-      x1967 = x1687*x1966
-      x1968 = x1039*x833
-      x1969 = -x1022*x1690 - x1692*x1968 - x1962 - x1963 + x1965 + x1967
-     &
-      x1970 = x1792*x1961
-      x1971 = x1795*x839
-      x1972 = x1797*x839
-      x1973 = x1964*x326
-      x1974 = 0.0012288992330409d0*x1701*x1973
-      x1975 = 0.000526671099874671d0*x1710*x1973
-      x1976 = x1022*x838
-      x1977 = x1022*x841
-      x1978 = x675*x918
-      x1979 = 0.000526671099874671d0*x1700*x1978
-      x1980 = x1025*x834
-      x1981 = x1716*x1883
-      x1982 = x1716*x1884
-      x1983 = gamma_cc*x1706
-      x1984 = x1027*x845
-      x1985 = x1983*x1984
-      x1986 = x1027*x851
-      x1987 = x1713*x1885
-      x1988 = x1022*x851
-      x1989 = x1031*x834
-      x1990 = 32.1636486443022d0*x1026*x546 + x1827*x842 + x1828*x842 + 
-     &x328*(x1849 + x1953 + x1954) + 32.1636486443022d0*x844*x926
-      x1991 = x1721*x1990
-      x1992 = x1957*x852
-      x1993 = x1810*x863
-      x1994 = 0.031091d0*x952
-      x1995 = x1044*x876
-      x1996 = 0.031091d0*x633
-      x1997 = -x1023 - x1035 - x1043 - x970
-      x1998 = x1732*x1997 + x1733*x1994 + x1859*x878 + x1867*x878 + x195
-     &5 + x1995* x1996 + x877*(-x1022*x674 + x1022*x678 + x1022*x857 + x
-     &1022*x874 + x1035*x834 + x1043*x834 + x1130*(x1027*x866 - x1036*x1
-     &691 + x1038*x1691 - x1039*x1729*x867 - 8.3268561410156d-5*x1725*x1
-     &966 - x1726*x1984 + x1727*x1990 + 1.78432631593191d-5*x1728*x1966 
-     &- x1730*x1883 - x1730*x1884 + x1852*x338 - x1854*x339 - x1856*x339
-     & + x1968*x859 - x1968*x860 + x1968*x866 + x1970 - x1971 - x1972 - 
-     &x1974 + x1975 + x1976 - x1977 + x1979 - x1980 - x1981 - x1982 - x1
-     &985 + x1986 - x1987 + x1988 + x1989 + x1991 - x1992 + 1.7843263159
-     &3191d-5*x1993*x862 - x868*(x1532*x1896 + x1532*x1898 + 5.56d0*x189
-     &7 + 5.56d0*x1899 + 5.56d0*x1956)) - x1497*x672*x918 + x1498*x1795 
-     &+ x1498*x1797 + x1502*x1885 + x1506*x1883 + x1506* x1884 + x1512*x
-     &1890 + x1672*x1957 + x1674*x1890 + x1677*x1960 + x1695*x1969 + x17
-     &24*(-x1970 + x1971 + x1972 + x1974 - x1975 - x1976 + x1977 - x1979
-     & + x1980 + x1981 + x1982 + x1985 - x1986 + x1987 - x1988 - x1989 -
-     & x1991 + x1992) - x1886*x1887 + x1888* x1889 + x1889*x1894 - x1891
-     &*x1892 + x1958*x1959 + x834*x970)
-      x1999 = x896*x913
-      x2000 = x884**2
-      x2001 = x1217*x2000
-      x2002 = x1222*x2001
-      x2003 = x2000*x885
-      x2004 = 1.24136239377604d0*x1739
-      x2005 = x1239*x881**2
-      x2006 = x104*x2004 + x1237*x1742*x881 - x1241*x2005 + x1253
-      x2007 = x2006*x885
-      x2008 = x1224*x1754
-      x2009 = x1228*x1754
-      x2010 = x1287*x890
-      x2011 = x1293*x893
-      x2012 = x416*x881
-      x2013 = x480*(x1212 - 0.0253302959105844d0)
-      x2014 = -x1303*x2012 + x151*(x1295*x1742*x2012 - x1297*x2005 + x12
-     &99 + x1744* x2011 - x2004 + x481*(x1220*x1745 + x1221*x1751*x887 +
-     & x1224* x1749 + x1227*x1747 + x1228*x1749 + x1292 + x1756*x2010 + 
-     &x449*( x1262 + x2002 - x2003 - x2007 - x2008 - x2009) + x471*(x127
-     &2* x1770 - x1273*x2001 + x1279 + 0.0034601924926801d0*x1769 + x200
-     &0* x889 - x2002 + x2003 + x2006*x889 + x2007 + x2008 + x2009))) + 
-     &x2013*x893 + x415 + x428*x881*(x141 + 1.0d0) - 0.5d0*x894
-      x2015 = x203*(x1215 + x2014)
-      x2016 = x200*(67.8d0*x1307 + 6.0d0*x1308 + x898)
-      x2017 = x1779*x911
-      x2018 = 3.11111111111111d0*x189
-      x2019 = x510*(-gamma_cc*x1318 - x1317*x906*x909 - x910*(x1322*x201
-     &8 + x1324* x2018))
-      x2020 = x1314*x911
-      x2021 = x1781*x2020
-      x2022 = x2016 + 2.0d0*x2017 + x2019 + x2021
-      x2023 = x2022*x513
-      x2024 = 0.444444444444444d0*x189
-      x2025 = x1340*(x1337*x2024 + x1339*x2024)
-      x2026 = x1047*x1796*x917
-      x2027 = x1342*x1805
-      x2028 = x1356*x946
-      x2029 = x2025*x922
-      x2030 = x2026*x922
-      x2031 = x936**2
-      x2032 = x1432*x2031
-      x2033 = x1821*x2031
-      x2034 = x1811*x2027
-      x2035 = 0.333333333333333d0*x189
-      x2036 = x1337*x2035
-      x2037 = x1339*x2035
-      x2038 = x544*(x2036 + x2037)
-      x2039 = x1372*x917*x925
-      x2040 = 0.854960467080683d0*x189
-      x2041 = x1383*x2040 + x1385*x2040
-      x2042 = x2041*x29
-      x2043 = 12.0d0*x1308
-      x2044 = x1895*x928
-      x2045 = x2041*x41
-      x2046 = x2043*x593
-      x2047 = x1843*x1895
-      x2048 = -x2045 - x2046 - x2047
-      x2049 = -x1836*x2043 + x2042*x549 - x2044*x559 + x2048
-      x2050 = 2.0d0*x1829*x926 + x2038*x547 + x2039*x547 + x2049*x49
-      x2051 = x1432*x2050
-      x2052 = 0.888888888888889d0*x189
-      x2053 = x614*(x1337*x2052 + x1339*x2052)
-      x2054 = x1439*x1855*x943
-      x2055 = x629*(x1054*(x1445*x2031 + x1445*x2050 - x1446*x2031 + 0.0
-     &0114780889384833d0*x1810*x1857 - x2029 - x2030 + x2032 - x2033 + x
-     &2034 + x2051 - x2053*x66 - x2054*x66) + x1342*x1793*x940 + x1348*x
-     &1801*x940 + x1434*(x2029 + x2030 - x2032 + x2033 - x2034 - x2051) 
-     &+ x1800*x2027 + x1813*x2028 + x2025*x919 + x2026*x919)
-      x2056 = x631*(-x2036 - x2037)
-      x2057 = x2056*x634
-      x2058 = x1451*x949
-      x2059 = x1864*x2058
-      x2060 = x1866*x46*x951
-      x2061 = x2060*x634
-      x2062 = 2.0d0*x1861*x949
-      x2063 = x1516*x2043
-      x2064 = x2044*x642
-      x2065 = x2042*x636 + x2045 + x2046 + x2047 - x2063 - x2064
-      x2066 = x2055 + x2057 + x2059 + x2061 + x2062 + x2065
-      x2067 = x189*x2016
-      x2068 = x1477*x2017
-      x2069 = 2.0d0*x958
-      x2070 = x2066*x209 + x2069*x961 + x81*(x1480*x2019 + x1480*x2021 +
-     & x2067*x207 + x2068*x650)
-      x2071 = 0.00390625d0*x184*x218
-      x2072 = x2066*x660 + x2069*x964 + x81*(x1489*x2019 + x1489*x2021 +
-     & x2067*x212 + x2068*x661)
-      x2073 = x2049 - x2055 - x2057 - x2059 - x2061 - x2062
-      x2074 = x1021**2
-      x2075 = 1.08968281544351d0*x918
-      x2076 = x1021*x347
-      x2077 = x682*(x1527*x2041 + x2048 + x2063 + x2064)
-      x2078 = x1896*x971
-      x2079 = x1898*x971
-      x2080 = 0.333333333333333d0*x189
-      x2081 = x1543*x2080
-      x2082 = x1546*x2080
-      x2083 = 0.111111111111111d0*x189
-      x2084 = x716*(x1543*x2083 + x1546*x2083)
-      x2085 = 0.222222222222222d0*x189
-      x2086 = x1543*x2085 + x1546*x2085
-      x2087 = x1567*x979*x987
-      x2088 = x1923*x986
-      x2089 = 17.2274040011291d0*x788
-      x2090 = 0.406727093991889d0*x1927
-      x2091 = 68.9096160045166d0*x760
-      x2092 = 0.406727093991889d0*x819
-      x2093 = -x1001*x1647*x2090 - x1004*(-x1593*x1610 - x1593*x1612) - 
-     &x1006*(-x1598* x1619 - x1598*x1620) - x1008*x1629*x2090 + x1593*x1
-     &601 + x1598* x1602 - x1603*x1943*x275 + x1603*x1944*x286 - x1641*x
-     &1933*x1945 - x1645*x1935*x1946 - x1649*x275*x787 - x1649*x286*x792
-     & - x1932* x1947*x2092 + x1934*x1941*x2092 - x1948*x2091 + x1949*x2
-     &091 - x2089*x786 - x2089*x791
-      x2094 = 2.22222222222222d0*x189
-      x2095 = x227*(x1539*x1903*x977 + x1554*x1907*x1910 + 2.0d0*x1908*x
-     &977 + x1909* x737*x994 + x2065*x302 + x253*(x300*(x2093 + x997) + 
-     &x996) + x303 *(x2065*x309 + x978) + x310*(x1012 + x2065*x321 + x32
-     &0*(x1015 + x2093 + x314*(x2094*x239 + x2094*x240))) + x700*(-x2081
-     & - x2082) + x738*(x1559*x1915*x993 + 2.0d0*x1913*x993 + x252*(x157
-     &7*x1924* x981 + x1580*x2086 + x2084 + x2087 + x2088*x729 + x982*(x
-     &2081 + x2082)) + x721*(-x2084 - x2086*x991 - x2087 - x2088*x710)) 
-     &+ x974 )
-      x2096 = x2065 - x2095
-      x2097 = x2096*x223
-      x2098 = 2.78d0*x2077 + 2.78d0*x2078 + 5.56d0*x2079 + 2.78d0*x2097
-      x2099 = x1040*x1694
-      x2100 = x2025*x839
-      x2101 = x2026*x839
-      x2102 = x1027**2
-      x2103 = x1983*x2102
-      x2104 = x1721*x2102
-      x2105 = 0.00105334219974934d0*x1973*x1978
-      x2106 = x1713*x2074
-      x2107 = x1022*x1962
-      x2108 = x1021*x334
-      x2109 = x1883*x2108
-      x2110 = x1884*x2108
-      x2111 = x1022*x1965
-      x2112 = 64.3272972886044d0*x1026*x926 + x2038*x842 + x2039*x842 + 
-     &x328*(x2049 + x2095)
-      x2113 = x1721*x2112
-      x2114 = x2098*x852
-      x2115 = x1039*x340
-      x2116 = x1044*x1731
-      x2117 = 0.062182d0*x1995*x952 + x1997*x2116 + x2056*x878 + x2060*x
-     &878 + x2096 + x877*(x1022*x1504*x2075 + x1022*x1513*x1886 + x1022*
-     &x1676*x1892 + x1033*x1676*x1958 + x1130*(-x1039**2*x1729 - x1726*x
-     &2102 + x1727* x2102 + x1727*x2112 - x1883*x2115 - x1884*x2115 - x1
-     &963*x1968 + 3.56865263186383d-5*x1966*x1993 + x1967*x1968 - x2053*
-     &x339 - x2054*x339 - x2100 - x2101 - x2103 + x2104 + x2105 - x2106 
-     &- x2107 - x2109 - x2110 + x2111 + x2113 - x2114 - x868*(5.56d0* x2
-     &077 + 5.56d0*x2078 + 11.12d0*x2079 + 5.56d0*x2097)) + x1498* x2025
-     & + x1498*x2026 + x1502*x2074 + x1672*x2098 + x1724*(x2100 + x2101 
-     &+ x2103 - x2104 - x2105 + x2106 + x2107 + x2109 + x2110 - x2111 - 
-     &x2113 + x2114) + x1883*x2076 + x1884*x2076 + x1888*x2075 + x1894*x
-     &2075 + x1969*x2099)
-      x2118 = gamma_cc*x650
-      x2119 = x1101*x495
-      x2120 = x510*(x1101*x1783 - x1785*x190)
-      x2121 = x1101*x1312
-      x2122 = -x1310*x2119 - x1315*x2121 + x2120
-      x2123 = x2122*x513
-      x2124 = gamma_cc*x205
-      x2125 = x21*x515
-      x2126 = x2124*x2125
-      x2127 = 0.00244885996736565d0*x206
-      x2128 = rho_c**(-8.66666666666667d0)*x1101
-      x2129 = x1115*x2128
-      x2130 = -x1081 - x1084 - x1090
-      x2131 = x103*x1207
-      x2132 = x1078*x2131
-      x2133 = 0.00053360517272456d0*x64
-      x2134 = x1186*x130*x396
-      x2135 = 0.0256575329123007d0*x2
-      x2136 = x134*x365
-      x2137 = x111*x369*x371
-      x2138 = x1082*x373
-      x2139 = 0.0256575329123007d0*x377
-      x2140 = x1082*x111
-      x2141 = x121*x384
-      x2142 = x2140*x2141
-      x2143 = x1087*x391
-      x2144 = x388*x406
-      x2145 = x103*x127
-      x2146 = x107*x2145
-      x2147 = x2146*x404
-      x2148 = x1086*x64
-      x2149 = 0.000865048123170025d0*x2148
-      x2150 = 0.00426884138179648d0*x396
-      x2151 = x402*x64
-      x2152 = 0.0103986064160662d0*x117
-      x2153 = -x113*x2152
-      x2154 = -x127*x2149 + x2153
-      x2155 = x1091*x1214 + x110*(x1174*x2130 + x410*(-x1059*x2132 + x10
-     &59*x2147 - x1082*x367 + x1083*x388 - x1089*x2136 - x1089*x2137 + x
-     &1185*x2154 + x1204*(-x2138 - x2139 - x2142) + x1211*(x1085*x127*x2
-     &151 + x1207*x2149 + x125*x2148*x2150 + x2138 + x2139 + x2142) - x2
-     &133* x2134 - x2135*x370 + x2140*x405 + x2143*x2144))
-      x2156 = -x1063 - x1067 - x1074
-      x2157 = 0.000108131015396253d0*x1060
-      x2158 = x1267*x172
-      x2159 = x2157*x2158
-      x2160 = x1259*x172*x456
-      x2161 = x2133*x2160
-      x2162 = x1065*x473
-      x2163 = x2135*x475
-      x2164 = x1073*x1748
-      x2165 = x1073*x1750
-      x2166 = x1066*x434
-      x2167 = x2166*x433
-      x2168 = x1065*x438
-      x2169 = 0.0256575329123007d0*x443
-      x2170 = -x2168 - x2169
-      x2171 = x1066*x172
-      x2172 = x1072*x469
-      x2173 = x2157*x463
-      x2174 = x1071*x64
-      x2175 = 0.000865048123170025d0*x2174
-      x2176 = x1266*x2175
-      x2177 = 0.00426884138179648d0*x1766
-      x2178 = x2174*x2177
-      x2179 = 0.000865048123170025d0*x463
-      x2180 = x1070*x2179
-      x2181 = x2168 + x2169
-      x2182 = x1066*x470
-      x2183 = 0.0103986064160662d0*x167
-      x2184 = x166*x2183
-      x2185 = -x162*x2175 - x2184
-      x2186 = x1075*x1300 + x151*(x1294*x2156 + x481*(x1280*x2173 + x128
-     &8*x2185 + x1752*x2172 - x2159 - x2161 - x2162 - x2163 - x2164 - x2
-     &165 + x2171*x447 + x2182*x468 + x449*(-x2167 + x2170) + x471*(x216
-     &7 + x2176 + x2178 + x2180*x462 + x2181)))
-      x2187 = x203*(x2155 + x2186)
-      x2188 = x1094*x512
-      x2189 = x1094*x202
-      x2190 = -x1773*x2188 - x207*x2187 + x2189*x517
-      x2191 = x1056*x1458
-      x2192 = -x1051 - x1055 - x75
-      x2193 = x1452*x2192
-      x2194 = x1047*x498
-      x2195 = gamma_cc*x612
-      x2196 = x2195*x530
-      x2197 = x1053*x623
-      x2198 = x1053*x622
-      x2199 = x1047*x53*x65
-      x2200 = 0.000286952223462081d0*x2199
-      x2201 = x1047*x1436
-      x2202 = x2195*x611
-      x2203 = 0.00114780889384833d0*x1047
-      x2204 = x2203*x65
-      x2205 = -x1346*x54 - x2203*x66
-      x2206 = x629*(-0.00066955518807819d0*x1048*x2194*x64 + x1050*x2196
-     & + x1054*( -x1052*x2202 + x2201*x610 + x2204*x617 + x539 - x542 + 
-     &x603) + x1349*x2200 + x1357*x2205 + x1434*(-x539 + x542 - x603) - 
-     &x1799* x2197 + x1804*x2198 + x1807*x2198 - x522 + x536 + x606 + x6
-     &25)
-      x2207 = x2191 + x2193 + x2206
-      x2208 = x201*x2124
-      x2209 = x1098*x1106
-      x2210 = 0.0016325733115771d0*x510
-      x2211 = x206*x2210
-      x2212 = x1102*x2211
-      x2213 = x1106*x206
-      x2214 = x1315*x2213
-      x2215 = x1057*x654 + x1107*x648 + x209*x2207 + x81*(-x1310*x2209 -
-     & x1474*x2208 + x1480*x2120 + x2118*x649 + x2118*x653 + x2212 - 0.0
-     &0102035831973569d0*x2214)
-      x2216 = 0.017578125d0*x21
-      x2217 = x214*x2216
-      x2218 = 0.005859375d0*x1147
-      x2219 = gamma_cc*x661
-      x2220 = x1114*x510
-      x2221 = x1102*x2220
-      x2222 = 0.00685680790862382d0*x206
-      x2223 = -x1878*x2188 - x212*x2187 + x2189*x659
-      x2224 = 0.00457120527241588d0*x510
-      x2225 = x206*x2224
-      x2226 = x1102*x2225
-      x2227 = x1057*x662 + x1118*x648 + x2207*x660 + x81*(-x1117*x1310 -
-     & x1488*x2208 + x1489*x2120 - 0.00285700329525993d0*x2214 + x2219*x
-     &649 + x2219* x653 + x2226)
-      x2228 = -x2191 - x2193 - x2206
-      x2229 = x1129*x871
-      x2230 = x1893*x2229
-      x2231 = x333*x833
-      x2232 = x2231*x831
-      x2233 = x1129*x870
-      x2234 = x1047*x863
-      x2235 = x2234*x331
-      x2236 = 0.00922943049313567d0*x2235
-      x2237 = 3.56865263186383d-5*x2234
-      x2238 = -0.00114780889384833d0*x1127 - x1689
-      x2239 = x1132*x876
-      x2240 = -x1126 - x1131 - x346
-      x2241 = x1732*x2240 + x1996*x2239 + x877*(-0.0215353378173166d0*x1
-     &123*x2194*x336 + x1125*x2196 + x1126*x834 + x1130*(-x1128*x1691 - 
-     &x1683*x2202 + x2201*x338 - x2232 + x2237*x862 + x837 - x840 + x850
-     &) + x1131* x834 + x1498*x532 + x1677*x2236 + x1695*x2238 + x1724*(
-     &x2232 - x837 + x840 - x850) + x1889*x2230 - x1891*x2229 + x1959*x2
-     &233 + x346*x834 - x673 + x856 + x873)
-      x2242 = x510*(-rho_s*x1318 - x1784*x190)
-      x2243 = -x1779*x2119 - x2020*x2121 + x2242
-      x2244 = x2243*x513
-      x2245 = x2166*x884
-      x2246 = x1075*x2013 + x151*(x2011*x2156 + x481*(x1751*x2173 + x175
-     &3*x2172 + x2010*x2185 + x2159 + x2161 + x2162 + x2163 + x2164 + x2
-     &165 + x2171*x887 + x2182*x890 + x449*(x2181 - x2245) + x471*(x1755
-     &* x2180 + x2170 - x2176 - x2178 + x2245)))
-      x2247 = x203*(x2155 + x2246)
-      x2248 = x1094*x913
-      x2249 = -x1773*x2248 - x207*x2247
-      x2250 = x1056*x1861
-      x2251 = x2058*x2192
-      x2252 = x2195*x917
-      x2253 = x2195*x943
-      x2254 = x629*(x1050*x2252 + x1054*(-x1052*x2253 + x1812*x2204 - x9
-     &23 + x938) + x1434*(x923 - x938) + x1801*x2200 + x1806*x2198 + x18
-     &08*x2198 + x2028*x2205 + x920 + x941 + x947)
-      x2255 = x2250 + x2251 + x2254
-      x2256 = x2020*x2213
-      x2257 = x1057*x961 + x1107*x958 + x209*x2255 + x81*(x1480*x2242 - 
-     &x1779*x2209 + x2118*x959 + x2118*x960 - 0.00102035831973569d0*x225
-     &6)
-      x2258 = -x1878*x2248 - x212*x2247
-      x2259 = x1057*x964 + x1118*x958 + x2255*x660 + x81*(-x1117*x1779 +
-     & x1489*x2242 + x2219*x959 + x2219*x960 - 0.00285700329525993d0*x22
-     &56)
-      x2260 = x211*x966
-      x2261 = -x2250 - x2251 - x2254
-      x2262 = x1021*x2231
-      x2263 = x1994*x2239 + x2116*x2240 + x877*(x1022*x1126 + x1022*x113
-     &1 + x1022*x346 + x1034 + x1042 + x1125*x2252 + x1130*(-x1024 + x10
-     &30 - x1128* x1968 - x1683*x2253 + x1966*x2237 - x2262) + x1498*x91
-     &8 + x1724*( x1024 - x1030 + x2262) + x1890*x2230 + x1958*x2236 + x
-     &1960*x2233 + x2099*x2238)
-      x2264 = x1091*x110*x1173
-      x2265 = x2130*x2264
-      x2266 = 5.40655076981265d-5*x64
-      x2267 = x1**(-3)
-      x2268 = 1.12441187047523d-6*x2267
-      x2269 = x1088*1d0/x116*x1205*x380
-      x2270 = x1087*x1184
-      x2271 = x2*x2152
-      x2272 = x111*x2271
-      x2273 = 0.000216262030792506d0*x64
-      x2274 = x1089*x2272 + x2143*x2146*x2273
-      x2275 = x1092*(x1079*x2266 + x2154*x2270 - x2268*x2269 + x2274)
-      x2276 = x2265 + x2275
-      x2277 = x1075*x1293*x151
-      x2278 = x2156*x2277
-      x2279 = x1061*x164
-      x2280 = x1275*x155*x156*1d0/x160*x470
-      x2281 = 0.000216262030792506d0*x1060
-      x2282 = x2281*x463
-      x2283 = x2172*x2282
-      x2284 = x2*x2183
-      x2285 = x152*x2284
-      x2286 = x1073*x2285
-      x2287 = x1072*x1287
-      x2288 = x1076*(x2185*x2287 + x2266*x2279 - x2268*x2280 + x2283 + x
-     &2286)
-      x2289 = x2278 + x2288
-      x2290 = x203*(x2276 + x2289)
-      x2291 = -x207*x2290
-      x2292 = x1095*x2124
-      x2293 = x194*x205
-      x2294 = x1100*x193
-      x2295 = x1115*x2294
-      x2296 = x2293*x2295
-      x2297 = x1314*x193**2*x206
-      x2298 = 5.33059123534764d-5*x2297
-      x2299 = x183*x2298
-      x2300 = rho_c**(-12.3333333333333d0)*x22
-      x2301 = x1105*x193
-      x2302 = x2301*x510
-      x2303 = 0.0032651466231542d0*x2302
-      x2304 = rho_c**(-11.3333333333333d0)
-      x2305 = x22*x2304
-      x2306 = gamma_cc*rho_c**(-7.0d0)*x1438
-      x2307 = x629*(0.000573904446924163d0*x1049*x68 + x1053*x1356*x2205
-     & + x1347*x2197 + 0.000573904446924163d0*x2198*x2199 - 9.7217486180
-     &7319d-6*x2267* x2306*x62*x623)
-      x2308 = 2.0d0*x1057
-      x2309 = x1056*x1451*x2192
-      x2310 = x1107*x2308 + x209*x2307 + x209*x2309 + x81*(x1104 - x2293
-     &*x2303 + x2298 *x2305)
-      x2311 = gamma_cc*x217
-      x2312 = 0.01171875d0*x2311
-      x2313 = 0.01171875d0*x1147
-      x2314 = -x212*x2290
-      x2315 = 0.000149256554589734d0*x2297
-      x2316 = x183*x2315
-      x2317 = 0.00914241054483176d0*x2302
-      x2318 = x1118*x2308 + x2307*x660 + x2309*x660 + x81*(x1116 - x2293
-     &*x2317 + x2305 *x2315)
-      x2319 = -x2307 - x2309
-      x2320 = x1132*x1731*x2240 + x877*(0.0184588609862713d0*x1124*x68 +
-     & x1129*x1694* x2238 + x1675*x2229 + 0.0184588609862713d0*x2233*x22
-     &35 - 0.000312686906759937d0*x2306*x325**8.34d0*x337*x871)
-      x2321 = x1143*x665
-      x2322 = rho_c**(-2.66666666666667d0)
-      x2323 = 0.0522423459704672d0*x2322
-      x2324 = x1310*x193
-      x2325 = rho_c**(-3.66666666666667d0)
-      x2326 = x193*x2325
-      x2327 = x510*(-x2322*x506 + 0.139312922587913d0*x2326)
-      x2328 = x1315*x193
-      x2329 = 0.065302932463084d0*x2322
-      x2330 = -x2323*x2324 + x2327 - x2328*x2329
-      x2331 = x2330*x513
-      x2332 = x1137*x510
-      x2333 = x2332*x486
-      x2334 = x1115*x2301
-      x2335 = x1140*x1310
-      x2336 = x1137*x2210
-      x2337 = x1140*x206
-      x2338 = x1315*x2337
-      x2339 = -x1141*x648 + x81*(-x1098*x2335 + x1480*x2327 + x2336 - 0.
-     &00102035831973569d0*x2338)
-      x2340 = x1137*x2224
-      x2341 = x1140*x2220
-      x2342 = -x2341*x648 + x81*(-x1114*x2335 + x1489*x2327 - 0.00285700
-     &329525993d0* x2338 + x2340)
-      x2343 = x1779*x193
-      x2344 = x510*x909
-      x2345 = x193*x2020
-      x2346 = -x2323*x2343 - x2323*x2344 - x2329*x2345
-      x2347 = x2346*x513
-      x2348 = x2332*x896
-      x2349 = x1140*x1779
-      x2350 = x2344*x63
-      x2351 = x2020*x2337
-      x2352 = -x2341*x958 + x81*(-x1114*x2349 - x1114*x2350 - 0.00285700
-     &329525993d0* x2351)
-      x2353 = -x1141*x958 + x81*(-x1098*x2349 - x1098*x2350 - 0.00102035
-     &831973569d0* x2351)
-      x2354 = rho_c*x180
-      x2355 = x1094*x2332
-      x2356 = x183*x2210
-      x2357 = x193*x498
-      x2358 = x2124*x2357
-      x2359 = rho_c**(-10.3333333333333d0)
-      x2360 = x190*x2359
-      x2361 = x1140*x2124
-      x2362 = rho_c**(-9.33333333333333d0)
-      x2363 = x190*x2362
-      x2364 = -x1057*x1141 + x81*(-x2210*x2361 + x2298*x2363)
-      x2365 = x183*x2224
-      x2366 = -x1057*x2341 + x81*(-x2224*x2361 + x2315*x2363)
-      x2367 = rho_c**(-8.33333333333333d0)
-      x2368 = x183*x2367
-      x2369 = rho_c**(-7.33333333333333d0)*x2298
-      x2370 = x1139*x2369
-      x2371 = x2369*x81
-      x2372 = rho_s*x2301
-      x2373 = x183*x2372
-      x2374 = rho_s*x2336
-      x2375 = x1139*x2374
-      x2376 = x1062*x2273
-      x2377 = x174*x2284
-      x2378 = -x100 - x101 + x99
-      x2379 = x155*x2378
-      x2380 = -x163*x2379 + x2184
-      x2381 = x2380*x471
-      x2382 = -x2376 - x2377 + x2381
-      x2383 = x1076*x2382
-      x2384 = x103*x1079*x2273
-      x2385 = x132*x2271
-      x2386 = -x128*x380 + x2153
-      x2387 = x1088*x2386
-      x2388 = x2387*x406
-      x2389 = x2384 + x2385 + x2388
-      x2390 = x1092*x2389
-      x2391 = x2383 + x2390
-      x2392 = x203*x2391
-      x2393 = -x212*x2392 - x2225*x2373 + x2375
-      x2394 = x2374*x81
-      x2395 = -x207*x2392 - x2211*x2373 + x2394
-      x2396 = x180*(x220*x2395 + x2393*x967)
-      x2397 = x2393*x665
-      x2398 = -x2384 - x2385 - x2388
-      x2399 = 0.00106721034544912d0*x64
-      x2400 = 0.0513150658246015d0*x2
-      x2401 = x2152*x374
-      x2402 = 0.0513150658246015d0*x377
-      x2403 = x2141*x2272
-      x2404 = x2386*x391
-      x2405 = x121*x64
-      x2406 = 0.000865048123170025d0*x2405
-      x2407 = -x119 - x2145*x2406
-      x2408 = x110*(x1174*x2398 + x410*(x1185*x2407 + x1204*(-x2401 - x2
-     &402 - x2403) + x1211*(x1175*x2150*x2405 + x2131*x2406 + x2145*x215
-     &1 + x2401 + x2402 + x2403) - x2132*x2273 - x2134*x2399 - x2136*x23
-     &87 - x2137* x2387 + x2144*x2404 + x2147*x2273 - x2271*x367 + x2271
-     &*x389 + x2272*x405 - x2400*x370)) + x1214*x2389
-      x2409 = x2376 + x2377 - x2381
-      x2410 = x2158*x2281
-      x2411 = x2160*x2399
-      x2412 = x2284*x473
-      x2413 = x2400*x475
-      x2414 = x2380*x470
-      x2415 = x1748*x2414
-      x2416 = x1750*x2414
-      x2417 = x2285*x434
-      x2418 = x2417*x433
-      x2419 = x2183*x439
-      x2420 = 0.0513150658246015d0*x443
-      x2421 = x2419 + x2420
-      x2422 = x2284*x448
-      x2423 = x2380*x469
-      x2424 = 0.000865048123170025d0*x2379
-      x2425 = x1267*x2424
-      x2426 = x2177*x2379*x64
-      x2427 = x2179*x2378
-      x2428 = -x2419 - x2420
-      x2429 = x2285*x470
-      x2430 = x169 - x2424*x463
-      x2431 = x1300*x2382 + x151*(x1294*x2409 + x481*(-x1280*x2282 + x12
-     &88*x2430 + x1752*x2423 + x2410 + x2411 + x2412 + x2413 - x2415 - x
-     &2416 - x2422*x447 - x2429*x468 + x449*(x2418 + x2421) + x471*(-x24
-     &18 + x2425 + x2426 + x2427*x462 + x2428)))
-      x2432 = x203*(x2408 + x2431)
-      x2433 = x2391*x512
-      x2434 = 0.104484691940934d0*x2326
-      x2435 = rho_s*x2434
-      x2436 = 0.104484691940934d0*rho_s*x2325
-      x2437 = x510*(-0.38311053711676d0*rho_s*x1140 + x2436*x505)
-      x2438 = 0.130605864926168d0*rho_s*x2326
-      x2439 = x1310*x2435 + x1315*x2438 + x2437
-      x2440 = x2439*x513
-      x2441 = x202*x2391
-      x2442 = rho_s*x206
-      x2443 = x2295*x2442
-      x2444 = x2372*x486
-      x2445 = rho_s*x1136
-      x2446 = x2324*x2445
-      x2447 = x2328*x2445
-      x2448 = x2374*x648 + x81*(x1480*x2437 - x2303*x2442 + 0.0016325733
-     &115771d0*x2446 + 0.00204071663947138d0*x2447)
-      x2449 = rho_s*x2340
-      x2450 = x2449*x648 + x81*(x1489*x2437 - x2317*x2442 + 0.0045712052
-     &7241588d0* x2446 + 0.00571400659051985d0*x2447)
-      x2451 = x2417*x884
-      x2452 = x151*(x2011*x2409 + x481*(-x1751*x2282 + x1753*x2423 + x20
-     &10*x2430 - x2410 - x2411 - x2412 - x2413 + x2415 + x2416 - x2422*x
-     &887 - x2429*x890 + x449*(x2428 + x2451) + x471*(x1755*x2427 + x242
-     &1 - x2425 - x2426 - x2451))) + x2013*x2382
-      x2453 = x203*(x2408 + x2452)
-      x2454 = x2391*x913
-      x2455 = x510*(x2434 + x2436*x909)
-      x2456 = x1779*x2435 + x2020*x2438 + x2455
-      x2457 = x2456*x513
-      x2458 = x2372*x896
-      x2459 = x2343*x2445
-      x2460 = x2345*x2445
-      x2461 = x2449*x958 + x81*(x1489*x2455 + 0.00457120527241588d0*x245
-     &9 + 0.00571400659051985d0*x2460)
-      x2462 = x2374*x958 + x81*(x1480*x2455 + 0.0016325733115771d0*x2459
-     & + 0.00204071663947138d0*x2460)
-      x2463 = 0.000106611824706953d0*x183
-      x2464 = x2297*x900
-      x2465 = x2304*x2464
-      x2466 = 0.0032651466231542d0*rho_s
-      x2467 = x2124*x2334
-      x2468 = x2264*x2398
-      x2469 = 2.24882374095046d-6*x2267
-      x2470 = x1092*(x1059*x2146*x2404 + x1080 + x2140*x2387 - x2269*x24
-     &69 + x2270* x2407 + x2274)
-      x2471 = x2468 + x2470
-      x2472 = x2277*x2409
-      x2473 = x1076*(-x1059*x2279 + x2173*x2423 + x2182*x2380 + x2280*x2
-     &469 - x2283 - x2286 + x2287*x2430)
-      x2474 = x2472 + x2473
-      x2475 = x203*(x2471 + x2474)
-      x2476 = x1094*x2372
-      x2477 = -x207*x2475 - x2211*x2476
-      x2478 = x2358*x510
-      x2479 = x2359*x2464
-      x2480 = x1057*x2374 + x81*(x2466*x2478 - 0.000106611824706953d0*x2
-     &479)
-      x2481 = 0.000298513109179468d0*x183
-      x2482 = 0.00914241054483176d0*rho_s
-      x2483 = -x212*x2475 - x2225*x2476
-      x2484 = x1057*x2449 + x81*(x2478*x2482 - 0.000298513109179468d0*x2
-     &479)
-      x2485 = x2354*(x1109*x2397 + x1121*x2395 + x211*(x2218*x2393 + x66
-     &5*(-x2219* x2392 + x2221*x2391 + x2465*x2481 - x2467*x2482 + x2483
-     & + x2484 )) + x220*(x1103*x2391 - x2118*x2392 + x2463*x2465 - x246
-     &6*x2467 + x2477 + x2480))
-      x2486 = rho_s*x2297
-      x2487 = 0.000106611824706953d0*x2367*x2486
-      x2488 = -x1139*x2487
-      x2489 = x2332*x2391
-      x2490 = x2362*x2486
-      x2491 = -x2487*x81
-      x2492 = x1111*x2125
-      x2493 = 0.03125d0*x1147
-      x2494 = x1111*x649
-      x2495 = x1147*x201
-      x2496 = -x1153*x648 + x81*(-x1149*x653 - 0.03125d0*x2494 + 0.0625d
-     &0*x2495)
-      x2497 = 0.0875d0*x1147
-      x2498 = 0.0875d0*x1111
-      x2499 = x208*x2498
-      x2500 = -x2499*x648 + x81*(-0.0875d0*x2494 + 0.175d0*x2495 - x2498
-     &*x653)
-      x2501 = x1157*x184
-      x2502 = 0.005859375d0*x2501
-      x2503 = x1111*x959
-      x2504 = -x2499*x958 + x81*(-x2498*x960 - 0.0875d0*x2503)
-      x2505 = -x1153*x958 + x81*(-x1149*x960 - 0.03125d0*x2503)
-      x2506 = x2189*x2493
-      x2507 = 0.0625d0*x2311
-      x2508 = x1102*x1111
-      x2509 = x1106*x1111
-      x2510 = -x1057*x1153 + x81*(-x208*x2507 + x2210*x2509)
-      x2511 = x1156*x67
-      x2512 = 0.017578125d0*x2511
-      x2513 = x2189*x2497
-      x2514 = 0.175d0*x2311
-      x2515 = -x1057*x2499 + x81*(-x208*x2514 + x2224*x2509)
-      x2516 = x2354*(x1109*x1158 + x1121*x1152 + x211*(-x1120*x2502 + x1
-     &155*x2218 - x215*x2512 + x665*(x204*x2514 - x2365*x2508 + x2513 + 
-     &x2515)) + x220*(x204*x2507 - x2356*x2508 + x2506 + x2510))
-      x2517 = x1111*x2357
-      x2518 = x1111*x2210
-      x2519 = x1140*x2518
-      x2520 = x1139*x2519
-      x2521 = x2519*x81
-      x2522 = x204*x2511
-      x2523 = 0.09375d0*x2511
-      x2524 = x1150*x2523
-      x2525 = 0.01171875d0*x2501
-      x2526 = x1139*x208*x2523
-      x2527 = 0.0234375d0*x216/tau_c**5
-      x2528 = x151*x81
-      x2529 = x182 + x2528
-      x2530 = x203*x2529
-      x2531 = -x207*x2530 + x210
-      x2532 = -x212*x2530 + x213
-      x2533 = x2532*x665 + 1.0d0
-      x2534 = x180*(x221 + x2531*x2533)
-      x2535 = x2534 + x351
-      x2536 = x151*x648
-      x2537 = 0.5d0*x79
-      x2538 = 1.0d0*x13
-      x2539 = x187*x593
-      x2540 = 0.0098758948512826d0*x31
-      x2541 = x2537 - x2538 + x2539 + x2540
-      x2542 = x2536 + x2541 + x413
-      x2543 = x203*x2542
-      x2544 = x2529*x512
-      x2545 = x202*x2529
-      x2546 = -x1773*x2544 - x207*x2543 + x2545*x517 + x655
-      x2547 = -x1878*x2544 - x212*x2543 + x2545*x659 + x663
-      x2548 = -x2532*x658 + x2547*x665
-      x2549 = x180*(x2531*x2548 + x2533*x2546 + x667)
-      x2550 = x151*x958
-      x2551 = -x2537 + x2538 - x2539 - x2540 + x2550 + x413
-      x2552 = x203*x2551
-      x2553 = x2529*x913
-      x2554 = -x1773*x2553 - x207*x2552 + x962
-      x2555 = -x1878*x2553 - x212*x2552 + x965
-      x2556 = x2531*x665
-      x2557 = x180*(x2533*x2554 + x2555*x2556 + x968)
-      x2558 = x1045 + x2557
-      x2559 = x2530*x650
-      x2560 = x1057*x151
-      x2561 = x1093 + x2560
-      x2562 = x203*x2561
-      x2563 = -gamma_cc*x2559 + x1103*x2529 + x1108 - x207*x2562
-      x2564 = x2530*x661
-      x2565 = -gamma_cc*x2564 + x1119 - x212*x2562 + x2221*x2529
-      x2566 = x2218*x2532 + x2565*x665
-      x2567 = x180*(x1058 + x2531*x2566 + x2533*x2563)
-      x2568 = x1133 + x2567
-      x2569 = rho_c*x2568
-      x2570 = x2332*x2529
-      x2571 = x1093*x203
-      x2572 = x1142 - x212*x2571 + 0.00228560263620794d0*x2570
-      x2573 = x1144 - x207*x2571 + 0.00081628665578855d0*x2570
-      x2574 = x180*(x2533*x2573 + x2556*x2572)
-      x2575 = x1151 + x2493*x2545
-      x2576 = x1154 + x2497*x2545
-      x2577 = -x2502*x2532 + x2576*x665
-      x2578 = x180*(x2531*x2577 + x2533*x2575)
-      x2579 = x1160*x2545
-      x2580 = x2542*x512
-      x2581 = x1473*x151
-      x2582 = 0.000681574929370872d0*x4
-      x2583 = x2582 + 0.0098758948512826d0
-      x2584 = 0.5d0*x574
-      x2585 = 4.0d0*x593
-      x2586 = x2583*x28
-      x2587 = 0.25d0*x640
-      x2588 = 0.5d0*x637
-      x2589 = x1516*x491
-      x2590 = 14.8042873216083d0*x569*x644
-      x2591 = x2587 + x2588 + x2589 + x2590
-      x2592 = x2583*x556 + x2583*x560*x570 + x2584*(-x5 - 1.0d0) - x2585
-     &*x490 + x2586* x558 + x2591 + 1.0d0*x582 + 1.0d0*x592 + 1.0d0*x630
-     & + 1.0d0*x635 + x646
-      x2593 = x203*(x1215 + x2581 + x2592)
-      x2594 = x1326*x2529
-      x2595 = x202*x2542
-      x2596 = x151*x1875
-      x2597 = x491*x593
-      x2598 = x1421*x187
-      x2599 = x1423*x187
-      x2600 = 0.5d0*x630
-      x2601 = 0.5d0*x635
-      x2602 = 0.0441896333017339d0*x578
-      x2603 = 0.000227191643123624d0*x30*x565
-      x2604 = x2583*x929 - x2586*x931
-      x2605 = x1843*x187 + x2604 + x593*x902 + 0.5d0*x950 + 0.5d0*x953
-      x2606 = x203*(x1215 - x2587 - x2588 - x2589 - x2590 + x2596 + x259
-     &7 - x2598 - x2599 - x2600 - x2601 - x2602 + x2603 + x2605)
-      x2607 = x2542*x913
-      x2608 = x2551*x512
-      x2609 = x1788*x2529
-      x2610 = x202*x2551
-      x2611 = x2555*x665
-      x2612 = x2551*x913
-      x2613 = x151*x2066
-      x2614 = -x2582 - 0.0098758948512826d0
-      x2615 = 0.5d0*x954
-      x2616 = 1.0d0*x932
-      x2617 = 1.0d0*x950
-      x2618 = 1.0d0*x953
-      x2619 = x2585*x901
-      x2620 = x1516*x902
-      x2621 = x203*(x1215 + x2613 - x2614*x28*x931 + x2614*x929 - x2615 
-     &- x2616 - x2617 - x2618 - x2619 + x2620)
-      x2622 = x2022*x2529
-      x2623 = x184*x2544
-      x2624 = x151*x2207
-      x2625 = 0.5d0*x1057
-      x2626 = x203*(x2155 + x2624 + x2625)
-      x2627 = x2561*x512
-      x2628 = x2122*x2529
-      x2629 = x21*x2545
-      x2630 = x2124*x2629
-      x2631 = x202*x2561
-      x2632 = x2529*x510
-      x2633 = x2128*x2632
-      x2634 = x2216*x2532
-      x2635 = x184*x2553
-      x2636 = x151*x2255
-      x2637 = x203*(x2155 - x2625 + x2636)
-      x2638 = x2561*x913
-      x2639 = x2243*x2529
-      x2640 = x2531*x2555
-      x2641 = x2124*x2562
-      x2642 = x151*x2307 + x151*x2309
-      x2643 = x203*(x2276 + x2642)
-      x2644 = x2294*x2632
-      x2645 = x2293*x2644
-      x2646 = x2300*x2529
-      x2647 = x184*x2532
-      x2648 = x2572*x665
-      x2649 = x203*x2155
-      x2650 = -x207*x2649
-      x2651 = x2330*x2529
-      x2652 = x2332*x2542
-      x2653 = x2302*x2529
-      x2654 = x1093*x512
-      x2655 = x1093*x202
-      x2656 = -x212*x2649
-      x2657 = x2346*x2529
-      x2658 = x2332*x2551
-      x2659 = x1093*x913
-      x2660 = x203*x2276
-      x2661 = x2332*x2561
-      x2662 = x2358*x2529
-      x2663 = x2360*x2529
-      x2664 = x2367*x2529
-      x2665 = x203*x2265
-      x2666 = x203*x2275
-      x2667 = x2372*x2529
-      x2668 = x203*x2390
-      x2669 = -x212*x2668 - x2225*x2667 + x2375
-      x2670 = -x207*x2668 - x2211*x2667 + x2394
-      x2671 = x180*(x2533*x2670 + x2556*x2669)
-      x2672 = x2669*x665
-      x2673 = x203*x2408
-      x2674 = -x207*x2673
-      x2675 = x2439*x2529
-      x2676 = x2390*x512
-      x2677 = x202*x2390
-      x2678 = x2442*x2644
-      x2679 = x2372*x2542
-      x2680 = -x212*x2673
-      x2681 = x2456*x2529
-      x2682 = x2390*x913
-      x2683 = x2372*x2551
-      x2684 = x203*x2471
-      x2685 = x2465*x2529
-      x2686 = x2372*x2561
-      x2687 = rho_s*x2124
-      x2688 = x2529*x2687
-      x2689 = x2354*(x2531*(x2218*x2669 + x665*(-x212*x2684 - x2219*x266
-     &8 + x2221* x2390 - x2225*x2686 - x2317*x2688 + x2484 + 0.000298513
-     &109179468d0*x2685)) + x2533*(x1103*x2390 - x207*x2684 - x2118*x266
-     &8 - x2211*x2686 - x2303*x2688 + x2480 + 0.000106611824706953d0*x26
-     &85) + x2563*x2672 + x2566*x2670)
-      x2690 = x2490*x2529
-      x2691 = x2332*x2390
-      x2692 = x1093*x2372
-      x2693 = x203*x2468
-      x2694 = x203*x2470
-      x2695 = x1111*x2629
-      x2696 = x1102*x2518
-      x2697 = x2224*x2508
-      x2698 = x2354*(x2531*(x2218*x2576 - x2502*x2565 - x2512*x2647 + x6
-     &65*(x2497* x2631 + x2514*x2530 + x2515 - x2529*x2697)) + x2533*(x2
-     &493*x2631 + x2507*x2530 + x2510 - x2529*x2696) + x2563*x2577 + x25
-     &66*x2575)
-      x2699 = x2224*x2517
-      x2700 = x2357*x2518
-      x2701 = x2511*x2530
-      x2702 = x110*x81
-      x2703 = x181 + x2702
-      x2704 = x203*x2703
-      x2705 = -x207*x2704 + x210
-      x2706 = -x212*x2704 + x213
-      x2707 = x2706*x665 + 1.0d0
-      x2708 = x180*(x221 + x2705*x2707)
-      x2709 = x2708 + x351
-      x2710 = x110*x648
-      x2711 = x2541 + x2710 + x485
-      x2712 = x203*x2711
-      x2713 = x2703*x512
-      x2714 = x202*x2703
-      x2715 = -x1773*x2713 - x207*x2712 + x2714*x517 + x655
-      x2716 = -x1878*x2713 - x212*x2712 + x2714*x659 + x663
-      x2717 = -x2706*x658 + x2716*x665
-      x2718 = x180*(x2705*x2717 + x2707*x2715 + x667)
-      x2719 = x110*x958
-      x2720 = x2541 + x2719 + x895
-      x2721 = x203*x2720
-      x2722 = x2703*x913
-      x2723 = -x1773*x2722 - x207*x2721 + x962
-      x2724 = -x1878*x2722 - x212*x2721 + x965
-      x2725 = x2705*x665
-      x2726 = x180*(x2707*x2723 + x2724*x2725 + x968)
-      x2727 = x1045 + x2726
-      x2728 = x2704*x650
-      x2729 = x1057*x110
-      x2730 = x1077 + x2729
-      x2731 = x203*x2730
-      x2732 = -gamma_cc*x2728 + x1103*x2703 + x1108 - x207*x2731
-      x2733 = x2704*x661
-      x2734 = -gamma_cc*x2733 + x1119 - x212*x2731 + x2221*x2703
-      x2735 = x2218*x2706 + x2734*x665
-      x2736 = x180*(x1058 + x2705*x2735 + x2707*x2732)
-      x2737 = x1133 + x2736
-      x2738 = rho_c*x2737
-      x2739 = x2332*x2703
-      x2740 = x1077*x203
-      x2741 = x1142 - x212*x2740 + 0.00228560263620794d0*x2739
-      x2742 = x1144 - x207*x2740 + 0.00081628665578855d0*x2739
-      x2743 = x180*(x2707*x2742 + x2725*x2741)
-      x2744 = x1151 + x2493*x2714
-      x2745 = x1154 + x2497*x2714
-      x2746 = -x2502*x2706 + x2745*x665
-      x2747 = x180*(x2705*x2746 + x2707*x2744)
-      x2748 = x1160*x2714
-      x2749 = x2711*x512
-      x2750 = x110*x1473
-      x2751 = x203*(x1305 + x2592 + x2750)
-      x2752 = x1326*x2703
-      x2753 = x202*x2711
-      x2754 = x110*x1875
-      x2755 = x203*(x1771 + x2591 - x2597 + x2598 + x2599 + x2600 + x260
-     &1 + x2602 - x2603 + x2605 + x2754)
-      x2756 = x2711*x913
-      x2757 = x2720*x512
-      x2758 = x1788*x2703
-      x2759 = x202*x2720
-      x2760 = x2724*x665
-      x2761 = x2720*x913
-      x2762 = x110*x2066
-      x2763 = x2616 + x2617 + x2618 + x2619
-      x2764 = x203*(x2014 + x2604 + x2615 - x2620 + x2762 + x2763)
-      x2765 = x2022*x2703
-      x2766 = x184*x2713
-      x2767 = x110*x2207
-      x2768 = x203*(x2186 + x2625 + x2767)
-      x2769 = x2730*x512
-      x2770 = x2122*x2703
-      x2771 = x21*x2714
-      x2772 = x2124*x2771
-      x2773 = x202*x2730
-      x2774 = x2703*x510
-      x2775 = x2128*x2774
-      x2776 = x2216*x2706
-      x2777 = x184*x2722
-      x2778 = x110*x2255
-      x2779 = x203*(x2246 + x2625 + x2778)
-      x2780 = x2730*x913
-      x2781 = x2243*x2703
-      x2782 = x2705*x2724
-      x2783 = x2124*x2731
-      x2784 = x110*x2307 + x110*x2309
-      x2785 = x203*(x2289 + x2784)
-      x2786 = x2294*x2774
-      x2787 = x2293*x2786
-      x2788 = x2300*x2703
-      x2789 = x184*x2706
-      x2790 = x2741*x665
-      x2791 = x203*x2186
-      x2792 = x2330*x2703
-      x2793 = x2332*x2711
-      x2794 = x2302*x2703
-      x2795 = x1077*x512
-      x2796 = x1077*x202
-      x2797 = x203*x2246
-      x2798 = x2346*x2703
-      x2799 = x2332*x2720
-      x2800 = x1077*x913
-      x2801 = x203*x2289
-      x2802 = x2332*x2730
-      x2803 = x2358*x2703
-      x2804 = x2360*x2703
-      x2805 = x2367*x2703
-      x2806 = x203*x2278
-      x2807 = x203*x2288
-      x2808 = x2372*x2703
-      x2809 = x203*x2383
-      x2810 = -x212*x2809 - x2225*x2808 + x2375
-      x2811 = -x207*x2809 - x2211*x2808 + x2394
-      x2812 = x180*(x2707*x2811 + x2725*x2810)
-      x2813 = x2810*x665
-      x2814 = x203*x2431
-      x2815 = x2439*x2703
-      x2816 = x2383*x512
-      x2817 = x202*x2383
-      x2818 = x2442*x2786
-      x2819 = x2372*x2711
-      x2820 = x203*x2452
-      x2821 = x2456*x2703
-      x2822 = x2383*x913
-      x2823 = x2372*x2720
-      x2824 = x203*x2474
-      x2825 = x2465*x2703
-      x2826 = x2372*x2730
-      x2827 = x2687*x2703
-      x2828 = x2354*(x2705*(x2218*x2810 + x665*(-x212*x2824 - x2219*x280
-     &9 + x2221* x2383 - x2225*x2826 - x2317*x2827 + x2484 + 0.000298513
-     &109179468d0*x2825)) + x2707*(x1103*x2383 - x207*x2824 - x2118*x280
-     &9 - x2211*x2826 - x2303*x2827 + x2480 + 0.000106611824706953d0*x28
-     &25) + x2732*x2813 + x2735*x2811)
-      x2829 = x2490*x2703
-      x2830 = x2332*x2383
-      x2831 = x1077*x2372
-      x2832 = x203*x2472
-      x2833 = x203*x2473
-      x2834 = x1111*x2771
-      x2835 = x2354*(x2705*(x2218*x2745 - x2502*x2734 - x2512*x2789 + x6
-     &65*(x2497* x2773 + x2514*x2704 + x2515 - x2697*x2703)) + x2707*(x2
-     &493*x2773 + x2507*x2704 + x2510 - x2696*x2703) + x2732*x2746 + x27
-     &35*x2744)
-      x2836 = x2511*x2704
-      x2837 = x2528 + x2702
-      x2838 = x203*x2837
-      x2839 = -x207*x2838 + x210
-      x2840 = -x212*x2838 + x213
-      x2841 = x2840*x665 + 1.0d0
-      x2842 = x180*(x221 + x2839*x2841)
-      x2843 = x2842 + x351
-      x2844 = -2.0d0*x13 + x2536 + x2710 + x32 + 1.0d0*x42 + 1.0d0*x79
-      x2845 = x203*x2844
-      x2846 = x2837*x512
-      x2847 = x202*x2837
-      x2848 = -x1773*x2846 - x207*x2845 + x2847*x517 + x655
-      x2849 = -x1878*x2846 - x212*x2845 + x2847*x659 + x663
-      x2850 = -x2840*x658 + x2849*x665
-      x2851 = x180*(x2839*x2850 + x2841*x2848 + x667)
-      x2852 = x2550 + x2719
-      x2853 = x203*x2852
-      x2854 = x2837*x913
-      x2855 = -x1773*x2854 - x207*x2853 + x962
-      x2856 = -x1878*x2854 - x212*x2853 + x965
-      x2857 = x2839*x665
-      x2858 = x180*(x2841*x2855 + x2856*x2857 + x968)
-      x2859 = x1045 + x2858
-      x2860 = x2838*x650
-      x2861 = x2560 + x2729
-      x2862 = x203*x2861
-      x2863 = -gamma_cc*x2860 + x1103*x2837 + x1108 - x207*x2862
-      x2864 = x2838*x661
-      x2865 = -gamma_cc*x2864 + x1119 - x212*x2862 + x2221*x2837
-      x2866 = x2218*x2840 + x2865*x665
-      x2867 = x180*(x1058 + x2839*x2866 + x2841*x2863)
-      x2868 = x1133 + x2867
-      x2869 = rho_c*x2868
-      x2870 = x2332*x2837
-      x2871 = x1142 + 0.00228560263620794d0*x2870
-      x2872 = x1144 + 0.00081628665578855d0*x2870
-      x2873 = x180*(x2841*x2872 + x2857*x2871)
-      x2874 = x1151 + x2493*x2847
-      x2875 = x1154 + x2497*x2847
-      x2876 = -x2502*x2840 + x2875*x665
-      x2877 = x180*(x2839*x2876 + x2841*x2874)
-      x2878 = x1160*x2847
-      x2879 = x2844*x512
-      x2880 = 8.0d0*x490
-      x2881 = x203*(x1516*x2880 + x1736 + x2581 + x2584*(x638 - 2.0d0) +
-     & x2750 - x2880 *x593 + 2.0d0*x582 + 2.0d0*x592 + 2.0d0*x630 + 2.0d
-     &0*x635 + 2.0d0 *x637 + 0.5d0*x640)
-      x2882 = x1326*x2837
-      x2883 = x202*x2844
-      x2884 = x203*(x2596 + x2754 + x2763 + x956)
-      x2885 = x2844*x913
-      x2886 = x2852*x512
-      x2887 = x1788*x2837
-      x2888 = x202*x2852
-      x2889 = x2856*x665
-      x2890 = x2852*x913
-      x2891 = x203*(x2613 + x2762)
-      x2892 = x2022*x2837
-      x2893 = x184*x2846
-      x2894 = x203*(1.0d0*x1057 + x2624 + x2767)
-      x2895 = x2861*x512
-      x2896 = x2122*x2837
-      x2897 = x21*x2847
-      x2898 = x2124*x2897
-      x2899 = x202*x2861
-      x2900 = x2837*x510
-      x2901 = x2128*x2900
-      x2902 = x2216*x2840
-      x2903 = x184*x2854
-      x2904 = x203*(x2636 + x2778)
-      x2905 = x2861*x913
-      x2906 = x2243*x2837
-      x2907 = x2839*x2856
-      x2908 = x2124*x2862
-      x2909 = x203*(x2642 + x2784)
-      x2910 = x2294*x2900
-      x2911 = x2293*x2910
-      x2912 = x2300*x2837
-      x2913 = x184*x2840
-      x2914 = x2871*x665
-      x2915 = x2330*x2837
-      x2916 = x2332*x2844
-      x2917 = x2302*x2837
-      x2918 = x2346*x2837
-      x2919 = x2332*x2852
-      x2920 = x2332*x2861
-      x2921 = x2358*x2837
-      x2922 = x2360*x2837
-      x2923 = x2367*x2837
-      x2924 = x2372*x2837
-      x2925 = -x2225*x2924 + x2375
-      x2926 = -x2211*x2924 + x2394
-      x2927 = x180*(x2841*x2926 + x2857*x2925)
-      x2928 = x2925*x665
-      x2929 = x2439*x2837
-      x2930 = x2442*x2910
-      x2931 = x2372*x2844
-      x2932 = x2456*x2837
-      x2933 = x2372*x2852
-      x2934 = x2465*x2837
-      x2935 = x2372*x2861
-      x2936 = x2687*x2837
-      x2937 = x2354*(x2839*(x2218*x2925 + x665*(-x2225*x2935 - x2317*x29
-     &36 + x2484 + 0.000298513109179468d0*x2934)) + x2841*(-x2211*x2935 
-     &- x2303* x2936 + x2480 + 0.000106611824706953d0*x2934) + x2863*x29
-     &28 + x2866*x2926)
-      x2938 = x2490*x2837
-      x2939 = x1111*x2897
-      x2940 = x2354*(x2839*(x2218*x2875 - x2502*x2865 - x2512*x2913 + x6
-     &65*(x2497* x2899 + x2514*x2838 + x2515 - x2697*x2837)) + x2841*(x2
-     &493*x2899 + x2507*x2838 + x2510 - x2696*x2837) + x2863*x2876 + x28
-     &66*x2874)
-      x2941 = x2511*x2838
-      PBE_value = x81
-      PBE_beta_value = x137
-      PBE_alpha_value = x179
-      if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .ge. PB
-     &E_value)) then
-      E = rho_c*x352
-      d1E(1) = rho_c*(x668 + 0.156233111018196d0*x670 + x879) + x352
-      d1E(2) = rho_c*x1046
-      d1E(3) = x1135
-      d1E(4) = rho_c*x1146
-      d1E(5) = x1135
-      d1E(6) = rho_c*x1159
-      d2E(1) = rho_c*(x1492*x222 + x1493*x668 - x1494*x222 + x1735 + x18
-     &0*(x1491 + x211 *(x1484*x214 - x1485*x664 + x665*(-0.525d0*x1161 -
-     & x1163*x1487 - x1306*x212 - x1327*x212 + x1329*x1486 + x1330*x1486
-     & + x1490)) + x220*(-0.1875d0*x1161 - x1162*x1163 - x1306*x207 - x1
-     &327*x207 + x1328*x1329 + x1328*x1330 + x1483) + 2.0d0*x656*x666)) 
-     &+ x1737 + 2.0d0*x668 + 0.312466222036391d0*x670
-      d2E(2) = rho_c*(x180*(x1880*x656 + x1881 + x211*(-x658*x966 + x665
-     &*(-x1772*x212 - x1774*x1878 - x1775*x1878 - x1789*x212 + x1790*x65
-     &9 + x1791*x659 + x1879)) + x220*(-x1772*x207 - x1773*x1774 - x1773
-     &*x1775 - x1789 *x207 + x1790*x517 + x1791*x517 + x1877) + x666*x96
-     &3) + x1882* x969 + x1998) + x1046
-      d2E(3) = rho_c*(x180*(x2071*x963*x966 + x2073 + x220*(-x1162*x1999
-     & - x2015*x207 - x2023*x207 + x2070) + x967*(-x1487*x1999 - x2015*x
-     &212 - x2023* x212 + x2072)) + x2117)
-      d2E(4) = rho_c*(x1122*x1882 + x180*(x1109*x666 + x1121*x656 + x211
-     &*(-x1111*x2217 - x1120*x658 + x2218*x664 + x665*(-x212*x2123 + 0.2
-     &625d0*x2126 - x2129*x2222 - x2219*x487 - x2219*x514 + x2221*x486 +
-     & x2223 + x2227)) + x220*(x1103*x486 - x207*x2123 - x2118*x487 - x2
-     &118*x514 + 0.09375d0*x2126 - x2127*x2129 + x2190 + x2215) + x2228)
-     & + x2241 ) + x1134
-      d2E(5) = rho_c*(x180*(x1109*x1880 + x1121*x963 + x220*(x1103*x896 
-     &- x207*x2244 - x2118*x897 - x2118*x914 + x2249 + x2257) + x2218*x2
-     &260 + x2261 + x967*(-x212*x2244 - x2219*x897 - x2219*x914 + x2221*
-     &x896 + x2258 + x2259)) + x2263)
-      d2E(6) = rho_c*(x180*(2.0d0*x1109*x1121 + x211*(x1120*x2313 + x215
-     &*x2312 + x665*( x1094*x2226 - x1113 - 0.175d0*x2292 + 0.0091424105
-     &4483176d0*x2296 - x2300*x2316 + x2314 + x2318)) + x220*(x1094*x221
-     &2 - x1097 + x2291 - 0.0625d0*x2292 + 0.0032651466231542d0*x2296 - 
-     &x2299*x2300 + x2310) + x2319) + x2320)
-      d2E(7) = rho_c*(x1146*x1882 + x180*(x1145*x666 + x211*(-x1143*x658
-     & + x665*(-x212* x2331 - x2222*x2334 + x2223 + 0.00228560263620794d
-     &0*x2333 + x2342 )) + x220*(-x207*x2331 - x2127*x2334 + x2190 + 0.0
-     &0081628665578855d0*x2333 + x2339) + x2321*x656)) + x1146
-      d2E(8) = x2354*(x1145*x1880 + x220*(-x207*x2347 + x2249 + 0.000816
-     &28665578855d0* x2348 + x2353) + x2321*x963 + x967*(-x212*x2347 + x
-     &2258 + 0.00228560263620794d0*x2348 + x2352))
-      d2E(9) = x2354*(x1109*x2321 + x1121*x1145 + x211*(x1143*x2218 + x6
-     &65*(x1094*x2221 - x1095*x2219 + x2314 - x2316*x2360 + 0.0022856026
-     &3620794d0*x2355 + x2358*x2365 + x2366)) + x220*(x1094*x1103 - x109
-     &5*x2118 + x2291 - x2299*x2360 + 0.00081628665578855d0*x2355 + x235
-     &6*x2358 + x2364 ))
-      d2E(10) = x2354*(x1143*x1145*x2071 + x220*(x1094*x2336 + x2291 - x
-     &2298*x2368 + x2371) + x967*(x1094*x2340 + x2314 - x2315*x2368 + x2
-     &370))
-      d2E(11) = rho_c*(x180*(x211*(-x2393*x658 + x665*(-x1878*x2433 - x2
-     &12*x2432 - x212* x2440 - x2225*x2444 + x2441*x659 + 0.013713615817
-     &2476d0*x2443 + x2450)) + x220*(-x1773*x2433 - x207*x2432 - x207*x2
-     &440 - x2211* x2444 + x2441*x517 + 0.0048977199347313d0*x2443 + x24
-     &48) + x2395* x666 + x2397*x656) + x1882*x2396) + x2396
-      d2E(12) = x2354*(x1880*x2395 + x220*(-x1773*x2454 - x207*x2453 - x
-     &207*x2457 - x2211*x2458 + x2462) + x2397*x963 + x967*(-x1878*x2454
-     & - x212* x2453 - x212*x2457 - x2225*x2458 + x2461))
-      d2E(13) = x2485
-      d2E(14) = x2354*(x1145*x2397 + x220*(x2463*x2490 + x2477 + 0.00081
-     &628665578855d0* x2489 + x2491) + x2321*x2395 + x967*(x2481*x2490 +
-     & x2483 + x2488 + 0.00228560263620794d0*x2489))
-      d2E(15) = x2485
-      d2E(16) = rho_c*(x1159*x1882 + x180*(x1152*x666 + x1158*x656 + x21
-     &1*(-x1155*x658 + x1157*x2217 - x2502*x664 + x665*(x1329*x2497 + x1
-     &330*x2497 - 0.2625d0*x2492 + x2500)) + x220*(x1329*x2493 + x1330*x
-     &2493 - 0.09375d0*x2492 + x2496))) + x1159
-      d2E(17) = x2354*(x1152*x1880 + x1158*x963 + x220*(x1790*x2493 + x1
-     &791*x2493 + x2505) - x2260*x2502 + x967*(x1790*x2497 + x1791*x2497
-     & + x2504))
-      d2E(18) = x2516
-      d2E(19) = x2354*(-x1143*x211*x2502 + x1145*x1158 + x1152*x2321 + x
-     &220*(-x2356* x2517 + x2506 + x2521) + x967*(-x2365*x2517 + x2513 +
-     & x2520))
-      d2E(20) = x2516
-      d2E(21) = x2354*(2.0d0*x1152*x1158 + x211*(-x1155*x2525 + x215*x25
-     &27 + x665*( -0.2625d0*x2522 + x2526)) + x220*(-0.09375d0*x2522 + x
-     &2524))
-      end if
-      if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .lt. PB
-     &E_value)) then
-      E = rho_c*x2535
-      d1E(1) = rho_c*(x1882*x2534 + x2549 + x879) + x2535
-      d1E(2) = rho_c*x2558
-      d1E(3) = x2569
-      d1E(4) = rho_c*x2574
-      d1E(5) = x2569
-      d1E(6) = rho_c*x2578
-      d2E(1) = rho_c*(x1492*x2534 + x1493*x2549 - x1494*x2534 + x1735 + 
-     &x180*(x1491 + x2531*(x1484*x2532 - x1485*x2547 + x665*(x1486*x2544
-     & + x1486* x2595 - x1487*x2580 + x1490 - x1878*x2594 - x212*x2593 -
-     & 0.525d0* x2579)) + x2533*(-x1162*x2580 + x1328*x2544 + x1328*x259
-     &5 + x1483 - x1773*x2594 - x207*x2593 - 0.1875d0*x2579) + 2.0d0*x25
-     &46*x2548 )) + x1493*x2534 + x1737 + 2.0d0*x2549
-      d2E(2) = rho_c*(x180*(x1881 + x2531*(-x2555*x658 + x665*(-x1878*x2
-     &607 - x1878* x2608 - x1878*x2609 + x1879 - x212*x2606 + x2553*x659
-     & + x2610* x659)) + x2533*(-x1773*x2607 - x1773*x2608 - x1773*x2609
-     & + x1877 - x207*x2606 + x2553*x517 + x2610*x517) + x2546*x2611 + x
-     &2548* x2554) + x1882*x2557 + x1998) + x2558
-      d2E(3) = rho_c*(x180*(x2071*x2554*x2555 + x2073 + x2533*(-x1162*x2
-     &612 - x1773* x2622 - x207*x2621 + x2070) + x2556*(-x1487*x2612 - x
-     &1878*x2622 + x2072 - x212*x2621)) + x2117)
-      d2E(4) = rho_c*(x180*(x2228 + x2531*(-x1111*x2634 + x2218*x2547 - 
-     &x2565*x658 + x665*(-x1878*x2627 - x1878*x2628 - x212*x2626 - x2219
-     &*x2543 - x2219*x2623 + x2221*x2542 - x2222*x2633 + x2227 + 0.2625d
-     &0*x2630 + x2631*x659)) + x2533*(x1103*x2542 - x1773*x2627 - x1773*
-     &x2628 - x207*x2626 - x2118*x2543 - x2118*x2623 - x2127*x2633 + x22
-     &15 + 0.09375d0*x2630 + x2631*x517) + x2546*x2566 + x2548*x2563) + 
-     &x1882*x2567 + x2241) + x2568
-      d2E(5) = rho_c*(x180*(x2218*x2640 + x2261 + x2533*(x1103*x2551 - x
-     &1773*x2638 - x1773*x2639 - x207*x2637 - x2118*x2552 - x2118*x2635 
-     &+ x2257) + x2554*x2566 + x2556*(-x1878*x2638 - x1878*x2639 - x212*
-     &x2637 - x2219*x2552 - x2219*x2635 + x2221*x2551 + x2259) + x2563*x
-     &2611) + x2263)
-      d2E(6) = rho_c*(x180*(x2319 + x2531*(x2312*x2647 + x2313*x2565 + x
-     &665*(-x212* x2643 + x2226*x2561 - x2315*x2646 + x2318 - x2564 - 0.
-     &175d0*x2641 + 0.00914241054483176d0*x2645)) + x2533*(-x207*x2643 +
-     & x2212* x2561 - x2298*x2646 + x2310 - x2559 - 0.0625d0*x2641 + 0.0
-     &032651466231542d0*x2645) + 2.0d0*x2563*x2566) + x2320)
-      d2E(7) = rho_c*(x180*(x2531*(-x2572*x658 + x665*(-x1878*x2651 - x1
-     &878*x2654 - x2222*x2653 + x2342 + 0.00228560263620794d0*x2652 + x2
-     &655*x659 + x2656)) + x2533*(-x1773*x2651 - x1773*x2654 - x2127*x26
-     &53 + x2339 + x2650 + 0.00081628665578855d0*x2652 + x2655*x517) + x
-     &2546*x2648 + x2548*x2573) + x1882*x2574) + x2574
-      d2E(8) = x2354*(x2533*(-x1773*x2657 - x1773*x2659 + x2353 + x2650 
-     &+ 0.00081628665578855d0*x2658) + x2554*x2648 + x2556*(-x1878*x2657
-     & - x1878*x2659 + x2352 + x2656 + 0.00228560263620794d0*x2658) + x2
-     &573*x2611)
-      d2E(9) = x2354*(x2531*(x2218*x2572 + x665*(x1093*x2221 - x212*x266
-     &0 - x2219*x2571 + x2224*x2662 - x2315*x2663 + x2366 + 0.0022856026
-     &3620794d0*x2661 )) + x2533*(x1093*x1103 - x207*x2660 - x2118*x2571
-     & + x2210*x2662 - x2298*x2663 + x2364 + 0.00081628665578855d0*x2661
-     &) + x2563* x2648 + x2566*x2573)
-      d2E(10) = x2354*(x2071*x2572*x2573 + x2533*(x1093*x2336 - x207*x26
-     &65 - x207*x2666 - x2298*x2664 + x2371) + x2556*(x1093*x2340 - x212
-     &*x2665 - x212* x2666 - x2315*x2664 + x2370))
-      d2E(11) = rho_c*(x180*(x2531*(-x2669*x658 + x665*(-x1878*x2675 - x
-     &1878*x2676 - x2225*x2679 + x2450 + x2677*x659 + 0.0137136158172476
-     &d0*x2678 + x2680)) + x2533*(-x1773*x2675 - x1773*x2676 - x2211*x26
-     &79 + x2448 + x2674 + x2677*x517 + 0.0048977199347313d0*x2678) + x2
-     &546*x2672 + x2548*x2670) + x1882*x2671) + x2671
-      d2E(12) = x2354*(x2533*(-x1773*x2681 - x1773*x2682 - x2211*x2683 +
-     & x2462 + x2674) + x2554*x2672 + x2556*(-x1878*x2681 - x1878*x2682 
-     &- x2225*x2683 + x2461 + x2680) + x2611*x2670)
-      d2E(13) = x2689
-      d2E(14) = x2354*(x2533*(-x207*x2693 - x207*x2694 - x2211*x2692 + x
-     &2491 + 0.000106611824706953d0*x2690 + 0.00081628665578855d0*x2691)
-     & + x2556*(-x212*x2693 - x212*x2694 - x2225*x2692 + x2488 + 0.00029
-     &8513109179468d0*x2690 + 0.00228560263620794d0*x2691) + x2573*x2672
-     & + x2648*x2670)
-      d2E(15) = x2689
-      d2E(16) = rho_c*(x180*(x2531*(x1157*x2634 - x2502*x2547 - x2576*x6
-     &58 + x665*(x2497 *x2544 + x2497*x2595 + x2500 - 0.2625d0*x2695)) +
-     & x2533*(x2493* x2544 + x2493*x2595 + x2496 - 0.09375d0*x2695) + x2
-     &546*x2577 + x2548*x2575) + x1882*x2578) + x2578
-      d2E(17) = x2354*(-x2502*x2640 + x2533*(x2493*x2553 + x2493*x2610 +
-     & x2505) + x2554* x2577 + x2556*(x2497*x2553 + x2497*x2610 + x2504)
-     & + x2575*x2611)
-      d2E(18) = x2698
-      d2E(19) = x2354*(-x2502*x2531*x2572 + x2533*(x2493*x2655 + x2521 -
-     & x2529*x2700) + x2556*(x2497*x2655 + x2520 - x2529*x2699) + x2573*
-     &x2577 + x2575* x2648)
-      d2E(20) = x2698
-      d2E(21) = x2354*(x2531*(-x2525*x2576 + x2527*x2647 + x665*(x2526 -
-     & 0.2625d0*x2701 )) + x2533*(x2524 - 0.09375d0*x2701) + 2.0d0*x2575
-     &*x2577)
-      end if
-      if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .ge. PB
-     &E_value)) then
-      E = rho_c*x2709
-      d1E(1) = rho_c*(x1882*x2708 + x2718 + x879) + x2709
-      d1E(2) = rho_c*x2727
-      d1E(3) = x2738
-      d1E(4) = rho_c*x2743
-      d1E(5) = x2738
-      d1E(6) = rho_c*x2747
-      d2E(1) = rho_c*(x1492*x2708 + x1493*x2718 - x1494*x2708 + x1735 + 
-     &x180*(x1491 + x2705*(x1484*x2706 - x1485*x2716 + x665*(x1486*x2713
-     & + x1486* x2753 - x1487*x2749 + x1490 - x1878*x2752 - x212*x2751 -
-     & 0.525d0* x2748)) + x2707*(-x1162*x2749 + x1328*x2713 + x1328*x275
-     &3 + x1483 - x1773*x2752 - x207*x2751 - 0.1875d0*x2748) + 2.0d0*x27
-     &15*x2717 )) + x1493*x2708 + x1737 + 2.0d0*x2718
-      d2E(2) = rho_c*(x180*(x1881 + x2705*(-x2724*x658 + x665*(-x1878*x2
-     &756 - x1878* x2757 - x1878*x2758 + x1879 - x212*x2755 + x2722*x659
-     & + x2759* x659)) + x2707*(-x1773*x2756 - x1773*x2757 - x1773*x2758
-     & + x1877 - x207*x2755 + x2722*x517 + x2759*x517) + x2715*x2760 + x
-     &2717* x2723) + x1882*x2726 + x1998) + x2727
-      d2E(3) = rho_c*(x180*(x2071*x2723*x2724 + x2073 + x2707*(-x1162*x2
-     &761 - x1773* x2765 - x207*x2764 + x2070) + x2725*(-x1487*x2761 - x
-     &1878*x2765 + x2072 - x212*x2764)) + x2117)
-      d2E(4) = rho_c*(x180*(x2228 + x2705*(-x1111*x2776 + x2218*x2716 - 
-     &x2734*x658 + x665*(-x1878*x2769 - x1878*x2770 - x212*x2768 - x2219
-     &*x2712 - x2219*x2766 + x2221*x2711 - x2222*x2775 + x2227 + 0.2625d
-     &0*x2772 + x2773*x659)) + x2707*(x1103*x2711 - x1773*x2769 - x1773*
-     &x2770 - x207*x2768 - x2118*x2712 - x2118*x2766 - x2127*x2775 + x22
-     &15 + 0.09375d0*x2772 + x2773*x517) + x2715*x2735 + x2717*x2732) + 
-     &x1882*x2736 + x2241) + x2737
-      d2E(5) = rho_c*(x180*(x2218*x2782 + x2261 + x2707*(x1103*x2720 - x
-     &1773*x2780 - x1773*x2781 - x207*x2779 - x2118*x2721 - x2118*x2777 
-     &+ x2257) + x2723*x2735 + x2725*(-x1878*x2780 - x1878*x2781 - x212*
-     &x2779 - x2219*x2721 - x2219*x2777 + x2221*x2720 + x2259) + x2732*x
-     &2760) + x2263)
-      d2E(6) = rho_c*(x180*(x2319 + x2705*(x2312*x2789 + x2313*x2734 + x
-     &665*(-x212* x2785 + x2226*x2730 - x2315*x2788 + x2318 - x2733 - 0.
-     &175d0*x2783 + 0.00914241054483176d0*x2787)) + x2707*(-x207*x2785 +
-     & x2212* x2730 - x2298*x2788 + x2310 - x2728 - 0.0625d0*x2783 + 0.0
-     &032651466231542d0*x2787) + 2.0d0*x2732*x2735) + x2320)
-      d2E(7) = rho_c*(x180*(x2705*(-x2741*x658 + x665*(-x1878*x2792 - x1
-     &878*x2795 - x212*x2791 - x2222*x2794 + x2342 + 0.00228560263620794
-     &d0*x2793 + x2796*x659)) + x2707*(-x1773*x2792 - x1773*x2795 - x207
-     &*x2791 - x2127*x2794 + x2339 + 0.00081628665578855d0*x2793 + x2796
-     &*x517) + x2715*x2790 + x2717*x2742) + x1882*x2743) + x2743
-      d2E(8) = x2354*(x2707*(-x1773*x2798 - x1773*x2800 - x207*x2797 + x
-     &2353 + 0.00081628665578855d0*x2799) + x2723*x2790 + x2725*(-x1878*
-     &x2798 - x1878*x2800 - x212*x2797 + x2352 + 0.00228560263620794d0*x
-     &2799 ) + x2742*x2760)
-      d2E(9) = x2354*(x2705*(x2218*x2741 + x665*(x1077*x2221 - x212*x280
-     &1 - x2219*x2740 + x2224*x2803 - x2315*x2804 + x2366 + 0.0022856026
-     &3620794d0*x2802 )) + x2707*(x1077*x1103 - x207*x2801 - x2118*x2740
-     & + x2210*x2803 - x2298*x2804 + x2364 + 0.00081628665578855d0*x2802
-     &) + x2732* x2790 + x2735*x2742)
-      d2E(10) = x2354*(x2071*x2741*x2742 + x2707*(x1077*x2336 - x207*x28
-     &06 - x207*x2807 - x2298*x2805 + x2371) + x2725*(x1077*x2340 - x212
-     &*x2806 - x212* x2807 - x2315*x2805 + x2370))
-      d2E(11) = rho_c*(x180*(x2705*(-x2810*x658 + x665*(-x1878*x2815 - x
-     &1878*x2816 - x212*x2814 - x2225*x2819 + x2450 + x2817*x659 + 0.013
-     &7136158172476d0*x2818)) + x2707*(-x1773*x2815 - x1773*x2816 - x207
-     &*x2814 - x2211*x2819 + x2448 + x2817*x517 + 0.0048977199347313d0*x
-     &2818) + x2715*x2813 + x2717*x2811) + x1882* x2812) + x2812
-      d2E(12) = x2354*(x2707*(-x1773*x2821 - x1773*x2822 - x207*x2820 - 
-     &x2211*x2823 + x2462) + x2723*x2813 + x2725*(-x1878*x2821 - x1878*x
-     &2822 - x212* x2820 - x2225*x2823 + x2461) + x2760*x2811)
-      d2E(13) = x2828
-      d2E(14) = x2354*(x2707*(-x207*x2832 - x207*x2833 - x2211*x2831 + x
-     &2491 + 0.000106611824706953d0*x2829 + 0.00081628665578855d0*x2830)
-     & + x2725*(-x212*x2832 - x212*x2833 - x2225*x2831 + x2488 + 0.00029
-     &8513109179468d0*x2829 + 0.00228560263620794d0*x2830) + x2742*x2813
-     & + x2790*x2811)
-      d2E(15) = x2828
-      d2E(16) = rho_c*(x180*(x2705*(x1157*x2776 - x2502*x2716 - x2745*x6
-     &58 + x665*(x2497 *x2713 + x2497*x2753 + x2500 - 0.2625d0*x2834)) +
-     & x2707*(x2493* x2713 + x2493*x2753 + x2496 - 0.09375d0*x2834) + x2
-     &715*x2746 + x2717*x2744) + x1882*x2747) + x2747
-      d2E(17) = x2354*(-x2502*x2782 + x2707*(x2493*x2722 + x2493*x2759 +
-     & x2505) + x2723* x2746 + x2725*(x2497*x2722 + x2497*x2759 + x2504)
-     & + x2744*x2760)
-      d2E(18) = x2835
-      d2E(19) = x2354*(-x2502*x2705*x2741 + x2707*(x2493*x2796 + x2521 -
-     & x2700*x2703) + x2725*(x2497*x2796 + x2520 - x2699*x2703) + x2742*
-     &x2746 + x2744* x2790)
-      d2E(20) = x2835
-      d2E(21) = x2354*(x2705*(-x2525*x2745 + x2527*x2789 + x665*(x2526 -
-     & 0.2625d0*x2836 )) + x2707*(x2524 - 0.09375d0*x2836) + 2.0d0*x2744
-     &*x2746)
-      end if
-      if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .lt. PB
-     &E_value)) then
-      E = rho_c*x2843
-      d1E(1) = rho_c*(x1882*x2842 + x2851 + x879) + x2843
-      d1E(2) = rho_c*x2859
-      d1E(3) = x2869
-      d1E(4) = rho_c*x2873
-      d1E(5) = x2869
-      d1E(6) = rho_c*x2877
-      d2E(1) = rho_c*(x1492*x2842 + x1493*x2851 - x1494*x2842 + x1735 + 
-     &x180*(x1491 + x2839*(x1484*x2840 - x1485*x2849 + x665*(x1486*x2846
-     & + x1486* x2883 - x1487*x2879 + x1490 - x1878*x2882 - x212*x2881 -
-     & 0.525d0* x2878)) + x2841*(-x1162*x2879 + x1328*x2846 + x1328*x288
-     &3 + x1483 - x1773*x2882 - x207*x2881 - 0.1875d0*x2878) + 2.0d0*x28
-     &48*x2850 )) + x1493*x2842 + x1737 + 2.0d0*x2851
-      d2E(2) = rho_c*(x180*(x1881 + x2839*(-x2856*x658 + x665*(-x1878*x2
-     &885 - x1878* x2886 - x1878*x2887 + x1879 - x212*x2884 + x2854*x659
-     & + x2888* x659)) + x2841*(-x1773*x2885 - x1773*x2886 - x1773*x2887
-     & + x1877 - x207*x2884 + x2854*x517 + x2888*x517) + x2848*x2889 + x
-     &2850* x2855) + x1882*x2858 + x1998) + x2859
-      d2E(3) = rho_c*(x180*(x2071*x2855*x2856 + x2073 + x2841*(-x1162*x2
-     &890 - x1773* x2892 - x207*x2891 + x2070) + x2857*(-x1487*x2890 - x
-     &1878*x2892 + x2072 - x212*x2891)) + x2117)
-      d2E(4) = rho_c*(x180*(x2228 + x2839*(-x1111*x2902 + x2218*x2849 - 
-     &x2865*x658 + x665*(-x1878*x2895 - x1878*x2896 - x212*x2894 - x2219
-     &*x2845 - x2219*x2893 + x2221*x2844 - x2222*x2901 + x2227 + 0.2625d
-     &0*x2898 + x2899*x659)) + x2841*(x1103*x2844 - x1773*x2895 - x1773*
-     &x2896 - x207*x2894 - x2118*x2845 - x2118*x2893 - x2127*x2901 + x22
-     &15 + 0.09375d0*x2898 + x2899*x517) + x2848*x2866 + x2850*x2863) + 
-     &x1882*x2867 + x2241) + x2868
-      d2E(5) = rho_c*(x180*(x2218*x2907 + x2261 + x2841*(x1103*x2852 - x
-     &1773*x2905 - x1773*x2906 - x207*x2904 - x2118*x2853 - x2118*x2903 
-     &+ x2257) + x2855*x2866 + x2857*(-x1878*x2905 - x1878*x2906 - x212*
-     &x2904 - x2219*x2853 - x2219*x2903 + x2221*x2852 + x2259) + x2863*x
-     &2889) + x2263)
-      d2E(6) = rho_c*(x180*(x2319 + x2839*(x2312*x2913 + x2313*x2865 + x
-     &665*(-x212* x2909 + x2226*x2861 - x2315*x2912 + x2318 - x2864 - 0.
-     &175d0*x2908 + 0.00914241054483176d0*x2911)) + x2841*(-x207*x2909 +
-     & x2212* x2861 - x2298*x2912 + x2310 - x2860 - 0.0625d0*x2908 + 0.0
-     &032651466231542d0*x2911) + 2.0d0*x2863*x2866) + x2320)
-      d2E(7) = rho_c*(x180*(x2839*(-x2871*x658 + x665*(-x1878*x2915 - x2
-     &222*x2917 + x2342 + 0.00228560263620794d0*x2916)) + x2841*(-x1773*
-     &x2915 - x2127*x2917 + x2339 + 0.00081628665578855d0*x2916) + x2848
-     &*x2914 + x2850*x2872) + x1882*x2873) + x2873
-      d2E(8) = x2354*(x2841*(-x1773*x2918 + x2353 + 0.00081628665578855d
-     &0*x2919) + x2855*x2914 + x2857*(-x1878*x2918 + x2352 + 0.002285602
-     &63620794d0 *x2919) + x2872*x2889)
-      d2E(9) = x2354*(x2839*(x2218*x2871 + x665*(x2224*x2921 - x2315*x29
-     &22 + x2366 + 0.00228560263620794d0*x2920)) + x2841*(x2210*x2921 - 
-     &x2298*x2922 + x2364 + 0.00081628665578855d0*x2920) + x2863*x2914 +
-     & x2866* x2872)
-      d2E(10) = x2354*(x2071*x2871*x2872 + x2841*(-x2298*x2923 + x2371) 
-     &+ x2857*(-x2315* x2923 + x2370))
-      d2E(11) = rho_c*(x180*(x2839*(-x2925*x658 + x665*(-x1878*x2929 - x
-     &2225*x2931 + x2450 + 0.0137136158172476d0*x2930)) + x2841*(-x1773*
-     &x2929 - x2211*x2931 + x2448 + 0.0048977199347313d0*x2930) + x2848*
-     &x2928 + x2850*x2926) + x1882*x2927) + x2927
-      d2E(12) = x2354*(x2841*(-x1773*x2932 - x2211*x2933 + x2462) + x285
-     &5*x2928 + x2857* (-x1878*x2932 - x2225*x2933 + x2461) + x2889*x292
-     &6)
-      d2E(13) = x2937
-      d2E(14) = x2354*(x2841*(x2491 + 0.000106611824706953d0*x2938) + x2
-     &857*(x2488 + 0.000298513109179468d0*x2938) + x2872*x2928 + x2914*x
-     &2926)
-      d2E(15) = x2937
-      d2E(16) = rho_c*(x180*(x2839*(x1157*x2902 - x2502*x2849 - x2875*x6
-     &58 + x665*(x2497 *x2846 + x2497*x2883 + x2500 - 0.2625d0*x2939)) +
-     & x2841*(x2493* x2846 + x2493*x2883 + x2496 - 0.09375d0*x2939) + x2
-     &848*x2876 + x2850*x2874) + x1882*x2877) + x2877
-      d2E(17) = x2354*(-x2502*x2907 + x2841*(x2493*x2854 + x2493*x2888 +
-     & x2505) + x2855* x2876 + x2857*(x2497*x2854 + x2497*x2888 + x2504)
-     & + x2874*x2889)
-      d2E(18) = x2940
-      d2E(19) = x2354*(-x2502*x2839*x2871 + x2841*(x2521 - x2700*x2837) 
-     &+ x2857*(x2520 - x2699*x2837) + x2872*x2876 + x2874*x2914)
-      d2E(20) = x2940
-      d2E(21) = x2354*(x2839*(-x2525*x2875 + x2527*x2913 + x665*(x2526 -
-     & 0.2625d0*x2941 )) + x2841*(x2524 - 0.09375d0*x2941) + 2.0d0*x2874
-     &*x2876)
-      end if
-      end subroutine
-
-
-C*****************************************************************************
-      pure subroutine ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 14, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, gamma_cc, tau_c, mu
-      real*8, intent(out) :: E
-      real*8 :: PBE_value, PBE_alpha_value, PBE_beta_value
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
-     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
-     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62
-      E = 0.0d0
-      x0 = 0.693147180559945d0
-      x1 = -0.101321183642338d0*x0 + 0.101321183642338d0
-      x2 = 1d0/rho_c
-      x3 = x2**0.333333333333333d0
-      x4 = 0.132568899905202d0*x3 + 1.0d0
-      x5 = 1d0/x1
-      x6 = x2**0.166666666666667d0
-      x7 = sqrt(x2)
-      x8 = x2**0.666666666666667d0
-      x9 = log(0.5d0*x5/(2.2255694211506878d0*x3 + 5.9825504357710795d0*
-     &x6 + 0.80042863499936356d0*x7 + 0.18970043257475591d0*x8) + 1.0d0)
-     &
-      x10 = x4*x9
-      x11 = 2.0d0*x10
-      x12 = x1*x11
-      x13 = -x12
-      x14 = exp(x11) - 1.0d0
-      x15 = gamma_cc**2
-      x16 = rho_c**(-4.66666666666667d0)*x15
-      x17 = x16/x1**2
-      x18 = gamma_cc*rho_c**(-2.33333333333333d0)
-      x19 = x18*x5
-      x20 = 0.00423491605186928d0*x19
-      x21 = 1.0d0 + x20/x14
-      x22 = x1*log(x20*x21/(x21 + 1.7934513966380087d-5*x17/x14**2) + 1.
-     &0d0)
-      x23 = x13 + x22
-      x24 = -0.0506605918211689d0*x0 + 0.0506605918211689d0
-      x25 = 2.0d0*x24*(0.160601656036401d0*x3 + 1.0d0)*log(1.0d0 + 0.5d0
-     &/(x24*( 4.8440767160638538d0*x3 + 12.482198746797325d0*x6 + 2.3260
-     &048119008192d0*x7 + 0.3819082618690966d0*x8)))
-      x26 = -0.0506605918211689d0*x0 + 0.0506605918211689d0
-      x27 = exp(x25/x26) - 1.0d0
-      x28 = 0.00846983210373856d0*x19
-      x29 = 1.0d0 + x28/x27
-      x30 = -x25 + x26*log(x28*x29/(7.173805586552039d-5*x17/x27**2 + x2
-     &9) + 1.0d0)
-      x31 = exp(-0.46869933305458689d0*mu*rho_c**(-0.33333333333333331d0
-     &))
-      x32 = x15/tau_c**2
-      x33 = x32/rho_c**2
-      x34 = x23*(0.00828125d0*x33 + 1.0d0)
-      x35 = x30*x33
-      x36 = 2.8d0*x34
-      x37 = rho_c**(-3)
-      x38 = 0.001953125d0*gamma_cc**3*x37/tau_c**3
-      x39 = x12 - x22
-      x40 = mu**2
-      x41 = x2**1.66666666666667d0
-      x42 = x2**1.0d0
-      x43 = x2**1.33333333333333d0
-      x44 = (0.0128480790170175d0*x3 - 0.00304892328706429d0*x42 + 0.000
-     &275310793616358d0*x43 + 0.0315297404574782d0*x8 + 1.0d0)*exp (-0.4
-     &6675853320810856d0*x3)
-      x45 = x1*x10
-      x46 = x3*x40
-      x47 = 4.60448529760779d0*mu*x6 + 1.0d0
-      x48 = mu**3
-      x49 = 0.5d0*x44 - 0.5d0
-      x50 = 1d0/x8
-      x51 = -17.2274040011291d0*x50*(-0.0177069812999059d0*x3 + 1.0d0)/(
-     & 0.337569861992026d0*x3 + 0.0244354823084343d0*x8 + 1.0d0)
-      x52 = (-0.00632205924947521d0*mu**8*x2**2.66666666666667d0*x45 + m
-     &u**6*( -0.106650135484359d0*x2**2.0d0*x45 - 0.00496533372342768d0*
-     &x41* x49) - 0.00264117541143784d0*mu**5*x41*x44 + mu**4*( 0.000206
-     &88890514282d0*x41*(-23.3866625383245d0*x50*( -0.240695990468967d0*
-     &x3 + 0.26014827853397d0*x8)*exp( -0.33933171852197186d0*x3) + 17.2
-     &274040011291d0*x50 + x51) - 0.0837628205355044d0*x42*x49 - 0.67467
-     &6415744774d0*x43*x45) + x48 *(0.000132058770571892d0*x41*(x51 - 37
-     &.6991118430775d0*( -3.07073492995203d0*x3 + 0.384834731559127d0*x8
-     &)*exp( -0.19230865217881402d0*x3)/x42) - 0.0445553741830535d0*x42*
-     &x44) + (0.202642367284676d0*x0 - 0.202642367284676d0)*log(( 0.6203
-     &5049089940009d0*x46*(3.4485100000000002d0 - 4.910891403137156d0/(4
-     &.0d0*x0 - 4.0d0)) + x47 + 1.9140710242289749d0*x48*x7)/(2.13928487
-     &13714905d0*x46 + x47)))/( 0.237113969739022d0*x40*x8 + 1.0d0)**4
-      x53 = x13 - x52
-      x54 = -x53/(x4*x9)
-      x55 = 0.031091d0*exp(64.327297288604413d0*x45 + 32.163648644302206
-     &d0*x52) - 0.031091d0
-      x56 = x1**(-2.78d0)*x18*x54**2.78d0
-      x57 = 1.0d0 + 0.000616568620185817d0*x56/x55
-      x58 = x53 + 0.031091d0*log(0.019831096464758849d0*x56*x57/( 3.8015
-     &686339784284d-7*x1**(-5.5599999999999996d0)*x16*x54** 5.5599999999
-     &999996d0/x55**2 + x57) + 1.0d0)
-      x59 = 0.5d0*rho_c
-      x60 = x32*x37*(x23*x59 + x30*x59)
-      x61 = rho_c*(x31*(x39 + (x34 - 0.02390625d0*x60)*(x38*(x36 - 0.066
-     &9375d0*x60) + 1.0d0)) + x58)
-      x62 = x23*x33
-      PBE_value = x23
-      PBE_beta_value = x30
-      PBE_alpha_value = x30
-      if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .ge. PB
-     &E_value)) then
-      E = rho_c*(x31*(x39 + (x34 - 0.02390625d0*x35)*(x38*(-0.0669375d0*
-     &x35 + x36 ) + 1.0d0)) + x58)
-      end if
-      if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .lt. PB
-     &E_value)) then
-      E = x61
-      end if
-      if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .ge. PB
-     &E_value)) then
-      E = x61
-      end if
-      if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .lt. PB
-     &E_value)) then
-      E = rho_c*(x31*(x39 + (x34 - 0.02390625d0*x62)*(x38*(x36 - 0.06693
-     &75d0*x62) + 1.0d0)) + x58)
-      end if
-      end subroutine
-
-
-C*****************************************************************************
-      pure subroutine D1ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E,
-     & d1E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 14, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, gamma_cc, tau_c, mu
-      real*8, intent(out) :: E, d1E(9)
-      real*8 :: PBE_value, PBE_alpha_value, PBE_beta_value
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
-     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
-     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
-     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
-     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
-     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
-     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
-     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
-     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
-     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
-     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
-     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
-     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
-     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
-     &, x193, x194, x195, x196, x197, x198, x199, x200, x201, x202, x203
-     &, x204, x205, x206, x207, x208, x209, x210, x211, x212, x213, x214
-     &, x215, x216, x217, x218, x219, x220, x221, x222, x223, x224, x225
-     &, x226, x227, x228, x229, x230, x231, x232, x233, x234, x235, x236
-     &, x237, x238, x239, x240, x241, x242, x243, x244, x245, x246, x247
-     &, x248, x249, x250, x251, x252, x253, x254, x255, x256, x257, x258
-     &, x259, x260, x261, x262, x263, x264, x265, x266, x267, x268, x269
-     &, x270, x271, x272, x273, x274, x275, x276, x277, x278, x279, x280
-     &, x281, x282, x283, x284, x285, x286, x287, x288, x289, x290, x291
-     &, x292, x293, x294, x295, x296, x297, x298, x299, x300
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      x0 = 0.693147180559945d0
-      x1 = 0.101321183642338d0*x0
-      x2 = -x1 + 0.101321183642338d0
-      x3 = 1d0/rho_c
-      x4 = x3**0.333333333333333d0
-      x5 = 0.132568899905202d0*x4 + 1.0d0
-      x6 = x3**0.166666666666667d0
-      x7 = sqrt(x3)
-      x8 = x3**0.666666666666667d0
-      x9 = 2.22556942115069d0*x4 + 5.98255043577108d0*x6 + 0.80042863499
-     &9364d0*x7 + 0.189700432574756d0*x8
-      x10 = 1d0/x2
-      x11 = 0.5d0*x10
-      x12 = x11/x9 + 1.0d0
-      x13 = log(x12)
-      x14 = x13*x5
-      x15 = 2.0d0*x14
-      x16 = x15*x2
-      x17 = -x16
-      x18 = exp(x15)
-      x19 = x18 - 1.0d0
-      x20 = 1d0/x19
-      x21 = rho_c**(-2.33333333333333d0)
-      x22 = x10*x21
-      x23 = 0.00423491605186928d0*x22
-      x24 = x20*x23
-      x25 = gamma_cc*x24 + 1.0d0
-      x26 = x19**(-2)
-      x27 = rho_c**(-4.66666666666667d0)
-      x28 = gamma_cc**2
-      x29 = x2**(-2)
-      x30 = x28*x29
-      x31 = x27*x30
-      x32 = x25 + 1.79345139663801d-5*x26*x31
-      x33 = 1d0/x32
-      x34 = x23*x33
-      x35 = x25*x34
-      x36 = gamma_cc*x35 + 1.0d0
-      x37 = x2*log(x36)
-      x38 = x17 + x37
-      x39 = 0.160601656036401d0*x4 + 1.0d0
-      x40 = -0.0506605918211689d0*x0 + 0.0506605918211689d0
-      x41 = 4.84407671606385d0*x4 + 12.4821987467973d0*x6 + 2.3260048119
-     &0082d0*x7 + 0.381908261869097d0*x8
-      x42 = 1.0d0 + 0.5d0/(x40*x41)
-      x43 = x40*log(x42)
-      x44 = x39*x43
-      x45 = 2.0d0*x44
-      x46 = -0.0506605918211689d0*x0 + 0.0506605918211689d0
-      x47 = 1d0/x46
-      x48 = exp(x45*x47)
-      x49 = x48 - 1.0d0
-      x50 = 1d0/x49
-      x51 = 0.00846983210373856d0*x22
+      x33 = 1.64473377556761d0*x10
+      x34 = 0.240587129128819d0*x12 + x33 + 3.84474623744721d0*x8 + 11.1
+     &203748630947d0*x9
+      x35 = 1.0d0 + 32.1639684429149d0/x34
+      x36 = log(x35)
+      x37 = x17 - 0.0310906908696548d0*x36*(0.127469618870009d0*x8 + 1.0
+     &d0)
+      x38 = x23*x37
+      x39 = x20*x38
+      x40 = x17 - x32 - x39
+      x41 = 0.5d0*x3 + 0.5d0*x5
+      x42 = x41**3
+      x43 = 1d0/x42
+      x44 = 32.1639684429148d0*x43
+      x45 = exp(x40*x44)
+      x46 = x45 - 1.0d0
+      x47 = x46**(-2)
+      x48 = x6**(-4)
+      x49 = x47*x48
+      x50 = rho_c**(-4.66666666666667d0)
+      x51 = gamma_cc**2
       x52 = x50*x51
-      x53 = gamma_cc*x52 + 1.0d0
-      x54 = x49**(-2)
-      x55 = 7.17380558655204d-5*x31*x54 + x53
-      x56 = 1d0/x55
-      x57 = x51*x56
-      x58 = x53*x57
+      x53 = 0.296858062715706d0*x52
+      x54 = 1d0/x46
+      x55 = x54*x7
+      x56 = rho_c**(-2.33333333333333d0)
+      x57 = 0.544846825002868d0*x56
+      x58 = x55*x57
       x59 = gamma_cc*x58 + 1.0d0
-      x60 = x46*log(x59)
-      x61 = -x45 + x60
-      x62 = exp(-0.46869933305458689d0*mu*rho_c**(-0.33333333333333331d0
-     &))
-      x63 = rho_c**(-2)
-      x64 = tau_c**(-2)
-      x65 = x28*x64
-      x66 = x63*x65
-      x67 = 0.00828125d0*x66 + 1.0d0
-      x68 = x38*x67
-      x69 = x61*x66
-      x70 = x68 - 0.02390625d0*x69
-      x71 = 2.8d0*x68
-      x72 = -0.0669375d0*x69 + x71
-      x73 = gamma_cc**3
-      x74 = tau_c**(-3)
-      x75 = x73*x74
-      x76 = x72*x75
-      x77 = rho_c**(-3)
-      x78 = 0.001953125d0*x77
-      x79 = x76*x78 + 1.0d0
-      x80 = x16 - x37
-      x81 = x62*(x70*x79 + x80)
-      x82 = x14*x2
-      x83 = mu**2
-      x84 = x8*x83
-      x85 = 0.237113969739022d0*x84 + 1.0d0
-      x86 = x85**(-4)
-      x87 = mu**5
-      x88 = exp(-0.46675853320810856d0*x4)
-      x89 = x3**1.0d0
-      x90 = 0.00304892328706429d0*x89
-      x91 = x3**1.33333333333333d0
-      x92 = x88*(0.0128480790170175d0*x4 + 0.0315297404574782d0*x8 - x90
-     & + 0.000275310793616358d0*x91 + 1.0d0)
-      x93 = x87*x92
-      x94 = x3**1.66666666666667d0
-      x95 = 0.00264117541143784d0*x94
-      x96 = mu**8
-      x97 = x3**2.66666666666667d0*x96
-      x98 = x82*x97
-      x99 = 0.202642367284676d0*x0 - 0.202642367284676d0
-      x100 = x4*x83
-      x101 = mu*x6
-      x102 = 4.60448529760779d0*x101 + 1.0d0
-      x103 = 2.13928487137149d0*x100 + x102
-      x104 = 1d0/x103
-      x105 = mu**3
-      x106 = x105*x7
-      x107 = x100*(3.44851d0 - 4.91089140313716d0/(4.0d0*x0 - 4.0d0))
-      x108 = x102 + 1.91407102422897d0*x106 + 0.6203504908994d0*x107
-      x109 = mu**6
-      x110 = 0.5d0*x92 - 0.5d0
-      x111 = 0.00496533372342768d0*x94
-      x112 = x3**2.0d0
-      x113 = x112*x82
-      x114 = 0.0445553741830535d0*x89
-      x115 = x114*x92
-      x116 = exp(-0.19230865217881402d0*x4)
-      x117 = x116*(-3.07073492995203d0*x4 + 0.384834731559127d0*x8)
-      x118 = 37.6991118430775d0/x89
-      x119 = x117*x118
-      x120 = 0.337569861992026d0*x4 + 0.0244354823084343d0*x8 + 1.0d0
-      x121 = 1d0/x120
-      x122 = -0.0177069812999059d0*x4 + 1.0d0
-      x123 = x121*x122
-      x124 = 1d0/x8
-      x125 = 17.2274040011291d0*x124
-      x126 = -x123*x125
-      x127 = -x119 + x126
-      x128 = 0.000132058770571892d0*x94
-      x129 = mu**4
-      x130 = 0.0837628205355044d0*x89
-      x131 = x110*x130
-      x132 = exp(-0.33933171852197186d0*x4)
-      x133 = x132*(-0.240695990468967d0*x4 + 0.26014827853397d0*x8)
-      x134 = 23.3866625383245d0*x124
-      x135 = 17.2274040011291d0*x124 + x126 - x133*x134
-      x136 = 0.00020688890514282d0*x94
-      x137 = x105*(-x115 + x127*x128) + x109*(-x110*x111 - 0.10665013548
-     &4359d0*x113) + x129*(-x131 + x135*x136 - 0.674676415744774d0*x82*x
-     &91) - x93* x95 - 0.00632205924947521d0*x98 + x99*log(x104*x108)
-      x138 = x137*x86
-      x139 = exp(32.163648644302206d0*x138 + 64.327297288604413d0*x82)
-      x140 = 0.031091d0*x139 - 0.031091d0
-      x141 = x140**(-2)
-      x142 = -x138 + x17
-      x143 = 1d0/x5
-      x144 = 1d0/x13
-      x145 = x143*x144
-      x146 = -x142*x145
-      x147 = x146**5.56d0*x2**(-5.56d0)
-      x148 = x141*x147
-      x149 = x148*x28
-      x150 = 3.80156863397843d-7*x149*x27
-      x151 = 1d0/x140
-      x152 = x146**2.78d0*x2**(-2.78d0)
-      x153 = x151*x152
-      x154 = 0.000616568620185817d0*x153*x21
-      x155 = gamma_cc*x154
-      x156 = x155 + 1.0d0
-      x157 = x150 + x156
-      x158 = 1d0/x157
-      x159 = x156*x158
-      x160 = x152*x21
-      x161 = 0.0198310964647588d0*x160
-      x162 = x159*x161
-      x163 = gamma_cc*x162
-      x164 = x163 + 1.0d0
-      x165 = x142 + 0.031091d0*log(x164)
-      x166 = x165 + x81
-      x167 = x65*x77
-      x168 = 0.0478125d0*x61
-      x169 = x3*x4
-      x170 = 0.107067770690934d0*x169*x43
-      x171 = x3*x6
-      x172 = x3*x7
-      x173 = x3*x8
-      x174 = (1.61469223868795d0*x169 + 2.08036645779955d0*x171 + 1.1630
-     &0240595041d0* x172 + 0.254605507912731d0*x173)/(x41**2*x42)
-      x175 = gamma_cc*rho_c**(-3.33333333333333d0)
-      x176 = x10*x175
-      x177 = 0.01976294157539d0*x176
-      x178 = x177*x50
-      x179 = x48*(-x170*x47 + 1.0d0*x174*x39*x47)
-      x180 = gamma_cc*x51
-      x181 = x179*x180*x54
-      x182 = rho_c**(-5.66666666666667d0)
-      x183 = x182*x30
-      x184 = x180*x53/x55**2
-      x185 = x46/x59
-      x186 = x170 + 0.5d0*x174*(-0.321203312072801d0*x4 - 2.0d0) + x185*
-     &(gamma_cc*x57 *(-x178 - x181) - x177*x53*x56 + x184*(x178 + 0.0001
-     &43476111731041d0*x179*x31/x49**3 + x181 + 0.000334777594039095d0*x
-     &183*x54))
-      x187 = x186*x66
-      x188 = 1d0/x36
-      x189 = 0.00988147078769499d0*x176
-      x190 = x189*x20
-      x191 = x13*x169
-      x192 = 0.0883792666034679d0*x191
-      x193 = 0.265137799810404d0*x4
-      x194 = x193 + 2.0d0
-      x195 = (0.741856473716896d0*x169 + 0.99709173929518d0*x171 + 0.400
-     &214317499682d0*x172 + 0.126466955049837d0*x173)/(x12*x9**2)
-      x196 = x18*(x11*x194*x195 - x192)
-      x197 = gamma_cc*x23
-      x198 = x196*x197*x26
-      x199 = x197*x25/x32**2
-      x200 = x188*(gamma_cc*x34*(-x190 - x198) - x189*x25*x33 + x199*( 8
-     &.36943985097738d-5*x183*x26 + x190 + x198 + 3.58690279327602d-5* x
-     &196*x31/x19**3))
-      x201 = 0.5d0*x195
-      x202 = x192*x2
-      x203 = x201*(-x193 - 2.0d0) + x202
-      x204 = x2*x200 + x203
-      x205 = x204*x67
-      x206 = x167*x38
-      x207 = x205 - 0.0165625d0*x206
-      x208 = rho_c**(-4)
-      x209 = 0.005859375d0*x208
-      x210 = 0.133875d0*x61
-      x211 = 0.0231875d0*x66 + 2.8d0
-      x212 = x204*x211
-      x213 = -0.046375d0*x206 + x212
-      x214 = x75*x78
-      x215 = x1 - 0.101321183642338d0
-      x216 = x194*x201 + x200*x215 - x202
-      x217 = 0.156233111018196d0*mu*rho_c**(-1.33333333333333d0)
-      x218 = x142*x144*x169/x5**2
-      x219 = x10*x142*x143*x195/x13**2
-      x220 = x3*x94
-      x221 = x3*x91
-      x222 = x88*(-0.0042826930056725d0*x169 - 0.0210198269716521d0*x173
-     & - 0.000367081058155144d0*x221 + x3*x90)
-      x223 = x13*x2
-      x224 = x223*x3
-      x225 = x195*x5
-      x226 = 0.767414216267966d0*x101*x3
-      x227 = 0.00152446164353214d0*x89
-      x228 = 0.155586177736036d0*x169*x88*(-x227 + 0.00642403950850875d0
-     &*x4 + 0.0157648702287391d0*x8 + 0.000137655396808179d0*x91 + 0.5d0
-     &) + x88*(-0.00214134650283625d0*x169 - 0.0105099134858261d0*x173 -
-     & 0.000183540529077572d0*x221 + x227*x3)
-      x229 = x3/x4
-      x230 = x124*x3
-      x231 = -0.101681773497972d0*x121*x229 - 11.4849360007528d0*x123*x2
-     &30 - x122* x125*(0.112523287330675d0*x169 + 0.0162903215389562d0*x
-     &173)/x120 **2
-      x232 = x86*(x103*x99*(x104*(-0.957035512114487d0*x106*x3 - 0.20678
-     &3496966467d0* x107*x3 - x226) + x108*(0.71309495712383d0*x100*x3 +
-     & x226)/x103** 2)/x108 + x105*(-x114*x222 + x115*x3 - 0.00022009795
-     &0953153d0* x127*x220 + x128*(-x116*x118*(1.02357830998401d0*x169 -
-     & 0.256556487706084d0*x173) - 2.41662179562687d0*x117*x3** 0.333333
-     &333333333d0 - x119*x3 + x231) - 0.00693220036674015d0* x221*x92) +
-     & x109*(0.0082755562057128d0*x110*x220 - x111*x228 - 0.053325067742
-     &1794d0*x112*x225 + 0.213300270968718d0*x113*x3 + 0.004712830378634
-     &06d0*x224*x3**2.33333333333333d0) + x129*(-x130* x228 + x131*x3 - 
-     &0.0003448148419047d0*x135*x220 + x136*(-x132* x134*(0.080231996822
-     &9891d0*x169 - 0.173432185689313d0*x173) - 2.64527879654103d0*x133*
-     &x229 - 15.591108358883d0*x133*x230 + 11.4849360007528d0*x230 + x23
-     &1) + 0.0298137034090898d0*x220*x223 + 0.899568554326366d0*x221*x82
-     & - 0.337338207872387d0*x225*x91) + 0.00440195901906306d0*x220*x93 
-     &- x222*x87*x95 + 0.000279369479946145d0*x224*x3**3.0d0*x96 - 0.003
-     &16102962473761d0 *x225*x97 + 0.0168588246652672d0*x3*x98 - 0.00041
-     &0930386996015d0* x3**3.0d0*x93)
-      x233 = x137*x3*x84/x85**5
-      x234 = x203 - x232 - 0.632303919304059d0*x233
-      x235 = x145*x234
-      x236 = x14/x142
-      x237 = x236*(-0.12284718057882d0*x218 + 1.39d0*x219 - 2.78d0*x235)
-     &
-      x238 = 0.00143866011376691d0*x153*x175
-      x239 = x139*(-2.84259967847505d0*x191*x2 + x201*(8.52779903542516d
-     &0*x4 + 64.3272972886044d0) + 32.1636486443022d0*x232 + 20.33720109
-     &6911d0 *x233)
-      x240 = 1.91697349701972d-5*gamma_cc*x141*x160*x239
-      x241 = x155*x237
-      x242 = gamma_cc*x161
-      x243 = x156*x242/x157**2
-      x244 = 0.031091d0/x164
-      x245 = x234 + x244*(-0.0462725584177706d0*x152*x159*x175 + x158*x2
-     &42*(-x238 - x240 - x241) - x163*x237 + x243*(1.77406536252327d-6*x
-     &149*x182 + x150*x236*(-0.245694361157641d0*x218 + 2.78d0*x219 - 5.
-     &56d0*x235 ) + x238 + x240 + x241 + 2.36389140798047d-8*x147*x239*x
-     &27*x28/ x140**3))
-      x246 = gamma_cc*x27
-      x247 = x246*x29
-      x248 = x188*(x199*(-x24 - 3.58690279327602d-5*x247*x26) + 1.793451
-     &39663801d-5* x20*x247*x33 + x35)
-      x249 = x215*x248
-      x250 = gamma_cc*x64
-      x251 = x250*x63
-      x252 = x185*(x184*(-0.000143476111731041d0*x247*x54 - x52) + 7.173
-     &80558655204d-5*x247*x50*x56 + x58)
-      x253 = x252*x66
-      x254 = x2*x248
-      x255 = x254*x67
-      x256 = 0.0165625d0*x63
-      x257 = x256*x38
-      x258 = x250*x257 + x255
-      x259 = x28*x74
-      x260 = 0.005859375d0*x77
-      x261 = x260*x72
-      x262 = x211*x254
-      x263 = x251*x38
-      x264 = x262 + 0.046375d0*x263
-      x265 = x244*(1.22272317840482d-5*x147*x151*x158*x246 + x162 + x243
-     &*( -7.60313726795686d-7*x148*x246 - x154))
-      x266 = -x257*x259
-      x267 = x259*x63
-      x268 = -x256*x259*(2.8d0*x37 - 5.6d0*x82)
-      x269 = x73/tau_c**4
-      x270 = rho_c*x62
-      x271 = 0.5d0*rho_c
-      x272 = x271*x38 + x271*x61
-      x273 = x167*x272
-      x274 = -0.02390625d0*x273 + x68
-      x275 = -0.0669375d0*x273 + x71
-      x276 = x214*x275 + 1.0d0
-      x277 = x62*(x274*x276 + x80)
-      x278 = x165 + x277
-      x279 = rho_c*x278
-      x280 = x208*x272*x65
-      x281 = x167*(x186*x271 + x204*x271 + 0.5d0*x37 - 1.0d0*x44 + 0.5d0
-     &*x60 - 1.0d0* x82)
-      x282 = x209*x75
-      x283 = rho_c*(x217*x277 + x245 + x62*(x216 + x274*(x214*(x213 + 0.
-     &2008125d0* x280 - 0.0669375d0*x281) - x275*x282) + x276*(x207 + 0.
-     &07171875d0 *x280 - 0.02390625d0*x281))) + x278
-      x284 = x167*(x252*x271 + x254*x271)
-      x285 = x272*x77
-      x286 = x250*x285
-      x287 = x260*x275
-      x288 = rho_c*(x265 + x62*(x249 + x274*(x214*(x264 - 0.0669375d0*x2
-     &84 - 0.133875d0*x286) + x259*x287) + x276*(x258 - 0.02390625d0*x28
-     &4 - 0.0478125d0*x286)))
-      x289 = x259*x285
-      x290 = x270*(x274*(x214*(x268 + 0.133875d0*x289) - x269*x287) + x2
-     &76*(x266 + 0.0478125d0*x289))
-      x291 = x38*x66
-      x292 = -0.02390625d0*x291 + x68
-      x293 = -0.0669375d0*x291 + x71
-      x294 = x214*x293 + 1.0d0
-      x295 = x62*(x292*x294 + x80)
-      x296 = x165 + x295
-      x297 = x204*x66
-      x298 = x254*x66
-      x299 = x260*x293
-      x300 = x267*x38
-      PBE_value = x38
-      PBE_beta_value = x61
-      PBE_alpha_value = x61
-      if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .ge. PB
-     &E_value)) then
-      E = rho_c*x166
-      d1E(1) = rho_c*(x217*x81 + x245 + x62*(x216 + x70*(-x209*x76 + x21
-     &4*(x167*x210 - 0.0669375d0*x187 + x213)) + x79*(x167*x168 - 0.0239
-     &0625d0*x187 + x207))) + x166
-      d1E(3) = rho_c*(x265 + x62*(x249 + x70*(x214*(-x210*x251 - 0.06693
-     &75d0*x253 + x264) + x259*x261) + x79*(-x168*x251 - 0.02390625d0*x2
-     &53 + x258 )))
-      d1E(6) = x270*(x70*(x214*(x210*x267 + x268) - x261*x269) + x79*(x1
-     &68*x267 + x266 ))
-      end if
-      if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .lt. PB
-     &E_value)) then
-      E = x279
-      d1E(1) = x283
-      d1E(3) = x288
-      d1E(6) = x290
-      end if
-      if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .ge. PB
-     &E_value)) then
-      E = x279
-      d1E(1) = x283
-      d1E(3) = x288
-      d1E(6) = x290
-      end if
-      if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .lt. PB
-     &E_value)) then
-      E = rho_c*x296
-      d1E(1) = rho_c*(x217*x295 + x245 + x62*(x216 + x292*(x214*(0.0875d
-     &0*x206 + x212 - 0.0669375d0*x297) - x282*x293) + x294*(x205 + 0.03
-     &125d0*x206 - 0.02390625d0*x297))) + x296
-      d1E(3) = rho_c*(x265 + x62*(x249 + x292*(x214*(x262 - 0.0875d0*x26
-     &3 - 0.0669375d0 *x298) + x259*x299) + x294*(x255 - 0.03125d0*x263 
-     &- 0.02390625d0* x298)))
-      d1E(6) = x270*(x292*(x214*(x268 + 0.133875d0*x300) - x269*x299) + 
-     &0.03125d0*x294* x300)
-      end if
-      end subroutine
-
-
-C*****************************************************************************
-      pure subroutine D2ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E,
-     & d1E, d2E)
-C*****************************************************************************
-C   Implemented by E.R. Kjellgren.
-C
-C   Subroutine generated using Sympy 1.2
-C   Generated: September 14, 2018
-C*****************************************************************************
-      implicit none
-      real*8, intent(in) :: rho_c, gamma_cc, tau_c, mu
-      real*8, intent(out) :: E, d1E(9), d2E(45)
-      real*8 :: PBE_value, PBE_alpha_value, PBE_beta_value
-      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
-     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
-     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
-     &, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52,
-     & x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, 
-     &x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x
-     &79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x9
-     &2, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104
-     &, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115
-     &, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126
-     &, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137
-     &, x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148
-     &, x149, x150, x151, x152, x153, x154, x155, x156, x157, x158, x159
-     &, x160, x161, x162, x163, x164, x165, x166, x167, x168, x169, x170
-     &, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181
-     &, x182, x183, x184, x185, x186, x187, x188, x189, x190, x191, x192
-     &, x193, x194, x195, x196, x197, x198, x199, x200, x201, x202, x203
-     &, x204, x205, x206, x207, x208, x209, x210, x211, x212, x213, x214
-     &, x215, x216, x217, x218, x219, x220, x221, x222, x223, x224, x225
-     &, x226, x227, x228, x229, x230, x231, x232, x233, x234, x235, x236
-     &, x237, x238, x239, x240, x241, x242, x243, x244, x245, x246, x247
-     &, x248, x249, x250, x251, x252, x253, x254, x255, x256, x257, x258
-     &, x259, x260, x261, x262, x263, x264, x265, x266, x267, x268, x269
-     &, x270, x271, x272, x273, x274, x275, x276, x277, x278, x279, x280
-     &, x281, x282, x283, x284, x285, x286, x287, x288, x289, x290, x291
-     &, x292, x293, x294, x295, x296, x297, x298, x299, x300, x301, x302
-     &, x303, x304, x305, x306, x307, x308, x309, x310, x311, x312, x313
-     &, x314, x315, x316, x317, x318, x319, x320, x321, x322, x323, x324
-     &, x325, x326, x327, x328, x329, x330, x331, x332, x333, x334, x335
-     &, x336, x337, x338, x339, x340, x341, x342, x343, x344, x345, x346
-     &, x347, x348, x349, x350, x351, x352, x353, x354, x355, x356, x357
-     &, x358, x359, x360, x361, x362, x363, x364, x365, x366, x367, x368
-     &, x369, x370, x371, x372, x373, x374, x375, x376, x377, x378, x379
-     &, x380, x381, x382, x383, x384, x385, x386, x387, x388, x389, x390
-     &, x391, x392, x393, x394, x395, x396, x397, x398, x399, x400, x401
-     &, x402, x403, x404, x405, x406, x407, x408, x409, x410, x411, x412
-     &, x413, x414, x415, x416, x417, x418, x419, x420, x421, x422, x423
-     &, x424, x425, x426, x427, x428, x429, x430, x431, x432, x433, x434
-     &, x435, x436, x437, x438, x439, x440, x441, x442, x443, x444, x445
-     &, x446, x447, x448, x449, x450, x451, x452, x453, x454, x455, x456
-     &, x457, x458, x459, x460, x461, x462, x463, x464, x465, x466, x467
-     &, x468, x469, x470, x471, x472, x473, x474, x475, x476, x477, x478
-     &, x479, x480, x481, x482, x483, x484, x485, x486, x487, x488, x489
-     &, x490, x491, x492, x493, x494, x495, x496, x497, x498, x499, x500
-     &, x501, x502, x503, x504, x505, x506, x507, x508, x509, x510, x511
-     &, x512, x513, x514, x515, x516, x517, x518, x519, x520, x521, x522
-     &, x523, x524, x525, x526, x527, x528, x529, x530, x531, x532, x533
-     &, x534, x535, x536, x537, x538, x539, x540, x541, x542, x543, x544
-     &, x545, x546, x547, x548, x549, x550, x551, x552, x553, x554, x555
-     &, x556, x557, x558, x559, x560, x561, x562, x563, x564, x565, x566
-     &, x567, x568, x569, x570, x571, x572, x573, x574, x575, x576, x577
-     &, x578, x579, x580, x581, x582, x583, x584, x585, x586, x587, x588
-     &, x589, x590, x591, x592, x593, x594, x595, x596, x597, x598, x599
-     &, x600, x601, x602, x603, x604, x605, x606, x607, x608, x609, x610
-     &, x611, x612, x613, x614, x615, x616, x617, x618, x619, x620, x621
-     &, x622, x623, x624, x625, x626, x627, x628, x629, x630, x631, x632
-     &, x633, x634, x635, x636, x637, x638, x639, x640, x641, x642, x643
-     &, x644, x645, x646, x647, x648, x649, x650, x651, x652, x653, x654
-     &, x655, x656, x657, x658, x659, x660, x661, x662, x663, x664, x665
-     &, x666, x667, x668, x669, x670, x671, x672, x673, x674, x675, x676
-     &, x677, x678, x679, x680, x681, x682, x683, x684, x685, x686, x687
-     &, x688, x689, x690, x691, x692, x693, x694, x695, x696, x697, x698
-     &, x699, x700, x701, x702, x703, x704, x705, x706, x707, x708, x709
-     &, x710, x711, x712, x713, x714, x715, x716, x717, x718, x719, x720
-     &, x721, x722, x723, x724, x725, x726, x727, x728, x729, x730, x731
-     &, x732, x733, x734, x735, x736, x737, x738, x739, x740, x741, x742
-     &, x743, x744, x745, x746, x747, x748, x749, x750, x751, x752, x753
-     &, x754, x755, x756, x757, x758, x759, x760, x761, x762, x763, x764
-     &, x765, x766, x767, x768, x769, x770, x771, x772, x773, x774, x775
-     &, x776, x777, x778, x779, x780, x781, x782, x783, x784, x785, x786
-     &, x787, x788, x789, x790, x791, x792, x793, x794, x795, x796, x797
-     &, x798, x799, x800, x801, x802, x803, x804, x805, x806, x807, x808
-     &, x809, x810, x811, x812, x813, x814, x815, x816, x817, x818, x819
-     &, x820, x821, x822, x823, x824, x825, x826, x827, x828, x829, x830
-     &, x831, x832, x833, x834, x835, x836, x837, x838, x839, x840, x841
-     &, x842, x843, x844, x845
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      d2E(:) = 0.0d0
-      x0 = 0.693147180559945d0
-      x1 = 0.101321183642338d0*x0
-      x2 = -x1 + 0.101321183642338d0
-      x3 = 1d0/rho_c
-      x4 = x3**0.333333333333333d0
-      x5 = 0.132568899905202d0*x4
-      x6 = x5 + 1.0d0
-      x7 = x3**0.166666666666667d0
-      x8 = sqrt(x3)
-      x9 = 0.800428634999364d0*x8
-      x10 = x3**0.666666666666667d0
-      x11 = 0.189700432574756d0*x10 + 2.22556942115069d0*x4 + 5.98255043
-     &577108d0*x7 + x9
-      x12 = 1d0/x2
-      x13 = 0.5d0*x12
-      x14 = 1.0d0 + x13/x11
-      x15 = log(x14)
-      x16 = x15*x6
-      x17 = 2.0d0*x16
-      x18 = x17*x2
-      x19 = -x18
-      x20 = exp(x17)
-      x21 = x20 - 1.0d0
-      x22 = x21**(-2)
-      x23 = rho_c**(-4.66666666666667d0)
-      x24 = gamma_cc**2
-      x25 = x2**(-2)
-      x26 = x24*x25
-      x27 = x23*x26
-      x28 = 1d0/x21
-      x29 = rho_c**(-2.33333333333333d0)
-      x30 = x12*x29
-      x31 = x28*x30
-      x32 = 0.00423491605186928d0*x31
-      x33 = gamma_cc*x32 + 1.0d0
-      x34 = 1.79345139663801d-5*x22*x27 + x33
-      x35 = 1d0/x34
-      x36 = x33*x35
-      x37 = 0.00423491605186928d0*x30
-      x38 = x36*x37
-      x39 = gamma_cc*x38 + 1.0d0
-      x40 = x2*log(x39)
-      x41 = x19 + x40
-      x42 = 0.160601656036401d0*x4
-      x43 = x42 + 1.0d0
-      x44 = -0.0506605918211689d0*x0 + 0.0506605918211689d0
-      x45 = 1d0/x44
-      x46 = 2.32600481190082d0*x8
-      x47 = 0.381908261869097d0*x10 + 4.84407671606385d0*x4 + x46 + 12.4
-     &821987467973d0*x7
-      x48 = 0.5d0*x45/x47 + 1.0d0
-      x49 = x44*log(x48)
-      x50 = x43*x49
-      x51 = 2.0d0*x50
-      x52 = -0.0506605918211689d0*x0 + 0.0506605918211689d0
-      x53 = 1d0/x52
-      x54 = exp(x51*x53)
-      x55 = x54 - 1.0d0
-      x56 = x55**(-2)
-      x57 = 1d0/x55
-      x58 = x30*x57
-      x59 = 0.00846983210373856d0*x58
-      x60 = gamma_cc*x59 + 1.0d0
-      x61 = 7.17380558655204d-5*x27*x56 + x60
-      x62 = 1d0/x61
-      x63 = x60*x62
-      x64 = 0.00846983210373856d0*x30
-      x65 = x63*x64
-      x66 = gamma_cc*x65 + 1.0d0
-      x67 = x52*log(x66)
-      x68 = -x51 + x67
-      x69 = exp(-0.46869933305458689d0*mu*rho_c**(-0.33333333333333331d0
-     &))
-      x70 = rho_c**(-2)
-      x71 = tau_c**(-2)
-      x72 = x70*x71
-      x73 = x24*x72
-      x74 = 0.00828125d0*x73 + 1.0d0
-      x75 = x41*x74
-      x76 = x68*x73
-      x77 = x75 - 0.02390625d0*x76
-      x78 = rho_c**(-3)
-      x79 = 2.8d0*x75
-      x80 = -0.0669375d0*x76 + x79
-      x81 = x78*x80
-      x82 = gamma_cc**3
-      x83 = tau_c**(-3)
-      x84 = x82*x83
-      x85 = 0.001953125d0*x84
-      x86 = x81*x85 + 1.0d0
-      x87 = x18 - x40
-      x88 = x69*(x77*x86 + x87)
-      x89 = x16*x2
-      x90 = mu**2
-      x91 = x10*x90
-      x92 = 0.237113969739022d0*x91 + 1.0d0
-      x93 = x92**(-4)
-      x94 = mu**5
-      x95 = exp(-0.46675853320810856d0*x4)
-      x96 = x3**1.0d0
-      x97 = 0.00304892328706429d0*x96
-      x98 = x3**1.33333333333333d0
-      x99 = x95*(0.0315297404574782d0*x10 + 0.0128480790170175d0*x4 - x9
-     &7 + 0.000275310793616358d0*x98 + 1.0d0)
-      x100 = x94*x99
-      x101 = x3**1.66666666666667d0
-      x102 = 0.00264117541143784d0*x101
-      x103 = mu**8
-      x104 = x103*x3**2.66666666666667d0
-      x105 = x104*x89
-      x106 = 0.202642367284676d0*x0 - 0.202642367284676d0
-      x107 = x4*x90
-      x108 = mu*x7
-      x109 = 4.60448529760779d0*x108 + 1.0d0
-      x110 = 2.13928487137149d0*x107 + x109
-      x111 = 1d0/x110
-      x112 = mu**3
-      x113 = x112*x8
-      x114 = x107*(3.44851d0 - 4.91089140313716d0/(4.0d0*x0 - 4.0d0))
-      x115 = x109 + 1.91407102422897d0*x113 + 0.6203504908994d0*x114
-      x116 = mu**6
-      x117 = 0.5d0*x99 - 0.5d0
-      x118 = 0.00496533372342768d0*x101
-      x119 = x3**2.0d0
-      x120 = x119*x89
-      x121 = 0.0445553741830535d0*x96
-      x122 = x121*x99
-      x123 = exp(-0.19230865217881402d0*x4)
-      x124 = x123*(0.384834731559127d0*x10 - 3.07073492995203d0*x4)
-      x125 = 1d0/x96
-      x126 = 37.6991118430775d0*x125
-      x127 = x124*x126
-      x128 = 0.0244354823084343d0*x10 + 0.337569861992026d0*x4 + 1.0d0
-      x129 = 1d0/x128
-      x130 = -0.0177069812999059d0*x4 + 1.0d0
-      x131 = x129*x130
-      x132 = 1d0/x10
-      x133 = 17.2274040011291d0*x132
-      x134 = -x131*x133
-      x135 = -x127 + x134
-      x136 = 0.000132058770571892d0*x101
-      x137 = mu**4
-      x138 = 0.0837628205355044d0*x96
-      x139 = x117*x138
-      x140 = exp(-0.33933171852197186d0*x4)
-      x141 = x140*(0.26014827853397d0*x10 - 0.240695990468967d0*x4)
-      x142 = 23.3866625383245d0*x132
-      x143 = 17.2274040011291d0*x132 + x134 - x141*x142
-      x144 = 0.00020688890514282d0*x101
-      x145 = -x100*x102 - 0.00632205924947521d0*x105 + x106*log(x111*x11
-     &5) + x112*( -x122 + x135*x136) + x116*(-x117*x118 - 0.106650135484
-     &359d0*x120 ) + x137*(-x139 + x143*x144 - 0.674676415744774d0*x89*x
-     &98)
-      x146 = x145*x93
-      x147 = exp(32.163648644302206d0*x146 + 64.327297288604413d0*x89)
-      x148 = 0.031091d0*x147 - 0.031091d0
+      x60 = x49*x53 + x59
+      x61 = 1d0/x60
+      x62 = x61*x7
+      x63 = x57*x59
+      x64 = x62*x63
+      x65 = gamma_cc*x64 + 1.0d0
+      x66 = log(x65)
+      x67 = 0.0310906908696549d0*x42
+      x68 = x66*x67
+      x69 = -x17 + x32
+      x70 = x39 + x69
+      x71 = x68 + x70
+      x72 = 6.28318530717959d0*rho_c
+      x73 = 6.28318530717959d0*rho_s
+      x74 = x72 + x73
+      x75 = 1d0/x74
+      x76 = x75**0.333333333333333d0
+      x77 = x75**0.166666666666667d0
+      x78 = sqrt(x75)
+      x79 = x75**0.666666666666667d0
+      x80 = 8.93863016189422d0*x76 + 16.9559087764345d0*x77 + 5.83042942
+     &843835d0*x78 + 1.30040600365736d0*x79
+      x81 = 1.0d0 + 32.1639684429149d0/x80
+      x82 = log(x81)
+      x83 = x82*(0.296353441706766d0*x76 + 1.0d0)
+      x84 = 0.5d0*gamma_cs
+      x85 = 0.25d0*gamma_cc
+      x86 = 0.25d0*gamma_ss
+      x87 = x85 + x86
+      x88 = x84 + x87
+      x89 = exp(1.999999999999994d0*x83)
+      x90 = x89 - 1.0d0
+      x91 = 1d0/x90
+      x92 = 0.5d0*rho_c
+      x93 = 0.5d0*rho_s
+      x94 = x92 + x93
+      x95 = x94**(-2)
+      x96 = x91*x95
+      x97 = 14.804406601634d0*rho_c
+      x98 = 14.804406601634d0*rho_s
+      x99 = x97 + x98
+      x100 = x99**(-0.333333333333333d0)
+      x101 = 0.668920897233289d0*x100
+      x102 = x101*x96
+      x103 = x102*x88 + 1.0d0
+      x104 = x90**(-2)
+      x105 = x88**2
+      x106 = x104*x105
+      x107 = x94**(-4)
+      x108 = x99**(-0.666666666666667d0)
+      x109 = x107*x108
+      x110 = 0.447455166755389d0*x109
+      x111 = x103 + x106*x110
+      x112 = 1d0/x111
+      x113 = x112*x95
+      x114 = x103*x113
+      x115 = x101*x88
+      x116 = x114*x115 + 1.0d0
+      x117 = log(x116)
+      x118 = 0.0155453454348274d0*x117 - 0.0310906908696548d0*x83
+      x119 = x72 - x73
+      x120 = 1d0/x119
+      x121 = x120**0.333333333333333d0
+      x122 = x120**0.166666666666667d0
+      x123 = sqrt(x120)
+      x124 = x120**0.666666666666667d0
+      x125 = 8.93863016189422d0*x121 + 16.9559087764345d0*x122 + 5.83042
+     &942843835d0* x123 + 1.30040600365736d0*x124
+      x126 = 1.0d0 + 32.1639684429149d0/x125
+      x127 = log(x126)
+      x128 = x127*(0.296353441706766d0*x121 + 1.0d0)
+      x129 = x92 - x93
+      x130 = x129**(-2)
+      x131 = exp(1.999999999999994d0*x128)
+      x132 = x131 - 1.0d0
+      x133 = x132**(-2)
+      x134 = -x84 + x87
+      x135 = x134**2
+      x136 = x133*x135
+      x137 = x129**(-4)
+      x138 = x97 - x98
+      x139 = x138**(-0.666666666666667d0)
+      x140 = x137*x139
+      x141 = 0.447455166755389d0*x140
+      x142 = 1d0/x132
+      x143 = x130*x142
+      x144 = x138**(-0.333333333333333d0)
+      x145 = 0.668920897233289d0*x144
+      x146 = x143*x145
+      x147 = x134*x146 + 1.0d0
+      x148 = x136*x141 + x147
       x149 = 1d0/x148
-      x150 = -x146 + x19
-      x151 = 1d0/x6
-      x152 = 1d0/x15
-      x153 = x151*x152
-      x154 = -x150*x153
-      x155 = x154**2.78d0
-      x156 = x155*x2**(-2.78d0)
-      x157 = x149*x156
-      x158 = x157*x29
-      x159 = 0.000616568620185817d0*x158
-      x160 = gamma_cc*x159
-      x161 = x160 + 1.0d0
-      x162 = x148**(-2)
-      x163 = x154**5.56d0
-      x164 = x163*x2**(-5.56d0)
-      x165 = x162*x164
-      x166 = x165*x24
-      x167 = x166*x23
-      x168 = 3.80156863397843d-7*x167
-      x169 = x161 + x168
-      x170 = 1d0/x169
-      x171 = x156*x170
-      x172 = x161*x171
-      x173 = 0.0198310964647588d0*x29
-      x174 = x172*x173
-      x175 = gamma_cc*x174
-      x176 = x175 + 1.0d0
-      x177 = x150 + 0.031091d0*log(x176)
-      x178 = x177 + x88
-      x179 = x71*x78
-      x180 = x179*x24
-      x181 = x180*x68
-      x182 = x3*x4
-      x183 = 0.107067770690934d0*x182
-      x184 = x183*x49
-      x185 = x3*x7
-      x186 = x3*x8
-      x187 = x10*x3
-      x188 = 1.61469223868795d0*x182 + 2.08036645779955d0*x185 + 1.16300
-     &240595041d0* x186 + 0.254605507912731d0*x187
-      x189 = 1d0/x48
-      x190 = x189/x47**2
-      x191 = x188*x190
-      x192 = -0.321203312072801d0*x4 - 2.0d0
-      x193 = 0.5d0*x192
-      x194 = rho_c**(-3.33333333333333d0)
-      x195 = x12*x194
-      x196 = 0.01976294157539d0*x195
-      x197 = x196*x63
-      x198 = gamma_cc*x197
-      x199 = x195*x57
-      x200 = 0.01976294157539d0*x199
-      x201 = gamma_cc*x200
-      x202 = x43*x53
-      x203 = 1.0d0*x202
-      x204 = -x184*x53 + x191*x203
-      x205 = x204*x54
-      x206 = x205*x56
-      x207 = x206*x64
-      x208 = gamma_cc*x207
-      x209 = -x201 - x208
-      x210 = x62*x64
-      x211 = x209*x210
-      x212 = gamma_cc*x211
-      x213 = rho_c**(-5.66666666666667d0)
-      x214 = x213*x26
-      x215 = x214*x56
-      x216 = x55**(-3)
-      x217 = x205*x216
-      x218 = 0.000143476111731041d0*x27
-      x219 = x201 + x208 + 0.000334777594039095d0*x215 + x217*x218
-      x220 = x61**(-2)
-      x221 = x220*x60
-      x222 = x221*x64
-      x223 = x219*x222
-      x224 = gamma_cc*x223
-      x225 = -x198 + x212 + x224
-      x226 = 1d0/x66
-      x227 = x226*x52
-      x228 = x225*x227
-      x229 = x184 + x191*x193 + x228
-      x230 = x229*x73
-      x231 = 1d0/x39
-      x232 = 0.00988147078769499d0*x195
-      x233 = x232*x36
-      x234 = gamma_cc*x233
-      x235 = x195*x28
-      x236 = 0.00988147078769499d0*x235
-      x237 = gamma_cc*x236
-      x238 = x15*x182
-      x239 = 0.0883792666034679d0*x238
-      x240 = 0.741856473716896d0*x182 + 0.99709173929518d0*x185 + 0.4002
-     &14317499682d0 *x186 + 0.126466955049837d0*x187
-      x241 = 1d0/x14
-      x242 = x241/x11**2
+      x150 = x147*x149
+      x151 = x130*x150
+      x152 = x134*x145
+      x153 = x151*x152 + 1.0d0
+      x154 = log(x153)
+      x155 = -0.0310906908696548d0*x128 + 0.0155453454348274d0*x154
+      x156 = exp(-0.46869933305458689d0*mu*rho_c**(-0.33333333333333331d
+     &0))
+      x157 = x129*x155
+      x158 = x118*x94
+      x159 = x157 + x158
+      x160 = rho_c**(-3)
+      x161 = rho_c**(-6)
+      x162 = rho_s**6
+      x163 = 0.5d0*x23
+      x164 = rho_c**2
+      x165 = 1d0/x164
+      x166 = rho_s**2
+      x167 = x165*x166
+      x168 = 2.26d0*x161*x162 + x163 + 0.87d0*x167 + 0.53d0
+      x169 = 1d0/x19 + 1d0/x18
+      x170 = gamma_cc*x166
+      x171 = 2.0d0*gamma_cs
+      x172 = rho_s*x171
+      x173 = gamma_ss*x164 - rho_c*x172 + x170
+      x174 = x169*x173
+      x175 = 0.0130605864926168d0*x174*x50 + 1.0d0
+      x176 = x175**(-4)
+      x177 = x168*x176
+      x178 = x177 + 1.0d0
+      x179 = x160*x178
+      x180 = x159*x179
+      x181 = tau_c**(-2)
+      x182 = x181*x51
+      x183 = 0.015625d0*x182
+      x184 = x165*x177
+      x185 = x183*x184 + 1.0d0
+      x186 = x185*x71
+      x187 = -x180*x183 + x186
+      x188 = 0.04375d0*x182
+      x189 = 2.8d0*x186
+      x190 = -x180*x188 + x189
+      x191 = x160*x190
+      x192 = gamma_cc**3
+      x193 = tau_c**(-3)
+      x194 = x192*x193
+      x195 = 0.001953125d0*x194
+      x196 = x191*x195 + 1.0d0
+      x197 = x40 - x68
+      x198 = x156*(x187*x196 + x197)
+      x199 = x48*x52
+      x200 = 1d0/x70
+      x201 = mu**2
+      x202 = x12*x201
+      x203 = 0.237113969739022d0*x202 + 1.0d0
+      x204 = x203**(-4)
+      x205 = mu**5
+      x206 = x167 - 1.0d0
+      x207 = exp(-0.46675853320810856d0*x8)
+      x208 = x0**1.0d0
+      x209 = 0.00304892328706429d0*x208
+      x210 = x0**1.33333333333333d0
+      x211 = x207*(0.0315297404574782d0*x12 - x209 + 0.00027531079361635
+     &8d0*x210 + 0.0128480790170175d0*x8 + 1.0d0)
+      x212 = x206*x211
+      x213 = x205*x212
+      x214 = x0**1.66666666666667d0
+      x215 = 0.00264117541143784d0*x214
+      x216 = x2**0.666666666666667d0
+      x217 = x4**0.666666666666667d0
+      x218 = 0.5d0*x216 + 0.5d0*x217
+      x219 = x218**3
+      x220 = -0.0621813817393098d0
+      x221 = x218**2
+      x222 = 1d0/x221
+      x223 = x201*x8
+      x224 = x222*x223
+      x225 = mu/x218
+      x226 = 4.60448529760779d0*x9
+      x227 = x225*x226 + 1.0d0
+      x228 = 2.13928487137149d0*x224 + x227
+      x229 = 1d0/x228
+      x230 = mu**3
+      x231 = 1d0/x219
+      x232 = x230*x231
+      x233 = 1.91407102422897d0*x10
+      x234 = 4.62131672808458d0*x224 + x227 + x232*x233
+      x235 = x220*log(x229*x234)
+      x236 = mu**8*x0**2.66666666666667d0
+      x237 = 0.00316102962473761d0*x236
+      x238 = 0.0445553741830535d0*x208
+      x239 = x212*x238
+      x240 = 0.384834731559127d0*x12 - 3.07073492995203d0*x8
+      x241 = exp(-0.19230865217881402d0*x8)
+      x242 = x241/x208
       x243 = x240*x242
-      x244 = 0.265137799810404d0*x4
-      x245 = x244 + 2.0d0
-      x246 = x13*x245
-      x247 = -x239 + x243*x246
-      x248 = x20*x247
-      x249 = x22*x248
-      x250 = x249*x37
-      x251 = gamma_cc*x250
-      x252 = -x237 - x251
-      x253 = x35*x37
-      x254 = x252*x253
-      x255 = gamma_cc*x254
-      x256 = x214*x22
-      x257 = x21**(-3)
-      x258 = x248*x257
-      x259 = 3.58690279327602d-5*x27
-      x260 = x237 + x251 + 8.36943985097738d-5*x256 + x258*x259
-      x261 = x34**(-2)
-      x262 = x261*x33
-      x263 = x262*x37
-      x264 = x260*x263
-      x265 = gamma_cc*x264
-      x266 = -x234 + x255 + x265
-      x267 = x231*x266
-      x268 = x2*x267
-      x269 = -x244 - 2.0d0
-      x270 = x243*x269
-      x271 = 0.5d0*x270
-      x272 = x2*x239
-      x273 = x271 + x272
-      x274 = x268 + x273
-      x275 = x274*x74
-      x276 = x180*x41
-      x277 = x275 - 0.0165625d0*x276
-      x278 = 0.0478125d0*x181 - 0.02390625d0*x230 + x277
-      x279 = rho_c**(-4)
-      x280 = x279*x84
-      x281 = 0.005859375d0*x280
-      x282 = 0.0231875d0*x73 + 2.8d0
-      x283 = x274*x282
-      x284 = -0.046375d0*x276 + x283
-      x285 = 0.133875d0*x181 - 0.0669375d0*x230 + x284
-      x286 = x78*x85
-      x287 = -x281*x80 + x285*x286
-      x288 = -x272
-      x289 = x1 - 0.101321183642338d0
-      x290 = 0.5d0*x243
-      x291 = x245*x290 + x267*x289 + x288
-      x292 = x69*(x278*x86 + x287*x77 + x291)
-      x293 = mu*rho_c**(-1.33333333333333d0)
-      x294 = x293*x88
-      x295 = 0.0462725584177706d0*x194
-      x296 = x172*x295
-      x297 = gamma_cc*x296
-      x298 = x6**2
-      x299 = 1d0/x298
-      x300 = x150*x152
-      x301 = x299*x300
-      x302 = x182*x301
-      x303 = x12*x243
-      x304 = x15**2
-      x305 = 1d0/x304
-      x306 = x150*x151
-      x307 = x305*x306
-      x308 = 1.39d0*x307
-      x309 = x101*x3
-      x310 = x3**2.0d0
-      x311 = x100*x310
-      x312 = x3*x98
-      x313 = -0.0042826930056725d0*x182 - 0.0210198269716521d0*x187 + x3
-     &*x97 - 0.000367081058155144d0*x312
-      x314 = x313*x95
-      x315 = x102*x94
-      x316 = x3**3.0d0
-      x317 = x15*x2
-      x318 = x103*x316*x317
-      x319 = 0.000279369479946145d0*x3
-      x320 = 0.0168588246652672d0*x3
-      x321 = x243*x6
-      x322 = 0.00316102962473761d0*x104
-      x323 = 1d0/x115
-      x324 = x108*x3
-      x325 = 0.767414216267966d0*x324
-      x326 = -x325
-      x327 = 0.957035512114487d0*x113*x3
-      x328 = 0.206783496966467d0*x114*x3
-      x329 = x326 - x327 - x328
-      x330 = x107*x3
-      x331 = 0.71309495712383d0*x330
-      x332 = x325 + x331
-      x333 = x110**(-2)
-      x334 = x115*x333
-      x335 = x111*x329 + x332*x334
-      x336 = x106*x323*x335
-      x337 = x3**2.33333333333333d0
-      x338 = x317*x337
-      x339 = 0.00471283037863406d0*x3
-      x340 = 0.213300270968718d0*x3
-      x341 = 0.00152446164353214d0*x96
-      x342 = x95*(0.0157648702287391d0*x10 - x341 + 0.00642403950850875d
-     &0*x4 + 0.000137655396808179d0*x98 + 0.5d0)
-      x343 = x95*(-0.00214134650283625d0*x182 - 0.0105099134858261d0*x18
-     &7 + x3*x341 - 0.000183540529077572d0*x312)
-      x344 = 0.155586177736036d0*x182*x342 + x343
-      x345 = 0.0533250677421794d0*x119
-      x346 = x121*x95
-      x347 = 1.02357830998401d0*x182 - 0.256556487706084d0*x187
-      x348 = x123*x126
-      x349 = x3**(-0.666666666666667d0)
-      x350 = x3*x349
-      x351 = x3/x4
-      x352 = x132*x3
-      x353 = x128**(-2)
-      x354 = 0.112523287330675d0*x182 + 0.0162903215389562d0*x187
-      x355 = x353*x354
-      x356 = x130*x133
-      x357 = -0.101681773497972d0*x129*x351 - 11.4849360007528d0*x131*x3
-     &52 - x355* x356
-      x358 = -2.41662179562687d0*x124*x350 - x127*x3 - x347*x348 + x357
-      x359 = 0.0298137034090898d0*x309
-      x360 = 0.899568554326366d0*x312
-      x361 = 0.337338207872387d0*x98
-      x362 = 0.0802319968229891d0*x182 - 0.173432185689313d0*x187
-      x363 = x140*x142
-      x364 = -2.64527879654103d0*x141*x351 - 15.591108358883d0*x141*x352
-     & + 11.4849360007528d0*x352 + x357 - x362*x363
-      x365 = 0.00440195901906306d0*x100*x309 + x105*x320 + x110*x336 + x
-     &112*(x122*x3 - 0.000220097950953153d0*x135*x309 + x136*x358 - 0.00
-     &693220036674015d0*x312*x99 - x313*x346) + x116*( 0.008275556205712
-     &8d0*x117*x309 - x118*x344 + x120*x340 - x321* x345 + x338*x339) + 
-     &x137*(-x138*x344 + x139*x3 - 0.0003448148419047d0*x143*x309 + x144
-     &*x364 + x317*x359 - x321* x361 + x360*x89) - 0.000410930386996015d
-     &0*x3*x311 - x314*x315 + x318*x319 - x321*x322
-      x366 = x365*x93
-      x367 = x92**(-5)
-      x368 = x3*x367*x91
-      x369 = x145*x368
-      x370 = 0.632303919304059d0*x369
-      x371 = x273 - x366 - x370
-      x372 = x153*x371
-      x373 = -0.12284718057882d0*x302 + x303*x308 - 2.78d0*x372
-      x374 = 1d0/x150
-      x375 = x16*x374
-      x376 = x373*x375
-      x377 = x175*x376
-      x378 = x157*x194
-      x379 = 0.00143866011376691d0*x378
-      x380 = gamma_cc*x379
-      x381 = x2*x238
-      x382 = 8.52779903542516d0*x4 + 64.3272972886044d0
-      x383 = x290*x382 + 32.1636486443022d0*x366 + 20.337201096911d0*x36
-     &9 - 2.84259967847505d0*x381
-      x384 = x147*x383
-      x385 = x162*x384
-      x386 = x156*x29
-      x387 = 1.91697349701972d-5*x386
-      x388 = x385*x387
-      x389 = gamma_cc*x388
-      x390 = x160*x376
-      x391 = -x380 - x389 - x390
-      x392 = x171*x173
-      x393 = x391*x392
-      x394 = gamma_cc*x393
-      x395 = x156*x173
-      x396 = x166*x213
-      x397 = x148**(-3)
-      x398 = x384*x397
-      x399 = x164*x23
-      x400 = x24*x399
-      x401 = 2.36389140798047d-8*x400
-      x402 = 2.78d0*x303
-      x403 = -0.245694361157641d0*x302 + x307*x402 - 5.56d0*x372
-      x404 = x168*x375
-      x405 = x380 + x389 + x390 + 1.77406536252327d-6*x396 + x398*x401 +
-     & x403*x404
-      x406 = x169**(-2)
-      x407 = x161*x406
-      x408 = x405*x407
-      x409 = x395*x408
-      x410 = gamma_cc*x409
-      x411 = -x297 - x377 + x394 + x410
-      x412 = 1d0/x176
-      x413 = 0.031091d0*x412
-      x414 = x371 + x411*x413
-      x415 = x28*x35
-      x416 = gamma_cc*x25
-      x417 = x23*x416
-      x418 = 1.79345139663801d-5*x417
-      x419 = x415*x418
-      x420 = x22*x417
-      x421 = -x32 - 3.58690279327602d-5*x420
-      x422 = gamma_cc*x263
-      x423 = x421*x422
-      x424 = x38 + x419 + x423
-      x425 = x231*x289
-      x426 = x424*x425
-      x427 = x68*x72
-      x428 = 0.0478125d0*x427
-      x429 = x57*x62
-      x430 = 7.17380558655204d-5*x417
-      x431 = x429*x430
-      x432 = x417*x56
-      x433 = -0.000143476111731041d0*x432 - x59
-      x434 = gamma_cc*x222
-      x435 = x433*x434
-      x436 = x431 + x435 + x65
-      x437 = x227*x436
-      x438 = 0.02390625d0*x73
-      x439 = x2*x231
-      x440 = x424*x439
-      x441 = x440*x74
-      x442 = x41*x72
-      x443 = 0.0165625d0*x442
-      x444 = gamma_cc*x443 + x441
-      x445 = -gamma_cc*x428 - x437*x438 + x444
-      x446 = x24*x83
-      x447 = 0.005859375d0*x81
-      x448 = 0.133875d0*x427
-      x449 = 0.0669375d0*x73
-      x450 = x282*x440
-      x451 = 0.046375d0*x442
-      x452 = gamma_cc*x451 + x450
-      x453 = -gamma_cc*x448 - x437*x449 + x452
-      x454 = x286*x453 + x446*x447
-      x455 = x69*(x426 + x445*x86 + x454*x77)
-      x456 = x149*x170
-      x457 = x399*x456
-      x458 = 1.22272317840482d-5*gamma_cc
-      x459 = x457*x458
-      x460 = gamma_cc*x165
-      x461 = x23*x460
-      x462 = 7.60313726795686d-7*x461
-      x463 = -x159 - x462
-      x464 = x407*x463
-      x465 = gamma_cc*x395
-      x466 = x464*x465
-      x467 = x174 + x459 + x466
-      x468 = x413*x467
-      x469 = x455 + x468
-      x470 = x446*x70
-      x471 = 0.0165625d0*x470
-      x472 = -x41*x471
-      x473 = x470*x68
-      x474 = x472 + 0.0478125d0*x473
-      x475 = 2.8d0*x40 - 5.6d0*x89
-      x476 = -x471*x475
-      x477 = 0.133875d0*x473 + x476
-      x478 = tau_c**(-4)
-      x479 = x478*x82
-      x480 = x286*x477 - x447*x479
-      x481 = x69*(x474*x86 + x480*x77)
-      x482 = x180*x229
-      x483 = x279*x71
-      x484 = x24*x483
-      x485 = x484*x68
-      x486 = x4*x70
-      x487 = 0.142757027587912d0*x486*x49
-      x488 = x183*x191
-      x489 = x7*x70
-      x490 = x70*x8
-      x491 = x10*x70
-      x492 = x190*(-2.15292298491727d0*x486 - 2.42709420076615d0*x489 - 
-     &1.74450360892561d0*x490 - 0.424342513187885d0*x491)
-      x493 = x188**2*x45/(x47**4*x48**2)
-      x494 = x188*x189*(3.2293844773759d0*x182 + 4.16073291559911d0*x185
-     & + 0.509211015825462d0*x187 + x3*x46)/x47**3
-      x495 = x52/x66**2
-      x496 = x225*x495
-      x497 = gamma_cc*rho_c**(-4.33333333333333d0)
-      x498 = x12*x497
-      x499 = 0.0658764719179666d0*x498
-      x500 = 0.03952588315078d0*gamma_cc
-      x501 = x195*x500
-      x502 = 0.0169396642074771d0*x30
-      x503 = gamma_cc*x502
-      x504 = x219*x220
-      x505 = 0.000286952223462082d0*x217
-      x506 = gamma_cc*x64
-      x507 = x506*x60/x61**3
-      x508 = x219*x507
-      x509 = x499*x57
-      x510 = x206*x501
-      x511 = exp(4.0d0*x50*x53)
-      x512 = x204**2
-      x513 = gamma_cc*x512
-      x514 = x216*x502*x511*x513
-      x515 = x54*x56*x64
-      x516 = x513*x515
-      x517 = -0.5d0*x202*x493 + x203*x492 + x203*x494 + x487*x53 - x488*
-     &x53
-      x518 = gamma_cc*x515*x517
-      x519 = gamma_cc*x210
-      x520 = rho_c**(-6.66666666666667d0)
-      x521 = x26*x520
-      x522 = x216*x218*x54
-      x523 = -0.25d0*x192*x493 + x193*x492 + x193*x494 + x227*(-x209*x50
-     &1*x62 + x209* x503*x504 - x219*x221*x501 + x434*(-0.00133911037615
-     &638d0*x214* x217 - 0.000430428335193122d0*x27*x511*x512/x55**4 - x
-     &509 - x510 + x512*x522 - x514 + x516 + x517*x522 + x518 - 0.001897
-     &07303288821d0*x521*x56) + x499*x63 + x508*(x199*x500 + x206*x503 +
-     & 0.00066955518807819d0*x215 + x27*x505) + x519*(x509 + x510 + x514
-     & - x516 - x518)) - x487 + x488 + x496*(x198 - x212 - x224)
-      x524 = x523*x73
-      x525 = 0.0329382359589833d0*x498
-      x526 = 0.01976294157539d0*gamma_cc
-      x527 = x195*x526
-      x528 = 0.00846983210373856d0*x30
-      x529 = gamma_cc*x528
-      x530 = x260*x261
-      x531 = 7.17380558655203d-5*x258
-      x532 = gamma_cc*x37
-      x533 = x33*x532/x34**3
-      x534 = x260*x533
-      x535 = x28*x525
-      x536 = x249*x527
-      x537 = exp(4.0d0*x16)
-      x538 = x247**2
-      x539 = gamma_cc*x538
-      x540 = x257*x528*x537*x539
-      x541 = x20*x22*x37
-      x542 = x539*x541
-      x543 = x15*x486
-      x544 = 0.117839022137957d0*x543
-      x545 = x182*x243
-      x546 = 0.0883792666034679d0*x545
-      x547 = x242*(-0.989141964955861d0*x486 - 1.16327369584438d0*x489 -
-     & 0.600321476249523d0*x490 - 0.210778258416395d0*x491)
-      x548 = x240**2/(x11**4*x14**2)
-      x549 = 0.25d0*x548
-      x550 = x245*x549
-      x551 = x240*x241*(1.48371294743379d0*x182 + 1.99418347859036d0*x18
-     &5 + 0.252933910099675d0*x187 + x3*x9)/x11**3
-      x552 = -x12*x546 + x246*x547 + x246*x551 - x25*x550 + x544
-      x553 = gamma_cc*x541*x552
-      x554 = gamma_cc*x253
-      x555 = x20*x257*x259
-      x556 = -x252*x35*x527 + x252*x529*x530 - x260*x262*x527 + x36*x525
-     & + x422*( -0.000334777594039095d0*x214*x258 - 0.000474268258222051
-     &d0*x22* x521 - x535 - x536 + x538*x555 - x540 + x542 + x552*x555 +
-     & x553 - 0.000107607083798281d0*x27*x537*x538/x21**4) + x534*(x235*
-     &x526 + x249*x529 + 0.000167388797019548d0*x256 + x27*x531) + x554*
-     &(x535 + x536 + x540 - x542 - x553)
-      x557 = x39**(-2)
-      x558 = x266*x557
-      x559 = x558*(x234 - x255 - x265)
-      x560 = 0.5d0*x269
-      x561 = x2*x544
-      x562 = x12*x549
-      x563 = -x269*x562 + x546 + x547*x560 + x551*x560 - x561
-      x564 = x2*x559 + x439*x556 + x563
-      x565 = x564*x74
-      x566 = 0.0496875d0*x24
-      x567 = x41*x566
-      x568 = x180*x274
-      x569 = x483*x567 + x565 - 0.033125d0*x568
-      x570 = rho_c**(-5)
-      x571 = 0.0234375d0*x570*x84
-      x572 = 0.01171875d0*x280
-      x573 = x282*x564
-      x574 = x41*x484
-      x575 = -0.09275d0*x568 + x573 + 0.139125d0*x574
-      x576 = 0.5d0*x547
-      x577 = 0.5d0*x551
-      x578 = -x12*x550 + x245*x576 + x245*x577 + x289*x559 + x425*x556 -
-     & x546 + x561
-      x579 = 0.0244087849784238d0*rho_c**(-2.66666666666667d0)*x90
-      x580 = 0.312466222036391d0*x293
-      x581 = 0.208310814690927d0*mu*rho_c**(-2.33333333333333d0)
-      x582 = gamma_cc*x194
-      x583 = x373*x374
-      x584 = x15*x4
-      x585 = x583*x584
-      x586 = 0.0925451168355413d0*x582
-      x587 = x298*x304
-      x588 = x373**2*x587
-      x589 = x150**(-2)
-      x590 = x175*x589
-      x591 = gamma_cc*x155*x2**(-3.78d0)*x29*x321*x583
-      x592 = x16*(-x271 + x288 + x366 + x370)
-      x593 = x373*x592
-      x594 = x171*x391
-      x595 = gamma_cc*x376
-      x596 = x300*x491/x6**3
-      x597 = x301*x486
-      x598 = x12*x547
-      x599 = x25*x548
-      x600 = x306*x599/x15**3
-      x601 = x12*x150*x305*x545
-      x602 = x12*x551
-      x603 = 0.245694361157641d0*x299
-      x604 = x152*x182*x371
-      x605 = x151*x305*x371
-      x606 = x101*x70
-      x607 = x70*x96
-      x608 = x70*x98
-      x609 = 0.00571025734089666d0*x486 + 0.0350330449527535d0*x491 - 0.
-     &00609784657412857d0*x607 + 0.000856522469028669d0*x608
-      x610 = x314*x94
-      x611 = x547*x6
-      x612 = x12*x548*x6
-      x613 = x551*x6
-      x614 = x106*x110
-      x615 = 0.89531658564596d0*x108*x70
-      x616 = x3*x96
-      x617 = x123*x347
-      x618 = x124*x70
-      x619 = x132*x70
-      x620 = -22.9698720015055d0*x130*x352*x355 + 3.82831200025092d0*x13
-     &1*x619 - 0.203363546995945d0*x351*x355 - x353*x356*(-0.15003104977
-     &4234d0* x486 - 0.0271505358982603d0*x491) - x354*x356*( 0.22504657
-     &4661351d0*x182 + 0.0325806430779124d0*x187)/x128**3
-      x621 = 0.311172355472072d0*x182*x343 - 0.207448236981382d0*x342*x4
-     &86 + 0.0242070587025094d0*x342*x491 + x95*(0.00285512867044833d0*x
-     &486 + 0.0175165224763768d0*x491 + 0.000428261234514334d0*x608 - x7
-     &0* x97)
-      x622 = x140*x362
-      x623 = x93*(-6.39350882283002d-5*x100*x3**2.33333333333333d0*x70 -
-     & 0.0117385573841682d0*x100*x606 + x103*x243*x316*x319 + x104*x320*
-     & x321 + 0.0015805148123688d0*x104*x612 - 0.0618156904393132d0*x105
-     & *x70 + x112*(0.000586927869208408d0*x135*x606 + x136*( -75.398223
-     &686155d0*x125*x3*x617 - 0.154912426780983d0*x3**( -0.3333333333333
-     &33d0)*x618 - x348*(-1.36477107997868d0*x486 + 0.427594146176807d0*
-     &x491) - 1.61108119708458d0*x349*x618 - 4.83324359125373d0*x350*x61
-     &7 + x620) - 0.000440195901906306d0* x309*x358 - 0.0138644007334803
-     &d0*x312*x314 + 0.0891107483661069d0 *x314*x616 - x346*x609 - 0.001
-     &07855455836145d0*x606*x99 - 0.0891107483661069d0*x607*x99 + 0.0231
-     &073345558005d0*x608*x99) + x116*(-0.0220681498819008d0*x117*x606 -
-     & x118*x621 + x119*x321* x340 + 0.0266625338710897d0*x119*x612 - 0.
-     &639900812906153d0*x120* x70 + x243*x337*x339 + 0.0165511124114256d
-     &0*x309*x344 - 0.025135095352715d0*x338*x70 - x345*x611 - x345*x613
-     &) + x137*( -0.167525641071009d0*x117*x607 - x138*x621 + 0.00091950
-     &62450792d0 *x143*x606 + x144*(5.19703611962767d0*x141*x619 - 0.299
-     &209d0*x141 *x70 - 5.29055759308205d0*x351*x622 - 31.182216717766d0
-     &*x352*x622 - x363*(-0.106975995763985d0*x486 + 0.289053642815522d0
-     &*x491) - 3.82831200025092d0*x619 + x620) + x243*x359 - 0.000689629
-     &6838094d0*x309*x364 - 0.119254813636359d0*x317*x606 + x321*x360 + 
-     &0.167525641071009d0*x344*x616 - x361*x611 - x361*x613 - 2.09899329
-     &342819d0*x608*x89 + 0.168669103936194d0*x612*x98) - 0.000821860773
-     &992031d0*x3*x310*x610 + 0.00880391803812612d0*x309* x610 + 0.00191
-     &767513931474d0*x311*x70 - x315*x609*x95 - 0.00186246319964097d0*x3
-     &18*x70 - x322*x611 - x322*x613 + x323* x614*(x111*(1.4355532681717
-     &3d0*x113*x70 + 0.275711329288622d0* x114*x70 + x615) + 2.0d0*x329*
-     &x332*x333 + x334*( -0.950793276165107d0*x107*x70 - x615) + x115*x3
-     &32*( 1.53482843253593d0*x324 + 1.42618991424766d0*x330)/x110**3) +
-     & x336*(x326 - x331) + x335*x614*(x325 + x327 + x328)/x115**2)
-      x624 = x145*x367*x70*x91
-      x625 = x365*x368
-      x626 = x137*x145*x608/x92**6
-      x627 = x563 - x623 + 1.05383986550676d0*x624 - 1.26460783860812d0*
-     &x625 - 0.499760307959092d0*x626
-      x628 = x153*x627
-      x629 = x375*(0.12284718057882d0*x299*x601 - 0.695d0*x307*x599 + x3
-     &08*x598 + x308*x602 + x402*x605 - 0.0108571437238599d0*x596 + 0.16
-     &379624077176d0*x597 - 1.39d0*x600 - x603*x604 - 2.78d0*x628)
-      x630 = 0.0396621929295177d0*x386
-      x631 = gamma_cc*x630
-      x632 = x391*x406
-      x633 = gamma_cc*x378
-      x634 = 0.00287732022753381d0*x633
-      x635 = 3.54813072504653d-6*x396
-      x636 = 3.83394699403945d-5*gamma_cc*x385*x386
-      x637 = 4.72778281596093d-8*x398
-      x638 = x400*x637
-      x639 = 0.00123313724037163d0*x158
-      x640 = x375*x403
-      x641 = x161/x169**3
-      x642 = x405*x465*x641
-      x643 = 0.00479553371255636d0*x157*x497
-      x644 = 8.94587631942538d-5*x156*x385*x582
-      x645 = exp(64.327297288604413d0*x146 + 128.65459457720883d0*x89)
-      x646 = x383**2
-      x647 = gamma_cc*x646
-      x648 = 1.19201245991681d-6*x386*x397*x645*x647
-      x649 = x147*x162*x387
-      x650 = x647*x649
-      x651 = 2.72459412313673d-5*x585*x633
-      x652 = x376*x634
-      x653 = x160*x589
-      x654 = x588*x653
-      x655 = 0.000308284310092909d0*x149*x591
-      x656 = x593*x653
-      x657 = x376*x636
-      x658 = 3.7901329046334d0*x2*x543 - x382*x562 + x382*x576 + x382*x5
-     &77 - 2.84259967847505d0*x545 + 32.1636486443022d0*x623 - 33.895335
-     &1615183d0*x624 + 40.6744021938219d0*x625 + 16.0741149515645d0*x626
+      x244 = -x167 + 1.0d0
+      x245 = 37.6991118430775d0*x244
+      x246 = x243*x245
+      x247 = 1d0/x12
+      x248 = 34.4548080022583d0*x247
+      x249 = 0.5d0*x1
+      x250 = x249 + 0.5d0
+      x251 = x250**2
+      x252 = 1d0/x2
+      x253 = x252**0.333333333333333d0
+      x254 = x253*x8
+      x255 = x252**0.666666666666667d0
+      x256 = 0.0244354823084343d0*x12
+      x257 = 0.337569861992026d0*x254 + x255*x256 + 1.0d0
+      x258 = 1d0/x257
+      x259 = x251*x258
+      x260 = 1d0/x255
+      x261 = x260*(-0.0177069812999059d0*x254 + 1.0d0)
+      x262 = x259*x261
+      x263 = 1d0/x4
+      x264 = x263**0.666666666666667d0
+      x265 = 1d0/x264
+      x266 = x263**0.333333333333333d0
+      x267 = x266*x8
+      x268 = x265*(-0.0177069812999059d0*x267 + 1.0d0)
+      x269 = -x249 + 0.5d0
+      x270 = x269**2
+      x271 = x256*x264 + 0.337569861992026d0*x267 + 1.0d0
+      x272 = 1d0/x271
+      x273 = x270*x272
+      x274 = x248*x273
+      x275 = -x248*x262 - x268*x274
+      x276 = -x246 + x275
+      x277 = 0.000132058770571892d0*x214
+      x278 = mu**6
+      x279 = -3.0d0*x167 + 3.0d0
+      x280 = 0.5d0*x211 - 0.5d0
+      x281 = x279*x280
+      x282 = 0.00165511124114256d0*x214
+      x283 = x0**2.0d0
+      x284 = 0.0533250677421794d0*x283
+      x285 = mu**4
+      x286 = 0.0279209401785015d0*x208
+      x287 = x281*x286
+      x288 = 0.5d0*x2**2.66666666666667d0 + 0.5d0*x4**2.66666666666667d0
      &
-      x659 = gamma_cc*x649*x658
-      x660 = x160*x629
-      x661 = gamma_cc*x392
-      x662 = x164*x213
-      x663 = x147*x397*x401
-      x664 = x374*x403
-      x665 = x168*x589
-      x666 = 2.78d0*x307
-      x667 = x407*x465
-      x668 = 0.031091d0/x176**2
-      x669 = x411*x668
-      x670 = x413*(-x156*x408*x586 - 0.00991554823237942d0*x161*x170*x59
-     &1 + x172*x376 *x586 + 0.154241861392569d0*x172*x497 + 0.0008763288
-     &80749006d0* x172*x582*x585 - x175*x629 - 0.0396621929295177d0*x29*
-     &x594*x595 - x376*x408*x631 + x405*x631*x632 - x586*x594 + x588*x59
-     &0 - x590* x593 + x642*(7.60313726795686d-7*x167*x640 + x595*x639 +
-     & x634 + x635 + x636 + x638) + x661*(x643 + x644 + x648 - x650 + x6
-     &51 + x652 + x654 - x655 - x656 + x657 - x659 - x660) + x667*( 1.90
-     &078431698921d-7*x162*x163*x2**(-6.56d0)*x23*x24*x321*x664 - 1.0053
-     &0370542985d-5*x166*x520 - 2.20629864744844d-7*x24*x398*x662 - 1.67
-     &98992390688d-8*x396*x584*x664 - x403**2*x587*x665 + x403* x592*x66
-     &5 + x404*(-0.491388722315281d0*x299*x604 + 5.56d0*x303* x605 - x30
-     &8*x599 - 0.0217142874477198d0*x596 + 0.327592481543521d0*x597 + x5
-     &98*x666 - 2.78d0*x600 + x601*x603 + x602*x666 - 5.56d0*x628) - x63
-     &5*x640 - x638*x640 - x643 - x644 + x646*x663 - x648 + x650 - x651 
-     &- x652 - x654 + x655 + x656 - x657 + x658*x663 + x659 + x660 - 2.2
-     &0487243296562d-9*x400*x645*x646/ x148**4)) + x627 + x669*(x297 + x
-     &377 - x394 - x410)
-      x671 = x270 - 2.0d0*x366 - 1.26460783860812d0*x369 + 0.17675853320
-     &6936d0*x381 + 0.062182d0*x411*x412
-      x672 = gamma_cc*x179
-      x673 = 0.095625d0*x68
-      x674 = -x431 - x435 - x65
-      x675 = x213*x416
-      x676 = x221*x433
-      x677 = x220*x433
-      x678 = -0.000286952223462082d0*x432 - 0.0169396642074771d0*x58
-      x679 = x227*(-gamma_cc*x196*x676 - x197 + x209*x506*x677 + x211 + 
-     &x223 - 0.000167388797019548d0*x429*x675 + x430*x504*x57 + x434*(x2
-     &00 + x207 + x417*x505 + 0.00066955518807819d0*x56*x675) + x508*x67
-     &8 + x519*(-x200 - x207)) + x496*x674
-      x680 = x679*x73
-      x681 = gamma_cc*x72
-      x682 = x229*x681
-      x683 = x180*x437
-      x684 = -x38 - x419 - x423
-      x685 = x558*x684
-      x686 = x262*x421
-      x687 = x261*x421
-      x688 = -0.00846983210373856d0*x31 - 7.17380558655203d-5*x420
-      x689 = -gamma_cc*x232*x686 - x233 + x252*x532*x687 + x254 + x264 +
-     & x28*x418* x530 - 4.18471992548869d-5*x415*x675 + x422*( 0.0001673
-     &88797019548d0*x22*x675 + x236 + x250 + x417*x531) + x534 *x688 + x
-     &554*(-x236 - x250)
-      x690 = x2*x685 + x439*x689
-      x691 = x690*x74
-      x692 = x274*x681
-      x693 = x41*x672
-      x694 = x180*x440
-      x695 = x691 + 0.0165625d0*x692 - 0.033125d0*x693 - 0.0165625d0*x69
-     &4
-      x696 = x279*x446
-      x697 = 0.017578125d0*x80
-      x698 = x446*x78
-      x699 = 0.005859375d0*x285
-      x700 = 0.26775d0*x68
-      x701 = x282*x690
-      x702 = 0.046375d0*x692 - 0.09275d0*x693 - 0.046375d0*x694 + x701
-      x703 = x289*x685 + x425*x689
-      x704 = 0.156233111018196d0*x293
-      x705 = x159*x376
-      x706 = x463*x465
-      x707 = x149*x406
-      x708 = gamma_cc*x399
-      x709 = -1.52062745359137d-6*x461 - x639
-      x710 = -x174 - x459 - x466
-      x711 = x413*(-gamma_cc*x156*x295*x464 - 2.85302074961125d-5*gamma_
-     &cc*x456*x662 - x174*x376 - x296 - x376*x459 - x376*x466 + x393 + x
-     &399*x405* x458*x707 + x409 + x632*x706 + x642*x709 + x661*(-x379 -
-     & x388 - x705) + x667*(3.54813072504653d-6*x213*x460 + x379 + x388 
-     &+ x462* x640 + x637*x708 + x705)) + x669*x710
-      x712 = x23*x25
-      x713 = gamma_cc*rho_c**(-7.0d0)
-      x714 = x713/x2**3
-      x715 = -1.21521857725915d-6*x221*x56*x714 + 0.000143476111731041d0
-     &*x417*x57* x677 + 0.000143476111731041d0*x429*x712 + x433*x507*x67
-     &8 + x502* x676
-      x716 = x227*x715
-      x717 = x437*x681
-      x718 = x436*x495*x674
-      x719 = x440*x681
-      x720 = -1.51902322157394d-7*x22*x262*x714 + 3.58690279327602d-5*x2
-     &8*x417*x687 + 3.58690279327602d-5*x415*x712 + x421*x533*x688 + x52
-     &8*x686
-      x721 = x439*x720
-      x722 = x424*x557*x684
-      x723 = x2*x722
-      x724 = x721*x74 + x723*x74
-      x725 = x443 + 0.033125d0*x719 + x724
-      x726 = gamma_cc*x83
-      x727 = 0.01171875d0*x726
-      x728 = 0.01171875d0*x698
-      x729 = x282*x721 + x282*x723
-      x730 = x451 + 0.09275d0*x719 + x729
-      x731 = x289*x722 + x425*x720
-      x732 = x413*(-1.50778548595655d-8*x154**8.34d0*x162*x2**(-8.34d0)*
-     &x407*x713 + 2.44544635680964d-5*x457 + 2.44544635680964d-5*x463*x7
-     &07*x708 + x464*x630 + x641*x706*x709) + x467*x668*x710
-      x733 = x229*x470
-      x734 = x41*x698
-      x735 = -x274*x471 + 0.033125d0*x734
-      x736 = x279*x479
-      x737 = x274*x470
-      x738 = 0.09275d0*x734 - 0.046375d0*x737
-      x739 = x479*x78
-      x740 = x70*x726
-      x741 = x437*x470
-      x742 = x41*x740
-      x743 = -x440*x471 - 0.033125d0*x742
-      x744 = 0.005859375d0*x698
-      x745 = x24*x478
-      x746 = 0.017578125d0*x745
-      x747 = x440*x470
-      x748 = -0.09275d0*x742 - 0.046375d0*x747
-      x749 = 0.005859375d0*x739
-      x750 = rho_c*x69
-      x751 = x478*x70
-      x752 = x567*x751
-      x753 = 0.1434375d0*x745
-      x754 = x68*x70
-      x755 = 0.01171875d0*x739
-      x756 = x475*x566*x751
-      x757 = 0.401625d0*x745
-      x758 = 0.0234375d0*x82/tau_c**5
-      x759 = 0.5d0*rho_c
-      x760 = x41*x759 + x68*x759
-      x761 = x179*x760
-      x762 = x24*x761
-      x763 = x75 - 0.02390625d0*x762
-      x764 = -0.0669375d0*x762 + x79
-      x765 = x286*x764 + 1.0d0
-      x766 = x69*(x763*x765 + x87)
-      x767 = x177 + x766
-      x768 = rho_c*x767
-      x769 = x484*x760
-      x770 = x229*x759 + x274*x759 + 0.5d0*x40 - 1.0d0*x50 + 0.5d0*x67 -
-     & 1.0d0*x89
-      x771 = x180*x770
-      x772 = x277 + 0.07171875d0*x769 - 0.02390625d0*x771
-      x773 = x284 + 0.2008125d0*x769 - 0.0669375d0*x771
-      x774 = -x281*x764 + x286*x773
-      x775 = x69*(x291 + x763*x774 + x765*x772)
-      x776 = rho_c*(x414 + x704*x766 + x775) + x767
-      x777 = x227*x759
-      x778 = x436*x777 + x440*x759
-      x779 = x180*x778
-      x780 = 0.0478125d0*x761
-      x781 = -gamma_cc*x780 + x444 - 0.02390625d0*x779
-      x782 = 0.133875d0*x761
-      x783 = -gamma_cc*x782 + x452 - 0.0669375d0*x779
-      x784 = x286*x783 + x744*x764
-      x785 = x69*(x426 + x763*x784 + x765*x781)
-      x786 = x468 + x785
-      x787 = rho_c*x786
-      x788 = x698*x760
-      x789 = x472 + 0.0478125d0*x788
-      x790 = x476 + 0.133875d0*x788
-      x791 = x286*x790 - x749*x764
-      x792 = x69*(x763*x791 + x765*x789)
-      x793 = rho_c*x792
-      x794 = x484*x770
-      x795 = x24*x570*x71*x760
-      x796 = x226*(-0.0253302959105844d0*x0 + 0.0253302959105844d0)
-      x797 = x180*(x184 + 0.25d0*x191*x192 + 0.5d0*x191*(-x42 - 1.0d0) +
-     & x225*x796 + 0.5d0*x228 + x267*x44 + 0.5d0*x268 + 0.25d0*x270 + x2
-     &72 + x290*( -x5 - 1.0d0) + x523*x759 + x564*x759)
-      x798 = rho_c*(x579*x766 + x580*x775 - x581*x766 + x670 + x69*(x578
-     & + x763*(x286 *(x575 + 0.401625d0*x794 - 0.80325d0*x795 - 0.066937
-     &5d0*x797) + x571*x764 - x572*x773) + x765*(x569 + 0.1434375d0*x794
-     & - 0.286875d0*x795 - 0.02390625d0*x797) + 2.0d0*x772*x774)) + x580
-     &* x766 + x671 + 2.0d0*x775
-      x799 = x484*x778
-      x800 = 0.1434375d0*x760
-      x801 = gamma_cc*x483
-      x802 = x180*(x231*x424*x44 + x436*x796 + x679*x759 + x690*x759)
-      x803 = x672*x770
-      x804 = 0.017578125d0*x764
-      x805 = 0.401625d0*x760
-      x806 = rho_c*(x69*(x703 + x763*(-x281*x783 + x286*(x702 + 0.200812
-     &5d0*x799 + x801*x805 - 0.0669375d0*x802 - 0.133875d0*x803) - x696*
-     &x804 + x744*x773) + x765*(x695 + 0.07171875d0*x799 + x800*x801 - 0
-     &.02390625d0*x802 - 0.0478125d0*x803) + x772*x784 + x774*x781) + x7
-     &04*x785 + x711) + x786
-      x807 = x180*(x715*x777 + x718*x759 + x721*x759 + x723*x759)
-      x808 = x672*x778
-      x809 = x764*x78
-      x810 = rho_c*(x69*(x731 + x763*(x286*(x730 - x782 - 0.0669375d0*x8
-     &07 - 0.26775d0*x808) + x727*x809 + x728*x783) + x765*(x725 - x780 
-     &- 0.02390625d0*x807 - 0.095625d0*x808) + 2.0d0*x781*x784) + x732)
-      x811 = x698*x770
-      x812 = rho_c*(x69*(x763*(-x281*x790 + x286*(-x696*x805 + x738 + 0.
-     &133875d0*x811 ) + x736*x804 - x749*x773) + x765*(-x696*x800 + x735
-     & + 0.0478125d0*x811) + x772*x791 + x774*x789) + x704*x792) + x792
-      x813 = x698*x778
-      x814 = x760*x78
-      x815 = x726*x814
-      x816 = x750*(x763*(x286*(x748 + 0.133875d0*x813 + 0.26775d0*x815) 
-     &+ x744*x790 - x746*x809 - x749*x783) + x765*(x743 + 0.0478125d0*x8
-     &13 + 0.095625d0*x815) + x781*x791 + x784*x789)
-      x817 = x750*(x763*(x286*(x756 - x757*x814) - x755*x790 + x758*x809
-     &) + x765*( x752 - x753*x814) + 2.0d0*x789*x791)
-      x818 = x41*x73
-      x819 = x75 - 0.02390625d0*x818
-      x820 = x79 - 0.0669375d0*x818
-      x821 = x286*x820 + 1.0d0
-      x822 = x69*(x819*x821 + x87)
-      x823 = x177 + x822
-      x824 = x274*x73
-      x825 = x275 + 0.03125d0*x276 - 0.02390625d0*x824
-      x826 = 0.0875d0*x276 + x283 - 0.0669375d0*x824
-      x827 = -x281*x820 + x286*x826
-      x828 = x69*(x291 + x819*x827 + x821*x825)
-      x829 = 0.03125d0*x442
-      x830 = -gamma_cc*x829 - x438*x440 + x441
-      x831 = 0.0875d0*x442
-      x832 = -gamma_cc*x831 - x440*x449 + x450
-      x833 = x286*x832 + x744*x820
-      x834 = x69*(x426 + x819*x833 + x821*x830)
-      x835 = x468 + x834
-      x836 = x41*x470
-      x837 = 0.03125d0*x836
-      x838 = x476 + 0.133875d0*x836
-      x839 = x286*x838 - x749*x820
-      x840 = x69*(x819*x839 + x821*x837)
-      x841 = x564*x73
-      x842 = x690*x73
-      x843 = 0.017578125d0*x820
-      x844 = x78*x820
-      x845 = x41*x70
-      PBE_value = x41
-      PBE_beta_value = x68
-      PBE_alpha_value = x68
+      x289 = 17.2274040011292d0*x247
+      x290 = exp(-0.33933171852197186d0*x8)
+      x291 = x290*(0.26014827853397d0*x12 - 0.240695990468967d0*x8)
+      x292 = x244*x291
+      x293 = 23.3866625383245d0*x247
+      x294 = x275 + x288*x289 - x292*x293
+      x295 = 0.00020688890514282d0*x214
+      x296 = 0.337338207872387d0*x210
+      x297 = x213*x215 + x219*x235 + x230*(x239 + x276*x277) + x237*x70 
+     &+ x278*(-x281 *x282 + x284*x70) + x285*(-x287 + x294*x295 + x296*x
+     &70)
+      x298 = x204*x297
+      x299 = -x298 + x70
+      x300 = x200*x299
+      x301 = x300**5.56d0
+      x302 = x298 + x40
+      x303 = exp(x302*x44)
+      x304 = 0.0310906908696549d0*x303 - 0.0310906908696549d0
+      x305 = x304**(-2)
+      x306 = x301*x305
+      x307 = 0.000286952223462081d0*x306
+      x308 = x199*x307
+      x309 = 1d0/x304
+      x310 = x300**2.78d0
+      x311 = x310*x7
+      x312 = x309*x311
+      x313 = x312*x56
+      x314 = 0.0169396642074771d0*x313
+      x315 = gamma_cc*x314
+      x316 = x315 + 1.0d0
+      x317 = x308 + x316
+      x318 = 1d0/x317
+      x319 = x311*x318
+      x320 = x316*x56
+      x321 = 0.544846825002868d0*x320
+      x322 = x319*x321
+      x323 = gamma_cc*x322
+      x324 = x323 + 1.0d0
+      x325 = log(x324)
+      x326 = x299 + x325*x67
+      x327 = x198 + x326
+      x328 = -0.00921383324426333d0*x76 - 0.0310906908696548d0
+      x329 = x75*x77
+      x330 = x75*x76
+      x331 = x75*x78
+      x332 = x75*x79
+      x333 = 17.7561861489951d0*x329 + 18.7210232331754d0*x330 + 18.3168
+     &342596557d0* x331 + 5.44712793036536d0*x332
+      x334 = 1d0/x81
+      x335 = x80**(-2)
+      x336 = 32.1639684429149d0*x334*x335
+      x337 = x333*x336
+      x338 = x94**(-3)
+      x339 = x103*x112
+      x340 = x338*x339
+      x341 = x115*x340
+      x342 = x99**(-1.33333333333333d0)
+      x343 = x114*x342
+      x344 = 3.30099231565716d0*x88
+      x345 = x343*x344
+      x346 = x338*x91
+      x347 = x346*x88
+      x348 = x101*x347
+      x349 = x342*x96
+      x350 = x349*x88
+      x351 = 3.30099231565716d0*x350
+      x352 = x330*x82
+      x353 = 0.592706883413531d0*x76 + 1.99999999999999d0
+      x354 = x337*x353 - 1.24136239377603d0*x352
+      x355 = x354*x89
+      x356 = x104*x355
+      x357 = x115*x95
+      x358 = x356*x357
+      x359 = -x348 - x351 - x358
+      x360 = x113*x359
+      x361 = x115*x360
+      x362 = x111**(-2)
+      x363 = x94**(-5)
+      x364 = x106*x108
+      x365 = x363*x364
+      x366 = x99**(-1.66666666666667d0)
+      x367 = x106*x107
+      x368 = x366*x367
+      x369 = x105*x109
+      x370 = x90**(-3)
+      x371 = x355*x370
+      x372 = 0.894910333510778d0*x371
+      x373 = x348 + x351 + x358 + 0.894910333510778d0*x365 + 4.416205483
+     &09916d0*x368 + x369*x372
+      x374 = x362*x373
+      x375 = x103*x374
+      x376 = x357*x375
+      x377 = -x341 - x345 + x361 + x376
+      x378 = 1d0/x116
+      x379 = 0.0155453454348274d0*x378
+      x380 = 0.0192974072210527d0*x352 + x377*x379
+      x381 = 0.00777267271741372d0*x117 - 0.0155453454348274d0*x83 + x94
+     &*(x328*x337 + x380)
+      x382 = 0.00777267271741372d0*x154
+      x383 = x120*x122
+      x384 = 17.7561861489951d0*x383
+      x385 = x120*x121
+      x386 = 18.7210232331754d0*x385
+      x387 = x120*x123
+      x388 = 18.3168342596557d0*x387
+      x389 = x120*x124
+      x390 = 5.44712793036536d0*x389
+      x391 = x384 + x386 + x388 + x390
+      x392 = -0.00921383324426333d0*x121 - 0.0310906908696548d0
+      x393 = 1d0/x126
+      x394 = x393/x125**2
+      x395 = 32.1639684429149d0*x394
+      x396 = x392*x395
+      x397 = x130*x152
+      x398 = x127*x385
+      x399 = 1.24136239377603d0*x398
+      x400 = 0.592706883413531d0*x121 + 1.99999999999999d0
+      x401 = x391*x400
+      x402 = x395*x401 - x399
+      x403 = x131*x133
+      x404 = x402*x403
+      x405 = x397*x404
+      x406 = x129**(-3)
+      x407 = x142*x406
+      x408 = x134*x407
+      x409 = x145*x408
+      x410 = x138**(-1.33333333333333d0)
+      x411 = x143*x410
+      x412 = x134*x411
+      x413 = 3.30099231565716d0*x412
+      x414 = -x409 - x413
+      x415 = -x405 + x414
+      x416 = x130*x149
+      x417 = x152*x416
+      x418 = x415*x417
+      x419 = x129**(-5)
+      x420 = x136*x139
+      x421 = x419*x420
+      x422 = 0.894910333510778d0*x421
+      x423 = x138**(-1.66666666666667d0)
+      x424 = x136*x137
+      x425 = x423*x424
+      x426 = 4.41620548309916d0*x425
+      x427 = x132**(-3)
+      x428 = x402*x427
+      x429 = x131*x428
+      x430 = x135*x140
+      x431 = 0.894910333510778d0*x430
+      x432 = x429*x431
+      x433 = x409 + x413
+      x434 = x405 + x422 + x426 + x432 + x433
+      x435 = x148**(-2)
+      x436 = x147*x435
+      x437 = x130*x436
+      x438 = x152*x437
+      x439 = x434*x438
+      x440 = x150*x406
+      x441 = x152*x440
+      x442 = x151*x410
+      x443 = 3.30099231565716d0*x134
+      x444 = x442*x443
+      x445 = -x441 - x444
+      x446 = x418 + x439 + x445
+      x447 = 1d0/x153
+      x448 = 0.0155453454348274d0*x447
+      x449 = 0.0192974072210527d0*x398
+      x450 = x446*x448 + x449
+      x451 = 0.0155453454348274d0*x128
+      x452 = x129*(x391*x396 + x450) + x382 - x451
+      x453 = x381 + x452
+      x454 = x179*x453
+      x455 = rho_c**(-7)
+      x456 = rho_c**(-5)
+      x457 = x22*x456
+      x458 = 2.0d0*x457
+      x459 = x160*x166
+      x460 = -13.56d0*x162*x455 - x458 - 1.74d0*x459
+      x461 = x176*x460
+      x462 = 0.0522423459704672d0*x50
+      x463 = 2.0d0*gamma_ss*rho_c - x172
+      x464 = x169*x463
+      x465 = rho_c**(-5.66666666666667d0)
+      x466 = x174*x465
+      x467 = x2**(-2.33333333333333d0)
+      x468 = 1.33333333333333d0*x165
+      x469 = x467*x468
+      x470 = x4**(-2.33333333333333d0)
+      x471 = x468*x470
+      x472 = rho_s*x469 - rho_s*x471
+      x473 = 0.0522423459704672d0*x472
+      x474 = x173*x50
+      x475 = -x462*x464 + 0.243797614528847d0*x466 - x473*x474
+      x476 = x175**(-5)
+      x477 = x168*x476
+      x478 = x475*x477
+      x479 = x461 + x478
+      x480 = x159*x160
+      x481 = x479*x480
+      x482 = x159*x178
+      x483 = x182*x21
+      x484 = 0.046875d0*x483
+      x485 = x2**0.333333333333333d0
+      x486 = 2.56488140124205d0*x165
+      x487 = x485*x486
+      x488 = x4**0.333333333333333d0
+      x489 = x486*x488
+      x490 = -rho_s*x487 + rho_s*x489
+      x491 = x38*x490
+      x492 = x0*x8
+      x493 = 1d0/x35
+      x494 = x34**(-2)
+      x495 = x0*x9
+      x496 = x0*x10
+      x497 = x0*x12
+      x498 = 1.28158207914907d0*x492 + 1.85339581051578d0*x495 + 0.82236
+     &6887783805d0* x496 + 0.160391419419213d0*x497
+      x499 = x493*x494*x498
+      x500 = -0.00396311851556016d0*x8 - 0.0310906908696548d0
+      x501 = 32.1639684429149d0*x500
+      x502 = x15*x492
+      x503 = 0.00274777245725523d0*x502
+      x504 = -x503
+      x505 = 0.0082433173717657d0*x8
+      x506 = x505 + 0.0621813817393098d0
+      x507 = 0.741856473716896d0*x492 + 0.99709173929518d0*x495 + 0.4002
+     &14317499682d0 *x496 + 0.126466955049837d0*x497
+      x508 = 1d0/x14
+      x509 = x13**(-2)
+      x510 = 16.0819842214574d0*x508*x509
+      x511 = x507*x510
+      x512 = x504 + x506*x511
+      x513 = 0.00132103950518672d0*x36*x492 + x499*x501 + x512
+      x514 = x20*x23
+      x515 = x513*x514
+      x516 = 0.00136314985874174d0*x8
+      x517 = x516 + 0.0197517897025652d0
+      x518 = x29*x490
+      x519 = x517*x518
+      x520 = x20*x37
+      x521 = 4.0d0*x457
+      x522 = x520*x521
+      x523 = -x505 - 0.0621813817393098d0
+      x524 = x511*x523
+      x525 = x28*x517
+      x526 = x20*x521
+      x527 = x525*x526
+      x528 = 1d0/x27
+      x529 = x26**(-2)
+      x530 = 0.749197287859205d0*x492 + 1.35956911724794d0*x495 + 0.2150
+     &48623563832d0 *x496 + 0.127434173008489d0*x497
+      x531 = x528*x529*x530
+      x532 = 29.6085746432167d0*x531
+      x533 = x20*x24
+      x534 = x517*x533
+      x535 = x532*x534
+      x536 = 0.000454383286247248d0*x492
+      x537 = x30*x536
+      x538 = x503 - x537
+      x539 = x491 + x515 + x519 - x522 + x524 + x527 + x535 + x538
+      x540 = x59*x62
+      x541 = rho_c**(-3.33333333333333d0)
+      x542 = 1.27130925834002d0*x541
+      x543 = x540*x542
+      x544 = gamma_cc*x543
+      x545 = x2**(-0.333333333333333d0)
+      x546 = x165*x545
+      x547 = rho_s*x546
+      x548 = x4**(-0.333333333333333d0)
+      x549 = x165*x548
+      x550 = rho_s*x549
+      x551 = 1.33333333333333d0*x547 - 1.33333333333333d0*x550
+      x552 = x6**(-3)
+      x553 = x551*x552
+      x554 = x61*x63
+      x555 = x553*x554
+      x556 = gamma_cc*x555
+      x557 = x541*x55
+      x558 = 1.27130925834002d0*x557
+      x559 = gamma_cc*x558
+      x560 = x54*x552
+      x561 = x560*x57
+      x562 = x551*x561
+      x563 = gamma_cc*x562
+      x564 = x57*x7
+      x565 = x547 - 1.0d0*x550
+      x566 = x41**(-4)
+      x567 = 32.1639684429148d0*x566
+      x568 = x565*x567
+      x569 = -x516 - 0.0197517897025652d0
+      x570 = x28*x569
+      x571 = x533*x569
+      x572 = -x491 - x515 + x522 + x537
+      x573 = x512 + x518*x569 + x526*x570 + x532*x571 + x572
+      x574 = x40*x568 + x44*x573
+      x575 = x45*x574
+      x576 = x47*x575
+      x577 = x564*x576
+      x578 = gamma_cc*x577
+      x579 = -x559 + x563 - x578
+      x580 = x57*x62
+      x581 = x579*x580
+      x582 = gamma_cc*x581
+      x583 = x49*x51
+      x584 = x465*x583
+      x585 = 2.66666666666667d0*x547 - 2.66666666666667d0*x550
+      x586 = x6**(-5)
+      x587 = x47*x586
+      x588 = x53*x587
+      x589 = x46**(-3)
+      x590 = x575*x589
+      x591 = 0.593716125431411d0*x199
+      x592 = x590*x591
+      x593 = x559 - x563 + x578 + 1.38533762600663d0*x584 - x585*x588 + 
+     &x592
+      x594 = x60**(-2)
+      x595 = x594*x7
+      x596 = x595*x63
+      x597 = x593*x596
+      x598 = gamma_cc*x597
+      x599 = -x544 + x556 + x582 + x598
+      x600 = 1d0/x65
+      x601 = x600*x67
+      x602 = x599*x601
+      x603 = -1.0d0*x547 + x550
+      x604 = x41**2
+      x605 = 0.0310906908696549d0*x604
+      x606 = x603*x605
+      x607 = x606*x66
+      x608 = x602 + x607
+      x609 = x539 + x608
+      x610 = x165*x461
+      x611 = 0.03125d0*x181
+      x612 = x160*x51
+      x613 = x177*x612
+      x614 = x165*x478
+      x615 = x183*x610 + x183*x614 - x611*x613
+      x616 = x185*x609 + x615*x71
+      x617 = -x183*x454 - x183*x481 + x482*x484 + x616
+      x618 = x194*x21
+      x619 = 0.005859375d0*x618
+      x620 = 0.13125d0*x483
+      x621 = x184*x188 + 2.8d0
+      x622 = 0.0875d0*x181
+      x623 = x188*x610 + x188*x614 - x613*x622
+      x624 = x609*x621 + x623*x71
+      x625 = -x188*x454 - x188*x481 + x482*x620 + x624
+      x626 = x160*x195
+      x627 = -x190*x619 + x625*x626
+      x628 = x573 - x602 - x607
+      x629 = x156*(x187*x627 + x196*x617 + x628)
+      x630 = mu*rho_c**(-1.33333333333333d0)
+      x631 = x198*x630
+      x632 = x316*x319
+      x633 = 1.27130925834002d0*x541
+      x634 = x632*x633
+      x635 = gamma_cc*x634
+      x636 = x310*x318
+      x637 = x321*x636
+      x638 = x553*x637
+      x639 = gamma_cc*x638
+      x640 = x504 - x519 - x524 - x527 - x535 + x572
+      x641 = x70**2
+      x642 = 1d0/x641
+      x643 = x299*x642
+      x644 = x640*x643
+      x645 = x214*x459
+      x646 = 0.00528235082287567d0*x205*x211
+      x647 = x0*x214
+      x648 = x0**2.0d0
+      x649 = x0*x648
+      x650 = x0*x210
+      x651 = x207*(x0*x209 - 0.00428269300567249d0*x492 - 0.021019826971
+     &6521d0*x497 - 0.000367081058155144d0*x650)
+      x652 = x206*x651
+      x653 = x205*x215
+      x654 = x4**(-0.333333333333333d0)
+      x655 = x165*x654
+      x656 = rho_s*x655
+      x657 = x2**(-0.333333333333333d0)
+      x658 = x165*x657
+      x659 = rho_s*x658
+      x660 = x656 - x659
+      x661 = x221*x235
+      x662 = x236*x70
+      x663 = 0.00842941233263362d0*x0
+      x664 = 0.666666666666667d0*x659
+      x665 = 0.666666666666667d0*x656
+      x666 = x664 - x665
+      x667 = x223*x231
+      x668 = x666*x667
+      x669 = 4.62131672808458d0*x668
+      x670 = x218**(-4)
+      x671 = -x656 + x659
+      x672 = x670*x671
+      x673 = x230*x233
+      x674 = x672*x673
+      x675 = x201*x222
+      x676 = x492*x675
+      x677 = 1.54043890936153d0*x676
+      x678 = 0.957035512114487d0*x496
+      x679 = x232*x678
+      x680 = -0.333333333333333d0*x656 + 0.333333333333333d0*x659
+      x681 = mu*x222
+      x682 = x226*x681
+      x683 = x680*x682
+      x684 = x225*x495
+      x685 = 0.767414216267966d0*x684
+      x686 = x683 - x685
+      x687 = x669 + x674 - x677 - x679 + x686
+      x688 = 0.71309495712383d0*x676
+      x689 = 2.13928487137149d0*x668
+      x690 = -x683 + x685
+      x691 = x688 - x689 + x690
+      x692 = x228**(-2)
+      x693 = x234*x692
+      x694 = x229*x687 + x691*x693
+      x695 = 1d0/x234
+      x696 = x219*x220*x695
+      x697 = x228*x696
+      x698 = 0.00993066744685536d0*x280
+      x699 = 0.00152446164353214d0*x208
+      x700 = x207*(0.0157648702287391d0*x12 + 0.000137655396808179d0*x21
+     &0 - x699 + 0.00642403950850874d0*x8 + 0.5d0)
+      x701 = x207*(x0*x699 - 0.00214134650283625d0*x492 - 0.010509913485
+     &8261d0*x497 - 0.000183540529077572d0*x650)
+      x702 = 0.155586177736036d0*x492*x700 + x701
+      x703 = x279*x702
+      x704 = x283*x70
+      x705 = 0.106650135484359d0*x0
+      x706 = x208*x459
+      x707 = 0.0891107483661069d0*x211
+      x708 = x206*x238
+      x709 = 0.000220097950953153d0*x647
+      x710 = 1.02357830998401d0*x492 - 0.256556487706084d0*x497
+      x711 = x242*x245
+      x712 = 75.398223686155d0*x243
+      x713 = x0*x244
+      x714 = x0**(-0.666666666666667d0)
+      x715 = x240*x241
+      x716 = x714*x715
+      x717 = 0.00590232709996862d0*x0
+      x718 = 0.00590232709996862d0*x165
+      x719 = rho_s*x252
+      x720 = x254*x719
+      x721 = x260*(x254*x717 - x718*x720)
+      x722 = x248*x259
+      x723 = rho_s*x263
+      x724 = x267*x723
+      x725 = x267*x717 + x718*x724
+      x726 = x265*x274
+      x727 = x0*x247
+      x728 = 22.9698720015055d0*x727
+      x729 = x262*x728
+      x730 = x268*x273
+      x731 = x728*x730
+      x732 = 0.112523287330675d0*x0
+      x733 = x254*x732
+      x734 = 0.0162903215389562d0*x497
+      x735 = x255*x734
+      x736 = 0.112523287330675d0*x165
+      x737 = x12*x165
+      x738 = 0.0162903215389562d0*x737
+      x739 = x255*x719
+      x740 = -x720*x736 + x733 + x735 - x738*x739
+      x741 = x251*x740
+      x742 = x257**(-2)
+      x743 = x261*x742
+      x744 = x248*x743
+      x745 = x267*x732
+      x746 = x264*x734
+      x747 = x264*x723
+      x748 = x724*x736 + x738*x747 + x745 + x746
+      x749 = x270*x748
+      x750 = x271**(-2)
+      x751 = x268*x750
+      x752 = x248*x751
+      x753 = x258*x261
+      x754 = x250*x753
+      x755 = x165*x247
+      x756 = rho_s*x755
+      x757 = 34.4548080022583d0*x756
+      x758 = x268*x272
+      x759 = x269*x758
+      x760 = 22.9698720015055d0*x755
+      x761 = x719*x760
+      x762 = x723*x760
+      x763 = x262*x761 - x721*x722 - x725*x726 - x729 - x730*x762 - x731
+     & - x741*x744 - x749*x752 + x754*x757 - x757*x759
+      x764 = -x0*x246 - x459*x712 - x710*x711 - 2.41662179562687d0*x713*
+     &x716 + x763
+      x765 = 0.167525641071009d0*x280
+      x766 = 0.0003448148419047d0*x647
+      x767 = 0.449784277163183d0*x650
+      x768 = x2**1.66666666666667d0
+      x769 = 1.33333333333333d0*x165
+      x770 = x768*x769
+      x771 = x4**1.66666666666667d0
+      x772 = x769*x771
+      x773 = -rho_s*x770 + rho_s*x772
+      x774 = 11.4849360007528d0*x727
+      x775 = x290*(0.0802319968229891d0*x492 - 0.173432185689313d0*x497)
+     &
+      x776 = x244*x293
+      x777 = 1d0/x8
+      x778 = x0*x777
+      x779 = 46.773325076649d0*x291
+      x780 = x247*x459
+      x781 = x288*x774 + x289*x773 - 15.591108358883d0*x292*x727 - 2.645
+     &27879654103d0 *x292*x778 + x763 - x775*x776 - x779*x780
+      x782 = -0.00440195901906306d0*x213*x647 + 0.000410930386996015d0*x
+     &213*x649 + x230*(-x0*x239 + 0.00693220036674015d0*x212*x650 - x276
+     &*x709 + x277*x764 + x651*x708 - x706*x707) + x237*x539 + x278*( 0.
+     &0027585187352376d0*x281*x647 - x282*x703 + x284*x539 - x645* x698 
+     &- x704*x705) + x285*(x0*x287 - x286*x703 - x294*x766 + x295* x781 
+     &+ x296*x539 - x70*x767 - x706*x765) - x645*x646 + x652*x653 + x660
+     &*x661 - x662*x663 + x694*x697
+      x783 = x204*x782
+      x784 = x203**(-5)
+      x785 = x0*x202*x784
+      x786 = x297*x785
+      x787 = 0.632303919304059d0*x786
+      x788 = x539 - x783 - x787
+      x789 = x200*x788
+      x790 = 2.78d0*x644 + 2.78d0*x789
+      x791 = 1d0/x299
+      x792 = x70*x791
+      x793 = x790*x792
+      x794 = x323*x793
+      x795 = x312*x541
+      x796 = 0.0395258831507799d0*x795
+      x797 = gamma_cc*x796
+      x798 = x309*x310
+      x799 = x553*x798
+      x800 = 0.0169396642074771d0*x56
+      x801 = x799*x800
+      x802 = gamma_cc*x801
+      x803 = x783 + x787
+      x804 = x573 + x803
+      x805 = x302*x568 + x44*x804
+      x806 = x303*x805
+      x807 = gamma_cc*x56
+      x808 = x305*x311
+      x809 = 0.000526665863310429d0*x808
+      x810 = x807*x809
+      x811 = x806*x810
+      x812 = x315*x792
+      x813 = x790*x812
+      x814 = -x797 + x802 - x811 + x813
+      x815 = x319*x814
+      x816 = 0.544846825002868d0*x56
+      x817 = x815*x816
+      x818 = gamma_cc*x817
+      x819 = x465*x51
+      x820 = x306*x48
+      x821 = x819*x820
+      x822 = 0.00133911037615638d0*x821
+      x823 = x585*x586
+      x824 = x307*x52
+      x825 = x823*x824
+      x826 = x304**(-3)
+      x827 = x806*x826
+      x828 = x199*x301
+      x829 = 1.78430857480394d-5*x828
+      x830 = x827*x829
+      x831 = 5.56d0*x644 + 5.56d0*x789
+      x832 = x308*x792
+      x833 = x797 - x802 + x811 - x813 + x822 - x825 + x830 - x831*x832
+      x834 = x317**(-2)
+      x835 = x311*x834
+      x836 = x321*x835
+      x837 = x833*x836
+      x838 = gamma_cc*x837
+      x839 = -x635 + x639 + x794 + x818 + x838
+      x840 = 1d0/x324
+      x841 = x67*x840
+      x842 = x325*x606 + x788 + x839*x841
+      x843 = -x449
+      x844 = -x384 - x386 - x388 - x390
+      x845 = x395*x400
+      x846 = x399 + x844*x845
+      x847 = x397*x403
+      x848 = x846*x847
+      x849 = x433 - x848
+      x850 = x417*x849
+      x851 = x131*x427*x431
+      x852 = x414 - x422 - x426 + x846*x851 + x848
+      x853 = x438*x852
+      x854 = x441 + x444
+      x855 = x850 + x853 + x854
+      x856 = x448*x855
+      x857 = x129*(x396*x844 + x843 + x856) - x382 + x451
+      x858 = x381 + x857
+      x859 = x179*x858
+      x860 = 1.74d0*x165
+      x861 = rho_s**5
+      x862 = rho_s**3
+      x863 = x21*x862
+      x864 = 2.0d0*x863
+      x865 = rho_s*x860 + 13.56d0*x161*x861 + x864
+      x866 = x176*x865
+      x867 = 2.0d0*rho_s
+      x868 = gamma_cc*x867 - rho_c*x171
+      x869 = x169*x868
+      x870 = 1.33333333333333d0*x0
+      x871 = -x467*x870 + x470*x870
+      x872 = x173*x462
+      x873 = -x462*x869 - x871*x872
+      x874 = x477*x873
+      x875 = x866 + x874
+      x876 = x480*x875
+      x877 = 2.56488140124205d0*x0
+      x878 = x485*x877 - x488*x877
+      x879 = x38*x878
+      x880 = 4.0d0*x863
+      x881 = x520*x880
+      x882 = x29*x878
+      x883 = x517*x882
+      x884 = x20*x880
+      x885 = x525*x884
+      x886 = x883 - x885
+      x887 = x879 + x881 + x886
+      x888 = x0*x545
+      x889 = x0*x548
+      x890 = -1.33333333333333d0*x888 + 1.33333333333333d0*x889
+      x891 = x552*x890
+      x892 = x554*x891
+      x893 = gamma_cc*x892
+      x894 = x561*x890
+      x895 = gamma_cc*x894
+      x896 = -1.0d0*x888 + x889
+      x897 = x567*x896
+      x898 = -x879 - x881
+      x899 = x569*x882 - x570*x884 + x898
+      x900 = x40*x897 + x44*x899
+      x901 = x45*x900
+      x902 = x47*x564
+      x903 = x901*x902
+      x904 = gamma_cc*x903
+      x905 = x895 - x904
+      x906 = x580*x905
+      x907 = gamma_cc*x906
+      x908 = -2.66666666666667d0*x888 + 2.66666666666667d0*x889
+      x909 = x589*x591
+      x910 = -x588*x908 - x895 + x901*x909 + x904
+      x911 = x596*x910
+      x912 = gamma_cc*x911
+      x913 = x893 + x907 + x912
+      x914 = x601*x913
+      x915 = x888 - 1.0d0*x889
+      x916 = x605*x915
+      x917 = x66*x916
+      x918 = x914 + x917
+      x919 = x887 + x918
+      x920 = x165*x866
+      x921 = x165*x874
+      x922 = x183*x920 + x183*x921
+      x923 = x185*x919 + x71*x922
+      x924 = -x183*x859 - x183*x876 + x923
+      x925 = x188*x920 + x188*x921
+      x926 = x621*x919 + x71*x925
+      x927 = -x188*x859 - x188*x876 + x926
+      x928 = x187*x626
+      x929 = -x914 - x917
+      x930 = x899 + x929
+      x931 = x156*(x196*x924 + x927*x928 + x930)
+      x932 = x637*x891
+      x933 = gamma_cc*x932
+      x934 = -x883 + x885 + x898
+      x935 = x643*x934
+      x936 = x165*x214
+      x937 = x646*x936
+      x938 = x0*x657
+      x939 = x0*x654
+      x940 = x938 - x939
+      x941 = x698*x936
+      x942 = -0.333333333333333d0*x938 + 0.333333333333333d0*x939
+      x943 = x682*x942
+      x944 = -x938 + x939
+      x945 = x670*x673
+      x946 = x944*x945
+      x947 = 0.666666666666667d0*x938
+      x948 = 0.666666666666667d0*x939
+      x949 = -x947 + x948
+      x950 = x667*x949
+      x951 = 4.62131672808458d0*x950
+      x952 = x943 + x946 + x951
+      x953 = -x943
+      x954 = 2.13928487137149d0*x950
+      x955 = x953 - x954
+      x956 = x229*x952 + x693*x955
+      x957 = x165*x208
+      x958 = x707*x957
+      x959 = x165*x712
+      x960 = 34.4548080022583d0*x727
+      x961 = 0.203363546995945d0*x778
+      x962 = 1d0/x266
+      x963 = x273*x962
+      x964 = x263*x963
+      x965 = x252*x733 + x252*x735
+      x966 = x251*x744
+      x967 = -x263*x745 - x263*x746
+      x968 = x270*x752
+      x969 = 1d0/x253
+      x970 = x259*x969
+      x971 = x252*x970
+      x972 = -x252*x729 + x263*x731 - x754*x960 + x759*x960 + x961*x964 
+     &- x961*x971 - x965*x966 - x967*x968
+      x973 = rho_s*x959 + x972
+      x974 = x765*x957
+      x975 = 1.33333333333333d0*x0
+      x976 = x768*x975 - x771*x975
+      x977 = x755*x779
+      x978 = rho_s*x977 + x289*x976 + x972
+      x979 = rho_s*x937 + x230*(rho_s*x958 + x277*x973) + x237*x887 + x2
+     &78*(rho_s* x941 + x284*x887) + x285*(rho_s*x974 + x295*x978 + x296
+     &*x887) + x661*x940 + x697*x956
+      x980 = x204*x979
+      x981 = x887 - x980
+      x982 = x200*x981
+      x983 = 2.78d0*x935 + 2.78d0*x982
+      x984 = x792*x983
+      x985 = x323*x984
+      x986 = x798*x800
+      x987 = x891*x986
+      x988 = gamma_cc*x987
+      x989 = x899 + x980
+      x990 = x302*x897 + x44*x989
+      x991 = x303*x990
+      x992 = x810*x991
+      x993 = x812*x983
+      x994 = x988 - x992 + x993
+      x995 = x319*x816
+      x996 = x994*x995
+      x997 = gamma_cc*x996
+      x998 = x586*x824
+      x999 = x908*x998
+      x1000 = x826*x829
+      x1001 = x1000*x991
+      x1002 = 5.56d0*x935 + 5.56d0*x982
+      x1003 = x1001 - x1002*x832 - x988 + x992 - x993 - x999
+      x1004 = x1003*x836
+      x1005 = gamma_cc*x1004
+      x1006 = x1005 + x933 + x985 + x997
+      x1007 = x1006*x841 + x325*x916 + x981
+      x1008 = x1007 + x931
+      x1009 = x48*x50
+      x1010 = x54*x61
+      x1011 = x1009*x1010
+      x1012 = 0.296858062715705d0*gamma_cc
+      x1013 = x1011*x1012
+      x1014 = gamma_cc*x49
+      x1015 = x1014*x50
+      x1016 = -0.593716125431411d0*x1015 - x58
+      x1017 = gamma_cc*x596
+      x1018 = x1016*x1017
+      x1019 = x1013 + x1018 + x64
+      x1020 = x1019*x601
+      x1021 = -x1020
+      x1022 = x134*x142
+      x1023 = x140*x149
+      x1024 = x1022*x1023
+      x1025 = 0.111863791688847d0*x1024
+      x1026 = 0.167230224308322d0*x144
+      x1027 = x1026*x130
+      x1028 = x1027*x150
+      x1029 = 0.25d0*gamma_cs
+      x1030 = 0.125d0*gamma_cc + 0.125d0*gamma_ss
+      x1031 = -x1029 + x1030
+      x1032 = x133*x141
+      x1033 = -x1026*x143 - x1031*x1032
+      x1034 = x1033*x436
+      x1035 = x1034*x397
+      x1036 = x1025 + x1028 + x1035
+      x1037 = x129*x448
+      x1038 = x1036*x1037
+      x1039 = x112*x91
+      x1040 = x1039*x109
+      x1041 = 0.111863791688847d0*x1040
+      x1042 = x1041*x88
+      x1043 = 0.167230224308322d0*x100
+      x1044 = x1043*x114
+      x1045 = x1029 + x1030
+      x1046 = x104*x110
+      x1047 = -x1043*x96 - x1045*x1046
+      x1048 = x103*x362
+      x1049 = x1047*x1048
+      x1050 = x1049*x357
+      x1051 = x1042 + x1044 + x1050
+      x1052 = x379*x94
+      x1053 = x1051*x1052
+      x1054 = x1038 + x1053
+      x1055 = x1054*x179
+      x1056 = -x1055*x183
+      x1057 = x180*x611
+      x1058 = 0.00081628665578855d0*x477
+      x1059 = rho_c**(-7.66666666666667d0)
+      x1060 = x166*x169
+      x1061 = x1060*x182
+      x1062 = x1059*x1061
+      x1063 = x1062*x159
+      x1064 = x184*x611
+      x1065 = rho_c**(-6.66666666666667d0)
+      x1066 = x1061*x1065
+      x1067 = gamma_cc*x1064 - x1058*x1066
+      x1068 = x1020*x185 + x1067*x71
+      x1069 = -gamma_cc*x1057 + x1056 + x1058*x1063 + x1068
+      x1070 = 0.005859375d0*x191
+      x1071 = x193*x51
+      x1072 = -x1055*x188
+      x1073 = x180*x622
+      x1074 = 0.00228560263620794d0*x477
+      x1075 = x184*x622
+      x1076 = gamma_cc*x1075 - x1066*x1074
+      x1077 = x1020*x621 + x1076*x71
+      x1078 = -gamma_cc*x1073 + x1063*x1074 + x1072 + x1077
+      x1079 = x1070*x1071 + x1078*x626
+      x1080 = x156*(x1021 + x1069*x196 + x1079*x187)
+      x1081 = gamma_cc*x1009
+      x1082 = x301*x309
+      x1083 = x1082*x318
+      x1084 = 0.00922952226005862d0*x1083
+      x1085 = x1081*x1084
+      x1086 = 0.000573904446924163d0*x306
+      x1087 = x1081*x1086
+      x1088 = -x1087 - x314
+      x1089 = gamma_cc*x836
+      x1090 = x1088*x1089
+      x1091 = x1085 + x1090 + x322
+      x1092 = x1091*x841
+      x1093 = x1080 + x1092
+      x1094 = x182*x465
+      x1095 = x1094*x169
+      x1096 = x1095*x159
+      x1097 = x42*x66
+      x1098 = 0.0870539344350337d0*x1097 - 0.174107868870067d0*x16 + 0.0
+     &553050111671826d0*x31 + 2.8d0*x39
+      x1099 = x169*x50
+      x1100 = x1099*x182
+      x1101 = x1058*x1100
+      x1102 = -x1098*x1101
+      x1103 = x1072 + x1074*x1096 + x1102
+      x1104 = -x1101*x71
+      x1105 = x1056 + x1058*x1096 + x1104
+      x1106 = x156*(x1103*x928 + x1105*x196)
+      x1107 = x1065*x159
+      x1108 = 0.00457120527241588d0*x477
+      x1109 = x169*x182
+      x1110 = rho_s*x1109
+      x1111 = x1108*x1110
+      x1112 = 0.0016325733115771d0*x477
+      x1113 = x1112*x169
+      x1114 = x1094*x1113
+      x1115 = rho_s*x1114
+      x1116 = x1098*x1115
+      x1117 = 0.223727583377694d0*x1024
+      x1118 = 0.334460448616645d0*x144
+      x1119 = x1118*x151
+      x1120 = x1118*x143
+      x1121 = x84 - x85 - x86
+      x1122 = -x1032*x1121 + x1120
+      x1123 = x1122*x437
+      x1124 = x1123*x152
+      x1125 = -x1117 - x1119 + x1124
+      x1126 = 0.223727583377694d0*x1040
+      x1127 = x1126*x88
+      x1128 = 0.334460448616645d0*x100
+      x1129 = x1128*x114
+      x1130 = -x1128*x96
+      x1131 = -x1046*x88 + x1130
+      x1132 = x1048*x1131
+      x1133 = x1132*x95
+      x1134 = x1133*x115
+      x1135 = x1127 + x1129 + x1134
+      x1136 = x1037*x1125 + x1052*x1135
+      x1137 = x1136*x179
+      x1138 = -x1107*x1111 + x1116 - x1137*x188
+      x1139 = rho_s*x1113*x182
+      x1140 = x1115*x71
+      x1141 = -x1107*x1139 - x1137*x183 + x1140
+      x1142 = x156*(x1138*x928 + x1141*x196)
+      x1143 = x1071*x160
+      x1144 = x1143*x482
+      x1145 = 0.03125d0*x1071
+      x1146 = x184*x71
+      x1147 = -x1145*x1146
+      x1148 = 0.03125d0*x1144 + x1147
+      x1149 = x1145*x184
+      x1150 = -x1098*x1149
+      x1151 = 0.0875d0*x1144 + x1150
+      x1152 = tau_c**(-4)
+      x1153 = x1152*x192
+      x1154 = -x1070*x1153 + x1151*x626
+      x1155 = x156*(x1148*x196 + x1154*x187)
+      x1156 = x182*x456
+      x1157 = x1156*x482
+      x1158 = x611*x612
+      x1159 = x453*x479
+      x1160 = x74**(-2)
+      x1161 = x1160*x76
+      x1162 = x1161*x82
+      x1163 = x336*(-130.15964257673d0*x1160*x77 - 172.632095841468d0*x1
+     &160*x78 - 57.042190297332d0*x1160*x79 - 156.836877485407d0*x1161)
+      x1164 = 1034.52086599683d0*x333**2/(x80**4*x81**2)
+      x1165 = x333*x334
+      x1166 = x1165*x335
+      x1167 = x1166*x330
+      x1168 = 32.1639684429149d0*x1165*(35.5123722979901d0*x329 + 37.442
+     &0464663507d0* x330 + 36.6336685193113d0*x331 + 10.8942558607307d0*
+     &x332)/x80**3
+      x1169 = x116**(-2)
+      x1170 = 0.0155453454348274d0*x1169
+      x1171 = x1170*x377
+      x1172 = x107*x88
+      x1173 = 1.00338134584993d0*x100
+      x1174 = 6.60198463131432d0*x342
+      x1175 = x1174*x88
+      x1176 = 65.1589765731441d0*x88*x99**(-2.33333333333333d0)
+      x1177 = 1.33784179446658d0*x100
+      x1178 = x1177*x88
+      x1179 = x1178*x338
+      x1180 = x1175*x95
+      x1181 = x1178*x95
+      x1182 = x103*x357/x111**3
+      x1183 = x1182*x373
+      x1184 = x1172*x91
+      x1185 = x1173*x1184
+      x1186 = x1174*x347
+      x1187 = x1176*x96
+      x1188 = x1179*x356
+      x1189 = x1180*x356
+      x1190 = exp(3.999999999999988d0*x83)
+      x1191 = x354**2
+      x1192 = x1191*x370
+      x1193 = x1181*x1190*x1192
+      x1194 = x104*x357*x89
+      x1195 = x1191*x1194
+      x1196 = 10.3996132712785d0*x1162 + x1163*x353 - x1164*x353 - 79.85
+     &42817192673d0* x1167 + x1168*x353
+      x1197 = x1194*x1196
+      x1198 = x113*x115
+      x1199 = x94**(-6)
+      x1200 = 17.6648219323966d0*x366
+      x1201 = x108*x363
+      x1202 = x105*x371
+      x1203 = 0.894910333510778d0*x369*x89
+      x1204 = x1048*x357
+      x1205 = 16.0819842214575d0*x1166*x328 + x337*(-0.00460691662213167
+     &d0*x76 - 0.0155453454348274d0) + x380 + x94*(-0.16166558069064d0*x
+     &1162 + x1163*x328 - x1164*x328 + 1.24136239377604d0*x1167 + x1168*
+     &x328 + x1171*(x341 + x345 - x361 - x376) + x379*(-x112*x1179*x359 
+     &+ x114 *x1176 + x1172*x1173*x339 + x1175*x340 - x1175*x360 - x1179
+     &*x375 - x1180*x375 + x1181*x359*x374 + x1183*(x1177*x347 + x1181*x
+     &356 + 6.60198463131432d0*x350 + 1.78982066702156d0*x365 + 8.832410
+     &96619832d0*x368 + 1.78982066702156d0*x369*x371) + x1198*( x1185 + 
+     &x1186 + x1187 + x1188 + x1189 + x1193 - x1195 - x1197) + x1204*(-x
+     &106*x1200*x363 - x107*x1200*x1202 - x1185 - x1186 - x1187 - x1188 
+     &- x1189 - 2.68473100053233d0*x1190*x1191*x369/x90** 4 + x1192*x120
+     &3 - x1193 + x1195 + x1196*x1203*x370 + x1197 - 2.23727583377694d0*
+     &x1199*x364 - 3.57964133404311d0*x1201*x1202 - 108.965502680276d0*x
+     &367*x99**(-2.66666666666667d0))))
+      x1206 = x402**2
+      x1207 = exp(3.999999999999988d0*x128)
+      x1208 = x1206*x1207
+      x1209 = 1.33784179446658d0*x144
+      x1210 = x1209*x134
+      x1211 = x1210*x130
+      x1212 = x1211*x427
+      x1213 = x1208*x1212
+      x1214 = x1210*x406
+      x1215 = x1214*x404
+      x1216 = 6.60198463131432d0*x410
+      x1217 = x1216*x134
+      x1218 = x130*x404
+      x1219 = x1217*x1218
+      x1220 = x1206*x847
+      x1221 = 1034.52086599683d0/(x125**4*x126**2)
+      x1222 = x1221*x391**2
+      x1223 = 35.5123722979901d0*x383
+      x1224 = 37.4420464663507d0*x385
+      x1225 = 36.6336685193113d0*x387
+      x1226 = 10.8942558607307d0*x389
+      x1227 = 32.1639684429149d0*x393/x125**3
+      x1228 = x1227*(x1223 + x1224 + x1225 + x1226)
+      x1229 = x391*x394
+      x1230 = x1229*x385
+      x1231 = x119**(-2)
+      x1232 = x121*x1231
+      x1233 = x1232*x127
+      x1234 = 10.3996132712785d0*x1233
+      x1235 = 130.15964257673d0*x122*x1231
+      x1236 = 156.836877485407d0*x1232
+      x1237 = 172.632095841468d0*x123*x1231
+      x1238 = 57.042190297332d0*x1231*x124
+      x1239 = -x1235 - x1236 - x1237 - x1238
+      x1240 = x1234 + x1239*x845
+      x1241 = -x1222*x400 + x1228*x401 - 79.8542817192673d0*x1230 + x124
+     &0
+      x1242 = x1241*x847
+      x1243 = x1022*x137
+      x1244 = 1.00338134584993d0*x144
+      x1245 = x1243*x1244
+      x1246 = 65.1589765731441d0*x134*x138**(-2.33333333333333d0)
+      x1247 = x1246*x143
+      x1248 = x1216*x408
+      x1249 = x1245 + x1247 + x1248
+      x1250 = x149*x406
+      x1251 = x1250*x415
+      x1252 = x415*x416
+      x1253 = x139*x419
+      x1254 = x135*x429
+      x1255 = x1253*x1254
+      x1256 = 17.6648219323966d0*x423
+      x1257 = x1256*x137
+      x1258 = 2.68473100053233d0*x430/x132**4
+      x1259 = x129**(-6)
+      x1260 = 2.23727583377694d0*x1259*x420
+      x1261 = 108.965502680276d0*x138**(-2.66666666666667d0)*x424
+      x1262 = x1256*x136*x419
+      x1263 = -x1245 - x1247 - x1248
+      x1264 = -x1260 - x1261 - x1262 + x1263
+      x1265 = x434*x435
+      x1266 = x434*x436
+      x1267 = x434*x437
+      x1268 = x1209*x408
+      x1269 = 6.60198463131432d0*x412
+      x1270 = 1.78982066702156d0*x421
+      x1271 = 8.83241096619832d0*x425
+      x1272 = 1.78982066702156d0*x430
+      x1273 = x147*x397/x148**3
+      x1274 = x1273*x434
+      x1275 = x1244*x134*x137*x150
+      x1276 = x1246*x151
+      x1277 = x1217*x440
+      x1278 = x1275 + x1276 + x1277
+      x1279 = x153**(-2)
+      x1280 = 0.0155453454348274d0*x1279
+      x1281 = x1280*x446
+      x1282 = x391*x392
+      x1283 = 0.16166558069064d0*x1233
+      x1284 = x1239*x396 - x1283
+      x1285 = 16.0819842214575d0*x392
+      x1286 = x1229*x1285
+      x1287 = 0.00460691662213167d0*x121
+      x1288 = x395*(-x1287 - 0.0155453454348274d0)
+      x1289 = x1286 + x1288*x391 + x129*(-x1222*x392 + x1228*x1282 + 1.2
+     &4136239377604d0*x1230 + x1281*(-x418 - x439 + x854) + x1284 + x448
+     &*(-x1210*x1251 + x1211*x1265*x415 - x1214*x1266 - x1217*x1252 - x1
+     &217*x1267 + x1274*(x1211*x404 + x1268 + x1269 + x1270 + x1271 + x1
+     &272*x429) + x1278 + x417*(x1213 + x1215 + x1219 - x1220 - x1242 + 
+     &x1249) + x438*(x1206*x851 - x1208*x1258 - x1213 - x1215 - x1219 + 
+     &x1220 + x1241*x851 + x1242 - x1254*x1257 - 3.57964133404311d0*x125
+     &5 + x1264))) + x450
+      x1290 = x179*(x1205 + x1289)
+      x1291 = x161*x22
+      x1292 = x166*x21
+      x1293 = x176*(10.0d0*x1291 + 5.22d0*x1292 + 94.92d0*x162/rho_c**8)
+     &
+      x1294 = x460*x476
+      x1295 = x1294*x475
+      x1296 = 0.065302932463084d0*x50
+      x1297 = 0.065302932463084d0*x474
+      x1298 = x168/x175**6
+      x1299 = x1298*x475
+      x1300 = x1299*(-x1296*x464 - x1297*x472 + 0.304747018161059d0*x466
+     &)
+      x1301 = 0.104484691940934d0*x50
+      x1302 = x1301*x169
+      x1303 = 0.487595229057694d0*x465
+      x1304 = rho_s*x160
+      x1305 = 2.66666666666667d0*x1304
+      x1306 = x2**(-3.33333333333333d0)
+      x1307 = 3.11111111111111d0*x1292
+      x1308 = x4**(-3.33333333333333d0)
+      x1309 = x477*(-gamma_ss*x1302 - 1.38151981566347d0*x1065*x174 - x1
+     &301*x463*x472 + x1303*x173*x472 + x1303*x464 - x872*(-x1305*x467 +
+     & x1305*x470 + x1306*x1307 + x1307*x1308))
+      x1310 = x1293 + 2.0d0*x1295 + x1300 + x1309
+      x1311 = x1310*x480
+      x1312 = 0.09375d0*x483
+      x1313 = x178*x453
+      x1314 = x159*x479
+      x1315 = gamma_cc*rho_c**(-4.33333333333333d0)
+      x1316 = 4.23769752780008d0*x1315
+      x1317 = 2.54261851668005d0*gamma_cc
+      x1318 = x1317*x541
+      x1319 = x553*x61
+      x1320 = x48*x551
+      x1321 = x1320*(2.0d0*x547 - 2.0d0*x550)
+      x1322 = gamma_cc*x1321
+      x1323 = x2**(-1.33333333333333d0)
+      x1324 = 0.444444444444444d0*x1292
+      x1325 = x4**(-1.33333333333333d0)
+      x1326 = -x1305*x545 + x1305*x548 + x1323*x1324 + x1324*x1325
+      x1327 = gamma_cc*x552
+      x1328 = x1326*x1327
+      x1329 = 1.08969365000574d0*x56
+      x1330 = gamma_cc*x1329
+      x1331 = x1330*x579
+      x1332 = x59*x595
+      x1333 = x593*x594
+      x1334 = x1330*x553
+      x1335 = x551*x560
+      x1336 = x585*x587
+      x1337 = 0.593716125431411d0*x52
+      x1338 = x576*x7
+      x1339 = 1.18743225086282d0*x199
+      x1340 = gamma_cc*x63
+      x1341 = x1340*x7/x60**3
+      x1342 = x1341*x593
+      x1343 = x1316*x55
+      x1344 = x1318*x1335
+      x1345 = gamma_cc*x57
+      x1346 = x1345*x54
+      x1347 = x1321*x1346
+      x1348 = gamma_cc*x561
+      x1349 = x1326*x1348
+      x1350 = x1318*x1338
+      x1351 = x574**2
+      x1352 = 64.3279368858296d0*x43
+      x1353 = exp(x1352*x40)
+      x1354 = x1351*x1353
+      x1355 = x1330*x7
+      x1356 = x1355*x589
+      x1357 = x1354*x1356
+      x1358 = x1351*x45
+      x1359 = gamma_cc*x902
+      x1360 = x1358*x1359
+      x1361 = x1334*x576
+      x1362 = 32.1639684429148d0/x41**5
+      x1363 = x1362*x565
+      x1364 = x1363*x551
+      x1365 = x160*x867
+      x1366 = x1304*x548
+      x1367 = 0.333333333333333d0*x1292
+      x1368 = x1323*x1367
+      x1369 = x1325*x1367
+      x1370 = x567*(-x1365*x545 + 2.0d0*x1366 + x1368 + x1369)
+      x1371 = 64.3279368858296d0*x566
+      x1372 = x1371*x565
+      x1373 = 5.1297628024841d0*x1304
+      x1374 = x2**(-0.666666666666667d0)
+      x1375 = 0.854960467080683d0*x1292
+      x1376 = x4**(-0.666666666666667d0)
+      x1377 = x1373*x485 - x1373*x488 + x1374*x1375 + x1375*x1376
+      x1378 = x1377*x29
+      x1379 = 20.0d0*x1291
+      x1380 = x1379*x20
+      x1381 = 8.0d0*x457
+      x1382 = x1381*x490
+      x1383 = 0.000908766572494496d0*x492
+      x1384 = x1383*x518
+      x1385 = 29.6085746432167d0*x528
+      x1386 = x1385*x571
+      x1387 = x165*x9
+      x1388 = x165*x8
+      x1389 = x10*x165
+      x1390 = x529*(-1.5861639701226d0*x1387 - 0.998929717145607d0*x1388
+     & - 0.322572935345748d0*x1389 - 0.212390288347482d0*x737)
+      x1391 = x24*x490
+      x1392 = 59.2171492864334d0*x531
+      x1393 = x1391*x1392
+      x1394 = 876.667692402934d0*x530**2/(x26**4*x27**2)
+      x1395 = x530*(x0*x25 + 1.49839457571841d0*x492 + 2.71913823449588d
+     &0*x495 + 0.254868346016978d0*x497)/x26**3
+      x1396 = x20*x531
+      x1397 = x1396*x569
+      x1398 = 236.868597145733d0*x457
+      x1399 = x510*(-1.16327369584438d0*x1387 - 0.989141964955861d0*x138
+     &8 - 0.600321476249523d0*x1389 - 0.210778258416395d0*x737)
+      x1400 = 258.630216499205d0*x507**2/(x13**4*x14**2)
+      x1401 = x507*x508
+      x1402 = 16.0819842214574d0*x1401*(x0*x11 + 1.48371294743379d0*x492
+     & + 1.99418347859036d0*x495 + 0.252933910099675d0*x497)/x13**3
+      x1403 = 0.00366369660967365d0*x1388*x15
+      x1404 = x1401*x509
+      x1405 = 0.0883792666034679d0*x1404*x492
+      x1406 = x1403 - x1405
+      x1407 = x1399*x506 - x1400*x506 + x1402*x506 + x1406
+      x1408 = x1377*x38
+      x1409 = x493*x501
+      x1410 = x514*(-0.00176138600691563d0*x1388*x36 + x1407 + x1409*x49
+     &4*( -2.16229511226841d0*x1387 - 1.70877610553209d0*x1388 - 1.23355
+     &033167571d0*x1389 - 0.267319032365355d0*x737) + x1409*x498 *(x0*x3
+     &3 + 2.56316415829814d0*x492 + 3.70679162103156d0*x495 + 0.32078283
+     &8838426d0*x497)/x34**3 + 0.0849797459133392d0*x492*x499 - 1034.520
+     &86599683d0*x498**2*x500/(x34**4*x35**2))
+      x1411 = x1379*x520
+      x1412 = x23*x513
+      x1413 = 2.0d0*x1412*x490
+      x1414 = x37*x490
+      x1415 = x1381*x1414
+      x1416 = x20*x513
+      x1417 = x1381*x1416
+      x1418 = x20*x28*x8
+      x1419 = 0.00363506628997799d0*x1291*x1418
+      x1420 = 0.000605844381662998d0*x1388*x30
+      x1421 = 0.0269072828949635d0*x492*x531*x533
+      x1422 = -x1408 - x1410 - x1411 - x1413 + x1415 + x1417 + x1419 - x
+     &1420 + x1421
+      x1423 = x1378*x569 - x1380*x570 + x1382*x570 + x1384 + x1386*x1390
+     & + x1386*x1395 + x1393*x569 - x1394*x571 + x1397*x1398 + x1407 + x
+     &1422
+      x1424 = x45*(x1364*x40 + x1370*x40 + x1372*x573 + x1423*x44)
+      x1425 = x1359*x1424
+      x1426 = gamma_cc*x580
+      x1427 = 2.77067525201325d0*x465
+      x1428 = x1427*x51
+      x1429 = x6**(-6)
+      x1430 = x1429*x47
+      x1431 = x1430*x53
+      x1432 = x585*(3.33333333333333d0*x547 - 3.33333333333333d0*x550)
+      x1433 = x1304*x545
+      x1434 = 0.888888888888889d0*x1292
+      x1435 = x1323*x1434 + x1325*x1434 + 5.33333333333333d0*x1366 - 5.3
+     &3333333333333d0*x1433
+      x1436 = x48*x819
+      x1437 = 1.78114837629423d0*x199/x46**4
+      x1438 = 1.18743225086282d0*x52
+      x1439 = x601*(x1017*(-7.85024654737088d0*x1065*x583 + x1336*x1428 
+     &- x1343 + x1344 - x1347 - x1349 - x1350 - x1354*x1437 - x1357 + x1
+     &358*x909 + x1360 + x1361 + x1424*x909 + x1425 - x1431*x1432 - x143
+     &5*x588 - 5.5413505040265d0*x1436*x590 + x1438*x590*x823) + x1316*x
+     &540 - x1318*x1319*x59 - x1318*x1332*x593 - x1318*x579*x62 + x1319*
+     &x1331 + x1322*x554 + x1328*x554 + x1331*x593*x595 + x1333*x1334*x5
+     &9 + x1342*(x1317*x557 - x1330*x1335 + x1330*x1338 - x1336*x1337 + 
+     &x1339*x590 + 2.77067525201325d0*x584) + x1426*(x1343 - x1344 + x13
+     &47 + x1349 + x1350 + x1357 - x1360 - x1361 - x1425))
+      x1440 = x605*(-x1365*x548 - x1368 - x1369 + 2.0d0*x1433)
+      x1441 = x1440*x66
+      x1442 = x67/x65**2
+      x1443 = x1442*x599
+      x1444 = x1443*(x544 - x556 - x582 - x598)
+      x1445 = 0.0310906908696549d0*x41
+      x1446 = x1445*x603
+      x1447 = x1446*(-0.666666666666667d0*x547 + 0.666666666666667d0*x55
+     &0)
+      x1448 = x1447*x66
+      x1449 = x603*x604
+      x1450 = 0.0621813817393098d0*x1449
+      x1451 = x599*x600
+      x1452 = x1450*x1451
+      x1453 = x1380*x525
+      x1454 = x1382*x525
+      x1455 = x1399*x523
+      x1456 = x1400*x523
+      x1457 = x1396*x517
+      x1458 = x1398*x1457
+      x1459 = x1385*x534
+      x1460 = x1390*x1459
+      x1461 = x1394*x534
+      x1462 = x1402*x523
+      x1463 = x1395*x1459
+      x1464 = x1378*x517 - x1384 + x1393*x517 - x1403 + x1405 + x1408 + 
+     &x1410 + x1411 + x1413 - x1415 - x1417 - x1419 + x1420 - x1421 - x1
+     &453 + x1454 + x1455 - x1456 + x1458 + x1460 - x1461 + x1462 + x146
+     &3
+      x1465 = x1439 + x1441 + x1444 + x1448 + x1452 + x1464
+      x1466 = 0.0625d0*x160
+      x1467 = x182*x461
+      x1468 = x1293*x165
+      x1469 = x165*x51
+      x1470 = x1295*x1469
+      x1471 = x182*x478
+      x1472 = x165*x183
+      x1473 = x1309*x165
+      x1474 = 2.0d0*x609
+      x1475 = x1465*x185 + x1474*x615 + x71*(x1300*x1472 + x1312*x177 - 
+     &x1466*x1467 - x1466*x1471 + x1468*x183 + x1470*x611 + x1473*x183)
+      x1476 = 0.0234375d0*x194*x456
+      x1477 = 0.01171875d0*x618
+      x1478 = 0.2625d0*x483
+      x1479 = x612*x622
+      x1480 = 0.175d0*x160
+      x1481 = x165*x188
+      x1482 = x1465*x621 + x1474*x623 + x71*(x1300*x1481 - x1467*x1480 +
+     & x1468*x188 + x1470*x622 - x1471*x1480 + x1473*x188 + x1478*x177)
+      x1483 = x1423 - x1439 - x1441 - x1444 - x1448 - x1452
+      x1484 = 0.0244087849784238d0*rho_c**(-2.66666666666667d0)*x201
+      x1485 = 0.312466222036391d0*x630
+      x1486 = 0.208310814690927d0*mu*rho_c**(-2.33333333333333d0)
+      x1487 = x553*x636
+      x1488 = gamma_cc*x541
+      x1489 = 2.54261851668005d0*x1488
+      x1490 = x1489*x316
+      x1491 = x790**2
+      x1492 = x299**(-2)
+      x1493 = x1492*x641
+      x1494 = x1493*x323
+      x1495 = 1.08969365000574d0*x1487
+      x1496 = gamma_cc*x320
+      x1497 = x539*x791
+      x1498 = x323*x790
+      x1499 = x1492*x70
+      x1500 = x1499*(x640 + x803)
+      x1501 = x807*x814
+      x1502 = 2.78d0*x640
+      x1503 = 0.00549554491451047d0*x502
+      x1504 = x20*x525
+      x1505 = x1381*x1504
+      x1506 = x1383*x30
+      x1507 = 2.0d0*x519
+      x1508 = x1404*x523
+      x1509 = 32.1639684429148d0*x1508
+      x1510 = x1381*x520
+      x1511 = 2.0d0*x491
+      x1512 = x1392*x534
+      x1513 = 2.0d0*x515
+      x1514 = x299/x70**3
+      x1515 = x1514*(-x1503 - x1505 + x1506 - x1507 - x1509 + x1510 - x1
+     &511 - x1512 - x1513)
+      x1516 = x23 - 1.0d0
+      x1517 = x1516*x525
+      x1518 = x1516*x490
+      x1519 = x517*x532
+      x1520 = x643*(x1377*x1517 - x1391*x1519 + x1406 + x1422 + x1453 - 
+     &x1454 - x1455 + x1456 - x1458 - x1460 + x1461 - x1462 - x1463 + x1
+     &518*x1519 - 0.000454383286247248d0*x1518*x28*x492 + x518*x536)
+      x1521 = x642*x788
+      x1522 = 5.56d0*x640
+      x1523 = x1292*x211
+      x1524 = x1523*x205
+      x1525 = x165*x213
+      x1526 = x165*x210
+      x1527 = x207*(0.00571025734089666d0*x1388 + 0.000856522469028669d0
+     &*x1526 + 0.0350330449527535d0*x737 - 0.00609784657412857d0*x957)
+      x1528 = x205*x652
+      x1529 = x218*x235
+      x1530 = x1529*x660
+      x1531 = x1365*x657
+      x1532 = x1365*x654
+      x1533 = x2**(-1.33333333333333d0)
+      x1534 = 0.333333333333333d0*x1292
+      x1535 = x1533*x1534
+      x1536 = x4**(-1.33333333333333d0)
+      x1537 = x1534*x1536
+      x1538 = x220*x228
+      x1539 = x1538*x694
+      x1540 = x221*x695
+      x1541 = x1539*x1540
+      x1542 = x694*x696
+      x1543 = x0*x539
+      x1544 = x219/x234**2
+      x1545 = x1539*x1544
+      x1546 = x687*x692
+      x1547 = x680*x681
+      x1548 = 9.20897059521559d0*x9
+      x1549 = x234/x228**3
+      x1550 = x1549*x691
+      x1551 = 0.89531658564596d0*x1387*x225
+      x1552 = x1388*x675
+      x1553 = 1.53482843253593d0*x1547*x495
+      x1554 = x231*x666
+      x1555 = x201*x492
+      x1556 = x1554*x1555
+      x1557 = mu*x226
+      x1558 = x1557*x680
+      x1559 = x1554*x1558
+      x1560 = x223*x666
+      x1561 = x1560*x672
+      x1562 = 0.666666666666667d0*x1304
+      x1563 = 0.111111111111111d0*x1292
+      x1564 = x682*(x1533*x1563 + x1536*x1563 + x1562*x654 - x1562*x657)
+     &
+      x1565 = 1.33333333333333d0*x1304
+      x1566 = 0.222222222222222d0*x1292
+      x1567 = x667*(x1533*x1566 + x1536*x1566 + x1565*x654 - x1565*x657)
+     &
+      x1568 = x673/x218**5
+      x1569 = x1568*x671
+      x1570 = x1292*x280
+      x1571 = x279*(-0.207448236981382d0*x1388*x700 + x207*(0.0028551286
+     &7044833d0* x1388 + 0.000428261234514334d0*x1526 - x165*x209 + 0.01
+     &75165224763768d0*x737) + 0.311172355472072d0*x492*x701 + 0.0242070
+     &587025094d0*x700*x737)
+      x1572 = 0.0891107483661069d0*x957
+      x1573 = x0*x208
+      x1574 = x242*x710
+      x1575 = 75.398223686155d0*x1574
+      x1576 = x165*x244
+      x1577 = 0.00786976946662483d0*x165
+      x1578 = x1577*x254
+      x1579 = 0.0157395389332497d0*x1304
+      x1580 = x252*x254
+      x1581 = 0.00786976946662483d0*x1292
+      x1582 = x2**(-2)
+      x1583 = x1582*x254
+      x1584 = x260*x722
+      x1585 = x1577*x267
+      x1586 = x263*x267
+      x1587 = x4**(-2)
+      x1588 = x1587*x267
+      x1589 = 7.65662400050185d0*x755
+      x1590 = x1589*x262
+      x1591 = x1589*x730
+      x1592 = 45.9397440030111d0*x727
+      x1593 = x259*x721
+      x1594 = x265*x725
+      x1595 = x1594*x273
+      x1596 = x1292*x289
+      x1597 = 0.150031049774234d0*x165
+      x1598 = x1597*x254
+      x1599 = 0.0271505358982603d0*x737
+      x1600 = x1599*x255
+      x1601 = 0.300062099548467d0*x1304
+      x1602 = x12*x255
+      x1603 = x1304*x252
+      x1604 = 0.150031049774234d0*x1292
+      x1605 = 0.0271505358982603d0*x1292
+      x1606 = x1582*x1602
+      x1607 = x1597*x267
+      x1608 = x1599*x264
+      x1609 = x12*x264
+      x1610 = x1304*x263
+      x1611 = x1587*x1609
+      x1612 = 68.9096160045166d0*x247
+      x1613 = x721*x742
+      x1614 = x1594*x750
+      x1615 = x247*x759
+      x1616 = 22.9698720015055d0*x1304
+      x1617 = x250*x258
+      x1618 = x1617*x721
+      x1619 = 68.9096160045166d0*x756
+      x1620 = x247*x754
+      x1621 = x741*x743
+      x1622 = x749*x751
+      x1623 = 0.225046574661351d0*x0
+      x1624 = x1623*x254
+      x1625 = 0.0325806430779124d0*x497
+      x1626 = x1625*x255
+      x1627 = 0.225046574661351d0*x165
+      x1628 = 0.0325806430779124d0*x737
+      x1629 = x261/x257**3
+      x1630 = x1629*x248*x741
+      x1631 = x1623*x267
+      x1632 = x1625*x264
+      x1633 = x268/x271**3
+      x1634 = x1633*x248*x749
+      x1635 = x269*x272
+      x1636 = x1594*x1635
+      x1637 = 45.9397440030111d0*x755
+      x1638 = x1637*x719
+      x1639 = 7.65662400050185d0*x1292
+      x1640 = x247*x262
+      x1641 = x1582*x1640
+      x1642 = x247*x730
+      x1643 = x1587*x1642
+      x1644 = x250*x743
+      x1645 = x1644*x740
+      x1646 = x1637*x723
+      x1647 = 45.9397440030111d0*x1292
+      x1648 = x269*x751
+      x1649 = x1648*x748
+      x1650 = -x1584*(-x1578 + x1579*x1580 - x1581*x1583) + x1590 + x159
+     &1 - x1592* x1593 - x1592*x1595 - x1592*x1621 - x1592*x1622 + x1593
+     &*x1638 - x1595*x1646 - x1596*x753 - x1596*x758 - 15.3132480010037d
+     &0*x1603* x1640 + 15.3132480010037d0*x1610*x1642 - x1612*x1613*x741
+     & - x1612 *x1614*x749 + x1615*x1616 - x1615*x1647*x263 - x1616*x162
+     &0 + x1618*x1619 - x1619*x1636 + x1619*x1645 - x1619*x1649 - x1620*
+     & x1647*x252 + x1621*x1638 - x1622*x1646 - x1630*(x1624 + x1626 - x
+     &1627*x720 - x1628*x739) - x1634*(x1627*x724 + x1628*x747 + x1631 +
+     & x1632) + x1639*x1641 + x1639*x1643 - x726*(-x1579*x1586 - x1581 *
+     &x1588 - x1585) - x966*(x1580*x1601 - x1583*x1604 - x1598 - x1600 +
+     & 0.0543010717965206d0*x1602*x1603 - x1605*x1606) - x968*(-x1586* x
+     &1601 - x1588*x1604 - x1605*x1611 - x1607 - x1608 - 0.0543010717965
+     &206d0*x1609*x1610)
+      x1651 = 2.66666666666667d0*x1304
+      x1652 = 2.22222222222222d0*x1292
+      x1653 = x1292*x291
+      x1654 = 5.29055759308205d0*x777
+      x1655 = x204*(6.39350882283002d-5*x0**2.33333333333333d0*x1525 + x
+     &1464*x237 + 0.0334548885448792d0*x1524*x214 - 0.00164372154798406d
+     &0*x1524* x648 - 0.00191767513931474d0*x1525*x648 + x1527*x206*x653
+     & - 0.00880391803812612d0*x1528*x647 + 0.000821860773992031d0*x1528
+     &* x649 + x1530*(-x664 + x665) + 2.0d0*x1541*x660 + x1542*(x686 - x
+     &688 + x689) - 0.0168588246652672d0*x1543*x236 + x1545*(-x669 - x67
+     &4 + x677 + x679 + x690) + 0.0309078452196566d0*x165*x662 - 0.01056
+     &47016457513d0*x205*x645*x651 + 0.0117385573841682d0*x213* x936 + x
+     &230*(0.445553741830535d0*x1523*x208 - 0.0277288014669606d0*x1523*x
+     &210 - 0.0231073345558005d0*x1526*x212 + x1527*x708 + x1572*x212 - 
+     &0.0891107483661069d0*x1573*x652 + 0.00107855455836145d0*x212*x936 
+     &+ 0.000586927869208408d0*x276* x936 + x277*(-0.154912426780983d0*x
+     &0**(-0.333333333333333d0)* x1576*x715 + x1292*x712 - 9.66648718250
+     &747d0*x1292*x716 - 150.79644737231d0*x1574*x459 - x1575*x713 - 1.6
+     &1108119708458d0* x1576*x716 + x1650 - 4.83324359125373d0*x241*x710
+     &*x713*x714 - x711*(-1.36477107997868d0*x1388 + 0.427594146176807d0
+     &*x737)) - 0.000440195901906306d0*x647*x764 + 0.0138644007334803d0*
+     &x650*x652 - 0.178221496732214d0*x651*x706) + x278*(x1464*x284 - 0.
+     &213300270968718d0*x1543*x283 + 0.0628942271634173d0*x1570*x214 - x
+     &1571*x282 + 0.319950406453076d0*x165*x704 - 0.0073560499606336d0*x
+     &281*x936 - 0.0198613348937107d0*x645*x702 + 0.0055170374704752d0*x
+     &647*x703) + x285*(x1464*x296 + 1.04949664671409d0*x1526*x70 + 0.83
+     &7628205355044d0*x1570*x208 - x1571*x286 + 0.055841880357003d0*x157
+     &3*x703 - 0.055841880357003d0 *x281*x957 + 0.0009195062450792d0*x29
+     &4*x936 + x295*(-0.299209d0* x165*x292 + x1650 + 77.9555417944151d0
+     &*x1653*x247 - 10.5811151861641d0*x1653*x777 - x1654*x713*x775 - 31
+     &.182216717766d0*x244*x727*x775 - 3.82831200025092d0*x288*x755 + x2
+     &89*(x1651*x768 - x1651*x771 + x1652*x216 + x1652*x217) - x290* x77
+     &6*(-0.106975995763985d0*x1388 + 0.289053642815522d0*x737) + 5.1970
+     &3611962767d0*x292*x755 + x728*x773 - 93.5466501532981d0* x775*x780
+     &) - 0.899568554326366d0*x539*x650 - 0.0006896296838094d0 *x647*x78
+     &1 - 0.335051282142018d0*x702*x706) + x661*(x1531 - x1532 - x1535 -
+     & x1537) + x697*(2.0d0*x1546*x691 + x1550*(-x1547*x1548 - 4.2785697
+     &4274298d0*x668 + 1.42618991424766d0*x676 + 1.53482843253593d0*x684
+     &) + x229*(1.43555326817173d0*x1389*x232 + x1551 + 2.05391854581537
+     &d0*x1552 - x1553 - 3.08087781872305d0* x1556 + x1559 + 4.621316728
+     &08458d0*x1561 + x1564 + 4.62131672808458d0*x1567 + x1569*(-1.33333
+     &333333333d0*x656 + 1.33333333333333d0*x659) - 1.91407102422897d0*x
+     &230*x496*x672 + x945*(-x1531 + x1532 + x1535 + x1537)) + x693*(-x1
+     &551 - 0.950793276165107d0*x1552 + x1553 + 1.42618991424766d0*x1556
+     & - x1559 - 2.13928487137149d0*x1561 - x1564 - 2.13928487137149d0* 
+     &x1567)))
+      x1656 = 1.05383986550676d0*x165*x202*x297*x784
+      x1657 = 1.26460783860812d0*x782*x785
+      x1658 = 0.499760307959092d0*x1526*x285*x297/x203**6
+      x1659 = x1464 - x1655 + x1656 - x1657 - x1658
+      x1660 = x1659*x200
+      x1661 = x1502*x1515 + 2.78d0*x1520 + x1521*x1522 + 2.78d0*x1660
+      x1662 = x323*x792
+      x1663 = x833*x835
+      x1664 = x833*x834
+      x1665 = x310*x553
+      x1666 = 1.08969365000574d0*x1496
+      x1667 = 1.08969365000574d0*x835
+      x1668 = x1667*x320
+      x1669 = gamma_cc*x1668
+      x1670 = 0.0790517663015599d0*gamma_cc
+      x1671 = x1670*x795
+      x1672 = 0.00267822075231276d0*x821
+      x1673 = 0.0338793284149542d0*x807
+      x1674 = x1673*x799
+      x1675 = x1086*x52
+      x1676 = x1675*x823
+      x1677 = x806*x808
+      x1678 = 0.00105333172662086d0*x807
+      x1679 = x1677*x1678
+      x1680 = 3.56861714960788d-5*x828
+      x1681 = x1680*x827
+      x1682 = 0.0338793284149542d0*x313
+      x1683 = gamma_cc*x1682
+      x1684 = x792*x831
+      x1685 = x1086*x199
+      x1686 = gamma_cc*x321
+      x1687 = x1686*x311/x317**3
+      x1688 = x1687*x833
+      x1689 = 0.131752943835933d0*x1315*x312
+      x1690 = x1670*x541*x799
+      x1691 = x1322*x986
+      x1692 = x1328*x986
+      x1693 = 0.002457774028782d0*x1488*x1677
+      x1694 = x805**2
+      x1695 = exp(x1352*x302)
+      x1696 = x1694*x1695
+      x1697 = 3.27488110955689d-5*x311*x807*x826
+      x1698 = x1696*x1697
+      x1699 = x303*x810
+      x1700 = x1694*x1699
+      x1701 = x1665*x305
+      x1702 = x1678*x1701*x806
+      x1703 = x1671*x793
+      x1704 = x1493*x315
+      x1705 = x1491*x1704
+      x1706 = x1674*x793
+      x1707 = x315*x790
+      x1708 = x1497*x1707
+      x1709 = x1500*x1707
+      x1710 = x1679*x793
+      x1711 = x1364*x302 + x1370*x302 + x1372*x804 + x44*(x1423 + x1655 
+     &- x1656 + x1657 + x1658)
+      x1712 = x1699*x1711
+      x1713 = x1661*x812
+      x1714 = gamma_cc*x995
+      x1715 = x306*x819
+      x1716 = x1429*x824
+      x1717 = x1436*x301
+      x1718 = 1.66426158945912d-6*x828/x304**4
+      x1719 = x1000*x303
+      x1720 = x301*x827
+      x1721 = x52*x823
+      x1722 = x1493*x308
+      x1723 = x308*x831
+      x1724 = x67/x324**2
+      x1725 = x1724*x839
+      x1726 = x839*x840
+      x1727 = x1440*x325 + x1447*x325 + x1450*x1726 + x1659 + x1725*(x63
+     &5 - x639 - x794 - x818 - x838) + x841*(x1089*(-0.00758829213155282
+     &d0*x1065* x51*x820 - x1432*x1716 - x1435*x998 - x1497*x1723 - x150
+     &0*x1723 + x1672*x1684 - x1676*x1684 + x1681*x1684 - x1689 + x1690 
+     &- x1691 - x1692 - x1693 + x1694*x1719 - x1696*x1718 - x1698 + x170
+     &0 + x1702 + x1703 - x1705 - x1706 - x1708 - x1709 + x1710 + x1711*
+     &x1719 + x1712 - x1713 + 0.00267822075231276d0*x1715*x823 - 0.00016
+     &6535466981701d0*x1717*x827 + 3.56861714960788d-5*x1720* x1721 - x1
+     &722*x831**2 - x832*(x1515*x1522 + 5.56d0*x1520 + 11.12d0*x1521*x64
+     &0 + 5.56d0*x1660)) + 4.23769752780008d0*x1315* x632 + x1322*x637 +
+     & x1328*x637 - x1487*x1490 - x1489*x632*x793 - x1489*x815 - x1490*x
+     &1663 + x1491*x1494 + x1495*x1496*x793 + x1495 *x1501 + x1497*x1498
+     & + x1498*x1500 + x1501*x1667*x833 + x1661* x1662 + x1664*x1665*x16
+     &66 + x1669*x793*x833 + x1688*(x1671 + x1672 - x1674 - x1676 + x167
+     &9 + x1681 - x1683*x793 - x1684*x1685 ) + x1714*(x1689 - x1690 + x1
+     &691 + x1692 + x1693 + x1698 - x1700 - x1702 - x1703 + x1705 + x170
+     &6 + x1708 + x1709 - x1710 - x1712 + x1713) + 1.08969365000574d0*x7
+     &93*x807*x815)
+      x1728 = 0.0621813817393098d0*x42
+      x1729 = x1503 - x1506 + x1509 + x1512
+      x1730 = x1450*x325 + x1505 + x1507 - x1510 + x1511 + x1513 + x1726
+     &*x1728 + x1729 - 2.0d0*x783 - 1.26460783860812d0*x786
+      x1731 = x1235 + x1236 + x1237 + x1238
+      x1732 = x394*x844
+      x1733 = x1732*x385
+      x1734 = x1221*x844
+      x1735 = x1227*(-x1223 - x1224 - x1225 - x1226)
+      x1736 = x445 - x850 - x853
+      x1737 = x1250*x849
+      x1738 = x410*x443
+      x1739 = x416*x849
+      x1740 = x152*x406
+      x1741 = x436*x852
+      x1742 = x437*x852
+      x1743 = x435*x852
+      x1744 = x397*x415
+      x1745 = x397*x849
+      x1746 = x403*x846
+      x1747 = x131*x427*x846
+      x1748 = x1211*x1746 - x1268 - x1269 - x1270 - x1271 + x1272*x1747
+      x1749 = x1740*x1746
+      x1750 = x130*x1746
+      x1751 = x1738*x1750
+      x1752 = x1740*x404
+      x1753 = 39.9271408596337d0*x1230 - x1234 + x1731*x845 - 39.9271408
+     &596337d0*x1733 - x1734*x401 + x1735*x401
+      x1754 = x1753*x847
+      x1755 = x1218*x1738
+      x1756 = x1207*x846
+      x1757 = x1211*x1756*x428
+      x1758 = x405*x846
+      x1759 = x137*x423
+      x1760 = 8.83241096619832d0*x1759
+      x1761 = x135*x1747
+      x1762 = x1253*x1761
+      x1763 = 0.00777267271741372d0*x447
+      x1764 = -x1286 + x1288*x844 + x129*(-0.620681196888019d0*x1230 + x
+     &1281*x1736 - x1282*x1734 + x1282*x1735 + x1283 + x1731*x396 + 0.62
+     &0681196888019d0*x1733 + x448*(x1251*x152 + x1252*x1738 + x1265*x17
+     &45 + x1266*x1740 + x1267*x1738 + x1274*x1748 - x1275 - x1276 - x12
+     &77 - x152*x1737 - x1738*x1739 - x1738*x1742 - x1740* x1741 + x1743
+     &*x1744 + x417*(x1263 + x1749 + x1751 - x1752 - x1754 - x1755 + x17
+     &57 - x1758) + x438*(x1249 + x1254*x1760 + 1.78982066702156d0*x1255
+     & - x1258*x1756*x402 + x1260 + x1261 + x1262 - x1749 - x1751 + x175
+     &2 + x1753*x851 + x1754 + x1755 - x1757 + x1758 - x1760*x1761 - 1.7
+     &8982066702156d0*x1762 + x432* x846))) - x1763*x446 + x1763*x855 + 
+     &x843
+      x1765 = x179*(x1205 + x1764)
+      x1766 = x160*x183
+      x1767 = x453*x875
+      x1768 = x479*x858
+      x1769 = x456*x862
+      x1770 = x176*(-3.48d0*x1304 - 8.0d0*x1769 - 81.36d0*x455*x861)
+      x1771 = x1294*x873
+      x1772 = x476*x865
+      x1773 = x1772*x475
+      x1774 = -x1296*x869 - x1297*x871
+      x1775 = x1299*x1774
+      x1776 = 0.243797614528847d0*x465
+      x1777 = x462*x871
+      x1778 = x473*x50
+      x1779 = 3.11111111111111d0*x1304
+      x1780 = x477*(gamma_cs*x1302 + x173*x1776*x871 + x1776*x869 - x177
+     &7*x463 - x1778 *x868 - x872*(-x1306*x1779 - x1308*x1779 + x469 - x
+     &471))
+      x1781 = x1770 + x1771 + x1773 + x1775 + x1780
+      x1782 = x1781*x480
+      x1783 = x178*x858
+      x1784 = x159*x875
+      x1785 = gamma_cc*x542
+      x1786 = x61*x891
+      x1787 = 0.444444444444444d0*x1304
+      x1788 = -x1323*x1787 - x1325*x1787 + 1.33333333333333d0*x546 - 1.3
+     &3333333333333d0*x549
+      x1789 = x1327*x1788
+      x1790 = -2.0d0*x888 + 2.0d0*x889
+      x1791 = gamma_cc*x1790
+      x1792 = x1320*x1791
+      x1793 = x594*x910
+      x1794 = x1340*x553
+      x1795 = x1340*x891
+      x1796 = gamma_cc*x564
+      x1797 = x1796*x579
+      x1798 = x1796*x905
+      x1799 = x560*x890
+      x1800 = x587*x908
+      x1801 = x47*x901
+      x1802 = x589*x901
+      x1803 = -x1330*x1799 - x1337*x1800 + x1339*x1802 + x1355*x1801
+      x1804 = x1785*x1799
+      x1805 = x1348*x1788
+      x1806 = x1346*x1790
+      x1807 = x1320*x1806
+      x1808 = x1785*x1801*x7
+      x1809 = x1345*x1801*x553
+      x1810 = x1345*x576*x891
+      x1811 = x1353*x574*x900
+      x1812 = x1356*x1811
+      x1813 = x578*x900
+      x1814 = 0.333333333333333d0*x1304
+      x1815 = x1323*x1814
+      x1816 = x1325*x1814
+      x1817 = x567*(-x1815 - x1816 + x546 - 1.0d0*x549)
+      x1818 = x1363*x890
+      x1819 = 0.854960467080683d0*x1304
+      x1820 = -x1374*x1819 - x1376*x1819 - x487 + x489
+      x1821 = x1820*x29
+      x1822 = x490*x880
+      x1823 = x521*x878
+      x1824 = 16.0d0*x1769
+      x1825 = x20*x570
+      x1826 = x24*x878
+      x1827 = 118.434298572867d0*x863
+      x1828 = x1412*x878
+      x1829 = x1820*x38
+      x1830 = x1414*x880
+      x1831 = x1416*x880
+      x1832 = x37*x878
+      x1833 = x1832*x521
+      x1834 = x1824*x520
+      x1835 = x536*x882
+      x1836 = 0.00181753314498899d0*x1418*x1769
+      x1837 = -x1828 - x1829 - x1830 - x1831 + x1833 + x1834 + x1835 - x
+     &1836
+      x1838 = -x1397*x1827 + x1821*x569 - x1822*x570 + x1823*x570 + x182
+     &4*x1825 + x1826*x532*x569 + x1837
+      x1839 = x45*(x1817*x40 + x1818*x40 + x1838*x44 + x568*x899 + x573*
+     &x897)
+      x1840 = x1359*x1839
+      x1841 = 0.888888888888889d0*x1304
+      x1842 = -x1323*x1841 - x1325*x1841 + 2.66666666666667d0*x546 - 2.6
+     &6666666666667d0*x549
+      x1843 = -3.33333333333333d0*x888 + 3.33333333333333d0*x889
+      x1844 = x1431*x1843
+      x1845 = x586*x908
+      x1846 = x601*(x1017*(x1337*x1802*x823 + x1337*x1845*x590 - x1428*x
+     &1802*x48 - x1437*x1811 + 1.38533762600663d0*x1800*x819 + x1804 - x
+     &1805 - x1807 - x1808 + x1809 + x1810 - x1812 + x1813 + x1839*x909 
+     &+ x1840 - x1842*x588 - x1844*x585 + x592*x900) + x1319*x1345*x905 
+     &- x1332*x1785*x910 + x1333*x1795 + x1333*x1798 + x1342*x1803 + x13
+     &45*x1786*x579 + x1426*(-x1804 + x1805 + x1807 + x1808 - x1809 - x1
+     &810 + x1812 - x1813 - x1840) - x1785*x1786*x59 - x1785*x62* x905 +
+     & x1789*x554 + x1792*x554 + x1793*x1794 + x1793*x1797)
+      x1847 = x605*(x1815 + x1816 - 1.0d0*x546 + x549)
+      x1848 = x1847*x66
+      x1849 = x1451*x916
+      x1850 = x600*x913
+      x1851 = x1850*x606
+      x1852 = -x893 - x907 - x912
+      x1853 = x1443*x1852
+      x1854 = 0.666666666666667d0*x888 - 0.666666666666667d0*x889
+      x1855 = x1446*x1854
+      x1856 = x1855*x66
+      x1857 = x1504*x1824
+      x1858 = x1823*x525
+      x1859 = x1822*x525
+      x1860 = x1457*x1827
+      x1861 = x1519*x1826
+      x1862 = x1821*x517 + x1828 + x1829 + x1830 + x1831 - x1833 - x1834
+     & - x1835 + x1836 + x1857 + x1858 - x1859 - x1860 + x1861
+      x1863 = x1846 + x1848 + x1849 + x1851 + x1853 + x1856 + x1862
+      x1864 = x165*x1770
+      x1865 = x185*x1863 + x609*x922 + x615*x919 + x71*(-x1158*x866 - x1
+     &158*x874 + x1472*x1771 + x1472*x1773 + x1472*x1775 + x1472*x1780 +
+     & x183* x1864)
+      x1866 = x160*x188
+      x1867 = x1863*x621 + x609*x925 + x623*x919 + x71*(-x1479*x866 - x1
+     &479*x874 + x1481*x1771 + x1481*x1773 + x1481*x1775 + x1481*x1780 +
+     & x1864* x188)
+      x1868 = x626*x927
+      x1869 = x1838 - x1846 - x1848 - x1849 - x1851 - x1853 - x1856
+      x1870 = 0.156233111018196d0*x630
+      x1871 = x636*x891
+      x1872 = gamma_cc*x1871
+      x1873 = x316*x633
+      x1874 = x791*x887
+      x1875 = x1499*(x934 + x980)
+      x1876 = x790*x983
+      x1877 = gamma_cc*x994
+      x1878 = x1877*x816
+      x1879 = gamma_cc*x814*x816
+      x1880 = x1003*x835
+      x1881 = gamma_cc*x1873
+      x1882 = x1003*x834
+      x1883 = x1665*x1686
+      x1884 = 8.0d0*x863
+      x1885 = x1514*(x1504*x1884 - x1884*x520 - 2.0d0*x879 - 2.0d0*x883)
+     &
+      x1886 = x643*(x1517*x1820 + x1837 - x1857 - x1858 + x1859 + x1860 
+     &- x1861)
+      x1887 = x642*x981
+      x1888 = x1521*x934
+      x1889 = x1304*x211
+      x1890 = x1889*x205
+      x1891 = rho_s*x651
+      x1892 = x947 - x948
+      x1893 = 0.333333333333333d0*x1304
+      x1894 = x1533*x1893
+      x1895 = x1536*x1893
+      x1896 = x1538*x956
+      x1897 = x1540*x1896
+      x1898 = x943 + x954
+      x1899 = -x946 - x951 + x953
+      x1900 = x1304*x280
+      x1901 = rho_s*x702
+      x1902 = x692*x952
+      x1903 = x681*x942
+      x1904 = -x1548*x1903 - 4.27856974274298d0*x950
+      x1905 = 0.767414216267966d0*x1903*x495
+      x1906 = x231*x949
+      x1907 = x1555*x1906
+      x1908 = 0.111111111111111d0*x1304
+      x1909 = x682*(-x1533*x1908 - x1536*x1908 - 0.333333333333333d0*x65
+     &5 + 0.333333333333333d0*x658)
+      x1910 = x1558*x1906
+      x1911 = 0.222222222222222d0*x1304
+      x1912 = x667*(-x1533*x1911 - x1536*x1911 - 0.666666666666667d0*x65
+     &5 + 0.666666666666667d0*x658)
+      x1913 = x670*x944
+      x1914 = x1560*x1913
+      x1915 = -1.33333333333333d0*x938 + 1.33333333333333d0*x939
+      x1916 = 0.00786976946662483d0*x1304
+      x1917 = 11.4849360007528d0*x755
+      x1918 = x1304*x289
+      x1919 = x165*x777
+      x1920 = 0.135575697997297d0*x1919
+      x1921 = 0.150031049774234d0*x1304
+      x1922 = 0.0271505358982603d0*x1304
+      x1923 = x251*x965
+      x1924 = x1923*x248
+      x1925 = x270*x967
+      x1926 = x1925*x248
+      x1927 = x263*x728
+      x1928 = x1617*x969
+      x1929 = 0.203363546995945d0*x777
+      x1930 = x1635*x962
+      x1931 = x263*x750*x962
+      x1932 = x1582*x970
+      x1933 = 0.135575697997297d0*x1304*x777
+      x1934 = x1587*x963
+      x1935 = x252*x728
+      x1936 = x1923*x743
+      x1937 = x1925*x751
+      x1938 = x1624*x252 + x1626*x252
+      x1939 = -x1631*x263 - x1632*x263
+      x1940 = x252*x742*x969
+      x1941 = x1644*x965
+      x1942 = 7.65662400050185d0*x1304
+      x1943 = x1648*x967
+      x1944 = -x1584*(-x1578*x252 + x1583*x1916) + x1590*x252 - x1591*x2
+     &63 - x1593* x1935 + x1595*x1927 + 45.9397440030111d0*x1603*x1620 +
+     & x1603* x1928*x1929 + 45.9397440030111d0*x1610*x1615 + x1610*x1929
+     &*x1930 - x1613*x1924 - x1614*x1926 - x1618*x960 - x1621*x1935 + x1
+     &622* x1927 - x1630*x1938 - x1634*x1939 + x1636*x960 - x1641*x1942 
+     &- x1643*x1942 - x1645*x960 + x1649*x960 + x1917*x754 - x1917*x759 
+     &+ x1918*x753 + x1918*x758 + x1920*x964 - x1920*x971 + x1931*x749* 
+     &x961 + x1932*x1933 + x1933*x1934 - x1936*x728 + x1936*x761 - x1937
+     &*x728 - x1937*x762 - x1940*x741*x961 + x1941*x757 - x1943* x757 - 
+     &x726*(x1585*x263 + x1588*x1916) - x966*(x1583*x1921 - x1598*x252 -
+     & x1600*x252 + x1606*x1922) - x968*(x1588*x1921 + x1607*x263 + x160
+     &8*x263 + x1611*x1922)
+      x1945 = 2.22222222222222d0*x1304
+      x1946 = x1304*x291
+      x1947 = x204*(x1530*x1892 + x1541*x940 + x1542*x1898 + x1545*x1899
+     & + x1862*x237 - 0.0193686196838775d0*x1890*x214 + 0.00082186077399
+     &2031d0*x1890* x648 + 0.00528235082287567d0*x1891*x205*x936 + x1897
+     &*x660 + x230* (x1572*x1891 - 0.267332245098321d0*x1889*x208 + 0.01
+     &38644007334803d0*x1889*x210 + x277*(rho_s*x1575*x165 - x1304* x712
+     & + 4.83324359125373d0*x1304*x716 + x1944) - x709*x973) - x236 *x66
+     &3*x887 + x278*(x1862*x284 - 0.0364124473051363d0*x1900*x214 + 0.00
+     &993066744685536d0*x1901*x936 - x283*x705*x887) + x285*(x1862* x296
+     & - 0.502576923213027d0*x1900*x208 + 0.167525641071009d0*x1901 *x95
+     &7 + x295*(x1654*x1946 + x1944 - 62.364433435532d0*x1946*x247 + x28
+     &9*(-x1945*x216 - x1945*x217 - x770 + x772) + 46.773325076649d0*x75
+     &6*x775 + x774*x976) - x766*x978 - x767*x887 ) + x661*(x1894 + x189
+     &5 + x655 - x658) + x697*(x1546*x955 + x1550 *x1904 + x1902*x691 + 
+     &x229*(x1569*x1915 - x1905 - 1.54043890936153d0*x1907 + x1909 + x19
+     &10 + 4.62131672808458d0* x1912 - x1913*x230*x678 + 4.6213167280845
+     &8d0*x1914 + x945*(-x1894 - x1895 - x655 + x658)) + x693*(x1905 + 0
+     &.71309495712383d0*x1907 - x1909 - x1910 - 2.13928487137149d0*x1912
+     & - 2.13928487137149d0* x1914)))
+      x1948 = 0.632303919304059d0*x785*x979
+      x1949 = x1862 - x1947 - x1948
+      x1950 = x1949*x200
+      x1951 = x1502*x1885 + x1502*x1887 + 2.78d0*x1886 + 2.78d0*x1888 + 
+     &2.78d0*x1950
+      x1952 = x310*x891
+      x1953 = x1686*x1952
+      x1954 = x798*x891
+      x1955 = x1673*x1954
+      x1956 = x1675*x1845
+      x1957 = x808*x991
+      x1958 = x1678*x1957
+      x1959 = x826*x991
+      x1960 = x1680*x1959
+      x1961 = x1002*x792
+      x1962 = -x1683*x984 - x1685*x1961 - x1955 - x1956 + x1958 + x1960
+      x1963 = 0.0395258831507799d0*x1488*x1954
+      x1964 = x1789*x986
+      x1965 = x1792*x986
+      x1966 = 0.001228887014391d0*x1488*x1957
+      x1967 = 0.000526665863310429d0*x807
+      x1968 = x1701*x1967*x991
+      x1969 = x797*x984
+      x1970 = x802*x984
+      x1971 = x1952*x305
+      x1972 = x1967*x1971*x806
+      x1973 = x793*x988
+      x1974 = x1707*x1874
+      x1975 = x1707*x1875
+      x1976 = x1695*x805*x990
+      x1977 = x1697*x1976
+      x1978 = x811*x990
+      x1979 = x1704*x1876
+      x1980 = x811*x984
+      x1981 = x793*x992
+      x1982 = x1817*x302 + x1818*x302 + x44*(x1838 + x1947 + x1948) + x5
+     &68*x989 + x804 *x897
+      x1983 = x1699*x1982
+      x1984 = x1951*x812
+      x1985 = x1716*x1843
+      x1986 = x1959*x301
+      x1987 = x1845*x52
+      x1988 = x1006*x840
+      x1989 = -x1005 - x933 - x985 - x997
+      x1990 = x1725*x1989 + x1726*x916 + x1847*x325 + x1855*x325 + x1949
+     & + x1988*x606 + x841*(x1005*x793 + x1089*(x1001*x1684 - x1002*x172
+     &2*x831 - x1684*x999 + 0.00133911037615638d0*x1715*x1845 - 8.326773
+     &34908506d-5*x1717*x1959 - x1718*x1976 + x1719*x1982 + 1.7843085748
+     &0394d-5*x1720*x1987 + 1.78430857480394d-5*x1721*x1986 - x1723*x187
+     &4 - x1723*x1875 - x1842*x998 + x1961*x822 - x1961* x825 + x1961*x8
+     &30 + x1963 - x1964 - x1965 - x1966 + x1968 + x1969 - x1970 + x1972
+     & - x1973 - x1974 - x1975 - x1977 + x1978 - x1979 + x1980 + x1981 +
+     & x1983 - x1984 - x1985*x585 + x830*x990 - x832*( x1522*x1885 + x15
+     &22*x1887 + 5.56d0*x1886 + 5.56d0*x1888 + 5.56d0* x1950)) + x1487*x
+     &1878 + x1494*x1876 + x1498*x1874 + x1498*x1875 + x1662*x1951 + x16
+     &63*x1878 + x1664*x1953 + x1688*x1962 + x1714*( -x1963 + x1964 + x1
+     &965 + x1966 - x1968 - x1969 + x1970 - x1972 + x1973 + x1974 + x197
+     &5 + x1977 - x1978 + x1979 - x1980 - x1981 - x1983 + x1984) + x1789
+     &*x637 + x1792*x637 + x1871*x1879 - x1872* x1873 - x1877*x319*x633 
+     &+ x1879*x1880 - x1880*x1881 + x1882*x1883 - x635*x984 + x639*x984 
+     &+ x793*x933 + x793*x997 + x818*x984 + x838*x984)
+      x1991 = x858*x875
+      x1992 = x846**2
+      x1993 = x1207*x1992
+      x1994 = x1212*x1993
+      x1995 = x1992*x847
+      x1996 = x1221*x844**2
+      x1997 = x1735*x844
+      x1998 = x1240 + 79.8542817192673d0*x1733 - x1996*x400 + x1997*x400
+     &
+      x1999 = x1998*x847
+      x2000 = x1214*x1746
+      x2001 = x1217*x1750
+      x2002 = x1273*x852
+      x2003 = x1280*x855
+      x2004 = -x1285*x1732 + x129*(x1284 - 1.24136239377604d0*x1733 + x1
+     &736*x2003 - x1996*x392 + x1997*x392 + x448*(x1210*x1737 + x1211*x1
+     &743*x849 + x1214*x1741 + x1217*x1739 + x1217*x1742 + x1278 + x1748
+     &*x2002 + x417*(x1249 + x1994 - x1995 - x1999 - x2000 - x2001) + x4
+     &38*( x1257*x1761 - x1258*x1993 + x1264 + 3.57964133404311d0*x1762 
+     &+ x1992*x851 - x1994 + x1995 + x1998*x851 + x1999 + x2000 + x2001 
+     &))) + x395*x844*(x1287 + 0.0155453454348274d0) + x449 - x856
+      x2005 = x179*(x1205 + x2004)
+      x2006 = x176*(67.8d0*x1291 + 6.0d0*x1292 + x860)
+      x2007 = x1772*x873
+      x2008 = 3.11111111111111d0*x165
+      x2009 = x477*(-gamma_cc*x1302 - x1301*x868*x871 - x872*(x1306*x200
+     &8 + x1308* x2008))
+      x2010 = x1298*x873
+      x2011 = x1774*x2010
+      x2012 = x2006 + 2.0d0*x2007 + x2009 + x2011
+      x2013 = x2012*x480
+      x2014 = 0.444444444444444d0*x165
+      x2015 = x1323*x2014 + x1325*x2014
+      x2016 = x1327*x2015
+      x2017 = x48*x890
+      x2018 = x1791*x2017
+      x2019 = x1330*x905
+      x2020 = x1330*x891
+      x2021 = x1341*x910
+      x2022 = x1348*x2015
+      x2023 = x1806*x2017
+      x2024 = x900**2
+      x2025 = x1353*x2024
+      x2026 = x1356*x2025
+      x2027 = x1359*x45
+      x2028 = x2024*x2027
+      x2029 = x1801*x2020
+      x2030 = 0.333333333333333d0*x165
+      x2031 = x1323*x2030
+      x2032 = x1325*x2030
+      x2033 = x567*(x2031 + x2032)
+      x2034 = x1362*x890*x896
+      x2035 = x1371*x896
+      x2036 = 0.854960467080683d0*x165
+      x2037 = x1374*x2036 + x1376*x2036
+      x2038 = x2037*x29
+      x2039 = 12.0d0*x1292
+      x2040 = x1884*x878
+      x2041 = x2037*x38
+      x2042 = x2039*x520
+      x2043 = x1832*x1884
+      x2044 = -x2041 - x2042 - x2043
+      x2045 = -x1825*x2039 + x2038*x569 - x2040*x570 + x2044
+      x2046 = x2033*x40 + x2034*x40 + x2035*x899 + x2045*x44
+      x2047 = x2027*x2046
+      x2048 = 0.888888888888889d0*x165
+      x2049 = x1323*x2048 + x1325*x2048
+      x2050 = x45*x909
+      x2051 = x601*(x1017*(-x1437*x2025 + x1438*x1802*x1845 - x1844*x908
+     & - x2022 - x2023 + x2024*x2050 - x2026 + x2028 + x2029 + x2046*x20
+     &50 + x2047 - x2049*x588) + x1426*(x2022 + x2023 + x2026 - x2028 - 
+     &x2029 - x2047) + x1786*x2019 + x1793*x2020*x59 + x1803*x2021 + x20
+     &16*x554 + x2018*x554 + x2019*x595*x910)
+      x2052 = x605*(-x2031 - x2032)
+      x2053 = x2052*x66
+      x2054 = x1442*x913
+      x2055 = x1852*x2054
+      x2056 = x1445*x1854*x915
+      x2057 = x2056*x66
+      x2058 = x604*x915
+      x2059 = 0.0621813817393098d0*x2058
+      x2060 = x1850*x2059
+      x2061 = x1504*x2039
+      x2062 = x2040*x525
+      x2063 = x2038*x517 + x2041 + x2042 + x2043 - x2061 - x2062
+      x2064 = x2051 + x2053 + x2055 + x2057 + x2060 + x2063
+      x2065 = x165*x2006
+      x2066 = x1469*x2007
+      x2067 = 2.0d0*x919
+      x2068 = x185*x2064 + x2067*x922 + x71*(x1472*x2009 + x1472*x2011 +
+     & x183*x2065 + x2066*x611)
+      x2069 = 0.00390625d0*x160*x194
+      x2070 = x2064*x621 + x2067*x925 + x71*(x1481*x2009 + x1481*x2011 +
+     & x188*x2065 + x2066*x622)
+      x2071 = x2045 - x2051 - x2053 - x2055 - x2057 - x2060
+      x2072 = x983**2
+      x2073 = x323*x983
+      x2074 = x643*(x1517*x2037 + x2044 + x2061 + x2062)
+      x2075 = x1885*x934
+      x2076 = x1887*x934
+      x2077 = 0.333333333333333d0*x165
+      x2078 = x1533*x2077
+      x2079 = x1536*x2077
+      x2080 = 0.111111111111111d0*x165
+      x2081 = x682*(x1533*x2080 + x1536*x2080)
+      x2082 = 0.222222222222222d0*x165
+      x2083 = x667*(x1533*x2082 + x1536*x2082)
+      x2084 = x1557*x1906*x942
+      x2085 = x1913*x223*x949
+      x2086 = x165*x289
+      x2087 = 2.77555756156289d-17*x1919
+      x2088 = 0.40672709399189d0*x1919
+      x2089 = 68.9096160045166d0*x727
+      x2090 = 0.40672709399189d0*x778
+      x2091 = x1582*x1590 + x1587*x1591 - x1592*x1936*x252 + x1592*x1937
+     &*x263 - x1629* x1924*x1938 - x1633*x1926*x1939 - x1637*x252*x754 -
+     & x1637*x263* x759 - x1923*x1940*x2090 + x1925*x1931*x2090 - x1928*
+     &x2088*x252 - x1930*x2088*x263 + x1932*x2087 + x1934*x2087 - x1941*
+     &x2089 + x1943*x2089 - x2086*x753 - x2086*x758 - x966*(-x1582*x1598
+     & - x1582*x1600) - x968*(-x1587*x1607 - x1587*x1608)
+      x2092 = 2.22222222222222d0*x165
+      x2093 = x204*(x1529*x1892*x940 + x1544*x1896*x1899 + 2.0d0*x1897*x
+     &940 + x1898* x696*x956 + x2063*x237 + x230*(x277*(x2091 + x959) + 
+     &x958) + x278 *(x2063*x284 + x941) + x285*(x2063*x296 + x295*(x2091
+     & + x289*( x2092*x216 + x2092*x217) + x977) + x974) + x661*(-x2078 
+     &- x2079) + x697*(x1549*x1904*x955 + 2.0d0*x1902*x955 + x229*(x1568
+     &*x1915* x944 + x2081 + 4.62131672808458d0*x2083 + x2084 + 4.621316
+     &72808458d0*x2085 + x945*(x2078 + x2079)) + x693*(-x2081 - 2.139284
+     &87137149d0*x2083 - x2084 - 2.13928487137149d0*x2085)) + x937)
+      x2094 = x2063 - x2093
+      x2095 = x200*x2094
+      x2096 = 2.78d0*x2074 + 2.78d0*x2075 + 5.56d0*x2076 + 2.78d0*x2095
+      x2097 = x807*x994
+      x2098 = 1.08969365000574d0*x2097
+      x2099 = x1003*x1687
+      x2100 = x2016*x986
+      x2101 = x2018*x986
+      x2102 = x990**2
+      x2103 = x1695*x2102
+      x2104 = x1697*x2103
+      x2105 = x1699*x2102
+      x2106 = x1678*x1971*x991
+      x2107 = x1704*x2072
+      x2108 = x1955*x984
+      x2109 = x315*x983
+      x2110 = x1874*x2109
+      x2111 = x1875*x2109
+      x2112 = x1958*x984
+      x2113 = x2033*x302 + x2034*x302 + x2035*x989 + x44*(x2045 + x2093)
+     &
+      x2114 = x1699*x2113
+      x2115 = x2096*x812
+      x2116 = x1002*x308
+      x2117 = x1006*x1724
+      x2118 = x1988*x2059 + x1989*x2117 + x2052*x325 + x2056*x325 + x209
+     &4 + x841*( x1003*x1667*x2097 + x1003*x1669*x984 + x1089*(-x1002**2
+     &*x1722 - x1718*x2103 + x1719*x2102 + x1719*x2113 - x1874*x2116 - x
+     &1875* x2116 - x1956*x1961 + x1960*x1961 - x1985*x908 + 3.568617149
+     &60788d-5*x1986*x1987 - x2049*x998 - x2100 - x2101 - x2104 + x2105 
+     &+ x2106 - x2107 - x2108 - x2110 - x2111 + x2112 + x2114 - x2115 - 
+     &x832*(5.56d0*x2074 + 5.56d0*x2075 + 11.12d0*x2076 + 5.56d0*x2095))
+     & + x1494*x2072 + x1662*x2096 + x1666*x1882*x1952 + x1714*(x2100 + 
+     &x2101 + x2104 - x2105 - x2106 + x2107 + x2108 + x2110 + x2111 - x2
+     &112 - x2114 + x2115) + x1871*x2098 + 1.08969365000574d0*x1872*x320
+     &*x984 + x1874*x2073 + x1875*x2073 + x1962*x2099 + x2016*x637 + x20
+     &18*x637 + x2098*x319*x984)
+      x2119 = gamma_cc*x611
+      x2120 = x1060*x462
+      x2121 = x477*(x1060*x1776 - x166*x1778)
+      x2122 = x1060*x1296
+      x2123 = -x1294*x2120 - x1299*x2122 + x2121
+      x2124 = x2123*x480
+      x2125 = gamma_cc*x181
+      x2126 = x21*x482
+      x2127 = x2125*x2126
+      x2128 = x1062*x453
+      x2129 = 0.00244885996736565d0*x159
+      x2130 = rho_c**(-8.66666666666667d0)*x1061*x477
+      x2131 = 0.00777267271741372d0*x378
+      x2132 = -x1042 - x1044 - x1050
+      x2133 = x1201*x88
+      x2134 = x1039*x2133
+      x2135 = x112*x1184*x366
+      x2136 = x115*x338
+      x2137 = x342*x344
+      x2138 = x1043*x346
+      x2139 = 0.825248078914289d0*x349
+      x2140 = x1043*x95
+      x2141 = x2140*x356
+      x2142 = x1047*x362
+      x2143 = x357*x359
+      x2144 = x104*x1045
+      x2145 = 0.894910333510778d0*x2144
+      x2146 = 4.41620548309916d0*x366
+      x2147 = x109*x88
+      x2148 = x2147*x91
+      x2149 = x2148*x374
+      x2150 = -x109*x2145 + x1130
+      x2151 = x1051*x2131 + x94*(x1171*x2132 + x379*(-x1043*x340 + x1043
+     &*x360 - x1049* x2136 - x1049*x2137*x95 + x1183*x2150 + x1198*(-x21
+     &38 - x2139 - x2141) + x1204*(x1045*x109*x372 + x107*x2144*x2146 + 
+     &x1201*x2145 + x2138 + x2139 + x2141) - 0.111863791688847d0*x2134 -
+     & 0.552025685387395d0*x2135 + x2140*x375 + x2142*x2143 + 0.11186379
+     &1688847d0*x2149 - 0.825248078914289d0*x343))
+      x2152 = x1036*x1763
+      x2153 = -x1025 - x1028 - x1035
+      x2154 = 0.111863791688847d0*x1022
+      x2155 = x1253*x149
+      x2156 = x2154*x2155
+      x2157 = x1243*x149*x423
+      x2158 = 0.552025685387395d0*x2157
+      x2159 = x1026*x440
+      x2160 = 0.825248078914289d0*x442
+      x2161 = x1034*x1740
+      x2162 = x1034*x130*x1738
+      x2163 = x1027*x403
+      x2164 = x2163*x402
+      x2165 = x1026*x407
+      x2166 = 0.825248078914289d0*x411
+      x2167 = -x2165 - x2166
+      x2168 = x1027*x149
+      x2169 = x1033*x435
+      x2170 = x1031*x133
+      x2171 = 0.894910333510778d0*x2170
+      x2172 = x1253*x2171
+      x2173 = 4.41620548309916d0*x1759
+      x2174 = x2170*x2173
+      x2175 = 0.894910333510778d0*x140
+      x2176 = x1031*x2175
+      x2177 = x2165 + x2166
+      x2178 = x140*x2154
+      x2179 = x1027*x436
+      x2180 = -x1120 - x140*x2171
+      x2181 = x129*(x1281*x2153 + x448*(x1265*x2178 + x1274*x2180 + x174
+     &4*x2169 - x2156 - x2158 - x2159 - x2160 - x2161 - x2162 + x2168*x4
+     &15 + x2179*x434 + x417*(-x2164 + x2167) + x438*(x2164 + x2172 + x2
+     &174 + x2176*x429 + x2177))) + x2152
+      x2182 = x179*(x2151 + x2181)
+      x2183 = x1054*x479
+      x2184 = x1054*x178
+      x2185 = -x1766*x2183 - x183*x2182 + x2184*x484
+      x2186 = x1019*x600
+      x2187 = x2186*x606
+      x2188 = -x1013 - x1018 - x64
+      x2189 = x1443*x2188
+      x2190 = gamma_cc*x465
+      x2191 = x2190*x48
+      x2192 = x551*x586
+      x2193 = x1010*x1012*x50
+      x2194 = x1016*x1332
+      x2195 = x1016*x594
+      x2196 = x1009*x1012*x54
+      x2197 = gamma_cc*x50
+      x2198 = 0.593716125431411d0*x2197
+      x2199 = 1.18743225086282d0*x1081
+      x2200 = -1.18743225086282d0*x1015 - x1329*x55
+      x2201 = x601*(-0.692668813003313d0*x1010*x2191 + x1017*(x1014*x142
+     &7 - x1336* x2198 + x2199*x590 + x558 - x562 + x577) + x1333*x2196 
+     &+ x1342* x2200 + x1426*(-x558 + x562 - x577) - x1785*x2194 + x1794
+     &*x2195 + x1797*x2195 + x2192*x2193 - x543 + x555 + x581 + x597)
+      x2202 = x2187 + x2189 + x2201
+      x2203 = x177*x2125
+      x2204 = x1066*x1294
+      x2205 = x1062*x1112
+      x2206 = x1066*x1299
+      x2207 = x1020*x615 + x1067*x609 + x185*x2202 + x71*(-x1466*x2203 +
+     & x1472*x2121 + x2119*x610 + x2119*x614 - 0.00081628665578855d0*x22
+     &04 + x2205 - 0.00102035831973569d0*x2206)
+      x2208 = 0.017578125d0*x21
+      x2209 = x190*x2208
+      x2210 = 0.005859375d0*x1143
+      x2211 = gamma_cc*x622
+      x2212 = 0.00685680790862382d0*x2130
+      x2213 = -x1866*x2183 - x188*x2182 + x2184*x620
+      x2214 = x1062*x1108
+      x2215 = x1020*x623 + x1076*x609 + x2202*x621 + x71*(-x1480*x2203 +
+     & x1481*x2121 - 0.00228560263620794d0*x2204 - 0.00285700329525993d0
+     &*x2206 + x2211 *x610 + x2211*x614 + x2214)
+      x2216 = -x2187 - x2189 - x2201
+      x2217 = x1084*x2197
+      x2218 = x1088*x835
+      x2219 = x1088*x834
+      x2220 = x56*x809
+      x2221 = x2220*x806
+      x2222 = x314*x792
+      x2223 = x2222*x790
+      x2224 = x1081*x1082
+      x2225 = 0.00922952226005862d0*x2224
+      x2226 = x1086*x2197
+      x2227 = 3.56861714960788d-5*x1081
+      x2228 = -0.00114780889384833d0*x1081*x306 - x1682
+      x2229 = x1091*x840
+      x2230 = -x1085 - x1090 - x322
+      x2231 = x1725*x2230 + x2229*x606 + x841*(-0.0215355519401368d0*x10
+     &83*x2191 + x1085*x793 + x1089*(-x1087*x1684 + x1720*x2227 + 0.0026
+     &7822075231276d0*x2190*x820 + x2221 - x2223 - x2226*x823 + x796 - x
+     &801) + x1090*x793 + x1664*x2225 + x1688*x2228 + x1714*( -x2221 + x
+     &2223 - x796 + x801) + x1879*x2218 - x1881*x2218 + x1883 *x2219 + x
+     &2192*x2217 + x322*x793 - x634 + x638 + x817 + x837)
+      x2232 = x477*(-rho_s*x1302 - x166*x1777)
+      x2233 = -x1772*x2120 - x2010*x2122 + x2232
+      x2234 = x2233*x480
+      x2235 = x1062*x858
+      x2236 = x2163*x846
+      x2237 = x129*(x2003*x2153 + x448*(x1743*x2178 + x1745*x2169 + x200
+     &2*x2180 + x2156 + x2158 + x2159 + x2160 + x2161 + x2162 + x2168*x8
+     &49 + x2179*x852 + x417*(x2177 - x2236) + x438*(x1747*x2176 + x2167
+     & - x2172 - x2174 + x2236))) - x2152
+      x2238 = x179*(x2151 + x2237)
+      x2239 = x1054*x875
+      x2240 = -x1766*x2239 - x183*x2238
+      x2241 = x2186*x916
+      x2242 = x2054*x2188
+      x2243 = x586*x890
+      x2244 = x601*(x1017*(-x1800*x2198 + x1802*x2199 - x894 + x903) + x
+     &1426*(x894 - x903) + x1793*x2196 + x1795*x2195 + x1798*x2195 + x20
+     &21*x2200 + x2193*x2243 + x892 + x906 + x911)
+      x2245 = x2241 + x2242 + x2244
+      x2246 = x1066*x1772
+      x2247 = x1066*x2010
+      x2248 = x1020*x922 + x1067*x919 + x185*x2245 + x71*(x1472*x2232 + 
+     &x2119*x920 + x2119*x921 - 0.00081628665578855d0*x2246 - 0.00102035
+     &831973569d0* x2247)
+      x2249 = -x1866*x2239 - x188*x2238
+      x2250 = x1020*x925 + x1076*x919 + x2245*x621 + x71*(x1481*x2232 + 
+     &x2211*x920 + x2211*x921 - 0.00228560263620794d0*x2246 - 0.00285700
+     &329525993d0* x2247)
+      x2251 = x187*x927
+      x2252 = -x2241 - x2242 - x2244
+      x2253 = x2220*x991
+      x2254 = x2222*x983
+      x2255 = x2117*x2230 + x2229*x916 + x841*(x1004 + x1085*x984 + x108
+     &9*(-x1087* x1961 - x1845*x2226 + x1986*x2227 + x2253 - x2254 - x98
+     &7) + x1090 *x984 + x1714*(-x2253 + x2254 + x987) + x1878*x2218 + x
+     &1882*x2225 + x1953*x2219 + x2099*x2228 + x2217*x2243 + x322*x984 +
+     & x932 + x996)
+      x2256 = x1170*x94
+      x2257 = x1051*x2256
+      x2258 = x104*x1048*x1199*x88*1d0/x99
+      x2259 = x1047*x1182
+      x2260 = x1128*x95
+      x2261 = x1049*x2260 + 0.223727583377694d0*x2142*x2148
+      x2262 = 0.0559318958444236d0*x1040 + x2150*x2259 - 0.0374140139522
+     &107d0*x2258 + x2261
+      x2263 = x1052*x2262 + x2132*x2257
+      x2264 = x1280*x129
+      x2265 = x1036*x2264
+      x2266 = x1023*x142
+      x2267 = x1259*x133*x134*1d0/x138*x436
+      x2268 = 0.223727583377694d0*x1022
+      x2269 = x140*x2268
+      x2270 = x2169*x2269
+      x2271 = x1118*x130
+      x2272 = x1034*x2271
+      x2273 = x1033*x1273
+      x2274 = x2180*x2273 + 0.0559318958444236d0*x2266 - 0.0374140139522
+     &107d0*x2267 + x2270 + x2272
+      x2275 = x1037*x2274 + x2153*x2265
+      x2276 = x179*(x2263 + x2275)
+      x2277 = -x183*x2276
+      x2278 = x1055*x2125
+      x2279 = 0.0032651466231542d0*x477
+      x2280 = x169*x181
+      x2281 = x170*x2280
+      x2282 = x1059*x159
+      x2283 = x2281*x2282
+      x2284 = x1298*x169**2*x182
+      x2285 = 5.33059123534764d-5*x2284
+      x2286 = x159*x2285
+      x2287 = rho_c**(-12.3333333333333d0)*x22
+      x2288 = x1065*x477
+      x2289 = 0.0032651466231542d0*x2288
+      x2290 = rho_c**(-11.3333333333333d0)
+      x2291 = x22*x2290
+      x2292 = gamma_cc*rho_c**(-7.0d0)
+      x2293 = x601*(0.593716125431411d0*x1011 + x1016*x1341*x2200 + 0.59
+     &3716125431411d0*x1081*x2195*x54 + x1329*x2194 - 0.323484345894309d
+     &0*x1430*x2292*x59*x594)
+      x2294 = x1728*x2186
+      x2295 = x1019*x1442*x2188
+      x2296 = x1067*x2294 + x185*x2293 + x185*x2295 + x71*(x1064 - x2281
+     &*x2289 + x2285 *x2291)
+      x2297 = gamma_cc*x193
+      x2298 = 0.01171875d0*x2297
+      x2299 = 0.01171875d0*x1143
+      x2300 = -x188*x2276
+      x2301 = 0.00914241054483176d0*x477
+      x2302 = 0.000149256554589734d0*x2284
+      x2303 = x159*x2302
+      x2304 = 0.00914241054483176d0*x2288
+      x2305 = x1076*x2294 + x2293*x621 + x2295*x621 + x71*(x1075 - x2281
+     &*x2304 + x2291 *x2302)
+      x2306 = -x2293 - x2295
+      x2307 = x1091*x1724*x2230 + x841*(0.0184590445201172d0*x1009*x1083
+     & + x1088*x1668 + x1088*x1687*x2228 - 0.000312690015761657d0*x1429*
+     &x2292*x300** 8.34d0*x305*x316*x834 + 0.0184590445201172d0*x2219*x2
+     &224)
+      x2308 = x1103*x626
+      x2309 = rho_c**(-2.66666666666667d0)
+      x2310 = 0.0522423459704672d0*x2309
+      x2311 = x1294*x169
+      x2312 = rho_c**(-3.66666666666667d0)
+      x2313 = x169*x2312
+      x2314 = x477*(-x2309*x473 + 0.139312922587913d0*x2313)
+      x2315 = x1299*x169
+      x2316 = 0.065302932463084d0*x2309
+      x2317 = -x2310*x2311 + x2314 - x2315*x2316
+      x2318 = x2317*x480
+      x2319 = x1095*x453
+      x2320 = x1109*x2288
+      x2321 = x1100*x1294
+      x2322 = x1100*x1299
+      x2323 = -x1101*x609 + x71*(x1114 + x1472*x2314 - 0.000816286655788
+     &55d0*x2321 - 0.00102035831973569d0*x2322)
+      x2324 = 0.00685680790862382d0*x2320
+      x2325 = x1095*x1108
+      x2326 = x1074*x1100
+      x2327 = -x2326*x609 + x71*(x1481*x2314 - 0.00228560263620794d0*x23
+     &21 - 0.00285700329525993d0*x2322 + x2325)
+      x2328 = x169*x1772
+      x2329 = x477*x871
+      x2330 = x169*x2010
+      x2331 = -x2310*x2328 - x2310*x2329 - x2316*x2330
+      x2332 = x2331*x480
+      x2333 = x1095*x858
+      x2334 = x1100*x1772
+      x2335 = x181*x2329*x52
+      x2336 = x1100*x2010
+      x2337 = -x2326*x919 + x71*(-0.00228560263620794d0*x2334 - 0.002285
+     &60263620794d0* x2335 - 0.00285700329525993d0*x2336)
+      x2338 = -x1101*x919 + x71*(-0.00081628665578855d0*x2334 - 0.000816
+     &28665578855d0* x2335 - 0.00102035831973569d0*x2336)
+      x2339 = rho_c*x156
+      x2340 = x1054*x1095
+      x2341 = x159*x2190
+      x2342 = x1113*x181
+      x2343 = x1054*x1062
+      x2344 = rho_c**(-10.3333333333333d0)
+      x2345 = x166*x2344
+      x2346 = x1099*x2125
+      x2347 = rho_c**(-9.33333333333333d0)
+      x2348 = x166*x2347
+      x2349 = x2186*x42
+      x2350 = x2349*x477
+      x2351 = x1100*x2350
+      x2352 = -2.53789160761462d-5*x2351 + x71*(-x1112*x2346 + x2285*x23
+     &48)
+      x2353 = x1108*x2280
+      x2354 = -7.10609650132094d-5*x2351 + x71*(-x1108*x2346 + x2302*x23
+     &48)
+      x2355 = rho_c**(-8.33333333333333d0)
+      x2356 = x159*x2355
+      x2357 = rho_c**(-7.33333333333333d0)*x2285
+      x2358 = x1098*x2357
+      x2359 = x2357*x71
+      x2360 = x1138*x626
+      x2361 = -x1127 - x1129 - x1134
+      x2362 = x1128*x346
+      x2363 = 1.65049615782858d0*x349
+      x2364 = x2260*x356
+      x2365 = x1131*x362
+      x2366 = 0.894910333510778d0*x104
+      x2367 = -x102 - x2147*x2366
+      x2368 = x1135*x2131 + x94*(x1171*x2361 + x379*(-x1128*x340 + x1128
+     &*x360 - x1132* x2136 - x1133*x2137 + x1183*x2367 + x1198*(-x2362 -
+     & x2363 - x2364 ) + x1204*(x104*x1172*x2146 + x2133*x2366 + x2147*x
+     &372 + x2362 + x2363 + x2364) - 0.223727583377694d0*x2134 - 1.10405
+     &137077479d0* x2135 + x2143*x2365 + 0.223727583377694d0*x2149 + x22
+     &60*x375 - 1.65049615782858d0*x343))
+      x2369 = x1125*x1763
+      x2370 = x1117 + x1119 - x1124
+      x2371 = x2155*x2268
+      x2372 = 1.10405137077479d0*x2157
+      x2373 = x1118*x440
+      x2374 = 1.65049615782858d0*x442
+      x2375 = x1122*x1740*x436
+      x2376 = x1123*x1738
+      x2377 = x2271*x403
+      x2378 = x2377*x402
+      x2379 = x1118*x407
+      x2380 = 1.65049615782858d0*x411
+      x2381 = x2379 + x2380
+      x2382 = x1118*x416
+      x2383 = x1122*x435
+      x2384 = x1121*x133
+      x2385 = 0.894910333510778d0*x2384
+      x2386 = x1253*x2385
+      x2387 = x2173*x2384
+      x2388 = x1121*x2175
+      x2389 = -x2379 - x2380
+      x2390 = x2271*x436
+      x2391 = -x140*x2385 + x146
+      x2392 = x129*(x1281*x2370 + x448*(-x1265*x2269 + x1274*x2391 + x17
+     &44*x2383 + x2371 + x2372 + x2373 + x2374 - x2375 - x2376 - x2382*x
+     &415 - x2390*x434 + x417*(x2378 + x2381) + x438*(-x2378 + x2386 + x
+     &2387 + x2388*x429 + x2389))) + x2369
+      x2393 = x179*(x2368 + x2392)
+      x2394 = x1136*x479
+      x2395 = 0.104484691940934d0*x2313
+      x2396 = rho_s*x2395
+      x2397 = 0.104484691940934d0*rho_s*x2312
+      x2398 = x477*(-0.38311053711676d0*rho_s*x1099 + x2397*x472)
+      x2399 = 0.130605864926168d0*rho_s*x2313
+      x2400 = x1294*x2396 + x1299*x2399 + x2398
+      x2401 = x2400*x480
+      x2402 = x1136*x178
+      x2403 = x1110*x477
+      x2404 = x2282*x2403
+      x2405 = x1065*x453
+      x2406 = rho_s*x1094
+      x2407 = x2311*x2406
+      x2408 = x1110*x2289
+      x2409 = x2315*x2406
+      x2410 = x1115*x609 + x71*(x1472*x2398 + 0.0016325733115771d0*x2407
+     & - x2408 + 0.00204071663947138d0*x2409)
+      x2411 = x1110*x2304
+      x2412 = rho_s*x2325
+      x2413 = x2412*x609 + x71*(x1481*x2398 + 0.00457120527241588d0*x240
+     &7 + 0.00571400659051985d0*x2409 - x2411)
+      x2414 = x2377*x846
+      x2415 = x129*(x2003*x2370 + x448*(-x1743*x2269 + x1745*x2383 + x20
+     &02*x2391 - x2371 - x2372 - x2373 - x2374 + x2375 + x2376 - x2382*x
+     &849 - x2390*x852 + x417*(x2389 + x2414) + x438*(x1747*x2388 + x238
+     &1 - x2386 - x2387 - x2414))) - x2369
+      x2416 = x179*(x2368 + x2415)
+      x2417 = x1136*x875
+      x2418 = x477*(x2395 + x2397*x871)
+      x2419 = x1772*x2396 + x2010*x2399 + x2418
+      x2420 = x2419*x480
+      x2421 = x1065*x858
+      x2422 = x2328*x2406
+      x2423 = x2330*x2406
+      x2424 = x2412*x919 + x71*(x1481*x2418 + 0.00457120527241588d0*x242
+     &2 + 0.00571400659051985d0*x2423)
+      x2425 = x1115*x919 + x71*(x1472*x2418 + 0.0016325733115771d0*x2422
+     & + 0.00204071663947138d0*x2423)
+      x2426 = 0.000106611824706953d0*x159
+      x2427 = x2284*x862
+      x2428 = x2290*x2427
+      x2429 = x1062*x1136
+      x2430 = rho_s*x159
+      x2431 = x169*x2430
+      x2432 = x2125*x2431
+      x2433 = x2148*x2365
+      x2434 = x1041 + x1132*x2140 - 0.0748280279044215d0*x2258 + x2259*x
+     &2367 + x2261 + 0.111863791688847d0*x2433
+      x2435 = x1052*x2434 + x2257*x2361
+      x2436 = x1122*x2179 + x2178*x2383 - 0.111863791688847d0*x2266 + 0.
+     &0748280279044215d0*x2267 - x2270 - x2272 + x2273*x2391
+      x2437 = x1037*x2436 + x2265*x2370
+      x2438 = x179*(x2435 + x2437)
+      x2439 = x1054*x1065
+      x2440 = -x1139*x2439 - x183*x2438
+      x2441 = rho_s*x2279
+      x2442 = x2190*x2280
+      x2443 = x2344*x2427
+      x2444 = rho_s*x1095*x2350
+      x2445 = 5.07578321522924d-5*x2444 + x71*(x2441*x2442 - 0.000106611
+     &824706953d0* x2443)
+      x2446 = 0.000298513109179468d0*x2428
+      x2447 = -x1111*x2439 - x188*x2438
+      x2448 = 0.000142121930026419d0*x2444 + x71*(rho_s*x2301*x2442 - 0.
+     &000298513109179468d0*x2443)
+      x2449 = rho_s*x2284
+      x2450 = 0.000106611824706953d0*x2355*x2449
+      x2451 = -x1098*x2450
+      x2452 = x1095*x1136
+      x2453 = -x2450*x71
+      x2454 = x2347*x2449
+      x2455 = x159*x2345
+      x2456 = 0.000597026218358936d0*x2284
+      x2457 = 0.000213223649413906d0*x2284
+      x2458 = x2348*x2457
+      x2459 = x1098*x2458
+      x2460 = x1125*x2370
+      x2461 = x1135*x2361
+      x2462 = -0.447455166755389d0*x1022*x140*x2383 + x1122*x1273*x2391 
+     &- x1123*x145 + 0.223727583377694d0*x2266 - 0.149656055808843d0*x22
+     &67
+      x2463 = x101*x1133 + x1126 + x1131*x1182*x2367 - 0.149656055808843
+     &d0*x2258 + 0.447455166755389d0*x2433
+      x2464 = x179*(x1037*x2462 + x1052*x2463 + x2256*x2461 + x2264*x246
+     &0)
+      x2465 = x2458*x71
+      x2466 = x1071*x2126
+      x2467 = 0.03125d0*x1143
+      x2468 = x1071*x610
+      x2469 = x1143*x177
+      x2470 = -x1149*x609 + x71*(-x1145*x614 - 0.03125d0*x2468 + 0.0625d
+     &0*x2469)
+      x2471 = 0.0875d0*x1143
+      x2472 = 0.0875d0*x1071
+      x2473 = x184*x2472
+      x2474 = -x2473*x609 + x71*(-0.0875d0*x2468 + 0.175d0*x2469 - x2472
+     &*x614)
+      x2475 = x1153*x160
+      x2476 = 0.005859375d0*x2475
+      x2477 = x1071*x920
+      x2478 = -x2473*x919 + x71*(-x2472*x921 - 0.0875d0*x2477)
+      x2479 = -x1149*x919 + x71*(-x1145*x921 - 0.03125d0*x2477)
+      x2480 = x2184*x2467
+      x2481 = 0.0625d0*x2297
+      x2482 = x1071*x1112
+      x2483 = x1060*x2282
+      x2484 = x1060*x1065
+      x2485 = x1071*x184*x2349
+      x2486 = -0.000971584089676716d0*x2485 + x71*(-x184*x2481 + x2482*x
+     &2484)
+      x2487 = x1152*x51
+      x2488 = 0.017578125d0*x2487
+      x2489 = x2184*x2471
+      x2490 = 0.175d0*x2297
+      x2491 = x1071*x1108
+      x2492 = -0.0027204354510948d0*x2485 + x71*(-x184*x2490 + x2484*x24
+     &91)
+      x2493 = x187*x2476
+      x2494 = x159*x465
+      x2495 = x169*x2491
+      x2496 = x1099*x2482
+      x2497 = x1098*x2496
+      x2498 = x1071*x1113
+      x2499 = x2496*x71
+      x2500 = x1071*x2431
+      x2501 = x1071*x169
+      x2502 = x2441*x2501*x465
+      x2503 = -x1098*x2502
+      x2504 = -x2502*x71
+      x2505 = x180*x2487
+      x2506 = 0.09375d0*x2487
+      x2507 = x1146*x2506
+      x2508 = 0.01171875d0*x2475
+      x2509 = x1098*x184*x2506
+      x2510 = 0.0234375d0*x192/tau_c**5
+      x2511 = x129*x71
+      x2512 = x158 + x2511
+      x2513 = x179*x2512
+      x2514 = -x183*x2513 + x186
+      x2515 = -x188*x2513 + x189
+      x2516 = x2515*x626 + 1.0d0
+      x2517 = x156*(x197 + x2514*x2516)
+      x2518 = x2517 + x326
+      x2519 = x129*x609
+      x2520 = 0.0155453454348275d0*x1097
+      x2521 = 0.0310906908696549d0*x16
+      x2522 = x163*x520
+      x2523 = 0.0098758948512826d0*x31
+      x2524 = x2520 - x2521 + x2522 + x2523
+      x2525 = x2519 + x2524 + x381
+      x2526 = x179*x2525
+      x2527 = x2512*x479
+      x2528 = x178*x2512
+      x2529 = -x1766*x2527 - x183*x2526 + x2528*x484 + x616
+      x2530 = -x1866*x2527 - x188*x2526 + x2528*x620 + x624
+      x2531 = -x2515*x619 + x2530*x626
+      x2532 = x156*(x2514*x2531 + x2516*x2529 + x628)
+      x2533 = x129*x919
+      x2534 = -x2520 + x2521 - x2522 - x2523 + x2533 + x381
+      x2535 = x179*x2534
+      x2536 = x2512*x875
+      x2537 = -x1766*x2536 - x183*x2535 + x923
+      x2538 = -x1866*x2536 - x188*x2535 + x926
+      x2539 = x2514*x626
+      x2540 = x156*(x2516*x2537 + x2538*x2539 + x930)
+      x2541 = x1007 + x2540
+      x2542 = x2513*x611
+      x2543 = x1020*x129
+      x2544 = x1053 + x2543
+      x2545 = x179*x2544
+      x2546 = x1062*x2512
+      x2547 = -gamma_cc*x2542 + x1058*x2546 + x1068 - x183*x2545
+      x2548 = x2513*x622
+      x2549 = -gamma_cc*x2548 + x1074*x2546 + x1077 - x188*x2545
+      x2550 = x2210*x2515 + x2549*x626
+      x2551 = x156*(x1021 + x2514*x2550 + x2516*x2547)
+      x2552 = x1092 + x2551
+      x2553 = x378*x94
+      x2554 = x1051*x2553
+      x2555 = x179*x182
+      x2556 = 0.000680108862773701d0*x2555
+      x2557 = x1095*x2512
+      x2558 = x1074*x2557 + x1102 - x2554*x2556
+      x2559 = 0.000242896022419179d0*x2555
+      x2560 = x1058*x2557 + x1104 - x2554*x2559
+      x2561 = x156*(x2516*x2560 + x2539*x2558)
+      x2562 = x1135*x2553
+      x2563 = x1065*x2512
+      x2564 = -x1111*x2563 + x1116 - x2556*x2562
+      x2565 = -x1139*x2563 + x1140 - x2559*x2562
+      x2566 = x156*(x2516*x2565 + x2539*x2564)
+      x2567 = x1147 + x2467*x2528
+      x2568 = x1150 + x2471*x2528
+      x2569 = -x2476*x2515 + x2568*x626
+      x2570 = x156*(x2514*x2569 + x2516*x2567)
+      x2571 = x1156*x2528
+      x2572 = x2525*x479
+      x2573 = x129*x1465
+      x2574 = 0.000681574929370872d0*x8
+      x2575 = x2574 + 0.0098758948512826d0
+      x2576 = 4.0d0*x520
+      x2577 = x2575*x28
+      x2578 = 0.5d0*x519
+      x2579 = 8.0409921107287d0*x1508
+      x2580 = x1504*x458
+      x2581 = 14.8042873216083d0*x531*x534
+      x2582 = x2578 + x2579 + x2580 + x2581
+      x2583 = x2575*x518 + x2575*x532*x533 - x2576*x457 + x2577*x526 + x
+     &2582 + 1.0d0* x491 + x511*(-0.00412165868588285d0*x8 - 0.031090690
+     &8696549d0) + 1.0d0*x515 + x538 + x608
+      x2584 = x179*(x1205 + x2573 + x2583)
+      x2585 = x1310*x2512
+      x2586 = x178*x2525
+      x2587 = x129*x1863
+      x2588 = 0.00137388622862762d0*x502
+      x2589 = 0.0155453454348275d0*x42
+      x2590 = x2589*x600
+      x2591 = x2590*x599
+      x2592 = 0.0155453454348275d0*x66
+      x2593 = x1449*x2592
+      x2594 = x458*x520
+      x2595 = x1414*x163
+      x2596 = x1416*x163
+      x2597 = 0.000227191643123624d0*x30*x492
+      x2598 = x2575*x882 - x2577*x884
+      x2599 = x163*x1832 + x1850*x2589 + x2058*x2592 + x2598 + x520*x864
+     &
+      x2600 = x179*(x1205 - x2578 - x2579 - x2580 - x2581 + x2587 - x258
+     &8 - x2591 - x2593 + x2594 - x2595 - x2596 + x2597 + x2599)
+      x2601 = x2525*x875
+      x2602 = x2534*x479
+      x2603 = x1781*x2512
+      x2604 = x178*x2534
+      x2605 = x2538*x626
+      x2606 = x2534*x875
+      x2607 = x129*x2064
+      x2608 = -x2574 - 0.0098758948512826d0
+      x2609 = 0.5d0*x883
+      x2610 = 1.0d0*x879
+      x2611 = x2576*x863
+      x2612 = x1504*x864
+      x2613 = x179*(x1205 + x2607 - x2608*x28*x884 + x2608*x882 - x2609 
+     &- x2610 - x2611 + x2612 + x929)
+      x2614 = x2012*x2512
+      x2615 = x160*x2527
+      x2616 = x129*x2202
+      x2617 = x1019*x2590
+      x2618 = x179*(x2151 + x2616 + x2617)
+      x2619 = x2544*x479
+      x2620 = x2123*x2512
+      x2621 = x21*x2528
+      x2622 = x2125*x2621
+      x2623 = x178*x2544
+      x2624 = x1062*x2525
+      x2625 = 0.00244885996736565d0*x2130
+      x2626 = x2208*x2515
+      x2627 = x160*x2536
+      x2628 = x129*x2245
+      x2629 = x179*(x2151 - x2617 + x2628)
+      x2630 = x2544*x875
+      x2631 = x2233*x2512
+      x2632 = x1062*x2534
+      x2633 = x2514*x2538
+      x2634 = x2125*x2545
+      x2635 = x129*x2293 + x129*x2295
+      x2636 = x179*(x2263 + x2635)
+      x2637 = x1059*x2512
+      x2638 = x2281*x2637
+      x2639 = x2287*x2512
+      x2640 = x160*x2515
+      x2641 = x2558*x626
+      x2642 = x179*x2151
+      x2643 = -x183*x2642
+      x2644 = x2317*x2512
+      x2645 = x178*x483
+      x2646 = x2554*x2645
+      x2647 = x1095*x2525
+      x2648 = 0.00244885996736565d0*x2320
+      x2649 = x160*x182
+      x2650 = x2554*x2649
+      x2651 = x2650*x479
+      x2652 = -x188*x2642
+      x2653 = x2331*x2512
+      x2654 = x1095*x2534
+      x2655 = x2650*x875
+      x2656 = x179*x2263
+      x2657 = x1095*x2544
+      x2658 = x2190*x2512
+      x2659 = x179*x2125
+      x2660 = 0.000485792044838358d0*x2554
+      x2661 = x2345*x2512
+      x2662 = x1062*x477
+      x2663 = x2554*x2662
+      x2664 = 0.0013602177255474d0*x2659
+      x2665 = x1095*x477
+      x2666 = 7.10609650132094d-5*x2665
+      x2667 = x2355*x2512
+      x2668 = x1169*x94
+      x2669 = x1051*x2668
+      x2670 = x2132*x2669
+      x2671 = x2262*x2553
+      x2672 = 2.53789160761462d-5*x2554
+      x2673 = x2564*x626
+      x2674 = x179*x2368
+      x2675 = -x183*x2674
+      x2676 = x2400*x2512
+      x2677 = x2562*x2645
+      x2678 = x2562*x2649
+      x2679 = x2678*x479
+      x2680 = x2403*x2637
+      x2681 = x1065*x2525
+      x2682 = -x188*x2674
+      x2683 = x2419*x2512
+      x2684 = x2678*x875
+      x2685 = x1065*x2534
+      x2686 = x179*x2435
+      x2687 = 0.000485792044838358d0*x2562
+      x2688 = 0.000106611824706953d0*x2512
+      x2689 = x1065*x2544
+      x2690 = rho_s*x2512
+      x2691 = x2289*x2690
+      x2692 = x169*x2125
+      x2693 = x2562*x2662
+      x2694 = x2304*x2690
+      x2695 = x2562*x2665
+      x2696 = rho_s*x2320
+      x2697 = 7.10609650132094d-5*x2696
+      x2698 = 0.000298513109179468d0*x2454
+      x2699 = x2361*x2669
+      x2700 = x2434*x2553
+      x2701 = x2562*x2696
+      x2702 = x2461*x2668
+      x2703 = x2463*x2553
+      x2704 = x1071*x2621
+      x2705 = x1060*x2637
+      x2706 = x2476*x2514
+      x2707 = x1143*x178
+      x2708 = 0.0013602177255474d0*x2707
+      x2709 = x2512*x465
+      x2710 = x2487*x2513
+      x2711 = x71*x94
+      x2712 = x157 + x2711
+      x2713 = x179*x2712
+      x2714 = -x183*x2713 + x186
+      x2715 = -x188*x2713 + x189
+      x2716 = x2715*x626 + 1.0d0
+      x2717 = x156*(x197 + x2714*x2716)
+      x2718 = x2717 + x326
+      x2719 = x609*x94
+      x2720 = x2524 + x2719 + x452
+      x2721 = x179*x2720
+      x2722 = x2712*x479
+      x2723 = x178*x2712
+      x2724 = -x1766*x2722 - x183*x2721 + x2723*x484 + x616
+      x2725 = -x1866*x2722 - x188*x2721 + x2723*x620 + x624
+      x2726 = -x2715*x619 + x2725*x626
+      x2727 = x156*(x2714*x2726 + x2716*x2724 + x628)
+      x2728 = x919*x94
+      x2729 = x2524 + x2728 + x857
+      x2730 = x179*x2729
+      x2731 = x2712*x875
+      x2732 = -x1766*x2731 - x183*x2730 + x923
+      x2733 = -x1866*x2731 - x188*x2730 + x926
+      x2734 = x2714*x626
+      x2735 = x156*(x2716*x2732 + x2733*x2734 + x930)
+      x2736 = x1007 + x2735
+      x2737 = x2713*x611
+      x2738 = x1020*x94
+      x2739 = x1038 + x2738
+      x2740 = x179*x2739
+      x2741 = x1062*x2712
+      x2742 = -gamma_cc*x2737 + x1058*x2741 + x1068 - x183*x2740
+      x2743 = x2713*x622
+      x2744 = -gamma_cc*x2743 + x1074*x2741 + x1077 - x188*x2740
+      x2745 = x2210*x2715 + x2744*x626
+      x2746 = x156*(x1021 + x2714*x2745 + x2716*x2742)
+      x2747 = x1092 + x2746
+      x2748 = x129*x447
+      x2749 = x1036*x2748
+      x2750 = x1095*x2712
+      x2751 = x1074*x2750 + x1102 - x2556*x2749
+      x2752 = x1058*x2750 + x1104 - x2559*x2749
+      x2753 = x156*(x2716*x2752 + x2734*x2751)
+      x2754 = x1125*x2748
+      x2755 = x1065*x2712
+      x2756 = -x1111*x2755 + x1116 - x2556*x2754
+      x2757 = -x1139*x2755 + x1140 - x2559*x2754
+      x2758 = x156*(x2716*x2757 + x2734*x2756)
+      x2759 = x1147 + x2467*x2723
+      x2760 = x1150 + x2471*x2723
+      x2761 = -x2476*x2715 + x2760*x626
+      x2762 = x156*(x2714*x2761 + x2716*x2759)
+      x2763 = x1156*x2723
+      x2764 = x2720*x479
+      x2765 = x1465*x94
+      x2766 = x179*(x1289 + x2583 + x2765)
+      x2767 = x1310*x2712
+      x2768 = x178*x2720
+      x2769 = x1863*x94
+      x2770 = x179*(x1764 + x2582 + x2588 + x2591 + x2593 - x2594 + x259
+     &5 + x2596 - x2597 + x2599 + x2769)
+      x2771 = x2720*x875
+      x2772 = x2729*x479
+      x2773 = x1781*x2712
+      x2774 = x178*x2729
+      x2775 = x2733*x626
+      x2776 = x2729*x875
+      x2777 = x2064*x94
+      x2778 = x2610 + x2611 + x918
+      x2779 = x179*(x2004 + x2598 + x2609 - x2612 + x2777 + x2778)
+      x2780 = x2012*x2712
+      x2781 = x160*x2722
+      x2782 = x2202*x94
+      x2783 = x179*(x2181 + x2617 + x2782)
+      x2784 = x2739*x479
+      x2785 = x2123*x2712
+      x2786 = x21*x2723
+      x2787 = x2125*x2786
+      x2788 = x178*x2739
+      x2789 = x1062*x2720
+      x2790 = x2208*x2715
+      x2791 = x160*x2731
+      x2792 = x2245*x94
+      x2793 = x179*(x2237 + x2617 + x2792)
+      x2794 = x2739*x875
+      x2795 = x2233*x2712
+      x2796 = x1062*x2729
+      x2797 = x2714*x2733
+      x2798 = x2125*x2740
+      x2799 = x2293*x94 + x2295*x94
+      x2800 = x179*(x2275 + x2799)
+      x2801 = x1059*x2712
+      x2802 = x2281*x2801
+      x2803 = x2287*x2712
+      x2804 = x160*x2715
+      x2805 = x2751*x626
+      x2806 = x179*x2181
+      x2807 = x2317*x2712
+      x2808 = x2645*x2749
+      x2809 = x1095*x2720
+      x2810 = x2649*x2749
+      x2811 = x2810*x479
+      x2812 = x179*x2237
+      x2813 = x2331*x2712
+      x2814 = x1095*x2729
+      x2815 = x2810*x875
+      x2816 = x179*x2275
+      x2817 = x1095*x2739
+      x2818 = x2190*x2712
+      x2819 = 0.000485792044838358d0*x2659
+      x2820 = x2345*x2712
+      x2821 = x2662*x2749
+      x2822 = x2355*x2712
+      x2823 = x1279*x129
+      x2824 = x1036*x2823
+      x2825 = x2153*x2824
+      x2826 = x2274*x2748
+      x2827 = 2.53789160761462d-5*x2749
+      x2828 = x2756*x626
+      x2829 = x179*x2392
+      x2830 = x2400*x2712
+      x2831 = x2645*x2754
+      x2832 = x2649*x2754
+      x2833 = x2832*x479
+      x2834 = x2403*x2801
+      x2835 = x1065*x2720
+      x2836 = x179*x2415
+      x2837 = x2419*x2712
+      x2838 = x2832*x875
+      x2839 = x1065*x2729
+      x2840 = x179*x2437
+      x2841 = 0.000106611824706953d0*x2712
+      x2842 = x1065*x2739
+      x2843 = rho_s*x2712
+      x2844 = x2692*x2843
+      x2845 = x2662*x2754
+      x2846 = x2665*x2754
+      x2847 = x2370*x2824
+      x2848 = x2436*x2748
+      x2849 = x2696*x2754
+      x2850 = x2460*x2823
+      x2851 = x2462*x2748
+      x2852 = x1071*x2786
+      x2853 = x1060*x2801
+      x2854 = x2476*x2714
+      x2855 = x2712*x465
+      x2856 = 0.000485792044838358d0*x2707
+      x2857 = x2501*x2843
+      x2858 = x2487*x2713
+      x2859 = x2511 + x2711
+      x2860 = x179*x2859
+      x2861 = -x183*x2860 + x186
+      x2862 = -x188*x2860 + x189
+      x2863 = x2862*x626 + 1.0d0
+      x2864 = x156*(x197 + x2861*x2863)
+      x2865 = x2864 + x326
+      x2866 = x2519 + x2719 + 1.0d0*x39 + x68 + x69
+      x2867 = x179*x2866
+      x2868 = x2859*x479
+      x2869 = x178*x2859
+      x2870 = -x1766*x2868 - x183*x2867 + x2869*x484 + x616
+      x2871 = -x1866*x2868 - x188*x2867 + x2869*x620 + x624
+      x2872 = -x2862*x619 + x2871*x626
+      x2873 = x156*(x2861*x2872 + x2863*x2870 + x628)
+      x2874 = x2533 + x2728
+      x2875 = x179*x2874
+      x2876 = x2859*x875
+      x2877 = -x1766*x2876 - x183*x2875 + x923
+      x2878 = -x1866*x2876 - x188*x2875 + x926
+      x2879 = x2861*x626
+      x2880 = x156*(x2863*x2877 + x2878*x2879 + x930)
+      x2881 = x1007 + x2880
+      x2882 = x2860*x611
+      x2883 = x2543 + x2738
+      x2884 = x179*x2883
+      x2885 = x1062*x2859
+      x2886 = -gamma_cc*x2882 + x1058*x2885 + x1068 - x183*x2884
+      x2887 = x2860*x622
+      x2888 = -gamma_cc*x2887 + x1074*x2885 + x1077 - x188*x2884
+      x2889 = x2210*x2862 + x2888*x626
+      x2890 = x156*(x1021 + x2861*x2889 + x2863*x2886)
+      x2891 = x1092 + x2890
+      x2892 = x1095*x2859
+      x2893 = x1074*x2892 + x1102
+      x2894 = x1058*x2892 + x1104
+      x2895 = x156*(x2863*x2894 + x2879*x2893)
+      x2896 = x1065*x2859
+      x2897 = -x1111*x2896 + x1116
+      x2898 = -x1139*x2896 + x1140
+      x2899 = x156*(x2863*x2898 + x2879*x2897)
+      x2900 = x1147 + x2467*x2869
+      x2901 = x1150 + x2471*x2869
+      x2902 = -x2476*x2862 + x2901*x626
+      x2903 = x156*(x2861*x2902 + x2863*x2900)
+      x2904 = x1156*x2869
+      x2905 = x2866*x479
+      x2906 = 8.0d0*x457
+      x2907 = x179*(x1450*x66 + x1451*x1728 + x1504*x2906 + x1729 + x257
+     &3 + x2765 - x2906*x520 + 2.0d0*x491 + 2.0d0*x515 + 2.0d0*x519)
+      x2908 = x1310*x2859
+      x2909 = x178*x2866
+      x2910 = x179*(x2587 + x2769 + x2778 + x886)
+      x2911 = x2866*x875
+      x2912 = x2874*x479
+      x2913 = x1781*x2859
+      x2914 = x178*x2874
+      x2915 = x2878*x626
+      x2916 = x2874*x875
+      x2917 = x179*(x2607 + x2777)
+      x2918 = x2012*x2859
+      x2919 = x160*x2868
+      x2920 = x179*(x1020 + x2616 + x2782)
+      x2921 = x2883*x479
+      x2922 = x2123*x2859
+      x2923 = x21*x2869
+      x2924 = x2125*x2923
+      x2925 = x178*x2883
+      x2926 = x1062*x2866
+      x2927 = x2208*x2862
+      x2928 = x160*x2876
+      x2929 = x179*(x2628 + x2792)
+      x2930 = x2883*x875
+      x2931 = x2233*x2859
+      x2932 = x1062*x2874
+      x2933 = x2861*x2878
+      x2934 = x2125*x2884
+      x2935 = x179*(x2635 + x2799)
+      x2936 = x1059*x2859
+      x2937 = x2281*x2936
+      x2938 = x2287*x2859
+      x2939 = x160*x2862
+      x2940 = x2893*x626
+      x2941 = x2317*x2859
+      x2942 = x1095*x2866
+      x2943 = x2331*x2859
+      x2944 = x1095*x2874
+      x2945 = x1095*x2883
+      x2946 = x2190*x2859
+      x2947 = x2345*x2859
+      x2948 = x2355*x2859
+      x2949 = x2897*x626
+      x2950 = x2400*x2859
+      x2951 = x2403*x2936
+      x2952 = x1065*x2866
+      x2953 = x2419*x2859
+      x2954 = x1065*x2874
+      x2955 = 0.000106611824706953d0*x2859
+      x2956 = x1065*x2883
+      x2957 = rho_s*x2859
+      x2958 = x2692*x2957
+      x2959 = x1071*x2923
+      x2960 = x1060*x2936
+      x2961 = x2476*x2861
+      x2962 = x2859*x465
+      x2963 = x2501*x2957
+      x2964 = x2487*x2860
+      PBE_value = x71
+      PBE_beta_value = x118
+      PBE_alpha_value = x155
       if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .ge. PB
      &E_value)) then
-      E = rho_c*x178
-      d1E(1) = rho_c*(x292 + 0.156233111018196d0*x294 + x414) + x178
-      d1E(3) = rho_c*x469
-      d1E(6) = rho_c*x481
-      d2E(1) = rho_c*(x292*x580 + x579*x88 - x581*x88 + x670 + x69*(2.0d
-     &0*x278*x287 + x578 + x77*(-x285*x572 + x286*(0.26775d0*x482 - 0.40
-     &1625d0*x485 - 0.0669375d0*x524 + x575) + x571*x80) + x86*(0.095625
-     &d0*x482 - 0.1434375d0*x485 - 0.02390625d0*x524 + x569))) + 2.0d0*x
-     &292 + 0.312466222036391d0*x294 + x671
-      d2E(4) = rho_c*(x455*x704 + x69*(x278*x454 + x287*x445 + x703 + x7
-     &7*(-x281*x453 + x286*(x672*x700 - 0.0669375d0*x680 - 0.133875d0*x6
-     &82 + 0.133875d0 *x683 + x702) - x696*x697 + x698*x699) + x86*(x672
-     &*x673 - 0.02390625d0*x680 - 0.0478125d0*x682 + 0.0478125d0*x683 + 
-     &x695)) + x711) + x469
-      d2E(6) = rho_c*(x69*(2.0d0*x445*x454 + x731 + x77*(x286*(-x448 - x
-     &449*x716 - x449 *x718 - 0.26775d0*x717 + x730) + x453*x728 + x727*
-     &x81) + x86*( -x428 - x438*x716 - x438*x718 - 0.095625d0*x717 + x72
-     &5)) + x732)
-      d2E(16) = rho_c*(x481*x704 + x69*(x278*x480 + x287*x474 + x77*(-x2
-     &81*x477 + x286*( -x698*x700 + 0.133875d0*x733 + x738) + x697*x736 
-     &- x699*x739) + x86*(-x673*x698 + 0.0478125d0*x733 + x735))) + x481
-     &
-      d2E(18) = x750*(x445*x480 + x454*x474 + x77*(x286*(x700*x740 + 0.1
-     &33875d0*x741 + x748) - x453*x749 + x477*x744 - x746*x81) + x86*(x6
-     &73*x740 + 0.0478125d0*x741 + x743))
-      d2E(21) = x750*(2.0d0*x474*x480 + x77*(x286*(-x754*x757 + x756) - 
-     &x477*x755 + x758 *x81) + x86*(x752 - x753*x754))
+      E = rho_c*x327
+      d1E(1) = rho_c*(x629 + 0.156233111018196d0*x631 + x842) + x327
+      d1E(2) = rho_c*x1008
+      d1E(3) = rho_c*x1093
+      d1E(4) = rho_c*x1106
+      d1E(5) = rho_c*x1142
+      d1E(6) = rho_c*x1155
+      d2E(1) = rho_c*(x1484*x198 + x1485*x629 - x1486*x198 + x156*(x1483
+     & + x187*(x1476* x190 - x1477*x625 + x626*(-0.525d0*x1157 - x1159*x
+     &1479 - x1290* x188 - x1311*x188 + x1313*x1478 + x1314*x1478 + x148
+     &2)) + x196*( -0.1875d0*x1157 - x1158*x1159 - x1290*x183 - x1311*x1
+     &83 + x1312* x1313 + x1312*x1314 + x1475) + 2.0d0*x617*x627) + x172
+     &7) + x1730 + 2.0d0*x629 + 0.312466222036391d0*x631
+      d2E(2) = rho_c*(x156*(x1868*x617 + x1869 + x187*(-x619*x927 + x626
+     &*(-x1765*x188 - x1767*x1866 - x1768*x1866 - x1782*x188 + x1783*x62
+     &0 + x1784*x620 + x1867)) + x196*(-x1765*x183 - x1766*x1767 - x1766
+     &*x1768 - x1782 *x183 + x1783*x484 + x1784*x484 + x1865) + x627*x92
+     &4) + x1870* x931 + x1990) + x1008
+      d2E(3) = rho_c*(x156*(x196*(-x1158*x1991 - x183*x2005 - x183*x2013
+     & + x2068) + x2069*x924*x927 + x2071 + x928*(-x1479*x1991 - x188*x2
+     &005 - x188* x2013 + x2070)) + x2118)
+      d2E(4) = rho_c*(x1080*x1870 + x156*(x1069*x627 + x1079*x617 + x187
+     &*(-x1071*x2209 - x1078*x619 + x2210*x625 + x626*(x1074*x2128 - x15
+     &9*x2212 - x188 *x2124 + 0.2625d0*x2127 - x2211*x454 - x2211*x481 +
+     & x2213 + x2215 )) + x196*(x1058*x2128 - x183*x2124 - x2119*x454 - 
+     &x2119*x481 + 0.09375d0*x2127 - x2129*x2130 + x2185 + x2207) + x221
+     &6) + x2231) + x1093
+      d2E(5) = rho_c*(x156*(x1069*x1868 + x1079*x924 + x196*(x1058*x2235
+     & - x183*x2234 - x2119*x859 - x2119*x876 + x2240 + x2248) + x2210*x
+     &2251 + x2252 + x928*(x1074*x2235 - x188*x2234 - x2211*x859 - x2211
+     &*x876 + x2249 + x2250)) + x2255)
+      d2E(6) = rho_c*(x156*(2.0d0*x1069*x1079 + x187*(x1078*x2299 + x191
+     &*x2298 + x626*( x1054*x2214 - x1073 - 0.175d0*x2278 + x2283*x2301 
+     &- x2287*x2303 + x2300 + x2305)) + x196*(x1054*x2205 - x1057 + x227
+     &7 - 0.0625d0* x2278 + x2279*x2283 - x2286*x2287 + x2296) + x2306) 
+     &+ x2307)
+      d2E(7) = rho_c*(x1106*x1870 + x156*(x1105*x627 + x187*(-x1103*x619
+     & + x626*(x1074* x2319 - x159*x2324 - x188*x2318 + x2213 + x2327)) 
+     &+ x196*(x1058* x2319 - x183*x2318 - x2129*x2320 + x2185 + x2323) +
+     & x2308*x617)) + x1106
+      d2E(8) = x2339*(x1105*x1868 + x196*(x1058*x2333 - x183*x2332 + x22
+     &40 + x2338) + x2308*x924 + x928*(x1074*x2333 - x188*x2332 + x2249 
+     &+ x2337))
+      d2E(9) = x2339*(x1069*x2308 + x1079*x1105 + x187*(x1103*x2210 + x6
+     &26*(-x1055* x2211 + x1074*x2340 + x1074*x2343 + x2300 - x2303*x234
+     &5 + x2341* x2353 + x2354)) + x196*(-x1055*x2119 + x1058*x2340 + x1
+     &058*x2343 + x2277 - x2286*x2345 + x2341*x2342 + x2352))
+      d2E(10) = x2339*(x1103*x1105*x2069 + x196*(x1054*x1114 + x2277 - x
+     &2285*x2356 + x2359) + x928*(x1054*x2325 + x2300 - x2302*x2356 + x2
+     &358))
+      d2E(11) = rho_c*(x1142*x1870 + x156*(x1141*x627 + x187*(-x1138*x61
+     &9 + x626*(-x1111 *x2405 - x1866*x2394 - x188*x2393 - x188*x2401 + 
+     &x2402*x620 + 0.0137136158172476d0*x2404 + x2413)) + x196*(-x1139*x
+     &2405 - x1766 *x2394 - x183*x2393 - x183*x2401 + x2402*x484 + 0.004
+     &8977199347313d0*x2404 + x2410) + x2360*x617)) + x1142
+      d2E(12) = x2339*(x1141*x1868 + x196*(-x1139*x2421 - x1766*x2417 - 
+     &x183*x2416 - x183*x2420 + x2425) + x2360*x924 + x928*(-x1111*x2421
+     & - x1866* x2417 - x188*x2416 - x188*x2420 + x2424))
+      d2E(13) = x2339*(x1069*x2360 + x1079*x1141 + x187*(x1138*x2210 + x
+     &626*(x1074*x2429 - x1137*x2211 + x159*x2446 - x2304*x2432 + x2447 
+     &+ x2448)) + x196 *(x1058*x2429 - x1137*x2119 - x2289*x2432 + x2426
+     &*x2428 + x2440 + x2445))
+      d2E(14) = x2339*(x1105*x2360 + x1141*x2308 + x196*(x1058*x2452 + x
+     &2426*x2454 + x2440 + x2453) + x928*(x1074*x2452 + 0.00029851310917
+     &9468d0*x2284 *x2347*x2430 + x2447 + x2451))
+      d2E(15) = x2339*(x1138*x1141*x2069 + x196*(-x1136*x2408 - x183*x24
+     &64 - x2455*x2457 + x2465) + x928*(-x1136*x2411 - x188*x2464 - x245
+     &5*x2456 + x2459 ))
+      d2E(16) = rho_c*(x1155*x1870 + x156*(x1148*x627 + x1154*x617 + x18
+     &7*(-x1151*x619 + x1153*x2209 - x2476*x625 + x626*(x1313*x2471 + x1
+     &314*x2471 - 0.2625d0*x2466 + x2474)) + x196*(x1313*x2467 + x1314*x
+     &2467 - 0.09375d0*x2466 + x2470))) + x1155
+      d2E(17) = x2339*(x1148*x1868 + x1154*x924 + x196*(x1783*x2467 + x1
+     &784*x2467 + x2479) - x2251*x2476 + x928*(x1783*x2471 + x1784*x2471
+     & + x2478))
+      d2E(18) = x2339*(x1069*x1154 + x1079*x1148 + x187*(-x1078*x2476 + 
+     &x1151*x2210 - x191*x2488 + x626*(x180*x2490 - x2483*x2491 + x2489 
+     &+ x2492)) + x196*(x180*x2481 + x2480 - x2482*x2483 + x2486))
+      d2E(19) = x2339*(-x1103*x2493 + x1105*x1154 + x1148*x2308 + x196*(
+     &x2480 - x2494* x2498 + x2499) + x928*(x2489 - x2494*x2495 + x2497)
+     &)
+      d2E(20) = x2339*(-x1138*x2493 + x1141*x1154 + x1148*x2360 + x196*(
+     &x2289*x2500 + x2402*x2467 + x2504) + x928*(x2304*x2500 + x2402*x24
+     &71 + x2503))
+      d2E(21) = x2339*(2.0d0*x1148*x1154 + x187*(-x1151*x2508 + x191*x25
+     &10 + x626*( -0.2625d0*x2505 + x2509)) + x196*(-0.09375d0*x2505 + x
+     &2507))
       end if
       if ((PBE_alpha_value .ge. PBE_value) .and. (PBE_beta_value .lt. PB
      &E_value)) then
-      E = x768
-      d1E(1) = x776
-      d1E(3) = x787
-      d1E(6) = x793
-      d2E(1) = x798
-      d2E(4) = x806
-      d2E(6) = x810
-      d2E(16) = x812
-      d2E(18) = x816
-      d2E(21) = x817
+      E = rho_c*x2518
+      d1E(1) = rho_c*(x1870*x2517 + x2532 + x842) + x2518
+      d1E(2) = rho_c*x2541
+      d1E(3) = rho_c*x2552
+      d1E(4) = rho_c*x2561
+      d1E(5) = rho_c*x2566
+      d1E(6) = rho_c*x2570
+      d2E(1) = rho_c*(x1484*x2517 + x1485*x2532 - x1486*x2517 + x156*(x1
+     &483 + x2514*( x1476*x2515 - x1477*x2530 + x626*(x1478*x2527 + x147
+     &8*x2586 - x1479*x2572 + x1482 - x1866*x2585 - x188*x2584 - 0.525d0
+     &*x2571)) + x2516*(-x1158*x2572 + x1312*x2527 + x1312*x2586 + x1475
+     & - x1766 *x2585 - x183*x2584 - 0.1875d0*x2571) + 2.0d0*x2529*x2531
+     &) + x1727) + x1485*x2517 + x1730 + 2.0d0*x2532
+      d2E(2) = rho_c*(x156*(x1869 + x2514*(-x2538*x619 + x626*(-x1866*x2
+     &601 - x1866* x2602 - x1866*x2603 + x1867 - x188*x2600 + x2536*x620
+     & + x2604* x620)) + x2516*(-x1766*x2601 - x1766*x2602 - x1766*x2603
+     & - x183* x2600 + x1865 + x2536*x484 + x2604*x484) + x2529*x2605 + 
+     &x2531* x2537) + x1870*x2540 + x1990) + x2541
+      d2E(3) = rho_c*(x156*(x2069*x2537*x2538 + x2071 + x2516*(-x1158*x2
+     &606 - x1766* x2614 - x183*x2613 + x2068) + x2539*(-x1479*x2606 - x
+     &1866*x2614 - x188*x2613 + x2070)) + x2118)
+      d2E(4) = rho_c*(x156*(x2216 + x2514*(-x1071*x2626 + x2210*x2530 - 
+     &x2549*x619 + x626*(x1074*x2624 - x1866*x2619 - x1866*x2620 - x188*
+     &x2618 - x2211*x2526 - x2211*x2615 - x2212*x2512 + x2215 + 0.2625d0
+     &*x2622 + x2623*x620)) + x2516*(x1058*x2624 - x1766*x2619 - x1766*x
+     &2620 - x183*x2618 - x2119*x2526 - x2119*x2615 + x2207 - x2512*x262
+     &5 + 0.09375d0*x2622 + x2623*x484) + x2529*x2550 + x2531*x2547) + x
+     &1870*x2551 + x2231) + x2552
+      d2E(5) = rho_c*(x156*(x2210*x2633 + x2252 + x2516*(x1058*x2632 - x
+     &1766*x2630 - x1766*x2631 - x183*x2629 - x2119*x2535 - x2119*x2627 
+     &+ x2248) + x2537*x2550 + x2539*(x1074*x2632 - x1866*x2630 - x1866*
+     &x2631 - x188*x2629 - x2211*x2535 - x2211*x2627 + x2250) + x2547*x2
+     &605) + x2255)
+      d2E(6) = rho_c*(x156*(x2306 + x2514*(x2298*x2640 + x2299*x2549 + x
+     &626*(-x188* x2636 + x2214*x2544 + x2301*x2638 - x2302*x2639 + x230
+     &5 - x2548 - 0.175d0*x2634)) + x2516*(-x183*x2636 + x2205*x2544 + x
+     &2279*x2638 - x2285*x2639 + x2296 - x2542 - 0.0625d0*x2634) + 2.0d0
+     &*x2547* x2550) + x2307)
+      d2E(7) = rho_c*(x156*(x2514*(-x2558*x619 + x626*(x1074*x2647 - x18
+     &66*x2644 - x2324*x2512 + x2327 + 0.0020403265883211d0*x2646 - 0.00
+     &0680108862773701d0*x2651 + x2652)) + x2516*(x1058*x2647 - x1766*x2
+     &644 + x2323 - x2512*x2648 + x2643 + 0.000728688067257537d0*x2646 -
+     & 0.000242896022419179d0*x2651) + x2529*x2641 + x2531*x2560) + x187
+     &0*x2561) + x2561
+      d2E(8) = x2339*(x2516*(x1058*x2654 - x1766*x2653 + x2338 + x2643 -
+     & 0.000242896022419179d0*x2655) + x2537*x2641 + x2539*(x1074*x2654 
+     &- x1866*x2653 + x2337 + x2652 - 0.000680108862773701d0*x2655) + x2
+     &560*x2605)
+      d2E(9) = x2339*(x2514*(x2210*x2558 + x626*(x1074*x2657 - x188*x265
+     &6 - x2302*x2661 + x2353*x2658 + x2354 - x2554*x2664 + 3.5530482506
+     &6047d-5*x2663 )) + x2516*(x1058*x2657 - x183*x2656 - x2285*x2661 +
+     & x2342*x2658 + x2352 - x2659*x2660 + 1.26894580380731d-5*x2663) + 
+     &x2547*x2641 + x2550*x2560)
+      d2E(10) = x2339*(x2069*x2558*x2560 + x2516*(-x2285*x2667 + x2359 -
+     & x2559*x2670 - x2559*x2671 + x2665*x2672) + x2539*(-x2302*x2667 + 
+     &x2358 + x2554* x2666 - x2556*x2670 - x2556*x2671))
+      d2E(11) = rho_c*(x156*(x2514*(-x2564*x619 + x626*(-x1111*x2681 - x
+     &1866*x2676 + x2413 + 0.0020403265883211d0*x2677 - 0.00068010886277
+     &3701d0*x2679 + 0.0137136158172476d0*x2680 + x2682)) + x2516*(-x113
+     &9*x2681 - x1766*x2676 + x2410 + x2675 + 0.000728688067257537d0*x26
+     &77 - 0.000242896022419179d0*x2679 + 0.0048977199347313d0*x2680) + 
+     &x2529*x2673 + x2531*x2565) + x1870*x2566) + x2566
+      d2E(12) = x2339*(x2516*(-x1139*x2685 - x1766*x2683 + x2425 + x2675
+     & - 0.000242896022419179d0*x2684) + x2537*x2673 + x2539*(-x1111*x26
+     &85 - x1866*x2683 + x2424 + x2682 - 0.000680108862773701d0*x2684) +
+     & x2565*x2605)
+      d2E(13) = x2339*(x2514*(x2210*x2564 + x626*(-x1111*x2689 - x188*x2
+     &686 + x2446* x2512 + x2448 - x2562*x2664 - x2692*x2694 + 3.5530482
+     &5066047d-5* x2693)) + x2516*(-x1139*x2689 - x183*x2686 + x2428*x26
+     &88 + x2445 - x2659*x2687 - x2691*x2692 + 1.26894580380731d-5*x2693
+     &) + x2547* x2673 + x2550*x2565)
+      d2E(14) = x2339*(x2516*(x2453 + x2454*x2688 - x2559*x2699 - x2559*
+     &x2700 - x2672* x2696 + 1.26894580380731d-5*x2695) + x2539*(x2451 +
+     & x2512*x2698 - x2554*x2697 - x2556*x2699 - x2556*x2700 + 3.5530482
+     &5066047d-5* x2695) + x2560*x2673 + x2565*x2641)
+      d2E(15) = x2339*(x2069*x2564*x2565 + x2516*(-x2457*x2661 + x2465 -
+     & x2559*x2702 - x2559*x2703 - 5.07578321522924d-5*x2701) + x2539*(-
+     &x2456*x2661 + x2459 - x2556*x2702 - x2556*x2703 - 0.00014212193002
+     &6419d0*x2701 ))
+      d2E(16) = rho_c*(x156*(x2514*(x1153*x2626 - x2476*x2530 - x2568*x6
+     &19 + x626*(x2471 *x2527 + x2471*x2586 + x2474 - 0.2625d0*x2704)) +
+     & x2516*(x2467* x2527 + x2467*x2586 + x2470 - 0.09375d0*x2704) + x2
+     &529*x2569 + x2531*x2567) + x1870*x2570) + x2570
+      d2E(17) = x2339*(-x2476*x2633 + x2516*(x2467*x2536 + x2467*x2604 +
+     & x2479) + x2537* x2569 + x2539*(x2471*x2536 + x2471*x2604 + x2478)
+     & + x2567*x2605)
+      d2E(18) = x2339*(x2514*(x2210*x2568 - x2476*x2549 - x2488*x2640 + 
+     &x626*(x2471* x2623 + x2490*x2513 - x2491*x2705 + x2492)) + x2516*(
+     &x2467*x2623 + x2481*x2513 - x2482*x2705 + x2486) + x2547*x2569 + x
+     &2550*x2567)
+      d2E(19) = x2339*(x2516*(-x2498*x2709 + x2499 + x2660*x2707) + x253
+     &9*(-x2495*x2709 + x2497 + x2554*x2708) - x2558*x2706 + x2560*x2569
+     & + x2567*x2641)
+      d2E(20) = x2339*(x2516*(x2501*x2691 + x2504 + x2687*x2707) + x2539
+     &*(x2501*x2694 + x2503 + x2562*x2708) - x2564*x2706 + x2565*x2569 +
+     & x2567*x2673)
+      d2E(21) = x2339*(x2514*(-x2508*x2568 + x2510*x2640 + x626*(x2509 -
+     & 0.2625d0*x2710 )) + x2516*(x2507 - 0.09375d0*x2710) + 2.0d0*x2567
+     &*x2569)
       end if
       if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .ge. PB
      &E_value)) then
-      E = x768
-      d1E(1) = x776
-      d1E(3) = x787
-      d1E(6) = x793
-      d2E(1) = x798
-      d2E(4) = x806
-      d2E(6) = x810
-      d2E(16) = x812
-      d2E(18) = x816
-      d2E(21) = x817
+      E = rho_c*x2718
+      d1E(1) = rho_c*(x1870*x2717 + x2727 + x842) + x2718
+      d1E(2) = rho_c*x2736
+      d1E(3) = rho_c*x2747
+      d1E(4) = rho_c*x2753
+      d1E(5) = rho_c*x2758
+      d1E(6) = rho_c*x2762
+      d2E(1) = rho_c*(x1484*x2717 + x1485*x2727 - x1486*x2717 + x156*(x1
+     &483 + x2714*( x1476*x2715 - x1477*x2725 + x626*(x1478*x2722 + x147
+     &8*x2768 - x1479*x2764 + x1482 - x1866*x2767 - x188*x2766 - 0.525d0
+     &*x2763)) + x2716*(-x1158*x2764 + x1312*x2722 + x1312*x2768 + x1475
+     & - x1766 *x2767 - x183*x2766 - 0.1875d0*x2763) + 2.0d0*x2724*x2726
+     &) + x1727) + x1485*x2717 + x1730 + 2.0d0*x2727
+      d2E(2) = rho_c*(x156*(x1869 + x2714*(-x2733*x619 + x626*(-x1866*x2
+     &771 - x1866* x2772 - x1866*x2773 + x1867 - x188*x2770 + x2731*x620
+     & + x2774* x620)) + x2716*(-x1766*x2771 - x1766*x2772 - x1766*x2773
+     & - x183* x2770 + x1865 + x2731*x484 + x2774*x484) + x2724*x2775 + 
+     &x2726* x2732) + x1870*x2735 + x1990) + x2736
+      d2E(3) = rho_c*(x156*(x2069*x2732*x2733 + x2071 + x2716*(-x1158*x2
+     &776 - x1766* x2780 - x183*x2779 + x2068) + x2734*(-x1479*x2776 - x
+     &1866*x2780 - x188*x2779 + x2070)) + x2118)
+      d2E(4) = rho_c*(x156*(x2216 + x2714*(-x1071*x2790 + x2210*x2725 - 
+     &x2744*x619 + x626*(x1074*x2789 - x1866*x2784 - x1866*x2785 - x188*
+     &x2783 - x2211*x2721 - x2211*x2781 - x2212*x2712 + x2215 + 0.2625d0
+     &*x2787 + x2788*x620)) + x2716*(x1058*x2789 - x1766*x2784 - x1766*x
+     &2785 - x183*x2783 - x2119*x2721 - x2119*x2781 + x2207 - x2625*x271
+     &2 + 0.09375d0*x2787 + x2788*x484) + x2724*x2745 + x2726*x2742) + x
+     &1870*x2746 + x2231) + x2747
+      d2E(5) = rho_c*(x156*(x2210*x2797 + x2252 + x2716*(x1058*x2796 - x
+     &1766*x2794 - x1766*x2795 - x183*x2793 - x2119*x2730 - x2119*x2791 
+     &+ x2248) + x2732*x2745 + x2734*(x1074*x2796 - x1866*x2794 - x1866*
+     &x2795 - x188*x2793 - x2211*x2730 - x2211*x2791 + x2250) + x2742*x2
+     &775) + x2255)
+      d2E(6) = rho_c*(x156*(x2306 + x2714*(x2298*x2804 + x2299*x2744 + x
+     &626*(-x188* x2800 + x2214*x2739 + x2301*x2802 - x2302*x2803 + x230
+     &5 - x2743 - 0.175d0*x2798)) + x2716*(-x183*x2800 + x2205*x2739 + x
+     &2279*x2802 - x2285*x2803 + x2296 - x2737 - 0.0625d0*x2798) + 2.0d0
+     &*x2742* x2745) + x2307)
+      d2E(7) = rho_c*(x156*(x2714*(-x2751*x619 + x626*(x1074*x2809 - x18
+     &66*x2807 - x188 *x2806 - x2324*x2712 + x2327 + 0.0020403265883211d
+     &0*x2808 - 0.000680108862773701d0*x2811)) + x2716*(x1058*x2809 - x1
+     &766*x2807 - x183*x2806 + x2323 - x2648*x2712 + 0.00072868806725753
+     &7d0*x2808 - 0.000242896022419179d0*x2811) + x2724*x2805 + x2726*x2
+     &752) + x1870*x2753) + x2753
+      d2E(8) = x2339*(x2716*(x1058*x2814 - x1766*x2813 - x183*x2812 + x2
+     &338 - 0.000242896022419179d0*x2815) + x2732*x2805 + x2734*(x1074*x
+     &2814 - x1866*x2813 - x188*x2812 + x2337 - 0.000680108862773701d0*x
+     &2815 ) + x2752*x2775)
+      d2E(9) = x2339*(x2714*(x2210*x2751 + x626*(x1074*x2817 - x188*x281
+     &6 - x2302*x2820 + x2353*x2818 + x2354 - x2664*x2749 + 3.5530482506
+     &6047d-5*x2821 )) + x2716*(x1058*x2817 - x183*x2816 - x2285*x2820 +
+     & x2342*x2818 + x2352 - x2749*x2819 + 1.26894580380731d-5*x2821) + 
+     &x2742*x2805 + x2745*x2752)
+      d2E(10) = x2339*(x2069*x2751*x2752 + x2716*(-x2285*x2822 + x2359 -
+     & x2559*x2825 - x2559*x2826 + x2665*x2827) + x2734*(-x2302*x2822 + 
+     &x2358 - x2556* x2825 - x2556*x2826 + x2666*x2749))
+      d2E(11) = rho_c*(x156*(x2714*(-x2756*x619 + x626*(-x1111*x2835 - x
+     &1866*x2830 - x188*x2829 + x2413 + 0.0020403265883211d0*x2831 - 0.0
+     &00680108862773701d0*x2833 + 0.0137136158172476d0*x2834)) + x2716*(
+     &-x1139*x2835 - x1766*x2830 - x183*x2829 + x2410 + 0.00072868806725
+     &7537d0*x2831 - 0.000242896022419179d0*x2833 + 0.0048977199347313d0
+     &*x2834) + x2724*x2828 + x2726*x2757) + x1870* x2758) + x2758
+      d2E(12) = x2339*(x2716*(-x1139*x2839 - x1766*x2837 - x183*x2836 + 
+     &x2425 - 0.000242896022419179d0*x2838) + x2732*x2828 + x2734*(-x111
+     &1*x2839 - x1866*x2837 - x188*x2836 + x2424 - 0.000680108862773701d
+     &0*x2838 ) + x2757*x2775)
+      d2E(13) = x2339*(x2714*(x2210*x2756 + x626*(-x1111*x2842 - x188*x2
+     &840 - x2304* x2844 + x2446*x2712 + x2448 - x2664*x2754 + 3.5530482
+     &5066047d-5* x2845)) + x2716*(-x1139*x2842 - x183*x2840 - x2289*x28
+     &44 + x2428* x2841 + x2445 - x2754*x2819 + 1.26894580380731d-5*x284
+     &5) + x2742* x2828 + x2745*x2757)
+      d2E(14) = x2339*(x2716*(x2453 + x2454*x2841 - x2559*x2847 - x2559*
+     &x2848 - x2696* x2827 + 1.26894580380731d-5*x2846) + x2734*(x2451 -
+     & x2556*x2847 - x2556*x2848 - x2697*x2749 + x2698*x2712 + 3.5530482
+     &5066047d-5* x2846) + x2752*x2828 + x2757*x2805)
+      d2E(15) = x2339*(x2069*x2756*x2757 + x2716*(-x2457*x2820 + x2465 -
+     & x2559*x2850 - x2559*x2851 - 5.07578321522924d-5*x2849) + x2734*(-
+     &x2456*x2820 + x2459 - x2556*x2850 - x2556*x2851 - 0.00014212193002
+     &6419d0*x2849 ))
+      d2E(16) = rho_c*(x156*(x2714*(x1153*x2790 - x2476*x2725 - x2760*x6
+     &19 + x626*(x2471 *x2722 + x2471*x2768 + x2474 - 0.2625d0*x2852)) +
+     & x2716*(x2467* x2722 + x2467*x2768 + x2470 - 0.09375d0*x2852) + x2
+     &724*x2761 + x2726*x2759) + x1870*x2762) + x2762
+      d2E(17) = x2339*(-x2476*x2797 + x2716*(x2467*x2731 + x2467*x2774 +
+     & x2479) + x2732* x2761 + x2734*(x2471*x2731 + x2471*x2774 + x2478)
+     & + x2759*x2775)
+      d2E(18) = x2339*(x2714*(x2210*x2760 - x2476*x2744 - x2488*x2804 + 
+     &x626*(x2471* x2788 + x2490*x2713 - x2491*x2853 + x2492)) + x2716*(
+     &x2467*x2788 + x2481*x2713 - x2482*x2853 + x2486) + x2742*x2761 + x
+     &2745*x2759)
+      d2E(19) = x2339*(x2716*(-x2498*x2855 + x2499 + x2749*x2856) + x273
+     &4*(-x2495*x2855 + x2497 + x2708*x2749) - x2751*x2854 + x2752*x2761
+     & + x2759*x2805)
+      d2E(20) = x2339*(x2716*(x2289*x2857 + x2504 + x2754*x2856) + x2734
+     &*(x2304*x2857 + x2503 + x2708*x2754) - x2756*x2854 + x2757*x2761 +
+     & x2759*x2828)
+      d2E(21) = x2339*(x2714*(-x2508*x2760 + x2510*x2804 + x626*(x2509 -
+     & 0.2625d0*x2858 )) + x2716*(x2507 - 0.09375d0*x2858) + 2.0d0*x2759
+     &*x2761)
       end if
       if ((PBE_alpha_value .lt. PBE_value) .and. (PBE_beta_value .lt. PB
      &E_value)) then
-      E = rho_c*x823
-      d1E(1) = rho_c*(x414 + x704*x822 + x828) + x823
-      d1E(3) = rho_c*x835
-      d1E(6) = rho_c*x840
-      d2E(1) = rho_c*(x579*x822 + x580*x828 - x581*x822 + x670 + x69*(x5
-     &78 + x819*(x286 *(0.175d0*x568 + x573 - 0.2625d0*x574 - 0.0669375d
-     &0*x841) + x571* x820 - x572*x826) + x821*(x565 + 0.0625d0*x568 - 0
-     &.09375d0*x574 - 0.02390625d0*x841) + 2.0d0*x825*x827)) + x580*x822
-     & + x671 + 2.0d0 *x828
-      d2E(4) = rho_c*(x69*(x703 + x819*(-x281*x832 + x286*(-0.0875d0*x69
-     &2 + 0.175d0* x693 + 0.0875d0*x694 + x701 - 0.0669375d0*x842) - x69
-     &6*x843 + x744*x826) + x821*(x691 - 0.03125d0*x692 + 0.0625d0*x693 
-     &+ 0.03125d0*x694 - 0.02390625d0*x842) + x825*x833 + x827*x830) + x
-     &704*x834 + x711) + x835
-      d2E(6) = rho_c*(x69*(x731 + x819*(x286*(-x449*x721 - x449*x723 - 0
-     &.175d0*x719 + x729 - x831) + x727*x844 + x728*x832) + x821*(-x438*
-     &x721 - x438* x723 - 0.0625d0*x719 + x724 - x829) + 2.0d0*x830*x833
-     &) + x732)
-      d2E(16) = rho_c*(x69*(x819*(-x281*x838 + x286*(-0.175d0*x734 + 0.0
-     &875d0*x737) + x736*x843 - x749*x826) + x821*(-0.0625d0*x734 + 0.03
-     &125d0*x737) + x825*x839 + x827*x837) + x704*x840) + x840
-      d2E(18) = x750*(x819*(x286*(0.175d0*x742 + 0.0875d0*x747) + x744*x
-     &838 - x746*x844 - x749*x832) + x821*(0.0625d0*x742 + 0.03125d0*x74
-     &7) + x830*x839 + x833*x837)
-      d2E(21) = x750*(-0.09375d0*x745*x821*x845 + x819*(x286*(x756 - x75
-     &7*x845) - x755* x838 + x758*x844) + 0.0625d0*x836*x839)
+      E = rho_c*x2865
+      d1E(1) = rho_c*(x1870*x2864 + x2873 + x842) + x2865
+      d1E(2) = rho_c*x2881
+      d1E(3) = rho_c*x2891
+      d1E(4) = rho_c*x2895
+      d1E(5) = rho_c*x2899
+      d1E(6) = rho_c*x2903
+      d2E(1) = rho_c*(x1484*x2864 + x1485*x2873 - x1486*x2864 + x156*(x1
+     &483 + x2861*( x1476*x2862 - x1477*x2871 + x626*(x1478*x2868 + x147
+     &8*x2909 - x1479*x2905 + x1482 - x1866*x2908 - x188*x2907 - 0.525d0
+     &*x2904)) + x2863*(-x1158*x2905 + x1312*x2868 + x1312*x2909 + x1475
+     & - x1766 *x2908 - x183*x2907 - 0.1875d0*x2904) + 2.0d0*x2870*x2872
+     &) + x1727) + x1485*x2864 + x1730 + 2.0d0*x2873
+      d2E(2) = rho_c*(x156*(x1869 + x2861*(-x2878*x619 + x626*(-x1866*x2
+     &911 - x1866* x2912 - x1866*x2913 + x1867 - x188*x2910 + x2876*x620
+     & + x2914* x620)) + x2863*(-x1766*x2911 - x1766*x2912 - x1766*x2913
+     & - x183* x2910 + x1865 + x2876*x484 + x2914*x484) + x2870*x2915 + 
+     &x2872* x2877) + x1870*x2880 + x1990) + x2881
+      d2E(3) = rho_c*(x156*(x2069*x2877*x2878 + x2071 + x2863*(-x1158*x2
+     &916 - x1766* x2918 - x183*x2917 + x2068) + x2879*(-x1479*x2916 - x
+     &1866*x2918 - x188*x2917 + x2070)) + x2118)
+      d2E(4) = rho_c*(x156*(x2216 + x2861*(-x1071*x2927 + x2210*x2871 - 
+     &x2888*x619 + x626*(x1074*x2926 - x1866*x2921 - x1866*x2922 - x188*
+     &x2920 - x2211*x2867 - x2211*x2919 - x2212*x2859 + x2215 + 0.2625d0
+     &*x2924 + x2925*x620)) + x2863*(x1058*x2926 - x1766*x2921 - x1766*x
+     &2922 - x183*x2920 - x2119*x2867 - x2119*x2919 + x2207 - x2625*x285
+     &9 + 0.09375d0*x2924 + x2925*x484) + x2870*x2889 + x2872*x2886) + x
+     &1870*x2890 + x2231) + x2891
+      d2E(5) = rho_c*(x156*(x2210*x2933 + x2252 + x2863*(x1058*x2932 - x
+     &1766*x2930 - x1766*x2931 - x183*x2929 - x2119*x2875 - x2119*x2928 
+     &+ x2248) + x2877*x2889 + x2879*(x1074*x2932 - x1866*x2930 - x1866*
+     &x2931 - x188*x2929 - x2211*x2875 - x2211*x2928 + x2250) + x2886*x2
+     &915) + x2255)
+      d2E(6) = rho_c*(x156*(x2306 + x2861*(x2298*x2939 + x2299*x2888 + x
+     &626*(-x188* x2935 + x2214*x2883 + x2301*x2937 - x2302*x2938 + x230
+     &5 - x2887 - 0.175d0*x2934)) + x2863*(-x183*x2935 + x2205*x2883 + x
+     &2279*x2937 - x2285*x2938 + x2296 - x2882 - 0.0625d0*x2934) + 2.0d0
+     &*x2886* x2889) + x2307)
+      d2E(7) = rho_c*(x156*(x2861*(-x2893*x619 + x626*(x1074*x2942 - x18
+     &66*x2941 - x2324*x2859 + x2327)) + x2863*(x1058*x2942 - x1766*x294
+     &1 + x2323 - x2648*x2859) + x2870*x2940 + x2872*x2894) + x1870*x289
+     &5) + x2895
+      d2E(8) = x2339*(x2863*(x1058*x2944 - x1766*x2943 + x2338) + x2877*
+     &x2940 + x2879*( x1074*x2944 - x1866*x2943 + x2337) + x2894*x2915)
+      d2E(9) = x2339*(x2861*(x2210*x2893 + x626*(x1074*x2945 - x2302*x29
+     &47 + x2353* x2946 + x2354)) + x2863*(x1058*x2945 - x2285*x2947 + x
+     &2342*x2946 + x2352) + x2886*x2940 + x2889*x2894)
+      d2E(10) = x2339*(x2069*x2893*x2894 + x2863*(-x2285*x2948 + x2359) 
+     &+ x2879*(-x2302* x2948 + x2358))
+      d2E(11) = rho_c*(x156*(x2861*(-x2897*x619 + x626*(-x1111*x2952 - x
+     &1866*x2950 + x2413 + 0.0137136158172476d0*x2951)) + x2863*(-x1139*
+     &x2952 - x1766*x2950 + x2410 + 0.0048977199347313d0*x2951) + x2870*
+     &x2949 + x2872*x2898) + x1870*x2899) + x2899
+      d2E(12) = x2339*(x2863*(-x1139*x2954 - x1766*x2953 + x2425) + x287
+     &7*x2949 + x2879* (-x1111*x2954 - x1866*x2953 + x2424) + x2898*x291
+     &5)
+      d2E(13) = x2339*(x2861*(x2210*x2897 + x626*(-x1111*x2956 - x2304*x
+     &2958 + x2446* x2859 + x2448)) + x2863*(-x1139*x2956 - x2289*x2958 
+     &+ x2428*x2955 + x2445) + x2886*x2949 + x2889*x2898)
+      d2E(14) = x2339*(x2863*(x2453 + x2454*x2955) + x2879*(x2451 + x269
+     &8*x2859) + x2894 *x2949 + x2898*x2940)
+      d2E(15) = x2339*(x2069*x2897*x2898 + x2863*(-x2457*x2947 + x2465) 
+     &+ x2879*(-x2456* x2947 + x2459))
+      d2E(16) = rho_c*(x156*(x2861*(x1153*x2927 - x2476*x2871 - x2901*x6
+     &19 + x626*(x2471 *x2868 + x2471*x2909 + x2474 - 0.2625d0*x2959)) +
+     & x2863*(x2467* x2868 + x2467*x2909 + x2470 - 0.09375d0*x2959) + x2
+     &870*x2902 + x2872*x2900) + x1870*x2903) + x2903
+      d2E(17) = x2339*(-x2476*x2933 + x2863*(x2467*x2876 + x2467*x2914 +
+     & x2479) + x2877* x2902 + x2879*(x2471*x2876 + x2471*x2914 + x2478)
+     & + x2900*x2915)
+      d2E(18) = x2339*(x2861*(x2210*x2901 - x2476*x2888 - x2488*x2939 + 
+     &x626*(x2471* x2925 + x2490*x2860 - x2491*x2960 + x2492)) + x2863*(
+     &x2467*x2925 + x2481*x2860 - x2482*x2960 + x2486) + x2886*x2902 + x
+     &2889*x2900)
+      d2E(19) = x2339*(x2863*(-x2498*x2962 + x2499) + x2879*(-x2495*x296
+     &2 + x2497) - x2893*x2961 + x2894*x2902 + x2900*x2940)
+      d2E(20) = x2339*(x2863*(x2289*x2963 + x2504) + x2879*(x2304*x2963 
+     &+ x2503) - x2897 *x2961 + x2898*x2902 + x2900*x2949)
+      d2E(21) = x2339*(x2861*(-x2508*x2901 + x2510*x2939 + x626*(x2509 -
+     & 0.2625d0*x2964 )) + x2863*(x2507 - 0.09375d0*x2964) + 2.0d0*x2900
+     &*x2902)
       end if
       end subroutine

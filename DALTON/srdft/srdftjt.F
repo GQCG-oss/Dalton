@@ -1324,7 +1324,7 @@ C Linear transformation -----------------------------------------------------
               write(lupri,*) 'hjaaj: rho ',rho(1:4)
               write(lupri,*) 'hjaaj: rhgc',rhg(1:3,1)
               write(lupri,*) 'hjaaj: grd2',grd2(1:6)
-              write(lupri,*) 'hjaaj: debug',tau(1:4)
+              write(lupri,*) 'debug: tau',tau(1:4)
               write(lupri,*) 'hjaaj: Ex, Ec, gga, spindns, triplet',
      &          Ex, Ec, dogga, dft_spindns, triplet
               write(lupri,*) 'debug: do_metagga',do_metagga
