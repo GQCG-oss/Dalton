@@ -61,6 +61,11 @@ pcmfil=''
 SSH=ssh
 SCP=scp
 
+# DALTON_NUM_MPI_PROCS is deprecated, print a warning if it is used
+if [ -n "$DALTON_NUM_MPI_PROCS" ]; then
+    echo "WARNING: DALTON_NUM_MPI_PROCS is deprecated and will be removed in future releases, use DALTON_LAUNCHER instead"
+fi
+
 #default values for options
 optd=0
 optD=1
@@ -132,7 +137,7 @@ usage (){
         echo '    DALTON_USE_GLOBAL_SCRATCH : use global scratch directory, do not copy any files to worker nodes'
         echo '    DALTON_NODELIST           : list of nodes, '$dalton'.x will be copied to DALTON_TMPDIR on each node'
         echo '                                unless DALTON_USE_GLOBAL_SCRATCH is defined'
-        echo '    DALTON_NUM_MPI_PROCS      : number of MPI processes (overridden by -N flag)'
+        echo '    DALTON_NUM_MPI_PROCS      : number of MPI processes (this variable is deprecated; overridden by -N flag)'
         echo '    DALTON_LAUNCHER           : launcher for the '$dalton'.x binary (if defined, DALTON_NUM_MPI_PROCS or -N flag not allowed)'
          }
 #

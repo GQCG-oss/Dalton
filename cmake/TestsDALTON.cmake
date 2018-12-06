@@ -17,6 +17,17 @@ macro(add_dalton_runtest _name _labels)
     endif()
 endmacro()
 
+# v2 of runtest does not have any --log functionality
+macro(add_dalton_runtest_v2 _name _labels)
+    add_test(
+        ${_name}
+        python ${CMAKE_SOURCE_DIR}/DALTON/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name} --verbose)
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
+
 # all tests here should contain the label "dalton", except benchmark tests.
 
 # all tests with label short should run in less than 30 seconds sequential on a 2GHz CPU
@@ -32,7 +43,8 @@ endmacro()
 # tests which are run only on master
 
 add_dalton_runtest(dft_ac_grac                   "dalton;runtest;dft;medium")
-add_dalton_runtest(dft_b3lyp_cart                "dalton;runtest;dft;short")
+add_dalton_runtest(dft_ac_multpole               "dalton;runtest;dft;medium")
+add_dalton_runtest_v2(dft_b3lyp_cart             "dalton;runtest;dft;short")
 add_dalton_runtest(dft_b3lyp_magsus_nosym        "dalton;runtest;dft;short")
 add_dalton_runtest(dft_b3lyp_molhes_nosym        "dalton;runtest;dft;medium")
 add_dalton_runtest(dft_b3lyp_nosym               "dalton;runtest;dft;short")
@@ -115,7 +127,7 @@ add_dalton_runtest(geoopt_preopt2                "dalton;runtest;geo;short")
 add_dalton_test(geoopt_prop                      "dalton;geo;short;essential")
 add_dalton_test(geoopt_prop2                     "dalton;geo;short")
 add_dalton_test(geoopt_prop3                     "dalton;geo;medium")
-add_dalton_test(geoopt_prop3_ex                  "dalton;geo;long")
+add_dalton_runtest_v2(geoopt_prop3_ex            "dalton;runtest;geo;long")
 add_dalton_test(geoopt_redintmin                 "dalton;geo;short")
 add_dalton_test(geoopt_redintsad                 "dalton;geo;short")
 add_dalton_test(geoopt_vrml                      "dalton;geo;short;essential")
@@ -123,6 +135,7 @@ add_dalton_test(geoopt_cartmin                   "dalton;geo;medium")
 add_dalton_test(geoopt_dckerr                    "dalton;geo;short")
 add_dalton_runtest(geoopt_mp2froz                "dalton;runtest;geo;short")
 add_dalton_test(geoopt_symbrk                    "dalton;geo;short")
+add_dalton_runtest(geoopt_freeze                 "dalton;runtest;geo;short;essential")
 
 add_dalton_runtest(aba_prop_file                 "dalton;runtest;prop;short;essential")
 add_dalton_runtest(prop_ecd                      "dalton;runtest;prop;short")
