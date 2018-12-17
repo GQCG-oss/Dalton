@@ -1,4 +1,4 @@
-#define SRDFT_DEBUG 20
+#define SRDFT_DEBUG -1
 !
 !...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -448,6 +448,8 @@ C           DMAT(1,3) is the spin density matrix
          TAU(4) = 0.5d0 * ( TAU(1) - TAU(2) ) ! tau_b
          ! For small values of tau to avoid NaN
          do i = 1,4
+            ! this is not a stable condition. TPSSc and TPSSx
+            ! have reversed tau dependency.
             if (abs(tau(i)) .lt. 1.d-30) tau(i) = 1.d-30
          end do
       ENDIF
@@ -475,12 +477,13 @@ C      Sum of exchange and correlation
           write(lupri,*)'rhoa, rhag ',rho(3),rhg(1:3,3)
           write(lupri,*)'rhob, rhbg ',rho(4),rhg(1:3,4)
           write(lupri,*)'grd2       ',grd2(1:6)
+          write(lupri,*)'tau        ',tau(1:4)
           write(lupri,*)'Ex, ExInt',Ex,ExInt
           write(lupri,*)'Ec, EcInt',Ec,EcInt
           write(lupri,*)'WGHTX, WGHTC  ', WGHTX, WGHTC
-          write(lupri,*)'d1Exdrhoc  ...', d1Ex(1:5)
-          write(lupri,*)'d1Ecdrhoc  ...', d1Ec(1:5)
-          write(lupri,*)'d1Excdrhoc ...', d1Exc(1:5)
+          write(lupri,*)'d1Exdrhoc  ...', d1Ex(1:9)
+          write(lupri,*)'d1Ecdrhoc  ...', d1Ec(1:9)
+          write(lupri,*)'d1Excdrhoc ...', d1Exc(1:9)
        end if
 
 C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin components)
@@ -511,9 +514,15 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
           end if
        else ! if hfsrdft
           IF (DFT_SPINDNS) CALL QUIT('no HFsrDFT with open shells')
+          if (do_metagga) then ! MGGA, spin and closed shell is handled
+!                                in the same  subroutine for now
+             CALL DFTKSM_MGGASPIN(EXCMAT, GSO(KSO0), GSO(KSO1), 0.0d0,
+     &                            RHG, d1Exc, DFTHRL)
+          else
              CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
      &                d1Exc(1)  ,d1Exc(3)    ,DOGGA,FROMVX,DFTHRL)
 !                     d1Excdrhoc,d1Excdgrdcc,DOGGA,FROMVX,DFTHRL)
+          end if
        end if
 
       ENDIF  !DOERG

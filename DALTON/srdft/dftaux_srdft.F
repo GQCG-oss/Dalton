@@ -224,7 +224,7 @@ C
             END IF
             ! Meta-GGA tau part of FC
             DO I = 1, NBAST
-               EXCMAT(1,J,1) = EXCMAT(1,J,1) 
+               EXCMAT(I,J,1) = EXCMAT(I,J,1) 
      &                        + 0.5d0*VXT * (GAO1(J,1)*GAO1(I,1)
      &                                     + GAO1(J,2)*GAO1(I,2)
      &                                     + GAO1(J,3)*GAO1(I,3))
@@ -241,7 +241,7 @@ C     &                               + 2.0d0*GAO1(J,3)*GAO1(I,3)
             END IF
             ! Meta-GGA tau part of FCS
             DO I = 1, NBAST
-               EXCMAT(1,J,2) = EXCMAT(1,J,2) 
+               EXCMAT(I,J,2) = EXCMAT(I,J,2) 
      &                        + 0.5d0*VST * (GAO1(J,1)*GAO1(I,1)
      &                                     + GAO1(J,2)*GAO1(I,2)
      &                                     + GAO1(J,3)*GAO1(I,3))
