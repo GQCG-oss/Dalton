@@ -1,7 +1,5 @@
 # DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
-## [2018.2] (WIP on patch no. 2)
-
 ## [2018.1] (2019-01-12)
 
 ### Fixed
