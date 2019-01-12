@@ -1,8 +1,11 @@
 # DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
-## [2018.1] (WIP on patch no. 1)
+## [2018.2] (WIP on patch no. 2)
+
+## [2018.1] (2019-01-12)
 
 ### Fixed
+- Error in code for 2-el integral transformation level.
 - Error in export for FDE fixed.
 - Compilation with PGI compilers now possible (but code with pelib or qfit using gen1int is not working).
 
