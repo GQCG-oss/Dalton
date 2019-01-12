@@ -295,7 +295,7 @@ FSYM(getwa)(const INTEGER *unit, double *result, const INTEGER *addr,
 {
   size_t nbytes, con2;
   off64_t where, con1;
-  double start, end;
+  double start=0, end;
   struct w_file *file;
 
   if (first_call)
@@ -365,7 +365,7 @@ FSYM(putwa)(const INTEGER *unit, const double *source, const INTEGER *addr,
 {
   size_t nbytes,con2;
   off64_t where, con1;
-  double start, end;
+  double start=0, end;
   struct w_file *file;
 
   if (first_call)
