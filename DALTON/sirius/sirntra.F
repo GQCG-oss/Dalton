@@ -3437,7 +3437,7 @@ C
       ELSE IF (JTRSIR .EQ. 3) THEN ! (gg|aa) + <gg|aa>
          JTRLVL = 2
          KTRLVL = 1
-      ELSE IF (JTR2IR .EQ. 4) THEN ! (gg|oo) + <gg|oo>
+      ELSE IF (JTRSIR .EQ. 4) THEN ! (gg|oo) + <gg|oo>
          JTRLVL = 2
          KTRLVL = 0
       ELSE IF (JTRSIR .EQ. 5) THEN ! (gg|go)
