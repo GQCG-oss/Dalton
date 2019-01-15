@@ -11,9 +11,10 @@
 ## [2019.alpha] (Dalton2019 alpha)
 
 
-## [2018.1] (WIP on patch no. 1)
+## [2018.1] (2019-01-14)
 
 ### Fixed
+- Error in code for 2-el integral transformation level 4 (used in some cases for MCSCF). Error was not in Dalton2016.
 - Error in export for FDE fixed.
 - Compilation with PGI compilers now possible (but code with pelib or qfit using gen1int is not working).
 
