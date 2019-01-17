@@ -3306,7 +3306,8 @@ C
       KTRLVL = NTRLVL/100
 C
       IF (KTRLVL .LT. 0 .OR. KTRLVL .GT. 2) THEN
-         WRITE (LUPRI,*) 'Illegal KTRLVL in N_TRALIM, KTRLVL =',KTRLVL
+         WRITE (LUPRI,*) 'Illegal KTRLVL in N_TRALIM, KTRLVL,NTRLVL =',
+     &      KTRLVL,NTRLVL
          CALL QTRACE(LUPRI)
          CALL QUIT('FATAL ERROR N_TRALIM: Illegal KTRLVL')
       END IF
@@ -3420,7 +3421,10 @@ C        3       a        g        g        g      third-order
 C        4       g        g        g        g      full transf.
 C
 C
-#include "implicit.h"
+      IMPLICIT NONE
+#include "priunit.h"
+      INTEGER ITRSIR, NTRLVL
+      INTEGER JTRSIR, JTRLVL, KTRLVL
 C
       CALL QENTER('N_TRALVL')
       ! a: active, o:occupied, g:general in comments for JTRSIR
@@ -3450,6 +3454,10 @@ C
       ELSE IF (JTRSIR .GE. 7) THEN ! (gg|gg)
          JTRLVL = 4
          KTRLVL = 0  ! KTRLVL is inactive
+      ELSE
+         WRITE(LUPRI,*)
+     &   'ERROR: Undefined Sirius integral transformation level:',JTRSIR
+         CALL QUIT('ERROR: Undefined 2el transformation level')
       END IF
       NTRLVL = 100*KTRLVL + JTRLVL
       CALL QEXIT('N_TRALVL')
