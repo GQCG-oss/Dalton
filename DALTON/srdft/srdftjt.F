@@ -1360,6 +1360,17 @@ C Linear transformation -----------------------------------------------------
               write(lupri,*) 'debug: FAC_RB, FAC_SB',FAC_RB, FAC_SB
               write(lupri,*) 'hjaaj: current EXCMAT left corner; before'
               call output(excmat,1,5,1,5,nbast,nbast,1,lupri)
+
+              write(lupri,*) 'debug: d2Exc(23)*B4(2)', d2Exc(23)*B4(2)
+              write(lupri,*) 'debug: d2Exc(26)*B4(2)', d2Exc(26)*B4(2)
+              write(lupri,*) 'debug: d2Exc(23)*B0(2)', d2Exc(23)*B0(2)
+              write(lupri,*) 'debug: d2Exc(26)*BR(3)', d2Exc(26)*BR(3)
+              write(lupri,*) 'debug: d2Exc(28)*B4(2)', d2Exc(28)*B4(2)
+              write(lupri,*) 'debug: d2Exc(16)*B4(1)', d2Exc(16)*B4(1)
+              write(lupri,*) 'debug: d2Exc(18)*B4(1)', d2Exc(18)*B4(1)
+              write(lupri,*) 'debug: d2Exc(16)*B0(1)', d2Exc(16)*B0(1)
+              write(lupri,*) 'debug: d2Exc(18)*BR(1)', d2Exc(18)*BR(1)
+              write(lupri,*) 'debug: d2Exc(21)*B4(1)', d2Exc(21)*B4(1)
            end if
            !end if
           !end if
@@ -1377,13 +1388,11 @@ C Linear transformation -----------------------------------------------------
                            AY = GY*GAO(J) + G0*GAO1(J,2)
                            AZ = GZ*GAO(J) + G0*GAO1(J,3)
                            AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
-                           AR(2) = AX*RX(2) + AY*RY(2) + AZ*RZ(2)
-                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
                            AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
                            Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
                            EXCMAT(J,I,1) = EXCMAT(J,I,1) +
      &                         FAC0S*G0*GAO(J) + FAC_AR*AR(1) +
-     &                         FZ0_S*AB(2) + FAC_SB*Xi
+     &                         FZ0_S*AB(2) + FAC_SB*Xi*0.5d0
       !&                         + FAC_SC*??
                         END DO
                      END DO
@@ -1404,12 +1413,12 @@ C Linear transformation -----------------------------------------------------
                            Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
                            EXCMAT(J,I,1) = EXCMAT(J,I,1) +
      &                         FAC0R*G0*GAO(J) + FACR*AR(1) +
-     &                         FAC_RB*Xi + FAC_AR*AR(2) + 
+     &                         FAC_RB*Xi*0.5d0 + FAC_AR*AR(2) + 
      &                         FZ0*AB(1) + d1Exc(5)*AB(2)
       !&                         + FAC_RC*??
                            EXCMAT(J,I,2) = EXCMAT(J,I,2) + 
      &                         FAC0S*G0*GAO(J) + FACS*AR(2) +
-     &                         FAC_SB*Xi + FAC_AR*AR(1) +
+     &                         FAC_SB*Xi*0.5d0 + FAC_AR*AR(1) +
      &                         FZ0_S*AB(2) + d1Exc(5)*AB(1)
       !&                         + FAC_SC*??
                         END DO
@@ -1424,10 +1433,12 @@ C Linear transformation -----------------------------------------------------
                            AX = GX*GAO(J) + G0*GAO1(J,1)
                            AY = GY*GAO(J) + G0*GAO1(J,2)
                            AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
                            Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
                            EXCMAT(J,I,1) = EXCMAT(J,I,1) +
      &                         FAC0R*G0*GAO(J) + FACR*AR(1) + FZ0*AB(1)
-     &                         + FAC_RB*Xi
+     &                         + FAC_RB*Xi*0.5d0
       !&                         + FAC_RC*??
                         END DO
                      END DO
