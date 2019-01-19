@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+
+f.add(from_re= 'CC2        Excitation energies',
+      num_lines = 7,
+      rel_tolerance = 1.0e-6)
+
+f.add(from_re= 'CC2        Length   Gauge Oscillator Strength',
+      num_lines = 7,
+      rel_tolerance = 1.0e-6)
+
+test.run(['cc2mm_exci.dal'], ['cc2mm_exci.mol'], ['cc2mm_exci.pot'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

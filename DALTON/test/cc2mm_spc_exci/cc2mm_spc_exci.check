@@ -1,0 +1,73 @@
+#!/bin/bash
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+#  The classical and QM/MM interaction energies compared:
+CRIT1=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n \- R_s\| \]        \| * (\-|\-0)\.08417171" $log | wc -l`
+CRIT2=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ Pind_a\*E\^site_a \]          \| * ( |0)\.00000000" $log | wc -l`
+CRIT3=`$GREP "Evdw  \= Sum_a\[ A_ma\/\|R_ma\|\^12 \- B_ma\/\|R_ma\|\^6 \] \| * ( |0)\.02847728" $log | wc -l`
+CRIT4=`$GREP "E\(MM\/MM\) \= Eelec \+ Epol \+ Evdw                  \| * (\-|\-0)\.05569443" $log | wc -l`
+CRIT5=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n \- R_s\| \]        \| * ( |0)\.00000000" $log | wc -l`
+CRIT6=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ Pind_a\*E\^\(QMclassic\)_a \]   \| * ( |0).00000000" $log | wc -l`
+CRIT7=`$GREP "E\(\"QM\"\/MM\) \= Eelec \+ Epol \+ Evdw                \| * (\-|\-0)\.00143016" $log | wc -l`
+CRIT8=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ MYind_a\*E\^site_a \]         \| * ( |0)\.00000000" $log | wc -l`
+CRIT9=`$GREP "(\-|\-0)\.15553012.. \| * ( |0)\.00000000.. \| * (\-|\-0)\.00143015.. \| * (\-|\-0)\.15696028.." $log | wc -l`
+CRIT10=`$GREP "\-317\.8685501... \| \-318\.02551041.. \|    ( |0)\.00000000.. \|   ( |0)\.00000000.." $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
+CTRL[1]=13
+ERROR[1]="THE CLASSICAL OR QM/MM ENERGY TERMS ARE NOT CORRECT"
+
+# Dipole moment components compared:
+CRIT1=` $GREP "x * 3\.4511331. * 8\.7719048." $log | wc -l`
+CRIT2=` $GREP "y * 1\.6383919. * 4\.1643767." $log | wc -l`
+CRIT3=` $GREP "z * \-2\.8903169. * \-7\.3464523." $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=6
+ERROR[2]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"
+
+# First ground state excitation energy compared:
+CRIT1=`$GREP "\^1A   \|    1   \|     ( |0)\.1983...  \|       5\.3982.  \|     43539\...." $log | wc -l`
+CRIT2=`$GREP "\^1A   \|    2   \|     ( |0)\.2235...  \|       6\.0836.  \|     49068\...." $log | wc -l`
+CRIT3=`$GREP "\^1A   \|    3   \|     ( |0)\.3016...  \|       8\.2071.  \|     66194\...." $log | wc -l`
+CRIT4=`$GREP "\^1A   \|    4   \|     ( |0)\.3609...  \|       9\.8213.  \|     79214\...." $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[3]=4
+ERROR[3]="FIRST GROUND STATE EXCITATION ENERGY NOT CORRECT"
+
+# Transition moments between ground state and first excited state compared:
+CRIT1=`$GREP "\^1A   \|    1   \|        ( |0)\.0002...      \|      ( |0)\.0000..." $log | wc -l`
+CRIT2=`$GREP "\^1A   \|    2   \|        ( |0)\.0046...      \|      ( |0)\.0006..." $log | wc -l`
+CRIT3=`$GREP "\^1A   \|    3   \|        ( |0)\.6467...      \|      ( |0)\.1300..." $log | wc -l`
+CRIT4=`$GREP "\^1A   \|    4   \|        ( |0)\.0085...      \|      ( |0)\.0020..." $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[4]=4
+ERROR[4]="OSCILLATOR STRENGTH NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+

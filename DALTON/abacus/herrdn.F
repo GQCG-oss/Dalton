@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -110,8 +104,6 @@ cREAD_MOL: 'ANG' was not initialized; errors in 'ANG' message format
 c931220-hjaaj
 cWRONEL: corrected calc. of INAMN and IGTO for LUONEL
 c931022-hjaaj
-cREAINP: INPTST = IPREAD .gt. 3 (INPTST was not defined)
-cexpanded tabs with 'expand'
 cREAD_MOL: If ID3 then reset to blank (for abawalk)
 cBASINP: changed format for nuclear charge from F4.1 to F4.0
 c (such that an entry '6' is read as 6. and not as 0.6 )
@@ -125,13 +117,16 @@ C  /* Deck reainp */
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-      PARAMETER ( NTABLE = 13, D1 = 1.0D0)
+#include "mxcent.h"
+      PARAMETER ( NTABLE = 14, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 !
 !     Parameter MAXPRD in cbirea.h is default for MAXPRI
 ! numder.h : NOMOVE
+! nuclei.h : GAUNUC
 #include "cbirea.h"
+#include "nuclei.h"
 #include "numder.h"
 #include "r12int.h"
 #include "qm3.h"
@@ -139,7 +134,7 @@ C
       DATA TABLE /'.PRINT ', '.CONTIN', '.MAXPRI', '.BIGVEC',
      *            '.ONLYOV', '.SYMTHR', '.CM FUN', '.ZCMVAL',
      *            '.WRTLIN', '.UNCONT', '.ANGSTR', '.R12AUX',
-     &            '.NOMOVE'/
+     &            '.NOMOVE', '.NUCMOD'/
 C
 C     ... in qm3.h, for QM3:
       ONLYOV = .FALSE.
@@ -159,7 +154,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -248,6 +243,23 @@ C setting NOMOVE to true disables redefinition of coordinates for automatically
 C determined symmetry
                   NOMOVE = .TRUE.
                GO TO 100
+   14          CONTINUE ! .NUCMOD
+C Nuclear model
+               READ (LUCMD, *,IOSTAT=IOS) INUC
+               IF (IOS.NE.0) THEN
+                 CALL QUIT('Error in reading nuclear model .NUCMOD')
+               ENDIF
+               IF    (INUC.EQ.1) THEN
+                 GAUNUC = .FALSE.
+               ELSEIF(INUC.EQ.2) THEN
+                 GAUNUC = .TRUE.
+               ELSE
+                 WRITE(LUPRI,'(//3A,I0)')
+     &           '*** ERROR ',WORD1,' *** Unknown nuclear model: ',INUC
+                 CALL QUIT(
+     &           '*** ERROR '//WORD1//': Unknown nuclear model')
+               ENDIF
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -264,6 +276,12 @@ C determined symmetry
             WRITE (LUPRI,'(A,I5)')
      &         ' Print level in molecule setup (READIN):',IPREAD
          END IF
+         IF(GAUNUC) THEN
+            WRITE(LUPRI,'(/A)') ' * Nuclear model: '//
+     &         'Gaussian charge distribution.'
+         ELSE
+            WRITE(LUPRI,'(/A)') ' * Nuclear model: Point charge'
+         ENDIF
          IF (ONLYOV) WRITE (LUPRI,'(A)')
      &  ' Stop after calculation of overlap integrals (.ONLYOV) for QM3'
          IF (TOL_SYMADD .NE. 0.0D0) THEN
@@ -371,7 +389,6 @@ C     ... parameter MAXPRD is in cbirea.h
       BIGVC  = .FALSE.
       DIRAC  = RELCAL
       GENCON = .TRUE.
-      INPTST = TSTINP
       IF (TSTINP) IPREAD = MAX(4,IPREAD)
       BASIS  = .FALSE.
       ATOMBA = .FALSE.
@@ -389,6 +406,16 @@ C
 C     nuclei.h:
 C
       NUCIND = -1 ! to tell that READIN has never been called
+C
+C     Initialize nuclear model
+C       1 - Point nucleus
+C       2 - Gaussian nucleus
+C
+      IF(RELCAL) THEN
+        GAUNUC = .TRUE.
+      ELSE
+        GAUNUC = .FALSE.
+      ENDIF
 C
 C     Initialize effective core potential parameters (ecpinf.h)
 C
@@ -428,7 +455,7 @@ C               - NEW common block FRAME
 C                       - added POTNUC, DPNUC(3)
 C               - common block CBIREA:
 C                       - IPRINT changed to IPREAD
-C                       - added INPTST,FAMILY
+C                       - added FAMILY
 C               - common block SHELLS:
 C                       - added NLRGSH,NSMLSH,NLARGE,NSMALL,NORBS
 C                       - added LCLASS(MXSHEL)
@@ -6589,12 +6616,12 @@ C
       DATA SPD/'S','P','D','F','G','H','I','J'/
 C
       LUTMP1 = -1
-      LUTMP2 = -1
+      LUAMFI_INP = -1
       LUSHB  = -1
-      CALL GPOPEN(
-     &     LUTMP1,'DALTON.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-      CALL GPOPEN(
-     &     LUTMP2, 'AMFI_MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUTMP1,
+     &     'DALTON.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUAMFI_INP,
+     &      'AMFI_MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       CALL GPOPEN(LUSHB, 'LUSH.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUSHB)
 C
@@ -6650,7 +6677,7 @@ Chj:  skip any additional comment lines before title lines
             ICENT = ICENT + 1
             NDEG  = NUCDEG(ICENT)
             KBCH  = JBLOCK
-            WRITE (LUTMP2,*) CHARGE(MNCENT),IQM(I)-1
+            WRITE (LUAMFI_INP,*) CHARGE(MNCENT),IQM(I)-1
             II = 0
             DO 200 J = 1, IQM(I)
                DO 210 K = 1, JCO(J,I)
@@ -6658,15 +6685,15 @@ Chj:  skip any additional comment lines before title lines
                   NNUC  = NUC(KBCH)
                   NNRC  = NRC(KBCH)
                   IF (NNUC .EQ. 0) GO TO 200
-                  WRITE (LUTMP2,*) NNUC,NNRC
+                  WRITE (LUAMFI_INP,*) NNUC,NNRC
                   ITYP = NHKOFF(J)
                   IPSTRT = IPRIM + 1
                   IPRIM =  IPRIM + NNUC
                   ITYP = ITYP + 1
                   IPRIMD = IPRIMD + 1
-                     IF (N.EQ.1) THEN
+                  IF (N.EQ.1) THEN
                      WRITE (LUTMP1,'(A1,I4,I5)') 'H', NNUC, NNRC
-                     ENDIF
+                  ENDIF
                      DO 410 M = 1, NNUC
                         IPRIMD = IPRIMD + 1
                         IF (NNRC.LE.3) THEN
@@ -6674,21 +6701,23 @@ Chj:  skip any additional comment lines before title lines
                            WRITE (LUTMP1,1050) PRIEXP(IPSTRT-1+M),
      &                          (CPRIMU(M,MM,KBCH),MM=1,NNRC)
                         ENDIF
-                           WRITE (LUTMP2,1050) PRIEXP(IPSTRT-1+M),
+                           WRITE (LUAMFI_INP,1050) PRIEXP(IPSTRT-1+M),
      &                          (CPRIMU(M,MM,KBCH),MM=1,NNRC)
                         ELSE
                         IF (N.EQ.1) THEN
                            WRITE (LUTMP1,1050) PRIEXP(IPSTRT - 1 + M),
      &                          (CPRIMU(M,MM,KBCH),MM = 1,3)
                         ENDIF
-                           WRITE (LUTMP2,1050) PRIEXP(IPSTRT - 1 + M),
+                           WRITE (LUAMFI_INP,1050)
+     &                          PRIEXP(IPSTRT - 1 + M),
      &                          (CPRIMU(M,MM,KBCH),MM = 1,3)
                            DO NLOOP = 1, INT(NNRC/3) - 1
                            IF (N.EQ.1) THEN
                               WRITE (LUTMP1,1040) (CPRIMU(M,MM,KBCH),
      &                             MM = NLOOP*3 + 1, (NLOOP + 1)*3)
                            ENDIF
-                              WRITE (LUTMP2,1040) (CPRIMU(M,MM,KBCH),
+                              WRITE (LUAMFI_INP,1040)
+     &                             (CPRIMU(M,MM,KBCH),
      &                             MM = NLOOP*3 + 1, (NLOOP + 1)*3)
                            END DO
                            IF (MOD(NNRC,3) .NE. 0) THEN
@@ -6696,7 +6725,8 @@ Chj:  skip any additional comment lines before title lines
                               WRITE (LUTMP1,1040) (CPRIMU(M,MM,KBCH),
      &                             MM = NNRC - MOD(NNRC,3) + 1, NNRC)
                            ENDIF
-                              WRITE (LUTMP2,1040) (CPRIMU(M,MM,KBCH),
+                              WRITE (LUAMFI_INP,1040)
+     &                             (CPRIMU(M,MM,KBCH),
      &                             MM = NNRC - MOD(NNRC,3) + 1, NNRC)
                            END IF
                         ENDIF
@@ -6715,13 +6745,13 @@ Chj:  skip any additional comment lines before title lines
          JBLOCK = JBLOCK + NBLCK(I)
  100  CONTINUE
 C
-      WRITE (LUTMP2,'(A)') 'END'
+      WRITE (LUAMFI_INP,'(A)') 'END'
       CALL GPCLOSE(LUTMP1,'KEEP')
-      CALL GPCLOSE(LUTMP2,'KEEP')
+      CALL GPCLOSE(LUAMFI_INP,'KEEP')
       CALL GPCLOSE(LUSHB ,'KEEP')
  1010 FORMAT(/2X,A4,3X,A4,3X,A10)
  1040 FORMAT(20X,3F20.10)
- 1050 FORMAT(F20.10,3F20.10)
+ 1050 FORMAT(G20.10,3F20.10)
       RETURN
       END
 C  /* Deck crtest */

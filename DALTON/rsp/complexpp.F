@@ -1,24 +1,17 @@
-C
-C...   Copyright (c) 2015 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program,
-C...    Release DALTON2016 (2015), see http://daltonprogram.org"
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For further information, including how to get a licence, see:
-C...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 C
 C
 C ============================================================================

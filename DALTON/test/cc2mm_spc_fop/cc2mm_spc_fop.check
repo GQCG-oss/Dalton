@@ -1,0 +1,62 @@
+#!/bin/bash
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# QM/MM interaction energy compared:
+CRIT1=`$GREP "\| * (\-|\-0)\.010342041. \| * ( |0)\.0000000000 \| * ( |0)\.005110972. \| * (\-|\-0)\.00523106[89]. \|" $log | wc -l`
+CRIT2=`$GREP "\| * \-76\.230966653. \| * \-76\.236197722. \| * ( |0)\.0000000000 \|" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2`
+CTRL[1]=2
+ERROR[1]="QM/MM ENERGY NOT CORRECT"
+
+# Dipole moment components compared:
+CRIT1=`$GREP "x * ( |0)\.0770601. * ( |0)\.1958672" $log | wc -l`
+CRIT2=`$GREP "y * ( |0)\.0115747. * ( |0)\.0294200" $log | wc -l`
+CRIT3=`$GREP "z * ( |0)\.8008827. *     2\.0356406" $log | wc -l` 
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=12
+ERROR[2]="DIPOLE MOMENT NOT CORRECT"
+
+# Quadrupole moment components compared:
+CRIT1=`$GREP "1 * 1\.5509380. * ( |0)\.0024452. * ( |0)\.1201701." $log | wc -l`
+CRIT2=`$GREP "2 * ( |0)\.0024452. * -1\.670209(5|6). * ( |0)\.0067644." $log | wc -l`
+CRIT3=`$GREP "3 * ( |0)\.1201701. * ( |0)\.0067644. * ( |0)\.1192715." $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=12
+ERROR[3]="QUADRUPOLE MOMENT NOT CORRECT"
+
+# Second order electric moment components compared:
+CRIT1=`$GREP "1 * 7\.2124209. * (\-|\-0)\.0016301. * (\-|\-0)\.0801134" $log | wc -l`
+CRIT2=`$GREP "2 * (\-|\-0)\.0016301. * 5\.2692356. * (\-|\-0)\.0045096" $log | wc -l`
+CRIT3=`$GREP "3 * (\-|\-0)\.0801134. * (\-|\-0)\.0045096. * 6\.5288855" $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[4]=12
+ERROR[4]="SECOND ORDER MOMENT NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]; then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+

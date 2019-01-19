@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -812,7 +806,7 @@ C
             DEPSAV = DEPRED
             EMCOLD = EMCGEO
             DEPRED = DEPGEO
-            CALL SIRSTP(JWSTEP,DUMMY,DUMMY,DUMMY,DUMMY,1)
+            CALL SIRSTP(JWSTEP,VDUMMY,DUMMY,DUMMY,DUMMY,1)
             EMCOLD = EMCSCF
             DEPRED = DEPSAV
             IF (WLKREJ) GO TO 700
@@ -1188,7 +1182,7 @@ C     ... this is RHF which will be followed by MCSCF
             JWSTEP = 1
             EMCOLD = EMCGEO
             DEPRED = DEPGEO
-            CALL SIRSTP(JWSTEP,DUMMY,DUMMY,DUMMY,DUMMY,1)
+            CALL SIRSTP(JWSTEP,VDUMMY,DUMMY,DUMMY,DUMMY,1)
          ELSE
             WLKREJ = .FALSE.
          END IF
@@ -1582,6 +1576,15 @@ C
       DATA STAR8/'********'/
 C
       CALL QENTER('OPTST ')
+
+      IF (ISTATE .GT. NCONF) THEN
+         WRITE(LUPRI,'(//A,I0,A,I0)')
+     &   'FATAL ERROR: requested .STATE ',ISTATE,
+     &   ' is greater than number of configurations: ',NCONF
+         CALL QUIT('ERROR: '//
+     &   'requested .STATE is greater than number of configurations')
+      END IF
+
 C     Transfer ICI0 to local variable ICSTRT
       ICSTRT = ICI0
 C
@@ -1815,8 +1818,9 @@ C     (but we test to be sure!)
 C
   400 CONTINUE
          REWIND LUIT1
-         IF ( .NOT.FNDLB2(TABLE(3),LBLINF,LUIT1) ) GO TO 490
-         IF ( ICSTRT.EQ.5 ) THEN
+         IF ( .NOT.FNDLB2(TABLE(3),LBLINF,LUIT1) ) GO TO 490 ! label 'STARTVEC'
+         IF ( ICSTRT.EQ.5 ) THEN ! .RESTART
+            REWIND LUIT1
             IF ( .NOT.FNDLAB(TABLE(2),LUIT1) ) GO TO 490     ! label 'OLDORB  ' for backstep after restart
             IF ( LBLINF(2).EQ.'NRSAVE  ') FLAG(39) = .TRUE.  ! if user has specified .RESTART, then respect shift to NR
          END IF
@@ -1842,25 +1846,26 @@ C
          IF (ICSTRT .EQ. 4) THEN
             NWARN = NWARN + 1
             WRITE (LUPRI,'(//A/A//)')
-     *       '@@*** (OPTST) MC start vectors not found on SIRIUS.RST',
-     *       '@@*** WARNING lowest diagonal elements used.'
+     &       '@@*** (OPTST) MC start vectors not found on SIRIUS.RST',
+     &       '@@*** WARNING lowest diagonal elements used.'
             ICSTRT = 1
             GO TO 10
          ELSE IF (ICSTRT .EQ. 5) THEN
             WRITE (LUPRI,'(//A/A//)')
-     *       '@@*** (OPTST) MC start vectors not found on SIRIUS.RST,',
-     *       '@@            .RESTART not possible.'
+     &      '@@*** (OPTST) MC start vectors or OLDORB'//
+     &          ' not found on SIRIUS.RST,',
+     &      '@@            .RESTART not possible.'
             CALL QTRACE(LUPRI)
-            CALL QUIT(
-     &         'MC start vectors for .RESTART not found on SIRIUS.RST.')
+            CALL QUIT( 'ERROR: '//
+     &      ' All necessary info for .RESTART not found on SIRIUS.RST.')
          ELSE
-            WRITE (LUPRI,'(//A/A/A//)')
-     *       ' *** (OPTST) MC start vectors not found on SIRIUS.RST,',
-     *       '             no recover when CISTRT 6 or 7',
-     *       '             optimization abandoned.'
+            WRITE (LUPRI,'(//A/A//)')
+     &       '@@*** (OPTST) Old CI vectors not found on SIRIUS.RST,',
+     &       '@@            no recover when CISTRT 6 or 7,'//
+     &          ' optimization abandoned.'
             CALL QTRACE(LUPRI)
-            CALL QUIT(
-     &     '(OPTST) Start vectors not found on SIRIUS.RST as expected.')
+            CALL QUIT('ERROR: '//
+     &      'Old CI vectors not found on SIRIUS.RST as expected.')
          END IF
   493 CONTINUE
          REWIND LUIT1

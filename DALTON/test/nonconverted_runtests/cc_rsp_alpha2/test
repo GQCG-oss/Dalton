@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['cc_rsp_alpha2.dal'], ['cc_rsp_alpha2.mol'], {'out': f})
+test.run(['cc_rsp_alpha2.dal'], ['cc_rsp_alpha2.mol'], f={'out': f})
 
 sys.exit(test.return_code)

@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -87,7 +81,6 @@ C
 #include "inftap.h"
 #include "huckel.h"
 #include "r12int.h"
-#include "nuclei.h"
 #include "pcmlog.h"
 C
 Cholesky
@@ -903,21 +896,9 @@ c ach
             THETA  = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
-  177    CONTINUE
-C&&& Nuclear model
-            READ (LUCMD, *,IOSTAT=IOS) INUC
-            IF (IOS.NE.0) THEN
-              CALL QUIT('Error in reading nuclear model INUC  !')
-            ENDIF
-            IF    (INUC.EQ.1) THEN
-              GAUNUC = .FALSE.
-            ELSEIF(INUC.EQ.2) THEN
-              GAUNUC = .TRUE.
-            ELSE
-              WRITE(LUPRI,'(//3A,I5)')
-     &         '*** ERROR ',WORD1,' *** Unknown nuclear model:',INUC
-              CALL QUIT('*** ERROR '//WORD1//': Unknown nuclear model')
-            ENDIF
+  177    CONTINUE ! .NUCMOD
+            CALL QUIT(
+     &      'ERROR, .NUCMOD has been moved to *MOLBAS input section')
             GO TO 100
 !      .SORT Integrals
   178    CONTINUE
@@ -1341,12 +1322,6 @@ cLig <>
      &               .OR. RPSO
       IF (TSTINP) WRITE (LUPRI,'(/A/)') ' @@ Input test run only !!!'
       WRITE (LUPRI,'(/A,I5)') ' Default print level:    ',IPRDEF
-      IF(GAUNUC) THEN
-        WRITE(LUPRI,'(/A)') ' * Nuclear model: '//
-     &    'Gaussian charge distribution.'
-      ELSE
-        WRITE(LUPRI,'(/A)') ' * Nuclear model: Point charge'
-      ENDIF
       IF (SPNORB .AND. SOTEST) THEN
          WRITE (LUPRI,'(/A)')
      *    ' FATAL ERROR in input: .SPIN-ORBIT and .SOTEST cannot '/
@@ -1533,7 +1508,7 @@ C copied from linsca abacus/herdrv.F, Bin Gao, December 17, 2009
          IF (ELGDIL) WRITE (LUPRI,'(10X,A)')
      &     '- Diamagnetic one-electron spin-orbit (London)'
          IF (MNF_SO) WRITE (LUPRI,'(10X,A)')
-     &     '- Mean field spin-orbit integrals'
+     &     '- Mean field spin-orbit integrals (AMFI)'
          IF (NELFLD) WRITE (LUPRI,'(10X,A)')
      &     '- Electric field at the nuclei'
          IF (NSNLTS) WRITE(LUPRI,'(10X,A)')
@@ -4289,17 +4264,6 @@ C
 Cholesky
       IF (CHOINT) NOTWO = .TRUE.
 Cholesky
-C
-CTSAUE
-C    Initialize nuclear model in NUCLEI
-C      1 - Point nucleus
-C      2 - Gaussian nucleus
-C
-      IF(RELCAL) THEN
-        GAUNUC = .TRUE.
-      ELSE
-        GAUNUC = .FALSE.
-      ENDIF
 C     
 C     Initialize /CBISOL/ (10-Dec-92 th+hjaaj)
 C     -- not used in Hermit; SOLVNT must be false
@@ -4337,9 +4301,9 @@ C
 C
 C     Open Mean-field input file generate in READIN
 C
-      LUTMP2   = -1
+      LUAMFI_INP   = -1
       LUMNFPRP = -1
-      CALL GPOPEN(LUTMP2,'AMFI_MNF.INP','OLD',' ','FORMATTED',
+      CALL GPOPEN(LUAMFI_INP,'AMFI_MNF.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       CALL GPOPEN(LUMNFPRP,'AOPROPER.MNF','UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
@@ -4353,7 +4317,7 @@ C     We loop over symmetry-independent centers
 C
       REWIND (LUMNFPRP)
       DO IATOM = 1, NUCIND
-         CALL AMFI(LUTMP2,LUMNFPRP,BREIT,GAUNUC,GNUEXP(IATOM),
+         CALL AMFI(LUAMFI_INP,LUMNFPRP,BREIT,GAUNUC,GNUEXP(IATOM),
      &             WORK,LWORK)
       END DO
 C
@@ -4363,7 +4327,7 @@ C
       REWIND (LUMNFPRP)
       CALL SYMTRAFO(LUMNFPRP,PROPRI,IPRINT,WORK,LWORK)
 C
-      CALL GPCLOSE(LUTMP2,'KEEP')
+      CALL GPCLOSE(LUAMFI_INP,'KEEP')
       CALL GPCLOSE(LUMNFPRP,'DELETE')
       RETURN
       END

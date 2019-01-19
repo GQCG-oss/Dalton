@@ -1,0 +1,9 @@
+BASIS
+aug-cc-pVTZ
+water, testing FDE
+aug-cc-pVTZ basis
+Angstrom Atomtypes=2 Generators=2 X Y 
+Charge=8.    Atoms=1
+O    0.0000000          0.0000000         -0.2619247262 
+Charge=1.    Atoms=1
+H    0.0000000000       0.7716276844       0.3426163129

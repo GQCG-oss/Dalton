@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -240,17 +234,17 @@ C
 C
       IF (DISTYP .NE. 1 .AND. IADINT .GE. 0) THEN
          WRITE(LUERR,'(/A,I5)')
-     &   ' GETINT ERROR: H2AC on disk is not implemented for DISTYP =',
+     &   ' GETIN2 ERROR: H2AC on disk is not implemented for DISTYP =',
      &   DISTYP
-       CALL QUIT('GETINT: H2AC on disk not implemented for DISTYP.ne.1')
+       CALL QUIT('GETIN2: H2AC on disk not implemented for DISTYP.ne.1')
       END IF
       GO TO (1,2,3,4,5,6,99,8,9,10,11,12,13,14,15,16,17,18,
      *       19,20,13,14,23,24,25,26,27,28), DISTYP
 C            19,20,21,22,23,24,25,26), DISTYP
  99      WRITE(LUERR,'(/A,I5)')
-     *      ' GETINT: INCORRECT SPECIFICATION OF DISTYP, DISTYP:',DISTYP
+     *      ' GETIN2: INCORRECT SPECIFICATION OF DISTYP, DISTYP:',DISTYP
          CALL QTRACE(LUERR)
-         CALL QUIT('GETINT INCORRECT SPECIFICATION OF DISTYP')
+         CALL QUIT('GETIN2 INCORRECT SPECIFICATION OF DISTYP')
 C     ... DISTYP = 1
 C     ... 2-electron integrals have full index symmetry
 C         (ij/kl) = (ji/kl) = (kl/ij) = ...
@@ -718,5 +712,5 @@ C        CALL REORMT(AIN  ,AOUT ,NROW ,NCOL ,IROW  ,ICOL  )
       END IF
 C
       RETURN
-C     ... end of getint.
+C     ... end of GETIN2.
       END

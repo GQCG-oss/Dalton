@@ -23,7 +23,7 @@ class Filter(runtest.Filter):
     def add(self, *args, **kwargs):
         try:
             runtest.Filter.add(self, *args, **kwargs)
-        except runtest.FilterKeywordError, e:
+        except runtest.FilterKeywordError as e:
             sys.stderr.write(str(e))  # FIXME currently not written to any log file
             sys.exit(-1)
 
@@ -97,20 +97,20 @@ class TestRun(runtest.TestRun):
                             out = '%s.%s' % (output_no_suffix, suffix)
                             f[suffix].check(self.work_dir, '%s' % out, 'result/%s' % out, self.verbose)
                         sys.stdout.write('passed\n')
-                    except IOError, e:
+                    except IOError as e:
                         write_stderr(self.log, 'ERROR: could not open file %s\n' % e.filename)
                         sys.exit(-1)
-                    except runtest.TestFailedError, e:
+                    except runtest.TestFailedError as e:
                         write_stderr(self.log, str(e))
                         self.return_code += 1
-                    except runtest.BadFilterError, e:
+                    except runtest.BadFilterError as e:
                         write_stderr(self.log, str(e))
                         sys.exit(-1)
-                    except runtest.FilterKeywordError, e:
+                    except runtest.FilterKeywordError as e:
                         write_stderr(self.log, str(e))
                         sys.exit(-1)
-            except runtest.AcceptedError, e:
+            except runtest.AcceptedError as e:
                 sys.stdout.write(str(e))
-            except runtest.SubprocessError, e:
+            except runtest.SubprocessError as e:
                 write_stderr(self.log, str(e))
                 sys.exit(-1)

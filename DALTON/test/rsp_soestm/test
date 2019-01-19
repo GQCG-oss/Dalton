@@ -32,3 +32,6 @@ output_filter.add(re="B and C", abs_tolerance=1e-4)
 output_test.run(
     ['rsp_soestm.dal'], ['h2o_cc-pVDZ.mol'], f={'out': output_filter},
     )
+
+sys.exit(output_test.return_code)
+

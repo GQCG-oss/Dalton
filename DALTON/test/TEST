@@ -1,4 +1,4 @@
-#!/bin/bash    
+#!/usr/bin/env bash    
 #########################################################################
 #
 # Shell script for running DALTON tests
@@ -214,8 +214,8 @@ do
       shift ;;
   esac
 
-  chmod +x $SCRIPT_DIR/$item || exit 1
-  $SCRIPT_DIR/$item
+#  chmod +x $SCRIPT_DIR/$item || exit 1
+  bash $SCRIPT_DIR/$item
 # remove any directory path now the files are unpacked
   item=`basename $item`
   if [ -f $item.info -a "$keep_quiet" = "" ]; then
@@ -229,11 +229,11 @@ do
       numsteps=`ls ./$item\_\_[0-9].dal | wc -l`
       myprint "   This is a multi-step job consisting of $numsteps steps"
       rm -f ./$item'__'[0-9]'_'$item.log
-      chmod +x ./$item'__'[0-9].check
+      # chmod +x ./$item'__'[0-9].check
   else
       multi=0
       rm -f ./$item.log
-      chmod +x ./$item.check
+      # chmod +x ./$item.check
   fi
 # Multi-step tests loop over the different jobsteps, regular tests just
 # go through this once
@@ -292,7 +292,7 @@ do
               num_reftests_not_found=`expr $num_reftests_not_found \+ 1`
               checkout="TEST ENDED PROPERLY"
           else
-              checkout=`$checkfile $reffile`
+              checkout=`bash $checkfile $reffile`
               if [ "$benchmark" = "true" ]; then
                  if [ `$GREP "CPU  time used in DALTON" $reffile | wc -l` = 1 ]; then
                      CPU_usage=`$GREP "CPU  time used in DALTON" $reffile | sed s/" Total CPU  time used in DALTON\:"/""/`
@@ -342,7 +342,7 @@ do
           myprint "evaluate output file $logfile:"
 
           if [ -s "$logfile" ]; then
-              checkout=`$checkfile $logfile`
+              checkout=`bash $checkfile $logfile`
           else
               checkout="THERE IS A PROBLEM: no output was produced"
               failed=true

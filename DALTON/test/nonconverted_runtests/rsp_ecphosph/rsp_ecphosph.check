@@ -74,8 +74,8 @@ CTRL[6]=9
 ERROR[6]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Quadratic response
-CRIT1=`$GREP "\@ *QRLRVE\: * << XDIPLEN * \; XDIPLEN * >> \( * (0| )\.16645\)\: * 15\.23880...[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\@ *QRLRVE\: * << YDIPLEN * \; YDIPLEN * >> \( * (0| )\.16645\)\: * 2(0| )\.73402...[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ *QRLRVE\: * << XDIPLEN * \; XDIPLEN * >> \( * (0| )\.16645\)\: * 15\.238...[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "\@ *QRLRVE\: * << YDIPLEN * \; YDIPLEN * >> \( * (0| )\.16645\)\: * 2(0| )\.734...[0-9][0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="QUADRATIC RESPONSE NOT CORRECT"
@@ -84,8 +84,8 @@ ERROR[7]="QUADRATIC RESPONSE NOT CORRECT"
 CRIT1=`$GREP "Partial rates \(ECSO\)\: X\-polarization * 0\.254[0-9]" $log | wc -l`
 CRIT2=`$GREP "Partial rates \(ECSO\)\: Y\-polarization * 2\.848[0-9]*(D|E)\-03" $log | wc -l`
 CRIT3=`$GREP "Partial rates \(ECSO\)\: Z\-polarization * (0| )\.(    |000)" $log | wc -l`
-CRIT4=`$GREP "Total transition * rate * \(ECSO\) * 8\.57[0-9](D|E)\-02 s\-1" $log | wc -l`
-CRIT5=`$GREP "Total phosphorescence lifetime * \(ECSO\) * 1\.16[0-9](D|E)\+01 s" $log | wc -l`
+CRIT4=`$GREP "Total transition * rate * \(ECSO\) * 8\.57[0-9]*(D|E)\-02 s\-1" $log | wc -l`
+CRIT5=`$GREP "Total phosphorescence lifetime * \(ECSO\) * 1\.16[0-9]*(D|E)\+01 s" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[8]=5
 ERROR[8]="PHOSPHORESCENCE NOT CORRECT"

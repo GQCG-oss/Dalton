@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -91,6 +85,8 @@ C
       END
 
       subroutine gettim(cputime,walltime)
+      ! returns used CPU time and elapsed wall time
+      ! since first call of GETTIM
       implicit none
       real*8      cputime, walltime
 
@@ -1104,25 +1100,6 @@ Chj      ... this ought never to happen ...
    20 CONTINUE
       RETURN
       END
-C  /* Deck defopn */
-      SUBROUTINE DEFOPN(LU)
-C
-C 29-Sep-1986 Hans Joergen Aa. Jensen
-C
-C DEFAULT OPEN :
-C
-C     OPEN(LU,STATUS='UNKNOWN',FORM='UNFORMATTED') with
-C     default file name, following CWBOPN by C.W.Bauschlicher.
-C
-C     This is especially useful for CRAY machines which do not
-C     allow for default names in the OPEN statement (i.e.
-C     FILE='name' must be specified if you use OPEN).
-C
-      REWIND (LU)
-      READ   (LU,ERR=1,END=1) A
-    1 REWIND (LU)
-      RETURN
-      END
 C  /* Deck readi */
       SUBROUTINE READI (IT,N,INTX)
 C
@@ -1192,17 +1169,17 @@ C  /* Deck readt */
       RETURN
  10   CONTINUE
       INQUIRE(UNIT=IT,NAME=FNAME)
-      WRITE (LUPRI,*) 'READT: END reading file ',FNAME,
-     & ' UNIT ',IT, ' record length ',N
-      WRITE (  0  ,*) 'READT: END reading file ',FNAME,
-     & ' UNIT ',IT, ' record length ',N
+      WRITE (LUPRI,*) 'READT: END reading file ',FNAME
+      WRITE (LUPRI,*) 'UNIT ',IT, ' record length ',N
+      WRITE (  0  ,*) 'READT: END reading file ',FNAME
+      WRITE (  0  ,*) 'UNIT ',IT, ' record length ',N
       CALL QUIT('READT: END reading file')
  20   CONTINUE
       INQUIRE(UNIT=IT,NAME=FNAME)
-      WRITE (LUPRI,*) 'READT: ERROR reading file ',FNAME,
-     & ' UNIT ',IT, ' record length ',N,' error code ',IERR
-      WRITE (  0  ,*) 'READT: ERROR reading file ',FNAME,
-     & ' UNIT ',IT, ' record length ',N,' error code ',IERR
+      WRITE (LUPRI,*) 'READT: ERROR reading file ',FNAME
+      WRITE (LUPRI,*) 'UNIT ',IT, ' record length ',N,' error code ',IERR
+      WRITE (  0  ,*) 'READT: ERROR reading file ',FNAME
+      WRITE (  0  ,*) 'UNIT ',IT, ' record length ',N,' error code ',IERR
       CALL QUIT('READT: Error reading file')
  30   CONTINUE
       WRITE (LUPRI,*) 'READT ERRROR: non-positive file unit number ',IT

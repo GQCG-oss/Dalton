@@ -1,4 +1,4 @@
-\documentclass[11pt]{report}  
+\documentclass[11pt]{report}
 \usepackage{a4}
 \usepackage{makeidx}
 % separate longtable is needed for tetex-latex-2.0.2-21.3
@@ -13,7 +13,7 @@
  {hyperref}
 \usepackage[dvipsnames,svgnames,x11names,hyperref]{xcolor}
 \hypersetup{
- urlcolor=webbrown,linkcolor=blue,citecolor=red}
+ urlcolor=brown,linkcolor=blue,citecolor=red}
 
 \newcommand{\ignore}[1]{}
 \newcommand{\nobibentry}[1]{{\let\nocite\ignore\bibentry{#1}}}
@@ -108,7 +108,7 @@
 %\fi
 
 %\renewcommand{\thetable}{\Roman{table}}
-\newcommand{\latestrelease}{Dalton2017.alpha}
+\newcommand{\latestrelease}{Dalton2019.alpha}
 \newcommand{\dalton}{{\sc Dalton}}
 \newcommand{\her}{{\sc Hermit}\index{\sc Hermit}}
 \newcommand{\hermit}{{\sc Hermit}\index{\sc Hermit}}
@@ -206,65 +206,69 @@ L.~Ferrighi,\\
 H.~Fliegl,
 L.~Frediani,
 B.~Gao,
+A.~S.~P.~Gomes,
 K.~Hald,
 A.~Halkier,
-F.~B.~K.~Hansen,
-E.~D.~Hedeg\aa{}rd,\\
+F.~B.~K.~Hansen, \\
+E.~D.~Hedeg\aa{}rd,
 C.~H{\"a}ttig,
 H.~Heiberg,
 T.~Helgaker,
 A.~C.~Hennum,
 H.~Hettema,
-E.~Hjerten\ae{}s,
-P.~A.~B.~Haase\\
+E.~Hjerten\ae{}s, \\
+P.~A.~B.~Haase,
+S.~H{\"o}fener,
 M.~F.~Iozzi,
+C.~R.~Jacob,
 B.~Jansik,
 H.~J.~Aa.~Jensen,
-D.~Jonsson,
+D.~Jonsson, \\
 P.~J{\o}rgensen,
-M.~Kami{\'n}ski,\\
+M.~Kami{\'n}ski,
 J.~Kauczor,
 S.~Kirpekar,
 W.~Klopper,
 S.~Knecht,
-R.~Kobayashi,
-H.~Koch,
-J.~Kongsted,\\
+R.~Kobayashi, \\
+H.~Koch, 
+J.~Kongsted,
 A.~Ligabue,
 N.~H.~List,
 O.~B.~Lutn\ae{}s,
 J.~I.~Melo,
-K.~V.~Mikkelsen,
-R.~H.~Myhre,\\
+K.~V.~Mikkelsen, \\
+R.~H.~Myhre,
 C.~Neiss,
 C.~B.~Nielsen,
 P.~Norman,
-J.~Olsen,
+J.~Olsen, \\
 J.~M.~H.~Olsen,
-A.~Osted,\\
+A.~Osted,
 M.~J.~Packer,
 F.~Pawlowski,
-M.~N.~Pedersen,
+M.~N.~Pedersen, \\
 T.~B.~Pedersen,
-P.~F.~Provasi,\\
+P.~F.~Provasi,
 Z.~Rinkevicius,
 E.~Rudberg,
 T.~A.~Ruden,
-K.~Ruud,
+K.~Ruud, \\
 P.~Sa\l{}ek,
-C.~C.~M.~Samson,\\
+C.~C.~M.~Samson,
 A.~S\'{a}nchez de Mer\'{a}s,
 T.~Saue,
-S.~P.~A.~Sauer,
+S.~P.~A.~Sauer, \\
 B.~Schimmelpfennig,
-K.~Sneskov,\\
+K.~Sneskov,
 A.~H.~Steindal,
 C.~Steinmann,
-K.~O.~Sylvester-Hvid,
+K.~O.~Sylvester-Hvid, \\
 P.~R.~Taylor,
-A.~M.~Teale,\\
+A.~M.~Teale,
 D.~P.~Tew,
 O.~Vahtras,
+L.~Visscher,
 D.~J.~D.~Wilson
 and H.~{\AA}gren.
 }
@@ -295,6 +299,7 @@ and H.~{\AA}gren.
 \include{finitefield}
 \include{Solvent}
 \include{embedding}
+\include{fde}
 \include{vibave}
 \include{relativity}
 \include{soppa}
@@ -341,7 +346,7 @@ and H.~{\AA}gren.
 \include{Appendix}
 \part{References}
 \bibliographystyle{unsrt}
-\bibliography{dalton,dft,Symm_tut}
+\bibliography{dalton,dft,Symm_tut,fde}
 %
 % Index
 %

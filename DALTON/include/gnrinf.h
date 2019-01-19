@@ -18,7 +18,7 @@
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT,                   &
      &        EMBEDDING, QM3, QMMM,   QMNPMM, QFIT,   USE_LSLIB,        &
-     &        USE_OPENRSP, SIR_INPPRC,NEWGEO
+     &        USE_OPENRSP, SIR_INPPRC,NEWGEO, DOFDE
       REAL*8  GRADML, PANAS,  CHIVAL, THR_REDFAC
       INTEGER KCHARG, ITERNR, ITERMX, IPRUSR, LENBAS
       INTEGER GNRINFlast
@@ -36,7 +36,7 @@
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT,                   &
      &        EMBEDDING, QM3, QMMM,   QMNPMM, QFIT,   USE_LSLIB,        &
-     &        USE_OPENRSP, SIR_INPPRC,NEWGEO
+     &        USE_OPENRSP, SIR_INPPRC,NEWGEO, DOFDE
       COMMON /GNRINF/ GNRINFlast
       ! Very important: Always keep GNRINFlast as the last variable in the common block.
       ! See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.

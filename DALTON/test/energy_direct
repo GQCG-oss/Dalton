@@ -78,7 +78,7 @@ fi
 
 # Symmetry:
 CRIT1=`$GREP "Symmetry class found: C.2v." $log | wc -l`
-CRIT2=`$GREP "The following elements were found: * X * Y" $log | wc -l`
+CRIT2=`$GREP "The following symmetry elements were found: * X * Y" $log | wc -l`
 #CRIT3=`$GREP "Symmetry operations: * 2" $log | wc -l`
 CRIT3=1
 CRIT4=`$GREP "Full point group is: * C.2v." $log | wc -l`

@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -533,7 +527,7 @@ C
       IF (RSPSUP .AND. (KSYMOP .EQ. 1)) THEN
          IF (IPRRSP.GT.210) THEN
             WRITE(LUPRI,*)' TRANSFORMATION WITH S(2) BEFORE RSPAVE'//
-     &      ' (Z1 Y1 Z1 Y2 ...)'
+     &      ' (Z1 Y1 Z2 Y2 ...)'
             CALL OUTPUT(SVECS,1,KZVAR,1,2*NSIM,KZVAR,2*NSIM,-1,LUPRI)
          END IF
          CALL RSPAVE(SVECS(KZCONF+1,1),KZVAR,2*NSIM)
@@ -541,7 +535,7 @@ C
 C
       IF (IPRRSP.GT.110) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  S(2)'//
-     &      ' (Z1 Y1 Z1 Y2 ...)'
+     &      ' (Z1 Y1 Z2 Y2 ...)'
          CALL OUTPUT(SVECS,1,KZVAR,1,2*NSIM,KZVAR,2*NSIM,-1,LUPRI)
       END IF
 C
@@ -1001,7 +995,7 @@ C
 C
       IF (IPRRSP.GT.110) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  E(2)'//
-     &      ' (Z1 Y1 Z1 Y2 ...)'
+     &      ' (Z1 Y1 Z2 Y2 ...)'
          CALL OUTPUT(EVECS,1,KZVAR,1,2*NSIM,KZVAR,2*NSIM,-1,LUPRI)
       END IF
 C
@@ -2721,9 +2715,9 @@ C trial vectors
 C
 C PURPOSE:
 C Solve mcrsp/rpa problem in reduced subspace.
-C the structue of E[2] and S[2] is used to obtain
+C The structue of E[2] and S[2] is used to obtain
 C a reduced problem with pairing of eigensolutions.
-C Allthough only KZRED vectors are known, a reduced
+C Although only KZRED vectors are known, a reduced
 C problem with KZRED*2 vectors is used.
 C
 C Input:
@@ -2731,17 +2725,24 @@ C  ICTL, flow control
 C         =1, extend the reduced E2 and S2 matrices
 C         =2, find the new eigenvalues and -vectors
 C         =3, both
+C  LINEQ, true for linear equations, false for eigenvalues
+C  N, number of new b-vectors
+C  IBTYP, types of the N new b-vectors (in BCVEC or BOVEC)
 C  REDE,REDS, the old reduced matrices (dimension: KZYRED-2*N)
-C  BCVEC,BOVEC, the N new vectors
-C  EVECS, E times the N b-vectors
-C  S times the N b-vectors are created in RSPSLI and
+C  BCVEC,BOVEC, the N new b-vectors
+C  EVECS, E[2] times the N b-vectors
+C  S[2] times the N b-vectors are created in RSPSLI and
 C    stored in EVECS after EVECS is used
-C  N, number of new vectors
+C  GP, the property gradient (when LINEQ true)
+C  REDGP, the old reduced GP vector (dimension: KZYRED-2*N) when LINEQ
+C  UDV, square (unpacked) active density matrix
+C  XINDX, information for CI module
 C
 C
 C Output:
 C  REDE, the new, extended reduced E[2]-matrix (dimension: KZYRED)
 C  REDS, rhe new, extended reduced S[2]-matrix (dimension: KZYRED)
+C  REDGP, rhe new, extended reduced GP vector (dimension: KZYRED) when LINEQ true
 C  EIVEC, eigenvectors of the new reduced mcrsp/rpa eq.
 C  EVALR, real part of eigenvalues of the new reduced  mcrsp/rpa eq.
 C
@@ -2851,8 +2852,8 @@ C EXTEND REDUCED GRADIENTS
 C
          IZYRED= 2*IZRED
          IF (IPRRSP.GT.100) THEN
-            WRITE(LUPRI,*)'  GRADIENT VECTOR (Z-part and Y-part)'
-            CALL OUTPUT(GP,1,2,1,KZVAR,2,KZVAR,-1,LUPRI)
+            WRITE(LUPRI,*)'RSPRED: GRADIENT VECTOR (Z-part and Y-part)'
+            CALL OUTPUT(GP,1,KZVAR,1,2,KZVAR,2,1,LUPRI)
             WRITE(LUPRI,*)KEXSIM,' REDUCED GRADIENT VECTORS DIM IZYRED',
      &         IZYRED
          ENDIF
@@ -2889,7 +2890,7 @@ C
          IF (IPRRSP.GE.15) THEN
             DO I = 1,KEXSIM
                WRITE(LUPRI,'(/I3,A,I5)') I,
-     &            ' REDUCED GRADIENT VECTORS (GZ, GY) DIM KZRED', KZRED
+     &            '. REDUCED GRADIENT VECTOR (GZ, GY) DIM KZRED', KZRED
                CALL OUTPUT(REDGP(1+(I-1)*KZYRED),1,2,1,KZRED,
      &            2,KZRED,-1,LUPRI)
             END DO
@@ -3142,7 +3143,7 @@ C           CALL JACO(F,V,NB,NMAX,NROWV,BIG,JBIG)
                BCVEC(I) = BCVEC( (I*I+I)/2 )
             END DO
             ! CALL ORDER(WRK,BCVEC,KZYRED,0)
-            WRITE(LUPRI,*) 'The eigenvalues of S[2] reduced matri'
+            WRITE(LUPRI,*) 'The eigenvalues of S[2] reduced matrix'
             CALL OUTPUT(BCVEC,1,2,1,KZRED,2,KZRED,-1,LUPRI)
 
             CALL DCOPY(NNZYRED,REDE,1,BCVEC,1)

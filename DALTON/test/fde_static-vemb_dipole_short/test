@@ -1,0 +1,78 @@
+#!/usr/bin/env python
+#    fde_static-vemb_dipole_short
+#    --------------
+#    Molecule:         H2O
+#    Wave Functions:   HF/LDA/PBE/CCSD 
+#    Test Purpose:     calculate ground-state energies and dipole moment for FDE with a fairly inaccurate 
+#                      imported embedding potential (generated with ADF and represented over an integration
+#                      grid) and small (STO-6G) basis. 
+#
+
+import os
+import sys
+import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+os.system('gunzip EMBPOT.2e-1.gz')
+
+f = Filter()
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 10,
+      rel_tolerance = 1.0e-8)
+f.add(from_string = ' Sym       Hartree-Fock orbital energies',
+      num_lines = 4,
+      rel_tolerance = 1.0e-8)
+f.add(from_string = '                                  Dipole moment',
+      num_lines = 4,
+      rel_tolerance = 1.0e-8)
+f.add(string = 'Final HF energy:',
+      rel_tolerance = 1.0e-9)
+
+test.run(['hf_fde.dal'], ['h2o_c2v_sto6g.mol', 'h2o_c1_sto6g.mol'], f={'out': f}, args = '-put EMBPOT.2e-1')
+
+f = Filter()
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 10,
+      rel_tolerance = 1.0e-8)
+f.add(from_string = ' Sym       Kohn-Sham orbital energies',
+      num_lines = 4,
+      rel_tolerance = 1.0e-8)
+f.add(from_string = '                                  Dipole moment',
+      num_lines = 4,
+      rel_tolerance = 1.0e-8)
+f.add(string = 'Final DFT energy:',
+      rel_tolerance = 1.0e-9)
+
+test.run(['lda_fde.dal', 'pbe_fde.dal'], ['h2o_c2v_sto6g.mol', 'h2o_c1_sto6g.mol'], f={'out': f}, args = '-put EMBPOT.2e-1')
+
+f = Filter()
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 10,
+      rel_tolerance = 1.0e-8)
+f.add(from_string = ' Sym       Hartree-Fock orbital energies',
+      num_lines = 4,
+      rel_tolerance = 1.0e-8)
+f.add(from_string = 'Unrelaxed CCSD    First-order one-electron properties',
+      num_lines = 40,
+      rel_tolerance = 1.0e-8)
+f.add(string = 'Final HF energy:',
+      rel_tolerance = 1.0e-9)
+
+test.run(['cc_fde.dal'], ['h2o_c2v_sto6g.mol', 'h2o_c1_sto6g.mol'], f={'out': f}, args = '-put EMBPOT.2e-1', accepted_errors=['not implemented for parallel calculations.'])
+
+os.system('rm EMBPOT.2e-1')
+
+sys.exit(test.return_code)

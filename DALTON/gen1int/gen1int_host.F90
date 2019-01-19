@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 !...  This file contains most host program specific subroutines for Gen1Int interface.
@@ -779,7 +773,7 @@
       if (ierr/=0) then
         call quit("gen1int_host_get_cube>> failed to allocate cube_values!")
       end if
-      cube_values = 0.0_REALK  !necessary to zero
+      cube_values = 0.0_8  !necessary to zero
       call Gen1IntAPIPropGetFunExpt(prop_comp=prop_comp,             &
                                     nary_tree_bra=nary_tree_bra,     &
                                     nary_tree_ket=nary_tree_ket,     &
@@ -832,7 +826,7 @@
         call GPOPEN(LUSIFC, "SIRIFC", "OLD", " ", "UNFORMATTED", ierr, .false.)
       rewind(LUSIFC)
       ! reads the molecular orbital coefficients
-      wrk_space(1:NCMOT) = 0.0_REALK
+      wrk_space(1:NCMOT) = 0.0_8
 #ifdef PRG_DIRAC
       print *, 
       call quit('error: RD_SIRIFC not available in DIRAC')
@@ -1030,8 +1024,8 @@
     num_cube_mo = 0
     if (allocated(idx_cube_mo)) deallocate(idx_cube_mo)
     cube_format = "GAUSSIAN"
-    cube_origin = 0.0_REALK
-    cube_increment = 0.0_REALK
+    cube_origin = 0.0_8
+    cube_increment = 0.0_8
     cube_num_inc = 0
     return
   end subroutine gen1int_host_cube_finalize
@@ -1064,8 +1058,8 @@
     real(REALK), intent(inout) :: wrk_space(len_work)
     integer, intent(in) :: io_viewer
     integer, intent(in) :: level_print
-    real(REALK), parameter :: ERR_THRSH = 10.0_REALK**(-8)    !threshold of error
-    real(REALK), parameter :: RATIO_THRSH = 10.0_REALK**(-6)  !threshold of ratio to the referenced result
+    real(REALK), parameter :: ERR_THRSH = 10.0_8**(-8)    !threshold of error
+    real(REALK), parameter :: RATIO_THRSH = 10.0_8**(-6)  !threshold of ratio to the referenced result
     logical test_failed                                   !indicator if the test failed
     integer num_ao                                        !number of orbitals
     integer, parameter :: NUM_TEST = 11                   !number of tests
@@ -1319,7 +1313,7 @@
       if (PROP_NAME(itest)=="INT_ONE_HAMIL     " .and. &
           GTO_TYPE(itest)==NON_LAO .and.               &
           ORDER_MAG_TOTAL(itest)==1) then
-        wrk_space(1:end_herm_int) = -0.5_REALK*wrk_space(1:end_herm_int)
+        wrk_space(1:end_herm_int) = -0.5_8*wrk_space(1:end_herm_int)
       ! HERMIT uses different sign for the following integrals
       else if (HERM_PROP(itest)=="DPLGRA  " .or. HERM_PROP(itest)=="POTENERG" .or. &
           HERM_PROP(itest)=="NUCSLO  " .or. HERM_PROP(itest)=="PSO     " .or. &
@@ -1761,7 +1755,7 @@
       call GPOPEN(LUSIFC, "SIRIFC", "OLD", " ", "UNFORMATTED", ierr, .false.)
     rewind(LUSIFC)
     ! reads the molecular orbital coefficients
-    wrk_space(1:NCMOT) = 0.0_REALK
+    wrk_space(1:NCMOT) = 0.0_8
 #ifdef PRG_DIRAC
       print *, 'error: RD_SIRIFC not available in DIRAC'
       call quit('error: RD_SIRIFC not available in DIRAC')
@@ -1774,7 +1768,7 @@
     end if
     ! reads active part of one-electron density matrix (MO)
     if (get_dv) then
-      wrk_space(start_dv_mo:start_dv_mo+NNASHX-1) = 0.0_REALK
+      wrk_space(start_dv_mo:start_dv_mo+NNASHX-1) = 0.0_8
 #ifdef PRG_DIRAC
       print *,'error: RD_SIRIFC not available in DIRAC' 
       call quit('error: RD_SIRIFC not available in DIRAC')
@@ -1785,7 +1779,7 @@
       if (.not.found) then
         call quit("gen1int_host_get_dens>> DV is not found on SIRIFC!")
       end if
-      wrk_space(start_dv_ao:start_dv_ao+N2BASX-1) = 0.0_REALK
+      wrk_space(start_dv_ao:start_dv_ao+N2BASX-1) = 0.0_8
     end if
     if (close_sirifc) call GPCLOSE(LUSIFC, "KEEP")
     ! gets the AO density matrix, using
