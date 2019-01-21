@@ -2633,9 +2633,9 @@ C
          ITYPK = IOBTYP(K)
          ITYPL = IOBTYP(L)
          IF (ITYPK .EQ. JTINAC) THEN ! first index inactive
-            EVEC(KZCONF+IG) = EVEC(KZCONF+IG) + D2*V2C_SR(K,L)
+            EVEC(KZCONF+IG) = EVEC(KZCONF+IG) + D2*V2C_SR(L,K)
            IF (.NOT. (TDA .OR. CISRPA)) THEN
-            EVEC(KYCONF+IG) = EVEC(KYCONF+IG) - D2*V2C_SR(L,K)
+            EVEC(KYCONF+IG) = EVEC(KYCONF+IG) - D2*V2C_SR(K,L)
            END IF
          ELSE                        ! first index active
             NK    = ICH(K)
@@ -2645,8 +2645,8 @@ C
                DVKX = UDV(NK,IASHK+NX)
                DVXK = UDV(IASHK+NX,NK)
                IX = (IORBK+NISHK)+NX
-               TEMPZ = TEMPZ + DVKX*V2C_SR(IX,L)
-               TEMPY = TEMPY + DVXK*V2C_SR(L,IX)
+               TEMPZ = TEMPZ + DVKX*V2C_SR(L,IX)
+               TEMPY = TEMPY + DVXK*V2C_SR(IX,L)
             END DO
             EVEC(KZCONF+IG) = EVEC(KZCONF+IG) + TEMPZ
            IF (.NOT. (TDA .OR. CISRPA)) THEN
@@ -2661,8 +2661,8 @@ C
                DVLX = UDV(NL,IASHL+NX)
                DVXL = UDV(IASHL+NX,NL)
                IX = (IORBL+NISHL)+NX
-               TEMPZ = TEMPZ + DVXL*V2C_SR(K,IX)
-               TEMPY = TEMPY + DVLX*V2C_SR(IX,K)
+               TEMPZ = TEMPZ + DVXL*V2C_SR(IX,K)
+               TEMPY = TEMPY + DVLX*V2C_SR(K,IX)
             END DO
             EVEC(KZCONF+IG) = EVEC(KZCONF+IG) - TEMPZ
            IF (.NOT. (TDA .OR. CISRPA)) THEN

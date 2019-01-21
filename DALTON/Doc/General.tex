@@ -1750,6 +1750,13 @@ Do not move molecule to center-of-mass if doing automatic symmetry detection.
 Do not rotate the molecule after automatic symmetry detection to get maximum symmetry in the calculation
 (a rotation axis or a mirror plane normal vector must be along a coordinate axis for \dalton\ to use it).
 
+\item[\Key{NUCMOD}]\verb| |\newline
+\verb|READ (LUCMD, *) INUC|
+
+Choose nuclear model.
+A 1 corresponds to a point nucleus (which is the default in Dalton),
+and 2 corresponds to a Gaussian distribution model (which is the default in the Dirac program, \url{http://diracprogram.org}).
+
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD,*) IPREAD|
 
