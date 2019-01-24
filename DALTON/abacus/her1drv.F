@@ -892,6 +892,12 @@ C
 C        CALL HEADER('GRADFT in DFT_MOLGRAD ',-1)
 C        CALL OUTPUT(GRADFT,1,3,1,NATOMS,3,NATOMS,1,LUPRI)
       END IF
+      IF (PROPTY .AND. SRDFTRUN) THEN
+         IF (EXPGRA) THEN
+            CALL QUIT('ERROR; .EXPGRA not implemented for srDFT')
+         END IF
+         CALL SRDFT_MOLGRAD(WORK,LWORK,IPRINT)
+      END IF
 
 C     ****************************************
 C     ***** PE contribution to gradient ******
@@ -955,6 +961,16 @@ C
 CAMT If requested also emprical dispersion gradient contrib
                IF (DODFTD) THEN
                  CALL HEADER('DFT-D contribution to gradient',-1)
+                 CALL PRIGRD(GRADFTD,WORK(KCSTRA),WORK(KSCTRA))
+               ENDIF
+            END IF
+            IF (SRDFTRUN) THEN
+               CALL HEADER('srDFT contribution to gradient',-1)
+               CALL PRIGRD(GRADFT,WORK(KCSTRA),WORK(KSCTRA))
+CAMT If requested also emprical dispersion gradient contrib
+               IF (DODFTD) THEN
+                 call quit('ERROR: srDFT-D not implemented yet')
+                 CALL HEADER('srDFT-D contribution to gradient',-1)
                  CALL PRIGRD(GRADFTD,WORK(KCSTRA),WORK(KSCTRA))
                ENDIF
             END IF

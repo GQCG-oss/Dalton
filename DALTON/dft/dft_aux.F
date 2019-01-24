@@ -61,8 +61,9 @@ C
       DFTBR1 = 1.0D-20
       DFTBR2 = 1.0D-20
 C
-C     Common block used by SR-DFT hybrids.
+C     Common block variables used when SR-DFT hybrids.
 C
+      SRDFTRUN = .FALSE.
       IF (ERFEXP(1)) THEN
 C        default scaling factor for ERFGAU, as proposed by Savin & Toulouse
 C        (COPFAC becomes approx. 1/3.375)

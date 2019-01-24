@@ -2629,8 +2629,9 @@ C *** Option 25 not used
 C
 C     ... .CISRDFT hybrid
   126 CONTINUE
-         DOCI = .TRUE.
-         FLAG(4) = .TRUE.
+         SRDFTRUN  = .TRUE.
+         DOCI      = .TRUE.
+         FLAG(4)   = .TRUE.
          DOCISRDFT = .TRUE.
          ADDSRI    = .TRUE.
          THRCIDFT  = 1.D-6
@@ -2642,6 +2643,7 @@ C        ... we want to use SIRFCK for generating U_sr integrals.
 C
 C     ... .HFSRDFT  Hartree-Fock srDFT hybrid
   127 CONTINUE
+         SRDFTRUN  = .TRUE.
          DOSCF     = .TRUE.
          DOHFSRDFT = .TRUE.
          ADDSRI    = .TRUE.
@@ -2655,6 +2657,7 @@ C        ... we want to use SIRFCK for generating U_sr integrals.
 C
 C     ... .MCSRDFT hybrid
   128 CONTINUE
+         SRDFTRUN  = .TRUE.
          DOMC      = .TRUE.
          DOMCSRDFT = .TRUE.
          FLAG(2)   = .TRUE.
