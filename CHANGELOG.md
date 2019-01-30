@@ -1,5 +1,10 @@
 # DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
+## [2018.2alpha] (unreleased)
+
+### Fixed
+- more robust .STEX input (old failed with gfortran 8); changed documentation accordingly.
+
 ## [2018.1] (2019-01-14)
 
 ### Fixed
