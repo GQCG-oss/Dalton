@@ -3,6 +3,11 @@
 ## [2019.alpha] (Dalton2019 alpha)
 
 
+## [2018.2alpha] (unreleased)
+
+### Fixed
+- more robust .STEX input (old failed with gfortran 8); changed documentation accordingly.
+
 ## [2018.1] (2019-01-14)
 
 ### Fixed
