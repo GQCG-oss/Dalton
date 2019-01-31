@@ -13,49 +13,33 @@ f = Filter()
 
 #enedft
 f.add(string = 'Final HF energy',
-      rel_tolerance = 1.0e-9)
+      abs_tolerance = 1.0e-9)
 
 #qm3convergence
 f.add(from_string = 'Electrostatic contributions:',
       num_lines = 13,
-      rel_tolerance = 1.0e-8)
+      abs_tolerance = 1.0e-8)
 
 
 f.add(from_string = 'CCSD Total  energy',
       num_lines = 2,
-      rel_tolerance = 1.0e-8)
+      abs_tolerance = 1.0e-8)
 
 f.add(from_string = 'Perturbative triples corrections',
       num_lines = 7,
-      rel_tolerance = 1.0e-8)
-
-#dipole
-#f.add(from_string = 'Dipole moment',
-#      num_lines = 5,
-#      mask = [1],
-#      rel_tolerance = 1.0e-5)
-
-#dipcompx
-#dipcompy
-#dipcompz
-#f.add(from_string = 'Dipole moment components',
-#      num_lines = 8,
-#      rel_tolerance = 1.0e-6)
-
-#excita
-#f.add(from_string = 'Singlet electronic excitation energies',
-#      num_lines = 10,
-#      rel_tolerance = 1.0e-6)
-
+      abs_tolerance = 1.0e-8)
 
 f.add(from_string = 'CCSD       Excitation energies',
-      num_lines = 25,
-      rel_tolerance = 1.0e-6)
+      num_lines = 6,
+      rel_tolerance = 5.0e-5)
+
+f.add(from_string = 'CCSD       Length   Gauge Oscillator Strength',
+      num_lines = 6,
+      abs_tolerance = 1.0e-5)
 
 f.add(from_string = 'CCSDR(3)   Excitation energies',
-      num_lines = 12,
-      rel_tolerance = 1.0e-6)
-
+      num_lines = 6,
+      rel_tolerance = 5.0e-5)
 
 test.run(['peccr3.dal'], ['formaldehyde.mol'], ['water.pot'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
