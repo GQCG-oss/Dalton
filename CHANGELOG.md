@@ -2,6 +2,8 @@
 
 ## [2019.alpha] (Dalton2019 alpha)
 
+### Added
+- added information about .MS2 input option to manual, quit if invalid value specified.
 
 ## [2018.2alpha] (unreleased)
 
