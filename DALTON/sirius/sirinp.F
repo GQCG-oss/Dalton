@@ -1638,7 +1638,7 @@ C
          IF (FLAG(27) .AND. MULTS.ne.abs(MS2)+1) THEN ! determinants
             WRITE(LUPRI,'(//A,I0,A,I0,A)')
      &      ' INPUT ERROR: specified .MS2 and .SPIN MULTIPLICITY (',
-     &      MS2,' and ',MULTS,') are not compatible for determinats.'
+     &      MS2,' and ',MULTS,') are not compatible for determinants.'
             CALL QUIT('INPUT ERROR: .MS2 and .SPIN M not compatible.')
          END IF
       END IF

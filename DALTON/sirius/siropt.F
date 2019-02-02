@@ -962,7 +962,7 @@ C     If (not noupdate or not neo_always or not nr_always) then
                UPDATE = .TRUE.
                DONR   = .FALSE.
                ITRLVL = 0
-            ELSE IF (ISTATE .GT. 1) THEN
+            ELSE IF (.NOT. FLAG(38) .AND. ISTATE .GT. 1) THEN
 C              ... no reason to switch to NR for ground state
                WRITE (LUPRI,'(/A)') ' Local region, DONR activated'
                DONR     = .TRUE.
