@@ -17,6 +17,7 @@
      &        DFTGRID_DONE,   DFTGRID_DONE_OLD    
               ! DFTGRID_DONE for REAQUA, DFTGRID_DONE_OLD for REAQUA_OLD ("grid done")
 !     variables for srDFT /hjaaj
+      LOGICAL SRDFTRUN ! variable primarily for abacus/ routines
       LOGICAL DOSRX_LDA, DOSRX_GGA, DOSRBCK, DOHFEXCH, DOSRX_WIB,       &
      &        DOSRC_LDA, DOSRC_GGA, DOSRC_MULOCAL,                      &
      &        DOSRGGA2, DOSRLYPT, SRCMULOFAC, DSLOCALFAC,               &
@@ -42,6 +43,7 @@
      &        DODFTD, DFTD_TEST,                                        &
      &        DFTGRID_DONE,   DFTGRID_DONE_OLD,                         &
 ! srDFT (logical):
+     &        SRDFTRUN,                                                 &
      &        DOSRX_LDA, DOSRX_GGA, DOSRBCK, DOHFEXCH, DOSRX_WIB,       &
      &        DOSRC_LDA, DOSRC_GGA, DOSRC_MULOCAL(0:3),                 &
      &        DOSRGGA2, DOSRLYPT, SRCMULOFAC, DSLOCALFAC,               &

@@ -1649,6 +1649,12 @@ C
          END IF
       ELSE
          IF (MULTS .LE. 0) MULTS = abs(MS2) + 1
+         IF (FLAG(27) .AND. MULTS.ne.abs(MS2)+1) THEN ! determinants
+            WRITE(LUPRI,'(//A,I0,A,I0,A)')
+     &      ' INPUT ERROR: specified .MS2 and .SPIN MULTIPLICITY (',
+     &      MS2,' and ',MULTS,') are not compatible for determinats.'
+            CALL QUIT('INPUT ERROR: .MS2 and .SPIN M not compatible.')
+         END IF
       END IF
       ISPIN = MULTS
 C     .. ISPIN in infinp.h, MULTS in spinfo.h for CI module
@@ -2634,8 +2640,9 @@ C *** Option 25 not used
 C
 C     ... .CISRDFT hybrid
   126 CONTINUE
-         DOCI = .TRUE.
-         FLAG(4) = .TRUE.
+         SRDFTRUN  = .TRUE.
+         DOCI      = .TRUE.
+         FLAG(4)   = .TRUE.
          DOCISRDFT = .TRUE.
          ADDSRI    = .TRUE.
          THRCIDFT  = 1.D-6
@@ -2647,6 +2654,7 @@ C        ... we want to use SIRFCK for generating U_sr integrals.
 C
 C     ... .HFSRDFT  Hartree-Fock srDFT hybrid
   127 CONTINUE
+         SRDFTRUN  = .TRUE.
          DOSCF     = .TRUE.
          DOHFSRDFT = .TRUE.
          ADDSRI    = .TRUE.
@@ -2660,6 +2668,7 @@ C        ... we want to use SIRFCK for generating U_sr integrals.
 C
 C     ... .MCSRDFT hybrid
   128 CONTINUE
+         SRDFTRUN  = .TRUE.
          DOMC      = .TRUE.
          DOMCSRDFT = .TRUE.
          FLAG(2)   = .TRUE.

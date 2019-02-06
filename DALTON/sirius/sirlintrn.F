@@ -492,7 +492,7 @@ C
            END IF
            CALL DAXPY(NWOPT,D4,WRK(KUBO),1,WRK(KSOVEC+(IOSIM-1)*NVAR),1)
          END DO ! IOSIM
-      END IF ! DFTRUN
+      END IF ! DODFT
       DFTADD = DFTADX 
 C
 C *** Now the solvent contribution, if any

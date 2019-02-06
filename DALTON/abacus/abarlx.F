@@ -385,6 +385,9 @@ C     ******************************************************
 C
       IF (MOLHES.AND.DFTRUN) 
      &           CALL DFTMOLHES(LURD,WORK(KLAST),LWRK1,IPRINT)
+      IF (MOLHES.AND.SRDFTRUN) THEN
+         call quit('ERROR: MOLHES not implemented for srDFT')
+      END IF
 C
 C     ******************************************************
 C     Calculate static contribution to dft magnetic hessian
@@ -392,6 +395,9 @@ C     ******************************************************
 C
       IF (DFTRUN.AND.(MAGSUS.OR.MOLGFA).AND.(.NOT.NOLOND))
      &           CALL DFTBHES(SUSDFT,WORK(KLAST),LWRK1,IPRINT)
+      IF (SRDFTRUN.AND.(MAGSUS.OR.MOLGFA).AND.(.NOT.NOLOND)) THEN
+         call quit('ERROR: magn. HES not implemented for srDFT')
+      END IF
 C
 C     ***********************
 C     ***** Close units *****

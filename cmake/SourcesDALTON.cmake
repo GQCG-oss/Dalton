@@ -857,6 +857,7 @@ if(ENABLE_SRDFT)
         DALTON/srdft/sir_srdft.F
         DALTON/srdft/srdft.F
         DALTON/srdft/srdftjt.F
+        DALTON/srdft/srdft_molgrad.F
         DALTON/srdft/srdft_par.F
         DALTON/srdft/srdftfun.F
         DALTON/srdft/srfunctionals/LDA_ERF_exchange.F
