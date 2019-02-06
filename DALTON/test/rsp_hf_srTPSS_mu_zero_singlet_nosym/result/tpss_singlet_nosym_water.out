@@ -1,0 +1,1951 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON release Dalton2019.alpha (2019)
+         ( Web site: http://daltonprogram.org )
+
+   ----------------------------------------------------------------------------
+
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
+    and
+     
+       Dalton, a molecular electronic structure program,
+       Release Dalton2019.alpha (2019), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            Technical Univ. of Denmark,   Denmark     (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
+  Tobias Fahleson,          KTH Stockholm,                Sweden      (Damped cubic response)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Christoph Jacob           TU Braunschweig               Germany     (Frozen density embedding model)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Subsystems and CC3)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           KTH Stockholm,                Sweden      (Cubic response and complex frequency response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Andre S. P. Gomes,        CNRS/Universite de Lille,     France      (Frozen density embedding model)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  Lucas Visscher,           Vrije Universiteit Amsterdam, Netherlands (Frozen density embedding model)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Tue Feb  5 12:39:21 2019
+     Host name              : s94p19.deic.sdu.dk                      
+
+ * Work memory size             :   320000000 =  2.384 gigabytes.
+
+ * Directories for basis set searches:
+   1) /work/sdujk/kjellgren/tpss_test
+   2) /gpfs/gss1/work/sdujk/kjellgren/programs/dalton/srdft_dalton_metaGGA/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | kjellgren
+ Host                     | fe2.deic.sdu.dk
+ System                   | Linux-3.10.0-327.36.3.el7.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | ON
+ Fortran compiler         | /opt/sys/apps/intel/2018.05/impi_latest/intel64/bi
+                          | n/mpiifort
+ Fortran compiler version | unknown
+ C compiler               | /opt/sys/apps/intel/2018.05/impi_latest/intel64/bi
+                          | n/mpiicc
+ C compiler version       | unknown
+ C++ compiler             | /opt/sys/apps/intel/2018.05/impi_latest/intel64/bi
+                          | n/mpiicpc
+ C++ compiler version     | unknown
+ Static linking           | OFF
+ Last Git revision        | 7e10a07b3965a4ccd38c7cf03e3f3189f1f405f3
+ Git branch               | kjellgren-srdft_metagga
+ Configuration time       | 2019-01-21 14:37:58.199462
+
+ * MPI parallel run using 24 processes.
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+*DALTON INPUT
+.RUN RESPONSE
+**INTEGRALS
+*TWOINT
+.DOSRINTEGRALS
+.ERF
+ 0.000001
+**WAVE FUNCTIONS
+.HFSRDFT
+.SRFUN
+ SRXTPSS_S SRCTPSS_S
+*DFT INPUT
+.ULTRAFINE
+**RESPONSE
+.MAXRM
+ 2000
+*LINEAR
+.SINGLE RESIDUE
+.ROOTS
+ 20
+.MAX IT
+ 100
+.PRINT
+ 4
+**END OF DALTON INPUT
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS
+3-21G
+
+
+Atomtypes=2 Nosymmetry Angstrom Cartesian
+Charge=8.0 Atoms=1
+O 0.000000    0.000000    0.118835
+Charge=1.0 Atoms=2
+H 0.000000    0.764176   -0.475338
+H 0.000000   -0.764176   -0.475338
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    Parallel calculation using MPI
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1:                                                                         
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+  Coordinates are entered in Angstrom and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   8 :
+     "/gpfs/gss1/work/sdujk/kjellgren/programs/dalton/srdft_dalton_metaGGA/basis/3-21G"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 3-21G                                                                           
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/gpfs/gss1/work/sdujk/kjellgren/programs/dalton/srdft_dalton_metaGGA/basis/3-21G"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 3-21G                                                                           
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):    0.000000   -0.000000    0.098905
+ Center-of-mass coordinates (Angs):    0.000000   -0.000000    0.052338
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    3
+
+  Basis set used is "3-21G" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  O           1    8.0000    15     9      [6s3p|3s2p]                                        
+  H           2    1.0000     3     2      [3s|2s]                                            
+  ----------------------------------------------------------------------
+  total:      3   10.0000    21    13
+  ----------------------------------------------------------------------
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    9
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.2245656041
+  H       :     4  x   0.0000000000    5  y   1.4440833513    6  z  -0.8982586368
+  H       :     7  x   0.0000000000    8  y  -1.4440833513    9  z  -0.8982586368
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           H           H     
+            ------      ------      ------
+ O     :    0.000000
+ H     :    0.967991    0.000000
+ H     :    0.967991    1.528352    0.000000
+
+
+  Max    interatomic separation is    1.5284 Angstrom (    2.8882 Bohr)
+  between atoms    3 and    2, "H     " and "H     ".
+
+  Min HX interatomic separation is    0.9680 Angstrom (    1.8292 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H          O            0.967991
+  bond distance:  H          O            0.967991
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H          O          H            104.267
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.631969          0.000000    1.000000    0.000000
+   IB       1.177069          0.000000    0.000000    1.000000
+   IC       1.809038          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is planar.
+
+               A                   B                   C
+
+         799689.9693         429353.7755         279363.4555 MHz
+           26.674786           14.321700            9.318562 cm-1
+
+
+@  Nuclear repulsion energy :    9.093052777509 Hartree
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000     -0.000000000000      0.098904877645
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+  Set-up from HR2INP:
+  -------------------
+
+ Print level in TWOINT:    1
+
+ DFT-hybrid : Using a Erf type two-elec. operator
+              with the coupling parameter :    0.00000
+ * Direct calculation of Fock matrices in AO-basis.
+ * Program controlled screening thresholds used for this.
+ * Separate density screening of Coulomb integral batches
+ * Separate density screening of exchange integral batches
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x      0.00000000         0.00000000         0.00000000
+      y      0.00000000         0.00000000         0.00000000
+      z      0.00000756         0.00001921         0.00006409
+
+
+  Total CPU  time used in HERMIT:   0.01 seconds
+  Total wall time used in HERMIT:   0.06 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+
+ Settings for DFT calculation:
+ -----------------------------
+
+     Default thresholds:                                       1.00D-09    1.00D-10    2.00D-12
+     Default threshold for number of electrons:                1.00D-03
+     DFT radial quadrature accuracy and ang. expansion order:              2.00D-15  64
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:    7
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+          -20.684798      -1.604626      -0.777511      -0.689317      -0.616200
+           -0.235816      -0.171633
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Feb  5 12:39:22 2019
+     Host name              : s94p19.deic.sdu.dk                      
+
+ Title lines from ".mol" input file:
+                                                                             
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, closed shell HF-srDFT hybrid calculation.
+
+@    Time-dependent HF-srDFT calculation (response properties).
+ Fock matrices are calculated directly and in parallel without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option
+
+     Wave function specification
+     ============================
+@    Wave function type        --- HF-srDFT ---
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 1 (point group: C1 )
+@    Reference state symmetry                   1 (irrep name : A  )
+
+@    This is a lrWFT-srDFT calculation using the 
+@      SRXTPSS_S  short range exchange functional
+@      SRCTPSS_S  short range correlation functional
+
+@    sr-DFT and exact sr-HF exchange weights:    1.000000    0.000000
+
+     Orbital specifications
+     ======================
+@    Abelian symmetry species          All |    1
+@                                          |  A  
+                                       --- |  ---
+@    Occupied SCF orbitals               5 |    5
+@    Secondary orbitals                  8 |    8
+@    Total number of orbitals           13 |   13
+@    Number of basis functions          13 |   13
+
+     Optimization information
+     ========================
+@    Number of configurations                 1
+@    Number of orbital rotations             40
+     ------------------------------------------
+@    Total number of variables               41
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
+
+
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
+ -----------------------------------------------------------------------------
+
+***  INFO  GETGAB: GABSRXXX not found on AOPROPER. Regenerating.
+
+   Ex-sr + Ec-sr                         -9.3057900665
+ + EJsr = sr Coulomb energy              46.7049287564
+ = Total E(srDFT)                        37.3991386899
+
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  6.59D-01  6.85D-01
+@  1    -75.8321224456        1.48135D+00   -7.58D+01    1
+      Virial theorem: -V/T =      2.002490
+@    MULPOP   O      -0.50; H       0.25; H       0.25; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
+ -----------------------------------------------------------------------------
+
+   Ex-sr + Ec-sr                         -9.3100607868
+ + EJsr = sr Coulomb energy              46.4265834644
+ = Total E(srDFT)                        37.1165226776
+
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    F  9.16D-02  9.20D-02
+@  2    -75.9744814554        2.45018D-01   -1.42D-01    2
+      Virial theorem: -V/T =      2.010246
+@    MULPOP   O      -0.57; H       0.29; H       0.29; 
+   2  Level shift: doubly occupied orbital energies shifted by -5.00D-02
+ -----------------------------------------------------------------------------
+
+   Ex-sr + Ec-sr                         -9.4038855102
+ + EJsr = sr Coulomb energy              47.2264413748
+ = Total E(srDFT)                        37.8225558646
+
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  1.58D-01  1.58D-01
+@  3    -75.9742519957        2.76840D-01    2.29D-04    3
+      Virial theorem: -V/T =      2.001208
+@    MULPOP   O      -0.71; H       0.36; H       0.36; 
+   3  Level shift: doubly occupied orbital energies shifted by -5.00D-02
+ -----------------------------------------------------------------------------
+
+   Ex-sr + Ec-sr                         -9.3562304499
+ + EJsr = sr Coulomb energy              46.8048212685
+ = Total E(srDFT)                        37.4485908186
+
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    4    F  1.21D-01  1.20D-01
+@  4    -75.9772905843        3.52194D-03   -3.04D-03    4
+      Virial theorem: -V/T =      2.006008
+@    MULPOP   O      -0.65; H       0.32; H       0.32; 
+   4  Level shift: doubly occupied orbital energies shifted by -1.25D-02
+ -----------------------------------------------------------------------------
+
+   Ex-sr + Ec-sr                         -9.3555584040
+ + EJsr = sr Coulomb energy              46.7981330587
+ = Total E(srDFT)                        37.4425746547
+
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  1.21D-01  1.21D-01
+@  5    -75.9772905199        2.71226D-03    6.44D-08    5
+      Virial theorem: -V/T =      2.006020
+@    MULPOP   O      -0.65; H       0.32; H       0.32; 
+   5  Level shift: doubly occupied orbital energies shifted by -1.25D-02
+ -----------------------------------------------------------------------------
+
+   Ex-sr + Ec-sr                         -9.3560118629
+ + EJsr = sr Coulomb energy              46.8024419247
+ = Total E(srDFT)                        37.4464300618
+
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    F  9.56D-02  9.70D-02
+@  6    -75.9772908679        2.86752D-05   -3.48D-07    6
+      Virial theorem: -V/T =      2.005979
+@    MULPOP   O      -0.65; H       0.32; H       0.32; 
+ -----------------------------------------------------------------------------
+
+   Ex-sr + Ec-sr                         -9.3560128839
+ + EJsr = sr Coulomb energy              46.8024357581
+ = Total E(srDFT)                        37.4464228742
+
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    7    F  1.14D-01  1.14D-01
+@  7    -75.9772908680        1.18642D-06   -7.44D-11    7
+
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:    -75.977290867957    1.19D-06
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Number of electrons :   10
+ Orbital occupations :    5
+
+ Sym       Hartree-Fock orbital energies
+
+1 A     -18.75788765    -0.92133528    -0.45677156    -0.27437817    -0.20114825
+          0.08215609     0.17099419     0.91172963     0.98616991     1.39878666
+          1.48251849     1.60371650     2.71094788
+
+    E(LUMO) :     0.08215609 au (symmetry 1)
+  - E(HOMO) :    -0.20114825 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.28330434 au
+
+ --- Writing SIRIFC interface file
+
+ CPU and wall time for SCF :       1.366       1.393
+
+
+                       .-----------------------------------.
+                       | --- Final results from SIRIUS --- |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A   in C1  )
+@    Total charge of molecule:    0
+
+@    Final HF-SRDFT energy:       -75.977290867957
+@    Nuclear repulsion:             9.093052777509
+@    Electronic energy:           -85.070343645467
+
+@    Final gradient norm:           0.000001186422
+
+ 
+     Date and time (Linux)  : Tue Feb  5 12:39:23 2019
+     Host name              : s94p19.deic.sdu.dk                      
+
+
+ INFO: Sorry, plot of MOs with Molden is only implemented for spherical GTOs
+
+File label for MO orbitals:   5Feb19   FOCKDIIS
+
+ (Only coefficients > 0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A  )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 O   :s     -0.9825   0.2242   0.0000   0.1079  -0.0000   0.1104  -0.0000
+   2 O   :s     -0.1015  -0.2169   0.0000  -0.0930   0.0000  -0.0660   0.0000
+   3 O   :s      0.0419  -0.6746  -0.0000  -0.4887   0.0000  -0.9761   0.0000
+   4 O   :px     0.0000  -0.0000  -0.0000   0.0000   0.5264  -0.0000  -0.0000
+   5 O   :py     0.0000  -0.0000  -0.4094   0.0000  -0.0000  -0.0000  -0.3781
+   6 O   :pz     0.0035   0.1224  -0.0000  -0.4351   0.0000   0.2683  -0.0000
+   7 O   :px     0.0000  -0.0000  -0.0000   0.0000   0.6273  -0.0000  -0.0000
+   8 O   :py    -0.0000  -0.0000  -0.3410   0.0000  -0.0000  -0.0000  -0.7335
+   9 O   :pz    -0.0072   0.1176  -0.0000  -0.4740   0.0000   0.4643  -0.0000
+  10 H   :s     -0.0027  -0.1281  -0.2392   0.1332  -0.0000   0.0995   0.1060
+  11 H   :s     -0.0074  -0.0252  -0.2015   0.1290  -0.0000   0.8093   1.0711
+  12 H   :s     -0.0027  -0.1281   0.2392   0.1332  -0.0000   0.0995  -0.1060
+  13 H   :s     -0.0074  -0.0252   0.2015   0.1290  -0.0000   0.8093  -1.0711
+
+    Orbital         8        9       10       11       12       13
+   1 O   :s     -0.0000  -0.0565   0.0000  -0.0537  -0.0000   0.0856
+   2 O   :s     -0.0000   0.1030  -0.0000   0.1448   0.0000  -1.6353
+   3 O   :s      0.0000  -0.0169  -0.0000   0.1912   0.0000   1.9922
+   4 O   :px    -0.0000   0.0000  -1.0267  -0.0000  -0.0000   0.0000
+   5 O   :py    -0.2123   0.0000   0.0000  -0.0000  -1.0325  -0.0000
+   6 O   :pz    -0.0000  -0.3405  -0.0000   0.9770  -0.0000   0.1502
+   7 O   :px    -0.0000   0.0000   0.9683  -0.0000  -0.0000   0.0000
+   8 O   :py    -0.2907   0.0000   0.0000   0.0000   1.4522  -0.0000
+   9 O   :pz    -0.0000  -0.1598  -0.0000  -1.1834  -0.0000  -0.5040
+  10 H   :s      0.9452  -0.9458   0.0000  -0.3366  -0.1936  -0.2948
+  11 H   :s     -0.8178   0.5635   0.0000  -0.0634  -0.5049  -0.3611
+  12 H   :s     -0.9452  -0.9458   0.0000  -0.3366   0.1936  -0.2948
+  13 H   :s      0.8178   0.5635   0.0000  -0.0634   0.5049  -0.3611
+
+  Total CPU  time used in SIRIUS :   1.38 seconds
+  Total wall time used in SIRIUS :   1.41 seconds
+
+ 
+     Date and time (Linux)  : Tue Feb  5 12:39:23 2019
+     Host name              : s94p19.deic.sdu.dk                      
+
+ NOTE:    1 informational messages have been issued.
+ Check output, result, and error files for "INFO".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
+ ----------------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, SOPPA and SOPPA-srDFT response property program
+ ----------------------------------------------------------------------------------------
+
+
+ -------- OUTPUT FROM RESPONSE INPUT PROCESSING --------
+
+
+
+
+ CHANGES OF DEFAULTS FOR RSPINP:
+ -------------------------------
+
+
+ AO-direct Fock matrix calculations.
+
+ Default : Using Fock type decoupling of the two-electron density matrix :
+    Add DV*(FC+FV) instead of DV*FC to E[2] approximate orbital diagonal
+
+
+ Max dimension of reduced space. MAXRM =  2000
+
+
+  Linear Response single residue calculation
+ -------------------------------------------
+
+
+    4 input options by user.
+
+ Print level                                    : IPRPP  =   4
+ Maximum number of iterations for eigenval.eqs. : MAXITP = 100
+ Threshold for convergence of eigenvalue eqs.   : THCPP  = 1.000D-03
+ Maximum iterations in optimal orbital algorithm: MAXITO =   5
+
+ General print level in RESPONS is IPRRSP =         4
+
+     20 Excitation energies are calculated for symmetry no.    1
+
+
+   SCF energy         :      -75.977290867957294
+ -- inactive part     :      -85.070343645466551
+ -- nuclear repulsion :        9.093052777509254
+
+
+                      *************************************
+                      *** HF-srDFT response calculation ***
+                      *************************************
+
+ ----------------------------------------------------------------
+ ----- Linear response calculation
+ ----- Symmetry of excitation/property operator(s)    1  ( A  )
+ ----------------------------------------------------------------
+
+ Number of excitations of this symmetry           20
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:           1
+ Perturbation spin symmetry.TRPLET:           F
+ Orbital variables.         KZWOPT:          40
+ Configuration variables.   KZCONF:           0
+ Total number of variables. KZVAR :          40
+ Electrons in DFTMOMO:    9.99999970448173
+
+ --- In RSPPP:
+ THCPP, MAXRM          1.00D-03      2000
+ KSYMOP,NGPPP(KSYMOP)         1         0
+ LWRK , LWRK1         319999450 307993112
+  KEXCNV,NSIM,LWRK2           20          15    12006599
+
+
+
+ --- EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) ---
+
+ Operator symmetry = 1  ( A  ); triplet =   F
+
+           0  START configuration VECTORS USING LOWEST DIAGONAL HESSIAN ELEMENTS
+          20  START orbital VECTORS
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    5.40603D-02  0.00D+00  5.41D-02  7.07D-01    2.95217D-01
+         2    7.02297D-03  0.00D+00  7.02D-03  7.07D-01    3.75893D-01
+         3    6.53542D-02  0.00D+00  6.54D-02  7.09D-01    3.80108D-01
+         4    5.56331D-02  0.00D+00  5.56D-02  7.08D-01    4.75091D-01
+         5    4.82987D-02  0.00D+00  4.83D-02  7.08D-01    5.67575D-01
+         6    1.50907D-01  0.00D+00  1.51D-01  7.13D-01    7.12085D-01
+         7    1.69162D-01  0.00D+00  1.69D-01  7.10D-01    1.07325D+00
+         8    1.39805D-03  0.00D+00  1.40D-03  7.07D-01    1.10961D+00
+         9    8.43903D-02  0.00D+00  8.44D-02  7.07D-01    1.12482D+00
+        10    4.63700D-02  0.00D+00  4.64D-02  7.07D-01    1.20301D+00
+        11    7.33452D-02  0.00D+00  7.33D-02  7.08D-01    1.22723D+00
+        12    7.84524D-02  0.00D+00  7.85D-02  7.08D-01    1.27415D+00
+        13    7.81021D-02  0.00D+00  7.81D-02  7.08D-01    1.43958D+00
+        14    4.36317D-02  0.00D+00  4.36D-02  7.08D-01    1.50911D+00
+        15    1.57917D-01  0.00D+00  1.58D-01  7.08D-01    1.66097D+00
+        16    6.53537D-02  0.00D+00  6.54D-02  7.07D-01    1.66591D+00
+        17    1.33484D-02  0.00D+00  1.33D-02  7.07D-01    1.67855D+00
+        18    2.12228D-02  0.00D+00  2.12D-02  7.07D-01    1.78911D+00
+        19    3.90940D-02  0.00D+00  3.91D-02  7.07D-01    1.86643D+00
+        20    6.52903D-01  0.00D+00  6.53D-01  7.22D-01    2.08317D+00
+
+ (RSPORT) b-vector no. 17 is removed because of linear dependence; 6.81643D-32
+
+ (RSPORT) b-vector no. 18 is removed because of linear dependence; 2.33725D-31
+RSPORT:    2 out of   20 new trial vectors linear dependent
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.27993D-14  0.00D+00  1.28D-14  7.08D-01    2.94996D-01
+         2    1.01151D-14  0.00D+00  1.01D-14  7.07D-01    3.75879D-01
+         3    1.63387D-04  0.00D+00  1.63D-04  7.09D-01    3.79282D-01
+         4    4.26547D-06  0.00D+00  4.27D-06  7.08D-01    4.74942D-01
+         5    1.00083D-05  0.00D+00  1.00D-05  7.08D-01    5.67080D-01
+         6    3.75292D-04  0.00D+00  3.75D-04  7.13D-01    7.07877D-01
+         7    3.84101D-04  0.00D+00  3.84D-04  7.09D-01    1.06721D+00
+         8    1.10336D-14  0.00D+00  1.10D-14  7.07D-01    1.10961D+00
+         9    1.50425D-05  0.00D+00  1.50D-05  7.07D-01    1.12424D+00
+        10    1.79464D-14  0.00D+00  1.79D-14  7.07D-01    1.20290D+00
+        11    5.34915D-06  0.00D+00  5.35D-06  7.08D-01    1.22695D+00
+        12    1.59988D-04  0.00D+00  1.60D-04  7.08D-01    1.27240D+00
+        13    2.79288D-06  0.00D+00  2.79D-06  7.08D-01    1.43764D+00
+        14    2.73767D-05  0.00D+00  2.74D-05  7.08D-01    1.50827D+00
+        15    6.72385D-05  0.00D+00  6.72D-05  7.08D-01    1.64971D+00
+        16    1.60211D-14  0.00D+00  1.60D-14  7.07D-01    1.66531D+00
+        17    1.74329D-14  0.00D+00  1.74D-14  7.07D-01    1.67852D+00
+        18    2.45918D-14  0.00D+00  2.46D-14  7.07D-01    1.78718D+00
+        19    1.65103D-13  0.00D+00  1.65D-13  7.07D-01    1.84873D+00
+        20    5.75184D-04  0.00D+00  5.75D-04  7.07D-01    1.85656D+00
+
+ *** THE REQUESTED   20 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   76)
+ RSP solution vector no.    1; norm of residual   1.81D-14
+ RSP solution vector no.    2; norm of residual   1.43D-14
+ RSP solution vector no.    3; norm of residual   2.30D-04
+ RSP solution vector no.    4; norm of residual   6.02D-06
+ RSP solution vector no.    5; norm of residual   1.41D-05
+ RSP solution vector no.    6; norm of residual   5.26D-04
+ RSP solution vector no.    7; norm of residual   5.41D-04
+ RSP solution vector no.    8; norm of residual   1.56D-14
+ RSP solution vector no.    9; norm of residual   2.13D-05
+ RSP solution vector no.   10; norm of residual   2.54D-14
+ RSP solution vector no.   11; norm of residual   7.56D-06
+ RSP solution vector no.   12; norm of residual   2.26D-04
+ RSP solution vector no.   13; norm of residual   3.94D-06
+ RSP solution vector no.   14; norm of residual   3.86D-05
+ RSP solution vector no.   15; norm of residual   9.49D-05
+ RSP solution vector no.   16; norm of residual   2.27D-14
+ RSP solution vector no.   17; norm of residual   2.47D-14
+ RSP solution vector no.   18; norm of residual   3.48D-14
+ RSP solution vector no.   19; norm of residual   2.33D-13
+ RSP solution vector no.   20; norm of residual   8.13D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+
+ **************************************************************************************
+ *** @ Excit. operator sym 1 & ref. state sym 1 => excited state symmetry 1  ( A  ) ***
+ **************************************************************************************
+
+
+
+ @ Excited state no:    1 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :  0.29499561     au
+@                       8.0272390     eV;   64744.053     cm-1;   774.51087     kJ / mol
+
+@ Total energy :       -75.682295     au
+
+ Eigenvector for state no.  1
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          33         5(1)   6(1)        0.7071776138        0.0142981490        1.0001001724        0.0202206362
+
+       39 elements with absolute value ≤ 1.00D-01 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.6530
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.4291
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:    2 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :  0.37587940     au
+@                       10.228199     eV;   82495.991     cm-1;   986.87120     kJ / mol
+
+@ Total energy :       -75.601411     au
+
+ Eigenvector for state no.  2
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          34         5(1)   7(1)       -0.7071066550       -0.0035336217       -0.9999998215       -0.0049972958
+
+       39 elements with absolute value ≤ 1.00D-01 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.5792
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.3998
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:    3 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :  0.37928150     au
+@                       10.320775     eV;   83242.667     cm-1;   995.80343     kJ / mol
+
+@ Total energy :       -75.598009     au
+
+ Eigenvector for state no.  3
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          18         3(1)   7(1)       -0.0904751316        0.0223242439       -0.1279511581        0.0315712485
+          25         4(1)   6(1)       -0.7013998054       -0.0216844004       -0.9919291174       -0.0306663731
+
+       38 elements with absolute value ≤ 9.92D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.7505
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.5753
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:    4 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :  0.47494177     au
+@                       12.923823     eV;   104237.67     cm-1;   1246.9594     kJ / mol
+
+@ Total energy :       -75.502349     au
+
+ Eigenvector for state no.  4
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          17         3(1)   6(1)       -0.1228648495        0.0077539427       -0.1737571365        0.0109657309
+          26         4(1)   7(1)       -0.6956226658       -0.0223510197       -0.9837590082       -0.0316091152
+
+       38 elements with absolute value ≤ 9.84D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.6787
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.5737
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:    5 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :  0.56707977     au
+@                       15.431025     eV;   124459.62     cm-1;   1488.8677     kJ / mol
+
+@ Total energy :       -75.410211     au
+
+ Eigenvector for state no.  5
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          17         3(1)   6(1)       -0.6955884087       -0.0177061089       -0.9837105614       -0.0250402194
+          26         4(1)   7(1)        0.1220448848        0.0146712332        0.1725975313        0.0207482570
+
+       38 elements with absolute value ≤ 9.84D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.4214
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.6481
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:    6 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :  0.70787691     au
+@                       19.262311     eV;   155361.02     cm-1;   1858.5306     kJ / mol
+
+@ Total energy :       -75.269414     au
+
+ Eigenvector for state no.  6
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+           9         2(1)   6(1)       -0.0932456459        0.0161067951       -0.1318692571        0.0227784481
+          18         3(1)   7(1)        0.6921571282        0.0415158492        0.9788579980        0.0587122770
+          25         4(1)   6(1)       -0.0861584795       -0.0284394661       -0.1218464902       -0.0402194786
+
+       37 elements with absolute value ≤ 9.79D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.3393
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.7605
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:    7 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.0672090     au
+@                       29.040234     eV;   234225.30     cm-1;   2801.9568     kJ / mol
+
+@ Total energy :       -74.910082     au
+
+ Eigenvector for state no.  7
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+           9         2(1)   6(1)        0.6929831494        0.0213242058        0.9800261683        0.0301569811
+          18         3(1)   7(1)        0.0791782626        0.0205280133        0.1119749728        0.0290309948
+          37         5(1)  10(1)        0.0848316596       -0.0169439475        0.1199700835       -0.0239623604
+
+       37 elements with absolute value ≤ 9.80D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.4081
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.6211
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:    8 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.1096090     au
+@                       30.193998     eV;   243531.03     cm-1;   2913.2781     kJ / mol
+
+@ Total energy :       -74.867682     au
+
+ Eigenvector for state no.  8
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          35         5(1)   8(1)        0.7071002365       -0.0010396467        0.9999907445       -0.0014702825
+
+       39 elements with absolute value ≤ 1.00D-01 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.4477
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.3613
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:    9 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.1242353     au
+@                       30.592000     eV;   246741.14     cm-1;   2951.6794     kJ / mol
+
+@ Total energy :       -74.853056     au
+
+ Eigenvector for state no.  9
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          10         2(1)   7(1)       -0.6893885452       -0.0099236148       -0.9749426304       -0.0140341106
+          27         4(1)   8(1)        0.1533403679       -0.0041064786        0.2168560280       -0.0058074378
+
+       38 elements with absolute value ≤ 9.75D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.3539
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.5722
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:   10 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.2029020     au
+@                       32.732629     eV;   264006.47     cm-1;   3158.2187     kJ / mol
+
+@ Total energy :       -74.774389     au
+
+ Eigenvector for state no. 10
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          36         5(1)   9(1)       -0.7067228150       -0.0046080552       -0.9994569898       -0.0065167741
+
+       39 elements with absolute value ≤ 9.99D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.6054
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.4187
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:   11 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.2269543     au
+@                       33.387126     eV;   269285.35     cm-1;   3221.3681     kJ / mol
+
+@ Total energy :       -74.750337     au
+
+ Eigenvector for state no. 11
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          10         2(1)   7(1)        0.1546591610        0.0089774089        0.2187210830        0.0126959735
+          20         3(1)   9(1)       -0.1186831997        0.0096010950       -0.1678433907        0.0135779988
+          27         4(1)   8(1)        0.6789258050        0.0114926757        0.9601460813        0.0162530978
+
+       37 elements with absolute value ≤ 9.60D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.5430
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.5729
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:   12 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.2723992     au
+@                       34.623742     eV;   279259.33     cm-1;   3340.6835     kJ / mol
+
+@ Total energy :       -74.704892     au
+
+ Eigenvector for state no. 12
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          19         3(1)   8(1)       -0.1240858397        0.0045154168       -0.1754838773        0.0063857637
+          28         4(1)   9(1)        0.6905393928        0.0032311830        0.9765701747        0.0045695829
+
+       38 elements with absolute value ≤ 9.77D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.6908
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.5608
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:   13 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.4376449     au
+@                       39.120309     eV;   315526.59     cm-1;   3774.5362     kJ / mol
+
+@ Total energy :       -74.539646     au
+
+ Eigenvector for state no. 13
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          19         3(1)   8(1)       -0.6899123989       -0.0169997999       -0.9756834713       -0.0240413475
+          28         4(1)   9(1)       -0.1130694859       -0.0074214074       -0.1599044005       -0.0104954550
+          37         5(1)  10(1)       -0.0841815254        0.0044975699       -0.1190506550        0.0063605244
+
+       37 elements with absolute value ≤ 9.76D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.2178
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.7800
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:   14 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.5082693     au
+@                       41.042094     eV;   331026.84     cm-1;   3959.9603     kJ / mol
+
+@ Total energy :       -74.469022     au
+
+ Eigenvector for state no. 14
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          11         2(1)   8(1)       -0.0788226539        0.0076619566       -0.1114720662        0.0108356430
+          20         3(1)   9(1)       -0.6915791033       -0.0153090166       -0.9780405474       -0.0216502189
+          27         4(1)   8(1)       -0.1172972364       -0.0140250623       -0.1658833425       -0.0198344333
+
+       37 elements with absolute value ≤ 9.78D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.3692
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.6890
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:   15 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.6497124     au
+@                       44.890957     eV;   362070.01     cm-1;   4331.3191     kJ / mol
+
+@ Total energy :       -74.327579     au
+
+ Eigenvector for state no. 15
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          12         2(1)   9(1)        0.0703991986       -0.0051018332        0.0995595015       -0.0072150818
+          23         3(1)  12(1)       -0.0801184612        0.0088703132       -0.1133046144        0.0125445173
+          30         4(1)  11(1)        0.3921459623       -0.0123382123        0.5545781383       -0.0174488672
+          37         5(1)  10(1)       -0.5741741950       -0.0087952896       -0.8120049337       -0.0124384179
+
+       36 elements with absolute value ≤ 8.12D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.0276
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.8590
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ **************************************************************************************
+ *** @ Excit. operator sym 1 & ref. state sym 1 => excited state symmetry 1  ( A  ) ***
+ **************************************************************************************
+
+
+
+ @ Excited state no:   16 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.6653109     au
+@                       45.315414     eV;   365493.48     cm-1;   4372.2730     kJ / mol
+
+@ Total energy :       -74.311980     au
+
+ Eigenvector for state no. 16
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          29         4(1)  10(1)        0.6156646028       -0.0014481806        0.8706812311       -0.0020480367
+          38         5(1)  11(1)        0.3467195337       -0.0019002674        0.4903354669       -0.0026873839
+
+       38 elements with absolute value ≤ 8.71D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.1233
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.5586
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:   17 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.6785187     au
+@                       45.674818     eV;   368392.28     cm-1;   4406.9503     kJ / mol
+
+@ Total energy :       -74.298772     au
+
+ Eigenvector for state no. 17
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          29         4(1)  10(1)        0.3472154897        0.0005547528        0.4910368546        0.0007845389
+          38         5(1)  11(1)       -0.6159391392        0.0009428863       -0.8710694843        0.0013334426
+
+       38 elements with absolute value ≤ 8.71D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.1478
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.5648
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:   18 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.7871793     au
+@                       48.631623     eV;   392240.52     cm-1;   4692.2385     kJ / mol
+
+@ Total energy :       -74.190112     au
+
+ Eigenvector for state no. 18
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          21         3(1)  10(1)        0.1241348094       -0.0023301337        0.1755531310       -0.0032953067
+          39         5(1)  12(1)       -0.6961362207        0.0034272124       -0.9844852846        0.0048468103
+
+       38 elements with absolute value ≤ 9.84D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.0644
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.5448
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:   19 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.8487262     au
+@                       50.306398     eV;   405748.49     cm-1;   4853.8298     kJ / mol
+
+@ Total energy :       -74.128565     au
+
+ Eigenvector for state no. 19
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          21         3(1)  10(1)       -0.6961290061        0.0012837021       -0.9844750817        0.0018154289
+          39         5(1)  12(1)       -0.1241235559       -0.0014901443       -0.1755372162       -0.0021073823
+
+       38 elements with absolute value ≤ 9.84D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.2332
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.5083
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ @ Excited state no:   20 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
+
+@ Excitation energy :   1.8565649     au
+@                       50.519702     eV;   407468.90     cm-1;   4874.4105     kJ / mol
+
+@ Total energy :       -74.120726     au
+
+ Eigenvector for state no. 20
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+          11         2(1)   8(1)       -0.4955381155       -0.0031563387       -0.7007967236       -0.0044637369
+          22         3(1)  11(1)       -0.1298880909        0.0028306830       -0.1836894997        0.0040031902
+          31         4(1)  12(1)        0.4858748491       -0.0028008475        0.6871308013       -0.0039609966
+
+       37 elements with absolute value ≤ 7.01D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
+
+
+                              MO Overlap Diagnostic
+                              ---------------------
+
+ 
+
+Delta_R Diagnostic (Aa):     0.1425
+ 
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+
+@ Overlap diagnostic LAMBDA =    0.5762
+
+@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+@            J Chem Phys 128, 044118 (2008)
+
+
+
+ Time used in polarization propagator calculation is      5.74 CPU seconds for symmetry 1
+
+  Total CPU  time used in RESPONSE:   5.74 seconds
+  Total wall time used in RESPONSE:   5.79 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+  Total CPU  time used in DALTON:   7.16 seconds
+  Total wall time used in DALTON:   7.44 seconds
+
+ 
+     Date and time (Linux)  : Tue Feb  5 12:39:29 2019
+     Host name              : s94p19.deic.sdu.dk                      

@@ -1,4 +1,4 @@
-C File: srdft/dftfun_autogen.F
+C File: srdft/srdftfun.F
 
 
 C****************************************************************************
