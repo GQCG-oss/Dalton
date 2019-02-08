@@ -14,6 +14,6 @@ f.add(string = 'Final HF-SRDFT energy',
 f.add(string = '@ Excitation energy :',
       rel_tolerance = 1.0e-3)
 
-test.run(['tpss_singlet_nosym.dal'], ['water.mol'], f={'out': f})
+test.run(['singlet_tpss_nosym.dal'], ['lih.mol'], f={'out': f})
 
 sys.exit(test.return_code)

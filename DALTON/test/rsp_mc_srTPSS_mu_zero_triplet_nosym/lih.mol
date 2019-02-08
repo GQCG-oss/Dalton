@@ -1,0 +1,9 @@
+BASIS
+3-21G
+ 
+ 
+Atomtypes=2 Nosymmetry Angstrom
+Charge=3.0 Atoms=1
+Li 0.0 0.0 .0
+Charge=1.0 Atoms=1
+H 1.4 0.0 0.0
