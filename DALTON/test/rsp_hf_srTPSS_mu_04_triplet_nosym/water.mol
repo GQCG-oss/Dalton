@@ -1,8 +1,8 @@
 BASIS
-3-21G
- 
- 
-Atomtypes=2 Nosymmetry Angstrom Cartesian
+MINI(Scaled)
+
+
+Atomtypes=2 Angstrom nosymmetry
 Charge=8.0 Atoms=1
 O 0.000000    0.000000    0.118835
 Charge=1.0 Atoms=2

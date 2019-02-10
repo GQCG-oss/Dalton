@@ -1,8 +1,8 @@
 BASIS
-3-21G
+MINI(Scaled)
  
  
-Atomtypes=2 Angstrom Cartesian
+Atomtypes=2 Angstrom
 Charge=8.0 Atoms=1
 O 0.000000    0.000000    0.118835
 Charge=1.0 Atoms=2
