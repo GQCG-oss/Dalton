@@ -234,6 +234,7 @@ C     from grid integration less than DFTHR
       THRELCTRN = D0
 
 C     Skipped grid points and nb of electrons
+C     NSKIP1 is not used anywhere? -E. R. K.
       NSKIP1 = 0
       ELCTRSKIP = D0
 C
