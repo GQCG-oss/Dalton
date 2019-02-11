@@ -30,6 +30,6 @@ f.add(from_string = 'Occupancies of natural orbitals',
       abs_tolerance = 1.0e-5)
 
 
-test.run(['energy_srpbe_openshell.dal'], ['H2O_cc-pVDZ.mol'], f={'out': f})
+test.run(['energy_srpbe_openshell.dal'], ['H2O.mol'], f={'out': f})
 
 sys.exit(test.return_code)
