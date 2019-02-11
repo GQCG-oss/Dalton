@@ -70,6 +70,10 @@ cat > cc_rsp_alpha.dal <<'%EOF%'
  1.0d-12
 .PRINT
  1
+.MAXRED
+ 400
+.MXLRV
+ 400
 *CCLR
 .OLD_LR
 .OPERATOR

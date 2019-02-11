@@ -45,7 +45,7 @@ C     variables for SRCPBERI
       real*8 :: mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C
-      PARAMETER  (NXTABLE = 22, NCTABLE = 34)
+      PARAMETER  (NXTABLE = 24, NCTABLE = 36)
       character(len=10) :: XTABLE(NXTABLE), CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
       PARAMETER  (maxfld=3)
@@ -57,7 +57,7 @@ C
      &             'SRXWI3    ','SRXWI4    ','SRXPBEHSE ','SRXPBETCS ', ! 9:12
      &             'SRXPBERI  ','SRXPBEGWS ','SRXLDA_S  ','NULL_S    ', ! 13:16
      &             'LXLDAS    ','LXLDA     ','LXPBEGWS  ','LXBCK     ', ! 17:20
-     &             'SRXPBEGWSS','SRXLDA_C  '/                           ! 21:25
+     &             'SRXPBEGWSS','SRXLDA_C  ','SRXTPSS_S ','SRXTPSS   '/ ! 21:24
       DATA CTABLE /'NULL      ','SRCLDA    ','SRCGGA    ','SRCMULO_A ', ! 1:4
      &             'SRLYPT    ','SRCWIB    ','SRCWI2    ','SRCWI3    ', ! 5:8
      &             'SRCWI4    ','SRCPBETCS ','SRCPBETCSJ','SRCPBERI  ', ! 9:12
@@ -66,7 +66,7 @@ C
      &             'NULL_S    ','SRCMDLDA  ','LNSCLDAS  ','LNSCLDA   ', ! 21:24
      &             'LSCLDA    ','LNSCPBEGWS','LSCPBEGWS ','LNCLYP    ', ! 25:28
      &             'LSCLYP    ','SRCLYPRI  ','SRCPBEGWSS','SRCPBEGWSC', ! 29:32
-     &             'SRCLDA_C  ','SRCVWN5_S '/                           ! 33:36
+     &             'SRCLDA_C  ','SRCVWN5_S ','SRCTPSS_S ','SRCTPSS   '/ ! 33:36
 
 C K. Sharkas and J. Toulouse beg
 C List of lambda-dependent complement density functionals for linear separation of the electron-electron interaction.
@@ -147,7 +147,7 @@ C      write (lupri, *) 'SRXFUN,SRCFUN=',SRXFUN,SRCFUN     ! Manu debug
       DO 100 II = 1, NXTABLE
         IF (XTABLE(II) .EQ. SRXFUN) THEN
           GO TO (101,102,103,104,105,106,107,108,109,110,111,112,113,
-     &           114,115,116,117,118,119,120,121,122),II
+     &           114,115,116,117,118,119,120,121,122,123,124),II
         END IF
  100  CONTINUE
       SETXFUN = .FALSE.
@@ -242,6 +242,15 @@ C Short-range spin-dependent exchange LDA functional to fit with LDA (edh 10-02-
 122   DOSRX_LDA_PW92 = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
+C mu independendt TPSS exchange functional (erk 27 aug. 18)
+123   DOSRX_TPSS_S = .TRUE.
+      DFT_SPINDNS  = .TRUE.
+      ISJT         = .TRUE.
+      GO TO 15
+C mu independendt TPSS exchange functional (erk 27 aug. 18)
+124   DOSRX_TPSS   = .TRUE.
+      ISJT         = .TRUE.
+      GO TO 15
 C
   15  CONTINUE
 
@@ -263,7 +272,7 @@ C
         IF (CTABLE(II) .EQ. SRCFUN) THEN
           GO TO (201,202,203,204,205,206,207,208,209,210,211,212,213,
      &           214,215,216,217,218,219,220,221,222,223,224,225,226,
-     &           227,228,229,230,231,232,233,234),II
+     &           227,228,229,230,231,232,233,234,235,236),II
         END IF
  200  CONTINUE
       SETCFUN = .FALSE.
@@ -424,10 +433,19 @@ C Short-range spin-dependent correlation LDA functional w. PW92 param. (edh 29-0
 233   DOSRC_LDA_PW92 = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
-C Short-range spin-dependent correlation LDA functional w. VWN5c param. (edh 02-07-18)
+C Short-range spin-dependent correlation LDA functional w. VWN5c param. (erk 07 feb. 18)
 234   DOSRC_VWN5_S = .TRUE.
       DFT_SPINDNS = .TRUE.
       ISJT    = .TRUE.
+      GO TO 20
+C mu independt TPSS spin-polarized correlation functional (erk 27 aug. 18)
+235   DOSRC_TPSS_S = .TRUE.
+      DFT_SPINDNS  = .TRUE.
+      ISJT         = .TRUE.
+      GO TO 20
+C mu independt TPSS spin-unpolarized correlation functional (erk 03 sep. 18)
+236   DOSRC_TPSS   = .TRUE.
+      ISJT         = .TRUE.
       GO TO 20
 C
   20  CONTINUE
@@ -508,7 +526,7 @@ C*****************************************************************************
 #include "dftcom.h"
 C
       logical, intent(in) :: DOGRD, DOERG, DOATR, TRIPLET
-      logical :: DOLND, DOGGA
+      logical :: DOLND, DOGGA, do_metagga
       logical :: first_call, LSRHYBR
       DATA       first_call /.true./
       real*8 :: EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),WORK(LWORK)
@@ -595,6 +613,9 @@ C     =================================
       DFTHRI = 1.0D-13
       DOLND  = .FALSE.
 
+C     ... erk : For setting meta-GGAs
+      do_metagga = DOSRC_TPSS_S .OR. DOSRX_TPSS_S .OR. DOSRC_TPSS .OR.
+     >             DOSRX_TPSS
 C     ... jkp : For gradient correction to SR-LDA
       DOGGA = DOSRX_GGA.OR.DOSRC_GGA.OR.DOSRBCK.OR.DOSRGGA2.OR.
      >        DOSRX_WIB.OR.DOSRC_WIB.OR.DOSRX_PBEHSE.OR.DOSRX_PBETCS.OR.
@@ -604,6 +625,8 @@ C     ... jkp : For gradient correction to SR-LDA
      >        DOLANSC_PBEGWS.OR.DOLASC_PBEGWS.OR.DOLAX_GGABCK.OR.
      >        DOLANC_GGALYP.OR.DOLASC_GGALYP.OR.DOSRC_LYPRI .OR.
      >        DOSRX_PBEGWS_S .OR. DOSRC_PBEGWS_S .OR. DOSRC_PBEGWS_PW92
+C     ... erk : Sets DOGGA active when using meta-GGAs
+     >        .OR. do_metagga
 C
 
       NDER  = 0
@@ -668,6 +691,7 @@ C JT 15-02-05 beg
         CALL SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
      &            WORK(KDGASR),DOGGA,DOERG,DOGRD,DOATR,TRIPLET,
+     &            do_metagga,
      &            RESULTS,WORK(KWRK),LWRK,IPRINT)
       ELSE
         CALL SRDFT1(ND_SIM,EXCMAT,DMAT,DOLND,WORK(KX),WORK(KY),
@@ -814,7 +838,7 @@ C
       END
 C*****************************************************************************
       SUBROUTINE SRDFT1(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
-     &                  WEIGHT,NBUF,GSO,NCNT,DMAGAOSR,DMAGAOT,DOGGA,
+     &                  WEIGHT,NBUF,GSO,NCNT,DMATGAOSR,DMATGAOT,DOGGA,
      &                  DOERG,DOGRD,DOATR,TRIPLET,RESULTS,WORK,LWORK,
      &                  IPRINT)
 C*****************************************************************************
@@ -844,13 +868,15 @@ C
 #include "chrnos.h"
 
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
+      PARAMETER (DP3 = 1.0D0/3.0D0)
 
       LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,TRIPLET
       LOGICAL   LDOGGA,LSRHYBR,RTEST,ldebug
       REAL*8    EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
      &          GSO(NBAST*NTYPSO),NCNT(NBAST),
-     &          DMAGAOSR(NBAST),DMAGAOT(NBAST),RESULTS(11),WORK(LWORK),
+     &          DMATGAOSR(NBAST),DMATGAOT(NBAST),RESULTS(11),
+     &          WORK(LWORK),
      &          RHGT(3),RHGSR(3),ZKSR(3,3),XKSR(3,3), COR(3)
 
       CHARACTER*17 QUADNAME
@@ -1030,16 +1056,19 @@ C           =============================
 C           Density
 C           =============================
             IF (LSRHYBR) THEN
-               CALL GETRHO_OLD(DMAT(1,2),GSO(KSO0),RHOSR,RHOSR13,
-     &                     DMAGAOSR,THRINT,IPRINT)
-               CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHOTOT,RHOT13,
-     &                     DMAGAOT,THRINT,IPRINT)
+               CALL GETRHO_OLD(DMAT(1,2),GSO(KSO0),RHOSR,
+     &                     DMATGAOSR,THRINT,IPRINT)
+               RHOSR13 = RHOSR ** DP3
+               CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHOTOT,
+     &                     DMATGAOT,THRINT,IPRINT)
+               RHOT13 = RHOTOT ** DP3
             ELSE
-               CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHOSR,RHOSR13,
-     &                     DMAGAOSR,THRINT,IPRINT)
+               CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHOSR,
+     &                     DMATGAOSR,THRINT,IPRINT)
+               RHOSR13 = RHOSR ** DP3
                RHOTOT = RHOSR
                RHOT13 = RHOSR13
-               CALL DCOPY(NBAST,DMAGAOSR,1,DMAGAOT,1)
+               CALL DCOPY(NBAST,DMATGAOSR,1,DMATGAOT,1)
             END IF
             DELCTRN = WGHT*RHOTOT
             DELCTSR = WGHT*RHOSR
@@ -1058,12 +1087,12 @@ C                 the hessian of the density for the potential.
 C
 C                 Gradient of density
 C                 ===================
-                  CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMAGAOSR,
+                  CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMATGAOSR,
      &                         1,D0,RHGSR,1)
                   RHOSRGRD = SQRT(RHGSR(1)**2 + RHGSR(2)**2
      &                     + RHGSR(3)**2)
                   IF (LSRHYBR) THEN
-                     CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMAGAOT,
+                     CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMATGAOT,
      &                          1,D0,RHGT,1)
                      RHOTGRD = SQRT(RHGT(1)**2 + RHGT(2)**2
      &                       + RHGT(3)**2)
@@ -1078,12 +1107,13 @@ C                 Hessian of density
 C                 ===================
 C
                   IF (LSRHYBR) THEN
-                     CALL DFTRHH(DMAT(1,2),DMAGAOSR,GSO(KSO0),GSO(KSO1),
-     &                           GSO(KSO2),RHGSR,RHOSRLAP,RHOSRGHG)
-                     CALL DFTRHH(DMAT,DMAGAOT,GSO(KSO0),GSO(KSO1),
+                     CALL DFTRHH(DMAT(1,2),DMATGAOSR,
+     &                           GSO(KSO0),GSO(KSO1),GSO(KSO2),
+     &                           RHGSR,RHOSRLAP,RHOSRGHG)
+                     CALL DFTRHH(DMAT,DMATGAOT,GSO(KSO0),GSO(KSO1),
      &                           GSO(KSO2),RHGT,RHOTLAP,RHOTGHG)
                   ELSE
-                     CALL DFTRHH(DMAT,DMAGAOSR,GSO(KSO0),GSO(KSO1),
+                     CALL DFTRHH(DMAT,DMATGAOSR,GSO(KSO0),GSO(KSO1),
      &                           GSO(KSO2),RHGSR,RHOSRLAP,RHOSRGHG)
                      RHOTLAP = RHOSRLAP
                      RHOTGHG = RHOSRGHG
@@ -1197,12 +1227,13 @@ C                    matrix 3 & 4 are DXTAO and DXVAO
      &                             WGHT, GSO(KSO0),GSO(KSO1),CHIVAL,
      &                             ERFEXP,.TRUE.,RHOSR,RHOSR13,
      &                             RHOSRGRD,RHOSRLAP, RHOSRGHG,RHGSR,
-     &                             DMAGAOSR,VLAMBDA)
+     &                             DMATGAOSR,VLAMBDA)
                      JDXAO = 3
                      CALL SRDFTLTR(JWOPSY,DMAT(1,JDXAO),EXCMAT(1,1,2),
      &                             WGHT, GSO(KSO0),GSO(KSO1),CHIVAL,
      &                             ERFEXP,.FALSE.,RHOTOT,RHOT13,RHOTGRD,
-     &                             RHOTLAP,RHOTGHG,RHGT,DMAGAOT,VLAMBDA)
+     &                             RHOTLAP,RHOTGHG,RHGT,
+     &                             DMATGAOT,VLAMBDA)
                   ELSE
 C                    matrix 1 is DTAO
 C                    matrix 2 is DXTAO
@@ -1210,8 +1241,8 @@ C                    matrix 2 is DXTAO
                      CALL SRDFTLTR(JWOPSY,DMAT(1,JDXAO),EXCMAT,
      &                             WGHT, GSO(KSO0),GSO(KSO1),CHIVAL,
      &                             ERFEXP,.TRUE.,RHOTOT,RHOT13,
-     &                             RHOTGRD,RHOTLAP,RHOTGHG,RHGT,DMAGAOT,
-     &                             VLAMBDA)
+     &                             RHOTGRD,RHOTLAP,RHOTGHG,RHGT,
+     &                             DMATGAOT,VLAMBDA)
                   END IF
                END IF
             ENDIF
@@ -1518,7 +1549,7 @@ C
       END
 C*****************************************************************************
       SUBROUTINE MCRHO1(CMO,DV,DOLND,CORX,CORY,CORZ,WEIGHT,NBUF,GSO,
-     &                  NCNT,DMAGAO,DOGGA,CREF,INDXCI,DODCAO,DCAO,DVAO,
+     &                  NCNT,DMATGAO,DOGGA,CREF,INDXCI,DODCAO,DCAO,DVAO,
      &                  WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
@@ -1549,7 +1580,7 @@ C
       LOGICAL   DOLND,DOGGA,DODCAO
       DIMENSION CMO(*),DV(NNASHX),CORX(NBUF),CORY(NBUF),
      &          CORZ(NBUF),WEIGHT(NBUF),GSO(NBAST*NTYPSO),
-     &          NCNT(NBAST),DMAGAO(NBAST),CREF(NCONF),
+     &          NCNT(NBAST),DMATGAO(NBAST),CREF(NCONF),
      &          DCAO(NBAST,NBAST),DVAO(NBAST,NBAST),WORK(LWORK), COR(3)
       CHARACTER*17 QUADNAME
 C
@@ -1648,11 +1679,11 @@ C           =============================
 C
 C           ... inactive part
             IF (DODCAO) THEN
-               CALL GETRHO_OLD(DCAO,GSO,RHO,RHO13,DMAGAO,THRINT,IPRINT)
+               CALL GETRHO_OLD(DCAO,GSO,RHO,DMATGAO,THRINT,IPRINT)
                CELCTRN = CELCTRN + WGHT*RHO
             ENDIF
 C           ... active part
-            CALL GETRHO_OLD(DVAO,GSO,RHO,RHO13,DMAGAO,THRINT,IPRINT)
+            CALL GETRHO_OLD(DVAO,GSO,RHO,DMATGAO,THRINT,IPRINT)
             VELCTRN = VELCTRN + WGHT*RHO
 C
 C           Dump active density to file
@@ -2602,9 +2633,9 @@ C
          ITYPK = IOBTYP(K)
          ITYPL = IOBTYP(L)
          IF (ITYPK .EQ. JTINAC) THEN ! first index inactive
-            EVEC(KZCONF+IG) = EVEC(KZCONF+IG) + D2*V2C_SR(K,L)
+            EVEC(KZCONF+IG) = EVEC(KZCONF+IG) + D2*V2C_SR(L,K)
            IF (.NOT. (TDA .OR. CISRPA)) THEN
-            EVEC(KYCONF+IG) = EVEC(KYCONF+IG) - D2*V2C_SR(L,K)
+            EVEC(KYCONF+IG) = EVEC(KYCONF+IG) - D2*V2C_SR(K,L)
            END IF
          ELSE                        ! first index active
             NK    = ICH(K)
@@ -2614,8 +2645,8 @@ C
                DVKX = UDV(NK,IASHK+NX)
                DVXK = UDV(IASHK+NX,NK)
                IX = (IORBK+NISHK)+NX
-               TEMPZ = TEMPZ + DVKX*V2C_SR(IX,L)
-               TEMPY = TEMPY + DVXK*V2C_SR(L,IX)
+               TEMPZ = TEMPZ + DVKX*V2C_SR(L,IX)
+               TEMPY = TEMPY + DVXK*V2C_SR(IX,L)
             END DO
             EVEC(KZCONF+IG) = EVEC(KZCONF+IG) + TEMPZ
            IF (.NOT. (TDA .OR. CISRPA)) THEN
@@ -2630,8 +2661,8 @@ C
                DVLX = UDV(NL,IASHL+NX)
                DVXL = UDV(IASHL+NX,NL)
                IX = (IORBL+NISHL)+NX
-               TEMPZ = TEMPZ + DVXL*V2C_SR(K,IX)
-               TEMPY = TEMPY + DVLX*V2C_SR(IX,K)
+               TEMPZ = TEMPZ + DVXL*V2C_SR(IX,K)
+               TEMPY = TEMPY + DVLX*V2C_SR(K,IX)
             END DO
             EVEC(KZCONF+IG) = EVEC(KZCONF+IG) - TEMPZ
            IF (.NOT. (TDA .OR. CISRPA)) THEN

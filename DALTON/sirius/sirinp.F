@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -1027,6 +1021,11 @@ C        However, if ITRLVL has been set in input, then this overrides.
          END IF
 C
       END IF
+
+C     To be able to use spin-dependent functionals for closed-shell Hartree-Fock
+      IF (DFT_SPINDNS .AND. NASHT .EQ. 0) THEN
+         DFT_SPINDNS = .FALSE.
+      END IF
 C
       IF (NFIELD .GT. MXFELT) THEN
          WRITE (LUPRI,*) 'Too many field-dependent Hamiltonian terms'
@@ -1650,6 +1649,12 @@ C
          END IF
       ELSE
          IF (MULTS .LE. 0) MULTS = abs(MS2) + 1
+         IF (FLAG(27) .AND. MULTS.ne.abs(MS2)+1) THEN ! determinants
+            WRITE(LUPRI,'(//A,I0,A,I0,A)')
+     &      ' INPUT ERROR: specified .MS2 and .SPIN MULTIPLICITY (',
+     &      MS2,' and ',MULTS,') are not compatible for determinats.'
+            CALL QUIT('INPUT ERROR: .MS2 and .SPIN M not compatible.')
+         END IF
       END IF
       ISPIN = MULTS
 C     .. ISPIN in infinp.h, MULTS in spinfo.h for CI module
@@ -2635,8 +2640,9 @@ C *** Option 25 not used
 C
 C     ... .CISRDFT hybrid
   126 CONTINUE
-         DOCI = .TRUE.
-         FLAG(4) = .TRUE.
+         SRDFTRUN  = .TRUE.
+         DOCI      = .TRUE.
+         FLAG(4)   = .TRUE.
          DOCISRDFT = .TRUE.
          ADDSRI    = .TRUE.
          THRCIDFT  = 1.D-6
@@ -2648,6 +2654,7 @@ C        ... we want to use SIRFCK for generating U_sr integrals.
 C
 C     ... .HFSRDFT  Hartree-Fock srDFT hybrid
   127 CONTINUE
+         SRDFTRUN  = .TRUE.
          DOSCF     = .TRUE.
          DOHFSRDFT = .TRUE.
          ADDSRI    = .TRUE.
@@ -2661,6 +2668,7 @@ C        ... we want to use SIRFCK for generating U_sr integrals.
 C
 C     ... .MCSRDFT hybrid
   128 CONTINUE
+         SRDFTRUN  = .TRUE.
          DOMC      = .TRUE.
          DOMCSRDFT = .TRUE.
          FLAG(2)   = .TRUE.

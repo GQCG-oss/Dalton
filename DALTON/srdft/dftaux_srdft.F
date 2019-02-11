@@ -24,14 +24,15 @@
 C
 C  /* Deck getrho */
 C*****************************************************************************
-      SUBROUTINE GETRHO_OLD(DMAT,GSO,RHO,RHO13,DMAGAO,DFTHRI,IPRINT)
+      SUBROUTINE GETRHO_OLD(DMAT,GSO,RHO,DMATGAO,DFTHRI,IPRINT)
 C*****************************************************************************
 C
 C     T. Helgaker feb 01
+C     (RHO13 removed Aug 18)
 C
 C Output:
-C    RHO and RHO13
-C    DMAGAO(i) = sum(j) dmat(i,j) * gso(j)
+C    RHO
+C    DMATGAO(i) = sum(j) dmat(i,j) * gso(j)
 C
 C*****************************************************************************
       implicit none
@@ -49,7 +50,7 @@ C*****************************************************************************
 C
       integer, intent(in) :: IPRINT
       real*8, intent(in) :: DMAT(NBAST,NBAST), GSO(NBAST), DFTHRI
-      real*8, intent(out) :: RHO, RHO13, DMAGAO(NBAST)
+      real*8, intent(out) :: RHO, DMATGAO(NBAST)
 C
       integer :: ISTR, ISYM, NBASI
       real*8 :: DDOT
@@ -61,38 +62,24 @@ C
          write(lupri,*) 'NBAS',nbas(1:nsym)
       END IF
       IF (NSYM.EQ.1) THEN
-         CALL DSYMV('U',NBAST,D1,DMAT,NBAST,GSO,1,D0,DMAGAO,1)
+         CALL DSYMV('U',NBAST,D1,DMAT,NBAST,GSO,1,D0,DMATGAO,1)
       ELSE
-         CALL DZERO(DMAGAO,NBAST)
+         CALL DZERO(DMATGAO,NBAST)
          DO ISYM = 1, NSYM
             ISTR = IBAS(ISYM) + 1
-#ifndef OLD_CODE
             NBASI= NBAS(ISYM)
             CALL DSYMV('U',NBASI,D1,DMAT(ISTR,ISTR),NBAST,GSO(ISTR),1,
-     &                 D0,DMAGAO(ISTR),1)
-#else
-C hjaaj June 09: DSYMV must be faster nowadays than the code below
-            IEND = IBAS(ISYM) + NBAS(ISYM)
-            DO J = ISTR, IEND 
-               GSOJ = GSO(J)
-               IF (abs(GSOJ).GT.DFTHRI) THEN
-                  DO I = ISTR, IEND 
-                     DMAGAO(I) = DMAGAO(I) + GSOJ*DMAT(I,J)
-                  END DO
-               END IF
-            END DO
-#endif
+     &                 D0,DMATGAO(ISTR),1)
          END DO
       END IF
-      RHO   = DDOT(NBAST,GSO,1,DMAGAO,1)
-      RHO13 = RHO**DP3
+      RHO = DDOT(NBAST,GSO,1,DMATGAO,1)
       RETURN
       END    
 
 
 C /* Deck dftksmggaspin */
 C*****************************************************************************
-      SUBROUTINE DFTKSMGGASPIN(EXCMAT,GAO,GAO1,RHG,d1E,DFTHRL)
+      SUBROUTINE DFTKSMGGASPIN(EXCMAT, GAO, GAO1, RHG, d1E, DFTHRL)
 C*****************************************************************************
 C
 C     Erik Hedegaard (feb. 2016) based on DFTKSM by T. Helgaker
@@ -109,11 +96,10 @@ C*****************************************************************************
       implicit none
 ! inforb.h : NBAST, NSYM
 #include "inforb.h"
-C
-      real*8, intent(in) :: GAO(NBAST), GAO1(NBAST,3), RHG(3,2),
-     &                      d1E(5), DFTHRL
+      real*8, intent(in) :: GAO(NBAST), GAO1(NBAST,3), RHG(3,2)
+      real*8, intent(in) :: d1E(5), DFTHRL
       real*8, intent(inout) :: EXCMAT(NBAST,NBAST,2)
-C
+
       ! local variables:
       real*8 :: VXB, VXC, VSB, VSC, VXSB
       real*8 :: FX, FY, FZ, SX, SY, SZ
@@ -159,9 +145,153 @@ C
                FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
                IF (abs(FCS).GT.DFTHRL) THEN
                   DO I = ISTR, IEND
-                  EXCMAT(I,J,2) = EXCMAT(I,J,2) + FCS*GAO(I)
+                     EXCMAT(I,J,2) = EXCMAT(I,J,2) + FCS*GAO(I)
                   END DO
                END IF
+            END DO
+         END DO
+      END IF
+      RETURN
+      END
+
+
+C /* Deck dftksm_mggaspin */
+C*****************************************************************************
+      SUBROUTINE DFTKSM_MGGASPIN(EXCMAT, GAO, GAO1, GAO2, RHG, d1E,
+     &                           DFTHRL)
+C*****************************************************************************
+C
+C     Erik Kjellgren (oct. 2018) based on DFTKSMGGASPIN by E. Hedegaard
+C
+C     RHG(1:3,1:4): grad(rhoc), grad(rhos), grad(rhoa), grad(rhob)
+C     VXC  = d1E(1) = d(e_xc) / d(rhoc)
+C     VSC  = d1E(2) = d(e_xc) / d(rhos)
+C     VXB  = d1E(3) = d(e_xc) / d(grdcc)
+C     VSB  = d1E(4) = d(e_xc) / d(grdss)
+C     VXSB = d1E(5) = d(e_xc) / d(grdcs)
+C     VXT  = d1E(6) = d(e_xc) / d(tauc)
+C     VST  = d1E(7) = d(e_xc) / d(taus)
+C     VXL  = d1E(8) = d(e_xc) / d(laplace(rhoc))
+C     VSL  = d1E(9) = d(e_xc) / d(laplace(rhos))
+C
+C     GAO2 is just a dummy variable for now, since it is not calculated
+C     in the code. It is put in now to make it easier to implement MGGA
+C     functional in the future that depends on laplace(rho). GAO2 is
+C     supposed to be defined as:
+C     GAO2 = laplace(Omega) = lapalce(GAOp)*GAOq + GAOp*laplace(GAOq)
+C                              + 2*GRAD(GAOp)*GRAD(GAOq)
+C     When calling this subroutine just set GAO2 = 0.0d0
+C     Later remember to change it to a vector when actually need in the
+C     declaration.
+C
+C*****************************************************************************
+      implicit none
+! inforb.h : NBAST, NSYM
+#include "inforb.h"
+      real*8, intent(in) :: GAO(NBAST), GAO1(NBAST,3), RHG(3,2)
+      real*8, intent(in) :: GAO2, d1E(9), DFTHRL
+      real*8, intent(inout) :: EXCMAT(NBAST,NBAST,2)
+
+      ! local variables:
+      real*8 :: VXB, VXC, VSB, VSC, VXSB, VXT, VST
+      !real*8 :: VXL, VSL
+      real*8 :: FX, FY, FZ, SX, SY, SZ
+      real*8 :: FC, FCS
+      integer :: I, J, ISYM, ISTR, IEND
+C
+C     Exchange-correlation contribution to Kohn-Sham matrix
+C
+      VXC  = d1E(1)
+      VSC  = d1E(2)
+      VXB  = d1E(3) * 4.0d0
+      VSB  = d1E(4) * 4.0d0
+      VXSB = d1E(5) * 2.0d0
+      VXT  = d1E(6)
+      VST  = d1E(7)
+      !VXL  = d1E(8), no laplace(rho) implementation yet
+      !VSL  = d1E(9), no laplace(rho) implementation yet
+      FX = VXB*RHG(1,1) + VXSB*RHG(1,2)
+      FY = VXB*RHG(2,1) + VXSB*RHG(2,2)
+      FZ = VXB*RHG(3,1) + VXSB*RHG(3,2)
+      SX = VSB*RHG(1,2) + VXSB*RHG(1,1)
+      SY = VSB*RHG(2,2) + VXSB*RHG(2,1)
+      SZ = VSB*RHG(3,2) + VXSB*RHG(3,1)
+      IF (NSYM.EQ.1) THEN
+         DO J = 1, NBAST
+            FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
+            IF (abs(FC).GT.DFTHRL) THEN
+               CALL DAXPY(NBAST,FC,GAO,1,EXCMAT(1,J,1),1)
+            END IF
+            ! Meta-GGA tau part of FC
+            DO I = 1, NBAST
+               EXCMAT(I,J,1) = EXCMAT(I,J,1) 
+     &                        + 0.5d0*VXT * (GAO1(J,1)*GAO1(I,1)
+     &                                     + GAO1(J,2)*GAO1(I,2)
+     &                                     + GAO1(J,3)*GAO1(I,3))
+C     &                        + VXL * (GAO2(J)*GAO(I)
+C     &                               + GAO(J)*GAO2(I)
+C     &                               + 2.0d0*GAO1(J,1)*GAO1(I,1)
+C     &                               + 2.0d0*GAO1(J,2)*GAO1(I,2)
+C     &                               + 2.0d0*GAO1(J,3)*GAO1(I,3)
+            END DO
+
+            FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
+            IF (abs(FCS).GT.DFTHRL) THEN
+               CALL DAXPY(NBAST,FCS,GAO,1,EXCMAT(1,J,2),1)
+            END IF
+            ! Meta-GGA tau part of FCS
+            DO I = 1, NBAST
+               EXCMAT(I,J,2) = EXCMAT(I,J,2) 
+     &                        + 0.5d0*VST * (GAO1(J,1)*GAO1(I,1)
+     &                                     + GAO1(J,2)*GAO1(I,2)
+     &                                     + GAO1(J,3)*GAO1(I,3))
+C     &                        + VSL * (GAO2(J)*GAO(I)
+C     &                               + GAO(J)*GAO2(I)
+C     &                               + 2.0d0*GAO1(J,1)*GAO1(I,1)
+C     &                               + 2.0d0*GAO1(J,2)*GAO1(I,2)
+C     &                               + 2.0d0*GAO1(J,3)*GAO1(I,3)
+            END DO
+         END DO
+      ELSE
+         DO ISYM = 1, NSYM
+            ISTR = IBAS(ISYM) + 1
+            IEND = IBAS(ISYM) + NBAS(ISYM)
+            DO J = ISTR, IEND
+               FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
+               ! spin
+               IF (abs(FC).GT.DFTHRL) THEN
+                  DO I = ISTR, IEND
+                     EXCMAT(I,J,1) = EXCMAT(I,J,1) + FC*GAO(I)
+                  END DO
+               END IF
+               DO I = ISTR, IEND
+                  EXCMAT(I,J,1) = EXCMAT(I,J,1)
+     &                           + 0.5d0*VXT * (GAO1(J,1)*GAO1(I,1)
+     &                                        + GAO1(J,2)*GAO1(I,2)
+     &                                        + GAO1(J,3)*GAO1(I,3))
+C     &                           + VXL * (GAO2(J)*GAO(I)
+C     &                                  + GAO(J)*GAO2(I)
+C     &                                  + 2.0d0*GAO1(J,1)*GAO1(I,1)
+C     &                                  + 2.0d0*GAO1(J,2)*GAO1(I,2)
+C     &                                  + 2.0d0*GAO1(J,3)*GAO1(I,3)
+               END DO
+               FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
+               IF (abs(FCS).GT.DFTHRL) THEN
+                  DO I = ISTR, IEND
+                     EXCMAT(I,J,2) = EXCMAT(I,J,2) + FCS*GAO(I)
+                  END DO
+               END IF
+               DO I = ISTR, IEND
+                  EXCMAT(I,J,2) = EXCMAT(I,J,2)
+     &                           + 0.5d0*VST * (GAO1(J,1)*GAO1(I,1)
+     &                                        + GAO1(J,2)*GAO1(I,2)
+     &                                        + GAO1(J,3)*GAO1(I,3))
+C     &                            + VSL * (GAO2(J)*GAO(I)
+C     &                                   + GAO(J)*GAO2(I)
+C     &                                   + 2.0d0*GAO1(J,1)*GAO1(I,1)
+C     &                                   + 2.0d0*GAO1(J,2)*GAO1(I,2)
+C     &                                   + 2.0d0*GAO1(J,3)*GAO1(I,3)
+               END DO
             END DO
          END DO
       END IF

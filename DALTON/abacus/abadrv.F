@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -1797,7 +1791,8 @@ cLig
          CALL QUIT
      *      ('Inconsistency in input for ".DIPOLE", cannot proceed.')
       END IF
-      IF (SPNSPN .AND. NASHT .LE. 1 .AND. .NOT.(ABASOP.OR.DFTRUN)) THEN
+      IF (SPNSPN .AND. NASHT .LE. 1 .AND.
+     &    .NOT.(ABASOP.OR.DFTRUN.OR.SRDFTRUN)) THEN
          NWARN = NWARN + 1
          WRITE (LUPRI,'(/A/A)')
      &      '@ WARNING - RHF calculations of spin-spin coupling'
@@ -1965,7 +1960,7 @@ CAMT DFT Contributions for Magnetizabilities do not work with symmetry
 CAMT g-tensors and spin-rotation constants also do not work, put a
 CAMT quit here to catch this...
       IF ((NSYM.GT.1).AND.
-     &    (MAGSUS.OR.MOLGFA.OR.SPINRO).AND.(DFTRUN)) THEN
+     &    (MAGSUS.OR.MOLGFA.OR.SPINRO).AND.(DFTRUN.OR.SRDFTRUN)) THEN
             IF (MAGSUS) THEN
               WRITE(LUPRI,'(5X,A)')
      &           'WARNING: Magnetic Suceptibilities requested with ',
@@ -3383,6 +3378,9 @@ C
      &                                + SUSFSY(I,J)
             IF (DFTRUN) THEN
                SUSTOT(I,J) = SUSTOT(I,J) + SUSDFT(I,J)
+            ELSE IF (SRDFTRUN) THEN
+               call quit(
+     &            'ERROR: Magnetizabilities not implemented for srDFT')
             END IF
             PARSUS(I,J) = SUSTOT(I,J) - DIASUS(I,J)
   100    CONTINUE

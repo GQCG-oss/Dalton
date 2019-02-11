@@ -26,8 +26,8 @@
 
 C*****************************************************************************
       SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
-     &                  WEIGHT,NBUF,GSO,NCNT,DMAGAOSR,DOGGA,
-     &                  DOERG,DOGRD,DOATR,TRIPLET,RESULTS,
+     &                  WEIGHT,NBUF,GSO,NCNT,DMATGAOSR,DOGGA,
+     &                  DOERG,DOGRD,DOATR,TRIPLET,do_metagga,RESULTS,
      &                  WORK,LWORK,IPRINT_in)
 C*****************************************************************************
 C     Calculate DFT energy and potential contributions for
@@ -82,14 +82,15 @@ C*****************************************************************************
       real*8, parameter :: THRELCTOT = 1.0D-7
       real*8, parameter :: THRESRHO  = 1.0D-8
 
-      logical, intent(in) :: DOLND, DOGGA, DOERG, DOGRD, DOATR, TRIPLET
+      logical, intent(in) :: DOLND, DOGGA, DOERG, DOGRD, DOATR, TRIPLET,
+     &                       do_metagga
       integer, intent(in) :: ND_SIM, NBUF, IPRINT_in
 
       logical :: FROMVX
       real*8 :: EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF), CORY(NBUF), CORZ(NBUF), WEIGHT(NBUF),
      &          GSO(NBAST*NTYPSO), NCNT(NBAST),
-     &          DMAGAOSR(NBAST,2),
+     &          DMATGAOSR(NBAST,2),
      &          COR(3), RESULTS(11), WORK(LWORK)
 
       character(len=17) :: QUADNAME
@@ -99,12 +100,13 @@ C*****************************************************************************
       integer :: LWORK, i, IPNT, IPNT_END,
      &           IPNT_ST, IPRINT, IPRINT_x, JDXSAO, JDXTAO, LDUMMY,
      &           LUQUAD, my_first_point, my_last_point, N_RS_GT_RT,
-     &           NORDER, NPNT1, NPNTS, NPNTS_PER_NODE, NPOINT, NSKIP1
-      real*8 :: DELCTRN, EcInt, ELCTRN, ELCTRSKIP, ExInt, rhoc13,
-     &          rhos13, SPINDEN, THRELCTRN,
-     &          THRINT, WGHT, WGHTC, WGHTX
+     &           NORDER, NPNT1, NPNTS, NPNTS_PER_NODE, NPOINT, NSKIP1,
+     &           KSO1_gx, KSO1_gy, KSO1_gz
+      real*8 :: DELCTRN, EcInt, ELCTRN, ELCTRSKIP, ExInt,
+     &          SPINDEN, THRELCTRN, THRINT, WGHT, WGHTC, WGHTX,
+     &          TAU_X, TAU_Y, TAU_Z
 
-      real*8 :: RHO(4), RHG(3,4), GRD2(6)
+      real*8 :: RHO(4), RHG(3,4), GRD2(6), tau(4), laplace(4)
 C     ... RHO(1) = rhoc = rho_a + rho_b
 C     ... RHO(2) = rhos = rho_a - rho_b
 C     ... RHO(3) = rhoa = rho_a
@@ -121,13 +123,13 @@ C     ... GRD2(5) = grdbb = RHG(:,4) . RHG(:,4)
 C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
 
 !     these are not initialized to zero!
-      real*8 :: Ex,  d1Ex(5),  d2Ex(15)
+      real*8 :: Ex,  d1Ex(9),  d2Ex(45)
       ! d1Ex(1:5) =   d1Exdrhoc, d1Exdrhos, d1Exdgrdcc, d1Exdgrdss, d1Exdgrdcs
 
-      real*8 :: Ec,  d1Ec(5),  d2Ec(15)
+      real*8 :: Ec,  d1Ec(9),  d2Ec(45)
       ! d1Ec(1:5) =   d1Ecdrhoc, d1Ecdrhos, d1Ecdgrdcc, d1Ecdgrdss, d1Ecdgrdcs
 
-      real*8 :: Exc, d1Exc(5), d2Exc(15)
+      real*8 :: Exc, d1Exc(9), d2Exc(45)
       ! d1Exc(1:5) =  d1Excdrhoc, d1Excdrhos, d1Excdgrdcc, d1Excdgrdss, d1Excdgrdcs
 
 #if SRDFT_DEBUG > 10
@@ -195,12 +197,14 @@ C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
 
 C     Initializations -------------------------------------------------------
 
-      RHG(1:3,1:4) = 0.0d0 ! so initialized for LDA
-      GRD2(1:6)    = 0.0d0
+      RHG(:,:)   = 0.0d0 ! so initialized for LDA
+      GRD2(:)    = 0.0d0
+      tau(:)     = 0.0d0
+      laplace(:) = 0.0d0
 
       ! edh the arrays are also zeroed in SRDFTEXCJT
-      d1Ex(1:5)  = 0.0d0
-      d1Ec(1:5)  = 0.0d0
+      d1Ex(:)  = 0.0d0
+      d1Ec(:)  = 0.0d0
       !---------------
 
 !     (Integrated) exchange and correlation energies
@@ -328,8 +332,8 @@ C       Is this a bug or feature?
      &            THRINT,IPRINT_x)
 
 C     Density
-      CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHO(1),rhoc13,
-     &       DMAGAOSR(1,1),THRINT,IPRINT_x)
+      CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHO(1),
+     &       DMATGAOSR(1,1),THRINT,IPRINT_x)
 
 C     Contribution to electron number (N_alpha + N_beta)
       DELCTRN = WGHT*RHO(1)
@@ -359,8 +363,8 @@ C        ... skip this point, go to next grid point
 C     Spin density rho_s ( in RHO(2) )
       IF (DFT_SPINDNS) THEN
 C        DMAT(1,3) is the spin density matrix
-         CALL GETRHO_OLD(DMAT(1,3),GSO(KSO0),RHO(2),RHOS13,
-     &                   DMAGAOSR(1,2),THRINT,IPRINT)
+         CALL GETRHO_OLD(DMAT(1,3),GSO(KSO0),RHO(2),
+     &                   DMATGAOSR(1,2),THRINT,IPRINT)
 
          IF (DFT_LOCALSPIN) THEN
 C        In our local spin model we can get unphysical densities
@@ -392,12 +396,12 @@ C        Contribution to spin density (N_alpha - N_beta)
 
 C     Gradients of densities
       IF (DOGGA) THEN
-C       GSO(KSO1)*DMAGAOSR
-        CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMAGAOSR(1,1),
+C       GSO(KSO1)*DMATGAOSR
+        CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMATGAOSR(1,1),
      &     1,D0,RHG(1,1),1)
 C
         IF (DFT_SPINDNS) THEN
-           CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMAGAOSR(1,2),
+           CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMATGAOSR(1,2),
      &        1,D0,RHG(1,2),1)
         ELSE
            RHG(1:3,2) = 0.0D0 ! RHGS is zero
@@ -416,6 +420,39 @@ C
         grd2(5) = rhg(1,4)**2 + rhg(2,4)**2 + rhg(3,4)**2  ! grdbb
         grd2(6) = rhg(1,3)*rhg(1,4) + rhg(2,3)*rhg(2,4)    ! grdab = grad(rhoa) . grad(rhob)
      &          + rhg(3,3)*rhg(3,4)
+      END IF
+
+      if (do_metagga) then
+         KSO1_gx = KSO1
+         KSO1_gy = KSO1 + NBAST
+         KSO1_gz = KSO1 + 2*NBAST
+         CALL GETRHO_OLD(DMAT(1,1),GSO(KSO1_gx),TAU_X,
+     &       DMATGAOSR(1,1),THRINT,IPRINT_x)
+         CALL GETRHO_OLD(DMAT(1,1),GSO(KSO1_gy),TAU_Y,
+     &       DMATGAOSR(1,1),THRINT,IPRINT_x)
+         CALL GETRHO_OLD(DMAT(1,1),GSO(KSO1_gz),TAU_Z,
+     &       DMATGAOSR(1,1),THRINT,IPRINT_x)
+         TAU(1) = 0.5D0*(TAU_X + TAU_Y + TAU_Z)
+         IF (DFT_SPINDNS) THEN
+C           DMAT(1,3) is the spin density matrix
+            CALL GETRHO_OLD(DMAT(1,3),GSO(KSO1_gx),TAU_X,
+     &          DMATGAOSR(1,1),THRINT,IPRINT_x)
+            CALL GETRHO_OLD(DMAT(1,3),GSO(KSO1_gy),TAU_Y,
+     &          DMATGAOSR(1,1),THRINT,IPRINT_x)
+            CALL GETRHO_OLD(DMAT(1,3),GSO(KSO1_gz),TAU_Z,
+     &          DMATGAOSR(1,1),THRINT,IPRINT_x)
+            TAU(2) = 0.5D0*(TAU_X + TAU_Y + TAU_Z)
+         ELSE
+            TAU(2) = 0.0D0
+         END IF
+         TAU(3) = 0.5d0 * ( TAU(1) + TAU(2) ) ! tau_a
+         TAU(4) = 0.5d0 * ( TAU(1) - TAU(2) ) ! tau_b
+         ! For small values of tau to avoid NaN
+         do i = 1,4
+            ! this is not a stable condition. TPSSc and TPSSx
+            ! have reversed tau dependency.
+            if (abs(tau(i)) .lt. 1.d-30) tau(i) = 1.d-30
+         end do
       ENDIF
 C
 C     Number of electrons
@@ -426,14 +463,14 @@ C
 C      Exchange and correlation energies and derivatives
        NORDER = 1  ! first-order derivatives
 C
-       CALL SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,.false.,
-     >                 Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
+       CALL SRDFTEXCJT(RHO,GRD2,tau,laplace,CHIVAL,NORDER,ERFEXP,
+     >                 .false.,Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
 C      Summation with quadrature weights
        ExInt     = ExInt + WGHTX*Ex
        EcInt     = EcInt + WGHTC*Ec
 
 C      Sum of exchange and correlation
-       d1Exc(1:5) = WGHTX*d1Ex(1:5) + WGHTC*d1Ec(1:5)
+       d1Exc(1:9) = WGHTX*d1Ex(1:9) + WGHTC*d1Ec(1:9)
 
        IF (iprint_x .gt. 10) then
           write(lupri,*)'rhoc, rhcg ',rho(1),rhg(1:3,1)
@@ -441,12 +478,13 @@ C      Sum of exchange and correlation
           write(lupri,*)'rhoa, rhag ',rho(3),rhg(1:3,3)
           write(lupri,*)'rhob, rhbg ',rho(4),rhg(1:3,4)
           write(lupri,*)'grd2       ',grd2(1:6)
+          write(lupri,*)'tau        ',tau(1:4)
           write(lupri,*)'Ex, ExInt',Ex,ExInt
           write(lupri,*)'Ec, EcInt',Ec,EcInt
           write(lupri,*)'WGHTX, WGHTC  ', WGHTX, WGHTC
-          write(lupri,*)'d1Exdrhoc  ...', d1Ex(1:5)
-          write(lupri,*)'d1Ecdrhoc  ...', d1Ec(1:5)
-          write(lupri,*)'d1Excdrhoc ...', d1Exc(1:5)
+          write(lupri,*)'d1Exdrhoc  ...', d1Ex(1:9)
+          write(lupri,*)'d1Ecdrhoc  ...', d1Ec(1:9)
+          write(lupri,*)'d1Excdrhoc ...', d1Exc(1:9)
        end if
 
 C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin components)
@@ -457,7 +495,11 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
      &                 d1Exc(1)  ,d1Exc(3)    ,DOGGA,FROMVX,DFTHRL)
 !                      d1Excdrhoc,d1Excdgrdcc,DOGGA,FROMVX,DFTHRL)
        else if (domcsrdft .and. .not. docisrdft) then
-          if (dogga .and. dft_spindns) then ! special treatment if gga + spin
+          if (do_metagga) then ! MGGA, spin and closed shell is handled
+!                                in the same  subroutine for now
+             CALL DFTKSM_MGGASPIN(EXCMAT, GSO(KSO0), GSO(KSO1), 0.0d0,
+     &                            RHG, d1Exc, DFTHRL)
+          else if (dogga .and. dft_spindns) then ! special treatment if gga + spin
               CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
      &             d1Exc,DFTHRL)
 !                  d1Exc = (d1Excdrhoc,d1Excdrhos, d1Excdgrdcc,d1Excdgrdss,d1Excdgrdcs)
@@ -473,9 +515,15 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
           end if
        else ! if hfsrdft
           IF (DFT_SPINDNS) CALL QUIT('no HFsrDFT with open shells')
+          if (do_metagga) then ! MGGA, spin and closed shell is handled
+!                                in the same  subroutine for now
+             CALL DFTKSM_MGGASPIN(EXCMAT, GSO(KSO0), GSO(KSO1), 0.0d0,
+     &                            RHG, d1Exc, DFTHRL)
+          else
              CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
      &                d1Exc(1)  ,d1Exc(3)    ,DOGGA,FROMVX,DFTHRL)
 !                     d1Excdrhoc,d1Excdgrdcc,DOGGA,FROMVX,DFTHRL)
+          end if
        end if
 
       ENDIF  !DOERG
@@ -520,8 +568,8 @@ C        Three cases:
 ! SRDFTLTRJT: SR short-range DFT density functional theory LTR linear transformation JT Julien Toulouse
         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
      &                 WGHTX,WGHTC,GSO(KSO0),GSO(KSO1),CHIVAL,VLAMBDA,
-     &                 ERFEXP,RHO,RHG,GRD2,DMAGAOSR,
-     &                 DOGGA,TRIPLET,IPRINT_X)
+     &                 ERFEXP,RHO,RHG,GRD2,tau,laplace,DMATGAOSR,
+     &                 DOGGA,do_metagga,TRIPLET,IPRINT_X)
 
       ENDIF ! DOATR
 
@@ -576,8 +624,8 @@ C Termination --------------------------------------------------------------
       END
 
 C****************************************************************************
-      SUBROUTINE SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,triplet,
-     >           Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
+      SUBROUTINE SRDFTEXCJT(RHO,GRD2,tau,laplace,CHIVAL,NORDER,ERFEXP,
+     >           triplet,Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
 c*****************************************************************************
 C    Driver for short-range DFT exchange and correlation
 C    energies and derivatives
@@ -597,18 +645,20 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 
-      real*8, intent(in) :: rho(4), grd2(6), CHIVAL, VLAMBDA
+      real*8, intent(in) :: rho(4), grd2(6), tau(4), laplace(4),
+     &                      CHIVAL, VLAMBDA
 !     grd2(1:6) = (grdcc, grdss, grdcs, grdaa, grdbb, grdab)
       integer, intent(in) :: NORDER
       logical, intent(in) :: triplet
+
+      real*8, intent(out) :: Ex, d1Ex(9), d2Ex(45)
+      real*8, intent(out) :: Ec, d1Ec(9), d2Ec(45)
+
 !     Maybe ERFEXP should be set correctly before calling the 
 !     subroutine, such that no input that is not an output is
 !     modified
 !       -- E.R. Kjellgren
       logical :: ERFEXP(0:2)
-
-      real*8, intent(out) :: Ex, d1Ex(5), d2Ex(15)
-      real*8, intent(out) :: Ec, d1Ec(5), d2Ec(15)
 
       real*8 :: mu
       integer, save :: icall = 0
@@ -628,6 +678,7 @@ C     spin functionals
       external ESRC_LDAERFSPIN, ESRC_LDAERFSPIN_VWN5
       external ESRC_PBEGWSERFSPIN
       external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA
+
 C     sr mdc func
       external ESRC_MD_LDAERF
 
@@ -682,6 +733,12 @@ c  Exchange  ------------------------------------------------------------
       IF(DOSRX_PBERI) THEN ! added Manu 01-02-2006
         call DESRX_SPINGGA(ESRX_PBERIERF,rho,grd2,CHIVAL,
      >                     norder,Ex,d1Ex,d2Ex)
+      ENDIF
+
+!     TPSS exchange functional
+      IF(DOSRX_TPSS_S .OR. DOSRX_TPSS) THEN
+         call BOTH_TPSSX_ERF(rho, grd2, tau, norder, chival,
+     >                       Ex, d1Ex, d2Ex)
       ENDIF
 
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
@@ -796,12 +853,26 @@ C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
       IF(DOSRC_PBEGWS_S) THEN
         ! PBEGWS_S has no grdss and no grds.grdc dependency,
         ! therefore zero these before DESRC_SPINGGA call:
+!        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,grd2,CHIVAL,norder,
+!     >                     Ec,d1Ec,d2Ec)
         !temp_grd2(:) = grd2(:)
         !temp_grd2(2:3) = 0.0d0
 C        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,temp_grd2,CHIVAL,
 C     >                     norder,Ec,d1Ec,d2Ec)
         call SPIN_PBEC_GWS_ERF(rho, grd2, norder, chival,
      >                         Ec, d1Ec, d2Ec)
+      ENDIF
+
+!     TPSS correlation spin-polarized functional
+      IF(DOSRC_TPSS_S) THEN
+         call SPIN_TPSSC_GWS_ERF(rho, grd2, tau, norder, chival,
+     >                           Ec, d1Ec, d2Ec)
+      ENDIF
+
+!     TPSS correlation spin-unpolarized functional
+      IF(DOSRC_TPSS) THEN
+         call TPSSC_GWS_ERF(rho, grd2, tau, norder, chival,
+     >                      Ec, d1Ec, d2Ec)
       ENDIF
 
 C Kamal SHARKAS 20-05-11 beg
@@ -873,8 +944,8 @@ C      mu_new = max(mu,CHIVAL)
 C**************************************************************************
       SUBROUTINE SRDFTLTRJT(KSYMOP,DTXMAT,DSXMAT,EXCMAT,
      &                      WGHTX,WGHTC,GAO,GAO1,CHIVAL,VLAMBDA,
-     &                      ERFEXP,RHO,RHG,GRD2,DGAO,
-     &                      DOGGA,TRIPLET,IPRINT_X)
+     &                      ERFEXP,RHO,RHG,GRD2,tau,laplace,DGAO,
+     &                      DOGGA,do_metagga,TRIPLET,IPRINT_X)
 C**************************************************************************
 C     Generate the 1-index transformed DFT Hessian
 C     needed in second-order optimization for short-range DFT hybrids.
@@ -897,39 +968,58 @@ C***************************************************************************
 #include "dftcom.h"
 
       integer, intent(in) :: KSYMOP, IPRINT_X
-      logical, intent(in) :: DOGGA,ERFEXP(0:2),TRIPLET
-      real*8, intent(in) :: rho(4), RHG(3,4), GRD2(6)
+      logical, intent(in) :: DOGGA,ERFEXP(0:2),TRIPLET, do_metagga
+      real*8, intent(in) :: rho(4), RHG(3,4), GRD2(6), tau(4),
+     &                      laplace(4)
       real*8, intent(in) :: CHIVAL,VLAMBDA
       real*8, intent(in) :: DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
       real*8, intent(in) :: GAO(NBAST),GAO1(NBAST,3), DGAO(NBAST,2)
       real*8, intent(in) :: WGHTX,WGHTC
       
-      real*8, intent(out) :: EXCMAT(NBAST,NBAST,2)
+      real*8, intent(inout) :: EXCMAT(NBAST,NBAST,2)
+
+      integer, save :: n_call = 0
 
 !     local
       integer :: I, J, ISYM, JSYM, JEND, JSTR, ISTR, IEND
-      integer :: NORDER
+      integer :: NORDER, p, q
 
       real*8 :: ddot
 
-      real*8 :: BR(4), B0(2), B3(3,2), BMAX
+      real*8 :: BR(4), B0(2), B3(3,2), BMAX, B4(2), B5(2)
       real*8 :: AR(2), AB(2), AX, AY, AZ, RX(2), RY(2), RZ(2)
 
-      real*8 :: FAC0R, FAC0S, FACR, FACS, FAC_AR
+      real*8 :: FAC0R, FAC0S, FACR, FACS, FAC_AR, FAC_RB, FAC_SB
+      real*8 :: FAC_RC, FAC_SC
       real*8 :: FRR, FRZ, FZZ, FZ0
       real*8 :: FRS, FSS, FSZ, FSZ_S, FRZ_S, FZZ_S, FZ0_S, FZZ_SS
-      real*8 :: G0, GX, GY, GZ
+      real*8 :: G0, GX, GY, GZ, Xi
 
 !     X, C, and XC energies, and derivatives
-      real*8 :: Ex, Ec, d1Ex(5), d1Ec(5), d2Ex(15), d2Ec(15)
-      real*8 :: Exc, d1Exc(5), d2Exc(15)
-! d1E?(1:5)  = d1E?drhoc, d1E?drhos, d1E?dgrdcc, d1E?dgrdss, d1E?grdcs
-! d2E?(1:15) =
-!     d2E?drhocdrhoc,
-!     d2E?drhocdrhos,   d2E?drhosdrhos,
-!     d2E?drhocdgrdcc,  d2E?drhosdgrdcc, d2E?dgrdccdgrdcc,
-!     d2E?drhocdgrdss,  d2E?drhosdgrdss, d2E?dgrdccdgrdss, d2E?dgrdssdgrdss,
-!     d2E?drhocdgrdcs,  d2E?drhosdgrdcs, d2E?dgrdccdgrdcs, d2E?dgrdssdgrdcs, d2E?dgrdcsdgrdcs
+      real*8 :: Ex, Ec, d1Ex(9), d1Ec(9), d2Ex(45), d2Ec(45)
+      real*8 :: Exc, d1Exc(9), d2Exc(45)
+!     
+!     r = rho, g=gamma, t=tau, e=eta
+!     gamma = grad_rho . grad_rho
+!     tau   = kinetic energy density
+!     eta   = laplace_rho
+!
+!           dr_c   dr_s   dg_cc   dg_ss   dg_cs   dt_c   dt_s   de_c   de_s
+!  d1E?(idx)  1      2      3       4       5       6      7       8      9
+!  
+!  d2E?(idx)
+!           dr_c   dr_s   dg_cc   dg_ss   dg_cs   dt_c   dt_s   de_c   de_s
+!     dr_c    1
+!     dr_s    2      3
+!     dg_cc   4      5      6
+!     dg_ss   7      8      9      10
+!     dg_cs  11     12     13      14      15
+!     dt_c   16     17     18      19      20      21
+!     dt_s   22     23     24      25      26      27     28
+!     de_c   29     30     31      32      33      34     35      36
+!     de_s   37     38     39      40      41      42     43      44     45
+
+      n_call = n_call + 1
 
       IF (DFT_SPINDNS .AND. TRIPLET) THEN
          CALL QUIT('SRDFTJT.F: Triplet with open-shell not implemented')
@@ -961,6 +1051,19 @@ C        B3(1:3,j) = B3(1:3,j) + GAO1(1:NBAST,1:3)'*DGAO((1:NBAST, 1)
      &         DGAO(1,1),1,1.0d0,B3(1,j),1)
          BMAX = MAX(BMAX, ABS(B3(1,j)),ABS(B3(2,j)),ABS(B3(3,j)))
       END IF
+      if (do_metagga) then
+         B4(j) = 0.0d0
+         do p = 1, nbast
+            GX = GAO1(p,1)
+            GY = GAO1(p,2)
+            GZ = GAO1(p,3)
+            do q = 1, nbast
+               B4(j) = B4(j) + ( GX*GAO1(q,1) + GY*GAO1(q,2) +
+     &                           GZ*GAO1(q,3) ) * DTXMAT(p,q)
+            end do
+         end do
+         B4(j) = B4(j)*0.5d0
+      end if
 
       IF (DFT_SPINDNS) THEN
          ! DGAO(1,2) = DSXMAT*GAO; DSXMAT is 1-index transformed or transition spin density matrix
@@ -981,6 +1084,19 @@ C           B3(1:3,2) = B3(1:3,2) + GAO1(1:NBAST,1:3)T*DGAO((1:NBAST, 2)
      &         DGAO(1,2),1,1.0d0,B3(1,2),1)
             BMAX = MAX(BMAX, ABS(B3(1,2)),ABS(B3(2,2)),ABS(B3(3,2)))
          END IF
+         if (do_metagga) then
+            B4(2) = 0.0d0
+            do p = 1, nbast
+               GX = GAO1(p,1)
+               GY = GAO1(p,2)
+               GZ = GAO1(p,3)
+               do q = 1, nbast
+                  B4(2) = B4(2) + ( GX*GAO1(q,1) + GY*GAO1(q,2) +
+     &                              GZ*GAO1(q,3) ) * DSXMAT(p,q)
+               end do
+            end do
+            B4(2) = B4(2)*0.5d0
+         end if
       END IF
 C
       IF (BMAX.GT.DFTHRL) THEN
@@ -989,11 +1105,11 @@ C
 C Exchange and correlation derivatives ------------------------------------
 
       NORDER = 2  ! zero-order, first-order and second-order derivatives
-      CALL SRDFTEXCJT(RHO,GRD2,CHIVAL,NORDER,ERFEXP,triplet,
+      CALL SRDFTEXCJT(RHO,GRD2,tau,laplace,CHIVAL,NORDER,ERFEXP,triplet,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
       Exc         = WGHTX*  Ex       + WGHTC*  Ec
-      d1Exc(1:5)  = WGHTX*d1Ex(1:5)  + WGHTC*d1Ec(1:5)
-      d2Exc(1:15) = WGHTX*d2Ex(1:15) + WGHTC*d2Ec(1:15)
+      d1Exc(1:9)  = WGHTX*d1Ex(1:9)  + WGHTC*d1Ec(1:9)
+      d2Exc(1:45) = WGHTX*d2Ex(1:45) + WGHTC*d2Ec(1:45)
 
 C Total contribution -------------------------------------------------------
 
@@ -1013,42 +1129,45 @@ C Total contribution -------------------------------------------------------
 
          FZ0   = d1Exc(3)*2.0d0
 !        FZ0   = 2 d1Excdgrdcc
-         ! gradient
          FRZ   = d2Exc(4)*2.0d0
 !        FRZ   = 2 d2Excdrhocdgrdcc
          FZZ   = d2Exc(6)*4.0d0
 !        FZZ   = 4 d2Excdgrdccdgrdcc
 
-      IF (DFT_SPINDNS .OR. TRIPLET) THEN
-         ! grd[rhos^(X,Y,Z)]
-         RX(2) = RHG(1,2)
-         RY(2) = RHG(2,2)
-         RZ(2) = RHG(3,2)
+         IF (DFT_SPINDNS .OR. TRIPLET) THEN
+            ! grd[rhos^(X,Y,Z)]
+            RX(2) = RHG(1,2)
+            RY(2) = RHG(2,2)
+            RZ(2) = RHG(3,2)
 
-         FZ0_S = d1Exc(4)*2.0d0
-!        FZ0_S = 2 d1Excgrdss
-         FSZ   = d2Exc(5)*2.0d0
-!        FSZ   = 2 d2Excdrhosdgrdcc
-         ! spin-gradient
-         FRZ_S = d2Exc(7)*2.0d0
-!        FRZ_S = 2 d2Excdrhocdgrdss
-         FSZ_S = d2Exc(8)*2.0d0
-!        FSZ_S = 2 dd2Excdrhosdgrdss
-         FZZ_S = d2Exc(9)*4.0d0
-!        FZZ_S = 4 d2Excdgrdccdgrdss
-         FZZ_SS= d2Exc(10)*4.0d0
-!        FZZ_SS= 4 d2Excdgrdssdgrdss
-
-!        The two lines below is to make the definitions consistent. As
-!        can be seen, for all the other terms the 2 or 4 factor have
-!        been absorbed into the derivatives (see lines above). Therefore
-!        this should also be the case for the two derivatives below.
-!        E.R.K, 20 June 2018
-         d2Exc(13) = d2Exc(13)*2.0d0
-         d2Exc(14) = d2Exc(14)*2.0d0
-
-      END IF ! DOGGA .and. DFT_SPINDNS
+            FZ0_S = d1Exc(4)*2.0d0
+!           FZ0_S = 2 d1Excgrdss
+            FSZ   = d2Exc(5)*2.0d0
+!           FSZ   = 2 d2Excdrhosdgrdcc
+            FRZ_S = d2Exc(7)*2.0d0
+!           FRZ_S = 2 d2Excdrhocdgrdss
+            FSZ_S = d2Exc(8)*2.0d0
+!           FSZ_S = 2 dd2Excdrhosdgrdss
+            FZZ_S = d2Exc(9)*4.0d0
+!           FZZ_S = 4 d2Excdgrdccdgrdss
+            FZZ_SS= d2Exc(10)*4.0d0
+!           FZZ_SS= 4 d2Excdgrdssdgrdss
+            d2Exc(13) = d2Exc(13)*2.0d0
+            d2Exc(14) = d2Exc(14)*2.0d0
+         END IF ! DOGGA .and. DFT_SPINDNS
       END IF ! DOGGA
+
+      if (do_metagga) then
+         d2Exc(18) = d2Exc(18)*2.0d0
+         d2Exc(31) = d2Exc(31)*2.0d0
+         if (dft_spindns .or. triplet) then
+            d2Exc(19) = d2Exc(19)*2.0d0
+            d2Exc(24) = d2Exc(24)*2.0d0
+            d2Exc(32) = d2Exc(32)*2.0d0
+            d2Exc(39) = d2Exc(39)*2.0d0
+            d2Exc(40) = d2Exc(40)*2.0d0
+         end if ! openshell or triplet
+      end if ! metaGGA
 
 
 C Linear transformation -----------------------------------------------------
@@ -1060,24 +1179,117 @@ C Linear transformation -----------------------------------------------------
             ! B0(2) = rhos_b
             ! B3(:,1) = grad(rhoc_b)
             ! B3(:,2) = grad(rhos_b)
+            ! B4(1) = tauc_b
+            ! B4(2) = taus_b
+            ! B5(1) = laplace(rhoc_b)
+            ! B5(2) = laplace(rhos_b)
             ! BR(1) = grad(rhoc) . grad(rhoc_b)
             ! BR(2) = grad(rhos) . grad(rhos_b)
             ! BR(3) = grad(rhoc) . grad(rhos_b)
             ! BR(4) = grad(rhos) . grad(rhoc_b)
-            ! AX, AY, AZ : grad(xhi_i xhi_j)
-            ! AR(1) = AX*RX(1)   + AY*RY(1)   + AZ*RZ(1)   ! grad(xhi_i xhi_j) . grad(rhoc)
-            ! AR(2) = AX*RX(2)   + AY*RY(2)   + AZ*RZ(2)   ! grad(xhi_i xhi_j) . grad(rhos)
-            ! AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1) ! grad(xhi_i xhi_j) . grad(rhoc_b)
-            ! AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2) ! grad(xhi_i xhi_j) . grad(rhos_b)
+            ! AX, AY, AZ : grad(chi_i chi_j)
+            ! BX, BY, BZ : grad(phi_p) . grad(phi_q) 
+            ! CX, AC, CZ : laplace(chi_i chi_j)
+            ! AR(1) = AX*RX(1)   + AY*RY(1)   + AZ*RZ(1)   ! grad(chi_i chi_j) . grad(rhoc)
+            ! AR(2) = AX*RX(2)   + AY*RY(2)   + AZ*RZ(2)   ! grad(chi_i chi_j) . grad(rhos)
+            ! AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1) ! grad(chi_i chi_j) . grad(rhoc_b)
+            ! AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2) ! grad(chi_i chi_j) . grad(rhos_b)
             
             ! FAC0R  = All terms in EXCMAT(1) multiplied with G0*GAO(J)
             ! FACR   = All terms in EXCMAT(1) multiplied with AR(1)
             ! FAC0S  = All terms in EXCMAT(2) multiplied with G0*GA0(J)
             ! FACS   = All terms in EXCMAT(2) multiplied with AR(2)
             ! FAC_AR = All terms multiplied with AR(2) for EXCMAT(1),
-            !          and AR(1) for EXCMAT(2)
+            !                                and AR(1) for EXCMAT(2)
+            ! FAC_RB = All terms multiplied with G1*GAO1(J) in EXCMAT(1)
+            ! FAC_SB = All terms multiplied with G1*GAO1(J) in EXCMAT(2)
+            ! FAC_RC = All terms multiplied with G2*GAO(J) + G0*GAO2(J)
+            !                                    + 2*G1*GAO1(J) in EXCMAT(1)
+            ! FAC_SC = All terms multiplied with G2*GAO(J) + G0*GAO2(J)
+            !                                    + 2*G1*GAO1(J) in EXCMAT(2)
+            !              FAC_RC and FAC_SC, will be implemented later.
+            !              all terms related to Laplacian rho, will be 
+            !              implemented later. And is therefore commented
+            !              out in the below code.
 
-            if (dogga) then
+            ! important to check for meta-gga before gga, becuase they
+            ! are both true in the case of meta-ggas
+            if (do_metagga) then
+               if (dft_spindns) then
+                  BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
+                  BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
+                  BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
+                  BR(4) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
+                  FAC0R = FRR*B0(1) + FRS*B0(2) + FRZ*BR(1) + 
+     &                    FRZ_S*BR(2) + d2Exc(11)*BR(4) +
+     &                    d2Exc(11)*BR(3) + d2Exc(16)*B4(1) +
+     &                    d2Exc(22)*B4(2)
+      !&                    + d2Exc(29)*B5(1) + d2Exc(37)*B5(2)
+                  FAC0S = FRS*B0(1) + FSS*B0(2) + FSZ*BR(1) +
+     &                    FSZ_S*BR(2) + d2Exc(12)*BR(4) +
+     &                    d2Exc(12)*BR(3) + d2Exc(17)*B4(1) +
+     &                    d2Exc(23)*B4(2)
+      !&                    + d2Exc(30)*B5(1) + d2Exc(38)*B5(2)
+                  FACR  = FRZ*B0(1) + FSZ*B0(2) + FZZ*BR(1) +
+     &                    FZZ_S*BR(2) + d2Exc(13)*BR(4) +
+     &                    d2Exc(13)*BR(3) + d2Exc(18)*B4(1) +
+     &                    d2Exc(24)*B4(2)
+      !&                    + d2Exc(31)*B5(1) + d2Exc(39)*B5(2)
+                  FACS  = FRZ_S*B0(1) + FSZ_S*B0(2) + FZZ_S*BR(1) +
+     &                    FZZ_SS*BR(2) + d2Exc(14)*BR(4) +
+     &                    d2Exc(14)*BR(3) + d2Exc(19)*B4(1) +
+     &                    d2Exc(25)*B4(2)
+      !&                    + d2Exc(32)*B5(1) + d2Exc(40)*B5(2)
+                  FAC_AR = d2Exc(11)*B0(1) + d2Exc(12)*B0(2) +
+     &                     d2Exc(13)*BR(1) + d2Exc(14)*BR(2) +
+     &                     d2Exc(15)*BR(4) + d2Exc(15)*BR(3) +
+     &                     d2Exc(20)*B4(1) + d2Exc(26)*B4(2)
+      !&                     + d2Exc(33)*B5(1) + d2Exc(41)*B5(2)
+                  FAC_RB = d2Exc(16)*B0(1) + d2Exc(17)*B0(2) +
+     &                     d2Exc(18)*BR(1) + d2Exc(19)*BR(2) +
+     &                     d2Exc(20)*BR(4) + d2Exc(20)*BR(3) +
+     &                     d2Exc(21)*B4(1) + d2Exc(27)*B4(2)
+      !&                     + d2Exc(34)*B5(1) + d2Exc(42)*B5(2)
+                  FAC_SB = d2Exc(22)*B0(1) + d2Exc(23)*B0(2) +
+     &                     d2Exc(24)*BR(1) + d2Exc(25)*BR(2) + 
+     &                     d2Exc(26)*BR(4) + d2Exc(26)*BR(3) +
+     &                     d2Exc(27)*B4(1) + d2Exc(28)*B4(2)
+      !&                     + d2Exc(35)*B5(1) + d2Exc(43)*B5(2)
+                  !FAC_RC = d2Exc(29)*B0(1) + d2Exc(30)*B0(2) + 
+      !&                     d2Exc(31)*BR(1) + d2Exc(32)*BR(2) + 
+      !&                     d2Exc(33)*BR(4) + d2Exc(33)*BR(3) + 
+      !&                     d2Exc(36)*B5(1) + d2Exc(44)*B5(2) +
+      !&                     d2Exc(34)*B4(1) + d2Exc(35)*B4(2)
+                  !FAC_SC = d2Exc(37)*B0(1) + d2Exc(38)*B0(2) +
+      !&                     d2Exc(39)*BR(1) + d2Exc(40)*BR(2) +
+      !&                     d2Exc(41)*BR(4) + d2Exc(41)*BR(3) +
+      !&                     d2Exc(44)*B5(1) + d2Exc(45)*B5(2) +
+      !&                     d2Exc(42)*B4(1) + d2Exc(43)*B4(2)
+               else if (triplet) then
+                  BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
+                  FAC0S = FSS*B0(2) + d2Exc(12)*BR(3) + d2Exc(23)*B4(2)
+      !&                    + d2Exc(38)*B5(2)
+                  FAC_AR = d2Exc(12)*B0(2) + d2Exc(15)*BR(3) +
+     &                     d2Exc(26)*B4(2)
+      !&                     + d2Exc(41)*B5(2)
+                  FAC_SB = d2Exc(23)*B0(2) + d2Exc(26)*BR(3) +
+     &                     d2Exc(28)*B4(2)
+      !&                     + d2Exc(43)*B5(2)
+                  !FAC_SC = d2Exc(38)*B0(2) + d2Exc(41)*BR(3) +
+      !&                     d2Exc(45)*B5(2) + d2Exc(43)*B4(2)
+               else ! closed-shell metaGGA
+                  BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
+                  FAC0R = FRR*B0(1) + FRZ*BR(1) + d2Exc(16)*B4(1)
+      !&                    + d2Exc(29)*B5(1)
+                  FACR  = FRZ*B0(1) + FZZ*BR(1) + d2Exc(18)*B4(1)
+      !&                    + d2Exc(31)*B5(1)
+                  FAC_RB = d2Exc(16)*B0(1) + d2Exc(18)*BR(1) +
+     &                     d2Exc(21)*B4(1)
+      !&                     + d2Exc(34)*B5(1)
+                  !FAC_RC = d2Exc(29)*B0(1) + d2Exc(31)*BR(1) +
+      !&                     d2Exc(36)*B5(1) + d2Exc(34)*B4(1)
+               end if
+            else if (dogga) then
                if (dft_spindns) then
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                   BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
@@ -1118,11 +1330,14 @@ C Linear transformation -----------------------------------------------------
 #if SRDFT_DEBUG > 11
           !if (IPRINT_X .gt. 10) then
            !if (abs(FSS) .gt. 0.d0 .or. abs(FRS) .gt. 0.d0) then
+           if (modulo(n_call, 1000) .eq. 0) then
               write(lupri,*) 'hjaaj: rho ',rho(1:4)
               write(lupri,*) 'hjaaj: rhgc',rhg(1:3,1)
               write(lupri,*) 'hjaaj: grd2',grd2(1:6)
+              write(lupri,*) 'debug: tau',tau(1:4)
               write(lupri,*) 'hjaaj: Ex, Ec, gga, spindns, triplet',
      &          Ex, Ec, dogga, dft_spindns, triplet
+              write(lupri,*) 'debug: do_metagga',do_metagga
               write(lupri,*) 'hjaaj: d1Ex  ',d1Ex(:)
               write(lupri,*) 'hjaaj: d1Ec  ',d1Ec(:)
               write(lupri,*) 'hjaaj: d2Ex(:)',d2Ex(:)
@@ -1133,21 +1348,103 @@ C Linear transformation -----------------------------------------------------
               write(lupri,*) 'hjaaj: FZ0, FZ0_S',FZ0, FZ0_S
               write(lupri,*) 'hjaaj: FSZ_S,FRZ_S,FZZ_S,FZZ_SS',
      &                               FSZ_S,FRZ_S,FZZ_S,FZZ_SS
-              write(lupri,*) 'debug: d2Exc(11:15)', d2Exc(11:15)
+              write(lupri,*) 'debug: d1Exc(1:9)', d1Exc(1:9)
+              write(lupri,*) 'debug: d2Exc(1:45)', d2Exc(1:45)
               write(lupri,*) 'hjaaj: RX, RY, RZ',RX(1),RY(1),RZ(1)
               write(lupri,*) 'hjaaj: B0, BMAX',B0(1:2), BMAX
+              write(lupri,*) 'hjaaj: B4',B4(1:2)
               write(lupri,*) 'hjaaj: B3 matrix',B3(1:3,1:2)
               call output(b3,1,3,1,2,3,2,1,lupri)
               write(lupri,*) 'hjaaj: BR',BR(1:2)
               write(lupri,*) 'hjaaj: FAC0R, FAC0S, FACR, FACS, FAC_AR',
      &                               FAC0R, FAC0S, FACR, FACS, FAC_AR
+              write(lupri,*) 'debug: FAC_RB, FAC_SB',FAC_RB, FAC_SB
               write(lupri,*) 'hjaaj: current EXCMAT left corner; before'
               call output(excmat,1,5,1,5,nbast,nbast,1,lupri)
+
+              write(lupri,*) 'debug: d2Exc(23)*B4(2)', d2Exc(23)*B4(2)
+              write(lupri,*) 'debug: d2Exc(26)*B4(2)', d2Exc(26)*B4(2)
+              write(lupri,*) 'debug: d2Exc(23)*B0(2)', d2Exc(23)*B0(2)
+              write(lupri,*) 'debug: d2Exc(26)*BR(3)', d2Exc(26)*BR(3)
+              write(lupri,*) 'debug: d2Exc(28)*B4(2)', d2Exc(28)*B4(2)
+              write(lupri,*) 'debug: d2Exc(16)*B4(1)', d2Exc(16)*B4(1)
+              write(lupri,*) 'debug: d2Exc(18)*B4(1)', d2Exc(18)*B4(1)
+              write(lupri,*) 'debug: d2Exc(16)*B0(1)', d2Exc(16)*B0(1)
+              write(lupri,*) 'debug: d2Exc(18)*BR(1)', d2Exc(18)*BR(1)
+              write(lupri,*) 'debug: d2Exc(21)*B4(1)', d2Exc(21)*B4(1)
+           end if
            !end if
           !end if
 #endif
             IF (NSYM.EQ.1) THEN
-               IF (DOGGA) THEN
+               if (do_metagga) then
+                  if (triplet) then
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        GX = GAO1(I,1)
+                        GY = GAO1(I,2)
+                        GZ = GAO1(I,3)
+                        DO J = 1, I
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
+                           Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1) +
+     &                         FAC0S*G0*GAO(J) + FAC_AR*AR(1) +
+     &                         FZ0_S*AB(2) + FAC_SB*Xi*0.5d0
+      !&                         + FAC_SC*??
+                        END DO
+                     END DO
+                  else if (dft_spindns) then
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        GX = GAO1(I,1)
+                        GY = GAO1(I,2)
+                        GZ = GAO1(I,3)
+                        DO J = 1, I
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AR(2) = AX*RX(2) + AY*RY(2) + AZ*RZ(2)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+                           AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
+                           Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1) +
+     &                         FAC0R*G0*GAO(J) + FACR*AR(1) +
+     &                         FAC_RB*Xi*0.5d0 + FAC_AR*AR(2) + 
+     &                         FZ0*AB(1) + d1Exc(5)*AB(2)
+      !&                         + FAC_RC*??
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2) + 
+     &                         FAC0S*G0*GAO(J) + FACS*AR(2) +
+     &                         FAC_SB*Xi*0.5d0 + FAC_AR*AR(1) +
+     &                         FZ0_S*AB(2) + d1Exc(5)*AB(1)
+      !&                         + FAC_SC*??
+                        END DO
+                     END DO
+                  else ! Closed-shell meta-GGA
+                     DO I = 1, NBAST
+                        G0 = GAO(I)
+                        GX = GAO1(I,1)
+                        GY = GAO1(I,2)
+                        GZ = GAO1(I,3)
+                        DO J = 1, I
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+                           Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1) +
+     &                         FAC0R*G0*GAO(J) + FACR*AR(1) + FZ0*AB(1)
+     &                         + FAC_RB*Xi*0.5d0
+      !&                         + FAC_RC*??
+                        END DO
+                     END DO
+                  end if
+               ELSE IF (DOGGA) THEN
                   IF (TRIPLET) THEN ! closed-shell triplet GGA response
                      DO I = 1, NBAST
                         G0 = GAO(I)
@@ -1246,7 +1543,74 @@ C Linear transformation -----------------------------------------------------
                  IF (ISYM.GE.JSYM) THEN
                    JSTR = IBAS(JSYM) + 1
                    JEND = IBAS(JSYM) + NBAS(JSYM)
-                   IF (DOGGA) THEN
+                   IF (do_metagga) THEN
+                     IF (triplet) THEN
+                       DO I = ISTR, IEND
+                         G0 = GAO(I)
+                         GX = GAO1(I,1)
+                         GY = GAO1(I,2)
+                         GZ = GAO1(I,3)
+                         DO J = JSTR, min(I, JEND)
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
+                           Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1) +
+     &                         FAC0S*G0*GAO(J) + FAC_AR*AR(1) +
+     &                         FZ0_S*AB(2) + FAC_SB*Xi*0.5d0
+      !&                         + FAC_SC*??
+                         END DO
+                       END DO
+                     ELSE IF (dft_spindns) THEN
+                       do i = istr, iend
+                         G0 = GAO(I)
+                         GX = GAO1(I,1)
+                         GY = GAO1(I,2)
+                         GZ = GAO1(I,3)
+                         DO J = JSTR, min(I, JEND)
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AR(2) = AX*RX(2) + AY*RY(2) + AZ*RZ(2)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+                           AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2)
+                           Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1) +
+     &                         FAC0R*G0*GAO(J) + FACR*AR(1) +
+     &                         FAC_RB*Xi*0.5d0 + FAC_AR*AR(2) + 
+     &                         FZ0*AB(1) + d1Exc(5)*AB(2)
+      !&                         + FAC_RC*??
+                           EXCMAT(J,I,2) = EXCMAT(J,I,2) + 
+     &                         FAC0S*G0*GAO(J) + FACS*AR(2) +
+     &                         FAC_SB*Xi*0.5d0 + FAC_AR*AR(1) +
+     &                         FZ0_S*AB(2) + d1Exc(5)*AB(1)
+      !&                         + FAC_SC*??
+                         END DO
+                       END DO
+                     ELSE ! Closed-shell MGGA singlet response
+                       DO I = ISTR, IEND
+                         G0 = GAO(I)
+                         GX = GAO1(I,1)
+                         GY = GAO1(I,2)
+                         GZ = GAO1(I,3)
+                         do J = JSTR, min(I, JEND)
+                           AX = GX*GAO(J) + G0*GAO1(J,1)
+                           AY = GY*GAO(J) + G0*GAO1(J,2)
+                           AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                           AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
+                           AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+                           Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1) +
+     &                         FAC0R*G0*GAO(J) + FACR*AR(1) + FZ0*AB(1)
+     &                         + FAC_RB*Xi*0.5d0
+      !&                         + FAC_RC*??
+                         END DO
+                       END DO
+                     END IF
+                   ELSE IF (DOGGA) THEN
                      IF (TRIPLET) THEN
                        DO I = ISTR, IEND
                          G0 = GAO(I)
@@ -1334,12 +1698,13 @@ C Linear transformation -----------------------------------------------------
                   END IF
                END DO
             END IF
-!        END IF   ! IF (DOHFSRDFT) THEN
       END IF   ! IF (BMAX.GT.DFTHRL) THEN
 #if SRDFT_DEBUG > 11
+           if (modulo(n_call, 1000) .eq. 0) then
       !if (iprint_x .gt. 10) then
          write(lupri,*) ':: current EXCMAT left corner - after'
          call output(excmat,1,5,1,5,nbast,nbast,1,lupri)
+           end if
       !end if
 #endif
 c

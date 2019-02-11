@@ -8,7 +8,24 @@
 
 
 
-## [2018.alpha Unreleased]
+## [2019.alpha] (Dalton2019 alpha)
+
+### Added
+- added information about .MS2 input option to manual, quit if invalid value specified.
+
+## [2018.2alpha] (unreleased)
+
+### Fixed
+- more robust .STEX input (old failed with gfortran 8); changed documentation accordingly.
+
+## [2018.1] (2019-01-14)
+
+### Fixed
+- Error in code for 2-el integral transformation level 4 (used in some cases for MCSCF). Error was not in Dalton2016.
+- Error in export for FDE fixed.
+- Compilation with PGI compilers now possible (but code with pelib or qfit using gen1int is not working).
+
+## [2018.0] (2018-11-19)
 
 ### New features added
 - New parallel 2-electron integral transformation .FCKTRA  (H. J. Aa. Jensen).
@@ -16,17 +33,18 @@
 - Analytical PE-HF/DFT molecular gradients (see e.g. test/pehf\_geoopt for example of input).
   - Reference: N. H. List, M. T. B. Beerepoot, J. M. H. Olsen, B. Gao, K. Ruud, H. J. Aa. Jensen, and J. Kongsted. J. Chem. Phys. 142, 034119 (2015).
 - Freezing atoms in geometry optimization (N. H. List and H. J. Aa. Jensen).
-  For example for freezing link atoms in PE-HF/DFT geometry optimization.
-  (See e.g. test/pehf\_geoopt for example of input.)
+  (See e.g. test/geoopt\_freeze for example of input.)
 - Effective external field (EEF) for one- and two-photon absorption in PE-HF/DFT calculations.
-  - Reference: N. H. List, H. J. Aa. Jensen, and J. Kongsted. Local Electric Fields and Molecular Properties in Heterogeneous Environments through Polarizable Embedding.
-   Phys. Chem. Chem. Phys. 18, 10070 (2016).
+  - Reference: N. H. List, H. J. Aa. Jensen, and J. Kongsted. Phys. Chem. Chem. Phys. 18, 10070 (2016).
 - Remove the most diffuse virtual orbitals after SCF or MCSCF (new .VIRTRUNC option).
 - Add purely classical multipole-multipole interaction energy in PE-QM calculations (which can be skipped using the .SKIPMUL keyword under the \*PEQM section).
 - Add basic frozen density embedding (FDE) functionality (A. Gomes, C. Jacob, L. Visscher).
 - Dipole velocity complex linear polarizability with test rsp\_cpp\_veloci (N. H. List).
+- Resonant-convergent (damped) cubic response at HF/DFT levels (T. Fahleson and P. Norman)
+  - Reference: T. Fahleson and P. Norman. J. Chem. Phys. 147, 144109 (2017).
 
 ### Fixed
+- Nuclear model keyword .NUCMOD was ignored, now the Gaussian nuclear model used in the Dirac program can be used in Dalton.
 - Open-shell DFT is not implemented for many derivative properties in \*\*PROPERTIES, dalton now quits.
 - Bugfix for .MNF\_SO (mean-field spin-orbit, AMFI) when basis set has big exponents (>10^9).
 - Open-shell doublet ROKS DFT geometry optimization.
@@ -37,17 +55,17 @@
 - Bugfix for .TDA for MCSCF (i.e. zero B matrix in linear response in \*\*RESPONSE).
 - Bugfix for .GASCI after .HSROHF
 - Fix of several library basis sets that were not read correctly for some atoms, which caused Dalton to abort.
-- Now a .G-TENSOR calculation in **RESPONSE:*ESR module with a CI wave function does not abort.
+- Now a .G-TENSOR calculation in \*\*RESPONSE:\*ESR module with a CI wave function does not abort.
 
 ### Changed
 - OK to run ECD or OECD with SOPPA.
 - More documentation of .STEX in manual.
 - Default induced-dipole solver in polarizable embedding (through .PEQM keyword) is changed to JI/DIIS method, which improves parallel scaling performance, and default convergence threshold for induced dipoles is changed $`1.0\cdot10^{-8}>|\mu^{[k]}-\mu^{[k-1]}|`$ where $`\mu`$ is a vector containing all induced dipoles and $`k`$ is the iteration index.
+- Minimum CMake version is now v3.1.
 
-### Removed
+### Deprecated
+- Environment variable DALTON\_NUM\_MPI\_PROCS is deprecated and will be removed in future releases, use DALTON\_LAUNCHER instead
 
-
-Do not make changes below this line! For the relase branch only.
 
 ## [2016.2] (2016-07-12)
 
@@ -79,7 +97,7 @@ Do not make changes below this line! For the relase branch only.
 - Make sure molecule is not moved in ADDSYM during numerical differentiation
 - Fixed error in the printing of the cpu/wall time used in Sirius
 - Fixed error in PBEc functional: gave NaN when rho was zero.
-- Polished some format statements to reduce number of compiler warnings 
+- Polished some format statements to reduce number of compiler warnings
 - Fixed error in memory addressing for MCSCF g-tensor calculations
 - Fixed 2 errors in author list for WIRE dalton publication in dalton output
 - Removed unsupported configure options.
@@ -99,15 +117,15 @@ Do not make changes below this line! For the relase branch only.
 ### Fixed (since version 2015.1)
 - Ahlrichs-TZV basis: Fixed error in an exponent for Boron.
 - ANO-RCC basis: Fixed Carbon basis set (wrong contraction coefficients, see [MOLCAS ANO-RCC](http://www.molcas.org/ANO/).
-- ANO-RCC basis: Modified the 3 Th h-functions by replacing them with the 3 Ac h-functions to Th.  
+- ANO-RCC basis: Modified the 3 Th h-functions by replacing them with the 3 Ac h-functions to Th.
                  (A mistake was made in the original work when the 3 Th h-functions were made,
                   and this has never been redone. They are too diffuse, exponents
                   (0.3140887600, 0.1256355100, 0.0502542000) for Th, Z=90, compared to
                   (0.7947153600, 0.3149038200, 0.1259615200) for Ac, Z=89, and
-                  (0.8411791300, 0.3310795400, 0.1324318200) for Pa, Z=91.  
+                  (0.8411791300, 0.3310795400, 0.1324318200) for Pa, Z=91.
                   We have selected to just replace the 3 Th h-functions with those from the Ac basis set,
                   because the Ac g-functions are quite close to the Th g-functions, closer than Ac g-functions,
-                  and therefore differences in results compared to optimized Th h-functions should be minimal.)  
+                  and therefore differences in results compared to optimized Th h-functions should be minimal.)
                   Thanks to Kirk Peterson for pointing out the Th problem on http://daltonforum.org.
 - Fixed reading of ANO-RCC basis set library file.
 - Bug fix for when more than 30 excitation energies requested (EIGENVALUES NOT PAIRED problem reported by Frank Jensen).
@@ -127,7 +145,7 @@ Do not make changes below this line! For the relase branch only.
 - Added ANO-RCC basis set.
 
 ### DALTON
-- Fixed a bug in an LRESC correction. 
+- Fixed a bug in an LRESC correction.
 - Improved calculation of one LRESC correction.
 - Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake
 - Fixed a bug with Intel Compiler 15 during initialization of Cauchy-Schwarz parameters
@@ -300,8 +318,8 @@ Do not make changes below this line! For the relase branch only.
 - DEC-MP2 energy, density and gradient
 - Local orbitals
 - Improved SCF optimization routines
-- Massively parallel CCSD 
-- MPI parallelization of HF and DFT 
+- Massively parallel CCSD
+- MPI parallelization of HF and DFT
 - Improved integral code including MPI parallelism
 - Matrix operation parallelization using PBLAS/SCALAPACK
 - ADMM exchange (energy, gradients)

@@ -815,18 +815,14 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/fde/emb_dalton_evaluators.F90
     DALTON/fde/emb_dalton_input.F90
     DALTON/fde/emb_data.F90
-#   DALTON/fde/emb_evaluators.F90
     DALTON/fde/emb_export.F90
     DALTON/fde/emb_input.F90
     DALTON/fde/emb_io.F90
     DALTON/fde/emb_dalton_io.F
     DALTON/fde/emb_main.F90
     DALTON/fde/emb_max_block_length.F90
-#   DALTON/fde/emb_nadd_derv.F90
     DALTON/fde/emb_types.F90
-#   DALTON/fde/emb_xcfun_interface.F90
     DALTON/fde/xcfun_autogen.F90
-#   DALTON/fde/xcfun_module.F90
     DALTON/fde/xml_file.F90
     DALTON/fde/xml_parser.F90
     DALTON/fde/xml_structure.F90
@@ -861,8 +857,15 @@ if(ENABLE_SRDFT)
         DALTON/srdft/sir_srdft.F
         DALTON/srdft/srdft.F
         DALTON/srdft/srdftjt.F
+        DALTON/srdft/srdft_molgrad.F
         DALTON/srdft/srdft_par.F
-        DALTON/srdft/dftfun_autogen.F)
+        DALTON/srdft/srdftfun.F
+        DALTON/srdft/srfunctionals/LDA_ERF_exchange.F
+        DALTON/srdft/srfunctionals/PBE_ERFGWS_exchange.F
+        DALTON/srdft/srfunctionals/TPSS_ERFGWS_exchange.F
+        DALTON/srdft/srfunctionals/PW92_ERF_correlation.F
+        DALTON/srdft/srfunctionals/PBE_ERFGWS_correlation.F
+        DALTON/srdft/srfunctionals/TPSS_ERFGWS_correlation.F)
     set(DALTON_srdft_FREE_SOURCES
         DALTON/sirius/sir_ensembledft.F90)
     set(DALTON_FIXED_FORTRAN_SOURCES
