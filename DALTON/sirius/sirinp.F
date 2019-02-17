@@ -2740,12 +2740,12 @@ C
             print *, 'You run OpenRSP DFT without .XCINT'
             print *, 'Either add .XCINT or deactivate'
             print *, 'this warning'
-            stop 1
+            CALL QUIT('OpenRSP only allowed with .XCINT')
          end if
 #else
          print *, 'You run OpenRSP DFT without XCint code compiled'
          print *, 'This is probably not what you want'
-         stop 1
+         CALL QUIT('OpenRSP only allowed with XCint code compiled')
 #endif /* ENABLE_XCINT */
 #endif /* BUILD_OPENRSP */
       end if
@@ -2918,16 +2918,14 @@ C
 C
 C *** Option 1 >CAS  S<  CAS calculation: Active orbitals
   101 CONTINUE
-      IF (MCTYPE .EQ. 2) THEN
+      IF (MCTYPE .NE. 0 .AND. MCTYPE.NE.1 .AND. MCTYPE.NE.11) THEN
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
          IF (MCTYPE .NE. 11) MCTYPE = 1 ! if (not APSG) then CASSCF
          READ(LUCMD,*,ERR=8010) (NAS2(I),I=1,NSYM)
-         DO 25 ISYM = 1,NSYM
-            NAS1(ISYM) = 0
-            NAS3(ISYM) = 0
-   25    CONTINUE
+         NAS1(1:NSYM) = 0
+         NAS3(1:NSYM) = 0
       GO TO 100
 C
 C *** Option 2 >INACTI<  Inactive orbitals
@@ -2983,7 +2981,7 @@ C *** Option 7 >RAS1 H< number of holes in RAS1
 C
 C *** Option 8 >RAS1 S<   RAS1 orbital space
   108 CONTINUE
-      IF (MCTYPE .EQ. 1) THEN
+      IF (MCTYPE .NE. 0 .AND. MCTYPE .NE. 2) THEN
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
@@ -2993,7 +2991,7 @@ C *** Option 8 >RAS1 S<   RAS1 orbital space
 C
 C *** Option 9 >RAS2 S<   RAS2 orbital space
   109 CONTINUE
-      IF (MCTYPE .EQ. 1) THEN
+      IF (MCTYPE .NE. 0 .AND. MCTYPE .NE. 2) THEN
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
@@ -3003,7 +3001,7 @@ C *** Option 9 >RAS2 S<   RAS2 orbital space
 C
 C *** Option 10 >RAS3 S<   RAS3 orbital space
   110 CONTINUE
-      IF (MCTYPE .EQ. 1) THEN
+      IF (MCTYPE .NE. 0 .AND. MCTYPE .NE. 2) THEN
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
@@ -3029,13 +3027,13 @@ C *** Option 12 >RAS3 E<   RAS3 electrons
 C
  2000 CONTINUE
       NASHT = 0
-      DO, I = 1,NSYM
+      DO I = 1,NSYM
          NASH(I) = NAS1(I) + NAS2(I) + NAS3(I)
          NASHT   = NASHT   + NASH(I)
       END DO
       IF (NHL1MX .NE. -1 .OR. NHL1MN .NE. -1) THEN
          NAS1T = 0
-         DO, I = 1,NSYM
+         DO I = 1,NSYM
             NAS1T = NAS1T + NAS1(I)
          END DO
          NELMN1 = 2*NAS1T - NHL1MX

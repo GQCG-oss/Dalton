@@ -2,8 +2,14 @@
 
 ## [2019.alpha] (Dalton2019 alpha)
 
+### New features added
+- Added possibility to optimize MCSCF singlet wave functions with CSFs when used for triplet properties,
+  both in **RESPONS and **PROPERTIES. Previously .DETERMINANTS in wave function optimization was required. (H. J. Aa. Jensen)
+
 ### Added
-- added information about .MS2 input option to manual, quit if invalid value specified.
+- added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
+
+
 
 ## [2018.2alpha] (unreleased)
 

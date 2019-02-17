@@ -2460,7 +2460,7 @@ C        WRITE (IUNIT,1010) JWOPSY
       IF (.NOT. SOPPA) THEN
 C        980820-hjaaj: Find out if vector is in CSFs or in det.s
          ICSF = 0
-         IF (.NOT. FLAG(27) .AND. .NOT.TRPLET .AND. ISYMV .EQ. LSYM)
+         IF (.NOT. FLAG(27) .AND. .NOT.TRPFLG .AND. ISYMV .EQ. LSYM)
      &      ICSF = 1
          CALL ANACIN(RSPVEC,ISYMV,THPLIM,100,XNDXCI,SYMPRO,IUNITX,ICSF)
       END IF
@@ -3314,6 +3314,7 @@ C                      (for determinants plus combinations of degenerate element
 C                       to avoid triplet CI states in a singlet excitation calculation)
 C
       IF (.NOT.DETERM .AND. KSYMOP.EQ.1         ! CSFs, thus do not use plus combinations of any equal diagonal elements
+     &    .AND. .NOT.TRPFLG                     ! triplet, i.e. not plus combinations!
      &    .OR. MS2.NE.0 ) THEN                  ! M_S .ne. 0, thus different number of alpha and beta electrons
          DO JEXST2 = 1, KEXST2
             IEQUAL(JEXST2) = 1

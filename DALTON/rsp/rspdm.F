@@ -47,6 +47,7 @@ C Used from common blocks:
 C   INFINP : LSYM,FLAG(*)
 C   INFORB : NASHT,N2ASHX,NNASHX
 C   INFVAR : ?? not used ?? /920920-hjaaj
+C   wrkrsp.h : DETERM
 C
 #include "maxorb.h"
 #include "priunit.h"
@@ -54,6 +55,7 @@ C
 #include "inforb.h"
 #include "infvar.h"
 #include "infrsp.h"
+#include "wrkrsp.h"
 C
 C
       INTEGER RHOTYP
@@ -106,7 +108,7 @@ C
       END IF
 C
 C
-      CSFEXP = .NOT.FLAG(27)
+      CSFEXP = .NOT.DETERM
 C
       IF ( IPRRSP.GT.65 ) THEN
          WRITE(LUPRI,'(/A)')' ***RSPDM BEFORE CALLING DENSID'
