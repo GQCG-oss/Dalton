@@ -448,11 +448,11 @@ C           DMAT(1,3) is the spin density matrix
          TAU(3) = 0.5d0 * ( TAU(1) + TAU(2) ) ! tau_a
          TAU(4) = 0.5d0 * ( TAU(1) - TAU(2) ) ! tau_b
          ! For small values of tau to avoid NaN
-         do i = 1,4
+         !do i = 1,4
             ! this is not a stable condition. TPSSc and TPSSx
             ! have reversed tau dependency.
-            if (abs(tau(i)) .lt. 1.d-30) tau(i) = 1.d-30
-         end do
+            !if (abs(tau(i)) .lt. 1.d-30) tau(i) = 1.d-30
+         !end do
       ENDIF
 C
 C     Number of electrons
