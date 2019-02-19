@@ -940,3 +940,290 @@ C*****************************************************************************
          call quit('Requested to high order derivative: ',diff_order) 
       end if
       end subroutine
+
+
+C*****************************************************************************
+      subroutine wPBEh_x_spin_unpol(rho, gamma_vec, diff_order, mu, E,
+     &                              d1E, d2E)
+C*****************************************************************************
+C Implemented by E. R. Kjellgren
+C
+C Subroutine to to control calling of Exchange wPBEh functional
+C This implentation will only work for spin-unpolarized calculations!
+C Doing triplet calculations will result in garbage results.
+C
+C   Input : rho, vector of densities
+C           gamma_vec, is called gamma_vec, becuase "gamma" is an
+C              intrinsic function and therefore a bad name.
+C           diff_order, max order of differentation
+C           mu, range-seperation parameter
+C   Output : E, energy
+C            d1E, vector of first derivatives of energy
+C            d2E, vector of second derivatives of energy
+C*****************************************************************************
+      implicit none
+!#include "pi.h" --> pi, pi2
+#include "pi.h" 
+#include "priunit.h" 
+      integer, intent(in) :: diff_order
+      real*8, intent(in) :: rho(4), gamma_vec(6), mu
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      real*8, parameter :: wcutoff = 14.0d0
+      real*8, parameter :: expfcutoff = 700.0d0
+      real*8 :: Ea, Eb, d1Ea(4), d2Ea(10), d1Eb(4), d2Eb(10),
+     &          rho_a, gamma_aa
+      real*8 :: w, s, s_check, aux5
+
+      E = 0.0d0
+      Ea = 0.0d0
+      d1E(:) = 0.0d0
+      d1Ea(:) = 0.0d0
+      d2E(:) = 0.0d0
+      d2Ea(:) = 0.0d0
+      rho_a = rho(3)
+      gamma_aa = gamma_vec(4)
+      
+      if (((2.0d0*rho_a) .le. 1.d-10) 
+     &     .and. ((4.0d0*gamma_aa) .lt. 1.0d-10)) then
+         ! Are we completely sure this check is valid
+         !  for derivatives? - E. R. K
+         return
+      end if
+      
+      s_check = 0.128278243853042d0*sqrt(gamma_aa)*
+     &          rho_a**(-1.33333333333333d0)
+      if (s_check < 1.0d0) then
+         s = s_check
+      elseif (s_check > 15.0d0) then
+         s = 8.572844
+      else
+         s = 0.128278243853042d0*sqrt(gamma_aa)*
+     &       rho_a**(-1.33333333333333d0) - log(0.00018917387353881317d0
+     &       *exp(0.1282782438530422d0*sqrt(gamma_aa)*
+     &       rho_a**(-1.3333333333333333d0)) + 1.0d0)
+      end if
+      w = 0.256556487706084d0*mu*rho_a**(-0.333333333333333d0)
+      aux5 = (s**4*(0.0909716957067039d0*s**2 + 0.0216932488113543d0) + 
+     &       w**2*(0.111928522995437d0*s**6 + 0.00389519564685434d0*s**5
+     &       + 0.604280169541133d0*s**4 + 3.22385920583191d0))/
+     &       (0.0347188d0*s**6 + 0.00120824d0*s**5 + 0.18744d0*s**4
+     &       + 1.0d0)
+      if (diff_order .eq. 0) then
+         if (s_check < 1.0d0) then
+            if ( w < wcutoff ) then
+               if (aux5 < expfcutoff) then
+                  call ESRX_wPBEh_case_1(rho_a, gamma_aa, mu, Ea)
+               else
+                  call ESRX_wPBEh_case_7(rho_a, gamma_aa, mu, Ea)
+               end if
+            else
+               if (aux5 < expfcutoff) then
+                  call ESRX_wPBEh_case_2(rho_a, gamma_aa, mu, Ea)
+               else
+                  call ESRX_wPBEh_case_8(rho_a, gamma_aa, mu, Ea)
+               end if
+            end if
+         elseif (s_check > 15.0d0) then
+            if ( w < wcutoff ) then
+               if (aux5 < expfcutoff) then
+                  call ESRX_wPBEh_case_3(rho_a, gamma_aa, mu, Ea)
+               else
+                  call ESRX_wPBEh_case_9(rho_a, gamma_aa, mu, Ea)
+               end if
+            else
+               if (aux5 < expfcutoff) then
+                  call ESRX_wPBEh_case_4(rho_a, gamma_aa, mu, Ea)
+               else
+                  call ESRX_wPBEh_case_10(rho_a, gamma_aa, mu, Ea)
+               end if
+            end if
+         else
+            if ( w < wcutoff ) then
+               if (aux5 < expfcutoff) then
+                  call ESRX_wPBEh_case_5(rho_a, gamma_aa, mu, Ea)
+               else
+                  call ESRX_wPBEh_case_11(rho_a, gamma_aa, mu, Ea)
+               end if
+            else
+               if (aux5 < expfcutoff) then
+                  call ESRX_wPBEh_case_6(rho_a, gamma_aa, mu, Ea)
+               else
+                  call ESRX_wPBEh_case_12(rho_a, gamma_aa, mu, Ea)
+               end if
+            end if
+         end if
+             
+      elseif (diff_order .eq. 1) then
+         if (s_check < 1.0d0) then
+            if ( w < wcutoff ) then
+               if (aux5 < expfcutoff) then
+                 call D1ESRX_wPBEh_case_1(rho_a, gamma_aa, mu, Ea, d1Ea)
+               else
+                 call D1ESRX_wPBEh_case_7(rho_a, gamma_aa, mu, Ea, d1Ea)
+               end if
+            else
+               if (aux5 < expfcutoff) then
+                 call D1ESRX_wPBEh_case_2(rho_a, gamma_aa, mu, Ea, d1Ea)
+               else
+                 call D1ESRX_wPBEh_case_8(rho_a, gamma_aa, mu, Ea, d1Ea)
+               end if
+            end if
+         elseif (s_check > 15.0d0) then
+            if ( w < wcutoff ) then
+               if (aux5 < expfcutoff) then
+                 call D1ESRX_wPBEh_case_3(rho_a, gamma_aa, mu, Ea, d1Ea)
+               else
+                 call D1ESRX_wPBEh_case_9(rho_a, gamma_aa, mu, Ea, d1Ea)
+               end if
+            else
+               if (aux5 < expfcutoff) then
+                 call D1ESRX_wPBEh_case_4(rho_a, gamma_aa, mu, Ea, d1Ea)
+               else
+                call D1ESRX_wPBEh_case_10(rho_a, gamma_aa, mu, Ea, d1Ea)
+               end if
+            end if
+         else
+            if ( w < wcutoff ) then
+               if (aux5 < expfcutoff) then
+                 call D1ESRX_wPBEh_case_5(rho_a, gamma_aa, mu, Ea, d1Ea)
+               else
+                call D1ESRX_wPBEh_case_11(rho_a, gamma_aa, mu, Ea, d1Ea)
+               end if
+            else
+               if (aux5 < expfcutoff) then
+                 call D1ESRX_wPBEh_case_6(rho_a, gamma_aa, mu, Ea, d1Ea)
+               else
+                call D1ESRX_wPBEh_case_12(rho_a, gamma_aa, mu, Ea, d1Ea)
+               end if
+            end if
+         end if
+
+      elseif (diff_order .eq. 2) then
+         if (s_check < 1.0d0) then
+            if ( w < wcutoff ) then
+               if (aux5 < expfcutoff) then
+                  call D2ESRX_wPBEh_case_1(rho_a, gamma_aa, mu, Ea,
+     &                                     d1Ea, d2Ea)
+               else
+                  call D2ESRX_wPBEh_case_7(rho_a, gamma_aa, mu, Ea,
+     &                                     d1Ea, d2Ea)
+               end if
+            else
+               if (aux5 < expfcutoff) then
+                  call D2ESRX_wPBEh_case_2(rho_a, gamma_aa, mu, Ea,
+     &                                     d1Ea, d2Ea)
+               else
+                  call D2ESRX_wPBEh_case_8(rho_a, gamma_aa, mu, Ea,
+     &                                     d1Ea, d2Ea)
+               end if
+            end if
+         elseif (s_check > 15.0d0) then
+            if ( w < wcutoff ) then
+               if (aux5 < expfcutoff) then
+                  call D2ESRX_wPBEh_case_3(rho_a, gamma_aa, mu, Ea,
+     &                                     d1Ea, d2Ea)
+               else
+                  call D2ESRX_wPBEh_case_9(rho_a, gamma_aa, mu, Ea,
+     &                                     d1Ea, d2Ea)
+               end if
+            else
+               if (aux5 < expfcutoff) then
+                  call D2ESRX_wPBEh_case_4(rho_a, gamma_aa, mu, Ea,
+     &                                     d1Ea, d2Ea)
+               else
+                  call D2ESRX_wPBEh_case_10(rho_a, gamma_aa, mu, Ea,
+     &                                     d1Ea, d2Ea)
+               end if
+            end if
+         else
+            if ( w < wcutoff ) then
+               if (aux5 < expfcutoff) then
+                  call D2ESRX_wPBEh_case_5(rho_a, gamma_aa, mu, Ea,
+     &                                     d1Ea, d2Ea)
+               else
+                  call D2ESRX_wPBEh_case_11(rho_a, gamma_aa, mu, Ea,
+     &                                     d1Ea, d2Ea)
+               end if
+            else
+               if (aux5 < expfcutoff) then
+                  call D2ESRX_wPBEh_case_6(rho_a, gamma_aa, mu, Ea,
+     &                                     d1Ea, d2Ea)
+               else
+                  call D2ESRX_wPBEh_case_12(rho_a, gamma_aa, mu, Ea,
+     &                                     d1Ea, d2Ea)
+               end if
+            end if
+         end if
+
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
+      end if
+
+C     Do the convertion from alpha, beta to charge, spin
+      Eb = Ea
+      if (diff_order .ge. 1) then
+         d1Eb(:) = d1Ea(:)
+      end if
+      if (diff_order .ge. 2) then
+         d2Eb(:) = d2Ea(:)
+      end if
+      ! Spin splitting realtion
+      E = 0.5d0*Ea + 0.5d0*Eb
+      if (diff_order .ge. 1) then
+         call Convert_d1_alpha_beta_to_C_S(0.5d0*d1Ea, 0.5d0*d1Eb, 1,
+     &                                     d1E)
+      end if
+      if (diff_order .ge. 2) then
+         call Convert_d2_alpha_beta_to_C_S(0.5d0*d2Ea, 0.5d0*d2Eb, 1,
+     &                                     d2E)
+      end if
+      end subroutine
+      
+      
+C*****************************************************************************
+      subroutine PBEC_nomu(rho, gamma_xx, diff_order, E, d1E, d2E)
+C*****************************************************************************
+C Implemented by E. R. Kjellgren
+C
+C Subroutine to to control calling of correlation spin-unpolarized PBE functional
+C This is just the normal PBE correlation functional, i.e. no range-seperation.
+C
+C   Input : rho, vector of densities
+C           gamma_xx, vector of grad_x * grad_y
+C           diff_order, max order of differentation
+C   Output : E, energy
+C            d1E, vector of first derivatives of energy
+C            d2E, vector of second derivatives of energy
+C*****************************************************************************
+      implicit none
+#include "priunit.h" 
+      integer, intent(in) :: diff_order
+      real*8, intent(in) :: rho(2), gamma_xx(3)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      real*8 :: rho_c, gamma_cc
+      
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      d2E(:) = 0.0d0
+      rho_c = rho(1)
+      gamma_cc = gamma_xx(1)
+
+      if (rho_c .le. 1.d-10) then
+         ! Are we completely sure this check is valid
+         !  for derivatives? - E. R. K
+         return
+      end if
+
+      if (diff_order .eq. 0) then
+         call ESRC_PBE(rho_c, gamma_cc, E)
+
+      elseif (diff_order .eq. 1) then
+         call D1ESRC_PBE(rho_c, gamma_cc, E, d1E)
+
+      elseif (diff_order .eq. 2) then
+         call D2ESRC_PBE(rho_c, gamma_cc, E, d1E, d2E)
+
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
+      end if
+      end subroutine
