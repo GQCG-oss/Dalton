@@ -3212,15 +3212,16 @@ C
       PARAMETER ( D0=0.0D0 , D1=1.0D0 , DM1 = -1.0D0 )
 C
 C wrkrsp.h : DETERM, ?
-C spinfo.h : MS2
+C infinp.h : ISPIN
 C
 #include "priunit.h"
+#include "maxorb.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
+#include "infinp.h"
 #include "inftap.h"
 #include "infdim.h"
 #include "infpri.h"
-#include "spinfo.h"
 #include "infopt.h"
 #include "phpinf.h"
 #include "thrldp.h"
@@ -3232,7 +3233,7 @@ C
 C
       CALL PHPINI(LPHPMX,KZCONF,KZWOPT,MAXPHP)
       KDIAE  = 1
-      KDIASO = KDIAE + LPHPMX
+      KDIASO = KDIAE  + LPHPMX
       KTOT   = KDIASO + KZWOPT
       LTOT   = LWRK   - KTOT
       IF (LTOT.LT.0) CALL ERRWRK('PPST 1',KTOT-1,LWRK)
@@ -3278,6 +3279,7 @@ C
  100  CONTINUE
       KK=KEXST2
 C
+C     Find KEXST2 lowest diagonal elements
 C     REPEAT UNTIL ...
  105  CONTINUE
          DO 110 I=1,KEXST2-1
@@ -3306,28 +3308,54 @@ C     ^--------------------
                GO TO 125
 C        ^--------------
             END IF
+
+C 16. Dec. 2014-hjaaj: No plus combinations for CSFs nor triplet excitations
+C     nor non-singlet reference state
+C     (for determinants the plus combinations of degenerate elements are used
+C     to avoid triplet CI states in calculations of singlet excitations,
+C     note that determinants are always used when KSYMOP .ne. 1)
 C
-C 19. Feb. 1988: Find number of degenerate diagonal elements
-C 19. Jun. 1995-hjaaj: not for orbital trial vectors
-C 16. Dec. 2014-hjaaj: not for CSFs
-C                      (for determinants plus combinations of degenerate elements are used
-C                       to avoid triplet CI states in a singlet excitation calculation)
-C
-      IF (.NOT.DETERM .AND. KSYMOP.EQ.1         ! CSFs, thus do not use plus combinations of any equal diagonal elements
-     &    .AND. .NOT.TRPFLG                     ! triplet, i.e. not plus combinations!
-     &    .OR. MS2.NE.0 ) THEN                  ! M_S .ne. 0, thus different number of alpha and beta electrons
+      IF ((.NOT.DETERM .AND. KSYMOP.EQ.1)  ! no plus combinations for CSFs in KSYMOP.eq.1, ground state symmetry
+     &      .OR. .NOT.TRPLET               ! never plus combinations for triplet excitations!
+     &      .OR. ISPIN.NE.1 ) THEN         ! not a singlet reference state
+
          DO JEXST2 = 1, KEXST2
-            IEQUAL(JEXST2) = 1
+            IEQUAL(JEXST2) = 1 ! no plus combinations!
          END DO
-         GO TO 2000
+
+C        Do include ALL (near)-degenerate diagonal elements as start vectors
+C        (Otherwise we will probably break spatial and/or spin symmetry) /hjaaj Feb. 2019
+         JEXSTV = KEXSTV
+         DO IEXST2 = KEXSTV+1, KEXST2
+            IF ( (STVAL(IEXST2)-STVAL(IEXST2-1)).GT.TOLEQL ) EXIT
+            JEXSTV = IEXST2
+         END DO
+         IF (KEXSTV .NE. JEXSTV) THEN
+            WRITE(LUPRI,'(/A,I0,A,I0,A/A)')
+     &      ' INFO: Number of roots increased from ',KEXSTV,' to ',
+     &      JEXSTV,' because of (near)-degenerate diagonal elements.',
+     &     ' (Otherwise the calculation would probably break symmetry.)'
+            KEXSTV = JEXSTV
+         END IF
+
+         GO TO 2000 ! skip next block where "plus combinations" are made
+
       END IF
+
+C --- block for constructing plus combinations of (near)-degenerate
+C     diagonal elements among determinants when singlet reference and singlet excitations
+
       JEXSTV = 0
       JEXST2 = 0
+
+C 19. Feb. 1988: Find number of (near)-degenerate diagonal elements
+C 19. Jun. 1995-hjaaj: not for orbital trial vectors
   160 CONTINUE
          IEXST2 = JEXST2
   165    IEXST2 = IEXST2 + 1
-         IF (IEXST2 .LT. KEXST2 .AND. ISTART(IEXST2) .LE. KZCONF .AND.
-     *      (STVAL(IEXST2+1)-STVAL(IEXST2)).LE.TOLEQL) GO TO 165
+         IF (IEXST2 .LT. KEXST2 .AND.
+     &      ISTART(IEXST2) .LE. KZCONF .AND. ! no plus combinations of orbital trial vectors
+     &      (STVAL(IEXST2+1)-STVAL(IEXST2)).LE.TOLEQL) GO TO 165
          JEXSTV = JEXSTV + 1
          IEQUAL(JEXSTV) = IEXST2 - JEXST2
          JEXST2 = IEXST2
@@ -3343,14 +3371,14 @@ C
       IF (IPRRSP.GE.7) THEN
          WRITE(LUPRI,*) 'KEXST2,JEXST2 :',KEXST2,JEXST2
          WRITE(LUPRI,*) '(I,(ISTART(I),STVAL(I)),I=1,KEXST2)'
-         DO 170 I = 1,KEXST2
+         DO I = 1,KEXST2
             WRITE(LUPRI,*) I,ISTART(I),STVAL(I)
-  170    CONTINUE
+         END DO
          WRITE(LUPRI,*) 'KEXSTV,JEXSTV :',KEXSTV,JEXSTV
          WRITE(LUPRI,*) '(I, IEQUAL(I), I = 1,JEXSTV)'
-         DO 171 I = 1,JEXSTV
+         DO I = 1,JEXSTV
             WRITE(LUPRI,*) I,IEQUAL(I)
-  171    CONTINUE
+         END DO
       END IF
       IF (JEXSTV .LT. KEXSTV .OR. JEXST2 .EQ. KEXST2) THEN
          IF (KEXST2 .LT. KZVAR) THEN

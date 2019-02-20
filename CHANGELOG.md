@@ -9,6 +9,14 @@
 ### Added
 - added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
 
+### Fixed
+- make sure we include all (near-)degenerate diagonal elements for linear response excitation energies
+  via **PROPERTIES .EXCITA or via **RESPONS *LINEAR .SINGLE (increase .NROOTS if needed).
+  Otherwise the calculation will probably exhibit spin and/or space symmetry contamination proportional
+  to the convergence threshold. (H. J. Aa. Jensen)
+- never use plus combinations of determinants as start guess for singlet linear response excitation energies
+  when reference wave function is not singlet (we do not want singlet states then). (H. J. Aa. Jensen)
+  
 
 
 ## [2018.2alpha] (unreleased)
