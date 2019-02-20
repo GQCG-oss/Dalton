@@ -3316,7 +3316,7 @@ C     to avoid triplet CI states in calculations of singlet excitations,
 C     note that determinants are always used when KSYMOP .ne. 1)
 C
       IF ((.NOT.DETERM .AND. KSYMOP.EQ.1)  ! no plus combinations for CSFs in KSYMOP.eq.1, ground state symmetry
-     &      .OR. .NOT.TRPLET               ! never plus combinations for triplet excitations!
+     &      .OR. TRPLET                    ! never plus combinations for triplet excitations!
      &      .OR. ISPIN.NE.1 ) THEN         ! not a singlet reference state
 
          DO JEXST2 = 1, KEXST2
@@ -3331,8 +3331,9 @@ C        (Otherwise we will probably break spatial and/or spin symmetry) /hjaaj 
             JEXSTV = IEXST2
          END DO
          IF (KEXSTV .NE. JEXSTV) THEN
-            WRITE(LUPRI,'(/A,I0,A,I0,A/A)')
-     &      ' INFO: Number of roots increased from ',KEXSTV,' to ',
+            WRITE(LUPRI,'(/A,I0,A,I0,A,I0,A/A)')
+     &     ' INFO Symmetry ',KSYMOP,
+     &      ': Number of roots increased from ',KEXSTV,' to ',
      &      JEXSTV,' because of (near)-degenerate diagonal elements.',
      &     ' (Otherwise the calculation would probably break symmetry.)'
             KEXSTV = JEXSTV
