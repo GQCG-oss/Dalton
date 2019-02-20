@@ -241,7 +241,8 @@ C Note that Hartree-Fock (i.e. nasht .le. 1) will not change
 C CI information (NEWCI forced false).
 C Note that change of symmetry will not change CI information.
 C
-      NEWCI = CHCKCI(NOSYM,IPRCIX,LUPRI)
+      NEWCI = CHCKCI(NOSYM,.true.,IPRCIX,LUPRI)
+!     NEWCI = CHCKCI(NOSYM,CHECK_CSF,IPRINT,LUPRI)
 !     IF (NASHT .LE. 1 .OR. HSROHF) THEN
       IF ( MCTYPE .EQ. 0 .OR. MCTYPE .EQ. -1) THEN ! Hartree-Fock or HSROHF
          NEWCI = .FALSE.
@@ -422,8 +423,12 @@ C CHCKCI sets information in CIINFO and SPINFO
 C Note that CHCKCI true if Hartree-Fock (i.e. nasht .le. 1) follows
 C MCSCF without call of SETCI first.
 C Note that change of symmetry will not change CI information.
-C
-      NEWCI = CHCKCI(NOSYM,1,LUPRI)
+C Note that switch from CSF to DET or DET to CSF is OK here
+C (is needed in RESPONS for switching between singlet and triplet
+C  if wave function optimization was done with CSFs)
+C 
+      NEWCI = CHCKCI(NOSYM,.false.,1,LUPRI)
+!     NEWCI = CHCKCI(NOSYM,CHECK_CSF,IPRINT,LUPRI)
 C
 C
       IF ( NEWCI ) THEN
@@ -484,7 +489,7 @@ C
       RETURN
       END
 C  /* Deck chckci */
-      LOGICAL FUNCTION CHCKCI(NOSYM,JPRINT,LUWCIX)
+      LOGICAL FUNCTION CHCKCI(NOSYM,CHECK_CSF,JPRINT,LUWCIX)
 C
 C 20-Aug-1998 Hans Joergen Aa. Jensen, 
 C CHCKCI test extracted from SETCI
@@ -508,7 +513,7 @@ C
 #include "spinfo.h"
 C
 C
-      LOGICAL  REFSPC, NEWCI, NOCSF
+      LOGICAL  REFSPC, NEWCI, NOCSF, CHECK_CSF
       INTEGER  MAS1(8), MAS2(8), MAS3(8)
       SAVE     REFSPC, NEWCI, NOCSF, NOSYMSV,
      &         MACTEL,MAS1,MAS2,MAS3,MASHT,
@@ -554,7 +559,7 @@ C           if RAS
             IF (MAS2(ISYM) .NE. NAS2(ISYM)) NEWCI = .TRUE.
             IF (MAS3(ISYM) .NE. NAS3(ISYM)) NEWCI = .TRUE.
   100    CONTINUE
-         IF (NOCSF  .NEQV. FLAG(27)) NEWCI = .TRUE.
+         IF (CHECK_CSF .AND. (NOCSF .NEQV. FLAG(27))) NEWCI = .TRUE.
          IF (MULTS  .NE.   ISPIN)    NEWCI = .TRUE.
          IF (REFSPC .NEQV. FLAG(28)) NEWCI = .TRUE.
          IF (NOSYMSV.NE.   NOSYM   ) NEWCI = .TRUE.

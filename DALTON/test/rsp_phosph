@@ -66,8 +66,6 @@ cat > rsp_phosph.dal <<'%EOF%'
  1
 .SPIN MULT
  1
-*OPTIMI
-.DETERM
 **RESPONS
 *QUADRATIC
 .PHOSPHORESENCE
