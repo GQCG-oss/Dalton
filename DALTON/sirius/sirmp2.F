@@ -2362,8 +2362,8 @@ C Pack or unpack ph-array for MP2/SOPPA.
 C
 C If IWAY.LT.0 then unpack the linear array XKP into XK. Else pack the
 C   the array XK into XKP.
-C If IPHLAB>0, pack XK(OCC,VIRT); IPHLAB<0 C pack XK(VIRT,OCC),
-C   and IPHLAB=0, pack both (XK(OCC,VIRT) and XK(VIRT,OCC))
+C If IPHLAB>0, pack XK(OCC,VIRT); if IPHLAB<0, pack XK(VIRT,OCC);
+C   and if IPHLAB=0, pack both (XK(OCC,VIRT) and XK(VIRT,OCC))
 C
 #include "implicit.h"
       DIMENSION XK(NORBT,NORBT), XKP(*)

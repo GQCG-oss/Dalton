@@ -67,8 +67,6 @@ cat > rsp_sreslrso.dal <<'%EOF%'
  1
 .SPIN MULT
  1
-*OPTIMIZATION
-.DETERMIN
 **RESPONS
 *LINEAR
 .SINGLE

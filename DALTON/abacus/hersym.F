@@ -164,7 +164,7 @@ C               /hjaaj Mar 2004
          ATMARR(1,0) = N_ATOMS
          IF (IPRSYM .GE. IPRTHR) THEN
             TEXT = 'Original Coordinates'
-            CALL PRNARR(TEXT, MXCENT, ATMARR)
+            CALL PRN_ATMARR(TEXT, MXCENT, ATMARR)
          END IF
 C
 C        MIDAS Interface, write out input coordinates for midas.sym analysis
@@ -212,7 +212,7 @@ C
          IF (IPRSYM .GE. IPRTHR) THEN
             IF (.NOT. NOMOVE) THEN
               TEXT = 'Centered and Rotated Coordinates'
-              CALL PRNARR(TEXT , MXCENT, ATMARR)
+              CALL PRN_ATMARR(TEXT , MXCENT, ATMARR)
             ELSE
               WRITE (LUPRI,'(/A/)') '   System has not been centered '//
      &           ' or rotated before symmetry analysis.'
@@ -245,7 +245,7 @@ C
          CALL REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM)
          IF (IPRSYM .GE. MIN(3,IPRTHR/2)) THEN
             TEXT = 'Symmetry Independent Centres'
-            CALL PRNARR(TEXT, MXCENT, ATMARR)
+            CALL PRN_ATMARR(TEXT, MXCENT, ATMARR)
          END IF
 C ::: The new symmetry is added. :::
          NSYMOP = 0
@@ -415,11 +415,37 @@ C ::::::::::::::::::::::::::::::::::::::::::::::
          END IF
          WRITE(LUPRI,'(/1X,A/1X,80A1)') TEXT, ('-',J=1,I)
          DO 200 I=1,NINT(ARR(1,0))
-            WRITE (LUPRI,11) NINT(ARR(4,I)), (ARR(J,I), J=1,3),
-     &         NINT(ARR(6,I))
- 11         FORMAT (I8, ' : ', 3F15.8,'  Isotope',I3)
+            WRITE (LUPRI,11) NINT(ARR(4,I)), (ARR(J,I), J=1,3)
+ 11         FORMAT (I8, ' : ', 3F15.8)
  200     CONTINUE
-         RETURN
+      RETURN
+      END
+      SUBROUTINE PRN_ATMARR(TEXT, MXM, ATMARR)
+C ::::::::::::::::::::::::::::::::::::::::::::::
+C ::                                          ::
+C ::       Prints all elements of array       ::
+C ::(based on PRNARR, 12-feb-19 hjaaj)        ::
+C ::::::::::::::::::::::::::::::::::::::::::::::
+#include "implicit.h"
+#include "priunit.h"
+      CHARACTER*(*) TEXT
+      INTEGER MXM, I, J
+      REAL*8  ATMARR(6,0:MXM)
+! Used from
+!  nuclei.h : NAMN()
+#include "mxcent.h"
+#include "nuclei.h"
+
+      I = LNBLNK(TEXT)
+      WRITE(LUPRI,'(/1X,A/1X,80A1)') TEXT, ('-',J=1,I)
+
+      DO I = 1,NINT(ATMARR(1,0))
+         J = NINT(ATMARR(5,I)) ! old atom number
+         WRITE (LUPRI,11) NAMN(J), NINT(ATMARR(4,I)),
+     &         (ATMARR(J,I), J=1,3), NINT(ATMARR(6,I))
+ 11         FORMAT (A4,I4, ' : ', 3F15.8,'  Isotope',I3)
+      END DO
+      RETURN
       END
 C  /* Deck vecang */
       FUNCTION VECANG(V1, V2)
@@ -732,7 +758,7 @@ C
 
 Cdbg     write (lupri,*) 'CENTER_MOLECULE: initial coord.s etc.'
 Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,NUCLP+1,6,NUCLP+1,1,LUPRI)
-Cdbg     CALL PRNARR('CENTER_MOLECULE: ATMARR start', NUCLP, ATMARR)
+Cdbg     CALL PRN_ATMARR('CENTER_MOLECULE: ATMARR start', NUCLP, ATMARR)
 
       IF (N_ATOMS .EQ. 1) THEN ! atom, just move to (0,0,0)
          ATMARR(1,1) = 0.0D0
@@ -862,7 +888,7 @@ Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,N_ATOMS+1,6,N_ATOMS+1,1,LUPRI)
  100  WRITE(LUPRI,'(/A/A)')
      &   '@   The molecule is centered at center of mass and rotated',
      &   '@   so principal axes of inertia are along coordinate axes.'
-Cdbg     CALL PRNARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)
+Cdbg     CALL PRN_ATMARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)
       RETURN
       END
 C  /* Deck rotmol */

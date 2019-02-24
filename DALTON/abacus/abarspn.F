@@ -65,8 +65,9 @@ C Used from common blocks:
 C ABAINF : DODRCT
 C exeinf.h : FTRCTL, NEWCMO, ITRLVL_LAST, LVLDRC_LAST
 C INFLIN : NCONRF
-C INFINP : DIRFCK,HSORHF,...
+C INFINP : DIRFCK,HSORHF,FLAG(:),...
 C INFORB : NASHT,...
+C infvar.h : NVAR, ... (reset of FLAG(27)
 C INFTRA : USEDRC
 C
 #include "abainf.h"
@@ -75,6 +76,7 @@ C
 #include "infinp.h"
 #include "cbisol.h"
 #include "inforb.h"
+#include "infvar.h"
 #include "infpri.h"
 #include "wrkrsp.h"
 #include "infrsp.h"
@@ -91,10 +93,14 @@ C
 #include "qm3.h"
 C
       LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX, USEDRC_SAVE
+      LOGICAL FLAG27_save
 C
       CALL QENTER('ABARSP')
 
       USEDRC_SAVE = USEDRC
+      FLAG27_SAVE = FLAG(27) ! needs to be restored after triplet response
+      ! otherwise susequent call of ABARSPN for singlet response may fail /Feb.2018 - hjaaj
+      ! (SIRIFC is not read again, so it is not restored this way)
 
       IF (MMPCM) CALL MMPCMINIT()
       TIMRSP = SECOND()
@@ -484,7 +490,18 @@ C
 C
 C     *******************************************
 C
-      USEDRC = USEDRC_SAVE
+      USEDRC   = USEDRC_SAVE
+      IF (FLAG(27) .NEQV. FLAG27_SAVE) THEN
+C        ... call SETCI with new FLAG(27) and
+C            reset Sirius CI common blocks for CSFs/determinants
+         FLAG(27) = FLAG27_SAVE
+         CALL SETCI(NCONF,NCDETS,LSYM,WRK,LWRK,0)
+C
+         NVAR   = NCONF  + NWOPT
+         NVARH  = NCONF  + NWOPH
+         NVARMA = NCONMA + NWOPMA
+         NCONDI = MAX(1,NCONF)
+      END IF
       CALL QEXIT('ABARSP')
       RETURN
       END
