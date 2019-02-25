@@ -741,15 +741,10 @@ c  Exchange  ------------------------------------------------------------
      >                       Ex, d1Ex, d2Ex)
       ENDIF
 
-!     wPBEh exchange functional
-      IF(DOSRX_wPBEh) THEN
-         call wPBEh_x_spin_unpol(rho, grd2, norder, chival,
-     >                           Ex, d1Ex, d2Ex)
-      ENDIF
-
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
       IF(DOLAX_LDAS)  THEN
         call ELX_LDALAMSPIN (rho(1),rho(2),VLAMBDA,Ex)
+        ! d1Ex(2), d1Ex(3) here ...
         call DELSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),VLAMBDA,DFT_SPINDNS,
      >               NORDER,d1Ex,d2Ex)
       ENDIF
@@ -757,6 +752,7 @@ C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-
 C linear complement exchange PBE functional, Kamal SHARKAS 19-05-11
       IF(DOLAX_PBEGWS) THEN
         call ELAX_PBEGWS(rho,grd2,VLAMBDA,Ex)
+        ! d1Ex(2), d1Ex(3) here ...
         call DELA(ESRX_PBEGWSERF,rho,grd2,VLAMBDA,NORDER,
      >            d1Ex,d2Ex)
       ENDIF
@@ -787,43 +783,44 @@ C  Correlation  ----------------------------------------------------------
       ENDIF
 !     short-range correlation PBE of TCS
       IF(DOSRC_PBETCS) THEN
+        ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_PBETCSERF,rho,grd2,CHIVAL,NORDER,
      >            Ec,d1Ec,d2Ec)
       ENDIF
 
 !     short-range correlation PBE of TCSJ
       IF(DOSRC_PBETCSJ) THEN
+        ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_PBETCSJERF,rho,grd2,CHIVAL,NORDER,
      >            Ec,d1Ec,d2Ec)
       ENDIF
 
 !     short-range correlation PBE of GWS
       IF(DOSRC_PBEGWS) THEN
+        ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_PBEGWSERF,rho,grd2,CHIVAL,NORDER,
      >            Ec,d1Ec,d2Ec)
       ENDIF
 
 !     Modified short-range correlation PBE of GWS
       IF(DOSRC_PBEGWS_PW92) THEN
+        ! d1Ec(3), d1Ec(3) here ...
 !        call DESR(ESRC_PBEGWSERF_PW92,rho,grd2,CHIVAL,NORDER,
 !     >            Ec,d1Ec,d2Ec)
         call PBEC_GWS_ERF(rho, grd2, norder, chival,
      >                         Ec, d1Ec, d2Ec)
       ENDIF
 
-!     PBE without mu-dependency (normal PBE)
-      IF(DOC_PBE_nomu) THEN
-        call PBEC_nomu(rho, grd2, norder, Ec, d1Ec, d2Ec)
-      ENDIF
-
 !     rational interpolation
       IF(DOSRC_PBERI) THEN
+        ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_PBERIERF,rho,grd2,CHIVAL,NORDER,
      >             Ec,d1Ec,d2Ec)
       ENDIF
 
 !     rational interpolation LYP
       IF(DOSRC_LYPRI) THEN
+        ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_LYPRIERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !     PBE local energy formula
@@ -832,11 +829,13 @@ C  Correlation  ----------------------------------------------------------
       ENDIF
 !     weighted interpolation
       IF(DOSRC_PBEWI) THEN
+        ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_PBEWIERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 
 !     short-range spin-dependent correlation LDA ! JT 18-08-09
       IF(DOSRC_LDA_S) THEN
+        ! d1Ec(2), d1Ec(3) here ...
 C        use_spindns = triplet .or. dft_spindns
 C        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
 C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
@@ -880,6 +879,7 @@ C Kamal SHARKAS 20-05-11 beg
 C linear Complement spin-dependent (NON-Scaled) correlation LDA functional
        IF(DOLANSC_LDAS) THEN
         call ELC_LDALAMSPIN (rho(1),rho(2),VLAMBDA,DFT_SPINDNS,Ec)
+        ! d1Ec(2), d1Ec(3) here ...
         call DELSPINnSC(ESRC_LDAERFSPIN,rho(1),rho(2),VLAMBDA,
      >                DFT_SPINDNS,NORDER,d1Ec,d2Ec)
        ENDIF
@@ -887,13 +887,17 @@ C linear Complement spin-dependent (NON-Scaled) correlation LDA functional
 C Complement (NON-Scaled) correlation PBE functional
       IF(DOLANSC_PBEGWS) THEN
         call ELAC_PBEGWS(rho,grd2,VLAMBDA,Ec)
+        ! d1Ec(3), d1Ec(3) here ...
         call DELANSC(ESRC_PBEGWSERF,rho,grd2,VLAMBDA,NORDER,d1Ec,d2Ec)
       ENDIF
 
 C Complement Scaled correlation PBE functional
       IF(DOLASC_PBEGWS) THEN
+
         call ELASC_PBEGWS(rho,grd2,VLAMBDA,Ec)
+        ! d1Ec(3), d1Ec(3) here ...
         call DELASC(ESRC_PBEGWSERF,rho,grd2,VLAMBDA,NORDER,d1Ec,d2Ec)
+
       ENDIF
 C Kamal SHARKAS 20-05-11 end
 
@@ -901,6 +905,7 @@ C Kamal SHARKAS 20-05-11 end
 !     ... or for RSDHf calculations (Manu 06-12-2012)
       IF(DOSRC_MD_LDA) THEN
 !CASS        Write(LUPRI,*)'La nouvelle fonctionnelle'
+        ! d1Ec(3), d1Ec(3) here ...
         call DESRSPIN(ESRC_MD_LDAERF,rho(1),rho(2),
      >             CHIVAL,DFT_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
@@ -924,10 +929,12 @@ C      mu_new = max(mu,CHIVAL)
 
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11
       IF(DOSRC_MULOD_GGA) THEN
+        ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_MULOD_GGA,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11
       IF(DOSRC_MULOE_GGA) THEN
+        ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_MULOE_GGA,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 

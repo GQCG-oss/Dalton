@@ -20,7 +20,7 @@
       LOGICAL SRDFTRUN ! variable primarily for abacus/ routines
       LOGICAL DOSRX_LDA, DOSRX_GGA, DOSRBCK, DOHFEXCH, DOSRX_WIB,       &
      &        DOSRC_LDA, DOSRC_GGA, DOSRC_MULOCAL,                      &
-     &        DOSRGGA2, DOSRLYPT, SRCMULOFAC, DSLOCALFAC,DOC_PBE_nomu,  &
+     &        DOSRGGA2, DOSRLYPT, SRCMULOFAC, DSLOCALFAC,               &
      &        DOSRC_WIB, ISJT, DOSRX_PBEHSE, DOSRX_PBETCS, DOSRC_PBETCS,&
      &        DOSRC_PBETCSJ, DOSRC_PBERI, DOSRC_PBEWI, DOSRX_PBERI,     &
      &        DOSRX_PBEGWS, DOSRC_PBEGWS, DOSRX_LDA_S, DOSRC_LDA_S,     &
@@ -31,7 +31,7 @@
      &        DFT_SPINDNS,  DFT_LOCALSPIN, DOSRC_MD_LDA, DOSRC_PBELO,   &
      &        DOLAX_LDAS,DOLANSC_LDAS,DOLANSC_LDA,DOLAX_LDA,DOLASC_LDA, &
      &        DOLAX_PBEGWS,DOLANSC_PBEGWS,DOLASC_PBEGWS,DOLAX_GGABCK,   &
-     &        DOLANC_GGALYP,DOLASC_GGALYP,DOSRC_LYPRI,DOSRX_wPBEh
+     &        DOLANC_GGALYP,DOLASC_GGALYP,DOSRC_LYPRI
       COMMON /DFTCOM/ HFXFAC, HFXATT, HFXMU,                            &
      &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC,   &
      &        XMULFAC_READIN, DSFAC, HEAVISIDE_PVALUE,                  &
@@ -46,7 +46,7 @@
      &        SRDFTRUN,                                                 &
      &        DOSRX_LDA, DOSRX_GGA, DOSRBCK, DOHFEXCH, DOSRX_WIB,       &
      &        DOSRC_LDA, DOSRC_GGA, DOSRC_MULOCAL(0:3),                 &
-     &        DOSRGGA2, DOSRLYPT, SRCMULOFAC, DSLOCALFAC,DOC_PBE_nomu,  &
+     &        DOSRGGA2, DOSRLYPT, SRCMULOFAC, DSLOCALFAC,               &
      &        DOSRC_WIB, ISJT, DOSRX_PBEHSE, DOSRX_PBETCS, DOSRC_PBETCS,&
      &        DOSRC_PBETCSJ, DOSRC_PBERI, DOSRC_PBEWI, DOSRX_PBERI,     &
      &        DOSRX_PBEGWS, DOSRC_PBEGWS, DOSRX_LDA_S,  DOSRC_LDA_S,    &
@@ -57,7 +57,7 @@
      &        DFT_SPINDNS,  DFT_LOCALSPIN, DOSRC_MD_LDA, DOSRC_PBELO,   &
      &        DOLAX_LDAS,DOLANSC_LDAS,DOLANSC_LDA,DOLAX_LDA,DOLASC_LDA, &
      &        DOLAX_PBEGWS,DOLANSC_PBEGWS,DOLASC_PBEGWS,DOLAX_GGABCK,   &
-     &        DOLANC_GGALYP,DOLASC_GGALYP,DOSRC_LYPRI,DOSRX_wPBEh
+     &        DOLANC_GGALYP,DOLASC_GGALYP,DOSRC_LYPRI
       INTEGER DFTCOMlast
       COMMON /DFTCOM/ DFTCOMlast
       !  Very important !!!  Always keep DFTCOMlast as the last variable in the common block. 

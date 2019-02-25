@@ -860,15 +860,12 @@ if(ENABLE_SRDFT)
         DALTON/srdft/srdft_molgrad.F
         DALTON/srdft/srdft_par.F
         DALTON/srdft/srdftfun.F
-        DALTON/srdft/srfunctionals/helper_functions.F
         DALTON/srdft/srfunctionals/LDA_ERF_exchange.F
         DALTON/srdft/srfunctionals/PBE_ERFGWS_exchange.F
         DALTON/srdft/srfunctionals/TPSS_ERFGWS_exchange.F
         DALTON/srdft/srfunctionals/PW92_ERF_correlation.F
         DALTON/srdft/srfunctionals/PBE_ERFGWS_correlation.F
-        DALTON/srdft/srfunctionals/TPSS_ERFGWS_correlation.F
-        DALTON/srdft/srfunctionals/wPBEh_exchange.F
-        DALTON/srdft/srfunctionals/PBE_nomu_correlation.F)
+        DALTON/srdft/srfunctionals/TPSS_ERFGWS_correlation.F)
     set(DALTON_srdft_FREE_SOURCES
         DALTON/sirius/sir_ensembledft.F90)
     set(DALTON_FIXED_FORTRAN_SOURCES
