@@ -147,6 +147,17 @@ C
 C
       LOGICAL OPINTM, FNDLAB, OLDTRA, FEXIST
 C
+C
+C     Find out if we need LUINTM (MOTWOINT):
+C     we need LUINTM in MC/CI optimization or for WRGEOM
+C     or for MP2 or for RESPONSE
+C
+      OPINTM = .NOT.FLAG(34) .OR. (FLAG(25) .AND. ABS(ITRFIN).LE.10)
+     &     .OR. DOMP2 .OR. DORSP
+
+      IF (.NOT. OPINTM) RETURN
+
+
       IF (THRP .LT. THRS) THEN
          WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
      &      ' INFO: Changed THRP threshold used in'//
@@ -168,17 +179,11 @@ C
          RETURN
       END IF
 C
-C *** (1) Specify LSRTAO = 0 to tell TRACTL to sort ao integrals
+C *** Specify LSRTAO = 0 to tell TRACTL to sort ao integrals
 C     on first call; if old LUINTM LSRTAO is reset to -1,
 C     signalling TRACTL to check if LUDA exist.
 C
-C     Find if we should open LUINTM:
-C     need LUINTM in MC/CI optimization or for WRGEOM
-C     or for MP2 or for RESPONSE
-C
       LSRTAO = 0
-      OPINTM = .NOT.FLAG(34) .OR. (FLAG(25) .AND. ABS(ITRFIN).LE.10)
-     &     .OR. DOMP2 .OR. DORSP
 C
 C
       IF (OPINTM) THEN

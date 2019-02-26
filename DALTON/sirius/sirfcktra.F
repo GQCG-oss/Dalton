@@ -91,6 +91,8 @@ C --- start of executable code
          FLUSH(LUPRI)
       END IF
 
+      ! call SIR_INTOPEN_FCKTRA()
+
 C     Test if MO integrals already available
 
       if (TYPE_TEXT .EQ. 'COUL') then
@@ -105,7 +107,7 @@ C     Test if MO integrals already available
       LBUF = IRAT*L_H2CD
 
       REWIND(LUINTM)
-      IF ( FNDLAB(INT_LABEL,LUINTM) ) THEN
+      IF ( FNDLAB(INT_LABEL,LUINTM) ) THEN ! true iff existing MOTWOINT is created by .FCKTRA
          REWIND(LUINTM)
          READ  (LUINTM)
          READ  (LUINTM) J,NTRLVL
@@ -149,8 +151,6 @@ C           and subtract from input CMO matrix
       KFREE  = 1
       LFREE  = LWORK
       KFRSAV = KFREE
-
-      ! call SIR_INTOPEN_FCKTRA()
 
 !     translate sirius integral level code to FCKTRA and NEWTRA integral level code
       call TRALVL(JTRSIR, NTRLVL)
