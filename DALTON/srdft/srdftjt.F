@@ -700,11 +700,6 @@ c  Exchange  ------------------------------------------------------------
 !     LDA exchange functional (to fit with corresponding correlation
 !     functional) - see explanation with DOSRC_LDA_PW92
       IF(DOSRX_LDA_PW92 .OR. DOSRX_LDA_S) THEN
-!       call DESRX_SPINGGA(ESRX_LDAERF,rho,grd2,CHIVAL,
-!    >                     norder,Ex,d1Ex,d2Ex)
-!        use_spindns = triplet .or. dft_spindns
-!        call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),CHIVAL,
-!     >                     use_SPINDNS,norder,Ex,d1Ex,d2Ex)
          call BOTH_LDAX_ERF(rho, norder, chival, Ex, d1Ex, d2Ex)
       ENDIF
 
@@ -722,8 +717,6 @@ c  Exchange  ------------------------------------------------------------
 
 !     short-range exchange PBE of GWS ! JT 11-08-09
       IF(DOSRX_PBEGWS .OR. DOSRX_PBEGWS_S) THEN
-!        call DESRX_SPINGGA(ESRX_PBEGWSERF,rho,grd2,CHIVAL,
-!     >                     norder,Ex,d1Ex,d2Ex)
          call BOTH_PBEX_ERF(rho, grd2, norder, chival,
      >                      Ex, d1Ex, d2Ex)
       ENDIF
@@ -742,8 +735,7 @@ c  Exchange  ------------------------------------------------------------
 
 !     wPBE exchange functional
       IF(DOSRX_wPBE_S .OR. DOSRX_wPBE) THEN
-         call BOTH_wPBEX(rho, grd2, norder, chival,
-     >                       Ex, d1Ex, d2Ex)
+         call BOTH_wPBEX(rho, grd2, norder, chival, Ex, d1Ex, d2Ex)
       ENDIF
 
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
@@ -756,8 +748,7 @@ C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-
 C linear complement exchange PBE functional, Kamal SHARKAS 19-05-11
       IF(DOLAX_PBEGWS) THEN
         call ELAX_PBEGWS(rho,grd2,VLAMBDA,Ex)
-        call DELA(ESRX_PBEGWSERF,rho,grd2,VLAMBDA,NORDER,
-     >            d1Ex,d2Ex)
+        call DELA(ESRX_PBEGWSERF,rho,grd2,VLAMBDA,NORDER,d1Ex,d2Ex)
       ENDIF
 
 
@@ -768,76 +759,55 @@ C  Correlation  ----------------------------------------------------------
       d2Ec(:) = 0.0d0
 
       IF(DOSRC_LDA_PW92) THEN
-        ! DESRSPIN called with DFT_SPINDNS = false gives LDA functional
-        ! for closed shell (but with J. Toulouse new LDA based on PW92)
-!        use_spindns = triplet .or. dft_spindns
-        ! rho(2) is always zero for spin unpolarized functionals
-!        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),0.0d0,CHIVAL,use_SPINDNS,
-!     >                NORDER,Ec,d1Ec,d2Ec)
-        ! DOSCR_LDA_PW92, is the keyword for both spin-polarized and
-        ! spin-unpolarized ?? - E. R. K.
-
-        ! This check it to keep the code working the same way. Should be changed
-        if (triplet .or. dft_spindns) then 
-           call SPIN_PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
-        else
-           call PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
-        end if
+         call PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
+
+!     short-range spin-dependent correlation LDA ! JT 18-08-09
+      if (DOSRC_LDA_PW92_S .OR. DOSRC_LDA_S) then
+        call SPIN_PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
+      end if
+
 !     short-range correlation PBE of TCS
       IF(DOSRC_PBETCS) THEN
-        call DESR(ESRC_PBETCSERF,rho,grd2,CHIVAL,NORDER,
-     >            Ec,d1Ec,d2Ec)
+        call DESR(ESRC_PBETCSERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 
 !     short-range correlation PBE of TCSJ
       IF(DOSRC_PBETCSJ) THEN
-        call DESR(ESRC_PBETCSJERF,rho,grd2,CHIVAL,NORDER,
-     >            Ec,d1Ec,d2Ec)
+        call DESR(ESRC_PBETCSJERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 
 !     short-range correlation PBE of GWS
       IF(DOSRC_PBEGWS_VWN5) THEN
-        call DESR(ESRC_PBEGWSERF,rho,grd2,CHIVAL,NORDER,
-     >            Ec,d1Ec,d2Ec)
+        call DESR(ESRC_PBEGWSERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 
 !     Modified short-range correlation PBE of GWS
       IF(DOSRC_PBEGWS) THEN
-!        call DESR(ESRC_PBEGWSERF_PW92,rho,grd2,CHIVAL,NORDER,
-!     >            Ec,d1Ec,d2Ec)
-        call PBEC_GWS_ERF(rho, grd2, norder, chival,
-     >                         Ec, d1Ec, d2Ec)
+        call PBEC_GWS_ERF(rho, grd2, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
 
 !     rational interpolation
       IF(DOSRC_PBERI) THEN
-        call DESR(ESRC_PBERIERF,rho,grd2,CHIVAL,NORDER,
-     >             Ec,d1Ec,d2Ec)
+        call DESR(ESRC_PBERIERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 
 !     rational interpolation LYP
       IF(DOSRC_LYPRI) THEN
         call DESR(ESRC_LYPRIERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
+
 !     PBE local energy formula
       IF(DOSRC_PBELO) THEN
         call DESR(ESRC_PBELOERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
+
 !     weighted interpolation
       IF(DOSRC_PBEWI) THEN
         call DESR(ESRC_PBEWIERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 
-!     short-range spin-dependent correlation LDA ! JT 18-08-09
-      IF(DOSRC_LDA_S) THEN
-C        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
-C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
-        call SPIN_PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
-      ENDIF
       IF(DOSRC_PBEGWS_S) THEN
-C        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,temp_grd2,CHIVAL,
-C     >                     norder,Ec,d1Ec,d2Ec)
         call SPIN_PBEC_GWS_ERF(rho, grd2, norder, chival,
      >                         Ec, d1Ec, d2Ec)
       ENDIF
@@ -924,6 +894,7 @@ C      mu_new = max(mu,CHIVAL)
       IF(DOSRC_MULOD_GGA) THEN
         call DESR(ESRC_MULOD_GGA,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
+
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11
       IF(DOSRC_MULOE_GGA) THEN
         call DESR(ESRC_MULOE_GGA,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
