@@ -346,12 +346,10 @@ C     Weighted interpolation
       ISJT    = .TRUE.
       GO TO 20
 C JT 12-02-05 end
-
 C Short-range correlation PBE function of GWS (JT 11-08-09)
- 215  DOSRC_PBEGWS = .TRUE.
+ 215  DOSRC_PBEGWS_VWN5 = .TRUE.
       ISJT    = .TRUE. 
       GO TO 20
-
 C Short-range spin-dependent correlation LDA function (JT 18-08-09)
  216  DOSRC_LDA_S = .TRUE.
       DFT_SPINDNS = .TRUE.
@@ -394,39 +392,30 @@ C ... or for RSDHf calculations (Manu 06-12-2012)
 !     END IF
       ISJT    = .TRUE.
       GO TO 20
-
 C Complement spin-dependent (NON-Scaled) correlation LDA functional (KS 08-08-11)
 223   DOLANSC_LDAS = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
-
-
 C Complement (NON-Scaled) correlation LDA functional (KS 08-08-11)
 224   DOLANSC_LDA = .TRUE.
       GO TO 20
-
 C Complement (Scaled) correlation LDA functional (KS 08-08-11)
 225   DOLASC_LDA = .TRUE.
       GO TO 20
-
 C Complemnt Non-scaled correlation PBE function (KS 08-08-11)
 226   DOLANSC_PBEGWS = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
-
 C Complemnt (scaled) correlation PBE function (KS 08-08-11)
 227   DOLASC_PBEGWS = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
-
 C Non-scaled Complement correlation LYP functional (KS 08-08-11)
 228   DOLANC_GGALYP = .TRUE.
       GO TO 20
-
 C Scaled complement correlation LYP functional (KS 08-08-11)
 229   DOLASC_GGALYP = .TRUE.
       GO TO 20
-
 C Rational interpolation LYP functional                             
 230   DOSRC_LYPRI = .TRUE.
       ISJT    = .TRUE.
@@ -437,7 +426,7 @@ C Short-range spin-dependent correlation PBE function of GWS (edh 10-02-15)
       ISJT    = .TRUE.
       GO TO 20
 C Modified short-range spin-dependent correlation PBE functional of GWS (edh 21-03-15)
-232   DOSRC_PBEGWS_PW92 = .TRUE.
+232   DOSRC_PBEGWS = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
 C Short-range spin-dependent correlation LDA functional w. PW92 param. (edh 29-03-15)
@@ -648,7 +637,7 @@ C     ... jkp : For gradient correction to SR-LDA
      >        .OR.DOSRC_MULOE_GGA.OR.DOSRC_PBELO.OR.DOLAX_PBEGWS.OR.
      >        DOLANSC_PBEGWS.OR.DOLASC_PBEGWS.OR.DOLAX_GGABCK.OR.
      >        DOLANC_GGALYP.OR.DOLASC_GGALYP.OR.DOSRC_LYPRI .OR.
-     >        DOSRX_PBEGWS_S.OR.DOSRC_PBEGWS_S.OR.DOSRC_PBEGWS_PW92
+     >        DOSRX_PBEGWS_S.OR.DOSRC_PBEGWS_S.OR.DOSRC_PBEGWS_VWN5
      >       .OR.DOC_PBE_nomu_S.OR.DOC_PBE_nomu.OR.DOSRX_wPBE_S
      >       .OR.DOSRX_wPBE
 C     ... erk : Sets DOGGA active when using meta-GGAs

@@ -73,7 +73,6 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 #include "chrnos.h"
-
       ! Need intention on many of the inputs for this subroutine!
       real*8, parameter :: D0 = 0.0D0
       real*8, parameter :: DP5 = 0.5D0
@@ -798,13 +797,13 @@ C  Correlation  ----------------------------------------------------------
       ENDIF
 
 !     short-range correlation PBE of GWS
-      IF(DOSRC_PBEGWS) THEN
+      IF(DOSRC_PBEGWS_VWN5) THEN
         call DESR(ESRC_PBEGWSERF,rho,grd2,CHIVAL,NORDER,
      >            Ec,d1Ec,d2Ec)
       ENDIF
 
 !     Modified short-range correlation PBE of GWS
-      IF(DOSRC_PBEGWS_PW92) THEN
+      IF(DOSRC_PBEGWS) THEN
 !        call DESR(ESRC_PBEGWSERF_PW92,rho,grd2,CHIVAL,NORDER,
 !     >            Ec,d1Ec,d2Ec)
         call PBEC_GWS_ERF(rho, grd2, norder, chival,
