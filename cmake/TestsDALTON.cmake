@@ -635,6 +635,7 @@ if (ENABLE_SRDFT)
    add_dalton_runtest(rsp_hf_srTPSS_mu_04_triplet          "dalton;srdft;rsp;runtest;parallel;essential")
    add_dalton_runtest(rsp_mc_srTPSS_mu_04_triplet          "dalton;srdft;rsp;runtest;parallel;essential")
    add_dalton_runtest(rsp_mc_srTPSS_mu_04_singlet          "dalton;srdft;rsp;runtest;parallel;essential")
+   add_dalton_runtest(rsp_wpbeh_singlet_nosym              "dalton;srdft;rsp;runtest;parallel;essential")
    # The following tests are expceted to fail. Feature not working
    add_dalton_runtest(rsp_mc_srPBE0_mu_zero_singlet        "dalton;srdft;rsp;runtest;medium;parallel")
    add_dalton_runtest(rsp_mc_srPBE0_mu_zero_triplet        "dalton;srdft;rsp;runtest;medium;parallel")

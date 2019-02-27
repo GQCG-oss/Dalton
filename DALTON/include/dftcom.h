@@ -31,7 +31,8 @@
      &        DFT_SPINDNS,  DFT_LOCALSPIN, DOSRC_MD_LDA, DOSRC_PBELO,   &
      &        DOLAX_LDAS,DOLANSC_LDAS,DOLANSC_LDA,DOLAX_LDA,DOLASC_LDA, &
      &        DOLAX_PBEGWS,DOLANSC_PBEGWS,DOLASC_PBEGWS,DOLAX_GGABCK,   &
-     &        DOLANC_GGALYP,DOLASC_GGALYP,DOSRC_LYPRI
+     &        DOLANC_GGALYP,DOLASC_GGALYP,DOSRC_LYPRI,                  &
+     &        DOC_PBE_nomu_S, DOC_PBE_nomu, DOSRX_wPBE_S, DOSRX_wPBE 
       COMMON /DFTCOM/ HFXFAC, HFXATT, HFXMU,                            &
      &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC,   &
      &        XMULFAC_READIN, DSFAC, HEAVISIDE_PVALUE,                  &
@@ -57,7 +58,8 @@
      &        DFT_SPINDNS,  DFT_LOCALSPIN, DOSRC_MD_LDA, DOSRC_PBELO,   &
      &        DOLAX_LDAS,DOLANSC_LDAS,DOLANSC_LDA,DOLAX_LDA,DOLASC_LDA, &
      &        DOLAX_PBEGWS,DOLANSC_PBEGWS,DOLASC_PBEGWS,DOLAX_GGABCK,   &
-     &        DOLANC_GGALYP,DOLASC_GGALYP,DOSRC_LYPRI
+     &        DOLANC_GGALYP,DOLASC_GGALYP,DOSRC_LYPRI,                  &
+     &        DOC_PBE_nomu_S, DOC_PBE_nomu, DOSRX_wPBE_S, DOSRX_wPBE 
       INTEGER DFTCOMlast
       COMMON /DFTCOM/ DFTCOMlast
       !  Very important !!!  Always keep DFTCOMlast as the last variable in the common block. 

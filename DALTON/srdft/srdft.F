@@ -45,7 +45,7 @@ C     variables for SRCPBERI
       real*8 :: mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C
-      PARAMETER  (NXTABLE = 24, NCTABLE = 36)
+      PARAMETER  (NXTABLE = 26, NCTABLE = 38)
       character(len=10) :: XTABLE(NXTABLE), CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
       PARAMETER  (maxfld=3)
@@ -57,7 +57,8 @@ C
      &             'SRXWI3    ','SRXWI4    ','SRXPBEHSE ','SRXPBETCS ', ! 9:12
      &             'SRXPBERI  ','SRXPBEGWS ','SRXLDA_S  ','NULL_S    ', ! 13:16
      &             'LXLDAS    ','LXLDA     ','LXPBEGWS  ','LXBCK     ', ! 17:20
-     &             'SRXPBEGWSS','SRXLDA_C  ','SRXTPSS_S ','SRXTPSS   '/ ! 21:24
+     &             'SRXPBEGWSS','SRXLDA_C  ','SRXTPSS_S ','SRXTPSS   ', ! 21:24
+     &             'LRCWPBE_S ','LRCWPBE   '/ ! 25:28
       DATA CTABLE /'NULL      ','SRCLDA    ','SRCGGA    ','SRCMULO_A ', ! 1:4
      &             'SRLYPT    ','SRCWIB    ','SRCWI2    ','SRCWI3    ', ! 5:8
      &             'SRCWI4    ','SRCPBETCS ','SRCPBETCSJ','SRCPBERI  ', ! 9:12
@@ -66,7 +67,8 @@ C
      &             'NULL_S    ','SRCMDLDA  ','LNSCLDAS  ','LNSCLDA   ', ! 21:24
      &             'LSCLDA    ','LNSCPBEGWS','LSCPBEGWS ','LNCLYP    ', ! 25:28
      &             'LSCLYP    ','SRCLYPRI  ','SRCPBEGWSS','SRCPBEGWSC', ! 29:32
-     &             'SRCLDA_C  ','SRCVWN5_S ','SRCTPSS_S ','SRCTPSS   '/ ! 33:36
+     &             'SRCLDA_C  ','SRCVWN5_S ','SRCTPSS_S ','SRCTPSS   ', ! 33:36
+     &             'CPBE_NOMUS','CPBE_NOMU '/ ! 37:40
 
 C K. Sharkas and J. Toulouse beg
 C List of lambda-dependent complement density functionals for linear separation of the electron-electron interaction.
@@ -147,7 +149,7 @@ C      write (lupri, *) 'SRXFUN,SRCFUN=',SRXFUN,SRCFUN     ! Manu debug
       DO 100 II = 1, NXTABLE
         IF (XTABLE(II) .EQ. SRXFUN) THEN
           GO TO (101,102,103,104,105,106,107,108,109,110,111,112,113,
-     &           114,115,116,117,118,119,120,121,122,123,124),II
+     &           114,115,116,117,118,119,120,121,122,123,124,125,126),II
         END IF
  100  CONTINUE
       SETXFUN = .FALSE.
@@ -239,16 +241,25 @@ C Short-range spin-dependent exchange GGA functional (edh 10-02-16)
       GO TO 15
 C Short-range spin-dependent exchange LDA functional to fit with LDA (edh 10-02-16)
 ! Equivalent to "normal" LDA but goes through J. Toulouse new routines
-122   DOSRX_LDA_PW92 = .TRUE.
+122   LDA_PW92 = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
-C mu independendt TPSS exchange functional (erk 27 aug. 18)
+C Short-range spind-dependent TPSS exchange functional (erk 27 aug. 18)
 123   DOSRX_TPSS_S = .TRUE.
       DFT_SPINDNS  = .TRUE.
       ISJT         = .TRUE.
       GO TO 15
-C mu independendt TPSS exchange functional (erk 27 aug. 18)
+C Short-range TPSS exchange functional (erk 27 aug. 18)
 124   DOSRX_TPSS   = .TRUE.
+      ISJT         = .TRUE.
+      GO TO 15
+C Short-range spin-dependent wPBE exchange functional (erk 27 feb. 19)
+125   DOSRX_wPBE_S = .TRUE.
+      DFT_SPINDNS  = .TRUE.
+      ISJT         = .TRUE.
+      GO TO 15
+C Short-range wPBE exchange functional (erk 27 feb. 19)
+126   DOSRX_wPBE   = .TRUE.
       ISJT         = .TRUE.
       GO TO 15
 C
@@ -272,7 +283,7 @@ C
         IF (CTABLE(II) .EQ. SRCFUN) THEN
           GO TO (201,202,203,204,205,206,207,208,209,210,211,212,213,
      &           214,215,216,217,218,219,220,221,222,223,224,225,226,
-     &           227,228,229,230,231,232,233,234,235,236),II
+     &           227,228,229,230,231,232,233,234,235,236,237,238),II
         END IF
  200  CONTINUE
       SETCFUN = .FALSE.
@@ -438,13 +449,22 @@ C Short-range spin-dependent correlation LDA functional w. VWN5c param. (erk 07 
       DFT_SPINDNS = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
-C mu independt TPSS spin-polarized correlation functional (erk 27 aug. 18)
+C Short-range TPSS spin-polarized correlation functional (erk 27 aug. 18)
 235   DOSRC_TPSS_S = .TRUE.
       DFT_SPINDNS  = .TRUE.
       ISJT         = .TRUE.
       GO TO 20
-C mu independt TPSS spin-unpolarized correlation functional (erk 03 sep. 18)
+C Short-range TPSS spin-unpolarized correlation functional (erk 03 sep. 18)
 236   DOSRC_TPSS   = .TRUE.
+      ISJT         = .TRUE.
+      GO TO 20
+C mu independt PBE spin-polarized correlation functional (erk 27 feb. 19)
+237   DOC_PBE_nomu_S = .TRUE.
+      DFT_SPINDNS    = .TRUE.
+      ISJT           = .TRUE.
+      GO TO 20
+C mu independt PBE spin-unpolarized correlation functional (erk 27 feb. 19)
+238   DOC_PBE_nomu = .TRUE.
       ISJT         = .TRUE.
       GO TO 20
 C
@@ -624,7 +644,9 @@ C     ... jkp : For gradient correction to SR-LDA
      >        .OR.DOSRC_MULOE_GGA.OR.DOSRC_PBELO.OR.DOLAX_PBEGWS.OR.
      >        DOLANSC_PBEGWS.OR.DOLASC_PBEGWS.OR.DOLAX_GGABCK.OR.
      >        DOLANC_GGALYP.OR.DOLASC_GGALYP.OR.DOSRC_LYPRI .OR.
-     >        DOSRX_PBEGWS_S .OR. DOSRC_PBEGWS_S .OR. DOSRC_PBEGWS_PW92
+     >        DOSRX_PBEGWS_S.OR.DOSRC_PBEGWS_S.OR.DOSRC_PBEGWS_PW92
+     >       .OR.DOC_PBE_nomu_S.OR.DOC_PBE_nomu.OR.DOSRX_wPBE_S
+     >       .OR.DOSRX_wPBE
 C     ... erk : Sets DOGGA active when using meta-GGAs
      >        .OR. do_metagga
 C

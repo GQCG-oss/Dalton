@@ -789,7 +789,7 @@ C****************************************************************************
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
-C Subroutine to to control calling of correlation spin-polarized PW92 functional
+C Subroutine to to control calling of correlation spin-polarized PBE functional
 C
 C   Input : rho_a, alpha-spin density
 C           rho_b, beta-spin density
@@ -938,5 +938,205 @@ C*****************************************************************************
 
       else 
          call quit('Requested to high order derivative: ',diff_order) 
+      end if
+      end subroutine
+
+
+C****************************************************************************
+      subroutine SPIN_PBEC_nomu(rho, gamma_xx, diff_order, E, d1E, d2E)
+C*****************************************************************************
+C Implemented by E. R. Kjellgren
+C
+C Subroutine to to control calling of correlation spin-polarized PW92 functional
+C
+C   Input : rho_a, alpha-spin density
+C           rho_b, beta-spin density
+C           diff_order, max order of differentation
+C           mu, range-seperation parameter
+C   Output : E, energy
+C            d1E, vector of first derivatives of energy
+C            d2E, vector of second derivatives of energy
+C*****************************************************************************
+      implicit none
+#include "priunit.h" 
+      integer, intent(in) :: diff_order
+      real*8, intent(in) :: rho(2), gamma_xx(3)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      real*8 :: rho_c, rho_s, gamma_cc
+      
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      d2E(:) = 0.0d0
+      rho_c = rho(1)
+      rho_s = rho(2)
+      gamma_cc = gamma_xx(1)
+
+      if (rho_c .le. 1.d-10) then
+         ! Are we completely sure this check is valid
+         !  for derivatives? - E. R. K
+         return
+      end if
+
+      if (diff_order .eq. 0) then
+         call ESRC_SPIN_PBE(rho_c, rho_s, gamma_cc, E)
+
+      elseif (diff_order .eq. 1) then
+         call D1ESRC_SPIN_PBE(rho_c, rho_s, gamma_cc, E, d1E)
+
+      elseif (diff_order .eq. 2) then
+         call D2ESRC_SPIN_PBE(rho_c, rho_s, gamma_cc, E, d1E, d2E)
+
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
+      end if
+      end subroutine
+
+
+C****************************************************************************
+      subroutine PBEC_nomu(rho, gamma_xx, diff_order, E, d1E, d2E)
+C*****************************************************************************
+C Implemented by E. R. Kjellgren
+C
+C Subroutine to to control calling of correlation spin-polarized PBE functional
+C
+C   Input : rho_a, alpha-spin density
+C           rho_b, beta-spin density
+C           diff_order, max order of differentation
+C           mu, range-seperation parameter
+C   Output : E, energy
+C            d1E, vector of first derivatives of energy
+C            d2E, vector of second derivatives of energy
+C*****************************************************************************
+      implicit none
+#include "priunit.h" 
+      integer, intent(in) :: diff_order
+      real*8, intent(in) :: rho(2), gamma_xx(3)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      real*8 :: rho_c, gamma_cc
+      
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      d2E(:) = 0.0d0
+      rho_c = rho(1)
+      gamma_cc = gamma_xx(1)
+
+      if (rho_c .le. 1.d-10) then
+         ! Are we completely sure this check is valid
+         !  for derivatives? - E. R. K
+         return
+      end if
+
+      if (diff_order .eq. 0) then
+         call ESRC_PBE(rho_c, gamma_cc, E)
+
+      elseif (diff_order .eq. 1) then
+         call D1ESRC_PBE(rho_c, gamma_cc, E, d1E)
+
+      elseif (diff_order .eq. 2) then
+         call D2ESRC_PBE(rho_c, gamma_cc, E, d1E, d2E)
+
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
+      end if
+      end subroutine
+
+
+C****************************************************************************
+      subroutine BOTH_wPBEX(rho, gamma_vec, diff_order, mu, E, d1E, d2E)
+C*****************************************************************************
+C Implemented by E. R. Kjellgren
+C
+C Subroutine to to control calling of Exchange PBE functional
+C
+C   Input : rho_a, alpha-spin density
+C           rho_b, beta-spin density
+C           gamma_vec, is called gamma_vec, becuase "gamma" is an
+C              intrinsic function and therefore a bad name.
+C           diff_order, max order of differentation
+C           mu, range-seperation parameter
+C   Output : E, energy
+C            d1E, vector of first derivatives of energy
+C            d2E, vector of second derivatives of energy
+C*****************************************************************************
+      implicit none
+!#include "pi.h" --> pi, pi2
+#include "pi.h" 
+#include "priunit.h" 
+      integer, intent(in) :: diff_order
+      real*8, intent(in) :: rho(4), gamma_vec(6), mu
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      logical :: alpha_eq_beta
+      real*8 :: Ea, Eb, d1Ea(4), d2Ea(10), d1Eb(4), d2Eb(10),
+     &          rho_a, rho_b, gamma_aa, gamma_bb
+
+      E = 0.0d0
+      Ea = 0.0d0
+      d1E(:) = 0.0d0
+      d1Ea(:) = 0.0d0
+      d2E(:) = 0.0d0
+      d2Ea(:) = 0.0d0
+      rho_a = rho(3)
+      rho_b = rho(4)
+      gamma_aa = gamma_vec(4)
+      gamma_bb = gamma_vec(5)
+      
+      if (((rho_a + rho_b) .le. 1.d-10) 
+     &     .and. ((gamma_aa + gamma_bb) .lt. 1.0d-10)) then
+         ! Are we completely sure this check is valid
+         !  for derivatives? - E. R. K
+         return
+      end if
+
+      if ((rho_a .eq. rho_b) .and. (gamma_aa .eq. gamma_bb)) then
+         alpha_eq_beta = .true.
+      else
+         alpha_eq_beta = .false.
+         Eb = 0.0d0
+         d1Eb(:) = 0.0d0
+         d2Eb(:) = 0.0d0
+      end if
+
+
+      if (diff_order .eq. 0) then
+         call ESRX_wPBE(rho_a, gamma_aa, mu, Ea)
+         if (.not.alpha_eq_beta) then
+            call ESRX_wPBE(rho_b, gamma_bb, mu, Eb)
+         end if
+
+      elseif (diff_order .eq. 1) then
+         call D1ESRX_wPBE(rho_a, gamma_aa, mu, Ea, d1Ea)
+         if (.not.alpha_eq_beta) then
+            call D1ESRX_wPBE(rho_b, gamma_bb, mu, Eb, d1Eb)
+         end if
+
+      elseif (diff_order .eq. 2) then
+         call D2ESRX_wPBE(rho_a, gamma_aa, mu, Ea, d1Ea, d2Ea)
+         if (.not.alpha_eq_beta) then
+            call D2ESRX_wPBE(rho_b, gamma_bb, mu, Eb, d1Eb, d2Eb)
+         end if
+
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
+      end if
+
+C     Do the convertion from alpha, beta to charge, spin
+      if (alpha_eq_beta) then
+         Eb = Ea
+         if (diff_order .ge. 1) then
+            d1Eb(:) = d1Ea(:)
+         end if
+         if (diff_order .ge. 2) then
+            d2Eb(:) = d2Ea(:)
+         end if
+      end if
+      ! Spin splitting realtion
+      E = 0.5d0*Ea + 0.5d0*Eb
+      if (diff_order .ge. 1) then
+         call Convert_d1_alpha_beta_to_C_S(0.5d0*d1Ea, 0.5d0*d1Eb, 1,
+     &                                     d1E)
+      end if
+      if (diff_order .ge. 2) then
+         call Convert_d2_alpha_beta_to_C_S(0.5d0*d2Ea, 0.5d0*d2Eb, 1,
+     &                                     d2E)
       end if
       end subroutine
