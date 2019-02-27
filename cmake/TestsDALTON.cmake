@@ -637,10 +637,9 @@ if (ENABLE_SRDFT)
    add_dalton_runtest(rsp_mc_srTPSS_mu_04_singlet          "dalton;srdft;rsp;runtest;parallel;essential")
    add_dalton_runtest(rsp_wpbeh_singlet_nosym              "dalton;srdft;rsp;runtest;parallel;essential")
    add_dalton_runtest(rsp_hfsrvwn5_singlet_nosym           "dalton;srdft;rsp;runtest;parallel;essential")
-   # The following tests are expceted to fail. Feature not working
-   add_dalton_runtest(rsp_mc_srPBE0_mu_zero_singlet        "dalton;srdft;rsp;runtest;medium;parallel")
-   add_dalton_runtest(rsp_mc_srPBE0_mu_zero_triplet        "dalton;srdft;rsp;runtest;medium;parallel")
-   add_dalton_runtest(rsp_mc_srPBE0_mu_inf_singlet         "dalton;srdft;rsp;runtest;medium;parallel")
+   add_dalton_runtest(rsp_mc_srPBE0_mu_zero_singlet        "dalton;srdft;rsp;runtest;medium;parallel;essential")
+   add_dalton_runtest(rsp_mc_srPBE0_mu_zero_triplet        "dalton;srdft;rsp;runtest;medium;parallel;essential")
+   add_dalton_runtest(rsp_mc_srPBE0_mu_inf_singlet         "dalton;srdft;rsp;runtest;medium;parallel;essential")
    # The following tests seem to be unstable
    add_dalton_runtest(rsp_srpbe_polar                      "dalton;srdft;rsp;short;parallel")
    add_dalton_runtest(energy_srpbe_state2                  "dalton;srdft;runtest;energy;medium;parallel")

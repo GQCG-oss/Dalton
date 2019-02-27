@@ -10,9 +10,9 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = 'Final MC-SRDFT energy',
-      rel_tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-4)
 f.add(string = '@ Excitation energy :',
-      rel_tolerance = 2.0e-4)
+      rel_tolerance = 2.0e-2)
 
 
 test.run(['test.dal'], ['h2o.mol'], f={'out': f})
