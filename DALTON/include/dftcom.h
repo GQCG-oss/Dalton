@@ -24,7 +24,7 @@
      &        DOSRC_WIB, ISJT, DOSRX_PBEHSE, DOSRX_PBETCS, DOSRC_PBETCS,&
      &        DOSRC_PBETCSJ, DOSRC_PBERI, DOSRC_PBEWI, DOSRX_PBERI,     &
      &        DOSRX_PBEGWS, DOSRC_PBEGWS, DOSRX_LDA_S, DOSRC_LDA_S,     &
-     &        DOSRC_LDA_PW92, DOSRX_LDA_PW92, DOSRC_VWN5_S,             &
+     &        DOSRC_LDA_PW92, DOSRX_LDA_PW92,                           &
      &        DOSRC_TPSS_S, DOSRC_TPSS, DOSRX_TPSS_S, DOSRX_TPSS,       &
      &        DOSRX_PBEGWS_S, DOSRC_PBEGWS_S, DOSRC_PBEGWS_PW92,        &
      &        DOSRC_MULOC_GGA, DOSRC_MULOD_GGA, DOSRC_MULOE_GGA,        &
@@ -32,7 +32,8 @@
      &        DOLAX_LDAS,DOLANSC_LDAS,DOLANSC_LDA,DOLAX_LDA,DOLASC_LDA, &
      &        DOLAX_PBEGWS,DOLANSC_PBEGWS,DOLASC_PBEGWS,DOLAX_GGABCK,   &
      &        DOLANC_GGALYP,DOLASC_GGALYP,DOSRC_LYPRI,                  &
-     &        DOC_PBE_nomu_S, DOC_PBE_nomu, DOSRX_wPBE_S, DOSRX_wPBE 
+     &        DOC_PBE_nomu_S, DOC_PBE_nomu, DOSRX_wPBE_S, DOSRX_wPBE,   &
+     &        DOSRC_VWN5_S, DOSRC_VWN5
       COMMON /DFTCOM/ HFXFAC, HFXATT, HFXMU,                            &
      &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC,   &
      &        XMULFAC_READIN, DSFAC, HEAVISIDE_PVALUE,                  &
@@ -51,7 +52,7 @@
      &        DOSRC_WIB, ISJT, DOSRX_PBEHSE, DOSRX_PBETCS, DOSRC_PBETCS,&
      &        DOSRC_PBETCSJ, DOSRC_PBERI, DOSRC_PBEWI, DOSRX_PBERI,     &
      &        DOSRX_PBEGWS, DOSRC_PBEGWS, DOSRX_LDA_S,  DOSRC_LDA_S,    &
-     &        DOSRC_LDA_PW92, DOSRX_LDA_PW92, DOSRC_VWN5_S,             &
+     &        DOSRC_LDA_PW92, DOSRX_LDA_PW92,                           &
      &        DOSRC_TPSS_S, DOSRC_TPSS, DOSRX_TPSS_S, DOSRX_TPSS,       &
      &        DOSRX_PBEGWS_S,  DOSRC_PBEGWS_S, DOSRC_PBEGWS_PW92,       &
      &        DOSRC_MULOC_GGA, DOSRC_MULOD_GGA, DOSRC_MULOE_GGA,        &
@@ -59,7 +60,8 @@
      &        DOLAX_LDAS,DOLANSC_LDAS,DOLANSC_LDA,DOLAX_LDA,DOLASC_LDA, &
      &        DOLAX_PBEGWS,DOLANSC_PBEGWS,DOLASC_PBEGWS,DOLAX_GGABCK,   &
      &        DOLANC_GGALYP,DOLASC_GGALYP,DOSRC_LYPRI,                  &
-     &        DOC_PBE_nomu_S, DOC_PBE_nomu, DOSRX_wPBE_S, DOSRX_wPBE 
+     &        DOC_PBE_nomu_S, DOC_PBE_nomu, DOSRX_wPBE_S, DOSRX_wPBE,   &
+     &        DOSRC_VWN5_S, DOSRC_VWN5
       INTEGER DFTCOMlast
       COMMON /DFTCOM/ DFTCOMlast
       !  Very important !!!  Always keep DFTCOMlast as the last variable in the common block. 

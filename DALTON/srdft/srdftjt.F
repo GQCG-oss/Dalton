@@ -832,27 +832,11 @@ C  Correlation  ----------------------------------------------------------
 
 !     short-range spin-dependent correlation LDA ! JT 18-08-09
       IF(DOSRC_LDA_S) THEN
-C        use_spindns = triplet .or. dft_spindns
 C        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
 C     >             CHIVAL,use_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
         call SPIN_PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
-      IF(DOSRC_VWN5_S) THEN
-        if (triplet .or. dft_spindns) then
-           call DESRSPIN(ESRC_LDAERFSPIN_VWN5,rho(1),rho(2),
-     >             CHIVAL,.true.,NORDER,Ec,d1Ec,d2Ec)
-        else
-           call DESRSPIN(ESRC_LDAERFSPIN_VWN5,rho(1),rho(2),
-     >             CHIVAL,.false.,NORDER,Ec,d1Ec,d2Ec)
-        end if
-      ENDIF
       IF(DOSRC_PBEGWS_S) THEN
-        ! PBEGWS_S has no grdss and no grds.grdc dependency,
-        ! therefore zero these before DESRC_SPINGGA call:
-!        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,grd2,CHIVAL,norder,
-!     >                     Ec,d1Ec,d2Ec)
-        !temp_grd2(:) = grd2(:)
-        !temp_grd2(2:3) = 0.0d0
 C        call DESRC_SPINGGA(ESRC_PBEGWSERFSPIN,rho,temp_grd2,CHIVAL,
 C     >                     norder,Ec,d1Ec,d2Ec)
         call SPIN_PBEC_GWS_ERF(rho, grd2, norder, chival,
@@ -879,6 +863,16 @@ C     >                     norder,Ec,d1Ec,d2Ec)
 !     PBE correlation spin-unpolarized functional
       IF(DOC_PBE_nomu) THEN
          call PBEC_nomu(rho, grd2, norder, Ec, d1Ec, d2Ec)
+      ENDIF
+
+!     TPSS correlation spin-polarized functional
+      IF(DOSRC_VWN5_S) THEN
+         call SPIN_VWN5C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
+      ENDIF
+
+!     TPSS correlation spin-unpolarized functional
+      IF(DOSRC_VWN5) THEN
+         call VWN5C_ERF(rho, norder, chival,  Ec, d1Ec, d2Ec)
       ENDIF
 
 C Kamal SHARKAS 20-05-11 beg
@@ -1519,8 +1513,6 @@ C Linear transformation -----------------------------------------------------
                         END DO
                      END DO
                   ELSE ! closed-shell LDA
-                     write(lupri,*)'Closed-shell singlet srLDA response'
-                     write(lupri,*)'WARNING: Code not covered in ctest'
                      DO I = 1, NBAST
                         G0 = GAO(I)
                         DO J = 1, I
