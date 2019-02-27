@@ -146,7 +146,7 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Wed Feb 27 18:04:00 2019
+     Date and time (Linux)  : Wed Feb 27 19:24:31 2019
      Host name              : fe1.deic.sdu.dk                         
 
  * Work memory size             :   320000000 =  2.384 gigabytes.
@@ -176,9 +176,9 @@ Compilation information
                           | n/mpiicpc
  C++ compiler version     | unknown
  Static linking           | OFF
- Last Git revision        | 5c237691ac40cdeed68c66718e1a7ab723d55304
+ Last Git revision        | 57e6a799532b594a4b5b0f5db483fe142458009e
  Git branch               | srdft-kjellgren
- Configuration time       | 2019-02-27 17:56:44.096287
+ Configuration time       | 2019-02-27 19:24:10.652847
 
  * Sequential calculation.
 
@@ -192,13 +192,14 @@ Compilation information
 *TWOINT
 .DOSRINTEGRALS
 .ERF
- 0.2
+ 0.4
 **WAVE FUNCTIONS
 .HFSRDFT
 .SRFUN
- LRCWPBE CPBE_NOMU
-.HFXFAC
- 0.2
+ SRXLDA SRCWVN5
+! LRCWPBE CPBE_NOMU
+!.HFXFAC
+! 0.2
 **RESPONSE
 .MAXRM
  2000
@@ -392,7 +393,7 @@ H 1.4000000 0.00000000 0.00000000
  Print level in TWOINT:    1
 
  DFT-hybrid : Using a Erf type two-elec. operator
-              with the coupling parameter :    0.20000
+              with the coupling parameter :    0.40000
 
 
      ************************************************************************
@@ -421,7 +422,7 @@ H 1.4000000 0.00000000 0.00000000
  HERMIT - Number of two-electron integrals written:          21 (100.0% )
  HERMIT - Megabytes written:                              0.007
 
-  Total CPU  time used in HERMIT:   0.00 seconds
+  Total CPU  time used in HERMIT:   0.01 seconds
   Total wall time used in HERMIT:   0.01 seconds
 
 
@@ -457,7 +458,7 @@ HUCDRV: reduced number of huckel orbitals in sym 1 from 6 to 3
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Feb 27 18:04:00 2019
+     Date and time (Linux)  : Wed Feb 27 19:24:31 2019
      Host name              : fe1.deic.sdu.dk                         
 
  Title lines from ".mol" input file:
@@ -486,10 +487,10 @@ HUCDRV: reduced number of huckel orbitals in sym 1 from 6 to 3
 @    Reference state symmetry                   1 (irrep name : A  )
 
 @    This is a lrWFT-srDFT calculation using the 
-@      LRCWPBE    short range exchange functional
-@      CPBE_NOMU  short range correlation functional
+@      SRXLDA     short range exchange functional
+@      SRCWVN5    short range correlation functional
 
-@    sr-DFT and exact sr-HF exchange weights:    0.800000    0.200000
+@    sr-DFT and exact sr-HF exchange weights:    1.000000    0.000000
 
      Orbital specifications
      ======================
@@ -548,53 +549,71 @@ H     1   18274      77     434
    Number of grid points in quadrature:     36344 (100.0%)
 
 
-   Ex-sr + Ec-sr                         -1.5790379156
- + EJKsr = sr Coulomb + exchange          4.0691088786
- = Total E(srDFT)                         2.4900709629
+   Ex-sr + Ec-sr                         -0.1752296131
+ + EJsr = sr Coulomb energy               3.3140546090
+ = Total E(srDFT)                         3.1388249959
 
-@  1    -7.86664650175        4.97393D-01   -7.87D+00    1
-      Virial theorem: -V/T =      1.919711
+@  1    -6.43899704156        9.44264D-01   -6.44D+00    1
+      Virial theorem: -V/T =      1.752800
 @    MULPOP   Li      0.65; H      -0.65; 
    1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
 
-   Ex-sr + Ec-sr                         -1.4652432770
- + EJKsr = sr Coulomb + exchange          3.7716732538
- = Total E(srDFT)                         2.3064299768
+   Ex-sr + Ec-sr                         -0.1497040548
+ + EJsr = sr Coulomb energy               2.9231078107
+ = Total E(srDFT)                         2.7734037559
 
-@  2    -7.93887886356        4.76003D-02   -7.22D-02    2
-      Virial theorem: -V/T =      1.964997
-@    MULPOP   Li      0.16; H      -0.16; 
+@  2    -6.63307360143        1.38246D-01   -1.94D-01    2
+      Virial theorem: -V/T =      1.832036
+@    MULPOP   Li     -0.25; H       0.25; 
    2  Level shift: doubly occupied orbital energies shifted by -5.00D-02
  -----------------------------------------------------------------------------
 
-   Ex-sr + Ec-sr                         -1.4572947527
- + EJKsr = sr Coulomb + exchange          3.7513503128
- = Total E(srDFT)                         2.2940555601
+   Ex-sr + Ec-sr                         -0.1520201380
+ + EJsr = sr Coulomb energy               2.9455679713
+ = Total E(srDFT)                         2.7935478333
 
-@  3    -7.93936897836        6.46043D-03   -4.90D-04    2
-      Virial theorem: -V/T =      1.967673
-@    MULPOP   Li      0.12; H      -0.12; 
+@  3    -6.63667330055        1.69756D-02   -3.60D-03    2
+      Virial theorem: -V/T =      1.828792
+@    MULPOP   Li     -0.15; H       0.15; 
    3  Level shift: doubly occupied orbital energies shifted by -1.25D-02
  -----------------------------------------------------------------------------
 
-   Ex-sr + Ec-sr                         -1.4561302319
- + EJKsr = sr Coulomb + exchange          3.7483863200
- = Total E(srDFT)                         2.2922560881
+   Ex-sr + Ec-sr                         -0.1521467007
+ + EJsr = sr Coulomb energy               2.9454037129
+ = Total E(srDFT)                         2.7932570121
 
-@  4    -7.93937803131        2.16077D-04   -9.05D-06    2
-      Virial theorem: -V/T =      1.968049
-@    MULPOP   Li      0.12; H      -0.12; 
+@  4    -6.63671298026        2.37358D-03   -3.97D-05    2
+      Virial theorem: -V/T =      1.828933
+@    MULPOP   Li     -0.15; H       0.15; 
  -----------------------------------------------------------------------------
 
-   Ex-sr + Ec-sr                         -1.4560940013
- + EJKsr = sr Coulomb + exchange          3.7482945753
- = Total E(srDFT)                         2.2922005740
+   Ex-sr + Ec-sr                         -0.1521563120
+ + EJsr = sr Coulomb energy               2.9452319352
+ = Total E(srDFT)                         2.7930756233
 
-@  5    -7.93937804074        5.47185D-06   -9.43D-09    2
+@  5    -6.63671368990        1.97383D-04   -7.10D-07    2
+      Virial theorem: -V/T =      1.828980
+@    MULPOP   Li     -0.15; H       0.15; 
+ -----------------------------------------------------------------------------
 
-@ *** DIIS converged in   5 iterations !
-@     Converged SCF energy, gradient:     -7.939378040744    5.47D-06
+   Ex-sr + Ec-sr                         -0.1521619630
+ + EJsr = sr Coulomb energy               2.9452920302
+ = Total E(srDFT)                         2.7931300671
+
+@  6    -6.63671369511        1.03876D-04   -5.20D-09    2
+      Virial theorem: -V/T =      1.828970
+@    MULPOP   Li     -0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+
+   Ex-sr + Ec-sr                         -0.1521600200
+ + EJsr = sr Coulomb energy               2.9452711540
+ = Total E(srDFT)                         2.7931111340
+
+@  7    -6.63671369706        3.55654D-06   -1.95D-09    2
+
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:     -6.636713697059    3.56D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -605,16 +624,16 @@ H     1   18274      77     434
 
  Sym       Hartree-Fock orbital energies
 
-1 A      -2.03107795    -0.27602144     0.12211761
+1 A      -1.27876555    -0.20967513     0.21680635
 
-    E(LUMO) :     0.12211761 au (symmetry 1)
-  - E(HOMO) :    -0.27602144 au (symmetry 1)
+    E(LUMO) :     0.21680635 au (symmetry 1)
+  - E(HOMO) :    -0.20967513 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.39813905 au
+    gap     :     0.42648148 au
 
  --- Writing SIRIFC interface file
 
- CPU and wall time for SCF :       0.436       0.437
+ CPU and wall time for SCF :       0.236       0.238
 
 
                        .-----------------------------------.
@@ -626,14 +645,14 @@ H     1   18274      77     434
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF-SRDFT energy:        -7.939378040744
+@    Final HF-SRDFT energy:        -6.636713697059
 @    Nuclear repulsion:             1.133951166000
-@    Electronic energy:            -9.073329206744
+@    Electronic energy:            -7.770664863059
 
-@    Final gradient norm:           0.000005471849
+@    Final gradient norm:           0.000003556540
 
  
-     Date and time (Linux)  : Wed Feb 27 18:04:01 2019
+     Date and time (Linux)  : Wed Feb 27 19:24:31 2019
      Host name              : fe1.deic.sdu.dk                         
 
 File label for MO orbitals:  27Feb19   FOCKDIIS
@@ -644,15 +663,15 @@ File label for MO orbitals:  27Feb19   FOCKDIIS
  ------------------------------------------------
 
     Orbital         1        2        3
-   1 Li  :1s    -0.9913  -0.1966  -0.0920
-   2 Li  :1s    -0.0399   0.5539   0.9578
-   3 H   :1s    -0.0110   0.6490  -0.8840
+   1 Li  :1s    -0.9609  -0.3086  -0.1055
+   2 Li  :1s    -0.1421   0.6503   0.8846
+   3 H   :1s    -0.0324   0.5412  -0.9534
 
-  Total CPU  time used in SIRIUS :   0.44 seconds
-  Total wall time used in SIRIUS :   0.45 seconds
+  Total CPU  time used in SIRIUS :   0.24 seconds
+  Total wall time used in SIRIUS :   0.25 seconds
 
  
-     Date and time (Linux)  : Wed Feb 27 18:04:01 2019
+     Date and time (Linux)  : Wed Feb 27 19:24:31 2019
      Host name              : fe1.deic.sdu.dk                         
 
 
@@ -706,8 +725,8 @@ srDFT INFO: DIRFCK reset because it must be true in **RESPONS
       3 Excitation energies are calculated for symmetry no.    1
 
 
-   SCF energy         :       -7.939378040743823
- -- inactive part     :       -9.073329206743823
+   SCF energy         :       -6.636713697059355
+ -- inactive part     :       -7.770664863059356
  -- nuclear repulsion :        1.133951166000000
 
 
@@ -734,7 +753,7 @@ srDFT INFO: DIRFCK reset because it must be true in **RESPONS
  ** RSPVAR ** Number of PP start vectors    3
    exceeds the maximum number of variables    2
    Number of start vectors reset to number of variables
- Electrons in DFTMOMO:    3.99968250329116
+ Electrons in DFTMOMO:    3.99954348018502
 
 
 
@@ -751,16 +770,16 @@ srDFT INFO: DIRFCK reset because it must be true in **RESPONS
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    3.95304D-16  0.00D+00  3.95D-16  7.50D-01    3.50033D-01
-         2    5.37654D-16  0.00D+00  5.38D-16  7.07D-01    1.94166D+00
+         1    5.78566D-16  0.00D+00  5.79D-16  7.70D-01    3.70525D-01
+         2    6.07253D-16  0.00D+00  6.07D-16  7.07D-01    1.23420D+00
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    4)
- RSP solution vector no.    1; norm of residual   5.27D-16
- RSP solution vector no.    2; norm of residual   7.60D-16
+ RSP solution vector no.    1; norm of residual   7.51D-16
+ RSP solution vector no.    2; norm of residual   8.58D-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -774,10 +793,10 @@ srDFT INFO: DIRFCK reset because it must be true in **RESPONS
  @ Excited state no:    1 in symmetry 1  ( A  ) - singlet excitation
  -------------------------------------------------------------------
 
-@ Excitation energy :  0.35003343     au
-@                       9.5248942     eV;   76823.458     cm-1;   919.01263     kJ / mol
+@ Excitation energy :  0.37052458     au
+@                       10.082487     eV;   81320.745     cm-1;   972.81214     kJ / mol
 
-@ Total energy :       -7.5893446     au
+@ Total energy :       -6.2661891     au
 
  Eigenvector for state no.  1
 
@@ -786,9 +805,9 @@ srDFT INFO: DIRFCK reset because it must be true in **RESPONS
 
       Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
       ----------    -----  -----      --------------      --------------      --------------      --------------
-           2         2(1)   3(1)        0.7286976341        0.1761101039        1.0305340770        0.2490572974
+           2         2(1)   3(1)       -0.7387222920       -0.2152761600       -1.0447110842       -0.3044464652
 
-        1 elements with absolute value ≤ 1.03D-01 not printed.
+        1 elements with absolute value ≤ 1.04D-01 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
@@ -801,7 +820,7 @@ srDFT INFO: DIRFCK reset because it must be true in **RESPONS
 
  
 
-Delta_R Diagnostic (Aa):     0.6561
+Delta_R Diagnostic (Aa):     0.2854
  
 
 
@@ -814,7 +833,7 @@ Delta_R Diagnostic (Aa):     0.6561
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
 
-@ Overlap diagnostic LAMBDA =    0.8745
+@ Overlap diagnostic LAMBDA =    0.9026
 
 @ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
 @            J Chem Phys 128, 044118 (2008)
@@ -824,10 +843,10 @@ Delta_R Diagnostic (Aa):     0.6561
  @ Excited state no:    2 in symmetry 1  ( A  ) - singlet excitation
  -------------------------------------------------------------------
 
-@ Excitation energy :   1.9416598     au
-@                       52.835251     eV;   426145.06     cm-1;   5097.8270     kJ / mol
+@ Excitation energy :   1.2341974     au
+@                       33.584220     eV;   270875.02     cm-1;   3240.3848     kJ / mol
 
-@ Total energy :       -5.9977182     au
+@ Total energy :       -5.4025163     au
 
  Eigenvector for state no.  2
 
@@ -836,9 +855,9 @@ Delta_R Diagnostic (Aa):     0.6561
 
       Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
       ----------    -----  -----      --------------      --------------      --------------      --------------
-           1         1(1)   3(1)       -0.7070979895       -0.0014469170       -0.9999875667       -0.0020462496
+           1         1(1)   3(1)       -0.7066872611       -0.0063313031       -0.9994067090       -0.0089538147
 
-        1 elements with absolute value ≤ 1.00D-01 not printed.
+        1 elements with absolute value ≤ 9.99D-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
@@ -851,7 +870,7 @@ Delta_R Diagnostic (Aa):     0.6561
 
  
 
-Delta_R Diagnostic (Aa):     0.2750
+Delta_R Diagnostic (Aa):     0.4511
  
 
 
@@ -864,26 +883,26 @@ Delta_R Diagnostic (Aa):     0.2750
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
 
-@ Overlap diagnostic LAMBDA =    0.1593
+@ Overlap diagnostic LAMBDA =    0.2637
 
 @ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
 @            J Chem Phys 128, 044118 (2008)
 
 
 
- Time used in polarization propagator calculation is      0.28 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is      0.11 CPU seconds for symmetry 1
 
-  Total CPU  time used in RESPONSE:   0.28 seconds
-  Total wall time used in RESPONSE:   0.28 seconds
+  Total CPU  time used in RESPONSE:   0.11 seconds
+  Total wall time used in RESPONSE:   0.11 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
-  Total CPU  time used in DALTON:   0.74 seconds
-  Total wall time used in DALTON:   0.75 seconds
+  Total CPU  time used in DALTON:   0.38 seconds
+  Total wall time used in DALTON:   0.40 seconds
 
  
-     Date and time (Linux)  : Wed Feb 27 18:04:01 2019
+     Date and time (Linux)  : Wed Feb 27 19:24:32 2019
      Host name              : fe1.deic.sdu.dk                         

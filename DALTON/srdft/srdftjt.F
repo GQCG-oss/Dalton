@@ -982,8 +982,6 @@ C***************************************************************************
 
       real*8 :: FAC0R, FAC0S, FACR, FACS, FAC_AR, FAC_RB, FAC_SB
       real*8 :: FAC_RC, FAC_SC
-      real*8 :: FRR, FRZ, FZZ, FZ0
-      real*8 :: FRS, FSS, FSZ, FSZ_S, FRZ_S, FZZ_S, FZ0_S, FZZ_SS
       real*8 :: G0, GX, GY, GZ, Xi
 
 !     X, C, and XC energies, and derivatives
@@ -1102,68 +1100,9 @@ C Exchange and correlation derivatives ------------------------------------
       d1Exc(1:9)  = WGHTX*d1Ex(1:9)  + WGHTC*d1Ec(1:9)
       d2Exc(1:45) = WGHTX*d2Ex(1:45) + WGHTC*d2Ec(1:45)
 
-C Total contribution -------------------------------------------------------
-
-         FRR = d2Exc(1)
-!        FRR = d2Excdrhocdrhoc
-      IF (DFT_SPINDNS .OR. TRIPLET) THEN
-         FRS = d2Exc(2)
-!        FRS = d2Excdrhocdrhos
-         FSS = d2Exc(3)
-!        FSS = d2Excdrhosdrhos
-      END IF
-      IF (DOGGA) THEN
-         ! grd[rhoc^(X,Y,Z)]
-         RX(1) = RHG(1,1)
-         RY(1) = RHG(2,1)
-         RZ(1) = RHG(3,1)
-
-         FZ0   = d1Exc(3)*2.0d0
-!        FZ0   = 2 d1Excdgrdcc
-         FRZ   = d2Exc(4)*2.0d0
-!        FRZ   = 2 d2Excdrhocdgrdcc
-         FZZ   = d2Exc(6)*4.0d0
-!        FZZ   = 4 d2Excdgrdccdgrdcc
-
-         IF (DFT_SPINDNS .OR. TRIPLET) THEN
-            ! grd[rhos^(X,Y,Z)]
-            RX(2) = RHG(1,2)
-            RY(2) = RHG(2,2)
-            RZ(2) = RHG(3,2)
-
-            FZ0_S = d1Exc(4)*2.0d0
-!           FZ0_S = 2 d1Excgrdss
-            FSZ   = d2Exc(5)*2.0d0
-!           FSZ   = 2 d2Excdrhosdgrdcc
-            FRZ_S = d2Exc(7)*2.0d0
-!           FRZ_S = 2 d2Excdrhocdgrdss
-            FSZ_S = d2Exc(8)*2.0d0
-!           FSZ_S = 2 dd2Excdrhosdgrdss
-            FZZ_S = d2Exc(9)*4.0d0
-!           FZZ_S = 4 d2Excdgrdccdgrdss
-            FZZ_SS= d2Exc(10)*4.0d0
-!           FZZ_SS= 4 d2Excdgrdssdgrdss
-            d2Exc(13) = d2Exc(13)*2.0d0
-            d2Exc(14) = d2Exc(14)*2.0d0
-         END IF ! DOGGA .and. DFT_SPINDNS
-      END IF ! DOGGA
-
-      if (do_metagga) then
-         d2Exc(18) = d2Exc(18)*2.0d0
-         d2Exc(31) = d2Exc(31)*2.0d0
-         if (dft_spindns .or. triplet) then
-            d2Exc(19) = d2Exc(19)*2.0d0
-            d2Exc(24) = d2Exc(24)*2.0d0
-            d2Exc(32) = d2Exc(32)*2.0d0
-            d2Exc(39) = d2Exc(39)*2.0d0
-            d2Exc(40) = d2Exc(40)*2.0d0
-         end if ! openshell or triplet
-      end if ! metaGGA
-
-
 C Linear transformation -----------------------------------------------------
 
-            ! It is used that FSR = FRS, FSZ = FZS, FSZ_S = FZS_S, etc.
+            ! It is used that d2/dxdy = d2/dydx etc. with x and y being the rho_c, gamma_ss, etc.
             ! "_b" in e.g. rhoc_b is for rhoc calculated from DTXMAT (from trial vector B)
 
             ! B0(1) = rhoc_b
@@ -1181,8 +1120,8 @@ C Linear transformation -----------------------------------------------------
             ! AX, AY, AZ : grad(chi_i chi_j)
             ! BX, BY, BZ : grad(phi_p) . grad(phi_q) 
             ! CX, AC, CZ : laplace(chi_i chi_j)
-            ! AR(1) = AX*RX(1)   + AY*RY(1)   + AZ*RZ(1)   ! grad(chi_i chi_j) . grad(rhoc)
-            ! AR(2) = AX*RX(2)   + AY*RY(2)   + AZ*RZ(2)   ! grad(chi_i chi_j) . grad(rhos)
+            ! AR(1) = AX*RHG(1,1)   + AY*RHG(2,1)   + AZ*RHG(3,1)   ! grad(chi_i chi_j) . grad(rhoc)
+            ! AR(2) = AX*RHG(1,2)   + AY*RHG(2,2)   + AZ*RHG(3,2)   ! grad(chi_i chi_j) . grad(rhos)
             ! AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1) ! grad(chi_i chi_j) . grad(rhoc_b)
             ! AB(2) = AX*B3(1,2) + AY*B3(2,2) + AZ*B3(3,2) ! grad(chi_i chi_j) . grad(rhos_b)
             
@@ -1205,60 +1144,77 @@ C Linear transformation -----------------------------------------------------
 
             ! important to check for meta-gga before gga, becuase they
             ! are both true in the case of meta-ggas
+            if (dogga) then
+               ! grd[rhoc^(X,Y,Z)]
+               RX(1) = RHG(1,1)
+               RY(1) = RHG(2,1)
+               RZ(1) = RHG(3,1)
+               if (dft_spindns .or. triplet) then
+                  ! grd[rhos^(X,Y,Z)]
+                  RX(2) = RHG(1,2)
+                  RY(2) = RHG(2,2)
+                  RZ(2) = RHG(3,2)
+               end if
+            end if
             if (do_metagga) then
                if (dft_spindns) then
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
                   BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
                   BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
                   BR(4) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
-                  FAC0R = FRR*B0(1) + FRS*B0(2) + FRZ*BR(1) + 
-     &                    FRZ_S*BR(2) + d2Exc(11)*BR(4) +
+                  FAC0R = d2Exc(1)*B0(1) + d2Exc(2)*B0(2)
+     &                    + 2.0d0*d2Exc(4)*BR(1) + 
+     &                    2.0d0*d2Exc(7)*BR(2) + d2Exc(11)*BR(4) +
      &                    d2Exc(11)*BR(3) + d2Exc(16)*B4(1) +
      &                    d2Exc(22)*B4(2)
       !&                    + d2Exc(29)*B5(1) + d2Exc(37)*B5(2)
-                  FAC0S = FRS*B0(1) + FSS*B0(2) + FSZ*BR(1) +
-     &                    FSZ_S*BR(2) + d2Exc(12)*BR(4) +
+                  FAC0S = d2Exc(2)*B0(1) + d2Exc(3)*B0(2) 
+     &                    + 2.0d0*d2Exc(5)*BR(1) +
+     &                    2.0d0*d2Exc(8)*BR(2) + d2Exc(12)*BR(4) +
      &                    d2Exc(12)*BR(3) + d2Exc(17)*B4(1) +
      &                    d2Exc(23)*B4(2)
       !&                    + d2Exc(30)*B5(1) + d2Exc(38)*B5(2)
-                  FACR  = FRZ*B0(1) + FSZ*B0(2) + FZZ*BR(1) +
-     &                    FZZ_S*BR(2) + d2Exc(13)*BR(4) +
-     &                    d2Exc(13)*BR(3) + d2Exc(18)*B4(1) +
-     &                    d2Exc(24)*B4(2)
-      !&                    + d2Exc(31)*B5(1) + d2Exc(39)*B5(2)
-                  FACS  = FRZ_S*B0(1) + FSZ_S*B0(2) + FZZ_S*BR(1) +
-     &                    FZZ_SS*BR(2) + d2Exc(14)*BR(4) +
-     &                    d2Exc(14)*BR(3) + d2Exc(19)*B4(1) +
-     &                    d2Exc(25)*B4(2)
-      !&                    + d2Exc(32)*B5(1) + d2Exc(40)*B5(2)
+                  FACR  = 2.0d0*d2Exc(4)*B0(1) + 2.0d0*d2Exc(5)*B0(2) 
+     &                    + 4.0d0*d2Exc(6)*BR(1) +
+     &                    4.0d0*d2Exc(9)*BR(2) + 2.0d0*d2Exc(13)*BR(4) +
+     &                    2.0d0*d2Exc(13)*BR(3) + 2.0d0*d2Exc(18)*B4(1)
+     &                    + 2.0d0*d2Exc(24)*B4(2)
+      !&                    + 2.0d0*d2Exc(31)*B5(1) + 2.0d0*d2Exc(39)*B5(2)
+                  FACS  = 2.0d0*d2Exc(7)*B0(1) + 2.0d0*d2Exc(8)*B0(2) 
+     &                    + 4.0d0*d2Exc(9)*BR(1) +
+     &                    4.0d0*d2Exc(10)*BR(2) + 2.0d0*d2Exc(14)*BR(4)
+     &                   + 2.0d0*d2Exc(14)*BR(3) + 2.0d0*d2Exc(19)*B4(1)
+     &                    + d2Exc(25)*B4(2)
+      !&                    + 2.0d0*d2Exc(32)*B5(1) + 2.0d0*d2Exc(40)*B5(2)
                   FAC_AR = d2Exc(11)*B0(1) + d2Exc(12)*B0(2) +
-     &                     d2Exc(13)*BR(1) + d2Exc(14)*BR(2) +
-     &                     d2Exc(15)*BR(4) + d2Exc(15)*BR(3) +
+     &                     2.0d0*d2Exc(13)*BR(1) + 2.0d0*d2Exc(14)*BR(2)
+     &                     + d2Exc(15)*BR(4) + d2Exc(15)*BR(3) +
      &                     d2Exc(20)*B4(1) + d2Exc(26)*B4(2)
       !&                     + d2Exc(33)*B5(1) + d2Exc(41)*B5(2)
                   FAC_RB = d2Exc(16)*B0(1) + d2Exc(17)*B0(2) +
-     &                     d2Exc(18)*BR(1) + d2Exc(19)*BR(2) +
-     &                     d2Exc(20)*BR(4) + d2Exc(20)*BR(3) +
+     &                     2.0d0*d2Exc(18)*BR(1) + 2.0d0*d2Exc(19)*BR(2)
+     &                     + d2Exc(20)*BR(4) + d2Exc(20)*BR(3) +
      &                     d2Exc(21)*B4(1) + d2Exc(27)*B4(2)
       !&                     + d2Exc(34)*B5(1) + d2Exc(42)*B5(2)
                   FAC_SB = d2Exc(22)*B0(1) + d2Exc(23)*B0(2) +
-     &                     d2Exc(24)*BR(1) + d2Exc(25)*BR(2) + 
+     &                     2.0d0*d2Exc(24)*BR(1) + d2Exc(25)*BR(2) + 
      &                     d2Exc(26)*BR(4) + d2Exc(26)*BR(3) +
      &                     d2Exc(27)*B4(1) + d2Exc(28)*B4(2)
       !&                     + d2Exc(35)*B5(1) + d2Exc(43)*B5(2)
                   !FAC_RC = d2Exc(29)*B0(1) + d2Exc(30)*B0(2) + 
-      !&                     d2Exc(31)*BR(1) + d2Exc(32)*BR(2) + 
+      !&                     2.0d0*d2Exc(31)*BR(1) + 2.0d0*d2Exc(32)*BR(2) + 
       !&                     d2Exc(33)*BR(4) + d2Exc(33)*BR(3) + 
       !&                     d2Exc(36)*B5(1) + d2Exc(44)*B5(2) +
       !&                     d2Exc(34)*B4(1) + d2Exc(35)*B4(2)
                   !FAC_SC = d2Exc(37)*B0(1) + d2Exc(38)*B0(2) +
-      !&                     d2Exc(39)*BR(1) + d2Exc(40)*BR(2) +
+      !&                     2.0d0*d2Exc(39)*BR(1) + 2.0d0*d2Exc(40)*BR(2) +
       !&                     d2Exc(41)*BR(4) + d2Exc(41)*BR(3) +
       !&                     d2Exc(44)*B5(1) + d2Exc(45)*B5(2) +
       !&                     d2Exc(42)*B4(1) + d2Exc(43)*B4(2)
                else if (triplet) then
                   BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
-                  FAC0S = FSS*B0(2) + d2Exc(12)*BR(3) + d2Exc(23)*B4(2)
+                  FAC0S = d2Exc(3)*B0(2) + d2Exc(12)*BR(3) 
+     &                    + d2Exc(23)*B4(2)
       !&                    + d2Exc(38)*B5(2)
                   FAC_AR = d2Exc(12)*B0(2) + d2Exc(15)*BR(3) +
      &                     d2Exc(26)*B4(2)
@@ -1270,14 +1226,16 @@ C Linear transformation -----------------------------------------------------
       !&                     d2Exc(45)*B5(2) + d2Exc(43)*B4(2)
                else ! closed-shell metaGGA
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
-                  FAC0R = FRR*B0(1) + FRZ*BR(1) + d2Exc(16)*B4(1)
+                  FAC0R = d2Exc(1)*B0(1) + 2.0d0*d2Exc(4)*BR(1) 
+     &                    + d2Exc(16)*B4(1)
       !&                    + d2Exc(29)*B5(1)
-                  FACR  = FRZ*B0(1) + FZZ*BR(1) + d2Exc(18)*B4(1)
-      !&                    + d2Exc(31)*B5(1)
-                  FAC_RB = d2Exc(16)*B0(1) + d2Exc(18)*BR(1) +
+                  FACR  = 2.0d0*d2Exc(4)*B0(1) + 4.0d0*d2Exc(6)*BR(1) 
+     &                   + 2.0d0*d2Exc(18)*B4(1)
+      !&                    + 2.0d0*d2Exc(31)*B5(1)
+                  FAC_RB = d2Exc(16)*B0(1) + 2.0d0*d2Exc(18)*BR(1) +
      &                     d2Exc(21)*B4(1)
       !&                     + d2Exc(34)*B5(1)
-                  !FAC_RC = d2Exc(29)*B0(1) + d2Exc(31)*BR(1) +
+                  !FAC_RC = d2Exc(29)*B0(1) + 2.0d0*d2Exc(31)*BR(1) +
       !&                     d2Exc(36)*B5(1) + d2Exc(34)*B4(1)
                end if
             else if (dogga) then
@@ -1286,41 +1244,44 @@ C Linear transformation -----------------------------------------------------
                   BR(2) = B3(1,2)*RX(2) + B3(2,2)*RY(2) + B3(3,2)*RZ(2)
                   BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
                   BR(4) = B3(1,1)*RX(2) + B3(2,1)*RY(2) + B3(3,1)*RZ(2)
-                  FAC0R = FRR*B0(1) + FRZ*BR(1) + FRS*B0(2) +FRZ_S*BR(2)
+                  FAC0R = d2Exc(1)*B0(1) + 2.0d0*d2Exc(4)*BR(1) 
+     &                    + d2Exc(2)*B0(2) +2.0d0*d2Exc(7)*BR(2)
      &                    + d2Exc(11)*BR(4) + d2Exc(11)*BR(3)
-                  FAC0S = FRS*B0(1) + FSS*B0(2) + FSZ*BR(1) +FSZ_S*BR(2)
+                  FAC0S = d2Exc(2)*B0(1) + d2Exc(3)*B0(2) 
+     &                    + 2.0d0*d2Exc(5)*BR(1) +2.0d0*d2Exc(8)*BR(2)
      &                    + d2Exc(12)*BR(4) + d2Exc(12)*BR(3)
-                  FACR  = FRZ*B0(1) + FZZ*BR(1) + FZZ_S*BR(2) +FSZ*B0(2)
-     &                    + d2Exc(13)*BR(4) + d2Exc(13)*BR(3)
-                  FACS  = FSZ_S*B0(2) + FRZ_S*B0(1) +
-     &                    FZZ_S*BR(1) + FZZ_SS*BR(2)
-     &                    + d2Exc(14)*BR(4) + d2Exc(14)*BR(3)
-                  FAC_AR = d2Exc(11)*B0(1) + d2Exc(13)*BR(1) +
-     &                      d2Exc(12)*B0(2) + d2Exc(14)*BR(2) +
+                  FACR  = 2.0d0*d2Exc(4)*B0(1) + 4.0d0*d2Exc(6)*BR(1) 
+     &                    + 4.0d0*d2Exc(9)*BR(2) +2.0d0*d2Exc(5)*B0(2)
+     &                   + 2.0d0*d2Exc(13)*BR(4) + 2.0d0*d2Exc(13)*BR(3)
+                  FACS  = 2.0d0*d2Exc(8)*B0(2) + 2.0d0*d2Exc(7)*B0(1) +
+     &                    4.0d0*d2Exc(9)*BR(1) + 4.0d0*d2Exc(10)*BR(2)
+     &                   + 2.0d0*d2Exc(14)*BR(4) + 2.0d0*d2Exc(14)*BR(3)
+                  FAC_AR = d2Exc(11)*B0(1) + 2.0d0*d2Exc(13)*BR(1) +
+     &                      d2Exc(12)*B0(2) + 2.0d0*d2Exc(14)*BR(2) +
      &                      d2Exc(15)*BR(3) + d2EXC(15)*BR(4)
                else if (triplet) then
                   BR(3) = B3(1,2)*RX(1) + B3(2,2)*RY(1) + B3(3,2)*RZ(1)
-                  FAC0S = FSS*B0(2) + d2Exc(12)*BR(3)
+                  FAC0S = d2Exc(3)*B0(2) + d2Exc(12)*BR(3)
                   FAC_AR = d2Exc(12)*B0(2) + d2Exc(15)*BR(3)
                else ! normal GGA
                   BR(1) = B3(1,1)*RX(1) + B3(2,1)*RY(1) + B3(3,1)*RZ(1)
-                  FAC0R = FRR*B0(1) + FRZ*BR(1)
-                  FACR  = FRZ*B0(1) + FZZ*BR(1)
+                  FAC0R = d2Exc(1)*B0(1) + 2.0d0*d2Exc(4)*BR(1)
+                  FACR  = 2.0d0*d2Exc(4)*B0(1) + 4.0d0*d2Exc(6)*BR(1)
                end if
             else !LDA
                if (dft_spindns) then
-                  FAC0R = FRR*B0(1) + FRS*B0(2)
-                  FAC0S = FRS*B0(1) + FSS*B0(2)
+                  FAC0R = d2Exc(1)*B0(1) + d2Exc(2)*B0(2)
+                  FAC0S = d2Exc(2)*B0(1) + d2Exc(3)*B0(2)
                else if (triplet) then
-                  FAC0S = FSS*B0(2)
+                  FAC0S = d2Exc(3)*B0(2)
                else ! normal LDA
-                  FAC0R = FRR*B0(1)
+                  FAC0R = d2Exc(1)*B0(1)
                end if
             end if
 
 #if SRDFT_DEBUG > 11
           !if (IPRINT_X .gt. 10) then
-           !if (abs(FSS) .gt. 0.d0 .or. abs(FRS) .gt. 0.d0) then
+           !if (abs(d2Exc(3)) .gt. 0.d0 .or. abs(d2Exc(2)) .gt. 0.d0) then
            if (modulo(n_call, 1000) .eq. 0) then
               write(lupri,*) 'hjaaj: rho ',rho(1:4)
               write(lupri,*) 'hjaaj: rhgc',rhg(1:3,1)
@@ -1334,14 +1295,15 @@ C Linear transformation -----------------------------------------------------
               write(lupri,*) 'hjaaj: d2Ex(:)',d2Ex(:)
               write(lupri,*) 'hjaaj: d2Ec(:)',d2Ec(:)
 
-              write(lupri,*) 'hjaaj: FRR, FRZ, FZZ',FRR, FRZ, FZZ
-              write(lupri,*) 'hjaaj: FSS, FRS',FSS, FRS
-              write(lupri,*) 'hjaaj: FZ0, FZ0_S',FZ0, FZ0_S
-              write(lupri,*) 'hjaaj: FSZ_S,FRZ_S,FZZ_S,FZZ_SS',
-     &                               FSZ_S,FRZ_S,FZZ_S,FZZ_SS
+              write(lupri,*) 'hjaaj: d2Exc(1)',d2Exc(1)
+              write(lupri,*) 'hjaaj:d2Exc(4),d2Exc(6)',d2Exc(4),d2Exc(6)
+              write(lupri,*) 'hjaaj:d2Exc(3),d2Exc(2)',d2Exc(3),d2Exc(2)
+              write(lupri,*) 'hjaaj:d1Exc(3),d1Exc(4)',d1Exc(3),d1Exc(4)
+            write(lupri,*) 'hjaaj:d2Exc(8),d2Exc(7),d2Exc(9),d2Exc(10)',
+     &                             d2Exc(8),d2Exc(7),d2Exc(9),d2Exc(10)
               write(lupri,*) 'debug: d1Exc(1:9)', d1Exc(1:9)
               write(lupri,*) 'debug: d2Exc(1:45)', d2Exc(1:45)
-              write(lupri,*) 'hjaaj: RX, RY, RZ',RX(1),RY(1),RZ(1)
+              write(lupri,*) 'hjaaj:RX,RY,RZ',RHG(1,1),RHG(2,1),RHG(3,1)
               write(lupri,*) 'hjaaj: B0, BMAX',B0(1:2), BMAX
               write(lupri,*) 'hjaaj: B4',B4(1:2)
               write(lupri,*) 'hjaaj: B3 matrix',B3(1:3,1:2)
@@ -1384,7 +1346,7 @@ C Linear transformation -----------------------------------------------------
                            Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
                            EXCMAT(J,I,1) = EXCMAT(J,I,1) +
      &                         FAC0S*G0*GAO(J) + FAC_AR*AR(1) +
-     &                         FZ0_S*AB(2) + FAC_SB*Xi*0.5d0
+     &                         2.0d0*d1Exc(4)*AB(2) + FAC_SB*Xi*0.5d0
       !&                         + FAC_SC*??
                         END DO
                      END DO
@@ -1406,12 +1368,12 @@ C Linear transformation -----------------------------------------------------
                            EXCMAT(J,I,1) = EXCMAT(J,I,1) +
      &                         FAC0R*G0*GAO(J) + FACR*AR(1) +
      &                         FAC_RB*Xi*0.5d0 + FAC_AR*AR(2) + 
-     &                         FZ0*AB(1) + d1Exc(5)*AB(2)
+     &                         2.0d0*d1Exc(3)*AB(1) + d1Exc(5)*AB(2)
       !&                         + FAC_RC*??
                            EXCMAT(J,I,2) = EXCMAT(J,I,2) + 
      &                         FAC0S*G0*GAO(J) + FACS*AR(2) +
      &                         FAC_SB*Xi*0.5d0 + FAC_AR*AR(1) +
-     &                         FZ0_S*AB(2) + d1Exc(5)*AB(1)
+     &                         2.0d0*d1Exc(4)*AB(2) + d1Exc(5)*AB(1)
       !&                         + FAC_SC*??
                         END DO
                      END DO
@@ -1429,7 +1391,8 @@ C Linear transformation -----------------------------------------------------
                            AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
                            Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
                            EXCMAT(J,I,1) = EXCMAT(J,I,1) +
-     &                         FAC0R*G0*GAO(J) + FACR*AR(1) + FZ0*AB(1)
+     &                         FAC0R*G0*GAO(J) + FACR*AR(1) 
+     &                         + 2.0d0*d1Exc(3)*AB(1)
      &                         + FAC_RB*Xi*0.5d0
       !&                         + FAC_RC*??
                         END DO
@@ -1450,7 +1413,8 @@ C Linear transformation -----------------------------------------------------
                            AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
                            ! spin matrix W[b]2s in EXCMAT no. 1
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0S*G0*GAO(J)
-     &                                   + FZ0_S*AB(2) + FAC_AR*AR(1)
+     &                                     + 2.0d0*d1Exc(4)*AB(2) 
+     &                                     + FAC_AR*AR(1)
                         END DO
                      END DO
                   ELSE IF (DFT_SPINDNS) THEN ! open-shell GGA response
@@ -1470,11 +1434,11 @@ C Linear transformation -----------------------------------------------------
                            ! charge matrix W[b]2c in EXCMAT no. 1
                            ! spin   matrix W[b]2s in EXCMAT no. 2
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
-     &                       + d1Exc(5)*AB(2) + FZ0*AB(1) + FACR*AR(1)
-     &                       + FAC_AR*AR(2)
+     &                       + d1Exc(5)*AB(2) + 2.0d0*d1Exc(3)*AB(1) 
+     &                       + FACR*AR(1) + FAC_AR*AR(2)
                            EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
-     &                       + d1Exc(5)*AB(1) + FZ0_S*AB(2) + FACS*AR(2)
-     &                       + FAC_AR*AR(1)
+     &                       + d1Exc(5)*AB(1) + 2.0d0*d1Exc(4)*AB(2) 
+     &                       + FACS*AR(2) + FAC_AR*AR(1)
                         END DO
                      END DO
                   ELSE ! closed-shell singlet GGA response
@@ -1491,7 +1455,8 @@ C Linear transformation -----------------------------------------------------
                            AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
                            ! charge matrix W[b]2c in EXCMAT no. 1
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
-     &                                   + FACR*AR(1)+FZ0*AB(1)
+     &                                   + FACR*AR(1) 
+     &                                   + 2.0d0*d1Exc(3)*AB(1)
                         END DO
                      END DO
                   END IF
@@ -1546,7 +1511,7 @@ C Linear transformation -----------------------------------------------------
                            Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
                            EXCMAT(J,I,1) = EXCMAT(J,I,1) +
      &                         FAC0S*G0*GAO(J) + FAC_AR*AR(1) +
-     &                         FZ0_S*AB(2) + FAC_SB*Xi*0.5d0
+     &                         2.0d0*d1Exc(4)*AB(2) + FAC_SB*Xi*0.5d0
       !&                         + FAC_SC*??
                          END DO
                        END DO
@@ -1568,12 +1533,12 @@ C Linear transformation -----------------------------------------------------
                            EXCMAT(J,I,1) = EXCMAT(J,I,1) +
      &                         FAC0R*G0*GAO(J) + FACR*AR(1) +
      &                         FAC_RB*Xi*0.5d0 + FAC_AR*AR(2) + 
-     &                         FZ0*AB(1) + d1Exc(5)*AB(2)
+     &                         2.0d0*d1Exc(3)*AB(1) + d1Exc(5)*AB(2)
       !&                         + FAC_RC*??
                            EXCMAT(J,I,2) = EXCMAT(J,I,2) + 
      &                         FAC0S*G0*GAO(J) + FACS*AR(2) +
      &                         FAC_SB*Xi*0.5d0 + FAC_AR*AR(1) +
-     &                         FZ0_S*AB(2) + d1Exc(5)*AB(1)
+     &                         2.0d0*d1Exc(4)*AB(2) + d1Exc(5)*AB(1)
       !&                         + FAC_SC*??
                          END DO
                        END DO
@@ -1591,7 +1556,8 @@ C Linear transformation -----------------------------------------------------
                            AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
                            Xi = GX*GAO1(J,1)+GY*GAO1(J,2)+GZ*GAO1(J,3)
                            EXCMAT(J,I,1) = EXCMAT(J,I,1) +
-     &                         FAC0R*G0*GAO(J) + FACR*AR(1) + FZ0*AB(1)
+     &                         FAC0R*G0*GAO(J) + FACR*AR(1) 
+     &                         + 2.0d0*d1Exc(3)*AB(1)
      &                         + FAC_RB*Xi*0.5d0
       !&                         + FAC_RC*??
                          END DO
@@ -1612,7 +1578,8 @@ C Linear transformation -----------------------------------------------------
                            AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
                            ! spin matrix W[b]2s in EXCMAT no. 1
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0S*G0*GAO(J)
-     &                                   + FZ0_S*AB(2) + FAC_AR*AR(1)
+     &                                     + 2.0d0*d1Exc(4)*AB(2) 
+     &                                     + FAC_AR*AR(1)
                          END DO
                        END DO
                      ELSE IF (DFT_SPINDNS) THEN
@@ -1632,11 +1599,11 @@ C Linear transformation -----------------------------------------------------
                            ! charge matrix W[b]2c in EXCMAT no. 1
                            ! spin   matrix W[b]2s in EXCMAT no. 2
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
-     &                       + d1Exc(5)*AB(2) + FZ0*AB(1) + FACR*AR(1)
-     &                       + FAC_AR*AR(2)
+     &                       + d1Exc(5)*AB(2) + 2.0d0*d1Exc(3)*AB(1) 
+     &                       + FACR*AR(1) + FAC_AR*AR(2)
                            EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
-     &                       + d1Exc(5)*AB(1) + FZ0_S*AB(2) + FACS*AR(2)
-     &                       + FAC_AR*AR(1)
+     &                       + d1Exc(5)*AB(1) + 2.0d0*d1Exc(4)*AB(2) 
+     &                       + FACS*AR(2) + FAC_AR*AR(1)
                          END DO
                        END DO
                      ELSE ! Closed-shell GGA singlet response
@@ -1653,7 +1620,8 @@ C Linear transformation -----------------------------------------------------
                            AB(1) = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
                            ! charge matrix W[b]2c in EXCMAT no. 1
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
-     &                                   + FACR*AR(1)+FZ0*AB(1)
+     &                                     + FACR*AR(1) 
+     &                                     + 2.0d0*d1Exc(3)*AB(1)
                          END DO
                        END DO
                      END IF
