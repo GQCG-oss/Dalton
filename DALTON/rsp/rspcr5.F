@@ -32,7 +32,7 @@ C
       CALL QENTER('WRTRSP')
 
       REWIND (LU)
- 100  READ(LU) LABEL
+ 100  READ(LU, END=9000) LABEL
       IF (LABEL.NE.'EOFLABEL') GOTO 100
       BACKSPACE LU
       IF (FREQ2 .EQ. D0) THEN
@@ -53,6 +53,9 @@ C
 C
       CALL QEXIT('WRTRSP')
       RETURN
+ 9000 CONTINUE
+      CALL QUIT('FATAL ERROR:'//
+     &   ' "EOFLABEL" not found on file RSPVEC as expected')
       END
       SUBROUTINE REARSP(LU,LEN,VEC,LAB1,LAB2,FREQ1,FREQ2,ISYM1,ISYM2,
      &                  RSD,FOUND,CONV,ANTSYM)
@@ -96,6 +99,7 @@ C
 
       IF (NERR .NE. 0) THEN
          REWIND (LU)
+         READ (LU)
          READ (LU) INFORB_TEST
          WRITE (LUPRI,'(/A/A/,(10X,8I5))')
      &      ' INFO: Orbital data found on response'//

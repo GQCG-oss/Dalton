@@ -367,8 +367,6 @@ C
          END IF
       END IF
 C
-      CALL ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS()
-C
       IF ( NEED_PVX ) THEN
 C
       IF ( .NOT.TDHF ) THEN
@@ -4227,6 +4225,7 @@ C
 C Used from common blocks:
 C SCBRHF : IOPRHF
 C QRINF  : MZCONF(1)
+C infinp.h : ISPIN, FLAG(:), ...
 C
 #include "maxorb.h"
 #include "priunit.h"
@@ -4275,13 +4274,29 @@ C     If any triplet operators, then we must use determinants
 C     in RESPONSE also for the reference symmetry, even if
 C     CSFs were used in SIRIUS. /hjaaj May 2001
 C
-      MCONRF = NCONRF
       IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
+         IF (ISPIN .GT. 1) THEN
+         ! For triplet properties, CSFs in wave function optimization only works
+         ! for singlet reference states, not for open-shell reference states.
+         ! (The code in e.g. lagrang.F does not work.)
+            CALL ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS()
+         END IF
          FLAG(27) = .TRUE. ! use determinants, not CSFs
-C        ... call setsir to reset Sirius common blocks to determinants
-         CALL SETSIR(.FALSE.,WRK,LWRK)
-         ! false means no 2-el. integral transformation by SETSIR
-         ! (already done if needed in RESPONS)
+C
+C        ... call SETCI with new FLAG(27) and
+C            reset Sirius CI common blocks to determinants
+C
+         CALL SETCI(NCONF,NCDETS,LSYM,WRK,LWRK,0)
+C
+         NVAR   = NCONF  + NWOPT
+         NVARH  = NCONF  + NWOPH
+         NVARMA = NCONMA + NWOPMA
+         NCONDI = MAX(1,NCONF)
+C
+C        Parameters needed for /INFLIN/
+C
+         NCONRF = NCONF
+         LSYMRF = LSYM
       END IF
       NCONRF = MAX(1,NCONRF) ! SETSIR(abaset.F) sets NCONRF=0 for Hartree-Fock
                              ! in RSP - especially for RSPESR - we want NCREF=1 for HSROHF
@@ -4299,7 +4314,7 @@ C
      &              ISTATE,ISPIN,NACTEL,LSYM,MS2
       NDUM = 1 + 64 + 6*8 + 4
       READ (LUSIFC) MISHT,MASHT, MOCCT, MORBT, MBAST, MCONF,MWOPT,MWOPH,
-     &              NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT,
+     &              MCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT,
      &              (IDUM,I=1,NDUM),MCTYPE_IFC
       IF (MCTYPE_IFC .GT. 900) THEN
          IF ( (.NOT. DFT_SPINDNS) .AND. ISPIN .NE. 1 ) THEN
@@ -4416,13 +4431,13 @@ C
      *   '@ TOTAL NUMBER OF ATOMIC ORBITALS FROM SIRINP:',NBAST,
      *   '@ FROM SIRIFC ',MBAST
       END IF
-      IF ( MCONRF .NE. MCONF .AND. MCONF .GT. 1 .AND. MCONRF .GT. 1 )
+      IF ( MCDETS .NE. NCDETS .AND. MCDETS .GT. 1 .AND. NCDETS .GT. 1 )
      &   THEN
          NUMERR = NUMERR + 1
          WRITE(LUPRI,'(A/A,I5/A,I5,A,L5)')
      *  '@ *** FATAL ERROR IN RSPMC ***',
-     *  '@ TOTAL NUMBER OF REFERENCE CONFIGURATIONS FROM SIRINP:',
-     *  MCONRF,'@ AND FROM SIRIFC',MCONF,';  TDHF flag is',TDHF
+     *  '@ TOTAL NUMBER OF REFERENCE DETERMINANTS FROM SIRINP:',
+     *  NCDETS,'@ AND FROM SIRIFC',MCDETS,';  TDHF flag is',TDHF
       END IF
 C     NWOPT test disabled because RSPMC may be called from ABACUS
 C     with NCONF,NWOPT not of symmetry 1 /25-Nov-1992 PJ+HJAaJ
@@ -4637,6 +4652,9 @@ C l.r. Sep 2004 hjaaj
 C
 C Purpose:
 C  GET MC REFERENCE STATE from SIRIFC
+C
+C  Value of LCREF determines if CREF is
+C  read in CSF basis or in determinant basis.
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -5123,19 +5141,12 @@ C
 
       SUBROUTINE ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS()
       IMPLICIT NONE
-#include <maxorb.h>
-#include <infinp.h>
-#include <infrsp.h>
-#include <priunit.h>
-      CALL QENTER('ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS')
-      IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
-         WRITE(LUPRI, *)
-     &      'Please use **WAVE FUNCTION *OPTIMIZATION .DETERMINANTS'
-         CALL QUIT(
-     &      'A TRIPLET RESPONSE CALCULATION REQUIRES DETERMINANTS'
-     &      )
-      END IF
-      CALL QEXIT('ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS')
+#include "priunit.h"
+      WRITE(LUPRI, '(//A/A/)') 'ERROR: '//
+     &  'Open-shell triplet response calculation requires determinants',
+     &  'ERROR: Please use **WAVE FUNCTION *OPTIMIZATION .DETERMINANTS'
+      CALL QUIT(
+     &  'Open-shell triplet response calculation requires determinants')
       END
 
 C --- end of rspmai.F ---
