@@ -270,18 +270,18 @@ C Nuclear model
             END IF
       END IF
   300 CONTINUE
+      IF(GAUNUC) THEN
+         WRITE(LUPRI,'(/A)') '@ * Nuclear model: '//
+     &      'Gaussian charge distribution.'
+      ELSE
+         WRITE(LUPRI,'(/A)') '@ * Nuclear model: Point charge.'
+      ENDIF
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for '//WORD1,0)
          IF (IPREAD .NE. IPREAD_ini) THEN
             WRITE (LUPRI,'(A,I5)')
      &         ' Print level in molecule setup (READIN):',IPREAD
          END IF
-         IF(GAUNUC) THEN
-            WRITE(LUPRI,'(/A)') ' * Nuclear model: '//
-     &         'Gaussian charge distribution.'
-         ELSE
-            WRITE(LUPRI,'(/A)') ' * Nuclear model: Point charge'
-         ENDIF
          IF (ONLYOV) WRITE (LUPRI,'(A)')
      &  ' Stop after calculation of overlap integrals (.ONLYOV) for QM3'
          IF (TOL_SYMADD .NE. 0.0D0) THEN
@@ -7036,14 +7036,16 @@ C     Since the number of atom types have not been specified,
 C     assume old input format
 C
 
-         IF (.NOT. SLAVE .AND. N_OLD_MOL_INP.EQ.0) THEN
-            N_OLD_MOL_INP = 1
-            NINFO = NINFO + 1
-            WRITE(LUPRI,'(///A/A/A///)') '@ INFO - deprecated '//
-     &      'old .mol fixed format input has been detected:',
-     &      LINE4_in, '@ INFO - '//
-     &      'this input format may not be supported in future releases.'
-         END IF
+! hjaaj Feb 2019: let us stop warning about old .mol format,
+!                 no real reason to delete it, it does no harm.
+!        IF (.NOT. SLAVE .AND. N_OLD_MOL_INP.EQ.0) THEN
+!           N_OLD_MOL_INP = 1
+!           NINFO = NINFO + 1
+!           WRITE(LUPRI,'(///A/A/A///)') '@ INFO - deprecated '//
+!    &      'old .mol fixed format input has been detected:',
+!    &      LINE4_in, '@ INFO - '//
+!    &      'this input format may not be supported in future releases.'
+!        END IF
 
          READ (LINE4_in,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)',ERR=199) CRT,
      &        NONTYP,KCHARG1,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
