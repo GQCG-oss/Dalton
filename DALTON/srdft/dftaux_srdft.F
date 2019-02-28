@@ -136,7 +136,6 @@ C
             IEND = IBAS(ISYM) + NBAS(ISYM)
             DO J = ISTR, IEND
                FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
-               ! spin
                IF (abs(FC).GT.DFTHRL) THEN
                   DO I = ISTR, IEND
                      EXCMAT(I,J,1) = EXCMAT(I,J,1) + FC*GAO(I)
@@ -155,10 +154,10 @@ C
       END
 
 
-C /* Deck dftksm_mggaspin */
+C /* Deck dftksm_mgga */
 C*****************************************************************************
-      SUBROUTINE DFTKSM_MGGASPIN(EXCMAT, GAO, GAO1, GAO2, RHG, d1E,
-     &                           DFTHRL)
+      SUBROUTINE DFTKSM_MGGA(EXCMAT, GAO, GAO1, GAO2, RHG, d1E,
+     &                           DFTHRL, DO_SPIN)
 C*****************************************************************************
 C
 C     Erik Kjellgren (oct. 2018) based on DFTKSMGGASPIN by E. Hedegaard
@@ -188,6 +187,7 @@ C*****************************************************************************
       implicit none
 ! inforb.h : NBAST, NSYM
 #include "inforb.h"
+      logical, intent(in) :: DO_SPIN
       real*8, intent(in) :: GAO(NBAST), GAO1(NBAST,3), RHG(3,2)
       real*8, intent(in) :: GAO2, d1E(9), DFTHRL
       real*8, intent(inout) :: EXCMAT(NBAST,NBAST,2)
@@ -206,8 +206,8 @@ C
       VXB  = d1E(3) * 4.0d0
       VSB  = d1E(4) * 4.0d0
       VXSB = d1E(5) * 2.0d0
-      VXT  = d1E(6)
-      VST  = d1E(7)
+      VXT  = d1E(6) * 0.5d0
+      VST  = d1E(7) * 0.5d0
       !VXL  = d1E(8), no laplace(rho) implementation yet
       !VSL  = d1E(9), no laplace(rho) implementation yet
       FX = VXB*RHG(1,1) + VXSB*RHG(1,2)
@@ -225,32 +225,33 @@ C
             ! Meta-GGA tau part of FC
             DO I = 1, NBAST
                EXCMAT(I,J,1) = EXCMAT(I,J,1) 
-     &                        + 0.5d0*VXT * (GAO1(J,1)*GAO1(I,1)
-     &                                     + GAO1(J,2)*GAO1(I,2)
-     &                                     + GAO1(J,3)*GAO1(I,3))
+     &                         + VXT * (GAO1(J,1)*GAO1(I,1)
+     &                                 + GAO1(J,2)*GAO1(I,2)
+     &                                 + GAO1(J,3)*GAO1(I,3))
 C     &                        + VXL * (GAO2(J)*GAO(I)
 C     &                               + GAO(J)*GAO2(I)
 C     &                               + 2.0d0*GAO1(J,1)*GAO1(I,1)
 C     &                               + 2.0d0*GAO1(J,2)*GAO1(I,2)
 C     &                               + 2.0d0*GAO1(J,3)*GAO1(I,3)
             END DO
-
-            FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
-            IF (abs(FCS).GT.DFTHRL) THEN
-               CALL DAXPY(NBAST,FCS,GAO,1,EXCMAT(1,J,2),1)
+            IF (DO_SPIN) THEN
+               FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
+               IF (abs(FCS).GT.DFTHRL) THEN
+                  CALL DAXPY(NBAST,FCS,GAO,1,EXCMAT(1,J,2),1)
+               END IF
+               ! Meta-GGA tau part of FCS
+               DO I = 1, NBAST
+                  EXCMAT(I,J,2) = EXCMAT(I,J,2) 
+     &                           + VST * (GAO1(J,1)*GAO1(I,1)
+     &                                   + GAO1(J,2)*GAO1(I,2)
+     &                                   + GAO1(J,3)*GAO1(I,3))
+C     &                           + VSL * (GAO2(J)*GAO(I)
+C     &                                  + GAO(J)*GAO2(I)
+C     &                                  + 2.0d0*GAO1(J,1)*GAO1(I,1)
+C     &                                  + 2.0d0*GAO1(J,2)*GAO1(I,2)
+C     &                                  + 2.0d0*GAO1(J,3)*GAO1(I,3)
+              END DO
             END IF
-            ! Meta-GGA tau part of FCS
-            DO I = 1, NBAST
-               EXCMAT(I,J,2) = EXCMAT(I,J,2) 
-     &                        + 0.5d0*VST * (GAO1(J,1)*GAO1(I,1)
-     &                                     + GAO1(J,2)*GAO1(I,2)
-     &                                     + GAO1(J,3)*GAO1(I,3))
-C     &                        + VSL * (GAO2(J)*GAO(I)
-C     &                               + GAO(J)*GAO2(I)
-C     &                               + 2.0d0*GAO1(J,1)*GAO1(I,1)
-C     &                               + 2.0d0*GAO1(J,2)*GAO1(I,2)
-C     &                               + 2.0d0*GAO1(J,3)*GAO1(I,3)
-            END DO
          END DO
       ELSE
          DO ISYM = 1, NSYM
@@ -258,7 +259,6 @@ C     &                               + 2.0d0*GAO1(J,3)*GAO1(I,3)
             IEND = IBAS(ISYM) + NBAS(ISYM)
             DO J = ISTR, IEND
                FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
-               ! spin
                IF (abs(FC).GT.DFTHRL) THEN
                   DO I = ISTR, IEND
                      EXCMAT(I,J,1) = EXCMAT(I,J,1) + FC*GAO(I)
@@ -266,32 +266,34 @@ C     &                               + 2.0d0*GAO1(J,3)*GAO1(I,3)
                END IF
                DO I = ISTR, IEND
                   EXCMAT(I,J,1) = EXCMAT(I,J,1)
-     &                           + 0.5d0*VXT * (GAO1(J,1)*GAO1(I,1)
-     &                                        + GAO1(J,2)*GAO1(I,2)
-     &                                        + GAO1(J,3)*GAO1(I,3))
+     &                            + VXT * (GAO1(J,1)*GAO1(I,1)
+     &                                    + GAO1(J,2)*GAO1(I,2)
+     &                                    + GAO1(J,3)*GAO1(I,3))
 C     &                           + VXL * (GAO2(J)*GAO(I)
 C     &                                  + GAO(J)*GAO2(I)
 C     &                                  + 2.0d0*GAO1(J,1)*GAO1(I,1)
 C     &                                  + 2.0d0*GAO1(J,2)*GAO1(I,2)
 C     &                                  + 2.0d0*GAO1(J,3)*GAO1(I,3)
                END DO
-               FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
-               IF (abs(FCS).GT.DFTHRL) THEN
-                  DO I = ISTR, IEND
-                     EXCMAT(I,J,2) = EXCMAT(I,J,2) + FCS*GAO(I)
-                  END DO
-               END IF
-               DO I = ISTR, IEND
-                  EXCMAT(I,J,2) = EXCMAT(I,J,2)
-     &                           + 0.5d0*VST * (GAO1(J,1)*GAO1(I,1)
-     &                                        + GAO1(J,2)*GAO1(I,2)
-     &                                        + GAO1(J,3)*GAO1(I,3))
+               IF (DO_SPIN) THEN
+                 FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
+                 IF (abs(FCS).GT.DFTHRL) THEN
+                    DO I = ISTR, IEND
+                       EXCMAT(I,J,2) = EXCMAT(I,J,2) + FCS*GAO(I)
+                    END DO
+                 END IF
+                 DO I = ISTR, IEND
+                   EXCMAT(I,J,2) = EXCMAT(I,J,2)
+     &                             + VST * (GAO1(J,1)*GAO1(I,1)
+     &                                     + GAO1(J,2)*GAO1(I,2)
+     &                                     + GAO1(J,3)*GAO1(I,3))
 C     &                            + VSL * (GAO2(J)*GAO(I)
 C     &                                   + GAO(J)*GAO2(I)
 C     &                                   + 2.0d0*GAO1(J,1)*GAO1(I,1)
 C     &                                   + 2.0d0*GAO1(J,2)*GAO1(I,2)
 C     &                                   + 2.0d0*GAO1(J,3)*GAO1(I,3)
-               END DO
+                 END DO
+               END IF
             END DO
          END DO
       END IF

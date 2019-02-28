@@ -494,10 +494,14 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
      &                 d1Exc(1)  ,d1Exc(3)    ,DOGGA,FROMVX,DFTHRL)
 !                      d1Excdrhoc,d1Excdgrdcc,DOGGA,FROMVX,DFTHRL)
        else if (domcsrdft .and. .not. docisrdft) then
-          if (do_metagga) then ! MGGA, spin and closed shell is handled
-!                                in the same  subroutine for now
-             CALL DFTKSM_MGGASPIN(EXCMAT, GSO(KSO0), GSO(KSO1), 0.0d0,
-     &                            RHG, d1Exc, DFTHRL)
+          if (do_metagga) then
+             if (dft_spindns) then
+               CALL DFTKSM_MGGA(EXCMAT, GSO(KSO0), GSO(KSO1), 0.0d0,
+     &                             RHG, d1Exc, DFTHRL, .TRUE.)
+             else
+               CALL DFTKSM_MGGA(EXCMAT, GSO(KSO0), GSO(KSO1), 0.0d0,
+     &                             RHG, d1Exc, DFTHRL, .FALSE.)
+             end if
           else if (dogga .and. dft_spindns) then ! special treatment if gga + spin
               CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
      &             d1Exc,DFTHRL)
@@ -514,10 +518,9 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
           end if
        else ! if hfsrdft
           IF (DFT_SPINDNS) CALL QUIT('no HFsrDFT with open shells')
-          if (do_metagga) then ! MGGA, spin and closed shell is handled
-!                                in the same  subroutine for now
-             CALL DFTKSM_MGGASPIN(EXCMAT, GSO(KSO0), GSO(KSO1), 0.0d0,
-     &                            RHG, d1Exc, DFTHRL)
+          if (do_metagga) then
+             CALL DFTKSM_MGGA(EXCMAT, GSO(KSO0), GSO(KSO1), 0.0d0,
+     &                            RHG, d1Exc, DFTHRL, .FALSE.)
           else
              CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
      &                d1Exc(1)  ,d1Exc(3)    ,DOGGA,FROMVX,DFTHRL)
