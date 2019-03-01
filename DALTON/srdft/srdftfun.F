@@ -1237,3 +1237,100 @@ C     Do the convertion from alpha, beta to charge, spin
      &                                     d2E)
       end if
       end subroutine
+
+
+C****************************************************************************
+      subroutine SPIN_VWN5C_nomu(rho, diff_order, E, d1E, d2E)
+C*****************************************************************************
+C Implemented by E. R. Kjellgren
+C
+C Subroutine to to control calling of correlation spin-polarized PW92 functional
+C
+C   Input : rho_a, alpha-spin density
+C           rho_b, beta-spin density
+C           diff_order, max order of differentation
+C           mu, range-seperation parameter
+C   Output : E, energy
+C            d1E, vector of first derivatives of energy
+C            d2E, vector of second derivatives of energy
+C*****************************************************************************
+      implicit none
+#include "priunit.h" 
+      integer, intent(in) :: diff_order
+      real*8, intent(in) :: rho(2)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      real*8 :: rho_c, rho_s
+      
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      d2E(:) = 0.0d0
+      rho_c = rho(1)
+      rho_s = rho(2)
+
+      if (rho_c .le. 1.d-10) then
+         ! Are we completely sure this check is valid
+         !  for derivatives? - E. R. K
+         return
+      end if
+
+      if (diff_order .eq. 0) then
+         call ESRC_SPIN_VWN5(rho_c, rho_s, E)
+
+      elseif (diff_order .eq. 1) then
+         call D1ESRC_SPIN_VWN5(rho_c, rho_s, E, d1E)
+
+      elseif (diff_order .eq. 2) then
+         call D2ESRC_SPIN_VWN5(rho_c, rho_s, E, d1E, d2E)
+
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
+      end if
+      end subroutine
+
+
+C****************************************************************************
+      subroutine VWN5C_nomu(rho, diff_order, E, d1E, d2E)
+C*****************************************************************************
+C Implemented by E. R. Kjellgren
+C
+C Subroutine to to control calling of correlation spin-polarized PBE functional
+C
+C   Input : rho_a, alpha-spin density
+C           rho_b, beta-spin density
+C           diff_order, max order of differentation
+C           mu, range-seperation parameter
+C   Output : E, energy
+C            d1E, vector of first derivatives of energy
+C            d2E, vector of second derivatives of energy
+C*****************************************************************************
+      implicit none
+#include "priunit.h" 
+      integer, intent(in) :: diff_order
+      real*8, intent(in) :: rho(2)
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      real*8 :: rho_c
+      
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      d2E(:) = 0.0d0
+      rho_c = rho(1)
+
+      if (rho_c .le. 1.d-10) then
+         ! Are we completely sure this check is valid
+         !  for derivatives? - E. R. K
+         return
+      end if
+
+      if (diff_order .eq. 0) then
+         call ESRC_VWN5(rho_c, E)
+
+      elseif (diff_order .eq. 1) then
+         call D1ESRC_VWN5(rho_c, E, d1E)
+
+      elseif (diff_order .eq. 2) then
+         call D2ESRC_VWN5(rho_c, E, d1E, d2E)
+
+      else 
+         call quit('Requested to high order derivative: ',diff_order) 
+      end if
+      end subroutine

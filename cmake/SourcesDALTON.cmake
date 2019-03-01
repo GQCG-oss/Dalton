@@ -868,7 +868,8 @@ if(ENABLE_SRDFT)
         DALTON/srdft/srfunctionals/TPSS_ERFGWS_correlation.F
         DALTON/srdft/srfunctionals/PBE_nomu_correlation.F
         DALTON/srdft/srfunctionals/wPBE_exchange.F
-        DALTON/srdft/srfunctionals/VWN5_ERF_correlation.F)
+        DALTON/srdft/srfunctionals/VWN5_ERF_correlation.F
+        DALTON/srdft/srfunctionals/VWN5_nomu_correlation.F)
     set(DALTON_srdft_FREE_SOURCES
         DALTON/sirius/sir_ensembledft.F90)
     set(DALTON_FIXED_FORTRAN_SOURCES
