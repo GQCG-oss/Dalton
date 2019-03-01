@@ -837,6 +837,16 @@ C  Correlation  ----------------------------------------------------------
          call PBEC_nomu(rho, grd2, norder, Ec, d1Ec, d2Ec)
       ENDIF
 
+!     VWN5 correlation spin-polarized functional
+      IF(DOC_VWN5_nomu_S) THEN
+         call SPIN_VWN5C_nomu(rho, norder, Ec, d1Ec, d2Ec)
+      ENDIF
+
+!     VWN5 correlation spin-unpolarized functional
+      IF(DOC_VWN5_nomu) THEN
+         call VWN5C_nomu(rho, norder, Ec, d1Ec, d2Ec)
+      ENDIF
+
 !     TPSS correlation spin-polarized functional
       IF(DOSRC_VWN5_S) THEN
          call SPIN_VWN5C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
@@ -844,7 +854,7 @@ C  Correlation  ----------------------------------------------------------
 
 !     TPSS correlation spin-unpolarized functional
       IF(DOSRC_VWN5) THEN
-         call VWN5C_ERF(rho, norder, chival,  Ec, d1Ec, d2Ec)
+         call VWN5C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
 
 C Kamal SHARKAS 20-05-11 beg
