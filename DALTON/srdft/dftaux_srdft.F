@@ -21,8 +21,8 @@
 !...      http://daltonprogram.org
 !
 !
-C
-C  /* Deck getrho */
+
+
 C*****************************************************************************
       SUBROUTINE GETRHO_OLD(DMAT,GSO,RHO,DMATGAO,DFTHRI,IPRINT)
 C*****************************************************************************
@@ -36,12 +36,12 @@ C    DMATGAO(i) = sum(j) dmat(i,j) * gso(j)
 C
 C*****************************************************************************
       implicit none
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "inforb.h"
       real*8, parameter :: D0 = 0.0d0
       real*8, parameter :: D1 = 1.0d0
       real*8, parameter :: D2 = 2.0d0
@@ -77,7 +77,6 @@ C
       END    
 
 
-C /* Deck dftksmggaspin */
 C*****************************************************************************
       SUBROUTINE DFTKSMGGASPIN(EXCMAT, GAO, GAO1, RHG, d1E, DFTHRL)
 C*****************************************************************************
@@ -154,7 +153,6 @@ C
       END
 
 
-C /* Deck dftksm_mgga */
 C*****************************************************************************
       SUBROUTINE DFTKSM_MGGA(EXCMAT, GAO, GAO1, GAO2, RHG, d1E,
      &                           DFTHRL, DO_SPIN)
@@ -301,7 +299,6 @@ C     &                                   + 2.0d0*GAO1(J,3)*GAO1(I,3)
       END
 
 
-C /* Deck dftksm */
 C*****************************************************************************
       SUBROUTINE DFTKSM(EXCMAT,GAO,GAO1,RHG,VXC,VXB,DOGGA,FROMVX,DFTHRL)
 C*****************************************************************************
@@ -371,7 +368,6 @@ C
       END
 
 
-C /* Deck dftfrc */
 C*****************************************************************************
       SUBROUTINE DFTFRC(DMAT,GAO,GAO1,GAO2,VXC,VXB,RHX,RHY,RHZ,DOGGA)
 C*****************************************************************************
@@ -381,11 +377,11 @@ C
 C     T. Helgaker sep 99/oct 00/feb 01
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
 C
@@ -393,10 +389,10 @@ C
       REAL*8  DMAT(NBAST,NBAST), 
      &        GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6)
 C
-#include <inforb.h>
-#include <energy.h>
-#include <symmet.h>
-#include <shells.h>
+#include "inforb.h"
+#include "energy.h"
+#include "symmet.h"
+#include "shells.h"
 C
       V2 = D2*VXC
       DO IX = 1, 3
@@ -459,7 +455,6 @@ C
       END
 
 
-C /* Deck dftltr */
 C*****************************************************************************
       SUBROUTINE DFTLTR(KSYMOP,DTRMAT,EXCMAT,GAO,GAO1,C0,C1,C2,HES,
      &                  RHO,RHO13,RHOGRD,RHG,WDRC,WVWN,WBCK,WLYP,DODRC,
@@ -469,15 +464,15 @@ C
 C     T. Helgaker sep 99/oct 00
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
 C
-#include <inforb.h>
-#include <nuclei.h>
-#include <dftcom.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dftcom.h"
 C
       INTEGER A, B
       LOGICAL DODRC, DOVWN, DOBCK, DOLYP, DOGGA, TRPLET, DOHES

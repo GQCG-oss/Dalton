@@ -463,7 +463,7 @@ C      Exchange and correlation energies and derivatives
        NORDER = 1  ! first-order derivatives
 C
        CALL SRDFTEXCJT(RHO,GRD2,tau,laplace,CHIVAL,NORDER,ERFEXP,
-     >                 .false.,Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
+     &                 .false.,Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
 C      Summation with quadrature weights
        ExInt     = ExInt + WGHTX*Ex
        EcInt     = EcInt + WGHTC*Ec
@@ -626,9 +626,9 @@ C Termination --------------------------------------------------------------
       END
 
 
-C****************************************************************************
+C*****************************************************************************
       SUBROUTINE SRDFTEXCJT(RHO,GRD2,tau,laplace,CHIVAL,NORDER,ERFEXP,
-     >           triplet,Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
+     &           triplet,Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
 c*****************************************************************************
 C    Driver for short-range DFT exchange and correlation
 C    energies and derivatives
@@ -710,31 +710,31 @@ c  Exchange  ------------------------------------------------------------
 !     short-range exchange PBE of HSE
       IF(DOSRX_PBEHSE) THEN
         call DESRX_SPINGGA(ESRX_PBEHSEERF,rho,grd2,CHIVAL,
-     >                     norder,Ex,d1Ex,d2Ex)
+     &                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange PBE of TCS
       IF(DOSRX_PBETCS) THEN
         call DESRX_SPINGGA(ESRX_PBETCSERF,rho,grd2,CHIVAL,
-     >                     norder,Ex,d1Ex,d2Ex)
+     &                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange PBE of GWS ! JT 11-08-09
       IF(DOSRX_PBEGWS .OR. DOSRX_PBEGWS_S) THEN
          call BOTH_PBEX_ERF(rho, grd2, norder, chival,
-     >                      Ex, d1Ex, d2Ex)
+     &                      Ex, d1Ex, d2Ex)
       ENDIF
 
 !     short-range exchange RI
       IF(DOSRX_PBERI) THEN ! added Manu 01-02-2006
         call DESRX_SPINGGA(ESRX_PBERIERF,rho,grd2,CHIVAL,
-     >                     norder,Ex,d1Ex,d2Ex)
+     &                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     TPSS exchange functional
       IF(DOSRX_TPSS_S .OR. DOSRX_TPSS) THEN
          call BOTH_TPSSX_ERF(rho, grd2, tau, norder, chival,
-     >                       Ex, d1Ex, d2Ex)
+     &                       Ex, d1Ex, d2Ex)
       ENDIF
 
 !     wPBE exchange functional
@@ -746,7 +746,7 @@ C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-
       IF(DOLAX_LDAS)  THEN
         call ELX_LDALAMSPIN (rho(1),rho(2),VLAMBDA,Ex)
         call DELSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),VLAMBDA,DFT_SPINDNS,
-     >               NORDER,d1Ex,d2Ex)
+     &               NORDER,d1Ex,d2Ex)
       ENDIF
 
 C linear complement exchange PBE functional, Kamal SHARKAS 19-05-11
@@ -813,19 +813,19 @@ C  Correlation  ----------------------------------------------------------
 
       IF(DOSRC_PBEGWS_S) THEN
         call SPIN_PBEC_GWS_ERF(rho, grd2, norder, chival,
-     >                         Ec, d1Ec, d2Ec)
+     &                         Ec, d1Ec, d2Ec)
       ENDIF
 
 !     TPSS correlation spin-polarized functional
       IF(DOSRC_TPSS_S) THEN
          call SPIN_TPSSC_GWS_ERF(rho, grd2, tau, norder, chival,
-     >                           Ec, d1Ec, d2Ec)
+     &                           Ec, d1Ec, d2Ec)
       ENDIF
 
 !     TPSS correlation spin-unpolarized functional
       IF(DOSRC_TPSS) THEN
          call TPSSC_GWS_ERF(rho, grd2, tau, norder, chival,
-     >                      Ec, d1Ec, d2Ec)
+     &                      Ec, d1Ec, d2Ec)
       ENDIF
 
 !     PBE correlation spin-polarized functional
@@ -863,7 +863,7 @@ C linear Complement spin-dependent (NON-Scaled) correlation LDA functional
        IF(DOLANSC_LDAS) THEN
         call ELC_LDALAMSPIN (rho(1),rho(2),VLAMBDA,DFT_SPINDNS,Ec)
         call DELSPINnSC(ESRC_LDAERFSPIN,rho(1),rho(2),VLAMBDA,
-     >                DFT_SPINDNS,NORDER,d1Ec,d2Ec)
+     &                DFT_SPINDNS,NORDER,d1Ec,d2Ec)
        ENDIF
 
 C Complement (NON-Scaled) correlation PBE functional
@@ -884,7 +884,7 @@ C Kamal SHARKAS 20-05-11 end
       IF(DOSRC_MD_LDA) THEN
 !CASS        Write(LUPRI,*)'La nouvelle fonctionnelle'
         call DESRSPIN(ESRC_MD_LDAERF,rho(1),rho(2),
-     >             CHIVAL,DFT_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
+     &             CHIVAL,DFT_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 !CASS      Write(LUPRI,*)'EC=',Ec
 
@@ -901,7 +901,7 @@ C      mu_new = max(mu,CHIVAL)
 !      print *,'xfac,SRCMULOFAC,mu_new ==>', xfac, SRCMULOFAC,mu_new
         call ESRC_MULOC_GGA(rho,grd2,CHIVAL,Ec)
         call DESR(ESRC_MULOC_GGA,rho,grd2,CHIVAL,NORDER,
-     >             Ec, d1Ec, d2Ec)
+     &             Ec, d1Ec, d2Ec)
       ENDIF
 
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11
@@ -918,12 +918,12 @@ C      mu_new = max(mu,CHIVAL)
       END ! subroutine SRDFTEXCJT
 
 
-C**************************************************************************
+C*****************************************************************************
       SUBROUTINE SRDFTLTRJT(KSYMOP,DTXMAT,DSXMAT,EXCMAT,
      &                      WGHTX,WGHTC,GAO,GAO1,CHIVAL,VLAMBDA,
      &                      ERFEXP,RHO,RHG,GRD2,tau,laplace,DGAO,
      &                      DOGGA,do_metagga,TRIPLET,IPRINT_X)
-C**************************************************************************
+C*****************************************************************************
 C     Generate the 1-index transformed DFT Hessian
 C     needed in second-order optimization for short-range DFT hybrids.
 C
@@ -933,7 +933,7 @@ C     Created : 15-02-05, J. Toulouse
 C     Modified: 17-08-09, J. Toulouse,  add spin density
 C     Modified: 16-02-16, E. Hedegaard, add spin gradient
 C     Modified: April-18, H. J. Aa. Jensen, new simpler structure for ESRX_ *and ESRC_*
-C***************************************************************************
+C*****************************************************************************
          implicit none
 #include "priunit.h"
 #include "mxcent.h"
@@ -1081,7 +1081,7 @@ C Exchange and correlation derivatives ------------------------------------
 
       NORDER = 2  ! zero-order, first-order and second-order derivatives
       CALL SRDFTEXCJT(RHO,GRD2,tau,laplace,CHIVAL,NORDER,ERFEXP,triplet,
-     >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
+     &                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
       Exc         = WGHTX*  Ex       + WGHTC*  Ec
       d1Exc(1:9)  = WGHTX*d1Ex(1:9)  + WGHTC*d1Ec(1:9)
       d2Exc(1:45) = WGHTX*d2Ex(1:45) + WGHTC*d2Ec(1:45)

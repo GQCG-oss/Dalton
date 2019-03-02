@@ -1789,7 +1789,7 @@ C*****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       SUBROUTINE DESR(ESR,rhoc,grdcc,mu,norder,E,d1E,d2E)
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives 
@@ -1929,9 +1929,9 @@ C     derivative wrt rhoc and grdcc -----------------------
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       SUBROUTINE DELA(ESR,rhoc,grdcc,VLAMBDA,norder,d1E,d2E)
-C****************************************************************************
+C*****************************************************************************
 C Linear complement exchange PBE functional, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
       implicit none
@@ -1956,9 +1956,9 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       SUBROUTINE DELANSC(ESR,rhoc,grdcc,VLAMBDA,norder,d1E,d2E)
-C****************************************************************************
+C*****************************************************************************
 C Linear complement (NON-Scaled) correlation PBE GWS functional, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
       implicit none
@@ -1982,9 +1982,9 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       SUBROUTINE DELASC(ESR,rhoc,grdcc,VLAMBDA,norder,d1E,d2E)
-C****************************************************************************
+C*****************************************************************************
 C Linear complement Scaled correlation PBE functional, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
       implicit none
@@ -2035,7 +2035,7 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       SUBROUTINE DESRSPIN(ESRSPIN,rhoc,rhos,mu,dospin,norder,E,d1E,d2E)
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives 
@@ -2500,7 +2500,7 @@ C        derivative wrt grdss and grdss -----------------------
       end ! SUBROUTINE DESRC_SPINGGA
 
 
-C****************************************************************************
+C*****************************************************************************
       SUBROUTINE DESRX_SPINGGA(ESRX_GGA,rho,grd2,mu,norder,E,d1E,d2E)
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives
@@ -2731,10 +2731,10 @@ C      cross-derivative wrt rhob and grdbb -----------------------
       end ! SUBROUTINE DESRX_SPINGGA
 
 
-C****************************************************************************
+C*****************************************************************************
       SUBROUTINE DELSPIN(ESRSPIN,rhoc,rhos,VLAMBDA,dospin,
      &                   norder,d1E,d2E)
-C****************************************************************************
+C*****************************************************************************
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
       implicit none
@@ -2761,10 +2761,10 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       SUBROUTINE DELSPINnSC(ESRSPIN,rhoc,rhos,VLAMBDA,dospin,
      &                      norder,d1E,d2E)
-C****************************************************************************
+C*****************************************************************************
 C linear complement non-scaled spin-dependent correlation LDA functional, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
       implicit none
@@ -2789,7 +2789,7 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRX_PBETCSERF(rhoa,grdaa,mu,e)
 C*****************************************************************************
 C     Short-range PBE exchange functional from 
@@ -2843,7 +2843,7 @@ C     LDA energy
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRX_PBEHSEERF(rhoa,grdaa,mu,e)
 C*****************************************************************************
 C     Short-range PBE exchange functional from 
@@ -2888,9 +2888,9 @@ C     Energy
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       Subroutine HSEFx(Rho,s,Omega,FxHSE)
-C****************************************************************************
+C*****************************************************************************
 C    Short-range exchange PBE enhancement factor
 C    from Heyd and Scuseria, JCP 120, 7274 (2004)
 C
@@ -2905,7 +2905,7 @@ C    gerfc -> erfc
 C    gei(x)-> ei
 C
 C    Should be the same as wpbe_analytical_erfc_approx
-C****************************************************************************
+C*****************************************************************************
       Implicit Real*8(A-H,O-Z)
       Real*8 rho,s,omega,Fxhse
 C
@@ -2943,13 +2943,13 @@ C
 C         Constants for PBE hole
 C
       Data A,B,C,D,E
-     $     / 1.0161144D0,-3.7170836D-1,-7.7215461D-2,
-     $        5.7786348D-1,-5.1955731D-2 /
+     &     / 1.0161144D0,-3.7170836D-1,-7.7215461D-2,
+     &        5.7786348D-1,-5.1955731D-2 /
 C
 C         Constants for fit of H(s) (PBE hole)
 C
       Data Ha1,Ha2,Ha3,Ha4,Ha5
-     $     / 9.79681d-3,4.10834d-2,1.87440d-1,1.20824d-3,3.47188d-2 /
+     &     / 9.79681d-3,4.10834d-2,1.87440d-1,1.20824d-3,3.47188d-2 /
 C
 C         Constants for F(H) (PBE hole)
 C
@@ -2959,45 +2959,45 @@ C         Constants for expansion of erfc(x) (eb1 set later
 C         depending on wcut)
 C
       Data ea1,ea2,ea3,ea4,ea5,ea6,ea7,ea8,wcut
-     $     / -1.128223946706117d0,1.452736265762971d0,
-     $        -1.243162299390327d0,0.971824836115601d0,
-     $        -0.568861079687373d0,0.246880514820192d0,
-     $        -0.065032363850763d0,0.008401793031216d0,1.4D1 /
+     &     / -1.128223946706117d0,1.452736265762971d0,
+     &        -1.243162299390327d0,0.971824836115601d0,
+     &        -0.568861079687373d0,0.246880514820192d0,
+     &        -0.065032363850763d0,0.008401793031216d0,1.4D1 /
 C
 C         Constants for polynomial expansion of EG for small s
 C
       Data EGscut,EGa1,EGa2,EGa3
-     $     / 8.0d-2,-2.628417880d-2,-7.117647788d-2,8.534541323d-2 /
+     &     / 8.0d-2,-2.628417880d-2,-7.117647788d-2,8.534541323d-2 /
 C
 C         Constants for large x expansion of exp(x)*ei(-x)
 C
       Data expcut,exei1,exei2,exei3,exei4
-     $     / 7.0D2,4.03640D0,1.15198D0,5.03627D0,4.19160D0 /
+     &     / 7.0D2,4.03640D0,1.15198D0,5.03627D0,4.19160D0 /
 C
 C         Constants for enforcement of local Lieb-Oxford bound
 C
       Data smax,strans,sconst
-     $     / 8.572844D0,8.3D0,1.879622316D1 /
+     &     / 8.572844D0,8.3D0,1.879622316D1 /
 C
 C         Whole numbers used during evaluation
 C
       Data Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine,Ten
-     $     / 0D0,1D0,2D0,3D0,4D0,5D0,6D0,7D0,8D0,9D0,10D0 /
+     &     / 0D0,1D0,2D0,3D0,4D0,5D0,6D0,7D0,8D0,9D0,10D0 /
       Data FIfteen,Sixteen / 1.5D1, 1.6D1 /
       Data r36,r64,r81,r256,r384
-     $     / 3.6D1,6.4D1,8.1D1,2.56D2,3.84D2 /
+     &     / 3.6D1,6.4D1,8.1D1,2.56D2,3.84D2 /
       Data r27,r128,r144,r288,r324,r729
-     $         / 2.7D1,1.28D2,1.44D2,2.88D2,3.24D2,7.29D2 /
+     &         / 2.7D1,1.28D2,1.44D2,2.88D2,3.24D2,7.29D2 /
       Data r18,r20,r32,r243,r2187,r6561,r40
-     $         / 1.8d1,2.0d1,3.2D1,2.43D2,2.187D3,6.561D3,4.0d1 /
+     &         / 1.8d1,2.0d1,3.2D1,2.43D2,2.187D3,6.561D3,4.0d1 /
       Data r12,r25,r30,r54,r75,r105,r135,r1215,r15309
-     $         / 1.2D1,2.5d1,3.0d1,5.4D1,7.5d1,1.05D2,1.35D2,1.215D3,
-     $            1.5309D4 /
+     &         / 1.2D1,2.5d1,3.0d1,5.4D1,7.5d1,1.05D2,1.35D2,1.215D3,
+     &            1.5309D4 /
 C
 C         Fractions used during evaluation
 C
       Data f12,f14,f32,f34,f94,f98,f1516
-     $         / 0.5D0,0.25D0,1.5D0,0.75D0,2.25D0,1.125D0,0.9375D0 /
+     &         / 0.5D0,0.25D0,1.5D0,0.75D0,2.25D0,1.125D0,0.9375D0 /
 C
 C         General constants
 C
@@ -3101,10 +3101,10 @@ C         Calculate EG(s), using expansion for small s If necessary
 C
           If(s .gt. EGscut) then
            G_a     = sqrtpi * (FIfteen*E + Six*C*(One+F*s2)*DHs +
-     $                           Four*B*(DHs2) + Eight*A*(DHs3))
-     $                    * (One / (Sixteen * DHs72))
-     $                    - f34*pi*sqrt(A) * exp(f94*H*s2/A) *
-     $                          (One - erf(f32*s*sqrt(H/A)))
+     &                           Four*B*(DHs2) + Eight*A*(DHs3))
+     &                    * (One / (Sixteen * DHs72))
+     &                    - f34*pi*sqrt(A) * exp(f94*H*s2/A) *
+     &                          (One - erf(f32*s*sqrt(H/A)))
            G_b     = (f1516 * sqrtpi * s2) / DHs72
            EG      = - (f34*pi + G_a) / G_b
           else
@@ -3114,12 +3114,12 @@ C
 C    Calculate the terms needed in any case
 C
       tm2      = (DHs2*B + DHs*C + Two*E + DHs*s2*C*F + Two*s2*EG) /
-     $               (Two*DHs3)
+     &               (Two*DHs3)
       tm3      = - w    * (Four*DHsw2*B + Six*DHsw*C + FIfteen*E
-     $                         + Six*DHsw*s2*C*F + FIfteen*s2*EG) /
-     $                         (Eight*DHs*DHsw52)
+     &                         + Six*DHsw*s2*C*F + FIfteen*s2*EG) /
+     &                         (Eight*DHs*DHsw52)
       tm4      = - w3 * (DHsw*C + Five*E + DHsw*s2*C*F + Five*s2*EG) /
-     $                         (Two*DHs2*DHsw52)
+     &                         (Two*DHs2*DHsw52)
       tm5      = - w5 * (E + s2*EG) / (DHs3*DHsw52)
 C
 C         Calculate t10 unless that would generate a div. by zero
@@ -3137,11 +3137,11 @@ C
            exei      = exHA94*eiHA94
           else
            exer      = pi*(One/(sqrtpi*HA9412)
-     $                      - One/(Two*Sqrt(pi*HA943))
-     $                      + Three/(Four*Sqrt(pi*HA945)))
+     &                      - One/(Two*Sqrt(pi*HA943))
+     &                      + Three/(Four*Sqrt(pi*HA945)))
            exei      = - (One/HA94) *
-     $                      (HA942 + exei1*HA94 + exei2) /
-     $                         (HA942 + exei3*HA94 + exei4)
+     &                      (HA942 + exei1*HA94 + exei2) /
+     &                         (HA942 + exei3*HA94 + exei4)
           endIf
 C
           If (w .eq. Zero) then
@@ -3170,9 +3170,9 @@ C
 C          First, we calculate the polynomials for the first term
 C
            pn1             = -f32*ea1*A12*w + r27*ea3*w3/(Eight*A12)
-     $                 - r243*ea5*w5/(r32*A32) + r2187*ea7*w7/(r128*A52)
+     &                 - r243*ea5*w5/(r32*A32) + r2187*ea7*w7/(r128*A52)
           pn2     = -A + f94*ea2*w2 - r81*ea4*w4/(Sixteen*A)
-     $                 + r729*ea6*w6/(r64*A2) - r6561*ea8*w8/(r256*A3)
+     &                 + r729*ea6*w6/(r64*A2) - r6561*ea8*w8/(r256*A3)
 C
 C         The first term is
 C
@@ -3183,23 +3183,23 @@ C
           f2      = (f12)*ea1*sqrtpi*A / DHsb12
           f3      = (f12)*ea2*A / DHsb
           f4      =    ea3*sqrtpi*(-f98 / Hsbw12
-     $                  + f14*A / DHsb32)
+     &                  + f14*A / DHsb32)
           f5      = ea4*(One/r128) * (-r144*(One/Hsbw)
-     $                  + r64*(One/DHsb2)*A)
+     &                  + r64*(One/DHsb2)*A)
           f6      = ea5*(Three*sqrtpi*(Three*DHsb52*(Nine*Hsbw-Two*A)
-     $                 + Four*Hsbw32*A2))
-     $                 / (r32*DHsb52*Hsbw32*A)
+     &                 + Four*Hsbw32*A2))
+     &                 / (r32*DHsb52*Hsbw32*A)
           f7      = ea6*(((r32*A)/DHsb3
-     $                  + (-r36 + (r81*s2*H)/A)/Hsbw2)) / r32
+     &                  + (-r36 + (r81*s2*H)/A)/Hsbw2)) / r32
           f8      = ea7*(-Three*sqrtpi*(-r40*Hsbw52*A3
-     $                  +Nine*DHsb72*(r27*Hsbw2-Six*Hsbw*A+Four*A2)))
-     $                  / (r128 * DHsb72*Hsbw52*A2)
+     &                  +Nine*DHsb72*(r27*Hsbw2-Six*Hsbw*A+Four*A2)))
+     &                  / (r128 * DHsb72*Hsbw52*A2)
        f9      = (r324*ea6*eb1*DHsb4*Hsbw*A
-     $             + ea8*(r384*Hsbw3*A3 + DHsb4*(-r729*Hsbw2
-     $             + r324*Hsbw*A - r288*A2))) / (r128*DHsb4*Hsbw3*A2)
+     &             + ea8*(r384*Hsbw3*A3 + DHsb4*(-r729*Hsbw2
+     &             + r324*Hsbw*A - r288*A2))) / (r128*DHsb4*Hsbw3*A2)
 C
           t2t9    = f2*w     + f3*w2 + f4*w3 + f5*w4 + f6*w5
-     $                 + f7*w6 + f8*w7 + f9*w8
+     &                 + f7*w6 + f8*w7 + f9*w8
 C
 C     The final value of term1 for 0 < omega < wcut is:
 C
@@ -3213,9 +3213,9 @@ C
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine wpbe_analytical(rho,s,omega,Fx_wpbe)
-C****************************************************************************
+C*****************************************************************************
 C    Short-range exchange PBE enhancement factor
 C    from Heyd, Scuseria, Ernzerhof, JCP 118, 8207 (2003)
 C
@@ -3226,7 +3226,7 @@ c    'wPBE Enhancement Factor (analytical, no gradients)'
 C    routine from J. Heyd
 C
 C    Gives sligthly different results compared to wpbe_analytical_erfc_approx
-C****************************************************************************
+C*****************************************************************************
       Implicit None
 #include "pi.h"
       Real*8 rho,s,omega,Fx_wpbe
@@ -3267,7 +3267,7 @@ C****************************************************************************
 
       Save One,Two,Three,Four,Six,Eight,Nine,Ten
       Data One,Two,Three,Four,Six,Eight,Nine,Ten
-     $  / 1D0,2D0,3D0,4D0,6D0,8D0,9D0,10D0 /
+     &  / 1D0,2D0,3D0,4D0,6D0,8D0,9D0,10D0 /
       Save Fifteen,Sixteen
       Data Fifteen,Sixteen / 1.5D1, 1.6D1 /
 
@@ -3367,7 +3367,7 @@ c     Calculate the wPBE enhancement factor
 c     Calculate wPBE enhancement factor
 
       H      = (Ha1*s2 + Ha2*s4) /
-     1         (One + Ha3*s4 + Ha4*s4*s + Ha5*s4*s2)
+     &         (One + Ha3*s4 + Ha4*s4*s + Ha5*s4*s2)
 
       xF     = Fc1*H + Fc2
 
@@ -3387,10 +3387,10 @@ c     Calculate wPBE enhancement factor
       if(s .gt. EGscut) then
 
         G_a    = sqrtpi * (Fifteen*E + Six*C_0*DH_0 +
-     1                   Four*B*(DH_0**2) + Eight*A*(DH_0**3))
-     2                * (One / (Sixteen * DH_072))
-     3                 - f34*pi*sqrt(A) * exp(f94*H_0/A) *
-     4                   (One - erf(f32*s*sqrt(H/A)))
+     &                   Four*B*(DH_0**2) + Eight*A*(DH_0**3))
+     &                * (One / (Sixteen * DH_072))
+     &                 - f34*pi*sqrt(A) * exp(f94*H_0/A) *
+     &                   (One - erf(f32*s*sqrt(H/A)))
 
         G_b    = (f1516 * sqrtpi * s2) / DH_072
 
@@ -3419,43 +3419,43 @@ c     Calculate wPBE enhancement factor
       srb5H3 = srab5H*srab5H*srab5H
 
       term1  = f12 * (fa1 * (wk - srab1H)) /
-     1               (srab1H * (wk2 - ab1H))
+     &               (srab1H * (wk2 - ab1H))
 
       term2  = f12 * (fa2 * (wk - srab2H)) /
-     1               (srab2H * (ab2H - wk2))
+     &               (srab2H * (ab2H - wk2))
 
       atb3H  = atan(srb3H / wk)
 
       term3  = f12 * (fa3 * (atb3H*wk2 + atb3H*b3H - wk*srb3H)) /
-     1               (sqrtpi*srb3H3*(wk2 + b3H))
+     &               (sqrtpi*srb3H3*(wk2 + b3H))
 
       atb4H  = atan(srb4H / wk)
 
       term4  = f12 * (fa4 * (atb4H*wk2 + atb4H*b4H - wk*srb4H)) /
-     1               (sqrtpi*srb4H3*(wk2 + b4H))
+     &               (sqrtpi*srb4H3*(wk2 + b4H))
 
       term5  = f14 * (fa5 * (wk3 - Three*ab5H*wk + Two*srb5H3)) / 
-     1               (srb5H3 * (wk2 - ab5H)**2)
+     &               (srb5H3 * (wk2 - ab5H)**2)
 
       term6  = f12 * (B * (wk - sraDH)) / 
-     1               (sraDH * aDHwk2)
+     &               (sraDH * aDHwk2)
 
       term7  = f14 * (C_0 * (Three*aDH*wk - wk3 - Two*sraDH3)) /
-     1               (sraDH3 * aDHwk2**2)
+     &               (sraDH3 * aDHwk2**2)
 
       term8  = f18 * (E_0 * (Ten*aDH*wk3 - Three*wk5 -
-     1               Fifteen*aDH2*wk + Eight*sraDH5)) /
-     1               (sraDH5 * aDHwk2**3) 
+     &               Fifteen*aDH2*wk + Eight*sraDH5)) /
+     &               (sraDH5 * aDHwk2**3) 
 
       Fx_wpbe = X * (-term1 + term2 - term3 - term4 - term5 -
-     1                term6 - term7 + term8)
+     &                term6 - term7 + term8)
 
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine wpbe_analytical_erfc_approx(rho,s,omega,Fx_wpbe)
-C****************************************************************************
+C*****************************************************************************
 C    Short-range exchange PBE enhancement factor
 C    from Heyd and Scuseria, JCP 120, 7274 (2004)
 C
@@ -3466,7 +3466,7 @@ C    'wPBE Enhancement Factor (erfc approx.,analytical, no gradients)'
 C    routine from J. Heyd
 C
 C    It is the preferred routine. Should be the same as HSEFx
-C****************************************************************************
+C*****************************************************************************
       Implicit None
 #include "pi.h"
       Real*8 rho,s,omega,Fx_wpbe
@@ -3523,18 +3523,18 @@ c     Real*8 term1p,p0,p1,p2,p3,p4,p5,p6,p7,p8
 
       Save Zero,One,Two,Three,Four,Six,Eight,Nine,Ten
       Data Zero,One,Two,Three,Four,Six,Eight,Nine,Ten
-     $  / 0D0,1D0,2D0,3D0,4D0,6D0,8D0,9D0,10D0 /
+     &  / 0D0,1D0,2D0,3D0,4D0,6D0,8D0,9D0,10D0 /
       Save Fifteen,Sixteen
       Data Fifteen,Sixteen / 1.5D1, 1.6D1 /
       Save r36,r64,r81,r256,r384,r864,r1944,r4374
       Data r36,r64,r81,r256,r384,r864,r1944,r4374
-     $  / 3.6D1,6.4D1,8.1D1,2.56D2,3.84D2,8.64D2,1.944D3,4.374D3 /
+     &  / 3.6D1,6.4D1,8.1D1,2.56D2,3.84D2,8.64D2,1.944D3,4.374D3 /
       Save r27,r48,r120,r128,r144,r288,r324,r512,r729
       Data r27,r48,r120,r128,r144,r288,r324,r512,r729
-     $  / 2.7D1,4.8D1,1.2D2,1.28D2,1.44D2,2.88D2,3.24D2,5.12D2,7.29D2 /
+     &  / 2.7D1,4.8D1,1.2D2,1.28D2,1.44D2,2.88D2,3.24D2,5.12D2,7.29D2 /
       Save r32,r243,r2187,r6561,r40
       Data r32,r243,r2187,r6561,r40
-     $  / 3.2D1,2.43D2,2.187D3,6.561D3,4.0d1 /
+     &  / 3.2D1,2.43D2,2.187D3,6.561D3,4.0d1 /
 
 c     General constants
 
@@ -3644,7 +3644,7 @@ c     Calculate prelim variables
 c     Calculate wPBE enhancement factor
 
       H      = (Ha1*s2 + Ha2*s4) /
-     1         (One + Ha3*s4 + Ha4*s4*s + Ha5*s4*s2)
+     &         (One + Ha3*s4 + Ha4*s4*s + Ha5*s4*s2)
 
       xF     = Fc1*H + Fc2
 
@@ -3664,10 +3664,10 @@ c     Calculate wPBE enhancement factor
       if(s .gt. EGscut) then
 
         G_a    = sqrtpi * (Fifteen*E + Six*C_0*DH_0 +
-     1                   Four*B*(DH_0**2) + Eight*A*(DH_0**3))
-     2                * (One / (Sixteen * DH_072))
-     3                 - f34*pi*sqrt(A) * exp(f94*H_0/A) *
-     4                   (One - erf(f32*s*sqrt(H/A)))
+     &                   Four*B*(DH_0**2) + Eight*A*(DH_0**3))
+     &                * (One / (Sixteen * DH_072))
+     &                 - f34*pi*sqrt(A) * exp(f94*H_0/A) *
+     &                   (One - erf(f32*s*sqrt(H/A)))
 
         G_b    = (f1516 * sqrtpi * s2) / DH_072
 
@@ -3716,14 +3716,14 @@ c     Calculate helper variables (should be moved later on...)
 c    Calculate the terms needed in any case
 
       term2  = f12 * (B * (w - sraDH)) / 
-     1               (sraDH * aDHw2)
+     &               (sraDH * aDHw2)
 
       term3  = f14 * (C_0 * (Three*aDH*w - w3 - Two*sraDH3)) /
-     1               (sraDH3 * aDHw2**2)
+     &               (sraDH3 * aDHw2**2)
 
       term4  = f18 * (E_0 * (Ten*aDH*w3 - Three*w5 -
-     1               Fifteen*aDH2*w + Eight*sraDH5)) /
-     2               (sraDH5 * aDHw2**3) 
+     &               Fifteen*aDH2*w + Eight*sraDH5)) /
+     &               (sraDH5 * aDHw2**3) 
 
 
       t10f1 = (f12)*A*Log(Hsbw / DHsbw)
@@ -3740,12 +3740,12 @@ c     Calculate exp(x)*f(x) depending on size of x
 c       print *,rho,s," LARGE HsbwA94"
 
         experf = One/(sqrtpi*HsbwA9412) 
-     1           - One/(Two*Sqrt(pi*HsbwA943))
-     2           + Three/(Four*Sqrt(pi*HsbwA945))
+     &           - One/(Two*Sqrt(pi*HsbwA943))
+     &           + Three/(Four*Sqrt(pi*HsbwA945))
 
         expei  = - (One/HsbwA94) *
-     1             (HsbwA942 + expei1*HsbwA94 + expei2) /
-     2             (HsbwA942 + expei3*HsbwA94 + expei4)
+     &             (HsbwA942 + expei1*HsbwA94 + expei2) /
+     &             (HsbwA942 + expei3*HsbwA94 + expei4)
 
       endif
 
@@ -3788,10 +3788,10 @@ c       Fx_wpbe = X * (term1 - term2 - term3 + term4)
 c       For everything else, use the full blown expression
 
         np1 = -f32*ea1*A12*w + r27*ea3*w3/(Eight*A12)
-     $        - r243*ea5*w5/(r32*A32) + r2187*ea7*w7/(r128*A52)
+     &        - r243*ea5*w5/(r32*A32) + r2187*ea7*w7/(r128*A52)
 
         np2 = -A + f94*ea2*w2 - r81*ea4*w4/(Sixteen*A)
-     $        + r729*ea6*w6/(r64*A2) - r6561*ea8*w8/(r256*A3)
+     &        + r729*ea6*w6/(r64*A2) - r6561*ea8*w8/(r256*A3)
 
 
         t1 = f12*(np1*pi*experf + np2*expei)
@@ -3803,30 +3803,30 @@ c       For everything else, use the full blown expression
         t3f1 = (f12)*ea2*A*w2 / DHsbw
         
         t4f1 = sqrtpi*(-f98*ea3 / Hsbw12 
-     $           + f14*ea3*A / DHsbw32)*w3
+     &           + f14*ea3*A / DHsbw32)*w3
         
         t5f1 = (One/r128) * (-r144*(One/Hsbw) 
-     $        + r64*(One/DHsbw2)*A)*ea4*w4
+     &        + r64*(One/DHsbw2)*A)*ea4*w4
         
         t6f1 = (Three*ea5*sqrtpi*(Three*DHsbw52*(Nine*Hsbw-Two*A)
-     $           + Four*Hsbw32*A2) * w5)
-     $           / (r32*DHsbw52*Hsbw32*A)
+     &           + Four*Hsbw32*A2) * w5)
+     &           / (r32*DHsbw52*Hsbw32*A)
         
         t7f1 = (ea6*((r32*A)/DHsbw3
-     $         + (-r36 + (r81*s2*H)/A)/Hsbw2) * w6) / r32
+     &         + (-r36 + (r81*s2*H)/A)/Hsbw2) * w6) / r32
         
         t8f1 = (-Three*ea7*sqrtpi*(-r40*Hsbw52*A3
-     $          +Nine*DHsbw72*(r27*Hsbw2-Six*Hsbw*A+Four*A2)) * w7)
-     $         / (r128 * DHsbw72*Hsbw52*A2)
+     &          +Nine*DHsbw72*(r27*Hsbw2-Six*Hsbw*A+Four*A2)) * w7)
+     &         / (r128 * DHsbw72*Hsbw52*A2)
         
         t9 = (r324*ea6*eb1*DHsbw4*Hsbw*A 
-     $        + ea8*(r384*Hsbw3*A3 + DHsbw4*(-r729*Hsbw2
-     $        + r324*Hsbw*A - r288*A2)))*w8
+     &        + ea8*(r384*Hsbw3*A3 + DHsbw4*(-r729*Hsbw2
+     &        + r324*Hsbw*A - r288*A2)))*w8
       
 c       The final value of term1 for 0 < omega < wcutoff is:
 
         term1 = t1 + t2f1 + t3f1 + t4f1 + t5f1 + t6f1 + t7f1 + t8f1
-     $             + factor1*t9 + t10f1
+     &             + factor1*t9 + t10f1
 
         Fx_wpbe = X * (term1 - term2 - term3 + term4)
 c       Fx_wpbe = term1
@@ -3836,7 +3836,7 @@ c       Fx_wpbe = term1
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ECPBE(rho,grdcc,e)
 C*****************************************************************************
 C     PBE correlation functional
@@ -3891,7 +3891,7 @@ C     LDA energy
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRC_PBERIERF(rho,grdcc,mu,e)
 C*****************************************************************************
 C     rational interpolation for short-range erf correlation functional
@@ -3929,8 +3929,7 @@ C     Constants for g0
       
 !      print *,'ESRC_PBERIERF: mu=',mu
 !      print *,'ESRC_PBERIERF: rho=',rho,' grdcc=',grdcc
-     
-
+     &
 !     Variables
       rs = (3.d0/(4.d0*pi*rho))**(1.d0/3.d0)
       mu2 =mu*mu
@@ -3979,7 +3978,7 @@ C        eps_LDA_asymptot3 = 1/d2 *  mu^(-2) - d1/(d2^2) * mu^(-3)
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRC_LYPRIERF(rho,grdcc,mu,e)
 C*****************************************************************************
 C     rational interpolation for short-range erf correlation functional
@@ -4105,7 +4104,7 @@ c           e_lyp * (1 + p6 * mu_ref**6) =  eps_LDA(mu_ref)
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRX_PBERIERF(rhoa,grdaa,mu,e)
 C*****************************************************************************
 C     rational interpolation for short-range erf exchange functional
@@ -4132,7 +4131,6 @@ C*****************************************************************************
       
 !      print *,'ESRX_PBERIERF: mu=',mu
 !      print *,'ESRX_PBERIERF: rho=',rho,' grd=',grd
-     
 C     General constants
       real*8, parameter :: three53 = 3.d0**(5.d0/3.d0) 
       real*8, parameter :: pi13 = pi**(1.d0/3.d0)
@@ -4163,7 +4161,7 @@ C      eps_pbe = epbe/rho
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRC_PBELOERF(rho,grdcc,mu,e)
 C*****************************************************************************
 C     Our new local energy formula for sr correlation functional.
@@ -4216,7 +4214,7 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRC_PBEWIERF(rho,grdcc,mu,e)
 C*****************************************************************************
 C     weighted interpolation for for short-range erf correlation functional
@@ -4270,7 +4268,7 @@ C
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRC_PBETCSERF(rho,grdcc,mu,e)
 C*****************************************************************************
 C     Short-range PBE correlation functional
@@ -4336,7 +4334,7 @@ C     Energy
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRC_PBETCSJERF(rho,grdcc,mu,e)
 C*****************************************************************************
 C     Short-range PBE correlation functional
@@ -4426,7 +4424,7 @@ C*****************************************************************************
       if(a .lt. 0.02d0) then
 !      expansion for small mu to avoid numerical problems
        berft = 7.d0/81.d0 + 56.d0*sqrt(pi)*a/243.d0 
-     >        + (-128.d0/81.d0 + 448.d0*pi/729.d0)*a*a
+     &        + (-128.d0/81.d0 + 448.d0*pi/729.d0)*a*a
 
       else
 
@@ -4463,7 +4461,7 @@ C*****************************************************************************
       if(a .lt. 0.02d0) then
 !      expansion for small mu to avoid numerical problems
        dberftda = 56.d0*sqrt(pi)/243.d0
-     >        + 2.d0*(-128.d0/81.d0 + 448.d0*pi/729.d0)*a
+     &        + 2.d0*(-128.d0/81.d0 + 448.d0*pi/729.d0)*a
 
       else
 
@@ -4499,7 +4497,7 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
 C      subroutine ESRX_PBEGWSERF(rhoa,grdaa,mu,e)
       subroutine ESRX_PBEGWSERF(rhoa,grdaa,taua,
      &laplacea, mu, e)
@@ -4552,9 +4550,9 @@ C     LDA energy
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ELAX_PBEGWS(rho,grd2,VLAMBDA,e)
-C****************************************************************************
+C*****************************************************************************
 C linear complement exchange PBE energy, Kamal SHARKAS 19/05/2011 beg
 C*****************************************************************************
       real*8, intent(in) :: rho(4), grd2(6), VLAMBDA
@@ -4568,7 +4566,7 @@ C*****************************************************************************
        end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRC_PBEGWSERF(rhoc,grdcc,mu,e)
 C*****************************************************************************
 C     Short-range PBE correlation functional from
@@ -4633,7 +4631,7 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRC_PBEGWSERF_PW92(rhoc,grdcc,mu,e)
 C*****************************************************************************
 C     Modified version of Short-range PBE correlation functional from
@@ -4696,7 +4694,7 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
 C      subroutine ESRC_PBEGWSERFSPIN(rhoc,rhos,grdcc,grdss,grdcs,mu,e)
       subroutine ESRC_PBEGWSERFSPIN(rhoc,rhos,grdcc,grdss,grdcs,
      & tauc,taus,laplacec,laplaces,mu,e)
@@ -4776,9 +4774,9 @@ C     LDA energy ----
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ELAC_PBEGWS(rhoc,grdcc,VLAMBDA,e)
-C****************************************************************************
+C*****************************************************************************
 C linear complement non-scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011 beg
 C*****************************************************************************
       real*8, intent(in) :: rhoc, grdcc, VLAMBDA
@@ -4791,9 +4789,9 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ELASC_PBEGWS(rhoc,grdcc,VLAMBDA,e)
-C****************************************************************************
+C*****************************************************************************
 C linear complement Scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
       real*8, intent(in) :: rhoc, grdcc, VLAMBDA
@@ -4842,11 +4840,11 @@ C*****************************************************************************
 !      denominator becomes zero for a approximately 0.4845801308
 !      (and for one negative and two complex values of a)
        berf = (-7.d0+72.d0*a*a)
-     >        /(27.d0*(-3.d0-24.d0*a*a+32.d0*a**4+8.d0*sqrt(pi)*a))
+     &        /(27.d0*(-3.d0-24.d0*a*a+32.d0*a**4+8.d0*sqrt(pi)*a))
 
       else if(a .gt. 50.d0) then
        berf = 1.d0/(72.d0*a*a)-1.d0/(17280.d0*a**4)
-     >        - 23.d0/(358400.d0*a**6)
+     &        - 23.d0/(358400.d0*a**6)
 
       else
 
@@ -4867,7 +4865,7 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRC_MULOC_GGA(rho,grd,mu,e)
 C*****************************************************************************
 C     Modified version of local mu formula C short-range correlation functional from
@@ -4911,7 +4909,7 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRC_MULOD_GGA(rho,grd,mu,e)
 C*****************************************************************************
 C     Modified version of SRCMULO_A functional
@@ -4959,7 +4957,7 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRC_MULOE_GGA(rhoc,grdcc,mu,e)
 C*****************************************************************************
 C     Modified version of SRCMULO_B correlation functional 
@@ -5005,7 +5003,7 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRX_LDAERF(rhoa,grdaa,mu,e)
 C*****************************************************************************
 C     Short-range spin-dependent LDA exchange functional
@@ -5046,8 +5044,8 @@ C       Limit for small a (expansion not so important as for large a)
 C       Intermediate values of a
         elseif (a.le.100) then
           e = - (rho*(24.d0*rho/pi)**f13)
-     >       *(3.d0/8.d0-a*(sqrtpi*erf(0.5d0/a)+
-     >       (2.d0*a-4.d0*a3)*exp(-0.25d0/a2)-3.d0*a+4.d0*a3))
+     &       *(3.d0/8.d0-a*(sqrtpi*erf(0.5d0/a)+
+     &       (2.d0*a-4.d0*a3)*exp(-0.25d0/a2)-3.d0*a+4.d0*a3))
 
 C       Expansion for large a
         elseif (a.lt.1.d+9) then
@@ -5065,7 +5063,7 @@ C       divide by two because of spin scaling
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRX_LDAERFSPIN(rhoc,rhos,mu,dospin,e)
 C*****************************************************************************
 C     Short-range spin-dependent LDA exchange functional
@@ -5116,8 +5114,8 @@ C       Limit for small a (expansion not so important as for large a)
 C       Intermediate values of a
         elseif (a.le.100) then
           e = - (rho*(24.d0*rho/pi)**f13)
-     >       *(3.d0/8.d0-a*(sqrtpi*erf(0.5d0/a)+
-     >       (2.d0*a-4.d0*a3)*exp(-0.25d0/a2)-3.d0*a+4.d0*a3))
+     &       *(3.d0/8.d0-a*(sqrtpi*erf(0.5d0/a)+
+     &       (2.d0*a-4.d0*a3)*exp(-0.25d0/a2)-3.d0*a+4.d0*a3))
 
 C       Expansion for large a
         elseif (a.lt.1.d+9) then
@@ -5150,8 +5148,8 @@ C       Limit for small a (expansion not so important as for large a)
 C       Intermediate values of a
         elseif (a.le.100) then
           ea = - (rhoa*(24.d0*rhoa/pi)**f13)
-     >       *(3.d0/8.d0-a*(sqrtpi*erf(0.5d0/a)+
-     >       (2.d0*a-4.d0*a3)*exp(-0.25d0/a2)-3.d0*a+4.d0*a3))
+     &       *(3.d0/8.d0-a*(sqrtpi*erf(0.5d0/a)+
+     &       (2.d0*a-4.d0*a3)*exp(-0.25d0/a2)-3.d0*a+4.d0*a3))
 
 C       Expansion for large a
         elseif (a.lt.1.d+9) then
@@ -5182,8 +5180,8 @@ C       Limit for small a (expansion not so important as for large a)
 C       Intermediate values of a
         elseif (a.le.100) then
           eb = - (rhob*(24.d0*rhob/pi)**f13)
-     >       *(3.d0/8.d0-a*(sqrtpi*erf(0.5d0/a)+
-     >       (2.d0*a-4.d0*a3)*exp(-0.25d0/a2)-3.d0*a+4.d0*a3))
+     &       *(3.d0/8.d0-a*(sqrtpi*erf(0.5d0/a)+
+     &       (2.d0*a-4.d0*a3)*exp(-0.25d0/a2)-3.d0*a+4.d0*a3))
 
 C       Expansion for large a
         elseif (a.lt.1.d+9) then
@@ -5203,9 +5201,9 @@ C       divide by two because of spin scaling
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ELX_LDALAMSPIN (rhoc,rhos,VLAMBDA,e)
-C****************************************************************************
+C*****************************************************************************
 C linear complement spin-dependent exchange LDA functional energy, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
       real*8, intent(in) :: rhoc, rhos, VLAMBDA
@@ -5223,7 +5221,7 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRC_LDAERFSPIN(rhoc,rhos,mu,dospin,e)
 C*****************************************************************************
 C     Short-range spin-dependent LDA correlation functional from 
@@ -5282,9 +5280,9 @@ C     Spin-polarized case
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ELC_LDALAMSPIN (rhoc,rhos,VLAMBDA,dospin,e)
-C****************************************************************************
+C*****************************************************************************
 C linear complement spin-dependent non-scaled correlation LDA functional, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
       real*8, intent(in) :: rhoc, rhos, VLAMBDA
@@ -5298,7 +5296,7 @@ C*****************************************************************************
        end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine ESRC_MD_LDAERF (rhoc,rhos,mu,dospin,e)
 C*****************************************************************************
 C     Short-range spin-dependent LDA correlation functional with multideterminant reference
@@ -5329,7 +5327,7 @@ C*****************************************************************************
       end
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine DELTA_LRSR_LDAERF(rhoc,rhos,mu,dospin,e)
 C*****************************************************************************
 C     LDA approximation to term Delta_(LR-SR) from  Eq. 42 of
@@ -5410,7 +5408,7 @@ C     Spin-polarized case
       delta6=(d0**8)*bc2;
 
       delta=(delta2*(mu**2)+delta3*(mu**3)+delta4*(mu**4)+delta5*(mu**5)
-     >      +delta6*(mu**6))/((1+(d0**2)*(mu**2))**4)
+     &      +delta6*(mu**6))/((1+(d0**2)*(mu**2))**4)
 
 C     multiply by rhoc to get energy density
       e=delta*rhoc
@@ -5426,7 +5424,7 @@ C     for given density parameter rs, spin polarization z
 C     and cutoff parameter mu
 C     gives the correlation energy of the LR gas
 C     => eclr
-C****************************************************************************
+C*****************************************************************************
       implicit none
 #include "pi.h"
       real*8, intent(in) :: rs, z, mu
@@ -5462,21 +5460,21 @@ C     parameters from the fit
       if(abs(z).eq.1.d0) then
 
         coe4=-9.d0/64.d0/rs**3*(dpol(rs)
-     $        -cf**2*2**(5.d0/3.d0)/5.d0/rs**2)
+     &        -cf**2*2**(5.d0/3.d0)/5.d0/rs**2)
         coe5=-9.d0/40.d0/(sqrt(2.d0*pi)*rs**3)*dpol(rs)
 
       else
 
          coe4=-9.d0/64.d0/rs**3*(((1.d0+z)/2.d0)**2*
-     $        dpol(rs*(2/(1.d0+z))**(1.d0/3.d0))+((1.d0-z)/2.d0)**2
-     $        *dpol(rs*(2.d0/(1.d0-z))**(1.d0/3.d0))+
-     $        (1.-z**2)*d2anti-cf**2/10.d0*((1.d0+z)**(8.d0/3.d0)
-     $        +(1.-z)**(8.d0/3.d0))/rs**2)
+     &        dpol(rs*(2/(1.d0+z))**(1.d0/3.d0))+((1.d0-z)/2.d0)**2
+     &        *dpol(rs*(2.d0/(1.d0-z))**(1.d0/3.d0))+
+     &        (1.-z**2)*d2anti-cf**2/10.d0*((1.d0+z)**(8.d0/3.d0)
+     &        +(1.-z)**(8.d0/3.d0))/rs**2)
 
          coe5=-9.d0/40.d0/(sqrt(2.d0*pi)*rs**3)*(((1.d0+z)/2.d0)**2
-     $        *dpol(rs*(2.d0/(1.d0+z))**(1.d0/3.d0))+((1.d0-z)/2.d0)**2
-     $        *dpol(rs*(2.d0/(1.d0-z))**(1.d0/3.d0))+(1.d0-z**2)*
-     $        d3anti)
+     &        *dpol(rs*(2.d0/(1.d0+z))**(1.d0/3.d0))+((1.d0-z)/2.d0)**2
+     &        *dpol(rs*(2.d0/(1.d0-z))**(1.d0/3.d0))+(1.d0-z**2)*
+     &        d3anti)
       end if
 
       call ecPW92(rs,z,ec,ecd,ecz)
@@ -5487,7 +5485,7 @@ C     parameters from the fit
       a4=b0**6*(b0**2*coe2+4.d0*ec)
 
       eclr=(phi**3*Qrpa(mu*sqrt(rs)/phi)+a1*mu**3+a2*mu**4+a3*mu**5+
-     $     a4*mu**6+b0**8*mu**8*ec)/((1.d0+b0**2*mu**2)**4)
+     &     a4*mu**6+b0**8*mu**8*ec)/((1.d0+b0**2*mu**2)**4)
 
 !      Write(6,*)'Qrpa=',Qrpa(mu*sqrt(rs)/phi)
 !      Write(6,*)'sqrt(rs)',sqrt(rs)
@@ -5505,7 +5503,7 @@ C     Hartree atomic units used
 C     for given density parameter rs, spin polarization z
 C     and cutoff mu it gives the correlation LSD potential for LR interaction
 C     => vclrup (spin-up electrons), vclrdown (spin-down electrons)
-C****************************************************************************
+C*****************************************************************************
       implicit none
 #include "pi.h"
       real*8, intent(in) :: rs,z,mu
@@ -5519,7 +5517,7 @@ C****************************************************************************
       real*8 :: coe2rs,coe3rs,coe4rs,coe5rs
       real*8 :: coe2z,coe3z,coe4z,coe5z
       real*8 :: a1,a2,a3,a4,a5,b0,a1rs,a2rs,a3rs,a4rs,a5rs,
-     $     b0rs,a1z,a2z,a3z,a4z,a5z,b0z
+     &     b0rs,a1z,a2z,a3z,a4z,a5z,b0z
 
       real*8, parameter :: alpha = (4.d0/9.d0/pi)**(1.d0/3.d0)
       real*8, parameter :: cf = 1.d0/alpha
@@ -5540,70 +5538,70 @@ C     parameters from the fit
       d3anti=(t1a+t2a*rs)*exp(-t3a*rs)/rs**2
 
       d2antid=-((q1a + q1a*q3a*rs + q2a*q3a*rs**2)/
-     -    rs**2)*exp(-q3a*rs)
+     &    rs**2)*exp(-q3a*rs)
       d3antid=-((rs*t2a*(1 + rs*t3a) + t1a*(2 + rs*t3a))/
-     -    rs**3)*exp(-rs*t3a)
+     &    rs**3)*exp(-rs*t3a)
 
       coe2=-3.d0/8.d0/rs**3*(1.d0-z**2)*(g0f(rs)-0.5d0)
       coe2rs=-3.d0/8.d0/rs**3*(1.d0-z**2)*g0d(rs)+
-     $     9.d0/8.d0/rs**4*(1.d0-z**2)*(g0f(rs)-0.5d0)
+     &     9.d0/8.d0/rs**4*(1.d0-z**2)*(g0f(rs)-0.5d0)
       coe2z=-3.d0/8.d0/rs**3*(-2.d0*z)*(g0f(rs)-0.5d0)
 
       coe3=-(1.d0-z**2)*g0f(rs)/(sqrt(2.d0*pi)*rs**3)
       coe3rs=-(1.d0-z**2)*g0d(rs)/(sqrt(2.d0*pi)*rs**3)+
-     $    3.d0*(1.d0-z**2)*g0f(rs)/(sqrt(2.d0*pi)*rs**4)
+     &    3.d0*(1.d0-z**2)*g0f(rs)/(sqrt(2.d0*pi)*rs**4)
       coe3z=2.d0*z*g0f(rs)/(sqrt(2.d0*pi)*rs**3)
 
       if(abs(z).eq.1.d0) then
 
         coe4=-9.d0/64.d0/rs**3*(dpol(rs)
-     $        -cf**2*2**(5.d0/3.d0)/5.d0/rs**2)
+     &        -cf**2*2**(5.d0/3.d0)/5.d0/rs**2)
         coe4rs=-3.d0/rs*coe4-9.d0/64.d0/rs**3*(dpold(rs)
-     $        +2.d0*cf**2*2**(5.d0/3.d0)/5.d0/rs**3)
+     &        +2.d0*cf**2*2**(5.d0/3.d0)/5.d0/rs**3)
         coe4z=-9.d0/64.d0/rs**3*(dpol(rs)-rs/6.d0*dpold(rs)-2.d0*d2anti
-     $       -4.d0/15.d0/rs**2*cf**2*2.d0**(5.d0/3.d0))*z
+     &       -4.d0/15.d0/rs**2*cf**2*2.d0**(5.d0/3.d0))*z
         coe5=-9.d0/40.d0/(sqrt(2.d0*pi)*rs**3)*dpol(rs)
         coe5rs=-3.d0/rs*coe5-9.d0/40.d0/(sqrt(2.d0*pi)*rs**3)*dpold(rs)
         coe5z=-9.d0/40.d0/(sqrt(2.d0*pi)*rs**3)*(dpol(rs)-rs/6.d0*
-     $       dpold(rs)-2.d0*d3anti)*z
+     &       dpold(rs)-2.d0*d3anti)*z
 
       else
 
          coe4=-9.d0/64.d0/rs**3*(((1.d0+z)/2.d0)**2*
-     $        dpol(rs*(2/(1.d0+z))**(1.d0/3.d0))+((1.d0-z)/2.d0)**2
-     $        *dpol(rs*(2.d0/(1.d0-z))**(1.d0/3.d0))+
-     $        (1.-z**2)*d2anti-cf**2/10.d0*((1.d0+z)**(8.d0/3.d0)
-     $        +(1.-z)**(8.d0/3.d0))/rs**2)
+     &        dpol(rs*(2/(1.d0+z))**(1.d0/3.d0))+((1.d0-z)/2.d0)**2
+     &        *dpol(rs*(2.d0/(1.d0-z))**(1.d0/3.d0))+
+     &        (1.-z**2)*d2anti-cf**2/10.d0*((1.d0+z)**(8.d0/3.d0)
+     &        +(1.-z)**(8.d0/3.d0))/rs**2)
          coe4rs=-3.d0/rs*coe4-9.d0/64.d0/rs**3*(
-     $        ((1.d0+z)/2.d0)**(5.d0/3.d0)*dpold(rs*(2/(1.d0+z))**
-     $        (1.d0/3.d0))+((1.d0-z)/2.d0)**(5.d0/3.d0)*
-     $        dpold(rs*(2/(1.d0-z))**(1.d0/3.d0))+(1.d0-z**2)*
-     $        d2antid+cf**2/5.d0*((1.d0+z)**(8.d0/3.d0)
-     $        +(1.d0-z)**(8.d0/3.d0))/rs**3)
+     &        ((1.d0+z)/2.d0)**(5.d0/3.d0)*dpold(rs*(2/(1.d0+z))**
+     &        (1.d0/3.d0))+((1.d0-z)/2.d0)**(5.d0/3.d0)*
+     &        dpold(rs*(2/(1.d0-z))**(1.d0/3.d0))+(1.d0-z**2)*
+     &        d2antid+cf**2/5.d0*((1.d0+z)**(8.d0/3.d0)
+     &        +(1.d0-z)**(8.d0/3.d0))/rs**3)
          coe4z=-9.d0/64.d0/rs**3*(1.d0/2.d0*(1.d0+z)*
-     $        dpol(rs*(2/(1.d0+z))**(1.d0/3.d0))-1.d0/2.d0*(1.d0-z)*
-     $        dpol(rs*(2/(1.d0-z))**(1.d0/3.d0))-rs/6.d0*
-     $        ((1.d0+z)/2.d0)**(2.d0/3.d0)*dpold(rs*(2/(1.d0+z))
-     $        **(1.d0/3.d0))+rs/6.d0*((1.d0-z)/2.d0)**(2.d0/3.d0)
-     $        *dpold(rs*(2/(1.d0-z))**(1.d0/3.d0))-2.d0*z*d2anti-
-     $        4.d0/15.d0/rs**2*cf**2*((1.d0+z)**(5.d0/3.d0)-
-     $        (1.d0-z)**(5.d0/3.d0)))
+     &        dpol(rs*(2/(1.d0+z))**(1.d0/3.d0))-1.d0/2.d0*(1.d0-z)*
+     &        dpol(rs*(2/(1.d0-z))**(1.d0/3.d0))-rs/6.d0*
+     &        ((1.d0+z)/2.d0)**(2.d0/3.d0)*dpold(rs*(2/(1.d0+z))
+     &        **(1.d0/3.d0))+rs/6.d0*((1.d0-z)/2.d0)**(2.d0/3.d0)
+     &        *dpold(rs*(2/(1.d0-z))**(1.d0/3.d0))-2.d0*z*d2anti-
+     &        4.d0/15.d0/rs**2*cf**2*((1.d0+z)**(5.d0/3.d0)-
+     &        (1.d0-z)**(5.d0/3.d0)))
 
          coe5=-9.d0/40.d0/(sqrt(2.d0*pi)*rs**3)*(((1.d0+z)/2.d0)**2
-     $        *dpol(rs*(2.d0/(1.d0+z))**(1.d0/3.d0))+((1.d0-z)/2.d0)**2
-     $        *dpol(rs*(2.d0/(1.d0-z))**(1.d0/3.d0))+(1.d0-z**2)*
-     $        d3anti)
+     &        *dpol(rs*(2.d0/(1.d0+z))**(1.d0/3.d0))+((1.d0-z)/2.d0)**2
+     &        *dpol(rs*(2.d0/(1.d0-z))**(1.d0/3.d0))+(1.d0-z**2)*
+     &        d3anti)
          coe5rs=-3.d0/rs*coe5-9.d0/(40.d0*sqrt(2.d0*pi)*rs**3)*(
-     $        ((1.d0+z)/2.d0)**(5.d0/3.d0)*dpold(rs*(2/(1.d0+z))**
-     $        (1.d0/3.d0))+((1.d0-z)/2.d0)**(5.d0/3.d0)*
-     $        dpold(rs*(2/(1.d0-z))**(1.d0/3.d0))+(1.d0-z**2)*
-     $        d3antid)
+     &        ((1.d0+z)/2.d0)**(5.d0/3.d0)*dpold(rs*(2/(1.d0+z))**
+     &        (1.d0/3.d0))+((1.d0-z)/2.d0)**(5.d0/3.d0)*
+     &        dpold(rs*(2/(1.d0-z))**(1.d0/3.d0))+(1.d0-z**2)*
+     &        d3antid)
          coe5z=-9.d0/40.d0/(sqrt(2.d0*pi)*rs**3)*(1.d0/2.d0*(1.d0+z)*
-     $        dpol(rs*(2/(1.d0+z))**(1.d0/3.d0))-1.d0/2.d0*(1.d0-z)*
-     $        dpol(rs*(2/(1.d0-z))**(1.d0/3.d0))-rs/6.d0*
-     $        ((1.d0+z)/2.d0)**(2.d0/3.d0)*dpold(rs*(2/(1.d0+z))
-     $        **(1.d0/3.d0))+rs/6.d0*((1.d0-z)/2.d0)**(2.d0/3.d0)
-     $        *dpold(rs*(2/(1.d0-z))**(1.d0/3.d0))-2.d0*z*d3anti)
+     &        dpol(rs*(2/(1.d0+z))**(1.d0/3.d0))-1.d0/2.d0*(1.d0-z)*
+     &        dpol(rs*(2/(1.d0-z))**(1.d0/3.d0))-rs/6.d0*
+     &        ((1.d0+z)/2.d0)**(2.d0/3.d0)*dpold(rs*(2/(1.d0+z))
+     &        **(1.d0/3.d0))+rs/6.d0*((1.d0-z)/2.d0)**(2.d0/3.d0)
+     &        *dpold(rs*(2/(1.d0-z))**(1.d0/3.d0))-2.d0*z*d3anti)
 
       end if
 
@@ -5611,12 +5609,12 @@ C     parameters from the fit
 
       a1=4.d0*b0**6*coe3+b0**8*coe5
       a1rs=24.d0*adib*b0**5*coe3+4.d0*b0**6*coe3rs+8.d0*adib*b0**7*
-     $     coe5+b0**8*coe5rs
+     &     coe5+b0**8*coe5rs
       a1z=4.d0*b0**6*coe3z+b0**8*coe5z
 
       a2=4.d0*b0**6*coe2+b0**8*coe4+6.d0*b0**4*ec
       a2rs=24.d0*adib*b0**5*coe2+4.d0*b0**6*coe2rs+8.d0*adib*b0**7*
-     $     coe4+b0**8*coe4rs+24.d0*adib*b0**3*ec+6.d0*b0**4*ecd
+     &     coe4+b0**8*coe4rs+24.d0*adib*b0**3*ec+6.d0*b0**4*ecd
       a2z=4.d0*b0**6*coe2z+b0**8*coe4z+6.d0*b0**4*ecz
 
       a3=b0**8*coe3
@@ -5625,7 +5623,7 @@ C     parameters from the fit
 
       a4=b0**6*(b0**2*coe2+4.d0*ec)
       a4rs=8.d0*adib*b0**7*coe2+b0**8*coe2rs+24.d0*adib*b0**5*ec+
-     $     4.d0*b0**6*ecd
+     &     4.d0*b0**6*ecd
       a4z=b0**6*(b0**2*coe2z+4.d0*ecz)
 
       a5=b0**8*ec
@@ -5635,12 +5633,12 @@ C     parameters from the fit
       x=mu*sqrt(rs)/phi
 
       eclr=(phi**3*Qrpa(x)+a1*mu**3+a2*mu**4+a3*mu**5+
-     $     a4*mu**6+a5*mu**8)/((1.d0+b0**2*mu**2)**4)
+     &     a4*mu**6+a5*mu**8)/((1.d0+b0**2*mu**2)**4)
 
       eclrrs=-4.d0/(1.d0+b0**2*mu**2)*2.d0*adib*b0*mu**2*eclr+
-     $     1.d0/((1.d0+b0**2*mu**2)**4)*(phi**2*mu/(2.d0*sqrt(rs))
-     $     *Qrpad(x)+
-     $     a1rs*mu**3+a2rs*mu**4+a3rs*mu**5+a4rs*mu**6+a5rs*mu**8)
+     &     1.d0/((1.d0+b0**2*mu**2)**4)*(phi**2*mu/(2.d0*sqrt(rs))
+     &     *Qrpad(x)+
+     &     a1rs*mu**3+a2rs*mu**4+a3rs*mu**5+a4rs*mu**6+a5rs*mu**8)
 
 
       if(z.eq.1.d0) then
@@ -5652,10 +5650,10 @@ C     parameters from the fit
       else
 
          eclrz=(phi**2*((1.d0+z)**(-1.d0/3.d0)-(1.d0-z)**(-1.d0/3.d0))
-     $        *Qrpa(x)-phi*Qrpad(x)*mu*sqrt(rs)*((1.d0+z)**(-1.d0/3.d0)
-     $        -(1.d0-z)**(-1.d0/3.d0))/3.d0+
-     $        a1z*mu**3+a2z*mu**4+a3z*mu**5+
-     $        a4z*mu**6+a5z*mu**8)/((1.d0+b0**2*mu**2)**4)
+     &        *Qrpa(x)-phi*Qrpad(x)*mu*sqrt(rs)*((1.d0+z)**(-1.d0/3.d0)
+     &        -(1.d0-z)**(-1.d0/3.d0))/3.d0+
+     &        a1z*mu**3+a2z*mu**4+a3z*mu**5+
+     &        a4z*mu**6+a5z*mu**8)/((1.d0+b0**2*mu**2)**4)
 
          vclrup=eclr-rs/3.d0*eclrrs-(z-1.d0)*eclrz
          vclrdown=eclr-rs/3.d0*eclrrs-(z+1.d0)*eclrz
@@ -5670,7 +5668,7 @@ C*****************************************************************************
 C     on-top pair-distribution function
 C     Gori-Giorgi and Perdew, PRB 64, 155102 (2001)
 C     x -> rs
-C****************************************************************************
+C*****************************************************************************
       implicit none
       real*8, intent(in) :: x
       real*8, parameter :: C0f = 0.0819306d0
@@ -5678,7 +5676,7 @@ C****************************************************************************
       real*8, parameter :: E0f = -0.0127713d0
       real*8, parameter :: F0f = 0.00185898d0
       g0f=(1.d0-(0.7317d0-D0f)*x+C0f*x**2+E0f*x**3+
-     $     F0f*x**4)*exp(-abs(D0f)*x)/2.d0
+     &     F0f*x**4)*exp(-abs(D0f)*x)/2.d0
       return
       end
 
@@ -5688,7 +5686,7 @@ C*****************************************************************************
 C*****************************************************************************
 C     derivative of on-top pair-distribution function
 C     Gori-Giorgi and Perdew, PRB 64, 155102 (2001)
-C****************************************************************************
+C*****************************************************************************
       implicit none
       real*8, intent(in) :: rs
       real*8, parameter :: Cg0 = 0.0819306d0
@@ -5697,8 +5695,8 @@ C****************************************************************************
       real*8, parameter :: Eg0 = 0.00185898d0
       real*8, parameter :: Bg0 =0.7317d0-Fg0
       g0d=(-Bg0+2*Cg0*rs+3*Dg0*rs**2+4*Eg0*rs**3)/2.d0*exp(-Fg0*rs)
-     -   - (Fg0*(1 - Bg0*rs + Cg0*rs**2 + Dg0*rs**3 + Eg0*rs**4))/
-     -   2.d0*exp(-Fg0*rs)
+     &   - (Fg0*(1 - Bg0*rs + Cg0*rs**2 + Dg0*rs**3 + Eg0*rs**4))/
+     &   2.d0*exp(-Fg0*rs)
       return
       end
 
@@ -5713,7 +5711,7 @@ C*****************************************************************************
       real*8, parameter :: p2p = 0.04d0
       real*8, parameter :: p3p = 0.4319d0
       dpol=2.d0**(5.d0/3.d0)/5.d0*cf**2/rs**2*(1.d0+(p3p-0.454555d0)*rs)
-     $     /(1.d0+p3p*rs+p2p*rs**2)
+     &     /(1.d0+p3p*rs+p2p*rs**2)
       return
       end
 
@@ -5728,12 +5726,12 @@ C*****************************************************************************
       real*8, parameter :: p2p = 0.04d0
       real*8, parameter :: p3p = 0.4319d0
       dpold=2.d0**(5.d0/3.d0)/5.d0*cf**2*
-     - (-2. + (0.454555 - 4.*p3p)*rs +
-     -    (-4.*p2p +
-     -       (0.90911 - 2.*p3p)*p3p)*rs**2
-     -      + p2p*(1.363665 - 3.*p3p)*
-     -     rs**3)/
-     -  (rs**3*(1. + p3p*rs + p2p*rs**2)**2)
+     & (-2. + (0.454555 - 4.*p3p)*rs +
+     &    (-4.*p2p +
+     &       (0.90911 - 2.*p3p)*p3p)*rs**2
+     &      + p2p*(1.363665 - 3.*p3p)*
+     &     rs**3)/
+     &  (rs**3*(1. + p3p*rs + p2p*rs**2)**2)
       return
       end
 
@@ -5768,10 +5766,10 @@ C*****************************************************************************
       real*8, parameter :: b2 = d2-3.d0/(2.d0*pi*Acoul) * 
      &                           (4.d0/(9.d0*pi))**(1.d0/3.d0)
       Qrpad=Acoul*((x*(b2*(2.d0 + a2*x) +
-     -      c2*x*(3.d0 + 2.d0*a2*x) +
-     -      d2*(-2.d0 - a2*x + c2*x**3)))/
-     -  ((1.d0 + a2*x + d2*x**2)*
-     -    (1.d0 + a2*x + b2*x**2 + c2*x**3)))
+     &      c2*x*(3.d0 + 2.d0*a2*x) +
+     &      d2*(-2.d0 - a2*x + c2*x**3)))/
+     &  ((1.d0 + a2*x + d2*x**2)*
+     &    (1.d0 + a2*x + b2*x**2 + c2*x**3)))
       return
       end
 
@@ -5785,43 +5783,43 @@ C     in Hartree; ec=ec(rs,zeta)
 C     x -> rs; y -> zeta
 C     ecd is d/drs ec
 C     ecz is d/dz ec
-C****************************************************************************
+C*****************************************************************************
       implicit none
 #include "pi.h"
       real*8, intent(in) :: x, y
       real*8, intent(out) :: ec, ecd, ecz
       real*8 :: f02,ff,ec0,ec0d,ec1,ec1d,
-     $          aaa,G,Gd,alfac,alfacd
+     &          aaa,G,Gd,alfac,alfacd
 
       f02=4.d0/(9.d0*(2.d0**(1.d0/3.d0)-1.d0))
 
       ff=((1.d0+y)**(4.d0/3.d0)+(1.d0-y)**(4.d0/3.d0)-
-     $     2.d0)/(2.d0**(4.d0/3.d0)-2.d0)
+     &     2.d0)/(2.d0**(4.d0/3.d0)-2.d0)
 
       aaa=(1.d0-log(2.d0))/pi**2
       call GPW(x,aaa,0.21370d0,7.5957d0,3.5876d0,
-     $     1.6382d0,0.49294d0,G,Gd)
+     &     1.6382d0,0.49294d0,G,Gd)
       ec0 =G
       ec0d=Gd
 
       aaa=aaa*0.5d0
       call GPW(x,aaa,0.20548d0,14.1189d0,6.1977d0,
-     $     3.3662d0,0.62517d0,G,Gd)
+     &     3.3662d0,0.62517d0,G,Gd)
       ec1 =G
       ec1d=Gd
       call GPW(x,0.016887d0,0.11125d0,10.357d0,3.6231d0,
-     $     0.88026d0,0.49671d0,G,Gd)
+     &     0.88026d0,0.49671d0,G,Gd)
       alfac =-G
       alfacd=-Gd
 
       ec =ec0 +alfac*ff/f02*(1.d0-y**4)+(ec1-ec0)*ff*y**4
       ecd=ec0d+alfacd*ff/f02*(1.d0-y**4)+(ec1d-ec0d)*
-     $     ff*y**4
+     &     ff*y**4
       ecz=alfac*(-4.d0*y**3)*ff/f02+alfac*(1.d0-y**4)/f02*
-     $     4.d0/3.d0*((1.d0+y)**(1.d0/3.d0)-(1.d0-y)**(1.d0/3.d0))/
-     $     (2.d0**(4.d0/3.d0)-2.d0)+(ec1-ec0)*(4.d0*y**3*ff+
-     $     4.d0/3.d0*((1.d0+y)**(1.d0/3.d0)-(1.d0-y)**(1.d0/3.d0))/
-     $     (2.d0**(4.d0/3.d0)-2.d0)*y**4)
+     &     4.d0/3.d0*((1.d0+y)**(1.d0/3.d0)-(1.d0-y)**(1.d0/3.d0))/
+     &     (2.d0**(4.d0/3.d0)-2.d0)+(ec1-ec0)*(4.d0*y**3*ff+
+     &     4.d0/3.d0*((1.d0+y)**(1.d0/3.d0)-(1.d0-y)**(1.d0/3.d0))/
+     &     (2.d0**(4.d0/3.d0)-2.d0)*y**4)
 
       return
       end
@@ -5831,20 +5829,20 @@ C*****************************************************************************
       pure subroutine GPW(x,Ac,alfa1,beta1,beta2,beta3,beta4,G,Gd)
 C*****************************************************************************
 C     Gd is d/drs G
-C****************************************************************************
+C*****************************************************************************
       implicit none
       real*8, intent(in) :: Ac,alfa1,beta1,beta2,beta3,beta4,x
       real*8, intent(out) :: G, Gd
       G=-2.d0*Ac*(1.d0+alfa1*x)*log(1.d0+1.d0/(2.d0*
-     $     Ac*(beta1*x**0.5d0+
-     $     beta2*x+beta3*x**1.5d0+beta4*x**2)))
+     &     Ac*(beta1*x**0.5d0+
+     &     beta2*x+beta3*x**1.5d0+beta4*x**2)))
       Gd=(1.d0+alfa1*x)*(beta2+beta1/(2.d0*sqrt(x))+3.d0*beta3*
-     $     sqrt(x)/2.d0+2.d0*beta4*x)/((beta1*sqrt(x)+beta2*x+
-     $     beta3*x**(3.d0/2.d0)+beta4*x**2)**2*(1.d0+1.d0/
-     $     (2.d0*Ac*(beta1*sqrt(x)+beta2*x+beta3*x**(3.d0/2.d0)+
-     $     beta4*x**2))))-2.d0*Ac*alfa1*log(1.d0+1.d0/(2.d0*Ac*
-     $     (beta1*sqrt(x)+beta2*x+beta3*x**(3.d0/2.d0)+
-     $     beta4*x**2)))
+     &     sqrt(x)/2.d0+2.d0*beta4*x)/((beta1*sqrt(x)+beta2*x+
+     &     beta3*x**(3.d0/2.d0)+beta4*x**2)**2*(1.d0+1.d0/
+     &     (2.d0*Ac*(beta1*sqrt(x)+beta2*x+beta3*x**(3.d0/2.d0)+
+     &     beta4*x**2))))-2.d0*Ac*alfa1*log(1.d0+1.d0/(2.d0*Ac*
+     &     (beta1*sqrt(x)+beta2*x+beta3*x**(3.d0/2.d0)+
+     &     beta4*x**2)))
       return
       end
 
@@ -5864,7 +5862,7 @@ C*****************************************************************************
       real*8 :: rs2
       rs2 = rs*rs
       g0s=(2.d0**f53)*(1.d0-0.02267d0*rs)/((5.d0*alpha2*rs2)
-     >    *(1.d0+0.4319d0*rs+0.04d0*rs2))
+     &    *(1.d0+0.4319d0*rs+0.04d0*rs2))
       end
 
 

@@ -21,21 +21,21 @@
 !...      http://daltonprogram.org
 !
 !
+
+
 #ifdef INCLUDE_DFTDRV_SRDFT
-C
-C-------------------------------------------------------------------------
-C /* Deck dftexc */
+C*****************************************************************************
       SUBROUTINE DFTEXC(DMAT,NDMAT,EXCMAT,NXCMAT,MAKDEN,DOERG,DOGRD,
      &                  DOLND,DOATR,TRPLET,HES,DOHES,WORK,LWORK,KPRINT)
-C-------------------------------------------------------------------------
+C*****************************************************************************
 C
 C     T. Helgaker sep 99 / feb 01
 C
-C-------------------------------------------------------------------------
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
 C 
       PARAMETER (FACTHR = 1.0D-8) 
       LOGICAL MAKDEN, DOERG, DOGRD, DOLND, DOATR, DOHES, TRPLET, DOGGA,
@@ -43,11 +43,11 @@ C
       DIMENSION DMAT(NBAST,NBAST,NDMAT), EXCMAT(NBAST,NBAST,NXCMAT),
      &          HES(*), WORK(LWORK)
 C
-#include <inforb.h>
-#include <nuclei.h>
-#include <dftcom.h>
-#include <dftinf.h>
-#include <dfterg.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "dftinf.h"
+#include "dfterg.h"
 C
       IPRINT = 6
       NBUF   = 1000000
@@ -132,35 +132,36 @@ C
 #endif
       RETURN
       END
-C------------------------------------------------------------------------------
-C /* Deck dftdrv */
+
+
+C*****************************************************************************
       SUBROUTINE DFTDRV(DMAT,DTRMAT,EXCMAT,NXCMAT,DOERG,DOGRD,DOLND,
      &                  DOATR,CORX,CORY,CORZ,WEIGHT,NBUF,GSO,NCNT,DST,
      &                  C0,C1,C2,DMAGAO,HES,DOHES,TRPLET,FACDRC,FACVWN,
      &                  FACBCK,FACLYP,DODRC,DOVWN,DOBCK,DOLYP,DOGGA,
      &                  WORK,LWORK,IPRINT)
-C------------------------------------------------------------------------------
+C*****************************************************************************
 C     T. Helgaker sep 99 / feb 01
-C------------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <dummy.h>
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, DP5 = 0.5D0)
 C     PARAMETER (DFTHR0 = 1.0D-8, DFTHRL = 1.0D-10, DFTHRI = 1.0D-13) 
 C
-#include <inforb.h>
-#include <infvar.h>
-#include <nuclei.h>
-#include <dfterg.h>
-#include <energy.h>
-#include <dftcom.h>
-#include <dftinf.h>
-#include <orgcom.h>
-#include <maxorb.h>
-#include <infpar.h>
+#include "inforb.h"
+#include "infvar.h"
+#include "nuclei.h"
+#include "dfterg.h"
+#include "energy.h"
+#include "dftcom.h"
+#include "dftinf.h"
+#include "orgcom.h"
+#include "maxorb.h"
+#include "infpar.h"
 C
       INTEGER A, B
       LOGICAL DOERG, DOGRD, DODRC, DOVWN, DOBCK, DOLYP, 
@@ -173,7 +174,7 @@ C
      &          RHG(3), WORK(LWORK), COR(3)
       CHARACTER*16 QUADNAME
 C
-#include <chrnos.h>
+#include "chrnos.h"
 C
       CALL TIMER('START ',TIMSTR,TIMEND)
       QUADNAME='                '
@@ -495,27 +496,28 @@ C
       CALL TIMER('DFTDRV',TIMSTR,TIMEND)
       RETURN 
       END
-C------------------------------------------------------------------------
-C  /* Deck dftatr */
+
+
+C*****************************************************************************
       SUBROUTINE DFTATR(FMAT,CMO,DV,ZYMAT,TRPLET,KSYMOP,WORK,LWORK)
-C------------------------------------------------------------------------
+C*****************************************************************************
 C     T. Helgaker Sep 99 / Feb 01
-C------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0)
 C
       DIMENSION CMO(*),ZYMAT(N2ORBX),DV(*),FMAT(N2ORBX),WORK(LWORK)
       LOGICAL DOPRNT, TRPLET
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "dftcom.h"
 C
 !      WRITE(LUPRI,*) 'DFTATR: entering'  !JT
 
@@ -618,18 +620,19 @@ C
 C
       RETURN
       END
-C-------------------------------------------------------------------------
-C  /* Deck dftatx */
+
+
+C*****************************************************************************
       SUBROUTINE DFTATX(FMAT,CMO,ZYMAT,TRPLET,WORK,LWORK)
-C-------------------------------------------------------------------------
+C*****************************************************************************
 C
 C     T. Helgaker Sep 99
-C-------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
       PARAMETER (NOC = 7, NVT = 1)
 C
@@ -640,10 +643,10 @@ C
       SAVE FIRST, HES
       DATA FIRST/.TRUE./
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
 C
       DOPRNT = .FALSE.
       IPRINT = 2
@@ -720,19 +723,20 @@ C
 C
       RETURN
       END
-c /* Deck dftlnd */
-C-------------------------------------------------------------------------
+
+
+C*****************************************************************************
       SUBROUTINE DFTLND(FX,FY,FZ,WORK,LWORK,IPRINT)
-C-------------------------------------------------------------------------
+C*****************************************************************************
 C
 C     T. Helgaker oct 99
-C-------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       DIMENSION FX(N2BASX), FY(N2BASX), FZ(N2BASX), WORK(LWORK)
-#include <inforb.h>
+#include "inforb.h"
 C
       KXCMAT = 1
       KDAO   = KXCMAT + 3*N2BASX
@@ -755,17 +759,18 @@ C
 C
       RETURN
       END
-C  /* Deck dftsol */
-C-------------------------------------------------------------------------
+
+
+C*****************************************************************************
       SUBROUTINE DFTSOL(WORK,LWORK)
-C-------------------------------------------------------------------------
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       DIMENSION WORK(*)
-#include <infvar.h>
-#include <inflin.h>
-#include <inforb.h>
+#include "infvar.h"
+#include "inflin.h"
+#include "inforb.h"
 C
       KVEC = 1
       KFCK = KVEC + NWOPPT
@@ -774,20 +779,21 @@ C
       CALL DFTSO1(WORK(KVEC),WORK(KFCK))
       RETURN
       END
-C-------------------------------------------------------------------------
-C  /* Deck dftso1 */
+
+
+C*****************************************************************************
       SUBROUTINE DFTSO1(VEC,FCK)
-C-------------------------------------------------------------------------
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
       PARAMETER (FAC = -1.0D0/4.0D0)
       DIMENSION VEC(*), FCK(*)
-#include <inftap.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <inforb.h>
+#include "inftap.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "inforb.h"
       IA(I) = JWOP(1,I)
       IB(I) = JWOP(2,I)
       IAA(I) = IA(I)*(IA(I)+1)/2

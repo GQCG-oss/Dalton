@@ -22,25 +22,26 @@
 !...      http://daltonprogram.org
 !
 !
-
 !  FILE: DALTON/srdft/srdft_par.F
 !  (c) Copyright Hans Joergen Aa. Jensen, hjj@sdu.dk (2017)
 
-! ===================================================================
-!     srdft_par.F master and slave routines
-! ===================================================================
+
+C*****************************************************************************
 #ifdef VAR_MPI
       SUBROUTINE SRDFT_PAR_MASTER(ND_SIM,EXCMAT,DMAT,EDFTY,
      &                 DOERG,DOGRD,DOATR,TRIPLET,
      &                 WORK,LWORK,IPRINT_in)
-!
-!  Written by Hans Joergen Aa. Jensen 2017
-!
-!  Master driver for parallel integration over srdft functional.
-!
-!  Parameter list same as for subroutine SRDFT,
-!  see SRDFT for an explanation of the parameters.
-!
+C*****************************************************************************
+C     srdft_par.F master and slave routines
+C
+C  Written by Hans Joergen Aa. Jensen 2017
+C
+C  Master driver for parallel integration over srdft functional.
+C
+C  Parameter list same as for subroutine SRDFT,
+C  see SRDFT for an explanation of the parameters.
+C
+C*****************************************************************************
       implicit none
       logical   DOERG,DOGRD,DOATR,TRIPLET
       integer   ND_SIM, LWORK, IPRINT_in
@@ -158,13 +159,17 @@ C     variables for SRCPBERI
       call qexit('SRDFT_PAR_MASTER')
       return
       end subroutine SRDFT_PAR_MASTER
-! ===================================================================
+
+
+C*****************************************************************************
       subroutine SRDFT_PAR_NODE(WORK,LWORK,IPRINT_in)
-!
-!  Written by Hans Joergen Aa. Jensen 2017
-!
-!  Node (slave) driver for parallel integration over srdft functional.
-!
+C*****************************************************************************
+C
+C  Written by Hans Joergen Aa. Jensen 2017
+C
+C  Node (slave) driver for parallel integration over srdft functional.
+C
+C*****************************************************************************
       implicit none
       integer LWORK, IPRINT_in
       real*8  WORK(LWORK)
