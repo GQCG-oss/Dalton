@@ -37,7 +37,6 @@ C*****************************************************************************
       real*8, parameter :: D1 = 1.0d0 
       real*8, parameter :: D3 = 3.0d0 
       real*8, parameter :: D4 = 4.0d0 
-c     &           CX = -(D3/D4)*((D3/PI)**(D1/D3)))
       ED = -(D3/D4)*((D3/PI)**(D1/D3))*RHO*RHO13
       RETURN
       END

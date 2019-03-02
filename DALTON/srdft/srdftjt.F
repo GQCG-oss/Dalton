@@ -625,6 +625,7 @@ C Termination --------------------------------------------------------------
       RETURN
       END
 
+
 C****************************************************************************
       SUBROUTINE SRDFTEXCJT(RHO,GRD2,tau,laplace,CHIVAL,NORDER,ERFEXP,
      >           triplet,Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
@@ -915,6 +916,7 @@ C      mu_new = max(mu,CHIVAL)
 
       RETURN
       END ! subroutine SRDFTEXCJT
+
 
 C**************************************************************************
       SUBROUTINE SRDFTLTRJT(KSYMOP,DTXMAT,DSXMAT,EXCMAT,
