@@ -943,24 +943,6 @@ c    ****Second derivatives involving gab and a density
 
 
 c    ****All other derivatives are aero for Lyp
-
-c         F00200=F00020=F00110=F00101=F00011=F00002=0
-c     write(6,*)'w,wd,wdd',w,wd,wdd
-c     write(6,*)'del,deld,deldd',del,deld,deldd
-c     write(6,*)'bsda,bsdb',bsda,bsdb
-c     write(6,*)'jaa,jab',jaa,jab
-c     write(6,*)'pagbb,pbgbb',F10010,F01010
-c     write(6,*)'papa',F20000
-c     write(6,*)'papb',F11000
-c     write(6,*)'pagab',F10001
-c     write(6,*)'pagaa,bs',F10100,bs
-c     write(6,*)'btda,btdb,btdadb,btdada',btda,btdb,btdadb,btdada
-c     write(6,*)'pbgaa,ta,tb,abwb2',F01100,ta,tb,ab*wd*pb*pb
-c     write(6,*)'F10001,bt,qwewdab',F10001,bt,wd*qwe*ab
-c     write(6,*)'bsdada,bsdadb,F01001',bsdada,bsdadb,F01001
-
-c     write(6,*)'DF1010,DF2000',
-c    1           F10100,F20000
       return
       end
 

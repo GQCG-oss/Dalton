@@ -2598,7 +2598,6 @@ C     energy
          call ESRX_GGA(rhob,grdbb,mu,Eb)
          E = Ea + Eb
       end if
-!     print *,'DESRX_SPINGGA: E=',E
 
 C     (optimal?) numerical step
 C     (step length of hx=1.d-4*X should give a relative accuracy of approx. 16 digits
@@ -3737,8 +3736,6 @@ c     Calculate exp(x)*f(x) depending on size of x
 
       else
 
-c       print *,rho,s," LARGE HsbwA94"
-
         experf = One/(sqrtpi*HsbwA9412) 
      &           - One/(Two*Sqrt(pi*HsbwA943))
      &           + Three/(Four*Sqrt(pi*HsbwA945))
@@ -3775,8 +3772,6 @@ c         term1 = f12*A* -8.23742D-1
       elseif(w .gt. wcutoff) then
 
 c       Use simple Gaussian approximation for large w
-
-c       print *,rho,s," LARGE w"
 
         term1 = -f12*A*(expei+log(DHsbw)-log(Hsbw))
 
@@ -3927,9 +3922,6 @@ C     Constants for g0
       real*8, parameter :: gam = 4.7125D0
       real*8, parameter :: sqrt2 = sqrt(2.0d0)
       
-!      print *,'ESRC_PBERIERF: mu=',mu
-!      print *,'ESRC_PBERIERF: rho=',rho,' grdcc=',grdcc
-     &
 !     Variables
       rs = (3.d0/(4.d0*pi*rho))**(1.d0/3.d0)
       mu2 =mu*mu
@@ -3941,13 +3933,11 @@ C     Constants for g0
          return
       end if
       eps_pbe = e_pbe/rho
-!      print *,'ESRC_PBERIERF: e_pbe=',e_pbe
 
 !     g0 from Burke, Perdew, Ernzerhof
       grs12 = sqrt(gam+rs)
       expgrs12 = exp(-a*grs12)
       g0 = d*(grs12**3+bet)*expgrs12
-
 
 C    modified d1 coefficient from Gori-Giorgi and Savin (submitted)
 C    added by Emmanuel Fromager 13.12.05    
@@ -3973,7 +3963,6 @@ C        eps_LDA_asymptot3 = 1/d2 *  mu^(-2) - d1/(d2^2) * mu^(-3)
      &     * ( 1.0d0 + ((erf(mu_0*mu))**5) * (1.0D0/denom - 1.0D0) )
       end if
 
-!      print *,'ESRC_PBERIERF: e=',e
       return
       end
 
@@ -4015,9 +4004,6 @@ C     Constants for g0
       real*8, parameter :: gam = 4.7125D0
       real*8, parameter :: sqrt2 = sqrt(2.0d0)
       
-!      print *,'ESRC_LYPRIERF: mu=',mu
-!      print *,'ESRC_LYPRIERF: rho=',rho,' grdcc=',grdcc
-
 !     set code for do rational interpolation
       mu_0 = -1.0D0
 
@@ -4034,7 +4020,6 @@ C     Constants for g0
          return
       end if
       eps_lyp = e_lyp/rho
-!      print *,'ESRC_LYPRIERF: e_lyp=',e_lyp
 
 !     g0 from Burke, Perdew, Ernzerhof
       grs12 = sqrt(gam+rs)
@@ -4099,7 +4084,6 @@ c           e_lyp * (1 + p6 * mu_ref**6) =  eps_LDA(mu_ref)
          end if
       end if
 
-!      print *,'ESRC_LYPRIERF: e=',e
       return
       end
 
@@ -4129,8 +4113,6 @@ C*****************************************************************************
       real*8 :: rho, epbe
       real*8 :: d, d2, denom1, denom2
       
-!      print *,'ESRX_PBERIERF: mu=',mu
-!      print *,'ESRX_PBERIERF: rho=',rho,' grd=',grd
 C     General constants
       real*8, parameter :: three53 = 3.d0**(5.d0/3.d0) 
       real*8, parameter :: pi13 = pi**(1.d0/3.d0)
@@ -4155,8 +4137,6 @@ C Get standard PBE exchange functional calling HSEPBE with mu=0
       e = (d/denom1) + ((epbe + (rho*mu/sqrtpi) - d )/denom2)  
       e = 0.5d0 * e ! exchange energy for rho_sigma
 C      eps_pbe = epbe/rho
-!      print *,'ESRX_PBERIERF: epbe=',epbe
-!      print *,'ESRX_PBERIERF: e=',e
       return
       end
 
@@ -4240,9 +4220,6 @@ C*****************************************************************************
       real*8, parameter :: mu0 = 0.d0
       logical, parameter :: ERFEXP(0:2) = .false.
       logical, parameter :: MULOCAL(0:2) = .false.
-C     
-!      print *,'ESRC_PBEWIERF: mu=',mu
-!      print *,'ESRC_PBEWIERF: rho=',rho,' grdcc=',grdcc
 
       rho13 = rho**(1.d0/3.d0)
       rs = (3.d0/(4.d0*pi*rho))**(1.d0/3.d0)
@@ -4250,20 +4227,16 @@ C
 !     LDA energy
       call VCSRLDA(ZKSR,rho,rho13,mu0,MULOCAL,0,ERFEXP)
       elda = ZKSR(1)
-!      print *,'ESRC_PBEWIERF: elda=',elda
 
 !     PBE energy
       call ECPBE(rho,grdcc,epbe)
-!      print *,'ESRC_PBEWIERF: epbe=',epbe
 
 !     short-range LDA energy
       call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
       eldamu = ZKSR(1)
-!      print *,'ESRC_PBEWIERF: eldamu=',eldamu
 
       e = (epbe - elda)*erfc(mu*rs) + eldamu
 
-!      print *,'ESRC_PBEWIERF: e=',e
       return
       end
 
@@ -4297,9 +4270,6 @@ C*****************************************************************************
 ! function 
       real*8  :: berft
 
-!      print *,'ESRC_PBETCSERF: mu=',mu
-!      print *,'ESRC_PBETCSERF: rho=',rho,' grdcc=',grdcc
-
 C     LDA energy
       rho13 = rho**(1.d0/3.d0)
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
@@ -4328,7 +4298,6 @@ C     Energy
        ecerfpbe = 1.013211836423377714438795d-1*t1
 
       e = ecerfpbe
-!      print *,'ESRC_PBETCSERF: e=',e
 
       return
       end
@@ -4365,9 +4334,6 @@ C*****************************************************************************
 ! function 
       real*8 :: berft
 
-!      print *,'ESRC_PBETCSERF: mu=',mu
-!      print *,'ESRC_PBETCSERF: rho=',rho,' grdcc=',grdcc
-
 C     LDA energy
       rho13 = rho**(1.d0/3.d0)
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
@@ -4401,7 +4367,6 @@ C     Energy
 
 ! modification of ESRC_PBETCS:
       e = max(ecerfpbe,epbe)
-!      print *,'ESRC_PBETCSERF: e=',e
 
       return
       end
@@ -4559,7 +4524,6 @@ C*****************************************************************************
       real*8, intent(out) :: e
 
       call ESRX_PBEGWSERF(rho(3),grd2(4),0.d0,e)
-!     call ESRX_PBEGWSERF(rhoa  ,grdaa  ,0.d0,e)
       e = (1.d0 - VLAMBDA) * e
 
       return
@@ -4848,7 +4812,6 @@ C*****************************************************************************
 
       else
 
-
 !     Code generated by Mathematica
       fak2 = exp(0.25d0/a**2)
       berf = (1.851851851851851851851852d-2*(-1.d0 + 1.44d2*a**4*(-1.d0
@@ -4950,7 +4913,6 @@ C*****************************************************************************
       amul = a/rs
       mu_new = max(amul,mu)
 !     short-range LDA energy
-!      print *,'mu = 0.1' , mu
       call VCSRLDA(ZKSR,rho,rho13,mu_new,MULOCAL,0,ERFEXP)
       e = ZKSR(1)
       return
@@ -4996,7 +4958,6 @@ C*****************************************************************************
       amul = (alpha*bfac)/sqrt(rs)
       mu_new = max(amul,mu)
 !     short-range LDA energy
-!      print *,'mu = 0.1' , mu
       call VCSRLDA(ZKSR,rhoc,rho13,mu_new,MULOCAL,0,ERFEXP)
       e = ZKSR(1)
       return
@@ -5125,7 +5086,6 @@ C       Limit for large a
         else
           e = 0.d0
         end if
-
       
 C     Spin-polarized case
       else
@@ -5159,7 +5119,6 @@ C       Limit for large a
         else
           ea = 0.d0
         end if
-
 
 C       Density and kF for spin beta
 !       rhob = max(0.5d0*(rhoc-rhos),0d0)
@@ -5487,11 +5446,6 @@ C     parameters from the fit
       eclr=(phi**3*Qrpa(mu*sqrt(rs)/phi)+a1*mu**3+a2*mu**4+a3*mu**5+
      &     a4*mu**6+b0**8*mu**8*ec)/((1.d0+b0**2*mu**2)**4)
 
-!      Write(6,*)'Qrpa=',Qrpa(mu*sqrt(rs)/phi)
-!      Write(6,*)'sqrt(rs)',sqrt(rs)
-!      Write(6,*)'phi=',phi
-!      Write(6,*)'mu=',mu
-!      Write(6,*)'mu*sqrt(rs)/phi=',mu*sqrt(rs)/phi
       return
       end
 

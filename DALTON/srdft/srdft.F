@@ -1,6 +1,5 @@
 #define SRDFT_DEBUG -1
 #define LDAembed
-
 !
 !...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -110,7 +109,7 @@ C C K. Sharkas and J. Toulouse end
       IXWINT = 0
       ICWINT = 0
       mu_0   = -1.0D0
-C
+
 C Cut string SRFTMP
        call  CUT_INTO_FIELDS (SRFTMP,' ',maxfld,fields,lenfld,Nfld)
        IF (NFld .LE. 1) THEN
@@ -184,7 +183,6 @@ C
       IXWINT    = 12
       GO TO 15
 
-C JT 12-02-05 beg
 C     Short-range exchange PBE functional of HSE
  111  DOSRX_PBEHSE = .TRUE.
       ISJT        = .TRUE.
@@ -193,19 +191,14 @@ C     Short-range exchange PBE functional of TCS
  112  DOSRX_PBETCS = .TRUE.
       ISJT        = .TRUE.
       GO TO 15  ! Manu 01-02-2006
-C JT 12-02-05 end
-C Manu 01-02-2006 begin
 C Short-range exchange rational interpolation functional
  113  DOSRX_PBERI = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
-C Manu 01-02-2006 end
-
 C Short-range exchange PBE functional of GWS (JT 11-08-09)
  114  DOSRX_PBEGWS = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
-
 C Short-range spin-dependent exchange LDA functional (JT 11-08-09)
  115  DOSRX_LDA_S = .TRUE.
       DFT_SPINDNS = .TRUE.
@@ -221,19 +214,15 @@ C  based on DOSRX_LDA_S of JT for mu=0
 117   DOLAX_LDAS = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
-
 C  based on standard dalton DOSRX_LDA for mu=0 (KS 2011) 
 118   DOLAX_LDA = .TRUE.
       GO TO 15
-
 C  Complement exchange PBE functional (KS 08-08-11)
 119   DOLAX_PBEGWS = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
-
 C Complement Beck exchange functional (KS 08-08-11)
 120   DOLAX_GGABCK = .TRUE.
-C      ISJT    = .TRUE.
        GO TO 15
 C Short-range spin-dependent exchange GGA functional (edh 10-02-16)
 121   DOSRX_PBEGWS_S = .TRUE.
@@ -263,12 +252,8 @@ C Short-range wPBE exchange functional (erk 27 feb. 19)
 126   DOSRX_wPBE   = .TRUE.
       ISJT         = .TRUE.
       GO TO 15
-C
-  15  CONTINUE
 
-C      print *,'DOSRX_PBERI = ',DOSRX_PBERI  ! Manu
-C      print *,'DOSRX_PBEHSE = ',DOSRX_PBEHSE  ! Manu
-!      print *,'SRXFUN = ', SRXFUN  ! Manu
+  15  CONTINUE
 
       IF (.NOT.SETXFUN) THEN
           WRITE(LUPRI,'(/2A/,A/)')
@@ -278,7 +263,7 @@ C      print *,'DOSRX_PBEHSE = ',DOSRX_PBEHSE  ! Manu
               WRITE(LUPRI,'(13X,A)') XTABLE(J)
           ENDDO
       ENDIF
-C
+
       SETCFUN = .TRUE.
       DO 200 II = 1, NCTABLE
         IF (CTABLE(II) .EQ. SRCFUN) THEN
@@ -290,7 +275,7 @@ C
  200  CONTINUE
       SETCFUN = .FALSE.
       GO TO 20
-C
+
  201  GO TO 20
  202  DOSRC_LDA = .TRUE.
       GO TO 20
@@ -314,18 +299,14 @@ C     SRCMULO_A : AMUL = A/r_s
  209  DOSRC_WIB = .TRUE.
       ICWINT    = 12
       GO TO 20
-
-C JT 12-02-05 beg
 C     Short-range correlation PBE TCS functional
  210  DOSRC_PBETCS = .TRUE.
       ISJT     = .TRUE.
       GO TO 20
-
 C     Short-range correlation PBE TCS J functional
  211  DOSRC_PBETCSJ = .TRUE.
       ISJT     = .TRUE.
       GO TO 20
-
 C     Rational interpolation
  212  DOSRC_PBERI = .TRUE.
       ISJT    = .TRUE.
@@ -339,7 +320,7 @@ CFRAN      IF (Nfld .ge. 3) THEN
      &      mu_0_m4,mu_0_m6,mu_0_m7
       END IF
       GO TO 20
-
+C
  213  DOSRC_PBELO   = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
@@ -347,7 +328,6 @@ C     Weighted interpolation
  214  DOSRC_PBEWI = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
-C JT 12-02-05 end
 C Short-range correlation PBE function of GWS (JT 11-08-09)
  215  DOSRC_PBEGWS_VWN5 = .TRUE.
       ISJT    = .TRUE. 
@@ -380,12 +360,10 @@ C
  220  DOSRC_MULOE_GGA = .TRUE.
       ISJT = .TRUE.
       GO TO 20
-
 C 'NULL_S   ' Spin density with no correlation functional
  221  DFT_SPINDNS = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
-C
 C Short-range correlation LDA function with multideterminant reference (for OEP) (JT 26-08-11)
 C ... or for RSDHf calculations (Manu 06-12-2012) 
  222  DOSRC_MD_LDA = .TRUE.
@@ -480,9 +458,9 @@ C mu independt VWN5 spin-unpolarized correlation functional (erk 01 mar. 19)
 243   DOC_VWN5_nomu = .TRUE.
       ISJT          = .TRUE.
       GO TO 20
-C
+
   20  CONTINUE
-C
+
       IF (.NOT.SETCFUN) THEN
           WRITE(LUPRI,'(/2A/A/)')
      & '  SRFUN_INPUT : Invalid or no SR correlation func. specified : '
@@ -499,7 +477,7 @@ C
          CALL QUIT ('Different extrapolation schemes specified for'//
      &              ' exchange and correlation')
       END IF
-C
+
       IF (.NOT.HFXSET) THEN
 C        if user has not specified HFXFAC with .HFXFAC or implicitly with HFEXCH
 C        then set HF exchange factor to zero.
@@ -547,9 +525,7 @@ C*****************************************************************************
 !  mpif.h   : for MPI
 #include "mpif.h"
 #endif
-!
 ! infpar.h : MYNUM, NODTOT
-!
 #include "maxorb.h"
 #include "gnrinf.h"
 #include "infpar.h"
@@ -558,7 +534,6 @@ C*****************************************************************************
 #include "infvar.h"
 #include "dftinf.h"
 #include "dftcom.h"
-C
       logical, intent(in) :: DOGRD, DOERG, DOATR, TRIPLET
       logical :: DOLND, DOGGA, do_metagga
       logical :: first_call, LSRHYBR
@@ -571,7 +546,6 @@ C
       RESULTS(:) = 0.0D0
 
       IF (TRIPLET) THEN
-         !CALL QUIT('SRDFT: TRIPLET not implemented yet')
 #if SRDFT_DEBUG > 4
          WRITE(lupri,*) 'srdft.F: Calling srDFT with triplet'
          flush(lupri)
