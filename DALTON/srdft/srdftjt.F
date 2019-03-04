@@ -766,7 +766,7 @@ C  Correlation  ----------------------------------------------------------
       ENDIF
 
 !     short-range spin-dependent correlation LDA ! JT 18-08-09
-      if (DOSRC_LDA_PW92_S .OR. DOSRC_LDA_S) then
+      if (DOSRC_LDA_PW92_S) then
         call SPIN_PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       end if
 
@@ -848,12 +848,12 @@ C  Correlation  ----------------------------------------------------------
       ENDIF
 
 !     VWN5 correlation spin-polarized functional
-      IF(DOSRC_VWN5_S) THEN
+      IF(DOSRC_VWN5_S .OR. DOSRC_LDA_S) THEN
          call SPIN_VWN5C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
 
 !     VWN5 correlation spin-unpolarized functional
-      IF(DOSRC_VWN5) THEN
+      IF(DOSRC_VWN5 .OR. DOSRC_LDA) THEN
          call VWN5C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
 

@@ -274,6 +274,7 @@ C Short-range wPBE exchange functional (erk 27 feb. 19)
 
  201  GO TO 20
  202  DOSRC_LDA = .TRUE.
+      ISJT      = .TRUE. 
       GO TO 20
  203  DOSRC_GGA = .TRUE.
       GO TO 20
@@ -1385,7 +1386,7 @@ C     -------------------------------------------------------
 C     Correlation energy and potential
 C     -------------------------------------------------------
 C
-      IF ((DOSRC_LDA.OR.DOSRC_MULOCAL(0)).OR.(SRHYBR.AND.LSRLDA)) THEN
+      IF (DOSRC_MULOCAL(0).OR.(SRHYBR.AND.LSRLDA)) THEN
           CALL VCSRLDA(ZKSR,RHO,RHO13,CHIVAL,DOSRC_MULOCAL,1,ERFEXP)
       END IF
 
