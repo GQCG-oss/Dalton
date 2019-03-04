@@ -701,9 +701,8 @@ c  Exchange  ------------------------------------------------------------
       END IF
 
 
-!     LDA exchange functional (to fit with corresponding correlation
-!     functional) - see explanation with DOSRC_LDA_PW92
-      IF(DOSRX_LDA_PW92 .OR. DOSRX_LDA_S) THEN
+!     LDA exchange functional
+      IF (DOSRX_LDA .OR. DOSRX_LDA_S) THEN
          call BOTH_LDAX_ERF(rho, norder, chival, Ex, d1Ex, d2Ex)
       ENDIF
 
@@ -838,27 +837,26 @@ C  Correlation  ----------------------------------------------------------
          call PBEC_nomu(rho, grd2, norder, Ec, d1Ec, d2Ec)
       ENDIF
 
-!     VWN5 correlation spin-polarized functional
+!     VWN5 correlation spin-polarized functional, with no range-separation
       IF(DOC_VWN5_nomu_S) THEN
          call SPIN_VWN5C_nomu(rho, norder, Ec, d1Ec, d2Ec)
       ENDIF
 
-!     VWN5 correlation spin-unpolarized functional
+!     VWN5 correlation spin-unpolarized functional, with no range-separation
       IF(DOC_VWN5_nomu) THEN
          call VWN5C_nomu(rho, norder, Ec, d1Ec, d2Ec)
       ENDIF
 
-!     TPSS correlation spin-polarized functional
+!     VWN5 correlation spin-polarized functional
       IF(DOSRC_VWN5_S) THEN
          call SPIN_VWN5C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
 
-!     TPSS correlation spin-unpolarized functional
+!     VWN5 correlation spin-unpolarized functional
       IF(DOSRC_VWN5) THEN
          call VWN5C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
 
-C Kamal SHARKAS 20-05-11 beg
 C linear Complement spin-dependent (NON-Scaled) correlation LDA functional
        IF(DOLANSC_LDAS) THEN
         call ELC_LDALAMSPIN (rho(1),rho(2),VLAMBDA,DFT_SPINDNS,Ec)
@@ -877,16 +875,13 @@ C Complement Scaled correlation PBE functional
         call ELASC_PBEGWS(rho,grd2,VLAMBDA,Ec)
         call DELASC(ESRC_PBEGWSERF,rho,grd2,VLAMBDA,NORDER,d1Ec,d2Ec)
       ENDIF
-C Kamal SHARKAS 20-05-11 end
 
 !     short-range spin-dependent correlation LDA with multideterminant reference (for OEP) ! JT 26-08-11
 !     ... or for RSDHf calculations (Manu 06-12-2012)
       IF(DOSRC_MD_LDA) THEN
-!CASS        Write(LUPRI,*)'La nouvelle fonctionnelle'
         call DESRSPIN(ESRC_MD_LDAERF,rho(1),rho(2),
      &             CHIVAL,DFT_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
-!CASS      Write(LUPRI,*)'EC=',Ec
 
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11
       IF(DOSRC_MULOC_GGA) THEN
@@ -898,7 +893,6 @@ C      END IF
 C      mu = sqrt(grd2(1))/rho(1)
 C      mu = xfac*mu
 C      mu_new = max(mu,CHIVAL)
-!      print *,'xfac,SRCMULOFAC,mu_new ==>', xfac, SRCMULOFAC,mu_new
         call ESRC_MULOC_GGA(rho,grd2,CHIVAL,Ec)
         call DESR(ESRC_MULOC_GGA,rho,grd2,CHIVAL,NORDER,
      &             Ec, d1Ec, d2Ec)

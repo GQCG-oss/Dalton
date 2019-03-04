@@ -43,7 +43,7 @@ C*****************************************************************************
 C     variables for SRCPBERI
       real*8 :: mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
-C
+C     general variables
       PARAMETER  (NXTABLE = 26, NCTABLE = 43)
       character(len=10) :: XTABLE(NXTABLE), CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
@@ -142,9 +142,6 @@ C Cut string SRFTMP
           END IF
        END IF
 
-c      write (lupri, *) 'DOSRX_PBERI=',DOSRX_PBERI         ! Manu debug
-C      write (lupri, *) 'SRXFUN,SRCFUN=',SRXFUN,SRCFUN     ! Manu debug
-
       SETXFUN = .TRUE.
       DO 100 II = 1, NXTABLE
         IF (XTABLE(II) .EQ. SRXFUN) THEN
@@ -154,9 +151,9 @@ C      write (lupri, *) 'SRXFUN,SRCFUN=',SRXFUN,SRCFUN     ! Manu debug
  100  CONTINUE
       SETXFUN = .FALSE.
       GO TO 15
-C
  101  GO TO 15
  102  DOSRX_LDA = .TRUE.
+      ISJT      = .TRUE.
       GO TO 15
  103  DOSRX_GGA = .TRUE.
       GO TO 15
@@ -182,7 +179,6 @@ C
  110  DOSRX_WIB = .TRUE.
       IXWINT    = 12
       GO TO 15
-
 C     Short-range exchange PBE functional of HSE
  111  DOSRX_PBEHSE = .TRUE.
       ISJT        = .TRUE.
@@ -697,7 +693,6 @@ C     =============================
       IF (KWRK .GT. LWORK) CALL ERRWRK('SRDFT',-KWRK,LWORK)
 
       IF(ISJT) THEN
-C JT 15-02-05 beg
         CALL SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
      &            WORK(KDGASR),DOGGA,DOERG,DOGRD,DOATR,TRIPLET,
@@ -1317,27 +1312,23 @@ C     -------------------------------------------------------
 C     Exchange energy and potential
 C     -------------------------------------------------------
 
-      IF (DOSRX_LDA.OR.(SRHYBR.AND.LSRLDA)) THEN
+      IF (SRHYBR.AND.LSRLDA) THEN
           CALL VXSRLDA(XKSR,RHO,RHO13,CHIVAL,1,ERFEXP)
       END IF
 
-C Kamal SHARKAS 08-08-11 beg
       IF (DOLAX_LDA) THEN
           CALL VXLALDA (XKSR,RHO,RHO13,VLAMBDA)
       END IF
-C Kamal SHARKAS 08-08-11 end
 
       IF (DOSRX_GGA) THEN
           CALL VXSRGGA(XKSR,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
      &                 CHIVAL,ERFEXP)
       END IF 
 
-C Kamal SHARKAS 08-08-11 beg
       IF (DOLAX_GGABCK) THEN
           CALL VLAXBEK(XKSR,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
      &                 VLAMBDA)
       END IF
-C Kamal SHARKAS 08-08-11 end 
 
       IF (DOSRGGA2) THEN
           CALL VXSRGGA2(XKSR,RHO,RHO13,RHOGRD,RHOLAP,
@@ -1398,20 +1389,17 @@ C
           CALL VCSRLDA(ZKSR,RHO,RHO13,CHIVAL,DOSRC_MULOCAL,1,ERFEXP)
       END IF
 
-C Kamal SHARKAS 08-08-11 beg
       IF (DOLANSC_LDA) THEN
           CALL VCLALDA (ZKSR,RHO,RHO13,VLAMBDA)
       END IF
       IF (DOLASC_LDA) THEN
           CALL VCLASLDA (ZKSR,RHO,RHO13,VLAMBDA)
       END IF
-C Kamal SHARKAS 08-08-11 end
 
       IF (DOSRC_GGA) THEN
           CALL VCSRGGA(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,
      &                 CHIVAL,ERFEXP)
       END IF
-C Kamal SHARKAS 08-08-11 beg
 
 C  NON-SCALED
       IF (DOLANC_GGALYP) THEN
@@ -1423,8 +1411,6 @@ C SCALED
       IF (DOLASC_GGALYP) THEN
           CALL VSCLALYP(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,VLAMBDA)
       ENDIF
-
-C Kamal SHARKAS 08-08-11 end
 
       IF (DOSRC_WIB) THEN
           CALL ELYP(ZKSR(1,1),RHO,RHO13,RHOGRD)
