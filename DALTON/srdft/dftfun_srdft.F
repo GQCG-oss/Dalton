@@ -21,12 +21,12 @@
 !...      http://daltonprogram.org
 !
 !
-C
+
+
 C     **************************
 C     ***** Dirac exchange *****
 C     **************************
-C
-C  /* Deck edrc */
+
 C*****************************************************************************
       PURE SUBROUTINE EDRC(ED,RHO,RHO13)
 C*****************************************************************************
@@ -37,12 +37,11 @@ C*****************************************************************************
       real*8, parameter :: D1 = 1.0d0 
       real*8, parameter :: D3 = 3.0d0 
       real*8, parameter :: D4 = 4.0d0 
-c     &           CX = -(D3/D4)*((D3/PI)**(D1/D3)))
       ED = -(D3/D4)*((D3/PI)**(D1/D3))*RHO*RHO13
       RETURN
       END
-C
-C  /* Deck vdrc */
+
+
 C*****************************************************************************
       PURE SUBROUTINE VDRC(VD,RHO13)
 C*****************************************************************************
@@ -55,8 +54,8 @@ C*****************************************************************************
       VD = -((D3/PI)**(D1/D3))*RHO13
       RETURN
       END
-C
-C  /* Deck V1DRC */ 
+
+
 C*****************************************************************************
       PURE SUBROUTINE V1DRC(VD0,VD1,RHO,RHO13)
 C*****************************************************************************
@@ -72,12 +71,12 @@ C*****************************************************************************
       VD1 = (-(D3/PI)**D13)*D13*RHO13/RHO
       RETURN
       END
-C
+
+
 C     ********************************
 C     ***** Vosko, Wilk & Nusair ***** 
 C     ********************************
-C
-C  /* Deck evwn */
+
 C*****************************************************************************
       SUBROUTINE EVWN(ECV,RHO,RHO13)
 C*****************************************************************************
@@ -85,24 +84,22 @@ C
 C     Correlation energy (G. J. Laming)
 C
 C*****************************************************************************
-#include <implicit.h>
-C
+#include "implicit.h"
       CALL WVWN(VA1,RHO,RHO13,E1,.FALSE.,.TRUE.)
       ECV = E1*RHO
       RETURN
       END
-C
-C  /* Deck vvwn */
+
+
 C*****************************************************************************
       SUBROUTINE VVWN(VA,RHO,RHO13)
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       CALL WVWN(VA,RHO,RHO13,E1,.TRUE.,.TRUE.)
       RETURN
       END
-C
-C
-C  /* Deck wvwn */
+
+
 C*****************************************************************************
       SUBROUTINE WVWN(VA1,RHO,RHO13,E1,POTENT,SPNCMP)
 C*****************************************************************************
@@ -110,8 +107,8 @@ C
 C     C. W. MURRAY & G. J. LAMING
 C
 C*****************************************************************************
-#include <implicit.h> 
-#include <pi.h>
+#include "implicit.h" 
+#include "pi.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           D6 = 6.0D0)
       PARAMETER (CV = 0.5D0) 
@@ -169,7 +166,6 @@ C
       END
 
 
-C  /* Deck V1VWN */ 
 C*****************************************************************************
       SUBROUTINE V1VWN(VD0,VD1,RHO,RHO13)
 C*****************************************************************************
@@ -178,8 +174,8 @@ C     WRITTEN   By    G. J. Laming
 C     Some adjustments by A. M. Lee
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           D6 = 6.0D0, D7 = 7.0D0, D8 = 8.0D0)
       PARAMETER (CV = D1/D2) 
@@ -229,11 +225,10 @@ C
       END
 
 
-C  /* Deck vtvwn */
 C*****************************************************************************
       SUBROUTINE VTVWN(VD1,RHO,RHO13)
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D1 = 1.0D0, D2 = 2.0D0, POW13 = 1.0D0/3.0D0, 
      &          D8D9 = 8.0D0/9.0D0)
       FAC = -D8D9/(D2**POW13 - D1)
@@ -244,14 +239,13 @@ C*****************************************************************************
       END
 
 
-C /* Deck ebck */
 C*****************************************************************************
       SUBROUTINE EBCK(BECKI,RHO,RHO13,RHOGRD)
 C*****************************************************************************
 C     Evaluates only the energy
 C     *************WRITTEN BY G. J. LAMING********************
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
       PARAMETER (BETAP = 0.0042D0)
       DF = (D1/D2)**(D1/D3)
@@ -260,13 +254,10 @@ C
       SINHIA = log(XALPHA+sqrt((XALPHA*XALPHA) + D1))
       DENOMA = (D1 + (6.0D0*BETAP*XALPHA*SINHIA))
       BECKI  = -BETAP*((DF*RHO*RHO13)*XALPHA*XALPHA/DENOMA)
-!      print *,'EBCK: RHO=',RHO,' RHOGRD=',RHOGRD
-!      print *,'EBCK: BECKI =',BECKI
       RETURN
       END
 
 
-C /* Deck gbck */ 
 C*****************************************************************************
       SUBROUTINE GBCK(VB1,VB2,RHO,RHO13,RHOGRD)
 C*****************************************************************************
@@ -279,7 +270,7 @@ C           RHOGRDa  : gradient of spin-alpha density
 C           RHOGRDa2 : square of gradient of spin-alpha density
 C     *************WRITTEN BY G. J. LAMING********************
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, DP5 = 0.5D0, D6 = 6.0D0)
       PARAMETER (FT = 4.0D0/3.0D0, BETAP = 0.0042D0)
       DF = D2**FT
@@ -295,20 +286,16 @@ C
       BBB   = D6*ALPHA*B*(ASH+ALPHA/EXV)
       VB2   = (BBB - D2)*B*XL
       VB1   = (D1 - BBB)*ALPHA*B*AAA
-!      print *,'EBCK: RHO=',RHO,' RHOGRD=',RHOGRD
-!      print *,'EBCK: VB1 =',VB1
-!      print *,'EBCK: VB2 =',VB2
       RETURN
       END
 
 
-c /* Deck vbck */
 C*****************************************************************************
       SUBROUTINE VBCK(VA,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG)
 C*****************************************************************************
 C     Evaluates directly the potential 
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0, 
      &           D6 = 6.0D0, D12 = 12.0D0, DP5 = 0.5D0)
       PARAMETER (BETAP=0.0042D0)
@@ -345,19 +332,12 @@ C
       VA    =  TERM1+TERM2+TERM3+TERM4
       RETURN
       END
-C  /* Deck B88xd2 */
+
+
 C*****************************************************************************
       SUBROUTINE V1BCK(DF1000,DF0010,DF2000,DF1010,DF0020,
      &                 RHOINP,RHOGRD)
 C*****************************************************************************
-C
-#include <implicit.h>
-C
-      PARAMETER (D0 = 0.0D0, DP5 = 0.50D0, D1 = 1.0D0, D2 = 2.0D0, 
-     &           D3 = 3.0D0, D4 = 4.0D0, D43 = D4/D3, D6 = 6.0D0, 
-     &           D7 = 7.0D0, BETAP = 0.0042D0)
-C
-C--------------------------------------------------------------------
 C     (C) A. M. Lee, Cambridge 1993.
 C
 C     Calculates the second and lower derivatives of the Becke '88
@@ -365,8 +345,11 @@ C     exchange functional, wrt the density and related functions.
 C     work with alpha-spin density, RHO; and length of the
 C     alpha-spin gradient vector, GRHO. 
 C
-C--------------------------------------------------------------------
-C
+C*****************************************************************************
+#include "implicit.h"
+      PARAMETER (D0 = 0.0D0, DP5 = 0.50D0, D1 = 1.0D0, D2 = 2.0D0, 
+     &           D3 = 3.0D0, D4 = 4.0D0, D43 = D4/D3, D6 = 6.0D0, 
+     &           D7 = 7.0D0, BETAP = 0.0042D0)
       GRHO = DP5*RHOGRD
       RHO  = DP5*RHOINP
       IF (RHO .LT. 1D-10) THEN
@@ -402,27 +385,21 @@ C
          DF2000 = DP5*(DF10*(D7/D4 + F3) + F*DF310)*X10
          DF0020 = DP5*(DF01*(D1 + F3) + F*X01*F4)*X01
       END IF
-!      print *,'V1BCK: RHO=',RHO,' RHOGRD=',RHOGRD  !JT
-!      print *,'V1BCK: DF1000=',DF1000              !JT
-!      print *,'V1BCK: DF0010=',DF0010              !JT
-!      print *,'V1BCK: DF2000=',DF2000              !JT
-!      print *,'V1BCK: DF1010=',DF1010              !JT
-!      print *,'V1BCK: DF0020=',DF0020              !JT
       RETURN
       END
-C
+
+
 C     ****************************
 C     ***** Lee, Yang & Parr *****
 C     ****************************
-C
-C /* Deck elyp */
+
 C*****************************************************************************
       SUBROUTINE ELYP(CLYPCI,RHO,RHO13,RHOGRD)
 C*****************************************************************************
 C     *************WRITTEN BY G. J. LAMING********************
 C*****************************************************************************
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (DP5 = 0.50D0,
      &           ALL=0.04918D0,
      &           BLL=0.132D0,
@@ -466,7 +443,8 @@ C     LEE,PARR AND YANG'S 'CORRELATION FUNCTIONAL:
      &      +TERM7+TERM8
       RETURN
       END
-C /* Deck glyp */
+
+
 C*****************************************************************************
       SUBROUTINE GLYP(TERM1,U,RHO,RHO13,RHOGRD)
 C*****************************************************************************
@@ -474,8 +452,8 @@ C
 C***********WRITTEN   BY   G. J. LAMING******************
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (ALL=0.04918D0,
      &           BLL=0.132D0,
      &           CLL=0.2533D0,
@@ -486,7 +464,7 @@ C*****************************************************************************
      &           HLL=(1.0D0/18.0D0),
      &           PLL=(5.0D0/18.0D0))
       CFFFF=0.3D0*((3.0D0*PI*PI)**(2.0D0/3.0D0))
-C
+      
       RRR   = RHO*RHO
       BG    = ALL*BLL
       RRRR  = RRR*RHO
@@ -513,7 +491,6 @@ C
       END
 
 
-c /* Deck vlyp */
 C*****************************************************************************
       SUBROUTINE VLYP(VA,RHO,RHO13,RHOGRD,RHOLAP)
 C*****************************************************************************
@@ -521,12 +498,12 @@ C
 C     Lee
 C  
 C*****************************************************************************
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (ALL=0.04918D0,BLL=0.132D0,CLL=0.2533D0,DLL=0.349D0,
      &           FLL=(7.0D0/18.0D0),PLL=(5.0D0/18.0D0))
       CFFFF=0.3D0*((3.0D0*PI*PI)**(2.0D0/3.0D0))
-C
+      
       RRR    = RHO*RHO
       RRRR   = RHO*RRR
       RHOT   = 1.0D0/RHO13
@@ -553,16 +530,9 @@ C
       END
 
 
-C  /* Deck v1lyp */
 C*****************************************************************************
       SUBROUTINE V1LYP(DF1000,DF0010,DF2000,DF1010,DF0020,RHOINP,RHOGRD)
 C*****************************************************************************
-#include <implicit.h>
-#include <pi.h>
-      PARAMETER (DP5=0.050,
-     &           ALL=0.04918D0,BLL=0.132D0,CLL=0.2533D0,DLL=0.349D0)
-C
-C-------------------------------------------------------------------
 C     (C) A. M. Lee Cambridge 1993/94
 C
 C     The second and lower derivatives of the LYP functional,wrt
@@ -571,8 +541,11 @@ C
 C     The following is closed shell code and cannot be generalised.
 C     Care has been taken to avoid numerical instabilities.
 C
-C-------------------------------------------------------------------
-C
+C*****************************************************************************
+#include "implicit.h"
+#include "pi.h"
+      PARAMETER (DP5=0.050,
+     &           ALL=0.04918D0,BLL=0.132D0,CLL=0.2533D0,DLL=0.349D0)
       PARAMETER(C13=1.0D0/3.0D0,C19=1.0D0/9.0D0,C49=4.0D0/9.0D0,
      &          C23=2.0D0/3.0D0,C43=4.0D0/3.0D0,C512=5.0D0/12.0D0,
      &          C524=5.0D0/24.0D0,C548=5.0D0/48.0D0,C506=5.0D0/6.0D0,
@@ -641,7 +614,7 @@ C
 C     Examine carefully:
 
       Dw10=(c13*crho43+Deps10/eps
-     1-11.0D0/3.0D0*rhon1)
+     &-11.0D0/3.0D0*rhon1)
 
       Dw10x2=omega*Dw10*Dw10
       Dw10=omega*Dw10
@@ -651,15 +624,15 @@ C    lim rho->big, dw10/omega->0/0
 
       alt=c13*drho43*(deps10+X10*eps)
       Dw20=Dw10x2+omega*(
-     1X10*c13*crho43+11.0D0/3.0D0*rhon2+alt)
+     &X10*c13*crho43+11.0D0/3.0D0*rhon2+alt)
 
 
 
       delta=drho13*eps+crho13
       Ddel10=-c13*drho43*eps-c13*crho43+
-     1drho13*Deps10
+     &drho13*Deps10
       Ddel20=c49*rhon1*rho43*(d*eps+c)
-     1-2.0D0*c13*drho43*Deps10+drho13*Deps20
+     &-2.0D0*c13*drho43*Deps10+drho13*Deps20
 
       f1=rho*eps
       Df110=(eps+rho*Deps10)
@@ -693,15 +666,13 @@ C     f5=f5+f6
       Df510=-C136*grho2*Ddel10
       Df520=-C136*grho2*Ddel20
       Df511=-C118*grho*Ddel10
-     
+      
       f7=-c23*rho2*grho2
       Df710=2.0D0*f7/rho
       Df720=2.0D0*f7/rho2
       Df701=2.0D0*f7/grho
       Df702=2.0D0*f7/grho2
       Df711=-4.0D0*c23*rho*grho
-      
-
 
 C     f8=f8+f9
       f8=c524*rho2*grho2
@@ -727,18 +698,18 @@ C     f8=f8+f9
       DG311=Df711+Df811
 
       DF10=omega*(DG310+rhoa*(G2+rhoa*DG210))+
-     1Dw10*(G3+G2*rhoa2)
+     &Dw10*(G3+G2*rhoa2)
       DF10=-(a*DF110+ab*DF10)
 
       DF11=
-     1    omega*(DG311+rhoa*(DG201+rhoa*DG211))+
-     1Dw10*(DG301+DG201*rhoa2)
+     &    omega*(DG311+rhoa*(DG201+rhoa*DG211))+
+     &Dw10*(DG301+DG201*rhoa2)
       DF11=-(ab*DF11)
 
       DF20=DG320*omega+DG310*Dw10+DG310*Dw10+G3*Dw20+
-     1DG210*rhoa2*dw10+G2*rhoa*dw10+dw20*rhoa2*G2+
-     1(G2+rhoa*DG210)*(0.50D0*omega+rhoa*Dw10)+
-     1rhoa*omega*(DG210+0.50D0*DG210+rhoa*DG220)
+     &DG210*rhoa2*dw10+G2*rhoa*dw10+dw20*rhoa2*G2+
+     &(G2+rhoa*DG210)*(0.50D0*omega+rhoa*Dw10)+
+     &rhoa*omega*(DG210+0.50D0*DG210+rhoa*DG220)
       DF20=-(a*DF120+ab*DF20)
 
       DF01=(DG301+rhoa2*DG201)*omega
@@ -763,8 +734,8 @@ C     DF1000 scaled for tozer
 
 C*****************************************************************************
       subroutine vtlyp(F20000,F02000,F11000,F10100,F01010,
+     &   F10010,F01100,F10001,F01001,pa,pb,gaa,gbb,gab)
 C*****************************************************************************
-     1   F10010,F01100,F10001,F01001,pa,pb,gaa,gbb,gab)
 
       implicit none
 
@@ -785,7 +756,6 @@ C*****************************************************************************
       double precision btdbdb
 
 c     ****data for Lyp
-     
       Co=  36.46239897876477 d0
       a=    0.04918          d0
 c     b=    0.132            d0
@@ -902,11 +872,11 @@ c     ****definition of S and its first and second derivatives
       bsdb=-ab*(ert*pb53+yui+s3*x/p*(-gaambb))
       bsdadb=-ab*(j3+s3d*(y-x)*gaambb/p+(x-y)/p/p*s3*gaambb)
       bsdada=-ab*(Co*40/9*pa23+j3+s3d*2*y/p*(gaambb)
-     1       +s3*(gaambb)*(-2.0d0*y/p/p))
+     &       +s3*(gaambb)*(-2.0d0*y/p/p))
 
 c Timings only
       bsdada=-ab*(Co*40/9*pa23+j3+s3d*2*y/p*(gaambb)
-     1       +s3*(gaambb)*(-2.0d0*y/p/p))
+     &       +s3*(gaambb)*(-2.0d0*y/p/p))
 
 c     ****definition of T and its first and second derivatives
 
@@ -951,46 +921,28 @@ c     ****Assembly of second derivatives involving pa,pb
 
       abwd=ab*wd
       F20000=jaa+wdd*(st*bs+bt)+2.0d0*wd*(pb*bs+st*bsda+btda)
-     1       +w*(2.0D0*pb*bsda+st*bsdada+btdada)
+     &       +w*(2.0D0*pb*bsda+st*bsdada+btdada)
 
 c For timings only
 
       F02000=jaa+wdd*(st*bs+bt)+2.0d0*wd*(pb*bs+st*bsda+btda)
-     1       +w*(2.0D0*pb*bsda+st*bsdada+btdada)
+     &       +w*(2.0D0*pb*bsda+st*bsdada+btdada)
 
 c End
  
       F11000=jab+wdd*(st*bs+bt)
-     1       +wd*(pa*bs+st*bsdb+btdb+pb*bs+st*bsda+btda)
-     2       +w*(bs+pb*bsdb+pa*bsda+st*bsdadb+btdadb)
+     &       +wd*(pa*bs+st*bsdb+btdb+pb*bs+st*bsda+btda)
+     &       +w*(bs+pb*bsdb+pa*bsda+st*bsdadb+btdadb)
 
 c    ****Second derivatives involving gab and a density
 
       F10001=-abw*2.0d0*(pb*s1+st*s1d-4.0d0/3.0d0*p)
-     1       -ab*wd*2.0d0*(st*s1-2.0d0/3.0d0*p2)
+     &       -ab*wd*2.0d0*(st*s1-2.0d0/3.0d0*p2)
       F01001=-abw*2.0d0*(pa*s1+st*s1d-4.0d0/3.0d0*p)
-     1       -ab*wd*2.0d0*(st*s1-2.0d0/3.0d0*p2)
+     &       -ab*wd*2.0d0*(st*s1-2.0d0/3.0d0*p2)
 
 
 c    ****All other derivatives are aero for Lyp
-
-c         F00200=F00020=F00110=F00101=F00011=F00002=0
-c     write(6,*)'w,wd,wdd',w,wd,wdd
-c     write(6,*)'del,deld,deldd',del,deld,deldd
-c     write(6,*)'bsda,bsdb',bsda,bsdb
-c     write(6,*)'jaa,jab',jaa,jab
-c     write(6,*)'pagbb,pbgbb',F10010,F01010
-c     write(6,*)'papa',F20000
-c     write(6,*)'papb',F11000
-c     write(6,*)'pagab',F10001
-c     write(6,*)'pagaa,bs',F10100,bs
-c     write(6,*)'btda,btdb,btdadb,btdada',btda,btdb,btdadb,btdada
-c     write(6,*)'pbgaa,ta,tb,abwb2',F01100,ta,tb,ab*wd*pb*pb
-c     write(6,*)'F10001,bt,qwewdab',F10001,bt,wd*qwe*ab
-c     write(6,*)'bsdada,bsdadb,F01001',bsdada,bsdadb,F01001
-
-c     write(6,*)'DF1010,DF2000',
-c    1           F10100,F20000
       return
       end
 
@@ -999,14 +951,15 @@ C*****************************************************************************
       SUBROUTINE GLYPCO(EASYGA,EASYGB,HARDGA,HARDGB,HARDER,
      &                  RHO,RHO13,RHOGRD,UHF)
 C*****************************************************************************
-      IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-      PARAMETER (DP5 = 0.50D0)
 C
 C
 C     OPENSHELL LYP CORRELATION  GRADIENT CODE
 C
 C***********WRITTEN   BY   G. J. LAMING******************
 C
+C*****************************************************************************
+      IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+      PARAMETER (DP5 = 0.50D0)
       LOGICAL UHF
 C
       IF (.NOT.UHF) THEN
@@ -1045,19 +998,20 @@ C
 C
       RETURN
       END
-C
+
+
 C*****************************************************************************
       SUBROUTINE GCSLYP(TERM1,U,RHO,RHO13,GMOD)
 C*****************************************************************************
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
 #include "pi.h"
       COMMON/DFTCON/BCX,CVX,AL,BL,CL,DL,CF,C3,CRS,PRE,THIRD,CINF,FF,AA
-     1,BB,GG,DD,AK1,AK2,AK3,PP,FT,QQ,BETAP,CV,AI,BI,CI,X0I,AII,BII,CII
-     1,X0II,AIII,BIII,CIII,X0III,FPPZ,FTT,FTTT,QQQI,QQQII,QQQIII,XF0I
-     1,YF0I,XF0II,YF0II,XF0III,YF0III,DCRS,PD,Q,P,ALL,BLL,CLL,DLL,CFFF
-     1,ELL,FLL,GLL,HLL,PLL,CFFFF,ONE,TWO,THREE,FOUR,FIVE,EIGHT,TEN
-     1,ELEVEN,VAR6,POW1,VAR14,VAR2,CFG,C2G,PRODAB,C3G,C33G,C4G,C44G
-     1,C5G,C55G,C6G,C66G,C7G,C77G,C8G,C88G,C9G,C99G,C11G,C1111G
+     &,BB,GG,DD,AK1,AK2,AK3,PP,FT,QQ,BETAP,CV,AI,BI,CI,X0I,AII,BII,CII
+     &,X0II,AIII,BIII,CIII,X0III,FPPZ,FTT,FTTT,QQQI,QQQII,QQQIII,XF0I
+     &,YF0I,XF0II,YF0II,XF0III,YF0III,DCRS,PD,Q,P,ALL,BLL,CLL,DLL,CFFF
+     &,ELL,FLL,GLL,HLL,PLL,CFFFF,ONE,TWO,THREE,FOUR,FIVE,EIGHT,TEN
+     &,ELEVEN,VAR6,POW1,VAR14,VAR2,CFG,C2G,PRODAB,C3G,C33G,C4G,C44G
+     &,C5G,C55G,C6G,C66G,C7G,C77G,C8G,C88G,C9G,C99G,C11G,C1111G
       RRR=RHO*RHO
       BG=ALL*BLL
       RRRR=RRR*RHO
@@ -1073,10 +1027,10 @@ C*****************************************************************************
       XARHO=-ALL-XXX*XD-XXX*RHO*XDRHO
       TERM1=XARHO/XB-XBRHO*XA/XB2
       XE=FLL*(CLL/(RRR)+DLL/(RRR*XB))
-     1  +RHO13/(6.0D0*RRR)
+     &  +RHO13/(6.0D0*RRR)
       XERHO=FLL*(-2.0D0*CLL/RRRR-2.0D0*DLL/(RRRR*XB)
-     1                    -XBRHO*DLL/(RRR*XB2))
-     1     -PLL*RHO13/RRRR
+     &                    -XBRHO*DLL/(RRR*XB2))
+     &     -PLL*RHO13/RRRR
       XF=(BG/4.0D0)*XD*XE/XB
       XFRHO=(BG/4.0D0)*(XDRHO*XE/XB+XD*XERHO/XB-XD*XE*XBRHO/XB2)
 C
@@ -1085,22 +1039,24 @@ C
       RETURN
       END
 
-C     OPENSHELL POTENTIAL FOR THE GRADIENT OF LYP FUNCTIONAL ENERGY
-C     CODED UP BY G.J.LAMING, JUNE 1991
+
 C*****************************************************************************
       SUBROUTINE GOSLYP(A1,A2,A3,A4,A5,RHOA,RHOB,RHOA53,RHOB53
 C*****************************************************************************
-     1,RHOA83,RHOB83,RHO13,RHO23,RHO43
-     1,RHO113,RHO143,AMASQ,AMBSQ,AMA,AMB,AMAAMB)
+C     OPENSHELL POTENTIAL FOR THE GRADIENT OF LYP FUNCTIONAL ENERGY
+C     CODED UP BY G.J.LAMING, JUNE 1991
+C*****************************************************************************
+     &,RHOA83,RHOB83,RHO13,RHO23,RHO43
+     &,RHO113,RHO143,AMASQ,AMBSQ,AMA,AMB,AMAAMB)
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
 #include "pi.h"
       COMMON/DFTCON/BCX,CVX,AL,BL,CL,DL,CF,C3,CRS,PRE,THIRD,CINF,FF,AA
-     1,BB,GG,DD,AK1,AK2,AK3,PP,FT,QQ,BETAP,CV,AI,BI,CI,X0I,AII,BII,CII
-     1,X0II,AIII,BIII,CIII,X0III,FPPZ,FTT,FTTT,QQQI,QQQII,QQQIII,XF0I
-     1,YF0I,XF0II,YF0II,XF0III,YF0III,DCRS,PD,Q,P,ALL,BLL,CLL,DLL,CFFF
-     1,ELL,FLL,GLL,HLL,PLL,CFFFF,ONE,TWO,THREE,FOUR,FIVE,EIGHT,TEN
-     1,ELEVEN,VAR6,POW1,VAR14,VAR2,CFG,C2G,PRODAB,C3G,C33G,C4G,C44G
-     1,C5G,C55G,C6G,C66G,C7G,C77G,C8G,C88G,C9G,C99G,C11G,C1111G
+     &,BB,GG,DD,AK1,AK2,AK3,PP,FT,QQ,BETAP,CV,AI,BI,CI,X0I,AII,BII,CII
+     &,X0II,AIII,BIII,CIII,X0III,FPPZ,FTT,FTTT,QQQI,QQQII,QQQIII,XF0I
+     &,YF0I,XF0II,YF0II,XF0III,YF0III,DCRS,PD,Q,P,ALL,BLL,CLL,DLL,CFFF
+     &,ELL,FLL,GLL,HLL,PLL,CFFFF,ONE,TWO,THREE,FOUR,FIVE,EIGHT,TEN
+     &,ELEVEN,VAR6,POW1,VAR14,VAR2,CFG,C2G,PRODAB,C3G,C33G,C4G,C44G
+     &,C5G,C55G,C6G,C66G,C7G,C77G,C8G,C88G,C9G,C99G,C11G,C1111G
 C
       RHO=RHOA+RHOB
       RR=RHO*RHO
@@ -1157,49 +1113,52 @@ C     CALCULATION OF DELTA AND IT'S DERIVATIVE WRT DENSITY
       FC=-F3+F4+F5-F6+F7B-F8B+F9-F10
       FD=TWO*(-F3+F4+F9)
       CALL NGLYP(A1,RHOA,RHOB,AMA,AMB,AMAAMB,W,WDA,WDB,DTA,DTADA,
-     1 RHOA53,RHOB53,RHOA83,RHOB83,
-     1 RHO13,RHO23,RHO43,
-     1 RHO113,RHO143,
-     1 F3,F4,F5,F6,
-     1  VAR,VAR3,VAR4,VAR5,VAR9,RR,PAB,RHO,ZA,ZB,
-     1 Q1,Q2,Q1DA,Q2DA,XDA,XDB,ZADA,ZBDA,
-     1 AMASQ,AMBSQ)
+     & RHOA53,RHOB53,RHOA83,RHOB83,
+     & RHO13,RHO23,RHO43,
+     & RHO113,RHO143,
+     & F3,F4,F5,F6,
+     &  VAR,VAR3,VAR4,VAR5,VAR9,RR,PAB,RHO,ZA,ZB,
+     & Q1,Q2,Q1DA,Q2DA,XDA,XDB,ZADA,ZBDA,
+     & AMASQ,AMBSQ)
       CALL NGLYP(A2,RHOB,RHOA,AMB,AMA,AMAAMB,W,WDA,WDB,DTA,DTADA,
-     1 RHOB53,RHOA53,RHOB83,RHOA83,
-     1 RHO13,RHO23,RHO43,
-     1 RHO113,RHO143,
-     1 F3,F4,F5,F6,
-     1 VAR,VAR3,VAR4,VAR5,VAR9,RR,PAB,RHO,ZB,ZA,
-     1 Q2,Q1,Q2DB,Q1DB,XDB,XDA,ZBDB,ZADB,
-     1 AMBSQ,AMASQ)
+     & RHOB53,RHOA53,RHOB83,RHOA83,
+     & RHO13,RHO23,RHO43,
+     & RHO113,RHO143,
+     & F3,F4,F5,F6,
+     & VAR,VAR3,VAR4,VAR5,VAR9,RR,PAB,RHO,ZB,ZA,
+     & Q2,Q1,Q2DB,Q1DB,XDB,XDA,ZBDB,ZADB,
+     & AMBSQ,AMASQ)
       A3=TWO*FB
       A4=TWO*FC
       A5=FD
       RETURN
       END
+
+
+C*****************************************************************************
+      SUBROUTINE NGLYP(T,RHOA,RHOB,AMA,AMB,AMAAMB,W,WDA,WDB,DTA,DTADA,
+C*****************************************************************************
 C     OPENSHELL POTENTIAL FOR THE GRADIENT OF LYP FUNCTIONAL ENERGY
 C
 C**********CODED   UP   BY   G.  J.  LAMING,   JUNE 1991*************
 C
 C*****************************************************************************
-      SUBROUTINE NGLYP(T,RHOA,RHOB,AMA,AMB,AMAAMB,W,WDA,WDB,DTA,DTADA,
-C*****************************************************************************
-     1 RHOA53,RHOB53,RHOA83,RHOB83,
-     1 RHO13,RHO23,RHO43,
-     1 RHO113,RHO143,
-     1 F3,F4,F5,F6,
-     1  VAR,VAR3,VAR4,VAR5,VAR9,RR,PAB,RHO,ZA,ZB,
-     1 Q1,Q2,Q1DA,Q2DA,XDA,XDB,ZADA,ZBDA,
-     1 AMASQ,AMBSQ)
+     & RHOA53,RHOB53,RHOA83,RHOB83,
+     & RHO13,RHO23,RHO43,
+     & RHO113,RHO143,
+     & F3,F4,F5,F6,
+     &  VAR,VAR3,VAR4,VAR5,VAR9,RR,PAB,RHO,ZA,ZB,
+     & Q1,Q2,Q1DA,Q2DA,XDA,XDB,ZADA,ZBDA,
+     & AMASQ,AMBSQ)
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
 #include "pi.h"
       COMMON/DFTCON/BCX,CVX,AL,BL,CL,DL,CF,C3,CRS,PRE,THIRD,CINF,FF,AA
-     1,BB,GG,DD,AK1,AK2,AK3,PP,FT,QQ,BETAP,CV,AI,BI,CI,X0I,AII,BII,CII
-     1,X0II,AIII,BIII,CIII,X0III,FPPZ,FTT,FTTT,QQQI,QQQII,QQQIII,XF0I
-     1,YF0I,XF0II,YF0II,XF0III,YF0III,DCRS,PD,Q,P,ALL,BLL,CLL,DLL,CFFF
-     1,ELL,FLL,GLL,HLL,PLL,CFFFF,ONE,TWO,THREE,FOUR,FIVE,EIGHT,TEN
-     1,ELEVEN,VAR6,POW1,VAR14,VAR2,CFG,C2G,PRODAB,C3G,C33G,C4G,C44G
-     1,C5G,C55G,C6G,C66G,C7G,C77G,C8G,C88G,C9G,C99G,C11G,C1111G
+     &,BB,GG,DD,AK1,AK2,AK3,PP,FT,QQ,BETAP,CV,AI,BI,CI,X0I,AII,BII,CII
+     &,X0II,AIII,BIII,CIII,X0III,FPPZ,FTT,FTTT,QQQI,QQQII,QQQIII,XF0I
+     &,YF0I,XF0II,YF0II,XF0III,YF0III,DCRS,PD,Q,P,ALL,BLL,CLL,DLL,CFFF
+     &,ELL,FLL,GLL,HLL,PLL,CFFFF,ONE,TWO,THREE,FOUR,FIVE,EIGHT,TEN
+     &,ELEVEN,VAR6,POW1,VAR14,VAR2,CFG,C2G,PRODAB,C3G,C33G,C4G,C44G
+     &,C5G,C55G,C6G,C66G,C7G,C77G,C8G,C88G,C9G,C99G,C11G,C1111G
       VAR10=VAR6*RHOA53
       A1=FOUR*ALL*PAB
       A1D=FOUR*ALL*RHOB
@@ -1224,9 +1183,9 @@ C*****************************************************************************
       T5A=C5G*(WDA*PAB+W*RHOB)
       T6A=C6G*(WDA*PAB*DTA+W*RHOB*DTA+W*PAB*DTADA)
       T7A=C7G*
-     1 (WDA*PAB*DTA*Q1+W*RHOB*DTA*Q1+W*PAB*DTADA*Q1+W*PAB*DTA*Q1DA)
+     & (WDA*PAB*DTA*Q1+W*RHOB*DTA*Q1+W*PAB*DTADA*Q1+W*PAB*DTA*Q1DA)
       T7AA=C7G*
-     1  (WDA*PAB*DTA*Q2+W*RHOB*DTA*Q2+W*PAB*DTADA*Q2+W*PAB*DTA*Q2DA)
+     &  (WDA*PAB*DTA*Q2+W*RHOB*DTA*Q2+W*PAB*DTADA*Q2+W*PAB*DTA*Q2DA)
       T8A=C8G*(WDA*PAB*Q1+W*RHOB*Q1+W*PAB*Q1DA)
       T8AA=C8G*(WDA*PAB*Q2+W*RHOB*Q2+W*PAB*Q2DA)
       T9A=C9G*(WDA*RR+W*TWO*RHO)
@@ -1244,8 +1203,8 @@ C*****************************************************************************
       T=P1+P2+P3+P4
       RETURN
       END
-C
-C /* Deck ecsrlda */
+
+
 C*****************************************************************************
       SUBROUTINE ECSRLDA(ECV,RHO,RHO13,CHI,MULOCAL,ERFEXP)
 C*****************************************************************************
@@ -1259,7 +1218,7 @@ C
 C     Based on implementation in Molpro by A. Savin
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL MULOCAL(0:2),ERFEXP(*)
       REAL*8  ZKSR(3)
       CALL VCSRLDA(ZKSR,RHO,RHO13,CHI,MULOCAL,0,ERFEXP)
@@ -1271,11 +1230,10 @@ C*****************************************************************************
 C*****************************************************************************
       SUBROUTINE VCLALDA (ZKSR,RHO,RHO13,VLAMBDA)
 C*****************************************************************************
-C
-C Kamal SHARKAS 17-05-11 beg
+C Kamal SHARKAS 17-05-11
 C linear complement non-scaled LDA correlation-functional 
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       REAL*8  ZKSR(3), RHO, RHO13, VLAMBDA
       LOGICAL MULOCAL(0:2),ERFEXP(0:2)
 
@@ -1295,7 +1253,7 @@ C*****************************************************************************
 C*****************************************************************************
 C linear complement scaled LDA correlation-functional
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       REAL*8  ZKSR(3),ZKSRCOUL(3),ZKSRSCALED(3)
       REAL*8  RHOSCALED,RHO13SCALED
       LOGICAL MULOCAL(0:2),ERFEXP(0:2)
@@ -1318,10 +1276,7 @@ C*****************************************************************************
       RETURN
       END
 
-C Kamal SHARKAS 17-05-11 end
 
-C
-C /* Deck vcsrlda */
 C*****************************************************************************
       SUBROUTINE VCSRLDA(ZKSR,RHO,RHO13,CHI,MULOCAL,NORDER,ERFEXP)
 C*****************************************************************************
@@ -1335,7 +1290,7 @@ C     Exact mu -> infinity limit imposed
 C     and fitted from RPA values with rs=0.2,0.5,1,2,3,4,5,6,7,8,9,10
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL MULOCAL(0:2),ERFEXP(0:2),POTENT
       DIMENSION DENOM(3),ZKSR(3),ZVWN(3)
 C
@@ -1351,13 +1306,12 @@ C
       END IF
       IF (NORDER.GT.1) THEN
          ZKSR(3) = (ZVWN(3)-2.0D0*ZKSR(2)*DENOM(2) - 
-     >              ZKSR(1)*DENOM(3))/DENOM(1)
+     &              ZKSR(1)*DENOM(3))/DENOM(1)
       ENDIF
       RETURN
       END
 
 
-C /* Deck srldafac */
 C*****************************************************************************
       SUBROUTINE SRLDAFAC(DENOM,RHO,RHO13,ZVWN,CHI,
      &                 ERFEXP,NORDER,MULOCAL)
@@ -1369,19 +1323,19 @@ C     Purpose   : Calculate the factor used for fitting the LDA
 C                 functionals to the short-range two-electron operator.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <pi.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "pi.h"
+#include "dftcom.h"
       PARAMETER (D0 = 0.0D0, DP25=0.25D0, DP5= 0.5D0, D1 = 1.0D0,
-     >           D2 = 2.0D0, D3 = 3.0D0 , D4 = 4.0D0, D6 = 6.0D0,
-     >           D9 = 9.0D0,
-     >           D32= 32.0D0, THIRD = D1/D3, DP75=0.75D0,D1P5=1.5D0, 
+     &           D2 = 2.0D0, D3 = 3.0D0 , D4 = 4.0D0, D6 = 6.0D0,
+     &           D9 = 9.0D0,
+     &           D32= 32.0D0, THIRD = D1/D3, DP75=0.75D0,D1P5=1.5D0, 
 C                RSFAC = (D3/(D4*PI))**THIRD 
-     >           RSFAC = 0.62035 04908 99400 08660 D0, 
-     >           D1P62 = 1.62D0)
+     &           RSFAC = 0.62035 04908 99400 08660 D0, 
+     &           D1P62 = 1.62D0)
 C     Constants for g(0)
       PARAMETER (D = 3.39530545262710070631D0, A = 3.2581D0,
-     >           BET = 163.44D0, GAM = 4.7125D0)
+     &           BET = 163.44D0, GAM = 4.7125D0)
 C     For ERFEXP we need :
 C                CERFGAU = D1 + D6*SQRT(D3)
       PARAMETER (CERFGAU = 11.39230484541326376112)
@@ -1529,9 +1483,9 @@ C   % Get D2C2, first derive D2G0
 c     DG0  = D*D1P5*GRS12*DRS*EXPGRS12
 c    &     - G0*A*DP5*DRS/GRS12
       D2G0 = D*EXPGRS12*(DRS2*DP75/GRS12
-     >     +   D2RS*D1P5*GRS12-DP75*A*DRS2)
-     >     + DG0*(-DP5*A*DRS/GRS12)
-     >     + G0*(DP25*A*DRS2/GRS32-DP5*A*D2RS/GRS12)
+     &     +   D2RS*D1P5*GRS12-DP75*A*DRS2)
+     &     + DG0*(-DP5*A*DRS/GRS12)
+     &     + G0*(DP25*A*DRS2/GRS32-DP5*A*D2RS/GRS12)
       D2C2D = -D2*C2D/RHO2 + D2*DC2D/RHO + PI*RHO*DG0 + DP5*PI*RHO2*D2G0
       D2C2  = (ZVWN(3) - D2*DC2*DC2D - C2*D2C2D)/C2D
 C   % And finally !
@@ -1549,8 +1503,8 @@ c
 C
       RETURN
       END
-C
-C /* Deck exsrlda */
+
+
 C*****************************************************************************
       SUBROUTINE EXSRLDA(ECV,RHO,RHO13,CHI,ERFEXP)
 C*****************************************************************************
@@ -1566,7 +1520,7 @@ C
 C     Based on implementation in Molpro by J. Toulouse and A. Savin
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL ERFEXP(*)
       REAL*8  ECV, RHO, RHO13, CHI, XKSR(3)
       XKSR(:) = 0.0D0
@@ -1575,14 +1529,14 @@ C*****************************************************************************
       RETURN
       END
 
+
 C*****************************************************************************
       SUBROUTINE VXLALDA (XKSR,RHO,RHO13,VLAMBDA)
 C*****************************************************************************
-C
-C Kamal SHARKAS 17-05-11 beg
+C Kamal SHARKAS 17-05-11
 C linear complement LDA exchange-functional
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL ERFEXP(0:2)
       REAL*8  XKSR(3)
 
@@ -1593,24 +1547,23 @@ C*****************************************************************************
       XKSR(3) = (1.D0 - VLAMBDA) * XKSR(3)
       RETURN
       END
-C Kamal SHARKAS 17-05-11 end
 
-C /* Deck vxsrlda */
+
 C*****************************************************************************
       SUBROUTINE VXSRLDA(XKSR,RHO,RHO13,CHI,NORDER,ERFEXP)
 C*****************************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, DP25=0.25D0, DP5 = 0.5D0, D1 = 1.0D0,
-     >           D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0 , D5 = 5.0D0,
-     >           D6 = 6.0D0, D7 = 7.0D0, D8 = 8.0D0 , D9 = 9.0D0,
-     >           D10 = 10.0, D15=15.0D0, D16=16.0D0 , D20 = 20.0D0,
-     >           D24=24.0D0, D25=25.0D0, D27 = 27.0D0, D30 = 30.D0,
-     >           D40 = 40.0D0, D50 = 50.0D0, D60 = 60.0D0, D81 = 81.0D0,
-     >           D96 =96.0D0, THIRD = D1/D3, SIXTH = D1/D6,
-     >           FIVSIX = D5/D6, D1P5 = 1.5D0)
+     &           D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0 , D5 = 5.0D0,
+     &           D6 = 6.0D0, D7 = 7.0D0, D8 = 8.0D0 , D9 = 9.0D0,
+     &           D10 = 10.0, D15=15.0D0, D16=16.0D0 , D20 = 20.0D0,
+     &           D24=24.0D0, D25=25.0D0, D27 = 27.0D0, D30 = 30.D0,
+     &           D40 = 40.0D0, D50 = 50.0D0, D60 = 60.0D0, D81 = 81.0D0,
+     &           D96 =96.0D0, THIRD = D1/D3, SIXTH = D1/D6,
+     &           FIVSIX = D5/D6, D1P5 = 1.5D0)
       LOGICAL ERFEXP(0:2)
       DIMENSION XKSR(3)
 C
@@ -1645,8 +1598,8 @@ C        ================
             XKSR(1) = -D3/D8 * RHO*RHO13 *(D24/PI)**THIRD
          ELSE IF (A.LE.1.D+2) THEN
             XKSR(1) = - (RHO*RHO13*(D24/PI)**THIRD)
-     >           *(D3/D8-A*(SQRTPI*erf(DP5/A)+
-     >           (D2*A-D4*A3)*EXP(-DP25/A2)-D3*A+D4*A3))
+     &           *(D3/D8-A*(SQRTPI*erf(DP5/A)+
+     &           (D2*A-D4*A3)*EXP(-DP25/A2)-D3*A+D4*A3))
          ELSE IF (A.LT.1.D+9) THEN
             XKSR(1) = - (RHO*RHO13*(D24/PI)**THIRD)/(D96*A2)
          ELSE
@@ -1660,10 +1613,10 @@ C           ================
 C           ... nothing done at this point ???
             ELSE IF (B.LE.1.D+2) THEN
                 XKSR(1) = XKSR(1) + RHO*
-     >                D6*COEF*((PI/EXPO)**D1P5)
-     >                *RHO*(D2*B3*(SQRTPI*erf(DP5/B)
-     >                +(D2*B-D16*B3)*EXP(-DP25/B2)-D6*B
-     >                +D16*B3))
+     &                D6*COEF*((PI/EXPO)**D1P5)
+     &                *RHO*(D2*B3*(SQRTPI*erf(DP5/B)
+     &                +(D2*B-D16*B3)*EXP(-DP25/B2)-D6*B
+     &                +D16*B3))
             ELSE IF (B.LT.1.D+9) THEN
                XKSR(1) = XKSR(1) - FACGAU*RHO13*RHO/B2 ! The old form was missing RHO -MNP
             ENDIF
@@ -1674,10 +1627,10 @@ C           The modified exp contribution
 C           ... nothing done at this point ???
             ELSE IF (C.LE.1.D+2) THEN
                   XKSR(1) = XKSR(1) - RHO*
-     >                RHO*(D10*D10*SQRT(D15)*PI)/(D27*AMU*AMU)
-     >                *(D2*C3*(SQRTPI*erf(DP5/C)
-     >                  +(D2*C-D16*C3)*EXP(-DP25/C2)-D6*C
-     >                  +D16*C3))
+     &                RHO*(D10*D10*SQRT(D15)*PI)/(D27*AMU*AMU)
+     &                *(D2*C3*(SQRTPI*erf(DP5/C)
+     &                  +(D2*C-D16*C3)*EXP(-DP25/C2)-D6*C
+     &                  +D16*C3))
             ELSEIF (C.LT.1.D+9) THEN
                XKSR(1) = XKSR(1) - FACEXP*RHO13*RHO/C2
             ENDIF
@@ -1691,8 +1644,8 @@ C        =================
             XKSR(2) = - RHO13*(D3/PI)**THIRD
          ELSE IF (A.LE.1.D+2) THEN
             XKSR(2) = - RHO13*(D3/PI)**THIRD
-     >      + D2*A*AMU/PI*(EXP(-DP25/A2)-D1)+AMU/SQRTPI
-     >      * erf(DP5/A)
+     &      + D2*A*AMU/PI*(EXP(-DP25/A2)-D1)+AMU/SQRTPI
+     &      * erf(DP5/A)
          ELSEIF (A.LT.1.D+9) THEN
             XKSR(2) = - PI*RHO/(D2*AMU*AMU)
          ELSE
@@ -1707,7 +1660,7 @@ c           ------- Old erf+exp
 C           ... nothing done at this point ???
             ELSE IF (B.LE.1.D+2) THEN
                XKSR(2) = XKSR(2) + COEF*(D2*B/SQRTPI*
-     >              (EXP(-DP25/B2)-D1)+DP5*erf(DP5/B))
+     &              (EXP(-DP25/B2)-D1)+DP5*erf(DP5/B))
             ELSE IF (B.LT.1.D+9) THEN
                XKSR(2) = XKSR(2) - DFACGAU*RHO/(AMU*AMU)
             ENDIF
@@ -1717,7 +1670,7 @@ c           ------- Modified erf+exp
 C           ... nothing done at this point ???
             ELSE IF (C.LE.1.D+2) THEN
             XKSR(2) = XKSR(2) + COEFM*(D2*C/SQRTPI*
-     >              (EXP(-DP25/C2)-D1)+erf(DP5/C)*DP5)
+     &              (EXP(-DP25/C2)-D1)+erf(DP5/C)*DP5)
             ELSE IF (C.LT.1.D+9) THEN
                XKSR(2) = XKSR(2) - DFACEXP*RHO/(AMU*AMU)
             ENDIF
@@ -1732,8 +1685,8 @@ C        =================
             XKSR(3) = - (THIRD/RHO)*XKSR(2)
          ELSE IF (A.LE.1.D+2) THEN
              XKSR(3) =
-     >        D4*A2*(PI**(-THIRD))*((D3*RHO)**(-D2/D3))
-     >       *(D1-EXP(-DP25/A2))-(PI**(-THIRD))*((D3*RHO)**(-D2/D3))
+     &        D4*A2*(PI**(-THIRD))*((D3*RHO)**(-D2/D3))
+     &       *(D1-EXP(-DP25/A2))-(PI**(-THIRD))*((D3*RHO)**(-D2/D3))
          ELSEIF (A.LT.1.D+9) THEN
             XKSR(3) = - PI/(D2*AMU*AMU)
          ELSE
@@ -1748,8 +1701,8 @@ c            ------- Old erf+exp
 C           ... nothing done at this point ???
             ELSE IF (B.LE.1.D+2) THEN
                XKSR(3) = XKSR(3) + D4*B2*D2*
-     >                 (EXP(-DP25/B2)*(D1+(DP25/B2)) - D1)/
-     >                 (((RHO2*PI)**THIRD)*(D3**SIXTH))
+     &                 (EXP(-DP25/B2)*(D1+(DP25/B2)) - D1)/
+     &                 (((RHO2*PI)**THIRD)*(D3**SIXTH))
             ELSE IF (B.LT.1.D+9) THEN
                XKSR(3) = XKSR(3) - DFACGAU/(AMU*AMU)
             ENDIF
@@ -1759,8 +1712,8 @@ c           --------- Modified erf+exp
 C           ... nothing done at this point ???
             ELSE IF (C.LE.1.D+2) THEN
                XKSR(3) = XKSR(3) -
-     >                ((D40*SQRT(D5)*D3**FIVSIX)/(D81*(PI*RHO2)**THIRD))
-     >                *C2*(EXP(-DP25/C2)*(D1+(DP25/C2)) - D1)
+     &                ((D40*SQRT(D5)*D3**FIVSIX)/(D81*(PI*RHO2)**THIRD))
+     &                *C2*(EXP(-DP25/C2)*(D1+(DP25/C2)) - D1)
             ELSE IF (C.LT.1.D+9) THEN
                XKSR(3) = XKSR(3) - DFACEXP/(AMU*AMU)
             ENDIF
@@ -1768,8 +1721,8 @@ C           ... nothing done at this point ???
       ENDIF
       RETURN
       END
-C
-C /* Deck old_vcerf */
+
+
 C*****************************************************************************
       SUBROUTINE OLD_VCERF (ZK,VK,RHO,RHO13,CHI,POTENT)
 C*****************************************************************************
@@ -1783,53 +1736,53 @@ C
 C     Based on implementation in Molpro by A. Savin
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (NORDER1=9,NORDER2=12)
       PARAMETER(
-     > AP=.5D0*0.0621814D0,X0P=-0.10498D0 ,BP=3.72744D0,CP=12.9352D0,
-     > AF=.5D0*0.0310907D0,X0F=-0.32500D0 ,BF=7.06042D0,CF=18.0578D0,
-     > AA=-1/(6*PI2)      ,X0A=-4.75840D-3,BA=1.13107D0,CA=13.0045D0,
-     > D1= 1.0D0          ,D2 = 2.0D0     ,D3= 3.0D0   ,D4= 4.0D0   ,
-     > D6= 6.0D0          ,D9= 9.0D0 )
+     & AP=.5D0*0.0621814D0,X0P=-0.10498D0 ,BP=3.72744D0,CP=12.9352D0,
+     & AF=.5D0*0.0310907D0,X0F=-0.32500D0 ,BF=7.06042D0,CF=18.0578D0,
+     & AA=-1/(6*PI2)      ,X0A=-4.75840D-3,BA=1.13107D0,CA=13.0045D0,
+     & D1= 1.0D0          ,D2 = 2.0D0     ,D3= 3.0D0   ,D4= 4.0D0   ,
+     & D6= 6.0D0          ,D9= 9.0D0 )
       PARAMETER(FTHIRDPI=D4*PI/D3,TNINTHPI=D2*PI/D9,THIRD=D1/D3,
-     >          FTHIRD  =D4/D3  , SIXTHM=-D1/D6)
+     &          FTHIRD  =D4/D3  , SIXTHM=-D1/D6)
 C     some fit parameters:
       PARAMETER( FLAM2 = 0.0010D0, FLAM1 = 0.0050D0,
-     >           S1 = 3.5D0, S2 = 3.0D0 )
+     &           S1 = 3.5D0, S2 = 3.0D0 )
 C
       LOGICAL POTENT
       DIMENSION BMAT(NORDER2,NORDER1), PROVI(NORDER1)
       SAVE PROVI, OLDCHI
       DATA OLDCHI/-1.D20/
       DATA BMAT/
-     > 0.00181690, -0.00116564, -0.00457974,  0.01933836,  0.00155020,
-     >-0.00054860,  0.03921819,  0.08820755,  0.19936576,  0.40428886,
-     > 0.62820365,  0.68605810,
-     >-0.00855823,  0.01234668, -0.00440614, -0.01818476,  0.00146308,
-     > 0.02721340,  0.02196785,  0.05080546,  0.09000664, -0.19520028,
-     >-0.65570755, -0.77612124,
-     > 0.01118993, -0.01527939,  0.02034940,  0.00927282,  0.00138437,
-     > 0.07115184,  0.06402993,  0.04664204,  0.13807110,  0.13313895,
-     > 0.03859662,  0.01331013,
-     > 0.00785217, -0.02565368,  0.02457654, -0.01571916,  0.09104788,
-     >-0.00890622,  0.12093568,  0.30133005, -0.31184160, -0.43986114,
-     >-0.03115270,  0.07973827,
-     >-0.02320849,  0.08201789, -0.05855235,  0.09926549, -0.00560629,
-     > 0.18025419,  0.17398319, -0.32719648, -0.15349722,  0.04821389,
-     > 0.04511596,  0.04213866,
-     > 0.03418527, -0.07586069,  0.11122485, -0.00638233,  0.19604870,
-     > 0.15970410, -0.28353683, -0.26314535,  0.06652545,  0.13186042,
-     >-0.03574465, -0.08134667,
-     > 0.03883157,  0.08058872,  0.05921307,  0.18736371,  0.00117169,
-     >-0.30328577, -0.12631965,  0.12479106, -0.01570289, -0.08194886,
-     > 0.00827699,  0.03316512,
-     > 0.01582351,  0.05810755,  0.01477907,  0.10762163, -0.02855738,
-     >-0.18552838, -0.02414007,  0.09601877, -0.02070167, -0.05977323,
-     > 0.01241429,  0.03217619,
-     > 0.00063426,  0.00233718,  0.00058942,  0.00432377, -0.00115390,
-     >-0.00745627, -0.00095892,  0.00386309, -0.00083434, -0.00240429,
-     > 0.00050048,  0.00129566/
+     & 0.00181690, -0.00116564, -0.00457974,  0.01933836,  0.00155020,
+     &-0.00054860,  0.03921819,  0.08820755,  0.19936576,  0.40428886,
+     & 0.62820365,  0.68605810,
+     &-0.00855823,  0.01234668, -0.00440614, -0.01818476,  0.00146308,
+     & 0.02721340,  0.02196785,  0.05080546,  0.09000664, -0.19520028,
+     &-0.65570755, -0.77612124,
+     & 0.01118993, -0.01527939,  0.02034940,  0.00927282,  0.00138437,
+     & 0.07115184,  0.06402993,  0.04664204,  0.13807110,  0.13313895,
+     & 0.03859662,  0.01331013,
+     & 0.00785217, -0.02565368,  0.02457654, -0.01571916,  0.09104788,
+     &-0.00890622,  0.12093568,  0.30133005, -0.31184160, -0.43986114,
+     &-0.03115270,  0.07973827,
+     &-0.02320849,  0.08201789, -0.05855235,  0.09926549, -0.00560629,
+     & 0.18025419,  0.17398319, -0.32719648, -0.15349722,  0.04821389,
+     & 0.04511596,  0.04213866,
+     & 0.03418527, -0.07586069,  0.11122485, -0.00638233,  0.19604870,
+     & 0.15970410, -0.28353683, -0.26314535,  0.06652545,  0.13186042,
+     &-0.03574465, -0.08134667,
+     & 0.03883157,  0.08058872,  0.05921307,  0.18736371,  0.00117169,
+     &-0.30328577, -0.12631965,  0.12479106, -0.01570289, -0.08194886,
+     & 0.00827699,  0.03316512,
+     & 0.01582351,  0.05810755,  0.01477907,  0.10762163, -0.02855738,
+     &-0.18552838, -0.02414007,  0.09601877, -0.02070167, -0.05977323,
+     & 0.01241429,  0.03217619,
+     & 0.00063426,  0.00233718,  0.00058942,  0.00432377, -0.00115390,
+     &-0.00745627, -0.00095892,  0.00386309, -0.00083434, -0.00240429,
+     & 0.00050048,  0.00129566/
 C
 c     XX(X)=X**2+B*X+C
 C
@@ -1846,7 +1799,7 @@ C
             PROVI(K) = 0.0D0
             DO L=1,NORDER2
                PROVI(K) = PROVI(K) +
-     >              BMAT(L,K)*exp(-FAC1*S2**(L-1))
+     &              BMAT(L,K)*exp(-FAC1*S2**(L-1))
             ENDDO
 CDBG        write(6,*)'K,PROVI(K)',K,PROVI(K)
          ENDDO
@@ -1915,34 +1868,36 @@ C        ... DG = 0 for ZETA = 0 /jkp+hjaaj
       END IF
       RETURN
       END
-C
+
+
 C*****************************************************************************
       SUBROUTINE VWN_EPS (EPS,XARRAY,A,X0,B,C)
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       XX(X)=X**2+B*X+C
       Q=SQRT(4*C-B**2)
       X=XARRAY
       EPS=A*( LOG(X**2/XX(X)) - B*(X0/XX(X0))*LOG((X-X0)**2/XX(X))
-     >       +(2*B/Q)*(1-(X0*(2*X0+B)/XX(X0))) * ATAN(Q/(2*X+B)) )
+     &       +(2*B/Q)*(1-(X0*(2*X0+B)/XX(X0))) * ATAN(Q/(2*X+B)) )
       RETURN
       END
-C
+
+
 C*****************************************************************************
       SUBROUTINE VWN_DEPS (DEPS,XARRAY,A,X0,B,C)
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       XX(X)=X**2+B*X+C
       Q=SQRT(4*C-B**2)
       X=XARRAY
       DEPS=A*( 2/X - (2*X+B)/XX(X) - 4*B/((2*X+B)**2+Q**2)
-     > - (B*X0/XX(X0)) * (
-     >  2/(X-X0) - (2*X+B)/XX(X) - 4*(2*X0+B) / ((2*X+B)**2+Q**2)
-     > ) )
+     & - (B*X0/XX(X0)) * (
+     &  2/(X-X0) - (2*X+B)/XX(X) - 4*(2*X0+B) / ((2*X+B)**2+Q**2)
+     & ) )
       RETURN
       END
-C
-C /* Deck old_vxerf */
+
+
 C*****************************************************************************
       SUBROUTINE OLD_VXERF (ZK,VK,RHO,RHO13,CHI,POTENT)
 C*****************************************************************************
@@ -1956,27 +1911,27 @@ C
 C     Based on implementation in Molpro by A. Savin
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER( D0 = 0.0D0,
-     >DP5 = 0.5D0 , DP25 = 0.25D0 , D1= 1.0D0 , D2 = 2.0D0 , D3 = 3.0D0,
-     >D4= 4.0D0   , D8= 8.0D0     , D9= 9.0D0 , D16=16.0D0 , D24=24.0D0,
-     >D6= 6.0D0   , D96=96.0D0  , THIRD = D1/D3)
+     &DP5 = 0.5D0 , DP25 = 0.25D0 , D1= 1.0D0 , D2 = 2.0D0 , D3 = 3.0D0,
+     &D4= 4.0D0   , D8= 8.0D0     , D9= 9.0D0 , D16=16.0D0 , D24=24.0D0,
+     &D6= 6.0D0   , D96=96.0D0  , THIRD = D1/D3)
       LOGICAL POTENT
 C
       A  = (DP5*(D3*PI2)**(-THIRD)) * (CHI/RHO13)
       A2 = A*A
       IF (A .LT. 1.D-9) THEN
          ZK = -D3/D8 * RHO *
-     >        RHO13 * ((D24/PI)**THIRD)
+     &        RHO13 * ((D24/PI)**THIRD)
       ELSEIF (A.LE.100) THEN
          PREO =  ( D3/D8 - A*erf(DP5/A)*SQRTPI -
-     >             A2*( (D2-D4*A2)*EXP(-DP25/A2)-D3+D4*A2 ) )
-     >      * RHO13 * ((D24/PI)**THIRD)
+     &             A2*( (D2-D4*A2)*EXP(-DP25/A2)-D3+D4*A2 ) )
+     &      * RHO13 * ((D24/PI)**THIRD)
          ZK = - PREO * RHO
       ELSEIF (A.LT.1.D+9) THEN
          ZK = -D3/D8 * RHO /(D96*A2) *
-     >        RHO13 * ((D24/PI)**THIRD)
+     &        RHO13 * ((D24/PI)**THIRD)
       ELSE
          ZK = D0
       ENDIF
@@ -1987,7 +1942,7 @@ C
         ELSE IF (A.LE.100) THEN
            VK = (D4/D3) * ZK / RHO
            PROVI = THIRD * ( A * erf(DP5/A)*SQRTPI +
-     >             A2 * ( (D2-D16*A2)*EXP(-DP25/A2) - D6+D16*A2 ) )
+     &             A2 * ( (D2-D16*A2)*EXP(-DP25/A2) - D6+D16*A2 ) )
            VK = VK - PROVI* RHO13 * ((D24/PI)**THIRD)
         ELSEIF (A.LT.1.D+9) THEN
            VK = - PI*RHO/(D2*CHI*CHI)
@@ -1997,17 +1952,16 @@ C
       END IF
       RETURN
       END
-C
-C /* Deck old_vxerfexp */
+
+
 C*****************************************************************************
       SUBROUTINE OLD_VXERFEXP(ZK,RHO,CHI,POTENT)
 C*****************************************************************************
-C
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, DP25=0.25D0, DP5 = 0.5D0, D1 = 1.0D0,
-     >           D2 = 2.0D0, D3 = 3.0D0 , D4 = 4.0D0 , D6 = 6.0D0,
-     >           D8 = 8.0D0, D16=16.0D0 , D24=24.0D0, D96 =96.0D0)
+     &           D2 = 2.0D0, D3 = 3.0D0 , D4 = 4.0D0 , D6 = 6.0D0,
+     &           D8 = 8.0D0, D16=16.0D0 , D24=24.0D0, D96 =96.0D0)
       LOGICAL POTENT
 C
       CHISQ = CHI*CHI
@@ -2033,12 +1987,12 @@ C        ================
             ZK = -D3/D8 * RHO *(D24 * RHO / PI)**POW13
          ELSE IF (A.LE.1.D+2) THEN
             PREO =  (D3/D8 - (erf(DP5/A)*SQRTPI +
-     >      (D2*A-D4*A3)*exp(-DP25/A2) - D3*A+D4*A3 ) * A ) *
-     >      (D24 * RHO / PI)**POW13
+     &      (D2*A-D4*A3)*exp(-DP25/A2) - D3*A+D4*A3 ) * A ) *
+     &      (D24 * RHO / PI)**POW13
             ZK = - PREO * RHO
          ELSE IF (A.LT.1.D+9) THEN
             ZK = -D3/D8 * RHO *(D24 * RHO / PI)**POW13
-     >         *  D1/(D96*A2)
+     &         *  D1/(D96*A2)
          ELSE
             ZK = D0
          ENDIF
@@ -2052,8 +2006,8 @@ C        ================
             ZK =  ZK + GFAC*B
          ELSE IF (B.LE.1.D+2) THEN
             PREOGAU = D6*COEF*((PI/EXPO)**POW32)
-     >          *RHO*(D2*B3*(erf(DP5/B)*SQRTPI
-     >          +(D2*B-D16*B3)*exp(-DP25/B2)-D6*B+D16*B3))
+     &          *RHO*(D2*B3*(erf(DP5/B)*SQRTPI
+     &          +(D2*B-D16*B3)*exp(-DP25/B2)-D6*B+D16*B3))
             ZK = ZK+ PREOGAU * RHO
          ELSEIF (b.LT.1.D+9) THEN
             ZK = ZK - 0.0710678504305031D0/B2
@@ -2070,8 +2024,8 @@ C        =================
             ZK=ZK-((D3/PI)*RHO)**POW13
          ELSE IF (A.LE.1.D+2) THEN
             ZK = ZK -(D3*RHO/PI)**POW13
-     >      + D2*A*AMU/PI*(exp(-DP25/A2)-D1)+AMU/SQRTPI
-     >      * erf(DP5/A) 
+     &      + D2*A*AMU/PI*(exp(-DP25/A2)-D1)+AMU/SQRTPI
+     &      * erf(DP5/A) 
          ELSEIF (A.LT.1.D+9) THEN
             ZK = ZK - PI*RHO/(D2*AMU*AMU)
          ENDIF
@@ -2084,7 +2038,7 @@ C        ================
             ZK = ZK + COEF*DP5
          ELSE IF (B.LE.1.D+2) THEN
             ZK = ZK + COEF*(D2*B/SQRTPI*
-     >           (exp(-DP25/B2)-D1)+DP5*erf(DP5/B))
+     &           (exp(-DP25/B2)-D1)+DP5*erf(DP5/B))
          ELSE IF (B.LT.1.D+9) THEN
             ZK = ZK - 0.1184464173841718D0/B2
          ENDIF
@@ -2093,20 +2047,18 @@ C        ================
       END
 
 
-C /* Deck old_vxerfexp */
 C*****************************************************************************
       SUBROUTINE OLD_VCERFEXP(ZK,RHO,CHI,POTENT)
 C*****************************************************************************
-C
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, DP25=0.25D0, DP5= 0.5D0, D1 = 1.0D0,
-     >           D2 = 2.0D0, D3 = 3.0D0 , D4 = 4.0D0, D6 = 6.0D0,
-     >           D8 = 8.0D0, D16=16.0D0 , D24=24.0D0,
-     >           POW13= D1/D3, TOL = 1.0D-14)
+     &           D2 = 2.0D0, D3 = 3.0D0 , D4 = 4.0D0, D6 = 6.0D0,
+     &           D8 = 8.0D0, D16=16.0D0 , D24=24.0D0,
+     &           POW13= D1/D3, TOL = 1.0D-14)
 C     FIT PARAMETERS 
       PARAMETER (U1=0.340875D0, U2=-0.00143657D0,
-     >           V1=1.51098D0,  V2= 0.0827831D0)
+     &           V1=1.51098D0,  V2= 0.0827831D0)
       LOGICAL POTENT
 C
       AMU = CHI
@@ -2142,10 +2094,11 @@ C
 1     CONTINUE
       RETURN
       END
-C /* Deck vxsrgga */
+
+
 C*****************************************************************************
       SUBROUTINE VXSRGGA(XKSR,RHO,RHO13,RHOGRD,RHOLAP,
-     >                   RHOGHG,CHI,ERFEXP)
+     &                   RHOGHG,CHI,ERFEXP)
 C*****************************************************************************
 C
 C     Written by Jesper Kielberg Pedersen, Sep. 2003
@@ -2164,7 +2117,7 @@ C                 where :
 C                           B = V_x,SRLDA/E_x,LDA - (E_X,SRLDA*V_x,LDA)/(E_x,LDA)^2
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
       REAL*8  XKSR(3)
       LOGICAL ERFEXP(0:2)
@@ -2196,28 +2149,28 @@ c         XKSR(2) = B * (EXLDA + EXB) + A * (VXLDA + VXB)
 
 C*****************************************************************************
       SUBROUTINE VLAXBEK(XKSR,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
-     >                 VLAMBDA)
+     &                 VLAMBDA)
 C*****************************************************************************
-C Kamal SHARKAS 23-05-11 beg
+C Kamal SHARKAS 23-05-11
 C linear complement Becke exchange-functional
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       REAL*8  XKSR(3)
       LOGICAL ERFEXP(0:2)
 
       ERFEXP(:) = .FALSE.
       CALL VXSRGGA(XKSR,RHO,RHO13,RHOGRD,RHOLAP,
-     >             RHOGHG,0.D0,ERFEXP)
+     &             RHOGHG,0.D0,ERFEXP)
 
       XKSR(1) = (1.D0 - VLAMBDA) * XKSR(1)
       XKSR(2) = (1.D0 - VLAMBDA) * XKSR(2)
       RETURN
       END
-C Kamal SHARKAS 23-05-11 end
-C /* Deck vxsrgga2 */
+
+
 C*****************************************************************************
       SUBROUTINE VXSRGGA2(XKSR,RHO,RHO13,RHOGRD,RHOLAP,
-     >                    RHOGHG,CHI,ERFEXP)
+     &                    RHOGHG,CHI,ERFEXP)
 C*****************************************************************************
 C
 C     Written by Jesper Kielberg Pedersen, Sep. 2003
@@ -2233,7 +2186,7 @@ C                 Where we make the assumption that A is the same factor
 C                 as used for the SR-LDA cor. func. (E_sr,lda ~ A * E_lda)
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
       LOGICAL ERFEXP(0:2), MULOCAL(0:2)
       REAL*8  DENOM(3),ZVWN(3),XKSR(3)
@@ -2262,7 +2215,6 @@ c
       END
 
 
-C /* Deck vcsrgga */
 C*****************************************************************************
       SUBROUTINE VCSRGGA(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,CHI,ERFEXP)
 C*****************************************************************************
@@ -2278,7 +2230,7 @@ C                 Where we make the assumption that A is the same factor
 C                 as used for the SR-LDA func. (E_sr,lda ~ A * E_lda)
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL ERFEXP(0:2),  MULOCAL(0:2)
       REAL*8  ZKSR(3),DENOM(3),ZVWN(3)
 C
@@ -2311,16 +2263,16 @@ C
 C*****************************************************************************
       SUBROUTINE VNCLALYP(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,VLAMBDA)
 C*****************************************************************************
-C Kamal SHARKAS 23-05-11 beg
+C Kamal SHARKAS 23-05-11
 C linear Non-scaled comlement LYP functional  
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       REAL*8  ZKSR(3),DENOM(3),ZVWN(3)
       LOGICAL ERFEXP(0:2)
 
       ERFEXP(:) = .FALSE.
       CALL VCSRGGA(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,
-     >             0.0D0,ERFEXP)
+     &             0.0D0,ERFEXP)
       ZKSR(1) = (1.D0 - VLAMBDA**2) * ZKSR(1)
       ZKSR(2) = (1.D0 - VLAMBDA**2) * ZKSR(2)
       RETURN
@@ -2332,7 +2284,7 @@ C*****************************************************************************
 C*****************************************************************************
 C Scaled complement LYP functional
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       REAL*8  RHOSCA,RHO13SCA,RHOGRDSCA,RHOLAPSCA
       REAL*8  ZKSR(3),ZKSRCOUL(3),ZKSRSCA(3)
       LOGICAL ERFEXP(0:2)
@@ -2341,7 +2293,7 @@ C*****************************************************************************
       ERFEXP(0:2)   = .FALSE.
 
       CALL VCSRGGA(ZKSRCOUL,RHO,RHO13,RHOGRD,RHOLAP,
-     >             0.0D0,ERFEXP)
+     &             0.0D0,ERFEXP)
 
       RHOSCA   = RHO/VLAMBDA**3
       RHO13SCA = (RHOSCA)**(1.D0/3.D0)
@@ -2351,15 +2303,14 @@ C*****************************************************************************
       ZKSRSCA(1) = 0.D0
       ZKSRSCA(2) = 0.D0
       CALL VCSRGGA(ZKSRSCA,RHOSCA,RHO13SCA,RHOGRDSCA,RHOLAPSCA,
-     >             0.0D0,ERFEXP)
+     &             0.0D0,ERFEXP)
 
       ZKSR(1) = ZKSRCOUL(1) - (VLAMBDA**5) * ZKSRSCA(1)
       ZKSR(2) = ZKSR(2) + (ZKSRCOUL(2) - (VLAMBDA**2) * ZKSRSCA(2))
       RETURN
       END
-C Kamal SHARKAS 23-05-11 end
-C
-C /* Deck vxsrwint */
+
+
 C*****************************************************************************
       SUBROUTINE VSRWINT(ZKSR,ZMU,RHO,RHO13,CHI,NORDER,ERFEXP)
 C*****************************************************************************
@@ -2380,14 +2331,14 @@ C     NOTE : On entry ZKSR contains the energy and potential
 C            from the (E_KS - E_LDA) and (V_KS - V_LDA) terms.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <pi.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "pi.h"
+#include "dftcom.h"
       LOGICAL ERFEXP(0:2)
       DIMENSION ZKSR(3),ZMU(3)
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
-     >           D9 = 9.0D0,
-     >          RSFAC = 0.62035 04908 99400 08660 D0)
+     &           D9 = 9.0D0,
+     &          RSFAC = 0.62035 04908 99400 08660 D0)
 C               RSFAC = (D3/(D4*PI))**THIRD
 c
       EDIFF  = ZKSR(1)
@@ -2408,13 +2359,13 @@ c
          D2RS = D4*RS/(D9*RHO*RHO)
          D2DERFCX = -D2*X*DDERFCX
          ZKSR(3) = DVDIFF*DERFCX + D2*VDIFF*DDERFCX*CHIM*DRS +
-     >          EDIFF*(D2DERFCX*(CHIM*DRS)**2 + DDERFCX*CHIM*D2RS) +
-     >          ZMU(3)
+     &          EDIFF*(D2DERFCX*(CHIM*DRS)**2 + DDERFCX*CHIM*D2RS) +
+     &          ZMU(3)
       END IF
       RETURN
       END
-C
-C /* Deck vxsrwint2 */
+
+
 C*****************************************************************************
       SUBROUTINE VSRWINT2(ZKSR,ZMU,RHO,RHO13,CHI,NORDER,ERFEXP)
 C*****************************************************************************
@@ -2435,14 +2386,14 @@ C                     V'_srlda,mu*erf(Rs*mu/c) + 2*V_srlda,mu*erf'(Rs*mu/c) +
 C                     E_srlda,mu*erf''(Rs*mu/c)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <pi.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "pi.h"
+#include "dftcom.h"
       LOGICAL ERFEXP(0:2)
       DIMENSION ZKSR(3),ZMU(3)
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
-     >           D9 = 9.0D0, D13= 1.0D0/3.0D0,D23=2.0D0/3.0D0,
-     >          RSFAC = 0.62035 04908 99400 08660 D0)
+     &           D9 = 9.0D0, D13= 1.0D0/3.0D0,D23=2.0D0/3.0D0,
+     &          RSFAC = 0.62035 04908 99400 08660 D0)
 C               RSFAC = (D3/(D4*PI))**THIRD
 c
       EKS  = ZKSR(1)
@@ -2476,11 +2427,11 @@ c     ...Exponential term for the erfgau operator
 c
 c    --- First derivative
       ZKSR(2) = VKS*DERFCX + EKS*DDERFCX*CHIM*DRS +
-     >          VSR*DERFX  + ESR*DDERFX*CHIM*DRS
+     &          VSR*DERFX  + ESR*DDERFX*CHIM*DRS
       IF (IWINT.EQ.3) THEN
 c     ...Exponential term for the erfgau operator
          ZKSR(2) = ZKSR(2)  + VKS*GAUX + EKS*DGAUX -
-     >             VSR*GAUX - ESR*DGAUX
+     &             VSR*GAUX - ESR*DGAUX
       ENDIF
 c    --- Second derivative
       IF (NORDER.GT.1) THEN
@@ -2488,16 +2439,16 @@ c    --- Second derivative
          D2DERFCX = -D2*X*DDERFCX
          D2DERFX  = -D2*X*DDERFX
          ZKSR(3)  = DVKS*DERFCX + D2*VKS*DDERFCX*CHIM*DRS +
-     >       EKS*(D2DERFCX*(CHIM*DRS)**2 + DDERFCX*CHIM*D2RS) +
-     >       DVSR*DERFX + D2*VSR*DDERFX*CHIM*DRS +
-     >       ESR*(D2DERFX*(CHIM*DRS)**2 + DDERFX*CHIM*D2RS) 
+     &       EKS*(D2DERFCX*(CHIM*DRS)**2 + DDERFCX*CHIM*D2RS) +
+     &       DVSR*DERFX + D2*VSR*DDERFX*CHIM*DRS +
+     &       ESR*(D2DERFX*(CHIM*DRS)**2 + DDERFX*CHIM*D2RS) 
 c        ...Exponential term for the erfgau operator
          IF (IWINT.EQ.3) THEN
             DGFAC = ((-D1/RS2) - D23*CHIM**2)*DRS2 
-     >            + (D1/RS - D23*CHIM*X)*D2RS
+     &            + (D1/RS - D23*CHIM*X)*D2RS
             D2GAUX=DGFAC*GAUX + GFAC*DGAUX
             ZKSR(3) = ZKSR(3) + DVKS*GAUX + D2*VKS*DGAUX + EKS*D2GAUX -
-     >                          DVSR*GAUX - D2*VSR*DGAUX - ESR*D2GAUX
+     &                          DVSR*GAUX - D2*VSR*DGAUX - ESR*D2GAUX
          END IF
       END IF
       RETURN
@@ -2508,6 +2459,7 @@ C*****************************************************************************
       SUBROUTINE CONDFT
 C*****************************************************************************
 C     DFT CONSTANTS
+C*****************************************************************************
       IMPLICIT REAL*8(A-H,O-Z)
 #include "pi.h"
       logical vwn5

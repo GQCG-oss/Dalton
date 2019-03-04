@@ -1,9 +1,11 @@
-C  /* Deck mp2srdftden */
+
+
+C*****************************************************************************
       SUBROUTINE MP2SRDFTDEN(NFROZ,DONE,CMO,ORBEN,WRK,LFRSAV)
+C*****************************************************************************
 C
 C written by Emmanuel Fromager - June 2007
 C
-C**********************************************************************
 C PURPOSE:
 C calculate the second-order MP-SRDFT correction D^{(2),SRDFT} to the density matrix
 C from the "long-range" second order contribution D^{(2),LR}, which is
@@ -29,8 +31,8 @@ C
 C input  : DONE
 C output : DONE = sum^{+infty}_{n=0} F^{n}(DONE)
 C
-C**********************************************************************
-#include <implicit.h>
+C*****************************************************************************
+#include "implicit.h"
 C
       DIMENSION DONE(NORBT,NORBT),NFROZ(8),ORBEN(*)
       DIMENSION CMO(*),WRK(*)
@@ -41,14 +43,14 @@ C
 C     DOUBLE PRECISION D2LRNORMF, FOPNORMF0, FOPNORMF1, FOPNORMF  
       DOUBLE PRECISION FACTOR, FOPNORMF   
 C
-#include <inforb.h>
-#include <dummy.h>
-#include <infpri.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <scbrhf.h>
-#include <inftap.h>
+#include "inforb.h"
+#include "dummy.h"
+#include "infpri.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "scbrhf.h"
+#include "inftap.h"
 C
 C
 C     FACTOR = 0.0 ! equivalent to FNEUMANN 
@@ -87,17 +89,18 @@ C
 C
       RETURN
       END
-C
-C  /* Function getnormf */
+
+
+C*****************************************************************************
       FUNCTION GETNORMF(NFROZ,DONE,CMO,ORBEN,WRK,LFRSAV)
+C*****************************************************************************
 C
 C written by Emmanuel Fromager - August 2007
 C
-C**********************************************************************
 C This function calculates the Frobenius norm of the F operator defined
 C as lim_{i -> infty} ||F^{i+1}(D^{(2)lr})||_F/||F^{i}(D^{(2)lr})||_F
-C**********************************************************************
-#include <implicit.h>
+C*****************************************************************************
+#include "implicit.h"
 C
       DIMENSION DONE(NORBT,NORBT),NFROZ(8),ORBEN(*)
       DIMENSION CMO(*),WRK(*)
@@ -109,14 +112,14 @@ C
       DOUBLE PRECISION D2LRNORMF, FOPNORMF0, FOPNORMF1, FOPNORMF  
       DOUBLE PRECISION FOPNORMF2  
 C
-#include <inforb.h>
-#include <dummy.h>
-#include <infpri.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <scbrhf.h>
-#include <inftap.h>
+#include "inforb.h"
+#include "dummy.h"
+#include "infpri.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "scbrhf.h"
+#include "inftap.h"
 C
       KFRSAV = 1
       KFREE = KFRSAV
@@ -262,20 +265,21 @@ C
 C
       RETURN
       END
-C
-C  /* Deck gneumann */
+
+
+C*****************************************************************************
       SUBROUTINE GNEUMANN(FACTOR,NFROZ,DONE,CMO,ORBEN,WRK,LFRSAV)
+C*****************************************************************************
 C
 C written by Emmanuel Fromager - August 2007
 C
-C**********************************************************************
 C This subroutine calculates the Neumann serie  
 C DONE = sum^{+infty}_{n=0} G^{n}(DONE1) where G = a * F^2 +(1-a) *F
 C and DONE1 = a * F(DONE) + DONE
 C The F operator is defined in the FOPERATOR subroutine
 C The a coeff (FACTOR) is given in input
-C**********************************************************************
-#include <implicit.h>
+C*****************************************************************************
+#include "implicit.h"
 C
       DIMENSION DONE(N2ORBX),NFROZ(8),ORBEN(*)
       DIMENSION CMO(*),WRK(*)
@@ -289,14 +293,14 @@ C
       DOUBLE PRECISION AF2DLRNORMF, D2LRNORMF1, DONENORMF, DONENORMF1 
       DOUBLE PRECISION RFMOTOTNORMF, SUPRFMOTOT, SCOVERLR
 C
-#include <inforb.h>
-#include <dummy.h>
-#include <infpri.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <scbrhf.h>
-#include <inftap.h>
+#include "inforb.h"
+#include "dummy.h"
+#include "infpri.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "scbrhf.h"
+#include "inftap.h"
 C
       KFRSAV = 1
       KFREE = KFRSAV
@@ -625,11 +629,12 @@ C
 C
       RETURN
       END
-C
-C
-C  /* Deck goperator */
+
+
+C*****************************************************************************
       SUBROUTINE GOPERATOR(FACTOR,DMO,RECT,DAO,FAO,DHFAO,EXCMAT,NFROZ,
      &                     RGMO,CMO,ORBEN,WRK,LFRSAV,NRFMO)
+C*****************************************************************************
 C
 C     written by Emmanuel Fromager - August 2007 (based on FOPERATOR)
 C
@@ -637,7 +642,8 @@ C     This subroutine calculates the matrix RGMO = G(DMO)
 C     where G = FACTOR * F^2 + (1-FACTOR) * F 
 C     The F operator is defined in the subroutine FOPERATOR
 C
-#include <implicit.h>
+C*****************************************************************************
+#include "implicit.h"
 C 
       DIMENSION DMO(*),NFROZ(8),ORBEN(*)
       DIMENSION CMO(*),WRK(*),FAO(*),DAO(*),DHFAO(*),EXCMAT(*),RGMO(*)
@@ -646,14 +652,14 @@ C
 C
       PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 )
 C
-#include <inforb.h>
-#include <dummy.h>
-#include <infpri.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <scbrhf.h>
-#include <inftap.h>
+#include "inforb.h"
+#include "dummy.h"
+#include "infpri.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "scbrhf.h"
+#include "inftap.h"
 C
 C 
 C     If FACTOR is not zero then ...
@@ -696,14 +702,14 @@ C
 C
       RETURN
       END
-C
-C  /* Deck foperator */
+
+
+C*****************************************************************************
       SUBROUTINE FOPERATOR(FACTOR,DMO,RECT,DAO,FAO,DHFAO,EXCMAT,NFROZ,
      &                     RFMO,CMO,ORBEN,WRK,LFRSAV,NRFMO)
+C*****************************************************************************
 C
 C written by Emmanuel Fromager - August 2007
-C
-C**********************************************************************
 C
 C This subroutine calculates the matrix RFMO = FACTOR * F(DMO) IN THE MO BASIS. 
 C If DMO is a packed rectangular matrix (we only keep the lower
@@ -727,8 +733,8 @@ C
 C input :  DMO
 C output : RFMO = FACTOR * F(DMO)
 C
-C**********************************************************************
-#include <implicit.h>
+C*****************************************************************************
+#include "implicit.h"
 C
       DIMENSION DMO(*),NFROZ(8),ORBEN(*)
       DIMENSION CMO(*),WRK(*),FAO(*),DAO(*),DHFAO(*),EXCMAT(*),RFMO(*)
@@ -738,14 +744,14 @@ C
       PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 )
 C
 C
-#include <inforb.h>
-#include <dummy.h>
-#include <infpri.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <scbrhf.h>
-#include <inftap.h>
+#include "inforb.h"
+#include "dummy.h"
+#include "infpri.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "scbrhf.h"
+#include "inftap.h"
 C
       KFRSAV = 1
       KFREE = KFRSAV
@@ -944,10 +950,11 @@ C          RESOLVH(RFMO,ORBEN,NFROZ)
 C     
       RETURN
       END
-C
-C  /* Deck uhutb */
-C
+
+
+C*****************************************************************************
       SUBROUTINE UHUTB(HAO,NAOT,HMO,NMOT,U,NSYM,NAO,NMO,WRK) 
+C*****************************************************************************
 C
 C     SUBROUTINE UHUTB(HAO,NAOT,HMO,NMOT,U,NAO,NMO,WRK)
 C
@@ -964,9 +971,10 @@ C  HAO( ij ) =  SUM (k,l = 1,...,NMO)  U (i,k) HMO(kl) U(l,j)
 C
 C This routine is optimized with respect to vector operations.
 C
-#include <implicit.h>
-#include <priunit.h>
-C#include <inforb.h>
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C#include "inforb.h"
       DIMENSION HAO(NAOT,NAOT),HMO(NMOT,NMOT),U(*),WRK(*)
       DIMENSION NAO(8),NMO(8)
 C
@@ -1046,7 +1054,7 @@ C  and RAO = UV * RMO * UH + UH * RMO * UV
 C
 C This routine is optimized with respect to vector operations.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION RAO(NAOT,NAOT),RMO(*),U(*),WRK(*)
 C     DIMENSION NAO(NSYM),NMO(NSYM)
 C     DIMENSION NMOCC(NSYM),NFROZ(NSYM)
@@ -1151,8 +1159,11 @@ C
 C
       RETURN
       END
-C  /* Deck utrub */
+
+
+C*****************************************************************************
       SUBROUTINE UTRUB(RAO,NAOT,RMO,U,NSYM,NAO,NMO,NMOCC,NFROZ,WRK)
+C*****************************************************************************
 C
 C May-2007 Emmanuel Fromager (based on URUTB)
 C
@@ -1172,8 +1183,9 @@ C  and RMO = UV * RAO * UH
 C
 C This routine is optimized with respect to vector operations.
 C
-#include <implicit.h>
-#include <priunit.h>
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION RAO(NAOT,NAOT),RMO(*),U(*),WRK(*)
 C     DIMENSION NAO(NSYM),NMO(NSYM)
 C     DIMENSION NMOCC(NSYM),NFROZ(NSYM)
@@ -1267,9 +1279,11 @@ C
 C
       RETURN
       END
-C
-C  /* Deck resolvh */
+
+
+C*****************************************************************************
       SUBROUTINE RESOLVH(RFMO,ORBEN,NFROZ) 
+C*****************************************************************************
 C
 C June-2007 Emmanuel Fromager 
 C
@@ -1278,11 +1292,12 @@ C This subroutine multiplies the elements RFMO_{ri}
 C of the RECTANGULAR PACKED matrix RFMO by 1/(epsilon_i - epsilon_r)
 C r --> virtuals, i --> holes
 C 
-#include <implicit.h>
-#include <priunit.h>
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION RFMO(*),ORBEN(*),NFROZ(8)   
 C 
-#include <inforb.h>
+#include "inforb.h"
 C
       IRFMO = 0 
 C
@@ -1318,14 +1333,14 @@ C June-2007 Emmanuel Fromager
 C
 C This subroutine transforms the HF density matrix in the AO basis 
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION DHFAO(NBAST,NBAST),DHFMO(NORBT,NORBT)  
       DIMENSION CMO(*),WRK(*)
       PARAMETER (D2 = 2.0D0)
 C
-#include <inforb.h>
-#include <priunit.h>
+#include "inforb.h"
+#include "priunit.h"
 C
       KFRSAV = 1
       KFREE = KFRSAV
@@ -1363,13 +1378,13 @@ C
 C This subroutine adds (if doadd = true) or substracts (if doadd = false) 
 C the zeroth order contribution to the density matrix 
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION DONE(NORBT,NORBT)
       LOGICAL   DOADD
       PARAMETER (D2 = 2.0D0)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       DO 1500 ISYM = 1,NSYM
          IORBI = IORB(ISYM)
@@ -1399,10 +1414,10 @@ C This subroutine adds the RECTANGULAR PACKED matrix RFMO to the
 C virtuals-holes and holes-virtuals rectangles of the
 C SYMMETRIC UNPACKED matrix DONE 
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DONE(NORBT,NORBT),RFMO(*),NFROZ(8)   
 C 
-#include <inforb.h>
+#include "inforb.h"
 C 
          IRFMO = 0 
          DO 2500 ISYM = 1,NSYM
@@ -1438,8 +1453,8 @@ C matrix:
 C                                          T    
 C        ||DONE||_F = sqrt [ tr (DONE * DONE) ]
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DONE(N,N), WRK(*) 
 C
       XXX = 0.0D0
@@ -1478,7 +1493,7 @@ C
 C This function calculates the trace of the UNPACKED DONE
 C matrix:
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DONE(N,N) 
 C
       XXX = 0.0D0

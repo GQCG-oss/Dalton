@@ -1,6 +1,5 @@
 #define SRDFT_DEBUG -1
 #define LDAembed
-
 !
 !...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -24,9 +23,9 @@
 !...      http://daltonprogram.org
 !
 !
-C
+
+
 C*****************************************************************************
-C  /* Deck srfun_input */
       SUBROUTINE SRFUN_INPUT(SRFTMP)
 C*****************************************************************************
 C
@@ -44,7 +43,7 @@ C*****************************************************************************
 C     variables for SRCPBERI
       real*8 :: mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
-C
+C     general variables
       PARAMETER  (NXTABLE = 26, NCTABLE = 43)
       character(len=10) :: XTABLE(NXTABLE), CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
@@ -110,7 +109,7 @@ C C K. Sharkas and J. Toulouse end
       IXWINT = 0
       ICWINT = 0
       mu_0   = -1.0D0
-C
+
 C Cut string SRFTMP
        call  CUT_INTO_FIELDS (SRFTMP,' ',maxfld,fields,lenfld,Nfld)
        IF (NFld .LE. 1) THEN
@@ -143,9 +142,6 @@ C Cut string SRFTMP
           END IF
        END IF
 
-c      write (lupri, *) 'DOSRX_PBERI=',DOSRX_PBERI         ! Manu debug
-C      write (lupri, *) 'SRXFUN,SRCFUN=',SRXFUN,SRCFUN     ! Manu debug
-
       SETXFUN = .TRUE.
       DO 100 II = 1, NXTABLE
         IF (XTABLE(II) .EQ. SRXFUN) THEN
@@ -155,9 +151,9 @@ C      write (lupri, *) 'SRXFUN,SRCFUN=',SRXFUN,SRCFUN     ! Manu debug
  100  CONTINUE
       SETXFUN = .FALSE.
       GO TO 15
-C
  101  GO TO 15
  102  DOSRX_LDA = .TRUE.
+      ISJT      = .TRUE.
       GO TO 15
  103  DOSRX_GGA = .TRUE.
       GO TO 15
@@ -183,8 +179,6 @@ C
  110  DOSRX_WIB = .TRUE.
       IXWINT    = 12
       GO TO 15
-
-C JT 12-02-05 beg
 C     Short-range exchange PBE functional of HSE
  111  DOSRX_PBEHSE = .TRUE.
       ISJT        = .TRUE.
@@ -193,19 +187,14 @@ C     Short-range exchange PBE functional of TCS
  112  DOSRX_PBETCS = .TRUE.
       ISJT        = .TRUE.
       GO TO 15  ! Manu 01-02-2006
-C JT 12-02-05 end
-C Manu 01-02-2006 begin
 C Short-range exchange rational interpolation functional
  113  DOSRX_PBERI = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
-C Manu 01-02-2006 end
-
 C Short-range exchange PBE functional of GWS (JT 11-08-09)
  114  DOSRX_PBEGWS = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
-
 C Short-range spin-dependent exchange LDA functional (JT 11-08-09)
  115  DOSRX_LDA_S = .TRUE.
       DFT_SPINDNS = .TRUE.
@@ -221,19 +210,15 @@ C  based on DOSRX_LDA_S of JT for mu=0
 117   DOLAX_LDAS = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
-
 C  based on standard dalton DOSRX_LDA for mu=0 (KS 2011) 
 118   DOLAX_LDA = .TRUE.
       GO TO 15
-
 C  Complement exchange PBE functional (KS 08-08-11)
 119   DOLAX_PBEGWS = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
-
 C Complement Beck exchange functional (KS 08-08-11)
 120   DOLAX_GGABCK = .TRUE.
-C      ISJT    = .TRUE.
        GO TO 15
 C Short-range spin-dependent exchange GGA functional (edh 10-02-16)
 121   DOSRX_PBEGWS_S = .TRUE.
@@ -263,12 +248,8 @@ C Short-range wPBE exchange functional (erk 27 feb. 19)
 126   DOSRX_wPBE   = .TRUE.
       ISJT         = .TRUE.
       GO TO 15
-C
-  15  CONTINUE
 
-C      print *,'DOSRX_PBERI = ',DOSRX_PBERI  ! Manu
-C      print *,'DOSRX_PBEHSE = ',DOSRX_PBEHSE  ! Manu
-!      print *,'SRXFUN = ', SRXFUN  ! Manu
+  15  CONTINUE
 
       IF (.NOT.SETXFUN) THEN
           WRITE(LUPRI,'(/2A/,A/)')
@@ -278,7 +259,7 @@ C      print *,'DOSRX_PBEHSE = ',DOSRX_PBEHSE  ! Manu
               WRITE(LUPRI,'(13X,A)') XTABLE(J)
           ENDDO
       ENDIF
-C
+
       SETCFUN = .TRUE.
       DO 200 II = 1, NCTABLE
         IF (CTABLE(II) .EQ. SRCFUN) THEN
@@ -290,7 +271,7 @@ C
  200  CONTINUE
       SETCFUN = .FALSE.
       GO TO 20
-C
+
  201  GO TO 20
  202  DOSRC_LDA = .TRUE.
       GO TO 20
@@ -314,18 +295,14 @@ C     SRCMULO_A : AMUL = A/r_s
  209  DOSRC_WIB = .TRUE.
       ICWINT    = 12
       GO TO 20
-
-C JT 12-02-05 beg
 C     Short-range correlation PBE TCS functional
  210  DOSRC_PBETCS = .TRUE.
       ISJT     = .TRUE.
       GO TO 20
-
 C     Short-range correlation PBE TCS J functional
  211  DOSRC_PBETCSJ = .TRUE.
       ISJT     = .TRUE.
       GO TO 20
-
 C     Rational interpolation
  212  DOSRC_PBERI = .TRUE.
       ISJT    = .TRUE.
@@ -336,10 +313,10 @@ CFRAN      IF (Nfld .ge. 3) THEN
          mu_0_m6 = mu_0 ** (-6)
          mu_0_m7 = mu_0 ** (-7)
          write (lupri,*) 'SRC_PBE_RI mu_0 = ',mu_0,
-     /      mu_0_m4,mu_0_m6,mu_0_m7
+     &      mu_0_m4,mu_0_m6,mu_0_m7
       END IF
       GO TO 20
-
+C
  213  DOSRC_PBELO   = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
@@ -347,7 +324,6 @@ C     Weighted interpolation
  214  DOSRC_PBEWI = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
-C JT 12-02-05 end
 C Short-range correlation PBE function of GWS (JT 11-08-09)
  215  DOSRC_PBEGWS_VWN5 = .TRUE.
       ISJT    = .TRUE. 
@@ -380,12 +356,10 @@ C
  220  DOSRC_MULOE_GGA = .TRUE.
       ISJT = .TRUE.
       GO TO 20
-
 C 'NULL_S   ' Spin density with no correlation functional
  221  DFT_SPINDNS = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
-C
 C Short-range correlation LDA function with multideterminant reference (for OEP) (JT 26-08-11)
 C ... or for RSDHf calculations (Manu 06-12-2012) 
  222  DOSRC_MD_LDA = .TRUE.
@@ -480,13 +454,13 @@ C mu independt VWN5 spin-unpolarized correlation functional (erk 01 mar. 19)
 243   DOC_VWN5_nomu = .TRUE.
       ISJT          = .TRUE.
       GO TO 20
-C
+
   20  CONTINUE
-C
+
       IF (.NOT.SETCFUN) THEN
           WRITE(LUPRI,'(/2A/A/)')
-     > '  SRFUN_INPUT : Invalid or no SR correlation func. specified : '
-     >   ,SRCFUN,'             Currently implemented functionals are :'
+     & '  SRFUN_INPUT : Invalid or no SR correlation func. specified : '
+     &   ,SRCFUN,'             Currently implemented functionals are :'
           DO J = 1,NCTABLE
               WRITE(LUPRI,'(13X,A)') CTABLE(J)
           ENDDO
@@ -497,9 +471,9 @@ C
          IWINT = IXWINT
       ELSE
          CALL QUIT ('Different extrapolation schemes specified for'//
-     >              ' exchange and correlation')
+     &              ' exchange and correlation')
       END IF
-C
+
       IF (.NOT.HFXSET) THEN
 C        if user has not specified HFXFAC with .HFXFAC or implicitly with HFEXCH
 C        then set HF exchange factor to zero.
@@ -509,7 +483,8 @@ C        then set HF exchange factor to zero.
       CALL QEXIT('SRFUN_INPUT')
       RETURN
       END
-C
+
+
 C*****************************************************************************
       SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,
      &                 DOERG,DOGRD,DOATR,TRIPLET,WORK,LWORK,IPRINT_in)
@@ -546,9 +521,7 @@ C*****************************************************************************
 !  mpif.h   : for MPI
 #include "mpif.h"
 #endif
-!
 ! infpar.h : MYNUM, NODTOT
-!
 #include "maxorb.h"
 #include "gnrinf.h"
 #include "infpar.h"
@@ -557,7 +530,6 @@ C*****************************************************************************
 #include "infvar.h"
 #include "dftinf.h"
 #include "dftcom.h"
-C
       logical, intent(in) :: DOGRD, DOERG, DOATR, TRIPLET
       logical :: DOLND, DOGGA, do_metagga
       logical :: first_call, LSRHYBR
@@ -570,7 +542,6 @@ C
       RESULTS(:) = 0.0D0
 
       IF (TRIPLET) THEN
-         !CALL QUIT('SRDFT: TRIPLET not implemented yet')
 #if SRDFT_DEBUG > 4
          WRITE(lupri,*) 'srdft.F: Calling srDFT with triplet'
          flush(lupri)
@@ -648,20 +619,20 @@ C     =================================
 
 C     ... erk : For setting meta-GGAs
       do_metagga = DOSRC_TPSS_S .OR. DOSRX_TPSS_S .OR. DOSRC_TPSS .OR.
-     >             DOSRX_TPSS
+     &             DOSRX_TPSS
 C     ... jkp : For gradient correction to SR-LDA
       DOGGA = DOSRX_GGA.OR.DOSRC_GGA.OR.DOSRBCK.OR.DOSRGGA2.OR.
-     >        DOSRX_WIB.OR.DOSRC_WIB.OR.DOSRX_PBEHSE.OR.DOSRX_PBETCS.OR.
-     >        DOSRC_PBETCS.OR.DOSRX_PBERI.OR.DOSRC_PBERI.OR.DOSRX_PBEGWS
-     >        .OR.DOSRC_PBEGWS.OR.DOSRC_MULOC_GGA.OR.DOSRC_MULOD_GGA
-     >        .OR.DOSRC_MULOE_GGA.OR.DOSRC_PBELO.OR.DOLAX_PBEGWS.OR.
-     >        DOLANSC_PBEGWS.OR.DOLASC_PBEGWS.OR.DOLAX_GGABCK.OR.
-     >        DOLANC_GGALYP.OR.DOLASC_GGALYP.OR.DOSRC_LYPRI .OR.
-     >        DOSRX_PBEGWS_S.OR.DOSRC_PBEGWS_S.OR.DOSRC_PBEGWS_VWN5
-     >       .OR.DOC_PBE_nomu_S.OR.DOC_PBE_nomu.OR.DOSRX_wPBE_S
-     >       .OR.DOSRX_wPBE
+     &        DOSRX_WIB.OR.DOSRC_WIB.OR.DOSRX_PBEHSE.OR.DOSRX_PBETCS.OR.
+     &        DOSRC_PBETCS.OR.DOSRX_PBERI.OR.DOSRC_PBERI.OR.DOSRX_PBEGWS
+     &        .OR.DOSRC_PBEGWS.OR.DOSRC_MULOC_GGA.OR.DOSRC_MULOD_GGA
+     &        .OR.DOSRC_MULOE_GGA.OR.DOSRC_PBELO.OR.DOLAX_PBEGWS.OR.
+     &        DOLANSC_PBEGWS.OR.DOLASC_PBEGWS.OR.DOLAX_GGABCK.OR.
+     &        DOLANC_GGALYP.OR.DOLASC_GGALYP.OR.DOSRC_LYPRI .OR.
+     &        DOSRX_PBEGWS_S.OR.DOSRC_PBEGWS_S.OR.DOSRC_PBEGWS_VWN5
+     &       .OR.DOC_PBE_nomu_S.OR.DOC_PBE_nomu.OR.DOSRX_wPBE_S
+     &       .OR.DOSRX_wPBE
 C     ... erk : Sets DOGGA active when using meta-GGAs
-     >        .OR. do_metagga
+     &        .OR. do_metagga
 C
 
       NDER  = 0
@@ -722,7 +693,6 @@ C     =============================
       IF (KWRK .GT. LWORK) CALL ERRWRK('SRDFT',-KWRK,LWORK)
 
       IF(ISJT) THEN
-C JT 15-02-05 beg
         CALL SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
      &            WORK(KDGASR),DOGGA,DOERG,DOGRD,DOATR,TRIPLET,
@@ -871,6 +841,8 @@ C
       CALL QEXIT('SRDFT')
       RETURN
       END
+
+
 C*****************************************************************************
       SUBROUTINE SRDFT1(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
      &                  WEIGHT,NBUF,GSO,NCNT,DMATGAOSR,DMATGAOT,DOGGA,
@@ -884,7 +856,6 @@ C     Purpose : Calculate DFT-energy and potential contribution for
 C               SR-DFT hybrid methods.
 C
 C*****************************************************************************
-C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -956,14 +927,14 @@ C
 !     debug print of quadrature points between IPNTstart and IPNTend
       !IPNTstart = 8168
       IPNTstart = 0
-c     IPNTend   = 10210
+C     IPNTend   = 10210
       IPNTend   = SRDFT_DEBUG
 #endif
 C     =============================
 C     Calculate DFT grid
 C     (NTOT_DFTGRID is the total number of grid points)
 C     =============================
-C
+
       IF (.NOT.DFTGRID_DONE_OLD .OR. NTOT_DFTGRID_save .LE. 0) THEN
          CALL MAKE_DFTGRID(WORK,LWORK,NTOT_DFTGRID,1,.FALSE.)
          CALL CONDFT
@@ -973,9 +944,9 @@ C
          NTOT_DFTGRID = NTOT_DFTGRID_save
          ! because wrong NTOT_DFTGRID has been transferred from master in SRDFT_PAR_NODE
       END IF
-C
+
       LDOGGA = DOGGA .OR. LSRHYBR
-C
+
       ELCTRN = D0
       ELCTSR = D0
       ELCTRSKIP = D0
@@ -992,22 +963,22 @@ C         zero if NULL functional is defined.
       VXBT   = D0
       VXBV   = D0
       VTOT   = D0
-C
+
 C     For SRHYBR:
-C
+
       EXSR   = D0
       EXTOT  = D0
       ECSR   = D0
       ECTOT  = D0
-C
+
 C     HJAaJ: THRELCTRN makes sure that error in
 C            no. of electrons from grid integration less than DFTHR0
 C            (NTOT_DFTGRID is the total number of grid points)
-C
-c1    THRELCTRN = 1.0D-6 / NTOT_DFTGRID
+
+C    THRELCTRN = 1.0D-6 / NTOT_DFTGRID
       THRELCTOT = 1.0D-7
       THRELCTRN = THRELCTOT/100
-c     THRDRHO   = DFTHRI
+C     THRDRHO   = DFTHRI
       THRDRHO   = 1.0D-10
 C Debug values: include everything
 #ifdef DFT_NOSCREEN
@@ -1017,16 +988,15 @@ C Debug values: include everything
       DFTHRI    = D0
       DFTHRL    = D0
 #endif
-C
+
 C     HJAaJ: skip eval. of neighbour points with same RHO
-C
+
       RHOOLD = D0
       NSKIP1 = 0
       NSKIP2 = 0
-C
-C
+
 C     Make quadname: Can take 9999 procs
-C
+
       IF (MYNUM .EQ. 0) THEN
          QUADNAME = 'DALTON.QUAD'
       ELSE
@@ -1035,11 +1005,11 @@ C
      &     //chrnos((mynum-(mynum/100)*100)/10)
      &     //chrnos(mynum-(mynum/10)*10)
       END IF
-C
+
       LUQUAD = -1
       CALL GPOPEN(LUQUAD,QUADNAME,'OLD','SEQUENTIAL',
      &     'UNFORMATTED',IDUMMY,LDUMMY)
-C
+
       IF (MYNUM .EQ. 0) THEN
          my_first_point = 1
          my_last_point  = NTOT_DFTGRID
@@ -1075,12 +1045,12 @@ C              Print grid information
                WRITE (LUPRI,'(I8,4F12.6)')
      &            IPNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),WEIGHT(IPNT)
             END IF
-C
+
             WGHT = WEIGHT(IPNT)
-C
+
 C           AOs
 C           ===
-C
+
             THRINT = DFTHRI/WGHT
             COR(1) = CORX(IPNT)
             COR(2) = CORY(IPNT)
@@ -1107,7 +1077,7 @@ C           =============================
             END IF
             DELCTRN = WGHT*RHOTOT
             DELCTSR = WGHT*RHOSR
-Chj            IF (RHOTOT.LE.DFTHR0) THEN
+C            IF (RHOTOT.LE.DFTHR0) THEN
             IF (ABS(DELCTRN).LE.THRELCTRN) THEN
                NSKIP1 = NSKIP1 + 1
                ELCTRSKIP = ELCTRSKIP + DELCTRN
@@ -1119,7 +1089,7 @@ C
 C             ... For the gradient correction to SR-LDA we need
 C                 the gradient of the density for the energy and
 C                 the hessian of the density for the potential.
-C
+
 C                 Gradient of density
 C                 ===================
                   CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMATGAOSR,
@@ -1137,10 +1107,10 @@ C                 ===================
                      RHGT(3) = RHGSR(3)
                      RHOTGRD = RHOSRGRD
                   ENDIF
-C
+
 C                 Hessian of density
 C                 ===================
-C
+
                   IF (LSRHYBR) THEN
                      CALL DFTRHH(DMAT(1,2),DMATGAOSR,
      &                           GSO(KSO0),GSO(KSO1),GSO(KSO2),
@@ -1165,19 +1135,19 @@ C              ETX,ETC: Energy
 C              VTX,VTC: Exchange-correlation potential
 C              ==============================
                IF (DOERG) THEN
-c              RTEST = (ABS(RHOTST-RHOOLD) .GT. THRDRHO)
-c              IF (RTEST) THEN
+C              RTEST = (ABS(RHOTST-RHOOLD) .GT. THRDRHO)
+C              IF (RTEST) THEN
                IF (.true.) THEN
 C              ... hjaaj 10. July 2003: we could make this better by using that
 C                  EXC(RHO) = EXC(RHOOLD+DRHO) ~ EXC(RHOOLD) + VXC(RHOOLD)*DRHO
 C                  = ETX+ETC + (VTX+VTC)*DRHO (as EXC and VXC are calculated for RHOOLD)
                   RHOOLD = RHOTST
 C                 ... only reevaluate if new RHOTOT /hjaaj July 2003
-c
-c                 -------------------------------------------------------
-c                 Exchange Correlation energy and potential
-c                 -------------------------------------------------------
-c
+
+C                 -------------------------------------------------------
+C                 Exchange Correlation energy and potential
+C                 -------------------------------------------------------
+
 #if SRDFT_DEBUG > 10
                   if (IPNT.GE.IPNTstart.AND.IPNT.LE.IPNTend) then
                      ldebug=.true.
@@ -1195,9 +1165,9 @@ C                 we can use ETX, ETC, VTX, VTC from last IPNT
                EX   = EX + WGHT*XKSR(1,1)
                EC   = EC + WGHT*ZKSR(1,1)
                VXC  = WGHT*(XKSR(2,1) + ZKSR(2,1))
-c
-c             ... SRHYBR (RHOTOT) contribution
-c              IF (RTEST) THEN
+
+C             ... SRHYBR (RHOTOT) contribution
+C              IF (RTEST) THEN
                IF (.true.) THEN
                   IF (LSRHYBR) THEN
                      VXB   = -WGHT*VXB
@@ -1234,7 +1204,6 @@ C              =====================================================
 C              Exchange-correlation contribution to Kohn-Sham matrix
 C              =====================================================
 C -hjaaj: implement screening>             IF (ABS(VXC) .GT. SCRTHR)
-C
 C  --- NOTE ! This uses FROMVX.
 !      WRITE(LUPRI,*) 'SRDFT1JT: IPNT=',IPNT,' VXC=',VXC !JT
 
@@ -1242,17 +1211,17 @@ C  --- NOTE ! This uses FROMVX.
                CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHGSR,VXC,VXB,
      &                     LDOGGA,.true.,DFTHRL,IPNT)
                IF (LSRHYBR) THEN
-c             ... SRHYBR (RHOTOT) contribution
+C             ... SRHYBR (RHOTOT) contribution
                   VXBT = 0.25d0*VXBT ! 23-Apr-2018 hjaaj: new definition of VXBT
                   CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHGT,
      &                        VXCT,VXBT,LDOGGA,.true.,DFTHRL,IPNT)
                END IF
-C
+
                ENDIF
-C
+
 C              Hessian transformation
 C              ======================
-C
+
                IF (DOATR) THEN
                   IF (LSRHYBR) THEN
 C                    matrix 1 & 2 are DTAO and DVAO
@@ -1281,7 +1250,7 @@ C                    matrix 2 is DXTAO
                   END IF
                END IF
             ENDIF
-C
+
   300    CONTINUE
 C End of loop over points ------------------------------------------------
 C
@@ -1289,9 +1258,9 @@ C
       ELSE IF (NPOINT .EQ.0 ) THEN
          GO TO 200
       END IF
-C
+
  1000 CALL GPCLOSE(LUQUAD,'KEEP')
-C
+
       RESULTS(1) = ELCTRN
       RESULTS(2) = ELCTRSKIP
       RESULTS(3) = 0.0D0 ! SPINDEN
@@ -1307,7 +1276,8 @@ C
 
       RETURN
       END
-C /* Deck srdftexc */
+
+
 C*****************************************************************************
       SUBROUTINE SRDFTEXC(XKSR,ZKSR,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
      &                    CHIVAL,ERFEXP,LSRLDA,VXB,ldebug,VLAMBDA)
@@ -1330,39 +1300,35 @@ C*****************************************************************************
       real*8   VLAMBDA
       LOGICAL ERFEXP(0:2),LSRLDA,ldebug
       DIMENSION XKSR(3,2), ZKSR(3,2), ZMU(3)
-c
+C
       VB    = 0.0D0
       VL    = 0.0D0
       VXB   = 0.0D0
       CALL DZERO(XKSR,6)
       CALL DZERO(ZKSR,6)
       CALL DZERO(ZMU ,3)
-c
-c     -------------------------------------------------------
-c     Exchange energy and potential
-c     -------------------------------------------------------
-c
-      IF (DOSRX_LDA.OR.(SRHYBR.AND.LSRLDA)) THEN
+
+C     -------------------------------------------------------
+C     Exchange energy and potential
+C     -------------------------------------------------------
+
+      IF (SRHYBR.AND.LSRLDA) THEN
           CALL VXSRLDA(XKSR,RHO,RHO13,CHIVAL,1,ERFEXP)
       END IF
 
-C Kamal SHARKAS 08-08-11 beg
       IF (DOLAX_LDA) THEN
           CALL VXLALDA (XKSR,RHO,RHO13,VLAMBDA)
       END IF
-C Kamal SHARKAS 08-08-11 end
 
       IF (DOSRX_GGA) THEN
           CALL VXSRGGA(XKSR,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
      &                 CHIVAL,ERFEXP)
       END IF 
 
-C Kamal SHARKAS 08-08-11 beg
       IF (DOLAX_GGABCK) THEN
           CALL VLAXBEK(XKSR,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
      &                 VLAMBDA)
       END IF
-C Kamal SHARKAS 08-08-11 end 
 
       IF (DOSRGGA2) THEN
           CALL VXSRGGA2(XKSR,RHO,RHO13,RHOGRD,RHOLAP,
@@ -1389,7 +1355,7 @@ C Kamal SHARKAS 08-08-11 end
              CALL VSRWINT2(XKSR,ZMU,RHO,RHO13,CHIVAL,1,ERFEXP)
           ELSE
             CALL QUIT ('Wrong dft functional interpolation scheme'//
-     >                 'in DFTEXC (IWINT).')
+     &                 'in DFTEXC (IWINT).')
           END IF
       END IF
       IF (DOSRBCK ) THEN
@@ -1414,29 +1380,26 @@ C Kamal SHARKAS 08-08-11 end
           XKSR(1,2) = ED + EB
           XKSR(2,2) = VD + VB
       END IF
-c
-c     -------------------------------------------------------
-c     Correlation energy and potential
-c     -------------------------------------------------------
-c
+C
+C     -------------------------------------------------------
+C     Correlation energy and potential
+C     -------------------------------------------------------
+C
       IF ((DOSRC_LDA.OR.DOSRC_MULOCAL(0)).OR.(SRHYBR.AND.LSRLDA)) THEN
           CALL VCSRLDA(ZKSR,RHO,RHO13,CHIVAL,DOSRC_MULOCAL,1,ERFEXP)
       END IF
 
-C Kamal SHARKAS 08-08-11 beg
       IF (DOLANSC_LDA) THEN
           CALL VCLALDA (ZKSR,RHO,RHO13,VLAMBDA)
       END IF
       IF (DOLASC_LDA) THEN
           CALL VCLASLDA (ZKSR,RHO,RHO13,VLAMBDA)
       END IF
-C Kamal SHARKAS 08-08-11 end
 
       IF (DOSRC_GGA) THEN
           CALL VCSRGGA(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,
      &                 CHIVAL,ERFEXP)
       END IF
-C Kamal SHARKAS 08-08-11 beg
 
 C  NON-SCALED
       IF (DOLANC_GGALYP) THEN
@@ -1448,8 +1411,6 @@ C SCALED
       IF (DOLASC_GGALYP) THEN
           CALL VSCLALYP(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,VLAMBDA)
       ENDIF
-
-C Kamal SHARKAS 08-08-11 end
 
       IF (DOSRC_WIB) THEN
           CALL ELYP(ZKSR(1,1),RHO,RHO13,RHOGRD)
@@ -1468,7 +1429,7 @@ C Kamal SHARKAS 08-08-11 end
              CALL VSRWINT2(ZKSR,ZMU,RHO,RHO13,CHIVAL,1,ERFEXP)
           ELSE
              CALL QUIT ('Wrong dft functional interpolation scheme'//
-     >                  'in DFTEXC (IWINT).')
+     &                  'in DFTEXC (IWINT).')
           END IF
       END IF
       IF (DOSRLYPT) THEN
@@ -1489,11 +1450,12 @@ C Kamal SHARKAS 08-08-11 end
           ZKSR(1,2) = EL
           ZKSR(2,2) = VL
       ENDIF
-c
+      
       RETURN
       END
+
+
 #ifdef JKP_DEBUG
-C /* Deck mcrho */
 C*****************************************************************************
       SUBROUTINE MCRHO(CMO,INDXCI,WORK,LWORK,IPRINT)
 C*****************************************************************************
@@ -1511,7 +1473,7 @@ C*****************************************************************************
 #include "infvar.h"
 #include "dftinf.h"
 #include "dftcom.h"
-C
+
       LOGICAL DOGGA,DOBCK,DOLYP,DOLND,DOGRD,DODCAO
       DIMENSION CMO(*),WORK(LWORK)
 C
@@ -1525,14 +1487,14 @@ C     =================================
       DOLYP = .FALSE.
       DOGRD = .FALSE.
       DOGGA = DOBCK .OR. DOLYP
-c
+      
       NDER  = 0
       IF (DOGRD) NDER = 1
       IF (DOGGA) THEN
          NDER = NDER + 1
          IF (DFTPOT) NDER = NDER + 1
       END IF
-C
+
       IF (NDER.EQ.0) NTYPSO =  1
       IF (NDER.EQ.1) NTYPSO =  4
       IF (NDER.EQ.2) NTYPSO = 10
@@ -1578,10 +1540,12 @@ C     =============================
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
      &            WORK(KDGA),DOGGA,WORK(KCREF),INDXCI,DODCAO,
      &            WORK(KDCAO),WORK(KDVAO),WORK(KWRK),LWRK,IPRINT)
-C
+
       CALL TIMER('MCRHO',TIMSTR,TIMEND)
       RETURN
       END
+
+
 C*****************************************************************************
       SUBROUTINE MCRHO1(CMO,DV,DOLND,CORX,CORY,CORZ,WEIGHT,NBUF,GSO,
      &                  NCNT,DMATGAO,DOGGA,CREF,INDXCI,DODCAO,DCAO,DVAO,
@@ -1594,14 +1558,12 @@ C     Purpose : Generate density from multiconfigurationel
 C               wavefunction on a grid.
 C
 C*****************************************************************************
-C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "pi.h"
 #include "dummy.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
-C
 #include "maxorb.h"
 #include "infinp.h"
 #include "inforb.h"
@@ -1611,22 +1573,20 @@ C
 #include "nuclei.h"
 #include "dftinf.h"
 #include "dftcom.h"
-C
       LOGICAL   DOLND,DOGGA,DODCAO
       DIMENSION CMO(*),DV(NNASHX),CORX(NBUF),CORY(NBUF),
      &          CORZ(NBUF),WEIGHT(NBUF),GSO(NBAST*NTYPSO),
      &          NCNT(NBAST),DMATGAO(NBAST),CREF(NCONF),
      &          DCAO(NBAST,NBAST),DVAO(NBAST,NBAST),WORK(LWORK), COR(3)
       CHARACTER*17 QUADNAME
-C
 #include "chrnos.h"
-C
+
 C     =============================
 C     Open file for dumping density
 C     =============================
       CALL GPOPEN(LUDDUMP,'DENSITY.GRID','UNKNOWN',
      &                ' ','FORMATTED',IDUMMY,.FALSE.)
-C
+
 C     =============================
 C     Retrieve CREF
 C     =============================
@@ -1637,13 +1597,13 @@ C
          READ (LUIT1)
   100 CONTINUE
       CALL READT(LUIT1,NCONF,CREF)
-C
+
 C     =============================
 C     Calculate DV
 C     =============================
 C
       CALL MAKDV(CREF,DV,INDXCI,WORK,LWORK)
-C
+
 C     =============================
 C     Calculate inactive and active
 C     density matrises in AO-basis
@@ -1654,20 +1614,20 @@ C
 C     =============================
 C     Calculate grid
 C     =============================
-C
+
       IF (.NOT.DFTGRID_DONE_OLD) THEN
          CALL MAKE_DFTGRID(WORK,LWORK,NTOT_DFTGRID,1,.FALSE.)
          CALL CONDFT
          DFTGRID_DONE_OLD = .TRUE.
       END IF
-C
+
       CELCTRN = D0
       VELCTRN = D0
-C
+
       LUQUAD = -1
-C
+
 C     Make quadname: Can take 10000 procs
-C
+
       IF (MYNUM .GT. 0) THEN
          QUADNAME = 'DALTON.QUAD.n'//chrnos(mynum/1000)
      &     //chrnos((mynum-(mynum/1000)*1000)/100)
@@ -1696,22 +1656,22 @@ C
                WRITE (LUPRI,'(2X,I6,4F12.6)')
      &            IPNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),WEIGHT(IPNT)
             END IF
-C
+
             WGHT = WEIGHT(IPNT)
-C
+
 C           AOs
 C           ===
-C
+
             THRINT = DFTHRI/WGHT
             COR(1) = CORX(IPNT)
             COR(2) = CORY(IPNT)
             COR(3) = CORZ(IPNT)
             CALL GETSOS(GSO,NCNT,COR,WORK,LWORK,
      &                  NBAST,DOLND,DOGGA,THRINT,IPRINT)
-C
+
 C           Density & Number of electrons
 C           =============================
-C
+
 C           ... inactive part
             IF (DODCAO) THEN
                CALL GETRHO_OLD(DCAO,GSO,RHO,DMATGAO,THRINT,IPRINT)
@@ -1720,30 +1680,30 @@ C           ... inactive part
 C           ... active part
             CALL GETRHO_OLD(DVAO,GSO,RHO,DMATGAO,THRINT,IPRINT)
             VELCTRN = VELCTRN + WGHT*RHO
-C
+
 C           Dump active density to file
 C           =============================
-C
+
             WRITE(LUDDUMP,'(4F25.13)') CORX(IPNT),CORY(IPNT),
      &           CORZ(IPNT),RHO
-C
+
   300    CONTINUE
-C
+
          GO TO 200
       ELSE IF (NPOINT .EQ.0 ) THEN
          GO TO 200
       END IF
-C
+
       CALL GPCLOSE(LUQUAD,'KEEP')
-C
+
 C     Test on the number of electrons
-C
+
       ELCTRX = FLOAT(2*NRHFT)
       ELCTRN = CELCTRN + VELCTRN
       ERROR  = ELCTRN - ELCTRX
-C
+
 C     Print section
-C
+
       WRITE (LUPRI,'(3(/2X,A,F14.6))')
      &' Nr. of inactive electrons from numerical integration :',CELCTRN,
      &' Nr. of active electrons from numerical integration   :',VELCTRN,
@@ -1758,7 +1718,7 @@ C
          CALL QUIT
      &    ('Wrong number of electrons in DFTDRV. Calculation aborted.')
       END IF
-C
+
       IF (IPRINT .GT. 5) THEN
          WRITE (LUPRI,'(/2X,A,F14.7,6X,D8.2,I14)')
      &      ' Number of electrons/abscissas:  ',
@@ -1767,7 +1727,8 @@ C
       RETURN
       END
 #endif  /* JKP_DEBUG */
-C /* Deck srdftltr */
+
+
 C*****************************************************************************
       SUBROUTINE SRDFTLTR(KSYMOP,DTRMAT,EXCMAT,WGHT,GAO,GAO1,CHIVAL,
      &                    ERFEXP,LSRLDA,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
@@ -1784,45 +1745,42 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "pi.h"
-C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, DP5 = 0.5D0,
-     >           D13=1.0D0/3.0D0,
-     >          RSFAC = 0.62035 04908 99400 08660 D0)
+     &           D13=1.0D0/3.0D0,
+     &          RSFAC = 0.62035 04908 99400 08660 D0)
 C               RSFAC = (D3/(D4*PI))**THIRD
       LOGICAL INVGGA,DOGGA,ERFEXP(0:2),LSRLDA
-C
 #include "maxorb.h"
 #include "inforb.h"
 #include "infinp.h"
 #include "nuclei.h"
 #include "dftinf.h"
 #include "dftcom.h"
-C
       DIMENSION DTRMAT(NBAST,NBAST),GAO(NBAST),GAO1(NBAST,3),
      &          EXCMAT(NBAST,NBAST),RHG(3),DTGAO(NBAST),
      &          DTGTAO(NBAST),XKSR(3,3),ZKSR(3,3),ZMU(3),BT3(3),BV3(3)
       DIMENSION B3(3)
-C
+
       FRZTMP = 0D0
       FZZTMP = 0D0
-C
+
 C     Check for valid functional
-C
+
       INVGGA = DOSRX_GGA.OR.DOSRBCK.OR.DOSRGGA2.OR.DOSRC_GGA.OR.DOSRLYPT
       DOGGA  = DOSRX_WIB.OR.DOSRC_WIB.OR.SRHYBR
-C
+
       CALL DGEMV('N',NBAST,NBAST,D1,DTRMAT,NBAST,GAO,1,D0,DTGAO,1)
       B0 = DDOT(NBAST,DTGAO,1,GAO,1)
-C
+
       IF (INVGGA) THEN
          CALL QUIT('SRDFTLTR called with GGA type functional. '//
      &             'This is not implemented!')
       END IF
-C
+
 C     ---------------------------------------------------------
 C     SRLDA,MULOCAL,SRHYBR or Interpolated GGA/SRLDA functional
 C     ---------------------------------------------------------
-C
+
       IF (DOGGA) THEN
 C        B3 = GAO1'*DTGAO
          CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,DTGAO,1,D0,B3,1)
@@ -1831,7 +1789,7 @@ C        DTGAO= DTRMAT'*GAO
 C        B3 = B3 + GAO1'*DTGAO
          CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,DTGAO,1,D1,B3,1)
          BMAX = MAX(abs(B0),abs(B3(1)),abs(B3(2)),abs(B3(3)))
-C
+
          IF (IWINT .GT. 0) THEN ! used for DOSRX_WIB and DOSRC_WIB
             RS   = RSFAC/RHO13
             X = CHIVAL*RS*COPFAC
@@ -1842,25 +1800,25 @@ C
          BMAX = abs(B0)
          CALL DZERO(B3,3)
       END IF
-C
+
       IF (BMAX.GT.DFTHRL) THEN
-C
+
 C        *****************************
 C        ** Calculate exchange part **
 C        *****************************
-C
+
          IF (.NOT.DOSRC_MULOCAL(0)) THEN
-c
+
             IF (LSRLDA) THEN
-c        ...  Do not do SRLDA if SRDFTLTR is called with LSRLDA false
-c             (regular Kohm-Sham part with total density for SRHYBR).
+C        ...  Do not do SRLDA if SRDFTLTR is called with LSRLDA false
+C             (regular Kohm-Sham part with total density for SRHYBR).
               CALL VXSRLDA(XKSR,RHO,RHO13,CHIVAL,2,ERFEXP)
             END IF
-c
-c           Below are various corrections to the SRLDA energy/potential
-c
+
+C           Below are various corrections to the SRLDA energy/potential
+
             IF (DOSRX_WIB) THEN
-c         ... Special case for Weighted Interpolation functionals
+C         ... Special case for Weighted Interpolation functionals
               CALL DCOPY(3,XKSR,1,ZMU,1)
               CALL DZERO(XKSR,3)
               CALL EBCK(XKSR(1,1),RHO,RHO13,RHOGRD)
@@ -1884,16 +1842,16 @@ c         ... Special case for Weighted Interpolation functionals
                  CALL QUIT ('Wrong dft functional interpolation '//
      &                      'scheme in SRDFTLTR (IWINT).')
               END IF
-c             --- Remember mixed terms from Becke
+C             --- Remember mixed terms from Becke
               IF (IWINT.EQ.3) THEN
                  FRZTMP = FRZBCK*GAUX
                  FZZTMP = FZZBCK*GAUX
               ENDIF
               FRZBCK = FRZBCK*DERFCX + FRZTMP
               FZZBCK = FZZBCK*DERFCX + FZZTMP
-c
+
             ELSE IF (SRHYBR) THEN
-c          ... Special case for SRDFT in DFT embedding.
+C          ... Special case for SRDFT in DFT embedding.
               CALL V1DRC(VDRC0,FRRDRC,RHO,RHO13)
 #ifndef LDAembed
               CALL V1BCK(FR0BCK,FZ0BCK,FRRBCK,FRZBCK,FZZBCK,
@@ -1923,24 +1881,24 @@ c          ... Special case for SRDFT in DFT embedding.
               FZZBCK = 0D0
             ENDIF
          ENDIF  ! IF (.NOT.DOSRC_MULOCAL(0)) THEN
-C
+
 C        ********************************
 C        ** Calculate correlation part **
 C        ********************************
-C
+
          IF (LSRLDA) THEN
-c     ... Don't do SRLDA if SRDFTLTR is called with LSRHYBR true
-c          (regular Kohm-Sham part with total density for SRHYBR).
+C     ... Don't do SRLDA if SRDFTLTR is called with LSRHYBR true
+C          (regular Kohm-Sham part with total density for SRHYBR).
            CALL VCSRLDA(ZKSR,RHO,RHO13,CHIVAL,DOSRC_MULOCAL,2,ERFEXP)
          END IF
-c
-c     ... Below are various corrections to the SRLDA energy/potential
-c
+C
+C     ... Below are various corrections to the SRLDA energy/potential
+C
          IF (DOSRC_WIB) THEN
-c        ... Special case for Weighted Interpolation functionals
+C        ... Special case for Weighted Interpolation functionals
            CALL DCOPY(3,ZKSR,1,ZMU,1)
            CALL DZERO(XKSR,3)
-c          -- lyp
+C          -- lyp
            CALL ELYP(ZKSR(1,1),RHO,RHO13,RHOGRD)
            CALL VLYP(ZKSR(2,1),RHO,RHO13,RHOGRD,RHOLAP)
            RHOA = DP5*RHO
@@ -1955,7 +1913,7 @@ c          -- lyp
            FRZLYP = DP5*(DF1010 + DF1001+DF10001)*RHOGRD
            FZZLYP = FZ0LYP/RHOGRD
            ZKSR(3,1) = FRRLYP
-c
+C
            IF (IWINT.EQ.1) THEN
               CALL WVWN(VLDA,RHO,RHO13,ELDA,.TRUE.,.TRUE.)
               CALL V1VWN(VVWN0,FRRVWN,RHO,RHO13)
@@ -1970,19 +1928,19 @@ c
               CALL QUIT ('Wrong dft functional interpolation '//
      &       'scheme in correlation part of SRDFTLTR (IWINT).')
            END IF
-c          --- Remember mixed terms from lyp
+C          --- Remember mixed terms from lyp
            IF (IWINT.EQ.3) THEN
               FRZTMP = FRZLYP*GAUX
               FZZTMP = FZZLYP*GAUX
            ENDIF
            FRZLYP = FRZLYP*DERFCX + FRZTMP
            FZZLYP = FZZLYP*DERFCX + FZZTMP
-c
+
          ELSE IF (SRHYBR) THEN
-c        ... Special case for SRDFT in DFT embedding.
+C        ... Special case for SRDFT in DFT embedding.
             RHOA = DP5*RHO
             RHGA = (DP5*RHOGRD)**2
-c
+
 #ifdef LDAembed
             CALL V1VWN(VVWN0,FRRLYP,RHO,RHO13)
             FZ0LYP = 0.0D0
@@ -1998,7 +1956,7 @@ c
             FRRLYP = DP5*(DF2000 + DF1100)
             FRZLYP = DP5*(DF1010 + DF1001+DF10001)*RHOGRD
             FZZLYP = FZ0LYP/RHOGRD
-c
+
 #endif
             IF (LSRLDA) THEN
                ZKSR(3,1) =  ZKSR(3,1) - FRRLYP
@@ -2009,7 +1967,7 @@ c
             ELSE
                ZKSR(3,1) =  FRRLYP
             END IF
-C
+
          ELSE
             FRRVWN = 0D0
             FZ0LYP = 0D0
@@ -2017,11 +1975,11 @@ C
             FRZLYP = 0D0
             FZZLYP = 0D0
          END IF
-C
+
 C        ************************
 C        ** Total contribution **
 C        ************************
-C
+
 #ifdef LDAembed
          ZNV     = 0.d0
 #else
@@ -2031,15 +1989,15 @@ C
          FZ0 = ZNV*WGHT*(FZ0BCK + FZ0LYP)
          FRZ = WGHT*(FRZBCK + FRZLYP)
          FZZ = WGHT*(FZZBCK + FZZLYP)
-C
+
          RX = ZNV*RHG(1)
          RY = ZNV*RHG(2)
          RZ = ZNV*RHG(3)
-C
+
 C        ***************************
 C        ** Linear transformation **
 C        ***************************
-C
+
          IF (.NOT.SRHYBR .OR. DOHFSRDFT) THEN
 !        i.e. for normal MCSRDFT (with SRHYBR .false.) and always for
 !        HFSRDFT
@@ -2105,14 +2063,14 @@ C
          END IF   ! IF (.NOT.SRHYBR .OR. DOHFSRDFT) THEN
 !        i.e. for normal MCSRDFT (with SRHYBR .false.) and always for
       END IF   ! IF (BMAX.GT.DFTHRL) THEN
-c
+
       RETURN
       END
 
-C  /* Deck srfmat */
+
 C*****************************************************************************
       SUBROUTINE SRFMAT(FMAT,CMO,DVREF,EJCSR,EJVSR,EDSR,EDFT,
-     >                  EMYDFTAUX,UEJCVSR,WRK,LWRK,IPRINT)
+     &                  EMYDFTAUX,UEJCVSR,WRK,LWRK,IPRINT)
 C*****************************************************************************
 C
 C     20-Mar-2003 Jesper K. Pedersen
@@ -2133,14 +2091,11 @@ C
 C       EMYDFTAUX = 1.0 * Tr (D^c . J^sr . D^c)
 C                  +1.0 * Tr (D^{v,ref} . J^sr . D^c)
 C                  +1.0 * Tr (V^{sr,ref}_{xc} . D^c) 
-!       UEJCVSR   = 1.0 * Tr (D^{v,updated} . J^sr . D^c)
-
+C       UEJCVSR   = 1.0 * Tr (D^{v,updated} . J^sr . D^c)
+C
 C     * Note that for ensemble CI-srDFT, D^{v,ref} should be, here, equal to the
 C       ensemble density matrix
 C*****************************************************************************
-C                
-C
-C
 #include "implicit.h"
       DIMENSION FMAT(*), CMO(*), DVREF(*), WRK(*)
       DIMENSION ISYMDM(2), IFCTYP(2)
@@ -2148,7 +2103,7 @@ C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
       SAVE ISYMDM, IFCTYP
       DATA ISYMDM/1,1/, IFCTYP/999,999/
-C
+
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -2160,9 +2115,9 @@ C
 #include "infinp.h"
 #include "infpri.h"
 #include "dftcom.h"
-C
+
       CALL QENTER('SRFMAT')
-C
+
       DFT_SPINDNS_SAVE = DFT_SPINDNS
       DFT_SPINDNS = .FALSE.
       LSRHYBR = SRHYBR .AND. .NOT.DOHFSRDFT
@@ -2179,17 +2134,16 @@ C
       CALL MEMGET('REAL',KFCAO,NF*N2BASX,WRK,KFREE,LFREE)
       KFVAO = KFCAO + N2BASX
       KFHAO = KFVAO + N2BASX
-C
+
       CALL FCKDEN(.TRUE.,.TRUE.,
-     >            WRK(KDCAO),WRK(KDVAO),CMO,DVREF,WRK(KFREE),LFREE)
-C
+     &            WRK(KDCAO),WRK(KDVAO),CMO,DVREF,WRK(KFREE),LFREE)
+
       IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A/)')
-     >   '----  Valence AO density matrix ----'
+     &   '----  Valence AO density matrix ----'
          CALL OUTPUT(WRK(KDVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       ENDIF
-C
-C
+
 C ... Get J^c,sr and J^v,sr
 C
       IF(HFXFAC .NE. D0) THEN
@@ -2204,116 +2158,115 @@ C        only Coulomb (Hartree) term
       ENDIF
       CALL DZERO(WRK(KFCAO),NF*N2BASX)
       CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFCAO),WRK(KDCAO),2,
-     >             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
+     &             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
       EJCSR   =  DP5*DDOT(N2BASX,WRK(KDCAO),1,WRK(KFCAO),1)
       EJVSR   = -DP5*DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
       UEJCVSR =      DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
-C     
+     
 C Manu: compute first and second terms in EMYDFTAUX
-C
+
       EMYDFTAUX = 2.0D0*EJCSR 
       EMYDFTAUX = EMYDFTAUX 
-     >         +DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
-C
-C
+     &         +DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
+
       IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A/)')
-     >   '----  Short-range core Hartree matrix ----'
+     &   '----  Short-range core Hartree matrix ----'
          CALL OUTPUT(WRK(KFCAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          WRITE(LUPRI,'(//5X,A//)')
-     >   '----  Short-range valence Hartree matrix ----'
+     &   '----  Short-range valence Hartree matrix ----'
          CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
-C
-c ... Add up in KFCAO
-C
+
+C ... Add up in KFCAO
+
       CALL DAXPY(N2BASX,D1,WRK(KFVAO),1,WRK(KFCAO),1)
-c
-c ... Get V^sr in WRK(KFVAO) and E_xc^sr
-c     using total density matrix (stored in KDCAO)
+
+C ... Get V^sr in WRK(KFVAO) and E_xc^sr
+C     using total density matrix (stored in KDCAO)
       CALL DAXPY(N2BASX,D1,WRK(KDVAO),1,WRK(KDCAO),1)
-c
+
       CALL DZERO(WRK(KFVAO),N2BASX)
-C
+
 C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
       CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,
-     >           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
-     >           WRK(KFREE),LFREE,IPRFCK)
+     &           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
+     &           WRK(KFREE),LFREE,IPRFCK)
       IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
-     >   '----  Short-range Exchange-Correlation Fock-matrix ----'
+     &   '----  Short-range Exchange-Correlation Fock-matrix ----'
          CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
       EDSR = -DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
-C
+
 C Manu: compute the third term in EMYDFTAUX.
 C       Note that WRK(KDCAO) actually contains the TOTAL density matrix
 C       and we only need the core contribution.
-C
+
       EMYDFTAUX = EMYDFTAUX
-     >         +DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
-     >         +EDSR
-C
-C
+     &         +DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
+     &         +EDSR
+
       IF (LSRHYBR) THEN
          write (lupri,*) 'WARNING, srdft-hybr exc matrix not used'
 C TODO
       END IF
-c
-c ... Add the Kohn-Sham Fock matrix
-c
+
+C ... Add the Kohn-Sham Fock matrix
+
       CALL DAXPY(N2BASX,D1,WRK(KFVAO),1,WRK(KFCAO),1)
-c
+C
       IF (DOSRBCK) THEN
-c     ... Get K^lr using total density and subtract it!
+C     ... Get K^lr using total density and subtract it!
           IFCTYP(1) = 12
 C         ... only exchange
           CALL DZERO(WRK(KFVAO),N2BASX)
           CALL SIRFCK2(LUINTA,'AOTWOINT',WRK(KFVAO),WRK(KDCAO),1,
-     >                 ISYMDM,IFCTYP,WRK(KFREE),LFREE)
+     &                 ISYMDM,IFCTYP,WRK(KFREE),LFREE)
           EKVLR =     DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
           CALL DAXPY(N2BASX,DM1,WRK(KFVAO),1,WRK(KFCAO),1)
           EKTLR = DP5*DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
           EDSR = EDSR + EKVLR
           EDFT = EDFT - EKTLR
       ENDIF
-C
+
 C     ===============================================
 C      Transform short-range Fock-matrix to MO basis
 C     ===============================================
-C
+
       CALL DCOPY(N2BASX,WRK(KFCAO),1,WRK(KDVAO),1)
       CALL DGETSP(NBAST,WRK(KDVAO),WRK(KFCAO))
       IF (NSYM.GT.1) CALL PKSYM1(WRK(KFCAO),WRK(KFCAO),NBAS,NSYM,2)
       CALL UTHUB(WRK(KFCAO),FMAT,CMO,WRK(KDVAO),NSYM,NBAS,NORB)
-C
+
       IF (P6FLAG(14)) THEN
         WRITE(LUPRI,1200)
         CALL OUTPKB(FMAT,NORB,NSYM,1,LUPRI)
       END IF
  1200 FORMAT(/' Short-range Fock matrix (MO-basis)')
-C
+
       CALL MEMREL('SRFMAT',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       DFT_SPINDNS = DFT_SPINDNS_SAVE
       CALL QEXIT('SRFMAT')
       RETURN
       END
 
+
 C*****************************************************************************
       SUBROUTINE SRFMAT_vensemble(FMAT,CMO,UDVREF,DVREF,DIFFDVREF,
      &                            diff_ejvsr,diff_edsr,uEDFT,
-     >                            WRK,LWRK,IPRINT)
+     &                            WRK,LWRK,IPRINT)
 C*****************************************************************************
-!
-!     !> brief: calculate various terms needed to make a variational ensemble energy
-!     !> author: S. Knecht and E. Fromager based on the routine by J. K. Pedersen
-      
-!     EJCSR =  0.5 * Tr (D^c . J^sr . D^c)
-!     EJVSR = -0.5 * Tr (D^{v,ref} . J^sr . D^{v,ref})
-!     EDSR  = -1.0 * Tr (V^{sr,ref}_{xc} . D^{v,ref})
-!     EDFT  = E^{sr}_{xc} [D^c+D^{v,ref}] 
-!
-!     !> input: ensemble density matrices D^{v,ref}, D^{v,upd} and D^{v,diff} = D^{v,upd}-D^{v,ref}
+C
+C     !> brief: calculate various terms needed to make a variational ensemble energy
+C     !> author: S. Knecht and E. Fromager based on the routine by J. K. Pedersen
+C     
+C     EJCSR =  0.5 * Tr (D^c . J^sr . D^c)
+C     EJVSR = -0.5 * Tr (D^{v,ref} . J^sr . D^{v,ref})
+C     EDSR  = -1.0 * Tr (V^{sr,ref}_{xc} . D^{v,ref})
+C     EDFT  = E^{sr}_{xc} [D^c+D^{v,ref}] 
+C
+C     !> input: ensemble density matrices D^{v,ref}, D^{v,upd} and D^{v,diff} = D^{v,upd}-D^{v,ref}
 C*****************************************************************************
  
 #include "implicit.h"
@@ -2323,7 +2276,7 @@ C*****************************************************************************
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
       SAVE ISYMDM, IFCTYP
       DATA ISYMDM/1,1/, IFCTYP/999,999/
-C
+
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -2335,9 +2288,9 @@ C
 #include "infinp.h"
 #include "infpri.h"
 #include "dftcom.h"
-C
+
       CALL QENTER('SRFMAT_vensemble')
-C
+
       DFT_SPINDNS_SAVE = DFT_SPINDNS
       DFT_SPINDNS = .FALSE.
       LSRHYBR = SRHYBR .AND. .NOT.DOHFSRDFT
@@ -2358,18 +2311,18 @@ C
       KFHAO = KFVAO + N2BASX
 
       !> start with computing uedft - requuires u_rho_ensemble
-C
+
       CALL FCKDEN(.TRUE.,.TRUE.,
-     >            WRK(KDCAO),WRK(KDVAO),CMO,UDVREF,WRK(KFREE),LFREE)
-C
+     &            WRK(KDCAO),WRK(KDVAO),CMO,UDVREF,WRK(KFREE),LFREE)
+
       IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
-     >   '----  Valence AO density matrix ----'
+     &   '----  Valence AO density matrix ----'
          CALL OUTPUT(WRK(KDVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
-C
+
 C ... Get J^c,sr adn J^v,sr
-C
+
       IF(HFXFAC .NE. D0) THEN
 C        Coulomb + Exchange
 C     ... Warning : assuming DIM(IFCTYP) = 2
@@ -2382,39 +2335,39 @@ C        only Coulomb (Hartree) term
       ENDIF
       CALL DZERO(WRK(KFCAO),NF*N2BASX)
       CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFCAO),WRK(KDCAO),2,
-     >             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
+     &             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
       EJVSR   = -DP5*DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
 C
       IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
-     >   '----  Short-range core Hartree matrix ----'
+     &   '----  Short-range core Hartree matrix ----'
          CALL OUTPUT(WRK(KFCAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          WRITE(LUPRI,'(//5X,A//)')
-     >   '----  Short-range valence Hartree matrix ----'
+     &   '----  Short-range valence Hartree matrix ----'
          CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
-C
+
 c ... Add up in KFCAO
-C
+
       CALL DAXPY(N2BASX,D1,WRK(KFVAO),1,WRK(KFCAO),1)
-c
-c ... Get V^sr in WRK(KFVAO) and E_xc^sr
-c     using total density matrix (stored in KDCAO)
+
+C ... Get V^sr in WRK(KFVAO) and E_xc^sr
+C     using total density matrix (stored in KDCAO)
       CALL DAXPY(N2BASX,D1,WRK(KDVAO),1,WRK(KDCAO),1)
-c
+
       CALL DZERO(WRK(KFVAO),N2BASX)
-C
+
 C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
       CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,
-     >           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
-     >           WRK(KFREE),LFREE,IPRFCK)
+     &           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
+     &           WRK(KFREE),LFREE,IPRFCK)
       IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
-     >   '----  Short-range Exchange-Correlation Fock-matrix ----'
+     &   '----  Short-range Exchange-Correlation Fock-matrix ----'
          CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
       EDSR = -DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
-C
+
       IF (LSRHYBR) THEN
          write (lupri,*) 'WARNING, srdft-hybr exc matrix not used'
 C TODO
@@ -2428,17 +2381,17 @@ C TODO
       call dzero(WRK(KDVAO),N2BASX)
 
       CALL FCKDEN(.TRUE.,.TRUE.,
-     >            WRK(KDCAO),WRK(KDVAO),CMO,DVREF,WRK(KFREE),LFREE)
+     &            WRK(KDCAO),WRK(KDVAO),CMO,DVREF,WRK(KFREE),LFREE)
 
       call dzero(WRK(KDCAO_backup),N2BASX)
       call dzero(WRK(KDVAO_backup),N2BASX)
 
       CALL FCKDEN(.TRUE.,.TRUE.,
-     >            WRK(KDCAO_backup),WRK(KDVAO_backup),CMO,DIFFDVREF,
+     &            WRK(KDCAO_backup),WRK(KDVAO_backup),CMO,DIFFDVREF,
      &            WRK(KFREE),LFREE)
-C
+
 C ... Get J^c,sr adn J^v,sr
-C
+
       IF(HFXFAC .NE. D0) THEN
 C        Coulomb + Exchange
 C     ... Warning : assuming DIM(IFCTYP) = 2
@@ -2451,38 +2404,38 @@ C        only Coulomb (Hartree) term
       ENDIF
       CALL DZERO(WRK(KFCAO),NF*N2BASX)
       CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFCAO),WRK(KDCAO),2,
-     >             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
-C
+     &             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
+
       IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
-     >   '----  Short-range core Hartree matrix ----'
+     &   '----  Short-range core Hartree matrix ----'
          CALL OUTPUT(WRK(KFCAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          WRITE(LUPRI,'(//5X,A//)')
-     >   '----  Short-range valence Hartree matrix ----'
+     &   '----  Short-range valence Hartree matrix ----'
          CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
-C
-c ... Add up in KFCAO
-C
+
+C ... Add up in KFCAO
+
       CALL DAXPY(N2BASX,D1,WRK(KFVAO),1,WRK(KFCAO),1)
-c
-c ... Get V^sr in WRK(KFVAO) and E_xc^sr
-c     using total density matrix (stored in KDCAO)
+
+C ... Get V^sr in WRK(KFVAO) and E_xc^sr
+C     using total density matrix (stored in KDCAO)
       CALL DAXPY(N2BASX,D1,WRK(KDVAO),1,WRK(KDCAO),1)
-c
+
       CALL DZERO(WRK(KFVAO),N2BASX)
-C
+
 C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
       CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,
-     >           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
-     >           WRK(KFREE),LFREE,IPRFCK)
+     &           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
+     &           WRK(KFREE),LFREE,IPRFCK)
       IF (IPRINT.GT.9) THEN
          WRITE(LUPRI,'(//5X,A//)')
-     >   '----  Short-range Exchange-Correlation Fock-matrix ----'
+     &   '----  Short-range Exchange-Correlation Fock-matrix ----'
          CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       ENDIF
       EDSR = -DDOT(N2BASX,WRK(KDVAO_backup),1,WRK(KFVAO),1)
-C
+
       IF (LSRHYBR) THEN
          write (lupri,*) 'WARNING, srdft-hybr exc matrix not used'
 C TODO
@@ -2492,9 +2445,9 @@ C TODO
 
       !> step 3: compute diff_ejvsr / requires DIFFDVREF (sitting in _backup)
 
-C
+
 C ... Get J^c,sr and J^v,sr
-C
+
       IF(HFXFAC .NE. D0) THEN
 C        Coulomb + Exchange
 C     ... Warning : assuming DIM(IFCTYP) = 2
@@ -2507,22 +2460,23 @@ C        only Coulomb (Hartree) term
       ENDIF
       CALL DZERO(WRK(KFCAO),NF*N2BASX)
       CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFCAO),WRK(KDCAO_backup),2,
-     >             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
+     &             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
       EJVSR   = -DP5*DDOT(N2BASX,WRK(KDVAO_backup),1,WRK(KFVAO),1)
-C
+
       IF (LSRHYBR) THEN
          write (lupri,*) 'WARNING, srdft-hybr exc matrix not used'
 C TODO
       END IF
 
       diff_ejvsr = EJVSR
-c
+
       CALL MEMREL('SRFMAT',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       DFT_SPINDNS = DFT_SPINDNS_SAVE
       CALL QEXIT('SRFMAT_vensemble')
       RETURN
       END
-C  /* Deck srdftso */
+
+
 C*****************************************************************************
       SUBROUTINE SRDFTSO(DCVAL,UDV,V2C_SR,EOVEC)
 C*****************************************************************************
@@ -2536,21 +2490,18 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION UDV(NASHT,*), V2C_SR(NORBT,*), EOVEC(*)
-C
 C  Used from common blocks:
 C    INFORB: NISHT,NASHT
 C    INFVAR: NWOPH,JWOP(2,*)
 C    INFIND: IOBTYP(*),ISX(*)
-C
 #include "maxash.h"
 #include "maxorb.h"
 #include "inforb.h"
 #include "infvar.h"
 #include "infind.h"
 #include "dftcom.h"
-C
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
-C
+
       CALL QENTER('SRDFTSO ')
       DCFAC = D2 * DCVAL
 C     ... DCVAL is the value of DC = <0| Eii |B>,
@@ -2588,12 +2539,13 @@ C           second index active
             EOVEC(IG) = EOVEC(IG) - D2 * TEMP
          END IF
   300 CONTINUE
-C
+
       CALL QEXIT('SRDFTSO ')
       RETURN
 C     end of srdftso.
       END
-C  /* Deck rsp_srdftso */
+
+
 C*****************************************************************************
       SUBROUTINE RSP_SRDFTSO(UDV,V2C_SR,EVEC)
 C*****************************************************************************
@@ -2613,12 +2565,10 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION UDV(NASHDI,*), V2C_SR(NORBT,*), EVEC(*)
-C
 C  Used from common blocks:
 C    INFORB: NISHT,NASHT
 C    INFVAR: NWOPH,JWOP(2,*)
 C    INFIND: IOBTYP(*),ISX(*)
-C
 #include "maxash.h"
 #include "maxorb.h"
 #include "inforb.h"
@@ -2628,12 +2578,10 @@ C
 #include "dftcom.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
-C
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
-C
+
       CALL QENTER('RSP_SRDFTSO ')
-C
-C
+
 #if SRDFT_DEBUG > 15
       write (lupri,*) 'rsp_srdftso: input UDV:'
       call output(udv,1,nasht,1,nasht,nasht,nasht,-1,lupri)
@@ -2642,12 +2590,12 @@ C
       write (lupri,*) 'rsp_srdftso:  input EVEC orbital part:'
       call output(evec(kzconf+1),1,kzwopt,1,2,kzvar,2,1,lupri)
 #endif
-C
+
       KYCONF = KZCONF + KZVAR
-C
+
 C     Distribute srDFT Fock-type matrix contribution to orbital
 C     part of EVECS
-C
+
       KSYM1 = -1
       DO IG = 1,KZWOPT
          K     = JWOP(1,IG)
@@ -2705,7 +2653,7 @@ C
            END IF
          END IF
       END DO ! DO IG = 1, KZWOPT
-C
+
 #if SRDFT_DEBUG > 15
       write (lupri,*) 'rsp_srdftso: output EVEC orbital part:'
       call output(evec(kzconf+1),1,kzwopt,1,2,kzvar,2,1,lupri)

@@ -21,15 +21,15 @@
 !...      http://daltonprogram.org
 !
 !
-C
 C File: sir_srdft.F
 C
 C Special rouitnes for srDFT in sirius/
 C Responsible author: Hans Joergen Aa. Jensen.
-C
-C  /* Deck srdft_dens */
-      SUBROUTINE SRDFT_DENS(DAO,UDV,PV,CMO,WRK,KFREE,LFREE)
 
+
+C*****************************************************************************
+      SUBROUTINE SRDFT_DENS(DAO,UDV,PV,CMO,WRK,KFREE,LFREE)
+C*****************************************************************************
 C      Hans Joergen Aa. Jensen, 2-Jun-2009
 C
 C      Purpose: calculate DCAO and DVAO matrices for srDFT
@@ -41,12 +41,13 @@ C      containing both "DV" active charge density matrix
 C      and "DS" active spin density matrix. This is done
 C      inside GTDMSO, thus we do not need to check for DFT_SPINDNS here.
 C
-#include <implicit.h>
+C*****************************************************************************
+#include "implicit.h"
 C
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION DAO(N2BASX,*), UDV(NASHT,NASHT), PV(*), CMO(*), WRK(*)
 C
-#include <dftcom.h>
+#include "dftcom.h"
 C
       CALL QENTER('SRDFT_DENS')
       IF (DFT_SPINDNS) THEN
@@ -72,10 +73,10 @@ C
 !>      f'(DV) = - DV' DV + (2 - DV) DV' = 2 DV' - DV' DV - DV DV'
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       DIMENSION FC(*), FS(*), DV(*), WRK(LWRK)
 C
@@ -142,22 +143,19 @@ C     to the FC matrix for the effective DFT_LOCALSPIN FC matrix.
 C      CALL MEMREL('FCK_..._LOCALSPIN',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
-C
+
+
+C*****************************************************************************
       SUBROUTINE FCK_MAKE_FCEFF_LOCALSPIN(FC,FS,DV,WRK,LWRK)
+C*****************************************************************************
 C
 C     Nov 2011 HJJ+MNP                     
 C
-!>  
-!> 
-!>
-!> 
-!> 
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
 C
-C
-#include <implicit.h>
-#include <priunit.h>
-C
-#include <inforb.h>
+#include "inforb.h"
 C
       DIMENSION FC(*), FS(*), DV(*), WRK(LWRK)
 C
@@ -292,10 +290,10 @@ C     Nov 2011 mnp
 C     Utility routine called by FCK_MAKE_FCEFF_LOCALSPIN
 C     to setup P =  2-DV  
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <inforb.h>
+#include "inforb.h"
       dimension udv(norbt,norbt), tmp(norbt,norbt)
 
       call dzero(tmp,n2orbx)
@@ -305,16 +303,20 @@ C
       call daxpy(n2orbx,-1.0d0,udt,1,tmp,1)
       return
       end
-C
+
+
+C*****************************************************************************
       SUBROUTINE FCK_MAKE_UDT(UDT,UDV)
+C*****************************************************************************
 C
 C     Nov 2011 hjaaj
 C     Utility routine to calculate UDT(NORBT,NORBT)
 C
-#include <implicit.h>
-#include <priunit.h>
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <inforb.h>
+#include "inforb.h"
       dimension UDT(norbt,norbt), udv(nasht,nasht)
 C
       call dzero(UDT,n2orbx)
@@ -334,16 +336,21 @@ C
       end do ! isym
       RETURN
       END
+
+
+C*****************************************************************************
       SUBROUTINE FCK_MAKE_DxFS(UFS,UDV,TMP)
+C*****************************************************************************
 C
 C     Feb 2010 hjaaj
 C     Utility routine called by FCK_MAKE_FCEFF_LOCALSPIN
 C     to calculate "- sum_r ( Dtot(p,r) FS(r,q) )" into tmp(p,q)
 C
-#include <implicit.h>
-#include <priunit.h>
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <inforb.h>
+#include "inforb.h"
       dimension UFS(norbt,norbt), udv(nasht,nasht), tmp(norbt,norbt)
 C
       call dzero(tmp,n2orbx)
@@ -390,14 +397,14 @@ C           ECSR = -0.5*Tr(Vxcsr Dc)
 C     because the local spin FC matrix wasn't added to Vxcsr when
 C     EMCMY was calculated in FCKMAO.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <inforb.h>
-#include <infind.h>
-#include <dfterg.h>
+#include "inforb.h"
+#include "infind.h"
+#include "dfterg.h"
       dimension UFC_LS(norbt,norbt), udv(nasht,nasht)
 !     write (lupri,*) 'UFC_LS matrix, MO basis'
 !     call output(ufc_ls,1,norbt,1,norbt,norbt,norbt,1,lupri)

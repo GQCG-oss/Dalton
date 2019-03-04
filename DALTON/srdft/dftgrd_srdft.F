@@ -21,15 +21,16 @@
 !...      http://daltonprogram.org
 !
 !
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C  /* Deck MAKE_DFTGRID */
+
+
+C*****************************************************************************
       SUBROUTINE MAKE_DFTGRID(WORK,LWORK,NTOTAL,IPRINT,TEST)
-C                                                                      C
-C     Interface routine for grid points                                C
-C     T. Helgaker                                                      C
-C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C*****************************************************************************
+C                                                                      
+C     Interface routine for grid points                                
+C     T. Helgaker                                                      
+C                                                                      
+C*****************************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
@@ -158,21 +159,21 @@ C
       RETURN
       END
 
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C  /* Deck construc */
+
+C*****************************************************************************
       SUBROUTINE CONSTRUC(WRKSP,X8,Y8,Z8,WT8,PSMU,RJ,ACCUM,XMUIJN,
      &                    XMUIJ2,RIJ,AIJ,IVECL,IBIG,RBC,RVEC,
      &                    NUCORB,AA,LUQUAD,NTOTAL,IPRINT)
-C                                                                      C
-C      Creates a quadrature grid and writes it to disk                 C
-C      Original version by C.W.Murray. Rewritten by                    C
-C      A.M.Lee and D.J.Tozer.                                          C
-C                                                                      C
-C      Adapted for Dalton by T. Helgaker                               C
-C      Adapted for DIRAC by T.Saue                                     C
-C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C*****************************************************************************
+C                                                                      
+C      Creates a quadrature grid and writes it to disk                 
+C      Original version by C.W.Murray. Rewritten by                    
+C      A.M.Lee and D.J.Tozer.                                          
+C                                                                      
+C      Adapted for Dalton by T. Helgaker                               
+C      Adapted for DIRAC by T.Saue                                     
+C                                                                      
+C*****************************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
@@ -503,33 +504,44 @@ C
       RETURN
       END
 
-C  /* Deck wrtqua */
+
+C*****************************************************************************
       SUBROUTINE WRTQUA_OLD(X,Y,Z,WT,LUQUAD,NPOINT)
+C*****************************************************************************
 C
 C     T. Helgaker
 C
+C*****************************************************************************
 #include "implicit.h" 
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
       WRITE(LUQUAD) NPOINT
       IF (NPOINT .GT. 0) WRITE(LUQUAD) X,Y,Z,WT
       RETURN
       END
-C  /* Deck reaqua */
+
+
+C*****************************************************************************
       SUBROUTINE REAQUA_OLD(X,Y,Z,WT,LUQUAD,NPOINT)
+C*****************************************************************************
 C
 C     T. Helgaker
 C
+C*****************************************************************************
 #include "implicit.h" 
 #include "priunit.h"
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
       READ(LUQUAD) X,Y,Z,WT
       RETURN
       END
-C  /* Deck priqua */
+
+
+C*****************************************************************************
       SUBROUTINE PRIQUA(X,Y,Z,WT,LUQUAD)
+C*****************************************************************************
 C
 C     T. Helgaker
 C
+C*****************************************************************************
 #include "implicit.h" 
       DIMENSION X(*),Y(*),Z(*),WT(*)
       REWIND LUQUAD
@@ -541,11 +553,15 @@ C
   200 CONTINUE
       RETURN
       END
-C  /* Deck priqu2 */
+
+
+C*****************************************************************************
       SUBROUTINE PRIQU2(X,Y,Z,WT,LUQUAD,NPOINT)
+C*****************************************************************************
 C
 C     T. Helgaker
 C
+C*****************************************************************************
 #include "implicit.h" 
 #include "priunit.h"
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
@@ -555,15 +571,13 @@ C
   100 CONTINUE
       RETURN
       END
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C  /* Deck nleb */                                                     C
-      FUNCTION NLEB(NSCHEME)
-C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include "implicit.h" 
 
+C*****************************************************************************
+      integer pure FUNCTION NLEB(NSCHEME)
+C*****************************************************************************
+      integer, intent(in) :: NSCHEME
+      integer :: NTOT
       NTOT = 5810
       
       IF (NSCHEME.LE.131) NTOT=5810
@@ -601,16 +615,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       RETURN
       END
 
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C  /* Deck nlebset */                                                  C
-      FUNCTION NLEBSET(NTOT)
-C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include "implicit.h" 
-
-      
+C*****************************************************************************
+      integer pure FUNCTION NLEBSET(NTOT)
+C*****************************************************************************
+      integer, intent(in) :: NTOT 
+      integer :: NSCHEME
       IF (NTOT.GE.5810) THEN
          NSCHEME = 131
       ELSEIF (NTOT.GE.5294) THEN
@@ -668,20 +678,17 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       ELSE   
          NSCHEME=9
       ENDIF
-C
+
       NLEBSET=NSCHEME
  
       RETURN
       END
 
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C  /* Deck sleb */                                                     C
+
+C*****************************************************************************
       SUBROUTINE SLEB(X,Y,Z,WT,NSCHEME,NCOUNT,NATOM,
      &RNODE,RBRAGG)
-C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
+C*****************************************************************************
 #include "implicit.h" 
 #include "priunit.h" 
 #include "dftcom.h"
@@ -691,7 +698,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION X(MAXNUM),Y(MAXNUM),Z(MAXNUM),WT(MAXNUM)
 
 C
-C     Lebedev schemes programmed by Cristoph van Wüllen
+C     Lebedev schemes programmed by Cristoph van WÃ¼llen
 C     and used by kind permission.
 C
 C     For principal references, see file Lebedev-Laikov.F
@@ -848,18 +855,17 @@ C     the surface of the unit sphere. It is then divided by NCOUNT.
       RETURN
       END
 
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C  /* Deck bweght */                                                   C
+
+C*****************************************************************************
       SUBROUTINE BWGHT(RJ,PSMU,RIJ,AIJ,APASC,XPASC,X,Y,Z,WT,
      &                 ACCUM,XMUIJN,XMUIJ2,IVECL,IPT,NTRANS,NATOM)
-C                                                                      C
-C      Written by C. W. Murray                                         C
-C      BWGHT calculates the weights associated with                    C
-C      the Becke partitioning amongst the atoms.                       C
-C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
+C*****************************************************************************
+C                                                                      
+C      Written by C. W. Murray                                         
+C      BWGHT calculates the weights associated with                    
+C      the Becke partitioning amongst the atoms.                       
+C                                                                      
+C*****************************************************************************
 #include "implicit.h"
 #include "mxcent.h"
 
@@ -926,15 +932,14 @@ C
       RETURN
       END
 
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C  /* Deck cmprsq */                                                   C
-      SUBROUTINE CMPRSQ(X,Y,Z,WT,NPOINT,KPOINT)                  
-C                                                                      C
-C     T. Helgaker                                                      C
-C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+C*****************************************************************************
+      SUBROUTINE CMPRSQ(X,Y,Z,WT,NPOINT,KPOINT)                  
+C*****************************************************************************
+C                                                                      
+C     T. Helgaker                                                      
+C                                                                      
+C*****************************************************************************
 #include "implicit.h"
 
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
@@ -954,13 +959,17 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       RETURN
       END
-C /* Deck mltpnt */
+
+
+C*****************************************************************************
       FUNCTION MLTPNT(PX,PY,PZ)
+C*****************************************************************************
 C
 C     Symmetry multiplicity of a point in space
 C
 C     T. Helgaker  Feb 01
 C
+C*****************************************************************************
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"

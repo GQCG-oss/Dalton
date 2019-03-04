@@ -1,10 +1,10 @@
 C File: srdft/srdftfun.F
 
 
-C****************************************************************************
+C*****************************************************************************
       pure subroutine Convert_d1_alpha_beta_to_C_S(d1Ea, d1Eb,
      &                  functional_type, d1E) 
-C****************************************************************************
+C*****************************************************************************
 C  Implemented by E. R. Kjellgren
 C
 C  Subroutine to convert the derivatives in terms of alpha and beta
@@ -16,7 +16,7 @@ C  functional_type = 2 is MGGA
 C
 C            drho_x, dgamma_xx, dtau_x, dlaplace_x
 C  d1Ex(idx)    1,      2,        3,        4
-C****************************************************************************
+C*****************************************************************************
       implicit none
 
       integer, intent(in) :: functional_type
@@ -40,10 +40,10 @@ C****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       pure subroutine Convert_d2_alpha_beta_to_C_S(d2Ea, d2Eb,
      &                  functional_type, d2E) 
-C****************************************************************************
+C*****************************************************************************
 C  Implemented by E. R. Kjellgren
 C
 C  Subroutine to convert the derivatives in terms of alpha and beta
@@ -59,7 +59,7 @@ C drho_x         1
 C dgamma_xx      2         3
 C dtau_x         4         5        6
 C dlaplace_x     7         8        9        10
-C****************************************************************************
+C*****************************************************************************
       implicit none
 
       integer, intent(in) :: functional_type
@@ -119,15 +119,14 @@ C****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine BOTH_LDAX_ERF(rho, diff_order, mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
 C Subroutine to to control calling of Exchange LDA functional
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
 C   Output : E, energy
@@ -135,7 +134,7 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-!#include "pi.h" --> pi, pi2
+!#include "pi.h" --" pi, pi2
 #include "pi.h" 
 #include "priunit.h" 
       integer, intent(in) :: diff_order
@@ -253,7 +252,7 @@ C     Do the convertion from alpha, beta to charge, spin
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine BOTH_PBEX_ERF(rho, gamma_vec, diff_order, mu, E, d1E, 
      &                         d2E)
 C*****************************************************************************
@@ -261,8 +260,7 @@ C Implemented by E. R. Kjellgren
 C
 C Subroutine to to control calling of Exchange PBE functional
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           gamma_vec, is called gamma_vec, becuase "gamma" is an
 C              intrinsic function and therefore a bad name.
 C           diff_order, max order of differentation
@@ -272,7 +270,7 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-!#include "pi.h" --> pi, pi2
+!#include "pi.h" --" pi, pi2
 #include "pi.h" 
 #include "priunit.h" 
       integer, intent(in) :: diff_order
@@ -436,7 +434,7 @@ C     Do the convertion from alpha, beta to charge, spin
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine BOTH_TPSSX_ERF(rho, gamma_vec, tau, diff_order, mu, E,
      &                          d1E, d2E)
 C*****************************************************************************
@@ -444,8 +442,7 @@ C Implemented by E. R. Kjellgren
 C
 C Subroutine to to control calling of Exchange TPSS functional
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           gamma_vec, is called gamma_vec, becuase "gamma" is an
 C              intrinsic function and therefore a bad name.
 C           diff_order, max order of differentation
@@ -455,7 +452,7 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-!#include "pi.h" --> pi, pi2
+!#include "pi.h" --" pi, pi2
 #include "pi.h" 
 #include "priunit.h" 
       integer, intent(in) :: diff_order
@@ -633,15 +630,14 @@ C     Do the convertion from alpha, beta to charge, spin
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine SPIN_PW92C_ERF(rho, diff_order, mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
 C Subroutine to to control calling of correlation spin-polarized PW92 functional
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
 C   Output : E, energy
@@ -682,15 +678,14 @@ C*****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine PW92C_ERF(rho, diff_order, mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
 C Subroutine to to control calling of correlation spin-polarized PW92 functional
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
 C   Output : E, energy
@@ -730,15 +725,14 @@ C*****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine SPIN_VWN5C_ERF(rho, diff_order, mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
 C Subroutine to to control calling of correlation spin-polarized PW92 functional
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
 C   Output : E, energy
@@ -779,15 +773,14 @@ C*****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine VWN5C_ERF(rho, diff_order, mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
 C Subroutine to to control calling of correlation spin-polarized PW92 functional
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
 C   Output : E, energy
@@ -827,7 +820,7 @@ C*****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine SPIN_PBEC_GWS_ERF(rho, gamma_xx, diff_order, mu, E,
      &                             d1E, d2E)
 C*****************************************************************************
@@ -835,8 +828,7 @@ C Implemented by E. R. Kjellgren
 C
 C Subroutine to to control calling of correlation spin-polarized PW92 functional
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
 C   Output : E, energy
@@ -880,7 +872,7 @@ C*****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine PBEC_GWS_ERF(rho, gamma_xx, diff_order, mu, E,
      &                             d1E, d2E)
 C*****************************************************************************
@@ -888,8 +880,7 @@ C Implemented by E. R. Kjellgren
 C
 C Subroutine to to control calling of correlation spin-polarized PBE functional
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
 C   Output : E, energy
@@ -930,16 +921,15 @@ C*****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine SPIN_TPSSC_GWS_ERF(rho, gamma_xx, tau, diff_order, mu,
      &                              E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
-C Subroutine to to control calling of correlation spin-polarized PW92 functional
+C Subroutine to to control calling of correlation spin-polarized TPSS functional
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
 C   Output : E, energy
@@ -987,16 +977,15 @@ C*****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine TPSSC_GWS_ERF(rho, gamma_xx, tau, diff_order, mu, E,
      &                         d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
-C Subroutine to to control calling of correlation spin-polarized PW92 functional
+C Subroutine to to control calling of correlation spin-unpolarized TPSS functional
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
 C   Output : E, energy
@@ -1039,15 +1028,15 @@ C*****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine SPIN_PBEC_nomu(rho, gamma_xx, diff_order, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
-C Subroutine to to control calling of correlation spin-polarized PW92 functional
+C Subroutine to to control calling of correlation spin-polarized PBE functional
+C This functional is just the normal PBE, no mu dependency.
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
 C   Output : E, energy
@@ -1089,15 +1078,15 @@ C*****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine PBEC_nomu(rho, gamma_xx, diff_order, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
-C Subroutine to to control calling of correlation spin-polarized PBE functional
+C Subroutine to to control calling of correlation spin-unpolarized PBE functional
+C This functional is just the normal PBE, no mu dependency.
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
 C   Output : E, energy
@@ -1138,15 +1127,14 @@ C*****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine BOTH_wPBEX(rho, gamma_vec, diff_order, mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
-C Subroutine to to control calling of Exchange PBE functional
+C Subroutine to to control calling of Exchange wPBE functional
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           gamma_vec, is called gamma_vec, becuase "gamma" is an
 C              intrinsic function and therefore a bad name.
 C           diff_order, max order of differentation
@@ -1156,7 +1144,7 @@ C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
-!#include "pi.h" --> pi, pi2
+!#include "pi.h" --" pi, pi2
 #include "pi.h" 
 #include "priunit.h" 
       integer, intent(in) :: diff_order
@@ -1239,15 +1227,15 @@ C     Do the convertion from alpha, beta to charge, spin
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine SPIN_VWN5C_nomu(rho, diff_order, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
-C Subroutine to to control calling of correlation spin-polarized PW92 functional
+C Subroutine to to control calling of correlation spin-polarized VWN5 functional
+C This functional is just the normal VWN5, no mu dependency.
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
 C   Output : E, energy
@@ -1288,15 +1276,15 @@ C*****************************************************************************
       end subroutine
 
 
-C****************************************************************************
+C*****************************************************************************
       subroutine VWN5C_nomu(rho, diff_order, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
-C Subroutine to to control calling of correlation spin-polarized PBE functional
+C Subroutine to to control calling of correlation spin-unpolarized VWN5 functional
+C This functional is just the normal VWN5, no mu dependency.
 C
-C   Input : rho_a, alpha-spin density
-C           rho_b, beta-spin density
+C   Input : rho, vector of densities
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
 C   Output : E, energy
