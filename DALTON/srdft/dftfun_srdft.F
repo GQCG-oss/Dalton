@@ -1228,7 +1228,7 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      SUBROUTINE VCLALDA (ZKSR,RHO,RHO13,VLAMBDA)
+      SUBROUTINE VCLALDA(ZKSR,RHO,RHO13,VLAMBDA)
 C*****************************************************************************
 C Kamal SHARKAS 17-05-11
 C linear complement non-scaled LDA correlation-functional 
@@ -1249,7 +1249,7 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      SUBROUTINE VCLASLDA (ZKSR,RHO,RHO13,VLAMBDA)
+      SUBROUTINE VCLASLDA(ZKSR,RHO,RHO13,VLAMBDA)
 C*****************************************************************************
 C linear complement scaled LDA correlation-functional
 C*****************************************************************************
@@ -1531,7 +1531,7 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      SUBROUTINE VXLALDA (XKSR,RHO,RHO13,VLAMBDA)
+      SUBROUTINE VXLALDA(XKSR,RHO,RHO13,VLAMBDA)
 C*****************************************************************************
 C Kamal SHARKAS 17-05-11
 C linear complement LDA exchange-functional
@@ -1724,154 +1724,7 @@ C           ... nothing done at this point ???
 
 
 C*****************************************************************************
-      SUBROUTINE OLD_VCERF (ZK,VK,RHO,RHO13,CHI,POTENT)
-C*****************************************************************************
-C
-C     Written by Jesper Kielberg Pedersen, Apr. 2003
-C
-C     Description :
-C     OLD VERSION of Correlation-functional suitable for the
-C     erf short-range two-electron operator.
-C
-C     Based on implementation in Molpro by A. Savin
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "pi.h"
-      PARAMETER (NORDER1=9,NORDER2=12)
-      PARAMETER(
-     & AP=.5D0*0.0621814D0,X0P=-0.10498D0 ,BP=3.72744D0,CP=12.9352D0,
-     & AF=.5D0*0.0310907D0,X0F=-0.32500D0 ,BF=7.06042D0,CF=18.0578D0,
-     & AA=-1/(6*PI2)      ,X0A=-4.75840D-3,BA=1.13107D0,CA=13.0045D0,
-     & D1= 1.0D0          ,D2 = 2.0D0     ,D3= 3.0D0   ,D4= 4.0D0   ,
-     & D6= 6.0D0          ,D9= 9.0D0 )
-      PARAMETER(FTHIRDPI=D4*PI/D3,TNINTHPI=D2*PI/D9,THIRD=D1/D3,
-     &          FTHIRD  =D4/D3  , SIXTHM=-D1/D6)
-C     some fit parameters:
-      PARAMETER( FLAM2 = 0.0010D0, FLAM1 = 0.0050D0,
-     &           S1 = 3.5D0, S2 = 3.0D0 )
-C
-      LOGICAL POTENT
-      DIMENSION BMAT(NORDER2,NORDER1), PROVI(NORDER1)
-      SAVE PROVI, OLDCHI
-      DATA OLDCHI/-1.D20/
-      DATA BMAT/
-     & 0.00181690, -0.00116564, -0.00457974,  0.01933836,  0.00155020,
-     &-0.00054860,  0.03921819,  0.08820755,  0.19936576,  0.40428886,
-     & 0.62820365,  0.68605810,
-     &-0.00855823,  0.01234668, -0.00440614, -0.01818476,  0.00146308,
-     & 0.02721340,  0.02196785,  0.05080546,  0.09000664, -0.19520028,
-     &-0.65570755, -0.77612124,
-     & 0.01118993, -0.01527939,  0.02034940,  0.00927282,  0.00138437,
-     & 0.07115184,  0.06402993,  0.04664204,  0.13807110,  0.13313895,
-     & 0.03859662,  0.01331013,
-     & 0.00785217, -0.02565368,  0.02457654, -0.01571916,  0.09104788,
-     &-0.00890622,  0.12093568,  0.30133005, -0.31184160, -0.43986114,
-     &-0.03115270,  0.07973827,
-     &-0.02320849,  0.08201789, -0.05855235,  0.09926549, -0.00560629,
-     & 0.18025419,  0.17398319, -0.32719648, -0.15349722,  0.04821389,
-     & 0.04511596,  0.04213866,
-     & 0.03418527, -0.07586069,  0.11122485, -0.00638233,  0.19604870,
-     & 0.15970410, -0.28353683, -0.26314535,  0.06652545,  0.13186042,
-     &-0.03574465, -0.08134667,
-     & 0.03883157,  0.08058872,  0.05921307,  0.18736371,  0.00117169,
-     &-0.30328577, -0.12631965,  0.12479106, -0.01570289, -0.08194886,
-     & 0.00827699,  0.03316512,
-     & 0.01582351,  0.05810755,  0.01477907,  0.10762163, -0.02855738,
-     &-0.18552838, -0.02414007,  0.09601877, -0.02070167, -0.05977323,
-     & 0.01241429,  0.03217619,
-     & 0.00063426,  0.00233718,  0.00058942,  0.00432377, -0.00115390,
-     &-0.00745627, -0.00095892,  0.00386309, -0.00083434, -0.00240429,
-     & 0.00050048,  0.00129566/
-C
-c     XX(X)=X**2+B*X+C
-C
-      RS = ((FTHIRDPI)**(-THIRD)) / RHO13
-      X  = (FTHIRDPI*RHO)**SIXTHM
-C
-C     Create table of prefactors for this CHI value
-C     /jkp+hjaaj July 2003
-C
-      IF (CHI .NE. OLDCHI) THEN
-         OLDCHI = CHI
-         FAC1 = CHI*CHI*FLAM2
-         DO K=1,NORDER1
-            PROVI(K) = 0.0D0
-            DO L=1,NORDER2
-               PROVI(K) = PROVI(K) +
-     &              BMAT(L,K)*exp(-FAC1*S2**(L-1))
-            ENDDO
-CDBG        write(6,*)'K,PROVI(K)',K,PROVI(K)
-         ENDDO
-      END IF
-C
-#ifdef NONZERO_ZETA
-C
-C jkp+hjaaj 7-Jul-2003 : removed redundant code for ZETA = 0
-C
-C ZETA is used for open-shell DFT
-C
-      ZETA=0.0D0
-C
-      HCONST=4/(9*(2D0**(1D0/3D0)-1))
-      GCONST=9D0/8D0
-C
-      CALL VWN_EPS (EPSP,X,AP,X0P,BP,CP)
-      CALL VWN_EPS (EPSF,X,AF,X0F,BF,CF)
-      CALL VWN_EPS (EPSA,X,AA,X0A,BA,CA)
-      H=HCONST*(EPSF-EPSP)/EPSA-1
-      G=GCONST*( (1+ZETA)**FTHIRD + (1-ZETA)**FTHIRD -2 )
-C .   ... G = 0 for ZETA = 0 /jkp+hjaaj
-      EPS = EPSP + EPSA*G*(H*ZETA**4+D1)
-#else
-      CALL VWN_EPS (EPS,X,AP,X0P,BP,CP)
-#endif
-      ZOLD = EPS*RHO
-C
-C
-      ZNEW   = 0.0D0
-      DZNEW  = 0.0D0
-      FAC1 = RS*RS*FLAM1
-      DO K=1,NORDER1
-         S1K = S1**(K-1)
-         PES = PROVI(K) * exp(-FAC1*S1K)
-         ZNEW= ZNEW + PES
-         IF (POTENT) THEN
-            DZNEW = DZNEW + PES * S1K
-         ENDIF
-      ENDDO
-      IF (POTENT) THEN
-         FAC2 = FAC1*D2/(D3*RHO)
-         DZNEW = FAC2 * DZNEW
-      END IF
-C
-C     Energy:
-C
-      ZK = ZOLD*ZNEW
-C
-      IF (POTENT) THEN
-#ifdef NONZERO_ZETA
-         CALL VWN_DEPS (DEPSP,X,AP,X0P,BP,CP)
-         CALL VWN_DEPS (DEPSF,X,AF,X0F,BF,CF)
-         CALL VWN_DEPS (DEPSA,X,AA,X0A,BA,CA)
-         DH=HCONST*(DEPSF-DEPSP-DEPSA*(EPSF-EPSP)/EPSA)/EPSA
-         DG=1.5D0 * ( (1+ZETA)**THIRD - (1-ZETA)**THIRD )
-C        ... DG = 0 for ZETA = 0 /jkp+hjaaj
-         DEPSX = DEPSP + DEPSA*G*(1+H*ZETA**4)+EPSA*G*DH*ZETA**4
-         DEPSZ = EPSA*(DG*(1+H*ZETA**4)+4*G*H*ZETA**3)
-         DZOLD = EPS - (X/6D0)*DEPSX - ZETA*DEPSZ
-#else
-         CALL VWN_DEPS (DEPSX,X,AP,X0P,BP,CP)
-         DZOLD = EPS - (X/6D0)*DEPSX
-#endif
-         VK = DZOLD * ZNEW + DZNEW * ZOLD
-      END IF
-      RETURN
-      END
-
-
-C*****************************************************************************
-      SUBROUTINE VWN_EPS (EPS,XARRAY,A,X0,B,C)
+      SUBROUTINE VWN_EPS(EPS,XARRAY,A,X0,B,C)
 C*****************************************************************************
 #include "implicit.h"
       XX(X)=X**2+B*X+C
@@ -1884,7 +1737,7 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      SUBROUTINE VWN_DEPS (DEPS,XARRAY,A,X0,B,C)
+      SUBROUTINE VWN_DEPS(DEPS,XARRAY,A,X0,B,C)
 C*****************************************************************************
 #include "implicit.h"
       XX(X)=X**2+B*X+C
@@ -1894,204 +1747,6 @@ C*****************************************************************************
      & - (B*X0/XX(X0)) * (
      &  2/(X-X0) - (2*X+B)/XX(X) - 4*(2*X0+B) / ((2*X+B)**2+Q**2)
      & ) )
-      RETURN
-      END
-
-
-C*****************************************************************************
-      SUBROUTINE OLD_VXERF (ZK,VK,RHO,RHO13,CHI,POTENT)
-C*****************************************************************************
-C
-C     Written by Jesper Kielberg Pedersen, Apr. 2003
-C
-C     Description :
-C     Exchange-functional suitable for the erf short-range two-electron
-C     operator.
-C
-C     Based on implementation in Molpro by A. Savin
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "pi.h"
-      PARAMETER( D0 = 0.0D0,
-     &DP5 = 0.5D0 , DP25 = 0.25D0 , D1= 1.0D0 , D2 = 2.0D0 , D3 = 3.0D0,
-     &D4= 4.0D0   , D8= 8.0D0     , D9= 9.0D0 , D16=16.0D0 , D24=24.0D0,
-     &D6= 6.0D0   , D96=96.0D0  , THIRD = D1/D3)
-      LOGICAL POTENT
-C
-      A  = (DP5*(D3*PI2)**(-THIRD)) * (CHI/RHO13)
-      A2 = A*A
-      IF (A .LT. 1.D-9) THEN
-         ZK = -D3/D8 * RHO *
-     &        RHO13 * ((D24/PI)**THIRD)
-      ELSEIF (A.LE.100) THEN
-         PREO =  ( D3/D8 - A*erf(DP5/A)*SQRTPI -
-     &             A2*( (D2-D4*A2)*EXP(-DP25/A2)-D3+D4*A2 ) )
-     &      * RHO13 * ((D24/PI)**THIRD)
-         ZK = - PREO * RHO
-      ELSEIF (A.LT.1.D+9) THEN
-         ZK = -D3/D8 * RHO /(D96*A2) *
-     &        RHO13 * ((D24/PI)**THIRD)
-      ELSE
-         ZK = D0
-      ENDIF
-C
-      IF(POTENT) THEN
-        IF (A.LT.1.D-9) THEN
-           VK = - ((D3/PI)**THIRD) * RHO13
-        ELSE IF (A.LE.100) THEN
-           VK = (D4/D3) * ZK / RHO
-           PROVI = THIRD * ( A * erf(DP5/A)*SQRTPI +
-     &             A2 * ( (D2-D16*A2)*EXP(-DP25/A2) - D6+D16*A2 ) )
-           VK = VK - PROVI* RHO13 * ((D24/PI)**THIRD)
-        ELSEIF (A.LT.1.D+9) THEN
-           VK = - PI*RHO/(D2*CHI*CHI)
-        ELSE
-           VK = D0
-        ENDIF
-      END IF
-      RETURN
-      END
-
-
-C*****************************************************************************
-      SUBROUTINE OLD_VXERFEXP(ZK,RHO,CHI,POTENT)
-C*****************************************************************************
-#include "implicit.h"
-#include "pi.h"
-      PARAMETER (D0 = 0.0D0, DP25=0.25D0, DP5 = 0.5D0, D1 = 1.0D0,
-     &           D2 = 2.0D0, D3 = 3.0D0 , D4 = 4.0D0 , D6 = 6.0D0,
-     &           D8 = 8.0D0, D16=16.0D0 , D24=24.0D0, D96 =96.0D0)
-      LOGICAL POTENT
-C
-      CHISQ = CHI*CHI
-      AMU = CHI
-      COEF = - D2*CHI/SQRTPI
-      EXPO = CHISQ/D3
-      POW13 = D1/D3
-      POW32 = D3/D2
-      FAC = (D3*PI*PI)**POW13
-      GFAC = -6.0462952882138773D0
-      ZK = D0
-C
-      IF (.NOT.POTENT) THEN
-C     ... <<< Energy >>>
-C        ================
-C        ERF CONTRIBUTION
-C        ================
-         AKF = FAC*RHO**POW13
-         A = AMU/(D2*AKF)
-         A2 = A*A
-         A3 = A2*A
-         IF (A .LT. 1.D-9) THEN
-            ZK = -D3/D8 * RHO *(D24 * RHO / PI)**POW13
-         ELSE IF (A.LE.1.D+2) THEN
-            PREO =  (D3/D8 - (erf(DP5/A)*SQRTPI +
-     &      (D2*A-D4*A3)*exp(-DP25/A2) - D3*A+D4*A3 ) * A ) *
-     &      (D24 * RHO / PI)**POW13
-            ZK = - PREO * RHO
-         ELSE IF (A.LT.1.D+9) THEN
-            ZK = -D3/D8 * RHO *(D24 * RHO / PI)**POW13
-     &         *  D1/(D96*A2)
-         ELSE
-            ZK = D0
-         ENDIF
-C        ================
-C        EXP CONTRIBUTION
-C        ================
-         B = SQRT(EXPO)/(D2*AKF)
-         B2 = B*B
-         B3 = B2*B
-         IF (B .LT. 1.D-9) THEN
-            ZK =  ZK + GFAC*B
-         ELSE IF (B.LE.1.D+2) THEN
-            PREOGAU = D6*COEF*((PI/EXPO)**POW32)
-     &          *RHO*(D2*B3*(erf(DP5/B)*SQRTPI
-     &          +(D2*B-D16*B3)*exp(-DP25/B2)-D6*B+D16*B3))
-            ZK = ZK+ PREOGAU * RHO
-         ELSEIF (b.LT.1.D+9) THEN
-            ZK = ZK - 0.0710678504305031D0/B2
-         ENDIF
-      ELSE 
-C     ...<<< Potential >>>
-C        =================
-C        ERF CONTRIBUTION
-C        =================
-         AKF = FAC*RHO**POW13
-         A = AMU/(D2*AKF)
-         A2 = A*A
-         IF (A.LT.1.D-9) THEN
-            ZK=ZK-((D3/PI)*RHO)**POW13
-         ELSE IF (A.LE.1.D+2) THEN
-            ZK = ZK -(D3*RHO/PI)**POW13
-     &      + D2*A*AMU/PI*(exp(-DP25/A2)-D1)+AMU/SQRTPI
-     &      * erf(DP5/A) 
-         ELSEIF (A.LT.1.D+9) THEN
-            ZK = ZK - PI*RHO/(D2*AMU*AMU)
-         ENDIF
-C        ================
-C        EXP CONTRIBUTION
-C        ================
-         B = SQRT(EXPO)/(D2*AKF)
-         B2 = B*B
-         IF (B.LT.1.D-9) THEN
-            ZK = ZK + COEF*DP5
-         ELSE IF (B.LE.1.D+2) THEN
-            ZK = ZK + COEF*(D2*B/SQRTPI*
-     &           (exp(-DP25/B2)-D1)+DP5*erf(DP5/B))
-         ELSE IF (B.LT.1.D+9) THEN
-            ZK = ZK - 0.1184464173841718D0/B2
-         ENDIF
-      ENDIF
-      RETURN
-      END
-
-
-C*****************************************************************************
-      SUBROUTINE OLD_VCERFEXP(ZK,RHO,CHI,POTENT)
-C*****************************************************************************
-#include "implicit.h"
-#include "pi.h"
-      PARAMETER (D0 = 0.0D0, DP25=0.25D0, DP5= 0.5D0, D1 = 1.0D0,
-     &           D2 = 2.0D0, D3 = 3.0D0 , D4 = 4.0D0, D6 = 6.0D0,
-     &           D8 = 8.0D0, D16=16.0D0 , D24=24.0D0,
-     &           POW13= D1/D3, TOL = 1.0D-14)
-C     FIT PARAMETERS 
-      PARAMETER (U1=0.340875D0, U2=-0.00143657D0,
-     &           V1=1.51098D0,  V2= 0.0827831D0)
-      LOGICAL POTENT
-C
-      AMU = CHI
-      AMU2 = CHI*CHI
-      RHO13 = RHO**POW13
-C
-      RSFAC = (D3/(D4*PI))**POW13
-      RS = RSFAC/RHO13
-      RS2 =RS*RS
-      C1 = U1*RS + U2*RS2
-      C2D = (D1+V1*RS)
-      C2 = V2*RS2/C2D
-      DENOM=D1 + C1*AMU + C2*AMU2
-C
-      IF (.NOT.POTENT) THEN
-C
-         IF (RHO.GE.TOL) THEN
-            CALL WVWN(ZVWN,RHO,RHO13,E1,.FALSE.,.TRUE.)
-            ZK = RHO*E1/DENOM
-         ELSE
-            ZK = D0
-         END IF
-      ELSE 
-         CALL WVWN(ZVWN,RHO,RHO13,E1,.TRUE.,.TRUE.)
-         DENOM2 = DENOM*DENOM
-         DRS = -RS/(D3*RHO)
-         DC1 = U1*DRS + D2*U2*RS*DRS
-         C2D2 = C2D*C2D 
-         DC2 = V2*RS*DRS*(D2*C2D - RS*V1)/C2D2
-         DDENOM = DC1*AMU +DC2*AMU2
-         ZK = (ZVWN*DENOM-RHO*E1*DDENOM)/DENOM2
-      END IF
-1     CONTINUE
       RETURN
       END
 

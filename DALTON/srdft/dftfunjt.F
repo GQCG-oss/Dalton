@@ -4530,7 +4530,7 @@ C       divide by two because of spin scaling
 
 
 C*****************************************************************************
-      subroutine ELX_LDALAMSPIN (rhoc,rhos,VLAMBDA,e)
+      subroutine ELX_LDALAMSPIN(rhoc,rhos,VLAMBDA,e)
 C*****************************************************************************
 C linear complement spin-dependent exchange LDA functional energy, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
