@@ -674,7 +674,6 @@ C     correlation functionals
       external ESRC_PBETCSJERF, ESRC_PBETCSERF, ESRC_PBERIERF
       external ESRC_LYPRIERF
       external ESRC_PBEWIERF, ESRC_PBEGWSERF, ESRC_PBELOERF
-      external ESRC_PBEGWSERF_PW92
 
 C     spin functionals
       external ESRX_LDAERFSPIN
@@ -778,11 +777,6 @@ C  Correlation  ----------------------------------------------------------
 !     short-range correlation PBE of TCSJ
       IF(DOSRC_PBETCSJ) THEN
         call DESR(ESRC_PBETCSJERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-      ENDIF
-
-!     short-range correlation PBE of GWS
-      IF(DOSRC_PBEGWS_VWN5) THEN
-        call DESR(ESRC_PBEGWSERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 
 !     Modified short-range correlation PBE of GWS

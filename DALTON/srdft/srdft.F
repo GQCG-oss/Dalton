@@ -317,7 +317,7 @@ CFRAN      IF (Nfld .ge. 3) THEN
      &      mu_0_m4,mu_0_m6,mu_0_m7
       END IF
       GO TO 20
-C
+
  213  DOSRC_PBELO   = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
@@ -326,8 +326,8 @@ C     Weighted interpolation
       ISJT    = .TRUE.
       GO TO 20
 C Short-range correlation PBE function of GWS (JT 11-08-09)
- 215  DOSRC_PBEGWS_VWN5 = .TRUE.
-      ISJT    = .TRUE. 
+ 215  DOSRC_PBEGWS = .TRUE.
+      ISJT         = .TRUE. 
       GO TO 20
 C Short-range spin-dependent correlation LDA function (JT 18-08-09)
  216  DOSRC_LDA_S = .TRUE.
@@ -347,13 +347,11 @@ C of mu=abs(grad n(r))/4*n(r)
       ISJT = .TRUE.
       GO TO 20
 C     SRCMULO_D :
-C
  219  DOSRC_MULOD_GGA = .TRUE.
       ISJT = .TRUE.
       GO TO 20
 C     SRCMULO_E :
 C Extension of the SRCMULO_A functional: XMULFAC depends on grd/rho
-C
  220  DOSRC_MULOE_GGA = .TRUE.
       ISJT = .TRUE.
       GO TO 20
