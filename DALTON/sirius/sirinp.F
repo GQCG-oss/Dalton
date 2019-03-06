@@ -16,7 +16,6 @@
 !
 !
 C
-#ifdef OLD_REV_LOG
 !===========================================================================
 !Revision 1.9  2000/05/24 12:39:05  hjj
 !only MAXCIT=3 as default if MC combination with DOSCF or DOMP2
@@ -71,7 +70,6 @@ C
 !-- OPTINP: .COREHOLE keyword + .CORERELAX keyword
 !-- SIRRDI: CORHOL and CORRLX implemented, no check if calc. ok yet!
 !===========================================================================
-#endif
 C  /* Deck sirinp */
       SUBROUTINE SIRINP(WORK,LFREE)
 C

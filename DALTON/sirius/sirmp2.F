@@ -21,7 +21,6 @@ C  ORIGINAL AUTHORS: Hans Joergen Aa. Jensen and Poul Joergensen (1987).
 C  Reference: H. J. Aa. Jensen, P. Jorgensen, H. Agren, and J. Olsen,
 C             J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)
 C
-#ifdef OLD_REV_LOG
 !===========================================================================
 !NOTE (961114/hjaaj): if solvent is implemented in MP2 then
 !   IF (DOMP2) FLAG(16) = .FALSE.
@@ -38,7 +37,6 @@ C
 !--- Major overhaul of SOPPA code and other code, in particular FCKFRO.
 !December 1993-mjp (Martin J. Packer) --- Revised module for SOPPA
 !===========================================================================
-#endif
 C  /* Deck mp2inp */
       SUBROUTINE MP2INP(WORD1,INPERR,ALLOPT)
 C
@@ -715,7 +713,6 @@ C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
                   ELRHFX   = DP5*DDOT(N2BASX,WRK(KDHFAO),
      &                                1,WRK(KVSRAO),1) ! Klr
 
-!                 write(lupri,*) 'E_lrHFX = ', ELRHFX 
 !***********************************************************
 #endif
 !                   

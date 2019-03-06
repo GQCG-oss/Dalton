@@ -242,8 +242,6 @@ C
             WRITE (LUPRI,4020) ICSIM,NCSIM
             CALL OUTPUT(FTV(1,ICSIM),1,NORBT,1,NORBT,
      &                  NORBT,NORBT,-1,LUPRI)
-!           write(lupri,*) 'hjaaj: domcsrdft =',domcsrdft
-!           call flshfo(lupri)
             IF (DOMCSRDFT) THEN
                WRITE (LUPRI,4021) ICSIM,NCSIM
                CALL OUTPUT(FTV(1,NCSIM+ICSIM),1,NORBT,1,NORBT,

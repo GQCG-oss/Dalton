@@ -19,7 +19,6 @@ C
 
 #define USE_MXMA
 
-#ifdef OLD_REV_LOG
 !===========================================================================
 !MAERKE 940727 ITRSIR=10 og USEDRC (som i .HYPCAL) giver fuldt saet
 ! af Dirac integraler: dvs. alle integraler baade som Coulomb og Dirac !!!!
@@ -67,7 +66,6 @@ C
 !900316-hjaaj: added NXTH2D and NX2H2D routines
 !900314-hjaaj: rewritten NX2H2M to outer loop over symmetries.
 !===========================================================================
-#endif
 C /* Deck n_tractl */
       SUBROUTINE N_TRACTL(ITRSIR,CMO,WORK,KWORK)
 C

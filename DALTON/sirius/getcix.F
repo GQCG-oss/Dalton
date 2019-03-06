@@ -16,13 +16,11 @@
 !
 !
 C
-#ifdef REV_LOG
 c ===========================================================================
 c Revision 1.2  2000/05/24 12:20:33  hjj
 c 1) NCDETS new parameter in SETCI
 c 2) GETDETS new subroutine for getting det. vector from csf vector
 c ===========================================================================
-#endif
 C  /* Deck getcix */
       SUBROUTINE GETCIX(INDXCI,ICSYM,IHCSYM,WRK,LFRSAV,NOSYM)
 C

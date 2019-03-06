@@ -21,7 +21,6 @@ C FILE : sirius/sirdiis.F
 C Principal author : Hans Jørgen Aa. Jensen
 C First version    : 1993
 C
-#ifdef OLD_REV_LOG
 !===========================================================================
 !se efter HJTODO
 !HJTODO 940816: if .FREEZE implemented in FCKEIG (requires new ORDRSS)
@@ -73,7 +72,6 @@ C
 !930623-hjaaj
 !FCKEIG: inserted PARAMETER(D0=0.0D0)
 !===========================================================================
-#endif
 C  /* Deck srdiis */
       SUBROUTINE SRDIIS (ICONV,CMO,WRK,KFRSAV,LFRSAV)
 C

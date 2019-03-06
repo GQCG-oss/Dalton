@@ -677,8 +677,7 @@ C     correlation functionals
 
 C     spin functionals
       external ESRX_LDAERFSPIN
-      external ESRC_LDAERFSPIN, ESRC_LDAERFSPIN_VWN5
-      external ESRC_PBEGWSERFSPIN
+      external ESRC_LDAERFSPIN
       external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA
 
 C     sr mdc func
@@ -1254,8 +1253,6 @@ C Linear transformation -----------------------------------------------------
             end if
 
 #if SRDFT_DEBUG > 11
-          !if (IPRINT_X .gt. 10) then
-           !if (abs(d2Exc(3)) .gt. 0.d0 .or. abs(d2Exc(2)) .gt. 0.d0) then
            if (modulo(n_call, 1000) .eq. 0) then
               write(lupri,*) 'hjaaj: rho ',rho(1:4)
               write(lupri,*) 'hjaaj: rhgc',rhg(1:3,1)
@@ -1300,8 +1297,6 @@ C Linear transformation -----------------------------------------------------
               write(lupri,*) 'debug: d2Exc(18)*BR(1)', d2Exc(18)*BR(1)
               write(lupri,*) 'debug: d2Exc(21)*B4(1)', d2Exc(21)*B4(1)
            end if
-           !end if
-          !end if
 #endif
             IF (NSYM.EQ.1) THEN
                if (do_metagga) then
@@ -1630,13 +1625,10 @@ C Linear transformation -----------------------------------------------------
       END IF   ! IF (BMAX.GT.DFTHRL) THEN
 #if SRDFT_DEBUG > 11
            if (modulo(n_call, 1000) .eq. 0) then
-      !if (iprint_x .gt. 10) then
          write(lupri,*) ':: current EXCMAT left corner - after'
          call output(excmat,1,5,1,5,nbast,nbast,1,lupri)
            end if
-      !end if
 #endif
-c
       RETURN
       END
 ! end of srdftjt.F

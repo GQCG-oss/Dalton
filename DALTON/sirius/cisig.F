@@ -16,15 +16,13 @@
 !
 !
 C
-#ifdef REV_LOG
-========================================================================
-Revision 1.2  2000/05/05 11:19:33  hjj
-bug fix: now always calculate ci diag. in CIDAG, previously it was only
-done if LUIT2 .ge. 0 (must be a leftover, the code LUIT2 .lt. 0 was not
-used anywhere, rather UPDGRD expected diagonal to be calculated with
-LUIT2 .lt. 0 !!!).
-========================================================================
-#endif
+C========================================================================
+C Revision 1.2  2000/05/05 11:19:33  hjj
+C bug fix: now always calculate ci diag. in CIDAG, previously it was only
+C done if LUIT2 .ge. 0 (must be a leftover, the code LUIT2 .lt. 0 was not
+C used anywhere, rather UPDGRD expected diagonal to be calculated with
+C LUIT2 .lt. 0 !!!).
+C========================================================================
 C  /* Deck tpblm2 */
       SUBROUTINE TPBLM2(A,AT,LBLR,NBLR,LBLC,NBLC,IFLAG,IORD)
 C

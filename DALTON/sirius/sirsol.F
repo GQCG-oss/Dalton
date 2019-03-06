@@ -32,59 +32,55 @@ C
 C Intial polarization added later.
 C
 C===========================================================================
-#ifdef REV_LOG
-TO DO :: <  read CAVORG from LUSOL if label is new SOLVLRM
-hjaaj: someone (Kurt, Trygve, Kenneth?) had changed THRZER in SOLGRD 1.0D-10
-       in Oslo stating
-       "Default threshold (in COMDECK THRZER) for zero is a bit too tight here"
-       I do not see why that should be true so I have removed the change until
-       further.  There must be a bug in SOLNC0 if abs(Tn(l,m)) .gt. 1.0D-14
-       when symmetry of (l,m) is not totally symmetric.  /950824-hjaaj
-
-Revision 1.2  2000/05/24 12:53:44  hjj
-SOLFCK: corrected sign error in FCSOL introduced with AO code;
-        fixed AO code for open shell and for all information
-        needed for call WR_SIRIFC in sirdiis.F
-
-980826-hjaaj: revised SOLLNC and SOLLNO for LSYMPT .ne. 1
-950829-hjaaj: (ver n07) fixed error in SOLLNC (/INFVAR/ with NWOPH was missing)
-950623/950501-hjaaj: *** version n06 ***
-  new label on LUSOL (was SOLVINT, new SOLVRLM) [some SOLVINT forgotten 950501]
-94-03-05 -kvm+ha: Korrigerat inertial polarisations del
-930208-hjaaj: SOLLNO: fixed bug for NOSIM .gt. 1
-930111-hjaaj: SOLFCK: zero WRK(KTAO) (bug fix)
-921210-hjaaj -- preparation for ellipsoidal cavity: RSOL(3)
-SOLFL : now general utility routine (nothing from common);
-SOLFCK: new routine for calculating solvent t operator matrix
-920714-hjaaj: SOLGRD: use F17.8 instead of F15.10 for T(lm) etc.
-920601-hjaaj+ha+kvm -- implemented inertial polarization
-SOLFL: EPSLON in parameter list
-920522-hjaaj: added SOLREF deck
-summer 1990-hjaaj: rewritten for determinant CI and symmetry
-fall 1986 Minneapolis: original code
-===========================================================================
-#endif
-#ifdef UNDEF
-/* Comdeck hj_todo */
-900723: timing of SOLGRD (the following is removed from SIROPT)
-      PARAMETER (IDTGRD = 1)
+C TO DO :: <  read CAVORG from LUSOL if label is new SOLVLRM
+C hjaaj: someone (Kurt, Trygve, Kenneth?) had changed THRZER in SOLGRD 1.0D-10
+C       in Oslo stating
+C       "Default threshold (in COMDECK THRZER) for zero is a bit too tight here"
+C       I do not see why that should be true so I have removed the change until
+C       further.  There must be a bug in SOLNC0 if abs(Tn(l,m)) .gt. 1.0D-14
+C       when symmetry of (l,m) is not totally symmetric.  /950824-hjaaj
+C
+C Revision 1.2  2000/05/24 12:53:44  hjj
+C SOLFCK: corrected sign error in FCSOL introduced with AO code;
+C       fixed AO code for open shell and for all information
+C       needed for call WR_SIRIFC in sirdiis.F
+C
+C 980826-hjaaj: revised SOLLNC and SOLLNO for LSYMPT .ne. 1
+C 950829-hjaaj: (ver n07) fixed error in SOLLNC (/INFVAR/ with NWOPH was missing)
+C 950623/950501-hjaaj: *** version n06 ***
+C   new label on LUSOL (was SOLVINT, new SOLVRLM) [some SOLVINT forgotten 950501]
+C 94-03-05 -kvm+ha: Korrigerat inertial polarisations del
+C 930208-hjaaj: SOLLNO: fixed bug for NOSIM .gt. 1
+C 930111-hjaaj: SOLFCK: zero WRK(KTAO) (bug fix)
+C 921210-hjaaj -- preparation for ellipsoidal cavity: RSOL(3)
+C SOLFL : now general utility routine (nothing from common);
+C SOLFCK: new routine for calculating solvent t operator matrix
+C 920714-hjaaj: SOLGRD: use F17.8 instead of F15.10 for T(lm) etc.
+C 920601-hjaaj+ha+kvm -- implemented inertial polarization
+C SOLFL: EPSLON in parameter list
+C 920522-hjaaj: added SOLREF deck
+C summer 1990-hjaaj: rewritten for determinant CI and symmetry
+C fall 1986 Minneapolis: original code
+C ===========================================================================
+C /* Comdeck hj_todo */
+C 900723: timing of SOLGRD (the following is removed from SIROPT)
+C      PARAMETER (IDTGRD = 1)
 C     ... note : IDTGRD = IDTIM in GRAD
-#include "inftim.h"
-...
-         CALL GETTIM(T1,W1)
-         ... call solgrd ...
-         CALL GETTIM(T2,W2)
-         TIMCPU(1,IDTGRD) = TIMCPU(1,IDTGRD) + T2 - T1
-         TIMWAL(1,IDTGRD) = TIMWAL(1,IDTGRD) + W2 - W1
+C #include "inftim.h"
+C ...
+C         CALL GETTIM(T1,W1)
+C         ... call solgrd ...
+C         CALL GETTIM(T2,W2)
+C         TIMCPU(1,IDTGRD) = TIMCPU(1,IDTGRD) + T2 - T1
+C         TIMWAL(1,IDTGRD) = TIMWAL(1,IDTGRD) + W2 - W1
 C        MAERKE: code 8 for SOLGRD contribution ???? 900723
-900720: ORBLIN option to SOLDIA for no CSF diagonal ?? (for absorp.).
--- SOLGRD must be called by Abacus for solvent diagonal,
-   i.e. NCONST,NWOPPT will be necessary. (or augment ABADIA).
-NB. ABADIA should be in sirius, not abacus, to ensure correct argument
-   list to sirius and detci routines.
--- Also consider -TELM contributions to diagonal Hessian and SOLLIN.
-900718: absorption for solvent calculation.
-#endif
+C 900720: ORBLIN option to SOLDIA for no CSF diagonal ?? (for absorp.).
+C -- SOLGRD must be called by Abacus for solvent diagonal,
+C    i.e. NCONST,NWOPPT will be necessary. (or augment ABADIA).
+C NB. ABADIA should be in sirius, not abacus, to ensure correct argument
+C    list to sirius and detci routines.
+C -- Also consider -TELM contributions to diagonal Hessian and SOLLIN.
+C 900718: absorption for solvent calculation.
 C  /* Deck solref */
       SUBROUTINE SOLREF(IWUNIT)
 C
