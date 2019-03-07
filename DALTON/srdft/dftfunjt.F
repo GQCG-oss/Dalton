@@ -3897,9 +3897,7 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-C      subroutine ESRX_PBEGWSERF(rhoa,grdaa,mu,e)
-      subroutine ESRX_PBEGWSERF(rhoa,grdaa,taua,
-     &laplacea, mu, e)
+      subroutine ESRX_PBEGWSERF(rhoa,grdaa,mu,e)
 C*****************************************************************************
 C     Short-range PBE exchange functional from 
 C       Goll, Werner, Stoll, PCCP 7, 3917 (2005)
@@ -3952,7 +3950,7 @@ C     LDA energy
 C*****************************************************************************
       subroutine ELAX_PBEGWS(rho,grd2,VLAMBDA,e)
 C*****************************************************************************
-C linear complement exchange PBE energy, Kamal SHARKAS 19/05/2011 beg
+C linear complement exchange PBE energy, Kamal SHARKAS 19/05/2011
 C*****************************************************************************
       real*8, intent(in) :: rho(4), grd2(6), VLAMBDA
       real*8, intent(out) :: e
@@ -4030,7 +4028,7 @@ C*****************************************************************************
 C*****************************************************************************
       subroutine ELAC_PBEGWS(rhoc,grdcc,VLAMBDA,e)
 C*****************************************************************************
-C linear complement non-scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011 beg
+C linear complement non-scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
       real*8, intent(in) :: rhoc, grdcc, VLAMBDA
       real*8, intent(out) :: e

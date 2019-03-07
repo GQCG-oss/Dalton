@@ -519,10 +519,7 @@ C
 #include "infvar.h"
 #include "dftcom.h"
 C
-!      WRITE(LUPRI,*) 'DFTATR: entering'  !JT
-
       DOPRNT = .FALSE.
-C     IPRINT = 2
       IPRINT = 6
 C
       KDAO = 1
