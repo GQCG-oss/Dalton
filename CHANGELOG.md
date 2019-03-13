@@ -2,6 +2,27 @@
 
 ## [2019.alpha] (Dalton2019 alpha)
 
+### New features added
+- Added possibility to optimize MCSCF singlet wave functions with CSFs when used for triplet properties,
+  both in \*\*RESPONS and \*\*PROPERTIES. Previously .DETERMINANTS in wave function optimization was required. (H. J. Aa. Jensen)
+
+### Added
+- added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
+
+### Fixed
+- make sure we include all (near-)degenerate diagonal elements for linear response excitation energies
+  via \*\*PROPERTIES .EXCITA or via \*\*RESPONS \*LINEAR .SINGLE (increase .NROOTS if needed).
+  Otherwise the calculation will probably exhibit spin and/or space symmetry contamination proportional
+  to the convergence threshold. (H. J. Aa. Jensen)
+- never use plus combinations of determinants as start guess for singlet linear response excitation energies
+  when reference wave function is not singlet (we do not want singlet states then). (H. J. Aa. Jensen)
+  
+
+
+## [2018.2alpha] (unreleased)
+
+### Fixed
+- more robust .STEX input (old failed with gfortran 8); changed documentation accordingly.
 
 ## [2018.1] (2019-01-14)
 

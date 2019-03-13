@@ -62,9 +62,7 @@ cat > rsp_mnf.dal <<'%EOF%'
 .CAS SPACE
  0 0 0 0 0 1 1 0
 *CI VECTOR
-.PLUS COMBINATIONS
-*OPTIMIZATION
-.DETERMINANTS
+.PLUS COMBINATIONS  ! to get singlet Sigma (singlet Delta is lower in energy)
 **RESPONSE
 .TRPFLG
 *LINEAR

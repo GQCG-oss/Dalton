@@ -517,7 +517,7 @@ To obtain initial guess for CI vector(s).
 
 {\bf Purpose:}
 
-To specify the configuration part in MCSCF and CI calculations.
+To specify the configuration part in .MCSCF and .CI calculations.
 
 \begin{description}
 \item[\Key{CAS SPACE}] \ \\
@@ -570,6 +570,15 @@ To specify the configuration part in MCSCF and CI calculations.
   where $S$ is the spin quantum number. \\
   For determinant basis this option determines the minimum spin
   multiplicity.  The $M_S$ value is determined as (ISPIN-1)/2.
+
+\item[\Key{MS2}]
+  Default is determind by \kw{.SPIN MULTIPLICITY}. \\
+  \kw{READ (LUINP,*) MS2}\\
+  For CSF basis: MS2 specifies non-default $2 M_S$ value to be used in the determinant expansion of the CSFs.
+  The computationally optional MS2 value for, say, triplet is zero (default), but if you want to calculate
+  spin-density you should select MS2=2.\\
+  For determinant basis this option should never be used, if used it must give the
+  same $M_S$ value as the \kw{.SPIN MULTIPLICTY} key word.
 
 \item[\Key{SYMMETRY}]
   Default is 1 (totally symmetric irrep).\\
@@ -2397,18 +2406,31 @@ Build RPA matrix.
   \kw{READ (LUINP,*) IPRSTX} \\
 Print level in STEX routines.
 
-\item[\Key{OPEN S}] \ \\
-  \kw{READ (LUINP,*) NOPEN(1:NSYM} \\
-  \kw{READ (LUINP,*) (IOPEN(1:NOPEN(ISYM), ISYM=1,NSYM)} \\
+\item[\Key{OPEN S}] \ 
+\begin{verbatim}
+  READ (LUINP,*) NOPEN(1:NSYM)
+  do isym = 1, nsym
+  if (nopen(isym) > 0) then
+     READ (LUINP,*) IOPEN(1:NOPEN(ISYM),ISYM)
+  end if
+  end do
+\end{verbatim}
   Open shells in STEX calculation.
 
-\item[\Key{COEFFI}] \ \\
-  \kw{READ (LUINP,*) (CJ(1:NOPEN(ISYM), ISYM=1,NSYM)} \\
-  \kw{READ (LUINP,*) (CK(1:NOPEN(ISYM), ISYM=1,NSYM)} \\
+\item[\Key{COEFFI}] \ 
+\begin{verbatim}
+  do isym = 1, nsym
+  if (nopen(isym) > 0) then
+     READ (LUINP,*) CJ(1:NOPEN(ISYM))
+     READ (LUINP,*) CK(1:NOPEN(ISYM))
+  end if
+  end do
+\end{verbatim}
   Coefficients for modified J and K Fock matrices.
+  Note: \kw{.OPEN SH} must be specified before this keyword.
 
 \item[\Key{AO}]
-  Save STEX matrices in AO basis.
+  Save STEX matrices in AO basis (default: save in MO basis).
 
 \end{description}
 
