@@ -1,9 +1,16 @@
 # DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
-## [2018.2alpha] (unreleased)
+## [2018.2beta] (unreleased)
 
 ### Fixed
-- more robust .STEX input (old failed with gfortran 8); changed documentation accordingly.
+- dalton script: do not set OMP\_NUM\_THREADS=1 if not MPI parallel (better performance
+  for sequential calculations if threaded blas is used, e.g. MKL or openBLAS)
+- dalton script: stop if user asks for MPI run with a sequential dalton.x
+- more robust .STEX input specification (old failed in some situations with gfortran 8); changed documentation accordingly
+
+### Added
+- dalton script: -gb and -gnb options for specifying work memory in gigabytes
+- dalton script: -np as an alternative to -N for specifying number of MPI nodes
 
 ## [2018.1] (2019-01-14)
 
