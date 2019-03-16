@@ -1,8 +1,9 @@
 # DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
-## [2018.2beta] (unreleased)
+## [2018.2] (2019-03-17)
 
 ### Fixed
+- fixed error in AO-direct CC3 response calculations causing segmentation faults
 - dalton script: do not set OMP\_NUM\_THREADS=1 if not MPI parallel (better performance
   for sequential calculations if threaded blas is used, e.g. MKL or openBLAS)
 - dalton script: stop if user asks for MPI run with a sequential dalton.x
