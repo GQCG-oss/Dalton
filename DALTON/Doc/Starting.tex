@@ -603,21 +603,27 @@ These options include:
   Put files to \verb|DALTON_TMPDIR| before calculation starts.
 \item[-mb mb \hfill] \hfill \\
   Change the default size of the work memory\index{work memory}
-  \index{scratch memory} to \verb|mb| Megabytes.
+  \index{scratch memory} to \verb|mb| Megabytes (only integer \verb|mb| allowed).
+\item[-gb gb \hfill] \hfill \\
+  Change the default size of the work memory\index{work memory}
+  \index{scratch memory} to \verb|gb| Gigabytes (only integer \verb|gb| allowed).
 \item[-mw mem \hfill] \hfill \\
   Change the default size of the work memory\index{work memory}
   \index{scratch memory} to \verb|mem| double precision words.
 \item[-nb mb \hfill] \hfill \\
   Change the default size of the node work memory\index{work memory}
-  \index{scratch memory} to \verb|mb| Megabytes.
+  \index{scratch memory} to \verb|mb| Megabytes. Default: same as for master.
+\item[-ngb gb \hfill] \hfill \\
+  Change the default size of the node work memory\index{work memory}
+  \index{scratch memory} to \verb|gb| Gigabytes. Default: same as for master.
 \item[-nw mem \hfill] \hfill \\
   Change the default size of the node work memory\index{work memory}
-  \index{scratch memory} to \verb|mem| double precision words.
+  \index{scratch memory} to \verb|mem| double precision words. Default: same as for master.
 \item[-omp num\hfill] \hfill \\
   Set the number of OpenMP threads to \verb|num|. Note that \dalton\ is not OpenMP
   parallelized, however, this option can be used with e.g.\ the
-  threaded MKL libraries.
-\item[-N num \hfill] \hfill \\
+  threaded MKL or openBLAS libraries.
+\item[-N num | -np num\hfill] \hfill \\
   Number of MPI processes to be used in a parallel MPI calculation
   controlled by running mpirun/mpiexec.
 \item[-cpexe \hfill] \hfill \\
@@ -625,7 +631,7 @@ These options include:
   global scratch (if DALTON\_USE\_GLOBAL\_SCRATCH is set) or to
   local scratch on all nodes.
 \item[-rsh \hfill] \hfill \\
-  Use rsh/rcp for communications between nodes (default ssh/scp)
+  Use rsh/rcp for communications between cluster nodes (default ssh/scp)
 \item[-nodelist "node1 node2 ..." \hfill] \hfill \\
   Set nodelist DALTON\_NODELIST, dalton.x will be copied to
   DALTON\_TMPDIR on each node unless DALTON\_USE\_GLOBAL\_SCRATCH
@@ -646,7 +652,14 @@ variables:
 \item[DALTON\_NODELIST \hfill] \hfill \\
  List of nodes, dalton.x will be copied to DALTON\_TMPDIR on each node unless DALTON\_USE\_GLOBAL\_SCRATCH is defined.
 \item[DALTON\_LAUNCHER \hfill] \hfill \\
- Launcher for the dalton.x binary
+ Launcher for the dalton.x binary.
+ It is not allowed to user -N or -np together with DALTON\_LAUNCHER, instead the number of MPI processes
+ must be specified in the DALTON\_LAUNCHER specification.
+ Specification of DALTON\_LAUNCHER is the only way to use other launchers than mpirun and mpiexec,
+ and for adding other options to the launcher. \\
+ Examples (using bash) for openMPI and IBM Spectrum MPI: \\
+ \verb|   export DALTON_LAUNCHER="mpirun -np 16 --map-by node"| \\
+ \verb|   export DALTON_LAUNCHER="jsrun -n 12 -a 1 -c 4 -g 1 -bpacked:4"|
 \end{list}
 
 In most cases, the \verb|DALTON.OUT| file will contain all the
