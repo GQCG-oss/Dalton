@@ -610,7 +610,7 @@ These options include:
 \item[-mw mem \hfill] \hfill \\
   Change the default size of the work memory\index{work memory}
   \index{scratch memory} to \verb|mem| double precision words.
-\item[-nb mb \hfill] \hfill \\
+\item[-nmb mb \hfill] \hfill \\
   Change the default size of the node work memory\index{work memory}
   \index{scratch memory} to \verb|mb| Megabytes. Default: same as for master.
 \item[-ngb gb \hfill] \hfill \\
@@ -653,7 +653,7 @@ variables:
  List of nodes, dalton.x will be copied to DALTON\_TMPDIR on each node unless DALTON\_USE\_GLOBAL\_SCRATCH is defined.
 \item[DALTON\_LAUNCHER \hfill] \hfill \\
  Launcher for the dalton.x binary.
- It is not allowed to user -N or -np together with DALTON\_LAUNCHER, instead the number of MPI processes
+ It is not allowed to use -N or -np together with DALTON\_LAUNCHER, instead the number of MPI processes
  must be specified in the DALTON\_LAUNCHER specification.
  Specification of DALTON\_LAUNCHER is the only way to use other launchers than mpirun and mpiexec,
  and for adding other options to the launcher. \\

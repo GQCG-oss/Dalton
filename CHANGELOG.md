@@ -11,7 +11,7 @@
 - more robust .STEX input specification (old failed in some situations with gfortran 8); changed documentation accordingly
 
 ### Added
-- dalton script: -gb and -gnb options for specifying work memory in gigabytes
+- dalton script: -gb and -ngb options for specifying work memory in gigabytes
 - dalton script: -np as an alternative to -N for specifying number of MPI nodes
 
 ## [2018.1] (2019-01-14)

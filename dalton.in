@@ -516,7 +516,7 @@ if [ -n "$DALTON_USE_GLOBAL_SCRATCH" ] ; then
    echo ' DALTON_USE_GLOBAL_SCRATCH is defined, so Dalton will use global scratch dir.'
 fi
 
-if [ $mpi_enabled = "ON" -a $optn -gt 1 ] ; then  ! MPI parallel
+if [ $mpi_enabled = "ON" -a $optn -gt 1 ] ; then  # MPI parallel
    if [ -z "$OMP_NUM_THREADS" ]; then
       export OMP_NUM_THREADS=1
       echo
