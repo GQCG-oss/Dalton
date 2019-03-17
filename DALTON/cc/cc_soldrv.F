@@ -631,14 +631,11 @@ C--------------------------------
 C           Create start vectors.
 C--------------------------------
 C
-            write(lupri,*)'RPA: call cceq_str'
-            call flshfo(lupri)
             CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
      *                    FS12AM,LUFS12,FS2AM,LUFS2,LPROJECT,ISTATPRJ,
      *                    TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                    NREDH,WORK(KEIVAL),WORK(KIPLAC),
      *                    WORK(KWRK1),LWRK1,LIST)
-            write(lupri,*)'RPA: exit cceq_str'
 C
             CALL FLSHFO(LUPRI)
 C
