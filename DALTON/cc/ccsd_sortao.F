@@ -261,7 +261,7 @@ C
 C
       RETURN
       END
-C  /* Deck ccrda1 */
+C  /* Deck ccsd_sort1 */
       SUBROUTINE CCSD_SORT1(LUINTA,XINT,IBUF4,RBUF,KAOAB,KAOG,ISYDIS,
      *                      LENGTH,IOFF,ID1,ID2,NIBUF,LBUF,NBITS,IBIT1)
 C
