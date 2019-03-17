@@ -4,6 +4,7 @@
 
 ### Fixed
 - fixed error in AO-direct CC3 response calculations causing segmentation faults
+- fixed calculation of DSO contribution to spin-spin coupling for MCSCF and HSROHF when no symmetry
 - dalton script: do not set OMP\_NUM\_THREADS=1 if not MPI parallel (better performance
   for sequential calculations if threaded blas is used, e.g. MKL or openBLAS)
 - dalton script: stop if user asks for MPI run with a sequential dalton.x
