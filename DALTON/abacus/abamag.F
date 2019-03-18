@@ -332,9 +332,9 @@ c        Numerical dso integration is faster for large molecules
 c        but currently, it is implemented only without symmetry.
 c        In case of no symmetry present, both methods should give
 c        identical results.
-         IF(NSYM.GT.1) THEN
+         IF(NSYM.GT.1 .OR. NASHT.GT.0) THEN
             WRITE(LUPRI,'(/A)')
-     &         "Symmetry -> DSO by analytical integration."
+     &        "Symmetry or open-shell -> DSO by analytical integration."
             CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),
      &           WORK(KLAST),LWRK,MPRINT,MNODC,MNODV,WORD,NCOMP)
          ELSE
