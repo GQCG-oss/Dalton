@@ -97,13 +97,11 @@ usage (){
         echo "Usage: $0 [options] dalinp{.$DALEXT} [molinp{.$MOLEXT} [potinp{.$POTEXT}] [pcmsolver{.$PCMEXT}]]"
         echo
         echo 'Options:'
+        echo ' -w dir           : change job directory to dir (default:' $WRKDIR')'
         echo ' -b dir           : prepend dir to directory list for basis set searches'
-        echo '                    (current directory and dalton basis library are included'
-        echo '                     automatically)'
-        echo ' -w dir           : change WRKDIR to dir'
-        echo '                    (default:' $WRKDIR')'
-        echo ' -o file          : redirect output from program to WRKDIR with "file" as file name'
-        echo ' -ow              : redirect output from program to WRKDIR with standard file name'
+        echo '                    (job directory and dalton basis library are included automatically)'
+        echo ' -o file          : redirect output from program to job directory with "file" as file name'
+        echo ' -ow              : redirect output from program to job directory with standard file name'
         echo ' -dal file        : the '$dalton' input file'
         echo ' -mol file        : the molecule input file'
         echo ' -pot file        : the potential input file (for .QM3, .QMMM and .PEQM)'
@@ -119,37 +117,42 @@ usage (){
         echo ' -d               : delete job scratch directory before calculation starts'
         echo ' -D               : do not delete job scratch directory after calculation stops'
         echo ' -noappend        : do not append anything to the scratch directory; be careful'
-        echo '                    with this option since by default scratch is wiped after'
-        echo '                    calculation'
+        echo '                    with this option since by default scratch is wiped after calculation'
         echo ' -get "file1 ..." : get files back from DALTON_TMPDIR after calculation stops'
         echo ' -put "file1 ..." : put files to DALTON_TMPDIR before calculation starts'
         echo ' -omp num         : set the number of OpenMP threads. Note that Dalton is not OpenMP'
-        echo '                    parallelized, however, this option can be used with e.g. threaded MKL'
-        echo ' -N num           : use num MPI processes'
-        echo '                    (defaults to 1 or DALTON_NUM_MPI_PROCS if defined)'
-        echo ' -cpexe           : copy '$dalton'.x to DALTON_TMPDIR before execution, either to'
-        echo '                    global scratch (if DALTON_USE_GLOBAL_SCRATCH is set) or to'
-        echo '                    local scratch on all nodes'
-        echo ' -rsh             : use rsh/rcp for communication with MPI nodes'
-        echo '                    (default: ssh/scp)'
+        echo '                    parallelized, however, this option can be used with e.g. threaded blas as MKL'
+     if [ $mpi_enabled = "ON" ] ; then  # MPI parallel version
+        echo ' -N num |-np num  : use num MPI processes (defaults to 1, illegal if DALTON_LAUNCHER specified)'
+     fi
+        echo ' -cpexe           : copy '$dalton'.x to DALTON_TMPDIR before execution, either to global scratch'
+        echo '                    (if DALTON_USE_GLOBAL_SCRATCH is set) or to local scratch on all nodes'
+     if [ $mpi_enabled = "ON" ] ; then  # MPI parallel version
+        echo ' -rsh             : use rsh/rcp for communication with MPI nodes (default: ssh/scp)'
         echo ' -nodelist "node1 ..." : set nodelist DALTON_NODELIST, '$dalton'.x will be copied to'
         echo '                    DALTON_TMPDIR on each node unless DALTON_USE_GLOBAL_SCRATCH is'
         echo '                    defined (the script uses PBS_NODEFILE or SLURM_NODELIST if available)'
+     fi
         echo ' -x dalmol1 dalmol2 : calculate NEXAFS spectrum from ground and core hole states'
         echo " -exe exec        : change the executable from default ($DALTON_EXECUTABLE) to exec"
         echo ' -pg              : do profiling with gprof'
-        echo ' -mb mem          : set dalton max usable work memory to mem Megabytes'
-        echo ' -mw mem          : set dalton max usable work memory to mem double precision words'
-        echo ' -nb mem          : set node max usable work memory to mem Megabytes'
-        echo ' -nw mem          : set node max usable work memory to mem double precision words'
+        echo ' -gb mem          : set dalton max usable work memory to mem Gigabytes (mem integer)'
+        echo ' -mb mem          : set dalton max usable work memory to mem Megabytes (mem integer)'
+#       echo ' -mw mem          : set dalton max usable work memory to mem double precision words'
+     if [ $mpi_enabled = "ON" ] ; then  # MPI parallel version
+        echo ' -ngb mem         : set node max usable work memory to mem Gigabytes (mem integer)'
+        echo ' -nmb mem         : set node max usable work memory to mem Megabytes (mem integer)'
+#       echo ' -nw mem          : set node max usable work memory to mem double precision words'
+     fi
         echo
         echo "Environment variables understood by the $0 script:"
         echo '    DALTON_TMPDIR             : scratch directory'
+     if [ $mpi_enabled = "ON" ] ; then  # MPI parallel version
         echo '    DALTON_USE_GLOBAL_SCRATCH : use global scratch directory, do not copy any files to worker nodes'
         echo '    DALTON_NODELIST           : list of nodes, '$dalton'.x will be copied to DALTON_TMPDIR on each node'
         echo '                                unless DALTON_USE_GLOBAL_SCRATCH is defined'
-        echo '    DALTON_NUM_MPI_PROCS      : number of MPI processes (this variable is deprecated; overridden by -N flag)'
-        echo '    DALTON_LAUNCHER           : launcher for the '$dalton'.x binary (if defined, DALTON_NUM_MPI_PROCS or -N flag not allowed)'
+     fi
+        echo '    DALTON_LAUNCHER           : launcher for the '$dalton'.x binary (if defined, -N flag not allowed)'
          }
 #
 # Define backup function
@@ -194,7 +197,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -put ) PUT_FILES="$PUT_FILES $2"; shift;;
       -rsh ) SCP=rcp; SSH=rsh;;
       -f ) optf=$2; shift;;
-      -N ) optn=$2; shift;;
+      -N|-np ) optn=$2; shift;;
       -omp ) export OMP_NUM_THREADS=$2; shift;;
       -ow ) opto=2;;
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
@@ -207,9 +210,11 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -pot ) potfil=$2; shift;;
       -pcm ) pcmfil=$2; shift;;
       -m|-mw ) WRKMEM=$2; export WRKMEM; shift;;
-      -M|-mb ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
+      -M|-mb ) WRKMEM=`expr $2 \* 128000`; export WRKMEM; shift;;
+         -gb ) WRKMEM=`expr $2 \* 128000 \* 1024`; export WRKMEM; shift;;
          -nw ) NODE_WRKMEM=$2; export NODE_WRKMEM; shift;;
-         -nb ) NODE_WRKMEM=`expr $2 "*" 128000`; export NODE_WRKMEM; shift;;
+       -nb|-nmb ) NODE_WRKMEM=`expr $2 "*" 128000`; export NODE_WRKMEM; shift;;
+         -ngb ) WRKMEM=`expr $2 \* 128000 \* 1024`; export WRKMEM; shift;;
       -x ) optx=1; gs=$2; ch=$3; shift;shift;;
       * ) usage; exit 1;;
    esac
@@ -294,6 +299,9 @@ elif [ -n "$1" ]; then
                 potfil=$tmpfil
             elif [ -r ${tmpfil}.$PCMEXT ]; then
                 pcmfil=$tmpfil
+            else
+                echo "ERROR: positional parameter $3 not recognized as .$POTEXT or .$PCMEXT file"
+                exit 1
             fi
         fi
     fi
@@ -431,7 +439,9 @@ if [ -s $WRKDIR/$molfil.$MOLEXT -a -r $WRKDIR/$molfil.$MOLEXT ]; then
    cp $WRKDIR/$molfil.$MOLEXT MOLECULE.INP
 else
    echo "$WRKDIR/$molfil.$MOLEXT does not exist or is not readable"
-   echo " => assuming user has written MOLECULE input in dalton input file"
+   if [ $dalton_exitcode = 0 ]; then
+      echo " => assuming user has written MOLECULE input in dalton input file"
+   fi
 fi
 if [ "x$potfil" != "x" ]; then
   if [ -s $WRKDIR/$potfil.$POTEXT -a -r $WRKDIR/$potfil.$POTEXT ]; then
@@ -531,33 +541,33 @@ if [ -n "$DALTON_USE_GLOBAL_SCRATCH" ] ; then
    echo ' DALTON_USE_GLOBAL_SCRATCH is defined, so Dalton will use global scratch dir.'
 fi
 
-if [ -z "$OMP_NUM_THREADS" ]; then
-   export OMP_NUM_THREADS=1
-   echo
-   echo ' INFO : OMP_NUM_THREADS set to 1 because it was not defined by user'
-   echo ' INFO : and the cores are probably used by MPI'
-   echo
+if [ $mpi_enabled = "ON" -a $optn -gt 1 ] ; then  # MPI parallel
+   if [ -z "$OMP_NUM_THREADS" ]; then
+      export OMP_NUM_THREADS=1
+      echo
+      echo ' INFO : OMP_NUM_THREADS set to 1 because it was not defined by user'
+      echo ' INFO : and all the available cores are probably used by MPI.'
+      echo
+   fi
 fi
-#if [ -z "$OMP_NUM_THREADS" ]; then
-#   echo
-#   echo ' INFO : OMP_NUM_THREADS is not defined by the user, and default values will be assumed:'
-#   echo ' INFO : GCC and Intel compilers default to all available cores, '
-#   echo ' INFO : whereas Portland compilers default to one'
-#   echo
-#fi
 
 if [ -n "$DALTON_LAUNCHER" ] ; then
     if [ $optn -gt 1 ] ; then
        echo; echo  "*** JOB SPECIFICATION ERROR:"
        echo "    DALTON_LAUNCHER was defined as: $DALTON_LAUNCHER"
-       echo "    Definition of DALTON_LAUNCHER is not compatible with -N flag nor definition of DALTON_NUM_MPI_PROCS"
+       echo "    Definition of DALTON_LAUNCHER is not compatible with -N/-np flag nor definition of DALTON_NUM_MPI_PROCS"
        echo "--> Include instead number of MPI processes in your definition of DALTON_LAUNCHER"; echo
        exit 1
     fi
     DALTON_EXE="$DALTON_LAUNCHER $DALTON_EXECUTABLE"
-elif [ $mpi_enabled = "ON" -o $optn -gt 1 ] ; then
+elif [ $mpi_enabled = "ON" ] ; then
     DALTON_EXE="$MPIEXEC -np $optn $DALTON_EXECUTABLE"
 else
+    if [ $optn -gt 1 ] ; then
+       echo; echo  "*** JOB SPECIFICATION ERROR:"
+       echo "    $optn MPI nodes requested for a non-MPI enabled dalton executable."; echo
+       exit 1
+    fi
     DALTON_EXE=$DALTON_EXECUTABLE
 fi
 

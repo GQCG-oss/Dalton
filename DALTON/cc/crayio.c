@@ -120,9 +120,8 @@ void
 FSYM(walltm)(double *ai)
 {
   struct timeval tp;
-  struct timezone tzp;
 
-  (void) gettimeofday(&tp,&tzp);
+  (void) gettimeofday(&tp,NULL);
   *ai = (double) tp.tv_sec + ((double) tp.tv_usec) * 1.0e-6;
 }
 
