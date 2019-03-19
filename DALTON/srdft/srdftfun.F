@@ -631,54 +631,6 @@ C     Do the convertion from alpha, beta to charge, spin
 
 
 C*****************************************************************************
-      subroutine SPIN_PW92C_ERF(rho, diff_order, mu, E, d1E, d2E)
-C*****************************************************************************
-C Implemented by E. R. Kjellgren
-C
-C Subroutine to to control calling of correlation spin-polarized PW92 functional
-C
-C   Input : rho, vector of densities
-C           diff_order, max order of differentation
-C           mu, range-seperation parameter
-C   Output : E, energy
-C            d1E, vector of first derivatives of energy
-C            d2E, vector of second derivatives of energy
-C*****************************************************************************
-      implicit none
-#include "priunit.h" 
-      integer, intent(in) :: diff_order
-      real*8, intent(in) :: rho(2), mu
-      real*8, intent(out) :: E, d1E(9), d2E(45)
-      real*8 :: rho_c, rho_s
-      
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      d2E(:) = 0.0d0
-      rho_c = rho(1)
-      rho_s = rho(2)
-
-      if (rho_c .le. 1.d-10) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
-         return
-      end if
-
-      if (diff_order .eq. 0) then
-         call ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E)
-
-      elseif (diff_order .eq. 1) then
-         call D1ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E, d1E)
-
-      elseif (diff_order .eq. 2) then
-         call D2ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E, d1E, d2E)
-
-      else 
-         call quit('Requested to high order derivative: ',diff_order) 
-      end if
-      end subroutine
-
-
-C*****************************************************************************
       subroutine PW92C_ERF(rho, diff_order, mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
@@ -697,30 +649,53 @@ C*****************************************************************************
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
-      real*8 :: rho_c
+      logical :: spin_polarized
+      real*8 :: rho_c, rho_s
       
       E = 0.0d0
       d1E(:) = 0.0d0
       d2E(:) = 0.0d0
       rho_c = rho(1)
-
+      rho_s = rho(2)
+      
       if (rho_c .le. 1.d-10) then
          ! Are we completely sure this check is valid
          !  for derivatives? - E. R. K
          return
       end if
 
-      if (diff_order .eq. 0) then
-         call ESRC_PW92_ERF(rho_c, mu, E)
+      if (abs(rho_s) .le. 1.d-20) then
+         spin_polarized = .false.
+      else
+         spin_polarized = .true.
+      end if
+      
+      if (spin_polarized) then
+         if (diff_order .eq. 0) then
+            call ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E)
 
-      elseif (diff_order .eq. 1) then
-         call D1ESRC_PW92_ERF(rho_c, mu, E, d1E)
+         elseif (diff_order .eq. 1) then
+            call D1ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E, d1E)
 
-      elseif (diff_order .eq. 2) then
-         call D2ESRC_PW92_ERF(rho_c, mu, E, d1E, d2E)
+         elseif (diff_order .eq. 2) then
+            call D2ESRC_SPIN_PW92_ERF(rho_c, rho_s, mu, E, d1E, d2E)
 
-      else 
-         call quit('Requested to high order derivative: ',diff_order) 
+         else 
+            call quit('Requested to high order derivative: ',diff_order)
+         end if
+      else
+         if (diff_order .eq. 0) then
+            call ESRC_PW92_ERF(rho_c, mu, E)
+
+         elseif (diff_order .eq. 1) then
+            call D1ESRC_PW92_ERF(rho_c, mu, E, d1E)
+
+         elseif (diff_order .eq. 2) then
+            call D2ESRC_PW92_ERF(rho_c, mu, E, d1E, d2E)
+
+         else 
+            call quit('Requested to high order derivative: ',diff_order)
+         end if
       end if
       end subroutine
 

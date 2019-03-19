@@ -759,14 +759,10 @@ C  Correlation  ----------------------------------------------------------
       d1Ec(:) = 0.0d0
       d2Ec(:) = 0.0d0
 
+!     short-range spin-dependent correlation LDA ! JT 18-08-09
       IF(DOSRC_LDA_PW92) THEN
          call PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
-
-!     short-range spin-dependent correlation LDA ! JT 18-08-09
-      if (DOSRC_LDA_PW92_S) then
-        call SPIN_PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
-      end if
 
 !     short-range correlation PBE of TCS
       IF(DOSRC_PBETCS) THEN
