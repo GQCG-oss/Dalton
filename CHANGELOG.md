@@ -16,6 +16,7 @@
   to the convergence threshold. (H. J. Aa. Jensen)
 - never use plus combinations of determinants as start guess for singlet linear response excitation energies
   when reference wave function is not singlet (we do not want singlet states then). (H. J. Aa. Jensen)
+- dalton script: fix for using input files located in subfolders
   
 
 
