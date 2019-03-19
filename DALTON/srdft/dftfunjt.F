@@ -1863,7 +1863,6 @@ C     derivative wrt rhoc ---------------------
 !       call ESR(rhocp,grdcc,mu,Ep0)
 !       d1Edrhoc = (Ep0 - E)/hr
 !      endif
-!      print *,'D1SR: d1Edrhoc=',d1Edrhoc
 
 C     derivative wrt grdcc ---------------------
 !      if(grdccm .ge. 0.d0) then
@@ -1877,7 +1876,6 @@ C     derivative wrt grdcc ---------------------
 !       call ESR(rhoc,grdccp,mu,E0p)
 !       d1Edgrdcc = (E0p - E)/hg
 !      endif
-!      print *,'D1SR: d1Edgrdcc=',d1Edgrdcc
 
 C Second-order derivatives --------------------------------------------
       if (norder .le. 1) go to 9000 ! return
@@ -2097,7 +2095,6 @@ C     check
 
 C     energy
       call ESRSPIN(rhoc,rhos,mu,dospin,E)
-!      print *,'D1SRSPIN: E=',E
 
 C     (optimal?) numerical step
       hrc = 1.d-4*rhoc
@@ -3913,8 +3910,7 @@ C     Date  : 11-08-09
 C*****************************************************************************
       implicit none
 
-      real*8, intent(in) :: rhoa, grdaa, mu, taua,
-     &                      laplacea
+      real*8, intent(in) :: rhoa, grdaa, mu
       real*8, intent(out) :: e
 
       real*8 :: rho, rho13, grd2

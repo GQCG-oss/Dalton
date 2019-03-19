@@ -120,7 +120,7 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      subroutine BOTH_LDAX_ERF(rho, diff_order, mu, E, d1E, d2E)
+      subroutine LDAX_ERF(rho, diff_order, mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
@@ -253,7 +253,7 @@ C     Do the convertion from alpha, beta to charge, spin
 
 
 C*****************************************************************************
-      subroutine BOTH_PBEX_ERF(rho, gamma_vec, diff_order, mu, E, d1E, 
+      subroutine PBEX_GWS_ERF(rho, gamma_vec, diff_order, mu, E, d1E, 
      &                         d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
@@ -435,7 +435,7 @@ C     Do the convertion from alpha, beta to charge, spin
 
 
 C*****************************************************************************
-      subroutine BOTH_TPSSX_ERF(rho, gamma_vec, tau, diff_order, mu, E,
+      subroutine TPSSX_GWS_ERF(rho, gamma_vec, tau, diff_order, mu, E,
      &                          d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
@@ -1128,7 +1128,7 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      subroutine BOTH_wPBEX(rho, gamma_vec, diff_order, mu, E, d1E, d2E)
+      subroutine wPBEX(rho, gamma_vec, diff_order, mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C

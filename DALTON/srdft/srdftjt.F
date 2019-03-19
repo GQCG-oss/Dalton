@@ -701,7 +701,7 @@ c  Exchange  ------------------------------------------------------------
 
 !     LDA exchange functional
       IF (DOSRX_LDA .OR. DOSRX_LDA_S) THEN
-         call BOTH_LDAX_ERF(rho, norder, chival, Ex, d1Ex, d2Ex)
+         call LDAX_ERF(rho, norder, chival, Ex, d1Ex, d2Ex)
       ENDIF
 
 !     short-range exchange PBE of HSE
@@ -718,7 +718,7 @@ c  Exchange  ------------------------------------------------------------
 
 !     short-range exchange PBE of GWS ! JT 11-08-09
       IF(DOSRX_PBEGWS .OR. DOSRX_PBEGWS_S) THEN
-         call BOTH_PBEX_ERF(rho, grd2, norder, chival,
+         call PBEX_GWS_ERF(rho, grd2, norder, chival,
      &                      Ex, d1Ex, d2Ex)
       ENDIF
 
@@ -730,13 +730,13 @@ c  Exchange  ------------------------------------------------------------
 
 !     TPSS exchange functional
       IF(DOSRX_TPSS_S .OR. DOSRX_TPSS) THEN
-         call BOTH_TPSSX_ERF(rho, grd2, tau, norder, chival,
+         call TPSSX_GWS_ERF(rho, grd2, tau, norder, chival,
      &                       Ex, d1Ex, d2Ex)
       ENDIF
 
 !     wPBE exchange functional
       IF(DOSRX_wPBE_S .OR. DOSRX_wPBE) THEN
-         call BOTH_wPBEX(rho, grd2, norder, chival, Ex, d1Ex, d2Ex)
+         call wPBEX(rho, grd2, norder, chival, Ex, d1Ex, d2Ex)
       ENDIF
 
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
