@@ -45,30 +45,47 @@ C     variables for SRCPBERI
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C     general variables
       PARAMETER  (NXTABLE = 26, NCTABLE = 43)
-      character(len=10) :: XTABLE(NXTABLE), CTABLE(NCTABLE)
+      character(len=23) :: XTABLE(NXTABLE), CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
       PARAMETER  (maxfld=3)
-      character(len=10) :: fields(maxfld)
+      character(len=23) :: fields(maxfld)
       integer :: lenfld(maxfld)
       logical :: SETXFUN, SETCFUN
-      DATA XTABLE /'NULL      ','SRXLDA    ','SRXGGA    ','SRBCK     ', ! 1:4
-     &             'HFEXCH    ','SRGGA2    ','SRXWIB    ','SRXWI2    ', ! 5:8
-     &             'SRXWI3    ','SRXWI4    ','SRXPBEHSE ','SRXPBETCS ', ! 9:12
-     &             'SRXPBERI  ','SRXPBEGWS ','SRXLDA_S  ','NULL_S    ', ! 13:16
-     &             'LXLDAS    ','LXLDA     ','LXPBEGWS  ','LXBCK     ', ! 17:20
-     &             'SRXPBEGWSS','SRXLDA_C  ','SRXTPSS_S ','SRXTPSS   ', ! 21:24
-     &             'LRCWPBE_S ','LRCWPBE   '/ ! 25:28
-      DATA CTABLE /'NULL      ','SRCLDA    ','SRCGGA    ','SRCMULO_A ', ! 1:4
-     &             'SRLYPT    ','SRCWIB    ','SRCWI2    ','SRCWI3    ', ! 5:8
-     &             'SRCWI4    ','SRCPBETCS ','SRCPBETCSJ','SRCPBERI  ', ! 9:12
-     &             'SRCPBELO  ','SRCPBEWI  ','SRCPBEGWSC','SRCLDA_S  ', ! 13:16
-     &             'SRCMULO_B ','SRCMULO_C ','SRCMULO_D ','SRCMULO_E ', ! 17:20
-     &             'NULL_S    ','SRCMDLDA  ','LNSCLDAS  ','LNSCLDA   ', ! 21:24
-     &             'LSCLDA    ','LNSCPBEGWS','LSCPBEGWS ','LNCLYP    ', ! 25:28
-     &             'LSCLYP    ','SRCLYPRI  ','SRCPBEGWSS','SRCPBEGWS ', ! 29:32
-     &             'SRCLDA_C  ','SRCVWN5_S ','SRCTPSS_S ','SRCTPSS   ', ! 33:36
-     &             'CPBE_NOMUS','CPBE_NOMU ','SRCVWN5   ','SRCPW92_S ', ! 37:40
-     &             'SRCPW92   ','CVWN5NOMUS','CVWN5_NOMU'/ ! 41:44
+      DATA XTABLE /'NULL                   ','SRXLDA                 ', ! 1:2
+     &             'SRXGGA                 ','SRBCK                  ', ! 3:4
+     &             'HFEXCH                 ','SRGGA2                 ', ! 5:6
+     &             'SRXWIB                 ','SRXWI2                 ', ! 7:8
+     &             'SRXWI3                 ','SRXWI4                 ', ! 9:10
+     &             'SRXPBEHSE              ','SRXPBETCS              ', ! 11:12
+     &             'SRXPBERI               ','SRXPBEGWS              ', ! 13:14
+     &             'SRXLDA_S               ','NULL_S                 ', ! 15:16
+     &             'LXLDAS                 ','LXLDA                  ', ! 17:18
+     &             'LXPBEGWS               ','LXBCK                  ', ! 19:20
+     &             'SRXPBEGWSS             ','SRXLDA_C               ', ! 21:22
+     &             'SRXTPSS_S              ','SRXTPSS                ', ! 23:24
+     &             'LRCWPBE_S              ','LRCWPBE                '/ ! 25:28
+      DATA CTABLE /'NULL                   ','SRCLDA                 ', ! 1:2
+     &             'SRCGGA                 ','SRCMULO_A              ', ! 3:4
+     &             'SRLYPT                 ','SRCWIB                 ', ! 5:6
+     &             'SRCWI2                 ','SRCWI3                 ', ! 7:8
+     &             'SRCWI4                 ','SRCPBETCS              ', ! 9:10
+     &             'SRCPBETCSJ             ','SRCPBERI               ', ! 11:12
+     &             'SRCPBELO               ','SRCPBEWI               ', ! 13:14
+     &             'SRCPBEGWSC             ','SRCLDA_S               ', ! 15:16
+     &             'SRCMULO_B              ','SRCMULO_C              ', ! 17:18
+     &             'SRCMULO_D              ','SRCMULO_E              ', ! 19:20
+     &             'NULL_S                 ','SRCMDLDA               ', ! 21:22
+     &             'LNSCLDAS               ','LNSCLDA                ', ! 23:24
+     &             'LSCLDA                 ','LNSCPBEGWS             ', ! 25:26
+     &             'LSCPBEGWS              ','LNCLYP                 ', ! 27:28
+     &             'LSCLYP                 ','SRCLYPRI               ', ! 29:30
+     &             'SRCPBEGWSS             ','SRCPBEGWS              ', ! 31:32
+     &             'SRCLDA_C               ','SRCVWN5_S              ', ! 33:34
+     &             'SRCTPSS_S              ','SRCTPSS                ', ! 35:36
+     &             'CPBE_NOMUS             ','CPBE_NOMU              ', ! 37:38
+     &             'SRCVWN5                ','SRCPW92_S              ', ! 39:40
+     &             'SRCPW92                ','CVWN5NOMUS             ', ! 41:42
+     &             'CVWN5_NOMU             '/ ! 43:44
 
 C K. Sharkas and J. Toulouse beg
 C List of lambda-dependent complement density functionals for linear separation of the electron-electron interaction.
