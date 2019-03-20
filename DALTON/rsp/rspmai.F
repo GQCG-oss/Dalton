@@ -127,6 +127,7 @@ C     *************************
 C
 C Define wave function variables, also if SIRIUS has not been called
 C
+      CALL ABA_UNSET() ! tell SETSIR it is called from RESPONS
       CALL SETSIR(.FALSE.,WRK,LWRK)
       ! false means no 2-el. integral transformation by SETSIR
       ! (done below when we have found out what level is needed)
