@@ -244,7 +244,7 @@ C Short-range spin-dependent exchange GGA functional (edh 10-02-16)
       GO TO 15
 C Short-range spin-dependent exchange LDA functional to fit with LDA (edh 10-02-16)
 ! Equivalent to "normal" LDA but goes through J. Toulouse new routines
-122   LDA_PW92 = .TRUE.
+122   DOSRC_LDA_PW92 = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
 C Short-range spind-dependent TPSS exchange functional (erk 27 aug. 18)
@@ -453,7 +453,7 @@ C Short-range correlation LDA functional w. VWN5c param. (erk 27 feb. 19)
       ISJT        = .TRUE.
       GO TO 20
 C Short-range spin-dependent correlation LDA functional w. PW92 param. (edh 29-03-15)
-240   DOSRC_LDA_PW92_S = .TRUE.
+240   DOSRC_LDA_PW92 = .TRUE.
       DFT_SPINDNS      = .TRUE.
       ISJT             = .TRUE.
       GO TO 20
