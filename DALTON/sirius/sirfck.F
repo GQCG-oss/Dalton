@@ -505,8 +505,8 @@ C
             IF (NSR_DMAT .GT. 1)
      &         CALL QUIT('SIRFCK SRINT ERROR: DOERG and NSR_DMAT>1')
             EJSR = DP5*DDOT(N2BASX,DMAT,1,WRK(KFSRAO),1) ! Inactive part of EJsr+HFXFAC*EKsr (DMAT is DC)
+            EKSR = D0
             IF (NFSRTYP .EQ. 1) THEN
-               EKSR = D0
                EKSR_S = D0
             ELSE IF (NFSRTYP .EQ. 2) THEN
                JFSRAO = KFSRAO + N2BASX
