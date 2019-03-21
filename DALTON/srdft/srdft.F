@@ -213,7 +213,7 @@ C Short-range exchange PBE functional of GWS (JT 11-08-09)
       ISJT    = .TRUE.
       GO TO 15
 C Short-range spin-dependent exchange LDA functional (JT 11-08-09)
- 115  DOSRX_LDA_S = .TRUE.
+ 115  DOSRX_LDA = .TRUE.
       DFT_SPINDNS = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
@@ -238,7 +238,7 @@ C Complement Beck exchange functional (KS 08-08-11)
 120   DOLAX_GGABCK = .TRUE.
        GO TO 15
 C Short-range spin-dependent exchange GGA functional (edh 10-02-16)
-121   DOSRX_PBEGWS_S = .TRUE.
+121   DOSRX_PBEGWS = .TRUE.
       DFT_SPINDNS    = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
@@ -248,7 +248,7 @@ C Short-range spin-dependent exchange LDA functional to fit with LDA (edh 10-02-
       ISJT    = .TRUE.
       GO TO 15
 C Short-range spind-dependent TPSS exchange functional (erk 27 aug. 18)
-123   DOSRX_TPSS_S = .TRUE.
+123   DOSRX_TPSS = .TRUE.
       DFT_SPINDNS  = .TRUE.
       ISJT         = .TRUE.
       GO TO 15
@@ -257,7 +257,7 @@ C Short-range TPSS exchange functional (erk 27 aug. 18)
       ISJT         = .TRUE.
       GO TO 15
 C Short-range spin-dependent wPBE exchange functional (erk 27 feb. 19)
-125   DOSRX_wPBE_S = .TRUE.
+125   DOSRX_wPBE = .TRUE.
       DFT_SPINDNS  = .TRUE.
       ISJT         = .TRUE.
       GO TO 15
@@ -347,7 +347,7 @@ C Short-range correlation PBE function of GWS (JT 11-08-09)
       ISJT         = .TRUE. 
       GO TO 20
 C Short-range spin-dependent correlation LDA function (JT 18-08-09)
- 216  DOSRC_LDA_S = .TRUE.
+ 216  DOSRC_LDA = .TRUE.
       DFT_SPINDNS = .TRUE.
       ISJT    = .TRUE. 
       GO TO 20
@@ -413,7 +413,7 @@ C Rational interpolation LYP functional
       ISJT    = .TRUE.
       GO TO 20
 C Short-range spin-dependent correlation PBE function of GWS (edh 10-02-15)
-231   DOSRC_PBEGWS_S = .TRUE.
+231   DOSRC_PBEGWS = .TRUE.
       DFT_SPINDNS    = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
@@ -426,12 +426,12 @@ C Short-range spin-dependent correlation LDA functional w. PW92 param. (edh 29-0
       ISJT    = .TRUE.
       GO TO 20
 C Short-range spin-dependent correlation LDA functional w. VWN5c param. (erk 07 feb. 18)
-234   DOSRC_VWN5_S = .TRUE.
+234   DOSRC_VWN5 = .TRUE.
       DFT_SPINDNS = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
 C Short-range TPSS spin-polarized correlation functional (erk 27 aug. 18)
-235   DOSRC_TPSS_S = .TRUE.
+235   DOSRC_TPSS = .TRUE.
       DFT_SPINDNS  = .TRUE.
       ISJT         = .TRUE.
       GO TO 20
@@ -440,7 +440,7 @@ C Short-range TPSS spin-unpolarized correlation functional (erk 03 sep. 18)
       ISJT         = .TRUE.
       GO TO 20
 C mu independt PBE spin-polarized correlation functional (erk 27 feb. 19)
-237   DOC_PBE_nomu_S = .TRUE.
+237   DOC_PBE_nomu = .TRUE.
       DFT_SPINDNS    = .TRUE.
       ISJT           = .TRUE.
       GO TO 20
@@ -462,7 +462,7 @@ C Short-range spin-dependent correlation LDA functional w. PW92 param. (edh 29-0
       ISJT    = .TRUE.
       GO TO 20
 C mu independt VWN5 spin-polarized correlation functional (erk 01 mar. 19)
-242   DOC_VWN5_nomu_S = .TRUE.
+242   DOC_VWN5_nomu = .TRUE.
       DFT_SPINDNS     = .TRUE.
       ISJT            = .TRUE.
       GO TO 20

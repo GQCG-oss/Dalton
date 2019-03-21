@@ -700,54 +700,54 @@ c  Exchange  ------------------------------------------------------------
 
 
 !     LDA exchange functional
-      IF (DOSRX_LDA .OR. DOSRX_LDA_S) THEN
+      IF (DOSRX_LDA) THEN
          call LDAX_ERF(rho, norder, chival, Ex, d1Ex, d2Ex)
       ENDIF
 
 !     short-range exchange PBE of HSE
-      IF(DOSRX_PBEHSE) THEN
+      IF (DOSRX_PBEHSE) THEN
         call DESRX_SPINGGA(ESRX_PBEHSEERF,rho,grd2,CHIVAL,
      &                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange PBE of TCS
-      IF(DOSRX_PBETCS) THEN
+      IF (DOSRX_PBETCS) THEN
         call DESRX_SPINGGA(ESRX_PBETCSERF,rho,grd2,CHIVAL,
      &                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     short-range exchange PBE of GWS ! JT 11-08-09
-      IF(DOSRX_PBEGWS .OR. DOSRX_PBEGWS_S) THEN
+      IF (DOSRX_PBEGWS) THEN
          call PBEX_GWS_ERF(rho, grd2, norder, chival,
      &                      Ex, d1Ex, d2Ex)
       ENDIF
 
 !     short-range exchange RI
-      IF(DOSRX_PBERI) THEN ! added Manu 01-02-2006
+      IF (DOSRX_PBERI) THEN ! added Manu 01-02-2006
         call DESRX_SPINGGA(ESRX_PBERIERF,rho,grd2,CHIVAL,
      &                     norder,Ex,d1Ex,d2Ex)
       ENDIF
 
 !     TPSS exchange functional
-      IF(DOSRX_TPSS_S .OR. DOSRX_TPSS) THEN
+      IF (DOSRX_TPSS) THEN
          call TPSSX_GWS_ERF(rho, grd2, tau, norder, chival,
      &                       Ex, d1Ex, d2Ex)
       ENDIF
 
 !     wPBE exchange functional
-      IF(DOSRX_wPBE_S .OR. DOSRX_wPBE) THEN
+      IF (DOSRX_wPBE) THEN
          call wPBEX(rho, grd2, norder, chival, Ex, d1Ex, d2Ex)
       ENDIF
 
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
-      IF(DOLAX_LDAS)  THEN
+      IF (DOLAX_LDAS) THEN
         call ELX_LDALAMSPIN (rho(1),rho(2),VLAMBDA,Ex)
         call DELSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),VLAMBDA,DFT_SPINDNS,
      &               NORDER,d1Ex,d2Ex)
       ENDIF
 
 C linear complement exchange PBE functional, Kamal SHARKAS 19-05-11
-      IF(DOLAX_PBEGWS) THEN
+      IF (DOLAX_PBEGWS) THEN
         call ELAX_PBEGWS(rho,grd2,VLAMBDA,Ex)
         call DELA(ESRX_PBEGWSERF,rho,grd2,VLAMBDA,NORDER,d1Ex,d2Ex)
       ENDIF
@@ -799,26 +799,10 @@ C  Correlation  ----------------------------------------------------------
         call DESR(ESRC_PBEWIERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
       ENDIF
 
-      IF(DOSRC_PBEGWS_S) THEN
-        call SPIN_PBEC_GWS_ERF(rho, grd2, norder, chival,
-     &                         Ec, d1Ec, d2Ec)
-      ENDIF
-
-!     TPSS correlation spin-polarized functional
-      IF(DOSRC_TPSS_S) THEN
-         call SPIN_TPSSC_GWS_ERF(rho, grd2, tau, norder, chival,
-     &                           Ec, d1Ec, d2Ec)
-      ENDIF
-
 !     TPSS correlation spin-unpolarized functional
       IF(DOSRC_TPSS) THEN
          call TPSSC_GWS_ERF(rho, grd2, tau, norder, chival,
      &                      Ec, d1Ec, d2Ec)
-      ENDIF
-
-!     PBE correlation spin-polarized functional
-      IF(DOC_PBE_nomu_S) THEN
-         call SPIN_PBEC_nomu(rho, grd2, norder, Ec, d1Ec, d2Ec)
       ENDIF
 
 !     PBE correlation spin-unpolarized functional
@@ -826,19 +810,9 @@ C  Correlation  ----------------------------------------------------------
          call PBEC_nomu(rho, grd2, norder, Ec, d1Ec, d2Ec)
       ENDIF
 
-!     VWN5 correlation spin-polarized functional, with no range-separation
-      IF(DOC_VWN5_nomu_S) THEN
-         call SPIN_VWN5C_nomu(rho, norder, Ec, d1Ec, d2Ec)
-      ENDIF
-
 !     VWN5 correlation spin-unpolarized functional, with no range-separation
       IF(DOC_VWN5_nomu) THEN
          call VWN5C_nomu(rho, norder, Ec, d1Ec, d2Ec)
-      ENDIF
-
-!     VWN5 correlation spin-polarized functional
-      IF(DOSRC_VWN5_S .OR. DOSRC_LDA_S) THEN
-         call SPIN_VWN5C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
       ENDIF
 
 !     VWN5 correlation spin-unpolarized functional

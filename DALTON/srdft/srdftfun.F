@@ -701,54 +701,6 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      subroutine SPIN_VWN5C_ERF(rho, diff_order, mu, E, d1E, d2E)
-C*****************************************************************************
-C Implemented by E. R. Kjellgren
-C
-C Subroutine to to control calling of correlation spin-polarized PW92 functional
-C
-C   Input : rho, vector of densities
-C           diff_order, max order of differentation
-C           mu, range-seperation parameter
-C   Output : E, energy
-C            d1E, vector of first derivatives of energy
-C            d2E, vector of second derivatives of energy
-C*****************************************************************************
-      implicit none
-#include "priunit.h" 
-      integer, intent(in) :: diff_order
-      real*8, intent(in) :: rho(2), mu
-      real*8, intent(out) :: E, d1E(9), d2E(45)
-      real*8 :: rho_c, rho_s
-      
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      d2E(:) = 0.0d0
-      rho_c = rho(1)
-      rho_s = rho(2)
-
-      if (rho_c .le. 1.d-10) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
-         return
-      end if
-
-      if (diff_order .eq. 0) then
-         call ESRC_SPIN_VWN5_ERF(rho_c, rho_s, mu, E)
-
-      elseif (diff_order .eq. 1) then
-         call D1ESRC_SPIN_VWN5_ERF(rho_c, rho_s, mu, E, d1E)
-
-      elseif (diff_order .eq. 2) then
-         call D2ESRC_SPIN_VWN5_ERF(rho_c, rho_s, mu, E, d1E, d2E)
-
-      else 
-         call quit('Requested to high order derivative: ',diff_order) 
-      end if
-      end subroutine
-
-
-C*****************************************************************************
       subroutine VWN5C_ERF(rho, diff_order, mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
@@ -767,12 +719,14 @@ C*****************************************************************************
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
-      real*8 :: rho_c
+      logical :: spin_polarized
+      real*8 :: rho_c, rho_s
       
       E = 0.0d0
       d1E(:) = 0.0d0
       d2E(:) = 0.0d0
       rho_c = rho(1)
+      rho_s = rho(2)
 
       if (rho_c .le. 1.d-10) then
          ! Are we completely sure this check is valid
@@ -780,23 +734,44 @@ C*****************************************************************************
          return
       end if
 
-      if (diff_order .eq. 0) then
-         call ESRC_VWN5_ERF(rho_c, mu, E)
+      if (abs(rho_s) .le. 1.d-20) then
+         spin_polarized = .false.
+      else
+         spin_polarized = .true.
+      end if
 
-      elseif (diff_order .eq. 1) then
-         call D1ESRC_VWN5_ERF(rho_c, mu, E, d1E)
+      if (spin_polarized) then
+         if (diff_order .eq. 0) then
+            call ESRC_SPIN_VWN5_ERF(rho_c, rho_s, mu, E)
 
-      elseif (diff_order .eq. 2) then
-         call D2ESRC_VWN5_ERF(rho_c, mu, E, d1E, d2E)
+         elseif (diff_order .eq. 1) then
+            call D1ESRC_SPIN_VWN5_ERF(rho_c, rho_s, mu, E, d1E)
 
-      else 
-         call quit('Requested to high order derivative: ',diff_order) 
+         elseif (diff_order .eq. 2) then
+            call D2ESRC_SPIN_VWN5_ERF(rho_c, rho_s, mu, E, d1E, d2E)
+
+         else 
+            call quit('Requested to high order derivative: ',diff_order)
+         end if
+      else
+         if (diff_order .eq. 0) then
+            call ESRC_VWN5_ERF(rho_c, mu, E)
+
+         elseif (diff_order .eq. 1) then
+            call D1ESRC_VWN5_ERF(rho_c, mu, E, d1E)
+
+         elseif (diff_order .eq. 2) then
+            call D2ESRC_VWN5_ERF(rho_c, mu, E, d1E, d2E)
+
+         else 
+            call quit('Requested to high order derivative: ',diff_order)
+         end if
       end if
       end subroutine
 
 
 C*****************************************************************************
-      subroutine SPIN_PBEC_GWS_ERF(rho, gamma_xx, diff_order, mu, E,
+      subroutine PBEC_GWS_ERF(rho, gamma_xx, diff_order, mu, E,
      &                             d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
@@ -815,6 +790,7 @@ C*****************************************************************************
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), gamma_xx(3), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
+      logical :: spin_polarized
       real*8 :: rho_c, rho_s, gamma_cc
       
       E = 0.0d0
@@ -830,74 +806,46 @@ C*****************************************************************************
          return
       end if
 
-      if (diff_order .eq. 0) then
-         call ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu, E)
+      if (abs(rho_s) .le. 1.d-20) then
+         spin_polarized = .false.
+      else
+         spin_polarized = .true.
+      end if
 
-      elseif (diff_order .eq. 1) then
-         call D1ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu, E,
+      if (spin_polarized) then
+         if (diff_order .eq. 0) then
+            call ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu, E)
+
+         elseif (diff_order .eq. 1) then
+            call D1ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu, E,
      &                                d1E)
 
-      elseif (diff_order .eq. 2) then
-         call D2ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu, E,
+         elseif (diff_order .eq. 2) then
+            call D2ESRC_SPIN_PBE_GWS_ERF(rho_c, rho_s, gamma_cc, mu, E,
      &                                d1E, d2E)
 
-      else 
-         call quit('Requested to high order derivative: ',diff_order) 
+         else 
+            call quit('Requested to high order derivative: ',diff_order)
+         end if
+      else
+         if (diff_order .eq. 0) then
+            call ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E)
+
+         elseif (diff_order .eq. 1) then
+            call D1ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E, d1E)
+
+         elseif (diff_order .eq. 2) then
+            call D2ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E, d1E, d2E)
+
+         else 
+            call quit('Requested to high order derivative: ',diff_order)
+         end if
       end if
       end subroutine
 
 
 C*****************************************************************************
-      subroutine PBEC_GWS_ERF(rho, gamma_xx, diff_order, mu, E,
-     &                             d1E, d2E)
-C*****************************************************************************
-C Implemented by E. R. Kjellgren
-C
-C Subroutine to to control calling of correlation spin-polarized PBE functional
-C
-C   Input : rho, vector of densities
-C           diff_order, max order of differentation
-C           mu, range-seperation parameter
-C   Output : E, energy
-C            d1E, vector of first derivatives of energy
-C            d2E, vector of second derivatives of energy
-C*****************************************************************************
-      implicit none
-#include "priunit.h" 
-      integer, intent(in) :: diff_order
-      real*8, intent(in) :: rho(2), gamma_xx(3), mu
-      real*8, intent(out) :: E, d1E(9), d2E(45)
-      real*8 :: rho_c, gamma_cc
-      
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      d2E(:) = 0.0d0
-      rho_c = rho(1)
-      gamma_cc = gamma_xx(1)
-
-      if (rho_c .le. 1.d-10) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
-         return
-      end if
-
-      if (diff_order .eq. 0) then
-         call ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E)
-
-      elseif (diff_order .eq. 1) then
-         call D1ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E, d1E)
-
-      elseif (diff_order .eq. 2) then
-         call D2ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E, d1E, d2E)
-
-      else 
-         call quit('Requested to high order derivative: ',diff_order) 
-      end if
-      end subroutine
-
-
-C*****************************************************************************
-      subroutine SPIN_TPSSC_GWS_ERF(rho, gamma_xx, tau, diff_order, mu,
+      subroutine TPSSC_GWS_ERF(rho, gamma_xx, tau, diff_order, mu,
      &                              E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
@@ -916,6 +864,7 @@ C*****************************************************************************
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), gamma_xx(3), tau(2), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
+      logical :: spin_polarized
       real*8 :: rho_c, rho_s, gamma_cc, gamma_ss, gamma_cs, tau_c
       
       E = 0.0d0
@@ -934,77 +883,50 @@ C*****************************************************************************
          return
       end if
 
-      if (diff_order .eq. 0) then
-         call ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc, gamma_ss,
-     &                               gamma_cs, tau_c, mu, E)
-
-      elseif (diff_order .eq. 1) then
-         call D1ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc, gamma_ss,
-     &                                 gamma_cs, tau_c, mu, E, d1E)
-
-      elseif (diff_order .eq. 2) then
-         call D2ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc, gamma_ss,
-     &                                 gamma_cs, tau_c, mu, E, d1E, d2E)
-
-      else 
-         call quit('Requested to high order derivative: ',diff_order) 
-      end if
-      end subroutine
-
-
-C*****************************************************************************
-      subroutine TPSSC_GWS_ERF(rho, gamma_xx, tau, diff_order, mu, E,
-     &                         d1E, d2E)
-C*****************************************************************************
-C Implemented by E. R. Kjellgren
-C
-C Subroutine to to control calling of correlation spin-unpolarized TPSS functional
-C
-C   Input : rho, vector of densities
-C           diff_order, max order of differentation
-C           mu, range-seperation parameter
-C   Output : E, energy
-C            d1E, vector of first derivatives of energy
-C            d2E, vector of second derivatives of energy
-C*****************************************************************************
-      implicit none
-#include "priunit.h" 
-      integer, intent(in) :: diff_order
-      real*8, intent(in) :: rho(2), gamma_xx(3), tau(2), mu
-      real*8, intent(out) :: E, d1E(9), d2E(45)
-      real*8 :: rho_c, gamma_cc, tau_c
-      
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      d2E(:) = 0.0d0
-      rho_c = rho(1)
-      gamma_cc = gamma_xx(1)
-      tau_c = tau(1)
-
-      if (rho_c .le. 1.d-10) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
-         return
+      if ((abs(rho_s) .le. 1.d-20) .and. 
+     &    (abs(gamma_ss) .le. 1.d-20) .and. 
+     &    (abs(gamma_cs) .le. 1.d-20)) then
+         spin_polarized = .false.
+      else
+         spin_polarized = .true.
       end if
 
-      if (diff_order .eq. 0) then
-         call ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E)
+      if (spin_polarized) then
+         if (diff_order .eq. 0) then
+            call ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc,
+     &                                 gamma_ss, gamma_cs, tau_c, mu, E)
 
-      elseif (diff_order .eq. 1) then
-         call D1ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E, d1E)
+         elseif (diff_order .eq. 1) then
+            call D1ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc,
+     &                            gamma_ss, gamma_cs, tau_c, mu, E, d1E)
 
-      elseif (diff_order .eq. 2) then
-         call D2ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E, d1E,
+         elseif (diff_order .eq. 2) then
+            call D2ESRC_SPIN_TPSS_GWS_ERF(rho_c, rho_s, gamma_cc,
+     &                       gamma_ss, gamma_cs, tau_c, mu, E, d1E, d2E)
+
+         else 
+            call quit('Requested to high order derivative: ',diff_order)
+         end if
+      else
+         if (diff_order .eq. 0) then
+            call ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E)
+
+         elseif (diff_order .eq. 1) then
+            call D1ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E, d1E)
+
+         elseif (diff_order .eq. 2) then
+            call D2ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E, d1E,
      &                           d2E)
 
-      else 
-         call quit('Requested to high order derivative: ',diff_order) 
+         else 
+            call quit('Requested to high order derivative: ',diff_order)
+         end if
       end if
       end subroutine
 
 
 C*****************************************************************************
-      subroutine SPIN_PBEC_nomu(rho, gamma_xx, diff_order, E, d1E, d2E)
+      subroutine PBEC_nomu(rho, gamma_xx, diff_order, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
@@ -1023,6 +945,7 @@ C*****************************************************************************
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2), gamma_xx(3)
       real*8, intent(out) :: E, d1E(9), d2E(45)
+      logical :: spin_polarized
       real*8 :: rho_c, rho_s, gamma_cc
       
       E = 0.0d0
@@ -1038,66 +961,38 @@ C*****************************************************************************
          return
       end if
 
-      if (diff_order .eq. 0) then
-         call ESRC_SPIN_PBE(rho_c, rho_s, gamma_cc, E)
-
-      elseif (diff_order .eq. 1) then
-         call D1ESRC_SPIN_PBE(rho_c, rho_s, gamma_cc, E, d1E)
-
-      elseif (diff_order .eq. 2) then
-         call D2ESRC_SPIN_PBE(rho_c, rho_s, gamma_cc, E, d1E, d2E)
-
-      else 
-         call quit('Requested to high order derivative: ',diff_order) 
-      end if
-      end subroutine
-
-
-C*****************************************************************************
-      subroutine PBEC_nomu(rho, gamma_xx, diff_order, E, d1E, d2E)
-C*****************************************************************************
-C Implemented by E. R. Kjellgren
-C
-C Subroutine to to control calling of correlation spin-unpolarized PBE functional
-C This functional is just the normal PBE, no mu dependency.
-C
-C   Input : rho, vector of densities
-C           diff_order, max order of differentation
-C           mu, range-seperation parameter
-C   Output : E, energy
-C            d1E, vector of first derivatives of energy
-C            d2E, vector of second derivatives of energy
-C*****************************************************************************
-      implicit none
-#include "priunit.h" 
-      integer, intent(in) :: diff_order
-      real*8, intent(in) :: rho(2), gamma_xx(3)
-      real*8, intent(out) :: E, d1E(9), d2E(45)
-      real*8 :: rho_c, gamma_cc
-      
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      d2E(:) = 0.0d0
-      rho_c = rho(1)
-      gamma_cc = gamma_xx(1)
-
-      if (rho_c .le. 1.d-10) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
-         return
+      if (abs(rho_s) .le. 1.d-20) then
+         spin_polarized = .false.
+      else
+         spin_polarized = .true.
       end if
 
-      if (diff_order .eq. 0) then
-         call ESRC_PBE(rho_c, gamma_cc, E)
+      if (spin_polarized) then
+         if (diff_order .eq. 0) then
+            call ESRC_SPIN_PBE(rho_c, rho_s, gamma_cc, E)
 
-      elseif (diff_order .eq. 1) then
-         call D1ESRC_PBE(rho_c, gamma_cc, E, d1E)
+         elseif (diff_order .eq. 1) then
+            call D1ESRC_SPIN_PBE(rho_c, rho_s, gamma_cc, E, d1E)
 
-      elseif (diff_order .eq. 2) then
-         call D2ESRC_PBE(rho_c, gamma_cc, E, d1E, d2E)
+         elseif (diff_order .eq. 2) then
+            call D2ESRC_SPIN_PBE(rho_c, rho_s, gamma_cc, E, d1E, d2E)
 
-      else 
-         call quit('Requested to high order derivative: ',diff_order) 
+         else 
+            call quit('Requested to high order derivative: ',diff_order)
+         end if
+      else
+         if (diff_order .eq. 0) then
+            call ESRC_PBE(rho_c, gamma_cc, E)
+
+         elseif (diff_order .eq. 1) then
+            call D1ESRC_PBE(rho_c, gamma_cc, E, d1E)
+
+         elseif (diff_order .eq. 2) then
+            call D2ESRC_PBE(rho_c, gamma_cc, E, d1E, d2E)
+
+         else 
+            call quit('Requested to high order derivative: ',diff_order)
+         end if
       end if
       end subroutine
 
@@ -1203,7 +1098,7 @@ C     Do the convertion from alpha, beta to charge, spin
 
 
 C*****************************************************************************
-      subroutine SPIN_VWN5C_nomu(rho, diff_order, E, d1E, d2E)
+      subroutine VWN5C_nomu(rho, diff_order, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
@@ -1222,6 +1117,7 @@ C*****************************************************************************
       integer, intent(in) :: diff_order
       real*8, intent(in) :: rho(2)
       real*8, intent(out) :: E, d1E(9), d2E(45)
+      logical :: spin_polarized
       real*8 :: rho_c, rho_s
       
       E = 0.0d0
@@ -1236,64 +1132,37 @@ C*****************************************************************************
          return
       end if
 
-      if (diff_order .eq. 0) then
-         call ESRC_SPIN_VWN5(rho_c, rho_s, E)
-
-      elseif (diff_order .eq. 1) then
-         call D1ESRC_SPIN_VWN5(rho_c, rho_s, E, d1E)
-
-      elseif (diff_order .eq. 2) then
-         call D2ESRC_SPIN_VWN5(rho_c, rho_s, E, d1E, d2E)
-
-      else 
-         call quit('Requested to high order derivative: ',diff_order) 
-      end if
-      end subroutine
-
-
-C*****************************************************************************
-      subroutine VWN5C_nomu(rho, diff_order, E, d1E, d2E)
-C*****************************************************************************
-C Implemented by E. R. Kjellgren
-C
-C Subroutine to to control calling of correlation spin-unpolarized VWN5 functional
-C This functional is just the normal VWN5, no mu dependency.
-C
-C   Input : rho, vector of densities
-C           diff_order, max order of differentation
-C           mu, range-seperation parameter
-C   Output : E, energy
-C            d1E, vector of first derivatives of energy
-C            d2E, vector of second derivatives of energy
-C*****************************************************************************
-      implicit none
-#include "priunit.h" 
-      integer, intent(in) :: diff_order
-      real*8, intent(in) :: rho(2)
-      real*8, intent(out) :: E, d1E(9), d2E(45)
-      real*8 :: rho_c
-      
-      E = 0.0d0
-      d1E(:) = 0.0d0
-      d2E(:) = 0.0d0
-      rho_c = rho(1)
-
-      if (rho_c .le. 1.d-10) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
-         return
+      if (abs(rho_s) .le. 1.d-20) then
+         spin_polarized = .false.
+      else
+         spin_polarized = .true.
       end if
 
-      if (diff_order .eq. 0) then
-         call ESRC_VWN5(rho_c, E)
+      if (spin_polarized) then
+         if (diff_order .eq. 0) then
+            call ESRC_SPIN_VWN5(rho_c, rho_s, E)
 
-      elseif (diff_order .eq. 1) then
-         call D1ESRC_VWN5(rho_c, E, d1E)
+         elseif (diff_order .eq. 1) then
+            call D1ESRC_SPIN_VWN5(rho_c, rho_s, E, d1E)
 
-      elseif (diff_order .eq. 2) then
-         call D2ESRC_VWN5(rho_c, E, d1E, d2E)
+         elseif (diff_order .eq. 2) then
+            call D2ESRC_SPIN_VWN5(rho_c, rho_s, E, d1E, d2E)
 
-      else 
-         call quit('Requested to high order derivative: ',diff_order) 
+         else 
+            call quit('Requested to high order derivative: ',diff_order)
+         end if
+      else
+         if (diff_order .eq. 0) then
+            call ESRC_VWN5(rho_c, E)
+
+         elseif (diff_order .eq. 1) then
+            call D1ESRC_VWN5(rho_c, E, d1E)
+
+         elseif (diff_order .eq. 2) then
+            call D2ESRC_VWN5(rho_c, E, d1E, d2E)
+
+         else 
+            call quit('Requested to high order derivative: ',diff_order)
+         end if
       end if
       end subroutine
