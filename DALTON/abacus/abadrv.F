@@ -70,7 +70,7 @@ C
 C
 C     Tag this as an ABACUS run.
 C
-      CALL ABA_SET
+      CALL ABA_SET()
 C
 C     *************************
 C     ***** Input Section *****

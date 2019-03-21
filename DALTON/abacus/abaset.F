@@ -15,11 +15,8 @@
 !  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
-C
 #ifdef OLD_LOG
 !===========================================================================
-!
-!=============================================================================
 !900105-hjaaj: flag(27) true se MAERKE, to do: transfer flags from Sirius
 !900216-hjaaj: call sir_intopen to open luintm, revised check if luintm ok.
 !900402-tuh:   H2MO defined according to info from LUSIFC
@@ -56,7 +53,7 @@ C
       REAL*8      WORK(LWORK)
 
       CHARACTER*8 RTNLBL(2)
-      LOGICAL     DIPOK, FNDLAB, MCSSYM
+      LOGICAL     DIPOK, FNDLAB, MCSSYM, ABACUS_ACTIVE
 C
 C Used from common blocks:
 C   GNRINF : IPRUSR, EMBEDDING, ?
@@ -84,6 +81,10 @@ C
 C
       CALL QENTER('SETSIR  ')
       DST = SECOND( )
+
+C     ABACUS_ACTIVE true:  SETSIR called from ABACUS
+C     ABACUS_ACTIVE false: SETSIR called from RESPONS
+      CALL ABARUN(ABACUS_ACTIVE)
 C
       IPRNTR = IPRTRA
 C     ... IPRTRA from cbirhs.h, used for IPRTRD in cbdtra.h for
@@ -128,7 +129,8 @@ C
       END IF
 C     disable SUPSYM for ABACUS /921216-hjaaj
       MCSSYM = FLAG(17)
-      FLAG(17) = .FALSE.
+
+      IF (ABACUS_ACTIVE) FLAG(17) = .FALSE.
 C
       IF (LBSIFC .EQ. 'CIRESPON') THEN
          FLAG(4) = .TRUE.
@@ -223,17 +225,20 @@ C        NCNTCV is defined in READIN
 C
 C        Check that no frozen orbitals are used
 C
-      DO 50 I = 1, NSYM
-         IF (NFRO(I).NE.0) THEN
+      IF (ABACUS_ACTIVE) THEN
+        DO I = 1, NSYM
+          IF (NFRO(I).NE.0) THEN
             WRITE (LUPRI,'(/A/)') ' ERROR in SETSIR '//
-     *           ' - Frozen orbitals not allowed in ABACUS.'
+     &        ' - Frozen orbitals not allowed in ABACUS.'
             WRITE (LUPRI,'(A,8I5)') ' NFRO:', (NFRO(J),J=1,NSYM)
-            CALL QUIT(' ERROR in ABACUS.SETSIR - frozen orbitals used.')
-         END IF
- 50   CONTINUE
+            CALL QUIT('ERROR in ABACUS.SETSIR - frozen orbitals used.')
+          END IF
+        END DO
+      END IF
       CALL SETORB
       IF (FLAG(17)) THEN
-         CALL QUIT('SETSIR ERROR: .SUPSYM not implemented in ABACUS.')
+         IF (ABACUS_ACTIVE)
+     &   CALL QUIT('SETSIR ERROR: .SUPSYM not implemented in ABACUS.')
       ELSE
          CALL AVESE0
       END IF
@@ -321,26 +326,29 @@ C
 C
       IF (NWOPT.NE.MWOPT .OR. NWOPH.NE.MWOPH) THEN
       IF (MCSSYM) THEN
-         WRITE (LUPRI,'(/,A,2(/A,I5,A,I5))')
+        IF (ABACUS_ACTIVE) THEN
+        ! super symmetry is allowed in RESPONS, but not implemented in ABACUS
+          WRITE (LUPRI,'(/A,2(/A,I6,A,I6))')
      &      ' (SETSIR) ERROR: super symmetry was used in SIRIUS',
      &      ' NWOPT from SETUP:',NWOPT,' and NWOPT from SIRIFC:',MWOPT,
      &      ' NWOPH from SETUP:',NWOPH,' and NWOPH from SIRIFC:',MWOPH
-         WRITE (LUPRI,'(/A/A)')
+          WRITE (LUPRI,'(/A/A)')
      &      ' ABACUS cannot continue because MC orbital gradient',
      &      ' may be non-zero without super symmetry averaging.'
+          CALL QUIT('SETSIR: .SUPSYM not allowed in ABACUS')
+        END IF
       ELSE
-         WRITE(LUPRI,'(/A,2(/A,I5,A,I5))') ' (ABACUS.SETSIR) ERROR',
+          WRITE(LUPRI,'(/A,2(/A,I6,A,I6))') ' (ABACUS.SETSIR) ERROR',
      &      ' NWOPT from SETUP:',NWOPT,' and NWOPT from SIRIFC:',MWOPT,
      &      ' NWOPH from SETUP:',NWOPH,' and NWOPH from SIRIFC:',MWOPH
-         WRITE(LUPRI,'(/A)') 'The JWOP array (with a zero vector):'
-         CALL DZERO(WORK,NWOPT)
-         CALL PRWOP(WORK,LUPRI)
+          WRITE(LUPRI,'(/A)') 'The JWOP array (with a zero vector):'
+          CALL DZERO(WORK,NWOPT)
+          CALL PRWOP(WORK,LUPRI)
+          CALL QUIT('SETSIR: inconsistency found for orbital rotations')
       END IF
-         CALL QUIT('SETSIR: inconsistency found for orbital rotations')
       END IF
 C
-C     Set FLAG(23) for calculation of active-active block
-C     of QX matrix
+C     Set FLAG(23) for calculation of active-active block of QX matrix
 C
       FLAG(23) = .TRUE.
 C
@@ -353,11 +361,10 @@ C     END OF SETSIR
 C
       DTIM = SECOND() - DST
       IF (IPRDEF .GT. 3) WRITE (LUPRI,1423) DTIM
- 1423 FORMAT (/' *** SETSIR-INFO, time in NSETUP: ',F10.2,' seconds.'/)
+ 1423 FORMAT (/' *** SETSIR-INFO, CPU time used:',F10.2,' seconds.'/)
 C
       CALL QEXIT('SETSIR  ')
       RETURN
-C
       END
 C  /* Deck nsetup */
       SUBROUTINE NSETUP(MAKE_MOTWOINT,WORK,LFREE,IPRNTR)

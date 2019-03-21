@@ -10,6 +10,7 @@
 - added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
 
 ### Fixed
+- Singlet totally-symmetric excitation energies for MCSCF in \*\*RESPONS with super-symmetry activated (.SUPSYM keyword). (H. J. Aa. Jensen)
 - make sure we include all (near-)degenerate diagonal elements for linear response excitation energies
   via \*\*PROPERTIES .EXCITA or via \*\*RESPONS \*LINEAR .SINGLE (increase .NROOTS if needed).
   Otherwise the calculation will probably exhibit spin and/or space symmetry contamination proportional
