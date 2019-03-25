@@ -20,6 +20,10 @@
 - dalton script: fix for using input files located in subfolders
   
 
+## [2018.3] (unreleased)
+
+### Fixed
+- fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
 
 ## [2018.2] (2019-03-17)
 
