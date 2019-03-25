@@ -1,5 +1,10 @@
 # DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
+## [2018.3] (unreleased)
+
+### Fixed
+- fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
+
 ## [2018.2] (2019-03-17)
 
 ### Fixed
