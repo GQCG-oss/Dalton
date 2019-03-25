@@ -9,7 +9,7 @@ from runtest_dalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(string = 'Final MC-SRDFT energy',
+f.add(string = 'Final HF-SRDFT energy:',
       rel_tolerance = 1.0e-7)
 f.add(string = '@ Excitation energy :',
       rel_tolerance = 1.0e-3)

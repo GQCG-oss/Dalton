@@ -146,7 +146,7 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Mar 25 11:28:47 2019
+     Date and time (Linux)  : Mon Mar 25 11:32:35 2019
      Host name              : fe1.deic.sdu.dk                         
 
  * Work memory size             :   320000000 =  2.384 gigabytes.
@@ -193,11 +193,11 @@ Compilation information
 *TWOINT
 .DOSRINTEGRALS
 .ERF
- 0.000001
+ 0.3
 **WAVE FUNCTIONS
 .HFSRDFT
 .SRFUN
- NULL CVWN5NOMUS
+ LRCWPBE_S CPBE_NOMUS
 *SCF INPUT
 .MAX DIIS ITERATIONS
  0
@@ -495,7 +495,7 @@ H      1 :      0.00000000     0.00000000     2.31331660  Isotope  1
  Print level in TWOINT:    1
 
  DFT-hybrid : Using a Erf type two-elec. operator
-              with the coupling parameter :    0.00000
+              with the coupling parameter :    0.30000
  * Direct calculation of Fock matrices in AO-basis.
  * Program controlled screening thresholds used for this.
  * Separate density screening of Coulomb integral batches
@@ -559,7 +559,7 @@ Thus no Huckel projection in this symmetry!
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Mar 25 11:28:47 2019
+     Date and time (Linux)  : Mon Mar 25 11:32:35 2019
      Host name              : fe1.deic.sdu.dk                         
 
  Title lines from ".mol" input file:
@@ -589,8 +589,8 @@ Thus no Huckel projection in this symmetry!
 @    Reference state symmetry                   1 (irrep name : A1 )
 
 @    This is a lrWFT-srDFT calculation using the 
-@      NULL       short range exchange functional
-@      CVWN5NOMUS short range correlation functional
+@      LRCWPBE_S  short range exchange functional
+@      CPBE_NOMUS short range correlation functional
 
 @    sr-DFT and exact sr-HF exchange weights:    1.000000    0.000000
 
@@ -650,9 +650,9 @@ H     1   18274      77     434
    Number of grid points in quadrature:     36344 (100.0%)
 
 
-   Ex-sr + Ec-sr                          0.0000000000
- + EJsr = sr Coulomb energy               6.1070343037
- = Total E(srDFT)                         6.1070343037
+   Ex-sr + Ec-sr                         -1.7694203419
+ + EJsr = sr Coulomb energy               3.8128671934
+ = Total E(srDFT)                         2.0434468515
 
 
 
@@ -661,22 +661,22 @@ H     1   18274      77     434
 
  Fock matrix screening setting for this macro iteration: 10^( -9)
 
-   Ex-sr + Ec-sr                          0.0000000000
- + EJsr = sr Coulomb energy               6.1070343037
- = Total E(srDFT)                         6.1070343037
+   Ex-sr + Ec-sr                         -1.7694203419
+ + EJsr = sr Coulomb energy               3.8128671934
+ = Total E(srDFT)                         2.0434468515
 
 
- Total HF-srDFT energy    :            -5.480078737300969  (MACRO    1)
+ Total HF-srDFT energy    :            -7.866982217844867  (MACRO    1)
 
  - Nuclear repulsion      :             1.133951166000000
- - Inactive energy        :            -6.745916656899246
+ - Inactive energy        :            -8.440451465627820
  - Active energy          :             0.000000000000000
- - srDFT effective energy :             0.131886753598277
+ - srDFT effective energy :            -0.560481918217046
 
- Norm of total gradient   :             1.154138286790
+ Norm of total gradient   :             0.504023732288
  -    of CI gradient      :             0.000000000000
- -    of orbital gradient :             1.154138286790
-      Virial theorem: -V/T =      1.640691
+ -    of orbital gradient :             0.504023732288
+      Virial theorem: -V/T =      1.919750
 @    MULPOP   Li      0.65; H      -0.65; 
 
  Residual norm when dim(red L) =   3
@@ -688,9 +688,9 @@ H     1   18274      77     434
    --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
 
 
-   Ex-sr + Ec-sr                          0.0000000000
- + EJsr = sr Coulomb energy               5.3309242212
- = Total E(srDFT)                         5.3309242212
+   Ex-sr + Ec-sr                         -1.5740911726
+ + EJsr = sr Coulomb energy               3.3868174234
+ = Total E(srDFT)                         1.8127262508
 
 
 
@@ -699,23 +699,23 @@ H     1   18274      77     434
 
  Fock matrix screening setting for this macro iteration: 10^( -9)
 
-   Ex-sr + Ec-sr                          0.0000000000
- + EJsr = sr Coulomb energy               5.3309242212
- = Total E(srDFT)                         5.3309242212
+   Ex-sr + Ec-sr                         -1.5740911726
+ + EJsr = sr Coulomb energy               3.3868174234
+ = Total E(srDFT)                         1.8127262508
 
 
- Total HF-srDFT energy    :            -5.753271455529840  (MACRO    2)
+ Total HF-srDFT energy    :            -7.919382879794335  (MACRO    2)
 
  - Nuclear repulsion      :             1.133951166000000
- - Inactive energy        :            -7.016427514604282
+ - Inactive energy        :            -8.552751920057677
  - Active energy          :             0.000000000000000
- - srDFT effective energy :             0.129204893074441
+ - srDFT effective energy :            -0.500582125736657
 
- Norm of total gradient   :             0.423405227291
+ Norm of total gradient   :             0.306275550450
  -    of CI gradient      :             0.000000000000
- -    of orbital gradient :             0.423405227291
-      Virial theorem: -V/T =      1.736297
-@    MULPOP   Li     -0.62; H       0.62; 
+ -    of orbital gradient :             0.306275550450
+      Virial theorem: -V/T =      1.984350
+@    MULPOP   Li     -0.16; H       0.16; 
 
  Residual norm when dim(red L) =   3
  NEO root     CSF        orbital          total
@@ -726,9 +726,9 @@ H     1   18274      77     434
    --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
 
 
-   Ex-sr + Ec-sr                          0.0000000000
- + EJsr = sr Coulomb energy               5.4838831474
- = Total E(srDFT)                         5.4838831474
+   Ex-sr + Ec-sr                         -1.6348880296
+ + EJsr = sr Coulomb energy               3.5139255366
+ = Total E(srDFT)                         1.8790375070
 
 
 
@@ -737,23 +737,23 @@ H     1   18274      77     434
 
  Fock matrix screening setting for this macro iteration: 10^( -9)
 
-   Ex-sr + Ec-sr                          0.0000000000
- + EJsr = sr Coulomb energy               5.4838831474
- = Total E(srDFT)                         5.4838831474
+   Ex-sr + Ec-sr                         -1.6348880296
+ + EJsr = sr Coulomb energy               3.5139255366
+ = Total E(srDFT)                         1.8790375070
 
 
- Total HF-srDFT energy    :            -5.787967980744349  (MACRO    3)
+ Total HF-srDFT energy    :            -7.939517218849404  (MACRO    3)
 
  - Nuclear repulsion      :             1.133951166000000
- - Inactive energy        :            -7.050046452175918
+ - Inactive energy        :            -8.554625804113245
  - Active energy          :             0.000000000000000
- - srDFT effective energy :             0.128127305431569
+ - srDFT effective energy :            -0.518842580736158
 
- Norm of total gradient   :             0.100329757440
+ Norm of total gradient   :             0.008540916203
  -    of CI gradient      :             0.000000000000
- -    of orbital gradient :             0.100329757440
-      Virial theorem: -V/T =      1.726903
-@    MULPOP   Li     -0.24; H       0.24; 
+ -    of orbital gradient :             0.008540916203
+      Virial theorem: -V/T =      1.967476
+@    MULPOP   Li      0.13; H      -0.13; 
 
  Residual norm when dim(red L) =   3
  NEO root     CSF        orbital          total
@@ -764,9 +764,9 @@ H     1   18274      77     434
    --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
 
 
-   Ex-sr + Ec-sr                          0.0000000000
- + EJsr = sr Coulomb energy               5.4550353029
- = Total E(srDFT)                         5.4550353029
+   Ex-sr + Ec-sr                         -1.6332060686
+ + EJsr = sr Coulomb energy               3.5103555482
+ = Total E(srDFT)                         1.8771494796
 
 
 
@@ -775,66 +775,28 @@ H     1   18274      77     434
 
  Fock matrix screening setting for this macro iteration: 10^( -9)
 
-   Ex-sr + Ec-sr                          0.0000000000
- + EJsr = sr Coulomb energy               5.4550353029
- = Total E(srDFT)                         5.4550353029
+   Ex-sr + Ec-sr                         -1.6332060686
+ + EJsr = sr Coulomb energy               3.5103555482
+ = Total E(srDFT)                         1.8771494796
 
 
- Total HF-srDFT energy    :            -5.789330101094381  (MACRO    4)
-
- - Nuclear repulsion      :             1.133951166000000
- - Inactive energy        :            -7.051760605611864
- - Active energy          :             0.000000000000000
- - srDFT effective energy :             0.128479338517482
-
- Norm of total gradient   :             0.001233648010
- -    of CI gradient      :             0.000000000000
- -    of orbital gradient :             0.001233648010
-      Virial theorem: -V/T =      1.729215
-@    MULPOP   Li     -0.31; H       0.31; 
-
- Residual norm when dim(red L) =   3
- NEO root     CSF        orbital          total
-    1     0.00000000     0.00000000     0.00000000 converged
-
- (NEONEX) NEO vector is converged.
-
-   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
-
-
-   Ex-sr + Ec-sr                          0.0000000000
- + EJsr = sr Coulomb energy               5.4548043128
- = Total E(srDFT)                         5.4548043128
-
-
-
- --- MACRO ITERATION  5 ---
- --------------------------
-
- Fock matrix screening setting for this macro iteration: 10^( -9)
-
-   Ex-sr + Ec-sr                          0.0000000000
- + EJsr = sr Coulomb energy               5.4548043128
- = Total E(srDFT)                         5.4548043128
-
-
- Total HF-srDFT energy    :            -5.789322138836960  (MACRO    5)
+ Total HF-srDFT energy    :            -7.939532629587368  (MACRO    4)
 
  - Nuclear repulsion      :             1.133951166000000
- - Inactive energy        :            -7.051761267476742
+ - Inactive energy        :            -8.555149266794302
  - Active energy          :             0.000000000000000
- - srDFT effective energy :             0.128487962639782
+ - srDFT effective energy :            -0.518334528793065
 
- Norm of total gradient   :             0.000000343408
+ Norm of total gradient   :             0.000009713490
  -    of CI gradient      :             0.000000000000
- -    of orbital gradient :             0.000000343408
-      Virial theorem: -V/T =      1.729224
-@    MULPOP   Li     -0.31; H       0.31; 
+ -    of orbital gradient :             0.000009713490
+      Virial theorem: -V/T =      1.967951
+@    MULPOP   Li      0.12; H      -0.12; 
 
  *** Optimization control: HF-srDFT converged ***
-     Number of macro iterations used            5
-     Number of micro iterations used            8
-     Total number of CPU seconds used         0.77
+     Number of macro iterations used            4
+     Number of micro iterations used            6
+     Total number of CPU seconds used         1.65
 
 
  *** SCF orbital energy analysis ***
@@ -844,16 +806,14 @@ H     1   18274      77     434
 
  Sym       Hartree-Fock orbital energies
 
-1 A1     -0.90587892     0.04315985     0.23644160
+1 A1     -1.98203076    -0.28713849     0.13069549
 
-    E(LUMO) :     0.23644160 au (symmetry 1)
-  - E(HOMO) :     0.04315985 au (symmetry 1)
+    E(LUMO) :     0.13069549 au (symmetry 1)
+  - E(HOMO) :    -0.28713849 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.19328175 au
+    gap     :     0.41783398 au
 
- WARNING: E(HOMO) positive!
-
- CPU and wall time for SCF :       0.771       0.780
+ CPU and wall time for SCF :       1.649       1.654
 
 
                      .----------------------------------------.
@@ -862,73 +822,66 @@ H     1   18274      77     434
 
 
  
-     Date and time (Linux)  : Mon Mar 25 11:28:48 2019
+     Date and time (Linux)  : Mon Mar 25 11:32:36 2019
      Host name              : fe1.deic.sdu.dk                         
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    2     -5.480078737301   1.1541382868  0.000000   0.7174185384
-    2    2     -5.753271455530   0.4234052273  0.415243   0.1967880194
-    3    2     -5.787967980744   0.1003297574  0.843592   0.0336888140
-    4    2     -5.789330101094   0.0012336480  0.807178   0.0004175553
-    5    0     -5.789322138837   0.0000003434-31.095391   0.0000000000
+    1    2     -7.866982217845   0.5040237323  0.000000   0.4177285257
+    2    2     -7.919382879794   0.3062755505  0.503427   0.1355967840
+    3    2     -7.939517218849   0.0085409162  0.970864   0.0036373217
+    4    0     -7.939532629587   0.0000097135  0.999283   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
-    1      0    0.000000    0.000000      2   -1.057393    1.154138    1.154138
-    2      0    0.000000    0.000000      2    0.415544    0.423405    0.423405
-    3      0    0.000000    0.000000      2   -0.100319    0.100330    0.100330
-    4      0    0.000000    0.000000      2   -0.001111    0.001234    0.001234
-    5      0    0.000000    0.000000      2   -0.000000    0.000000    0.000000
+    1      0    0.000000    0.000000      2   -0.491893    0.504024    0.504024
+    2      0    0.000000    0.000000      2    0.305507    0.306276    0.306276
+    3      0    0.000000    0.000000      2   -0.008387    0.008541    0.008541
+    4      0    0.000000    0.000000      2    0.000009    0.000010    0.000010
 
 
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     2     0     2      0.17      0.00      0.13      0.10      0.07
-    2     2     0     2      0.17      0.00      0.13      0.10      0.07
-    3     2     0     2      0.17      0.00      0.13      0.10      0.07
-    4     2     0     2      0.17      0.00      0.13      0.10      0.07
-    5     0     0     0      0.04      0.00      0.00      0.00
+    1     2     0     2      0.55      0.00      0.44      0.33      0.22
+    2     2     0     2      0.45      0.00      0.36      0.27      0.18
+    3     2     0     2      0.44      0.00      0.36      0.27      0.18
+    4     0     0     0      0.09      0.00      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1     -6.614029903301      0.000000000000     -5.480078737301
-    2     -6.887222621530      0.000000000000     -5.753271455530
-    3     -6.921919146744      0.000000000000     -5.787967980744
-    4     -6.923281267094      0.000000000000     -5.789330101094
-    5     -6.923273304837      0.000000000000     -5.789322138837
+    1     -9.000933383845      0.000000000000     -7.866982217845
+    2     -9.053334045794      0.000000000000     -7.919382879794
+    3     -9.073468384849      0.000000000000     -7.939517218849
+    4     -9.073483795587      0.000000000000     -7.939532629587
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.657910371613     -0.273192718229      0.415243063518
-    3     -0.041129531053     -0.034696525215      0.843591558815
-    4     -0.001687509784     -0.001362120350      0.807177749720
-    5     -0.000000256059      0.000007962257    -31.095391174916
+    2     -0.104087984983     -0.052400661949      0.503426615071
+    3     -0.020738586597     -0.020134339055      0.970863610240
+    4     -0.000015421802     -0.000015410738      0.999282581147
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      1.14376414  1.00000000      0.717418538382      0.700000000000
-    2      0.20000000  1.00000000      0.196788019394      0.700000000000
-    3      0.20000000  1.00000000      0.033688814022      0.700000000000
-    4      0.20000000  1.00000000      0.000417555332      0.700000000000
-    5      0.00000000  0.00000000      0.000000000000      0.469000000000
+    1      0.20000000  1.00000000      0.417728525681      0.700000000000
+    2      0.20000000  1.00000000      0.135596783985      0.700000000000
+    3      0.20000000  1.00000000      0.003637321673      0.700000000000
+    4      0.00000000  0.00000000      0.000000000000      0.700000000000
 
 
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -1.028707810713    0.773056395108   -0.602433187920    0.198640539859
-    2   -0.003285273527    0.999226388148   -0.039326729387   -0.000183259001
-    3   -0.000134994654    0.999977302049   -0.006722381812   -0.000452735623
-    4   -0.000000020485    0.999999996513   -0.000080708745   -0.000021452194
-    5    0.000000000000    0.000000000000    0.000000000000    0.000000000000
+    1   -0.008269319898    0.996528221503   -0.083255601294   -0.000092746202
+    2   -0.001657867633    0.999632472957   -0.027108827208   -0.000174634767
+    3   -0.000001233743    0.999999735398   -0.000727079514   -0.000023652873
+    4    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
                        .-----------------------------------.
@@ -940,14 +893,14 @@ H     1   18274      77     434
 @    Spatial symmetry:            1 ( irrep  A1  in C2v )
 @    Total charge of molecule:    0
 
-@    Final HF-SRDFT energy:        -5.789322138837
+@    Final HF-SRDFT energy:        -7.939532629587
 @    Nuclear repulsion:             1.133951166000
-@    Electronic energy:            -6.923273304837
+@    Electronic energy:            -9.073483795587
 
-@    Final gradient norm:           0.000000343408
+@    Final gradient norm:           0.000009713490
 
  
-     Date and time (Linux)  : Mon Mar 25 11:28:48 2019
+     Date and time (Linux)  : Mon Mar 25 11:32:36 2019
      Host name              : fe1.deic.sdu.dk                         
 
 File label for MO orbitals:  25Mar19   (CNOORB)
@@ -958,15 +911,15 @@ File label for MO orbitals:  25Mar19   (CNOORB)
  ------------------------------------------------
 
     Orbital         1        2        3
-   1 Li  :1s     0.9567  -0.3282  -0.0818
-   2 Li  :1s     0.1520   0.7156   0.8310
-   3 H   :1s     0.0374   0.4646  -0.9928
+   1 Li  :1s     0.9906  -0.1990  -0.0940
+   2 Li  :1s     0.0428   0.5510   0.9593
+   3 H   :1s     0.0114   0.6515  -0.8822
 
-  Total CPU  time used in SIRIUS :   0.78 seconds
-  Total wall time used in SIRIUS :   0.79 seconds
+  Total CPU  time used in SIRIUS :   1.65 seconds
+  Total wall time used in SIRIUS :   1.66 seconds
 
  
-     Date and time (Linux)  : Mon Mar 25 11:28:48 2019
+     Date and time (Linux)  : Mon Mar 25 11:32:36 2019
      Host name              : fe1.deic.sdu.dk                         
 
 
@@ -1005,8 +958,8 @@ File label for MO orbitals:  25Mar19   (CNOORB)
       1 Excitation energies are calculated for symmetry no.    1
 
 
-   SCF energy         :       -5.789322138836960
- -- inactive part     :       -6.923273304836960
+   SCF energy         :       -7.939532629587368
+ -- inactive part     :       -9.073483795587368
  -- nuclear repulsion :        1.133951166000000
 
 
@@ -1029,7 +982,7 @@ File label for MO orbitals:  25Mar19   (CNOORB)
  Orbital variables.         KZWOPT:           2
  Configuration variables.   KZCONF:           0
  Total number of variables. KZVAR :           2
- Electrons in DFTMOMO:    3.99944848120071
+ Electrons in DFTMOMO:    3.99968552926722
 
 
 
@@ -1042,14 +995,20 @@ File label for MO orbitals:  25Mar19   (CNOORB)
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    6.34998D-17  0.00D+00  6.35D-17  7.07D-01    1.93281D-01
+         1    4.28211D-03  0.00D+00  4.28D-03  7.53D-01    1.27564D-01
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.55496D-16  0.00D+00  1.55D-16  7.53D-01    1.27559D-01
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
- (dimension of paired reduced space:    2)
- RSP solution vector no.    1; norm of residual   8.98D-17
+ (dimension of paired reduced space:    4)
+ RSP solution vector no.    1; norm of residual   2.06D-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1063,10 +1022,10 @@ File label for MO orbitals:  25Mar19   (CNOORB)
  @ Excited state no:    1 in symmetry 1  ( A1 ) - triplet excitation
  -------------------------------------------------------------------
 
-@ Excitation energy :  0.19328062     au
-@                       5.2594331     eV;   42420.192     cm-1;   507.45818     kJ / mol
+@ Excitation energy :  0.12755896     au
+@                       3.4710559     eV;   27995.956     cm-1;   334.90600     kJ / mol
 
-@ Total energy :       -5.5960415     au
+@ Total energy :       -7.8119737     au
 
  Eigenvector for state no.  1
 
@@ -1075,9 +1034,9 @@ File label for MO orbitals:  25Mar19   (CNOORB)
 
       Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
       ----------    -----  -----      --------------      --------------      --------------      --------------
-           2         2(1)   3(1)       -0.7071067812       -0.0000000000       -1.0000000000       -0.0000000000
+           2         2(1)   3(1)        0.7305483215       -0.1835749579        1.0331513442       -0.2596141952
 
-        1 elements with absolute value ≤ 1.00D-01 not printed.
+        1 elements with absolute value ≤ 1.03D-01 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
@@ -1094,26 +1053,26 @@ File label for MO orbitals:  25Mar19   (CNOORB)
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
 
-@ Overlap diagnostic LAMBDA =    0.9009
+@ Overlap diagnostic LAMBDA =    0.8732
 
 @ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
 @            J Chem Phys 128, 044118 (2008)
 
 
 
- Time used in polarization propagator calculation is      0.06 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is      0.30 CPU seconds for symmetry 1
 
-  Total CPU  time used in RESPONSE:   0.06 seconds
-  Total wall time used in RESPONSE:   0.06 seconds
+  Total CPU  time used in RESPONSE:   0.30 seconds
+  Total wall time used in RESPONSE:   0.31 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
-  Total CPU  time used in DALTON:   0.86 seconds
-  Total wall time used in DALTON:   0.87 seconds
+  Total CPU  time used in DALTON:   1.98 seconds
+  Total wall time used in DALTON:   2.00 seconds
 
  
-     Date and time (Linux)  : Mon Mar 25 11:28:48 2019
+     Date and time (Linux)  : Mon Mar 25 11:32:37 2019
      Host name              : fe1.deic.sdu.dk                         
