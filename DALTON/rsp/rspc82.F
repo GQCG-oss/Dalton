@@ -458,7 +458,8 @@ C
                   IF (ONEIND) THEN
                      SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
      *                       + D2 * ZYMAT(L,K,ISIM)
-                     SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+                     IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *               SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
      *                       - D2 * ZYMAT(K,L,ISIM)
                   END IF
                   IF ( ITYPL.EQ.JTACT ) THEN
@@ -466,12 +467,15 @@ C
                      IF (ONEIND) THEN
                         SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
      *                  - DDOT(NASHL,ZYMAT(IORBL+NISHL+1,K,ISIM),1,
-     *                                        UDV(IASHL+1,NWL,1),1)
-                        DO 735 IX = 1,NASHL
-                           SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+     *                               UDV(IASHL+1,NWL,1),1)
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA)) THEN
+                           DO IX = 1,NASHL
+                              SVECS(KYCONF+IG,ISIM)
+     *                        = SVECS(KYCONF+IG,ISIM)
      *                        + ZYMAT(K,IORBL+NISHL+IX,ISIM)*
      *                          UDV(NWL,IASHL+IX,1)
- 735                    CONTINUE
+                           END DO
+                        END IF
                      END IF
                   END IF
  2000          CONTINUE
@@ -484,23 +488,27 @@ C
                         SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
      *                     -DDOT(NASHL,ZYMAT(IORBL+NISHL+1,K,ISIM),1,
      *                                        UDV(IASHL+1,NWL,1),1)
-                        DO 745 IX = 1,NASHL
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA)) THEN
+                           DO IX = 1,NASHL
+                              SVECS(KYCONF+IG,ISIM)
+     *                        = SVECS(KYCONF+IG,ISIM)
+     *                        + ZYMAT(K,IORBL+NISHL+IX,ISIM)*
+     *                          UDV(NWL,IASHL+IX,1)
+                           END DO
                            SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
-     *                        +ZYMAT(K,IORBL+NISHL+IX,ISIM)*
-     *                                        UDV(NWL,IASHL+IX,1)
- 745                    CONTINUE
-                        SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
-     *                     -DDOT(NASHK,ZYMAT(IORBK+NISHK+1,L,ISIM),1,
+     *                        -DDOT(NASHK,ZYMAT(IORBK+NISHK+1,L,ISIM),1,
      *                                      UDV(IASHK+1,NWK,1),1)
-                        DO 755 IX = 1,NASHK
+                        END IF
+                        DO IX = 1,NASHK
                            SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
-     *                        +ZYMAT(L,IORBK+NISHK+IX,ISIM)*
-     *                                      UDV(NWK,IASHK+IX,1)
- 755                    CONTINUE
+     *                        + ZYMAT(L,IORBK+NISHK+IX,ISIM)*
+     *                          UDV(NWK,IASHK+IX,1)
+                        END DO
                      ELSE
                         SVECS(KZCONF+IG,ISIM) =
      *                     SVECS(KZCONF+IG,ISIM) + UDV(NWK,NWL,ISIM)
-                        SVECS(KYCONF+IG,ISIM) =
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                  SVECS(KYCONF+IG,ISIM) =
      *                     SVECS(KYCONF+IG,ISIM) + UDV(NWL,NWK,ISIM)
                      END IF
  2020             CONTINUE
@@ -508,14 +516,15 @@ C
                   NWK = ISW(K) - NISHT
                   DO 2030 ISIM=1,NSIM
                      IF (ONEIND) THEN
-                        SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                     SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
      *                     -DDOT(NASHK,ZYMAT(IORBK+NISHK+1,L,ISIM),1,
-     *                                        UDV(IASHK+1,NWK,1),1)
-                        DO 765 IX = 1,NASHK
+     *                                 UDV(IASHK+1,NWK,1),1)
+                        DO IX = 1,NASHK
                            SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
-     *                        +ZYMAT(L,IORBK+NISHK+IX,ISIM)*
-     *                                        UDV(NWK,IASHK+IX,1)
- 765                    CONTINUE
+     *                        + ZYMAT(L,IORBK+NISHK+IX,ISIM)*
+     *                          UDV(NWK,IASHK+IX,1)
+                        END DO
                      END IF
  2030             CONTINUE
                ENDIF
@@ -879,23 +888,22 @@ C
      *                  -DDOT(NASHL,FCX(IORBL+NISHL+1,K,ISIM),1,
      *                                        UDV(IASHL+1,NWL,1),1)
                         IF ((.NOT. TDA) .AND. (.NOT. CISRPA)) THEN
-                           DO 740 IX = 1,NASHL
-                                EVECS(KYCONF+IG,ISIM) =
+                           DO IX = 1,NASHL
+                              EVECS(KYCONF+IG,ISIM) =
      *                          EVECS(KYCONF+IG,ISIM)
      *                          +FCX(K,IORBL+NISHL+IX,ISIM)*
      *                                          UDV(NWL,IASHL+IX,1)
- 740                    CONTINUE
-                        END IF
-                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
-     *                          EVECS(KYCONF+IG,ISIM) =
+                           END DO
+                           EVECS(KYCONF+IG,ISIM) =
      *                          EVECS(KYCONF+IG,ISIM)
      *                          -DDOT(NASHK,FCX(IORBK+NISHK+1,L,ISIM),
      *                                        1,UDV(IASHK+1,NWK,1),1)
-                        DO 750 IX = 1,NASHK
+                        END IF
+                        DO IX = 1,NASHK
                            EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                        +FCX(L,IORBK+NISHK+IX,ISIM)*
      *                                        UDV(NWK,IASHK+IX,1)
- 750                    CONTINUE
+                        END DO
                      ELSE
                         TEMP1 = D0
                         TEMP2 = D0
