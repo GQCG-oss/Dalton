@@ -662,7 +662,13 @@ C*****************************************************************************
 !     modified
 !       -- E.R. Kjellgren
       logical :: ERFEXP(0:2)
-
+     
+!     Integer to control request for special cases of derivatives of the
+!     functionals.
+!     special_case = 1 : Requests a Hessian for triplet response based
+!                        on a singlet reference.
+!                  = 2 : No more special cases yet.
+      integer :: special_case
       real*8 :: mu
       integer, save :: icall = 0
 
@@ -683,6 +689,12 @@ C     spin functionals
 C     sr mdc func
       external ESRC_MD_LDAERF
 
+      if (triplet) then
+         special_case = 1
+      else
+         special_case = 0
+      end if
+
 c  Exchange  ------------------------------------------------------------
 
       Ex      = 0.0d0
@@ -702,54 +714,47 @@ c  Exchange  ------------------------------------------------------------
 !     LDA exchange functional
       IF (DOSRX_LDA) THEN
          call LDAX_ERF(rho, norder, chival, Ex, d1Ex, d2Ex)
-      ENDIF
 
 !     short-range exchange PBE of HSE
-      IF (DOSRX_PBEHSE) THEN
+      ELSE IF (DOSRX_PBEHSE) THEN
         call DESRX_SPINGGA(ESRX_PBEHSEERF,rho,grd2,CHIVAL,
      &                     norder,Ex,d1Ex,d2Ex)
-      ENDIF
 
 !     short-range exchange PBE of TCS
-      IF (DOSRX_PBETCS) THEN
+      ELSE IF (DOSRX_PBETCS) THEN
         call DESRX_SPINGGA(ESRX_PBETCSERF,rho,grd2,CHIVAL,
      &                     norder,Ex,d1Ex,d2Ex)
-      ENDIF
 
 !     short-range exchange PBE of GWS ! JT 11-08-09
-      IF (DOSRX_PBEGWS) THEN
+      ELSE IF (DOSRX_PBEGWS) THEN
          call PBEX_GWS_ERF(rho, grd2, norder, chival,
      &                      Ex, d1Ex, d2Ex)
-      ENDIF
 
 !     short-range exchange RI
-      IF (DOSRX_PBERI) THEN ! added Manu 01-02-2006
+      ELSE IF (DOSRX_PBERI) THEN ! added Manu 01-02-2006
         call DESRX_SPINGGA(ESRX_PBERIERF,rho,grd2,CHIVAL,
      &                     norder,Ex,d1Ex,d2Ex)
-      ENDIF
 
 !     TPSS exchange functional
-      IF (DOSRX_TPSS) THEN
+      ELSE IF (DOSRX_TPSS) THEN
          call TPSSX_GWS_ERF(rho, grd2, tau, norder, chival,
      &                       Ex, d1Ex, d2Ex)
-      ENDIF
 
 !     wPBE exchange functional
-      IF (DOSRX_wPBE) THEN
+      ELSE IF (DOSRX_wPBE) THEN
          call wPBEX(rho, grd2, norder, chival, Ex, d1Ex, d2Ex)
-      ENDIF
 
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
-      IF (DOLAX_LDAS) THEN
-        call ELX_LDALAMSPIN (rho(1),rho(2),VLAMBDA,Ex)
-        call DELSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),VLAMBDA,DFT_SPINDNS,
-     &               NORDER,d1Ex,d2Ex)
-      ENDIF
+      ELSE IF (DOLAX_LDAS) THEN
+         call ELX_LDALAMSPIN (rho(1),rho(2),VLAMBDA,Ex)
+         call DELSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),VLAMBDA,DFT_SPINDNS,
+     &                NORDER,d1Ex,d2Ex)
 
 C linear complement exchange PBE functional, Kamal SHARKAS 19-05-11
-      IF (DOLAX_PBEGWS) THEN
-        call ELAX_PBEGWS(rho,grd2,VLAMBDA,Ex)
-        call DELA(ESRX_PBEGWSERF,rho,grd2,VLAMBDA,NORDER,d1Ex,d2Ex)
+      ELSE IF (DOLAX_PBEGWS) THEN
+         call ELAX_PBEGWS(rho,grd2,VLAMBDA,Ex)
+         call DELA(ESRX_PBEGWSERF,rho,grd2,VLAMBDA,NORDER,d1Ex,d2Ex)
+
       ENDIF
 
 
@@ -760,115 +765,101 @@ C  Correlation  ----------------------------------------------------------
       d2Ec(:) = 0.0d0
 
 !     short-range spin-dependent correlation LDA ! JT 18-08-09
-      IF(DOSRC_LDA_PW92) THEN
-         call PW92C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
-      ENDIF
+      IF (DOSRC_LDA_PW92) THEN
+         call PW92C_ERF(rho, norder, special_case, chival, 
+     &                  Ec, d1Ec, d2Ec)
 
 !     short-range correlation PBE of TCS
-      IF(DOSRC_PBETCS) THEN
+      ELSE IF (DOSRC_PBETCS) THEN
         call DESR(ESRC_PBETCSERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-      ENDIF
 
 !     short-range correlation PBE of TCSJ
-      IF(DOSRC_PBETCSJ) THEN
+      ELSE IF (DOSRC_PBETCSJ) THEN
         call DESR(ESRC_PBETCSJERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-      ENDIF
 
 !     Modified short-range correlation PBE of GWS
-      IF(DOSRC_PBEGWS) THEN
-        call PBEC_GWS_ERF(rho, grd2, norder, chival, Ec, d1Ec, d2Ec)
-      ENDIF
+      ELSE IF (DOSRC_PBEGWS) THEN
+        call PBEC_GWS_ERF(rho, grd2, norder, special_case, chival,
+     &                    Ec, d1Ec, d2Ec)
 
 !     rational interpolation
-      IF(DOSRC_PBERI) THEN
+      ELSE IF (DOSRC_PBERI) THEN
         call DESR(ESRC_PBERIERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-      ENDIF
 
 !     rational interpolation LYP
-      IF(DOSRC_LYPRI) THEN
+      ELSE IF (DOSRC_LYPRI) THEN
         call DESR(ESRC_LYPRIERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-      ENDIF
 
 !     PBE local energy formula
-      IF(DOSRC_PBELO) THEN
+      ELSE IF (DOSRC_PBELO) THEN
         call DESR(ESRC_PBELOERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-      ENDIF
 
 !     weighted interpolation
-      IF(DOSRC_PBEWI) THEN
+      ELSE IF (DOSRC_PBEWI) THEN
         call DESR(ESRC_PBEWIERF,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-      ENDIF
 
 !     TPSS correlation spin-unpolarized functional
-      IF(DOSRC_TPSS) THEN
-         call TPSSC_GWS_ERF(rho, grd2, tau, norder, chival,
-     &                      Ec, d1Ec, d2Ec)
-      ENDIF
+      ELSE IF (DOSRC_TPSS) THEN
+         call TPSSC_GWS_ERF(rho, grd2, tau, norder, special_case,
+     &                      chival, Ec, d1Ec, d2Ec)
 
 !     PBE correlation spin-unpolarized functional
-      IF(DOC_PBE_nomu) THEN
-         call PBEC_nomu(rho, grd2, norder, Ec, d1Ec, d2Ec)
-      ENDIF
+      ELSE IF (DOC_PBE_nomu) THEN
+         call PBEC_nomu(rho, grd2, norder, special_case, Ec, d1Ec, d2Ec)
 
 !     VWN5 correlation spin-unpolarized functional, with no range-separation
-      IF(DOC_VWN5_nomu) THEN
-         call VWN5C_nomu(rho, norder, Ec, d1Ec, d2Ec)
-      ENDIF
+      ELSE IF (DOC_VWN5_nomu) THEN
+         call VWN5C_nomu(rho, norder, special_case, Ec, d1Ec, d2Ec)
 
 !     VWN5 correlation spin-unpolarized functional
-      IF(DOSRC_VWN5 .OR. DOSRC_LDA) THEN
-         call VWN5C_ERF(rho, norder, chival, Ec, d1Ec, d2Ec)
-      ENDIF
+      ELSE IF(DOSRC_VWN5 .OR. DOSRC_LDA) THEN
+         call VWN5C_ERF(rho, norder, special_case, chival, 
+     &                  Ec, d1Ec, d2Ec)
 
 C linear Complement spin-dependent (NON-Scaled) correlation LDA functional
-       IF(DOLANSC_LDAS) THEN
-        call ELC_LDALAMSPIN (rho(1),rho(2),VLAMBDA,DFT_SPINDNS,Ec)
-        call DELSPINnSC(ESRC_LDAERFSPIN,rho(1),rho(2),VLAMBDA,
+      ELSE IF (DOLANSC_LDAS) THEN
+         call ELC_LDALAMSPIN (rho(1),rho(2),VLAMBDA,DFT_SPINDNS,Ec)
+         call DELSPINnSC(ESRC_LDAERFSPIN,rho(1),rho(2),VLAMBDA,
      &                DFT_SPINDNS,NORDER,d1Ec,d2Ec)
-       ENDIF
 
 C Complement (NON-Scaled) correlation PBE functional
-      IF(DOLANSC_PBEGWS) THEN
+      ELSE IF (DOLANSC_PBEGWS) THEN
         call ELAC_PBEGWS(rho,grd2,VLAMBDA,Ec)
         call DELANSC(ESRC_PBEGWSERF,rho,grd2,VLAMBDA,NORDER,d1Ec,d2Ec)
-      ENDIF
 
 C Complement Scaled correlation PBE functional
-      IF(DOLASC_PBEGWS) THEN
+      ELSE IF (DOLASC_PBEGWS) THEN
         call ELASC_PBEGWS(rho,grd2,VLAMBDA,Ec)
         call DELASC(ESRC_PBEGWSERF,rho,grd2,VLAMBDA,NORDER,d1Ec,d2Ec)
-      ENDIF
 
 !     short-range spin-dependent correlation LDA with multideterminant reference (for OEP) ! JT 26-08-11
 !     ... or for RSDHf calculations (Manu 06-12-2012)
-      IF(DOSRC_MD_LDA) THEN
+      ELSE IF (DOSRC_MD_LDA) THEN
         call DESRSPIN(ESRC_MD_LDAERF,rho(1),rho(2),
      &             CHIVAL,DFT_SPINDNS,NORDER,Ec,d1Ec,d2Ec)
-      ENDIF
 
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11
-      IF(DOSRC_MULOC_GGA) THEN
-C      IF (SRCMULOFAC) THEN
-C         xfac = XMULFAC_READIN
-C      ELSE
-C         xfac = 1.0d0/4.0d0
-C      END IF
-C      mu = sqrt(grd2(1))/rho(1)
-C      mu = xfac*mu
-C      mu_new = max(mu,CHIVAL)
+      ELSE IF (DOSRC_MULOC_GGA) THEN
+C        IF (SRCMULOFAC) THEN
+C           xfac = XMULFAC_READIN
+C        ELSE
+C           xfac = 1.0d0/4.0d0
+C        END IF
+C        mu = sqrt(grd2(1))/rho(1)
+C        mu = xfac*mu
+C        mu_new = max(mu,CHIVAL)
         call ESRC_MULOC_GGA(rho,grd2,CHIVAL,Ec)
         call DESR(ESRC_MULOC_GGA,rho,grd2,CHIVAL,NORDER,
      &             Ec, d1Ec, d2Ec)
-      ENDIF
 
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11
-      IF(DOSRC_MULOD_GGA) THEN
+      ELSE IF (DOSRC_MULOD_GGA) THEN
         call DESR(ESRC_MULOD_GGA,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
-      ENDIF
 
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11
-      IF(DOSRC_MULOE_GGA) THEN
+      ELSE IF(DOSRC_MULOE_GGA) THEN
         call DESR(ESRC_MULOE_GGA,rho,grd2,CHIVAL,NORDER,Ec,d1Ec,d2Ec)
+
       ENDIF
 
       RETURN

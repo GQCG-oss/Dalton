@@ -1,3 +1,8 @@
+C SOURCES:
+C    Thomas  M.  Henderson,  Benjamin  G.  Janesko,  and  Gustavo  E.  Scuseria.
+C    Generalized  gradient approximation model exchange holes for range-separated hybrids.
+C    The Journal of Chemical Physics,128(19):194105, may 2008.
+
 
 
 C*****************************************************************************
@@ -6,7 +11,7 @@ C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 27, 2019
+C   Generated: March 22, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -83,7 +88,7 @@ C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 27, 2019
+C   Generated: March 22, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -414,7 +419,7 @@ C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 27, 2019
+C   Generated: March 22, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu

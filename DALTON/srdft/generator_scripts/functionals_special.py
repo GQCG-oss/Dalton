@@ -73,7 +73,8 @@ def PBEc_alpha_replaced(parameters):
     #  PBE(rho_alpha, rho_beta, grad_alpha, grad_beta) -> PBE(rho_alpha, 0, grad_alpha, 0)
     rho_c = symbols('rho_c', real=True, nonnegative=True)
     rho_s = symbols('rho_s', real=True)
-    gamma_cc = symbols('gamma_cc', real=True, nonnegative=True)
+    gamma_cc, gamma_ss = symbols('gamma_cc gamma_ss', real=True, nonnegative=True)
+    gamma_cs = symbols('gamma_cs', real=True)
     rho_a = 1/2*(rho_c + rho_s)
     gamma_aa = 1/4*(gamma_cc + gamma_ss + 2*gamma_cs)
     
@@ -104,7 +105,8 @@ def PBEc_beta_replaced(parameters):
     #  PBE(rho_alpha, rho_beta, grad_alpha, grad_beta) -> PBE(rho_beta, 0, grad_beta, 0)
     rho_c = symbols('rho_c', real=True, nonnegative=True)
     rho_s = symbols('rho_s', real=True)
-    gamma_cc = symbols('gamma_cc', real=True, nonnegative=True)
+    gamma_cc, gamma_ss = symbols('gamma_cc gamma_ss', real=True, nonnegative=True)
+    gamma_cs = symbols('gamma_cs', real=True)
     rho_b = 1/2*(rho_c - rho_s)
     gamma_bb = 1/4*(gamma_cc + gamma_ss - 2*gamma_cs)
     

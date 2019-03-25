@@ -1,3 +1,8 @@
+C SOURCES:
+C    Simone Paziani, Saverio Moroni, Paola Gori-Giorgi, and Giovanni B. Bachelet.
+C    Local-spin-densityfunctional for multideterminant density functional theory.
+C    Physical Review B, 73(15), apr 2006.
+
 
 
 C*****************************************************************************
@@ -6,7 +11,7 @@ C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -22,7 +27,7 @@ C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -49,7 +54,7 @@ C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -65,7 +70,7 @@ C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -85,7 +90,7 @@ C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -140,7 +145,7 @@ C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -160,7 +165,7 @@ C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -182,7 +187,7 @@ C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu
@@ -264,7 +269,7 @@ C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, mu

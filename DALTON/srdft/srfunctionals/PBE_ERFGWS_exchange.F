@@ -1,12 +1,21 @@
+C SOURCES:
+C    Erich Goll,  Hans-Joachim Werner, and Hermann Stoll.
+C    A short-range gradient-corrected densityfunctional in long-range coupled-cluster calculations for rare gas dimers.
+C    Physical Chemistry Chemical Physics, 7(23):3917, 2005.
+
+C    Erich Goll, Hans-Joachim Werner, Hermann Stoll, Thierry Leininger, Paola Gori-Giorgi, and Andreas Savin.
+C    A short-range gradient-corrected spin density functional in combination with long-range coupled-cluster methods:  Application to alkali-metal rare-gas dimers.
+C    Chemical Physics,329(1-3):276-282, oct 2006.
+
 
 
 C*****************************************************************************
-      pure subroutine ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea)
+      pure subroutine ESRX_PBE_GWS_ERF_case_1(rho_a, gamma_aa, mu, Ea)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -25,12 +34,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine ESRX_PBE_ERF_case_2_1(rho_a, gamma_aa, mu, Ea)
+      pure subroutine ESRX_PBE_GWS_ERF_case_2_1(rho_a, gamma_aa, mu, Ea)
+     &
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -61,12 +71,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea)
+      pure subroutine ESRX_PBE_GWS_ERF_case_2_2(rho_a, gamma_aa, mu, Ea)
+     &
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -96,12 +107,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine ESRX_PBE_ERF_case_2_3(rho_a, gamma_aa, mu, Ea)
+      pure subroutine ESRX_PBE_GWS_ERF_case_2_3(rho_a, gamma_aa, mu, Ea)
+     &
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -137,12 +149,12 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea)
+      pure subroutine ESRX_PBE_GWS_ERF_case_3(rho_a, gamma_aa, mu, Ea)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -164,13 +176,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D1ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea, d1E
-     &a)
+      pure subroutine D1ESRX_PBE_GWS_ERF_case_1(rho_a, gamma_aa, mu, Ea,
+     & d1Ea)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -211,13 +223,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D1ESRX_PBE_ERF_case_2_1(rho_a, gamma_aa, mu, Ea, d
-     &1Ea)
+      pure subroutine D1ESRX_PBE_GWS_ERF_case_2_1(rho_a, gamma_aa, mu, E
+     &a, d1Ea)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -292,13 +304,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D1ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea, d
-     &1Ea)
+      pure subroutine D1ESRX_PBE_GWS_ERF_case_2_2(rho_a, gamma_aa, mu, E
+     &a, d1Ea)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -378,13 +390,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D1ESRX_PBE_ERF_case_2_3(rho_a, gamma_aa, mu, Ea, d
-     &1Ea)
+      pure subroutine D1ESRX_PBE_GWS_ERF_case_2_3(rho_a, gamma_aa, mu, E
+     &a, d1Ea)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -483,13 +495,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D1ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea, d1E
-     &a)
+      pure subroutine D1ESRX_PBE_GWS_ERF_case_3(rho_a, gamma_aa, mu, Ea,
+     & d1Ea)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -535,13 +547,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D2ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea, d1E
-     &a, d2Ea)
+      pure subroutine D2ESRX_PBE_GWS_ERF_case_1(rho_a, gamma_aa, mu, Ea,
+     & d1Ea, d2Ea)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -632,13 +644,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D2ESRX_PBE_ERF_case_2_1(rho_a, gamma_aa, mu, Ea, d
-     &1Ea, d2Ea)
+      pure subroutine D2ESRX_PBE_GWS_ERF_case_2_1(rho_a, gamma_aa, mu, E
+     &a, d1Ea, d2Ea)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -791,13 +803,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D2ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea, d
-     &1Ea, d2Ea)
+      pure subroutine D2ESRX_PBE_GWS_ERF_case_2_2(rho_a, gamma_aa, mu, E
+     &a, d1Ea, d2Ea)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -949,13 +961,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D2ESRX_PBE_ERF_case_2_3(rho_a, gamma_aa, mu, Ea, d
-     &1Ea, d2Ea)
+      pure subroutine D2ESRX_PBE_GWS_ERF_case_2_3(rho_a, gamma_aa, mu, E
+     &a, d1Ea, d2Ea)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu
@@ -1159,13 +1171,13 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D2ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea, d1E
-     &a, d2Ea)
+      pure subroutine D2ESRX_PBE_GWS_ERF_case_3(rho_a, gamma_aa, mu, Ea,
+     & d1Ea, d2Ea)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: February 05, 2019
+C   Generated: March 21, 2019
 C*****************************************************************************
       implicit none
       real*8, intent(in) :: rho_a, gamma_aa, mu

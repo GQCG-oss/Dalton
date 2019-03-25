@@ -1,15 +1,20 @@
+C SOURCES:
+C    S. H. Vosko, L. Wilk, and M. Nusair.
+C    Accurate spin-dependent electron liquid correlation energies for local spin density calculations: a critical analysis.
+C    Canadian Journal of Physics, 58(8):1200-1211, aug 1980.
+
 
 
 C*****************************************************************************
-      pure subroutine ESRC_VWN5(rho_c, mu, E)
+      pure subroutine ESRC_VWN5(rho_c, E)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: March 01, 2019
+C   Generated: March 25, 2019
 C*****************************************************************************
       implicit none
-      real*8, intent(in) :: rho_c, mu
+      real*8, intent(in) :: rho_c
       real*8, intent(out) :: E
       real*8 :: x0, x1, x2
       E = 0.0d0
@@ -24,15 +29,15 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D1ESRC_VWN5(rho_c, mu, E, d1E)
+      pure subroutine D1ESRC_VWN5(rho_c, E, d1E)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: March 01, 2019
+C   Generated: March 25, 2019
 C*****************************************************************************
       implicit none
-      real*8, intent(in) :: rho_c, mu
+      real*8, intent(in) :: rho_c
       real*8, intent(out) :: E, d1E(9)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13
@@ -61,15 +66,15 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D2ESRC_VWN5(rho_c, mu, E, d1E, d2E)
+      pure subroutine D2ESRC_VWN5(rho_c, E, d1E, d2E)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: March 01, 2019
+C   Generated: March 25, 2019
 C*****************************************************************************
       implicit none
-      real*8, intent(in) :: rho_c, mu
+      real*8, intent(in) :: rho_c
       real*8, intent(out) :: E, d1E(9), d2E(45)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
@@ -131,15 +136,15 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine ESRC_SPIN_VWN5(rho_c, rho_s, mu, E)
+      pure subroutine ESRC_SPIN_VWN5(rho_c, rho_s, E)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: March 01, 2019
+C   Generated: March 25, 2019
 C*****************************************************************************
       implicit none
-      real*8, intent(in) :: rho_c, rho_s, mu
+      real*8, intent(in) :: rho_c, rho_s
       real*8, intent(out) :: E
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10
       E = 0.0d0
@@ -168,15 +173,15 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D1ESRC_SPIN_VWN5(rho_c, rho_s, mu, E, d1E)
+      pure subroutine D1ESRC_SPIN_VWN5(rho_c, rho_s, E, d1E)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: March 01, 2019
+C   Generated: March 25, 2019
 C*****************************************************************************
       implicit none
-      real*8, intent(in) :: rho_c, rho_s, mu
+      real*8, intent(in) :: rho_c, rho_s
       real*8, intent(out) :: E, d1E(9)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
@@ -253,15 +258,15 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      pure subroutine D2ESRC_SPIN_VWN5(rho_c, rho_s, mu, E, d1E, d2E)
+      pure subroutine D2ESRC_SPIN_VWN5(rho_c, rho_s, E, d1E, d2E)
 C*****************************************************************************
 C   Implemented by E.R. Kjellgren.
 C
 C   Subroutine generated using Sympy 1.3
-C   Generated: March 01, 2019
+C   Generated: March 25, 2019
 C*****************************************************************************
       implicit none
-      real*8, intent(in) :: rho_c, rho_s, mu
+      real*8, intent(in) :: rho_c, rho_s
       real*8, intent(out) :: E, d1E(9), d2E(45)
       real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
      &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
@@ -495,4 +500,82 @@ C*****************************************************************************
       d2E(3) = -x28*(x117*x118*x168 - x117*x121*x161 - x171*x175*x32 + x
      &173*x175*x27 + 0.854960467080683d0*x174*x27*x35 + 0.08333333333333
      &33d0*x174*x46)
+      end subroutine
+
+
+C*****************************************************************************
+      pure subroutine D2ESRC_VWN5_singletref_triplet(rho_c, E, d1E, d2E)
+     &
+C*****************************************************************************
+C   Implemented by E.R. Kjellgren.
+C
+C   Subroutine generated using Sympy 1.3
+C   Generated: March 25, 2019
+C*****************************************************************************
+      implicit none
+      real*8, intent(in) :: rho_c
+      real*8, intent(out) :: E, d1E(9), d2E(45)
+      real*8 :: x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x
+     &13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x2
+     &6, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39
+     &, x40
+      E = 0.0d0
+      d1E(:) = 0.0d0
+      d2E(:) = 0.0d0
+      x0 = 0.826307487110758d0
+      x1 = rho_c**(-0.166666666666667d0)*x0
+      x2 = 1.90636858599387d0*x1
+      x3 = x2 + 3.72744d0
+      x4 = 0.682784063255296d0
+      x5 = rho_c**0.333333333333333d0
+      x6 = 0.90856029641607d0/x5
+      x7 = x4*x6
+      x8 = 3.5529372610885d0*x1 + x7 + 12.9352d0
+      x9 = 1d0/x8
+      x10 = 0.953184292996937d0*x1
+      x11 = x10 + 0.10498d0
+      x12 = x11**2
+      x13 = x12*x9
+      x14 = 0.000969022771154437d0*log(x13) + 0.0310907d0*log(x7*x9) + 0
+     &.038783294878113d0*atan(6.1519908197590798d0/x3)
+      x15 = rho_c**(-1.16666666666667d0)*x0
+      x16 = x3**(-2)
+      x17 = 37.8469910464d0*x16 + 1.0d0
+      x18 = 1d0/x17
+      x19 = x16*x18
+      x20 = x15*x19
+      x21 = rho_c**(-1.33333333333333d0)
+      x22 = 0.30285343213869d0*x21
+      x23 = 0.592156210181417d0*x15 + x22*x4
+      x24 = x23*x9
+      x25 = x22 - x24*x6
+      x26 = 0.0342197431724027d0*x5
+      x27 = x25*x26
+      x28 = 1d0/x11
+      x29 = 0.000307885761673592d0*x15
+      x30 = x11*x24
+      x31 = 0.000615771523347183d0*x15
+      x32 = rho_c**(-2.33333333333333d0)*x4
+      x33 = rho_c**(-2.16666666666667d0)*x0
+      x34 = 1d0/x12
+      x35 = 0.317728097665645d0*x15 - x30
+      x36 = 0.40380457618492d0*rho_c**(-2.33333333333333d0)
+      x37 = 0.60570686427738d0*x21
+      x38 = 0.69084891187832d0*x33 + x36*x4
+      x39 = x23*(1.18431242036283d0*x15 + x37*x4)/x8**2
+      x40 = 1d0/(1.07811815828004d0*x1 + x7 + 13.0045d0)
+      E = rho_c*x14
+      d1E(1) = -rho_c*(-0.0758081683534927d0*x20 + x27 + x28*(x29 - 0.00
+     &0969022771154437d0*x30)) + x14
+      d2E(1) = rho_c*(-0.0114065810574676d0*rho_c**(-0.666666666666667d0
+     &)*x25 + 0.0481727702369445d0*x18*x32/x3**3 - 0.0884428630790749d0*
+     &x19*x33 + x24*x27 + 0.000969022771154437d0*x24*x28*x35 + x26*(-x24
+     &*x37 + x36 - x38*x6*x9 + x39*x6) - x29*x34*x35 + x34*( 0.000359200
+     &055285857d0*x11*x33 + 0.000969022771154437d0*x12*x39 - 0.000969022
+     &771154437d0*x13*x38 - x30*x31 + 4.89119786774443d-5* x32) - 1.8231
+     &9440383792d0*x32/(x17**2*x3**5)) + 0.151616336706985d0*x20 - 0.068
+     &4394863448054d0*x25*x5 - x28*( -0.00193804554230887d0*x30 + x31)
+      d2E(3) = -0.0168868639403896d0*(log(x40*x7) + 0.000414033794282063
+     &d0*log(x40*(x10 + 0.0047584000000000003d0)**2) + 0.317708004743941
+     &d0*atan( 7.1231089178181177d0/(x2 + 1.13107d0)))/rho_c
       end subroutine

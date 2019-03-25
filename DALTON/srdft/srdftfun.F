@@ -154,8 +154,6 @@ C*****************************************************************************
       rho_b = rho(4)
       
       if ((rho_a + rho_b) .le. 1.d-10) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
          return
       end if
 
@@ -293,8 +291,6 @@ C*****************************************************************************
       
       if (((rho_a + rho_b) .le. 1.d-10) 
      &     .and. ((gamma_aa + gamma_bb) .lt. 1.0d-10)) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
          return
       end if
 
@@ -312,97 +308,104 @@ C*****************************************************************************
 
       if (diff_order .eq. 0) then
          if (A .lt. 1.d-9) then
-            call ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea)
+            call ESRX_PBE_GWS_ERF_case_1(rho_a, gamma_aa, mu, Ea)
             if (.not.alpha_eq_beta) then
-               call ESRX_PBE_ERF_case_1(rho_b, gamma_bb, mu, Eb)
+               call ESRX_PBE_GWS_ERF_case_1(rho_b, gamma_bb, mu, Eb)
             end if
          elseif (A .lt. 0.075d0) then ! case_2_1
-            call ESRX_PBE_ERF_case_2_1(rho_a, gamma_aa, mu, Ea)
+            call ESRX_PBE_GWS_ERF_case_2_1(rho_a, gamma_aa, mu, Ea)
             if (.not.alpha_eq_beta) then
-               call ESRX_PBE_ERF_case_2_1(rho_b, gamma_bb, mu, Eb)
+               call ESRX_PBE_GWS_ERF_case_2_1(rho_b, gamma_bb, mu, Eb)
             end if
          elseif (A .lt. 50d0) then ! case_2_3
-            call ESRX_PBE_ERF_case_2_3(rho_a, gamma_aa, mu, Ea)
+            call ESRX_PBE_GWS_ERF_case_2_3(rho_a, gamma_aa, mu, Ea)
             if (.not.alpha_eq_beta) then
-               call ESRX_PBE_ERF_case_2_3(rho_b, gamma_bb, mu, Eb)
+               call ESRX_PBE_GWS_ERF_case_2_3(rho_b, gamma_bb, mu, Eb)
             end if
          elseif (A .le. 1.d+2) then ! case_2_2
-            call ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea)
+            call ESRX_PBE_GWS_ERF_case_2_2(rho_a, gamma_aa, mu, Ea)
             if (.not.alpha_eq_beta) then
-               call ESRX_PBE_ERF_case_2_2(rho_b, gamma_bb, mu, Eb)
+               call ESRX_PBE_GWS_ERF_case_2_2(rho_b, gamma_bb, mu, Eb)
             end if
          elseif (A .lt. 1.d+9) then
-            call ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea)
+            call ESRX_PBE_GWS_ERF_case_3(rho_a, gamma_aa, mu, Ea)
             if (.not.alpha_eq_beta) then
-               call ESRX_PBE_ERF_case_3(rho_b, gamma_bb, mu, Eb)
+               call ESRX_PBE_GWS_ERF_case_3(rho_b, gamma_bb, mu, Eb)
             end if
          end if
 
       elseif (diff_order .eq. 1) then
          if (A .lt. 1.d-9) then
-            call D1ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea, d1Ea)
+            call D1ESRX_PBE_GWS_ERF_case_1(rho_a, gamma_aa, mu, Ea, 
+     &                                     d1Ea)
             if (.not.alpha_eq_beta) then
-               call D1ESRX_PBE_ERF_case_1(rho_b, gamma_bb, mu, Eb, d1Eb)
+               call D1ESRX_PBE_GWS_ERF_case_1(rho_b, gamma_bb, mu, Eb, 
+     &                                        d1Eb)
             end if
          elseif (A .lt. 0.075d0) then ! case_2_1
-            call D1ESRX_PBE_ERF_case_2_1(rho_a, gamma_aa, mu, Ea, d1Ea)
+            call D1ESRX_PBE_GWS_ERF_case_2_1(rho_a, gamma_aa, mu, Ea, 
+     &                                       d1Ea)
             if (.not.alpha_eq_beta) then
-               call D1ESRX_PBE_ERF_case_2_1(rho_b, gamma_bb, mu, Eb,
+               call D1ESRX_PBE_GWS_ERF_case_2_1(rho_b, gamma_bb, mu, Eb,
      &                                      d1Eb)
             end if
          elseif (A .lt. 50d0) then ! case_2_3
-            call D1ESRX_PBE_ERF_case_2_3(rho_a, gamma_aa, mu, Ea, d1Ea)
+            call D1ESRX_PBE_GWS_ERF_case_2_3(rho_a, gamma_aa, mu, Ea,
+     &                                       d1Ea)
             if (.not.alpha_eq_beta) then
-               call D1ESRX_PBE_ERF_case_2_3(rho_b, gamma_bb, mu, Eb,
+               call D1ESRX_PBE_GWS_ERF_case_2_3(rho_b, gamma_bb, mu, Eb,
      &                                      d1Eb)
             end if
          elseif (A .le. 1.d+2) then ! case_2_2
-            call D1ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea, d1Ea)
+            call D1ESRX_PBE_GWS_ERF_case_2_2(rho_a, gamma_aa, mu, Ea, 
+     &                                       d1Ea)
             if (.not.alpha_eq_beta) then
-               call D1ESRX_PBE_ERF_case_2_2(rho_b, gamma_bb, mu, Eb,
+               call D1ESRX_PBE_GWS_ERF_case_2_2(rho_b, gamma_bb, mu, Eb,
      &                                      d1Eb)
             end if
          elseif (A .lt. 1.d+9) then
-            call D1ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea, d1Ea)
+            call D1ESRX_PBE_GWS_ERF_case_3(rho_a, gamma_aa, mu, Ea,
+     &                                     d1Ea)
             if (.not.alpha_eq_beta) then
-               call D1ESRX_PBE_ERF_case_3(rho_b, gamma_bb, mu, Eb, d1Eb)
+               call D1ESRX_PBE_GWS_ERF_case_3(rho_b, gamma_bb, mu, Eb, 
+     &                                        d1Eb)
             end if
          end if
 
       elseif (diff_order .eq. 2) then
          if (A .lt. 1.d-9) then
-            call D2ESRX_PBE_ERF_case_1(rho_a, gamma_aa, mu, Ea,
+            call D2ESRX_PBE_GWS_ERF_case_1(rho_a, gamma_aa, mu, Ea,
      &                                   d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
-               call D2ESRX_PBE_ERF_case_1(rho_b, gamma_bb, mu, Eb,
+               call D2ESRX_PBE_GWS_ERF_case_1(rho_b, gamma_bb, mu, Eb,
      &                                    d1Eb, d2Eb)
             end if
          elseif (A .lt. 0.075d0) then ! case_2_1
-            call D2ESRX_PBE_ERF_case_2_1(rho_a, gamma_aa, mu, Ea,
+            call D2ESRX_PBE_GWS_ERF_case_2_1(rho_a, gamma_aa, mu, Ea,
      &                                   d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
-               call D2ESRX_PBE_ERF_case_2_1(rho_b, gamma_bb, mu, Eb,
+               call D2ESRX_PBE_GWS_ERF_case_2_1(rho_b, gamma_bb, mu, Eb,
      &                                    d1Eb, d2Eb)
             end if
          elseif (A .lt. 50d0) then ! case_2_3
-            call D2ESRX_PBE_ERF_case_2_3(rho_a, gamma_aa, mu, Ea,
+            call D2ESRX_PBE_GWS_ERF_case_2_3(rho_a, gamma_aa, mu, Ea,
      &                                   d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
-               call D2ESRX_PBE_ERF_case_2_3(rho_b, gamma_bb, mu, Eb,
+               call D2ESRX_PBE_GWS_ERF_case_2_3(rho_b, gamma_bb, mu, Eb,
      &                                    d1Eb, d2Eb)
             end if
          elseif (A .le. 1.d+2) then ! case_2_2
-            call D2ESRX_PBE_ERF_case_2_2(rho_a, gamma_aa, mu, Ea,
+            call D2ESRX_PBE_GWS_ERF_case_2_2(rho_a, gamma_aa, mu, Ea,
      &                                   d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
-               call D2ESRX_PBE_ERF_case_2_2(rho_b, gamma_bb, mu, Eb,
+               call D2ESRX_PBE_GWS_ERF_case_2_2(rho_b, gamma_bb, mu, Eb,
      &                                    d1Eb, d2Eb)
             end if
          elseif (A .lt. 1.d+9) then
-            call D2ESRX_PBE_ERF_case_3(rho_a, gamma_aa, mu, Ea,
+            call D2ESRX_PBE_GWS_ERF_case_3(rho_a, gamma_aa, mu, Ea,
      &                                   d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
-               call D2ESRX_PBE_ERF_case_3(rho_b, gamma_bb, mu, Eb,
+               call D2ESRX_PBE_GWS_ERF_case_3(rho_b, gamma_bb, mu, Eb,
      &                                    d1Eb, d2Eb)
             end if
          end if
@@ -478,8 +481,6 @@ C*****************************************************************************
       if (((rho_a + rho_b) .le. 1.d-10) 
      &     .and. ((gamma_aa + gamma_bb) .lt. 1.0d-10)
      &     .and. ((tau_a + tau_b) .lt. 1.0d-10)) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
          return
       end if
 
@@ -498,108 +499,115 @@ C*****************************************************************************
 
       if (diff_order .eq. 0) then
          if (A .lt. 1.d-9) then
-            call ESRX_TPSS_ERF_case_1(rho_a, gamma_aa, tau_a, mu, Ea)
+            call ESRX_TPSS_GWS_ERF_case_1(rho_a, gamma_aa, tau_a, mu, 
+     &                                    Ea)
             if (.not.alpha_eq_beta) then
-               call ESRX_TPSS_ERF_case_1(rho_b, gamma_bb, tau_b, mu, Eb)
+               call ESRX_TPSS_GWS_ERF_case_1(rho_b, gamma_bb, tau_b, mu,
+     &                                       Eb)
             end if
          elseif (A .lt. 0.075d0) then ! case_2_1
-            call ESRX_TPSS_ERF_case_2_1(rho_a, gamma_aa, tau_a, mu, Ea)
+            call ESRX_TPSS_GWS_ERF_case_2_1(rho_a, gamma_aa, tau_a, mu,
+     &                                      Ea)
             if (.not.alpha_eq_beta) then
-               call ESRX_TPSS_ERF_case_2_1(rho_b, gamma_bb, tau_b, mu,
-     &                                     Eb)
+               call ESRX_TPSS_GWS_ERF_case_2_1(rho_b, gamma_bb, tau_b,
+     &                                         mu, Eb)
             end if
          elseif (A .lt. 50d0) then ! case_2_3
-            call ESRX_TPSS_ERF_case_2_3(rho_a, gamma_aa, tau_a, mu, Ea)
+            call ESRX_TPSS_GWS_ERF_case_2_3(rho_a, gamma_aa, tau_a, mu,
+     &                                      Ea)
             if (.not.alpha_eq_beta) then
-               call ESRX_TPSS_ERF_case_2_3(rho_b, gamma_bb, tau_b, mu,
-     &                                     Eb)
+               call ESRX_TPSS_GWS_ERF_case_2_3(rho_b, gamma_bb, tau_b,
+     &                                         mu, Eb)
             end if
          elseif (A .le. 1.d+2) then ! case_2_2
-            call ESRX_TPSS_ERF_case_2_2(rho_a, gamma_aa, tau_a, mu, Ea)
+            call ESRX_TPSS_GWS_ERF_case_2_2(rho_a, gamma_aa, tau_a, mu,
+     &                                      Ea)
             if (.not.alpha_eq_beta) then
-               call ESRX_TPSS_ERF_case_2_2(rho_b, gamma_bb, tau_b, mu,
-     &                                     Eb)
+               call ESRX_TPSS_GWS_ERF_case_2_2(rho_b, gamma_bb, tau_b,
+     &                                         mu, Eb)
             end if
          elseif (A .lt. 1.d+9) then
-            call ESRX_TPSS_ERF_case_3(rho_a, gamma_aa, tau_a, mu, Ea)
+            call ESRX_TPSS_GWS_ERF_case_3(rho_a, gamma_aa, tau_a, mu,
+     &                                    Ea)
             if (.not.alpha_eq_beta) then
-               call ESRX_TPSS_ERF_case_3(rho_b, gamma_bb, tau_b, mu, Eb)
+               call ESRX_TPSS_GWS_ERF_case_3(rho_b, gamma_bb, tau_b, mu,
+     &                                       Eb)
             end if
          end if
 
       elseif (diff_order .eq. 1) then
          if (A .lt. 1.d-9) then
-            call D1ESRX_TPSS_ERF_case_1(rho_a, gamma_aa, tau_a, mu,
+            call D1ESRX_TPSS_GWS_ERF_case_1(rho_a, gamma_aa, tau_a, mu,
      &                                  Ea, d1Ea)
             if (.not.alpha_eq_beta) then
-               call D1ESRX_TPSS_ERF_case_1(rho_b, gamma_bb, tau_b, mu,
-     &                                     Eb, d1Eb)
+               call D1ESRX_TPSS_GWS_ERF_case_1(rho_b, gamma_bb, tau_b,
+     &                                         mu, Eb, d1Eb)
             end if
          elseif (A .lt. 0.075d0) then ! case_2_1
-            call D1ESRX_TPSS_ERF_case_2_1(rho_a, gamma_aa, tau_a, mu,
-     &                                    Ea, d1Ea)
+            call D1ESRX_TPSS_GWS_ERF_case_2_1(rho_a, gamma_aa, tau_a,
+     &                                        mu, Ea, d1Ea)
             if (.not.alpha_eq_beta) then
-               call D1ESRX_TPSS_ERF_case_2_1(rho_b, gamma_bb, tau_b, mu,
-     &                                       Eb, d1Eb)
+               call D1ESRX_TPSS_GWS_ERF_case_2_1(rho_b, gamma_bb, tau_b,
+     &                                           mu, Eb, d1Eb)
             end if
          elseif (A .lt. 50d0) then ! case_2_3
-            call D1ESRX_TPSS_ERF_case_2_3(rho_a, gamma_aa, tau_a, mu,
-     &                                    Ea, d1Ea)
+            call D1ESRX_TPSS_GWS_ERF_case_2_3(rho_a, gamma_aa, tau_a,
+     &                                        mu, Ea, d1Ea)
             if (.not.alpha_eq_beta) then
-               call D1ESRX_TPSS_ERF_case_2_3(rho_b, gamma_bb, tau_b, mu,
-     &                                       Eb, d1Eb)
+               call D1ESRX_TPSS_GWS_ERF_case_2_3(rho_b, gamma_bb, tau_b,
+     &                                           mu, Eb, d1Eb)
             end if
          elseif (A .le. 1.d+2) then ! case_2_2
-            call D1ESRX_TPSS_ERF_case_2_2(rho_a, gamma_aa, tau_a, mu,
-     &                                    Ea, d1Ea)
+            call D1ESRX_TPSS_GWS_ERF_case_2_2(rho_a, gamma_aa, tau_a,
+     &                                        mu, Ea, d1Ea)
             if (.not.alpha_eq_beta) then
-               call D1ESRX_TPSS_ERF_case_2_2(rho_b, gamma_bb, tau_b, mu,
-     &                                       Eb, d1Eb)
+               call D1ESRX_TPSS_GWS_ERF_case_2_2(rho_b, gamma_bb, tau_b,
+     &                                           mu, Eb, d1Eb)
             end if
          elseif (A .lt. 1.d+9) then
-            call D1ESRX_TPSS_ERF_case_3(rho_a, gamma_aa, tau_a, mu,
-     &                                  Ea, d1Ea)
+            call D1ESRX_TPSS_GWS_ERF_case_3(rho_a, gamma_aa, tau_a, mu,
+     &                                      Ea, d1Ea)
             if (.not.alpha_eq_beta) then
-               call D1ESRX_TPSS_ERF_case_3(rho_b, gamma_bb, tau_b, mu,
-     &                                     Eb, d1Eb)
+               call D1ESRX_TPSS_GWS_ERF_case_3(rho_b, gamma_bb, tau_b,
+     &                                         mu, Eb, d1Eb)
             end if
          end if
 
       elseif (diff_order .eq. 2) then
          if (A .lt. 1.d-9) then
-            call D2ESRX_TPSS_ERF_case_1(rho_a, gamma_aa, tau_a, mu,
-     &                                  Ea, d1Ea, d2Ea)
+            call D2ESRX_TPSS_GWS_ERF_case_1(rho_a, gamma_aa, tau_a, mu,
+     &                                      Ea, d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
-               call D2ESRX_TPSS_ERF_case_1(rho_b, gamma_bb, tau_b, mu,
-     &                                     Eb, d1Eb, d2Eb)
+               call D2ESRX_TPSS_GWS_ERF_case_1(rho_b, gamma_bb, tau_b,
+     &                                         mu, Eb, d1Eb, d2Eb)
             end if
          elseif (A .lt. 0.075d0) then ! case_2_1
-            call D2ESRX_TPSS_ERF_case_2_1(rho_a, gamma_aa, tau_a, mu,
-     &                                    Ea, d1Ea, d2Ea)
+            call D2ESRX_TPSS_GWS_ERF_case_2_1(rho_a, gamma_aa, tau_a,
+     &                                        mu, Ea, d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
-               call D2ESRX_TPSS_ERF_case_2_1(rho_b, gamma_bb, tau_b, mu,
-     &                                       Eb, d1Eb, d2Eb)
+               call D2ESRX_TPSS_GWS_ERF_case_2_1(rho_b, gamma_bb, tau_b,
+     &                                           mu, Eb, d1Eb, d2Eb)
             end if
          elseif (A .lt. 50d0) then ! case_2_3
-            call D2ESRX_TPSS_ERF_case_2_3(rho_a, gamma_aa, tau_a, mu,
-     &                                    Ea, d1Ea, d2Ea)
+            call D2ESRX_TPSS_GWS_ERF_case_2_3(rho_a, gamma_aa, tau_a,
+     &                                        mu, Ea, d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
-               call D2ESRX_TPSS_ERF_case_2_3(rho_b, gamma_bb, tau_b, mu,
-     &                                       Eb, d1Eb, d2Eb)
+               call D2ESRX_TPSS_GWS_ERF_case_2_3(rho_b, gamma_bb, tau_b,
+     &                                           mu, Eb, d1Eb, d2Eb)
             end if
          elseif (A .le. 1.d+2) then ! case_2_2
-            call D2ESRX_TPSS_ERF_case_2_2(rho_a, gamma_aa, tau_a, mu,
-     &                                    Ea, d1Ea, d2Ea)
+            call D2ESRX_TPSS_GWS_ERF_case_2_2(rho_a, gamma_aa, tau_a,
+     &                                        mu, Ea, d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
-               call D2ESRX_TPSS_ERF_case_2_2(rho_b, gamma_bb, tau_b, mu,
-     &                                       Eb, d1Eb, d2Eb)
+               call D2ESRX_TPSS_GWS_ERF_case_2_2(rho_b, gamma_bb, tau_b,
+     &                                           Eb, d1Eb, d2Eb)
             end if
          elseif (A .lt. 1.d+9) then
-            call D2ESRX_TPSS_ERF_case_3(rho_a, gamma_aa, tau_a, mu,
-     &                                  Ea, d1Ea, d2Ea)
+            call D2ESRX_TPSS_GWS_ERF_case_3(rho_a, gamma_aa, tau_a, mu,
+     &                                      Ea, d1Ea, d2Ea)
             if (.not.alpha_eq_beta) then
-               call D2ESRX_TPSS_ERF_case_3(rho_b, gamma_bb, tau_b, mu,
-     &                                     Eb, d1Eb, d2Eb)
+               call D2ESRX_TPSS_GWS_ERF_case_3(rho_b, gamma_bb, tau_b,
+     &                                         mu, Eb, d1Eb, d2Eb)
             end if
          end if
 
@@ -631,7 +639,8 @@ C     Do the convertion from alpha, beta to charge, spin
 
 
 C*****************************************************************************
-      subroutine PW92C_ERF(rho, diff_order, mu, E, d1E, d2E)
+      subroutine PW92C_ERF(rho, diff_order, special_case, mu, 
+     &                     E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
@@ -646,7 +655,7 @@ C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
 #include "priunit.h" 
-      integer, intent(in) :: diff_order
+      integer, intent(in) :: diff_order, special_case
       real*8, intent(in) :: rho(2), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
       logical :: spin_polarized
@@ -659,8 +668,6 @@ C*****************************************************************************
       rho_s = rho(2)
       
       if (rho_c .le. 1.d-10) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
          return
       end if
 
@@ -691,7 +698,12 @@ C*****************************************************************************
             call D1ESRC_PW92_ERF(rho_c, mu, E, d1E)
 
          elseif (diff_order .eq. 2) then
-            call D2ESRC_PW92_ERF(rho_c, mu, E, d1E, d2E)
+            if (special_case .eq. 1) then
+               call D2ESRC_PW92_ERF_singletref_triplet(rho_c, mu, 
+     &                                     E, d1E, d2E)
+            else
+               call D2ESRC_PW92_ERF(rho_c, mu, E, d1E, d2E)
+            end if
 
          else 
             call quit('Requested to high order derivative: ',diff_order)
@@ -701,11 +713,12 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      subroutine VWN5C_ERF(rho, diff_order, mu, E, d1E, d2E)
+      subroutine VWN5C_ERF(rho, diff_order, special_case, mu, 
+     &                     E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
-C Subroutine to to control calling of correlation spin-polarized PW92 functional
+C Subroutine to to control calling of correlation spin-polarized VWN5 functional
 C
 C   Input : rho, vector of densities
 C           diff_order, max order of differentation
@@ -716,7 +729,7 @@ C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
 #include "priunit.h" 
-      integer, intent(in) :: diff_order
+      integer, intent(in) :: diff_order, special_case
       real*8, intent(in) :: rho(2), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
       logical :: spin_polarized
@@ -729,8 +742,6 @@ C*****************************************************************************
       rho_s = rho(2)
 
       if (rho_c .le. 1.d-10) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
          return
       end if
 
@@ -761,7 +772,12 @@ C*****************************************************************************
             call D1ESRC_VWN5_ERF(rho_c, mu, E, d1E)
 
          elseif (diff_order .eq. 2) then
-            call D2ESRC_VWN5_ERF(rho_c, mu, E, d1E, d2E)
+            if (special_case .eq. 1) then
+               call D2ESRC_VWN5_ERF_singletref_triplet(rho_c, mu, 
+     &                                     E, d1E, d2E)
+            else
+               call D2ESRC_VWN5_ERF(rho_c, mu, E, d1E, d2E)
+            end if
 
          else 
             call quit('Requested to high order derivative: ',diff_order)
@@ -771,23 +787,27 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      subroutine PBEC_GWS_ERF(rho, gamma_xx, diff_order, mu, E,
-     &                             d1E, d2E)
+      subroutine PBEC_GWS_ERF(rho, gamma_xx, diff_order, special_case,
+     &                        mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
-C Subroutine to to control calling of correlation spin-polarized PW92 functional
+C Subroutine to control calling of correlation functional PBEGWS
 C
 C   Input : rho, vector of densities
+C           gamma_xx, vector of density gradient norms
 C           diff_order, max order of differentation
 C           mu, range-seperation parameter
+C           special_case, keyword to invoke special call.
+C                         special_case = 1, singlet-reference triplet
+C                                           hessian.
 C   Output : E, energy
 C            d1E, vector of first derivatives of energy
 C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
 #include "priunit.h" 
-      integer, intent(in) :: diff_order
+      integer, intent(in) :: diff_order, special_case
       real*8, intent(in) :: rho(2), gamma_xx(3), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
       logical :: spin_polarized
@@ -801,8 +821,6 @@ C*****************************************************************************
       gamma_cc = gamma_xx(1)
 
       if (rho_c .le. 1.d-10) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
          return
       end if
 
@@ -835,8 +853,12 @@ C*****************************************************************************
             call D1ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E, d1E)
 
          elseif (diff_order .eq. 2) then
-            call D2ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E, d1E, d2E)
-
+            if (special_case .eq. 1) then
+               call D2ESRC_PBE_GWS_ERF_singletref_triplet(rho_c,
+     &                    gamma_cc, mu, E, d1E, d2E)
+            else
+               call D2ESRC_PBE_GWS_ERF(rho_c, gamma_cc, mu, E, d1E, d2E)
+            end if
          else 
             call quit('Requested to high order derivative: ',diff_order)
          end if
@@ -845,12 +867,12 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      subroutine TPSSC_GWS_ERF(rho, gamma_xx, tau, diff_order, mu,
-     &                              E, d1E, d2E)
+      subroutine TPSSC_GWS_ERF(rho, gamma_xx, tau, diff_order,
+     &                         special_case ,mu, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
-C Subroutine to to control calling of correlation spin-polarized TPSS functional
+C Subroutine to to control calling of correlation TPSS functional
 C
 C   Input : rho, vector of densities
 C           diff_order, max order of differentation
@@ -861,7 +883,7 @@ C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
 #include "priunit.h" 
-      integer, intent(in) :: diff_order
+      integer, intent(in) :: diff_order, special_case
       real*8, intent(in) :: rho(2), gamma_xx(3), tau(2), mu
       real*8, intent(out) :: E, d1E(9), d2E(45)
       logical :: spin_polarized
@@ -878,8 +900,6 @@ C*****************************************************************************
       tau_c = tau(1)
 
       if (rho_c .le. 1.d-10) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
          return
       end if
 
@@ -915,8 +935,13 @@ C*****************************************************************************
             call D1ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E, d1E)
 
          elseif (diff_order .eq. 2) then
-            call D2ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu, E, d1E,
-     &                           d2E)
+            if (special_case .eq. 1) then
+               call D2ESRC_TPSS_GWS_ERF_singletref_triplet(rho_c,
+     &                    gamma_cc, tau_c, mu, E, d1E, d2E)
+            else
+               call D2ESRC_TPSS_GWS_ERF(rho_c, gamma_cc, tau_c, mu,
+     &                                  E, d1E, d2E)
+            end if
 
          else 
             call quit('Requested to high order derivative: ',diff_order)
@@ -926,7 +951,8 @@ C*****************************************************************************
 
 
 C*****************************************************************************
-      subroutine PBEC_nomu(rho, gamma_xx, diff_order, E, d1E, d2E)
+      subroutine PBEC_nomu(rho, gamma_xx, diff_order, special_case,
+     &                     E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
@@ -942,7 +968,7 @@ C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
 #include "priunit.h" 
-      integer, intent(in) :: diff_order
+      integer, intent(in) :: diff_order, special_case
       real*8, intent(in) :: rho(2), gamma_xx(3)
       real*8, intent(out) :: E, d1E(9), d2E(45)
       logical :: spin_polarized
@@ -956,8 +982,6 @@ C*****************************************************************************
       gamma_cc = gamma_xx(1)
 
       if (rho_c .le. 1.d-10) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
          return
       end if
 
@@ -988,7 +1012,12 @@ C*****************************************************************************
             call D1ESRC_PBE(rho_c, gamma_cc, E, d1E)
 
          elseif (diff_order .eq. 2) then
-            call D2ESRC_PBE(rho_c, gamma_cc, E, d1E, d2E)
+            if (special_case .eq. 1) then
+               call D2ESRC_PBE_singletref_triplet(rho_c,
+     &                    gamma_cc, E, d1E, d2E)
+            else
+               call D2ESRC_PBE(rho_c, gamma_cc, E, d1E, d2E)
+            end if
 
          else 
             call quit('Requested to high order derivative: ',diff_order)
@@ -1037,8 +1066,6 @@ C*****************************************************************************
       
       if (((rho_a + rho_b) .le. 1.d-10) 
      &     .and. ((gamma_aa + gamma_bb) .lt. 1.0d-10)) then
-         ! Are we completely sure this check is valid
-         !  for derivatives? - E. R. K
          return
       end if
 
@@ -1098,7 +1125,7 @@ C     Do the convertion from alpha, beta to charge, spin
 
 
 C*****************************************************************************
-      subroutine VWN5C_nomu(rho, diff_order, E, d1E, d2E)
+      subroutine VWN5C_nomu(rho, diff_order, special_case, E, d1E, d2E)
 C*****************************************************************************
 C Implemented by E. R. Kjellgren
 C
@@ -1114,7 +1141,7 @@ C            d2E, vector of second derivatives of energy
 C*****************************************************************************
       implicit none
 #include "priunit.h" 
-      integer, intent(in) :: diff_order
+      integer, intent(in) :: diff_order, special_case
       real*8, intent(in) :: rho(2)
       real*8, intent(out) :: E, d1E(9), d2E(45)
       logical :: spin_polarized
@@ -1159,7 +1186,12 @@ C*****************************************************************************
             call D1ESRC_VWN5(rho_c, E, d1E)
 
          elseif (diff_order .eq. 2) then
-            call D2ESRC_VWN5(rho_c, E, d1E, d2E)
+            if (special_case .eq. 1) then
+               call D2ESRC_VWN5_singletref_triplet(rho_c,
+     &                           E, d1E, d2E)
+            else
+               call D2ESRC_VWN5(rho_c, E, d1E, d2E)
+            end if
 
          else 
             call quit('Requested to high order derivative: ',diff_order)
