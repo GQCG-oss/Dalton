@@ -346,6 +346,6 @@ nightly-mpi-int64:
         - mpirun --version
     script:
         - dnf install -y findutils which
-        - python setup --mpi --int64 --type=release -D SITE=GitLabCI -D BUILDNAME=${CI_COMMIT_REF_NAME}-mpi
+        - python setup --mpi --int64 --type=release -D SITE=GitLabCI -D BUILDNAME=${CI_COMMIT_REF_NAME}-mpi-int64
         - cd build
         - ctest -L dalton --output-on-failure -D Nightly
