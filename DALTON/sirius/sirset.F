@@ -313,7 +313,7 @@ C
 C
       LOGICAL FEXIST
 C
-C     ***** CALL SIR_INTOPEN to open MO integral files
+C     ***** CALL SIR_INTOPEN to open MO integral files (if needed)
 C
       CALL SIR_INTOPEN
 C
