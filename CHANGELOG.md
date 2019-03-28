@@ -23,6 +23,7 @@
 ## [2018.3] (unreleased)
 
 ### Fixed
+- fixed error from March 2015 which meant that double-hybrid DFT was not working correctly (MP2 part was ignored).
 - fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
 
 ## [2018.2] (2019-03-17)
