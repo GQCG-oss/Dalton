@@ -583,17 +583,17 @@ C
      &       '@   Kohn-Sham contribution    :',EMY,
      &       '@   + scaled PT2 contribution :',EMP2,' *',WDFTMP,
      &          ' = ',EMP2*WDFTMP,
-     &       '@   = KS-PT2 energy           :',EMY+WDFTMP*EMP2
-            EMCSCF = EMY + WDFTMP*EMP2
+     &       '@   = DH-DFT/KS-PT2 energy    :',EMY+WDFTMP*EMP2
+            EMP2   = WDFTMP*EMP2
          END IF
       END IF
+C
+      ECORR = EMY + EMP2
 C
 C
       IF (SRMP2_SRINTS) GO TO 20
 C     ... skip to calculate energy with full integrals if
 C         calculating MP2 correlation energy with short-range integrals
-C
-      ECORR = EMY + EMP2
 C
 C     Write the correlation coefficients and second order one-density to
 C     the interface file LUSIFC
