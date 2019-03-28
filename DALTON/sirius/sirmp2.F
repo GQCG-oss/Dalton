@@ -289,7 +289,7 @@ C
          FLAG(25) = .FALSE. ! do NOT calculate first order wave function coefficients for SOPPA if we quit after MP2
       END IF
       IF (SAVE_MP2WF1) THEN
-         FLAG(25) = .TRUE. ! DO calculaate first order wave function coeffients if requested in input
+         FLAG(25) = .TRUE. ! DO calculate first order wave function coeffients if requested in input
       END IF
 C
       KFRSAV= 1

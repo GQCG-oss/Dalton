@@ -4143,7 +4143,7 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),XINDX(LCINDX),
      *          FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*),WRK(*)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
-      LOGICAL   HSFOCK
+      LOGICAL   HSFOCK, FNDLAB
 C
 C Used from common blocks:
 C SCBRHF : IOPRHF
@@ -4191,6 +4191,17 @@ C
       ! or high-spin ROHF (.SINGLY OCCUPIED keyword in SIRIUS)
       HSFOCK = HSFOCK .OR. (DIRFCK .AND. TDHF .AND. NASHT .GT. 0)
       ! Some of the open-shell direct response only works with HSROHF code
+
+      ! If DFT; check that this is not double hybrid DFT (DH-DFT) with MP2:
+      IF (DODFT) THEN
+         REWIND LUSIFC
+         IF (FNDLAB('MP2INFO ',LUSIFC)) THEN
+            WRITE(LUPRI,'(//A)')
+     &      ' FATAL ERROR. **RESPONSE is not implemented for DH-DFT.'
+            CALL QUIT(
+     &      ' FATAL ERROR. **RESPONSE is not implemented for DH-DFT.')
+         END IF
+      END IF
 C
 C     If any triplet operators, then we must use determinants
 C     in RESPONSE also for the reference symmetry, even if
