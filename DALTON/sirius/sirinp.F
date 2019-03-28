@@ -2545,11 +2545,6 @@ C        ... no P-supermatrix for DFT
          functional_line(1:80) = titlin(1:80)
          functional_line_read = .true.
 
-         IF (WDFTMP.NE.0.0D0) THEN
-            DOMP2    = .TRUE.
-            FLAG(9)  = .TRUE.
-            FLAG(3)  = .FALSE.
-         END IF
       GO TO 100
 C
 C *** Option 18: NEVPT2
@@ -2721,6 +2716,10 @@ C
 #ifdef ENABLE_XCINT
          end if
 #endif
+         IF (WDFTMP.NE.0.0D0) THEN ! double-hybrid DFT requested
+            DOMP2    = .TRUE.
+            FLAG(3)  = .FALSE. ! do NOT call sircan for HF canonical orbitals
+         END IF
 
 #ifdef BUILD_OPENRSP
 #ifdef ENABLE_XCINT
