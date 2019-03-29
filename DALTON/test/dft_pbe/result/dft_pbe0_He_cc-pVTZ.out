@@ -146,7 +146,7 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Darwin) : Mon Mar 25 23:05:07 2019
+     Date and time (Darwin) : Mon Mar 25 23:05:08 2019
      Host name              : adm-106152.local                        
 
  * Work memory size             :    64000000 =  488.28 megabytes.
@@ -189,7 +189,7 @@ Compilation information
 .RUN RESPONSE
 **WAVE FUNCTIONS
 .DFT
- PBE
+ PBE0
 ! Molpro form:
 ! GGAKey pbex=1 pw91c=1
 *DFT INPUT
@@ -478,8 +478,8 @@ He     2 :      0.00000000     0.00000000     0.00000000  Isotope  1
  HERMIT - Number of two-electron integrals written:         776 ( 13.9% )
  HERMIT - Megabytes written:                              0.014
 
-  Total CPU  time used in HERMIT:   0.01 seconds
-  Total wall time used in HERMIT:   0.56 seconds
+  Total CPU  time used in HERMIT:   0.02 seconds
+  Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -547,9 +547,10 @@ He     2 :      0.00000000     0.00000000     0.00000000  Isotope  1
 @    Total number of symmetries                 8 (point group: D2h)
 @    Reference state symmetry                   1 (irrep name : Ag )
  
-     This is a DFT calculation of type: PBE
+     This is a DFT calculation of type: PBE0
  Weighted mixed functional:
-                      PBEx:    1.00000
+               HF exchange:    0.25000
+                      PBEx:    0.75000
                       PBEc:    1.00000
 
      Orbital specifications
@@ -571,9 +572,10 @@ He     2 :      0.00000000     0.00000000     0.00000000  Isotope  1
      Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-05
  
-     This is a DFT calculation of type: PBE
+     This is a DFT calculation of type: PBE0
  Weighted mixed functional:
-                      PBEx:    1.00000
+               HF exchange:    0.25000
+                      PBEx:    0.75000
                       PBEc:    1.00000
 
 
@@ -587,34 +589,29 @@ He     2 :      0.00000000     0.00000000     0.00000000  Isotope  1
 
  Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -1.055476614964   2.0000000000   -1.70D-11
-@  1  -2.89140596618       1.17D-01  -2.89D+00     1   0   0   0   0   0   0   0
-      Virial theorem: -V/T =      2.007679
+      K-S energy, electrons, error :     -0.802069290493   2.0000000000   -1.70D-11
+@  1  -2.89428595472       6.25D-02  -2.89D+00     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.008683
 @    MULPOP   He      0.00; 
    1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -1.046894721304   2.0000000000   -1.96D-11
-@  2  -2.89212852573       1.64D-02  -7.23D-04     1   0   0   0   0   0   0   0
-      Virial theorem: -V/T =      2.014257
-@    MULPOP   He      0.00; 
+      K-S energy, electrons, error :     -0.798352790804   2.0000000000   -1.84D-11
+@  2  -2.89451151494       9.83D-03  -2.26D-04     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.012893
+@    MULPOP   He     -0.00; 
    2  Level shift: doubly occupied orbital energies shifted by -5.00D-02
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -1.048376566494   2.0000000000   -1.96D-11
-@  3  -2.89213409227       4.78D-03  -5.57D-06     1   0   0   0   0   0   0   0
-      Virial theorem: -V/T =      2.010737
+      K-S energy, electrons, error :     -0.798351260972   2.0000000000   -1.85D-11
+@  3  -2.89451481116       1.13D-03  -3.30D-06     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.012152
 @    MULPOP   He      0.00; 
-   3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
+   3  Level shift: doubly occupied orbital energies shifted by -1.25D-02
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -1.047689377682   2.0000000000   -1.97D-11
-@  4  -2.89213531450       7.73D-05  -1.22D-06     1   0   0   0   0   0   0   0
-      Virial theorem: -V/T =      2.011938
-@    MULPOP   He      0.00; 
- -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -1.047676166599   2.0000000000   -1.97D-11
-@  5  -2.89213531497       9.22D-09  -4.72D-10     1   0   0   0   0   0   0   0
+      K-S energy, electrons, error :     -0.798224519062   2.0000000000   -1.85D-11
+@  4  -2.89451488222       6.48D-06  -7.11D-08     1   0   0   0   0   0   0   0
 
-@ *** DIIS converged in   5 iterations !
-@     Converged SCF energy, gradient:     -2.892135314973    9.22D-09
+@ *** DIIS converged in   4 iterations !
+@     Converged SCF energy, gradient:     -2.894514882222    6.48D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -625,29 +622,33 @@ He     2 :      0.00000000     0.00000000     0.00000000  Isotope  1
 
  Sym       Kohn-Sham orbital energies
 
-1 Ag     -0.57706741     0.45012963     4.02504432     5.83510178     5.83510178
+1 Ag     -0.66824103     0.49545628     4.16819731     5.95576445     5.95576445
 
 
-2 B3u     1.19300557     7.20332276
+2 B3u     1.26247515     7.35649363
 
-3 B2u     1.19300557     7.20332276
+3 B2u     1.26247515     7.35649363
 
-4 B1g     5.83510178
+4 B1g     5.95576445
 
-5 B1u     1.19300557     7.20332276
+5 B1u     1.26247515     7.35649363
 
-6 B2g     5.83510178
+6 B2g     5.95576445
 
-7 B3g     5.83510178
+7 B3g     5.95576445
 
-    E(LUMO) :     0.45012963 au (symmetry 1)
-  - E(HOMO) :    -0.57706741 au (symmetry 1)
+    E(LUMO) :     0.49545628 au (symmetry 1)
+  - E(HOMO) :    -0.66824103 au (symmetry 1)
   ------------------------------------------
-    gap     :     1.02719703 au
+    gap     :     1.16369731 au
+
+ NOTE: MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS
+
+ Largest off-diagonal Fock matrix element is  1.48D-04
 
  --- Writing SIRIFC interface file
 
- CPU and wall time for SCF :       0.215       0.225
+ CPU and wall time for SCF :       0.238       0.180
 
 
                        .-----------------------------------.
@@ -659,14 +660,14 @@ He     2 :      0.00000000     0.00000000     0.00000000  Isotope  1
 @    Spatial symmetry:            1 ( irrep  Ag  in D2h )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:             -2.892135314973                 
+@    Final DFT energy:             -2.894514882222                 
 @    Nuclear repulsion:             0.000000000000
-@    Electronic energy:            -2.892135314973
+@    Electronic energy:            -2.894514882222
 
-@    Final gradient norm:           0.000000009220
+@    Final gradient norm:           0.000006484265
 
  
-     Date and time (Darwin) : Mon Mar 25 23:05:08 2019
+     Date and time (Darwin) : Mon Mar 25 23:05:09 2019
      Host name              : adm-106152.local                        
 
 File label for MO orbitals:  25Mar19   FOCKDIIS
@@ -677,9 +678,9 @@ File label for MO orbitals:  25Mar19   FOCKDIIS
  ------------------------------------------------
 
     Orbital         1        2        3        4        5
-   1 He  :1s     1.0257  -0.5781  -4.1823  -0.0000   0.0000
-   2 He  :1s    -0.0467  -0.8359   3.9859   0.0000   0.0000
-   3 He  :1s     0.0238   1.6823   0.4006   0.0000   0.0000
+   1 He  :1s     1.0168  -0.5431  -4.1892  -0.0000   0.0000
+   2 He  :1s    -0.0305  -0.8640   3.9801   0.0000   0.0000
+   3 He  :1s     0.0156   1.6795   0.4123   0.0000   0.0000
    4 He  :3d0    0.0000  -0.0000  -0.0000   1.0000   0.0000
    5 He  :3d2+   0.0000   0.0000   0.0000   0.0000   1.0000
 
@@ -687,15 +688,15 @@ File label for MO orbitals:  25Mar19   FOCKDIIS
  ------------------------------------------------
 
     Orbital         1        2
-   1 He  :2px   -0.0486  -1.2169
-   2 He  :2px    1.0269   0.6546
+   1 He  :2px   -0.0523  -1.2167
+   2 He  :2px    1.0289   0.6514
 
  Molecular orbitals for symmetry species 3  (B2u)
  ------------------------------------------------
 
     Orbital         1        2
-   1 He  :2py   -0.0486  -1.2169
-   2 He  :2py    1.0269   0.6546
+   1 He  :2py   -0.0523  -1.2167
+   2 He  :2py    1.0289   0.6514
 
  Molecular orbitals for symmetry species 4  (B1g)
  ------------------------------------------------
@@ -707,8 +708,8 @@ File label for MO orbitals:  25Mar19   FOCKDIIS
  ------------------------------------------------
 
     Orbital         1        2
-   1 He  :2pz   -0.0486  -1.2169
-   2 He  :2pz    1.0269   0.6546
+   1 He  :2pz   -0.0523  -1.2167
+   2 He  :2pz    1.0289   0.6514
 
  Molecular orbitals for symmetry species 6  (B2g)
  ------------------------------------------------
@@ -722,11 +723,11 @@ File label for MO orbitals:  25Mar19   FOCKDIIS
     Orbital         1
    1 He  :3d1-   1.0000
 
-  Total CPU  time used in SIRIUS :   0.22 seconds
-  Total wall time used in SIRIUS :   0.23 seconds
+  Total CPU  time used in SIRIUS :   0.26 seconds
+  Total wall time used in SIRIUS :   0.19 seconds
 
  
-     Date and time (Darwin) : Mon Mar 25 23:05:08 2019
+     Date and time (Darwin) : Mon Mar 25 23:05:09 2019
      Host name              : adm-106152.local                        
 
 
@@ -774,8 +775,8 @@ File label for MO orbitals:  25Mar19   FOCKDIIS
  Sorting integrals to Dirac format: Total CPU and WALL times (sec)       0.000       0.000
 
 
-   SCF energy         :       -2.892135314972748
- -- inactive part     :       -2.892135314972748
+   SCF energy         :       -2.894514882221919
+ -- inactive part     :       -2.894514882221919
  -- nuclear repulsion :        0.000000000000000
 
 
@@ -798,7 +799,7 @@ File label for MO orbitals:  25Mar19   FOCKDIIS
  Orbital variables.         KZWOPT:       4
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       4
- Electrons in DFTMOMO:    1.99999999998030
+ Electrons in DFTMOMO:    1.99999999998150
 
 
 
@@ -811,20 +812,20 @@ File label for MO orbitals:  25Mar19   FOCKDIIS
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    1.27247D-01  0.00D+00  1.27D-01  7.08D-01    9.66026D-01
+         1    1.84531D-01  0.00D+00  1.85D-01  7.08D-01    9.70669D-01
 
  ** RSPCTL MICROITERATION NUMBER    2
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    1.13782D-15  0.00D+00  1.14D-15  7.08D-01    9.64002D-01
+         1    2.32082D-15  0.00D+00  2.32D-15  7.08D-01    9.66192D-01
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    4)
- RSP solution vector no.    1; norm of residual   1.61D-15
+ RSP solution vector no.    1; norm of residual   3.28D-15
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -838,10 +839,10 @@ File label for MO orbitals:  25Mar19   FOCKDIIS
  @ Excited state no:    1 in symmetry 1  ( Ag ) - triplet excitation
  -------------------------------------------------------------------
 
-@ Excitation energy :  0.96400196     au
-@                       26.231828     eV;   211573.97     cm-1;   2530.9867     kJ / mol
+@ Excitation energy :  0.96619176     au
+@                       26.291415     eV;   212054.58     cm-1;   2536.7361     kJ / mol
 
-@ Total energy :       -1.9281334     au
+@ Total energy :       -1.9283231     au
 
  Eigenvector for state no.  1
 
@@ -850,7 +851,7 @@ File label for MO orbitals:  25Mar19   FOCKDIIS
 
       Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
       ----------    -----  -----      --------------      --------------      --------------      --------------
-           1         1(1)   2(1)       -0.7073882201        0.0224505200       -1.0003980148        0.0317498299
+           1         1(1)   2(1)       -0.7074113276        0.0281117531       -1.0004306937        0.0397560225
 
         3 elements with absolute value ≤ 1.00D-01 not printed.
 
@@ -871,24 +872,24 @@ File label for MO orbitals:  25Mar19   FOCKDIIS
 
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
-      1    2 -0.707388  0.022451  0.707977  0.904244  0.532665  0.377114
+      1    2 -0.707411  0.028112  0.699565  0.897306  0.540994  0.378461
 
-@ Overlap diagnostic LAMBDA =    0.7081
+@ Overlap diagnostic LAMBDA =    0.6999
 
 
- Time used in polarization propagator calculation is      0.17 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is      0.18 CPU seconds for symmetry 1
 
   Total CPU  time used in RESPONSE:   0.18 seconds
-  Total wall time used in RESPONSE:   0.18 seconds
+  Total wall time used in RESPONSE:   0.19 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
-  Total CPU  time used in DALTON:   0.41 seconds
-  Total wall time used in DALTON:   0.98 seconds
+  Total CPU  time used in DALTON:   0.48 seconds
+  Total wall time used in DALTON:   0.39 seconds
 
  
-     Date and time (Darwin) : Mon Mar 25 23:05:08 2019
+     Date and time (Darwin) : Mon Mar 25 23:05:09 2019
      Host name              : adm-106152.local                        
