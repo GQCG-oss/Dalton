@@ -351,6 +351,8 @@ C
       END IF
 C
       IF (USE_PELIB()) THEN
+         WRITE(LUPRI,'(A)') ' Environment is modeled using'//
+     &      ' the polarizable embedding scheme (PE library)'
          IF (TRPFLG) THEN
          ! edh: Insert quit of CREF have MULTIPLICITY NEQ 0!
          END IF
