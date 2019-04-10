@@ -70,7 +70,7 @@ C
 C
 C     Tag this as an ABACUS run.
 C
-      CALL ABA_SET
+      CALL ABA_SET()
 C
 C     *************************
 C     ***** Input Section *****
@@ -267,7 +267,7 @@ C     ***** Linear response *****
 C     ***************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF ((DOLRES .OR. VCD .OR. SPNSPN .OR. MAGSUS .OR. SHIELD .OR.
+      IF ((VCD .OR. SPNSPN .OR. MAGSUS .OR. SHIELD .OR.
      &    SPINRO .OR. MOLGFA) .AND. .NOT. PASLRS) THEN
          CALL LRSDRV(WORK(KLAST),LWRK,PASLRS)
          CALL FLSHFO(LUPRI)
@@ -737,7 +737,7 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
-      PARAMETER (NDIR = 29, NTABLE = 60, D0 = 0.D0)
+      PARAMETER (NDIR = 29, NTABLE = 62, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP
       LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       LOGICAL   GRDINP, NO_ABACUS_INPUT
@@ -832,7 +832,9 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
-     &             '.VIB_G ', '.LOCALI', '.LRESC '/  ! jim May-12 for LRESC
+     &             '.VIB_G ', '.LOCALI', '.LRESC ',  ! jim May-12 for LRESC
+C                     61         62
+     &             '.TDA SI', '.TDA TR'/
 C
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
@@ -901,7 +903,6 @@ C
       MAGSUS = .FALSE.
       GDALL  = .FALSE.
       POPULA = .FALSE.
-      DOLRES = .FALSE.
       VCD    = .FALSE.
       NACME  = .FALSE.
       NOLOND = .FALSE.
@@ -967,6 +968,8 @@ C
 CPFP: 27/03-2006: SOS for spin-spin coupling included; .LOCALI keyword
       ABALOC = .FALSE.
 Cend-PFP
+      TDA_SINGLET = .FALSE.
+      TDA_TRIPLET = .FALSE.
 C
 C     Initialize /NUCLEI/
 C
@@ -1043,7 +1046,8 @@ C
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
-     &                151,152,153,154,155,156,157,158,159,160),I
+     &                151,152,153,154,155,156,157,158,159,160,
+     &                161,162), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1293,24 +1297,24 @@ C .D2DQ2
             MOLGRD  = .TRUE.
             MOLHES  = .TRUE.
          GOTO 100
- 154     CONTINUE
+ 154     CONTINUE ! .QPGRAD
             QPGRAD = .TRUE.
          GOTO 100
- 155     CONTINUE
+ 155     CONTINUE ! .DISDIP
             POLAR  = .TRUE.
             DIPDER = .TRUE.
             QPGRAD = .TRUE.
          GOTO 100
 
- 156     CONTINUE
+ 156     CONTINUE ! .SECMOM
             SECNDM = .TRUE.
          GOTO 100
 
- 157     CONTINUE
+ 157     CONTINUE ! .THIRDM
             THIRDM = .TRUE.
          GOTO 100
 
- 158     CONTINUE
+ 158     CONTINUE ! .VIB_G
             VIB_G  = .TRUE.
             NACME  = .TRUE.
             VIB    = .TRUE.
@@ -1323,9 +1327,14 @@ C        .LOCALI
  159     CONTINUE
             ABALOC = .TRUE.
          GOTO 100
-Cend-PFP
  160     CONTINUE ! jim-gesc 1.2: set RNLRSC true
          RNLRSC = .TRUE.
+         GOTO 100
+ 161     CONTINUE ! .TDA SInglet
+         TDA_SINGLET = .TRUE.
+         GOTO 100
+ 162     CONTINUE ! .TDA TRiplet
+         TDA_TRIPLET = .TRUE.
          GOTO 100
 C
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -1602,7 +1611,6 @@ C
       IF (NQCC)   WRITE (LUPRI,'(5X,A)') ' Nuclear quadrupole moments'
       IF (POPULA) WRITE (LUPRI,'(5X,A)') ' Cioslowski population'
      &               //' analysis and static polarizabilities only.'
-      IF (DOLRES) WRITE (LUPRI,'(5X,A)') ' Linear response calculation'
       IF (DOEXCI) WRITE (LUPRI,'(5X,A)')
      &               ' Electronic excitation energies '
       IF (SHIELD) WRITE (LUPRI,'(5X,A)') ' Nuclear magnetic shieldings'

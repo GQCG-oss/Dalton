@@ -26,20 +26,17 @@ C
 !   modify input KTRLVL (was ITRLVL, which is abs(KTRLVL))
 !950830-hjaaj: LRECL in *4 words for direct access under IRIX
 !941115-hjaaj: SIR_INTOPEN: included FLAG(34) in def. of OLDTRA
-!940927-hjaaj: SIR_INTOPEN: s/FLAG(8)/DOMP2/ and s/FLAG(9)/DORSP/
+!940927-hjaaj: SIR_INTOPEN: s/FLAG(9)/DOMP2/ and s/FLAG(8)/DORSP/
 !940909-hjaaj: added PARAGON define label (same code as AIX)
 !940517-hjaaj: Ide: gem integraler paa LUINTM uden labels (afhaengigt af ITRLVL)
 !   Brug ITRLVL til at bestemme LBINTM (ikke NMORBT men f.eks. NMOCCT + ...)
 !   Beregn ogsaa LBINTD v.hj.af LBMXSQ ??
 !MAERKE 930305: usikkert,indfoer USEDRC el. LVLDRC i parameterliste til TRACTL
-!MAERKE 900111: reconsider in SIR_INTOPEN (allow flag(14) also when flag(34?)
 !-------- Revision n05 ends here ---------
 !940517-hjaaj
-!SORTA,SORTB: changed NTRI to NMBASX (was = NMBASX); removed old TAYLSPACE
 !SIR_INTOPEN: deleted write DUMMY for CRAY; attempt open old LUINTM file if FLAG(14)
 !        true, irrespective of FLAG(34); fixed ICASE print error on Cray
 !        by extending IF (OPINTM) THEN to after ICASE print
-!TRAAB : removed unused DUMMY parameter statement
 !-------- Revision n04 ends here ---------
 !931201-hjaaj
 !TRACTL: corrected error for TRAAB; LRBUF for 600 but LBINTM could be up to 1024
@@ -53,7 +50,7 @@ C
 !TRACTL: print KWORK,MWORK when IPRTRA .gt. 5 (was .ge. 20);
 !        SAVE LRBUF; LRBUF defined for 600 integrals/buffer in AO file
 !910319-hjaaj
-!SORTA,SORTB: reduced NBLOCK to max NTRI, thus only calling DZERO with
+!SORTA,SORTB: reduced NBLOCK to max NMBASX, thus only calling DZERO with
 !  what is used later; at the same time this gives the most even
 !  distribution of distributions per chain.
 !TRACD,TRAAB: insert symmetry check in write-to-file loop, gprof showed

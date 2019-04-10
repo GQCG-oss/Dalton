@@ -902,11 +902,11 @@ C
      *                        -DDOT(NASHK,FCX(IORBK+NISHK+1,L,ISIM),1,
      *                                    UDV(IASHK+1,NWK,1),1)
                         END IF
-                        DO 750 IX = 1,NASHK
+                        DO IX = 1,NASHK
                            EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
-     *                        +FCX(L,IORBK+NISHK+IX,ISIM)*
-     *                                        UDV(NWK,IASHK+IX,1)
- 750                    CONTINUE
+     *                        + FCX(L,IORBK+NISHK+IX,ISIM)
+     *                          *UDV(NWK,IASHK+IX,1)
+                        END DO
                      ELSE
                         TEMP1 = D0
                         TEMP2 = D0
@@ -921,8 +921,8 @@ C
                            TEMP1 = TEMP1 + FCXL * UDV(NWX,NWK,ISIM)
                            TEMP2 = TEMP2 + FCXL * UDV(NWK,NWX,ISIM)
  835                    CONTINUE
-                        EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
-     *                                          + TEMP2
+                        EVECS(KZCONF+IG,ISIM) =
+     *                  EVECS(KZCONF+IG,ISIM) + TEMP2
                         IF ((.NOT. TDA) .AND. (.NOT. CISRPA)) THEN
                             EVECS(KYCONF+IG,ISIM) =
      *                      EVECS(KYCONF+IG,ISIM) - TEMP1

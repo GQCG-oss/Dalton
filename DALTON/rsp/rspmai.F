@@ -124,6 +124,7 @@ C     *************************
 C
 C Define wave function variables, also if SIRIUS has not been called
 C
+      CALL ABA_UNSET() ! tell SETSIR it is called from RESPONS
       CALL SETSIR(.FALSE.,WRK,LWRK)
       ! false means no 2-el. integral transformation by SETSIR
       ! (done below when we have found out what level is needed)
@@ -4220,7 +4221,7 @@ C
       DIMENSION CMO(*),UDV(N2ASHX,*),PV(*),XINDX(LCINDX),
      *          FOCK(*),FC(*),FV(NNORBT,*),FCAC(*),H2AC(*),WRK(*)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
-      LOGICAL   HSFOCK
+      LOGICAL   HSFOCK, FNDLAB
 C
 C Used from common blocks:
 C SCBRHF : IOPRHF
@@ -4269,6 +4270,17 @@ C
       ! or high-spin ROHF (.SINGLY OCCUPIED keyword in SIRIUS)
       HSFOCK = HSFOCK .OR. (DIRFCK .AND. TDHF .AND. NASHT .GT. 0)
       ! Some of the open-shell direct response only works with HSROHF code
+
+      ! If DFT; check that this is not double hybrid DFT (DH-DFT) with MP2:
+      IF (DODFT) THEN
+         REWIND LUSIFC
+         IF (FNDLAB('MP2INFO ',LUSIFC)) THEN
+            WRITE(LUPRI,'(//A)')
+     &      ' FATAL ERROR. **RESPONSE is not implemented for DH-DFT.'
+            CALL QUIT(
+     &      ' FATAL ERROR. **RESPONSE is not implemented for DH-DFT.')
+         END IF
+      END IF
 C
 C     If any triplet operators, then we must use determinants
 C     in RESPONSE also for the reference symmetry, even if

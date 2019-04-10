@@ -1,0 +1,12 @@
+**DALTON
+.RUN WAVE FUNCTION
+**WAVE FUNCTIONS
+.DFT
+ PBE0DH
+! Molpro form:
+! GGAKey pbex=1 pw91c=1
+*DFT INPUT
+.RADINT
+1e-9
+**END OF 
+

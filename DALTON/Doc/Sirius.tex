@@ -1183,13 +1183,8 @@ with the same meanings and syntax as for the CAMB3LYP functional.\index{rCAMB3LY
   \funexample{Combine HF=0.25 PBEx=0.75 PBEc=1}
 
 \item[PBE] same as above but with exchange estimated exclusively by
-  \exfn{PBEx} functional \cite{dft:pbe}.\index{PBE} Alias of PBEPBE. 
-  This is the form used by CADPAC and NWChem quantum chemistry programs.
-  \funexample{Combine PBEx=1 PBEc=1}\\
-  Note that the Molpro quantum chemistry program uses the \corfn{PW91c}
-  non-local correlation functional instead of \corfn{PBEc}, which is 
-  equivalent to the following:
-  \funexample{Combine PBEx=1 PW91c=1}.
+  \exfn{PBEx} functional \cite{dft:pbe}.\index{PBE} Alias: PBEPBE. 
+  \funexample{Combine PBEx=1 PBEc=1}
 
 \item[RPBE] is a revised PBE functional that employs the 
   \exfn{RPBEx} exchange functional.

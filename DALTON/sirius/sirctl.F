@@ -294,10 +294,9 @@ C           ... use global print level in DIIS if IPRRHF not specified
          END IF
          FLAG(2)  = .FALSE.
          FLAG(4)  = .FALSE.
-         FLAG(9)  = .FALSE.
-C        Fock approximation to orbital Hessian diagonal
+C        Fock approximation to orbital Hessian diagonal:
          FLAG(12) = .FALSE.
-C        Integral transformations not needed
+C        Integral transformations not needed:
          FLAG(14) = .TRUE.
          FLAG(34) = .TRUE.
 C        Use always NEO for RHF (920221-hjaaj)
@@ -698,9 +697,9 @@ C              for RAS ?????????
          END IF
 C
          IF (DOCINO) THEN
-            ICI0 = 1
+            ICI0 = 1 ! orbitals transformed to NO, thus CI coefficients cannot be used
          ELSE IF (DOCI) THEN
-            ICI0 = 4
+            ICI0 = 4 ! orbitals are not transformed, thus CI coefficients from CI module are OK
          END IF
          THRGRD = THRMC
 C

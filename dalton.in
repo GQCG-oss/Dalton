@@ -330,6 +330,8 @@ elif [ -n "$pcmfil" ]; then
     input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $pcmfil.$PCMEXT"
 fi
 
+outnam=$(echo $outnam | sed 's|/|-|g')
+
 if [ $opto -eq 2 ]; then   # -ow input option
    OUTFIL=$outnam.$OUTEXT
    export OUTFIL

@@ -11,6 +11,9 @@
 ## [2019.alpha] (Dalton2019 alpha)
 
 ### New features added
+- Added ".TDA TR" keyword for invoking Tamm-Dancoff approximation for triplet response properties under \*\*PROPERTIES.
+  Useful for avoiding (near-)triplet-instability problems, for example in DFT calculations of spin-spin coupling constants. (H. J. Aa. Jensen)
+- Added ".TDA SI" keyword for invoking Tamm-Dancoff approximation for singlet response properties under \*\*PROPERTIES. (H. J. Aa. Jensen)
 - Added possibility to optimize MCSCF singlet wave functions with CSFs when used for triplet properties,
   both in \*\*RESPONS and \*\*PROPERTIES. Previously .DETERMINANTS in wave function optimization was required. (H. J. Aa. Jensen)
 
@@ -18,14 +21,21 @@
 - added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
 
 ### Fixed
+- Singlet totally-symmetric excitation energies for MCSCF in \*\*RESPONS with super-symmetry activated (.SUPSYM keyword). (H. J. Aa. Jensen)
 - make sure we include all (near-)degenerate diagonal elements for linear response excitation energies
   via \*\*PROPERTIES .EXCITA or via \*\*RESPONS \*LINEAR .SINGLE (increase .NROOTS if needed).
   Otherwise the calculation will probably exhibit spin and/or space symmetry contamination proportional
   to the convergence threshold. (H. J. Aa. Jensen)
 - never use plus combinations of determinants as start guess for singlet linear response excitation energies
   when reference wave function is not singlet (we do not want singlet states then). (H. J. Aa. Jensen)
+- dalton script: fix for using input files located in subfolders
   
 
+## [2018.3] (unreleased)
+
+### Fixed
+- fixed error from March 2015 which meant that double-hybrid DFT was not working correctly (MP2 part was ignored).
+- fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
 
 ## [2018.2] (2019-03-17)
 

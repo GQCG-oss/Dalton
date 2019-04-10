@@ -134,12 +134,12 @@ C
      &         ' The following expectation values will be calculated '//
      &          'in this run:'
                IF (NST) WRITE (LUPRI,'(10X,A)')
-     &              'Nuclear shielding tensor'
+     &              'Diamagnetic nuclear shielding tensor'
                IF (MDIASU) WRITE (LUPRI,'(10X,A)')
      &                 'Diamagnetic susceptiblity tensor'
                IF (SST) THEN
                   WRITE (LUPRI,'(10X,A)')
-     &                 'Spin-spin coupling tensor'
+     &                 'DSO part of spin-spin coupling tensor'
                   WRITE (LUPRI,'(10X,A,I5)')
      &                 'Number of integration points for DSO:', MPQUAD
                END IF
@@ -2271,6 +2271,10 @@ C
       ELSE
          WRITE(LUPRI,'(A)') '@1 London orbitals (GIAOs) has been used.'
       END IF 
+      IF (TDA_SINGLET) THEN
+         WRITE(LUPRI,'(A)')
+     &   '@1 TDA used for singlet response contributions.'
+      END IF
       WRITE (LUPRI,'(/A/A)')
      & '@1 atom   shielding       dia      para     skew '/
      &  /'     span     (aniso     asym)',
@@ -2305,6 +2309,10 @@ C
       ELSE
          WRITE(LUPRI,'(A)') '@2 London orbitals (GIAOs) has been used.'
       END IF 
+      IF (TDA_SINGLET) THEN
+         WRITE(LUPRI,'(A)')
+     &   '@2 TDA used for singlet response contributions.'
+      END IF
       WRITE (LUPRI,'(/A/A)')
      & '@2 atom   shielding       dia      para     aniso'/
      &  /'      asym        S        A',
@@ -2839,6 +2847,14 @@ C
          WRITE (LUPRI,'(A)')
      &         '             contributions have not been calculated !'
       END IF
+      IF (TDA_TRIPLET) THEN
+         WRITE(LUPRI,'(A)')
+     &   ' * TDA used for triplet response contributions.'
+      END IF
+      IF (TDA_SINGLET) THEN
+         WRITE(LUPRI,'(A)')
+     &   ' * TDA used for singlet response contributions.'
+      END IF
       IATOM1 = 0
       NUCINS = NUCIND
       IF (SOLVNT) NUCINS = NUCINS - 1
@@ -2969,10 +2985,12 @@ C  /* Deck fnlspn */
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *XTHZ)
+! abainf.h : TDA_SINGLET, TDA_TRIPLET
 #include "dorps.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "spnout.h"
+#include "abainf.h"
       LOGICAL TEST
       DIMENSION CHESS(3*NUCDEP,3*NUCDEP,6),
      &                AVEISO(NUCDEP*(NUCDEP + 1)/2,5),
@@ -3055,6 +3073,14 @@ C
      &         'because some'
          WRITE (LUPRI,'(A)')
      &         '             contributions have not been calculated !'
+      END IF
+      IF (TDA_TRIPLET) THEN
+         WRITE(LUPRI,'(A)')
+     &   ' * TDA used for triplet response contributions.'
+      END IF
+      IF (TDA_SINGLET) THEN
+         WRITE(LUPRI,'(A)')
+     &   ' * TDA used for singlet response contributions.'
       END IF
       IATOM1 = 0
       NUCINS = NUCIND

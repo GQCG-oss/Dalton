@@ -1988,17 +1988,17 @@ C 4  SIRCTL  CI calculation (CALL SIRCI, no orbital opt.)  CIC : general
 C 5  SIRCTL  Optimization result summary (CALL SIROUT)     PRI : SUMMARY
 C 6  SIRCTL  Population analysis (CALL SIRPOP)             POP : general
 C 7
-C 8  SIRCTL  Response calculation (CALL RSPDRV)            GEN : RESPON
-C 9  SIRCTL  CALL MP2CTL (OBS FLAG 3 will destroy)         GEN : MP2
+C 8          (was CALL RSPDRV, now controlled by DORSP variable)
+C 9          (was CALL MP2CTL, now controlled by DOMP2 variable)
 C 10
 C 11 SIRSET  Calculate non-symmetric orbital rotations
 C            and write them to LUINDX (labeled)
 C 12 GRAD    Exact orbital Hessian diagonal                WAV : FOCKDI
-C                  (otherwise only Fock matrix contributions)
+C            (otherwise only Fock matrix contributions)
 C 13 various CALL READMO for initial orbitals              ORB : vario
 C 14 various Integral transformation not needed.           TRA : OLD TR
 C 15 SIRSAV  transformation to NO's each macro iteration.  OPT : TRACI
-C 16 SIROPT  Solvent calculation                           SOL : genera
+C 16 SIROPT  Sperhical cavity solvent calculation          SOL : genera
 C 17 various SUPSYM : find and use 'super symmetry'        ORB : NOSUPS
 C 18 SIROUT  Punch MO:s (canonical if flag 3) to LUPNCH    ORB : PUNCHO
 C 19 SIROPT  Use UPDATE from the beginning /990821-hjaaj test option/
@@ -2481,7 +2481,6 @@ C
 C *** Option  10 >MP2  <  Moeller-Plesset PT2 calculation
   110 CONTINUE
         DOMP2    = .TRUE.
-        FLAG(9)  = .TRUE.
         NUMRUN   = NUMRUN + 1
         FLAG(3)  = .FALSE.
       GO TO 100
@@ -2558,7 +2557,6 @@ C        ... no P-supermatrix for DFT
             WORD = TITLIN(1:7)
             GO TO 1101
          END IF
-         WDFTMP = 0.0D0
 
          ! we save the functional line
          ! we will parse it later
@@ -2566,11 +2564,6 @@ C        ... no P-supermatrix for DFT
          functional_line(1:80) = titlin(1:80)
          functional_line_read = .true.
 
-         IF (WDFTMP.NE.0.0D0) THEN
-            DOMP2    = .TRUE.
-            FLAG(9)  = .TRUE.
-            FLAG(3)  = .FALSE.
-         END IF
       GO TO 100
 C
 C *** Option 18: NEVPT2
@@ -2592,8 +2585,7 @@ C *** Option 21: .KSPT2
   121 CONTINUE
         DOMP2    = .TRUE.
         NUMRUN   = NUMRUN + 1
-        FLAG(9)  = .TRUE.
-        FLAG(3)  = .FALSE.
+        FLAG(3)  = .FALSE. ! do NOT call sircan for HF canonical orbitals
         READ (LUCMD,*) WDFTMP
       GO TO 100
 C *** Option 22: .GASCI
@@ -2762,6 +2754,12 @@ C
 #ifdef ENABLE_XCINT
          end if
 #endif
+
+         IF (WDFTMP.NE.0.0D0 .AND. .NOT.DOMP2) THEN ! double-hybrid DFT requested
+            DOMP2    = .TRUE.
+            NUMRUN   = NUMRUN + 1
+            FLAG(3)  = .FALSE. ! do NOT call sircan for HF canonical orbitals
+         END IF
 
 #ifdef BUILD_OPENRSP
 #ifdef ENABLE_XCINT
@@ -3873,6 +3871,7 @@ C
 C *** Option 1 >CINO  < Calculate CI natural orbitals.
   101 CONTINUE
       DOCINO   = .TRUE.
+      FLAG(4)  = .TRUE.
       FLAG(67) = .TRUE.
       FLAG(68) = .TRUE.
       GO TO 100
@@ -5328,7 +5327,7 @@ C   INFIND : ISMO(),?
 C   INFDIM : MAXPHP
 C   SCBRHF : IOPRHF,NFRRHF(*),MAXFCK
 C   INFMP2 : NFRMP2(*)
-C   DFTCOM : DFTRUN, DOSRBCK, ...
+C   DFTCOM : DODFT, DOSRBCK, ...
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
 C   gnrinf : NEWSYM,SIR_INPPRC,EMBEDDING,QM3,QMMM,?
 C   infpar.h : PARHER
@@ -5537,13 +5536,32 @@ C          to get here unless someone modifies SIRIUS incorrectly
             WRITE(IWUNIT,1051)
      &      '      Selected active-active rotations included by user.'
          END IF
-      ELSE IF ( DOMP2 ) THEN
-         IF (WFTYPE .EQ. ' ') WFTYPE='MP2'
+      ELSE IF (DOMP2 .AND. DODFT .AND. WDFTMP.NE.0.0D0) THEN
          IF (MP2_SCS) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='DH-SCS-MP2-DFT'
+            WRITE(IWUNIT,1050) 'DH-SCS-MP2-DFT, '//
+     &         'double hybrid DFT with SCS-MP2.'
+         ELSE IF (MP2_SOS) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='DH-SOS-MP2-DFT'
+            WRITE(IWUNIT,1050) 'DH-SOS-MP2-DFT, '//
+     &         'double hybrid DFT with SOS-MP2.'
+         ELSE
+            IF (WFTYPE .EQ. ' ') WFTYPE='DH-MP2-DFT'
+            WRITE(IWUNIT,1050) 'DH-MP2-DFT, '//
+     &         'double hybrid DFT with MP2.'
+         END IF
+         IF (IOPRHF .NE. 0 .OR. HSROHF) WRITE (IWUNIT,1051)
+     &      '      (ROHF open shell orbitals are not included.)'
+         NUMRUN_LOCAL = NUMRUN_LOCAL - 1
+      ELSE IF ( DOMP2 ) THEN
+         IF (MP2_SCS) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='SCS-MP2'
             WRITE(IWUNIT,1050) 'SCS-MP2'
          ELSE IF (MP2_SOS) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='SOS-MP2'
             WRITE(IWUNIT,1050) 'SOS-MP2'
          ELSE
+            IF (WFTYPE .EQ. ' ') WFTYPE='MP2'
             WRITE(IWUNIT,1050) 'MP2, '//
      &         'closed-shell Moeller-Plesset second-order calculation.'
          END IF
