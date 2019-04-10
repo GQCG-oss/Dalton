@@ -3,6 +3,9 @@
 ## [2019.alpha] (Dalton2019 alpha)
 
 ### New features added
+- Added ".TDA TR" keyword for invoking Tamm-Dancoff approximation for triplet response properties under \*\*PROPERTIES.
+  Useful for avoiding (near-)triplet-instability problems, for example in DFT calculations of spin-spin coupling constants. (H. J. Aa. Jensen)
+- Added ".TDA SI" keyword for invoking Tamm-Dancoff approximation for singlet response properties under \*\*PROPERTIES. (H. J. Aa. Jensen)
 - Added possibility to optimize MCSCF singlet wave functions with CSFs when used for triplet properties,
   both in \*\*RESPONS and \*\*PROPERTIES. Previously .DETERMINANTS in wave function optimization was required. (H. J. Aa. Jensen)
 

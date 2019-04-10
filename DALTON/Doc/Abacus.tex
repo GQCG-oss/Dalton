@@ -492,12 +492,23 @@ than 1\% and non-zero spin will be calculated, as well as all the different
 contributions (Fermi contact, dia- and paramagnetic spin-orbit and
 spin-dipole)\index{Fermi contact}\index{spin-dipole}\index{paramagnetic spin-orbit}\index{diamagnetic spin-orbit}. The implementation is described in
 Ref.~\cite{ovhapjhjajsbpthjcp96}.
+Consider to also use the \Key{TDA TR} to avoid triplet instabilities,
+especially for HF and DFT calculations.
 
 As this is a very time consuming property, it is recommended to
 consult the chapter describing the calculation of NMR-parameters
 (Ch.~\ref{ch:magnetic}). The main control of which
 contributions and which nuclei to calculate spin-spin couplings
 between is done in the \verb|*SPIN-S| module.
+
+\item[\Key{TDA SI}] Use the Tamm-Dancoff approximation (TDA) for
+those singlet response properties which are calculated using the general response module.
+The keyword does not affect the linear response calculations for
+nuclear derivative response equations as for analytical evaluation
+of the molecular Hessian and for dipole and quadrupole moment nuclear derivatives.
+
+\item[\Key{TDA TR}] Use the Tamm-Dancoff approximation (TDA) for
+triplet response properties.
 
 \item[\Key{THIRDM}] Calculates the 27 cartesian molecular third order
 moments\index{third order moments}\index{moments!third order}.
