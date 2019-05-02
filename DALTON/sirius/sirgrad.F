@@ -2804,9 +2804,8 @@ C
       IF (NASHT .GE. 1) THEN
          CALL GETAC(FC,WRK(KFCAC))
          IF (DFT_SPINDNS) THEN
-            CALL GETAC(FV(NNORBT+1),WRK(KWRK3))
-            CALL DAXPY(NNASHX,1.0D0,WRK(KWRK3),1,WRK(KFSAC),1)
-         EN DIF
+            CALL GETAC(FV(NNORBT+1),WRK(KFSAC))
+         END IF
          IF (P6FLAG(21)) THEN
             WRITE(LUPRI,'(/A)')
      &         ' FCAC, active block of inactive Fock matrix FC'
