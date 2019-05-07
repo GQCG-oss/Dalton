@@ -2092,7 +2092,7 @@ C
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',   !  6:10
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',   ! 11:15
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',   ! 16:20
-     *            '*AUXILL','*LUCITA','*STEX  ','*CUBE  ','*CHOACT',   ! 21:25
+     *            '*AUXILL','*LUCITA','*STEX I','*CUBE  ','*CHOACT',   ! 21:25
      *            '*APSG I','*ENSEMB'/
 C
 C
