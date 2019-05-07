@@ -756,11 +756,9 @@ C
       CALL QENTER('FCK2AO')
       KFRSAV = KFREE
 C
-C
       LUSUPM_here = LUSUPM
       ! setting "LUSUPM_here = -1" below for cases not OK in RDSUPM
-      ISYMDM(1) = 1
-      ISYMDM(2) = 1
+      ISYMDM(1:3) = 1
 #ifdef SIRGRAD_DEBUG
       write(lupri,*) 'from FCK2AO: HFXFAC =', HFXFAC
 #endif
@@ -775,8 +773,7 @@ C        ... Coulomb and Exchange
       END IF
 C
       IF (DFT_SPINDNS) THEN
-         ISYMDM(3) = 1
-         IFCTYP(3) = -12
+         IFCTYP(3) = -12 ! only exchange; minus sign is code for spin density
          LUSUPM_here = -1
       END IF
 C
@@ -810,7 +807,7 @@ C     one-electron system
          IOFFAO = 1
       ELSE
 C        DCAO zero matrix, only FVAO contribution
-C        (except for RO-DFT and srDFT we need FCAO for VxcAO)
+C        (except for RO-DFT and srDFT for which we need FCAO for VxcAO)
          NDMAT = 2
          IF (DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT) THEN
             NFMAT  = 2
@@ -843,7 +840,7 @@ C     ... note: NDMAT = # of DCAO and FCAO matrices; NFMAT = # of non-zero FCAO 
      &      WRK(KFREE),LFREE)
       ELSE
          if (iprsir .gt. 5) write(lupri,*)
-     &      'SIRFCK called, NFMAT',NFMAT,ISYMDM(1:NFMAT)
+     &   'SIRFCK called. NFMAT, ISYMDM(1:NFMAT)',NFMAT,ISYMDM(1:NFMAT)
          IF (DIRFCK) THEN ! density matrices may be destroyed in SIRFCK
             CALL MEMGET('REAL',KDMAT_SAVE,N2BASX*NDMAT,WRK,KFREE,LFREE)
             CALL DCOPY(NDMAT*N2BASX,DCAO(IOFFAO),1,WRK(KDMAT_SAVE),1)

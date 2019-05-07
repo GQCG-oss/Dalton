@@ -168,8 +168,8 @@ C
       write(lupri,*)'iprfck,iprsrdft =',iprfck,iprsrdft
       write(lupri,*)'SIRFCK: NDMAT=', NDMAT
       write(lupri,*)'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
-      write(lupri,*)'SIRFCK: DO_SPINDNS,DFT_SPINDNS = ',
-     & DO_SPINDNS,DFT_SPINDNS
+      write(lupri,*)'SIRFCK: DO_SPINDNS,DFT_SPINDNS,TRIPLET_LOCAL = ',
+     & DO_SPINDNS,DFT_SPINDNS,TRIPLET_LOCAL
 #endif
 C
       IF (DO_SPINDNS) THEN
@@ -458,8 +458,8 @@ C           ... total DMAT = DC when NASHT.eq.0 or CISRDFT
      &         CALL STOPIT('SIRFCK','FSRAO+DSRAO',KLAST,LWORK)
 
             IF (NASHT.GT.0 .AND. (.NOT.DOCISRDFT)) THEN
-C              ... get total DMAT = DT = DC + DV if NASHT.gt.0
-C                  for Hartree SR term and - only if singlet - HFXFAC*(exact exchange SR term)
+C              ... put total DT = DC + DV into DSRAO
+C                  for Hartree SR term and HFXFAC*(exact exchange SR term)
                CALL DCOPY(NSR_DMAT*N2BASX,DMAT,1,WRK(KDSRAO),1)
                CALL DAXPY(NSR_DMAT*N2BASX,D1,DMAT(1,NSR_DMAT+1),1,   ! DT = DC + DV
      &                    WRK(KDSRAO),1)
@@ -503,7 +503,7 @@ C                  for Hartree SR term and - only if singlet - HFXFAC*(exact exc
 C
          IF (DOERG) THEN
             IF (NSR_DMAT .GT. 1)
-     &         CALL QUIT('SIRFCK SRINT ERROR: DOERG and NSR_DMAT>1')
+     &         CALL QUIT('SIRFCK SRINTS ERROR: DOERG and NSR_DMAT>1')
             EJSR = DP5*DDOT(N2BASX,DMAT,1,WRK(KFSRAO),1) ! Inactive part of EJsr+HFXFAC*EKsr (DMAT is DC)
             EKSR = D0
             IF (NFSRTYP .EQ. 1) THEN
@@ -515,14 +515,14 @@ C
                CALL QUIT('NFSRTYP neither 1 nor 2')
             END IF
             IF (NASHT.GT.0) THEN
-              EJKVSR = -DP5*DDOT(N2BASX,DMAT(1,2),1,WRK(KFSRAO),1) ! -0.5 * (DV * Fsr)
+              EJKVSR = -DP5*DDOT(N2BASX,DMAT(1,2),1,WRK(KFSRAO),1) ! -0.5 * (DV * Fsr) correction for CI (see below)
             ELSE
               EJKVSR =  D0
             END IF
-            EJSR = EJSR - EJKVSR ! Now EJsr or EJsr + HFXFAC*Eksr from DT=DC+DV
+            EJSR = EJSR - EJKVSR ! Now total EJsr + HFXFAC*Eksr from DT=DC+DV
          END IF
  
-         CALL DAXPY(NSR_DMAT*N2BASX,D1,WRK(KFSRAO),1,FMAT,1) ! adding short-range Jsr+Ksr terms to FC
+         CALL DAXPY(NSR_DMAT*N2BASX,D1,WRK(KFSRAO),1,FMAT,1) ! adding short-range FT_sr = Jsr+HFXFAC*Ksr terms to FC_lr
          IF (NFSRTYP .EQ. 2) THEN
             JFSRAO = KFSRAO + NSR_DMAT*N2BASX
             CALL DAXPY(NSR_DMAT*N2BASX,1.0d0,WRK(JFSRAO),1,FMAT(1,3),1) ! add Ksr_spin to FS
@@ -638,7 +638,8 @@ C                  for Hartree SR term
 C                 ... add DV(I) to DC(I)
                END DO
             END IF
-            IF (NSR_DMAT.GT.1) CALL QUIT('NSR_DMAT .GT. 1 for ADDSRI')
+            IF (NSR_DMAT.GT.1) CALL QUIT(
+     &        'ERROR, NOT IMPLEMENTED: NSR_DMAT>1 for ADDSRI & SIRFCK2')
 C
             KFSRAO = 1
             KLAST  = KFSRAO + NSR_DMAT*N2BASX
@@ -652,11 +653,11 @@ C
             CALL DZERO(WRK(KFSRAO),NSR_DMAT*N2BASX)
             CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFSRAO),
      &         DMAT,NSR_DMAT,ISYMDM,IFCTYP_local,WRK(KLAST),LWRK)
-            CALL DAXPY(N2BASX,D1,WRK(KFSRAO),1,FMAT,1) ! add F_sr to FC_lr
-            EJSR = DP5*DDOT(N2BASX,DMAT(1,1),1,WRK(KFSRAO),1) ! EJsr+HFXFAC*EKsr from DC+DV
+            CALL DAXPY(N2BASX,D1,WRK(KFSRAO),1,FMAT,1) ! add FT_sr to FC_lr
+            EJSR = DP5*DDOT(N2BASX,DMAT(1,1),1,WRK(KFSRAO),1) ! EJsr+HFXFAC*EKsr from DT=DC+DV
             IF (NASHT.GT.0) THEN
                EJKVSR = -DP5*
-     &            DDOT(N2BASX,DMAT(1,NSR_DMAT+1),1,WRK(KFSRAO),1) ! correction from DV
+     &            DDOT(N2BASX,DMAT(1,NSR_DMAT+1),1,WRK(KFSRAO),1) ! -0.5 * (DV * Fsr) correction for CI (see below)
             ELSE
                EJKVSR = D0
             END IF
@@ -1005,7 +1006,7 @@ C        ... restore DC = DTOT - DV
             ESRDFT  = ESRDFT + EJSR + EKSR
 
 !           ESRDFTY is ESRDFT + a correction energy needed because
-!           the JKsr and Vxcsr matrices are added to FC to get correct MC-srDFt gradient.
+!           the JKsr and Vxcsr matrices are added to FC to get correct MC-srDFT gradient.
 !           However, this means FCAC will be modified and this gives a contribution to
 !           the energy in CIGRAD and ENRACT, which is not the same as ESRDFT because of
 !           the non-linearity and which has to be removed again to get correct energy
@@ -1026,7 +1027,7 @@ C           ECSR   = -0.5*Tr( Vxcsr Dc )
 C           EVSR   =     -Tr( Vxcsr Dv )
 C           EJKVSR = -0.5*Tr( (Jsr+HFXFAC*Ksr) Dv)
 C           note: ECSR + EVSR + EJKVSR corrections are added
-C                 to get right contributions from MCSCF code.
+C                 to get right energy contributions from MCSCF code.
 C
 !           IF (iprsrdft .GT. 0) then
 !

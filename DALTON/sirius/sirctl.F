@@ -324,6 +324,25 @@ Ck
 #endif
 
 C
+C        Modifications for open-shell HF-srDFT ...
+C
+         IF (DOHFSRDFT .and. DFT_SPINDNS) THEN
+         IF (MXDIIS .gt. 0) THEN ! DIIS not implemented for HFSRDFT and open shell SCF
+            MXDIIS = 0
+            NINFO  = NINFO + 1
+            WRITE(LUPRI,'(/A)') '@ INFO: DIIS disabled '//
+     &      'for open-shell HF-srDFT because not implemented.'
+         END IF
+         IF (.NOT.DIRCAL .OR. .NOT.DIRFCK) THEN
+            NINFO  = NINFO + 1
+            WRITE (LUPRI,'(/A)')
+     &      '@ INFO: switched to AO-direct Fock matrices because'
+     &      //' open-shell HF-srDFT will not work otherwise.'
+            DIRCAL = .TRUE.
+            DIRFCK = .TRUE.
+         END IF
+         END IF
+C
 C        Call FCMO to perform MAXFCK Roothaan Fock iterations
 C
          IF (MAXFCK .GT. 0) THEN
@@ -344,7 +363,7 @@ C           CALL FCMO(MAXFCK,CMO,FC,SCRA,LSCRA)
 C
 C        Call SRDIIS to perform MXDIIS DIIS iterations
 C
-         IF (MXDIIS .GT. 0) THEN
+         IF (MXDIIS .gt. 0) THEN
             FLAG(5) = FLAGSV(5)
             JRDMO = 9
             KCMO  = 1
@@ -413,6 +432,9 @@ C              ... orbital super symmetries may have been reordered
                IF (IAVERR .NE. 0) CALL QUIT('SIRCTL error: '//
      &         'inconsistency in sup.sym. averaging before QC-SCF call')
             END IF
+
+! Tell srdft routines to use MCSRDFT version, otherwise qc-hf-srdft will not work for open shells /May2019-hjaaj
+            IF (DOHFSRDFT) DOMCSRDFT = .TRUE.
 C
             CALL SIROPT(WORK,LWORK,ICONV)
             FLAG(15) = FLAGSV(15)
