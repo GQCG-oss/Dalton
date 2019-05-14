@@ -166,7 +166,7 @@ CTRL[8]=4
 ERROR[8]="EXCITATION ENERGY NOT CORRECT"
 
 # Spin-orbit
-CRIT1=`$GREP "\@ *Operator type\: * Z1MNF\-SO" $log | wc -l`
+CRIT1=`$GREP "\@ *Operator label\: * Z1MNF\-SO" $log | wc -l`
 CRIT2=`$GREP "\@ *Spin\-orbit coupling constant \(Z1MNF\-SO\) \: * \-*191\.0325. * cm\-1" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[9]=2
