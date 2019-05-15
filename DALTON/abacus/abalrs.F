@@ -384,20 +384,21 @@ C
                   IF (.NOT. ZERNRM(I)) THEN
                      NOCONV = .FALSE.
                      FINRES = 0.0D0
+                     KZRED_ABA = 0
                      CALL ABARSP(CICLC,HFCLC,TRPCLC,OOTV,ISYM,EXCLC,
      &                           EXVAL,NEXVAL,NABATY,1,IMGLAB(IREC),
      &                           LUGDVE,LUSOVE,LUREVE,THRCLC,MAXCLC,
      &                           IPRCLC,MXRM,MXPHP,WORK,LWORK)
                      IF (NOCONV) THEN
-                        WRITE (LUPRI,'(/3A,2F10.5)')
-     &                    '@ WARNING  No convergence for ',
-     &                    IMGLAB(IREC),'. Last residual and threshold:',
-     &                    FINRES, THRCLC
+                        WRITE (LUPRI,'(/3A,2F10.5,A,I0)')
+     &    '@ WARNING No convergence for "',IMGLAB(IREC),
+     &    '". Last residual and threshold:', FINRES, THRTRP,
+     &    ';  # trial vectors: ',KZRED_ABA
                      ELSE
-                        WRITE (LUPRI,'(3A,2F10.5)')
-     &                    '    Convergence for ',
-     &                    IMGLAB(IREC),'. Last residual and threshold:',
-     &                    FINRES, THRCLC
+                        WRITE (LUPRI,'(3A,2F10.5,A,I0)')
+     &    '    Convergence for "',IMGLAB(IREC),
+     &    '". Last residual and threshold:', FINRES, THRTRP,
+     &    ';  # trial vectors: ',KZRED_ABA
                      END IF
                   END IF
                END IF

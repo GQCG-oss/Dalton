@@ -59,10 +59,10 @@ C
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in EXPECT')
 
- 1          CONTINUE !         .SHIELD
+ 1          CONTINUE !         .SHIELDing
                NST    = .TRUE.
                GOTO 100
- 2          CONTINUE !         .SPIN-S
+ 2          CONTINUE !         .SPIN-Spin
                SST    = .TRUE.
                GOTO 100
  3          CONTINUE !         .DIASUS
@@ -99,7 +99,7 @@ C
  11         CONTINUE
                MQUADR = .TRUE.
                GOTO 100
- 12         CONTINUE
+ 12         CONTINUE !      .ALL COmponents
                ALLCOM = .TRUE.
                IF (.NOT. DODRCT) ICHANG = ICHANG - 1
                GOTO 100
@@ -163,11 +163,11 @@ C              MSKIP = .TRUE.
             IF (MNODV) WRITE (LUPRI,'(/,2A)') 'Active one-electron',
      &           'density matrix neglected in EXPECT.'
             IF (ALLCOM .AND. DODRCT .AND. NST) WRITE(LUPRI,'(/,A)')
-     &           ' All components of shielding expexctation value '//
+     &           ' All components of shielding expectation value '//
      &           'calculated at once'
             IF (ALLCOM .AND. DODRCT .AND. SST) WRITE(LUPRI,'(/,A)')
      &           ' All components of diamagnetic spin-orbit operators'//
-     &           ' calculated at once'
+     &           ' (DSO) calculated at once'
             IF (MCUT) WRITE (LUPRI,'(/,A)')
      &           ' Program is stopped after EXPECT.'
          END IF
@@ -639,7 +639,7 @@ C
             END IF
 
 cDM add the solvent contribution to perturbed Fock matrix 
-	    CALL DAXPY(NCOMP,D1,WORK(KSLEXP),1,EXPVAL,1)
+            CALL DAXPY(NCOMP,D1,WORK(KSLEXP),1,EXPVAL,1)
 C
          END IF
 C
@@ -2006,20 +2006,23 @@ C     efficiency anyway). K.Ruud, Feb.-96
 C
                NABATY(1) = 1
                IF (.NOT. ZERNRM(I)) THEN
-                  NOCONV = .FALSE.
+                  NOCONV = .TRUE.
                   FINRES = 0.0D0
+                  KZRED_ABA = 0
                   CALL ABARSP(CICLC,HFCLC,TRPCLC,OOTV,ISYM,EXCLC,EXVAL,
      &                        NEXVAL,NABATY,1,TRPLAB(IREC),LUGDVE,
      &                        LUSOVE,LUREVE,THRTRP,MAXTRP,IPRTRP,MXRM,
      &                        MXPHP,WORK,LWORK)
                   IF (NOCONV) THEN
-                     WRITE (LUPRI,'(/3A,2F10.5)')
-     &                  '@ WARNING No convergence for ',TRPLAB(IREC),
-     &                  '. Last residual and threshold:', FINRES, THRTRP
+                     WRITE (LUPRI,'(/3A,2F10.5,A,I0)')
+     &    '@ WARNING No convergence for "',TRPLAB(IREC),
+     &    '". Last residual and threshold:', FINRES, THRTRP,
+     &    ';  # trial vectors: ',KZRED_ABA
                   ELSE
-                     WRITE (LUPRI,'(3A,2F10.5)')
-     &                  '    Convergence for ',TRPLAB(IREC),
-     &                  '. Last residual and threshold:', FINRES, THRTRP
+                     WRITE (LUPRI,'(3A,2F10.5,A,I0)')
+     &    '    Convergence for "',TRPLAB(IREC),
+     &    '". Last residual and threshold:', FINRES, THRTRP,
+     &    ';  # trial vectors: ',KZRED_ABA
                   END IF
                END IF
 C

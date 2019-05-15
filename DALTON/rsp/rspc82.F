@@ -996,10 +996,10 @@ C
 C
 C CHANGE SIGN ON ORBITAL PART OF LINEAR TRANSFORMATION E[2]*N
 C
-      DO 3000 ISIM = 1,NSIM
+      DO ISIM = 1,NSIM
          CALL DSCAL(KZWOPT,DM1,EVECS(KZCONF+1,ISIM),1)
          CALL DSCAL(KZWOPT,DM1,EVECS(KYCONF+1,ISIM),1)
- 3000 CONTINUE
+      END DO
 C
       IF (IPRRSP.GT.110) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  E(2)'//
@@ -1682,9 +1682,11 @@ C
       IF (KCONV .NE. 1) THEN
          FINRES = RESID(1)
          NOCONV = .TRUE.
+         KZRED_ABA = KZRED
       ELSE
          FINRES = RESID(1)
          NOCONV = .FALSE.
+         KZRED_ABA = KZRED
       END IF
 C
 C     END OF RSPNEX.
@@ -2317,9 +2319,11 @@ C
 C
 C Used from common blocks:
 C   INFVAR : JWOPSY
+! infrsp.h : TDHF
 C
 #include "maxorb.h"
 #include "infvar.h"
+#include "infrsp.h"
 C
       IUNIT = IABS(IUNITX)
 C
@@ -2352,7 +2356,7 @@ C
       RETURN
 C
   300 CONTINUE
-      WRITE (IUNIT,3000) JWOPSY
+      IF (.NOT.TDHF) WRITE (IUNIT,3000) JWOPSY
       RETURN
 C
 C1000 FORMAT(/5X,'Configuration operator symmetry =',I2,/,
@@ -2398,7 +2402,7 @@ C
 C Used from common blocks:
 C   INFINP : FLAG(27), LSYM
 C   INFVAR : JWOPSY
-C   INFRSP : SOPPA
+C   INFRSP : SOPPA, TDHF
 C   INFSOP : KABSAD,KABTAD,......
 C
 #include "maxorb.h"
@@ -2476,7 +2480,7 @@ C
       RETURN
 C
   300 CONTINUE
-      WRITE (IUNIT,3000) JWOPSY
+      IF (.NOT.TDHF) WRITE (IUNIT,3000) JWOPSY
       RETURN
 C
 C1000 FORMAT(/5X,'Configuration operator symmetry =',I2,/,
@@ -2532,19 +2536,21 @@ C
 C Used from common blocks:
 C   INFIND : ISMO(*)
 C   INFVAR : NWOPT,JWOPSY,JWOP(2,*)
+C   infrsp.h : RSPCI
 C
 #include "maxorb.h"
 #include "maxash.h"
 #include "infdim.h"
 #include "infind.h"
 #include "infvar.h"
+#include "infrsp.h"
 C
       IUNIT = IABS(IUNITX)
 C
 C Any elements?
 C
       IF (NWOPT.LE.0) THEN
-         WRITE (IUNIT,3000) JWOPSY
+         IF (.NOT.RSPCI) WRITE (IUNIT,3000) JWOPSY
          GO TO 300
       END IF
 C
@@ -2578,7 +2584,7 @@ C
      &                                  ABS(WOP_SCALED(IG,2)) )
       END DO
 C
-C 1. find maximum absolute value in WOP
+C 1. find maximum absolute value in scaled WOP
 C
       IF (IUNITX.GT.0) THEN
          THPWOP = PRFAC * WOP_SC_AMAX
@@ -2644,12 +2650,14 @@ C  If IUNITX .lt. 0, write all elements;
 C  if IUNITX .gt. 0, write only elements with absolut value
 C                    .ge. PRFAC * (max. absolut value)
 C
+! infrsp.h : RSPCI
 #include "implicit.h"
 #include "maxorb.h"
 #include "maxash.h"
 #include "infdim.h"
 #include "infind.h"
 #include "infvar.h"
+#include "infrsp.h"
       DIMENSION WOP(*), MJWOP(2,MAXWOP,8)
       PARAMETER (PRFAC = 1.D-1)
 C
@@ -2691,7 +2699,7 @@ C
       RETURN
 C
   300 CONTINUE
-      WRITE (IUNIT,3000) NWOPSY
+      IF (.NOT.RSPCI) WRITE (IUNIT,3000) NWOPSY
       RETURN
 C
  1000 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
@@ -3700,15 +3708,15 @@ C
  100  CONTINUE
       IF ( IPRRSP.GT.90 ) THEN
          WRITE(LUPRI,*)NSIM,' DENA MATRICES'
-         DO 3000 ISIM = 1, NSIM
+         DO ISIM = 1, NSIM
             CALL OUTPUT(DENA(1,1,ISIM),1,NORBT,1,NASHT,NORBT,NASHT,
      &                  -1,LUPRI)
- 3000    CONTINUE
+         END DO
          WRITE(LUPRI,*)NSIM,' DENB MATRICES'
-         DO 3010 ISIM = 1, NSIM
+         DO ISIM = 1, NSIM
             CALL OUTPUT(DENB(1,1,ISIM),1,NORBT,1,NASHT,NORBT,NASHT,
      &                  -1,LUPRI)
- 3010    CONTINUE
+         END DO
       END IF
       CALL QEXIT('RSPTR1')
       RETURN
