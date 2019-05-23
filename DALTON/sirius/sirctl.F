@@ -325,8 +325,9 @@ Ck
 
 C
 C        Modifications for open-shell HF-srDFT ...
+C        (do not switch off DIIS if DFT_SPINDNS but NASHT.eq.0, i.e. closed-shell SCF)
 C
-         IF (DOHFSRDFT .and. DFT_SPINDNS) THEN
+         IF (DOHFSRDFT .and. DFT_SPINDNS .AND. NASHT.GT.0) THEN
          IF (MXDIIS .gt. 0) THEN ! DIIS not implemented for HFSRDFT and open shell SCF
             MXDIIS = 0
             NINFO  = NINFO + 1
@@ -434,7 +435,7 @@ C              ... orbital super symmetries may have been reordered
             END IF
 
 ! Tell srdft routines to use MCSRDFT version, otherwise qc-hf-srdft will not work for open shells /May2019-hjaaj
-            IF (DOHFSRDFT) DOMCSRDFT = .TRUE.
+            IF (DOHFSRDFT .AND. NASHT.GT.0) DOMCSRDFT = .TRUE.
 C
             CALL SIROPT(WORK,LWORK,ICONV)
             FLAG(15) = FLAGSV(15)
