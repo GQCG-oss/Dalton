@@ -1,0 +1,9 @@
+ATOMBASIS
+
+Basis set specified with ATOMBASIS
+    2
+        8.    1      Basis=3-21G
+O     0.0 -0.2249058930 0.0
+        1.    2      Bas=3-21G
+H1    1.45235 0.899623 0.0
+H2   -1.45235 0.899623 0.0

@@ -595,6 +595,8 @@ add_dalton_test(benchmark_her_atzs               "weekly;benchmark")
 add_dalton_test(benchmark_her_r12                "weekly;benchmark")
 add_dalton_test(benchmark_her_r12xl              "weekly;benchmark")
 
+add_dalton_runtest(cino                          "dalton;runtest;short;essential")
+
 # Mar 2015: extra tests on hjaaj-srdft branch
 if (ENABLE_SRDFT) 
    add_dalton_test(energy_srpbe0_mp2                       "dalton;srdft;energy;short;parallel;essential")

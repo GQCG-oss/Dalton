@@ -673,7 +673,7 @@ C
          IPRNO = MAX(IPRI4-2,3) ! default: IPRI4 = IPRUSR + 5
          KCVEC = KW2
          KOCCNO= KCVEC + NCONF
-         KUNO  = KOCCNO+ NOCCT
+         KUNO  = KOCCNO+ NORBT
          KW3   = KUNO  + N2ASHX
          LW3   = LWRK  - KW3
 C

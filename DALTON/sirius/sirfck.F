@@ -1,5 +1,6 @@
 #define SIRFCK_DEBUG -1
 #define SIRFCK_HERMIT_DEBUG -1
+#define SIRFCK_MANU_SRHFX -1
 !
 !  Dalton, a molecular electronic structure program
 !  Copyright (C) 2018 by the authors of Dalton.
@@ -19,9 +20,7 @@
 !
 ! -- FILE: DALTON/sirius/sirfck.F --
 C
-!#define noSIRFCK_MANU_SRHFX 
 C
-C  /* Deck sirfck */
       SUBROUTINE SIRFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,AO_DIRECT,
      &                  WRK,LWORK)
 C
@@ -661,7 +660,7 @@ C
                EJKVSR = D0
             END IF
 !            
-#ifdef SIRFCK_MANU_SRHFX
+#if SIRFCK_MANU_SRHFX > 0
 ! Manu: write the srHFX energy when the HFEXCH option is
 ! used in srDFT
 !
@@ -681,7 +680,7 @@ C
                EKSR = D0
             end if
            
-#ifdef SIRFCK_MANU_SRHFX
+#if SIRFCK_MANU_SRHFX > 0
             write(lupri,*) 'srHFX energy =', EKSR
             iprsrdft = iprsrdft_save ! restore
 #endif
