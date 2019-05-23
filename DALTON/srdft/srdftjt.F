@@ -389,7 +389,7 @@ C        Contribution to spin density (N_alpha - N_beta)
             call quit('rho_c is less or equal to |rho_s|')
          end if
          if ((rho(1) - abs(rho(2)) - 1.d-4*rho(1)) .le. 0.0d0 ) then
-            call quit('rho_c and rho_s are to close for finite diff.')
+            call quit('rho_c and rho_s are too close for finite diff.')
          end if
       end if
 

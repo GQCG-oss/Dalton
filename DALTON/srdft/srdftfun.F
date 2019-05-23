@@ -227,7 +227,7 @@ C*****************************************************************************
          call quit('Requested to high order derivative: ',diff_order) 
       end if
 
-C     Do the convertion from alpha, beta to charge, spin
+C     Do the conversion from alpha, beta to charge, spin
       if (alpha_eq_beta) then
          Eb = Ea
          if (diff_order .ge. 1) then
@@ -237,7 +237,7 @@ C     Do the convertion from alpha, beta to charge, spin
             d2Eb(:) = d2Ea(:)
          end if
       end if
-      ! Spin splitting realtion
+      ! Spin splitting relation
       E = 0.5d0*Ea + 0.5d0*Eb
       if (diff_order .ge. 1) then
          call Convert_d1_alpha_beta_to_C_S(0.5d0*d1Ea, 0.5d0*d1Eb, 0,
@@ -414,7 +414,7 @@ C*****************************************************************************
          call quit('Requested to high order derivative: ',diff_order) 
       end if
 
-C     Do the convertion from alpha, beta to charge, spin
+C     Do the conversion from alpha, beta to charge, spin
       if (alpha_eq_beta) then
          Eb = Ea
          if (diff_order .ge. 1) then
@@ -424,7 +424,7 @@ C     Do the convertion from alpha, beta to charge, spin
             d2Eb(:) = d2Ea(:)
          end if
       end if
-      ! Spin splitting realtion
+      ! Spin splitting relation
       E = 0.5d0*Ea + 0.5d0*Eb
       if (diff_order .ge. 1) then
          call Convert_d1_alpha_beta_to_C_S(0.5d0*d1Ea, 0.5d0*d1Eb, 1,
@@ -615,7 +615,7 @@ C*****************************************************************************
          call quit('Requested to high order derivative: ',diff_order) 
       end if
 
-C     Do the convertion from alpha, beta to charge, spin
+C     Do the conversion from alpha, beta to charge, spin
       if (alpha_eq_beta) then
          Eb = Ea
          if (diff_order .ge. 1) then
@@ -625,7 +625,7 @@ C     Do the convertion from alpha, beta to charge, spin
             d2Eb(:) = d2Ea(:)
          end if
       end if
-      ! Spin splitting realtion
+      ! Spin splitting relation
       E = 0.5d0*Ea + 0.5d0*Eb
       if (diff_order .ge. 1) then
          call Convert_d1_alpha_beta_to_C_S(0.5d0*d1Ea, 0.5d0*d1Eb, 2,
@@ -1101,7 +1101,7 @@ C*****************************************************************************
          call quit('Requested to high order derivative: ',diff_order) 
       end if
 
-C     Do the convertion from alpha, beta to charge, spin
+C     Do the conversion from alpha, beta to charge, spin
       if (alpha_eq_beta) then
          Eb = Ea
          if (diff_order .ge. 1) then
@@ -1111,7 +1111,7 @@ C     Do the convertion from alpha, beta to charge, spin
             d2Eb(:) = d2Ea(:)
          end if
       end if
-      ! Spin splitting realtion
+      ! Spin splitting relation
       E = 0.5d0*Ea + 0.5d0*Eb
       if (diff_order .ge. 1) then
          call Convert_d1_alpha_beta_to_C_S(0.5d0*d1Ea, 0.5d0*d1Eb, 1,

@@ -168,7 +168,7 @@ C Cut string SRFTMP
  100  CONTINUE
       SETXFUN = .FALSE.
       GO TO 15
- 101  GO TO 15
+ 101  GO TO 15 ! NULL
  102  DOSRX_LDA = .TRUE.
       ISJT      = .TRUE.
       GO TO 15
@@ -217,7 +217,7 @@ C Short-range spin-dependent exchange LDA functional (JT 11-08-09)
       DFT_SPINDNS = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
-C Spin-density with no exchange functional (unless HFXFAC set non-zero elsewhere)
+C NULL_S : Spin-density with no exchange functional (unless HFXFAC set non-zero elsewhere)
  116  CONTINUE
       DFT_SPINDNS = .TRUE.
       ISJT    = .TRUE.
@@ -247,7 +247,7 @@ C Short-range spin-dependent exchange LDA functional to fit with LDA (edh 10-02-
 122   DOSRC_LDA_PW92 = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
-C Short-range spind-dependent TPSS exchange functional (erk 27 aug. 18)
+C Short-range spin-dependent TPSS exchange functional (erk 27 aug. 18)
 123   DOSRX_TPSS = .TRUE.
       DFT_SPINDNS  = .TRUE.
       ISJT         = .TRUE.
@@ -289,7 +289,7 @@ C Short-range wPBE exchange functional (erk 27 feb. 19)
       SETCFUN = .FALSE.
       GO TO 20
 
- 201  GO TO 20
+ 201  GO TO 20 ! NULL
  202  DOSRC_LDA = .TRUE.
       ISJT      = .TRUE. 
       GO TO 20
@@ -372,7 +372,7 @@ C Extension of the SRCMULO_A functional: XMULFAC depends on grd/rho
  220  DOSRC_MULOE_GGA = .TRUE.
       ISJT = .TRUE.
       GO TO 20
-C 'NULL_S   ' Spin density with no correlation functional
+C NULL_S   : Spin density with no correlation functional
  221  DFT_SPINDNS = .TRUE.
       ISJT    = .TRUE.
       GO TO 20

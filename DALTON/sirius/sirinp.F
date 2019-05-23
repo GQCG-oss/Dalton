@@ -1019,11 +1019,6 @@ C        However, if ITRLVL has been set in input, then this overrides.
          END IF
 C
       END IF
-
-C     To be able to use spin-dependent functionals for closed-shell Hartree-Fock
-      IF (DFT_SPINDNS .AND. NASHT .EQ. 0) THEN
-         DFT_SPINDNS = .FALSE.
-      END IF
 C
       IF (NFIELD .GT. MXFELT) THEN
          WRITE (LUPRI,*) 'Too many field-dependent Hamiltonian terms'
@@ -1506,7 +1501,12 @@ C
          END IF
          CALL SETORB
       END IF
-C
+
+C     To be able to use spin-dependent functionals for closed-shell Hartree-Fock
+      IF (DFT_SPINDNS .AND. NASHT .EQ. 0) THEN
+         DFT_SPINDNS = .FALSE.
+      END IF
+
 C
 C *** Check if initial occupation for RHF has been defined.
 C
@@ -2092,7 +2092,7 @@ C
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',   !  6:10
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',   ! 11:15
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',   ! 16:20
-     *            '*AUXILL','*LUCITA','*STEX  ','*CUBE  ','*CHOACT',   ! 21:25
+     *            '*AUXILL','*LUCITA','*STEX I','*CUBE  ','*CHOACT',   ! 21:25
      *            '*APSG I','*ENSEMB'/
 C
 C
