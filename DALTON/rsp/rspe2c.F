@@ -3665,11 +3665,11 @@ C
 #include "dummy.h"
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
-      CHARACTER BLANK*8, PRI_LINE*80
+      CHARACTER BLANK*8, PRI_LINE*80, LBLPP_1*1
 C
       PARAMETER ( MAXSIM = 15, LMXFR = 1000, BLANK = '        ' )
       PARAMETER ( TOLRTT = 1.0D-12)
-      DIMENSION OSCSTR(MAXSIM,12),TRSMOM(MAXSIM,60)
+      DIMENSION TRSMOM(MAXSIM,60)
       DIMENSION RMLEN(3,3,LMXFR), RMVEL(3,3,LMXFR)
       DIMENSION RQLEN(3,3,LMXFR), RQVEL(3,3,LMXFR)
       DIMENSION RTLEN(3,3,LMXFR), RTVEL(3,3,LMXFR)
@@ -3933,11 +3933,12 @@ C ---------------------------- not non-adiabatic coupling:
                  LOCST = ISIM-1+INUM
                   IF ((RSPECD.OR.RSPOCD) .AND. (LOCST.GT.NPPCNV(KSYMOP))
      &               ) THEN
-                     CALL QUIT('State count error in RSPPP')
+                     CALL QUIT('State counting error in RSPPP')
                   END IF
                   XMOM = DDOT(KZYVAR,WRK(KWRK2),1,
      &                        WRK(KBVECS+(INUM-1)*KZYVAR),1)
                   TRSMOM(INUM,JOP) = XMOM
+                  LBLPP_1 = LBLPP(KSYMOP,IOP)(1:1)
                   IF (IPRRSP.GT.0) WRITE(LUPRI,751)
      &               (ISIM-1+INUM),XMOM, WRK(KEIVAL-1+ISIM-1+INUM)*XTEV
  751              FORMAT('@ STATE NO:',I5,' *TRANSITION MOMENT:'
@@ -3946,10 +3947,12 @@ C ---------------------------- not non-adiabatic coupling:
                      WRK(KFREX+LOCST-1) = WRK(KEIVAL-1+ISIM-1+INUM)
                   END IF
                   IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPLEN ' ) THEN
-                      OSCIL = D2R3*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
-                      IF (IPRRSP.GT.11) WRITE(LUPRI,'(/A,1P,G16.8)')
+                      IF (IPRRSP.GT.11) THEN
+                         OSCIL = D2R3*XMOM*XMOM
+     &                          *WRK(KEIVAL-1+ISIM-1+INUM)
+                         WRITE(LUPRI,'(/1X,2A,1P,G16.8)') LBLPP_1,
      *                   ' OSCILLATOR STRENGTH (LENGTH)   :',OSCIL
-                      OSCSTR(INUM,JOP) = OSCIL
+                      END IF
                       IF (RSPECD .OR. RSPOCD) THEN
                          IF (LBLPP(KSYMOP,IOP).EQ.'XDIPLEN ') THEN
                             KOFF = KTRLEN + 3*(LOCST - 1)
@@ -3963,10 +3966,12 @@ C ---------------------------- not non-adiabatic coupling:
                          END IF
                       END IF
                   ELSE IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPVEL ' ) THEN
-                      OSCIL = D2R3*XMOM*XMOM/WRK(KEIVAL-1+ISIM-1+INUM)
-                      IF (IPRRSP.GT.11) WRITE(LUPRI,'(/A,1P,G16.8)')
+                      IF (IPRRSP.GT.11) THEN
+                         OSCIL = D2R3*XMOM*XMOM
+     &                          /WRK(KEIVAL-1+ISIM-1+INUM)
+                         WRITE(LUPRI,'(/1X,2A,1P,G16.8)') LBLPP_1,
      *                   ' OSCILLATOR STRENGTH (VELOCITY) :',OSCIL
-                      OSCSTR(INUM,JOP) = OSCIL
+                      END IF
                       IF (RSPECD .OR. RSPOCD) THEN
                          IF (LBLPP(KSYMOP,IOP).EQ.'XDIPVEL ') THEN
                             KOFF = KTRVEL + 3*(LOCST - 1)
@@ -4092,22 +4097,22 @@ C ---------------------------- not non-adiabatic coupling:
                       END IF
                   ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' .OR.
      &                      LBLPP(KSYMOP,IOP)(1:5) .EQ. 'SIN K' ) THEN
-                      OSCIL = D2*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
-                      IF (IPRRSP.GT.11) WRITE(LUPRI,'(/A,1P,G16.8)')
+                      IF (IPRRSP.GT.11) THEN
+                         OSCIL = D2*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
+                         WRITE(LUPRI,'(/A,1P,G16.8)')
      &                   ' GENERALIZED OSCILLATOR STRENGTH :',OSCIL
-                      OSCSTR(INUM,JOP) = OSCIL
+                      END IF
                   ELSE IF (LBLPP(KSYMOP,IOP)(3:8).EQ.'SPNORB' .OR.
      &                     LBLPP(KSYMOP,IOP)(3:8).EQ.'MNF-SO') THEN
-                     XMOMAU = XMOM
                      IF (IPRRSP.GT.11) THEN
-                        XMOMCM = XMOMAU*XTKAYS
-                        WRITE(LUPRI,'(/3A,G16.8,A/41X,G16.8,A)')
-     &                  ' SPIN-ORBIT COUPLING CONSTANT (',
+                        XMOMCM = XMOM*XTKAYS
+                        WRITE(LUPRI,'(/3A,1P,G16.8,A,G16.8,A)')
+     &                  ' Spin-orbit coupling constant (',
      &                    LBLPP(KSYMOP,IOP), '):',
-     &                    XMOMAU,' (AU)', XMOMCM,' (CM-1)'
+     &                    XMOM,' au;', XMOMCM,' cm-1'
                      END IF
                   END IF
- 550           CONTINUE
+ 550           CONTINUE ! DO 550 INUM = 1, NBX
  600        CONTINUE  ! go to 600 if non-adiabatic coupling ("HDO" in label)
          END IF
          PRI_LINE = ' '
@@ -4138,13 +4143,13 @@ C ---------------------------- not non-adiabatic coupling:
                END IF
             END IF
             WRITE(LUPRI,'( A,1P,G16.8,A
-     &                    /A,T22,3(G16.8,A)
+     &                    /A,3(G16.8,A)
      &                   //A,T22,G16.8,A)')
-     &      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),' au',
-     &      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,  ' eV;',
+     & '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),' au',
+     & '@                    ',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,' eV;',
      &          WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1;',
      &          WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
-     &      '@ Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
+     & '@ Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
             IF (SOPPA) THEN
               TXNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
               TYNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR+KZVAR),1)
@@ -4161,47 +4166,44 @@ C ---------------------------- not non-adiabatic coupling:
 C                 ... skip HDO
 C
                   JOP = JOP + 1
-                  WRITE(LUPRI,'(/A,A)')
-     *                  '@ Operator type:    ',LBLPP(KSYMOP,IOP)
+                  XMOM = TRSMOM(INUM,JOP)
+                  LBLPP_1 = LBLPP(KSYMOP,IOP)(1:1)
+                  WRITE(LUPRI,'(/3A,1P,G16.8,A)')
+     &               '@ Operator label: ',LBLPP(KSYMOP,IOP),
+     &               '; Transition moment :',XMOM,' au'
 C
                   IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPLEN ' ) THEN
-                     WRITE(LUPRI,'(A,1P,G16.8,A,G16.8,A)')
-     *                  '@ Oscillator strength (LENGTH)   :',
-     *                  OSCSTR(INUM,JOP),
-     *                  '  (Transition moment :',TRSMOM(INUM,JOP),' )'
+                     OSCIL = D2R3*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
+                     WRITE(LUPRI,'(A,1P,G16.8,3A)')
+     *                  '@ Oscillator strength (LENGTH)   :',OSCIL,
+     &                  '  (',LBLPP_1,'-polarization)'
+                  ELSE IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'LFDIPLN' ) THEN
+                     OSCIL = D2R3*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
+                     WRITE(LUPRI,'(A,1P,G16.8,3A)')
+     *                  '@ Oscillator strength (PE-EEF)   :',OSCIL,
+     &                  '  (',LBLPP_1,'-polarization)'
                   ELSE IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPVEL ' ) THEN
+                     OSCIL = D2R3*XMOM*XMOM/WRK(KEIVAL-1+ISIM-1+INUM)
+                     WRITE(LUPRI,'(A,1P,G16.8,3A)')
+     *                  '@ Oscillator strength (VELOCITY) :',OSCIL,
+     &                  '  (',LBLPP_1,'-polarization)'
+                  ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' ) THEN
+                     OSCIL = D2*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
                      WRITE(LUPRI,'(A,1P,G16.8,A,G16.8,A)')
-     *                  '@ Oscillator strength (VELOCITY) :',
-     *                  OSCSTR(INUM,JOP),
-     *                  '  (Transition moment :',TRSMOM(INUM,JOP),' )'
-                  ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' .OR.
-     &                      LBLPP(KSYMOP,IOP)(1:5) .EQ. 'SIN K' ) THEN
-                     WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  '@ Generalized oscillator strength:',
-     *                  OSCSTR(INUM,JOP)
-                     IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' ) THEN
-                        WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  '@ Transition moment  (cos(kr)/k) :',
-     *                  TRSMOM(INUM,JOP)
-                     ELSE
-                        WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  '@ Transition moment  (sin(kr)/k) :',
-     *                  TRSMOM(INUM,JOP)
-                     END IF
+     &                 '@ Generalized oscillator strength (cos(kr)/k):',
+     &                  OSCIL,' (transition moment :',XMOM,')'
+                  ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'SIN K' ) THEN
+                     OSCIL = D2*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
+                     WRITE(LUPRI,'(A,1P,G16.8,A,G16.8,A)')
+     &                 '@ Generalized oscillator strength (sin(kr)/k):',
+     &                  OSCIL,' (transition moment :',XMOM,')'
                   ELSE IF (LBLPP(KSYMOP,IOP)(3:8).EQ.'SPNORB' .OR.
      &                     LBLPP(KSYMOP,IOP)(3:8).EQ.'MNF-SO' .OR.
      &                     LBLPP(KSYMOP,IOP)(3:8).EQ.'SPNSCA') THEN
-                     WRITE(LUPRI,'(3A,1P,G16.8,A)')
+                     WRITE(LUPRI,'(3A,1P,G16.8,A,G16.8,A)')
      *                  '@ Spin-orbit coupling constant (',
      *                    LBLPP(KSYMOP,IOP),') :',
-     *               TRSMOM(INUM,JOP)*XTKAYS,' cm-1'
-                     WRITE(LUPRI,'(A,1P,G16.8,A)')
-     *                  '                                          ',
-     *               TRSMOM(INUM,JOP),' au'
-                  ELSE
-                     WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  '@ Transition moment              :',
-     *                  TRSMOM(INUM,JOP)
+     *                  XMOM*XTKAYS,' cm-1; ',XMOM,' au'
                   END IF
   545          CONTINUE
             END IF

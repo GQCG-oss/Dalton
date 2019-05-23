@@ -363,6 +363,8 @@ C
       END IF
 C
       IF (USE_PELIB()) THEN
+         WRITE(LUPRI,'(A)') ' Environment is modeled using'//
+     &      ' the polarizable embedding scheme (PE library)'
          IF (TRPFLG) THEN
          ! edh: Insert quit of CREF have MULTIPLICITY NEQ 0!
          END IF
@@ -3483,7 +3485,7 @@ C
       IF (EXMOM) THEN
          WRITE(LUPRI,'(/A)')
      * '** CALCULATION OF TRANSITION MOMENTS BETWEEN EXCITED STATES **'
-         CALL ANASYM(NGPPP,NPPCNV,NPPCNV,WRK)
+         CALL QR_ANASYM(NGPPP,NPPCNV,NPPCNV)
 C
 C SET UP POINTERS FOR EXCITATION ENERGIES
 C
@@ -3555,7 +3557,7 @@ C
  430     CONTINUE
       ELSE
          IF (CRCAL) THEN
-            CALL AN2SYM(NACROP,NBCROP,NCCROP,NDCROP,WRK)
+            CALL CR_ANASYM(NACROP,NBCROP,NCCROP,NDCROP)
             DO 480 ISYM = 1,NSYM
                IF (NACROP(ISYM).GT.0) THEN
                   WRITE(LUPRI,'(/I5,A,I5,A/)')NACROP(ISYM),
@@ -3598,7 +3600,7 @@ C
  483        CONTINUE
          END IF
          IF (TOMOM) THEN
-            CALL AN2SYM(NATMOP,NBTMOP,NCTMOP,NTMCNV,WRK)
+            CALL CR_ANASYM(NATMOP,NBTMOP,NCTMOP,NTMCNV)
             DO 790 ISYM = 1,NSYM
                IF (NATMOP(ISYM).GT.0) THEN
                   WRITE(LUPRI,'(/I5,A,I5,A/)')NATMOP(ISYM),
@@ -3631,7 +3633,7 @@ C
  798        CONTINUE
          END IF
          IF (TPAMP) THEN
-            CALL AN2SYM(NATPOP,NBTPOP,NTPCN1,NTPCN2,WRK)
+            CALL CR_ANASYM(NATPOP,NBTPOP,NTPCN1,NTPCN2)
             DO 390 ISYM = 1,NSYM
                IF (NATPOP(ISYM).GT.0) THEN
                   WRITE(LUPRI,'(/I5,A,I5,A/)')NATPOP(ISYM),
@@ -3654,7 +3656,7 @@ C
  391        CONTINUE
          END IF
          IF (HYPCAL) THEN
-            CALL ANASYM(NAQROP,NBQROP,NCQROP,WRK)
+            CALL QR_ANASYM(NAQROP,NBQROP,NCQROP)
             DO 490 ISYM = 1,NSYM
                IF (NAQROP(ISYM).GT.0) THEN
                   WRITE(LUPRI,'(/I5,A,I5,A/)')NAQROP(ISYM),
@@ -3687,7 +3689,7 @@ C
  492        CONTINUE
          END IF
          IF (SOMOM) THEN
-            CALL ANASYM(NASMOP,NBSMOP,NSMCNV,WRK)
+            CALL QR_ANASYM(NASMOP,NBSMOP,NSMCNV)
             DO 590 ISYM = 1,NSYM
                IF (NASMOP(ISYM).GT.0) THEN
                   WRITE(LUPRI,'(/I5,A,I5,A/)')NASMOP(ISYM),
@@ -3772,8 +3774,8 @@ C
       CALL QEXIT('RSPSYM')
       RETURN
       END
-C  /* Deck anasym */
-      SUBROUTINE ANASYM(NAOPNU,NBOPNU,NCOPNU,IWRK)
+C  /* Deck QR_ANASYM */
+      SUBROUTINE QR_ANASYM(NAOPNU,NBOPNU,NCOPNU)
 C
 C THIS ROUTINE ANALYZES IF OPERATORS THAT ARE SPECIFIED IN QUADRATIC
 C RESPONSE CALCULATIONS HAVE NO MATCHING PARTNERS DUE TO SYMMETRY.
@@ -3785,10 +3787,11 @@ C
 #include "inforb.h"
 #include "infrsp.h"
 C
-      DIMENSION NAOPNU(*),NBOPNU(*),NCOPNU(*),IWRK(NSYM,*)
+      DIMENSION NAOPNU(*),NBOPNU(*),NCOPNU(*)
+      INTEGER   IWRK(8,3)
       IF (IPRRSP.GT.5) THEN
          WRITE(LUPRI,'(/A)')
-     *   ' ANASYM: NUMBER OF QR PROPERTY VECTORS BEFORE REDUCTION'
+     *   ' QR_ANASYM: NUMBER OF QR PROPERTY VECTORS BEFORE REDUCTION'
          WRITE(LUPRI,'(/A)')' NAOPNU(I),I=1,NSYM '
          WRITE(LUPRI,'(8I5)')( NAOPNU(I),I=1,NSYM)
          WRITE(LUPRI,'(/A)')' NBOPNU(I),I=1,NSYM '
@@ -3816,29 +3819,38 @@ C
       NAOPTO = 0
       NBOPTO = 0
       NCOPTO = 0
+      I = 0
       DO 400 ISYM = 1,NSYM
          IF (IWRK(ISYM,1).NE.NAOPNU(ISYM)) THEN
-           WRITE(LUPRI,'(/I5,A,I5,A)')
-     *     NAOPNU(ISYM),' A OPERATORS OF SYMMETRY',ISYM,' NOT INCLUDED'
+           WRITE(LUPRI,'(/A,I5,A,I3,A)')  '@ INFO: ',
+     *     NAOPNU(ISYM),' A operators of symmetry',ISYM,' not included'
            NAOPNU(ISYM) = IWRK(ISYM,1)
+           I = 1
          END IF
          IF (IWRK(ISYM,2).NE.NBOPNU(ISYM)) THEN
-           WRITE(LUPRI,'(/I5,A,I5,A)')
-     *     NBOPNU(ISYM),' B OPERATORS OF SYMMETRY',ISYM,' NOT INCLUDED'
+           WRITE(LUPRI,'(/A,I5,A,I3,A)') '@ INFO: ',
+     *     NBOPNU(ISYM),' B operators of symmetry',ISYM,' not included'
            NBOPNU(ISYM) = IWRK(ISYM,2)
+           I = 1
          END IF
          IF (IWRK(ISYM,3).NE.NCOPNU(ISYM)) THEN
-           WRITE(LUPRI,'(/I5,A,I5,A)')
-     *     NCOPNU(ISYM),' C OPERATORS OF SYMMETRY',ISYM,' NOT INCLUDED'
+           WRITE(LUPRI,'(/A,I5,A,I3,A)') '@ INFO: ',
+     *     NCOPNU(ISYM),' C operators of symmetry',ISYM,' not included'
            NCOPNU(ISYM) = IWRK(ISYM,3)
+           I = 1
          END IF
          NAOPTO = NAOPTO + NAOPNU(ISYM)
          NBOPTO = NBOPTO + NBOPNU(ISYM)
          NCOPTO = NCOPTO + NCOPNU(ISYM)
  400  CONTINUE
+      IF (I .EQ. 1) THEN
+         WRITE(LUPRI,'(/A)')
+     &   '@ INFO: Symmetry analysis shows that all properties'//
+     &   ' involving those operators are trivially ZERO.'
+      END IF
       IF (IPRRSP.GT.5) THEN
          WRITE(LUPRI,'(/A)')
-     *   ' ANASYM: NUMBER OF QR PROPERTY VECTORS AFTER REDUCTION'
+     *   ' QR_ANASYM: NUMBER OF QR PROPERTY VECTORS AFTER REDUCTION'
          WRITE(LUPRI,'(/A)')' NAOPNU(I),I=1,NSYM '
          WRITE(LUPRI,'(8I5)')( NAOPNU(I),I=1,NSYM)
          WRITE(LUPRI,'(/A)')' NBOPNU(I),I=1,NSYM '
@@ -3850,9 +3862,9 @@ C
       IF (NOPTOT.EQ.0) THEN
          NINFO = NINFO + 1
          WRITE(LUPRI,'(3(/A))')
-     *   ' INFO: Symmetry of specified operators does not match.',
-     *   ' INFO: Response properties are thus trivially ZERO.',
-     *   ' INFO: Welcome back with new input.'
+     *   '@ INFO: Symmetries of specified operators do not match.',
+     *   '@ INFO: All response properties are thus trivially ZERO.',
+     *   '@ INFO: Welcome back with new input.'
 C
       END IF
       RETURN

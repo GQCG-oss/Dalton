@@ -11,6 +11,7 @@
 ## [2019.alpha] (Dalton2019 alpha)
 
 ### New features added
+- Calculate and print oscillator strengths based on .EEF dipole transition moments.
 - Added ".TDA TR" keyword for invoking Tamm-Dancoff approximation for triplet response properties under \*\*PROPERTIES.
   Useful for avoiding (near-)triplet-instability problems, for example in DFT calculations of spin-spin coupling constants. (H. J. Aa. Jensen)
 - Added ".TDA SI" keyword for invoking Tamm-Dancoff approximation for singlet response properties under \*\*PROPERTIES. (H. J. Aa. Jensen)
