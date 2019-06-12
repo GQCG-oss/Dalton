@@ -1940,10 +1940,7 @@ C
       KLAMPB = 1
       KLAMHB = KLAMPB + NLAMDT
       KEND1  = KLAMHB + NLAMDT
-      LWRK1 = LWORK
-C
-      KENDSV = KEND1
-      LWRKSV = LWRK1
+      LWRK1  = LWORK - KEND1
 C
 C--------------------------------------
 C     Calculate lambda-B
@@ -1975,6 +1972,9 @@ C
       ELSE
          NTOSYM = NSYM
       ENDIF
+C
+      KENDSV = KEND1
+      LWRKSV = LWRK1
 C
       DO ISYMD1 = 1,NTOSYM
 C

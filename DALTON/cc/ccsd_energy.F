@@ -288,24 +288,22 @@ C
       WRITE (LUPRI,'(1x,A,/)')
      *'*********************************************************'//
      *'**********'
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,'(13X,A)')
+      WRITE(LUPRI,'(/13X,A)')
      *     'The Direct Coupled Cluster Energy Program'
       WRITE(LUPRI,'(13X,A)')
      *     '-----------------------------------------'
       WRITE(LUPRI,'(//10X,A,I8)')
      *     'Number of t1 amplitudes                 :  ',NT1AMX
-      WRITE(LUPRI,'(10X,A,I8)')
-     *     'Number of t2 amplitudes                 :  ',NT2AMX
+      WRITE(LUPRI,'(10X,A,I10)')
+     *     'Number of t2 amplitudes                 :',NT2AMX
       NCCVAR = NT1AMX + NT2AMX
       IF (CCR12) THEN
-        WRITE(LUPRI,'(10X,A,I8)')
-     *     "Number of t2' amplitudes for R12 part   :  ",NTR12AM(1)
+        WRITE(LUPRI,'(10X,A,I10)')
+     *     "Number of t2' amplitudes for R12 part   :",NTR12AM(1)
         NCCVAR = NCCVAR + NTR12AM(1)
       END IF
-      WRITE(LUPRI,'(10X,A,I8)')
-     *     'Total number of amplitudes in ccsd      :  ',NCCVAR
-      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(10X,A,I10/)')
+     *     'Total number of amplitudes in ccsd      :',NCCVAR
       CALL FLSHFO(LUPRI)
 C
 C----------------------------------------------------------------

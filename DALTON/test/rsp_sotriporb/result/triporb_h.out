@@ -4,8 +4,11 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2016.alpha
+    This is output from DALTON release Dalton2019.alpha (2019)
+         ( Web site: http://daltonprogram.org )
+
    ----------------------------------------------------------------------------
+
     NOTE:
      
     Dalton is an experimental code for the evaluation of molecular
@@ -24,13 +27,13 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
        T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
        L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
        C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
        H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
        M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
-       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
        T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
        J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
        O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
@@ -45,12 +48,12 @@
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
        and H. Agren,
        "The Dalton quantum chemistry program system",
-       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
-    
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
     and
-    
-       Dalton, a Molecular Electronic Structure Program,
-       Release Dalton2016.alpha (2015), see http://daltonprogram.org
+     
+       Dalton, a molecular electronic structure program,
+       Release Dalton2019.alpha (2019), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -59,17 +62,19 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
   Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
-  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Sonia Coriani,            Technical Univ. of Denmark,   Denmark     (CC module, MCD in RESPONS)
   Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
   Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
+  Tobias Fahleson,          KTH Stockholm,                Sweden      (Damped cubic response)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -78,13 +83,16 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
   Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Christoph Jacob           TU Braunschweig               Germany     (Frozen density embedding model)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
   Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
@@ -102,10 +110,10 @@
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
   Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
   Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
-  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Rolf H. Myhre,            NTNU,                         Norway      (Subsystems and CC3)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
-  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Patrick Norman,           KTH Stockholm,                Sweden      (Cubic response and complex frequency response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
@@ -123,6 +131,7 @@
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
   Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Andre S. P. Gomes,        CNRS/Universite de Lille,     France      (Frozen density embedding model)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
   Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
   Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
@@ -132,42 +141,43 @@
   Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
   David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  Lucas Visscher,           Vrije Universiteit Amsterdam, Netherlands (Frozen density embedding model)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Thu Apr 16 16:30:51 2015
-     Host name              : olav-ThinkPad-W540                      
+     Date and time (Darwin) : Tue May 14 10:51:52 2019
+     Host name              : adm-106152.pc.sdu.dk                    
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/olav/dev/dalton/DALTON/test/rsp_sotriporb.d
-   2) /home/olav/dev/dalton/build/master/basis
+   1) /Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/test/rsp_sotriporb
+   2) /Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | olav
- Host                     | olav-ThinkPad-W540
- System                   | Linux-3.13.0-48-generic
+ Who compiled             | hjj
+ Host                     | adm-106152.local
+ System                   | Darwin-15.6.0
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | ON
- Fortran compiler         | /usr/bin/mpif90
- Fortran compiler version | GNU Fortran (Ubuntu 4.9.1-16ubuntu6) 4.9.1
- C compiler               | /usr/bin/mpicc
- C compiler version       | gcc (Ubuntu 4.9.1-16ubuntu6) 4.9.1
- C++ compiler             | /usr/bin/mpicxx
+ Fortran compiler         | /opt/local/bin/mpif90
+ Fortran compiler version | GNU Fortran (MacPorts gcc7 7.4.0_0) 7.4.0
+ C compiler               | /opt/local/bin/mpicc
+ C compiler version       | gcc-mp-7 (MacPorts gcc7 7.4.0_0) 7.4.0
+ C++ compiler             | /opt/local/bin/mpicxx
  C++ compiler version     | unknown
- BLAS                     | /usr/lib/libblas.so
- LAPACK                   | /usr/lib/liblapack.so
+ BLAS                     | /opt/local/lib/libopenblas.dylib
+ LAPACK                   | /usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | 5b2590b092c28391aee43cb9e568ad75084e9834
- Git branch               | master-diable-refchk
- Configuration time       | 2015-04-10 07:52:21.948089
+ Last Git revision        | f1c5783e03fbd3364f432e0407e614f4d4aec2ca
+ Git branch               | master
+ Configuration time       | 2019-05-14 10:47:33.872690
 
  * Sequential calculation.
 
@@ -175,63 +185,63 @@ Compilation information
    Content of the .dal input file
  ----------------------------------
 
-cat > $testcase.dal <<%EOF%                       
-**DALTON INPUT                                    
-.RUN RESPONSE                                     
-**INTEGRAL                                        
-.DIPLEN                                           
-.SPIN-ORBIT                                       
-**WAVE FUNCTIONS                                  
-.MCSCF                                            
-*CONFIG                                           
-.ELECTRONS                                        
- 2                                                
-.INACTIVE                                         
- 0 0 0 0 0 0 0 0                                  
-.RAS1 SPACE                                       
- 1 0 0 0 0 0 0 0                                  
-.RAS2 SPACE                                       
- 0 1 0 0 0 0 0 0                                  
-.RAS3 SPACE                                       
- 0 0 1 0 0 0 0 0                                  
-.RAS1 ELEC                                        
- 1 2                                              
-.RAS3 ELEC                                        
- 0 0                                              
-.SYMMETRY                                         
- 2                                                
-.SPIN MULT                                        
- 1                                                
-*CI VECTOR                                        
-.PLUS COM                                         
-*OPTIMIZATION                                     
-.DETERMINANTS                                     
-**RESPONSE                                        
-.TRPFLG                                           
-*LINEAR                                           
-.SINGLE RESIDUE                                   
-.PRINT                                            
- 3                                                
-.PROPRT                                           
-Z2SPNORB                                          
-.ROOTS                                            
- 0 0 1 0 0 0 0 0                                  
-**END OF DALTON INPUT                             
+cat > $testcase.dal <<%EOF%
+**DALTON INPUT
+.RUN RESPONSE
+**INTEGRAL
+.DIPLEN
+.SPIN-ORBIT
+**WAVE FUNCTIONS
+.MCSCF
+*CONFIG
+.ELECTRONS
+ 2
+.INACTIVE
+ 0 0 0 0 0 0 0 0
+.RAS1 SPACE
+ 1 0 0 0 0 0 0 0
+.RAS2 SPACE
+ 0 1 0 0 0 0 0 0
+.RAS3 SPACE
+ 0 0 1 0 0 0 0 0
+.RAS1 ELEC
+ 1 2
+.RAS3 ELEC
+ 0 0
+.SYMMETRY
+ 2
+.SPIN MULT
+ 1
+*CI VECTOR
+.PLUS COM
+*OPTIMIZATION
+.DETERMINANTS
+**RESPONSE
+.TRPFLG
+*LINEAR
+.SINGLE RESIDUE
+.PRINT
+ 3
+.PROPRT
+Z2SPNORB
+.ROOTS
+ 0 0 1 0 0 0 0 0
+**END OF DALTON INPUT
 
 
    Content of the .mol file
  ----------------------------
 
-INTGRL                                                                         
-Energy calculation without symmetry                                            
-Basis set specified with ATOMBASIS                                             
-    1                                                                          
-        1.    1    2    1    1                                                 
-H     0 0 1.0                                                                  
-    1    1                                                                     
-1.0       1.0                                                                  
-    1    1                                                                     
-1.0       1.0                                                                  
+INTGRL
+Energy calculation without symmetry
+Basis set specified with ATOMBASIS
+    1
+        1.    1    2    1    1
+H     0 0 1.0
+    1    1
+1.0       1.0
+    1    1
+1.0       1.0
 
 
        *******************************************************************
@@ -260,15 +270,6 @@ H     0 0 1.0
  2: Basis set specified with ATOMBASIS                                      
     ------------------------------------------------------------------------
 
-
-
-@ WARNING - deprecated old .mol fixed format input has been detected:
-    1                                                                           
-@ WARNING - this input format may not be supported in future releases.
-
-
-
-
   Atomic type no.    1
   --------------------
   Nuclear charge:   1.00000
@@ -288,9 +289,9 @@ H     0 0 1.0
 
  Symmetry Independent Centres             
  ----------------------------
-       1 :      0.00000000     0.00000000     0.00000000  Isotope  1
+H      1 :      0.00000000     0.00000000     0.00000000  Isotope  1
 
- The following elements were found:   X  Y  Z  
+ The following symmetry elements were found:   X  Y  Z  
 
 
                          SYMGRP: Point group information
@@ -464,9 +465,9 @@ H     0 0 1.0
 
  Default print level:        1
 
- * Nuclear model: Point charge
-
  Calculation of one- and two-electron Hamiltonian integrals.
+
+ Calculate two-electron spin-orbit integrals
 
  The following one-electron property integrals are calculated as requested:
           - overlap integrals
@@ -484,6 +485,14 @@ H     0 0 1.0
      ************************************************************************
 
 
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                    All dipole components are zero by symmetry
+
+
+
  Threshold for neglecting two-electron integrals:  1.00D-12
  HERMIT - Number of two-electron integrals written:          16 ( 29.1% )
  HERMIT - Megabytes written:                              0.007
@@ -493,8 +502,8 @@ H     0 0 1.0
    =================================
    Spin-orbit 2-electron CPU  time      0. seconds
    Spin-orbit 2-electron wall time      0. seconds
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+  Total CPU  time used in HERMIT:   0.01 seconds
+  Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -526,8 +535,8 @@ H     0 0 1.0
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Apr 16 16:30:51 2015
-     Host name              : olav-ThinkPad-W540                      
+     Date and time (Darwin) : Tue May 14 10:51:52 2019
+     Host name              : adm-106152.pc.sdu.dk                    
 
  Title lines from ".mol" input file:
      Energy calculation without symmetry                                     
@@ -546,7 +555,7 @@ H     0 0 1.0
 
      Wave function specification
      ============================
-@    Wave function type        >>> MC-SCF <<<
+@    Wave function type        --- MC-SCF ---
 @    Number of closed shell electrons           0
 @    Number of electrons in active shells       2
 @    Total charge of the molecule              -1
@@ -601,19 +610,19 @@ Number of active orbitals in RAS1, RAS2, and RAS3 :   1   1   1
 
 
 
- <<<<< Output from SIRIUS CI module (CICTL) >>>>>
+ ----- Output from SIRIUS CI module (CICTL) -----
 
 
 
 
- Integral transformation: Total CPU and WALL times (sec)       0.000       0.001
+ 2-el. integral transformation level 0: Total CPU and WALL times (sec)       0.002       0.003
 
 
- >>> SIRCI.CIST1: plus combination of all degenerate
+ --- SIRCI.CIST1: plus combination of all degenerate
                  configurations is used as start vectors.
 
 
- (CIST1)  2 lowest diagonal elements:
+ (CIST1) 2 lowest diagonal elements:
 
  Element no. Config.no.    Active energy      Total energy
 
@@ -632,24 +641,26 @@ Number of active orbitals in RAS1, RAS2, and RAS3 :   1   1   1
 
 
 @ Final CI energies and residuals in symmetry 2 (irrep B3u)
-@    1        2.468763964419294       4.97D-16
+@    1        2.468763964419295       4.97D-16
 
-   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
+   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
 
-     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+
+Calculating AOSUPINT
+     (Precalculated AO two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
 
 
- <<< MACRO ITERATION  1 >>>
+ --- MACRO ITERATION  1 ---
  --------------------------
 
- Integral transformation: Total CPU and WALL times (sec)       0.000       0.000
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.001       0.003
 
- Total MCSCF energy       :             2.468763964419294  (MACRO    1)
+ Total MCSCF energy       :             2.468763964419295  (MACRO    1)
 
  - Nuclear repulsion      :             0.000000000000000
  - Inactive energy        :             0.000000000000000
- - Active energy          :             2.468763964419294
+ - Active energy          :             2.468763964419295
 
  Norm of total gradient   :             0.000000000000
  -    of CI gradient      :             0.000000000000
@@ -659,28 +670,28 @@ Number of active orbitals in RAS1, RAS2, and RAS3 :   1   1   1
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
       Virial theorem: -V/T =      0.382809
-@      MULPOP H      -1.00; 
+@    MULPOP   H      -1.00; 
 
  (SIROPT) CI energy lowering:               0.000000000000000
-          CI electronic energy:             2.468763964419294
-          CI total energy:                  2.468763964419294
+          CI electronic energy:             2.468763964419295
+          CI total energy:                  2.468763964419295
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            1
      Number of micro iterations used            0
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used         0.01
 
- >>>> CPU and wall time for MCSCF :       0.002       0.002
+ CPU and wall time for MCSCF :       0.009       0.018
 
 
                      .----------------------------------------.
-                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     | --- SIRIUS OPTIMIZATION STATISTICS --- |
                      `----------------------------------------'
 
 
  
-     Date and time (Linux)  : Thu Apr 16 16:30:51 2015
-     Host name              : olav-ThinkPad-W540                      
+     Date and time (Darwin) : Tue May 14 10:51:52 2019
+     Host name              : adm-106152.pc.sdu.dk                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
@@ -690,7 +701,7 @@ Number of active orbitals in RAS1, RAS2, and RAS3 :   1   1   1
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
-    1      1    0.000000    0.000000      0    0.000000    0.000000    0.000000
+    1      2   -0.000000    0.000000      0    0.000000    0.000000    0.000000
 
 
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
@@ -715,7 +726,7 @@ Number of active orbitals in RAS1, RAS2, and RAS3 :   1   1   1
 
 
                        .-----------------------------------.
-                       | >>> Final results from SIRIUS <<< |
+                       | --- Final results from SIRIUS --- |
                        `-----------------------------------'
 
 
@@ -731,8 +742,8 @@ Number of active orbitals in RAS1, RAS2, and RAS3 :   1   1   1
 @    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Thu Apr 16 16:30:51 2015
-     Host name              : olav-ThinkPad-W540                      
+     Date and time (Darwin) : Tue May 14 10:51:52 2019
+     Host name              : adm-106152.pc.sdu.dk                    
 
  Occupancies of natural orbitals
  -------------------------------
@@ -759,9 +770,9 @@ Number of active orbitals in RAS1, RAS2, and RAS3 :   1   1   1
 
  Symmetry 8  ( Au ) -- No occupied orbitals
 
-File label for MO orbitals:  16Apr15   (CNOORB)
+File label for MO orbitals:  14May19   (CNOORB)
 
- (Only coefficients >0.0100 are printed.)
+ (Only coefficients > 0.0100 are printed.)
 
  Molecular orbitals for symmetry species 1  (Ag )
  ------------------------------------------------
@@ -791,7 +802,7 @@ File label for MO orbitals:  16Apr15   (CNOORB)
  *** NOTE: this root is the reference state ***
 
 
-  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  Printout of coefficients in interval   0.3162E+00 to  0.1000E+01
   ==============================================================
 
  Coefficient of determinant         1 is      0.70710678  7.07106781E-01
@@ -803,12 +814,12 @@ File label for MO orbitals:  16Apr15   (CNOORB)
   beta-string:  1
 
 
-  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  Printout of coefficients in interval   0.1000E+00 to  0.3162E+00
   ==============================================================
    ( no coefficients )
 
 
-  Printout of coefficients in interval  0.5000E-01 to 0.1000E+00
+  Printout of coefficients in interval   0.5000E-01 to  0.1000E+00
   ==============================================================
    ( no coefficients )
 
@@ -822,16 +833,14 @@ File label for MO orbitals:  16Apr15   (CNOORB)
   10- 1 to 10- 0         2    0.10000000E+01    0.10000000E+01
   Number of coefficients less than 10^-11 times norm is             0
 
-
-
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+  Total CPU  time used in SIRIUS :   0.01 seconds
+  Total wall time used in SIRIUS :   0.03 seconds
 
  
-     Date and time (Linux)  : Thu Apr 16 16:30:51 2015
-     Host name              : olav-ThinkPad-W540                      
+     Date and time (Darwin) : Tue May 14 10:51:52 2019
+     Host name              : adm-106152.pc.sdu.dk                    
 
- NOTE:    2 warnings have been issued.
+ NOTE:    1 warnings have been issued.
  Check output, result, and error files for "WARNING".
 
 
@@ -850,22 +859,8 @@ File label for MO orbitals:  16Apr15   (CNOORB)
   RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
  ------------------------------------------------------------------------------
 
- WARNING SIR_INTOPEN, old integral transformation not found as expected, ICASE = 3
- - ICASE = 1: MO integral file MOTWOINT does not exist
- - ICASE = 2: no MO integrals on MOTWOINT
- - ICASE = 3: transformation level on MOTWOINT not sufficient
- ITRLVL requested & ITRLVL on MOTWOINT :    4    3
 
- NSETUP: MO transformation level too low or no MO integral file found.
- NSETUP: generating MO 2-el. integral file.
-
-
- Old direct access AO file found, SORTA skipped.
-
- Integral transformation: Total CPU and WALL times (sec)       0.000       0.000
-
-
- <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+ -------- OUTPUT FROM RESPONSE INPUT PROCESSING --------
 
 
 
@@ -900,13 +895,16 @@ File label for MO orbitals:  16Apr15   (CNOORB)
 
                Z2SPNORB
 
- TRACTL_1: Integral transformation abandoned,
-           the required MO integrals are already available.
+ Old direct access AO file found, SORTA skipped.
+
+ 2-el. integral transformation level 4: Total CPU and WALL times (sec)       0.002       0.002
+
+ Sorting integrals to Dirac format: Total CPU and WALL times (sec)       0.000       0.000
 
 
- MCSCF energy         :        2.468763964419294
+ MCSCF energy         :        2.468763964419295
  -- inactive part     :        0.000000000000000
- --   active part     :        2.468763964419294
+ --   active part     :        2.468763964419295
  -- nuclear repulsion :        0.000000000000000
 
 
@@ -914,10 +912,10 @@ File label for MO orbitals:  16Apr15   (CNOORB)
                         *** MCSCF response calculation ***
                         **********************************
 
-
-
- >>>>>>>>>> Linear response calculation
- >>>>>>>>>> Symmetry of excitation/property operator(s)    4  ( B1g)
+ ----------------------------------------------------------------
+ ----- Linear response calculation
+ ----- Symmetry of excitation/property operator(s)    4  ( B1g)
+ ----------------------------------------------------------------
 
  Number of excitations of this symmetry            1
  Number of response properties of this symmetry    0
@@ -930,18 +928,20 @@ File label for MO orbitals:  16Apr15   (CNOORB)
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       1
 
- >>> IN RSPPP:
-  THCPP,MAXRM    1.0000000000000000E-003         600
-  KSYMOP,NGPPP(KSYMOP)            4           1
-  LWRK ,LWRK1     63999638    62917838
+ --- In RSPPP:
+ THCPP, MAXRM          1.00D-03       600
+ KSYMOP,NGPPP(KSYMOP)         4         1
+ LWRK , LWRK1          63999638  62917838
   KEXCNV,NSIM,LWRK2            1           1     1082089
 
 
 
- <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+ --- EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) ---
 
  Operator symmetry = 4  ( B1g); triplet =   T
 
+           0  START configuration VECTORS USING LOWEST DIAGONAL HESSIAN ELEMENTS
+           1  START orbital VECTORS
 
  ** RSPCTL MICROITERATION NUMBER    1
 
@@ -969,8 +969,6 @@ File label for MO orbitals:  16Apr15   (CNOORB)
 
  Skip one-electron spin-orbit contributions
 
- Integral transformation: Total CPU and WALL times (sec)       0.000       0.000
-
      Response orbital operator symmetry = 4
      (only scaled elements abs greater than   10.00 % of max abs value)
 
@@ -978,7 +976,7 @@ File label for MO orbitals:  16Apr15   (CNOORB)
       ----------    -----  -----      --------------      --------------      --------------      --------------
            1         2(2)   3(3)       -0.7522527781       -0.7522527781       -0.7522527781       -0.7522527781
 
-@ Transition operator type:    Z2SPNORB
+@ Triplet transition operator label: Z2SPNORB
 @ STATE NO:    1 *TRANSITION MOMENT: -1.00146197E-05 *ENERGY(eV):  -10.234920    
 
 
@@ -988,32 +986,43 @@ File label for MO orbitals:  16Apr15   (CNOORB)
 
 
 
- @ Excited state no:    1 in symmetry 3  ( B2u)
- ----------------------------------------------
+ @ Excited state no:    1 in symmetry 3  ( B2u) - triplet excitation
+ -------------------------------------------------------------------
 
 @ Excitation energy : -0.37612639     au
-@                     -10.234920     eV;  -82550.200     cm-1;  -987.51968     kJ / mol
+@                      -10.234920     eV;  -82550.200     cm-1;  -987.51968     kJ / mol
 
-@ Total energy :       2.0926376     au
+@ Total energy :        2.0926376     au
 
-@ Operator type:    Z2SPNORB
-@ Spin-orbit coupling constant (Z2SPNORB) :  -2.1979549     cm-1
-                                           -1.00146197E-05 au
+@ Operator label: Z2SPNORB; Transition moment : -1.00146197E-05 au
+@ Spin-orbit coupling constant (Z2SPNORB) :  -2.1979549     cm-1;  -1.00146197E-05 au
+
+ Eigenvector for state no.  1
+
+     Response orbital operator symmetry = 4
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+           1         2(2)   3(3)        1.0000000000        0.0000000000        1.0000000000        0.0000000000
+
+     Configuration operator symmetry = 4
+     >> NO ELEMENTS <<
 
 
  Time used in polarization propagator calculation is      0.00 CPU seconds for symmetry 4
 
- >>>> Total CPU  time used in RESPONSE:   0.00 seconds
- >>>> Total wall time used in RESPONSE:   0.00 seconds
+  Total CPU  time used in RESPONSE:   0.01 seconds
+  Total wall time used in RESPONSE:   0.02 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.01 seconds
- >>>> Total wall time used in DALTON:   0.01 seconds
+  Total CPU  time used in DALTON:   0.04 seconds
+  Total wall time used in DALTON:   0.06 seconds
 
  
-     Date and time (Linux)  : Thu Apr 16 16:30:51 2015
-     Host name              : olav-ThinkPad-W540                      
+     Date and time (Darwin) : Tue May 14 10:51:52 2019
+     Host name              : adm-106152.pc.sdu.dk                    

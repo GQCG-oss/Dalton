@@ -59,10 +59,10 @@ C
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in EXPECT')
 
- 1          CONTINUE !         .SHIELD
+ 1          CONTINUE !         .SHIELDing
                NST    = .TRUE.
                GOTO 100
- 2          CONTINUE !         .SPIN-S
+ 2          CONTINUE !         .SPIN-Spin
                SST    = .TRUE.
                GOTO 100
  3          CONTINUE !         .DIASUS
@@ -99,7 +99,7 @@ C
  11         CONTINUE
                MQUADR = .TRUE.
                GOTO 100
- 12         CONTINUE
+ 12         CONTINUE !      .ALL COmponents
                ALLCOM = .TRUE.
                IF (.NOT. DODRCT) ICHANG = ICHANG - 1
                GOTO 100
@@ -134,12 +134,12 @@ C
      &         ' The following expectation values will be calculated '//
      &          'in this run:'
                IF (NST) WRITE (LUPRI,'(10X,A)')
-     &              'Nuclear shielding tensor'
+     &              'Diamagnetic nuclear shielding tensor'
                IF (MDIASU) WRITE (LUPRI,'(10X,A)')
      &                 'Diamagnetic susceptiblity tensor'
                IF (SST) THEN
                   WRITE (LUPRI,'(10X,A)')
-     &                 'Spin-spin coupling tensor'
+     &                 'DSO part of spin-spin coupling tensor'
                   WRITE (LUPRI,'(10X,A,I5)')
      &                 'Number of integration points for DSO:', MPQUAD
                END IF
@@ -163,11 +163,11 @@ C              MSKIP = .TRUE.
             IF (MNODV) WRITE (LUPRI,'(/,2A)') 'Active one-electron',
      &           'density matrix neglected in EXPECT.'
             IF (ALLCOM .AND. DODRCT .AND. NST) WRITE(LUPRI,'(/,A)')
-     &           ' All components of shielding expexctation value '//
+     &           ' All components of shielding expectation value '//
      &           'calculated at once'
             IF (ALLCOM .AND. DODRCT .AND. SST) WRITE(LUPRI,'(/,A)')
      &           ' All components of diamagnetic spin-orbit operators'//
-     &           ' calculated at once'
+     &           ' (DSO) calculated at once'
             IF (MCUT) WRITE (LUPRI,'(/,A)')
      &           ' Program is stopped after EXPECT.'
          END IF
@@ -333,13 +333,14 @@ c        but currently, it is implemented only without symmetry.
 c        In case of no symmetry present, both methods should give
 c        identical results.
          IF(NSYM.GT.1 .OR. NASHT.GT.0) THEN
+         ! numerical integration not implemented for symmetry or MCSCF or HSROHF
             WRITE(LUPRI,'(/A)')
-     &        "Symmetry or open-shell -> DSO by analytical integration."
+     &        "Symmetry or open shell -> DSO by analytical integration."
             CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),
      &           WORK(KLAST),LWRK,MPRINT,MNODC,MNODV,WORD,NCOMP)
          ELSE
             WRITE(LUPRI,'(/A)')
-     &         "No symmetry -> DSO by numerical integration."
+     &        "No symmetry -> DSO by numerical integration."
             CALL DZERO(SPNDSO,MXCOOR*MXCOOR)
             CALL NUMDSO(SPNDSO,NUCIND,WORK(KLAST),LWRK,MPRINT)
          ENDIF
@@ -638,7 +639,7 @@ C
             END IF
 
 cDM add the solvent contribution to perturbed Fock matrix 
-	    CALL DAXPY(NCOMP,D1,WORK(KSLEXP),1,EXPVAL,1)
+            CALL DAXPY(NCOMP,D1,WORK(KSLEXP),1,EXPVAL,1)
 C
          END IF
 C
@@ -2005,20 +2006,23 @@ C     efficiency anyway). K.Ruud, Feb.-96
 C
                NABATY(1) = 1
                IF (.NOT. ZERNRM(I)) THEN
-                  NOCONV = .FALSE.
+                  NOCONV = .TRUE.
                   FINRES = 0.0D0
+                  KZRED_ABA = 0
                   CALL ABARSP(CICLC,HFCLC,TRPCLC,OOTV,ISYM,EXCLC,EXVAL,
      &                        NEXVAL,NABATY,1,TRPLAB(IREC),LUGDVE,
      &                        LUSOVE,LUREVE,THRTRP,MAXTRP,IPRTRP,MXRM,
      &                        MXPHP,WORK,LWORK)
                   IF (NOCONV) THEN
-                     WRITE (LUPRI,'(/3A,2F10.5)')
-     &                  '@ WARNING No convergence for ',TRPLAB(IREC),
-     &                  '. Last residual and threshold:', FINRES, THRTRP
+                     WRITE (LUPRI,'(/3A,2F10.5,A,I0)')
+     &    '@ WARNING No convergence for "',TRPLAB(IREC),
+     &    '". Last residual and threshold:', FINRES, THRTRP,
+     &    ';  # trial vectors: ',KZRED_ABA
                   ELSE
-                     WRITE (LUPRI,'(3A,2F10.5)')
-     &                  '    Convergence for ',TRPLAB(IREC),
-     &                  '. Last residual and threshold:', FINRES, THRTRP
+                     WRITE (LUPRI,'(3A,2F10.5,A,I0)')
+     &    '    Convergence for "',TRPLAB(IREC),
+     &    '". Last residual and threshold:', FINRES, THRTRP,
+     &    ';  # trial vectors: ',KZRED_ABA
                   END IF
                END IF
 C
@@ -2270,6 +2274,10 @@ C
       ELSE
          WRITE(LUPRI,'(A)') '@1 London orbitals (GIAOs) has been used.'
       END IF 
+      IF (TDA_SINGLET) THEN
+         WRITE(LUPRI,'(A)')
+     &   '@1 TDA used for singlet response contributions.'
+      END IF
       WRITE (LUPRI,'(/A/A)')
      & '@1 atom   shielding       dia      para     skew '/
      &  /'     span     (aniso     asym)',
@@ -2304,6 +2312,10 @@ C
       ELSE
          WRITE(LUPRI,'(A)') '@2 London orbitals (GIAOs) has been used.'
       END IF 
+      IF (TDA_SINGLET) THEN
+         WRITE(LUPRI,'(A)')
+     &   '@2 TDA used for singlet response contributions.'
+      END IF
       WRITE (LUPRI,'(/A/A)')
      & '@2 atom   shielding       dia      para     aniso'/
      &  /'      asym        S        A',
@@ -2838,6 +2850,14 @@ C
          WRITE (LUPRI,'(A)')
      &         '             contributions have not been calculated !'
       END IF
+      IF (TDA_TRIPLET) THEN
+         WRITE(LUPRI,'(A)')
+     &   ' * TDA used for triplet response contributions.'
+      END IF
+      IF (TDA_SINGLET) THEN
+         WRITE(LUPRI,'(A)')
+     &   ' * TDA used for singlet response contributions.'
+      END IF
       IATOM1 = 0
       NUCINS = NUCIND
       IF (SOLVNT) NUCINS = NUCINS - 1
@@ -2968,10 +2988,12 @@ C  /* Deck fnlspn */
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *XTHZ)
+! abainf.h : TDA_SINGLET, TDA_TRIPLET
 #include "dorps.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "spnout.h"
+#include "abainf.h"
       LOGICAL TEST
       DIMENSION CHESS(3*NUCDEP,3*NUCDEP,6),
      &                AVEISO(NUCDEP*(NUCDEP + 1)/2,5),
@@ -3054,6 +3076,14 @@ C
      &         'because some'
          WRITE (LUPRI,'(A)')
      &         '             contributions have not been calculated !'
+      END IF
+      IF (TDA_TRIPLET) THEN
+         WRITE(LUPRI,'(A)')
+     &   ' * TDA used for triplet response contributions.'
+      END IF
+      IF (TDA_SINGLET) THEN
+         WRITE(LUPRI,'(A)')
+     &   ' * TDA used for singlet response contributions.'
       END IF
       IATOM1 = 0
       NUCINS = NUCIND

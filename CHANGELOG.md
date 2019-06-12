@@ -3,6 +3,10 @@
 ## [2019.alpha] (Dalton2019 alpha)
 
 ### New features added
+- Calculate and print oscillator strengths based on .EEF dipole transition moments.
+- Added ".TDA TR" keyword for invoking Tamm-Dancoff approximation for triplet response properties under \*\*PROPERTIES.
+  Useful for avoiding (near-)triplet-instability problems, for example in DFT calculations of spin-spin coupling constants. (H. J. Aa. Jensen)
+- Added ".TDA SI" keyword for invoking Tamm-Dancoff approximation for singlet response properties under \*\*PROPERTIES. (H. J. Aa. Jensen)
 - Added possibility to optimize MCSCF singlet wave functions with CSFs when used for triplet properties,
   both in \*\*RESPONS and \*\*PROPERTIES. Previously .DETERMINANTS in wave function optimization was required. (H. J. Aa. Jensen)
 
@@ -10,19 +14,35 @@
 - added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
 
 ### Fixed
+- Singlet totally-symmetric excitation energies for MCSCF in \*\*RESPONS with super-symmetry activated (.SUPSYM keyword). (H. J. Aa. Jensen)
 - make sure we include all (near-)degenerate diagonal elements for linear response excitation energies
   via \*\*PROPERTIES .EXCITA or via \*\*RESPONS \*LINEAR .SINGLE (increase .NROOTS if needed).
   Otherwise the calculation will probably exhibit spin and/or space symmetry contamination proportional
   to the convergence threshold. (H. J. Aa. Jensen)
 - never use plus combinations of determinants as start guess for singlet linear response excitation energies
   when reference wave function is not singlet (we do not want singlet states then). (H. J. Aa. Jensen)
+- dalton script: fix for using input files located in subfolders
   
 
-
-## [2018.2alpha] (unreleased)
+## [2018.3] (unreleased)
 
 ### Fixed
-- more robust .STEX input (old failed with gfortran 8); changed documentation accordingly.
+- fixed error from March 2015 which meant that double-hybrid DFT was not working correctly (MP2 part was ignored).
+- fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
+
+## [2018.2] (2019-03-17)
+
+### Fixed
+- fixed error in AO-direct CC3 response calculations causing segmentation faults
+- fixed calculation of DSO contribution to spin-spin coupling for MCSCF and HSROHF when no symmetry
+- dalton script: do not set OMP\_NUM\_THREADS=1 if not MPI parallel (better performance
+  for sequential calculations if threaded blas is used, e.g. MKL or openBLAS)
+- dalton script: stop if user asks for MPI run with a sequential dalton.x
+- more robust .STEX input specification (old failed in some situations with gfortran 8); changed documentation accordingly
+
+### Added
+- dalton script: -gb and -ngb options for specifying work memory in gigabytes
+- dalton script: -np as an alternative to -N for specifying number of MPI nodes
 
 ## [2018.1] (2019-01-14)
 

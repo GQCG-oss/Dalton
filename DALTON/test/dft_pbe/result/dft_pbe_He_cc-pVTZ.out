@@ -4,8 +4,11 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON (Release Dalton2013 patch 0)
+    This is output from DALTON release Dalton2019.alpha (2019)
+         ( Web site: http://daltonprogram.org )
+
    ----------------------------------------------------------------------------
+
     NOTE:
      
     Dalton is an experimental code for the evaluation of molecular
@@ -24,32 +27,33 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
-       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
-       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
-       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
-       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
-       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
-       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
-       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
-       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
-       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
-       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
-       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
-       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
-       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
-       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
-       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
-       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
-       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Agren.
-       The Dalton quantum chemistry program system.
-       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
-    
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
     and
-    
-       Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2013.0 (2013), see http://daltonprogram.org
+     
+       Dalton, a molecular electronic structure program,
+       Release Dalton2019.alpha (2019), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -58,15 +62,19 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
-  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Sonia Coriani,            Technical Univ. of Denmark,   Denmark     (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
-  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
+  Tobias Fahleson,          KTH Stockholm,                Sweden      (Damped cubic response)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -75,124 +83,139 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Christoph Jacob           TU Braunschweig               Germany     (Frozen density embedding model)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
   Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
   Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
   Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
   Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
   Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
   Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
   Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
   Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
   Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
-  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Rolf H. Myhre,            NTNU,                         Norway      (Subsystems and CC3)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
-  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Patrick Norman,           KTH Stockholm,                Sweden      (Cubic response and complex frequency response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
-  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
   Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
   Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Andre S. P. Gomes,        CNRS/Universite de Lille,     France      (Frozen density embedding model)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
-  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
   David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  Lucas Visscher,           Vrije Universiteit Amsterdam, Netherlands (Frozen density embedding model)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Sep  8 20:38:32 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Darwin) : Mon Mar 25 23:05:07 2019
+     Host name              : adm-106152.local                        
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/bast/DALTON-2013.0-Source/build/test_dft_pbe
-   2) /home/bast/DALTON-2013.0-Source/build/basis
+   1) /Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/test/dft_pbe
+   2) /Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | bast
- Host                     | lpqlx131.ups-tlse.fr
- System                   | Linux-3.8.5-201.fc18.x86_64
+ Who compiled             | hjj
+ Host                     | adm-106152.local
+ System                   | Darwin-15.6.0
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ MPI                      | ON
+ Fortran compiler         | /opt/local/bin/mpif90
+ Fortran compiler version | GNU Fortran (MacPorts gcc7 7.4.0_0) 7.4.0
+ C compiler               | /opt/local/bin/mpicc
+ C compiler version       | gcc-mp-7 (MacPorts gcc7 7.4.0_0) 7.4.0
+ C++ compiler             | /opt/local/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /opt/local/lib/libopenblas.dylib
+ LAPACK                   | /usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
- Configuration time       | 2013-09-08 20:31:27.952056
+ Last Git revision        | e8d18ebef2fd29c1f0b13aed98f5d73439580fcd
+ Git branch               | master
+ Configuration time       | 2019-03-25 22:52:46.712692
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
  ----------------------------------
 
-**DALTON                                          
-.RUN RESPONSE                                     
-**WAVE FUNCTIONS                                  
-.DFT                                              
- PBE                                              
-! Molpro form:                                    
-! GGAKey pbex=1 pw91c=1                           
-*DFT INPUT                                        
-.RADINT                                           
-1e-9                                              
-**RESPONSE                                        
-*LINEAR                                           
-.SINGLE RESIDUE                                   
-.TRIPLET                                          
-.ROOTS                                            
-1 0 0 0  0 0 0 0                                  
-**END OF                                          
-                                                  
+**DALTON
+.RUN RESPONSE
+**WAVE FUNCTIONS
+.DFT
+ PBE
+! Molpro form:
+! GGAKey pbex=1 pw91c=1
+*DFT INPUT
+.RADINT
+1e-9
+**RESPONSE
+*LINEAR
+.SINGLE RESIDUE
+.TRIPLET
+.ROOTS
+1 0 0 0  0 0 0 0
+**END OF
+
 
 
    Content of the .mol file
  ----------------------------
 
-BASIS                                                                          
-cc-pVTZ                                                                        
-He atom with PBE functional                                                    
----------------------------                                                    
-    1                                                                          
-        2.    1                                                                
-He    .0000     .0000     .0000                                                
-                                                                               
+BASIS
+cc-pVTZ
+He atom with PBE functional
+---------------------------
+    1
+        2.    1
+He    .0000     .0000     .0000
+
 
 
        *******************************************************************
@@ -227,7 +250,7 @@ He    .0000     .0000     .0000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   2 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVTZ"
+     "/Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/basis/cc-pVTZ"
 
 
                       SYMADD: Requested addition of symmetry
@@ -235,23 +258,26 @@ He    .0000     .0000     .0000
 
  Symmetry test threshold:  5.00E-06
 
- - molecule centered at center of mass and rotated so
-   principal axes of inertia are along coordinate axes.
+@   The molecule is centered at center of mass and rotated
+@   so principal axes of inertia are along coordinate axes.
 
  Symmetry class found: D(oo,h)        
 
  Symmetry Independent Centres             
  ----------------------------
-       2 :      0.00000000     0.00000000     0.00000000  Isotope  1
+He     2 :      0.00000000     0.00000000     0.00000000  Isotope  1
 
- The following elements were found:   X  Y  Z  
+ The following symmetry elements were found:   X  Y  Z  
 
 
                          SYMGRP: Point group information
                          -------------------------------
 
-Full point group is: D(oo,h)        
-Represented as:      D2h
+@    Full point group is: D(oo,h)        
+@    Represented as:      D2h
+
+@  * The irrep name for each symmetry:    1: Ag     2: B3u    3: B2u    4: B1g    5: B1u    6: B2g    7: B3g    8: Au 
+
 
    * The point group was generated by:
 
@@ -418,10 +444,21 @@ Represented as:      D2h
 
 
 
-    *************************************************************************
-    ****************** Output from HERMIT input processing ******************
-    *************************************************************************
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
 
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
 
      ************************************************************************
@@ -429,12 +466,20 @@ Represented as:      D2h
      ************************************************************************
 
 
- Threshold for neglecting two-electron integrals:  1.00D-12
- Number of two-electron integrals written:         776 ( 13.9% )
- Megabytes written:                              0.014
 
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                    All dipole components are zero by symmetry
+
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ HERMIT - Number of two-electron integrals written:         776 ( 13.9% )
+ HERMIT - Megabytes written:                              0.014
+
+  Total CPU  time used in HERMIT:   0.01 seconds
+  Total wall time used in HERMIT:   0.56 seconds
 
 
                         .----------------------------------.
@@ -474,8 +519,8 @@ Represented as:      D2h
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:32 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Darwin) : Mon Mar 25 23:05:08 2019
+     Host name              : adm-106152.local                        
 
  Title lines from ".mol" input file:
      He atom with PBE functional                                             
@@ -493,26 +538,27 @@ Represented as:      D2h
 
      Wave function specification
      ============================
-@    For the wave function of type :      >>> KS-DFT <<<
+@    Wave function type        --- KS-DFT ---
 @    Number of closed shell electrons           2
 @    Number of electrons in active shells       0
 @    Total charge of the molecule               0
 
 @    Spin multiplicity and 2 M_S                1         0
-     Total number of symmetries                 8
-@    Reference state symmetry                   1
+@    Total number of symmetries                 8 (point group: D2h)
+@    Reference state symmetry                   1 (irrep name : Ag )
  
      This is a DFT calculation of type: PBE
  Weighted mixed functional:
-                      pbex:    1.00000
-                      PBEC:    1.00000
+                      PBEx:    1.00000
+                      PBEc:    1.00000
 
      Orbital specifications
      ======================
-     Abelian symmetry species          All |    1    2    3    4    5    6    7    8
+@    Abelian symmetry species          All |    1    2    3    4    5    6    7    8
+@                                          |  Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
                                        --- |  ---  ---  ---  ---  ---  ---  ---  ---
-     Total number of orbitals           14 |    5    2    2    1    2    1    1    0
-     Number of basis functions          14 |    5    2    2    1    2    1    1    0
+@    Total number of orbitals           14 |    5    2    2    1    2    1    1    0
+@    Number of basis functions          14 |    5    2    2    1    2    1    1    0
 
       ** Automatic occupation of RKS orbitals **
 
@@ -527,13 +573,15 @@ Represented as:      D2h
  
      This is a DFT calculation of type: PBE
  Weighted mixed functional:
-                      pbex:    1.00000
-                      PBEC:    1.00000
+                      PBEx:    1.00000
+                      PBEc:    1.00000
 
 
- >>>>> DIIS optimization of Hartree-Fock <<<<<
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
 
- C1-DIIS algorithm; max error vectors =    4
+ C1-DIIS algorithm; max error vectors =    3
 
  Automatic occupation of symmetries with   2 electrons.
 
@@ -542,136 +590,144 @@ Represented as:      D2h
       K-S energy, electrons, error :     -1.055476614964   2.0000000000   -1.70D-11
 @  1  -2.89140596618       1.17D-01  -2.89D+00     1   0   0   0   0   0   0   0
       Virial theorem: -V/T =      2.007679
-@      MULPOP He      0.00; 
+@    MULPOP   He      0.00; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -1.044478700072   2.0000000000   -2.01D-11
-@  2  -2.89210978672       2.22D-02  -7.04D-04     1   0   0   0   0   0   0   0
-      Virial theorem: -V/T =      2.017614
-@      MULPOP He     -0.00; 
+      K-S energy, electrons, error :     -1.046894721304   2.0000000000   -1.96D-11
+@  2  -2.89212852573       1.64D-02  -7.23D-04     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.014257
+@    MULPOP   He      0.00; 
+   2  Level shift: doubly occupied orbital energies shifted by -5.00D-02
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -1.049033884283   2.0000000000   -1.95D-11
-@  3  -2.89213071988       9.32D-03  -2.09D-05     1   0   0   0   0   0   0   0
-      Virial theorem: -V/T =      2.009583
-@      MULPOP He     -0.00; 
+      K-S energy, electrons, error :     -1.048376566494   2.0000000000   -1.96D-11
+@  3  -2.89213409227       4.78D-03  -5.57D-06     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.010737
+@    MULPOP   He      0.00; 
+   3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -1.047675956163   2.0000000000   -1.97D-11
-@  4  -2.89213531497       2.25D-06  -4.60D-06     1   0   0   0   0   0   0   0
+      K-S energy, electrons, error :     -1.047689377682   2.0000000000   -1.97D-11
+@  4  -2.89213531450       7.73D-05  -1.22D-06     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.011938
+@    MULPOP   He      0.00; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -1.047676166599   2.0000000000   -1.97D-11
+@  5  -2.89213531497       9.22D-09  -4.72D-10     1   0   0   0   0   0   0   0
 
-@ *** DIIS converged in   4 iterations !
-@     Converged SCF energy, gradient:     -2.892135314973    2.25D-06
+@ *** DIIS converged in   5 iterations !
+@     Converged SCF energy, gradient:     -2.892135314973    9.22D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
-
- Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :    2
  Orbital occupations :    1    0    0    0    0    0    0    0
 
  Sym       Kohn-Sham orbital energies
 
-  1     -0.57706758     0.45012956     4.02504411     5.83510163     5.83510163
+1 Ag     -0.57706741     0.45012963     4.02504432     5.83510178     5.83510178
 
 
-  2      1.19300547     7.20332254
+2 B3u     1.19300557     7.20332276
 
-  3      1.19300547     7.20332254
+3 B2u     1.19300557     7.20332276
 
-  4      5.83510163
+4 B1g     5.83510178
 
-  5      1.19300547     7.20332254
+5 B1u     1.19300557     7.20332276
 
-  6      5.83510163
+6 B2g     5.83510178
 
-  7      5.83510163
+7 B3g     5.83510178
 
-    E(LUMO) :     0.45012956 au (symmetry 1)
-  - E(HOMO) :    -0.57706758 au (symmetry 1)
+    E(LUMO) :     0.45012963 au (symmetry 1)
+  - E(HOMO) :    -0.57706741 au (symmetry 1)
   ------------------------------------------
-    gap     :     1.02719714 au
+    gap     :     1.02719703 au
 
- >>> Writing SIRIFC interface file <<<
+ --- Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.243       0.245
+ CPU and wall time for SCF :       0.215       0.225
 
 
                        .-----------------------------------.
-                       | >>> Final results from SIRIUS <<< |
+                       | --- Final results from SIRIUS --- |
                        `-----------------------------------'
 
 
 @    Spin multiplicity:           1
-@    Spatial symmetry:            1
+@    Spatial symmetry:            1 ( irrep  Ag  in D2h )
 @    Total charge of molecule:    0
 
 @    Final DFT energy:             -2.892135314973                 
 @    Nuclear repulsion:             0.000000000000
 @    Electronic energy:            -2.892135314973
 
-@    Final gradient norm:           0.000002250886
+@    Final gradient norm:           0.000000009220
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:32 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Darwin) : Mon Mar 25 23:05:08 2019
+     Host name              : adm-106152.local                        
 
- (Only coefficients >0.0100 are printed.)
+File label for MO orbitals:  25Mar19   FOCKDIIS
 
- Molecular orbitals for symmetry species  1
- ------------------------------------------
+ (Only coefficients > 0.0100 are printed.)
 
-    Orbital         1        2        3
-   1 He  :1s     1.0257  -0.5781  -4.1823
-   2 He  :1s    -0.0467  -0.8359   3.9859
-   3 He  :1s     0.0238   1.6823   0.4006
+ Molecular orbitals for symmetry species 1  (Ag )
+ ------------------------------------------------
 
- Molecular orbitals for symmetry species  2
- ------------------------------------------
+    Orbital         1        2        3        4        5
+   1 He  :1s     1.0257  -0.5781  -4.1823  -0.0000   0.0000
+   2 He  :1s    -0.0467  -0.8359   3.9859   0.0000   0.0000
+   3 He  :1s     0.0238   1.6823   0.4006   0.0000   0.0000
+   4 He  :3d0    0.0000  -0.0000  -0.0000   1.0000   0.0000
+   5 He  :3d2+   0.0000   0.0000   0.0000   0.0000   1.0000
+
+ Molecular orbitals for symmetry species 2  (B3u)
+ ------------------------------------------------
 
     Orbital         1        2
    1 He  :2px   -0.0486  -1.2169
    2 He  :2px    1.0269   0.6546
 
- Molecular orbitals for symmetry species  3
- ------------------------------------------
+ Molecular orbitals for symmetry species 3  (B2u)
+ ------------------------------------------------
 
     Orbital         1        2
-   1 He  :2py   -0.0486   1.2169
-   2 He  :2py    1.0269  -0.6546
+   1 He  :2py   -0.0486  -1.2169
+   2 He  :2py    1.0269   0.6546
 
- Molecular orbitals for symmetry species  4
- ------------------------------------------
+ Molecular orbitals for symmetry species 4  (B1g)
+ ------------------------------------------------
 
     Orbital         1
    1 He  :3d2-   1.0000
 
- Molecular orbitals for symmetry species  5
- ------------------------------------------
+ Molecular orbitals for symmetry species 5  (B1u)
+ ------------------------------------------------
 
     Orbital         1        2
    1 He  :2pz   -0.0486  -1.2169
    2 He  :2pz    1.0269   0.6546
 
- Molecular orbitals for symmetry species  6
- ------------------------------------------
+ Molecular orbitals for symmetry species 6  (B2g)
+ ------------------------------------------------
 
     Orbital         1
    1 He  :3d1+   1.0000
 
- Molecular orbitals for symmetry species  7
- ------------------------------------------
+ Molecular orbitals for symmetry species 7  (B3g)
+ ------------------------------------------------
 
     Orbital         1
    1 He  :3d1-   1.0000
 
-
-
- >>>> Total CPU  time used in SIRIUS :      0.25 seconds
- >>>> Total wall time used in SIRIUS :      0.25 seconds
+  Total CPU  time used in SIRIUS :   0.22 seconds
+  Total wall time used in SIRIUS :   0.23 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:32 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Darwin) : Mon Mar 25 23:05:08 2019
+     Host name              : adm-106152.local                        
 
 
                      .---------------------------------------.
@@ -690,13 +746,16 @@ Represented as:      D2h
  ------------------------------------------------------------------------------
 
 
- <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+ -------- OUTPUT FROM RESPONSE INPUT PROCESSING --------
 
 
 
 
   Linear Response single residue calculation
  -------------------------------------------
+
+
+    3 input options by user.
 
  Print level                                    : IPRPP  =   2
  Maximum number of iterations for eigenval.eqs. : MAXITP =  60
@@ -705,11 +764,18 @@ Represented as:      D2h
 
       1 Excitation energies are calculated for symmetry no.    1
 
- Integral transformation: Total CPU and WALL times (sec)       0.001       0.000
+ INFO SIR_INTOPEN, old integral transformation not found as expected, ICASE = 2
+ - ICASE = 1: MO integral file MOTWOINT does not exist
+ - ICASE = 2: no MO integrals on MOTWOINT
+ - ICASE = 3: transformation level on MOTWOINT not sufficient
+
+ 2-el. integral transformation level 4: Total CPU and WALL times (sec)       0.002       0.002
+
+ Sorting integrals to Dirac format: Total CPU and WALL times (sec)       0.000       0.000
 
 
-   SCF energy         :       -2.892135314972583
- -- inactive part     :       -2.892135314972583
+   SCF energy         :       -2.892135314972748
+ -- inactive part     :       -2.892135314972748
  -- nuclear repulsion :        0.000000000000000
 
 
@@ -717,10 +783,10 @@ Represented as:      D2h
                     *** DFT response calculation (TD-DFT) ***
                     *****************************************
 
-
-
- >>>>>>>>>> Linear response calculation
- >>>>>>>>>> Symmetry of excitation/property operator(s)    1
+ ----------------------------------------------------------------
+ ----- Linear response calculation
+ ----- Symmetry of excitation/property operator(s)    1  ( Ag )
+ ----------------------------------------------------------------
 
  Number of excitations of this symmetry            1
  Number of response properties of this symmetry    0
@@ -736,36 +802,62 @@ Represented as:      D2h
 
 
 
- <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+ --- EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) ---
 
- Operator symmetry =  1; triplet =   T
+ Operator symmetry = 1  ( Ag ); triplet =   T
 
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.27247D-01  0.00D+00  1.27D-01  7.08D-01    9.66026D-01
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.13782D-15  0.00D+00  1.14D-15  7.08D-01    9.64002D-01
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    4)
- RSP solution vector no.    1; norm of residual   1.65D-15
+ RSP solution vector no.    1; norm of residual   1.61D-15
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
 
-  ******************************************************************************
-  *** @ Excit. operator sym 1 & ref. state sym 1 => excited state symmetry 1 ***
-  ******************************************************************************
+ **************************************************************************************
+ *** @ Excit. operator sym 1 & ref. state sym 1 => excited state symmetry 1  ( Ag ) ***
+ **************************************************************************************
 
 
 
- @ Excited state no:    1 in symmetry  1
- ---------------------------------------
+ @ Excited state no:    1 in symmetry 1  ( Ag ) - triplet excitation
+ -------------------------------------------------------------------
 
-@ Excitation energy :  0.96400204    au
-@                      26.231830     eV
-@                      211573.99     cm-1
-                       2530.9870     kJ / mol
+@ Excitation energy :  0.96400196     au
+@                       26.231828     eV;   211573.97     cm-1;   2530.9867     kJ / mol
 
-@ Total energy :      -1.9281333     au
+@ Total energy :       -1.9281334     au
+
+ Eigenvector for state no.  1
+
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+           1         1(1)   2(1)       -0.7073882201        0.0224505200       -1.0003980148        0.0317498299
+
+        3 elements with absolute value ≤ 1.00D-01 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
+     >> NO ELEMENTS <<
 
 
                             PBHT MO Overlap Diagnostic
@@ -779,24 +871,24 @@ Represented as:      D2h
 
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
-      1    2 -0.707388  0.022451  0.707977  0.904244  0.532665  0.377115
+      1    2 -0.707388  0.022451  0.707977  0.904244  0.532665  0.377114
 
 @ Overlap diagnostic LAMBDA =    0.7081
 
 
- Time used in polarization propagator calculation is      0.25 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is      0.17 CPU seconds for symmetry 1
 
- >>>> Total CPU  time used in RESPONSE:   0.25 seconds
- >>>> Total wall time used in RESPONSE:   0.25 seconds
+  Total CPU  time used in RESPONSE:   0.18 seconds
+  Total wall time used in RESPONSE:   0.18 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.51 seconds
- >>>> Total wall time used in DALTON:   0.51 seconds
+  Total CPU  time used in DALTON:   0.41 seconds
+  Total wall time used in DALTON:   0.98 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:33 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Darwin) : Mon Mar 25 23:05:08 2019
+     Host name              : adm-106152.local                        

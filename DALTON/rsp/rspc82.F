@@ -458,7 +458,8 @@ C
                   IF (ONEIND) THEN
                      SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
      *                       + D2 * ZYMAT(L,K,ISIM)
-                     SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+                     IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *               SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
      *                       - D2 * ZYMAT(K,L,ISIM)
                   END IF
                   IF ( ITYPL.EQ.JTACT ) THEN
@@ -466,12 +467,15 @@ C
                      IF (ONEIND) THEN
                         SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
      *                  - DDOT(NASHL,ZYMAT(IORBL+NISHL+1,K,ISIM),1,
-     *                                        UDV(IASHL+1,NWL,1),1)
-                        DO 735 IX = 1,NASHL
-                           SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+     *                               UDV(IASHL+1,NWL,1),1)
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA)) THEN
+                           DO IX = 1,NASHL
+                              SVECS(KYCONF+IG,ISIM)
+     *                        = SVECS(KYCONF+IG,ISIM)
      *                        + ZYMAT(K,IORBL+NISHL+IX,ISIM)*
      *                          UDV(NWL,IASHL+IX,1)
- 735                    CONTINUE
+                           END DO
+                        END IF
                      END IF
                   END IF
  2000          CONTINUE
@@ -484,23 +488,27 @@ C
                         SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
      *                     -DDOT(NASHL,ZYMAT(IORBL+NISHL+1,K,ISIM),1,
      *                                        UDV(IASHL+1,NWL,1),1)
-                        DO 745 IX = 1,NASHL
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA)) THEN
+                           DO IX = 1,NASHL
+                              SVECS(KYCONF+IG,ISIM)
+     *                        = SVECS(KYCONF+IG,ISIM)
+     *                        + ZYMAT(K,IORBL+NISHL+IX,ISIM)*
+     *                          UDV(NWL,IASHL+IX,1)
+                           END DO
                            SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
-     *                        +ZYMAT(K,IORBL+NISHL+IX,ISIM)*
-     *                                        UDV(NWL,IASHL+IX,1)
- 745                    CONTINUE
-                        SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
-     *                     -DDOT(NASHK,ZYMAT(IORBK+NISHK+1,L,ISIM),1,
+     *                        -DDOT(NASHK,ZYMAT(IORBK+NISHK+1,L,ISIM),1,
      *                                      UDV(IASHK+1,NWK,1),1)
-                        DO 755 IX = 1,NASHK
+                        END IF
+                        DO IX = 1,NASHK
                            SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
-     *                        +ZYMAT(L,IORBK+NISHK+IX,ISIM)*
-     *                                      UDV(NWK,IASHK+IX,1)
- 755                    CONTINUE
+     *                        + ZYMAT(L,IORBK+NISHK+IX,ISIM)*
+     *                          UDV(NWK,IASHK+IX,1)
+                        END DO
                      ELSE
                         SVECS(KZCONF+IG,ISIM) =
      *                     SVECS(KZCONF+IG,ISIM) + UDV(NWK,NWL,ISIM)
-                        SVECS(KYCONF+IG,ISIM) =
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                  SVECS(KYCONF+IG,ISIM) =
      *                     SVECS(KYCONF+IG,ISIM) + UDV(NWL,NWK,ISIM)
                      END IF
  2020             CONTINUE
@@ -508,14 +516,15 @@ C
                   NWK = ISW(K) - NISHT
                   DO 2030 ISIM=1,NSIM
                      IF (ONEIND) THEN
-                        SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                     SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
      *                     -DDOT(NASHK,ZYMAT(IORBK+NISHK+1,L,ISIM),1,
-     *                                        UDV(IASHK+1,NWK,1),1)
-                        DO 765 IX = 1,NASHK
+     *                                 UDV(IASHK+1,NWK,1),1)
+                        DO IX = 1,NASHK
                            SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
-     *                        +ZYMAT(L,IORBK+NISHK+IX,ISIM)*
-     *                                        UDV(NWK,IASHK+IX,1)
- 765                    CONTINUE
+     *                        + ZYMAT(L,IORBK+NISHK+IX,ISIM)*
+     *                          UDV(NWK,IASHK+IX,1)
+                        END DO
                      END IF
  2030             CONTINUE
                ENDIF
@@ -879,23 +888,22 @@ C
      *                  -DDOT(NASHL,FCX(IORBL+NISHL+1,K,ISIM),1,
      *                                        UDV(IASHL+1,NWL,1),1)
                         IF ((.NOT. TDA) .AND. (.NOT. CISRPA)) THEN
-                           DO 740 IX = 1,NASHL
-                                EVECS(KYCONF+IG,ISIM) =
+                           DO IX = 1,NASHL
+                              EVECS(KYCONF+IG,ISIM) =
      *                          EVECS(KYCONF+IG,ISIM)
      *                          +FCX(K,IORBL+NISHL+IX,ISIM)*
      *                                          UDV(NWL,IASHL+IX,1)
- 740                    CONTINUE
-                        END IF
-                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
-     *                          EVECS(KYCONF+IG,ISIM) =
+                           END DO
+                           EVECS(KYCONF+IG,ISIM) =
      *                          EVECS(KYCONF+IG,ISIM)
      *                          -DDOT(NASHK,FCX(IORBK+NISHK+1,L,ISIM),
      *                                        1,UDV(IASHK+1,NWK,1),1)
-                        DO 750 IX = 1,NASHK
+                        END IF
+                        DO IX = 1,NASHK
                            EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                        +FCX(L,IORBK+NISHK+IX,ISIM)*
      *                                        UDV(NWK,IASHK+IX,1)
- 750                    CONTINUE
+                        END DO
                      ELSE
                         TEMP1 = D0
                         TEMP2 = D0
@@ -988,10 +996,10 @@ C
 C
 C CHANGE SIGN ON ORBITAL PART OF LINEAR TRANSFORMATION E[2]*N
 C
-      DO 3000 ISIM = 1,NSIM
+      DO ISIM = 1,NSIM
          CALL DSCAL(KZWOPT,DM1,EVECS(KZCONF+1,ISIM),1)
          CALL DSCAL(KZWOPT,DM1,EVECS(KYCONF+1,ISIM),1)
- 3000 CONTINUE
+      END DO
 C
       IF (IPRRSP.GT.110) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  E(2)'//
@@ -1674,9 +1682,11 @@ C
       IF (KCONV .NE. 1) THEN
          FINRES = RESID(1)
          NOCONV = .TRUE.
+         KZRED_ABA = KZRED
       ELSE
          FINRES = RESID(1)
          NOCONV = .FALSE.
+         KZRED_ABA = KZRED
       END IF
 C
 C     END OF RSPNEX.
@@ -2309,9 +2319,11 @@ C
 C
 C Used from common blocks:
 C   INFVAR : JWOPSY
+! infrsp.h : TDHF
 C
 #include "maxorb.h"
 #include "infvar.h"
+#include "infrsp.h"
 C
       IUNIT = IABS(IUNITX)
 C
@@ -2344,7 +2356,7 @@ C
       RETURN
 C
   300 CONTINUE
-      WRITE (IUNIT,3000) JWOPSY
+      IF (.NOT.TDHF) WRITE (IUNIT,3000) JWOPSY
       RETURN
 C
 C1000 FORMAT(/5X,'Configuration operator symmetry =',I2,/,
@@ -2390,7 +2402,7 @@ C
 C Used from common blocks:
 C   INFINP : FLAG(27), LSYM
 C   INFVAR : JWOPSY
-C   INFRSP : SOPPA
+C   INFRSP : SOPPA, TDHF
 C   INFSOP : KABSAD,KABTAD,......
 C
 #include "maxorb.h"
@@ -2468,7 +2480,7 @@ C
       RETURN
 C
   300 CONTINUE
-      WRITE (IUNIT,3000) JWOPSY
+      IF (.NOT.TDHF) WRITE (IUNIT,3000) JWOPSY
       RETURN
 C
 C1000 FORMAT(/5X,'Configuration operator symmetry =',I2,/,
@@ -2524,19 +2536,21 @@ C
 C Used from common blocks:
 C   INFIND : ISMO(*)
 C   INFVAR : NWOPT,JWOPSY,JWOP(2,*)
+C   infrsp.h : RSPCI
 C
 #include "maxorb.h"
 #include "maxash.h"
 #include "infdim.h"
 #include "infind.h"
 #include "infvar.h"
+#include "infrsp.h"
 C
       IUNIT = IABS(IUNITX)
 C
 C Any elements?
 C
       IF (NWOPT.LE.0) THEN
-         WRITE (IUNIT,3000) JWOPSY
+         IF (.NOT.RSPCI) WRITE (IUNIT,3000) JWOPSY
          GO TO 300
       END IF
 C
@@ -2570,7 +2584,7 @@ C
      &                                  ABS(WOP_SCALED(IG,2)) )
       END DO
 C
-C 1. find maximum absolute value in WOP
+C 1. find maximum absolute value in scaled WOP
 C
       IF (IUNITX.GT.0) THEN
          THPWOP = PRFAC * WOP_SC_AMAX
@@ -2636,12 +2650,14 @@ C  If IUNITX .lt. 0, write all elements;
 C  if IUNITX .gt. 0, write only elements with absolut value
 C                    .ge. PRFAC * (max. absolut value)
 C
+! infrsp.h : RSPCI
 #include "implicit.h"
 #include "maxorb.h"
 #include "maxash.h"
 #include "infdim.h"
 #include "infind.h"
 #include "infvar.h"
+#include "infrsp.h"
       DIMENSION WOP(*), MJWOP(2,MAXWOP,8)
       PARAMETER (PRFAC = 1.D-1)
 C
@@ -2683,7 +2699,7 @@ C
       RETURN
 C
   300 CONTINUE
-      WRITE (IUNIT,3000) NWOPSY
+      IF (.NOT.RSPCI) WRITE (IUNIT,3000) NWOPSY
       RETURN
 C
  1000 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
@@ -3692,15 +3708,15 @@ C
  100  CONTINUE
       IF ( IPRRSP.GT.90 ) THEN
          WRITE(LUPRI,*)NSIM,' DENA MATRICES'
-         DO 3000 ISIM = 1, NSIM
+         DO ISIM = 1, NSIM
             CALL OUTPUT(DENA(1,1,ISIM),1,NORBT,1,NASHT,NORBT,NASHT,
      &                  -1,LUPRI)
- 3000    CONTINUE
+         END DO
          WRITE(LUPRI,*)NSIM,' DENB MATRICES'
-         DO 3010 ISIM = 1, NSIM
+         DO ISIM = 1, NSIM
             CALL OUTPUT(DENB(1,1,ISIM),1,NORBT,1,NASHT,NORBT,NASHT,
      &                  -1,LUPRI)
- 3010    CONTINUE
+         END DO
       END IF
       CALL QEXIT('RSPTR1')
       RETURN

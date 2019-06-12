@@ -138,7 +138,7 @@ CRIT2=`$GREP "Spin of operator A \, ISPINA\= * 0" $log | wc -l`
 CRIT3=`$GREP "Spin of operator B \, \(Excitation energy\) ISPINB\= * 0" $log | wc -l`
 CRIT4=`$GREP "Spin of operator C \, \(Excitation energy\) ISPINC\= * 0" $log | wc -l`
 CRIT5=`$GREP "\*\* CALCULATION OF TRANSITION MOMENTS BETWEEN EXCITED STATES \*\*" $log | wc -l`
-CRIT6=`$GREP "1 A OPERATORS OF SYMMETRY * 3 NOT INCLUDED" $log | wc -l`
+CRIT6=`$GREP "1 A operators of symmetry * 3 not included" $log | wc -l`
 CRIT7=`$GREP "2 Excitation energies are calculated for symmetry no\. * 1" $log | wc -l`
 CRIT8=`$GREP "1 property residues are calculated with labels\:" $log | wc -l`
 CRIT9=`$GREP "1 Excitation energies are calculated for symmetry no\. * 2" $log | wc -l`

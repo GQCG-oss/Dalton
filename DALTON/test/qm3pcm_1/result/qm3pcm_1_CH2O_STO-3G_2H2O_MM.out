@@ -4,8 +4,11 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2014.0
+    This is output from DALTON release Dalton2019.alpha (2019)
+         ( Web site: http://daltonprogram.org )
+
    ----------------------------------------------------------------------------
+
     NOTE:
      
     Dalton is an experimental code for the evaluation of molecular
@@ -24,13 +27,13 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
        T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
        L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
        C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
        H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
        M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
-       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
        T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
        J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
        O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
@@ -43,14 +46,14 @@
        K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
        E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
-       and H. Aagren,
+       and H. Agren,
        "The Dalton quantum chemistry program system",
-       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
-    
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
     and
-    
-       Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2014.0 (2014), see http://daltonprogram.org
+     
+       Dalton, a molecular electronic structure program,
+       Release Dalton2019.alpha (2019), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -59,17 +62,19 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
   Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
-  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Sonia Coriani,            Technical Univ. of Denmark,   Denmark     (CC module, MCD in RESPONS)
   Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
   Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
+  Tobias Fahleson,          KTH Stockholm,                Sweden      (Damped cubic response)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -78,13 +83,16 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
   Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Christoph Jacob           TU Braunschweig               Germany     (Frozen density embedding model)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
   Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
@@ -102,10 +110,10 @@
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
   Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
   Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
-  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Rolf H. Myhre,            NTNU,                         Norway      (Subsystems and CC3)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
-  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Patrick Norman,           KTH Stockholm,                Sweden      (Cubic response and complex frequency response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
@@ -123,6 +131,7 @@
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
   Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Andre S. P. Gomes,        CNRS/Universite de Lille,     France      (Frozen density embedding model)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
   Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
   Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
@@ -132,145 +141,146 @@
   Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
   David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  Lucas Visscher,           Vrije Universiteit Amsterdam, Netherlands (Frozen density embedding model)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Tue Oct 14 15:27:32 2014
-     Host name              : spongebob                               
+     Date and time (Darwin) : Thu May 16 10:31:33 2019
+     Host name              : adm-106152.pc.sdu.dk                    
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/roberto/Workspace/dalton/DALTON/test/qm3pcm_1
-   2) /home/roberto/Workspace/dalton/build/basis
+   1) /Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/test/qm3pcm_1
+   2) /Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | roberto
- Host                     | spongebob
- System                   | Linux-3.13.0-37-generic
+ Who compiled             | hjj
+ Host                     | adm-106152.local
+ System                   | Darwin-15.6.0
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
- BLAS                     | /usr/lib/atlas-base/libf77blas.so;/usr/lib/atlas-b
-                          | ase/libcblas.so;/usr/lib/atlas-base/libatlas.so
- LAPACK                   | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-bas
-                          | e/atlas/liblapack.so
+ MPI                      | ON
+ Fortran compiler         | /opt/local/bin/mpif90
+ Fortran compiler version | GNU Fortran (MacPorts gcc7 7.4.0_0) 7.4.0
+ C compiler               | /opt/local/bin/mpicc
+ C compiler version       | gcc-mp-7 (MacPorts gcc7 7.4.0_0) 7.4.0
+ C++ compiler             | /opt/local/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /opt/local/lib/libopenblas.dylib
+ LAPACK                   | /usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | 0e8c20e5b1820f883090356a2a3cf05f844cfb02
- Git branch               | pcm_public
- Configuration time       | 2014-10-11 10:26:03.210432
+ Last Git revision        | f1c5783e03fbd3364f432e0407e614f4d4aec2ca
+ Git branch               | master
+ Configuration time       | 2019-05-16 10:24:58.109179
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
  ----------------------------------
 
-**DALTON                                          
-.RUN RESPONSE                                     
-*PCM                                              
-.NEQRSP                                           
-.SOLVNT                                           
-WATER                                             
-.NPCMMT                                           
-0                                                 
-.NESFP                                            
-8                                                 
-.ICESPH                                           
-2                                                 
-*PCMCAV                                           
-.RIN                                              
-1.7                                               
-1.5                                               
-1.2                                               
-1.2                                               
-1.5                                               
-1.5                                               
-1.2                                               
-1.2                                               
-.INA                                              
-1                                                 
-2                                                 
-3                                                 
-4                                                 
-5                                                 
-6                                                 
-7                                                 
-8                                                 
-.AREATS                                           
- 0.3                                              
-.ALPHA                                            
- 1.2                                              
- 1.2                                              
- 1.2                                              
- 1.2                                              
- 1.2                                              
- 1.2                                              
- 1.2                                              
- 1.2                                              
-*QM3                                              
-.PRINT                                            
- 1                                                
-.QM3                                              
-.MMPCM                                            
-.THRSMP                                           
- 1.0D-9                                           
-**INTEGRALS                                       
-.DIPLEN                                           
-.NUCPOT                                           
-.NELFLD                                           
-.PRINT                                            
- 2                                                
-**WAVE FUNCTIONS                                  
-.DFT                                              
-B3LYP                                             
-*SCF INPUT                                        
-.THRESH                                           
-1.0D-12                                           
-**RESPONSE                                        
-*LINEAR                                           
-.DIPLEN                                           
-.SINGLE RES                                       
-.ROOTS                                            
-4                                                 
-.THCPP                                            
- 1.0D-04                                          
-.PRINT                                            
-5                                                 
-**END OF DALTON INPUT                             
+**DALTON
+.RUN RESPONSE
+*PCM
+.NEQRSP
+.SOLVNT
+WATER
+.NPCMMT
+0
+.NESFP
+8
+.ICESPH
+2
+*PCMCAV
+.RIN
+1.7
+1.5
+1.2
+1.2
+1.5
+1.5
+1.2
+1.2
+.INA
+1
+2
+3
+4
+5
+6
+7
+8
+.AREATS
+ 0.3
+.ALPHA
+ 1.2
+ 1.2
+ 1.2
+ 1.2
+ 1.2
+ 1.2
+ 1.2
+ 1.2
+*QM3
+.PRINT
+ 1
+.QM3
+.MMPCM
+.THRSMP
+ 1.0D-9
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
+.PRINT
+ 2
+**WAVE FUNCTIONS
+.DFT
+B3LYP
+*SCF INPUT
+.THRESH
+1.0D-12
+**RESPONSE
+*LINEAR
+.DIPLEN
+.SINGLE RES
+.ROOTS
+4
+.THCPP
+ 1.0D-04
+.PRINT
+5
+**END OF DALTON INPUT
 
 
    Content of the .mol file
  ----------------------------
 
-ATOMBASIS                                                                      
-CH2O PLUS 2 WATERS                                                             
-------------------------                                                       
-AtomTypes=5 NoSymmetry Angstrom                                                
-        Charge=6.0   Atoms=1    Basis=STO-3G                                   
-C           -1.588367    -.770650     .029109 0 1                              
-        Charge=8.0   Atoms=1    Basis=STO-3G                                   
-O           -1.657083     .436069    -.009750 0 2                              
-        Charge=1.0   Atoms=2    Basis=STO-3G                                   
-H           -.620668   -1.294822      .054251 0 3                              
-H           -2.508043   -1.382001     .040282 0 4                              
-   Charge=-0.669     Atoms=2   Basis=MM                                        
-O             .975536    1.507219    -.082590 1 1                              
-O            1.633705   -1.233280    -.078786 2 1                              
-    Charge=0.3345    Atoms=4   Basis=MM                                        
-H             .023200    1.300096    -.088063 1 2                              
-H            1.113831    2.040431     .704778 1 3                              
-H            1.600739    -.258639    -.086953 2 2                              
-H            2.303878   -1.461228     .570065 2 3                              
+ATOMBASIS
+CH2O PLUS 2 WATERS
+------------------------
+AtomTypes=5 NoSymmetry Angstrom
+        Charge=6.0   Atoms=1    Basis=STO-3G
+C           -1.588367    -.770650     .029109 0 1
+        Charge=8.0   Atoms=1    Basis=STO-3G
+O           -1.657083     .436069    -.009750 0 2
+        Charge=1.0   Atoms=2    Basis=STO-3G
+H           -.620668   -1.294822      .054251 0 3
+H           -2.508043   -1.382001     .040282 0 4
+   Charge=-0.669     Atoms=2   Basis=MM
+O             .975536    1.507219    -.082590 1 1
+O            1.633705   -1.233280    -.078786 2 1
+    Charge=0.3345    Atoms=4   Basis=MM
+H             .023200    1.300096    -.088063 1 2
+H            1.113831    2.040431     .704778 1 3
+H            1.600739    -.258639    -.086953 2 2
+H            2.303878   -1.461228     .570065 2 3
 
 
        *******************************************************************
@@ -290,7 +300,7 @@ H            2.303878   -1.461228     .570065 2 3
  ** LOOKING UP INTERNALLY STORED DATA FOR SOLVENT = WATER    **
  Optical and physical constants:
  EPS= 78.390; EPSINF=  1.776; RSOLV=  1.385 A; VMOL=  18.070 ML/MOL;
- TCE=2.57000D-04 1/K; STEN= 71.810 DYN/CM;  DSTEN=  0.6500; CMF=  1.2770
+ TCE= 2.57000D-04 1/K; STEN= 71.810 DYN/CM;  DSTEN=  0.6500; CMF=  1.2770
 
 
      -----------------------------------
@@ -372,7 +382,7 @@ H            2.303878   -1.461228     .570065 2 3
   Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
   Basis set file used for this atomic type with Z =   6 :
-     "/home/roberto/Workspace/dalton/build/basis/STO-3G"
+     "/Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -381,7 +391,7 @@ H            2.303878   -1.461228     .570065 2 3
   Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
   Basis set file used for this atomic type with Z =   8 :
-     "/home/roberto/Workspace/dalton/build/basis/STO-3G"
+     "/Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -390,7 +400,7 @@ H            2.303878   -1.461228     .570065 2 3
   Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
   Basis set file used for this atomic type with Z =   1 :
-     "/home/roberto/Workspace/dalton/build/basis/STO-3G"
+     "/Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/basis/STO-3G"
 
   Atomic type no.    4
   --------------------
@@ -585,8 +595,6 @@ H            2.303878   -1.461228     .570065 2 3
 
  Default print level:        2
 
- * Nuclear model: Point charge
-
  Calculation of one- and two-electron Hamiltonian integrals.
 
  The following one-electron property integrals are calculated as requested:
@@ -604,6 +612,18 @@ H            2.303878   -1.461228     .570065 2 3
      ************************************************************************
      ************************** Output from HERONE **************************
      ************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x    -48.97334290      -124.47781350      -415.21329231
+      y     -7.20395913       -18.31063652       -61.07770905
+      z      0.36129107         0.91831024         3.06315324
+
 
 
 
@@ -645,16 +665,17 @@ H            2.303878   -1.461228     .570065 2 3
  Total number of tesserae =     579
  Surface area =  120.81612345 (A^2)    Cavity volume =   96.50955728 (A^3)
 
- Surface area =  431.44220661816792 (AU^2)    Cavity volume =  651.27875143575397 (AU^3)
+ Surface area =  431.44220661816706 (AU^2)    Cavity volume =  651.27875143575318 (AU^3)
 
           THE SOLUTE IS ENCLOSED IN ONE CAVITY
 
  ..... DONE GENERATION CAVITY .....
+  Time used in PEDRAM     is       0.15 seconds
 
   ..... DONE GENERATING -Q-  MATRIX .....
- >>>  Time used in Q-MAT      is   3.01 seconds
- >>>> Total CPU  time used in HERMIT:   6.15 seconds
- >>>> Total wall time used in HERMIT:   6.16 seconds
+  Time used in Q-MAT      is       1.36 seconds
+  Total CPU  time used in HERMIT:   2.78 seconds
+  Total wall time used in HERMIT:   2.79 seconds
 
 
                         .----------------------------------.
@@ -684,8 +705,8 @@ H            2.303878   -1.461228     .570065 2 3
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Oct 14 15:27:39 2014
-     Host name              : spongebob                               
+     Date and time (Darwin) : Thu May 16 10:31:36 2019
+     Host name              : adm-106152.pc.sdu.dk                    
 
  Title lines from ".mol" input file:
      CH2O PLUS 2 WATERS                                                      
@@ -709,7 +730,7 @@ H            2.303878   -1.461228     .570065 2 3
 
      Wave function specification
      ============================
-@    Wave function type        >>> KS-DFT <<<
+@    Wave function type        --- KS-DFT ---
 @    Number of closed shell electrons          16
 @    Number of electrons in active shells       0
 @    Total charge of the molecule               0
@@ -728,13 +749,13 @@ H            2.303878   -1.461228     .570065 2 3
 
      Orbital specifications
      ======================
-     Abelian symmetry species          All |    1
-                                           |  A  
+@    Abelian symmetry species          All |    1
+@                                          |  A  
                                        --- |  ---
 @    Occupied SCF orbitals               8 |    8
-     Secondary orbitals                  4 |    4
-     Total number of orbitals           12 |   12
-     Number of basis functions          12 |   12
+@    Secondary orbitals                  4 |    4
+@    Total number of orbitals           12 |   12
+@    Number of basis functions          12 |   12
 
      Optimization information
      ========================
@@ -768,9 +789,9 @@ H            2.303878   -1.461228     .570065 2 3
  ..... DONE WITH INDUCED NUCLEAR CHARGES .....
 
 
- *********************************************
- ***** DIIS optimization of Hartree-Fock *****
- *********************************************
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -778,275 +799,262 @@ H            2.303878   -1.461228     .570065 2 3
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :    -11.975378044871  16.0000012547    1.25D-06
       QM3 induced Dipole vector converged in  12 iterations.
-      Final norm2 of QM3 induced dipole moment vector:   13.241662292658104
+      Final norm2 of QM3 induced dipole moment vector:   13.241662292657777
       QM3 induced Dipole vector converged in  10 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.688237384600818
+      Final norm2 of QM3 induced dipole moment vector:    0.688237384600794
       QM3 induced Dipole vector converged in  10 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.154008077632154
+      Final norm2 of QM3 induced dipole moment vector:    0.154008077632153
       QM3 induced Dipole vector converged in   9 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.128059711130831
+      Final norm2 of QM3 induced dipole moment vector:    0.128059711130834
       QM3 induced Dipole vector converged in   8 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.126706885498391
+      Final norm2 of QM3 induced dipole moment vector:    0.126706885498393
       QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.126664581086263
+      Final norm2 of QM3 induced dipole moment vector:    0.126664581086266
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.126675731044765
+      Final norm2 of QM3 induced dipole moment vector:    0.126675731044768
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.126680482362682
+      Final norm2 of QM3 induced dipole moment vector:    0.126680482362684
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.126681854288566
+      Final norm2 of QM3 induced dipole moment vector:    0.126681854288569
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.126682208816075
+      Final norm2 of QM3 induced dipole moment vector:    0.126682208816078
       QM3 induced Dipole vector converged in   3 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.126682295680974
+      Final norm2 of QM3 induced dipole moment vector:    0.126682295680977
       QM3 induced Dipole vector converged in   3 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.126682316680571
+      Final norm2 of QM3 induced dipole moment vector:    0.126682316680574
  MMPCM converged for given density
  No. of iterations:           12
-@  1  -112.645865418     -4.056810716835E-02    2.41860D+00   -1.13D+02
+@  1  -112.645865418     -4.056810716840E-02    2.41860D+00   -1.13D+02
       Virial theorem: -V/T =      2.004627
-@      MULPOP C       0.99; O      -0.72; H      -0.14; H      -0.14; 
+@    MULPOP   C       0.99; O      -0.72; H      -0.14; H      -0.14; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.758810357133  16.0000013794    1.38D-06
+      K-S energy, electrons, error :    -11.786989074565  16.0000013498    1.35D-06
       QM3 induced Dipole vector converged in  10 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.040886785952024
+      Final norm2 of QM3 induced dipole moment vector:    0.053529842645190
       QM3 induced Dipole vector converged in  10 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.082438111383389
+      Final norm2 of QM3 induced dipole moment vector:    0.092800359174497
       QM3 induced Dipole vector converged in   9 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.092648600417404
+      Final norm2 of QM3 induced dipole moment vector:    0.100839356611444
       QM3 induced Dipole vector converged in   8 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.094372092358495
+      Final norm2 of QM3 induced dipole moment vector:    0.102163407046078
       QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.094647953083527
+      Final norm2 of QM3 induced dipole moment vector:    0.102373662303843
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.094691193177147
-      QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.094697796213977
+      Final norm2 of QM3 induced dipole moment vector:    0.102406453939667
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.094698758123724
- MMPCM converged for given density
- No. of iterations:            8
-@  2  -112.408289855     -2.659591800310E-02    2.58593D+00    2.38D-01
-      Virial theorem: -V/T =      2.014983
-@      MULPOP C      -1.40; O       0.98; H       0.22; H       0.20; 
- -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.945262011089  16.0000013047    1.30D-06
-      QM3 induced Dipole vector converged in  10 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.247103640542101
-      QM3 induced Dipole vector converged in  10 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.144106716880452
-      QM3 induced Dipole vector converged in   9 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.130832367631675
-      QM3 induced Dipole vector converged in   8 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.128822744671450
-      QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.128511458285486
-      QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.128463711130555
-      QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.128456582120614
+      Final norm2 of QM3 induced dipole moment vector:    0.102411441087134
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.128455573056798
+      Final norm2 of QM3 induced dipole moment vector:    0.102412165486981
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.128455445747960
+      Final norm2 of QM3 induced dipole moment vector:    0.102412261145405
  MMPCM converged for given density
  No. of iterations:            9
-@  3  -112.860123641     -3.358005068179E-02    8.18635D-01   -4.52D-01
-      Virial theorem: -V/T =      2.009386
-@      MULPOP C       0.44; O      -0.59; H       0.08; H       0.07; 
+@  2  -112.726123522     -1.648754930537E-02    1.65669D+00   -8.03D-02
+      Virial theorem: -V/T =      2.016752
+@    MULPOP   C      -0.88; O       0.54; H       0.18; H       0.16; 
+   2  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.866076294078  16.0000013131    1.31D-06
+      K-S energy, electrons, error :    -11.883240530744  16.0000013136    1.31D-06
+      QM3 induced Dipole vector converged in  10 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.166214908771900
+      QM3 induced Dipole vector converged in  10 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.125403956527572
       QM3 induced Dipole vector converged in   9 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.092749358609264
-      QM3 induced Dipole vector converged in   9 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.111704010596385
+      Final norm2 of QM3 induced dipole moment vector:    0.119599714863016
       QM3 induced Dipole vector converged in   8 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.114929653582368
-      QM3 induced Dipole vector converged in   8 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.115443626119041
+      Final norm2 of QM3 induced dipole moment vector:    0.118701379905542
       QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.115524040991067
+      Final norm2 of QM3 induced dipole moment vector:    0.118561282231383
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.115536400312778
+      Final norm2 of QM3 induced dipole moment vector:    0.118539696370079
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.115538243243910
+      Final norm2 of QM3 induced dipole moment vector:    0.118536458021665
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.115538502559372
+      Final norm2 of QM3 induced dipole moment vector:    0.118535996756046
+      QM3 induced Dipole vector converged in   3 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.118535937984329
+ MMPCM converged for given density
+ No. of iterations:            9
+@  3  -112.911533184     -2.230827977924E-02    1.57268D-01   -1.85D-01
+      Virial theorem: -V/T =      2.013081
+@    MULPOP   C       0.09; O      -0.27; H       0.10; H       0.08; 
+   3  Level shift: doubly occupied orbital energies shifted by -5.00D-02
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.871989786495  16.0000013130    1.31D-06
+      QM3 induced Dipole vector converged in   8 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.113319274754447
+      QM3 induced Dipole vector converged in   8 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116065350746315
+      QM3 induced Dipole vector converged in   7 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116504402383853
+      QM3 induced Dipole vector converged in   7 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116573797397985
+      QM3 induced Dipole vector converged in   6 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116584669695514
+      QM3 induced Dipole vector converged in   5 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116586348896791
+      QM3 induced Dipole vector converged in   4 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116586601589200
+      QM3 induced Dipole vector converged in   3 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116586637762477
  MMPCM converged for given density
  No. of iterations:            8
-@  4  -112.912980912     -2.014724722601E-02    3.80230D-02   -5.29D-02
-      Virial theorem: -V/T =      2.014164
-@      MULPOP C       0.03; O      -0.18; H       0.08; H       0.07; 
+@  4  -112.913063146     -2.089215831995E-02    3.34436D-02   -1.53D-03
+      Virial theorem: -V/T =      2.013807
+@    MULPOP   C       0.05; O      -0.21; H       0.09; H       0.07; 
+   4  Level shift: doubly occupied orbital energies shifted by -1.25D-02
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.871398178647  16.0000013149    1.31D-06
-      QM3 induced Dipole vector converged in   8 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.118011189906846
-      QM3 induced Dipole vector converged in   8 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116796797353958
+      K-S energy, electrons, error :    -11.871424618187  16.0000013143    1.31D-06
       QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116607460211043
+      Final norm2 of QM3 induced dipole moment vector:    0.116215274313089
+      QM3 induced Dipole vector converged in   7 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116497298882092
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116578148008320
+      Final norm2 of QM3 induced dipole moment vector:    0.116542287882803
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116573695130279
+      Final norm2 of QM3 induced dipole moment vector:    0.116549452463092
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116573042559025
+      Final norm2 of QM3 induced dipole moment vector:    0.116550589997943
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116572953535906
+      Final norm2 of QM3 induced dipole moment vector:    0.116550769422932
+      QM3 induced Dipole vector converged in   3 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116550797372211
  MMPCM converged for given density
  No. of iterations:            7
-@  5  -112.913130029     -2.074829006633E-02    7.60088D-03   -1.49D-04
-      Virial theorem: -V/T =      2.013787
-@      MULPOP C       0.02; O      -0.19; H       0.10; H       0.08; 
+@  5  -112.913132928     -2.077070544368E-02    5.89552D-03   -6.98D-05
+      Virial theorem: -V/T =      2.013801
+@    MULPOP   C       0.03; O      -0.20; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.870737191294  16.0000013143    1.31D-06
+      K-S energy, electrons, error :    -11.870839213055  16.0000013143    1.31D-06
       QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116276881452128
+      Final norm2 of QM3 induced dipole moment vector:    0.116254479048999
       QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116407108358240
+      Final norm2 of QM3 induced dipole moment vector:    0.116416106943544
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116427539394603
+      Final norm2 of QM3 induced dipole moment vector:    0.116441688936440
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116430715429072
+      Final norm2 of QM3 induced dipole moment vector:    0.116445718218356
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116431201173742
-      QM3 induced Dipole vector converged in   3 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116431273240004
+      Final norm2 of QM3 induced dipole moment vector:    0.116446347243725
+      QM3 induced Dipole vector converged in   4 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116446443954026
  MMPCM converged for given density
  No. of iterations:            6
-@  6  -112.913132250     -2.067985364802E-02    1.99956D-03   -2.22D-06
-      Virial theorem: -V/T =      2.013841
-@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
+@  6  -112.913132936     -2.069405623324E-02    4.36698D-04   -7.68D-09
+      Virial theorem: -V/T =      2.013836
+@    MULPOP   C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.870870509521  16.0000013143    1.31D-06
+      K-S energy, electrons, error :    -11.870879835036  16.0000013143    1.31D-06
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116498224882024
+      Final norm2 of QM3 induced dipole moment vector:    0.116466346101514
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116459169460103
+      Final norm2 of QM3 induced dipole moment vector:    0.116455430836949
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116452974364953
-      QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116451994157502
+      Final norm2 of QM3 induced dipole moment vector:    0.116453720988330
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116451839998438
+      Final norm2 of QM3 induced dipole moment vector:    0.116453455973100
       QM3 induced Dipole vector converged in   3 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116451816033892
+      Final norm2 of QM3 induced dipole moment vector:    0.116453415705631
  MMPCM converged for given density
- No. of iterations:            6
-@  7  -112.913133074     -2.069806946322E-02    1.36338D-04   -8.25D-07
-      Virial theorem: -V/T =      2.013834
-@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
+ No. of iterations:            5
+@  7  -112.913133109     -2.069934879542E-02    1.35134D-05   -1.73D-07
+      Virial theorem: -V/T =      2.013833
+@    MULPOP   C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.870879820529  16.0000013143    1.31D-06
-      QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116456550582468
-      QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453883159805
+      K-S energy, electrons, error :    -11.870880234281  16.0000013143    1.31D-06
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453474599526
-      QM3 induced Dipole vector converged in   3 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453413713638
- MMPCM converged for given density
- No. of iterations:            4
-@  8  -112.913133108     -2.069936838178E-02    6.06854D-06   -3.38D-08
-      Virial theorem: -V/T =      2.013833
-@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
- -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.870880335414  16.0000013143    1.31D-06
+      Final norm2 of QM3 induced dipole moment vector:    0.116453585822376
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453584428229
-      QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453470226357
+      Final norm2 of QM3 induced dipole moment vector:    0.116453461446366
  MMPCM converged for given density
  No. of iterations:            2
-@  9  -112.913133109     -2.069943063480E-02    2.58089D-06   -6.99D-10
+@  8  -112.913133109     -2.069941896637E-02    2.19979D-06    6.01D-10
       Virial theorem: -V/T =      2.013833
-@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
+@    MULPOP   C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.870880185957  16.0000013143    1.31D-06
+      K-S energy, electrons, error :    -11.870880167090  16.0000013143    1.31D-06
       QM3 induced Dipole vector converged in   3 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453367749332
+      Final norm2 of QM3 induced dipole moment vector:    0.116453373815540
       QM3 induced Dipole vector converged in   3 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453414884824
+      Final norm2 of QM3 induced dipole moment vector:    0.116453410721172
  MMPCM converged for given density
  No. of iterations:            2
-@ 10  -112.913133108     -2.069941011071E-02    3.06782D-07    1.23D-09
+@  9  -112.913133107     -2.069940736523E-02    1.88042D-07    1.27D-09
       Virial theorem: -V/T =      2.013833
-@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
+@    MULPOP   C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.870880165226  16.0000013143    1.31D-06
+      K-S energy, electrons, error :    -11.870880164129  16.0000013143    1.31D-06
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453410220049
+      Final norm2 of QM3 induced dipole moment vector:    0.116453417738984
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453418400457
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419684386
  MMPCM converged for given density
  No. of iterations:            2
-@ 11  -112.913133108     -2.069940723078E-02    1.86412D-08    1.50D-11
+@ 10  -112.913133108     -2.069940714139E-02    1.64500D-08   -1.41D-10
       Virial theorem: -V/T =      2.013833
-@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
+@    MULPOP   C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.870880163962  16.0000013143    1.31D-06
+      K-S energy, electrons, error :    -11.870880163992  16.0000013143    1.31D-06
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453419205363
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419524570
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453419821390
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419859263
  MMPCM converged for given density
  No. of iterations:            2
-@ 12  -112.913133108     -2.069940708429E-02    9.36057D-10   -1.09D-11
+@ 11  -112.913133108     -2.069940708628E-02    1.94805D-09    8.67D-13
       Virial theorem: -V/T =      2.013833
-@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
+@    MULPOP   C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.870880163915  16.0000013143    1.31D-06
+      K-S energy, electrons, error :    -11.870880163908  16.0000013143    1.31D-06
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453419899877
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419908563
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453419934868
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419935471
  MMPCM converged for given density
  No. of iterations:            2
-@ 13  -112.913133108     -2.069940707853E-02    6.23727D-11   -9.81D-13
+@ 12  -112.913133108     -2.069940707742E-02    1.90197D-10   -1.68D-12
       Virial theorem: -V/T =      2.013833
-@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
+@    MULPOP   C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :    -11.870880163912  16.0000013143    1.31D-06
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453419939079
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419942240
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453419941300
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419941972
  MMPCM converged for given density
  No. of iterations:            2
-@ 14  -112.913133108     -2.069940707819E-02    1.15269D-11   -1.42D-14
+@ 13  -112.913133108     -2.069940707818E-02    2.41205D-11   -1.14D-13
       Virial theorem: -V/T =      2.013833
-@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
+@    MULPOP   C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :    -11.870880163913  16.0000013143    1.31D-06
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453419942344
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419942286
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453419942111
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419942058
  MMPCM converged for given density
  No. of iterations:            2
-@ 15  -112.913133108     -2.069940707840E-02    1.48807D-12   -8.53D-14
+@ 14  -112.913133108     -2.069940707835E-02    3.43101D-12    8.53D-14
       Virial theorem: -V/T =      2.013833
-@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
+@    MULPOP   C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :    -11.870880163913  16.0000013143    1.31D-06
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453419942041
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419942149
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.116453419942049
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419942073
  MMPCM converged for given density
  No. of iterations:            2
-@ 16  -112.913133108     -2.069940707842E-02    4.68983D-13   -5.68D-14
+@ 15  -112.913133108     -2.069940707834E-02    3.64855D-13    0.00D+00
 
-@ *** DIIS converged in  16 iterations !
-@     Converged SCF energy, gradient:   -112.913133107583    4.69D-13
+@ *** DIIS converged in  15 iterations !
+@     Converged SCF energy, gradient:   -112.913133107583    3.65D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
     (incl. solvent contribution)
-
- Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   16
  Orbital occupations :    8
@@ -1062,13 +1070,13 @@ H            2.303878   -1.461228     .570065 2 3
   ------------------------------------------
     gap     :     0.23585724 au
 
- >>> Writing SIRIFC interface file
+ --- Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :      74.444      74.506
+ CPU and wall time for SCF :      80.528      36.250
 
 
                        .-----------------------------------.
-                       | >>> Final results from SIRIUS <<< |
+                       | --- Final results from SIRIUS --- |
                        `-----------------------------------'
 
 
@@ -1090,10 +1098,12 @@ H            2.303878   -1.461228     .570065 2 3
 @    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Tue Oct 14 15:28:53 2014
-     Host name              : spongebob                               
+     Date and time (Darwin) : Thu May 16 10:32:12 2019
+     Host name              : adm-106152.pc.sdu.dk                    
 
- (Only coefficients >0.0100 are printed.)
+File label for MO orbitals:  16May19   FOCKDIIS
+
+ (Only coefficients > 0.0100 are printed.)
 
  Molecular orbitals for symmetry species 1  (A  )
  ------------------------------------------------
@@ -1112,28 +1122,26 @@ H            2.303878   -1.461228     .570065 2 3
   11 H   :1s     0.0003  -0.0088   0.0314   0.2612   0.3170   0.1307   0.0008
   12 H   :1s     0.0003  -0.0088   0.0317   0.2654  -0.3168   0.1466   0.0003
 
-    Orbital         8        9       10
-   1 C   :1s    -0.0002  -0.0000   0.2051
-   2 C   :1s     0.0000  -0.0002  -1.2684
-   3 C   :2px   -0.0892  -0.0074   0.0170
-   4 C   :2py    0.0009   0.0262   0.4644
-   5 C   :2pz   -0.0002   0.8275  -0.0148
-   6 O   :1s     0.0032   0.0001  -0.0225
-   7 O   :1s    -0.0144  -0.0002   0.1275
-   8 O   :2px    0.9060   0.0065  -0.0011
-   9 O   :2py    0.0438  -0.0246  -0.2101
-  10 O   :2pz    0.0067  -0.7626   0.0067
-  11 H   :1s    -0.3411   0.0004   0.8724
-  12 H   :1s     0.3467   0.0000   0.9182
+    Orbital         8        9       10       11       12
+   1 C   :1s    -0.0002  -0.0000   0.2051  -0.0114  -0.1045
+   2 C   :1s     0.0000  -0.0002  -1.2684   0.0747   0.6963
+   3 C   :2px   -0.0892  -0.0074   0.0170   1.1440  -0.1187
+   4 C   :2py    0.0009   0.0262   0.4644   0.0946   1.1548
+   5 C   :2pz   -0.0002   0.8275  -0.0148   0.0072  -0.0375
+   6 O   :1s     0.0032   0.0001  -0.0225   0.0057   0.1171
+   7 O   :1s    -0.0144  -0.0002   0.1275  -0.0408  -0.8764
+   8 O   :2px    0.9060   0.0065  -0.0011  -0.3527  -0.0382
+   9 O   :2py    0.0438  -0.0246  -0.2101   0.0303   0.9331
+  10 O   :2pz    0.0067  -0.7626   0.0067  -0.0042  -0.0300
+  11 H   :1s    -0.3411   0.0004   0.8724  -0.8660   0.1532
+  12 H   :1s     0.3467   0.0000   0.9182   0.8161   0.0664
 
-
-
- >>>> Total CPU  time used in SIRIUS :     74.45 seconds
- >>>> Total wall time used in SIRIUS :     74.51 seconds
+  Total CPU  time used in SIRIUS :  1 minute  21 seconds
+  Total wall time used in SIRIUS :  36.26 seconds
 
  
-     Date and time (Linux)  : Tue Oct 14 15:28:53 2014
-     Host name              : spongebob                               
+     Date and time (Darwin) : Thu May 16 10:32:12 2019
+     Host name              : adm-106152.pc.sdu.dk                    
 
  NOTE:    1 warnings have been issued.
  Check output, result, and error files for "WARNING".
@@ -1155,7 +1163,7 @@ H            2.303878   -1.461228     .570065 2 3
  ------------------------------------------------------------------------------
 
 
- <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+ -------- OUTPUT FROM RESPONSE INPUT PROCESSING --------
 
 
 
@@ -1186,11 +1194,18 @@ H            2.303878   -1.461228     .570065 2 3
                YDIPLEN 
                ZDIPLEN 
 
- Integral transformation: Total CPU and WALL times (sec)       0.004       0.002
+ INFO SIR_INTOPEN, old integral transformation not found as expected, ICASE = 2
+ - ICASE = 1: MO integral file MOTWOINT does not exist
+ - ICASE = 2: no MO integrals on MOTWOINT
+ - ICASE = 3: transformation level on MOTWOINT not sufficient
+
+ 2-el. integral transformation level 4: Total CPU and WALL times (sec)       0.018       0.006
+
+ Sorting integrals to Dirac format: Total CPU and WALL times (sec)       0.001       0.000
 
 
-   SCF energy         :     -112.913133107582922
- -- inactive part     :     -144.282662539261082
+   SCF energy         :     -112.913133107582809
+ -- inactive part     :     -144.282662539261054
  -- nuclear repulsion :       31.249215315972382
 
 
@@ -1198,10 +1213,10 @@ H            2.303878   -1.461228     .570065 2 3
                     *** DFT response calculation (TD-DFT) ***
                     *****************************************
 
-
-
- >>>>>>>>>> Linear response calculation
- >>>>>>>>>> Symmetry of excitation/property operator(s)    1  ( A  )
+ ----------------------------------------------------------------
+ ----- Linear response calculation
+ ----- Symmetry of excitation/property operator(s)    1  ( A  )
+ ----------------------------------------------------------------
 
  Number of excitations of this symmetry            4
  Number of response properties of this symmetry    0
@@ -1213,85 +1228,17 @@ H            2.303878   -1.461228     .570065 2 3
  Orbital variables.         KZWOPT:      32
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :      32
- Electrons in DFTMOMO:   16.00000131428616
+ Electrons in DFTMOMO:   16.00000131428624
 
-
-                         Matrix < abs(phi_p) abs(phi_q) >
-                         --------------------------------
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
-       1       1.00000001     0.00199563     0.21049475     0.09704217     0.07746212     0.19306334     0.15104992     0.19169152
-       2       0.00199563     1.00000055     0.13410930     0.19022437     0.14928021     0.11841411     0.14568113     0.03200435
-       3       0.21049475     0.13410930     1.00000005     0.46882440     0.60517410     0.70956035     0.79309361     0.69658954
-       4       0.09704217     0.19022437     0.46882440     1.00000004     0.82603197     0.64890286     0.59765571     0.61780758
-       5       0.07746212     0.14928021     0.60517410     0.82603197     1.00000004     0.54917202     0.52788194     0.73762333
-       6       0.19306334     0.11841411     0.70956035     0.64890286     0.54917202     1.00000000     0.62051646     0.64696297
-       7       0.15104992     0.14568113     0.79309361     0.59765571     0.52788194     0.62051646     0.99999999     0.51731898
-       8       0.19169152     0.03200435     0.69658954     0.61780758     0.73762333     0.64696297     0.51731898     0.99999998
-       9       0.15737825     0.18184850     0.66782058     0.67864879     0.53282948     0.59200082     0.94724205     0.48898593
-      10       0.05023827     0.21552930     0.32672900     0.82866151     0.71843100     0.44793287     0.41830817     0.49073935
-      11       0.07095010     0.22287843     0.47495003     0.72821385     0.87564171     0.49912794     0.43756232     0.60382383
-      12       0.21170599     0.24686412     0.76908519     0.63086162     0.61459841     0.71054325     0.67271817     0.51171038
-
-               Column   9     Column  10     Column  11     Column  12
-       1       0.15737825     0.05023827     0.07095010     0.21170599
-       2       0.18184850     0.21552930     0.22287843     0.24686412
-       3       0.66782058     0.32672900     0.47495003     0.76908519
-       4       0.67864879     0.82866151     0.72821385     0.63086162
-       5       0.53282948     0.71843100     0.87564171     0.61459841
-       6       0.59200082     0.44793287     0.49912794     0.71054325
-       7       0.94724205     0.41830817     0.43756232     0.67271817
-       8       0.48898593     0.49073935     0.60382383     0.51171038
-       9       1.00000000     0.48593365     0.46884117     0.66073088
-      10       0.48593365     1.00000006     0.79225371     0.51403404
-      11       0.46884117     0.79225371     1.00000008     0.55454844
-      12       0.66073088     0.51403404     0.55454844     1.00000001
-    ==== End of matrix output ====
-
-
-                            Matrix < phi_p^2 phi_q^2 >
-                            --------------------------
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
-       1       1.00000000     0.00000054     0.42517117     0.14436899     0.01409204     0.14000110     0.04222008     0.05259723
-       2       0.00000054     1.00000000     0.09981674     0.33713965     0.03364779     0.01866632     0.02442532     0.00056562
-       3       0.42517117     0.09981674     1.00000000     0.22194090     0.27665116     0.41516551     0.51994416     0.46482337
-       4       0.14436899     0.33713965     0.22194090     1.00000000     0.62694280     0.33309604     0.29378103     0.23872927
-       5       0.01409204     0.03364779     0.27665116     0.62694280     1.00000000     0.18797521     0.21578874     0.42243850
-       6       0.14000110     0.01866632     0.41516551     0.33309604     0.18797521     1.00000000     0.33620819     0.35120199
-       7       0.04222008     0.02442532     0.51994416     0.29378103     0.21578874     0.33620819     1.00000000     0.28941838
-       8       0.05259723     0.00056562     0.46482337     0.23872927     0.42243850     0.35120199     0.28941838     1.00000000
-       9       0.04438798     0.03811779     0.38916388     0.36959697     0.23400071     0.31428655     0.94181985     0.26134796
-      10       0.00940404     0.32148010     0.10177585     0.74605323     0.49563550     0.11372446     0.17058326     0.14329171
-      11       0.00967013     0.06664709     0.15722939     0.44556732     0.80145029     0.13671479     0.17038184     0.23716718
-      12       0.16396678     0.10666663     0.66820503     0.31075417     0.29499923     0.43963014     0.39705907     0.30036156
-
-               Column   9     Column  10     Column  11     Column  12
-       1       0.04438798     0.00940404     0.00967013     0.16396678
-       2       0.03811779     0.32148010     0.06664709     0.10666663
-       3       0.38916388     0.10177585     0.15722939     0.66820503
-       4       0.36959697     0.74605323     0.44556732     0.31075417
-       5       0.23400071     0.49563550     0.80145029     0.29499923
-       6       0.31428655     0.11372446     0.13671479     0.43963014
-       7       0.94181985     0.17058326     0.17038184     0.39705907
-       8       0.26134796     0.14329171     0.23716718     0.30036156
-       9       1.00000000     0.24007044     0.21007406     0.36759943
-      10       0.24007044     1.00000000     0.57709756     0.23828876
-      11       0.21007406     0.57709756     1.00000000     0.27086793
-      12       0.36759943     0.23828876     0.27086793     1.00000000
-    ==== End of matrix output ====
-
- >>> IN RSPPP:
-  THCPP,MAXRM    1.0000000000000000E-004         600
-  KSYMOP,NGPPP(KSYMOP)            1           3
-  LWRK ,LWRK1     63999526    62917438
+ --- In RSPPP:
+ THCPP, MAXRM          1.00D-04       600
+ KSYMOP,NGPPP(KSYMOP)         1         3
+ LWRK , LWRK1          63999526  62917438
   KEXCNV,NSIM,LWRK2            4           4     1082605
 
 
 
- <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+ --- EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) ---
 
  Operator symmetry = 1  ( A  ); triplet =   F
 
@@ -1364,23 +1311,23 @@ H            2.303878   -1.461228     .570065 2 3
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
-@ Transition operator type:    XDIPLEN 
+@ Singlet transition operator label: XDIPLEN 
 @ STATE NO:    1 *TRANSITION MOMENT: -3.95725849E-04 *ENERGY(eV):   4.1060393    
 @ STATE NO:    2 *TRANSITION MOMENT:  1.65899787E-03 *ENERGY(eV):   9.5092759    
 @ STATE NO:    3 *TRANSITION MOMENT:  4.27987055E-02 *ENERGY(eV):   11.870025    
 @ STATE NO:    4 *TRANSITION MOMENT:  5.81860300E-03 *ENERGY(eV):   11.875364    
 
-@ Transition operator type:    YDIPLEN 
+@ Singlet transition operator label: YDIPLEN 
 @ STATE NO:    1 *TRANSITION MOMENT: -9.19588871E-05 *ENERGY(eV):   4.1060393    
 @ STATE NO:    2 *TRANSITION MOMENT: -6.43359696E-03 *ENERGY(eV):   9.5092759    
 @ STATE NO:    3 *TRANSITION MOMENT: -0.66548695     *ENERGY(eV):   11.870025    
 @ STATE NO:    4 *TRANSITION MOMENT: -9.20759902E-02 *ENERGY(eV):   11.875364    
 
-@ Transition operator type:    ZDIPLEN 
+@ Singlet transition operator label: ZDIPLEN 
 @ STATE NO:    1 *TRANSITION MOMENT:  5.03948873E-03 *ENERGY(eV):   4.1060393    
 @ STATE NO:    2 *TRANSITION MOMENT: -0.17976795     *ENERGY(eV):   9.5092759    
 @ STATE NO:    3 *TRANSITION MOMENT:  2.19058394E-02 *ENERGY(eV):   11.870025    
-@ STATE NO:    4 *TRANSITION MOMENT: -4.37888482E-05 *ENERGY(eV):   11.875364    
+@ STATE NO:    4 *TRANSITION MOMENT: -4.37888483E-05 *ENERGY(eV):   11.875364    
 
 
  **************************************************************************************
@@ -1389,22 +1336,22 @@ H            2.303878   -1.461228     .570065 2 3
 
 
 
- @ Excited state no:    1 in symmetry 1  ( A  )
- ----------------------------------------------
+ @ Excited state no:    1 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
 
 @ Excitation energy :  0.15089417     au
-@                      4.1060393     eV;   33117.443     cm-1;   396.17259     kJ / mol
+@                       4.1060393     eV;   33117.443     cm-1;   396.17259     kJ / mol
 
-@ Total energy :      -112.76224     au
+@ Total energy :       -112.76224     au
 
-@ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  1.57532457E-08  (Transition moment : -3.95725849E-04 )
+@ Operator label: XDIPLEN ; Transition moment : -3.95725849E-04 au
+@ Oscillator strength (LENGTH)   :  1.57532457E-08  (X-polarization)
 
-@ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  8.50684701E-10  (Transition moment : -9.19588871E-05 )
+@ Operator label: YDIPLEN ; Transition moment : -9.19588871E-05 au
+@ Oscillator strength (LENGTH)   :  8.50684702E-10  (Y-polarization)
 
-@ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  2.55478387E-06  (Transition moment :  5.03948873E-03 )
+@ Operator label: ZDIPLEN ; Transition moment :  5.03948873E-03 au
+@ Oscillator strength (LENGTH)   :  2.55478387E-06  (Z-polarization)
 
  Eigenvector for state no.  1
 
@@ -1415,12 +1362,9 @@ H            2.303878   -1.461228     .570065 2 3
       ----------    -----  -----      --------------      --------------      --------------      --------------
           29         8(1)   9(1)        0.7077518876        0.0375742150        1.0009123182        0.0531379644
 
-       31 elements with absolute value ≤$ 1.00D-01 not printed.
+       31 elements with absolute value ≤ 1.00D-01 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
-
-     Configuration operator symmetry = 1
-     >> NO ELEMENTS <<
 
 
                               MO Overlap Diagnostic
@@ -1448,22 +1392,22 @@ Delta_R Diagnostic (Aa):     0.3002
 @ Overlap diagnostic LAMBDA =    0.4890
 
 
- @ Excited state no:    2 in symmetry 1  ( A  )
- ----------------------------------------------
+ @ Excited state no:    2 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
 
 @ Excitation energy :  0.34945947     au
-@                      9.5092759     eV;   76697.488     cm-1;   917.50570     kJ / mol
+@                       9.5092759     eV;   76697.488     cm-1;   917.50570     kJ / mol
 
-@ Total energy :      -112.56367     au
+@ Total energy :       -112.56367     au
 
-@ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  6.41205461E-07  (Transition moment :  1.65899787E-03 )
+@ Operator label: XDIPLEN ; Transition moment :  1.65899787E-03 au
+@ Oscillator strength (LENGTH)   :  6.41205461E-07  (X-polarization)
 
-@ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  9.64302419E-06  (Transition moment : -6.43359696E-03 )
+@ Operator label: YDIPLEN ; Transition moment : -6.43359696E-03 au
+@ Oscillator strength (LENGTH)   :  9.64302419E-06  (Y-polarization)
 
-@ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  7.52887516E-03  (Transition moment : -0.17976795     )
+@ Operator label: ZDIPLEN ; Transition moment : -0.17976795     au
+@ Oscillator strength (LENGTH)   :  7.52887516E-03  (Z-polarization)
 
  Eigenvector for state no.  2
 
@@ -1474,12 +1418,9 @@ Delta_R Diagnostic (Aa):     0.3002
       ----------    -----  -----      --------------      --------------      --------------      --------------
           21         6(1)   9(1)        0.7056494895        0.0321398851        0.9979390783        0.0454526614
 
-       31 elements with absolute value ≤$ 9.98D-02 not printed.
+       31 elements with absolute value ≤ 9.98D-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
-
-     Configuration operator symmetry = 1
-     >> NO ELEMENTS <<
 
 
                               MO Overlap Diagnostic
@@ -1507,22 +1448,22 @@ Delta_R Diagnostic (Aa):     0.5395
 @ Overlap diagnostic LAMBDA =    0.5932
 
 
- @ Excited state no:    3 in symmetry 1  ( A  )
- ----------------------------------------------
+ @ Excited state no:    3 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
 
 @ Excitation energy :  0.43621541     au
-@                      11.870025     eV;   95738.215     cm-1;   1145.2834     kJ / mol
+@                       11.870025     eV;   95738.215     cm-1;   1145.2834     kJ / mol
 
-@ Total energy :      -112.47692     au
+@ Total energy :       -112.47692     au
 
-@ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  5.32685666E-04  (Transition moment :  4.27987055E-02 )
+@ Operator label: XDIPLEN ; Transition moment :  4.27987055E-02 au
+@ Oscillator strength (LENGTH)   :  5.32685666E-04  (X-polarization)
 
-@ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  0.12879198      (Transition moment : -0.66548695     )
+@ Operator label: YDIPLEN ; Transition moment : -0.66548695     au
+@ Oscillator strength (LENGTH)   :  0.12879198      (Y-polarization)
 
-@ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  1.39549904E-04  (Transition moment :  2.19058394E-02 )
+@ Operator label: ZDIPLEN ; Transition moment :  2.19058394E-02 au
+@ Oscillator strength (LENGTH)   :  1.39549904E-04  (Z-polarization)
 
  Eigenvector for state no.  3
 
@@ -1536,12 +1477,9 @@ Delta_R Diagnostic (Aa):     0.5395
           25         7(1)   9(1)        0.6677406674        0.1065742950        0.9443279080        0.1507188133
           31         8(1)  11(1)       -0.1841357707        0.0288508750       -0.2604073042        0.0408012988
 
-       28 elements with absolute value ≤$ 9.44D-02 not printed.
+       28 elements with absolute value ≤ 9.44D-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
-
-     Configuration operator symmetry = 1
-     >> NO ELEMENTS <<
 
 
                               MO Overlap Diagnostic
@@ -1571,22 +1509,22 @@ Delta_R Diagnostic (Aa):     0.3090
 @ Overlap diagnostic LAMBDA =    0.8766
 
 
- @ Excited state no:    4 in symmetry 1  ( A  )
- ----------------------------------------------
+ @ Excited state no:    4 in symmetry 1  ( A  ) - singlet excitation
+ -------------------------------------------------------------------
 
 @ Excitation energy :  0.43641161     au
-@                      11.875364     eV;   95781.276     cm-1;   1145.7985     kJ / mol
+@                       11.875364     eV;   95781.276     cm-1;   1145.7985     kJ / mol
 
-@ Total energy :      -112.47672     au
+@ Total energy :       -112.47672     au
 
-@ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  9.85014195E-06  (Transition moment :  5.81860300E-03 )
+@ Operator label: XDIPLEN ; Transition moment :  5.81860300E-03 au
+@ Oscillator strength (LENGTH)   :  9.85014195E-06  (X-polarization)
 
-@ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  2.46659492E-03  (Transition moment : -9.20759902E-02 )
+@ Operator label: YDIPLEN ; Transition moment : -9.20759902E-02 au
+@ Oscillator strength (LENGTH)   :  2.46659492E-03  (Y-polarization)
 
-@ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  5.57868807E-10  (Transition moment : -4.37888482E-05 )
+@ Operator label: ZDIPLEN ; Transition moment : -4.37888483E-05 au
+@ Oscillator strength (LENGTH)   :  5.57868810E-10  (Z-polarization)
 
  Eigenvector for state no.  4
 
@@ -1598,12 +1536,9 @@ Delta_R Diagnostic (Aa):     0.3090
           17         5(1)   9(1)       -0.6999752575       -0.0078165517       -0.9899145025       -0.0110542734
           25         7(1)   9(1)        0.0922812537        0.0147534262        0.1305054006        0.0208644954
 
-       30 elements with absolute value ≤$ 9.90D-02 not printed.
+       30 elements with absolute value ≤ 9.90D-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
-
-     Configuration operator symmetry = 1
-     >> NO ELEMENTS <<
 
 
                               MO Overlap Diagnostic
@@ -1631,19 +1566,19 @@ Delta_R Diagnostic (Aa):     0.4924
 @ Overlap diagnostic LAMBDA =    0.5384
 
 
- Time used in polarization propagator calculation is     13.87 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is     13.83 CPU seconds for symmetry 1
 
- >>>> Total CPU  time used in RESPONSE:  13.88 seconds
- >>>> Total wall time used in RESPONSE:  13.89 seconds
+  Total CPU  time used in RESPONSE:  13.86 seconds
+  Total wall time used in RESPONSE:   7.85 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  1 minute  34 seconds
- >>>> Total wall time used in DALTON:  1 minute  35 seconds
+  Total CPU  time used in DALTON:  1 minute  37 seconds
+  Total wall time used in DALTON:  46.94 seconds
 
  
-     Date and time (Linux)  : Tue Oct 14 15:29:07 2014
-     Host name              : spongebob                               
+     Date and time (Darwin) : Thu May 16 10:32:20 2019
+     Host name              : adm-106152.pc.sdu.dk                    

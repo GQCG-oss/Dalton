@@ -62,13 +62,14 @@ C
       CHARACTER*8 LABEL(NABAOP)
 C
 C Used from common blocks:
-C ABAINF : DODRCT
+C ABAINF : DODRCT, TDA_SINGLET, TDA_TRIPLET, ?
 C exeinf.h : FTRCTL, NEWCMO, ITRLVL_LAST, LVLDRC_LAST
 C INFLIN : NCONRF
 C INFINP : DIRFCK,HSORHF,FLAG(:),...
 C INFORB : NASHT,...
 C infvar.h : NVAR, ... (reset of FLAG(27)
 C INFTRA : USEDRC
+C infrsp.h : TDA, ...
 C
 #include "abainf.h"
 #include "exeinf.h"
@@ -93,7 +94,7 @@ C
 #include "qm3.h"
 C
       LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX, USEDRC_SAVE
-      LOGICAL FLAG27_save
+      LOGICAL FLAG27_save, TDA_save
 C
       CALL QENTER('ABARSP')
 
@@ -101,6 +102,7 @@ C
       FLAG27_SAVE = FLAG(27) ! needs to be restored after triplet response
       ! otherwise susequent call of ABARSPN for singlet response may fail /Feb.2018 - hjaaj
       ! (SIRIFC is not read again, so it is not restored this way)
+      TDA_save = TDA
 
       IF (MMPCM) CALL MMPCMINIT()
       TIMRSP = SECOND()
@@ -109,23 +111,32 @@ C
          WRITE (LUPRI,'(//A/A)')
      *   '  THIS IS OUTPUT FROM THE MCSCF AND SOPPA RESPONSE SOLVER',
      *   ' ---------------------------------------------------------'
-         IF (EXCLC) THEN
+         IF (EXCLC .AND. TRPCLC) THEN
             WRITE(LUPRI,'(2(/A,I6),/A,1P,D13.2)')
-     *      ' Symmetry of excitation operator',IOPSYM,
-     *      ' Number of excitations:',NEXVAL,
+     *      ' Symmetry of triplet excitation operator',IOPSYM,
+     *      ' Number of triplet excitations:',NEXVAL,
      *      ' Convergence threshold:',THRCLC
+            IF (TDA_TRIPLET) WRITE(LUPRI,'(A)') ' * TDA is used.'
+         ELSE IF (EXCLC) THEN
+            WRITE(LUPRI,'(2(/A,I6),/A,1P,D13.2)')
+     *      ' Symmetry of singlet excitation operator',IOPSYM,
+     *      ' Number of singlet excitations:',NEXVAL,
+     *      ' Convergence threshold:',THRCLC
+            IF (TDA_SINGLET) WRITE(LUPRI,'(A)') ' * TDA is used.'
          ELSE IF (TRPCLC) THEN
             WRITE(LUPRI,'(/3(/A,I6),/A,1P,D13.2)')
      *      ' Symmetry of triplet property operator', IOPSYM,
      *     ' Number of operators for triplet linear response equations:'
      *      ,NABAOP, ' Number of response frequencies:',NEXVAL,
      *      ' Convergence threshold:',THRCLC
+            IF (TDA_TRIPLET) WRITE(LUPRI,'(A)') ' * TDA is used.'
          ELSE
             WRITE(LUPRI,'(/3(/A,I6),/A,1P,D13.2)')
      *      ' Symmetry of singlet property operator', IOPSYM,
      *     ' Number of operators for singlet linear response equations:'
      *      ,NABAOP, ' Number of response frequencies:',NEXVAL,
      *      ' Convergence threshold:',THRCLC
+            IF (TDA_SINGLET) WRITE(LUPRI,'(A)') ' * TDA is used.'
          ENDIF
       END IF
       CALL FLSHFO(LUPRI)
@@ -148,9 +159,11 @@ C
       IF (TRPCLC) THEN
          TRPLET = .TRUE.
          TRPFLG = .TRUE.
+         TDA    = TDA_TRIPLET
       ELSE
          TRPLET = .FALSE.
          TRPFLG = .FALSE.
+         TDA    = TDA_SINGLET
       ENDIF
 C
       IF (CICLC) THEN
@@ -490,7 +503,8 @@ C
 C
 C     *******************************************
 C
-      USEDRC   = USEDRC_SAVE
+      USEDRC = USEDRC_SAVE
+      TDA    = TDA_save
       IF (FLAG(27) .NEQV. FLAG27_SAVE) THEN
 C        ... call SETCI with new FLAG(27) and
 C            reset Sirius CI common blocks for CSFs/determinants
