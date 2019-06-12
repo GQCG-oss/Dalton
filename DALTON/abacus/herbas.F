@@ -333,7 +333,7 @@ C
             BASTMP(1:len_BASNAM) = BASNAM(1:len_BASNAM)
             ISTART = len_BASNAM + 2
          ELSE IF (BASNAM(1:7) .EQ. 'ANO-RCC') THEN
-            ANO = .FALSE. ! ANO-RCC is not written in MOLCAS format
+            ANO = .TRUE.
             BASTMP(1:len_BASNAM) = BASNAM(1:len_BASNAM)
             ISTART = len_BASNAM + 2
          ELSE IF (BASNAM(1:7) .EQ. 'ANO-DK3') THEN
