@@ -2,7 +2,6 @@ set(DALTON_C_SOURCES
     DALTON/cc/crayio.c
     DALTON/dft/basisinfo.c
     DALTON/dft/cube-fast.c
-    DALTON/dft/dft_dftd.F
     DALTON/dft/eval-dso.c
     DALTON/dft/fun-b86.c
     DALTON/dft/fun-b86mx.c
@@ -446,6 +445,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/dft/dft_mos.F
     DALTON/dft/dft_rho.F
     DALTON/dft/dso_cb.F
+    DALTON/dft/dft_dftd.F
     DALTON/eri/eri2aob.F
     DALTON/eri/eri2ave.F
     DALTON/eri/eri2car1.F
