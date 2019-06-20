@@ -2162,12 +2162,7 @@ C           --------------
 
                KOFFF = IAODIS(ISYMA,ISYMB) + 1
                KOFFH = KHOLE + IHOLE(ISYMA,ISYMK)
-Casm
-C              Very dirty hack to solve weird bug when linking
-C              against some ATLAS libraries.
-C              See the end of cc_cholesky.F for more info
-Casm
-               CALL OTHER_DGEMM('N','T',NA,NB,NVK,
+               CALL DGEMM('N','T',NA,NB,NVK,
      &                    HFXFAC*XMONE,WORK(KOFFH),NTOTA,WORK(KOFFH),
      &                    NTOTB,ONE,FOCK(KOFFF),NTOTA)
 
