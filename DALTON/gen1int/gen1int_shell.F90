@@ -328,8 +328,8 @@ module gen1int_shell
       end if
       write(io_viewer,100) "base index of the orbitals", sub_shells(ishell)%base_idx
     end do
-100 format("Gen1IntShellView>> "A,2I8)
-110 format("Gen1IntShellView>> "A,3F16.8)
+100 format("Gen1IntShellView>> ",A,2I8)
+110 format("Gen1IntShellView>> ",A,3F16.8)
 120 format("Gen1IntShellView>> ",5Es16.8)
 130 format("Gen1IntShellView>> ",16X,4Es16.8)
 140 format("Gen1IntShellView>> magnetic numbers>> ",8I4)
