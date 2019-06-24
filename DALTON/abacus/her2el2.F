@@ -1636,8 +1636,9 @@ C
                   IF (IJ .NE. JI) THEN
 C                    Antihermitean integrals (WK/UniKA/18-11-2002).
                      IF (ANTICO) THEN
-                        CALL VSMUL(CCPRIM(I),NUC34,DM1,
-     &                             SCR1(JI),N34Q,NINT12)
+                        DO INT12 = 0, NINT12-1
+                           SCR1(JI+N34Q*INT12) = -CCPRIM(I+NUC34*INT12)
+                        END DO
                      ELSE
                         CALL DCOPY(NINT12,CCPRIM(I),
      &                             NUC34,SCR1(JI),N34Q)
@@ -1665,8 +1666,9 @@ C                    Antihermitean integrals (WK/UniKA/18-11-2002).
                   CALL DCOPY(NINT12,CCPRIM(IADR),N34D,SCR1(IJ),N34Q)
                   IF (IJ .NE. JI) THEN
                      IF (ANTICO) THEN
-                        CALL VSMUL(CCPRIM(IADR),N34D,DM1,
-     &                             SCR1(JI),N34Q,NINT12)
+                        DO INT12 = 0, NINT12-1
+                          SCR1(JI+N34Q*INT12) = -CCPRIM(IADR+N34D*INT12)
+                        END DO
                      ELSE
                         CALL DCOPY(NINT12,CCPRIM(IADR),
      &                             N34D,SCR1(JI),N34Q)
