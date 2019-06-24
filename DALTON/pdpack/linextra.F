@@ -23,7 +23,9 @@ C 3) DSUM, IDAMIN, IDMAX, IDMIN (supplement DASUM and IDAMAX)
 C 4) "iblas": ICOPY, ISWAP, ...
 C 5) other extra routines: DGEZERO, DSPZERO, NDXGTA
 C            (zero block of matrix; find next element .gt. a)
-C 5) DSPSOL, DSPSLI, DGESOL, DGEINV : driver routines calling LINPACK
+C 6) DSPSOL, DSPSLI, DGESOL, DGEINV : driver routines calling LINPACK
+C 7) BLAS and LAPACK routines missing for ESSL:
+C            LSAME; ILAENV, DSPTRI, DSPCON
 C
 C
 C
@@ -1025,4 +1027,948 @@ C
 C
       RETURN
       END
+C Block 7: BLAS and LAPACK routines missing for ESSL
+C            LSAME; ILAENV, DSPTRI, DSPCON
+#if defined (VAR_ESSL)
+      LOGICAL FUNCTION LSAME(CA,CB)
+*
+*  -- Reference BLAS level1 routine (version 3.1) --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*     November 2011
+*
+*     .. Scalar Arguments ..
+      CHARACTER CA,CB
+*     ..
+*
+* =====================================================================
+*
+*     .. Intrinsic Functions ..
+      INTRINSIC ICHAR
+*     ..
+*     .. Local Scalars ..
+      INTEGER INTA,INTB,ZCODE
+*     ..
+*
+*     Test if the characters are equal
+*
+      LSAME = CA .EQ. CB
+      IF (LSAME) RETURN
+*
+*     Now test for equivalence if both characters are alphabetic.
+*
+      ZCODE = ICHAR('Z')
+*
+*     Use 'Z' rather than 'A' so that ASCII can be detected on Prime
+*     machines, on which ICHAR returns a value with bit 8 set.
+*     ICHAR('A') on Prime machines returns 193 which is the same as
+*     ICHAR('A') on an EBCDIC machine.
+*
+      INTA = ICHAR(CA)
+      INTB = ICHAR(CB)
+*
+      IF (ZCODE.EQ.90 .OR. ZCODE.EQ.122) THEN
+*
+*        ASCII is assumed - ZCODE is the ASCII code of either lower or
+*        upper case 'Z'.
+*
+          IF (INTA.GE.97 .AND. INTA.LE.122) INTA = INTA - 32
+          IF (INTB.GE.97 .AND. INTB.LE.122) INTB = INTB - 32
+*
+      ELSE IF (ZCODE.EQ.233 .OR. ZCODE.EQ.169) THEN
+*
+*        EBCDIC is assumed - ZCODE is the EBCDIC code of either lower or
+*        upper case 'Z'.
+*
+          IF (INTA.GE.129 .AND. INTA.LE.137 .OR.
+     +        INTA.GE.145 .AND. INTA.LE.153 .OR.
+     +        INTA.GE.162 .AND. INTA.LE.169) INTA = INTA + 64
+          IF (INTB.GE.129 .AND. INTB.LE.137 .OR.
+     +        INTB.GE.145 .AND. INTB.LE.153 .OR.
+     +        INTB.GE.162 .AND. INTB.LE.169) INTB = INTB + 64
+*
+      ELSE IF (ZCODE.EQ.218 .OR. ZCODE.EQ.250) THEN
+*
+*        ASCII is assumed, on Prime machines - ZCODE is the ASCII code
+*        plus 128 of either lower or upper case 'Z'.
+*
+          IF (INTA.GE.225 .AND. INTA.LE.250) INTA = INTA - 32
+          IF (INTB.GE.225 .AND. INTB.LE.250) INTB = INTB - 32
+      END IF
+      LSAME = INTA .EQ. INTB
+*
+*     RETURN
+*
+*     End of LSAME
+*
+      END
+      INTEGER FUNCTION ILAENV( ISPEC, NAME, OPTS, N1, N2, N3, N4 )
+*
+*  -- LAPACK auxiliary routine (version 3.4.0) --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*     November 2011
+*
+*     .. Scalar Arguments ..
+      CHARACTER*( * )    NAME, OPTS
+      INTEGER            ISPEC, N1, N2, N3, N4
+*     ..
+*
+*  =====================================================================
+*
+*     .. Local Scalars ..
+      INTEGER            I, IC, IZ, NB, NBMIN, NX
+      LOGICAL            CNAME, SNAME
+      CHARACTER          C1*1, C2*2, C4*2, C3*3, SUBNAM*6
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          CHAR, ICHAR, INT, MIN, REAL
+*     ..
+*     .. External Functions ..
+      INTEGER            IEEECK, IPARMQ
+      EXTERNAL           IEEECK, IPARMQ
+*     ..
+*     .. Executable Statements ..
+*
+      GO TO ( 10, 10, 10, 80, 90, 100, 110, 120,
+     $        130, 140, 150, 160, 160, 160, 160, 160 )ISPEC
+*
+*     Invalid value for ISPEC
+*
+      ILAENV = -1
+      RETURN
+*
+   10 CONTINUE
+*
+*     Convert NAME to upper case if the first character is lower case.
+*
+      ILAENV = 1
+      SUBNAM = NAME
+      IC = ICHAR( SUBNAM( 1: 1 ) )
+      IZ = ICHAR( 'Z' )
+      IF( IZ.EQ.90 .OR. IZ.EQ.122 ) THEN
+*
+*        ASCII character set
+*
+         IF( IC.GE.97 .AND. IC.LE.122 ) THEN
+            SUBNAM( 1: 1 ) = CHAR( IC-32 )
+            DO 20 I = 2, 6
+               IC = ICHAR( SUBNAM( I: I ) )
+               IF( IC.GE.97 .AND. IC.LE.122 )
+     $            SUBNAM( I: I ) = CHAR( IC-32 )
+   20       CONTINUE
+         END IF
+*
+      ELSE IF( IZ.EQ.233 .OR. IZ.EQ.169 ) THEN
+*
+*        EBCDIC character set
+*
+         IF( ( IC.GE.129 .AND. IC.LE.137 ) .OR.
+     $       ( IC.GE.145 .AND. IC.LE.153 ) .OR.
+     $       ( IC.GE.162 .AND. IC.LE.169 ) ) THEN
+            SUBNAM( 1: 1 ) = CHAR( IC+64 )
+            DO 30 I = 2, 6
+               IC = ICHAR( SUBNAM( I: I ) )
+               IF( ( IC.GE.129 .AND. IC.LE.137 ) .OR.
+     $             ( IC.GE.145 .AND. IC.LE.153 ) .OR.
+     $             ( IC.GE.162 .AND. IC.LE.169 ) )SUBNAM( I:
+     $             I ) = CHAR( IC+64 )
+   30       CONTINUE
+         END IF
+*
+      ELSE IF( IZ.EQ.218 .OR. IZ.EQ.250 ) THEN
+*
+*        Prime machines:  ASCII+128
+*
+         IF( IC.GE.225 .AND. IC.LE.250 ) THEN
+            SUBNAM( 1: 1 ) = CHAR( IC-32 )
+            DO 40 I = 2, 6
+               IC = ICHAR( SUBNAM( I: I ) )
+               IF( IC.GE.225 .AND. IC.LE.250 )
+     $            SUBNAM( I: I ) = CHAR( IC-32 )
+   40       CONTINUE
+         END IF
+      END IF
+*
+      C1 = SUBNAM( 1: 1 )
+      SNAME = C1.EQ.'S' .OR. C1.EQ.'D'
+      CNAME = C1.EQ.'C' .OR. C1.EQ.'Z'
+      IF( .NOT.( CNAME .OR. SNAME ) )
+     $   RETURN
+      C2 = SUBNAM( 2: 3 )
+      C3 = SUBNAM( 4: 6 )
+      C4 = C3( 2: 3 )
+*
+      GO TO ( 50, 60, 70 )ISPEC
+*
+   50 CONTINUE
+*
+*     ISPEC = 1:  block size
+*
+*     In these examples, separate code is provided for setting NB for
+*     real and complex.  We assume that NB will take the same value in
+*     single or double precision.
+*
+      NB = 1
+*
+      IF( C2.EQ.'GE' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         ELSE IF( C3.EQ.'QRF' .OR. C3.EQ.'RQF' .OR. C3.EQ.'LQF' .OR.
+     $            C3.EQ.'QLF' ) THEN
+            IF( SNAME ) THEN
+               NB = 32
+            ELSE
+               NB = 32
+            END IF
+         ELSE IF( C3.EQ.'HRD' ) THEN
+            IF( SNAME ) THEN
+               NB = 32
+            ELSE
+               NB = 32
+            END IF
+         ELSE IF( C3.EQ.'BRD' ) THEN
+            IF( SNAME ) THEN
+               NB = 32
+            ELSE
+               NB = 32
+            END IF
+         ELSE IF( C3.EQ.'TRI' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'PO' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'SY' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         ELSE IF( SNAME .AND. C3.EQ.'TRD' ) THEN
+            NB = 32
+         ELSE IF( SNAME .AND. C3.EQ.'GST' ) THEN
+            NB = 64
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'HE' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            NB = 64
+         ELSE IF( C3.EQ.'TRD' ) THEN
+            NB = 32
+         ELSE IF( C3.EQ.'GST' ) THEN
+            NB = 64
+         END IF
+      ELSE IF( SNAME .AND. C2.EQ.'OR' ) THEN
+         IF( C3( 1: 1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NB = 32
+            END IF
+         ELSE IF( C3( 1: 1 ).EQ.'M' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NB = 32
+            END IF
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'UN' ) THEN
+         IF( C3( 1: 1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NB = 32
+            END IF
+         ELSE IF( C3( 1: 1 ).EQ.'M' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NB = 32
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'GB' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               IF( N4.LE.64 ) THEN
+                  NB = 1
+               ELSE
+                  NB = 32
+               END IF
+            ELSE
+               IF( N4.LE.64 ) THEN
+                  NB = 1
+               ELSE
+                  NB = 32
+               END IF
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'PB' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               IF( N2.LE.64 ) THEN
+                  NB = 1
+               ELSE
+                  NB = 32
+               END IF
+            ELSE
+               IF( N2.LE.64 ) THEN
+                  NB = 1
+               ELSE
+                  NB = 32
+               END IF
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'TR' ) THEN
+         IF( C3.EQ.'TRI' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'LA' ) THEN
+         IF( C3.EQ.'UUM' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         END IF
+      ELSE IF( SNAME .AND. C2.EQ.'ST' ) THEN
+         IF( C3.EQ.'EBZ' ) THEN
+            NB = 1
+         END IF
+      END IF
+      ILAENV = NB
+      RETURN
+*
+   60 CONTINUE
+*
+*     ISPEC = 2:  minimum block size
+*
+      NBMIN = 2
+      IF( C2.EQ.'GE' ) THEN
+         IF( C3.EQ.'QRF' .OR. C3.EQ.'RQF' .OR. C3.EQ.'LQF' .OR. C3.EQ.
+     $       'QLF' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 2
+            ELSE
+               NBMIN = 2
+            END IF
+         ELSE IF( C3.EQ.'HRD' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 2
+            ELSE
+               NBMIN = 2
+            END IF
+         ELSE IF( C3.EQ.'BRD' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 2
+            ELSE
+               NBMIN = 2
+            END IF
+         ELSE IF( C3.EQ.'TRI' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 2
+            ELSE
+               NBMIN = 2
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'SY' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 8
+            ELSE
+               NBMIN = 8
+            END IF
+         ELSE IF( SNAME .AND. C3.EQ.'TRD' ) THEN
+            NBMIN = 2
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'HE' ) THEN
+         IF( C3.EQ.'TRD' ) THEN
+            NBMIN = 2
+         END IF
+      ELSE IF( SNAME .AND. C2.EQ.'OR' ) THEN
+         IF( C3( 1: 1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NBMIN = 2
+            END IF
+         ELSE IF( C3( 1: 1 ).EQ.'M' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NBMIN = 2
+            END IF
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'UN' ) THEN
+         IF( C3( 1: 1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NBMIN = 2
+            END IF
+         ELSE IF( C3( 1: 1 ).EQ.'M' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NBMIN = 2
+            END IF
+         END IF
+      END IF
+      ILAENV = NBMIN
+      RETURN
+*
+   70 CONTINUE
+*
+*     ISPEC = 3:  crossover point
+*
+      NX = 0
+      IF( C2.EQ.'GE' ) THEN
+         IF( C3.EQ.'QRF' .OR. C3.EQ.'RQF' .OR. C3.EQ.'LQF' .OR. C3.EQ.
+     $       'QLF' ) THEN
+            IF( SNAME ) THEN
+               NX = 128
+            ELSE
+               NX = 128
+            END IF
+         ELSE IF( C3.EQ.'HRD' ) THEN
+            IF( SNAME ) THEN
+               NX = 128
+            ELSE
+               NX = 128
+            END IF
+         ELSE IF( C3.EQ.'BRD' ) THEN
+            IF( SNAME ) THEN
+               NX = 128
+            ELSE
+               NX = 128
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'SY' ) THEN
+         IF( SNAME .AND. C3.EQ.'TRD' ) THEN
+            NX = 32
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'HE' ) THEN
+         IF( C3.EQ.'TRD' ) THEN
+            NX = 32
+         END IF
+      ELSE IF( SNAME .AND. C2.EQ.'OR' ) THEN
+         IF( C3( 1: 1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NX = 128
+            END IF
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'UN' ) THEN
+         IF( C3( 1: 1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NX = 128
+            END IF
+         END IF
+      END IF
+      ILAENV = NX
+      RETURN
+*
+   80 CONTINUE
+*
+*     ISPEC = 4:  number of shifts (used by xHSEQR)
+*
+      ILAENV = 6
+      RETURN
+*
+   90 CONTINUE
+*
+*     ISPEC = 5:  minimum column dimension (not used)
+*
+      ILAENV = 2
+      RETURN
+*
+  100 CONTINUE
+*
+*     ISPEC = 6:  crossover point for SVD (used by xGELSS and xGESVD)
+*
+      ILAENV = INT( REAL( MIN( N1, N2 ) )*1.6E0 )
+      RETURN
+*
+  110 CONTINUE
+*
+*     ISPEC = 7:  number of processors (not used)
+*
+      ILAENV = 1
+      RETURN
+*
+  120 CONTINUE
+*
+*     ISPEC = 8:  crossover point for multishift (used by xHSEQR)
+*
+      ILAENV = 50
+      RETURN
+*
+  130 CONTINUE
+*
+*     ISPEC = 9:  maximum size of the subproblems at the bottom of the
+*                 computation tree in the divide-and-conquer algorithm
+*                 (used by xGELSD and xGESDD)
+*
+      ILAENV = 25
+      RETURN
+*
+  140 CONTINUE
+*
+*     ISPEC = 10: ieee NaN arithmetic can be trusted not to trap
+*
+*     ILAENV = 0
+      ILAENV = 1
+      IF( ILAENV.EQ.1 ) THEN
+         ILAENV = IEEECK( 1, 0.0, 1.0 )
+      END IF
+      RETURN
+*
+  150 CONTINUE
+*
+*     ISPEC = 11: infinity arithmetic can be trusted not to trap
+*
+*     ILAENV = 0
+      ILAENV = 1
+      IF( ILAENV.EQ.1 ) THEN
+         ILAENV = IEEECK( 0, 0.0, 1.0 )
+      END IF
+      RETURN
+*
+  160 CONTINUE
+*
+*     12 <= ISPEC <= 16: xHSEQR or one of its subroutines. 
+*
+      ILAENV = IPARMQ( ISPEC, NAME, OPTS, N1, N2, N3, N4 )
+      RETURN
+*
+*     End of ILAENV
+*
+      END
+      SUBROUTINE DSPTRI( UPLO, N, AP, IPIV, WORK, INFO )
+*
+*  -- LAPACK computational routine (version 3.4.0) --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*     November 2011
+*
+*     .. Scalar Arguments ..
+      CHARACTER          UPLO
+      INTEGER            INFO, N
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   AP( * ), WORK( * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            UPPER
+      INTEGER            J, K, KC, KCNEXT, KP, KPC, KSTEP, KX, NPP
+      DOUBLE PRECISION   AK, AKKP1, AKP1, D, T, TEMP
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      DOUBLE PRECISION   DDOT
+      EXTERNAL           LSAME, DDOT
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DCOPY, DSPMV, DSWAP, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          ABS
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      UPPER = LSAME( UPLO, 'U' )
+      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DSPTRI', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 )
+     $   RETURN
+*
+*     Check that the diagonal matrix D is nonsingular.
+*
+      IF( UPPER ) THEN
+*
+*        Upper triangular storage: examine D from bottom to top
+*
+         KP = N*( N+1 ) / 2
+         DO 10 INFO = N, 1, -1
+            IF( IPIV( INFO ).GT.0 .AND. AP( KP ).EQ.ZERO )
+     $         RETURN
+            KP = KP - INFO
+   10    CONTINUE
+      ELSE
+*
+*        Lower triangular storage: examine D from top to bottom.
+*
+         KP = 1
+         DO 20 INFO = 1, N
+            IF( IPIV( INFO ).GT.0 .AND. AP( KP ).EQ.ZERO )
+     $         RETURN
+            KP = KP + N - INFO + 1
+   20    CONTINUE
+      END IF
+      INFO = 0
+*
+      IF( UPPER ) THEN
+*
+*        Compute inv(A) from the factorization A = U*D*U**T.
+*
+*        K is the main loop index, increasing from 1 to N in steps of
+*        1 or 2, depending on the size of the diagonal blocks.
+*
+         K = 1
+         KC = 1
+   30    CONTINUE
+*
+*        If K > N, exit from loop.
+*
+         IF( K.GT.N )
+     $      GO TO 50
+*
+         KCNEXT = KC + K
+         IF( IPIV( K ).GT.0 ) THEN
+*
+*           1 x 1 diagonal block
+*
+*           Invert the diagonal block.
+*
+            AP( KC+K-1 ) = ONE / AP( KC+K-1 )
+*
+*           Compute column K of the inverse.
+*
+            IF( K.GT.1 ) THEN
+               CALL DCOPY( K-1, AP( KC ), 1, WORK, 1 )
+               CALL DSPMV( UPLO, K-1, -ONE, AP, WORK, 1, ZERO, AP( KC ),
+     $                     1 )
+               AP( KC+K-1 ) = AP( KC+K-1 ) -
+     $                        DDOT( K-1, WORK, 1, AP( KC ), 1 )
+            END IF
+            KSTEP = 1
+         ELSE
+*
+*           2 x 2 diagonal block
+*
+*           Invert the diagonal block.
+*
+            T = ABS( AP( KCNEXT+K-1 ) )
+            AK = AP( KC+K-1 ) / T
+            AKP1 = AP( KCNEXT+K ) / T
+            AKKP1 = AP( KCNEXT+K-1 ) / T
+            D = T*( AK*AKP1-ONE )
+            AP( KC+K-1 ) = AKP1 / D
+            AP( KCNEXT+K ) = AK / D
+            AP( KCNEXT+K-1 ) = -AKKP1 / D
+*
+*           Compute columns K and K+1 of the inverse.
+*
+            IF( K.GT.1 ) THEN
+               CALL DCOPY( K-1, AP( KC ), 1, WORK, 1 )
+               CALL DSPMV( UPLO, K-1, -ONE, AP, WORK, 1, ZERO, AP( KC ),
+     $                     1 )
+               AP( KC+K-1 ) = AP( KC+K-1 ) -
+     $                        DDOT( K-1, WORK, 1, AP( KC ), 1 )
+               AP( KCNEXT+K-1 ) = AP( KCNEXT+K-1 ) -
+     $                            DDOT( K-1, AP( KC ), 1, AP( KCNEXT ),
+     $                            1 )
+               CALL DCOPY( K-1, AP( KCNEXT ), 1, WORK, 1 )
+               CALL DSPMV( UPLO, K-1, -ONE, AP, WORK, 1, ZERO,
+     $                     AP( KCNEXT ), 1 )
+               AP( KCNEXT+K ) = AP( KCNEXT+K ) -
+     $                          DDOT( K-1, WORK, 1, AP( KCNEXT ), 1 )
+            END IF
+            KSTEP = 2
+            KCNEXT = KCNEXT + K + 1
+         END IF
+*
+         KP = ABS( IPIV( K ) )
+         IF( KP.NE.K ) THEN
+*
+*           Interchange rows and columns K and KP in the leading
+*           submatrix A(1:k+1,1:k+1)
+*
+            KPC = ( KP-1 )*KP / 2 + 1
+            CALL DSWAP( KP-1, AP( KC ), 1, AP( KPC ), 1 )
+            KX = KPC + KP - 1
+            DO 40 J = KP + 1, K - 1
+               KX = KX + J - 1
+               TEMP = AP( KC+J-1 )
+               AP( KC+J-1 ) = AP( KX )
+               AP( KX ) = TEMP
+   40       CONTINUE
+            TEMP = AP( KC+K-1 )
+            AP( KC+K-1 ) = AP( KPC+KP-1 )
+            AP( KPC+KP-1 ) = TEMP
+            IF( KSTEP.EQ.2 ) THEN
+               TEMP = AP( KC+K+K-1 )
+               AP( KC+K+K-1 ) = AP( KC+K+KP-1 )
+               AP( KC+K+KP-1 ) = TEMP
+            END IF
+         END IF
+*
+         K = K + KSTEP
+         KC = KCNEXT
+         GO TO 30
+   50    CONTINUE
+*
+      ELSE
+*
+*        Compute inv(A) from the factorization A = L*D*L**T.
+*
+*        K is the main loop index, increasing from 1 to N in steps of
+*        1 or 2, depending on the size of the diagonal blocks.
+*
+         NPP = N*( N+1 ) / 2
+         K = N
+         KC = NPP
+   60    CONTINUE
+*
+*        If K < 1, exit from loop.
+*
+         IF( K.LT.1 )
+     $      GO TO 80
+*
+         KCNEXT = KC - ( N-K+2 )
+         IF( IPIV( K ).GT.0 ) THEN
+*
+*           1 x 1 diagonal block
+*
+*           Invert the diagonal block.
+*
+            AP( KC ) = ONE / AP( KC )
+*
+*           Compute column K of the inverse.
+*
+            IF( K.LT.N ) THEN
+               CALL DCOPY( N-K, AP( KC+1 ), 1, WORK, 1 )
+               CALL DSPMV( UPLO, N-K, -ONE, AP( KC+N-K+1 ), WORK, 1,
+     $                     ZERO, AP( KC+1 ), 1 )
+               AP( KC ) = AP( KC ) - DDOT( N-K, WORK, 1, AP( KC+1 ), 1 )
+            END IF
+            KSTEP = 1
+         ELSE
+*
+*           2 x 2 diagonal block
+*
+*           Invert the diagonal block.
+*
+            T = ABS( AP( KCNEXT+1 ) )
+            AK = AP( KCNEXT ) / T
+            AKP1 = AP( KC ) / T
+            AKKP1 = AP( KCNEXT+1 ) / T
+            D = T*( AK*AKP1-ONE )
+            AP( KCNEXT ) = AKP1 / D
+            AP( KC ) = AK / D
+            AP( KCNEXT+1 ) = -AKKP1 / D
+*
+*           Compute columns K-1 and K of the inverse.
+*
+            IF( K.LT.N ) THEN
+               CALL DCOPY( N-K, AP( KC+1 ), 1, WORK, 1 )
+               CALL DSPMV( UPLO, N-K, -ONE, AP( KC+( N-K+1 ) ), WORK, 1,
+     $                     ZERO, AP( KC+1 ), 1 )
+               AP( KC ) = AP( KC ) - DDOT( N-K, WORK, 1, AP( KC+1 ), 1 )
+               AP( KCNEXT+1 ) = AP( KCNEXT+1 ) -
+     $                          DDOT( N-K, AP( KC+1 ), 1,
+     $                          AP( KCNEXT+2 ), 1 )
+               CALL DCOPY( N-K, AP( KCNEXT+2 ), 1, WORK, 1 )
+               CALL DSPMV( UPLO, N-K, -ONE, AP( KC+( N-K+1 ) ), WORK, 1,
+     $                     ZERO, AP( KCNEXT+2 ), 1 )
+               AP( KCNEXT ) = AP( KCNEXT ) -
+     $                        DDOT( N-K, WORK, 1, AP( KCNEXT+2 ), 1 )
+            END IF
+            KSTEP = 2
+            KCNEXT = KCNEXT - ( N-K+3 )
+         END IF
+*
+         KP = ABS( IPIV( K ) )
+         IF( KP.NE.K ) THEN
+*
+*           Interchange rows and columns K and KP in the trailing
+*           submatrix A(k-1:n,k-1:n)
+*
+            KPC = NPP - ( N-KP+1 )*( N-KP+2 ) / 2 + 1
+            IF( KP.LT.N )
+     $         CALL DSWAP( N-KP, AP( KC+KP-K+1 ), 1, AP( KPC+1 ), 1 )
+            KX = KC + KP - K
+            DO 70 J = K + 1, KP - 1
+               KX = KX + N - J + 1
+               TEMP = AP( KC+J-K )
+               AP( KC+J-K ) = AP( KX )
+               AP( KX ) = TEMP
+   70       CONTINUE
+            TEMP = AP( KC )
+            AP( KC ) = AP( KPC )
+            AP( KPC ) = TEMP
+            IF( KSTEP.EQ.2 ) THEN
+               TEMP = AP( KC-N+K-1 )
+               AP( KC-N+K-1 ) = AP( KC-N+KP-1 )
+               AP( KC-N+KP-1 ) = TEMP
+            END IF
+         END IF
+*
+         K = K - KSTEP
+         KC = KCNEXT
+         GO TO 60
+   80    CONTINUE
+      END IF
+*
+      RETURN
+*
+*     End of DSPTRI
+*
+      END
+      SUBROUTINE DSPCON( UPLO, N, AP, IPIV, ANORM, RCOND, WORK, IWORK,
+     $                   INFO )
+*
+*  -- LAPACK computational routine (version 3.4.0) --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*     November 2011
+*
+*     .. Scalar Arguments ..
+      CHARACTER          UPLO
+      INTEGER            INFO, N
+      DOUBLE PRECISION   ANORM, RCOND
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * ), IWORK( * )
+      DOUBLE PRECISION   AP( * ), WORK( * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            UPPER
+      INTEGER            I, IP, KASE
+      DOUBLE PRECISION   AINVNM
+*     ..
+*     .. Local Arrays ..
+      INTEGER            ISAVE( 3 )
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      EXTERNAL           LSAME
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DLACN2, DSPTRS, XERBLA
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      UPPER = LSAME( UPLO, 'U' )
+      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( ANORM.LT.ZERO ) THEN
+         INFO = -5
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DSPCON', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      RCOND = ZERO
+      IF( N.EQ.0 ) THEN
+         RCOND = ONE
+         RETURN
+      ELSE IF( ANORM.LE.ZERO ) THEN
+         RETURN
+      END IF
+*
+*     Check that the diagonal matrix D is nonsingular.
+*
+      IF( UPPER ) THEN
+*
+*        Upper triangular storage: examine D from bottom to top
+*
+         IP = N*( N+1 ) / 2
+         DO 10 I = N, 1, -1
+            IF( IPIV( I ).GT.0 .AND. AP( IP ).EQ.ZERO )
+     $         RETURN
+            IP = IP - I
+   10    CONTINUE
+      ELSE
+*
+*        Lower triangular storage: examine D from top to bottom.
+*
+         IP = 1
+         DO 20 I = 1, N
+            IF( IPIV( I ).GT.0 .AND. AP( IP ).EQ.ZERO )
+     $         RETURN
+            IP = IP + N - I + 1
+   20    CONTINUE
+      END IF
+*
+*     Estimate the 1-norm of the inverse.
+*
+      KASE = 0
+   30 CONTINUE
+      CALL DLACN2( N, WORK( N+1 ), WORK, IWORK, AINVNM, KASE, ISAVE )
+      IF( KASE.NE.0 ) THEN
+*
+*        Multiply by inv(L*D*L**T) or inv(U*D*U**T).
+*
+         CALL DSPTRS( UPLO, N, 1, AP, IPIV, WORK, N, INFO )
+         GO TO 30
+      END IF
+*
+*     Compute the estimate of the reciprocal condition number.
+*
+      IF( AINVNM.NE.ZERO )
+     $   RCOND = ( ONE / AINVNM ) / ANORM
+*
+      RETURN
+*
+*     End of DSPCON
+*
+      END
+#endif
 C --- end of linextra.F ---

@@ -1861,12 +1861,12 @@ C
      &      'ERROR reading .mol line',NMLINE,
      &      MLINE(NMLINE),
      &      ' Cannot determine the charge of atom type', I,
-     &      ' Correct input format is: Charge=???'
+     &      ' Correct input format is: Charge=<number>'
       IF (MYNUM .NE. 0) THEN
          WRITE (LUERR,'(//A,I5,A,I5/A,I5/A/A)')
      &      'ERROR slave no.',MYNUM,' reading .mol line',NMLINE,
      &      ' Cannot determine the charge of atom type', I,
-     &      ' Correct input format is: Charge=???',
+     &      ' Correct input format is: Charge=<number>',
      &      ' Dump of slave version of .mol file:'
          WRITE (LUERR,'(/80A1 )') ('-',I = 1, 80)
          WRITE (LUERR,'(A)') (MLINE(I), I = 1, NMLINE)
