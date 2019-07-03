@@ -3205,7 +3205,6 @@ C loop rewritten to avoid problems. VB Oct 2003
 C
       DO 1 IREP = 0, MAXREP
          DO 2 ICRD = 1, 3*NUCIND
-#include "scalar.h"
             ISCOOR = IPTCNT(ICRD,IREP,1)
             IF (ISCOOR .GT. 0) THEN
                ICENT = (ICRD-1)/3 + 1

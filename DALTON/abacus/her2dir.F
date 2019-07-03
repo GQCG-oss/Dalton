@@ -30,18 +30,10 @@ C     and sets directives for integral calculation.
 C
 C     tuh
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (F,S), LOGICAL(D)
-      REAL ONE, TWO
-      PARAMETER (ONE = 1.00 E00, TWO = 2.00 E00)
-C
-#endif
-#if !defined (SYS_CRAY) && !defined (SYS_T3D) && !defined (VAR_REAL) && !defined (SYS_T90)
-      IMPLICIT DOUBLE PRECISION (F,S), LOGICAL(D)
-      DOUBLE PRECISION ONE, TWO
+      IMPLICIT REAL*8 (F,S), LOGICAL(D)
+      REAL*8  ONE, TWO
       PARAMETER (ONE = 1.00 D00, TWO = 2.00 D00)
 C
-#endif
 #include "priunit.h"
       LOGICAL ONECEN, DERECC, DERECD, EXPECT, BIGVEC, SPNORB, DIA2SO,
      &        LONDON, ZFS2EL, EXPGRA
@@ -1541,12 +1533,7 @@ C
       END
 C  /* Deck dire00 */
       SUBROUTINE DIRE00
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (F,S), LOGICAL (D)
-#endif
-#if !defined (SYS_CRAY) && !defined (SYS_T3D) && !defined (VAR_REAL) && !defined (SYS_T90)
-      IMPLICIT DOUBLE PRECISION (F,S), LOGICAL (D)
-#endif
+      IMPLICIT REAL*8 (F,S), LOGICAL (D)
 #include "expcom.h"
       COMMON /DEODIR/ DEXA00, DEXB00, DEXC00, DEXD00,
      *                DEYA00, DEYB00, DEYC00, DEYD00,

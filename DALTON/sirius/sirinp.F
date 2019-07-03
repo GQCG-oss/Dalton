@@ -2356,11 +2356,7 @@ C     read namelist $NMLSIR ... $END
          CALL QUIT(
      &   'ERROR, .FLAGS namelist not implemented for this machine')
 #else
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_NEC) || defined (SYS_T90)
-         READ (LUCMD,NMLSIR)
-#else
          READ (LUCMD,NML=NMLSIR)
-#endif
 #endif
 C
          DO 286 I = 1,NPDIM

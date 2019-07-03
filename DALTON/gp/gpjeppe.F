@@ -240,12 +240,7 @@ C
 C  /* Deck matvcd */
       SUBROUTINE MATVCD(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
 #include "implicit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL
-#else
-      DOUBLE PRECISION
-#endif
-     *        MATRIX(MATDIM,MATDIM),VECIN(*),VECOUT(*)
+      REAL*8 MATRIX(MATDIM,MATDIM),VECIN(*),VECOUT(*)
 C
 C     VECOUT=MATRIX*VECIN FOR ITRNSP=0
 C     VECOUT=MATRIX(TRANSPOSED)*VECIN FOR ITRNSP .NE. 0
@@ -524,7 +519,6 @@ C
 #include "implicit.h"
       DIMENSION VECI(*),VECO(*),INDEX(*)
 C
-#include "nosync.h"
       DO 100 I = 1, NDIM
   100 VECO(INDEX(I)) = VECI(I)
 C
@@ -623,7 +617,6 @@ C
       DO 100 I = 1,NDET
          IF (IORD(I) .LT. 0) BCSF(I) = -BCSF(I)
   100 CONTINUE
-#include "nosync.h"
       DO 200 I = 1,NDET
          ADET( ABS(IORD(I)) ) = BCSF(I)
   200 CONTINUE
@@ -808,12 +801,7 @@ C
 C     PURPOSE: CALCULATE SCALAR PRODUCT BETWEEN TO VECTORS A,B
 C
 #include "implicit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL
-#else
-      DOUBLE PRECISION
-#endif
-     *   INPROD
+      REAL*8 INPROD
 C
       DIMENSION A(*),B(*)
 C
@@ -835,7 +823,6 @@ C
 C
       DO 100 I = 1, NPROD
          VU(I) = D0
-#include "prefer_vector.h"
          DO 50 J = 1,NROW
             VU(I) = VU(I) + A(J,IP(I))*VI(J)
    50    CONTINUE

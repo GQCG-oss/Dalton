@@ -64,8 +64,7 @@ c   basis needed when using Hueckel initial guess.
 c951115-hjaaj:
 cCNTINP: always read NAMN with '(A4)' and never
 c   with free format; if free format doesn't work then try formatted;
-cZMAT: Read NAMN with '(A4)', allow free input for IRIX;
-c   for CRAY formatted input made last field for CHARGE very long;
+cZMAT: Read NAMN with '(A4)';
 c   removed old END=204 branches which were reminiscences from when
 c   the input was read directly from file.
 cBUILDZ: changed format and output of internal coordinates;
@@ -1971,7 +1970,7 @@ C        (otherwise it will on e.g. AIX be filled with nulls:
 C         e.g. ' C  ' would become 'C\NULL\NULL\NULL'; and on
 C         e.g. IRIX free format read of char. var. is not defined).
 C
-#if !defined (SYS_CRAY) && !defined (VAR_NOFREE) && !defined (SYS_T3D) && !defined (SYS_T90)
+#if !defined (VAR_NOFREE)
 C
         IF (QM3) THEN
            READ (MLINE(NMLINE)(IPOS:80),*,ERR=101,END=101)
@@ -3137,7 +3136,7 @@ C
         DO 100 L = 1, NUCIJ
            CALL RDLINE(LUINFO)
            IF (FREE_FORMAT) THEN
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_NOFREE)
               ISTART = 1
               CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,
      &                    ALPHA(L),'REA',IERR)
@@ -3197,7 +3196,7 @@ C
         DO 300 L = 1, NUCIJ
            CALL RDLINE(LUINFO)
            IF (FREE_FORMAT) THEN
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_NOFREE)
               ISTART = 1
               CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,
      &                    ALPHA(L),'REA',IERR)
@@ -6072,7 +6071,7 @@ C
       IF(NUCIND .EQ. 2) GO TO 201
       IF(NUCIND .EQ. 3) GO TO 202
       GO TO 203
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_NOFREE)
   200 ISTART = 5
       CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT',IERR)
       CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA',IERR)

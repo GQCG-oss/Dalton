@@ -1083,9 +1083,6 @@ C
 C        Expectation value of undifferentiated elements
 C
          SAVR0  = D0
-#if defined (SYS_HAL)
-#include "scalar.h"
-#endif
          DO 200 ICOMP = 1, KHKTAB
             DENS  = DSHELL(ICOMP)
             SAVR0 = SAVR0 + DENS*SINT0(ICOMP)
@@ -1257,9 +1254,6 @@ C
          SAVRX  = D0
          SAVRY  = D0
          SAVRZ  = D0
-#if defined (SYS_CONVEX) || defined (SYS_HAL)
-#include "scalar.h"
-#endif
          DO 200 ICOMP = 1, KHKTAB
             DENS  = DSHELL(ICOMP)
             SAVRX = SAVRX + DENS*SINT1(ICOMP,1)

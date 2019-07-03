@@ -43,8 +43,6 @@ C
 !        cannot be performed without commenting new code in AVESET!
 !941215-hjaaj:
 !renamed ICKDIA to NOFDIA; moved NOFDIA to gp
-!940909-hjaaj: CALL SCALSUB2 after SUBROUTINE for CRAY (see 940427 comment)
-! changed CALL SCALSUB to CALL SCALSUB1 before SUBROUTINE
 !940823-hjaaj:
 !AVESE1: print if IPHCHA .gt. 0 and IPRAVE .ge. 4
 !940818-hjaaj:
@@ -1112,7 +1110,6 @@ C
       END
 C  /* Deck aveudv */
 #if defined (VAR_NOTUSED  )
-#include "scalsub1.h"
       SUBROUTINE AVEUDV(UDV)
 C
 C     09-Jul-1992 Hinne Hettema
@@ -1122,7 +1119,6 @@ C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
 #include "implicit.h"
-#include "scalsub2.h"
       DIMENSION UDV(NASHT,*)
 C
 C     Used from common blocks
@@ -1241,7 +1237,6 @@ C
       END
 #endif
 C  /* Deck aveh1 */
-#include "scalsub1.h"
       SUBROUTINE AVEH1(H1)
 C
 C     12-Jul-1992 Hinne Hettema
@@ -1251,7 +1246,6 @@ C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
 #include "implicit.h"
-#include "scalsub2.h"
       DIMENSION H1(NORBT,*)
 C
 C     Used from common blocks
@@ -1367,7 +1361,6 @@ C
       RETURN
       END
 C  /* Deck avedv */
-#include "scalsub1.h"
       SUBROUTINE AVEDV(DV)
 C
 C     09-Jul-1992 Hinne Hettema
@@ -1377,7 +1370,6 @@ C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
 #include "implicit.h"
-#include "scalsub2.h"
       DIMENSION DV(NNASHX)
 C
 C     Used from common blocks
@@ -1501,7 +1493,6 @@ C
       END
 C  /* Deck aveh1p */
 #if defined (VAR_NOTUSED  )
-#include "scalsub1.h"
       SUBROUTINE AVEH1P(H1P)
 C
 C     12-Jul-1992 Hinne Hettema
@@ -1511,7 +1502,6 @@ C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
 #include "implicit.h"
-#include "scalsub2.h"
       DIMENSION H1P(NNORBX)
 C
 C     Used from common blocks
@@ -1623,7 +1613,6 @@ C
       END
 #endif
 C  /* Deck avefck */
-#include "scalsub1.h"
       SUBROUTINE AVEFCK(FCK)
 C
 C     12-Jul-1992 Hinne Hettema
@@ -1633,7 +1622,6 @@ C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
 #include "implicit.h"
-#include "scalsub2.h"
       DIMENSION FCK(NNORBT)
 C
 C     Used from common blocks
