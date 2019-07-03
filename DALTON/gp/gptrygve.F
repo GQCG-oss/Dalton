@@ -291,11 +291,7 @@ C
 #else
       WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
 #endif
-#if defined (SYS_CRAY) || defined (SYS_UNIX) || defined (SYS_AIX)  \
- || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC)  \
- || defined (SYS_DEC)  || defined (SYS_T3D)  || defined (SYS_LINUX)\
- || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL)   \
- || defined (SYS_T90) || defined (SYS_DARWIN)
+#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_LINUX) || defined (SYS_DARWIN)
 C     Write to stderr
       WRITE (0,'(/A,I6,A/1X,A)') ' Node ',MYNUM,
      &   ':  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
@@ -317,10 +313,7 @@ C     ... define exit code to the environment for MPI_ABORT
 C
       CALL our_own_traceback
 
-#if defined(SYS_T3D)
-      CALL STOP_ALL()
-#endif
-#if defined(VAR_IFORT)||defined(SYS_IRIX)||defined(SYS_AIX)
+#if defined(VAR_IFORT)||defined(SYS_AIX)
       CALL EXIT(100)
 #else
       STOP 100
@@ -462,57 +455,7 @@ C
       CHARACTER*(*) NAME, STATUS
       LOGICAL OLDDX, FEXIST
 #include "priunit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-C
-C     CRAY has 8 byte integers.
-C
-      LRECL  = 8*NELEM
-C
-      IF (STATUS .EQ. 'NEW') THEN
-         INQUIRE(FILE=NAME,EXIST=FEXIST)
-         IF (FEXIST) THEN
-            OPEN(UNIT=LUDX,STATUS='OLD',FILE=NAME)
-            CLOSE(UNIT=LUDX,STATUS='DELETE')
-         END IF
-         GO TO 300
-      END IF
-C
-      IF (STATUS .NE. 'OLD' .AND. STATUS .NE. 'UNKNOWN') GO TO 9000
-C
-C     OPEN OLD FILE
-C
-         OPEN(LUDX,FILE=NAME,STATUS='OLD',FORM='UNFORMATTED',ERR=300,
-     *        ACCESS='DIRECT',RECL=LRECL)
-         OLDDX = .TRUE.
-      GO TO 600
-C
-  300 CONTINUE
-      IF (STATUS .EQ. 'OLD') GO TO 9100
-C
-C     OPEN NEW FILE
-C
-         OPEN(LUDX,FILE=NAME,STATUS='NEW',FORM='UNFORMATTED',
-     *        ACCESS='DIRECT',ERR=301,IOSTAT=IOS,RECL=LRECL)
-         OLDDX = .FALSE.
-C
-C     ERROR HANDLING (JAA 1997-06-06)
-C
- 301     IF (IOS .GT. 0) THEN
-            WRITE(lupri,*) '--> ERROR (OPENDX) NEW FILE OPEN FAILED'
-            WRITE(lupri,*) '    FILE=',NAME,', UNIT=',LUDX,
-     $           ', IOSTAT=',IOS
-            IF (IOS .LT. 1000) THEN
-               WRITE(lupri,'(A,I3.3,A)') '    (try explain sys-',IOS,')'
-            ELSE IF (IOS .LT. 6000) THEN
-               WRITE(lupri,'(A,I4,A)') '    (try explain lib-',IOS,')'
-            ENDIF
-            CALL FLUSH(lupri,IOS)
-            CALL TRBK()
-            CALL QUIT('OPENDX: new file open failed')
-         ENDIF
-  600 CONTINUE
-#endif
-#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_DARWIN)
+#if defined (SYS_AIX) || defined (SYS_LINUX) || defined (SYS_DARWIN)
 C
 C     Assume same for IBM-AIX--  1-Oct-1990 hjaaj
 C     Assume same for HP-UX  -- 21-Aug-1991 hjaaj
@@ -520,14 +463,10 @@ C     Assume same for DEC    -- 21-May-1992 hjaaj
 C     Assume same for IRIX   --  3-Feb-1994 hjaaj; except recl in *4 words
 C     Assume same for PARAGON-- 13-Oct-1994 hjaaj
 C
-#if (defined (SYS_IRIX) || defined (SYS_NEC))
-      LRECL  = NELEM
-#else
 #ifdef VAR_INT64
       LRECL  = 8*NELEM
 #else
       LRECL  = 4*NELEM
-#endif
 #endif
 C
       IF (STATUS .EQ. 'NEW') THEN
@@ -559,8 +498,7 @@ C
      *        ACCESS='DIRECT',RECL=LRECL)
          OLDDX = .FALSE.
   600  CONTINUE
-#endif
-#if !defined (SYS_CRAY) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90) && !defined (SYS_DARWIN) && !defined (SYS_FREEBSD)
+#else
  >>>>> insert appropriate OPEN statements in OPENDX.
 #endif
       RETURN
@@ -625,16 +563,10 @@ C
       IF (LEN .EQ. 0) RETURN
 #if defined (VAR_SPLITFILES)
       INQUIRE(UNIT=LU,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-      LRECL = LRECL/8
-#else
-#if !defined (SYS_NEC) && !defined (SYS_IRIX)
 #ifdef VAR_INT64
       LRECL = LRECL/8
 #else
       LRECL = LRECL/4
-#endif
-#endif
 #endif
       IRECPF = I2GB/LRECL
 C
@@ -710,16 +642,10 @@ C
 C
 #if defined (VAR_SPLITFILES)
       INQUIRE(UNIT=LU,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-      LRECL = LRECL/8
-#else
-#if !defined (SYS_NEC) && !defined (SYS_IRIX)
 #ifdef VAR_INT64
       LRECL = LRECL/8
 #else
       LRECL = LRECL/4
-#endif
-#endif
 #endif
       IRECPF = I2GB/LRECL
 C
@@ -1007,7 +933,7 @@ C
       END IF
 C
 C
-#if defined (SYS_LINUX) || defined (SYS_DARWIN) || defined (SYS_UNIX)
+#if defined (SYS_LINUX) || defined (SYS_DARWIN) || defined (SYS_UNIX) || defined (SYS_AIX)
 C     Just return if user has asked explicitly for stderr, stdinp, or stdout
 C     /HJAaJ Sep 2007
       IF (LUNIT .EQ. 0) GO TO 9002
@@ -1075,23 +1001,12 @@ C     2) The file either has been closed with status='KEEP' or is
 C        not currently in use
 C
          IF ((LUNIT .EQ. 5) .OR. (LUNIT .EQ. 6)) GOTO 9002
-#if defined (SYS_HPUX)
-C
-C     This avoids us writing to unit 7 of HP-systems (which corresponds to
-C     standard error on this machine)
-C
-         IF (LUNIT .EQ. 7) GOTO 9002
-#endif
          IF (IUNTAB(LUNIT) .EQ. 1) GOTO 9003
       END IF
       IF (MYNUM .EQ. 0) THEN
       IF (FILENM(1:FILELN) .EQ. 'DALTON.OUT') THEN
          OUTFIL = ' '
-#if defined (SYS_T3D) || defined (SYS_T90)
-         CALL PXFGETENV ('OUTFIL',6,OUTFIL,LOUTFL,IERR)
-#else 
          CALL GETENV ('OUTFIL',OUTFIL)
-#endif
          LENOUT = LNBLNK(OUTFIL)
          if (LENOUT .EQ. max_filename_length) then
             write (lugppri,*) 'max_filename_length is too short'
@@ -1106,11 +1021,7 @@ c              IF (OUTFIL(I:I) .EQ. ' ') GO TO 43
 c              LENOUT = LENOUT + 1
 c           END DO
 c43         CONTINUE
-#if defined (SYS_T3D) || defined (SYS_T90)
-            CALL PXFGETENV ('WRKDIR',6,WRKDIR,LWRKDR,IERR)
-#else 
             CALL GETENV ('WRKDIR',WRKDIR)
-#endif
             LENWRK = lnblnk(WRKDIR)
             if (LENWRK .EQ. max_filename_length) then
                write (lugppri,*) 'max_filename_length is too short'
@@ -1412,10 +1323,9 @@ C
          INQUIRE(UNIT=LUNIT,DIRECT=IODIR,NAME=FNNAME)
          IF (IODIR .EQ. 'YES') THEN
             INQUIRE(UNIT=LUNIT,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#ifdef VAR_INT64
             LRECL = LRECL/8
-#endif
-#if !defined (SYS_NEC) && !defined (SYS_IRIX)
+#else
             LRECL = LRECL/4
 #endif
          END IF

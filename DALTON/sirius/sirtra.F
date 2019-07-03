@@ -24,7 +24,6 @@ C
 !              also work when AOSRTINT.DA has been deleted !!!
 !951219-hjaaj: TRACTL: defined DM1=-1.0D0 (was undefined); never
 !   modify input KTRLVL (was ITRLVL, which is abs(KTRLVL))
-!950830-hjaaj: LRECL in *4 words for direct access under IRIX
 !941115-hjaaj: SIR_INTOPEN: included FLAG(34) in def. of OLDTRA
 !940927-hjaaj: SIR_INTOPEN: s/FLAG(9)/DOMP2/ and s/FLAG(8)/DORSP/
 !940909-hjaaj: added PARAGON define label (same code as AIX)
@@ -94,8 +93,6 @@ C
 ! Write total time in tracd,sortb,traab in tractl if iprtra .gt.0
 !    and only write TRANSFORMATION level each time if iprtra .gt. 0
 !    and corrected 890615 tractl output error in TRACTL
-!890220-hjaaj
-! traab,tracd -- NOSYNC directive for read direct access to TRI(*)
 !===========================================================================
 #endif
 C  /* Deck trauth */
@@ -997,7 +994,6 @@ C     ***** FIND LAST ADDRESS OF NEW CHAIN AND START READ *****
   103          CALL READDX(LUDA,IADR,LDA22,IBUF)
                   IADR   = IBUF(LDA21)
                   LENGTH = IBUF(LDA22)
-#include "nosync.h"
                   DO 104 I = 1,LENGTH
                      LDAI = IDABUF + I
                      IBL  = IBUF(LDAI)
@@ -1405,7 +1401,6 @@ C           ***** FIND LAST ADDRESS OF NEW CHAIN AND START READ *****
                IADR=IBUF(LDA21)
                LENGTH=IBUF(LDA22)
             IF(LENGTH.EQ.0) GO TO 106
-#include "nosync.h"
                DO 104 I=1,LENGTH
                   IBL=IBUF(IDABUG+I)
                   MPQ=IAND(ISHFT(IBL,-16),IBT16)

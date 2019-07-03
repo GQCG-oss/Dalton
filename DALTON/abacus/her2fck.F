@@ -1000,7 +1000,6 @@ C           one SKLTON matrix for IXYZ = 0 /961114-hjaaj
                               KHKTB  = KHKT(IB)
                               MULB   = ISTBAO(IB)
                               INDB   = KSTRT(IB) + NB - KHKTB
-#include "scalar.h"
                               DO 540 ISYMB = 0, MAXOPR
                               IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                                  INDB = INDB + KHKTB

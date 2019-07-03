@@ -100,7 +100,6 @@ C  /* Deck daptge */
       SUBROUTINE DAPTGE(N,AAP,AGE)
 C
 C  8-Feb-1987 Hans Joergen Aa. Jensen
-C  900720-hjaaj: NOSYNC directive
 C
 C Purpose: Transform from AP format to GE format, that is:
 C          unpack antisymmetric,   packed (lower triangle) matrix AAP
@@ -109,10 +108,8 @@ C
 #include "implicit.h"
       DIMENSION AAP(*), AGE(N,*)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
-#include "nosync.h"
          DO 100 I = 1,J-1
             AGE(I,J) = - AAP(JOFF+I)
             AGE(J,I) =   AAP(JOFF+I)
@@ -127,7 +124,6 @@ C  /* Deck dsptsi */
       SUBROUTINE DSPTSI(N,ASP,ASI)
 C
 C  8-Feb-1987 Hans Joergen Aa. Jensen
-C  900720-hjaaj: inserted NOSYNC directive.
 C
 C Purpose: Transform from SP format to SI format, that is:
 C          unpack symmetric,   packed matrix ASP
@@ -139,10 +135,8 @@ C
       ENTRY      DSPTGE(N,ASP,ASI)
 C     ... equivalent subroutine name
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
-#include "nosync.h"
          DO 100 I = 1,J-1
             ASI(I,J) = ASP(JOFF+I)
             ASI(J,I) = ASP(JOFF+I)
@@ -166,7 +160,6 @@ C
       DIMENSION AGE(N,*), AAP(*)
       PARAMETER ( DP5 = 0.5D0 )
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -189,7 +182,6 @@ C
       DIMENSION AGE(N,*), ASP(*)
       PARAMETER ( DP5 = 0.5D0 )
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -210,7 +202,6 @@ C
 #include "implicit.h"
       DIMENSION AGE(N,*), ASP(*)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J-1
@@ -234,7 +225,6 @@ C
       DIMENSION AGE(N,*), ASP(*)
       PARAMETER ( DP5 = 0.5D0 )
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -256,7 +246,6 @@ C
       DIMENSION AGE(N,*), ASP(*)
       PARAMETER ( DP5 = 0.5D0)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J-1
@@ -281,7 +270,6 @@ C
 #include "implicit.h"
       DIMENSION ASI(N,*), ASP(*)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -304,7 +292,6 @@ C
       DIMENSION ASI(N,*), ASP(*)
       PARAMETER (D2 = 2.0D0)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J-1
@@ -328,7 +315,6 @@ C
       DIMENSION AGE(N,*), ASI(N,*)
       PARAMETER ( DP5 = 0.5D0 )
 C
-#include "nosync.h"
       DO 200 J = 1,N
          ASI(J,J) = AGE(J,J)
          DO 100 I = 1,J-1
@@ -931,12 +917,7 @@ C Call Linpack routines to calculate the inverse of a
 C general matrix A.
 C
       INTEGER N, IPVT(*), N2
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL
-#else
-      DOUBLE PRECISION
-#endif
-     &   A(*), AINV(*), WRK(*), DET(2)
+      REAL*8  A(*), AINV(*), WRK(*), DET(2)
 C
       N2 = N*N
       CALL DCOPY(N2,A,1,AINV,1)
@@ -1971,4 +1952,28 @@ C            LSAME; ILAENV, DSPTRI, DSPCON
 *
       END
 #endif
+      real*8 function ddot_128(n,da,inca,db,incb)
+!
+!     Purpose: accumulate in quadruple precision
+!              to avoid round-off errors for big vectors
+!     hjaaj July 2012
+!
+      implicit none
+      real*8 da(*), db(*), ddot
+      integer n, inca, incb, i
+      ! only real*16 for debugging (e.g. PGI compilers do not allow real*16)
+      ! real*16 ddot_value 
+      real*8 ddot_value
+
+      if (inca .ne. 1 .or. incb .ne. 1) then
+         ddot_128 =  ddot(n,da,inca,db,incb)
+         return
+      end if
+      ddot_value = 0
+      do i = 1,n
+         ddot_value = ddot_value + da(i)*db(i)
+      end do
+      ddot_128 = ddot_value
+      return
+      end
 C --- end of linextra.F ---

@@ -2127,11 +2127,7 @@ C     using RMA operations. It should probably be in a common block
 C
          I0 = 1
          LUNMCL = -9056
-#if defined (SYS_T3D) || defined (SYS_T90)
-         CALL PXFGETENV('WRKDIR',6,WRKDIR,LWRKMM,IERR)
-#else
          CALL GETENV('WRKDIR',WRKDIR)
-#endif
          LENWRK = 0
          DO 43 I = 1, 60
             IF (WRKDIR(I:I) .EQ. ' ') GO TO 44
@@ -2210,11 +2206,7 @@ C
       CALL MPI_BCAST(PARIO,1,MPI_LOGICAL,NODEID(MASTER),MPI_COMM_WORLD,
      &               IERR)
       IF (PARIO) THEN
-#if defined (SYS_T3D) || defined (SYS_T90)
-         CALL PXFGETENV('WRKDIR',6,WRKDIR,LWRKMM,IERR)
-#else
          CALL GETENV('WRKDIR',WRKDIR)
-#endif
          LENWRK = 0
          DO 43 I = 1, 60
             IF (WRKDIR(I:I) .EQ. ' ') GO TO 44

@@ -376,26 +376,9 @@ C     Final sorting of 2-el. AO density matrix into integral evaluatin order
 C
       IF (RUNSOR) THEN
          IF (IPRPTR .GE. 2) CALL TIMER('START ',TIMSTR,TIMEND)
-C
-C     In order to avoid paging on machines with virtual memory, we
-C     use at most 64 Mb on such machines as suggested by P.Taylor
-C     K.Ruud, Aug.-98
-C
-#if defined (SYS_CRAY) || defined (SYS_NEC) || defined (SYS_T90)
-         LWUSE = LWRK
-#else
-         CALL MEM_PSORT(MEMMIN,WORK(KNCONT))
-C
-C        1000000 is just an estimate of what the rest of the sorting 
-C        program needs
-C
-         LWUSE = MEMMIN + 1000000
-         IF (LWUSE .GT. LWRK)
-     &        CALL STOPIT('TWOEXP','PSORG',LWUSE,LWRK)
-#endif
          IF (LUPAO .LE. 0)
      &        CALL GPOPEN(LUPAO,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-         CALL PSORG(WORK(KLAST),WORK(KLAST),LWUSE,WORK(KNCONT),IPRSOR,
+         CALL PSORG(WORK(KLAST),WORK(KLAST),LWRK,WORK(KNCONT),IPRSOR,
      &              ANTI,PANTI)
          IF (IPRPTR .GE. 2) CALL TIMER('PSORT ',TIMSTR,TIMEND)
       END IF

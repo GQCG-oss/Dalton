@@ -721,10 +721,6 @@ C (DOTHIS test was inside 500 loop)
                   GO TO 400
 C
   511             NSYMOP = 0
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-C                 Cray fails in some cases without this directive
-CDIR$ NOVECTOR
-#endif
                   DO 500 ISYMOP = 0,MAXOP12
                   IF (IAND(ISYMOP,IOR(MUL1,MUL2)) .EQ. 0) THEN
                      NSYMOP = NSYMOP + 1

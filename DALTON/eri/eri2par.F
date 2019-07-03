@@ -186,14 +186,6 @@ C
 #include "inforb.h"
 #include "infpar.h"
 #include "r12int.h"
-#if defined (SYS_T3D)
-C
-C     This kludge fixes the current non-implementation of MPI_CHARACTER on
-C     the Cray-T3E, K.Ruud-Nov.96
-C
-      DIMENSION ITMP(4000)
-      EQUIVALENCE (ITMP,MLINE)
-#endif
 #include "cbieri.h"
 #include "cbirea.h"
 C
@@ -218,11 +210,7 @@ C
 C   /molinp/
          CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
 C   /molinc/
-#if defined (SYS_T3D)
-         CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
-#else
          CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
-#endif
 C   /inforb/
          CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
 C   /infpar/
@@ -900,14 +888,6 @@ C
 #include "r12int.h"
 #include "cbieri.h"
 #include "cbirea.h"
-#if defined (SYS_T3D)
-C
-C     This kludge fixes the current non-implementation of MPI_CHARACTER
-C     on the Cray-T3E, K.Ruud-Nov.96
-C     This Kludge fix is soon old enough to start at University...
-      DIMENSION ITMP(4000)
-      EQUIVALENCE (ITMP,MLINE)
-#endif
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_RVINIT','*',103)
 C
@@ -930,11 +910,7 @@ C
 C   /molinp/
          CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
 C   /molinc/
-#if defined (SYS_T3D)
-         CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
-#else
          CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
-#endif
 C   /inforb/
          CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
 C   /infpar/

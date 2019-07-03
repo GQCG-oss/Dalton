@@ -257,7 +257,7 @@ C--------------------------------------
 C
       IF (IPRINT.GT.3) THEN
         CALL HEADER('Distribution matrices in GETDIS',-1)
-        DO, I = 1, NUMDIS
+        DO I = 1, NUMDIS
           CALL UNPKIJ(INDXAB(I),IA,IB)
           WRITE(LUPRI,'(//A,2I5)')' Distribution matrix No.',I,NUMDIS
           WRITE(LUPRI,'(A,2I5)')  ' Orbital indices:       ',IA,IB

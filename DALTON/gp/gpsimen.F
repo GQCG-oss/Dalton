@@ -15,12 +15,7 @@
 !  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
-#if defined (SYS_CRAY)
-      REAL
-#else
-      DOUBLE PRECISION
-#endif
-     &FUNCTION GETERF(x)
+      REAL*8 FUNCTION GETERF(x)
 #include "implicit.h"
 #include "pi.h"
       DIMENSION rj(1,0:0), wvalu(1), fjws(1,0:0), indads(1,3)
