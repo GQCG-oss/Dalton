@@ -1950,7 +1950,7 @@ C                    note NRS = IPQ
             DO 380 ISIM = 1,NSIM
                DPQ = DMAT(IPQ,ISIM)
                IF (ABS(DPQ) .GT. THRZER) THEN
-#include "ivdep.h"
+! no vector dependence in IRS loop
                   DO 320 IRS = 1,NPQRS
                      FMAT( IWORK(INDP+IRS) , ISIM ) =
      &               FMAT( IWORK(INDP+IRS) , ISIM ) + DPQ * WORK(IRS)

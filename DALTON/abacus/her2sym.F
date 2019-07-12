@@ -52,17 +52,9 @@ C
       IF (SOP000) THEN
          DO 100 I = 1, NINTX
             IAO = IPNTAO(I)
-#if defined (SYS_AIX)
-            ITMPR  = IAND(ISYMR, IPNTOP(1,I))
-            ITMPT  = IAND(ISYMT, IPNTOP(2,I))
-            ITMPTS = IAND(ISYMTS,IPNTOP(3,I))
-            ITMP1  = IEOR(ITMPT,ITMPTS)
-            FAC    = FACTOR*PT(IEOR(ITMPR,ITMP1))
-#else
             FAC = FACTOR*PT(IEOR((IAND(ISYMR, IPNTOP(1,I))),
      &                     (IEOR (IAND(ISYMT, IPNTOP(2,I)),
      &                              IAND(ISYMTS,IPNTOP(3,I))))))
-#endif
             DO 110 J = 1,NOABCD
                SO(J,I) = FAC*AO(J,IAO)
   110       CONTINUE
@@ -70,17 +62,9 @@ C
       ELSE
          DO 200 I = 1, NINTX
             IAO = IPNTAO(I)
-#if defined (SYS_AIX)
-            ITMPR  = IAND(ISYMR, IPNTOP(1,I))
-            ITMPT  = IAND(ISYMT, IPNTOP(2,I))
-            ITMPTS = IAND(ISYMTS,IPNTOP(3,I))
-            ITMP1  = IEOR(ITMPT,ITMPTS)
-            FAC    = FACTOR*PT(IEOR(ITMPR,ITMP1))
-#else
             FAC = FACTOR*PT(IEOR((IAND(ISYMR, IPNTOP(1,I))),
      &                     (IEOR (IAND(ISYMT, IPNTOP(2,I)),
      &                              IAND(ISYMTS,IPNTOP(3,I))))))
-#endif
             DO 210 J = 1,NOABCD
                SO(J,I) = SO(J,I) + FAC*AO(J,IAO)
   210       CONTINUE

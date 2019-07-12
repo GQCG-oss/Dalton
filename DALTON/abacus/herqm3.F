@@ -435,14 +435,7 @@ C
       LOGICAL   LOALIS, LOALTE
       LOGICAL   LOTEST(0:MXTYPE)
 C
-#if defined (SYS_CRAY)
-      REAL TEMP,TEMP1
-      REAL QM3SIG(0:MXTYPE,MXQM3),QM3EPS(0:MXTYPE,MXQM3)
-#else
-      DOUBLE PRECISION TEMP,TEMP1
-      DOUBLE PRECISION QM3SIG(0:MXTYPE,MXQM3)
-      DOUBLE PRECISION QM3EPS(0:MXTYPE,MXQM3)
-#endif
+      REAL*8 QM3SIG(0:MXTYPE,MXQM3),QM3EPS(0:MXTYPE,MXQM3)
 C
       DATA TABLE  /'.TYPE  ', '.MODEL ', '.ALPISO', '.ALPTSR',
      &             '.CHARGS', '.FILINP', '.SHAWFC', '.SIGEPS',
@@ -1717,24 +1710,14 @@ C
 #include "nuclei.h"
 #include "inftap.h"
 C
-      DIMENSION  ENUC(3,MXQM3), ESITE(3,MXQM3)
-      DIMENSION  EQMCLF(3,MXQM3), EELEC(3,MXQM3)
-      DIMENSION  EIND(3,MXQM3), MYIND(3,MXQM3)
-      DIMENSION  EFPCM(3,MXQM3)
+      REAL*8     ENUC(3,MXQM3), ESITE(3,MXQM3)
+      REAL*8     EQMCLF(3,MXQM3), EELEC(3,MXQM3)
+      REAL*8     EIND(3,MXQM3), MYIND(3,MXQM3)
+      REAL*8     EFPCM(3,MXQM3)
       PARAMETER  (D0 = 0.0D0)
 C
       LOGICAL    DIPCON, LOEC3L, LOMIND 
 C
-#if defined (SYS_CRAY)
-      REAL              DIST, DISM1, DISM3, ESITE
-      REAL              ENUC, EQMCLF, EIND, MYIND
-      REAL              XDIP1, XDIP2, EFPCM
-#else
-      DOUBLE PRECISION  DIST, DISM1, DISM3, ESITE
-      DOUBLE PRECISION  ENUC, EQMCLF, EIND, MYIND
-      DOUBLE PRECISION  XDIP1, XDIP2, EFPCM
-#endif
-C  
 C-------------------------
 C     Initializing fields:
 C-------------------------
@@ -2344,25 +2327,13 @@ C
 #include "inftap.h"
 C
       LOGICAL    DIPCON, LOINDM 
-      DIMENSION  MYIND(3,MXQM3), EIND1(3,MXQM3)
-      DIMENSION  EIND(3,MXQM3),ESITE(3,MXQM3)
-      DIMENSION  ENUC(3,MXQM3),EQMCLF(3,MXQM3)
-      DIMENSION  EELEC(3,MXQM3),QMFIELD(3,MXQM3)
-      DIMENSION  FFJ(*)
-      DIMENSION  EFPCM(3,MXQM3)
+      REAL*8     MYIND(3,MXQM3), EIND1(3,MXQM3)
+      REAL*8     EIND(3,MXQM3),ESITE(3,MXQM3)
+      REAL*8     ENUC(3,MXQM3),EQMCLF(3,MXQM3)
+      REAL*8     EELEC(3,MXQM3),QMFIELD(3,MXQM3)
+      REAL*8     FFJ(*)
+      REAL*8     EFPCM(3,MXQM3)
       PARAMETER  (D0 = 0.0D0)
-C
-#if defined (SYS_CRAY)
-      REAL              DIST, DISM1, DISM2, DISM3, DISM5
-      REAL              XDIP1, XDIP2, MYIND, EIND
-      REAL              TEMPX, TEMPY, TEMPZ
-      REAL              ESITE,ENUC,EQMCLF,QMFIELD,EFPCM
-#else
-      DOUBLE PRECISION  DIST, DISM1, DISM2, DISM3, DISM5
-      DOUBLE PRECISION  XDIP1, XDIP2, MYIND, EIND1
-      DOUBLE PRECISION  TEMPX, TEMPY, TEMPZ
-      DOUBLE PRECISION  ESITE,ENUC,EQMCLF,QMFIELD,EFPCM
-#endif
 C
       DO 879 I = 1,MXQM3 
          DO 880 J = 1, 3
@@ -3029,19 +3000,11 @@ C*******************************************************
 #include "nuclei.h"
 #include "inftap.h"
 C
-      DIMENSION  EIND(3,MXQM3),ESITE(3,MXQM3)
-      DIMENSION  ENUC(3,MXQM3)
-      DIMENSION  OBAR(3,MXQM3),ENSA(3,MXQM3),EFPCM(3,MXQM3)
-      DIMENSION  FFJ(*)
+      REAL*8     EIND(3,MXQM3),ESITE(3,MXQM3)
+      REAL*8     ENUC(3,MXQM3)
+      REAL*8     OBAR(3,MXQM3),ENSA(3,MXQM3),EFPCM(3,MXQM3)
+      REAL*8     FFJ(*)
       PARAMETER  (D0 = 0.0D0)
-C
-#if defined (SYS_CRAY)
-      REAL              EIND,ESITE,ENUC
-      REAL              OBAR,ENSA,FFJ,EFPCM
-#else
-      DOUBLE PRECISION  EIND,ESITE,ENUC 
-      DOUBLE PRECISION  OBAR,ENSA,FFJ,EFPCM
-#endif
 C
 C
       DO 19 I = 1, MXQM3
@@ -3124,19 +3087,10 @@ C
 #include "nuclei.h"
 #include "inftap.h"
 C
-      DIMENSION  EIND(3,MXQM3),ESITE(3,MXQM3)
-      DIMENSION  ENUC(3,MXQM3),RHS(3,MXQM3),EFPCM(3,MXQM3)
-      DIMENSION  FFJ(*)
+      REAL*8     EIND(3,MXQM3),ESITE(3,MXQM3)
+      REAL*8     ENUC(3,MXQM3),RHS(3,MXQM3),EFPCM(3,MXQM3)
+      REAL*8     FFJ(*)
       PARAMETER  (D0 = 0.0D0)
-C
-#if defined (SYS_CRAY)
-      REAL              EIND,ESITE,ENUC,RHS,EFPCM
-      REAL              DOTPR,OTILDE,FFJ
-#else
-      DOUBLE PRECISION  EIND,ESITE,ENUC,RHS,EFPCM
-      DOUBLE PRECISION  DOTPR,OTILDE,FFJ
-#endif
-C
 C
       TEMP = D0
       DOTPR = D0
@@ -3250,17 +3204,10 @@ C
 #include "nuclei.h"
 #include "inftap.h"
 C
-      DIMENSION  PIND(3,MXQM3),MYIND(3,MXQM3)
-      DIMENSION  ESITE(3,MXQM3),FFJ(*),EFPCM(3,MXQM3)
+      REAL*8     PIND(3,MXQM3),MYIND(3,MXQM3)
+      REAL*8     ESITE(3,MXQM3),FFJ(*),EFPCM(3,MXQM3)
       PARAMETER  (D0 = 0.0D0)
 C
-#if defined (SYS_CRAY)
-      REAL              PIND,MYIND,DEMMMM
-      REAL              ESITE, TEMPOL,FFJ,EFPCM
-#else
-      DOUBLE PRECISION  PIND,MYIND,DEMMMM
-      DOUBLE PRECISION  ESITE, TEMPOL,FFJ,EFPCM
-#endif
 C
 C     See if external fields are to be added
 C      IF (RELMOM) THEN
@@ -3840,13 +3787,8 @@ C
 #include "nqcc.h"
 C
       PARAMETER (D0 = 0.0D0, D3 = 3.0D0)
-      DIMENSION  MYIND(3,MXQM3)
+      REAL*8 MYIND(3,MXQM3)
 C
-#if defined (SYS_CRAY)
-      REAL              MYIND
-#else
-      DOUBLE PRECISION  MYIND
-#endif
 C
 C     get induced dipole moments from files:
 C
@@ -4048,22 +3990,12 @@ C**************************************************************
 #include "nuclei.h"
 #include "inftap.h"
 
-#if defined (SYS_CRAY)
-      REAL              DIST
-      REAL              TMAT, TMATI, EQMCLT, TMUM, EINDT
-      REAL              EQMCLF, ESITE, MYIND, EIND, EFPCM
-#else
-      DOUBLE PRECISION  DIST
-      DOUBLE PRECISION  TMAT, TMATI, EQMCLT, TMUM, EINDT
-      DOUBLE PRECISION  EQMCLF, ESITE, MYIND, EIND, EFPCM
-#endif
-
       INTEGER    IMODE, KTEMP2  
 
-      DIMENSION  TMAT(3*KTEMP2,3*KTEMP2), TMATI(3*KTEMP2,3*KTEMP2)
-      DIMENSION  EQMCLT(3*KTEMP2), TMUM(3*KTEMP2), EINDT(3*KTEMP2)
-      DIMENSION  EQMCLF(3,MXQM3), ESITE(3,MXQM3), MYIND(3,MXQM3) 
-      DIMENSION  EIND(3,MXQM3), EFPCM(3,MXQM3)
+      REAL*8     TMAT(3*KTEMP2,3*KTEMP2), TMATI(3*KTEMP2,3*KTEMP2)
+      REAL*8     EQMCLT(3*KTEMP2), TMUM(3*KTEMP2), EINDT(3*KTEMP2)
+      REAL*8     EQMCLF(3,MXQM3), ESITE(3,MXQM3), MYIND(3,MXQM3) 
+      REAL*8     EIND(3,MXQM3), EFPCM(3,MXQM3)
 
       PARAMETER  (D0 = 0.0D0)
 
@@ -4244,15 +4176,10 @@ C
 #include "nuclei.h"
 C
       PARAMETER (D0 = 0.0D0, D3 = 3.0D0)
-      DIMENSION  MYIND(3,MXQM3)
-      DIMENSION  RFQM(3,MXCENT_QM)
+      REAL*8     MYIND(3,MXQM3)
+      REAL*8     RFQM(3,MXCENT_QM)
       CHARACTER  LAPRPC*8
 C
-#if defined (SYS_CRAY)
-      REAL              MYIND, RFQM
-#else
-      DOUBLE PRECISION  MYIND, RFQM
-#endif
 
       IF (.NOT. PRFQM3) RETURN
 
@@ -4440,16 +4367,7 @@ C
 #include "nuclei.h"
  
       PARAMETER  (D0 = 0.0D0)
- 
-#if defined (SYS_CRAY)
-      REAL              XCORD, YCORD, ZCORD, PCMCHARGE
-      REAL              DIST, DIST2, DISTM1, DISTM3, EFPCM
-#else
-      DOUBLE PRECISION  XCORD, YCORD, ZCORD, PCMCHARGE
-      DOUBLE PRECISION  DIST, DIST2, DISTM1, DISTM3, EFPCM
-#endif
- 
-      DIMENSION  EFPCM(3,MXQM3)
+      REAL*8     EFPCM(3,MXQM3)
 
       DO 19 I = 1, MXQM3
          DO 20 J = 1, 3
@@ -4520,13 +4438,7 @@ C
 #include "nuclei.h"
  
       PARAMETER  (D0 = 0.0D0)
-#if defined (SYS_CRAY)
-      REAL              MYIND
-#else
-      DOUBLE PRECISION  MYIND
-#endif
-
-      DIMENSION  MYIND(3,MXQM3)
+      REAL*8 MYIND(3,MXQM3)
 
       LM = 0
       L = NUSITE + NUALIS(0)
@@ -4593,13 +4505,8 @@ C
 #include "nuclei.h"
 #include "inftap.h"
 C
-      DIMENSION  MYIND(3,MXQM3)
 C
-#if defined (SYS_CRAY)
-      REAL              MYIND
-#else
-      DOUBLE PRECISION  MYIND
-#endif
+      REAL*8 MYIND(3,MXQM3)
 C
       LUMOM = -1
       CALL QM3_GET3(LUMOM,'QMIND   ',MYIND,NCOMS)

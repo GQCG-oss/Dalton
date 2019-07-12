@@ -51,6 +51,7 @@
 !  inforb.h : NNORBX, NORBT, ???
 !  inftra.h : IPRTRA, LBUF
 !  inftap.h : LUINTM, LBINTM
+!  cbihr2.h : IFTHRS
 !  ccom.h   : THRS
 #include "iratdef.h"
 #include "maxaqn.h"
@@ -252,7 +253,6 @@ C           and subtract from input CMO matrix
 !  ccom.h   : THRS
 #include "iratdef.h"
 #include "maxaqn.h"
-#include "thrzer.h"
 #include "gnrinf.h"
 #include "inforb.h"
 #include "inftra.h"
@@ -338,7 +338,7 @@ C --- start of executable code
       end if !  if (FCKTRA_TYPE .eq. 1 .AND. PARCAL) then ... else ...
 
       IFTHRS = IFTHRS_save
- 9999 call QEXIT('FCKTRA_CTL')
+      call QEXIT('FCKTRA_CTL')
       return
       end
 
@@ -754,7 +754,6 @@ C --- start of executable code
 
 ! Used from include files:
 !  gnrinf.h : CHIVAL
-!  blocks.h : NSYMBL
 !  inforb.h : N2BASX, NORBT,NNORBX, ...
 !  infind.h : ISMO(:)
 !  inftra.h : IPRTRA
@@ -766,7 +765,6 @@ C --- start of executable code
 #include "maxorb.h"
 #include "maxash.h"
 #include "gnrinf.h"
-#include "blocks.h"
 #include "inforb.h"
 #include "infind.h"
 #include "inftra.h"

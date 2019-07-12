@@ -1181,14 +1181,7 @@ C-------------------------------------------------------
 C        Open file for efffective two electron densities.
 C-------------------------------------------------------
 C
-#if defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC)
-         NFRL = 2
-#elif defined (SYS_UNIX)
          NFRL = 8
-#endif
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-         NFRL = 16
-#endif
 C
 C
          LDECH = N2BSTM*NFRL+1

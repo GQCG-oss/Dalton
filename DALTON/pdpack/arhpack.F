@@ -331,8 +331,7 @@ C  /* Deck uhut */
       SUBROUTINE UHUT(H,HT,U,NAO,NMO)
 C
 C /VER 1/ 28-Mar-1987 Hans Jorgen Aa. Jensen
-C 900720-hjaaj: NOSYNC compiler option.  Corrected fatal error
-C (this routine can never have been used! HT would have been wrong).
+C Revised 900720-hjaaj
 C
 C This subroutine backtransforms the symmetric, packed matrix H of
 C dimension NMO to the symmetric, packed HT of dimension NAO
@@ -358,7 +357,6 @@ C
          DO 410 L = 1,K
             KL   = KL + 1
             HKL  = H(KL)
-#include "nosync.h"
             DO 240 I = 1,NAO
                IROW = (I*I-I)/2
                IF (K .NE. L) THEN
@@ -384,8 +382,7 @@ C  /* Deck auhut */
       SUBROUTINE AUHUT(H,HT,U,NAO,NMO)
 C
 C /VER 1/ 28-Mar-1987 Hans Jorgen Aa. Jensen
-C 900720-hjaaj: NOSYNC compiler option.  Corrected fatal error
-C (this routine can never have been used! HT would have been wrong).
+C Revised 900720-hjaaj
 C
 C This subroutine backtransforms the symmetric, packed matrix H of
 C dimension NMO to the symmetric, packed HT of dimension NAO
@@ -405,7 +402,6 @@ C
          DO 410 L = 1,K
             KL   = KL + 1
             HKL  = H(KL)
-#include "nosync.h"
             DO 240 I = 1,NAO
                IROW = (I*I-I)/2
                IF (K .NE. L) THEN

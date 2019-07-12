@@ -742,21 +742,9 @@ C
      &                  CALL TIMER('PTRAN ',TIMSTR,TIMEND)
                         IF (IPRPTR .GE. 3)
      &                  CALL TIMER('START ',TIMSTR,TIMEND)
-#if defined (SYS_CRAY) || defined (SYS_NEC) || defined (SYS_T90)
-                        LWUSE = LWRK
-#else 
-                        CALL MEM_PSORT(MEMMIN,WORK(KNCONT))
-C     
-C     1000000 is just an estimate of what the rest of the sorting 
-C     program needs
-C
-                        LWUSE = MEMMIN + 1000000
-                        IF (LWUSE .GT. LWRK)
-     &                       CALL STOPIT('TWOEXP','PSORG',LWUSE,LWRK)
-#endif
                         CALL GPOPEN(LUPAO,' ','UNKNOWN',' ',' ',IDUMMY,
      &                              .FALSE.)
-                        CALL PSORG(WORK,WORK(KLAST),LWUSE,WORK(KNCONT),
+                        CALL PSORG(WORK,WORK(KLAST),LWRK,WORK(KNCONT),
      &                             IPRSOR,ANTI,PANTI)
                         IF (IPRPTR .GE. 3 .OR. IPRSOR .GE. 3)
      &                  CALL TIMER('PSORT ',TIMSTR,TIMEND)
@@ -774,7 +762,7 @@ C
      &                  CALL TIMER('START ',TIMSTR,TIMEND)
                         CALL GPOPEN(LUPAS,' ','UNKNOWN',' ',' ',IDUMMY,
      &                              .FALSE.)
-                        CALL PSORG(WORK,WORK(KLAST),LWUSE,WORK(KNCONT),
+                        CALL PSORG(WORK,WORK(KLAST),LWRK,WORK(KNCONT),
      &                             IPRSOR,ANTI,PANTI)
                         IF (IPRPTR .GE. 3 .OR. IPRSOR .GE. 3)
      &                  CALL TIMER('PSORT ',TIMSTR,TIMEND)

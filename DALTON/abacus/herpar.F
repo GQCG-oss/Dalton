@@ -945,6 +945,7 @@ C CBIREA : UNCONT, LMULBS
 C DORPS  : DOREPS(), DOCOOR()
 C ABAINF : DOSYM()
 C SYMMET : MAXREP
+C CBIHR2 : IFTHRS
 C DFTCOM : HFXFAC, HFXMU, ...
 C EXPOPT : EXPGRA
 C R12INT : R12INT, INTGAC
@@ -957,6 +958,7 @@ C
 #include "dorps.h"
 #include "abainf.h"
 #include "symmet.h"
+#include "cbihr2.h"
 #include "dftcom.h"
 #include "expopt.h"
 #include "r12int.h"
@@ -972,6 +974,7 @@ C
       CALL MPIXBCAST(NEWGEO,1,'LOGICAL',MASTER)! gnrinf.h
       CALL MPIXBCAST(HFXFAC,1,'DOUBLE', MASTER)! dftcom.h
       CALL MPIXBCAST(HFXMU, 1,'DOUBLE', MASTER)! dftcom.h
+      CALL MPIXBCAST(IFTHRS,1,'INTEGER',MASTER)! cbihr2.h
       CALL MPIXBCAST(DOSRIN,1,'LOGICAL',MASTER)! gnrinf.h
       CALL MPIXBCAST(SRINTS,1,'LOGICAL',MASTER)! gnrinf.h
       CALL MPIXBCAST(ERFEXP,1,'LOGICAL',MASTER)! gnrinf.h

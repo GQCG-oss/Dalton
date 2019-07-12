@@ -380,7 +380,7 @@ C
       WRITE(LUPRI,2600) THR1, THR2
       WRITE(LUPRI,2700) IPRINT
       WRITE(LUPRI,2800) NSYM
-      DO, I = 1,NSYM
+      DO I = 1,NSYM
         WRITE(LUPRI,2850) (MUL(I,J),J = 1,NSYM)
       END DO
       WRITE(LUPRI,2900) (I,I = 1,NSYM)
@@ -486,7 +486,7 @@ C
 C     Initialize counters and rewind half-transformed 2-matrix
 C     output file.
 C
-      DO, I = 1,NBAST
+      DO I = 1,NBAST
         IT(I) = I*(I-1)/2
       END DO
       L1BUF = 2*MX1BUF + 1
@@ -806,11 +806,11 @@ C
       IF (IPRINT .GT. 2) THEN
          WRITE (LUPRI,2100) MEMS, MEMT, NBLOCK, NCHAIN, LABUF
          WRITE (LUPRI,'(/4X,A)') 'ISYOFF array:'
-         DO, I = 1,NSYM
+         DO I = 1,NSYM
            WRITE(LUPRI,2850) (ISYOFF(I,J),J = 1,NSYM)
          END DO
          WRITE (LUPRI,'(/4X,A)') 'NENT array:'
-         DO, I = 1,NSYM
+         DO I = 1,NSYM
            WRITE(LUPRI,2850) (NENT(I,J),J = 1,NSYM)
          END DO
          CALL FLSHFO(LUPRI)
@@ -1298,8 +1298,7 @@ C
 C     If MAXBUF is changed be sure to make the corresponding change
 C     of MX2BUF in PTRAN (used in PT2TRA) and in DISINT.
 C
-      PARAMETER ( MINMEM = 50000,
-     *            MAXLOC = 4000,
+      PARAMETER ( MAXLOC = 4000,
      *            MAXPAS = 12,    IBUFMX = 600,
      *            IBUFMN = 200,   MXMAX = 2000 )
 C
@@ -1325,6 +1324,7 @@ C
       IF (IPRINT .GT. 2) WRITE (LUPRI, 1000)
 CHJ-860802:  find MEMS = available space for SORT(*), ISORT(*)
       MEMS  = LWORK / 2
+      CALL MEM_PSORT(MINMEM, NCONTS)
       IF (MEMS .LT. MINMEM)
      *   CALL STOPIT('PSORG',' ',2*MINMEM,2*MEMS)
       LBUF  = 2*MAXBUF +  1
@@ -1467,7 +1467,7 @@ C
       INTEGER   IXBUF(10), IOOPS(10)
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
 #include "priunit.h"
-#include "ioweight.h"
+      PARAMETER ( DAWEIG = 1.D0, SQWEIG = 1.D0 )
       CALL QENTER('PSIZE')
       SQBUF = LSQBUF
       DO 10 I = 1,10
@@ -1515,7 +1515,7 @@ C
 #include "ptrbuf.h"
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
       INTEGER*8 IBUF(*), IBIN(*)
-      REAL*8     BUF(*),  BIN(*), SORT(LSORT)
+      REAL*8     BUF(*),  BIN(*), SORT(*)
       INTEGER*8 ITAB(*), NTOP(*), IPOINT(NPS1,2)
       INTEGER*8 INDGEN(4,*)
       INTEGER   P, Q, R, S, PQ, RS, PQRS
@@ -1647,7 +1647,7 @@ C
       IPQRSF = IPQRS
       NCHAIN = IBINO
       IDISK  = 1
-      DO, ICHAIN = 1,NCHAIN
+      DO ICHAIN = 1,NCHAIN
          IBIN(LBIN(ICHAIN))   = 0
          IBIN(LBIN(ICHAIN)-1) = -1
       END DO

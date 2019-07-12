@@ -1323,7 +1323,6 @@ C
       IF (NCRTOT .GT. LWORK) CALL STOPIT('WLKCGH',' ',LWORK,NCRTOT)
       DO 100 IREP = 0, MAXREP
          DO 110 ICENT = 1, NUCIND
-#include "scalar.h"
             DO 120 ICOOR = 1, 3
                ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
                IF (ISCOOR .GT. 0) THEN

@@ -508,13 +508,9 @@ C
 C  /* Deck getname */
       SUBROUTINE GETNAME(HSTNAM)
 #include "implicit.h"
-      CHARACTER*(20) HSTNAM
+      CHARACTER*(40) HSTNAM
 C
-#if defined (SYS_HAL) || defined (VAR_G95)
-      IRET = HOSTNM(HSTNAM)
-#else
       CALL HOSTNM(HSTNAM)
-#endif
 C
       RETURN
       END
@@ -522,34 +518,8 @@ C  /* Deck getdate */
       SUBROUTINE GETDATE
 #include "implicit.h"
 #include "priunit.h"
-#if defined (SYS_DARWIN) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_AIX)
+#if defined (SYS_DARWIN) || defined (SYS_LINUX) || defined (SYS_AIX)
       CHARACTER*(24) FDATE
-#endif
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-      CDATE = DATE()
-      CTIME = CLOCK()
-      WRITE (LUPRI,'(T6,A,A8,1X,A8)')
-     *   'Date and time (CRAY) : ',CDATE,CTIME
-#endif
-#if defined (SYS_HAL)
-      CHARACTER*(24) CFDATE
-      CALL FDATE(CFDATE)
-      WRITE (LUPRI,'(T6,2A)') 'Date and time (HAL)    : ',CFDATE
-#endif
-#if 0 && defined (SYS_HPUX)
-      WRITE (LUPRI,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
-#endif
-#if defined (SYS_DEC)
-      WRITE (LUPRI,'(T6,2A)') 'Date and time (DEC)    : ',FDATE()
-#endif
-#if defined (SYS_IRIX)
-      WRITE (LUPRI,'(T6,2A)') 'Date and time (IRIX)   : ',FDATE()
-#endif
-#if defined (SYS_NEC)
-      WRITE (LUPRI,'(T6,2A)') 'Date and time (NEC-SX4): ',FDATE()
-#endif
-#if defined (SYS_SUN)
-      WRITE (LUPRI,'(T6,2A)') 'Date and time (SUN)    : ',FDATE()
 #endif
 #if defined (SYS_LINUX)
       WRITE (LUPRI,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
