@@ -5,7 +5,7 @@
 
       REAL*8  CHARGE, CORD, GNUEXP
 
-      INTEGER NUCPRE, NUCNUM, NUCDEG, ISTBNU, NCTOT,                    &
+      INTEGER         NUCNUM, NUCDEG, ISTBNU, NCTOT,                    &
      &        NUCIND, NUCDEP, NTRACO, ITRACO, NATOMS, NFLOAT,           &
      &        NBASIS, NLARGE, NSMALL, NPBAS,  NPLRG,  NPSML,            &
      &        NCHTOT, INCENT, INUNIQ, NDEGNM, ISOTOP, IZATOM,           &
@@ -13,7 +13,7 @@
      &        NUCLEIlast, NUCLEClast
       LOGICAL GAUNUC, NOORBT
       COMMON /NUCLEI/ CHARGE(MXCENT), CORD(3,MXCENT), GNUEXP(MXCENT),   &
-     &                NUCPRE(MXCENT), NUCNUM(MXCENT,8), NUCDEG(MXCENT), &
+     &                                NUCNUM(MXCENT,8), NUCDEG(MXCENT), &
      &                ISTBNU(MXCENT), NDEGNM(MXCENT), NUCIND, NUCDEP,   &
      &                NTRACO, ITRACO(3),                                &
      &                NATOMS, NFLOAT, NBASIS, NLARGE, NSMALL, NPBAS,    &

@@ -58,11 +58,11 @@ cat > rsp_soppafcnosymm.dal <<'%EOF%'
 .SOPPA
 *LINEAR
 .PROPRT
-FC O  01
+FC O 001
 .PROPRT
-FC H  02
+FC H 002
 .PROPRT
-FC H  03
+FC H 003
 **END OF DALTON INPUT
 %EOF%
 #######################################################################
@@ -134,12 +134,12 @@ CTRL[4]=2
 ERROR[4]="ENERGIES NOT CORRECT"
 
 # Fermi-contact contribution
-CRIT1=`$GREP "\@.*FC O * 01 .* FC O * 01 .* 1\.32699......[0-9](D|E)\+04" $log | wc -l`
-CRIT2=`$GREP "\@.*FC O * 01 .* FC H * 02 .* \-4\.2682.......[0-9](D|E)\+01" $log | wc -l`
-CRIT3=`$GREP "\@.*FC O * 01 .* FC H * 03 .* \-4\.2682.......[0-9](D|E)\+01" $log | wc -l`
-CRIT4=`$GREP "\@.*FC H * 02 .* FC H * 02 .* 5\.3614.......[0-9](D|E)\+01" $log | wc -l`
-CRIT5=`$GREP "\@.*FC H * 02 .* FC H * 03 .* 6\.3823.......[0-9](D|E)\-01" $log | wc -l`
-CRIT6=`$GREP "\@.*FC H * 03 .* FC H * 03 .* 5\.3614.......[0-9](D|E)\+01" $log | wc -l`
+CRIT1=`$GREP "\@.*FC O *001 .* FC O *001 .* 1\.32699......[0-9](D|E)\+04" $log | wc -l`
+CRIT2=`$GREP "\@.*FC O *001 .* FC H *002 .* \-4\.2682.......[0-9](D|E)\+01" $log | wc -l`
+CRIT3=`$GREP "\@.*FC O *001 .* FC H *003 .* \-4\.2682.......[0-9](D|E)\+01" $log | wc -l`
+CRIT4=`$GREP "\@.*FC H *002 .* FC H *002 .* 5\.3614.......[0-9](D|E)\+01" $log | wc -l`
+CRIT5=`$GREP "\@.*FC H *002 .* FC H *003 .* 6\.3823.......[0-9](D|E)\-01" $log | wc -l`
+CRIT6=`$GREP "\@.*FC H *003 .* FC H *003 .* 5\.3614.......[0-9](D|E)\+01" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[5]=6
 ERROR[5]="FERMI-CONTACT NOT CORRECT"
