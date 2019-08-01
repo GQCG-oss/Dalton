@@ -195,9 +195,11 @@ C
 C        Spin polarization correction to Fermi contact contribution
          IF (HFCFC) THEN
             DO IDX = 1,NUCIND
-               LABINT = 'FC '//NAMDEP(NUCPRE(IDX)+1)(1:3)
-     &                   //CHRNOS(IPTNUC(IDX,0)/10)//
-     &                   CHRNOS(MOD(IPTNUC(IDX,0),10))
+               JATOM = IPTNUC(IDX,0)
+               LABINT = 'FC '//NAMN(IDX)(1:2)
+     &                 //CHRNOS(JATOM/100)
+     &                 //CHRNOS(MOD(JATOM,100)/10)
+     &                 //CHRNOS(MOD(JATOM,10))
                CALL GETGPV(LABINT,FC,FV,CMO,UDV,PVX,XINDX,
      &                     ANTSYM,WORK(KGP),LFREE)
                AFCPOL(IDX) = -DDOT(KZYVAR,WORK(KLAGR),1,WORK(KGP),1)
@@ -215,7 +217,7 @@ C        Spin polarization correction to Spin-dipolar contribution
                             IF (IDOCOMP .EQ. 0) THEN
                                IFIRST = ISCOR1/100
                                ISECND = MOD(ISCOR1,100)/10
-                               ITHIRD = MOD(MOD(ISCOR1,100),10)
+                               ITHIRD = MOD(ISCOR1,10)
                                LABINT = 'SD '//CHRNOS(IFIRST)
      &                                 //CHRNOS(ISECND)
      &                                 //CHRNOS(ITHIRD)//' '
@@ -346,9 +348,11 @@ C     Compute expectation values
       TRPSAVE = TRPLET
       TRPLET = .TRUE.
       DO IK = 1, NUCIND
-         LABINT = 'FC '//NAMDEP(NUCPRE(IK)+1)(1:3)
-     &                //CHRNOS(IPTNUC(IK,0)/10)//
-     &                  CHRNOS(MOD(IPTNUC(IK,0),10))
+         JATOM = IPTNUC(IK,0)
+         LABINT = 'FC '//NAMN(IK)(1:2)
+     &                 //CHRNOS(JATOM/100)
+     &                 //CHRNOS(MOD(JATOM,100)/10)
+     &                 //CHRNOS(MOD(JATOM,10))
          CALL PRPGET(LABINT,CMO,WORK(KPRPMO),KSYMOP,ANTSYM,WORK(KFREE),
      &               LFREE,0)
          CALL PRPONE(WORK(KPRPMO),WORK(KDV),AFCEXP(IK),1,LABINT)
@@ -426,7 +430,7 @@ C     Compute expectation values
                      IF (IEOR(IREP,ISYMAX(ICOOR2,2)) .EQ. 0) THEN
                         IFIRST = ISCOR1/100
                         ISECND = MOD(ISCOR1,100)/10
-                        ITHIRD = MOD(MOD(ISCOR1,100),10)
+                        ITHIRD = MOD(ISCOR1,10)
                         LABINT = 'SD '//CHRNOS(IFIRST)
      &                           //CHRNOS(ISECND)
      &                           //CHRNOS(ITHIRD)//' '
@@ -671,7 +675,7 @@ C
              INUCMAS = NINT(DISOTP(NINT(CHARGE(IDX)),ISOTOP(IDX),
      &                      'MASS'))
              WRITE(LUPRI,'(2X,A,I3,A,I3,A,F8.3,A,F8.3,A,F8.3,A)')
-     &              '|',IDX,NAMDEP(NUCPRE(IDX)+1)(1:3)//'|  ', INUCMAS,
+     &              '|',IDX,NAMN(IDX)(1:3)//'|  ', INUCMAS,
      &               '  | ', XEXP(IDX),' | ', XPOL(IDX), ' | ',
      &               XEXP(IDX)+XPOL(IDX), ' | '
           END IF
@@ -704,7 +708,7 @@ C
      &                      'MASS'))
              WRITE(LUPRI,'(2X,A,I3,A,I3,A,F8.2,A,F8.2,A,F8.2,A,F8.2,'//
      &              'A,F8.2,A,F8.2,A)')
-     &              '|',IDX,NAMDEP(NUCPRE(IDX)+1)(1:3)//'|  ', INUCMAS,
+     &              '|',IDX,NAMN(IDX)(1:3)//'|  ', INUCMAS,
      &               '  |   <SD>   |', XEXP(IDX,1,1),' | ',
      &               XEXP(IDX,2,2), ' | ', XEXP(IDX,3,3), ' | ',
      &               XEXP(IDX,1,2), ' | ', XEXP(IDX,1,3), ' | ',
@@ -746,7 +750,7 @@ C
             INUCMAS = NINT(DISOTP(NINT(CHARGE(IDX)),ISOTOP(IDX),
      &                     'MASS'))
             WRITE(LUPRI,'(2X,A,I3,A,I3,A,/,2X,A)') 'Atom: ', IDX,
-     &            NAMDEP(NUCPRE(IDX)+1)(1:3)//'Isot.:', INUCMAS,
+     &            NAMN(IDX)(1:3)//'Isot.:', INUCMAS,
      &            ' <<PSO;SO>>:',
      &            '================================='
             WRITE(LUPRI,'(2X,A)') '-----------------------------'//
@@ -780,7 +784,7 @@ C  /* Deck atotprt */
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
-      DIMENSION XFCEXP(MXCENT), XFCPOL(MXCENT), XSDPEXP(MXCENT,3,3)
+      DIMENSION XFCEXP(MXCENT), XFCPOL(MXCENT), XSDEXP(MXCENT,3,3)
       DIMENSION XSDPOL(MXCENT,3,3), XSOVAL(MXCENT,3,3)
 C
       DOUBLE PRECISION ATOTAL, ATOTVAL, PVALVEC
@@ -795,7 +799,7 @@ C
              INUCMAS = NINT(DISOTP(NINT(CHARGE(IDX)),ISOTOP(IDX),
      &                     'MASS'))
              WRITE(LUPRI,'(2X,A,I3,A,I3,A,/,2X,A)') 'Atom: ', IDX,
-     &            NAMDEP(NUCPRE(IDX)+1)(1:3)//' Isot.: ', INUCMAS,
+     &            NAMN(IDX)(1:3)//' Isot.: ', INUCMAS,
      &            ' Sym. HFC tensor:',
      &            '========================================'
              WRITE(LUPRI,'(2X,A)') '-----------------------------'//
@@ -842,7 +846,7 @@ C     Print Summary
              INUCMAS = NINT(DISOTP(NINT(CHARGE(IDX)),ISOTOP(IDX),
      &                      'MASS'))
              WRITE(LUPRI,'(2X,A,I3,A,I3,A,F8.2,A,F8.2,A,F8.2,A,'//
-     &             'F8.2,A)') '|',IDX,NAMDEP(NUCPRE(IDX)+1)(1:3)//
+     &             'F8.2,A)') '|',IDX,NAMN(IDX)(1:3)//
      &             ' |  ', INUCMAS,'  | ', ATOTVAL(IDX,1),' | ',
      &             ATOTVAL(IDX,2), ' | ', ATOTVAL(IDX,3), ' | ',
      &             (ATOTVAL(IDX,1)+ATOTVAL(IDX,2)+ATOTVAL(IDX,3))/D3,

@@ -3864,7 +3864,6 @@ C
       DPNUC(3) = D0
       NUCDEP    = 0
       NCDTOT    = 0
-      NUCPRE(1) = 0
       NFLOAT    = 0
 
       DO 100 N = 1, NCTOT
@@ -3874,7 +3873,6 @@ C
      &      WRITE (LUPRI,1000) NAMN(N),(CORD(I,N),I=1,3),CHARGE(N),
      &                        IFAKBN(ISTBNU(N)), NDEG - 1
          NUCDEG(N) = NDEG
-         NUCPRE(N + 1) = NUCPRE(N) + NDEG
          IF (CHARGE(N) .EQ. D0 .AND. NAMN(N) .NE. 'cav' .AND.
      &       N .LE. NUCIND) THEN
             NFLOAT = NFLOAT + NDEG
@@ -5954,7 +5952,6 @@ C
       WRITE(LUPRI,*) 'cord3',(cord(3,i),i=1,nucind)
       WRITE(LUPRI,*) 'noorbt ',(noorbt(i),i=1,nucind)
       WRITE(LUPRI,*) 'nucind,nucdep',NUCIND, NUCDEP
-      WRITE(LUPRI,*) 'nucpre ',(nucpre(i),i=1,nucind)
       WRITE(LUPRI,*) 'nucnum ',((NUCNUM(i,j),i=1,nucind),j=1,8)
       WRITE(LUPRI,*) 'nucdeg ',(nucdeg(i),i=1,nucind)
       WRITE(LUPRI,*) 'istbnu ',(istbnu(i),i=1,nucind)

@@ -276,18 +276,6 @@ cb      write(lupri,*)' LRATOM / 100' , LRATOM / 100
 cb      write(lupri,*)' LRATOM / 10' , LRATOM / 10
  
       npos1 = 3*LRATOM-2
-      aa = LRATOM / 100
-      bb = LRATOM /10
-cb       write(lupri,*)
-cb       IF (aa.GE.1) THEN
-cb               write(lupri,*)'LRATOM tiene 3 digits'
-cb          ELSE IF (bb.GE.1) THEN
-cb               write(lupri,*)'LRATOM tiene 2 digitos'
-cb          ELSE IF (bb.LT.1) THEN
-cb               write(lupri,*)'LRATOM tiene 1 digito'
-cb       ENDIF
-cb       write(lupri,*)
-cb
 C===============================================================================
 C  SINGLET CALCULATIONS : D1S and P1S 
 C ==============================================================================
@@ -296,19 +284,8 @@ C      Look for LABELS : FERMI
 C     ---------------------------
       IF(KEY.EQ."FCAV") THEN 
         NLAB=1
-        LABEL2='FC '//NAMN(LRATOM)(1:3)
-cx        IF (aa.GE.1) THEN
-cx          write(char,'(i3)') LRATOM
-cx          LISTA1(1) = LABEL2//char
-cx        write(lupri,*)' label2 for FC :',LISTA1(1) 
-cx          ELSE IF (bb.GE.1) 
-        IF (bb.GE.1) THEN
-           write(char,'(i2)') LRATOM
-           LISTA1(1) = LABEL2//char
-        ELSE IF (bb.LT.1) THEN
-           write(char,'(i1)') LRATOM
-           LISTA1(1) = LABEL2//'0'//char
-        ENDIF
+        write(LISTA1(1),'(A3,A2,I3.3)') 'FC ',
+     &        NAMN(LRATOM)(1:2), LRATOM
       ENDIF
 C
 C ---------------------------------------------------------------------
