@@ -756,15 +756,20 @@ C***********************************************************************
 C     Card 1: Keyword (INTGRL/BASIS/ATOMBA/...) - read in READIN
 C***********************************************************************
 C***********************************************************************
-C     Card 2: If basis set library, read additional card containing basis set
 C***********************************************************************
       DO J=1,MXMULB
          MULNAM(J) = ' '
       END DO
       IF (BASIS) THEN
-         CALL RDLINE(LUINFO)
-C        Read basis set name(s), set NMULBS (WK/04-11-2002).
-         CALL READ_BASMUL(MLINE(NMLINE))
+         J = LNBLNK(MLINE(NMLINE)(6:))
+         IF (J .eq. 0) THEN
+C     Card 1b: If basis set library, basis set info may be on next card
+            CALL RDLINE(LUINFO)
+C           Read basis set name(s), set NMULBS (WK/04-11-2002).
+            CALL READ_BASMUL(MLINE(NMLINE))
+         ELSE
+            CALL READ_BASMUL(MLINE(NMLINE)(6:))
+         END IF
       END IF
 C     Enforce computation of Cartesian second moments (WK/UniKA/04-11-2002).
 C     Sep 09/hjaaj: moved to HERINI
@@ -6817,15 +6822,17 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "cbirea.h"
-      CHARACTER*80 INPUT_LINE
+      CHARACTER*(*) INPUT_LINE
       LOGICAL NEXTMB
+      INTEGER LEN_INE
 
       N = 0
       K = 0 !radovan: this is workaround for gfortran 4.7.2
             !         which optimizies the following code to wrong K
             !         the resulting basis set name is then empty
       NEXTMB = .FALSE.
-      DO I=1,80
+      LEN_LINE = LEN(INPUT_LINE)
+      DO I=1,LEN_LINE
        IF (INPUT_LINE(I:I) .NE. ' ' .AND. .NOT. NEXTMB) THEN
         NEXTMB = .TRUE.
         K = I

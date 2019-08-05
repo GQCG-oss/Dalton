@@ -32,6 +32,9 @@
 - never use plus combinations of determinants as start guess for singlet linear response excitation energies
   when reference wave function is not singlet (we do not want singlet states then). (H. J. Aa. Jensen)
 - dalton script: fix for using input files located in subfolders
+
+### Changed
+- Allow basis set(s) after BASIS in line 1 of .mol file (instead of on second line). (H. J. Aa. Jensen)
   
 
 ## [2018.3] (unreleased)

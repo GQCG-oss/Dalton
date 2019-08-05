@@ -1,5 +1,4 @@
-BASIS
-cc-pVDZ
+BASIS cc-pVDZ
    Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ
    Test Purpose:     Check energy calculation with symmetry
     2
