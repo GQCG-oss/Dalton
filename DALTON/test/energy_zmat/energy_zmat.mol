@@ -1,5 +1,4 @@
-BASIS
-STO-3G
+BASIS  STO-3G
 Z-matrix input
 
   Atomtypes=12

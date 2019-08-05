@@ -42,21 +42,6 @@ crevision 1.4 2000/04/27 07:56:52  hjj
 ctell users that d, f, ... atomic GTO's are not normalized
 c(I have had several questions from people comparing MO coefficients from
 cDalton with other programs, or comparing AO integrals with other programs).
-c----------------------------
-crevision 1.3 2000/04/14 14:09:48  hjj
-c\hjaaj dec 99-jan 00:
-c1) corrected printout for Huckel basis when DOHUCKEL
-c   (the true basis set name was printed instead of "Huckel")
-c2) corrected output format from I3 to I4 for .gt. 999 primitives
-c3) changed ZMATL format from A6 to A1 to give room for change
-c   of CHARGE format from F4.0 to F9.0; this was done so that
-c   point charges can be entered with more decimal places.
-c4) polishing.
-c----------------------------
-crevision 1.2 2000/04/12 10:15:14  hjj
-cMAXPRD was 22 on most machines except T3D and LINUX, where it was 14.
-cNow LINUX also has MAXPRD = 22, following suggestion by Asger Halkier
-ce-mail to dalton-wizards 30 Nov 99 /hjaaj
 c=============================================================================
 c960705-kr:
 c-- We use the small component basis for keeping a possible extra STO-3G
@@ -65,8 +50,6 @@ c951115-hjaaj:
 cCNTINP: always read NAMN with '(A4)' and never
 c   with free format; if free format doesn't work then try formatted;
 cZMAT: Read NAMN with '(A4)';
-c   removed old END=204 branches which were reminiscences from when
-c   the input was read directly from file.
 cBUILDZ: changed format and output of internal coordinates;
 c   removed printing of zero cartesian coords. before printing of
 c   the correct cartesian coords.
@@ -773,15 +756,20 @@ C***********************************************************************
 C     Card 1: Keyword (INTGRL/BASIS/ATOMBA/...) - read in READIN
 C***********************************************************************
 C***********************************************************************
-C     Card 2: If basis set library, read additional card containing basis set
 C***********************************************************************
       DO J=1,MXMULB
          MULNAM(J) = ' '
       END DO
       IF (BASIS) THEN
-         CALL RDLINE(LUINFO)
-C        Read basis set name(s), set NMULBS (WK/04-11-2002).
-         CALL READ_BASMUL(MLINE(NMLINE))
+         J = LNBLNK(MLINE(NMLINE)(6:))
+         IF (J .eq. 0) THEN
+C     Card 1b: If basis set library, basis set info may be on next card
+            CALL RDLINE(LUINFO)
+C           Read basis set name(s), set NMULBS (WK/04-11-2002).
+            CALL READ_BASMUL(MLINE(NMLINE))
+         ELSE
+            CALL READ_BASMUL(MLINE(NMLINE)(6:))
+         END IF
       END IF
 C     Enforce computation of Cartesian second moments (WK/UniKA/04-11-2002).
 C     Sep 09/hjaaj: moved to HERINI
@@ -1117,7 +1105,7 @@ C***********************************************************************
      &          SEG(KBLOCK,KSETS), ALPHA(KPRIM,KBLOCK,KSETS),
      &          CPRIM( KPRIM,KPRIM,KBLOCK,KSETS),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS), ISGEN(KBLOCK)
-      CHARACTER SPDCAR*1,BSET*5,ZMATL*4, BKPLIN*80, TSTCHA*2
+      CHARACTER SPDCAR*1,BSET*5, BKPLIN*80, TSTCHA*2
       CHARACTER*80 BASNAM, AUXNAM, BASNAMSAVE
 C...  added by Bin Gao, for effective core potentials, Dec. 6, 2010
       character*80 ECPNAME
@@ -1176,7 +1164,7 @@ C     If (DOHUCKEL) use second set for atomic orbitals for Huckel guess
          CALL QUIT('NSETS .gt. KSETS error')
       END IF
 C
-C     Run over atomic centers
+C     Loop over atomic types
 C     =======================
 C
       NONTYP_QM = 0
@@ -1202,12 +1190,18 @@ C
 C        Test if Z-matrix for first line (I.eq.1):
 C
          IF (I .EQ. 1) THEN
-           READ (BKPLIN,'(A4)',IOSTAT=IOS) ZMATL
-           IF (IOS.NE.0) CALL QUIT('Error read READ..ZMATL')
-           IF (ZMATL .EQ. 'ZMAT') THEN
-             ZMAT_INPUT = .TRUE.
+           IF (INDEX(BKPLIN,'ZMAT') .gt. 0) ZMAT_INPUT = .TRUE.
+           IF (ZMAT_INPUT) THEN
              WRITE (LUPRI,'(/A)')
      &        'Atoms and their geometry are read in Z-matrix format.'
+             IF (NSYMOP > 0) THEN
+                WRITE(LUPRI,'(/A/A)')
+     &   '@ Input error: User specification of symmetry generators'//
+     &   ' is not allowed for Z-matrix input.',
+     &   '@ (It is allowed to let Dalton determine the symmetry.)'
+                CALL QUIT('READ_MOL: '//
+     &          'User input of symmetry is not allowed for Z-matrix')
+             END IF
 
              IF (DIRAC) CALL QUIT
      &          ('READ_MOL: Z-matrix is not implemented for DIRAC')
@@ -1228,8 +1222,8 @@ C           Arnfinn, nov -08: add 1 to NONTYP_QM if not MM;
 C           counting the numbers of QM type atoms
             NONTYP_QM = NONTYP_QM + 1
 C           HJAaJ dec 08: NONTYP_QM sent to slaves when parallel,
-C           slaves will then only read transferred MLINE(1:NMLINE) correctly
-C           if all QM atoms before any MM atom
+C           slaves will then only read transferred MLINE(1:NMLINE)
+C           correctly if all QM atoms before any MM atom
             IF (MM_ATOMTYPE) THEN
                WRITE (LUPRI,'(/A,I6/A/A)')
      &            'ERROR in .mol input line no.',NMLINE,MLINE(NMLINE),
@@ -1261,7 +1255,7 @@ C
             ELSE
                MBSI = 1
             END IF
-         ELSE IF (ZMATL .EQ. 'ZMAT') THEN
+         ELSE IF (ZMAT_INPUT) THEN
 C           Z-matrix not implemented with LMULBS (WK/UniKA/04-11-2002).
             IF (LMULBS) THEN
                CALL QUIT(
@@ -1270,8 +1264,8 @@ C           Z-matrix not implemented with LMULBS (WK/UniKA/04-11-2002).
                MBSI = 1
             END IF
             CALL ZMAT(NONT,KATOM)
-            Q = CHARGE(NCTOT)
-            ISOTOP(NCTOT) = 1
+            Q = CHARGE(NUCIND)
+            ISOTOP(NUCIND) = 1
 C           ... "Isotope=#" not implemented for ZMAT yet,
 C               thus always use isotope no. 1 /hjaaj feb 2003
          ELSE IF (ATOMBA .OR. BASIS) THEN
@@ -1384,7 +1378,7 @@ C
                CALL QUIT('Input error in .mol file, see output.')
             ENDIF
          ENDIF
-         CALL CNTINP(LUINFO,NONT(I),Q,Q_EXPONENT,NSYMOP,ANG,MBSI,
+         CALL CNTINP(LUINFO,NONT(I),Q,Q_EXPONENT,ANG,MBSI,
      &               RADIUS_PCM, ALPHA_PCM)
 C        .. MBSI has been added (WK/UniKA/04-11-2002).
 C
@@ -1419,8 +1413,9 @@ C
                IF (J .EQ. 1) THEN
                   IF (LCMMAX .eq. 1234567890) THEN
                      WRITE(LUPRI,'(/A)') ' FATAL ERROR:'//
-     &                  ' only one "X" center allowed for .CM FUN'
-                     CALL QUIT('ERROR: max one "X" center for .CM FUN')
+     &      ' only one "X" center allowed for .CM FUN or .CONTINUUM'
+                     CALL QUIT('ERROR: max one "X" center for .CM FUN'//
+     &                  ' or .CONTINUUM')
                   END IF
                   IQM(I,J) = LCMMAX + 1
 
@@ -1751,12 +1746,18 @@ C
               CALL QUIT('Symmetry cannot be determined -- see output')
             END IF
          END IF
-  100 CONTINUE
+  100 CONTINUE  ! DO 100 I = 1, NONTYP
 C
       IF (LCMMAX .GT. -1 .AND. LCMMAX .NE. 1234567890) THEN
-         WRITE(LUPRI,'(//A)') ' FATAL ERROR:'//
-     &     ' .CM FUN specified but no "X" center in .mol input'
-         CALL QUIT('ERROR: no "X" center in .mol input for .CM FUN')
+         if (LCNTNUUM) then
+            WRITE(LUPRI,'(//A)') ' FATAL ERROR:'//
+     &      ' .CONTIN specified but no "X" center in .mol input'
+            CALL QUIT('ERROR: no "X" center in .mol input for .CONTIN')
+         else
+            WRITE(LUPRI,'(//A)') ' FATAL ERROR:'//
+     &      ' .CM FUN specified but no "X" center in .mol input'
+            CALL QUIT('ERROR: no "X" center in .mol input for .CM FUN')
+         end if
       END IF
 C
       IF (.NOT. ONLYOV) THEN
@@ -1874,7 +1875,7 @@ C
       CALL QUIT('Cannot determine the charge of an atom type')
       END ! SUBROUTINE BASINP
 C  /* Deck cntinp */
-      SUBROUTINE CNTINP(LUINFO,NONT,Q,Q_EXPONENT,NSYMOP,ANG,MBSI,
+      SUBROUTINE CNTINP(LUINFO,NONT,Q,Q_EXPONENT,ANG,MBSI,
      &                  RADIUS_PCM, ALPHA_PCM)
 C*****************************************************************************
 C
@@ -4891,8 +4892,15 @@ C
          IF (IPREAD .GT. 0) CALL ROTANA(WORK(1),WORK(KMASS),WORK(ISTRT),
      &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NCENTS,NCOOR,IPREAD)
 C
-         IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
+         IF (IPREAD .GT. 0) THEN
+            IF (POTNUC .LT. 1.D5) THEN
+               WRITE(LUPRI,'(//A,F18.12,A)')
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
+            ELSE
+               WRITE(LUPRI,'(//A,1P,E20.12,A)')
+     &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
+            END IF
+         END IF
       END IF
 
 #ifdef HAS_PCMSOLVER
@@ -6814,15 +6822,17 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "cbirea.h"
-      CHARACTER*80 INPUT_LINE
+      CHARACTER*(*) INPUT_LINE
       LOGICAL NEXTMB
+      INTEGER LEN_INE
 
       N = 0
       K = 0 !radovan: this is workaround for gfortran 4.7.2
             !         which optimizies the following code to wrong K
             !         the resulting basis set name is then empty
       NEXTMB = .FALSE.
-      DO I=1,80
+      LEN_LINE = LEN(INPUT_LINE)
+      DO I=1,LEN_LINE
        IF (INPUT_LINE(I:I) .NE. ' ' .AND. .NOT. NEXTMB) THEN
         NEXTMB = .TRUE.
         K = I
