@@ -153,12 +153,10 @@ of 1.0D-15 will give integrals correct to approximately 1.0D-13.
 
 Note that if one wants to use a basis set
 library\index{basis set!library}, there are two
-options. One option is to use a common basis set for the entire
-molecule in which the first line should be replaced by two lines,
+options. One option is to use a common basis set for the entire molecule,
 which for a calculation using the 4-31G** basis would look like:
 \begin{verbatim}
- 1:BASIS
- 2:4-31G**
+ 1:BASIS 4-31G**
 \end{verbatim}
 This option will not be active with customizable basis sets like the
 ANO or NQvD sets.
@@ -170,8 +168,7 @@ atoms, in which case the first line should read
  1:ATOMBASIS
 \end{verbatim}
 
-The fourth line (fifth in a calculation using the basis set library with "BASIS" in line 1)
-looks a bit devastating. However, for ordinary
+The fourth line looks a bit devastating. However, for ordinary
 Hartree--Fock\index{HF}\index{MP2}\index{SCF}\index{Hartree--Fock}\index{M{\o}ller-Plesset!second-order}
 or MP2 calculations, only the number of different atom types and the charge
 need to be given (if the molecule is charged), as symmetry and
@@ -448,8 +445,7 @@ for the {\tt NONTYP} atoms.
 
 A typical Z-matrix input could be:
 \begin{verbatim}
-BASIS
-6-31G**
+BASIS 6-31G**
    Test Z-matrix input of ammonia
    6-31G** basis set
 Atomtypes=4
@@ -470,9 +466,11 @@ ease of reference to a given atom, and is actually not used within the
 program, where any reference to an atom, is the number of the
 atom consecutively in the input list.
 
-The second Z-matrix line consists of the atom name, a running number,
+The second Z-matrix line consists of an atom name, a running number,
 the number of the atom to which this atom is bonded with a given bond
-length in \angstrom{}, and then finally the charge of this atom.
+length in \angstrom{}, and then finally the nuclear charge of this atom.
+Note that the atom label is not used to identify the atom type
+and can be used to distinguish atoms, as in the ammonia example above.
 
 The third Z-matrix line is identical to the second, except that an extra atom
 number, to which the two first atoms on this line is bonded to with a
@@ -508,7 +506,7 @@ The specified basis set(s) are searched for in the following directories:
 \end{itemize}
 
 If {\tt BASIS} is used, a common basis set is used for all atoms in
-the molecule, and the name of this basis set is given on the second line.
+the molecule.
 If we want to use one basis set for all the
 atoms in a molecule, the molecule input file can be significantly
 simplified, as we may delete all the input information regarding the
@@ -517,17 +515,16 @@ with the 6-31G** basis will, if the basis set library is used,  be reduced
 to:
 
 \begin{verbatim}
- 1:BASIS
- 2:6-31G**
- 3:        Tetrahedrane, Td_symmetric geometry
- 4:                 4-31G** basis
- 5:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
- 6:Charge=6.0 Atoms=2
- 7:C1    1.379495419          .0                 0.975450565
- 8:C2     .0                 1.379495419         -.975450565
- 9:Charge=1.0 Atoms=2
-10:H1    3.020386510         .0                  2.1357357837
-11:H2     .0                 3.020386510         -2.1357357837
+ 1:BASIS 6-31G**
+ 2:        Tetrahedrane, Td_symmetric geometry
+ 3:                 6-31G** basis
+ 4:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
+ 5:Charge=6.0 Atoms=2
+ 6:C1    1.379495419          .0                 0.975450565
+ 7:C2     .0                 1.379495419         -.975450565
+ 8:Charge=1.0 Atoms=2
+ 9:H1    3.020386510         .0                  2.1357357837
+10:H2     .0                 3.020386510        -2.1357357837
 \end{verbatim}
 
 The use of the same basis set library for all atom types is indicated by the presence of the
@@ -548,7 +545,7 @@ of diffuse, tight or polarizing\index{polarization function} basis
 functions. Returning to
 tetrahedrane, we could for instance use the 6-31G* basis set for
 carbon and the 4-31G** basis set for hydrogen. This could be achieved
-as
+with
 
 \begin{verbatim}
  1:ATOMBASIS
@@ -658,7 +655,7 @@ look like
  7:C2     .0                 1.379495419         -.975450565
  8:Charge=1.0 Atoms=2 Basis=NQvD 4 2 Pol 2 0.75D0
  9:H1    3.020386510         .0                  2.1357357837
-10:H2     .0                 3.020386510         -2.1357357837
+10:H2     .0                 3.020386510        -2.1357357837
 \end{verbatim}
 
 This input will use an (8s4p/4s) primitive basis set on carbon and
@@ -677,8 +674,7 @@ functions to this set.
 
 It is possible to specify more than one basis set. For example, by typing
 \begin{verbatim}
- 1:BASIS
- 2:4-31G** 6-311++G(3df,3pd)
+ 1:BASIS 4-31G** 6-311++G(3df,3pd)
 \end{verbatim}
 the basis set 6-311++G(3df,3pd) will be used as an auxiliary basis.
 When using an auxiliary basis, each atom line must contain a basis-set
@@ -688,19 +684,18 @@ basis sets with \verb|Set=2| thereafter.
 The above also applies to the \verb|ATOMBASIS| and \verb|INTGRL| input modes.
 Examples are provided by the following input files:
 \begin{verbatim}
- 1:BASIS
- 2:cc-pVDZ cc-pCVQZ
- 3:Direct MP2-R12/cc-pVDZ calculation on H2O
- 4:Auxiliary basis: cc-pCVQZ
- 5:Atomtypes=1 Generators=1 X
- 6:Charge=8.0 Atoms=1 Set=1
- 7:O       .000000000000000    .000000000000000  -0.124309000000000       *
- 8:Charge=1.0 Atoms=1 Set=1
- 9:H      1.427450200000000    .000000000000000   0.986437000000000       *
-10:Charge=8.0 Atoms=1 Set=2
-11:O       .000000000000000    .000000000000000  -0.124309000000000       *
-12:Charge=1.0 Atoms=1 Set=2
-13:H      1.427450200000000    .000000000000000   0.986437000000000       *
+ 1:BASIS cc-pVDZ cc-pCVQZ
+ 2:Direct MP2-R12/cc-pVDZ calculation on H2O
+ 3:Auxiliary basis: cc-pCVQZ
+ 4:Atomtypes=1 Generators=1 X
+ 5:Charge=8.0 Atoms=1 Set=1
+ 6:O       .000000000000000    .000000000000000  -0.124309000000000       *
+ 7:Charge=1.0 Atoms=1 Set=1
+ 8:H      1.427450200000000    .000000000000000   0.986437000000000       *
+ 9:Charge=8.0 Atoms=1 Set=2
+10:O       .000000000000000    .000000000000000  -0.124309000000000       *
+11:Charge=1.0 Atoms=1 Set=2
+12:H      1.427450200000000    .000000000000000   0.986437000000000       *
 \end{verbatim}
 \begin{verbatim}
  1:ATOMBASIS
