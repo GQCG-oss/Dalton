@@ -64,7 +64,7 @@
 #include "ccom.h"
 
       character*4 TYPE_TEXT
-      integer JTRSIR, NTRLVL, MX_NDMAT
+      integer JTRSIR, NTRLVL, IOSVAL, MX_NDMAT
       integer KFREE, LFREE, KFRSAV, KUCMO, KDMAT, KFMAT, I, J
       integer MISH_TEST(8), MASH_TEST(8), IDAMAX, L_H2CD
       integer, allocatable :: ICDTRA(:), ITRTYP(:)
@@ -112,15 +112,16 @@ C     Test if MO integrals already available
          REWIND(LUINTM)
          READ  (LUINTM)
          READ  (LUINTM) J,NTRLVL
-         IF (NTRLVL .EQ. 3 .AND. JTRSIR .EQ. 2) JTRSIR = -1
-         IF (NTRLVL .EQ. 2 .AND. JTRSIR .EQ. 3) JTRSIR =  3
-         IF (NTRLVL .EQ. 5 .AND. JTRSIR .EQ. 6) JTRSIR =  6
-         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 4) JTRSIR = -1 ! (gg|ii) and (gi|gi) missing
-         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 5) JTRSIR = -1 ! (gg|gi) missing
+         IF (NTRLVL .EQ. 3 .AND. JTRSIR .EQ. 2) NTRLVL = -1 ! (aa|ii) and (ai|ai) missing
+         IF (NTRLVL .EQ. 2 .AND. JTRSIR .EQ. 3) NTRLVL =  3
+         IF (NTRLVL .EQ. 5 .AND. JTRSIR .EQ. 6) NTRLVL =  6
+         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 4) NTRLVL = -1 ! (gg|ii) and (gi|gi) missing
+         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 5) NTRLVL = -1 ! (gg|gi) missing
          IF (NTRLVL .GE. JTRSIR) THEN
-C           read CMO matrix from LUINTM
+C           level OK, now read CMO matrix from LUINTM
 C           and subtract from input CMO matrix
-            READ  (LUINTM) WORK(1:NCMOT)
+            READ  (LUINTM, IOSTAT=IOSVAL) WORK(1:NCMOT)
+         IF (IOSVAL .EQ. 0) THEN
             WORK(1:NCMOT) = WORK(1:NCMOT) - CMO(1:NCMOT)
             I = IDAMAX(NCMOT,WORK,1)
             READ (LUINTM) MISH_TEST(1:8), MASH_TEST(1:8)
@@ -136,7 +137,8 @@ C           and subtract from input CMO matrix
      &          //' the required MO integrals are already available.'
                GO TO 9999
             END IF
-         END IF
+         END IF ! IOSVAL test
+         END IF ! NTRLVL test
       END IF
 
       IF (THR_MOTWOINT .LT. THRS) THEN

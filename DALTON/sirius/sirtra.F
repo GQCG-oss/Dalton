@@ -2301,9 +2301,9 @@ C
 C
       IF (LSRTAO .NE. 0) THEN
          REWIND(LUINTM)
-         READ  (LUINTM) NPQ,LDABUF,(LASTAD(I),I=1,2500)
-         READ  (LUINTM) LBINT1,JTRLVL
-         IF (JTRLVL .EQ. 3 .AND. ITRLVL .EQ. 2) JTRLVL = -1
+         READ  (LUINTM)
+         READ  (LUINTM) LBINTM_1,JTRLVL
+         IF (JTRLVL .EQ. 3 .AND. ITRLVL .EQ. 2) JTRLVL = -1 ! (aa|ii) and (ai|ai) missing
          IF (JTRLVL .EQ. 2 .AND. ITRLVL .EQ. 3) JTRLVL =  3
          IF (JTRLVL .EQ. 5 .AND. ITRLVL .EQ. 6) JTRLVL =  6
          IF (JTRLVL .EQ. 6 .AND. ITRLVL .EQ. 4) JTRLVL = -1 ! (gg|ii) and (gi|gi) missing
@@ -2311,7 +2311,8 @@ C
          IF (JTRLVL .GE. ITRLVL) THEN
 C           read CMO matrix from LUINTM
 C           and subtract from input CMO matrix
-            READ  (LUINTM) (WORK(I),I=1,NCMOT)
+            READ  (LUINTM, IOSTAT=IOSVAL) WORK(1:NCMOT)
+         IF (IOSVAL .EQ. 0) THEN
             CALL DAXPY(NCMOT,DM1,CMO,1,WORK,1)
             I = IDAMAX(NCMOT,WORK,1)
             READ (LUINTM) MISH_TEST(1:8), MASH_TEST(1:8)
@@ -2322,17 +2323,17 @@ C           and subtract from input CMO matrix
                J = J + ABS(MISH_TEST(ISYM)) + ABS(MASH_TEST(ISYM))
             END DO
             IF (ABS(WORK(I)) .LE. THRZER .AND. J .EQ. 0) THEN
-               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
-     *            ' TRACTL_1: Integral transformation abandoned,',
-     *            ' the required MO integrals are already available.'
-               LBINTM = LBINT1
+               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A)')
+     &            ' TRACTL_1: Integral transformation abandoned,'//
+     &            ' the required MO integrals are already available.'
+               LBINTM = LBINTM_1
                GO TO 9999
             END IF
-         END IF
-         ITRLVL_LAST = ITRLVL ! cannot be earlier, because we might have abandoned integral transformation
-      ELSE
-         ITRLVL_LAST = ITRLVL
+         END IF ! IOSVAL test
+         END IF ! JTRLVL test
       END IF
+      ITRLVL_LAST = ITRLVL
+
       IF (LSRTAO .LT. 0) THEN
 C     ... check if old LUDA exist, if yes then check if file
 C         is consistent with LUINTM information /890302-hjaaj
@@ -2351,8 +2352,8 @@ C           LUDA exists, try to read last record acc. to LUINTM ...
                IADR = MAX(IADR,LASTAD(IPQ))
   110       CONTINUE
             LBUF = LBUF/IRAT
-            READ (LUDA,REC=IADR,IOSTAT=IODA) (WORK(I),I=1,LBUF)
-            IF (IODA .NE. 0) THEN
+            READ (LUDA,REC=IADR,IOSTAT=IOSVAL) WORK(1:LBUF)
+            IF (IOSVAL .NE. 0) THEN
 C        ... LUDA not consistent with LUINTM information
                CALL GPCLOSE(LUDA,'DELETE')
                LSRTAO = 0
