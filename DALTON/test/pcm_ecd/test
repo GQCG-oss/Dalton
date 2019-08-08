@@ -30,8 +30,8 @@ f.add(string = 'Point group',
       rel_tolerance = 1.0e-5)
 
 # cmass
-f.add(string = 'Center-of-mass',
-      rel_tolerance = 1.0e-5)
+#f.add(string = 'Center-of-mass',
+#      rel_tolerance = 1.0e-5)
 
 # gauge_or
 f.add(string = 'Center of mass gauge origin',

@@ -11,11 +11,11 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(string = 'Final MC-SRDFT energy',
       rel_tolerance = 1.0e-7)
-f.add(string = '-<< FC H  01 ; FC H  01 >>',
+f.add(string = '-<< FC H 001 ; FC H 001 >>',
       rel_tolerance = 2.0e-4)
-f.add(string = '-<< FC H  01 ; FC H  02 >>',
+f.add(string = '-<< FC H 001 ; FC H 002 >>',
       rel_tolerance = 2.0e-4)
-f.add(string = '-<< FC H  02 ; FC H  02 >>',
+f.add(string = '-<< FC H 002 ; FC H 002 >>',
       rel_tolerance = 2.0e-4)
 
 

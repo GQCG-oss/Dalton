@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON release Dalton2017.alpha (2017)
+    This is output from DALTON release Dalton2019.alpha (2019)
          ( Web site: http://daltonprogram.org )
 
    ----------------------------------------------------------------------------
@@ -52,8 +52,8 @@
      
     and
      
-       Dalton, a Molecular Electronic Structure Program,
-       Release Dalton2017.alpha (2017), see http://daltonprogram.org
+       Dalton, a molecular electronic structure program,
+       Release Dalton2019.alpha (2019), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -67,13 +67,14 @@
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
-  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Sonia Coriani,            Technical Univ. of Denmark,   Denmark     (CC module, MCD in RESPONS)
   Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
   Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
   Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
+  Tobias Fahleson,          KTH Stockholm,                Sweden      (Damped cubic response)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -91,6 +92,7 @@
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
   Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Christoph Jacob           TU Braunschweig               Germany     (Frozen density embedding model)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
   Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
@@ -108,10 +110,10 @@
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
   Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
   Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
-  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Rolf H. Myhre,            NTNU,                         Norway      (Subsystems and CC3)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
-  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex frequency response in RESPONS)
+  Patrick Norman,           KTH Stockholm,                Sweden      (Cubic response and complex frequency response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
@@ -129,6 +131,7 @@
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
   Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Andre S. P. Gomes,        CNRS/Universite de Lille,     France      (Frozen density embedding model)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
   Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
   Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
@@ -138,41 +141,55 @@
   Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
   David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  Lucas Visscher,           Vrije Universiteit Amsterdam, Netherlands (Frozen density embedding model)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Wed Jul  4 12:04:52 2018
-     Host name              : fe1.deic.sdu.dk                         
+     Date and time (Linux)  : Tue Aug  6 15:41:26 2019
+     Host name              : adm-110765.pc.sdu.dk                    
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /work/sdujk/kjellgren/programs/testing/checklist_srdft_triplet_response
-   2) /gpfs/gss1/work/sdujk/kjellgren/programs/dalton/srdft_dalton_intel/basis
+   1) /home/hjj/progs/gitDalton_hjaaj-srdft/build_srdft_intelmpi/test/rsp_hf_srLDA_mu_zero_fermi_nosymm
+   2) /home/hjj/progs/gitDalton_hjaaj-srdft/build_srdft_intelmpi/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | kjellgren
- Host                     | fe1.deic.sdu.dk
- System                   | Linux-3.10.0-327.36.3.el7.x86_64
+ Who compiled             | hjj
+ Host                     | adm-110765.pc.sdu.dk
+ System                   | Linux-4.15.0-39-generic
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | ON
- Fortran compiler         | /opt/sys/apps/intel/2017.10/impi_latest/intel64/bi
-                          | n/mpiifort
- Fortran compiler version | unknown
- C compiler               | /opt/sys/apps/intel/2017.10/impi_latest/intel64/bi
-                          | n/mpiicc
- C compiler version       | unknown
- C++ compiler             | /opt/sys/apps/intel/2017.10/impi_latest/intel64/bi
-                          | n/mpiicpc
+ Fortran compiler         | /opt/intel/compilers_and_libraries_2019.1.144/linu
+                          | x/mpi/intel64/bin/mpif90
+ Fortran compiler version | GNU Fortran (Ubuntu 8.3.0-6ubuntu1~18.04.1) 8.3.0
+ C compiler               | /opt/intel/compilers_and_libraries_2019.1.144/linu
+                          | x/mpi/intel64/bin/mpicc
+ C compiler version       | gcc (Ubuntu 7.4.0-1ubuntu1~18.04.1) 7.4.0
+ C++ compiler             | /opt/intel/compilers_and_libraries_2019.1.144/linu
+                          | x/mpi/intel64/bin/mpicxx
  C++ compiler version     | unknown
+ BLAS                     | /opt/intel/compilers_and_libraries_2019.1.144/linu
+                          | x/mkl/lib/intel64/libmkl_gf_lp64.so;/opt/intel/com
+                          | pilers_and_libraries_2019.1.144/linux/mkl/lib/inte
+                          | l64/libmkl_sequential.so;/opt/intel/compilers_and_
+                          | libraries_2019.1.144/linux/mkl/lib/intel64/libmkl_
+                          | core.so;/usr/lib/x86_64-linux-gnu/libpthread.so;/u
+                          | sr/lib/x86_64-linux-gnu/libm.so
+ LAPACK                   | /opt/intel/compilers_and_libraries_2019.1.144/linu
+                          | x/mkl/lib/intel64/libmkl_lapack95_lp64.a;/opt/inte
+                          | l/compilers_and_libraries_2019.1.144/linux/mkl/lib
+                          | /intel64/libmkl_gf_lp64.so
  Static linking           | OFF
- Configuration time       | 2018-07-04 11:57:17.951564
+ Last Git revision        | f8892fe83769bcd863e671505911584565206414
+ Git branch               | hjaaj-srdft
+ Configuration time       | 2019-08-06 15:30:35.442168
 
  * Sequential calculation.
 
@@ -192,7 +209,10 @@ Compilation information
 **WAVE FUNCTIONS
 .HFSRDFT
 .SRFUN
- SRXLDA_S SRCVWN5_S
+ SRXLDA  SRCVWN5
+*SCF INPUT
+.MAX ERRORVECTORS
+ 2
 **RESPONSE
 *LINEAR
 .FERMI
@@ -249,7 +269,7 @@ H 1.2 0.0 0.0
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/gpfs/gss1/work/sdujk/kjellgren/programs/dalton/srdft_dalton_intel/basis/3-21G"
+     "/home/hjj/progs/gitDalton_hjaaj-srdft/build_srdft_intelmpi/basis/3-21G"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 3-21G                                                                           
@@ -362,8 +382,6 @@ H 1.2 0.0 0.0
 
  Default print level:        1
 
- * Nuclear model: Point charge
-
  Calculation of one-electron Hamiltonian integrals.
 
  The following one-electron property integrals are calculated as requested:
@@ -441,8 +459,8 @@ H 1.2 0.0 0.0
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Jul  4 12:04:52 2018
-     Host name              : fe1.deic.sdu.dk                         
+     Date and time (Linux)  : Tue Aug  6 15:41:26 2019
+     Host name              : adm-110765.pc.sdu.dk                    
 
  Title lines from ".mol" input file:
      TOP                                                                     
@@ -471,8 +489,8 @@ H 1.2 0.0 0.0
 @    Reference state symmetry                   1 (irrep name : A  )
 
 @    This is a lrWFT-srDFT calculation using the 
-@      SRXLDA_S   short range exchange functional
-@      SRCVWN5_S  short range correlation functional
+@      SRXLDA     short range exchange functional
+@      SRCVWN5    short range correlation functional
 
 @    sr-DFT and exact sr-HF exchange weights:    1.000000    0.000000
 
@@ -503,7 +521,7 @@ H 1.2 0.0 0.0
  ***** DIIS acceleration of SCF iterations *****
  ***********************************************
 
- C1-DIIS algorithm; max error vectors =    3
+ C1-DIIS algorithm; max error vectors =    2
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -512,8 +530,8 @@ H 1.2 0.0 0.0
 ** Atom H   
 * Grid spacing
  Value chosen:  0.142
- AH =    10.8943560000000     
- RADERR =   1.000000000000000E-013
+ AH =    10.894356000000000     
+ RADERR =    1.0000000000000000E-013
 * Inner grid point: 2.64923E-05
 * Outer point:
  Value chosen:     9.278
@@ -523,8 +541,8 @@ H     1   18514      77     434
 ** Atom H   
 * Grid spacing
  Value chosen:  0.142
- AH =    10.8943560000000     
- RADERR =   1.000000000000000E-013
+ AH =    10.894356000000000     
+ RADERR =    1.0000000000000000E-013
 * Inner grid point: 2.64923E-05
 * Outer point:
  Value chosen:     9.278
@@ -535,48 +553,48 @@ H     1   18514      77     434
    Number of grid points in quadrature:     37028 (100.0%)
 
 
-   Ex-sr + Ec-sr                         -0.5643845928
+   Ex-sr + Ec-sr                         -0.5643845917
  + EJsr = sr Coulomb energy               1.0796630926
- = Total E(srDFT)                         0.5152784998
+ = Total E(srDFT)                         0.5152785009
 
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    F  7.96D-02  8.10D-02
-@  1    -1.07541359957        4.23783D-02   -1.08D+00    1
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    F  6.07D-02  6.10D-02
+@  1    -1.07541359849        4.23783D-02   -1.08D+00    1
       Virial theorem: -V/T =      2.225498
-@    MULPOP   H      -0.00; H      -0.00; 
+@    MULPOP   H      -0.00; H       0.00; 
    1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
 
-   Ex-sr + Ec-sr                         -0.5605401367
- + EJsr = sr Coulomb energy               1.0729025900
- = Total E(srDFT)                         0.5123624533
+   Ex-sr + Ec-sr                         -0.5605401359
+ + EJsr = sr Coulomb energy               1.0729025903
+ = Total E(srDFT)                         0.5123624544
 
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    F  7.19D-02  7.20D-02
-@  2    -1.07557137259        2.39718D-03   -1.58D-04    2
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    F  5.77D-02  5.80D-02
+@  2    -1.07557137163        2.39718D-03   -1.58D-04    2
       Virial theorem: -V/T =      2.251262
-@    MULPOP   H      -0.00; H      -0.00; 
+@    MULPOP   H      -0.00; H       0.00; 
    2  Level shift: doubly occupied orbital energies shifted by -5.00D-02
  -----------------------------------------------------------------------------
 
-   Ex-sr + Ec-sr                         -0.5603202997
- + EJsr = sr Coulomb energy               1.0725154423
- = Total E(srDFT)                         0.5121951427
+   Ex-sr + Ec-sr                         -0.5603202988
+ + EJsr = sr Coulomb energy               1.0725154426
+ = Total E(srDFT)                         0.5121951437
 
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  7.20D-02  7.10D-02
-@  3    -1.07557191554        9.68684D-05   -5.43D-07    3
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  5.73D-02  5.70D-02
+@  3    -1.07557191457        9.68684D-05   -5.43D-07    2
       Virial theorem: -V/T =      2.252752
-@    MULPOP   H       0.00; H      -0.00; 
+@    MULPOP   H      -0.00; H       0.00; 
    3  Level shift: doubly occupied orbital energies shifted by -1.25D-02
  -----------------------------------------------------------------------------
 
-   Ex-sr + Ec-sr                         -0.5603114335
- + EJsr = sr Coulomb energy               1.0724998272
- = Total E(srDFT)                         0.5121883937
+   Ex-sr + Ec-sr                         -0.5603111399
+ + EJsr = sr Coulomb energy               1.0724993118
+ = Total E(srDFT)                         0.5121881719
 
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    F  7.19D-02  7.20D-02
-@  4    -1.07557191643        4.06313D-06   -8.85D-10    3
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    F  5.53D-02  5.60D-02
+@  4    -1.07557191546        9.98738D-07   -8.86D-10    2
 
 @ *** DIIS converged in   4 iterations !
-@     Converged SCF energy, gradient:     -1.075571916425    4.06D-06
+@     Converged SCF energy, gradient:     -1.075571915461    9.99D-07
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -587,16 +605,16 @@ H     1   18514      77     434
 
  Sym       Hartree-Fock orbital energies
 
-1 A      -0.30741899    -0.03473180     0.89575760     0.92190473
+1 A      -0.30741920    -0.03473197     0.89575740     0.92190452
 
-    E(LUMO) :    -0.03473180 au (symmetry 1)
-  - E(HOMO) :    -0.30741899 au (symmetry 1)
+    E(LUMO) :    -0.03473197 au (symmetry 1)
+  - E(HOMO) :    -0.30741920 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.27268719 au
+    gap     :     0.27268723 au
 
  --- Writing SIRIFC interface file
 
- CPU and wall time for SCF :       0.298       0.300
+ CPU and wall time for SCF :       0.232       0.232
 
 
                        .-----------------------------------.
@@ -608,24 +626,17 @@ H     1   18514      77     434
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF-SRDFT energy:        -1.075571916425
+@    Final HF-SRDFT energy:        -1.075571915461
 @    Nuclear repulsion:             0.440981009000
-@    Electronic energy:            -1.516552925425
+@    Electronic energy:            -1.516552924461
 
-@    Final gradient norm:           0.000004063129
+@    Final gradient norm:           0.000000998738
 
  
-     Date and time (Linux)  : Wed Jul  4 12:04:52 2018
-     Host name              : fe1.deic.sdu.dk                         
+     Date and time (Linux)  : Tue Aug  6 15:41:27 2019
+     Host name              : adm-110765.pc.sdu.dk                    
 
- Occupancies of natural orbitals
- -------------------------------
-
- Symmetry 1  ( A  ) -- Total occupation in this symmetry is   2.000000000
-
-   2.000000000
-
-File label for MO orbitals:   4Jul18   FOCKDIIS
+File label for MO orbitals:   6Aug19   FOCKDIIS
 
  (Only coefficients > 0.0100 are printed.)
 
@@ -633,17 +644,17 @@ File label for MO orbitals:   4Jul18   FOCKDIIS
  ------------------------------------------------
 
     Orbital         1        2        3        4
-   1 H   :1s     0.2380  -0.2241  -0.9188   0.9065
-   2 H   :1s     0.3990  -0.9118   0.6723  -1.1193
-   3 H   :1s     0.2380   0.2241  -0.9188  -0.9065
-   4 H   :1s     0.3990   0.9118   0.6723   1.1193
+   1 H   :1s     0.2380  -0.2241   0.9188   0.9065
+   2 H   :1s     0.3990  -0.9118  -0.6723  -1.1193
+   3 H   :1s     0.2380   0.2241   0.9188  -0.9065
+   4 H   :1s     0.3990   0.9118  -0.6723   1.1193
 
-  Total CPU  time used in SIRIUS :   0.30 seconds
-  Total wall time used in SIRIUS :   0.31 seconds
+  Total CPU  time used in SIRIUS :   0.23 seconds
+  Total wall time used in SIRIUS :   0.23 seconds
 
  
-     Date and time (Linux)  : Wed Jul  4 12:04:52 2018
-     Host name              : fe1.deic.sdu.dk                         
+     Date and time (Linux)  : Tue Aug  6 15:41:27 2019
+     Host name              : adm-110765.pc.sdu.dk                    
 
 
                      .---------------------------------------.
@@ -677,16 +688,14 @@ File label for MO orbitals:   4Jul18   FOCKDIIS
 
   1 B-frequencies  0.000000D+00
 
-srDFT INFO: DFT_SPINDNS set to false for singlet reference.
-
     2 second order properties calculated with symmetry no.    1 and labels:
 
-          FC H  01
-          FC H  02
+          FC H 001
+          FC H 002
 
 
-   SCF energy         :       -1.075571916425184
- -- inactive part     :       -1.516552925425184
+   SCF energy         :       -1.075571915460559
+ -- inactive part     :       -1.516552924460560
  -- nuclear repulsion :        0.440981009000000
 
 
@@ -712,7 +721,7 @@ srDFT INFO: DFT_SPINDNS set to false for singlet reference.
 
 
  RSPLR -- linear response calculation for symmetry 1  ( A  )
- RSPLR -- operator label : FC H  01
+ RSPLR -- operator label : FC H 001
  RSPLR -- operator spin  :   0
  RSPLR -- frequencies    :     0.000000
 
@@ -739,20 +748,20 @@ srDFT INFO: DFT_SPINDNS set to false for singlet reference.
 
        No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
       ----------------------------------------------------------------
-         1    8.02810D-14  0.00D+00  8.03D-14  1.14D+01    0.00000D+00
+         1    2.82005D-14  0.00D+00  2.82D-14  1.14D+01    0.00000D+00
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    6)
- RSP solution vector no.    1; norm of residual   7.01D-15
+ RSP solution vector no.    1; norm of residual   2.46D-15
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
 
  RSPLR -- linear response calculation for symmetry 1  ( A  )
- RSPLR -- operator label : FC H  02
+ RSPLR -- operator label : FC H 002
  RSPLR -- operator spin  :   0
  RSPLR -- frequencies    :     0.000000
 
@@ -779,14 +788,14 @@ srDFT INFO: DFT_SPINDNS set to false for singlet reference.
 
        No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
       ----------------------------------------------------------------
-         1    1.66489D-14  0.00D+00  1.66D-14  1.14D+01    0.00000D+00
+         1    5.44820D-14  0.00D+00  5.45D-14  1.14D+01    0.00000D+00
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    6)
- RSP solution vector no.    1; norm of residual   1.45D-15
+ RSP solution vector no.    1; norm of residual   4.76D-15
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -802,24 +811,24 @@ srDFT INFO: DFT_SPINDNS set to false for singlet reference.
 
 @ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
-@ -<< FC H  01 ; FC H  01 >> =  6.265973132020E+01
-@ -<< FC H  01 ; FC H  02 >> = -3.261758635172E+01
-@ -<< FC H  02 ; FC H  02 >> =  6.265973122489E+01
+@ -<< FC H 001 ; FC H 001 >> =  6.265957611406E+01
+@ -<< FC H 001 ; FC H 002 >> = -3.261748556696E+01
+@ -<< FC H 002 ; FC H 002 >> =  6.265957618456E+01
 
 
- Time used in linear response calculation is      1.32 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.55 CPU seconds for symmetry 1
 
-  Total CPU  time used in RESPONSE:   1.32 seconds
-  Total wall time used in RESPONSE:   1.33 seconds
+  Total CPU  time used in RESPONSE:   0.55 seconds
+  Total wall time used in RESPONSE:   0.55 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
-  Total CPU  time used in DALTON:   1.65 seconds
-  Total wall time used in DALTON:   1.66 seconds
+  Total CPU  time used in DALTON:   0.79 seconds
+  Total wall time used in DALTON:   0.79 seconds
 
  
-     Date and time (Linux)  : Wed Jul  4 12:04:54 2018
-     Host name              : fe1.deic.sdu.dk                         
+     Date and time (Linux)  : Tue Aug  6 15:41:27 2019
+     Host name              : adm-110765.pc.sdu.dk                    
