@@ -9,6 +9,7 @@
 - Added ".TDA SI" keyword for invoking Tamm-Dancoff approximation for singlet response properties under \*\*PROPERTIES. (H. J. Aa. Jensen)
 - Added possibility to optimize MCSCF singlet wave functions with CSFs when used for triplet properties,
   both in \*\*RESPONS and \*\*PROPERTIES. Previously .DETERMINANTS in wave function optimization was required. (H. J. Aa. Jensen)
+- Added the ability in QFITLIB to fit up to and including quadrupoles (C. Steinmann)
 
 ### Added
 - added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
