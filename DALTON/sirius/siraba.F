@@ -294,7 +294,6 @@ C **        first index active:
             ISYMK = ISMO(K)
             NKW   = ISW(K) - NISHT
             TEMP = D0
-#include "scalar.h"
             DO 1100 NXW = IASH(ISYMK)+1,IASH(ISYMK)+NASH(ISYMK)
                IX   = ISX(NISHT + NXW)
                TEMP = TEMP + UDV(NKW,NXW)*FDC(L,IX)
@@ -307,7 +306,6 @@ C **        second index active:
             ISYML = ISMO(L)
             NLW   = ISW(L) - NISHT
             TEMP = D0
-#include "scalar.h"
             DO 1200 NXW = IASH(ISYML)+1,IASH(ISYML)+NASH(ISYML)
                IX   = ISX(NISHT + NXW)
                TEMP = TEMP + UDV(NLW,NXW)*FDC(K,IX)

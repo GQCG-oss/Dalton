@@ -1761,23 +1761,6 @@ C
       END IF
       RETURN
       END
-C  /* Deck hdot */
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL)
-      REAL FUNCTION HDOT(NDIM,VEC1,VEC2,HMAT)
-#else
-      DOUBLE PRECISION FUNCTION HDOT(NDIM,VEC1,VEC2,HMAT)
-#endif
-#include "implicit.h"
-      PARAMETER (D0 = 0.0D0)
-      DIMENSION VEC1(NDIM), VEC2(NDIM), HMAT(NDIM,NDIM)
-      HDOT = D0
-      DO 100 I = 1, NDIM
-         DO 200 J = 1, NDIM
-            HDOT = HDOT + VEC1(J)*HMAT(J,I)*VEC2(I)
-  200    CONTINUE
-  100 CONTINUE
-      RETURN
-      END
 C  /* Deck intern */
       SUBROUTINE INTERN(NCORD,NINTER,GRAD,HESS,HESCOR,DGRAD,CAAT,BMAT,
      &                  BADJIN,QMAT,QINV,BHES,FINT,DINT,AATINT,HINT,W2,
@@ -2083,11 +2066,7 @@ C  /* Deck prhint */
       PARAMETER ( KCOL = 6 )
 C
       INTEGER BEGIN
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL)
-      REAL MATRIX(NINTER,NINTER)
-#else
-      DOUBLE PRECISION MATRIX(NINTER,NINTER)
-#endif
+      REAL*8  MATRIX(NINTER,NINTER)
 #include "cbivib.h"
 #include "nuclei.h"
 C

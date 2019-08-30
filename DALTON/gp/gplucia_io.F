@@ -953,18 +953,6 @@ C    &                  NSASO,NSBSO,IDC,IWAY,IPRNT)
       RETURN
       END
 ***********************************************************************
-      SUBROUTINE GFLUSH(LU)
-*
-*. Outer routine for flushing UNITS !
-*
-*. RISC/6000
-C      CALL FLUSH_(LU)
-*. CRAY.
-C      CALL FLUSH(LU)
-*
-      RETURN
-      END
-***********************************************************************
       SUBROUTINE IFRMDS(IARRAY,NDIM,MBLOCK,IFILE)
 C
 C     TRANSFER INTEGER ARRAY FROM DISK FILE IFILE

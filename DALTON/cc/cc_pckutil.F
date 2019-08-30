@@ -15,9 +15,9 @@
 !  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
-#if (defined (SYS_AIX) && !defined (VAR_INT64)) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)||defined(__apple__)
+#if (defined (SYS_AIX) && !defined (VAR_INT64))
 #define BIGENDIAN 1
-#elif defined (SYS_LINUX) || (SYS_DARWIN) || (SYS_DEC)
+#else
 #define LITTLEENDIAN 1
 #endif
 C
