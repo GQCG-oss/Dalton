@@ -6417,9 +6417,9 @@ C     TODO : define multiple basis sets and point charges
       ELSE
          CRT = ' '
       END IF
-      WRITE(MLINE(5),'(A1,I4,I3,I2,10X,1P,D10.2)')
+      WRITE(MLINE(NMLAU),'(A1,I4,I3,I2,10X,1P,D10.2)')
      &     CRT,NONTYP,KCHARG,NSYMOP,THRS
-      NMLINE = 6
+      NMLINE = NMLAU+1
       NHTYP  = 0
       NSETS  = 1
       IF (DOHUCKEL) THEN
@@ -6645,7 +6645,7 @@ Chj:  ILINE must now point to line with first effective line (CARD 1)
      &   '# DALTON.BAS with INTGRL directive created ',LDATE,LTIME,
      &   '# Directive in input mol file was:',
      &   '# > ',MLINE(ILINE)(1:76)
-      IF (BASIS) THEN
+      IF (BASIS .AND. NMLAU.EQ.5) THEN ! old BASIS input over two lines
          WRITE (LUTMP1,'(2A)')
      &   '# > ',MLINE(ILINE+1)(1:76)
          ILINE = ILINE + 2
