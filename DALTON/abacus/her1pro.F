@@ -41,8 +41,6 @@ C
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('PR1INT')
-#ifdef VAR_DEBUG
-#endif
 C
       NCOMP  = 0
       TOFILE = .TRUE.
@@ -4898,7 +4896,8 @@ C     when reaching this routine.
          END IF
          REWIND (LUPROP)
          IF(.NOT.FNDLAB('EOFLABEL',LUPROP)) THEN
-            WRITE (LUPRI,'(/A)') ' End of file not found in AOPROPER?'
+            WRITE (LUPRI,'(/A)') ' Internal error, '//
+     &         '"EOFLABEL" label not found in AOPROPER'
             CALL GPINQ_print(LUPROP,'NAME')
             REWIND LUPROP
             CALL QDUMP(LUPROP)
