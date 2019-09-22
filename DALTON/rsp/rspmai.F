@@ -1806,7 +1806,7 @@ C
 
          IF (DOESA) THEN
             WRITE(LUPRI,'(A,L1,/)')
-     *      ' Excited state absorption calculattion requested: DOESA  ='
+     *      ' Excited state absorption calculation requested: DOESA  ='
      *      ,DOESA
          END IF
          IF (CHANNEL_CALC) THEN
@@ -1816,7 +1816,7 @@ C
          END IF
          IF (CHANNEL_VCALC) THEN
           DO I=1,NSYM
-             WRITE(LUPRI,'(/A,1I5,/A,1I5)') 'Including only the first',
+             WRITE(LUPRI,'(/A,I5,A,I2)') 'Including only the first',
      &           CHANNEL_VIRT(I),' virtual orbitals in symmetry',I
           ENDDO
          ENDIF
