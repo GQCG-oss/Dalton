@@ -1,0 +1,8 @@
+BASIS
+STO-3G
+Acrolein
+------------------------
+AtomTypes=1 NoSymmetry Angstrom
+Charge=1.0 Atoms=2
+H   50.0   50.0   50.0
+H   51.0   50.0   50.0
