@@ -1635,6 +1635,12 @@ C
          END IF
       ELSE
          IF (MULTS .LE. 0) MULTS = abs(MS2) + 1
+         IF (FLAG(27) .AND. MULTS.ne.abs(MS2)+1) THEN ! determinants
+            WRITE(LUPRI,'(//A,I0,A,I0,A)')
+     &      ' INPUT ERROR: specified .MS2 and .SPIN MULTIPLICITY (',
+     &      MS2,' and ',MULTS,') are not compatible for determinants.'
+            CALL QUIT('INPUT ERROR: .MS2 and .SPIN M not compatible.')
+         END IF
       END IF
       ISPIN = MULTS
 C     .. ISPIN in infinp.h, MULTS in spinfo.h for CI module
@@ -1970,17 +1976,17 @@ C 4  SIRCTL  CI calculation (CALL SIRCI, no orbital opt.)  CIC : general
 C 5  SIRCTL  Optimization result summary (CALL SIROUT)     PRI : SUMMARY
 C 6  SIRCTL  Population analysis (CALL SIRPOP)             POP : general
 C 7
-C 8  SIRCTL  Response calculation (CALL RSPDRV)            GEN : RESPON
-C 9  SIRCTL  CALL MP2CTL (OBS FLAG 3 will destroy)         GEN : MP2
+C 8          (was CALL RSPDRV, now controlled by DORSP variable)
+C 9          (was CALL MP2CTL, now controlled by DOMP2 variable)
 C 10
 C 11 SIRSET  Calculate non-symmetric orbital rotations
 C            and write them to LUINDX (labeled)
 C 12 GRAD    Exact orbital Hessian diagonal                WAV : FOCKDI
-C                  (otherwise only Fock matrix contributions)
+C            (otherwise only Fock matrix contributions)
 C 13 various CALL READMO for initial orbitals              ORB : vario
 C 14 various Integral transformation not needed.           TRA : OLD TR
 C 15 SIRSAV  transformation to NO's each macro iteration.  OPT : TRACI
-C 16 SIROPT  Solvent calculation                           SOL : genera
+C 16 SIROPT  Sperhical cavity solvent calculation          SOL : genera
 C 17 various SUPSYM : find and use 'super symmetry'        ORB : NOSUPS
 C 18 SIROUT  Punch MO:s (canonical if flag 3) to LUPNCH    ORB : PUNCHO
 C 19 SIROPT  Use UPDATE from the beginning /990821-hjaaj test option/
@@ -2350,11 +2356,7 @@ C     read namelist $NMLSIR ... $END
          CALL QUIT(
      &   'ERROR, .FLAGS namelist not implemented for this machine')
 #else
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_NEC) || defined (SYS_T90)
-         READ (LUCMD,NMLSIR)
-#else
          READ (LUCMD,NML=NMLSIR)
-#endif
 #endif
 C
          DO 286 I = 1,NPDIM
@@ -2460,7 +2462,6 @@ C
 C *** Option  10 >MP2  <  Moeller-Plesset PT2 calculation
   110 CONTINUE
         DOMP2    = .TRUE.
-        FLAG(9)  = .TRUE.
         NUMRUN   = NUMRUN + 1
         FLAG(3)  = .FALSE.
       GO TO 100
@@ -2537,7 +2538,6 @@ C        ... no P-supermatrix for DFT
             WORD = TITLIN(1:7)
             GO TO 1101
          END IF
-         WDFTMP = 0.0D0
 
          ! we save the functional line
          ! we will parse it later
@@ -2545,11 +2545,6 @@ C        ... no P-supermatrix for DFT
          functional_line(1:80) = titlin(1:80)
          functional_line_read = .true.
 
-         IF (WDFTMP.NE.0.0D0) THEN
-            DOMP2    = .TRUE.
-            FLAG(9)  = .TRUE.
-            FLAG(3)  = .FALSE.
-         END IF
       GO TO 100
 C
 C *** Option 18: NEVPT2
@@ -2571,8 +2566,7 @@ C *** Option 21: .KSPT2
   121 CONTINUE
         DOMP2    = .TRUE.
         NUMRUN   = NUMRUN + 1
-        FLAG(9)  = .TRUE.
-        FLAG(3)  = .FALSE.
+        FLAG(3)  = .FALSE. ! do NOT call sircan for HF canonical orbitals
         READ (LUCMD,*) WDFTMP
       GO TO 100
 C *** Option 22: .GASCI
@@ -2722,6 +2716,12 @@ C
          end if
 #endif
 
+         IF (WDFTMP.NE.0.0D0 .AND. .NOT.DOMP2) THEN ! double-hybrid DFT requested
+            DOMP2    = .TRUE.
+            NUMRUN   = NUMRUN + 1
+            FLAG(3)  = .FALSE. ! do NOT call sircan for HF canonical orbitals
+         END IF
+
 #ifdef BUILD_OPENRSP
 #ifdef ENABLE_XCINT
          if (xcint_is_active()) then
@@ -2734,12 +2734,12 @@ C
             print *, 'You run OpenRSP DFT without .XCINT'
             print *, 'Either add .XCINT or deactivate'
             print *, 'this warning'
-            stop 1
+            CALL QUIT('OpenRSP only allowed with .XCINT')
          end if
 #else
          print *, 'You run OpenRSP DFT without XCint code compiled'
          print *, 'This is probably not what you want'
-         stop 1
+         CALL QUIT('OpenRSP only allowed with XCint code compiled')
 #endif /* ENABLE_XCINT */
 #endif /* BUILD_OPENRSP */
       end if
@@ -2912,16 +2912,14 @@ C
 C
 C *** Option 1 >CAS  S<  CAS calculation: Active orbitals
   101 CONTINUE
-      IF (MCTYPE .EQ. 2) THEN
+      IF (MCTYPE .NE. 0 .AND. MCTYPE.NE.1 .AND. MCTYPE.NE.11) THEN
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
          IF (MCTYPE .NE. 11) MCTYPE = 1 ! if (not APSG) then CASSCF
          READ(LUCMD,*,ERR=8010) (NAS2(I),I=1,NSYM)
-         DO 25 ISYM = 1,NSYM
-            NAS1(ISYM) = 0
-            NAS3(ISYM) = 0
-   25    CONTINUE
+         NAS1(1:NSYM) = 0
+         NAS3(1:NSYM) = 0
       GO TO 100
 C
 C *** Option 2 >INACTI<  Inactive orbitals
@@ -2977,7 +2975,7 @@ C *** Option 7 >RAS1 H< number of holes in RAS1
 C
 C *** Option 8 >RAS1 S<   RAS1 orbital space
   108 CONTINUE
-      IF (MCTYPE .EQ. 1) THEN
+      IF (MCTYPE .NE. 0 .AND. MCTYPE .NE. 2) THEN
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
@@ -2987,7 +2985,7 @@ C *** Option 8 >RAS1 S<   RAS1 orbital space
 C
 C *** Option 9 >RAS2 S<   RAS2 orbital space
   109 CONTINUE
-      IF (MCTYPE .EQ. 1) THEN
+      IF (MCTYPE .NE. 0 .AND. MCTYPE .NE. 2) THEN
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
@@ -2997,7 +2995,7 @@ C *** Option 9 >RAS2 S<   RAS2 orbital space
 C
 C *** Option 10 >RAS3 S<   RAS3 orbital space
   110 CONTINUE
-      IF (MCTYPE .EQ. 1) THEN
+      IF (MCTYPE .NE. 0 .AND. MCTYPE .NE. 2) THEN
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
@@ -3023,13 +3021,13 @@ C *** Option 12 >RAS3 E<   RAS3 electrons
 C
  2000 CONTINUE
       NASHT = 0
-      DO, I = 1,NSYM
+      DO I = 1,NSYM
          NASH(I) = NAS1(I) + NAS2(I) + NAS3(I)
          NASHT   = NASHT   + NASH(I)
       END DO
       IF (NHL1MX .NE. -1 .OR. NHL1MN .NE. -1) THEN
          NAS1T = 0
-         DO, I = 1,NSYM
+         DO I = 1,NSYM
             NAS1T = NAS1T + NAS1(I)
          END DO
          NELMN1 = 2*NAS1T - NHL1MX
@@ -3807,6 +3805,7 @@ C
 C *** Option 1 >CINO  < Calculate CI natural orbitals.
   101 CONTINUE
       DOCINO   = .TRUE.
+      FLAG(4)  = .TRUE.
       FLAG(67) = .TRUE.
       FLAG(68) = .TRUE.
       GO TO 100
@@ -5258,7 +5257,7 @@ C   INFIND : ISMO(),?
 C   INFDIM : MAXPHP
 C   SCBRHF : IOPRHF,NFRRHF(*),MAXFCK
 C   INFMP2 : NFRMP2(*)
-C   DFTCOM : DFTRUN, DOSRBCK, ...
+C   DFTCOM : DODFT, DOSRBCK, ...
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
 C   gnrinf : NEWSYM,SIR_INPPRC,EMBEDDING,QM3,QMMM,?
 C   infpar.h : PARHER
@@ -5467,13 +5466,32 @@ C          to get here unless someone modifies SIRIUS incorrectly
             WRITE(IWUNIT,1051)
      &      '      Selected active-active rotations included by user.'
          END IF
-      ELSE IF ( DOMP2 ) THEN
-         IF (WFTYPE .EQ. ' ') WFTYPE='MP2'
+      ELSE IF (DOMP2 .AND. DODFT .AND. WDFTMP.NE.0.0D0) THEN
          IF (MP2_SCS) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='DH-SCS-MP2-DFT'
+            WRITE(IWUNIT,1050) 'DH-SCS-MP2-DFT, '//
+     &         'double hybrid DFT with SCS-MP2.'
+         ELSE IF (MP2_SOS) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='DH-SOS-MP2-DFT'
+            WRITE(IWUNIT,1050) 'DH-SOS-MP2-DFT, '//
+     &         'double hybrid DFT with SOS-MP2.'
+         ELSE
+            IF (WFTYPE .EQ. ' ') WFTYPE='DH-MP2-DFT'
+            WRITE(IWUNIT,1050) 'DH-MP2-DFT, '//
+     &         'double hybrid DFT with MP2.'
+         END IF
+         IF (IOPRHF .NE. 0 .OR. HSROHF) WRITE (IWUNIT,1051)
+     &      '      (ROHF open shell orbitals are not included.)'
+         NUMRUN_LOCAL = NUMRUN_LOCAL - 1
+      ELSE IF ( DOMP2 ) THEN
+         IF (MP2_SCS) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='SCS-MP2'
             WRITE(IWUNIT,1050) 'SCS-MP2'
          ELSE IF (MP2_SOS) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='SOS-MP2'
             WRITE(IWUNIT,1050) 'SOS-MP2'
          ELSE
+            IF (WFTYPE .EQ. ' ') WFTYPE='MP2'
             WRITE(IWUNIT,1050) 'MP2, '//
      &         'closed-shell Moeller-Plesset second-order calculation.'
          END IF

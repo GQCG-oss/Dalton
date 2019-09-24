@@ -75,7 +75,7 @@ end subroutine qfitlib_ifc_finalize
 subroutine qfitlib_ifc_information
   use qfit, only : qfit_print_info
   call qenter('qfitlib_ifc_information')
-  CALL HEADER('Charge and moment fitting (QFITLIB) settings',-1) 
+  CALL HEADER('Charge and moment fitting (QFITLIB) settings',-1)
   call qfit_print_info
   call qexit('qfitlib_ifc_information')
 end subroutine qfitlib_ifc_information
@@ -259,39 +259,47 @@ subroutine qfitlib_ifc_results
 #include "priunit.h"
   real*8, dimension(:), allocatable :: charges
   real*8, dimension(:), allocatable :: dipoles
+  real*8, dimension(:), allocatable :: quadrupoles
+  real*8 :: rmsd_value
   integer :: m, k
   call qenter('qfitlib_ifc_results')
   CALL HEADER('Potential fitted multipole moments (QFITLIB)',-1)
 
   allocate( charges( nucdep ) )
   allocate( dipoles( 3*nucdep ) )
-  call qfit_get_results( charges, dipoles )
+  allocate( quadrupoles(6*nucdep) )
+  call qfit_get_results( charges, dipoles, quadrupoles, rmsd_value )
 
   write(lupri,'(a)') " Charges:"
   write(lupri,'(a,6a,a12)') "  ", "      ", "        Q   "
   do m = 1, size(charges)
       write(lupri,'(a,a6,f12.6)') '@ ',namdep(m), charges(m)
   enddo
+  write(lupri,'(/a,f12.6)') '  Sum = total charge:', sum(charges)
 
   if (qfit_multipole_rank >= 1) then
       write(lupri,'(/a)') " Dipoles:"
       write(lupri,'(a,6a,3a12)') "  ", "      ", "        X   ", &
        "        Y   ", "        Z   "
       do m = 1, size(charges)
-          write(lupri,'(a,a6,3f12.6)') '@ ',namdep(m), (dipoles(m+(k-1)*3),k=1,3)
+          write(lupri,'(a,a6,3f12.6)') '@ ',namdep(m), (dipoles((m-1)*3+k),k=1,3)
       enddo
   endif
   if (qfit_multipole_rank >= 2) then
       write(lupri,'(/a)') " Quadrupoles:"
-      write(lupri,'(a,6a,5a12)') "  ", "      ", "       XX   ", &
-       "       XY   ", "       XZ   ", "       YY   ", "       ZZ  "
-      write(lupri,*)
+      write(lupri,'(a,6a,6a12)') "  ", "      ", "       XX   ", &
+       "       XY   ", "       XZ   ", "       YY   ", "       YZ  ", &
+       "       ZZ  "
+       do m = 1, size(charges)
+           write(lupri,'(a,a6,6f12.6)') '@ ',namdep(m), (quadrupoles((m-1)*6+k),k=1,6)
+       enddo
   endif
-  write(lupri,'(/a,f12.6)') '  Sum = total charge:', sum(charges)
+  write(lupri,'(/a,f12.6)') '@ RMSD of fit', rmsd_value
 
   !call qfit_finalize
-  deallocate( charges )
+  deallocate( quadrupoles )
   deallocate( dipoles )
+  deallocate( charges )
   call qexit('qfitlib_ifc_results')
 end subroutine qfitlib_ifc_results
 

@@ -8153,16 +8153,8 @@ C
             IOFF2 = IOFF2 + NDIMA*(NDIMA + 1)/2
   100    CONTINUE
       ELSE
-#if defined (SYS_AIX)
-CAIX 4.x compiler fix provided by T.Saue, Nov.12-97
-         IREPO = ISYMO - 1
-         DO 200 IREPB = 0, MAXREP
-            ISYMB = IREPB + 1
-            ISYMA = IEOR(IREPO,IREPB) + 1
-#else
          DO 200 ISYMB = 1, MAXREP + 1
             ISYMA = IEOR(ISYMO - 1,ISYMB - 1) + 1
-#endif
             IF (ISYMA .GT. ISYMB) THEN
                NDIMA = NAOS(ISYMA)
                NDIMB = NAOS(ISYMB)

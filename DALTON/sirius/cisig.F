@@ -701,7 +701,7 @@ C  /* Deck cisigc */
      *                  FCAC,H2AC,XNDXCI,WRK,LFREE)
 C
 C Written 18-JAN-1988 by J.O.
-C   ( from hjaaj's cisigc )
+C   ( from hjaajs cisigc )
 C
 C Purpose:
 C   Compute CI sigma vector(s) for direct CI,

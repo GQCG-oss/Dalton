@@ -88,9 +88,9 @@ PSO 005
 .APROP
 PSO 006
 .BPROP
-FC He 01
+FC He001
 .BPROP
-FC H  02
+FC H 002
 .BFREQ
  1
  0.0
@@ -184,8 +184,8 @@ CRIT4=`$GREP "Spin of operator B \, ISPINB\= * 1" $log | wc -l`
 CRIT5=`$GREP "Spin of operator C \, ISPINC\= * 1" $log | wc -l`
 CRIT6=`$GREP "1 B\-frequencies * (0| )\.000000(D|E)\+00" $log | wc -l`
 CRIT7=`$GREP "1 C\-frequencies * (0| )\.000000(D|E)\+00" $log | wc -l`
-CRIT8=`$GREP "2 A OPERATORS OF SYMMETRY * 2 NOT INCLUDED" $log | wc -l`
-CRIT9=`$GREP "2 A OPERATORS OF SYMMETRY * 4 NOT INCLUDED" $log | wc -l`
+CRIT8=`$GREP "2 A operators of symmetry * 2 not included" $log | wc -l`
+CRIT9=`$GREP "2 A operators of symmetry * 4 not included" $log | wc -l`
 CRIT10=`$GREP "2 A OPERATORS OF SYMMETRY NO\: * 3 AND LABELS\:" $log | wc -l`
 CRIT11=`$GREP "2 B OPERATORS OF SYMMETRY NO\: * 1 AND LABELS\:" $log | wc -l`
 CRIT12=`$GREP "3 C OPERATORS OF SYMMETRY NO\: * 3 AND LABELS\:" $log | wc -l`

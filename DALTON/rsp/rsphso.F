@@ -1228,7 +1228,7 @@ C        CALL QUIT(' H2XSIG, INCORRECT CALCULATION OF DETERMINANTS')
 C        END IF
          IF (IPRHSO.GT.IPRLOC) THEN
             WRITE(LUPRI,'(/A)')
-     *        ' CSF part of spin-orbit property vector: Z part'
+     *      ' Configuration part of spin-orbit property vector: Z part'
             CALL OUTPUT(GP,1,KZCONF,1,1,KZCONF,1,1,LUPRI)
          END IF
 C
@@ -1274,7 +1274,7 @@ C    *                               WRK(KHSQTR),N2ASHX)
             CALL DSCAL(KZCONF,DM1,GP(1+KZVAR),1)
             IF (IPRHSO.GT.IPRLOC) THEN
                WRITE(LUPRI,'(/A)')
-     &           ' CSF part of spin-orbit property vector: Y part'
+     &      ' Configuration part of spin-orbit property vector: Y part'
                CALL OUTPUT(GP(1+KZVAR),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
             END IF
 C

@@ -42,21 +42,6 @@ crevision 1.4 2000/04/27 07:56:52  hjj
 ctell users that d, f, ... atomic GTO's are not normalized
 c(I have had several questions from people comparing MO coefficients from
 cDalton with other programs, or comparing AO integrals with other programs).
-c----------------------------
-crevision 1.3 2000/04/14 14:09:48  hjj
-c\hjaaj dec 99-jan 00:
-c1) corrected printout for Huckel basis when DOHUCKEL
-c   (the true basis set name was printed instead of "Huckel")
-c2) corrected output format from I3 to I4 for .gt. 999 primitives
-c3) changed ZMATL format from A6 to A1 to give room for change
-c   of CHARGE format from F4.0 to F9.0; this was done so that
-c   point charges can be entered with more decimal places.
-c4) polishing.
-c----------------------------
-crevision 1.2 2000/04/12 10:15:14  hjj
-cMAXPRD was 22 on most machines except T3D and LINUX, where it was 14.
-cNow LINUX also has MAXPRD = 22, following suggestion by Asger Halkier
-ce-mail to dalton-wizards 30 Nov 99 /hjaaj
 c=============================================================================
 c960705-kr:
 c-- We use the small component basis for keeping a possible extra STO-3G
@@ -64,10 +49,7 @@ c   basis needed when using Hueckel initial guess.
 c951115-hjaaj:
 cCNTINP: always read NAMN with '(A4)' and never
 c   with free format; if free format doesn't work then try formatted;
-cZMAT: Read NAMN with '(A4)', allow free input for IRIX;
-c   for CRAY formatted input made last field for CHARGE very long;
-c   removed old END=204 branches which were reminiscences from when
-c   the input was read directly from file.
+cZMAT: Read NAMN with '(A4)';
 cBUILDZ: changed format and output of internal coordinates;
 c   removed printing of zero cartesian coords. before printing of
 c   the correct cartesian coords.
@@ -270,18 +252,18 @@ C Nuclear model
             END IF
       END IF
   300 CONTINUE
+      IF(GAUNUC) THEN
+         WRITE(LUPRI,'(/A)') '@ * Nuclear model: '//
+     &      'Gaussian charge distribution.'
+      ELSE
+         WRITE(LUPRI,'(/A)') '@ * Nuclear model: Point charge.'
+      ENDIF
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for '//WORD1,0)
          IF (IPREAD .NE. IPREAD_ini) THEN
             WRITE (LUPRI,'(A,I5)')
      &         ' Print level in molecule setup (READIN):',IPREAD
          END IF
-         IF(GAUNUC) THEN
-            WRITE(LUPRI,'(/A)') ' * Nuclear model: '//
-     &         'Gaussian charge distribution.'
-         ELSE
-            WRITE(LUPRI,'(/A)') ' * Nuclear model: Point charge'
-         ENDIF
          IF (ONLYOV) WRITE (LUPRI,'(A)')
      &  ' Stop after calculation of overlap integrals (.ONLYOV) for QM3'
          IF (TOL_SYMADD .NE. 0.0D0) THEN
@@ -774,15 +756,20 @@ C***********************************************************************
 C     Card 1: Keyword (INTGRL/BASIS/ATOMBA/...) - read in READIN
 C***********************************************************************
 C***********************************************************************
-C     Card 2: If basis set library, read additional card containing basis set
 C***********************************************************************
       DO J=1,MXMULB
          MULNAM(J) = ' '
       END DO
       IF (BASIS) THEN
-         CALL RDLINE(LUINFO)
-C        Read basis set name(s), set NMULBS (WK/04-11-2002).
-         CALL READ_BASMUL(MLINE(NMLINE))
+         J = LNBLNK(MLINE(NMLINE)(6:))
+         IF (J .eq. 0) THEN
+C     Card 1b: If basis set library, basis set info may be on next card
+            CALL RDLINE(LUINFO)
+C           Read basis set name(s), set NMULBS (WK/04-11-2002).
+            CALL READ_BASMUL(MLINE(NMLINE))
+         ELSE
+            CALL READ_BASMUL(MLINE(NMLINE)(6:))
+         END IF
       END IF
 C     Enforce computation of Cartesian second moments (WK/UniKA/04-11-2002).
 C     Sep 09/hjaaj: moved to HERINI
@@ -1118,7 +1105,7 @@ C***********************************************************************
      &          SEG(KBLOCK,KSETS), ALPHA(KPRIM,KBLOCK,KSETS),
      &          CPRIM( KPRIM,KPRIM,KBLOCK,KSETS),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS), ISGEN(KBLOCK)
-      CHARACTER SPDCAR*1,BSET*5,ZMATL*4, BKPLIN*80, TSTCHA*2
+      CHARACTER SPDCAR*1,BSET*5, BKPLIN*80, TSTCHA*2
       CHARACTER*80 BASNAM, AUXNAM, BASNAMSAVE
 C...  added by Bin Gao, for effective core potentials, Dec. 6, 2010
       character*80 ECPNAME
@@ -1177,7 +1164,7 @@ C     If (DOHUCKEL) use second set for atomic orbitals for Huckel guess
          CALL QUIT('NSETS .gt. KSETS error')
       END IF
 C
-C     Run over atomic centers
+C     Loop over atomic types
 C     =======================
 C
       NONTYP_QM = 0
@@ -1203,12 +1190,18 @@ C
 C        Test if Z-matrix for first line (I.eq.1):
 C
          IF (I .EQ. 1) THEN
-           READ (BKPLIN,'(A4)',IOSTAT=IOS) ZMATL
-           IF (IOS.NE.0) CALL QUIT('Error read READ..ZMATL')
-           IF (ZMATL .EQ. 'ZMAT') THEN
-             ZMAT_INPUT = .TRUE.
+           IF (INDEX(BKPLIN,'ZMAT') .gt. 0) ZMAT_INPUT = .TRUE.
+           IF (ZMAT_INPUT) THEN
              WRITE (LUPRI,'(/A)')
      &        'Atoms and their geometry are read in Z-matrix format.'
+             IF (NSYMOP > 0) THEN
+                WRITE(LUPRI,'(/A/A)')
+     &   '@ Input error: User specification of symmetry generators'//
+     &   ' is not allowed for Z-matrix input.',
+     &   '@ (It is allowed to let Dalton determine the symmetry.)'
+                CALL QUIT('READ_MOL: '//
+     &          'User input of symmetry is not allowed for Z-matrix')
+             END IF
 
              IF (DIRAC) CALL QUIT
      &          ('READ_MOL: Z-matrix is not implemented for DIRAC')
@@ -1229,8 +1222,8 @@ C           Arnfinn, nov -08: add 1 to NONTYP_QM if not MM;
 C           counting the numbers of QM type atoms
             NONTYP_QM = NONTYP_QM + 1
 C           HJAaJ dec 08: NONTYP_QM sent to slaves when parallel,
-C           slaves will then only read transferred MLINE(1:NMLINE) correctly
-C           if all QM atoms before any MM atom
+C           slaves will then only read transferred MLINE(1:NMLINE)
+C           correctly if all QM atoms before any MM atom
             IF (MM_ATOMTYPE) THEN
                WRITE (LUPRI,'(/A,I6/A/A)')
      &            'ERROR in .mol input line no.',NMLINE,MLINE(NMLINE),
@@ -1262,7 +1255,7 @@ C
             ELSE
                MBSI = 1
             END IF
-         ELSE IF (ZMATL .EQ. 'ZMAT') THEN
+         ELSE IF (ZMAT_INPUT) THEN
 C           Z-matrix not implemented with LMULBS (WK/UniKA/04-11-2002).
             IF (LMULBS) THEN
                CALL QUIT(
@@ -1271,8 +1264,8 @@ C           Z-matrix not implemented with LMULBS (WK/UniKA/04-11-2002).
                MBSI = 1
             END IF
             CALL ZMAT(NONT,KATOM)
-            Q = CHARGE(NCTOT)
-            ISOTOP(NCTOT) = 1
+            Q = CHARGE(NUCIND)
+            ISOTOP(NUCIND) = 1
 C           ... "Isotope=#" not implemented for ZMAT yet,
 C               thus always use isotope no. 1 /hjaaj feb 2003
          ELSE IF (ATOMBA .OR. BASIS) THEN
@@ -1385,7 +1378,7 @@ C
                CALL QUIT('Input error in .mol file, see output.')
             ENDIF
          ENDIF
-         CALL CNTINP(LUINFO,NONT(I),Q,Q_EXPONENT,NSYMOP,ANG,MBSI,
+         CALL CNTINP(LUINFO,NONT(I),Q,Q_EXPONENT,ANG,MBSI,
      &               RADIUS_PCM, ALPHA_PCM)
 C        .. MBSI has been added (WK/UniKA/04-11-2002).
 C
@@ -1420,8 +1413,9 @@ C
                IF (J .EQ. 1) THEN
                   IF (LCMMAX .eq. 1234567890) THEN
                      WRITE(LUPRI,'(/A)') ' FATAL ERROR:'//
-     &                  ' only one "X" center allowed for .CM FUN'
-                     CALL QUIT('ERROR: max one "X" center for .CM FUN')
+     &      ' only one "X" center allowed for .CM FUN or .CONTINUUM'
+                     CALL QUIT('ERROR: max one "X" center for .CM FUN'//
+     &                  ' or .CONTINUUM')
                   END IF
                   IQM(I,J) = LCMMAX + 1
 
@@ -1752,12 +1746,18 @@ C
               CALL QUIT('Symmetry cannot be determined -- see output')
             END IF
          END IF
-  100 CONTINUE
+  100 CONTINUE  ! DO 100 I = 1, NONTYP
 C
       IF (LCMMAX .GT. -1 .AND. LCMMAX .NE. 1234567890) THEN
-         WRITE(LUPRI,'(//A)') ' FATAL ERROR:'//
-     &     ' .CM FUN specified but no "X" center in .mol input'
-         CALL QUIT('ERROR: no "X" center in .mol input for .CM FUN')
+         if (LCNTNUUM) then
+            WRITE(LUPRI,'(//A)') ' FATAL ERROR:'//
+     &      ' .CONTIN specified but no "X" center in .mol input'
+            CALL QUIT('ERROR: no "X" center in .mol input for .CONTIN')
+         else
+            WRITE(LUPRI,'(//A)') ' FATAL ERROR:'//
+     &      ' .CM FUN specified but no "X" center in .mol input'
+            CALL QUIT('ERROR: no "X" center in .mol input for .CM FUN')
+         end if
       END IF
 C
       IF (.NOT. ONLYOV) THEN
@@ -1861,12 +1861,12 @@ C
      &      'ERROR reading .mol line',NMLINE,
      &      MLINE(NMLINE),
      &      ' Cannot determine the charge of atom type', I,
-     &      ' Correct input format is: Charge=???'
+     &      ' Correct input format is: Charge=<number>'
       IF (MYNUM .NE. 0) THEN
          WRITE (LUERR,'(//A,I5,A,I5/A,I5/A/A)')
      &      'ERROR slave no.',MYNUM,' reading .mol line',NMLINE,
      &      ' Cannot determine the charge of atom type', I,
-     &      ' Correct input format is: Charge=???',
+     &      ' Correct input format is: Charge=<number>',
      &      ' Dump of slave version of .mol file:'
          WRITE (LUERR,'(/80A1 )') ('-',I = 1, 80)
          WRITE (LUERR,'(A)') (MLINE(I), I = 1, NMLINE)
@@ -1875,7 +1875,7 @@ C
       CALL QUIT('Cannot determine the charge of an atom type')
       END ! SUBROUTINE BASINP
 C  /* Deck cntinp */
-      SUBROUTINE CNTINP(LUINFO,NONT,Q,Q_EXPONENT,NSYMOP,ANG,MBSI,
+      SUBROUTINE CNTINP(LUINFO,NONT,Q,Q_EXPONENT,ANG,MBSI,
      &                  RADIUS_PCM, ALPHA_PCM)
 C*****************************************************************************
 C
@@ -1971,7 +1971,7 @@ C        (otherwise it will on e.g. AIX be filled with nulls:
 C         e.g. ' C  ' would become 'C\NULL\NULL\NULL'; and on
 C         e.g. IRIX free format read of char. var. is not defined).
 C
-#if !defined (SYS_CRAY) && !defined (VAR_NOFREE) && !defined (SYS_T3D) && !defined (SYS_T90)
+#if !defined (VAR_NOFREE)
 C
         IF (QM3) THEN
            READ (MLINE(NMLINE)(IPOS:80),*,ERR=101,END=101)
@@ -3145,7 +3145,7 @@ C
         DO 100 L = 1, NUCIJ
            CALL RDLINE(LUINFO)
            IF (FREE_FORMAT) THEN
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_NOFREE)
               ISTART = 1
               CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,
      &                    ALPHA(L),'REA',IERR)
@@ -3205,7 +3205,7 @@ C
         DO 300 L = 1, NUCIJ
            CALL RDLINE(LUINFO)
            IF (FREE_FORMAT) THEN
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_NOFREE)
               ISTART = 1
               CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,
      &                    ALPHA(L),'REA',IERR)
@@ -3873,7 +3873,6 @@ C
       DPNUC(3) = D0
       NUCDEP    = 0
       NCDTOT    = 0
-      NUCPRE(1) = 0
       NFLOAT    = 0
 
       DO 100 N = 1, NCTOT
@@ -3883,7 +3882,6 @@ C
      &      WRITE (LUPRI,1000) NAMN(N),(CORD(I,N),I=1,3),CHARGE(N),
      &                        IFAKBN(ISTBNU(N)), NDEG - 1
          NUCDEG(N) = NDEG
-         NUCPRE(N + 1) = NUCPRE(N) + NDEG
          IF (CHARGE(N) .EQ. D0 .AND. NAMN(N) .NE. 'cav' .AND.
      &       N .LE. NUCIND) THEN
             NFLOAT = NFLOAT + NDEG
@@ -4902,8 +4900,15 @@ C
          IF (IPREAD .GT. 0) CALL ROTANA(WORK(1),WORK(KMASS),WORK(ISTRT),
      &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NCENTS,NCOOR,IPREAD)
 C
-         IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
+         IF (IPREAD .GT. 0) THEN
+            IF (POTNUC .LT. 1.D5) THEN
+               WRITE(LUPRI,'(//A,F18.12,A)')
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
+            ELSE
+               WRITE(LUPRI,'(//A,1P,E20.12,A)')
+     &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
+            END IF
+         END IF
       END IF
 
 #ifdef HAS_PCMSOLVER
@@ -5963,7 +5968,6 @@ C
       WRITE(LUPRI,*) 'cord3',(cord(3,i),i=1,nucind)
       WRITE(LUPRI,*) 'noorbt ',(noorbt(i),i=1,nucind)
       WRITE(LUPRI,*) 'nucind,nucdep',NUCIND, NUCDEP
-      WRITE(LUPRI,*) 'nucpre ',(nucpre(i),i=1,nucind)
       WRITE(LUPRI,*) 'nucnum ',((NUCNUM(i,j),i=1,nucind),j=1,8)
       WRITE(LUPRI,*) 'nucdeg ',(nucdeg(i),i=1,nucind)
       WRITE(LUPRI,*) 'istbnu ',(istbnu(i),i=1,nucind)
@@ -6080,7 +6084,7 @@ C
       IF(NUCIND .EQ. 2) GO TO 201
       IF(NUCIND .EQ. 3) GO TO 202
       GO TO 203
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_NOFREE)
   200 ISTART = 5
       CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT',IERR)
       CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA',IERR)
@@ -6421,9 +6425,9 @@ C     TODO : define multiple basis sets and point charges
       ELSE
          CRT = ' '
       END IF
-      WRITE(MLINE(5),'(A1,I4,I3,I2,10X,1P,D10.2)')
+      WRITE(MLINE(NMLAU),'(A1,I4,I3,I2,10X,1P,D10.2)')
      &     CRT,NONTYP,KCHARG,NSYMOP,THRS
-      NMLINE = 6
+      NMLINE = NMLAU+1
       NHTYP  = 0
       NSETS  = 1
       IF (DOHUCKEL) THEN
@@ -6649,7 +6653,7 @@ Chj:  ILINE must now point to line with first effective line (CARD 1)
      &   '# DALTON.BAS with INTGRL directive created ',LDATE,LTIME,
      &   '# Directive in input mol file was:',
      &   '# > ',MLINE(ILINE)(1:76)
-      IF (BASIS) THEN
+      IF (BASIS .AND. NMLAU.EQ.5) THEN ! old BASIS input over two lines
          WRITE (LUTMP1,'(2A)')
      &   '# > ',MLINE(ILINE+1)(1:76)
          ILINE = ILINE + 2
@@ -6826,15 +6830,17 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "cbirea.h"
-      CHARACTER*80 INPUT_LINE
+      CHARACTER*(*) INPUT_LINE
       LOGICAL NEXTMB
+      INTEGER LEN_INE
 
       N = 0
       K = 0 !radovan: this is workaround for gfortran 4.7.2
             !         which optimizies the following code to wrong K
             !         the resulting basis set name is then empty
       NEXTMB = .FALSE.
-      DO I=1,80
+      LEN_LINE = LEN(INPUT_LINE)
+      DO I=1,LEN_LINE
        IF (INPUT_LINE(I:I) .NE. ' ' .AND. .NOT. NEXTMB) THEN
         NEXTMB = .TRUE.
         K = I
@@ -7044,14 +7050,16 @@ C     Since the number of atom types have not been specified,
 C     assume old input format
 C
 
-         IF (.NOT. SLAVE .AND. N_OLD_MOL_INP.EQ.0) THEN
-            N_OLD_MOL_INP = 1
-            NINFO = NINFO + 1
-            WRITE(LUPRI,'(///A/A/A///)') '@ INFO - deprecated '//
-     &      'old .mol fixed format input has been detected:',
-     &      LINE4_in, '@ INFO - '//
-     &      'this input format may not be supported in future releases.'
-         END IF
+! hjaaj Feb 2019: let us stop warning about old .mol format,
+!                 no real reason to delete it, it does no harm.
+!        IF (.NOT. SLAVE .AND. N_OLD_MOL_INP.EQ.0) THEN
+!           N_OLD_MOL_INP = 1
+!           NINFO = NINFO + 1
+!           WRITE(LUPRI,'(///A/A/A///)') '@ INFO - deprecated '//
+!    &      'old .mol fixed format input has been detected:',
+!    &      LINE4_in, '@ INFO - '//
+!    &      'this input format may not be supported in future releases.'
+!        END IF
 
          READ (LINE4_in,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)',ERR=199) CRT,
      &        NONTYP,KCHARG1,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS

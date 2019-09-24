@@ -23,7 +23,7 @@ C
 !===========================================================================
 !961213-hjaaj
 !    removed check for LSORT .ge. 8*1024**2 (see MAERKE)
-!    : This check is not necessary, but instead we outght to
+!    : This check is not necessary, but instead we ought to
 !    : check that buffer length is greater than a minimum !!
 !961112-hjaaj
 !    delete SORINT after use
@@ -46,9 +46,6 @@ C
 !  - removed FPS code
 !  - moved LSORT parameter to cdk LSORT
 !  - modified some formats to print higher integer numbers
-!901221-hjaaj
-!  - corrected error in writing to LUORD
-!  - added VCLR and READI
 !901023-hjaaj-l04
 !  - use XI4LAB(1:2) instead of XI2LAB(3:4) for LUSORT
 !890826-hjaaj-t10.1

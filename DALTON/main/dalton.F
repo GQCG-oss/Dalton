@@ -768,17 +768,11 @@ C         options to transfer UNIX environment variables to
 C         slave nodes. /hjaaj June 2005
         WRKMEM = ' '
         NODE_WRKMEM = ' '
-#if defined (SYS_T3D) || defined (SYS_T90)
-        CALL PXFGETENV('WRKMEM',6,WRKMEM,LWRKMM,IERR)
-        CALL PXFGETENV('NODE_WRKMEM',11,NODE_WRKMEM,LWRKMM,IERR)
-        CALL PXFGETENV('BASDIR',6,BASDIR,LBASDR,IERR)
-#else
         CALL GETENV('WRKMEM',WRKMEM)
         CALL GETENV('NODE_WRKMEM',NODE_WRKMEM)
         CALL GETENV('BASDIR',BASDIR)
         !debug! write (0,*) 'GETENV WRKMEM ',WRKMEM
         !debug! write (0,*) 'GETENV BASDIR ',BASDIR
-#endif
 
 !       WRKMEM -> LMWORK
 

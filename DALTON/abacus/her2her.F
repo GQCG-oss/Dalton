@@ -501,15 +501,8 @@ C
             SGN34Z = SIGNT(3)
          END IF
 C
-C    It turns out 64-bits IRIX compiler misinterprets this statement with
-C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
-#if defined (SYS_IRIX)
-         IODS  = 1
-         NODS  = 1
-#else
          IODS  = 0
          NODS  = 0
-#endif
          DO 300 IOD12 = 1, NUC12
             EXPP   = EXP12(IOD12)
             FAC12I = FAC12(IOD12)
@@ -518,18 +511,14 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
             PZ     = SGN12Z*COOR12(IOD12,3)
             IF (HFXMU .NE. D0) THEN
                DO IOD34 = 1, NUC34
-#if !defined (SYS_IRIX)
                   IODS = IODS + 1
-#endif
                   EXPQ   = EXP34(IOD34)
                   EXPPQI = D1/(EXPP + EXPQ)
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
                   ALPHA = EXPP*EXPQ*EXPPQI
                   BETA = HFXMU**2/(ALPHA + HFXMU**2)
                   SCLFAC(IODS,1) = SQRT(BETA)*FACTOR
-#if !defined (SYS_IRIX)
                   NODS = NODS + 1
-#endif
                   TALPHA(IODS,1) = - D2*ALPHA*BETA
                   PQXI = PX - SGN34X*COOR34(IOD34,1)
                   PQYI = PY - SGN34Y*COOR34(IOD34,2)
@@ -540,26 +529,18 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
                   WVALU(NODS,1)=ALPHA*BETA*
      &               (PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
                   INDADR(NODS) = IODS
-#if defined (SYS_IRIX)
-                  IODS = IODS + 1
-                  NODS = NODS + 1
-#endif
                END DO
             ELSE IF (PANAS .EQ. D0 .AND. CHIVAL .EQ. -1.D0) THEN
 C
 C              Regular two-electron integrals
 C
                DO IOD34 = 1, NUC34
-#if !defined (SYS_IRIX)
                   IODS = IODS + 1
-#endif
                   EXPQ   = EXP34(IOD34)
                   EXPPQI = D1/(EXPP + EXPQ)
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
                   SCLFAC(IODS,1) = FACTOR
-#if !defined (SYS_IRIX)
                   NODS = NODS + 1
-#endif
                   ALPHA = EXPP*EXPQ*EXPPQI
                   TALPHA(IODS,1) = - D2*ALPHA
                   PQXI = PX - SGN34X*COOR34(IOD34,1)
@@ -570,10 +551,6 @@ C
                   PQZ(IODS) = PQZI
                   WVALU(NODS,1) = ALPHA*(PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
                   INDADR(NODS) = IODS
-#if defined (SYS_IRIX)
-                  IODS = IODS + 1
-                  NODS = NODS + 1
-#endif
                END DO
             ELSE IF (SRINTS) THEN
 C
@@ -581,9 +558,7 @@ C              Short-range two-electron integrals (MCDFT)
 C
                CHISQ     = CHIVAL**2
                DO IOD34 = 1, NUC34
-#if !defined (SYS_IRIX)
                   IODS = IODS + 1
-#endif
 c                --- Regular
                   EXPQ   = EXP34(IOD34)
                   EXPPQI = D1/(EXPP + EXPQ)
@@ -597,9 +572,7 @@ c                --- Modified
                   EXPPQII= D1/EXPPQI2
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQ*EXPPQII)
                   SCLFAC(IODS,2) = FACTOR
-#if !defined (SYS_IRIX)
                   NODS = NODS + 1
-#endif
                   ALPHA = EXPP*EXPQ*EXPPQI
                   TALPHA(IODS,1) = - D2*ALPHA
                   TALPHA(IODS,2) = - D2*EXPPQII
@@ -622,10 +595,6 @@ c                --- Modified
                   WVALU(NODS,1) = ALPHA*PQXYZI
                   WVALU(NODS,2) = EXPPQII*PQXYZI
                   INDADR(NODS) = IODS
-#if defined (SYS_IRIX)
-                  IODS = IODS + 1
-                  NODS = NODS + 1
-#endif
                END DO
             ELSE IF (PANAS .EQ. D0) THEN
 C
@@ -633,9 +602,7 @@ C              Long-range two-electron integrals (MCSCF-DFT)
 C
                CHISQ     = CHIVAL**2
                DO IOD34 = 1, NUC34
-#if !defined (SYS_IRIX)
                   IODS = IODS + 1
-#endif
                   EXPQ   = EXP34(IOD34)
                   EXPPI  = D1/EXPP
                   EXPQI  = D1/EXPQ
@@ -644,9 +611,7 @@ C
                   EXPPQII= D1/EXPPQI
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQ*EXPPQII)
                   SCLFAC(IODS,1) = FACTOR
-#if !defined (SYS_IRIX)
                   NODS = NODS + 1
-#endif
                   TALPHA(IODS,1) = - D2*EXPPQII
                   PQXI = PX - SGN34X*COOR34(IOD34,1)
                   PQYI = PY - SGN34Y*COOR34(IOD34,2)
@@ -666,28 +631,20 @@ C
                      EJ000(IODS,0) = - FACTOR* DEXP(- EXPFACI*PQXYZI)
                   ENDIF
                   INDADR(NODS) = IODS
-#if defined (SYS_IRIX)
-                  IODS = IODS + 1
-                  NODS = NODS + 1
-#endif
                END DO
             ELSE
 C
 C              Two-electron integrals regularized according to I.Panas
 C
                DO IOD34 = 1, NUC34
-#if !defined (SYS_IRIX)
                   IODS = IODS + 1
-#endif
                   EXPQ   = EXP34(IOD34)
                   EXPPQ  = EXPP + EXPQ
                   EXPMOD = EXPPQ/D2
                   EXPPQP = EXPMOD + SQRT(EXPMOD**2 + EXPP*EXPQ*PANAS)
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(D1/EXPPQP)
                   SCLFAC(IODS,1) = FACTOR
-#if !defined (SYS_IRIX)
                   NODS = NODS + 1
-#endif
                   ALPHA = EXPP*EXPQ/EXPPQP
                   TALPHA(IODS,1) = - D2*ALPHA
                   PQXI = PX - SGN34X*COOR34(IOD34,1)
@@ -698,17 +655,9 @@ C
                   PQZ(IODS) = PQZI
                   WVALU(NODS,1) = ALPHA*(PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
                   INDADR(NODS) = IODS
-#if defined (SYS_IRIX)
-                  IODS = IODS + 1
-                  NODS = NODS + 1
-#endif
                END DO
             END IF
  300     CONTINUE
-#if defined (SYS_IRIX)
-         IODS = IODS - 1
-         NODS = NODS - 1
-#endif
          IF (.NOT.NOINT) THEN
             IPQ0X = 1
             IPQ0Y = 1
@@ -870,9 +819,6 @@ C
       NODS2 = 0
       NODS3 = 0
       D2JP36 = 2.0D0*JMAX + 36.0D0
-C NECgh980808 As sth suggested, this loop DO 100 can savely 
-C             be vectorized.
-#include "ivdep.h"
       DO 100 I = 1, NODS
          WVAL = WVALU(I)
          IF (WVAL .LT. D12) THEN

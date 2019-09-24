@@ -254,6 +254,37 @@ nightly-debug:
         - cd build
         - ctest -L dalton -j 4 --output-on-failure -D Nightly
 
+nightly-int64:
+    only:
+        - schedules
+    allow_failure: true
+    tags:
+        - dalton
+    image: foeroyingur/fedora:26
+    variables:
+        DALTON_NUM_MPI_PROCS: "1"
+        OMP_NUM_THREADS: "1"
+        CTEST_MAKE_NUM_PROCS: "4"
+    before_script:
+        - whoami
+        - ps -u `whoami`
+        - uname -a
+        - lscpu
+        - free -m
+        - df -h
+        - ulimit -a
+        - git --version
+        - cmake --version
+        - python -V
+        - gfortran -v
+        - gcc -v
+        - g++ -v
+    script:
+        - dnf install -y findutils which
+        - python setup --int64 --type=release -D SITE=GitLabCI -D BUILDNAME=${CI_COMMIT_REF_NAME}-int64
+        - cd build
+        - ctest -L dalton -j 4 --output-on-failure -D Nightly
+
 nightly-mpi:
     only:
         - schedules
@@ -286,5 +317,40 @@ nightly-mpi:
     script:
         - dnf install -y findutils which
         - python setup --mpi --type=release -D SITE=GitLabCI -D BUILDNAME=${CI_COMMIT_REF_NAME}-mpi
+        - cd build
+        - ctest -L dalton --output-on-failure -D Nightly
+
+nightly-mpi-int64:
+    only:
+        - schedules
+    allow_failure: true
+    tags:
+        - dalton
+    image: foeroyingur/fedora:26
+    variables:
+        DALTON_NUM_MPI_PROCS: "4"
+        OMP_NUM_THREADS: "1"
+        CTEST_MAKE_NUM_PROCS: "4"
+    before_script:
+        - whoami
+        - ps -u `whoami`
+        - uname -a
+        - lscpu
+        - free -m
+        - df -h
+        - ulimit -a
+        - git --version
+        - cmake --version
+        - python -V
+        - gfortran -v
+        - gcc -v
+        - g++ -v
+        - mpifort -v
+        - mpicc -v
+        - mpicxx -v
+        - mpirun --version
+    script:
+        - dnf install -y findutils which
+        - python setup --mpi --int64 --type=release -D SITE=GitLabCI -D BUILDNAME=${CI_COMMIT_REF_NAME}-mpi-int64
         - cd build
         - ctest -L dalton --output-on-failure -D Nightly

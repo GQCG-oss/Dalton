@@ -146,13 +146,13 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Darwin) : Tue May 14 10:51:53 2019
-     Host name              : adm-106152.pc.sdu.dk                    
+     Date and time (Darwin) : Mon Mar 25 23:05:08 2019
+     Host name              : adm-106152.local                        
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/test/rsp_sosingci
+   1) /Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/test/dft_pbe
    2) /Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/basis
 
 
@@ -175,9 +175,9 @@ Compilation information
  BLAS                     | /opt/local/lib/libopenblas.dylib
  LAPACK                   | /usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | f1c5783e03fbd3364f432e0407e614f4d4aec2ca
+ Last Git revision        | e8d18ebef2fd29c1f0b13aed98f5d73439580fcd
  Git branch               | master
- Configuration time       | 2019-05-14 10:47:33.872690
+ Configuration time       | 2019-03-25 22:52:46.712692
 
  * Sequential calculation.
 
@@ -185,59 +185,37 @@ Compilation information
    Content of the .dal input file
  ----------------------------------
 
-**DALTON INPUT
+**DALTON
 .RUN RESPONSE
-**INTEGRAL
-.DIPLEN
-.SPIN-ORBIT
 **WAVE FUNCTIONS
-.MCSCF
-*CONFIG
-.ELECTRONS
- 2
-.INACTIVE
- 0 0 0 0 0 0 0 0
-.RAS1 SPACE
- 1 0 0 0 0 0 0 0
-.RAS2 SPACE
- 0 1 1 0 0 0 0 0
-.RAS3 SPACE
- 0 0 0 0 0 0 0 0
-.RAS1 ELEC
- 1 2
-.RAS3 ELEC
- 0 0
-.SYMMETRY
- 2
-.SPIN MULT
- 3
-*OPTIMIZATION
-.DETERMINANTS
+.DFT
+ PBE0
+! Molpro form:
+! GGAKey pbex=1 pw91c=1
+*DFT INPUT
+.RADINT
+1e-9
 **RESPONSE
 *LINEAR
 .SINGLE RESIDUE
-.PRINT
- 3
-.PROPRT
-Z2SPNORB
+.TRIPLET
 .ROOTS
- 0 0 1 0 0 0 0 0
-**END OF DALTON INPUT
+1 0 0 0  0 0 0 0
+**END OF
+
 
 
    Content of the .mol file
  ----------------------------
 
-INTGRL
-Energy calculation without symmetry
-Basis set specified with ATOMBASIS
+BASIS
+cc-pVTZ
+He atom with PBE functional
+---------------------------
     1
-        1.    1    2    1    1
-H     0 0 1.0
-    1    1
-1.0       1.0
-    1    1
-1.0       1.0
+        2.    1
+He    .0000     .0000     .0000
+
 
 
        *******************************************************************
@@ -262,15 +240,17 @@ H     0 0 1.0
 
     The two title cards from your ".mol" input:
     ------------------------------------------------------------------------
- 1: Energy calculation without symmetry                                     
- 2: Basis set specified with ATOMBASIS                                      
+ 1: He atom with PBE functional                                             
+ 2: ---------------------------                                             
     ------------------------------------------------------------------------
 
   Atomic type no.    1
   --------------------
-  Nuclear charge:   1.00000
+  Nuclear charge:   2.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   2 :
+     "/Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/basis/cc-pVTZ"
 
 
                       SYMADD: Requested addition of symmetry
@@ -285,7 +265,7 @@ H     0 0 1.0
 
  Symmetry Independent Centres             
  ----------------------------
-H      1 :      0.00000000     0.00000000     0.00000000  Isotope  1
+He     2 :      0.00000000     0.00000000     0.00000000  Isotope  1
 
  The following symmetry elements were found:   X  Y  Z  
 
@@ -348,10 +328,10 @@ H      1 :      0.00000000     0.00000000     0.00000000  Isotope  1
                                  Isotopic Masses
                                  ---------------
 
-                           H           1.007825
+                           He          4.002603
 
-                       Total mass:     1.007825 amu
-                       Natural abundance:  99.985 %
+                       Total mass:     4.002603 amu
+                       Natural abundance: 100.000 %
 
  Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
 
@@ -362,12 +342,15 @@ H      1 :      0.00000000     0.00000000     0.00000000  Isotope  1
   Number of atom types :    1
   Total number of atoms:    1
 
+  Basis set used is "cc-pVTZ" from the basis set library.
+
   label    atoms   charge   prim   cont     basis
   ----------------------------------------------------------------------
-  H           1    1.0000     4     4      [1s1p|1s1p]                                        
+  He          1    2.0000    17    14      [6s2p1d|3s2p1d]                                    
   ----------------------------------------------------------------------
-  total:      1    1.0000     4     4
+  total:      1    2.0000    17    14
   ----------------------------------------------------------------------
+  Spherical harmonic basis used.
 
   Threshold for neglecting AO integrals:  1.00D-12
 
@@ -376,7 +359,7 @@ H      1 :      0.00000000     0.00000000     0.00000000  Isotope  1
   ----------------------------
 
   Total number of coordinates:    3
-  H       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
+  He      :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
 
 
   Symmetry Coordinates
@@ -386,15 +369,15 @@ H      1 :      0.00000000     0.00000000     0.00000000  Isotope  1
 
   Symmetry  B3u ( 2)
 
-    1   H     x    1
+    1   He    x    1
 
   Symmetry  B2u ( 3)
 
-    2   H     y    2
+    2   He    y    2
 
   Symmetry  B1u ( 5)
 
-    3   H     z    3
+    3   He    z    3
 
 
 @ This is an atomic calculation.
@@ -403,36 +386,49 @@ H      1 :      0.00000000     0.00000000     0.00000000  Isotope  1
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:           1    1    1    0    1    0    0    0
+  Number of orbitals in each symmetry:           5    2    2    1    2    1    1    0
 
 
   Symmetry  Ag ( 1)
 
-    1     H        1s         1
+    1     He       1s         1
+    2     He       1s         2
+    3     He       1s         3
+    4     He       3d0       12
+    5     He       3d2+      14
 
 
   Symmetry  B3u( 2)
 
-    2     H        2px        2
+    6     He       2px        4
+    7     He       2px        7
 
 
   Symmetry  B2u( 3)
 
-    3     H        2py        3
+    8     He       2py        5
+    9     He       2py        8
 
 
-  No orbitals in symmetry  B1g( 4)
+  Symmetry  B1g( 4)
+
+   10     He       3d2-      10
 
 
   Symmetry  B1u( 5)
 
-    4     H        2pz        4
+   11     He       2pz        6
+   12     He       2pz        9
 
 
-  No orbitals in symmetry  B2g( 6)
+  Symmetry  B2g( 6)
+
+   13     He       3d1+      13
 
 
-  No orbitals in symmetry  B3g( 7)
+  Symmetry  B3g( 7)
+
+   14     He       3d1-      11
 
 
   No orbitals in symmetry  Au ( 8)
@@ -453,22 +449,11 @@ H      1 :      0.00000000     0.00000000     0.00000000  Isotope  1
  ***************************************************************************************
 
 
-
-    *************************************************************************
-    ****************** Output from HERMIT input processing ******************
-    *************************************************************************
-
+ - Using defaults, no **INTEGRALS input found
 
  Default print level:        1
 
  Calculation of one- and two-electron Hamiltonian integrals.
-
- Calculate two-electron spin-orbit integrals
-
- The following one-electron property integrals are calculated as requested:
-          - overlap integrals
-          - dipole length integrals
-          - spatial spin-orbit integrals
 
  Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000000
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
@@ -490,15 +475,10 @@ H      1 :      0.00000000     0.00000000     0.00000000  Isotope  1
 
 
  Threshold for neglecting two-electron integrals:  1.00D-12
- HERMIT - Number of two-electron integrals written:          16 ( 29.1% )
- HERMIT - Megabytes written:                              0.007
+ HERMIT - Number of two-electron integrals written:         776 ( 13.9% )
+ HERMIT - Megabytes written:                              0.014
 
-
-   Two-electron spin-orbit integrals
-   =================================
-   Spin-orbit 2-electron CPU  time      0. seconds
-   Spin-orbit 2-electron wall time      0. seconds
-  Total CPU  time used in HERMIT:   0.01 seconds
+  Total CPU  time used in HERMIT:   0.02 seconds
   Total wall time used in HERMIT:   0.01 seconds
 
 
@@ -513,6 +493,14 @@ H      1 :      0.00000000     0.00000000     0.00000000  Isotope  1
                    `--------------------------------------------'
 
 
+
+ Settings for DFT calculation:
+ -----------------------------
+
+     Default thresholds:                                       1.00D-09    1.00D-10    2.00D-12
+     Default threshold for number of electrons:                1.00D-03
+     DFT radial quadrature accuracy and ang. expansion order:              1.00D-09  35
+
  *** Output from Huckel module :
 
      Using EWMO model:          T
@@ -524,161 +512,143 @@ H      1 :      0.00000000     0.00000000     0.00000000  Isotope  1
  Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
 
  Huckel EWMO eigenvalues for symmetry :  1
-           -0.500000
+           -0.918000
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Darwin) : Tue May 14 10:51:53 2019
-     Host name              : adm-106152.pc.sdu.dk                    
+     Date and time (Darwin) : Mon Mar 25 23:05:08 2019
+     Host name              : adm-106152.local                        
 
  Title lines from ".mol" input file:
-     Energy calculation without symmetry                                     
-     Basis set specified with ATOMBASIS                                      
+     He atom with PBE functional                                             
+     ---------------------------                                             
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-@    MC-SCF optimization.
+@    Restricted, closed shell Kohn-Sham DFT calculation.
 
-@    Multi-configurational response calculation.
-@              Type: restricted active space calculation (RAS)
+@    Time-dependent Kohn-Sham DFT calculation (TD-DFT).
 
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option
 
      Wave function specification
      ============================
-@    Wave function type        --- MC-SCF ---
-@    Number of closed shell electrons           0
-@    Number of electrons in active shells       2
-@    Total charge of the molecule              -1
+@    Wave function type        --- KS-DFT ---
+@    Number of closed shell electrons           2
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-@    Spin multiplicity and 2 M_S                3         2
+@    Spin multiplicity and 2 M_S                1         0
 @    Total number of symmetries                 8 (point group: D2h)
-@    Reference state symmetry                   2 (irrep name : B3u)
-
-Number of active orbitals in RAS1, RAS2, and RAS3 :   1   2   0
-
-@    Minimum number of electrons in RAS1 :   1 (maximum   1 holes)
-@    Maximum number of electrons in RAS1 :   2 (minimum   0 holes)
+@    Reference state symmetry                   1 (irrep name : Ag )
+ 
+     This is a DFT calculation of type: PBE0
+ Weighted mixed functional:
+               HF exchange:    0.25000
+                      PBEx:    0.75000
+                      PBEc:    1.00000
 
      Orbital specifications
      ======================
 @    Abelian symmetry species          All |    1    2    3    4    5    6    7    8
 @                                          |  Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
                                        --- |  ---  ---  ---  ---  ---  ---  ---  ---
-@    Inactive orbitals                   0 |    0    0    0    0    0    0    0    0
-@    Active orbitals                     3 |    1    1    1    0    0    0    0    0
-@    - Active orbitals in RAS1           1 |    1    0    0    0    0    0    0    0
-@    - Active orbitals in RAS2           2 |    0    1    1    0    0    0    0    0
-@    Secondary orbitals                  1 |    0    0    0    0    1    0    0    0
-@    Total number of orbitals            4 |    1    1    1    0    1    0    0    0
-@    Number of basis functions           4 |    1    1    1    0    1    0    0    0
+@    Total number of orbitals           14 |    5    2    2    1    2    1    1    0
+@    Number of basis functions          14 |    5    2    2    1    2    1    1    0
 
-     Optimization information
-     ========================
-@    Number of determinants                   1
-@    Number of orbital rotations              0
-     ------------------------------------------
-@    Total number of variables                1
+      ** Automatic occupation of RKS orbitals **
 
-     Maximum number of macro iterations      25
-     Maximum number of micro iterations     600
-     Threshold for MCSCF gradient      1.00D-05
-     Number of initial trial vectors          1
-     Number of initial CI iterations          3
-     Number of simultaneous trial vectors     1
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               1 |    1    0    0    0    0    0    0    0
 
-@    This calculation converges to the lowest state for the specified symmetry and spin species.
-
-     Maximum number of NEO/NR iterations  24
-
-
-        SIRIUS MCSCF optimization (SIROPT)
- ================================================
-
-
-   --- OUTPUT FROM SIRCNO     Keyword = ONLYFD
-
-
-Calculating AOSUPINT
-     (Precalculated AO two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-12 )
-
-
- --- MACRO ITERATION  1 ---
- --------------------------
-
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.002       0.007
-
- Total MCSCF energy       :             2.092637575387457  (MACRO    1)
-
- - Nuclear repulsion      :             0.000000000000000
- - Inactive energy        :             0.000000000000000
- - Active energy          :             2.092637575387457
-
- Norm of total gradient   :             0.000000000000
- -    of CI gradient      :             0.000000000000
- -    of orbital gradient :             0.000000000000
-
-
- *** Label "NATOCC  " not found on SIRIUS.RST in SIRPOP
-
- WARNING, occupation of active orbitals not available
-          population analysis aborted.
-          Use ".TRACI" option.
-
-
- *** Optimization control: MCSCF converged ***
-     Number of macro iterations used            1
-     Number of micro iterations used            0
-     Total number of CPU seconds used         0.01
-
- CPU and wall time for MCSCF :       0.006       0.015
-
-
-                     .----------------------------------------.
-                     | --- SIRIUS OPTIMIZATION STATISTICS --- |
-                     `----------------------------------------'
-
-
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
  
-     Date and time (Darwin) : Tue May 14 10:51:53 2019
-     Host name              : adm-106152.pc.sdu.dk                    
+     This is a DFT calculation of type: PBE0
+ Weighted mixed functional:
+               HF exchange:    0.25000
+                      PBEx:    0.75000
+                      PBEc:    1.00000
 
 
-  ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
- ---------------------------------------------------------------------
-    1    0      2.092637575387   0.0000000000  0.000000   0.0000000000
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
+
+ C1-DIIS algorithm; max error vectors =    3
+
+ Automatic occupation of symmetries with   2 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -0.802069290493   2.0000000000   -1.70D-11
+@  1  -2.89428595472       6.25D-02  -2.89D+00     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.008683
+@    MULPOP   He      0.00; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -0.798352790804   2.0000000000   -1.84D-11
+@  2  -2.89451151494       9.83D-03  -2.26D-04     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.012893
+@    MULPOP   He     -0.00; 
+   2  Level shift: doubly occupied orbital energies shifted by -5.00D-02
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -0.798351260972   2.0000000000   -1.85D-11
+@  3  -2.89451481116       1.13D-03  -3.30D-06     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.012152
+@    MULPOP   He      0.00; 
+   3  Level shift: doubly occupied orbital energies shifted by -1.25D-02
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -0.798224519062   2.0000000000   -1.85D-11
+@  4  -2.89451488222       6.48D-06  -7.11D-08     1   0   0   0   0   0   0   0
+
+@ *** DIIS converged in   4 iterations !
+@     Converged SCF energy, gradient:     -2.894514882222    6.48D-06
+    - total time used in SIRFCK :              0.00 seconds
 
 
-  ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
- ------------------------------------------------------------------------------
-    1      0    0.000000    0.000000      0    0.000000    0.000000    0.000000
+ *** SCF orbital energy analysis ***
+
+ Number of electrons :    2
+ Orbital occupations :    1    0    0    0    0    0    0    0
+
+ Sym       Kohn-Sham orbital energies
+
+1 Ag     -0.66824103     0.49545628     4.16819731     5.95576445     5.95576445
 
 
-  ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
- ------------------------------------------------------------------------------
+2 B3u     1.26247515     7.35649363
 
-    1     0     0     0      0.00      0.00      0.00      0.00
+3 B2u     1.26247515     7.35649363
 
+4 B1g     5.95576445
 
- ITER         EMY                 EACTIV              EMCSCF
+5 B1u     1.26247515     7.35649363
 
-    1      0.000000000000      2.092637575387      2.092637575387
+6 B2g     5.95576445
 
+7 B3g     5.95576445
 
- ITER         DEPRED              DEACT               RATIO
+    E(LUMO) :     0.49545628 au (symmetry 1)
+  - E(HOMO) :    -0.66824103 au (symmetry 1)
+  ------------------------------------------
+    gap     :     1.16369731 au
 
-    1      0.000000000000      0.000000000000      0.000000000000
+ NOTE: MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS
 
+ Largest off-diagonal Fock matrix element is  1.48D-04
 
- ITER    BETA           GAMMA             STPLNG              RTRUST
+ --- Writing SIRIFC interface file
 
-    1      0.00000000  0.00000000      0.000000000000      0.700000000000
+ CPU and wall time for SCF :       0.238       0.180
 
 
                        .-----------------------------------.
@@ -686,83 +656,79 @@ Calculating AOSUPINT
                        `-----------------------------------'
 
 
-@    Spin multiplicity:           3
-@    Spatial symmetry:            2 ( irrep  B3u in D2h )
-@    Total charge of molecule:   -1
-@    State number:                1
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  Ag  in D2h )
+@    Total charge of molecule:    0
 
-@    Final MCSCF energy:            2.092637575387                 
+@    Final DFT energy:             -2.894514882222                 
 @    Nuclear repulsion:             0.000000000000
-@    Electronic energy:             2.092637575387
+@    Electronic energy:            -2.894514882222
 
-@    Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000006484265
 
  
-     Date and time (Darwin) : Tue May 14 10:51:53 2019
-     Host name              : adm-106152.pc.sdu.dk                    
+     Date and time (Darwin) : Mon Mar 25 23:05:09 2019
+     Host name              : adm-106152.local                        
 
- Occupancies of natural orbitals
- -------------------------------
-
- Symmetry 1  ( Ag ) -- Total occupation in this symmetry is   1.000000000
-
-   1.000000000
-
- Symmetry 2  ( B3u) -- Total occupation in this symmetry is   1.000000000
-
-   1.000000000
-
- Symmetry 3  ( B2u) -- Total occupation in this symmetry is   0.000000000
-
-   0.000000000
-
- Symmetry 4  ( B1g) -- No occupied orbitals
-
- Symmetry 5  ( B1u) -- No occupied orbitals
-
- Symmetry 6  ( B2g) -- No occupied orbitals
-
- Symmetry 7  ( B3g) -- No occupied orbitals
-
- Symmetry 8  ( Au ) -- No occupied orbitals
-
-File label for MO orbitals:  14May19   (CNOORB)
+File label for MO orbitals:  25Mar19   FOCKDIIS
 
  (Only coefficients > 0.0100 are printed.)
 
  Molecular orbitals for symmetry species 1  (Ag )
  ------------------------------------------------
 
-    Orbital         1
-   1 H   :1s     1.0000
+    Orbital         1        2        3        4        5
+   1 He  :1s     1.0168  -0.5431  -4.1892  -0.0000   0.0000
+   2 He  :1s    -0.0305  -0.8640   3.9801   0.0000   0.0000
+   3 He  :1s     0.0156   1.6795   0.4123   0.0000   0.0000
+   4 He  :3d0    0.0000  -0.0000  -0.0000   1.0000   0.0000
+   5 He  :3d2+   0.0000   0.0000   0.0000   0.0000   1.0000
 
  Molecular orbitals for symmetry species 2  (B3u)
  ------------------------------------------------
 
-    Orbital         1
-   1 H   :2px    1.0000
+    Orbital         1        2
+   1 He  :2px   -0.0523  -1.2167
+   2 He  :2px    1.0289   0.6514
 
  Molecular orbitals for symmetry species 3  (B2u)
  ------------------------------------------------
 
+    Orbital         1        2
+   1 He  :2py   -0.0523  -1.2167
+   2 He  :2py    1.0289   0.6514
+
+ Molecular orbitals for symmetry species 4  (B1g)
+ ------------------------------------------------
+
     Orbital         1
-   1 H   :2py    1.0000
+   1 He  :3d2-   1.0000
 
  Molecular orbitals for symmetry species 5  (B1u)
  ------------------------------------------------
 
-    Orbital         1
-   1 H   :2pz    1.0000
+    Orbital         1        2
+   1 He  :2pz   -0.0523  -1.2167
+   2 He  :2pz    1.0289   0.6514
 
-  Total CPU  time used in SIRIUS :   0.01 seconds
-  Total wall time used in SIRIUS :   0.04 seconds
+ Molecular orbitals for symmetry species 6  (B2g)
+ ------------------------------------------------
+
+    Orbital         1
+   1 He  :3d1+   1.0000
+
+ Molecular orbitals for symmetry species 7  (B3g)
+ ------------------------------------------------
+
+    Orbital         1
+   1 He  :3d1-   1.0000
+
+  Total CPU  time used in SIRIUS :   0.26 seconds
+  Total wall time used in SIRIUS :   0.19 seconds
 
  
-     Date and time (Darwin) : Tue May 14 10:51:53 2019
-     Host name              : adm-106152.pc.sdu.dk                    
-
- NOTE:    1 warnings have been issued.
- Check output, result, and error files for "WARNING".
+     Date and time (Darwin) : Mon Mar 25 23:05:09 2019
+     Host name              : adm-106152.local                        
 
 
                      .---------------------------------------.
@@ -790,41 +756,37 @@ File label for MO orbitals:  14May19   (CNOORB)
  -------------------------------------------
 
 
-    4 input options by user.
+    3 input options by user.
 
- Print level                                    : IPRPP  =   3
+ Print level                                    : IPRPP  =   2
  Maximum number of iterations for eigenval.eqs. : MAXITP =  60
  Threshold for convergence of eigenvalue eqs.   : THCPP  = 1.000D-03
  Maximum iterations in optimal orbital algorithm: MAXITO =   5
 
- General print level in RESPONS is IPRRSP =         3
+      1 Excitation energies are calculated for symmetry no.    1
 
-      1 Excitation energies are calculated for symmetry no.    4
+ INFO SIR_INTOPEN, old integral transformation not found as expected, ICASE = 2
+ - ICASE = 1: MO integral file MOTWOINT does not exist
+ - ICASE = 2: no MO integrals on MOTWOINT
+ - ICASE = 3: transformation level on MOTWOINT not sufficient
 
-      1 property residues are calculated with labels:
-
-               Z2SPNORB
-
- Old direct access AO file found, SORTA skipped.
-
- 2-el. integral transformation level 4: Total CPU and WALL times (sec)       0.002       0.004
+ 2-el. integral transformation level 4: Total CPU and WALL times (sec)       0.002       0.002
 
  Sorting integrals to Dirac format: Total CPU and WALL times (sec)       0.000       0.000
 
 
- MCSCF energy         :        2.092637575387457
- -- inactive part     :        0.000000000000000
- --   active part     :        2.092637575387457
+   SCF energy         :       -2.894514882221919
+ -- inactive part     :       -2.894514882221919
  -- nuclear repulsion :        0.000000000000000
 
 
-                        **********************************
-                        *** MCSCF response calculation ***
-                        **********************************
+                    *****************************************
+                    *** DFT response calculation (TD-DFT) ***
+                    *****************************************
 
  ----------------------------------------------------------------
  ----- Linear response calculation
- ----- Symmetry of excitation/property operator(s)    4  ( B1g)
+ ----- Symmetry of excitation/property operator(s)    1  ( Ag )
  ----------------------------------------------------------------
 
  Number of excitations of this symmetry            1
@@ -832,124 +794,102 @@ File label for MO orbitals:  14May19   (CNOORB)
  Number of C6/C8 properties of this symmetry       0
 
 
- Perturbation symmetry.     KSYMOP:       4
- Perturbation spin symmetry.TRPLET:       F
- Orbital variables.         KZWOPT:       0
- Configuration variables.   KZCONF:       1
- Total number of variables. KZVAR :       1
-
- --- In RSPPP:
- THCPP, MAXRM          1.00D-03       600
- KSYMOP,NGPPP(KSYMOP)         4         1
- LWRK , LWRK1          63999718  62917918
-  KEXCNV,NSIM,LWRK2            1           1     1082089
+ Perturbation symmetry.     KSYMOP:       1
+ Perturbation spin symmetry.TRPLET:       T
+ Orbital variables.         KZWOPT:       4
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :       4
+ Electrons in DFTMOMO:    1.99999999998150
 
 
 
  --- EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) ---
 
- Operator symmetry = 4  ( B1g); triplet =   F
+ Operator symmetry = 1  ( Ag ); triplet =   T
 
-           1  START configuration VECTORS USING LOWEST DIAGONAL HESSIAN ELEMENTS
-           0  START orbital VECTORS
 
  ** RSPCTL MICROITERATION NUMBER    1
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    0.00000D+00  0.00D+00  0.00D+00  1.00D+00    0.00000D+00
+         1    1.84531D-01  0.00D+00  1.85D-01  7.08D-01    9.70669D-01
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.32082D-15  0.00D+00  2.32D-15  7.08D-01    9.66192D-01
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
- (dimension of paired reduced space:    2)
- RSP solution vector no.    1; norm of residual   0.00D+00
+ (dimension of paired reduced space:    4)
+ RSP solution vector no.    1; norm of residual   3.28D-15
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
 
-                                Output from HSOCTL
-                                ------------------
-
-
- Spin-orbit property vector calculation component =    Z2SPNORB
-
- Print level in HSOCTL:     3
-
- Skip one-electron spin-orbit contributions
-
-      Index(conf)                         Z operator          Y operator
-      ----------                      --------------      --------------
-           1                            4.5135166684        4.5135166684
-
-@ Singlet transition operator label: Z2SPNORB
-@ STATE NO:    1 *TRANSITION MOMENT:  6.00877179E-05 *ENERGY(eV):   0.0000000    
-
-
  **************************************************************************************
- *** @ Excit. operator sym 4 & ref. state sym 2 => excited state symmetry 3  ( B2u) ***
+ *** @ Excit. operator sym 1 & ref. state sym 1 => excited state symmetry 1  ( Ag ) ***
  **************************************************************************************
 
 
 
- @ Excited state no:    1 in symmetry 3  ( B2u) - singlet excitation
+ @ Excited state no:    1 in symmetry 1  ( Ag ) - triplet excitation
  -------------------------------------------------------------------
 
-@ Excitation energy :   0.0000000     au
-@                       0.0000000     eV;   0.0000000     cm-1;   0.0000000     kJ / mol
+@ Excitation energy :  0.96619176     au
+@                       26.291415     eV;   212054.58     cm-1;   2536.7361     kJ / mol
 
-@ Total energy :        2.0926376     au
-
-@ Operator label: Z2SPNORB; Transition moment :  6.00877179E-05 au
-@ Spin-orbit coupling constant (Z2SPNORB) :   13.187730     cm-1;   6.00877179E-05 au
+@ Total energy :       -1.9283231     au
 
  Eigenvector for state no.  1
 
-     Orbital operator symmetry = 4
+     Response orbital operator symmetry = 1
+     (only scaled elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
+      ----------    -----  -----      --------------      --------------      --------------      --------------
+           1         1(1)   2(1)       -0.7074113276        0.0281117531       -1.0004306937        0.0397560225
+
+        3 elements with absolute value ≤ 1.00D-01 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 1
      >> NO ELEMENTS <<
 
-      Index(conf)                         Z operator          Y operator
-      ----------                      --------------      --------------
-           1                            1.0000000000        0.0000000000
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+             J Chem Phys 128, 044118 (2008)
 
 
-  Printout of coefficients in interval   0.3162E+00 to  0.1000E+01
-  ==============================================================
+  The dominant contributions:
 
- Coefficient of determinant         1 is      1.00000000  1.00000000E+00
- alpha-string:  1     3
-  beta-string:
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
+      1    2 -0.707411  0.028112  0.699565  0.897306  0.540994  0.378461
 
-  Printout of coefficients in interval   0.1000E+00 to  0.3162E+00
-  ==============================================================
-   ( no coefficients )
-
- Norm of printed part of CI vector ..      1.00000000
-
-  Magnitude of CI coefficients
-  ============================
-
-  ( Ranges are relative to norm of vector :  1.00E+00 )
-
-  10- 1 to 10- 0         1    0.10000000E+01    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is             0
+@ Overlap diagnostic LAMBDA =    0.6999
 
 
- Time used in polarization propagator calculation is      0.00 CPU seconds for symmetry 4
+ Time used in polarization propagator calculation is      0.18 CPU seconds for symmetry 1
 
-  Total CPU  time used in RESPONSE:   0.01 seconds
-  Total wall time used in RESPONSE:   0.02 seconds
+  Total CPU  time used in RESPONSE:   0.18 seconds
+  Total wall time used in RESPONSE:   0.19 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
-  Total CPU  time used in DALTON:   0.03 seconds
-  Total wall time used in DALTON:   0.07 seconds
+  Total CPU  time used in DALTON:   0.48 seconds
+  Total wall time used in DALTON:   0.39 seconds
 
  
-     Date and time (Darwin) : Tue May 14 10:51:53 2019
-     Host name              : adm-106152.pc.sdu.dk                    
+     Date and time (Darwin) : Mon Mar 25 23:05:09 2019
+     Host name              : adm-106152.local                        

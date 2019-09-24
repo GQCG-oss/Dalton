@@ -77,7 +77,7 @@ C
          ELSE IF (PROMPT .EQ. '#' .OR. PROMPT .EQ. '!') THEN
             GO TO 100
          ELSE IF (PROMPT .EQ. '*') THEN
-            RETURN
+            GO TO 9000
          ELSE
             WRITE (LUPRI,'(/3A/2A/)')
      *         ' Keyword ',WORD,' does not begin with',
@@ -105,12 +105,34 @@ C *** Option 4 >PRINT< Print level in stex routines
 C *** Option 5 >OPEN S< Open shells in stex calculation
   105 CONTINUE
       READ(LUCMD,*) (NHLSTX(ISYM), ISYM=1,NSYM)
-      READ(LUCMD,*) ((IHLSTX(I,ISYM),I=1,NHLSTX(ISYM)),ISYM=1,NSYM)
+      j = 0
+      do isym = 1, nsym
+      if (NHLSTX(isym) .gt. 0) then
+         j = j + 1
+         READ(LUCMD,*) (IHLSTX(I,ISYM),I=1,NHLSTX(ISYM))
+      end if
+      end do
+      if (j .eq. 0) then
+         write(lupri,*) 'Error in *STEX input .OPEN SHELLS:'
+         write(lupri,*) '   holes per symmetry:',NHLSTX(1:NSYM)
+         call quit('Error in *STEX input .OPEN SHELLS')
+      end if
       GO TO 100
-C *** Option 6 >COEFF< Coefficients for modified Fock matrices
+C *** Option 6 >COEFFI< Coefficients for modified Fock matrices
   106 CONTINUE
-      READ(LUCMD,*) ((CJSTX(I,ISYM),I=1,NHLSTX(ISYM)),ISYM=1,NSYM)
-      READ(LUCMD,*) ((CKSTX(I,ISYM),I=1,NHLSTX(ISYM)),ISYM=1,NSYM)
+      j = 0
+      do isym = 1, nsym
+      if (NHLSTX(isym) .gt. 0) then
+         j = j + 1
+         READ(LUCMD,*) (CJSTX(I,ISYM),I=1,NHLSTX(ISYM))
+         READ(LUCMD,*) (CKSTX(I,ISYM),I=1,NHLSTX(ISYM))
+      end if
+      end do
+      if (j .eq. 0) then
+         write(lupri,*) 'Error in *STEX input .COEFFI:'
+         write(lupri,*) '   .OPEN SHELL must be before .COEFFI'
+         call quit('Error in *STEX input .COEFFI')
+      end if
       GO TO 100
 C *** Option 7 >AO   < Save stex matrices in AO basis
   107 CONTINUE
@@ -127,7 +149,9 @@ C *** Option 9 >AUGERTEST   < Build RPA matrix
       RPATST = .TRUE.
       GO TO 100
 C
+ 9000 CONTINUE
 C
+      RETURN
       END
 C#######################################################################
       SUBROUTINE STXCTL(WORK,LWORK)

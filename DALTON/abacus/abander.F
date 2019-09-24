@@ -683,11 +683,7 @@ c         ELSE IF (NTASK .EQ. 0) THEN
 c            CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
 c     &                  MPI_COMM_WORLD,IERR)
 c            CALL MPI_FINALIZE(IERR)
-c#if defined (SYS_CRAY)
-c            CALL INFO = ISHELL('rm -f $SCRATCHDIR/*')
-c#else
 c            CALL SYSTEM('rm -f $SCRATCHDIR/*')
-c#endif
 c            STOP '*** End of DALTON calculation ***'
 c         ELSE
 c            WRITE (LUPRI,'(/A)') 'Unknown message received by slave'
@@ -2383,7 +2379,7 @@ C
 C
 C     *** unset ABA variable to false ***
 C
-      CALL ABA_UNSET
+      CALL ABA_UNSET()
 C
 C     *** If there are possibilities for  new symmetry. ***
 C

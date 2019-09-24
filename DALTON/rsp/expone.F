@@ -79,16 +79,21 @@ C dipole.h: DIPMN(:)
 
       REAL*8 DIP(3), DIPMOM
 
+      I = 0
       DO IOP = 1, N1AVTOT
         IF (LBL1AV(IOP).EQ.'XDIPLEN') THEN
           DIP(1) = DIPMN(1) - AVE1VAL(IOP)
+          I = I + 1
         ELSE IF (LBL1AV(IOP).EQ.'YDIPLEN') THEN
           DIP(2) = DIPMN(2) - AVE1VAL(IOP)
+          I = I + 1
         ELSE IF (LBL1AV(IOP).EQ.'ZDIPLEN') THEN
           DIP(3) = DIPMN(3) - AVE1VAL(IOP)
+          I = I + 1
         END IF
       END DO
-        CALL HEADER('Dipole moment - electronic and nuclear',-1)
+      IF (I.EQ.3) THEN
+        CALL HEADER('Total dipole moment - electronic and nuclear',-1)
         DIPMOM = SQRT(DIP(1)*DIP(1) + DIP(2)*DIP(2) +
      &       DIP(3)*DIP(3))
         WRITE (LUPRI,'(17X,A,15X,A,10X,A/3X,3F19.6)')
@@ -97,6 +102,7 @@ C dipole.h: DIPMN(:)
         CALL HEADER(
      $       'Dipole moment components',-1)
         CALL DP0PRI(DIP)
+      END IF
 
       I = 0
       DO IOP = 1, N1AVTOT
@@ -112,7 +118,7 @@ C dipole.h: DIPMN(:)
         END IF
       END DO
       IF (I.EQ.3) THEN
-        CALL HEADER('Local-field corrected Dipole moment',-1)
+        CALL HEADER('Local-field corrected total dipole moment',-1)
         DIPMOM = SQRT(DIP(1)*DIP(1) + DIP(2)*DIP(2) +
      &       DIP(3)*DIP(3))
         WRITE (LUPRI,'(17X,A,15X,A,10X,A/3X,3F19.6)')

@@ -41,8 +41,6 @@ C
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('PR1INT')
-#ifdef VAR_DEBUG
-#endif
 C
       NCOMP  = 0
       TOFILE = .TRUE.
@@ -3480,14 +3478,22 @@ C  /* Deck frmtyp */
             IF (DOATOM(IATOM)) THEN
                IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
                   ITYP = ITYP + 1
+                  JATOM = IPTNUC(IATOM,IREP)
                   IF (INTTYP .EQ. 9) THEN
-                     LABINT(ITYP) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
-     &                              //CHRNOS(IPTNUC(IATOM,IREP)/10)//
-     &                                CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                     IF (JATOM .GT. 999) THEN
+         CALL QUIT('Error: FC only implemented for max 999 atoms')
+                     END IF
+                     LABINT(ITYP) = 'FC '//NAMN(IATOM)(1:2)
+     &                              //CHRNOS(JATOM/100)
+     &                              //CHRNOS(MOD(JATOM,100)/10)
+     &                              //CHRNOS(MOD(JATOM,10))
                   ELSE IF (INTTYP .EQ. 95) THEN
-                     LABINT(ITYP) = 'FCKE'//NAMDEP(NUCPRE(IATOM)+1)(1:2)
-     &                              //CHRNOS(IPTNUC(IATOM,IREP)/10)//
-     &                                CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                     IF (JATOM .GT. 99) THEN
+         CALL QUIT('Error: FCKE only implemented for max 99 atoms')
+                     END IF
+                     LABINT(ITYP) = 'FCKE'//NAMN(IATOM)(1:2)
+     &                              //CHRNOS(JATOM/10)
+     &                              //CHRNOS(MOD(JATOM,10))
                   END IF
                   INTREP(ITYP) = IREP
                END IF
@@ -3618,11 +3624,14 @@ C  /* Deck sdtyp */
             DO 300 ICOOR1 = 1, 3
                ISCOR1 = IPTCNT(3*(IATOM - 1) + ICOOR1,IREP,2)
                IF (ISCOR1 .GT. 0) THEN
+               IF (ISCOR1 .GT. 999) THEN
+         CALL QUIT('Error: SD only implemented for max 333 atoms')
+               END IF
+                  IFIRST = ISCOR1/100
+                  ISECND = MOD(ISCOR1,100)/10
+                  ITHIRD = MOD(MOD(ISCOR1,100),10)
                   DO 400 ICOOR2 = 1, 3
                      ITYP = ITYP + 1
-                     IFIRST = ISCOR1/100
-                     ISECND = MOD(ISCOR1,100)/10
-                     ITHIRD = MOD(MOD(ISCOR1,100),10)
                      IF (INTTYP .EQ. 11) THEN
                         LABINT(ITYP) = 'SD '//CHRNOS(IFIRST)
      &                                      //CHRNOS(ISECND)
@@ -3634,6 +3643,9 @@ C  /* Deck sdtyp */
      &                                      //CHRNOS(ITHIRD)//' '
      &                                      //CHRXYZ(-ICOOR2)
                      ELSE IF (INTTYP .EQ. 68) THEN
+               IF (ISCOR1 .GT. 99) THEN
+         CALL QUIT('Error: SDKE only implemented for max 33 atoms')
+               END IF
                         LABINT(ITYP) = 'SDKE'//CHRNOS(ISCOR1/10)
      &                                       //CHRNOS(MOD(ISCOR1,10))
      &                                       //' '//CHRXYZ(-ICOOR2)
@@ -4911,7 +4923,8 @@ C     when reaching this routine.
          END IF
          REWIND (LUPROP)
          IF(.NOT.FNDLAB('EOFLABEL',LUPROP)) THEN
-            WRITE (LUPRI,'(/A)') ' End of file not found in AOPROPER?'
+            WRITE (LUPRI,'(/A)') ' Internal error, '//
+     &         '"EOFLABEL" label not found in AOPROPER'
             CALL GPINQ_print(LUPROP,'NAME')
             REWIND LUPROP
             CALL QDUMP(LUPROP)

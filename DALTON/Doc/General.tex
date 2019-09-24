@@ -75,11 +75,11 @@ integral indices~\cite{directCC}.
 \item[\Key{DOUGLAS-KROLL}] Include scalar relativistic effects by using the
 Douglas-Kroll-Hess second-order (DKH2) transformed one-electron potential and kinetic energy Hamiltonian.
 
-\item[\Key{FDE}] activates the use of frozen density embedding (FDE) to include environment effects 
-(See Chapter~\ref{ch:fde-embedding} for an introduction to FDE). Further options may be specified via 
-the \Sec{FDE} input section (see subsection~\ref{subsec:fde}).  \index{frozen density embedding} \index{FDE} 
-\index{environment model} \index{embedding model} \index{multiscale modeling} \index{embedding} 
-\index{QM/QM} \index{quantum mechanics / quantum mechanics} \index{solvent effects} \index{enviroment effects} 
+\item[\Key{FDE}] activates the use of frozen density embedding (FDE) to include environment effects
+(See Chapter~\ref{ch:fde-embedding} for an introduction to FDE). Further options may be specified via
+the \Sec{FDE} input section (see subsection~\ref{subsec:fde}).  \index{frozen density embedding} \index{FDE}
+\index{environment model} \index{embedding model} \index{multiscale modeling} \index{embedding}
+\index{QM/QM} \index{quantum mechanics / quantum mechanics} \index{solvent effects} \index{enviroment effects}
 \index{subsystem DFT}
 
 
@@ -995,7 +995,7 @@ and anisotropic dipole-dipole polarizabilities provided in the \potinp\
 file. See Chapter~\ref{ch:embedding} for an introduction to
 calculations using the polarizable embedding model. See also Ref.~\cite{pescf} for
 details on the PE-HF/DFT model, Ref.~\cite{pesoppa} for PE-MP2/SOPPA,
-Ref.~\cite{pemcscf} for PE-MCSCF, Ref.~\cite{pecc} for PE-CC and Ref.~\cite{peeef,peeef2} 
+Ref.~\cite{pemcscf} for PE-MCSCF, Ref.~\cite{pecc} for PE-CC and Ref.~\cite{peeef,peeef2}
 for details on the EEF effect.
 
 \begin{description}
@@ -1061,11 +1061,11 @@ Damp the electric fields from the electrons and nuclei in the core region based 
 Activate the ground-state polarization approximation, i.e.\ freeze the embedding potential according to the ground-state density. This means that the polarizable environment is self-consistently relaxed during the optimization of the ground-state density/wave function of the core molecular system and then kept frozen in any following response calculations.
 
 \item[\Key{NOMB}]\verb| |\newline
-Remove many-body effects in the environment. This is done by deactivating interactions between induced dipole moments. 
+Remove many-body effects in the environment. This is done by deactivating interactions between induced dipole moments.
 
 \item[\Key{EEF}]\verb| |\newline
-Request the calculation of effective dipole integrals (\verb|XLFDIPLN,YLFDIPLN,ZLFDIPLN|), i.e., 
-include the effective external field effect in property calculations in the \resp\ module. 
+Request the calculation of effective dipole integrals (\verb|XLFDIPLN,YLFDIPLN,ZLFDIPLN|), i.e.,
+include the effective external field effect in property calculations in the \resp\ module.
 NOTE: Does currently only affect 1PA and 2PA properties (.SINGLE RESIDUE and .DIPLEN or .TWO-PHOTON).
 
 \item[\Key{RESTART}]\verb| |\newline
@@ -1118,7 +1118,7 @@ Debug output. Prints the total electric field and the induced dipole moments in 
 \subsection{QM/MM model: \Sec{QM3}}
 \label{sec:qm3}
 
-Not documented. Examples can be found by grepping for "QM3" in the "DALTON/test" directory in the distribution. See also \Key{PEQM} and \Sec{PEQM} 
+Not documented. Examples can be found by grepping for "QM3" in the "DALTON/test" directory in the distribution. See also \Key{PEQM} and \Sec{PEQM}
 (introduction in Chapter~\ref{ch:embedding}) for a newer more general and efficient implementation with many of the same capabilities.
 
 \subsection{Polarizable continuum model: \Sec{PCM}}
@@ -1213,7 +1213,7 @@ This input section is only used right after the *PCM section
 (Section~\ref{subsec:pcmcav}), and is used to specify the cavity.
 
 \begin{description}
-    
+
 \item[\Key{AREATS}]\verb| |\newline
 \verb|READ (LUCMD, *) AREATS|\verb| |\newline
 Defines the maximum area of a tessera in the initial tesselation of a
@@ -1282,7 +1282,7 @@ This option can be used to specify a non-default name of the file that contains 
 %
 %\item[\Key{LEVEL}]\verb| |\newline
 %\verb|READ (LUCMD, *) ex_level|\verb| |\newline
-%Defines the wavefunction with which to calculate the total electrostatic potential and electron density, gradient and Hessian 
+%Defines the wavefunction with which to calculate the total electrostatic potential and electron density, gradient and Hessian
 %which will be exported. Default is \verb|HF|, supported options are: \verb|HF|, \verb|DFT|, \verb|MP22|, \verb|CC2|, \verb|CCSD|, \verb|MCSCF|.
 %
 %\item[\Key{EXONLY}]\verb| |\newline
@@ -1306,7 +1306,7 @@ Directives controlling the evaluation of charges (and higher ranks of multipole 
 \item[\Key{MPRANK}]\verb| |\newline
 \verb|READ (LUCMD,*) MPRANK|
 
-Specifies the highest rank of the multipole moments which are fitted to reproduce the electrostatic potential. It is possible to specify either 0 (charges) or 1 (charges and dipoles). Please note, that using the dipole constraint (see \verb|CONSTR| below) with a rank $>=1$ is meaningless and will be ignored. The default value is 0 (charges).
+Specifies the highest rank of the multipole moments which are fitted to reproduce the electrostatic potential. It is possible to specify either 0 (charges), 1 (charges and dipoles) or 2 (charges, dipoles and quadrupoles). Please note, that using the dipole constraint (see \verb|CONSTR| below) with a rank $>=1$ is meaningless and will be ignored. The default value is 0 (charges).
 
 \item[\Key{CONSTR}]\verb| |\newline
 \verb|READ (LUCMD,*) CONSTR|
@@ -1935,7 +1935,7 @@ implemented for spin--spin coupling constants.
 
 \item[\Key{CUBIC }]\verb| |\newline
 Calculate the molecular Hessian and third derivatives and write the files
-\verb|DALTON.HES| and \verb|DALTON.WLK| for use in future 
+\verb|DALTON.HES| and \verb|DALTON.WLK| for use in future
 calculation of the vibrationally averaged properties using the
 \Key{ONLY-P} keyword.
 
@@ -1958,15 +1958,15 @@ to the total zero-point vibrational corrections to a molecular property.
 
 \item[\Key{ONLY-P}]\verb| |\newline
 Calculate only the equilibrium value and derivatives of the molecular property
-required to calculate the (harmonic and anharmonic) vibrational average. 
-In order for this to work, \verb|DALTON.HES| and \verb|DALTON.WLK| files containing the molecular Hessian 
+required to calculate the (harmonic and anharmonic) vibrational average.
+In order for this to work, \verb|DALTON.HES| and \verb|DALTON.WLK| files containing the molecular Hessian
 and third derivatives of the molecule must be available from a previous calculation.
 
 \item[\Key{P-BASIS}]\verb| |\newline
 \verb|READ (LUCMD,*) PRPBTX|
 
-When calculating vibrationally averaged properties use the basis set in the 
-.mol file for calculating the force-constants and \verb|PRPBTX| for 
+When calculating vibrationally averaged properties use the basis set in the
+.mol file for calculating the force-constants and \verb|PRPBTX| for
 calculating the property and property derivatives.
 
 \item[\Key{SPIN-SPIN COUPLINGS}]\verb| |\newline

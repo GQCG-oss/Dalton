@@ -87,7 +87,6 @@ C
 C  1-Mar-1989 Hans Joergen Aa. Jensen
 C  l.r. 980824-hjaaj: removed slow blank fill of QNAMES
 C    because of many system routine calls (marked "chj1"),
-C    test on IRIX shows this is automatically done,
 C    disabled LQTREE (marked "Chj2"), not used in this version
 C
 C  Package for tracebacks and statistics.

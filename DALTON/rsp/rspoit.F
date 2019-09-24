@@ -667,7 +667,6 @@ C
                ISYMX = MULD2H(IXYSYM,ISYMY)
                IXST  = IORB(ISYMX) + 1
                IXEND = IORB(ISYMX) + NORB(ISYMX)
-#include "ivdep.h"
                DO 1100 IX = IXST,IXEND
                   IRECXY = ICDTRA(IX,IY)
                   IF (IRECXY .GT. 0) THEN
@@ -1109,7 +1108,6 @@ C
                ISYMX = MULD2H(IXYSYM,ISYMY)
                IXST  = IORB(ISYMX) + 1
                IXEND = IORB(ISYMX) + NORB(ISYMX)
-#include "ivdep.h"
                DO 1100 IX = IXST,IXEND
                   IRECXY = ICDTRA(IX,IY)
                   IF (IRECXY .GT. 0) THEN

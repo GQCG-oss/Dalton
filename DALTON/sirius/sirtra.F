@@ -24,22 +24,18 @@ C
 !              also work when AOSRTINT.DA has been deleted !!!
 !951219-hjaaj: TRACTL: defined DM1=-1.0D0 (was undefined); never
 !   modify input KTRLVL (was ITRLVL, which is abs(KTRLVL))
-!950830-hjaaj: LRECL in *4 words for direct access under IRIX
 !941115-hjaaj: SIR_INTOPEN: included FLAG(34) in def. of OLDTRA
-!940927-hjaaj: SIR_INTOPEN: s/FLAG(8)/DOMP2/ and s/FLAG(9)/DORSP/
+!940927-hjaaj: SIR_INTOPEN: s/FLAG(9)/DOMP2/ and s/FLAG(8)/DORSP/
 !940909-hjaaj: added PARAGON define label (same code as AIX)
 !940517-hjaaj: Ide: gem integraler paa LUINTM uden labels (afhaengigt af ITRLVL)
 !   Brug ITRLVL til at bestemme LBINTM (ikke NMORBT men f.eks. NMOCCT + ...)
 !   Beregn ogsaa LBINTD v.hj.af LBMXSQ ??
 !MAERKE 930305: usikkert,indfoer USEDRC el. LVLDRC i parameterliste til TRACTL
-!MAERKE 900111: reconsider in SIR_INTOPEN (allow flag(14) also when flag(34?)
 !-------- Revision n05 ends here ---------
 !940517-hjaaj
-!SORTA,SORTB: changed NTRI to NMBASX (was = NMBASX); removed old TAYLSPACE
 !SIR_INTOPEN: deleted write DUMMY for CRAY; attempt open old LUINTM file if FLAG(14)
 !        true, irrespective of FLAG(34); fixed ICASE print error on Cray
 !        by extending IF (OPINTM) THEN to after ICASE print
-!TRAAB : removed unused DUMMY parameter statement
 !-------- Revision n04 ends here ---------
 !931201-hjaaj
 !TRACTL: corrected error for TRAAB; LRBUF for 600 but LBINTM could be up to 1024
@@ -53,7 +49,7 @@ C
 !TRACTL: print KWORK,MWORK when IPRTRA .gt. 5 (was .ge. 20);
 !        SAVE LRBUF; LRBUF defined for 600 integrals/buffer in AO file
 !910319-hjaaj
-!SORTA,SORTB: reduced NBLOCK to max NTRI, thus only calling DZERO with
+!SORTA,SORTB: reduced NBLOCK to max NMBASX, thus only calling DZERO with
 !  what is used later; at the same time this gives the most even
 !  distribution of distributions per chain.
 !TRACD,TRAAB: insert symmetry check in write-to-file loop, gprof showed
@@ -97,8 +93,6 @@ C
 ! Write total time in tracd,sortb,traab in tractl if iprtra .gt.0
 !    and only write TRANSFORMATION level each time if iprtra .gt. 0
 !    and corrected 890615 tractl output error in TRACTL
-!890220-hjaaj
-! traab,tracd -- NOSYNC directive for read direct access to TRI(*)
 !===========================================================================
 #endif
 C  /* Deck trauth */
@@ -147,6 +141,17 @@ C
 C
       LOGICAL OPINTM, FNDLAB, OLDTRA, FEXIST
 C
+C
+C     Find out if we need LUINTM (MOTWOINT):
+C     we need LUINTM in MC/CI optimization or for WRGEOM
+C     or for MP2 or for RESPONSE
+C
+      OPINTM = .NOT.FLAG(34) .OR. (FLAG(25) .AND. ABS(ITRFIN).LE.10)
+     &     .OR. DOMP2 .OR. DORSP
+
+      IF (.NOT. OPINTM) RETURN
+
+
       IF (THRP .LT. THRS) THEN
          WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
      &      ' INFO: Changed THRP threshold used in'//
@@ -168,17 +173,11 @@ C
          RETURN
       END IF
 C
-C *** (1) Specify LSRTAO = 0 to tell TRACTL to sort ao integrals
+C *** Specify LSRTAO = 0 to tell TRACTL to sort ao integrals
 C     on first call; if old LUINTM LSRTAO is reset to -1,
 C     signalling TRACTL to check if LUDA exist.
 C
-C     Find if we should open LUINTM:
-C     need LUINTM in MC/CI optimization or for WRGEOM
-C     or for MP2 or for RESPONSE
-C
       LSRTAO = 0
-      OPINTM = .NOT.FLAG(34) .OR. (FLAG(25) .AND. ABS(ITRFIN).LE.10)
-     &     .OR. DOMP2 .OR. DORSP
 C
 C
       IF (OPINTM) THEN
@@ -995,7 +994,6 @@ C     ***** FIND LAST ADDRESS OF NEW CHAIN AND START READ *****
   103          CALL READDX(LUDA,IADR,LDA22,IBUF)
                   IADR   = IBUF(LDA21)
                   LENGTH = IBUF(LDA22)
-#include "nosync.h"
                   DO 104 I = 1,LENGTH
                      LDAI = IDABUF + I
                      IBL  = IBUF(LDAI)
@@ -1403,7 +1401,6 @@ C           ***** FIND LAST ADDRESS OF NEW CHAIN AND START READ *****
                IADR=IBUF(LDA21)
                LENGTH=IBUF(LDA22)
             IF(LENGTH.EQ.0) GO TO 106
-#include "nosync.h"
                DO 104 I=1,LENGTH
                   IBL=IBUF(IDABUG+I)
                   MPQ=IAND(ISHFT(IBL,-16),IBT16)
@@ -2298,9 +2295,9 @@ C
 C
       IF (LSRTAO .NE. 0) THEN
          REWIND(LUINTM)
-         READ  (LUINTM) NPQ,LDABUF,(LASTAD(I),I=1,2500)
-         READ  (LUINTM) LBINT1,JTRLVL
-         IF (JTRLVL .EQ. 3 .AND. ITRLVL .EQ. 2) JTRLVL = -1
+         READ  (LUINTM)
+         READ  (LUINTM) LBINTM_1,JTRLVL
+         IF (JTRLVL .EQ. 3 .AND. ITRLVL .EQ. 2) JTRLVL = -1 ! (aa|ii) and (ai|ai) missing
          IF (JTRLVL .EQ. 2 .AND. ITRLVL .EQ. 3) JTRLVL =  3
          IF (JTRLVL .EQ. 5 .AND. ITRLVL .EQ. 6) JTRLVL =  6
          IF (JTRLVL .EQ. 6 .AND. ITRLVL .EQ. 4) JTRLVL = -1 ! (gg|ii) and (gi|gi) missing
@@ -2308,7 +2305,8 @@ C
          IF (JTRLVL .GE. ITRLVL) THEN
 C           read CMO matrix from LUINTM
 C           and subtract from input CMO matrix
-            READ  (LUINTM) (WORK(I),I=1,NCMOT)
+            READ  (LUINTM, IOSTAT=IOSVAL) WORK(1:NCMOT)
+         IF (IOSVAL .EQ. 0) THEN
             CALL DAXPY(NCMOT,DM1,CMO,1,WORK,1)
             I = IDAMAX(NCMOT,WORK,1)
             READ (LUINTM) MISH_TEST(1:8), MASH_TEST(1:8)
@@ -2322,14 +2320,14 @@ C           and subtract from input CMO matrix
                IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/T12,A)')
      *            ' TRACTL_1: Integral transformation abandoned,',
      *            'the required MO integrals are already available.'
-               LBINTM = LBINT1
+               LBINTM = LBINTM_1
                GO TO 9999
             END IF
-         END IF
-         ITRLVL_LAST = ITRLVL ! cannot be earlier, because we might have abandoned integral transformation
-      ELSE
-         ITRLVL_LAST = ITRLVL
+         END IF ! IOSVAL test
+         END IF ! JTRLVL test
       END IF
+      ITRLVL_LAST = ITRLVL
+
       IF (LSRTAO .LT. 0) THEN
 C     ... check if old LUDA exist, if yes then check if file
 C         is consistent with LUINTM information /890302-hjaaj
@@ -2348,8 +2346,8 @@ C           LUDA exists, try to read last record acc. to LUINTM ...
                IADR = MAX(IADR,LASTAD(IPQ))
   110       CONTINUE
             LBUF = LBUF/IRAT
-            READ (LUDA,REC=IADR,IOSTAT=IODA) (WORK(I),I=1,LBUF)
-            IF (IODA .NE. 0) THEN
+            READ (LUDA,REC=IADR,IOSTAT=IOSVAL) WORK(1:LBUF)
+            IF (IOSVAL .NE. 0) THEN
 C        ... LUDA not consistent with LUINTM information
                CALL GPCLOSE(LUDA,'DELETE')
                LSRTAO = 0

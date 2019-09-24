@@ -1301,8 +1301,10 @@ C  /* Deck FCOPER */
 #include "nuclei.h"
 #include "chrnos.h"
 C
-       LABINT = 'FC '//NAMN(ATMIND)(1:3)//CHRNOS(ATMIND/10)
-     *          //CHRNOS(MOD(ATMIND,10))
+       LABINT = 'FC '//NAMN(ATMIND)(1:2)
+     &          //CHRNOS(ATMIND/100)
+     &          //CHRNOS(MOD(ATMIND,100)/10)
+     &          //CHRNOS(MOD(ATMIND,10))
 C
       RETURN
       END
@@ -1381,9 +1383,9 @@ C
               DO 300 ICOOR2 = 1, 3
                  NCOOR=NCOOR+1
                  LABINT(NCOOR) = 'SD '//CHRNOS(ISCOR1/100)
-     *                            //CHRNOS(ISCOR1/10)
-     *                            //CHRNOS(MOD(ISCOR1,10))
-     *                            //' '//CHRXYZ(-ICOOR2)
+     &                            //CHRNOS(MOD(ISCOR1,100)/10)
+     &                            //CHRNOS(MOD(ISCOR1,10))
+     &                            //' '//CHRXYZ(-ICOOR2)
  300          CONTINUE
               SDIND(1,ISCOR1)=ATMIND
               SDIND(2,ISCOR1)=ICOOR1

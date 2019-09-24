@@ -51,6 +51,7 @@
 !  inforb.h : NNORBX, NORBT, ???
 !  inftra.h : IPRTRA, LBUF
 !  inftap.h : LUINTM, LBINTM
+!  cbihr2.h : IFTHRS
 !  ccom.h   : THRS
 #include "iratdef.h"
 #include "maxaqn.h"
@@ -63,7 +64,7 @@
 #include "ccom.h"
 
       character*4 TYPE_TEXT
-      integer JTRSIR, NTRLVL, MX_NDMAT
+      integer JTRSIR, NTRLVL, IOSVAL, MX_NDMAT
       integer KFREE, LFREE, KFRSAV, KUCMO, KDMAT, KFMAT, I, J
       integer MISH_TEST(8), MASH_TEST(8), IDAMAX, L_H2CD
       integer, allocatable :: ICDTRA(:), ITRTYP(:)
@@ -91,6 +92,8 @@ C --- start of executable code
          FLUSH(LUPRI)
       END IF
 
+      ! call SIR_INTOPEN_FCKTRA()
+
 C     Test if MO integrals already available
 
       if (TYPE_TEXT .EQ. 'COUL') then
@@ -105,19 +108,20 @@ C     Test if MO integrals already available
       LBUF = IRAT*L_H2CD
 
       REWIND(LUINTM)
-      IF ( FNDLAB(INT_LABEL,LUINTM) ) THEN
+      IF ( FNDLAB(INT_LABEL,LUINTM) ) THEN ! true iff existing MOTWOINT is created by .FCKTRA
          REWIND(LUINTM)
          READ  (LUINTM)
          READ  (LUINTM) J,NTRLVL
-         IF (NTRLVL .EQ. 3 .AND. JTRSIR .EQ. 2) JTRSIR = -1
-         IF (NTRLVL .EQ. 2 .AND. JTRSIR .EQ. 3) JTRSIR =  3
-         IF (NTRLVL .EQ. 5 .AND. JTRSIR .EQ. 6) JTRSIR =  6
-         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 4) JTRSIR = -1 ! (gg|ii) and (gi|gi) missing
-         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 5) JTRSIR = -1 ! (gg|gi) missing
+         IF (NTRLVL .EQ. 3 .AND. JTRSIR .EQ. 2) NTRLVL = -1 ! (aa|ii) and (ai|ai) missing
+         IF (NTRLVL .EQ. 2 .AND. JTRSIR .EQ. 3) NTRLVL =  3
+         IF (NTRLVL .EQ. 5 .AND. JTRSIR .EQ. 6) NTRLVL =  6
+         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 4) NTRLVL = -1 ! (gg|ii) and (gi|gi) missing
+         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 5) NTRLVL = -1 ! (gg|gi) missing
          IF (NTRLVL .GE. JTRSIR) THEN
-C           read CMO matrix from LUINTM
+C           level OK, now read CMO matrix from LUINTM
 C           and subtract from input CMO matrix
-            READ  (LUINTM) WORK(1:NCMOT)
+            READ  (LUINTM, IOSTAT=IOSVAL) WORK(1:NCMOT)
+         IF (IOSVAL .EQ. 0) THEN
             WORK(1:NCMOT) = WORK(1:NCMOT) - CMO(1:NCMOT)
             I = IDAMAX(NCMOT,WORK,1)
             READ (LUINTM) MISH_TEST(1:8), MASH_TEST(1:8)
@@ -133,7 +137,8 @@ C           and subtract from input CMO matrix
      &          //' the required MO integrals are already available.'
                GO TO 9999
             END IF
-         END IF
+         END IF ! IOSVAL test
+         END IF ! NTRLVL test
       END IF
 
       IF (THR_MOTWOINT .LT. THRS) THEN
@@ -149,8 +154,6 @@ C           and subtract from input CMO matrix
       KFREE  = 1
       LFREE  = LWORK
       KFRSAV = KFREE
-
-      ! call SIR_INTOPEN_FCKTRA()
 
 !     translate sirius integral level code to FCKTRA and NEWTRA integral level code
       call TRALVL(JTRSIR, NTRLVL)
@@ -249,7 +252,6 @@ C           and subtract from input CMO matrix
 !  ccom.h   : THRS
 #include "iratdef.h"
 #include "maxaqn.h"
-#include "thrzer.h"
 #include "gnrinf.h"
 #include "inforb.h"
 #include "inftra.h"
@@ -335,7 +337,7 @@ C --- start of executable code
       end if !  if (FCKTRA_TYPE .eq. 1 .AND. PARCAL) then ... else ...
 
       IFTHRS = IFTHRS_save
- 9999 call QEXIT('FCKTRA_CTL')
+      call QEXIT('FCKTRA_CTL')
       return
       end
 
@@ -745,7 +747,6 @@ C --- start of executable code
 
 ! Used from include files:
 !  gnrinf.h : CHIVAL
-!  blocks.h : NSYMBL
 !  inforb.h : N2BASX, NORBT,NNORBX, ...
 !  infind.h : ISMO(:)
 !  inftra.h : IPRTRA
@@ -757,7 +758,6 @@ C --- start of executable code
 #include "maxorb.h"
 #include "maxash.h"
 #include "gnrinf.h"
-#include "blocks.h"
 #include "inforb.h"
 #include "infind.h"
 #include "inftra.h"
