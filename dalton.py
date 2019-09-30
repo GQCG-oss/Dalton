@@ -3,11 +3,11 @@ import argparse
 import os
 import pathlib
 import re
+import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
-import shutil
-import sys
 
 INSTALL_DIR = pathlib.Path(__file__).resolve().parent
 DALEXE = INSTALL_DIR / 'dalton.x'
@@ -20,12 +20,11 @@ def main():
     args = parse_arguments()
 
     with tempfile.TemporaryDirectory() as tmp:
-
         upload_files(args, tmp)
-        p = subprocess.run([DALEXE], cwd=tmp)
+        p = subprocess.run(args.exe, cwd=tmp)
         download_files(args, tmp)
 
-        return p.returncode
+    return p.returncode
 
 
 def parse_arguments():
@@ -38,8 +37,13 @@ def parse_arguments():
     parser.add_argument('-nobackup', action='store_true')
     parser.add_argument('-get', default="")
     parser.add_argument('-put', default="")
+    parser.add_argument('-N', type=int, default="1")
+    parser.add_argument('-exe', default=[DALEXE])
 
     args = parser.parse_args()
+
+    if args.N > 1:
+        args.exe = ['mpirun', '-np', f'{args.N}'] + args.exe
     return args
 
 
@@ -54,8 +58,8 @@ def upload_files(args, tmp):
     try:
         shutil.copy(mol + '.mol', os.path.join(tmp, 'MOLECULE.INP'))
     except FileNotFoundError:
-        print("Assuming molecule definition in dal file")
         pass
+
     if pot:
         try:
             shutil.copy(pot + '.pot', os.path.join(tmp, 'POTENTIAL.INP'))
