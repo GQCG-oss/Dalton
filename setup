@@ -33,6 +33,7 @@ def parse_input():
             default=default_path,
             help='build directory [default: %(default)s]',
             metavar='build path')
+
     
     group = parser.add_argument_group('basic options')
     group.add_argument('--fc',
@@ -178,6 +179,11 @@ def parse_input():
             action='store_true',
             default=False,
             help='build using timings [default: %(default)s]')
+    group.add_argument('--driver',
+            choices=['bash', 'python'],
+            default='bash',
+            help='bash or python (experimental) driver script [default bash]'
+    )
 
     group = parser.add_argument_group('pass extra flags to the compiler')
     group.add_argument('--extra-fc-flags',
@@ -327,6 +333,9 @@ def gen_cmake_command(args):
     if args.generator:
         command += ' -G "%s"' % args.generator
 
+    if args.driver == 'python':
+        command += ' -DENABLE_PYTHON=ON'
+
     command += ' %s' % root_directory
 
     print('%s\n' % command)
@@ -402,6 +411,7 @@ def main(argv):
         # configuration was successful
         save_setup_command(argv, command, build_path)
         print_build_help(build_path)
+
 
 # host/system specific configurations
 def configure_host(args):
