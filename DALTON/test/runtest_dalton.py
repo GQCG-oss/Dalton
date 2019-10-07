@@ -47,9 +47,9 @@ class TestRun(runtest.TestRun):
                 sys.exit(-1)
 
         if noarch:
-            launcher = '%s -noarch -nobackup %s' % (launch_script, args)
+            launcher = '%s -ow -noarch -nobackup %s' % (launch_script, args)
         else:
-            launcher = '%s -nobackup %s' % (launch_script, args)
+            launcher = '%s -ow -nobackup %s' % (launch_script, args)
 
         commands = []
         messages = []
