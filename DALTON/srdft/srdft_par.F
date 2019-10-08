@@ -29,7 +29,7 @@
 C*****************************************************************************
 #ifdef VAR_MPI
       SUBROUTINE SRDFT_PAR_MASTER(ND_SIM,EXCMAT,DMAT,EDFTY,
-     &                 DOERG,DOGRD,DOATR,TRIPLET,
+     &                 DOERG,DO_MOLGRAD,DOATR,TRIPLET,
      &                 WORK,LWORK,IPRINT_in)
 C*****************************************************************************
 C     srdft_par.F master and slave routines
@@ -43,7 +43,7 @@ C  see SRDFT for an explanation of the parameters.
 C
 C*****************************************************************************
       implicit none
-      logical   DOERG,DOGRD,DOATR,TRIPLET
+      logical   DOERG,DO_MOLGRAD,DOATR,TRIPLET
       integer   ND_SIM, LWORK, IPRINT_in
       real*8    EXCMAT(N2BASX,*),DMAT(N2BASX,*),EDFTY,WORK(LWORK)
 
@@ -124,7 +124,7 @@ C     variables for SRCPBERI
 !     5) Transfer input control variables
       CALL MPI_BCAST(DOERG,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DOGRD,1,MPI_LOGICAL,
+      CALL MPI_BCAST(DO_MOLGRAD,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(DOATR,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
@@ -177,7 +177,7 @@ C*****************************************************************************
 !  mpif.h   : for MPI
 #include "mpif.h"
 
-      logical   DOERG,DOGRD,DOATR,TRIPLET
+      logical   DOERG,DO_MOLGRAD,DOATR,TRIPLET
       integer   ND_SIM, NDMAT, NEXCMAT, NDMAT_in, IPRINT
       integer   KFREE, LFREE, KDMAT, KEXCMAT
       real*8    EDFTY
@@ -256,7 +256,7 @@ C     variables for SRCPBERI
 !     5) Transfer input control variables
       CALL MPI_BCAST(DOERG,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DOGRD,1,MPI_LOGICAL,
+      CALL MPI_BCAST(DO_MOLGRAD,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(DOATR,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
@@ -299,7 +299,7 @@ C     variables for SRCPBERI
 #if SRDFT_PAR_DEBUG > 1
       write (lupri,*)
      &'SRDFT_PAR_NODE has started, MYNYM =',MYNUM
-      write (lupri,*) 'DOERG,DOGRD,DOATR',DOERG,DOGRD,DOATR
+      write (lupri,*) 'DOERG,DO_MOLGRAD,DOATR',DOERG,DO_MOLGRAD,DOATR
       write (lupri,*) 'NBAST, N2BASX, NDMAT, NEXCMAT =',
      &   NBAST, N2BASX, NDMAT, NEXCMAT
       write (lupri,*) 'KDMAT,KEXCMAT,KFREE,LFREE',
@@ -322,9 +322,9 @@ C     variables for SRCPBERI
       CALL DZERO(WORK(KEXCMAT),NEXCMAT*N2BASX)
       CALL SRDFT(
      &      ND_SIM,WORK(KEXCMAT),WORK(KDMAT),EDFTY,
-     &      DOERG,DOGRD,DOATR,TRIPLET,
+     &      DOERG,DO_MOLGRAD,DOATR,TRIPLET,
      &      WORK(KFREE),LFREE,IPRINT)
-!     SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,
+!     SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DO_MOLGRAD,DOATR,
 !    &                 WORK,LWORK,IPRINT)
 
       if (iprint .ge. 5) then

@@ -502,15 +502,15 @@ C        then set HF exchange factor to zero.
 
 
 C*****************************************************************************
-      SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,
-     &                 DOERG,DOGRD,DOATR,TRIPLET,WORK,LWORK,IPRINT_in)
+      SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
+     &                 DO_MOLGRAD,DOATR,TRIPLET,WORK,LWORK,IPRINT_in)
 C*****************************************************************************
 C    Purpose : Calculate SR DFT-energy and potential contribution for
 C               SR-DFT hybrid methods.
 C
 C    Input:        ND_SIM : number of input density matrices and output potential matrices
 C                  DOERG   true: xc energy and Vxc potential matrix
-C                  DOGRD   true: molecular gradient contribution
+C                  DO_MOLGRAD   true: molecular gradient contribution
 C                  DOATR   true: electronic Hessian, non-linear Exc second derivative terms
 C                  TRIPLET true: triplet operators
 C                  DMAT(1) = charge density matrix
@@ -546,7 +546,7 @@ C*****************************************************************************
 #include "infvar.h"
 #include "dftinf.h"
 #include "dftcom.h"
-      logical, intent(in) :: DOGRD, DOERG, DOATR, TRIPLET
+      logical, intent(in) :: DO_MOLGRAD, DOERG, DOATR, TRIPLET
       logical :: DOLND, DOGGA, do_metagga
       logical :: first_call, LSRHYBR
       DATA       first_call /.true./
@@ -613,7 +613,7 @@ C*****************************************************************************
 #endif
          CALL SRDFT_PAR_MASTER(
      &        ND_SIM,EXCMAT,DMAT,EDFTY,
-     &        DOERG,DOGRD,DOATR,TRIPLET,
+     &        DOERG,DO_MOLGRAD,DOATR,TRIPLET,
      &        WORK,LWORK,IPRINT)
 #if SRDFT_DEBUG > 4
          WRITE(lupri,*) 'returned from srdft_par_master'
@@ -652,14 +652,14 @@ C     ... erk : Sets DOGGA active when using meta-GGAs
 C
 
       NDER  = 0
-      IF (DOGRD) NDER = 1
+      IF (DO_MOLGRAD) NDER = 1
       IF (LSRHYBR) THEN
          NDER = NDER + 2
 C        ... we use DFTPOT for SRHYBR
       ELSE IF (DOGGA) THEN
-         NDER = NDER + 2
-C        ... we always use DFTPOT in this version
-CC       NDER = NDER + 1
+         NDER = NDER + 1
+         IF (.NOT.ISJT) NDER = NDER + 1
+C        ... we always use DFTPOT when not ISJT
 CC       IF (DFTPOT) NDER = NDER + 1
       END IF
 C
@@ -711,13 +711,13 @@ C     =============================
       IF(ISJT) THEN
         CALL SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
-     &            WORK(KDGASR),DOGGA,DOERG,DOGRD,DOATR,TRIPLET,
+     &            WORK(KDGASR),DOGGA,DOERG,DO_MOLGRAD,DOATR,TRIPLET,
      &            do_metagga,
      &            RESULTS,WORK(KWRK),LWRK,IPRINT)
       ELSE
         CALL SRDFT1(ND_SIM,EXCMAT,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
-     &            WORK(KDGASR),WORK(KDGAT),DOGGA,DOERG,DOGRD,DOATR,
+     &            WORK(KDGASR),WORK(KDGAT),DOGGA,DOERG,DO_MOLGRAD,DOATR,
      &            TRIPLET,RESULTS,WORK(KWRK),LWRK,IPRINT)
       ENDIF
 
@@ -862,8 +862,8 @@ C
 C*****************************************************************************
       SUBROUTINE SRDFT1(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
      &                  WEIGHT,NBUF,GSO,NCNT,DMATGAOSR,DMATGAOT,DOGGA,
-     &                  DOERG,DOGRD,DOATR,TRIPLET,RESULTS,WORK,LWORK,
-     &                  IPRINT)
+     &                  DOERG,DO_MOLGRAD,DOATR,TRIPLET,RESULTS,
+     &                  WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     Written by Jesper Kielberg Pedersen, Mar. 2003
@@ -892,7 +892,7 @@ C*****************************************************************************
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
       PARAMETER (DP3 = 1.0D0/3.0D0)
 
-      LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,TRIPLET
+      LOGICAL   DOLND,DOGGA,DOERG,DO_MOLGRAD,DOATR,TRIPLET
       LOGICAL   LDOGGA,LSRHYBR,RTEST,ldebug
       REAL*8    EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*),
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
@@ -910,8 +910,8 @@ C*****************************************************************************
       WRITE(LUPRI,*) 'SRDFT1: ND_SIM =',ND_SIM
       WRITE(LUPRI,*) 'SRDFT1: CHIVAL =',CHIVAL
       WRITE(LUPRI,*) 'SRDFT1: HFXFAC =',HFXFAC
-      WRITE(LUPRI,*) 'SRDFT1: DOERG,DOATR,DOGRD,DOGGA,TRIPLET  =',
-     &   DOERG,DOATR,DOGRD,DOGGA,TRIPLET
+      WRITE(LUPRI,*) 'SRDFT1: DOERG,DOATR,DO_MOLGRAD,DOGGA,TRIPLET  =',
+     &   DOERG,DOATR,DO_MOLGRAD,DOGGA,TRIPLET
       WRITE(LUPRI,*) 'SRDFT1: ERFEXP(0:2) =',ERFEXP(0:2)
 #endif
 
@@ -920,8 +920,8 @@ C*****************************************************************************
          CALL QUIT('SRDFT1: illegal ND_SIM value')
       END IF
 
-      IF (DOGRD) THEN
-         CALL QUIT('SRDFT1: DOGRD not implemented yet')
+      IF (DO_MOLGRAD) THEN
+         CALL QUIT('SRDFT1: DO_MOLGRAD not implemented yet')
       END IF
 
       IF (DFT_SPINDNS) THEN
@@ -1490,7 +1490,7 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 
-      LOGICAL DOGGA,DOBCK,DOLYP,DOLND,DOGRD,DODCAO
+      LOGICAL DOGGA,DOBCK,DOLYP,DOLND,DO_MOLGRAD,DODCAO
       DIMENSION CMO(*),WORK(LWORK)
 C
       CALL TIMER('START ',TIMSTR,TIMEND)
@@ -1501,11 +1501,11 @@ C     =================================
       DOLND = .FALSE.
       DOBCK = .FALSE.
       DOLYP = .FALSE.
-      DOGRD = .FALSE.
+      DO_MOLGRAD = .FALSE.
       DOGGA = DOBCK .OR. DOLYP
       
       NDER  = 0
-      IF (DOGRD) NDER = 1
+      IF (DO_MOLGRAD) NDER = 1
       IF (DOGGA) THEN
          NDER = NDER + 1
          IF (DFTPOT) NDER = NDER + 1
@@ -2113,8 +2113,8 @@ C     * Note that for ensemble CI-srDFT, D^{v,ref} should be, here, equal to the
 C       ensemble density matrix
 C*****************************************************************************
 #include "implicit.h"
-      DIMENSION FMAT(*), CMO(*), DVREF(*), WRK(*)
-      DIMENSION ISYMDM(2), IFCTYP(2)
+      REAL*8    FMAT(*), CMO(*), DVREF(*), WRK(*)
+      INTEGER   ISYMDM(2), IFCTYP(2)
       LOGICAL   LSRHYBR, DFT_SPINDNS_SAVE
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
       SAVE ISYMDM, IFCTYP
@@ -2164,7 +2164,6 @@ C ... Get J^c,sr and J^v,sr
 C
       IF(HFXFAC .NE. D0) THEN
 C        Coulomb + Exchange
-C     ... Warning : assuming DIM(IFCTYP) = 2
          IFCTYP(1) = 13
          IFCTYP(2) = 13
       ELSE
@@ -2204,7 +2203,7 @@ C     using total density matrix (stored in KDCAO)
 
       CALL DZERO(WRK(KFVAO),N2BASX)
 
-C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DO_MOLGRAD,DOATR,WORK,LWORK,IPRINT)
       CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,
      &           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      &           WRK(KFREE),LFREE,IPRFCK)
@@ -2373,7 +2372,7 @@ C     using total density matrix (stored in KDCAO)
 
       CALL DZERO(WRK(KFVAO),N2BASX)
 
-C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DO_MOLGRAD,DOATR,WORK,LWORK,IPRINT)
       CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,
      &           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      &           WRK(KFREE),LFREE,IPRFCK)
@@ -2441,7 +2440,7 @@ C     using total density matrix (stored in KDCAO)
 
       CALL DZERO(WRK(KFVAO),N2BASX)
 
-C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DO_MOLGRAD,DOATR,WORK,LWORK,IPRINT)
       CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,
      &           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      &           WRK(KFREE),LFREE,IPRFCK)

@@ -26,8 +26,8 @@
 
 C*****************************************************************************
       SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,DMAT,DOLND,CORX,CORY,CORZ,
-     &                  WEIGHT,NBUF,GSO,NCNT,DMATGAOSR,DOGGA,
-     &                  DOERG,DOGRD,DOATR,TRIPLET,do_metagga,RESULTS,
+     &                  WEIGHT,NBUF,GSO,NCNT,DMATGAOSR,DOGGA,DOERG,
+     &                  DO_MOLGRAD,DOATR,TRIPLET,do_metagga,RESULTS,
      &                  WORK,LWORK,IPRINT_in)
 C*****************************************************************************
 C     Calculate DFT energy and potential contributions for
@@ -37,7 +37,7 @@ C     Based on the routine SRDFT1 of J. K. Pedersen
 C
 C    Input: ND_SIM: number of input density matrices and output potential matrices
 C                  DOERG   true: energy and Vxc potential matrix
-C                  DOGRD   true: molecular gradient
+C                  DO_MOLGRAD   true: molecular gradient
 C                  DOATR   true: electronic Hessian, non-linear Exc second derivative terms
 C                  TRIPLET true: triplet operators
 C                  DMAT(1) = charge density matrix
@@ -81,8 +81,8 @@ C*****************************************************************************
       real*8, parameter :: THRELCTOT = 1.0D-7
       real*8, parameter :: THRESRHO  = 1.0D-8
 
-      logical, intent(in) :: DOLND, DOGGA, DOERG, DOGRD, DOATR, TRIPLET,
-     &                       do_metagga
+      logical, intent(in) :: DOLND, DOGGA, DOERG, DO_MOLGRAD, DOATR,
+     &                       TRIPLET, do_metagga
       integer, intent(in) :: ND_SIM, NBUF, IPRINT_in
 
       logical :: FROMVX
@@ -145,8 +145,8 @@ C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
       WRITE(LUPRI,*) 'SRDFT1JT: LUPRI,IPRINT  =',LUPRI, IPRINT
       WRITE(LUPRI,*) 'SRDFT1JT: CHIVAL =',CHIVAL
       WRITE(LUPRI,*) 'SRDFT1JT: HFXFAC =',HFXFAC
-      WRITE(LUPRI,*) 'SRDFT1JT: DOERG,DOATR,DOGRD,DOGGA,TRIPLET  =',
-     &   DOERG,DOATR,DOGRD,DOGGA,TRIPLET
+      WRITE(LUPRI,*) 'SRDFT1JT: DOERG,DOATR,DO_MOLGRAD,DOGGA,TRIPLET  ='
+     &   ,DOERG,DOATR,DO_MOLGRAD,DOGGA,TRIPLET
       WRITE(LUPRI,*) 'SRDFT1JT: ERFEXP(0:2)=',ERFEXP(0:2)
       WRITE(LUPRI,*) 'SRDFT1JT: DOSRX_PBERI=',DOSRX_PBERI
       WRITE(LUPRI,*) 'SRDFT1JT: DFT_SPINDNS=',DFT_SPINDNS
@@ -177,9 +177,9 @@ C     ... GRD2(6) = grdab = RHG(:,3) . RHG(:,4)
          CALL QUIT('SRDFT1jt: illegal ND_SIM value')
       END IF
 
-      IF (DOGRD) THEN
+      IF (DO_MOLGRAD) THEN
          CALL QUIT(
-     &   'SRDFT1JT: molecular gradient (DOGRD) not implemented yet')
+     &  'SRDFT1JT: molecular gradient (DO_MOLGRAD) not implemented yet')
       END IF
 
       IF (DOLND) THEN
