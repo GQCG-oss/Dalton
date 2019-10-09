@@ -129,7 +129,7 @@ C  /* Deck supdrv */
       LOGICAL   NOSYM
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
+     A      NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
@@ -144,10 +144,11 @@ C*** DEFAULTS
 C
       NWORK = LIWORK
       NBMAX = 255
-      NUT   = 0
       XFAC  = HFXFAC
       THRQ  = THRESH
       KSUP  = 0
+
+      CALL SUP_RDINFO(NOSYM)
 C
       LINT   = 1706
       LDA2   = (IRAT+1)*LINT
@@ -155,10 +156,6 @@ C
       LDA21  = LDA2+1
       LDA22  = LDA21+1
       LRDA22 = (LDA22-1)/IRAT + 1
-
-      CALL SUPRDI(NOSYM)
-C
-      NUT  = 0
 C
 C***  SIZE OF FIRST BLOCK on LUDASP
 C     NST = starting NP for second block
@@ -189,8 +186,8 @@ C          NST1 = int(sqrt(2*IJ)+1)-.5) is max NST1 which fit in memory
 C
 C*** SET UP DYNAMICAL STORAGE FOR SORT ROUTINE
 C
-C allocate space for buffer with 600 real + 602 integer elements
-      LENBUF  = ((600*IRAT+602)-1)/IRAT + 1
+C allocate space for buffer with LBUF real + LBUF+2 integer elements
+      LENBUF  = ((LBUF*IRAT+LBUF+2)-1)/IRAT + 1
       LW1   = 1
       LW2   = LW1+LENBUF
       LSORT = LWORK-LENBUF
@@ -349,24 +346,30 @@ C
       IF (IPRINT .GT. 1) WRITE(LUPRI,380) DTOT,WTOT
  380  FORMAT(/'    TOTAL TIME       :',2(F9.2,' SEC.'))
       END
-C  /* Deck suprdi */
-      SUBROUTINE SUPRDI(NOSYM)
+C  /* Deck sup_rdinfo */
+      SUBROUTINE SUP_RDINFO(NOSYM)
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL NOSYM
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
+     A      NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
-! frame.h : POTNUC
-#include "frame.h"
+
+      INTEGER NAOS(8)
+
       CHARACTER*8 LAB123(3), NEWLBL
       DATA LAB123 /'********','        ','        '/
       DATA NEWLBL /'PXSUPMAT'/
-C
+
+!     statement function
+      IT( I ) = (I*(I-1))/2
+
+! 1. Read symmetry and basis set size from LUONEL
+
       IF (LUONEL .LT. 0)
      &CALL GPOPEN(LUONEL,'AOONEINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
@@ -378,45 +381,16 @@ C
       DO 10 I = 1,NSYM
   10     NBAST = NBAST+NBAS(I)
       CALL GETDAT(LAB123(2),LAB123(3))
-      CALL REWSPL(LUSUPM)
+      REWIND LUSUPM
       WRITE (LUSUPM) LAB123, NEWLBL
       WRITE (LUSUPM) XFAC, POTNUC, NOSYM, NSYM, NBAS
-C
-C***  If (NOSYM) then reset symmetry index arrays
-C     (now done in SUP_SORT after consistency check with AOTWOINT)
-C
-      NBAS1 = NBAS(1)
-      RETURN
-      END
-C  /* Deck supsrt */
-      SUBROUTINE SUP_SORT(NOSYM,RINT,INT4,SCR,ISCR,LSORT,IPRINT)
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
-     B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
-      COMMON/CSPREA/XFAC,THRQ
-      DIMENSION RINT(*),SCR(*),ISCR(*)
-      INTEGER*4 INT4(*)
-      LOGICAL NOSYM, OLDDX 
-      DIMENSION NSOINT(255), NAOS(8)
-C
-#include "iratdef.h"
-#include "inftap.h"
 
-!     statement function
-      IT( I ) = (I*(I-1))/2
+! 2. Read AO buffer info etc. from LUNITA
 
-C
-      CALL QENTER('SUP_SORT')
-C
       IF (LUINTA .LT. 0) CALL GPOPEN(LUINTA,'AOTWOINT',
      &   'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
-C
-      CALL REWSPL(LUINTA)
+
+      REWIND LUINTA
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
       READ (LUINTA) MSYM,NAOS,LBUF,NIBUF,NBITS,LENINT4
 C
@@ -437,17 +411,18 @@ C
          WRITE(LUPRI,1051)(NAOS(I),I = 1,MSYM)
          CALL QUIT('Info on AOTWOINT inconsistent with input')
       END IF
-      IF (LBUF .NE. 600) THEN
-        WRITE(LUPRI,'(//A/A,4I10)')
-     &     'Sorry, SUP_SORT only works for LBUF=600 on AOTWOINT',
-     &     ' LBUF,NIBUF,NBITS,LENINT4:', LBUF,NIBUF,NBITS,LENINT4
-        CALL QUIT('Sorry, SUP_SORT only works for LBUF=600 on AOTWOINT')
-      END IF
       IF (NIBUF .NE. 1) THEN
         WRITE(LUPRI,'(//A/A,4I10)')
      &     'Sorry, SUP_SORT only works for NIBUF=1 on AOTWOINT',
      &     ' LBUF,NIBUF,NBITS,LENINT4:', LBUF,NIBUF,NBITS,LENINT4
         CALL QUIT('Sorry, SUP_SORT only works for NIBUF=1 on AOTWOINT')
+      END IF
+
+      LAOINT4 = 2*LBUF+NIBUF*LBUF+1
+      IF (LAOINT4 .NE. LENINT4) THEN
+         WRITE(LUPRI,*)
+     &   'Fatal error LAOINT4 .ne. LENINT4',LAOINT4,LENINT4
+         CALL QUIT('LAOINT4 .ne. LENINT4')
       END IF
 C
       IF (IPRINT .GE. 3) THEN
@@ -464,6 +439,7 @@ C***  If (NOSYM) then reset symmetry index arrays
          NSYM = 1
          NBAS(1) = NBAST
       END IF
+      NBAS1 = NBAS(1)
 C
       IF (NBAST .GT. NBMAX) THEN
          WRITE(LUPRI,1002) NBAST,NBMAX
@@ -490,6 +466,32 @@ C
          IBAS(ISYM) = IBAS(ISYM-1) + NBI
          IIBAS(ISYM)  = IIBAS(ISYM-1) + IT(NBI+1)
    6  CONTINUE
+
+      RETURN
+      END
+C  /* Deck supsrt */
+      SUBROUTINE SUP_SORT(NOSYM,RINT,INT4,SCR,ISCR,LSORT,IPRINT)
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
+     &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
+     A      NBAS1,NPLAST,NST,
+     B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
+     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ
+      DIMENSION RINT(*),SCR(*),ISCR(*)
+      INTEGER*4 INT4(*)
+      LOGICAL NOSYM, OLDDX 
+      DIMENSION NSOINT(255)
+C
+#include "iratdef.h"
+#include "inftap.h"
+
+!     statement function
+      IT( I ) = (I*(I-1))/2
+
+      CALL QENTER('SUP_SORT')
 C
 C***  OPEN UNIT LUDASP FOR SORTED INTEGRALS
 C
@@ -549,23 +551,18 @@ C
          ISCR(KBATCH+LDA22)   =  0
          KBATCH = KBATCH+LDA22
   15  CONTINUE
-Cha
-      IAOINT = 2*600
-      LAOINT4 = IAOINT+NIBUF*600+1
-      IF (LAOINT4 .NE. LENINT4) THEN
-         WRITE(LUPRI,*)
-     &   'Fatal error LAOINT4 .ne. LENINT4',LAOINT4,LENINT4
-         CALL QUIT('LAOINT4 .ne. LENINT4')
-      END IF
 C
-      CALL REWSPL(LUINTA)
+      IAOINT = 2*LBUF
+      LAOINT4 = IAOINT+NIBUF*LBUF+1
+C
+      REWIND LUINTA
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
 C
   20  CONTINUE
       CALL READI4(LUINTA,LAOINT4,INT4)
-      NINT = INT4(LAOINT4)
-      IF(NINT.EQ. 0) GO TO 20
-      IF(NINT.EQ.-1) GO TO 35
+      NUMINT = INT4(LAOINT4)
+      IF(NUMINT.EQ. 0) GO TO 20
+      IF(NUMINT.EQ.-1) GO TO 35
 C
 C***  LOOP OVER INTEGRALS IN THIS BUFFER
 C
@@ -574,7 +571,7 @@ C     IBITSHR_4 =       0 ! shift for index 4 in (12|34) -- not needed!
       IBITSHR_3 =   NBITS ! shift for index 3 in (12|34)
       IBITSHR_2 = 2*NBITS ! shift for index 2 in (12|34)
       IBITSHR_1 = 3*NBITS ! shift for index 1 in (12|34)
-      DO 30 I = 1,NINT
+      DO 30 I = 1,NUMINT
          VALUE  = RINT(I)
          NINTAO = NINTAO+1
       IF(ABS(VALUE).LE.THRQ) GO TO 30
@@ -686,7 +683,7 @@ C  /* Deck sup1 */
 C***  TRANSFORMATION OF FIRST SYMMETRY
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
+     A      NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
@@ -953,7 +950,7 @@ C  /* Deck sup */
 C
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
+     A      NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
@@ -1269,7 +1266,7 @@ C  /* Deck sup1d */
 C***  TRANSFORMATION OF FIRST SYMMETRY
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
+     A      NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
@@ -1575,7 +1572,7 @@ C  /* Deck supd */
 #include "iratdef.h"
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
+     A      NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
@@ -1961,7 +1958,7 @@ C
 #include "inftap.h"
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
+     A      NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
