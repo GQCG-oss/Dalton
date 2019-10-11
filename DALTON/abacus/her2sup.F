@@ -17,8 +17,8 @@
 !
 !
 C
-#ifdef REV_LOG
 c===========================================================================
+C old REV_LOG
 c160207-hjaaj: removed unused, obsolete IND(600),BUF(600) from common
 c031021-hjaaj: removed OLDSUP
 c940818-hjaaj:
@@ -53,7 +53,6 @@ c   implemented NEWSUP = .NOT. OLDSUP format (label "PSUPMAT ");
 c   removed saving IJ,KL in INDP in SUP1,SUP,SUP1D,SUPD; just
 c   allocate IT(NP+1) for INDP when not OLDSUP
 c===========================================================================
-#endif
 C  /* Deck frmsup */
       SUBROUTINE FORMSUP(WORK,LWORK,NOSYM,HFXFAC,THRESH,IPRINT)
 C
@@ -64,8 +63,6 @@ C
 C Revised
 C        5-Jul-1984 hjaaj (changed all var. to max 6 char.)
 C       23-Sep-1986 tuh   adaption to HERMIT
-C       12-Jun-1987 hjaaj increased NBMAX from 150 to 255 and
-C                         made appropriate changes in commons etc.
 C        9-Jan-1990 tuh+hjaaj: NOSYM parameter;
 C          Dec 1991 - work space in call, tuh
 C
@@ -73,7 +70,7 @@ C
 #include "priunit.h"
 #include "iratdef.h"
       LOGICAL NOSYM
-      DIMENSION WORK(LWORK)
+      REAL*8  WORK(LWORK)
 C
       CALL QENTER('FORMSUP')
 C
@@ -101,7 +98,6 @@ C
      &   //' are resorted to new file.',
      &   '      Threshold for discarding integrals :',THRESH,' )'
       END IF
-      NBMAX = 255
       LWRK2 = 0
 #if defined (VAR_DUPLCHCK)
 C Allocate memory for IBIT vector in IWORK
@@ -127,13 +123,13 @@ C  /* Deck supdrv */
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION WORK(LWORK), IWORK(LIWORK)
       LOGICAL   NOSYM
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
-     B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
+
+      INTEGER, allocatable :: IS(:), LASTAD(:)
 
 !     statement function
       IT( I ) = (I*(I-1))/2
@@ -143,22 +139,31 @@ C
 C*** DEFAULTS
 C
       NWORK = LIWORK
-      NBMAX = 255
-      NUT   = 0
       XFAC  = HFXFAC
       THRQ  = THRESH
       KSUP  = 0
+
+      CALL SUP_RDINFO(NOSYM,IPRINT)
 C
-      LINT   = 1706
-      LDA2   = (IRAT+1)*LINT
-      IDABUF = IRAT*LINT
+      LINT   = 1706 ! NOTE: LINT *must* be an even number!!!
+      ! calculate off-sets for integer*4 ISCR
+      IDABUF = 2*LINT ! 2 for integer*4
+      LDA2   = IDABUF + NIBUF*LINT
       LDA21  = LDA2+1
       LDA22  = LDA21+1
-      LRDA22 = (LDA22-1)/IRAT + 1
-
-      CALL SUPRDI(NOSYM)
+      LRDA22 = LDA22/2 ! 2 because integer*4
+      IF (2*LRDA22 .NE. LDA22)
+     &   CALL QUIT('Program error FORMSUP: 2*LRDA22 .ne. LDA22')
 C
-      NUT  = 0
+C***  SYMMETRY LABELS
+C
+      allocate( IS(NBAST), LASTAD(NBAST) )
+      DO ISYM = 1,NSYM
+         DO I = IBAS(ISYM)+1,IBAS(ISYM)+NBAS(ISYM)
+            IS(I) = ISYM
+         END DO
+      END DO
+
 C
 C***  SIZE OF FIRST BLOCK on LUDASP
 C     NST = starting NP for second block
@@ -167,9 +172,9 @@ C     NST1 max. equal to nbas1, ie. to nbas(1) before NOSYM reset to nbast
 C
       NST1  = NBAS1
       LAVAIL = LWORK - LRDA22
-C     ... max. memory for INDP
+C     ... IJ = max. memory for integer*4 INDP
       IJ = (NST1*(NST1+1))/2
-      IJ = (IJ-1)/IRAT + 1
+      IJ = (IJ-1)/2 + 1
       LAVAIL = LAVAIL - IJ
 C     IJ = nst1*(nst1+1)/2 = # (p q) distributions in first block
 C     NPMAX = ij*(ij+1)/2 = # unique integrals in first block
@@ -189,19 +194,27 @@ C          NST1 = int(sqrt(2*IJ)+1)-.5) is max NST1 which fit in memory
 C
 C*** SET UP DYNAMICAL STORAGE FOR SORT ROUTINE
 C
-C allocate space for buffer with 600 real + 602 integer elements
-      LENBUF  = ((600*IRAT+602)-1)/IRAT + 1
-      LW1   = 1
-      LW2   = LW1+LENBUF
-      LSORT = LWORK-LENBUF
+C allocate space for buffer with LBUF real*8 + NIBUF*LBUF + 2 integer*4 elements
+      LENBUF = LBUF*(2+NIBUF)+2
+      LENBUF = (LENBUF-1)/2 + 1 ! divide by 2 because integer*4 -> real*8
+      KFREE  = 1
+      LFREE  = LWORK
+      CALL MEMGET2('REAL','BUFFER',LW1,LENBUF,WORK,KFREE,LFREE)
+      LW2   = KFREE
+      LSORT = LFREE
       CALL GETTIM(DST,WST)
       CALL SUP_SORT(NOSYM,WORK(LW1),WORK(LW1),WORK(LW2),WORK(LW2),LSORT,
-     &            IWORK(1),IPRINT)
+     &            IS,LASTAD,IPRINT)
+      CALL MEMCHK('after SUP_SORT',WORK,1)
       CALL GETTIM(DFIN,WFIN)
       DTOT  = DFIN-DST
       WTOT  = WFIN-WST
       IF (IPRINT .GT. 1) WRITE(LUPRI,340) DTOT,WTOT
- 340  FORMAT(/'    TIME IN SUP_SORT :',2(F9.2,' SEC.')/)
+ 340  FORMAT(/'    CPU & WALL TIMES IN SUP_SORT :',2(F9.2,' SEC.')/)
+#if HER2SUP_DEBUG > 10
+      write(lupri,'(/A)') 'LASTAD array:'
+      write(lupri,'(5I8,5X,5I8)') LASTAD(1:NBAST)
+#endif
 C
 C*** START TRANSFERRING INTEGRALS TO SUPERMATRIX FORM.
 C*** BEGIN WITH FIRST BLOCK CONTAINING ALL INDICES BETWEEN
@@ -227,12 +240,12 @@ C
       IF (NPM.LE.LWORK) THEN
          LW3 = LW2+NPMAX
          CALL SUP1(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &             WORK(LW3),IBEF,IWORK(1))
+     &             WORK(LW3),IBEF,IWORK(1),IS,LASTAD)
       ELSE
          CALL GETTIM(DST1D,WST1D)
          LW3 = LW2+LSUP
          CALL SUP1D(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &             WORK(LW3),IBEF,IWORK(1))
+     &             WORK(LW3),IBEF,IWORK(1),IS,LASTAD)
          CALL GETTIM(DFIN1D,WFIN1D)
          DTOTD = DTOTD + DFIN1D - DST1D
          WTOTD = WTOTD + WFIN1D - WST1D
@@ -257,12 +270,12 @@ C
          IF (NPM.LE.LWORK) THEN
             LW3 = LW2+NPMM
             CALL SUP1(ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
-     &                WORK(LW3),IBEF,IWORK(1))
+     &                WORK(LW3),IBEF,IWORK(1),IS,LASTAD)
          ELSE
             CALL GETTIM(DST1D,WST1D)
             LW3 = LW2+LSUP
             CALL SUP1D(ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
-     &                WORK(LW3),IBEF,IWORK(1))
+     &                WORK(LW3),IBEF,IWORK(1),IS,LASTAD)
             CALL GETTIM(DFIN1D,WFIN1D)
             DTOTD = DTOTD + DFIN1D - DST1D
             WTOTD = WTOTD + WFIN1D - WST1D
@@ -315,12 +328,12 @@ C
          IF (NPM.LE.LWORK) THEN
             LW3 = LW2+NPMAX
             CALL SUP(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &               WORK(LW3),IWORK(1),IBEF,NP,IPRINT)
+     &               WORK(LW3),IWORK(1),IBEF,NP,IS,LASTAD,IPRINT)
          ELSE
             CALL GETTIM(DST1D,WST1D)
             LW3 = LW2+LSUP
             CALL SUPD(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &                WORK(LW3),IWORK(1),IBEF,NP)
+     &                WORK(LW3),IWORK(1),IBEF,NP,IS,LASTAD)
             CALL GETTIM(DFIN1D,WFIN1D)
             DTOTD = DTOTD + DFIN1D - DST1D
             WTOTD = WTOTD + WFIN1D - WST1D
@@ -347,26 +360,32 @@ C
       DTOT = DFIN-DST1 - DTOTD
       WTOT = WFIN-WST1 - WTOTD
       IF (IPRINT .GT. 1) WRITE(LUPRI,380) DTOT,WTOT
- 380  FORMAT(/'    TOTAL TIME       :',2(F9.2,' SEC.'))
+ 380  FORMAT(/'    TOTAL CPU & WALL TIMES      :',2(F9.2,' SEC.'))
+      deallocate(IS,LASTAD)
+      RETURN
       END
-C  /* Deck suprdi */
-      SUBROUTINE SUPRDI(NOSYM)
+C  /* Deck sup_rdinfo */
+      SUBROUTINE SUP_RDINFO(NOSYM,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL NOSYM
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
-     B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
-! frame.h : POTNUC
-#include "frame.h"
+
+      INTEGER NAOS(8)
+
       CHARACTER*8 LAB123(3), NEWLBL
       DATA LAB123 /'********','        ','        '/
       DATA NEWLBL /'PXSUPMAT'/
-C
+
+!     statement function
+      IT( I ) = (I*(I-1))/2
+
+! 1. Read symmetry and basis set size from LUONEL
+
       IF (LUONEL .LT. 0)
      &CALL GPOPEN(LUONEL,'AOONEINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
@@ -378,45 +397,16 @@ C
       DO 10 I = 1,NSYM
   10     NBAST = NBAST+NBAS(I)
       CALL GETDAT(LAB123(2),LAB123(3))
-      CALL REWSPL(LUSUPM)
+      REWIND LUSUPM
       WRITE (LUSUPM) LAB123, NEWLBL
       WRITE (LUSUPM) XFAC, POTNUC, NOSYM, NSYM, NBAS
-C
-C***  If (NOSYM) then reset symmetry index arrays
-C     (now done in SUP_SORT after consistency check with AOTWOINT)
-C
-      NBAS1 = NBAS(1)
-      RETURN
-      END
-C  /* Deck supsrt */
-      SUBROUTINE SUP_SORT(NOSYM,RINT,INT4,SCR,ISCR,LSORT,IPRINT)
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
-     B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
-      COMMON/CSPREA/XFAC,THRQ
-      DIMENSION RINT(*),SCR(*),ISCR(*)
-      INTEGER*4 INT4(*)
-      LOGICAL NOSYM, OLDDX 
-      DIMENSION NSOINT(255), NAOS(8)
-C
-#include "iratdef.h"
-#include "inftap.h"
 
-!     statement function
-      IT( I ) = (I*(I-1))/2
+! 2. Read AO buffer info etc. from LUNITA
 
-C
-      CALL QENTER('SUP_SORT')
-C
       IF (LUINTA .LT. 0) CALL GPOPEN(LUINTA,'AOTWOINT',
      &   'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
-C
-      CALL REWSPL(LUINTA)
+
+      REWIND LUINTA
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
       READ (LUINTA) MSYM,NAOS,LBUF,NIBUF,NBITS,LENINT4
 C
@@ -437,17 +427,12 @@ C
          WRITE(LUPRI,1051)(NAOS(I),I = 1,MSYM)
          CALL QUIT('Info on AOTWOINT inconsistent with input')
       END IF
-      IF (LBUF .NE. 600) THEN
-        WRITE(LUPRI,'(//A/A,4I10)')
-     &     'Sorry, SUP_SORT only works for LBUF=600 on AOTWOINT',
-     &     ' LBUF,NIBUF,NBITS,LENINT4:', LBUF,NIBUF,NBITS,LENINT4
-        CALL QUIT('Sorry, SUP_SORT only works for LBUF=600 on AOTWOINT')
-      END IF
-      IF (NIBUF .NE. 1) THEN
-        WRITE(LUPRI,'(//A/A,4I10)')
-     &     'Sorry, SUP_SORT only works for NIBUF=1 on AOTWOINT',
-     &     ' LBUF,NIBUF,NBITS,LENINT4:', LBUF,NIBUF,NBITS,LENINT4
-        CALL QUIT('Sorry, SUP_SORT only works for NIBUF=1 on AOTWOINT')
+
+      LAOINT4 = 2*LBUF+NIBUF*LBUF+1
+      IF (LAOINT4 .NE. LENINT4) THEN
+         WRITE(LUPRI,*)
+     &   'Fatal error LAOINT4 .ne. LENINT4',LAOINT4,LENINT4
+         CALL QUIT('LAOINT4 .ne. LENINT4')
       END IF
 C
       IF (IPRINT .GE. 3) THEN
@@ -464,24 +449,9 @@ C***  If (NOSYM) then reset symmetry index arrays
          NSYM = 1
          NBAS(1) = NBAST
       END IF
+      NBAS1 = NBAS(1)
 C
-      IF (NBAST .GT. NBMAX) THEN
-         WRITE(LUPRI,1002) NBAST,NBMAX
- 1002    FORMAT(/,' NUMBER OF BASIS FUNCTIONS IS ',I5,' WHICH EXCEEDS',
-     &          /,' THE LIMITATION OF ',I5)
-         CALL QUIT('SUP_SORT ERROR: max. # basis funcions exceeded')
-      END IF
-C
-C***  SYMMETRY LABELS AND NUMBER OF PREVIOUS BASIS FUNCTIONS
-C
-      K  = 0
-      DO 5 ISYM = 1,NSYM
-         NBASI = NBAS(ISYM)
-         DO 4 I = 1,NBASI
-            IS(K+I) = ISYM
-   4     CONTINUE
-         K = K + NBASI
-   5  CONTINUE
+C***  NUMBER OF PREVIOUS BASIS FUNCTIONS
 C
       IBAS(1) = 0
       IIBAS(1)  = 0
@@ -490,13 +460,46 @@ C
          IBAS(ISYM) = IBAS(ISYM-1) + NBI
          IIBAS(ISYM)  = IIBAS(ISYM-1) + IT(NBI+1)
    6  CONTINUE
+
+      RETURN
+      END
+C  /* Deck supsrt */
+      SUBROUTINE SUP_SORT(NOSYM,RINT,INT4,SCR,ISCR,LSORT,
+     &   IS,LASTAD,IPRINT)
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ
+      DIMENSION RINT(*),SCR(*)
+      INTEGER*4 INT4(*),ISCR(*), LABEL1, LABEL2, NUMINT
+      LOGICAL   NOSYM, OLDDX 
+      INTEGER   IS(*), LASTAD(*)
+      INTEGER, allocatable :: NREC(:),IBATCH(:),NSOINT(:)
+C
+#include "inftap.h"
+#include "ibtdef.h"
+
+!     statement function
+      IT( I ) = (I*(I-1))/2
+
+      CALL QENTER('SUP_SORT')
+      allocate ( NREC(NBAST),IBATCH(NBAST),NSOINT(NBAST) )
 C
 C***  OPEN UNIT LUDASP FOR SORTED INTEGRALS
 C
       LUDASP = -1
-      CALL GPOPEN(LUDASP,' ','UNKNOWN','DIRECT',' ',LDA22,OLDDX)
+#ifdef VAR_INT64
+      LDA22_DX = LDA22 / 2 ! LDA22 is in integer*4
+#else
+      LDA22_DX = LDA22
+#endif
+      CALL GPOPEN(LUDASP,'AO2SORTED.DA','UNKNOWN','DIRECT',
+     &   ' ',LDA22_DX,OLDDX)
 C
-C***  NUMBER OF BATCHES
+C***  BATCH NUMBER FOR EACH AO
 C
       NST1 = NST-1
       NBATCH = NBAST-NST1+1
@@ -509,7 +512,7 @@ C
 C
 C***  PRESET LASTAD
 C
-      DO 12 I = 1,NBMAX
+      DO 12 I = 1,NBAST
          LASTAD(I) = -1
          NREC(I) = 0
          NSOINT(I) = 0
@@ -518,7 +521,7 @@ C
 C
 C***  NUMBER OF BATCHES PER PASS
 C
-      NBP = LSORT/(LDA22/IRAT)
+      NBP = LSORT/(LDA22/2)
       IF(NBP.GT.NBATCH) NBP = NBATCH
 C
 C***  NUMBER OF STEPS
@@ -549,38 +552,36 @@ C
          ISCR(KBATCH+LDA22)   =  0
          KBATCH = KBATCH+LDA22
   15  CONTINUE
-Cha
-      IAOINT = 2*600
-      LAOINT4 = IAOINT+NIBUF*600+1
-      IF (LAOINT4 .NE. LENINT4) THEN
-         WRITE(LUPRI,*)
-     &   'Fatal error LAOINT4 .ne. LENINT4',LAOINT4,LENINT4
-         CALL QUIT('LAOINT4 .ne. LENINT4')
-      END IF
 C
-      CALL REWSPL(LUINTA)
+      IAOINT  = 2*LBUF
+      LAOINT4 = IAOINT+NIBUF*LBUF+1
+C
+      REWIND LUINTA
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
 C
   20  CONTINUE
       CALL READI4(LUINTA,LAOINT4,INT4)
-      NINT = INT4(LAOINT4)
-      IF(NINT.EQ. 0) GO TO 20
-      IF(NINT.EQ.-1) GO TO 35
+      NUMINT = INT4(LAOINT4)
+      IF(NUMINT.EQ. 0) GO TO 20
+      IF(NUMINT.EQ.-1) GO TO 35
 C
 C***  LOOP OVER INTEGRALS IN THIS BUFFER
 C
-      IBITMASK  = 2**NBITS - 1
-C     IBITSHR_4 =       0 ! shift for index 4 in (12|34) -- not needed!
-      IBITSHR_3 =   NBITS ! shift for index 3 in (12|34)
-      IBITSHR_2 = 2*NBITS ! shift for index 2 in (12|34)
-      IBITSHR_1 = 3*NBITS ! shift for index 1 in (12|34)
-      DO 30 I = 1,NINT
+      NINTAO = NINTAO + NUMINT
+      DO 30 I = 1,NUMINT
          VALUE  = RINT(I)
-         NINTAO = NINTAO+1
       IF(ABS(VALUE).LE.THRQ) GO TO 30
-         LABEL  = INT4(IAOINT+I)
+         IF (NIBUF .EQ. 1) THEN
+            LABEL1 = INT4(IAOINT+I)
+            NP = IAND(ISHFT(LABEL1,-24),IBT08)
+         ELSE
+            LABEL1 = INT4(IAOINT+2*I-1)
+            LABEL2 = INT4(IAOINT+2*I)
+            NP = IAND(ISHFT(LABEL1,-16),IBT16)
+         END IF
+         KBATCH = IBATCH(NP)
+      IF (KBATCH.LT.NBP1.OR.KBATCH.GT.NBP2) GO TO 30
 C
-         NP = IAND(ISHFT(LABEL,-IBITSHR_1),IBITMASK)
 C        HERMIT: We know NP is largest index, thus we don't need NQ,NR,NS
 C                unless we check symmetry below
 C
@@ -588,22 +589,22 @@ C***  ONLY INTEGRALS WITH AT MOST TWO DIFFERENT SYMMETRY INDICES
 C***  ARE TO BE KEPT
 C
          IF (NOSYM) GO TO 25
+         IF (NIBUF .EQ. 1) THEN
+            NQ = IAND(ISHFT(LABEL1,-16),IBT08)
+            NR = IAND(ISHFT(LABEL1, -8),IBT08)
+            NS = IAND(      LABEL1     ,IBT08)
+         ELSE
+            NQ = IAND(      LABEL1     ,IBT16)
+            NR = IAND(ISHFT(LABEL2,-16),IBT16)
+            NS = IAND(      LABEL2     ,IBT16)
+         END IF
          ISP = IS(NP)
-         NQ = IAND(ISHFT(LABEL,-IBITSHR_2),IBITMASK)
          IF (IS(NQ).EQ.ISP) GO TO 25
-         NR = IAND(ISHFT(LABEL,-IBITSHR_3),IBITMASK)
          IF (IS(NR).EQ.ISP) GO TO 25
-         NS = IAND(       LABEL,    IBITMASK)
          IF (IS(NS).EQ.ISP) GO TO 25
       GO TO 30
   25  CONTINUE
 C
-C        INTRODUCE CANONICAL ORDERING OF INTEGRAL INDICES
-C
-C        940819-hjaaj: HERMIT already has canonical ordering.
-C
-         KBATCH = IBATCH(NP)
-      IF (KBATCH.LT.NBP1.OR.KBATCH.GT.NBP2) GO TO 30
          KBP = KBATCH-NBP1
          NINTSO = NINTSO+1
 C
@@ -613,9 +614,14 @@ C
          IPOS   = LDA22*KBP
          LENGTH = ISCR(IPOS+LDA22)
          LENGTH = LENGTH+1
-         IRPOS  = IPOS/IRAT
+         IRPOS  = IPOS/2 ! "/2" because ISCR is always integer*4
          SCR(IRPOS+LENGTH) = VALUE
-         ISCR(IPOS+IINT+LENGTH) = LABEL
+         IF (NIBUF .EQ. 1) THEN
+            ISCR(IPOS+IINT+LENGTH) = LABEL1
+         ELSE
+            ISCR(IPOS+IINT+2*LENGTH-1) = LABEL1
+            ISCR(IPOS+IINT+2*LENGTH  ) = LABEL2
+         END IF
          ISCR(IPOS+LDA22) = LENGTH
 C
          IF (LENGTH.GE.LINT) THEN
@@ -623,7 +629,7 @@ C           ... THIS BATCH IS NOW FULL AND MUST BE EMPTIED
             NCHAIN = NCHAIN+1
             IDO = IDISK
             NREC(KBATCH) = NREC(KBATCH)+1
-            CALL WRITDX(LUDASP,IDISK,LDA22,ISCR(IPOS+1))
+            CALL WRITDX(LUDASP,IDISK,LDA22_DX,ISCR(IPOS+1))
             ISCR(IPOS+LDA22-1) = IDO
             ISCR(IPOS+LDA22)   = 0
             IDISK = IDISK+1
@@ -650,7 +656,7 @@ C
       IF (ISCR(IPOS+LDA22).EQ.0) GO TO 40
          NCHAIN = NCHAIN+1
          NREC(I) = NREC(I)+1
-         CALL WRITDX(LUDASP,IDISK,LDA22,ISCR(IPOS+1))
+         CALL WRITDX(LUDASP,IDISK,LDA22_DX,ISCR(IPOS+1))
          LASTAD(I) = IDO
          IDISK = IDISK+1
       GO TO 45
@@ -674,26 +680,28 @@ C
  1260 FORMAT(//10X,'NUMBER OF RECORDS IN EACH CHAIN'/(5X,8I9))
  1261 FORMAT(/10X,'NUMBER OF INTEGRALS IN EACH CHAIN'/(5X,8I9))
       CALL GPCLOSE(LUINTA,'KEEP')
+
+      deallocate ( NREC,IBATCH,NSOINT )
       CALL QEXIT('SUP_SORT')
       RETURN
       END
 C  /* Deck sup1 */
-      SUBROUTINE SUP1(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IBIT)
-     &                
+      SUBROUTINE SUP1(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IBIT,IS,LASTAD)
+C***  TRANSFORMATION OF FIRST SYMMETRY
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-C***  TRANSFORMATION OF FIRST SYMMETRY
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
-     B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
-      COMMON/CSPREA/XFAC,THRQ
-#include "inftap.h"
-      DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*)
+#include "ibtdef.h"
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ
+#include "inftap.h"
+      DIMENSION P(*),BBUF(*),IBIT(*)
+      INTEGER*4 INDP(*), IBUF(*), IBL1, IBL2
+      INTEGER   IS(*), LASTAD(*)
 C
 
 !     statement function
@@ -733,18 +741,29 @@ C
 #endif
 C
       IADR = LASTAD(ICHAIN)
+#if HER2SUP_DEBUG > 1
+      write (lupri,*) 'SUP1: ICHAIN, IADR =',ICHAIN, IADR
+#endif
       IF (IADR.EQ.-1) GO TO 900
-  50  CALL READDX(LUDASP,IADR,LDA22,IBUF)
+  50  CALL READDX(LUDASP,IADR,LDA22_DX,IBUF)
       IADR = IBUF(LDA21)
       LENGTH = IBUF(LDA22)
       IF (LENGTH.EQ.0) GO TO 500
       DO 400 I = 1,LENGTH
-         LDAI  = IDABUF+I
-         IBL   = IBUF(LDAI)
-         NP    = IAND(ISHFT(IBL,-IBITSHR_1),IBITMASK)
-         NQ    = IAND(ISHFT(IBL,-IBITSHR_2),IBITMASK)
-         NR    = IAND(ISHFT(IBL,-IBITSHR_3),IBITMASK)
-         NS    = IAND(       IBL           ,IBITMASK)
+         IF (NIBUF .EQ. 1) THEN
+            IBL1  = IBUF(IDABUF+I)
+            NP    = IAND(ISHFT(IBL1,-24),IBT08)
+            NQ    = IAND(ISHFT(IBL1,-16),IBT08)
+            NR    = IAND(ISHFT(IBL1, -8),IBT08)
+            NS    = IAND(      IBL1     ,IBT08)
+         ELSE
+            IBL1  = IBUF(IDABUF+2*I-1)
+            IBL2  = IBUF(IDABUF+2*I)
+            NP    = IAND(ISHFT(IBL1,-16),IBT08)
+            NQ    = IAND(      IBL1     ,IBT08)
+            NR    = IAND(ISHFT(IBL2,-16),IBT08)
+            NS    = IAND(      IBL2     ,IBT08)
+         END IF
          IJ    = IT(NP)+NQ
          KL    = IT(NR)+NS
          IJKL  = IT(IJ)+KL-IBEF
@@ -929,7 +948,7 @@ C
 C
 C***  Transfer P to disk
 C
-      CALL SUPNWR(P,INDP,IBEF,NPMAX)
+      CALL SUPNWR(P,INDP,IBEF,NPMAX,IS)
 C
  900  CONTINUE
       RETURN
@@ -942,20 +961,21 @@ C
       END
 C  /* Deck sup */
       SUBROUTINE SUP(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBIT,
-     &               IBEF,NP,IPRINT)
+     &               IBEF,NP,IS,LASTAD,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
+#include "ibtdef.h"
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 #include "inftap.h"
-      DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*)
+      DIMENSION P(*),BBUF(*),IBIT(*)
+      INTEGER*4 INDP(*), IBUF(*), IBL1, IBL2
+      INTEGER   IS(*), LASTAD(*)
 C
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
-     B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 C
 
@@ -1016,17 +1036,24 @@ C
 C
       IADR = LASTAD(ICHAIN)
       IF(IADR.EQ.-1) GO TO 900
-  50  CALL READDX(LUDASP,IADR,LDA22,IBUF)
+  50  CALL READDX(LUDASP,IADR,LDA22_DX,IBUF)
       IADR   = IBUF(LDA21)
       LENGTH = IBUF(LDA22)
       IF(LENGTH.EQ.0) GO TO 410
       DO 400 I = 1,LENGTH
-      LDAI = IDABUF+I
-      IBL  = IBUF(LDAI)
 C
-      NQ = IAND(ISHFT(IBL,-IBITSHR_2),IBITMASK)
-      NR = IAND(ISHFT(IBL,-IBITSHR_3),IBITMASK)
-      NS = IAND(       IBL,           IBITMASK)
+         IF (NIBUF .EQ. 1) THEN
+            IBL1  = IBUF(IDABUF+I)
+            NQ    = IAND(ISHFT(IBL1,-16),IBT08)
+            NR    = IAND(ISHFT(IBL1, -8),IBT08)
+            NS    = IAND(      IBL1     ,IBT08)
+         ELSE
+            IBL1  = IBUF(IDABUF+2*I-1)
+            IBL2  = IBUF(IDABUF+2*I)
+            NQ    = IAND(      IBL1     ,IBT08)
+            NR    = IAND(ISHFT(IBL2,-16),IBT08)
+            NS    = IAND(      IBL2     ,IBT08)
+         END IF
 #if defined (VAR_DUPLCHCK)
 C
 C***  FIRST CHECK IF INTEGRAL HAS OCCURRED BEFORE
@@ -1250,7 +1277,7 @@ C
 C
 C***  Transfer P to disk
 C
-      CALL SUPNWR(P,INDP,IBEF,NPMAX)
+      CALL SUPNWR(P,INDP,IBEF,NPMAX,IS)
 C
  900  CONTINUE
       RETURN
@@ -1262,21 +1289,23 @@ C
 #endif
       END
 C  /* Deck sup1d */
-      SUBROUTINE SUP1D(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IBIT)
+      SUBROUTINE SUP1D(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IBIT,
+     &   IS,LASTAD)
+C***  TRANSFORMATION OF FIRST SYMMETRY
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-C***  TRANSFORMATION OF FIRST SYMMETRY
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
-     B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
-      COMMON/CSPREA/XFAC,THRQ
-#include "inftap.h"
-      DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*)
+#include "ibtdef.h"
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ
+#include "inftap.h"
+      DIMENSION P(*),BBUF(*),IBIT(*)
+      INTEGER*4 INDP(*), IBUF(*), IBL1, IBL2
+      INTEGER   IS(*), LASTAD(*)
 C
 
 !     statement function
@@ -1324,17 +1353,25 @@ C
 C
       IADR = LASTAD(ICHAIN)
       IF(IADR.EQ.-1) GO TO 900
-  50  CALL READDX(LUDASP,IADR,LDA22,IBUF)
+  50  CALL READDX(LUDASP,IADR,LDA22_DX,IBUF)
       IADR = IBUF(LDA21)
       LENGTH = IBUF(LDA22)
       IF(LENGTH.EQ.0) GO TO 500
       DO 400 I = 1,LENGTH
-      LDAI = IDABUF+I
-      IBL = IBUF(LDAI)
-      NP = IAND(ISHFT(IBL,-IBITSHR_1),IBITMASK)
-      NQ = IAND(ISHFT(IBL,-IBITSHR_2),IBITMASK)
-      NR = IAND(ISHFT(IBL,-IBITSHR_3),IBITMASK)
-      NS = IAND(       IBL,           IBITMASK)
+         IF (NIBUF .EQ. 1) THEN
+            IBL1  = IBUF(IDABUF+I)
+            NP    = IAND(ISHFT(IBL1,-24),IBT08)
+            NQ    = IAND(ISHFT(IBL1,-16),IBT08)
+            NR    = IAND(ISHFT(IBL1, -8),IBT08)
+            NS    = IAND(      IBL1     ,IBT08)
+         ELSE
+            IBL1  = IBUF(IDABUF+2*I-1)
+            IBL2  = IBUF(IDABUF+2*I)
+            NP    = IAND(ISHFT(IBL1,-16),IBT08)
+            NQ    = IAND(      IBL1     ,IBT08)
+            NR    = IAND(ISHFT(IBL2,-16),IBT08)
+            NS    = IAND(      IBL2     ,IBT08)
+         END IF
       IJ    = IT(NP)+NQ
       KL    = IT(NR)+NS
       IJKL  = IT(IJ)+KL-IBEF
@@ -1554,7 +1591,7 @@ C***  Transfer P to disk
 C
       IOFF = IBEF + IRED
 C     Note: A PQ distribution may be divided into two records
-      CALL SUPNWR(P,INDP,IOFF,NBB)
+      CALL SUPNWR(P,INDP,IOFF,NBB,IS)
 C
 C
  800  IRED = IRED+NBB
@@ -1569,20 +1606,21 @@ C
       END
 C  /* Deck supd */
       SUBROUTINE SUPD(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBIT,
-     &               IBEF,NP)
+     &               IBEF,NP,IS,LASTAD)
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
-     B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
-      COMMON/CSPREA/XFAC,THRQ
-#include "inftap.h"
-      DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*)
+#include "ibtdef.h"
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ
+#include "inftap.h"
+      DIMENSION P(*),BBUF(*),IBIT(*)
+      INTEGER*4 INDP(*), IBUF(*), IBL1, IBL2
+      INTEGER   IS(*), LASTAD(*)
 C
 
 !     statement function
@@ -1641,17 +1679,24 @@ C
 C
       IADR = LASTAD(ICHAIN)
       IF(IADR.EQ.-1) GO TO 900
-  50  CALL READDX(LUDASP,IADR,LDA22,IBUF)
+  50  CALL READDX(LUDASP,IADR,LDA22_DX,IBUF)
       IADR = IBUF(LDA21)
       LENGTH = IBUF(LDA22)
       IF(LENGTH.EQ.0) GO TO 410
       DO 400 I = 1,LENGTH
-      LDAI = IDABUF+I
-      IBL = IBUF(LDAI)
 C
-      NQ = IAND(ISHFT(IBL,-IBITSHR_2),IBITMASK)
-      NR = IAND(ISHFT(IBL,-IBITSHR_3),IBITMASK)
-      NS = IAND(       IBL,           IBITMASK)
+         IF (NIBUF .EQ. 1) THEN
+            IBL1  = IBUF(IDABUF+I)
+            NQ    = IAND(ISHFT(IBL1,-16),IBT08)
+            NR    = IAND(ISHFT(IBL1, -8),IBT08)
+            NS    = IAND(      IBL1     ,IBT08)
+         ELSE
+            IBL1  = IBUF(IDABUF+2*I-1)
+            IBL2  = IBUF(IDABUF+2*I)
+            NQ    = IAND(      IBL1     ,IBT08)
+            NR    = IAND(ISHFT(IBL2,-16),IBT08)
+            NS    = IAND(      IBL2     ,IBT08)
+         END IF
 #if defined (VAR_DUPLCHCK)
 C
 C***  FIRST CHECK IF INTEGRAL HAS OCCURRED BEFORE
@@ -1923,7 +1968,7 @@ C***  Transfer P to disk
 C
       IOFF = IBEF + IRED
 C     Note: A PQ distribution may be divided into two records
-      CALL SUPNWR(P,INDP,IOFF,NBB)
+      CALL SUPNWR(P,INDP,IOFF,NBB,IS)
 C
 C
  800  IRED = IRED+NBB
@@ -1937,33 +1982,33 @@ C
 #endif
       END
 C  /* Deck supnwr */
-      SUBROUTINE SUPNWR(P,INDP,IBEF,NPMAX)
+      SUBROUTINE SUPNWR(P,INDP,IBEF,NPMAX,IS)
 C
 C     Jan 90 Hans Joergen Aa. Jensen
 C     Write to LUSUPM
 C
-C     On input P contains P(IBEF+1:IBEF+NPMAX)
+C     On input P(1:NPMAX) contains Psupmat(IBEF+1:IBEF+NPMAX)
 C
 C     WRITE (LUSUPM) ITYP,NPF,NQF,NPL,NQL,IBEF,NPQRS
 C     Two format types:
-C     ITYP=1: WRITE (LUSUPM) P(IBEF+1:IBEF+NPQRS)
+C     ITYP=1: WRITE (LUSUPM) Psupmat(IBEF+1:IBEF+NPQRS)
 C     ITYP=2: WRITE (LUSUPM) P(1:NPQRS),INDP(1:NPQRS)
 C
 C     note: IBEF=IT(NPQF),       NPQF = IT(NPF) + NQF
 C           NPQRS=IT(NPQL)-IOFF, NPQL = IT(NPL) + NQL
 C
 #include "implicit.h"
-      DIMENSION P(*), INDP(*)
+      REAL*8    P(*)
+      INTEGER*4 INDP(*)
+      INTEGER   IS(*)
 C
 #include "iratdef.h"
       PARAMETER ( ITYP1 = 1, ITYP2 = 2)
 C
 #include "inftap.h"
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
-     A      NBAS1,NPLAST,NST,NUT,
-     B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 
 !     statement function
@@ -2075,7 +2120,8 @@ C 900319-hjaaj
 C
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION P(NRSOUT), INDP(NRSOUT)
+      REAL*8    P(NRSOUT)
+      INTEGER*4 INDP(NRSOUT)
       WRITE (LUSUPM) ITYP2,NP,NQ,NP,NQ,IOFPQ,NRSOUT,NPQ
       WRITE (LUSUPM) P,INDP
 #if HER2SUP_DEBUG > 5

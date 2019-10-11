@@ -2443,23 +2443,32 @@ C                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
      &        DAMPING,' au =',
      &        DAMPING*XTEV,' eV =',
      &        DAMPING*XTKAYS,' cm-1'
-         WRITE(LUPRI,*) ''
-         CALL PRSYMB(LUPRI,'-',99,1)
-         WRITE(LUPRI,'(A6,A10,A10,A10,A11,A11,A11,A11,A10,A10,A10)') '',
+         WRITE(LUPRI,'(T5,A)') '','NOTE:',
+     &'The real and imaginary part of A_abba should be zero.',
+     &'The quadratic response functions are collected in a separate'
+     &//' file called MCHD_QRF.list.',
+     &'You can copy it from the tmp dir using the -get flag of the'
+     &//' dalton run script.',
+     &'The precision of the property depends linearly on the'
+     &//' parameter .THCLR set in the input.',
+     &'All values are given in a.u.'
+         WRITE(LUPRI,'(A)') ''
+         CALL PRSYMB(LUPRI,'-',102,0)
+         WRITE(LUPRI,'(A6,A6,A10,A10,A11,A11,A11,A11,A14,A12)') '',
      &   'FREQ',
      &   'Re(G_abg)','Im(G_abg)',
      &   'Re(A_aabb)','Im(A_aabb)',
      &   'Re(A_abba)','Im(A_abba)',
-     &   "Birefr",'Dichro'
-         CALL PRSYMB(LUPRI,'-',99,1)
+     &   "Birefringence",'Dichroism'
+         CALL PRSYMB(LUPRI,'-',102,0)
          DO IFREQ=1,NFREQ_BETA_B
          BIREFR(IFREQ)=(FREQ_BETA_B(IFREQ)/5.0D0)*AIMAABB(IFREQ)*
      &   0.5D0+
      &   GREABG(IFREQ)*0.25D0
          DICHRO(IFREQ)=(FREQ_BETA_B(IFREQ)/5.0D0)*AREAABB(IFREQ)*0.5D0+
      &   GIMABG(IFREQ)*0.25D0
-         WRITE(LUPRI,'(A6,F10.6,F10.6,F10.6,
-     &   F11.6,F11.6,F11.6,F11.6,F10.6,F10.6,F10.6)')
+         WRITE(LUPRI,'(A6,F6.3,F10.6,F10.6,
+     &   F11.6,F11.6,F11.6,F11.6,F14.8,F12.8)')
      &   "#MCHD#",FREQ_BETA_B(IFREQ),0.25D0*GREABG(IFREQ),
      &   0.25D0*GIMABG(IFREQ),0.5D0*AREAABB(IFREQ),0.5D0*AIMAABB(IFREQ),
      &   0.5D0*AREABBA(IFREQ),0.5D0*AIMABBA(IFREQ),

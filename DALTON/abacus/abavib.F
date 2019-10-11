@@ -3848,14 +3848,12 @@ C
      &     'ZZ',ROANL0(3,3,I),ROANLA(3,3,I),ROANL0(3,3,I)+ROANLA(3,3,I)
          END DO
          TMASS = 0.0D0
-         JATOM = 0
          DO IATOM = 1, NUCIND
             DO ISYMOP = 0, MAXOPR
                IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-                  JATOM = JATOM + 1
                   NATTYP = IZATOM(IATOM)
                   IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
-                     AMASS = DISOTP(NATTYP,ISOTOP(JATOM),'MASS')
+                     AMASS = DISOTP(NATTYP,ISOTOP(IATOM),'MASS')
                      TMASS = TMASS + AMASS
                   END IF
                END IF

@@ -1788,7 +1788,7 @@ C
       IAB = 0
       DO IA = 1, NBAST
          ICA = IPCEN(IA)
-         AMASS = XFAMU*DISOTP(NINT(CHARGE(ICA)),ISOTOP(ICA),'MASS')
+         AMASS = XFAMU*DISOTP(IZATOM(ICA),ISOTOP(ICA),'MASS')
          FACT = ONE + ONE/AMASS
          DO IB = 1, IA
             IAB = IAB + 1

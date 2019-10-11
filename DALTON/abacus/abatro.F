@@ -313,10 +313,10 @@ C
 C     Some initialization for spin-spin couplings
 C
       IF (.NOT. DOSELE) THEN
-         DO 10 I = 1, MXCENT
+         DO 10 I = 1, NUCIND
             DOPERT(I,2) = .FALSE.
             NUCCHA = IZATOM(I)
-            IF (NUCCHA .NE. 0) THEN
+            IF (NUCCHA .NE. 0 .AND. .NOT.NOORBT(I)) THEN
                DO 20 ISTP = 1, 5
                   GVAL   = DISOTP(NUCCHA,ISTP,'GVAL')
                   ABUND1 = DISOTP(NUCCHA,ISTP,'ABUNDANCE')

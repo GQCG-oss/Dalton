@@ -2453,21 +2453,24 @@ will activate this model.
 
 \item[\Key{INERSINITIAL}] \ \\
   \kw{READ (LUINP,*) EPSOL, EPPN}\\
-  Enter static and optical dielectric constant\index{dielectric constant} of solvent for calculation
-  of the initial state defining inertial polarization\index{inertial
-  polarization}. Note that the optical dielectric constant specified here
+  Enter the static and optical dielectric constants\index{dielectric constant} of the solvent
+  for calculation of the initial state defining inertial polarization\index{inertial polarization}. \\
+  Note that the optical dielectric constant specified here
   only will be used in case there is a calculation of response
   properties, for which this is an alternative input to the use of the
   keyword \Key{INERSFINAL}.
 
 \item[\Key{INERSFINAL}] \ \\
   \kw{READ (LUINP,*) EPSTAT,EPSOL}\\
-  Enter static and optical dielectric\index{dielectric constant} constants of solvent
-  for calculation of the final state with inertial polarization
+  Enter the static and optical dielectric\index{dielectric constant} constants of the solvent
+  for state specific calculation of the final state with inertial polarization
   from a previous calculation with \quotekw{\Key{INERSINITIAL}}\index{final polarization}. 
-  This can for example be used to optimize an excited electronic state
-  with inertial polarization from a previous ground state calculation.
-  This keyword an  also be used to specify the static and optical dielectric constants
+  This can for example be used to optimize an excited MCSCF electronic state
+  with inertial polarization from a previous ground state MCSCF calculation.
+  The "\verb|SIRIFC|" file from the previous calculation with \quotekw{\Key{INERSINITIAL}}
+  will contain information about the inertial polarization and must be provided for the
+  \quotekw{\Key{INERSFINAL}} calculation. \\
+  This keyword can also be used to specify the static and optical dielectric constants
   for non-equilibrium solvation linear, quadratic, or cubic response functions,
   see also Sec.~\ref{sec:solvnoneqrsp}, but this is usually easier done with
   \quotekw{.INERSINITIAL} (requires only one \dalton\ calculation instead of two).
