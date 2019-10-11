@@ -1789,10 +1789,9 @@ C
       RETURN
       END
 C  /* Deck rdsupp */
-#include "vdir.h"
       SUBROUTINE RDSUPP(NSIM,FMAT,DMAT,ISYMDM,WORK,IWORK,LFREE)
 C
-C Jan 90, Hans Joergen Aa. Jensen
+C Jan 90 + Oct 16, Hans Joergen Aa. Jensen
 C
 C NOTE: WORK and IWORK must be equivalenced.
 C
@@ -1801,8 +1800,9 @@ C
 #include "thrzer.h"
       PARAMETER (D0 = 0.0D0)
 C
-      REAL*8  FMAT(N2BASX,NSIM), DMAT(N2BASX,NSIM), WORK(LFREE)
-      INTEGER IWORK(IRAT*LFREE), ISYMDM(NSIM)
+      REAL*8    FMAT(N2BASX,NSIM), DMAT(N2BASX,NSIM), WORK(LFREE)
+      INTEGER*4 IWORK(2*LFREE)
+      INTEGER   ISYMDM(NSIM)
 C
 C Used from common blocks:
 C
@@ -1942,9 +1942,9 @@ C                    note NRS = IPQ
   280       CONTINUE
          ELSE IF (ITYP .EQ. 2) THEN
             IREC2 = IREC2 + 1
-            LENP  = (IRAT+1)*NPQRS
+            LENP  = 3*NPQRS ! real*8 P + integer*4 INDP
             IF (LENP .GT. LFREE) GO TO 820
-            CALL READI(LUSUPM,LENP,WORK)
+            CALL READI4(LUSUPM,LENP,IWORK)
             INDP  = IRAT*NPQRS
             IPQ   = IROW(NP1) + NQ1
             DO 380 ISIM = 1,NSIM
