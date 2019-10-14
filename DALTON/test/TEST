@@ -310,24 +310,24 @@ do
           if [ "$step" -eq "1" ]; then
 #           make sure that directory is clear before start
 	        if [ -n "$potfile" ]; then
-                  $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $potfile > "$tmpfile" 
+                  $TIMING_OF $DALTON -d $paramlist_this_test -ow -ext log $dalfile $molfile $potfile > "$tmpfile"
                   if [ $? -ne 0 ]; then failed=true; fi
 	        elif [ -n "$pcmfile" ]; then
-                  $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $pcmfile > "$tmpfile" 
+                  $TIMING_OF $DALTON -d $paramlist_this_test -ow -ext log $dalfile $molfile $pcmfile > "$tmpfile"
                   if [ $? -ne 0 ]; then failed=true; fi
 	        else
-                  $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile > "$tmpfile" 
+                  $TIMING_OF $DALTON -d $paramlist_this_test -ow -ext log $dalfile $molfile > "$tmpfile"
                   if [ $? -ne 0 ]; then failed=true; fi
 	        fi
           else
 	        if [ -n "$potfile" ]; then
-                  $TIMING_OF $DALTON -d $paramlist_this_test -f $item -ext log $dalfile $molfile $potfile > "$tmpfile" 
+                  $TIMING_OF $DALTON -d $paramlist_this_test -f $item -ow -ext log $dalfile $molfile $potfile > "$tmpfile"
                   if [ $? -ne 0 ]; then failed=true; fi
 	        elif [ -n "$pcmfile" ]; then
-                  $TIMING_OF $DALTON -d $paramlist_this_test -f $item -ext log $dalfile $molfile $pcmfile > "$tmpfile" 
+                  $TIMING_OF $DALTON -d $paramlist_this_test -f $item -ow -ext log $dalfile $molfile $pcmfile > "$tmpfile"
                   if [ $? -ne 0 ]; then failed=true; fi
 	        else
-                  $TIMING_OF $DALTON -d $paramlist_this_test -f $item -ext log $dalfile $molfile > "$tmpfile" 
+                  $TIMING_OF $DALTON -d $paramlist_this_test -f $item -ow -ext log $dalfile $molfile > "$tmpfile"
                   if [ $? -ne 0 ]; then failed=true; fi
 	        fi
           fi
