@@ -756,10 +756,10 @@ C
          ELSE
             IBL1  = IBUF(IDABUF+2*I-1)
             IBL2  = IBUF(IDABUF+2*I)
-            NP    = IAND(ISHFT(IBL1,-16),IBT08)
-            NQ    = IAND(      IBL1     ,IBT08)
-            NR    = IAND(ISHFT(IBL2,-16),IBT08)
-            NS    = IAND(      IBL2     ,IBT08)
+            NP    = IAND(ISHFT(IBL1,-16),IBT16)
+            NQ    = IAND(      IBL1     ,IBT16)
+            NR    = IAND(ISHFT(IBL2,-16),IBT16)
+            NS    = IAND(      IBL2     ,IBT16)
          END IF
          IJ    = IT(NP)+NQ
          KL    = IT(NR)+NS
@@ -1047,9 +1047,9 @@ C
          ELSE
             IBL1  = IBUF(IDABUF+2*I-1)
             IBL2  = IBUF(IDABUF+2*I)
-            NQ    = IAND(      IBL1     ,IBT08)
-            NR    = IAND(ISHFT(IBL2,-16),IBT08)
-            NS    = IAND(      IBL2     ,IBT08)
+            NQ    = IAND(      IBL1     ,IBT16)
+            NR    = IAND(ISHFT(IBL2,-16),IBT16)
+            NS    = IAND(      IBL2     ,IBT16)
          END IF
 #if defined (VAR_DUPLCHCK)
 C
@@ -1364,10 +1364,10 @@ C
          ELSE
             IBL1  = IBUF(IDABUF+2*I-1)
             IBL2  = IBUF(IDABUF+2*I)
-            NP    = IAND(ISHFT(IBL1,-16),IBT08)
-            NQ    = IAND(      IBL1     ,IBT08)
-            NR    = IAND(ISHFT(IBL2,-16),IBT08)
-            NS    = IAND(      IBL2     ,IBT08)
+            NP    = IAND(ISHFT(IBL1,-16),IBT16)
+            NQ    = IAND(      IBL1     ,IBT16)
+            NR    = IAND(ISHFT(IBL2,-16),IBT16)
+            NS    = IAND(      IBL2     ,IBT16)
          END IF
       IJ    = IT(NP)+NQ
       KL    = IT(NR)+NS
@@ -1690,9 +1690,9 @@ C
          ELSE
             IBL1  = IBUF(IDABUF+2*I-1)
             IBL2  = IBUF(IDABUF+2*I)
-            NQ    = IAND(      IBL1     ,IBT08)
-            NR    = IAND(ISHFT(IBL2,-16),IBT08)
-            NS    = IAND(      IBL2     ,IBT08)
+            NQ    = IAND(      IBL1     ,IBT16)
+            NR    = IAND(ISHFT(IBL2,-16),IBT16)
+            NS    = IAND(      IBL2     ,IBT16)
          END IF
 #if defined (VAR_DUPLCHCK)
 C
