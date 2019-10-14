@@ -53,7 +53,7 @@ c   implemented NEWSUP = .NOT. OLDSUP format (label "PSUPMAT ");
 c   removed saving IJ,KL in INDP in SUP1,SUP,SUP1D,SUPD; just
 c   allocate IT(NP+1) for INDP when not OLDSUP
 c===========================================================================
-C  /* Deck frmsup */
+C  /* Deck formsup */
       SUBROUTINE FORMSUP(WORK,LWORK,NOSYM,HFXFAC,THRESH,IPRINT)
 C
 C --- PROGRAM FORMSUP (form super matrices for Fock matrices)
@@ -463,7 +463,7 @@ C
 
       RETURN
       END
-C  /* Deck supsrt */
+C  /* Deck sup_sort */
       SUBROUTINE SUP_SORT(NOSYM,RINT,INT4,SCR,ISCR,LSORT,
      &   IS,LASTAD,IPRINT)
 #include "implicit.h"
@@ -481,9 +481,6 @@ C  /* Deck supsrt */
 C
 #include "inftap.h"
 #include "ibtdef.h"
-
-!     statement function
-      IT( I ) = (I*(I-1))/2
 
       CALL QENTER('SUP_SORT')
       allocate ( NREC(NBAST),IBATCH(NBAST),NSOINT(NBAST) )
