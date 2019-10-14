@@ -482,9 +482,6 @@ C
 #include "inftap.h"
 #include "ibtdef.h"
 
-!     statement function
-      IT( I ) = (I*(I-1))/2
-
       CALL QENTER('SUP_SORT')
       allocate ( NREC(NBAST),IBATCH(NBAST),NSOINT(NBAST) )
 C
