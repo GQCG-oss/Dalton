@@ -33,7 +33,6 @@ cSUPDRV: LINT = 1706 instead of 540
 c900319-hjaaj: corrected error in NPLAST for SUP1D and SUPD
 c- rewritten SUPNWR to write up to NP=NST-1 as type 1 if advantageous,
 c  used new routine NDXGTA to determine this.
-c- added WRSUP2 to correcte error in SUPNWR
 c900112-hjaaj: new routines SUPOWR and SUPNWR for writing to LUSUPM
 cwhen OLDSUP and .NOT.OLDSUP, resp.
 c- use new variable NBAS1 = true NBAS(1) for NST in SUPSRT
@@ -42,8 +41,8 @@ c- Format of LUSUPM if .not.oldsup:
 crec 1 : '*******','date    ','time    ','PXSUPMAT'
 crec 2 : xfac,nosym,nsym,nbas(1:8)
 cfor i = 3 until finished
-crec ia: ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS
-crec ib: if (ityp.eq.1) P(ibef+1:ibef+npqrs)
+crec ia: ITYP,NP1,NQ1,NPL,NQL,NPQRS
+crec ib: if (ityp.eq.1) P(1:npqrs) from NP1,NQ1 to NPL,NQL
 c        if (ityp.eq.2) P(1:npqrs),INDP(1:npqrs) and np1=npl, nq1=nql
 crec n : -2
 c900109-hjaaj: s/SRTINT/SUPSRT/;s/ONEL/SUPONE/;s/RDINFO/SUPRDI/;
@@ -68,7 +67,6 @@ C          Dec 1991 - work space in call, tuh
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
       LOGICAL NOSYM
       REAL*8  WORK(LWORK)
 C
@@ -100,45 +98,48 @@ C
       END IF
       LWRK2 = 0
 #if defined (VAR_DUPLCHCK)
-C Allocate memory for IBIT vector in IWORK
-      LWRK2 = LWRK2 + LWORK / 32
+C Allocate memory for IBIT vector
+      LWRK2 = LWORK / 32
 #endif
-      LWRK2 = LWRK2 / IRAT + 1
+      LWRK2 = LWRK2 / 2 ! for integer*4 IBIT
       LWRK1 = LWORK - LWRK2
       KWRK1 = 1
       KWRK2 = KWRK1 + LWRK1
-      LIWRK2 = IRAT*LWRK2
+      LIWRK2 = 2*LWRK2
       CALL SUPDRV(NOSYM,WORK(KWRK1),LWRK1,WORK(KWRK2),LIWRK2,
      &            HFXFAC,THRESH,IPRINT)
       CALL QEXIT('FORMSUP')
       RETURN
       END
 C  /* Deck supdrv */
-      SUBROUTINE SUPDRV(NOSYM,WORK,LWORK,IWORK,LIWORK,
+      SUBROUTINE SUPDRV(NOSYM,WORK,LWORK,IBIT,LIBIT,
      &                  HFXFAC,THRESH,IPRINT)
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "iratdef.h"
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
-      DIMENSION WORK(LWORK), IWORK(LIWORK)
+      PARAMETER (D0 = 0.0D0)
+      REAL*8    WORK(LWORK)
+      INTEGER*4 IBIT(LIBIT)
       LOGICAL   NOSYM
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,IIBAS(8),
      &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
 
       INTEGER, allocatable :: IS(:), LASTAD(:)
+      INTEGER*8  :: IBEF8, IT8, I8, NPMAX8, NPMM8
+      ! integer*8 variables are needed when more than 255 basis functions,
+      ! otherwise there will be overflow in the calculation of absolute PQRS indeces
 
 !     statement function
       IT( I ) = (I*(I-1))/2
+      IT8( I8 ) = (I8*(I8-1_8))/2_8
 
       CALL GETTIM(DST1,WST1)
 C
 C*** DEFAULTS
 C
-      NWORK = LIWORK
       XFAC  = HFXFAC
       THRQ  = THRESH
       KSUP  = 0
@@ -170,9 +171,10 @@ C     NST = starting NP for second block
 C     NST1 = last NP in first block
 C     NST1 max. equal to nbas1, ie. to nbas(1) before NOSYM reset to nbast
 C
-      NST1  = NBAS1
       LAVAIL = LWORK - LRDA22
-C     ... IJ = max. memory for integer*4 INDP
+C     ... IJ = max. memory for integer*4 INDP for type 2
+      NBAS1 = MIN(NBAS1, 250) ! 250 to make sure numbers fit in 32bit integers
+      NST1  = NBAS1
       IJ = (NST1*(NST1+1))/2
       IJ = (IJ-1)/2 + 1
       LAVAIL = LAVAIL - IJ
@@ -180,13 +182,12 @@ C     IJ = nst1*(nst1+1)/2 = # (p q) distributions in first block
 C     NPMAX = ij*(ij+1)/2 = # unique integrals in first block
 C     To have all integrals of first block in memory NPMAX .le. LAVAIL
 C     thus:
-C          IJ = int(sqrt(2*lavail+1)-.5) is max IJ which fit in memory
-C          NST1 = int(sqrt(2*IJ)+1)-.5) is max NST1 which fit in memory
-      RTMP = 2*LAVAIL+1
-      RTMP = SQRT(RTMP) - DP5
-      IJ   = RTMP
-      RTMP = 2*IJ+1
-      RTMP = SQRT(RTMP) - DP5
+C          IJ = int(sqrt(2*lavail+0.25)-.5) is max IJ which fit in memory
+C          RTMP = sqrt(2*avail) - 1.5 is a safe estimate of max ij (RTMP < max IJ)
+C          NST1 = sqrt(2*RTMP) - 1.5 is a safe estimate of max NST1 which fit in memory
+      RTMP = 2*LAVAIL
+      RTMP = SQRT(RTMP) - 1.5d0
+      RTMP = SQRT(2.0d0*RTMP) - 1.5d0
       NST1 = RTMP
       NST1 = MAX(15,NST1)
       NST1 = MIN(NBAS1,NST1)
@@ -226,31 +227,32 @@ C
       CALL GETTIM(DST,WST)
       DTOTD = D0
       WTOTD = D0
-      IBEF   = 0
+      IBEF8  = 0_8
       NPLAST = 0
       NST1   = NST-1
       IJ     = IT(NST)
-      NPMAX  = IT(IJ+1)
+      NPMAX  = IT(IJ+1) ! NST .le. 250, so IT is OK (IT8 not needed)
       LW1    = 1
       LW2    = LRDA22+1
-      IJ     = (IJ-1)/IRAT + 1
+      IJ     = (IJ-1)/2 + 1 ! allocation for integer*4 INDP
       NPM    = LRDA22 + NPMAX + IJ
-      LSUP   = LWORK-LRDA22-IJ
       ICHAIN = 1
       IF (NPM.LE.LWORK) THEN
          LW3 = LW2+NPMAX
          CALL SUP1(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &             WORK(LW3),IBEF,IWORK(1),IS,LASTAD)
+     &             WORK(LW3),IBEF8,IBIT,IS,LASTAD)
       ELSE
          CALL GETTIM(DST1D,WST1D)
-         LW3 = LW2+LSUP
+         LSUP = LWORK-LRDA22-IJ
+         LW3  = LW2+LSUP
          CALL SUP1D(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &             WORK(LW3),IBEF,IWORK(1),IS,LASTAD)
+     &             WORK(LW3),IBEF8,IBIT,IS,LASTAD)
          CALL GETTIM(DFIN1D,WFIN1D)
          DTOTD = DTOTD + DFIN1D - DST1D
          WTOTD = WTOTD + WFIN1D - WST1D
       END IF
-      IBEF = IBEF+NPMAX
+      IBEF8 = IBEF8+NPMAX
+      NPMAX8 = NPMAX
 C
 C*** CONTINUE WITH REST OF FIRST SYMMETRY
 C
@@ -259,28 +261,30 @@ C
       IF (IFIRST.EQ.0) GO TO 100
       DO 60 I = 1,IFIRST
          ICHAIN = ICHAIN+1
-         NPMX   = NPMAX
          NP     = NST1+I
          IJ     = IT(NP+1)
-         NPMAX  = IT(IJ+1)
-         NPMM   = NPMAX-NPMX
-         IJ     = (IJ-1)/IRAT + 1
+         I8     = IJ
+         NPMM8  = NPMAX8      ! old absolute index of last integral
+         NPMAX8 = IT8(I8+1_8) ! new absolute index of last integral
+         NPMM8  = NPMAX8 - NPMM8 ! number of integrals for this P value
+         NPMM   = NPMM8
+         IJ     = (IJ-1)/2 + 1
          NPM    = LRDA22 + NPMM + IJ
-         LSUP   = LWORK - LRDA22 - IJ
          IF (NPM.LE.LWORK) THEN
             LW3 = LW2+NPMM
             CALL SUP1(ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
-     &                WORK(LW3),IBEF,IWORK(1),IS,LASTAD)
+     &                WORK(LW3),IBEF8,IBIT,IS,LASTAD)
          ELSE
             CALL GETTIM(DST1D,WST1D)
-            LW3 = LW2+LSUP
+            LSUP = LWORK-LRDA22-IJ
+            LW3  = LW2+LSUP
             CALL SUP1D(ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
-     &                WORK(LW3),IBEF,IWORK(1),IS,LASTAD)
+     &                WORK(LW3),IBEF8,IBIT,IS,LASTAD)
             CALL GETTIM(DFIN1D,WFIN1D)
             DTOTD = DTOTD + DFIN1D - DST1D
             WTOTD = WTOTD + WFIN1D - WST1D
          END IF
-         IBEF=IBEF+NPMM
+         IBEF8=IBEF8+NPMM
          NPLAST = NP
   60  CONTINUE
       CALL GETTIM(DFIN,WFIN)
@@ -308,37 +312,36 @@ C
 C
 C*** NUMBER OF SUPER MATRIX ELEMENTS
 C
-         KK = 0
          ISP = IS(NP)
          NPR = NP-IBAS(ISP)
-         ISR = ISP-1
-         DO 190 I = 1,ISR
-            NBI = NBAS(I)+1
- 190        KK = KK+IT(NBI)
+         KK  = IIBAS(ISP)
          I1 = IT(NPR+1)
          I2 = IT(NPR)
          IJ = KK + I1
          KOMB = I1-I2
-         I1 = IT(I1+1)
-         I2 = IT(I2+1)
-         NPMAX = KK*KOMB+I1-I2
-         IJ = (IJ-1)/IRAT + 1
+         I8 = I1+1
+         NPMM8 = IT8(I8)
+         I8 = I2+1
+         NPMM8 = NPMM8 - IT8(I8) ! IT(I1+1) - IT(I2+1)
+         NPMAX = NPMM8
+         NPMAX = KK*KOMB+NPMAX
+         IJ = (IJ-1)/2 + 1
          NPM = LRDA22+NPMAX+IJ
          LSUP = LWORK - LRDA22 - IJ
          IF (NPM.LE.LWORK) THEN
             LW3 = LW2+NPMAX
             CALL SUP(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &               WORK(LW3),IWORK(1),IBEF,NP,IS,LASTAD,IPRINT)
+     &               WORK(LW3),IBIT,IBEF8,NP,IS,LASTAD,IPRINT)
          ELSE
             CALL GETTIM(DST1D,WST1D)
             LW3 = LW2+LSUP
             CALL SUPD(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &                WORK(LW3),IWORK(1),IBEF,NP,IS,LASTAD)
+     &                WORK(LW3),IBIT,IBEF8,NP,IS,LASTAD)
             CALL GETTIM(DFIN1D,WFIN1D)
             DTOTD = DTOTD + DFIN1D - DST1D
             WTOTD = WTOTD + WFIN1D - WST1D
          END IF
-         IBEF = IBEF+NPMAX
+         IBEF8 = IBEF8+NPMAX
          NPLAST = NP
  200  CONTINUE
       CALL GETTIM(DFIN,WFIN)
@@ -369,7 +372,7 @@ C  /* Deck sup_rdinfo */
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL NOSYM
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,IIBAS(8),
      &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
@@ -444,12 +447,12 @@ C
 
 C***  If (NOSYM) then reset symmetry index arrays
 
+      NBAS1 = NBAS(1) ! NBAS1 = true NBAS(1) before reset (if NOSYM)
       IF (NOSYM) THEN
          NBAS(1:8) = 0
          NSYM = 1
          NBAS(1) = NBAST
       END IF
-      NBAS1 = NBAS(1)
 C
 C***  NUMBER OF PREVIOUS BASIS FUNCTIONS
 C
@@ -458,7 +461,7 @@ C
       DO 6 ISYM = 2,NSYM
          NBI = NBAS(ISYM-1)
          IBAS(ISYM) = IBAS(ISYM-1) + NBI
-         IIBAS(ISYM)  = IIBAS(ISYM-1) + IT(NBI+1)
+         IIBAS(ISYM) = IIBAS(ISYM-1) + IT(NBI+1)
    6  CONTINUE
 
       RETURN
@@ -469,7 +472,7 @@ C  /* Deck supsrt */
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,IIBAS(8),
      &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
@@ -514,7 +517,7 @@ C
          NREC(I) = 0
          NSOINT(I) = 0
   12  CONTINUE
-      IINT = IRAT*LINT
+      IINT = 2*LINT ! off-set for integer*4 ISCR()
 C
 C***  NUMBER OF BATCHES PER PASS
 C
@@ -683,26 +686,29 @@ C
       RETURN
       END
 C  /* Deck sup1 */
-      SUBROUTINE SUP1(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IBIT,IS,LASTAD)
+      SUBROUTINE SUP1(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF8,
+     &   IBIT,IS,LASTAD)
 C***  TRANSFORMATION OF FIRST SYMMETRY
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "ibtdef.h"
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,IIBAS(8),
      &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
-      DIMENSION P(*),BBUF(*),IBIT(*)
+      DIMENSION P(*),BBUF(*)
+      INTEGER*8  :: IBEF8, IJROW8, IT8, I8
+      INTEGER*4 IBIT(*)
       INTEGER*4 INDP(*), IBUF(*), IBL1, IBL2
-      INTEGER   IS(*), LASTAD(*)
+      INTEGER   ICHAIN, IS(*), LASTAD(*)
 C
 
 !     statement function
       IT( I ) = (I*(I-1))/2
+      IT8( I8 ) = (I8*(I8-1_8))/2_8
 
 C
 #if defined (VAR_DUPLCHCK)
@@ -763,7 +769,9 @@ C
          END IF
          IJ    = IT(NP)+NQ
          KL    = IT(NR)+NS
-         IJKL  = IT(IJ)+KL-IBEF
+         I8    = IJ
+         IJROW8= IT8(I8)-IBEF8
+         IJKL  = IJROW8 + KL
 C
 C***  ALL INDICES ARE IN IRREP 1 AND IN CANONICAL ORDER
 #if defined (VAR_DUPLCHCK)
@@ -792,7 +800,9 @@ C***  CONTRIBUTION TO PS,QQ
 C
       IJ = IT(NP)+NS
       KL = IT(NQ)+NQ
-      IJKL = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      IJKL  = IJROW8 + KL
       P   (IJKL) = P(IJKL) - XON2*BBUF(I)
       GO TO 400
 C
@@ -808,12 +818,14 @@ C***  PQ,RR
 C
       P(IJKL)    = P(IJKL)+CFAC*BBUF(I)
       IJ = IT(NP)+NR
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
       IF(NR.GT.NQ) GO TO 85
 C
 C***  CONTRIBUTION TO PR,QR
 C
       KL = IT(NQ)+NR
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL = IJROW8 + KL
       P   (IJKL) = P(IJKL)-XON4*BBUF(I)
       GO TO 400
   85  CONTINUE
@@ -821,7 +833,7 @@ C
 C***  CONTRIBUTION TO PR,RQ
 C
       KL = IT(NR)+NQ
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL = IJROW8 + KL
       P   (IJKL) = P(IJKL)-XON4*BBUF(I)
       GO TO 400
  100  IF(NS.EQ.NQ) GO TO 120
@@ -830,34 +842,38 @@ C***  PQ,RS
 C
       P   (IJKL) = P(IJKL)+CFAC*BBUF(I)
       IJ = IT(NP)+NR
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
       IF (NQ.GT.NS) GO TO 105
 C
 C***  CONTRIBUTION TO PR,SQ
 C
       KL = IT(NS)+NQ
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL = IJROW8 + KL
       P   (IJKL) = P(IJKL)-XON4*BBUF(I)
       GO TO 110
 C
 C***  CONTRIBUTION TO PR,QS
 C
  105  KL = IT(NQ)+NS
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL = IJROW8 + KL
       P   (IJKL) = P(IJKL)-XON4*BBUF(I)
  110  IJ = IT(NP)+NS
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
       IF(NQ.GT.NR) GO TO 115
 C
 C***  CONTRIBUTION TO PS,RQ
 C
       KL = IT(NR)+NQ
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL = IJROW8 + KL
       P   (IJKL) = P(IJKL)-XON4*BBUF(I)
       GO TO 400
 C
 C***  CONTRIBUTION TO PS,QR
 C
  115  KL = IT(NQ)+NR
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL = IJROW8 + KL
       P   (IJKL) = P(IJKL)-XON4*BBUF(I)
       GO TO 400
 C
@@ -870,7 +886,9 @@ C***  CONTRIBUTION TO PR,QQ
 C
       IJ = IT(NP)+NR
       KL = IT(NQ)+NQ
-      IJKL = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      IJKL  = IJROW8 + KL
       P   (IJKL) = P(IJKL)-XON2*BBUF(I)
       GO TO 400
 C
@@ -880,11 +898,13 @@ C***  PQ,PS
 C
       P   (IJKL) = P(IJKL)+FPQPS*BBUF(I)
       IJ = IT(NP)+NP
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
 C
 C***  CONTRIBUTION TO PP,QS   CANONICAL ORDERING ASSUMED
 C
       KL = IT(NQ)+NS
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL  = IJROW8 + KL
       P   (IJKL) = P(IJKL)-XON2*BBUF(I)
       GO TO 400
 C
@@ -897,7 +917,9 @@ C***  CONTRIBUTION TO PP,QQ
 C
       IJ = IT(NP)+NP
       KL = IT(NQ)+NQ
-      IJKL = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      IJKL  = IJROW8 + KL
       P   (IJKL) = P(IJKL)-XON2*BBUF(I)
       GO TO 400
 C
@@ -912,7 +934,9 @@ C***  CONTRIBUTION TO PR,PS
 C
       IJ = IT(NP)+NR
       KL = IT(NP)+NS
-      IJKL = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      IJKL  = IJROW8 + KL
       P   (IJKL) = P(IJKL)-XON4*BBUF(I)
       GO TO 400
 C
@@ -925,7 +949,9 @@ C***  CONTRIBUTION TO PR,PR
 C
       IJ = IT(NP)+NR
       KL = IJ
-      IJKL = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      IJKL  = IJROW8 + KL
       P   (IJKL) = P(IJKL)-XON8*BBUF(I)
       GO TO 400
 C
@@ -945,32 +971,33 @@ C
 C
 C***  Transfer P to disk
 C
-      CALL SUPNWR(P,INDP,IBEF,NPMAX,IS)
+      CALL SUPNWR(P,INDP,IBEF8,NPMAX,IS)
 C
  900  CONTINUE
       RETURN
 #if defined (VAR_DUPLCHCK)
  950  NWT = KBMAX
       WRITE(LUPRI,960) NWT
- 960  FORMAT(' SUP1: DIMENSION OF IWORK MUST BE INCREASED TO',I10)
+ 960  FORMAT(' SUP1: DIMENSION OF IBIT MUST BE INCREASED TO',I10)
       CALL QUIT('Insfspce')
 #endif
       END
 C  /* Deck sup */
       SUBROUTINE SUP(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBIT,
-     &               IBEF,NP,IS,LASTAD,IPRINT)
+     &               IBEF8,NP,IS,LASTAD,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "ibtdef.h"
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 #include "inftap.h"
-      DIMENSION P(*),BBUF(*),IBIT(*)
+      DIMENSION P(*),BBUF(*)
+      INTEGER*4 IBIT(*)
+      INTEGER*8  :: IBEF8, IJROW8, IT8, I8
       INTEGER*4 INDP(*), IBUF(*), IBL1, IBL2
       INTEGER   IS(*), LASTAD(*)
 C
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,IIBAS(8),
      &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
@@ -978,6 +1005,7 @@ C
 
 !     statement function
       IT( I ) = (I*(I-1))/2
+      IT8( I8 ) = (I8*(I8-1_8))/2_8
 
 C
 #if defined (VAR_DUPLCHCK)
@@ -1057,7 +1085,9 @@ C***  FIRST CHECK IF INTEGRAL HAS OCCURRED BEFORE
 C
       IJ   = ITP+NQ
       KL   = IT(NR)+NS
-      IJKL = IT(IJ)+KL-JMAX
+      I8    = IJ
+      IJROW8= IT8(I8)-JMAX
+      IJKL  = IJROW8 + KL
       IF(JO(IJKL).EQ.1) GO TO 400
       IK31 = (IJKL+31)/32
       IK32 = IK31*32-IJKL
@@ -1078,7 +1108,9 @@ C***  ISP = ISQ = ISR = ISS
 C
       IJ = MPP+NQR
       KL = IT(NRR)+NSR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID    = IJROW8 + KL
       IF(NP.EQ.NQ) GO TO 180
       IF(NR.EQ.NP) GO TO 140
       IF(NR.NE.NQ) GO TO 80
@@ -1092,7 +1124,9 @@ C***  CONTRIBUTION TO PS,QQ
 C
       IJ = MPP+NSR
       KL = IT(NQR)+NQR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID    = IJROW8 + KL
       P(ID)    = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
@@ -1108,12 +1142,14 @@ C***  PQ,RR
 C
       P(ID)    = P(ID)+CFAC*BBUF(I)
       IJ       = MPP+NRR
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
       IF(NR.GT.NQ) GO TO 85
 C
 C***  CONTRIBUTION TO PR,QR
 C
       KL = IT(NQR)+NRR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      ID = IJROW8 + KL
       P(ID)    = P(ID)-XON4*BBUF(I)
       GO TO 400
   85  CONTINUE
@@ -1121,7 +1157,7 @@ C
 C***  CONTRIBUTION TO PR,RQ
 C
       KL = IT(NRR)+NQR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      ID = IJROW8 + KL
       P(ID)    = P(ID)-XON4*BBUF(I)
       GO TO 400
  100  IF(NS.EQ.NQ) GO TO 120
@@ -1130,28 +1166,32 @@ C***  PQ,RS
 C
       P(ID)    = P(ID)+CFAC*BBUF(I)
       IJ = MPP+NRR
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
       IF(NQ.GT.NS) GO TO 105
 C
 C***  CONTRIBUTION TO PR,SQ
 C
       KL = IT(NSR)+NQR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      ID = IJROW8 + KL
       P(ID)    = P(ID)-XON4*BBUF(I)
       GO TO 110
 C
 C***  CONTRIBUTION TO PR,QS
 C
  105  KL = IT(NQR)+NSR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      ID = IJROW8 + KL
       P(ID)    = P(ID)-XON4*BBUF(I)
  110  CONTINUE
       IJ = MPP+NSR
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
       IF(NQ.GT.NR) GO TO 115
 C
 C***  CONTRIBUTION TO PS,RQ
 C
       KL = IT(NRR)+NQR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      ID = IJROW8 + KL
       P(ID)    = P(ID)-XON4*BBUF(I)
       GO TO 400
 C
@@ -1159,7 +1199,7 @@ C***  CONTRIBUTION TO PS,QR
 C
  115  CONTINUE
       KL = IT(NQR)+NRR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      ID = IJROW8 + KL
       P(ID)    = P(ID)-XON4*BBUF(I)
       GO TO 400
 C
@@ -1172,7 +1212,9 @@ C***  CONTRIBUTION TO PR,QQ
 C
       IJ = MPP+NRR
       KL = IT(NQR)+NQR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       P(ID)    = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
@@ -1182,11 +1224,13 @@ C***  PQ,PS
 C
       P(ID)    = P(ID)+FPQPS*BBUF(I)
       IJ = MPP+NPR
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
 C
 C***  CONTRIBUTION TO PP,QS  CANONICAL ORDERING ASSUMED
 C
       KL = IT(NQR)+NSR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      ID = IJROW8 + KL
       P(ID)    = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
@@ -1199,7 +1243,9 @@ C***  CONTRIBUTION TO PP,QQ
 C
       IJ = MPP+NPR
       KL = IT(NQR)+NQR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       P(ID)    = P(ID)-XON2*BBUF(I)
       GO TO 400
 C
@@ -1214,7 +1260,9 @@ C***  CONTRIBUTION TO PR,PS
 C
       IJ = MPP+NRR
       KL = IT(NPR)+NSR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       P(ID)    = P(ID)-XON4*BBUF(I)
       GO TO 400
 C
@@ -1227,7 +1275,9 @@ C***  CONTRIBUTION TO PR,PR
 C
       IJ = MPP+NRR
       KL = IJ
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       P(ID)    = P(ID)-XON8*BBUF(I)
       GO TO 400
 C
@@ -1254,7 +1304,9 @@ C
       NSR = NX
  252  IJ  = MPP+NRR
       KL  = IT(NQR)+NSR+IIBAS(ISQ)
-      ID  = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID  = IJROW8 + KL
       IF(NQ.EQ.NS) GO TO 264
       IF(NP.EQ.NR) GO TO 264
       P(ID) = P(ID)-XON4*BBUF(I)
@@ -1266,7 +1318,9 @@ C***  ISP = ISQ, ISP>ISR, ISR = ISS
 C
  350  IJ = MPP+NQR
       KL = IT(NRR)+NSR+IIBAS(ISR)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       P(ID)    = P(ID)+CFAC*BBUF(I)
  400  CONTINUE
 C
@@ -1274,39 +1328,41 @@ C
 C
 C***  Transfer P to disk
 C
-      CALL SUPNWR(P,INDP,IBEF,NPMAX,IS)
+      CALL SUPNWR(P,INDP,IBEF8,NPMAX,IS)
 C
  900  CONTINUE
       RETURN
 #if defined (VAR_DUPLCHCK)
  950  KK = KBMAX
       WRITE(LUPRI,960) KK
- 960  FORMAT(' SUP: DIMENSION OF IWORK MUST BE INCREASED TO',I10)
+ 960  FORMAT(' SUP: DIMENSION OF IBIT MUST BE INCREASED TO',I10)
       CALL QUIT('Insfspce')
 #endif
       END
 C  /* Deck sup1d */
-      SUBROUTINE SUP1D(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IBIT,
+      SUBROUTINE SUP1D(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF8,IBIT,
      &   IS,LASTAD)
 C***  TRANSFORMATION OF FIRST SYMMETRY
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "ibtdef.h"
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,IIBAS(8),
      &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
-      DIMENSION P(*),BBUF(*),IBIT(*)
+      DIMENSION P(*),BBUF(*)
+      INTEGER*4 IBIT(*)
       INTEGER*4 INDP(*), IBUF(*), IBL1, IBL2
+      INTEGER*8  :: IBEF8, IJROW8, IT8, I8
       INTEGER   IS(*), LASTAD(*)
 C
 
 !     statement function
       IT( I ) = (I*(I-1))/2
+      IT8( I8 ) = (I8*(I8-1_8))/2_8
 
 C
 #if defined (VAR_DUPLCHCK)
@@ -1371,7 +1427,9 @@ C
          END IF
       IJ    = IT(NP)+NQ
       KL    = IT(NR)+NS
-      IJKL  = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      IJKL  = IJROW8 + KL
       ID    = IJKL-IRED
 C
 C***  ALL INDICES ARE IN IRREP 1 AND IN CANONICAL ORDER
@@ -1402,7 +1460,9 @@ C***  CONTRIBUTION TO PS,QQ
 C
   55  IJ = IT(NP)+NS
       KL = IT(NQ)+NQ
-      IJKL = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      IJKL  = IJROW8 + KL
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
       P(ID) = P(ID)-XON2*BBUF(I)
@@ -1421,12 +1481,14 @@ C
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 82
       P(ID) = P(ID)+CFAC*BBUF(I)
   82  IJ = IT(NP)+NR
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
       IF(NR.GT.NQ) GO TO 85
 C
 C***  CONTRIBUTION TO PR,QR
 C
       KL = IT(NQ)+NR
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL = IJROW8 + KL
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
@@ -1436,7 +1498,7 @@ C
 C***  CONTRIBUTION TO PR,RQ
 C
       KL = IT(NR)+NQ
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL = IJROW8 + KL
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
@@ -1448,12 +1510,14 @@ C
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 101
       P(ID) = P(ID)+CFAC*BBUF(I)
  101  IJ = IT(NP)+NR
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
       IF(NQ.GT.NS) GO TO 105
 C
 C***  CONTRIBUTION TO PR,SQ
 C
       KL = IT(NS)+NQ
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL = IJROW8 + KL
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 110
       ID = IJKL-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
@@ -1462,17 +1526,19 @@ C
 C***  CONTRIBUTION TO PR,QS
 C
  105  KL = IT(NQ)+NS
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL = IJROW8 + KL
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 110
       ID = IJKL-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
  110  IJ = IT(NP)+NS
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
       IF(NQ.GT.NR) GO TO 115
 C
 C***  CONTRIBUTION TO PS,RQ
 C
       KL = IT(NR)+NQ
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL = IJROW8 + KL
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
@@ -1481,7 +1547,7 @@ C
 C***  CONTRIBUTION TO PS,QR
 C
  115  KL = IT(NQ)+NR
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL = IJROW8 + KL
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
@@ -1496,7 +1562,9 @@ C***  CONTRIBUTION TO PR,QQ
 C
  125  IJ = IT(NP)+NR
       KL = IT(NQ)+NQ
-      IJKL = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      IJKL  = IJROW8 + KL
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
       P(ID) = P(ID)-XON2*BBUF(I)
@@ -1509,11 +1577,13 @@ C
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 142
       P(ID) = P(ID)+FPQPS*BBUF(I)
  142  IJ = IT(NP)+NP
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
 C
 C***  CONTRIBUTION TO PP,QS   CANONICAL ORDERING ASSUMED
 C
       KL = IT(NQ)+NS
-      IJKL = IT(IJ)+KL-IBEF
+      IJKL = IJROW8 + KL
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
       P(ID) = P(ID)-XON2*BBUF(I)
@@ -1528,7 +1598,9 @@ C***  CONTRIBUTION TO PP,QQ
 C
  162  IJ = IT(NP)+NP
       KL = IT(NQ)+NQ
-      IJKL = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      IJKL  = IJROW8 + KL
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
       P(ID) = P(ID)-XON2*BBUF(I)
@@ -1546,7 +1618,9 @@ C***  CONTRIBUTION TO PR,PS
 C
  182  IJ = IT(NP)+NR
       KL = IT(NP)+NS
-      IJKL = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      IJKL  = IJROW8 + KL
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
@@ -1561,7 +1635,9 @@ C***  CONTRIBUTION TO PR,PR
 C
  202  IJ = IT(NP)+NR
       KL = IJ
-      IJKL = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      IJKL  = IJROW8 + KL
       IF(IJKL.LT.NB1.OR.IJKL.GT.NB2) GO TO 400
       ID = IJKL-IRED
       P(ID) = P(ID)-XON8*BBUF(I)
@@ -1586,9 +1662,10 @@ C
 C
 C***  Transfer P to disk
 C
-      IOFF = IBEF + IRED
+      IBEF8 = IBEF8 + IRED
 C     Note: A PQ distribution may be divided into two records
-      CALL SUPNWR(P,INDP,IOFF,NBB,IS)
+      CALL SUPNWR(P,INDP,IBEF8,NBB,IS)
+      IBEF8 = IBEF8 - IRED
 C
 C
  800  IRED = IRED+NBB
@@ -1597,31 +1674,33 @@ C
 #if defined (VAR_DUPLCHCK)
  950  NWT = KBMAX
       WRITE(LUPRI,960) NWT
- 960  FORMAT(' SUP1D: DIMENSION OF IWORK MUST BE INCREASED TO',I10)
+ 960  FORMAT(' SUP1D: DIMENSION OF IBIT MUST BE INCREASED TO',I10)
       CALL QUIT('Insfspce')
 #endif
       END
 C  /* Deck supd */
       SUBROUTINE SUPD(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBIT,
-     &               IBEF,NP,IS,LASTAD)
+     &               IBEF8,NP,IS,LASTAD)
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "ibtdef.h"
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,IIBAS(8),
      &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
-      DIMENSION P(*),BBUF(*),IBIT(*)
+      DIMENSION P(*),BBUF(*)
+      INTEGER*4 IBIT(*)
       INTEGER*4 INDP(*), IBUF(*), IBL1, IBL2
+      INTEGER*8  :: IBEF8, IJROW8, IT8, I8
       INTEGER   IS(*), LASTAD(*)
 C
 
 !     statement function
       IT( I ) = (I*(I-1))/2
+      IT8( I8 ) = (I8*(I8-1_8))/2_8
 
 C
 #if defined (VAR_DUPLCHCK)
@@ -1700,7 +1779,9 @@ C***  FIRST CHECK IF INTEGRAL HAS OCCURRED BEFORE
 C
       IJ = ITP+NQ
       KL = IT(NR)+NS
-      IJKL = IT(IJ)+KL-JMAX
+      I8    = IJ
+      IJROW8= IT8(I8)-JMAX
+      IJKL  = IJROW8 + KL
       IF(JO(IJKL).EQ.1) GO TO 400
       IK31 = (IJKL+31)/32
       IK32 = IK31*32-IJKL
@@ -1721,7 +1802,9 @@ C***  ISP = ISQ = ISR = ISS
 C
       IJ = MPP+NQR
       KL = IT(NRR)+NSR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       IF(NP.EQ.NQ) GO TO 180
       IF(NR.EQ.NP) GO TO 140
       IF(NR.NE.NQ) GO TO 80
@@ -1737,7 +1820,9 @@ C***  CONTRIBUTION TO PS,QQ
 C
   55  IJ = MPP+NSR
       KL = IT(NQR)+NQR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
       P(ID) = P(ID)-XON2*BBUF(I)
@@ -1758,12 +1843,14 @@ C
       ID = ID-IRED
       P(ID) = P(ID)+CFAC*BBUF(I)
   82  IJ = MPP+NRR
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
       IF(NR.GT.NQ) GO TO 85
 C
 C***  CONTRIBUTION TO PR,QR
 C
       KL = IT(NQR)+NRR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
@@ -1773,7 +1860,7 @@ C
 C***  CONTRIBUTION TO PR,RQ
 C
       KL = IT(NRR)+NQR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
@@ -1786,12 +1873,14 @@ C
       ID = ID-IRED
       P(ID) = P(ID)+CFAC*BBUF(I)
  101  IJ = MPP+NRR
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
       IF(NQ.GT.NS) GO TO 105
 C
 C***  CONTRIBUTION TO PR,SQ
 C
       KL = IT(NSR)+NQR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 110
       ID = ID-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
@@ -1800,18 +1889,20 @@ C
 C***  CONTRIBUTION TO PR,QS
 C
  105  KL = IT(NQR)+NSR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 110
       ID = ID-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
  110  CONTINUE
       IJ = MPP+NSR
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
       IF(NQ.GT.NR) GO TO 115
 C
 C***  CONTRIBUTION TO PS,RQ
 C
       KL = IT(NRR)+NQR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
@@ -1821,7 +1912,7 @@ C***  CONTRIBUTION TO PS,QR
 C
  115  CONTINUE
       KL = IT(NQR)+NRR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
@@ -1837,7 +1928,9 @@ C***  CONTRIBUTION TO PR,QQ
 C
  122  IJ = MPP+NRR
       KL = IT(NQR)+NQR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
       P(ID) = P(ID)-XON2*BBUF(I)
@@ -1855,7 +1948,9 @@ C
 C***  CONTRIBUTION TO PP,QS  CANONICAL ORDERING ASSUMED
 C
       KL = IT(NQR)+NSR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
       P(ID) = P(ID)-XON2*BBUF(I)
@@ -1871,7 +1966,9 @@ C***  CONTRIBUTION TO PP,QQ
 C
  162  IJ = MPP+NPR
       KL = IT(NQR)+NQR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
       P(ID) = P(ID)-XON2*BBUF(I)
@@ -1890,7 +1987,9 @@ C***  CONTRIBUTION TO PR,PS
 C
  182  IJ = MPP+NRR
       KL = IT(NPR)+NSR+IIBAS(ISP)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
       P(ID) = P(ID)-XON4*BBUF(I)
@@ -1906,7 +2005,9 @@ C***  CONTRIBUTION TO PR,PR
 C
  202  IJ = MPP+NRR
       KL = IJ
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
       P(ID) = P(ID)-XON8*BBUF(I)
@@ -1938,7 +2039,9 @@ C
       NSR = NX
  252  IJ = MPP+NRR
       KL = IT(NQR)+NSR+IIBAS(ISQ)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
       IF(NQ.EQ.NS) GO TO 264
@@ -1952,7 +2055,9 @@ C***  ISP = ISQ, ISP>ISR, ISR = ISS
 C
  350  IJ = MPP+NQR
       KL = IT(NRR)+NSR+IIBAS(ISR)
-      ID = IT(IJ)+KL-IBEF
+      I8    = IJ
+      IJROW8= IT8(I8)-IBEF8
+      ID = IJROW8 + KL
       IF(ID.LT.NB1.OR.ID.GT.NB2) GO TO 400
       ID = ID-IRED
       P(ID) = P(ID)+CFAC*BBUF(I)
@@ -1963,9 +2068,10 @@ C
 C
 C***  Transfer P to disk
 C
-      IOFF = IBEF + IRED
+      IBEF8 = IBEF8 + IRED
 C     Note: A PQ distribution may be divided into two records
-      CALL SUPNWR(P,INDP,IOFF,NBB,IS)
+      CALL SUPNWR(P,INDP,IBEF8,NBB,IS)
+      IBEF8 = IBEF8 - IRED
 C
 C
  800  IRED = IRED+NBB
@@ -1974,46 +2080,49 @@ C
 #if defined (VAR_DUPLCHCK)
  950  KK = KBMAX
       WRITE(LUPRI,960) KK
- 960  FORMAT('SUPD: DIMENSION OF IWORK MUST BE INCREASED TO',I10)
+ 960  FORMAT('SUPD: DIMENSION OF IBIT MUST BE INCREASED TO',I10)
       CALL QUIT('Insfspce')
 #endif
       END
 C  /* Deck supnwr */
-      SUBROUTINE SUPNWR(P,INDP,IBEF,NPMAX,IS)
+      SUBROUTINE SUPNWR(P,INDP,IBEF8,NPMAX,IS)
 C
 C     Jan 90 Hans Joergen Aa. Jensen
+C     Revised Oct 2019 hjaaj for nbast > 255
 C     Write to LUSUPM
 C
-C     On input P(1:NPMAX) contains Psupmat(IBEF+1:IBEF+NPMAX)
+C     On input P(1:NPMAX) contains Psupmat(IBEF8+1:IBEF8+NPMAX)
 C
-C     WRITE (LUSUPM) ITYP,NPF,NQF,NPL,NQL,IBEF,NPQRS
+C     WRITE (LUSUPM) ITYP,NPF,NQF,NPL,NQL,NPQRS
 C     Two format types:
-C     ITYP=1: WRITE (LUSUPM) Psupmat(IBEF+1:IBEF+NPQRS)
+C     ITYP=1: WRITE (LUSUPM) Psupmat(IBEF8+1:IBEF8+NPQRS)
 C     ITYP=2: WRITE (LUSUPM) P(1:NPQRS),INDP(1:NPQRS)
 C
-C     note: IBEF=IT(NPQF),       NPQF = IT(NPF) + NQF
-C           NPQRS=IT(NPQL)-IOFF, NPQL = IT(NPL) + NQL
+C     note: IBEF8=IT(NPQF),       NPQF = IT(NPF) + NQF
+C           NPQRS=IT(NPQL)-IBEF8, NPQL = IT(NPL) + NQL
 C
 #include "implicit.h"
+#include "priunit.h"
       REAL*8    P(*)
       INTEGER*4 INDP(*)
+      INTEGER*8  :: IBEF8
       INTEGER   IS(*)
 C
-#include "iratdef.h"
-      PARAMETER ( ITYP1 = 1, ITYP2 = 2)
-C
 #include "inftap.h"
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
+      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,IIBAS(8),
      &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 
+      integer*8 :: IT8, I8, IOFF8, NPQR8, NPQROW8, NPQRS8
 !     statement function
       IT( I ) = (I*(I-1))/2
+      IT8( I8 ) = (I8*(I8-1_8))/2_8
 
 C
-      IOFF  = IBEF
-      IF (NPLAST .EQ. 0) THEN
+      IOFF  = 0
+      IF (NPLAST .EQ. 0) THEN ! then also  IBEF8 = 0
+         IF (IBEF8 .ne. 0) CALL QUIT('SUPNWR code error')
          NPL   = NPLAST
          NPLAST= MIN(NST-1,15)
 C        if NPLAST = 15 then NPQL = 120 and NPQRS = 7260
@@ -2025,7 +2134,7 @@ C
          NPQF  = IT(NPF)+NQF
          NPQL  = IT(NPL)+NQL
          NPQRS = IT(NPQL+1) - IOFF
-         IF ( (IOFF + NPQRS) .GT. (IBEF+NPMAX) ) THEN
+         IF ( (IOFF + NPQRS) .GT. NPMAX ) THEN
 C           ... all elements not available, switch to type 2
             NPLAST = NPF
             GO TO 200
@@ -2037,17 +2146,18 @@ C               switch to type 2
             NPLAST = NPF
             GO TO 200
          END IF
-         CALL WRSUP1(LUSUPM,P(IOFF+1),NPQRS,ITYP1,NPF,NQF,NPL,
-     &               NQL,IOFF,NPQL)
+         CALL WRSUP1(LUSUPM,P(IOFF+1),NPQRS,NPF,NQF,NPL,NQL)
          IOFF  = IOFF + NPQRS
          IF (NPLAST + 1 .LE. NST-1) THEN
             NPLAST = NPLAST + 1
             GO TO 100
          END IF
+  200    IF (IOFF .EQ. NPMAX) GO TO 900
       END IF
-  200 IF (IOFF .EQ. (IBEF+NPMAX)) GO TO 900
 C
+      IOFF8 = IBEF8 + IOFF
 C
+      NPQRS8 = 0 ! ... to avoid compiler messages
       NPF = NPLAST
       DO 740 NP = NPF,NBAST
 C     ... we begin with NPLAST, because NPLAST may not be finished
@@ -2055,28 +2165,28 @@ C         if SUP1D or SUPD was calling routine.
       ISP = IS(NP)
       NPR = NP - IBAS(ISP)
       DO 730 NQR = 1,NPR
-         NPQR   = IIBAS(ISP) + IT(NPR) + NQR
-         NPQROW = IT(NPQR)
-       IF (NPQROW+NPQR .LE. IOFF) GO TO 730
-       IF (NPQROW .GE. (IBEF+NPMAX)) GO TO 900
+         NPQR8   = IIBAS(ISP) + IT(NPR) + NQR
+         NPQROW8 = IT8(NPQR8)
+       IF (NPQROW8+NPQR8 .LE. IOFF8) GO TO 730
+       IF (NPQROW8 .GE. (IBEF8+NPMAX)) GO TO 900
 C      (  Finished with this block of integrals )
          NRSOUT = 0
-         NPQRS  = NPQROW
-C        ... to avoid compiler messages
          DO 720 NR = 1,NP
          ISR = IS(NR)
          NRR = NR - IBAS(ISR)
+         NRROW = IIBAS(ISR) + IT(NRR)
          INDPR = IT(NR) + IBAS(ISR)
          NSEND  = NRR
          IF (NR .EQ. NP) NSEND = NQR
          DO 710 NSR = 1,NSEND
-            NRSR = IIBAS(ISR) + IT(NRR) + NSR
-            NPQRS = NPQROW + NRSR
-          IF (NPQRS .LE. IOFF) GO TO 710
-          IF (NPQRS .GT. (IBEF+NPMAX)) GO TO 721
-          IF(ABS(P(NPQRS-IBEF)).GT.THRQ) THEN
+            NPQRS8 = NPQROW8 + NRROW + NSR
+          IF (NPQRS8 .LE. IOFF8) GO TO 710
+            NPQRS8 = NPQRS8 - IBEF8
+            NPQRS  = NPQRS8
+          IF (NPQRS .GT. NPMAX) GO TO 721
+          IF(ABS(P(NPQRS)).GT.THRQ) THEN
             NRSOUT = NRSOUT + 1
-            P(NRSOUT) = P(NPQRS-IBEF)
+            P(NRSOUT) = P(NPQRS)
             INDP(NRSOUT) = INDPR + NSR
           END IF
   710    CONTINUE
@@ -2084,12 +2194,9 @@ C        ... to avoid compiler messages
   721    CONTINUE
          IF (NRSOUT .GT. 0) THEN
             NQ   = IBAS(ISP) + NQR
-            NPQ  = IT(NP) + NQ
-            IOFPQ= IT(NPQ)
-            CALL WRSUP2(LUSUPM,P,INDP,ITYP2,NP,NQ,
-     &                  IOFPQ,NRSOUT,NPQ)
+            CALL WRSUP2(LUSUPM,P,INDP,NP,NQ,NRSOUT)
          END IF
-         IF (NPQRS .GT. (IBEF+NPMAX)) GO TO 900
+         IF (NPQRS .GT. NPMAX) GO TO 900
   730 CONTINUE
       NPLAST = NP
   740 CONTINUE
@@ -2098,20 +2205,20 @@ C
       RETURN
       END
 C  /* Deck wrsup1 */
-      SUBROUTINE WRSUP1(LUSUPM,P,NPQRS,ITYP1,NPF,NQF,NPL,NQL,IOFF,NPQL)
+      SUBROUTINE WRSUP1(LUSUPM,P,NPQRS,NPF,NQF,NPL,NQL)
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION P(NPQRS)
-      WRITE (LUSUPM) ITYP1,NPF,NQF,NPL,NQL,IOFF,NPQRS,NPQL
+      WRITE (LUSUPM) 1,NPF,NQF,NPL,NQL,NPQRS
       WRITE (LUSUPM) P
 #if HER2SUP_DEBUG > 5
-      write(lupri,*) 'type 1; NPF,NQF,NPL,NQL,IOFF,NPQRS,NPQL',
-     &                        NPF,NQF,NPL,NQL,IOFF,NPQRS,NPQL
+      write(lupri,*) 'type 1; NPF,NQF,NPL,NQL,NPQRS',
+     &                        NPF,NQF,NPL,NQL,NPQRS
 #endif
       RETURN
       END
 C  /* Deck wrsup2 */
-      SUBROUTINE WRSUP2(LUSUPM,P,INDP,ITYP2,NP,NQ,IOFPQ,NRSOUT,NPQ)
+      SUBROUTINE WRSUP2(LUSUPM,P,INDP,NP,NQ,NRSOUT)
 C
 C 900319-hjaaj
 C
@@ -2119,11 +2226,11 @@ C
 #include "priunit.h"
       REAL*8    P(NRSOUT)
       INTEGER*4 INDP(NRSOUT)
-      WRITE (LUSUPM) ITYP2,NP,NQ,NP,NQ,IOFPQ,NRSOUT,NPQ
+      WRITE (LUSUPM) 2,NP,NQ,NP,NQ,NRSOUT
       WRITE (LUSUPM) P,INDP
 #if HER2SUP_DEBUG > 5
-      write(lupri,*) 'type 2; NP,NQ,NP,NQ,IOFPQ,NRSOUT,NPQ',
-     &                        NP,NQ,NP,NQ,IOFPQ,NRSOUT,NPQ
+      write(lupri,*) 'type 2; NP,NQ,NP,NQ,NRSOUT',
+     &                        NP,NQ,NP,NQ,NRSOUT
 #endif
       RETURN
       END
