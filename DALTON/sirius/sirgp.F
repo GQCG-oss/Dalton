@@ -1672,6 +1672,7 @@ C
       DIMENSION FMAT(*), DMAT(*), ISYMDM(*), WORK(*)
 C
 C Used from common blocks:
+C  gnrinf.h: DOSRIN
 C  INFORB  : NBAST,N2BASX
 C  INFTAP  : LUSUPM
 C  PRIUNIT : IPRSTAT
@@ -1679,6 +1680,7 @@ C  CBIHRS  : parameters for FORMSUP
 C  frame.h : POTNUC
 C  DFTCOM  : HFXFAC
 C
+#include "gnrinf.h"
 #include "inforb.h"
 #include "inftap.h"
 #include "infpri.h"
@@ -1688,7 +1690,7 @@ C
 C
 C     Local variables:
 C
-      LOGICAL FNDLAB, FNSUPM_OK, NOSYM, F_EXIST
+      LOGICAL FNDLAB, FNSUPM_OK, NOSYM, F_EXIST, DOSRIN_save
       character*8  FNSUPM_local
 
       CALL QENTER('RDSUPM')
@@ -1749,10 +1751,13 @@ C
             IF (I.GT.1) CALL QUIT('CALL FORMSUP failed')
             inquire(file='AOTWOINT',EXIST=F_EXIST)
             IF (.NOT. F_EXIST) THEN
+               DOSRIN_save = DOSRIN
+               DOSRIN = .FALSE. ! do not generate AOSR2INT here when srDFT
                CALL newTIMER('START ')
                CALL MAKE_AOTWOINT(WORK,LFREE)
                CALL newTIMER('MAKE_AOTWOINT')
                CALL FLSHFO(LUPRI)
+               DOSRIN = DOSRIN_save
             END IF
             CALL newTIMER('START ')
             CALL FORMSUP(WORK,LFREE,NOSSUP,HFXFACSUP,THRSUP,IPRSUP)
