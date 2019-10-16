@@ -37,6 +37,8 @@ c900112-hjaaj: new routines SUPOWR and SUPNWR for writing to LUSUPM
 cwhen OLDSUP and .NOT.OLDSUP, resp.
 c900111-hjaaj: added NPLAST to CSPINT
 c- Format of LUSUPM if .not.oldsup:
+c===========================================================================
+c- Format of LUSUPM (integers and logicals are *always* *4 kind):
 crec 1 : '*******','date    ','time    ','PXSUPMAT'
 crec 2 : xfac,nosym,nsym,nbas(1:8)
 cfor i = 3 until finished
@@ -354,7 +356,7 @@ C
 C
 C*** FINALLY signal end of integrals
 C
-      WRITE(LUSUPM) -2,0,0,0,0,0,0
+      WRITE(LUSUPM) -2_4,0_4,0_4,0_4,0_4,0_4,0_4
       CALL GPCLOSE(LUDASP,' ')
       CALL GETTIM(DFIN,WFIN)
       DTOT = DFIN-DST1 - DTOTD
@@ -376,6 +378,8 @@ C  /* Deck sup_rdinfo */
 #include "inftap.h"
 
       INTEGER NAOS(8)
+      INTEGER*4 NSYM_4, NBAS_4(8)
+      LOGICAL*4 NOSYM_4
 
       CHARACTER*8 LAB123(3), NEWLBL
       DATA LAB123 /'********','        ','        '/
@@ -405,7 +409,10 @@ C  /* Deck sup_rdinfo */
       CALL GETDAT(LAB123(2),LAB123(3))
       REWIND LUSUPM
       WRITE (LUSUPM) LAB123, NEWLBL
-      WRITE (LUSUPM) XFAC, POTNUC, NOSYM, NSYM, NBAS
+      NOSYM_4 = NOSYM
+      NSYM_4  = NSYM
+      NBAS_4  = NBAS
+      WRITE (LUSUPM) XFAC, POTNUC, NOSYM_4, NSYM_4, NBAS_4
 
 ! 2. Read AO buffer info etc. from LUNITA
 
@@ -2178,10 +2185,22 @@ C
       END
 C  /* Deck wrsup1 */
       SUBROUTINE WRSUP1(LUSUPM,P,NPQRS,NPF,NQF,NPL,NQL)
-#include "implicit.h"
+!
+! Write integrals in type 1 format to LUSUPM
+! File LUSUPM is standardized: always integer*4
+!
+      implicit none
 #include "priunit.h"
-      DIMENSION P(NPQRS)
-      WRITE (LUSUPM) 1,NPF,NQF,NPL,NQL,NPQRS
+      real(8)   P(NPQRS)
+      integer   LUSUPM, NPQRS,NPF,NQF,NPL,NQL
+      integer(4), parameter :: ITYP = 1
+      integer(4) :: NPQRS_4, NPF_4, NQF_4, NPL_4, NQL_4
+      NPQRS_4 = NPQRS
+      NPF_4   = NPF
+      NPL_4   = NPL
+      NQF_4   = NQF
+      NQL_4   = NQL
+      WRITE (LUSUPM) 1,NPF_4,NQF_4,NPL_4,NQL_4,NPQRS_4
       WRITE (LUSUPM) P
 #if HER2SUP_DEBUG > 5
       write(lupri,*) 'type 1; NPF,NQF,NPL,NQL,NPQRS',
@@ -2195,14 +2214,20 @@ C  /* Deck wrsup1 */
       END
 C  /* Deck wrsup2 */
       SUBROUTINE WRSUP2(LUSUPM,P,INDP,NP,NQ,NRSOUT)
-C
-C 900319-hjaaj
-C
-#include "implicit.h"
+!
+! Write integrals in type 2 format to LUSUPM
+! File LUSUPM is standardized: always integer*4
+!
+      implicit none
 #include "priunit.h"
+      integer   LUSUPM, NP, NQ, NRSOUT
+      integer(4), parameter :: ITYP = 2
       REAL*8    P(NRSOUT)
-      INTEGER*4 INDP(NRSOUT)
-      WRITE (LUSUPM) 2,NP,NQ,NP,NQ,NRSOUT
+      INTEGER*4 INDP(NRSOUT), NP_4, NQ_4, NRSOUT_4
+      NP_4 = NP
+      NQ_4 = NQ
+      NRSOUT_4 = NRSOUT
+      WRITE (LUSUPM) ITYP,NP_4,NQ_4,NP_4,NQ_4,NRSOUT_4
       WRITE (LUSUPM) P,INDP
 #if HER2SUP_DEBUG > 5
       write(lupri,*) 'type 2; NP,NQ,NP,NQ,NRSOUT',

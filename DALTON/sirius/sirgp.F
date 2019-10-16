@@ -1684,7 +1684,8 @@ C
 C
 C     Local variables:
 C
-      LOGICAL FNDLAB, FNSUPM_OK, NOSYM, F_EXIST
+      LOGICAL      FNDLAB, FNSUPM_OK, F_EXIST
+      LOGICAL*4    NOSYM
       character*8  FNSUPM_local
 
       CALL QENTER('RDSUPM')
@@ -1693,7 +1694,7 @@ C
 C     ... special code for AOSUPMAT not to be used
          WRITE (LUPRI,'(/A/A)')
      &      'PROGRAMMING ERROR: RDSUPM called with LUSUPM = -1',
-     &      'Please report to dalton-admin.'
+     &      'Please report on Dalton forum.'
          CALL QTRACE(LUPRI)
          CALL QUIT('Programming ERROR: RDSUPM called with LUSUPM.eq.-1')
       END IF
@@ -1792,7 +1793,6 @@ C
 C NOTE: WORK and IWORK must be equivalenced.
 C
 #include "implicit.h"
-#include "iratdef.h"
 #include "thrzer.h"
       PARAMETER (D0 = 0.0D0)
 C
@@ -1814,8 +1814,10 @@ C
 #include "infind.h"
 #include "inftap.h"
 C
-      LOGICAL NOSYM
-      INTEGER MBAS(8)
+! always *4 on LUSUPM
+      LOGICAL*4 NOSYM
+      INTEGER*4 MSYM, MBAS(8)
+      INTEGER*4 ITYP,NP1,NQ1,NPL,NQL,NPQRS_4
 C
       CALL QENTER('RDSUPP')
       REWIND(LUSUPM)
@@ -1863,7 +1865,8 @@ C
       IREC2 = 0
   100 CONTINUE
          IREC = IREC + 1
-         READ (LUSUPM) ITYP,NP1,NQ1,NPL,NQL,NPQRS
+         READ (LUSUPM) ITYP,NP1,NQ1,NPL,NQL,NPQRS_4
+         NPQRS = NPQRS_4 ! in case default is integer*8
          IF (IPRSTAT .GT. 20) THEN
             WRITE (LUERR,*) 'ITYP,NP1,NQ1,NPL,NQL,NPQRS'
             WRITE (LUERR,'(7I10)') ITYP,NP1,NQ1,NPL,NQL,NPQRS
