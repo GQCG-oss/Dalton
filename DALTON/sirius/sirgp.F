@@ -1801,7 +1801,6 @@ C
 C NOTE: WORK and IWORK must be equivalenced.
 C
 #include "implicit.h"
-#include "iratdef.h"
 #include "thrzer.h"
       PARAMETER (D0 = 0.0D0)
 C
@@ -1949,7 +1948,7 @@ C                    note NRS = IPQ
             LENP  = 3*NPQRS ! real*8 P + integer*4 INDP
             IF (LENP .GT. LFREE) GO TO 820
             CALL READI4(LUSUPM,LENP,IWORK)
-            INDP  = IRAT*NPQRS
+            INDP  = 2*NPQRS ! 2 because IWORK is always integer*4
             IPQ   = IROW(NP1) + NQ1
             DO 380 ISIM = 1,NSIM
                DPQ = DMAT(IPQ,ISIM)
