@@ -97,8 +97,8 @@ module fde_evaluators_dalton
 !   ----------------------------------------------------------------------------
          real(kind=8), intent(in)  :: dmat(:)
          real(kind=8), intent(in)  :: r(:,:)
-         real(kind=8), intent(out) :: vc(:)
-         real(kind=8), intent(out) :: vnuc(:)
+         real(kind=8), intent(inout) :: vc(:)
+         real(kind=8), intent(in) :: vnuc(:)
          integer :: i
          integer :: np
          integer :: irrep = 1
