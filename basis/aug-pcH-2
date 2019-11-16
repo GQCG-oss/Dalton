@@ -2,6 +2,11 @@
 ! contraction: H 3s1s 2. row 3s2s 3p1p 3. row 5s2s 5p1p
 !
 !  pc-2  EMSL  Basis Set Exchange Library   9/29/14 2:43 AM
+!
+! REFERENCE
+! P. Jakobsen and Frank Jensen. Probing basis set requirements for calculating
+! hyperfine coupling constants. J. Chem. Phys. 151, 174107 (2019); doi: 10.1063/1.5128286
+
 ! Elements                             References
 ! --------                             ----------
 ! H C N O F: Frank Jensen, Polarization consistent basis sets: Principles, J. Chem. Phys. 115, 9113 (2001).
