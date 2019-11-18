@@ -4624,7 +4624,7 @@ C
           WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      *                             '" not recognized for *QMMM  .'
           CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-          CALL QUIT('Illegal keyword in REAINP.')
+          CALL QUIT('Illegal keyword in QMMMIN.')
 C
     1     CONTINUE
             QMMM = .TRUE.

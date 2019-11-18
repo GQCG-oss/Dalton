@@ -1951,7 +1951,7 @@ C     "XXXXXXX" input
 C
 C     "*MOLBAS" input
     6 CONTINUE
-        CALL REAINP(WORD,RELCAL,TSTINP)
+        CALL REAINP(WORD,RELCAL)
       GO TO 200
 C
 Clf:  "*PCM   " input processing
