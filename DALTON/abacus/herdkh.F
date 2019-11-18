@@ -138,7 +138,6 @@ C
       MAXPRI = MAXPRD
       BIGVC  = .FALSE.
       DIRAC  = .FALSE.
-      GENCON = .TRUE.
       BASIS  = .FALSE.
       ATOMBA = .FALSE.
       TOLLRN = 0.0D0

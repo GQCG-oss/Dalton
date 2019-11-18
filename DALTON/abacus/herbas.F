@@ -1466,7 +1466,7 @@ C
 C
 C     Find next colon in BASDIR
 C
-      ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ':' )
+      ICOLON = ISTART - 1 + INDEX( BASDIR(ISTART:), ':' )
 C
 C     In there are no colons, we are at the last directory in BASDIR
 C
