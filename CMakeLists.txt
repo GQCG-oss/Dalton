@@ -58,6 +58,7 @@ option(ENABLE_SRDFT          "Enable srdft module"                              
 
 option(ENABLE_LARGE_TEST     "Enable Large-scale (long) test cases"             OFF)
 option(ENABLE_DEVELOPER      "Enable Developer test cases and features"         OFF)
+option(ENABLE_PYTHON         "Enable Python driver script"                      OFF)
 
 set(EXTERNAL_LIBS)
 
@@ -141,10 +142,17 @@ include(pcmsolver)
 include(ConfigWORKMEM)
 
 set(opt_lsdalton "0") #FALSE, ie. dalton
+if(ENABLE_PYTHON)
+configure_script(
+    ${CMAKE_SOURCE_DIR}/dalton.py
+    ${CMAKE_BINARY_DIR}/dalton
+    )
+else()
 configure_script(
     ${CMAKE_SOURCE_DIR}/dalton.in
     ${CMAKE_BINARY_DIR}/dalton
     )
+endif()
 configure_script(
     ${CMAKE_SOURCE_DIR}/DALTON/dalton_config.in
     ${CMAKE_BINARY_DIR}/dalton_config.h

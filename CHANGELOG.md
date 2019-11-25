@@ -11,6 +11,7 @@
 ## [2019.alpha] (Dalton2019 alpha)
 
 ### New features added
+- Added pcH-n and aug-pcH-n basis sets levels 1-4 to Dalton basis set library.
 - Calculate and print oscillator strengths based on .EEF dipole transition moments. (H. J. Aa. Jensen)
 - Added ".TDA TR" keyword for invoking Tamm-Dancoff approximation for triplet response properties under \*\*PROPERTIES.
   Useful for avoiding (near-)triplet-instability problems, for example in DFT calculations of spin-spin coupling constants. (H. J. Aa. Jensen)
@@ -33,6 +34,11 @@
 - never use plus combinations of determinants as start guess for singlet linear response excitation energies
   when reference wave function is not singlet (we do not want singlet states then). (H. J. Aa. Jensen)
 - dalton script: fix for using input files located in subfolders
+
+### Fixes in enclosed basis set files
+- Error in diffuse d-orbital exponents for Aluminum and Silicon (factor 10 too big) in aug-cc-pV(D+d)Z basis sets (H. J. Aa. Jensen)
+- Error in diffuse f-orbital exponents for Aluminum and Silicon (factor 10 too big) in aug-cc-pV(Q+d)Z basis sets (H. J. Aa. Jensen)
+- Error in diffuse f-orbital exponent for Aluminum (factor 10 too big) in aug-cc-pV(T+d)Z basis sets (H. J. Aa. Jensen)
 
 ### Changed
 - Allow basis set(s) after BASIS in line 1 of .mol file (instead of on second line). (H. J. Aa. Jensen)

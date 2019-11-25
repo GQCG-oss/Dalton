@@ -1184,12 +1184,10 @@ C
       IF (IOERR .NE. 0) GO TO 200
       READ (STRING, '(A1)',IOSTAT=IOS) SIGN
 C
-      IF (SIGN .EQ. '$') THEN
+      IF (SIGN .EQ. '$' .OR. SIGN .EQ. '!') THEN
          IF (IREF.EQ.0) THEN
 C           Check for start of documentation
-            DO I = 2, 80
-               IF (STRING(I:I+8).EQ.'REFERENCE') IREF = 1
-            ENDDO
+            IF (INDEX(STRING,'REFERENCE').GT.0) IREF = 1
          ELSE
 C           We have documentation, omit blank lines and store in BASREF
             len_STRING = LNBLNK(STRING(2:))
@@ -1203,7 +1201,7 @@ C        Maximum number of documentation lines is 10
 C
          IF (IREF.GT.10) RETURN
       ELSE
-C        We return if we found a REFERENCE line but no more $ lines.
+C        We return if we found a REFERENCE line but no more $/! lines.
          IF (IREF.GT.0) RETURN
       END IF
 C
@@ -1468,7 +1466,7 @@ C
 C
 C     Find next colon in BASDIR
 C
-      ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ':' )
+      ICOLON = ISTART - 1 + INDEX( BASDIR(ISTART:), ':' )
 C
 C     In there are no colons, we are at the last directory in BASDIR
 C
