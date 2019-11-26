@@ -1,6 +1,6 @@
 # DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
-## [2019.alpha] (Dalton2019 alpha)
+## [2020.alpha] (Dalton2020 alpha)
 
 ### New features added
 - Added pcH-n and aug-pcH-n basis sets levels 1-4 to Dalton basis set library.
@@ -26,6 +26,8 @@
 - never use plus combinations of determinants as start guess for singlet linear response excitation energies
   when reference wave function is not singlet (we do not want singlet states then). (H. J. Aa. Jensen)
 - dalton script: fix for using input files located in subfolders
+- fixed error from March 2015 which meant that double-hybrid DFT was not working correctly (MP2 part was ignored).
+- fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
 
 ### Fixes in enclosed basis set files
 - Error in diffuse d-orbital exponents for Aluminum and Silicon (factor 10 too big) in aug-cc-pV(D+d)Z basis sets (H. J. Aa. Jensen)
@@ -35,12 +37,6 @@
 ### Changed
 - Allow basis set(s) after BASIS in line 1 of .mol file (instead of on second line). (H. J. Aa. Jensen)
   
-
-## [2018.3] (unreleased)
-
-### Fixed
-- fixed error from March 2015 which meant that double-hybrid DFT was not working correctly (MP2 part was ignored).
-- fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
 
 ## [2018.2] (2019-03-17)
 
