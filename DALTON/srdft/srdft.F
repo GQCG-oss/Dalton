@@ -2149,7 +2149,6 @@ C*****************************************************************************
       END IF
       CALL MEMGET('REAL',KFCAO,NF*N2BASX,WRK,KFREE,LFREE)
       KFVAO = KFCAO + N2BASX
-      KFHAO = KFVAO + N2BASX
 
       CALL FCKDEN(.TRUE.,.TRUE.,
      &            WRK(KDCAO),WRK(KDVAO),CMO,DVREF,WRK(KFREE),LFREE)
@@ -2323,7 +2322,6 @@ C*****************************************************************************
       END IF
       CALL MEMGET('REAL',KFCAO,NF*N2BASX,WRK,KFREE,LFREE)
       KFVAO = KFCAO + N2BASX
-      KFHAO = KFVAO + N2BASX
 
       !> start with computing uedft - requuires u_rho_ensemble
 
