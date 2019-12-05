@@ -36,7 +36,6 @@ c  used new routine NDXGTA to determine this.
 c- added WRSUP2 to correcte error in SUPNWR
 c900112-hjaaj: new routines SUPOWR and SUPNWR for writing to LUSUPM
 cwhen OLDSUP and .NOT.OLDSUP, resp.
-c- use new variable NBAS1 = true NBAS(1) for NST in SUPSRT
 c900111-hjaaj: added NPLAST to CSPINT
 c- Format of LUSUPM if .not.oldsup:
 crec 1 : '*******','date    ','time    ','PXSUPMAT'
@@ -51,7 +50,6 @@ c   s/FRMDRV/SUPDRV/; implemented NOSYM option;
 c   s/SUPA/SUP1D/; s/SUPB/SUPD/; implemented OLDSUP option;
 c   implemented NEWSUP = .NOT. OLDSUP format (label "PSUPMAT ");
 c   removed saving IJ,KL in INDP in SUP1,SUP,SUP1D,SUPD; just
-c   allocate IT(NP+1) for INDP when not OLDSUP
 c===========================================================================
 C  /* Deck formsup */
       SUBROUTINE FORMSUP(WORK,LWORK,NOSYM,HFXFAC,THRESH,IPRINT)
@@ -124,7 +122,7 @@ C  /* Deck supdrv */
       DIMENSION WORK(LWORK), IWORK(LIWORK)
       LOGICAL   NOSYM
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     &      LBUF,NIBUF,NBITS, NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
@@ -168,9 +166,8 @@ C
 C***  SIZE OF FIRST BLOCK on LUDASP
 C     NST = starting NP for second block
 C     NST1 = last NP in first block
-C     NST1 max. equal to nbas1, ie. to nbas(1) before NOSYM reset to nbast
 C
-      NST1  = NBAS1
+      NST1  = NBAS(1)
       LAVAIL = LWORK - LRDA22
 C     ... IJ = max. memory for integer*4 INDP
       IJ = (NST1*(NST1+1))/2
@@ -189,7 +186,7 @@ C          NST1 = int(sqrt(2*IJ)+1)-.5) is max NST1 which fit in memory
       RTMP = SQRT(RTMP) - DP5
       NST1 = RTMP
       NST1 = MAX(15,NST1)
-      NST1 = MIN(NBAS1,NST1)
+      NST1 = MIN(NBAS(1),NST1)
       NST  = NST1 + 1
 C
 C*** SET UP DYNAMICAL STORAGE FOR SORT ROUTINE
@@ -370,7 +367,7 @@ C  /* Deck sup_rdinfo */
 #include "priunit.h"
       LOGICAL NOSYM
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     &      LBUF,NIBUF,NBITS, NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
@@ -396,6 +393,12 @@ C  /* Deck sup_rdinfo */
       NBAST = 0
       DO 10 I = 1,NSYM
   10     NBAST = NBAST+NBAS(I)
+
+      IF (NBAS(1) .EQ. 0) NOSYM = .TRUE.
+      ! very special case, no basis functions in symmetry 1:
+      ! activate NOSYM because FORMSUP does not work if no
+      ! basis functions in symmetry 1.
+
       CALL GETDAT(LAB123(2),LAB123(3))
       REWIND LUSUPM
       WRITE (LUSUPM) LAB123, NEWLBL
@@ -449,7 +452,6 @@ C***  If (NOSYM) then reset symmetry index arrays
          NSYM = 1
          NBAS(1) = NBAST
       END IF
-      NBAS1 = NBAS(1)
 C
 C***  NUMBER OF PREVIOUS BASIS FUNCTIONS
 C
@@ -470,7 +472,7 @@ C  /* Deck sup_sort */
 #include "priunit.h"
 #include "iratdef.h"
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     &      LBUF,NIBUF,NBITS, NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
       DIMENSION RINT(*),SCR(*)
@@ -500,12 +502,16 @@ C***  BATCH NUMBER FOR EACH AO
 C
       NST1 = NST-1
       NBATCH = NBAST-NST1+1
-      DO 10 I = 1,NST1
-  10     IBATCH(I) = 1
-      K = 1
-      DO 11 I = NST,NBAST
+      IF (NST1 .EQ. 0) THEN
+         K = 0
+      ELSE
+         IBATCH(1:NST1) = 1
+         K = 1
+      END IF
+      DO I = NST,NBAST
          K = K+1
-  11     IBATCH(I) = K
+         IBATCH(I) = K
+      END DO
 C
 C***  PRESET LASTAD
 C
@@ -692,7 +698,7 @@ C***  TRANSFORMATION OF FIRST SYMMETRY
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     &      LBUF,NIBUF,NBITS, NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
@@ -971,7 +977,7 @@ C  /* Deck sup */
       INTEGER   IS(*), LASTAD(*)
 C
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     &      LBUF,NIBUF,NBITS, NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 C
@@ -1296,7 +1302,7 @@ C***  TRANSFORMATION OF FIRST SYMMETRY
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     &      LBUF,NIBUF,NBITS, NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
@@ -1611,7 +1617,7 @@ C  /* Deck supd */
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     &      LBUF,NIBUF,NBITS, NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 #include "inftap.h"
@@ -2004,7 +2010,7 @@ C
 C
 #include "inftap.h"
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NWORK,IIBAS(8),
-     &      LBUF,NIBUF,NBITS, NBAS1,NPLAST,NST,
+     &      LBUF,NIBUF,NBITS, NPLAST,NST,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LDA22_DX, NWW,LSUP
       COMMON/CSPREA/XFAC,THRQ
 
