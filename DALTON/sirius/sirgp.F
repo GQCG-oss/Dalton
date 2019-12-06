@@ -327,7 +327,6 @@ C   INFORB: MULD2H()
 C   INFVAR: MAXOCC,NWOPT,NVAR,NWOPH,NVARH,JWOP(2,*),JWOPSY
 C   INFLIN: LSYMRF,LSYMPT,LSYMST,NCONST,NWOPPT,NVARPT
 C   INFDIM: NWOPDI,NWOPMA,NCONMA,NVARMA
-C   INFPRI: NWARN
 C
 #include "maxorb.h"
 #include "priunit.h"
@@ -335,7 +334,6 @@ C
 #include "infvar.h"
 #include "inflin.h"
 #include "infdim.h"
-#include "infpri.h"
 C
       LOGICAL FNDLAB
 C
@@ -1529,7 +1527,7 @@ C
       !> read MOs from SIRIUS.RST 
       !> a. if HF these are the final HF orbitals
       !> b. if MC these are the final MCSCF orbitals
-      call readmo(cmo,9,vdummy,0)
+      call readmo(cmo,9)
 
       select case(trim(density))
 
@@ -1674,14 +1672,12 @@ C
 C Used from common blocks:
 C  INFORB  : NBAST,N2BASX
 C  INFTAP  : LUSUPM
-C  PRIUNIT : IPRSTAT
 C  CBIHRS  : parameters for FORMSUP
 C  frame.h : POTNUC
 C  DFTCOM  : HFXFAC
 C
 #include "inforb.h"
 #include "inftap.h"
-#include "infpri.h"
 #include "cbihrs.h"
 #include "frame.h"
 #include "dftcom.h"
@@ -1817,7 +1813,6 @@ C
 #include "inforb.h"
 #include "infind.h"
 #include "inftap.h"
-#include "infpri.h"
 C
       LOGICAL NOSYM
       INTEGER MBAS(8)
@@ -2320,7 +2315,6 @@ C
 #include "infinp.h"
 #include "infvar.h"
 #include "inftap.h"
-#include "infpri.h"
 C
       CHARACTER*8 RTNLBL(2), STAR8
       DATA STAR8/'********'/
