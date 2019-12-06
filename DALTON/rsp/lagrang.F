@@ -234,6 +234,7 @@ C
 #include "implicit.h"
 #include "dummy.h"
 #include "iratdef.h"
+#include "inftap.h"
 C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
@@ -334,6 +335,13 @@ C     CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
          CALL RSPPRO(WRK(KBVECS+KZCONF),KZVAR,UDV,LUPRI)
       END IF
       CALL DCOPY(KZYVAR,WRK(KBVECS),1,WRK(1),1)
+      IF ( IPRRSP.GE.10 ) THEN
+         CALL HEADER(LABEL, LUPRI)
+         CALL OUTPUT(WRK, 1, KZVAR, 1, 2, KZVAR, 2, 1, LUPRI)
+      END IF
+      CALL WRTRSP(                                                      &
+     &   LURSP, KZYVAR, WRK, LABEL, '        ', D0, D0, 1, 1, D0, .TRUE.&
+     &)
 C
 C *** end of RSPLAN --
 C
