@@ -327,7 +327,6 @@ C   INFORB: MULD2H()
 C   INFVAR: MAXOCC,NWOPT,NVAR,NWOPH,NVARH,JWOP(2,*),JWOPSY
 C   INFLIN: LSYMRF,LSYMPT,LSYMST,NCONST,NWOPPT,NVARPT
 C   INFDIM: NWOPDI,NWOPMA,NCONMA,NVARMA
-C   INFPRI: NWARN
 C
 #include "maxorb.h"
 #include "priunit.h"
@@ -335,7 +334,6 @@ C
 #include "infvar.h"
 #include "inflin.h"
 #include "infdim.h"
-#include "infpri.h"
 C
       LOGICAL FNDLAB
 C
@@ -1529,7 +1527,7 @@ C
       !> read MOs from SIRIUS.RST 
       !> a. if HF these are the final HF orbitals
       !> b. if MC these are the final MCSCF orbitals
-      call readmo(cmo,9,vdummy,0)
+      call readmo(cmo,9)
 
       select case(trim(density))
 
@@ -1674,14 +1672,12 @@ C
 C Used from common blocks:
 C  INFORB  : NBAST,N2BASX
 C  INFTAP  : LUSUPM
-C  PRIUNIT : IPRSTAT
 C  CBIHRS  : parameters for FORMSUP
 C  frame.h : POTNUC
 C  DFTCOM  : HFXFAC
 C
 #include "inforb.h"
 #include "inftap.h"
-#include "infpri.h"
 #include "cbihrs.h"
 #include "frame.h"
 #include "dftcom.h"
@@ -1789,10 +1785,9 @@ C
       RETURN
       END
 C  /* Deck rdsupp */
-#include "vdir.h"
       SUBROUTINE RDSUPP(NSIM,FMAT,DMAT,ISYMDM,WORK,IWORK,LFREE)
 C
-C Jan 90, Hans Joergen Aa. Jensen
+C Jan 90 + Oct 16, Hans Joergen Aa. Jensen
 C
 C NOTE: WORK and IWORK must be equivalenced.
 C
@@ -1801,8 +1796,9 @@ C
 #include "thrzer.h"
       PARAMETER (D0 = 0.0D0)
 C
-      REAL*8  FMAT(N2BASX,NSIM), DMAT(N2BASX,NSIM), WORK(LFREE)
-      INTEGER IWORK(IRAT*LFREE), ISYMDM(NSIM)
+      REAL*8    FMAT(N2BASX,NSIM), DMAT(N2BASX,NSIM), WORK(LFREE)
+      INTEGER*4 IWORK(2*LFREE)
+      INTEGER   ISYMDM(NSIM)
 C
 C Used from common blocks:
 C
@@ -1817,7 +1813,6 @@ C
 #include "inforb.h"
 #include "infind.h"
 #include "inftap.h"
-#include "infpri.h"
 C
       LOGICAL NOSYM
       INTEGER MBAS(8)
@@ -1942,9 +1937,9 @@ C                    note NRS = IPQ
   280       CONTINUE
          ELSE IF (ITYP .EQ. 2) THEN
             IREC2 = IREC2 + 1
-            LENP  = (IRAT+1)*NPQRS
+            LENP  = 3*NPQRS ! real*8 P + integer*4 INDP
             IF (LENP .GT. LFREE) GO TO 820
-            CALL READI(LUSUPM,LENP,WORK)
+            CALL READI4(LUSUPM,LENP,IWORK)
             INDP  = IRAT*NPQRS
             IPQ   = IROW(NP1) + NQ1
             DO 380 ISIM = 1,NSIM
@@ -2320,7 +2315,6 @@ C
 #include "infinp.h"
 #include "infvar.h"
 #include "inftap.h"
-#include "infpri.h"
 C
       CHARACTER*8 RTNLBL(2), STAR8
       DATA STAR8/'********'/

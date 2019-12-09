@@ -112,8 +112,7 @@ C
 C *** Start timing:
 C
       IF (IPRSTAT .GT. 0) CALL TIMOPT('START',LUSTAT,WRK,LFREE)
-      TOPT  = SECOND()
-      TIMST = TOPT
+      CALL GETTIM(T_start,W_start)
 C
 C *** WF_TYPE
 C
@@ -148,7 +147,11 @@ C
       END IF
 
       WRITE (LUW4,960) WF_TYPE(1:len_WF_TYPE)
-      IF (LUPRI .NE. LUW4) WRITE (LUPRI,960) WF_TYPE(1:len_WF_TYPE)
+      flush(LUW4)
+      IF (LUPRI .NE. LUW4) THEN
+         WRITE (LUPRI,960) WF_TYPE(1:len_WF_TYPE)
+         flush(LUPRI)
+      END IF
   960 FORMAT(//T9,     'SIRIUS ',A,' optimization (SIROPT)'
      *       /' ================================================'/)
 C
@@ -158,6 +161,7 @@ C     UPDATE , if use UPDATE for MC optimization
 C
       ICONV  = 0
       SOLVNT = FLAG(16)
+
       ABSORP = ( FLAG(51) .OR. FLAG(52) .OR. FLAG(53) )
 #if defined (VAR_NOEXCABS)
       IF ( ABSORP .AND. ISTATE .GT. 1 ) THEN
@@ -308,9 +312,12 @@ C    SCF (canonical orbitals are not needed with high precision).
 C
       IF (DIRFCK .AND. .NOT. USRSCR) THEN
          IFTHRS  = MIN( IFTHSV, 9 )
-         IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I5)')
+         IF (IPRI6 .GE. 0) THEN
+            WRITE (LUPRI,'(/A,I5)')
      &      ' Fock matrix screening setting for SIRCNO: IFTHRS =',
      &      IFTHRS
+            flush(LUPRI)
+         END IF
       END IF
       CALL OPTST(WRK(KCINDX),WRK(KWRK10),LWRK10)
 C     CALL OPTST(INDXCI,WRK,LFREE)
@@ -351,9 +358,15 @@ C-841209-hj: force beta positive
       IF (BETMAX .LT. D1)     BETMAX = D1
 C
 C
-      TIMST = SECOND() - TIMST
-      IF (IPRI6 .GT. 1) WRITE (LUPRI,'(/A,F15.2,A)')
-     *   ' --- Time used in SIROPT startup :',TIMST,' seconds.'
+      IF (IPRI6 .GT. 0) THEN
+         CALL GETTIM(T_1,W_1)
+         T_1 = T_1 - T_start
+         W_1 = W_1 - W_start
+         WRITE (LUPRI,'(/A,2F15.2)')
+     &   ' --- CPU and WALL time used in SIROPT startup (seconds):',
+     &   T_1,W_1
+         flush(LUPRI)
+      END IF
 C
 C ***********************************************
 C *** START LOOP OVER MACRO ITERATIONS **********
@@ -1019,13 +1032,15 @@ C
 C We did not converge...
 C
       NWARN = NWARN + 1
-      TOPT = SECOND() - TOPT
+      CALL GETTIM(T_opt, W_opt)
+      T_opt = T_opt - T_start
+      W_opt = W_opt - W_start
       WRITE (LUSTAT,7050) WF_TYPE(1:len_WF_TYPE),
-     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
+     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,T_opt,W_opt
       WRITE (LUW4,7050)  WF_TYPE(1:len_WF_TYPE),
-     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
+     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,T_opt,W_opt
       IF (LUPRI.NE.LUW4) WRITE (LUPRI,7050)  WF_TYPE(1:len_WF_TYPE),
-     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
+     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,T_opt,W_opt
  7050 FORMAT(
      *   /' *** Optimization control WARNING: ',A,
      &    ' not converged ***',
@@ -1036,21 +1051,27 @@ C
      *   /5X,  '   Maximum',T45,I5,
      *   /5X,  'Number of back steps this macro',T45,I5,
      *   /5X,  '   Maximum',T45,I5,
-     *   /5X,  'Total number of CPU seconds used',F13.2)
+     *   /5X,  'Total number of CPU seconds used',F13.2,
+     *   /5X,  'Total WALL time used (seconds)  ',F13.2)
       GO TO 890
   750 CONTINUE
       NWARN = NWARN + 1
-      TOPT = SECOND() - TOPT
-      WRITE (LUSTAT,7051) WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,TOPT
-      WRITE (LUW4  ,7051) WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,TOPT
-      IF (LUPRI.NE.LUW4)
-     *WRITE (LUPRI ,7051) WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,TOPT
+      CALL GETTIM(T_opt, W_opt)
+      T_opt = T_opt - T_start
+      W_opt = W_opt - W_start
+      WRITE (LUSTAT,7051)
+     &   WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,T_opt,W_opt
+      WRITE (LUW4  ,7051)
+     &   WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,T_opt,W_opt
+      IF (LUPRI.NE.LUW4) WRITE (LUPRI ,7051)
+     &   WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,T_opt,W_opt
  7051 FORMAT(
      *   /' *** Optimization control WARNING: ',A,
      &    ' not converged ***',
      *   /5X,  'Number of macro iterations used',T45,I5,
      *   /5X,  'Number of micro iterations used',T45,I5,
-     *   /5X,  'Total number of CPU seconds used',F13.2)
+     *   /5X,  'Total number of CPU seconds used',F13.2,
+     *   /5X,  'Total WALL time used (seconds)  ',F13.2)
       GO TO 890
 C
 C ***********************************************************
@@ -1058,14 +1079,17 @@ C
 C We have converged...
 C
   800 CONTINUE
-      TOPT = SECOND() - TOPT
-      WRITE (LUW4 ,8000) WF_TYPE(1:len_WF_TYPE),ITMAC,ITMICT,TOPT
+      CALL GETTIM(T_opt, W_opt)
+      T_opt = T_opt - T_start
+      W_opt = W_opt - W_start
+      WRITE (LUW4 ,8000) WF_TYPE(1:len_WF_TYPE),ITMAC,ITMICT,T_opt,W_opt
       IF (LUPRI.NE.LUW4)
-     &WRITE (LUPRI,8000) WF_TYPE(1:len_WF_TYPE),ITMAC,ITMICT,TOPT
+     &WRITE (LUPRI,8000) WF_TYPE(1:len_WF_TYPE),ITMAC,ITMICT,T_opt,W_opt
  8000 FORMAT(/' *** Optimization control: ',A,' converged ***',
      *       /5X,  'Number of macro iterations used',T45,I5,
      *       /5X,  'Number of micro iterations used',T45,I5,
-     *       /5X,  'Total number of CPU seconds used',F13.2)
+     *       /5X,  'Total number of CPU seconds used',F13.2,
+     *       /5X,  'Total WALL time used (seconds)  ',F13.2)
 C
       IF (SOLVNT) THEN
          KFCSOL = KWRKG

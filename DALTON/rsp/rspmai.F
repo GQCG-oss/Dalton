@@ -1124,6 +1124,8 @@ C              .PROP2Average
      *      ' calculation, DIROIT=',DIROIT
          IF (DFT_SO) WRITE (LUPRI,'(/A)')
      &      ' .DFT-SO: DFT spin-orbit integrals calculated.'
+         IF (TRDQF) WRITE (LUPRI,'(/A)')
+     &      ' .TRDQF : Charge fitting of transition density matrices.'
       END IF
       IF (CCPPA .AND. RSPCI) THEN
          WRITE (LUPRI,'(/A)') ' Input ERROR:'//
