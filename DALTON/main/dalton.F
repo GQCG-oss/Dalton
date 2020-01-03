@@ -30,7 +30,7 @@ C=========================================================================
 #ifdef VAR_CHEMSHELL
       subroutine dalton
 #else
-      PROGRAM DALTON2017_DALTON
+      PROGRAM DALTON2020_DALTON
 #endif
 C
       use parallel_models_mpi
