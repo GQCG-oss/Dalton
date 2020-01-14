@@ -42,7 +42,7 @@ ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
 CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-7\.9780508" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy *\: * \-7\.9911257" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy *\: * \-7\.991125" $log | wc -l`
 CRIT3=`$GREP "Final MCSCF energy\: * \-7\.9947773" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3

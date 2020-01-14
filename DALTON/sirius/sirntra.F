@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -174,7 +168,7 @@ C     Set TRINP and TRUNIT
 C
       CALL TRASET(JRDAO, KWORK)
 C
-      CALL TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,DUMMY,
+      CALL TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,VDUMMY,
      &            WORK,KWORK)
 C     CALL TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
 C    &            WRK,MEMX)
@@ -262,7 +256,7 @@ C  address of ICDTRA from the LUMINT address array
 C  (here IADRM).
 C
 #include "implicit.h"
-      DIMENSION IADRM(3,1297)
+      INTEGER  IADRM(3,1297)
       IADFRE = IADRM(1,1297)
       IADCMO = IADRM(2,1297)
       IADCDT = IADRM(3,1297)
@@ -3310,7 +3304,8 @@ C
       KTRLVL = NTRLVL/100
 C
       IF (KTRLVL .LT. 0 .OR. KTRLVL .GT. 2) THEN
-         WRITE (LUPRI,*) 'Illegal KTRLVL in TRALIM, KTRLVL =',KTRLVL
+         WRITE (LUPRI,*) 'Illegal KTRLVL in TRALIM, KTRLVL,NTRLVL =',
+     &      KTRLVL,NTRLVL
          CALL QTRACE(LUPRI)
          CALL QUIT('FATAL ERROR TRALIM: Illegal KTRLVL')
       END IF
@@ -3424,28 +3419,43 @@ C        3       a        g        g        g      third-order
 C        4       g        g        g        g      full transf.
 C
 C
-#include "implicit.h"
+      IMPLICIT NONE
+#include "priunit.h"
+      INTEGER ITRSIR, NTRLVL
+      INTEGER JTRSIR, JTRLVL, KTRLVL
 C
       CALL QENTER('TRALVL')
-      JTRLVL = ABS(ITRSIR)
-      KTRLVL = 0
-      IF (JTRLVL .EQ. 0) THEN
+      ! a: active, o:occupied, g:general in comments for JTRSIR
+      JTRSIR = ABS(ITRSIR)
+      IF (JTRSIR .EQ. 0) THEN      ! (aa|aa)
+         JTRLVL = 0
          KTRLVL = 1
-      ELSE IF (JTRLVL .EQ. 1) THEN
+      ELSE IF (JTRSIR .EQ. 1) THEN ! (ga|aa)
+         JTRLVL = 1
          KTRLVL = 1
-      ELSE IF (JTRLVL .EQ. 2) THEN
-         KTRLVL = 0
-      ELSE IF (JTRLVL .EQ. 3) THEN
-         JTRLVL = 2
-         KTRLVL = 1
-      ELSE IF (JTRLVL .EQ. 4) THEN
+      ELSE IF (JTRSIR .EQ. 2) THEN ! (gg|oo) + <gg|oo> (for (aa|ii) and (ai|ai)
          JTRLVL = 2
          KTRLVL = 0
-      ELSE IF (JTRLVL .EQ. 5) THEN
+      ELSE IF (JTRSIR .EQ. 3) THEN ! (gg|aa) + <gg|aa>
+         JTRLVL = 2
+         KTRLVL = 1
+      ELSE IF (JTRSIR .EQ. 4) THEN ! (gg|oo) + <gg|oo>
+         JTRLVL = 2
+         KTRLVL = 0
+      ELSE IF (JTRSIR .EQ. 5) THEN ! (gg|go)
          JTRLVL = 3
          KTRLVL = 0
-      ELSE IF (JTRLVL .GE. 6) THEN ! KTRLVL is inactive
+      ELSE IF (JTRSIR .EQ. 6) THEN ! (gg|ga)
+      ! hjaaj aug 2017;  new option for abacus: we only need active-general for abatr1
+         JTRLVL = 3
+         KTRLVL = 1
+      ELSE IF (JTRSIR .GE. 7) THEN ! (gg|gg)
          JTRLVL = 4
+         KTRLVL = 0  ! KTRLVL is inactive
+      ELSE
+         WRITE(LUPRI,*)
+     &   'ERROR: Undefined Sirius integral transformation level:',JTRSIR
+         CALL QUIT('ERROR: Undefined 2el transformation level')
       END IF
       NTRLVL = 100*KTRLVL + JTRLVL
       CALL QEXIT('TRALVL')

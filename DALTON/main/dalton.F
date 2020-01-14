@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 C
 C=========================================================================
@@ -36,7 +30,7 @@ C=========================================================================
 #ifdef VAR_CHEMSHELL
       subroutine dalton
 #else
-      PROGRAM DALTON2017_DALTON
+      PROGRAM DALTON2020_DALTON
 #endif
 C
       use parallel_models_mpi
@@ -259,7 +253,7 @@ C
      &' ',
      &'and',
      &' ',
-     &'   Dalton, a Molecular Electronic Structure Program,',
+     &'   Dalton, a molecular electronic structure program,',
      &'   Release '//
      &DALTON_VERSION
      &//', see http://daltonprogram.org'
@@ -286,7 +280,7 @@ C
      &  '(CC module)',
      *'Renzo Cimiraglia,','University of Ferrara,','Italy',
      &  '(NEVPT2)',
-     *'Sonia Coriani,','University of Trieste,','Italy',
+     *'Sonia Coriani,','Technical Univ. of Denmark,','Denmark',
      &  '(CC module, MCD in RESPONS)',
      *'Janusz Cukras,','University of Trieste,','Italy',
      &  '(MChD in RESPONS)',
@@ -300,6 +294,8 @@ C
      &  '(Polarizable embedding model, TDA)',
      *'Rasmus Faber,','University of Copenhagen,','Denmark',
      &  '(Vib.avg. NMR with SOPPA, parallel AO-SOPPA)',
+     *'Tobias Fahleson,','KTH Stockholm,','Sweden',
+     &  '(Damped cubic response)',
      *'Berta Fernandez,','U. of Santiago de Compostela,','Spain',
      &  '(doublet spin, ESR in RESPONS)',
      *'Lara Ferrighi,','Aarhus University,','Denmark',
@@ -334,6 +330,8 @@ C
      &  '(Triplet AO-SOPPA)',
      *'Maria Francesca Iozzi,','University of Oslo,','Norway',
      &  '(RPA)',
+     *'Christoph Jacob','TU Braunschweig',
+     &  'Germany','(Frozen density embedding model)',
      *'Brano Jansik','Technical Univ. of Ostrava','Czech Rep.',
      &  '(DFT cubic response)',
      *'Hans Joergen Aa. Jensen,','Univ. of Southern Denmark,','Denmark',
@@ -369,12 +367,12 @@ C
      *'Kurt V. Mikkelsen,','University of Copenhagen,','Denmark',
      &  '(MC-SCRF and QM/MM)',
      *'Rolf H. Myhre,', 'NTNU,','Norway',
-     &  '(Cholesky, subsystems and ECC2)',
+     &  '(Subsystems and CC3)',
      *'Christian Neiss,','Univ. Erlangen-Nuernberg,','Germany',
      &  '(CCSD(R12))',
      *'Christian B. Nielsen,','University of Copenhagen,','Denmark',
      &  '(QM/MM)',
-     *'Patrick Norman,','Linkoeping University,','Sweden',
+     *'Patrick Norman,','KTH Stockholm,','Sweden',
      &  '(Cubic response and complex frequency response in RESPONS)',
      *'Jeppe Olsen,','Aarhus University,','Denmark',
      &  '(SIRIUS CI/density modules)',
@@ -410,6 +408,8 @@ C
      &  '(direct Fock matrix construction)',
      *'Stephan P. A. Sauer,','University of Copenhagen,','Denmark',
      &  '(SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)',
+     *'Andre S. P. Gomes,','CNRS/Universite de Lille,',
+     &  'France','(Frozen density embedding model)',
      *'Bernd Schimmelpfennig,','Forschungszentrum Karlsruhe,',
      &  'Germany','(AMFI module)',
      *'Kristian Sneskov,','Aarhus University,','Denmark',
@@ -428,6 +428,8 @@ C
      &  '(CCSD(R12))',
      *'Olav Vahtras,','KTH Stockholm,','Sweden',
      &  '(triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)',
+     *'Lucas Visscher,','Vrije Universiteit Amsterdam,',
+     &  'Netherlands','(Frozen density embedding model)',
      *'David J. Wilson,','La Trobe University,','Australia',
      &  '(DFT Hessian and DFT magnetizabilities)',
      *'Hans Agren,','KTH Stockholm,','Sweden',
@@ -766,17 +768,11 @@ C         options to transfer UNIX environment variables to
 C         slave nodes. /hjaaj June 2005
         WRKMEM = ' '
         NODE_WRKMEM = ' '
-#if defined (SYS_T3D) || defined (SYS_T90)
-        CALL PXFGETENV('WRKMEM',6,WRKMEM,LWRKMM,IERR)
-        CALL PXFGETENV('NODE_WRKMEM',11,NODE_WRKMEM,LWRKMM,IERR)
-        CALL PXFGETENV('BASDIR',6,BASDIR,LBASDR,IERR)
-#else
         CALL GETENV('WRKMEM',WRKMEM)
         CALL GETENV('NODE_WRKMEM',NODE_WRKMEM)
         CALL GETENV('BASDIR',BASDIR)
         !debug! write (0,*) 'GETENV WRKMEM ',WRKMEM
         !debug! write (0,*) 'GETENV BASDIR ',BASDIR
-#endif
 
 !       WRKMEM -> LMWORK
 

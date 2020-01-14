@@ -34,19 +34,6 @@
 
 #include "FSYMdef.h"
 
-#if defined(VAR_PGF77)
-#define __FUNCTION__ "PGI_does_not_define__FUNCTION__"
-#endif
-#if defined(SYS_SUN)
-#define __FUNCTION__ "SUNs CC compiler_does_not_define__FUNCTION__"
-#endif
-#if defined(SYS_IRIX)
-#define __FUNCTION__ "SGIs CC compiler_does_not_define__FUNCTION__"
-#endif
-#if defined(SYS_DEC)
-#define __FUNCTION__ "DEC CC compiler does not define __FUNCTION__"
-#endif
-
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
 
 

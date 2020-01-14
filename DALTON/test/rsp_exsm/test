@@ -13,10 +13,12 @@ output_test = runtest_dalton.TestRun(__file__, sys.argv)
 # Parallel quits
 
 
-output_filter.add(re="moment:", abs_tolerance=1e-5)
+output_filter.add(re="moment:", abs_tolerance=1e-5, ignore_sign=True)
 
 
 #
 output_test.run(
     ['rsp_exsm.dal'], ['h2o.mol'], f={'out': output_filter},
     )
+
+sys.exit(output_test.return_code)

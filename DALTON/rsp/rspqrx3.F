@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 #define DFTQRC dft_qr_respons
@@ -82,7 +76,8 @@ C
 C
       IBEQC = 0
       IF ( HYPCAL .AND. ISYMB .EQ. ISYMC .AND. ISPINB.EQ.ISPINC .AND.
-     *     ABS(OMEGAB) .EQ. ABS(OMEGAC) .AND. .NOT. RSPCI ) THEN
+     &     ABS(OMEGAB) .EQ. ABS(OMEGAC) .AND.
+     &     .NOT. (RSPCI .OR. TDA .OR. CISRPA) ) THEN
          IF (OMEGAB .EQ. OMEGAC) THEN
             BMINC = D0
             DO 110 I = 1,KZYVB
@@ -151,7 +146,7 @@ C
 C
 C     Return if we have a CI response calculation
 C
-      IF ( RSPCI ) RETURN
+      IF ( RSPCI .OR. TDA .OR. CISRPA) RETURN
 C
       IF ( TEST ) THEN
          CALL DCOPY(MZVAR(ISYMB),VECB,1,VECB(1+MZVAR(ISYMB)),1)
@@ -242,11 +237,18 @@ C  /* Deck e3init */
      *                  ISYMA,ISYMB,ISYMC,ISPINA,ISPINB,ISPINC,CMO,FC,
      *                  FV,MJWOP)
 
+C     Compute ( E3(jkl) + E3(jlk) ) N(l) N(k)
+C
+C          VECB = N(l) (input)
+C          VECC = N(k) (input)
+C          VECA = N(j) (input, only used if ATEST true)
+C          ATEST (input, true to print individiual E3 contributions based on VECA)
+C          IBEQC (input, true if VECB = VECC)
+C          ETRS = ( E3(jkl) + E3(jlk) ) N(l) N(k) (output)
+
       use qmcmm_response, only: qmcmm_qr
       use pelib_interface, only: use_pelib, pelib_ifc_qro,
      &                           pelib_ifc_gspol
-C
-C
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -279,19 +281,25 @@ C
 #include "infpar.h"
 C
       LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
-      DIMENSION VECB(*),VECC(*),VECA(*)
-      DIMENSION ETRS(KZYVA)
-      DIMENSION XINDX(*)
-      DIMENSION UDV(*), MJWOP(2,MAXWOP,8)
-      DIMENSION PV(*)
-      DIMENSION WRK(*)
-      DIMENSION CMO(*),FC(*), FV(*)
+      REAL*8    VECB(*), VECC(*), VECA(*), ETRS(KZYVA)
+      REAL*8    XINDX(*), UDV(*), PV(*), WRK(*)
+      REAL*8    CMO(*), FC(*), FV(*)
+      INTEGER   MJWOP(2,MAXWOP,8)
 C
 C     Initialise variables and layout some workspace
 C
       CALL QENTER('E3INIT')
       IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
          CALL QUIT('srDFT not implemented in E3INIT')
+      END IF
+      IF (CISRPA .OR. TDA) THEN
+         ! E[3] is zero for CI, i.e. also for CIS = TDA
+         IF (EMBEDDING) THEN
+            ! embedding may give an E[3] contribution ...
+            CALL QUIT('QR embedding not implemented for CISRPA or TDA')
+         END IF
+         ETRS(1:KZYVA) = 0.0D0
+         GO TO 9000
       END IF
       KFREE = 1
       LFREE = LWRK
@@ -505,7 +513,7 @@ C
          END IF
       END IF
 C
-      CALL QEXIT('E3INIT')
+ 9000 CALL QEXIT('E3INIT')
       RETURN
       END
 C  /* Deck e3drv */

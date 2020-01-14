@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 !
@@ -83,14 +77,14 @@ C
          ELSE IF (PROMPT .EQ. '#' .OR. PROMPT .EQ. '!') THEN
             GO TO 100
          ELSE IF (PROMPT .EQ. '*') THEN
-            RETURN
+            GO TO 9000
          ELSE
             WRITE (LUPRI,'(/3A/2A/)')
      *         ' Keyword ',WORD,' does not begin with',
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal keyword  for "*STEX  "')
+         CALL QUIT('Illegal keyword  for '//WORD1)
 C
 C *** Option 1 >XAS<   X-ray absorption spectroscopy
   101 CONTINUE
@@ -111,12 +105,34 @@ C *** Option 4 >PRINT< Print level in stex routines
 C *** Option 5 >OPEN S< Open shells in stex calculation
   105 CONTINUE
       READ(LUCMD,*) (NHLSTX(ISYM), ISYM=1,NSYM)
-      READ(LUCMD,*) ((IHLSTX(I,ISYM),I=1,NHLSTX(ISYM)),ISYM=1,NSYM)
+      j = 0
+      do isym = 1, nsym
+      if (NHLSTX(isym) .gt. 0) then
+         j = j + 1
+         READ(LUCMD,*) (IHLSTX(I,ISYM),I=1,NHLSTX(ISYM))
+      end if
+      end do
+      if (j .eq. 0) then
+         write(lupri,*) 'Error in *STEX input .OPEN SHELLS:'
+         write(lupri,*) '   holes per symmetry:',NHLSTX(1:NSYM)
+         call quit('Error in *STEX input .OPEN SHELLS')
+      end if
       GO TO 100
-C *** Option 6 >COEFF< Coefficients for modified Fock matrices
+C *** Option 6 >COEFFI< Coefficients for modified Fock matrices
   106 CONTINUE
-      READ(LUCMD,*) ((CJSTX(I,ISYM),I=1,NHLSTX(ISYM)),ISYM=1,NSYM)
-      READ(LUCMD,*) ((CKSTX(I,ISYM),I=1,NHLSTX(ISYM)),ISYM=1,NSYM)
+      j = 0
+      do isym = 1, nsym
+      if (NHLSTX(isym) .gt. 0) then
+         j = j + 1
+         READ(LUCMD,*) (CJSTX(I,ISYM),I=1,NHLSTX(ISYM))
+         READ(LUCMD,*) (CKSTX(I,ISYM),I=1,NHLSTX(ISYM))
+      end if
+      end do
+      if (j .eq. 0) then
+         write(lupri,*) 'Error in *STEX input .COEFFI:'
+         write(lupri,*) '   .OPEN SHELL must be before .COEFFI'
+         call quit('Error in *STEX input .COEFFI')
+      end if
       GO TO 100
 C *** Option 7 >AO   < Save stex matrices in AO basis
   107 CONTINUE
@@ -133,7 +149,9 @@ C *** Option 9 >AUGERTEST   < Build RPA matrix
       RPATST = .TRUE.
       GO TO 100
 C
+ 9000 CONTINUE
 C
+      RETURN
       END
 C#######################################################################
       SUBROUTINE STXCTL(WORK,LWORK)

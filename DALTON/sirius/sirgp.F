@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -333,7 +327,6 @@ C   INFORB: MULD2H()
 C   INFVAR: MAXOCC,NWOPT,NVAR,NWOPH,NVARH,JWOP(2,*),JWOPSY
 C   INFLIN: LSYMRF,LSYMPT,LSYMST,NCONST,NWOPPT,NVARPT
 C   INFDIM: NWOPDI,NWOPMA,NCONMA,NVARMA
-C   INFPRI: NWARN
 C
 #include "maxorb.h"
 #include "priunit.h"
@@ -341,7 +334,6 @@ C
 #include "infvar.h"
 #include "inflin.h"
 #include "infdim.h"
-#include "infpri.h"
 C
       LOGICAL FNDLAB
 C
@@ -1068,6 +1060,53 @@ C
 C     End of GETAC1.
 C
       END
+C  /* Deck getvir */
+      SUBROUTINE GETVIR(FC,FCVIR)
+C
+C  7-Nov-2017 Hans Joergen Aa. Jensen (based on GETAC)
+C
+C Module : SIRGP
+C
+C Purpose: Extract blocks with virtual-virtual orbital indices out
+C          of symmetry packed matrix (e.g. the Fock matrix).
+C          Both FC and FCVIR are symmetry packed.
+C
+#include "implicit.h"
+      REAL*8  FC(*), FCVIR(*)
+C
+C INFORB : NSSHT, NNSSHT, NSYM, NSSH(*), IIORB(*), IISH(*), NOCC(*)
+C
+#include "inforb.h"
+
+      IROW(I) = (I*(I-1))/2
+C
+      CALL QENTER('GETVIR ')
+C
+      CALL DZERO(FCVIR,NNSSHT)
+      IISSH_I = 0
+      DO 300 ISYM=1,NSYM
+      IF (NSSH(ISYM).EQ.0) GO TO 300
+         NOCCI = NOCC(ISYM)
+         NORBI = NORB(ISYM)
+         IJFC  = IIORB(ISYM) + IROW(NOCCI+1)
+         IJFCVIR = IISSH_I
+         DO 290 I = (NOCCI+1),NORBI
+            IJFC   = IJFC + NOCCI
+            DO 280 J = (NOCCI+1),I
+               IJFC = IJFC + 1
+               IJFCVIR = IJFCVIR + 1
+               FCVIR(IJFCVIR) = FC(IJFC)
+  280       CONTINUE
+  290    CONTINUE
+         IISSH_I = IISSH_I + IROW(NSSH(ISYM)+1)
+  300 CONTINUE
+C
+      CALL QEXIT('GETVIR ')
+      RETURN
+C
+C     End of GETVIR.
+C
+      END
 C  /* Deck pksym1 */
       SUBROUTINE PKSYM1(ASP,APK,NDIM,NBLK,IWAY)
 C
@@ -1488,7 +1527,7 @@ C
       !> read MOs from SIRIUS.RST 
       !> a. if HF these are the final HF orbitals
       !> b. if MC these are the final MCSCF orbitals
-      call readmo(cmo,9,vdummy,0)
+      call readmo(cmo,9)
 
       select case(trim(density))
 
@@ -1633,14 +1672,12 @@ C
 C Used from common blocks:
 C  INFORB  : NBAST,N2BASX
 C  INFTAP  : LUSUPM
-C  PRIUNIT : IPRSTAT
 C  CBIHRS  : parameters for FORMSUP
 C  frame.h : POTNUC
 C  DFTCOM  : HFXFAC
 C
 #include "inforb.h"
 #include "inftap.h"
-#include "infpri.h"
 #include "cbihrs.h"
 #include "frame.h"
 #include "dftcom.h"
@@ -1748,10 +1785,9 @@ C
       RETURN
       END
 C  /* Deck rdsupp */
-#include "vdir.h"
       SUBROUTINE RDSUPP(NSIM,FMAT,DMAT,ISYMDM,WORK,IWORK,LFREE)
 C
-C Jan 90, Hans Joergen Aa. Jensen
+C Jan 90 + Oct 16, Hans Joergen Aa. Jensen
 C
 C NOTE: WORK and IWORK must be equivalenced.
 C
@@ -1760,8 +1796,9 @@ C
 #include "thrzer.h"
       PARAMETER (D0 = 0.0D0)
 C
-      REAL*8  FMAT(N2BASX,NSIM), DMAT(N2BASX,NSIM), WORK(LFREE)
-      INTEGER IWORK(IRAT*LFREE), ISYMDM(NSIM)
+      REAL*8    FMAT(N2BASX,NSIM), DMAT(N2BASX,NSIM), WORK(LFREE)
+      INTEGER*4 IWORK(2*LFREE)
+      INTEGER   ISYMDM(NSIM)
 C
 C Used from common blocks:
 C
@@ -1776,7 +1813,6 @@ C
 #include "inforb.h"
 #include "infind.h"
 #include "inftap.h"
-#include "infpri.h"
 C
       LOGICAL NOSYM
       INTEGER MBAS(8)
@@ -1901,15 +1937,15 @@ C                    note NRS = IPQ
   280       CONTINUE
          ELSE IF (ITYP .EQ. 2) THEN
             IREC2 = IREC2 + 1
-            LENP  = (IRAT+1)*NPQRS
+            LENP  = 3*NPQRS ! real*8 P + integer*4 INDP
             IF (LENP .GT. LFREE) GO TO 820
-            CALL READI(LUSUPM,LENP,WORK)
-            INDP  = IRAT*NPQRS
+            CALL READI4(LUSUPM,LENP,IWORK)
+            INDP  = 2*NPQRS ! "2" as IWORK is always integer*4
             IPQ   = IROW(NP1) + NQ1
             DO 380 ISIM = 1,NSIM
                DPQ = DMAT(IPQ,ISIM)
                IF (ABS(DPQ) .GT. THRZER) THEN
-#include "ivdep.h"
+! no vector dependence in IRS loop
                   DO 320 IRS = 1,NPQRS
                      FMAT( IWORK(INDP+IRS) , ISIM ) =
      &               FMAT( IWORK(INDP+IRS) , ISIM ) + DPQ * WORK(IRS)
@@ -1941,6 +1977,7 @@ C
          CALL ERRWRK('RDSUPP.TYP2',LENP,LFREE)
   900 CONTINUE
       IF (IPRSTAT .GT. 5) THEN
+         WRITE (LUERR,*) 'RDSUPP statistics.'
          WRITE (LUERR,*) 'Total number of records :',IREC
          WRITE (LUERR,*) 'No. of records of type 1:',IREC1
          WRITE (LUERR,*) 'No. of records of type 2:',IREC2
@@ -2278,7 +2315,6 @@ C
 #include "infinp.h"
 #include "infvar.h"
 #include "inftap.h"
-#include "infpri.h"
 C
       CHARACTER*8 RTNLBL(2), STAR8
       DATA STAR8/'********'/

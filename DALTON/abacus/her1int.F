@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -166,7 +160,7 @@ C
          JMAXM  = 2
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ. 8) THEN
+      ELSE IF (INTTYP .EQ. 8 .OR. INTTYP .EQ. 108) THEN
          JMAXD  = 0
          JMAXM  = 0
          DONUC1 = .TRUE.
@@ -1361,10 +1355,11 @@ C
       KFREE  = KFRWRK
       LFREE  = LWORK
       LODC   = 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)*(JMAXM+1)
-      CALL MEMGET('REAL',KODC,  LODC,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ODC',KODC,  LODC,WORK,KFREE,LFREE)
       N_AHGTF_VECS = MAX(3,NATOMC+1)
       ! PR1PRA needs 3 vectors if NATOMC.eq.1 and ADDNAI becomes true
-      CALL MEMGET('REAL',KAHGTF,NAHGTF*N_AHGTF_VECS,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','AHGTV',
+     &   KAHGTF,NAHGTF*N_AHGTF_VECS,WORK,KFREE,LFREE)
 C
       IF (INTTYP .NE. 12 .AND. INTTYP .NE. 58 .AND. INTTYP .NE. 96) THEN
          CALL PR1PRA(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
@@ -1500,7 +1495,7 @@ C
      &            (INTTYP .EQ. 30) .OR. (INTTYP .EQ. 31) .OR.
      &            (INTTYP .EQ. 56) .OR. (INTTYP .EQ. 53) .OR.
      &            (INTTYP .EQ. 54) .OR. (INTTYP .EQ. 83) .OR.
-     &            (INTTYP .EQ. 84) ) THEN
+     &            (INTTYP .EQ. 84) .OR. (INTTYP .EQ. 108)) THEN
             TEMP(1) = DIPORG(1)
             TEMP(2) = DIPORG(2)
             TEMP(3) = DIPORG(3)
@@ -2318,6 +2313,19 @@ c     &                  EXPPI,DIFABX,DIFABY,DIFABZ,DIFABX,DIFABY,DIFABZ)
      &                  EXPPI,DIFAOX,DIFAOY,DIFAOZ,DIFOBX,DIFOBY,DIFOBZ)
 c            CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
 c     &                  EXPPI,DIFOBX,DIFOBY,DIFOBZ,DIFAOX,DIFAOY,DIFAOZ)
+C
+C        R**n integrals
+C        --------------------------
+C
+         ELSE IF (INTTYP .EQ. 108) THEN
+            IF (FMMORI) THEN
+               DIPORG(1) = CORPX
+               DIPORG(2) = CORPY
+               DIPORG(3) = CORPZ
+            END IF
+            CALL RN_INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  CORPX,CORPY,CORPZ,EXPPI,DIPORG,IORDER,
+     &                  WORK(KFREE),LFREE)
          END IF
   200 CONTINUE
   100 CONTINUE
@@ -5431,6 +5439,141 @@ C
   300 CONTINUE
       RETURN
       END
+C  /* Deck rn_int */
+      SUBROUTINE RN_INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  CORPX,CORPY,CORPZ,EXPPI,ORIGIN,IORDER,
+     &                  WORK,LWORK)
+C
+C     tuh 1989
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+      DIMENSION WORK(LWORK)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &          ORIGIN(3), SHLINT(KCKTAB,(IORDER+1)*(IORDER+2)/2)
+#include "onecom.h"
+C
+      KHMULT = 1
+      KDX    = KHMULT + 3*((IORDER + 1)**2)
+      KDY    = KDX    + IORDER + 1
+      KDZ    = KDY    + IORDER + 1
+      KLO    = KDZ    + IORDER + 1
+      KMO    = KLO    + (((IORDER + 1)*(IORDER + 2)/2) + 1)/IRAT
+      KNO    = KMO    + (((IORDER + 1)*(IORDER + 2)/2) + 1)/IRAT
+      KLAST  = KNO    + (((IORDER + 1)*(IORDER + 2)/2) + 1)/IRAT
+      IF (KLAST .GT. LWORK) CALL STOPIT('RN_INT',' ',KLAST,LWORK)
+      CALL RN_IN1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,CORPX,
+     &            CORPY,CORPZ,EXPPI,ORIGIN,IORDER,WORK(KHMULT),
+     &            WORK(KDX),WORK(KDY),WORK(KDZ),WORK(KLO),WORK(KMO),
+     &            WORK(KNO))
+      RETURN
+      END
+C  /* Deck rn_in1 */
+      SUBROUTINE RN_IN1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  CORPX,CORPY,CORPZ,EXPPI,ORIGIN,IORDER,HMULT,DX,
+     &                  DY,DZ,LO,MO,NO)
+C
+C     tuh 1989
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &          ORIGIN(3), SHLINT(KCKTAB,(IORDER+1)*(IORDER+2)/2),
+     &          HMULT(3,0:IORDER,0:IORDER),
+     &          DX(0:IORDER), DY(0:IORDER), DZ(0:IORDER),
+     &          LO((IORDER + 1)*(IORDER + 2)/2),
+     &          MO((IORDER + 1)*(IORDER + 2)/2),
+     &          NO((IORDER + 1)*(IORDER + 2)/2)
+#include "onecom.h"
+#include "lmns.h"
+C
+C     Hermitian integrals
+C     -------------------
+C
+      HMULT(1,0,0) = SHGTF
+      HMULT(2,0,0) = SHGTF
+      HMULT(3,0,0) = SHGTF
+      DO 100 IO = 1, IORDER
+         DO 200 IT = 0, IO
+            HX = D0
+            HY = D0
+            HZ = D0
+            IF (IT .GT. 0) THEN
+               X_IT = IT
+               HX = HX + X_IT*HMULT(1,IO-1,IT-1)
+               HY = HY + X_IT*HMULT(2,IO-1,IT-1)
+               HZ = HZ + X_IT*HMULT(3,IO-1,IT-1)
+            END IF
+            IF (IT .LE. IO-1) THEN
+               HX = HX + (CORPX - ORIGIN(1))*HMULT(1,IO-1,IT)
+               HY = HY + (CORPY - ORIGIN(2))*HMULT(2,IO-1,IT)
+               HZ = HZ + (CORPZ - ORIGIN(3))*HMULT(3,IO-1,IT)
+            END IF
+            IF (IT .LE. IO-2) THEN
+               HX = HX + DP5*EXPPI*HMULT(1,IO-1,IT+1)
+               HY = HY + DP5*EXPPI*HMULT(2,IO-1,IT+1)
+               HZ = HZ + DP5*EXPPI*HMULT(3,IO-1,IT+1)
+            END IF
+            HMULT(1,IO,IT) = HX
+            HMULT(2,IO,IT) = HY
+            HMULT(3,IO,IT) = HZ
+  200    CONTINUE
+  100 CONTINUE
+C
+C     Cartesian integrals
+C
+      INT = 0
+      DO 300 ICOMPA = 1,KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 300 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+C        One-dimensional integrals
+C
+         DO 400 IO = 0, IORDER
+            DX(IO) = D0
+            DY(IO) = D0
+            DZ(IO) = D0
+            DO 500 IT = 0, MIN(LVALA+LVALB,IO)
+               DX(IO) = DX(IO)+ ODC(LVALA,LVALB,IT,0,0,1)*HMULT(1,IO,IT)
+  500       CONTINUE
+            DO 510 IU = 0, MIN(MVALA+MVALB,IO)
+               DY(IO) = DY(IO)+ ODC(MVALA,MVALB,IU,0,0,2)*HMULT(2,IO,IU)
+  510       CONTINUE
+            DO 520 IV = 0, MIN(NVALA+NVALB,IO)
+               DZ(IO) = DZ(IO)+ ODC(NVALA,NVALB,IV,0,0,3)*HMULT(3,IO,IV)
+  520       CONTINUE
+  400    CONTINUE
+C
+C        Three-dimensional integrals
+C
+         INT = INT + 1
+         IF (IORDER .EQ. 2) THEN
+            SHLINT(INT,1) = SHLINT(INT,1)
+     &                    -DX(2)*DY(0)*DZ(0)
+     &                    -DX(0)*DY(2)*DZ(0)
+     &                    -DX(0)*DY(0)*DZ(2)
+         ELSE IF (IORDER .EQ. 4) THEN
+            SHLINT(INT,1) = SHLINT(INT,1)
+     &                    -DX(4)*DY(0)*DZ(0)
+     &                    -DX(0)*DY(4)*DZ(0)
+     &                    -DX(0)*DY(0)*DZ(4)
+     &                    -DX(2)*DY(2)*DZ(0)*2.0D0
+     &                    -DX(2)*DY(0)*DZ(2)*2.0D0
+     &                    -DX(0)*DY(2)*DZ(2)*2.0D0
+         ELSE
+            CALL QUIT('Order .ne. 2 or 4 not implemented yet')
+         END IF
+  300 CONTINUE
+      RETURN
+      END
 C  /* Deck dpvint */
       SUBROUTINE DPVINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
@@ -8010,16 +8153,8 @@ C
             IOFF2 = IOFF2 + NDIMA*(NDIMA + 1)/2
   100    CONTINUE
       ELSE
-#if defined (SYS_AIX)
-CAIX 4.x compiler fix provided by T.Saue, Nov.12-97
-         IREPO = ISYMO - 1
-         DO 200 IREPB = 0, MAXREP
-            ISYMB = IREPB + 1
-            ISYMA = IEOR(IREPO,IREPB) + 1
-#else
          DO 200 ISYMB = 1, MAXREP + 1
             ISYMA = IEOR(ISYMO - 1,ISYMB - 1) + 1
-#endif
             IF (ISYMA .GT. ISYMB) THEN
                NDIMA = NAOS(ISYMA)
                NDIMB = NAOS(ISYMB)

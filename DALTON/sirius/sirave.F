@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -49,8 +43,6 @@ C
 !        cannot be performed without commenting new code in AVESET!
 !941215-hjaaj:
 !renamed ICKDIA to NOFDIA; moved NOFDIA to gp
-!940909-hjaaj: CALL SCALSUB2 after SUBROUTINE for CRAY (see 940427 comment)
-! changed CALL SCALSUB to CALL SCALSUB1 before SUBROUTINE
 !940823-hjaaj:
 !AVESE1: print if IPHCHA .gt. 0 and IPRAVE .ge. 4
 !940818-hjaaj:
@@ -1118,7 +1110,6 @@ C
       END
 C  /* Deck aveudv */
 #if defined (VAR_NOTUSED  )
-#include "scalsub1.h"
       SUBROUTINE AVEUDV(UDV)
 C
 C     09-Jul-1992 Hinne Hettema
@@ -1128,7 +1119,6 @@ C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
 #include "implicit.h"
-#include "scalsub2.h"
       DIMENSION UDV(NASHT,*)
 C
 C     Used from common blocks
@@ -1247,7 +1237,6 @@ C
       END
 #endif
 C  /* Deck aveh1 */
-#include "scalsub1.h"
       SUBROUTINE AVEH1(H1)
 C
 C     12-Jul-1992 Hinne Hettema
@@ -1257,7 +1246,6 @@ C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
 #include "implicit.h"
-#include "scalsub2.h"
       DIMENSION H1(NORBT,*)
 C
 C     Used from common blocks
@@ -1373,7 +1361,6 @@ C
       RETURN
       END
 C  /* Deck avedv */
-#include "scalsub1.h"
       SUBROUTINE AVEDV(DV)
 C
 C     09-Jul-1992 Hinne Hettema
@@ -1383,7 +1370,6 @@ C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
 #include "implicit.h"
-#include "scalsub2.h"
       DIMENSION DV(NNASHX)
 C
 C     Used from common blocks
@@ -1507,7 +1493,6 @@ C
       END
 C  /* Deck aveh1p */
 #if defined (VAR_NOTUSED  )
-#include "scalsub1.h"
       SUBROUTINE AVEH1P(H1P)
 C
 C     12-Jul-1992 Hinne Hettema
@@ -1517,7 +1502,6 @@ C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
 #include "implicit.h"
-#include "scalsub2.h"
       DIMENSION H1P(NNORBX)
 C
 C     Used from common blocks
@@ -1629,7 +1613,6 @@ C
       END
 #endif
 C  /* Deck avefck */
-#include "scalsub1.h"
       SUBROUTINE AVEFCK(FCK)
 C
 C     12-Jul-1992 Hinne Hettema
@@ -1639,7 +1622,6 @@ C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
 #include "implicit.h"
-#include "scalsub2.h"
       DIMENSION FCK(NNORBT)
 C
 C     Used from common blocks
@@ -1857,7 +1839,7 @@ C        --- we have a degeneracy to other supersym.(s)
       RETURN
       END
 C  /* Deck avechk */
-      SUBROUTINE AVECHK(WRK,LWRK,INPERR)
+      SUBROUTINE AVECHK(INPERR)
 C
 C 14-Jul-1992 Hinne Hettema and Hans Joergen Aa. Jensen.
 C
@@ -1881,7 +1863,7 @@ C
 #include "orbtypdef.h"
 C
       PARAMETER (MAXDEG = 20, D1 = 1.0D0)
-      DIMENSION ISSDEG(MAXDEG),ISSOFF(MAXDEG), WRK(LWRK)
+      DIMENSION ISSDEG(MAXDEG),ISSOFF(MAXDEG)
 C
       CALL QENTER('AVECHK')
       IF (.NOT.SUPSYM) GO TO 9999

@@ -1,5 +1,5 @@
 #!/bin/ksh
-AWK=awk
+AWK=gawk
 log=$1
 ERRLIST=""
 . ./functions || { echo "current dir is not the test dir" ; exit 1; }

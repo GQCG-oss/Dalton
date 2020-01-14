@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -419,6 +413,7 @@ C
       DONEVPT   = .FALSE.
       DOLUCITA  = .FALSE.
       DOAPSG    = .FALSE.
+      DO_VIRTRUNC = .FALSE.
 C  ---> Initialize SR-DFT stuff here !
       DOMCSRDFT = .FALSE.
       DOCISRDFT = .FALSE.
@@ -433,7 +428,6 @@ C <---
       DOCISD    = .FALSE. ! DO CISD
       DORSP     = RNRESP
       ABAIPH    = RNABAC
-      ADDMP2    = .FALSE.
 C     ... It is followed by an abacus run
       CORHOL    = .FALSE.
       CORRLX    = .FALSE.
@@ -563,7 +557,7 @@ C MAXRC : Max dimension of reduced CI matrix
       ISTACI = 0
 C     ... do not converge to a specific state.
       NROOCI = 1
-      MXCIMA = 20
+      MXCIMA = 25
       ICICNO = 0
 C
 C********** Default values section SCFINP *****
@@ -847,6 +841,14 @@ C        ... active rotations will be deleted when
 C            SETWOP is called again because orbitals
 C            have been reordered after ORDRSS or ORD2SS /hjaaj aug 04
       END IF
+      IF (HFXMU .NE. 0.0D0 .AND. .NOT.DIRCAL) THEN
+         NINFO = NINFO + 1
+         IF (.NOT.DIRFCK) WRITE (LUPRI,'(/A)')
+     &   'INFO: switched to AO-direct Fock matrices because long-range'
+     &   //' corrected models as CAM-B3LYP will not work otherwise.'
+         DIRCAL = .TRUE.
+         DIRFCK = .TRUE.
+      END IF
 C
 C *** Open print unit(s).
 C     and initialize units for memory allocation routines
@@ -869,13 +871,6 @@ C
 C
       IF (DIRFCK) THEN
          LUSUPM = -1
-c        IF ((DOMP2 .AND..NOT.ADDMP2) .OR. DOCI .OR. DOMC) THEN
-c        IF (DOCI .OR. DOMC) THEN
-c           WRITE (LUPRI,'(/A/A)')
-c    &      'INPUT ERROR: Direct Fock matrix construction',
-c    &      '             not possible for MP2, CI, and MCSCF.'
-c           INPERR = INPERR + 1
-c        END IF
       END IF
 C
 C     set ITRFIN for ABAIPH
@@ -1622,6 +1617,15 @@ C
          IF (THQKVA .LE. D0) THQKVA = 0.8D0
       END IF
 
+      IF (NSYM .EQ. 1 .AND. LSYM .LT. 0) LSYM = 1 ! if no symmetry, then do not require .SYMMETRY in input
+
+      IF (LSYM .LT. 0) THEN
+         WRITE(LUPRI,'(///A/)') 'FATAL INPUT ERROR: '//
+     &      '.SYMMETRY must be specified for MCSCF/CI calculations.'
+         CALL QUIT( 'FATAL INPUT ERROR: '//
+     &      '.SYMMETRY must be specified for MCSCF/CI calculations.')
+      END IF
+
       IF (MS2 .EQ. -12345) THEN ! MS2 = 2*MS
          IF (MULTS .LE. 0) MULTS = MOD(NACTEL,2) + 1
          IF (FLAG(27)) THEN ! determinants
@@ -1631,6 +1635,12 @@ C
          END IF
       ELSE
          IF (MULTS .LE. 0) MULTS = abs(MS2) + 1
+         IF (FLAG(27) .AND. MULTS.ne.abs(MS2)+1) THEN ! determinants
+            WRITE(LUPRI,'(//A,I0,A,I0,A)')
+     &      ' INPUT ERROR: specified .MS2 and .SPIN MULTIPLICITY (',
+     &      MS2,' and ',MULTS,') are not compatible for determinants.'
+            CALL QUIT('INPUT ERROR: .MS2 and .SPIN M not compatible.')
+         END IF
       END IF
       ISPIN = MULTS
 C     .. ISPIN in infinp.h, MULTS in spinfo.h for CI module
@@ -1661,7 +1671,7 @@ C         SETORB has already been called.
          JWOPSY = 1
          CALL SIRSET(CMO(K1),LCMO-K1,.FALSE.)
 C        CALL SIRSET(WRK,LWRK,OLDWOP)
-         CALL AVECHK(CMO(K1),LCMO-K1,INPERR)
+         CALL AVECHK(INPERR)
       END IF
 C
       IF (LUSUPM.NE.-1 .AND. NBAST .GT. 255) THEN
@@ -1966,17 +1976,17 @@ C 4  SIRCTL  CI calculation (CALL SIRCI, no orbital opt.)  CIC : general
 C 5  SIRCTL  Optimization result summary (CALL SIROUT)     PRI : SUMMARY
 C 6  SIRCTL  Population analysis (CALL SIRPOP)             POP : general
 C 7
-C 8  SIRCTL  Response calculation (CALL RSPDRV)            GEN : RESPON
-C 9  SIRCTL  CALL MP2CTL (OBS FLAG 3 will destroy)         GEN : MP2
+C 8          (was CALL RSPDRV, now controlled by DORSP variable)
+C 9          (was CALL MP2CTL, now controlled by DOMP2 variable)
 C 10
 C 11 SIRSET  Calculate non-symmetric orbital rotations
 C            and write them to LUINDX (labeled)
 C 12 GRAD    Exact orbital Hessian diagonal                WAV : FOCKDI
-C                  (otherwise only Fock matrix contributions)
+C            (otherwise only Fock matrix contributions)
 C 13 various CALL READMO for initial orbitals              ORB : vario
 C 14 various Integral transformation not needed.           TRA : OLD TR
 C 15 SIRSAV  transformation to NO's each macro iteration.  OPT : TRACI
-C 16 SIROPT  Solvent calculation                           SOL : genera
+C 16 SIROPT  Sperhical cavity solvent calculation          SOL : genera
 C 17 various SUPSYM : find and use 'super symmetry'        ORB : NOSUPS
 C 18 SIROUT  Punch MO:s (canonical if flag 3) to LUPNCH    ORB : PUNCHO
 C 19 SIROPT  Use UPDATE from the beginning /990821-hjaaj test option/
@@ -2069,7 +2079,7 @@ C
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
-     *            '*AUXILL','*LUCITA','*STEX  ','*CUBE  ','*CHOACT',
+     *            '*AUXILL','*LUCITA','*STEX I','*CUBE  ','*CHOACT',
      *            '*APSG I','*END OF'/
 C
 C
@@ -2167,7 +2177,7 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
  3200  lucita_input_provided = .true.
        call move_to_next_star(word,lucmd)
        GO TO 910
-!      *STEX
+!      *STEX INPUT
  3300  CALL STXINP(WORD,INPERR,ALLOPT)
        GO TO 910
 !      *CUBE
@@ -2284,7 +2294,7 @@ C
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
      *            '.KSPT2 ','.GASCI ','.XCINT ','.NUMGRI','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
-     *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','xXXXXXX'/
+     *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','.VIRTRU'/
 C
 
       functional_line_read = .false.
@@ -2346,11 +2356,7 @@ C     read namelist $NMLSIR ... $END
          CALL QUIT(
      &   'ERROR, .FLAGS namelist not implemented for this machine')
 #else
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_NEC) || defined (SYS_T90)
-         READ (LUCMD,NMLSIR)
-#else
          READ (LUCMD,NML=NMLSIR)
-#endif
 #endif
 C
          DO 286 I = 1,NPDIM
@@ -2392,7 +2398,7 @@ C *** Option 5 >RESTAR< restart SIRIUS, SIRIUS.RST (LUIT1) must be available
         IREST = 1
       GO TO 100
 C
-C *** Option 6 >HARTRE<  Restricted Hartree-Fock SCF
+C *** Option 6 >HF    <  Restricted Hartree-Fock SCF (alias: .SCF)
   106 CONTINUE
          IF (.NOT.DOSCF) THEN
 C           ... DOSCF may also be set with .CC
@@ -2456,7 +2462,6 @@ C
 C *** Option  10 >MP2  <  Moeller-Plesset PT2 calculation
   110 CONTINUE
         DOMP2    = .TRUE.
-        FLAG(9)  = .TRUE.
         NUMRUN   = NUMRUN + 1
         FLAG(3)  = .FALSE.
       GO TO 100
@@ -2515,6 +2520,7 @@ C           ... DOSCF may also be set with .CC
 C        ... flag for QCSCF -- quadratically convergent HF or DFT
 
 c     dodft should be enough but it is sometimes necessary to have also dftrun set.
+c     (especially for ABACUS)
          DFTRUN = .TRUE.
          DFTADD = .TRUE.
          LUSUPM   = -1
@@ -2532,7 +2538,6 @@ C        ... no P-supermatrix for DFT
             WORD = TITLIN(1:7)
             GO TO 1101
          END IF
-         WDFTMP = 0.0D0
 
          ! we save the functional line
          ! we will parse it later
@@ -2540,12 +2545,6 @@ C        ... no P-supermatrix for DFT
          functional_line(1:80) = titlin(1:80)
          functional_line_read = .true.
 
-         IF (WDFTMP.NE.0.0D0) THEN
-            DOMP2    = .TRUE.
-            FLAG(9)  = .TRUE.
-            FLAG(3)  = .FALSE.
-            ADDMP2   = .TRUE.
-         END IF
       GO TO 100
 C
 C *** Option 18: NEVPT2
@@ -2567,9 +2566,7 @@ C *** Option 21: .KSPT2
   121 CONTINUE
         DOMP2    = .TRUE.
         NUMRUN   = NUMRUN + 1
-        FLAG(9)  = .TRUE.
-        FLAG(3)  = .FALSE.
-        ADDMP2   = .TRUE.
+        FLAG(3)  = .FALSE. ! do NOT call sircan for HF canonical orbitals
         READ (LUCMD,*) WDFTMP
       GO TO 100
 C *** Option 22: .GASCI
@@ -2675,7 +2672,7 @@ C     .COPFAC (for some srDFT testing)
 C
 C *** Option 32: .STEX
   133 CONTINUE
-      DOSTEX = .TRUE.
+         DOSTEX = .TRUE.
       GO TO 100
 C *** Option 34: .APSG
   134 CONTINUE
@@ -2683,7 +2680,10 @@ C *** Option 34: .APSG
         MCTYPE = 11
         NUMRUN   = NUMRUN + 1
       GO TO 100
+C *** Option 35: .VIRTRUNC
   135 CONTINUE
+        READ (LUCMD,*) N_in_RN, THR_VIRTRUNC
+        DO_VIRTRUNC = .TRUE.
       GO TO 100
 C
  8000 CONTINUE
@@ -2716,6 +2716,12 @@ C
          end if
 #endif
 
+         IF (WDFTMP.NE.0.0D0 .AND. .NOT.DOMP2) THEN ! double-hybrid DFT requested
+            DOMP2    = .TRUE.
+            NUMRUN   = NUMRUN + 1
+            FLAG(3)  = .FALSE. ! do NOT call sircan for HF canonical orbitals
+         END IF
+
 #ifdef BUILD_OPENRSP
 #ifdef ENABLE_XCINT
          if (xcint_is_active()) then
@@ -2728,12 +2734,12 @@ C
             print *, 'You run OpenRSP DFT without .XCINT'
             print *, 'Either add .XCINT or deactivate'
             print *, 'this warning'
-            stop 1
+            CALL QUIT('OpenRSP only allowed with .XCINT')
          end if
 #else
          print *, 'You run OpenRSP DFT without XCint code compiled'
          print *, 'This is probably not what you want'
-         stop 1
+         CALL QUIT('OpenRSP only allowed with XCint code compiled')
 #endif /* ENABLE_XCINT */
 #endif /* BUILD_OPENRSP */
       end if
@@ -2906,16 +2912,14 @@ C
 C
 C *** Option 1 >CAS  S<  CAS calculation: Active orbitals
   101 CONTINUE
-      IF (MCTYPE .EQ. 2) THEN
+      IF (MCTYPE .NE. 0 .AND. MCTYPE.NE.1 .AND. MCTYPE.NE.11) THEN
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
          IF (MCTYPE .NE. 11) MCTYPE = 1 ! if (not APSG) then CASSCF
          READ(LUCMD,*,ERR=8010) (NAS2(I),I=1,NSYM)
-         DO 25 ISYM = 1,NSYM
-            NAS1(ISYM) = 0
-            NAS3(ISYM) = 0
-   25    CONTINUE
+         NAS1(1:NSYM) = 0
+         NAS3(1:NSYM) = 0
       GO TO 100
 C
 C *** Option 2 >INACTI<  Inactive orbitals
@@ -2971,7 +2975,7 @@ C *** Option 7 >RAS1 H< number of holes in RAS1
 C
 C *** Option 8 >RAS1 S<   RAS1 orbital space
   108 CONTINUE
-      IF (MCTYPE .EQ. 1) THEN
+      IF (MCTYPE .NE. 0 .AND. MCTYPE .NE. 2) THEN
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
@@ -2981,7 +2985,7 @@ C *** Option 8 >RAS1 S<   RAS1 orbital space
 C
 C *** Option 9 >RAS2 S<   RAS2 orbital space
   109 CONTINUE
-      IF (MCTYPE .EQ. 1) THEN
+      IF (MCTYPE .NE. 0 .AND. MCTYPE .NE. 2) THEN
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
@@ -2991,7 +2995,7 @@ C *** Option 9 >RAS2 S<   RAS2 orbital space
 C
 C *** Option 10 >RAS3 S<   RAS3 orbital space
   110 CONTINUE
-      IF (MCTYPE .EQ. 1) THEN
+      IF (MCTYPE .NE. 0 .AND. MCTYPE .NE. 2) THEN
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
@@ -3017,13 +3021,13 @@ C *** Option 12 >RAS3 E<   RAS3 electrons
 C
  2000 CONTINUE
       NASHT = 0
-      DO, I = 1,NSYM
+      DO I = 1,NSYM
          NASH(I) = NAS1(I) + NAS2(I) + NAS3(I)
          NASHT   = NASHT   + NASH(I)
       END DO
       IF (NHL1MX .NE. -1 .OR. NHL1MN .NE. -1) THEN
          NAS1T = 0
-         DO, I = 1,NSYM
+         DO I = 1,NSYM
             NAS1T = NAS1T + NAS1(I)
          END DO
          NELMN1 = 2*NAS1T - NHL1MX
@@ -3801,6 +3805,7 @@ C
 C *** Option 1 >CINO  < Calculate CI natural orbitals.
   101 CONTINUE
       DOCINO   = .TRUE.
+      FLAG(4)  = .TRUE.
       FLAG(67) = .TRUE.
       FLAG(68) = .TRUE.
       GO TO 100
@@ -5252,7 +5257,7 @@ C   INFIND : ISMO(),?
 C   INFDIM : MAXPHP
 C   SCBRHF : IOPRHF,NFRRHF(*),MAXFCK
 C   INFMP2 : NFRMP2(*)
-C   DFTCOM : DFTRUN, DOSRBCK, ...
+C   DFTCOM : DODFT, DOSRBCK, ...
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
 C   gnrinf : NEWSYM,SIR_INPPRC,EMBEDDING,QM3,QMMM,?
 C   infpar.h : PARHER
@@ -5461,13 +5466,32 @@ C          to get here unless someone modifies SIRIUS incorrectly
             WRITE(IWUNIT,1051)
      &      '      Selected active-active rotations included by user.'
          END IF
-      ELSE IF ( DOMP2 ) THEN
-         IF (WFTYPE .EQ. ' ') WFTYPE='MP2'
+      ELSE IF (DOMP2 .AND. DODFT .AND. WDFTMP.NE.0.0D0) THEN
          IF (MP2_SCS) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='DH-SCS-MP2-DFT'
+            WRITE(IWUNIT,1050) 'DH-SCS-MP2-DFT, '//
+     &         'double hybrid DFT with SCS-MP2.'
+         ELSE IF (MP2_SOS) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='DH-SOS-MP2-DFT'
+            WRITE(IWUNIT,1050) 'DH-SOS-MP2-DFT, '//
+     &         'double hybrid DFT with SOS-MP2.'
+         ELSE
+            IF (WFTYPE .EQ. ' ') WFTYPE='DH-MP2-DFT'
+            WRITE(IWUNIT,1050) 'DH-MP2-DFT, '//
+     &         'double hybrid DFT with MP2.'
+         END IF
+         IF (IOPRHF .NE. 0 .OR. HSROHF) WRITE (IWUNIT,1051)
+     &      '      (ROHF open shell orbitals are not included.)'
+         NUMRUN_LOCAL = NUMRUN_LOCAL - 1
+      ELSE IF ( DOMP2 ) THEN
+         IF (MP2_SCS) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='SCS-MP2'
             WRITE(IWUNIT,1050) 'SCS-MP2'
          ELSE IF (MP2_SOS) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='SOS-MP2'
             WRITE(IWUNIT,1050) 'SOS-MP2'
          ELSE
+            IF (WFTYPE .EQ. ' ') WFTYPE='MP2'
             WRITE(IWUNIT,1050) 'MP2, '//
      &         'closed-shell Moeller-Plesset second-order calculation.'
          END IF
@@ -5869,13 +5893,13 @@ C
             IF (RESPHP) WRITE(IWUNIT,2570)
          END IF
       ELSE IF (DOCI) THEN
-         WRITE(IWUNIT,1800) MAXMAC, THRCI, NROOCI
+         WRITE(IWUNIT,1800) MXCIMA, THRCI, NROOCI
          IF (JOLSEN) WRITE(IWUNIT,2550)
          IF (MAXPHP.GT.1) THEN
             WRITE(IWUNIT,2560) MAXPHP
             IF (RESPHP) WRITE(IWUNIT,2570)
          END IF
-         IF (DORSP ) THEN
+         IF (DORSP) THEN
             WRITE(IWUNIT,2600) ISTACI
          ELSE IF (ISTACI .GT. 0) THEN
             WRITE(IWUNIT,'(/5X,A,I4)')

@@ -26,14 +26,14 @@ output_filter.add(string="in each symmetry")
 output_filter.add(string="Final MCSCF energy", rel_tolerance=1e-8)
 
 # Transition moment
-output_filter.add(re="TRANSITION MOMENT:", abs_tolerance=1e-6)
+output_filter.add(re="TRANSITION MOMENT:", abs_tolerance=1e-6, ignore_sign=True)
 
 # Excitation energy
 output_filter.add(re="Excitation.*au", abs_tolerance=1e-6)
 
 # Spin-orbit coupling constants
-output_filter.add(re="Z1SPNORB.*cm-1", abs_tolerance=1e-4)
-output_filter.add(re="Z2SPNORB.*cm-1", abs_tolerance=1e-4)
+output_filter.add(re="Z1SPNORB.*cm-1", abs_tolerance=1e-4, ignore_sign=True)
+output_filter.add(re="Z2SPNORB.*cm-1", abs_tolerance=1e-4, ignore_sign=True)
 
 
 #
@@ -41,3 +41,6 @@ output_test.run(
     ['rsp_lrso.dal'], ['rsp_lrso.mol'], f={'out': output_filter},
     accepted_errors=['not implemented for parallel calculations'],
     )
+
+sys.exit(output_test.return_code)
+

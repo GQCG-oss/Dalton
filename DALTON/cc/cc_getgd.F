@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -71,6 +65,7 @@ C
 #include "cccl2rsp.h"
 #include "leinf.h"
 #include "ccpl1rsp.h"
+#include "cctpainf.h"
 Cholesky
 #include "ccdeco.h"
 Cholesky
@@ -226,9 +221,13 @@ C       -------------------------------------------------------------
          IF (CCSLV) THEN
             IF (CCSDT) CALL QUIT('Solvent not implemented for triples')
             IF (CCR12) CALL QUIT('Solvent not implemented for CCR12')
-            CALL CC_PTB(GD,LRTLBL(ILSTNR),ISYLRT(ILSTNR),
+            IF (CCTPA.AND.(.NOT.TPOLDW)) THEN
+               WRITE(LUPRI,*) 'No SC SLV/PE response for TPA'
+            ELSE IF (.NOT.(CCTPA.AND.(.NOT.TPOLDW))) THEN
+               CALL CC_PTB(GD,LRTLBL(ILSTNR),ISYLRT(ILSTNR),
      *                  FRQLRT(ILSTNR),LORXLRT(ILSTNR),
      *                  WORK,LWORK)
+            END IF
          ENDIF
          IF (LOCDBG) THEN
            WRITE(LUPRI,*)'CC_GETGD> RHS vector "O1":',ISYMGD,NTAMP

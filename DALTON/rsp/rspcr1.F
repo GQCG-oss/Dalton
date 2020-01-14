@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -613,7 +607,7 @@ C
 300   CONTINUE
       RETURN
       END
-      SUBROUTINE AN2SYM(NAOPNU,NBOPNU,NCOPNU,NDOPNU,IWRK)
+      SUBROUTINE CR_ANASYM(NAOPNU,NBOPNU,NCOPNU,NDOPNU)
 C
 #include "implicit.h"
 C
@@ -626,13 +620,14 @@ C THIS ROUTINE ANALYZE IF OPERATORS THAT ARE SPECIFIED IN CUBIC
 C RESPONSE CALCULATIONS HAVE NO MATCHING PARTNERS DUE TO SYMMETRY.
 C SUCH OPERATORS ARE REMOVED FROM THE CALCULATION IN THIS ROUTINE.
 C
-C BASED ON ANASYM
+C BASED ON QR_ANASYM
 C
-      DIMENSION NAOPNU(*),NBOPNU(*),NCOPNU(*),NDOPNU(*),IWRK(*)
+      DIMENSION NAOPNU(*),NBOPNU(*),NCOPNU(*),NDOPNU(*)
+      INTEGER   IWRK(8,4)
 C
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A)')
-     *   ' AN2SYM: NUMBER OF PROPERTY VECTORS BEFORE REDUCTION '
+     *   ' CR_ANASYM: NUMBER OF PROPERTY VECTORS BEFORE REDUCTION '
          WRITE(LUPRI,'(/A)')' NAOPNU(I),I=1,NSYM '
          WRITE(LUPRI,'(8I5)')( NAOPNU(I),I=1,NSYM)
          WRITE(LUPRI,'(/A)')' NBOPNU(I),I=1,NSYM '
@@ -642,16 +637,7 @@ C
          WRITE(LUPRI,'(/A)')' NDOPNU(I),I=1,NSYM '
          WRITE(LUPRI,'(8I5)')( NDOPNU(I),I=1,NSYM)
       END IF
-      KASYM = 1
-      KBSYM = KASYM + NSYM
-      KCSYM = KBSYM + NSYM
-      KDSYM = KCSYM + NSYM
-      DO 100 I = 1,NSYM
-         IWRK(KASYM-1+I) = 0
-         IWRK(KBSYM-1+I) = 0
-         IWRK(KCSYM-1+I) = 0
-         IWRK(KDSYM-1+I) = 0
- 100  CONTINUE
+      IWRK(1:8,1:4) = 0
       DO 200 IASYM = 1,NSYM
          IF ( NAOPNU(IASYM).LE.0 ) GO TO 200
          DO 300 IBSYM = 1,NSYM
@@ -660,10 +646,10 @@ C
                IF (NCOPNU(ICSYM).LE.0) GO TO 350
                IDSYM = MULD2H(ICSYM,MULD2H(IASYM,IBSYM))
                IF(NDOPNU(IDSYM).GT.0) THEN
-                  IWRK(KASYM-1+IASYM) = NAOPNU(IASYM)
-                  IWRK(KBSYM-1+IBSYM) = NBOPNU(IBSYM)
-                  IWRK(KCSYM-1+ICSYM) = NCOPNU(ICSYM)
-                  IWRK(KDSYM-1+IDSYM) = NDOPNU(IDSYM)
+                  IWRK(IASYM,1) = NAOPNU(IASYM)
+                  IWRK(IBSYM,2) = NBOPNU(IBSYM)
+                  IWRK(ICSYM,3) = NCOPNU(ICSYM)
+                  IWRK(IDSYM,4) = NDOPNU(IDSYM)
                END IF
  350        CONTINUE
  300     CONTINUE
@@ -673,25 +659,25 @@ C
       NCOPTO = 0
       NDOPTO = 0
       DO 400 ISYM = 1,NSYM
-         IF (IWRK(KASYM-1+ISYM).NE.NAOPNU(ISYM)) THEN
+         IF (IWRK(ISYM,1).NE.NAOPNU(ISYM)) THEN
            WRITE(LUPRI,'(/I5,A,I5,A)')
      *     NAOPNU(ISYM),' A OPERATORS OF SYMMETRY',ISYM,' NOT INCLUDED'
-           NAOPNU(ISYM) = IWRK(KASYM-1+ISYM)
+           NAOPNU(ISYM) = IWRK(ISYM,1)
          END IF
-         IF (IWRK(KBSYM-1+ISYM).NE.NBOPNU(ISYM)) THEN
+         IF (IWRK(ISYM,2).NE.NBOPNU(ISYM)) THEN
            WRITE(LUPRI,'(/I5,A,I5,A)')
      *     NBOPNU(ISYM),' B OPERATORS OF SYMMETRY',ISYM,' NOT INCLUDED'
-           NBOPNU(ISYM) = IWRK(KBSYM-1+ISYM)
+           NBOPNU(ISYM) = IWRK(ISYM,2)
          END IF
-         IF (IWRK(KCSYM-1+ISYM).NE.NCOPNU(ISYM)) THEN
+         IF (IWRK(ISYM,3).NE.NCOPNU(ISYM)) THEN
            WRITE(LUPRI,'(/I5,A,I5,A)')
      *     NCOPNU(ISYM),' C OPERATORS OF SYMMETRY',ISYM,' NOT INCLUDED'
-           NCOPNU(ISYM) = IWRK(KCSYM-1+ISYM)
+           NCOPNU(ISYM) = IWRK(ISYM,3)
          END IF
-         IF (IWRK(KDSYM-1+ISYM).NE.NDOPNU(ISYM)) THEN
+         IF (IWRK(ISYM,4).NE.NDOPNU(ISYM)) THEN
            WRITE(LUPRI,'(/I5,A,I5,A)')
      *     NDOPNU(ISYM),' D OPERATORS OF SYMMETRY',ISYM,' NOT INCLUDED'
-           NDOPNU(ISYM) = IWRK(KDSYM-1+ISYM)
+           NDOPNU(ISYM) = IWRK(ISYM,4)
          END IF
          NAOPTO = NAOPTO + NAOPNU(ISYM)
          NBOPTO = NBOPTO + NBOPNU(ISYM)
@@ -700,7 +686,7 @@ C
  400  CONTINUE
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A)')
-     *   ' AN2SYM: NUMBER OF PROPERTY VECTORS AFTER REDUCTION '
+     *   ' CR_ANASYM: NUMBER OF PROPERTY VECTORS AFTER REDUCTION '
          WRITE(LUPRI,'(/A)')' NAOPNU(I),I=1,NSYM '
          WRITE(LUPRI,'(8I5)')( NAOPNU(I),I=1,NSYM)
          WRITE(LUPRI,'(/A)')' NBOPNU(I),I=1,NSYM '
@@ -713,7 +699,7 @@ C
       NOPTOT = NAOPTO + NBOPTO + NCOPTO + NDOPTO
       IF (NOPTOT.EQ.0) THEN
          WRITE(LUPRI,'(/A,/A)')
-     *   ' AN2SYM: SYMMETRY OF SPECIFIED OPERATORS DOES NOT MATCH'
+     *   ' CR_ANASYM: SYMMETRY OF SPECIFIED OPERATORS DOES NOT MATCH'
      *   ,' RESPONSE CALCULATION GIVE TRIVIALLY ZERO'
       END IF
       RETURN

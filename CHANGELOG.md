@@ -1,31 +1,104 @@
-# DALTON Change Log All notable changes to the DALTON project will be documented in this file.
+# DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
-## [2017.alpha Unreleased]
+## [2020.alpha] (Dalton2020 alpha)
+
+### New features added
+- Added pcH-n and aug-pcH-n basis sets levels 1-4 to Dalton basis set library.
+- Calculate and print oscillator strengths based on .EEF dipole transition moments. (H. J. Aa. Jensen)
+- Added ".TDA TR" keyword for invoking Tamm-Dancoff approximation for triplet response properties under \*\*PROPERTIES.
+  Useful for avoiding (near-)triplet-instability problems, for example in DFT calculations of spin-spin coupling constants. (H. J. Aa. Jensen)
+- Added ".TDA SI" keyword for invoking Tamm-Dancoff approximation for singlet response properties under \*\*PROPERTIES. (H. J. Aa. Jensen)
+- Added possibility to optimize MCSCF singlet wave functions with CSFs when used for triplet properties,
+  both in \*\*RESPONS and \*\*PROPERTIES. Previously .DETERMINANTS in wave function optimization was required. (H. J. Aa. Jensen)
+- Added the ability in QFITLIB to fit up to and including quadrupoles (C. Steinmann)
 
 ### Added
-- New parallel 2-electron integral transformatin .FCKTRA
-- Triplet excitation energies and polarizabilities with the AO-SOPPA code
-- PE-HF/DFT molecular gradients
-- Effective external field (EEF) for one- and two-photon absorption in PE-HF/DFT calculations
+- added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
 
 ### Fixed
-- Fix .GSPOL for parallel polarizable embedding quadratic response
+- Errors for Fermi-contact (FC) labels on APROPER and therefore FC properties in \*\*RESPONS when more than 99 atoms (H. J. Aa. Jensen)
+- Error for \*ESR spin-dipole properties when more than 33 atoms (H. J. Aa. Jensen)
+- Singlet totally-symmetric excitation energies for MCSCF in \*\*RESPONS with super-symmetry activated (.SUPSYM keyword). (H. J. Aa. Jensen)
+- make sure we include all (near-)degenerate diagonal elements for linear response excitation energies
+  via \*\*PROPERTIES .EXCITA or via \*\*RESPONS \*LINEAR .SINGLE (increase .NROOTS if needed).
+  Otherwise the calculation will probably exhibit spin and/or space symmetry contamination proportional
+  to the convergence threshold. (H. J. Aa. Jensen)
+- never use plus combinations of determinants as start guess for singlet linear response excitation energies
+  when reference wave function is not singlet (we do not want singlet states then). (H. J. Aa. Jensen)
+- dalton script: fix for using input files located in subfolders
+- fixed error from March 2015 which meant that double-hybrid DFT was not working correctly (MP2 part was ignored).
+- fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
+
+### Fixes in enclosed basis set files
+- Error in diffuse d-orbital exponents for Aluminum and Silicon (factor 10 too big) in aug-cc-pV(D+d)Z basis sets (H. J. Aa. Jensen)
+- Error in diffuse f-orbital exponents for Aluminum and Silicon (factor 10 too big) in aug-cc-pV(Q+d)Z basis sets (H. J. Aa. Jensen)
+- Error in diffuse f-orbital exponent for Aluminum (factor 10 too big) in aug-cc-pV(T+d)Z basis sets (H. J. Aa. Jensen)
 
 ### Changed
+- Allow basis set(s) after BASIS in line 1 of .mol file (instead of on second line). (H. J. Aa. Jensen)
+  
 
-### Removed
-
-
-Do not make changes below this line! For the relase branch only.
-
-## [2016.3] (2016-xx-xx)
-
-### Changed
-- OK to run ECD or OECD with SOPPA
+## [2018.2] (2019-03-17)
 
 ### Fixed
-- open-shell doublet ROKS DFT geometry optimization
-- Fix .GSPOL for parallel polarizable embedding quadratic response
+- fixed error in AO-direct CC3 response calculations causing segmentation faults
+- fixed calculation of DSO contribution to spin-spin coupling for MCSCF and HSROHF when no symmetry
+- dalton script: do not set OMP\_NUM\_THREADS=1 if not MPI parallel (better performance
+  for sequential calculations if threaded blas is used, e.g. MKL or openBLAS)
+- dalton script: stop if user asks for MPI run with a sequential dalton.x
+- more robust .STEX input specification (old failed in some situations with gfortran 8); changed documentation accordingly
+
+### Added
+- dalton script: -gb and -ngb options for specifying work memory in gigabytes
+- dalton script: -np as an alternative to -N for specifying number of MPI nodes
+
+## [2018.1] (2019-01-14)
+
+### Fixed
+- Error in code for 2-el integral transformation level 4 (used in some cases for MCSCF). Error was not in Dalton2016.
+- Error in export for FDE fixed.
+- Compilation with PGI compilers now possible (but code with pelib or qfit using gen1int is not working).
+
+## [2018.0] (2018-11-19)
+
+### New features added
+- New parallel 2-electron integral transformation .FCKTRA  (H. J. Aa. Jensen).
+- Triplet excitation energies and polarizabilities with the AO-SOPPA code (P. A. B. Haase).
+- Analytical PE-HF/DFT molecular gradients (see e.g. test/pehf\_geoopt for example of input).
+  - Reference: N. H. List, M. T. B. Beerepoot, J. M. H. Olsen, B. Gao, K. Ruud, H. J. Aa. Jensen, and J. Kongsted. J. Chem. Phys. 142, 034119 (2015).
+- Freezing atoms in geometry optimization (N. H. List and H. J. Aa. Jensen).
+  (See e.g. test/geoopt\_freeze for example of input.)
+- Effective external field (EEF) for one- and two-photon absorption in PE-HF/DFT calculations.
+  - Reference: N. H. List, H. J. Aa. Jensen, and J. Kongsted. Phys. Chem. Chem. Phys. 18, 10070 (2016).
+- Remove the most diffuse virtual orbitals after SCF or MCSCF (new .VIRTRUNC option).
+- Add purely classical multipole-multipole interaction energy in PE-QM calculations (which can be skipped using the .SKIPMUL keyword under the \*PEQM section).
+- Add basic frozen density embedding (FDE) functionality (A. Gomes, C. Jacob, L. Visscher).
+- Dipole velocity complex linear polarizability with test rsp\_cpp\_veloci (N. H. List).
+- Resonant-convergent (damped) cubic response at HF/DFT levels (T. Fahleson and P. Norman)
+  - Reference: T. Fahleson and P. Norman. J. Chem. Phys. 147, 144109 (2017).
+
+### Fixed
+- Nuclear model keyword .NUCMOD was ignored, now the Gaussian nuclear model used in the Dirac program can be used in Dalton.
+- Open-shell DFT is not implemented for many derivative properties in \*\*PROPERTIES, dalton now quits.
+- Bugfix for .MNF\_SO (mean-field spin-orbit, AMFI) when basis set has big exponents (>10^9).
+- Open-shell doublet ROKS DFT geometry optimization.
+- Fix of .GSPOL for parallel PE-QM quadratic response.
+- Corrected text about elimination of some two-photon transitions between excited states
+  because they were duplicates (text had "Third order" instead of "Second order").
+- Bugfixes for CC2 in environments (incl. external fields) by Ove Christiansen.
+- Bugfix for .TDA for MCSCF (i.e. zero B matrix in linear response in \*\*RESPONSE).
+- Bugfix for .GASCI after .HSROHF
+- Fix of several library basis sets that were not read correctly for some atoms, which caused Dalton to abort.
+- Now a .G-TENSOR calculation in \*\*RESPONSE:\*ESR module with a CI wave function does not abort.
+
+### Changed
+- OK to run ECD or OECD with SOPPA.
+- More documentation of .STEX in manual.
+- Default induced-dipole solver in polarizable embedding (through .PEQM keyword) is changed to JI/DIIS method, which improves parallel scaling performance, and default convergence threshold for induced dipoles is changed $`1.0\cdot10^{-8}>|\mu^{[k]}-\mu^{[k-1]}|`$ where $`\mu`$ is a vector containing all induced dipoles and $`k`$ is the iteration index.
+- Minimum CMake version is now v3.1.
+
+### Deprecated
+- Environment variable DALTON\_NUM\_MPI\_PROCS is deprecated and will be removed in future releases, use DALTON\_LAUNCHER instead
 
 
 ## [2016.2] (2016-07-12)
@@ -38,7 +111,7 @@ Do not make changes below this line! For the relase branch only.
 - More robust code for reading exponents and contraction coefficients in Dalton-type basis set files, incl. such files from EMSL
 - Work-around for Intel 15 compiler I/O problem in some response calculations
 - Fix for spin-orbit coupling (SOC) between S/T excited states of same symmetry (problem reported on daltonforum.org)
-- Further fixes of MCSCF in **PROPERTIES for more than 255 basis functions - hopefully it is OK now for all requests.
+- Further fixes of MCSCF in \*\*PROPERTIES for more than 255 basis functions - hopefully it is OK now for all requests.
 - Fixed an error in the manual for spin-dipole (problem reported on daltonforum.org)
 - Fix of open-shell Hartree-Fock occupation output (only output, not the calculation, was wrong if ROHF was followed by MCSCF)
 - Fix of Douglas-Kroll post-SCF with less than 256 contracted basis functions, but more than 255 uncontracted basis functions
@@ -54,11 +127,11 @@ Do not make changes below this line! For the relase branch only.
   emsl output as e.g. aug-pcseg-1; only LSDALTON has been able to read them so far)
 
 ### Fixed
-- MCSCF in **PROPERTIES for more than 255 basis functions (fixes problem with MCSCF shielding reported on daltonforum.org)
+- MCSCF in \*\*PROPERTIES for more than 255 basis functions (fixes problem with MCSCF shielding reported on daltonforum.org)
 - Make sure molecule is not moved in ADDSYM during numerical differentiation
 - Fixed error in the printing of the cpu/wall time used in Sirius
 - Fixed error in PBEc functional: gave NaN when rho was zero.
-- Polished some format statements to reduce number of compiler warnings 
+- Polished some format statements to reduce number of compiler warnings
 - Fixed error in memory addressing for MCSCF g-tensor calculations
 - Fixed 2 errors in author list for WIRE dalton publication in dalton output
 - Removed unsupported configure options.
@@ -78,21 +151,21 @@ Do not make changes below this line! For the relase branch only.
 ### Fixed (since version 2015.1)
 - Ahlrichs-TZV basis: Fixed error in an exponent for Boron.
 - ANO-RCC basis: Fixed Carbon basis set (wrong contraction coefficients, see [MOLCAS ANO-RCC](http://www.molcas.org/ANO/).
-- ANO-RCC basis: Modified the 3 Th h-functions by replacing them with the 3 Ac h-functions to Th.  
+- ANO-RCC basis: Modified the 3 Th h-functions by replacing them with the 3 Ac h-functions to Th.
                  (A mistake was made in the original work when the 3 Th h-functions were made,
                   and this has never been redone. They are too diffuse, exponents
                   (0.3140887600, 0.1256355100, 0.0502542000) for Th, Z=90, compared to
                   (0.7947153600, 0.3149038200, 0.1259615200) for Ac, Z=89, and
-                  (0.8411791300, 0.3310795400, 0.1324318200) for Pa, Z=91.  
+                  (0.8411791300, 0.3310795400, 0.1324318200) for Pa, Z=91.
                   We have selected to just replace the 3 Th h-functions with those from the Ac basis set,
                   because the Ac g-functions are quite close to the Th g-functions, closer than Ac g-functions,
-                  and therefore differences in results compared to optimized Th h-functions should be minimal.)  
+                  and therefore differences in results compared to optimized Th h-functions should be minimal.)
                   Thanks to Kirk Peterson for pointing out the Th problem on http://daltonforum.org.
 - Fixed reading of ANO-RCC basis set library file.
 - Bug fix for when more than 30 excitation energies requested (EIGENVALUES NOT PAIRED problem reported by Frank Jensen).
 - Fixed some bugs for two byte packing of derivative and spin-orbit two-electron integrals.
 - Fixed .NEWTRA integral transformation for 32 bit integers and exactly n\*256 orbitals and no integer overflow test
-  (the first 32 bits of (n\*256)**4 are zero !!!).
+  (the first 32 bits of (n\*256)\*\*4 are zero !!!).
 - Improved performance of .NEWTRA integral transformation for response calculations.
 - Do not include floating orbitals in calculation of smallest atom-atom distance.
 - Enable Tamm-Dancoff approximation (.TDA) for embedding models, e.g. PE, PCM etc.
@@ -106,7 +179,7 @@ Do not make changes below this line! For the relase branch only.
 - Added ANO-RCC basis set.
 
 ### DALTON
-- Fixed a bug in an LRESC correction. 
+- Fixed a bug in an LRESC correction.
 - Improved calculation of one LRESC correction.
 - Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake
 - Fixed a bug with Intel Compiler 15 during initialization of Cauchy-Schwarz parameters
@@ -183,13 +256,13 @@ Do not make changes below this line! For the relase branch only.
   (this bug resulted in aborted calculations, not in wrong results).
 - Print irrep names together with symmetry numbers for easier interpretation of output.
 - More important output with '@' in column 1 (can be obtained with 'grep @' on the output).
-- Environment variable DALTON_USE_GLOBAL_SCRATCH disables copying of binaries to worker nodes.
-- Environment variable DALTON_LAUNCHER introduced.
+- Environment variable DALTON\_USE\_GLOBAL\_SCRATCH disables copying of binaries to worker nodes.
+- Environment variable DALTON\_LAUNCHER introduced.
 - Fixed output information about number of MPI processes and number of OpenMP threads.
 - Added information in the error messages when values in maxorb.h are exceeded (which values to increase).
 - Increased some of the values in the common blocks:
   MXSHEL 1000 -> 1500; MXCORB 2400 -> 5000; MXPRIM 8000 -> 15000;
-  MAXOCC 800 -> 1500; MXCENT 200 -> 500; MXCENT_QM 200 -> 500
+  MAXOCC 800 -> 1500; MXCENT 200 -> 500; MXCENT\_QM 200 -> 500
   (the static size of dalton.x went from 100 MB to 165 MB).
 - Do not print garbage non-zero transition moments and oscillator strengths for triplet excitations (\*EXCITA module).
 - Corrected input description for transition moments between excited states (\*QUADRA with .DOUBLE RESIDUE).
@@ -202,14 +275,14 @@ Do not make changes below this line! For the relase branch only.
   KBLOCK was larger than MXBLCK leading to unpredictable results due to array length mismatch in DALTON/abacus/herrdn.F.
 
 ### LSDALTON
-- Environment variable LSDALTON_LAUNCHER introduced.
+- Environment variable LSDALTON\_LAUNCHER introduced.
 
 
 ## [2013.2] (2014-03-05)
 
 ### Common
 - Recognize CYGWIN as a LINUX and UNIX system, for proper definition of compilation flags.
-- Define M_PI in C-code if not already defined (problem seen with Cygwin).
+- Define M\_PI in C-code if not already defined (problem seen with Cygwin).
 - Added setup option --blacs to be used in combination with --scalapack; defaults to --blacs=intelmpi.
 
 ### DALTON
@@ -220,7 +293,7 @@ Do not make changes below this line! For the relase branch only.
   converged wave function from a neighboring geometry rather than from scratch each time).
 - Fix of error which sometimes caused a geometry optimization to stop with "\*\*\* ERROR, Wrong interval in WLKBIS".
 - Fix of a bug which occasionally caused DALTON to abort a .STEX calculation.
-- Print final geometry in xyz format (angstrom). File called "final_geometry.xyz" is put into the restart tarball.
+- Print final geometry in xyz format (angstrom). File called "final\_geometry.xyz" is put into the restart tarball.
 - Append PID to scratch directory to avoid multiple tests running in the same directory.
 - Improved manual for two-photon and non-adiabatic coupling.
 - Updated/corrected g-factors for Ag, Nd, and Tl (thanks to M. Jaszunski).
@@ -240,7 +313,7 @@ Do not make changes below this line! For the relase branch only.
 
 ### DALTON
 - Correct the printout of relativistic corrections to the shielding (thanks to M. Jaszunski).
-- Compilation fix for DALTON/abacus/rma_windows.F90 (Intel 10.0.011).
+- Compilation fix for DALTON/abacus/rma\_windows.F90 (Intel 10.0.011).
 - Fix of error where basis set names were changed to upper case and could not be found (reported by Yurij Rusakov).
 - Each MPI slave sleeps 10 millisecond between tests for new task
   (only Intel; should enable turbomode in sequential parts of DALTON, and more efficient use of threaded MKL when combined with MPI).
@@ -279,8 +352,8 @@ Do not make changes below this line! For the relase branch only.
 - DEC-MP2 energy, density and gradient
 - Local orbitals
 - Improved SCF optimization routines
-- Massively parallel CCSD 
-- MPI parallelization of HF and DFT 
+- Massively parallel CCSD
+- MPI parallelization of HF and DFT
 - Improved integral code including MPI parallelism
 - Matrix operation parallelization using PBLAS/SCALAPACK
 - ADMM exchange (energy, gradients)

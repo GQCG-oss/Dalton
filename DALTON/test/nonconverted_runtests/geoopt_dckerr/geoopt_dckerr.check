@@ -36,8 +36,8 @@ CTRL[2]=2
 ERROR[2]="SYMMETRY NOT CORRECT"
 
 # MCSCF energy
-CRIT1=`$GREP "\= MP2 second order energy *\: * \-224\.9639138" $log | wc -l`
-CRIT2=`$GREP "Final MCSCF energy\: * \-224\.5107485163" $log | wc -l`
+CRIT1=`$GREP "\= MP2 second order energy *\: * \-224\.963913" $log | wc -l`
+CRIT2=`$GREP "Final MCSCF energy\: * \-224\.510748516" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[3]=2
 ERROR[3]="INITIAL MCSCF ENERGY NOT CORRECT"

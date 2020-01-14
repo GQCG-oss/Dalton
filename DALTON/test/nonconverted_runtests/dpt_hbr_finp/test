@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['dpt_hbr_finp.dal'], ['dpt_hbr_finp.mol'], {'out': f})
+test.run(['dpt_hbr_finp.dal'], ['dpt_hbr_finp.mol'], f={'out': f})
 
 sys.exit(test.return_code)

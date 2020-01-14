@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -365,11 +359,39 @@ C
       else
           owrite=.true.
       endif
-c
       LUN98=-13300
       if (owrite) CALL GPOPEN(
      *   LUN98,'DETSTR','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
+
+
       VNRM = DNRM2(NCIVAR,CIVEC,1)
+C
+C     Warn if M_S = 0 and triplet combination of determinants
+C     (In determinant basis, triplet states for M_S = 0 have coefficients with
+C      same absolute value but opposite signs when switching alpha- and beta-strings.
+C      For singlet states they have same sign.)
+C
+      IF (NAEL .EQ. NBEL .AND. ICOMBI .EQ. 0) THEN
+      IF (ABS(1.0D0-VNRM) .LT. 1.D-14) THEN ! only print for normalized CI vectors
+         XMIN = 0.0D0
+         XMAX = 0.0D0
+         DO I = 1, NCIVAR
+            XMAX = MAX(XMAX, CIVEC(I))
+            XMIN = MIN(XMIN, CIVEC(I))
+         END DO
+         IF (ABS(XMAX+XMIN) .LT. 1.D-14) THEN
+            NWARN = NWARN + 1
+            WRITE(LUPRI,'(//A/)')
+     &      '@ WARNING : This M_S=0 CI determinant vector is '//
+     &         'not a singlet state (S=0)',
+     &      '@ WARNING : It is probably a triplet state (S=1) '//
+     &         'but it might also have S=3, or S=5, or ...',
+     &      '@ WARNING : If you wanted a singlet state, '//
+     &         'then use CSFs or specify .PLUS COMBINATIONS'
+         END IF
+      END IF
+      END IF
+c
       ITRM = 0
       IDET = 0
       IIDET = 0

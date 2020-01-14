@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -71,22 +65,22 @@ C
  400     CONTINUE
  100  CONTINUE
       DO 500 IPSYM = 1,NSYM
-         IORBP = IORB(IPSYM) + 1
+         IORBP = IORB(IPSYM)
          NORBP = NORB(IPSYM)
          IQSYM = MULD2H(IPSYM,KSYMOP)
-         IORBQ = IORB(IQSYM) + 1
+         IORBQ = IORB(IQSYM)
          NORBQ = NORB(IQSYM)
          IF ((NORBQ.EQ.0).OR.(NORBP.EQ.0)) GO TO 500
-         DO 800 ISIM = 1,NSIM
-            DO 600 IP = IORBP,IORBP+NORBP-1
-               DO 700 IQ = IORBQ,IORBQ+NORBQ-1
+         DO ISIM = 1,NSIM
+            DO IQ = IORBQ+1,IORBQ+NORBQ
+               DO IP = IORBP+1,IORBP+NORBP
                   FCOEX(IP,IQ,ISIM) = FCOCO(IP,IQ,ISIM)
      *                              + FCOEX(IP,IQ,ISIM)
                   IF (NASHT.GT.0) FVOEX(IP,IQ,ISIM) = FVOCO(IP,IQ,ISIM)
      *                              + FVOEX(IP,IQ,ISIM)
- 700           CONTINUE
- 600        CONTINUE
- 800     CONTINUE
+               END DO
+            END DO
+         END DO
  500  CONTINUE
       RETURN
       END

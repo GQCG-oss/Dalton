@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C FILE    : hersym.F
@@ -50,6 +44,9 @@ C*****************************************************************************
 #include "mxsymm.h"
       DIMENSION WORK(LWORK), NONT(KATOM)
       CHARACTER KASYM(3,3)*1, CLASS*15
+
+C optinf.h : VRML_SYM
+#include "optinf.h"
 
       CALL QENTER('SYMADD')
 
@@ -167,7 +164,7 @@ C               /hjaaj Mar 2004
          ATMARR(1,0) = N_ATOMS
          IF (IPRSYM .GE. IPRTHR) THEN
             TEXT = 'Original Coordinates'
-            CALL PRNARR(TEXT, MXCENT, ATMARR)
+            CALL PRN_ATMARR(TEXT, MXCENT, ATMARR)
          END IF
 C
 C        MIDAS Interface, write out input coordinates for midas.sym analysis
@@ -215,7 +212,7 @@ C
          IF (IPRSYM .GE. IPRTHR) THEN
             IF (.NOT. NOMOVE) THEN
               TEXT = 'Centered and Rotated Coordinates'
-              CALL PRNARR(TEXT , MXCENT, ATMARR)
+              CALL PRN_ATMARR(TEXT , MXCENT, ATMARR)
             ELSE
               WRITE (LUPRI,'(/A/)') '   System has not been centered '//
      &           ' or rotated before symmetry analysis.'
@@ -248,7 +245,7 @@ C
          CALL REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM)
          IF (IPRSYM .GE. MIN(3,IPRTHR/2)) THEN
             TEXT = 'Symmetry Independent Centres'
-            CALL PRNARR(TEXT, MXCENT, ATMARR)
+            CALL PRN_ATMARR(TEXT, MXCENT, ATMARR)
          END IF
 C ::: The new symmetry is added. :::
          NSYMOP = 0
@@ -285,10 +282,10 @@ C ::: If there's any Angstrom mark, it's removed.    :::
             WRITE(LUPRI, '(/A)') ' No symmetry elements were found.'
          ELSE IF (NSYMOP .EQ. 1) THEN
             WRITE(LUPRI, '(/2A)')
-     &         ' The following element was found:   ',SYMM
+     &         ' The following symmetry element was found:   ',SYMM
          ELSE
             WRITE(LUPRI, '(/2A)')
-     &         ' The following elements were found:   ',SYMM
+     &         ' The following symmetry elements were found:   ',SYMM
          END IF
 C ::: The reduced coordinates are moved back. :::
          CALL SRTOLD(MXCENT, ATMARR)
@@ -306,6 +303,7 @@ C           ... IOLD .ge. I after CALL SRTOLD
 C           GNUEXP(I) and MULBSI(I) have been added (WK/UniKA/04-11-2002).
             GNUEXP(I) = GNUEXP(IOLD)
             MULBSI(I) = MULBSI(IOLD)
+            NOORBT(I) = NOORBT(IOLD)
             NCLINE(I) = NCLINE(IOLD)
  250     CONTINUE
 C ::: Then the different elements are counted, and arrays updated. :::
@@ -417,11 +415,37 @@ C ::::::::::::::::::::::::::::::::::::::::::::::
          END IF
          WRITE(LUPRI,'(/1X,A/1X,80A1)') TEXT, ('-',J=1,I)
          DO 200 I=1,NINT(ARR(1,0))
-            WRITE (LUPRI,11) NINT(ARR(4,I)), (ARR(J,I), J=1,3),
-     &         NINT(ARR(6,I))
- 11         FORMAT (I8, ' : ', 3F15.8,'  Isotope',I3)
+            WRITE (LUPRI,11) NINT(ARR(4,I)), (ARR(J,I), J=1,3)
+ 11         FORMAT (I8, ' : ', 3F15.8)
  200     CONTINUE
-         RETURN
+      RETURN
+      END
+      SUBROUTINE PRN_ATMARR(TEXT, MXM, ATMARR)
+C ::::::::::::::::::::::::::::::::::::::::::::::
+C ::                                          ::
+C ::       Prints all elements of array       ::
+C ::(based on PRNARR, 12-feb-19 hjaaj)        ::
+C ::::::::::::::::::::::::::::::::::::::::::::::
+#include "implicit.h"
+#include "priunit.h"
+      CHARACTER*(*) TEXT
+      INTEGER MXM, I, J
+      REAL*8  ATMARR(6,0:MXM)
+! Used from
+!  nuclei.h : NAMN()
+#include "mxcent.h"
+#include "nuclei.h"
+
+      I = LNBLNK(TEXT)
+      WRITE(LUPRI,'(/1X,A/1X,80A1)') TEXT, ('-',J=1,I)
+
+      DO I = 1,NINT(ATMARR(1,0))
+         J = NINT(ATMARR(5,I)) ! old atom number
+         WRITE (LUPRI,11) NAMN(J), NINT(ATMARR(4,I)),
+     &         (ATMARR(J,I), J=1,3), NINT(ATMARR(6,I))
+ 11         FORMAT (A4,I4, ' : ', 3F15.8,'  Isotope',I3)
+      END DO
+      RETURN
       END
 C  /* Deck vecang */
       FUNCTION VECANG(V1, V2)
@@ -734,7 +758,7 @@ C
 
 Cdbg     write (lupri,*) 'CENTER_MOLECULE: initial coord.s etc.'
 Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,NUCLP+1,6,NUCLP+1,1,LUPRI)
-Cdbg     CALL PRNARR('CENTER_MOLECULE: ATMARR start', NUCLP, ATMARR)
+Cdbg     CALL PRN_ATMARR('CENTER_MOLECULE: ATMARR start', NUCLP, ATMARR)
 
       IF (N_ATOMS .EQ. 1) THEN ! atom, just move to (0,0,0)
          ATMARR(1,1) = 0.0D0
@@ -864,7 +888,7 @@ Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,N_ATOMS+1,6,N_ATOMS+1,1,LUPRI)
  100  WRITE(LUPRI,'(/A/A)')
      &   '@   The molecule is centered at center of mass and rotated',
      &   '@   so principal axes of inertia are along coordinate axes.'
-Cdbg     CALL PRNARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)
+Cdbg     CALL PRN_ATMARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)
       RETURN
       END
 C  /* Deck rotmol */

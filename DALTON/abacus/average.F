@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 C
       SUBROUTINE AVELRSC(KEY,WORK,LWORK)
@@ -282,18 +276,6 @@ cb      write(lupri,*)' LRATOM / 100' , LRATOM / 100
 cb      write(lupri,*)' LRATOM / 10' , LRATOM / 10
  
       npos1 = 3*LRATOM-2
-      aa = LRATOM / 100
-      bb = LRATOM /10
-cb       write(lupri,*)
-cb       IF (aa.GE.1) THEN
-cb               write(lupri,*)'LRATOM tiene 3 digits'
-cb          ELSE IF (bb.GE.1) THEN
-cb               write(lupri,*)'LRATOM tiene 2 digitos'
-cb          ELSE IF (bb.LT.1) THEN
-cb               write(lupri,*)'LRATOM tiene 1 digito'
-cb       ENDIF
-cb       write(lupri,*)
-cb
 C===============================================================================
 C  SINGLET CALCULATIONS : D1S and P1S 
 C ==============================================================================
@@ -302,19 +284,8 @@ C      Look for LABELS : FERMI
 C     ---------------------------
       IF(KEY.EQ."FCAV") THEN 
         NLAB=1
-        LABEL2='FC '//NAMN(LRATOM)(1:3)
-cx        IF (aa.GE.1) THEN
-cx          write(char,'(i3)') LRATOM
-cx          LISTA1(1) = LABEL2//char
-cx        write(lupri,*)' label2 for FC :',LISTA1(1) 
-cx          ELSE IF (bb.GE.1) 
-        IF (bb.GE.1) THEN
-           write(char,'(i2)') LRATOM
-           LISTA1(1) = LABEL2//char
-        ELSE IF (bb.LT.1) THEN
-           write(char,'(i1)') LRATOM
-           LISTA1(1) = LABEL2//'0'//char
-        ENDIF
+        write(LISTA1(1),'(A3,A2,I3.3)') 'FC ',
+     &        NAMN(LRATOM)(1:2), LRATOM
       ENDIF
 C
 C ---------------------------------------------------------------------

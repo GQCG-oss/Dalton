@@ -55,7 +55,7 @@ CTRL[6]=3
 ERROR[6]="INITIAL GRADIENT NOT CORRECT"
 
 # Initial step
-CRIT1=`$GREP "O * 0*.0000000000 * 0*\.0000000000 * \-0*\.14441" $log | wc -l`
+CRIT1=`$GREP "O * 0*.0000000000 * 0*\.0000000000 * \-0*\.1444[12]" $log | wc -l`
 CRIT2=`$GREP "H * _1 * 0*.0000000000 * 1\.42132.* * 1\.07076" $log | wc -l`
 CRIT3=`$GREP "H * _2 * 0*.0000000000 * \-1\.42132.* * 1\.07076" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
@@ -71,8 +71,8 @@ CTRL[8]=3
 ERROR[8]="SECOND ITERATION NOT CORRECT"
 
 # Third iteration
-CRIT1=`$GREP "Norm of gradient * \: * (0| )\.00053[0-9]" $log | wc -l`
-CRIT2=`$GREP "Norm of step * \: * (0| )\.00080[0-9]" $log | wc -l`
+CRIT1=`$GREP "Norm of gradient * \: * 0*\.00053" $log | wc -l`
+CRIT2=`$GREP "Norm of step * \: *     0*\.000(79|80)" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[9]=2
 ERROR[9]="THIRD ITERATION NOT CORRECT"
@@ -87,7 +87,7 @@ CTRL[10]=4
 ERROR[10]="SECOND BASIS SET NOT READ CORRECTLY"
 
 # First energy with second set
-CRIT1=`$GREP "Final * HF energy\: * \-76\.0182613" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-76\.018261" $log | wc -l`
 TEST[11]=`expr	$CRIT1`
 CTRL[11]=1
 ERROR[11]="FIRST ENERGY WITH SECOND BASIS SET NOT CORRECT"
@@ -108,11 +108,11 @@ CTRL[13]=1
 ERROR[13]="FIRST ENERGY WITH THIRD BASIS SET NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "O *      (0| )\.0000000000 * (0| )\.0000000000 * \-0*\.0474[56]" $log | wc -l`
-CRIT2=`$GREP "H * _1 * (0| )\.0000000000 *   1\.41965.* 1.02228" $log | wc -l`
-CRIT3=`$GREP "H * _2 * (0| )\.0000000000 * \-1\.41965.* 1.02228" $log | wc -l`
+CRIT1=`$GREP -l "O *      (0| )\.0000000000 * (0| )\.0000000000 * \-0*\.0474[56]" $log | wc -l`
+CRIT2=`$GREP -l "H * _1 * (0| )\.0000000000 *   1\.4196[45].* 1.02228" $log | wc -l`
+CRIT3=`$GREP -l "H * _2 * (0| )\.0000000000 * \-1\.4196[45].* 1.02228" $log | wc -l`
 TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[14]=12
+CTRL[14]=3
 ERROR[14]="FINAL GEOMETRY NOT CORRECT"
 
 # Convergence

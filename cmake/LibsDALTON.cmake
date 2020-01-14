@@ -97,16 +97,14 @@ if(ENABLE_GEN1INT)
         )
 endif()
 
-if(ENABLE_QFITLIB)
-    include(LibsQFITlib)
-    add_dependencies(dalton qfitlib)
-endif()
 
 if(ENABLE_OPENRSP)
     include(LibsOpenRSP)
 endif()
 
 include(LibsPElib)
+
+include(LibsQFITlib)
 
 if(ENABLE_QMMM_CUDA)
     add_subdirectory(external/qmmm_cuda)
@@ -133,21 +131,4 @@ if(NOT ENABLE_CHEMSHELL)
         )
 endif()
 
-# compile utilities
-
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/tools)
-
-add_library(peter_utils_blocks ${CMAKE_SOURCE_DIR}/DALTON/tools/blocks.f90)
-
-add_executable(tools/aces2dalton ${CMAKE_SOURCE_DIR}/DALTON/tools/aces2dalton.f90)
-add_executable(tools/xyz2dalton  ${CMAKE_SOURCE_DIR}/DALTON/tools/xyz2dalton.f90)
-add_executable(tools/distances   ${CMAKE_SOURCE_DIR}/DALTON/tools/distances.f90)
-
-target_link_libraries(tools/aces2dalton peter_utils_blocks)
-target_link_libraries(tools/xyz2dalton  peter_utils_blocks)
-target_link_libraries(tools/distances   peter_utils_blocks)
-
-add_executable(tools/FChk2HES ${CMAKE_SOURCE_DIR}/DALTON/tools/FChk2HES.f)
-add_executable(tools/labread  ${CMAKE_SOURCE_DIR}/DALTON/tools/labread.f)
-# radovan: compilation broken
-#add_executable(tools/ODCPRG   ${CMAKE_SOURCE_DIR}/DALTON/tools/ODCPRG.f)
+add_subdirectory(DALTON/tools ${CMAKE_BINARY_DIR}/tools)

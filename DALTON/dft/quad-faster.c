@@ -254,11 +254,7 @@ qrbl_add_lda_contribution(DftIntegratorBl* grid, QuadBlData* d,
 {
     static const real sgn[2]={1.0,-1.0};
     integer i, j, k, isym, ibl, jbl;
-#if defined(VAR_PGF77) || defined(SYS_DEC)
     real pref2b[DFT_BLLEN], pref2c[DFT_BLLEN], pref3[DFT_BLLEN];
-#else
-    real pref2b[bllen], pref2c[bllen], pref3[bllen];
-#endif
     real * RESTRICT aos = grid->atv;
     integer sY = d->spinY, sZ = d->spinZ;
     real *om = d->res_omega, *omY = d->res_omY, *omZ = d->res_omZ;
@@ -385,11 +381,7 @@ qrbl_add_gga_contribution(DftIntegratorBl* grid, QuadBlData* d,
     /* pref3 is the prefactor of the double-commuted term, pref2a is
      * the prefactor of commuted with Z, and pref2b - with commuted
      * with Y. */
-#if 1 || defined(VAR_PGF77)
     real pref2b[DFT_BLLEN][4], pref2c[DFT_BLLEN][4], pref3[DFT_BLLEN][4];
-#else
-    real pref2b[bllen][4], pref2c[bllen][4], pref3[bllen][4];
-#endif
     real * RESTRICT aos = grid->atv;
     real * RESTRICT aox = grid->atv+bllen*inforb_.nbast;
     real * RESTRICT aoy = grid->atv+bllen*inforb_.nbast*2;
@@ -514,35 +506,34 @@ qrbl_add_gga_contribution(DftIntegratorBl* grid, QuadBlData* d,
         symmetry and collapse the loops to reduce the overhead.
         1:special case when all three vectors have same symmetry */
         if(can_collapse_loops) {
+            integer nbast = inforb_.nbast;
+            integer jsym = inforb_.muld2h[d->symYZ-1][isym]-1;
+            integer jbl_cnt = grid->bas_bl_cnt[jsym];
             for(ibl=0; ibl<ibl_cnt; ibl++) {
-                for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
-                    integer ioff = i*inforb_.nbast;
-                    real sum;
-                    real * RESTRICT tmpi = tmp  + i*bllen;
-                    real * RESTRICT vyi = d->vy + i*bllen;
-                    real * RESTRICT vzi = d->vz + i*bllen;
-                    integer jsym = inforb_.muld2h[d->symYZ-1][isym]-1;
+                for(jbl=0; jbl<jbl_cnt; jbl++) {
+                    integer lenbl = blend - blstart;
                     integer (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
-                    integer jbl_cnt = grid->bas_bl_cnt[jsym];
-                    for(jbl=0; jbl<jbl_cnt; jbl++) {
-                        for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) {
-                            real * RESTRICT aosj = aos + j*bllen;
-                            real oR = 0, oY = 0, oZ = 0;
-                            for(k=blstart; k<blend; k++) {
-                                oR += aosj[k]*tmpi[k];
-                                oY += aosj[k]*vyi [k];
-                                oZ += aosj[k]*vzi [k];
-                            }
-                            om [j+ioff] += oR;
-                            omY[j+ioff] += oY;
-                            omZ[j+ioff] += oZ;
-                        }
-                    }
+                    integer ilen = iblocks[ibl][1] - iblocks[ibl][0] + 1;
+                    integer jlen = jblocks[jbl][1] - jblocks[jbl][0] + 1;
+
+                    dgemm_("T","N", &jlen, &ilen, &lenbl, &ONER,
+                    aos + (jblocks[jbl][0] - 1)*bllen+blstart, &bllen,
+                    tmp + (iblocks[ibl][0] - 1)*bllen+blstart, &bllen,
+                    &ONER, om + (iblocks[ibl][0]-1)*nbast+jblocks[jbl][0]-1, &nbast);
+
+                    dgemm_("T","N", &jlen, &ilen, &lenbl, &ONER,
+                    aos +   (jblocks[jbl][0] - 1)*bllen+blstart, &bllen,
+                    d->vy + (iblocks[ibl][0] - 1)*bllen+blstart, &bllen,
+                    &ONER, omY + (iblocks[ibl][0]-1)*nbast+jblocks[jbl][0]-1, &nbast);
+
+                    dgemm_("T","N", &jlen, &ilen, &lenbl, &ONER,
+                    aos +   (jblocks[jbl][0] - 1)*bllen+blstart, &bllen,
+                    d->vz + (iblocks[ibl][0] - 1)*bllen+blstart, &bllen,
+                    &ONER, omZ + (iblocks[ibl][0]-1)*nbast+jblocks[jbl][0]-1, &nbast);
                 }
             }
             continue; /* no need to do the general case here */
         }
-
         /* 2:general case */
         for(ibl=0; ibl<ibl_cnt; ibl++) {
             for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 

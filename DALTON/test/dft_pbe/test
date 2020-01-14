@@ -2,8 +2,8 @@
 #    dft_pbe
 #    --------
 #    Molecule:         He
-#    Wave Function:    DFT PBE / cc-pVDZ
-#    Test Purpose:     PBE functional test.
+#    Wave Function:    DFT PBE, PBE0, PBE0DH / cc-pVTZ
+#    Test Purpose:     PBE, PBE0, PBE0DH functional tests.
 
 import os
 import sys
@@ -17,9 +17,14 @@ f = Filter()
 f.add(string = 'Final DFT energy',
       rel_tolerance = 1.0e-8)
 
+test.run(['dft_pbe0dh.dal'], ['He_cc-pVTZ.mol'], f={'out': f})
+
+# for PBE and PBE0 we also test excitation energies from linear response
+
 f.add(string = '@ Excitation energy :',
       abs_tolerance = 1.0e-6)
 
 test.run(['dft_pbe.dal'], ['He_cc-pVTZ.mol'], f={'out': f})
+test.run(['dft_pbe0.dal'], ['He_cc-pVTZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

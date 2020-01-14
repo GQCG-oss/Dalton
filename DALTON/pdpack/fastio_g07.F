@@ -751,13 +751,10 @@ C*  ERROR HANDLING SECTION                                             *
 C*                                                                     *
 C***********************************************************************
 900   CONTINUE
-      ISTEOF = -999
-#if defined (SYS_AIX) || defined (SYS_LINUX) || defined (SYS_IRIX) || defined (SYS_HAL) || defined (SYS_HPUX) || defined (SYS_DARWIN)
+#if defined (SYS_AIX) || defined (SYS_LINUX) || (SYS_HPUX) || defined (SYS_DARWIN)
       ISTEOF = -1
-#endif
-#if defined (SYS_CRAY) || defined (SYS_T90)
-C     eof value for Cray from Trygve Sep.93 /hjaaj
-      ISTEOF = 2
+#else
+      ISTEOF = -999
 #endif
       IF (ISTEOF .EQ. -999) CALL QUIT('FASTIO ERROR: ISTEOF has not '//
      &          'been defined for this computer')

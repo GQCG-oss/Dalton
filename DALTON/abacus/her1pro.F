@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -47,8 +41,6 @@ C
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('PR1INT')
-#ifdef VAR_DEBUG
-#endif
 C
       NCOMP  = 0
       TOFILE = .TRUE.
@@ -196,7 +188,7 @@ C     perturbation (WORD=PCMBSOL/PCM2BSL) (Feb2004 KR&DM)
 #include "efield.h"
 #include "ccom.h"
 #include "qm3.h"
-      PARAMETER (NTABLE = 105)
+      PARAMETER (NTABLE = 107)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
@@ -254,7 +246,7 @@ C Bin Gao, December 17, 2009; adds integrals S2MBRA, S2MKET, and S2MMIX
      &            'HUCKEL ', 'SQHD2OR', 'EFIELB1', 'EFIELB2', !  93:96
      &            'MAGQDP ', 'DERANGM', 'DIPANH ', 'POPOVLP', !  97:100
      &            'KINADIA', 'S2MBRA ', 'S2MKET ', 'S2MMIX ', ! 101:104
-     &            'LFDIPLN'/ ! 104:108
+     &            'LFDIPLN', 'R2     ', 'R4     '/ ! 104:108
 C
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
@@ -289,7 +281,7 @@ C
      &             71,72,73,74,75,76,77,78,79,80,
      &             81,82,83,84,85,86,87,88,89,90,
      &             91,92, 1,94,95,96,97,98,99,100,
-     &             101,102,103,104,105), I
+     &             101,102,103,104,105,106,107), I
          END IF
       END DO
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -2444,6 +2436,30 @@ C
          INTREP(3) = ISYMAX(3,1)
          ANTI = .FALSE.
       GO TO 200
+C R2 integrals
+  106 CONTINUE
+         INTTYP = 108
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of r**2 integrals'
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         NOPTYP = 1
+         IORDER = 2
+         LABINT(1) = 'R2      '
+         INTREP(1) = 0
+         ANTI = .FALSE.
+      GO TO 200
+C  R4 integrals
+  107 CONTINUE
+         INTTYP = 108
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of r**4 integrals'
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         NOPTYP = 1
+         IORDER = 4
+         LABINT(1) = 'R4      '
+         INTREP(1) = 0
+         ANTI = .FALSE.
+      GO TO 200
   200 CONTINUE
 C
 C     ***** Print section *****
@@ -3435,14 +3451,22 @@ C  /* Deck frmtyp */
             IF (DOATOM(IATOM)) THEN
                IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
                   ITYP = ITYP + 1
+                  JATOM = IPTNUC(IATOM,IREP)
                   IF (INTTYP .EQ. 9) THEN
-                     LABINT(ITYP) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
-     &                              //CHRNOS(IPTNUC(IATOM,IREP)/10)//
-     &                                CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                     IF (JATOM .GT. 999) THEN
+         CALL QUIT('Error: FC only implemented for max 999 atoms')
+                     END IF
+                     LABINT(ITYP) = 'FC '//NAMN(IATOM)(1:2)
+     &                              //CHRNOS(JATOM/100)
+     &                              //CHRNOS(MOD(JATOM,100)/10)
+     &                              //CHRNOS(MOD(JATOM,10))
                   ELSE IF (INTTYP .EQ. 95) THEN
-                     LABINT(ITYP) = 'FCKE'//NAMDEP(NUCPRE(IATOM)+1)(1:2)
-     &                              //CHRNOS(IPTNUC(IATOM,IREP)/10)//
-     &                                CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                     IF (JATOM .GT. 99) THEN
+         CALL QUIT('Error: FCKE only implemented for max 99 atoms')
+                     END IF
+                     LABINT(ITYP) = 'FCKE'//NAMN(IATOM)(1:2)
+     &                              //CHRNOS(JATOM/10)
+     &                              //CHRNOS(MOD(JATOM,10))
                   END IF
                   INTREP(ITYP) = IREP
                END IF
@@ -3573,11 +3597,14 @@ C  /* Deck sdtyp */
             DO 300 ICOOR1 = 1, 3
                ISCOR1 = IPTCNT(3*(IATOM - 1) + ICOOR1,IREP,2)
                IF (ISCOR1 .GT. 0) THEN
+               IF (ISCOR1 .GT. 999) THEN
+         CALL QUIT('Error: SD only implemented for max 333 atoms')
+               END IF
+                  IFIRST = ISCOR1/100
+                  ISECND = MOD(ISCOR1,100)/10
+                  ITHIRD = MOD(MOD(ISCOR1,100),10)
                   DO 400 ICOOR2 = 1, 3
                      ITYP = ITYP + 1
-                     IFIRST = ISCOR1/100
-                     ISECND = MOD(ISCOR1,100)/10
-                     ITHIRD = MOD(MOD(ISCOR1,100),10)
                      IF (INTTYP .EQ. 11) THEN
                         LABINT(ITYP) = 'SD '//CHRNOS(IFIRST)
      &                                      //CHRNOS(ISECND)
@@ -3589,6 +3616,9 @@ C  /* Deck sdtyp */
      &                                      //CHRNOS(ITHIRD)//' '
      &                                      //CHRXYZ(-ICOOR2)
                      ELSE IF (INTTYP .EQ. 68) THEN
+               IF (ISCOR1 .GT. 99) THEN
+         CALL QUIT('Error: SDKE only implemented for max 33 atoms')
+               END IF
                         LABINT(ITYP) = 'SDKE'//CHRNOS(ISCOR1/10)
      &                                       //CHRNOS(MOD(ISCOR1,10))
      &                                       //' '//CHRXYZ(-ICOOR2)
@@ -4866,7 +4896,8 @@ C     when reaching this routine.
          END IF
          REWIND (LUPROP)
          IF(.NOT.FNDLAB('EOFLABEL',LUPROP)) THEN
-            WRITE (LUPRI,'(/A)') ' End of file not found in AOPROPER?'
+            WRITE (LUPRI,'(/A)') ' Internal error, '//
+     &         '"EOFLABEL" label not found in AOPROPER'
             CALL GPINQ_print(LUPROP,'NAME')
             REWIND LUPROP
             CALL QDUMP(LUPROP)

@@ -1,0 +1,3015 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON release Dalton2018.alpha (2018)
+         ( Web site: http://daltonprogram.org )
+
+   ----------------------------------------------------------------------------
+
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
+    and
+     
+       Dalton, a Molecular Electronic Structure Program,
+       Release Dalton2018.alpha (2018), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Christoph Jacob           TU Braunschweig               Germany     (Frozen density embedding model)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           KTH Stockholm,                Sweden      (Cubic response and complex frequency response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Andre S. P. Gomes         CNRS/Universite de Lille      France      (Frozen density embedding model)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  Lucas Visscher            Vrije Universiteit Amsterdam  Netherlands (Frozen density embedding model)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Wed Sep  5 11:48:12 2018
+     Host name              : foeroyar                                
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/test/cc2_r12_aux_ch4_ff2
+   2) /home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | magnus
+ Host                     | foeroyar
+ System                   | Linux-4.17.12-200.fc28.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 8.1.1 20180712 (Red Hat 8.1.1-5)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 8.1.1 20180712 (Red Hat 8.1.1-5)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 8.1.1 20180712 (Red Hat 8.1.1-5)
+ BLAS                     | /home/magnus/intel/compilers_and_libraries_2018.3.
+                          | 222/linux/mkl/lib/intel64/libmkl_gf_lp64.so;/home/
+                          | magnus/intel/compilers_and_libraries_2018.3.222/li
+                          | nux/mkl/lib/intel64/libmkl_sequential.so;/home/mag
+                          | nus/intel/compilers_and_libraries_2018.3.222/linux
+                          | /mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpthr
+                          | ead.so;/usr/lib64/libm.so
+ LAPACK                   | /home/magnus/intel/compilers_and_libraries_2018.3.
+                          | 222/linux/mkl/lib/intel64/libmkl_lapack95_lp64.a;/
+                          | home/magnus/intel/compilers_and_libraries_2018.3.2
+                          | 22/linux/mkl/lib/intel64/libmkl_gf_lp64.so
+ Static linking           | OFF
+ Last Git revision        | 81bf9373ccd8f5daaa6ed3ff7e43f676eea84bc1
+ Git branch               | master
+ Configuration time       | 2018-09-03 20:59:56.165003
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT
+.RUN WAVE FUNCTION
+*MOLBAS
+.R12AUX
+**INTEGRALS
+.R12
+.DIPLEN
+**WAVE FUNCTIONS
+.CC
+*SCF INPUT
+.THRESHOLD
+ 1.0D-10
+*ORBITALS
+.MOSTART
+ H1DIAG
+*CC INPUT
+.CC2
+.PRINT
+ 3
+.FREEZE
+ 1 0
+.THRENR
+ 1.0D-12
+.THRLEQ
+ 1.0D-10
+.FIELD
+ 1.0D-02
+ XDIPLEN
+.PACK
+ 1.0D-15
+*CCFOP
+.NONREL
+.DIPMOM
+*CCLR
+.OPERAT
+XDIPLEN XDIPLEN
+.ASYMSD
+*CCQR
+.OPERAT
+XDIPLEN XDIPLEN XDIPLEN
+.NOBMAT
+*R12 INPUT
+.CC2
+ 1A
+**END OF DALTON INPUT
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS
+6-311G** 6-311++G(3df,3pd)
+CH4: CC2-R12/A finite field calculation without symmetry
+
+    4    0
+ 1      6.    1
+C      0.000000000000000   0.000000000000000   0.000000000000000       *
+ 1      1.    4
+H      1.276731000000000   1.276731000000000   1.276731000000000       *
+H     -1.276731000000000  -1.276731000000000   1.276731000000000       *
+H     -1.276731000000000   1.276731000000000  -1.276731000000000       *
+H      1.276731000000000  -1.276731000000000  -1.276731000000000       *
+ 2      6.    1
+C      0.000000000000000   0.000000000000000   0.000000000000000       *
+ 2      1.    4
+H      1.276731000000000   1.276731000000000   1.276731000000000       *
+H     -1.276731000000000  -1.276731000000000   1.276731000000000       *
+H     -1.276731000000000   1.276731000000000  -1.276731000000000       *
+H      1.276731000000000  -1.276731000000000  -1.276731000000000       *
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
+
+
+ Changes of defaults for *MOLBAS
+ -------------------------------
+
+
+ .R12AUX: Reading auxiliary basis sets from .mol file for R12
+
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: CH4: CC2-R12/A finite field calculation without symmetry                
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+
+
+@ INFO - deprecated old .mol fixed format input has been detected:
+    4    0                                                                      
+@ INFO - this input format may not be supported in future releases.
+
+
+
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    1
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/6-311G**"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-311G**                                                                        
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    4
+  Number of basis sets to read;    1
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/6-311G**"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-311G**                                                                        
+
+  Atomic type no.    3
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  This is an auxiliary basis for R12, MBSI:    2
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/6-311++G(3df,3pd)"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-311++G(3df,3pd)                                                               
+
+  Atomic type no.    4
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    4
+  This is an auxiliary basis for R12, MBSI:    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/magnus/Projects/dalton_devel/dalton-foeroyingur/build/basis/6-311++G(3df,3pd)"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-311++G(3df,3pd)                                                               
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           C          12.000000
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           C           0.000000
+                           H           0.000000
+                           H           0.000000
+                           H           0.000000
+                           H           0.000000
+
+                       Total mass:    16.031300 amu
+                       Natural abundance:   0.000 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    4
+  Total number of atoms:   10
+
+  Basis set 1 refers to the basis "6-311G**" from the basis set library.
+
+  Basis set 2 refers to the basis "6-311++G(3df,3pd)" from the basis set library.
+
+  label  basis   atoms  charge   prim  cont     basis
+  ------------------------------------------------------------------------------
+  C        1       1    6.0000    31    18      [11s5p1d|4s3p1d]                                   
+  H        1       4    1.0000     8     6      [5s1p|3s1p]                                        
+  C        2       1    0.0000    52    39      [12s6p3d1f|5s4p3d1f]                               
+  H        2       4    0.0000    20    18      [6s3p1d|4s3p1d]                                    
+  ------------------------------------------------------------------------------
+  total:          10   10.0000   195   153
+  ------------------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:   30
+  C       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
+  H       :     4  x   1.2767310000    5  y   1.2767310000    6  z   1.2767310000
+  H       :     7  x  -1.2767310000    8  y  -1.2767310000    9  z   1.2767310000
+  H       :    10  x  -1.2767310000   11  y   1.2767310000   12  z  -1.2767310000
+  H       :    13  x   1.2767310000   14  y  -1.2767310000   15  z  -1.2767310000
+  C       :    16  x   0.0000000000   17  y   0.0000000000   18  z   0.0000000000
+  H       :    19  x   1.2767310000   20  y   1.2767310000   21  z   1.2767310000
+  H       :    22  x  -1.2767310000   23  y  -1.2767310000   24  z   1.2767310000
+  H       :    25  x  -1.2767310000   26  y   1.2767310000   27  z  -1.2767310000
+  H       :    28  x   1.2767310000   29  y  -1.2767310000   30  z  -1.2767310000
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            C           H           H           H           H           C     
+            ------      ------      ------      ------      ------      ------
+ C     :    0.000000
+ H     :    1.170203    0.000000
+ H     :    1.170203    1.910933    0.000000
+ H     :    1.170203    1.910933    1.910933    0.000000
+ H     :    1.170203    1.910933    1.910933    1.910933    0.000000
+ C     :    0.000000    1.170203    1.170203    1.170203    1.170203    0.000000
+ H     :    1.170203    0.000000    1.910933    1.910933    1.910933    1.170203
+ H     :    1.170203    1.910933    0.000000    1.910933    1.910933    1.170203
+ H     :    1.170203    1.910933    1.910933    0.000000    1.910933    1.170203
+ H     :    1.170203    1.910933    1.910933    1.910933    0.000000    1.170203
+
+            H           H           H           H     
+            ------      ------      ------      ------
+ H     :    0.000000
+ H     :    1.910933    0.000000
+ H     :    1.910933    1.910933    0.000000
+ H     :    1.910933    1.910933    1.910933    0.000000
+
+
+  Max    interatomic separation is    1.9109 Angstrom (    3.6111 Bohr)
+  between atoms    3 and    2, "H     " and "H     ".
+
+  Min HX interatomic separation is    0.0000 Angstrom (    0.0000 Bohr)
+
+  Min YX interatomic separation is    0.0000 Angstrom (    0.0000 Bohr)
+
+@ WARNING: Number of short HX and YX bond lengths:    4    1
+@ WARNING: If not intentional, maybe your coordinates were in Angstrom,
+@ WARNING: but "Angstrom" was not specified in .mol file
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H          C            1.170203
+  bond distance:  H          C            1.170203
+  bond distance:  H          C            1.170203
+  bond distance:  H          C            1.170203
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       3.680240          1.000000    0.000000    0.000000
+   IB       3.680240          0.000000    1.000000    0.000000
+   IC       3.680240          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+               A                   B                   C
+
+         137322.2814         137322.2814         137322.2814 MHz
+            4.580578            4.580578            4.580578 cm-1
+
+
+@  Nuclear repulsion energy :   12.514560078913 Hartree
+
+  Number of main orbitals in each symmetry:          42
+  Number of auxiliary functions in each symmetry:   111
+
+  Number of floating/multiple basis set orbitals :    5
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - dipole length integrals
+          - Cartesian multipole moment integrals of orders 2 and lower
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x      0.00000000         0.00000000         0.00000000
+      y      0.00000000         0.00000000         0.00000000
+      z      0.00000000         0.00000000         0.00000000
+
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ HERMIT - Number of two-electron integrals written:      377953 (  0.5% )
+ HERMIT - Megabytes written:                              4.328
+
+  Time used in TWOINT     is       0.18 seconds
+  Total CPU  time used in HERMIT:   0.51 seconds
+  Total wall time used in HERMIT:   0.51 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ ---- Detected R12 input:
+ Direct Fock matrix formation switched on!
+ Scale factors for CC excitations manifolds:
+ for bra states (projection manifold):   1.0000000000000000     
+ for ket states (operator manifold)  :   1.0000000000000000     
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Sep  5 11:48:13 2018
+     Host name              : foeroyar                                
+
+ Title lines from ".mol" input file:
+     CH4: CC2-R12/A finite field calculation without symmetry                
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    (Integral direct) CC calculation.
+
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+
+ Fock matrices are calculated directly without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART H1DIAG" input option
+
+     Wave function specification
+     ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+@    Wave function type        --- CC ---
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 1 (point group: C1 )
+@    Reference state symmetry                   1 (irrep name : A  )
+
+     Orbital specifications
+     ======================
+@    Abelian symmetry species          All |    1
+@                                          |  A  
+                                       --- |  ---
+@    Occupied SCF orbitals               5 |    5
+@    Secondary orbitals                 37 |   37
+@    Total number of orbitals           42 |   42
+@    Number of basis functions         153 |  153
+
+     Optimization information
+     ========================
+@    Number of configurations                 1
+@    Number of orbital rotations            185
+     ------------------------------------------
+@    Total number of variables              186
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-10
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -Implicit frozen core calculation
+ -Calculation with finite fields:
+    Field strength:   0.010000Field Label:  XDIPLEN 
+
+ Electric field:      0.01000000    0.00000000    0.00000000
+ Total norm:          0.01000000
+Center of charge:    0.00000000    0.00000000    0.00000000
+Charge correction to interaction with electric field:   -0.00000000
+
+ -Linear response properties calculated
+ -Quadratic response properties calculated
+ -Dipole moment calculated
+  
+
+
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
+ -----------------------------------------------------------------------------
+
+***  INFO  GETGAB: GABAOXXX not found on AOPROPER. Regenerating.
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    1    T  3.34D-01  3.34D-01
+@  1    -26.9208461510        1.73607D+01   -2.69D+01    1
+      Virial theorem: -V/T =      1.397424
+@    MULPOP   C      -3.96; H       0.99; H       0.99; H       0.99; H       0.99; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    2    T  1.92D-01  1.93D-01
+@  2    -35.0161676020        6.02723D+00   -8.10D+00    2
+      Virial theorem: -V/T =      2.099833
+@    MULPOP   C       6.91; H      -1.73; H      -1.73; H      -1.73; H      -1.73; 
+   2  Level shift: doubly occupied orbital energies shifted by -1.00D-01
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    T  1.93D-01  1.93D-01
+@  3    -39.2641757580        4.09299D+00   -4.25D+00    3
+      Virial theorem: -V/T =      1.899530
+@    MULPOP   C      -1.46; H       0.36; H       0.36; H       0.37; H       0.36; 
+   3  Level shift: doubly occupied orbital energies shifted by -1.00D-01
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    T  1.98D-01  1.98D-01
+@  4    -40.1164207469        1.04572D+00   -8.52D-01    4
+      Virial theorem: -V/T =      1.987532
+@    MULPOP   C      -0.67; H       0.17; H       0.17; H       0.17; H       0.17; 
+   4  Level shift: doubly occupied orbital energies shifted by -5.00D-02
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    5    T  1.93D-01  1.94D-01
+@  5    -40.1914831899        6.15357D-02   -7.51D-02    5
+      Virial theorem: -V/T =      2.012461
+@    MULPOP   C      -0.39; H       0.10; H       0.10; H       0.10; H       0.10; 
+   5  Level shift: doubly occupied orbital energies shifted by -1.25D-02
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    6    F  1.93D-01  1.93D-01
+@  6    -40.1917365440        2.07748D-02   -2.53D-04    6
+      Virial theorem: -V/T =      2.011877
+@    MULPOP   C      -0.38; H       0.10; H       0.10; H       0.10; H       0.10; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    7    T  1.93D-01  1.94D-01
+@  7    -40.1917714932        1.88921D-03   -3.49D-05    7
+      Virial theorem: -V/T =      2.011271
+@    MULPOP   C      -0.38; H       0.10; H       0.10; H       0.10; H       0.10; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -12    8    F  1.93D-01  1.93D-01
+@  8    -40.1917720859        2.14798D-04   -5.93D-07    8
+      Virial theorem: -V/T =      2.011252
+@    MULPOP   C      -0.38; H       0.10; H       0.10; H       0.10; H       0.10; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -12    9    T  2.00D-01  2.00D-01
+@  9    -40.1917720926        2.13271D-05   -6.66D-09    8
+      Virial theorem: -V/T =      2.011255
+@    MULPOP   C      -0.38; H       0.09; H       0.09; H       0.09; H       0.09; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -14   10    F  1.93D-01  1.93D-01
+@ 10    -40.1917720926        1.37184D-06   -4.36D-11    8
+      Virial theorem: -V/T =      2.011255
+@    MULPOP   C      -0.38; H       0.09; H       0.09; H       0.09; H       0.09; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -17   11    F  1.93D-01  1.93D-01
+@ 11    -40.1917720926        2.52143D-07   -2.13D-13    8
+      Virial theorem: -V/T =      2.011255
+@    MULPOP   C      -0.38; H       0.09; H       0.09; H       0.09; H       0.09; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -17   12    T  1.93D-01  1.93D-01
+@ 12    -40.1917720926        2.06198D-08    0.00D+00    8
+      Virial theorem: -V/T =      2.011255
+@    MULPOP   C      -0.38; H       0.09; H       0.09; H       0.09; H       0.09; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -17   13    T  1.94D-01  1.94D-01
+@ 13    -40.1917720926        4.84905D-09   -1.42D-14    8
+      Virial theorem: -V/T =      2.011255
+@    MULPOP   C      -0.38; H       0.09; H       0.09; H       0.09; H       0.09; 
+ -----------------------------------------------------------------------------
+  14  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -17   14    T  1.92D-01  1.93D-01
+@ 14    -40.1917720926        3.64597D-10    1.42D-14    8
+      Virial theorem: -V/T =      2.011255
+@    MULPOP   C      -0.38; H       0.09; H       0.09; H       0.09; H       0.09; 
+ -----------------------------------------------------------------------------
+  15  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -17   15    T  1.92D-01  1.93D-01
+@ 15    -40.1917720926        4.72243D-11    0.00D+00    8
+
+@ *** DIIS converged in  15 iterations !
+@     Converged SCF energy, gradient:    -40.191772092640    4.72D-11
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the 20 lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    5
+
+ Sym       Hartree-Fock orbital energies
+
+1 A     -11.24614520    -0.91114126    -0.52478334    -0.52478334    -0.52478334
+          0.15222200     0.22923252     0.22923252     0.22923252     0.41945542
+          0.41945542     0.41945542     0.67112701     0.77679176     0.77679176
+          0.77679176     0.94587496     1.19833119     1.19833119     1.66708634
+          1.66708634     1.66708634     1.69778322     1.69778322     1.69778322
+
+    E(LUMO) :     0.15222200 au (symmetry 1)
+  - E(HOMO) :    -0.52478334 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.67700534 au
+
+ --- Writing SIRIFC interface file
+
+  Canonical primary and secondary basis sets
+  ISYM       NORB1 MBAS1       NORB2 MBAS2
+     1          42    42         111   111
+
+ Computation of exchange matrix done [5]
+
+ AUXILIARY BASIS LOW EIGENVALUES
+ ISYM         EIGENVALUE
+   1      0.000000000000
+  Time used in R12AUX     is       2.03 seconds
+
+ CPU and wall time for SCF :       5.293       5.304
+
+
+                       .-----------------------------------.
+                       | --- Final results from SIRIUS --- |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A   in C1  )
+@    Total charge of molecule:    0
+
+@    Final HF energy:             -40.191772092640                 
+@    Nuclear repulsion:            12.514560078913
+@    Electronic energy:           -52.706332171553
+
+@    Final gradient norm:           0.000000000047
+
+ 
+     Date and time (Linux)  : Wed Sep  5 11:48:18 2018
+     Host name              : foeroyar                                
+
+File label for MO orbitals:   5Sep18   FOCKDIIS
+
+ (Only coefficients > 0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A  )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 C   :1s     0.5636  -0.1015   0.0000   0.0000   0.0000  -0.0530  -0.0000
+   2 C   :1s     0.4666  -0.1682   0.0000   0.0000   0.0000  -0.0852  -0.0000
+   3 C   :1s     0.0034   0.4331  -0.0000  -0.0000  -0.0000   0.0983   0.0000
+   4 C   :1s    -0.0008   0.2981  -0.0000  -0.0000  -0.0000   1.9759  -0.0000
+   5 C   :2px   -0.0000  -0.0000   0.0171  -0.1806   0.0124  -0.0000  -0.0115
+   6 C   :2py   -0.0000  -0.0000  -0.0476  -0.0165  -0.1747  -0.0000  -0.0766
+   7 C   :2pz   -0.0000   0.0000   0.1746   0.0132  -0.0489   0.0000  -0.1243
+   8 C   :2px    0.0000  -0.0000   0.0276  -0.2911   0.0200  -0.0000  -0.0085
+   9 C   :2py    0.0000  -0.0000  -0.0768  -0.0266  -0.2816  -0.0000  -0.0567
+  10 C   :2pz    0.0000   0.0000   0.2815   0.0213  -0.0788   0.0000  -0.0919
+  11 C   :2px   -0.0000  -0.0000   0.0193  -0.2035   0.0140  -0.0000  -0.0887
+  12 C   :2py   -0.0000   0.0000  -0.0537  -0.0186  -0.1968  -0.0000  -0.5886
+  13 C   :2pz    0.0000   0.0000   0.1968   0.0149  -0.0551  -0.0000  -0.9544
+  14 C   :3d2-   0.0000   0.0000   0.0307   0.0023  -0.0086   0.0000   0.0197
+  15 C   :3d1-   0.0000  -0.0000   0.0030  -0.0317   0.0022   0.0000   0.0018
+  17 C   :3d1+   0.0000   0.0000  -0.0084  -0.0029  -0.0307  -0.0000   0.0122
+  19 H   :1s     0.0003   0.0770   0.0762  -0.0972  -0.1116  -0.0184   0.0280
+  20 H   :1s     0.0002   0.1094   0.1259  -0.1607  -0.1846   0.0089  -0.1167
+  21 H   :1s     0.0001   0.0088   0.0597  -0.0762  -0.0875  -0.7492   1.7799
+  22 H   :2px   -0.0001  -0.0110  -0.0066  -0.0000   0.0117   0.0006   0.0141
+  23 H   :2py   -0.0001  -0.0110  -0.0101   0.0087   0.0017   0.0006   0.0123
+  24 H   :2pz   -0.0001  -0.0110   0.0018   0.0103   0.0084   0.0006   0.0110
+  25 H   :1s     0.0003   0.0770   0.1084   0.1111   0.0599  -0.0184   0.0048
+  26 H   :1s     0.0002   0.1094   0.1793   0.1838   0.0991   0.0089  -0.0198
+  27 H   :1s     0.0001   0.0088   0.0850   0.0872   0.0470  -0.7492   0.3022
+  28 H   :2px    0.0001   0.0110   0.0117   0.0013   0.0066  -0.0006  -0.0028
+  29 H   :2py    0.0001   0.0110   0.0082   0.0101  -0.0034  -0.0006  -0.0045
+  30 H   :2pz   -0.0001  -0.0110  -0.0014  -0.0103  -0.0086   0.0006  -0.0010
+  31 H   :1s     0.0003   0.0770  -0.1265   0.0797  -0.0730  -0.0184  -0.0078
+  32 H   :1s     0.0002   0.1094  -0.2092   0.1318  -0.1208   0.0089   0.0325
+  33 H   :1s     0.0001   0.0088  -0.0992   0.0625  -0.0573  -0.7492  -0.4957
+  34 H   :2px    0.0001   0.0110  -0.0116  -0.0018  -0.0066  -0.0006   0.0037
+  35 H   :2py   -0.0001  -0.0110   0.0100  -0.0088  -0.0021   0.0006  -0.0061
+  36 H   :2pz    0.0001   0.0110  -0.0032   0.0086  -0.0099  -0.0006   0.0006
+  37 H   :1s     0.0003   0.0770  -0.0580  -0.0937   0.1247  -0.0184  -0.0250
+  38 H   :1s     0.0002   0.1094  -0.0960  -0.1549   0.2062   0.0089   0.1041
+  39 H   :1s     0.0001   0.0088  -0.0455  -0.0735   0.0978  -0.7492  -1.5864
+  40 H   :2px   -0.0001  -0.0110   0.0067  -0.0004  -0.0117   0.0006  -0.0131
+  41 H   :2py    0.0001   0.0110  -0.0083  -0.0102   0.0030  -0.0006   0.0107
+  42 H   :2pz    0.0001   0.0110   0.0036  -0.0086   0.0097  -0.0006   0.0094
+
+    Orbital         8        9       10       11       12       13       14
+   1 C   :1s    -0.0000  -0.0000  -0.0000   0.0000   0.0000   0.0703   0.0000
+   2 C   :1s    -0.0000  -0.0000  -0.0000   0.0000   0.0000   0.1326  -0.0000
+   3 C   :1s     0.0000   0.0000   0.0000   0.0000  -0.0000  -0.4555   0.0000
+   4 C   :1s    -0.0000   0.0000   0.0000  -0.0000  -0.0000  -1.0416  -0.0000
+   5 C   :2px   -0.0270   0.1435   0.0013   0.0157  -0.0024   0.0000   0.0207
+   6 C   :2py    0.1236   0.0171   0.0108   0.0009   0.0117  -0.0000   0.1026
+   7 C   :2pz   -0.0737  -0.0239   0.0117  -0.0025  -0.0106  -0.0000   0.2392
+   8 C   :2px   -0.0200   0.1061  -0.0004  -0.0053   0.0008   0.0000   0.0791
+   9 C   :2py    0.0914   0.0126  -0.0037  -0.0003  -0.0039  -0.0000   0.3919
+  10 C   :2pz   -0.0545  -0.0177  -0.0039   0.0009   0.0036  -0.0000   0.9134
+  11 C   :2px   -0.2074   1.1019   0.1038   1.2977  -0.1966  -0.0000  -0.1349
+  12 C   :2py    0.9494   0.1313   0.8928   0.0748   0.9647  -0.0000  -0.6680
+  13 C   :2pz   -0.5663  -0.1834   0.9621  -0.2094  -0.8741   0.0000  -1.5570
+  14 C   :3d2-   0.0117   0.0038   0.0110  -0.0024  -0.0100   0.0000  -0.0677
+  15 C   :3d1-   0.0043  -0.0228   0.0012   0.0149  -0.0023  -0.0000  -0.0059
+  17 C   :3d1+  -0.0196  -0.0027   0.0102   0.0009   0.0111  -0.0000  -0.0291
+  19 H   :1s    -0.0030  -0.0180  -0.0574  -0.0341   0.0031   0.0634  -0.0552
+  20 H   :1s     0.0126   0.0751  -1.1407  -0.6774   0.0617   0.9859  -0.3636
+  21 H   :1s    -0.1917  -1.1452   0.3243   0.1926  -0.0175  -0.3081   1.2994
+  22 H   :2px   -0.0023  -0.0053   0.0185   0.0244  -0.0031   0.0199  -0.0567
+  23 H   :2py    0.0018  -0.0088   0.0270   0.0111   0.0095   0.0199  -0.0441
+  24 H   :2pz   -0.0036  -0.0099   0.0278   0.0080  -0.0104   0.0199  -0.0232
+  25 H   :1s     0.0225   0.0243   0.0010   0.0463   0.0481   0.0634  -0.0177
+  26 H   :1s    -0.0936  -0.1014   0.0201   0.9212   0.9564   0.9859  -0.1162
+  27 H   :1s     1.4273   1.5453  -0.0057  -0.2619  -0.2719  -0.3081   0.4152
+  28 H   :2px   -0.0123  -0.0085   0.0014   0.0281   0.0124  -0.0199   0.0223
+  29 H   :2py   -0.0081  -0.0120   0.0100   0.0148   0.0250  -0.0199   0.0348
+  30 H   :2pz    0.0095   0.0118   0.0101  -0.0163  -0.0240   0.0199   0.0175
+  31 H   :1s    -0.0296   0.0135   0.0051   0.0297  -0.0596   0.0634   0.0240
+  32 H   :1s     0.1233  -0.0563   0.1007   0.5903  -1.1854   0.9859   0.1578
+  33 H   :1s    -1.8797   0.8588  -0.0286  -0.1678   0.3370  -0.3081  -0.5637
+  34 H   :2px    0.0144  -0.0030   0.0027   0.0230  -0.0202  -0.0199  -0.0228
+  35 H   :2py   -0.0118   0.0074   0.0081  -0.0082   0.0285   0.0199   0.0417
+  36 H   :2pz    0.0132  -0.0076   0.0119   0.0067  -0.0275  -0.0199   0.0107
+  37 H   :1s     0.0101  -0.0198   0.0513  -0.0420   0.0084   0.0634   0.0489
+  38 H   :1s    -0.0422   0.0826   1.0198  -0.8341   0.1673   0.9859   0.3220
+  39 H   :1s     0.6441  -1.2589  -0.2899   0.2371  -0.0476  -0.3081  -1.1508
+  40 H   :2px    0.0045  -0.0062  -0.0144   0.0267  -0.0047   0.0199   0.0562
+  41 H   :2py   -0.0018   0.0106   0.0252  -0.0119   0.0130  -0.0199  -0.0373
+  42 H   :2pz   -0.0072   0.0095   0.0259  -0.0150  -0.0069  -0.0199  -0.0163
+
+    Orbital        15
+   5 C   :2px   -0.2060
+   6 C   :2py   -0.1402
+   7 C   :2pz    0.0780
+   8 C   :2px   -0.7866
+   9 C   :2py   -0.5354
+  10 C   :2pz    0.2979
+  11 C   :2px    1.3409
+  12 C   :2py    0.9127
+  13 C   :2pz   -0.5077
+  14 C   :3d2-  -0.0221
+  15 C   :3d1-   0.0583
+  17 C   :3d1+   0.0397
+  19 H   :1s     0.0409
+  20 H   :1s     0.2690
+  21 H   :1s    -0.9612
+  22 H   :2px    0.0127
+  23 H   :2py    0.0228
+  24 H   :2pz    0.0562
+  25 H   :1s    -0.0646
+  26 H   :1s    -0.4255
+  27 H   :1s     1.5204
+  28 H   :2px    0.0385
+  29 H   :2py    0.0485
+  30 H   :2pz   -0.0581
+  32 H   :1s     0.0123
+  33 H   :1s    -0.0438
+  34 H   :2px   -0.0336
+  35 H   :2py   -0.0195
+  37 H   :1s     0.0219
+  38 H   :1s     0.1442
+  39 H   :1s    -0.5153
+  41 H   :2py   -0.0452
+  42 H   :2pz   -0.0118
+
+  Total CPU  time used in SIRIUS :   5.36 seconds
+  Total wall time used in SIRIUS :   5.37 seconds
+
+ 
+     Date and time (Linux)  : Wed Sep  5 11:48:18 2018
+     Host name              : foeroyar                                
+
+ NOTE:    1 informational messages have been issued.
+ Check output, result, and error files for "INFO".
+
+ NOTE:    1 warnings have been issued.
+ Check output, result, and error files for "WARNING".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+  I am freezing!
+  -- output from FNDMN3 --
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            1
+  FROM FNDMN3 : 
+    PLACES OF LOWEST ELEMENTS 
+     1 :      1
+  MIN AND MAX IN SELECTED SUPSPACE   -11.246145204406609       -11.246145204406609     
+ Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -11.2461
+ In total frozen-core per symmetry-class:  1
+ 
+
+
+          Time needed to pack integrals:        0.05 seconds
+          Threshold used for packing:       0.10E-14
+          Reduction obtained by packing:       23.29 %
+
+
+ CCR12 ANSATZ =   1
+
+ CCR12 APPROX =   2
+
+ Before INIT1 in ccsd_r12
+
+  I am freezing!
+ Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -11.2461
+ In total frozen-core per symmetry-class:  1
+ 
+ After INIT1 in ccsd_r12
+   NRHF   :       4
+   NRHFS  :       5
+   NORB1  :      42
+   NORB2  :     111
+
+ Number of primary orbitals             :           42
+ Number of secondary orbitals           :          111
+ Total number of orbitals               :          153
+ Total number of basis functions        :          153
+ Number of (i|p') integrals             :          612
+ Number of (i|u') integrals             :          612
+ Number of (Ip'|1/r12|jL) integrals     :          612
+ Number of (ip'|1/r12|jq') integrals    :       187578
+ Number of (ip'|r12|jq') integrals      :       187578
+ Number of (ip'|[T1,r12]|jq') integrals :       374544
+ Threshold for R12 contributions            =  0.00000    
+ Threshold for singular value decomposition = 0.100000E-11
+
+ The B matrix is transformed into an orthogonal basis
+ and inverted by diagonalization
+
+ ******************************************************************************
+ The MP2-R12/A and MP2-R12/B energies are computed as described in:
+ W. Klopper, J. Chem. Phys. 120, 10890-10895 (2004).
+ To avoid the hybride scheme, the keyword '.NO HYB'
+ must be specified in the Dalton input file.
+ ------------------------------------------------------------------------------
+ Ansatz 1 is used and results are printed for approximations A and B.
+ ******************************************************************************
+
+ Core memory required by CCSD_R12 :         985941  (double words)
+
+ ccsd_r12.11
+ ccsd_r12.12
+ Computation of (ip'|r12|jq') integrals done
+  Time used in R  [6]     is      44.38 seconds
+ Backtransformation of (ip'|r12|jq') integrals done
+  Time used in R12BATF    is       0.20 seconds
+ Computation of CC-R12 VXINT response intermediates done
+
+  Time used for VXINT is   0.04 seconds
+
+ Computation of V^aj_kl intermediate done
+
+  Time used for V^aj_kl is    0.73 seconds
+
+ Computation of (ip'|1/r12|jq') integrals done
+  Time used in 1/R[5]     is      13.27 seconds
+ Computation of (i* p'|r12|jq') integrals done
+  Time used in R  [5]     is      13.42 seconds
+ Computation of (i'p|r12|jq') integrals done
+  Time used in R  [5]     is      13.19 seconds
+ Computation of (ip'|[T,r12]|jq') integrals done
+  Time used in T,R[5]     is      21.11 seconds
+
+
+                 +-----------------------------------------------+
+                 ! MP2-R12 ansatz := (1 - P1 - P2 + P1*P2) * R12 !
+                 +-----------------------------------------------+
+
+
+ SECOND-ORDER PAIR ENERGIES:
+
+                    1   -0.008552696    0.000000000
+                    2   -0.012167435   -0.004524398
+                    3   -0.014650229    0.000000000
+                    4   -0.012167435   -0.004524398
+                    5   -0.013164006   -0.011368248
+                    6   -0.013621043    0.000000000
+                    7   -0.012167435   -0.004524398
+                    8   -0.011133903   -0.011368248
+                    9   -0.013192275   -0.011368248
+                   10   -0.014636095    0.000000000
+
+ MP2 =   -0.173130492   -0.125452553   -0.047677939
+
+
+                         +--------------------------------+
+                         ! Auxiliary-basis MP2-R12 method !
+                         +--------------------------------+
+
+
+ SECOND-ORDER R12/A PAIR ENERGIES:
+
+   1   -0.008552696   -0.010623222    0.000000000   -0.000000000     1.62962         1.93487    
+   2   -0.012167435   -0.014443622   -0.004524398   -0.004706073     1.62962         1.93487    
+   3   -0.014650229   -0.017502717    0.000000000   -0.000000000     1.62962         1.93487    
+   4   -0.012167435   -0.014443622   -0.004524398   -0.004706073     1.62962         1.93487    
+   5   -0.013164006   -0.015506554   -0.011368248   -0.012119637     1.62962         1.93487    
+   6   -0.013621043   -0.016345735    0.000000000   -0.000000000     1.62962         1.93487    
+   7   -0.012167435   -0.014443622   -0.004524398   -0.004706073     1.62962         1.93487    
+   8   -0.011133903   -0.013224370   -0.011368248   -0.012119637     1.62962         1.93487    
+   9   -0.013192275   -0.015538332   -0.011368248   -0.012119637     1.62962         1.93487    
+  10   -0.014636095   -0.017486827    0.000000000   -0.000000000     1.62962         1.93487    
+
+       -0.125452553   -0.149558622   -0.047677939   -0.050477130
+
+              MP2-R12/A   correlation energy =   -0.200035752
+
+ SECOND-ORDER R12/B PAIR ENERGIES:
+
+   1   -0.008552696   -0.010011093    0.000000000   -0.000000000     3.27397         3.66842    
+   2   -0.012167435   -0.014035374   -0.004524398   -0.004674765     2.88761         3.28207    
+   3   -0.014650229   -0.016772833    0.000000000   -0.000000000     2.50126         2.89571    
+   4   -0.012167435   -0.014035374   -0.004524398   -0.004674765     2.88761         3.28207    
+   5   -0.013164006   -0.014971379   -0.011368248   -0.011870315     2.50126         2.89571    
+   6   -0.013621043   -0.015626366    0.000000000   -0.000000000     2.50126         2.89571    
+   7   -0.012167435   -0.014035374   -0.004524398   -0.004674765     2.88761         3.28207    
+   8   -0.011133903   -0.012709936   -0.011368248   -0.011870315     2.50126         2.89571    
+   9   -0.013192275   -0.015002870   -0.011368248   -0.011870315     2.50126         2.89571    
+  10   -0.014636095   -0.016757088    0.000000000   -0.000000000     2.50126         2.89571    
+
+       -0.125452553   -0.143957687   -0.047677939   -0.049635241
+
+              MP2-R12/B   correlation energy =   -0.193592928
+  Time used in E(R12)     is       0.17 seconds
+ Time for MP2-R12 part cpu :   105.72443799999999     
+ Time for MP2-R12 part wall:   105.92700004577637     
+
+  I am freezing!
+  -- output from FNDMN3 --
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            1
+  FROM FNDMN3 : 
+    PLACES OF LOWEST ELEMENTS 
+     1 :      1
+  MIN AND MAX IN SELECTED SUPSPACE   -11.246145204406609       -11.246145204406609     
+ Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -11.2461
+ In total frozen-core per symmetry-class:  1
+ 
+   
+
+ *******************************************************************
+ *                                                                 *
+ *----------                                             >---------*
+ *---------- OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >---------*
+ *----------                                             >---------*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :       148
+          Number of t2 amplitudes                 :     11026
+          Number of t2' amplitudes for R12 part   :       136
+          Total number of amplitudes in ccsd      :     11310
+
+ Iter.  1: Coupled cluster MP2-R12/A energy :     -40.3918078441915398
+     Conventional correlation energy:    -0.1731304917333460
+     R12 correlation energy         :    -0.0269052598177314
+     Total correlation energy       :    -0.2000357515510774
+
+
+       Iteration no.:  1
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.45 seconds
+       Norm^2 of omega1 after ccvec:        0.1546719499D-02
+       Norm^2 of omega2 after ccvec:        0.5281178816D-05
+       Norm^2 of Omegar12  in NXTAM:        0.3927893952D-08
+ Iter.  1: Coupled cluster CC2-R12/A energy :     -40.3916613537858424
+     Conventional correlation energy:    -0.1729840013277979
+     R12 correlation energy         :    -0.0269052598175852
+     Total correlation energy       :    -0.1998892611453831
+
+
+       Iteration no.:  2
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.46 seconds
+       Norm^2 of omega1 after ccvec:        0.3022950823D-04
+       Norm^2 of omega2 after ccvec:        0.1091944068D-03
+       Norm^2 of Omegar12  in NXTAM:        0.1956719769D-07
+ Iter.  2: Coupled cluster CC2-R12/A energy :     -40.3932815882266780
+     Conventional correlation energy:    -0.1745684078074916
+     R12 correlation energy         :    -0.0269410877787259
+     Total correlation energy       :    -0.2015094955862175
+
+
+       Iteration no.:  3
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.46 seconds
+       Norm^2 of omega1 after ccvec:        0.7378134023D-05
+       Norm^2 of omega2 after ccvec:        0.3835627082D-05
+       Norm^2 of Omegar12  in NXTAM:        0.1067091781D-08
+ Iter.  3: Coupled cluster CC2-R12/A energy :     -40.3936137318490438
+     Conventional correlation energy:    -0.1749044118886545
+     R12 correlation energy         :    -0.0269372273199234
+     Total correlation energy       :    -0.2018416392085779
+
+
+       Iteration no.:  4
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.46 seconds
+       Norm^2 of omega1 after ccvec:        0.2483651358D-06
+       Norm^2 of omega2 after ccvec:        0.1728604450D-06
+       Norm^2 of Omegar12  in NXTAM:        0.4118357881D-10
+ Iter.  4: Coupled cluster CC2-R12/A energy :     -40.3936846969628363
+     Conventional correlation energy:    -0.1749712720325149
+     R12 correlation energy         :    -0.0269413322898596
+     Total correlation energy       :    -0.2019126043223746
+
+
+       Iteration no.:  5
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.46 seconds
+       Norm^2 of omega1 after ccvec:        0.9648076303D-08
+       Norm^2 of omega2 after ccvec:        0.1186395578D-07
+       Norm^2 of Omegar12  in NXTAM:        0.1060952001D-11
+ Iter.  5: Coupled cluster CC2-R12/A energy :     -40.3936854217967607
+     Conventional correlation energy:    -0.1749721690367068
+     R12 correlation energy         :    -0.0269411601195917
+     Total correlation energy       :    -0.2019133291562984
+
+
+       Iteration no.:  6
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.46 seconds
+       Norm^2 of omega1 after ccvec:        0.3996899873D-09
+       Norm^2 of omega2 after ccvec:        0.3135835766D-09
+       Norm^2 of Omegar12  in NXTAM:        0.5380581447D-13
+ Iter.  6: Coupled cluster CC2-R12/A energy :     -40.3936880996704488
+     Conventional correlation energy:    -0.1749748190832108
+     R12 correlation energy         :    -0.0269411879467787
+     Total correlation energy       :    -0.2019160070299895
+
+
+       Iteration no.:  7
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.46 seconds
+       Norm^2 of omega1 after ccvec:        0.1485185327D-10
+       Norm^2 of omega2 after ccvec:        0.1746757575D-10
+       Norm^2 of Omegar12  in NXTAM:        0.2878761810D-14
+ Iter.  7: Coupled cluster CC2-R12/A energy :     -40.3936882193285385
+     Conventional correlation energy:    -0.1749749607661144
+     R12 correlation energy         :    -0.0269411659219645
+     Total correlation energy       :    -0.2019161266880790
+
+
+       Iteration no.:  8
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.46 seconds
+       Norm^2 of omega1 after ccvec:        0.8682390417D-12
+       Norm^2 of omega2 after ccvec:        0.7103185922D-12
+       Norm^2 of Omegar12  in NXTAM:        0.1555306139D-15
+ Iter.  8: Coupled cluster CC2-R12/A energy :     -40.3936882458978701
+     Conventional correlation energy:    -0.1749750023640431
+     R12 correlation energy         :    -0.0269411508933648
+     Total correlation energy       :    -0.2019161532574079
+
+
+       Iteration no.:  9
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.46 seconds
+       Norm^2 of omega1 after ccvec:        0.2210511837D-13
+       Norm^2 of omega2 after ccvec:        0.1853967325D-13
+       Norm^2 of Omegar12  in NXTAM:        0.2361958524D-17
+ Iter.  9: Coupled cluster CC2-R12/A energy :     -40.3936882529577872
+     Conventional correlation energy:    -0.1749750097313978
+     R12 correlation energy         :    -0.0269411505859276
+     Total correlation energy       :    -0.2019161603173254
+
+
+       Iteration no.: 10
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.46 seconds
+       Norm^2 of omega1 after ccvec:        0.2897252099D-14
+       Norm^2 of omega2 after ccvec:        0.2735999703D-14
+       Norm^2 of Omegar12  in NXTAM:        0.3820393357D-18
+ Iter. 10: Coupled cluster CC2-R12/A energy :     -40.3936882550507619
+     Conventional correlation energy:    -0.1749750118119380
+     R12 correlation energy         :    -0.0269411505983613
+     Total correlation energy       :    -0.2019161624102992
+
+
+       Iteration no.: 11
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.46 seconds
+       Norm^2 of omega1 after ccvec:        0.1320788038D-15
+       Norm^2 of omega2 after ccvec:        0.1309025683D-15
+       Norm^2 of Omegar12  in NXTAM:        0.1504322309D-19
+ Iter. 11: Coupled cluster CC2-R12/A energy :     -40.3936882551653298
+     Conventional correlation energy:    -0.1749750119872147
+     R12 correlation energy         :    -0.0269411505376511
+     Total correlation energy       :    -0.2019161625248658
+
+
+       Iteration no.: 12
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.46 seconds
+       Norm^2 of omega1 after ccvec:        0.7975791227D-17
+       Norm^2 of omega2 after ccvec:        0.6758157560D-17
+       Norm^2 of Omegar12  in NXTAM:        0.1350608774D-20
+ Iter. 12: Coupled cluster CC2-R12/A energy :     -40.3936882552960483
+     Conventional correlation energy:    -0.1749750121212230
+     R12 correlation energy         :    -0.0269411505343638
+     Total correlation energy       :    -0.2019161626555868
+
+
+       Iteration no.: 13
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.46 seconds
+       Norm^2 of omega1 after ccvec:        0.1980014542D-18
+       Norm^2 of omega2 after ccvec:        0.1997336262D-18
+       Norm^2 of Omegar12  in NXTAM:        0.2499758614D-22
+ Iter. 13: Coupled cluster CC2-R12/A energy :     -40.3936882552838554
+     Conventional correlation energy:    -0.1749750121101457
+     R12 correlation energy         :    -0.0269411505332452
+     Total correlation energy       :    -0.2019161626433909
+
+
+       Iteration no.: 14
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.45 seconds
+       Norm^2 of omega1 after ccvec:        0.1266993823D-19
+       Norm^2 of omega2 after ccvec:        0.9658392784D-20
+       Norm^2 of Omegar12  in NXTAM:        0.1886233323D-23
+ Iter. 14: Coupled cluster CC2-R12/A energy :     -40.3936882552870600
+     Conventional correlation energy:    -0.1749750121120570
+     R12 correlation energy         :    -0.0269411505345396
+     Total correlation energy       :    -0.2019161626465966
+
+
+       Iteration no.: 15
+       -----------------
+
+       Time used in   RHS - TOTAL  :       2.45 seconds
+       Norm^2 of omega1 after ccvec:        0.4222282168D-21
+       Norm^2 of omega2 after ccvec:        0.3808386050D-21
+       Norm^2 of Omegar12  in NXTAM:        0.6024996641D-25
+ Iter. 15: Coupled cluster CC2-R12/A energy :     -40.3936882552875005
+     Conventional correlation energy:    -0.1749750121124833
+     R12 correlation energy         :    -0.0269411505345565
+     Total correlation energy       :    -0.2019161626470399
+
+
+ CC2-R12/A energy converged to within   0.10D-11 is          -40.393688255288
+ Final 2-norm of the CC vector function:  2.83384337D-11
+ R12       energy converged to within   0.10D-11 is     -0.026941151
+
+
+                    +------------------------------------------+
+                    ! Largest amplitudes in converged solution !
+                    +------------------------------------------+
+
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               3.6438 %
+
+          Double Excitation Contribution :              96.3562 %
+
+          ||T1||/||T2||                  :               0.1945
+
+          Tau1 diagnostic                :               0.0119
+
+          Norm of Total Amplitude Vector :               0.1759
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   2       2     |       39          |              |   -0.006830  |
+ | 1   1   |   3       2     |       40          |              |    0.007064  |
+ | 1   1   |   5       2     |       42          |              |    0.006728  |
+ | 1   1   |   1       3     |       75          |              |   -0.015085  |
+ | 1   1   |   2       4     |      113          |              |    0.014829  |
+ | 1   1   |   5       4     |      116          |              |   -0.011962  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   1   1   1   1 |        1        1 |            1 |   -0.011774  |
+ | 1 1 1 1 |   8   1   1   1 |        8        1 |           29 |    0.008707  |
+ | 1 1 1 1 |  12   1   1   1 |       12        1 |           67 |    0.008725  |
+ | 1 1 1 1 |   2   1   2   1 |       39        1 |          742 |    0.009531  |
+ | 1 1 1 1 |   3   1   2   1 |       40        1 |          781 |    0.010226  |
+ | 1 1 1 1 |   9   1   2   1 |       46        1 |         1036 |   -0.011593  |
+ | 1 1 1 1 |  11   1   2   1 |       48        1 |         1129 |   -0.007258  |
+ | 1 1 1 1 |   4   1   3   1 |       78        1 |         3004 |    0.013911  |
+ | 1 1 1 1 |  10   1   3   1 |       84        1 |         3487 |   -0.012550  |
+ | 1 1 1 1 |  11   1   3   1 |       85        1 |         3571 |    0.007649  |
+ | 1 1 1 1 |   2   1   4   1 |      113        1 |         6329 |   -0.009997  |
+ | 1 1 1 1 |   3   1   4   1 |      114        1 |         6442 |    0.009651  |
+ | 1 1 1 1 |   9   1   4   1 |      120        1 |         7141 |    0.009423  |
+ | 1 1 1 1 |  11   1   4   1 |      122        1 |         7382 |   -0.010095  |
+ | 1 1 1 1 |  14   2   2   1 |       51        2 |         1277 |   -0.006777  |
+ | 1 1 1 1 |   3   3   1   1 |        3        3 |            6 |   -0.006936  |
+ | 1 1 1 1 |   4   4   1   1 |        4        4 |           10 |   -0.006674  |
+ | 1 1 1 1 |   5   5   1   1 |        5        5 |           15 |   -0.008289  |
+ | 1 1 1 1 |   6   6   1   1 |        6        6 |           21 |   -0.008193  |
+ | 1 1 1 1 |   8   6   3   1 |       82        6 |         3327 |   -0.007024  |
+ | 1 1 1 1 |   7   7   1   1 |        7        7 |           28 |   -0.008109  |
+ | 1 1 1 1 |   8   8   1   1 |        8        8 |           36 |   -0.011023  |
+ | 1 1 1 1 |  12   8   1   1 |       12        8 |           74 |   -0.006576  |
+ | 1 1 1 1 |   2   8   2   1 |       39        8 |          749 |   -0.006879  |
+ | 1 1 1 1 |   3   8   2   1 |       40        8 |          788 |   -0.007311  |
+ | 1 1 1 1 |   9   8   2   1 |       46        8 |         1043 |    0.010840  |
+ | 1 1 1 1 |  11   8   2   1 |       48        8 |         1136 |    0.006942  |
+ | 1 1 1 1 |   4   8   3   1 |       78        8 |         3011 |   -0.010018  |
+ | 1 1 1 1 |  10   8   3   1 |       84        8 |         3494 |    0.011776  |
+ | 1 1 1 1 |  11   8   3   1 |       85        8 |         3578 |   -0.007156  |
+ | 1 1 1 1 |   2   8   4   1 |      113        8 |         6336 |    0.007252  |
+ | 1 1 1 1 |   3   8   4   1 |      114        8 |         6449 |   -0.006935  |
+ | 1 1 1 1 |   9   8   4   1 |      120        8 |         7148 |   -0.008656  |
+ | 1 1 1 1 |  11   8   4   1 |      122        8 |         7389 |    0.009471  |
+ | 1 1 1 1 |   9   9   1   1 |        9        9 |           45 |   -0.009311  |
+ | 1 1 1 1 |  10  10   1   1 |       10       10 |           55 |   -0.009340  |
+ | 1 1 1 1 |  11  11   1   1 |       11       11 |           66 |   -0.009342  |
+ | 1 1 1 1 |  12  12   1   1 |       12       12 |           78 |   -0.010283  |
+ | 1 1 1 1 |   9  12   2   1 |       46       12 |         1047 |    0.010123  |
+ | 1 1 1 1 |   4  12   3   1 |       78       12 |         3015 |   -0.008773  |
+ | 1 1 1 1 |  10  12   3   1 |       84       12 |         3498 |    0.010987  |
+ | 1 1 1 1 |  11  12   3   1 |       85       12 |         3582 |   -0.006682  |
+ | 1 1 1 1 |   9  12   4   1 |      120       12 |         7152 |   -0.008120  |
+ | 1 1 1 1 |  11  12   4   1 |      122       12 |         7393 |    0.008837  |
+ | 1 1 1 1 |  13  13   1   1 |       13       13 |           91 |   -0.009742  |
+ | 1 1 1 1 |  14  14   1   1 |       14       14 |          105 |   -0.009741  |
+ | 1 1 1 1 |   1   1   2   2 |       38       38 |          741 |   -0.008896  |
+ | 1 1 1 1 |   8   1   2   2 |       45       38 |         1028 |    0.006788  |
+ | 1 1 1 1 |   2   2   2   2 |       39       39 |          780 |   -0.011253  |
+ | 1 1 1 1 |   3   2   2   2 |       40       39 |          819 |   -0.008289  |
+ | 1 1 1 1 |   9   2   2   2 |       46       39 |         1074 |    0.011153  |
+ | 1 1 1 1 |   4   2   3   2 |       78       39 |         3042 |   -0.010996  |
+ | 1 1 1 1 |  10   2   3   2 |       84       39 |         3525 |    0.008749  |
+ | 1 1 1 1 |   2   2   4   2 |      113       39 |         6367 |    0.009851  |
+ | 1 1 1 1 |   3   2   4   2 |      114       39 |         6480 |   -0.006591  |
+ | 1 1 1 1 |   9   2   4   2 |      120       39 |         7179 |   -0.008335  |
+ | 1 1 1 1 |   3   3   2   2 |       40       40 |          820 |   -0.016671  |
+ | 1 1 1 1 |   9   3   2   2 |       46       40 |         1075 |    0.010022  |
+ | 1 1 1 1 |  11   3   2   2 |       48       40 |         1168 |    0.010095  |
+ | 1 1 1 1 |   4   3   3   2 |       78       40 |         3043 |   -0.012135  |
+ | 1 1 1 1 |  10   3   3   2 |       84       40 |         3526 |    0.009422  |
+ | 1 1 1 1 |   3   3   4   2 |      114       40 |         6481 |   -0.010487  |
+ | 1 1 1 1 |  11   3   4   2 |      122       40 |         7421 |    0.008604  |
+ | 1 1 1 1 |   4   4   2   2 |       41       41 |          861 |   -0.006692  |
+ | 1 1 1 1 |   5   5   2   2 |       42       42 |          903 |   -0.009899  |
+ | 1 1 1 1 |   5   5   4   2 |      116       42 |         6712 |    0.008286  |
+ | 1 1 1 1 |   6   6   2   2 |       43       43 |          946 |   -0.018179  |
+ | 1 1 1 1 |  18   6   2   2 |       55       43 |         1528 |    0.007026  |
+ | 1 1 1 1 |   5   6   3   2 |       79       43 |         3124 |    0.007484  |
+ | 1 1 1 1 |   7   6   3   2 |       81       43 |         3283 |   -0.011740  |
+ | 1 1 1 1 |   8   6   4   2 |      119       43 |         7064 |   -0.007124  |
+ | 1 1 1 1 |  13   6   4   2 |      124       43 |         7669 |    0.009877  |
+ | 1 1 1 1 |   7   7   2   2 |       44       44 |          990 |   -0.020020  |
+ | 1 1 1 1 |  19   7   2   2 |       56       44 |         1584 |   -0.006547  |
+ | 1 1 1 1 |   8   7   3   2 |       82       44 |         3365 |   -0.007348  |
+ | 1 1 1 1 |  13   7   3   2 |       87       44 |         3785 |   -0.009127  |
+ | 1 1 1 1 |   5   7   4   2 |      116       44 |         6714 |    0.007977  |
+ | 1 1 1 1 |   7   7   4   2 |      118       44 |         6947 |   -0.007958  |
+ | 1 1 1 1 |   8   8   2   2 |       45       45 |         1035 |   -0.014256  |
+ | 1 1 1 1 |   7   8   3   2 |       81       45 |         3285 |   -0.007453  |
+ | 1 1 1 1 |   6   8   4   2 |      117       45 |         6831 |   -0.007123  |
+ | 1 1 1 1 |   9   9   2   2 |       46       46 |         1081 |   -0.016997  |
+ | 1 1 1 1 |  11   9   2   2 |       48       46 |         1174 |   -0.008878  |
+ | 1 1 1 1 |   4   9   3   2 |       78       46 |         3049 |    0.011950  |
+ | 1 1 1 1 |  10   9   3   2 |       84       46 |         3532 |   -0.013041  |
+ | 1 1 1 1 |  11   9   3   2 |       85       46 |         3616 |    0.008260  |
+ | 1 1 1 1 |   2   9   4   2 |      113       46 |         6374 |   -0.009707  |
+ | 1 1 1 1 |   3   9   4   2 |      114       46 |         6487 |    0.007455  |
+ | 1 1 1 1 |   9   9   4   2 |      120       46 |         7186 |    0.011555  |
+ | 1 1 1 1 |  11   9   4   2 |      122       46 |         7427 |   -0.009702  |
+ | 1 1 1 1 |  10  10   2   2 |       47       47 |         1128 |   -0.008644  |
+ | 1 1 1 1 |  10  10   3   2 |       84       47 |         3533 |   -0.008017  |
+ | 1 1 1 1 |  11  11   2   2 |       48       48 |         1176 |   -0.012070  |
+ | 1 1 1 1 |   4  11   3   2 |       78       48 |         3051 |    0.007209  |
+ | 1 1 1 1 |  10  11   3   2 |       84       48 |         3534 |   -0.007027  |
+ | 1 1 1 1 |  11  11   3   2 |       85       48 |         3618 |    0.006695  |
+ | 1 1 1 1 |   3  11   4   2 |      114       48 |         6489 |    0.006736  |
+ | 1 1 1 1 |  11  11   4   2 |      122       48 |         7429 |   -0.008092  |
+ | 1 1 1 1 |  14  14   2   2 |       51       51 |         1326 |   -0.018488  |
+ | 1 1 1 1 |   5  14   3   2 |       79       51 |         3132 |    0.008630  |
+ | 1 1 1 1 |   6  14   4   2 |      117       51 |         6837 |    0.010304  |
+ | 1 1 1 1 |  18  14   4   2 |      129       51 |         8307 |   -0.006569  |
+ | 1 1 1 1 |  15  15   2   2 |       52       52 |         1378 |   -0.007598  |
+ | 1 1 1 1 |  18  18   2   2 |       55       55 |         1540 |   -0.008325  |
+ | 1 1 1 1 |  13  18   4   2 |      124       55 |         7681 |   -0.006625  |
+ | 1 1 1 1 |  19  19   2   2 |       56       56 |         1596 |   -0.009090  |
+ | 1 1 1 1 |  13  19   3   2 |       87       56 |         3797 |   -0.006626  |
+ | 1 1 1 1 |   1   1   3   3 |       75       75 |         2850 |   -0.008923  |
+ | 1 1 1 1 |   8   1   3   3 |       82       75 |         3396 |    0.006860  |
+ | 1 1 1 1 |   5   2   3   3 |       79       76 |         3157 |    0.006550  |
+ | 1 1 1 1 |   3   3   3   3 |       77       77 |         3003 |   -0.006743  |
+ | 1 1 1 1 |   4   4   3   3 |       78       78 |         3081 |   -0.021103  |
+ | 1 1 1 1 |  10   4   3   3 |       84       78 |         3564 |    0.016780  |
+ | 1 1 1 1 |  11   4   3   3 |       85       78 |         3648 |   -0.009278  |
+ | 1 1 1 1 |   2   4   4   3 |      113       78 |         6406 |    0.011470  |
+ | 1 1 1 1 |   3   4   4   3 |      114       78 |         6519 |   -0.011316  |
+ | 1 1 1 1 |   9   4   4   3 |      120       78 |         7218 |   -0.009623  |
+ | 1 1 1 1 |  11   4   4   3 |      122       78 |         7459 |    0.010294  |
+ | 1 1 1 1 |   5   5   3   3 |       79       79 |         3160 |   -0.019020  |
+ | 1 1 1 1 |  20   5   3   3 |       94       79 |         4450 |    0.007605  |
+ | 1 1 1 1 |   6   5   4   3 |      117       79 |         6865 |   -0.012544  |
+ | 1 1 1 1 |   8   5   4   3 |      119       79 |         7100 |    0.007461  |
+ | 1 1 1 1 |   6   6   3   3 |       80       80 |         3240 |   -0.011434  |
+ | 1 1 1 1 |   7   7   3   3 |       81       81 |         3321 |   -0.017851  |
+ | 1 1 1 1 |  19   7   3   3 |       93       81 |         4359 |   -0.006835  |
+ | 1 1 1 1 |   6   7   4   3 |      117       81 |         6867 |   -0.007555  |
+ | 1 1 1 1 |  14   7   4   3 |      125       81 |         7831 |   -0.007066  |
+ | 1 1 1 1 |   8   8   3   3 |       82       82 |         3403 |   -0.014158  |
+ | 1 1 1 1 |   5   8   4   3 |      116       82 |         6752 |    0.007572  |
+ | 1 1 1 1 |  10  10   3   3 |       84       84 |         3570 |   -0.021051  |
+ | 1 1 1 1 |  11  10   3   3 |       85       84 |         3654 |    0.008313  |
+ | 1 1 1 1 |   2  10   4   3 |      113       84 |         6412 |   -0.009279  |
+ | 1 1 1 1 |   3  10   4   3 |      114       84 |         6525 |    0.008759  |
+ | 1 1 1 1 |   9  10   4   3 |      120       84 |         7224 |    0.010559  |
+ | 1 1 1 1 |  10  10   4   3 |      121       84 |         7344 |   -0.008499  |
+ | 1 1 1 1 |  11  10   4   3 |      122       84 |         7465 |   -0.009998  |
+ | 1 1 1 1 |  11  11   3   3 |       85       85 |         3655 |   -0.010782  |
+ | 1 1 1 1 |  11  11   4   3 |      122       85 |         7466 |    0.009313  |
+ | 1 1 1 1 |  13  13   3   3 |       87       87 |         3828 |   -0.015536  |
+ | 1 1 1 1 |   5  13   4   3 |      116       87 |         6757 |    0.007570  |
+ | 1 1 1 1 |  14  14   3   3 |       88       88 |         3916 |   -0.009181  |
+ | 1 1 1 1 |  19  19   3   3 |       93       93 |         4371 |   -0.007873  |
+ | 1 1 1 1 |  20  20   3   3 |       94       94 |         4465 |   -0.008842  |
+ | 1 1 1 1 |   1   1   4   4 |      112      112 |         6328 |   -0.008900  |
+ | 1 1 1 1 |   8   1   4   4 |      119      112 |         7133 |    0.006941  |
+ | 1 1 1 1 |   2   2   4   4 |      113      113 |         6441 |   -0.015320  |
+ | 1 1 1 1 |   3   2   4   4 |      114      113 |         6554 |    0.007800  |
+ | 1 1 1 1 |   9   2   4   4 |      120      113 |         7253 |    0.011833  |
+ | 1 1 1 1 |  11   2   4   4 |      122      113 |         7494 |   -0.008394  |
+ | 1 1 1 1 |   3   3   4   4 |      114      114 |         6555 |   -0.011953  |
+ | 1 1 1 1 |   9   3   4   4 |      120      114 |         7254 |   -0.006619  |
+ | 1 1 1 1 |  11   3   4   4 |      122      114 |         7495 |    0.010248  |
+ | 1 1 1 1 |   6   4   4   4 |      117      115 |         6901 |   -0.006644  |
+ | 1 1 1 1 |   5   5   4   4 |      116      116 |         6786 |   -0.020146  |
+ | 1 1 1 1 |  20   5   4   4 |      131      116 |         8631 |    0.006638  |
+ | 1 1 1 1 |   6   6   4   4 |      117      117 |         6903 |   -0.018688  |
+ | 1 1 1 1 |  18   6   4   4 |      129      117 |         8373 |    0.007329  |
+ | 1 1 1 1 |   7   7   4   4 |      118      118 |         7021 |   -0.009687  |
+ | 1 1 1 1 |   8   8   4   4 |      119      119 |         7140 |   -0.014054  |
+ | 1 1 1 1 |   9   9   4   4 |      120      120 |         7260 |   -0.015003  |
+ | 1 1 1 1 |  11   9   4   4 |      122      120 |         7501 |    0.009417  |
+ | 1 1 1 1 |  10  10   4   4 |      121      121 |         7381 |   -0.008179  |
+ | 1 1 1 1 |  11  11   4   4 |      122      122 |         7503 |   -0.015008  |
+ | 1 1 1 1 |  13  13   4   4 |      124      124 |         7750 |   -0.015397  |
+ | 1 1 1 1 |  14  14   4   4 |      125      125 |         7875 |   -0.009415  |
+ | 1 1 1 1 |  17  17   4   4 |      128      128 |         8256 |   -0.007454  |
+ | 1 1 1 1 |  18  18   4   4 |      129      129 |         8385 |   -0.008393  |
+ | 1 1 1 1 |  20  20   4   4 |      131      131 |         8646 |   -0.008622  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.1370
+
+          Printed all single excitations greater than 0.006363
+
+          Printed all double excitations greater than 0.006544
+
+
+
+
+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                   -40.1917720926
+
+            Total MP2-R12/A energy:               -40.3918078442
+
+            Total CC2-R12/A energy:               -40.3936882553
+
+
+
+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
+
+
+
+       Time used in   RHS - TOTAL  :       2.56 seconds
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *---- OUTPUT FROM COUPLED CLUSTER RESPONSE  -------------*
+ *                                                                 *
+ *----------    CALCULATION OF FIRST ORDER PROPERTIES    >---------*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                         +-------------------------------+
+                         ! Coupled Cluster model is: CC2 !
+                         +-------------------------------+
+
+
+ Solving   1 response equations:
+ L0 :
+ RPA: call cceq_str
+     Start vector generated from gradient
+ RPA: exit cceq_str
+
+
+
+ ----- COUPLED CLUSTER RESPONSE SOLVER -----
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+  
+ ROOT:  1 RESIDUAL TOT: 1.85031D-01
+      1       1         0.00     0.19E+00
+ Dimension of the reduced space:     2
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 1.20641D-02
+      2       1         0.00     0.12E-01
+ Dimension of the reduced space:     3
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 2.57208D-03
+      3       1         0.00     0.26E-02
+ Dimension of the reduced space:     4
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 5.51560D-04
+      4       1         0.00     0.55E-03
+ Dimension of the reduced space:     5
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 1.66408D-04
+      5       1         0.00     0.17E-03
+ Dimension of the reduced space:     6
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 2.64305D-05
+      6       1         0.00     0.26E-04
+ Dimension of the reduced space:     7
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 7.86274D-06
+      7       1         0.00     0.79E-05
+ Dimension of the reduced space:     8
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 2.56716D-06
+      8       1         0.00     0.26E-05
+ Dimension of the reduced space:     9
+ --- TIME USED IN THIS MICRO ITERATION        0.12
+
+  
+ ROOT:  1 RESIDUAL TOT: 3.97802D-07
+      9       1         0.00     0.40E-06
+ Dimension of the reduced space:    10
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 8.73242D-08
+     10       1         0.00     0.87E-07
+ Dimension of the reduced space:    11
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 1.41414D-08
+     11       1         0.00     0.14E-07
+ Dimension of the reduced space:    12
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 3.21752D-09
+     12       1         0.00     0.32E-08
+ Dimension of the reduced space:    13
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 7.47755D-10
+     13       1         0.00     0.75E-09
+ Dimension of the reduced space:    14
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 1.71902D-10
+     14       1         0.00     0.17E-09
+ Dimension of the reduced space:    15
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 3.66074D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.66074D-11
+     15       1         0.00     0.37E-10
+ Dimension of the reduced space:    15
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+    --------------------------------------
+    converged in 15 iterations
+    threshold:    0.10E-09
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.03
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.03
+
+
+  Total CPU  time used in CCEQ_SOLV:   1.67 seconds
+  Total wall time used in CCEQ_SOLV:   1.73 seconds
+
+
+ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               1.6158 %
+
+          Double Excitation Contribution :              98.3842 %
+
+          ||T1||/||T2||                  :               0.1282
+
+          Norm of Total Amplitude Vector :               0.4649
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       3     |       75          |              |   -0.029019  |
+ | 1   1   |   2       4     |      113          |              |    0.024265  |
+ | 1   1   |   5       4     |      116          |              |   -0.022054  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   3   1   2   1 |       40        1 |          781 |    0.033365  |
+ | 1 1 1 1 |   9   1   2   1 |       46        1 |         1036 |   -0.035854  |
+ | 1 1 1 1 |   4   1   3   1 |       78        1 |         3004 |    0.045487  |
+ | 1 1 1 1 |  10   1   3   1 |       84        1 |         3487 |   -0.038830  |
+ | 1 1 1 1 |  10   8   3   1 |       84        8 |         3494 |    0.034302  |
+ | 1 1 1 1 |  10  12   3   1 |       84       12 |         3498 |    0.035617  |
+ | 1 1 1 1 |   4   2   3   2 |       78       39 |         3042 |   -0.036818  |
+ | 1 1 1 1 |   3   2   4   2 |      114       39 |         6480 |   -0.034861  |
+ | 1 1 1 1 |   3   3   2   2 |       40       40 |          820 |   -0.033290  |
+ | 1 1 1 1 |   4   3   3   2 |       78       40 |         3043 |   -0.040514  |
+ | 1 1 1 1 |  10   3   3   2 |       84       40 |         3526 |    0.033521  |
+ | 1 1 1 1 |   6   6   2   2 |       43       43 |          946 |   -0.036428  |
+ | 1 1 1 1 |   7   6   3   2 |       81       43 |         3283 |   -0.040788  |
+ | 1 1 1 1 |  13   6   4   2 |      124       43 |         7669 |    0.035777  |
+ | 1 1 1 1 |   7   7   2   2 |       44       44 |          990 |   -0.040171  |
+ | 1 1 1 1 |  13   7   3   2 |       87       44 |         3785 |   -0.034716  |
+ | 1 1 1 1 |   5   7   4   2 |      116       44 |         6714 |    0.036372  |
+ | 1 1 1 1 |   9   9   2   2 |       46       46 |         1081 |   -0.033814  |
+ | 1 1 1 1 |   4   9   3   2 |       78       46 |         3049 |    0.041600  |
+ | 1 1 1 1 |  10   9   3   2 |       84       46 |         3532 |   -0.044918  |
+ | 1 1 1 1 |   3   9   4   2 |      114       46 |         6487 |    0.037795  |
+ | 1 1 1 1 |  11   9   4   2 |      122       46 |         7427 |   -0.042901  |
+ | 1 1 1 1 |  14  14   2   2 |       51       51 |         1326 |   -0.036895  |
+ | 1 1 1 1 |   5  14   3   2 |       79       51 |         3132 |    0.035660  |
+ | 1 1 1 1 |   6  14   4   2 |      117       51 |         6837 |    0.047288  |
+ | 1 1 1 1 |   4   4   3   3 |       78       78 |         3081 |   -0.042358  |
+ | 1 1 1 1 |  10   4   3   3 |       84       78 |         3564 |    0.033472  |
+ | 1 1 1 1 |   2   4   4   3 |      113       78 |         6406 |    0.038163  |
+ | 1 1 1 1 |   3   4   4   3 |      114       78 |         6519 |   -0.037662  |
+ | 1 1 1 1 |   9   4   4   3 |      120       78 |         7218 |   -0.033446  |
+ | 1 1 1 1 |  11   4   4   3 |      122       78 |         7459 |    0.035974  |
+ | 1 1 1 1 |   5   5   3   3 |       79       79 |         3160 |   -0.038056  |
+ | 1 1 1 1 |   6   5   4   3 |      117       79 |         6865 |   -0.042665  |
+ | 1 1 1 1 |  13   5   4   3 |      124       79 |         7705 |   -0.035527  |
+ | 1 1 1 1 |   7   7   3   3 |       81       81 |         3321 |   -0.035782  |
+ | 1 1 1 1 |  10  10   3   3 |       84       84 |         3570 |   -0.041869  |
+ | 1 1 1 1 |   9  10   4   3 |      120       84 |         7224 |    0.035356  |
+ | 1 1 1 1 |  11  10   4   3 |      122       84 |         7465 |   -0.041486  |
+ | 1 1 1 1 |   5  13   4   3 |      116       87 |         6757 |    0.040348  |
+ | 1 1 1 1 |   5   5   4   4 |      116      116 |         6786 |   -0.040203  |
+ | 1 1 1 1 |   6   6   4   4 |      117      117 |         6903 |   -0.037429  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.2482
+
+          Printed all single excitations greater than 0.021186
+
+          Printed all double excitations greater than 0.033063
+            Norm of singles part:        0.5909371316E-01
+            Norm of doubles part:        0.4611106362E+00
+        Norm of r12 doubles part:        0.1929306123E+01
+ CCFOP: call CC_D1AO to recalc the 1e Density
+  
+
+
+             +--------------------------------------------------------+
+             ! Unrelaxed  CC2    First-order one-electron properties: !
+             +--------------------------------------------------------+
+
+
+
+                            +-------------------------+
+                            !  Electric Dipole Moment !
+                            +-------------------------+
+
+
+
+                          Total Molecular Dipole Moment
+                          -----------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x      0.15706375         0.39921621         1.33164193
+      y     -0.00000000        -0.00000000        -0.00000000
+      z      0.00000000         0.00000000         0.00000000
+
+
+
+ *******************************************************************
+
+ Ground state energy is target 
+
+ Ecorr =                    -40.39368825528750051035
+
+ *******************************************************************
+     
+
+   *******************************************************************
+   *                                                                 *
+   *--------   OUTPUT FROM PROPERTY AND SYMMETRY ANALYSIS   ---------*
+   *                                                                 *
+   *******************************************************************
+
+
+  PUT TRIPLE: XDIPLEN  XDIPLEN  XDIPLEN  ON THE LIST.
+
+
+                         +-------------------------------+
+                         ! REQUESTED PROPERTY OPERATORS: !
+                         +-------------------------------+
+
+             Index   Oper. Label  Symmetry  Transp.  PDBS  Atom
+             --------------------------------------------------
+                1     HAM0            1        1      T      0
+                2     XDIPLEN         1        1      F      0
+                3     YDIPLEN         1        1      F      0
+                4     ZDIPLEN         1        1      F      0
+             --------------------------------------------------
+
+
+
+
+                         +-------------------------------+
+                         ! REQUESTED EXPECTATION VALUES: !
+                         +-------------------------------+
+
+                       Index   Oper. Label  Symmetry
+                       -----------------------------
+                       -----------------------------
+
+
+
+
+                       +------------------------------------+
+                       ! REQUESTED EFFECTIVE FOCK MATRICES: !
+                       +------------------------------------+
+
+                       Index   Oper. Label  Symmetry
+                       -----------------------------
+                       -----------------------------
+
+
+
+
+                       +-----------------------------------+
+                       ! REQUESTED FIRST ORDER XI VECTORS: !
+                       +-----------------------------------+
+
+             Index   Oper. Label  relaxed  Sym.     Frequency
+             --------------------------------------------------
+                1      XDIPLEN        F     1      0.000000D+00
+             --------------------------------------------------
+
+
+
+
+                        +----------------------------------+
+                        ! REQUESTED FIRST ORDER T VECTORS: !
+                        +----------------------------------+
+
+             Index   Oper. Label  relaxed  Sym.     Frequency
+             --------------------------------------------------
+                1      XDIPLEN        F     1      0.000000D+00
+             --------------------------------------------------
+
+
+
+
+                       +------------------------------------+
+                       ! REQUESTED FIRST ORDER ETA VECTORS: !
+                       +------------------------------------+
+
+             Index   Oper. Label  relaxed  Sym.     Frequency
+             --------------------------------------------------
+                1      XDIPLEN        F     1      0.000000D+00
+             --------------------------------------------------
+
+
+
+
+                      +-------------------------------------+
+                      ! REQUESTED FIRST ORDER ZETA VECTORS: !
+                      +-------------------------------------+
+
+             Index   Oper. Label  relaxed  Sym.     Frequency
+             --------------------------------------------------
+                1      XDIPLEN        F     1      0.000000D+00
+             --------------------------------------------------
+
+
+      
+
+    *******************************************************************
+    *          SOLVING COUPLED CLUSTER RESPONSE EQUATIONS             *
+    *******************************************************************
+
+
+
+ 
+ +======================================================================+
+ !                     RHS & ETA VECTORS TO COMPUTE:                    !
+ +======================================================================+
+ | TYPE | # VEC. |  NEEDED FOR:                                         |
+ +----------------------------------------------------------------------+
+ |  O1  |    1   |  first-order amplitude equations                     |
+ |  X1  |    1   |  first-order multipliers equations                   |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                       LINEAR EQUATIONS TO SOLVE:                     !
+ +======================================================================+
+ | TYPE | # VEC. |  EQUATION:                                           |
+ +----------------------------------------------------------------------+
+ |  R1  |    1   |  first-order amplitude response                      |
+ |  L1  |    1   |  first-order multiplier response                     |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                F MATRIX TRANSFORMATIONS TO COMPUTE:                  !
+ +======================================================================+
+ | TYPE | # VEC. |  TRANSFORMED:                                        |
+ +----------------------------------------------------------------------+
+ |  F1  |    1   |  first-order amplitude response (R1) vector          |
+ +======================================================================+
+
+
+
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  1 1th.-order amplitude rhs vectors "O1 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   0 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   0 A{O} matrix transformations 
+         -   1Xi{O} vector calculations    
+   will be performed.
+
+
+
+ Solving   1 response equations:
+ R1 :XDIPLEN   0.000000  1
+ RPA: call cceq_str
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+     R1  start vector nr.  1 of symmetry  1 generated from gradient
+ RPA: exit cceq_str
+
+
+
+ ----- COUPLED CLUSTER RESPONSE SOLVER -----
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 3.19327D-01
+      1       1         0.00     0.32E+00
+ Dimension of the reduced space:     2
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 4.74194D-02
+      2       1         0.00     0.47E-01
+ Dimension of the reduced space:     3
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 8.67905D-03
+      3       1         0.00     0.87E-02
+ Dimension of the reduced space:     4
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 2.10043D-03
+      4       1         0.00     0.21E-02
+ Dimension of the reduced space:     5
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 3.99465D-04
+      5       1         0.00     0.40E-03
+ Dimension of the reduced space:     6
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 1.08859D-04
+      6       1         0.00     0.11E-03
+ Dimension of the reduced space:     7
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 2.16575D-05
+      7       1         0.00     0.22E-04
+ Dimension of the reduced space:     8
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 4.63142D-06
+      8       1         0.00     0.46E-05
+ Dimension of the reduced space:     9
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 6.39955D-07
+      9       1         0.00     0.64E-06
+ Dimension of the reduced space:    10
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 1.58605D-07
+     10       1         0.00     0.16E-06
+ Dimension of the reduced space:    11
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 3.32194D-08
+     11       1         0.00     0.33E-07
+ Dimension of the reduced space:    12
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 5.84377D-09
+     12       1         0.00     0.58E-08
+ Dimension of the reduced space:    13
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 1.28865D-09
+     13       1         0.00     0.13E-08
+ Dimension of the reduced space:    14
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 2.12411D-10
+     14       1         0.00     0.21E-09
+ Dimension of the reduced space:    15
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 4.17957D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.17957D-11
+     15       1         0.00     0.42E-10
+ Dimension of the reduced space:    15
+ --- TIME USED IN THIS MICRO ITERATION        0.10
+
+    --------------------------------------
+    converged in 15 iterations
+    threshold:    0.10E-09
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.02
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.02
+
+
+  Total CPU  time used in CCEQ_SOLV:   1.49 seconds
+  Total wall time used in CCEQ_SOLV:   1.49 seconds
+
+
+ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              97.9063 %
+
+          Double Excitation Contribution :               2.0937 %
+
+          ||T1||/||T2||                  :               6.8382
+
+          Norm of Total Amplitude Vector :               2.6659
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   4       1     |        4          |              |    0.179832  |
+ | 1   1   |   6       1     |        6          |              |   -0.227290  |
+ | 1   1   |   2       2     |       39          |              |   -0.300712  |
+ | 1   1   |   3       2     |       40          |              |    1.110051  |
+ | 1   1   |   4       2     |       41          |              |    0.176968  |
+ | 1   1   |   5       2     |       42          |              |    0.394919  |
+ | 1   1   |   7       2     |       44          |              |    0.713734  |
+ | 1   1   |   1       3     |       75          |              |   -1.511486  |
+ | 1   1   |   8       3     |       82          |              |    0.363088  |
+ | 1   1   |  13       3     |       87          |              |    0.367958  |
+ | 1   1   |  14       3     |       88          |              |    0.224038  |
+ | 1   1   |   2       4     |      113          |              |    1.078588  |
+ | 1   1   |   3       4     |      114          |              |    0.318403  |
+ | 1   1   |   5       4     |      116          |              |   -0.755552  |
+ | 1   1   |   7       4     |      118          |              |    0.356018  |
+ | 1   1   |   9       4     |      120          |              |   -0.206497  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |  11   1   2   1 |       48        1 |         1129 |    0.026008  |
+ | 1 1 1 1 |  19   1   2   1 |       56        1 |         1541 |   -0.026827  |
+ | 1 1 1 1 |   1   1   3   1 |       75        1 |         2776 |   -0.047619  |
+ | 1 1 1 1 |  13   1   3   1 |       87        1 |         3742 |   -0.028281  |
+ | 1 1 1 1 |   9   1   4   1 |      120        1 |         7141 |    0.030460  |
+ | 1 1 1 1 |  20   1   4   1 |      131        1 |         8516 |   -0.029510  |
+ | 1 1 1 1 |   5   2   3   1 |       79        2 |         3083 |   -0.028776  |
+ | 1 1 1 1 |   7   3   3   1 |       81        3 |         3243 |    0.029910  |
+ | 1 1 1 1 |   5   5   3   1 |       79        5 |         3086 |    0.029501  |
+ | 1 1 1 1 |   7   7   3   1 |       81        7 |         3247 |    0.026002  |
+ | 1 1 1 1 |   4   1   2   2 |       41       38 |          858 |    0.025680  |
+ | 1 1 1 1 |   3   2   2   2 |       40       39 |          819 |   -0.024766  |
+ | 1 1 1 1 |   1   2   3   2 |       75       39 |         2814 |    0.043268  |
+ | 1 1 1 1 |   2   2   4   2 |      113       39 |         6367 |   -0.028892  |
+ | 1 1 1 1 |   3   3   2   2 |       40       40 |          820 |   -0.034416  |
+ | 1 1 1 1 |   9   3   2   2 |       46       40 |         1075 |    0.024721  |
+ | 1 1 1 1 |  19   3   2   2 |       56       40 |         1580 |    0.025283  |
+ | 1 1 1 1 |   1   3   3   2 |       75       40 |         2815 |    0.051479  |
+ | 1 1 1 1 |   4   3   3   2 |       78       40 |         3043 |   -0.051103  |
+ | 1 1 1 1 |   3   3   4   2 |      114       40 |         6481 |   -0.032947  |
+ | 1 1 1 1 |   9   3   4   2 |      120       40 |         7180 |   -0.034019  |
+ | 1 1 1 1 |   8   4   2   2 |       45       41 |         1031 |   -0.024197  |
+ | 1 1 1 1 |   8   6   2   2 |       45       43 |         1033 |   -0.032222  |
+ | 1 1 1 1 |   1   9   3   2 |       75       46 |         2821 |   -0.029512  |
+ | 1 1 1 1 |   2  11   4   2 |      113       48 |         6376 |    0.026174  |
+ | 1 1 1 1 |   4   1   3   3 |       78       75 |         3078 |    0.089934  |
+ | 1 1 1 1 |  10   1   3   3 |       84       75 |         3561 |   -0.039563  |
+ | 1 1 1 1 |  11   1   3   3 |       85       75 |         3645 |    0.026512  |
+ | 1 1 1 1 |   2   1   4   3 |      113       75 |         6403 |   -0.042679  |
+ | 1 1 1 1 |   3   1   4   3 |      114       75 |         6516 |    0.045971  |
+ | 1 1 1 1 |   9   1   4   3 |      120       75 |         7215 |    0.024460  |
+ | 1 1 1 1 |  11   1   4   3 |      122       75 |         7456 |   -0.025742  |
+ | 1 1 1 1 |   2   4   4   3 |      113       78 |         6406 |   -0.043726  |
+ | 1 1 1 1 |   5   4   4   3 |      116       78 |         6748 |    0.027830  |
+ | 1 1 1 1 |   2  10   4   3 |      113       84 |         6412 |    0.024430  |
+ | 1 1 1 1 |   5  10   4   3 |      116       84 |         6754 |   -0.024824  |
+ | 1 1 1 1 |   4   1   4   4 |      115      112 |         6667 |    0.026355  |
+ | 1 1 1 1 |   2   2   4   4 |      113      113 |         6441 |    0.029706  |
+ | 1 1 1 1 |  20   2   4   4 |      131      113 |         8628 |   -0.024481  |
+ | 1 1 1 1 |   8   4   4   4 |      119      115 |         7136 |   -0.025811  |
+ | 1 1 1 1 |   8   6   4   4 |      119      117 |         7138 |   -0.032068  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             2.6001
+
+          Printed all single excitations greater than 0.164913
+
+          Printed all double excitations greater than 0.024116
+            Norm of singles part:        0.2637848645E+01
+            Norm of doubles part:        0.3857491041E+00
+        Norm of r12 doubles part:        0.6947142717E+00
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ |          (result is written to file)             |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.03 secs.|
+ | time for  1 sets of left interm.:      0.00 secs.|
+ | time for  1 sets of right inter.:      0.01 secs.|
+ | time for  1 sets of 2. ord. int.:      0.02 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L0   No. |  R1  No. |   F1   No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     0    |     1    |      1       |       2.54  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      2.68 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      0.10      |
+ |  % of time used in Fock interm. :      2.07      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      2.48      |
+ |  % of time used in (**|k del)   :      0.05      |
+ |  % of time used in BF term      :      0.00      |
+ |  % of time used in C term       :      0.00      |
+ |  % of time used in GZ terms     :      0.00      |
+ |  % of time used in FG terms     :      0.00      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :      0.22      |
+ +==================================================+
+
+
+
+ Solving   1 response equations:
+ L1 :XDIPLEN   0.000000  1
+ RPA: call cceq_str
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+     L1  start vector nr.  1 of symmetry  1 generated from gradient
+ RPA: exit cceq_str
+
+
+
+ ----- COUPLED CLUSTER RESPONSE SOLVER -----
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 4.21494D-01
+      1       1         0.00     0.42E+00
+ Dimension of the reduced space:     2
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 5.02573D-02
+      2       1         0.00     0.50E-01
+ Dimension of the reduced space:     3
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 9.95104D-03
+      3       1         0.00     0.10E-01
+ Dimension of the reduced space:     4
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 2.32055D-03
+      4       1         0.00     0.23E-02
+ Dimension of the reduced space:     5
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 4.61666D-04
+      5       1         0.00     0.46E-03
+ Dimension of the reduced space:     6
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 1.13024D-04
+      6       1         0.00     0.11E-03
+ Dimension of the reduced space:     7
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 2.49118D-05
+      7       1         0.00     0.25E-04
+ Dimension of the reduced space:     8
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 5.63537D-06
+      8       1         0.00     0.56E-05
+ Dimension of the reduced space:     9
+ --- TIME USED IN THIS MICRO ITERATION        0.12
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 1.39661D-06
+      9       1         0.00     0.14E-05
+ Dimension of the reduced space:    10
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 3.11863D-07
+     10       1         0.00     0.31E-06
+ Dimension of the reduced space:    11
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 8.30850D-08
+     11       1         0.00     0.83E-07
+ Dimension of the reduced space:    12
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 1.69386D-08
+     12       1         0.00     0.17E-07
+ Dimension of the reduced space:    13
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 3.69198D-09
+     13       1         0.00     0.37E-08
+ Dimension of the reduced space:    14
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 6.44401D-10
+     14       1         0.00     0.64E-09
+ Dimension of the reduced space:    15
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 1.31962D-10
+     15       1         0.00     0.13E-09
+ Dimension of the reduced space:    16
+ --- TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 1.91873D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.91873D-11
+     16       1         0.00     0.19E-10
+ Dimension of the reduced space:    16
+ --- TIME USED IN THIS MICRO ITERATION        0.12
+
+    --------------------------------------
+    converged in 16 iterations
+    threshold:    0.10E-09
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.03
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.03
+
+
+  Total CPU  time used in CCEQ_SOLV:   1.80 seconds
+  Total wall time used in CCEQ_SOLV:   1.86 seconds
+
+
+ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              94.9835 %
+
+          Double Excitation Contribution :               5.0165 %
+
+          ||T1||/||T2||                  :               4.3514
+
+          Norm of Total Amplitude Vector :               4.8967
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   4       1     |        4          |              |    0.373382  |
+ | 1   1   |   6       1     |        6          |              |   -0.484984  |
+ | 1   1   |  10       1     |       10          |              |   -0.274630  |
+ | 1   1   |  11       1     |       11          |              |    0.212122  |
+ | 1   1   |   1       2     |       38          |              |    0.269380  |
+ | 1   1   |   2       2     |       39          |              |   -0.560685  |
+ | 1   1   |   3       2     |       40          |              |    2.027294  |
+ | 1   1   |   4       2     |       41          |              |    0.323428  |
+ | 1   1   |   5       2     |       42          |              |    0.666516  |
+ | 1   1   |   7       2     |       44          |              |    1.210412  |
+ | 1   1   |  11       2     |       48          |              |   -0.213274  |
+ | 1   1   |  15       2     |       52          |              |    0.163634  |
+ | 1   1   |   1       3     |       75          |              |   -2.838977  |
+ | 1   1   |   3       3     |       77          |              |    0.206921  |
+ | 1   1   |   4       3     |       78          |              |    0.180978  |
+ | 1   1   |   7       3     |       81          |              |    0.165030  |
+ | 1   1   |   8       3     |       82          |              |    0.563747  |
+ | 1   1   |  12       3     |       86          |              |    0.246329  |
+ | 1   1   |  13       3     |       87          |              |    0.596879  |
+ | 1   1   |  14       3     |       88          |              |    0.363422  |
+ | 1   1   |   1       4     |      112          |              |    0.194918  |
+ | 1   1   |   2       4     |      113          |              |    1.988458  |
+ | 1   1   |   3       4     |      114          |              |    0.575227  |
+ | 1   1   |   4       4     |      115          |              |    0.258919  |
+ | 1   1   |   5       4     |      116          |              |   -1.275621  |
+ | 1   1   |   6       4     |      117          |              |    0.197540  |
+ | 1   1   |   7       4     |      118          |              |    0.604126  |
+ | 1   1   |   9       4     |      120          |              |   -0.300424  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   4   1   1   1 |        4        1 |            7 |    0.041008  |
+ | 1 1 1 1 |   3   1   2   1 |       40        1 |          781 |    0.037669  |
+ | 1 1 1 1 |   7   1   2   1 |       44        1 |          947 |   -0.071754  |
+ | 1 1 1 1 |  10   1   2   1 |       47        1 |         1082 |    0.065267  |
+ | 1 1 1 1 |  11   1   2   1 |       48        1 |         1129 |    0.086213  |
+ | 1 1 1 1 |  19   1   2   1 |       56        1 |         1541 |   -0.077494  |
+ | 1 1 1 1 |   1   1   3   1 |       75        1 |         2776 |   -0.088550  |
+ | 1 1 1 1 |   8   1   3   1 |       82        1 |         3322 |   -0.098800  |
+ | 1 1 1 1 |  12   1   3   1 |       86        1 |         3656 |   -0.077012  |
+ | 1 1 1 1 |  13   1   3   1 |       87        1 |         3742 |   -0.087188  |
+ | 1 1 1 1 |  14   1   3   1 |       88        1 |         3829 |   -0.053086  |
+ | 1 1 1 1 |  24   1   3   1 |       98        1 |         4754 |   -0.043945  |
+ | 1 1 1 1 |  25   1   3   1 |       99        1 |         4852 |    0.043735  |
+ | 1 1 1 1 |   2   1   4   1 |      113        1 |         6329 |    0.044970  |
+ | 1 1 1 1 |   5   1   4   1 |      116        1 |         6671 |    0.070380  |
+ | 1 1 1 1 |   9   1   4   1 |      120        1 |         7141 |    0.096927  |
+ | 1 1 1 1 |  20   1   4   1 |      131        1 |         8516 |   -0.084824  |
+ | 1 1 1 1 |   2   2   1   1 |        2        2 |            3 |    0.052572  |
+ | 1 1 1 1 |   6   2   2   1 |       43        2 |          905 |    0.050823  |
+ | 1 1 1 1 |  14   2   2   1 |       51        2 |         1277 |    0.057733  |
+ | 1 1 1 1 |   5   2   3   1 |       79        2 |         3083 |   -0.071131  |
+ | 1 1 1 1 |   9   2   3   1 |       83        2 |         3405 |   -0.064921  |
+ | 1 1 1 1 |  20   2   3   1 |       94        2 |         4373 |    0.048618  |
+ | 1 1 1 1 |   6   2   4   1 |      117        2 |         6788 |   -0.048813  |
+ | 1 1 1 1 |   8   2   4   1 |      119        2 |         7023 |    0.057723  |
+ | 1 1 1 1 |  13   2   4   1 |      124        2 |         7628 |   -0.063499  |
+ | 1 1 1 1 |   3   3   1   1 |        3        3 |            6 |   -0.054685  |
+ | 1 1 1 1 |   6   3   2   1 |       43        3 |          906 |    0.066680  |
+ | 1 1 1 1 |   8   3   2   1 |       45        3 |          993 |    0.062759  |
+ | 1 1 1 1 |  14   3   2   1 |       51        3 |         1278 |   -0.071218  |
+ | 1 1 1 1 |   7   3   3   1 |       81        3 |         3243 |    0.074109  |
+ | 1 1 1 1 |  10   3   3   1 |       84        3 |         3489 |   -0.041490  |
+ | 1 1 1 1 |  11   3   3   1 |       85        3 |         3573 |   -0.054642  |
+ | 1 1 1 1 |  19   3   3   1 |       93        3 |         4281 |    0.043600  |
+ | 1 1 1 1 |   6   3   4   1 |      117        3 |         6789 |    0.056148  |
+ | 1 1 1 1 |  13   3   4   1 |      124        3 |         7629 |   -0.042467  |
+ | 1 1 1 1 |  14   3   4   1 |      125        3 |         7753 |    0.048449  |
+ | 1 1 1 1 |   2   4   4   1 |      113        4 |         6332 |    0.042937  |
+ | 1 1 1 1 |  14   5   2   1 |       51        5 |         1280 |   -0.041911  |
+ | 1 1 1 1 |   5   5   3   1 |       79        5 |         3086 |    0.051749  |
+ | 1 1 1 1 |  20   5   3   1 |       94        5 |         4376 |   -0.048548  |
+ | 1 1 1 1 |   6   5   4   1 |      117        5 |         6791 |    0.038700  |
+ | 1 1 1 1 |  13   5   4   1 |      124        5 |         7631 |    0.043379  |
+ | 1 1 1 1 |   6   7   2   1 |       43        7 |          910 |    0.044262  |
+ | 1 1 1 1 |   7   7   3   1 |       81        7 |         3247 |    0.046997  |
+ | 1 1 1 1 |  19   7   3   1 |       93        7 |         4285 |    0.042510  |
+ | 1 1 1 1 |   3   8   2   1 |       40        8 |          788 |   -0.042425  |
+ | 1 1 1 1 |   1   8   3   1 |       75        8 |         2783 |    0.083502  |
+ | 1 1 1 1 |   2   8   4   1 |      113        8 |         6336 |   -0.043229  |
+ | 1 1 1 1 |   3  12   2   1 |       40       12 |          792 |   -0.043197  |
+ | 1 1 1 1 |   1  12   3   1 |       75       12 |         2787 |    0.097135  |
+ | 1 1 1 1 |   2  12   4   1 |      113       12 |         6340 |   -0.042802  |
+ | 1 1 1 1 |   9  12   4   1 |      120       12 |         7152 |   -0.043664  |
+ | 1 1 1 1 |   4   1   2   2 |       41       38 |          858 |    0.049495  |
+ | 1 1 1 1 |   6   1   2   2 |       43       38 |          941 |   -0.043239  |
+ | 1 1 1 1 |   2   1   3   2 |       76       38 |         2888 |   -0.053488  |
+ | 1 1 1 1 |   5   1   3   2 |       79       38 |         3119 |    0.043629  |
+ | 1 1 1 1 |   9   1   3   2 |       83       38 |         3441 |    0.074694  |
+ | 1 1 1 1 |  10   1   3   2 |       84       38 |         3524 |    0.044770  |
+ | 1 1 1 1 |   2   2   2   2 |       39       39 |          780 |    0.055353  |
+ | 1 1 1 1 |   3   2   2   2 |       40       39 |          819 |   -0.054484  |
+ | 1 1 1 1 |   1   2   3   2 |       75       39 |         2814 |    0.169046  |
+ | 1 1 1 1 |   2   2   4   2 |      113       39 |         6367 |   -0.067937  |
+ | 1 1 1 1 |   7   2   4   2 |      118       39 |         6942 |   -0.054515  |
+ | 1 1 1 1 |   9   2   4   2 |      120       39 |         7179 |   -0.075386  |
+ | 1 1 1 1 |  10   2   4   2 |      121       39 |         7299 |   -0.046367  |
+ | 1 1 1 1 |  11   2   4   2 |      122       39 |         7420 |   -0.058381  |
+ | 1 1 1 1 |   3   3   2   2 |       40       40 |          820 |   -0.100103  |
+ | 1 1 1 1 |   7   3   2   2 |       44       40 |          986 |    0.038917  |
+ | 1 1 1 1 |   9   3   2   2 |       46       40 |         1075 |    0.045818  |
+ | 1 1 1 1 |  19   3   2   2 |       56       40 |         1580 |    0.045289  |
+ | 1 1 1 1 |   1   3   3   2 |       75       40 |         2815 |    0.089270  |
+ | 1 1 1 1 |   4   3   3   2 |       78       40 |         3043 |   -0.146415  |
+ | 1 1 1 1 |   6   3   3   2 |       80       40 |         3200 |    0.053649  |
+ | 1 1 1 1 |   8   3   3   2 |       82       40 |         3361 |    0.063917  |
+ | 1 1 1 1 |  10   3   3   2 |       84       40 |         3526 |    0.062516  |
+ | 1 1 1 1 |  11   3   3   2 |       85       40 |         3610 |   -0.056520  |
+ | 1 1 1 1 |  12   3   3   2 |       86       40 |         3695 |    0.043925  |
+ | 1 1 1 1 |   2   3   4   2 |      113       40 |         6368 |    0.056521  |
+ | 1 1 1 1 |   3   3   4   2 |      114       40 |         6481 |   -0.054478  |
+ | 1 1 1 1 |   7   3   4   2 |      118       40 |         6943 |    0.043146  |
+ | 1 1 1 1 |   9   3   4   2 |      120       40 |         7180 |   -0.137808  |
+ | 1 1 1 1 |  11   3   4   2 |      122       40 |         7421 |    0.063424  |
+ | 1 1 1 1 |   8   4   2   2 |       45       41 |         1031 |   -0.043921  |
+ | 1 1 1 1 |   7   4   3   2 |       81       41 |         3281 |    0.053199  |
+ | 1 1 1 1 |  10   4   3   2 |       84       41 |         3527 |    0.038150  |
+ | 1 1 1 1 |   4   5   3   2 |       78       42 |         3045 |   -0.050263  |
+ | 1 1 1 1 |  10   5   3   2 |       84       42 |         3528 |    0.045983  |
+ | 1 1 1 1 |  11   5   4   2 |      122       42 |         7423 |    0.038393  |
+ | 1 1 1 1 |   8   6   2   2 |       45       43 |         1033 |   -0.058317  |
+ | 1 1 1 1 |  10   6   3   2 |       84       43 |         3529 |    0.046294  |
+ | 1 1 1 1 |  11   6   3   2 |       85       43 |         3613 |    0.042620  |
+ | 1 1 1 1 |  16   6   4   2 |      127       43 |         8044 |    0.057434  |
+ | 1 1 1 1 |   7   7   2   2 |       44       44 |          990 |    0.072391  |
+ | 1 1 1 1 |   1   7   3   2 |       75       44 |         2819 |   -0.075496  |
+ | 1 1 1 1 |   4   7   3   2 |       78       44 |         3047 |   -0.083649  |
+ | 1 1 1 1 |  10   7   3   2 |       84       44 |         3530 |    0.068675  |
+ | 1 1 1 1 |  11   7   3   2 |       85       44 |         3614 |   -0.061042  |
+ | 1 1 1 1 |  13   7   3   2 |       87       44 |         3785 |    0.049266  |
+ | 1 1 1 1 |   2   7   4   2 |      113       44 |         6372 |    0.088487  |
+ | 1 1 1 1 |   7   7   4   2 |      118       44 |         6947 |    0.041151  |
+ | 1 1 1 1 |   9   7   4   2 |      120       44 |         7184 |   -0.058125  |
+ | 1 1 1 1 |  11   7   4   2 |      122       44 |         7425 |    0.042567  |
+ | 1 1 1 1 |  17   7   4   2 |      128       44 |         8172 |    0.043451  |
+ | 1 1 1 1 |   3   8   3   2 |       77       45 |         2971 |   -0.037816  |
+ | 1 1 1 1 |   7   8   3   2 |       81       45 |         3285 |   -0.042511  |
+ | 1 1 1 1 |  13   8   4   2 |      124       45 |         7671 |    0.054428  |
+ | 1 1 1 1 |  14   8   4   2 |      125       45 |         7795 |   -0.062204  |
+ | 1 1 1 1 |   1   9   3   2 |       75       46 |         2821 |   -0.120849  |
+ | 1 1 1 1 |  12   9   3   2 |       86       46 |         3701 |   -0.038576  |
+ | 1 1 1 1 |   2   9   4   2 |      113       46 |         6374 |    0.071715  |
+ | 1 1 1 1 |   3   9   4   2 |      114       46 |         6487 |    0.078695  |
+ | 1 1 1 1 |   5   9   4   2 |      116       46 |         6716 |   -0.048436  |
+ | 1 1 1 1 |   7   9   4   2 |      118       46 |         6949 |    0.047779  |
+ | 1 1 1 1 |   1  10   3   2 |       75       47 |         2822 |   -0.052472  |
+ | 1 1 1 1 |   4  10   3   2 |       78       47 |         3050 |   -0.040850  |
+ | 1 1 1 1 |  11  10   3   2 |       85       47 |         3617 |   -0.051670  |
+ | 1 1 1 1 |   2  10   4   2 |      113       47 |         6375 |    0.071536  |
+ | 1 1 1 1 |   3  10   4   2 |      114       47 |         6488 |   -0.046359  |
+ | 1 1 1 1 |   1  11   3   2 |       75       48 |         2823 |   -0.064276  |
+ | 1 1 1 1 |   4  11   3   2 |       78       48 |         3051 |   -0.047260  |
+ | 1 1 1 1 |  10  11   3   2 |       84       48 |         3534 |    0.064254  |
+ | 1 1 1 1 |   2  11   4   2 |      113       48 |         6376 |    0.099775  |
+ | 1 1 1 1 |   3  11   4   2 |      114       48 |         6489 |   -0.069640  |
+ | 1 1 1 1 |   5  11   4   2 |      116       48 |         6718 |   -0.043335  |
+ | 1 1 1 1 |   7  13   3   2 |       81       50 |         3290 |   -0.038041  |
+ | 1 1 1 1 |   9  14   3   2 |       83       51 |         3454 |   -0.071634  |
+ | 1 1 1 1 |   8  14   4   2 |      119       51 |         7072 |    0.076372  |
+ | 1 1 1 1 |  12  14   4   2 |      123       51 |         7554 |   -0.038556  |
+ | 1 1 1 1 |   6  16   4   2 |      117       53 |         6839 |   -0.057462  |
+ | 1 1 1 1 |   1   1   3   3 |       75       75 |         2850 |    0.043935  |
+ | 1 1 1 1 |   4   1   3   3 |       78       75 |         3078 |    0.169608  |
+ | 1 1 1 1 |  10   1   3   3 |       84       75 |         3561 |   -0.073832  |
+ | 1 1 1 1 |  11   1   3   3 |       85       75 |         3645 |    0.049997  |
+ | 1 1 1 1 |   2   1   4   3 |      113       75 |         6403 |   -0.227455  |
+ | 1 1 1 1 |   3   1   4   3 |      114       75 |         6516 |    0.131150  |
+ | 1 1 1 1 |   7   1   4   3 |      118       75 |         6978 |   -0.041744  |
+ | 1 1 1 1 |   9   1   4   3 |      120       75 |         7215 |    0.106768  |
+ | 1 1 1 1 |  10   1   4   3 |      121       75 |         7335 |   -0.060798  |
+ | 1 1 1 1 |  11   1   4   3 |      122       75 |         7456 |   -0.101318  |
+ | 1 1 1 1 |   2   2   3   3 |       76       76 |         2926 |    0.055780  |
+ | 1 1 1 1 |   1   2   4   3 |      112       76 |         6292 |    0.084742  |
+ | 1 1 1 1 |   3   3   3   3 |       77       77 |         3003 |   -0.053318  |
+ | 1 1 1 1 |  12   4   3   3 |       86       78 |         3733 |    0.039132  |
+ | 1 1 1 1 |   2   4   4   3 |      113       78 |         6406 |   -0.128745  |
+ | 1 1 1 1 |   3   4   4   3 |      114       78 |         6519 |   -0.046705  |
+ | 1 1 1 1 |   5   4   4   3 |      116       78 |         6748 |    0.094932  |
+ | 1 1 1 1 |   7   4   4   3 |      118       78 |         6981 |   -0.041548  |
+ | 1 1 1 1 |   9   4   4   3 |      120       78 |         7218 |   -0.067957  |
+ | 1 1 1 1 |   5   5   3   3 |       79       79 |         3160 |   -0.052817  |
+ | 1 1 1 1 |   1   5   4   3 |      112       79 |         6295 |   -0.075009  |
+ | 1 1 1 1 |   4   5   4   3 |      115       79 |         6634 |   -0.046661  |
+ | 1 1 1 1 |  12   5   4   3 |      123       79 |         7582 |    0.040245  |
+ | 1 1 1 1 |   2   6   4   3 |      113       80 |         6408 |    0.046003  |
+ | 1 1 1 1 |   7   7   3   3 |       81       81 |         3321 |    0.058205  |
+ | 1 1 1 1 |   3   8   4   3 |      114       82 |         6523 |    0.047891  |
+ | 1 1 1 1 |   1   9   4   3 |      112       83 |         6299 |   -0.064504  |
+ | 1 1 1 1 |   4   9   4   3 |      115       83 |         6638 |    0.052485  |
+ | 1 1 1 1 |   6   9   4   3 |      117       83 |         6869 |    0.061290  |
+ | 1 1 1 1 |   1  10   4   3 |      112       84 |         6300 |    0.045806  |
+ | 1 1 1 1 |   2  10   4   3 |      113       84 |         6412 |    0.084693  |
+ | 1 1 1 1 |   5  10   4   3 |      116       84 |         6754 |   -0.079634  |
+ | 1 1 1 1 |   9  10   4   3 |      120       84 |         7224 |    0.043150  |
+ | 1 1 1 1 |   1  11   4   3 |      112       85 |         6301 |    0.059007  |
+ | 1 1 1 1 |   2  11   4   3 |      113       85 |         6413 |   -0.047770  |
+ | 1 1 1 1 |   5  11   4   3 |      116       85 |         6755 |    0.054492  |
+ | 1 1 1 1 |  13  11   4   3 |      124       85 |         7711 |   -0.046340  |
+ | 1 1 1 1 |   4   1   4   4 |      115      112 |         6667 |    0.051104  |
+ | 1 1 1 1 |   6   1   4   4 |      117      112 |         6898 |   -0.046190  |
+ | 1 1 1 1 |   2   2   4   4 |      113      113 |         6441 |    0.150066  |
+ | 1 1 1 1 |   3   2   4   4 |      114      113 |         6554 |   -0.039629  |
+ | 1 1 1 1 |  11   2   4   4 |      122      113 |         7494 |    0.040345  |
+ | 1 1 1 1 |  20   2   4   4 |      131      113 |         8628 |   -0.043755  |
+ | 1 1 1 1 |   3   3   4   4 |      114      114 |         6555 |   -0.050923  |
+ | 1 1 1 1 |   9   3   4   4 |      120      114 |         7254 |   -0.038016  |
+ | 1 1 1 1 |   8   4   4   4 |      119      115 |         7136 |   -0.047338  |
+ | 1 1 1 1 |   5   5   4   4 |      116      116 |         6786 |   -0.044263  |
+ | 1 1 1 1 |   9   5   4   4 |      120      116 |         7256 |    0.043178  |
+ | 1 1 1 1 |   8   6   4   4 |      119      117 |         7138 |   -0.059473  |
+ | 1 1 1 1 |   9   9   4   4 |      120      120 |         7260 |   -0.040992  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             4.8412
+
+          Printed all single excitations greater than 0.162432
+
+          Printed all double excitations greater than 0.037329
+            Norm of singles part:        0.4772281204E+01
+            Norm of doubles part:        0.1096735035E+01
+        Norm of r12 doubles part:        0.1649867061E+01
+
+ Solution of CC response equations completed.
+
+
+ *******************************************************************
+ *                                                                 *
+ *--------  OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE   ---------*
+ *                                                                 *
+ *--------     CALCULATION OF SECOND ORDER PROPERTIES     ---------*
+ *                                                                 *
+ *******************************************************************
+
+ 
+
+
+   For the requested  1 second-order properties
+         -   0 F matrix transformations with R1 vectors
+         -   0 J matrix transformations with L1 vectors
+         -   1 ETA and XKSI vector calculations 
+         -   0 X intermediate calculations 
+         -   0 2. order reortho./relax. contributions
+   will be performed.
+
+
+
+ Time used for    1 O1/X1 vector calculation:        0.02 seconds.
+
+ Total time for   1 linear response function:        0.02 seconds.
+
+
+             +--------------------------------------------------------+
+             !      FINAL CC2 RESULTS FOR THE SECOND-ORDER PROPERTIES !
+             +--------------------------------------------------------+
+
+
+  A operator                  B operator                     property 
+------------------------------------------------------------------------
+
+ XDIPLEN  (unrel.) -0.0000   XDIPLEN  (unrel.)  0.0000      15.531270    
+------------------------------------------------------------------------
+
+
+
+ *******************************************************************
+ *                                                                 *
+ *-------- OUTPUT FROM COUPLED CLUSTER QUADRATIC RESPONSE ---------*
+ *                                                                 *
+ *--------     CALCULATION OF CC HYPERPOLARIZABILITIES    ---------*
+ *                                                                 *
+ *******************************************************************
+
+
+
+   For the requested  1 quadratic response functions 
+         -   1 G matrix transformations 
+         -   0 B matrix transformations 
+         -   0 K matrix transformations 
+         -   1 F matrix transformations 
+         -   1 F{O} matrix transformations 
+         -   1 ETA{O} vector calculations 
+         -   0 Xksi{O2} x L1 and Eta{O2} x R1 dot products
+         -   0 X1 x R2 dot products 
+   will be performed.
+
+
+
+
+ +==================================================+
+ |        G MATRIX TRANSFORMATION SECTION           |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | L vec. | R vec. | R vec. |  # prod. |            |
+ | L0  No.| R1  No.| R1  No.| with R1  | time/secs  |
+ +--------------------------------------------------+
+ |     0  |     1  |     1  |      1  |       0.01  |
+ +--------------------------------------------------+
+ | total time for   1 G transforms.:      0.08 secs.|
+ +==================================================+
+
+
+
+ Time used for    1 G matrix transformations:        0.08 seconds.
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.03 secs.|
+ | time for  1 sets of left interm.:      0.00 secs.|
+ | time for  1 sets of right inter.:      0.01 secs.|
+ | time for  1 sets of 2. ord. int.:      0.02 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |  # products  |             |
+ |  L1  No. |  R1  No. |   with R1    |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     1    |      1       |       2.53  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      2.66 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      0.08      |
+ |  % of time used in Fock interm. :      2.01      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      2.43      |
+ |  % of time used in (**|k del)   :      0.05      |
+ |  % of time used in BF term      :      0.00      |
+ |  % of time used in C term       :      0.00      |
+ |  % of time used in GZ terms     :      0.00      |
+ |  % of time used in FG terms     :      0.00      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :      0.20      |
+ +==================================================+
+
+
+
+ Time used for    1 F matrix transformations:        2.66 seconds.
+
+ Time used for    1 F{O} matrix transform.:          0.00 seconds.
+
+ Time used for    1 ETA{O} vector calculat.:         0.02 seconds.
+
+ Time used for    0 Xksi{O} and Eta{O2} vector calculat.:         0.00 seconds.
+
+ Total time for   1 quadratic response func.:        2.76 seconds.
+
+
+                  +--------------------------------------------------------------------------------------+
+                  !                FINAL CC2 RESULTS FOR THE FIRST HYPERPOLARIZABILITIES                 !
+                  +--------------------------------------------------------------------------------------+
+
+
+  A operator                  B operator                  C operator                     property 
+------------------------------------------------------------------------------------------------------
+
+ XDIPLEN  (unrel.) -0.0000   XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000      3.3441790    
+
+
+------------------------------------------------------------------------------------------------------
+
+
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                   -40.1917720926                
+            Total MP2-R12/A energy:               -40.3918078442                
+            Total CC2-R12/A energy:               -40.3936882553                
+
+
+          Threshold used for packing of integrals: 0.10E-14
+          Time used for packing and unpacking:        4.38 seconds
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+ CPU and wall time for CC :     155.844     156.519
+
+ 
+     Date and time (Linux)  : Wed Sep  5 11:50:54 2018
+     Host name              : foeroyar                                
+
+
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+  Total CPU  time used in DALTON:  2 minutes 42 seconds
+  Total wall time used in DALTON:  2 minutes 42 seconds
+
+ 
+     Date and time (Linux)  : Wed Sep  5 11:50:54 2018
+     Host name              : foeroyar                                

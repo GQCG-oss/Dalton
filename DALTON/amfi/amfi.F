@@ -1,31 +1,25 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
-      Subroutine amfi(IN,LUPROP,BREIT,FINITE,EXP_FIN,
+      Subroutine amfi(LUAMFI_INP,LUPROP,BREIT,FINITE,EXP_FIN,
      *                WRK,LFREE)            
 CBS
-CBS IN:  Input file, to be replaced by direct reading from DALTON arrays..
+CBS LUAMFI_INP:  Input file, to be replaced by direct reading from DALTON arrays..
 CBS LUPROP: Unit for writing the atomic integrals 
 CBS BREIT: FLAG to switch to Breit-Pauli (Douglas-Kroll is the default)
 CBS FINITE: flag whether to use a finite nucleus or not ...
@@ -176,7 +170,7 @@ cbs   move some powers of x,y,z to the right place   END
       endif 
 cbs   read the input 
       call readbas(Lhigh,makemean,bonn,breit,
-     *symmetry,sameorb,AIMP,oneonly,ncont4,numballcart,IN,
+     *symmetry,sameorb,AIMP,oneonly,ncont4,numballcart,LUAMFI_INP,
      *ifinite,EXP_FIN) 
 cbs
 cbs
@@ -5940,8 +5934,8 @@ cbs   e.g. for spins, arguments are doubled values...
      
 
       subroutine readbas(Lhigh,makemean,bonn,breit,
-     *symmetry,sameorb,AIMP,oneonly,ncont4,numballcart,IN,ifinite,
-     *EXP_FIN) 
+     *symmetry,sameorb,AIMP,oneonly,ncont4,numballcart,LUAMFI_INP,
+     *ifinite,EXP_FIN) 
 cbs   suposed to read the maximum of l-values, the number of primitive and contracted 
 cbs   functions, the exponents and contraction coefficients
 #include "implicit.h"
@@ -6016,9 +6010,9 @@ CBS   write(LUPRI,*) 'OTHER-ORBIT included'
       if (AIMP) then 
 CBS   write(LUPRI,*) 'CORE removed for use with AIMP' 
       endif 
-      read(IN,*) charge,Lhigh
+      read(LUAMFI_INP,*) charge,Lhigh
       if (Lhigh.gt.Lmax) then 
-      write(LUPRI,*) 'Sorry, so far this code deals only ',
+      write(LUPRI,*) 'Sorry, so far the AMFI code deals only ',
      *'with maximum l-values of ',Lmax
       CALL QUIT('Too high angular momentum values in AMFI')            
       endif  
@@ -6032,7 +6026,7 @@ CBS   write(LUPRI,'(A19,F5.2)') chcharge,charge
       enddo 
       do Lrun=0,Lhigh 
 CBS   write(LUPRI,*) 'ANGULAR MOMENTUM ',LRUN  
-         read(IN,*) nprimit(Lrun),ncontrac(Lrun) 
+         read(LUAMFI_INP,*) nprimit(Lrun),ncontrac(Lrun) 
 CBS   write(LUPRI,'(I3,I3)') nprimit(Lrun),ncontrac(Lrun) 
 cbs   check keywords
 cbs   check maximum numbers
@@ -6040,14 +6034,14 @@ cbs   check maximum numbers
             write(LUPRI,*) 'Too many primitives for L=',Lrun,
      *           ' increase MxprimL in para.h or reduce ',
      *           'the number of primitives to at least ',MxprimL
-            CALL QUIT('Too many primitive functions in AMFI')            
+            CALL QUIT('Too many primitive functions in AMFI')
          endif   
          if (ncontrac(Lrun).gt.MxcontL) then 
             write(LUPRI,*) 'Too many contracted fncts for L=',Lrun,
      *           ' increase MxcontL in para.h or ',
      *           'reduce the number of contracted functions',
      *           'to at most ',MxcontL
-            CALL QUIT('Too many contracted functions in AMFI')            
+            CALL QUIT('Too many contracted functions in AMFI')
          endif   
          if (ncontrac(Lrun).gt.nprimit(Lrun)) then 
             write(LUPRI,*) 'You have more contracted than ',
@@ -6061,11 +6055,11 @@ C    *ncontrac(Lrun),' contracted functions, built from ',
 C    *nprimit(Lrun),
 C    *' uncontracted functions.' 
          do ILINE=1,nprimit(Lrun)
-            read(IN,*) exponents(ILINE,Lrun), 
+            read(LUAMFI_INP,*) exponents(ILINE,Lrun), 
      *           (cntscrtch(ILINE,JRUN,Lrun),
      *           Jrun=1,ncontrac(Lrun))
          enddo 
-ckr         read(IN,'(A76)') header
+ckr         read(LUAMFI_INP,'(A76)') header
 c
 cbs   
 cbs   end of reading for the current L-value 

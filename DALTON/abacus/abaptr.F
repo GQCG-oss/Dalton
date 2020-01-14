@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -284,10 +278,12 @@ C
      2                LSMAX, MOFF(MXCORB), NCMOT, MXBAS1, MXBAS2, NNASHX
       COMMON /PTRINF/ THR1, THR2, DAWEIG, SQWEIG, IPRINT
       COMMON /PTRSYM/ NSYM, MUL(8,8), NENT(8,8), ISYOFF(8,8)
-      INTEGER    NDUM(8)
 #include "abainf.h"
 #include "inftap.h"
 #include "ccom.h"
+      INTEGER NDUM(8)
+      LOGICAL FNDLAB
+
       CALL QENTER('PTRMOS')
       THR1 = THRS
       THR2 = THRS
@@ -296,7 +292,11 @@ C     Modified to read full symmetry data     881006  PRT
 C     Used from LUSIFC: NCMOT_I, NNASHX, NSYM, MUL, NISH, NASH, NORB, NBAS
 C
       REWIND LUSIFC
-      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      IF ( .NOT.FNDLAB('SIR IPH ',LUSIFC) ) THEN
+      ! this might be a CI calculation
+         REWIND LUSIFC
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+      END IF
       READ (LUSIFC)
       READ (LUSIFC) NISHI,NASHI,NOCCI,NORBI,NBASI,NCONF,NWOPT,NWOPH,
      *              NCDETS,NCMOT_I,NNASHX,NNASHY,NNORBT,N2ORBT,
@@ -380,7 +380,7 @@ C
       WRITE(LUPRI,2600) THR1, THR2
       WRITE(LUPRI,2700) IPRINT
       WRITE(LUPRI,2800) NSYM
-      DO, I = 1,NSYM
+      DO I = 1,NSYM
         WRITE(LUPRI,2850) (MUL(I,J),J = 1,NSYM)
       END DO
       WRITE(LUPRI,2900) (I,I = 1,NSYM)
@@ -466,7 +466,7 @@ C
       INTEGER   T, U, V, X, TU, VX, TUVX, SIGMA, SIGMB, ALPHA, ALPHAP,
      *          IT(*)
       INTEGER*8 IBUF(*), IND
-      REAL*8    PV(*), CMO(*), BUF(*), P2(*), P4V(*)
+      REAL*8    PV(*), CMO(*), BUF(*), P2(*), P4V(*), WORK(*)
 C
 #include "priunit.h"
 #include "inftap.h"
@@ -478,13 +478,15 @@ C
      2                LSMAX, MOFF(MXCORB), NCMOT, MXBAS1, MXBAS2, NNASHX
       COMMON /PTRINF/ THR1, THR2, DAWEIG, SQWEIG, IPRINT
       COMMON /PTRSYM/ NSYM, MUL(8,8), NENT(8,8), ISYOFF(8,8)
-C
+
+      LOGICAL FNDLAB
+
       CALL QENTER('PT1TRA')
 C
 C     Initialize counters and rewind half-transformed 2-matrix
 C     output file.
 C
-      DO, I = 1,NBAST
+      DO I = 1,NBAST
         IT(I) = I*(I-1)/2
       END DO
       L1BUF = 2*MX1BUF + 1
@@ -496,7 +498,11 @@ C
 C     Read PMAT and MOs.  This form will handle symmetry as is.
 C
       REWIND LUSIFC
-      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      IF ( .NOT.FNDLAB('SIR IPH ',LUSIFC) ) THEN
+      ! this might be a CI calculation
+         REWIND LUSIFC
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+      END IF
       READ (LUSIFC)
       READ (LUSIFC)
       CALL RD_SIRIFC('CMO',FOUND,CMO)
@@ -800,11 +806,11 @@ C
       IF (IPRINT .GT. 2) THEN
          WRITE (LUPRI,2100) MEMS, MEMT, NBLOCK, NCHAIN, LABUF
          WRITE (LUPRI,'(/4X,A)') 'ISYOFF array:'
-         DO, I = 1,NSYM
+         DO I = 1,NSYM
            WRITE(LUPRI,2850) (ISYOFF(I,J),J = 1,NSYM)
          END DO
          WRITE (LUPRI,'(/4X,A)') 'NENT array:'
-         DO, I = 1,NSYM
+         DO I = 1,NSYM
            WRITE(LUPRI,2850) (NENT(I,J),J = 1,NSYM)
          END DO
          CALL FLSHFO(LUPRI)
@@ -1292,8 +1298,7 @@ C
 C     If MAXBUF is changed be sure to make the corresponding change
 C     of MX2BUF in PTRAN (used in PT2TRA) and in DISINT.
 C
-      PARAMETER ( MINMEM = 50000,
-     *            MAXLOC = 4000,
+      PARAMETER ( MAXLOC = 4000,
      *            MAXPAS = 12,    IBUFMX = 600,
      *            IBUFMN = 200,   MXMAX = 2000 )
 C
@@ -1319,6 +1324,7 @@ C
       IF (IPRINT .GT. 2) WRITE (LUPRI, 1000)
 CHJ-860802:  find MEMS = available space for SORT(*), ISORT(*)
       MEMS  = LWORK / 2
+      CALL MEM_PSORT(MINMEM, NCONTS)
       IF (MEMS .LT. MINMEM)
      *   CALL STOPIT('PSORG',' ',2*MINMEM,2*MEMS)
       LBUF  = 2*MAXBUF +  1
@@ -1461,7 +1467,7 @@ C
       INTEGER   IXBUF(10), IOOPS(10)
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
 #include "priunit.h"
-#include "ioweight.h"
+      PARAMETER ( DAWEIG = 1.D0, SQWEIG = 1.D0 )
       CALL QENTER('PSIZE')
       SQBUF = LSQBUF
       DO 10 I = 1,10
@@ -1509,7 +1515,7 @@ C
 #include "ptrbuf.h"
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
       INTEGER*8 IBUF(*), IBIN(*)
-      REAL*8     BUF(*),  BIN(*), SORT(LSORT)
+      REAL*8     BUF(*),  BIN(*), SORT(*)
       INTEGER*8 ITAB(*), NTOP(*), IPOINT(NPS1,2)
       INTEGER*8 INDGEN(4,*)
       INTEGER   P, Q, R, S, PQ, RS, PQRS
@@ -1641,7 +1647,7 @@ C
       IPQRSF = IPQRS
       NCHAIN = IBINO
       IDISK  = 1
-      DO, ICHAIN = 1,NCHAIN
+      DO ICHAIN = 1,NCHAIN
          IBIN(LBIN(ICHAIN))   = 0
          IBIN(LBIN(ICHAIN)-1) = -1
       END DO
@@ -1992,10 +1998,16 @@ C  /* Deck ptrnod */
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
 #include "inftap.h"
 #include "inforb.h"
-C
+
+      LOGICAL FNDLAB
+
       CALL QENTER('PTRNOD')
       REWIND LUSIFC
-      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      IF ( .NOT.FNDLAB('SIR IPH ',LUSIFC) ) THEN
+      ! this might be a CI calculation
+         REWIND LUSIFC
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+      END IF
       READ (LUSIFC)
       READ (LUSIFC) (IDUM, I = 1,9), NCMOT,NNASHX
 C
@@ -2222,11 +2234,17 @@ C  /* Deck makpv1 */
 #include "infdim.h"
 #include "inforb.h"
 #include "inftap.h"
-C
+
+      LOGICAL FNDLAB
+
       CALL QENTER('MAKPV1')
 C
       REWIND LUSIFC
-      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      IF ( .NOT.FNDLAB('SIR IPH ',LUSIFC) ) THEN
+      ! this might be a CI calculation
+         REWIND LUSIFC
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+      END IF
       READ (LUSIFC)
       READ (LUSIFC)
       READ (LUSIFC)
@@ -2280,14 +2298,20 @@ C  /* Deck makpv2 */
 #include "infdim.h"
 #include "inforb.h"
 #include "inftap.h"
-C
+
+      LOGICAL FNDLAB
+
       CALL QENTER('MAKPV2')
 C
       KFREE  = 1
       LFREE = LWORK
       CALL MEMGET('REAL',KPV,N2ASHX*N2ASHX,WORK,KFREE,LFREE)
       REWIND LUSIFC
-      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      IF ( .NOT.FNDLAB('SIR IPH ',LUSIFC) ) THEN
+      ! this might be a CI calculation
+         REWIND LUSIFC
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+      END IF
       READ (LUSIFC)
       READ (LUSIFC)
       READ (LUSIFC)
@@ -2427,11 +2451,17 @@ C  /* Deck makpvq */
 #include "inforb.h"
 #include "inftap.h"
 #include "infinp.h"
-C
+
+      LOGICAL FNDLAB
+
       CALL QENTER('MAKPVQ')
 C
       REWIND LUSIFC
-      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      IF ( .NOT.FNDLAB('SIR IPH ',LUSIFC) ) THEN
+      ! this might be a CI calculation
+         REWIND LUSIFC
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+      END IF
       READ (LUSIFC)
       READ (LUSIFC)
       READ (LUSIFC)

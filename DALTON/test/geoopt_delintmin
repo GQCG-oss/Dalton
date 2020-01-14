@@ -93,7 +93,7 @@ fi
 CRIT1=`$GREP "1st order method with DFP update will be used\." $log | wc -l`
 CRIT2=`$GREP "Optimization will be performed in delocalized internal coordinates\." $log | wc -l`
 CRIT3=`$GREP "Model Hessian will be used as initial Hessian\." $log | wc -l`
-CRIT4=`$GREP "Baker.s convergence criteria will be used\." $log | wc -l`
+CRIT4=`$GREP "Baker.s convergence criteria will be used" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=4
 ERROR[1]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"

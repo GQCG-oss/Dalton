@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -76,7 +70,7 @@ C
 C
 C     Tag this as an ABACUS run.
 C
-      CALL ABA_SET
+      CALL ABA_SET()
 C
 C     *************************
 C     ***** Input Section *****
@@ -273,7 +267,7 @@ C     ***** Linear response *****
 C     ***************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF ((DOLRES .OR. VCD .OR. SPNSPN .OR. MAGSUS .OR. SHIELD .OR.
+      IF ((VCD .OR. SPNSPN .OR. MAGSUS .OR. SHIELD .OR.
      &    SPINRO .OR. MOLGFA) .AND. .NOT. PASLRS) THEN
          CALL LRSDRV(WORK(KLAST),LWRK,PASLRS)
          CALL FLSHFO(LUPRI)
@@ -706,12 +700,10 @@ C
       CALL GETTIM(TIMALL,TIMDUM)
       TIMALL = TIMALL - TSTART
 
-#if !defined (SYS_T3D)
 cLig <> added the TIMCTO
       CALL ABATIMSTA(TIMALL,TIMINP,TIMTRO,TIMONE,TIMMAG,TIMTEX,TIMDRC,
      &     TIMORT,TIMDIP,TIMQPG,TIMRES,TIMREL,TIMTST,TIMVIB,TIMWLK,
      &     TIMLRS,TIMTRP,TIMEXC,TIMAAT,TIMLNR,TIMCTO)
-#endif
       CALL GETTIM(TEND,WEND)
       TIMABA = TEND - TIMABA
       WALABA = WEND - WALABA
@@ -743,7 +735,7 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
-      PARAMETER (NDIR = 29, NTABLE = 60, D0 = 0.D0)
+      PARAMETER (NDIR = 29, NTABLE = 62, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP
       LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       LOGICAL   GRDINP, NO_ABACUS_INPUT
@@ -838,7 +830,9 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
-     &             '.VIB_G ', '.LOCALI', '.LRESC '/  ! jim May-12 for LRESC
+     &             '.VIB_G ', '.LOCALI', '.LRESC ',  ! jim May-12 for LRESC
+C                     61         62
+     &             '.TDA SI', '.TDA TR'/
 C
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
@@ -907,7 +901,6 @@ C
       MAGSUS = .FALSE.
       GDALL  = .FALSE.
       POPULA = .FALSE.
-      DOLRES = .FALSE.
       VCD    = .FALSE.
       NACME  = .FALSE.
       NOLOND = .FALSE.
@@ -973,6 +966,8 @@ C
 CPFP: 27/03-2006: SOS for spin-spin coupling included; .LOCALI keyword
       ABALOC = .FALSE.
 Cend-PFP
+      TDA_SINGLET = .FALSE.
+      TDA_TRIPLET = .FALSE.
 C
 C     Initialize /NUCLEI/
 C
@@ -1049,7 +1044,8 @@ C
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
-     &                151,152,153,154,155,156,157,158,159,160),I
+     &                151,152,153,154,155,156,157,158,159,160,
+     &                161,162), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1299,24 +1295,24 @@ C .D2DQ2
             MOLGRD  = .TRUE.
             MOLHES  = .TRUE.
          GOTO 100
- 154     CONTINUE
+ 154     CONTINUE ! .QPGRAD
             QPGRAD = .TRUE.
          GOTO 100
- 155     CONTINUE
+ 155     CONTINUE ! .DISDIP
             POLAR  = .TRUE.
             DIPDER = .TRUE.
             QPGRAD = .TRUE.
          GOTO 100
 
- 156     CONTINUE
+ 156     CONTINUE ! .SECMOM
             SECNDM = .TRUE.
          GOTO 100
 
- 157     CONTINUE
+ 157     CONTINUE ! .THIRDM
             THIRDM = .TRUE.
          GOTO 100
 
- 158     CONTINUE
+ 158     CONTINUE ! .VIB_G
             VIB_G  = .TRUE.
             NACME  = .TRUE.
             VIB    = .TRUE.
@@ -1329,9 +1325,14 @@ C        .LOCALI
  159     CONTINUE
             ABALOC = .TRUE.
          GOTO 100
-Cend-PFP
  160     CONTINUE ! jim-gesc 1.2: set RNLRSC true
          RNLRSC = .TRUE.
+         GOTO 100
+ 161     CONTINUE ! .TDA SInglet
+         TDA_SINGLET = .TRUE.
+         GOTO 100
+ 162     CONTINUE ! .TDA TRiplet
+         TDA_TRIPLET = .TRUE.
          GOTO 100
 C
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -1484,7 +1485,7 @@ cs    write session
 cs
       IF (.NOT. ABASOP .AND. DOMP2 .AND. (NASHT .EQ. 0)) THEN
          WRITE(LUPRI,'(3A/A)') '@ ',WRDSRC,' properties not ' //
-     &        'available for MP2 wave functions!',
+     &        'available for MP2 wave functions! **PROPERTIES skipped.',
      &      '@ You may consider using SOPPA instead.'
          SKIPAB = .TRUE.
          GOTO 789
@@ -1605,7 +1606,6 @@ C
       IF (NQCC)   WRITE (LUPRI,'(5X,A)') ' Nuclear quadrupole moments'
       IF (POPULA) WRITE (LUPRI,'(5X,A)') ' Cioslowski population'
      &               //' analysis and static polarizabilities only.'
-      IF (DOLRES) WRITE (LUPRI,'(5X,A)') ' Linear response calculation'
       IF (DOEXCI) WRITE (LUPRI,'(5X,A)')
      &               ' Electronic excitation energies '
       IF (SHIELD) WRITE (LUPRI,'(5X,A)') ' Nuclear magnetic shieldings'
@@ -1964,44 +1964,47 @@ CAMT quit here to catch this...
       IF ((NSYM.GT.1).AND.
      &    (MAGSUS.OR.MOLGFA.OR.SPINRO).AND.(DFTRUN)) THEN
             IF (MAGSUS) THEN
-              WRITE(LUPRI,'(5X,A50)')
-     &           'WARNING: Magnetic Suceptibilities requested with '
-              WRITE(LUPRI,'(5X,A50)')
+              WRITE(LUPRI,'(5X,A)')
+     &           'WARNING: Magnetic Suceptibilities requested with ',
      &           '         DFT and symmetry but not yet implemented'
             ENDIF
             IF (MOLGFA) THEN
-              WRITE(LUPRI,'(5X,A50)')
-     &           'WARNING: Rotational g-tensors requested with     '
-              WRITE(LUPRI,'(5X,A50)')
+              WRITE(LUPRI,'(5X,A)')
+     &           'WARNING: Rotational g-tensors requested with     ',
      &           '         DFT and symmetry but not yet implemented'
             ENDIF
             IF (SPINRO) THEN
-              WRITE(LUPRI,'(5X,A50)')
-     &           'WARNING: Spin-rotation constants requested with  '
-              WRITE(LUPRI,'(5X,A50)')
+              WRITE(LUPRI,'(5X,A)')
+     &           'WARNING: Spin-rotation constants requested with  ',
      &           '         DFT and symmetry but not yet implemented'
             ENDIF
-              WRITE(LUPRI,'(5X,A50)')
+            WRITE(LUPRI,'(5X,A)')
      &           '         Please re-run with NoSymmetry...        '
-            CALL QUIT('Specified Mag. Props. NYI with Symm for DFT')
+            CALL QUIT('ERROR: Specified magnetic properties'//
+     &           ' not implemented with symmetry for DFT')
       ENDIF
 CAMT--------------
       IF (USE_PELIB()) THEN
-        WRITE(LUPRI,'(6X,A)') 'Environment is modeled using'//
-     &                 ' the polarizable embedding scheme (PE library).'
         IF (POLAR) THEN
          WRITE (LUPRI,'(4A)') 'ERROR: .POLARI and .PEQM are not',
-     &                       'compatible. Please use either .ALPHA',
-     &                       'or the RESPONSE module and set frequency',
-     &                       'to zero.'
+     &                        ' compatible. Please use either .ALPHA',
+     &                        ' or the RESPONSE module and set',
+     &                        ' frequency to zero.'
          CALL QUIT('ERROR: .POLARI and .PEQM are not compatible'//
      &             ' (see output file for more details)')
-        END IF 
-        IF ((MAGSUS.OR.SPINRO) .AND. .NOT. NOLOND) THEN 
-         CALL QUIT('ERROR: .MAGNET (Magnetizability tensor and'//
-     &        ' spin-rotation constants) not implemented for PE'//
-     &        ' with London orbitals')
-        END IF 
+        END IF
+        IF ((MAGSUS .OR. MOLGFA) .AND. .NOT. NOLOND) THEN
+         WRITE (LUPRI,'(4A)') 'ERROR: .MAGNET and .MOLGFA are not',
+     &                        ' implemented for .PEQM with London',
+     &                        ' orbitals. You may consider using',
+     &                        ' .NOLOND to deactivate use of London',
+     &                        ' orbitals.'
+         CALL QUIT('ERROR: .MAGNET and .MOLGFA are not implemented'//
+     &             ' for .PEQM with London orbitals'//
+     &             ' (see output file for more details)')
+        END IF
+        WRITE(LUPRI,'(6X,A)') 'Environment is modeled using'//
+     &                 ' the polarizable embedding scheme (PE library).'
       END IF
 C
 C
@@ -2101,7 +2104,7 @@ C
       IF (.NOT. ABASOP .AND. DOMP2 .AND. (NASHT .EQ. 0)) THEN
          IF (.NOT. NO_ABACUS_INPUT)
      &   WRITE(LUPRI,'(/3A/A)') '@ INFO ',WRDSRC,' properties not ' //
-     &        'available for MP2 wave functions!',
+     &        'available for MP2 wave functions! **PROPERTIES skipped.',
      &      '@ INFO You may consider using SOPPA instead.'
          SKIPAB = .TRUE.
          GOTO 789
@@ -2124,8 +2127,8 @@ Chj   this call had survived from when ABACUS was a separate program.
 Chj   I have now made sure that READIN always is called in the beginning,
 Chj   also if RNHERM is false. /April 2009 hjaaj
 
-      FLAG(34) = .FALSE. ! make sure integral transformation done if needed
-      CALL SETSIR(WORK,LWORK)
+      CALL SETSIR(.TRUE.,WORK,LWORK)
+      ! true means do 2-el integral transformation in SETSIR, if needed
 C
 C     If SOPPA calculation, then
 C     1) set SOPPA true in /INFRSP/
@@ -3154,6 +3157,7 @@ C  /* Deck timsta */
 #include "mxcent.h"
 #include "infpri.h"
 #include "abainf.h"
+      IF (TIMALL .LE. 1.0D0) RETURN ! only output if > 1s total CPU time
       CALL HEADER('CPU time statistics for ABACUS',0)
       CALL TIMPRI('INPUT ',TIMINP,TIMALL)
       CALL TIMPRI('TRAROT',TIMTRO,TIMALL)

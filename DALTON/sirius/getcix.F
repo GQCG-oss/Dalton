@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -247,7 +241,8 @@ C Note that Hartree-Fock (i.e. nasht .le. 1) will not change
 C CI information (NEWCI forced false).
 C Note that change of symmetry will not change CI information.
 C
-      NEWCI = CHCKCI(NOSYM,IPRCIX,LUPRI)
+      NEWCI = CHCKCI(NOSYM,.true.,IPRCIX,LUPRI)
+!     NEWCI = CHCKCI(NOSYM,CHECK_CSF,IPRINT,LUPRI)
 !     IF (NASHT .LE. 1 .OR. HSROHF) THEN
       IF ( MCTYPE .EQ. 0 .OR. MCTYPE .EQ. -1) THEN ! Hartree-Fock or HSROHF
          NEWCI = .FALSE.
@@ -428,8 +423,12 @@ C CHCKCI sets information in CIINFO and SPINFO
 C Note that CHCKCI true if Hartree-Fock (i.e. nasht .le. 1) follows
 C MCSCF without call of SETCI first.
 C Note that change of symmetry will not change CI information.
-C
-      NEWCI = CHCKCI(NOSYM,1,LUPRI)
+C Note that switch from CSF to DET or DET to CSF is OK here
+C (is needed in RESPONS for switching between singlet and triplet
+C  if wave function optimization was done with CSFs)
+C 
+      NEWCI = CHCKCI(NOSYM,.false.,1,LUPRI)
+!     NEWCI = CHCKCI(NOSYM,CHECK_CSF,IPRINT,LUPRI)
 C
 C
       IF ( NEWCI ) THEN
@@ -490,7 +489,7 @@ C
       RETURN
       END
 C  /* Deck chckci */
-      LOGICAL FUNCTION CHCKCI(NOSYM,JPRINT,LUWCIX)
+      LOGICAL FUNCTION CHCKCI(NOSYM,CHECK_CSF,JPRINT,LUWCIX)
 C
 C 20-Aug-1998 Hans Joergen Aa. Jensen, 
 C CHCKCI test extracted from SETCI
@@ -514,7 +513,7 @@ C
 #include "spinfo.h"
 C
 C
-      LOGICAL  REFSPC, NEWCI, NOCSF
+      LOGICAL  REFSPC, NEWCI, NOCSF, CHECK_CSF
       INTEGER  MAS1(8), MAS2(8), MAS3(8)
       SAVE     REFSPC, NEWCI, NOCSF, NOSYMSV,
      &         MACTEL,MAS1,MAS2,MAS3,MASHT,
@@ -560,7 +559,7 @@ C           if RAS
             IF (MAS2(ISYM) .NE. NAS2(ISYM)) NEWCI = .TRUE.
             IF (MAS3(ISYM) .NE. NAS3(ISYM)) NEWCI = .TRUE.
   100    CONTINUE
-         IF (NOCSF  .NEQV. FLAG(27)) NEWCI = .TRUE.
+         IF (CHECK_CSF .AND. (NOCSF .NEQV. FLAG(27))) NEWCI = .TRUE.
          IF (MULTS  .NE.   ISPIN)    NEWCI = .TRUE.
          IF (REFSPC .NEQV. FLAG(28)) NEWCI = .TRUE.
          IF (NOSYMSV.NE.   NOSYM   ) NEWCI = .TRUE.

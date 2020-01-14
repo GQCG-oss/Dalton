@@ -1,25 +1,19 @@
 #define FCKTRA_DEBUG -1
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 
@@ -57,6 +51,7 @@
 !  inforb.h : NNORBX, NORBT, ???
 !  inftra.h : IPRTRA, LBUF
 !  inftap.h : LUINTM, LBINTM
+!  cbihr2.h : IFTHRS
 !  ccom.h   : THRS
 #include "iratdef.h"
 #include "maxaqn.h"
@@ -69,7 +64,7 @@
 #include "ccom.h"
 
       character*4 TYPE_TEXT
-      integer JTRSIR, NTRLVL, MX_NDMAT
+      integer JTRSIR, NTRLVL, IOSVAL, MX_NDMAT
       integer KFREE, LFREE, KFRSAV, KUCMO, KDMAT, KFMAT, I, J
       integer MISH_TEST(8), MASH_TEST(8), IDAMAX, L_H2CD
       integer, allocatable :: ICDTRA(:), ITRTYP(:)
@@ -93,9 +88,11 @@ C --- start of executable code
          CALL TITLER('.FCKTRA AO->MO integral transformation','*',200)
          WRITE(LUPRI,'(A,I4,1P,D10.2)')
      &   ' Sirius integral transformation level & screening threshold:',
-     &   ITRSIR,THR_MOTWOINT
+     &   JTRSIR,THR_MOTWOINT
          FLUSH(LUPRI)
       END IF
+
+      ! call SIR_INTOPEN_FCKTRA()
 
 C     Test if MO integrals already available
 
@@ -111,16 +108,20 @@ C     Test if MO integrals already available
       LBUF = IRAT*L_H2CD
 
       REWIND(LUINTM)
-      IF ( FNDLAB(INT_LABEL,LUINTM) ) THEN
+      IF ( FNDLAB(INT_LABEL,LUINTM) ) THEN ! true iff existing MOTWOINT is created by .FCKTRA
          REWIND(LUINTM)
          READ  (LUINTM)
          READ  (LUINTM) J,NTRLVL
-         IF (NTRLVL .EQ. 3 .AND. JTRSIR .EQ. 2) NTRLVL = -1
+         IF (NTRLVL .EQ. 3 .AND. JTRSIR .EQ. 2) NTRLVL = -1 ! (aa|ii) and (ai|ai) missing
          IF (NTRLVL .EQ. 2 .AND. JTRSIR .EQ. 3) NTRLVL =  3
+         IF (NTRLVL .EQ. 5 .AND. JTRSIR .EQ. 6) NTRLVL =  6
+         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 4) NTRLVL = -1 ! (gg|ii) and (gi|gi) missing
+         IF (NTRLVL .EQ. 6 .AND. JTRSIR .EQ. 5) NTRLVL = -1 ! (gg|gi) missing
          IF (NTRLVL .GE. JTRSIR) THEN
-C           read CMO matrix from LUINTM
+C           level OK, now read CMO matrix from LUINTM
 C           and subtract from input CMO matrix
-            READ  (LUINTM) WORK(1:NCMOT)
+            READ  (LUINTM, IOSTAT=IOSVAL) WORK(1:NCMOT)
+         IF (IOSVAL .EQ. 0) THEN
             WORK(1:NCMOT) = WORK(1:NCMOT) - CMO(1:NCMOT)
             I = IDAMAX(NCMOT,WORK,1)
             READ (LUINTM) MISH_TEST(1:8), MASH_TEST(1:8)
@@ -136,7 +137,8 @@ C           and subtract from input CMO matrix
      &          //' the required MO integrals are already available.'
                GO TO 9999
             END IF
-         END IF
+         END IF ! IOSVAL test
+         END IF ! NTRLVL test
       END IF
 
       IF (THR_MOTWOINT .LT. THRS) THEN
@@ -152,8 +154,6 @@ C           and subtract from input CMO matrix
       KFREE  = 1
       LFREE  = LWORK
       KFRSAV = KFREE
-
-      ! call SIR_INTOPEN_FCKTRA()
 
 !     translate sirius integral level code to FCKTRA and NEWTRA integral level code
       call TRALVL(JTRSIR, NTRLVL)
@@ -179,7 +179,7 @@ C           and subtract from input CMO matrix
 
       REWIND(LUINTM)
       WRITE (LUINTM) (0, I=1,8) ! info not used for FCKTRA
-      WRITE (LUINTM) LBINTM,ITRSIR,NSYM,NORB,NBAS
+      WRITE (LUINTM) LBINTM,JTRSIR,NSYM,NORB,NBAS
       WRITE (LUINTM) CMO(1:NCMOT)
       WRITE (LUINTM) NISH(1:8), NASH(1:8)
 
@@ -252,7 +252,6 @@ C           and subtract from input CMO matrix
 !  ccom.h   : THRS
 #include "iratdef.h"
 #include "maxaqn.h"
-#include "thrzer.h"
 #include "gnrinf.h"
 #include "inforb.h"
 #include "inftra.h"
@@ -338,7 +337,7 @@ C --- start of executable code
       end if !  if (FCKTRA_TYPE .eq. 1 .AND. PARCAL) then ... else ...
 
       IFTHRS = IFTHRS_save
- 9999 call QEXIT('FCKTRA_CTL')
+      call QEXIT('FCKTRA_CTL')
       return
       end
 
@@ -748,7 +747,6 @@ C --- start of executable code
 
 ! Used from include files:
 !  gnrinf.h : CHIVAL
-!  blocks.h : NSYMBL
 !  inforb.h : N2BASX, NORBT,NNORBX, ...
 !  infind.h : ISMO(:)
 !  inftra.h : IPRTRA
@@ -760,7 +758,6 @@ C --- start of executable code
 #include "maxorb.h"
 #include "maxash.h"
 #include "gnrinf.h"
-#include "blocks.h"
 #include "inforb.h"
 #include "infind.h"
 #include "inftra.h"
@@ -770,7 +767,7 @@ C --- start of executable code
 #include "mtags.h"
 
       integer, allocatable :: ICD_NODE(:)
-      integer IPRTYP, IPRINT_slaves, ICD, NCD, IWHO, NWHO
+      integer IPRTYP, IPRINT_slaves, ICD, NCDTRA, IWHO, NWHO
       integer KFREE, LFREE
       integer NDMAT, IDIST, N2GAB, L_H2CD
 
@@ -802,11 +799,11 @@ C --- start of executable code
 
       allocate( ICD_NODE(NNORBX) )
       ICD_NODE(:) = 0
-      NCD = 0
+      NCDTRA = 0
       DO ICD = 1,NNORBX
          IF (ICDTRA(ICD) .EQ. 0) CYCLE
-         ICD_NODE(ICD) = MOD(NCD,NODTOT) + 1
-         NCD = NCD + 1
+         ICD_NODE(ICD) = MOD(NCDTRA,NODTOT) + 1
+         NCDTRA = NCDTRA + 1
       END DO
 
 #if FCKTRA_DEBUG > 2
@@ -851,12 +848,12 @@ C --- start of executable code
 #endif
 
       IDIST = IDIST + NDMAT
-      IF (IDIST .GT. NCD) THEN
-         write(lupri,*) 'ERROR: IDIST .gt. NCD',IDIST,NCD
-         call quit('IDIST .gt. NCD, uha')
-      ELSE IF (IDIST .LT. NCD) THEN
-         GO TO 100
-      END IF
+      IF (IDIST .GT. NCDTRA) THEN
+         write(lupri,*) 'ERROR: IDIST .gt. NCDTRA',IDIST,NCDTRA
+         call quit('IDIST .gt. NCDTRA, uha')
+      else if (IDIST .LT. NCDTRA) then
+         go to 100
+      end if
 
       deallocate( ICD_NODE )
       call qexit('FCKTRA_DISTRIBUTED_MASTER')
@@ -872,7 +869,6 @@ C --- start of executable code
       real*8  WORK(LWORK)
 
       integer, allocatable :: ICDTRA(:), ICD_NODE(:)
-      real*8 , allocatable :: CMO(:)
       integer ICD, NCDTRA, MX_NDMAT
       integer KFREE, LFREE, KDMAT, KFMAT, KUCMO
       logical PARHER_save, SLAVE_save, DIRFCK_save
@@ -928,11 +924,13 @@ C --- start of executable code
       KFREE = 1
       LFREE = LWORK
 
-      PARHER_save = PARHER
       SLAVE_save  = SLAVE
       SLAVE  = .FALSE. ! Be sure the Fock matrices are NOT constructed in parallel,
+
+      PARHER_save = PARHER
       PARHER = .FALSE. ! be sure the Fock matrices are NOT constructed in parallel
                        ! we are parallelizing on the distributions
+
       DIRFCK_save = DIRFCK
       DIRFCK = .TRUE.  ! NEVER read from AOTWOINT when parallel.
 
@@ -940,7 +938,6 @@ C --- start of executable code
 
 
       allocate( ICDTRA(NNORBX) )
-      allocate( CMO(NCMOT) )
       allocate( ICD_NODE(NNORBX) )
 
       call MEMGET2('REAL','UCMO',  KUCMO,NBAST*NORBT,
@@ -1000,7 +997,6 @@ C --- start of executable code
  1000 CONTINUE
 
       deallocate( ICDTRA )
-      deallocate( CMO )
       deallocate( ICD_NODE )
 
       PARHER = PARHER_save
