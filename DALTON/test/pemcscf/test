@@ -16,6 +16,7 @@ f.add(from_string = 'Dipole moment components',
       num_lines = 8,
       abs_tolerance = 1.0e-4)
 f.add(from_string = 'Electric transition dipole moments (au)',
+      ignore_sign = True,
       num_lines = 9,
       rel_tolerance = 1.0e-4)
 

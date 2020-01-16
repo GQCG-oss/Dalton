@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['walk_modeflw.dal'], ['walk_modeflw.mol'], {'out': f})
+test.run(['walk_modeflw.dal'], ['walk_modeflw.mol'], f={'out': f})
 
 sys.exit(test.return_code)

@@ -1,25 +1,19 @@
 #define OLD_DIAINT
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -124,7 +118,7 @@ C
       CALL ATMINI(ATMARR,IATOM,.TRUE.)
       ITMP = IREDIC
       IREDIC = IINTCR
-      CALL GETINT(IATOM,8*MXCENT,ATMARR,CRDIN1)
+      CALL GET_RINTCRD(IATOM,8*MXCENT,ATMARR,CRDIN1)
       IREDIC = ITMP
 C
 C     Output
@@ -306,7 +300,7 @@ C
 C     We have to calculate the Wilson B matrix and the
 C     values of all redundant internal coordinates.
 C
-      CALL GETINT(IATOM,MXRCRD,ATMARR,CRDRIN)
+      CALL GET_RINTCRD(IATOM,MXRCRD,ATMARR,CRDRIN)
       IP = IPRINT
       IPRINT = -1
       CALL GETWIL(MXRCRD,MX2CRD,ATMARR,WILBMT,BMTRAN,TMPMAT)
@@ -3211,7 +3205,6 @@ C loop rewritten to avoid problems. VB Oct 2003
 C
       DO 1 IREP = 0, MAXREP
          DO 2 ICRD = 1, 3*NUCIND
-#include "scalar.h"
             ISCOOR = IPTCNT(ICRD,IREP,1)
             IF (ISCOOR .GT. 0) THEN
                ICENT = (ICRD-1)/3 + 1
@@ -3930,8 +3923,8 @@ C
       RETURN
       END
       
-C  /* Deck getint */
-      SUBROUTINE GETINT(IATOM,MXRCRD,ATMCRD,VALINT)
+C  /* Deck GET_RINTCRD */
+      SUBROUTINE GET_RINTCRD(IATOM,MXRCRD,ATMCRD,VALINT)
 C
 C     Determines the value of all redundant internal coordinates.
 C
@@ -4090,7 +4083,7 @@ C     the values of the internal coordinates after the major step.
 C
       IF (.NOT. CORREC) THEN
          CALL ATMINI(CRDOLD,IATOM,.TRUE.)
-         CALL GETINT(IATOM,MXRCRD,CRDOLD,VALOLD)
+         CALL GET_RINTCRD(IATOM,MXRCRD,CRDOLD,VALOLD)
          RMSLIM = 1.0D-6
       ELSE
          IATOM = ICRTCR / 3
@@ -4190,7 +4183,7 @@ C
             CRDNEW(I,J+1) = CRDOLD(I,J+1) + TMPVEC((I-1)*3+J)
  17      CONTINUE
  15   CONTINUE
-      CALL GETINT(IATOM,MXRCRD,CRDNEW,VALNEW)
+      CALL GET_RINTCRD(IATOM,MXRCRD,CRDNEW,VALNEW)
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('New coordinates',-1)
          CALL OUTPUT(CRDNEW,1,IATOM,1,4,MXCENT,8,1,LUPRI)
@@ -4330,7 +4323,7 @@ C      ELSE IF ((ITRCRD .GE. ITRLIM) .OR. (RMSINT .GE. 1.0D2)) THEN
                CRDNEW(I,J+1) = CRDOLD(I,J+1) + TMPVEC((I-1)*3+J)
  42         CONTINUE
  40      CONTINUE
-         CALL GETINT(IATOM,MXRCRD,CRDNEW,VALNEW)
+         CALL GET_RINTCRD(IATOM,MXRCRD,CRDNEW,VALNEW)
          DO 45 I = 1, NRIC
             STPINT(I) = VALNEW(I) - VALOLD(I)
             IF (INTCRD(I,1) .GT. 10) STPINT(I) = MOD(STPINT(I),2.0D0*PI)
@@ -4366,7 +4359,7 @@ C
          END IF
       END IF
       IF (CORREC) THEN
-         CALL GETINT(IATOM,MXRCRD,CRDNEW,VALNEW)
+         CALL GET_RINTCRD(IATOM,MXRCRD,CRDNEW,VALNEW)
          DO 50 I = 1, NRIC
             STPINT(I) = VALNEW(I) - VALORG(I)
             IF (INTCRD(I,1) .GT. 10) STPINT(I) = MOD(STPINT(I),2.0D0*PI)
@@ -4412,6 +4405,9 @@ C
          STPSYM(I) = STPSYM(I)/SCLVEC(I)
  90   CONTINUE
       CALL WLKCOR(STPSYM,CSTEP,ICRTCR,MXCOOR,IPRINT)
+#if 0
+! Oct 2017 hjaaj: disabled this code. .FREEZE is now used for 
+! freezing atoms in geometry optimization in cartesian coordinates.
 C
 C     Experimental extra stabilization by freezing atoms.
 C     All Cartesian step vector components are simply set to zero
@@ -4430,7 +4426,7 @@ C     Calculate new internal coordinates
                CRDNEW(I,J+1) = CRDORG(I,J+1)+ CSTEP(3*(I-1)+J)
  535        CONTINUE
  530     CONTINUE
-         CALL GETINT(IATOM,MXRCRD,CRDNEW,VALNEW)
+         CALL GET_RINTCRD(IATOM,MXRCRD,CRDNEW,VALNEW)
          DO 550 I = 1, NRIC
             STPINT(I) = VALNEW(I) - VALORG(I)
             IF (INTCRD(I,1) .GT. 10) STPINT(I) = MOD(STPINT(I),2.0D0*PI)
@@ -4452,6 +4448,7 @@ C     the requested number of iterations
          IF ((ITRFRZ .GT. 0) .AND. ((ITRNMR+1) .GE. ITRFRZ))
      &        IFREEZ(0) = 0
       END IF
+#endif
       RETURN
       END
 

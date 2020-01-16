@@ -1,6 +1,0 @@
-   cc2dc_energy  
-   --------------
-   Molecule:         H2O in a spherical cavity of radius 4.00 au
-   Wave Function:    CC2 / cc-pVDZ
-   Test Purpose:     Check energy, dipole moment quadrupole moment and
-                     second order electric moment.

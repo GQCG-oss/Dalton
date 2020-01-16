@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['r12_fc_aux_sym.dal'], ['r12_fc_aux_sym.mol'], {'out': f})
+test.run(['r12_fc_aux_sym.dal'], ['r12_fc_aux_sym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

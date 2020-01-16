@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 !...  This file is the module of API of Gen1Int interface.
@@ -85,9 +79,9 @@ module gen1int_api
   integer, save, private :: api_num_atoms = 0                      !number of atoms
   real(REALK), save, allocatable, private :: api_coord_atoms(:,:)  !coordinates of atoms
   real(REALK), save, allocatable, private :: api_charge_atoms(:)   !charges of atoms
-  real(REALK), save, private :: api_dipole_origin(3) = 0.0_REALK   !coordinates of dipole origin
-  real(REALK), save, private :: api_gauge_origin(3) = 0.0_REALK    !coordinates of gauge origin
-  real(REALK), save, private :: api_origin_LPF(3) = 0.0_REALK      !coordinates of origin of London phase factor
+  real(REALK), save, private :: api_dipole_origin(3) = 0.0_8   !coordinates of dipole origin
+  real(REALK), save, private :: api_gauge_origin(3) = 0.0_8    !coordinates of gauge origin
+  real(REALK), save, private :: api_origin_LPF(3) = 0.0_8      !coordinates of origin of London phase factor
 
   ! \fn(Gen1IntAPICreate) might be the only program specific subroutine (depends on common blocks)
   public :: Gen1IntAPICreate
@@ -534,7 +528,7 @@ module gen1int_api
     integer, optional, intent(in) :: order_geo
     integer icomp, jcomp  !incremental recorders over components
     ! initializes
-    val_mo = 0.0_REALK
+    val_mo = 0.0_8
     ! loops over components
     do icomp = 1, size(comp_shell)
       jcomp = comp_shell(icomp)
@@ -575,9 +569,9 @@ module gen1int_api
       api_num_atoms = 0              !number of atoms
       deallocate(api_coord_atoms)    !coordinates of atoms
       deallocate(api_charge_atoms)   !charges of atoms
-      api_dipole_origin = 0.0_REALK  !coordinates of dipole origin
-      api_gauge_origin = 0.0_REALK   !coordinates of gauge origin
-      api_origin_LPF = 0.0_REALK     !coordinates of origin of the London phase factor
+      api_dipole_origin = 0.0_8  !coordinates of dipole origin
+      api_gauge_origin = 0.0_8   !coordinates of gauge origin
+      api_origin_LPF = 0.0_8     !coordinates of origin of the London phase factor
     end if
     api_inited = .false.
   end subroutine Gen1IntAPIDestroy
@@ -692,7 +686,7 @@ module gen1int_api
     end select
     if (ierr/=0) then
       write(STDOUT,999) "failed to create operator of "//trim(prop_name)//"!"
-      call quit('failed to create propert operator')
+      call quit('failed to create property operator')
     end if
     ! sets magnetic derivatives
     call OnePropSetMag(one_prop=prop_comp%one_prop, &

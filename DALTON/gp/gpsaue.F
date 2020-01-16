@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -1336,12 +1330,7 @@ C  /* Deck lset */
    10 CONTINUE
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL
-#else
-      DOUBLE PRECISION
-#endif
-     &FUNCTION GAMMP(A,X)
+      REAL*8 FUNCTION GAMMP(A,X)
 #include "implicit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C****************************************************************C
@@ -1593,7 +1582,6 @@ C*****************************************************************************
 #include "implicit.h"
       DIMENSION AMAT(LDM,N), ATRI(*)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -1755,7 +1743,6 @@ C
             CX= SQRT(DP5   + T)
             SX= SIGN( SQRT(DP5 - T),T2X2)
   270    CONTINUE
-#include "ivdep.h"
          DO 275 IR=1,IA
             T        = F(IAA+IR)*SX
             F(IAA+IR)= F(IAA+IR)*CX+F(IBB+IR)*SX
@@ -1835,7 +1822,6 @@ Cwas:        JAA=(IA-1)*NROWV
 Cwas:        JBB=(IB-1)*NROWV
          JAA=(IA-1)*LDM
          JBB=(IB-1)*LDM
-#include "ivdep.h"
          DO 400 I=1,NROWV
             T=V(JBB+I)*SX
             V(JBB+I)=-V(JAA+I)*SX + V(JBB+I)*CX
@@ -2284,17 +2270,11 @@ C
 #include "implicit.h"
       CHARACTER TEXT*(*)
 C
-#if defined (SYS_UNIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_HAL) || defined (SYS_AIX)
+#if defined (SYS_UNIX) || defined (SYS_LINUX) || defined (SYS_DARWIN) || defined (SYS_AIX)
       CHARACTER*(24) FDATE
-#endif
-C
-      TEXT = '                        '
-#if defined (SYS_CRAY) || defined (SYS_T90)
-      WRITE(TEXT(1:8),'(A8)') DATE()
-      WRITE(TEXT(12:19),'(A8)') CLOCK()
-#endif
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_HAL) || defined (SYS_AIX)
       TEXT = FDATE()
+#else
+      TEXT = '                        '
 #endif
 C
       RETURN

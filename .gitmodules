@@ -12,7 +12,7 @@
 	url = https://github.com/cstein/qfitlib.git
 [submodule "external/efs"]
 	path = external/efs
-	url = git@gitlab.com:dalton/efs.git
+	url = https://gitlab.com/dalton/efs.git
 [submodule "external/xcint"]
 	path = external/xcint
 	url = https://github.com/dftlibs/xcint.git

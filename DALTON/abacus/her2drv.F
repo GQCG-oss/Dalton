@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 
@@ -93,7 +87,7 @@ C
 C
 C     CPU time statistics
 C
-      CALL GETTIM(T2INT,DUMTIM)
+      CALL GETTIM(T2INT,W2INT)
       CALL DELSTA(-1,0)
       CALL REDSTA(-1,0,0,0,0)
       IF (TKTIME) THEN
@@ -180,7 +174,7 @@ C     *******************
 C
       IF (TKTIME) THEN
          CALL HEADER('Timings for TWOINT',1)
-         WRITE (LUPRI, '(18(/,1X,A,F8.2,A))')
+         WRITE (LUPRI, '(18(/A,F8.2,A))')
      &      ' Time in R000:   ', TR000, ' seconds',
      &      ' Time in HERI:   ', THERI, ' seconds',
      &      ' Time in ODCVEC: ', TODCVE,' seconds',
@@ -219,7 +213,7 @@ C
          END IF
       ELSE
          CALL HEADER('Maximum work space allocations in TWOINT',1)
-         WRITE (LUPRI,'(15(1X,A,I12/))')
+         WRITE (LUPRI,'(15(A,I12/))')
      &      ' Total allocation:                   ', MWTOT,
      &      ' Expansion coefficients (electron 1):', MWFCAB,
      &      ' Expansion coefficients (electron 2):', MWFCCD,
@@ -241,8 +235,8 @@ C
       END IF
       END IF
       IF (LWTOT .NE. 0) THEN
-         WRITE (LUPRI,'(1X,A)')     ' Error in work space statistics.'
-         WRITE (LUPRI,'(1X,A,I12)') ' LWTOT at end of TWOINT:',LWTOT
+         WRITE (LUPRI,'(A)')     ' Error in work space statistics.'
+         WRITE (LUPRI,'(A,I12)') ' LWTOT at end of TWOINT:',LWTOT
       END IF
       IF ((JPRINT .GT. 2 .AND. .NOT. SLAVE)  .OR.
      &    (JPRINT .GT. 5 .AND. SLAVE) ) THEN
@@ -843,7 +837,7 @@ C
       IF ((DIRFCK.OR.SOFOCK) .AND. IPRINT.GT.3) THEN
          CALL HEADER('Fock matrix in TWOINT',-1)
          DO 700 I = 1, NDMAT
-            WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
+            WRITE (LUPRI,'(//A,I3)') ' Fock matrix No.',I
             CALL OUTPUT(FMAT(1,1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
   700    CONTINUE
       END IF
@@ -1575,7 +1569,7 @@ C
          IF (SUSCEP) THEN
             READ (LUPAS) NPMATA
             IF (NPMAT .NE. NPMATA) THEN
-               WRITE (LUPRI,'(1X,A,I5,A,I5)')
+               WRITE (LUPRI,'(A,I5,A,I5)')
      &         ' Error in TWOODS: NPMAT = ',NPMAT,', NPMATA = ',NPMATA
                CALL QUIT('Program aborted due to error in TWOODS')
             END IF
@@ -2334,12 +2328,12 @@ C              Integral contributes
 C              ====================
 C
                IF (IPRINT .GE. 5) THEN
-                  WRITE (LUPRI, '(/,1X,A,3I5)')
+                  WRITE (LUPRI, '(/A,3I5)')
      &               ' Symmetry operations:',ISYMR, ISYMS, ISYMT
-                  WRITE (LUPRI, '(/,1X,A,I5)') ' ISYMTS ', ISYMTS
-                  WRITE (LUPRI, '(1X,A,4I5)')
+                  WRITE (LUPRI, '(/A,I5)') ' ISYMTS ', ISYMTS
+                  WRITE (LUPRI, '(A,4I5)')
      &               ' ICENTA-D ',ICENTA, ICENTB, ICENTC, ICENTD
-                  WRITE (LUPRI, '(1X,A,4I5)')
+                  WRITE (LUPRI, '(A,4I5)')
      &               ' NCENTA-D ',NCENTA, NCENTB, NCENTC, NCENTD
                END IF
 C
@@ -3264,6 +3258,7 @@ C        WRITE (LUPRI,'(1X,A,(5I5))') ' NSTRSH ',(NSTRSH(I),I=1,MAXSHL)
             WRITE (LUPRI,'(1X,A,I5)')'IORBSH for ISHELL =',I
             WRITE (LUPRI,'(1X,15I5)')(IORBSH(I,J),J=1,NORBSH(I))
  2003    CONTINUE
+         CALL FLSHFO(LUPRI)
       END IF
       RETURN
       END
@@ -4108,7 +4103,6 @@ C
          IPRVPR(I + 1) = INUC
   100 CONTINUE
       DO 200 I = 1, MAXSHL
-#include "scalar.h"
          DO 300 J = 1, NSETSH(I,1)
             NPRIMS(I,J,1) = NUCO  (KORBSH(I,J))
             NCONTS(I,J,1) = NRCO  (KORBSH(I,J))
@@ -4421,7 +4415,7 @@ C
          REDPR = REDPR + XNREDPR / NTOTPR
          REDCN = REDCN + XNREDCN / NTOTCN
       ELSE
-         WRITE (LUPRI,'(2(/1X,A,F5.2,A))')
+         WRITE (LUPRI,'(2(/A,F5.2,A))')
      &      ' Average reduction of primitive ODC vectors:   ',
      &      D100*(D1 - REDPR/NODC),' %',
      &      ' Average reduction of contracted ODC vectors:  ',
@@ -4578,13 +4572,13 @@ C
       IF (IPRINT .GE. 10) THEN
          CALL TITLER('Output from GETODA','*',103)
          CALL HEADER('IODD12 (Cartesian)',1)
-         WRITE (LUPRI,'(1X,(10I7))') (IODD12(I,1),I=1,KCKT12)
+         WRITE (LUPRI,'(10I7)') (IODD12(I,1),I=1,KCKT12)
          CALL HEADER('IODD12 (spherical)',1)
-         WRITE (LUPRI,'(1X,(10I7))') (IODD12(I,2),I=1,KHKT12)
+         WRITE (LUPRI,'(10I7)') (IODD12(I,2),I=1,KHKT12)
          CALL HEADER('IODD34 (Cartesian)',1)
-         WRITE (LUPRI,'(1X,(10I7))') (IODD34(I,1),I=1,KCKT34)
+         WRITE (LUPRI,'(10I7)') (IODD34(I,1),I=1,KCKT34)
          CALL HEADER('IODD34 (spherical)',1)
-         WRITE (LUPRI,'(1X,(10I7))') (IODD34(I,2),I=1,KHKT34)
+         WRITE (LUPRI,'(10I7)') (IODD34(I,2),I=1,KHKT34)
       END IF
       RETURN
       END
@@ -4680,7 +4674,7 @@ C
 C
       IF (IPRINT .GT. 5) THEN
          CALL TITLER('Output from WHTREP','*',103)
-         WRITE (LUPRI,'(/,1X,A,I2,/,1X,A,8I2)')
+         WRITE (LUPRI,'(/A,I2,/A,8I2)')
      &         ' Number of perturbation representations:', NOPREP,
      &         ' Perturbation representations:          ',
      &           (IPTREP(I,1),I=1,NOPREP)
@@ -4885,7 +4879,7 @@ C     x) Error
 C     ========
 C
       ELSE
-         WRITE (LUPRI,'(1X,A,I5)')
+         WRITE (LUPRI,'(A,I5)')
      &       ' Wrong run type in TWORUN, ITYPE =', ITYPE
          CALL QUIT('ERROR in TWORUN, unknown run type.')
       END IF

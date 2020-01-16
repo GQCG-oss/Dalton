@@ -1,0 +1,245 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc2mm_exci.info <<%EOF%
+   cc2mm_exci
+   ---------------
+   Molecule:            Acetone (QM) and 2 water molecules (MM)
+   Wave Function:       CC2 / STO-3G
+   Molecular Mechanics: SPCE01 model: Point charges and isotropic
+                        polarizability introduced in the optimization of 
+                        the CC wave function. OLDTG=.TRUE. meaning that
+                        point charge relaxed HF orbitals are used.
+   Test Purpose:        Run checks energy, dipole moment, three lowest 
+                        ground state excitation energies and transition 
+                        properties.
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > cc2mm_exci.mol <<%EOF%
+ATOMBASIS
+Acetone + 2 H2O + PCM geo. opt. 1
+----------------------------------------------
+    5    0         1 1.00D-12
+        8.0   1    Bas=STO-3G
+O           -0.179135   -0.004460   -0.007175 0 1
+        6.0   3    Bas=STO-3G
+C            1.045626   -0.000365   -0.002259 0 2
+C            1.822933    1.284178   -0.015439 0 3
+C            1.831095   -1.279863    0.017674 0 4
+        1.0   6    Bas=STO-3G
+H            2.562907   -1.258744    0.827594 0 5
+H            2.397102   -1.366007   -0.913575 0 6
+H            1.176795   -2.140473    0.126333 0 7
+H            2.377050    1.375315    0.922508 0 8
+H            1.163818    2.139929   -0.133043 0 9
+H            2.564433    1.266653   -0.816509 0 10
+   -0.662     2    Bas=MM
+O           -1.940465   -2.293949    0.060717 1 1
+O           -1.961591    2.270632   -0.080178 2 1
+    0.331     4    Bas=MM
+H           -1.351760   -1.522343    0.003925 1 2
+H           -2.660308   -2.108063   -0.563728 1 3
+H           -1.355401    1.513520   -0.013626 2 2
+H           -2.423029    2.298729    0.773350 2 3
+%EOF%
+#######################################################################
+#  QM/MM INTERACTION INPUT
+#######################################################################
+cat > cc2mm_exci.pot <<%EOF%
+**SYSTP
+.NUMMTP
+ 1
+.TYPE
+ 0
+.MODEL
+ SPC
+.CHARGS
+ 10
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+*******
+.TYPE
+ 1-2
+.MODEL
+ SPC_E01  # (This model includes the induced dipole moments in
+.ALPISO   # the optimization of the wave function and introduces
+ 1        # an iterative determination of  the t and t-bar coupled
+ 9.501    # cluster parameters)
+*******
+**TWOIA (i,j=0,1,2,...,N; if i=0 then j.neq.0)
+.LJ_A
+ 2
+ 0.00000
+ 0.00000
+.LJ_B
+ 2
+ 0.000
+ 0.000
+**END OF
+%EOF%
+#
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc2mm_exci.dal <<%EOF%
+**DALTON.INP
+.RUN WAVEFUNCTION
+*QM3
+.QM3
+.THRDIP
+ 1.0D-9
+.MAXDIP
+ 90
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
+**WAVE FUNCTIONS
+.CC
+*SCF INP
+.THRESH
+1.0D-10
+.MAX DIIS
+ 180
+*CC INP
+.CC2
+.FREEZE
+ 4 0
+.THRLEQ
+ 1.0D-9
+.THRENR
+ 1.0D-9
+.MAX IT
+ 100
+.MAXRED
+ 100
+.MXLRV
+ 200
+*CCSLV
+.CCMM
+.ETOLSL
+ 1.0D-8
+.TTOLSL
+ 1.0D-8
+.LTOLSL
+ 1.0D-8
+.MXSLIT
+ 100
+.MXINIT
+ 4 4
+*CCFOP
+.DIPMOM
+.NONREL
+*CCEXCI
+.NCCEXC
+ 3
+*CCLRSD
+.DIPOLE
+**END OF
+%EOF%
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >cc2mm_exci.check
+cat >>cc2mm_exci.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# MM/MM interaction energy compared:
+CRIT1=`$GREP "Eelec = Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n - R_s\| \]        \| * ( |0)\.00061981" $log | wc -l`
+CRIT2=`$GREP "Epol  = - 1\/2\*Sum_a\[ Pind_a\*E\^site_a \]          \| * (\-|\-0)\.00003482" $log | wc -l`
+CRIT3=`$GREP "Epol  = - 1\/2\*Sum_a\[ MYind_a\*E\^site_a \]         \| * ( |0)\.00005571" $log | wc -l`
+CRIT4=`$GREP "Evdw  = Sum_a\[ A_ma\/\|R_ma\|\^12 - B_ma\/\|R_ma\|\^6 \] \| * ( |0)\.00000000" $log | wc -l`
+CRIT5=`$GREP "E\(MM\/MM\) = Eelec \+ Epol \+ Evdw                  \| * ( |0)\.00058499" $log | wc -l`
+CRIT6=`$GREP "E\(MM\/MM\) = Eelec \+ Epol \+ Evdw                  \| * ( |0)\.00067552" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[1]=9
+ERROR[1]="THE CLASSICAL MM/MM ENERGY NOT CORRECT"
+
+# QM/MM interaction energy compared:
+CRIT1=`$GREP "\| * (\-|\-0).01031056.. \| * (\-|\-0)\.00020727.. \| * ( |0)\.00000000.. \| * (\-|\-0)\.01051784.. \|" $log | wc -l`
+CRIT2=`$GREP "\| * \-189\.75182056.. \| * \-189\.7623384... \| * ( |0)\.00009053.. \|" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2`
+CTRL[2]=2
+ERROR[2]="QM/MM ENERGY NOT CORRECT"
+
+# Dipole moment components compared:
+CRIT1=`$GREP "x * ( |0)\.69265... * 1\.7605532." $log | wc -l`
+CRIT2=`$GREP "y * (\-|\-0)\.0033511. * (\-|\-0)\.008517." $log | wc -l`
+CRIT3=`$GREP "z * ( |0)\.00062292 * ( |0)\.00158331" $log | wc -l` 
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=12
+ERROR[3]="DIPOLE MOMENT NOT CORRECT"
+
+# Three lowest ground state excitation energies compared:
+CRIT1=`$GREP "\^1A   \|    1   \|     ( |0)\.1760158  \|       4\.78963  \|     38631\.003" $log | wc -l`
+CRIT2=`$GREP "\^1A   \|    2   \|     ( |0)\.3708109  \|      10\.08988  \|     81383\.59." $log | wc -l`
+CRIT3=`$GREP "\^1A   \|    3   \|     ( |0)\.4568413  \|      12\.43128  \|    100265\.077" $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[4]=3
+ERROR[4]="LOWEST GROUND STATE EXCITATION ENERGIES NOT CORRECT"
+
+# Transition properties between ground state and excited states compared:
+CRIT1=`$GREP "\^1A   \|    1   \|        ( |0)\.0000041      \|      ( |0)\.0000005" $log | wc -l`
+CRIT2=`$GREP "\^1A   \|    2   \|        ( |0)\.0124143      \|      ( |0)\.0030689" $log | wc -l`
+CRIT3=`$GREP "\^1A   \|    3   \|        ( |0)\.0251965      \|      ( |0)\.0076739" $log | wc -l`
+TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[5]=3
+ERROR[5]="OSCILLATOR STRENGTH NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+%EOF%
+#######################################################################

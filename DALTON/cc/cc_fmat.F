@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -4122,11 +4116,6 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
          CALL CC_21EFM(THETA1,WORK(KONEH),ISYM0,XINT,YINT,ISYRES,
      &                 WORK(KEND0),LWRK0)
 
-      ELSE IF (CC2.AND.NONHF) THEN
-
-         CALL CC_21EFM(THETA1,WORK(KFIELD),ISYM0,XINT,YINT,ISYRES,
-     &                 WORK(KEND0),LWRK0)
-
       END IF
 
       IF (LOCDBG .AND. .NOT.CCS) THEN
@@ -4156,26 +4145,6 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
         LWRK1 = LWORK  - KEND1
       END IF
 
-*---------------------------------------------------------------------*
-* for CC2/NONHF calculate additional FF term to Theta2:
-*---------------------------------------------------------------------*
-      IF (CC2.AND.NONHF) THEN
-
-         IOPT   = 1
-         ISYLMA = 0
-         CALL CC_EIM(WORK(KEMAT1),WORK(KEMAT2),
-     &               DUMMY,DUMMY,DUMMY,DUMMY,
-     &               WORK(KFIELDR),WORK(KFIELDG),
-     &               DUMMY,DUMMY,ISYLMA,DUMMY,DUMMY,IDUMMY,
-     &               .TRUE.,.FALSE.,.FALSE.,.FALSE.,IOPT,ISYAMP)
-
-         CALL CC_EITR(WORK(KEMAT1),WORK(KEMAT2),WORK(KEND1),LWRK1,
-     &                ISYAMP)
-
-         CALL CCRHS_E(THETA2,WORK(KZETA2),WORK(KEMAT1),WORK(KEMAT2),
-     &                WORK(KEND1),LWRK1,ISYCTR,ISYAMP)
-
-      END IF
 *---------------------------------------------------------------------*
 * calculate the first E2 term contribution from the zero-order BF:
 *---------------------------------------------------------------------*

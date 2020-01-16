@@ -541,6 +541,7 @@ follows:
 .HF
 **PROPERTIES
 .SPIN-SPIN
+.TDA TRIPLET
 **END OF DALTON INPUT
 \end{verbatim}
 
@@ -552,6 +553,8 @@ natural abundance\index{abundance} of more than 1\% . This limit will
 automatically
 include proton and $^{13}$C spin--spin coupling constants. By default,
 all contributions to the coupling constants will be calculated.
+The Tamm-Dancoff approximation (TDA) will be used for the triplet response contributions
+(Fermi-contact and spin-dipole).
 
 Often one is interested in only certain kinds of nuclei. For example,
  one may want to calculate only the proton spin--spin couplings of a molecule.
@@ -582,6 +585,7 @@ abundance threshold as well as selected three atoms will look as:
 .HF
 **PROPERTIES
 .SPIN-S
+.TDA TRIPLET
 *SPIN-S
 .ABUNDA
  0.10

@@ -2,7 +2,6 @@ set(DALTON_C_SOURCES
     DALTON/cc/crayio.c
     DALTON/dft/basisinfo.c
     DALTON/dft/cube-fast.c
-    DALTON/dft/dft_dftd.F
     DALTON/dft/eval-dso.c
     DALTON/dft/fun-b86.c
     DALTON/dft/fun-b86mx.c
@@ -446,6 +445,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/dft/dft_mos.F
     DALTON/dft/dft_rho.F
     DALTON/dft/dso_cb.F
+    DALTON/dft/dft_dftd.F
     DALTON/eri/eri2aob.F
     DALTON/eri/eri2ave.F
     DALTON/eri/eri2car1.F
@@ -629,7 +629,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/sirorb.F
     DALTON/sirius/sirout.F
     DALTON/sirius/sir_mep.F
-    DALTON/sirius/sir_qfit.F
     DALTON/sirius/sirpcm.F
     DALTON/sirius/sirpcmder.F
     DALTON/sirius/sirpop.F
@@ -791,6 +790,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_lrnsl.F
     DALTON/soppa/so_rspdrv.F
     DALTON/soppa/so_rsplrs.F
+    DALTON/fde/emb_quit.F
     )
 if(NOT ENABLE_CRAY_WRAPPERS)
     # radovan: CRAY provides these functions
@@ -824,6 +824,22 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/qmcmm/fock.F90
     DALTON/qmcmm/response.F90
     DALTON/qmcmm/input.F90
+    DALTON/fde/emb_main.F90
+    DALTON/fde/emb_cfg.F90
+    DALTON/fde/emb_dalton_evaluators.F90
+    DALTON/fde/emb_dalton_input.F90
+    DALTON/fde/emb_data.F90
+    DALTON/fde/emb_export.F90
+    DALTON/fde/emb_input.F90
+    DALTON/fde/emb_io.F90
+    DALTON/fde/emb_dalton_io.F
+    DALTON/fde/emb_main.F90
+    DALTON/fde/emb_max_block_length.F90
+    DALTON/fde/emb_types.F90
+    DALTON/fde/xcfun_autogen.F90
+    DALTON/fde/xml_file.F90
+    DALTON/fde/xml_parser.F90
+    DALTON/fde/xml_structure.F90
    )
 set(DALTON_OWN_BLAS_SOURCES
     DALTON/pdpack/gp_blas.F

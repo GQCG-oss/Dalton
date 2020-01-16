@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -118,8 +112,7 @@ C
 C *** Start timing:
 C
       IF (IPRSTAT .GT. 0) CALL TIMOPT('START',LUSTAT,WRK,LFREE)
-      TOPT  = SECOND()
-      TIMST = TOPT
+      CALL GETTIM(T_start,W_start)
 C
 C *** WF_TYPE
 C
@@ -154,7 +147,11 @@ C
       END IF
 
       WRITE (LUW4,960) WF_TYPE(1:len_WF_TYPE)
-      IF (LUPRI .NE. LUW4) WRITE (LUPRI,960) WF_TYPE(1:len_WF_TYPE)
+      flush(LUW4)
+      IF (LUPRI .NE. LUW4) THEN
+         WRITE (LUPRI,960) WF_TYPE(1:len_WF_TYPE)
+         flush(LUPRI)
+      END IF
   960 FORMAT(//T9,     'SIRIUS ',A,' optimization (SIROPT)'
      *       /' ================================================'/)
 C
@@ -164,6 +161,7 @@ C     UPDATE , if use UPDATE for MC optimization
 C
       ICONV  = 0
       SOLVNT = FLAG(16)
+
       ABSORP = ( FLAG(51) .OR. FLAG(52) .OR. FLAG(53) )
 #if defined (VAR_NOEXCABS)
       IF ( ABSORP .AND. ISTATE .GT. 1 ) THEN
@@ -314,9 +312,12 @@ C    SCF (canonical orbitals are not needed with high precision).
 C
       IF (DIRFCK .AND. .NOT. USRSCR) THEN
          IFTHRS  = MIN( IFTHSV, 9 )
-         IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I5)')
+         IF (IPRI6 .GE. 0) THEN
+            WRITE (LUPRI,'(/A,I5)')
      &      ' Fock matrix screening setting for SIRCNO: IFTHRS =',
      &      IFTHRS
+            flush(LUPRI)
+         END IF
       END IF
       CALL OPTST(WRK(KCINDX),WRK(KWRK10),LWRK10)
 C     CALL OPTST(INDXCI,WRK,LFREE)
@@ -357,9 +358,15 @@ C-841209-hj: force beta positive
       IF (BETMAX .LT. D1)     BETMAX = D1
 C
 C
-      TIMST = SECOND() - TIMST
-      IF (IPRI6 .GT. 1) WRITE (LUPRI,'(/A,F15.2,A)')
-     *   ' --- Time used in SIROPT startup :',TIMST,' seconds.'
+      IF (IPRI6 .GT. 0) THEN
+         CALL GETTIM(T_1,W_1)
+         T_1 = T_1 - T_start
+         W_1 = W_1 - W_start
+         WRITE (LUPRI,'(/A,2F15.2)')
+     &   ' --- CPU and WALL time used in SIROPT startup (seconds):',
+     &   T_1,W_1
+         flush(LUPRI)
+      END IF
 C
 C ***********************************************
 C *** START LOOP OVER MACRO ITERATIONS **********
@@ -812,7 +819,7 @@ C
             DEPSAV = DEPRED
             EMCOLD = EMCGEO
             DEPRED = DEPGEO
-            CALL SIRSTP(JWSTEP,DUMMY,DUMMY,DUMMY,DUMMY,1)
+            CALL SIRSTP(JWSTEP,VDUMMY,DUMMY,DUMMY,DUMMY,1)
             EMCOLD = EMCSCF
             DEPRED = DEPSAV
             IF (WLKREJ) GO TO 700
@@ -968,7 +975,7 @@ C     If (not noupdate or not neo_always or not nr_always) then
                UPDATE = .TRUE.
                DONR   = .FALSE.
                ITRLVL = 0
-            ELSE IF (ISTATE .GT. 1) THEN
+            ELSE IF (.NOT. FLAG(38) .AND. ISTATE .GT. 1) THEN
 C              ... no reason to switch to NR for ground state
                WRITE (LUPRI,'(/A)') ' Local region, DONR activated'
                DONR     = .TRUE.
@@ -1025,13 +1032,15 @@ C
 C We did not converge...
 C
       NWARN = NWARN + 1
-      TOPT = SECOND() - TOPT
+      CALL GETTIM(T_opt, W_opt)
+      T_opt = T_opt - T_start
+      W_opt = W_opt - W_start
       WRITE (LUSTAT,7050) WF_TYPE(1:len_WF_TYPE),
-     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
+     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,T_opt,W_opt
       WRITE (LUW4,7050)  WF_TYPE(1:len_WF_TYPE),
-     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
+     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,T_opt,W_opt
       IF (LUPRI.NE.LUW4) WRITE (LUPRI,7050)  WF_TYPE(1:len_WF_TYPE),
-     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
+     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,T_opt,W_opt
  7050 FORMAT(
      *   /' *** Optimization control WARNING: ',A,
      &    ' not converged ***',
@@ -1042,21 +1051,27 @@ C
      *   /5X,  '   Maximum',T45,I5,
      *   /5X,  'Number of back steps this macro',T45,I5,
      *   /5X,  '   Maximum',T45,I5,
-     *   /5X,  'Total number of CPU seconds used',F13.2)
+     *   /5X,  'Total number of CPU seconds used',F13.2,
+     *   /5X,  'Total WALL time used (seconds)  ',F13.2)
       GO TO 890
   750 CONTINUE
       NWARN = NWARN + 1
-      TOPT = SECOND() - TOPT
-      WRITE (LUSTAT,7051) WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,TOPT
-      WRITE (LUW4  ,7051) WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,TOPT
-      IF (LUPRI.NE.LUW4)
-     *WRITE (LUPRI ,7051) WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,TOPT
+      CALL GETTIM(T_opt, W_opt)
+      T_opt = T_opt - T_start
+      W_opt = W_opt - W_start
+      WRITE (LUSTAT,7051)
+     &   WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,T_opt,W_opt
+      WRITE (LUW4  ,7051)
+     &   WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,T_opt,W_opt
+      IF (LUPRI.NE.LUW4) WRITE (LUPRI ,7051)
+     &   WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,T_opt,W_opt
  7051 FORMAT(
      *   /' *** Optimization control WARNING: ',A,
      &    ' not converged ***',
      *   /5X,  'Number of macro iterations used',T45,I5,
      *   /5X,  'Number of micro iterations used',T45,I5,
-     *   /5X,  'Total number of CPU seconds used',F13.2)
+     *   /5X,  'Total number of CPU seconds used',F13.2,
+     *   /5X,  'Total WALL time used (seconds)  ',F13.2)
       GO TO 890
 C
 C ***********************************************************
@@ -1064,14 +1079,17 @@ C
 C We have converged...
 C
   800 CONTINUE
-      TOPT = SECOND() - TOPT
-      WRITE (LUW4 ,8000) WF_TYPE(1:len_WF_TYPE),ITMAC,ITMICT,TOPT
+      CALL GETTIM(T_opt, W_opt)
+      T_opt = T_opt - T_start
+      W_opt = W_opt - W_start
+      WRITE (LUW4 ,8000) WF_TYPE(1:len_WF_TYPE),ITMAC,ITMICT,T_opt,W_opt
       IF (LUPRI.NE.LUW4)
-     &WRITE (LUPRI,8000) WF_TYPE(1:len_WF_TYPE),ITMAC,ITMICT,TOPT
+     &WRITE (LUPRI,8000) WF_TYPE(1:len_WF_TYPE),ITMAC,ITMICT,T_opt,W_opt
  8000 FORMAT(/' *** Optimization control: ',A,' converged ***',
      *       /5X,  'Number of macro iterations used',T45,I5,
      *       /5X,  'Number of micro iterations used',T45,I5,
-     *       /5X,  'Total number of CPU seconds used',F13.2)
+     *       /5X,  'Total number of CPU seconds used',F13.2,
+     *       /5X,  'Total WALL time used (seconds)  ',F13.2)
 C
       IF (SOLVNT) THEN
          KFCSOL = KWRKG
@@ -1188,7 +1206,7 @@ C     ... this is RHF which will be followed by MCSCF
             JWSTEP = 1
             EMCOLD = EMCGEO
             DEPRED = DEPGEO
-            CALL SIRSTP(JWSTEP,DUMMY,DUMMY,DUMMY,DUMMY,1)
+            CALL SIRSTP(JWSTEP,VDUMMY,DUMMY,DUMMY,DUMMY,1)
          ELSE
             WLKREJ = .FALSE.
          END IF
@@ -1582,6 +1600,15 @@ C
       DATA STAR8/'********'/
 C
       CALL QENTER('OPTST ')
+
+      IF (ISTATE .GT. NCONF) THEN
+         WRITE(LUPRI,'(//A,I0,A,I0)')
+     &   'FATAL ERROR: requested .STATE ',ISTATE,
+     &   ' is greater than number of configurations: ',NCONF
+         CALL QUIT('ERROR: '//
+     &   'requested .STATE is greater than number of configurations')
+      END IF
+
 C     Transfer ICI0 to local variable ICSTRT
       ICSTRT = ICI0
 C
@@ -1815,16 +1842,16 @@ C     (but we test to be sure!)
 C
   400 CONTINUE
          REWIND LUIT1
-         IF ( .NOT.FNDLAB(TABLE(2),LUIT1) ) GO TO 490
-            READ (LUIT1,END=490,ERR=490)
-         IF ( .NOT.FNDLB2(TABLE(3),LBLINF,LUIT1) ) GO TO 490
-         IF ( ICSTRT.EQ.5 .AND. LBLINF(2).EQ.'NRSAVE  ')
-     &      FLAG(39) = .TRUE.
-C        ... if user has specified .RESTART, then respect shift to NR
+         IF ( .NOT.FNDLB2(TABLE(3),LBLINF,LUIT1) ) GO TO 490 ! label 'STARTVEC'
+         IF ( ICSTRT.EQ.5 ) THEN ! .RESTART
+            REWIND LUIT1
+            IF ( .NOT.FNDLAB(TABLE(2),LUIT1) ) GO TO 490     ! label 'OLDORB  ' for backstep after restart
+            IF ( LBLINF(2).EQ.'NRSAVE  ') FLAG(39) = .TRUE.  ! if user has specified .RESTART, then respect shift to NR
+         END IF
          IF (FLAG(39)) GO TO 495
 C        ... if (ONLYNR) one vector is all that is needed,
 C            so no reason to do more checking.
-C        We now check if sufficient vectors using label information.
+C        We now check if sufficient vectors available using label information.
          READ (LBLINF(1),'(2I4)',ERR=405) LROIT1,JSTA
          IF (LROIT1 .LT. LROOTS) GO TO 493
          GO TO 495
@@ -1839,28 +1866,30 @@ C        error reading LBLINF(1) -- use the old check
 C
   490 CONTINUE
          REWIND LUIT1
+         CALL DMPLAB(LUIT1, LUPRI)
          IF (ICSTRT .EQ. 4) THEN
             NWARN = NWARN + 1
             WRITE (LUPRI,'(//A/A//)')
-     *       '@@*** (OPTST) MC start vectors not found on SIRIUS.RST',
-     *       '@@*** WARNING lowest diagonal elements used.'
+     &       '@@*** (OPTST) MC start vectors not found on SIRIUS.RST',
+     &       '@@*** WARNING lowest diagonal elements used.'
             ICSTRT = 1
             GO TO 10
          ELSE IF (ICSTRT .EQ. 5) THEN
             WRITE (LUPRI,'(//A/A//)')
-     *       '@@*** (OPTST) MC start vectors not found on SIRIUS.RST,',
-     *       '@@            .RESTART not possible.'
+     &      '@@*** (OPTST) MC start vectors or OLDORB'//
+     &          ' not found on SIRIUS.RST,',
+     &      '@@            .RESTART not possible.'
             CALL QTRACE(LUPRI)
-            CALL QUIT(
-     &         'MC start vectors for .RESTART not found on SIRIUS.RST.')
+            CALL QUIT( 'ERROR: '//
+     &      ' All necessary info for .RESTART not found on SIRIUS.RST.')
          ELSE
-            WRITE (LUPRI,'(//A/A/A//)')
-     *       ' *** (OPTST) MC start vectors not found on SIRIUS.RST,',
-     *       '             no recover when CISTRT 6 or 7',
-     *       '             optimization abandoned.'
+            WRITE (LUPRI,'(//A/A//)')
+     &       '@@*** (OPTST) Old CI vectors not found on SIRIUS.RST,',
+     &       '@@            no recover when CISTRT 6 or 7,'//
+     &          ' optimization abandoned.'
             CALL QTRACE(LUPRI)
-            CALL QUIT(
-     &     '(OPTST) Start vectors not found on SIRIUS.RST as expected.')
+            CALL QUIT('ERROR: '//
+     &      'Old CI vectors not found on SIRIUS.RST as expected.')
          END IF
   493 CONTINUE
          REWIND LUIT1

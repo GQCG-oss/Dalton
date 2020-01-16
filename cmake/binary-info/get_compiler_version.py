@@ -33,6 +33,7 @@ command_d['mpicc']        = 'mpicc        --version'
 command_d['gcc']          = 'gcc          --version'
 command_d['gcc.exe']      = 'gcc.exe      --version'
 command_d['gcc44']        = 'gcc44        --version'
+command_d['cc']           = 'cc           --version'
 command_d['icc']          = 'icc          --version'
 command_d['pgcc']         = 'pgcc         -V'
 command_d['xlc']          = 'xlc          -qversion'
@@ -52,7 +53,7 @@ if sys.version >= '2.4':
     if compiler_name in command_d:
         p = subprocess.Popen(command_d[compiler_name], shell=True, \
                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out = p.communicate()[0]
+        out = p.communicate()[0].decode('utf-8')
         if out != '':
             if compiler_name != 'pgf90' and compiler_name != 'pgcc' and  compiler_name != 'pgCC':
                 # use only first line, not the copyright stuff

@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+#   ccmm_beta
+#   -----------
+#   Molecule:         H20 in 5 waters
+#   Wave Function:    CC2/CCSD / 6-31G
+#   Test Purpose:     CCMM for CC2/CCSD 1. hyperpolarizability
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+#
+# Test of CC2 hyperpolarizabilities
+#
+f.add(from_string = 'FINAL CC2 RESULTS FOR THE FIRST HYPERPOLARIZABILITIES',
+     to_string = 'OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM',
+      rel_tolerance = 1.0e-7)
+
+#
+# Test of CCSD hyperpolarizabilities
+#
+f.add(from_string = 'FINAL CCSD RESULTS FOR THE FIRST HYPERPOLARIZABILITIES',
+     to_string = 'SUMMARY OF COUPLED CLUSTER CALCULATION',
+     rel_tolerance = 1.0e-9)
+
+
+
+f.add(from_string = 'SUMMARY OF COUPLED CLUSTER CALCULATION',
+     to_string = 'END OF COUPLED CLUSTER CALCULATION',
+      abs_tolerance = 1.0e-8)
+
+
+
+test.run(['ccmm_beta.dal'], ['ccmm_beta.mol'], f={'out': f}, args='-put POTENTIAL.INP',
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

@@ -1,12 +1,9 @@
-# only in the development code we get the hash from git
-# in the released code we read it from file, in this case
-# it is already set at this stage
-if(DEVELOPMENT_CODE)
     find_package(Git)
     if(GIT_FOUND)
         execute_process(
-            COMMAND         ${GIT_EXECUTABLE} rev-list --max-count=1 HEAD
-            OUTPUT_VARIABLE GIT_REVISION
+            COMMAND           ${GIT_EXECUTABLE} rev-list --max-count=1 HEAD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE   GIT_REVISION
             ERROR_QUIET
             )
         if(NOT ${GIT_REVISION} STREQUAL "")
@@ -21,9 +18,10 @@ if(DEVELOPMENT_CODE)
       #     ERROR_QUIET
       #     )
       execute_process(
-          COMMAND ${GIT_EXECUTABLE} branch
-          COMMAND grep "*"
-          OUTPUT_VARIABLE GIT_BRANCH
+          COMMAND           ${GIT_EXECUTABLE} branch
+          COMMAND           grep "*"
+          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+          OUTPUT_VARIABLE   GIT_BRANCH
           ERROR_QUIET
           )
       if(NOT ${GIT_BRANCH} STREQUAL "")
@@ -33,10 +31,10 @@ if(DEVELOPMENT_CODE)
       endif()
 
       execute_process(
-          COMMAND     ${GIT_EXECUTABLE} status -uno
-          OUTPUT_FILE ${PROJECT_BINARY_DIR}/GIT_STATUS_AT_BUILD
+          COMMAND           ${GIT_EXECUTABLE} status -uno
+          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+          OUTPUT_FILE       ${PROJECT_BINARY_DIR}/GIT_STATUS_AT_BUILD
           ERROR_QUIET
           )
 
     endif()
-endif()

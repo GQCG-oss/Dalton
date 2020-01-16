@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -329,8 +323,8 @@ C
             END IF
  16      CONTINUE
          IF (IDIFF .GT. 0) THEN
-            WRITE (LUPRI,'(/,A,/,12X,A)') ' WARNINGCoordinates on'//
-     &           ' DALTON.HES differ from MOLECULE.INP',
+            WRITE (LUPRI,'(/A)') ' WARNING Coordinates on'//
+     &           ' DALTON.HES differ from MOLECULE.INP. '//
      &           'Coordinates from DALTON.HES will be used'
          END IF
  18      CONTINUE
@@ -1767,23 +1761,6 @@ C
       END IF
       RETURN
       END
-C  /* Deck hdot */
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL)
-      REAL FUNCTION HDOT(NDIM,VEC1,VEC2,HMAT)
-#else
-      DOUBLE PRECISION FUNCTION HDOT(NDIM,VEC1,VEC2,HMAT)
-#endif
-#include "implicit.h"
-      PARAMETER (D0 = 0.0D0)
-      DIMENSION VEC1(NDIM), VEC2(NDIM), HMAT(NDIM,NDIM)
-      HDOT = D0
-      DO 100 I = 1, NDIM
-         DO 200 J = 1, NDIM
-            HDOT = HDOT + VEC1(J)*HMAT(J,I)*VEC2(I)
-  200    CONTINUE
-  100 CONTINUE
-      RETURN
-      END
 C  /* Deck intern */
       SUBROUTINE INTERN(NCORD,NINTER,GRAD,HESS,HESCOR,DGRAD,CAAT,BMAT,
      &                  BADJIN,QMAT,QINV,BHES,FINT,DINT,AATINT,HINT,W2,
@@ -2089,11 +2066,7 @@ C  /* Deck prhint */
       PARAMETER ( KCOL = 6 )
 C
       INTEGER BEGIN
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL)
-      REAL MATRIX(NINTER,NINTER)
-#else
-      DOUBLE PRECISION MATRIX(NINTER,NINTER)
-#endif
+      REAL*8  MATRIX(NINTER,NINTER)
 #include "cbivib.h"
 #include "nuclei.h"
 C
@@ -3875,14 +3848,12 @@ C
      &     'ZZ',ROANL0(3,3,I),ROANLA(3,3,I),ROANL0(3,3,I)+ROANLA(3,3,I)
          END DO
          TMASS = 0.0D0
-         JATOM = 0
          DO IATOM = 1, NUCIND
             DO ISYMOP = 0, MAXOPR
                IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-                  JATOM = JATOM + 1
                   NATTYP = IZATOM(IATOM)
                   IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
-                     AMASS = DISOTP(NATTYP,ISOTOP(JATOM),'MASS')
+                     AMASS = DISOTP(NATTYP,ISOTOP(IATOM),'MASS')
                      TMASS = TMASS + AMASS
                   END IF
                END IF

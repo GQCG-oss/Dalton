@@ -77,7 +77,9 @@ cat > ccsdr12_n2_exc.dal <<'%EOF%'
 .MAX IT
  100
 .MAXRED
- 300
+ 500
+.MXLRV
+ 500
 *CCEXCI
 .THREXC
  1.0D-08

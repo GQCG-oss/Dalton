@@ -120,7 +120,7 @@ ERROR[3]="NUCLEAR REPULSION ENERGY NOT CORRECT"
 # Wave function:
 CRIT1=`$GREP "Number of closed shell electrons * 10" $log | wc -l`
 CRIT2=`$GREP "Number of electrons in active shells * 0" $log | wc -l`
-CRIT3=`$GREP "Wave function type .* MP2" $log | wc -l`
+CRIT3=`$GREP "Wave function type .* SCS-MP2" $log | wc -l`
 CRIT4=`$GREP "Total number of orbitals * 24" $log | wc -l`
 CRIT5=`$GREP "Spin multiplicity .* 1  * 0" $log | wc -l`
 CRIT6=`$GREP "Total number of symmetries * 4" $log | wc -l`

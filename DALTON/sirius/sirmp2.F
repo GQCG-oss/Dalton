@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -295,7 +289,7 @@ C
          FLAG(25) = .FALSE. ! do NOT calculate first order wave function coefficients for SOPPA if we quit after MP2
       END IF
       IF (SAVE_MP2WF1) THEN
-         FLAG(25) = .TRUE. ! DO calculaate first order wave function coeffients if requested in input
+         FLAG(25) = .TRUE. ! DO calculate first order wave function coeffients if requested in input
       END IF
 C
       KFRSAV= 1
@@ -589,17 +583,17 @@ C
      &       '@   Kohn-Sham contribution    :',EMY,
      &       '@   + scaled PT2 contribution :',EMP2,' *',WDFTMP,
      &          ' = ',EMP2*WDFTMP,
-     &       '@   = KS-PT2 energy           :',EMY+WDFTMP*EMP2
-            EMCSCF = EMY + WDFTMP*EMP2
+     &       '@   = DH-DFT/KS-PT2 energy    :',EMY+WDFTMP*EMP2
+            EMP2   = WDFTMP*EMP2
          END IF
       END IF
+C
+      ECORR = EMY + EMP2
 C
 C
       IF (SRMP2_SRINTS) GO TO 20
 C     ... skip to calculate energy with full integrals if
 C         calculating MP2 correlation energy with short-range integrals
-C
-      ECORR = EMY + EMP2
 C
 C     Write the correlation coefficients and second order one-density to
 C     the interface file LUSIFC
@@ -2125,8 +2119,8 @@ C Pack or unpack ph-array for MP2/SOPPA.
 C
 C If IWAY.LT.0 then unpack the linear array XKP into XK. Else pack the
 C   the array XK into XKP.
-C If IPHLAB>0, pack XK(OCC,VIRT); IPHLAB<0 C pack XK(VIRT,OCC),
-C   and IPHLAB=0, pack both (XK(OCC,VIRT) and XK(VIRT,OCC))
+C If IPHLAB>0, pack XK(OCC,VIRT); if IPHLAB<0, pack XK(VIRT,OCC);
+C   and if IPHLAB=0, pack both (XK(OCC,VIRT) and XK(VIRT,OCC))
 C
 #include "implicit.h"
       DIMENSION XK(NORBT,NORBT), XKP(*)

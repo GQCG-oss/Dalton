@@ -134,18 +134,20 @@ Section~\ref{ref-optinp} \Sec{OPTIMIZATION}
 Section~\ref{ref-stpinp} \Sec{STEP CONTROL}
 
 \noindent
-The next five groups have special input only relevant for the
-respective calculation types:
+The next groups have special input only relevant for the
+specified calculation types:
 
-Section~\ref{ref-rhfinp} \Sec{SCF INPUT}
+Section~\ref{ref-rhfinp} \Sec{SCF INPUT}, for \Key{HF} (or \Key{SCF}) and \Key{DFT}
 
-Section~\ref{ref-dftinp} \Sec{DFT INPUT}
+Section~\ref{ref-dftinp} \Sec{DFT INPUT}, for \Key{DFT}
 
-Section~\ref{ref-mp2inp} \Sec{MP2 INPUT}
+Section~\ref{ref-mp2inp} \Sec{MP2 INPUT}, for \Key{MP2}
 
-Section~\ref{ref-nevpt2inp} \Sec{NEVPT2 INPUT}
+Section~\ref{ref-nevpt2inp} \Sec{NEVPT2 INPUT}, for \Key{NEVPT2}
 
-Section~\ref{ref-cicinp} \Sec{CI INPUT}
+Section~\ref{ref-cicinp} \Sec{CI INPUT}, for \Key{CI}
+
+Section~\ref{ref-stexinp} \Sec{STEX INPUT}, for \Key{STEX}
 
 \noindent
 The next section is used to select some types of analysis of the final
@@ -220,6 +222,9 @@ Specification of which wave function calculation is to be performed.
   \quotekw{*SCF INPUT} submodule.
   Note: you cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
 
+%\item[\Key{SCF}]
+%  Alias for \Key{HF}. Deprecated.
+
 \item[\Key{DFT}] \ \\
   \kw{READ (LUINP,'(A80)') LINE} \\
   Restricted closed-shell, one
@@ -229,8 +234,8 @@ Specification of which wave function calculation is to be performed.
   functional to use.  The occupied orbitals, optimization control
   etc. are specified in the \quotekw{*SCF INPUT} submodule shared with
   the \quotekw{.HF} option.  The DFT specific input options are
-  collected in the \quotekw{*DFT INPUT} input submodule.  Note: you
-  cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
+  collected in the \quotekw{*DFT INPUT} input submodule.
+  Note: you cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
 
 \item[\Key{MP2}]
  \index{M{\o}ller-Plesset!second-order}\index{MP2}
@@ -252,8 +257,22 @@ Specification of which wave function calculation is to be performed.
 \item[\Key{MCSCF}]
   Multiconfiguration self-consistent field (MCSCF) calculation.\index{MCSCF}
 
+\item[\Key{VIRTRUNC}] \ \\
+  \kw{READ (LUINP,*) N, THR\_VIRTUNC} \\
+  Truncate virtual space after SCF or MCSCF, write reduced orbital information to 
+  "\verb|SIRIUS.RST|" and stop \dalton. Start a new \dalton\ calculation with the
+  reduced set of molecular orbitals using ".MOSTART NEWORB" and, if MCSCF, ".STARTOLDCI"
+  in the relevant input sections (the ".RESTART" option cannot be used).
+  In input N is either 2 or 4, and all virtual orbitals with eigenvalues of
+  $r^N$ greater than ( THR\_VIRTRUNC )$^N$ are deleted.
+  The THR\_VIRTRUNC is thus a measure of the maximum extent (diffuseness) of a virtual orbital.
+  All the occupied orbitals are not modified.
+
 \item[\Key{NEVPT2}]
   Multireference second-order perturbation theory calculation.\index{NEVPT2}
+
+\item[\Key{STEX}]
+  Static exchange calculation.\index{Static exchange}
 
 \item[\Key{CC}]
   \index{Coupled Cluster}\index{CC}
@@ -295,8 +314,8 @@ Specification of which wave function calculation is to be performed.
   General {\sir} print level and default for all other print parameters in this module.
 
 \item[\Key{RESTART}]
-  restart {\sir}\index{restart!wave function},
-  the {\sir} restart file (\verb|SIRIUS.RST|) must be available
+  Restart {\sir}\index{restart!wave function} second order optimization,
+  the {\sir} restart file (\verb|SIRIUS.RST|) must be available and contain restart information.
 
 %hjaaj Oct 2003: obsolete, we want the specific .HF or .DFT
 %\item[\Key{SCF}]
@@ -323,7 +342,7 @@ Specification of which wave function calculation is to be performed.
   lines will be discarded.
 
 \item[\Key{WESTA}]
-  Write the "\verb|SIRIFC|" interface file for the WESTA post-processing program.
+  Write the file "\verb|SIRIUS.STRINGINFO|" with CI string information for the WESTA post-processing program.
 
 %hjaaj Oct 2003: obsolete
 %\item[\Key{BASIS SET}]
@@ -402,7 +421,7 @@ Options for a CI calculation.
 
 \item[\Key{MAX ITERATIONS}] \ \\
   \kw{READ (LUINP,*) MXCIMA} \\
-  Max iterations in iterative diagonalization of CI matrix (default = 20).
+  Max iterations in iterative diagonalization of CI matrix (default = 25).
 
 \item[\Key{STATE}]
   Default: not specified\\
@@ -498,7 +517,7 @@ To obtain initial guess for CI vector(s).
 
 {\bf Purpose:}
 
-To specify the configuration part in MCSCF and CI calculations.
+To specify the configuration part in .MCSCF and .CI calculations.
 
 \begin{description}
 \item[\Key{CAS SPACE}] \ \\
@@ -551,6 +570,15 @@ To specify the configuration part in MCSCF and CI calculations.
   where $S$ is the spin quantum number. \\
   For determinant basis this option determines the minimum spin
   multiplicity.  The $M_S$ value is determined as (ISPIN-1)/2.
+
+\item[\Key{MS2}]
+  Default is determind by \kw{.SPIN MULTIPLICITY}. \\
+  \kw{READ (LUINP,*) MS2}\\
+  For CSF basis: MS2 specifies non-default $2 M_S$ value to be used in the determinant expansion of the CSFs.
+  The computationally optional MS2 value for, say, triplet is zero (default), but if you want to calculate
+  spin-density you should select MS2=2.\\
+  For determinant basis this option should never be used, if used it must give the
+  same $M_S$ value as the \kw{.SPIN MULTIPLICTY} key word.
 
 \item[\Key{SYMMETRY}]
   Default is 1 (totally symmetric irrep).\\
@@ -1154,13 +1182,8 @@ with the same meanings and syntax as for the CAMB3LYP functional.\index{rCAMB3LY
   \funexample{Combine HF=0.25 PBEx=0.75 PBEc=1}
 
 \item[PBE] same as above but with exchange estimated exclusively by
-  \exfn{PBEx} functional \cite{dft:pbe}.\index{PBE} Alias of PBEPBE. 
-  This is the form used by CADPAC and NWChem quantum chemistry programs.
-  \funexample{Combine PBEx=1 PBEc=1}\\
-  Note that the Molpro quantum chemistry program uses the \corfn{PW91c}
-  non-local correlation functional instead of \corfn{PBEc}, which is 
-  equivalent to the following:
-  \funexample{Combine PBEx=1 PW91c=1}.
+  \exfn{PBEx} functional \cite{dft:pbe}.\index{PBE} Alias: PBEPBE. 
+  \funexample{Combine PBEx=1 PBEc=1}
 
 \item[RPBE] is a revised PBE functional that employs the 
   \exfn{RPBEx} exchange functional.
@@ -1355,7 +1378,6 @@ perturbation theory (NEVPT2).
  Default = 0.0\\
   \kw{READ (LUINP,*) THRNEVPT} \\
   Threshold to discard small coefficients in the CAS wavefunction
-
 
 \item[\Key{FROZEN}]
   Default = no frozen orbitals\\
@@ -2351,6 +2373,64 @@ the main peak can be obtained in SCF calculations, for shake-up
 energies MCSCF must be used.
 
 \pagebreak[3]
+\subsection{\label{ref-stexinp}\Sec{STEX INPUT}}
+
+{\bf Purpose:}
+
+Options for a STEX static exchange calculation.
+(Note: A STEX calculation may require a sequence of four DALTON calculations, see the test energy\_stex for inspiration.)
+
+\begin{description}
+\item[\Key{XAS}]
+X-ray absorption spectroscopy.
+
+\item[\Key{XES}]
+X-ray emission spectroscopy.
+
+\item[\Key{SHAKE}]
+Electron shake-up/off spectroscopy.
+
+\item[\Key{AUGER}] \ \\
+  \kw{READ (LUINP,*) NAUGER, (IAUGER(I),JAUGER(I), I=1,NAUGER)} \\
+Auger orbital pairs.
+
+\item[\Key{AUGERTEST}]
+Build RPA matrix.
+
+\item[\Key{PRINT}] \ \\
+  \kw{READ (LUINP,*) IPRSTX} \\
+Print level in STEX routines.
+
+\item[\Key{OPEN S}] \ 
+\begin{verbatim}
+  READ (LUINP,*) NOPEN(1:NSYM)
+  do isym = 1, nsym
+  if (nopen(isym) > 0) then
+     READ (LUINP,*) IOPEN(1:NOPEN(ISYM),ISYM)
+  end if
+  end do
+\end{verbatim}
+  Open shells in STEX calculation.
+
+\item[\Key{COEFFI}] \ 
+\begin{verbatim}
+  do isym = 1, nsym
+  if (nopen(isym) > 0) then
+     READ (LUINP,*) CJ(1:NOPEN(ISYM))
+     READ (LUINP,*) CK(1:NOPEN(ISYM))
+  end if
+  end do
+\end{verbatim}
+  Coefficients for modified J and K Fock matrices.
+  Note: \kw{.OPEN SH} must be specified before this keyword.
+
+\item[\Key{AO}]
+  Save STEX matrices in AO basis (default: save in MO basis).
+
+\end{description}
+
+
+\pagebreak[3]
 \subsection{\label{ref-solinp}\Sec{SOLVENT}}
 
 {\bf Purpose:}
@@ -2372,21 +2452,24 @@ will activate this model.
 
 \item[\Key{INERSINITIAL}] \ \\
   \kw{READ (LUINP,*) EPSOL, EPPN}\\
-  Enter static and optical dielectric constant\index{dielectric constant} of solvent for calculation
-  of the initial state defining inertial polarization\index{inertial
-  polarization}. Note that the optical dielectric constant specified here
+  Enter the static and optical dielectric constants\index{dielectric constant} of the solvent
+  for calculation of the initial state defining inertial polarization\index{inertial polarization}. \\
+  Note that the optical dielectric constant specified here
   only will be used in case there is a calculation of response
   properties, for which this is an alternative input to the use of the
   keyword \Key{INERSFINAL}.
 
 \item[\Key{INERSFINAL}] \ \\
   \kw{READ (LUINP,*) EPSTAT,EPSOL}\\
-  Enter static and optical dielectric\index{dielectric constant} constants of solvent
-  for calculation of the final state with inertial polarization
+  Enter the static and optical dielectric\index{dielectric constant} constants of the solvent
+  for state specific calculation of the final state with inertial polarization
   from a previous calculation with \quotekw{\Key{INERSINITIAL}}\index{final polarization}. 
-  This can for example be used to optimize an excited electronic state
-  with inertial polarization from a previous ground state calculation.
-  This keyword an  also be used to specify the static and optical dielectric constants
+  This can for example be used to optimize an excited MCSCF electronic state
+  with inertial polarization from a previous ground state MCSCF calculation.
+  The "\verb|SIRIFC|" file from the previous calculation with \quotekw{\Key{INERSINITIAL}}
+  will contain information about the inertial polarization and must be provided for the
+  \quotekw{\Key{INERSFINAL}} calculation. \\
+  This keyword can also be used to specify the static and optical dielectric constants
   for non-equilibrium solvation linear, quadratic, or cubic response functions,
   see also Sec.~\ref{sec:solvnoneqrsp}, but this is usually easier done with
   \quotekw{.INERSINITIAL} (requires only one \dalton\ calculation instead of two).

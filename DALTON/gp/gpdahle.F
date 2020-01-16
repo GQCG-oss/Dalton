@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -514,13 +508,9 @@ C
 C  /* Deck getname */
       SUBROUTINE GETNAME(HSTNAM)
 #include "implicit.h"
-      CHARACTER*(20) HSTNAM
+      CHARACTER*(40) HSTNAM
 C
-#if defined (SYS_HAL) || defined (VAR_G95)
-      IRET = HOSTNM(HSTNAM)
-#else
       CALL HOSTNM(HSTNAM)
-#endif
 C
       RETURN
       END
@@ -528,34 +518,8 @@ C  /* Deck getdate */
       SUBROUTINE GETDATE
 #include "implicit.h"
 #include "priunit.h"
-#if defined (SYS_DARWIN) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_AIX)
+#if defined (SYS_DARWIN) || defined (SYS_LINUX) || defined (SYS_AIX)
       CHARACTER*(24) FDATE
-#endif
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-      CDATE = DATE()
-      CTIME = CLOCK()
-      WRITE (LUPRI,'(T6,A,A8,1X,A8)')
-     *   'Date and time (CRAY) : ',CDATE,CTIME
-#endif
-#if defined (SYS_HAL)
-      CHARACTER*(24) CFDATE
-      CALL FDATE(CFDATE)
-      WRITE (LUPRI,'(T6,2A)') 'Date and time (HAL)    : ',CFDATE
-#endif
-#if 0 && defined (SYS_HPUX)
-      WRITE (LUPRI,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
-#endif
-#if defined (SYS_DEC)
-      WRITE (LUPRI,'(T6,2A)') 'Date and time (DEC)    : ',FDATE()
-#endif
-#if defined (SYS_IRIX)
-      WRITE (LUPRI,'(T6,2A)') 'Date and time (IRIX)   : ',FDATE()
-#endif
-#if defined (SYS_NEC)
-      WRITE (LUPRI,'(T6,2A)') 'Date and time (NEC-SX4): ',FDATE()
-#endif
-#if defined (SYS_SUN)
-      WRITE (LUPRI,'(T6,2A)') 'Date and time (SUN)    : ',FDATE()
 #endif
 #if defined (SYS_LINUX)
       WRITE (LUPRI,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()

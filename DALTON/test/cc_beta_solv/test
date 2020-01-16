@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+#   cc_beta_solv
+#   -----------
+#   Molecule:         H2S in C2v
+#   Wave Function:    CC2/CCSD / 6-31G
+#   Test Purpose:     Solvent for CC2/CCSD 1. hyperpolarizability
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+#
+# Test of CC2 hyperpolarizabilities
+#
+f.add(from_string = 'FINAL CC2 RESULTS FOR THE FIRST HYPERPOLARIZABILITIES',
+     to_string = 'OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM',
+      rel_tolerance = 1.0e-7)
+
+#
+# Test of CCSD hyperpolarizabilities
+#
+f.add(from_string = 'FINAL CCSD RESULTS FOR THE FIRST HYPERPOLARIZABILITIES',
+     to_string = 'SUMMARY OF COUPLED CLUSTER CALCULATION',
+     rel_tolerance = 1.0e-9)
+
+f.add(string = 'CC2      Total energy:',
+      rel_tolerance = 1.0e-10)
+
+f.add(string = 'CCSD     Total energy:',
+      rel_tolerance = 1.0e-10)
+
+test.run(['cc_beta_solv.dal'], ['cc_beta_solv.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

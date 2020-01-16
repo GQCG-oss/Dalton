@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -29,7 +23,7 @@ C
 !===========================================================================
 !961213-hjaaj
 !    removed check for LSORT .ge. 8*1024**2 (see MAERKE)
-!    : This check is not necessary, but instead we outght to
+!    : This check is not necessary, but instead we ought to
 !    : check that buffer length is greater than a minimum !!
 !961112-hjaaj
 !    delete SORINT after use
@@ -52,9 +46,6 @@ C
 !  - removed FPS code
 !  - moved LSORT parameter to cdk LSORT
 !  - modified some formats to print higher integer numbers
-!901221-hjaaj
-!  - corrected error in writing to LUORD
-!  - added VCLR and READI
 !901023-hjaaj-l04
 !  - use XI4LAB(1:2) instead of XI2LAB(3:4) for LUSORT
 !890826-hjaaj-t10.1

@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -1161,7 +1155,7 @@ C
      *                           INQRTR(AQRLB(MSYMA,IAOP),BPCFR,MSYMA)
                            END IF
 C
-                           IF ( RSPCI ) THEN
+                           IF ( RSPCI .OR. TDA .OR. CISRPA) THEN
 C                          ... E[3] term is zero for CI
                               CALL DZERO(HYPVAL,NAQROP(MSYMA))
                            ELSE
@@ -1960,7 +1954,7 @@ C
                         ELSE
                            CEXMBF=EXCITA(MSYMC,IC,ISPINC+1)-BSMFR(IBFR)
                         END IF 
-                        IF(.NOT.RSPCI) THEN
+                        IF(.NOT.(RSPCI.OR.TDA.OR.CISRPA)) THEN
                            IF (E3TEST) THEN
                               IAOP   = 1
                               KAVEC  = 1
@@ -2022,7 +2016,7 @@ C
                            ELSE
                               FACMOM = FACB
                            END IF
-                           IF ( RSPCI) THEN
+                           IF ( RSPCI .OR. TDA .OR. CISRPA) THEN
                               SMOM = D0
                            ELSE
                               CALL REARSP(LURSP,KLEN,
@@ -3056,7 +3050,7 @@ C
                      CALL DSWAP(MZVAR(MSYMB),VECB,1,
      *                          VECB(1+MZVAR(MSYMB)),1)
                      CALL FLSHFO(LUPRI)
-                     IF(.NOT.RSPCI) THEN
+                     IF(.NOT.(RSPCI .OR. TDA .OR. CISRPA)) THEN
                         CEXMBE = EXCITA(MSYMC,IC,ISPINC+1)
      *                         - EXCITA(MSYMB,IB,ISPINB+1)
                         IF (E3TEST) THEN
@@ -3104,7 +3098,7 @@ C
      *                   ' SPIN OF OPERATOR A ',ISPINA,
      *                   ' LABEL OF OPERATOR A: ',LBLPP(MSYMA,IAOP),
      *                   ' FOR WHICH TRANSITION MOMENT IS CALCULATED'
-                        IF (RSPCI) THEN
+                        IF (RSPCI .OR. TDA .OR. CISRPA) THEN
                            XMOM   = D0
                         ELSE
                            IF ( ISPINA.EQ.0 ) THEN

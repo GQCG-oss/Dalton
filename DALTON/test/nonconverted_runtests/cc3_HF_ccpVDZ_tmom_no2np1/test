@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['cc3_HF_ccpVDZ_tmom_no2np1.dal'], ['cc3_HF_ccpVDZ_tmom_no2np1.mol'], {'out': f})
+test.run(['cc3_HF_ccpVDZ_tmom_no2np1.dal'], ['cc3_HF_ccpVDZ_tmom_no2np1.mol'], f={'out': f})
 
 sys.exit(test.return_code)

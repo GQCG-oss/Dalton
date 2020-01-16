@@ -4,8 +4,11 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2016.alpha
+    This is output from DALTON release Dalton2018.alpha (2018)
+         ( Web site: http://daltonprogram.org )
+
    ----------------------------------------------------------------------------
+
     NOTE:
      
     Dalton is an experimental code for the evaluation of molecular
@@ -24,13 +27,13 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
        T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
        L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
        C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
        H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
        M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
-       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
        T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
        J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
        O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
@@ -45,12 +48,12 @@
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
        and H. Agren,
        "The Dalton quantum chemistry program system",
-       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
-    
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
     and
-    
+     
        Dalton, a Molecular Electronic Structure Program,
-       Release Dalton2016.alpha (2015), see http://daltonprogram.org
+       Release Dalton2018.alpha (2018), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -59,7 +62,7 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
   Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
@@ -70,6 +73,7 @@
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
   Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -78,13 +82,16 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
   Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Christoph Jacob           TU Braunschweig               Germany     (Frozen density embedding model)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
   Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
@@ -105,7 +112,7 @@
   Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
-  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Patrick Norman,           KTH Stockholm,                Sweden      (Cubic response and complex frequency response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
@@ -123,6 +130,7 @@
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
   Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Andre S. P. Gomes         CNRS/Universite de Lille      France      (Frozen density embedding model)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
   Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
   Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
@@ -132,98 +140,93 @@
   Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
   David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  Lucas Visscher            Vrije Universiteit Amsterdam  Netherlands (Frozen density embedding model)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Jul 20 19:44:36 2015
-     Host name              : node18.cluster-net                      
+     Date and time (Linux)  : Tue Oct 16 22:14:41 2018
+     Host name              : karax                                   
 
- * Work memory size             :   256000000 =  1.907 gigabytes.
+ * Work memory size             :   768000000 =  5.722 gigabytes.
 
  * Directories for basis set searches:
-   1) /home/januszc/Jobs/dalton/mchd/tests
-   2) /home/januszc/programs/dalton20150720/build/basis
+   1) /home/januszc/Jobs/test
+   2) /home/januszc/source/dalton/build/basis
 
 
 Compilation information
 -----------------------
 
  Who compiled             | januszc
- Host                     | node18.cluster-net
- System                   | Linux-2.6.32-358.el6.x86_64
+ Host                     | karax
+ System                   | Linux-4.14.74-1-MANJARO
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | ON
- Fortran compiler         | /home/januszc/openmpi_1.6.5_intel/bin/mpif90
- Fortran compiler version | ifort (IFORT) 12.0.4 20110427
- C compiler               | /home/januszc/openmpi_1.6.5_intel/bin/mpicc
- C compiler version       | icc (ICC) 12.0.4 20110427
- C++ compiler             | /home/januszc/openmpi_1.6.5_intel/bin/mpicxx
+ Fortran compiler         | /bin/mpif90
+ Fortran compiler version | GNU Fortran (GCC) 8.2.1 20180831
+ C compiler               | /bin/mpicc
+ C compiler version       | gcc (GCC) 8.2.1 20180831
+ C++ compiler             | /bin/mpicxx
  C++ compiler version     | unknown
- BLAS                     | /home/awodyn/intel/mkl/lib/intel64/libmkl_intel_lp
-                          | 64.so;/home/awodyn/intel/mkl/lib/intel64/libmkl_se
-                          | quential.so;/home/awodyn/intel/mkl/lib/intel64/lib
-                          | mkl_core.so;/usr/lib64/libpthread.so;/usr/lib64/li
-                          | bm.so
- LAPACK                   | /home/awodyn/intel/mkl/lib/intel64/libmkl_lapack95
-                          | _lp64.a;/home/awodyn/intel/mkl/lib/intel64/libmkl_
-                          | intel_lp64.so
+ BLAS                     | /lib64/libblas.so
+ LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | bc82dd43f6c59f7582aa3c46a35e6fbf247b82ea
+ Last Git revision        | 5794f53ef565c5966814905de02923f4c3d49091
  Git branch               | master
- Configuration time       | 2015-07-20 17:39:41.183504
+ Configuration time       | 2018-10-16 22:10:41.435376
 
- * MPI run using 8 processes.
+ * MPI parallel run using 4 processes.
 
 
    Content of the .dal input file
  ----------------------------------
 
-**DALTON INPUT                                    
-.RUN RESPONSE                                     
-.DIRECT                                           
-**INTEGRALS                                       
-.DIPLEN                                           
-.ANGMOM                                           
-.THETA                                            
-**WAVE FUNCTION INPUT                             
-.HF                                               
-*SCF INPUT                                        
-.THRESH                                           
- 1.0D-08                                          
-**RESPONSE INPUT                                  
-*ABSORP                                           
-.MCHD                                             
-.BFREQ                                            
- 1                                                
- 0.072                                            
-.DAMPING                                          
- 0.004556                                         
-.MAXRM                                            
- 1000                                             
-.THCLR                                            
- 1.0D-6                                           
-**END OF DALTON INPUT                             
-                                                  
+**DALTON INPUT
+.RUN RESPONSE
+.DIRECT
+**INTEGRALS
+.DIPLEN
+.ANGMOM
+.THETA
+**WAVE FUNCTION INPUT
+.HF
+*SCF INPUT
+.THRESH
+ 1.0D-08
+**RESPONSE INPUT
+*ABSORP
+.MCHD
+.BFREQ
+ 1
+ 0.072
+.DAMPING
+ 0.004556
+.MAXRM
+ 1000
+.THCLR
+ 1.0D-6
+**END OF DALTON INPUT
+
 
 
    Content of the .mol file
  ----------------------------
 
-BASIS                                                                          
-3-21G                                                                          
-Hydrogen Peroxide - optimized geometry                                         
-optimized with CCSD(T)/cc-pCVQZ                                                
-AtomTypes=2                                                                    
-Charge=8.0 Atoms=2                                                             
-O   1.3697920000     0.0000000000    -0.0587737580                             
-O  -1.3697920000    -0.0000000000    -0.0587737580                             
-Charge=1.0 Atoms=2                                                             
-H   1.6852310000    -1.4904930000     0.9327822420                             
-H  -1.6852310000     1.4904930000     0.9327822420                             
-                                                                               
+BASIS
+3-21G
+Hydrogen Peroxide - optimized geometry
+optimized with CCSD(T)/cc-pCVQZ
+AtomTypes=2
+Charge=8.0 Atoms=2
+O   1.3697920000     0.0000000000    -0.0587737580
+O  -1.3697920000    -0.0000000000    -0.0587737580
+Charge=1.0 Atoms=2
+H   1.6852310000    -1.4904930000     0.9327822420
+H  -1.6852310000     1.4904930000     0.9327822420
+
 
 
        *******************************************************************
@@ -260,7 +263,7 @@ H  -1.6852310000     1.4904930000     0.9327822420
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/januszc/programs/dalton20150720/build/basis/3-21G"
+     "/home/januszc/source/dalton/build/basis/3-21G"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 3-21G                                                                           
@@ -271,7 +274,7 @@ H  -1.6852310000     1.4904930000     0.9327822420
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/januszc/programs/dalton20150720/build/basis/3-21G"
+     "/home/januszc/source/dalton/build/basis/3-21G"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 3-21G                                                                           
@@ -292,7 +295,7 @@ H  -1.6852310000     1.4904930000     0.9327822420
        8 :      1.36979200     0.00000000    -0.05877376  Isotope  1
        1 :      1.68523100    -1.49049300     0.93278224  Isotope  1
 
- The following element was found:   XY       
+ The following symmetry element was found:   XY       
 
 
                          SYMGRP: Point group information
@@ -367,7 +370,7 @@ H  -1.6852310000     1.4904930000     0.9327822420
 
   Total number of coordinates:   12
   O   / 1 :     1  x   1.3697920000    2  y   0.0000000000    3  z  -0.0587737580
-  O   / 2 :     4  x  -1.3697920000    5  y   0.0000000000    6  z  -0.0587737580
+  O   / 2 :     4  x  -1.3697920000    5  y  -0.0000000000    6  z  -0.0587737580
   H   / 1 :     7  x   1.6852310000    8  y  -1.4904930000    9  z   0.9327822420
   H   / 2 :    10  x  -1.6852310000   11  y   1.4904930000   12  z   0.9327822420
 
@@ -535,8 +538,18 @@ H  -1.6852310000     1.4904930000     0.9327822420
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      z      0.92518436         2.35158392         7.84403963
+
+
+  Total CPU  time used in HERMIT:   0.01 seconds
+  Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -569,8 +582,8 @@ H  -1.6852310000     1.4904930000     0.9327822420
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Jul 20 19:44:36 2015
-     Host name              : node18.cluster-net                      
+     Date and time (Linux)  : Tue Oct 16 22:14:41 2018
+     Host name              : karax                                   
 
  Title lines from ".mol" input file:
      Hydrogen Peroxide - optimized geometry                                  
@@ -589,7 +602,7 @@ H  -1.6852310000     1.4904930000     0.9327822420
 
      Wave function specification
      ============================
-@    Wave function type        >>> HF <<<
+@    Wave function type        --- HF ---
 @    Number of closed shell electrons          18
 @    Number of electrons in active shells       0
 @    Total charge of the molecule               0
@@ -628,76 +641,79 @@ H  -1.6852310000     1.4904930000     0.9327822420
 
  Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    T  2.90D-02  2.90D-02
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    T  1.49D-02  1.50D-02
 @  1  -149.668667452       2.60D+00  -1.50D+02     5   4
       Virial theorem: -V/T =      1.999279
-@      MULPOP O   _1 -0.18; O   _2 -0.18; H   _1  0.18; H   _2  0.18; 
+@    MULPOP   O   _1 -0.18; O   _2 -0.18; H   _1  0.18; H   _2  0.18; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    T  1.10D-02  1.10D-02
-@  2  -149.933216171       3.37D-01  -2.65D-01     5   4
-      Virial theorem: -V/T =      2.003956
-@      MULPOP O   _1 -0.36; O   _2 -0.36; H   _1  0.36; H   _2  0.36; 
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    T  3.06D-03  3.00D-03
+@  2  -149.923032375       4.67D-01  -2.54D-01     5   4
+      Virial theorem: -V/T =      2.004386
+@    MULPOP   O   _1 -0.34; O   _2 -0.34; H   _1  0.34; H   _2  0.34; 
+   2  Level shift: doubly occupied orbital energies shifted by -5.00D-02
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    3    T  1.10D-02  1.10D-02
-@  3  -149.943412779       6.88D-02  -1.02D-02     5   4
-      Virial theorem: -V/T =      2.003307
-@      MULPOP O   _1 -0.40; O   _2 -0.40; H   _1  0.40; H   _2  0.40; 
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    3    T  2.97D-03  3.00D-03
+@  3  -149.942887301       9.98D-02  -1.99D-02     5   4
+      Virial theorem: -V/T =      2.003372
+@    MULPOP   O   _1 -0.40; O   _2 -0.40; H   _1  0.40; H   _2  0.40; 
+   3  Level shift: doubly occupied orbital energies shifted by -1.25D-02
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  1.10D-02  1.10D-02
-@  4  -149.943827356       7.25D-03  -4.15D-04     5   4
-      Virial theorem: -V/T =      2.003046
-@      MULPOP O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  2.84D-03  3.00D-03
+@  4  -149.943817706       1.02D-02  -9.30D-04     5   4
+      Virial theorem: -V/T =      2.003087
+@    MULPOP   O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    5    T  1.10D-02  1.10D-02
-@  5  -149.943835906       3.30D-03  -8.55D-06     5   4
-      Virial theorem: -V/T =      2.003094
-@      MULPOP O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    5    T  2.91D-03  3.00D-03
+@  5  -149.943834106       3.84D-03  -1.64D-05     5   4
+      Virial theorem: -V/T =      2.003067
+@    MULPOP   O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    6    T  1.10D-02  1.10D-02
-@  6  -149.943838141       1.85D-03  -2.24D-06     5   4
-      Virial theorem: -V/T =      2.003074
-@      MULPOP O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    6    T  2.80D-03  3.00D-03
+@  6  -149.943838245       1.81D-03  -4.14D-06     5   4
+      Virial theorem: -V/T =      2.003088
+@    MULPOP   O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    7    F  1.10D-02  1.10D-02
-@  7  -149.943839341       3.12D-04  -1.20D-06     5   4
-      Virial theorem: -V/T =      2.003082
-@      MULPOP O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    7    F  2.67D-03  3.00D-03
+@  7  -149.943839307       4.80D-04  -1.06D-06     5   4
+      Virial theorem: -V/T =      2.003080
+@    MULPOP   O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    T  1.10D-02  1.10D-02
-@  8  -149.943839371       6.73D-05  -3.00D-08     5   4
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    T  2.88D-03  3.00D-03
+@  8  -149.943839369       1.01D-04  -6.18D-08     5   4
       Virial theorem: -V/T =      2.003083
-@      MULPOP O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
+@    MULPOP   O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13    9    F  1.10D-02  1.10D-02
-@  9  -149.943839372       1.60D-05  -1.21D-09     5   4
+   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13    9    F  2.94D-03  3.00D-03
+@  9  -149.943839372       2.48D-05  -2.59D-09     5   4
       Virial theorem: -V/T =      2.003083
-@      MULPOP O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
+@    MULPOP   O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   10    T  1.10D-02  1.10D-02
-@ 10  -149.943839372       1.84D-06  -6.16D-11     5   4
+  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   10    T  2.84D-03  3.00D-03
+@ 10  -149.943839372       2.73D-06  -1.50D-10     5   4
       Virial theorem: -V/T =      2.003083
-@      MULPOP O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
+@    MULPOP   O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-  11  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   11    T  1.00D-02  1.10D-02
-@ 11  -149.943839372       3.81D-07  -6.25D-13     5   4
+  11  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   11    T  2.80D-03  2.00D-03
+@ 11  -149.943839372       5.10D-07  -1.14D-12     5   4
       Virial theorem: -V/T =      2.003083
-@      MULPOP O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
+@    MULPOP   O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-  12  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   12    T  1.10D-02  1.10D-02
-@ 12  -149.943839372       7.35D-08   0.00D+00     5   4
+  12  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   12    T  2.81D-03  3.00D-03
+@ 12  -149.943839372       1.22D-07   1.99D-13     5   4
       Virial theorem: -V/T =      2.003083
-@      MULPOP O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
+@    MULPOP   O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-  13  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   13    T  1.10D-02  1.10D-02
-@ 13  -149.943839372       1.03D-08  -1.14D-13     5   4
+  13  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   13    T  2.58D-03  2.00D-03
+@ 13  -149.943839372       1.92D-08  -1.71D-13     5   4
       Virial theorem: -V/T =      2.003083
-@      MULPOP O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
+@    MULPOP   O   _1 -0.41; O   _2 -0.41; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-  14  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   14    T  1.10D-02  1.00D-02
-@ 14  -149.943839372       4.49D-09   8.53D-14     5   4
+  14  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   14    T  2.85D-03  3.00D-03
+@ 14  -149.943839372       5.04D-09   2.84D-14     5   4
 
 @ *** DIIS converged in  14 iterations !
-@     Converged SCF energy, gradient:   -149.943839371799    4.49D-09
+@     Converged SCF energy, gradient:   -149.943839371799    5.04D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -721,13 +737,13 @@ H  -1.6852310000     1.4904930000     0.9327822420
   ------------------------------------------
     gap     :     0.71571138 au
 
- >>> Writing SIRIFC interface file
+ --- Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.179       0.179
+ CPU and wall time for SCF :       0.056       0.056
 
 
                        .-----------------------------------.
-                       | >>> Final results from SIRIUS <<< |
+                       | --- Final results from SIRIUS --- |
                        `-----------------------------------'
 
 
@@ -739,15 +755,15 @@ H  -1.6852310000     1.4904930000     0.9327822420
 @    Nuclear repulsion:            36.904126703133
 @    Electronic energy:          -186.847966074932
 
-@    Final gradient norm:           0.000000004495
+@    Final gradient norm:           0.000000005044
 
  
-     Date and time (Linux)  : Mon Jul 20 19:44:36 2015
-     Host name              : node18.cluster-net                      
+     Date and time (Linux)  : Tue Oct 16 22:14:41 2018
+     Host name              : karax                                   
 
-File label for MO orbitals:  20Jul15   FOCKDIIS
+File label for MO orbitals:  16Oct18   FOCKDIIS
 
- (Only coefficients >0.0100 are printed.)
+ (Only coefficients > 0.0100 are printed.)
 
  Molecular orbitals for symmetry species 1  (A  )
  ------------------------------------------------
@@ -756,7 +772,7 @@ File label for MO orbitals:  20Jul15   FOCKDIIS
    1 O   :1s     0.6951  -0.1630   0.0223  -0.0308  -0.0411   0.0645   0.0205
    2 O   :1s     0.0665   0.1585  -0.0141   0.0390   0.0407  -0.0273  -0.0156
    3 O   :1s    -0.0221   0.4764  -0.1107   0.1254   0.1973  -0.6172   0.0064
-   4 O   :2px   -0.0017  -0.0590   0.1535   0.2542   0.1701  -0.0463   0.0000
+   4 O   :2px   -0.0017  -0.0590   0.1535   0.2542   0.1701  -0.0463  -0.0000
    5 O   :2py   -0.0017  -0.0295  -0.1235  -0.0984   0.3131   0.1372   0.2528
    6 O   :2pz    0.0013   0.0272   0.2467  -0.2226   0.0960  -0.0957  -0.0596
    7 O   :2px   -0.0006  -0.0476   0.1570   0.2818   0.1923  -0.0868  -0.0925
@@ -807,14 +823,12 @@ File label for MO orbitals:  20Jul15   FOCKDIIS
   10 H   :1s    -0.0821  -0.2491  -0.1191  -0.3376
   11 H   :1s    -0.0804   0.3028  -0.3685  -0.1242
 
-
-
- >>>> Total CPU  time used in SIRIUS :      0.18 seconds
- >>>> Total wall time used in SIRIUS :      0.19 seconds
+  Total CPU  time used in SIRIUS :   0.06 seconds
+  Total wall time used in SIRIUS :   0.06 seconds
 
  
-     Date and time (Linux)  : Mon Jul 20 19:44:36 2015
-     Host name              : node18.cluster-net                      
+     Date and time (Linux)  : Tue Oct 16 22:14:41 2018
+     Host name              : karax                                   
 
 
                      .---------------------------------------.
@@ -833,7 +847,7 @@ File label for MO orbitals:  20Jul15   FOCKDIIS
  ------------------------------------------------------------------------------
 
 
- <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+ -------- OUTPUT FROM RESPONSE INPUT PROCESSING --------
 
 
 
@@ -844,7 +858,7 @@ File label for MO orbitals:  20Jul15   FOCKDIIS
 
  Magneto-chiral circular dichroism requested: ABSLRS_MCHD=   T
  at frequencies:  0.07200000
- Absorption calc over frequency interval  :            ABSLRS_INTERVAL =   F
+ Absorption calc over frequency interval  :                           ABSLRS_INTERVAL =   F
  Start: 0.00000Stop: 0.00000   Step: 1.00000
  Damping parameter (a.u. and cm-1)        : DAMPING      = 0.004556   999.9
  Threshold of convergence in LR solver    : THCLR        = 1.0D-06
@@ -853,8 +867,8 @@ File label for MO orbitals:  20Jul15   FOCKDIIS
  Print level in absorption modules        : PRINT        =   0
 
 
-   SCF energy         :     -149.943839371799356
- -- inactive part     :     -186.847966074932430
+   SCF energy         :     -149.943839371799214
+ -- inactive part     :     -186.847966074932287
  -- nuclear repulsion :       36.904126703133073
 
 
@@ -938,22 +952,22 @@ File label for MO orbitals:  20Jul15   FOCKDIIS
  ABSLRS -- Solving linear response equations( E[2] - {w+iW}*S[2] ) N = B[1]  
  ABSLRS -- for operator XXTHETA  of symmetry 1 at frequencies:
  ABSLRS --  0.00000000  0.07200000
-ITER, IVEC:   1   1  XXTHETA   0.0000   RESID, RESID/X:  0.1056690D+00  0.5044413D+00
-ITER, IVEC:   1   2  XXTHETA   0.0720   RESID, RESID/X:  0.1084993D+00  0.5123687D+00
-ITER, IVEC:   2   1  XXTHETA   0.0000   RESID, RESID/X:  0.1409795D-01  0.6695731D-01
-ITER, IVEC:   2   2  XXTHETA   0.0720   RESID, RESID/X:  0.1601841D-01  0.7506903D-01
-ITER, IVEC:   3   1  XXTHETA   0.0000   RESID, RESID/X:  0.2798383D-02  0.1328626D-01
-ITER, IVEC:   3   2  XXTHETA   0.0720   RESID, RESID/X:  0.3169105D-02  0.1484087D-01
-ITER, IVEC:   4   1  XXTHETA   0.0000   RESID, RESID/X:  0.4827968D-03  0.2292155D-02
-ITER, IVEC:   4   2  XXTHETA   0.0720   RESID, RESID/X:  0.7161550D-03  0.3353485D-02
-ITER, IVEC:   5   1  XXTHETA   0.0000   RESID, RESID/X:  0.6937507D-04  0.3293692D-03
-ITER, IVEC:   5   2  XXTHETA   0.0720   RESID, RESID/X:  0.1073723D-03  0.5027830D-03
-ITER, IVEC:   6   1  XXTHETA   0.0000   RESID, RESID/X:  0.9281902D-05  0.4406732D-04
-ITER, IVEC:   6   2  XXTHETA   0.0720   RESID, RESID/X:  0.1438387D-04  0.6735414D-04
-ITER, IVEC:   7   1  XXTHETA   0.0000   RESID, RESID/X:  0.6745670D-06  0.3202615D-05
-ITER, IVEC:   7   2  XXTHETA   0.0720   RESID, RESID/X:  0.1076763D-05  0.5042066D-05
-ITER, IVEC:  8  1  XXTHETA   0.0000 RESID, RESID/X:TT
-ITER, IVEC:   8   2  XXTHETA   0.0720   RESID, RESID/X:  0.1001814D-06  0.4691109D-06
+ITER, IVEC:   1   1  XXTHETA    0.0000   RESID, RESID/X:  0.1056690D+00  0.5044413D+00
+ITER, IVEC:   1   2  XXTHETA    0.0720   RESID, RESID/X:  0.1084993D+00  0.5123687D+00
+ITER, IVEC:   2   1  XXTHETA    0.0000   RESID, RESID/X:  0.1409795D-01  0.6695731D-01
+ITER, IVEC:   2   2  XXTHETA    0.0720   RESID, RESID/X:  0.1601841D-01  0.7506903D-01
+ITER, IVEC:   3   1  XXTHETA    0.0000   RESID, RESID/X:  0.2798383D-02  0.1328626D-01
+ITER, IVEC:   3   2  XXTHETA    0.0720   RESID, RESID/X:  0.3169105D-02  0.1484087D-01
+ITER, IVEC:   4   1  XXTHETA    0.0000   RESID, RESID/X:  0.4827968D-03  0.2292155D-02
+ITER, IVEC:   4   2  XXTHETA    0.0720   RESID, RESID/X:  0.7161550D-03  0.3353485D-02
+ITER, IVEC:   5   1  XXTHETA    0.0000   RESID, RESID/X:  0.6937507D-04  0.3293692D-03
+ITER, IVEC:   5   2  XXTHETA    0.0720   RESID, RESID/X:  0.1073723D-03  0.5027830D-03
+ITER, IVEC:   6   1  XXTHETA    0.0000   RESID, RESID/X:  0.9281902D-05  0.4406732D-04
+ITER, IVEC:   6   2  XXTHETA    0.0720   RESID, RESID/X:  0.1438387D-04  0.6735414D-04
+ITER, IVEC:   7   1  XXTHETA    0.0000   RESID, RESID/X:  0.6745670D-06  0.3202615D-05
+ITER, IVEC:   7   2  XXTHETA    0.0720   RESID, RESID/X:  0.1076763D-05  0.5042066D-05
+ITER, IVEC:  8  1  XXTHETA    0.0000 RESID, RESID/X:TT
+ITER, IVEC:   8   2  XXTHETA    0.0720   RESID, RESID/X:  0.1001814D-06  0.4691109D-06
 
  *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  23  23
 
@@ -961,18 +975,18 @@ ITER, IVEC:   8   2  XXTHETA   0.0720   RESID, RESID/X:  0.1001814D-06  0.469110
  ABSLRS -- for operator XYTHETA  of symmetry 1 at frequencies:
  ABSLRS --  0.00000000  0.07200000
  Use ABS_READIN_RED           23          23
-ITER, IVEC:   1   1  XYTHETA   0.0000   RESID, RESID/X:  0.6544274D+00  0.2591809D+01
-ITER, IVEC:   1   2  XYTHETA   0.0720   RESID, RESID/X:  0.6556958D+00  0.2555722D+01
-ITER, IVEC:   2   1  XYTHETA   0.0000   RESID, RESID/X:  0.3888761D-01  0.1500935D+00
-ITER, IVEC:   2   2  XYTHETA   0.0720   RESID, RESID/X:  0.3926210D-01  0.1492775D+00
-ITER, IVEC:   3   1  XYTHETA   0.0000   RESID, RESID/X:  0.2875063D-02  0.1109343D-01
-ITER, IVEC:   3   2  XYTHETA   0.0720   RESID, RESID/X:  0.2920277D-02  0.1109982D-01
-ITER, IVEC:   4   1  XYTHETA   0.0000   RESID, RESID/X:  0.2299685D-03  0.8873335D-03
-ITER, IVEC:   4   2  XYTHETA   0.0720   RESID, RESID/X:  0.2343476D-03  0.8907430D-03
-ITER, IVEC:   5   1  XYTHETA   0.0000   RESID, RESID/X:  0.9963527D-05  0.3844427D-04
-ITER, IVEC:   5   2  XYTHETA   0.0720   RESID, RESID/X:  0.1040914D-04  0.3956461D-04
-ITER, IVEC:   6   1  XYTHETA   0.0000   RESID, RESID/X:  0.7768506D-06  0.2997478D-05
-ITER, IVEC:   6   2  XYTHETA   0.0720   RESID, RESID/X:  0.7908047D-06  0.3005808D-05
+ITER, IVEC:   1   1  XYTHETA    0.0000   RESID, RESID/X:  0.6544274D+00  0.2591809D+01
+ITER, IVEC:   1   2  XYTHETA    0.0720   RESID, RESID/X:  0.6556958D+00  0.2555722D+01
+ITER, IVEC:   2   1  XYTHETA    0.0000   RESID, RESID/X:  0.3888761D-01  0.1500935D+00
+ITER, IVEC:   2   2  XYTHETA    0.0720   RESID, RESID/X:  0.3926210D-01  0.1492775D+00
+ITER, IVEC:   3   1  XYTHETA    0.0000   RESID, RESID/X:  0.2875063D-02  0.1109343D-01
+ITER, IVEC:   3   2  XYTHETA    0.0720   RESID, RESID/X:  0.2920277D-02  0.1109982D-01
+ITER, IVEC:   4   1  XYTHETA    0.0000   RESID, RESID/X:  0.2299685D-03  0.8873335D-03
+ITER, IVEC:   4   2  XYTHETA    0.0720   RESID, RESID/X:  0.2343476D-03  0.8907430D-03
+ITER, IVEC:   5   1  XYTHETA    0.0000   RESID, RESID/X:  0.9963527D-05  0.3844427D-04
+ITER, IVEC:   5   2  XYTHETA    0.0720   RESID, RESID/X:  0.1040914D-04  0.3956461D-04
+ITER, IVEC:   6   1  XYTHETA    0.0000   RESID, RESID/X:  0.7768506D-06  0.2997478D-05
+ITER, IVEC:   6   2  XYTHETA    0.0720   RESID, RESID/X:  0.7908047D-06  0.3005808D-05
 
  *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  38  38
 
@@ -980,16 +994,16 @@ ITER, IVEC:   6   2  XYTHETA   0.0720   RESID, RESID/X:  0.7908047D-06  0.300580
  ABSLRS -- for operator YYTHETA  of symmetry 1 at frequencies:
  ABSLRS --  0.00000000  0.07200000
  Use ABS_READIN_RED           38          38
-ITER, IVEC:   1   1  YYTHETA   0.0000   RESID, RESID/X:  0.2494711D+00  0.9220260D+00
-ITER, IVEC:   1   2  YYTHETA   0.0720   RESID, RESID/X:  0.2496596D+00  0.9117236D+00
-ITER, IVEC:   2   1  YYTHETA   0.0000   RESID, RESID/X:  0.1439692D-01  0.5307423D-01
-ITER, IVEC:   2   2  YYTHETA   0.0720   RESID, RESID/X:  0.1444223D-01  0.5261238D-01
-ITER, IVEC:   3   1  YYTHETA   0.0000   RESID, RESID/X:  0.2222057D-03  0.8191446D-03
-ITER, IVEC:   3   2  YYTHETA   0.0720   RESID, RESID/X:  0.2296619D-03  0.8366311D-03
-ITER, IVEC:   4   1  YYTHETA   0.0000   RESID, RESID/X:  0.4924320D-05  0.1815313D-04
-ITER, IVEC:   4   2  YYTHETA   0.0720   RESID, RESID/X:  0.5059653D-05  0.1843171D-04
-ITER, IVEC:   5   1  YYTHETA   0.0000   RESID, RESID/X:  0.1597737D-06  0.5889936D-06
-ITER, IVEC:   5   2  YYTHETA   0.0720   RESID, RESID/X:  0.1616520D-06  0.5888790D-06
+ITER, IVEC:   1   1  YYTHETA    0.0000   RESID, RESID/X:  0.2494711D+00  0.9220259D+00
+ITER, IVEC:   1   2  YYTHETA    0.0720   RESID, RESID/X:  0.2496595D+00  0.9117234D+00
+ITER, IVEC:   2   1  YYTHETA    0.0000   RESID, RESID/X:  0.1439692D-01  0.5307422D-01
+ITER, IVEC:   2   2  YYTHETA    0.0720   RESID, RESID/X:  0.1444223D-01  0.5261237D-01
+ITER, IVEC:   3   1  YYTHETA    0.0000   RESID, RESID/X:  0.2222058D-03  0.8191451D-03
+ITER, IVEC:   3   2  YYTHETA    0.0720   RESID, RESID/X:  0.2296620D-03  0.8366316D-03
+ITER, IVEC:   4   1  YYTHETA    0.0000   RESID, RESID/X:  0.4924317D-05  0.1815312D-04
+ITER, IVEC:   4   2  YYTHETA    0.0720   RESID, RESID/X:  0.5059650D-05  0.1843170D-04
+ITER, IVEC:   5   1  YYTHETA    0.0000   RESID, RESID/X:  0.1597736D-06  0.5889933D-06
+ITER, IVEC:   5   2  YYTHETA    0.0720   RESID, RESID/X:  0.1616519D-06  0.5888787D-06
 
  *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  50  49
 
@@ -997,14 +1011,14 @@ ITER, IVEC:   5   2  YYTHETA   0.0720   RESID, RESID/X:  0.1616520D-06  0.588879
  ABSLRS -- for operator ZDIPLEN  of symmetry 1 at frequencies:
  ABSLRS --  0.00000000  0.07200000
  Use ABS_READIN_RED           50          49
-ITER, IVEC:   1   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.1469878D+00  0.3543929D+00
-ITER, IVEC:   1   2  ZDIPLEN   0.0720   RESID, RESID/X:  0.1470193D+00  0.3496831D+00
-ITER, IVEC:   2   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.1885461D-02  0.4544383D-02
-ITER, IVEC:   2   2  ZDIPLEN   0.0720   RESID, RESID/X:  0.1929375D-02  0.4587529D-02
-ITER, IVEC:   3   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.4644789D-04  0.1119497D-03
-ITER, IVEC:   3   2  ZDIPLEN   0.0720   RESID, RESID/X:  0.4672397D-04  0.1110969D-03
-ITER, IVEC:   4   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.2019389D-07  0.4867176D-07
-ITER, IVEC:   4   2  ZDIPLEN   0.0720   RESID, RESID/X:  0.2099773D-07  0.4992688D-07
+ITER, IVEC:   1   1  ZDIPLEN    0.0000   RESID, RESID/X:  0.1469879D+00  0.3543930D+00
+ITER, IVEC:   1   2  ZDIPLEN    0.0720   RESID, RESID/X:  0.1470194D+00  0.3496832D+00
+ITER, IVEC:   2   1  ZDIPLEN    0.0000   RESID, RESID/X:  0.1885463D-02  0.4544386D-02
+ITER, IVEC:   2   2  ZDIPLEN    0.0720   RESID, RESID/X:  0.1929376D-02  0.4587533D-02
+ITER, IVEC:   3   1  ZDIPLEN    0.0000   RESID, RESID/X:  0.4644833D-04  0.1119508D-03
+ITER, IVEC:   3   2  ZDIPLEN    0.0720   RESID, RESID/X:  0.4672442D-04  0.1110979D-03
+ITER, IVEC:   4   1  ZDIPLEN    0.0000   RESID, RESID/X:  0.2019502D-07  0.4867447D-07
+ITER, IVEC:   4   2  ZDIPLEN    0.0720   RESID, RESID/X:  0.2099885D-07  0.4992954D-07
 
  *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  57  57
 
@@ -1012,10 +1026,10 @@ ITER, IVEC:   4   2  ZDIPLEN   0.0720   RESID, RESID/X:  0.2099773D-07  0.499268
  ABSLRS -- for operator ZANGMOM  of symmetry 1 at frequencies:
  ABSLRS --  0.00000000  0.07200000
  Use ABS_READIN_RED           57          57
-ITER, IVEC:   1   1  ZANGMOM   0.0000   RESID, RESID/X:  0.2106378D-01  0.1110139D+00
-ITER, IVEC:   1   2  ZANGMOM   0.0720   RESID, RESID/X:  0.2108208D-01  0.1086846D+00
-ITER, IVEC:   2   1  ZANGMOM   0.0000   RESID, RESID/X:  0.1183422D-14  0.6237039D-14
-ITER, IVEC:   2   2  ZANGMOM   0.0720   RESID, RESID/X:  0.1249591D-14  0.6441998D-14
+ITER, IVEC:   1   1  ZANGMOM    0.0000   RESID, RESID/X:  0.2106381D-01  0.1110140D+00
+ITER, IVEC:   1   2  ZANGMOM    0.0720   RESID, RESID/X:  0.2108211D-01  0.1086848D+00
+ITER, IVEC:   2   1  ZANGMOM    0.0000   RESID, RESID/X:  0.1367661D-14  0.7208043D-14
+ITER, IVEC:   2   2  ZANGMOM    0.0720   RESID, RESID/X:  0.1440192D-14  0.7424602D-14
 
  *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  58  58
 
@@ -1023,8 +1037,8 @@ ITER, IVEC:   2   2  ZANGMOM   0.0720   RESID, RESID/X:  0.1249591D-14  0.644199
  ABSLRS -- for operator ZZTHETA  of symmetry 1 at frequencies:
  ABSLRS --  0.00000000  0.07200000
  Use ABS_READIN_RED           58          58
-ITER, IVEC:   1   1  ZZTHETA   0.0000   RESID, RESID/X:  0.2297687D-14  0.8682698D-14
-ITER, IVEC:   1   2  ZZTHETA   0.0720   RESID, RESID/X:  0.2359552D-14  0.8810964D-14
+ITER, IVEC:   1   1  ZZTHETA    0.0000   RESID, RESID/X:  0.2454012D-14  0.9273435D-14
+ITER, IVEC:   1   2  ZZTHETA    0.0720   RESID, RESID/X:  0.2515888D-14  0.9394748D-14
 
  *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  58  58
 
@@ -1038,22 +1052,22 @@ ITER, IVEC:   1   2  ZZTHETA   0.0720   RESID, RESID/X:  0.2359552D-14  0.881096
  ABSLRS -- Solving linear response equations( E[2] - {w+iW}*S[2] ) N = B[1]  
  ABSLRS -- for operator XDIPLEN  of symmetry 2 at frequencies:
  ABSLRS --  0.00000000  0.07200000
-ITER, IVEC:   1   1  XDIPLEN   0.0000   RESID, RESID/X:  0.7075220D+00  0.1906115D+01
-ITER, IVEC:   1   2  XDIPLEN   0.0720   RESID, RESID/X:  0.7193887D+00  0.1910694D+01
-ITER, IVEC:   2   1  XDIPLEN   0.0000   RESID, RESID/X:  0.1337035D+00  0.3218590D+00
-ITER, IVEC:   2   2  XDIPLEN   0.0720   RESID, RESID/X:  0.1377436D+00  0.3258009D+00
-ITER, IVEC:   3   1  XDIPLEN   0.0000   RESID, RESID/X:  0.1172330D-01  0.2808401D-01
-ITER, IVEC:   3   2  XDIPLEN   0.0720   RESID, RESID/X:  0.1224057D-01  0.2879998D-01
-ITER, IVEC:   4   1  XDIPLEN   0.0000   RESID, RESID/X:  0.2000072D-02  0.4791050D-02
-ITER, IVEC:   4   2  XDIPLEN   0.0720   RESID, RESID/X:  0.2030560D-02  0.4777264D-02
-ITER, IVEC:   5   1  XDIPLEN   0.0000   RESID, RESID/X:  0.3751584D-03  0.8986586D-03
-ITER, IVEC:   5   2  XDIPLEN   0.0720   RESID, RESID/X:  0.3947189D-03  0.9286384D-03
-ITER, IVEC:   6   1  XDIPLEN   0.0000   RESID, RESID/X:  0.3831693D-04  0.9178476D-04
-ITER, IVEC:   6   2  XDIPLEN   0.0720   RESID, RESID/X:  0.4168090D-04  0.9806085D-04
-ITER, IVEC:   7   1  XDIPLEN   0.0000   RESID, RESID/X:  0.2792581D-05  0.6689377D-05
-ITER, IVEC:   7   2  XDIPLEN   0.0720   RESID, RESID/X:  0.3119579D-05  0.7339297D-05
-ITER, IVEC:   8   1  XDIPLEN   0.0000   RESID, RESID/X:  0.1661257D-06  0.3979392D-06
-ITER, IVEC:   8   2  XDIPLEN   0.0720   RESID, RESID/X:  0.1922101D-06  0.4522042D-06
+ITER, IVEC:   1   1  XDIPLEN    0.0000   RESID, RESID/X:  0.7075220D+00  0.1906115D+01
+ITER, IVEC:   1   2  XDIPLEN    0.0720   RESID, RESID/X:  0.7193887D+00  0.1910694D+01
+ITER, IVEC:   2   1  XDIPLEN    0.0000   RESID, RESID/X:  0.1337035D+00  0.3218590D+00
+ITER, IVEC:   2   2  XDIPLEN    0.0720   RESID, RESID/X:  0.1377436D+00  0.3258009D+00
+ITER, IVEC:   3   1  XDIPLEN    0.0000   RESID, RESID/X:  0.1172330D-01  0.2808401D-01
+ITER, IVEC:   3   2  XDIPLEN    0.0720   RESID, RESID/X:  0.1224057D-01  0.2879998D-01
+ITER, IVEC:   4   1  XDIPLEN    0.0000   RESID, RESID/X:  0.2000072D-02  0.4791050D-02
+ITER, IVEC:   4   2  XDIPLEN    0.0720   RESID, RESID/X:  0.2030560D-02  0.4777264D-02
+ITER, IVEC:   5   1  XDIPLEN    0.0000   RESID, RESID/X:  0.3751584D-03  0.8986586D-03
+ITER, IVEC:   5   2  XDIPLEN    0.0720   RESID, RESID/X:  0.3947189D-03  0.9286384D-03
+ITER, IVEC:   6   1  XDIPLEN    0.0000   RESID, RESID/X:  0.3831693D-04  0.9178476D-04
+ITER, IVEC:   6   2  XDIPLEN    0.0720   RESID, RESID/X:  0.4168090D-04  0.9806085D-04
+ITER, IVEC:   7   1  XDIPLEN    0.0000   RESID, RESID/X:  0.2792581D-05  0.6689377D-05
+ITER, IVEC:   7   2  XDIPLEN    0.0720   RESID, RESID/X:  0.3119579D-05  0.7339297D-05
+ITER, IVEC:   8   1  XDIPLEN    0.0000   RESID, RESID/X:  0.1661257D-06  0.3979392D-06
+ITER, IVEC:   8   2  XDIPLEN    0.0720   RESID, RESID/X:  0.1922101D-06  0.4522042D-06
 
  *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  24  23
 
@@ -1061,18 +1075,18 @@ ITER, IVEC:   8   2  XDIPLEN   0.0720   RESID, RESID/X:  0.1922101D-06  0.452204
  ABSLRS -- for operator XANGMOM  of symmetry 2 at frequencies:
  ABSLRS --  0.00000000  0.07200000
  Use ABS_READIN_RED           24          23
-ITER, IVEC:   1   1  XANGMOM   0.0000   RESID, RESID/X:  0.6094385D+00  0.7089656D+00
-ITER, IVEC:   1   2  XANGMOM   0.0720   RESID, RESID/X:  0.6092886D+00  0.6900740D+00
-ITER, IVEC:   2   1  XANGMOM   0.0000   RESID, RESID/X:  0.5589063D-01  0.6474889D-01
-ITER, IVEC:   2   2  XANGMOM   0.0720   RESID, RESID/X:  0.5609603D-01  0.6329565D-01
-ITER, IVEC:   3   1  XANGMOM   0.0000   RESID, RESID/X:  0.4194340D-02  0.4858938D-02
-ITER, IVEC:   3   2  XANGMOM   0.0720   RESID, RESID/X:  0.4234866D-02  0.4778229D-02
-ITER, IVEC:   4   1  XANGMOM   0.0000   RESID, RESID/X:  0.2388933D-03  0.2767463D-03
-ITER, IVEC:   4   2  XANGMOM   0.0720   RESID, RESID/X:  0.2407476D-03  0.2716374D-03
-ITER, IVEC:   5   1  XANGMOM   0.0000   RESID, RESID/X:  0.1453789D-04  0.1684144D-04
-ITER, IVEC:   5   2  XANGMOM   0.0720   RESID, RESID/X:  0.1468800D-04  0.1657258D-04
-ITER, IVEC:   6   1  XANGMOM   0.0000   RESID, RESID/X:  0.6317834D-06  0.7318904D-06
-ITER, IVEC:   6   2  XANGMOM   0.0720   RESID, RESID/X:  0.6396026D-06  0.7216683D-06
+ITER, IVEC:   1   1  XANGMOM    0.0000   RESID, RESID/X:  0.6094385D+00  0.7089656D+00
+ITER, IVEC:   1   2  XANGMOM    0.0720   RESID, RESID/X:  0.6092886D+00  0.6900740D+00
+ITER, IVEC:   2   1  XANGMOM    0.0000   RESID, RESID/X:  0.5589063D-01  0.6474889D-01
+ITER, IVEC:   2   2  XANGMOM    0.0720   RESID, RESID/X:  0.5609603D-01  0.6329565D-01
+ITER, IVEC:   3   1  XANGMOM    0.0000   RESID, RESID/X:  0.4194340D-02  0.4858938D-02
+ITER, IVEC:   3   2  XANGMOM    0.0720   RESID, RESID/X:  0.4234866D-02  0.4778229D-02
+ITER, IVEC:   4   1  XANGMOM    0.0000   RESID, RESID/X:  0.2388933D-03  0.2767463D-03
+ITER, IVEC:   4   2  XANGMOM    0.0720   RESID, RESID/X:  0.2407476D-03  0.2716374D-03
+ITER, IVEC:   5   1  XANGMOM    0.0000   RESID, RESID/X:  0.1453789D-04  0.1684144D-04
+ITER, IVEC:   5   2  XANGMOM    0.0720   RESID, RESID/X:  0.1468800D-04  0.1657258D-04
+ITER, IVEC:   6   1  XANGMOM    0.0000   RESID, RESID/X:  0.6317834D-06  0.7318904D-06
+ITER, IVEC:   6   2  XANGMOM    0.0720   RESID, RESID/X:  0.6396026D-06  0.7216683D-06
 
  *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  38  37
 
@@ -1080,18 +1094,18 @@ ITER, IVEC:   6   2  XANGMOM   0.0720   RESID, RESID/X:  0.6396026D-06  0.721668
  ABSLRS -- for operator XZTHETA  of symmetry 2 at frequencies:
  ABSLRS --  0.00000000  0.07200000
  Use ABS_READIN_RED           38          37
-ITER, IVEC:   1   1  XZTHETA   0.0000   RESID, RESID/X:  0.2918870D+00  0.1053216D+01
-ITER, IVEC:   1   2  XZTHETA   0.0720   RESID, RESID/X:  0.2931943D+00  0.1041648D+01
-ITER, IVEC:   2   1  XZTHETA   0.0000   RESID, RESID/X:  0.1260830D-01  0.4522499D-01
-ITER, IVEC:   2   2  XZTHETA   0.0720   RESID, RESID/X:  0.1274434D-01  0.4501429D-01
-ITER, IVEC:   3   1  XZTHETA   0.0000   RESID, RESID/X:  0.9445526D-03  0.3387949D-02
-ITER, IVEC:   3   2  XZTHETA   0.0720   RESID, RESID/X:  0.9552657D-03  0.3374013D-02
-ITER, IVEC:   4   1  XZTHETA   0.0000   RESID, RESID/X:  0.2413819D-04  0.8657947D-04
-ITER, IVEC:   4   2  XZTHETA   0.0720   RESID, RESID/X:  0.2441559D-04  0.8623616D-04
-ITER, IVEC:   5   1  XZTHETA   0.0000   RESID, RESID/X:  0.1052661D-05  0.3775712D-05
-ITER, IVEC:   5   2  XZTHETA   0.0720   RESID, RESID/X:  0.1074115D-05  0.3793786D-05
-ITER, IVEC:   6   1  XZTHETA   0.0000   RESID, RESID/X:  0.2689892D-07  0.9648174D-07
-ITER, IVEC:   6   2  XZTHETA   0.0720   RESID, RESID/X:  0.2729628D-07  0.9641078D-07
+ITER, IVEC:   1   1  XZTHETA    0.0000   RESID, RESID/X:  0.2918870D+00  0.1053216D+01
+ITER, IVEC:   1   2  XZTHETA    0.0720   RESID, RESID/X:  0.2931943D+00  0.1041648D+01
+ITER, IVEC:   2   1  XZTHETA    0.0000   RESID, RESID/X:  0.1260830D-01  0.4522499D-01
+ITER, IVEC:   2   2  XZTHETA    0.0720   RESID, RESID/X:  0.1274434D-01  0.4501429D-01
+ITER, IVEC:   3   1  XZTHETA    0.0000   RESID, RESID/X:  0.9445526D-03  0.3387949D-02
+ITER, IVEC:   3   2  XZTHETA    0.0720   RESID, RESID/X:  0.9552657D-03  0.3374013D-02
+ITER, IVEC:   4   1  XZTHETA    0.0000   RESID, RESID/X:  0.2413819D-04  0.8657947D-04
+ITER, IVEC:   4   2  XZTHETA    0.0720   RESID, RESID/X:  0.2441559D-04  0.8623616D-04
+ITER, IVEC:   5   1  XZTHETA    0.0000   RESID, RESID/X:  0.1052661D-05  0.3775712D-05
+ITER, IVEC:   5   2  XZTHETA    0.0720   RESID, RESID/X:  0.1074115D-05  0.3793786D-05
+ITER, IVEC:   6   1  XZTHETA    0.0000   RESID, RESID/X:  0.2689891D-07  0.9648172D-07
+ITER, IVEC:   6   2  XZTHETA    0.0720   RESID, RESID/X:  0.2729628D-07  0.9641076D-07
 
  *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  51  51
 
@@ -1099,14 +1113,14 @@ ITER, IVEC:   6   2  XZTHETA   0.0720   RESID, RESID/X:  0.2729628D-07  0.964107
  ABSLRS -- for operator YDIPLEN  of symmetry 2 at frequencies:
  ABSLRS --  0.00000000  0.07200000
  Use ABS_READIN_RED           51          51
-ITER, IVEC:   1   1  YDIPLEN   0.0000   RESID, RESID/X:  0.9690485D-01  0.2356361D+00
-ITER, IVEC:   1   2  YDIPLEN   0.0720   RESID, RESID/X:  0.9712764D-01  0.2330943D+00
-ITER, IVEC:   2   1  YDIPLEN   0.0000   RESID, RESID/X:  0.2936921D-02  0.7139982D-02
-ITER, IVEC:   2   2  YDIPLEN   0.0720   RESID, RESID/X:  0.2962224D-02  0.7107532D-02
-ITER, IVEC:   3   1  YDIPLEN   0.0000   RESID, RESID/X:  0.3474974D-04  0.8448045D-04
-ITER, IVEC:   3   2  YDIPLEN   0.0720   RESID, RESID/X:  0.3492130D-04  0.8378980D-04
-ITER, IVEC:   4   1  YDIPLEN   0.0000   RESID, RESID/X:  0.2947057D-14  0.7164619D-14
-ITER, IVEC:   4   2  YDIPLEN   0.0720   RESID, RESID/X:  0.3443189D-14  0.8261551D-14
+ITER, IVEC:   1   1  YDIPLEN    0.0000   RESID, RESID/X:  0.9690490D-01  0.2356362D+00
+ITER, IVEC:   1   2  YDIPLEN    0.0720   RESID, RESID/X:  0.9712769D-01  0.2330944D+00
+ITER, IVEC:   2   1  YDIPLEN    0.0000   RESID, RESID/X:  0.2936923D-02  0.7139986D-02
+ITER, IVEC:   2   2  YDIPLEN    0.0720   RESID, RESID/X:  0.2962225D-02  0.7107536D-02
+ITER, IVEC:   3   1  YDIPLEN    0.0000   RESID, RESID/X:  0.3474973D-04  0.8448041D-04
+ITER, IVEC:   3   2  YDIPLEN    0.0720   RESID, RESID/X:  0.3492128D-04  0.8378976D-04
+ITER, IVEC:   4   1  YDIPLEN    0.0000   RESID, RESID/X:  0.4922678D-14  0.1196757D-13
+ITER, IVEC:   4   2  YDIPLEN    0.0720   RESID, RESID/X:  0.4989215D-14  0.1197107D-13
 
  *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  59  59
 
@@ -1114,8 +1128,8 @@ ITER, IVEC:   4   2  YDIPLEN   0.0720   RESID, RESID/X:  0.3443189D-14  0.826155
  ABSLRS -- for operator YANGMOM  of symmetry 2 at frequencies:
  ABSLRS --  0.00000000  0.07200000
  Use ABS_READIN_RED           59          59
-ITER, IVEC:   1   1  YANGMOM   0.0000   RESID, RESID/X:  0.1118586D-14  0.5906161D-14
-ITER, IVEC:   1   2  YANGMOM   0.0720   RESID, RESID/X:  0.1251587D-14  0.6450560D-14
+ITER, IVEC:   1   1  YANGMOM    0.0000   RESID, RESID/X:  0.1488326D-14  0.7858395D-14
+ITER, IVEC:   1   2  YANGMOM    0.0720   RESID, RESID/X:  0.1499104D-14  0.7726241D-14
 
  *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  59  59
 
@@ -1123,8 +1137,8 @@ ITER, IVEC:   1   2  YANGMOM   0.0720   RESID, RESID/X:  0.1251587D-14  0.645056
  ABSLRS -- for operator YZTHETA  of symmetry 2 at frequencies:
  ABSLRS --  0.00000000  0.07200000
  Use ABS_READIN_RED           59          59
-ITER, IVEC:   1   1  YZTHETA   0.0000   RESID, RESID/X:  0.3013666D-14  0.9061382D-14
-ITER, IVEC:   1   2  YZTHETA   0.0720   RESID, RESID/X:  0.3322600D-14  0.9860315D-14
+ITER, IVEC:   1   1  YZTHETA    0.0000   RESID, RESID/X:  0.4218507D-14  0.1268405D-13
+ITER, IVEC:   1   2  YZTHETA    0.0720   RESID, RESID/X:  0.4430753D-14  0.1314893D-13
 
  *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  59  59
 
@@ -1403,7 +1417,7 @@ ITER, IVEC:   1   2  YZTHETA   0.0720   RESID, RESID/X:  0.3322600D-14  0.986031
  B operator, symmetry, frequency:   XANGMOM     2  0.072000
  C operator, symmetry, frequency:   ZANGMOM     1  0.000000
  Na X[2] Ny           2.882991       0.031926       2.882991       0.031926
- Nx A[2] Ny          -0.106225      -0.003094       2.776766       0.028832
+ Nx A[2] Ny          -0.106225      -0.003094       2.776767       0.028832
  Na T[3] NbNc         0.004026       0.001434       3.191890       0.032160
 
  Quadratic response function no   35 of   41.
@@ -1479,8 +1493,8 @@ ITER, IVEC:   1   2  YZTHETA   0.0720   RESID, RESID/X:  0.3322600D-14  0.986031
 
   1   XDIPLEN   XDIPLEN    0.000000       13.477075        0.000000
   2   YDIPLEN   YDIPLEN    0.000000        6.850721        0.000000
-  3   ZDIPLEN   ZDIPLEN    0.000000        3.587099        0.000000
-  4   XDIPLEN   YDIPLEN    0.000000       -2.958671        0.000000
+  3   ZDIPLEN   ZDIPLEN    0.000000        3.587099       -0.000000
+  4   XDIPLEN   YDIPLEN    0.000000       -2.958671       -0.000000
   5   XDIPLEN   ZDIPLEN    0.000000        0.000000        0.000000
   6   YDIPLEN   ZDIPLEN    0.000000        0.000000        0.000000
 
@@ -1505,23 +1519,22 @@ ITER, IVEC:   1   2  YZTHETA   0.0720   RESID, RESID/X:  0.3322600D-14  0.986031
 
  Damping parameter equals  0.004556 au = 0.1240 eV =  999.9 cm-1
  
- ----------------------------------------------------------------------------------------------
-        DAMPING         FREQ    Re(G_abg)    Im(G_abg)   Re(A_aabb)   Im(A_aabb)   B(A')+B(G)       Dichro
- ----------------------------------------------------------------------------------------------
-DBGJC  0.004556     0.072000     0.166616     0.023381     0.009492    -0.516123     0.159184     0.023518
-   DBGJC B(A')=    -0.007432
+ ---------------------------------------------------------------------------------------------------
+            FREQ Re(G_abg) Im(G_abg) Re(A_aabb) Im(A_aabb) Re(A_abba) Im(A_abba)    Birefr    Dichro
+ ---------------------------------------------------------------------------------------------------
+#MCHD#  0.072000  0.166616  0.023381   0.009492  -0.516123  -0.000000   0.000000  0.159184  0.023518
 
- >>>> Total CPU  time used in RESPONSE:   2.66 seconds
- >>>> Total wall time used in RESPONSE:   2.66 seconds
+  Total CPU  time used in RESPONSE:   0.71 seconds
+  Total wall time used in RESPONSE:   0.71 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   2.87 seconds
- >>>> Total wall time used in DALTON:   2.87 seconds
+  Total CPU  time used in DALTON:   0.79 seconds
+  Total wall time used in DALTON:   0.79 seconds
 
  
-     Date and time (Linux)  : Mon Jul 20 19:44:39 2015
-     Host name              : node18.cluster-net                      
+     Date and time (Linux)  : Tue Oct 16 22:14:41 2018
+     Host name              : karax                                   

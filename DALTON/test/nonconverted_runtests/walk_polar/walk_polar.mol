@@ -1,0 +1,9 @@
+ATOMBASIS
+Geometry optimization using WALK module plus
+static and dynamic polarizabilities
+Atomtypes=2 Generators=2  X  Z
+Charge=8.0 Atoms=1 Basis=6-311G Pol 1 0.0845D0 3 1.292D0 2 0.0845D0
+O     0.0 -0.2249058930 0.0
+Basis=6-311G Pol 1 0.0360D0 2 0.750D0 Charge=1.0 Atoms=1
+H     1.45235 0.899623 0.0
+H    -1.45235 0.899623 0.0

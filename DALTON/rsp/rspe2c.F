@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -36,8 +30,6 @@ merged with SOPPA changes by ekd
 LRST  : modification needed for proper handling of cubic response
 950705-hjaaj
 RSPPP : New code for GOS oscillator strengths.
-940523-hjaaj
-RSPCTL: removed CALL FLUSH(LURSP1) (system dependent); instead REWIND LURSP1
 941117-hjaaj
 QONEMU: changed a SMPATB to SMPAB to change DDOT to DAXPY
 FCKOIN: optimized
@@ -45,23 +37,17 @@ FCKOIN: optimized
 c: SOPPA changes: test KOFFTY.eq.1, not KSYMOP.eq.1 for CREF
 LRST  : only orb (ph) trial vectors for SOPPA (no conf., i.e. no 2p2h)
 RSPDIA: skip S[2] reads if SHIFT .eq. D0
-931119-hjaaj
-RSPCTL: improved output when insufficient memory stop
 931007-hjaaj
 removed RSPMC and GETREF (now in rspmai.u)
 extracted **FILENAME=ORPCTL.UPD module as rsporp.u
 931004-pj+hjaaj
 merged previous updates (including some of the comments below and more),
 merged/inserted solvent and RSPSUP changes
-920613-ov: In rspe2c.u:
-           A lot of explicit DOUBLE PRECISION changed to REAL for CRAY
-           Statement functions DABS(X)=ABS(X) etc.
 920624-ov: New conversion factors in RSPPP from CODATA
 921125-hj: RSPMC  (rspe2c.u) consistency check with NCONRF, LSYMRF
            instead of NCONF,LSYM (because of problems with calls from
            ABACUS).  The NWOPT test has been disabled.
 920722-hjaaj
-extracted EISPACK RGG routines to file "rggeis.u"
 RSPNEX: new THRLDV definition for lin.dep.
 LRST: stop if RSPSUP true and restart (need some additional coding)
 920721-Hinne Hettema
@@ -1004,7 +990,7 @@ C
 C H2X ARE ONE INDEX TRANSFORMED INTEGRALS
 C
 C H2XAC CONTAIN HALF TRANSFORMED INTEGRALS. THE ONE INDEX TRANSFORMED
-C INTEGRALS ARE OBTAINED FROM H2XAC IN GETINT.
+C INTEGRALS ARE OBTAINED FROM H2XAC IN GETIN2.
 C
 #include "implicit.h"
 C
@@ -1101,6 +1087,9 @@ C           ... remove CREF component of E[2] vector
 C
 C CREATE Y PART  <0,H2X,J> OF LINEAR TRANSFORMATION WITH E(2)
 C
+C (unless TDA or CISRPA, for which B block is by definition zero)
+      IF (TDA .OR. CISRPA) GO TO 100
+C
 C        Get FCXAC matrix for Y sigma vector
 C
          DO 120 IW = 1,NASHT
@@ -1140,8 +1129,8 @@ C     ... END OF H2XSIG.
 C
       END
 C  /* Deck lrst */
-      SUBROUTINE LRST(BINMEM,MAXSIM,IBTYP,EIVAL,EIVEC,GD,
-     *                REDGD,REDS,REDE,UDV,FCAC,H2AC,XINDX,
+      SUBROUTINE LRST(BINMEM,MAXSIM,IBTYP,EIVAL,EIVEC,GP,
+     *                REDGP,REDS,REDE,UDV,FCAC,H2AC,XINDX,
      *                LAB1,LAB2,WRK,LWRK)
 C
 C PURPOSE: CREATE START VECTOR(S) FOR SOLUTION OF A LINEAR
@@ -1157,7 +1146,7 @@ C
 #include "dummy.h"
       CHARACTER*72 FNAME
       CHARACTER*8 LAB1, LAB2
-      DIMENSION IBTYP(*),EIVAL(*),EIVEC(*),GD(*),REDGD(*)
+      DIMENSION IBTYP(*),EIVAL(*),EIVEC(*),GP(*),REDGP(*)
       DIMENSION REDS(*),REDE(*),UDV(*),FCAC(*),H2AC(*),XINDX(*),WRK(*)
       PARAMETER ( DTEST = 1.0D-4, D0=0.0D0, D1=1.0D0, D1TEST = 1.0D-6)
       PARAMETER ( DM1 = -1.0D0 )
@@ -1165,7 +1154,7 @@ C
 #include "ibndxdef.h"
 C
 C Used from common blocks:
-C   INFRSP : ???,SOPPA
+C   INFRSP : ???,SOPPA, CISRPA, TDA$
 C
 #include "priunit.h"
 #include "wrkrsp.h"
@@ -1321,11 +1310,11 @@ C
 C
 C           CALL RSPRED(1,..) INCREASE DIMENSION OF REDUCED RSP EQUATION
 C
-            CALL RSPRED (1,.TRUE.,NSIM,IBTYP,GD,REDGD,REDE,REDS,
+            CALL RSPRED (1,.TRUE.,NSIM,IBTYP,GP,REDGP,REDE,REDS,
      *                 EIVAL,EIVEC,WRK(KBCVEC),WRK(KBOVEC),
      *                 UDV,WRK(KECVEC),XINDX,WRK(KWRK),LWRKRE)
 C
-C           CALL RSPRED (ICTL,LINEQ,N,IBTYP,GD,REDGD,REDE,REDS,
+C           CALL RSPRED (ICTL,LINEQ,N,IBTYP,GP,REDGP,REDE,REDS,
 C    *                 EIVAL,EIVEC,BCVEC,BOVEC,SVECS,EVECS,XINDX,WRK)
 C
             IF (JLRSTV.LE.0) THEN
@@ -1372,11 +1361,11 @@ C     CALL PHPINI(LPHPMX,KZCONF,KZWOPT,MAXPHP)
       NLOAD = 0
       NTSIM = 0
       IF (IPRRSP.GT.110) THEN
-         WRITE(LUPRI,*)'  GRADIENT VECTOR (Z-part and Y-part)'
-         CALL OUTPUT(GD,1,KZVAR,1,2,KZVAR,2,1,LUPRI)
+         WRITE(LUPRI,*)'LRST:  GRADIENT VECTOR (Z-part and Y-part)'
+         CALL OUTPUT(GP,1,KZVAR,1,2,KZVAR,2,1,LUPRI)
       ENDIF
       IF (IPRRSP.GT.150) THEN
-         WRITE(LUPRI,*)' DIAGONAL HESSIAN MATRIX WVAL=0.0'
+         WRITE(LUPRI,*)'LRST: DIAGONAL HESSIAN MATRIX WVAL=0.0'
          CALL OUTPUT(WRK(KDIAE),1,KZVAR,1,1,KZVAR,1,1,LUPRI)
       ENDIF
       DO 150 ISIM = 1,KEXSIM,MAXSIM
@@ -1427,44 +1416,41 @@ C
                GO TO 160
             END IF
             IF (KZCONF.GT.0 .AND. .NOT.SOPPA) THEN
-               TXNRM = DNRM2(KZCONF,GD,1)
-               TYNRM = DNRM2(KZCONF,GD(KZVAR+1),1)
+               TXNRM = DNRM2(KZCONF,GP,1)
+               TYNRM = DNRM2(KZCONF,GP(KZVAR+1),1)
                IF (TXNRM .GT. TYNRM) THEN
-                  KGDC = 1
+                  KGPC = 1
                ELSE
-                  KGDC = KZVAR + 1
+                  KGPC = KZVAR + 1
                END IF
                CALL NEXCI(.FALSE.,WVAL,KZCONF,WRK(ISTBC),DUMMY,
-     *                    GD(KGDC),WRK(KDIAE),IPRRSP,WRK(KWRK1),LWRK1)
+     *                    GP(KGPC),WRK(KDIAE),IPRRSP,WRK(KWRK1),LWRK1)
                NCSIM = NCSIM + 1
                ISTBC = ISTBC + KZCONF
             ENDIF
             IF (KZWOPT.GE.1) THEN
-               DO 105 I=1,KZWOPT
+               DO I = 1,KZWOPT
                   IZ = I + KZCONF
+
                   ZDIA = WRK(KDIAE-1+IZ) - WVAL * WRK(KDIASO-1+I)
+                  IF (ABS(ZDIA).LT.DTEST ) ZDIA = SIGN(DTEST,ZDIA)
+                  WRK(ISTBO-1+I) = GP(IZ) / ZDIA
+
                   YDIA = WRK(KDIAE-1+IZ) + WVAL * WRK(KDIASO-1+I)
-                  IF (ABS(ZDIA).LT.DTEST ) THEN
-                     WRK(ISTBO-1+I) = GD(KZCONF+I)
-     *                           /SIGN(DTEST,ZDIA)
-                  ELSE
-                     WRK(ISTBO-1+I) = GD(KZCONF+I) / ZDIA
-                  ENDIF
-                  IF (ABS(YDIA).LT.DTEST ) THEN
-                     WRK(ISTBO-1+KZWOPT+I) = GD(KZVAR+KZCONF+I)
-     *                          /SIGN(DTEST,YDIA)
-                  ELSE
-                     WRK(ISTBO-1+KZWOPT+I) = GD(I+KZVAR+KZCONF) / YDIA
-                  ENDIF
- 105           CONTINUE
-               NOSIM  = NOSIM  + 1
+                  IF (ABS(YDIA).LT.DTEST ) YDIA = SIGN(DTEST,YDIA)
+                  WRK(ISTBO-1+KZWOPT+I) = GP(KZVAR+IZ) / YDIA
+               END DO
+               IF (CISRPA .OR. TDA) THEN
+                  CALL DZERO(WRK(ISTBO+KZWOPT),KZWOPT)
+               END IF
+               NOSIM = NOSIM  + 1
                ISTBO = ISTBO + KZYWOP
             ENDIF
  160     CONTINUE
          NLSIM = NOSIM + NCSIM
          DO 170 IR = 1 , NLSIM
-            IF (IR.LE.NCSIM) IBTYP(KOFFTY+KZRED+NTSIM+IR)=JBCNDX
-            IF (IR.GT.NCSIM) IBTYP(KOFFTY+KZRED+NTSIM+IR)=JBONDX
+            IF (IR.LE.NCSIM) IBTYP(KOFFTY+KZRED+NTSIM+IR) = JBCNDX
+            IF (IR.GT.NCSIM) IBTYP(KOFFTY+KZRED+NTSIM+IR) = JBONDX
  170     CONTINUE
          IF ((IPRRSP.GT.110).AND.(NCSIM.GT.0)) THEN
             WRITE(LUPRI,'(/A,I5)')' NCSIM CSF TRIAL VECTORS',NCSIM
@@ -1477,7 +1463,7 @@ C
             CALL OUTPUT(WRK(KBOVEC),1,KZWOPT,1,2*NOSIM,
      *                  KZWOPT,2*NOSIM,1,LUPRI)
          ENDIF
-         IF (IPRRSP.GT.80) THEN
+         IF (IPRRSP.GT.30) THEN
             WRITE(LUPRI,'(/A,I5)')
      *         '    I       IBTYP(I)          I=1,NLSIM NLSIM',NLSIM
             DO 3007 I=1+KOFFTY,NLSIM+KOFFTY
@@ -1499,7 +1485,7 @@ C
          CALL RSPORT(WRK(KBCVEC),NLSIM,NBPREV_here,IBTYP,
      *               THRLDV,WRK(KWRK1),LURSP3)
 C        CALL RSPORT (BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
-         IF (IPRRSP.GT.80) THEN
+         IF (IPRRSP.GT.20) THEN
             WRITE(LUPRI,'(/A//A,I5)')' AFTER RSPORT IN LRST',
      *         '    I       IBTYP(I)          I=1,NLSIM NLSIM=',NLSIM
             DO 3008 I=1+KOFFTY,NLSIM+KOFFTY
@@ -1516,17 +1502,17 @@ C        CALL RSPORT (BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
             ENDIF
  3010    CONTINUE
          IF ((IPRRSP.GT.110).AND.(NCSIM.GT.0)) THEN
-            WRITE(LUPRI,*)' NCSIM CSF TRIAL VECTORS',NCSIM
+            WRITE(LUPRI,*)'LRST: NCSIM CSF TRIAL VECTORS',NCSIM
             CALL OUTPUT(WRK(KBCVEC),1,KZCONF,1,NCSIM,KZCONF,NCSIM,1,
      &                  LUPRI)
          ENDIF
          IF ((IPRRSP.GT.110).AND.(NOSIM.GT.0)) THEN
-            WRITE(LUPRI,*)' NOSIM ORBITAL TRIAL VECTORS',NOSIM
+            WRITE(LUPRI,*)'LRST: NOSIM ORBITAL TRIAL VECTORS',NOSIM
             CALL OUTPUT(WRK(KBCVEC+NCSIM*KZCONF),1,KZYWOP,
      *                1,NOSIM,KZYWOP,NOSIM,1,LUPRI)
          ENDIF
          NTSIM = NTSIM + NLSIM
- 150  CONTINUE ! ISIM DO 150 ISIM = 1,KEXSIM,MAXSIM
+ 150  CONTINUE ! DO 150 ISIM = 1,KEXSIM,MAXSIM
       KEXSTV = NTSIM
       IF ((NLOAD.EQ.1).AND.(KEXSTV.LE.MAXSIM)) THEN
          BINMEM = .TRUE.
@@ -3635,6 +3621,9 @@ C
 C  /* Deck rsppp */
       SUBROUTINE RSPPP(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
+      use qfitlib_interface, only : qfitlib_ifc_response_fit,
+     *   qfitlib_ifc_results
+C
 C  Purpose:
 C     CONTROL CALCULATION OF EXCITATION ENERGIES AND TRANSITION
 C     MOMENTS
@@ -3645,11 +3634,11 @@ C
 #include "dummy.h"
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
-      CHARACTER BLANK*8, PRI_LINE*80
+      CHARACTER BLANK*8, PRI_LINE*80, LBLPP_1*1
 C
       PARAMETER ( MAXSIM = 15, LMXFR = 1000, BLANK = '        ' )
       PARAMETER ( TOLRTT = 1.0D-12)
-      DIMENSION OSCSTR(MAXSIM,12),TRSMOM(MAXSIM,60)
+      DIMENSION TRSMOM(MAXSIM,60)
       DIMENSION RMLEN(3,3,LMXFR), RMVEL(3,3,LMXFR)
       DIMENSION RQLEN(3,3,LMXFR), RQVEL(3,3,LMXFR)
       DIMENSION RTLEN(3,3,LMXFR), RTVEL(3,3,LMXFR)
@@ -3830,12 +3819,13 @@ C
 C     Call RSPCTL to solve propagator eigen problem
 C
       CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-     *            .FALSE.,BLANK,BLANK,DUMMY,DUMMY,WRK(KREDE),WRK(KREDS),
-     *            WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
-     *            XINDX,WRK(KWRK1),LWRK1)
+     &            .FALSE.,BLANK,BLANK,VDUMMY,
+     &            VDUMMY,WRK(KREDE),WRK(KREDS),
+     &            WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
+     &            XINDX,WRK(KWRK1),LWRK1)
 C     CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-C    *            LINEQ,GD,REDGD,REDE,REDS,
-C    *            IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
+C    &            LINEQ,LAB1,LAB2,GD,REDGD,REDE,REDS,
+C    &            IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 C
 C   Save the excitation energies for excited state gradient
 C   (singlet only for the moment)
@@ -3895,19 +3885,25 @@ C ---------------------------- test for non-adiabatic coupling:
                END IF
 C ---------------------------- not non-adiabatic coupling:
                JOP = JOP + 1
-               IF (IPRRSP.GT.0) WRITE(LUPRI,'(/A,A)')
-     *            '@ Transition operator type:    ',LBLPP(KSYMOP,IOP)
-               IF (IPRRSP.GT.11) WRITE(LUPRI,'(A,I4,A,L4)')
-     *              ' Operator symmetry:',KSYMOP,'; triplet = ',TRPLET
+               IF (IPRRSP.GT.0) THEN
+                  IF (TRPLET) THEN
+                     WRITE(LUPRI,'(/A,A)')
+     &        '@ Triplet transition operator label: ',LBLPP(KSYMOP,IOP)
+                  ELSE
+                     WRITE(LUPRI,'(/A,A)')
+     &        '@ Singlet transition operator label: ',LBLPP(KSYMOP,IOP)
+                  END IF
+               END IF
                DO 550 INUM = 1,NBX
                  LOCST = ISIM-1+INUM
                   IF ((RSPECD.OR.RSPOCD) .AND. (LOCST.GT.NPPCNV(KSYMOP))
      &               ) THEN
-                     CALL QUIT('State count error in RSPPP')
+                     CALL QUIT('State counting error in RSPPP')
                   END IF
                   XMOM = DDOT(KZYVAR,WRK(KWRK2),1,
      &                        WRK(KBVECS+(INUM-1)*KZYVAR),1)
                   TRSMOM(INUM,JOP) = XMOM
+                  LBLPP_1 = LBLPP(KSYMOP,IOP)(1:1)
                   IF (IPRRSP.GT.0) WRITE(LUPRI,751)
      &               (ISIM-1+INUM),XMOM, WRK(KEIVAL-1+ISIM-1+INUM)*XTEV
  751              FORMAT('@ STATE NO:',I5,' *TRANSITION MOMENT:'
@@ -3916,10 +3912,12 @@ C ---------------------------- not non-adiabatic coupling:
                      WRK(KFREX+LOCST-1) = WRK(KEIVAL-1+ISIM-1+INUM)
                   END IF
                   IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPLEN ' ) THEN
-                      OSCIL = D2R3*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
-                      IF (IPRRSP.GT.11) WRITE(LUPRI,'(/A,1P,G16.8)')
+                      IF (IPRRSP.GT.11) THEN
+                         OSCIL = D2R3*XMOM*XMOM
+     &                          *WRK(KEIVAL-1+ISIM-1+INUM)
+                         WRITE(LUPRI,'(/1X,2A,1P,G16.8)') LBLPP_1,
      *                   ' OSCILLATOR STRENGTH (LENGTH)   :',OSCIL
-                      OSCSTR(INUM,JOP) = OSCIL
+                      END IF
                       IF (RSPECD .OR. RSPOCD) THEN
                          IF (LBLPP(KSYMOP,IOP).EQ.'XDIPLEN ') THEN
                             KOFF = KTRLEN + 3*(LOCST - 1)
@@ -3933,10 +3931,12 @@ C ---------------------------- not non-adiabatic coupling:
                          END IF
                       END IF
                   ELSE IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPVEL ' ) THEN
-                      OSCIL = D2R3*XMOM*XMOM/WRK(KEIVAL-1+ISIM-1+INUM)
-                      IF (IPRRSP.GT.11) WRITE(LUPRI,'(/A,1P,G16.8)')
+                      IF (IPRRSP.GT.11) THEN
+                         OSCIL = D2R3*XMOM*XMOM
+     &                          /WRK(KEIVAL-1+ISIM-1+INUM)
+                         WRITE(LUPRI,'(/1X,2A,1P,G16.8)') LBLPP_1,
      *                   ' OSCILLATOR STRENGTH (VELOCITY) :',OSCIL
-                      OSCSTR(INUM,JOP) = OSCIL
+                      END IF
                       IF (RSPECD .OR. RSPOCD) THEN
                          IF (LBLPP(KSYMOP,IOP).EQ.'XDIPVEL ') THEN
                             KOFF = KTRVEL + 3*(LOCST - 1)
@@ -4062,22 +4062,22 @@ C ---------------------------- not non-adiabatic coupling:
                       END IF
                   ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' .OR.
      &                      LBLPP(KSYMOP,IOP)(1:5) .EQ. 'SIN K' ) THEN
-                      OSCIL = D2*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
-                      IF (IPRRSP.GT.11) WRITE(LUPRI,'(/A,1P,G16.8)')
+                      IF (IPRRSP.GT.11) THEN
+                         OSCIL = D2*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
+                         WRITE(LUPRI,'(/A,1P,G16.8)')
      &                   ' GENERALIZED OSCILLATOR STRENGTH :',OSCIL
-                      OSCSTR(INUM,JOP) = OSCIL
+                      END IF
                   ELSE IF (LBLPP(KSYMOP,IOP)(3:8).EQ.'SPNORB' .OR.
      &                     LBLPP(KSYMOP,IOP)(3:8).EQ.'MNF-SO') THEN
-                     XMOMAU = XMOM
                      IF (IPRRSP.GT.11) THEN
-                        XMOMCM = XMOMAU*XTKAYS
-                        WRITE(LUPRI,'(/3A,G16.8,A/41X,G16.8,A)')
-     &                  ' SPIN-ORBIT COUPLING CONSTANT (',
+                        XMOMCM = XMOM*XTKAYS
+                        WRITE(LUPRI,'(/3A,1P,G16.8,A,G16.8,A)')
+     &                  ' Spin-orbit coupling constant (',
      &                    LBLPP(KSYMOP,IOP), '):',
-     &                    XMOMAU,' (AU)', XMOMCM,' (CM-1)'
+     &                    XMOM,' au;', XMOMCM,' cm-1'
                      END IF
                   END IF
- 550           CONTINUE
+ 550           CONTINUE ! DO 550 INUM = 1, NBX
  600        CONTINUE  ! go to 600 if non-adiabatic coupling ("HDO" in label)
          END IF
          PRI_LINE = ' '
@@ -4087,18 +4087,34 @@ C ---------------------------- not non-adiabatic coupling:
          CALL TITLER(PRI_LINE,'*',103)
          DO 555 INUM = 1,NBX
             PRI_LINE = ' '
-            WRITE (PRI_LINE,'(A,I5,A,I2,3A)')
+            IF (TRPLET) THEN
+               WRITE (PRI_LINE,'(A,I5,A,I2,3A)')
      &      '@ Excited state no:',(ISIM-1+INUM),' in symmetry',KSYMST,
-     &      '  ( ',REP(KSYMST-1),')'
+     &      '  ( ',REP(KSYMST-1),') - triplet excitation'
+            ELSE
+               WRITE (PRI_LINE,'(A,I5,A,I2,3A)')
+     &      '@ Excited state no:',(ISIM-1+INUM),' in symmetry',KSYMST,
+     &      '  ( ',REP(KSYMST-1),') - singlet excitation'
+            END IF
             CALL HEADER(PRI_LINE,0)
+            IF (KZCONF .GT. 1) THEN
+               EXCIT_TEST =
+     &         DNRM2(KZWOPT,WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),1) +
+     &         DNRM2(KZWOPT,WRK(KBVECS+(INUM-1)*KZYVAR+KZVAR+KZCONF),1)
+               IF (EXCIT_TEST .LT. 1.D-10) THEN
+                  WRITE(LUPRI,'(/A/A/)')
+     & '@ INFO: Excitation vector is only in configuration space',
+     & '@ INFO: thus this excited state is of a different spin symmetry'
+               END IF
+            END IF
             WRITE(LUPRI,'( A,1P,G16.8,A
-     &                    /A,T22,3(G16.8,A)
+     &                    /A,3(G16.8,A)
      &                   //A,T22,G16.8,A)')
-     &      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),' au',
-     &      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,  ' eV;',
+     & '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),' au',
+     & '@                    ',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,' eV;',
      &          WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1;',
      &          WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
-     &      '@ Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
+     & '@ Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
             IF (SOPPA) THEN
               TXNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
               TYNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR+KZVAR),1)
@@ -4115,47 +4131,44 @@ C ---------------------------- not non-adiabatic coupling:
 C                 ... skip HDO
 C
                   JOP = JOP + 1
-                  WRITE(LUPRI,'(/A,A)')
-     *                  '@ Operator type:    ',LBLPP(KSYMOP,IOP)
+                  XMOM = TRSMOM(INUM,JOP)
+                  LBLPP_1 = LBLPP(KSYMOP,IOP)(1:1)
+                  WRITE(LUPRI,'(/3A,1P,G16.8,A)')
+     &               '@ Operator label: ',LBLPP(KSYMOP,IOP),
+     &               '; Transition moment :',XMOM,' au'
 C
                   IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPLEN ' ) THEN
-                     WRITE(LUPRI,'(A,1P,G16.8,A,G16.8,A)')
-     *                  '@ Oscillator strength (LENGTH)   :',
-     *                  OSCSTR(INUM,JOP),
-     *                  '  (Transition moment :',TRSMOM(INUM,JOP),' )'
+                     OSCIL = D2R3*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
+                     WRITE(LUPRI,'(A,1P,G16.8,3A)')
+     *                  '@ Oscillator strength (LENGTH)   :',OSCIL,
+     &                  '  (',LBLPP_1,'-polarization)'
+                  ELSE IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'LFDIPLN' ) THEN
+                     OSCIL = D2R3*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
+                     WRITE(LUPRI,'(A,1P,G16.8,3A)')
+     *                  '@ Oscillator strength (PE-EEF)   :',OSCIL,
+     &                  '  (',LBLPP_1,'-polarization)'
                   ELSE IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPVEL ' ) THEN
+                     OSCIL = D2R3*XMOM*XMOM/WRK(KEIVAL-1+ISIM-1+INUM)
+                     WRITE(LUPRI,'(A,1P,G16.8,3A)')
+     *                  '@ Oscillator strength (VELOCITY) :',OSCIL,
+     &                  '  (',LBLPP_1,'-polarization)'
+                  ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' ) THEN
+                     OSCIL = D2*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
                      WRITE(LUPRI,'(A,1P,G16.8,A,G16.8,A)')
-     *                  '@ Oscillator strength (VELOCITY) :',
-     *                  OSCSTR(INUM,JOP),
-     *                  '  (Transition moment :',TRSMOM(INUM,JOP),' )'
-                  ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' .OR.
-     &                      LBLPP(KSYMOP,IOP)(1:5) .EQ. 'SIN K' ) THEN
-                     WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  '@ Generalized oscillator strength:',
-     *                  OSCSTR(INUM,JOP)
-                     IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' ) THEN
-                        WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  '@ Transition moment  (cos(kr)/k) :',
-     *                  TRSMOM(INUM,JOP)
-                     ELSE
-                        WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  '@ Transition moment  (sin(kr)/k) :',
-     *                  TRSMOM(INUM,JOP)
-                     END IF
+     &                 '@ Generalized oscillator strength (cos(kr)/k):',
+     &                  OSCIL,' (transition moment :',XMOM,')'
+                  ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'SIN K' ) THEN
+                     OSCIL = D2*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
+                     WRITE(LUPRI,'(A,1P,G16.8,A,G16.8,A)')
+     &                 '@ Generalized oscillator strength (sin(kr)/k):',
+     &                  OSCIL,' (transition moment :',XMOM,')'
                   ELSE IF (LBLPP(KSYMOP,IOP)(3:8).EQ.'SPNORB' .OR.
      &                     LBLPP(KSYMOP,IOP)(3:8).EQ.'MNF-SO' .OR.
      &                     LBLPP(KSYMOP,IOP)(3:8).EQ.'SPNSCA') THEN
-                     WRITE(LUPRI,'(3A,1P,G16.8,A)')
+                     WRITE(LUPRI,'(3A,1P,G16.8,A,G16.8,A)')
      *                  '@ Spin-orbit coupling constant (',
      *                    LBLPP(KSYMOP,IOP),') :',
-     *               TRSMOM(INUM,JOP)*XTKAYS,' cm-1'
-                     WRITE(LUPRI,'(A,1P,G16.8,A)')
-     *                  '                                          ',
-     *               TRSMOM(INUM,JOP),' au'
-                  ELSE
-                     WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  '@ Transition moment              :',
-     *                  TRSMOM(INUM,JOP)
+     *                  XMOM*XTKAYS,' cm-1; ',XMOM,' au'
                   END IF
   545          CONTINUE
             END IF
@@ -4169,10 +4182,12 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
 !           END IF
-            IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
-     &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
-     &                             WRK(KWRK2),LWRK2)
-
+            IF (TRDQF) THEN
+              IDX=KBVECS+(INUM-1)*KZYVAR
+              CALL QFITLIB_IFC_RESPONSE_FIT(CMO,WRK(IDX),UDV,
+     &                                      WRK(KWRK2),LWRK2)
+              CALL QFITLIB_IFC_RESULTS
+            END IF
 
             IF (DOMO2) CALL RSPMO2(WRK(KBVECS+(INUM-1)*KZYVAR),
      &                             KZYVAR,KZVAR,CMO,LUPRI,
@@ -4190,7 +4205,8 @@ C     Print oscillator/rotatory strengths
 C
       IF (RSPOCD .OR. RSPECD) THEN
 
-         CALL AROUND('@  Absorption and Circular Dichroism Spectra')
+         CALL AROUND(
+     &  '@  Absorption and Electronic Circular Dichroism (ECD) Spectra')
 
          WRITE (LUPRI,'(3(/A,I3,3A))')
      &'@  Reference  state    symmetry:',IREFSY,
@@ -4453,11 +4469,12 @@ C
          END DO
 
          CALL HEADER('Total Rotatory Strength Tensor',18)
-         WRITE(LUPRI,'(/A/A/A)')
-     &' State Gauge                 Total Rotatory Strength Tensor ',
-     &'                  xx        xy        xz        yy        yz'//
+         WRITE(LUPRI,'(/A//A/A/A)')
+     &'@ Output for .OECD : Oriented electronic circular dichroism',
+     &'@ State Gauge                 Total Rotatory Strength Tensor ',
+     &'@                  xx        xy        xz        yy        yz'//
      &'        zz',
-     &' -----------------------------------------------------------'//
+     &'@ -----------------------------------------------------------'//
      &'------------'
          LENTOT = 3*3*NPPCNV(KSYMOP)
          CALL DCOPY(LENTOT,RMVEL,1,RTVEL,1)
@@ -4470,8 +4487,8 @@ C
 
             IF (ABS(EXENG) .GT. 0.0D0) THEN
 
-               WRITE(LUPRI,'(I5,3X,A,6(1X,F9.4))')
-     &         LOCST,'Vel ',RTVEL(1,1,LOCST),RTVEL(1,2,LOCST),
+               WRITE(LUPRI,'(A,I5,3X,A,6F10.4)')
+     &         '@',LOCST,'Vel ',RTVEL(1,1,LOCST),RTVEL(1,2,LOCST),
      &                      RTVEL(1,3,LOCST),
      &                      RTVEL(2,2,LOCST),RTVEL(2,3,LOCST),
      &                      RTVEL(3,3,LOCST)
@@ -4479,8 +4496,8 @@ C
             ELSE
 
                CALL DZERO(RTVEL(1,1,LOCST),3*3)
-               WRITE(LUPRI,'(I5,3X,A,1X,A)')
-     &         LOCST,'Vel ','    ------ undefined ------'
+               WRITE(LUPRI,'(A,I5,3X,A,1X,A)')
+     &         '@',LOCST,'Vel ','    ------ undefined ------'
 
             END IF
 
@@ -4502,8 +4519,8 @@ C
                LOCWRN = LOCWRN + 1
             END IF
 
-            WRITE(LUPRI,'(8X,A,6(1X,F9.4))')
-     &            'Len ',RTLEN(1,1,LOCST),RTLEN(1,2,LOCST),
+            WRITE(LUPRI,'(A,8X,A,6F10.4)')
+     &           '@','Len ',RTLEN(1,1,LOCST),RTLEN(1,2,LOCST),
      &                   RTLEN(1,3,LOCST),
      &                   RTLEN(2,2,LOCST),RTLEN(2,3,LOCST),
      &                   RTLEN(3,3,LOCST)
@@ -4695,7 +4712,7 @@ C
      *               WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
      *               XINDX,WRK(KWRK1),LWRK1)
 C        CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-C                    LINEQ,GD,REDGD,REDE,REDS,
+C    *               LINEQ,LAB1,LAB2,GD,REDGD,REDE,REDS,
 C    *               IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 C
          DO 700 IFREQ = 1,JFREQ,MXFREQ
@@ -6700,121 +6717,6 @@ C Take out the diagonal elements
        WRITE(LUPRI,*)
 
 
-      RETURN
-      END
-C  /* Deck TRCHAR */
-      SUBROUTINE TRCHAR (WOP,NDIM2,NDIM1,CMO,UDV,LUPRI,WRK,LWRK)
-c
-#ifdef BUILD_QFITLIB
-      use qfit
-#endif
-C
-C     NDIM2 = KZYVAR
-C     NDIM1 = KZVAR
-C
-#include "implicit.h"
-      DIMENSION WOP(*),CMO(*),WRK(*), UDV(*)
-      PARAMETER (D0 = 0.0D0)
-      LOGICAL LOCDEB, ANTSYM
-      real*8, dimension(:), allocatable :: dens
-      DIMENSION TRDIP(3)
-C
-#include "mxcent.h"
-#include "codata.h"
-#include "maxorb.h"
-#include "maxash.h"
-#include "infind.h"
-#include "inforb.h"
-#include "infvar.h"
-#include "inflin.h"
-#include "nuclei.h"
-
-      LOCDEB = .FALSE.
-
-      CALL HEADER('Calculation of Transition Density charges',-1)
-
-C     Memory allocation
-      KUBOVE  = 1
-      KDCAO   = KUBOVE + N2ORBX
-      KDVAO   = KDCAO  + N2BASX
-      KDENS   = KDVAO  + N2BASX
-      KINT    = KDENS  + NNBASX
-      KWRK2   = KINT   + 3*NNBASX
-      LWRK2   = LWRK   - KWRK2
-
-      IF (LWRK2 .LT. 0) CALL ERRWRK('TRCHAR',-KWRK2,LWRK2)
-
-      CALL DZERO(WRK(KUBOVE),N2ORBX)
-      CALL DZERO(WRK(KDCAO),N2BASX)
-      CALL DZERO(WRK(KDVAO),N2BASX)
-      CALL DZERO(WRK(KDENS),NNBASX)
-      CALL DZERO(WRK(KINT),3*NNBASX)
-
-      CALL RSPZYM(1,WOP,WRK(KUBOVE))
-      CALL DSCAL(N2ORBX,-1.0D0,WRK(KUBOVE),1)
-
-      CALL DEQ27(CMO,WRK(KUBOVE),UDV,WRK(KDCAO),WRK(KDVAO),
-     &           WRK(KWRK2),LWRK2)
-
-      IF (NASHT .GT. 1) THEN
-        CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)
-        CALL DZERO(WRK(KDVAO),N2BASX)
-      ENDIF
-
-      IF (LOCDEB) THEN
-          WRITE (LUPRI,'(/A)') ' Transition Density Matrix - Full'
-          CALL OUTPUT(WRK(KDCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-      ENDIF
-      CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KDVAO))
-      CALL PKSYM1(WRK(KDVAO),WRK(KDENS),NBAS,NSYM,1)
-
-      IF (LOCDEB)  THEN
-         WRITE (LUPRI,'(/A)') ' Transition Density Matrix - Packed'
-         CALL OUTPAK(WRK(KDENS),NBAST,1,LUPRI)
-      ENDIF
-
-      LU=-1
-      CALL GPOPEN(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
-     &     .FALSE.)
-
-      REWIND LU
-      CALL MOLLAB('XDIPLEN ',LU,LUPRI)
-      CALL READT(LU,NNBASX,WRK(KINT))
-
-      CALL MOLLAB('YDIPLEN ',LU,LUPRI)
-      CALL READT(LU,NNBASX,WRK(KINT+NNBASX))
-
-      CALL MOLLAB('ZDIPLEN ',LU,LUPRI)
-      CALL READT(LU,NNBASX,WRK(KINT+2*NNBASX))
-
-      CALL GPCLOSE(LU,'KEEP')
-
-      IF (LOCDEB) THEN
-          WRITE (LUPRI,'(/A)') ' XDIPLEN AO Basis:'
-          CALL OUTPAK(WRK(KINT),NBAST,1,LUPRI)
-
-          WRITE (LUPRI,'(/A)') ' YDIPLEN AO Basis:'
-          CALL OUTPAK(WRK(KINT+NNBASX),NBAST,1,LUPRI)
-
-          WRITE (LUPRI,'(/A)') ' ZDIPLEN AO Basis:'
-          CALL OUTPAK(WRK(KINT+2*NNBASX),NBAST,1,LUPRI)
-      ENDIF
-
-      TRDIP(1) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT),1)
-      TRDIP(2) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+NNBASX),1)
-      TRDIP(3) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+2*NNBASX),1)
-
-      WRITE (LUPRI,'(/A)') ' Transition Dipole (x,y,z)'
-      WRITE(LUPRI,'(5x,3F12.6)') TRDIP
-
-#ifdef BUILD_QFITLIB
-      allocate( dens( N2BASX ) )
-      call dcopy(n2basx,wrk(kdcao),1,dens,1)
-      call qfit_set_transition_dipole( TRDIP )
-      call qfit_fit( dens )
-      deallocate( dens )
-      CALL QFITRES
-#endif
       RETURN
       END
 ! -- end of rspe2c.F --

@@ -126,7 +126,7 @@ CTRL[6]=3
 ERROR[6]="INITIAL GRADIENT NOT CORRECT"
 
 # Initial step
-CRIT1=`$GREP "O * 0*.0000000000 * 0*\.0000000000 * \-0*\.14441" $log | wc -l`
+CRIT1=`$GREP "O * 0*.0000000000 * 0*\.0000000000 * \-0*\.1444[12]" $log | wc -l`
 CRIT2=`$GREP "H * _1 * 0*.0000000000 * 1\.42132.* * 1\.07076" $log | wc -l`
 CRIT3=`$GREP "H * _2 * 0*.0000000000 * \-1\.42132.* * 1\.07076" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
@@ -158,7 +158,7 @@ CTRL[10]=4
 ERROR[10]="SECOND BASIS SET NOT READ CORRECTLY"
 
 # First energy with second set
-CRIT1=`$GREP "Final * HF energy\: * \-76\.0182613" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-76\.018261" $log | wc -l`
 TEST[11]=`expr	$CRIT1`
 CTRL[11]=1
 ERROR[11]="FIRST ENERGY WITH SECOND BASIS SET NOT CORRECT"

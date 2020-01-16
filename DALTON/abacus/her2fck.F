@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -598,9 +592,9 @@ C
   100 CONTINUE
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Total density matrix in SO basis',-1)
-         CALL OUTPUT(DSO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(DSO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('Total density matrix in AO basis',-1)
-         CALL OUTPUT(DAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(DAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
@@ -800,10 +794,12 @@ C
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Subroutine SKLFC1',-1)
-         CALL HEADER("Input skeleton Fock matrix in SKLFC1",1)
-         DO 10 N = 1, NMAT
-            CALL OUTPUT(FMAT(1,1,N),1,NBASIS,1,NBASIS,
-     &                                NBASIS,NBASIS,1,LUPRI)
+         CALL HEADER("Input skeleton Fock matrices in SKLFC1",1)
+         DO 10 IMAT = 1, NMAT
+            WRITE (LUPRI,*) 'Input skeleton Fock matrix no.',IMAT,
+     &         ' out of',NMAT
+            CALL OUTPUT(FMAT(1,1,IMAT),1,NBASIS,1,NBASIS,
+     &                  NBASIS,NBASIS,-1,LUPRI)
    10    CONTINUE
       END IF
 C
@@ -844,7 +840,7 @@ C        Anti-symmetric matrix
             WRITE (LUPRI,*) 'Skeleton Fock matrix no.',IMAT,
      &         ' out of',NMAT
             CALL OUTPUT(FMAT(1,1,IMAT),1,NBASIS,1,NBASIS,
-     &                                NBASIS,NBASIS,1,LUPRI)
+     &                  NBASIS,NBASIS,-1,LUPRI)
          END IF
   100 CONTINUE
 C
@@ -961,10 +957,12 @@ C
          FAC = D1 / (1.0D0 + MAXREP)
          CALL DSCAL(NMAT*(NBASIS**2),FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN
-            CALL HEADER("AO Fock matrix in SKLFC1",1)
+            CALL HEADER("AO Fock matrices in SKLFC1",1)
             DO 40 N = 1, NMAT
+               WRITE (LUPRI,*) 'AO Fock matrix no.',N,
+     &         ' out of',NMAT
                CALL OUTPUT(FMAT(1,1,N),1,NBASIS,1,NBASIS,
-     &                     NBASIS,NBASIS,1,LUPRI)
+     &                     NBASIS,NBASIS,-1,LUPRI)
    40       CONTINUE
          END IF
 C
@@ -1002,7 +1000,6 @@ C           one SKLTON matrix for IXYZ = 0 /961114-hjaaj
                               KHKTB  = KHKT(IB)
                               MULB   = ISTBAO(IB)
                               INDB   = KSTRT(IB) + NB - KHKTB
-#include "scalar.h"
                               DO 540 ISYMB = 0, MAXOPR
                               IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                                  INDB = INDB + KHKTB
@@ -1080,10 +1077,12 @@ C           NMAT SKLTON matrices for IXYZ .ne. 0  /961114-hjaaj
   600       CONTINUE
          END IF
          IF (IPRINT .GT. 5) THEN
-            CALL HEADER("SO Fock matrix in SKLFC1",1)
+            CALL HEADER("SO Fock matrices in SKLFC1",1)
             DO 700 N = 1, NMAT
+               WRITE (LUPRI,*) 'SO Fock matrix no.',N,
+     &         ' out of',NMAT
                CALL OUTPUT(FMAT(1,1,N),1,NBASIS,1,NBASIS,NBASIS,NBASIS,
-     &                     1,LUPRI)
+     &                     -1,LUPRI)
   700       CONTINUE
          END IF
       END IF
@@ -1112,11 +1111,12 @@ C
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER("Input skeleton molecular gradient",1)
-         CALL OUTPUT(GRADEE,1,1,1,3*NUCDEP,1,MXCOOR,1,LUPRI)
+         CALL OUTPUT(GRADEE,1,1,1,3*NUCDEP,1,MXCOOR,-1,LUPRI)
       END IF
       IF (MAXDER .EQ. 2 .AND. IPRINT .GT. 5) THEN
          CALL HEADER("Input skeleton molecular Hessian",1)
-         CALL OUTPUT(HESSEE,1,3*NUCDEP,1,3*NUCDEP,MXCOOR,MXCOOR,1,LUPRI)
+         CALL OUTPUT(HESSEE,1,3*NUCDEP,1,3*NUCDEP,MXCOOR,MXCOOR,
+     &               -1,LUPRI)
       END IF
 C
       IF (MAXDER .EQ. 2) THEN
@@ -1128,7 +1128,7 @@ C
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("Skeleton molecular Hessian symmetrized",1)
             CALL OUTPUT(HESSEE,1,3*NUCDEP,1,3*NUCDEP,MXCOOR,MXCOOR,
-     &                  1,LUPRI)
+     &                  -1,LUPRI)
          END IF
       END IF
 C
@@ -1197,12 +1197,12 @@ C
 C
          IF (IPRINT .GT. 5) THEN
            CALL HEADER("Full molecular gradient (non-symmetry basis)",1)
-           CALL OUTPUT(GRADEE,1,1,1,3*NUCDEP,1,MXCOOR,1,LUPRI)
+           CALL OUTPUT(GRADEE,1,1,1,3*NUCDEP,1,MXCOOR,-1,LUPRI)
          END IF
          IF (MAXDER .EQ. 2 .AND. IPRINT .GT. 5) THEN
            CALL HEADER("Full molecular Hessian (non-symmetry basis)",1)
            CALL OUTPUT(HESSEE,1,3*NUCDEP,1,3*NUCDEP,MXCOOR,MXCOOR,
-     &                 1,LUPRI)
+     &                 -1,LUPRI)
          END IF
 C
 C        Transformation to symmetry basis
@@ -1315,7 +1315,7 @@ C
          DO 100 X = 1, NFMAT
             WRITE(LUPRI,*) 'Input skeleton Fock matrix no.',X,NFMAT
             CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,
-     &                                NBASIS,NBASIS,-1,LUPRI)
+     &                  NBASIS,NBASIS,-1,LUPRI)
   100    CONTINUE
       END IF
 C
@@ -1336,7 +1336,7 @@ C
          DO 300 X = 1, NFMAT
             WRITE(LUPRI,*) 'Symmetric skeleton Fock matrix no.',X,NFMAT
             CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,NBASIS,NBASIS,
-     &                              1,LUPRI)
+     &                  -1,LUPRI)
   300    CONTINUE
       END IF
       END IF
@@ -1408,7 +1408,7 @@ C
             DO 700 X = 1, NFMAT
                WRITE(LUPRI,*) 'AO skeleton Fock matrix no.',X,NFMAT
                CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,
-     &                                   NBASIS,NBASIS,1,LUPRI)
+     &                     NBASIS,NBASIS,-1,LUPRI)
   700       CONTINUE
          END IF
 C
@@ -1467,7 +1467,7 @@ C
             CALL HEADER("SO Fock matrix in SKLOND",1)
             DO 900 X = 1, NFMAT
                CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,
-     &                                   NBASIS,NBASIS,1,LUPRI)
+     &                     NBASIS,NBASIS,-1,LUPRI)
   900       CONTINUE
          END IF
       END IF

@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -254,22 +248,36 @@ c     assert(NTYPSO>=NRHO)
       DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,*)
       DIMENSION NBLOCKS(NSYM),IBLOCKS(2,LDAIB,NSYM), GRAD(4,NVCLEN)
       DIMENSION TMP(NVCLEN,NBAST)
+      real*8 dmat_sym(nbast,nbast)
 #include "priunit.h"
 c
       CALL zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
 c      CALL DZERO(TMP,NVCLEN*NBAST)
+      do i = 1,nbast
+         do j = 1,nbast
+            dmat_sym(j,i) = dmat(j,i) + dmat(i,j)
+         end do
+      end do
       DO ISYM = 1, NSYM
       DO IBL=1, NBLOCKS(ISYM)
+         IDX_1 = IBLOCKS(1,IBL,ISYM)
+         L_IDX = IBLOCKS(2,IBL,ISYM) - IDX_1 + 1
          JSYM = MULD2H(ISYM,IDSYM)
          DO JBL=1, NBLOCKS(JSYM)
-            DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
-               DO JDX=IBLOCKS(1,JBL,JSYM), IBLOCKS(2,JBL,JSYM)
-                  DIJSYM = DMAT(IDX,JDX) + DMAT(JDX,IDX)
-                  DO K = 1, NVCLEN
-                     TMP(K,JDX) = TMP(K,JDX) + GAO(K,IDX,1)*DIJSYM
-                  END DO
-               END DO
-            END DO
+!           DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
+!              DO JDX=IBLOCKS(1,JBL,JSYM), IBLOCKS(2,JBL,JSYM)
+!                 DIJSYM = DMAT(IDX,JDX) + DMAT(JDX,IDX)
+!                 DO K = 1, NVCLEN
+!                    TMP(K,JDX) = TMP(K,JDX) + GAO(K,IDX,1)*DIJSYM
+!                 END DO
+!              END DO
+!           END DO
+            JDX_1 = IBLOCKS(1,JBL,JSYM)
+            L_JDX = IBLOCKS(2,JBL,JSYM) - JDX_1 + 1
+            CALL DGEMM('N','N',NVCLEN,L_JDX,L_IDX,1.0D0,
+     &         GAO(1,IDX_1,1),NVCLEN,
+     &         DMAT_sym(IDX_1,JDX_1),NBAST, 1.0D0,
+     &         TMP(1,JDX_1),NVCLEN)
          END DO
       END DO
       END DO
@@ -278,7 +286,7 @@ c      CALL DZERO(TMP,NVCLEN*NBAST)
       DO IBL=1, NBLOCKS(ISYM)
       DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
          DO K = 1, NVCLEN
-            GRAD(1,K) = GRAD(1,K) + GAO(K,IDX,1)*TMP(K,IDX)*0.5
+            GRAD(1,K) = GRAD(1,K) + GAO(K,IDX,1)*TMP(K,IDX)*0.5d0
             GRAD(2,K) = GRAD(2,K) + GAO(K,IDX,2)*TMP(K,IDX)
             GRAD(3,K) = GRAD(3,K) + GAO(K,IDX,3)*TMP(K,IDX)
             GRAD(4,K) = GRAD(4,K) + GAO(K,IDX,4)*TMP(K,IDX)

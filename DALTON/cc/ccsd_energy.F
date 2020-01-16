@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -294,24 +288,22 @@ C
       WRITE (LUPRI,'(1x,A,/)')
      *'*********************************************************'//
      *'**********'
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,'(13X,A)')
+      WRITE(LUPRI,'(/13X,A)')
      *     'The Direct Coupled Cluster Energy Program'
       WRITE(LUPRI,'(13X,A)')
      *     '-----------------------------------------'
       WRITE(LUPRI,'(//10X,A,I8)')
      *     'Number of t1 amplitudes                 :  ',NT1AMX
-      WRITE(LUPRI,'(10X,A,I8)')
-     *     'Number of t2 amplitudes                 :  ',NT2AMX
+      WRITE(LUPRI,'(10X,A,I10)')
+     *     'Number of t2 amplitudes                 :',NT2AMX
       NCCVAR = NT1AMX + NT2AMX
       IF (CCR12) THEN
-        WRITE(LUPRI,'(10X,A,I8)')
-     *     "Number of t2' amplitudes for R12 part   :  ",NTR12AM(1)
+        WRITE(LUPRI,'(10X,A,I10)')
+     *     "Number of t2' amplitudes for R12 part   :",NTR12AM(1)
         NCCVAR = NCCVAR + NTR12AM(1)
       END IF
-      WRITE(LUPRI,'(10X,A,I8)')
-     *     'Total number of amplitudes in ccsd      :  ',NCCVAR
-      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(10X,A,I10/)')
+     *     'Total number of amplitudes in ccsd      :',NCCVAR
       CALL FLSHFO(LUPRI)
 C
 C----------------------------------------------------------------

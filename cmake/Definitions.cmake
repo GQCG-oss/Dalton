@@ -1,15 +1,5 @@
-if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
-    add_definitions(-DMOD_UNRELEASED)
-endif()
-
 if(ENABLE_GEN1INT)
     add_definitions(-DBUILD_GEN1INT)
-endif()
-
-
-if(ENABLE_DEC)
-  add_definitions(-DVAR_DEC)
-  set(ENABLE_TENSORS ON)
 endif()
 
 if(ENABLE_CHEMSHELL)
@@ -72,10 +62,6 @@ endif()
 
 if(ENABLE_REAL_SP)
     add_definitions(-DVAR_REAL_SP)
-endif()
-
-if(ENABLE_DEBUGPBC)
-    add_definitions(-DDEBUGPBC)
 endif()
 
 if(ENABLE_QCMATRIX)

@@ -1,24 +1,18 @@
 !
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2016 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
+!  Dalton, a molecular electronic structure program
+!  Copyright (C) 2018 by the authors of Dalton.
+!
+!  This program is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License version 2.1 as published by the Free Software Foundation.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  If a copy of the GNU LGPL v2.1 was not distributed with this
+!  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
 C
@@ -68,12 +62,14 @@ C
       CHARACTER*8 LABEL(NABAOP)
 C
 C Used from common blocks:
-C ABAINF : DODRCT
+C ABAINF : DODRCT, TDA_SINGLET, TDA_TRIPLET, ?
 C exeinf.h : FTRCTL, NEWCMO, ITRLVL_LAST, LVLDRC_LAST
 C INFLIN : NCONRF
-C INFINP : DIRFCK,HSORHF,...
+C INFINP : DIRFCK,HSORHF,FLAG(:),...
 C INFORB : NASHT,...
+C infvar.h : NVAR, ... (reset of FLAG(27)
 C INFTRA : USEDRC
+C infrsp.h : TDA, ...
 C
 #include "abainf.h"
 #include "exeinf.h"
@@ -81,6 +77,7 @@ C
 #include "infinp.h"
 #include "cbisol.h"
 #include "inforb.h"
+#include "infvar.h"
 #include "infpri.h"
 #include "wrkrsp.h"
 #include "infrsp.h"
@@ -97,10 +94,15 @@ C
 #include "qm3.h"
 C
       LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX, USEDRC_SAVE
+      LOGICAL FLAG27_save, TDA_save
 C
       CALL QENTER('ABARSP')
 
       USEDRC_SAVE = USEDRC
+      FLAG27_SAVE = FLAG(27) ! needs to be restored after triplet response
+      ! otherwise susequent call of ABARSPN for singlet response may fail /Feb.2018 - hjaaj
+      ! (SIRIFC is not read again, so it is not restored this way)
+      TDA_save = TDA
 
       IF (MMPCM) CALL MMPCMINIT()
       TIMRSP = SECOND()
@@ -109,23 +111,32 @@ C
          WRITE (LUPRI,'(//A/A)')
      *   '  THIS IS OUTPUT FROM THE MCSCF AND SOPPA RESPONSE SOLVER',
      *   ' ---------------------------------------------------------'
-         IF (EXCLC) THEN
+         IF (EXCLC .AND. TRPCLC) THEN
             WRITE(LUPRI,'(2(/A,I6),/A,1P,D13.2)')
-     *      ' Symmetry of excitation operator',IOPSYM,
-     *      ' Number of excitations:',NEXVAL,
+     *      ' Symmetry of triplet excitation operator',IOPSYM,
+     *      ' Number of triplet excitations:',NEXVAL,
      *      ' Convergence threshold:',THRCLC
+            IF (TDA_TRIPLET) WRITE(LUPRI,'(A)') ' * TDA is used.'
+         ELSE IF (EXCLC) THEN
+            WRITE(LUPRI,'(2(/A,I6),/A,1P,D13.2)')
+     *      ' Symmetry of singlet excitation operator',IOPSYM,
+     *      ' Number of singlet excitations:',NEXVAL,
+     *      ' Convergence threshold:',THRCLC
+            IF (TDA_SINGLET) WRITE(LUPRI,'(A)') ' * TDA is used.'
          ELSE IF (TRPCLC) THEN
             WRITE(LUPRI,'(/3(/A,I6),/A,1P,D13.2)')
      *      ' Symmetry of triplet property operator', IOPSYM,
      *     ' Number of operators for triplet linear response equations:'
      *      ,NABAOP, ' Number of response frequencies:',NEXVAL,
      *      ' Convergence threshold:',THRCLC
+            IF (TDA_TRIPLET) WRITE(LUPRI,'(A)') ' * TDA is used.'
          ELSE
             WRITE(LUPRI,'(/3(/A,I6),/A,1P,D13.2)')
      *      ' Symmetry of singlet property operator', IOPSYM,
      *     ' Number of operators for singlet linear response equations:'
      *      ,NABAOP, ' Number of response frequencies:',NEXVAL,
      *      ' Convergence threshold:',THRCLC
+            IF (TDA_SINGLET) WRITE(LUPRI,'(A)') ' * TDA is used.'
          ENDIF
       END IF
       CALL FLSHFO(LUPRI)
@@ -148,9 +159,11 @@ C
       IF (TRPCLC) THEN
          TRPLET = .TRUE.
          TRPFLG = .TRUE.
+         TDA    = TDA_TRIPLET
       ELSE
          TRPLET = .FALSE.
          TRPFLG = .FALSE.
+         TDA    = TDA_SINGLET
       ENDIF
 C
       IF (CICLC) THEN
@@ -217,17 +230,13 @@ C
             JTRLVL = 0
          ELSE IF (SOPPA .OR. NEXVAL.EQ.0) THEN  ! SOPPA or quadratic response
             JTRLVL = -10
-         ELSE IF (FCKTRA_TYPE .gt. 0) THEN
-            JTRLVL = -4
-         ELSE IF (NEWTRA .AND. .NOT.USEDRC) THEN
-            JTRLVL = -5 ! level 5 needed for occ-sec distributions in NEWTRA
          ELSE
             JTRLVL = -4
          ENDIF
 
          IF (NEWCMO .OR. FTRCTL .OR.
      &       (ABS(JTRLVL) .GT. ITRLVL_LAST) .OR.
-     &       (USEDRC .AND. LVLDRC_LAST .LT. 0) .OR. NEWCMO) THEN
+     &       (USEDRC .AND. LVLDRC_LAST .LT. 0) ) THEN
             FLAGSV = DORSP
             DORSP  = .TRUE.
             CALL SIR_INTOPEN
@@ -495,6 +504,18 @@ C
 C     *******************************************
 C
       USEDRC = USEDRC_SAVE
+      TDA    = TDA_save
+      IF (FLAG(27) .NEQV. FLAG27_SAVE) THEN
+C        ... call SETCI with new FLAG(27) and
+C            reset Sirius CI common blocks for CSFs/determinants
+         FLAG(27) = FLAG27_SAVE
+         CALL SETCI(NCONF,NCDETS,LSYM,WRK,LWRK,0)
+C
+         NVAR   = NCONF  + NWOPT
+         NVARH  = NCONF  + NWOPH
+         NVARMA = NCONMA + NWOPMA
+         NCONDI = MAX(1,NCONF)
+      END IF
       CALL QEXIT('ABARSP')
       RETURN
       END
