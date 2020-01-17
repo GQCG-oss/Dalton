@@ -2808,8 +2808,12 @@ c        get R*A
       END IF
 
       NRHO2 = MAX(NT2AM(ISYMTR),2*NT2ORT(ISYMTR))
+      NRHO22 = NT2AM(ISYMTR)
       IF (CC2 ) NRHO2 = NT2AM(ISYMTR)
-      IF (TRIPLET) NRHO2 = NT2AM(ISYMTR) + NT2AMA(ISYMTR)
+      IF (TRIPLET) THEN 
+         NRHO2 = NT2AM(ISYMTR) + NT2AMA(ISYMTR)
+         NRHO22 = NT2AM(ISYMTR) + NT2AMA(ISYMTR)
+      ENDIF
       DO 90 IV = 1, NSIMTR
          NR1 = IV + K1 - 1
          IF (.NOT. (CCS.OR.CC2)) THEN
@@ -2820,7 +2824,7 @@ c        get R*A
          CALL CC_RVEC(LUFR1,FRHO1,NT1AM(ISYMTR),NT1AM(ISYMTR),
      *                NR1,WORK(KRHO1))
          IF (.NOT.CCS) THEN
-            CALL CC_RVEC(LUFSD,FR2SD,NRHO2,NRHO2,
+            CALL CC_RVEC(LUFSD,FR2SD,NRHO2,NRHO22,
      *                   NR2,WORK(KRHO2))
          END IF
          IF (CCR12) THEN

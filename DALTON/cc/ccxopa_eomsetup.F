@@ -314,7 +314,7 @@ CRF    We need to know multiplicities as well.
 
               RESULT(ITMIF) = WIAF + WXINIF + WIBF - WLIXiRF
 
-              !IF (LOCDBG) THEN
+              IF (LOCDBG) THEN
                 WRITE (LUPRI,*) '----- Summary after add ------'
                 WRITE (LUPRI,*) 'IDX of result = ',ITMIF
                 WRITE (LUPRI,*) 'ISTATEI, EIGVI:',ISTATEI,EIGVI
@@ -328,7 +328,7 @@ CRF    We need to know multiplicities as well.
                 WRITE (LUPRI,*) '(L^i x Xksi{X})(R^f x L0):',WLiXiRF
                 WRITE (LUPRI,*) 'Total result:',RESULT(ITMIF)
                 WRITE (LUPRI,*) '------------------------------'
-              !END IF
+              END IF
 
            END IF
 

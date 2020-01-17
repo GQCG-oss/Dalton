@@ -128,7 +128,7 @@ Cholesky
 #include "maxorb.h"
 #include "ccdeco.h"
 C
-#include "ccsdsym.h"
+C#include "ccsdsym.h"
 CSonia:
 ! Consider moving the CVSEPARA in the argument list for better control 
 ! when not needed
@@ -162,9 +162,6 @@ C
          WRITE(LUPRI,*) 'CCEQ_SOL: LIONISAT=    ',LIONIZEXCI
          WRITE(LUPRI,*) 'CCEQ_SOL: REMOVE_CORE = ',LRMCORE
       ENDIF
-      WRITE(LUPRI,*) 'CCEQ_SOL: CVSEPARA=    ',LCVSEXCI
-      WRITE(LUPRI,*) 'CCEQ_SOL: LIONISAT=    ',LIONIZEXCI
-      WRITE(LUPRI,*) 'CCEQ_SOL: REMOVE_CORE = ',LRMCORE
 C
       CALL GETTIM(CSTR,WSTR)
 C
@@ -508,12 +505,6 @@ C
           WRITE(LUPRI,*) 'CCEQ_STR: LCOR in GS = ',LCOR
           CALL FLSHFO(LUPRI)
       ENDIF
-!SONIA: control print out
-!      WRITE(LUPRI,*) 'SONIAPRI', lusonia
-      WRITE(LUPRI,*) 'CCEQ_STR: CVSEPARATION = ',LCVSEXCI
-      WRITE(LUPRI,*) 'CCEQ_STR: IONIZATION = ',LIONIZEXCI
-      WRITE(LUPRI,*) 'CCEQ_STR: REMOVE_CORE = ',LRMCORE
-      WRITE(LUPRI,*) 'CCEQ_STR: LCOR in GS = ',LCOR
       CALL FLSHFO(LUPRI)
 C
       MODEL = 'CCSD      '
@@ -753,7 +744,7 @@ C        or core excitation elements or virtuals
 C -------------------------------------------------------------  
 C     
          IF (LCVSEXCI.or.LIONIZEXCI) THEN
-           write(lupri,*)'CCEQ_STR: freeze VALENCE OR VIRT'
+           !write(lupri,*)'CCEQ_STR: freeze VALENCE OR VIRT'
            if (triplet) then
                 KCAM1 = KV
                 KCAMP = KCAM1 + NT1AM(ISYMTR)
@@ -771,7 +762,7 @@ C
            end if
          END IF
          IF (LRMCORE) THEN
-           write(lupri,*)'CCEQ_STR: freeze CORE '
+           !write(lupri,*)'CCEQ_STR: freeze CORE '
            if (TRIPLET) then
                KCAM1 = KV
                KCAMP = KCAM1 + NT1AM(ISYMTR)
@@ -789,7 +780,7 @@ C
          END IF
          !SONIA FIXME CHECK IF IT GIVES PROBLEMS WITH CCS
          IF ((LIST.eq.'L0').and.(LCOR.or.LSEC)) then
-            write(lupri,*) 'Project out core from start vector'
+            !write(lupri,*) 'Project out core from start vector'
             call cc_core(WORK(KV),WORK(KV+NT1AM(ISYMTR)),ISYMTR)
          end if
 !CN
@@ -903,6 +894,7 @@ Cholesky
 #include "maxorb.h"
 #include "ccdeco.h"
 Cholesky
+#include "ccsections.h"
 CVS Sonia
 #include "ccexcicvs.h"
 C
@@ -912,7 +904,7 @@ C
       PARAMETER ( DTEST = 1.0D-04 )
       PARAMETER ( DM1=-1.0D0,D1 =1.0D0, D0=0.0D0 )
 C
-      CHARACTER*(*) FRHO1,FRHO2,FRHO12,FC1AM,FC2AM,FC12AM,FS12AM
+      CHARACTER*(*) FRHO1,FRHO2,FRHO12,FC1AM,FC2AM,FC12AM,FS12AM,FS2AM
       CHARACTER*(*) LIST
       INTEGER :: NREDHOLD
       LOGICAL LINQCC,CCRSTRS,LPROJECT,TRIPLET
@@ -1112,7 +1104,6 @@ C        -----------------------------------------------
      &                NRHFCORE,IRHFCORE,
      &                NVIRION,IVIRION,LBOTHEXCI)
               else
-                !write(lupri,*)'CCNEX:CVS or IONISATION (1)'
                  CALL CC_FREEZE_EXCI(WRK(KWRK1),ISYMTR,
      &           MAXCORE,MAXION,
      &           NRHFCORE,IRHFCORE,
@@ -1252,6 +1243,8 @@ C
                   CALL DCOPY(NCCVAR,WRK(KRES+(JR-1)*NCCVAR),
      *                       1,WRK(KRES+(NFIN-1)*NCCVAR),1)
                END IF
+               ! Overwrite KTST with frequency of this vector
+               WRK(KTST+NFIN-1) = EIVAL(JROOTJ)
             ELSE
                IF (IPRLE .GT. 1) THEN
                   WRITE(LUPRI,'(A,I3,1P,1(A,D12.5))')
@@ -1272,24 +1265,24 @@ C
 C    Cholesky CC2 did not converge using precond, so
 C    uncomment next lines and go back to old safe method
 C
-       IF (CHOINT) THEN
-          KDIA   = KWRK1
-          KWRK2  = KDIA  + NCCVAR
-          LWRK2  = LWRK  - KWRK2
-          IF (LWRK2 .LT. 0 ) THEN
-             CALL QUIT('Too little work in CCNEX')
-          END IF
-          CALL CCLR_DIA(WRK(KDIA),ISYMTR,TRIPLET,WRK(KWRK2),LWRK2)
-          CALL LEDIAG(NCCVAR,WRK(KDIA),DTEST)
+         IF (CHOINT.OR.CCSLV) THEN
+             KDIA   = KWRK1
+             KWRK2  = KDIA  + NCCVAR
+             LWRK2  = LWRK  - KWRK2
+             IF (LWRK2 .LT. 0 ) THEN
+                CALL QUIT('Too little work in CCNEX')
+             END IF
+             CALL CCLR_DIA(WRK(KDIA),ISYMTR,TRIPLET,WRK(KWRK2),LWRK2)
+             CALL LEDIAG(NCCVAR,WRK(KDIA),DTEST)
 C
-          DO JR = 1,NFIN
-             IOFF = (JR-1)*NCCVAR
-             DO I=1,NCCVAR
-                WRK(IOFF+I) = WRK(IOFF+I)*WRK(KDIA-1+I)
+             DO JR = 1,NFIN
+                IOFF = (JR-1)*NCCVAR
+                DO I=1,NCCVAR
+                   WRK(IOFF+I) = WRK(IOFF+I)*WRK(KDIA-1+I)
+                END DO
              END DO
-          END DO
 C
-       ELSE
+         ELSE
 CCH
 C         WRITE(LUPRI,'(/I4,1X,A)') NFIN,
 C     *         'new trial vectors before PRECOND:'
@@ -1297,10 +1290,10 @@ C         WRITE (LUPRI,*) 'NORM: ',DDOT(NCCVAR*NFIN,WRK(KRES),1,
 C     *                                   WRK(KRES),1)
 C         CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NFIN,NCCVAR,NFIN,1,LUPRI)
 CCH
-         CALL CC_PRECOND(WRK(KRES),EIVAL(ISIMC),
-     &                   NFIN,NCCVAR,ISYMTR,TRIPLET,
-     &                   WRK(KWRK1),LWRK1)
-       END IF
+            CALL CC_PRECOND(WRK(KRES),WRK(KTST),
+     &                      NFIN,NCCVAR,ISYMTR,TRIPLET,
+     &                      WRK(KWRK1),LWRK1)
+         END IF
 C
 Cholesky
 C
@@ -1751,15 +1744,6 @@ C
                   IVENU = IREDH + IVEC -1 + INUM
                   CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
      *                           TRIPLET,IVENU,WRK(LBVEC))
-!sonia
-!               IF (CVSEPARA) THEN
-!                 write(lupri,*)'SONIAREDCVS 3: Project out i=/ core'
-!                 CALL CC_FREEZE_EXCI(WRK(LBVEC),ISYMTR,
-!     &          MAXCORE,MAXION,
-!     &          NRHFCORE,IRHFCORE,
-!     &          NVIRION,IVIRION,LBOTHEXCI)
-!               END IF
-!sonia
                   LBVEC = LBVEC + NCCVAR
                END DO
                IF (LOCDBG) THEN
@@ -1906,7 +1890,7 @@ cs -------------------------------
                END IF
 cs ------------------
                IF (LCVSEXCI.or.LIONIZEXCI) THEN
-                  !write(lupri,*)'CCNEX:CVS or IONISATION (1)'
+
                  IF (TRIPLET) THEN
 C Eirik
                    KCAM1 = LGDVEC
@@ -2920,7 +2904,7 @@ ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
   
       LWRK1 = LWORK - KEND1
       IF (LWRK1.LT.0) THEN
-        CALL QUIT('Too little work space in CC_PRECOND')
+         CALL QUIT('Too little work space in CC_PRECOND')
       END IF
 
       CALL CCLR_DIA(WORK(KDIA),ISYMTR,TRIPLET,WORK(KEND1),LWRK1)
