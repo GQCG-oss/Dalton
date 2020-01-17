@@ -126,7 +126,6 @@ c
 C
       IF (CCP2)   CCS = .TRUE.
       IF (CHOINT .AND. CC2) CHOEXC = .TRUE.
-C      TRIPLET = .FALSE.
       TRIPLET = JACEXT
 C
       LABEL  = "Excita  "

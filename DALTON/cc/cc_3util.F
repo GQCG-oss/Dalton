@@ -57,7 +57,6 @@ C  /* Deck cc_t2sq3a */
                KOFF2 = IT2SQ(ISYMBJ,ISYMAI) + 1
                CALL TRM3A(T2AM(KOFF),NT1AM(ISYMAI),NT1AM(ISYMBJ),
      *                    T2SQ(KOFF2),ONEM*FACT)
-!               KOFF = KOFF + NAMP
 !
             ENDIF
 !
@@ -1294,7 +1293,6 @@ C
                            KOFF2 = I3ORHF(ISYNJM,ISYMI)
      &                           + NMAIJK(ISYNJM)*(I-1)
      &                           + IMAIJK(ISYMNJ,ISYMM)
-!     &                           + NMATIJ(ISYMMI)*(N-1)
      &                           + IMATIJ(ISYMN,ISYMJ)
      &                           + NRHF(ISYMN)*(J-1) + N
 
@@ -1334,7 +1332,6 @@ C
                            KOFF2 = I3ORHF(ISYNJM,ISYMI)
      &                           + NMAIJK(ISYNJM)*(I-1)
      &                           + IMAIJK(ISYMNJ,ISYMM)
-!     &                           + NMATIJ(ISYMMI)*(N-1)
      &                           + IMATIJ(ISYMN,ISYMJ)
      &                           + NRHF(ISYMN)*(J-1) + N
 

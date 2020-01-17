@@ -87,9 +87,6 @@ C
                   IF (I==IRHFCORE(II,ISYMI)) THEN
                      do aa = 1, NVIRION(ISYMA)
                         IF (A==IVIRION(AA,ISYMA)) THEN
-!                           write(lupri,*)
-!     &    'BOTH REQ I:', I, ' II:', II, ' A:', ' AA:', AA
-!                           call flshfo(lupri)
                            ikeep = .true.
                            go to 333
                         END IF
@@ -99,8 +96,6 @@ C
                ELSE
                  do ii = 1, NRHFCORE(ISYMI)
                    IF (I==IRHFCORE(II,ISYMI)) THEN
-                       !write(lupri,*)'CORE ONLY'
-                       !call flshfo(lupri)
                       ikeep = .true.
                       go to 333
                    end if
@@ -114,9 +109,7 @@ C
                  end do
                end if
   333          continue
-               !write(lupri,*)'ikeep=', ikeep
                if (.not.ikeep) CAM(NAI) = zero
-               !WRITE(LUPRI,9990) ISYMA,ISYMI,A,I,NAI,CAM(NAI)
   120       CONTINUE
   110    CONTINUE
   100 CONTINUE
@@ -156,9 +149,6 @@ C
                            NAI = IT1AM(ISYMA,ISYMI)
      *                         + NVIR(ISYMA)*(I - 1) + A
                            MA = IORB(ISYMA) + NRHF(ISYMA) +  A
-!                           IF (((ISYMAI.EQ.ISYMBJ).AND.
-!     *                         (NAI .LT. NBJ)).OR.(ISYMAI.LT.ISYMBJ))
-!     *                          GOTO 260
                            IF ((ISYMAI.EQ.ISYMBJ).AND.
      *                         (NAI .LT. NBJ))
      *                          GOTO 260
@@ -166,8 +156,6 @@ C
                               NAIBJ = IT2AM(ISYMAI,ISYMBJ)
      *                              + INDEX(NAI,NBJ)
                            ELSE
-!                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-!     *                            + NT1AM(ISYMAI)*(NBJ-1) + NAI
                                NAIBJ = IT2AM(ISYMAI,ISYMBJ)
      *                           + NT1AM(ISYMBJ)*(NAI-1)+NBJ
          
@@ -209,31 +197,26 @@ C
                                  end if
                               end do
                            else
-                             !write(lupri,*)'Get in here'
                              do ii = 1, nrhfcore(isymi)
                               if (i==IRHFCORE(II,ISYMI)) then
-                              !write(lupri,*)'loop ii',ii, 'I keep'
                                  ikeep = .true.
                                  go to 444
                               end if
                              end do
                              do aa = 1, nvirion(isyma)
                               if (a==IVIRION(aa,ISYMA)) then
-                              !write(lupri,*)'loop aa',aa, 'I keep'
                                  ikeep = .true.
                                  go to 444
                               end if
                              end do
                              do jj = 1, nrhfcore(isymj)
                               if (j==IRHFCORE(JJ,ISYMJ)) then
-                              !write(lupri,*)'loop jj',jj, 'I keep'
                                  ikeep = .true.
                                  go to 444
                               end if
                              end do
                              do bb = 1, nvirion(isymb)
                               if (b==IVIRION(bb,ISYMB)) then
-                              !write(lupri,*)'loop bb',bb, 'I keep'
                                  ikeep = .true.
                                  go to 444
                               end if
@@ -242,11 +225,6 @@ C
 !========================================
   444                      continue
                            if (.not.ikeep) CAM(KAIBJ) = zero
-!                           if (abs(CAM(KAIBJ)).gt.thr2) then
-!                              WRITE(LUPRI,9991) ISYMA,ISYMB,ISYMI,ISYMJ,
-!     *                                      A,B,I,J,NAI,NBJ,NAIBJ,
-!     *                                      CAM(KAIBJ)
-                           !end if
   260                   CONTINUE
   250                CONTINUE
   240             CONTINUE
@@ -476,42 +454,14 @@ C
 C
                            MA = IORB(ISYMA) + NRHF(ISYMA) +  A
 C
-!                           IF ((ISYMAI.EQ.ISYMBJ).AND.
-!     *                         (NAI .LT. NBJ))
-!     *                          THEN
-!!                           IF (((ISYMAI.EQ.ISYMBJ).AND.
-!!     *                         (NAI .LT. NBJ)).OR.(ISYMAI.LT.ISYMBJ))
-!!     *                          THEN
-!!                             write(lupri,*)'skip and jump 260'
-!                             call flshfo(lupri)
-!!                             write(lupri,*)'nai,nbj', NAI , NBJ
-!!                       write(lupri,*)'isymai,isymbj',isymai,isymbj
-!                             GOTO 260
-!                           END IF
 
                            IF (ISYMAI.EQ.ISYMBJ) THEN
-!                              write(lupri,*)'isymai=isymbj'
                               NAIBJ = IT2AM(ISYMAI,ISYMBJ)
      *                             + INDEX(NAI,NBJ)
                            ELSE
-                              !error could be here?
-                              !write(lupri,*)'alternative'
-!                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-!     *                            + NT1AM(ISYMAI)*(NBJ-1) + NAI
                            NAIBJ = IT2AM(ISYMAI,ISYMBJ)
      *                           + NT1AM(ISYMBJ)*(NAI-1)+NBJ
                            ENDIF
-
-!                        IF (ISYMAI.EQ.ISYMBJ) THEN
-!                           NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-!     *                           + INDEX(NAI,NBJ)
-!                         ELSE IF (ISYMAI.LT.ISYMBJ) THEN
-!                           NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-!     *                           + NT1AM(ISYMAI)*(NBJ-1)+NAI
-!                         ELSE IF (ISYMBJ.LT.ISYMAI) THEN
-!                           NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-!     *                           + NT1AM(ISYMBJ)*(NAI-1)+NBJ
-!                         END IF
 C
                            KAIBJ = NAIBJ + NT1AM(ISYMTR)
 
@@ -656,9 +606,6 @@ C
                   IF (I==IRHFCORE(II,ISYMI)) THEN
                      do aa = 1, NVIRION(ISYMA)
                         IF (A==IVIRION(AA,ISYMA)) THEN
-!                           write(lupri,*)
-!     &    'BOTH REQ I:', I, ' II:', II, ' A:', ' AA:', AA
-!                           call flshfo(lupri)
                            ikeep = .true.
                            go to 333
                         END IF
@@ -668,24 +615,19 @@ C
                ELSE
                  do ii = 1, NRHFCORE(ISYMI)
                    IF (I==IRHFCORE(II,ISYMI)) THEN
-                       !write(lupri,*)'CORE ONLY'
-                       !call flshfo(lupri)
                       ikeep = .true.
                       go to 333
                    end if
                  end do
                  do aa = 1, NVIRION(ISYMA)
                    IF (A==IVIRION(AA,ISYMA)) THEN
-                    !write(lupri,*)'IONISATION ONLY'
                     ikeep = .true.
                     go to 333
                    END IF
                  end do
                end if
   333          continue
-               !write(lupri,*)'ikeep=', ikeep
                if (.not.ikeep) CAM(NAI) = crazy
-               !WRITE(LUPRI,9990) ISYMA,ISYMI,A,I,NAI,CAM(NAI)
   120       CONTINUE
   110    CONTINUE
   100 CONTINUE
@@ -725,9 +667,6 @@ C
                            NAI = IT1AM(ISYMA,ISYMI)
      *                         + NVIR(ISYMA)*(I - 1) + A
                            MA = IORB(ISYMA) + NRHF(ISYMA) +  A
-!                           IF (((ISYMAI.EQ.ISYMBJ).AND.
-!     *                         (NAI .LT. NBJ)).OR.(ISYMAI.LT.ISYMBJ))
-!     *                          GOTO 260
                            IF ((ISYMAI.EQ.ISYMBJ).AND.
      *                         (NAI .LT. NBJ))
      *                          GOTO 260
@@ -735,8 +674,6 @@ C
                               NAIBJ = IT2AM(ISYMAI,ISYMBJ)
      *                              + INDEX(NAI,NBJ)
                            ELSE
-!                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-!     *                            + NT1AM(ISYMAI)*(NBJ-1) + NAI
                                NAIBJ = IT2AM(ISYMAI,ISYMBJ)
      *                           + NT1AM(ISYMBJ)*(NAI-1)+NBJ
          
@@ -778,31 +715,26 @@ C
                                  end if
                               end do
                            else
-                             !write(lupri,*)'Get in here'
                              do ii = 1, nrhfcore(isymi)
                               if (i==IRHFCORE(II,ISYMI)) then
-                              !write(lupri,*)'loop ii',ii, 'I keep'
                                  ikeep = .true.
                                  go to 444
                               end if
                              end do
                              do aa = 1, nvirion(isyma)
                               if (a==IVIRION(aa,ISYMA)) then
-                              !write(lupri,*)'loop aa',aa, 'I keep'
                                  ikeep = .true.
                                  go to 444
                               end if
                              end do
                              do jj = 1, nrhfcore(isymj)
                               if (j==IRHFCORE(JJ,ISYMJ)) then
-                              !write(lupri,*)'loop jj',jj, 'I keep'
                                  ikeep = .true.
                                  go to 444
                               end if
                              end do
                              do bb = 1, nvirion(isymb)
                               if (b==IVIRION(bb,ISYMB)) then
-                              !write(lupri,*)'loop bb',bb, 'I keep'
                                  ikeep = .true.
                                  go to 444
                               end if
@@ -811,11 +743,6 @@ C
 !========================================
   444                      continue
                            if (.not.ikeep) CAM(KAIBJ) = crazy
-!                           if (abs(CAM(KAIBJ)).gt.thr2) then
-!                              WRITE(LUPRI,9991) ISYMA,ISYMB,ISYMI,ISYMJ,
-!     *                                      A,B,I,J,NAI,NBJ,NAIBJ,
-!     *                                      CAM(KAIBJ)
-                           !end if
   260                   CONTINUE
   250                CONTINUE
   240             CONTINUE

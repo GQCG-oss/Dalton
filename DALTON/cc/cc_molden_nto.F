@@ -108,27 +108,6 @@ C
 C
 C     Reorder and delete frozen orbitals
       CALL CMO_REORDER(WORK(KCMOT), WORK(KEND1), LWRK1)
-C
-C
-C
-!     Get overlap matrix and square
-!     -----------------------------
-!
-!      call rdonel('OVERLAP ',.true.,work(kover),nbast)
-!
-!      do ax = 1,nbast
-!         do bx = 1,ax
-!
-!            abu = max(ax,bx)*(max(ax,bx)-3)/2+ax+bx
-!            ab  = nbast*(ax-1) + bx
-!            ba  = nbast*(bx-1) + ax
-!
-!            work(kuver+ab-1) = work(kover+abu-1)
-!            work(kuver+ba-1) = work(kover+abu-1)
-!
-!         enddo
-!      enddo
-
 !
 !     Natural transition orbitals
 !     ---------------------
@@ -169,7 +148,7 @@ C
                lwrk3 = lwork - kend3
 
                kpos = kvec1 + it1am(isyma,isymi)
-               !write(lupri,*) kpos, kumat, kvmat, ksval
+
                ! Do the SVD... Maybe we can use 'S' instead of 'A'
                CALL DGESVD(
      &            'A','A',nvir(isyma),nrhf(isymi),
@@ -179,15 +158,10 @@ C
      &            work(kvmat), nrhf(isymi),
      &            work(kend3), lwrk3, i_info
      &         )
-               !write(LUPRI,'(3I5)') nvir(isyma), nrhf(isymi), mindim
                if (i_info .ne. 0) then
                   write(LUPRI,'(A,i5)') 'ERROR in DGSVD ', i_info
                   cycle
                endif
-               !do n = 1, mindim
-               !   write(LUPRI,'(F16.10)') work(ksval-1+n)
-               !end do
-               !write (LUPRI,'(A)') ''
 
 
                ! work(kumat) now has the left/virtual eigenvectors on

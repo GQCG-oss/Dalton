@@ -80,7 +80,6 @@ C
                MA = IORB(ISYMA) + NRHF(ISYMA) +  A
                  do ii = 1, NRHFCORE(ISYMI)
                    IF (I==IRHFCORE(II,ISYMI)) THEN
-                      !write(lupri,*)'CORE : ', CAM(NAI)
                       CAM1(NAI) = zero
                    end if
                  end do
@@ -122,9 +121,6 @@ C
                            NAI = IT1AM(ISYMA,ISYMI)
      *                         + NVIR(ISYMA)*(I - 1) + A
                            MA = IORB(ISYMA) + NRHF(ISYMA) +  A
-!                           IF (((ISYMAI.EQ.ISYMBJ).AND.
-!     *                         (NAI .LT. NBJ)).OR.(ISYMAI.LT.ISYMBJ))
-!     *                          GOTO 260
                            IF ((ISYMAI.EQ.ISYMBJ).AND.
      *                         (NAI .LT. NBJ))
      *                          GOTO 260
@@ -132,8 +128,6 @@ C
                               NAIBJ = IT2AM(ISYMAI,ISYMBJ)
      *                              + INDEX(NAI,NBJ)
                            ELSE
-!                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-!     *                            + NT1AM(ISYMAI)*(NBJ-1) + NAI
                                NAIBJ = IT2AM(ISYMAI,ISYMBJ)
      *                           + NT1AM(ISYMBJ)*(NAI-1)+NBJ
          
