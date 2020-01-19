@@ -2200,7 +2200,7 @@ C  /* Deck wrsup1 */
       NPL_4   = NPL
       NQF_4   = NQF
       NQL_4   = NQL
-      WRITE (LUSUPM) 1,NPF_4,NQF_4,NPL_4,NQL_4,NPQRS_4
+      WRITE (LUSUPM) ITYP,NPF_4,NQF_4,NPL_4,NQL_4,NPQRS_4
       WRITE (LUSUPM) P
 #if HER2SUP_DEBUG > 5
       write(lupri,*) 'type 1; NPF,NQF,NPL,NQL,NPQRS',
