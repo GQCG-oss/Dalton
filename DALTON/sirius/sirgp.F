@@ -1684,7 +1684,8 @@ C
 C
 C     Local variables:
 C
-      LOGICAL FNDLAB, FNSUPM_OK, NOSYM, F_EXIST
+      LOGICAL      FNDLAB, FNSUPM_OK, F_EXIST
+      LOGICAL*4    NOSYM
       character*8  FNSUPM_local
 
       CALL QENTER('RDSUPM')
@@ -1693,7 +1694,7 @@ C
 C     ... special code for AOSUPMAT not to be used
          WRITE (LUPRI,'(/A/A)')
      &      'PROGRAMMING ERROR: RDSUPM called with LUSUPM = -1',
-     &      'Please report to dalton-admin.'
+     &      'Please report on Dalton forum.'
          CALL QTRACE(LUPRI)
          CALL QUIT('Programming ERROR: RDSUPM called with LUSUPM.eq.-1')
       END IF
@@ -1792,7 +1793,6 @@ C
 C NOTE: WORK and IWORK must be equivalenced.
 C
 #include "implicit.h"
-#include "iratdef.h"
 #include "thrzer.h"
       PARAMETER (D0 = 0.0D0)
 C
@@ -1814,8 +1814,10 @@ C
 #include "infind.h"
 #include "inftap.h"
 C
-      LOGICAL NOSYM
-      INTEGER MBAS(8)
+! always *4 on LUSUPM
+      LOGICAL*4 NOSYM
+      INTEGER*4 MSYM, MBAS(8)
+      INTEGER*4 ITYP,NP1,NQ1,NPL,NQL,NPQRS_4
 C
       CALL QENTER('RDSUPP')
       REWIND(LUSUPM)
@@ -1863,14 +1865,15 @@ C
       IREC2 = 0
   100 CONTINUE
          IREC = IREC + 1
-         READ (LUSUPM) ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS
+         READ (LUSUPM) ITYP,NP1,NQ1,NPL,NQL,NPQRS_4
+         NPQRS = NPQRS_4 ! in case default is integer*8
          IF (IPRSTAT .GT. 20) THEN
-            WRITE (LUERR,*) 'ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS'
-            WRITE (LUERR,'(7I10)') ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS
+            WRITE (LUERR,*) 'ITYP,NP1,NQ1,NPL,NQL,NPQRS'
+            WRITE (LUERR,'(7I10)') ITYP,NP1,NQ1,NPL,NQL,NPQRS
          END IF
 C        ITYP = -2 finished
-C                1 P(IBEF+1:IBEF+NPQRS)
-C                2 P(1:NPQRS), INDP(1:NPQRS) with (RS) addresses
+C                1 P(1:NPQRS) from NP1,NQ1 to NPL,NQL
+C                2 P(1:NPQRS), INDP(1:NPQRS) with (RS) addresses and np1=npl, nq1=nql
          IF (ITYP .EQ. -2) GO TO 900
 C
          ISP1 = ISAO(NP1)
@@ -1889,9 +1892,8 @@ C
 C
          IF (ITYP .EQ. 1) THEN
             IREC1 = IREC1 + 1
-            LENP  = IRAT*NPQRS
-            IF (LENP .GT. LFREE) GO TO 810
-            CALL READI(LUSUPM,LENP,WORK)
+            IF (NPQRS .GT. LFREE) GO TO 810
+            CALL READT(LUSUPM,NPQRS,WORK)
             DO 280 ISIM = 1,NSIM
                IOFF = 0
                DO 260 IP = NP1,NPL
@@ -1928,8 +1930,8 @@ C                    note NRS = IPQ
      &         '   in record pair no.',IREC,
      &         '   Number of integrals from NP1,NQ1,NPL,NQL:',IOFF,
      &         '   Number of integrals from NPQRS          :',NPQRS,
-     &         '   dump of ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS:',
-     &         ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS
+     &         '   dump of ITYP,NP1,NQ1,NPL,NQL,NPQRS:',
+     &         ITYP,NP1,NQ1,NPL,NQL,NPQRS
                CALL QTRACE(LUPRI)
                CALL QUIT(
      &            'RDSUPP ERROR, inconsistent type 1 spec. on LUSUPM')
@@ -1964,8 +1966,8 @@ C              FMAT( IPQ , ISIM ) = FPQ
             WRITE (LUPRI,'(//5X,A,I5/5X,A,I12/5X,A/5X,5I5,2I12)')
      &         'RDSUPP ERROR, unrecognized type on LUSUPM:',ITYP,
      &         '   record pair no.',IREC,
-     &         '   dump of ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS:',
-     &         ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS
+     &         '   dump of ITYP,NP1,NQ1,NPL,NQL,NPQRS:',
+     &         ITYP,NP1,NQ1,NPL,NQL,NPQRS
             CALL QTRACE(LUPRI)
             CALL QUIT('RDSUPP ERROR, unrecognized type on AOSUPINT')
          END IF
