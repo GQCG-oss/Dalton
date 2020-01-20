@@ -120,7 +120,7 @@ C  /* Deck supdrv */
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       REAL*8    WORK(LWORK)
-      INTEGER*4 IBIT_VEC(LIBIT)
+      INTEGER*4 IBIT_VEC(*)
       LOGICAL   NOSYM
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,IIBAS(8),
      &      LBUF,NIBUF,NBITS, NPLAST,NST,
@@ -239,13 +239,13 @@ C
       IF (NPM.LE.LWORK) THEN
          KW3 = KW2+NPMAX
          CALL SUP1(ICHAIN,NPMAX,WORK(KW1),WORK(KW1),WORK(KW2),
-     &             WORK(KW3),IBEF8,IBIT_VEC(1),IS,LASTAD)
+     &             WORK(KW3),IBEF8,IBIT_VEC,IS,LASTAD)
       ELSE
          CALL GETTIM(DST1D,WST1D)
          LSUP = LWORK-LRDA22-IJ
          KW3 = KW2+LSUP
          CALL SUP1D(ICHAIN,NPMAX,WORK(KW1),WORK(KW1),WORK(KW2),
-     &             WORK(KW3),IBEF8,IBIT_VEC(1),IS,LASTAD)
+     &             WORK(KW3),IBEF8,IBIT_VEC,IS,LASTAD)
          CALL GETTIM(DFIN1D,WFIN1D)
          DTOTD = DTOTD + DFIN1D - DST1D
          WTOTD = WTOTD + WFIN1D - WST1D
@@ -272,13 +272,13 @@ C
          IF (NPM.LE.LWORK) THEN
             KW3 = KW2+NPMM
             CALL SUP1(ICHAIN,NPMM,WORK(KW1),WORK(KW1),WORK(KW2),
-     &                WORK(KW3),IBEF8,IBIT_VEC(1),IS,LASTAD)
+     &                WORK(KW3),IBEF8,IBIT_VEC,IS,LASTAD)
          ELSE
             CALL GETTIM(DST1D,WST1D)
             LSUP = LWORK-LRDA22-IJ
             KW3 = KW2+LSUP
             CALL SUP1D(ICHAIN,NPMM,WORK(KW1),WORK(KW1),WORK(KW2),
-     &                WORK(KW3),IBEF8,IBIT_VEC(1),IS,LASTAD)
+     &                WORK(KW3),IBEF8,IBIT_VEC,IS,LASTAD)
             CALL GETTIM(DFIN1D,WFIN1D)
             DTOTD = DTOTD + DFIN1D - DST1D
             WTOTD = WTOTD + WFIN1D - WST1D
@@ -330,12 +330,12 @@ C
          IF (NPM.LE.LWORK) THEN
             KW3 = KW2+NPMAX
             CALL SUP(ICHAIN,NPMAX,WORK(KW1),WORK(KW1),WORK(KW2),
-     &               WORK(KW3),IBIT_VEC(1),IBEF8,NP,IS,LASTAD,IPRINT)
+     &               WORK(KW3),IBIT_VEC,IBEF8,NP,IS,LASTAD,IPRINT)
          ELSE
             CALL GETTIM(DST1D,WST1D)
             KW3 = KW2+LSUP
             CALL SUPD(ICHAIN,NPMAX,WORK(KW1),WORK(KW1),WORK(KW2),
-     &                WORK(KW3),IBIT_VEC(1),IBEF8,NP,IS,LASTAD)
+     &                WORK(KW3),IBIT_VEC,IBEF8,NP,IS,LASTAD)
             CALL GETTIM(DFIN1D,WFIN1D)
             DTOTD = DTOTD + DFIN1D - DST1D
             WTOTD = WTOTD + WFIN1D - WST1D
