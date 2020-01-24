@@ -1042,7 +1042,8 @@ boxify_save_batch_local(GridGenMolGrid *mg, FILE *f, integer cnt,
 #ifdef VAR_MPI
 #include <mpi.h>
 #include <our_extra_mpi.h>
-static integer mynum, nodes, last;
+static integer last;
+static int mynum, nodes;
 static void
 grid_par_init(real *radint, integer *angmin, integer *angint, integer *grdone) {
     integer arr[4];
@@ -1057,8 +1058,8 @@ grid_par_init(real *radint, integer *angmin, integer *angint, integer *grdone) {
     else if(selected_partitioning == &partitioning_ssf) arr[2] = 2;
     else /* if(selected_partitioning == &partitioning_block)*/ arr[2] = 3;
     arr[3] = *grdone;
-    MPI_Bcast(radint, 1,             MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Bcast(arr,    ELEMENTS(arr), MPI_INT,    0, MPI_COMM_WORLD);
+    MPI_Bcast(radint, 1,             MPI_DOUBLE,      0, MPI_COMM_WORLD);
+    MPI_Bcast(arr,    ELEMENTS(arr), fortran_MPI_INT, 0, MPI_COMM_WORLD);
     *angmin = arr[0];
     *angint = arr[1];
     /* 
@@ -1105,11 +1106,11 @@ boxify_save_batch(GridGenMolGrid *mg, FILE *f, integer cnt,
                                     center, atom_nums+i, coorw + i*4);
         else { /* send batch to node no. last */
             integer arr[2]; arr[0] = bcnt; arr[1] = nbl;
-            M(MPI_Send(arr,     2,      MPI_INT,   last, 1, MPI_COMM_WORLD));
-            M(MPI_Send(shlbl,   2*nbl,  fortran_MPI_INT,   last, 2, MPI_COMM_WORLD));
-            M(MPI_Send(coorw+i*4,4*bcnt,MPI_DOUBLE,last, 3, MPI_COMM_WORLD));
-            M(MPI_Send(center,  3,      MPI_DOUBLE,last, 4, MPI_COMM_WORLD));
-            M(MPI_Send(atom_nums+i,bcnt, MPI_INT,  last, 5, MPI_COMM_WORLD));
+            M(MPI_Send(arr,       2,      fortran_MPI_INT, last,  1, MPI_COMM_WORLD));
+            M(MPI_Send(shlbl,     2*nbl,  fortran_MPI_INT, last,  2, MPI_COMM_WORLD));
+            M(MPI_Send(coorw+i*4, 4*bcnt, MPI_DOUBLE,      last,  3, MPI_COMM_WORLD));
+            M(MPI_Send(center,    3,      MPI_DOUBLE,      last,  4, MPI_COMM_WORLD));
+            M(MPI_Send(atom_nums+i,bcnt,  fortran_MPI_INT, last,  5, MPI_COMM_WORLD));
         }
     }
 }
@@ -1701,11 +1702,11 @@ grid_gen_atom_new(integer* atom_cnt)
 static void
 grid_par_shutdown(void)
 {
-    unsigned i;
+    integer i;
     integer arr[2]; arr[0] = 0; arr[1] = 0;
     /* Executed by master only */
     for(i=1; i<nodes; i++)
-         M(MPI_Send(arr, 2, MPI_INT, i, 1, MPI_COMM_WORLD));
+         M(MPI_Send(arr, 2, fortran_MPI_INT, i, 1, MPI_COMM_WORLD));
 }
 static void
 grid_par_slave(const char *fname, real threshold)
@@ -1730,18 +1731,18 @@ grid_par_slave(const char *fname, real threshold)
         integer arr[2], lda;
         integer arr_integer;
         real center[3];
-        M(MPI_Recv(arr, 2, MPI_INT, 0, 1, MPI_COMM_WORLD, &s));
+        M(MPI_Recv(arr, 2, fortran_MPI_INT,  0,  1, MPI_COMM_WORLD, &s));
         if(arr[0] == 0)break; /* End Of Job */
 
-        M(MPI_Recv(shlblocks, 2*arr[1], fortran_MPI_INT, 0, 2, MPI_COMM_WORLD, &s));
+        M(MPI_Recv(shlblocks,  2*arr[1], fortran_MPI_INT,  0,  2, MPI_COMM_WORLD, &s));
         if(arr[0]>dt_sz) {
             dt = realloc(dt, 4*arr[0]*sizeof(real));
             atom_nums = realloc(atom_nums, arr[0]*sizeof(integer));
             dt_sz = arr[0];
         }
-        M(MPI_Recv(dt,        4*arr[0], MPI_DOUBLE, 0, 3, MPI_COMM_WORLD, &s));
-        M(MPI_Recv(center,           3, MPI_DOUBLE, 0, 4, MPI_COMM_WORLD, &s));
-        M(MPI_Recv(atom_nums,   arr[0], MPI_INT,    0, 5, MPI_COMM_WORLD, &s));
+        M(MPI_Recv(dt,  4*arr[0], MPI_DOUBLE,  0,  3, MPI_COMM_WORLD, &s));
+        M(MPI_Recv(center,    3, MPI_DOUBLE,  0,  4,  MPI_COMM_WORLD, &s));
+        M(MPI_Recv(atom_nums,arr[0], fortran_MPI_INT,     0,  5,  MPI_COMM_WORLD, &s));
         if(selected_partitioning->postprocess)
             arr[0] = selected_partitioning->postprocess
                 (mg, center, arr[0], atom_nums,  (real(*)[4])dt);

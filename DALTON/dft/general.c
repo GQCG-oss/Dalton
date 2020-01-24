@@ -596,12 +596,6 @@ struct {
     DFTPropEvalMaster master_func;
     DFTPropEvalSlave  slave_func;
 } PropEvaluatorList[] = {
-#if 0
-    { (DFTPropEvalMaster)dft_kohn_shamab_, dft_kohn_shamab_slave },
-    { (DFTPropEvalMaster)dft_lin_resp_,    dft_lin_resp_slave    },
-    { (DFTPropEvalMaster)dft_lin_respab_,  dft_lin_respab_slave  },
-    { (DFTPropEvalMaster)dft_mol_grad_,    dft_mol_grad_slave    },
-#endif
     { (DFTPropEvalMaster)FSYM2(dft_kohn_shamab),dft_kohn_shamab_slave },
     { (DFTPropEvalMaster)FSYM2(dft_lin_respab), dft_lin_respab_slave  },
     { (DFTPropEvalMaster)FSYM2(dft_lin_respf),  dft_lin_respf_slave },
@@ -621,7 +615,7 @@ mpi_sync_data(const SyncData* data, integer count)
 {
     integer i;
     for(i=0; i<count; i++) {
-        MPI_Bcast(data[i].data, data[i].count, data[i].type,
+        MPI_Bcast(data[i].data, (int) data[i].count, data[i].type,
                   0, MPI_COMM_WORLD);
     }
 }
@@ -635,7 +629,8 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
 {
     static integer iprtyp = DFT_C_WORK; /* magic DFT/C number */
     static integer iprint = 0;
-    integer id, mynum;
+    integer id;
+    int mynum;
 
     MPI_Comm_rank(MPI_COMM_WORLD, &mynum);
     if(mynum != 0)
@@ -667,7 +662,7 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
       
     MPI_Bcast(&iprtyp,1, fortran_MPI_INT, MASTER_NO, MPI_COMM_WORLD);
     MPI_Bcast(&iprint,1, fortran_MPI_INT, MASTER_NO, MPI_COMM_WORLD);
-    MPI_Bcast(&id,    1, MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+    MPI_Bcast(&id,    1, fortran_MPI_INT, MASTER_NO, MPI_COMM_WORLD);
     /*
     printf("id %d bcast",id);
     */
@@ -683,12 +678,12 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
 void
 FSYM2(dft_cslave)(real* work, integer*lwork,integer*iprint)
 {
-    integer rank, size;
+    int rank, size;
     if(MPI_Comm_rank(MPI_COMM_WORLD, &rank) ||
        MPI_Comm_size(MPI_COMM_WORLD, &size)) printf("MPI error\n");
     else {
         integer id;
-        MPI_Bcast(&id,1,MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+        MPI_Bcast(&id, 1, fortran_MPI_INT, MASTER_NO, MPI_COMM_WORLD);
 /*        
         printf("done id bcast: id = %i mynum = %i; size = %i .\n", id, rank, size);
 */        
@@ -752,13 +747,13 @@ FSYM(dftfuncsync)(integer *mynum, integer *nodes)
     static integer done = 0;
     integer len = DftConfString ? strlen(DftConfString) + 1: 0;
     if(done) return;
-    MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&len, 1, fortran_MPI_INT, 0, MPI_COMM_WORLD);
     if(len>0) {
         integer res;
         char *line = malloc(len);
         if(*mynum == 0)
             strcpy(line, DftConfString);
-        MPI_Bcast(line, len, MPI_CHAR, 0, MPI_COMM_WORLD);
+        MPI_Bcast(line, (int) len, MPI_CHAR,  0, MPI_COMM_WORLD);
 /*        
         printf("my line is %s its length is %i",line, len);
 */

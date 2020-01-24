@@ -1263,7 +1263,6 @@ dft_cr_resp_sync_slaves(real* cmo, real* kappaB, real* kappaC, real *kappaD,
     data2[5].data = symC;    data2[5].count = 1;
     data2[6].data = symD;    data2[6].count = 1;
 #endif /* C99_COMPILER */
-                                                                                       
     mpi_sync_data(sync_data, ELEMENTS(sync_data));
     mpi_sync_data(data2,     ELEMENTS(data2));
 }
@@ -1271,7 +1270,7 @@ dft_cr_resp_sync_slaves(real* cmo, real* kappaB, real* kappaC, real *kappaD,
 static __inline__ void
 dft_cr_resp_collect_info(real* fi, real*work, integer lwork)
 {
-    integer sz = 0;
+    int sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz<=1) return;
     CHECK_WRKMEM(inforb_.n2orbx, lwork);
