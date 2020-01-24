@@ -622,25 +622,25 @@ qrbl_sync_slaves(real* cmo, real* kappaY, real* kappaZ, integer* addfock,
 		 integer* symY, integer* symZ, integer* spinY, integer* spinZ)
 {
     static const SyncData sync_data[] = {
- 	{ inforb_.nocc,   8, fortran_MPI_INT },
+ 	{ &inforb_.nocc,  8, fortran_MPI_INT },
  	{ &inforb_.nocct, 1, fortran_MPI_INT },
  	{ &inforb_.nvirt, 1, fortran_MPI_INT },
     };
-#ifdef C99_COMPILER
-    const SyncData data2[] = {
-	{ cmo,     inforb_.norbt*inforb_.nbast,MPI_DOUBLE },
-	{ kappaY,  inforb_.n2orbx,             MPI_DOUBLE },
-	{ kappaZ,  inforb_.n2orbx,             MPI_DOUBLE },
-	{ addfock, 1,                          fortran_MPI_INT    },
-	{ symY,    1,                          fortran_MPI_INT    },
-	{ symZ,    1,                          fortran_MPI_INT    },
-	{ spinY,   1,                          fortran_MPI_INT    },
-	{ spinZ,   1,                          fortran_MPI_INT    }
-    };
-#else /* C99_COMPILER */
+ #ifdef C99_COMPILER
+     const SyncData data2[] = {
+ 	{ cmo,     &inforb_.norbt*inforb_.nbast,MPI_DOUBLE },
+ 	{ kappaY,  &inforb_.n2orbx,             MPI_DOUBLE },
+ 	{ kappaZ,  &inforb_.n2orbx,             MPI_DOUBLE },
+ 	{ addfock, 1,                          fortran_MPI_INT    },
+ 	{ symY,    1,                          fortran_MPI_INT    },
+ 	{ symZ,    1,                          fortran_MPI_INT    },
+ 	{ spinY,   1,                          fortran_MPI_INT    },
+ 	{ spinZ,   1,                          fortran_MPI_INT    }
+     };
+ #else /* C99_COMPILER */
     /* this is more error-prone but some compilers (HP/UX)... */
     static SyncData data2[] = 
-    { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, 
+    { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE},
       {NULL, 0, fortran_MPI_INT   }, {NULL, 0, fortran_MPI_INT   }, {NULL, 0, fortran_MPI_INT   },
       {NULL, 0, fortran_MPI_INT   }, {NULL, 0, fortran_MPI_INT   } };
     data2[0].data = cmo;     data2[0].count = inforb_.norbt*inforb_.nbast;
@@ -651,7 +651,7 @@ qrbl_sync_slaves(real* cmo, real* kappaY, real* kappaZ, integer* addfock,
     data2[5].data = symZ;    data2[5].count = 1;
     data2[6].data = spinY;   data2[6].count = 1;
     data2[7].data = spinZ;   data2[7].count = 1;
-#endif /* C99_COMPILER */
+ #endif /* C99_COMPILER */
 
     mpi_sync_data(sync_data, ELEMENTS(sync_data));
     mpi_sync_data(data2,     ELEMENTS(data2));
@@ -659,7 +659,7 @@ qrbl_sync_slaves(real* cmo, real* kappaY, real* kappaZ, integer* addfock,
 static __inline__ void
 qrbl_collect_info(real* fi, real*work, integer lwork)
 {
-    integer sz = 0;
+    int sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz<=1) return;
 
@@ -719,7 +719,7 @@ FSYM2(dft_qr_respons)(real *fi, real *cmo,
 		   dmat, work, lwork);
     cb = (DftBlockCallback)
         (qr_data.is_gga ? qrbl_gga_cb : qrbl_lda_cb );
-    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, iprint, 0, 
+    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, iprint, 0,
                                     cb, &qr_data);
     free(dmat);
     if(DFTQR_DEBUG) {

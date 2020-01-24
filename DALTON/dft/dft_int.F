@@ -547,9 +547,9 @@ c
       END
 c
       SUBROUTINE DFTINTCOLLECT(ELECTRONS)
+#include "implicit.h"
 #ifdef VAR_MPI
 c
-#include "implicit.h"
 #include "mpif.h"
 #include "maxorb.h"
 #include "infpar.h"
