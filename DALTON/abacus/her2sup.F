@@ -585,11 +585,11 @@ C
       IF(ABS(VALUE).LE.THRQ) GO TO 30
          IF (NIBUF .EQ. 1) THEN
             LABEL1 = INT4(IAOINT+I)
-            NP = IAND(ISHFT(LABEL1,-24),IBT08)
+            NP = IAND(ISHFT(LABEL1,-24),IBT08_4)
          ELSE
             LABEL1 = INT4(IAOINT+2*I-1)
             LABEL2 = INT4(IAOINT+2*I)
-            NP = IAND(ISHFT(LABEL1,-16),IBT16)
+            NP = IAND(ISHFT(LABEL1,-16),IBT16_4)
          END IF
          KBATCH = IBATCH(NP)
       IF (KBATCH.LT.NBP1.OR.KBATCH.GT.NBP2) GO TO 30
@@ -602,13 +602,13 @@ C***  ARE TO BE KEPT
 C
          IF (NOSYM) GO TO 25
          IF (NIBUF .EQ. 1) THEN
-            NQ = IAND(ISHFT(LABEL1,-16),IBT08)
-            NR = IAND(ISHFT(LABEL1, -8),IBT08)
-            NS = IAND(      LABEL1     ,IBT08)
+            NQ = IAND(ISHFT(LABEL1,-16),IBT08_4)
+            NR = IAND(ISHFT(LABEL1, -8),IBT08_4)
+            NS = IAND(      LABEL1     ,IBT08_4)
          ELSE
-            NQ = IAND(      LABEL1     ,IBT16)
-            NR = IAND(ISHFT(LABEL2,-16),IBT16)
-            NS = IAND(      LABEL2     ,IBT16)
+            NQ = IAND(      LABEL1     ,IBT16_4)
+            NR = IAND(ISHFT(LABEL2,-16),IBT16_4)
+            NS = IAND(      LABEL2     ,IBT16_4)
          END IF
          ISP = IS(NP)
          IF (IS(NQ).EQ.ISP) GO TO 25
@@ -765,17 +765,17 @@ C
       DO 400 I = 1,LENGTH
          IF (NIBUF .EQ. 1) THEN
             IBL1  = IBUF(IDABUF+I)
-            NP    = IAND(ISHFT(IBL1,-24),IBT08)
-            NQ    = IAND(ISHFT(IBL1,-16),IBT08)
-            NR    = IAND(ISHFT(IBL1, -8),IBT08)
-            NS    = IAND(      IBL1     ,IBT08)
+            NP    = IAND(ISHFT(IBL1,-24),IBT08_4)
+            NQ    = IAND(ISHFT(IBL1,-16),IBT08_4)
+            NR    = IAND(ISHFT(IBL1, -8),IBT08_4)
+            NS    = IAND(      IBL1     ,IBT08_4)
          ELSE
             IBL1  = IBUF(IDABUF+2*I-1)
             IBL2  = IBUF(IDABUF+2*I)
-            NP    = IAND(ISHFT(IBL1,-16),IBT16)
-            NQ    = IAND(      IBL1     ,IBT16)
-            NR    = IAND(ISHFT(IBL2,-16),IBT16)
-            NS    = IAND(      IBL2     ,IBT16)
+            NP    = IAND(ISHFT(IBL1,-16),IBT16_4)
+            NQ    = IAND(      IBL1     ,IBT16_4)
+            NR    = IAND(ISHFT(IBL2,-16),IBT16_4)
+            NS    = IAND(      IBL2     ,IBT16_4)
          END IF
          IJ    = IT(NP)+NQ
          KL    = IT(NR)+NS
@@ -1070,15 +1070,15 @@ C
 C
          IF (NIBUF .EQ. 1) THEN
             IBL1  = IBUF(IDABUF+I)
-            NQ    = IAND(ISHFT(IBL1,-16),IBT08)
-            NR    = IAND(ISHFT(IBL1, -8),IBT08)
-            NS    = IAND(      IBL1     ,IBT08)
+            NQ    = IAND(ISHFT(IBL1,-16),IBT08_4)
+            NR    = IAND(ISHFT(IBL1, -8),IBT08_4)
+            NS    = IAND(      IBL1     ,IBT08_4)
          ELSE
             IBL1  = IBUF(IDABUF+2*I-1)
             IBL2  = IBUF(IDABUF+2*I)
-            NQ    = IAND(      IBL1     ,IBT16)
-            NR    = IAND(ISHFT(IBL2,-16),IBT16)
-            NS    = IAND(      IBL2     ,IBT16)
+            NQ    = IAND(      IBL1     ,IBT16_4)
+            NR    = IAND(ISHFT(IBL2,-16),IBT16_4)
+            NS    = IAND(      IBL2     ,IBT16_4)
          END IF
 #if defined (VAR_DUPLCHCK)
 C
@@ -1406,17 +1406,17 @@ C
       DO 400 I = 1,LENGTH
          IF (NIBUF .EQ. 1) THEN
             IBL1  = IBUF(IDABUF+I)
-            NP    = IAND(ISHFT(IBL1,-24),IBT08)
-            NQ    = IAND(ISHFT(IBL1,-16),IBT08)
-            NR    = IAND(ISHFT(IBL1, -8),IBT08)
-            NS    = IAND(      IBL1     ,IBT08)
+            NP    = IAND(ISHFT(IBL1,-24),IBT08_4)
+            NQ    = IAND(ISHFT(IBL1,-16),IBT08_4)
+            NR    = IAND(ISHFT(IBL1, -8),IBT08_4)
+            NS    = IAND(      IBL1     ,IBT08_4)
          ELSE
             IBL1  = IBUF(IDABUF+2*I-1)
             IBL2  = IBUF(IDABUF+2*I)
-            NP    = IAND(ISHFT(IBL1,-16),IBT16)
-            NQ    = IAND(      IBL1     ,IBT16)
-            NR    = IAND(ISHFT(IBL2,-16),IBT16)
-            NS    = IAND(      IBL2     ,IBT16)
+            NP    = IAND(ISHFT(IBL1,-16),IBT16_4)
+            NQ    = IAND(      IBL1     ,IBT16_4)
+            NR    = IAND(ISHFT(IBL2,-16),IBT16_4)
+            NS    = IAND(      IBL2     ,IBT16_4)
          END IF
       IJ    = IT(NP)+NQ
       KL    = IT(NR)+NS
@@ -1748,15 +1748,15 @@ C
 C
          IF (NIBUF .EQ. 1) THEN
             IBL1  = IBUF(IDABUF+I)
-            NQ    = IAND(ISHFT(IBL1,-16),IBT08)
-            NR    = IAND(ISHFT(IBL1, -8),IBT08)
-            NS    = IAND(      IBL1     ,IBT08)
+            NQ    = IAND(ISHFT(IBL1,-16),IBT08_4)
+            NR    = IAND(ISHFT(IBL1, -8),IBT08_4)
+            NS    = IAND(      IBL1     ,IBT08_4)
          ELSE
             IBL1  = IBUF(IDABUF+2*I-1)
             IBL2  = IBUF(IDABUF+2*I)
-            NQ    = IAND(      IBL1     ,IBT16)
-            NR    = IAND(ISHFT(IBL2,-16),IBT16)
-            NS    = IAND(      IBL2     ,IBT16)
+            NQ    = IAND(      IBL1     ,IBT16_4)
+            NR    = IAND(ISHFT(IBL2,-16),IBT16_4)
+            gS    = IAND(      IBL2     ,IBT16_4)
          END IF
 #if defined (VAR_DUPLCHCK)
 C
