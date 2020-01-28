@@ -4,6 +4,7 @@
 
 ### New features added
 - Added pcH-n and aug-pcH-n basis sets levels 1-4 to Dalton basis set library.
+- Extended "super matrix integrals" to work with >255 basis functions. (H. J. Aa. Jensen)
 - Calculate and print oscillator strengths based on .EEF dipole transition moments. (H. J. Aa. Jensen)
 - Added ".TDA TR" keyword for invoking Tamm-Dancoff approximation for triplet response properties under \*\*PROPERTIES.
   Useful for avoiding (near-)triplet-instability problems, for example in DFT calculations of spin-spin coupling constants. (H. J. Aa. Jensen)
@@ -16,6 +17,8 @@
 - added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
 
 ### Fixed
+- Compilation errors with gfortran-9.2.0 and 64-bit integers
+- Errors when running DFT with 64-bit integers and MPI. (P. Reinholdt and H. J. Aa. Jensen)
 - Errors for Fermi-contact (FC) labels on APROPER and therefore FC properties in \*\*RESPONS when more than 99 atoms (H. J. Aa. Jensen)
 - Error for \*ESR spin-dipole properties when more than 33 atoms (H. J. Aa. Jensen)
 - Singlet totally-symmetric excitation energies for MCSCF in \*\*RESPONS with super-symmetry activated (.SUPSYM keyword). (H. J. Aa. Jensen)

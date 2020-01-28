@@ -98,9 +98,9 @@ dft_kohn_sham_collect_info(real*ksm, real* energy, real* work, integer lwork)
     if(sz <=1) return;
     CHECK_WRKMEM(inforb_.n2basx, lwork);
     dcopy_(&inforb_.n2basx, ksm,&ONEI, work, &ONEI);
-    MPI_Reduce(work, ksm, inforb_.n2basx, MPI_DOUBLE, MPI_SUM, 
+    MPI_Reduce(work, ksm, inforb_.n2basx, MPI_DOUBLE, MPI_SUM,
 	       MASTER_NO, MPI_COMM_WORLD);
-    MPI_Reduce(&tmp, energy, 1, MPI_DOUBLE, MPI_SUM, 
+    MPI_Reduce(&tmp, energy, 1, MPI_DOUBLE, MPI_SUM,
 	       MASTER_NO, MPI_COMM_WORLD);
 }
 
@@ -155,7 +155,7 @@ dft_lin_resp_sync_slaves(real* cmo, integer *nvec, real **zymat,
     static SyncData data2[] = 
     { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, fortran_MPI_INT},
       {NULL, 0, fortran_MPI_INT} };
-    MPI_Bcast(nvec, 1, fortran_MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+    MPI_Bcast(nvec,  1, fortran_MPI_INT, MASTER_NO, MPI_COMM_WORLD);
     FSYM(dftlrsync)();
     if(*zymat == NULL) { /* we are a slave */
         if(lwork<*nvec*inforb_.n2orbx)
@@ -174,7 +174,7 @@ dft_lin_resp_sync_slaves(real* cmo, integer *nvec, real **zymat,
 static __inline__ void
 dft_lin_resp_collect_info(integer nvec, real* fmat, real*work, integer lwork)
 {
-    integer sz_mpi = 0;
+    int sz_mpi = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz_mpi);
     if(sz_mpi<=1) return;
 
@@ -248,8 +248,8 @@ lin_resp_cb(DftGrid* grid, LinRespData* data)
 	    integer iend = inforb_.ibas[isym] + inforb_.nbas[isym];
 	    integer jsym = inforb_.muld2h[data->ksymop-1][isym]-1;
 	    if (isym>=jsym) {
-		int jstr = inforb_.ibas[jsym];
-		int jend = inforb_.ibas[jsym] + inforb_.nbas[jsym];
+		integer jstr = inforb_.ibas[jsym];
+		integer jend = inforb_.ibas[jsym] + inforb_.nbas[jsym];
 		for(i=istr; i<iend; i++) {
 		    real g0 = grid->atv[i];
 		    real gx = atvX[i];
@@ -277,10 +277,10 @@ lin_resp_cb(DftGrid* grid, LinRespData* data)
 	for(isym=0; isym<inforb_.nsym; isym++) {
 	    integer jsym = inforb_.muld2h[data->ksymop-1][isym]-1;
 	    if(isym>=jsym) {
-		int istr = inforb_.ibas[isym];
-		int iend = inforb_.ibas[isym] + inforb_.nbas[isym];
-		int jstr = inforb_.ibas[jsym];
-		int jend = inforb_.ibas[jsym] + inforb_.nbas[jsym]-1;
+		integer istr = inforb_.ibas[isym];
+		integer iend = inforb_.ibas[isym] + inforb_.nbas[isym];
+		integer jstr = inforb_.ibas[jsym];
+		integer jend = inforb_.ibas[jsym] + inforb_.nbas[jsym]-1;
 		for(i=istr; i<iend; i++) {
 		    integer ioff = i*inforb_.nbast;
 		    real gvi = vt*grid->atv[i];
@@ -348,7 +348,7 @@ FSYM2(dft_lin_resp)(real* fmat, real *cmo, real *zymat, integer *trplet,
     }
 
     for(i=0; i<inforb_.nbast; i++) {
-	int ioff = i*inforb_.nbast;
+	integer ioff = i*inforb_.nbast;
 	for(j=0; j<i; j++) {
 	    integer joff = j*inforb_.nbast;
 	    real averag = lr_data.res[i+joff] + lr_data.res[j+ioff];
@@ -524,7 +524,7 @@ dft_kohn_shamab_slave(real* work, integer* lwork, integer* iprint)
 static __inline__ void
 dft_kohn_shamab_sync_slaves(real* dmat)
 {
-    MPI_Bcast(dmat,2*inforb_.n2basx,MPI_DOUBLE,
+    MPI_Bcast(dmat, 2*inforb_.n2basx,MPI_DOUBLE,
 	      MASTER_NO, MPI_COMM_WORLD);
 }
 
@@ -532,7 +532,7 @@ static __inline__ void
 dft_kohn_shamab_collect_info(real*ksm, real* energy, real* work, integer lwork)
 {
     real tmp = *energy;
-    integer sz = 0;
+    int sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz<=1) return;
 
@@ -540,9 +540,9 @@ dft_kohn_shamab_collect_info(real*ksm, real* energy, real* work, integer lwork)
     integer sz_ftn = sz;
     CHECK_WRKMEM(sz,lwork);
     dcopy_(&sz_ftn, ksm, &ONEI, work, &ONEI);
-    MPI_Reduce(work, ksm, sz, MPI_DOUBLE, MPI_SUM, 
+    MPI_Reduce(work, ksm, sz, MPI_DOUBLE, MPI_SUM,
 	       MASTER_NO, MPI_COMM_WORLD);
-    MPI_Reduce(&tmp, energy, 1, MPI_DOUBLE, MPI_SUM, 
+    MPI_Reduce(&tmp, energy,  1, MPI_DOUBLE, MPI_SUM,
 	       MASTER_NO, MPI_COMM_WORLD);
 }
 
@@ -656,12 +656,12 @@ FSYM2(dft_kohn_shamab)(real* dmat, real* ksm, real *edfty,
 
     times(&starttm);
     res.energy = 0.0;
-    electrons = dft_integrate_ao(&dens, work, lwork, iprint, 0, 0,0,
+    electrons = dft_integrate_ao(&dens, work, lwork, iprint, 0, 0, 0,
                                  cbdata, ELEMENTS(cbdata));
     dft_kohn_shamab_collect_info(res.ksma, &res.energy, work, *lwork);
 
     for(i=0; i<inforb_.nbast; i++) {
-	int ioff = i*inforb_.nbast;
+	integer ioff = i*inforb_.nbast;
 	for(j=0; j<i; j++) {
 	    integer joff = j*inforb_.nbast;
 	    real averag = 0.5*(res.ksma[i+joff] + res.ksma[j+ioff]);
@@ -711,7 +711,7 @@ dft_lin_respab_slave(real* work, integer* lwork, integer* iprint)
 static __inline__ void
 dft_lin_respab_collect_info(real* fmat, real*work, integer lwork)
 {
-    integer sz = 0;
+    int sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz<=1) return;
 
@@ -1018,7 +1018,7 @@ FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
         (DftCallback)(selected_func->is_gga() ? 
                       lin_resp_cbab_gga : lin_resp_cbab_nogga);
     cbdata[0].cb_data  = &lr_data;
-    electrons = dft_integrate_ao(&dens,work, lwork, iprint, 0, 0,0, 
+    electrons = dft_integrate_ao(&dens,work, lwork, iprint, 0, 0, 0,
                                  cbdata,ELEMENTS(cbdata));
 
     dft_lin_respab_collect_info(lr_data.resa, work, *lwork);/*serial:NO-OP*/
@@ -1257,14 +1257,14 @@ FSYM2(dft_kohn_shamf)(real* dmat, real* ksm, real* edfty,
     times(&starttm);
     ds.energy = 0.0;
 
-    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, iprint, 0, 
+    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, iprint, 0,
                                     (DftBlockCallback)
                                     (selected_func->is_gga() ?
                                     kohn_sham_cb_b_gga : kohn_sham_cb_b_lda),
                                     &ds);
 
     for(i=0; i<inforb_.nbast; i++) {
-	int ioff = i*inforb_.nbast;
+	integer ioff = i*inforb_.nbast;
 	for(j=0; j<i; j++) {
 	    integer joff = j*inforb_.nbast;
 	    real averag = 0.5*(ds.excmat[i+joff] + ds.excmat[j+ioff]);
@@ -1438,7 +1438,7 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
                         integer jtop = jblocks[jbl][1];
                         for(j=jblocks[jbl][0]-1; j<jtop; j++) { 
                             real *RESTRICT g0j = &aos[j*bllen];
-                            int bllen = blend - blstart;
+                            integer bllen = blend - blstart;
                             real s = ddot_(&bllen, g0j+blstart, &ONEI, tmp+blstart, &ONEI);
                             excmat[j+ioff] += s;
                         }
@@ -1505,7 +1505,7 @@ FSYM2(dft_lin_respf)(integer *nosim, real* fmat, real *cmo, real *zymat,
             dscal_(&inforb_.n2basx,&DP5R,lr_data.kappa+jvec*inforb_.n2basx,&ONEI);    
         }
         FSYM(dzero)(lr_data.res, &sz);
-        electrons = dft_integrate_ao_bl(1, lr_data.dmat, work, lwork, iprint, 0, 
+        electrons = dft_integrate_ao_bl(1, lr_data.dmat, work, lwork, iprint, 0,
                                         (DftBlockCallback)
                                         (selected_func->is_gga() ?
                                          lin_resp_cb_b_gga : lin_resp_cb_b_lda),
@@ -1601,7 +1601,7 @@ void
 dft_kohn_shamab_b_sync_slaves(real* dmat)
 {
   FSYM(dftintbcast)();
-  MPI_Bcast(dmat, 2*inforb_.n2basx,MPI_DOUBLE,
+  MPI_Bcast(dmat,  2*inforb_.n2basx,MPI_DOUBLE,
             MASTER_NO, MPI_COMM_WORLD);
 }
 
@@ -1609,16 +1609,16 @@ static void
 dft_kohn_shamab_b_collect(real *energy, real *ksm, real* work, integer lwork)
 {
   real tmp = *energy;
-  integer sz = 0;
+  int sz = 0;
   MPI_Comm_size(MPI_COMM_WORLD, &sz);
   if(sz <=1) return; 
   sz = 2*inforb_.n2basx;
   integer sz_ftn = sz;
   CHECK_WRKMEM(sz, lwork);
   dcopy_(&sz_ftn, ksm,&ONEI, work, &ONEI);
-  MPI_Reduce(work, ksm, sz, MPI_DOUBLE, MPI_SUM, 
+  MPI_Reduce(work, ksm, sz, MPI_DOUBLE, MPI_SUM,
              MASTER_NO, MPI_COMM_WORLD);
-  MPI_Reduce(&tmp, energy, 1, MPI_DOUBLE, MPI_SUM, 
+  MPI_Reduce(&tmp, energy,  1, MPI_DOUBLE, MPI_SUM,
              MASTER_NO, MPI_COMM_WORLD);
 }
 #endif
@@ -1903,7 +1903,7 @@ dft_lin_respab_b_slave(real* work, integer* lwork, integer* iprint)
 static  void
 dft_lin_respab_b_collect(integer nvec, real* fmata, real* fmatb,  real *work, integer lwork)
 {
-  integer sz = 0;
+  int sz = 0;
   MPI_Comm_size(MPI_COMM_WORLD, &sz);
   if(sz<=1) return;
 
@@ -1926,7 +1926,7 @@ dft_lin_respab_b_collect(integer nvec, real* fmata, real* fmatb,  real *work, in
   } else {
     CHECK_WRKMEM(sz, lwork);
     dcopy_(&sz_ftn, fmata, &ONEI, work, &ONEI);
-    MPI_Reduce(work, fmata, sz, MPI_DOUBLE, MPI_SUM, 
+    MPI_Reduce(work, fmata, sz, MPI_DOUBLE, MPI_SUM,
                MASTER_NO, MPI_COMM_WORLD);
     dcopy_(&sz_ftn, fmatb, &ONEI, work, &ONEI);
     MPI_Reduce(work, fmatb, sz, MPI_DOUBLE, MPI_SUM,
@@ -2276,7 +2276,7 @@ FSYM2(dft_lin_respab_b)(integer *nosim, real* fmatc, real* fmato, real *cmo,
     FSYM(dzero)(fmatb, &sz1);
     for(jvec=0; jvec<lr_data.vecs_in_batch; jvec++){
       for(i=0; i<inforb_.nbast; i++) {
-	int ioff = i*inforb_.nbast + jvec*inforb_.n2basx;
+	integer ioff = i*inforb_.nbast + jvec*inforb_.n2basx;
 	for(j=0; j<i; j++) {
 	  integer joff = j*inforb_.nbast + jvec*inforb_.n2basx;
 	  averag = 0.5*(lr_data.res_a[i+joff] +

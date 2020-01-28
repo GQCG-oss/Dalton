@@ -1082,7 +1082,7 @@ FSYM2(dft_qr_ab)(real * fi, real * fo, real *cmo,
     free(tmp);
     free(kappa_yz);
     /* Integrate VXC[3] */
-    electrons = dft_integrate_ao_bl(2, qr_data.dmata, work, lwork, iprint, 0,
+    electrons = dft_integrate_ao_bl( 2, qr_data.dmata, work, lwork, iprint,  0,
                                      (DftBlockCallback)(selected_func->is_gga() ? 
                                       quad_open_gga_cb:quad_open_lda_cb),
                                      &qr_data); 
