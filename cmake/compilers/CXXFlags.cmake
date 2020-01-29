@@ -30,7 +30,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177 -fno-rtti -fno-exceptions -Wall")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -wd981 -wd279 -wd383 -wd1572 -wd177 -fno-rtti -fno-exceptions -Wall")
     set(CMAKE_CXX_FLAGS_DEBUG   "-O0")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ip")
     set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")

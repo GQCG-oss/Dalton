@@ -685,7 +685,7 @@ dft_qr_resp_sync_slaves(real* cmo, real* kappaY, real* kappaZ, integer* addfock,
 static __inline__ void
 dft_qr_resp_collect_info(real* fi, real*work, integer lwork)
 {
-    integer sz = 0;
+    int sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz<=1) return;
     CHECK_WRKMEM(inforb_.n2orbx,lwork);

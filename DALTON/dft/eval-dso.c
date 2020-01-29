@@ -98,8 +98,9 @@ void FSYM(dsosyncslaves)(real *dmat,integer *nucind,real *work,integer *lwork);
 static void
 numdso_collect_info(real *spndso, real *work, integer lwork)
 {
-    integer dsodim, sz;
-    integer     sz_mpi;
+    integer dsodim;
+    integer sz;
+    int sz_mpi;
 
     MPI_Comm_size(MPI_COMM_WORLD, &sz_mpi);
     if(sz_mpi <=1) return;
