@@ -1298,7 +1298,7 @@ C--------------------------------------------------------------------
       do k=1,nexc
          call dcopy(Lspace,XVEC(1,k),1,work(katrr),1)
          CALL cc_atrr(ECURR,ISYHOP,ISIDE,WORK(Katrr),Lend,.false.,
-     &                dummy,APROXR12)
+     &                dummy,APROXR12,.false.)
 !      SUBROUTINE CC_ATRR(ECURR,ISYMV,ISIDE,WORK,LWORK,LCONT,CONT,
 !     &                   APROXR12)
 
@@ -1323,7 +1323,7 @@ C--------------------------------------------------------------------
       do k=1,nexc
          call dcopy(Lspace,XVEC(1,k),1,work(katrr),1)
          CALL cc_atrr(ECURR,ISYHOP,ISIDE,WORK(Katrr),Lend,.false.,
-     &                dummy,APROXR12)
+     &                dummy,APROXR12,.false.)
          Rdag_A_R=ddot(Lspace,XVEC(1,k),1,WORK(KAtrr),1)
          Rdag_R=ddot(Lspace,XVEC(1,k),1,XVEC(1,k),1)
          omega1=Rdag_A_R/Rdag_R

@@ -354,7 +354,7 @@ C
 C-----------------------------------
 C     Extract the fock matrix F(ie).
 C-----------------------------------
-C
+C     Note that F(kc) is stored in order c,k
       DO 50 ISYMC = 1,NSYM
 C
          ISYMK = MULD2H(ISYMC,ISYFCK)

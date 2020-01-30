@@ -116,7 +116,13 @@ Cholesky
 #include "ccdeco.h"
 Cholesky
 C
+#include "ccexcicvs.h"
+#include "ccxscvs.h"
+C
       PARAMETER(NMODEL = 22)
+      !sonia: prevent projection in L0
+      logical lcvsbck,lionbck,lrmcorebck
+      !
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
       LOGICAL   MOLGRD, LHTF, NOAUXBSAVE
@@ -651,7 +657,16 @@ C
                        ENDIF
                     ENDDO
                  ELSE
+                    lcvsbck = LCVSEXCI
+                    lionbck = LIONIZEXCI
+                    lrmcorebck = LRMCORE
+                    LCVSEXCI = .false.
+                    LIONIZEXCI = .false.
+                    LRMCORE = .false.
                     CALL CC_FOP(IDUMMY,WORK,LWORK,APROXR12)
+                    LCVSEXCI = lcvsbck
+                    LIONIZEXCI = lionbck 
+                    LRMCORE = lrmcorebck
                  ENDIF
              ENDIF
 C
@@ -753,10 +768,15 @@ C
                    WRITE(LUPRI,*) 'No triples left excitation energies '
                  ENDIF
                ENDIF
+
+               IF ((.NOT. LHTR).AND.(.NOT.RESKIP)) THEN
+                  CALL CC_MOLDEN_NTO(WORK,LWORK)
+               ENDIF
             ELSE
                WRITE(LUPRI,'(/,1X,A)')
      &              ' No MP2 and CCD excitation energies'
             ENDIF
+
 C
          ENDIF
 C
@@ -802,7 +822,13 @@ C-----------------------------------------------
 C
          !IF (LRSPSYM) THEN
          !Do not enter if Lanczos calculation. Sonia
-         IF ((LRSPSYM).and.(.NOT.CCLRLCZ)) THEN
+         !IF ((LRSPSYM).and.(.NOT.CCLRLCZ)) THEN
+         !reactivate for Excited state calculation
+         IF (LRSPSYM) THEN
+           if (LXSCVS.or.LXRMCORE) then
+              !transfer info for projection
+              call cc_cvs_interface(MSYM)
+           end if
            CALL CC_SOLRSP(WORK,LWORK,APROXR12)
          END IF
 C
@@ -873,7 +899,12 @@ C
          IF (CCXOPA) THEN
            IF ((CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP))
      &          .and. (.not. CCR12)) THEN
-            CALL CC_XOPA(WORK,LWORK)
+            write(lupri,*) "SONIA cc_drv: CALLING CC_eom_XOPA"
+            if (.false.) then
+              CALL CC_XOPA(WORK,LWORK)
+            else
+              CALL CC_eom_XOPA(WORK,LWORK)
+            end if
            ELSE
             WRITE(LUPRI,*) 'One-photon absorption strengths'//
      &         ' are not implemented for the requested model.'

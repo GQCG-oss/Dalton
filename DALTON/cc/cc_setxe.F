@@ -23,14 +23,14 @@ c /* deck CC_SETXE */
      &                     IDOTVEC,ITRAN,IVEC)
 *---------------------------------------------------------------------*
 *
-*    Purpose: set up list of Xi and Eta vectors 
+*    Purpose: set up list of Xi and Eta vectors
 *
 *             IXETRAN - list for CC_XIETA routine
 *             IDOTS   - list of vectors Xi/Eta should be dotted on
-*        
+*
 *             MXTRAN  - maximum IXETRAN list dimension
 *             MXVEC   - second maximum dimension maximum for IDOTS
-*      
+*
 *             IZETA   - index of left vector for ETA (ignored for Xi)
 *             IOPER   - index of operator
 *             IRLX1   - index for 1. kappa vector (0 for unrelaxed)
@@ -45,7 +45,7 @@ c /* deck CC_SETXE */
 *    Written by Christof Haettig, june 1999.
 *
 *=====================================================================*
-      IMPLICIT NONE  
+      IMPLICIT NONE
 #include "priunit.h"
 #include "cclists.h"
       INTEGER MXVEC, MXTRAN
@@ -62,7 +62,7 @@ c /* deck CC_SETXE */
       LOGICAL LXITST, LETATST, LXEEND
       INTEGER IL, IO, IR1, IR2, IR3, IR4
 
-      LXITST(ITRAN,IO,IR1,IR2,IR3,IR4) = IXETRAN(1,ITRAN).EQ.IO 
+      LXITST(ITRAN,IO,IR1,IR2,IR3,IR4) = IXETRAN(1,ITRAN).EQ.IO
      & .AND. (
      &    (  ( (IXETRAN(5,ITRAN).EQ.IR1 .AND. IXETRAN(6,ITRAN).EQ.IR2)
      &     .OR.(IXETRAN(5,ITRAN).EQ.IR2 .AND. IXETRAN(6,ITRAN).EQ.IR1))
@@ -80,7 +80,7 @@ c /* deck CC_SETXE */
      &     .OR.(IXETRAN(7,ITRAN).EQ.IR2 .AND. IXETRAN(8,ITRAN).EQ.IR3))
      &    )  )
 
-      LETATST(ITRAN,IL,IO,IR1,IR2,IR3,IR4) = 
+      LETATST(ITRAN,IL,IO,IR1,IR2,IR3,IR4) =
      &   IXETRAN(2,ITRAN).EQ.IL .AND.  LXITST(ITRAN,IO,IR1,IR2,IR3,IR4)
 
       LXEEND(ITRAN) = ITRAN.GT.MXTRAN .OR. IXETRAN(1,ITRAN).LE.0
@@ -93,7 +93,7 @@ c /* deck CC_SETXE */
         ITRAN = 1
         LFND  = LXITST(ITRAN,IOPER,IRLX1,IRLX2,IRLX3,IRLX4)
 
-        DO WHILE ( .NOT.(LFND.OR.LXEEND(ITRAN))) 
+        DO WHILE ( .NOT.(LFND.OR.LXEEND(ITRAN)))
          ITRAN = ITRAN + 1
          LFND  = LXITST(ITRAN,IOPER,IRLX1,IRLX2,IRLX3,IRLX4)
         END DO
@@ -111,7 +111,7 @@ c /* deck CC_SETXE */
         ITRAN = 1
         LFND  = LETATST(ITRAN,IZETA,IOPER,IRLX1,IRLX2,IRLX3,IRLX4)
 
-        DO WHILE ( .NOT.(LFND.OR.LXEEND(ITRAN))) 
+        DO WHILE ( .NOT.(LFND.OR.LXEEND(ITRAN)))
          ITRAN = ITRAN + 1
          LFND  = LETATST(ITRAN,IZETA,IOPER,IRLX1,IRLX2,IRLX3,IRLX4)
         END DO
@@ -142,7 +142,7 @@ c /* deck CC_SETXE */
       IF (IVEC.GT.MXVEC .OR. ITRAN.GT.MXTRAN) THEN
         WRITE (LUPRI,*) 'TYPE   :',TYPE
         WRITE (LUPRI,*) 'IZETA  :',IZETA
-        WRITE (LUPRI,*) 'IOPER  :',IOPER 
+        WRITE (LUPRI,*) 'IOPER  :',IOPER
         WRITE (LUPRI,*) 'IRLX1-4:',IRLX1,IRLX2,IRLX3,IRLX4
         WRITE (LUPRI,*) 'IDOTVEC:',IDOTVEC
         WRITE (LUPRI,*) 'IVEC   :',IVEC

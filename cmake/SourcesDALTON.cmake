@@ -202,6 +202,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/cc_2hyp.F
     DALTON/cc/cc_3hyp.F
     DALTON/cc/cc_4hyp.F
+    DALTON/cc/cc_3util.F
     DALTON/cc/cc_aamat.F
     DALTON/cc/cc_aodens3.F
     DALTON/cc/cc_aofock2.F
@@ -276,6 +277,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/cc_landf2.F
     DALTON/cc/cc_landf3.F
     DALTON/cc/cc_lhtr.F
+    DALTON/cc/cc_lhtr3.F
     DALTON/cc/cc_lhtr_noddy.F
     DALTON/cc/cc_lhtr_rccd.F
     DALTON/cc/cc_lr.F
@@ -285,6 +287,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/cc_mmommo.F
     DALTON/cc/cc_mofcon2.F
     DALTON/cc/cc_mofconr12.F
+    DALTON/cc/cc_molden_nto.F
     DALTON/cc/cc_nuccon.F
     DALTON/cc/cc_opa.F
     DALTON/cc/cc_omega2_rccd.F
@@ -330,7 +333,11 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/cc_wrrsp.F
     DALTON/cc/cc_xetst.F
     DALTON/cc/cc_xieta.F
+    DALTON/cc/cc_xieta3.F
     DALTON/cc/cc_xopa.F
+    DALTON/cc/cc_eom_xopa.F
+    DALTON/cc/ccxopa_eomsetup.F
+    DALTON/cc/cceom_xieta.F
     DALTON/cc/cc_zkjam.F
     DALTON/cc/cccr_aa.F
     DALTON/cc/cccr_setup.F
@@ -402,6 +409,11 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/cc_lanczos_lrinp.F
     DALTON/cc/cc_lanczos_drv.F
     DALTON/cc/cc_lanczos_lrextras.F
+    DALTON/cc/cc_freeze_exci.F
+    DALTON/cc/cc_freeze_exci.F
+    DALTON/cc/cc_freeze_core.F
+    DALTON/cc/cc_freeze_tripletcore.F
+    DALTON/cc/cc_freeze_tripletexci.F
     DALTON/cc/rpa_grad.F
     DALTON/cc/cc_active.F
     DALTON/choles/cc_caa.F
