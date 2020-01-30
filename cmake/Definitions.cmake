@@ -53,17 +53,6 @@ if(ENABLE_64BIT_INTEGERS)
     endif()
 endif()
 
-if(ENABLE_GPU)
-    add_definitions(-DVAR_CUDA)
-    if(ENABLE_CUBLAS)
-        add_definitions(-DVAR_CUBLAS)
-    endif()
-endif()
-
-if(ENABLE_REAL_SP)
-    add_definitions(-DVAR_REAL_SP)
-endif()
-
 if(ENABLE_QCMATRIX)
     add_definitions(-DENABLE_QCMATRIX)
 endif()
