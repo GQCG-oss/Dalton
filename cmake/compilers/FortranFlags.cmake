@@ -13,7 +13,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
             )
     endif()
     set(CMAKE_Fortran_FLAGS_DEBUG   "-Og -g -fbacktrace -fcray-pointer -Wuninitialized")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -Wno-argument-mismatch -Wno-unused-variable -Wno-unused-dummy-argument")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -Wno-argument-mismatch -Wno-unused-variable -Wno-unused-dummy-argument -Wno-maybe-uninitialized")
     set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_STATIC_LINKING)
         set(CMAKE_Fortran_FLAGS
