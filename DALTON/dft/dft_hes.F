@@ -35,40 +35,40 @@ C
 #include "nuclei.h"
 #include "inforb.h"
       CHARACTER*4 KEY
-      LOGICAL FOUND 
+      LOGICAL FOUND
 #include "dftcom.h"
 #include "dftmolhes.h"
 C
       LOGICAL  DFT_ISGGA           ! , DOKAPPA
       EXTERNAL DFT_ISGGA, DFTSTATHES
-C     
+C
       CALL QENTER('DFTMOLHES')
       DOGGA = DFT_ISGGA()
       IF (IPRINT .GE. 5) CALL TITLER('Output from DFTMOLHES','*',103)
-C     
-      KCMO   = 1 
+C
+      KCMO   = 1
       KDMAT  = KCMO   + NCMOT
       KV1MAT = KDMAT  + N2BASX
       KDFTHS = KV1MAT + 3*N2BASX*NUCDEP
       KLAST  = KDFTHS + MXCOOR*MXCOOR
-C     IF (DOKAPPA) THEN 
+C     IF (DOKAPPA) THEN
 C        KTRMAT = KDFTHS + MXCOOR*MXCOOR
-C        KTKAP  = KTRMAT + 3*NUCDEP*N2BASX 
+C        KTKAP  = KTRMAT + 3*NUCDEP*N2BASX
 C        KDKAP  = KTKAP  + N2ORBT
 C        KLAST  = KDKAP  + 3*NVARPT
-C     END IF 
+C     END IF
       LWRK   = LWORK  -  KLAST + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('DFTMOLHES',' ',KLAST,LWORK)
-C 
+C
 C     Calculate V1MAT = Sa * Dmat in AO basis
-C     
+C
       CALL GETV1MAT(0,WORK(KCMO),WORK(KDMAT),WORK(KV1MAT),
      &              WORK(KLAST),LWRK,IPRINT)
 C
 C Calculate kappa derivative matrix for debugging of rho derivative
 C NOTE: not currently checked to work for gga
 C     IF (DOKAPPA) THEN
-C         WRITE(LUPRI,'(/,1X,A)') 'WARNING!! Kappa derivative matrix to', 
+C         WRITE(LUPRI,'(/,1X,A)') 'WARNING!! Kappa derivative matrix to',
 C    &        ' be calculated and added to HESDFT'
 C         CALL GETKAPMAT(LURD,WORK(KCMO),WORK(KTRMAT),WORK(KDKAP),
 C    &                   WORK(KTKAP),WORK(KLAST),LWRK,IPRINT)
@@ -83,7 +83,7 @@ C
       CALL DFTHSSYM(WORK(KDFTHS),MXCOOR)
       CALL ADDHES(WORK(KDFTHS))
 
-CAMT  Add Grimme empirical dispersion correction  
+CAMT  Add Grimme empirical dispersion correction
       IF (DODFTD) THEN
          NDERIV=2 !Note hessians NYI, this will just cause a quit
          CALL DFT_D_DAL_IFC(EDISP,NDERIV,WORK(KLAST),LWRK)
@@ -137,7 +137,7 @@ C
      &     'DFT analytical Hessians do not work with symmetry')
       IF (NASHT.GT.0)CALL QUIT('ERROR: '//
      &     'DFT analytical Hessian not implemented for open-shell DFT')
-C    
+C
       DO ISYM = 1, NSYM
          NISHI  = NISH(ISYM)
          NORBI  = NORB(ISYM)
@@ -147,7 +147,7 @@ C
          DO S = 1, R
             DTRS = D0
             ICENDI = ICEND
-            DO I = 1, NISHI 
+            DO I = 1, NISHI
                DTRS = DTRS + CMO(ICENDI+R)*CMO(ICENDI+S)
                ICENDI = ICENDI + NBASI
             END DO
@@ -157,12 +157,12 @@ C
                DTRS = DTRS + CMO(ICENDI+R)*CMO(ICENDI+S)
                ICENDI = ICENDI + NBASI
             END DO
-            QMAT(R,S) = DTRS 
-            QMAT(S,R) = DTRS 
-         END DO          
-         END DO          
+            QMAT(R,S) = DTRS
+            QMAT(S,R) = DTRS
+         END DO
+         END DO
       END DO
-C     
+C
 C     CONSTRUCT V1MAT = Q * Sa * Dmat
 C
       IF (LWRK.LT.N2BASX) CALL STOPIT('GETV1MAT',' ',LWRK,N2BASX)
@@ -183,7 +183,7 @@ C
          JSTOP = NUCIND
       END IF
       KATOM = 0
-      DO JATOM = JSTRT, JSTOP 
+      DO JATOM = JSTRT, JSTOP
          KATOM = KATOM + 1
          CALL DZERO(TMAT,3*N2BASX)
          CALL ONEDRL(KEY,TMAT(1,1),TMAT(1,2),TMAT(1,3),JATOM,
@@ -199,10 +199,10 @@ C
                CALL OUTPUT(V1MAT(1,I,KATOM),1,NBAST,1,NBAST,
      &                     NBAST,NBAST,1,LUPRI)
             END IF
-         END DO 
+         END DO
       END DO
-      RETURN        
-      END      
+      RETURN
+      END
 C
 C /* Deck dftstathes */
       SUBROUTINE DFTSTATHES(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,RHOA,GRADA,
@@ -254,18 +254,18 @@ C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
       LOGICAL   ACTIVE(NBAST)
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN), WGHT(NBLEN),
-     &          RHOA(NBLEN), GRADA(3,NBLEN), NBLCNT(8), 
+     &          RHOA(NBLEN), GRADA(3,NBLEN), NBLCNT(8),
      &          NBLOCKS(2,LDAIB,8)
-      DIMENSION GRADAT(NBLEN,3) 
-      DIMENSION HESDFT(MXCOOR,MXCOOR) 
+      DIMENSION GRADAT(NBLEN,3)
+      DIMENSION HESDFT(MXCOOR,MXCOOR)
       DIMENSION DMAT(NBAST,NBAST),V1MAT(NBAST,NBAST,3,NUCDEP)
       DIMENSION RHODER(NBLEN,3*NUCDEP), ZETDER(NBLEN,3*NUCDEP),
      &          GDRHOD(NBLEN,3*NUCDEP,3)
       DIMENSION GD1(NBLEN,NBAST), GD2(NBLEN,NBAST), GD3(NBLEN,NBAST),
-     &          GD4(NBLEN,NBAST)     
+     &          GD4(NBLEN,NBAST)
       DIMENSION GAGDT(NBLEN,NBAST,6), GAGDT2(NBLEN,NBAST),
-     &          GAGDT3(NBLEN,NBAST) 
-      DIMENSION TMP1(NBLEN,3*NUCDEP), TMP2(NBLEN,3*NUCDEP), 
+     &          GAGDT3(NBLEN,NBAST)
+      DIMENSION TMP1(NBLEN,3*NUCDEP), TMP2(NBLEN,3*NUCDEP),
      &          VXCT1(NBLEN), VXCT2(NBLEN)
       DIMENSION KACTCOR(NUCDEP), IACTCOR(NBAST,NUCDEP)
       DIMENSION IX2(6), IY2(6), IXY2(9), IXY3(18)
@@ -281,7 +281,7 @@ C
       DIMENSION VXCR(NBLEN), VXCRR(NBLEN), VX(5), DENS(5),
      &          VXCZ(NBLEN), VXCRZ(NBLEN), VXCZZ(NBLEN)
 C
-C     Set Active orbitals 
+C     Set Active orbitals
 C
       CALL DFTHESACT(0,NACTIVE,KACTCOR,IACTCOR,ACTIVE,NBLCNT,NBLOCKS,
      &               LDAIB)
@@ -301,10 +301,10 @@ C     potential
 C
       CALL DFTHESVX(VXCR,VXCRR,VXCZ,VXCRZ,VXCZZ,GRADAT,RHOA,WGHT,NBLEN)
 C
-      IF (DOGGA) THEN 
-         DO I = 1, 3*NUCDEP 
+      IF (DOGGA) THEN
+         DO I = 1, 3*NUCDEP
          DO J = I, 3*NUCDEP
-            TRM = D0 
+            TRM = D0
             DO K = 1, NBLEN
                TRM = TRM + VXCRR(K)*RHODER(K,I)*RHODER(K,J)
      &               + DP5*VXCZZ(K)*ZETDER(K,I)*ZETDER(K,J)
@@ -313,32 +313,32 @@ C
      &                   + VXCZ(K)*(GDRHOD(K,I,1)*GDRHOD(K,J,1)
      &                            + GDRHOD(K,I,2)*GDRHOD(K,J,2)
      &                            + GDRHOD(K,I,3)*GDRHOD(K,J,3))
-            END DO        
+            END DO
             HESDFT(I,J) = HESDFT(I,J) + TRM
-         END DO        
-         END DO           
+         END DO
+         END DO
       ELSE
-         DO I = 1, 3*NUCDEP 
+         DO I = 1, 3*NUCDEP
          DO J = I, 3*NUCDEP
-            TRM = D0 
+            TRM = D0
             DO K = 1, NBLEN
                TRM = TRM + VXCRR(K)*RHODER(K,I)*RHODER(K,J)
-            END DO        
-            HESDFT(I,J) = HESDFT(I,J) + TRM 
-         END DO        
-         END DO           
+            END DO
+            HESDFT(I,J) = HESDFT(I,J) + TRM
+         END DO
+         END DO
       END IF
-C                         
+C
 C     dF/dp . dp2/(dxa.dxb)
-C     dF/dz . dz2/(dxa.dxb) 
+C     dF/dz . dz2/(dxa.dxb)
 C     =====================
 C
 C     GGA
 C
-      IF (DOGGA) THEN 
+      IF (DOGGA) THEN
          DO ISYM = 1, NSYM
 C
-            DO IXA = 1, 3       
+            DO IXA = 1, 3
                IXA1 = IXY2(3*IXA - 2)
                IXA2 = IXY2(3*IXA - 1)
                IXA3 = IXY2(3*IXA)
@@ -353,9 +353,9 @@ C
                END DO
             END DO
 C
-            DO IXA = 1, 3       
-               IA = 0               
-               DO ISHELA = 1, KMAX 
+            DO IXA = 1, 3
+               IA = 0
+               DO ISHELA = 1, KMAX
                DO ICOMPA = 1, KHKT(ISHELA)
                   ISCORA = IPTCNT(3*(NCENT(ISHELA) - 1) + IXA,0,1)
                   IA = IA + 1
@@ -364,12 +364,12 @@ C
                      CALL DZERO(TMP2,NBLEN*3*NUCDEP)
                      DO IXB = 1, 3
                         IB = 0
-                        DO ISHELB = 1, KMAX 
+                        DO ISHELB = 1, KMAX
                         DO ICOMPB = 1, KHKT(ISHELB)
                            ISCORB=IPTCNT(3*(NCENT(ISHELB)-1)+IXB,0,1)
                            IB = IB + 1
                            IF (ACTIVE(IB).AND.ISCORB.GE.ISCORA) THEN
-                              DBA = DMAT(IB,IA) 
+                              DBA = DMAT(IB,IA)
                               CALL DAXPY(NBLEN,DBA,GAO(1,IB,IXB+1),1,
      &                                              TMP1(1,ISCORB),1)
                               CALL DAXPY(NBLEN,DBA,GAGDT(1,IB,IXB),1,
@@ -381,12 +381,12 @@ C
                      DO J = 1, NBLEN
                         VXCT1(J) = VXCZ(J)*GAGDT(J,IA,IXA)
      &                           + VXCR(J)*GAO(J,IA,IXA+1)
-                        VXCT2(J) = VXCZ(J)*GAO(J,IA,IXA+1) 
+                        VXCT2(J) = VXCZ(J)*GAO(J,IA,IXA+1)
                      END DO
                      DO I = ISCORA, 3*NUCDEP
-                        TRM = D0 
-                        DO J = 1, NBLEN 
-                           TRM = TRM + VXCT1(J)*TMP1(J,I) 
+                        TRM = D0
+                        DO J = 1, NBLEN
+                           TRM = TRM + VXCT1(J)*TMP1(J,I)
      &                               + VXCT2(J)*TMP2(J,I)
                         END DO
                         HESDFT(ISCORA,I) = HESDFT(ISCORA,I) + D2*TRM
@@ -400,7 +400,7 @@ C
 C     LDA
 C
       ELSE
-         DO ISYM = 1, NSYM 
+         DO ISYM = 1, NSYM
             DO IXA = 1, 3
                IA = 0
                DO ISHELA = 1, KMAX
@@ -414,9 +414,9 @@ C
                         DO ISHELB = 1, KMAX
                         DO ICOMPB = 1, KHKT(ISHELB)
                            ISCORB = IPTCNT(3*(NCENT(ISHELB)-1)+IXB,0,1)
-                           IB = IB + 1 
+                           IB = IB + 1
                            IF (ACTIVE(IB).AND.ISCORB.GE.ISCORA) THEN
-                              DBA = DMAT(IB,IA) 
+                              DBA = DMAT(IB,IA)
                               CALL DAXPY(NBLEN,DBA,GAO(1,IB,IXB+1),1,
      &                                              TMP1(1,ISCORB),1)
                            END IF
@@ -427,7 +427,7 @@ C
                         VXCT1(J) = VXCR(J)*GAO(J,IA,IXA+1)
                      END DO
                      DO I = ISCORA, 3*NUCDEP
-                        HESDFT(ISCORA,I) = HESDFT(ISCORA,I) 
+                        HESDFT(ISCORA,I) = HESDFT(ISCORA,I)
      &                         + D2*DDOT(NBLEN,VXCT1,1,TMP1(1,I),1)
                      END DO
                   END IF
@@ -437,12 +437,12 @@ C
          END DO
       END IF
 C
-C Add GGA: 3rd derivative GAO contribution  
+C Add GGA: 3rd derivative GAO contribution
 C     LDA: 2nd derivative GAO contribution
-C 
+C
 C     GGA
 C
-      IF (DOGGA) THEN 
+      IF (DOGGA) THEN
          DO ISYM = 1, NSYM
             DO IA = 1, NBAST
             IF (ACTIVE(IA)) THEN
@@ -454,7 +454,7 @@ C
                   GAGDT3(I,IA) = VXCZ(I)*GD1(I,IA)
                END DO
             END IF
-            END DO 
+            END DO
             DO IXY = 1, 6
                NXY0 = IXY + 4
                NXY1 = IXY3(3*IXY - 2)
@@ -518,7 +518,7 @@ C
 C     Symmetrize Hessian
 C
       DO J = 1, NDIM
-         DO I = J+1, NDIM 
+         DO I = J+1, NDIM
             HESDFT(I,J) = HESDFT(J,I)
          END DO
       END DO
@@ -594,36 +594,36 @@ C
          CALL HEADER('DFT FCD Fock derivative matrix (z direction)',-1)
          CALL OUTPUT(FCD(1,3),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
          CALL HEADER('DFT FD MO basis (x direction)',-1)
-         CALL OUTPUT(FDFTD(1,1),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)  
+         CALL OUTPUT(FDFTD(1,1),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
          CALL HEADER('DFT FD MO basis (y direction)',-1)
-         CALL OUTPUT(FDFTD(1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)  
+         CALL OUTPUT(FDFTD(1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
          CALL HEADER('DFT FD MO basis (z direction)',-1)
-         CALL OUTPUT(FDFTD(1,3),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)  
+         CALL OUTPUT(FDFTD(1,3),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
-C     
+C
       RETURN
-      END  
-C    
+      END
+C
 C /* Deck dftksd */
       SUBROUTINE DFTKSD(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,RHOA,GRADA,
      &                  DST,VFA,XCPOT,COORD,WGHT,DATMAT)
 C
 C     This subroutine calculates the part of the geometrical derivatives
-C     of the Kohn-Sham matrix, needed for molecular hessians. 
-C        
+C     of the Kohn-Sham matrix, needed for molecular hessians.
+C
 C     O. B. Lutnaes and D. Wilson Jan 2004
 C     tuh Sep 2004
-C    
+C
 C     DATMAT(KDFCD) for static contributions to molecular hessians,
 C                        that is, contribution to the derivative of the
 C                        generalized fock matrix. Reorthonormalization
 C                        contributions are calculated elsewhere
-C                        (in ABARHS-ABATR1). 
-C        
+C                        (in ABARHS-ABATR1).
+C
 C     DATMAT(KDFTFD) remaining term for total derivative fock matrix
 C                        for calculation of diffferentiated electronic
 C                        gradients (needed for response calculation).
-C    
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -665,7 +665,7 @@ C
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, DP5 = 0.5D0)
       LOGICAL ACTIVE(NBAST)
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN), WGHT(NBLEN),
-     &          RHOA(NBLEN), GRADA(3,NBLEN), NBLCNT(8), 
+     &          RHOA(NBLEN), GRADA(3,NBLEN), NBLCNT(8),
      &          NBLOCKS(2,LDAIB,8)
       DIMENSION DMAT(NBAST,NBAST), V1MAT(NBAST,NBAST,3), GRADAT(NBLEN,3)
       DIMENSION DFTFCD(NBAST,NBAST,3), DFTFDX(NBAST,NBAST,3)
@@ -675,7 +675,7 @@ C
       DIMENSION GMP1(NBLEN), GMP2(NBLEN), GMP3(NBLEN), GMP4(NBLEN)
       DIMENSION GD1(NBLEN,NBAST), GD2(NBLEN,NBAST), GD3(NBLEN,NBAST),
      &          GD4(NBLEN,NBAST)
-      DIMENSION VXCR(NBLEN), VXCRR(NBLEN), 
+      DIMENSION VXCR(NBLEN), VXCRR(NBLEN),
      &          VXCZ(NBLEN), VXCRZ(NBLEN), VXCZZ(NBLEN)
       DIMENSION KACTCOR(NUCDEP), IACTCOR(NBAST,NUCDEP), IXY2(9)
       DATA IXY2 / 5, 6, 7, 6, 8, 9, 7, 9, 10/
@@ -691,20 +691,15 @@ C
       DO J = 1, NBLEN
          GRADAT(J,I) = GRADA(I,J)
       END DO
-      END DO     
+      END DO
 C
       CALL DFTHESRHO(KACTCOR,IACTCOR,RHODER,ZETDER,GDRHOD,
      &               GD1,GD2,GD3,GD4,NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
      &               DMAT,V1MAT(1,1,1-3*(IATOM-1)),GRADAT)
 C
-C     potential 
-C    
-#ifdef MOD_XCFUN
-      CALL xcfun_HESVX(VXCR,VXCRR,VXCZ,VXCRZ,VXCZZ,GRADAT,RHOA,WGHT,
-     &     NBLEN,DOGGA)
-#else
+C     potential
+C
       CALL DFTHESVX(VXCR,VXCRR,VXCZ,VXCRZ,VXCZZ,GRADAT,RHOA,WGHT,NBLEN)
-#endif
 C
 C     GGA
 C
@@ -719,17 +714,17 @@ C
                TMP2(I) = FAC*GRADAT(I,1) + GDRHOD(I,ISCORN,1)*VXCZ(I)
                TMP3(I) = FAC*GRADAT(I,2) + GDRHOD(I,ISCORN,2)*VXCZ(I)
                TMP4(I) = FAC*GRADAT(I,3) + GDRHOD(I,ISCORN,3)*VXCZ(I)
-            END DO            
-            DO IBLA = 1, NBLCNT(ISYM) 
+            END DO
+            DO IBLA = 1, NBLCNT(ISYM)
             DO IA = NBLOCKS(1,IBLA,ISYM), NBLOCKS(2,IBLA,ISYM)
-               DO I = 1, NBLEN 
+               DO I = 1, NBLEN
                   GMP1(I) = GAO(I,IA,1)*TMP1(I)
      &                    + GAO(I,IA,2)*TMP2(I)
      &                    + GAO(I,IA,3)*TMP3(I)
      &                    + GAO(I,IA,4)*TMP4(I)
                   GMP2(I) = GAO(I,IA,1)*TMP2(I)
                   GMP3(I) = GAO(I,IA,1)*TMP3(I)
-                  GMP4(I) = GAO(I,IA,1)*TMP4(I) 
+                  GMP4(I) = GAO(I,IA,1)*TMP4(I)
                END DO
                DO IBLB = 1, NBLCNT(ISYM)
                DO IB = NBLOCKS(1,IBLB,ISYM), NBLOCKS(2,IBLB,ISYM)
@@ -742,13 +737,13 @@ C
      &                            + GMP4(I)*GAO(I,IB,4)
                      END DO
                      DFTFDX(IA,IB,IX) = DFTFDX(IA,IB,IX) + TRM
-                  END IF      
-               END DO         
+                  END IF
                END DO
-            END DO         
+               END DO
+            END DO
             END DO
          END DO
-C     
+C
          DO I = 1,NBLEN
             TMP2(I) = VXCZ(I)*GRADAT(I,1)
             TMP3(I) = VXCZ(I)*GRADAT(I,2)
@@ -794,21 +789,21 @@ C
             ISCORN = IPTCNT(3*(IATOM - 1) + IX,0,1)
             DO I = 1, NBLEN
                TMP1(I) = RHODER(I,ISCORN)*VXCRR(I)
-            END DO            
-            DO IBLA = 1, NBLCNT(ISYM) 
+            END DO
+            DO IBLA = 1, NBLCNT(ISYM)
             DO IA = NBLOCKS(1,IBLA,ISYM), NBLOCKS(2,IBLA,ISYM)
-               DO I = 1, NBLEN 
+               DO I = 1, NBLEN
                   GMP1(I) = GAO(I,IA,1)*TMP1(I)
                END DO
                DO IBLB = 1, NBLCNT(ISYM)
                DO IB = NBLOCKS(1,IBLB,ISYM), NBLOCKS(2,IBLB,ISYM)
                   IF (IB.GE.IA) THEN
-                     DFTFDX(IA,IB,IX) = DFTFDX(IA,IB,IX) + 
+                     DFTFDX(IA,IB,IX) = DFTFDX(IA,IB,IX) +
      &                    DDOT(NBLEN,GMP1,1,GAO(1,IB,1),1)
-                  END IF      
-               END DO         
+                  END IF
                END DO
-            END DO         
+               END DO
+            END DO
             END DO
 C
             DO LAC = 1, KACTCOR(IATOM)
@@ -818,16 +813,16 @@ C
                END DO
                DO IBLB = 1, NBLCNT(ISYM)
                DO IB = NBLOCKS(1,IBLB,ISYM), NBLOCKS(2,IBLB,ISYM)
-                  DFTFCD(IA,IB,IX) = DFTFCD(IA,IB,IX) 
+                  DFTFCD(IA,IB,IX) = DFTFCD(IA,IB,IX)
      &                 - D2*DDOT(NBLEN,GMP1,1,GAO(1,IB,1),1)
                END DO
                END DO
             END DO
          END DO
          END DO
-      END IF      
-      RETURN 
-      END 
+      END IF
+      RETURN
+      END
 C
 C /* Deck DFTFDSYM */
       SUBROUTINE DFTFDSYM(DFTFCD,DFTFDX,NBAST)
@@ -836,22 +831,22 @@ C /* Deck DFTFDSYM */
       PARAMETER (DP5 = 0.5D0)
       DIMENSION DFTFCD(NBAST,NBAST,3), DFTFDX(NBAST,NBAST,3)
 C
-      DO IX = 1, 3         
-         DO IB = 1, NBAST            
-         DO IA = 1, IB - 1 
+      DO IX = 1, 3
+         DO IB = 1, NBAST
+         DO IA = 1, IB - 1
             AVE = DP5*(DFTFCD(IA,IB,IX) + DFTFCD(IB,IA,IX))
-            DFTFCD(IA,IB,IX) = AVE 
-            DFTFCD(IB,IA,IX) = AVE 
+            DFTFCD(IA,IB,IX) = AVE
+            DFTFCD(IB,IA,IX) = AVE
          END DO
          END DO
-         DO IB = 1, NBAST            
-         DO IA = IB + 1, NBAST      
+         DO IB = 1, NBAST
+         DO IA = IB + 1, NBAST
             DFTFDX(IA,IB,IX) = DFTFDX(IB,IA,IX)
-         END DO      
-         END DO 
+         END DO
+         END DO
       END DO
       RETURN
-      END    
+      END
 C
 C /* Deck dfthesact */
       SUBROUTINE DFTHESACT(KATOM,NACTIV,KACTCOR,IACTCOR,ACTIVE,
@@ -866,13 +861,13 @@ C
 #include "inforb.h"
       LOGICAL   ACTIVE(NBAST)
       DIMENSION NBLCNT(8), NBLOCKS(2,LDAIB,8)
-      DIMENSION KACTCOR(NUCDEP), IACTCOR(NBAST,NUCDEP) 
+      DIMENSION KACTCOR(NUCDEP), IACTCOR(NBAST,NUCDEP)
 #include "dftcom.h"
 #include "symmet.h"
 #include "shells.h"
 #include "dftmolhes.h"
 C
-C     Set active orbitals 
+C     Set active orbitals
 C
       DO I = 1, NBAST
          ACTIVE(I) = .FALSE.
@@ -888,7 +883,7 @@ C
 C     Set up array of active orbitals centered on atoms
 C
       NACTIV = 0
-      CALL IZERO(KACTCOR,NUCDEP) 
+      CALL IZERO(KACTCOR,NUCDEP)
       DO LATOM = 1, NUCDEP
       IF (KATOM.EQ.0 .OR. KATOM.EQ.LATOM) THEN
          IA = 0
@@ -928,22 +923,22 @@ C
       DIMENSION RHODER(NBLEN,3*NUCDEP), ZETDER(NBLEN,3*NUCDEP),
      &          GDRHOD(NBLEN,3*NUCDEP,3)
       DIMENSION GD1(NBLEN,NBAST), GD2(NBLEN,NBAST), GD3(NBLEN,NBAST),
-     &          GD4(NBLEN,NBAST)     
-      DIMENSION TMP1(NBLEN,3*NUCDEP), TMP2(NBLEN,3*NUCDEP) 
-      DIMENSION IXY2(9), IDONEB(3*NUCDEP) 
-      DIMENSION KACTCOR(NUCDEP), IACTCOR(NBAST,NUCDEP) 
+     &          GD4(NBLEN,NBAST)
+      DIMENSION TMP1(NBLEN,3*NUCDEP), TMP2(NBLEN,3*NUCDEP)
+      DIMENSION IXY2(9), IDONEB(3*NUCDEP)
+      DIMENSION KACTCOR(NUCDEP), IACTCOR(NBAST,NUCDEP)
       DATA IXY2 /5, 6, 7, 6, 8, 9, 7, 9, 10/
 #include "dftcom.h"
 #include "symmet.h"
 #include "shells.h"
 #include "dftmolhes.h"
 C
-C     GD = DMAT*GAO  
+C     GD = DMAT*GAO
 C     =============
 C
 C     GGA
 C
-      IF (DOGGA) THEN 
+      IF (DOGGA) THEN
          DO ISYM = 1, NSYM
             CALL DZERO(GD1,NBLEN*NBAST)
             CALL DZERO(GD2,NBLEN*NBAST)
@@ -970,7 +965,7 @@ C
 C
 C     LDA
 C
-      ELSE 
+      ELSE
          DO ISYM = 1, NSYM
             CALL DZERO(GD1,NBLEN*NBAST)
             DO IBLA = 1, NBLCNT(ISYM)
@@ -998,11 +993,11 @@ C
 C
 C     GGA
 C
-      IF (DOGGA) THEN 
+      IF (DOGGA) THEN
          CALL DZERO(GDRHOD,9*NBLEN*NUCDEP)
          DO ISYM = 1, NSYM
             DO LATOM = 1, NUCDEP
-            IF (KACTCOR(LATOM).GT.0) THEN 
+            IF (KACTCOR(LATOM).GT.0) THEN
                DO IXA = 1, 3
                   ISCORN = IPTCNT(3*(LATOM - 1) + IXA,0,1)
                   IXA1 = IXY2(3*IXA - 2)
@@ -1010,22 +1005,22 @@ C
                   IXA3 = IXY2(3*IXA)
                   DO J = 1, KACTCOR(LATOM)
                      IA = IACTCOR(J,LATOM)
-                     DO I = 1, NBLEN 
+                     DO I = 1, NBLEN
                        GA = GAO(I,IA,IXA+1)
-                       RHODER(I,ISCORN)   = RHODER(I,ISCORN) 
+                       RHODER(I,ISCORN)   = RHODER(I,ISCORN)
      &                                    - GD1(I,IA)*GA
                        GDRHOD(I,ISCORN,1) = GDRHOD(I,ISCORN,1)
-     &                                    - GD1(I,IA)*GAO(I,IA,IXA1) 
+     &                                    - GD1(I,IA)*GAO(I,IA,IXA1)
      &                                    - GD2(I,IA)*GA
                        GDRHOD(I,ISCORN,2) = GDRHOD(I,ISCORN,2)
-     &                                    - GD1(I,IA)*GAO(I,IA,IXA2) 
+     &                                    - GD1(I,IA)*GAO(I,IA,IXA2)
      &                                    - GD3(I,IA)*GA
                        GDRHOD(I,ISCORN,3) = GDRHOD(I,ISCORN,3)
-     &                                    - GD1(I,IA)*GAO(I,IA,IXA3) 
+     &                                    - GD1(I,IA)*GAO(I,IA,IXA3)
      &                                    - GD4(I,IA)*GA
                      END DO
                   END DO
-               END DO 
+               END DO
             END IF
             END DO
          END DO
@@ -1035,7 +1030,7 @@ C
       ELSE
          DO ISYM = 1, NSYM
             DO LATOM = 1, NUCDEP
-            IF (KACTCOR(LATOM).GT.0) THEN 
+            IF (KACTCOR(LATOM).GT.0) THEN
                DO IXA = 1, 3
                   ISCORN = IPTCNT(3*(LATOM - 1) + IXA,0,1)
                   DO J = 1, KACTCOR(LATOM)
@@ -1051,27 +1046,27 @@ C
          END DO
       END IF
 C
-C     Add orbital connection matrix contribution 
+C     Add orbital connection matrix contribution
 C     ==========================================
 C
       DO LATOM = 1, NUCDEP
       DO IX = 1, 3
-         ISCORN = IPTCNT(3*(LATOM - 1) + IX,0,1) 
+         ISCORN = IPTCNT(3*(LATOM - 1) + IX,0,1)
          CALL DSCAL(NBLEN,D2,RHODER(1,ISCORN),1)
          IF (DOGGA) THEN
             CALL DSCAL(NBLEN,D2,GDRHOD(1,ISCORN,1),1)
             CALL DSCAL(NBLEN,D2,GDRHOD(1,ISCORN,2),1)
             CALL DSCAL(NBLEN,D2,GDRHOD(1,ISCORN,3),1)
          END IF
-      END DO          
-      END DO          
+      END DO
+      END DO
 C
 C     GGA
 C
       IF (DOGGA) THEN
          DO ISYM = 1, NSYM
          DO LATOM = 1, NUCDEP
-            IF (KACTCOR(LATOM).GT.0) THEN 
+            IF (KACTCOR(LATOM).GT.0) THEN
                DO IX = 1, 3
                   ISCORN = IPTCNT(3*(LATOM - 1) + IX,0,1)
                   DO IBLA = 1, NBLCNT(ISYM)
@@ -1099,7 +1094,7 @@ C
                               END IF
                            END DO
                         END DO
-                        DO I = 1, NBLEN 
+                        DO I = 1, NBLEN
                            TMP2(I,ISCORN)=TMP2(I,ISCORN)+TMP1(I,ISCORN)
                            RHODER(I,ISCORN)   = RHODER(I,ISCORN)
      &                                 + TMP1(I,ISCORN)*GAO(I,IA,1)
@@ -1124,12 +1119,12 @@ C
             END DO
          END DO
 C
-C     LDA 
+C     LDA
 C
       ELSE
          DO ISYM = 1, NSYM
          DO LATOM = 1 , NUCDEP
-            IF (KACTCOR(LATOM).GT.0) THEN  
+            IF (KACTCOR(LATOM).GT.0) THEN
                DO IX = 1, 3
                   ISCORN = IPTCNT(3*(LATOM - 1) + IX,0,1)
                   DO IBLA = 1, NBLCNT(ISYM)
@@ -1142,11 +1137,11 @@ C
                            IENDB = NBLOCKS(2,IBLB,ISYM)
                            DO IB = ISTRB, IENDB
                               VBA = V1MAT(IB,IA,IX,LATOM)
-                              IF (IDONEB(ISCORN).EQ.0) THEN 
+                              IF (IDONEB(ISCORN).EQ.0) THEN
                                  IDONEB(ISCORN) = 1
-                                 DO I = 1, NBLEN 
+                                 DO I = 1, NBLEN
                                     TMP1(I,ISCORN) = VBA*GAO(I,IB,1)
-                                 END DO 
+                                 END DO
                               ELSE
                                  CALL DAXPY(NBLEN,VBA,GAO(1,IB,1),1,
      &                                                TMP1(1,ISCORN),1)
@@ -1160,7 +1155,7 @@ C
                      END DO
                   END DO
                END DO
-            END IF 
+            END IF
          END DO
          END DO
       END IF
@@ -1180,10 +1175,10 @@ C
 #include "nuclei.h"
 #include "inforb.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
-      DIMENSION WGHT(NBLEN), RHOA(NBLEN), GRADAT(NBLEN,3) 
-      DIMENSION VXCR(NBLEN), VXCRR(NBLEN), 
+      DIMENSION WGHT(NBLEN), RHOA(NBLEN), GRADAT(NBLEN,3)
+      DIMENSION VXCR(NBLEN), VXCRR(NBLEN),
      &          VXCZ(NBLEN), VXCRZ(NBLEN), VXCZZ(NBLEN)
-      DIMENSION VX(9), DENS(5) 
+      DIMENSION VX(9), DENS(5)
 #include "dftcom.h"
 #include "energy.h"
 #include "symmet.h"
@@ -1220,15 +1215,15 @@ C
       END IF
       RETURN
       END
-C    
+C
 C /* Deck getkapmat */
       SUBROUTINE GETKAPMAT(LURD,CMO,TRMAT,DKAPPA,TOTKAP,
      &                       WORK,LWRK,IPRINT)
-C           
-C     Construct KAPMAT (derivative of orbital variational param matrix) 
+C
+C     Construct KAPMAT (derivative of orbital variational param matrix)
 C     Output matrices are in AO-basis.
 C     Only needed for debugging purposes.
-C     
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1236,15 +1231,15 @@ C
 #include "inforb.h"
       DIMENSION TRMAT(NBAST,NBAST,NUCDEP*3), TOTKAP(NORBT,NORBT),
      &          CMO(NCMOT), DKAPPA(NVARPT), WORK(LWRK)
-#include "inftap.h" 
-#include "abainf.h" 
+#include "inftap.h"
+#include "abainf.h"
 #include "gdvec.h"
-#include "infvar.h" 
+#include "infvar.h"
 #include "iratdef.h"
 #include "inflin.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from GETKAP','*',103)
-C    
+C
 C  Read derivative kappa matrix and transform to AO-basis
 C
       CALL DZERO(TRMAT,N2BASX*3*NUCDEP)
@@ -1255,7 +1250,7 @@ C
          CALL READDX(LURD,IREC,IRAT*NVARPT,DKAPPA)
 C
 C  Construct matrix kappa^a(NORBT,NORBT)
-C           
+C
          DO I = 1, NWOPT
             K = JWOP(1,I)
             L = JWOP(2,I)
@@ -1291,7 +1286,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-C defined parallel calculation types  
+C defined parallel calculation types
 #include "iprtyp.h"
 C
       IF (MYNUM .EQ. MASTER) THEN
@@ -1330,14 +1325,14 @@ C
 #include "mpif.h"
       LOGICAL  DFT_ISGGA
       EXTERNAL DFT_ISGGA, DFTSTATHES
-C     
-      KCMO   = 1 
+C
+      KCMO   = 1
       KDMAT  = KCMO   + NCMOT
       KV1MAT = KDMAT  + N2BASX
       KDFTHS = KV1MAT + 3*N2BASX*NUCDEP
       KLAST  = KDFTHS + MXCOOR*MXCOOR
       LWRK   = LWORK  -  KLAST + 1
-      IF (KLAST .GT. LWORK) CALL 
+      IF (KLAST .GT. LWORK) CALL
      &     STOPIT('DFT_HESSTAT_SLAVE',' ',KLAST,LWORK)
 C
       CALL DFTINTBCAST
@@ -1380,7 +1375,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-C defined parallel calculation types  
+C defined parallel calculation types
 #include "iprtyp.h"
 C
       LOGICAL DFT_ISGGA
