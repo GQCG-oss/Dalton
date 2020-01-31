@@ -16,8 +16,8 @@ import datetime
 sys.path.append('cmake')
 from argparse import ArgumentParser
 
-if sys.version < '2.4':
-    print('requires python version >= 2.4')
+if sys.version_info.major == 2 and sys.version_info.minor < 7:
+    print('requires python version >= 2.7')
     sys.exit(1)
 
 root_directory = os.path.dirname(os.path.realpath(__file__))
@@ -27,14 +27,14 @@ default_path = os.path.join(root_directory, 'build')
 def parse_input():
 
     parser = ArgumentParser(description="setup build configurations")
-    
+
     parser.add_argument('builddir', nargs='?',
             action='store',
             default=default_path,
             help='build directory [default: %(default)s]',
             metavar='build path')
 
-    
+
     group = parser.add_argument_group('basic options')
     group.add_argument('--fc',
             action='store',
@@ -61,18 +61,6 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable 64bit integers [default: %(default)s]')
-    group.add_argument('--gpu',
-            action='store_true',
-            default=False,
-            help='enable GPU acceleration [default: %(default)s]')
-    group.add_argument('--cublas',
-            action='store_true',
-            default=False,
-            help='enable the CUBLAS GPU library [default: %(default)s]')
-    group.add_argument('--real-sp',
-            action='store_true',
-            default=False,
-            help='enable single precision arithmetic for certain parts of LSDalton [default: %(default)s]')
     group.add_argument('--prefix',
             action='store',
             default=None,
@@ -87,7 +75,7 @@ def parse_input():
             default='cmake',
             help='set the cmake command [default: cmake; e.g. --cmake cmake28]',
             metavar='STRING')
-    
+
     group = parser.add_argument_group('parallelization')
     group.add_argument('--mpi',
             action='store_true',
@@ -97,11 +85,7 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable SGI MPT [default: %(default)s]')
-    group.add_argument('--omp',
-            action='store_true',
-            default=False,
-            help='enable OpenMP [default: %(default)s]')
-    
+
     group = parser.add_argument_group('math libraries')
     group.add_argument('--mkl',
             nargs='?',
@@ -129,21 +113,7 @@ def parse_input():
             action='store_true',
             default=False,
             help='use cray wrappers for BLAS/LAPACK and MPI which disables math detection and builtin math implementation [default: %(default)s]')
-    group.add_argument('--csr',
-            action='store_true',
-            default=False,
-            help='build using MKL compressed sparse row [default: %(default)s]')
-    group.add_argument('--scalapack',
-            action='store_true',
-            default=False,
-            help='build using SCALAPACK [default: %(default)s]')
-    group.add_argument('--blacs',
-            nargs='?',
-            action='store',
-            choices=('intelmpi', 'openmpi', 'sgimpt'),
-            default='intelmpi',
-            help='specify the BLACS implementation; only used in combination with --scalapack [default: %(default)s]')
-    
+
     group = parser.add_argument_group('advanced options')
     group.add_argument('--check',
             action='store_true',
@@ -162,9 +132,9 @@ def parse_input():
             dest='define',
             default=[],
             help='forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1); \
-                    you can also forward CPP defintions all the way to the program \
-                    (example: -D CPP="-DDEBUG")',
-                    metavar='STRING')
+                  you can also forward CPP defintions all the way to the program \
+                  (example: -D CPP="-DDEBUG")',
+                  metavar='STRING')
     group.add_argument('--host',
             action='store',
             default=None,
@@ -175,10 +145,6 @@ def parse_input():
             default=None,
             help='set the cmake generator [default: %(default)s]',
             metavar='STRING')
-    group.add_argument('--timings',
-            action='store_true',
-            default=False,
-            help='build using timings [default: %(default)s]')
     group.add_argument('--driver',
             choices=['bash', 'python'],
             default='bash',
@@ -201,7 +167,7 @@ def parse_input():
             default=None,
             help='extra C++ flags [default: %(default)s]',
             metavar='STRING')
-    
+
     return parser.parse_args()
 
 
@@ -246,16 +212,8 @@ def gen_cmake_command(args):
 
     command += ' -DENABLE_MPI=%s'            % translate_cmake(args.mpi)
     command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
-    command += ' -DENABLE_OPENMP=%s'            % translate_cmake(args.omp)
     command += ' -DENABLE_64BIT_INTEGERS=%s' % translate_cmake(args.int64)
-    command += ' -DENABLE_GPU=%s'            % translate_cmake(args.gpu)
-    command += ' -DENABLE_CUBLAS=%s'         % translate_cmake(args.cublas)
-    command += ' -DENABLE_REAL_SP=%s'        % translate_cmake(args.real_sp)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
-
-    command += ' -DENABLE_SCALAPACK=%s'      % translate_cmake(args.scalapack)
-    if args.scalapack:
-        command += ' -DBLACS_IMPLEMENTATION=%s' % args.blacs
 
     if args.blas == 'builtin':
         command += ' -DENABLE_BUILTIN_BLAS=ON'
@@ -291,9 +249,6 @@ def gen_cmake_command(args):
         command += ' -DENABLE_CRAY_WRAPPERS=ON'
         command += ' -DENABLE_AUTO_BLAS=OFF'
         command += ' -DENABLE_AUTO_LAPACK=OFF'
-
-    if args.gpu:
-        command += ' -DENABLE_CUDA=ON'
 
     if args.mkl != 'none':
         if args.mkl == None:
@@ -378,16 +333,16 @@ def run_cmake(command, build_path):
             shell=True,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
-    s = str(p.communicate()[0])
+    s = p.communicate()[0]
     # print cmake output to screen
-    print(s)
+    print(s.decode('utf-8'))
     # write cmake output to file
     f = open('setup_cmake_output', 'w')
-    f.write(s)
+    f.write(s.decode('utf-8'))
     f.close()
     # change directory and return
     os.chdir(topdir)
-    return s
+    return s.decode('utf-8')
 
 
 def main(argv):

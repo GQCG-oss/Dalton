@@ -27,10 +27,6 @@ set(CMAKE_MODULE_PATH
     )
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                           OFF)
-option(ENABLE_GPU            "Enable GPU acceleration"                          OFF)
-option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     OFF)
-option(ENABLE_CUBLAS         "Enable the CUBLAS GPU library"                    OFF)
-option(ENABLE_COLLAPSE       "Enable COLLAPSE clause for reorderings"           OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                              OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                             OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"                       OFF)
@@ -39,7 +35,6 @@ option(ENABLE_GEN1INT        "Enable Gen1Int library"                           
 option(ENABLE_PELIB          "Enable Polarizable Embedding (PE) library"        ON)
 option(ENABLE_QFITLIB        "Enable charge fitting library (QFITLIB)"          ON)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
-option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          OFF)
@@ -53,7 +48,6 @@ option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 option(ENABLE_LARGE_TEST     "Enable Large-scale (long) test cases"             OFF)
-option(ENABLE_DEVELOPER      "Enable Developer test cases and features"         OFF)
 option(ENABLE_PYTHON         "Enable Python driver script"                      OFF)
 
 set(EXTERNAL_LIBS)
@@ -93,19 +87,6 @@ endif()
 set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
-
-if(ENABLE_GPU)
-    message(STATUS "Enabling GPU acceleration (OpenACC/CUDA).")
-    message(STATUS "If your compiler does not support OpenACC, this *will* fail.")
-    if(NOT ENABLE_CRAY_WRAPPERS AND NOT ENABLE_CUBLAS)
-        set(ENABLE_GPU OFF CACHE BOOL "Enable GPU acceleration" FORCE)
-        set(ENABLE_OPENACC OFF CACHE BOOL "Enable OpenACC GPU acceleration" FORCE)
-        set(ENABLE_CUDA OFF CACHE BOOL "Enable CUDA GPU acceleration" FORCE)
-        message(STATUS "No GPU math library found, so GPU acceleration is disabled!")
-        message(STATUS "GPU acceleration currently only works in combination with:")
-        message(STATUS "'--cray' (Libsci_acc) OR '--cublas' (CUBLAS)")
-    endif()
-endif()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/DALTON/include
