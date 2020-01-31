@@ -2709,9 +2709,6 @@ C
          else
 #endif
             call dftsetfunc(functional_line, inperr)
-#ifdef MOD_XCFUN
-            call xcfun_select(functional_line)
-#endif
 #ifdef ENABLE_XCINT
          end if
 #endif

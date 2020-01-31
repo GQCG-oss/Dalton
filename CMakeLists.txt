@@ -40,7 +40,6 @@ option(ENABLE_PELIB          "Enable Polarizable Embedding (PE) library"        
 option(ENABLE_QFITLIB        "Enable charge fitting library (QFITLIB)"          ON)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
-option(ENABLE_XCFUN          "Enable XCFUN"                                     ON)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          OFF)

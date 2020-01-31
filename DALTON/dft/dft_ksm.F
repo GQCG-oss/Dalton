@@ -31,12 +31,8 @@ C
       EXTERNAL DFTKSMGGA,DFTKSMLDA, DFTKSMHES
       LOGICAL DOGGA, DFT_ISGGA
       EXTERNAL DFT_ISGGA
-#ifdef MOD_XCFUN
-      external xcfun_KSMLDA
-      external xcfun_KSMGGA
-#endif
       COMMON /DKSMPRIV/ ENERGY_DFTKSM
-C      
+C
       CALL QENTER('DFTKSMb')
 C
       IF (NODTOT.gt.0) CALL KICK_KSM_SLAVES_ALIVE(NBAST,DMAT,IPRFCK)
@@ -48,25 +44,15 @@ CAMT If explicit v_xc use DFTKSMHES
          CALL DFTINT(DMAT,1,1,.FALSE.,WORK,LWORK,
      &               DFTKSMHES,FKSM,ELE)
         ELSE
-#ifdef MOD_XCFUN
-         CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
-     &               xcfun_KSMGGA,FKSM,ELE)
-#else
          CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
      &               DFTKSMGGA,FKSM,ELE)
-#endif
         ENDIF
       ELSE
          DO I = 1, NBAST
             FKSM(I,I) = FKSM(I,I)*2.0D0
          END DO
-#ifdef MOD_XCFUN
-         CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
-     &               xcfun_KSMLDA,FKSM,ELE)
-#else
          CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
      &               DFTKSMLDA,FKSM,ELE)
-#endif
 C
       END IF
       IF (NODTOT.gt.0) CALL KSMCOLLECT(FKSM,ENERGY_DFTKSM,WORK,LWORK)
@@ -279,7 +265,7 @@ c     ================================================================
 c     DISTLDAI AND DISTGGAI are matrix element distribution routines
 c     using inline versions of the loops. This make sense for very fast
 c     compilers and slow BLAS routines.
-c     
+c
 c     DISTRLDAI - helper subroutine to distribute given Omega with
 c     given set of rho-dependent coefficients.
 c
@@ -299,7 +285,7 @@ c
 c
       DIMENSION TMP(NBLEN)
 c
-      DO ISYM = 1, NSYM         
+      DO ISYM = 1, NSYM
          DO JBL = 1, NBLCNT(ISYM)
             DO J = NBLOCKS(1,JBL,ISYM), NBLOCKS(2,JBL,ISYM)
                DO K = IBLSTART, IBLEND
@@ -318,7 +304,7 @@ c
       END DO
       RETURN
       END
-c     
+c
 c     DISTGGAI - helper subroutine to distribute given Omega with
 c     given set of rho and grad-dependent coefficients.
 c
@@ -365,7 +351,7 @@ c     DISTLDAB AND DISTGGAB are matrix element distribution routines
 c     using BLAS routines for the kernel operations. This make sense for
 c     hardware-optimized BLAS routines only that are able to compensate
 c     for the call overhead.
-c     
+c
       SUBROUTINE DISTLDAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
      &                    COEF,GAOS,EXCMAT)
 c
@@ -383,7 +369,7 @@ c
       DIMENSION TMP(NBLEN,NBAST)
 c
       NK=IBLEND-IBLSTART+1
-      DO ISYM = 1, NSYM         
+      DO ISYM = 1, NSYM
          DO JBL = 1, NBLCNT(ISYM)
             DO J = NBLOCKS(1,JBL,ISYM), NBLOCKS(2,JBL,ISYM)
                DO K = IBLSTART, IBLEND
@@ -464,7 +450,7 @@ c
       RETURN
       END
 
-c     
+c
 c     DISTRHES - helper subroutine to distribute given Omega with
 c     given set of rho-dependent coefficients from calculations with
 C     Hessian
@@ -484,7 +470,7 @@ c
       DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
       DIMENSION GAOS(NBLEN,NBAST), COEF(NBLEN)
       DIMENSION EXCMAT(NBAST,NBAST)
-c     
+c
       DIMENSION TMP(NBLEN,NBAST)
 
       INTEGER NK
@@ -529,7 +515,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-C defined parallel calculation types  
+C defined parallel calculation types
 #include "iprtyp.h"
       IF(MYNUM.EQ.MASTER) THEN
 c        DFT_KSM_WORK is registered for KSM Slave driver.
@@ -565,7 +551,7 @@ c
      &             WRK(KFREE),LFREE,IPRINT)
       CALL QEXIT('DFT_KSMSLAVE')
       END
-c      
+c
       SUBROUTINE KSMSYNC(DMAT)
 #include "implicit.h"
 #include "mpif.h"
@@ -593,6 +579,6 @@ c
       CALL DCOPY(N2BASX,FMAT,1,WRK,1)
       CALL MPI_Reduce(WRK,FMAT,N2BASX,MPI_DOUBLE_PRECISION,MPI_SUM,
      &                0,MPI_COMM_WORLD,IERR)
-      
+
 #endif
       END
