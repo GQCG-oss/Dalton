@@ -67,15 +67,6 @@ include(LibsPElib)
 
 include(LibsQFITlib)
 
-if(ENABLE_QMMM_CUDA)
-    add_subdirectory(external/qmmm_cuda)
-    add_dependencies(dalton qmmm_cuda)
-    set(DALTON_LIBS
-        ${PROJECT_BINARY_DIR}/lib/libqmmm_cuda.a
-        ${DALTON_LIBS}
-        )
-endif()
-
 if(NOT ENABLE_CHEMSHELL)
     add_executable(
         dalton.x
