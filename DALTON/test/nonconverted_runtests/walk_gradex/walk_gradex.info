@@ -1,6 +1,0 @@
-   walk_gradex
-   -----------
-   Molecule:         NH3
-   Wave Function:    SCF / 6-31G** (Atombasis)
-   Test Purpose:     Locating a transition state following a gradient
-                     extremal

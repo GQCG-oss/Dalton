@@ -1,7 +1,0 @@
-   cc2_r12_aux_h2o_sym_a2
-   -----------
-   Molecule:         H2O 
-   Wave Function:    CC2-R12/A2/B / 6-311G/6-311++G**
-   Test Purpose:     Check CC2-R12/A2/B method with auxiliary basis 
-                     - test .R12ORB option
-                     - test non-direct mode

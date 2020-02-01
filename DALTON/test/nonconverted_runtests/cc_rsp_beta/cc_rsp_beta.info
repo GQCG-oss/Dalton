@@ -1,7 +1,0 @@
-   cc_rsp_beta
-   -----------
-   Molecule:         HF in C2
-   Wave Function:    CCS, CCSD / 6-31G**
-   Test Purpose:     Static first hyperpolarizabilities and
-                     first hyperpolarizability dispersion coefficients.
-                     Tests .AVERAGE and .NOBMAT options

@@ -1,7 +1,0 @@
-   cc3_h2o_resid
-   ---------
-   Molecule:         H2O in C2v
-   Wave Function:    CC3 / STO-3G
-   Test Purpose:     transition moments between excited states and
-                     excited state polarizabilities / two-photon
-                     transitions between excited states

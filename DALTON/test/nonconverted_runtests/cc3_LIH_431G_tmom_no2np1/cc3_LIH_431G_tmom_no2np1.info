@@ -1,7 +1,0 @@
-   cc3_LIH_431G_tmom_no2np1
-   -----------
-   Molecule:         LiH 
-   Theory Level:     CC3 / 4-31G
-   Test Purpose:     Transition moment between the ground and an 
-                     excited state; non-totally symmetric operator.
-                     (NOT exploiting 2n+1 rule !)

@@ -1,8 +1,0 @@
-   cc_rsp_betafreq
-   ---------------
-   Molecule:         HF in C2
-   Wave Function:    CCS, CCSD / 6-31G**
-   Test Purpose:     First hyperpolarizabilities
-                     - Parallel (beta_||) and orthogonal averages (beta_|_)
-                     - Static and for two non-zero frequencies
-                     - Use explicitly that X and Y directions degnerated

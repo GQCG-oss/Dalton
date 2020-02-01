@@ -1,5 +1,0 @@
-   ccsdr12_bh
-   -----------
-   Molecule:         BH 
-   Wave Function:    CCSD(R12)/A1/B / aug-cc-pVDZ + aug-cc-pVDZ
-   Test Purpose:     Check CCSD(R12)/A1/B method with auxiliary basis 

@@ -1,6 +1,0 @@
-   cc_geoopt2
-   ----------
-   Molecule:         CO in C1
-   Wave Function:    CCSD
-   Test Purpose:     Geometry optimization using the analytic CCSD
-                     gradient and the *OPTIMIZE module

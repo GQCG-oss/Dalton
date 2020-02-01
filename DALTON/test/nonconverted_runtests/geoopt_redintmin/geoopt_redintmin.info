@@ -1,7 +1,0 @@
-   geoopt_redintmin
-   ----------------
-   Molecule:         C2H6
-   Wave Function:    SCF / STO-3G
-   Test Purpose:     Minimization in redundant internal coordinates using
-                     a model Hessian. The BFGS-formula is used for updating
-                     the Hessians

@@ -1,7 +1,0 @@
-   geoopt_preopt
-   -------------
-   Molecule:         H2O
-   Wave Function:    SCF / STO-3G, 4-31G and cc-pVDZ
-   Test Purpose:     Demonstrate pre-optimization using smaller
-                     basis sets. The molecule is optimized using
-                     STO-3G, then 6-31G** and finally cc-pVTZ

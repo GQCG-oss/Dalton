@@ -1,6 +1,0 @@
-   energy_lucita_gasci
-   -------------------
-   Molecule:         HBr
-   Wave Functions:   RHF, LUCITA CI
-   Test Purpose:     Check LUCITA CI energy and NO calculation
-                     for two roots, with symmetry

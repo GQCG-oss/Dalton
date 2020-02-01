@@ -1,6 +1,0 @@
-   energy_direct
-   -------------
-   Molecule:         H2O
-   Wave Function:    Direct SCF / cc-pVDZ
-   Test Purpose:     Check energy calculated directly (using TWOINT)
-                     and with symmetry

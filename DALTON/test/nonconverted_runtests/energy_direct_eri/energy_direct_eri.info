@@ -1,6 +1,0 @@
-   energy_direct_eri
-   -------------
-   Molecule:         H2O
-   Wave Function:    Direct SCF / cc-pVDZ
-   Test Purpose:     Check energy calculated directly (using ERI)
-                     and with symmetry

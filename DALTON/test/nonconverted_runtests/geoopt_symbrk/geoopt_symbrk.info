@@ -1,6 +1,0 @@
-   geoopt_symbrk
-   -------------
-   Molecule:         H2O2
-   Wave Function:    SCF / cc-pVDZ
-   Test Purpose:     Geometry optimization (2nd order) with symmetry
-                     breaking

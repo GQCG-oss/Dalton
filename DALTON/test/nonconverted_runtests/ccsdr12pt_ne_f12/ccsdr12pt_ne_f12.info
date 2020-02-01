@@ -1,6 +1,0 @@
-   ccsdr12pt_ne_f12
-   -----------
-   Molecule:         Ne 
-   Wave Function:    CCSD(R12)(T)/A1/B / aug-cc-pVDZ + aug-cc-pVDZ
-   Test Purpose:     Check CCSD(R12)(T)/A1/B method with auxiliary basis 
-                     and correlation factor F12

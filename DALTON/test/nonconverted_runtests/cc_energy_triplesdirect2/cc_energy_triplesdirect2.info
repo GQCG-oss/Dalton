@@ -1,6 +1,0 @@
-   cc_energy_triplesdirect2
-   ------------------------
-   Molecule:         HF in C2
-   Wave Function:    CCSD(T) / 6-31G**
-   Test Purpose:     Integral direct calculation of CCSD(T) energy
-                     using HERMIT as integral program

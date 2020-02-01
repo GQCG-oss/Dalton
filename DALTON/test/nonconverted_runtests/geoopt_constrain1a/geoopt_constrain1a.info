@@ -1,8 +1,0 @@
-   geoopt_constrain1a
-   ------------------
-   Molecule:         C2H6
-   Wave Function:    N/A
-   Test Purpose:     Demonstrates a run were nothing but determination of
-                     redundant internal coordinates is performed. This is
-                     needed to get the coordinate numbers required for
-                     constraints

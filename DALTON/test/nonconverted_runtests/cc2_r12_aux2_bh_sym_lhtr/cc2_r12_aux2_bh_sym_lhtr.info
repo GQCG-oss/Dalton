@@ -1,5 +1,0 @@
-   cc2_r12_aux2_bh_sym_lhtr
-   -----------
-   Molecule:         BH 
-   Wave Function:    CC2-R12/A1/A / AhlrichsVDZ + AhlrichsVTZ-Auxbasis
-   Test Purpose:     Check CC2-R12/A1/A method with auxiliary basis (and LHTR) 

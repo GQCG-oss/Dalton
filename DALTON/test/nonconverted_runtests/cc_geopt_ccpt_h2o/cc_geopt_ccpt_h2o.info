@@ -1,5 +1,0 @@
-   cc_geopt_ccpt_h2o
-   -----------------
-   Molecule:         H2O, C2v 
-   Wave Function:    CCSD(T) / cc-pVDZ
-   Test Purpose:     CCSD(T) geometry optimization

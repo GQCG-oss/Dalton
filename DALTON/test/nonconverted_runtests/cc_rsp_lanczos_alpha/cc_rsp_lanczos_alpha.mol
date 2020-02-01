@@ -1,8 +1,0 @@
-ATOMBASIS
-H2O, Lanczos spectrum
-using 3-21G
-ATOMTYPES=2 Generators=2 X Z
-    8.0    1    basis=3-21G
-O     0.000000      0.000000      0.000000
-    1.0    1    basis=3-21G
-H     1.429937284000 -1.1071751130000000 0.0

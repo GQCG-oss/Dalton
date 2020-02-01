@@ -1,7 +1,0 @@
-   cc_rsp_ctocd
-   -----------
-   Molecule:         HF 
-   Wave Function:    CCS, CCSD / 6-31G**
-   Test Purpose:     Static nuclear magnetic shielding and 
-   		     z-component (in the electric field) of 
-		     shielding polarizability in the CTOCD-DZ formalism

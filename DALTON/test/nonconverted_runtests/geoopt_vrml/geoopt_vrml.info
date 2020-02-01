@@ -1,7 +1,0 @@
-   geoopt_vrml
-   -----------
-   Molecule:         KUM1
-   Wave Function:    N/A
-   Test Purpose:     VRML visualization of input geometry. A ball-and-stick
-                     representation of the molecule is written to the file
-                     'first.wrl'
