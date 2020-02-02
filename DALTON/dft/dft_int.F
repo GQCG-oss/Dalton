@@ -384,7 +384,7 @@ c     /XYZPOW/
       CALL MPI_Bcast(nval, MXAQNM, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
 c     /DFTCOM/
-      CALL MPI_Bcast(DFTADD,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+      CALL MPI_Bcast(DFTADD,1,my_MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
 
 !     sync thresholds
       call mpi_bcast(dfthr0, 1, mpi_double_precision,
@@ -395,10 +395,10 @@ c     /DFTCOM/
      &                       0, mpi_comm_world, ie)
 
 c     /DFTASC/
-      CALL MPI_Bcast(DFTASC,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(DOMPOLE,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(DOLB94,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(LDFTVXC,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+      CALL MPI_Bcast(DFTASC,1,my_MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+      CALL MPI_Bcast(DOMPOLE,1,my_MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+      CALL MPI_Bcast(DOLB94,1,my_MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+      CALL MPI_Bcast(LDFTVXC,1,my_MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
 
 c     sync functionals, too.
 !     print *, 'calling DFTFUNCSYNC for mytid',mytid, NODTOT

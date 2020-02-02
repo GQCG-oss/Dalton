@@ -421,7 +421,7 @@ C    &     I_BLK_TO_CLS(IBLK)
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #endif
 
       DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)

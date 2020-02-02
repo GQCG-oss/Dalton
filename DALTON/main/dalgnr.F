@@ -1572,7 +1572,7 @@ C
             OPTWLK = .TRUE.
             DOWALK = .TRUE.
          GO TO 100
-  111    CONTINUE  ! .MAX ITerations
+  111    CONTINUE  ! .MAX ITerations ( geometry iterations )
             READ (LUCMD,*) ITERMX
          GO TO 100
   112    CONTINUE  ! .RESPONs
@@ -2040,7 +2040,7 @@ C
 C
 C     We are going to do parallel I/O. Inform the slaves about this
 C
-      CALL MPI_BCAST(PARIO,1,MPI_LOGICAL,NODEID(MASTER),MPI_COMM_WORLD,
+      CALL MPI_BCAST(PARIO,1,my_MPI_LOGICAL,MASTER,MPI_COMM_WORLD,
      &               IERR)
 C
 C     Read in Dalton input. Save it temporarily MLINE
@@ -2120,17 +2120,22 @@ C
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      INCLUDE 'mpif.h'
 #include "priunit.h"
 #include "inftap.h"
 #include "molinp.h"
 #include "infpar.h"
 #include "pario.h"
+
+      INCLUDE 'mpif.h'
 C
 C     We start by waiting for the master to tell us whether we will do
 C     parallel I/O or not
 C
-      CALL MPI_BCAST(PARIO,1,MPI_LOGICAL,NODEID(MASTER),MPI_COMM_WORLD,
+#ifdef VAR_INT64
+      call quit(
+     &'Routine PARION is not revised for int64 code and int32 mpi')
+#endif
+      CALL MPI_BCAST(PARIO,1,my_MPI_LOGICAL,MASTER,MPI_COMM_WORLD,
      &               IERR)
       IF (PARIO) THEN
          CALL GETENV('WRKDIR',WRKDIR)

@@ -61,11 +61,11 @@
     integer, intent(in) :: KPRIM
     real(REALK), intent(in) :: exponents(KPRIM,KBLOCK,num_comp)
     real(REALK), intent(in) :: ucontr_coefs(KPRIM,KPRIM,KBLOCK,num_comp)
-    integer :: ierr  !error information
     logical :: mpi_sync = .true.
 #if defined(VAR_MPI)
 #include "mpif.h"
 #include "iprtyp.h"
+    integer(kind=MPI_INTEGER_KIND) :: count_mpi, manager_mpi, ierr_mpi
 #endif
     ! in case of initializing the interface multiple times
     if (Gen1IntAPIInited()) mpi_sync = .false.
@@ -76,9 +76,11 @@
 #if defined(VAR_MPI)
     if (mpi_sync) then
       ! wakes up workers
-      call MPI_Bcast(GEN1INT_INIT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+      manager_mpi = MANAGER
+      count_mpi = 1
+      call MPI_Bcast(GEN1INT_INIT, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
       ! broadcasts level of print
-      call MPI_Bcast(0, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+      call MPI_Bcast(0, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
       ! broadcasts information of API of Gen1Int
       call Gen1IntAPIBcast(MANAGER, MPI_COMM_WORLD)
     end if
@@ -209,20 +211,22 @@
     type(nary_tree_t) nary_tree_bra    !N-ary tree for partial geometric derivatives on bra center
     type(nary_tree_t) nary_tree_ket    !N-ary tree for partial geometric derivatives on ket center
     type(nary_tree_t) nary_tree_total  !N-ary tree for total geometric derivatives
-    integer ierr                       !error information
 #if defined(VAR_MPI)
 #include "mpif.h"
 #include "iprtyp.h"
+    integer(kind=MPI_INTEGER_KIND) :: count_mpi, manager_mpi, ierr_mpi
 #endif
     ! gets the start time
     call xtimer_set(start_time)
 #if defined(VAR_MPI)
+    manager_mpi = MANAGER
+    count_mpi = 1
     ! wakes up workers
-    call MPI_Bcast(GEN1INT_GET_INT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(GEN1INT_GET_INT, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     ! broadcasts level of print
-    call MPI_Bcast(level_print, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(level_print,     count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     ! broadcasts number of property integral matrices including various derivatives
-    call MPI_Bcast(num_ints, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(num_ints,        count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
 #endif
     ! creates the operator of property integrals and N-ary tree for total
     ! geometric derivatives on manager processor, and broadcasts other input
@@ -267,7 +271,7 @@
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_total)
 #if defined(VAR_MPI)
     ! blocks until all processors have finished
-    call MPI_Barrier(MPI_COMM_WORLD, ierr)
+    call MPI_Barrier(MPI_COMM_WORLD, ierr_mpi)
 #endif
     ! prints the CPU elapsed time
     call xtimer_view(start_time, trim(prop_name)//"@gen1int_host_get_int", io_viewer)
@@ -297,10 +301,13 @@
     type(nary_tree_t) nary_tree_bra    !N-ary tree for partial geometric derivatives on bra center
     type(nary_tree_t) nary_tree_ket    !N-ary tree for partial geometric derivatives on ket center
     type(nary_tree_t) nary_tree_total  !N-ary tree for total geometric derivatives
-    integer ierr                       !error information
 #include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND) :: manager_mpi, count_mpi
+    integer(kind=MPI_INTEGER_KIND) :: ierr_mpi !MPI error information
+    manager_mpi = MANAGER
+    count_mpi   = 1
     ! gets the number of property integral matrices including various derivatives
-    call MPI_Bcast(num_ints, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(num_ints, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     ! creates the operator of property integrals and N-ary trees for geometric
     ! derivatives on worker processors by the arguments from manager
     call gen1int_worker_prop_create(io_viewer, level_print, prop_comp)
@@ -321,7 +328,7 @@
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_ket)
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_total)
     ! blocks until all processors have finished
-    call MPI_Barrier(MPI_COMM_WORLD, ierr)
+    call MPI_Barrier(MPI_COMM_WORLD, ierr_mpi)
     return
   end subroutine gen1int_worker_get_int
 #endif
@@ -398,26 +405,29 @@
     type(nary_tree_t) nary_tree_ket    !N-ary tree for partial geometric derivatives on ket center
     type(nary_tree_t) nary_tree_total  !N-ary tree for total geometric derivatives
     integer idens                      !incremental recorder over AO density matrices
-    integer ierr                       !error information
 #if defined(VAR_MPI)
 #include "mpif.h"
 #include "iprtyp.h"
+    integer(kind=MPI_INTEGER_KIND) :: manager_mpi, count_mpi
+    integer(kind=MPI_INTEGER_KIND) :: ierr_mpi !MPI error information
 #endif
     ! gets the start time
     call xtimer_set(start_time)
 #if defined(VAR_MPI)
+    manager_mpi = MANAGER
+    count_mpi   = 1
     ! wakes up workers
-    call MPI_Bcast(GEN1INT_GET_EXPT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(GEN1INT_GET_EXPT, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     ! broadcasts level of print
-    call MPI_Bcast(level_print, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(level_print, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     ! broadcasts the number of AO density matrices
-    call MPI_Bcast(num_dens, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(num_dens, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     ! broadcasts AO density matrices
     do idens = 1, num_dens
       call MatBcast(ao_dens(idens), MANAGER, MPI_COMM_WORLD)
     end do
     ! broadcasts the number of property integral matrices including various derivatives
-    call MPI_Bcast(num_ints, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(num_ints, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
 #endif
     ! creates the operator of property integrals and N-ary tree for total
     ! geometric derivatives on manager processor, and broadcasts other input
@@ -463,7 +473,7 @@
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_total)
 #if defined(VAR_MPI)
     ! blocks until all processors have finished
-    call MPI_Barrier(MPI_COMM_WORLD, ierr)
+    call MPI_Barrier(MPI_COMM_WORLD, ierr_mpi)
 #endif
     ! prints the CPU elapsed time
     call xtimer_view(start_time, trim(prop_name)//"@gen1int_host_get_expt", io_viewer)
@@ -494,10 +504,13 @@
     type(nary_tree_t) nary_tree_bra          !N-ary tree for partial geometric derivatives on bra center
     type(nary_tree_t) nary_tree_ket          !N-ary tree for partial geometric derivatives on ket center
     type(nary_tree_t) nary_tree_total        !N-ary tree for total geometric derivatives
-    integer ierr                             !error information
 #include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND) :: count_mpi, manager_mpi, ierr_mpi
+    integer                        :: ierr
+    manager_mpi = MANAGER
+    count_mpi = 1
     ! gets the number of AO density matrices
-    call MPI_Bcast(num_dens, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(num_dens, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     ! allocates memory for AO density matrices
     allocate(ao_dens(num_dens), stat=ierr)
     if (ierr/=0) then
@@ -508,7 +521,7 @@
       call MatBcast(ao_dens(idens), MANAGER, MPI_COMM_WORLD)
     end do
     ! gets the number of property integral matrices including various derivatives
-    call MPI_Bcast(num_ints, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(num_ints, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     ! creates the operator of property integrals and N-ary trees for geometric
     ! derivatives on worker processors by the arguments from manager
     call gen1int_worker_prop_create(io_viewer, level_print, prop_comp)
@@ -534,7 +547,7 @@
     end do
     deallocate(ao_dens)
     ! blocks until all processors have finished
-    call MPI_Barrier(MPI_COMM_WORLD, ierr)
+    call MPI_Barrier(MPI_COMM_WORLD, ierr_mpi)
     return
   end subroutine gen1int_worker_get_expt
 #endif
@@ -714,10 +727,13 @@
 #if defined(VAR_MPI)
 #include "mpif.h"
 #include "iprtyp.h"
+    integer(kind=MPI_INTEGER_KIND) :: count_mpi, manager_mpi, ierr_mpi
+    manager_mpi = MANAGER
+    count_mpi = 1
     ! wakes up workers
-    call MPI_Bcast(GEN1INT_GET_CUBE, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(GEN1INT_GET_CUBE, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     ! broadcasts level of print
-    call MPI_Bcast(level_print, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(level_print,      count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
 #endif
     ! sets the XYZ coordinates of points in cube file
     num_points = product(cube_num_inc)
@@ -1413,31 +1429,37 @@
     integer,           intent(in)    :: active_component_pairs(*)
     type(prop_comp_t), intent(inout) :: prop_comp
     integer len_name  !length of property name
-    integer ierr      !error information
 #if defined(VAR_MPI)
 #include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND) :: count_mpi, manager_mpi, ierr_mpi
+    manager_mpi = MANAGER
+    count_mpi = 1
     ! broadcasts input arguments
-    call MPI_Bcast(gto_type, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(gto_type, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     len_name = len_trim(prop_name)
     if (len_name>MAX_LEN_STR) then
       call quit("gen1int_host_prop_create>> too long property name!")
     end if
-    call MPI_Bcast(len_name, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(prop_name(1:len_name), len_name, MPI_CHARACTER, &
-                   MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mom,       1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_elec,      1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mag_bra,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mag_ket,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mag_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_ram_bra,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_ram_ket,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_ram_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(nr_active_blocks,       1,                  MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(active_component_pairs, nr_active_blocks*2, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(add_sr,     1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(add_so,     1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(add_london, 1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(len_name, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    count_mpi = len_name
+    call MPI_Bcast(prop_name(1:len_name), count_mpi, MPI_CHARACTER, &
+                   manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    count_mpi = 1
+    call MPI_Bcast(order_mom,       count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_elec,      count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_mag_bra,   count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_mag_ket,   count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_mag_total, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_ram_bra,   count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_ram_ket,   count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_ram_total, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(nr_active_blocks,       count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    count_mpi = nr_active_blocks*2
+    call MPI_Bcast(active_component_pairs, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    count_mpi = 1
+    call MPI_Bcast(add_sr,     count_mpi, MPI_LOGICALK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(add_so,     count_mpi, MPI_LOGICALK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(add_london, count_mpi, MPI_LOGICALK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
 #endif
     ! creates the operator of property integrals
     call Gen1IntAPIPropCreate(gto_type, prop_name, order_mom, &
@@ -1488,32 +1510,39 @@
     integer len_name  !length of property name
     integer ierr      !error information
 #include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND) :: count_mpi, manager_mpi, ierr_mpi
+    manager_mpi = MANAGER
+    count_mpi = 1
     ! gets input arguments from manager
-    call MPI_Bcast(gto_type, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(len_name, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(gto_type, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(len_name, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     if (len_name>MAX_LEN_STR) then
       call quit("gen1int_worker_prop_create>> too long property name!")
     end if
     prop_name = ""
-    call MPI_Bcast(prop_name(1:len_name), len_name, MPI_CHARACTER, &
-                   MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mom,       1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_elec,      1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mag_bra,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mag_ket,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_mag_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_ram_bra,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_ram_ket,   1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_ram_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(nr_active_blocks,       1,                  MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    count_mpi = len_name
+    call MPI_Bcast(prop_name(1:len_name), count_mpi, MPI_CHARACTER, &
+                   manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    count_mpi = 1
+    call MPI_Bcast(order_mom,       count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_elec,      count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_mag_bra,   count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_mag_ket,   count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_mag_total, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_ram_bra,   count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_ram_ket,   count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_ram_total, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(nr_active_blocks,count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     allocate(active_component_pairs(nr_active_blocks*2), stat=ierr)
     if (ierr /= 0) then
       call quit("gen1int_worker_prop_create>> failed to allocate active_component_pairs!")
     end if
-    call MPI_Bcast(active_component_pairs, nr_active_blocks*2, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(add_sr,     1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(add_so,     1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(add_london, 1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
+    count_mpi = nr_active_blocks*2
+    call MPI_Bcast(active_component_pairs, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    count_mpi = 1
+    call MPI_Bcast(add_sr,     count_mpi, MPI_LOGICALK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(add_so,     count_mpi, MPI_LOGICALK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(add_london, count_mpi, MPI_LOGICALK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     ! creates the operator of property integrals
     call Gen1IntAPIPropCreate(gto_type, prop_name, order_mom, &
                               order_elec,                     &
@@ -1567,27 +1596,34 @@
     type(nary_tree_t), intent(inout) :: nary_tree_bra
     type(nary_tree_t), intent(inout) :: nary_tree_ket
     type(nary_tree_t), intent(inout) :: nary_tree_total
-    integer ierr  !error information
 #if defined(VAR_MPI)
 #include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND) :: count_mpi, manager_mpi, ierr_mpi
+    manager_mpi = MANAGER
+    count_mpi = 1
     ! broadcasts information of N-ary trees
-    call MPI_Bcast(max_ncent_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_geo_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(num_atoms_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(max_ncent_bra, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_geo_bra, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(num_atoms_bra, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     if (num_atoms_bra>0) then
-      call MPI_Bcast(idx_atoms_bra, num_atoms_bra, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+      count_mpi = num_atoms_bra
+      call MPI_Bcast(idx_atoms_bra, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+      count_mpi = 1
     end if
-    call MPI_Bcast(max_ncent_ket, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_geo_ket, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(num_atoms_ket, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(max_ncent_ket, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_geo_ket, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(num_atoms_ket, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     if (num_atoms_ket>0) then
-      call MPI_Bcast(idx_atoms_ket, num_atoms_ket, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+      count_mpi = num_atoms_ket
+      call MPI_Bcast(idx_atoms_ket, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+      count_mpi = 1
     end if
-    call MPI_Bcast(max_num_cent, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_geo_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(num_geo_atoms, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(max_num_cent,    count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_geo_total, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(num_geo_atoms,   count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     if (num_geo_atoms>0) then
-      call MPI_Bcast(idx_geo_atoms, num_geo_atoms, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+      count_mpi = num_geo_atoms
+      call MPI_Bcast(idx_geo_atoms, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     end if
 #endif
     ! creates N-ary tree for geometric derivatives
@@ -1646,36 +1682,45 @@
     integer, allocatable :: idx_geo_atoms(:)
     integer ierr  !error information
 #include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND) :: count_mpi, manager_mpi, ierr_mpi
+    manager_mpi = MANAGER
+    count_mpi = 1
     ! gets information of N-ary trees from manager node
-    call MPI_Bcast(max_ncent_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_geo_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(num_atoms_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(max_ncent_bra, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_geo_bra, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(num_atoms_bra, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     if (num_atoms_bra>0) then
       allocate(idx_atoms_bra(num_atoms_bra), stat=ierr)
       if (ierr/=0) then
         call quit("gen1int_worker_geom_create>> failed to allocate idx_atoms_bra!")
       end if
-      call MPI_Bcast(idx_atoms_bra, num_atoms_bra, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+      count_mpi = num_atoms_bra
+      call MPI_Bcast(idx_atoms_bra, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+      count_mpi = 1
     end if
-    call MPI_Bcast(max_ncent_ket, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_geo_ket, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(num_atoms_ket, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(max_ncent_ket, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_geo_ket, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(num_atoms_ket, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     if (num_atoms_ket>0) then
       allocate(idx_atoms_ket(num_atoms_ket), stat=ierr)
       if (ierr/=0) then          
         call quit("gen1int_worker_geom_create>> failed to allocate idx_atoms_ket!")
       end if
-      call MPI_Bcast(idx_atoms_ket, num_atoms_ket, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+      count_mpi = num_atoms_ket
+      call MPI_Bcast(idx_atoms_ket, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+      count_mpi = 1
     end if
-    call MPI_Bcast(max_num_cent, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(order_geo_total, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    call MPI_Bcast(num_geo_atoms, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    call MPI_Bcast(max_num_cent,    count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(order_geo_total, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+    call MPI_Bcast(num_geo_atoms,   count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
     if (num_geo_atoms>0) then
       allocate(idx_geo_atoms(num_geo_atoms), stat=ierr)
       if (ierr/=0) then
         call quit("gen1int_worker_geom_create>> failed to allocate idx_geo_atoms!")
       end if
-      call MPI_Bcast(idx_geo_atoms, num_geo_atoms, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+      count_mpi = num_geo_atoms
+      call MPI_Bcast(idx_geo_atoms, count_mpi, MPI_INTEGERK, manager_mpi, MPI_COMM_WORLD, ierr_mpi)
+      count_mpi = 1
     end if
     ! creates N-ary trees for geometric derivatives
     call Gen1IntAPINaryTreeCreate(max_num_cent=max_ncent_bra,  &

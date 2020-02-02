@@ -1060,7 +1060,7 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
@@ -2123,7 +2123,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
       DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
       INTEGER IPROCLIST(*), RCCTOS(*)
@@ -4937,7 +4937,7 @@ C?     WRITE(luwrt,*) ' DIATERM2_GAS will be called '
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
@@ -5335,7 +5335,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 *. Specific input

@@ -59,6 +59,7 @@ C
 #ifdef VAR_MPI
       integer :: maxnumjobs, nloopidx
       integer :: AssignedIndices(maxnumjobs)
+      integer(kind=MPI_INTEGER_KIND) :: ierr_mpi
 #endif
 C
 #include "ccorb.h"
@@ -189,10 +190,10 @@ C Only master reads...
 C Should probably use non-blocking collectives, where implemented
 !      IF (MPI_VERSION.GE.3) THEN
 !         MPI_IBCAST(WORK(KCMO),LCMO, my_MPI_INTEGER, 0,
-!     &              MPI_COMM_WORLD, IERR)
+!     &              MPI_COMM_WORLD, ierr_mpi)
 !      ELSE
       CALL MPI_BCAST(WORK(KCMO), LCMO, MPI_REAL8, 0,
-     &               SOPPA_COMM_ACTIVE, IERR)
+     &               SOPPA_COMM_ACTIVE, ierr_mpi)
 
 !      ENDIF
 #endif
@@ -461,7 +462,7 @@ C---------------------------
 C Rememember that the trial-vectors are contigous in memory
          LTRTOT = LTR1E + LTR1D + LTR2E + LTR2D
          CALL MPI_BCAST(WORK(KTR1E), LTRTOT, MPI_REAL8,
-     &                  0, SOPPA_COMM_ACTIVE, IERR)
+     &                  0, SOPPA_COMM_ACTIVE, ierr_mpi)
 C Note for future adjustment:
 C It may be worthwile using non-blocking communication here
 C since the next two calls only use the singles vectors.
@@ -546,7 +547,7 @@ C           Master does the balancing
 C           Slaves receives the scatter, send arguments should be ignored
             call mpi_scatter( AssignedIndices, maxnumjobs, mpi_integer,
      &                        AssignedIndices, maxnumjobs, mpi_integer,
-     &                        0, soppa_comm_active, ierr )
+     &                        0, soppa_comm_active, ierr_mpi )
          ENDIF
 #endif
          DO 210 ISYMD1 = 1,NTOSYM
@@ -862,12 +863,12 @@ C
 C           Fock-matrix
             call mpi_reduce( mpi_in_place, work(kfock), lfock,
      &                       MPI_REAL8, MPI_SUM, 0,
-     &                       soppa_comm_active, ierr)
+     &                       soppa_comm_active, ierr_mpi)
 C
 C           Result-vectors
             call mpi_reduce( mpi_in_place, work(kres1e), lrestot,
      &                       MPI_REAL8, MPI_SUM, 0,
-     &                       soppa_comm_active, ierr)
+     &                       soppa_comm_active, ierr_mpi)
 C
             if (singles_second) then
 C
@@ -875,7 +876,7 @@ C           Sigai / Sigda
                if(triplet) then
                   call mpi_reduce( mpi_in_place, work(ksigai1), lsigtot,
      &                             MPI_REAL8, MPI_SUM, 0,
-     &                             soppa_comm_active, ierr)
+     &                             soppa_comm_active, ierr_mpi)
                end if
 C
 C           Aij / Aab -- only calculated in first pass
@@ -883,7 +884,7 @@ C           Aij / Aab -- only calculated in first pass
 C               write(lupri,*) 'Aij'
                   call mpi_reduce ( mpi_in_place, work(kaij), latot,
      &                              MPI_REAL8, MPI_SUM, 0,
-     &                              soppa_comm_active, ierr)
+     &                              soppa_comm_active, ierr_mpi)
                end if
             end if
          else
@@ -892,26 +893,26 @@ C
 C           Fock-matrix
             call mpi_reduce( work(kfock), work(kfock), lfock,
      &                       MPI_REAL8, MPI_SUM, 0,
-     &                       soppa_comm_active, ierr)
+     &                       soppa_comm_active, ierr_mpi)
 C
 C           Result-vectors
             call mpi_reduce( work(kres1e), work(kres1e), lrestot,
      &                       MPI_REAL8, MPI_SUM, 0,
-     &                       soppa_comm_active, ierr)
+     &                       soppa_comm_active, ierr_mpi)
 C
             if (singles_second) then
 C              Sigai / Sigda
                if(triplet) then
                   call mpi_reduce( work(ksigai1), work(ksigai1),lsigtot,
      &                            MPI_REAL8, MPI_SUM, 0,
-     &                           soppa_comm_active, ierr)
+     &                           soppa_comm_active, ierr_mpi)
                end if
 C
 C              Aij / Aab
                if ( inewtr .eq. 1 ) then
                   call mpi_reduce ( work(kaij), work(kaij), latot,
      &                              MPI_REAL8, MPI_SUM, 0,
-     &                              soppa_comm_active, ierr)
+     &                              soppa_comm_active, ierr_mpi)
                endif
             endif
 C
@@ -1072,10 +1073,10 @@ C-----------------------------------------------------------
       IF ( CALC_DENSAI ) THEN
          IF (MYNUM.EQ.0) THEN
             CALL MPI_REDUCE( MPI_IN_PLACE, DENSAI, LDENSAI, MPI_REAL8,
-     &                       MPI_SUM, 0, SOPPA_COMM_ACTIVE, IERR)
+     &                       MPI_SUM, 0, SOPPA_COMM_ACTIVE, ierr_mpi)
          ELSE
             CALL MPI_REDUCE( DENSAI, DENSAI, LDENSAI, MPI_REAL8,
-     &                       MPI_SUM, 0, SOPPA_COMM_ACTIVE, IERR)
+     &                       MPI_SUM, 0, SOPPA_COMM_ACTIVE, ierr_mpi)
          ENDIF
       ENDIF
 C--------------------------------------
@@ -1088,7 +1089,7 @@ C --------
 C Recieve the timings
             call mpi_reduce( mpi_in_place, work(ktiming), soppa_nint,
      &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
-     &                       IERR)
+     &                       ierr_mpi)
 C
 C Redo the loadbalancing based on the timings and distribute them
             ksorted = kend2
@@ -1109,11 +1110,11 @@ C  ---------
 C  Send the timings
             call mpi_reduce( work(ktiming), work(ktiming), soppa_nint,
      &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
-     &                       IERR)
+     &                       ierr_mpi)
 C  Recieve the new indices
             call mpi_scatter( AssignedIndices, maxnumjobs, mpi_integer,
      &                        AssignedIndices, maxnumjobs, mpi_integer,
-     &                        0, soppa_comm_active, ierr)
+     &                        0, soppa_comm_active, ierr_mpi)
          endif
       endif
 C Slaves are done
@@ -1704,7 +1705,7 @@ C F.Beyer Oct. 2014.
       integer  :: ltimings, maxnumjobs
 
       ! Bookkeeping
-      integer :: maxrows, maxcols, numprocs, numrecipients
+      integer :: maxrows, maxcols, numrecipients
       integer :: getnumjobs, targetID, myid
       integer :: colindex, rowindex, assignILLL, col,i
       integer :: ntot
@@ -1751,7 +1752,7 @@ C     PRINT HOW WORK IS DISTRIBUTED
       ! Send the info to every slave that does computation (some slaves might be stalled in the polling barrier in case there are too many MPI processes compared to the number of tasks).
       call mpi_scatter( sortedindices, maxnumjobs, mpi_integer,
      &                  localIndices, maxnumjobs, mpi_integer,
-     &                  0, soppa_comm_active, ierr)
+     &                  0, soppa_comm_active, ierr_mpi)
 
       ! Update the master's own array of ILLL indices
       ! should be done by the scatter
@@ -1797,7 +1798,8 @@ C     Dummy parameters
       integer, dimension(maxnumjobs), intent(out) :: localIndices
 
 C     Pre-sorting load balancing variables
-      integer :: getnumjobs, getindices, myid, numprocs, ierr
+      integer :: getnumjobs, getindices, numprocs
+      INTEGER(MPI_INTEGER_KIND) :: ierr_mpi
 C      integer :: presortarray, finalsorted
       integer :: col, ntot
       integer :: kpresortarray, kend, kfinalsorted, ktmp
@@ -1805,7 +1807,7 @@ C      integer :: presortarray, finalsorted
       ntot = soppa_nint
 
       ! numprocs = soppa_num_active !! not consistent with other use
-!      call mpi_comm_size(soppa_comm_active, numprocs, ierr)
+!      call mpi_comm_size(soppa_comm_active, numprocs, ierr_mpi)
       numprocs = soppa_num_active
 
 
@@ -1844,7 +1846,7 @@ C     TRANSFER AO INDICES TO SLAVES
 C     Use scatter
       call mpi_scatter( work(kfinalsorted), maxnumjobs, mpi_integer,
      &                  localIndices, maxnumjobs, mpi_integer,
-     &                  0, soppa_comm_active, ierr )
+     &                  0, soppa_comm_active, ierr_mpi )
 
       return
       end subroutine
@@ -1907,29 +1909,33 @@ C     send from the master with a logical value equal to .true.
 C
 C     F.Beyer Oct. 2014
 
+#ifdef VAR_MPI
+      use so_parutils, only: my_mpi_logical
+#endif
+
 #include "implicit.h"
 #include "mpif.h"
 
       integer, dimension(MPI_STATUS_SIZE) :: mpistatus
       integer, intent(in)                 :: pollinginterval !in milliseconds
-      integer                             :: myid, request
       logical                             :: flag, exitbarrier
       volatile                            :: exitbarrier
+      INTEGER(MPI_INTEGER_KIND) :: ierr_mpi, myid, request
 
-      call mpi_comm_rank(mpi_comm_world, myid, ierr)
+      call mpi_comm_rank(mpi_comm_world, myid, ierr_mpi)
       print *, 'I am in the polling barrier ', myid
 
       ! Initiate the polling variables and ask for the non-blocking update
       exitbarrier = .false.
-      call mpi_irecv(exitbarrier, 1, MPI_LOGICAL, 0, myid,
-     &               mpi_comm_world, request, ierr)
+      call mpi_irecv(exitbarrier, 1, my_mpi_logical, 0, myid,
+     &               mpi_comm_world, request, ierr_mpi)
 
       ! Polling barrier, the process will cycle repeatedly until released.
 130   continue
 #ifdef VAR_IFORT
       call sleepqq(pollinginterval)
 #endif
-      call mpi_test(request, flag, mpistatus, ierr)
+      call mpi_test(request, flag, mpistatus, ierr_mpi)
       if (.not. flag) goto 130
       ! Warning, seems that we'll go into an infinite loop,
       ! if exitbarrier is ever sent as .false.
@@ -2003,10 +2009,12 @@ C
       integer, dimension(:,:), allocatable  :: sumofwork
       integer, dimension(2) :: temploc, tempwork, tempout
       integer :: allocstatus, deallocstatus, numprocs
+      INTEGER(MPI_INTEGER_KIND) :: ierr_mpi, numprocs_mpi
 
 
 
-      call mpi_comm_size(mpi_comm_world, numprocs, ierr)
+      call mpi_comm_size(mpi_comm_world, numprocs_mpi, ierr_mpi)
+      numprocs = numprocs_mpi
       allocate( copysort(2, ntot), sumofwork(2, numprocs)
      &         ,stat=allocstatus)
       if(.not.(allocstatus.eq.0) ) then

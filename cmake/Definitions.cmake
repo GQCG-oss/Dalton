@@ -18,7 +18,7 @@ add_definitions(-DBINARY_INFO_AVAILABLE)
 
 add_definitions(-DINSTALL_BASDIR="${PROJECT_BINARY_DIR}/basis")
 
-if(HAVE_MKL_LAPACK)
+if(HAVE_MKL_LAPACK OR HAVE_MKL_BLAS)
     add_definitions(-DVAR_MKL)
 endif()
 

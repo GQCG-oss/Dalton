@@ -59,7 +59,7 @@ C     The definition must match that in soppa_nodedriver
       INTEGER   INFO_ARRAY(4)
       EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
      &            (info_array(3), nnewtr),    (info_array(4),noldtr)
-      INTEGER(MPI_INTEGER_KIND) :: IERR
+      INTEGER(MPI_INTEGER_KIND) :: IERR, numprocs
 #endif
 C
 C------------------

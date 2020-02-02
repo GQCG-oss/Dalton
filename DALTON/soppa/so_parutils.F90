@@ -9,7 +9,7 @@ module so_parutils
 ! The common sin, sadly a lot of common-blocks still require this
 #include "implicit.h"
 !
-! Various other common-blocks that set occationally used parameters
+! Various other common-blocks that set occasionally used parameters
 #include "mpif.h"
 #include "maxorb.h"
 #include "maxash.h"
@@ -50,6 +50,7 @@ module so_parutils
 ! Make the defines in infpar a fortran parameter (nicer IMO).
 ! also, maybe change the name?
    integer(mpi_integer_kind), parameter :: my_mpi_integer = my_MPI_INTEGER
+   integer(mpi_integer_kind), parameter :: my_mpi_logical = my_MPI_LOGICAL
    ! Actually every call to MPI functions should be explicitly typed,
    ! but it is a pain to write 1_mpi_integer_kind everywhere...
    integer(mpi_integer_kind), parameter :: one_mpi = 1, zero_mpi = 0
@@ -324,7 +325,7 @@ contains
       ! Do we need to do an allreduce to check that all
       ! Processes agree not to update the common-blocks?
       ! For now just let master tell the slaves
-      call mpi_bcast(update_common_blocks, 1, mpi_logical,        &
+      call mpi_bcast(update_common_blocks, 1, my_mpi_logical,     &
                      0, mpi_comm_world, ierr)
 
       if ( update_common_blocks ) then
@@ -529,7 +530,7 @@ contains
                       ierr )
          !
          ! Send the various common blocks if needed
-      call mpi_bcast( update_common_blocks, 1, mpi_logical,      &
+      call mpi_bcast( update_common_blocks, 1, my_mpi_logical,    &
      &                   0, mpi_comm_world, ierr )
 !
       if ( update_common_blocks ) then

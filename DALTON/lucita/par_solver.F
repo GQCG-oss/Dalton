@@ -39,7 +39,7 @@
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION IBLINF(NBLOCK),SCALFAC(NBLOCK),ICCTOS(NBLOCK,NBLOCK)
       DIMENSION ICWEIGHT(NBLOCK),ICWEIGHTF(NBLOCK)
@@ -216,7 +216,7 @@ CSK      ENDIF
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCALFAC(NBLOCK),ICCTOS(NBLOCK,NBLOCK)
       DIMENSION ICWEIGHT(NBLOCK),ICWEIGHTF(NBLOCK)
@@ -303,7 +303,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SUBVAL(*),ISCAT(*),RECVARRAY(*),TESTARR(*)
       DIMENSION IRECVARRAY(*),ITESTARRAY(*),IRANKARR(NSUBMX)
@@ -534,7 +534,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
       INTEGER IERR
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)

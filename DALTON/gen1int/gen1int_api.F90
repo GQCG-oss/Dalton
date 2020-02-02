@@ -330,21 +330,27 @@ module gen1int_api
     integer, intent(in) :: root
     integer, intent(in) :: api_comm
 #include "mpif.h"
-    integer rank_proc  !rank of processor
-    integer icomp      !incremental recorder over components
-    integer ierr       !error information
+    ! declaration of MPI variables so they also work with int64 integer and int32 mpi library
+    integer(kind=MPI_INTEGER_KIND) :: rank_proc  !rank of processor
+    integer(kind=MPI_INTEGER_KIND) :: ierr_mpi   !error information in MPI calls
+    integer                        :: ierr       !error information
+    integer(kind=MPI_INTEGER_KIND) :: root_mpi, api_comm_mpi, count_mpi
+    integer                        :: icomp      !incremental recorder over components
+    root_mpi = root
     ! gets the rank of processor
-    call MPI_Comm_rank(api_comm, rank_proc, ierr)
+    api_comm_mpi = api_comm
+    call MPI_Comm_rank(api_comm_mpi, rank_proc, ierr_mpi)
+    count_mpi = NUM_COMPONENTS
     if (rank_proc==root) then
       ! stops if the interface is not initialized
       if (.not.api_inited) stop "Gen1IntAPIBcast>> interface is not initialized!"
       ! broadcasts the number of components
-      call MPI_Bcast(num_sub_shells, NUM_COMPONENTS, MPI_INTEGER, root, api_comm, ierr)
+      call MPI_Bcast(num_sub_shells, count_mpi, MPI_INTEGERK, root_mpi, api_comm_mpi, ierr_mpi)
     else
       ! terminates previous created interface
       if (api_inited) call Gen1IntAPIDestroy()
       ! gets the number of components
-      call MPI_Bcast(num_sub_shells, NUM_COMPONENTS, MPI_INTEGER, root, api_comm, ierr)
+      call MPI_Bcast(num_sub_shells, count_mpi, MPI_INTEGERK, root_mpi, api_comm_mpi, ierr_mpi)
       ! allocates memory for sub-shells
       allocate(sub_shells(maxval(num_sub_shells),NUM_COMPONENTS), stat=ierr)
       if (ierr/=0) then
@@ -360,27 +366,33 @@ module gen1int_api
                                api_comm=api_comm)
     end do
     ! number of atoms
-    call MPI_Bcast(api_num_atoms, 1, MPI_INTEGER, root, api_comm, ierr)
+    count_mpi = 1
+    call MPI_Bcast(api_num_atoms, count_mpi, MPI_INTEGERK, root_mpi, api_comm_mpi, ierr_mpi)
     ! coordinates and charges of atoms
     if (rank_proc==root) then
-      call MPI_Bcast(api_coord_atoms, 3*api_num_atoms, MPI_REALK, root, api_comm, ierr)
-      call MPI_Bcast(api_charge_atoms, api_num_atoms, MPI_REALK, root, api_comm, ierr)
+      count_mpi = 3*api_num_atoms
+      call MPI_Bcast(api_coord_atoms, count_mpi, MPI_REALK, root_mpi, api_comm_mpi, ierr_mpi)
+      count_mpi = api_num_atoms
+      call MPI_Bcast(api_charge_atoms, count_mpi, MPI_REALK, root_mpi, api_comm_mpi, ierr_mpi)
     else
       allocate(api_coord_atoms(3,api_num_atoms), stat=ierr)
       if (ierr/=0) then
         call quit("Gen1IntAPIBcast>> failed to allocate api_coord_atoms!")
       end if
-      call MPI_Bcast(api_coord_atoms, 3*api_num_atoms, MPI_REALK, root, api_comm, ierr)
+      count_mpi = 3*api_num_atoms
+      call MPI_Bcast(api_coord_atoms, count_mpi, MPI_REALK, root_mpi, api_comm_mpi, ierr_mpi)
       allocate(api_charge_atoms(api_num_atoms), stat=ierr)
       if (ierr/=0) then
         call quit("Gen1IntAPIBcast>> failed to allocate api_charge_atoms!")
       end if
-      call MPI_Bcast(api_charge_atoms, api_num_atoms, MPI_REALK, root, api_comm, ierr)
+      count_mpi = api_num_atoms
+      call MPI_Bcast(api_charge_atoms, count_mpi, MPI_REALK, root_mpi, api_comm_mpi, ierr_mpi)
     end if
     ! coordinates of origins
-    call MPI_Bcast(api_dipole_origin, 3, MPI_REALK, root, api_comm, ierr)
-    call MPI_Bcast(api_gauge_origin, 3, MPI_REALK, root, api_comm, ierr)
-    call MPI_Bcast(api_origin_LPF, 3, MPI_REALK, root, api_comm, ierr)
+    count_mpi = 3
+    call MPI_Bcast(api_dipole_origin, count_mpi, MPI_REALK, root_mpi, api_comm_mpi, ierr_mpi)
+    call MPI_Bcast(api_gauge_origin,  count_mpi, MPI_REALK, root_mpi, api_comm_mpi, ierr_mpi)
+    call MPI_Bcast(api_origin_LPF,    count_mpi, MPI_REALK, root_mpi, api_comm_mpi, ierr_mpi)
     api_inited = .true.
   end subroutine Gen1IntAPIBcast
 #endif

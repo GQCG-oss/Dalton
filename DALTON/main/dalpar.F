@@ -20,6 +20,7 @@ C
 C FILE: dalpar.F
 C
 C (until Jan. 2017 these subroutines were in eri/eri2par.F)
+
 C
 C  /* Deck dalton_nodedriver */
 #if defined (VAR_MPI)
@@ -74,6 +75,7 @@ C
 #endif
 
 #include "implicit.h"
+
 #include "priunit.h"
 #include "mtags.h"
 C infpar.h: MASTER,MYNUM, PARHER
@@ -106,39 +108,6 @@ C gnrinf.h : PARCAL, DIRCAL
 C
 C     Get calculation type (IPRTYP)
   100 CONTINUE
-#ifdef VAR_IFORT
-!     Nov 2013 hjaaj: sleep 10 millisecond before next check for a task
-!     - this saves a lot of cpu time on other cores in a sequential section
-!     - may make it possible to go into turbo mode
-!     - may make it possible to exploit e.g. parallel DGEMM in MKL in serial sections
-C      CALL SLEEP(1)
-c
-!     - only intel ifort has a sleepqq counting in milliseconds (that I know of),
-!       the more common sleep(n) sleeps in at least one second, which is too long.
-!       (One could use an interface to the C routine usleep.)
-      CALL SLEEPQQ(TEN_4)
-#endif
-#ifdef VAR_GFORTRAN
-!      CALL SLEEP(1)
-#endif
-#ifdef COPIED_FROM_NET_CHECK_IT_OUT
-! milliseconds wait
-use iso_c_binding
-implicit none
-interface
-   subroutine usleep(useconds) bind(C)
-!  integer(c_int) function usleep(useconds) bind(C)
-    use iso_c_binding
-    implicit none
-    integer(c_int32_t), value :: useconds
-!  end function
-   end subroutine
-end interface
-  print *, 'before'
-  call usleep(500000_c_int32_t) ! sleep for 1/2 s
-  print *, 'after'
-end
-#endif
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
       IF (IPRTYP.GT.0) THEN
@@ -315,12 +284,12 @@ C added by Bin Gao, May 12, 2012
          else if (IPRTYP .eq. CALL_FCKTRA_DISTRIBUTED) THEN
             call FCKTRA_DISTRIBUTED_NODE(WORK(1),MWORK,IPRINT)
          ELSE
-            WRITE(LUPRI,'(/A,I5,A,I10)')
+            WRITE(LUPRI,'(/A,I5,A,I0)')
      &         '(DALTON_NODEDRIVER) ERROR on slave',mynum,
-     &         ': Unknown calculation type request',IPRTYP
-            WRITE(*,'(/A,I5,A,I10)')
+     &         ': Unknown calculation type request ',IPRTYP
+            WRITE(*,'(/A,I5,A,I0)')
      &         '(DALTON_NODEDRIVER) ERROR on slave',mynum,
-     &         ': Unknown calculation type request',IPRTYP
+     &         ': Unknown calculation type request ',IPRTYP
             CALL QUIT('DALTON_NODEDRIVER: Unknown calculation type')
          END IF
 C
@@ -349,6 +318,59 @@ C
       RETURN
       END
 #endif
+
+C  /* Deck dalton_parctl */
+      SUBROUTINE DALTON_PARCTL(ITASK,IPRINT)
+C
+C 20-Oct-2019 Hans Joergen Aa. Jensen
+C
+C Called by master node to control parallel calculation.
+C Can be used to send slaves to sleep and to wake them up.
+C
+C ITASK .gt. 0: wake slaves and get hold of them for task ITASK
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+      implicit none
+      integer :: itask, iprint
+C
+#if defined (VAR_MPI)
+#include "maxorb.h"
+#include "infpar.h"
+      INCLUDE 'mpif.h'
+#include "mtags.h"
+
+      integer :: NODE
+      integer(kind=MPI_INTEGER_KIND), allocatable ::
+     &   my_requests(:), my_statuses(:,:), IERR, NODTOT_mpi
+      logical, save  :: first_call = .true.
+C
+
+      IF (NODTOT .EQ. 0) RETURN   ! MPI version of DALTON, but no slaves (i.e. sequential)
+
+      if (first_call) then
+         allocate ( my_requests(nodtot) )
+         allocate ( my_statuses(MPI_STATUS_SIZE,nodtot) )
+         first_call = .false.
+      end if
+      IF (ITASK .EQ. -1) THEN
+C        go back from submenu to main menu via MPI_BCAST
+!        CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+      ELSE
+C        slave should be in main menu, ready to receive task
+C        (we use point-to-point communication instead of mpi_bcast, so it can be probed with mpi_iprobe)
+         CALL MPIXBCAST(ITASK,1,'INTEGER',MASTER)
+
+         CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+      END IF
+
+#else /* not VAR_MPI */
+
+      CALL QUIT('DALTON_PARCTL called '//
+     &   'but this is a sequential DALTON version !')
+
+#endif /* VAR_MPI */
+      RETURN
+      END
 C  /* Deck sendname */
       SUBROUTINE SENDNAME(NASTER,NYTID)
 C
@@ -362,11 +384,11 @@ C
       MASTER = NASTER
       MYTID  = NYTID
 C
-C     Get my name
+C     Get name of my host machine
 C
       CALL GETNAME(MYNAME)
 C
-C     Return name to master
+C     Send name to master
 C
 #if defined (VAR_MPI)
       CALL MPIXSEND(MYNAME,20,'STRING',MASTER,MTAG8)
@@ -565,7 +587,7 @@ C
 #include "infpar.h"
 #include "iprtyp.h"
 #include "gnrinf.h"
-      DATA TOTWAL /0./
+      DATA TOTWAL /0.0D0/
       SAVE TOTWAL
 C
       CALL QENTER('PARDRV')
@@ -591,8 +613,7 @@ C
 C     Tell nodes whether this is an ERI or HERMIT run. Send IPRNOD (PVM: NCODE)
 C
 #if defined (VAR_MPI)
-      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(IPRNOD,1,'INTEGER',MASTER)
+      CALL DALTON_PARCTL(IPRTYP,IPRNOD)
 #endif
 #if defined (VAR_PVM)
       CALL PVMXINITSEND(NCODE)
