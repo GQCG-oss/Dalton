@@ -1,5 +1,0 @@
-   energy_solv
-   -----------
-   Molecule:         H2CO
-   Wave Functions:   SCF, MP2 and MCSCF (CAS) / 6-31G
-   Test Purpose:     Solvation energies; check .MOSTART H1DIAG option

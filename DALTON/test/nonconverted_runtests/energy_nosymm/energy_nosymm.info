@@ -1,5 +1,0 @@
-   energy_nosymm
-   -------------
-   Molecule:         H2O
-   Wave Functions:   SCF, MP2, and MCSCF (CAS) / cc-pVDZ (Atombasis)
-   Test Purpose:     Check energy calculations without symmetry

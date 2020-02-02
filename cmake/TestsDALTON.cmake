@@ -449,7 +449,7 @@ if(ENABLE_XCINT)
 endif()
 
 if(ENABLE_VPOTDAMP)
-    add_dalton_runtest(qmcmm "dalton;runtest;qmcmm;short;parallel")
+    add_dalton_runtest(qmcmm "dalton;runtest;qmcmm;short")
 endif()
 
 if(ENABLE_PCMSOLVER)

@@ -1,5 +1,0 @@
-   dpt_h2s_finp
-   ------------
-   Molecule:       H2S in C2v
-   Wave Function:  CCSD, CCSD(T) / cc-pVDZ
-   Test Purpose:   Finite-field (+0.1) first-order DPT correction

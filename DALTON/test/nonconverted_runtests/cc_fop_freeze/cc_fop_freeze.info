@@ -1,6 +1,0 @@
-   cc_fop_freeze
-   -------------
-   Molecule:         N2 in D2h
-   Wave Function:    CCS, MP2, CCSD / aug-cc-pVDZ
-   Test Purpose:     Frozen-core approximation for
-                     first-order one-electron properties

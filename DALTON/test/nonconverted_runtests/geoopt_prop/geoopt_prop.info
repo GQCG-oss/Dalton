@@ -1,8 +1,0 @@
-   geoopt_prop
-   -----------
-   Molecule:         H2O
-   Wave Function:    SCF / 6-311++G**
-   Test Purpose:     Geometry optimization using .OPTIMIZE module
-                     (1st order) with a calculation of quadrupole moment,
-                     magnetizability and nuclear shieldings at the
-                     optimized geometry, along with a vibrational analysis

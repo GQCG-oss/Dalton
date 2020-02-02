@@ -1,5 +1,0 @@
-   cc_drpa_grad
-   -----------
-   Molecule:         HF in C1
-   Wave Function:    Direct RPA / STO-3G
-   Test Purpose:     Analytic gradient

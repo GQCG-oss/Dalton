@@ -1,5 +1,0 @@
-   cc_grad_ccpt_hf
-   --------------
-   Molecule:         HF, C2v 
-   Wave Function:    CCSD(T) / DZ(Dunning)
-   Test Purpose:     CCSD(T) gradient

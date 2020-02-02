@@ -1,5 +1,0 @@
-   cc2_r12_aux_ch4_sym_lhtr
-   -----------
-   Molecule:         Methane (CH4)
-   Wave Function:    CC2-R12 / 6-311G**
-   Test Purpose:     Check CC2-R12 excitation energies with symmetry and using LHTR

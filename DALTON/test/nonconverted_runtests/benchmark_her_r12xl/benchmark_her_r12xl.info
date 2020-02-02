@@ -1,6 +1,0 @@
-   benchmark_her_r12xl
-   -------------------
-   Molecule:         Methane (CH4)
-   Wave Function:    MP2-R12 / 6-311G**
-   Test Purpose:     Check R12 method with auxiliary basis and symmetry
-                     using HERMIT integral code

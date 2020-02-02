@@ -1,5 +1,0 @@
-   cc_rsp_twophotb
-   ---------------
-   Molecule:         HF in C2
-   Wave Function:    CC2 / 6-31G**
-   Test Purpose:     Finite difference on one-photon transition moments

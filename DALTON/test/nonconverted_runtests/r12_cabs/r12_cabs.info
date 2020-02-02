@@ -1,5 +1,0 @@
-   r12_cabs
-   -----------
-   Molecule:         Methane (CH4)
-   Wave Function:    MP2-R12 / Turbomole-TZV
-   Test Purpose:     Check R12 method with complementary auxiliary basis

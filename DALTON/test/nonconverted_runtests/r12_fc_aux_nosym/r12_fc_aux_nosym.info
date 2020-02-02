@@ -1,5 +1,0 @@
-   r12_fc_aux_nosym
-   ----------------
-   Molecule:         Nitrogen (N2)
-   Wave Function:    MP2-R12 / cc-pVTZ w/frozen core
-   Test Purpose:     Check R12 method with auxiliary basis but without symmetry

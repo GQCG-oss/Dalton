@@ -1,5 +1,0 @@
-   cc_energy_triplet2
-   ------------------
-   Molecule:         H2O in C2v
-   Wave Function:    CCS, CC2, CCSD / 6-31G
-   Test Purpose:     Triplet excitation energies

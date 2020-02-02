@@ -1,6 +1,0 @@
-   cc3_twophot3
-   --------------
-   Molecule:         He2 (with symmetry)
-   Wave Function:    CCSD and CC3 / cc-pVDZ
-   Test Purpose:     transition moments (one and two photon, between
-                     ground and an excited states)

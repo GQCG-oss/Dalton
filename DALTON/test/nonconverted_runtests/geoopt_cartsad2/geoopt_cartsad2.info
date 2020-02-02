@@ -1,9 +1,0 @@
-   geoopt_cartsad2
-   ---------------
-   Molecule:         C2H6
-   Wave Function:    SCF / STO-3G
-   Test Purpose:     First order transition state optimization in Cartesian
-                     coordinates. Initial approximate (model) Hessian, updates
-                     are done with Bofill's method. The partitioned rational
-                     function method controls the steps and Baker's
-                     convergence criteria are used

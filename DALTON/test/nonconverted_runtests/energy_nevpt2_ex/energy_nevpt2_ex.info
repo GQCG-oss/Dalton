@@ -1,6 +1,0 @@
-   energy_nevpt2_ex
-   ----------------
-   Molecule:         H2CO
-   Wave Functions:   MCSCF (CAS) / NEVPT2 / ano-1 basis
-   Test Purpose:     Check NEVPT2 energy calculation for electronic excited state
-                     and check freezing of orbitals in NEVPT2

@@ -1,7 +1,0 @@
-   ccsdr12_n2_exc
-   -------------
-   Molecule:         N2
-   Wave Function:    CCSD(R12) / cc-pVDZ
-   Test Purpose:     - CCSD(R12) excitation energies without symmetry
-                     - test .R12ORB
-                     - non-direct mode

@@ -1,9 +1,0 @@
-   cc_rsp_gamma
-   ------------
-   Molecule:         HF in C2
-   Wave Function:    CCS / 6-31G**
-   Test Purpose:     Second hyperpolarizabilities (cubic response):
-                     - Parallel isotropic average (gamma_||) 
-                     - A & B coefficients  (2. and 4. order disp.
-                       coefficients)
-                     - Explicitly use symmetry of linear molecules

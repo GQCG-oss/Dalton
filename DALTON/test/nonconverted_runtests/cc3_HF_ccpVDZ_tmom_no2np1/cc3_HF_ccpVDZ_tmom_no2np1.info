@@ -1,7 +1,0 @@
-   cc3_HF_ccpVDZ_tmom_no2np1
-   -----------
-   Molecule:         HF
-   Theory Level:     CC3 / cc-pVDZ
-   Test Purpose:     Transition moment between the ground and an
-                     excited state; non-totally symmetric operator.
-                     (NOT exploiting 2n+1 rule!)
