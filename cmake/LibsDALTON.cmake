@@ -97,11 +97,6 @@ if(ENABLE_GEN1INT)
         )
 endif()
 
-
-if(ENABLE_OPENRSP)
-    include(LibsOpenRSP)
-endif()
-
 include(LibsPElib)
 
 include(LibsQFITlib)

@@ -29,11 +29,6 @@ C  /* Deck her_pardrv */
      &                      DINTSKP,RELCALC,GENCTR)
 
 C  Hermit parallel driver.  Only called from PARDRV (checked Nov. 2016).
-
-C Note Nov. 2016 hjaaj: GENCTR is apparently related to some BUILD_OPENRSP
-C work, but no comment explains the meaning. Was introduced in Jan. 2014
-C according to "git blame".  Currently it is **UNDEFINED** in the calls of PARDRV !!!
-
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -105,11 +100,6 @@ C     Derivatives with respect to magnetic field(DDFOCK=T)
 C         L_TMPMT = 3*N2BASX + L_SUS
 C modified by Bin Gao, June 3, 2009, from linsca
          NFMAT = 3*NDMAT
-#ifdef BUILD_OPENRSP
-         IF (USE_OPENRSP) THEN
-            IF (MAXDER .EQ. 2 .AND. .NOT.GENCTR) NFMAT = 6*NDMAT
-         END IF
-#endif
          L_FCK = NFMAT*N2BASX
          L_TMPMT = L_FCK + L_SUS
       ELSE IF (ITYPE .EQ. 8) THEN
@@ -665,15 +655,6 @@ C
          NFMAT = NDMAT
       ELSE IF (ITYPE .EQ. -5) THEN
          NFMAT = 3*NDMAT
-#ifdef BUILD_OPENRSP
-!radovan: this breaks dft_camb3lyp_magsus test on master
-!         after the problem is fixed, remove the ifdef!
-        IF (USE_OPENRSP) THEN
-C added by Bin Gao, June 3, 2009
-         IF (MAXDIF .EQ. 2 .AND. .NOT. GENCTR)
-     &      NFMAT = 6*NDMAT
-        END IF
-#endif
       ELSE IF (ITYPE .EQ. 8) THEN
          NFMAT = 3*NDMAT*NUCDEG(IATOM)
       ELSE
@@ -723,9 +704,6 @@ C
       CALL MPIXBCAST(ERFEXP,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(EXPGRA,1,'LOGICAL',MASTER)
-#ifdef BUILD_OPENRSP
-      CALL MPIXBCAST(USE_OPENRSP,1,'LOGICAL',MASTER)
-#endif
 C
 Cef begin
       IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
@@ -1023,7 +1001,7 @@ C
 C
 C        Other defaults for the slaves
 C
-         USE_OPENRSP = .FALSE.
+         ! place other defaults here
 C
 C        Set basis set information always (with NEWGEO .true.)
 C
@@ -1114,20 +1092,7 @@ C modified by Bin Gao, December 24, 2009
          CALL BIN_SUM(8, DINTSKP)
 #endif
       ELSE IF (ITYPE .EQ. -5) THEN
-#ifdef BUILD_OPENRSP
-!radovan: this breaks dft_camb3lyp_magsus test on master
-!         after the problem is fixed, remove the ifdef!
-
-C modified by Bin Gao, December 21, 2009
-        IF (USE_OPENRSP) THEN
-         CALL DZERO(FMAT,L_FCK)
-         CALL DZERO(SUS2EL,L_SUS)
-        ELSE
-#endif
          CALL DZERO(FMAT,3*N2BASX)
-#ifdef BUILD_OPENRSP
-        END IF
-#endif
 COBL/AMT
 C for CAMB3LYP, we must not zero the susceptibilities the second run in TWOLOP
          IF (.NOT. DONETWOLOP)THEN
@@ -1168,19 +1133,8 @@ C
             CALL MPIXRECV(TMPMAT(1),L_TMPMT,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(L_TMPMT,D1,TMPMAT,1,FMAT,1)
          ELSE IF (ITYPE .EQ. -5) THEN
-#ifdef BUILD_OPENRSP
-!radovan: this breaks dft_camb3lyp_magsus test on master
-!         after the problem is fixed, remove the ifdef!
-           IF (USE_OPENRSP) THEN
-            CALL MPIXRECV(TMPMAT(1),L_FCK,'DOUBLE',NWHO,MTAG7)
-            CALL DAXPY(L_FCK,D1,TMPMAT,1,FMAT,1)
-           ELSE
-#endif
             CALL MPIXRECV(TMPMAT(1),3*N2BASX,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(3*N2BASX,D1,TMPMAT,1,FMAT,1)
-#ifdef BUILD_OPENRSP
-           END IF
-#endif
             CALL MPIXRECV(TMPMAT(1),L_SUS,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(L_SUS,D1,TMPMAT,1,SUS2EL,1)
          END IF
@@ -1805,9 +1759,6 @@ C
         CALL MPIXBCAST(ERFEXP,   1,'LOGICAL',MASTER)
         CALL MPIXBCAST(CHIVAL,   1,'DOUBLE' ,MASTER)
         CALL MPIXBCAST(EXPGRA,   1,'LOGICAL',MASTER)
-#ifdef BUILD_OPENRSP
-        CALL MPIXBCAST(USE_OPENRSP,1,'LOGICAL',MASTER)
-#endif
 C
 C       IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
 C                               ELSE calculate g_lr(R12)
