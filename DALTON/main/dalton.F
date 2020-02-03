@@ -34,9 +34,6 @@ C=========================================================================
 #endif
 C
       use parallel_models_mpi
-#ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: xcint_is_active, xcint_finalize
-#endif
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -727,14 +724,6 @@ C
       end do
       ! clear the corresponding table and hope for the best
       call clear_iuntab()
-
-
-#ifdef ENABLE_XCINT
-      if (xcint_is_active()) then
-        call xcint_finalize()
-      end if
-#endif
-
 
       CALL QEXIT('DALTON main')
       END

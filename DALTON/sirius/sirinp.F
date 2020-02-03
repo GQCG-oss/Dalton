@@ -2246,13 +2246,6 @@ C  /* Deck sir_geninp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: xcint_set_functional,
-     &                                  xcint_activate,
-     &                                  xcint_is_active,
-     &                                  xcint_set_grid
-#endif
-
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
@@ -2289,7 +2282,7 @@ C
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
      *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
-     *            '.KSPT2 ','.GASCI ','.XCINT ','.NUMGRI','xXXXXXX',
+     *            '.KSPT2 ','.GASCI ','xXXXXXX','xXXXXXX','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
      *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','.VIRTRU'/
 C
@@ -2570,36 +2563,14 @@ C *** Option 22: .GASCI
         NUMRUN   = NUMRUN + 1
       GO TO 100
 
-      ! Option 23: .XCINT
-  123 continue
-#ifdef ENABLE_XCINT
-        call xcint_activate()
-#else
-        call quit('.XCINT is not available in this version')
-#endif
-      go to 100
+! *** Option 23: not in use
+  123 CONTINUE
+      GO TO 100
 
-      ! Option 24: .NUMGRID
-  124 continue
-#ifdef ENABLE_XCINT
-      if (xcint_is_active()) then
-        ! radial precision threshold
-        d_radint = 0
-        read(lucmd, *) d_radint
-        ! minimum number of angular points
-        i_angmin = 0
-        read(lucmd, *) i_angmin
-        ! regular number of angular points
-        i_angint = 0
-        read(lucmd, *) i_angint
-        call xcint_set_grid(d_radint,
-     &                      i_angmin,
-     &                      i_angint)
-      end if
-#else
-      call quit('.NUMGRID is not available in this version')
-#endif
-      go to 100
+! *** Option 24: not in use
+  124 CONTINUE
+      GO TO 100
+
 C *** Option 25 not used
   125 CONTINUE
       GO TO 100
@@ -2692,21 +2663,7 @@ C
 
       ! here we parse the functional
       if (functional_line_read) then
-
-#ifdef ENABLE_XCINT
-         if (xcint_is_active()) then
-            this_mu   = 0.0d0
-            this_beta = 0.0d0
-            call xcint_set_functional(titlin,
-     &                                hfxfac, this_mu, this_beta)
-            call dftsetcam(this_mu, this_beta)
-         else
-#endif
-            call dftsetfunc(functional_line, inperr)
-#ifdef ENABLE_XCINT
-         end if
-#endif
-
+         call dftsetfunc(functional_line, inperr)
          IF (WDFTMP.NE.0.0D0 .AND. .NOT.DOMP2) THEN ! double-hybrid DFT requested
             DOMP2    = .TRUE.
             NUMRUN   = NUMRUN + 1
