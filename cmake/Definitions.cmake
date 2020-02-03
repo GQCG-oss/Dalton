@@ -30,6 +30,3 @@ if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DVAR_INT64)
 endif()
 
-if(ENABLE_QCMATRIX)
-    add_definitions(-DENABLE_QCMATRIX)
-endif()
