@@ -265,22 +265,6 @@ C ISYMTR is a non-local parameter, we need to copy it to the info-array
          CALL GETTIM (DUMMY,WTIMEE)
          SOWTIM(1)  = SOWTIM(1)  + WTIMEE - WTIMES
 C
-C--------------------------------------------------------------
-C        Make S[2] linear transformation of trialvectors giving
-C        resultvectors.
-C--------------------------------------------------------------
-C
-         CALL GETTIM (DUMMY,WTIMES)
-         DTIME      = SECOND()
-         IF (MODEL .EQ. 'AORPA') THEN
-            CALL SO_SRES(NOLDTR,NNEWTR,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-     &                   ISYMTR,WORK(KEND1),LWORK1)
-         ENDIF
-         DTIME      = SECOND()   - DTIME
-         SOTIME(40) = SOTIME(40) + DTIME
-         CALL GETTIM (DUMMY,WTIMEE)
-         SOWTIM(2)  = SOWTIM(2)  + WTIMEE - WTIMES
-C
          IF ( AOTEST ) THEN
 C
 C--------------------------------------------------------------------

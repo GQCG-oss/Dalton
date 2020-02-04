@@ -159,11 +159,11 @@ C
          LDENSIJ = 0
          LDENSAB = 0
          LDENSAI = 0
-C        Force a crash of this is used
-         KT2AM   = LWORK + 1
-         KDENSIJ = LWORK + 1
-         KDENSAB = LWORK + 1
-         KDENSAI = LWORK + 1
+C        Force a crash if this is used
+         KT2AM   = HUGE(LWORK)
+         KDENSIJ = HUGE(LWORK)
+         KDENSAB = HUGE(LWORK)
+         KDENSAI = HUGE(LWORK)
       END IF
 C
       CALL SO_MEMMAX ('SO_LNRABA.1',LWORK1)
