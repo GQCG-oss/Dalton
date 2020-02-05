@@ -1566,6 +1566,9 @@ CKeinSPASmehr
             ENDIF
 C
          ELSE
+            WRITE(LUPRI,'(//5x,A,A,/)')
+     *          ' SOPPA :',
+     *          ' Second Order Polarization Propagator Approximation'
             IF (DODRCT) THEN
                AOSOP = .TRUE.
                WRITE(LUPRI,'(//5x,A,/,5x,A,A,/,5x,A)')
@@ -1574,10 +1577,6 @@ CPi extra space to avoid test crash
      &              '    (Ref.: K. L. Bak, H. Koch, J. Oddershede,',
      &              ' O. Christiansen and S. P. A. Sauer',
      &              '     J. Chem. Phys. 112, 4173-4185 (2000))'
-            ELSE
-               WRITE(LUPRI,'(//5x,A,A,/)')
-     *             ' SOPPA :',
-     *             ' Second Order Polarization Propagator Approximation'
             END IF
          END IF
 CPi 9.8.16 SPAS: In case of ECD or OECD avoid london orbitals
