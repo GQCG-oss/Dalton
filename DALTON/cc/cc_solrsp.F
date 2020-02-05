@@ -30,7 +30,7 @@ C      SLV98,OC: Self consistent solution of 1-order response equations.
 C
 C---------------------------------------------------------------------*
 C
-      USE PELIB_INTERFACE, ONLY: USE_PELIB, SIMPLIFIED_LAGRANGIAN
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
       IMPLICIT NONE
 #include "priunit.h"
 #include "maxorb.h"
@@ -457,69 +457,6 @@ C======================================================================
          ENDIF
       ENDIF
 
-      IF (USE_PELIB().AND.SIMPLIFIED_LAGRANGIAN) THEN
-C
-C     For simplified test if there exist vectors that are not converged.
-C
-         LSLTCVG = .TRUE.
-         WRITE(LUPRI,'(//,1X,A)') 'Testing R1 list: '
-         WRITE(LUPRI,'(/,1X,A)')
-     *   'List nr.  Label     Symmetry      Frequency      T1-norm     '
-     *    //'   T2-norm'
-         DO ILSTNR = 1, NLRTLBL
-C
-            ISYM = ISYLRT(ILSTNR)
-            KT1  = 1
-            KT2  = KT1  + NT1AM(ISYM)
-            IF (.NOT. CCS) THEN
-               KEND1= KT2  + NT2AM(ISYM)
-            ELSE
-               KEND1= KT2
-            ENDIF
-            LEND1= LWORK - KEND1
-            IF (LEND1 .LE. 0 ) CALL QUIT(
-     *          'Insufficient workspace in CC_SOLRSP ')
-            IOPT  = 3
-            CALL CC_RDRSP('R1',ILSTNR,ISYM,IOPT,MODEL1,WORK(KT1),
-     *                    WORK(KT2))
-            X1  = DDOT(NT1AM(ISYM),WORK(KT1),1,WORK(KT1),1)
-            X2  = 0.0D0
-            IF (.NOT.CCS) THEN
-               X2  = DDOT(NT2AM(ISYM),WORK(KT2),1,WORK(KT2),1)
-            ENDIF
-            WRITE(LUPRI,'(1X,I5,5X,A8,2X,I4,6X,F15.10,F15.10,F15.10)')
-     *           ILSTNR,LRTLBL(ILSTNR),ISYM,FRQLRT(ILSTNR),X1,X2
-C
-            XLNCCCU = X1+X2
-            XLNCCPR = XLRT(ILSTNR)
-            IF (ABS(XLNCCPR-XLNCCCU).GT.CVGTSOL) LSLTCVG = .FALSE.
-            IF (IPRINT.GT.10)  WRITE(LUPRI,*) ' LSLTCVG = ',LSLTCVG
-            XLRT(ILSTNR) = XLNCCCU
-C
-         END DO
-
-         IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
-            CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                  IDUMMY, IDUMMY, DUMMY, LDUMMY,
-     &                  ISYLRT, LRTLBL, FRQLRT, IDUMMY,
-     &                  ISYOFT, NLRTLBL, MAXTLBL, WORK, LWORK)
-         END IF
-C
-         IF (LSLTCVG) THEN
-           WRITE(LUPRI,*)
-     &      ' Solvent 1-order response amplitudes converged'
-         ELSE
-           ICCSLIT = ICCSLIT + 1
-           IF (ICCSLIT.GT.MXCCSLIT) 
-     &        CALL QUIT('Too many solvent iterations in CC_SOLRSP')
-           GOTO 999
-         END IF
-      END IF
-
-! Introduce marker 996 for iteration over response multipliers only
-! for the simplified PDE-CC
-! DH, 12/2017
-  996 CONTINUE
 C======================================================================
 C     Solve first-order Lagrange multiplier response equations.
 C======================================================================
@@ -561,51 +498,49 @@ C
 C
          LSLTCVG = .TRUE.
          LSLLCVG = .TRUE.
-         IF (.NOT.(USE_PELIB().AND.SIMPLIFIED_LAGRANGIAN)) THEN
 C
 C        Test if there exist vectors that are not converged.
 C
-            WRITE(LUPRI,'(//,1X,A)') 'Testing R1 list: '
-            WRITE(LUPRI,'(/,1X,A)')
-     &      'List nr.  Label     Symmetry      Frequency      T1-norm '
-     &      //'   T2-norm'
-            DO 997  ILSTNR = 1, NLRTLBL
+         WRITE(LUPRI,'(//,1X,A)') 'Testing R1 list: '
+         WRITE(LUPRI,'(/,1X,A)')
+     * 'List nr.  Label     Symmetry      Frequency      T1-norm     '
+     * //'   T2-norm'
+         DO 997  ILSTNR = 1, NLRTLBL
 C
-              ISYM = ISYLRT(ILSTNR)
-              KT1  = 1
-              KT2  = KT1  + NT1AM(ISYM)
-              IF (.NOT. CCS) THEN
-                 KEND1= KT2  + NT2AM(ISYM)
-              ELSE
-                 KEND1= KT2
-              ENDIF
-              LEND1= LWORK - KEND1
-              IF (LEND1 .LE. 0 ) CALL QUIT(
-     *            'Insufficient workspace in CC_SOLRSP ')
-              IOPT  = 3
-              CALL CC_RDRSP('R1',ILSTNR,ISYM,IOPT,MODEL1,WORK(KT1),
-     *                      WORK(KT2))
-              X1  = DDOT(NT1AM(ISYM),WORK(KT1),1,WORK(KT1),1)
-              X2  = 0.0D0
-              IF (.NOT.CCS) THEN
-                 X2  = DDOT(NT2AM(ISYM),WORK(KT2),1,WORK(KT2),1)
-              ENDIF
-              WRITE(LUPRI,'(1X,I5,5X,A8,2X,I4,6X,F15.10,F15.10,F15.10)')
-     *             ILSTNR,LRTLBL(ILSTNR),ISYM,FRQLRT(ILSTNR),X1,X2
-C             
-              XLNCCCU = X1+X2
-              XLNCCPR = XLRT(ILSTNR)
-              IF (ABS(XLNCCPR-XLNCCCU).GT.CVGTSOL) LSLTCVG = .FALSE.
-              IF (IPRINT.GT.1)  WRITE(LUPRI,*) ' LSLTCVG = ',LSLTCVG
-              XLRT(ILSTNR) = XLNCCCU
+            ISYM = ISYLRT(ILSTNR)
+            KT1  = 1
+            KT2  = KT1  + NT1AM(ISYM)
+            IF (.NOT. CCS) THEN
+               KEND1= KT2  + NT2AM(ISYM)
+            ELSE
+               KEND1= KT2
+            ENDIF
+            LEND1= LWORK - KEND1
+            IF (LEND1 .LE. 0 ) CALL QUIT(
+     *          'Insufficient workspace in CC_SOLRSP ')
+            IOPT  = 3
+            CALL CC_RDRSP('R1',ILSTNR,ISYM,IOPT,MODEL1,WORK(KT1),
+     *                    WORK(KT2))
+            X1  = DDOT(NT1AM(ISYM),WORK(KT1),1,WORK(KT1),1)
+            X2  = 0.0D0
+            IF (.NOT.CCS) THEN
+               X2  = DDOT(NT2AM(ISYM),WORK(KT2),1,WORK(KT2),1)
+            ENDIF
+            WRITE(LUPRI,'(1X,I5,5X,A8,2X,I4,6X,F15.10,F15.10,F15.10)')
+     *           ILSTNR,LRTLBL(ILSTNR),ISYM,FRQLRT(ILSTNR),X1,X2
 C
- 997        CONTINUE
-         END IF
+            XLNCCCU = X1+X2
+            XLNCCPR = XLRT(ILSTNR)
+            IF (ABS(XLNCCPR-XLNCCCU).GT.CVGTSOL) LSLTCVG = .FALSE.
+            IF (IPRINT.GT.16)  WRITE(LUPRI,*) ' LSLTCVG = ',LSLTCVG
+            XLRT(ILSTNR) = XLNCCCU
+C
+ 997     CONTINUE
 C
          WRITE(LUPRI,'(//,1X,A)') 'Testing L1 list: '
          WRITE(LUPRI,'(/,1X,A)')
-     &   'List nr.  Label     Symmetry      Frequency      T1-norm     '
-     &    //'   T2-norm'
+     * 'List nr.  Label     Symmetry      Frequency      T1-norm     '
+     * //'   T2-norm'
          DO 998  ILSTNR = 1, NLRZLBL
 C
             ISYM = ISYLRZ(ILSTNR)
@@ -633,37 +568,16 @@ C
             XLNCCCU = X1+X2
             XLNCCPR = XLRZ(ILSTNR)
             IF (ABS(XLNCCPR-XLNCCCU).GT.CVGLSOL) LSLLCVG = .FALSE.
-            IF (IPRINT.GT.1)  WRITE(LUPRI,*) ' LSLLCVG = ',LSLLCVG
+            IF (IPRINT.GT.16)  WRITE(LUPRI,*) ' LSLLCVG = ',LSLLCVG
             XLRZ(ILSTNR) = XLNCCCU
 C
  998     CONTINUE
 C
-! Check multiplier convergence for simplified PDE-CC
-! DH, 12/2017
-         IF (USE_PELIB().AND.SIMPLIFIED_LAGRANGIAN) THEN
-            IF (.NOT.LSLLCVG) THEN
-              ICCSLIT = ICCSLIT + 1
-              IF (ICCSLIT.GT.MXCCSLIT) 
-     &           CALL QUIT('Too many solvent iterations in CC_SOLRSP')
-              GO TO 996
-            END IF
-            WRITE(LUPRI,*) 
-     &          'Solvent 1-order multiplier equations converged'
-         END IF
 C
          IF (LSLTCVG.AND.LSLLCVG) THEN
-           IF (SIMPLIFIED_LAGRANGIAN) THEN
-             WRITE(LUPRI,*)
-     &        'Simplified Lagrangian: iterative procedure for 1st order'
-     &         //' response equations was uncoupled'
-             WRITE(LUPRI,*)
-     &        ' Solvent 1-order response equations converged in'
-     &        ,ICCSLIT,' solvent iterations'
-           ELSE
-             WRITE(LUPRI,*)
-     *        ' Solvent 1-order response equations converged in'
-     *        ,ICCSLIT,' solvent iterations'
-           END IF
+           WRITE(LUPRI,*)
+     *      ' Solvent 1-order response equations converged in'
+     *      ,ICCSLIT,' solvent iterations'
          ELSE
            ICCSLIT = ICCSLIT + 1
            IF (ICCSLIT.GT.MXCCSLIT) THEN
@@ -674,7 +588,7 @@ C
               WRITE(LUPRI,*) 'NO SOLVENT ITERATION FOR TPA'
            ELSE
               WRITE(LUPRI,*)' Solvent 1-order response equations not ',
-     *                     'converged in',ICCSLIT,' solvent iterations'
+     *                      'converged in',ICCSLIT,' solvent iterations'
               WRITE(LUPRI,*)' A New iteration starts '
               GOTO 999
            END IF

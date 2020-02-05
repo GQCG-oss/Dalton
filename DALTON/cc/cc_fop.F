@@ -57,8 +57,7 @@ C     RCCD and DRCCD, Sonia & Maria Francesca Iozzi (Fran), 2010
 C     SOSEX, Thomas Bondo Pedersen 2011
 C-----------------------------------------------------------------------------
 C
-      USE PELIB_INTERFACE, ONLY: USE_PELIB, PELIB_IFC_PECC, 
-     &                           SIMPLIFIED_LAGRANGIAN
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, PELIB_IFC_PECC
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1472,16 +1471,9 @@ C
 C
       ENDIF
 C
-      IF ((USE_PELIB()).AND.(SIMPLIFIED_LAGRANGIAN)) THEN
-        KDENS = KWRK2     
-        KDENSCC = KDENS + N2BST(ISYMOP)
-        KWRK3 = KDENSCC + N2BST(ISYMOP)
-        LWRK3 = LWORK - KWRK3
-      ELSE
-        KDENS = KWRK2     
-        KWRK3 = KDENS + N2BST(ISYMOP)
-        LWRK3 = LWORK - KWRK3
-      END IF
+      KDENS = KWRK2
+      KWRK3 = KDENS + N2BST(ISYMOP)
+      LWRK3 = LWORK - KWRK3
 C
       IF (LWRK3 .LT. 0) THEN
          WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KWRK3
@@ -1505,22 +1497,9 @@ C
       call flshfo(lupri)
       NATOCC=.TRUE.
       !
-      IF (USE_PELIB().AND.SIMPLIFIED_LAGRANGIAN) THEN
-         CALL CC_D1AO(IPDD,R12PRP,WORK(KDENSCC),WORK(KZKAM),
-     &          WORK(KWRK3),LWRK3,MODEL,LIST,ILSTNR,NATOCC,
-     &          FNDPTIA,FNDPTIA2,FNDPTAB,FNDPTIJ)
-         CALL AROUND('One electron CC density in cc_fop')
-         CALL CC_PRFCKAO(WORK(KDENSCC),1)
-         SIMPLIFIED_LAGRANGIAN = .FALSE.
-         CALL CC_D1AO(IPDD,R12PRP,WORK(KDENS),WORK(KZKAM),WORK(KWRK3),
-     &            LWRK3,MODEL,LIST,ILSTNR,NATOCC,
-     &            FNDPTIA,FNDPTIA2,FNDPTAB,FNDPTIJ)
-         SIMPLIFIED_LAGRANGIAN = .TRUE.
-      ELSE
-         CALL CC_D1AO(IPDD,R12PRP,WORK(KDENS),WORK(KZKAM),WORK(KWRK3),
-     &            LWRK3,MODEL,LIST,ILSTNR,NATOCC,
-     &            FNDPTIA,FNDPTIA2,FNDPTAB,FNDPTIJ)
-      END IF
+      CALL CC_D1AO(IPDD,R12PRP,WORK(KDENS),WORK(KZKAM),WORK(KWRK3),
+     &             LWRK3,MODEL,LIST,ILSTNR,NATOCC,
+     &             FNDPTIA,FNDPTIA2,FNDPTAB,FNDPTIJ)
 C
       IF ((FROIMP .OR. FROEXP) .AND. (.NOT. MP2)) THEN
 C
@@ -1586,11 +1565,7 @@ C
         END IF
       ENDIF
       IF (USE_PELIB()) THEN
-          IF (SIMPLIFIED_LAGRANGIAN) THEN
-              CALL PELIB_IFC_PECC(WORK(KDENS),WORK(KDENSCC),CCMMCONV,2)
-          ELSE 
-              CALL PELIB_IFC_PECC(WORK(KDENS),VDUMMY,CCMMCONV,IDUMMY)
-          END IF
+        CALL PELIB_IFC_PECC(WORK(KDENS),VDUMMY,CCMMCONV,IDUMMY)
       END IF
 
 C---------------------------------------------------------------------

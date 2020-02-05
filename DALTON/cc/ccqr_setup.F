@@ -18,7 +18,7 @@
 C
 c /* deck ccqr_setup */
 *=====================================================================*
-      SUBROUTINE CCQR_SETUP(MXTRAN, MXVEC, 
+      SUBROUTINE CCQR_SETUP(MXTRAN, MXVEC,
      &                      IGTRAN, IGDOTS, NGTRAN,
      &                      IFTRAN, IFDOTS, NFTRAN,
      &                      IBTRAN, IBDOTS, NBTRAN,
@@ -32,23 +32,23 @@ c /* deck ccqr_setup */
 *---------------------------------------------------------------------*
 *
 *    Purpose: set up for CCQR section
-*                - list of G matrix transformations 
-*                - list of F/B matrix transformations 
-*                - list of F{O} matrix transformations 
-*                - list of ETA{O} vector calculations 
+*                - list of G matrix transformations
+*                - list of F/B matrix transformations
+*                - list of F{O} matrix transformations
+*                - list of ETA{O} vector calculations
 *                - list of X1 x R2 dot products
 *                - list of Xksi{O2} x L1 and Eta{O2} x R1 dot products
 *    CCMM JK+OC  - list of K matrix transformations
 *
 *     Written by Christof Haettig, november 1996.
 *     (option for B matrix transformation introduced in 12/97)
-*     (USE_R2 option introduced 3/98)                              
+*     (USE_R2 option introduced 3/98)
 *     (Orbital relaxation for one operator introduced in 6/99)
 *
 *=====================================================================*
-      USE PELIB_INTERFACE, ONLY: USE_PELIB, SIMPLIFIED_LAGRANGIAN
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #if defined (IMPLICIT_NONE)
-      IMPLICIT NONE  
+      IMPLICIT NONE
 #else
 #  include "implicit.h"
 #endif
@@ -76,10 +76,10 @@ c /* deck ccqr_setup */
 
       INTEGER IKTRAN(MXDIM_KTRAN,MXTRAN)
       INTEGER IKDOTS(MXVEC,MXTRAN)
-  
+
       INTEGER IFTRAN(MXDIM_FTRAN,MXTRAN)
       INTEGER IFDOTS(MXVEC,MXTRAN)
-  
+
       INTEGER IFATRAN(MXDIM_FATRAN,MXTRAN)
       INTEGER IFADOTS(MXVEC,MXTRAN)
 
@@ -187,7 +187,7 @@ c /* deck ccqr_setup */
       NR2TRAN = 0
       NXETRAN = 0
       NQRRESF = 0
- 
+
       MXV0G  = 0
       MXVAF  = 0
       MXVXE  = 0
@@ -201,7 +201,7 @@ c /* deck ccqr_setup */
 *---------------------------------------------------------------------*
 * start loop over all requested hyperpolarizabilities
 *---------------------------------------------------------------------*
- 
+
       DO IOPER = 1, NQROPER
         IOPERA = IAQROP(IOPER)
         IOPERB = IBQROP(IOPER)
@@ -242,7 +242,7 @@ c /* deck ccqr_setup */
         IF(LORXA)IKAPA=IR1KAPPA(LBLOPR(IOPERA),SIGN*AQRFR(IFREQ),ISYML)
         IF(LORXB)IKAPB=IR1KAPPA(LBLOPR(IOPERB),SIGN*BQRFR(IFREQ),ISYML)
         IF(LORXC)IKAPC=IR1KAPPA(LBLOPR(IOPERC),SIGN*CQRFR(IFREQ),ISYML)
- 
+
         IF ( USE_R2 ) THEN
          IR2AB=IR2TAMP(LBLOPR(IOPERA),.FALSE.,SIGN*AQRFR(IFREQ),ISYML1,
      &                 LBLOPR(IOPERB),.FALSE.,SIGN*BQRFR(IFREQ),ISYML2)
@@ -314,17 +314,17 @@ c /* deck ccqr_setup */
      &                 IR2AC,IZETVB,ITRAN,IVEC)
         NR2TRAN = MAX(NR2TRAN,ITRAN)
         MXVR2  = MAX(MXVR2,IVEC)
-     
+
         CALL CC_SETDOT(IR2TRAN,IR2DOTS,MXTRAN,MXVEC,
      &                 IR2BC,IZETVA,ITRAN,IVEC)
         NR2TRAN = MAX(NR2TRAN,ITRAN)
         MXVR2  = MAX(MXVR2,IVEC)
 
-       ELSE 
+       ELSE
           CALL QUIT('Error in CC_HYPPOL.')
        END IF
 * K matrix transformations:
-      IF (CCSLV.OR.(USE_PELIB().AND.(.NOT.SIMPLIFIED_LAGRANGIAN))) THEN
+      IF (CCSLV.OR.USE_PELIB()) THEN
         CALL CC_SETB11(IKTRAN,IKDOTS,MXTRAN,MXVEC,
      &                 ITAMPA,IZETVB,IZETVC,ITRAN,IVEC)
         NKTRAN = MAX(NKTRAN,ITRAN)
@@ -401,7 +401,7 @@ c /* deck ccqr_setup */
           IF (IKAPA.NE.0 .OR. IKAPB.NE.0 .OR. IKAPC.NE.0) THEN
             CALL QUIT('A{O} matrix transformation not yet relaxed.')
           END IF
- 
+
           CALL CC_SETAA(IAATRAN,IAADOTS,MXTRAN,MXVEC,
      &                  IZETVA,IOPERB,ITAMPC,ITRAN,IVEC)
           NAATRAN = MAX(NAATRAN,ITRAN)
@@ -493,12 +493,12 @@ c /* deck ccqr_setup */
       END DO
 
 *---------------------------------------------------------------------*
-* print the lists: 
+* print the lists:
 *---------------------------------------------------------------------*
 * general statistics:
       WRITE(LUPRI,'(/,/3X,A,I3,A)') 'For the requested',NQRRESF,
      &      ' quadratic response functions '
-      WRITE(LUPRI,'((8X,A,I3,A))') 
+      WRITE(LUPRI,'((8X,A,I3,A))')
      &   ' - ',NGTRAN,  ' G matrix transformations ',
      &   ' - ',NBTRAN,  ' B matrix transformations ',
      &   ' - ',NKTRAN,  ' K matrix transformations ',
@@ -506,7 +506,7 @@ c /* deck ccqr_setup */
      &   ' - ',NFATRAN, ' F{O} matrix transformations ',
      &   ' - ',NEATRAN, ' ETA{O} vector calculations ',
      &   ' - ',NXETRAN, ' Xksi{O2} x L1 and Eta{O2} x R1 dot products',
-     &   ' - ',NR2TRAN, ' X1 x R2 dot products ' 
+     &   ' - ',NR2TRAN, ' X1 x R2 dot products '
       WRITE(LUPRI,'(3X,A,/,/)') 'will be performed.'
 
 
@@ -629,20 +629,20 @@ c /* deck CCQR_DISP_SETUP */
 *---------------------------------------------------------------------*
 *
 *    Purpose: set up for CCQR dispersion coefficients:
-*                - list of G matrix transformations 
-*                - list of F/B matrix transformations 
-*                - list of F{O} matrix transformations 
-*                - list of ETA{O} vector calculations 
-*                - list of XC x CR2 dot products      
+*                - list of G matrix transformations
+*                - list of F/B matrix transformations
+*                - list of F{O} matrix transformations
+*                - list of ETA{O} vector calculations
+*                - list of XC x CR2 dot products
 *
 *     Written by Christof Haettig, october 1997.
 *     based on CCQR_SETUP routine, B matrix transf. added 12/97
-*     USE_R2 option introduced 3/98                               
+*     USE_R2 option introduced 3/98
 *     odd dispersion coefficients 8/98
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
-      IMPLICIT NONE  
+      IMPLICIT NONE
 #else
 #  include "implicit.h"
 #endif
@@ -667,10 +667,10 @@ c /* deck CCQR_DISP_SETUP */
 
       INTEGER IFTRAN(3,MXTRAN)
       INTEGER IFDOTS(MXVEC,MXTRAN)
-  
+
       INTEGER IBTRAN(3,MXTRAN)
       INTEGER IBDOTS(MXVEC,MXTRAN)
-  
+
       INTEGER IFATRAN(MXDIM_FATRAN,MXTRAN)
       INTEGER IFADOTS(MXVEC,MXTRAN)
 
@@ -740,7 +740,7 @@ c /* deck CCQR_DISP_SETUP */
       MXVFA = 0
       MXVEA = 0
       MXVR2 = 0
- 
+
       NQRDSPCF = 0
 
       CALL DZERO(DISPCF,MXDSPCF)
@@ -748,7 +748,7 @@ c /* deck CCQR_DISP_SETUP */
 *---------------------------------------------------------------------*
 * start loop over all requested dispersion coefficients:
 *---------------------------------------------------------------------*
- 
+
       DO IOPER = 1, NQROPER
         IOPERA = IAQROP(IOPER)
         IOPERB = IBQROP(IOPER)
@@ -933,7 +933,7 @@ c /* deck CCQR_DISP_SETUP */
           NEATRAN  = MAX(NEATRAN,ITRAN)
           MXVEA    = MAX(MXVEA,IVEC)
           EACON(1) = WEA(IVEC,ITRAN)
-        ELSE 
+        ELSE
           EACON(1) = ZERO
         END IF
 
@@ -943,7 +943,7 @@ c /* deck CCQR_DISP_SETUP */
           NEATRAN  = MAX(NEATRAN,ITRAN)
           MXVEA    = MAX(MXVEA,IVEC)
           EACON(2) = WEA(IVEC,ITRAN)
-        ELSE 
+        ELSE
           EACON(2) = ZERO
         END IF
 
@@ -953,7 +953,7 @@ c /* deck CCQR_DISP_SETUP */
           NEATRAN  = MAX(NEATRAN,ITRAN)
           MXVEA    = MAX(MXVEA,IVEC)
           EACON(3) = WEA(IVEC,ITRAN)
-        ELSE 
+        ELSE
           EACON(3) = ZERO
         END IF
 
@@ -963,7 +963,7 @@ c /* deck CCQR_DISP_SETUP */
           NEATRAN  = MAX(NEATRAN,ITRAN)
           MXVEA    = MAX(MXVEA,IVEC)
           EACON(4) = WEA(IVEC,ITRAN)
-        ELSE 
+        ELSE
           EACON(4) = ZERO
         END IF
 
@@ -973,7 +973,7 @@ c /* deck CCQR_DISP_SETUP */
           NEATRAN  = MAX(NEATRAN,ITRAN)
           MXVEA    = MAX(MXVEA,IVEC)
           EACON(5) = WEA(IVEC,ITRAN)
-        ELSE 
+        ELSE
           EACON(5) = ZERO
         END IF
 
@@ -983,7 +983,7 @@ c /* deck CCQR_DISP_SETUP */
           NEATRAN  = MAX(NEATRAN,ITRAN)
           MXVEA    = MAX(MXVEA,IVEC)
           EACON(6) = WEA(IVEC,ITRAN)
-        ELSE 
+        ELSE
           EACON(6) = ZERO
         END IF
 
@@ -993,14 +993,14 @@ c /* deck CCQR_DISP_SETUP */
 *---------------------------------------------------------------------*
         IF (LADD) THEN
           IDX = NQRDISP*(IOPER-1) + IDISP
-          
-          DISPCF(IDX) = GCON + 
+
+          DISPCF(IDX) = GCON +
      &                  FCON(1)  + FCON(2)  + FCON(3)  +
      &                  BCON(1)  + BCON(2)  + BCON(3)  +
      &                  R2CON(1) + R2CON(2) + R2CON(3) +
      &                  FACON(1) + FACON(2) + FACON(3) +
      &                  EACON(1) + EACON(2) + EACON(3) +
-     &                  EACON(4) + EACON(5) + EACON(6)  
+     &                  EACON(4) + EACON(5) + EACON(6)
 
           IF (LOCDBG) THEN
             WRITE(LUPRI,*) 'ITAMPA,ITAMPB,ITAMPC:',ITAMPA,ITAMPB,ITAMPC
@@ -1027,20 +1027,20 @@ c /* deck CCQR_DISP_SETUP */
       END DO
 
 *---------------------------------------------------------------------*
-* print the lists: 
+* print the lists:
 *---------------------------------------------------------------------*
       IF (.NOT. LADD) THEN
 
 * general statistics:
       WRITE(LUPRI,'(/,/3X,A,I4,A)') 'For the requested',NQRDSPCF,
      &      ' expansion coefficients for quadratic response functions'
-      WRITE(LUPRI,'((8X,A,I3,A))') 
+      WRITE(LUPRI,'((8X,A,I3,A))')
      &   ' - ',NGTRAN,  ' G matrix transformations ',
      &   ' - ',NBTRAN,  ' B matrix transformations ',
      &   ' - ',NFTRAN,  ' F matrix transformations ',
      &   ' - ',NFATRAN, ' F{O} matrix transformations ',
      &   ' - ',NEATRAN, ' ETA{O} vector calculations ',
-     &   ' - ',NR2TRAN, ' XC x CR2 dot products ' 
+     &   ' - ',NR2TRAN, ' XC x CR2 dot products '
       WRITE(LUPRI,'(3X,A,/,/)') 'will be performed.'
 
 
@@ -1121,16 +1121,16 @@ c /* deck ccqr_setg */
      &                     IZETAV,ITAMPA,ITAMPB,ITAMPC,ITRAN,IVEC)
 *---------------------------------------------------------------------*
 *
-*    Purpose: maintain a list of dot products of G matrix 
-*             transformations with right amplitude vectors:  
+*    Purpose: maintain a list of dot products of G matrix
+*             transformations with right amplitude vectors:
 *                       (Z*G*T*T) * T
 *
 *             IGTRAN - list of G matrix transformations
 *             IGDOTS - list of vectors it should be dottet on
-*             
+*
 *             MXTRAN - maximum list dimension
 *             MXVEC  - maximum second dimesion for IGDOTS
-*      
+*
 *             IZETAV - index of lagrangian multiplier vector
 *             ITAMPA - index of amplitude vector A
 *             ITAMPB - index of amplitude vector B
@@ -1142,7 +1142,7 @@ c /* deck ccqr_setg */
 *    Written by Christof Haettig, november 1996.
 *
 *=====================================================================*
-      IMPLICIT NONE  
+      IMPLICIT NONE
 #include "priunit.h"
 
       INTEGER MXVEC, MXTRAN
@@ -1158,7 +1158,7 @@ c /* deck ccqr_setg */
       LOGICAL LGTST, LGEND
       INTEGER IL, IA, IB
       LGTST(ITRAN,IL,IA,IB) = IGTRAN(1,ITRAN).EQ.IL .AND.
-     &   ( (IGTRAN(2,ITRAN).EQ.IA .AND. IGTRAN(3,ITRAN).EQ.IB) .OR. 
+     &   ( (IGTRAN(2,ITRAN).EQ.IA .AND. IGTRAN(3,ITRAN).EQ.IB) .OR.
      &     (IGTRAN(2,ITRAN).EQ.IB .AND. IGTRAN(3,ITRAN).EQ.IA)       )
       LGEND(ITRAN) = ITRAN.GT.MXTRAN .OR.
      &   (IGTRAN(1,ITRAN)+IGTRAN(2,ITRAN)+IGTRAN(3,ITRAN)).LE.0
@@ -1184,7 +1184,7 @@ c /* deck ccqr_setg */
           IGTRAN(3,ITRAN) = ITAMPB
           IGTRAN(4,ITRAN) = 0
           ITAMP = ITAMPC
-        ELSE 
+        ELSE
           IF (LFNDA) ITAMP = ITAMPA
           IF (LFNDB) ITAMP = ITAMPB
           IF (LFNDC) ITAMP = ITAMPC
@@ -1212,9 +1212,9 @@ c /* deck ccqr_setg */
           CALL FLSHFO(LUPRI)
           CALL QUIT('Overflow error in CCQR_SETG.')
         END IF
-      
+
         RETURN
-        END 
+        END
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCQR_SETG                            *
 *---------------------------------------------------------------------*
@@ -1228,10 +1228,10 @@ c /* deck ccqr_setf */
 *
 *             IFTRAN - list of F matrix transformations
 *             IFDOTS - list of vectors it should be dottet on
-*        
+*
 *             MXTRAN - maximum list dimension
 *             MXVEC  - maximum second dimension for IFDOTS
-*      
+*
 *             IZETAV - index of lagrangian multiplier vector
 *             ITAMPA - index of amplitude vector A
 *             ITAMPB - index of amplitude vector B
@@ -1242,7 +1242,7 @@ c /* deck ccqr_setf */
 *    Written by Christof Haettig, november 1996.
 *
 *=====================================================================*
-      IMPLICIT NONE  
+      IMPLICIT NONE
 #include "priunit.h"
 
       INTEGER MXVEC, MXTRAN
@@ -1257,8 +1257,8 @@ c /* deck ccqr_setf */
 * statement  functions:
       LOGICAL LFTST, LFEND
       INTEGER IL, IA
-      LFTST(ITRAN,IL,IA) = 
-     &      IFTRAN(1,ITRAN).EQ.IL .AND. IFTRAN(2,ITRAN).EQ.IA 
+      LFTST(ITRAN,IL,IA) =
+     &      IFTRAN(1,ITRAN).EQ.IL .AND. IFTRAN(2,ITRAN).EQ.IA
       LFEND(ITRAN) = ITRAN.GT.MXTRAN .OR.
      &   (IFTRAN(1,ITRAN)+IFTRAN(2,ITRAN)).LE.0
 
@@ -1280,7 +1280,7 @@ c /* deck ccqr_setf */
         IFTRAN(2,ITRAN) = ITAMPA
         IFTRAN(3,ITRAN) = 0
         ITAMP = ITAMPB
-      ELSE 
+      ELSE
         IF (LFNDA) ITAMP = ITAMPA
         IF (LFNDB) ITAMP = ITAMPB
       END IF
@@ -1307,9 +1307,9 @@ c /* deck ccqr_setf */
         CALL FLSHFO(LUPRI)
         CALL QUIT('Overflow error in CCQR_SETF.')
       END IF
-      
+
       RETURN
-      END 
+      END
 
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCQR_SETF                            *
@@ -1324,12 +1324,12 @@ c /* deck ccqr_setfa */
 *
 *             IFTRAN - list of F matrix transformations
 *             IFDOTS - list of vectors it should be dottet on
-*        
+*
 *             MXTRAN - maximum list dimension
 *             MXVEC  - maximum second dimension for IFDOTS
-*      
+*
 *             IZETAV - index of lagrangian multiplier vector
-*             IOPER  - index of property operator 
+*             IOPER  - index of property operator
 *             ITAMPA - index of amplitude vector A
 *             ITAMPB - index of amplitude vector B
 *
@@ -1339,7 +1339,7 @@ c /* deck ccqr_setfa */
 *    Written by Christof Haettig, november 1996.
 *
 *=====================================================================*
-      IMPLICIT NONE  
+      IMPLICIT NONE
 #include "priunit.h"
 
       INTEGER MXVEC, MXTRAN
@@ -1354,10 +1354,10 @@ c /* deck ccqr_setfa */
 * statement  functions:
       LOGICAL LFATST, LFAEND
       INTEGER IL, IA, IO
-      LFATST(ITRAN,IL,IO,IA) = IFTRAN(1,ITRAN).EQ.IL 
-     &       .AND. IFTRAN(2,ITRAN).EQ.IO .AND. IFTRAN(3,ITRAN).EQ.IA 
+      LFATST(ITRAN,IL,IO,IA) = IFTRAN(1,ITRAN).EQ.IL
+     &       .AND. IFTRAN(2,ITRAN).EQ.IO .AND. IFTRAN(3,ITRAN).EQ.IA
       LFAEND(ITRAN) = ITRAN.GT.MXTRAN .OR.
-     &      (IFTRAN(1,ITRAN)+IFTRAN(2,ITRAN)+IFTRAN(3,ITRAN)).LE.0 
+     &      (IFTRAN(1,ITRAN)+IFTRAN(2,ITRAN)+IFTRAN(3,ITRAN)).LE.0
 
 
 *---------------------------------------------------------------------*
@@ -1380,7 +1380,7 @@ c /* deck ccqr_setfa */
         IFTRAN(4,ITRAN) = 0
         IFTRAN(5,ITRAN) = 0
         ITAMP = ITAMPB
-      ELSE 
+      ELSE
         IF (LFNDA) ITAMP = ITAMPA
         IF (LFNDB) ITAMP = ITAMPB
       END IF
@@ -1408,9 +1408,9 @@ c /* deck ccqr_setfa */
         CALL FLSHFO(LUPRI)
         CALL QUIT('Overflow error in CCQR_SETFA')
       END IF
-      
+
       RETURN
-      END 
+      END
 
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCQR_SETFA                           *
@@ -1425,12 +1425,12 @@ c /* deck ccqr_setea */
 *
 *             IETRAN - list of F matrix transformations
 *             IEDOTS - list of vectors it should be dottet on
-*        
+*
 *             MXTRAN - maximum IETRAN list dimension
 *             MXVEC  - second maximum dimension maximum for IEDOTS
-*      
+*
 *             IZETAV - index of lagrangian multiplier vector
-*             IOPER  - index of property operator 
+*             IOPER  - index of property operator
 *             ITAMP  - index of amplitude vector
 *
 *             ITRAN - index in IETRAN list
@@ -1439,7 +1439,7 @@ c /* deck ccqr_setea */
 *    Written by Christof Haettig, november 1996.
 *
 *=====================================================================*
-      IMPLICIT NONE  
+      IMPLICIT NONE
 #include "priunit.h"
 
       INTEGER MXVEC, MXTRAN
@@ -1454,8 +1454,8 @@ c /* deck ccqr_setea */
 * statement  functions:
       LOGICAL LEATST, LEAEND
       INTEGER IL, IA, IO
-      LEATST(ITRAN,IL,IO,IA) = 
-     &       IETRAN(1,ITRAN).EQ.IL .AND. IETRAN(2,ITRAN).EQ.IO 
+      LEATST(ITRAN,IL,IO,IA) =
+     &       IETRAN(1,ITRAN).EQ.IL .AND. IETRAN(2,ITRAN).EQ.IO
       LEAEND(ITRAN) = ITRAN.GT.MXTRAN .OR.
      &  (IETRAN(1,ITRAN)+IETRAN(2,ITRAN)).LE.0
 
@@ -1465,7 +1465,7 @@ c /* deck ccqr_setea */
       ITRAN = 1
       LFND  = LEATST(ITRAN,IZETAV,IOPER,ITAMP)
 
-      DO WHILE ( .NOT.(LFND.OR.LEAEND(ITRAN))) 
+      DO WHILE ( .NOT.(LFND.OR.LEAEND(ITRAN)))
        ITRAN = ITRAN + 1
        LFND  = LEATST(ITRAN,IZETAV,IOPER,ITAMP)
       END DO
@@ -1498,9 +1498,9 @@ c /* deck ccqr_setea */
         CALL FLSHFO(LUPRI)
         CALL QUIT('Overflow error in CCQR_SETEA.')
       END IF
-      
+
       RETURN
-      END 
+      END
 
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCQR_SETEA                           *
@@ -1518,7 +1518,7 @@ c /* deck ccqr_fadrv */
 *    Written by Christof Haettig, November 1996.
 *
 *=====================================================================*
-      IMPLICIT NONE  
+      IMPLICIT NONE
 #include "priunit.h"
 #include "dummy.h"
 #include "ccorb.h"
@@ -1544,12 +1544,12 @@ c /* deck ccqr_fadrv */
       CHARACTER*5 FNDKBC3
       CHARACTER*6 FNDELD, FNCKJD, FN3VI, FN3FOPX
       CHARACTER*7 FN3FOP2X
- 
+
       PARAMETER (FNDELD  = 'CKDELD'  , FNCKJD  = 'CKJDEL'  )
       PARAMETER (FNDKBC  = 'DKBC'    , FNTOC   = 'CCSDT_OC')
       PARAMETER (FN3VI   = 'CC3_VI'  )
       PARAMETER (FN3FOPX = 'PTFOPX'  , FN3FOP2X= 'PTFOP2X' )
-      PARAMETER (FNDKBC3 = 'DKBC3'   )  
+      PARAMETER (FNDKBC3 = 'DKBC3'   )
 
 #if defined (SYS_CRAY)
       REAL FACON(MXVEC,NFATRAN)
@@ -1596,20 +1596,20 @@ c /* deck ccqr_fadrv */
      &  CALL QUIT('No finite field in CC3 for F{O} module.')
 
       FADEN_NODDY = .FALSE.
-      IF (CCSDT .AND. OPTION(1:4).EQ.'DOTP' .AND. 
+      IF (CCSDT .AND. OPTION(1:4).EQ.'DOTP' .AND.
      &    NODDY_FAMAT .AND. NODDY_FA_ALTER) THEN
         ! we compute 'dot products' for CC3, which is via densities
         ! and the noddy flag is switched on and we want to use
         ! the noddy code for the densities (not for the transformation)
         ! check for which cases this is possible:
-        IF ( (LISTO(1:3).EQ.'o1 ') 
+        IF ( (LISTO(1:3).EQ.'o1 ')
      &       .AND. (LISTL(1:3).EQ.'L0 '.OR.
-     &              LISTL(1:3).EQ.'L1 '.OR.LISTL(1:3).EQ.'LE ') 
+     &              LISTL(1:3).EQ.'L1 '.OR.LISTL(1:3).EQ.'LE ')
      &       .AND. (LISTB(1:3).EQ.'R1 '.OR.LISTB(1:3).EQ.'RE '.OR.
-     &              LISTB(1:3).EQ.'R2 '.OR.LISTB(1:3).EQ.'ER1'    ) 
+     &              LISTB(1:3).EQ.'R2 '.OR.LISTB(1:3).EQ.'ER1'    )
      &       .AND. (LISTC(1:3).EQ.'R1 '.OR.LISTC(1:3).EQ.'RE '.OR.
      &              LISTC(1:3).EQ.'R2 '.OR.LISTC(1:3).EQ.'ER1'    ) )
-     &    FADEN_NODDY = .TRUE. 
+     &    FADEN_NODDY = .TRUE.
       END IF
 
 *---------------------------------------------------------------------*
@@ -1666,12 +1666,12 @@ c /* deck ccqr_fadrv */
             IFBTRAN(3) = ITAMPB
             IFBTRAN(4) = IFILE
             IFBTRAN(5) = IRELAX
- 
+
             FILFBTA = 'CC_FBMAT'
             CALL CC_FBTA( IFBTRAN, 1, 0, LISTL, LISTB,
      &                    FILFBTA, IDUMMY,  DUMMY,
-     &                       0,   WORK, LWORK)   
- 
+     &                       0,   WORK, LWORK)
+
             IADR = IFBTRAN(4)
             LEN  = NT1AM(ISYRES) + NT2AM(ISYRES)
             LUFBTA = -1
@@ -1702,7 +1702,7 @@ C            -----------------------
              ELSE
                 CALL QUIT('Unknown coupled cluster model in CCQR_FADRV')
              END IF
-            
+
              CALL CC_WARSP(LISTC, IFILE, ISYRES, IOPT, MODEL,DUMMY,
      &                  WORK(KGAMMA1),WORK(KGAMMA2),WORK(KEND1),LWRK1)
 
@@ -1712,18 +1712,18 @@ C             calculate required dot products:
 C            ---------------------------------
              IVEC = 1
              DO WHILE (IFADOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
-             
+
                ITAMPC = IFADOTS(IVEC,ITRAN)
                ISYMTC = ILSTSYM(LISTC,ITAMPC)
-            
+
                IF (ISYMTC.NE.ISYRES) THEN
                  CALL QUIT('symmetry mismatch in CCQR_FADRV.')
                END IF
-             
+
                IOPT = 3
                CALL CC_RDRSP(LISTC,ITAMPC,ISYMTC,IOPT,MODEL,
      &                       WORK(KT1AMPC),WORK(KT2AMPC)   )
-             
+
                FACON1  = DDOT(NT1AM(ISYRES),WORK(KT1AMPC),1,
      &                                      WORK(KGAMMA1),1)
                IF (CC2 .OR. CCSD) THEN
@@ -1731,13 +1731,13 @@ C            ---------------------------------
      &                                      WORK(KGAMMA2),1)
                ELSE IF (CCS) THEN
                 FACON2 = ZERO
-               ELSE 
+               ELSE
                 CALL QUIT('ERROR> unknown coupled cluster model '//
      &                 'in CCQR_FADRV.')
                END IF
-             
+
                FACON(IVEC,ITRAN) = FACON1 + FACON2
-             
+
                IVEC = IVEC + 1
              END DO
 
@@ -1780,7 +1780,7 @@ C    &                  LISTL,  IZETAV, WORK,  LWORK   )
 *---------------------------------------------------------------------*
 * add triples contributions for contractions (IOPTRES=5):
 *---------------------------------------------------------------------*
-      IF (CCSDT .AND. IOPTRES.EQ.5 .AND. 
+      IF (CCSDT .AND. IOPTRES.EQ.5 .AND.
      &    .NOT. ( NODDY_FAMAT .AND. .NOT. FADEN_NODDY ) ) THEN
 
         MXFADEN = NFATRAN*MXVEC
@@ -1793,16 +1793,16 @@ C    &                  LISTL,  IZETAV, WORK,  LWORK   )
         KEND1       = KIADR_FADEN + MXFADEN
 
         KIDXL_INTER = KEND1
-        KIDXR_INTER = KIDXL_INTER + MXINTER  
-        KLSTR_INTER = KIDXR_INTER + MXINTER  
-        KIADR_INTER = KLSTR_INTER + MXINTER  
-        KEND1       = KIADR_INTER + 3 * MXINTER  
+        KIDXR_INTER = KIDXL_INTER + MXINTER
+        KLSTR_INTER = KIDXR_INTER + MXINTER
+        KIADR_INTER = KLSTR_INTER + MXINTER
+        KEND1       = KIADR_INTER + 3 * MXINTER
 
         LWRK1 = LWORK - KEND1
- 
+
         IF (LWRK1 .LT. 0) THEN
           CALL QUIT('Insufficient work space CCQR_FADRV')
-        END IF 
+        END IF
 
         CALL CCSDT_FA_SETUP(IFATRAN,IFADOTS,NFATRAN,MXVEC,
      &                      WORK(KIDXL_FADEN),WORK(KIDXB_FADEN),
@@ -1825,7 +1825,7 @@ C    &                  LISTL,  IZETAV, WORK,  LWORK   )
       END IF
 
 *---------------------------------------------------------------------*
-* print the results: 
+* print the results:
 *---------------------------------------------------------------------*
 * F{A} matrix transformations:
       IF (LOCDBG) THEN
@@ -1865,7 +1865,7 @@ c /* deck ccqr_eadrv */
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
-      IMPLICIT NONE  
+      IMPLICIT NONE
 #else
 #  include "implicit.h"
 #endif
@@ -1942,13 +1942,13 @@ c /* deck ccqr_eadrv */
 
         LTWOEL = LPDBSOP(IOPERA)
         LABELA = LBLOPR(IOPERA)
-        IF (LTWOEL) THEN  
+        IF (LTWOEL) THEN
            WRITE (LUPRI,*) 'List inconsistency in CCQR_EADRV:'
            WRITE (LUPRI,*) 'LISTO, IOPERA :',LISTO,IOPERA
            WRITE (LUPRI,*) 'LABELA, LTWOEL:',LABELA,LTWOEL
            WRITE (LUPRI,*) 'CCQR_EADRV no adapted for '//
      &          'derivative integrals.'
-        END IF 
+        END IF
 
 
         ISYCTR = ILSTSYM(LISTL,IZETAV)
@@ -2007,7 +2007,7 @@ c /* deck ccqr_eadrv */
 
           ITAMPB = IEDOTS(IVEC,ITRAN)
           ISYMTB = ILSTSYM(LISTB,ITAMPB)
-       
+
           IF (ISYMTB.NE.ISYRES) THEN
             WRITE (LUPRI,*) LISTL, IZETAV, ISYCTR
             WRITE (LUPRI,*) LISTO, IOPERA, ISYMTA
@@ -2033,14 +2033,14 @@ c /* deck ccqr_eadrv */
           IVEC = IVEC + 1
         END DO
 *---------------------------------------------------------------------*
-      ELSE 
+      ELSE
         CALL QUIT('Illegal OPTION in CCQR_EADRV.')
       END IF
 
       END DO
 
 *---------------------------------------------------------------------*
-* print the results: 
+* print the results:
 *---------------------------------------------------------------------*
 * ETA vector results:
       IF (LOCDBG) THEN
@@ -2050,7 +2050,7 @@ c /* deck ccqr_eadrv */
           WRITE (LUPRI,*)
           IVEC = 1
           DO WHILE (IEDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
-           WRITE(LUPRI,'(A,3I5,2X,E19.12)') MSGDBG, 
+           WRITE(LUPRI,'(A,3I5,2X,E19.12)') MSGDBG,
      &      (IETRAN(I,ITRAN),I=1,2),IEDOTS(IVEC,ITRAN),ECON(IVEC,ITRAN)
            IVEC = IVEC + 1
           END DO
@@ -2069,7 +2069,7 @@ c /* deck ccqr_eadrv */
 *---------------------------------------------------------------------*
 c /* deck CC_DOTDRV */
 *=====================================================================*
-      SUBROUTINE CC_DOTDRV(LISTL, LISTR, 
+      SUBROUTINE CC_DOTDRV(LISTL, LISTR,
      &                     NDTRAN, MXVEC,
      &                     IDTRAN, IDDOTS, DCON,
      &                     WORK, LWORK )
@@ -2081,14 +2081,14 @@ c /* deck CC_DOTDRV */
 *
 *               LISTR = X1B  --  right hand side for L1 equations
 *               LISTR = X2B  --  right hand side for L2 equations
-*             
+*
 *
 *    Written by Christof Haettig, April 1997.
 *    adapted for CC-R12, Christian Neiss, June 2005
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
-      IMPLICIT NONE  
+      IMPLICIT NONE
 #else
 #  include "implicit.h"
 #endif
@@ -2240,7 +2240,7 @@ c /* deck CC_DOTDRV */
         END IF
 
 *---------------------------------------------------------------------*
-* calculate singles and doubles contributions of the required dot 
+* calculate singles and doubles contributions of the required dot
 * products (the vectors are mainly read from file)
 *---------------------------------------------------------------------*
         IVEC = 1
@@ -2252,7 +2252,7 @@ c /* deck CC_DOTDRV */
           ELSE
             ISYMR  = ILSTSYM(LISTR,IFILER)
           END IF
-       
+
           IF (ISYMR.NE.ISYML) THEN
             WRITE (LUPRI,*) LISTL, IFILEL, ISYML
             WRITE (LUPRI,*) LISTR, IFILER, ISYMR
@@ -2342,23 +2342,23 @@ c /* deck CC_DOTDRV */
       END DO
 
 *---------------------------------------------------------------------*
-* calculate the triples contributions by explicitly setting up the 
+* calculate the triples contributions by explicitly setting up the
 * triples part of the vectors:
 *---------------------------------------------------------------------*
       IF (CCSDT) THEN
-        IF (NODDY_OVLP) THEN  
+        IF (NODDY_OVLP) THEN
           CALL CCOVLP_NODDY(LISTL,LISTR,2,DUMMY,1,1,1,
      &                      NDTRAN,MXVEC,IDTRAN,IDDOTS,DCON,
-     &                      WORK,LWORK) 
+     &                      WORK,LWORK)
         ELSE
           CALL CC3_LR_OVLP(LISTL,LISTR,2,DUMMY,1,1,1,
      &                     NDTRAN,MXVEC,IDTRAN,IDDOTS,DCON,
-     &                     WORK,LWORK)  
+     &                     WORK,LWORK)
         END IF
       END IF
 
 *---------------------------------------------------------------------*
-* print the results: 
+* print the results:
 *---------------------------------------------------------------------*
       IF (LOCDBG) THEN
         WRITE(LUPRI,*) MSGDBG,
@@ -2368,7 +2368,7 @@ c /* deck CC_DOTDRV */
           WRITE (LUPRI,*)
           IVEC = 1
           DO WHILE (IDDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
-           WRITE(LUPRI,'(A,2I5,2X,E19.12)') MSGDBG, 
+           WRITE(LUPRI,'(A,2I5,2X,E19.12)') MSGDBG,
      &      IDTRAN(ITRAN),IDDOTS(IVEC,ITRAN),DCON(IVEC,ITRAN)
            IVEC = IVEC + 1
           END DO

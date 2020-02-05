@@ -36,7 +36,7 @@ C     1/2 C^{+/-w} symmetrization introduced. Ch. Haettig, March 1999.
 C
 C----------------------------------------------------------------------
 C
-      USE PELIB_INTERFACE, ONLY: USE_PELIB, SIMPLIFIED_LAGRANGIAN
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -281,8 +281,7 @@ C             The Pt-barA(-omeg)*t-barB(omeg)
 C             contribution for solvent calculations.
 C---------------------------------------------------
 C
-              IF (CCSLV.OR.(USE_PELIB().AND.
-     &                     (.NOT.SIMPLIFIED_LAGRANGIAN))) THEN
+              IF (CCSLV.OR.USE_PELIB()) THEN
                 CALL CC_PABCON(LABELA,ISYMA,FREQA,LRLXA,
      *                         LABELB,ISYMB,FREQB,LRLXB,
      *                         WORK(KPRP2),WORK(KEND1),LEND1)
@@ -3442,9 +3441,6 @@ C     IOPTCC2 = 1 -- transform for CC2 the Fock matrix entering the
 C                    E term contribution with CMO vector instead with
 C                    Lambda matrices
 C
-C               2 -- for simplified PDE-CC Lagrangian
-C                    set multipliers to zero
-C
 C     C property integrals read according to LBLC
 C
 C     SLV98,OC: Allow for input of integrals if
@@ -3633,13 +3629,8 @@ C     Read zero'th order amplitude multipliers.
 C----------------------------------------------
 C
       IOPT = 3
-      IF (IOPTCC2.EQ.2) THEN
-         CALL DZERO(WORK(KL1AM),NT1AM(ISYML))
-         CALL DZERO(WORK(KT2AM),MAX(NT2AM(ISYML),NT2AM(1)))
-      ELSE
-         CALL CC_RDRSP(LIST,ILSTNR,ISYML,IOPT,MODEL,
+      CALL CC_RDRSP(LIST,ILSTNR,ISYML,IOPT,MODEL,
      *              WORK(KL1AM),WORK(KT2AM))
-      END IF
       IF (.NOT. CCS) CALL CC_T2SQ(WORK(KT2AM),WORK(KL2AM),ISYML)
 C
 C--------------------------------

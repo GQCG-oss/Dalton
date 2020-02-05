@@ -516,7 +516,7 @@ C     Current models: CCS, CC2 and CCSD
 C     KS sep 10: Modified to calculate QR density when LR=Q
 !     Note that the list arguments are only dummy when LR=R,L
 C
-      USE PELIB_INTERFACE, ONLY: USE_PELIB, SIMPLIFIED_LAGRANGIAN
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -616,11 +616,10 @@ C
          IOPT = 3
          IF (LR.EQ.'Q') THEN
            CALL CC_RDRSP(LISTB,IDLSTB,ISYMTB,IOPT,MODDUM,
-     &             WORK(KL1AM),WORK(KR2AMT))
+     &                   WORK(KL1AM),WORK(KR2AMT))
          ELSE
-           IF (.NOT.SIMPLIFIED_LAGRANGIAN) 
-     &        CALL CC_RDRSP('L0',1,ISYML,IOPT,MODDUM,WORK(KL1AM),
-     &                      WORK(KR2AMT))
+           CALL CC_RDRSP('L0',1,ISYML,IOPT,MODDUM,WORK(KL1AM),
+     &                   WORK(KR2AMT))
          END IF
 C Read in t1 amplitudes
          IOPT = 1

@@ -84,7 +84,7 @@ C            CC(3),CCSDR(3), CC3,CC1A,CC1B
 C            (see list below for name of logical flags.)
 C
 C
-      USE PELIB_INTERFACE, ONLY: USE_PELIB, SIMPLIFIED_LAGRANGIAN
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -604,17 +604,7 @@ C
 C          ! no energy in gradient step for geometry optimization
            IF (.NOT.MOLGRD) THEN
 
-              IF (USE_PELIB().AND.SIMPLIFIED_LAGRANGIAN) THEN
-                 DO WHILE (.NOT.LSLTCVG) 
-                    CALL CCSD_ENERGY(WORK,LWORK,APROXR12,CCR12RSP,
-     &                               CCR12LIM)
-                    ICCSLIT = ICCSLIT + 1
-                    IF (ICCSLIT.GT.MXCCSLIT)
-     &                 CALL QUIT('MAX. NUM. PE-CC ITER. REACHED')
-                 END DO
-              ELSE
-                 CALL CCSD_ENERGY(WORK,LWORK,APROXR12,CCR12RSP,CCR12LIM)
-              END IF
+             CALL CCSD_ENERGY(WORK,LWORK,APROXR12,CCR12RSP,CCR12LIM)
 c
 c              write(lupri,*) 'after CCSD_ENERGY: APROXR12 = ',APROXR12
 c
@@ -662,16 +652,7 @@ C
                        ENDIF
                     ENDDO
                  ELSE
-                    IF (USE_PELIB().AND.SIMPLIFIED_LAGRANGIAN) THEN
-                       DO WHILE (.NOT.LSLLCVG) 
-                          CALL CC_FOP(IDUMMY,WORK,LWORK,APROXR12)
-                          ICCSLIT = ICCSLIT + 1
-                          IF (ICCSLIT.GT.MXCCSLIT)
-     &                       CALL QUIT('MAX. NUM. PE-CC ITER. REACHED')
-                       END DO
-                    ELSE
-                       CALL CC_FOP(IDUMMY,WORK,LWORK,APROXR12)
-                    END IF
+                    CALL CC_FOP(IDUMMY,WORK,LWORK,APROXR12)
                  ENDIF
              ENDIF
 C
@@ -685,7 +666,7 @@ C           After CC SCRF convergence then left
 C           transformations are no longer static.
 C------------------------------------------------------------
 C
-         IF (CCSLV) THEN
+         IF (CCSLV.OR.USE_PELIB()) THEN
             CCRSTR  = .TRUE.
             IF (LSLECVG.AND.LSLTCVG.AND.LSLLCVG) THEN
               LSTBTR = .TRUE.
@@ -693,19 +674,6 @@ C
               GOTO 31
             ENDIF
          ENDIF
-C
-         IF (USE_PELIB()) THEN
-            CCRSTR  = .TRUE.
-            IF (.NOT.SIMPLIFIED_LAGRANGIAN) THEN
-               IF (LSLECVG.AND.LSLTCVG.AND.LSLLCVG) THEN
-                 LSTBTR = .TRUE.
-               ELSE
-                 GOTO 31
-               ENDIF
-            ELSE
-               LSTBTR = .TRUE.
-            END IF
-         END IF
 C
   32     CONTINUE
          IF ((CCSLV.OR.USE_PELIB()) .AND. DISCEX) THEN
