@@ -397,12 +397,17 @@ contains
          ! Zero densai (To mirror initialization in so_excit1)
          call dzero( work(kdensai), ldensai )
       else
-         ! For RPA initialize the addresses as negative, to ensure a crash
+         ! For RPA initialize the addresses as too large, to ensure a crash
          ! if they are for some reason accessed anyway
-         kt2am   = -1
-         kdensij = -1
-         kdendab = -1
-         kdensai = -1
+         kt2am   = huge(lwork)
+         kdensij = huge(lwork)
+         kdendab = huge(lwork)
+         kdensai = huge(lwork)
+
+         lt2am   = 0
+         ldensij = 0
+         ldensab = 0
+         ldensai = 0
       endif
 
 !
@@ -504,8 +509,7 @@ contains
 
    end subroutine soppa_nodedriver
 
-   subroutine soppa_initialize_slaves( update_common_blocks,         &
-     &             t2mp, lt2mp, rpa_only )
+   subroutine soppa_initialize_slaves( update_common_blocks, rpa_only )
 !    -----------------------------------------------------------
 !     This subroutine tells the slaves that hang in
 !     dalton_nodedriver to enter the soppa node-driver and sends
@@ -516,9 +520,6 @@ contains
 !
 ! Arguments
       logical, intent(in)        :: update_common_blocks, rpa_only
-      integer, intent(in)        :: lt2mp
-      real(real8),intent(in)     :: t2mp(lt2mp)
-
 !
 ! Locals
       integer(mpi_integer_kind)  :: ierr
@@ -606,7 +607,7 @@ contains
       endif
 !
       return
-   endsubroutine soppa_release_slaves
+   end subroutine soppa_release_slaves
 
    subroutine stupid_isao_bcast_routine()
 ! For the isoa

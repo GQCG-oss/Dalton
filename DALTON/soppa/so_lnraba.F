@@ -200,8 +200,7 @@ C---------------------------------------------------------
 C              Ready the slaves for parallel calculations.
 C---------------------------------------------------------
 C
-      call soppa_initialize_slaves ( update_common_blocks,
-     &                               WORK(KT2AM), LT2AM, rpa_only)
+      call soppa_initialize_slaves ( update_common_blocks, rpa_only)
       update_common_blocks = .false.
 #endif
 C

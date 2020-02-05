@@ -186,10 +186,10 @@ C         KDENSIJ = KT2SQ  + LT2AM
          LDENSAB = 0
          LDENSIJ = 0
 C        Force a crash of this is used
-         KT2AM   = LWORK + 1
-         KDENSIJ = LWORK + 1
-         KDENSAB = LWORK + 1
-         KDENSAI = LWORK + 1
+         KT2AM   = HUGE(LWORK)
+         KDENSIJ = HUGE(LWORK)
+         KDENSAB = HUGE(LWORK)
+         KDENSAI = HUGE(LWORK)
 C
       END IF
 C
@@ -244,8 +244,7 @@ C              Ready the slaves for parallel calculations.
 C---------------------------------------------------------
 C
 #ifdef VAR_MPI
-      call soppa_initialize_slaves ( update_common_blocks,
-     &                                     WORK(KT2AM), LT2AM, RPA_ONLY)
+      call soppa_initialize_slaves ( update_common_blocks, RPA_ONLY)
       update_common_blocks = .false.
 #endif
       IF ( NSAVMX .LT. 2 ) THEN
@@ -359,29 +358,7 @@ C
      &                          WORK(KEND2),LWORK2)
                   old_denslab = DENSLAB
 C
-C
-C---------------------------------------------------------
-C              Calculate second order doubles amplitudes.
-C               This should be changed s.t. is runs parallel.
-C    This is not finnished - Lilli's master thesis work.
-C----------------------------------------------------------
-C
-C                  CALL SO_2NDDECOEF(WORK(K2TAM2),WORK(KT2AM),
-C     *                 WORK(KT2SQ),WORK(KEND2),LWORK2) 
-C                  CALL SO_2DOUBLES(WORK(KT2AM2),WORK(KT2AM),
-C     *                  WORK(KT2SQ),WORK(KEND2),LWORK2,
-C     *                  WORK(KFOCKD),LFOCKD)
-C
                 ENDIF
-C---------------------------------------------------------
-C              Ready the slaves for parallel calculations.
-C---------------------------------------------------------
-C
-#ifdef VAR_MPI
-               call soppa_initialize_slaves ( update_common_blocks,
-     &                                       WORK(KT2AM), LT2AM, model)
-               update_common_blocks = .false.
-#endif
 C
 C-----------------------------------------
 C              Initialize DENSAI if needed
