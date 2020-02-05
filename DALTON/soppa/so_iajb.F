@@ -254,17 +254,6 @@ C
      *                        WORK(KEND2),LWRK2,IDEL,ISYMD,.FALSE.,
      *                        DUMMY,1)
 C
-C-------------------------------------------------------
-C              Calculate integrals (cJ|dk)
-C              needed for frozen core gradients.
-C-------------------------------------------------------
-C
-C              IF ((FROIMP .OR. FROEXP) .AND. (RELORB .OR. MP2)) THEN
-C
-C                  CALL CC_FRCOIN(WORK(KFRIN),WORK(KXINT),WORK(KCMO),
-C     *                              WORK(KEND2),LWRK2,IDEL,ISYMD)
-C               END IF
-C
 C--------------------------------------------------------------------
 C        Transform (alpha beta|gamma delta) to (alpha beta| j delta).
 C--------------------------------------------------------------------

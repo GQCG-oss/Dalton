@@ -45,13 +45,11 @@ C-----------------------------------------
 C     Memory allocation
 C-----------------------------------------
 C
-      KEND1 = 1
-      KT2AM = KEND1
-      KEND2 = KT2AM + LT2AMH
-      KT1AM = KEND2
-      LWORK2 = LWORK - KEND3
+      KT1AM = 1
+      KEND1 = KT1AM + NT1AM(1)
+      LWORK1 = LWORK - KEND1
 C
-      IF (LWRK2 .LT. 0) THEN
+      IF (LWORK1 .LT. 0) THEN
          CALL QUIT('Insufficient space in GETT2')
       ENDIF
 C
@@ -70,9 +68,9 @@ C        Check if T2-amplitudes has been calculated in CC:
 C----------------------------------------------------------
 C
       INQUIRE (FILE=FNAME,EXIST=LEXIST)
-      IF (.NOT. LEXIST) THEN
-             WRITE(LUPRI, '(2A)') 'The (ai|bj) integrals for the T2 ',
-     & 'amplitudes is calculated in SOPPA'
+      IF ((.NOT.LEXIST) .AND. (KEY .EQ. 'MP2 ')) THEN
+C             WRITE(LUPRI, '(2A)') 'The (ai|bj) integrals for the T2 ',
+C     & 'amplitudes is calculated in SOPPA'
 C
 C----------------------------------------
 C        Calculate (ia|jb) integrals .
@@ -80,7 +78,7 @@ C----------------------------------------
          CALL DZERO(WORK(KT1AM),NT1AMX)
 C
          DTIME     = SECOND()
-         CALL SO_IAJB(T2AM,WORK(KT1AM),WORK,LWORK2)
+         CALL SO_IAJB(T2AM,WORK(KT1AM),WORK(KEND1),LWORK1)
          DTIME     = SECOND()  - DTIME
          SOTIME(5) = SOTIME(5) + DTIME
 C
@@ -89,7 +87,7 @@ C        Calculate MP2 T2 amplitudes
 C-----------------------------------------
 C
          DTIME     = SECOND()
-         CALL SO_MP2T2(FOCKD,LFOCKD,T2AM,LT2AMH)
+         CALL SO_MP2T2(FOCKD,LFOCKD,T2AM,LT2AMH,WORK(KEND1),LWORK1)
          DTIME     = SECOND()  - DTIME
          SOTIME(5) = SOTIME(5) + DTIME
          FOUND_DENS = .FALSE.
@@ -100,7 +98,7 @@ C
          REWIND LUTAM
          WRITE (LUTAM) T2AM
 C
-      ELSE
+      ELSE IF (LEXIST) THEN
 C             WRITE(LUPRI, '(2A)') 'The (ai|bj) integrals for the T2 ',
 C     & 'ampliltudes from is read from the file: MP2__TAM'
 C-----------------------------------------------
@@ -139,6 +137,8 @@ C        And also for MP2 get D(ai) block
             FOUND_DENS = .TRUE.
          END IF
 C
+      ELSE 
+         CALL QUIT('SOPPA(CC) requires running the CC module')
       END IF
 
       IF (.NOT.FOUND_DENS) THEN
@@ -151,7 +151,7 @@ C----------------------------------------------------
 C
          DTIME     = SECOND()
          CALL SO_DENS(DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-     &                T2AM,LT2AMH,WORK(KEND2),LWORK2)
+     &                T2AM,LT2AMH,WORK(KEND1),LWORK1)
          DTIME     = SECOND()  - DTIME
          SOTIME(4) = SOTIME(4) + DTIME
 C
