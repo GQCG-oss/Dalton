@@ -67,7 +67,6 @@ C
 #include "eritap.h"
 #include "ccslvinf.h"
 #include "qm3.h"
-!#include <qmmm.h>
 #include "ccnoddy.h"
 #include "r12int.h"
 #include "ccr12int.h"
@@ -98,6 +97,7 @@ C
      &        IRGIJS(8,8),NRGIJS(8),IR1BASM(8,8),NR1BASM(8),
      &        IR2BASM(8,8),NR2BASM,IR1XBASM(8,8),NR1XBASM(8),
      &        IR2XBASM(8,8),IMATF(8,8),NMATF(8)
+
       REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 C
       IF (IPRINT .GT. 15) THEN

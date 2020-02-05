@@ -781,6 +781,11 @@ C                 Multi-Level CCSD(T)
                   MLCCSDPT = .TRUE.
                   call mlccsdpt_input(word,lucmd)
                GO TO 1000
+ 128           CONTINUE
+C             Polarizable Embedding Coupled Cluster with the PElib implementation
+C             Summer 2016
+                  CALL CC_PEINP(WORD)
+               GO TO 1000
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
      *            '" not recognized in CC2INP.'
@@ -840,6 +845,7 @@ Cho
       END
 C  /* Deck CC_PRTINP */
       SUBROUTINE CC_PRTINP(IWUNIT)
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 C
 C     K.Ruud, Jan.-96. Split from CC_INPUT in order to place CC output more 
 C     adequatly in SIRIUS Print of input processing
@@ -926,11 +932,11 @@ C
      &              'type of calculation ')
             ENDIF
 C
-            IF (CCSLV.AND.CCTPA) THEN
+            IF ((CCSLV.OR.USE_PELIB()).AND.CCTPA) THEN
                IF (CCLR.OR.CCQR.OR.CCCR) THEN
                   WRITE(IQUNIT,*)
      &              'For embedding calcs. avoid TPA and LR/QR/CR simul'
-                  CALL QUIT('FOR CCSLV dont do TPA and '//
+                  CALL QUIT('FOR CCSLV/PE-CC dont do TPA and '//
      &                      'LR/QR/CR at the same time - avoid '//
      &                      'confusion')
                END IF

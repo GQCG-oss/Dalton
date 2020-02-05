@@ -8399,7 +8399,6 @@ C
 #include "leinf.h"
 #include "ccsections.h"
 #include "qm3.h"
-!#include "qmmm.h"
       REAL*8, ALLOCATABLE :: GMATRIX(:), HARTREEFOCK(:)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J

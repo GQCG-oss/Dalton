@@ -1162,6 +1162,7 @@ C---------------------------------------------------------------------
      *         'Warning - Check your input and output carefully!!'
            END IF
          END DO
+
          CALL CCEXNORM(ISYM,IMULT,THREIG,WORK,LWORK)
 
         END IF

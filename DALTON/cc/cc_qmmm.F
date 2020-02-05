@@ -437,6 +437,7 @@ C----------------------------
         CALL CCMM_GEFF(WORK(KDENS),WORK(KGMAT),WORK(KWRK),LWRK)
 
 C
+
       ELSE IF (LR .EQ. '0' ) THEN
         IF (HFFLD ) THEN
           CALL GET_FROM_FILE('G_MATRIXHF',N2BST(ISYMOP),WORK(KGMAT))

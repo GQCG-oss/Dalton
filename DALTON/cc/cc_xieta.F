@@ -586,8 +586,9 @@ c /* deck cc_xieta1 */
       INTEGER luxint,ian,isymv
       INTEGER IDUM
       INTEGER KSCR1,KSCR2,KSCR3,ISYM1,ISYM2
+
       REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
-    
+   
 
 * external functions:
       INTEGER ILSTSYM

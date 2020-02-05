@@ -468,7 +468,7 @@ C
       END DO
 C
       IF (IPRLE .GE.11) THEN
-         WRITE (LUPRI,'(/A)') '2. REDUCED EIGENVALUES real part:'
+         WRITE (LUPRI,'(/A)') ' REDUCED EIGENVALUES real part:'
          CALL OUTPUT(EIVAL,1,NREDH,1,1,NREDH,MAXRED,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' REDUCED EIGENVALUES imaginary part:'
          CALL OUTPUT(WRK(KWI),1,NREDH,1,1,NREDH,MAXRED,1,LUPRI)

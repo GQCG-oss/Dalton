@@ -118,6 +118,7 @@ C
       INTEGER ISYOF(8),KOFF(8,8),NCVAI1(8,8),NCVAI2(8,8),NCVAI3(8,8)
       INTEGER NCVIJ(8,8),NCVAI5(8,8) 
       INTEGER IPDD
+
       REAL*8, ALLOCATABLE :: FOCKMAT(:)
 C
 #include "leinf.h"
@@ -128,6 +129,7 @@ C
       CALL QENTER('CC_FOP')
 C     Initialize variable for natural occupation numbers to false
       NATOCC = .FALSE.
+
 C     Define CCDC and initialize local variables
       CCDC = CCSLV .AND. (.NOT. CCMM)
       CCMMCONV = .FALSE.

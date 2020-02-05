@@ -2650,8 +2650,10 @@ C
 C
       CHARACTER*8 LABEL,LR*(2),LIST
       CHARACTER*(8) FILMME, FILMMX
+
       LOGICAL LEXIST, LOCDEB
       PARAMETER (LOCDEB=.FALSE.)
+
       REAL*8, ALLOCATABLE :: DENMATS(:), JTERMTEMP(:)
 C
 C
@@ -2873,6 +2875,7 @@ C
       CALL GPCLOSE(LUCCEF,'KEEP')
 C
       ELSE IF (NYQMMM) THEN
+
         IF (LR .NE. 'XI' ) CALL QUIT('CCMM_TGB xi flag not allowed')
         KDENS = KWRK1
         KWRK2 = KDENS + N2BST(ISYMTR)
@@ -3923,7 +3926,6 @@ C
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
 C
-      WRITE(LUPRI,*) 'LUCCEF = ', LUCCEF
       LM = 0
       IADR1 = 1 
       IADR2 = 1
