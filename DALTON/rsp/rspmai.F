@@ -949,7 +949,7 @@ C                  END IF
 cjje: change this if full solvent soppa is ever implemented
                     GO TO 24 ! go to .SOPRPA option
                   END IF
-                  IF (DIRCAL) AOSOP = .TRUE. 
+C                  IF (DIRCAL) AOSOP = .TRUE. 
                   SOPPA = .TRUE.
                GO TO 100
     4          CONTINUE
@@ -999,7 +999,7 @@ cjje: change this if full solvent soppa is ever implemented
    16          CONTINUE ! .HIRPA
                   HIRPA = .TRUE.
 C                  SOPPA = .TRUE.
-                  IF(DIRCAL) AOHRP = .TRUE.
+C                  IF(DIRCAL) AOHRP = .TRUE.
                GO TO 100
    17          CONTINUE ! .SOPW4
                   SOPW4 = .TRUE.
@@ -1007,7 +1007,7 @@ C                  SOPPA = .TRUE.
    18          CONTINUE ! .SOPPA(CCSD)
 C                  SOPPA = .TRUE.
                   CCPPA = .TRUE.
-                  IF(DIRCAL) AOSOC = .TRUE.
+C                  IF(DIRCAL) AOSOC = .TRUE.
                GO TO 100
    19          CONTINUE ! .NODOIT
                   DIROIT = .FALSE.
