@@ -97,7 +97,7 @@ C
 #include "center.h"
 Cholesky  
 C
-      PARAMETER (NTABLE = 127)
+      PARAMETER (NTABLE = 128)
       LOGICAL   SET, NEWDEF, SIRFF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*(80) LINE
@@ -132,7 +132,7 @@ Cring-CCD for triplet (rTCCD), and SOSEX added
      &            '.KEPAOI','*CHO(T)','*CHOCC2','*CHOMP2','*CHODBG',
      &            '.D01SKI','.CHO(T)','.T2UPDA','.RCCD  ','.RTCCD ',
      &            '.DRCCD ','.SOSEX ','.T2STAR','.HURWIT','.DCPT2 ',
-     &            '*MLCC3 ','*MLCCPT'/
+     &            '*MLCC3 ','*MLCCPT','*PECC'/
 
       DATA SET/.FALSE./
 C
@@ -207,7 +207,7 @@ C
      *                92,93,94,95,96,97,98,99,100,101,102,103,104,
      *                105,106,107,108,109,110,111,112,113,114,115,
      *                116,117,118,119,120,121,122,123,124,125,126,
-     *                127), I
+     *                127,128), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -2881,7 +2881,7 @@ C           ------------------------------------------------------
             END IF
             GO TO 100
 C           ------------------------------------------------------
-C           .DIPOLE is the synonim of .DIPLEN.
+C           .DIPOLE is the synonym of .DIPLEN.
 C           ------------------------------------------------------
 16          CONTINUE
             GO TO 4
