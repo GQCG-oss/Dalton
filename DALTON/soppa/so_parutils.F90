@@ -293,19 +293,23 @@ contains
 !#include "parsoppa.h"
 !
       use so_info, only: sop_models
+      implicit none
 !
       integer, intent(in) :: iprint, lwork
-      real(real8)         :: work(*)
+      real(real8), intent(inout) :: work(*)
+
       logical :: update_common_blocks
-      integer :: soppa_work_kind
+      integer :: soppa_work_kind, maxnumjobs
 ! Use proper integerkind for mpi-arguments, irrespective of
 ! what flags are use for compilation of MPI and Dalton
 ! Not that it will change things right away, but perhaps one day
       integer(mpi_integer_kind) :: ierr, numprocs, mycolor
 ! Lengths of arrays
-      integer :: lt2am, lfockd, ldensij, ldensab, ldensai
+      integer :: lt2am, lfockd, ldensij, ldensab, ldensai, lworkf, &
+                 LAssignedIndices
 ! Pointers to arrays
-      integer :: kt2am, kfockd, kdensij, kdensab, kdensai
+      integer :: kt2am, kfockd, kdensij, kdensab, kdensai, kend, &
+                 kAssignedIndices
 ! Other integers
       character(len=5) :: model
 ! Some info, that we need in each pass
@@ -401,7 +405,7 @@ contains
          ! if they are for some reason accessed anyway
          kt2am   = huge(lwork)
          kdensij = huge(lwork)
-         kdendab = huge(lwork)
+         kdensab = huge(lwork)
          kdensai = huge(lwork)
 
          lt2am   = 0
@@ -469,7 +473,6 @@ contains
             ! Inactive processes do nothing
             if ( soppa_comm_active .eq. MPI_COMM_NULL ) cycle
             model = sop_models(imodel)
-            print *, 'Model :', model
             !
             ! All should now run through same ERES routine
             !
@@ -574,8 +577,11 @@ contains
 ! Send the amplitudes to the slaves. The slaves must be
 ! waiting in soppa_nodedriver when this is called.
 !
+      implicit none
       integer, intent(in) :: lt2mp
       real(sop_dp), intent(in) :: t2mp(lt2mp)
+!
+      integer(mpi_integer_kind) :: ierr
 !
 ! Tell slaves that the amplitudes will be send
       call mpixbcast(parsoppa_update_amplitudes, 1, 'INTEGE', 0)
@@ -593,6 +599,7 @@ contains
 !
 ! The slaves must be in the SOPPA node-driver, when this routine is
 ! called
+      implicit none
       integer(mpi_integer_kind) :: ierr
 !
 ! Send release signal
