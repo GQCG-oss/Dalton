@@ -1700,8 +1700,8 @@ C
        IF (.NOT.SELQR2) NSYMF = ISYMI
        DO ISYMF = 1, NSYMF
 
-        DO IEXI = 1, NCCEXCI(ISYMI,1)
-         NEXF = NCCEXCI(ISYMF,1)
+        DO IEXI = 1, NCCEXCI(ISYMI,1) + NCCEXCI(ISYMI,3)
+         NEXF = NCCEXCI(ISYMF,1) + NCCEXCI(ISYMF,3)
          IF ((.NOT.SELQR2).AND.(ISYMI.EQ.ISYMF)) NEXF = IEXI - 1
          DO IEXF = 1, NEXF
 
@@ -1745,6 +1745,12 @@ C
                LABEL = LBLOPR(IQR2OP(IOPER))
                ISYMO = ISYOPR(IQR2OP(IOPER))
                IF (ISYMO.EQ.ISYMFI) THEN
+            if (LSKIPLINEQ) then
+                   if (locdbg) then
+                   write(lupri,*)'SONIA XOPAIND WARNING'
+                   write(lupri,*)'XOPAIND: skip lin eqs'
+                   end if
+            else
                 IF (.NOT.QR22N1) THEN
                  INUM=IR1TAMP(LABEL,.FALSE.,EIGVI-EIGVF,ISYMO)
                  INUM=IR1TAMP(LABEL,.FALSE.,EIGVF-EIGVI,ISYMO)
@@ -1752,6 +1758,7 @@ C
                  INUM=IN2AMP(ISTATEI,-EIGVI,ISYMI,ISTATEF,+EIGVF,ISYMF)
                  INUM=IN2AMP(ISTATEF,-EIGVF,ISYMF,ISTATEI,+EIGVI,ISYMI)
                 END IF
+            end if
                END IF
               END DO
             END IF 
@@ -1905,13 +1912,20 @@ C
 
               LABELA = LBLOPR(IALRSOP(IOPER))
               LABELB = LBLOPR(IBLRSOP(IOPER))
-              IF (.NOT.LRS2N1) THEN
+              if (SKIPLEQ) then
+                   !if (locdbg) then
+                   write(lupri,*)'SONIA LRESIND WARNING'
+                   write(lupri,*)'LRESIND: skip lin eqs'
+                   !end if
+              else
+               IF (.NOT.LRS2N1) THEN
                  EIGV  = -EIGVAL(ILRSST(NXLRSST)) 
                  INUM  = IR1TAMP(LABELB,.FALSE.,EIGV,ISYMB)
-              ELSE
+               ELSE
                  EIGV  = EIGVAL(ILRSST(NXLRSST))   
                  INUM  = ILRMAMP(ILRSST(NXLRSST),EIGV,ISYMB)
-              ENDIF
+               ENDIF
+              end if
 
             ENDIF
   400     CONTINUE

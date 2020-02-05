@@ -1,7 +1,0 @@
-   geoopt_exci2
-   ------------
-   Molecule:         LiH
-   Wave Function:    MCSCF (CAS)
-   Test Purpose:     Optimization of the first excited state of A1
-                     symmetry using the .OPTIMIZE module (1st order),
-                     and with a vibrational analysis at the final point

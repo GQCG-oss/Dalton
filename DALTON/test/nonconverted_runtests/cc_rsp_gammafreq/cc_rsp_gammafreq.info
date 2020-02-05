@@ -1,8 +1,0 @@
-   cc_rsp_gammafreq
-   ----------------
-   Molecule:         HF in C2
-   Wave Function:    CCS / 6-31G**
-   Test Purpose:     Second hyperpolarizability (cubic response):
-                     - Parallel isotropic average (gamma_||) 
-                     - ESHG & THG for one frequency
-                     - No use of special symmetries 

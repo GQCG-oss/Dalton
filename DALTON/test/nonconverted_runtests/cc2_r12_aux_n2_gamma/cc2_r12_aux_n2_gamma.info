@@ -1,7 +1,0 @@
-   cc2_r12_aux_n2_gamma
-   ------------
-   Molecule:         N2 in D2h
-   Wave Function:    CC2-R12/A/1  cc-pVDZ/cc-pVDZ
-   Test Purpose:     Second hyperpolarizabilities (cubic response):
-                     - for CC2-R12 (Ansatz 1) 
-                     - Check frozen core 

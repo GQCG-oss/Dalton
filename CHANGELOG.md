@@ -1,8 +1,10 @@
 # DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
-## [2019.alpha] (Dalton2019 alpha)
+## [2020.alpha] (Dalton2020 alpha)
 
 ### New features added
+- Added pcH-n and aug-pcH-n basis sets levels 1-4 to Dalton basis set library.
+- Extended "super matrix integrals" to work with >255 basis functions. (H. J. Aa. Jensen)
 - Calculate and print oscillator strengths based on .EEF dipole transition moments. (H. J. Aa. Jensen)
 - Added ".TDA TR" keyword for invoking Tamm-Dancoff approximation for triplet response properties under \*\*PROPERTIES.
   Useful for avoiding (near-)triplet-instability problems, for example in DFT calculations of spin-spin coupling constants. (H. J. Aa. Jensen)
@@ -10,11 +12,15 @@
 - Added possibility to optimize MCSCF singlet wave functions with CSFs when used for triplet properties,
   both in \*\*RESPONS and \*\*PROPERTIES. Previously .DETERMINANTS in wave function optimization was required. (H. J. Aa. Jensen)
 - Added the ability in QFITLIB to fit up to and including quadrupoles (C. Steinmann)
+- Added the CVS approximation for CC calculations of core-excited states (S. Coriani et al.)
+- Added the possibility to calculate triplet-triplet excited state moments using the EOM-CC approximation (R. Faber)
 
 ### Added
 - added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
 
 ### Fixed
+- Compilation errors with gfortran-9.2.0 and 64-bit integers
+- Errors when running DFT with 64-bit integers and MPI. (P. Reinholdt and H. J. Aa. Jensen)
 - Errors for Fermi-contact (FC) labels on APROPER and therefore FC properties in \*\*RESPONS when more than 99 atoms (H. J. Aa. Jensen)
 - Error for \*ESR spin-dipole properties when more than 33 atoms (H. J. Aa. Jensen)
 - Singlet totally-symmetric excitation energies for MCSCF in \*\*RESPONS with super-symmetry activated (.SUPSYM keyword). (H. J. Aa. Jensen)
@@ -25,16 +31,17 @@
 - never use plus combinations of determinants as start guess for singlet linear response excitation energies
   when reference wave function is not singlet (we do not want singlet states then). (H. J. Aa. Jensen)
 - dalton script: fix for using input files located in subfolders
+- fixed error from March 2015 which meant that double-hybrid DFT was not working correctly (MP2 part was ignored).
+- fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
+
+### Fixes in enclosed basis set files
+- Error in diffuse d-orbital exponents for Aluminum and Silicon (factor 10 too big) in aug-cc-pV(D+d)Z basis sets (H. J. Aa. Jensen)
+- Error in diffuse f-orbital exponents for Aluminum and Silicon (factor 10 too big) in aug-cc-pV(Q+d)Z basis sets (H. J. Aa. Jensen)
+- Error in diffuse f-orbital exponent for Aluminum (factor 10 too big) in aug-cc-pV(T+d)Z basis sets (H. J. Aa. Jensen)
 
 ### Changed
 - Allow basis set(s) after BASIS in line 1 of .mol file (instead of on second line). (H. J. Aa. Jensen)
   
-
-## [2018.3] (unreleased)
-
-### Fixed
-- fixed error from March 2015 which meant that double-hybrid DFT was not working correctly (MP2 part was ignored).
-- fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
 
 ## [2018.2] (2019-03-17)
 

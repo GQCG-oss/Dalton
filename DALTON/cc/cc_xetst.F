@@ -553,7 +553,7 @@ C          ------------------------------------------------------------
            CALL DCOPY(NT1AM(ISYCTR),WORK(KLEFT1),1,WORK(KRHO1),1)
            CALL DCOPY(NT2AM(ISYCTR),WORK(KLEFT2),1,WORK(KRHO2),1)
            CALL CC_ATRR(0.0D0,ISYCTR,-1,WORK(KRHO1),LWRK1,.FALSE.,DUMMY,
-     &                  APROXR12)
+     &                  APROXR12,.FALSE.)
            IF (LISTL(1:2).EQ.'L0') THEN
              CALL CC_ETA(WORK(KETA1),WORK(KEND1),LWRK1)
              CALL DAXPY(NT1AMX,1.0D0,WORK(KETA1),1,WORK(KRHO1),1)
@@ -1103,7 +1103,7 @@ C
       IF (.NOT.CCS) CALL DCOPY(NT2AMX,VECL2,1,WORK(KRHO2),1)
 C
       CALL CC_ATRR(0.0D0,ISYM0,-1,WORK(KRHO1),LWRK0,.FALSE.,DUMMY,
-     &                  APROXR12)
+     &                  APROXR12,.FALSE.)
 C
       IF (LISTL(1:2).EQ.'L0') THEN
          CALL CC_ETA(WORK(KETA1),WORK(KEND1B),LWRK1B)
@@ -1173,7 +1173,7 @@ C
          IF (.NOT.CCS) CALL DCOPY(NT2AMX,VECL2,1,WORK(KRHO2),1)
 C
          CALL CC_ATRR(0.0D0,ISYM0,-1,WORK(KRHO1),LWRK0,.FALSE.,DUMMY,
-     &                  APROXR12)
+     &                  APROXR12,.FALSE.)
 C
          IF (LISTL(1:2).EQ.'L0') THEN
             CALL CC_ETA(WORK(KETA1),WORK(KEND1B),LWRK1B)

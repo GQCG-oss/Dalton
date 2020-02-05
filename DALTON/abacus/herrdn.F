@@ -19,8 +19,9 @@ C
 C FILE    : herrdn.F
 C
 C
+#define HERRDN_DEBUG -1
 C
-#ifdef OLD_REVISION_LOG
+! OLD_REVISION_LOG
 c===========================================================================
 crevision 1.7-1.8 2000/04/28 10:27:31  hjj
 c - implemented new normalized s,p,d,f,g,h,i GTO's in SPHINP as default
@@ -93,15 +94,14 @@ cCNTINP: read in old 3F10 format if error reading coordinates
 c        changed format to 3F20.0 instead of 3F20.15
 C CONTINUUM key added to activate CONTINUUM basis functs of Kaufmann - Sonia 2012
 c===========================================================================
-#endif
 C  /* Deck reainp */
-      SUBROUTINE REAINP(WORD,RELCAL,TSTINP)
+      SUBROUTINE REAINP(WORD,RELCAL)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER ( NTABLE = 14, D1 = 1.0D0)
-      LOGICAL NEWDEF, RELCAL, TSTINP
+      LOGICAL NEWDEF, RELCAL
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 !
 !     Parameter MAXPRD in cbirea.h is default for MAXPRI
@@ -122,8 +122,8 @@ C     ... in qm3.h, for QM3:
       ONLYOV = .FALSE.
 C
       NEWDEF = (WORD .EQ. '*READIN' .OR. WORD .EQ. '*MOLBAS')
-      ICHANG = 0
       IPREAD_ini = IPREAD
+      ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
   100    CONTINUE
@@ -148,7 +148,6 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword for '//WORD1)
     1          CONTINUE ! .PRINT
-                  IPREAD_ini = IPREAD
                   READ (LUCMD, *,IOSTAT=IOS) IPREAD
                   IF (IOS.NE.0) THEN
                      CALL QUIT('Error in reading .PRINT')
@@ -187,8 +186,7 @@ C
                     CALL QUIT('Error in reading .SYMTHR')
                   ENDIF
                GO TO 100
-C              '.CM FUN'
-    7          CONTINUE
+    7          CONTINUE ! .CM FUN
                   IF (LCMMAX .GT. -1) THEN
                      WRITE (LUPRI,'(/A/)')
      &          ' Input error: .CONTINUUM and .CM FUN not both allowed.'
@@ -291,17 +289,17 @@ C Nuclear model
              CALL QUIT('Option .BIGVEC not allowed.')
          END IF
          IF (LCMMAX .GT. -1) THEN
-            if (LCNTNUUM) then
+           if (LCNTNUUM) then
             WRITE (LUPRI,'(/A,I5)')
-     &           ' Continuum center of mass basis fctns with l(max) =',
-     &           LCMMAX
-            else
+     &         ' Continuum center of mass basis functions with l(max) ='
+     &          ,LCMMAX
+           else
             WRITE (LUPRI,'(/A,I5)')
-     &           ' Rydberg center of mass basis fctns with l(max) =',
-     &           LCMMAX
-            end if
+     &         ' Rydberg center of mass basis functions with l(max) ='
+     &          ,LCMMAX
+           end if
             WRITE (LUPRI,'(2(A,F4.1))')
-     &           ' Sequence starts at n=',CMSTR,' and ends at n=', CMEND
+     &         ' Sequence starts at n=',CMSTR,' and ends at n=', CMEND
                  WRITE (LUPRI,'(A,F10.3)')
      &         ' Net charge of ionic core',ZCMVAL
                  WRITE(LUPRI,'(/A/A/A/A/A)')
@@ -363,14 +361,13 @@ C
 C
 C     cbirea.h:
 C
-      IPREAD = IPREAD_ini
+      IPREAD = MAX(HERRDN_DEBUG,IPREAD_ini)
       LUMLCL = -1
       MAXPRI = MAXPRD
 C     ... parameter MAXPRD is in cbirea.h
       UNCONT = .FALSE.
       BIGVC  = .FALSE.
       DIRAC  = RELCAL
-      GENCON = .TRUE.
       IF (TSTINP) IPREAD = MAX(4,IPREAD)
       BASIS  = .FALSE.
       ATOMBA = .FALSE.
@@ -3221,8 +3218,7 @@ C
            ELSE
               READ (MLINE(NMLINE),FMT3,IOSTAT=IOS) ALPHA(L)
               IF (IOS.NE.0) THEN
-                WRITE(LUPRI,*)
-     &          'Error in reading of ALPHA(L), NMLINE=',NMLINE,':'
+                WRITE(LUPRI,*) 'Error reading ALPHA(L), line',NMLINE,':'
                 WRITE(LUPRI,*) MLINE(NMLINE)
                 CALL QUIT('Error in basis set reading of ALPHA(L)')
               ENDIF
@@ -6065,7 +6061,7 @@ C     include character ASYMB(0:NSYMB)*2 with atomic symbols
 C
       NCTOT = NCTOT + 1
       NUCIND = NUCIND + 1
-      IF (NUCIND .GT. MXCENT) GOTO 5000
+      IF (NUCIND .GT. KATOM) GOTO 5000
       IZ(NUCIND,1) = 0
       IZ(NUCIND,2) = 0
       IZ(NUCIND,3) = 0
@@ -6162,8 +6158,8 @@ C     Error message:
 C
  5000 CONTINUE
         WRITE (LUPRI,'(/A/A,I5)')
-     &    ' Too many atomic centers: MXCENT exceed in ZMAT,',
-     &    ' Current limit:',MXCENT
+     &    ' Too many atomic centers in ZMAT,',
+     &    ' Current limit ("KATOM"):',KATOM
         CALL QUIT('*** ERROR *** MXCENT exceeded in ZMAT')
       END
 C  /* Deck buildz */

@@ -1,5 +1,0 @@
-   rsp_exci_cmfun
-   --------------
-   Molecule:         LiH
-   Wave Function:    MCSCF (CAS) / 4-31G + .CM FUN Rydberg functions
-   Test Purpose:     Excitation energy with extra Rydberg basis functions

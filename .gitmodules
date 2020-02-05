@@ -1,9 +1,6 @@
 [submodule "external/gen1int"]
 	path = external/gen1int
 	url = https://gitlab.com/bingao/gen1int.git
-[submodule "external/xcfun"]
-	path = external/xcfun
-  	url = https://github.com/dftlibs/xcfun.git
 [submodule "external/pelib"]
 	path = external/pelib
 	url = ../../pe-software/pelib.git
@@ -13,6 +10,3 @@
 [submodule "external/efs"]
 	path = external/efs
 	url = https://gitlab.com/dalton/efs.git
-[submodule "external/xcint"]
-	path = external/xcint
-	url = https://github.com/dftlibs/xcint.git

@@ -1162,11 +1162,6 @@
 #endif
     logical almost_equal                                  !indicates if the results from Gen1Int are
                                                           !almost equal to those from \fn(PR1IN1)
-#if !defined (BUILD_OPENRSP)
-    ! test suite of matrix module
-    call MatTestSuite(test_failed=test_failed, io_viewer=io_viewer, &
-                      level_print=level_print, threshold=ERR_THRSH)
-#endif
     ! gets the number of atomic orbitals
     call Gen1IntAPIGetNumAO(num_ao=num_ao)
     write(io_viewer,100) "number of orbitals", num_ao

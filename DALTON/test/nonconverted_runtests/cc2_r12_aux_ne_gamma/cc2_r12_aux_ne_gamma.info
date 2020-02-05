@@ -1,6 +1,0 @@
-   cc2_r12_aux_ne_gamma
-   ------------
-   Molecule:         Ne in D2h
-   Wave Function:    CC2-R12/B/1  cc-pVDZ/cc-pVDZ
-   Test Purpose:     Test properties up to second hyperpolarizabilities (cubic response):
-                     - for CC2-R12 (Ansatz 1B) 

@@ -1,5 +1,0 @@
-   choles_ccsdpt_energy
-   ---------------
-   Molecule:         NH3 in Cs
-   Wave Function:    CCSD, CCSD(T) / aug-cc-pVTZ
-   Test Purpose:     Cholesky CCSD(T) energy

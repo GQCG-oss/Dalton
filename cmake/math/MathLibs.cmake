@@ -145,28 +145,12 @@ if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     endif()
 endif()
 
-if(ENABLE_SCALAPACK)
-    set(_scalapack_lib      mkl_scalapack${_lib_suffix})
-    if(${BLACS_IMPLEMENTATION} STREQUAL "intelmpi")
-        set(_blacs_lib mkl_blacs_intelmpi${_lib_suffix})
-    elseif(${BLACS_IMPLEMENTATION} STREQUAL "openmpi")
-        set(_blacs_lib mkl_blacs_openmpi${_lib_suffix})
-    elseif(${BLACS_IMPLEMENTATION} STREQUAL "sgimpt")
-        set(_blacs_lib mkl_blacs_sgimpt${_lib_suffix})
-    else()
-        message(FATAL_ERROR "BLACS implementation ${BLACS_IMPLEMENTATION} not recognized/supported")
-    endif()
-else()
-    set(_scalapack_lib)
-    set(_blacs_lib)
-endif()
-
 # miro: for MKL 10.0.1.014
-set(MKL_BLAS_LIBS ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core mkl_def mkl_mc ${_blacs_lib} guide pthread m)
+set(MKL_BLAS_LIBS ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core mkl_def mkl_mc guide pthread m)
 #  try this MKL BLAS combination with SGI MPT
-set(MKL_BLAS_LIBS2 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_lib}   guide pthread m)
+set(MKL_BLAS_LIBS2 ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core guide pthread m)
 # newer MKL BLAS versions do not have libguide
-set(MKL_BLAS_LIBS3 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_lib}         pthread m)
+set(MKL_BLAS_LIBS3 ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core pthread m)
 # ancient MKL BLAS
 set(MKL_BLAS_LIBS4 mkl guide m)
 
@@ -178,5 +162,3 @@ set(MKL_LAPACK_LIBS2 mkl_lapack)
 unset(_lib_suffix)
 unset(_thread_lib)
 unset(_compiler_mkl_interface)
-unset(_scalapack_lib)
-unset(_blacs_lib)

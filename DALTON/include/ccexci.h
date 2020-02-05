@@ -24,7 +24,7 @@
 ! Christof Haettig, Januar 1999
 !---------------------------------------------------------------------*
       INTEGER MAXEXCI
-      PARAMETER ( MAXEXCI = 100)
+      PARAMETER ( MAXEXCI = 200)
 
       INTEGER NEXCI
       INTEGER ISYEXC(MAXEXCI),IMULTE(MAXEXCI)

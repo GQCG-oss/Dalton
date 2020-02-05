@@ -1728,7 +1728,7 @@ C
 !    &             '*SUPINT', '*ER2INT', '*SORINT', '*DENFIT',  ! TABDIR(5:8)
 !    &             '*QM3INP'/                                   ! TABDIR(9)
 
-C 302   CALL REAINP(WORD,RELCAL,TSTINP)
+C 302   CALL REAINP(WORD,RELCAL)
   302   CALL QUIT('Input ERROR, *READIN has been moved to **DALTON'//
      &     ' section as *MOLBAS')
       GO TO 301

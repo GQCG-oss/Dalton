@@ -5146,6 +5146,8 @@ C     -------------
          MODEL = 'CC3       '
          WRITE(LUPRI,'(/,1X,A)')
      *    'CC3 linear response residues not implemented yet'
+         WRITE(LUPRI,'(/,1X,A)')
+     *    'USE CC_OPAINP INSTEAD'
          RETURN
       END IF
       IF (CC1A) THEN
@@ -5271,25 +5273,40 @@ C              ----------------------------------
 C              Calculate etaA vector.
 C              ----------------------
 
-               CALL CC_ETAC(ISYMA,LABELA,WORK(KETA),'L0',1,0,DUMMY,
+               if (EOMCCSD) then
+                  !EOM transition moment requested (SONIA)
+                  write(lupri,*)'EOM eta^X vector requested'
+                  CALL CCCI_ETAC(ISYMA,LABELA,WORK(KETA),'L0',1,0,DUMMY,
      &                      WORK(KEND2),LWRK2)
+                  write(lupri,*)'out of CCCI_ETAC'
+C
+C              Calculate contribution to right (left) transition moment:
+C              etaA*RE for all excited states of matching symmetry.
+C              ----------------------------------------------------
+               else
 
-C              Calculate contribution to right transition moment:
+                  CALL CC_ETAC(ISYMA,LABELA,WORK(KETA),'L0',1,0,DUMMY,
+     &                      WORK(KEND2),LWRK2)
+               end if
+
+C              Calculate contribution to right (left) transition moment:
 C              etaA*RE for all excited states of matching symmetry.
 C              ----------------------------------------------------
 
                CALL CC_TRRETA(ISYMA,LABELA,WORK(KOFFR),WORK(KETA),
      &                        WORK(KEND2),LWRK2,MODEL)
 
-C              Calculate contribution to right transition moment:
+C              Calculate contribution to right (sonia: left) transition moment:
 C              [F*tA(-wf)]*RE for all excited states of matching symmetry,
 C              if requested.
 C              -----------------------------------------------------------
 
-               IF ((.NOT.CIS) .AND. (.NOT.LRS2N1)) THEN
-                  CALL CC_TRRFTA(ISYMA,LABELA,WORK(KOFFR),
+               if (.not.EOMCCSD) then
+                  IF ((.NOT.CIS) .AND. (.NOT.LRS2N1)) THEN
+                     CALL CC_TRRFTA(ISYMA,LABELA,WORK(KOFFR),
      &                           WORK(KEND1),LWRK1,MODEL)
-               END IF
+                  END IF
+               end if
 
 C              Calculate ksiA vector.
 C              ----------------------
@@ -5298,22 +5315,35 @@ C              ----------------------
                CALL CC_XKSI(WORK(KKSI),LABELA,ISYMA,0,DUMMY,
      &                      WORK(KEND2),LWRK2)
 
-C              Calculate contribution to right transition moment:
-C              Mf(wf)*ksiA for all excited states of matching symmetry,
-C              if requested.
-C              --------------------------------------------------------
-
-               IF ((.NOT.CIS) .AND. LRS2N1) THEN
-                  CALL CC_TRRKSI(ISYMA,LABELA,WORK(KOFFR),WORK(KKSI),
-     &                           WORK(KEND2),LWRK2,MODEL)
-               END IF
-
-C              Calculate left transition moment:
+C              Calculate left (sonia: right) transition moment:
 C              LE*ksiA for all excited states of matching symmetry.
 C              ----------------------------------------------------
 
                CALL CC_TRLKSI(ISYMA,LABELA,WORK(KOFFL),WORK(KKSI),
      &                        WORK(KEND2),LWRK2,MODEL)
+
+               if (EOMCCSD) then
+                 !Sonia:
+                 !compute the trivial contribution to left moment
+                 !-(tbar*RE)*(tbar*ksiA) 
+                 !Done as (tbar*(tbar*RE))*ksiaA
+                 CALL CC_eomTRRKSI(ISYMA,LABELA,WORK(KOFFR),WORK(KKSI),
+     &                           WORK(KEND2),LWRK2,MODEL)
+                 
+               else
+
+C              Calculate contribution to right (left) transition moment:
+C              Mf(wf)*ksiA for all excited states of matching symmetry,
+C              if requested.
+C              --------------------------------------------------------
+
+                 IF ((.NOT.CIS) .AND. LRS2N1) THEN
+                    write(lupri,*)'Doing the Mf*CsiA'
+                    CALL CC_TRRKSI(ISYMA,LABELA,WORK(KOFFR),WORK(KKSI),
+     &                           WORK(KEND2),LWRK2,MODEL)
+                 END IF
+               end if
+
 
             END IF
 
@@ -7004,3 +7034,109 @@ c
       tobestripped=helper 
       end
 C--------------------------------------------------------------
+
+C  /* Deck cc_eomtrrksi */
+      SUBROUTINE CC_eomTRRKSI(ISYMA,LABELA,TRRMOM,XKSI,WORK,LWORK,MODEL)
+C
+C     Sonia, 2016
+C
+C     Purpose: Calculate (tbar0*RE)*(tbar0*ksiA) 
+C              contributions to left ground-excited
+C              state EOM transition moments for all excited states of matching
+C              symmetry.
+C
+#include "implicit.h"
+      DIMENSION TRRMOM(*), XKSI(*), WORK(LWORK)
+      CHARACTER*8  LABELA
+      CHARACTER*10 MODEL
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "cclres.h"
+#include "ccexci.h"
+
+      CHARACTER*9 SECNAM
+      PARAMETER (SECNAM = 'CC_eomTRRKSI')
+
+C     Allocation.
+C     -----------
+
+      NTAMP = NT1AM(ISYMA)
+      IF (.NOT. CCS) NTAMP = NTAMP + NT2AM(ISYMA)
+
+      KTBAR01 = 1
+      KTBAR02 = KTBAR01 + NT1AM(1)
+      IF (CCS) THEN
+         KEND = KTBAR02
+      ELSE
+         KEND = KTBAR02 + NT2AM(1)
+      END IF
+      KMF1 = KEND
+      KMF2 = KMF1 + NT1AM(ISYMA)
+      IF (CCS) THEN
+         KEND = KMF2
+      ELSE
+         KEND = KMF2 + NT2AM(ISYMA)
+      END IF
+      LWRK = LWORK - KEND + 1
+
+      IF (LWRK .LT. 0) THEN
+         CALL QUIT('Insufficient memory in '//SECNAM)
+      END IF
+
+      IOPT   = 3
+      ILSTNR = 0
+      CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KTBAR01),
+     &                            WORK(KTBAR02))
+!
+!     Loop over requested excited states.
+!     -----------------------------------
+
+      DO IRSD = 1,NXLRSST
+
+         ISTATE = ILRSST(IRSD)
+         ISYME  = ISYEXC(ISTATE)
+
+         IF (ISYME .EQ. ISYMA) THEN
+
+C           Calculate contribution.
+C           -----------------------
+
+            IOPT   = 3
+            !ILSTNR = ILRMAMP(ISTATE,EIGVAL(ISTATE),ISYMA)
+            ILSTNR = ISTATE
+            CALL CC_RDRSP('RE',ILSTNR,ISYMA,IOPT,MODEL,WORK(KMF1),
+     &                    WORK(KMF2))
+
+            if (isyme.eq.1) then
+               CONST = DDOT(NTAMP,WORK(KMF1),1,WORK(KTBAR01),1)
+               !write(lupri,*)'The constant TB0*RE', CONST
+               CONTR = DDOT(NTAMP,WORK(KTBAR01),1,XKSI,1)
+               !write(lupri,*)'The TB0*Csi^A', CONTR
+               !write(lupri,*)'TB0*Csi^A * TB0*RE', CONTR*CONST
+               !write(lupri,*)'Final contrib', CONTR*CONST
+               !write(lupri,*)''
+            else
+               !call quit('CC_EOMTRRKSI: SYMMETRY NOT WORKING')
+               contr=zero
+               const=zero
+               write(lupri,*)'TB0*Csi^A * TB0*RE zero for this irrep'
+            end if
+            !write(lupri,*)'TRRMOM before', TRRMOM(IRSD)
+            TRRMOM(IRSD) = TRRMOM(IRSD) - CONTR*CONST
+            !write(lupri,*)'TRRMOM after', TRRMOM(IRSD)
+
+            IF (IPRINT .GT. 2) THEN
+               ISTSY = ISTATE - ISYOFE(ISYME)
+               WRITE(LUPRI,'(1X,A1,A8,A3,A,F12.6,A,I3,A,I2,A)')
+     &       '<',LABELA,'|f>','(tb0*RE)(tb0*ksiA) cont. =',CONTR*CONST,
+     &       '  (f:',ISTSY,' of sym.',ISYME,')'
+            END IF
+
+         END IF
+
+      END DO
+
+      RETURN
+      END

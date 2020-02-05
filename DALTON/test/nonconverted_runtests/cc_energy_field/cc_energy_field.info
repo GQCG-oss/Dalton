@@ -1,6 +1,0 @@
-   cc_energy_field
-   ---------------
-   Molecule:         HF in C2v
-   Wave Function:    CCSD, CCSD(T) / aug-cc-pVDZ
-   Test Purpose:     Finite field for energy and binary packing of
-                     two-electron integrals

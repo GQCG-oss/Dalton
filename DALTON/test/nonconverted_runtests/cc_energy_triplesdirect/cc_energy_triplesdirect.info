@@ -1,5 +1,0 @@
-   cc_energy_triplesdirect
-   -----------------------
-   Molecule:         HF in C2
-   Wave Function:    CCSD(T) / 6-31G**
-   Test Purpose:     Integral direct energy calculation using ERI

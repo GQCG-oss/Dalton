@@ -1,9 +1,0 @@
-BASIS
-cc-pVDZ
-Geometry optimization calculation
-for HF in CM coor. system
-    2    2  X  Y  Z   1.00D-15
-        1.0   1
-H     0.0000000000000000  0.000000000000000   1.645584440000000       *
-        9.0   1
-F     0.0000000000000000  0.000000000000000   -.08729478000000        *

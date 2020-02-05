@@ -1,9 +1,0 @@
-BASIS
-cc-pVDZ
-Geometry optimization (2nd order) with automatic breaking of symmetry
-
-Atomtypes=2 Angstrom Generators=2   X YZ
-Atoms=1 Charge=8.0
-O     0.0  0.73 0.0
-Charge=1.0 Atoms=1
-H     0.0 0.73 0.95

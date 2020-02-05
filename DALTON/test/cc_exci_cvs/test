@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+#    cc_exci_cvs
+#    ---------------
+#    Molecule:         H2O
+#    Wave Function:    CCSD
+#    Test Purpose:     Calculation of Core excitation energies
+#                      using the CVS approximation
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# Checks that things are setup correctly
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 8,
+      rel_tolerance = 1.0e-8)
+
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+      
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Number of t1 amplitudes',
+      num_lines = 3,
+      rel_tolerance = 10e-2)
+
+# Energy (Should check SCF, MP2, CCSD
+f.add(string = 'Total SCF   energy',
+      rel_tolerance = 1.0e-9)
+f.add(string = 'Total MP2   energy',
+      rel_tolerance = 1.0e-9)
+f.add(string = 'Total CCSD  energy',
+      rel_tolerance = 1.0e-9)
+#Excitation energies
+f.add(from_string = 'CCSD       Excitation energies',
+      num_lines = 16,
+      abs_tolerance = 1.0e-7,
+      mask = [2]) # Let's just read the numbers in hartree
+
+
+test.run(['cc_exci_cvs.dal'], ['water_dz.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

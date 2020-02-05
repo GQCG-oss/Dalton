@@ -1,6 +1,0 @@
-   rsp_ecp
-   -------
-   Molecule:         H2O
-   Wave Function:    SCF / ECP 
-   Test Purpose:     Calculation of energy and second hyperpolarizability
-                     using ECP; test that Huckel works with ECP

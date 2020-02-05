@@ -1,0 +1,4996 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON release Dalton2020.alpha (2020)
+         ( Web site: http://daltonprogram.org )
+
+   ----------------------------------------------------------------------------
+
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
+    and
+     
+       Dalton, a molecular electronic structure program,
+       Release Dalton2020.alpha (2020), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            Technical Univ. of Denmark,   Denmark     (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
+  Tobias Fahleson,          KTH Stockholm,                Sweden      (Damped cubic response)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Christoph Jacob           TU Braunschweig               Germany     (Frozen density embedding model)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Subsystems and CC3)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           KTH Stockholm,                Sweden      (Cubic response and complex frequency response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Andre S. P. Gomes,        CNRS/Universite de Lille,     France      (Frozen density embedding model)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  Lucas Visscher,           Vrije Universiteit Amsterdam, Netherlands (Frozen density embedding model)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Mon Jan 27 16:10:21 2020
+     Host name              : kemi-czc7084xz.win.dtu.dk               
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/WIN/rfaber/source/dalton/DALTON/test/cc_exci_cvs
+   2) /home/WIN/rfaber/source/dalton/build-cvs-merge/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | rfaber
+ Host                     | kemi-czc7084xz.win.dtu.dk
+ System                   | Linux-3.10.0-1062.9.1.el7.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /opt/rh/devtoolset-8/root/usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39
+                          | )
+ C compiler               | /opt/rh/devtoolset-8/root/usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39)
+ C++ compiler             | /opt/rh/devtoolset-8/root/usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39)
+ Explicit libs            | -lpthread
+ Static linking           | OFF
+ Last Git revision        | 097b0703cbd16e443e48fbed6b23673eeb89c133
+ Git branch               | cvs-part1
+ Configuration time       | 2020-01-23 10:05:11.144610
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
+**WAVE FUNCTIONS
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-10
+*CC INPUT
+.CCSD
+.THRENR
+ 1.0d-10
+.PRINT
+  5
+.MAXRED
+ 300
+.MAX ITE
+ 200
+*CCEXCI
+.NCCEXCI
+ 2 2 2 2
+.THREXC
+ 1.0D-8
+.CVSEPARA
+1 0 0 0
+1
+0
+0
+0
+**END OF DALTON INPUT
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS
+cc-pVDZ
+Water
+Empty line
+Atomtypes=2
+        8.    1
+O    0.0000000000  0.0000000000 -0.1239093563
+      1.00    2
+H    0.0000000000  1.4299372840 0.9832657567
+H    0.0000000000 -1.4299372840 0.9832657567
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Water                                                                   
+ 2: Empty line                                                              
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/WIN/rfaber/source/dalton/build-cvs-merge/basis/cc-pVDZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/WIN/rfaber/source/dalton/build-cvs-merge/basis/cc-pVDZ"
+
+
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+@   The molecule is centered at center of mass and rotated
+@   so principal axes of inertia are along coordinate axes.
+
+ Symmetry class found: C(2v)          
+
+ Symmetry Independent Centres             
+ ----------------------------
+O      8 :      0.00000000     0.00000000    -0.12390936  Isotope  1
+H      1 :      0.00000000     1.42993728     0.98326576  Isotope  1
+
+ The following symmetry elements were found:   X  Y     
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Full point group is: C(2v)          
+@    Represented as:      C2v
+
+@  * The irrep name for each symmetry:    1: A1     2: B1     3: B2     4: A2 
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           H   _1      1.007825
+                           H   _2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    3
+
+  Basis set used is "cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  O           1    8.0000    26    14      [9s4p1d|3s2p1d]                                    
+  H           2    1.0000     7     5      [4s1p|2s1p]                                        
+  ----------------------------------------------------------------------
+  total:      3   10.0000    40    24
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    9
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z  -0.1239093563
+  H   / 1 :     4  x   0.0000000000    5  y   1.4299372840    6  z   0.9832657567
+  H   / 2 :     7  x   0.0000000000    8  y  -1.4299372840    9  z   0.9832657567
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     3    2    3    1
+
+  Symmetry  A1  ( 1)
+
+    1   O     z    3
+    2   H     y    [  5  -    8 ]/2
+    3   H     z    [  6  +    9 ]/2
+
+  Symmetry  B1  ( 2)
+
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
+
+  Symmetry  B2  ( 3)
+
+    6   O     y    2
+    7   H     y    [  5  +    8 ]/2
+    8   H     z    [  6  -    9 ]/2
+
+  Symmetry  A2  ( 4)
+
+    9   H     x    [  4  -    7 ]/2
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           H   _1      H   _2
+            ------      ------      ------
+ O     :    0.000000
+ H   _1:    0.957000    0.000000
+ H   _2:    0.957000    1.513380    0.000000
+
+
+  Max    interatomic separation is    1.5134 Angstrom (    2.8599 Bohr)
+  between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9570 Angstrom (    1.8085 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H   _1     O            0.957000
+  bond distance:  H   _2     O            0.957000
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H   _1     O          H   _2       104.500
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.614476          0.000000    1.000000    0.000000
+   IB       1.154121          0.000000    0.000000    1.000000
+   IC       1.768597          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is planar.
+
+               A                   B                   C
+
+         822455.8206         437890.8074         285751.4237 MHz
+           27.434173           14.606465            9.531642 cm-1
+
+
+@  Nuclear repulsion energy :    9.196931932729 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          11    4    7    2
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        1s         3
+    4     O        2pz        6
+    5     O        2pz        9
+    6     O        3d0       12
+    7     O        3d2+      14
+    8     H        1s        15 +   16
+    9     H        1s        17 +   18
+   10     H        2py       21 -   22
+   11     H        2pz       23 +   24
+
+
+  Symmetry  B1 ( 2)
+
+   12     O        2px        4
+   13     O        2px        7
+   14     O        3d1+      13
+   15     H        2px       19 +   20
+
+
+  Symmetry  B2 ( 3)
+
+   16     O        2py        5
+   17     O        2py        8
+   18     O        3d1-      11
+   19     H        1s        15 -   16
+   20     H        1s        17 -   18
+   21     H        2py       21 +   22
+   22     H        2pz       23 -   24
+
+
+  Symmetry  A2 ( 4)
+
+   23     O        3d2-      10
+   24     H        2px       19 -   20
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      z      0.97525666         2.47885502         8.26857032
+
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ HERMIT - Number of two-electron integrals written:       11412 ( 25.3% )
+ HERMIT - Megabytes written:                              0.137
+
+  Total CPU  time used in HERMIT:   0.10 seconds
+  Total wall time used in HERMIT:   0.03 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+NCCEXCI for singlet:    2    2    2    2
+ CCSD_INPUT: core-val requested
+ Requested number of core orbs per sym
+           1           0           0           0
+ Indices of requested core orbs
+           1
+
+
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:    4    1    2    0
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.705656      -1.506643      -0.670531      -0.292100
+
+ Huckel EHT eigenvalues for symmetry :  2
+           -0.616200
+
+ Huckel EHT eigenvalues for symmetry :  3
+           -0.731300      -0.257471
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Mon Jan 27 16:10:21 2020
+     Host name              : kemi-czc7084xz.win.dtu.dk               
+
+ Title lines from ".mol" input file:
+     Water                                                                   
+     Empty line                                                              
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    (Integral direct) CC calculation.
+
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+     Wave function specification
+     ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+@    Wave function type        --- CC ---
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 4 (point group: C2v)
+@    Reference state symmetry                   1 (irrep name : A1 )
+
+     Orbital specifications
+     ======================
+@    Abelian symmetry species          All |    1    2    3    4
+@                                          |  A1   B1   B2   A2 
+                                       --- |  ---  ---  ---  ---
+@    Total number of orbitals           24 |   11    4    7    2
+@    Number of basis functions          24 |   11    4    7    2
+
+      ** Automatic occupation of RHF orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               5 |    3    1    1    0
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-10
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+ -Excitation energies calculated
+  
+
+
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+
+Calculating AOSUPINT
+     (Precalculated AO two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -75.8009975347       2.30D+00  -7.58D+01     3   1   1   0
+      Virial theorem: -V/T =      1.999427
+@    MULPOP   O      -0.43; H   _1  0.22; H   _2  0.22; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
+ -----------------------------------------------------------------------------
+@  2  -76.0137712189       3.95D-01  -2.13D-01     3   1   1   0
+      Virial theorem: -V/T =      2.000385
+@    MULPOP   O      -0.27; H   _1  0.13; H   _2  0.13; 
+   2  Level shift: doubly occupied orbital energies shifted by -5.00D-02
+ -----------------------------------------------------------------------------
+@  3  -76.0258203332       1.04D-01  -1.20D-02     3   1   1   0
+      Virial theorem: -V/T =      2.001509
+@    MULPOP   O      -0.27; H   _1  0.14; H   _2  0.14; 
+   3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
+ -----------------------------------------------------------------------------
+@  4  -76.0267446743       3.33D-02  -9.24D-04     3   1   1   0
+      Virial theorem: -V/T =      1.999932
+@    MULPOP   O      -0.30; H   _1  0.15; H   _2  0.15; 
+   4  Level shift: doubly occupied orbital energies shifted by -1.25D-02
+ -----------------------------------------------------------------------------
+@  5  -76.0268052958       6.60D-03  -6.06D-05     3   1   1   0
+      Virial theorem: -V/T =      2.000574
+@    MULPOP   O      -0.30; H   _1  0.15; H   _2  0.15; 
+ -----------------------------------------------------------------------------
+@  6  -76.0268080675       9.22D-04  -2.77D-06     3   1   1   0
+      Virial theorem: -V/T =      2.000476
+@    MULPOP   O      -0.30; H   _1  0.15; H   _2  0.15; 
+ -----------------------------------------------------------------------------
+@  7  -76.0268081615       1.64D-04  -9.40D-08     3   1   1   0
+      Virial theorem: -V/T =      2.000487
+@    MULPOP   O      -0.31; H   _1  0.15; H   _2  0.15; 
+ -----------------------------------------------------------------------------
+@  8  -76.0268081652       1.96D-05  -3.67D-09     3   1   1   0
+      Virial theorem: -V/T =      2.000488
+@    MULPOP   O      -0.31; H   _1  0.15; H   _2  0.15; 
+ -----------------------------------------------------------------------------
+@  9  -76.0268081652       3.89D-06  -5.31D-11     3   1   1   0
+      Virial theorem: -V/T =      2.000488
+@    MULPOP   O      -0.31; H   _1  0.15; H   _2  0.15; 
+ -----------------------------------------------------------------------------
+@ 10  -76.0268081652       8.93D-07  -2.70D-12     3   1   1   0
+      Virial theorem: -V/T =      2.000488
+@    MULPOP   O      -0.31; H   _1  0.15; H   _2  0.15; 
+ -----------------------------------------------------------------------------
+@ 11  -76.0268081652       8.65D-08  -1.42D-13     3   1   1   0
+      Virial theorem: -V/T =      2.000488
+@    MULPOP   O      -0.31; H   _1  0.15; H   _2  0.15; 
+ -----------------------------------------------------------------------------
+@ 12  -76.0268081652       7.31D-09  -2.84D-14     3   1   1   0
+      Virial theorem: -V/T =      2.000488
+@    MULPOP   O      -0.31; H   _1  0.15; H   _2  0.15; 
+ -----------------------------------------------------------------------------
+@ 13  -76.0268081652       1.46D-09   5.68D-14     3   1   1   0
+      Virial theorem: -V/T =      2.000488
+@    MULPOP   O      -0.31; H   _1  0.15; H   _2  0.15; 
+ -----------------------------------------------------------------------------
+@ 14  -76.0268081652       2.11D-10  -2.84D-14     3   1   1   0
+      Virial theorem: -V/T =      2.000488
+@    MULPOP   O      -0.31; H   _1  0.15; H   _2  0.15; 
+ -----------------------------------------------------------------------------
+@ 15  -76.0268081652       6.70D-11   0.00D+00     3   1   1   0
+
+@ *** DIIS converged in  15 iterations !
+@     Converged SCF energy, gradient:    -76.026808165250    6.70D-11
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Sym       Hartree-Fock orbital energies
+
+1 A1    -20.55039011    -1.33682614    -0.56664574     0.18560873     0.85462704
+          1.16350007     1.44443875     1.86721905     2.49106020     3.51094882
+          3.86608421
+
+2 B1     -0.49316918     1.20038401     1.67465608     3.28596075
+
+3 B2     -0.69940558     0.25629059     0.78945155     1.25330055     1.93526815
+          2.45346939     4.14787768
+
+4 A2      1.47636958     3.33912410
+
+    E(LUMO) :     0.18560873 au (symmetry 1)
+  - E(HOMO) :    -0.49316918 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.67877792 au
+
+ --- Writing SIRIFC interface file
+
+ CPU and wall time for SCF :       0.032       0.008
+
+
+                       .-----------------------------------.
+                       | --- Final results from SIRIUS --- |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A1  in C2v )
+@    Total charge of molecule:    0
+
+@    Final HF energy:             -76.026808165250                 
+@    Nuclear repulsion:             9.196931932729
+@    Electronic energy:           -85.223740097979
+
+@    Final gradient norm:           0.000000000067
+
+ 
+     Date and time (Linux)  : Mon Jan 27 16:10:21 2020
+     Host name              : kemi-czc7084xz.win.dtu.dk               
+
+File label for MO orbitals:  27Jan20   FOCKDIIS
+
+ (Only coefficients > 0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 O   :1s     1.0004  -0.0082   0.0022   0.0520   0.0650   0.0032   0.2017
+   2 O   :1s     0.0023   0.8703  -0.2956  -0.1427   0.5027   0.2257   1.0396
+   3 O   :1s    -0.0014  -0.1230  -0.1806  -0.9212  -0.6077   0.6208  -1.1018
+   4 O   :2pz    0.0026   0.1150   0.7948  -0.2774   0.4799  -1.0990  -0.1920
+   5 O   :2pz   -0.0017  -0.0661  -0.0008  -0.2091  -0.2312   1.7859   0.8279
+   6 O   :3d0    0.0000   0.0012   0.0179  -0.0075  -0.0010   0.0127  -0.1171
+   7 O   :3d2+  -0.0001  -0.0030  -0.0046   0.0100   0.1071   0.0067  -0.0046
+   8 H   :1s    -0.0004   0.3297   0.3512   0.1002  -1.3394  -0.9320  -0.5671
+   9 H   :1s     0.0006  -0.1552  -0.1358   0.7792   1.2189   0.3541   0.4939
+  10 H   :2py    0.0006  -0.0373  -0.0318  -0.0176  -0.2964   0.0845   0.3291
+  11 H   :2pz    0.0005  -0.0205   0.0076  -0.0163  -0.0593   0.2505  -0.5458
+
+    Orbital         8        9       10       11
+   1 O   :1s    -0.7238   0.2791  -0.0842   0.1419
+   2 O   :1s    -3.1299   1.4361  -0.3031   0.3424
+   3 O   :1s     4.8267  -0.0299   0.7343  -2.4658
+   4 O   :2pz    0.1613   0.9759   0.0289  -0.5912
+   5 O   :2pz    0.8936  -0.2700   0.5259  -0.6496
+   6 O   :3d0   -0.1141  -0.0532   1.0849  -0.1341
+   7 O   :3d2+   0.1081   0.2178   0.1750   1.1600
+   8 H   :1s    -1.4112  -0.8152  -0.5238   2.1098
+   9 H   :1s     0.3192   0.2500   0.2245  -0.8658
+  10 H   :2py    0.3731   0.7445   0.3532  -0.6207
+  11 H   :2pz   -0.0232   0.5370  -0.3151  -0.4939
+
+ Molecular orbitals for symmetry species 2  (B1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4
+   1 O   :2px    0.9196  -1.4102   0.0304  -0.0165
+   2 O   :2px    0.0721   1.6749   0.6194   0.3195
+   3 O   :3d1+   0.0182  -0.0035  -0.1607   1.0429
+   4 H   :2px    0.0311   0.0078  -0.7672  -0.3987
+
+ Molecular orbitals for symmetry species 3  (B2 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 O   :2py    0.7140  -0.4125  -0.3902  -1.0694   0.0144   1.2235   0.6847
+   2 O   :2py   -0.1070  -0.4810  -0.2822   2.2571  -0.9082  -0.4109   0.8298
+   3 O   :3d1-   0.0268  -0.0213   0.1118   0.0447   0.0294  -0.1388   1.3257
+   4 H   :1s     0.5582   0.0440   1.6071  -0.6460   0.6598  -0.5038  -1.8516
+   5 H   :1s    -0.1901   1.4230  -1.4912  -0.5022  -0.2392  -0.0774   0.6394
+   6 H   :2py   -0.0233  -0.0209   0.0741   0.3026   0.4723   0.7246   0.6064
+   7 H   :2pz   -0.0327  -0.0172   0.1530   0.1869  -0.6932   0.5553   0.4939
+
+ Molecular orbitals for symmetry species 4  (A2 )
+ ------------------------------------------------
+
+    Orbital         1        2
+   1 O   :3d2-  -0.1312   1.0664
+   2 H   :2px   -0.6856  -0.3717
+
+  Total CPU  time used in SIRIUS :   0.04 seconds
+  Total wall time used in SIRIUS :   0.01 seconds
+
+ 
+     Date and time (Linux)  : Mon Jan 27 16:10:21 2020
+     Host name              : kemi-czc7084xz.win.dtu.dk               
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+ LWORK =        64000000
+
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *----------                                             >---------*
+ *---------- OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >---------*
+ *----------                                             >---------*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        33
+          Number of t2 amplitudes                 :      1277
+          Total number of amplitudes in ccsd      :      1310
+
+
+
+                        +---------------------------------+
+                        ! Largest amplitudes in MP2 guess !
+                        +---------------------------------+
+
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.0000 %
+
+          Double Excitation Contribution :             100.0000 %
+
+          ||T1||/||T2||                  :               0.0000
+
+          Norm of Total Amplitude Vector :               0.1548
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   3   3   3   3 |       19       19 |          190 |   -0.032759  |
+ | 2 1 2 1 |   1   3   1   3 |       25       19 |          319 |   -0.029305  |
+ | 2 2 2 2 |   1   1   1   1 |       25       25 |          325 |   -0.047146  |
+ | 3 2 3 2 |   1   1   1   1 |       28       25 |          403 |   -0.022936  |
+ | 3 2 3 2 |   3   1   1   1 |       30       25 |          460 |   -0.023248  |
+ | 3 3 3 3 |   1   1   1   1 |       28       28 |          406 |   -0.026164  |
+ | 3 3 3 3 |   2   2   1   1 |       29       29 |          435 |   -0.030121  |
+ | 3 3 3 3 |   3   3   1   1 |       30       30 |          465 |   -0.021519  |
+ | 3 3 1 1 |   2   2   3   3 |       14       14 |          856 |   -0.021747  |
+ | 1 1 3 3 |   2   2   1   1 |       22       22 |         1004 |   -0.023526  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.0911
+
+          Printed all single excitations greater than 0.010000
+
+          Printed all double excitations greater than 0.020000
+ Iter.  1: Coupled cluster MP2   energy :     -76.2307563423383101
+     Conventional correlation energy:    -0.2039481770883640
+
+       Iteration no.:  1
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm^2 of t1am   after ccvec:        0.0000000000D+00
+       Norm^2 of t2am   after ccvec:        0.2397632652D-01
+       Norm^2 of omega1 after ccvec:        0.9082508581D-03
+       Norm^2 of omega2 after ccvec:        0.5442953076D-02
+ Iter.  1: Coupled cluster CCSD  energy :     -76.2357152945661340
+     Conventional correlation energy:    -0.2089071293161879
+
+       Iteration no.:  2
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm^2 of t1am   after ccvec:        0.1608634519D-03
+       Norm^2 of t2am   after ccvec:        0.2693464297D-01
+       Norm^2 of omega1 after ccvec:        0.2815243964D-04
+       Norm^2 of omega2 after ccvec:        0.5295756085D-03
+ Iter.  2: Coupled cluster CCSD  energy :     -76.2396064923115944
+     Conventional correlation energy:    -0.2127983270616483
+
+       Iteration no.:  3
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm^2 of t1am   after ccvec:        0.2239663008D-03
+       Norm^2 of t2am   after ccvec:        0.2912636727D-01
+       Norm^2 of omega1 after ccvec:        0.2781085574D-05
+       Norm^2 of omega2 after ccvec:        0.2622097878D-04
+ Iter.  3: Coupled cluster CCSD  energy :     -76.2400655731057384
+     Conventional correlation energy:    -0.2132574078557923
+
+       Iteration no.:  4
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm^2 of t1am   after ccvec:        0.2663471510D-03
+       Norm^2 of t2am   after ccvec:        0.2960421500D-01
+       Norm^2 of omega1 after ccvec:        0.1011553104D-06
+       Norm^2 of omega2 after ccvec:        0.1418939896D-05
+ Iter.  4: Coupled cluster CCSD  energy :     -76.2400720696138308
+     Conventional correlation energy:    -0.2132639043638846
+
+       Iteration no.:  5
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm^2 of t1am   after ccvec:        0.2713215863D-03
+       Norm^2 of t2am   after ccvec:        0.2967062164D-01
+       Norm^2 of omega1 after ccvec:        0.1185514938D-07
+       Norm^2 of omega2 after ccvec:        0.5669368722D-07
+ Iter.  5: Coupled cluster CCSD  energy :     -76.2400823589365189
+     Conventional correlation energy:    -0.2132741936865727
+
+       Iteration no.:  6
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm^2 of t1am   after ccvec:        0.2735938789D-03
+       Norm^2 of t2am   after ccvec:        0.2968045699D-01
+       Norm^2 of omega1 after ccvec:        0.1566313496D-08
+       Norm^2 of omega2 after ccvec:        0.6622158157D-08
+ Iter.  6: Coupled cluster CCSD  energy :     -76.2400806785932303
+     Conventional correlation energy:    -0.2132725133432842
+
+       Iteration no.:  7
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm^2 of t1am   after ccvec:        0.2744724839D-03
+       Norm^2 of t2am   after ccvec:        0.2967842571D-01
+       Norm^2 of omega1 after ccvec:        0.1074782201D-09
+       Norm^2 of omega2 after ccvec:        0.4042777596D-09
+ Iter.  7: Coupled cluster CCSD  energy :     -76.2400800477192462
+     Conventional correlation energy:    -0.2132718824693001
+
+       Iteration no.:  8
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.2747323293D-03
+       Norm^2 of t2am   after ccvec:        0.2967788506D-01
+       Norm^2 of omega1 after ccvec:        0.1606384657D-11
+       Norm^2 of omega2 after ccvec:        0.2709502251D-10
+ Iter.  8: Coupled cluster CCSD  energy :     -76.2400799235875439
+     Conventional correlation energy:    -0.2132717583375978
+
+       Iteration no.:  9
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.01 seconds
+       Norm^2 of t1am   after ccvec:        0.2747621046D-03
+       Norm^2 of t2am   after ccvec:        0.2967779992D-01
+       Norm^2 of omega1 after ccvec:        0.9459675823D-13
+       Norm^2 of omega2 after ccvec:        0.1464141158D-11
+ Iter.  9: Coupled cluster CCSD  energy :     -76.2400798955824257
+     Conventional correlation energy:    -0.2132717303324796
+
+       Iteration no.: 10
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.01 seconds
+       Norm^2 of t1am   after ccvec:        0.2747645731D-03
+       Norm^2 of t2am   after ccvec:        0.2967777763D-01
+       Norm^2 of omega1 after ccvec:        0.1631246589D-13
+       Norm^2 of omega2 after ccvec:        0.2319957279D-12
+ Iter. 10: Coupled cluster CCSD  energy :     -76.2400798838104805
+     Conventional correlation energy:    -0.2132717185605344
+
+       Iteration no.: 11
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.01 seconds
+       Norm^2 of t1am   after ccvec:        0.2747667651D-03
+       Norm^2 of t2am   after ccvec:        0.2967776671D-01
+       Norm^2 of omega1 after ccvec:        0.2290622375D-14
+       Norm^2 of omega2 after ccvec:        0.7771332234D-14
+ Iter. 11: Coupled cluster CCSD  energy :     -76.2400798807123010
+     Conventional correlation energy:    -0.2132717154623549
+
+       Iteration no.: 12
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.01 seconds
+       Norm^2 of t1am   after ccvec:        0.2747677102D-03
+       Norm^2 of t2am   after ccvec:        0.2967776456D-01
+       Norm^2 of omega1 after ccvec:        0.2488044131D-15
+       Norm^2 of omega2 after ccvec:        0.1043774028D-14
+ Iter. 12: Coupled cluster CCSD  energy :     -76.2400798814803977
+     Conventional correlation energy:    -0.2132717162304516
+
+       Iteration no.: 13
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.01 seconds
+       Norm^2 of t1am   after ccvec:        0.2747681585D-03
+       Norm^2 of t2am   after ccvec:        0.2967776529D-01
+       Norm^2 of omega1 after ccvec:        0.1035737863D-16
+       Norm^2 of omega2 after ccvec:        0.6642396364D-16
+ Iter. 13: Coupled cluster CCSD  energy :     -76.2400798817277661
+     Conventional correlation energy:    -0.2132717164778200
+
+       Iteration no.: 14
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.01 seconds
+       Norm^2 of t1am   after ccvec:        0.2747682625D-03
+       Norm^2 of t2am   after ccvec:        0.2967776540D-01
+       Norm^2 of omega1 after ccvec:        0.3431141718D-18
+       Norm^2 of omega2 after ccvec:        0.4168851568D-17
+ Iter. 14: Coupled cluster CCSD  energy :     -76.2400798816715479
+     Conventional correlation energy:    -0.2132717164216018
+
+ CCSD  energy converged to within   0.10D-09 is          -76.240079881672
+ Final 2-norm of the CC vector function:  2.12413882D-09
+
+
+                    +------------------------------------------+
+                    ! Largest amplitudes in converged solution !
+                    +------------------------------------------+
+
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.9173 %
+
+          Double Excitation Contribution :              99.0827 %
+
+          ||T1||/||T2||                  :               0.0962
+
+          Tau1 diagnostic                :               0.0052
+
+          Norm of Total Amplitude Vector :               0.1731
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       2     |        9          |              |    0.003931  |
+ | 1   1   |   3       2     |       11          |              |   -0.004233  |
+ | 1   1   |   6       2     |       14          |              |    0.002672  |
+ | 1   1   |   1       3     |       17          |              |    0.007320  |
+ | 1   1   |   2       3     |       18          |              |   -0.002937  |
+ | 1   1   |   4       3     |       20          |              |   -0.002945  |
+ | 1   1   |   6       3     |       22          |              |    0.004979  |
+ | 2   2   |   1       1     |       25          |              |    0.003042  |
+ | 2   2   |   2       1     |       26          |              |   -0.003272  |
+ | 3   3   |   1       1     |       28          |              |    0.005945  |
+ | 3   3   |   3       1     |       30          |              |   -0.004519  |
+ | 3   3   |   5       1     |       32          |              |    0.007310  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   3   3   3   3 |       19       19 |          190 |   -0.035385  |
+ | 2 1 2 1 |   1   3   1   3 |       25       19 |          319 |   -0.028597  |
+ | 2 2 2 2 |   1   1   1   1 |       25       25 |          325 |   -0.051382  |
+ | 3 2 3 2 |   1   1   1   1 |       28       25 |          403 |   -0.021652  |
+ | 3 2 3 2 |   3   1   1   1 |       30       25 |          460 |   -0.022786  |
+ | 3 3 3 3 |   1   1   1   1 |       28       28 |          406 |   -0.029190  |
+ | 3 3 3 3 |   2   1   1   1 |       29       28 |          434 |   -0.020892  |
+ | 3 3 3 3 |   2   2   1   1 |       29       29 |          435 |   -0.036079  |
+ | 3 3 3 3 |   3   3   1   1 |       30       30 |          465 |   -0.022144  |
+ | 3 3 1 1 |   2   2   3   3 |       14       14 |          856 |   -0.025627  |
+ | 1 3 3 1 |   2   2   1   3 |       22       14 |          996 |    0.021482  |
+ | 1 1 3 3 |   2   2   1   1 |       22       22 |         1004 |   -0.028351  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.1047
+
+          Printed all single excitations greater than 0.002000
+
+          Printed all double excitations greater than 0.019908
+
+
+
+
+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                   -76.0268081652
+
+            Total MP2   energy:                   -76.2307563423
+
+            Total CCSD  energy:                   -76.2400798817
+
+
+
+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
+
+
+
+       Time used in   RHS - TOTAL  :       0.01 seconds
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *---------- OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >---------*
+ *                                                                 *
+ *----------     CALCULATION OF EXCITATION ENERGIES      >---------*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                           +---------------------------+
+                           !  CCSD Excitation Energies !
+                           +---------------------------+
+
+
+ --------------------------
+ Symmetry class Nr.:     1
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1310
+ Converging for  2 roots.
+ CCEQ_STR: freeze VALENCE OR VIRT
+  -- output from FNDMN3 --
+  LOWEST VALUE AND PLACE    20.735998844341381                1
+  HIGHST VALUE AND PLACE    100000000000000.00                9
+IELMNT XMIN IMIN NDEG        1    2.07360D+01       1   1
+IELMNT XMIN IMIN NDEG        2    2.14050D+01       2   1
+IELMNT XMIN IMIN NDEG        3    2.14883D+01     170   1
+IELMNT XMIN IMIN NDEG        4    2.16296D+01     863   1
+IELMNT XMIN IMIN NDEG        5    2.16917D+01     995   1
+IELMNT XMIN IMIN NDEG        6    2.16917D+01     412   2
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  FROM FNDMN3 : 
+    PLACES OF LOWEST ELEMENTS 
+     1 :      1      2    170    863
+  MIN AND MAX IN SELECTED SUPSPACE    20.735998844341381        21.629617028749163     
+ Start vector guessed from diagonal
+ ... selected element no.  1
+ Start vector guessed from diagonal
+ ... selected element no.  2
+ CCEQ_SOL: IPRLE   =               5
+ CCEQ_SOL: TRIPLET =     F
+ CCEQ_SOL: LINQCC  =     F
+ CCEQ_SOL: NREDH   =               2
+ CCEQ_SOL: MAXRED  =             300
+ CCEQ_SOL: MAXLE   =             200
+ CCEQ_SOL: ISIDE   =               1
+ CCEQ_SOL: ISTRVE  =               1
+ CCEQ_SOL: NVEC    =               2
+ CCEQ_SOL: NUPVEC  =               2
+ CCEQ_SOL: NCCVAR  =            1310
+ CCEQ_SOL: CVSEPARA=     T
+ CCEQ_SOL: LIONISAT=     F
+ CCEQ_SOL: REMOVE_CORE =  F
+
+
+
+ ----- COUPLED CLUSTER RESPONSE SOLVER -----
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           1 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           2 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.32528520
+       2      20.90043288
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 9.53279D-01
+ ROOT:  2 RESIDUAL TOT: 9.69396D-01
+      1       2         0.00     0.97E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.32528520
+       2      20.90043288
+    ==== End of matrix output ====
+ Dimension of the reduced space:     4
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           3 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           4 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.79339985
+       2      20.34777046
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.03538D-01
+ ROOT:  2 RESIDUAL TOT: 2.39296D-01
+      2       2         0.00     0.24E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.79339985
+       2      20.34777046
+    ==== End of matrix output ====
+ Dimension of the reduced space:     6
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           5 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           6 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.77961363
+       2      20.32829069
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 5.48291D-02
+ ROOT:  2 RESIDUAL TOT: 7.18920D-02
+      3       2         0.00     0.72E-01
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.77961363
+       2      20.32829069
+    ==== End of matrix output ====
+ Dimension of the reduced space:     8
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           7 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           8 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78396967
+       2      20.33362909
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.59108D-02
+ ROOT:  2 RESIDUAL TOT: 5.71515D-02
+      4       2         0.00     0.57E-01
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78396967
+       2      20.33362909
+    ==== End of matrix output ====
+ Dimension of the reduced space:    10
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           9 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          10 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78502269
+       2      20.33474080
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 4.57602D-03
+ ROOT:  2 RESIDUAL TOT: 2.68156D-02
+      5       2         0.00     0.27E-01
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78502269
+       2      20.33474080
+    ==== End of matrix output ====
+ Dimension of the reduced space:    12
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          11 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          12 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78491984
+       2      20.33291097
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.69262D-03
+ ROOT:  2 RESIDUAL TOT: 1.40669D-02
+      6       2         0.00     0.14E-01
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78491984
+       2      20.33291097
+    ==== End of matrix output ====
+ Dimension of the reduced space:    14
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          13 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          14 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78488091
+       2      20.33224654
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 5.59387D-04
+ ROOT:  2 RESIDUAL TOT: 8.57038D-03
+      7       2         0.00     0.86E-02
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78488091
+       2      20.33224654
+    ==== End of matrix output ====
+ Dimension of the reduced space:    16
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          15 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          16 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78487391
+       2      20.33242019
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.41736D-04
+ ROOT:  2 RESIDUAL TOT: 2.97571D-03
+      8       2         0.00     0.30E-02
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78487391
+       2      20.33242019
+    ==== End of matrix output ====
+ Dimension of the reduced space:    18
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          17 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          18 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78487391
+       2      20.33253548
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 3.48287D-05
+ ROOT:  2 RESIDUAL TOT: 9.48815D-04
+      9       2         0.00     0.95E-03
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78487391
+       2      20.33253548
+    ==== End of matrix output ====
+ Dimension of the reduced space:    20
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          19 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          20 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78487350
+       2      20.33254037
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 8.74784D-06
+ ROOT:  2 RESIDUAL TOT: 2.74685D-04
+     10       2         0.00     0.27E-03
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78487350
+       2      20.33254037
+    ==== End of matrix output ====
+ Dimension of the reduced space:    22
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          21 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          22 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78487351
+       2      20.33253765
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.85164D-06
+ ROOT:  2 RESIDUAL TOT: 7.43804D-05
+     11       2         0.00     0.74E-04
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78487351
+       2      20.33253765
+    ==== End of matrix output ====
+ Dimension of the reduced space:    24
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          23 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          24 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78487350
+       2      20.33253585
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 4.58803D-07
+ ROOT:  2 RESIDUAL TOT: 2.38178D-05
+     12       2         0.00     0.24E-04
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78487350
+       2      20.33253585
+    ==== End of matrix output ====
+ Dimension of the reduced space:    26
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          25 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          26 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78487349
+       2      20.33253570
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.17025D-07
+ ROOT:  2 RESIDUAL TOT: 9.28306D-06
+     13       2         0.00     0.93E-05
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78487349
+       2      20.33253570
+    ==== End of matrix output ====
+ Dimension of the reduced space:    28
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          27 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          28 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78487349
+       2      20.33253567
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.82129D-08
+ ROOT:  2 RESIDUAL TOT: 3.14451D-06
+     14       2         0.00     0.31E-05
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78487349
+       2      20.33253567
+    ==== End of matrix output ====
+ Dimension of the reduced space:    30
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          29 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          30 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78487349
+       2      20.33253565
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 8.09395D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.09395D-09
+ ROOT:  2 RESIDUAL TOT: 1.25994D-06
+     15       2         0.00     0.13E-05
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78487349
+       2      20.33253565
+    ==== End of matrix output ====
+ Dimension of the reduced space:    31
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          31 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78487349
+       2      20.33253565
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.67389D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.67389D-09
+ ROOT:  2 RESIDUAL TOT: 4.60145D-07
+     16       1         0.00     0.46E-06
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78487349
+       2      20.33253565
+    ==== End of matrix output ====
+ Dimension of the reduced space:    32
+ --- TIME USED IN THIS MICRO ITERATION        0.01
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          32 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78487349
+       2      20.33253566
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.47617D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.47617D-09
+ ROOT:  2 RESIDUAL TOT: 1.15090D-07
+     17       1         0.00     0.12E-06
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78487349
+       2      20.33253566
+    ==== End of matrix output ====
+ Dimension of the reduced space:    33
+ --- TIME USED IN THIS MICRO ITERATION        0.01
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          33 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78487349
+       2      20.33253565
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.46405D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.46405D-09
+ ROOT:  2 RESIDUAL TOT: 2.90633D-08
+     18       1         0.00     0.29E-07
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78487349
+       2      20.33253565
+    ==== End of matrix output ====
+ Dimension of the reduced space:    34
+ --- TIME USED IN THIS MICRO ITERATION        0.01
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          34 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.78487349
+       2      20.33253565
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.49009D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.49009D-09
+ ROOT:  2 RESIDUAL TOT: 8.07210D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.07210D-09
+     19       1         0.00     0.81E-08
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.78487349
+       2      20.33253565
+    ==== End of matrix output ====
+ Dimension of the reduced space:    34
+ --- TIME USED IN THIS MICRO ITERATION        0.01
+
+    --------------------------------------
+    converged in 19 iterations
+    threshold:    0.10E-07
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.01
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.01
+
+
+  Total CPU  time used in CCEQ_SOLV:   0.36 seconds
+  Total wall time used in CCEQ_SOLV:   0.63 seconds
+
+
+ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-08)
+
+    1  19.7848734862
+    2  20.3325356549
+
+
+ SYMMETRY CLASS NR.    1
+ MULTIPLICITY          1
+
+
+ CCSD       right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1           19.7848734862      538.3737939795
+         2           20.3325356549      553.2764396669
+
+
+ Total excited state energies for states of symmetry/spin    1    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    1    1           -56.455206395435525
+@@    1    2           -55.907544226821159
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                           538.3738 eV
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              89.2998 %
+
+          Double Excitation Contribution :              10.7002 %
+
+          ||T1||/||T2||                  :               2.8889
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       1     |        1          |              |    0.924249  |
+ | 1   1   |   2       1     |        2          |              |   -0.173458  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   1   1   2   1 |        9        1 |           37 |   -0.078658  |
+ | 1 1 1 1 |   2   1   2   1 |       10        1 |           46 |    0.051441  |
+ | 1 1 1 1 |   4   1   2   1 |       12        1 |           67 |    0.033760  |
+ | 1 1 1 1 |   5   1   2   1 |       13        1 |           79 |   -0.055566  |
+ | 1 1 1 1 |   6   1   2   1 |       14        1 |           92 |    0.038654  |
+ | 1 1 1 1 |   1   1   3   1 |       17        1 |          137 |   -0.059771  |
+ | 1 1 1 1 |   2   1   3   1 |       18        1 |          154 |    0.066879  |
+ | 1 1 1 1 |   3   1   3   1 |       19        1 |          172 |   -0.123726  |
+ | 1 1 1 1 |   5   1   3   1 |       21        1 |          211 |    0.032978  |
+ | 1 1 1 1 |   6   1   3   1 |       22        1 |          232 |    0.037626  |
+ | 2 1 2 1 |   1   1   1   1 |       25        1 |          301 |   -0.148704  |
+ | 3 1 3 1 |   1   1   1   1 |       28        1 |          379 |   -0.103794  |
+ | 3 1 3 1 |   2   1   1   1 |       29        1 |          407 |   -0.076863  |
+ | 3 1 3 1 |   3   1   1   1 |       30        1 |          436 |   -0.108818  |
+ | 3 1 3 1 |   5   1   1   1 |       32        1 |          497 |    0.059665  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9894
+
+          Printed all single excitations greater than 0.094499
+
+          Printed all double excitations greater than 0.032711
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                           553.2764 eV
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              88.8299 %
+
+          Double Excitation Contribution :              11.1701 %
+
+          ||T1||/||T2||                  :               2.8200
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       1     |        1          |              |    0.170576  |
+ | 1   1   |   2       1     |        2          |              |    0.906079  |
+ | 1   1   |   3       1     |        3          |              |   -0.177117  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   1   2   2   1 |        9        2 |           38 |   -0.057389  |
+ | 1 1 1 1 |   2   2   2   1 |       10        2 |           47 |    0.067171  |
+ | 1 1 1 1 |   5   2   2   1 |       13        2 |           80 |   -0.048144  |
+ | 1 1 1 1 |   6   2   2   1 |       14        2 |           93 |    0.041119  |
+ | 1 1 1 1 |   1   2   3   1 |       17        2 |          138 |   -0.047513  |
+ | 1 1 1 1 |   2   2   3   1 |       18        2 |          155 |    0.081990  |
+ | 1 1 1 1 |   3   2   3   1 |       19        2 |          173 |   -0.112191  |
+ | 1 1 1 1 |   5   2   3   1 |       21        2 |          212 |    0.033898  |
+ | 1 1 1 1 |   6   2   3   1 |       22        2 |          233 |    0.038765  |
+ | 2 1 2 1 |   1   1   1   1 |       25        1 |          301 |   -0.040854  |
+ | 2 1 2 1 |   1   2   1   1 |       25        2 |          302 |   -0.135132  |
+ | 3 1 3 1 |   1   2   1   1 |       28        2 |          380 |   -0.100883  |
+ | 3 1 3 1 |   2   2   1   1 |       29        2 |          408 |   -0.096143  |
+ | 3 1 3 1 |   3   2   1   1 |       30        2 |          437 |   -0.105627  |
+ | 3 1 3 1 |   5   2   1   1 |       32        2 |          498 |    0.065549  |
+ | 1 3 3 1 |   2   1   1   1 |       22        1 |          983 |   -0.033655  |
+ | 1 3 3 1 |   2   2   1   1 |       22        2 |          984 |   -0.057369  |
+ | 1 3 3 1 |   2   3   1   1 |       22        3 |          985 |   -0.034908  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9889
+
+          Printed all single excitations greater than 0.094250
+
+          Printed all double excitations greater than 0.033422
+
+ --------------------------
+ Symmetry class Nr.:     1
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      2587
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     2
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1066
+ Converging for  2 roots.
+ CCEQ_STR: freeze VALENCE OR VIRT
+  -- output from FNDMN3 --
+  LOWEST VALUE AND PLACE    21.414776762527442              317
+  HIGHST VALUE AND PLACE    100000000000000.00                4
+IELMNT XMIN IMIN NDEG        1    2.14148D+01     317   1
+IELMNT XMIN IMIN NDEG        2    2.15561D+01     815   1
+IELMNT XMIN IMIN NDEG        3    2.17508D+01       1   1
+IELMNT XMIN IMIN NDEG        4    2.20838D+01     318   1
+IELMNT XMIN IMIN NDEG        5    2.20838D+01     350   2
+IELMNT XMIN IMIN NDEG        6    2.20893D+01     816   1
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  FROM FNDMN3 : 
+    PLACES OF LOWEST ELEMENTS 
+     1 :    317    815      1    318    350
+  MIN AND MAX IN SELECTED SUPSPACE    21.414776762527442        22.083795073728286     
+ Start vector guessed from diagonal
+ ... selected element no.317
+ Start vector guessed from diagonal
+ ... selected element no.815
+ CCEQ_SOL: IPRLE   =               5
+ CCEQ_SOL: TRIPLET =     F
+ CCEQ_SOL: LINQCC  =     F
+ CCEQ_SOL: NREDH   =               2
+ CCEQ_SOL: MAXRED  =             300
+ CCEQ_SOL: MAXLE   =             200
+ CCEQ_SOL: ISIDE   =               1
+ CCEQ_SOL: ISTRVE  =               3
+ CCEQ_SOL: NVEC    =               2
+ CCEQ_SOL: NUPVEC  =               2
+ CCEQ_SOL: NCCVAR  =            1066
+ CCEQ_SOL: CVSEPARA=     T
+ CCEQ_SOL: LIONISAT=     F
+ CCEQ_SOL: REMOVE_CORE =  F
+
+
+
+ ----- COUPLED CLUSTER RESPONSE SOLVER -----
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           1 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           2 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      21.34233380
+       2      21.57995151
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 5.10603D-01
+ ROOT:  2 RESIDUAL TOT: 5.79698D-01
+      1       2         0.00     0.58E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      21.34233380
+       2      21.57995151
+    ==== End of matrix output ====
+ Dimension of the reduced space:     4
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           3 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           4 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      21.02305420
+       2      21.17254878
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 3.04717D-01
+ ROOT:  2 RESIDUAL TOT: 3.71793D-01
+      2       2         0.00     0.37E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      21.02305420
+       2      21.17254878
+    ==== End of matrix output ====
+ Dimension of the reduced space:     6
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           5 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           6 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.95672023
+       2      21.08912381
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.56036D-01
+ ROOT:  2 RESIDUAL TOT: 1.59579D-01
+      3       2         0.00     0.16E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.95672023
+       2      21.08912381
+    ==== End of matrix output ====
+ Dimension of the reduced space:     8
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           7 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           8 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.94152612
+       2      21.05749692
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 3.41247D-02
+ ROOT:  2 RESIDUAL TOT: 1.72415D-01
+      4       2         0.00     0.17E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.94152612
+       2      21.05749692
+    ==== End of matrix output ====
+ Dimension of the reduced space:    10
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           9 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          10 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.66657093
+       2      20.94109780
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 4.34017D-01
+ ROOT:  2 RESIDUAL TOT: 1.76588D-02
+      5       2         0.00     0.43E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.66657093
+       2      20.94109780
+    ==== End of matrix output ====
+ Dimension of the reduced space:    12
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          11 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          12 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55703257
+       2      20.94096456
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.18633D-01
+ ROOT:  2 RESIDUAL TOT: 4.49955D-03
+      6       2         0.00     0.12E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55703257
+       2      20.94096456
+    ==== End of matrix output ====
+ Dimension of the reduced space:    14
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          13 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          14 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55205865
+       2      20.94094741
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 3.42725D-02
+ ROOT:  2 RESIDUAL TOT: 2.21238D-03
+      7       2         0.00     0.34E-01
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55205865
+       2      20.94094741
+    ==== End of matrix output ====
+ Dimension of the reduced space:    16
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          15 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          16 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55410703
+       2      20.94094358
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.69277D-02
+ ROOT:  2 RESIDUAL TOT: 1.27420D-03
+      8       2         0.00     0.17E-01
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55410703
+       2      20.94094358
+    ==== End of matrix output ====
+ Dimension of the reduced space:    18
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          17 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          18 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55434333
+       2      20.94094175
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 7.82390D-03
+ ROOT:  2 RESIDUAL TOT: 1.00742D-03
+      9       2         0.00     0.78E-02
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55434333
+       2      20.94094175
+    ==== End of matrix output ====
+ Dimension of the reduced space:    20
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          19 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          20 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55418105
+       2      20.94094176
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.81345D-03
+ ROOT:  2 RESIDUAL TOT: 4.14752D-04
+     10       2         0.00     0.18E-02
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55418105
+       2      20.94094176
+    ==== End of matrix output ====
+ Dimension of the reduced space:    22
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          21 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          22 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55422348
+       2      20.94094174
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 5.07562D-04
+ ROOT:  2 RESIDUAL TOT: 1.33567D-04
+     11       2         0.00     0.51E-03
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55422348
+       2      20.94094174
+    ==== End of matrix output ====
+ Dimension of the reduced space:    24
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          23 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          24 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55423432
+       2      20.94094186
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 9.30416D-05
+ ROOT:  2 RESIDUAL TOT: 3.63306D-05
+     12       2         0.00     0.93E-04
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55423432
+       2      20.94094186
+    ==== End of matrix output ====
+ Dimension of the reduced space:    26
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          25 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          26 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55423581
+       2      20.94094186
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.89601D-05
+ ROOT:  2 RESIDUAL TOT: 1.23985D-05
+     13       2         0.00     0.19E-04
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55423581
+       2      20.94094186
+    ==== End of matrix output ====
+ Dimension of the reduced space:    28
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          27 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          28 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55423537
+       2      20.94094184
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 4.08584D-06
+ ROOT:  2 RESIDUAL TOT: 3.66831D-06
+     14       2         0.00     0.41E-05
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55423537
+       2      20.94094184
+    ==== End of matrix output ====
+ Dimension of the reduced space:    30
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          29 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          30 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55423538
+       2      20.94094183
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.03913D-06
+ ROOT:  2 RESIDUAL TOT: 1.24492D-06
+     15       2         0.00     0.12E-05
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55423538
+       2      20.94094183
+    ==== End of matrix output ====
+ Dimension of the reduced space:    32
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          31 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          32 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55423542
+       2      20.94094182
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.65829D-07
+ ROOT:  2 RESIDUAL TOT: 3.72977D-07
+     16       2         0.00     0.37E-06
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55423542
+       2      20.94094182
+    ==== End of matrix output ====
+ Dimension of the reduced space:    34
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          33 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          34 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55423542
+       2      20.94094182
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 6.07449D-08
+ ROOT:  2 RESIDUAL TOT: 9.79026D-08
+     17       2         0.00     0.98E-07
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55423542
+       2      20.94094182
+    ==== End of matrix output ====
+ Dimension of the reduced space:    36
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          35 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          36 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55423542
+       2      20.94094182
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.55090D-08
+ ROOT:  2 RESIDUAL TOT: 3.40662D-08
+     18       2         0.00     0.34E-07
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55423542
+       2      20.94094182
+    ==== End of matrix output ====
+ Dimension of the reduced space:    38
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          37 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          38 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55423542
+       2      20.94094182
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 4.69835D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.69835D-09
+ ROOT:  2 RESIDUAL TOT: 1.27384D-08
+     19       2         0.00     0.13E-07
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55423542
+       2      20.94094182
+    ==== End of matrix output ====
+ Dimension of the reduced space:    39
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          39 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.55423542
+       2      20.94094182
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.84485D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.84485D-09
+ ROOT:  2 RESIDUAL TOT: 2.98691D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.98691D-09
+     20       1         0.00     0.30E-08
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.55423542
+       2      20.94094182
+    ==== End of matrix output ====
+ Dimension of the reduced space:    39
+ --- TIME USED IN THIS MICRO ITERATION        0.01
+
+    --------------------------------------
+    converged in 20 iterations
+    threshold:    0.10E-07
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.01
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.01
+
+
+  Total CPU  time used in CCEQ_SOLV:   0.36 seconds
+  Total wall time used in CCEQ_SOLV:   0.65 seconds
+
+
+ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-08)
+
+    1  20.5542354206
+    2  20.9409418212
+
+
+ SYMMETRY CLASS NR.    2
+ MULTIPLICITY          1
+
+
+ CCSD       right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1           20.5542354206      559.3091971709
+         2           20.9409418212      569.8320136142
+
+
+ Total excited state energies for states of symmetry/spin    2    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    2    1           -55.685844461110747
+@@    2    2           -55.299138060506110
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                           559.3092 eV
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              91.2433 %
+
+          Double Excitation Contribution :               8.7567 %
+
+          ||T1||/||T2||                  :               3.2280
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   1       1     |        1          |              |    0.954274  |
+ +-----------------------------------------------------------------------------+
+ | 2 1 1 1 |   3   1   3   1 |        9        1 |            9 |   -0.056290  |
+ | 2 1 1 1 |   3   2   1   1 |        3        2 |           22 |    0.035546  |
+ | 2 1 1 1 |   3   2   2   1 |        6        2 |           25 |   -0.171355  |
+ | 2 1 1 1 |   3   2   3   1 |        9        2 |           28 |   -0.082679  |
+ | 1 1 2 1 |   1   1   1   1 |       10        1 |           10 |    0.036464  |
+ | 1 1 2 1 |   4   1   1   1 |       13        1 |           13 |   -0.055377  |
+ | 1 1 2 1 |   8   1   1   1 |       17        1 |           17 |   -0.042232  |
+ | 1 1 2 1 |   1   2   1   1 |       10        2 |           29 |   -0.052468  |
+ | 1 1 2 1 |   2   2   1   1 |       11        2 |           30 |   -0.094687  |
+ | 1 1 2 1 |   4   2   1   1 |       13        2 |           32 |    0.050005  |
+ | 4 1 3 1 |   1   1   1   1 |       18        1 |           18 |    0.056755  |
+ | 4 1 3 1 |   2   1   1   1 |       19        1 |           19 |   -0.111415  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9936
+
+          Printed all single excitations greater than 0.095521
+
+          Printed all double excitations greater than 0.029592
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                           569.8320 eV
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.0321 %
+
+          Double Excitation Contribution :              99.9679 %
+
+          ||T1||/||T2||                  :               0.0179
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   2       1     |        2          |              |   -0.013063  |
+ +-----------------------------------------------------------------------------+
+ | 2 1 1 1 |   2   2   3   3 |        8       18 |          331 |    0.255213  |
+ | 2 1 1 1 |   3   4   1   3 |        3       20 |          364 |   -0.134771  |
+ | 1 1 2 1 |   4   8   1   2 |       13       16 |          298 |   -0.539526  |
+ | 1 1 2 1 |   5   8   1   2 |       14       16 |          299 |    0.247781  |
+ | 1 1 2 1 |   6   8   1   2 |       15       16 |          300 |   -0.118636  |
+ | 4 3 1 1 |   2   6   2   2 |        4       12 |          796 |    0.477812  |
+ | 4 3 1 1 |   1   6   3   2 |        5       12 |          797 |    0.233571  |
+ | 4 3 1 1 |   2   6   3   2 |        6       12 |          798 |    0.217018  |
+ | 4 3 1 1 |   2   2   1   3 |        2       14 |          824 |    0.238804  |
+ | 2 3 3 1 |   3   3   1   3 |       15       15 |          852 |    0.232770  |
+ | 3 4 2 2 |   5   1   1   1 |       11       19 |          908 |   -0.105126  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9499
+
+          Printed all single excitations greater than 0.010000
+
+          Printed all double excitations greater than 0.099984
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     2
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      2113
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     3
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1237
+ Converging for  2 roots.
+ CCEQ_STR: freeze VALENCE OR VIRT
+  -- output from FNDMN3 --
+  LOWEST VALUE AND PLACE    20.806680698527632                1
+  HIGHST VALUE AND PLACE    100000000000000.00                7
+IELMNT XMIN IMIN NDEG        1    2.08067D+01       1   1
+IELMNT XMIN IMIN NDEG        2    2.13398D+01       2   1
+IELMNT XMIN IMIN NDEG        3    2.15589D+01      45   1
+IELMNT XMIN IMIN NDEG        4    2.15589D+01     425   2
+IELMNT XMIN IMIN NDEG        5    2.16210D+01     689   1
+IELMNT XMIN IMIN NDEG        6    2.17624D+01      56   1
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  FROM FNDMN3 : 
+    PLACES OF LOWEST ELEMENTS 
+     1 :      1      2     45    425    689
+  MIN AND MAX IN SELECTED SUPSPACE    20.806680698527632        21.621013159888548     
+ Start vector guessed from diagonal
+ ... selected element no.  1
+ Start vector guessed from diagonal
+ ... selected element no.  2
+ CCEQ_SOL: IPRLE   =               5
+ CCEQ_SOL: TRIPLET =     F
+ CCEQ_SOL: LINQCC  =     F
+ CCEQ_SOL: NREDH   =               2
+ CCEQ_SOL: MAXRED  =             300
+ CCEQ_SOL: MAXLE   =             200
+ CCEQ_SOL: ISIDE   =               1
+ CCEQ_SOL: ISTRVE  =               5
+ CCEQ_SOL: NVEC    =               2
+ CCEQ_SOL: NUPVEC  =               2
+ CCEQ_SOL: NCCVAR  =            1237
+ CCEQ_SOL: CVSEPARA=     T
+ CCEQ_SOL: LIONISAT=     F
+ CCEQ_SOL: REMOVE_CORE =  F
+
+
+
+ ----- COUPLED CLUSTER RESPONSE SOLVER -----
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           1 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           2 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.39116047
+       2      20.85751154
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 9.56016D-01
+ ROOT:  2 RESIDUAL TOT: 9.67906D-01
+      1       2         0.00     0.97E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.39116047
+       2      20.85751154
+    ==== End of matrix output ====
+ Dimension of the reduced space:     4
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           3 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           4 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.86569544
+       2      20.30139992
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.25364D-01
+ ROOT:  2 RESIDUAL TOT: 2.23592D-01
+      2       2         0.00     0.23E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.86569544
+       2      20.30139992
+    ==== End of matrix output ====
+ Dimension of the reduced space:     6
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           5 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           6 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.84545216
+       2      20.28890537
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 7.14969D-02
+ ROOT:  2 RESIDUAL TOT: 6.35335D-02
+      3       2         0.00     0.71E-01
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.84545216
+       2      20.28890537
+    ==== End of matrix output ====
+ Dimension of the reduced space:     8
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           7 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           8 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85070386
+       2      20.29370845
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 4.13601D-02
+ ROOT:  2 RESIDUAL TOT: 3.74086D-02
+      4       2         0.00     0.41E-01
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85070386
+       2      20.29370845
+    ==== End of matrix output ====
+ Dimension of the reduced space:    10
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           9 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          10 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85195016
+       2      20.29421014
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 7.55503D-03
+ ROOT:  2 RESIDUAL TOT: 7.01196D-03
+      5       2         0.00     0.76E-02
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85195016
+       2      20.29421014
+    ==== End of matrix output ====
+ Dimension of the reduced space:    12
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          11 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          12 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85162856
+       2      20.29416079
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.72881D-03
+ ROOT:  2 RESIDUAL TOT: 3.29791D-03
+      6       2         0.00     0.33E-02
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85162856
+       2      20.29416079
+    ==== End of matrix output ====
+ Dimension of the reduced space:    14
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          13 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          14 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85151377
+       2      20.29413106
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 7.63650D-04
+ ROOT:  2 RESIDUAL TOT: 1.54779D-03
+      7       2         0.00     0.15E-02
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85151377
+       2      20.29413106
+    ==== End of matrix output ====
+ Dimension of the reduced space:    16
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          15 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          16 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85149461
+       2      20.29413779
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.97058D-04
+ ROOT:  2 RESIDUAL TOT: 5.01790D-04
+      8       2         0.00     0.50E-03
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85149461
+       2      20.29413779
+    ==== End of matrix output ====
+ Dimension of the reduced space:    18
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          17 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          18 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85149693
+       2      20.29414219
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 4.33314D-05
+ ROOT:  2 RESIDUAL TOT: 1.62504D-04
+      9       2         0.00     0.16E-03
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85149693
+       2      20.29414219
+    ==== End of matrix output ====
+ Dimension of the reduced space:    20
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          19 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          20 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85149683
+       2      20.29414326
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.27175D-05
+ ROOT:  2 RESIDUAL TOT: 6.35076D-05
+     10       2         0.00     0.64E-04
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85149683
+       2      20.29414326
+    ==== End of matrix output ====
+ Dimension of the reduced space:    22
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          21 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          22 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85149682
+       2      20.29414290
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.59122D-06
+ ROOT:  2 RESIDUAL TOT: 1.79436D-05
+     11       2         0.00     0.18E-04
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85149682
+       2      20.29414290
+    ==== End of matrix output ====
+ Dimension of the reduced space:    24
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          23 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          24 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85149681
+       2      20.29414266
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 5.78224D-07
+ ROOT:  2 RESIDUAL TOT: 4.67200D-06
+     12       2         0.00     0.47E-05
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85149681
+       2      20.29414266
+    ==== End of matrix output ====
+ Dimension of the reduced space:    26
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          25 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          26 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85149680
+       2      20.29414265
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.37220D-07
+ ROOT:  2 RESIDUAL TOT: 1.27590D-06
+     13       2         0.00     0.13E-05
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85149680
+       2      20.29414265
+    ==== End of matrix output ====
+ Dimension of the reduced space:    28
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          27 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          28 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85149679
+       2      20.29414265
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.44051D-08
+ ROOT:  2 RESIDUAL TOT: 2.83881D-07
+     14       2         0.00     0.28E-06
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85149679
+       2      20.29414265
+    ==== End of matrix output ====
+ Dimension of the reduced space:    30
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          29 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          30 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85149679
+       2      20.29414265
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 6.34216D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.34216D-09
+ ROOT:  2 RESIDUAL TOT: 8.59206D-08
+     15       2         0.00     0.86E-07
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85149679
+       2      20.29414265
+    ==== End of matrix output ====
+ Dimension of the reduced space:    31
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          31 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85149679
+       2      20.29414265
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.61301D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.61301D-09
+ ROOT:  2 RESIDUAL TOT: 2.28507D-08
+     16       1         0.00     0.23E-07
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85149679
+       2      20.29414265
+    ==== End of matrix output ====
+ Dimension of the reduced space:    32
+ --- TIME USED IN THIS MICRO ITERATION        0.01
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          32 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      19.85149679
+       2      20.29414265
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.57514D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.57514D-09
+ ROOT:  2 RESIDUAL TOT: 5.33486D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.33486D-09
+     17       1         0.00     0.53E-08
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      19.85149679
+       2      20.29414265
+    ==== End of matrix output ====
+ Dimension of the reduced space:    32
+ --- TIME USED IN THIS MICRO ITERATION        0.01
+
+    --------------------------------------
+    converged in 17 iterations
+    threshold:    0.10E-07
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+  Total CPU  time used in CCEQ_SOLV:   0.29 seconds
+  Total wall time used in CCEQ_SOLV:   0.53 seconds
+
+
+ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-08)
+
+    1  19.8514967932
+    2  20.2941426532
+
+
+ SYMMETRY CLASS NR.    3
+ MULTIPLICITY          1
+
+
+ CCSD       right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1           19.8514967932      540.1867063824
+         2           20.2941426532      552.2317129491
+
+
+ Total excited state energies for states of symmetry/spin    3    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    3    1           -56.388583088477532
+@@    3    2           -55.945937228432129
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                           540.1867 eV
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              89.5592 %
+
+          Double Excitation Contribution :              10.4408 %
+
+          ||T1||/||T2||                  :               2.9288
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   1       1     |        1          |              |    0.906729  |
+ | 3   1   |   2       1     |        2          |              |    0.219887  |
+ | 3   1   |   3       1     |        3          |              |    0.150326  |
+ +-----------------------------------------------------------------------------+
+ | 3 1 1 1 |   3   1   2   1 |        9        1 |            9 |   -0.064919  |
+ | 3 1 1 1 |   4   1   2   1 |       10        1 |           10 |    0.050950  |
+ | 3 1 1 1 |   1   1   3   1 |       13        1 |           13 |   -0.052827  |
+ | 3 1 1 1 |   2   1   3   1 |       14        1 |           14 |    0.037978  |
+ | 3 1 1 1 |   5   1   3   1 |       17        1 |           17 |   -0.055806  |
+ | 3 1 1 1 |   6   1   3   1 |       18        1 |           18 |    0.067495  |
+ | 3 1 1 1 |   1   2   1   1 |        1        2 |           29 |   -0.074194  |
+ | 3 1 1 1 |   2   2   1   1 |        2        2 |           30 |   -0.107241  |
+ | 3 1 1 1 |   4   2   1   1 |        4        2 |           32 |    0.054306  |
+ | 3 1 1 1 |   5   3   1   1 |        5        3 |           61 |   -0.032367  |
+ | 4 1 2 1 |   1   1   1   1 |       19        1 |           19 |   -0.117701  |
+ | 1 1 3 1 |   2   1   1   1 |       22        1 |           22 |    0.036365  |
+ | 1 1 3 1 |   5   1   1   1 |       25        1 |           25 |   -0.144217  |
+ | 1 1 3 1 |   8   1   1   1 |       28        1 |           28 |   -0.115049  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9910
+
+          Printed all single excitations greater than 0.094636
+
+          Printed all double excitations greater than 0.032312
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                           552.2317 eV
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              88.5922 %
+
+          Double Excitation Contribution :              11.4078 %
+
+          ||T1||/||T2||                  :               2.7867
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   1       1     |        1          |              |   -0.220518  |
+ | 3   1   |   2       1     |        2          |              |    0.908840  |
+ +-----------------------------------------------------------------------------+
+ | 3 1 1 1 |   2   2   3   1 |       14        2 |           42 |   -0.063287  |
+ | 3 1 1 1 |   3   2   3   1 |       15        2 |           43 |    0.059879  |
+ | 3 1 1 1 |   6   2   3   1 |       18        2 |           46 |   -0.050231  |
+ | 3 1 1 1 |   2   3   1   1 |        2        3 |           58 |   -0.139696  |
+ | 3 1 1 1 |   5   3   1   1 |        5        3 |           61 |   -0.092396  |
+ | 3 1 1 1 |   6   3   1   1 |        6        3 |           62 |   -0.104204  |
+ | 3 1 1 1 |   1   3   2   1 |        7        3 |           63 |   -0.106305  |
+ | 3 1 1 1 |   3   3   2   1 |        9        3 |           65 |    0.064143  |
+ | 3 1 1 1 |   5   8   2   2 |       11       16 |          431 |    0.041747  |
+ | 4 1 2 1 |   1   1   1   1 |       19        1 |           19 |    0.035445  |
+ | 4 1 2 1 |   1   2   1   1 |       19        2 |           47 |    0.044922  |
+ | 1 1 3 1 |   5   1   1   1 |       25        1 |           25 |    0.045204  |
+ | 1 1 3 1 |   2   2   1   1 |       22        2 |           50 |   -0.056075  |
+ | 1 1 3 1 |   3   2   1   1 |       23        2 |           51 |    0.076571  |
+ | 1 1 3 1 |   4   2   1   1 |       24        2 |           52 |   -0.116079  |
+ | 1 1 3 1 |   7   2   1   1 |       27        2 |           55 |    0.042642  |
+ | 1 2 3 2 |   3   1   1   1 |       23       25 |          695 |   -0.040412  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9859
+
+          Printed all single excitations greater than 0.094123
+
+          Printed all double excitations greater than 0.033775
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     3
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      2446
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     4
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1042
+ Converging for  2 roots.
+ CCEQ_STR: freeze VALENCE OR VIRT
+  -- output from FNDMN3 --
+  LOWEST VALUE AND PLACE    21.485458616713693               25
+  HIGHST VALUE AND PLACE    100000000000000.00                3
+IELMNT XMIN IMIN NDEG        1    2.14855D+01      25   1
+IELMNT XMIN IMIN NDEG        2    2.14855D+01     746   2
+IELMNT XMIN IMIN NDEG        3    2.20186D+01      44   1
+IELMNT XMIN IMIN NDEG        4    2.20186D+01     779   2
+IELMNT XMIN IMIN NDEG        5    2.20268D+01       1   1
+IELMNT XMIN IMIN NDEG        6    2.21545D+01      26   1
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  FROM FNDMN3 : 
+    PLACES OF LOWEST ELEMENTS 
+     1 :     25    746     44    779      1
+  MIN AND MAX IN SELECTED SUPSPACE    21.485458616713693        22.026759694662417     
+ Start vector guessed from diagonal
+ ... selected element no. 25
+ Start vector guessed from diagonal
+ ... selected element no.746
+ CCEQ_SOL: IPRLE   =               5
+ CCEQ_SOL: TRIPLET =     F
+ CCEQ_SOL: LINQCC  =     F
+ CCEQ_SOL: NREDH   =               2
+ CCEQ_SOL: MAXRED  =             300
+ CCEQ_SOL: MAXLE   =             200
+ CCEQ_SOL: ISIDE   =               1
+ CCEQ_SOL: ISTRVE  =               7
+ CCEQ_SOL: NVEC    =               2
+ CCEQ_SOL: NUPVEC  =               2
+ CCEQ_SOL: NCCVAR  =            1042
+ CCEQ_SOL: CVSEPARA=     T
+ CCEQ_SOL: LIONISAT=     F
+ CCEQ_SOL: REMOVE_CORE =  F
+
+
+
+ ----- COUPLED CLUSTER RESPONSE SOLVER -----
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           1 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           2 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      21.35416498
+       2      21.52563338
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 4.86197D-01
+ ROOT:  2 RESIDUAL TOT: 5.63194D-01
+      1       2         0.00     0.56E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      21.35416498
+       2      21.52563338
+    ==== End of matrix output ====
+ Dimension of the reduced space:     4
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           3 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           4 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      21.03228883
+       2      21.14554640
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.92711D-01
+ ROOT:  2 RESIDUAL TOT: 3.65347D-01
+      2       2         0.00     0.37E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      21.03228883
+       2      21.14554640
+    ==== End of matrix output ====
+ Dimension of the reduced space:     6
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           5 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           6 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.97497447
+       2      21.06212341
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.34800D-01
+ ROOT:  2 RESIDUAL TOT: 1.61931D-01
+      3       2         0.00     0.16E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.97497447
+       2      21.06212341
+    ==== End of matrix output ====
+ Dimension of the reduced space:     8
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           7 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_           8 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96562117
+       2      21.04399974
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 3.27180D-02
+ ROOT:  2 RESIDUAL TOT: 5.67016D-02
+      4       2         0.00     0.57E-01
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96562117
+       2      21.04399974
+    ==== End of matrix output ====
+ Dimension of the reduced space:    10
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_           9 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          10 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96491880
+       2      21.04139798
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.35005D-02
+ ROOT:  2 RESIDUAL TOT: 3.14634D-02
+      5       2         0.00     0.31E-01
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96491880
+       2      21.04139798
+    ==== End of matrix output ====
+ Dimension of the reduced space:    12
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          11 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          12 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96483465
+       2      21.03964027
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 7.38904D-03
+ ROOT:  2 RESIDUAL TOT: 5.08151D-02
+      6       2         0.00     0.51E-01
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96483465
+       2      21.03964027
+    ==== End of matrix output ====
+ Dimension of the reduced space:    14
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          13 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          14 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96491090
+       2      21.00694354
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.12829D-02
+ ROOT:  2 RESIDUAL TOT: 2.31715D-01
+      7       2         0.00     0.23E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96491090
+       2      21.00694354
+    ==== End of matrix output ====
+ Dimension of the reduced space:    16
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          15 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          16 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96491633
+       2      20.97300429
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.70007D-02
+ ROOT:  2 RESIDUAL TOT: 1.33007D-01
+      8       2         0.00     0.13E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96491633
+       2      20.97300429
+    ==== End of matrix output ====
+ Dimension of the reduced space:    18
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          17 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          18 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96298653
+       2      20.96527052
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 3.00119D-02
+ ROOT:  2 RESIDUAL TOT: 2.11280D-02
+      9       2         0.00     0.30E-01
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96298653
+       2      20.96527052
+    ==== End of matrix output ====
+ Dimension of the reduced space:    20
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          19 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          20 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96256039
+       2      20.96534125
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 9.79542D-03
+ ROOT:  2 RESIDUAL TOT: 6.16568D-03
+     10       2         0.00     0.98E-02
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96256039
+       2      20.96534125
+    ==== End of matrix output ====
+ Dimension of the reduced space:    22
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          21 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          22 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96260198
+       2      20.96536100
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 4.47737D-03
+ ROOT:  2 RESIDUAL TOT: 2.86093D-03
+     11       2         0.00     0.45E-02
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96260198
+       2      20.96536100
+    ==== End of matrix output ====
+ Dimension of the reduced space:    24
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          23 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          24 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96260819
+       2      20.96535098
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.17079D-03
+ ROOT:  2 RESIDUAL TOT: 7.47071D-04
+     12       2         0.00     0.12E-02
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96260819
+       2      20.96535098
+    ==== End of matrix output ====
+ Dimension of the reduced space:    26
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          25 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          26 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96260058
+       2      20.96534232
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.94645D-04
+ ROOT:  2 RESIDUAL TOT: 1.88943D-04
+     13       2         0.00     0.29E-03
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96260058
+       2      20.96534232
+    ==== End of matrix output ====
+ Dimension of the reduced space:    28
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          27 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          28 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96259995
+       2      20.96534016
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 5.62042D-05
+ ROOT:  2 RESIDUAL TOT: 3.58866D-05
+     14       2         0.00     0.56E-04
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96259995
+       2      20.96534016
+    ==== End of matrix output ====
+ Dimension of the reduced space:    30
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          29 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          30 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96259987
+       2      20.96533999
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.74409D-05
+ ROOT:  2 RESIDUAL TOT: 1.10524D-05
+     15       2         0.00     0.17E-04
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96259987
+       2      20.96533999
+    ==== End of matrix output ====
+ Dimension of the reduced space:    32
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          31 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          32 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96259954
+       2      20.96533992
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 6.94724D-06
+ ROOT:  2 RESIDUAL TOT: 4.39447D-06
+     16       2         0.00     0.69E-05
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96259954
+       2      20.96533992
+    ==== End of matrix output ====
+ Dimension of the reduced space:    34
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          33 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          34 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96259960
+       2      20.96533995
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.73217D-06
+ ROOT:  2 RESIDUAL TOT: 1.75474D-06
+     17       2         0.00     0.27E-05
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96259960
+       2      20.96533995
+    ==== End of matrix output ====
+ Dimension of the reduced space:    36
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          35 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          36 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96259958
+       2      20.96533994
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 6.87738D-07
+ ROOT:  2 RESIDUAL TOT: 4.43434D-07
+     18       2         0.00     0.69E-06
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96259958
+       2      20.96533994
+    ==== End of matrix output ====
+ Dimension of the reduced space:    38
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          37 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          38 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96259958
+       2      20.96533994
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.66524D-07
+ ROOT:  2 RESIDUAL TOT: 1.08078D-07
+     19       2         0.00     0.17E-06
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96259958
+       2      20.96533994
+    ==== End of matrix output ====
+ Dimension of the reduced space:    40
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          39 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          40 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96259958
+       2      20.96533994
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 4.52784D-08
+ ROOT:  2 RESIDUAL TOT: 2.94130D-08
+     20       2         0.00     0.45E-07
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96259958
+       2      20.96533994
+    ==== End of matrix output ====
+ Dimension of the reduced space:    42
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          41 project out valence occupied or virtual
+ CCRED CVS/IONIS sigma_          42 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96259958
+       2      20.96533994
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 1.17486D-08
+ ROOT:  2 RESIDUAL TOT: 7.64174D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 7.64174D-09
+     21       2         0.00     0.12E-07
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96259958
+       2      20.96533994
+    ==== End of matrix output ====
+ Dimension of the reduced space:    43
+ --- TIME USED IN THIS MICRO ITERATION        0.02
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+ CCRED CVS/IONIS sigma_          43 project out valence occupied or virtual
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1      20.96259958
+       2      20.96533994
+    ==== End of matrix output ====
+  
+ ROOT:  1 RESIDUAL TOT: 2.02195D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.02195D-09
+ ROOT:  2 RESIDUAL TOT: 1.39751D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.39751D-09
+     22       1         0.00     0.20E-08
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1
+       1      20.96259958
+       2      20.96533994
+    ==== End of matrix output ====
+ Dimension of the reduced space:    43
+ --- TIME USED IN THIS MICRO ITERATION        0.01
+
+    --------------------------------------
+    converged in 22 iterations
+    threshold:    0.10E-07
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.01
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.01
+
+
+  Total CPU  time used in CCEQ_SOLV:   0.39 seconds
+  Total wall time used in CCEQ_SOLV:   0.71 seconds
+
+
+ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-08)
+
+    1  20.9625995834
+    2  20.9653399441
+
+
+ SYMMETRY CLASS NR.    4
+ MULTIPLICITY          1
+
+
+ CCSD       right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1           20.9625995834      570.4213513024
+         2           20.9653399441      570.4959203113
+
+
+ Total excited state energies for states of symmetry/spin    4    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    4    1           -55.277480298310905
+@@    4    2           -55.274739937575319
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                           570.4214 eV
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              79.2778 %
+
+          Double Excitation Contribution :              20.7222 %
+
+          ||T1||/||T2||                  :               1.9560
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 4   1   |   1       1     |        1          |              |    0.889668  |
+ +-----------------------------------------------------------------------------+
+ | 3 2 1 1 |   4   1   2   1 |       10        1 |           10 |    0.213543  |
+ | 3 2 1 1 |   5   1   2   1 |       11        1 |           11 |   -0.094238  |
+ | 3 2 1 1 |   6   1   2   1 |       12        1 |           12 |    0.060350  |
+ | 3 2 1 1 |   1   2   1   1 |        1        2 |           29 |    0.106568  |
+ | 4 2 2 1 |   2   2   1   1 |       20        2 |           48 |    0.095595  |
+ | 4 1 1 1 |   2   2   1   1 |        2        2 |          549 |   -0.053241  |
+ | 4 1 1 1 |   1   2   2   1 |        3        2 |          550 |    0.070231  |
+ | 4 1 1 1 |   2   2   2   1 |        4        2 |          551 |   -0.116543  |
+ | 4 1 1 1 |   2   3   1   1 |        2        3 |          564 |    0.068050  |
+ | 4 1 1 1 |   2   6   2   2 |        4       14 |          731 |   -0.100355  |
+ | 3 1 2 1 |   3   1   1   1 |        9        1 |          541 |   -0.060108  |
+ | 3 1 2 1 |   4   1   1   1 |       10        1 |          542 |    0.053448  |
+ | 3 1 2 1 |   4   2   1   1 |       10        2 |          557 |   -0.140929  |
+ | 3 1 2 1 |   1   8   1   2 |        7       16 |          764 |   -0.048353  |
+ | 3 1 2 1 |   4   2   1   3 |       10       18 |          797 |   -0.046335  |
+ | 2 1 3 1 |   1   1   1   1 |       13        1 |          545 |   -0.054182  |
+ | 2 1 3 1 |   1   2   1   1 |       13        2 |          560 |   -0.092608  |
+ | 2 1 3 1 |   2   2   1   1 |       14        2 |          561 |   -0.084570  |
+ | 2 1 3 1 |   3   2   1   1 |       15        2 |          562 |   -0.105574  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9833
+
+          Printed all single excitations greater than 0.089038
+
+          Printed all double excitations greater than 0.045522
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                           570.4959 eV
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              30.1146 %
+
+          Double Excitation Contribution :              69.8854 %
+
+          ||T1||/||T2||                  :               0.6564
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 4   1   |   1       1     |        1          |              |    0.548526  |
+ +-----------------------------------------------------------------------------+
+ | 3 2 1 1 |   4   1   2   1 |       10        1 |           10 |   -0.289803  |
+ | 3 2 1 1 |   5   1   2   1 |       11        1 |           11 |    0.130736  |
+ | 3 2 1 1 |   1   2   1   1 |        1        2 |           29 |   -0.132510  |
+ | 4 2 2 1 |   2   2   1   1 |       20        2 |           48 |   -0.107859  |
+ | 4 1 1 1 |   2   6   2   2 |        4       14 |          731 |    0.516426  |
+ | 4 1 1 1 |   1   6   3   2 |        5       14 |          732 |   -0.205602  |
+ | 4 1 1 1 |   2   6   3   2 |        6       14 |          733 |    0.104391  |
+ | 4 1 1 1 |   1   7   1   3 |        1       23 |          863 |   -0.128442  |
+ | 3 1 2 1 |   4   2   1   1 |       10        2 |          557 |   -0.086858  |
+ | 3 1 2 1 |   1   8   1   2 |        7       16 |          764 |    0.267099  |
+ | 3 1 2 1 |   2   8   1   2 |        8       16 |          765 |   -0.084588  |
+ | 3 1 2 1 |   4   2   1   3 |       10       18 |          797 |    0.267855  |
+ | 3 1 2 1 |   5   2   1   3 |       11       18 |          798 |   -0.085194  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9657
+
+          Printed all single excitations greater than 0.054877
+
+          Printed all double excitations greater than 0.083597
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     4
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      2069
+ No Excitation Energies calculated in this symmetry class
+
+ *******************************************************************
+
+ Ground state energy is target 
+
+ Ecorr =                    -76.24007988167154792336
+
+ *******************************************************************
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                   -76.0268081652                
+            Total MP2   energy:                   -76.2307563423                
+            Total CCSD  energy:                   -76.2400798817                
+                                                                                
+                                                                                
+ +=============================================================================+
+ |  sym. | Exci.  |        CCSD       Excitation energies            | ||T1||  |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
+ +=============================================================================+
+ | ^1A1  |    1   |    19.7848735  |     538.37379  |   4342277.775  |  89.30  |
+ | ^1A1  |    2   |    20.3325357  |     553.27644  |   4462475.726  |  88.83  |
+ +-----------------------------------------------------------------------------+
+ | ^1B1  |    1   |    20.5542354  |     559.30920  |   4511133.200  |  91.24  |
+ | ^1B1  |    2   |    20.9409418  |     569.83201  |   4596005.444  |   0.03  |
+ +-----------------------------------------------------------------------------+
+ | ^1B2  |    1   |    19.8514968  |     540.18671  |   4356899.901  |  89.56  |
+ | ^1B2  |    2   |    20.2941427  |     552.23171  |   4454049.437  |  88.59  |
+ +-----------------------------------------------------------------------------+
+ | ^1A2  |    1   |    20.9625996  |     570.42135  |   4600758.774  |  79.28  |
+ | ^1A2  |    2   |    20.9653399  |     570.49592  |   4601360.213  |  30.11  |
+ +=============================================================================+
+                                                                                
+                                                                                
+     Total energies in Hartree:                                                 
+             1 ^1A1       -56.4552063954                                        
+             2 ^1A1       -55.9075442268                                        
+             1 ^1B1       -55.6858444611                                        
+             2 ^1B1       -55.2991380605                                        
+             1 ^1B2       -56.3885830885                                        
+             2 ^1B2       -55.9459372284                                        
+             1 ^1A2       -55.2774802983                                        
+             2 ^1A2       -55.2747399376                                        
+
+  1 a.u. =        27.21138 eV.  
+  1 a.u. =    219474.62934 cm-1.
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+ CPU and wall time for CC :       1.702       2.688
+
+ 
+     Date and time (Linux)  : Mon Jan 27 16:10:23 2020
+     Host name              : kemi-czc7084xz.win.dtu.dk               
+
+
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+  Total CPU  time used in DALTON:   1.87 seconds
+  Total wall time used in DALTON:   2.73 seconds
+
+ 
+     Date and time (Linux)  : Mon Jan 27 16:10:23 2020
+     Host name              : kemi-czc7084xz.win.dtu.dk               

@@ -1,8 +1,0 @@
-   ccsdr12_n2_gamma
-   ------------
-   Molecule:         N2 in D2h
-   Wave Function:    CCSD(R12)/B/1  cc-pVDZ/aug-cc-pVTZ
-   Test Purpose:     Second hyperpolarizabilities (cubic response):
-                     - for CCSD(R12) (Ansatz 1) 
-                     - Check frozen core 
-                     - .R12ORB option

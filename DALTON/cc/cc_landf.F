@@ -107,7 +107,10 @@ C     C1T2C = sum(dl)[Xdl*LamH(beta,d)*LamP(alfa,l)]
 C            +sum(bk)[VLTR1(bk)*LampC(alfa,b)*LamH(beta,k)] 
 C            +sum(bk)[VLTR1(bk)*Lamp(alfa,b)*LamHC(beta,k)] 
 C
-C     For IOPT=1 is the third term omitted. 
+C     For IOPT=1 is the third term omitted.
+C     Negative IOPT signals a triplet calculation:
+C     Only the "Exchange" part of Xdl is calculated
+C
 C
 #include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -124,18 +127,19 @@ C
       CALL QENTER('CC_C1T2C')
 C
       ISYRES = MULD2H(ISYR,ISYL)
+      IOPTA = ABS(IOPT)
 C
 C-----------------------------
 C     Initialize result array.
 C-----------------------------
 C
-      IF ((IOPT .EQ. 1).OR.(IOPT.EQ.3)) THEN
+      IF ((IOPTA .EQ. 1).OR.(IOPTA.EQ.3)) THEN
          CALL DZERO(C1T2C,N2BST(ISYRES))
-      ELSE IF (IOPT .EQ. 2) THEN
+      ELSE IF (IOPTA .EQ. 2) THEN
          CALL DZERO(C1T2C,NT1AM(ISYRES))
       ENDIF
 C
-      ISYMBK = ISYL  
+      ISYMBK = ISYL
       ISYMDL = MULD2H(ISYMBK,ISYR)
 C
 C-------------------------------
@@ -156,7 +160,8 @@ C-------------------------------------------
 C     Calculate coulomb part of contraction.
 C-------------------------------------------
 C
-      IF (.NOT. CCS) THEN
+      IF (.NOT. CCS .AND. IOPT .GT. 0) THEN
+
        IF (ISYMDL .LT. ISYMBK) THEN
 C
          KOFF1  = IT2AM(ISYMDL,ISYMBK) + 1
@@ -223,11 +228,13 @@ C
   100    CONTINUE
 C
        ENDIF
+      ENDIF
 C
 C---------------------------------------------
 C      Calculate exchange part of contraction.
 C---------------------------------------------
 C
+      IF ( .NOT. CCS) THEN
        DO 140 ISYMDK = 1,NSYM
 C
          ISYMBL = MULD2H(ISYMDK,ISYR  )
@@ -335,7 +342,7 @@ C
 C
       ENDIF
 C
-      IF ((IOPT .EQ. 1) .OR. (IOPT .EQ. 3)) THEN
+      IF ((IOPTA .EQ. 1) .OR. (IOPTA .EQ. 3)) THEN
 C
 C===================================
 C        Transformation to AO-basis.
@@ -449,7 +456,7 @@ C
 C
       ENDIF
 C
-      IF (IOPT .EQ. 3) THEN
+      IF (IOPTA .EQ. 3) THEN
 C
 C--------------------------------------------
 C        lamp*lamhc
@@ -505,7 +512,7 @@ C
 C
       ENDIF
 C
-      IF (IOPT. EQ. 2) THEN
+      IF (IOPTA. EQ. 2) THEN
 C
          CALL DCOPY(NT1AM(ISYMDL),WORK(KLDINT),1,C1T2C,1)
 C

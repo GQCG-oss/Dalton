@@ -1,5 +1,0 @@
-   cc_grad2
-   --------
-   Molecule:         N2H2 in C1
-   Wave Function:    CCSD / cc-pVDZ
-   Test Purpose:     Analytical gradient
