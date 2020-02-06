@@ -2391,10 +2391,7 @@ C     Print orbital and geometry input data
 C
 C*****************************************************************************
       use pelib_interface, only: use_pelib, pelib_ifc_init,
-     &                           pelib_ifc_domep
-#if defined(BUILD_PELIB)
-      use pe_variables, only: pe_savden
-#endif
+     &                           pelib_ifc_do_mep, pelib_ifc_do_savden
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -2635,12 +2632,10 @@ C
 
          CALL PRICAR(WORK,LWORK)
 
-         IF (USE_PELIB() .OR. PELIB_IFC_DOMEP()) THEN
+         IF (USE_PELIB()
+     &       .OR. PELIB_IFC_DO_MEP()
+     &       .OR. PELIB_IFC_DO_SAVDEN()) THEN
             CALL PELIB_IFC_INIT()
-#if defined(BUILD_PELIB)
-         ELSE IF (pe_savden) THEN
-            CALL PELIB_IFC_INIT()
-#endif
          END IF
       END IF
 C

@@ -180,7 +180,7 @@ C     LOA contribution to PCM solvent - 1st/2nd order magnetic
 C     perturbation (WORD=PCMBSOL/PCM2BSL) (Feb2004 KR&DM)
 C
       use pelib_interface, only: use_pelib, pelib_ifc_localfield,
-     &                           pelib_ifc_dolf
+     &                           pelib_ifc_do_lf
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2636,7 +2636,7 @@ C
       END IF
 
       IF (WORD == 'DIPLEN ') THEN
-         IF (USE_PELIB() .AND. PELIB_IFC_DOLF()) THEN
+         IF (USE_PELIB() .AND. PELIB_IFC_DO_LF()) THEN
             WRITE(LUPRI,*) 'INFO: EEF CONTRIBUTION ADDED TO DIPOLE'//
      &                     ' MOMENT INTEGRALS'
             ALLOCATE(EEFMATS(3*NELMNT))

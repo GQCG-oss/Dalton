@@ -285,10 +285,6 @@ C  /* Deck DIIS_CTL */
 #ifdef ENABLE_EFS
       use efs_interface
 #endif
-#if defined (BUILD_PELIB)
-      use pe_variables, only: pe_savden
-      use polarizable_embedding, only: pe_save_density
-#endif
 C
 C L.r. 5-May-1994 hjaaj / 1-Apr-1997
 C
@@ -304,8 +300,9 @@ C
 #endif
       use pelib_interface, only: use_pelib, pelib_ifc_fock,
      &                           pelib_ifc_energy, pelib_ifc_mep,
-     &                           pelib_ifc_domep, pelib_ifc_doinfld,
-     &                           pelib_ifc_infld
+     &                           pelib_ifc_do_mep, pelib_ifc_do_infld,
+     &                           pelib_ifc_infld, pelib_ifc_do_savden,
+     &                           pelib_ifc_save_density
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), GVEC(*), BMAT(*), H1AO(*)
@@ -1732,12 +1729,12 @@ C
             PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
         END IF
         CALL PELIB_IFC_ENERGY(PE_DENMAT)
-        IF (PELIB_IFC_DOINFLD()) THEN
+        IF (PELIB_IFC_DO_INFLD()) THEN
             CALL PELIB_IFC_INFLD()
         END IF
         DEALLOCATE(PE_DENMAT)
       END IF
-      IF (PELIB_IFC_DOMEP()) THEN
+      IF (PELIB_IFC_DO_MEP()) THEN
         ALLOCATE(PE_DENMAT(NNBASX))
         IF (NASHT == 0 .OR. HSROHF) THEN
             PE_DENMAT = DAOSAV(:,1)
@@ -1747,17 +1744,18 @@ C
         CALL PELIB_IFC_MEP(PE_DENMAT)
         DEALLOCATE(PE_DENMAT)
       END IF
-#if defined (BUILD_PELIB)
-      ! save density matrix 
-      if (pe_savden) then
-        if (nsym > 1) then
-            call quit('PEQM cannot be combined with symmetry.')
-        end if
-        call pe_save_density(daosav(:,1), nbast, nisht, norbt,
-     &                      wrk(kfree:lfree), fcao(1:norbt*(norbt+1)/2),
-     &                      cmo(1:nbast*norbt))
-      end if
-#endif
+      IF (PELIB_IFC_DO_SAVDEN()) THEN
+        ALLOCATE(PE_DENMAT(NNBASX))
+        IF (NASHT == 0 .OR. HSROHF) THEN
+            PE_DENMAT = DAOSAV(:,1)
+        ELSE
+            PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
+        END IF
+        CALL PELIB_IFC_SAVE_DENSITY(PE_DENMAT,
+     &                              FCAO(1:NORBT*(NORBT+1)/2),
+     &                              CMO(1:NBAST*NORBT))
+        DEALLOCATE(PE_DENMAT)
+      END IF
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC
 C       FLAG(25) is true for .ABACUS (geometry optimization and many properties)

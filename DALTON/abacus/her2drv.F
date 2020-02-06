@@ -258,9 +258,7 @@ C  /* Deck twocal */
      &            ITYPE,JSTRSH,NPRIMS,NCONTS,IORBSH,
      &            I2TYP,ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,
      &            RELCAL_in,GENCNT)
-#if defined (BUILD_PELIB)
-      use pe_variables, only: pe_twoint
-#endif
+      use pelib_interface, only: pelib_ifc_do_twoints
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -355,13 +353,12 @@ C
      &               WORK(KIODHR),IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,
      &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL_in,GENCNT)
 C
-#if defined (BUILD_PELIB)
-      else if (pe_twoint) then
+      ELSE IF (PELIB_IFC_DO_TWOINTS()) THEN
 !
 !        Only intermolecular integrals for PElib
 !        =============================================
 !
-       call twopeqm(WORK(KLAST),LWRK,HESSEE,FMAT,DMAT,NDMAT,GMAT,MAXDER,
+       CALL TWOPEQM(WORK(KLAST),LWRK,HESSEE,FMAT,DMAT,NDMAT,GMAT,MAXDER,
      &              EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,DISTRI,
      &              LONDON,SPNORB,DIA2SO,ZFS2EL,PERTUR,IATOM,MULE,MULTE,
      &              NODV,NOPV,NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,
@@ -369,7 +366,6 @@ C
      &              WORK(KIODHR),IREPDM,IFCTYP,ADISTR,I2TYP,JSTRSH,
      &              NPRIMS,NCONTS,IORBSH,ICEDIF,IFTHRS,GABRAO,DMRAO,
      &              DMRSO,DINTSKP,RELCAL,WORK(KTFMAT))
-#endif
       ELSE
 C
 C        All integrals
@@ -862,9 +858,9 @@ C
  9999 CALL QEXIT('TWOLOP')
       RETURN
       END
-#if defined (BUILD_PELIB)
+
 C  /* Deck twopeqm */
-      subroutine twopeqm(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,GMAT,
+      SUBROUTINE TWOPEQM(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,GMAT,
      &                   MAXDER,EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,
      &                   SOFOCK,DISTRI,LONDON,SPNORB,DIA2SO,ZFS2EL,
      &                   PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,
@@ -874,11 +870,8 @@ C  /* Deck twopeqm */
      &                   IORBSH,ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
      &                   DINTSKP,RELCAL,TFMAT)
 ! Modified TWOLOP routine to only calculate intermolecular integrals
-! needed for the Polarizable Embedding module.
-!
-!   gives the number of nuclei in first fragment
-!
-      use pe_variables, only: fdnucs
+! used for PDE calculations using the PE library.
+      use pelib_interface, only: pelib_ifc_get_num_core_nuclei
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -912,6 +905,7 @@ C  /* Deck twopeqm */
 Cef begin
 #include "incore.h"
 Cef end
+      INTEGER :: NUM_CORE_NUCLEI
       DIMENSION FMAT(NBASIS,NBASIS,*)
 #if defined (VAR_VECTOR)
 C NECgh Dimensioning TFMAT adapted to always odd first dimension
@@ -922,7 +916,7 @@ C NECgh We zero out the temporary FOCK matrices
 #endif
       CALL QENTER('TWOPEQM')
 
-      print *, 'Calculating intermolecular two-electron integrals'
+      NUM_CORE_NUCLEI = PELIB_IFC_GET_NUM_CORE_NUCLEI()
 
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOPEQM','*',103)
 
@@ -973,15 +967,15 @@ C
       ENDIF
 
       IF(I2TYP.EQ.0) THEN
-        do ishel = 1, maxshl
-          ncent = ncntsh(ishel)
-          if (ncent <= fdnucs) then
-            iastrt = ishel + 1
-            icsmax = ishel
-            idsmax = ishel
-            cycle
-          end if
-        end do
+        DO ISHEL = 1, MAXSHL
+          NCENT = NCNTSH(ISHEL)
+          IF (NCENT <= NUM_CORE_NUCLEI) THEN
+            IASTRT = ISHEL + 1
+            ICSMAX = ISHEL
+            IDSMAX = ISHEL
+            CYCLE
+          END IF
+        END DO
         IBSTRT = 1
         ICSTRT = 1
         IDSTRT = 1
@@ -1160,28 +1154,30 @@ C                 Check for basis-set identifier (WK/UniKA/04-11-2002).
                   SHABAB = (ISHELA.EQ.ISHELC) .AND. (ISHELB.EQ.ISHELD)
 
 ! Intermolecular Coulomb and exchange integrals
-!           if ((ncentb.le.fdnucs).and.
-!     &         (ncentc.le.fdnucs).and.
-!     &         (ncentd.le.fdnucs)) cycle
-!           if ((ncentb.gt.fdnucs).and.
-!     &         (ncentc.gt.fdnucs)) cycle
-!           if ((ncentb.gt.fdnucs).and.
-!     &         (ncentd.gt.fdnucs)) cycle
-!           if ((ncentc.gt.fdnucs).and.
-!     &         (ncentd.gt.fdnucs)) cycle
+!           IF ((NCENTB <= NUM_CORE_NUCLEI) .AND.
+!     &         (NCENTC <= NUM_CORE_NUCLEI) .AND.
+!     &         (NCENTD <= NUM_CORE_NUCLEI)) CYCLE
+!           IF ((NCENTB > NUM_CORE_NUCLEI) .AND.
+!     &         (NCENTC > NUM_CORE_NUCLEI)) CYCLE
+!           IF ((NCENTB > NUM_CORE_NUCLEI) .AND.
+!     &         (NCENTD > NUM_CORE_NUCLEI)) CYCLE
+!           IF ((NCENTC > NUM_CORE_NUCLEI) .AND.
+!     &         (NCENTD > NUM_CORE_NUCLEI)) CYCLE
 
 ! Intermolecular Coulomb integrals only
-           if ((ncenta.le.fdnucs).or.(ncentb.le.fdnucs)) cycle
-           if ((ncentc.gt.fdnucs).or.(ncentd.gt.fdnucs)) cycle
+           IF ((NCENTA <= NUM_CORE_NUCLEI) .OR.
+     &         (NCENTB <= NUM_CORE_NUCLEI)) CYCLE
+           IF ((NCENTC > NUM_CORE_NUCLEI) .OR.
+     &         (NCENTD > NUM_CORE_NUCLEI)) CYCLE
 
 ! Make sure that all integrals are written
-!           if ((ishela.eq.iasmax).and.
-!     &         (ishelb.eq.ibsmax).and.
-!     &         (ncentc.eq.fdnucs).and.
-!     &         (ncentd.eq.fdnucs)) then
-!             icsmax = ishelc
-!             idsmax = isheld
-!           end if
+!           IF ((ISHELA == IASMAX) .AND.
+!     &         (ISHELB == IBSMAX) .AND.
+!     &         (NCENTC == FDNUCS) .AND.
+!     &         (NCENTD == FDNUCS)) THEN
+!             ICSMAX = ISHELC
+!             IDSMAX = ISHELD
+!           END IF
 C
 C                 *******************************
 C                 ***** Calculate integrals *****
@@ -1254,8 +1250,8 @@ C     Print Fock matrices
       END IF
  9999 CALL QEXIT('TWOPEQM')
       RETURN
-      end subroutine twopeqm
-#endif
+      END SUBROUTINE TWOPEQM
+
 C  /* Deck twodsa */
       SUBROUTINE TWODSA(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,GMAT,MAXDER,
      &                  EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,

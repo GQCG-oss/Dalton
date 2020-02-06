@@ -1,9 +1,9 @@
 **DALTON
 .RUN WAVEFUN
+.DIRECT
 *PEQM
 .TWOINT
-3
-1.0 0.0 0.0
+save_density.h5
 **WAVE FUNCTIONS
 .HF
 **END OF
