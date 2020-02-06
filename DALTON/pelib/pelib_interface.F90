@@ -22,14 +22,17 @@ module pelib_interface
     private
 
     public :: use_pelib, pelib_ifc_gspol
-    public :: pelib_ifc_domep, pelib_ifc_domep_noqm, pelib_ifc_docube
-    public :: pelib_ifc_doinfld, pelib_ifc_dolf
+    public :: pelib_ifc_do_mep, pelib_ifc_do_mep_noqm, pelib_ifc_do_cube
+    public :: pelib_ifc_do_infld, pelib_ifc_do_lf
     public :: pelib_ifc_activate, pelib_ifc_deactivate
     public :: pelib_ifc_init, pelib_ifc_finalize, pelib_ifc_input_reader
     public :: pelib_ifc_fock, pelib_ifc_energy, pelib_ifc_response, pelib_ifc_london
     public :: pelib_ifc_molgrad, pelib_ifc_infld, pelib_ifc_lf, pelib_ifc_localfield
     public :: pelib_ifc_mep, pelib_ifc_mep_noqm, pelib_ifc_cube
     public :: pelib_ifc_set_mixed, pelib_ifc_mixed
+    public :: pelib_ifc_do_savden, pelib_ifc_do_twoints
+    public :: pelib_ifc_save_density, pelib_ifc_twoints
+    public :: pelib_ifc_get_num_core_nuclei
 #if defined(VAR_MPI)
     public :: pelib_ifc_slave
 #endif
@@ -62,59 +65,77 @@ logical function pelib_ifc_gspol()
 end function pelib_ifc_gspol
 
 subroutine pelib_ifc_set_mixed(do_mixed)
-  use pe_variables, only: mixed
-  logical :: do_mixed
-  if (do_mixed) then
-      mixed = .true.
-  else
-      mixed = .false.
-  end if
+    use pe_variables, only: mixed
+    logical :: do_mixed
+    if (do_mixed) then
+        mixed = .true.
+    else
+        mixed = .false.
+    end if
 end subroutine pelib_ifc_set_mixed
 
-logical function pelib_ifc_domep()
-  use pe_variables, only: pe_mep
-  if (pe_mep) then
-      pelib_ifc_domep = .true.
-  else
-      pelib_ifc_domep = .false.
-  end if
-end function pelib_ifc_domep
+logical function pelib_ifc_do_mep()
+    use pe_variables, only: pe_mep
+    if (pe_mep) then
+        pelib_ifc_do_mep = .true.
+    else
+        pelib_ifc_do_mep = .false.
+    end if
+end function pelib_ifc_do_mep
 
-logical function pelib_ifc_domep_noqm()
-  use pe_variables, only: pe_mep, mep_qmcube
-  if (pe_mep .and. .not. mep_qmcube) then
-      pelib_ifc_domep_noqm = .true.
-  else
-      pelib_ifc_domep_noqm = .false.
-  end if
-end function pelib_ifc_domep_noqm
+logical function pelib_ifc_do_mep_noqm()
+    use pe_variables, only: pe_mep, mep_qmcube
+    if (pe_mep .and. .not. mep_qmcube) then
+        pelib_ifc_do_mep_noqm = .true.
+    else
+        pelib_ifc_do_mep_noqm = .false.
+    end if
+end function pelib_ifc_do_mep_noqm
 
-logical function pelib_ifc_docube()
-  use pe_variables, only: pe_cube
-  if (pe_cube) then
-      pelib_ifc_docube = .true.
-  else
-      pelib_ifc_docube = .false.
-  end if
-end function pelib_ifc_docube
+logical function pelib_ifc_do_cube()
+    use pe_variables, only: pe_cube
+    if (pe_cube) then
+        pelib_ifc_do_cube = .true.
+    else
+        pelib_ifc_do_cube = .false.
+    end if
+end function pelib_ifc_do_cube
 
-logical function pelib_ifc_doinfld()
-  use pe_variables, only: pe_infld
-  if (pe_infld) then
-      pelib_ifc_doinfld = .true.
-  else
-      pelib_ifc_doinfld = .false.
-  end if
-end function pelib_ifc_doinfld
+logical function pelib_ifc_do_infld()
+    use pe_variables, only: pe_infld
+    if (pe_infld) then
+        pelib_ifc_do_infld = .true.
+    else
+        pelib_ifc_do_infld = .false.
+    end if
+end function pelib_ifc_do_infld
 
-logical function pelib_ifc_dolf()
-  use pe_variables, only: pe_lf
-  if (pe_lf) then
-      pelib_ifc_dolf = .true.
-  else
-      pelib_ifc_dolf = .false.
-  end if
-end function pelib_ifc_dolf
+logical function pelib_ifc_do_lf()
+    use pe_variables, only: pe_lf
+    if (pe_lf) then
+        pelib_ifc_do_lf = .true.
+    else
+        pelib_ifc_do_lf = .false.
+    end if
+end function pelib_ifc_do_lf
+
+logical function pelib_ifc_do_savden()
+    use pe_variables, only: pe_savden
+    if (pe_savden) then
+        pelib_ifc_do_savden = .true.
+    else
+        pelib_ifc_do_savden = .false.
+    end if
+end function pelib_ifc_do_savden
+
+logical function pelib_ifc_do_twoints()
+    use pe_variables, only: pe_twoints
+    if (pe_twoints) then
+        pelib_ifc_do_twoints = .true.
+    else
+        pelib_ifc_do_twoints = .false.
+    end if
+end function pelib_ifc_do_twoints
 
 subroutine pelib_ifc_activate()
     use pe_variables, only: peqm
@@ -205,7 +226,6 @@ subroutine pelib_ifc_mixed(denmats, fckmats, energy)
     energy = energies(1)
     call qexit('pelib_ifc_mixed')
 end subroutine pelib_ifc_mixed
-
 
 subroutine pelib_ifc_energy(denmats, energy)
     use polarizable_embedding, only: pe_master
@@ -432,10 +452,123 @@ subroutine pelib_ifc_cube(denmats, idx)
     call qexit('pelib_ifc_cube')
 end subroutine pelib_ifc_cube
 
+subroutine pelib_ifc_save_density(ao_denmat, mo_fckmat, mo_coefficients)
+    use pde_utils, only: pde_save_density
+#include "iprtyp.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "inforb.h"
+    real*8, dimension(:), intent(in) :: ao_denmat
+    real*8, dimension(:), intent(in) :: mo_fckmat
+    real*8, dimension(nbast,norbt), intent(in) :: mo_coefficients
+    real*8, dimension(:), allocatable :: mo_energies
+    real*8, dimension(:,:), allocatable :: ew_denmat
+    real*8, dimension(:,:), allocatable :: temp
+    integer, parameter :: iprtyp = POLARIZABLE_EMBEDDING
+    integer, parameter :: runtyp = 9
+    integer :: i
+    call qenter('pelib_ifc_save_density')
+    allocate(temp(nbast,nisht))
+    allocate(mo_energies(nisht))
+    do i = 1, nisht
+        mo_energies(i) = mo_fckmat(i*(i+1)/2)
+        temp(:,i) = mo_energies(i) * mo_coefficients(:,i)
+    end do
+    allocate(ew_denmat(nbast,nbast))
+    ew_denmat = matmul(mo_coefficients(:,1:nisht), transpose(temp))
+    deallocate(temp)
+#if defined(VAR_MPI)
+    if (nodtot >= 1) then
+        call mpixbcast(iprtyp, 1, 'INTEGER', master)
+        call mpixbcast(runtyp, 1, 'INTEGER', master)
+    end if
+#endif
+    call pde_save_density(ao_denmat, ew_denmat, nbast)
+    deallocate(ew_denmat)
+    deallocate(mo_energies)
+    call qexit('pelib_ifc_save_density')
+end subroutine pelib_ifc_save_density
+
+subroutine pelib_ifc_twoints(work, lwork)
+    use pde_utils, only: pde_twoints, pde_get_fragment_density
+#include "inforb.h"
+    real*8, dimension(:), intent(inout) :: work
+    integer, intent(in) :: lwork
+    real*8, dimension(:), allocatable :: overlap
+    real*8, dimension(:), allocatable :: core_fckmat
+    real*8, dimension(:), allocatable :: packed_frag_denmat
+    real*8, dimension(:,:), allocatable :: full_overlap
+    real*8, dimension(:,:), allocatable :: full_fckmat
+    real*8, dimension(:,:), allocatable :: full_denmat
+    real*8, dimension(:,:), allocatable :: frag_denmat
+    integer :: i, j, k
+    integer :: core_nbast
+    integer :: frag_nbast
+    integer, dimension(1) :: isymdm, ifctyp
+    call qenter('pelib_ifc_twoints')
+    call pde_get_fragment_density(packed_frag_denmat, frag_nbast)
+    allocate(frag_denmat(frag_nbast,frag_nbast))
+    frag_denmat = 0.0d0
+    call dunfld(frag_nbast, packed_frag_denmat, frag_denmat)
+    core_nbast = nbast - frag_nbast
+    allocate(full_denmat(nbast,nbast))
+    full_denmat = 0.0d0
+    full_denmat(core_nbast+1:nbast,core_nbast+1:nbast) = frag_denmat
+    deallocate(frag_denmat)
+    ! IFCTYP = +/-XY
+    !   X indicates symmetry about diagonal
+    !     X = 0 No symmetry
+    !     X = 1 Symmetric
+    !     X = 2 Anti-symmetric
+    !   Y indicates contributions
+    !     Y = 0 No contribution
+    !     Y = 1 Coulomb
+    !     Y = 2 Exchange
+    !     Y = 3 Coulomb + Exchange
+    !   + sign: alpha + beta matrix (singlet)
+    !   - sign: alpha - beta matrix (triplet)
+    ! SIRFCK(fckmat, denmat, ?, isymdm, ifctyp, direct, work, nwrk)
+    allocate(full_fckmat(nbast,nbast))
+    full_fckmat = 0.0d0
+    isymdm = 1
+    ifctyp = 11
+    call sirfck(full_fckmat, full_denmat, 1, isymdm, ifctyp, .true., work(1), lwork)
+    deallocate(full_denmat)
+    allocate(core_fckmat(core_nbast*(core_nbast+1)/2))
+    core_fckmat = 0.0d0
+    call dgetsp(core_nbast, full_fckmat(1:core_nbast,1:core_nbast), core_fckmat)
+    deallocate(full_fckmat)
+    allocate(overlap(nnbast))
+    overlap = 0.0d0
+    call rdonel('OVERLAP', .true., overlap, nnbast)
+    allocate(full_overlap(nbast,nbast))
+    full_overlap = 0.0d0
+    call dsptge(nbast, overlap, full_overlap)
+    deallocate(overlap)
+    call pde_twoints(core_fckmat, full_overlap(1:core_nbast,core_nbast+1:nbast), nbast)
+    deallocate(full_overlap, core_fckmat)
+    call qexit('pelib_ifc_twoints')
+end subroutine pelib_ifc_twoints
+
+integer function pelib_ifc_get_num_core_nuclei()
+    use pde_utils, only: pde_get_num_core_nuclei
+    integer :: num_nuclei
+    num_nuclei = pde_get_num_core_nuclei()
+    if (num_nuclei <= 0) then
+        call quit('Number of core nuclei must be more than zero')
+    end if
+    pelib_ifc_get_num_core_nuclei = num_nuclei
+end function pelib_ifc_get_num_core_nuclei
+
 #if defined(VAR_MPI)
 subroutine pelib_ifc_slave(runtype)
     use polarizable_embedding, only: pe_slave
+    use pde_utils, only: pde_save_density
+    implicit none
+#include "inforb.h"
     integer, intent(in) :: runtype
+    real*8, dimension(:), allocatable :: ao_denmat
+    real*8, dimension(:,:), allocatable :: dummy
     call qenter('pelib_ifc_slave')
     if (runtype == 1) then
         call pe_slave('full_fock')
@@ -453,6 +586,11 @@ subroutine pelib_ifc_slave(runtype)
         call pe_slave('cube')
     else if (runtype == 8) then
         call pe_slave('effdipole')
+    else if (runtype == 9) then
+        allocate(ao_denmat(nnbasx))
+        allocate(dummy(1,1))
+        call pde_save_density(ao_denmat, dummy, nbast)
+        deallocate(ao_denmat, dummy)
     end if
     call qexit('pelib_ifc_slave')
 end subroutine pelib_ifc_slave
@@ -3956,19 +4094,25 @@ module pelib_interface
     private
 
     public :: use_pelib, pelib_ifc_gspol
-    public :: pelib_ifc_domep, pelib_ifc_domep_noqm, pelib_ifc_docube
-    public :: pelib_ifc_doinfld
+    public :: pelib_ifc_do_mep, pelib_ifc_do_mep_noqm, pelib_ifc_do_cube
+    public :: pelib_ifc_do_infld, pelib_ifc_do_lf
     public :: pelib_ifc_activate, pelib_ifc_deactivate
     public :: pelib_ifc_init, pelib_ifc_finalize, pelib_ifc_input_reader
     public :: pelib_ifc_fock, pelib_ifc_energy, pelib_ifc_response, pelib_ifc_london
-    public :: pelib_ifc_molgrad, pelib_ifc_infld
+    public :: pelib_ifc_molgrad, pelib_ifc_infld, pelib_ifc_lf, pelib_ifc_localfield
     public :: pelib_ifc_mep, pelib_ifc_mep_noqm, pelib_ifc_cube
+    public :: pelib_ifc_set_mixed, pelib_ifc_mixed
+    public :: pelib_ifc_do_savden, pelib_ifc_do_twoints
+    public :: pelib_ifc_save_density, pelib_ifc_twoints
+    public :: pelib_ifc_get_num_fragment_nuclei
 #if defined(VAR_MPI)
     public :: pelib_ifc_slave
 #endif
-    ! TODO: update the following interface routines
     public :: pelib_ifc_grad, pelib_ifc_lin, pelib_ifc_lr, pelib_ifc_qro
-    public :: pelib_ifc_cro, pelib_ifc_pecc
+    public :: pelib_ifc_cro, pelib_ifc_rspmcqr
+    public :: pelib_ifc_pecc
+    public :: pelib_ifc_transformer, pelib_ifc_qrtransformer
+    public :: pelib_ifc_qrtest
 
 contains
 
@@ -3980,21 +4124,38 @@ logical function pelib_ifc_gspol()
     call quit('using dummy PElib interface routines')
 end function pelib_ifc_gspol
 
-logical function pelib_ifc_domep()
-    pelib_ifc_domep = .false.
-end function pelib_ifc_domep
-
-logical function pelib_ifc_domep_noqm()
-    pelib_ifc_domep_noqm = .false.
-end function pelib_ifc_domep_noqm
-
-logical function pelib_ifc_docube()
+subroutine pelib_ifc_set_mixed(do_mixed)
+    logical :: do_mixed
     call quit('using dummy PElib interface routines')
-end function pelib_ifc_docube
+end subroutine pelib_ifc_set_mixed
 
-logical function pelib_ifc_doinfld()
+logical function pelib_ifc_do_mep()
+    pelib_ifc_do_mep = .false.
+end function pelib_ifc_do_mep
+
+logical function pelib_ifc_do_mep_noqm()
+    pelib_ifc_do_mep_noqm = .false.
+end function pelib_ifc_do_mep_noqm
+
+logical function pelib_ifc_do_cube()
     call quit('using dummy PElib interface routines')
-end function pelib_ifc_doinfld
+end function pelib_ifc_do_cube
+
+logical function pelib_ifc_do_infld()
+    call quit('using dummy PElib interface routines')
+end function pelib_ifc_do_infld
+
+logical function pelib_ifc_do_lf()
+    call quit('using dummy PElib interface routines')
+end function pelib_ifc_do_lf
+
+logical function pelib_ifc_do_savden()
+    call quit('using dummy PElib interface routines')
+end function pelib_ifc_do_savden
+
+logical function pelib_ifc_do_twoints()
+    call quit('using dummy PElib interface routines')
+end function pelib_ifc_do_twoints
 
 subroutine pelib_ifc_activate()
     call qenter('pelib_ifc_activate')
@@ -4036,6 +4197,15 @@ subroutine pelib_ifc_fock(denmats, fckmats, energy)
     call qexit('pelib_ifc_fock')
 end subroutine pelib_ifc_fock
 
+subroutine pelib_ifc_mixed(denmats, fckmats, energy)
+    real*8, dimension(*), intent(in) :: denmats
+    real*8, dimension(*), intent(in) :: fckmats
+    real*8, intent(in) :: energy
+    call qenter('pelib_ifc_mixed')
+    call quit('using dummy PElib interface routines')
+    call qexit('pelib_ifc_mixed')
+end subroutine pelib_ifc_mixed
+
 subroutine pelib_ifc_energy(denmats)
     real*8, dimension(*), intent(in) :: denmats
     call qenter('pelib_ifc_energy')
@@ -4073,6 +4243,19 @@ subroutine pelib_ifc_london(fckmats)
     call qexit('pelib_ifc_london')
 end subroutine pelib_ifc_london
 
+subroutine pelib_ifc_localfield(eefmats)
+    real*8, dimension(:), intent(in) :: eefmats
+    call qenter('pelib_ifc_localfield')
+    call quit('using dummy PElib interface routines')
+    call qexit('pelib_ifc_localfield')
+end subroutine pelib_ifc_localfield
+
+subroutine pelib_ifc_lf()
+    call qenter('pelib_ifc_lf')
+    call quit('using dummy PElib interface routines')
+    call qexit('pelib_ifc_lf')
+end subroutine pelib_ifc_lf
+
 subroutine pelib_ifc_mep(denmats)
     real*8, dimension(*), intent(in) :: denmats
     call qenter('pelib_ifc_mep')
@@ -4093,6 +4276,28 @@ subroutine pelib_ifc_cube(denmats, idx)
     call quit('using dummy PElib interface routines')
     call qexit('pelib_ifc_cube')
 end subroutine pelib_ifc_cube
+
+subroutine pelib_ifc_save_density(ao_denmat, mo_fckmat, mo_coefficients)
+    real*8, dimension(*), intent(in) :: ao_denmat
+    real*8, dimension(*), intent(in) :: mo_fckmat
+    real*8, dimension(*), intent(in) :: mo_coefficients
+    call qenter('pelib_ifc_save_density')
+    call quit('using dummy PElib interface routines')
+    call qexit('pelib_ifc_save_density')
+end subroutine pelib_ifc_save_density
+
+subroutine pelib_ifc_twoints(work, lwork)
+    real*8, dimension(*), intent(in) :: work
+    integer, intent(in) :: lwork
+    call qenter('pelib_ifc_twoints')
+    call quit('using dummy PElib interface routines')
+    call qexit('pelib_ifc_twoints')
+end subroutine pelib_ifc_twoints
+
+integer function pelib_ifc_get_num_fragment_nuclei()
+    use pde_utils, only: pde_get_num_fragment_nuclei
+    call quit('using dummy PElib interface routines')
+end function pelib_ifc_get_num_fragment_nuclei
 
 #if defined(VAR_MPI)
 subroutine pelib_ifc_slave(runtype)
@@ -4180,13 +4385,40 @@ subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
     call qexit('pelib_ifc_cro')
 end subroutine pelib_ifc_cro
 
-subroutine pelib_ifc_addg(fock,wrk,nwrk)
-    integer, intent(in) :: nwrk
-    real*8, dimension(nwrk) :: wrk
-    call qenter('pelib_ifc_addg')
+subroutine pelib_ifc_pecc(aoden,converged,work,lwork)
+    use pelib_interface, only: pelib_ifc_fock
+    integer :: lwork
+    real*8 :: work(lwork), aoden(*)
+    logical :: converged
+    call qenter('PELIB_IFC_PECC')
     call quit('using dummy PElib interface routines')
-    call qexit('pelib_ifc_addg')
-end subroutine pelib_ifc_addg
+    call qexit('PELIB_IFC_PECC')
+end subroutine pelib_ifc_pecc
+
+subroutine pelib_ifc_transformer(rho1,rho2,ctr1,ctr2,model,isymtr,lr,work,lwork)
+    integer :: lwork, isymtr
+    character*1, intent(in) :: lr
+    real*8, dimension(*) :: work
+    real*8 :: rho1(*), rho2(*), ctr1(*), ctr2(*)
+    character*10 :: model
+    call qenter('PELIB_IFC_TRANSFORMER')
+    call quit('using dummy PElib interface routines')
+    call qexit('PELIB_IFC_TRANSFORMER')
+end subroutine pelib_ifc_transformer
+
+subroutine pelib_ifc_qrtransformer(rho1,rho2,isyres,listb,idlstb,isymtb, &
+   &                               listc,idlstc,isymtc,model,rsptyp, &
+   &                               work,lwork)
+    integer :: lwork
+    real*8 :: work(*), rho1(*), rho2(*)
+    character*(*) :: listb, listc
+    integer :: idlstb, isymtb, idlstc, isymtc
+    character*5 :: model
+    character*1 :: rsptyp
+    call qenter('PELIB_IFC_QRTRANSFORMER')
+    call quit('using dummy PElib interface routines')
+    call qexit('PELIB_IFC_QRTRANSFORMER')
+end subroutine pelib_ifc_qrtransformer
 
 end module pelib_interface
 

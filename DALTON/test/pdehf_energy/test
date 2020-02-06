@@ -18,14 +18,12 @@ f.add(from_string = 'Final results from SIRIUS',
       num_lines = 12,
       abs_tolerance = 1.0e-6)
 
-test.run(['savden.dal'], ['fragment.mol'], ['fragment.pot'], args='-put "core.dat" -get "pe_density.bin"')
+test.run(['save_density.dal'], ['monomer.mol'], ['monomer.pot'], args='-put "core.h5" -get "core.h5"')
+os.rename('save_density_monomer_monomer.core.h5', 'save_density.h5')
 
-os.rename('savden_fragment_fragment.pe_density.bin', 'pe_density.bin')
+test.run(['twoint.dal'], ['core_monomer.mol'], args='-put "save_density.h5" -get "save_density.h5"')
+os.rename('twoint_core_monomer.save_density.h5', 'twoint.h5')
 
-test.run(['twoint.dal'], ['fragment_core.mol'], args='-put "pe_density.bin" -get "pe_fock.bin"')
-
-os.rename('twoint_fragment_core.pe_fock.bin', 'pe_fock_1.bin')
-
-test.run(['pde.dal'], ['core.mol'], ['fragment.pot'], f={'out': f}, args='-put "pe_fock_1.bin"')
+test.run(['pde.dal'], ['core.mol'], ['monomer.pot'], f={'out': f}, args='-put "final.h5"')
 
 sys.exit(test.return_code)

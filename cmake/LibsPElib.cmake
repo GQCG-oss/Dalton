@@ -7,7 +7,7 @@ if(ENABLE_PELIB)
     if(ENABLE_GEN1INT)
         set(PE_INTEGRAL_LIBRARY "GEN1INT")
     else()
-        message(FATAL_ERROR "-- PElib requires Gen1Int, use -DENABLE_GEN1INT=ON to enable Gen1Int or -DENABLE_PELIB=OFF to disable PElib")
+        message(FATAL_ERROR "PElib requires Gen1Int, use -DENABLE_GEN1INT=ON to enable Gen1Int or -DENABLE_PELIB=OFF to disable PElib")
     endif()
     set(PE_INCLUDE_DIR)
     set(PE_MPIF OFF)
@@ -16,6 +16,11 @@ if(ENABLE_PELIB)
             set(PE_MPIF ON)
         endif()
         set(PE_INCLUDE_DIR ${MPI_INCLUDE_PATH})
+    endif()
+    if(ENABLE_PDE)
+        find_package(HDF5 REQUIRED COMPONENTS Fortran)
+        include_directories(${HDF5_Fortran_INCLUDE_DIRS})
+        add_definitions(${HDF5_Fortran_DEFINITIONS})
     endif()
     set(ExternalProjectCMakeArgs
         -DPARENT_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -28,6 +33,7 @@ if(ENABLE_PELIB)
         -DENABLE_STATIC_LINKING=${ENABLE_STATIC_LINKING}
         -DENABLE_MPI=${ENABLE_MPI}
         -DENABLE_MPIF=${PE_MPIF}
+        -DENABLE_PDE=${ENABLE_PDE}
         -DHOST_PROGRAM=${PE_HOST_PROGRAM}
         )
     add_external(pelib)
@@ -35,5 +41,8 @@ if(ENABLE_PELIB)
     if(ENABLE_GEN1INT)
         add_dependencies(pelib gen1int_interface)
     endif()
-    set(EXTERNAL_LIBS ${PROJECT_BINARY_DIR}/external/lib/libpelib.a ${EXTERNAL_LIBS})
+    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/external/lib/libpelib.a)
+    if(ENABLE_PDE)
+        set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${HDF5_Fortran_LIBRARIES})
+    endif()
 endif()

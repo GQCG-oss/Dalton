@@ -1513,7 +1513,7 @@ C  /* Deck runopt */
      &     GRDMAT,STPMAT,HESOLD,GRDARR,STPARR,GEINFO,WILBMT,
      &     BMTRAN,HESINT,VECMOD,WORK,LWORK)
       use pelib_interface, only: use_pelib, pelib_ifc_infld,
-     &                           pelib_ifc_doinfld
+     &                           pelib_ifc_do_infld
 #include "implicit.h"
 #include "dummy.h"
 #include "codata.h"
@@ -2232,7 +2232,7 @@ C
          WRITE(LUPRI,*)
 
          IF (USE_PELIB()) THEN
-            IF (PELIB_IFC_DOINFLD()) THEN
+            IF (PELIB_IFC_DO_INFLD()) THEN
                 CALL PELIB_IFC_INFLD()
             END IF
          END IF

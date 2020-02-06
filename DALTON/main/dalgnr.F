@@ -687,9 +687,9 @@ C
       use pcm_config, only: pcm_configuration, pcm_cfg, pcm_finalize
 #endif
       use pelib_interface, only: use_pelib, pelib_ifc_finalize,
-     &                           pelib_ifc_deactivate, pelib_ifc_domep,
-     &                           pelib_ifc_domep_noqm,
-     &                           pelib_ifc_mep_noqm, pelib_ifc_dolf
+     &                           pelib_ifc_deactivate, pelib_ifc_do_mep,
+     &                           pelib_ifc_do_mep_noqm,
+     &                           pelib_ifc_mep_noqm, pelib_ifc_do_lf
 
 #include "implicit.h"
 #include "dummy.h"
@@ -1123,13 +1123,13 @@ Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
 C
 C Request effective dipole integrals using PE library
          IF (USE_PELIB()) THEN
-             IF (PELIB_IFC_DOLF()) THEN
+             IF (PELIB_IFC_DO_LF()) THEN
                  WRITE(LUPRI,'(/A)') 'PE-QM calculation includes '//
      &                               'effective external field effects.'
              END IF
          END IF
 Classical MEP calculations using PE library
-         IF (PELIB_IFC_DOMEP() .AND. PELIB_IFC_DOMEP_NOQM()) THEN
+         IF (PELIB_IFC_DO_MEP() .AND. PELIB_IFC_DO_MEP_NOQM()) THEN
              CALL PELIB_IFC_MEP_NOQM()
          END IF
 
