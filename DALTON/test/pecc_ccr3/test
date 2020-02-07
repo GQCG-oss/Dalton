@@ -11,15 +11,12 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
-#enedft
 f.add(string = 'Final HF energy',
       abs_tolerance = 1.0e-9)
 
-#qm3convergence
 f.add(from_string = 'Electrostatic contributions:',
       num_lines = 13,
       abs_tolerance = 1.0e-8)
-
 
 f.add(from_string = 'CCSD Total  energy',
       num_lines = 2,

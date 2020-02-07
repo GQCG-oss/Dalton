@@ -30,7 +30,7 @@ f.add(from_string = 'CCSD       Length   Gauge Oscillator Strength',
       num_lines = 6,
       abs_tolerance = 1.0e-5)
 
-test.run(['peccsd.dal'], ['formaldehyde.mol'], ['water.pot'], f={'out': f},
+test.run(['peccsd-cvs.dal'], ['ammonia-h2o.mol'], ['water.pot'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)
