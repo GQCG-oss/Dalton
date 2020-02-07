@@ -154,11 +154,452 @@ subroutine pelib_ifc_deactivate()
 end subroutine pelib_ifc_deactivate
 
 subroutine pelib_ifc_input_reader(word)
-    use polarizable_embedding, only: pe_input_reader
+    use pe_variables
+    use pe_constants
+    use pe_utils, only: chcase
+    use pe_cavity_generators, only: ntsatm
 #include "priunit.h"
-    character(len=7), intent(inout) :: word
+    character(len=*), intent(inout) :: word
+
+    character(len=80) :: option
+    character(len=2) :: auoraa
+    integer :: i, j
+    real(dp), dimension(2) :: temp
+
     call qenter('pelib_ifc_input_reader')
-    call pe_input_reader(word, lucmd)
+
+    do
+        read(lucmd, '(a80)') option
+        call chcase(option)
+
+        ! Read potential (optionally from potfile)
+        if (trim(option(2:7)) == 'POTENT') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+              & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, '(a240)') potfile
+            end if
+        ! direct solver for induced moments
+        else if (trim(option(2:7)) == 'DIRECT') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, '(a80)') option
+                call chcase(option)
+                if (trim(option(1:7)) == 'NOCHOL') then
+                    chol = .false.
+                end if
+            end if
+            pe_iter = .false.
+        ! iterative solver for induced moments (default)
+        else if (trim(option(2:7)) == 'ITERAT') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+              & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) thriter
+            end if
+            pe_iter = .true.
+        else if (trim(option(2:7)) == 'DIIS T') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) thrdiis
+            end if
+            thriter = thrdiis
+        ! use reduced threshold in iterative induced moments solver
+        else if (trim(option(2:7)) == 'REDTHR') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) redlvl
+            end if
+            pe_redthr = .true.
+        ! handling sites near quantum-classical border
+         else if (trim(option(2:7)) == 'BORDER') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+              & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, '(a)', advance='no') border_type
+                backspace(lucmd)
+                call chcase(border_type)
+                if ((trim(border_type) /= 'REMOVE') .and.&
+                  & (trim(border_type) /= 'REDIST') .and.&
+                  & (trim(border_type) /= 'CHGRED')) then
+                    error stop 'unknown handling of border sites'
+                else if (trim(border_type) == 'REMOVE') then
+                    read(lucmd, *) border_type, Rmin, auoraa
+                else if (trim(border_type) == 'REDIST') then
+                    read(lucmd, *) border_type, redist_order, Rmin, auoraa, nredist
+                    if ((nredist > 3) .or. (nredist < 1)) then
+                        error stop 'parameters can only be distributed to&
+                             & minimum one site and maximum three sites'
+                    end if
+                else if (trim(border_type) == 'CHGRED') then
+                    read(lucmd, *) border_type, Rmin, auoraa
+                else
+                    error stop 'unrecognized input in .BORDER option'
+                end if
+                call chcase(auoraa)
+                if (trim(auoraa) == 'AA') Rmin = Rmin * aa2bohr
+            end if
+            pe_border = .true.
+        ! damp electric field from induced multipoles
+        else if (trim(option(2:7)) == 'DAMP I') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+              & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) ind_damp
+            end if
+            pe_ind_damp = .true.
+        ! damp electric field from permanent multipoles
+        else if (trim(option(2:7)) == 'DAMP M') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+              & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) mul_damp
+            end if
+            pe_mul_damp = .true.
+        ! damp electric field from core region
+        else if (trim(option(2:7)) == 'DAMP C') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+              & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) core_damp
+                ! attempt to optionally read a custom specification of the polarizabilities
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                   & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) j
+                    allocate(core_alphas(6,j))
+                    core_alphas = 0.0_dp
+                    do i = 1, j
+                        read(lucmd, *) core_alphas(1,i)
+                        core_alphas(4,i) = core_alphas(1,i)
+                        core_alphas(6,i) = core_alphas(1,i)
+                    enddo
+                end if
+            end if
+            pe_core_damp = .true.
+        ! damp electric fields using AMOEABA-style Thole damping
+        else if (trim(option(2:7)) == 'DAMP A') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+              & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) amoeba_damp
+            end if
+            pe_amoeba_damp = .true.
+        ! the old deprecated DAMP option
+        else if (trim(option(2:7)) == 'DAMP') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+              & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) ind_damp
+            end if
+            pe_ind_damp = .true.
+            write(luout, *) 'INFO: the .DAMP option is deprecated, please use .DAMP INDUCED'
+        ! neglect dynamic response from environment
+        else if (trim(option(2:7)) == 'GSPOL') then
+            pe_gspol = .true.
+        ! neglect many-body interactions
+        else if (trim(option(2:7)) == 'NOMB') then
+            pe_nomb = .true.
+        ! Use existing files for restart
+        else if (trim(option(2:7)) == 'RESTAR') then
+            pe_restart = .true.
+        ! calculate intermolecular two-electron integrals
+        else if (trim(option(2:7)) == 'TWOINT') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+              & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, '(a240)') h5pdefile
+            end if
+            pe_twoints = .true.
+        ! save density matrix
+        else if (trim(option(2:7)) == 'SAVE D') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+              & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, '(a240)') h5pdefile
+            end if
+            pe_savden = .true.
+        ! disable exchange repulsion
+        else if (trim(option(2:7)) == 'NO REP') then
+            pe_repuls = .false.
+        ! electrostatics and exchange repulsion from fragment densities
+        else if (trim(option(2:7)) == 'PDE') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+              & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, '(a240)') h5pdefile
+            end if
+            pe_fd = .true.
+        ! skip electrostatics from fragment densities
+        else if (trim(option(2:7)) == 'NO FD') then
+            pe_fdes = .false.
+        ! request calculation of effective dipole integrals
+        else if (trim(option(2:7)) == 'EEF') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) ncrds
+                allocate(crds(3,ncrds))
+                do i = 1, ncrds
+                    read(lucmd, *) (crds(j,i), j = 1, 3)
+                end do
+            end if
+            pe_lf = .true.
+        ! provide LJ parameters for the QM region
+        else if (trim(option(2:7)) == 'LJ') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) qmLJsites
+                allocate(qmLJs(2,qmLJsites))
+                do i = 1, qmLJsites
+                    read(lucmd, *) (temp(j), j = 1, 2)
+                    qmLJs(1,i) = temp(1) * 2.0_dp
+                    qmLJs(2,i) = temp(2)
+                end do
+                lvdw = .true.
+             end if
+        ! skip QM calculations, i.e. go directly into PE library
+        else if (trim(option(2:7)) == 'SKIPQM') then
+            pe_skipqm = .true.
+        ! calculate internal field
+        else if (trim(option(2:7)) == 'INFLD') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) ncrds
+                allocate(crds(3,ncrds))
+                do i = 1, ncrds
+                    read(lucmd, *) (crds(j,i), j = 1, 3)
+                end do
+            end if
+            pe_infld = .true.
+        ! Write cube files
+        else if (trim(option(2:7)) == 'CUBE') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+              & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                do
+                    read(lucmd, '(a80)') option
+                    call chcase(option)
+                    if (trim(option(1:7)) == 'COARSE') then
+                        xgrid = 3
+                        ygrid = 3
+                        zgrid = 3
+                    else if (trim(option(1:7)) == 'MEDIUM') then
+                        xgrid = 6
+                        ygrid = 6
+                        zgrid = 6
+                    else if (trim(option(1:7)) == 'FINE') then
+                        xgrid = 12
+                        ygrid = 12
+                        zgrid = 12
+                    else if (trim(option(1:7)) == 'GRID') then
+                        read(lucmd, *) xsize, xgrid, ysize, ygrid, zsize, zgrid
+                    else if (trim(option(1:7)) == 'FIELD') then
+                        cube_field = .true.
+                    else if (option(1:1) == '.' .or. option(1:1) == '*') then
+                        backspace(lucmd)
+                        exit
+                    else if (option(1:1) == '!' .or. option(1:1) == '#') then
+                        cycle
+                    else
+                        error stop 'unknown input under .CUBE option'
+                    end if
+                end do
+            end if
+            pe_cube = .true.
+        ! evaluate molecular electrostatic potential
+        else if (trim(option(2:7)) == 'MEP') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                do
+                    read(lucmd, '(a80)') option
+                    call chcase(option)
+                    if (trim(option(1:7)) == 'COARSE') then
+                        xgrid = 3
+                        ygrid = 3
+                        zgrid = 3
+                    else if (trim(option(1:7)) == 'MEDIUM') then
+                        xgrid = 6
+                        ygrid = 6
+                        zgrid = 6
+                    else if (trim(option(1:7)) == 'FINE') then
+                        xgrid = 12
+                        ygrid = 12
+                        zgrid = 12
+                    else if (trim(option(1:7)) == 'GRID') then
+                        read(lucmd, *) xsize, xgrid, ysize, ygrid, zsize, zgrid
+                    else if (trim(option(1:7)) == 'FIELD') then
+                        mep_field = .true.
+                    else if (trim(option(1:7)) == 'EXTFLD') then
+                        read(lucmd, *) (extfld(i), i = 1, 3)
+                        mep_extfld = .true.
+                    else if (trim(option(1:7)) == 'LOCFLD') then
+                        read(lucmd, *) lf_component
+                        mep_lf = .true.
+                    else if (trim(option(1:7)) == 'SKIPQM') then
+                        mep_qmcube = .false.
+                    else if (trim(option(1:7)) == 'SKIPMUL') then
+                        mep_mulcube = .false.
+                    else if (trim(option(1:7)) == 'INPUT') then
+                        mep_input = .true.
+                        read(lucmd, '(a240)') h5gridfile
+                    else if (option(1:1) == '.' .or. option(1:1) == '*') then
+                        backspace(lucmd)
+                        exit
+                    else if (option(1:1) == '!' .or. option(1:1) == '#') then
+                        cycle
+                    else
+                        error stop 'unknown option present in .MEP section.'
+                    end if
+                end do
+            end if
+            pe_mep = .true.
+        ! continuum solvation calculation
+        else if (trim(option(2:7)) == 'SOLVAT') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) solvent
+            else
+                solvent = 'H2O'
+            end if
+            pe_sol = .true.
+            pe_diis = .true.
+            pe_fixsol = .true.
+            pe_polar = .true.
+            chol = .false.
+        ! equilibrium solvation (non-equilibrium is default)
+        else if (trim(option(2:7)) == 'EQSOL') then
+            pe_noneq = .false.
+        ! Turn off interaction between induced dipoles and surface charges
+        else if (trim(option(2:7)) == 'NOMUQ') then
+            pe_nomuq = .true.
+        else if (trim(option(2:7)) == 'NOVMU') then
+            pe_novmu = .true.
+        ! specify surface file
+        else if (trim(option(2:7)) == 'SURFAC') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, '(a240)') surfile
+            end if
+            read_surf = .true.
+        ! FixSol solvation using FIXPVA2 tesselation (optional: number of tessera per atom)
+        else if (trim(option(2:7)) == 'NTESS ') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) ntsatm
+                if ((ntsatm .ne. 60) .and. (ntsatm .ne. 240) .and. (ntsatm .ne. 960)) then
+                   error stop 'number of tessera per atom must be equal to 60, 240 or 960'
+                end if
+            end if
+        ! apply external electric field
+        else if (trim(option(2:7)) == 'FIELD') then
+            pe_field = .true.
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) (efields(i), i = 1, 3)
+            end if
+        ! verbose output
+        else if (trim(option(2:7)) == 'VERBOS') then
+            pe_verbose = .true.
+        ! debug output
+        else if (trim(option(2:7)) == 'DEBUG') then
+            pe_debug = .true.
+            pe_verbose = .true.
+        ! isotropic polarizabilities
+        else if (trim(option(2:7)) == 'ISOPOL') then
+            pe_isopol = .true.
+        ! zero out the polarizabilities
+        else if (trim(option(2:7)) == 'ZEROPO') then
+            pe_zeropol = .true.
+        ! zero out higher-order multipoles
+        else if (trim(option(2:7)) == 'ZEROMU') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(lucmd, *) zeromul_order
+                if (zeromul_order < 0) then
+                    error stop 'ZEROMUL order cannot be negative'
+                end if
+            end if
+            pe_zeromul = .true.
+        ! skip calculation of multipole-multipole interaction energy
+        else if (trim(option(2:7)) == 'SKIPMU') then
+            pe_skipmul = .true.
+        else if (trim(option(2:7)) == 'GAUGE') then
+            read(lucmd, '(a80)') option
+            backspace(lucmd)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                allocate(gauge_input(3))
+                gauge_input = 0.0_dp
+                do i = 1,3
+                    read(lucmd, *) gauge_input(i)
+                enddo
+            end if
+            gauge = .true.
+        else if (option(1:1) == '*') then
+            word = option
+            exit
+        else if (option(1:1) == '!' .or. option(1:1) == '#') then
+            cycle
+        else
+            write(luout, *) 'unknown option:', option
+            error stop 'unknown option in *PEQM section'
+        end if
+    end do
+
+! check options
+    if (pe_diis .and. .not. pe_iter) then ! Assume that you want to use a direct solver for FixSol
+        pe_diis = .false.
+    end if
+
+    if (pe_sol .and. ndens > 1) then
+        error stop 'Continuum solvation only implemented for ndens = 1'
+    end if
+
+    if (pe_sol .and. pe_iter .and. .not. pe_fixsol) then
+        error stop '.SOLV without .FIXSOL requires .DIRECT'
+    end if
+
+    if (pe_mep .and. pe_cube) then
+        error stop '.MEP and .CUBE are not compatible.'
+    end if
+
     call qexit('pelib_ifc_input_reader')
 end subroutine pelib_ifc_input_reader
 
