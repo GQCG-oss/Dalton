@@ -69,6 +69,7 @@ include(ConfigExternal)
 set(BLAS_LANG "Fortran")
 set(LAPACK_LANG "Fortran")
 set(MKL_COMPILER_BINDINGS ${CMAKE_Fortran_COMPILER_ID})
+set(MKL_COMPILER_BINDINGS_VERSION ${CMAKE_Fortran_COMPILER_VERSION})
 include(ConfigMath)
 
 include(ConfigExplicitLibs)
