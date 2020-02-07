@@ -1495,8 +1495,8 @@ C----------------------------------------------------------
 C
       ILSTNR = 1
       !Sonia
-      write(lupri,*)'CCFOP: call CC_D1AO to recalc the 1e Density'
-      call flshfo(lupri)
+      !write(lupri,*)'CCFOP: call CC_D1AO to recalc the 1e Density'
+      !call flshfo(lupri)
       NATOCC=.TRUE.
       !
       CALL CC_D1AO(IPDD,R12PRP,WORK(KDENS),WORK(KZKAM),WORK(KWRK3),
