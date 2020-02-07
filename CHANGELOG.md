@@ -15,16 +15,16 @@
 - Added the CVS approximation for CC calculations of core-excited states (S. Coriani et al.)
 - Added the possibility to calculate triplet-triplet excited state moments using the EOM-CC approximation (R. Faber)
 - New features available through the Polarizable Embedding library (PElib)
-  - Polarizable density embedding (PDE) model
-    - Reference: J. M. H. Olsen, C. Steinmann, K. Ruud, and J. Kongsted, J. Phys. Chem. A 119, 5344 (2015)
-                 P. Reinholdt, J. Kongsted, and J. M. H. Olsen, J. Phys. Chem. Lett. 8, 5949 (2017)
-  - PDE-CC2, PDE-CCSD, and PDE-CCSDR(3) including linear and quadratic response (also enables PE-CC through the Polarizable Embedding library (PElib))
-    - Reference: D. Hrsak, J. M. H. Olsen, and J. Kongsted, J. Chem. Theory Comput. 14, 1351 (2018)
+  - Polarizable density embedding (PDE) model (use -DENABLE\_PDE=ON during setup to enable it [requires HDF5])
+    - J. M. H. Olsen, C. Steinmann, K. Ruud, and J. Kongsted, J. Phys. Chem. A 119, 5344 (2015)
+    - P. Reinholdt, J. Kongsted, and J. M. H. Olsen, J. Phys. Chem. Lett. 8, 5949 (2017)
+  - PDE-CC2, PDE-CCSD, and PDE-CCSDR(3) including linear and quadratic response (also enables PE-CC through PElib)
+    - D. Hrsak, J. M. H. Olsen, and J. Kongsted, J. Chem. Theory Comput. 14, 1351 (2018)
   - FixSol continuum solvation with FIXPVA2 cavity tesselation
-    - Reference: M. S. Nørby, C. Steinmann, J. M. H. Olsen, H. Li, and J. Kongsted, J. Chem. Theory Comput. 12, 5050 (2016)
-                 N. M. Thellamurege and H. Li, J. Chem. Phys. 137, 246101 (2012)
+    - M. S. Nørby, C. Steinmann, J. M. H. Olsen, H. Li, and J. Kongsted, J. Chem. Theory Comput. 12, 5050 (2016)
+    - N. M. Thellamurege and H. Li, J. Chem. Phys. 137, 246101 (2012)
   - Enabled cubic response for PE-HF/DFT and PDE-HF/DFT
-    - Reference: J. M. H. Olsen and J. Kongsted, Adv. Quantum Chem. 61, 107 (2011)
+    - J. M. H. Olsen and J. Kongsted, Adv. Quantum Chem. 61, 107 (2011)
   - Effective external field (EEF) can now be used for all dipole properties
   - Added support for AMOEBA potential
 
