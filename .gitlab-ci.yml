@@ -13,7 +13,7 @@ coverage:
   script:
     - dnf upgrade -y -q
     - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel mpich mpich-devel
-                        git make cmake python redhat-rpm-config findutils which procps-ng gcovr
+                        hdf5 hdf5-devel git make cmake python redhat-rpm-config findutils which procps-ng gcovr
     - . ~/.bash_profile
     - module load mpi
     - alternatives --install /usr/bin/python python /usr/bin/python3 1
@@ -30,7 +30,7 @@ coverage:
     - git --version
     - cmake --version
     - python setup --mpi --blas=none --lapack=none --explicit-libs="-lopenblaso -llapack" --type=release --coverage
-                   -D SITE=GitLab -D BUILDNAME=${CI_COMMIT_REF_NAME}-coverage
+                   -DENABLE_PDE=ON
     - cd build
     - make -j 4
     - export DALTON_LAUNCHER="mpirun -n 4"
@@ -40,7 +40,6 @@ coverage:
     - export OMP_NUM_THREADS=4
     - ctest --output-on-failure -L serial -LE "medium|long|verylong" -E dft_ac_multpole
     - ctest -D ExperimentalCoverage
-    - ctest -D ExperimentalSubmit
     - bash <(curl -s https://codecov.io/bash) -t 69d70b17-576f-459e-8f6c-409607c9f06b
 
 gcc-7.3.1:
@@ -53,7 +52,7 @@ gcc-7.3.1:
   script:
     - dnf upgrade -y -q
     - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel
-                        git make cmake python redhat-rpm-config findutils which procps-ng
+                        hdf5 hdf5-devel git make cmake python redhat-rpm-config findutils which procps-ng
     - alternatives --install /usr/bin/python python /usr/bin/python3 1
     - uname -a
     - lscpu
@@ -65,6 +64,7 @@ gcc-7.3.1:
     - git --version
     - cmake --version
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
+                   -DENABLE_PDE=ON
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -79,7 +79,7 @@ gcc-8.3.1:
   script:
     - dnf upgrade -y -q
     - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel
-                        git make cmake python redhat-rpm-config findutils which procps-ng
+                        hdf5 hdf5-devel git make cmake python redhat-rpm-config findutils which procps-ng
     - alternatives --install /usr/bin/python python /usr/bin/python3 1
     - uname -a
     - lscpu
@@ -91,6 +91,7 @@ gcc-8.3.1:
     - git --version
     - cmake --version
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
+                   -DENABLE_PDE=ON
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -105,7 +106,7 @@ gcc-9.2.1:
   script:
     - dnf upgrade -y -q
     - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel
-                        git make cmake python redhat-rpm-config findutils which procps-ng
+                        hdf5 hdf5-devel git make cmake python redhat-rpm-config findutils which procps-ng
     - uname -a
     - lscpu
     - free -h
@@ -116,6 +117,7 @@ gcc-9.2.1:
     - git --version
     - cmake --version
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
+                   -DENABLE_PDE=OFF
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -130,7 +132,7 @@ gcc-9.2.1-debug:
   script:
     - dnf upgrade -y -q
     - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel
-                        git make cmake python redhat-rpm-config findutils which procps-ng
+                        hdf5 hdf5-devel git make cmake python redhat-rpm-config findutils which procps-ng
     - uname -a
     - lscpu
     - free -h
@@ -141,6 +143,7 @@ gcc-9.2.1-debug:
     - git --version
     - cmake --version
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=debug
+                   -DENABLE_PDE=OFF
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -234,7 +237,7 @@ gcc-8.3.1-ompi-2.1.1:
   script:
     - dnf upgrade -y -q
     - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel openmpi openmpi-devel
-                        git make cmake python redhat-rpm-config findutils which procps-ng
+                        hdf5 hdf5-devel git make cmake python redhat-rpm-config findutils which procps-ng
     - . ~/.bash_profile
     - module load mpi
     - alternatives --install /usr/bin/python python /usr/bin/python3 1
@@ -249,6 +252,7 @@ gcc-8.3.1-ompi-2.1.1:
     - git --version
     - cmake --version
     - python setup --mpi --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
+                   -DENABLE_PDE=ON
     - cd build
     - make -j 4
     - ctest --output-on-failure -L essential
@@ -265,7 +269,7 @@ gcc-9.2.1-ompi-4.0.2:
   script:
     - dnf upgrade -y -q
     - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel openmpi openmpi-devel
-                        git make cmake python redhat-rpm-config findutils which procps-ng
+                        hdf5 hdf5-devel git make cmake python redhat-rpm-config findutils which procps-ng
     - . ~/.bash_profile
     - module load mpi
     - uname -a
@@ -279,6 +283,7 @@ gcc-9.2.1-ompi-4.0.2:
     - git --version
     - cmake --version
     - python setup --mpi --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
+                   -DENABLE_PDE=OFF
     - cd build
     - make -j 4
     - ctest --output-on-failure -L essential
@@ -295,7 +300,7 @@ gcc-9.2.1-mpich-3.2.2:
   script:
     - dnf upgrade -y -q
     - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel mpich mpich-devel
-                        git make cmake python redhat-rpm-config findutils which procps-ng
+                        hdf5 hdf5-devel git make cmake python redhat-rpm-config findutils which procps-ng
     - . ~/.bash_profile
     - module load mpi
     - uname -a
@@ -309,6 +314,7 @@ gcc-9.2.1-mpich-3.2.2:
     - git --version
     - cmake --version
     - python setup --mpi --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
+                   -DENABLE_PDE=ON
     - cd build
     - make -j 4
     - ctest --output-on-failure -L essential

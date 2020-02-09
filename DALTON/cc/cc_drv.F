@@ -84,6 +84,7 @@ C            CC(3),CCSDR(3), CC3,CC1A,CC1B
 C            (see list below for name of logical flags.)
 C
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -340,7 +341,7 @@ C-----------------------------------------------------------------
      &          CC5R.OR.CCQR2R.OR.CCEXGR.OR.CCTM.OR.
      &          CCMCD.OR.CCEXLR.OR.MOLGRD.OR.CCSLV.OR.CCDERI.OR.
      &          CCLRLCZ.OR.
-     &          CCOPA.OR.CCTPA.OR.CCXOPA)
+     &          CCOPA.OR.CCTPA.OR.CCXOPA.OR.USE_PELIB())
 
 C-----------------------------------------------------------------
 C     flag for kappa-bar-0 Lagrange multiplier:
@@ -350,7 +351,7 @@ C-----------------------------------------------------------------
 C-----------------------------------------------------------------
 C     consistency check: no gradient for solvent...
 C-----------------------------------------------------------------
-      IF ((MOLGRD.OR.CCDERI) .AND. CCSLV) THEN
+      IF ((MOLGRD.OR.CCDERI) .AND. (CCSLV.OR.USE_PELIB())) THEN
         WRITE(LUPRI,*) 'No analytic derivatives in solvent available!'
         IF (MOLGRD) THEN
           CALL QUIT("No optimiz. with anal. gradient in solvent.")
@@ -609,7 +610,7 @@ C
 C          ! no energy in gradient step for geometry optimization
            IF (.NOT.MOLGRD) THEN
 
-              CALL CCSD_ENERGY(WORK,LWORK,APROXR12,CCR12RSP,CCR12LIM)
+             CALL CCSD_ENERGY(WORK,LWORK,APROXR12,CCR12RSP,CCR12LIM)
 c
 c              write(lupri,*) 'after CCSD_ENERGY: APROXR12 = ',APROXR12
 c
@@ -624,7 +625,7 @@ C
            IF (CCP2) CCS = .TRUE.
 C KS: For CCSDR(3)/MM model we use vacuum triples amplitudes, i.e. we skip the
 C call to CC_FOP by a dirty goto
-           IF (CCR3 .AND. CCSLV) THEN
+           IF (CCR3 .AND. (CCSLV.OR.USE_PELIB())) THEN
              LSTBTR=.TRUE.
              GOTO 32
            ENDIF
@@ -680,7 +681,7 @@ C           After CC SCRF convergence then left
 C           transformations are no longer static.
 C------------------------------------------------------------
 C
-         IF (CCSLV) THEN
+         IF (CCSLV.OR.USE_PELIB()) THEN
             CCRSTR  = .TRUE.
             IF (LSLECVG.AND.LSLTCVG.AND.LSLLCVG) THEN
               LSTBTR = .TRUE.
@@ -690,12 +691,13 @@ C
          ENDIF
 C
   32     CONTINUE
-         IF (CCSLV .AND. DISCEX) THEN
+         IF ((CCSLV.OR.USE_PELIB()) .AND. DISCEX) THEN
 C           IF (CCEXCI .OR. CCEXGR .OR. LRSPSYM .OR. CCLRSD .OR.
 C     *         CCQR2R .OR. CCSM .OR. CCLR .OR. CCQR ) THEN
-             IF (.NOT. CCMM) THEN
+             IF (.NOT. (CCMM.OR.USE_PELIB())) THEN
                CALL CCSL_XIETA(WORK,LWORK)
-             ELSE IF (CCMM) THEN
+             ELSE IF (CCMM.OR.USE_PELIB()) THEN
+               CALL AROUND('ENTERING CCMM_XIETA')
                CALL CCMM_XIETA(WORK,LWORK)
              END IF
 C           END IF
@@ -839,7 +841,7 @@ C        *********************************************
 C-----------------------------------------------------
 C
          IF (CCEXGR) THEN
-           IF (.NOT. CCSLV) THEN
+           IF (.NOT. (CCSLV.OR.USE_PELIB())) THEN
             IF ((CCS.or.CC2.or.CCSD.or.CC3).and.(.not.CCR12)) THEN
              CALL CC_EXGR(WORK,LWORK)
             ELSE
@@ -935,7 +937,7 @@ C------------------------------------------------------
 C
          IF (CCTM) THEN
            IF ((CCS .or. CC2 .or. CCSD) .and. (.not. CCR12) 
-     &          .AND. (.NOT. CCSLV)) THEN
+     &          .AND. (.NOT. (CCSLV.OR.USE_PELIB()))) THEN
             CALL CC_TMCAL(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'third-order transition moments'//
@@ -951,7 +953,7 @@ C-------------------------------------------------------
 C
          IF (CCMCD) THEN
            IF ((CCS .or. CC2 .or. CCSD) .and. (.not. CCR12)
-     &          .AND. (.NOT. CCSLV)) THEN
+     &          .AND. (.NOT. (CCSLV.OR.USE_PELIB()))) THEN
             CALL CC_MCDCAL(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'magnetic circular dichroism'//
@@ -989,7 +991,8 @@ C-----------------------------------------
 C
          IF ( CCLR .AND. CAUCHY) THEN
            IF ((CCS .or. CC2 .or. CCSD .OR. (CC3.AND.CC3RSP)) 
-     &         .AND. (.NOT.CCR12) .AND. (.NOT. CCSLV) ) THEN
+     &         .AND. (.NOT.CCR12) .AND. (.NOT. CCSLV) .AND. 
+     &         (.NOT.USE_PELIB()) ) THEN
              CALL CC_CAUCHY(WORK,LWORK)
            ELSE
              WRITE(LUPRI,'(/,1X,2A)') 'Cauchy moments',
@@ -1005,7 +1008,8 @@ C----------------------------------------------------
 C
          IF (CCEXLR) THEN 
            IF ((CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP))
-     &          .and. (.not. CCR12) .AND. (.NOT. CCSLV)) THEN
+     &          .and. (.not. CCR12) .AND. (.NOT. CCSLV)
+     &          .AND. (.NOT. USE_PELIB())) THEN
             CALL CC_EXLR(WORK,LWORK)  
            ELSE
             WRITE(LUPRI,*) 'Excited state linear response'//
@@ -1039,7 +1043,7 @@ C
          IF ( CCCR ) THEN
 C
             IF ( (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) 
-     &         .AND. (.NOT. CCSLV) ) THEN
+     &         .AND. (.NOT. CCSLV) .AND. (.NOT. USE_PELIB()) ) THEN
                CALL CC_2HYP(WORK,LWORK)
             ELSE
               WRITE(LUPRI,'(/,1X,A)')
@@ -1056,7 +1060,8 @@ C--------------------------------------------------
 C
          IF ( CC4R ) THEN
 C
-            IF ( (CCS .or. CC2 .or. CCSD) .AND. (.NOT. CCSLV) ) THEN
+            IF ( (CCS .or. CC2 .or. CCSD) .AND. (.NOT. CCSLV) .AND.
+     &           (.NOT. USE_PELIB()) ) THEN
                CALL CC_3HYP(WORK,LWORK)
             ELSE
               WRITE(LUPRI,'(/,1X,A)')
@@ -1073,7 +1078,8 @@ C---------------------------------------------------
 C
          IF ( CC5R ) THEN
 C
-            IF ( (CCS .or. CC2 .or. CCSD) .AND. (.NOT. CCSLV) ) THEN
+            IF ( (CCS .or. CC2 .or. CCSD) .AND. (.NOT. CCSLV) .AND.
+     &           (.NOT. USE_PELIB()) ) THEN
                CALL CC_4HYP(WORK,LWORK)
             ELSE
               WRITE(LUPRI,'(/,1X,A)')
@@ -1087,7 +1093,8 @@ C        ***** CC LANCZOS: damped response via Lanczos ***
 C        *************************************************
 C---------------------------------------------------------
          IF (CCLRLCZ) THEN
-           IF ((.not. CCR12).AND. (.NOT. CCSLV)) THEN
+           IF ((.not. CCR12).AND. (.NOT. CCSLV).AND.
+     &         (.NOT. USE_PELIB())) THEN
             write(lupri,*)'CCLRLANCZOS: building the '//
      &                    'Lanczos Chain'
             !if (.false.) then

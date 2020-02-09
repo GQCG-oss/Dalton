@@ -590,7 +590,7 @@ C  /* Deck smoinp */
 C
 C Sonia: added MCDBTE section (1999)
 C
-      use pelib_interface, only: use_pelib, pelib_ifc_dolf
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -940,39 +940,15 @@ C                 B operators
                GO TO 100
  24            CONTINUE
                   TWOPHO = .TRUE.
-                  IF (USE_PELIB()) THEN
-                     IF (PELIB_IFC_DOLF()) THEN
-                        LABEL='XLFDIPLN'
-                        ASMOP( INDPRP(LABEL)) = .TRUE.
-                        BSMOP( INDPRP(LABEL)) = .TRUE.
-                        LABEL='YLFDIPLN'
-                        ASMOP( INDPRP(LABEL)) = .TRUE.
-                        BSMOP( INDPRP(LABEL)) = .TRUE.
-                        LABEL='ZLFDIPLN'
-                        ASMOP( INDPRP(LABEL)) = .TRUE.
-                        BSMOP( INDPRP(LABEL)) = .TRUE.
-                     ELSE
-                        LABEL='XDIPLEN'
-                        ASMOP( INDPRP(LABEL)) = .TRUE.
-                        BSMOP( INDPRP(LABEL)) = .TRUE.
-                        LABEL='YDIPLEN'
-                        ASMOP( INDPRP(LABEL)) = .TRUE.
-                        BSMOP( INDPRP(LABEL)) = .TRUE.
-                        LABEL='ZDIPLEN'
-                        ASMOP( INDPRP(LABEL)) = .TRUE.
-                        BSMOP( INDPRP(LABEL)) = .TRUE.
-                     END IF
-                  ELSE
-                     LABEL='XDIPLEN'
-                     ASMOP( INDPRP(LABEL)) = .TRUE.
-                     BSMOP( INDPRP(LABEL)) = .TRUE.
-                     LABEL='YDIPLEN'
-                     ASMOP( INDPRP(LABEL)) = .TRUE.
-                     BSMOP( INDPRP(LABEL)) = .TRUE.
-                     LABEL='ZDIPLEN'
-                     ASMOP( INDPRP(LABEL)) = .TRUE.
-                     BSMOP( INDPRP(LABEL)) = .TRUE.
-                  END IF
+                  LABEL='XDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
  25            CONTINUE
                   MCDCAL=.TRUE.

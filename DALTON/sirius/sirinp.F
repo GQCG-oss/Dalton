@@ -1986,7 +1986,7 @@ C            (otherwise only Fock matrix contributions)
 C 13 various CALL READMO for initial orbitals              ORB : vario
 C 14 various Integral transformation not needed.           TRA : OLD TR
 C 15 SIRSAV  transformation to NO's each macro iteration.  OPT : TRACI
-C 16 SIROPT  Sperhical cavity solvent calculation          SOL : genera
+C 16 SIROPT  Spherical cavity solvent calculation          SOL : genera
 C 17 various SUPSYM : find and use 'super symmetry'        ORB : NOSUPS
 C 18 SIROUT  Punch MO:s (canonical if flag 3) to LUPNCH    ORB : PUNCHO
 C 19 SIROPT  Use UPDATE from the beginning /990821-hjaaj test option/

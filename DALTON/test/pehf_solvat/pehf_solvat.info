@@ -1,0 +1,6 @@
+   pehf_solvat
+   -----------
+   Molecule:         Acrolein, two classical water molecules and/or
+                     continuum solvation
+   Wave Function:    PE-HF / STO-3G
+   Test Purpose:     Test of PE library using continuum solvation.

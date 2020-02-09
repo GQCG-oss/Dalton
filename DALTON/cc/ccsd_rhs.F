@@ -37,6 +37,7 @@ C     some changes for CC2 with non-Hatree-Fock fields (NONHF=.true.)
 C     to allow for finite difference also w.r.t. orbital coefficients
 C     (i.e. the CMO vector), spring 2000, Ch. Haettig
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -94,6 +95,8 @@ C
       INTEGER NADP(8),IADP(8,8),NLAMDX(8),ILAMDX(8,8)
 C
       LOGICAL MLCC3_RESPONSE
+C
+      REAL*8, ALLOCATABLE :: DENMAT(:), FOCKMAT(:), FOCKTEMP(:)
 C
       CALL QENTER('CCRHSN')
 C
@@ -481,8 +484,20 @@ C
          END IF
       ENDIF
 C
+      IF (USE_PELIB()) THEN
+          ALLOCATE(FOCKMAT(NNBASX),FOCKTEMP(N2BST(ISYMOP)))
+          IF (HFFLD) THEN
+              CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+          ELSE
+              CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+          END IF
+          CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+          CALL DAXPY(N2BST(ISYMOP),1.0d0,FOCKTEMP,1,WORK(KFOCK),1)
+          DEALLOCATE(FOCKMAT,FOCKTEMP)
+      END IF
+C
       IF (IPRINT .GT.15) THEN
-         CALL AROUND( 'Fock AO matrix after ff/slv/mm contribution' )
+         CALL AROUND( 'Fock AO matrix after ff/slv/pe/mm contribution' )
          CALL CC_PRFCKAO(WORK(KFOCK),1)
       ENDIF
 C
@@ -1257,6 +1272,18 @@ C
               END IF
            END IF
         ENDIF
+C
+      IF (USE_PELIB()) THEN
+          ALLOCATE(FOCKMAT(NNBASX),FOCKTEMP(N2BAST))
+          IF (HFFLD) THEN
+              CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+          ELSE
+              CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+          END IF
+          CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+          CALL DAXPY(N2BAST,1.0d0,FOCKTEMP,1,WORK(KFIELD),1)
+          DEALLOCATE(FOCKMAT,FOCKTEMP)
+      END IF
 C
 C----------------------------------
 C
@@ -8355,6 +8382,7 @@ C
 C     Purpose: Fock contribution in CC2 model.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -8371,7 +8399,7 @@ C
 #include "leinf.h"
 #include "ccsections.h"
 #include "qm3.h"
-!#include "qmmm.h"
+      REAL*8, ALLOCATABLE :: GMATRIX(:), HARTREEFOCK(:)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -8405,7 +8433,7 @@ C
       IF (FROIMP .OR. FROEXP)
      *   CALL CCSD_DELFRO(WORK(KSCR1),WORK(KEND),LWRK)
 C
-      IF (IPRINT .GT. 80) THEN
+      IF (IPRINT .GT. 80 .OR. DEBUG) THEN
             CALL AROUND('CC2_FCK - Orbital energies. ')
             write (LUPRI,*) (WORK(I), I=1,NORBT)
             CALL AROUND('CC2_FCK - start - : RHO2 ')
@@ -8478,13 +8506,14 @@ C
   110    CONTINUE
   100 CONTINUE
 C
-      IF (((NFIELD.GT.0).OR.CCSLV)
+      IF (((NFIELD.GT.0).OR.CCSLV.OR.USE_PELIB())
      *     .AND.NONHF.AND.(ISIDE.NE.0)) THEN
 C
          KFOCK  = 1
          KEMAT1 = KFOCK  + N2BST(ISYMOP)
          KEMAT2 = KEMAT1 + NEMAT1(ISYMOP)
-         KEND1  = KEMAT2 + NMATIJ(ISYMOP)
+         KCC    = KEMAT2 + NMATIJ(ISYMOP)
+         KEND1  = KCC    + N2BST(ISYMOP)
          LWRK1  = LWORK  - KEND1
 C
          CALL DZERO(WORK(KFOCK),N2BST(ISYMOP))
@@ -8524,6 +8553,23 @@ C
             END IF
          ENDIF
 C
+C
+C-------------------------------------
+C     Solvent contribution.
+C     Put into one-electron integrals.
+C PECC16,DH
+C-------------------------------------
+C
+         IF (USE_PELIB().AND.(.NOT.HFFLD)) THEN
+             ALLOCATE(GMATRIX(NNBASX),HARTREEFOCK(NNBASX))
+             CALL GET_FROM_FILE('FOCKMAT',NNBASX,GMATRIX)
+             CALL GET_FROM_FILE('FOCKMHF',NNBASX,HARTREEFOCK)
+             CALL DAXPY(NNBASX,-1.0d0,HARTREEFOCK,1,GMATRIX,1)
+             CALL DSPTSI(NBAS,GMATRIX,WORK(KCC))
+             DEALLOCATE(GMATRIX,HARTREEFOCK)
+             CALL DAXPY(N2BST(ISYMOP),1.0d0,WORK(KCC),1,WORK(KFOCK),1)
+         END IF
+C
 C-------------------------------------
 C
          CALL CC_FCKMO(WORK(KFOCK),XLAMDP,XLAMDH,WORK(KEND1),
@@ -8545,7 +8591,7 @@ C
 C
       ENDIF
 C
-      IF (IPRINT .GT. 80) THEN
+      IF (IPRINT .GT. 80 .OR. DEBUG) THEN
             CALL AROUND('CC2_FCK - end - : RHO2 (RHO1=dummy')
             CALL CC_PRP(DUMMY,OMEGA2,ISYMTR,0,1)
             CALL AROUND('CC2_FCK - end - : T2AM (T1AM=dummy')

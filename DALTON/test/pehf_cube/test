@@ -13,6 +13,6 @@ f.add(from_string = 'Embedding potential',
       num_lines = 1000,
       abs_tolerance = 1.0e-5)
 
-test.run(['embpot_cube.dal'], ['formaldehyde.mol'], ['2h2o.pot'], f={'embedding_potential.cube': f}, args='-get "embedding_potential.cube"')
+test.run(['embpot_cube.dal'], ['formaldehyde.mol'], ['2h2o.pot'], f={'embedding_potential_000.cube': f}, args='-get "embedding_potential_000.cube"')
 
 sys.exit(test.return_code)

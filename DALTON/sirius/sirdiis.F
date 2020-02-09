@@ -299,7 +299,10 @@ C
       use pcm_config, only: pcm_configuration, pcm_cfg
 #endif
       use pelib_interface, only: use_pelib, pelib_ifc_fock,
-     &                           pelib_ifc_energy
+     &                           pelib_ifc_energy, pelib_ifc_mep,
+     &                           pelib_ifc_do_mep, pelib_ifc_do_infld,
+     &                           pelib_ifc_infld, pelib_ifc_do_savden,
+     &                           pelib_ifc_save_density
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), GVEC(*), BMAT(*), H1AO(*)
@@ -356,6 +359,7 @@ Cholesky
 #include "choscf.h"
 C
 #include "center.h"
+#include "nuclei.h"
 C
 Cholesky
 C
@@ -1725,6 +1729,31 @@ C
             PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
         END IF
         CALL PELIB_IFC_ENERGY(PE_DENMAT)
+        IF (PELIB_IFC_DO_INFLD()) THEN
+            CALL PELIB_IFC_INFLD()
+        END IF
+        DEALLOCATE(PE_DENMAT)
+      END IF
+      IF (PELIB_IFC_DO_MEP()) THEN
+        ALLOCATE(PE_DENMAT(NNBASX))
+        IF (NASHT == 0 .OR. HSROHF) THEN
+            PE_DENMAT = DAOSAV(:,1)
+        ELSE
+            PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
+        END IF
+        CALL PELIB_IFC_MEP(PE_DENMAT)
+        DEALLOCATE(PE_DENMAT)
+      END IF
+      IF (PELIB_IFC_DO_SAVDEN()) THEN
+        ALLOCATE(PE_DENMAT(NNBASX))
+        IF (NASHT == 0 .OR. HSROHF) THEN
+            PE_DENMAT = DAOSAV(:,1)
+        ELSE
+            PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
+        END IF
+        CALL PELIB_IFC_SAVE_DENSITY(PE_DENMAT,
+     &                              FCAO(1:NORBT*(NORBT+1)/2),
+     &                              CMO(1:NBAST*NORBT))
         DEALLOCATE(PE_DENMAT)
       END IF
 C

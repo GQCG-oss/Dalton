@@ -598,9 +598,10 @@ fi
 filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC* "
 filelist="$filelist DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK"
 filelist="$filelist molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h"
-filelist="$filelist gv.off FCIDUMP pe_*.bin UNIT1 UNIT2 rsp_tensor_human final_geometry.xyz *.cube"
+filelist="$filelist gv.off FCIDUMP UNIT1 UNIT2 rsp_tensor_human final_geometry.xyz *.cube"
 pcmfiles="cavity.off PCM_matrix PCM_mep_asc PEDRA.OUT *.npy *.npz *.vtk molec_dyadic.dat"
-filelist="$filelist $pcmfiles $GET_FILES"
+pelib_files="pe_electrostatics.bin pe_induced_moments.bin pe_induced_charges.bin pe_response_matrix.bin pe_nuclear_potential.bin pe_nuclear_field.bin pe_multipole_potential.bin pe_multipole_field.bin"
+filelist="$filelist $pcmfiles $pelib_files $GET_FILES"
 
 if [ -s $DALTON.OUT.n0001 -a -r $DALTON.OUT.n0001 ]; then
    tarfilelist="$DALTON.OUT.n*"

@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Electrostatic contributions:',
+      num_lines = 5,
+      abs_tolerance = 1.0e-6)
+f.add(from_string = 'Polarization contributions:',
+      num_lines = 5,
+      abs_tolerance = 1.0e-6)
+f.add(from_string = 'Continuum solvation contributions:',
+      num_lines = 5,
+      abs_tolerance = 1.0e-6)
+f.add(from_string = 'Polarizable embedding information:',
+      num_lines = 15,
+      abs_tolerance = 1.0e-6)
+
+test.run(['fixsol_iter.dal', 'fixsol_direct.dal'], ['formaldehyde.mol'], ['2h2o.pot'], f={'out': f})
+
+g = Filter()
+g.add(from_string = 'Continuum solvation contributions:',
+      num_lines = 5,
+      abs_tolerance = 1.0e-6)
+
+test.run(['fixsol_iter.dal', 'fixsol_direct.dal'], ['formaldehyde.mol'], f={'out': g})
+
+sys.exit(test.return_code)

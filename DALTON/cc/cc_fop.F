@@ -57,6 +57,7 @@ C     RCCD and DRCCD, Sonia & Maria Francesca Iozzi (Fran), 2010
 C     SOSEX, Thomas Bondo Pedersen 2011
 C-----------------------------------------------------------------------------
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, PELIB_IFC_PECC
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -102,7 +103,7 @@ C
       CHARACTER*(*) APROXR12 
       CHARACTER*17 MODELPRI2
       CHARACTER*10 MODEL,MODELFM
-      CHARACTER*8  LABEL1, FNTOC, FN3VI2
+      CHARACTER*8  LABEL1, FNTOC, FN3VI2, LABELPE
       CHARACTER*7  FN3FOP2X
       CHARACTER*6  FN3VI, FN3FOP2, FNDPTIA2, FNDELD, FNCKJD, FN3FOPX
       CHARACTER*5  ETY1, FN3FOP, FNDPTIA, FNDPTAB, FNDPTIJ, FNDKBC3
@@ -117,6 +118,8 @@ C
       INTEGER ISYOF(8),KOFF(8,8),NCVAI1(8,8),NCVAI2(8,8),NCVAI3(8,8)
       INTEGER NCVIJ(8,8),NCVAI5(8,8) 
       INTEGER IPDD
+
+      REAL*8, ALLOCATABLE :: FOCKMAT(:)
 C
 #include "leinf.h"
 Cholesky
@@ -867,7 +870,7 @@ C CCMM02,JK+AO qm/mm part 1 start
 C NYQMMM10, KS
 C---------------------------------------------------
 C
-      IF (CCMM) THEN
+      IF (CCMM) THEN 
 C
               KLAM   = 1
               KLAM2  = 1 + NT1AMX
@@ -952,6 +955,104 @@ C
      *        'The singles contribution is:', ECCP1
               WRITE(LUPRI,'(12X,A,F25.10)')
      *        'The doubles contribution is:', ECCP2
+C
+      ENDIF
+C
+!     PElib implementation
+!     DH, 2016 
+      IF (USE_PELIB()) THEN 
+C
+           KLAM   = 1
+           KLAM2  = 1 + NT1AMX
+C
+           IOPT = 3
+           CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KLAM),WORK(KLAM2))
+C
+           XLNCCCU = DDOT(NT1AMX+NT2AMX,WORK(KLAM),1,WORK(KLAM),1)
+C
+           IF ((ABS(XLNCCPR-XLNCCCU).LT.CVGLSOL).AND.LRSPFUL) 
+     &         LSLLCVG = .TRUE.
+           IF (IPRINT.GT.2) THEN
+             WRITE(LUPRI,*)
+     &       'Norm of L-amplitudes in this pecc it.:',XLNCCCU
+             WRITE(LUPRI,*)
+     &       'Norm of L-amplitudes in prev pecc it.:',XLNCCPR
+           ENDIF
+           WRITE(LUPRI,*)
+     &     ' Change in norm^2 of L-amplitudes in this PECC it.:',
+     &     XLNCCCU-XLNCCPR
+
+           XLNCCPR = XLNCCCU
+C
+           KWRK3  = KLAM  + NT1AMX + NT2AMX
+           KRHO1  = KWRK3
+           KRHO2  = KRHO1 + NT1AMX
+           KGMAT  = KRHO2 + NT2AMX
+           KETA   = KGMAT + N2BST(ISYMTR)
+           KWRK4  = KETA  + NT1AMX + NT2AMX
+           LWRK4  = LWORK - KWRK4
+C
+           IF (LWRK4.LE.0) CALL QUIT(' Too little work in cc_fop')
+           CALL DZERO(WORK(KRHO1),NT1AMX)
+           IF (.NOT.CCS) CALL DZERO(WORK(KRHO2),NT2AMX)
+           LR = '0'
+           CALL TIMER('START ',TIMSTR,TIMEND)
+           ALLOCATE(FOCKMAT(NNBASX))
+           IF (HFFLD) THEN
+               CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+           ELSE
+               CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+           END IF
+           CALL DSPTSI(NBAS,FOCKMAT,WORK(KGMAT))
+           DEALLOCATE(FOCKMAT)
+           LABELPE = 'GIVE INT'
+           CALL CC_XKSI(WORK(KETA),LABELPE,ISYMTR,0,WORK(KGMAT),
+     &                  WORK(KWRK4),LWRK4)
+           KETA1 = KETA
+           KETA2 = KETA1 + NT1AMX
+           CALL DAXPY(NT1AMX,1.0d0,WORK(KETA1),1,WORK(KRHO1),1)
+           CALL DAXPY(NT2AMX,1.0d0,WORK(KETA2),1,WORK(KRHO2),1)
+C
+           CALL TIMER('LR=R',TIMSTR,TIMEND)
+           CALL FLSHFO(LUPRI)
+           KOMEG1 = KWRK4
+           KOMEG2 = KWRK4 + NT1AMX
+           LUOME = -9000
+           CALL GPOPEN(LUOME,'CC_OME','UNKNOWN',' ',
+     &         'UNFORMATTED',IDUMMY,.FALSE.)
+           REWIND (LUOME)
+           READ(LUOME) (WORK(KOMEG1+K-1), K = 1,NT1AMX)
+           IF (.NOT.CCS) THEN
+              READ(LUOME) (WORK(KOMEG2+K-1), K = 1,NT2AMX)
+           ENDIF
+           CALL GPCLOSE(LUOME,'KEEP')
+C
+           CALL DAXPY(NT1AM(ISYMOP),-ONE,WORK(KRHO1),1,
+     &                WORK(KOMEG1),1)
+           IF (.NOT. CCS ) THEN
+             CALL DAXPY(NT2AM(ISYMOP),-ONE,WORK(KRHO2),1,
+     &                  WORK(KOMEG2),1)
+           ENDIF
+C
+           ECCP1 = DDOT(NT1AMX,WORK(KLAM),1,WORK(KOMEG1),1)
+           ECCP2 = 0.0D0
+           IF (.NOT.CCS) THEN
+              ECCP2 = DDOT(NT2AMX,WORK(KLAM2),
+     &                     1,WORK(KOMEG2),1)
+           ENDIF
+           IF (IPRINT .GE. 3) THEN
+              WRITE(LUPRI,*) 'Norm of omega1 in cc_fop:',
+     &            DDOT(NT1AM(ISYMOP),WORK(KOMEG1),1,WORK(KOMEG1),1)
+              WRITE(LUPRI,*) 'Norm of omega2 in cc_fop:',
+     &            DDOT(NT2AM(ISYMOP),WORK(KOMEG2),1,WORK(KOMEG2),1)
+           ENDIF
+           ECCL = ECCP1 + ECCP2
+           ECCGRS = ECCGRS + ECCL
+           WRITE(LUPRI,*)'Total <Lambda|H|CC> energy: ',ECCGRS
+           WRITE(LUPRI,'(12X,A,F25.10)')
+     &     'The singles contribution is:', ECCP1
+           WRITE(LUPRI,'(12X,A,F25.10)')
+     &     'The doubles contribution is:', ECCP2
 C
       ENDIF
 C
@@ -1372,17 +1473,18 @@ C
 C
       ENDIF
 C
-      KDENS = KWRK2     
+      KDENS = KWRK2
       KWRK3 = KDENS + N2BST(ISYMOP)
       LWRK3 = LWORK - KWRK3
 C
       IF (LWRK3 .LT. 0) THEN
          WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KWRK3
-         CALL QUIT('Insufficient memory for one e- density in CC_FOP')
+         CALL QUIT('Insufficient memory for one el density in CC_FOP')
       ENDIF
 C
       IF (.NOT.(CCSLV.OR.CCMM.OR.DIPMOM.OR.QUADRU.OR.NQCC.OR.
-     *    RELCOR.OR.DPTECO.OR.SECMOM.OR.TSTDEN.OR.(NAFOP.GT.0))) GOTO 47
+     &    RELCOR.OR.DPTECO.OR.SECMOM.OR.TSTDEN.OR.(NAFOP.GT.0)
+     &    .OR.USE_PELIB())) GOTO 47
 C
 C----------------------------------------------------------
 C     Calculate one electron AO-density and CC nat.occ.num.
@@ -1393,12 +1495,12 @@ C----------------------------------------------------------
 C
       ILSTNR = 1
       !Sonia
-      write(lupri,*)'CCFOP: call CC_D1AO to recalc the 1e Density'
-      call flshfo(lupri)
+      !write(lupri,*)'CCFOP: call CC_D1AO to recalc the 1e Density'
+      !call flshfo(lupri)
       NATOCC=.TRUE.
       !
       CALL CC_D1AO(IPDD,R12PRP,WORK(KDENS),WORK(KZKAM),WORK(KWRK3),
-     &             LWRK3,MODEL, LIST,ILSTNR,NATOCC,
+     &             LWRK3,MODEL,LIST,ILSTNR,NATOCC,
      &             FNDPTIA,FNDPTIA2,FNDPTAB,FNDPTIJ)
 C
       IF ((FROIMP .OR. FROEXP) .AND. (.NOT. MP2)) THEN
@@ -1457,12 +1559,16 @@ C
 
       IF (CCMM) THEN
         DTIME = SECOND()
+        CALL AROUND('Calling CC_QM3 from CC_FOP')
         CALL CC_QM3(WORK(KDENS),CCMMCONV,WORK(KWRK3),LWRK3)
         IF (IPRINT .GT. 5) THEN
          WRITE(LUPRI,*)'Time used in CC_QM3 (CC_FOP):',
      *                  SECOND()-DTIME
         END IF
       ENDIF
+      IF (USE_PELIB()) THEN
+        CALL PELIB_IFC_PECC(WORK(KDENS),VDUMMY,CCMMCONV,IDUMMY)
+      END IF
 
 C---------------------------------------------------------------------
 C     Calculate the simple one electron AO-density in CCS calculation.
@@ -1786,8 +1892,8 @@ C--------------------------------
 C           Store on prpc common.
 C--------------------------------
 C
-            IF (.NOT.CCSLV .OR.(CCMM.AND.CCMMCONV)
-     *                     .OR.(CCDC.AND.DIELCONV))
+            IF (.NOT.(CCSLV.OR.USE_PELIB()) .OR.(CCMM.AND.CCMMCONV)
+     *          .OR.(CCDC.AND.DIELCONV).OR.(USE_PELIB().AND.CCMMCONV))
      *         CALL WRIPRO(DIPMN(IDIP),MODELFM,1,LABEL1,LABEL1,LABEL1,
      *                     LABEL1,DUMMY,DUMMY,DUMMY,ISY,0,0,0)
   100    CONTINUE
@@ -1993,8 +2099,8 @@ C--------------------------------
 C           Store on prpc common.
 C--------------------------------
 C
-         IF (.NOT.CCSLV .OR.(CCMM.AND.CCMMCONV) 
-     *      .OR.(CCDC.AND.DIELCONV)) THEN
+         IF (.NOT.(CCSLV.OR.USE_PELIB()) .OR.(CCMM.AND.CCMMCONV) 
+     *      .OR.(CCDC.AND.DIELCONV).OR.(USE_PELIB().AND.CCMMCONV)) THEN
          IJ = 0
          DO 678 I = 1, 3
             DO 679 J = I, 3
@@ -2471,8 +2577,8 @@ C--------------------------------
 C
             IF (IRC.EQ.1) PROP = DARW
             IF (IRC.EQ.2) PROP = VELO
-            IF (.NOT.CCSLV .OR.(CCMM.AND.CCMMCONV)
-     *             .OR.(CCDC.AND.DIELCONV)) 
+            IF (.NOT.(CCSLV.OR.USE_PELIB()) .OR.(CCMM.AND.CCMMCONV)
+     *          .OR.(CCDC.AND.DIELCONV).OR.(USE_PELIB().AND.CCMMCONV)) 
      *          CALL WRIPRO(PROP,MODELFM,1,LABEL1,LABEL1,LABEL1,LABEL1,
      *                      DUMMY,DUMMY,DUMMY,ISY,0,0,0)
   130    CONTINUE

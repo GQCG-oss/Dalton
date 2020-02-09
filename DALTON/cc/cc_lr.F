@@ -36,6 +36,7 @@ C     1/2 C^{+/-w} symmetrization introduced. Ch. Haettig, March 1999.
 C
 C----------------------------------------------------------------------
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -67,6 +68,7 @@ C
 #include "leinf.h"
 #include "symmet.h"
 #include "codata.h"
+#include "qm3.h"
 C
       LOGICAL FTSAV,LRLXA,LRLXB,LPDBSA,LPDBSB,LPRTSCF,OPTST,NOKAPPA
       LOGICAL SHIELD
@@ -279,7 +281,7 @@ C             The Pt-barA(-omeg)*t-barB(omeg)
 C             contribution for solvent calculations.
 C---------------------------------------------------
 C
-              IF (CCSLV) THEN
+              IF (CCSLV.OR.USE_PELIB()) THEN
                 CALL CC_PABCON(LABELA,ISYMA,FREQA,LRLXA,
      *                         LABELB,ISYMB,FREQB,LRLXB,
      *                         WORK(KPRP2),WORK(KEND1),LEND1)
@@ -4044,7 +4046,7 @@ C
       LOGICAL LRLXA,LRLXB
 C
       IF ( IPRINT .GT. 10 ) THEN
-         CALL AROUND( 'IN CC_FABCON: Calculating polarizabilty P-cont.')
+         CALL AROUND( 'IN CC_PABCON: Calculating polarizabilty P-cont.')
       ENDIF
 C
       NTAMPA = NT1AM(ISYMA) + NT2AM(ISYMA)
