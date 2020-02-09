@@ -9,24 +9,24 @@ if(ENABLE_PELIB)
     else()
         message(FATAL_ERROR "PElib requires Gen1Int, use -DENABLE_GEN1INT=ON to enable Gen1Int or -DENABLE_PELIB=OFF to disable PElib")
     endif()
-    set(PE_INCLUDE_DIR)
+    set(PE_INCLUDE_DIRS)
     set(PE_MPIF OFF)
     if(MPI_FOUND)
         if(NOT MPI_COMPILER_MATCHES)
             set(PE_MPIF ON)
         endif()
-        set(PE_INCLUDE_DIR ${MPI_INCLUDE_PATH})
+        set(PE_INCLUDE_DIRS ${PE_INCLUDE_DIRS} ${MPI_INCLUDE_DIRS})
     endif()
     if(ENABLE_PDE)
         find_package(HDF5 REQUIRED COMPONENTS Fortran)
-        include_directories(${HDF5_Fortran_INCLUDE_DIRS})
+        set(PE_INCLUDE_DIRS ${PE_INCLUDE_DIRS} ${HDF5_Fortran_INCLUDE_DIRS})
         add_definitions(${HDF5_Fortran_DEFINITIONS})
     endif()
     set(ExternalProjectCMakeArgs
         -DPARENT_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DPARENT_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
         -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-        -DPARENT_INCLUDE_DIR=${PE_INCLUDE_DIR}
+        -DPARENT_INCLUDE_DIR=${PE_INCLUDE_DIRS}
         -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
         -DINTEGRAL_LIBRARY=${PE_INTEGRAL_LIBRARY}
         -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}

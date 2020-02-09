@@ -117,7 +117,7 @@ gcc-9.2.1:
     - git --version
     - cmake --version
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
-                   -DENABLE_PDE=ON
+                   -DENABLE_PDE=OFF
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -143,7 +143,7 @@ gcc-9.2.1-debug:
     - git --version
     - cmake --version
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=debug
-                   -DENABLE_PDE=ON
+                   -DENABLE_PDE=OFF
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -283,7 +283,7 @@ gcc-9.2.1-ompi-4.0.2:
     - git --version
     - cmake --version
     - python setup --mpi --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
-                   -DENABLE_PDE=ON
+                   -DENABLE_PDE=OFF
     - cd build
     - make -j 4
     - ctest --output-on-failure -L essential

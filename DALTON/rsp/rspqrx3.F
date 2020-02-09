@@ -248,8 +248,7 @@ C          ETRS = ( E3(jkl) + E3(jlk) ) N(l) N(k) (output)
 
       use qmcmm_response, only: qmcmm_qr
       use pelib_interface, only: use_pelib, pelib_ifc_qro,
-     &                           pelib_ifc_gspol, pelib_ifc_rspmcqr,
-     &                           pelib_ifc_qrtest
+     &                           pelib_ifc_gspol
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -402,17 +401,8 @@ C
 
       IF (USE_PELIB()) THEN
          IF (.NOT. TDHF .AND. .NOT. TRPLET) THEN 
-            write(lupri,*) '*** WARNING PE-MCSCF QR ***  '
-            write(lupri,*) 'Highly experimental version'
-            write(lupri,*) 'Results *WILL* be wrong'
-!           CALL QUIT('ERROR: PE-MCSCF quadratic response not'//
-!    &                ' implemented using the PE library.')
-            ! edh this is for now a debug routine
-            CALL PELIB_IFC_QRTEST(VECB, VECC, VECA, ATEST, ETRS, 
-     &                      XINDX,
-     &                      WRK(KZYMB), WRK(KZYMC), WRK(KDEN1), UDV, 
-     &                      WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
-     &                      ISYMA, ISYMB, ISYMC, CMO, MJWOP)
+            CALL QUIT('ERROR: PE-MCSCF quadratic response not'//
+     &                ' implemented using the PE library.')
          ELSE IF (NASHT > 0) THEN
             CALL QUIT('ERROR: quadratic response not implemented for'//
      &                ' open-shell systems using the PE library.')
@@ -421,10 +411,10 @@ C
      &                ' response using the PE library.')
          ENDIF
          IF (.NOT. PELIB_IFC_GSPOL()) THEN
-          CALL PELIB_IFC_QRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB),
-     &                       WRK(KZYMC), UDV, WRK(KFREE), LFREE,
-     &                       KZYVA, KZYVB, KZYVC, ISYMA, ISYMB,
-     &                       ISYMC, CMO, MJWOP)
+            CALL PELIB_IFC_QRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB),
+     &                         WRK(KZYMC), UDV, WRK(KFREE), LFREE,
+     &                         KZYVA, KZYVB, KZYVC, ISYMA, ISYMB,
+     &                         ISYMC, CMO, MJWOP)
          END IF
       END IF
 
