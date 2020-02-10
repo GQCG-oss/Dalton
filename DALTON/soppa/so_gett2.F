@@ -14,32 +14,41 @@ C              the corresponding densities.
       use so_parutils, only: soppa_update_amplitudes
 #endif
 C
-      use so_info, only : sop_mp2ai_done
-C
-#include "implicit.h"
+      use so_info, only : sop_mp2ai_done, sop_dp
+C#include "implicit.h"
+      implicit none
+
 #include "priunit.h"
 C
 #include "soppinf.h"
 #include "ccsdsym.h"
 C
-      PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
+      REAL(SOP_DP), PARAMETER :: HALF = 0.5D0
 C
-      CHARACTER KEY*4
-      DIMENSION FOCKD(LFOCKD),T2AM(LT2AM),DENSAI(LDENSAI)
-      DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB)
-      DIMENSION WORK(LWORK)
-      LOGICAL DOCCSD,LEXIST
+C     Arguments
+      character(len=4), intent(in) :: KEY
+      real(sop_dp), intent(in) :: FOCKD(LFOCKD)
+      real(sop_dp), intent(out) :: T2AM(LT2AM), DENSAI(LDENSAI),
+     &                             DENSIJ(LDENSIJ), DENSAB(LDENSAB)
+      real(sop_dp), intent(inout) :: WORK(LWORK)
+      integer, intent(in) :: LFOCKD, LT2AM, LDENSAI, LDENSIJ, LDENSAB,
+     &                       LWORK
+
+C     Local Variables
+      LOGICAL DOCCSD, LEXIST
       CHARACTER(LEN=8) :: FNAME
       LOGICAL :: FOUND_DENS
-      INTEGER :: IOSTATR
+      INTEGER :: IOSTATR, IDUMMY, LUTAM
+      real(sop_dp) :: dtime
+C     Pointers... Do we need them?
+      integer :: KT1AM, KEND1
+      integer :: LWORK1
 C
 C------------------
 C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_GETT2')
-C
-      LT2AMH = LT2AM
 C
 C-----------------------------------------
 C     Memory allocation
@@ -75,7 +84,7 @@ C
 C----------------------------------------
 C        Calculate (ia|jb) integrals .
 C----------------------------------------
-         CALL DZERO(WORK(KT1AM),NT1AMX)
+         CALL DZERO(WORK(KT1AM),NT1AM(1))
 C
          DTIME     = SECOND()
          CALL SO_IAJB(T2AM,WORK(KT1AM),WORK(KEND1),LWORK1)
@@ -87,7 +96,7 @@ C        Calculate MP2 T2 amplitudes
 C-----------------------------------------
 C
          DTIME     = SECOND()
-         CALL SO_MP2T2(FOCKD,LFOCKD,T2AM,LT2AMH,WORK(KEND1),LWORK1)
+         CALL SO_MP2T2(FOCKD,LFOCKD,T2AM,LT2AM,WORK(KEND1),LWORK1)
          DTIME     = SECOND()  - DTIME
          SOTIME(5) = SOTIME(5) + DTIME
          FOUND_DENS = .FALSE.
@@ -115,14 +124,14 @@ C
             READ(LUTAM,END=901) (DENSAI(I), I = 1,LDENSAI)
             CALL DSCAL(LDENSAI,HALF,DENSAI,1)
          END IF
-         READ(LUTAM,END=902) (T2AM(I), I = 1,LT2AMH)
+         READ(LUTAM,END=902) (T2AM(I), I = 1,LT2AM)
 C
 C------------------------------------------------------------
 C        Attempt to read the D(ij) and D(ab) density matrices
 C------------------------------------------------------------
 C
          READ(LUTAM,IOSTAT=IOSTATR) DENSIJ
-         IF (IOSTATR.GT.0) THEN 
+         IF (IOSTATR.GT.0) THEN
             CALL QUIT('Error reading file '//FNAME)
          ELSE IF (IOSTATR.LT.0) THEN
             FOUND_DENS = .FALSE.
@@ -137,7 +146,7 @@ C        And also for MP2 get D(ai) block
             FOUND_DENS = .TRUE.
          END IF
 C
-      ELSE 
+      ELSE
          CALL QUIT('SOPPA(CC) requires running the CC module')
       END IF
 
@@ -151,7 +160,7 @@ C----------------------------------------------------
 C
          DTIME     = SECOND()
          CALL SO_DENS(DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-     &                T2AM,LT2AMH,WORK(KEND1),LWORK1)
+     &                T2AM,LT2AM,WORK(KEND1),LWORK1)
          DTIME     = SECOND()  - DTIME
          SOTIME(4) = SOTIME(4) + DTIME
 C
@@ -167,7 +176,7 @@ C     (2 * coulomb - exchange of T2-amplitudes).
 C------------------------------------------------------
 C
       DTIME     = SECOND()
-      CALL SO_T2MP(T2AM,LT2AMH)
+      CALL SO_T2MP(T2AM,LT2AM)
       DTIME     = SECOND()  - DTIME
       SOTIME(5) = SOTIME(5) + DTIME
 C
@@ -230,7 +239,7 @@ C
       use so_info, only: sop_dp
       implicit none
       character(len=4), intent(in) :: KEY
-      real(sop_dp), intent(out) :: DENSIJ(LDENSIJ), 
+      real(sop_dp), intent(out) :: DENSIJ(LDENSIJ),
      &                            DENSAB(LDENSAB), DENSAI(LDENSAI)
       integer, intent(in) :: LDENSIJ, LDENSAB, LDENSAI
 C
@@ -250,7 +259,7 @@ C
       REWIND(LUTAM)
 
       IF (KEY(1:2).EQ.'CC') THEN
-C    CC method - T1 amplitudes are first         
+C    CC method - T1 amplitudes are first
          READ(LUTAM) DENSAI
          CALL DSCAL(LDENSAI,HALF,DENSAI,1)
       END IF
@@ -268,4 +277,4 @@ C     In case of MP2: densai is last
 
       RETURN
 
-      END 
+      END
