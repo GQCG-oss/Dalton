@@ -84,10 +84,9 @@ C
 C----------------------------------------
 C        Calculate (ia|jb) integrals .
 C----------------------------------------
-         CALL DZERO(WORK(KT1AM),NT1AM(1))
 C
          DTIME     = SECOND()
-         CALL SO_IAJB(T2AM,WORK(KT1AM),WORK(KEND1),LWORK1)
+         CALL SO_IAJB(T2AM,WORK(KEND1),LWORK1)
          DTIME     = SECOND()  - DTIME
          SOTIME(5) = SOTIME(5) + DTIME
 C

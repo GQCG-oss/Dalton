@@ -1,5 +1,5 @@
 C  /* Deck so_iajb */
-      SUBROUTINE SO_IAJB(XAIBJ,T1AM,WORK,LWORK)
+      SUBROUTINE SO_IAJB(XAIBJ,WORK,LWORK)
 C
 C     The Original subroutine CCSD_IAJB is written by Henrik Koch 27-Mar-1990.
 C
@@ -31,7 +31,7 @@ C
 #include "eritap.h"
 #include "ccfro.h"
 #include "ccfop.h"
-      DIMENSION XAIBJ(*),T1AM(*),WORK(LWORK),INDEXA(MXCORB)
+      DIMENSION XAIBJ(*),WORK(LWORK),INDEXA(MXCORB)
       INTEGER KEND0
 C
       LOGICAL OPENED
@@ -39,8 +39,6 @@ C
       CHARACTER*8 FNTOC
 C
       CALL QENTER('SO_IAJB')
-C
-      KEND0 = 1
 C
 C-------------------------------------------------------
 C     Initialize the XAIBJ integral array.
@@ -55,26 +53,18 @@ C
       CALL GPINQ('SIRIFC','OPENE',OPENED)
       IF (OPENED) THEN
          INQUIRE (FILE='SIRIFC',NUMBER=LUSIFC)
-         WRITE(LUPRI,'(2A,I3)') ' RP_INIT: file SIRIFC is already ',
+         WRITE(LUPRI,'(2A,I3)') ' SO_IAJB: file SIRIFC is already ',
      &                          'opened with unit number ',LUSIFC
          CALL GPCLOSE (LUSIFC,'KEEP')
-         WRITE(LUPRI,'(2A,I3)') ' RP_INIT: file SIRIFC was closed again'
+         WRITE(LUPRI,'(2A,I3)') ' RP_IAJB: file SIRIFC was closed again'
       ENDIF
 C
 C-------------------------------------------------------
 C     Dynamic allocation of space.
 C-------------------------------------------------------
 C
-      KLAMDP = KEND0
-C
-      KLAMDQ = KLAMDP
-      KLAMDH = KLAMDQ + NLAMDT
-      KEND1  = KLAMDH + NLAMDT
-C
-      KCMO   = KEND1
-      KDNSHF = KCMO   + NLAMDS
-      KFCKHF = KDNSHF + N2BAST
-      KEND1  = KFCKHF + N2BAST
+      KCMO   = 1
+      KEND1 = KCMO   + NLAMDS
 C
       LWRK1  = LWORK  - KEND1
 C
@@ -82,45 +72,11 @@ C
          CALL QUIT('Insufficient space in SO_IAJB')
       ENDIF
 C
-C-------------------------------------------------------
-C     Calculate the lamda matrices and get CMO vector:
-C-------------------------------------------------------
-C
-      CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),T1AM,WORK(KEND1),LWRK1)
-C
 C---------------------------------------------------------------------
 C     Initialize CMO vector:
 C---------------------------------------------------------------------
 C
       CALL SO_GETMO(WORK(KCMO),NLAMDS,WORK(KEND1),LWRK1)
-C
-C--------------------------------------
-C     Additional work space allocation.
-C--------------------------------------
-C
-      IF ((FROIMP .OR. FROEXP) .AND. (RELORB .OR. MP2)) THEN
-         KCMO  = KEND1
-         KFRIN = KCMO  + NLAMDS
-         KFRGR = KFRIN + NT2FRO(1)
-         KFRGR1= KFRGR + NFROVR(1)
-         KEND1 = KFRGR1+ NFROVF(1)
-         LWRK1 = LWORK - KEND1
-C
-         IF (LWRK1 .LT. 0) THEN
-            CALL QUIT('Insufficient space in SO_IAJB')
-         ENDIF
-C
-         CALL DZERO(WORK(KCMO),NLAMDS)
-         CALL DZERO(WORK(KFRIN),NT2FRO(1))
-         CALL DZERO(WORK(KFRGR),NFROVR(1))
-         CALL DZERO(WORK(KFRGR1),NFROVF(1))
-C
-C----------------------------------------------
-C     Calculate the FULL MO coefficient matrix.
-C----------------------------------------------
-C
-         CALL CMO_ALL(WORK(KCMO),WORK(KEND1),LWRK1)
-      END IF
 C
 C====================================================
 C     Start the loop over distributions of integrals.
@@ -250,9 +206,9 @@ C-------------------------------------------------------
 C              compute the AO-Fock matrix:
 C-------------------------------------------------------
 C
-              CALL CC_AOFOCK(WORK(KXINT),WORK(KDNSHF),WORK(KFCKHF),
-     *                        WORK(KEND2),LWRK2,IDEL,ISYMD,.FALSE.,
-     *                        DUMMY,1)
+C              CALL CC_AOFOCK(WORK(KXINT),WORK(KDNSHF),WORK(KFCKHF),
+C     *                        WORK(KEND2),LWRK2,IDEL,ISYMD,.FALSE.,
+C     *                        DUMMY,1)
 C
 C--------------------------------------------------------------------
 C        Transform (alpha beta|gamma delta) to (alpha beta| j delta).
@@ -268,8 +224,8 @@ C
                   IF (ISYMAI .GT. ISYMBJ) GOTO 130
 C
                   KOFF1 = KXINT  + IDSAOG(ISYMG,ISYDIS)
-                  KOFF2 = KLAMDQ + ILMRHF(ISYMJ)
-                  KOFF6 = KLAMDP + ILMRHF(ISYMJ)
+                  KOFF2 = KCMO + ILMRHF(ISYMJ)
+                  KOFF6 = KCMO + ILMRHF(ISYMJ)
 C
                   IF (LWRK2 .LT. 2*NNBST(ISYMAB)*NRHF(ISYMJ)) THEN
                      CALL QUIT('Insufficient core in SO_IAJB')
@@ -314,8 +270,8 @@ C--------------------------------------------------------------------
 C
                   KOFF4  = IT2AM(ISYMAI,ISYMBJ) + 1
 C
-                  CALL SO_AIBJ2(WORK(KEND2),XAIBJ(KOFF4),WORK(KLAMDP),
-     *                            WORK(KLAMDH),WORK(KSCR1),WORK(KSCR2),
+                  CALL SO_AIBJ2(WORK(KEND2),XAIBJ(KOFF4),WORK(KCMO),
+     *                            WORK(KCMO),WORK(KSCR1),WORK(KSCR2),
      *                            IDEL,ISYMD,ISYMJ,ISYMAB,LUTOC,FNTOC,
      *                            .FALSE.)
 C
@@ -329,10 +285,6 @@ C
 C
       KEND1 = KENDSV
       LWRK1 = LWRKSV
-C
-c-------------------------------------
-C     write AO-Fock matrix to file:
-C------------------------------------
 C
       IF (IPRINT .GT. 40) THEN
         CALL AROUND('(ia|jb) integral vector')

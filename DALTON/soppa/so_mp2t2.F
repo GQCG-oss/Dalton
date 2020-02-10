@@ -13,9 +13,6 @@ C     Written by Lilli Irene Ør Kristensen
 C
       use so_info, only: sop_dp
       implicit none
-
-      real(sop_dp) :: ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, 
-     &                TWO = 2.0D0, FOUR = 4.0D0
 C
 #include "ccorb.h"
 #include "ccsdinp.h"
