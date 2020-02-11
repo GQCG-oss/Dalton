@@ -441,7 +441,7 @@ nightly-serial:
                    -DENABLE_PDE=OFF -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-serial
     - cd build
     - export CTEST_MAKE_NUM_PROCS=4
-    - ctest --output-on-failure -L dalton -D Nightly -j 4
+    - ctest -j 4 --output-on-failure -L dalton -M Nightly -T Build -T Test -T Submit
 
 nightly-mpi:
   image: fedora:31
@@ -474,7 +474,7 @@ nightly-mpi:
                    -DENABLE_PDE=ON -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-mpi
     - cd build
     - export CTEST_MAKE_NUM_PROCS=4
-    - ctest --output-on-failure -L dalton -D Nightly
+    - ctest --output-on-failure -L dalton -M Nightly -T Build -T Test -T Submit
 
 nightly-mpi-int64:
   image: fedora:31
@@ -507,4 +507,4 @@ nightly-mpi-int64:
                    -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-mpi-int64
     - cd build
     - export CTEST_MAKE_NUM_PROCS=4
-    - ctest --output-on-failure -L dalton -D Nightly
+    - ctest --output-on-failure -L dalton -M Nightly -T Build -T Test -T Submit
