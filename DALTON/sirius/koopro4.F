@@ -5187,7 +5187,7 @@ C        Calculate the srxc potential for the MCSCF-srDFT density
 
          IPRFCK = 0
 
-         CALL SRDFT(1,WRK(KVSRAO),WRK(KDAO),EDFT,
+         CALL SRDFT(1,WRK(KVSRAO),WRK(KDAO),EDFT,EXDFT,ECDFT,
      &              .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      &              WRK(KFREE),LFREE,IPRFCK)
 

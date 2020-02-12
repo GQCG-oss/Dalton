@@ -932,7 +932,7 @@ C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
                 CALL DZERO(WRK(KSRAO),NSRAO*N2BASX)
                 DFT_SPINDNS_SAVE = DFT_SPINDNS
                 DFT_SPINDNS = DO_SPINDNS 
-                CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),ESRDFT,
+                CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),ESRDFT,EXSR,ECSR,
      &                     DOERG,.FALSE.,DOATR,TRIPLET_local,
      &                     WRK(KLAST),LWRK,IPRSRDFT)
 C                    SRDFT(NDMAT,EXCMAT,DMAT,ESRDFT,
@@ -980,6 +980,10 @@ C        ... restore DC = DTOT - DV
 !           (EJSR and EKSR are included in EMCSCF via modified FCAC and therefore not included in ESRDFTY)
 !           IF (iprsrdft .GT. 0) then
                WRITE (LUPRI,'(/A,F20.10)')
+     &            '   Ex-sr                          ',EXSR
+               WRITE (LUPRI,'(A,F20.10)')
+     &            '   Ec-sr                          ',ECSR
+               WRITE (LUPRI,'(A,F20.10)')
      &            '   Ex-sr + Ec-sr                  ',ESRDFT
                IF (EKSR .ne. 0.0D0) THEN
                   WRITE (LUPRI,'(A,F20.10)')

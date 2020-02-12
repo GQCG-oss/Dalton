@@ -28,7 +28,7 @@
 
 C*****************************************************************************
 #ifdef VAR_MPI
-      SUBROUTINE SRDFT_PAR_MASTER(ND_SIM,EXCMAT,DMAT,EDFTY,
+      SUBROUTINE SRDFT_PAR_MASTER(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,
      &                 DOERG,DO_MOLGRAD,DOATR,TRIPLET,
      &                 WORK,LWORK,IPRINT_in)
 C*****************************************************************************
@@ -321,10 +321,10 @@ C     variables for SRCPBERI
       EDFTY  = 0.0D0
       CALL DZERO(WORK(KEXCMAT),NEXCMAT*N2BASX)
       CALL SRDFT(
-     &      ND_SIM,WORK(KEXCMAT),WORK(KDMAT),EDFTY,
+     &      ND_SIM,WORK(KEXCMAT),WORK(KDMAT),EDFTY,EDFTX,EDFTC,
      &      DOERG,DO_MOLGRAD,DOATR,TRIPLET,
      &      WORK(KFREE),LFREE,IPRINT)
-!     SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DO_MOLGRAD,DOATR,
+!     SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,DO_MOLGRAD,DOATR,
 !    &                 WORK,LWORK,IPRINT)
 
       if (iprint .ge. 5) then

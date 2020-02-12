@@ -502,7 +502,7 @@ C        then set HF exchange factor to zero.
 
 
 C*****************************************************************************
-      SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
+      SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,
      &                 DO_MOLGRAD,DOATR,TRIPLET,WORK,LWORK,IPRINT_in)
 C*****************************************************************************
 C    Purpose : Calculate SR DFT-energy and potential contribution for
@@ -612,7 +612,7 @@ C*****************************************************************************
          flush(lupri)
 #endif
          CALL SRDFT_PAR_MASTER(
-     &        ND_SIM,EXCMAT,DMAT,EDFTY,
+     &        ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,
      &        DOERG,DO_MOLGRAD,DOATR,TRIPLET,
      &        WORK,LWORK,IPRINT)
 #if SRDFT_DEBUG > 4
@@ -773,6 +773,8 @@ C
       ECTOT     = RESULTS(11)
 C
       IF (DOERG) THEN
+         EDFTX = Exint
+         EDFTC = Ecint
          EDFTY = EXint + ECint
          IF (LSRHYBR) THEN
             EDFTY = EDFTY + EXTOT - EXSR + ECTOT - ECSR
