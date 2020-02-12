@@ -169,13 +169,7 @@ C
          LDENSAI = NAIDEN(1)
 C
          KT2AM   = KFOCKD  + LFOCKD
-CLilli need array for 2nd order doules and the squared one
-         K2TAM2  = KT2AM   + LT2AM
-         KT2SQ  = K2TAM2 + MAX(NT2SQ(1),NT2AO(ISYMOP),4*NT2ORT(ISYMOP))
-         WRITE(LUPRI,*) 
-Cend  THIS NEEDS TO BE PUT IN IF A3(1)-method Keyword!
-         KDENSIJ = KT2SQ  + NT2SQ(1)
-C         KDENSIJ = KT2SQ  + LT2AM
+         KDENSIJ = KT2AM  + LT2AM
          KDENSAB = KDENSIJ + LDENSIJ
          KDENSAI = KDENSAB + LDENSAB
          KEND1   = KDENSAI + LDENSAI

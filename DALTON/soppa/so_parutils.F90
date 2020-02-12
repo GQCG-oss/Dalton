@@ -587,7 +587,7 @@ contains
       call mpixbcast(parsoppa_update_amplitudes, 1, 'INTEGE', 0)
 !
 ! Send the actual amplitudes
-      call mpi_bcast(t2mp, lt2mp, mpi_real8, 0,mpi_comm_world,ierr)
+      call mpi_bcast(t2mp, lt2mp, mpi_real8, 0, mpi_comm_world, ierr)
       return
    end subroutine soppa_update_amplitudes
 
@@ -738,4 +738,3 @@ subroutine so_parutils()
    call quit('MPI dummy subroutine called')
 endsubroutine
 #endif
-

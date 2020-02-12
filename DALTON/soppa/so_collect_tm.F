@@ -144,7 +144,7 @@ C
       CONTAINS
 C
 C        A function that converts the letters X,Y and Z to
-C        the integers 1,2 and3
+C        the integers 1,2 and 3
          PURE FUNCTION COORD_IDX(A)
             CHARACTER(LEN=1), INTENT(IN) :: A
             INTEGER :: COORD_IDX
