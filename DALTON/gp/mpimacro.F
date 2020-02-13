@@ -88,9 +88,9 @@ C
 C  /* Deck mpifinalize */
       SUBROUTINE MPIXFINALIZE
 C
-      implicit none
 #ifndef VAR_CHEMSHELL
 #if defined (VAR_MPI)
+      implicit none
       INCLUDE 'mpif.h'
 C
       integer(kind=MPI_INTEGER_KIND) ierr_mpi
@@ -104,9 +104,9 @@ C
 C  /* Deck mpixbcast */
       SUBROUTINE MPIXBCAST(BUFFER,BUF_COUNT,TYPE_in,ROOT)
 C
+#if defined (VAR_MPI)
       implicit none
 #include "priunit.h"
-#if defined (VAR_MPI)
 #include "maxorb.h"
 #include "infpar.h"
       INCLUDE 'mpif.h'
@@ -236,12 +236,12 @@ C
 
       SUBROUTINE MPIX_ISEND(BUFFER,BUF_COUNT,BUF_TYPE,DEST,REQUEST,TAG)
 C
+#if defined (VAR_MPI)
       implicit none
 #include "priunit.h"
       CHARACTER*6 BUF_TYPE
       INTEGER     BUFFER(*) ! does not matter if wrong type here
       INTEGER     BUF_COUNT, DEST, REQUEST, TAG
-#if defined (VAR_MPI)
 #include "maxorb.h"
 #include "infpar.h"
       INCLUDE 'mpif.h'
@@ -280,12 +280,12 @@ C
       SUBROUTINE MPIX_IRECV(BUFFER,BUF_COUNT,BUF_TYPE,
      &                      SOURCE,REQUEST,TAG)
 C
+#if defined (VAR_MPI)
       implicit none
 #include "priunit.h"
       CHARACTER*6 BUF_TYPE
       INTEGER     BUFFER(*) ! does not matter if wrong type here
       INTEGER     BUF_COUNT, SOURCE, REQUEST, TAG
-#if defined (VAR_MPI)
 #include "maxorb.h"
 #include "infpar.h"
       INCLUDE 'mpif.h'
@@ -323,10 +323,10 @@ C
 
       subroutine mpixprocname(process_name,process_name_length)
 C
+#ifdef VAR_MPI
       implicit none
       character*(*) process_name
       integer       process_name_length
-#ifdef VAR_MPI
       include 'mpif.h'
       integer(kind=MPI_INTEGER_KIND) name_length_mpi, ierr_mpi
 C
