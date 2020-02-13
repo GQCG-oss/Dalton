@@ -903,7 +903,7 @@ C                 ... copy symmetric part of DXVAO
 C           ... get total DMAT = DC + DV if NASHT .gt. 0
 C           ... spin DMAT: DS is expected in JDAO + 2
           END IF
-C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
 #if SIRFCK_DEBUG > 0
           WRITE(LUPRI,*) 'SIRFCK: calling SRDFT, DOERG,DOATR,NSRAO',
      &             DOERG,DOATR,NSRAO  !JT
@@ -935,7 +935,7 @@ C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
                 CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),ESRDFT,EXSR,ECSR,
      &                     DOERG,.FALSE.,DOATR,TRIPLET_local,
      &                     WRK(KLAST),LWRK,IPRSRDFT)
-C                    SRDFT(NDMAT,EXCMAT,DMAT,ESRDFT,
+C                    SRDFT(NDMAT,EXCMAT,DMAT,ESRDFT,EXSR,ECSR,
 C                          DOERG,DOGRD,DOATR,TRIPLET,WORK,LWORK,IPRINT)
                 DFT_SPINDNS = DFT_SPINDNS_SAVE
 C         IF (DOATR)
