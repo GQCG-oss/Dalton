@@ -31,7 +31,7 @@ C
 
 #ifdef VAR_MPI
       use so_parutils, only: soppa_comm_active, soppa_num_active,
-     &                       soppa_nint
+     &                       soppa_nint, my_mpi_integer
 #endif
 
 #include "implicit.h"
@@ -545,8 +545,8 @@ C           Master does the balancing
      &                     work(kindxb), work(kend2), lwork2)
          ELSE
 C           Slaves receives the scatter, send arguments should be ignored
-            call mpi_scatter( AssignedIndices, maxnumjobs, mpi_integer,
-     &                        AssignedIndices, maxnumjobs, mpi_integer,
+            call mpi_scatter( AssignedIndices,maxnumjobs,my_mpi_integer,
+     &                        AssignedIndices,maxnumjobs,my_mpi_integer,
      &                        0, soppa_comm_active, ierr_mpi )
          ENDIF
 #endif
@@ -1112,8 +1112,8 @@ C  Send the timings
      &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
      &                       ierr_mpi)
 C  Recieve the new indices
-            call mpi_scatter( AssignedIndices, maxnumjobs, mpi_integer,
-     &                        AssignedIndices, maxnumjobs, mpi_integer,
+            call mpi_scatter( AssignedIndices,maxnumjobs,my_mpi_integer,
+     &                        AssignedIndices,maxnumjobs,my_mpi_integer,
      &                        0, soppa_comm_active, ierr_mpi)
          endif
       endif
@@ -1687,7 +1687,7 @@ C
 C F.Beyer Oct. 2014.
 
       use so_parutils, only : soppa_comm_active, soppa_num_active,
-     &                        soppa_nint
+     &                        soppa_nint, my_mpi_integer
 
 #include "implicit.h"
 #include "mpif.h"
@@ -1750,8 +1750,8 @@ C     PRINT HOW WORK IS DISTRIBUTED
            write (LUPRI, '(i5,f20.5)') i, sumofwork(i)
       enddo
       ! Send the info to every slave that does computation (some slaves might be stalled in the polling barrier in case there are too many MPI processes compared to the number of tasks).
-      call mpi_scatter( sortedindices, maxnumjobs, mpi_integer,
-     &                  localIndices, maxnumjobs, mpi_integer,
+      call mpi_scatter( sortedindices, maxnumjobs, my_mpi_integer,
+     &                  localIndices,  maxnumjobs, my_mpi_integer,
      &                  0, soppa_comm_active, ierr_mpi)
 
       ! Update the master's own array of ILLL indices
@@ -1781,7 +1781,7 @@ C
 C     F.Beyer Oct. 2014.
 
       use so_parutils, only: soppa_comm_active, soppa_nint,
-     &                       soppa_num_active
+     &                       soppa_num_active, my_mpi_integer
 
 C#include "implicit.h"
 #include "priunit.h"
@@ -1844,8 +1844,8 @@ C     HERDIR code
 
 C     TRANSFER AO INDICES TO SLAVES
 C     Use scatter
-      call mpi_scatter( work(kfinalsorted), maxnumjobs, mpi_integer,
-     &                  localIndices, maxnumjobs, mpi_integer,
+      call mpi_scatter( work(kfinalsorted), maxnumjobs, my_mpi_integer,
+     &                  localIndices,       maxnumjobs, my_mpi_integer,
      &                  0, soppa_comm_active, ierr_mpi )
 
       return

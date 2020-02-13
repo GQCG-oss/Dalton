@@ -254,7 +254,7 @@ contains
       ! The slaves need to create the iadrpk array by
       ! calling the module functions rather than with a bcast
       ! iadrpk_dim is initialized in get_iadrpk, no need to send it
-!      call mpi_bcast(iadrpk_dim, 1, mpi_integer, 0,mpi_comm_world,ierr)
+!      call mpi_bcast(iadrpk_dim, 1, my_mpi_integer, 0,mpi_comm_world,ierr)
       if (.not. allocated(iadrpk) ) then
          call get_iadrpk(lupri, nsym, muld2h, nbas,           &
      &                   nbast, i2bst, iaodis, iaodpk)
