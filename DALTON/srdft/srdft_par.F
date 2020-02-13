@@ -172,16 +172,16 @@ C  Node (slave) driver for parallel integration over srdft functional.
 C
 C*****************************************************************************
       implicit none
-      integer LWORK, IPRINT_in
-      real*8  WORK(LWORK)
+      integer :: LWORK, IPRINT_in
+      real*8 :: WORK(LWORK)
 
 !  mpif.h   : for MPI
 #include "mpif.h"
 
-      logical   DOERG,DO_MOLGRAD,DOATR,TRIPLET
-      integer   ND_SIM, NDMAT, NEXCMAT, NDMAT_in, IPRINT
-      integer   KFREE, LFREE, KDMAT, KEXCMAT
-      real*8    EDFTY
+      logical :: DOERG,DO_MOLGRAD,DOATR,TRIPLET
+      integer :: ND_SIM, NDMAT, NEXCMAT, NDMAT_in, IPRINT
+      integer :: KFREE, LFREE, KDMAT, KEXCMAT
+      real*8 :: EDFTY, EDFTX, EDFTC
 
       logical, save :: first_call
       DATA      first_call/.true./
