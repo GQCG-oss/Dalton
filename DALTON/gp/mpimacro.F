@@ -78,9 +78,6 @@ C
         CALL QUIT('MPI ERROR: Number of nodes requested is too large.')
       ENDIF
 C
-      DO I = 0, NODTOT
-         NODEID(I) = I
-      END DO
 #endif
 C
       RETURN

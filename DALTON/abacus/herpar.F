@@ -68,15 +68,6 @@ C     Determine total number of tasks - MTOTTK.
 C
       MTOTTK = MAXSHL*(MAXSHL+1)/2
 C
-      IF (MTOTTK .GT. MAXTSK) THEN
-         WRITE(LUPRI,'(//5X,A,/5X,A,/5X,2(A,I5))')
-     &    'ERROR : Number of tasks greater than maximum.',
-     &    'Recompilation will be necessary',
-     &    'MTOTTK =',MTOTTK, 'MAXTSK =',MAXTSK
-         CALL RECOMPI
-         CALL QUIT('ERROR: MTOTTK greater than MAXTSK in HER_PARDRV')
-      ENDIF
-C
 C     Determine dimension of array TMPMAT
 C
 C     Expectation values of differentiated integrals (all atoms)
@@ -280,11 +271,11 @@ Cef begin
 Cef end
 C
 Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
-      LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME,GENCTR
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,GENCTR
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), TMPMAT(L_TMPMT), INDEX(3,NINDEX),
      &          TIMES(MTOTTK), TSKCPU(MTOTTK), IWHICH(MTOTTK),
-     &          WORK(LWORK), NPOS(0:MAXTSK+1), HESSEE(*), SORTING(*)
+     &          WORK(LWORK), HESSEE(*), SORTING(*)
 CTROND
       DIMENSION GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
 CTROND
@@ -300,8 +291,9 @@ CTROND
 C
 C     NB! NPOS cannot be allocated from WORK due to the SAVEing below.
 C
-      SAVE FIRST,NPOS
-      DATA FIRST/.TRUE./
+      INTEGER, PARAMETER :: MAXTSK = MXSHEL*(MXSHEL+1)/2
+      INTEGER, SAVE      :: NPOS(0:MAXTSK+1)
+      LOGICAL, SAVE      :: FIRST = .TRUE.
 C
       CALL QENTER('HER_PARDRV_1')
       IF (IPRINT .GT. 4) CALL TITLER('Output from HER_PARDRV_1','*',103)

@@ -41,7 +41,6 @@ C
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "iratdef.h"
 C
       LOGICAL FIRST
@@ -50,10 +49,9 @@ C
 C
 C Used from common blocks
 C
-C MXORB  : MXSHEL (for INFPAR)
 C GNRINF : NEWBAS, NEWGEO
 C INFORB : N2BASX
-C INFPAR : NODEID(), NODTOT, NCODE, NTASK
+C INFPAR : NODTOT, NCODE, NTASK
 C
 #include "gnrinf.h"
 #include "inforb.h"
@@ -89,15 +87,6 @@ C
 C     Number of (class|class) integrals
 C
       MXCLS2 = NODCLS*(NODCLS + 1)/2
-C
-      IF (MXCLS2 .GT. MAXTSK) THEN
-         WRITE(LUPRI,'(/1X,A,/1X,A,/1X,2(A,I5))')
-     &      'Number of actual (class1|class2) integrals too large.',
-     &      'Recompilation necessary!',
-     &      'MXCLS2 =',MXCLS2,' MAXTSK =',MAXTSK
-         CALL RECOMPI
-         CALL QUIT('ERROR: MXCLS2 greater than MAXTSK in ERI_PARDRV')
-      END IF
 C
 C     Dimension of array INDEX
 C
@@ -164,7 +153,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "mtags.h"
 C
       LOGICAL FIRST
@@ -173,7 +161,6 @@ C
 C Used from common blocks
 C
 C MXCENT : MXCENT (for MOLINP)
-C MXORB  : MXSHEL (for INFPAR)
 C GNRINF : NEWBAS, NEWGEO (PVM: BASDIR, LENBAS)
 C MOLINP : NMLINE
 C MOLINC : MLINE()
@@ -272,22 +259,23 @@ C
 C  /* Deck eri_rvcls */
       SUBROUTINE ERI_RVCLS(NODCLS,IPRINT)
 C
+C     Receive number of OD classes from node 1. (Letting Master
+C     calculate it is waste of CPU time). Also get NTASK
+C
 #include "implicit.h"
-#include "maxorb.h"
 #include "mtags.h"
 C
 C Used from common blocks
 C
-C  MXORB : MXSHEL (for INFPAR)
-C  INFPAR: NODEID(1), NTASK
+C  INFPAR: NTASK
 C
 #include "infpar.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_RVCLS','*',103)
 C
 #if defined (VAR_MPI)
-      CALL MPIXRECV(NODCLS,1,'INTEGER',NODEID(1),MTAG4)
-      CALL MPIXRECV(NTASK ,1,'INTEGER',NODEID(1),MTAG4)
+      CALL MPIXRECV(NODCLS,1,'INTEGER',1,MTAG4)
+      CALL MPIXRECV(NTASK ,1,'INTEGER',1,MTAG4)
 #endif
 #if defined (VAR_PVM)
       CALL PVMXRECV(NODEID(1),MTAG4)
@@ -304,7 +292,6 @@ C  /* Deck eri_pardr1 */
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mtags.h"
 C
 Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
@@ -315,9 +302,8 @@ Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
 C
 C Used from common blocks
 C
-C MXORB  : MXSHEL (for INFPAR)
 C GNRINF : NEWBAS, NEWGEO
-C INFPAR : NODTOT, NTASK, TIMING, MAXTSK
+C INFPAR : NODTOT, NTASK, TIMING
 C
 #include "gnrinf.h"
 #include "infpar.h"
@@ -327,8 +313,9 @@ Cef end
 C
 C     NPOS must be saved and therefore statically allocated.
 C
-      DIMENSION NPOS(0:MAXTSK+1)
-      SAVE NPOS
+#include "maxorb.h"
+      INTEGER, PARAMETER :: MAXTSK = MXSHEL*(MXSHEL+1)/2
+      INTEGER, SAVE      :: NPOS(0:MAXTSK+1)
 C
       CALL QENTER('ERI_PARDR1')
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_PARDR1','*',103)
@@ -377,7 +364,6 @@ Cef begin
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mtags.h"
 #include "incore.h"
 C
@@ -392,8 +378,7 @@ C
 C
 C Used from common blocks
 C
-C  MXORB  : MXSHEL (for INFPAR)
-C  INFPAR : NODTOT, NODEID(), NTASK, NCODE
+C  INFPAR : NODTOT, NTASK, NCODE
 C
 #include "infpar.h"
 C
@@ -451,7 +436,7 @@ C         CALL MPI_BARRIER(MPI_COMM_WORLD)
             INDEX(3,IPLAC2) = ISAVED
          END IF
 C
-C     Send (I|J) batch to NODEID
+C     Send (I|J) batch
 C
          IF (IPLACE .GT. NBATCH .AND. NQUEUE(NWHO) .EQ. 0) THEN
             TDONE = .TRUE.
@@ -542,7 +527,7 @@ C
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
 C
-C        Send (I|J) batch to NODEID
+C        Send (I|J) batch
 C
          CALL MPIXRECV(IPLAC2,1,'INTEGER',NWHO,MTAG51)
 C
@@ -587,7 +572,7 @@ C
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
 C
-C        Send (I|J) batch to NODEID
+C        Send (I|J) batch
 C
          CALL MPIXSEND(DONE,1,'LOGICAL',NWHO,MTAG6)
          CALL MPIXSEND(INDEX(MOD(IPLACE-1,3)+1,INT((IPLACE-1)/3)+1),
@@ -655,7 +640,6 @@ C
 #include "implicit.h"
 #include "mtags.h"
 #include "priunit.h"
-#include "maxorb.h"
       PARAMETER (D0=0.0D0,D1 = 1.0D0)
       LOGICAL NOTMEM
       DIMENSION FMAT(N2BASX), TMPMAT(N2BASX), TIMES(MXCLS2),
@@ -663,7 +647,6 @@ C
 C
 C Used from common blocks
 C
-C MXORB  : MXSHEL (for INFPAR)
 C INFPAR : NODTOT
 C INFORB : N2BASX
 C ERIMEM : *
@@ -777,15 +760,14 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
 #include "aovec.h"
+#include "maxorb.h"
 C
       PARAMETER (MXDMAT = 100)
       DIMENSION WORK(LWORK), ISYMDM(MXDMAT), IFCTYP(MXDMAT)
 C
 C Used from common blocks
 C
-C MXORB  : MXSHEL (for INFPAR)
 C INFPAR : SLAVE
 C INFORB : N2BASX
 C
@@ -862,7 +844,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "mtags.h"
 C
       LOGICAL FIRST, TSTINP
@@ -873,7 +854,6 @@ C
 C Used from common blocks
 C
 C MXCENT : MXCENT (for MOLINP)
-C MXORB  : MXSHEL (for INFPAR)
 C GNRINF : NEWBAS, NEWGEO, (PVM: BASDIR, BASLEN), RELCAL
 C MOLINP : NMLINE
 C MOLINC : MLINE()
@@ -1021,9 +1001,9 @@ C  /* Deck eri_noddrv */
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "eribuf.h"
 #include "dummy.h"
 #include "mtags.h"
@@ -1461,12 +1441,10 @@ C  /* Deck eri_sdcls */
       SUBROUTINE ERI_SDCLS(NODCLS,IPRINT)
 C
 #include "implicit.h"
-#include "maxorb.h"
 #include "mtags.h"
 C
 C Used from common blocks
 C
-C  MXORB : MXSHEL (for INFPAR)
 C  INFPAR: MASTER
 C
 #include "infpar.h"
@@ -1492,14 +1470,12 @@ C  /* Deck sdres */
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mtags.h"
 C
       DIMENSION DMAT(*), FMAT(*), CLSCPU(IJSTOT), IWHICH(IJSTOT)
 C
 C Used from common blocks
 C
-C  MXORB  : MXSHEL (for INFPAR)
 C  INFPAR : NCODE, MASTER, MYNUM, TIMING
 C  ERIMEM : *
 C  CBIERI : NDMAT
