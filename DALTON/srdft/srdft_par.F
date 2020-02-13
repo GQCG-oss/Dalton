@@ -43,9 +43,10 @@ C  see SRDFT for an explanation of the parameters.
 C
 C*****************************************************************************
       implicit none
-      logical   DOERG,DO_MOLGRAD,DOATR,TRIPLET
-      integer   ND_SIM, LWORK, IPRINT_in
-      real*8    EXCMAT(N2BASX,*),DMAT(N2BASX,*),EDFTY,WORK(LWORK)
+      logical :: DOERG,DO_MOLGRAD,DOATR,TRIPLET
+      integer :: ND_SIM, LWORK, IPRINT_in
+      real*8 :: EXCMAT(N2BASX,*),DMAT(N2BASX,*),EDFTY,EDFTX,EDFTC,
+     &          WORK(LWORK)
 
 #include "priunit.h"
 
