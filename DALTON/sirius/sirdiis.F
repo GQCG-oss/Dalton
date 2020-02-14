@@ -282,9 +282,6 @@ C  /* Deck DIIS_CTL */
      *                    CVEC,TNLM,WRK,KFRSAV,LFRSAV,
      *                    IPR_DIIS,ICONV)
 
-#ifdef ENABLE_EFS
-      use efs_interface
-#endif
 C
 C L.r. 5-May-1994 hjaaj / 1-Apr-1997
 C
@@ -554,9 +551,6 @@ C------------------
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
      &     .AND. .NOT.AOSAVE   .AND. .NOT.CHOINT
      &     .AND. .NOT.EMBEDDING
-#ifdef ENABLE_EFS
-     &     .AND. .NOT. use_efs
-#endif
 C
 #ifdef HAS_PCMSOLVER
       if (pcm_cfg%do_pcm) then
@@ -782,18 +776,7 @@ C
 
          CALL GETTIM(t1_fck,w1_fck)
 
-#if defined ENABLE_EFS
-         if (use_efs) then
-            call mpixbcast (const_fock_update, 1, 'INTEGER', 0)
-            iprint = 0
-            call mpixbcast (iprint, 1, 'INTEGER', 0)
-            call efs_add_2efock (FCAO, DCAO, IFTHRS)
-         else
-#endif
          CALL FCK2AO(ONLYFC,FCAO,DCAO,WRK,KFREE,LFREE)
-#if defined ENABLE_EFS
-         end if
-#endif
 
          IF (DIRFCK .AND. IFTHRS.LT.20) THEN
             IF (IPR_DIIS .GE. 0) THEN

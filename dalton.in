@@ -470,17 +470,6 @@ if [ $dalton_exitcode = 1 ]; then
    exit 1
 fi
 
-# set environment variables for EFS code
-if [ -z "$EFS_MEM_MB" ]; then
-    export EFS_MEM_MB=4096
-fi
-if [ -z "$EFS_BUFFER_MB" ]; then
-    export EFS_BUFFER_MB=1024
-fi
-if [ -z "$QIC_DIR" ]; then
-    export QIC_DIR=$SCRIPT_DIR/external/efs-build/qic
-fi
-
 if [ $opt_cpexe -eq 1 ] ; then
    cp $DALTON_EXECUTABLE $SCRATCHDIR/dalton.x
    if [ $optn -gt 1 -a -z "$DALTON_USE_GLOBAL_SCRATCH" ] ; then

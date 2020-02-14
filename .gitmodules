@@ -7,6 +7,3 @@
 [submodule "external/qfitlib"]
 	path = external/qfitlib
 	url = https://github.com/cstein/qfitlib.git
-[submodule "external/efs"]
-	path = external/efs
-	url = https://gitlab.com/dalton/efs.git
