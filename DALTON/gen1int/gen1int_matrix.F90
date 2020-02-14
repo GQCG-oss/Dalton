@@ -497,34 +497,32 @@ module gen1int_matrix
   !> \author Bin Gao
   !> \date 2012-05-13
   !> \param A is the matrix
-  !> \param root is the root processor which broadcasts the matrix
+  !> \param root_mpi is the root processor which broadcasts the matrix
   !> \param mat_comm is the MPI communicator
-  subroutine MatBcast(A, root, mat_comm)
+  subroutine MatBcast(A, root_mpi, mat_comm)
     type(matrix), intent(inout) :: A
-    integer, intent(in) :: root
-    integer, intent(in) :: mat_comm
 #include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND), intent(in) :: root_mpi
+    integer(kind=MPI_INTEGER_KIND), intent(in) :: mat_comm
     integer(kind=MPI_INTEGER_KIND) :: rank_proc  !rank of processor
-    integer(kind=MPI_INTEGER_KIND) :: count_mpi, root_mpi, comm_mpi, ierr_mpi
+    integer(kind=MPI_INTEGER_KIND) :: count_mpi, ierr_mpi
     integer :: ierr
-    root_mpi  = root
     count_mpi = 1
-    comm_mpi = mat_comm
     ! broadcasts information of the matrix
-    call MPI_Bcast(A%num_row,    count_mpi, MPI_INTEGERK, root_mpi, comm_mpi, ierr_mpi)
-    call MPI_Bcast(A%num_col,    count_mpi, MPI_INTEGERK, root_mpi, comm_mpi, ierr_mpi)
-    call MPI_Bcast(A%triangular, count_mpi, MPI_LOGICALK, root_mpi, comm_mpi, ierr_mpi)
-    call MPI_Bcast(A%symmetric,  count_mpi, MPI_LOGICALK, root_mpi, comm_mpi, ierr_mpi)
+    call MPI_Bcast(A%num_row,    count_mpi, MPI_INTEGERK, root_mpi, mat_comm, ierr_mpi)
+    call MPI_Bcast(A%num_col,    count_mpi, MPI_INTEGERK, root_mpi, mat_comm, ierr_mpi)
+    call MPI_Bcast(A%triangular, count_mpi, MPI_LOGICALK, root_mpi, mat_comm, ierr_mpi)
+    call MPI_Bcast(A%symmetric,  count_mpi, MPI_LOGICALK, root_mpi, mat_comm, ierr_mpi)
     ! allocates memory for the matrix on other processors
-    call MPI_Comm_rank(comm_mpi, rank_proc, ierr_mpi)
-    if (rank_proc==root) then
+    call MPI_Comm_rank(mat_comm, rank_proc, ierr_mpi)
+    if (rank_proc==root_mpi) then
       count_mpi = size(A%elms_alpha)
-      call MPI_Bcast(A%elms_alpha, count_mpi, MPI_REALK, root_mpi, comm_mpi, ierr_mpi)
+      call MPI_Bcast(A%elms_alpha, count_mpi, MPI_REALK, root_mpi, mat_comm, ierr_mpi)
     else
       call MatCreate(A=A, num_row=A%num_row, info_mat=ierr, num_col=A%num_col, &
                      triangular=A%triangular, symmetric=A%symmetric)
       count_mpi = size(A%elms_alpha)
-      call MPI_Bcast(A%elms_alpha, count_mpi, MPI_REALK, root_mpi, comm_mpi, ierr_mpi)
+      call MPI_Bcast(A%elms_alpha, count_mpi, MPI_REALK, root_mpi, mat_comm, ierr_mpi)
     end if
   end subroutine MatBcast
 #endif

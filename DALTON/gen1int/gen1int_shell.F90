@@ -204,22 +204,19 @@ module gen1int_shell
   !> \date 2012-05-13
   !> \param num_shells is the number of AO sub-shells
   !> \param sub_shells are the AO sub-shells
-  !> \param root is the root processor which broadcasts the AO sub-shells
-  !> \param api_comm is the MPI communicator
-  subroutine Gen1IntShellBcast(num_shells, sub_shells, root, api_comm)
+  !> \param root_mpi is the root processor which broadcasts the AO sub-shells
+  !> \param api_comm_mpi is the MPI communicator
+  subroutine Gen1IntShellBcast(num_shells, sub_shells, root_mpi, api_comm_mpi)
     integer, intent(in) :: num_shells
     type(sub_shell_t), intent(inout) :: sub_shells(num_shells)
-    integer, intent(in) :: root
-    integer, intent(in) :: api_comm
 #include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND), intent(in) :: root_mpi, api_comm_mpi
     integer(kind=MPI_INTEGER_KIND) ::  rank_proc         !rank of processor
-    integer(kind=MPI_INTEGER_KIND) ::  root_mpi, api_comm_mpi, ierr_mpi, count_mpi
+    integer(kind=MPI_INTEGER_KIND) ::  ierr_mpi, count_mpi
     logical bcast_mag_powers  !if broadcasting magnetic numbers or Cartesian powers
     integer ishell            !incremental recorder sub-shells
     integer ierr              !error information
     ! gets the rank of processor
-    root_mpi     = root
-    api_comm_mpi = api_comm
     call MPI_Comm_rank(api_comm_mpi, rank_proc, ierr_mpi)
     do ishell = 1, num_shells
       ! broadcasts
@@ -227,12 +224,12 @@ module gen1int_shell
       call MPI_Bcast(sub_shells(ishell)%spher_gto, count_mpi, MPI_LOGICALK, root_mpi, api_comm_mpi, ierr_mpi)
       call MPI_Bcast(sub_shells(ishell)%idx_cent,  count_mpi, MPI_INTEGERK, root_mpi, api_comm_mpi, ierr_mpi)
       count_mpi = 3
-      call MPI_Bcast(sub_shells(ishell)%coord_cent, count_mpi, MPI_REALK, root_mpi, api_comm_mpi, ierr_mpi)
+      call MPI_Bcast(sub_shells(ishell)%coord_cent,count_mpi, MPI_REALK,    root_mpi, api_comm_mpi, ierr_mpi)
       count_mpi = 1
       call MPI_Bcast(sub_shells(ishell)%ang_num,   count_mpi, MPI_INTEGERK, root_mpi, api_comm_mpi, ierr_mpi)
       call MPI_Bcast(sub_shells(ishell)%num_prim,  count_mpi, MPI_INTEGERK, root_mpi, api_comm_mpi, ierr_mpi)
       call MPI_Bcast(sub_shells(ishell)%num_contr, count_mpi, MPI_INTEGERK, root_mpi, api_comm_mpi, ierr_mpi)
-      if (rank_proc==root) then
+      if (rank_proc==root_mpi) then
         ! spherical GTOs
         if (sub_shells(ishell)%spher_gto) then
           !-bcast_mag_powers = allocated(sub_shells(ishell)%mag_num)
@@ -401,7 +398,7 @@ module gen1int_shell
   !> \param nary_tree_bra is the N-ary tree for geometric derivatives on bra center
   !> \param nary_tree_ket is the N-ary tree for geometric derivatives on ket center
   !> \param nary_tree_total is the N-ary tree for total geometric derivatives
-  !> \param api_comm is the MPI communicator
+  !> \param api_comm_mpi is the MPI communicator
   !> \param num_prop is the number of property integrals including various derivatives (except
   !>        geometric derivatives)
   !> \param num_geo_bra is number of geometric derivatives on bra center
@@ -420,7 +417,7 @@ module gen1int_shell
                                     num_shells_ket, sub_shells_ket, &
                                     same_braket, one_prop,          &
                                     nary_tree_bra, nary_tree_ket,   &
-                                    nary_tree_total, api_comm,      &
+                                    nary_tree_total, api_comm_mpi,  &
                                     num_prop, num_geo_bra,          &
                                     num_geo_ket, num_geo_total,     &
                                     val_ints, write_ints,           &
@@ -436,7 +433,12 @@ module gen1int_shell
     type(nary_tree_t), intent(inout) :: nary_tree_bra
     type(nary_tree_t), intent(inout) :: nary_tree_ket
     type(nary_tree_t), intent(inout) :: nary_tree_total
-    integer, optional, intent(in) :: api_comm
+#ifdef VAR_MPI
+#include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND), optional, intent(in) :: api_comm_mpi
+#else
+    integer, optional, intent(in) :: api_comm_mpi
+#endif
     integer, intent(in) :: num_prop
     integer, intent(in) :: num_geo_bra
     integer, intent(in) :: num_geo_ket
@@ -490,7 +492,6 @@ module gen1int_shell
     integer ishell, idens, bgeo, kgeo, tgeo, iprop  !incremental recorders
     integer ierr                                    !error information
 #if defined(VAR_MPI)
-#include "mpif.h"
     integer(kind=MPI_INTEGER_KIND) :: rank_proc     !rank of processor
     integer(kind=MPI_INTEGER_KIND) :: num_proc      !number of processors
     integer(kind=MPI_INTEGER_KIND) :: worker_request(3) !request from a worker, in which the first two elements
@@ -498,8 +499,8 @@ module gen1int_shell
                                                     !to send back, the third is the rank of the worker
     integer(kind=MPI_INTEGER_KIND) :: msg_tag       !message tag
     integer(kind=MPI_INTEGER_KIND) :: mpi_status(MPI_STATUS_SIZE) !MPI status
-    integer(kind=MPI_INTEGER_KIND) :: api_comm_mpi, ierr_mpi, count_mpi, manager_mpi
-    manager_mpi = MANAGER
+    integer(kind=MPI_INTEGER_KIND) :: ierr_mpi, count_mpi
+    integer(kind=MPI_INTEGER_KIND), parameter :: manager_mpi = MANAGER
 #endif
     ! since we do not use mixed CGTOs and SGTOs, we get this information only from
     ! the first sub-shell on bra center
@@ -628,9 +629,9 @@ module gen1int_shell
     end if
 #if defined(VAR_MPI)
     ! gets the rank of this processor and the number of processors
-    if (present(api_comm)) then
+    if (present(api_comm_mpi)) then
       call MPI_Comm_rank(api_comm_mpi, rank_proc, ierr_mpi)
-      call MPI_Comm_size(api_comm_mpi, num_proc, ierr_mpi)
+      call MPI_Comm_size(api_comm_mpi, num_proc,  ierr_mpi)
     else
       rank_proc = manager_mpi
       num_proc = 1
@@ -672,7 +673,7 @@ module gen1int_shell
       end if
 #if defined(VAR_MPI)
       ! broadcasts what kind of jobs to do
-      if (present(api_comm)) then
+      if (present(api_comm_mpi)) then
         count_mpi = 1
         call MPI_Bcast(do_integral,    count_mpi, MPI_LOGICALK, manager_mpi, api_comm_mpi, ierr_mpi)
         call MPI_Bcast(do_expectation, count_mpi, MPI_LOGICALK, manager_mpi, api_comm_mpi, ierr_mpi)
@@ -711,13 +712,15 @@ module gen1int_shell
         shell_pair(2) = min_shell_ket
         do while (remaining_jobs>0)
           ! receives a request from a woker
-          call MPI_Recv(worker_request, 3, MPI_INTEGERK, MPI_ANY_SOURCE, &
-                        MPI_ANY_TAG, api_comm_mpi, mpi_status, ierr_mpi)
+          count_mpi = 3
+          call MPI_Recv(worker_request, count_mpi, MPI_INTEGERK, int(MPI_ANY_SOURCE,kind=MPI_INTEGER_KIND), &
+                        int(MPI_ANY_TAG,kind=MPI_INTEGER_KIND), api_comm_mpi, mpi_status, ierr_mpi)
           ! the worker requests new work
           if (worker_request(1)==REQUEST_WORK) then
             ! no more sub-shell pair to calculate
             if (shell_pair(1)>=max_shell_bra .and. shell_pair(2)>=max_shell_ket) then
-              call MPI_Send((/NO_MORE_WORK,NO_MORE_WORK/), 2, MPI_INTEGERK, &
+              count_mpi = 2
+              call MPI_Send((/NO_MORE_WORK,NO_MORE_WORK/), count_mpi, MPI_INTEGERK, &
                             worker_request(3), msg_tag, api_comm_mpi, ierr_mpi)
               ! decreases the number of remaining jobs
               remaining_jobs = remaining_jobs-1
@@ -742,7 +745,8 @@ module gen1int_shell
                 end if
               end select
               ! sends the next sub-shell pair to the worker
-              call MPI_Send(shell_pair, 2, MPI_INTEGERK, worker_request(3), &
+              count_mpi = 2
+              call MPI_Send(shell_pair, count_mpi, MPI_INTEGERK, worker_request(3), &
                             msg_tag, api_comm_mpi, ierr_mpi)
             end if
           ! the worker wants to send the contracted integrals back
@@ -751,10 +755,10 @@ module gen1int_shell
                     * sub_shells_bra(worker_request(1))%num_contr &
                     * sub_shells_ket(worker_request(2))%num_ao    &
                     * sub_shells_ket(worker_request(2))%num_contr
-            size_ints =  size_ao*num_matrices
+            count_mpi = size_ao*num_matrices
             ! receives results from the worker
-            call MPI_Recv(contr_ints(1:size_ints), size_ints, MPI_REALK, &
-                          worker_request(3), MPI_ANY_TAG, api_comm_mpi,      &
+            call MPI_Recv(contr_ints(1:size_ints), count_mpi, MPI_REALK,   &
+                          worker_request(3), int(MPI_ANY_TAG,kind=MPI_INTEGER_KIND), api_comm_mpi, &
                           mpi_status, ierr_mpi)
             ! sets the minimum and maximum of indices of rows of the integral matrices
             min_row_idx = sub_shells_bra(worker_request(1))%base_idx+1
@@ -806,11 +810,12 @@ module gen1int_shell
         end do
         ! receives expectation values from worker processors
         if (do_expectation) then
-          call MPI_Reduce(MPI_IN_PLACE,                                                     &
+          call MPI_Reduce(int(MPI_IN_PLACE,kind=MPI_INTEGER_KIND),                          &
                           unique_expt(:,path_offset_bgeo+1:path_offset_bgeo+path_num_bgeo,  &
                                       path_offset_kgeo+1:path_offset_kgeo+path_num_kgeo,    &
                                       path_offset_tgeo+1:path_offset_tgeo+path_num_tgeo,:), &
-                          num_matrices*num_dens, MPI_REALK, MPI_SUM, manager_mpi, api_comm_mpi, ierr_mpi)
+                          num_matrices*num_dens, MPI_REALK, int(MPI_SUM,kind=MPI_INTEGER_KIND), &
+                          manager_mpi, api_comm_mpi, ierr_mpi)
         end if
       ! worker code
       else
@@ -818,10 +823,12 @@ module gen1int_shell
         do while (.true.)
           ! sends request for a new work to manager
           worker_request(1) = REQUEST_WORK
-          call MPI_Send(worker_request, 3, MPI_INTEGERK, manager_mpi, &
+          count_mpi = 3
+          call MPI_Send(worker_request, count_mpi, MPI_INTEGERK, manager_mpi, &
                         msg_tag, api_comm_mpi, ierr_mpi)
           ! receives the next sub-shell pair or "finished" signal from manager
-          call MPI_Recv(shell_pair, 2, MPI_INTEGERK, manager_mpi, MPI_ANY_TAG, &
+          count_mpi = 2
+          call MPI_Recv(shell_pair, count_mpi, MPI_INTEGERK, manager_mpi, int(MPI_ANY_TAG,kind=MPI_INTEGER_KIND), &
                         api_comm_mpi, mpi_status, ierr_mpi)
           if (shell_pair(1)==NO_MORE_WORK) then
             exit
@@ -903,9 +910,11 @@ module gen1int_shell
             ! sends the contracted integrals to manager
             if (do_integral) then
               worker_request(1:2) = shell_pair
-              call MPI_Send(worker_request, 3, MPI_INTEGERK, manager_mpi, &
+              count_mpi = 3
+              call MPI_Send(worker_request, count_mpi, MPI_INTEGERK, manager_mpi, &
                             msg_tag, api_comm_mpi, ierr_mpi)
-              call MPI_Send(contr_ints(1:size_ints), size_ints, MPI_REALK, &
+              count_mpi = size_ints
+              call MPI_Send(contr_ints(1:size_ints), count_mpi, MPI_REALK, &
                             manager_mpi, msg_tag, api_comm_mpi, ierr_mpi)
             end if
             ! calculates the expectation values with unique total geometric derivatives
@@ -961,7 +970,8 @@ module gen1int_shell
         ! sends expectation values to manager processor
         if (do_expectation) then
           call MPI_Reduce(unique_expt, unique_expt, num_matrices*num_dens, &
-                          MPI_REALK, MPI_SUM, manager_mpi, api_comm_mpi, ierr_mpi)
+                          MPI_REALK, int(MPI_SUM,kind=MPI_INTEGER_KIND),   &
+                          manager_mpi, api_comm_mpi, ierr_mpi)
         end if
       end if
     ! calculations with only one processor
@@ -1173,7 +1183,7 @@ module gen1int_shell
     end if
 #if defined(VAR_MPI)
     ! blocks until all processors have finished
-    if (present(api_comm)) call MPI_Barrier(api_comm_mpi, ierr_mpi)
+    if (present(api_comm_mpi)) call MPI_Barrier(api_comm_mpi, ierr_mpi)
 #endif
   end subroutine Gen1IntShellGetIntExpt
 
@@ -1190,7 +1200,7 @@ module gen1int_shell
   !> \param nary_tree_bra is the N-ary tree for geometric derivatives on bra center
   !> \param nary_tree_ket is the N-ary tree for geometric derivatives on ket center
   !> \param nary_tree_total is the N-ary tree for total geometric derivatives
-  !> \param api_comm is the MPI communicator
+  !> \param api_comm_mpi is the MPI communicator
   !> \param num_points is the number of grid points
   !> \param grid_points contains the coordinates of grid points
   !> \param num_dens is the number of AO density matrices
@@ -1212,7 +1222,7 @@ module gen1int_shell
                                     num_shells_ket, sub_shells_ket, &
                                     same_braket, one_prop,          &
                                     nary_tree_bra, nary_tree_ket,   &
-                                    nary_tree_total, api_comm,      &
+                                    nary_tree_total, api_comm_mpi,  &
                                     num_points, grid_points,        &
                                     num_dens, ao_dens, num_prop,    &
                                     num_geo_bra, num_geo_ket,       &
@@ -1228,7 +1238,12 @@ module gen1int_shell
     type(nary_tree_t), intent(inout) :: nary_tree_bra
     type(nary_tree_t), intent(inout) :: nary_tree_ket
     type(nary_tree_t), intent(inout) :: nary_tree_total
-    integer, optional, intent(in) :: api_comm
+#ifdef VAR_MPI
+#include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND), optional, intent(in) :: api_comm_mpi
+#else
+    integer, optional, intent(in) :: api_comm_mpi
+#endif
     integer, intent(in) :: num_points
     real(REALK), intent(in) :: grid_points(3,num_points)
     integer, intent(in) :: num_dens
@@ -1277,7 +1292,6 @@ module gen1int_shell
             iprop, ipoint
     integer ierr                                      !error information
 #if defined(VAR_MPI)
-#include "mpif.h"
     integer(kind=MPI_INTEGER_KIND) :: rank_proc     !rank of processor
     integer(kind=MPI_INTEGER_KIND) :: num_proc      !number of processors
     integer(kind=MPI_INTEGER_KIND) :: worker_request(3) !request from a worker, in which the first two elements
@@ -1285,8 +1299,8 @@ module gen1int_shell
                                                     !to send back, the third is the rank of the worker
     integer(kind=MPI_INTEGER_KIND) :: msg_tag       !message tag
     integer(kind=MPI_INTEGER_KIND) :: mpi_status(MPI_STATUS_SIZE) !MPI status
-    integer(kind=MPI_INTEGER_KIND) :: api_comm_mpi, ierr_mpi, count_mpi, manager_mpi
-    manager_mpi = MANAGER
+    integer(kind=MPI_INTEGER_KIND) :: ierr_mpi, count_mpi
+    integer(kind=MPI_INTEGER_KIND), parameter :: manager_mpi = MANAGER
 #endif
     ! since we do not use mixed CGTOs and SGTOs, we get this information only from
     ! the first sub-shell on bra center
@@ -1415,7 +1429,7 @@ module gen1int_shell
     end if
 #if defined(VAR_MPI)
     ! gets the rank of this processor and the number of processors
-    if (present(api_comm)) then
+    if (present(api_comm_mpi)) then
       call MPI_Comm_rank(api_comm_mpi, rank_proc, ierr_mpi)
       call MPI_Comm_size(api_comm_mpi, num_proc, ierr_mpi)
     else
@@ -1433,7 +1447,7 @@ module gen1int_shell
       end if
 #if defined(VAR_MPI)
       ! broadcasts what kind of jobs to do
-      if (present(api_comm)) then
+      if (present(api_comm_mpi)) then
         count_mpi = 1
         call MPI_Bcast(do_expectation, count_mpi, MPI_LOGICALK, manager_mpi, api_comm_mpi, ierr_mpi)
       end if
@@ -1468,13 +1482,15 @@ module gen1int_shell
         shell_pair(2) = min_shell_ket
         do while (remaining_jobs>0)
           ! receives a request from a woker
-          call MPI_Recv(worker_request, 3, MPI_INTEGERK, MPI_ANY_SOURCE, &
-                        MPI_ANY_TAG, api_comm_mpi, mpi_status, ierr_mpi)
+          count_mpi = 3
+          call MPI_Recv(worker_request, count_mpi, MPI_INTEGERK, int(MPI_ANY_SOURCE,kind=MPI_INTEGER_KIND), &
+                        int(MPI_ANY_TAG,kind=MPI_INTEGER_KIND), api_comm_mpi, mpi_status, ierr_mpi)
           ! the worker requests new work
           if (worker_request(1)==REQUEST_WORK) then
             ! no more sub-shell pair to calculate
             if (shell_pair(1)>=max_shell_bra .and. shell_pair(2)>=max_shell_ket) then
-              call MPI_Send((/NO_MORE_WORK,NO_MORE_WORK/), 2, MPI_INTEGERK, &
+              count_mpi = 2
+              call MPI_Send((/NO_MORE_WORK,NO_MORE_WORK/), count_mpi, MPI_INTEGERK, &
                             worker_request(3), msg_tag, api_comm_mpi, ierr_mpi)
               ! decreases the number of remaining jobs
               remaining_jobs = remaining_jobs-1
@@ -1499,7 +1515,8 @@ module gen1int_shell
                 end if
               end select
               ! sends the next sub-shell pair to the worker
-              call MPI_Send(shell_pair, 2, MPI_INTEGERK, worker_request(3), &
+              count_mpi = 2
+              call MPI_Send(shell_pair, count_mpi, MPI_INTEGERK, worker_request(3), &
                             msg_tag, api_comm_mpi, ierr_mpi)
             end if
           ! the worker wants to send the contracted integrals back
@@ -1509,13 +1526,13 @@ module gen1int_shell
         end do
         ! receives expectation values from worker processors
         if (do_expectation) then
-          call MPI_Reduce(MPI_IN_PLACE,                                                     &
+          call MPI_Reduce(int(MPI_IN_PLACE,kind=MPI_INTEGER_KIND),                          &
                           unique_expt(:,:,                                                  &
                                       path_offset_bgeo+1:path_offset_bgeo+path_num_bgeo,    &
                                       path_offset_kgeo+1:path_offset_kgeo+path_num_kgeo,    &
                                       path_offset_tgeo+1:path_offset_tgeo+path_num_tgeo,:), &
-                          num_points*num_matrices*num_dens, MPI_REALK, MPI_SUM, manager_mpi,&
-                          api_comm_mpi, ierr_mpi)
+                          num_points*num_matrices*num_dens, MPI_REALK, int(MPI_SUM,kind=MPI_INTEGER_KIND), &
+                          manager_mpi, api_comm_mpi, ierr_mpi)
         end if
       ! worker code
       else
@@ -1523,10 +1540,12 @@ module gen1int_shell
         do while (.true.)
           ! sends request for a new work to manager
           worker_request(1) = REQUEST_WORK
-          call MPI_Send(worker_request, 3, MPI_INTEGERK, manager_mpi, &
+          count_mpi = 3
+          call MPI_Send(worker_request, count_mpi, MPI_INTEGERK, manager_mpi, &
                         msg_tag, api_comm_mpi, ierr_mpi)
           ! receives the next sub-shell pair or "finished" signal from manager
-          call MPI_Recv(shell_pair, 2, MPI_INTEGERK, manager_mpi, MPI_ANY_TAG, &
+          count_mpi = 2
+          call MPI_Recv(shell_pair, count_mpi, MPI_INTEGERK, manager_mpi, int(MPI_ANY_TAG,kind=MPI_INTEGER_KIND), &
                         api_comm_mpi, mpi_status, ierr_mpi)
           if (shell_pair(1)==NO_MORE_WORK) then
             exit
@@ -1679,7 +1698,8 @@ module gen1int_shell
         ! sends expectation values to manager processor
         if (do_expectation) then
           call MPI_Reduce(unique_expt, unique_expt, num_points*num_matrices*num_dens, &
-                          MPI_REALK, MPI_SUM, manager_mpi, api_comm_mpi, ierr_mpi)
+                          MPI_REALK, int(MPI_SUM,kind=MPI_INTEGER_KIND),              &
+                          manager_mpi, api_comm_mpi, ierr_mpi)
         end if
       end if
     ! calculations with only one processor
@@ -1865,7 +1885,7 @@ module gen1int_shell
     end if
 #if defined(VAR_MPI)
     ! blocks until all processors have finished
-    if (present(api_comm)) call MPI_Barrier(api_comm_mpi, ierr_mpi)
+    if (present(api_comm_mpi)) call MPI_Barrier(api_comm_mpi, ierr_mpi)
 #endif
   end subroutine Gen1IntShellGetFunExpt
 
@@ -1879,7 +1899,7 @@ module gen1int_shell
   !> \param grid_points contains the coordinates of grid points
   !> \param num_derv is the number of derivatives
   !> \param num_mo is the number of molecular orbitals
-  !> \param api_comm is the MPI communicator
+  !> \param api_comm_mpi is the MPI communicator
   !> \param gto_type specifies the type of GTOs, should be either NON_LAO (non London atomic
   !>        orbital), LONDON (London atomic orbital, LAO), or ROT_LAO (rotational LAO), only
   !>        NON_LAO implemented
@@ -1892,7 +1912,7 @@ module gen1int_shell
   subroutine Gen1IntShellGetMO(num_shells, sub_shells, mo_coef, &
                                num_points, grid_points,         &
                                num_derv, num_mo, val_mo,        &
-                               api_comm, gto_type,              &
+                               api_comm_mpi, gto_type,          &
                                order_mag, order_ram, order_geo)
     use gen1int_matrix
     integer, intent(in) :: num_shells
@@ -1903,7 +1923,12 @@ module gen1int_shell
     integer, intent(in) :: num_derv
     integer, intent(in) :: num_mo
     real(REALK), intent(inout) :: val_mo(num_points*num_derv,num_mo)
-    integer, optional, intent(in) :: api_comm
+#ifdef VAR_MPI
+#include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND), optional, intent(in) :: api_comm_mpi
+#else
+    integer, optional, intent(in) :: api_comm_mpi
+#endif
     integer, optional, intent(in) :: gto_type
     integer, optional, intent(in) :: order_mag
     integer, optional, intent(in) :: order_ram

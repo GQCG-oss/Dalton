@@ -324,24 +324,21 @@ module gen1int_api
   !> \brief broadcasts AO sub-shells
   !> \author Bin Gao
   !> \date 2012-05-13
-  !> \param root is the root processor which broadcasts the AO sub-shells
-  !> \param api_comm is the MPI communicator
-  subroutine Gen1IntAPIBcast(root, api_comm)
-    integer, intent(in) :: root
-    integer, intent(in) :: api_comm
+  !> \param root_mpi is the root processor which broadcasts the AO sub-shells
+  !> \param api_comm_mpi is the MPI communicator
+  subroutine Gen1IntAPIBcast(root_mpi, api_comm_mpi)
 #include "mpif.h"
     ! declaration of MPI variables so they also work with int64 integer and int32 mpi library
+    integer(kind=MPI_INTEGER_KIND), intent(in) :: root_mpi, api_comm_mpi
     integer(kind=MPI_INTEGER_KIND) :: rank_proc  !rank of processor
     integer(kind=MPI_INTEGER_KIND) :: ierr_mpi   !error information in MPI calls
+    integer(kind=MPI_INTEGER_KIND) :: count_mpi
     integer                        :: ierr       !error information
-    integer(kind=MPI_INTEGER_KIND) :: root_mpi, api_comm_mpi, count_mpi
     integer                        :: icomp      !incremental recorder over components
-    root_mpi = root
     ! gets the rank of processor
-    api_comm_mpi = api_comm
     call MPI_Comm_rank(api_comm_mpi, rank_proc, ierr_mpi)
     count_mpi = NUM_COMPONENTS
-    if (rank_proc==root) then
+    if (rank_proc==root_mpi) then
       ! stops if the interface is not initialized
       if (.not.api_inited) stop "Gen1IntAPIBcast>> interface is not initialized!"
       ! broadcasts the number of components
@@ -362,14 +359,14 @@ module gen1int_api
       if (num_sub_shells(icomp)>0)                               &
         call Gen1IntShellBcast(num_shells=num_sub_shells(icomp), &
                                sub_shells=sub_shells(:,icomp),   &
-                               root=root,                        &
-                               api_comm=api_comm)
+                               root_mpi=root_mpi,                &
+                               api_comm_mpi=api_comm_mpi)
     end do
     ! number of atoms
     count_mpi = 1
     call MPI_Bcast(api_num_atoms, count_mpi, MPI_INTEGERK, root_mpi, api_comm_mpi, ierr_mpi)
     ! coordinates and charges of atoms
-    if (rank_proc==root) then
+    if (rank_proc==root_mpi) then
       count_mpi = 3*api_num_atoms
       call MPI_Bcast(api_coord_atoms, count_mpi, MPI_REALK, root_mpi, api_comm_mpi, ierr_mpi)
       count_mpi = api_num_atoms
@@ -515,7 +512,7 @@ module gen1int_api
   !> \param grid_points contains the coordinates of grid points
   !> \param num_derv is the number of derivatives
   !> \param num_mo is the number of molecular orbitals
-  !> \param api_comm is the MPI communicator
+  !> \param api_comm_mpi is the MPI communicator
   !> \param gto_type specifies the type of GTOs, should be either NON_LAO (non London atomic
   !>        orbital), LONDON (London atomic orbital, LAO), or ROT_LAO (rotational LAO), only
   !>        NON_LAO implemented
@@ -524,7 +521,7 @@ module gen1int_api
   !> \param order_geo is the order of geometric derivatives
   !> \return val_mo contains the value of molecular orbitals at grid points
   subroutine Gen1IntAPIGetMO(comp_shell, mo_coef, num_points, grid_points, &
-                             num_derv, num_mo, val_mo, api_comm, gto_type, &
+                             num_derv, num_mo, val_mo, api_comm_mpi, gto_type, &
                              order_mag, order_ram, order_geo)
     integer, intent(in) :: comp_shell(:)
     type(matrix), intent(in) :: mo_coef
@@ -533,7 +530,12 @@ module gen1int_api
     integer, intent(in) :: num_derv
     integer, intent(in) :: num_mo
     real(REALK), intent(out) :: val_mo(num_points*num_derv,num_mo)
-    integer, optional, intent(in) :: api_comm
+#ifdef VAR_MPI
+#include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND), optional, intent(in) :: api_comm_mpi
+#else
+    integer, optional, intent(in) :: api_comm_mpi
+#endif
     integer, optional, intent(in) :: gto_type
     integer, optional, intent(in) :: order_mag
     integer, optional, intent(in) :: order_ram
@@ -554,7 +556,7 @@ module gen1int_api
                                  num_derv=num_derv,                &
                                  num_mo=num_mo,                    &
                                  val_mo=val_mo,                    &
-                                 api_comm=api_comm,                &
+                                 api_comm_mpi=api_comm_mpi,        &
                                  gto_type=gto_type,                &
                                  order_mag=order_mag,              &
                                  order_ram=order_ram,              &
@@ -770,7 +772,7 @@ module gen1int_api
   !> \param nary_tree_bra is the N-ary tree for geometric derivatives on bra center
   !> \param nary_tree_ket is the N-ary tree for geometric derivatives on ket center
   !> \param nary_tree_total is the N-ary tree for total geometric derivatives
-  !> \param api_comm is the MPI communicator
+  !> \param api_comm_mpi is the MPI communicator
   !> \param num_ints is the number of property integral matrices including various derivatives
   !> \param write_ints indicates if writing integral matrices on file
   !> \param num_dens is the number of AO density matrices
@@ -786,7 +788,7 @@ module gen1int_api
   !>       see Gen1Int library manual, for instance Section 2.2;
   !>       \var(val_expt) should be zero by users before calculations
   subroutine Gen1IntAPIPropGetIntExpt(prop_comp, nary_tree_bra, nary_tree_ket, &
-                                      nary_tree_total, api_comm,               &
+                                      nary_tree_total, api_comm_mpi,           &
                                       num_ints, val_ints, write_ints,          &
                                       num_dens, ao_dens, val_expt, write_expt, &
                                       io_viewer, level_print)
@@ -794,7 +796,12 @@ module gen1int_api
     type(nary_tree_t), intent(inout) :: nary_tree_bra
     type(nary_tree_t), intent(inout) :: nary_tree_ket
     type(nary_tree_t), intent(inout) :: nary_tree_total
-    integer, optional, intent(in) :: api_comm
+#ifdef VAR_MPI
+#include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND), optional, intent(in) :: api_comm_mpi
+#else
+    integer, optional, intent(in) :: api_comm_mpi
+#endif
     integer, intent(in) :: num_ints
     type(matrix), optional, intent(inout) :: val_ints(num_ints)
     logical, optional, intent(in) :: write_ints
@@ -813,7 +820,7 @@ module gen1int_api
                                   nary_tree_bra=nary_tree_bra,     &
                                   nary_tree_ket=nary_tree_ket,     &
                                   nary_tree_total=nary_tree_total, &
-                                  api_comm=api_comm,               &
+                                  api_comm_mpi=api_comm_mpi,       &
                                   num_ints=num_ints,               &
                                   val_ints=val_ints,               &
                                   write_ints=write_ints,           &
@@ -832,7 +839,7 @@ module gen1int_api
   !> \param nary_tree_bra is the N-ary tree for geometric derivatives on bra center
   !> \param nary_tree_ket is the N-ary tree for geometric derivatives on ket center
   !> \param nary_tree_total is the N-ary tree for total geometric derivatives
-  !> \param api_comm is the MPI communicator
+  !> \param api_comm_mpi is the MPI communicator
   !> \param num_points is the number of grid points
   !> \param grid_points contains the coordinates of grid points
   !> \param num_dens is the number of AO density matrices
@@ -847,7 +854,7 @@ module gen1int_api
   !>       see Gen1Int library manual, for instance Section 2.2;
   !>       \var(val_expt) should be zero by users before calculations
   subroutine Gen1IntAPIPropGetFunExpt(prop_comp, nary_tree_bra, nary_tree_ket, &
-                                      nary_tree_total, api_comm,               &
+                                      nary_tree_total, api_comm_mpi,           &
                                       num_points, grid_points,                 &
                                       num_dens, ao_dens, num_ints, val_expt,   &
                                       io_viewer, level_print)
@@ -855,7 +862,12 @@ module gen1int_api
     type(nary_tree_t), intent(inout) :: nary_tree_bra
     type(nary_tree_t), intent(inout) :: nary_tree_ket
     type(nary_tree_t), intent(inout) :: nary_tree_total
-    integer, optional, intent(in) :: api_comm
+#ifdef VAR_MPI
+#include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND), optional, intent(in) :: api_comm_mpi
+#else
+    integer, optional, intent(in) :: api_comm_mpi
+#endif
     integer, intent(in) :: num_points
     real(REALK), intent(in) :: grid_points(3,num_points)
     integer, intent(in) :: num_dens
@@ -917,7 +929,7 @@ module gen1int_api
       write(io_viewer,100) "information of total geometric derivatives"
       call Gen1IntAPINaryTreeView(nary_tree=nary_tree_total, io_viewer=io_viewer)
       ! MPI communicator
-      if (present(api_comm)) write(io_viewer,100) "MPI communicator provided"
+      if (present(api_comm_mpi)) write(io_viewer,100) "MPI communicator provided"
       ! arguments related to AO density matrices
       write(io_viewer,100) "number of AO density matrices", num_dens
       if (level_print>=20) then
@@ -984,7 +996,7 @@ module gen1int_api
                                             nary_tree_bra=nary_tree_bra,             &
                                             nary_tree_ket=nary_tree_ket,             &
                                             nary_tree_total=nary_tree_total,         &
-                                            api_comm=api_comm,                       &
+                                            api_comm_mpi=api_comm_mpi,               &
                                             num_points=num_points,                   &
                                             grid_points=grid_points,                 &
                                             num_dens=num_dens,                       &
@@ -1078,7 +1090,7 @@ module gen1int_api
   !> \param nary_tree_bra is the N-ary tree for geometric derivatives on bra center
   !> \param nary_tree_ket is the N-ary tree for geometric derivatives on ket center
   !> \param nary_tree_total is the N-ary tree for total geometric derivatives
-  !> \param api_comm is the MPI communicator
+  !> \param api_comm_mpi is the MPI communicator
   !> \param num_ints is the number of property integral matrices including various derivatives
   !> \param write_ints indicates if writing integral matrices on file
   !> \param num_dens is the number of AO density matrices
@@ -1095,7 +1107,7 @@ module gen1int_api
   !>       \var(val_expt) should be zero by users before calculations
   subroutine Gen1IntOnePropGetIntExpt(nnz_comp, one_prop,                            &
                                       nary_tree_bra, nary_tree_ket, nary_tree_total, &
-                                      api_comm, num_ints, val_ints, write_ints,      &
+                                      api_comm_mpi, num_ints, val_ints, write_ints,  &
                                       num_dens, ao_dens, val_expt, write_expt,       &
                                       io_viewer, level_print)
     integer, intent(in) :: nnz_comp(:,:)
@@ -1103,7 +1115,12 @@ module gen1int_api
     type(nary_tree_t), intent(inout) :: nary_tree_bra
     type(nary_tree_t), intent(inout) :: nary_tree_ket
     type(nary_tree_t), intent(inout) :: nary_tree_total
-    integer, optional, intent(in) :: api_comm
+#ifdef VAR_MPI
+#include "mpif.h"
+    integer(kind=MPI_INTEGER_KIND), optional, intent(in) :: api_comm_mpi
+#else
+    integer, optional, intent(in) :: api_comm_mpi
+#endif
     integer, intent(in) :: num_ints
     type(matrix), optional, intent(inout) :: val_ints(num_ints)
     logical, optional, intent(in) :: write_ints
@@ -1172,7 +1189,7 @@ module gen1int_api
       write(io_viewer,100) "information of total geometric derivatives"
       call Gen1IntAPINaryTreeView(nary_tree=nary_tree_total, io_viewer=io_viewer)
       ! MPI communicator
-      if (present(api_comm)) write(io_viewer,100) "MPI communicator provided"
+      if (present(api_comm_mpi)) write(io_viewer,100) "MPI communicator provided"
       ! arguments related to integral matrices
       if (present(val_ints)) write(io_viewer,100) "integral matrices returned"
       if (present(write_ints)) then
@@ -1252,7 +1269,7 @@ module gen1int_api
                                             nary_tree_bra=nary_tree_bra,             &
                                             nary_tree_ket=nary_tree_ket,             &
                                             nary_tree_total=nary_tree_total,         &
-                                            api_comm=api_comm,                       &
+                                            api_comm_mpi=api_comm_mpi,               &
                                             num_prop=num_prop,                       &
                                             num_geo_bra=num_geo_bra,                 &
                                             num_geo_ket=num_geo_ket,                 &
