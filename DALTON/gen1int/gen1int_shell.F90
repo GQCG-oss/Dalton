@@ -494,12 +494,12 @@ module gen1int_shell
 #if defined(VAR_MPI)
     integer(kind=MPI_INTEGER_KIND) :: rank_proc     !rank of processor
     integer(kind=MPI_INTEGER_KIND) :: num_proc      !number of processors
-    integer(kind=MPI_INTEGER_KIND) :: worker_request(3) !request from a worker, in which the first two elements
+    integer                        :: worker_request(3) !request from a worker, in which the first two elements
                                                     !are either \var(REQUEST_WORK) or the AO sub-shell pair
                                                     !to send back, the third is the rank of the worker
     integer(kind=MPI_INTEGER_KIND) :: msg_tag       !message tag
     integer(kind=MPI_INTEGER_KIND) :: mpi_status(MPI_STATUS_SIZE) !MPI status
-    integer(kind=MPI_INTEGER_KIND) :: ierr_mpi, count_mpi
+    integer(kind=MPI_INTEGER_KIND) :: ierr_mpi, count_mpi, worker_rank
     integer(kind=MPI_INTEGER_KIND), parameter :: manager_mpi = MANAGER
 #endif
     ! since we do not use mixed CGTOs and SGTOs, we get this information only from
@@ -720,8 +720,9 @@ module gen1int_shell
             ! no more sub-shell pair to calculate
             if (shell_pair(1)>=max_shell_bra .and. shell_pair(2)>=max_shell_ket) then
               count_mpi = 2
+              worker_rank = worker_request(3) ! change to MPI_INTEGER_KIND
               call MPI_Send((/NO_MORE_WORK,NO_MORE_WORK/), count_mpi, MPI_INTEGERK, &
-                            worker_request(3), msg_tag, api_comm_mpi, ierr_mpi)
+                            worker_rank, msg_tag, api_comm_mpi, ierr_mpi)
               ! decreases the number of remaining jobs
               remaining_jobs = remaining_jobs-1
             else
@@ -746,7 +747,8 @@ module gen1int_shell
               end select
               ! sends the next sub-shell pair to the worker
               count_mpi = 2
-              call MPI_Send(shell_pair, count_mpi, MPI_INTEGERK, worker_request(3), &
+              worker_rank = worker_request(3) ! change to MPI_INTEGER_KIND
+              call MPI_Send(shell_pair, count_mpi, MPI_INTEGERK, worker_rank, &
                             msg_tag, api_comm_mpi, ierr_mpi)
             end if
           ! the worker wants to send the contracted integrals back
@@ -757,8 +759,9 @@ module gen1int_shell
                     * sub_shells_ket(worker_request(2))%num_contr
             count_mpi = size_ao*num_matrices
             ! receives results from the worker
+            worker_rank = worker_request(3) ! change to MPI_INTEGER_KIND
             call MPI_Recv(contr_ints(1:size_ints), count_mpi, MPI_REALK,   &
-                          worker_request(3), int(MPI_ANY_TAG,kind=MPI_INTEGER_KIND), api_comm_mpi, &
+                          worker_rank, int(MPI_ANY_TAG,kind=MPI_INTEGER_KIND), api_comm_mpi, &
                           mpi_status, ierr_mpi)
             ! sets the minimum and maximum of indices of rows of the integral matrices
             min_row_idx = sub_shells_bra(worker_request(1))%base_idx+1
@@ -1294,12 +1297,12 @@ module gen1int_shell
 #if defined(VAR_MPI)
     integer(kind=MPI_INTEGER_KIND) :: rank_proc     !rank of processor
     integer(kind=MPI_INTEGER_KIND) :: num_proc      !number of processors
-    integer(kind=MPI_INTEGER_KIND) :: worker_request(3) !request from a worker, in which the first two elements
+    integer                        :: worker_request(3) !request from a worker, in which the first two elements
                                                     !are either \var(REQUEST_WORK) or the AO sub-shell pair
                                                     !to send back, the third is the rank of the worker
     integer(kind=MPI_INTEGER_KIND) :: msg_tag       !message tag
     integer(kind=MPI_INTEGER_KIND) :: mpi_status(MPI_STATUS_SIZE) !MPI status
-    integer(kind=MPI_INTEGER_KIND) :: ierr_mpi, count_mpi
+    integer(kind=MPI_INTEGER_KIND) :: ierr_mpi, count_mpi, worker_rank
     integer(kind=MPI_INTEGER_KIND), parameter :: manager_mpi = MANAGER
 #endif
     ! since we do not use mixed CGTOs and SGTOs, we get this information only from
@@ -1490,8 +1493,9 @@ module gen1int_shell
             ! no more sub-shell pair to calculate
             if (shell_pair(1)>=max_shell_bra .and. shell_pair(2)>=max_shell_ket) then
               count_mpi = 2
+              worker_rank = worker_request(3) ! change to MPI_INTEGER_KIND
               call MPI_Send((/NO_MORE_WORK,NO_MORE_WORK/), count_mpi, MPI_INTEGERK, &
-                            worker_request(3), msg_tag, api_comm_mpi, ierr_mpi)
+                            worker_rank, msg_tag, api_comm_mpi, ierr_mpi)
               ! decreases the number of remaining jobs
               remaining_jobs = remaining_jobs-1
             else
@@ -1516,7 +1520,8 @@ module gen1int_shell
               end select
               ! sends the next sub-shell pair to the worker
               count_mpi = 2
-              call MPI_Send(shell_pair, count_mpi, MPI_INTEGERK, worker_request(3), &
+              worker_rank = worker_request(3) ! change to MPI_INTEGER_KIND
+              call MPI_Send(shell_pair, count_mpi, MPI_INTEGERK, worker_rank, &
                             msg_tag, api_comm_mpi, ierr_mpi)
             end if
           ! the worker wants to send the contracted integrals back
