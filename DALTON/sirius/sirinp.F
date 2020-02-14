@@ -53,7 +53,7 @@ C
 !960905-hjaaj
 !SCFINP : new '.GRAM-S', old '.GRAM S' kept for compatibility
 !951017 C*FM
-!PRTINP : FM change format nb of determinantsi and CSF  info 
+!PRTINP : FM change format nb of determinantsi and CSF  info
 !Til Hans fra Hans Joergen, MANDAG 29. okt. har jeg aendret:
 !PRIINP : + .NOSUMM og .CANONI (for hvor egen skyld)
 !SIR_GENINP : namlist til NMLSIR i stedet for INPUT (saa det er
@@ -126,7 +126,7 @@ C
 C
 C ***** ORTHONORMALIZE ORBITALS, UNLESS RESTART
 C       feb. 2003 hjaaj: now always orthonormalize orbitals,
-C       becuase the user may have used .RESTART with 
+C       becuase the user may have used .RESTART with
 C       SIRIUS.RST from another geometry ...
 C
 Chj   IF (IREST.EQ.0 .OR. IORTO.EQ.1) THEN
@@ -286,7 +286,7 @@ C           ... write SIRIFC and CI info for WESTA program
             FLAG(25) = .TRUE.
             FLAG(26) = .TRUE.
          END IF
-C     
+C
 C     We obviously have MO's from previous iteration
 C     (.MOSTART NEWORB because abawlk.F(WLKSAV) saves
 C     on LUIT1 with label NEWORB)
@@ -295,7 +295,7 @@ C
          FLAG(13) = .TRUE.
 C
 C     ... unless a new symmetry has been found, vb, april-96
-C     
+C
          IF (NEWSYM) THEN
             IRDMO = 8
             FLAG(13) = .FALSE.
@@ -434,7 +434,7 @@ C     ... It is followed by an abacus run
 C added by Bin Gao for generating cube files
 C March 9, 2012
       DO_CUBE = .false.
-C 
+C
 Cholesky orbitals
       ACTSEL = .FALSE.
 C
@@ -637,7 +637,7 @@ C
       THRSSY = 5.0D-8
       SUPSYM = .FALSE.
 C     ... Oct 2003 hjaaj: new default
-c     SUPSYM = .NOT. (RNABAC .OR. RNRESP) 
+c     SUPSYM = .NOT. (RNABAC .OR. RNRESP)
 C     supsym false forced for DOCCSD set after reading of sirius input
 C
 C IRDMO : select how to get starting orbitals
@@ -995,7 +995,7 @@ C
             MS2    = NASHT
             NACTEL = NASHT
             CALL ICOPY(8,NROHF,1,NASH,1)
-         ELSE  
+         ELSE
             LSYM   = 1
             ISPIN  = 1
             MS2    = 0
@@ -1393,7 +1393,7 @@ C
          JRDMO = -IRDMO
          IPRSIR_save = IPRSIR
          IPRSIR = max(1, IPRSIR)
-         ! .ge. 1 to print info about orbitals on SIRIUS.RST when 
+         ! .ge. 1 to print info about orbitals on SIRIUS.RST when
          ! reading initial orbitals from SIRIUS.RST
          CALL READMO(CMO,JRDMO)
          IPRSIR = IPRSIR_save
@@ -1460,7 +1460,7 @@ C
          WRITE(LUPRI,'(/A)') 'INPUT ERROR - RHF occupation too big'
       END IF
 C
-C       
+C
 C     If INIOCC .ge. 2 and RHF/MP2 highest level (i.e. MCTYPE .LE. 0),
 C     we need to retransfer SCF occupation to MCSCF parameters as
 C     NRHF(*),IOPRHF may have changed since previous RHF setting above.
@@ -1486,7 +1486,7 @@ C
             MS2    = NASHT
             NACTEL = NASHT
             CALL ICOPY(8,NROHF,1,NASH,1)
-         ELSE 
+         ELSE
             LSYM   = 1
             ISPIN  = 1
             MS2    = 0
@@ -1740,7 +1740,7 @@ C
 !     END IF
       IF(NOCCT .LT.0 .OR. NOCCT .GT.MAXOCC) THEN
          INPERR = INPERR + 1
-         WRITE(LUPRI,'(/A,I5/A,I5/A)') 
+         WRITE(LUPRI,'(/A,I5/A,I5/A)')
      *      'ERROR: Number of occ. orbitals :',
      *      NOCCT,' is .lt. 0 or .gt. MAXOCC :',MAXOCC,
      *      'Increase MAXOCC in DALTON/include/maxorb.h and recompile'
@@ -1890,7 +1890,7 @@ C
 C
       CALL SIR_OPEN
 C
-C      
+C
       NEWSYM = .FALSE.
       SIR_INPPRC = .TRUE.
       CALL QEXIT('SIRRDI')
@@ -1986,7 +1986,7 @@ C            (otherwise only Fock matrix contributions)
 C 13 various CALL READMO for initial orbitals              ORB : vario
 C 14 various Integral transformation not needed.           TRA : OLD TR
 C 15 SIRSAV  transformation to NO's each macro iteration.  OPT : TRACI
-C 16 SIROPT  Sperhical cavity solvent calculation          SOL : genera
+C 16 SIROPT  Spherical cavity solvent calculation          SOL : genera
 C 17 various SUPSYM : find and use 'super symmetry'        ORB : NOSUPS
 C 18 SIROUT  Punch MO:s (canonical if flag 3) to LUPNCH    ORB : PUNCHO
 C 19 SIROPT  Use UPDATE from the beginning /990821-hjaaj test option/
@@ -2217,16 +2217,16 @@ C
 C ********  END OF READ OF INPUT DATA  **********
 C
       if(lucita_input_provided)then
-!        LUCITA input has been processed - 
+!        LUCITA input has been processed -
 !        complete now the remaining compulsory settings
 !        this is lucita-ci, therefore:
 !        1: ci input
 !        2: mcscf input
          lucita_cfg_init_input_type = 1
 
-         call define_lucita_orb_spaces(nsym,                        
-     &                                 lucita_cfg_nr_gas_spaces,    
-     &                                 lucita_cfg_init_input_type,  
+         call define_lucita_orb_spaces(nsym,
+     &                                 lucita_cfg_nr_gas_spaces,
+     &                                 lucita_cfg_init_input_type,
      &                                 lucita_cfg_init_wave_f_type)
       end if
 C
@@ -2246,16 +2246,6 @@ C  /* Deck sir_geninp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#ifdef BUILD_OPENRSP
-      use eri_contractions, only: set_eri_contractions_xfac
-#endif
-#ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: xcint_set_functional,
-     &                                  xcint_activate,
-     &                                  xcint_is_active,
-     &                                  xcint_set_grid
-#endif
-
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
@@ -2292,13 +2282,11 @@ C
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
      *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
-     *            '.KSPT2 ','.GASCI ','.XCINT ','.NUMGRI','xXXXXXX',
+     *            '.KSPT2 ','.GASCI ','xXXXXXX','xXXXXXX','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
      *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','.VIRTRU'/
 C
-
       functional_line_read = .false.
-C
 C
       SR_FUNCS = ' ERROR: .SRFUN was not specified in input.'
 C
@@ -2575,36 +2563,14 @@ C *** Option 22: .GASCI
         NUMRUN   = NUMRUN + 1
       GO TO 100
 
-      ! Option 23: .XCINT
-  123 continue
-#ifdef ENABLE_XCINT
-        call xcint_activate()
-#else
-        call quit('.XCINT is not available in this version')
-#endif
-      go to 100
+! *** Option 23: not in use
+  123 CONTINUE
+      GO TO 100
 
-      ! Option 24: .NUMGRID
-  124 continue
-#ifdef ENABLE_XCINT
-      if (xcint_is_active()) then
-        ! radial precision threshold
-        d_radint = 0
-        read(lucmd, *) d_radint
-        ! minimum number of angular points
-        i_angmin = 0
-        read(lucmd, *) i_angmin
-        ! regular number of angular points
-        i_angint = 0
-        read(lucmd, *) i_angint
-        call xcint_set_grid(d_radint,
-     &                      i_angmin,
-     &                      i_angint)
-      end if
-#else
-      call quit('.NUMGRID is not available in this version')
-#endif
-      go to 100
+! *** Option 24: not in use
+  124 CONTINUE
+      GO TO 100
+
 C *** Option 25 not used
   125 CONTINUE
       GO TO 100
@@ -2646,7 +2612,7 @@ C        ... Disable use of super-matrix integrals,
 C        ... we want to use SIRFCK for generating U_sr integrals.
          NUMRUN = NUMRUN + 1
       GO TO 100
-C&&& .SRLDA (SR-DFT) : Use SR-LDA functionals for both 
+C&&& .SRLDA (SR-DFT) : Use SR-LDA functionals for both
 C                     exchange and correlation
   129 SR_FUNCS = 'SRXLDA SRCLDA'
       DFTADD = .TRUE.
@@ -2655,7 +2621,7 @@ C                     exchange and correlation
          HFXSET = .TRUE.
       END IF
       GO TO 100
-C&&& SRFUN : Read Correlation (SRCFUN) and 
+C&&& SRFUN : Read Correlation (SRCFUN) and
 C&&&         Exchange (SRXFUN) functionals
   130 READ (LUCMD,'(A)') SR_FUNCS
       DFTADD = .TRUE.
@@ -2688,7 +2654,6 @@ C *** Option 35: .VIRTRUNC
 C
  8000 CONTINUE
 
-
 !     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
       IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
@@ -2698,50 +2663,12 @@ C
 
       ! here we parse the functional
       if (functional_line_read) then
-
-#ifdef ENABLE_XCINT
-         if (xcint_is_active()) then
-            this_mu   = 0.0d0
-            this_beta = 0.0d0
-            call xcint_set_functional(titlin,
-     &                                hfxfac, this_mu, this_beta)
-            call dftsetcam(this_mu, this_beta)
-         else
-#endif
-            call dftsetfunc(functional_line, inperr)
-#ifdef MOD_XCFUN
-            call xcfun_select(functional_line)
-#endif
-#ifdef ENABLE_XCINT
-         end if
-#endif
-
+         call dftsetfunc(functional_line, inperr)
          IF (WDFTMP.NE.0.0D0 .AND. .NOT.DOMP2) THEN ! double-hybrid DFT requested
             DOMP2    = .TRUE.
             NUMRUN   = NUMRUN + 1
             FLAG(3)  = .FALSE. ! do NOT call sircan for HF canonical orbitals
          END IF
-
-#ifdef BUILD_OPENRSP
-#ifdef ENABLE_XCINT
-         if (xcint_is_active()) then
-            ! we pass hfxfac to the 2-el integral code
-            call set_eri_contractions_xfac(hfxfac)
-         end if
-
-         ! sanity check
-         if (use_openrsp .and. .not. xcint_is_active()) then
-            print *, 'You run OpenRSP DFT without .XCINT'
-            print *, 'Either add .XCINT or deactivate'
-            print *, 'this warning'
-            CALL QUIT('OpenRSP only allowed with .XCINT')
-         end if
-#else
-         print *, 'You run OpenRSP DFT without XCint code compiled'
-         print *, 'This is probably not what you want'
-         CALL QUIT('OpenRSP only allowed with XCint code compiled')
-#endif /* ENABLE_XCINT */
-#endif /* BUILD_OPENRSP */
       end if
 
 C
@@ -3052,7 +2979,7 @@ C  /* Deck scfinp */
 C
 C 8-May-1989 Hans Joergen Aa. Jensen
 C 13-May-1995 K.Ruud, added keyword .ELECTRONS.
-C 1999 Helgaker, DFT input added 
+C 1999 Helgaker, DFT input added
 C
 #include "implicit.h"
       PARAMETER (NTABLE = 26)
@@ -4201,7 +4128,7 @@ C
       END IF
       GO TO 100
 C
-C *** Option 18 >R12ORB< 
+C *** Option 18 >R12ORB<
   118 READ (LUCMD,*) (NRXR12(I), I=1,NSYM)
       GO TO 100
 C
@@ -4967,7 +4894,7 @@ C
 C *** Option 7 >RESFIL<  Write sirius result file separate from LUPRI
  107  LUW4 = -8888
 C
-C     Note, the unit number for LUW4 will be reassigned when the file is opened 
+C     Note, the unit number for LUW4 will be reassigned when the file is opened
 C     in the main input-reading routine.
 C
       GO TO 100
@@ -5742,7 +5669,7 @@ C        ... Check for inconsistencies :
      &        '@    sr-DFT and exact sr-HF exchange weights:',
      &         (1.0D0-HFXFAC),HFXFAC
 
-         IF (DOSRBCK.AND.DOMCSRDFT) 
+         IF (DOSRBCK.AND.DOMCSRDFT)
      &      CALL QUIT(' SRBCK functional not implemented for MCSRDFT !')
 !hjaaj Oct 09: allow chival=0 for tests
 !        IF (DOMCSRDFT .AND. CHIVAL.LE.0.D0)  THEN
@@ -5775,7 +5702,7 @@ C
          WRITE(IWUNIT,1400) NSSHT,(NSSH(I),I=1,NSYM)
       ELSE IF (.NOT.AUTOCC) THEN
          WRITE(IWUNIT,1550) NRHFT,(NRHF(I),I=1,NSYM)
-         IF (IOPRHF .NE. 0 .OR. HSROHF) 
+         IF (IOPRHF .NE. 0 .OR. HSROHF)
      *      WRITE (IWUNIT,1555) NASHT,(NASH(I),I=1,NSYM)
          WRITE(IWUNIT,1400) NSSHT,(NSSH(I),I=1,NSYM)
       END IF
@@ -6059,7 +5986,7 @@ C                           the calculation of density matrices in koopro4
       GO TO 100
 C
 C *** Option 3 >ISTNEVCI < If .CI, state considered for NEVPT2
-C                           
+C
   103 READ(LUCMD,*) ISTNEVCI
       GO TO 100
 C

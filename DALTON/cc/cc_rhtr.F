@@ -40,6 +40,8 @@ C     (R: Eai, EaiEbj)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, PELIB_IFC_FOCK,
+     &                           PELIB_IFC_TRANSFORMER
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -65,7 +67,6 @@ C
 #include "eritap.h"
 #include "ccslvinf.h"
 #include "qm3.h"
-!#include <qmmm.h>
 #include "ccnoddy.h"
 #include "r12int.h"
 #include "ccr12int.h"
@@ -96,6 +97,8 @@ C
      &        IRGIJS(8,8),NRGIJS(8),IR1BASM(8,8),NR1BASM(8),
      &        IR2BASM(8,8),NR2BASM,IR1XBASM(8,8),NR1XBASM(8),
      &        IR2XBASM(8,8),IMATF(8,8),NMATF(8)
+
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 C
       IF (IPRINT .GT. 15) THEN
          CALL AROUND(' START OF CC_RHTR ')
@@ -400,11 +403,11 @@ C---------------------------
 C        Print C amplitudes.
 C---------------------------
 C
-         IF (IPRINT .GT. 50) THEN
+         IF (IPRINT .GT. 50 .OR. DEBUG) THEN
             CALL AROUND('START OF CC_RHTR: (C1) ')
             CALL CC_PRSQ(C1AM(1,IV),C2AM,ISYMTR,1,0)
          ENDIF
-         IF (IPRINT .GT. 50) THEN
+         IF (IPRINT .GT. 50 .OR. DEBUG) THEN
             CALL AROUND('START OF CC_RHTR: RHO1 ')
             CALL CC_PRSQ(RHO1(1,IV),C2AM,ISYMTR,1,0)
          ENDIF
@@ -526,6 +529,19 @@ C
             END IF
          END IF
       ENDIF
+C
+      IF (USE_PELIB()) THEN
+          ALLOCATE(FOCKMAT(NNBASX),FOCKTEMP(N2BST(ISYMOP)))
+          IF (HFFLD) THEN
+              CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+          ELSE
+              CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+          END IF
+          CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+          CALL DAXPY(N2BST(ISYMOP),1.0d0,FOCKTEMP,1,WORK(KFOCK),1)
+          DEALLOCATE(FOCKMAT,FOCKTEMP)
+      END IF
+C
 C====================================================
 C     Start the loop over distributions of integrals.
 C====================================================
@@ -1327,7 +1343,7 @@ C
             RHO2N = DDOT(NT2AM(ISYMTR),RHO2,1,RHO2,1)
             WRITE(LUPRI,1) 'Norm of Rho2 -after loop in mo:     ',RHO2N
          ENDIF
-         IF (IPRINT.GT.40) THEN
+         IF (IPRINT.GT.40 .OR. DEBUG) THEN
             CALL AROUND(' RHO: ')
             CALL CC_PRP(RHO1(1,IV),RHO2,ISYMTR,0,1)
          END IF
@@ -1363,7 +1379,7 @@ C
      *         DDOT(NT2AM(ISYMTR),WORK(KEND1),1,RHO2,1) - CONT(7,IV)
          END IF
 C
-         IF (IPRINT .GT. 120) THEN
+         IF (IPRINT .GT. 120 .OR. DEBUG) THEN
             CALL AROUND(' AFTER CC2_FCK cont. CCLR:RHO ')
             CALL CC_PRP(RHO1(1,IV),RHO2,ISYMTR,0,1)
          ENDIF
@@ -1629,7 +1645,7 @@ C
          DTIME = SECOND() - DTIME
          TIME  = TIME + DTIME
 C
-         IF (IPRINT .GT. 120) THEN
+         IF (IPRINT .GT. 120 .OR. DEBUG) THEN
             CALL AROUND(' CC_RHTR:  AFTER E EI*(C2) RHO2 ')
             CALL CC_PRP(RHO1(1,IV),RHO2,ISYMTR,0,NC2)
          ENDIF
@@ -2619,6 +2635,15 @@ C
      *                     MODEL,ISYMTR,LR,WORK(KEND1),LWRK1)
          END IF
       ENDIF
+C
+      IF (USE_PELIB().AND.LSTBTR.AND.(.NOT.JACTST).AND.
+     &    (.NOT.HFFLD))THEN
+         CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     &                IVEC+IV-1,C2AM)
+         LR = 'R'
+         CALL PELIB_IFC_TRANSFORMER(RHO1(1,IV),RHO2,C1AM(1,IV),C2AM,
+     &                  MODEL,ISYMTR,LR,WORK(KEND1),LWRK1)
+      END IF
 C---------------------------------------------------------
 C        And finally scale diagonal (if not triples cont.)
 C---------------------------------------------------------
@@ -2950,7 +2975,7 @@ C
 C
                   IF (LWRK2 .LT. 0) THEN
                      WRITE(LUPRI,*) 'Need : ',KEND2,'Available : ',LWORK
-                     CALL QUIT('Insufficient space in CCRHSN')
+                     CALL QUIT('Insufficient space in CC_RHTR')
                   ENDIF
 C
 C--------------------------------------------

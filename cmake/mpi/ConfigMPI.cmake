@@ -104,8 +104,4 @@ if(MPI_FOUND)
          set(MPI_DEFS "${MPI_DEFS} -DVAR_HAVE_MPI3")
       endif()
    endif()
-
-   if(ENABLE_TITANBUILD)
-      message("-- TITANBUILD requested, will use 32bit mpi module -- should not be necessary anymore")
-   endif()
 endif()

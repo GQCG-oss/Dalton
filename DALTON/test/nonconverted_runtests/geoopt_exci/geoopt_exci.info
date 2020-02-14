@@ -1,9 +1,0 @@
-   geoopt_exci
-   -----------
-   Molecule:         H2O
-   Wave Function:    MCSCF / aug-cc-pVDZ
-   Test Purpose:     Geometry optimization of the first-excited state
-                     of A1 symmetry in the molecule using the .OPTIMIZE
-                     module (2nd order). Note that this test will crash,
-                     due to the need for breaking the symmetry, which we
-                     do not allow for an MCSCF wave function

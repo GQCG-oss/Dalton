@@ -1,5 +1,0 @@
-   dpt_hf
-   -------
-   Molecule:       HF in C2v
-   Wave Function:  CCS, CCSD , CCSD(T) / cc-pCVDZ
-   Test Purpose:   Analytical calculation of relativistic corrections

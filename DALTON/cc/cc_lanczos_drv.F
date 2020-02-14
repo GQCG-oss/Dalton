@@ -420,7 +420,7 @@ C     --------------------------------
       call dcopy(length,work(KQnew1),1,work(KAQnew1),1)
       iside=1
       call CC_ATRR(ECURR,ISYHOP,ISIDE,WORK(KAQnew1),LWRK2,.false.,Cdum,
-     &                   APROXR12)
+     &                   APROXR12,.false.)
 !
 !      CALL DZERO(WORK(KAQnew1),NT1AM(isyhop))
 !      if (.not.ccs) CALL DZERO(WORK(KAQnew2),NT2AM(isyhop))

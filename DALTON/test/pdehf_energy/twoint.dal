@@ -1,0 +1,9 @@
+**DALTON
+.RUN WAVEFUN
+.DIRECT
+*PEQM
+.TWOINT
+save_density.h5
+**WAVE FUNCTIONS
+.HF
+**END OF

@@ -86,8 +86,8 @@ c /* deck CC_OPA */
      &                               'ER LINEAR RESPONSE    -------*',
      & '*                                   ',
      &                               '                             *',
-     & '*------  CALCULATION OF ONE-PHOTON A',
-     &                               'ABSORPTION STRENGHTS  -------*',
+     & '*------  CALCULATION OF ONE-PHOTON ',
+     &                               'ABSORPTION STRENGTHS  -------*',
      & '*                                   ',
      &                               '                             *',
      & '************************************',
@@ -359,8 +359,8 @@ C-tbp:
         ISYMI   = ISYEXC(ISTATEI)
         ISYMF   = ISYEXC(ISTATEF)
         ISYME   = MULD2H(ISYMI,ISYMF)
-        IMULI   = 1
-        IMULF   = 1
+        IMULI   = IMULTE(ISTATEI)
+        IMULF   = IMULTE(ISTATEF)
         ISTISY  = ISTATEI - ISYOFE(ISYMI)
         ISTFSY  = ISTATEF - ISYOFE(ISYMF)
         EIGVI   = EIGVAL(ISTATEI)

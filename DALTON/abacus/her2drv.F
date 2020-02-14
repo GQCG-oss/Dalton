@@ -258,6 +258,7 @@ C  /* Deck twocal */
      &            ITYPE,JSTRSH,NPRIMS,NCONTS,IORBSH,
      &            I2TYP,ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,
      &            RELCAL_in,GENCNT)
+      use pelib_interface, only: pelib_ifc_do_twoints
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -352,6 +353,19 @@ C
      &               WORK(KIODHR),IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,
      &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL_in,GENCNT)
 C
+      ELSE IF (PELIB_IFC_DO_TWOINTS()) THEN
+!
+!        Only intermolecular integrals for PElib
+!        =============================================
+!
+       CALL TWOPEQM(WORK(KLAST),LWRK,HESSEE,FMAT,DMAT,NDMAT,GMAT,MAXDER,
+     &              EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,DISTRI,
+     &              LONDON,SPNORB,DIA2SO,ZFS2EL,PERTUR,IATOM,MULE,MULTE,
+     &              NODV,NOPV,NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,
+     &              IPRNTD,RETUR,SQ12EL,WORK(KINDHR),WORK(KINDSQ),
+     &              WORK(KIODHR),IREPDM,IFCTYP,ADISTR,I2TYP,JSTRSH,
+     &              NPRIMS,NCONTS,IORBSH,ICEDIF,IFTHRS,GABRAO,DMRAO,
+     &              DMRSO,DINTSKP,RELCAL,WORK(KTFMAT))
       ELSE
 C
 C        All integrals
@@ -844,6 +858,400 @@ C
  9999 CALL QEXIT('TWOLOP')
       RETURN
       END
+
+C  /* Deck twopeqm */
+      SUBROUTINE TWOPEQM(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,GMAT,
+     &                   MAXDER,EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,
+     &                   SOFOCK,DISTRI,LONDON,SPNORB,DIA2SO,ZFS2EL,
+     &                   PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,
+     &                   THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
+     &                   RETUR,SQ12EL,INDHER,INDHSQ,IODDHR,IREPDM,
+     &                   IFCTYP,ADISTR,I2TYP,JSTRSH,NPRIMS,NCONTS,
+     &                   IORBSH,ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
+     &                   DINTSKP,RELCAL,TFMAT)
+! Modified TWOLOP routine to only calculate intermolecular integrals
+! used for PDE calculations using the PE library.
+      use pelib_interface, only: pelib_ifc_get_num_core_nuclei
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "dummy.h"
+      LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
+     &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
+     &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR,
+     &        SOFOCK,RELCAL, DIA2SO, ZFS2EL
+      DIMENSION DMAT(*), GMAT(*), HESSEE(*), IREPDM(*),
+     &        IFCTYP(*), INDHSQ(*), IODDHR(*), INDHER(*),
+     &        IORBSH(MXSHEL,MXAOVC), JSTRSH(*), NPRIMS(*), NCONTS(*),
+     &        GABRAO(*), DMRAO(*),DMRSO(*),DINTSKP(*),
+     &        WORK(LWORK)
+#include "twocom.h"
+#include "nuclei.h"
+#include "energy.h"
+#include "taymol.h"
+#include "taysol.h"
+#include "suscpt.h"
+#include "inforb.h"
+#include "blocks.h"
+#include "symmet.h"
+#include "veclen.h"
+#include "inftap.h"
+#include "gtensor.h"
+#include "r12int.h"
+#include "zfs.h"
+Cef begin
+#include "incore.h"
+Cef end
+      INTEGER :: NUM_CORE_NUCLEI
+      DIMENSION FMAT(NBASIS,NBASIS,*)
+#if defined (VAR_VECTOR)
+C NECgh Dimensioning TFMAT adapted to always odd first dimension
+      DIMENSION TFMAT(NBASIS + NODD,NBASIS,NDMAT,*)
+C NECgh We zero out the temporary FOCK matrices
+      JUNK = MAX (IVECLN/NDMAT,1)
+      CALL DZERO(TFMAT,(NBASIS + NODD)*NBASIS*NDMAT*JUNK)
+#endif
+      CALL QENTER('TWOPEQM')
+
+      NUM_CORE_NUCLEI = PELIB_IFC_GET_NUM_CORE_NUCLEI()
+
+      IF (JPRINT .GT. 5) CALL TITLER('Output from TWOPEQM','*',103)
+
+      FIRST = .TRUE.
+      DIRAC = RELCAL
+C
+C     For direct contributions: some parameters
+C       FCKTHR is threshold for screening
+C       ICEFLG gives information about separate screening of
+C              Coulomb/exchange for each DMAT
+C       NCM    is the number of DMAT requiring Coulomb-contributions
+C       NEM    is the number og DMAT requiring exchange-contributions
+C       Screening proceeds in three steps as documented by DINTSKP:
+C         Step 1: Screening on integral batches
+C           DINTSKP(1,1) - total number of integrals
+C           DINTSKP(2,1) - number of integrals skipped (batchwise)
+C         Step 2: Screening on individual integrals
+C                 while unpacking indices
+C           DINTSKP(1,2) - number of integrals remaining after step 1
+C           DINTSKP(2,2) - number of integrals skipped
+C         Step 3a: Screening on Coulomb contributions
+C           DINTSKP(1,3) - NCM times number of integrals remaining
+C                         after step 2
+C           DINTSKP(2,3) - NCM times number of integrals skipped
+C         Step 3b: Screening on exchange contributions
+C           DINTSKP(1,4) - NEM times number of integrals remaining
+C                         after step 2
+C           DINTSKP(2,4) - NEM times number of integrals skipped
+C
+
+      DOSCRN = .FALSE.
+      IF(DIRFCK.OR.SOFOCK)  THEN
+        CALL DZERO(DINTSKP,8)
+        IF(IFTHRS.LT.16) THEN
+          DOSCRN = .TRUE.
+          FCKTHR = (10.0D0)**DBLE(-IFTHRS)
+          ICEFLG = ICEDIF
+          NCM = 0
+          NEM = 0
+          DO I = 1,NDMAT
+            IY  = MOD(IFCTYP(I),10)
+            IC  = MOD(IY,2)
+            NCM = NCM + IC
+            IE  = (IY - IC)/2
+            NEM = NEM + IE
+          ENDDO
+        ENDIF
+      ENDIF
+
+      IF(I2TYP.EQ.0) THEN
+        DO ISHEL = 1, MAXSHL
+          NCENT = NCNTSH(ISHEL)
+          IF (NCENT <= NUM_CORE_NUCLEI) THEN
+            IASTRT = ISHEL + 1
+            ICSMAX = ISHEL
+            IDSMAX = ISHEL
+            CYCLE
+          END IF
+        END DO
+        IBSTRT = 1
+        ICSTRT = 1
+        IDSTRT = 1
+        IASMAX = MAXSHL
+        IBSMAX = MAXSHL
+!        ICSMAX = MAXSHL
+!        IDSMAX = MAXSHL
+      ELSE
+        WRITE(LUPRI,'(A,I5)') 'TWOPEQM: Unknown I2TYP =', I2TYP
+        CALL QUIT('Unknown I2TYP !!!')
+      ENDIF
+
+Cef begin
+#if defined(VAR_MPI)
+      LINTSV = .FALSE.
+#else
+      LINTSV = LINTMP
+#endif
+Cef end
+      I_SHL = 1
+      IPREVA = -1
+      IPREVB = 0
+      IPREVC = 0
+      IPREVD = 0
+
+C
+C     *****************************
+C     ***** First Shell Index *****
+C     *****************************
+C
+      DO 100 ISHELA = IASTRT,IASMAX
+C        Check for basis-set identifier (WK/UniKA/04-11-2002).
+         MBSA = MBSISH(ISHELA)
+         IF (ISHELA .NE. IASMAX) THEN
+            IF (.NOT. R12TRA .AND. MBSISH(ISHELA) .GT. 1) GOTO 100
+            IF (MBSA .GT. MBSMAX) GOTO 100
+         END IF
+         ICA    = LCLASH(ISHELA)
+         NHKTA  = NHKTSH(ISHELA)
+         KHKTA  = KHKTSH(ISHELA)
+         KCKTA  = KCKTSH(ISHELA)
+         SPHRA  = SPHRSH(ISHELA)
+         NCENTA = NCNTSH(ISHELA)
+         MULA   = ISTBSH(ISHELA)
+         MULTA  = MULT(MULA)
+         NSTRA  = IORBSB(IORBSH(ISHELA,1))
+         NUCA   = NUCOSH(ISHELA)
+         NORBA  = NORBSH(ISHELA)
+         IF (.NOT.BIGVEC) THEN
+            CORAX0 = CENTSH(ISHELA,1)
+            CORAY0 = CENTSH(ISHELA,2)
+            CORAZ0 = CENTSH(ISHELA,3)
+         END IF
+         PRINTA = .TRUE.
+         IF ((ISHELA .NE. IPRNTA).AND.(IPRNTA .NE. 0)) PRINTA = .FALSE.
+C
+C        ******************************
+C        ***** Second Shell Index *****
+C        ******************************
+C
+         DO 200 ISHELB = IBSTRT,ISHELA
+C           Check for basis-set identifier (WK/UniKA/04-11-2002).
+            MBSAB = MBSA + MBSISH(ISHELB)
+            IF (ISHELB .NE. IBSMAX) THEN
+               IF (MBSAB .GT. MBSMAX) GOTO 200
+               IF (.NOT. R12TRA .AND. MBSISH(ISHELB) .GT. 1) GOTO 200
+            END IF
+            ICB    = LCLASH(ISHELB)
+            NHKTB  = NHKTSH(ISHELB)
+            KHKTB  = KHKTSH(ISHELB)
+            KCKTB  = KCKTSH(ISHELB)
+            SPHRB  = SPHRSH(ISHELB)
+            NCENTB = NCNTSH(ISHELB)
+            MULB   = ISTBSH(ISHELB)
+            MULTB  = MULT(MULB)
+            NSTRB  = IORBSB(IORBSH(ISHELB,1))
+            NUCB   = NUCOSH(ISHELB)
+            NORBB  = NORBSH(ISHELB)
+            IF (.NOT.BIGVEC) THEN
+               CORBX0 = CENTSH(ISHELB,1)
+               CORBY0 = CENTSH(ISHELB,2)
+               CORBZ0 = CENTSH(ISHELB,3)
+            END IF
+            GENAB  = .NOT.(SEGMSH(ISHELA) .AND. SEGMSH(ISHELB))
+            IGENAB = 1
+            IF (.NOT.GENAB) IGENAB = 2
+            NSETA  = NSETSH(ISHELA,IGENAB)
+            NSETB  = NSETSH(ISHELB,IGENAB)
+            PRINTB = PRINTA
+            IF ((ISHELB.NE.IPRNTB).AND.(IPRNTB.NE.0)) PRINTB = .FALSE.
+            IF (PRINTB) THEN
+               IPRINT = JPRINT
+            ELSE
+               IPRINT = 0
+            END IF
+C
+C           *****************************
+C           ***** Third Shell Index *****
+C           *****************************
+C
+            ICMAX = ISHELA
+            IF (SPNORB .OR. DIA2SO) ICMAX = MAXSHL
+            IF(I2TYP.EQ.2) ICMAX = NLRGBL
+            DO 300 ISHELC = ICSTRT, ICMAX
+C              Check for basis-set identifier (WK/UniKA/04-11-2002).
+               MBSABC = MBSAB + MBSISH(ISHELC)
+               IF (ISHELC .NE. ICSMAX) THEN
+                  IF (.NOT. R12TRA .AND. MBSISH(ISHELC) .GT. 1) GOTO 300
+                  IF (MBSABC .GT. MBSMAX) GOTO 300
+               END IF
+               ICC    = LCLASH(ISHELC)
+               NHKTC  = NHKTSH(ISHELC)
+               KHKTC  = KHKTSH(ISHELC)
+               KCKTC  = KCKTSH(ISHELC)
+               SPHRC  = SPHRSH(ISHELC)
+               NCENTC = NCNTSH(ISHELC)
+               MULC   = ISTBSH(ISHELC)
+               MULTC  = MULT(MULC)
+               NSTRC  = IORBSB(IORBSH(ISHELC,1))
+               NUCC   = NUCOSH(ISHELC)
+               NORBC  = NORBSH(ISHELC)
+               IF (.NOT.BIGVEC) THEN
+                  CORCX0 = CENTSH(ISHELC,1)
+                  CORCY0 = CENTSH(ISHELC,2)
+                  CORCZ0 = CENTSH(ISHELC,3)
+               END IF
+               PRINTC = PRINTB
+               IF ((ISHELC.NE.IPRNTC).AND.(IPRNTC.NE.0)) PRINTC=.FALSE.
+C
+C              ******************************
+C              ***** Fourth Shell Index *****
+C              ******************************
+C
+               IDMAX = ISHELC
+               IF (.NOT.(SPNORB .OR. DIA2SO) .AND.
+     &                  (ISHELA.EQ.ISHELC)) IDMAX = ISHELB
+               DO 400 ISHELD = IDSTRT,IDMAX
+C                 Check for basis-set identifier (WK/UniKA/04-11-2002).
+                  MBSABCD = MBSABC + MBSISH(ISHELD)
+                  IF (ISHELD .NE. IDSMAX) THEN
+                     IF (.NOT.R12TRA.AND.MBSISH(ISHELD) .GT. 1) GOTO 400
+                     IF (MBSABCD .GT. MBSMAX) GOTO 400
+                  END IF
+                  ICD    = LCLASH(ISHELD)
+                  NHKTD  = NHKTSH(ISHELD)
+                  KHKTD  = KHKTSH(ISHELD)
+                  KCKTD  = KCKTSH(ISHELD)
+                  SPHRD  = SPHRSH(ISHELD)
+                  NCENTD = NCNTSH(ISHELD)
+                  MULD   = ISTBSH(ISHELD)
+                  MULTD  = MULT(MULD)
+                  NSTRD  = IORBSB(IORBSH(ISHELD,1))
+                  NUCD   = NUCOSH(ISHELD)
+                  NORBD  = NORBSH(ISHELD)
+                  IF (.NOT.BIGVEC) THEN
+                     CORDX0 = CENTSH(ISHELD,1)
+                     CORDY0 = CENTSH(ISHELD,2)
+                     CORDZ0 = CENTSH(ISHELD,3)
+                  END IF
+                  GENCD = .NOT.(SEGMSH(ISHELC) .AND. SEGMSH(ISHELD))
+                  IGENCD = 1
+                  IF (.NOT.GENCD) IGENCD = 2
+                  NSETC = NSETSH(ISHELC,IGENCD)
+                  NSETD = NSETSH(ISHELD,IGENCD)
+                  PRINTD = PRINTC
+                  IF ((ISHELD .NE. IPRNTD).AND.(IPRNTD .NE. 0))
+     &               PRINTD = .FALSE.
+                  IF (PRINTD) THEN
+                     IPRINT = JPRINT
+                  ELSE
+                     IPRINT = 0
+                  END IF
+
+                  SHAEQB = ISHELA .EQ. ISHELB
+                  SHCEQD = ISHELC .EQ. ISHELD
+                  SHABAB = (ISHELA.EQ.ISHELC) .AND. (ISHELB.EQ.ISHELD)
+
+! Intermolecular Coulomb and exchange integrals
+!           IF ((NCENTB <= NUM_CORE_NUCLEI) .AND.
+!     &         (NCENTC <= NUM_CORE_NUCLEI) .AND.
+!     &         (NCENTD <= NUM_CORE_NUCLEI)) CYCLE
+!           IF ((NCENTB > NUM_CORE_NUCLEI) .AND.
+!     &         (NCENTC > NUM_CORE_NUCLEI)) CYCLE
+!           IF ((NCENTB > NUM_CORE_NUCLEI) .AND.
+!     &         (NCENTD > NUM_CORE_NUCLEI)) CYCLE
+!           IF ((NCENTC > NUM_CORE_NUCLEI) .AND.
+!     &         (NCENTD > NUM_CORE_NUCLEI)) CYCLE
+
+! Intermolecular Coulomb integrals only
+           IF ((NCENTA <= NUM_CORE_NUCLEI) .OR.
+     &         (NCENTB <= NUM_CORE_NUCLEI)) CYCLE
+           IF ((NCENTC > NUM_CORE_NUCLEI) .OR.
+     &         (NCENTD > NUM_CORE_NUCLEI)) CYCLE
+
+! Make sure that all integrals are written
+!           IF ((ISHELA == IASMAX) .AND.
+!     &         (ISHELB == IBSMAX) .AND.
+!     &         (NCENTC == FDNUCS) .AND.
+!     &         (NCENTD == FDNUCS)) THEN
+!             ICSMAX = ISHELC
+!             IDSMAX = ISHELD
+!           END IF
+C
+C                 *******************************
+C                 ***** Calculate integrals *****
+C                 *******************************
+C
+#if defined (VAR_VECTOR)
+C For the moment, only INTFCK is vectorized. Use TFMAT only then.
+      IF (DIRFCK .AND. .NOT.(EXPECT.OR.DDFOCK.OR.SUSCEP.OR.LONDON.OR.
+     &   PERTUR.OR.SPNORB.OR.UNDIFF.OR.DISTRI.OR.SOFOCK.OR.DIA2SO.OR.
+     &   ZFS2EL)) THEN
+
+                  CALL TWOODS(TFMAT,DMAT,NDMAT,GMAT,HESSEE,WORK,LWORK,
+     &                        UNDIFF,PERTUR,LONDON,SPNORB,DIA2SO,ZFS2EL,
+     &                        EXPECT,SUSCEP,DDFOCK,DIRFCK,SOFOCK,DISTRI,
+     &                        IATOM,MULE,MULTE,
+     &                        MAXDER,NOCONT,NODV,NOPV,THRESH,IPRINT,
+     &                        FIRST,SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
+     &                        ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,DUMMY,
+     &                        ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,
+     &                        DMRSO,IREPDM)
+
+       ELSE
+#endif
+                  CALL TWOODS(FMAT,DMAT,NDMAT,GMAT,HESSEE,WORK,LWORK,
+     &                        UNDIFF,PERTUR,LONDON,SPNORB,DIA2SO,ZFS2EL,
+     &                        EXPECT,SUSCEP,DDFOCK,DIRFCK,SOFOCK,DISTRI,
+     &                        IATOM,MULE,MULTE,
+     &                        MAXDER,NOCONT,NODV,NOPV,THRESH,IPRINT,
+     &                        FIRST,SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
+     &                        ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,DUMMY,
+     &                        ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,
+     &                        DMRSO,IREPDM)
+#if defined (VAR_VECTOR)
+       END IF
+#endif
+                  IF (RETUR) THEN
+                     IF (ISHELA .EQ. IPRNTA .AND.
+     &                   ISHELB .EQ. IPRNTB .AND.
+     &                   ISHELC .EQ. IPRNTC .AND.
+     &                   ISHELD .EQ. IPRNTD) GOTO 9999
+                  END IF
+  400          CONTINUE
+  300       CONTINUE
+  200    CONTINUE
+  100 CONTINUE
+#if defined (VAR_VECTOR)
+C NECgh Here we have to sum up the temporary Fockmatrices
+      IF(DIRFCK.AND..NOT.(EXPECT.OR.DDFOCK.OR.SUSCEP.OR.LONDON.OR.
+     &   PERTUR.OR.SPNORB.OR.UNDIFF.OR.DISTRI.OR.SOFOCK.OR.DIA2SO.OR.
+     &   ZFS2EL)) THEN
+         JUNK = MAX (IVECLN/NDMAT,1)
+         DO L = 1,JUNK
+            DO I = 1,NDMAT
+               DO K = 1,NBASIS
+                  DO J = 1,NBASIS
+                     FMAT(J,K,I)=FMAT(J,K,I)+TFMAT(J,K,I,L)
+                  END DO
+               END DO
+            END DO
+         END DO
+      END IF
+#endif
+C     Print Fock matrices
+      IF ((DIRFCK.OR.SOFOCK) .AND. IPRINT.GT.3) THEN
+         CALL HEADER('Fock matrix in TWOINT',-1)
+         DO 700 I = 1, NDMAT
+            WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
+            CALL OUTPUT(FMAT(1,1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+  700    CONTINUE
+      END IF
+ 9999 CALL QEXIT('TWOPEQM')
+      RETURN
+      END SUBROUTINE TWOPEQM
+
 C  /* Deck twodsa */
       SUBROUTINE TWODSA(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,GMAT,MAXDER,
      &                  EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,

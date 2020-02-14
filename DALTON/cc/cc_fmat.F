@@ -485,6 +485,8 @@ c/* Deck CC_FMATNEW */
 *     Written by Christof Haettig, November 1998, based on CC_FMAT.
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, PELIB_IFC_TRANSFORMER,
+     &                           PELIB_IFC_QRTRANSFORMER
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -545,7 +547,7 @@ c/* Deck CC_FMATNEW */
       CHARACTER*(6) FNCKJD, FN3VI, FN3FOP2, FNDELD, FN3FOPX
       CHARACTER*(5) FNDKBC3, FN3FOP
       CHARACTER*(4) FNDKBC
-      CHARACTER RSPTYP(1)
+      CHARACTER*(1) RSPTYP
       PARAMETER (BFFIL ='CCFM_BFI', FNBFD ='CCBFDENS',
      &           CBAFIL='CCFM_CBA', DBAFIL='CCFM_DBA',
      &           CTFIL ='CCFM_CIM', DTFIL ='CCFM_DIM', 
@@ -635,6 +637,8 @@ C     DOUBLE PRECISION ECURRSAV
       INTEGER ICCSET1
       INTEGER ICCSET2
       INTEGER ILSTSYM
+
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 
 #if defined (SYS_CRAY) 
       REAL DDOT
@@ -1019,6 +1023,19 @@ C     DOUBLE PRECISION ECURRSAV
             END IF
          END IF
       ENDIF
+      IF (USE_PELIB()) THEN
+          ALLOCATE(FOCKMAT(NNBASX),FOCKTEMP(N2BAST))
+          IF (HFFLD) THEN
+              CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+          ELSE
+          CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+          END IF
+          CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+          CALL DAXPY(N2BAST,1.0d0,FOCKTEMP,1,WORK(KFOCK0),1)
+          DEALLOCATE(FOCKMAT,FOCKTEMP)
+      END IF
+C
+C====================================================
 C
       IF (LOCDBG) THEN
         WRITE (LUPRI,*) MSGDBG, 'norm of T1AMP0:',
@@ -2208,6 +2225,36 @@ C
          END IF
       ENDIF
 C
+      IF (USE_PELIB().AND.LSTBTR) THEN
+C
+          KT2AMPA = KEND2
+          KEND3   = KT2AMPA +  NT2AM(ISYAMP)
+          LWRK3   = LWORK - KEND3
+          IF (LWRK3 .LT. 0) THEN
+             CALL QUIT('Insuff. work in CC_FMAT. in PECC part')
+          END IF
+C         
+C         
+          IF (LISTL(1:2).EQ.'L0') THEN
+            IOPT = 2
+            CALL CC_RDRSP(LISTR,IDLSTR,ISYAMP,IOPT,MODEL,
+     &                    WORK(KDUM),WORK(KT2AMPA))
+            IF (.NOT. HFFLD) THEN
+                CALL PELIB_IFC_TRANSFORMER(WORK(KTHETA1),WORK(KTHETA2),
+     &                    WORK(KT1AMPA),WORK(KT2AMPA),MODEL,ISYAMP,
+     &                    'F',WORK(KEND3),LWRK3)
+            END IF
+C         
+          ELSE IF (LISTL(1:2).NE.'L0') THEN
+            IF (.NOT. HFFLD) THEN
+               RSPTYP='F'
+               CALL PELIB_IFC_QRTRANSFORMER(WORK(KTHETA1),WORK(KTHETA2),
+     &                              ISYRES,LISTL,IDLSTL,ISYCTR,
+     &                              LISTR,IDLSTR,ISYAMP,MODEL,RSPTYP,
+     &                              WORK(KEND2),LWRK2)
+            END IF
+          END IF
+      END IF
 C----------------------------------------------------------
 C
         
@@ -3838,6 +3885,7 @@ c/* Deck CCFMAT2 */
 *     Written by Christof Haettig, November 1998.
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -3898,6 +3946,8 @@ C
       INTEGER KONEHR, KONEHG, KONEH, KA2CON
       INTEGER NRHFK, NVIRC, ISYMC, ISYMI, IF, IOPTR12
       INTEGER KFIELD, KFIELDR, KFIELDG, ISYLMA
+
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 
   
       CALL QENTER('CCFMAT2')
@@ -3991,6 +4041,18 @@ C
               END IF
             END IF
          ENDIF
+         IF (USE_PELIB()) THEN
+             ALLOCATE(FOCKMAT(NNBASX),FOCKTEMP(N2BST(ISYM0)))
+             IF (HFFLD) THEN
+                 CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+             ELSE
+             CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+             END IF
+             CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+             CALL DAXPY(N2BST(ISYM0),1.0d0,FOCKTEMP,1,WORK(KONEH),1)
+             DEALLOCATE(FOCKMAT,FOCKTEMP)
+         END IF
+C
 C-----------------------------------------------------------------
 
          IF (FROIMP.OR.FROEXP) THEN
@@ -4040,6 +4102,18 @@ C
               END IF
             END IF
          ENDIF
+         IF (USE_PELIB()) THEN
+             ALLOCATE(FOCKMAT(NNBASX),FOCKTEMP(N2BST(ISYM0)))
+             IF (HFFLD) THEN
+                 CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+             ELSE
+             CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+             END IF
+             CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+             CALL DAXPY(N2BST(ISYM0),1.0d0,FOCKTEMP,1,WORK(KFIELD),1)
+             DEALLOCATE(FOCKMAT,FOCKTEMP)
+         END IF
+C
 C------------------------------------------------------------------------------
 C
          CALL DCOPY(N2BST(ISYM0),WORK(KFIELD),1,WORK(KFIELDR),1)

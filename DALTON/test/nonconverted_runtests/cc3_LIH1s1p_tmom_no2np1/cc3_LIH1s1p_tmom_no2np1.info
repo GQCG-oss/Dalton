@@ -1,7 +1,0 @@
-   cc3_LIH1s1p_tmom_no2np1
-   -----------
-   Molecule:         LIH
-   Theory Level:     CC3 / (two-function basis)
-   Test Purpose:     Transition moment between the ground and an
-                     excited state; non-totally symmetric operator.
-                     (NOT exploitng 2n+1 rule!)

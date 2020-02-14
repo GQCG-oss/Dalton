@@ -12,9 +12,25 @@
 - Added possibility to optimize MCSCF singlet wave functions with CSFs when used for triplet properties,
   both in \*\*RESPONS and \*\*PROPERTIES. Previously .DETERMINANTS in wave function optimization was required. (H. J. Aa. Jensen)
 - Added the ability in QFITLIB to fit up to and including quadrupoles (C. Steinmann)
+- Added the CVS approximation for CC calculations of core-excited states (S. Coriani et al.)
+- Added the possibility to calculate triplet-triplet excited state moments using the EOM-CC approximation (R. Faber)
+- New features available through the Polarizable Embedding library (PElib)
+  - Polarizable density embedding (PDE) model (use -DENABLE\_PDE=ON during setup to enable it [requires HDF5])
+    - J. M. H. Olsen, C. Steinmann, K. Ruud, and J. Kongsted, J. Phys. Chem. A 119, 5344 (2015)
+    - P. Reinholdt, J. Kongsted, and J. M. H. Olsen, J. Phys. Chem. Lett. 8, 5949 (2017)
+  - PDE-CC2, PDE-CCSD, and PDE-CCSDR(3) including linear and quadratic response (also enables PE-CC through PElib)
+    - D. Hrsak, J. M. H. Olsen, and J. Kongsted, J. Chem. Theory Comput. 14, 1351 (2018)
+  - FixSol continuum solvation with FIXPVA2 cavity tesselation
+    - M. S. Nørby, C. Steinmann, J. M. H. Olsen, H. Li, and J. Kongsted, J. Chem. Theory Comput. 12, 5050 (2016)
+    - N. M. Thellamurege and H. Li, J. Chem. Phys. 137, 246101 (2012)
+  - Enabled cubic response for PE-HF/DFT and PDE-HF/DFT
+    - J. M. H. Olsen and J. Kongsted, Adv. Quantum Chem. 61, 107 (2011)
+  - Effective external field (EEF) can now be used for all dipole properties
+  - Added support for AMOEBA potential
+- Added the ability to run SOPPA linear response calculations via the AOSOPPA module (R. Faber et al.)
 
 ### Added
-- added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
+- Added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
 
 ### Fixed
 - Compilation errors with gfortran-9.2.0 and 64-bit integers
@@ -22,15 +38,15 @@
 - Errors for Fermi-contact (FC) labels on APROPER and therefore FC properties in \*\*RESPONS when more than 99 atoms (H. J. Aa. Jensen)
 - Error for \*ESR spin-dipole properties when more than 33 atoms (H. J. Aa. Jensen)
 - Singlet totally-symmetric excitation energies for MCSCF in \*\*RESPONS with super-symmetry activated (.SUPSYM keyword). (H. J. Aa. Jensen)
-- make sure we include all (near-)degenerate diagonal elements for linear response excitation energies
+- Make sure we include all (near-)degenerate diagonal elements for linear response excitation energies
   via \*\*PROPERTIES .EXCITA or via \*\*RESPONS \*LINEAR .SINGLE (increase .NROOTS if needed).
   Otherwise the calculation will probably exhibit spin and/or space symmetry contamination proportional
   to the convergence threshold. (H. J. Aa. Jensen)
-- never use plus combinations of determinants as start guess for singlet linear response excitation energies
+- Never use plus combinations of determinants as start guess for singlet linear response excitation energies
   when reference wave function is not singlet (we do not want singlet states then). (H. J. Aa. Jensen)
-- dalton script: fix for using input files located in subfolders
-- fixed error from March 2015 which meant that double-hybrid DFT was not working correctly (MP2 part was ignored).
-- fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
+- Dalton script: fix for using input files located in subfolders
+- Fixed error from March 2015 which meant that double-hybrid DFT was not working correctly (MP2 part was ignored).
+- Fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
 
 ### Fixes in enclosed basis set files
 - Error in diffuse d-orbital exponents for Aluminum and Silicon (factor 10 too big) in aug-cc-pV(D+d)Z basis sets (H. J. Aa. Jensen)
@@ -39,21 +55,21 @@
 
 ### Changed
 - Allow basis set(s) after BASIS in line 1 of .mol file (instead of on second line). (H. J. Aa. Jensen)
-  
+
 
 ## [2018.2] (2019-03-17)
 
 ### Fixed
-- fixed error in AO-direct CC3 response calculations causing segmentation faults
-- fixed calculation of DSO contribution to spin-spin coupling for MCSCF and HSROHF when no symmetry
-- dalton script: do not set OMP\_NUM\_THREADS=1 if not MPI parallel (better performance
+- Fixed error in AO-direct CC3 response calculations causing segmentation faults
+- Fixed calculation of DSO contribution to spin-spin coupling for MCSCF and HSROHF when no symmetry
+- Dalton script: do not set OMP\_NUM\_THREADS=1 if not MPI parallel (better performance
   for sequential calculations if threaded blas is used, e.g. MKL or openBLAS)
-- dalton script: stop if user asks for MPI run with a sequential dalton.x
-- more robust .STEX input specification (old failed in some situations with gfortran 8); changed documentation accordingly
+- Dalton script: stop if user asks for MPI run with a sequential dalton.x
+- More robust .STEX input specification (old failed in some situations with gfortran 8); changed documentation accordingly
 
 ### Added
-- dalton script: -gb and -ngb options for specifying work memory in gigabytes
-- dalton script: -np as an alternative to -N for specifying number of MPI nodes
+- Dalton script: -gb and -ngb options for specifying work memory in gigabytes
+- Dalton script: -np as an alternative to -N for specifying number of MPI nodes
 
 ## [2018.1] (2019-01-14)
 

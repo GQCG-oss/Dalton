@@ -423,6 +423,7 @@ c /* deck cc_xieta1 */
 *    CC-R12 contributions by Christian Neiss  spring 2005
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -585,7 +586,9 @@ c /* deck cc_xieta1 */
       INTEGER luxint,ian,isymv
       INTEGER IDUM
       INTEGER KSCR1,KSCR2,KSCR3,ISYM1,ISYM2
-    
+
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
+   
 
 * external functions:
       INTEGER ILSTSYM
@@ -974,6 +977,18 @@ C
             END IF
          END IF
       ENDIF
+      IF (USE_PELIB()) THEN
+          ALLOCATE(FOCKMAT(NNBASX),FOCKTEMP(N2BST(ISYM0)))
+          IF (HFFLD) THEN
+              CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+          ELSE
+              CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+          END IF
+          CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+          CALL DAXPY(N2BST(ISYM0),1.0d0,FOCKTEMP,1,WORK(KONEH0),1)
+          DEALLOCATE(FOCKMAT,FOCKTEMP)
+      END IF
+C
 C
 C---------------------------------------------
 C

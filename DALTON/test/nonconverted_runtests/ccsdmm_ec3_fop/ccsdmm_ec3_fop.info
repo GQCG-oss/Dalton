@@ -1,8 +1,0 @@
-   ccsdmm_ec3_fop
-   --------------
-   Molecule:         H2O
-   Wave Function:    CCSD / cc-pVDZ
-   Test Purpose:     Check energy, dipole moment and quadrupole moment
-                     calculated using the SPC_EC3 model for the five
-                     water molecules surrounding the QM water molecule.
-                     OLDTG = .FALSE.

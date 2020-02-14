@@ -1,9 +1,0 @@
-BASIS
-STO-3G
-Calculation to verify that AVEPRP in response works properly
-
-    2    2  X  Y
-        3.    1
-Li   0.000000   0.000000    0.7581192283
-        1.    1
-H    0.000000   0.000000    -2.2743576849

@@ -1,5 +1,0 @@
-   energy_nevpt2_gs
-   ----------------
-   Molecule:         H2CO
-   Wave Functions:   MCSCF (CAS) / NEVPT2 / ano-1 basis
-   Test Purpose:     Check NEVPT2 energy calculation for el.ground state

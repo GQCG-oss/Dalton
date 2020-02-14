@@ -151,6 +151,7 @@ c/* Deck CC_BMAT */
 *     CC3 noddy version, April 2002, Christof Haettig
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, PELIB_IFC_QRTRANSFORMER
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -281,6 +282,7 @@ c/* Deck CC_BMAT */
       INTEGER ICCSET1
       INTEGER ICCSET2
       INTEGER ILSTSYM
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 
 #if defined (SYS_CRAY) 
       REAL DTIME, CONVRT, TIMALL, TIMTRN, TIMIO, TIMPRE
@@ -676,8 +678,8 @@ C
             CALL CCMM_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
             ELSE IF (NYQMMM) THEN
               IF (HFFLD) THEN
-                WRITE(LUPRI,*) 'Is it justified to do B transfor with
-     &  with a HFFLD?'
+                WRITE(LUPRI,*) 'Is it justified to do B transformation '
+     &                          //'with a HFFLD?'
                 CALL QUIT('HFFLD not implemented for QR')
               ELSE
                 CALL CCMM_ADDG(WORK(KFOCK0),WORK(KEND0),LWRK0)
@@ -685,6 +687,18 @@ C
             END IF
          ENDIF
       ENDIF
+      IF (USE_PELIB()) THEN
+          IF (HFFLD) THEN
+              CALL QUIT('HFFLD not implemented for QR')
+          ELSE
+              ALLOCATE(FOCKMAT(NNBASX),FOCKTEMP(N2BAST))
+              CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+              CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+              CALL DAXPY(N2BAST,1.0d0,FOCKTEMP,1,WORK(KFOCK0),1)
+              DEALLOCATE(FOCKMAT,FOCKTEMP)
+          END IF
+      END IF
+C
 C
 C------------------------------------------------------------------------
 C
@@ -1998,6 +2012,13 @@ C
           END IF
         END IF
       END IF
+!
+      IF (USE_PELIB()) THEN
+         RSPTYP='B'
+         CALL PELIB_IFC_QRTRANSFORMER(WORK(KTHETA1),WORK(KTHETA2),
+     &                   ISYMAB,LISTA,IDLSTA,ISYMA,LISTB,IDLSTB,ISYMB,
+     &                   MODEL,RSPTYP,WORK(KEND2),LWRK2)
+      END IF
 *---------------------------------------------------------------------*
 * if DO_O2 flag is set include A{x} t^y + A{y} t^x contribution
 * to the second-order rhs vector (here we do the CCS/CC2/CCSD parts):
@@ -2430,6 +2451,7 @@ c/* Deck CCBMAT2 */
 *
 *    Written by Christof Haettig, Januar 1997.
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -2494,6 +2516,7 @@ c/* Deck CCBMAT2 */
       DOUBLE PRECISION TIMIO, TIMBF, TIMA, TIME, TIMI, TIMC, TIMD
       DOUBLE PRECISION DDOT
 #endif
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 
       CALL QENTER('CCBMAT2')
 
@@ -2643,8 +2666,8 @@ C
                CALL CCMM_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
              ELSE IF (NYQMMM) THEN
                IF (HFFLD) THEN
-                 WRITE(LUPRI,*) 'Is it justified to do B transfor with
-     &  with a HFFLD?'
+                 WRITE(LUPRI,*) 'Is it justified to do B transformation'
+     &                           //' with a HFFLD?'
                  CALL QUIT('HFFLD not implemented for QR')
                ELSE
                  CALL CCMM_ADDG(WORK(KONEHR),WORK(KEND1),LWRK1)
@@ -2652,6 +2675,20 @@ C
              END IF
          END IF
       ENDIF
+      IF (USE_PELIB()) THEN
+          IF (HFFLD) THEN
+              CALL QUIT('HFFLD not implemented for QR')
+          ELSE
+              ALLOCATE(FOCKMAT(NNBASX),
+     &                 FOCKTEMP(MAX(N2BST(ISYM0),N2BST(ISYMA))))
+              CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+              CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+              CALL DAXPY(MAX(N2BST(ISYM0),N2BST(ISYMA)),1.0d0,FOCKTEMP,
+     &                   1,WORK(KONEHR),1)
+              DEALLOCATE(FOCKMAT,FOCKTEMP)
+          END IF
+      END IF
+C
 C
 C------------------------------------------------------------------------
 C
@@ -2776,7 +2813,7 @@ C
       DTIME = SECOND()
 
       IF(CC2.AND.(.NOT.CCSTST).AND.
-     &   ((NFIELD.GT.0) .OR. CCSLV)) THEN
+     &   ((NFIELD.GT.0) .OR. CCSLV .OR. USE_PELIB())) THEN
  
          KPERT   = KEND0
          KT1AMPA = KPERT   + N2BST(ISYM0)
@@ -2808,8 +2845,8 @@ C
               CALL CCMM_RHSTG(WORK(KPERT),WORK(KEND1),LWRK1)
                ELSE IF (NYQMMM) THEN
                  IF (HFFLD) THEN
-                   WRITE(LUPRI,*) 'Is it justified to do B transfor with
-     &  with a HFFLD?'
+                   WRITE(LUPRI,*) 'Is it justified to do B '// 
+     &                             'transformation with a HFFLD?'
                    CALL QUIT('HFFLD not implemented for QR')
                  ELSE
                    CALL CCMM_ADDG(WORK(KPERT),WORK(KEND1),LWRK1)
@@ -2817,6 +2854,18 @@ C
                END IF  
            END IF
          ENDIF
+         IF (USE_PELIB()) THEN
+             IF (HFFLD) THEN
+                 CALL QUIT('HFFLD not implemented for QR')
+             ELSE
+                 ALLOCATE(FOCKMAT(NNBASX),FOCKTEMP(N2BST(ISYM0)))
+                 CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+                 CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+                 CALL DAXPY(N2BST(ISYM0),1.0d0,FOCKTEMP,1,WORK(KPERT),1)
+                 DEALLOCATE(FOCKMAT,FOCKTEMP)
+             END IF
+         END IF
+C
 C
 C------------------------------------------------------------------------
 C
@@ -4686,7 +4735,7 @@ C
       CALL DCOPY(NTAMP,TXAM,1,WORK(KRHO1D),1)
       ISIDE = +1
       CALL CC_ATRR(0.0D0,1,ISIDE,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY,
-     &             APROXR12)
+     &             APROXR12,.FALSE.)
 C
 C-------------------------
 C     Zero out components.
@@ -4840,7 +4889,7 @@ C
 
          ISIDE = +1
          CALL CC_ATRR(0.0D0,1,ISIDE,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY,
-     &             APROXR12)
+     &             APROXR12,.FALSE.)
 C
          IF (LCOR .OR. LSEC) THEN
             CALL CC_CORE(WORK(KRHO1D),WORK(KRHO2D),ISYMTR)
@@ -4972,7 +5021,7 @@ C
 
            ISIDE = +1
            CALL CC_ATRR(0.0D0,1,ISIDE,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY,
-     &             APROXR12)
+     &             APROXR12,.FALSE.)
 C
            IF (LCOR .OR. LSEC) THEN
               CALL CC_CORE(WORK(KRHO1D),WORK(KRHO2D),ISYMTR)
@@ -5107,7 +5156,7 @@ C
 
            ISIDE = +1
            CALL CC_ATRR(0.0D0,1,ISIDE,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY,
-     &             APROXR12)
+     &             APROXR12,.FALSE.)
 C
            IF (LCOR .OR. LSEC) THEN
               CALL CC_CORE(WORK(KRHO1D),WORK(KRHO2D),ISYMTR)
@@ -5262,8 +5311,8 @@ C
 *=====================================================================*
 c /* deck CCDOTRSP */
 *=====================================================================*
-       SUBROUTINE CCDOTRSP(IDOTS,DOTPROD,IOPT,TYPE,ITRAN,MXTRAN,MXVEC,
-     &                     VEC1,VEC2,ISYVEC,WORK,LWORK                )
+       SUBROUTINE CCDOTRSP(IDOTS,DOTPROD,IIOPT,TYPE,ITRAN,MXTRAN,MXVEC,
+     &                     VEC1,VEC2,ISYVEC,WORK,LWORK)
 *---------------------------------------------------------------------*
 *
 *    Purpose: dot vector on a batch of other vectors
@@ -5272,9 +5321,11 @@ c /* deck CCDOTRSP */
 *             IDOTS   --  arrays of vectors to be dotted on
 *             DOTPROD --  array for resulting dot products
 *
-*             IOPT    --  1 : use only singles
+*             IIOPT   --  1 : use only singles
 *                         2 : use only doubles
 *                         3 : use singles and doubles
+*                         4 : triplet case, doubles only
+*                         5 : triplet case, singles and doubles
 *
 *             TYPE    --  type of vectors to be dotted on
 *             ITRAN   --  index of present vector in the
@@ -5300,7 +5351,7 @@ c /* deck CCDOTRSP */
       PARAMETER (LOCDBG = .FALSE.)
 
       CHARACTER TYPE*(*)
-      INTEGER IOPT, ITRAN, MXVEC, MXTRAN, ISYVEC, LWORK
+      INTEGER IIOPT, ITRAN, MXVEC, MXTRAN, ISYVEC, LWORK
       INTEGER IDOTS(MXVEC,MXTRAN)
 
 #if defined (SYS_CRAY)
@@ -5322,22 +5373,26 @@ c /* deck CCDOTRSP */
 
       CHARACTER MODEL*(10)
       INTEGER KZETA1, KZETA2, KEND, LEND, IVEC, ISYCTR, IZETAV
-
+      INTEGER IOPT
 * external functions:
       INTEGER ILSTSYM
 
 
       CALL QENTER('CCDOTRSP')
-
+      IOPT = IIOPT
 *---------------------------------------------------------------------*
 * allocate memory for vectors to be read from file:
 *---------------------------------------------------------------------*
       KZETA1 = 1
       KEND   = KZETA1 + NT1AM(ISYVEC)
-      IF (IOPT.EQ.32) THEN
+      IF (IIOPT.EQ.32) THEN
         KZETA2 = KEND
         KEND   = KZETA2 + NTR12AM(ISYVEC)
-      ELSE IF (IOPT.GT.1) THEN
+      ELSE IF (IAND(IIOPT,4).EQ.4) THEN
+        KZETA2 = KEND
+        KEND   = KZETA2 + 2*NT2AM(ISYVEC)
+        IOPT = IIOPT - 2
+      ELSE IF (IIOPT.GT.1) THEN
         KZETA2 = KEND
         KEND   = KZETA2 + NT2AM(ISYVEC)
       END IF
@@ -5392,9 +5447,11 @@ C
           CON1 = ZERO
         END IF
 
-        IF (IOPT.EQ.2 .OR. IOPT.EQ.3) THEN
+        IF (IIOPT.EQ.2 .OR. IIOPT.EQ.3) THEN
           IF (.NOT.CCS) CALL CCLR_DIASCL(WORK(KZETA2),0.5d0,ISYCTR)
           CON2 = DDOT(NT2AM(ISYCTR),WORK(KZETA2),1,VEC2,1)
+        ELSE IF (IAND(IIOPT,4).EQ.4) THEN
+          CON2 = DDOT(2*NT2AM(ISYCTR),WORK(KZETA2),1,VEC2,1)
         ELSE IF (IOPT.EQ.32) THEN
           CON2 = DDOT(NTR12AM(ISYCTR),WORK(KZETA2),1,VEC2,1)
         ELSE
@@ -5454,7 +5511,7 @@ c/* Deck CC_BTST */
       PARAMETER (MSGDBG='[debug] CC_BTST> ')
 
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .TRUE.)
+      PARAMETER (LOCDBG = .FALSE.)
       INTEGER MXBTRAN
       PARAMETER (MXBTRAN = 2)
 

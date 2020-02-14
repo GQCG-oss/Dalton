@@ -1,5 +1,0 @@
-   energy_scsmp2
-   -------------
-   Molecule:         H2O
-   Wave Functions:   RHF, SCS-MP2 / cc-pVDZ
-   Test Purpose:     Check SCS-MP2 energy calculation with symmetry

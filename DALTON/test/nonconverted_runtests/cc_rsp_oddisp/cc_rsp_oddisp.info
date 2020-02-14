@@ -1,6 +1,0 @@
-   cc_rsp_oddisp
-   -------------
-   Molecule:         HF in C2
-   Wave Function:    CCS, CCSD / 6-31G**
-   Test Purpose:     Dispersion coefficients for pure imaginary
-                     quadratic response functions

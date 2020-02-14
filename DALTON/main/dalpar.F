@@ -66,9 +66,6 @@ C
 #ifdef MOD_CGTO_DIFF_ERI
       use eri_basis_loops
 #endif
-#ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: xcint_integrate_worker
-#endif
       use so_parutils, only: soppa_nodedriver
       use pelib_interface, only: pelib_ifc_slave
       use qfitlib_interface, only: qfitlib_ifc_slave
@@ -288,11 +285,6 @@ C added by Bin Gao, May 12, 2012
          ! of two-electron integrals
          ELSE IF (IPRTYP.EQ.CGTO_DIFF_ERI_INIT) THEN
             CALL unopt_geodiff_loop_worker(LUPRI,IPRINT)
-#endif
-
-#ifdef ENABLE_XCINT
-         else if (iprtyp == XCINT_MPI_WAKEUP_SIGNAL) then
-            call xcint_integrate_worker(MPI_COMM_WORLD)
 #endif
          ELSE IF (IPRTYP.EQ.QMCMM_WORK) THEN
 #ifdef ENABLE_VPOTDAMP

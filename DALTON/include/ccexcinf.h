@@ -16,7 +16,8 @@
 *   EOMINP  : omegas...
 *
 *   FDEXCI  : flag for diagonlization of fin.-diff. jacobian
-*   JACEXP  : flag for explicite construction of the jacobian
+*   JACEXP  : flag for explicit construction of the jacobian
+*   JACEXT  : flag for explicit construction of the jacobian for triplet
 *   JACTST  : flag for test of the jacobian
 *
 *   STSD    : flag for .STSD option in triples calculation
@@ -30,6 +31,7 @@
       LOGICAL FDEXCI, FDJAC, JACTST, STVEC, OMEINP, STSD, OMESC
       LOGICAL CCSPIC,CC2PIC,CCSDPI,MARGIN,SQROVLP,CCSDTRENRM
       LOGICAL EXCI_CONT
+      LOGICAL JACEXT
 
       INTEGER NCCEXCI(8,3), NOMINP(8,3)
       INTEGER IOMINP(MAXOME,8,3), ISTVEC(MAXOME,8)
@@ -48,6 +50,6 @@ C     INTEGER NCC(8,3)
      &                 FDEXCI, FDJAC, JACTST, STVEC,
      &                 OMEINP, STSD, OMESC,
      &                 CCSPIC,CC2PIC,CCSDPI,MARGIN,SQROVLP,CCSDTRENRM,
-     &                 EXCI_CONT
+     &                 EXCI_CONT, JACEXT
       COMMON /OMEPIC/ OMPCCS,OMPCC2,OMPCCSD,XMARGIN
 *---------------------------------------------------------------------*

@@ -1,5 +1,0 @@
-   cc2_r12_aux_ne
-   ------------
-   Molecule:         Ne in D2h
-   Wave Function:    CC2-R12/B/1  6-31G/6-311++G(3df,3pd)
-   Test Purpose:     test CC2-R12/CCSD(R12) using .R12ORB option

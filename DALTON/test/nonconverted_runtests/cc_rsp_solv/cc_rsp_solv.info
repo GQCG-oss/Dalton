@@ -1,5 +1,0 @@
-   cc_rsp_solv
-   -----------
-   Molecule:         H2S in C2v
-   Wave Function:    CCSD / 6-31G
-   Test Purpose:     Solvent for CCSD excitation energies

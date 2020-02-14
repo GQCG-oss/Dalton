@@ -52,10 +52,8 @@ C
 #ifdef HAS_PCMSOLVER
       use pcm_config, only: pcm_configuration, pcm_cfg
 #endif
-#ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: xcint_is_active, xcint_init
-#endif
-
+      use pelib_interface, only: pelib_ifc_do_twoints,
+     &                           pelib_ifc_twoints
 #include "implicit.h"
 C
       DIMENSION WORK(LWORK)
@@ -125,6 +123,14 @@ C
       CALL FLSHFO(LUW4)
       CALL FLSHFO(LUPRI)
       CALL FLSHFO(LUSTAT)
+! ************************************************************************
+! *** Compute intermolecular part of two-electron Fock matrix and quit ***
+! ************************************************************************
+      IF (PELIB_IFC_DO_TWOINTS()) THEN
+          CALL PELIB_IFC_TWOINTS(WORK, LWORK)
+          ICONV = 1
+          GOTO 8000
+      END IF
 C
 C ***************************************************
 C *** Optimize for RHF, MP2, CI, MCSCF wave functions
@@ -168,15 +174,6 @@ Cbm initialized PCM_save
       IF (PCM) THEN
          CALL PCMSOLVNT(WORK,LWORK)
       END IF
-
-
-#ifdef ENABLE_XCINT
-      if (xcint_is_active()) then
-        ! initialize XCint interface
-        call xcint_init()
-      end if
-#endif
-
 C
 C
 C ***************************************************

@@ -31,6 +31,7 @@ c /* deck cc_hyppol */
 *     Orbital relax. for one operator, june 1999, Christof Haettig.
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -272,7 +273,7 @@ c /* deck cc_hyppol */
 *---------------------------------------------------------------------*
 * calculate K matrix contributions:
 *---------------------------------------------------------------------*
-      IF (CCSLV) THEN
+      IF (CCSLV.OR.USE_PELIB()) THEN
         TIM1 = SECOND()
 
         IOPT = 5
@@ -494,7 +495,7 @@ C--------------------------------------------------------------------*
 C     K-Matrix contribution:
 C--------------------------------------------------------------------*
 C
-        IF (CCSLV) THEN
+        IF (CCSLV.OR.USE_PELIB()) THEN
           CALL CC_SETB11(WORK(KKTRAN),WORK(KKDOTS),NKTRAN,MXVEC,
      &                   ITAMPA,IZETVB,IZETVC,ITRAN,IVEC)
 

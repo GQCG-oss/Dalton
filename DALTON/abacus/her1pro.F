@@ -178,6 +178,9 @@ C     Solvent flag (22.01.91/HJAAJ+KM) (SOLVENT)
 C
 C     LOA contribution to PCM solvent - 1st/2nd order magnetic
 C     perturbation (WORD=PCMBSOL/PCM2BSL) (Feb2004 KR&DM)
+C
+      use pelib_interface, only: use_pelib, pelib_ifc_localfield,
+     &                           pelib_ifc_do_lf
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -251,6 +254,8 @@ C
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
 C
+      REAL*8, DIMENSION(:), ALLOCATABLE :: EEFMATS
+C
 
 C
       CALL QENTER('PR1IN1')
@@ -260,6 +265,7 @@ C
       RCHRG  = .FALSE.
       RGAUGE = .FALSE. 
       CALL MEMGET('REAL',KCHRG,MXCENT,WORK,KFREE,LFREE) 
+
 C
 C     **************************
 C     ***** Integral types *****
@@ -2627,6 +2633,27 @@ C
                END IF
             END IF
          END DO
+      END IF
+
+      IF (WORD == 'DIPLEN ') THEN
+         IF (USE_PELIB() .AND. PELIB_IFC_DO_LF()) THEN
+            WRITE(LUPRI,*) 'INFO: EEF CONTRIBUTION ADDED TO DIPOLE'//
+     &                     ' MOMENT INTEGRALS'
+            ALLOCATE(EEFMATS(3*NELMNT))
+            CALL PELIB_IFC_LOCALFIELD(EEFMATS)
+            IF (.NOT. EXP1EL) THEN
+                CALL DAXPY(3*NELMNT, 1.0D0, EEFMATS, 1, WORK(KSOINT), 1)
+            ELSE
+                WRITE(LUPRI,*) 'WARNING: EXPERIMENTAL - DIPOLE MOMENT'//
+     &                         ' INCLUDES EEF CONTRIBUTION (NOT TESTED)'
+                DO I = 1, 3
+                   J = 1+(I-1)*NELMNT
+                   EXPVAL(I) = EXPVAL(I) + DDOT(NELMNT, DENMAT, 1,
+     &                                          EEFMATS(J), 1)
+                END DO
+            END IF
+            DEALLOCATE(EEFMATS)
+         END IF
       END IF
 C
 C     ***********************************

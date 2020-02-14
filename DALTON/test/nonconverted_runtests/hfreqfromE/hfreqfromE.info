@@ -1,6 +1,0 @@
-   hfreqfromE
-   ----------
-   Molecule:         H2O
-   Wave Function:    SCF / cc-pVDZ
-   Test Purpose:     Harmonic frequencies calculated numerically from
-                     energies

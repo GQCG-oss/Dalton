@@ -1,6 +1,0 @@
-   effgeom_fromE2
-   --------------
-   Molecule:         CO
-   Wave Function:    SCF / STO-3G
-   Test Purpose:     Effective geometry from energies using normal
-                     coordinates

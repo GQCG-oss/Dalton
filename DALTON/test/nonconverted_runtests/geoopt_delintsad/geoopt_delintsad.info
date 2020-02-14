@@ -1,9 +1,0 @@
-   geoopt_delintsad
-   ----------------
-   Molecule:         C2H6
-   Wave Function:    SCF / STO-3G
-   Test Purpose:     Saddle point optimization in delocalized internal
-                     coordinates. The initial Hessian is calculated, then
-                     updated using the Rank one (MS) formula. The step is
-                     controlled with the partitioned rational function
-                     method and Baker's convergence criteria are used

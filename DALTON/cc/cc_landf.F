@@ -107,7 +107,10 @@ C     C1T2C = sum(dl)[Xdl*LamH(beta,d)*LamP(alfa,l)]
 C            +sum(bk)[VLTR1(bk)*LampC(alfa,b)*LamH(beta,k)] 
 C            +sum(bk)[VLTR1(bk)*Lamp(alfa,b)*LamHC(beta,k)] 
 C
-C     For IOPT=1 is the third term omitted. 
+C     For IOPT=1 is the third term omitted.
+C     Negative IOPT signals a triplet calculation:
+C     Only the "Exchange" part of Xdl is calculated
+C
 C
 #include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -124,18 +127,19 @@ C
       CALL QENTER('CC_C1T2C')
 C
       ISYRES = MULD2H(ISYR,ISYL)
+      IOPTA = ABS(IOPT)
 C
 C-----------------------------
 C     Initialize result array.
 C-----------------------------
 C
-      IF ((IOPT .EQ. 1).OR.(IOPT.EQ.3)) THEN
+      IF ((IOPTA .EQ. 1).OR.(IOPTA.EQ.3)) THEN
          CALL DZERO(C1T2C,N2BST(ISYRES))
-      ELSE IF (IOPT .EQ. 2) THEN
+      ELSE IF (IOPTA .EQ. 2) THEN
          CALL DZERO(C1T2C,NT1AM(ISYRES))
       ENDIF
 C
-      ISYMBK = ISYL  
+      ISYMBK = ISYL
       ISYMDL = MULD2H(ISYMBK,ISYR)
 C
 C-------------------------------
@@ -156,7 +160,8 @@ C-------------------------------------------
 C     Calculate coulomb part of contraction.
 C-------------------------------------------
 C
-      IF (.NOT. CCS) THEN
+      IF (.NOT. CCS .AND. IOPT .GT. 0) THEN
+
        IF (ISYMDL .LT. ISYMBK) THEN
 C
          KOFF1  = IT2AM(ISYMDL,ISYMBK) + 1
@@ -223,11 +228,13 @@ C
   100    CONTINUE
 C
        ENDIF
+      ENDIF
 C
 C---------------------------------------------
 C      Calculate exchange part of contraction.
 C---------------------------------------------
 C
+      IF ( .NOT. CCS) THEN
        DO 140 ISYMDK = 1,NSYM
 C
          ISYMBL = MULD2H(ISYMDK,ISYR  )
@@ -335,7 +342,7 @@ C
 C
       ENDIF
 C
-      IF ((IOPT .EQ. 1) .OR. (IOPT .EQ. 3)) THEN
+      IF ((IOPTA .EQ. 1) .OR. (IOPTA .EQ. 3)) THEN
 C
 C===================================
 C        Transformation to AO-basis.
@@ -449,7 +456,7 @@ C
 C
       ENDIF
 C
-      IF (IOPT .EQ. 3) THEN
+      IF (IOPTA .EQ. 3) THEN
 C
 C--------------------------------------------
 C        lamp*lamhc
@@ -505,7 +512,7 @@ C
 C
       ENDIF
 C
-      IF (IOPT. EQ. 2) THEN
+      IF (IOPTA. EQ. 2) THEN
 C
          CALL DCOPY(NT1AM(ISYMDL),WORK(KLDINT),1,C1T2C,1)
 C
@@ -2607,6 +2614,7 @@ C
 C     Ove Christiansen - march 1997 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 C
 #include "implicit.h"
 C
@@ -2626,12 +2634,13 @@ C
 !#include "qmmm.h"
 #include "ccfield.h"
 #include "leinf.h"
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 C
 C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CC_RCC2FF')
 C
-      IF (((NFIELD.GT.0).OR.CCSLV).AND.NONHF) THEN
+      IF (((NFIELD.GT.0).OR.CCSLV.OR.USE_PELIB()).AND.NONHF) THEN
 C
          KFOCK1 = 1
          KFOCK2 = KFOCK1 + MAX(N2BST(ISYMTR),N2BST(ISYMOP))
@@ -2690,6 +2699,20 @@ C
      *                       SECOND() - DTIME
             END IF
          ENDIF
+         IF (USE_PELIB()) THEN
+             ALLOCATE(FOCKMAT(NNBASX),
+     &                FOCKTEMP(MAX(N2BST(ISYMTR),N2BST(ISYMOP))))
+             IF (HFFLD) THEN
+                 CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+             ELSE
+             CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+             END IF
+             CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+             CALL DAXPY(MAX(N2BST(ISYMTR),N2BST(ISYMOP)),1.0d0,
+     &                  FOCKTEMP,1,WORK(KFOCK2),1)
+             DEALLOCATE(FOCKMAT,FOCKTEMP)
+         END IF
+C
 C
 C--------------------------------------
 C
@@ -2734,6 +2757,7 @@ C     Ove Christiansen - march 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 C
       DIMENSION RHO1(*),WORK(LWORK)
@@ -2747,6 +2771,7 @@ C
 #include "ccfield.h"
 #include "leinf.h"
 #include "qm3.h"
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 !#include "qmmm.h"
 C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2807,6 +2832,19 @@ C
      *                       SECOND() - DTIME
             END IF
          ENDIF
+         IF (USE_PELIB()) THEN
+             ALLOCATE(FOCKMAT(NNBASX),
+     &                FOCKTEMP(MAX(N2BST(ISYMOP),N2BST(ISYMLA))))
+             IF (HFFLD) THEN
+                 CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+             ELSE
+             CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+             END IF
+             CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+             CALL DAXPY(MAX(N2BST(ISYMOP),N2BST(ISYMLA)),1.0d0,FOCKTEMP,
+     &                  1,WORK(KFOCK1),1)
+             DEALLOCATE(FOCKMAT,FOCKTEMP)
+         END IF
 C
 C--------------------------------------
 C
@@ -2835,6 +2873,7 @@ C     Ove Christiansen - march 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 C
       DIMENSION OMEGA2(*),C2AM(*),WORK(LWORK)
@@ -2848,6 +2887,7 @@ C
 #include "ccfield.h"
 #include "leinf.h"
 #include "qm3.h"
+      REAL*8, ALLOCATABLE :: FOCKMAT(:), FOCKTEMP(:)
 !#include "qmmm.h"
 C
       LOGICAL ETRAN,FCKCON
@@ -2918,6 +2958,19 @@ C
          END IF
 
       ENDIF
+      IF (USE_PELIB()) THEN
+          ALLOCATE(FOCKMAT(NNBASX),
+     &             FOCKTEMP(MAX(N2BST(ISYMOP),N2BST(ISYMLA))))
+          IF (HFFLD) THEN
+              CALL GET_FROM_FILE('FOCKMHF',NNBASX,FOCKMAT)
+          ELSE
+          CALL GET_FROM_FILE('FOCKMAT',NNBASX,FOCKMAT)
+          END IF
+          CALL DSPTSI(NBAS,FOCKMAT,FOCKTEMP)
+          CALL DAXPY(MAX(N2BST(ISYMOP),N2BST(ISYMLA)),1.0d0,FOCKTEMP,
+     &               1,WORK(KFOCK1),1)
+          DEALLOCATE(FOCKMAT,FOCKTEMP)
+      END IF
 C
 C-------------------------------------
 C

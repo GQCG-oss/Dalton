@@ -678,10 +678,6 @@ C
       END
 C  /* Deck dalton_exedrv */
       SUBROUTINE DALTON_EXEDRV(LMWORK, WRKDLM)
-
-#ifdef BUILD_OPENRSP
-          use openrsp_input, only: read_openrsp_input
-#endif
 C
 C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
@@ -691,8 +687,9 @@ C
       use pcm_config, only: pcm_configuration, pcm_cfg, pcm_finalize
 #endif
       use pelib_interface, only: use_pelib, pelib_ifc_finalize,
-     &                           pelib_ifc_deactivate,
-     &                           pelib_ifc_dolf, pelib_ifc_lf
+     &                           pelib_ifc_deactivate, pelib_ifc_do_mep,
+     &                           pelib_ifc_do_mep_noqm,
+     &                           pelib_ifc_mep_noqm, pelib_ifc_do_lf
 
 #include "implicit.h"
 #include "dummy.h"
@@ -744,34 +741,9 @@ C
       REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 
       real(8), allocatable :: work(:)
-      logical :: openrsp_input_found
 
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
-
-#ifdef BUILD_OPENRSP
-      ! radovan: we need to read the **OPENRSP input before we run anything
-      call gpopen(lucmd, 'DALTON.INP','OLD',' ','FORMATTED',
-     &            idummy, .false.)
-!     search **OPENRSP in input
-      rewind (lucmd)
-      openrsp_input_found = .false.
-      use_openrsp = .false.
-      do
-         read (lucmd, '(a)', end=2) word
-         if (word == '**OPENR') then
-            call read_openrsp_input('DALTON.INP', lucmd)
-            openrsp_input_found = .true.
-            use_openrsp = .true.
-            exit
-         end if
-      end do
-2     rewind(lucmd)
-      call gpclose(lucmd, 'KEEP')
-#else
-      use_openrsp = .false.
-#endif
-
 C
 !     allocate memory using f90 utilities
       allocate(work(0:lmwork+1),stat=i)
@@ -1135,24 +1107,6 @@ C
                GOTO 133
             END IF
  134        CONTINUE
-
-#ifdef BUILD_OPENRSP
-C added by Bin Gao, April 2, 2009
-C for response theory in atomic orbital basis
-            REWIND(LUCMD)
-C search for $RESPON in input (legacy driver)
-            DO
-               READ (LUCMD,'(A7)',END=135) WORD
-               IF (WORD .EQ. '$RESPON') THEN
-                  USE_OPENRSP = .TRUE.
-                  CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9)
-                  EXIT
-               END IF
-            END DO
- 135        CONTINUE
- 137        CONTINUE
-#endif
-
             IF (LUCMD .GT. 0) CALL GPCLOSE(LUCMD,'KEEP')
          ELSE IF (ITERNR .GT. ITERMX) THEN
             CALL TITLER('WARNING - Geometry not converged',' ',200)
@@ -1169,13 +1123,14 @@ Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
 C
 C Request effective dipole integrals using PE library
          IF (USE_PELIB()) THEN
-             IF (PELIB_IFC_DOLF()) THEN
-!                 WRITE(LUPRI,'(/A)') 'PEQM calculation includes '//
-!     &                               'effective external field effects.'
-!                 WRITE(LUPRI,'(A)') 'Reference: '//
-!     &                        'Phys. Chem. Chem. Phys. 2016, 18, 10070.'
-                 CALL PELIB_IFC_LF()
+             IF (PELIB_IFC_DO_LF()) THEN
+                 WRITE(LUPRI,'(/A)') 'PE-QM calculation includes '//
+     &                               'effective external field effects.'
              END IF
+         END IF
+Classical MEP calculations using PE library
+         IF (PELIB_IFC_DO_MEP() .AND. PELIB_IFC_DO_MEP_NOQM()) THEN
+             CALL PELIB_IFC_MEP_NOQM()
          END IF
 
 Cholesky
@@ -1228,34 +1183,6 @@ C
             CALL TITLER(
      &         'End of Dynamic Property Section (RESPONS)',' ',200)
          END IF
-
-#ifdef BUILD_OPENRSP
-C added by Bin Gao, April 2, 2009
-C for response theory in atomic orbital basis
-         IF (LUCMD .LT. 0) THEN
-            CALL GPOPEN(LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
-     &                  IDUMMY, .FALSE.)
-         END IF
-         REWIND(LUCMD)
-C search for $RESPON in input
-         DO
-            READ (LUCMD,'(A7)',END=145) WORD
-            IF (WORD .EQ. '$RESPON') then
-               USE_OPENRSP = .TRUE.
-               CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9)
-               EXIT
-            END IF
-         END DO
-
- 145     CONTINUE
-         ! radovan: it's really bad to call the driver while reading the input
-         !          we should first read all input, then sanity check, then run the code
-         if (openrsp_input_found) then
-            call openrsp_driver(work(10), lmwork-9)
-         end if
- 147     if (lucmd > 0) call gpclose(lucmd, 'KEEP')
-#endif
-
          IF (RNABAC) THEN
             CALL ABAINP('**PROPE',WORK(1),LMWORK)
             CALL WLKINI

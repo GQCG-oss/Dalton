@@ -1,6 +1,0 @@
-   cc_rsp_alpha2
-   -------------
-   Molecule:         Ne atom in D2h
-   Wave Function:    CCS, CC2, CCSD / d-aug-cc-pVDZ
-   Test Purpose:     Frequency-dependent polarizabilities and
-                     dispersion coefficients

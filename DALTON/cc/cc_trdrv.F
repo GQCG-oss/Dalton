@@ -532,21 +532,48 @@ C           For Triplet start at the
 C           beginning of the workspace.
 C           -----------------------------
 C
-            NRHO1 = NT1AM(ISYMTR)
+            NRHO1 = NT1AM(ISYMTR)*NSIMTR
             NRHO2 = NT2AM(ISYMTR)+NT2AMA(ISYMTR)
+            IF (ISIDE .EQ. -1) THEN
+               NRHO2 = MAX(NT2SQ(ISYMTR),NT2ORT(ISYMTR)+NT2ORT3(ISYMTR),
+     &                     2*NT2ORT(1))
+               LRHO1 = NT1AM(ISYMTR)
+               NC2AM = NT2SQ(ISYMTR)
+            ELSE
+               LRHO1 = 0
+               NC2AM = 0
+            END IF
 C
-            KRHO1 = 1    
+            KRHO1 = 1
             KRHO2 = KRHO1 + NRHO1
-            KEND1 = KRHO2 + NRHO2
-            LWRK1 = LWORK - KEND1             
+            KC1AM = KRHO2 + NRHO2
+            KC2AM = KC1AM + LRHO1*NSIMTR
+            KEND1 = KC2AM + NC2AM
+            LWRK1 = LWORK - KEND1
             IF (LWRK1 .LE. 0) THEN
                 CALL QUIT('Too little workspace in CC_TRDRV ')
             ENDIF
+C-----------------------------------------------
+C           The left transform need C1 in memory
+C-----------------------------------------------
+C
+            IF (ISIDE .EQ.-1) THEN
+               DO IV = 1, NSIMTR
+                  KOFF1  = KC1AM + NT1AM(ISYMTR)*(IV - 1)
+                  CALL CC_RVEC(LUFC1,FC1AM,NT1AM(ISYMTR),NT1AM(ISYMTR),
+     *                         IV+K1-1,WORK(KOFF1))
+                  IF (IPRINT.GT.45 .AND. (CCS.OR.(.NOT.MINSCR))
+     *                .OR. LOCDBG) THEN
+                     WRITE(LUPRI,*) 'Vector nr.',IV+K1-1
+                     CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,1,0)
+                  ENDIF
+               END DO
+            END IF
 C
 C           -------------------------------------
 C           File opening for the triplet case
 C           -------------------------------------
-            IF (.NOT. (CCS.OR.CC2)) THEN 
+            IF (.NOT. (CCS.OR.CC2)) THEN
                CALL WOPEN2(LUFSD,FR2SD,64,0)
             ENDIF
          ENDIF
@@ -598,10 +625,22 @@ C           ---------------------
 C
             IF (TRIPLET) THEN
                IF (CCR12) CALL QUIT('No triplet yet for CCR12')
-               CALL CC_RHTR3(ECURR,FRHO1,LUFR1,FR2SD,LUFSD,
-     *                       FC1AM,LUFC1,FC2AM,LUFC2,
-     *                       WORK,LWORK,NSIMTR,
-     *                       IVEC,ITR)
+               IF (ISIDE .EQ. 1) THEN
+                  CALL CC_RHTR3(ECURR,FRHO1,LUFR1,FR2SD,LUFSD,
+     *                          FC1AM,LUFC1,FC2AM,LUFC2,
+     *                          WORK,LWORK,NSIMTR,
+     *                          IVEC,ITR)
+               ELSE IF (ISIDE .EQ. -1) THEN
+                  CALL CC_LHTR3(ECURR,
+     *                          FRHO1,LUFR1,FR2SD,LUFSD,
+     *                          FC1AM,LUFC1,FC2AM,LUFC2,
+     *                          WORK(KRHO1),WORK(KRHO2),
+     *                          WORK(KC1AM),WORK(KC2AM),
+     *                          WORK(KEND1),LWRK1,NSIMTR,
+     *                          IVEC,ITR,LRHO1)
+               ELSE
+                  CALL QUIT(' ISIDE should be -1 or +1 ')
+               END IF
 C
             ELSE
                IF (ISIDE .EQ. 1) THEN

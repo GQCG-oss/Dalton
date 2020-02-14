@@ -97,7 +97,7 @@ C
 #include "center.h"
 Cholesky  
 C
-      PARAMETER (NTABLE = 127)
+      PARAMETER (NTABLE = 128)
       LOGICAL   SET, NEWDEF, SIRFF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*(80) LINE
@@ -132,7 +132,7 @@ Cring-CCD for triplet (rTCCD), and SOSEX added
      &            '.KEPAOI','*CHO(T)','*CHOCC2','*CHOMP2','*CHODBG',
      &            '.D01SKI','.CHO(T)','.T2UPDA','.RCCD  ','.RTCCD ',
      &            '.DRCCD ','.SOSEX ','.T2STAR','.HURWIT','.DCPT2 ',
-     &            '*MLCC3 ','*MLCCPT'/
+     &            '*MLCC3 ','*MLCCPT','*PECC'/
 
       DATA SET/.FALSE./
 C
@@ -207,7 +207,7 @@ C
      *                92,93,94,95,96,97,98,99,100,101,102,103,104,
      *                105,106,107,108,109,110,111,112,113,114,115,
      *                116,117,118,119,120,121,122,123,124,125,126,
-     *                127), I
+     *                127,128), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -301,7 +301,7 @@ c module, hence:
                GO TO 1000
    18          CONTINUE
 C                '*CCXOPA'
-                  CALL CC_OPAINP(WORD)
+                  CALL CC_OPAINP(WORD,MSYM)
                GO TO 1000
    19          CONTINUE
                   E0SKIP = .TRUE.
@@ -634,7 +634,7 @@ C                '.DKABAR', direct KappaBar calculation in nondir CC
                GO TO 1000
    99          CONTINUE
 C                '*CCOPA ' one-photon absorption strengths
-                  CALL CC_OPAINP(WORD)
+                  CALL CC_OPAINP(WORD,MSYM)
                GO TO 1000
   100          CONTINUE
 C                '*NODDY '
@@ -649,7 +649,7 @@ C                 '.DIRDER' direct calculation of derivative integrals
                GO TO 1000
  103           CONTINUE
 C                 '.CCTPA ' two-photon absorption strengths
-                  CALL CC_OPAINP(WORD)
+                  CALL CC_OPAINP(WORD,MSYM)
                GO TO 1000
  104           CONTINUE
 C                 '.INT4V ' use VVVV integrals in CC3 left transformation
@@ -781,6 +781,11 @@ C                 Multi-Level CCSD(T)
                   MLCCSDPT = .TRUE.
                   call mlccsdpt_input(word,lucmd)
                GO TO 1000
+ 128           CONTINUE
+C             Polarizable Embedding Coupled Cluster with the PElib implementation
+C             Summer 2016
+                  CALL CC_PEINP(WORD)
+               GO TO 1000
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
      *            '" not recognized in CC2INP.'
@@ -840,6 +845,7 @@ Cho
       END
 C  /* Deck CC_PRTINP */
       SUBROUTINE CC_PRTINP(IWUNIT)
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 C
 C     K.Ruud, Jan.-96. Split from CC_INPUT in order to place CC output more 
 C     adequatly in SIRIUS Print of input processing
@@ -926,11 +932,11 @@ C
      &              'type of calculation ')
             ENDIF
 C
-            IF (CCSLV.AND.CCTPA) THEN
+            IF ((CCSLV.OR.USE_PELIB()).AND.CCTPA) THEN
                IF (CCLR.OR.CCQR.OR.CCCR) THEN
                   WRITE(IQUNIT,*)
      &              'For embedding calcs. avoid TPA and LR/QR/CR simul'
-                  CALL QUIT('FOR CCSLV dont do TPA and '//
+                  CALL QUIT('FOR CCSLV/PE-CC dont do TPA and '//
      &                      'LR/QR/CR at the same time - avoid '//
      &                      'confusion')
                END IF
@@ -1188,6 +1194,8 @@ C    else set only defaults
 C 
 C    Ove Christiansen 24-10 1996
 C    Kasper Hald & Christof Haettig 12-08-99, changes for triplet
+C    Sonia Coriani 2015, input for core-valence separation and
+C    ionization
 C
 C=====================================================================*
 #include "implicit.h"
@@ -1201,6 +1209,8 @@ C=====================================================================*
 #include "cclrinf.h"
 #include "ccrspprp.h"
 #include "ccexci.h"
+!SONIA: CVS and IONISATION
+#include "ccexcicvs.h"
 
 #include "maxorb.h"
 #include "ccdeco.h"
@@ -1211,7 +1221,7 @@ C=====================================================================*
 
       LOGICAL LSTVEC
       INTEGER NTABLE
-      PARAMETER (NTABLE = 25)
+      PARAMETER (NTABLE = 29)
 
       DIMENSION NSTAR(8)
 
@@ -1230,7 +1240,8 @@ C=====================================================================*
      *            '.JACTST','.LHTR  ','.NOSCOM','.STSD  ','.TOLSC ',
      *            '.OMEINP','.STVEC ','.STOLD ','.CCTREN','.THREXC',
      *            '.CCSPIC','.CC2PIC','.CCSDPI','.MARGIN','.SQROVL',
-     *            '.ANALYS','.CHEXDI','.DV4DIS','.XXXXXX','.XXXXXX'/
+     *            '.ANALYS','.CVSEPA','.IONISA','.CVSPER','.RMCORE',
+     *            '.CHEXDI','.DV4DIS','.JACEXT','.XXXXXX'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -1246,6 +1257,7 @@ C
       FDJAC  = .FALSE.
       FDEXCI = .FALSE.
       JACEXP = .FALSE.
+      JACEXT = .FALSE.
       JACTST = .FALSE.
       LHTR   = .FALSE.
       OMESC  = .TRUE.
@@ -1278,6 +1290,21 @@ C
       NSIDE  = 1
       STCCS  = .FALSE.
 C
+C     Core-valence separation and ionisation
+C     within CCEXCI
+C     Sonia
+C
+      LCVSEXCI   = .FALSE.
+      LIONIZEXCI = .FALSE.
+      LBOTHEXCI  = .FALSE.
+      CALL IZERO(NRHFCORE,8)
+      CALL IZERO(IRHFCORE,8*MAXCORE)
+      CALL IZERO(NVIRION,8)
+      CALL IZERO(IVIRION,8*MAXION)
+      !for the time being I am assuming to compute the correction for all
+      !requested excitations
+      LCVSPTEXCI = .FALSE.
+      LRMCORE    = .FALSE.
 *---------------------------------------------------------------------*
 * read input:
 *---------------------------------------------------------------------*
@@ -1305,7 +1332,7 @@ c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
             GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
-     *            21,22,23,24,25),IJUMP
+     *            21,22,23,24,25,26,27,28,29),IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_EXCINP.')
       
 C           -------------------------------------------
@@ -1325,7 +1352,7 @@ C           -------------------------------------------
                IF (WORD(1:1).NE.'.' .AND. WORD(1:1).NE.'*'
      &                              .AND. WORD(1:1).NE.'!' ) THEN
 
-                  ! read # triplett states
+                  ! read # triplet states
                   READ (LUCMD,*) (NCCEXCI(ISYM,3),ISYM=1,MSYM)
                   WRITE (LUPRI,'(A,8I5)') 'NCCEXCI for triplet:',
      &                 (NCCEXCI(ISYM,3),ISYM=1,MSYM)
@@ -1338,7 +1365,7 @@ C           .R3DIIS  use CCDIIS_SOL for iterative triples models
 C---------------------------------------------------------------
 C
 2           CONTINUE
-            CCSDT_DIIS = .TRUE.
+               CCSDT_DIIS = .TRUE.
             GO TO 100
 
 C
@@ -1356,7 +1383,7 @@ C           .FDEXCI Diagonalize finite difference jacobian:
 C----------------------------------------------------------
 C
 4           CONTINUE
-              FDEXCI = .TRUE.
+               FDEXCI = .TRUE.
             GO TO 100
 
 C
@@ -1537,10 +1564,98 @@ C
             GO TO 100
 C
 C----------------------------------------------------------------
-C           .CHEXDI  Use DIIS solver for Cholesky CC2 excitations
+C           Core-Valence Separation (CVS) - freeze valence excs
 C----------------------------------------------------------------
 C
 22          CONTINUE
+               LCVSEXCI = .TRUE.
+               WRITE(LUPRI,*)'CCSD_INPUT: core-val requested'
+               !how many per symmetry
+               READ(LUCMD,*) (NRHFCORE(I),I=1,MSYM)
+               !which ones
+               DO I = 1, MSYM
+                  IF (NRHFCORE(I) .GT. MAXCORE) THEN
+                     WRITE(LUPRI,*)
+                     WRITE(LUPRI,*) 'Too many requested cores'
+                     WRITE(LUPRI,*) 'Symmetry: ', I
+                     WRITE(LUPRI,*) 'Requested cores: ', NRHFCORE(I)
+                     WRITE(LUPRI,*) 'MAXCORE: ', MAXCORE
+                     WRITE(LUPRI,*)
+                     CALL QUIT('Too many requested cores in CC_EXCINP')
+                  END IF
+                  READ(LUCMD,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
+               END DO
+               WRITE(LUPRI,*)'Requested number of core orbs per sym'
+               write(lupri,*) (NRHFCORE(I),I=1,MSYM)
+               WRITE(LUPRI,*)'Indices of requested core orbs'
+               DO I = 1, MSYM
+                  write(LUpri,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
+               END DO
+            GO TO 100
+C
+C----------------------------------------------------------------
+C           .IONISATION
+C----------------------------------------------------------------
+C
+23          CONTINUE
+              LIONIZEXCI = .TRUE.
+              WRITE(LUPRI,*)'CCSD_INPUT: core-val requested'
+              !how many per symmetry
+              READ(LUCMD,*) (NVIRION(I),I=1,MSYM)
+              !which ones
+              DO I = 1, MSYM
+                  IF (NVIRION(I) .GT. MAXION) THEN
+                     WRITE(LUPRI,*)
+                     WRITE(LUPRI,*) 'Too many requested ion orbitals'
+                     WRITE(LUPRI,*) 'Symmetry: ', I
+                     WRITE(LUPRI,*) 'Requested orbitals: ', NVIRION(I)
+                     WRITE(LUPRI,*) 'MAXION: ', MAXION
+                     WRITE(LUPRI,*)
+                     CALL QUIT('Too many ion orbitals in CC_EXCINP')
+                  END IF
+                 READ(LUCMD,*) (IVIRION(J,I),J=1,NVIRION(I))
+              END DO
+              WRITE(LUPRI,*)'Requested number of virtual orbs per sym'
+              write(lupri,*) (NVIRION(I),I=1,MSYM)
+              WRITE(LUPRI,*)'Indices of requested virtual orbs'
+              DO I = 1, MSYM
+                 write(LUpri,*) (IVIRION(J,I),J=1,NVIRION(I))
+              END DO
+C----------------------------------------------------------------
+CDISABLED   .CVSPERTurbation correction
+C----------------------------------------------------------------
+C
+24          CONTINUE
+              !LCVSPTEXCI = .true.
+            GO TO 100
+C
+C----------------------------------------------------------------
+C           .RMCORE  remove the core excitations
+C----------------------------------------------------------------
+C
+25          CONTINUE
+              LRMCORE = .TRUE.
+              WRITE(LUPRI,*)'CCSD_INPUT: core removal requested'
+              !how many per symmetry
+              READ(LUCMD,*) (NRHFCORE(I),I=1,MSYM)
+              !which ones
+              DO I = 1, MSYM
+                 READ(LUCMD,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
+              END DO
+              WRITE(LUPRI,*)'Requested number of core orbs per sym'
+              write(lupri,*) (NRHFCORE(I),I=1,MSYM)
+              WRITE(LUPRI,*)'Indices of requested core orbs'
+              DO I = 1, MSYM
+                 write(LUpri,*) (IRHFCORE(J,I),J=1,NRHFCORE(I))
+              END DO
+            GO TO 100
+
+C
+C----------------------------------------------------------------
+C           .CHEXDI  Use DIIS solver for Cholesky CC2 excitations
+C----------------------------------------------------------------
+C
+26          CONTINUE
                CHEXDI = .TRUE.
                MINSCR = .TRUE.
             GO TO 100
@@ -1549,22 +1664,23 @@ C----------------------------------------------------------------
 C           .DV4DIS Use Davidson with omega=zero before CC2/DIIS
 C----------------------------------------------------------------
 C
-23          CONTINUE
+27          CONTINUE
                DV4DIS = .TRUE.
             GO TO 100
-C
 C----------------------------------------------------------------
-C           .XXXXXX  unused
+C           .JACEXT Explicitly calculate the Jacobian for triplet
 C----------------------------------------------------------------
 C
-24          CONTINUE
+28          CONTINUE
+               JACEXP = .TRUE.
+               JACEXT = .TRUE.
             GO TO 100
 C
 C----------------------------------------------------------------
 C           .XXXXXX  unused
 C----------------------------------------------------------------
 C
-25          CONTINUE
+29          CONTINUE
             GO TO 100
 C
           ELSE
@@ -1678,7 +1794,7 @@ C     ---------------------------------------------------------------
 C     if we are going for triplett states set flag for intermediates:
 C     ---------------------------------------------------------------
 C
-      IF (NTRIP.GT.0) TRIPIM = .TRUE.
+      IF (NTRIP.GT.0.OR.JACEXT) TRIPIM = .TRUE.
 C
 C     ----------------------------------------------------------
 C     initialize eigenvalues with (non-degenerate) dummy values:
@@ -1692,6 +1808,7 @@ C     Finally if we are to calculate anything at all, put CCEXCI true.
 C---------------------------------------------------------------------
 C
       CCEXCI  = ((NEXCI.GT.0).OR.JACTST.OR.JACEXP.OR.FDJAC.OR.FDEXCI)
+      IF (LCVSEXCI.AND.LIONIZEXCI) LBOTHEXCI=.true.
       IF (CCEXCI) RSPIM = .TRUE.
       IF (NEXCI .EQ. 0) THEN
          OSCSTR = .FALSE.
@@ -1748,7 +1865,7 @@ C=====================================================================*
       DATA TABLE /'.DIPOLE','.ECDLEN','.DIPLEN','.NO2N+1','.OPERAT',
      *            '.SELEXC','.DIPVEL','.DIPMIX','.ECDVEL','.OECDLE',
      *            '.OECDVE','.OLD_LR','.BOTHLR','.NEW_LR','.ECD   ',
-     *            '.OECD  ','.SUMRUL','.XXXXXX','.XXXXXX','.XXXXXX'/
+     *            '.OECD  ','.SUMRUL','.EOMTMO','.SKIPLE','.XXXXXX'/
 
 *--------------------------------------------------------------------*
 * begin:
@@ -1772,6 +1889,8 @@ C
       OLDLRS = .FALSE.
       BOTHLRS = .FALSE.
       SUMRULES = .false.
+      EOMCCSD = .false.
+      SKIPLEQ = .false.
 C
       NSELRS = 0
       NLRSOP = 0
@@ -2276,11 +2395,26 @@ C
             GO TO 100
 C
 C------------------------------------
-C           .XXXXXX: unused keywords.
+C           .EOMTMO: Compute transition
+C            moments according to EOM recipe
 C------------------------------------
 C
 18          CONTINUE
+            eomccsd = .true.
+            skipleq = .true.
+            GO TO 100
+C
+C----------------------------------------------
+C           .SKIPLE: skip solving for M vectors
+C           (introduced mainly for EOM)
+C----------------------------------------------
 19          CONTINUE
+            skipleq = .true.
+            GO TO 100
+C
+C------------------------------------
+C           .XXXXXX: unused
+C------------------------------------
 20          CONTINUE
             GO TO 100
 
@@ -2322,7 +2456,7 @@ C
       RETURN
       END
 c/* deck cc_opainp */
-      SUBROUTINE CC_OPAINP(WORD)
+      SUBROUTINE CC_OPAINP(WORD,MSYM)
 C---------------------------------------------------------------------*
 C
 C    Purpose: Read input for absorption strenghts
@@ -2340,13 +2474,15 @@ C=====================================================================*
 #include "ccopainf.h"
 #include "cctpainf.h"
 #include "ccxopainf.h"
+!sonia
+#include "ccxscvs.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_OPAINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 17)
+      PARAMETER (NTABLE = 22)
 
 * variables:
       LOGICAL SETGSTOPA, SETGSTTPA, SETXSTOPA
@@ -2358,7 +2494,7 @@ C=====================================================================*
 
       LOGICAL GSTOPA, GSTTPA, XSTOPA
       INTEGER IXSYM, IXSTATE, IXSYM2, IXSTATE2, IJUMP
-      INTEGER INDPRP_CC
+      INTEGER INDPRP_CC, MSYM, I, J
 
 #if defined (SYS_CRAY)
       REAL SMFREQ
@@ -2373,11 +2509,14 @@ C=====================================================================*
       DATA TABLE / '.SELEXC','.NO2N+1','.OPERAT','.DIPLEN','.DIPVEL',
      *             '.ANGMOM','.HALFFR','.PRINT ','.USE X2','.USE O2',
      *             '.SELSTA','.STATES','.TRANSI','.SECMOM','.ROTSTR',
-     *             '.DIPOLE','.TPOLDW'/
+     *             '.DIPOLE','.XCVSEP','.XRMCOR','.SKIPLE','.EOMXTM',
+     &             '.OPADEN','.TPOLDW'/
 
 *---------------------------------------------------------------------*
 * begin:
 *---------------------------------------------------------------------*
+      LOPADEN = .FALSE.
+
       IF (WORD(1:7) .EQ. '*CCOPA ') THEN
          GSTOPA = .TRUE.
          GSTTPA = .FALSE.
@@ -2414,6 +2553,13 @@ C=====================================================================*
         QR22N1  = .TRUE.
         NSEQR2  = 0 
         NQR2OP  = 0 
+        !sonia
+        LXSCVS = .false.
+        LXRMCORE = .false.
+        LSKIPLINEQ = .false.
+        LEOMXOPA  = .false.
+        CALL IZERO(NXCORE,8)
+        CALL IZERO(IXCORE,8*MXCORE)
       ELSE IF (GSTTPA) THEN
         NSMSEL   = 0
         NSMOPER  = 0
@@ -2448,7 +2594,8 @@ c         table look up:
 
 c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,
+     &            18,19,20,21,22), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_OPAINP.')
 
 C           ---------------------------------------------------------
@@ -2734,14 +2881,89 @@ C           ------------------------------------------------------
             END IF
             GO TO 100
 C           ------------------------------------------------------
-C           .DIPOLE is the synonim od .DIPLEN.
+C           .DIPOLE is the synonym of .DIPLEN.
 C           ------------------------------------------------------
 16          CONTINUE
             GO TO 4
+C           ------------------------------------------------------
+C           .XSCVSEP 
+C           ------------------------------------------------------
 17          CONTINUE
+            LXSCVS = .true.
+              WRITE(LUPRI,*)'CCSD_INPUT: core-val requested'
+              !how many per symmetry
+              READ(LUCMD,*) (NXCORE(I),I=1,MSYM)
+              !which ones
+              DO I = 1, MSYM
+                 READ(LUCMD,*) (IXCORE(J,I),J=1,NXCORE(I))
+              END DO
+              WRITE(LUPRI,*)'XOPA: # active core orbs per sym'
+              write(lupri,*) (NXCORE(I),I=1,MSYM)
+              WRITE(LUPRI,*)'Indices of requested core orbs'
+              DO I = 1, MSYM
+                 write(LUpri,*) (IXCORE(J,I),J=1,NXCORE(I))
+              END DO
+
+            GO TO 100
+C           ------------------------------------------------------
+C           .XRMCORE
+C           ------------------------------------------------------
+18          CONTINUE
+            LXRMCORE = .true.
+              WRITE(LUPRI,*)'CCSD_INPUT: core-val requested'
+              !how many per symmetry
+              READ(LUCMD,*) (NXCORE(I),I=1,MSYM)
+              !which ones
+              DO I = 1, MSYM
+                 READ(LUCMD,*) (IXCORE(J,I),J=1,NXCORE(I))
+              END DO
+              WRITE(LUPRI,*)'XOPA: # frozen core orbs per sym'
+              write(lupri,*) (NXCORE(I),I=1,MSYM)
+              WRITE(LUPRI,*)'Indices of requested core orbs'
+              DO I = 1, MSYM
+                 write(LUpri,*) (IXCORE(J,I),J=1,NXCORE(I))
+              END DO
+
+            GO TO 100
+C
+C           ------------------------------------------------------
+C           .SKIPLEquation: skip calculation of the term involving
+C           linear equations
+C           ------------------------------------------------------
+19          CONTINUE
+              LSKIPLINEQ = .true.
+              WRITE(LUPRI,*)'CCSD_INPUT: skip Nij*xksi or TX*B' 
+            GO TO 100
+C
+C           ------------------------------------------------------
+C           .EOMXTMO: XOPA in EOM framework
+C           linear equations
+C           ------------------------------------------------------
+20          CONTINUE
+            LSKIPLINEQ = .true.
+            LEOMXOPA = .true.
+            QR22N1   = .false.
+
+              WRITE(LUPRI,*)'CCSD_INPUT: skip Nij*xksi or TX*B' 
+              WRITE(LUPRI,*)'CCSD_INPUT: Add EOM extra term   '
+            GO TO 100
+C
+C           ------------------------------------------------------
+C           .OPADEN: use density based implementation of transition 
+C           moments
+C           ------------------------------------------------------
+21          CONTINUE
+            LOPADEN = .true.
+
+              WRITE(LUPRI,*)'CCSD_INPUT: You requested the density 
+     &                       implementation of TMoms'
+            GO TO 100
+C           ------------------------------------------------------
+C           .TPOLDW 
+C           ------------------------------------------------------
+22          CONTINUE
                TPOLDW = .TRUE.
             GO TO 100
-
 C
           ELSE
            WRITE (LUPRI,'(/5A/)') ' Prompt "',WORD,
@@ -10277,5 +10499,144 @@ C
 C
       CALL FLSHFO(LUPRI)
 C
+      RETURN
+      END
+
+
+*=====================================================================*
+c /* deck cc_peinp */
+*=====================================================================*
+       SUBROUTINE CC_PEINP(WORD)
+C---------------------------------------------------------------------*
+C
+C    Purpose: read input for P(D)E CC calculations.
+C
+C    if (WORD .eq. '*PECC  ') read & process input and set defaults,
+C    else set only defaults
+C
+C    PECC16,DH (based on CC_SLVINP)
+C    Dalibor Hršak, July 2016
+C
+C=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
+      IMPLICIT NONE
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccslvinf.h"
+#include "qm3.h"
+
+      CHARACTER*8, PARAMETER :: SECNAM='CC_PEINP'
+      INTEGER, PARAMETER :: NTABLE = 8
+
+      LOGICAL :: SET
+      SAVE SET
+
+      CHARACTER*7 :: WORD
+      INTEGER :: IXCCSLIT, IJUMP
+      CHARACTER*8 :: TABLE(NTABLE)
+
+
+      DATA SET /.FALSE./
+      DATA TABLE /'.MXSLIT','.ETOLSL','.TTOLSL','.LTOLSL','.MXINIT',
+     &            '.HFFLD ','.CCFIXF','.SIMPLE'/
+
+*---------------------------------------------------------------------*
+* begin:
+*---------------------------------------------------------------------*
+      IF (.NOT. USE_PELIB()) CALL QUIT('Keyword *PEQM is obligatory!')
+      IF (SET) RETURN
+      SET = .TRUE.
+
+*---------------------------------------------------------------------*
+* initializations & defaults:
+*---------------------------------------------------------------------*
+
+      ICHANG   =  0
+      IXCCSLIT =  0
+      MXCCSLIT = 10
+      CVGESOL  = 1.0D-07
+      CVGTSOL  = 1.0D-07
+      CVGLSOL  = 1.0D-07
+      PTSOLV   = .FALSE.
+      DISCEX   = .FALSE.
+      ECCCU    = 0.0D0
+      XTNCCCU  = 0.0D0
+      XLNCCCU  = 0.0D0
+      MXTINIT  = 200
+      MXLINIT  = 200
+      LOITER   = .FALSE.
+      NREPMT   = 0
+      RELMOM   = .FALSE.
+      SLOTH    = .FALSE.
+      SKIPNC   = .FALSE.
+      HFFLD    = .FALSE. ! Do polarization based on fixed HF/MM reaction field - in doi:10.1039/C0C901075H denoted model 1
+      CCFIXF   = .FALSE.   ! Do polarization based on fixed CC/MM reaction field neglecting resp terms - ie only static polarization. Model 2 in doi:10.1039/C0C901075H
+
+*---------------------------------------------------------------------*
+* read input:
+*---------------------------------------------------------------------*
+
+      IF (WORD .EQ. '*PECC  ') THEN
+        DO
+          READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
+          DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+            READ (LUCMD,'(A7)') WORD
+            CALL UPCASE(WORD)
+          END DO
+!
+          IF (WORD(1:1) .EQ. '.') THEN
+            IF (WORD .EQ. '.MXSLIT') THEN
+              READ(LUCMD,*) MXCCSLIT
+              CYCLE
+            ELSE IF (WORD .EQ. '.ETOLSL') THEN
+               READ(LUCMD,*) CVGESOL
+              CYCLE
+            ELSE IF (WORD .EQ. '.TTOLSL') THEN
+               READ(LUCMD,*) CVGTSOL
+              CYCLE
+            ELSE IF (WORD .EQ. '.LTOLSL') THEN
+               READ(LUCMD,*) CVGLSOL
+              CYCLE
+            ELSE IF (WORD .EQ. '.MXINIT') THEN
+              READ(LUCMD,*) MXTINIT, MXLINIT
+              LOITER = .TRUE.
+              CYCLE
+            ELSE IF (WORD .EQ. '.HFFLD ') THEN
+              HFFLD = .TRUE.
+              CYCLE
+            ELSE IF (WORD .EQ. '.CCFIXF') THEN
+              CCFIXF = .TRUE.
+              CYCLE
+            ELSE
+              WRITE (LUPRI,'(/5A/)') ' Prompt "',WORD,
+     &                               '" not recognized in ',SECNAM,'.'
+              CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',LUPRI)
+              CALL QUIT('Illegal Keyword in '//SECNAM//'.')
+            END IF
+          ELSE IF (WORD(1:1) .NE. '*') THEN
+            WRITE (LUPRI,'(/5A/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+            CALL QUIT('Illegal prompt in '//SECNAM//'.')
+          ELSE IF (WORD(1:1) .EQ.'*') THEN
+            BACKSPACE(LUCMD)
+            EXIT
+          END IF
+        END DO
+        IF (USE_PELIB()) RSPIM = .TRUE.
+!
+        IF (CC2) NONHF = .TRUE.
+!
+        IF ( (HFFLD) .AND. (CCFIXF) ) THEN
+          WRITE(LUPRI,*) 'You have specified both CCFIXF and HFFLD.
+     &                    Make a choice!'
+          CALL QUIT('Error in PECC input')
+        ENDIF
+!
+      END IF
+!
       RETURN
       END

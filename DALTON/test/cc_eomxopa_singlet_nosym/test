@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+#    prop_exci_aorpa
+#    ---------------
+#    Molecule:         H2O
+#    Wave Function:    CCSD
+#    Test Purpose:     Calculation of transition moments between singlet 
+#                      excited states in the EOM approximation
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# Checks that things are setup correctly
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 8,
+      rel_tolerance = 1.0e-8)
+
+f.add(from_string = 'Number of t1 amplitudes',
+      num_lines = 3,
+      rel_tolerance = 10e-2)
+
+# Energy (Should check SCF, MP2, CCSD
+f.add(string = 'Total SCF   energy',
+      rel_tolerance = 1.0e-9)
+f.add(string = 'Total MP2   energy',
+      rel_tolerance = 1.0e-9)
+f.add(string = 'Total CCSD  energy',
+      rel_tolerance = 1.0e-9)
+
+# Check the (LE|RE) overlap
+f.add(from_string='(LE|RE) overlap',
+      num_lines = 12,
+      rel_tolerance = 1.0e-4)
+
+# Check state-state transition moments
+f.add(from_string='Transition from excited state:',
+      num_lines = 5,
+      rel_tolerance = 1.0e-6)
+f.add(from_string='| operator  |   left moment   |  right moment   | transition strength |',
+      num_lines = 5,
+      abs_tolerance = 1.0e-7,
+      mask = [3])
+f.add(string='oscillator strength (length gauge)',
+      abs_tolerance = 1.0e-7)
+
+
+test.run(['cc_xopa_eom.dal'], ['water_dz_nosym.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

@@ -29,7 +29,7 @@ f.add(string = 'Total CC3(R12)/B energy',
 
 f.add(from_string = 'Total energies in Hartree',
       num_lines = 18,
-      abs_tolerance = 5.0e-7)
+      abs_tolerance = 2.0e-6)
 
 test.run(['cc3r12_n2_sym_exc_lhtr.dal'], ['cc3r12_n2_sym_exc_lhtr.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])

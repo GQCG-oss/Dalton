@@ -3,6 +3,7 @@
      &        CCQR2R,CCGR, CCMCD, CCDERI, CCTPA,
      &        CCSLV, CCEXCI, CCLRSD,
      &        CCLRLCZ,
+     &        LOPADEN,
      &        OLDLR, OLDLRS, BOTHLRS
 
       COMMON /CCSECTIONS/ CCFOP, CCLR, CCQR,  CCCR, CC4R, CC5R,
@@ -10,6 +11,7 @@
      &                    CCQR2R,CCGR, CCMCD, CCDERI, CCTPA,
      &                    CCSLV, CCEXCI, CCLRSD,
      &                    CCLRLCZ,
+     &                    LOPADEN,
      &                    OLDLR, OLDLRS, BOTHLRS
 
 

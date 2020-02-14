@@ -1,9 +1,0 @@
-ATOMBASIS
-Calculation of non-equilibrium solvation first hyperpolarizabilities
-
-    2    2  X  Z
-        8.    1 Basis=ano-1 5 4 3 0
-O     0.0  1.0 0.0
-        1.    1 Basis=ano-1 4 3 0
-H     1.4344154111 2.1075628725 0.0
-H    -1.4344154111 2.1075628725 0.0
