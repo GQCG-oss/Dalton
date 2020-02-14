@@ -672,7 +672,7 @@ cC     We let the slaves wait for the Master to tell them whether to pick up
 cC     a new geometry or to end this calculation
 cC
 c      IF (MYNUM .GT. 0) THEN
-c         CALL MPI_BCAST(NTASK,1,my_MPI_INTEGER,NODEID(MASTER),
+c         CALL MPI_BCAST(NTASK,1,my_MPI_INTEGER,MASTER,
 c     &                 MPI_COMM_WORLD,IERR)
 c         IF (NTASK .EQ. 1) THEN
 c            CALL PARION
@@ -680,7 +680,7 @@ c            RDINPC = .FALSE.
 c            CALL READIN(WORK,LWORK,.FALSE.)
 c            GOTO 100
 c         ELSE IF (NTASK .EQ. 0) THEN
-c            CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
+c            CALL MPI_BCAST(FINISH,1,my_MPI_LOGICAL,MASTER,
 c     &                  MPI_COMM_WORLD,IERR)
 c            CALL MPI_FINALIZE(IERR)
 c            CALL SYSTEM('rm -f $SCRATCHDIR/*')
@@ -1623,9 +1623,9 @@ c     &              FUNVAL(IPOS) = FTVAL(IPOS)
 c            END DO
 c         END DO
 c      ELSE
-c         CALL MPI_SEND(MYNUM,1,my_MPI_INTEGER,NODEID(MASTER),
+c         CALL MPI_SEND(MYNUM,1,my_MPI_INTEGER,MASTER,
 c     &                 65,MPI_COMM_WORLD,IERR)
-c         CALL MPI_SEND(FTVAL,NDIME,MPI_DOUBLE_PRECISION,NODEID(MASTER),
+c         CALL MPI_SEND(FTVAL,NDIME,MPI_DOUBLE_PRECISION,MASTER,
 c     &                 65,MPI_COMM_WORLD,IERR)
 c      END IF
 c#else

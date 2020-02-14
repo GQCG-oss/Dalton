@@ -522,12 +522,6 @@ C        Who-got-the-last-batch statistics
 C
          NSTAT(NWHO) = NSTAT(NWHO) + 1
 C
-         IF (IPRINT .GT. 4) THEN
-            WRITE(LUPRI,'(5X,A,I5,A,I5)')
-     &         'DOPAR: Sending batch', I, ' to node ', NWHO
-            flush(lupri)
-         END IF
-C
          IF (IPLACE .LE. NBATCH .OR. IPLACQ .GT. 0) THEN
             GOTO 110
          END IF
@@ -537,6 +531,12 @@ C
       DONE = .TRUE.
 C
       DO 210 I = 1,(NODTOT-IDONE)
+C
+         IF (IPRINT .GT. 4) THEN
+            WRITE(LUPRI,'(5X,A,I5,A,I5)')
+     &         'DOPAR: Sending batch', I, ' to node ', NWHO
+            flush(lupri)
+         END IF
 C
 #if defined (VAR_MPI)
          IWHO = -1
@@ -581,7 +581,7 @@ C  ELSE below is for the compability to old code: AOSAVE = FALSE
             flush(lupri)
          END IF
 C
-         DO 100, I = 1,NBATCH
+         DO 100 I = 1,NBATCH
 C
 #if defined (VAR_MPI)
          IWHO = -1
@@ -610,7 +610,7 @@ C
          NSTAT(NWHO) = NSTAT(NWHO) + 1
 C
          IF (IPRINT .GT. 4) THEN
-            WRITE(LUPRI,'(5X,A10,I5,A8,I5)')
+            WRITE(LUPRI,'(5X,A,I5,A,I5)')
      &          'Sending batch', I, ' to node', NWHO
             flush(lupri)
          END IF

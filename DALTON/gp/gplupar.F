@@ -38,7 +38,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       real(8), intent(inout) :: vec1(*) 
       integer, intent(in)    :: nblock, nvec, i_run_cplx
@@ -418,7 +418,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 !------------------------------------------------------------------------------
       real(8), intent(inout) :: vec1(*)
@@ -728,7 +728,7 @@ C**********************************************************************
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SEGMNT(*), IBLOCKD(NBLOCK), IBLOCKL(NBLOCK)
       DIMENSION ISCALFAC(*), ISCALFAC_GROUP(*)
@@ -1027,7 +1027,7 @@ C**********************************************************************
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 *
 * =====
@@ -1182,7 +1182,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
@@ -1299,7 +1299,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*) 
       DIMENSION IVCOFF_IN(*), IVCOFF_OUT(*)
@@ -1377,7 +1377,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
       DIMENSION IBLOCKL(*)
@@ -1441,7 +1441,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 C     INPUT
       INTEGER ICOUNTABLK, NTEST,MWEIGHT
@@ -1841,7 +1841,7 @@ CSK   END IF
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 C     -----
 C     INPUT
@@ -2100,7 +2100,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 *     ==========
 *       INPUT
@@ -2203,7 +2203,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
@@ -2398,7 +2398,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -2490,7 +2490,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -2650,7 +2650,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
       DIMENSION IBLOCKL(*)
@@ -2714,7 +2714,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -2772,7 +2772,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -2835,7 +2835,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -2898,7 +2898,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -2954,7 +2954,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), XMAT(NVEC,NVEC2)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -3008,7 +3008,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), FAC(NVEC)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -3142,7 +3142,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION SUBSPH(*), SCRRED(*), SCRRED2(*)
@@ -3338,7 +3338,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -3604,7 +3604,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION FACIN1(*), FACIN3(1)
@@ -3781,7 +3781,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION SCRRED(*)
@@ -3975,7 +3975,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 C     Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -4149,7 +4149,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 C     input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -4318,7 +4318,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION LBATC(*),LEBATC(*),I1BATC(*),IBATC(8,*)
       DIMENSION ICCTOS(NBLOCK,NBLOCK),ICWEIGHT(NBLOCK)
@@ -4407,7 +4407,7 @@ C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VECIN(*),VECOUT(*)
       INTEGER DATATYPE
@@ -4452,7 +4452,7 @@ CSK        DATATYPE = MPI_REAL8
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
       DIMENSION VECIN(*),VECOUT(*)
       INTEGER DATATYPE
 *
@@ -4557,7 +4557,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 *     input
       DIMENSION IPLAC(*),VAL(*),IBLOCKL(NBLOCK),IBLOCKD(NBLOCK)
@@ -4685,7 +4685,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)

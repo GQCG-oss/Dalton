@@ -49,7 +49,8 @@ C
 
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
-      LOGICAL FINISH
+      LOGICAL(kind=MPI_INTEGER_KIND) :: FINISH
+      INTEGER(kind=MPI_INTEGER_KIND) :: ierr_mpi
 #endif
 #ifdef VAR_OMP
       INTEGER omp_get_num_procs
@@ -120,6 +121,10 @@ C
             WRITE(*,'(/A,I12,A,F8.2,A,I4)')
      &        ' Work memory size (LMWORK+2):',
      &        LMWORK+2,' =',XMBYTES,' megabytes; node',MYNUM
+         END IF
+         IF (MYNUM .EQ. 1 .AND. NODTOT .GT. 1) THEN
+            WRITE(*,'(A,I0,A)')
+     &        ' Same work memory size for all ',NODTOT,' slaves.'
          END IF
       END IF
  
@@ -586,11 +591,16 @@ C
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
 C ahs only print if number of cores are less than 16
 !        IF (NODTOT .LE. 15) THEN
+!        hjaaj May 2017: instead print from max 15 slaves
+!           spaced evenly out among all slaves 1..NODTOT
+!        ITEST = (NODTOT-1)/15 + 1
+!        IF (MYNUM .EQ. 1 .OR. MOD(MYNUM,ITEST) .EQ. 0) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
            WRITE(LUPRI,'(/A)') ' * Release: '//
      &     DALTON_VERSION
-           WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
+           WRITE(LUPRI,'(/A,I0,A,I0)')
+     &     ' * Output from slave no. ',MYNUM,' out of ',NODTOT
            CALL TSTAMP('INIT',LUPRI)
            IF (GBYTES .GE. 1.D0) THEN
              WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
@@ -628,8 +638,10 @@ C
 C     Send ending signal to slaves
 C
             FINISH = .TRUE.
-            CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
-     &           MPI_COMM_WORLD,IERR)
+            count_mpi = 1
+            master_mpi = MASTER
+            CALL MPI_BCAST(FINISH,count_mpi,my_MPI_LOGICAL,master_mpi,
+     &           MPI_COMM_WORLD,err_mpi)
             CALL GPCLOSE(LUCME,'KEEP')
             CALL GPCLOSE(LUNDPF,'KEEP')
             CALL GPCLOSE(LUNMPF,'KEEP')
@@ -655,7 +667,7 @@ C...  terminates Gen1Int interface
       CALL MPIXFINALIZE
 C
 C     All below is not relevant for MPI as all proc. has stopped
-C     with CALL MPI_FINALIZE(IERR)
+C     with CALL MPI_FINALIZE(err_mpi)
 C
 #endif /* VAR_MPI */
 #if defined (VAR_PVM)

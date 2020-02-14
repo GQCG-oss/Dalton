@@ -35,8 +35,9 @@ module sync_coworkers
 
   save
 
-  integer, private :: istat(MPI_STATUS_SIZE)
-  integer, private :: ierr
+  integer(kind=MPI_INTEGER_KIND), private   :: istat(MPI_STATUS_SIZE)
+  integer(kind=MPI_INTEGER_KIND), private   :: ierr
+  integer                       , parameter :: my_comm_world = MPI_COMM_WORLD
 
   integer, public, parameter :: dim_sync_ctrl_array                    = 6
 
@@ -81,7 +82,7 @@ contains
                 call sync_coworkers_ij_abcd(xarray1,xarray2)
               else
                 call quit('*** sync_coworkers_cfg: sync of 1-/2-el integrals requires& 
-&the output arrays in the argument list.***')
+   & the output arrays in the argument list.***')
               end if
             case(4) ! distribute previous solution vector (i.e., we restart a CI run)
             case(5) ! synchronize with current expansion point (CEP) vector (MCSCF run)
@@ -112,18 +113,18 @@ contains
 !-------------------------------------------------------------------------------
 
 !     character
-      call dalton_mpi_bcast(lucita_cfg_run_title,           0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_ini_wavef,           0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_ci_type,             0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_calculation_size,    0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_run_title,           0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_ini_wavef,           0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_ci_type,             0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_calculation_size,    0, my_comm_world)
 !     real(8)
-      call dalton_mpi_bcast(lucita_cfg_accepted_truncation, 0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_accepted_truncation, 0, my_comm_world)
 !     logical
-      call dalton_mpi_bcast(lucita_cfg_inactive_shell_set,  0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_minmax_occ_gas_set,  0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_analyze_cvec,        0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_timing_par,          0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_natural_orb_occ_nr,  0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_inactive_shell_set,  0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_minmax_occ_gas_set,  0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_analyze_cvec,        0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_timing_par,          0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_natural_orb_occ_nr,  0, my_comm_world)
 !     integer
 #ifdef PRG_DIRAC
       lucita_cfg_nr_ptg_irreps = nbsym
@@ -131,43 +132,43 @@ contains
       lucita_cfg_nr_ptg_irreps = nsym
 #endif
 !     general definitions/settings
-      call dalton_mpi_bcast(lucita_cfg_nr_roots,            0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_nr_active_e,         0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_global_print_lvl,    0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_local_print_lvl,     0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_density_calc_lvl,    0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_restart_ci,          0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_max_dav_subspace_dim,0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_max_nr_dav_ci_iter,  0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_max_batch_size,      0, mpi_comm_world)
-      call dalton_mpi_bcast(lucipar_cfg_ttss_dist_strategy, 0, mpi_comm_world)
-      call dalton_mpi_bcast(lucipar_cfg_mem_reduction_multp,0, mpi_comm_world)
-!     call dalton_mpi_bcast(lucita_cfg_nr_calc_sequences,   0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_nr_roots,            0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_nr_active_e,         0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_global_print_lvl,    0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_local_print_lvl,     0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_density_calc_lvl,    0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_restart_ci,          0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_max_dav_subspace_dim,0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_max_nr_dav_ci_iter,  0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_max_batch_size,      0, my_comm_world)
+      call dalton_mpi_bcast(lucipar_cfg_ttss_dist_strategy, 0, my_comm_world)
+      call dalton_mpi_bcast(lucipar_cfg_mem_reduction_multp,0, my_comm_world)
+!     call dalton_mpi_bcast(lucita_cfg_nr_calc_sequences,   0, my_comm_world)
 
 !     symmetry, spin and orbital spaces
-      call dalton_mpi_bcast(lucita_cfg_ptg_symmetry,        0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_is_spin_multiplett,  0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_nr_ptg_irreps,       0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_nr_gas_spaces,       0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_init_input_type,     0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_init_wave_f_type,    0, mpi_comm_world)
-      call dalton_mpi_bcast(nish_lucita,                    0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_ptg_symmetry,        0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_is_spin_multiplett,  0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_nr_ptg_irreps,       0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_nr_gas_spaces,       0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_init_input_type,     0, my_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_init_wave_f_type,    0, my_comm_world)
+      call dalton_mpi_bcast(nish_lucita,                    0, my_comm_world)
 
       select case(lucita_cfg_init_wave_f_type)
         case(1) ! GAS settings
-          call dalton_mpi_bcast(ngsh_lucita,                0, mpi_comm_world)
-          call dalton_mpi_bcast(ngso_lucita,                0, mpi_comm_world)
+          call dalton_mpi_bcast(ngsh_lucita,                0, my_comm_world)
+          call dalton_mpi_bcast(ngso_lucita,                0, my_comm_world)
         case(2) ! RAS settings
 !         logical
-          call dalton_mpi_bcast(lucita_cfg_ras1_set,        0, mpi_comm_world)
-          call dalton_mpi_bcast(lucita_cfg_ras2_set,        0, mpi_comm_world)
-          call dalton_mpi_bcast(lucita_cfg_ras3_set,        0, mpi_comm_world)
+          call dalton_mpi_bcast(lucita_cfg_ras1_set,        0, my_comm_world)
+          call dalton_mpi_bcast(lucita_cfg_ras2_set,        0, my_comm_world)
+          call dalton_mpi_bcast(lucita_cfg_ras3_set,        0, my_comm_world)
 !         integer 
-          call dalton_mpi_bcast(nas1_lucita,                0, mpi_comm_world)
-          call dalton_mpi_bcast(nas2_lucita,                0, mpi_comm_world)
-          call dalton_mpi_bcast(nas3_lucita,                0, mpi_comm_world)
-          call dalton_mpi_bcast(lucita_cfg_max_holes_ras1,  0, mpi_comm_world)
-          call dalton_mpi_bcast(lucita_cfg_max_e_ras3,      0, mpi_comm_world)
+          call dalton_mpi_bcast(nas1_lucita,                0, my_comm_world)
+          call dalton_mpi_bcast(nas2_lucita,                0, my_comm_world)
+          call dalton_mpi_bcast(nas3_lucita,                0, my_comm_world)
+          call dalton_mpi_bcast(lucita_cfg_max_holes_ras1,  0, my_comm_world)
+          call dalton_mpi_bcast(lucita_cfg_max_e_ras3,      0, my_comm_world)
       end select
 
   end subroutine sync_coworkers_ci_cfg
@@ -192,18 +193,21 @@ contains
 !-------------------------------------------------------------------------------
 
 !     total # 1-/2-electron integrals
-      call dalton_mpi_bcast(nint1,      0, mpi_comm_world)
-      call dalton_mpi_bcast(nint2,      0, mpi_comm_world)
+      call dalton_mpi_bcast(nint1,      0, my_comm_world)
+      call dalton_mpi_bcast(nint2,      0, my_comm_world)
 !     core energy + inactive energy and core energy
-      call dalton_mpi_bcast(ecore,      0, mpi_comm_world)
-      call dalton_mpi_bcast(ecore_orig, 0, mpi_comm_world)
+      call dalton_mpi_bcast(ecore,      0, my_comm_world)
+      call dalton_mpi_bcast(ecore_orig, 0, my_comm_world)
 
 !     synchronize the 1-electron integrals (use the generic bcast because
 !     the 1-/2-electron integral arrays have too large dimensions in the calling
 !     lucita routines (for historic reasons/other purposes, i do not know. stefan dec 2010)
 
-      call mpi_bcast(xarray1, nint1, mpi_real8, 0, mpi_comm_world, ierr)
-      call mpi_bcast(xarray2, nint2, mpi_real8, 0, mpi_comm_world, ierr)
+!     call mpi_bcast(xarray1, nint1, mpi_real8, 0, mpi_comm_world, ierr)
+!     call mpi_bcast(xarray2, nint2, mpi_real8, 0, mpi_comm_world, ierr)
+!     31-jan-2020 hjaaj: try again with dalton_mpi_bcast ...
+      call dalton_mpi_bcast(xarray1(1:nint1), 0, my_comm_world)
+      call dalton_mpi_bcast(xarray2(1:nint2), 0, my_comm_world)
 
 !     set sync_ctrl option
       sync_ctrl_array(3) = .false.
@@ -220,7 +224,7 @@ contains
 !-------------------------------------------------------------------------------
 
 !     character
-      call dalton_mpi_bcast(lucita_citask_id, 0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_citask_id, 0, my_comm_world)
 
 !     more to come once we actually have an mcscf-lucita interface
 
@@ -241,7 +245,7 @@ contains
 
       set_sync_default_val = set_value_sync_ctrl_array
 
-      call dalton_mpi_bcast(set_sync_default_val, 0, mpi_comm_world)
+      call dalton_mpi_bcast(set_sync_default_val, 0, my_comm_world)
      
 !     insert value in ctrl-array
       sync_ctrl_array(sync_ctrl_array_pos) = set_sync_default_val

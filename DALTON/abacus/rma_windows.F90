@@ -104,20 +104,23 @@ contains
   integer, intent(in),       optional        :: external_info
 !-------------------------------------------------------------------------------
   integer                                    :: info_object
-  integer                                    :: ierr
+  integer(kind=MPI_INTEGER_KIND)             :: info_object_mpi, myid_mpi, win_comm_mpi
+  integer(kind=MPI_INTEGER_KIND)             :: ierr
 !-------------------------------------------------------------------------------
 !
 !     open memory window on each process shared by win_communicator
-      info_object = mpi_info_null
+      info_object_mpi = mpi_info_null
 
       if(set_win_lock_info)then
-        call mpi_info_create(info_object,ierr)
-        call mpi_info_set(info_object,key,value,ierr)
+        call mpi_info_create(info_object_mpi,ierr)
+        call mpi_info_set(info_object_mpi,key,value,ierr)
       else
-        if(present(external_info)) info_object = external_info
+        if(present(external_info)) then
+           info_object_mpi = external_info
+        end if
       end if
 
-
+      info_object = info_object_mpi
       call  mpixwincreate(rbuf,                &
                           nelement,            &
                           myid,                &
@@ -126,7 +129,7 @@ contains
                           my_win)
 
       if(set_win_lock_info)then
-        call mpi_info_free(info_object,ierr)
+        call mpi_info_free(info_object_mpi,ierr)
       end if
 !
   end subroutine set_rma_window
@@ -144,7 +147,6 @@ contains
 !*******************************************************************************
   integer, intent(in)    :: myid
   integer, intent(inout) :: my_win
-!-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
 !
 !     close memory window on each process within the communication group

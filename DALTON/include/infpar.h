@@ -10,11 +10,16 @@
 !
 !    infpar.h depends on maxorb.h
 !    use #include "maxorb.h" before including infpar. - FBeyer 20140302
+!
+!    Note: my_MPI_LOGICAL points to MPI_INTEGER4/8 because in Fortran
+!          the default size of logical and integer is the same.
 #endif
 #if defined (VAR_INT64)
 #define my_MPI_INTEGER MPI_INTEGER8
+#define my_MPI_LOGICAL MPI_INTEGER8
 #else
 #define my_MPI_INTEGER MPI_INTEGER4
+#define my_MPI_LOGICAL MPI_INTEGER4
 #endif
 
 #if defined(__CVERSION__)
@@ -49,32 +54,17 @@ extern struct common_infpar {
 !
       INTEGER   MAXNOD, NPARI, MAXTSK
       PARAMETER ( MAXNOD = 9999, NPARI = (MAXNOD + 1) + 7 )
-      PARAMETER ( MAXTSK = (MXSHEL * (MXSHEL + 1))/2 )
+! NOTE : MXSHEL should have value of MXSHEL in maxorb.h
+!     PARAMETER ( MAXTSK = (MXSHEL * (MXSHEL + 1))/2 )
+      PARAMETER ( MAXTSK = (1500 * (1500 + 1))/2 )
       INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID
       INTEGER NODTOT, NODEID(0:MAXNOD), NFMAT, MTOTTK
       LOGICAL PARHER, PARIO, INFPAR_DEBUG, TIMING, SLAVE, rma_model
       CHARACTER*20   NODNAM(0:MAXNOD), MYNAME
       COMMON /DALTONINFPAR/                                              &
      &        IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID         &
-     &       ,NODTOT, NODEID, NFMAT, MTOTTK, PARHER, INFPAR_DEBUG, PARIO        &
+     &       ,NODTOT, NODEID, NFMAT, MTOTTK, PARHER, INFPAR_DEBUG, PARIO &
      &       ,rma_model, TIMING, SLAVE , NODNAM, MYNAME
-#ifdef PRG_DIRAC
-      EQUIVALENCE (NODTOT, NUMNOD)
-!     ... for some obscure reason NODTOT in Dalton is called NUMNOD in Dirac.
-!         This equivalence is important such that both e.g. abacus routines using NODTOT
-!         and dirac routines using NUMNOD are working correctly together /hjaaj Dec 07
-#endif
-
-#if defined (VAR_INT64)
-!     integer array my_STATUS contains MPI_SOURCE information.
-!     Proper use of my_STATUS on 64-bit machines in
-!     combination with VAR_INT64 requires explicit declaration
-!     as INTEGER*4 /March-2007 sk - This is only true for
-!     32-bit MPI libraries.
-!     64-bit MPI libraries require INTEGER my_STATUS (which will then be INTEGER*8)
-!
-#endif
-      INTEGER my_STATUS
 
 ! -- end of infpar.h --
 #endif

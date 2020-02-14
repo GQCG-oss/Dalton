@@ -1,4 +1,4 @@
-
+#define HERPAR_DEBUG -1
 !  Dalton, a molecular electronic structure program
 !  Copyright (C) 2018 by the authors of Dalton.
 !
@@ -292,8 +292,10 @@ CTROND
       integer, parameter             :: dummy_buff = 2
       integer(kind=MPI_ADDRESS_KIND) :: nelement
       integer(kind=MPI_OFFSET_KIND)  :: displacement
+      integer(kind=MPI_INTEGER_KIND) :: ierr, istat(mpi_status_size)
+      integer(kind=MPI_INTEGER_KIND) :: comm_intra
+      integer(kind=MPI_INTEGER_KIND) :: fh_dmat_mpi, nelement_mpi
       character(len=16)              :: shared_dmat_file
-      integer                        :: istat(mpi_status_size)
 #endif
 C
 C     NB! NPOS cannot be allocated from WORK due to the SAVEing below.
@@ -350,7 +352,7 @@ C
         rma_win_info%dmat_win = -1
         rma_win_info%fmat_win = -1
 
-        nelement            = n2basx*ndmat ! for itype == 3: ndmat == nfmat
+        nelement    = n2basx*ndmat ! for itype == 3: ndmat == nfmat
 
 
 !       sknecht: idea for RMA window on master: assign shmem-MASTER to some other member of the master group (via key-value in comm_split)
@@ -360,23 +362,26 @@ C
 
 
 #ifdef VAR_MPI
+
+        ! set MPI_INTEGER_KIND variables
+        comm_intra  = communication_info_mpi%communication_intranode
+
 !       test dmat on shared file
         write(shared_dmat_file,'(a12,i4)')
      &  'dmat_shared.',communication_info_mpi%intra_node_group_id
-        call mpi_file_open(
-     &                     communication_info_mpi%
-     &                     communication_intranode,
+
+        fh_dmat_mpi  = rma_win_info%dmat_fh
+        call mpi_file_open(comm_intra,
      &                     shared_dmat_file,
      &                     mpi_mode_CREATE +
      &                     mpi_mode_RDWR   +
      &                     mpi_mode_DELETE_ON_CLOSE,
      &                     mpi_info_null,
-     &                     rma_win_info%dmat_fh,
+     &                     fh_dmat_mpi,
      &                     ierr
      &                    )
         displacement = 0
-        call mpi_file_set_view(
-     &                         rma_win_info%dmat_fh,
+        call mpi_file_set_view(fh_dmat_mpi,
      &                         displacement,
      &                         mpi_real8,
      &                         mpi_real8,
@@ -385,18 +390,16 @@ C
      &                         ierr
      &                        )
         if(communication_info_mpi%my_intra_node_id == 0)then
-          nelement4 = nelement
-          call mpi_file_write(
-     &                        rma_win_info%dmat_fh,
+          nelement_mpi = nelement
+          call mpi_file_write(fh_dmat_mpi,
      &                        dmat,
-     &                        nelement4,
+     &                        nelement_mpi,
      &                        mpi_real8,
      &                        istat,
      &                        ierr
      &                       )
         end if
-        call mpi_barrier(communication_info_mpi%
-     &                   communication_intranode,ierr)
+        call mpi_barrier(comm_intra,ierr)
 !       end test dmat on shared file
 
 
@@ -407,7 +410,6 @@ C
      &                      communication_info_mpi%
      &                      communication_shmemnode,
      &                      rma_win_info%fmat_win,
-!    &                      .true.,
      &                      .false.,
      &                      'no_locks',
      &                      'true')
@@ -447,7 +449,8 @@ C           workspace for array SORTED.
 !       call free_rma_window(rma_win_info%dmat_win,master)
         call free_rma_window(rma_win_info%fmat_win,master)
 !       test dmat on shared file
-        call mpi_file_close(rma_win_info%dmat_fh,ierr)
+        fh_dmat_mpi  = rma_win_info%dmat_fh
+        call mpi_file_close(fh_dmat_mpi,ierr)
 !       end test dmat on shared file
 #endif
       end if
@@ -595,11 +598,9 @@ C
 #include "expopt.h"
 C
       LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR,FIRST,GENCTR
-      DIMENSION DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*)
-CTROND
-CKR      DIMENSION GABRAO(*), DMRAO(*), DMRSO(*), DINTSKP(*)
-      DIMENSION GABRAO(*), DMRAO(*), DMRSO(*)
-CTROND
+      REAL*8  DMAT(N2BASX,NDMAT)
+      INTEGER ISYMDM(*), IFCTYP(*)
+      REAL*8  GABRAO(*), DMRAO(*), DMRSO(*)
 #include "infpar.h"
 C
 C Used from common blocks:
@@ -639,6 +640,10 @@ Cef begin
 #include "incore.h"
 Cef end
       character(len=6) :: nmat_wo_win_env
+#ifdef VAR_MPI
+      integer(kind=MPI_INTEGER_KIND) :: i_MPI, j_MPI, k_MPI, ierr
+      integer(kind=MPI_INTEGER_KIND), parameter :: zero_mpi = 0
+#endif
 
       CALL QENTER('HER_SDINIT')
       IF (IPRINT .GT. 3) THEN
@@ -788,16 +793,15 @@ C
 
 #ifdef VAR_MPI
 !       distribute density matrix(ces) among node masters
-        call mpi_bcast(dmat,n2basx*ndmat,mpi_real8,master,
-     &                 communication_info_mpi%communication_internode,
-     &                 ierr)
+        i_mpi = n2basx*ndmat
+        j_mpi = communication_info_mpi%communication_internode
+        k_mpi = master
+        call mpi_bcast(dmat,i_mpi,mpi_real8,k_mpi,j_mpi,ierr)
 !       distribute density matrix(ces) among node/NUMA node slaves
-        call mpi_bcast(dmat,
-     &                 n2basx*rma_win_info%nmat_max_wo_win,
-     &                 mpi_real8,
-     &                 0,
-     &                 communication_info_mpi%communication_shmemnode,
-     &                 ierr)
+        i_mpi = n2basx*rma_win_info%nmat_max_wo_win
+        j_mpi = communication_info_mpi%communication_shmemnode
+        call mpi_bcast(dmat, i_mpi,
+     &                 mpi_real8, zero_mpi, j_mpi, ierr)
 #endif
 
       else
@@ -1065,7 +1069,8 @@ C
 #ifndef USE_MPI_MOD_F90
 #include "mpif.h"
 #endif
-       integer (kind=mpi_offset_kind) :: offset_mat
+      integer(kind=mpi_offset_kind)  :: offset_mat
+      integer(kind=MPI_INTEGER_KIND) :: i_MPI, j_MPI, k_MPI, l_MPI, ierr
 #endif
 C
       CALL QENTER('HER_RVRES')
@@ -1193,44 +1198,45 @@ C
       if(rma_model)then
 
 #ifdef VAR_MPI
+        j_mpi = communication_info_mpi%communication_glb_world
+        k_mpi = 8
+        l_mpi = master
         call mpi_reduce(mpi_in_place,
      &                  dintskp,
-     &                  8,
+     &                  k_mpi,
      &                  mpi_real8,
      &                  mpi_sum,
-     &                  master,
-     &                  communication_info_mpi%
-     &                  communication_glb_world,
+     &                  l_mpi,
+     &                  j_mpi,
      &                  ierr)
 
 !       all fmatS outside the RMA window...
+        i_mpi = rma_win_info%nmat_max_wo_win * n2basx
         call mpi_reduce(
      &                  mpi_in_place,
      &                  fmat,
-     &                  rma_win_info%nmat_max_wo_win * n2basx,
+     &                  i_mpi,
      &                  mpi_real8,
      &                  mpi_sum,
-     &                  master,
-     &                  communication_info_mpi%
-     &                  communication_glb_world,
+     &                  l_mpi,
+     &                  j_mpi,
      &                  ierr)
 
 !       now all fmatS inside the RMA window... if any
         if(rma_win_info%nmat_max_wo_win < jnfmat )then
-          call mpi_barrier(communication_info_mpi%
-     &                     communication_shmemnode,
-     &                     ierr)
+          i_mpi =communication_info_mpi%communication_shmemnode
+          call mpi_barrier(i_mpi, ierr)
+          i_mpi =communication_info_mpi%communication_internode
+          j_mpi = (jnfmat - rma_win_info% nmat_max_wo_win) * n2basx
           call mpi_reduce(
      &                    mpi_in_place,
      &                    fmat(1 + rma_win_info%
      &                    nmat_max_wo_win * n2basx),
-     &                    (jnfmat - rma_win_info%
-     &                    nmat_max_wo_win) * n2basx,
+     &                    j_mpi,
      &                    mpi_real8,
      &                    mpi_sum,
-     &                    master,
-     &                    communication_info_mpi%
-     &                    communication_internode,
+     &                    l_mpi,
+     &                    i_mpi,
      &                    ierr)
         end if
 #endif
@@ -1321,7 +1327,7 @@ C
       RETURN
       END
 C  /* Deck her_nodstr */
-      SUBROUTINE HER_NODSTR(LWORK_save,wrkdlm,IPRINT)
+      SUBROUTINE HER_NODSTR(LWORK_save,wrkdlm,IPRINT_in)
 C
 C    *****************************************************************
 C    *    This is the node program for the construction of fock-     *
@@ -1346,12 +1352,12 @@ C
 #include "dummy.h"
 C
       PARAMETER (MXDMAT = 2*MXCOOR)
-      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,GENCTR
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,GENCTR
       DIMENSION ISYMDM(MXDMAT), IFCTYP(MXDMAT),
      &          DINTSKP(2,4)
       real(8), allocatable :: work(:)
-      integer, intent(in)  :: lwork_save
-      integer              :: lwork
+      integer, intent(in)  :: lwork_save, iprint_in
+      integer              :: lwork, iprint
 C
 C Used from common blocks
 C
@@ -1382,7 +1388,8 @@ C
       pointer                        (dmat_p, dmat_buff)
       pointer                        (fmat_p, fmat_buff)
       character(len=16)              :: shared_dmat_file
-      integer                        :: istat(mpi_status_size)
+      integer(kind=MPI_INTEGER_KIND) :: istat(mpi_status_size)
+      integer(kind=MPI_INTEGER_KIND) :: i_MPI, j_MPI, k_MPI, l_MPI, ierr
 #endif
       integer, allocatable           :: JSTRS(:)
       integer, allocatable           :: NPRIM(:)
@@ -1397,6 +1404,8 @@ C     This is a slave in a parallel run; check for programming error
       END IF
 
       CALL QENTER('HER_NODSTR')
+
+      IPRINT = max(HERPAR_DEBUG,iprint_in)
 
       IF (IPRINT .GE. 2) THEN
          CALL TITLER('Output from HER_NODSTR','*',103)
@@ -1520,7 +1529,6 @@ C     ===================
 !    &                      communication_info_mpi%
 !    &                      communication_shmemnode,
 !    &                      rma_win_info%dmat_win,
-!!   &                      .true.,
 !    &                      .false.,
 !    &                      'no_locks',
 !    &                      'true')
@@ -1528,19 +1536,18 @@ C     ===================
 !       test dmat on shared file
         write(shared_dmat_file,'(a12,i4)')
      &  'dmat_shared.',communication_info_mpi%intra_node_group_id
-        call mpi_file_open(
-     &                     communication_info_mpi%
-     &                     communication_intranode,
+        i_mpi = communication_info_mpi%communication_intranode
+        j_mpi = rma_win_info%dmat_fh
+        call mpi_file_open(i_mpi,
      &                     shared_dmat_file,
      &                     mpi_mode_CREATE +
      &                     mpi_mode_RDWR   +
      &                     mpi_mode_DELETE_ON_CLOSE,
      &                     mpi_info_null,
-     &                     rma_win_info%dmat_fh,
+     &                     j_mpi,
      &                     ierr )
         displacement = 0
-        call mpi_file_set_view(
-     &                         rma_win_info%dmat_fh,
+        call mpi_file_set_view(j_mpi,
      &                         displacement,
      &                         mpi_real8,
      &                         mpi_real8,
@@ -1548,33 +1555,30 @@ C     ===================
      &                         mpi_info_null,
      &                         ierr )
         if(communication_info_mpi%my_intra_node_id == 0)then
-          nelement4 = nelement
-          call mpi_file_write(
-     &                        rma_win_info%dmat_fh,
+          i_mpi = nelement
+          call mpi_file_write(j_mpi,
      &                        dmat_buff,
-     &                        nelement4,
+     &                        i_mpi,
      &                        mpi_real8,
      &                        istat,
      &                        ierr )
         end if
-        call mpi_barrier(communication_info_mpi%
-     &                   communication_intranode,ierr)
+        k_mpi = communication_info_mpi%communication_intranode
+        call mpi_barrier(k_mpi, ierr)
 !       end test dmat on shared file
 
         nelement            = n2basx*nfmat
         if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
         call set_rma_window(
-     &                      fmat_buff,
-     &                      nelement,
-     &                      communication_info_mpi%my_shmem_node_id,
-     &                      communication_info_mpi%
-     &                      communication_shmemnode,
-     &                      rma_win_info%fmat_win,
-!    &                      .true.,
-     &                      .false.,
-     &                      'no_locks',
-     &                      'true')
+     &     fmat_buff,
+     &     nelement,
+     &     communication_info_mpi%my_shmem_node_id,
+     &     communication_info_mpi%communication_shmemnode,
+     &     rma_win_info%fmat_win,
+     &     .false.,
+     &     'no_locks',
+     &     'true')
 #endif
 !       print *, 'fmat_win, dmat_win',rma_win_info%fmat_win,
 !    &            rma_win_info%dmat_win,mynum
@@ -1614,10 +1618,10 @@ C
 !------------------------
       if(rma_model)then
 #ifdef VAR_MPI
-!       call free_rma_window(rma_win_info%dmat_win,master)
         call free_rma_window(rma_win_info%fmat_win,master)
 !       test dmat on shared file
-        call mpi_file_close(rma_win_info%dmat_fh,ierr)
+        i_mpi = rma_win_info%dmat_fh
+        call mpi_file_close(i_mpi,ierr)
 !       end test dmat on shared file
 #endif
       end if
@@ -1728,6 +1732,10 @@ C
 #include "cbisol.h"
 #include "incore.h"
 C
+#ifdef VAR_MPI
+      integer(kind=MPI_INTEGER_KIND) :: i_MPI, j_MPI, k_MPI, l_MPI, ierr
+#endif
+
       IF (IPRINT .GT. 2) THEN
          CALL TITLER('Output from HER_RVINIT','*',103)
          WRITE(LUPRI,*) 'Set Common blocks is ',set_cb_blocks
@@ -1986,18 +1994,19 @@ C
 
         if(communication_info_mpi%my_shmem_node_id == 0)then
 !         distribute density matrix(ces) among NUMA/node masters
-          call mpi_bcast(dmat_buff,n2basx*ndmat,mpi_real8,master,
-     &                   communication_info_mpi%communication_internode,
-     &                   ierr)
+          i_mpi = n2basx*ndmat
+          j_mpi = master
+          k_mpi = communication_info_mpi%communication_internode
+          call mpi_bcast(dmat_buff,i_mpi,mpi_real8,j_mpi,k_mpi,ierr)
         end if
 
 !       distribute density matrix(ces) among node/NUMA node slaves
+        i_mpi = n2basx*rma_win_info%nmat_max_wo_win
+        j_mpi = 0
+        k_mpi = communication_info_mpi%communication_shmemnode
         call mpi_bcast(dmat_buff,
-     &                 n2basx*rma_win_info%nmat_max_wo_win,
-     &                 mpi_real8,
-     &                 0,
-     &                 communication_info_mpi%communication_shmemnode,
-     &                 ierr)
+     &                 i_mpi, mpi_real8,
+     &                 j_mpi, k_mpi, ierr)
 
 
       else
@@ -2656,7 +2665,8 @@ C
 #ifndef USE_MPI_MOD_F90
 #include "mpif.h"
 #endif
-       integer (kind=mpi_offset_kind) :: offset_mat
+      integer(kind=mpi_offset_kind)  :: offset_mat
+      integer(kind=MPI_INTEGER_KIND) :: i_MPI, j_MPI, k_MPI, l_MPI, ierr
 #endif
 C
       IF (IPRINT .GT. 3) THEN
@@ -2701,44 +2711,43 @@ C
 
 !     collect data for rma_model
       if(rma_model)then
+        i_mpi = 8
+        j_mpi = master
+        k_mpi = communication_info_mpi%communication_glb_world
         call mpi_reduce(dintskp,
      &                  mpi_in_place,
-     &                  8,
+     &                  i_mpi,
      &                  mpi_real8,
      &                  mpi_sum,
-     &                  master,
-     &                  communication_info_mpi%
-     &                  communication_glb_world,
+     &                  j_mpi,
+     &                  k_mpi,
      &                  ierr)
 !       all fmatS outside the RMA window...
+        i_mpi = rma_win_info%nmat_max_wo_win * n2basx
         call mpi_reduce(fmat,
      &                  mpi_in_place,
-     &                  rma_win_info%nmat_max_wo_win * n2basx,
+     &                  i_mpi,
      &                  mpi_real8,
      &                  mpi_sum,
-     &                  master,
-     &                  communication_info_mpi%
-     &                  communication_glb_world,
+     &                  j_mpi,
+     &                  k_mpi,
      &                  ierr)
 
 !       now all fmatS inside the RMA window... if any
         if(rma_win_info%nmat_max_wo_win < ndmat)then
 
-          call mpi_barrier(communication_info_mpi%
-     &                     communication_shmemnode,
-     &                     ierr)
+          k_mpi = communication_info_mpi%communication_shmemnode
+          call mpi_barrier(k_mpi, ierr)
           if(communication_info_mpi%my_shmem_node_id == 0)then
 
-            call mpi_reduce(fmat(1 + rma_win_info%
-     &                      nmat_max_wo_win * n2basx),
-     &                      mpi_in_place,
-     &                      (ndmat - rma_win_info%
-     &                      nmat_max_wo_win) * n2basx,
+            i_mpi = (ndmat - rma_win_info%nmat_max_wo_win) * n2basx
+            k_mpi = communication_info_mpi%communication_internode
+            call mpi_reduce(fmat(1 +
+     &                      rma_win_info%nmat_max_wo_win * n2basx),
+     &                      mpi_in_place, i_mpi,
      &                      mpi_real8,
      &                      mpi_sum,
-     &                      master,
-     &                      communication_info_mpi%
-     &                      communication_internode,
+     &                      j_mpi, k_mpi,
      &                      ierr)
           end if
         end if

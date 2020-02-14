@@ -178,7 +178,10 @@ C*****************************************************************************
 #ifdef VAR_MPI
        integer (kind=mpi_offset_kind) :: offset_mat
        integer (kind=mpi_address_kind):: address_mat
-       integer                        :: status_read(mpi_status_size)
+       integer (kind=mpi_integer_kind):: status_read(mpi_status_size)
+       integer (kind=mpi_integer_kind):: ierr, nbasis2_mpi
+       integer (kind=mpi_integer_kind):: rma_dmat_fh_mpi
+       integer, parameter  :: my_MPI_LOCK_SHARED = MPI_LOCK_SHARED ! fix any int32/int64 incompability
 #endif
 #include "twocom.h"
 #include "expcom.h"
@@ -245,7 +248,7 @@ C
                         IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
                         IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
                         AOMAX       = MAX(AOMAX,ABS(AINT))
-Cef begin                      
+Cef begin
                         AOINT2(NBUF) = AINT
 Cef end
                         IND(NBUF,1) = A
@@ -269,20 +272,20 @@ Cef end
             IF (DIAGAB) KHKTBB = ICOMPA
             DO ICOMPB = 1,KHKTBB
               FACAB = SFAC
-              IF (DIAGAB.AND.ICOMPA.NE.ICOMPB) 
+              IF (DIAGAB.AND.ICOMPA.NE.ICOMPB)
      &          FACAB = FACAB+FACAB
               DO ICOMPC = 1,KHKTC
                             KHKTDD = KHKTD
                 IF (DIAGCD) KHKTDD = ICOMPC
                 DO ICOMPD = 1,KHKTDD
                   FCABCD = FACAB
-                  IF(DIAGCD.AND.ICOMPC.NE.ICOMPD) 
+                  IF(DIAGCD.AND.ICOMPC.NE.ICOMPD)
      &              FCABCD = FCABCD+FCABCD
                   DO IORBAB = 1,NORBAB
                     FAB = FCABCD
                     IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
                     IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
-                    IF (TCONAB.AND.IORBA.NE.IORBB) 
+                    IF (TCONAB.AND.IORBA.NE.IORBB)
      &                FAB = FAB+FAB
                     A = ICORBA(IORBA) + ICOMPA
                     B = ICORBB(IORBB) + ICOMPB
@@ -293,10 +296,10 @@ Cef end
                         IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
                         IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
                         FABCD = FAB
-                        IF (TCONCD.AND.IORBC.NE.IORBD) 
+                        IF (TCONCD.AND.IORBC.NE.IORBD)
      &                     FABCD = FABCD+FABCD
                         AOMAX       = MAX(AOMAX,ABS(AINT))
-Cef begin                         
+Cef begin
                         AOINT2(NBUF) = FABCD*AINT
 Cef end
                         IND(NBUF,1) = A
@@ -332,7 +335,7 @@ Cef end
                         IORBC = NINDCD(IORBCD,1)
                         IORBD = NINDCD(IORBCD,2)
                         AOMAX       = MAX(AOMAX,ABS(AINT))
-Cef begin                   
+Cef begin
                         AOINT2(NBUF) = AINT
 Cef end
                         IND(NBUF,1) = A
@@ -356,20 +359,20 @@ Cef end
             IF (DIAGAB) KHKTBB = ICOMPA
             DO ICOMPB = 1,KHKTBB
               FACAB = SFAC
-              IF(DIAGAB.AND.ICOMPA.NE.ICOMPB) 
+              IF(DIAGAB.AND.ICOMPA.NE.ICOMPB)
      &          FACAB = FACAB+FACAB
               DO ICOMPC = 1,KHKTC
                             KHKTDD = KHKTD
                 IF (DIAGCD) KHKTDD = ICOMPC
                 DO ICOMPD = 1,KHKTDD
                   FCABCD = FACAB
-                  IF (DIAGCD.AND.ICOMPC.NE.ICOMPD) 
+                  IF (DIAGCD.AND.ICOMPC.NE.ICOMPD)
      &              FCABCD = FCABCD+FCABCD
                   DO IORBAB = 1,NORBAB
                     IORBA = NINDAB(IORBAB,1)
                     IORBB = NINDAB(IORBAB,2)
                     FAB   = FCABCD
-                    IF(TCONAB.AND.IORBA.NE.IORBB) 
+                    IF(TCONAB.AND.IORBA.NE.IORBB)
      &                FAB = FAB+FAB
                     A = ICORBA(IORBA) + ICOMPA
                     B = ICORBB(IORBB) + ICOMPB
@@ -380,10 +383,10 @@ Cef end
                         IORBC = NINDCD(IORBCD,1)
                         IORBD = NINDCD(IORBCD,2)
                         FABCD = FAB
-                        IF (TCONCD.AND.IORBC.NE.IORBD) 
+                        IF (TCONCD.AND.IORBC.NE.IORBD)
      &                    FABCD = FABCD+FABCD
                         AOMAX       = MAX(AOMAX,ABS(AINT))
-Cef begin                        
+Cef begin
                         AOINT2(NBUF) = FABCD*AINT
 Cef end
                         IND(NBUF,1) = A
@@ -415,7 +418,7 @@ C     **********************************
 C
       IF(IPRINT.GE.15) THEN
         DO INT = 1,NBUF
-Cef begin 
+Cef begin
           WRITE (LUPRI,'(1X,A,F16.12)') 'GINT,A,B,C,D',AOINT2(INT)
 Cef end
         ENDDO
@@ -485,13 +488,16 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
         call dzero(fmat_tmp,nbasis**2)
 
 #ifdef VAR_MPI
+
+        rma_dmat_fh_mpi = rma_win_info%dmat_fh
+        nbasis2_mpi = nbasis**2
         call mpi_file_read_at(
-     &                        rma_win_info%dmat_fh,
+     &                        rma_dmat_fh_mpi,
      &                        offset_mat,
      &                        dmat_tmp,
-     &                        nbasis**2,
+     &                        nbasis2_mpi,
      &                        mpi_real8,
-     &                        status_read,    
+     &                        status_read,
      &                        ierr
      &                       )
 #endif
@@ -510,7 +516,7 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
      &                 address_mat,
      &                 nbasis**2,
      &                 communication_info_mpi%my_shmem_node_id,
-     &                 MPI_LOCK_SHARED,
+     &                 my_MPI_LOCK_SHARED,
      &                 rma_win_info%fmat_win,
      &                 rma_win_info%lock_win
      &                )
