@@ -3963,27 +3963,34 @@ C
 C
       IF (FCSUM .LT. THRZER .AND. (FC1SUM .GT. THRZER .AND. 
      &                             FC2SUM .GT. THRZER)) THEN
-         DO I = 1, 3*MXCOOR
-            SIGFC(I,1) = SIGFC1(I,1) + SIGFC2(I,1)
+         DO I = 1, MXCOOR
+            SIGFC(1,I) = SIGFC1(1,I) + SIGFC2(1,I)
+            SIGFC(2,I) = SIGFC1(2,I) + SIGFC2(2,I)
+            SIGFC(3,I) = SIGFC1(3,I) + SIGFC2(3,I)
          END DO
          FCSUM = DNRM2(3*MXCOOR,SIGFC,1)
       END IF
       IF (SDSUM .LT. THRZER .AND. (SD1SUM .GT. THRZER .AND. 
      &                             SD2SUM .GT. THRZER)) THEN
-         DO I = 1, 3*MXCOOR
-            SIGSD(I,1) = SIGSD1(I,1) + SIGSD2(I,1)
+         DO I = 1, MXCOOR
+            SIGSD(1,I) = SIGSD1(1,I) + SIGSD2(1,I)
+            SIGSD(2,I) = SIGSD1(2,I) + SIGSD2(2,I)
+            SIGSD(3,I) = SIGSD1(3,I) + SIGSD2(3,I)
          END DO
          SDSUM = DNRM2(3*MXCOOR,SIGSD,1)
       END IF
       IF (FSSUM .LT. THRZER .AND. (FS1SUM .GT. THRZER .AND. 
      &                             FS2SUM .GT. THRZER)) THEN
-         DO I = 1, 3*MXCOOR
-            SIGFS(I,1) = SIGFS1(I,1) + SIGFS2(I,1)
+         DO I = 1, MXCOOR
+            SIGFS(1,I) = SIGFS1(1,I) + SIGFS2(1,I)
+            SIGFS(2,I) = SIGFS1(2,I) + SIGFS2(2,I)
+            SIGFS(3,I) = SIGFS1(3,I) + SIGFS2(3,I)
          END DO
          FSSUM = DNRM2(3*MXCOOR,SIGFS,1)
       END IF
 C
-      CALL TITLER('ABACUS - SO CORRECTIONS TO CHEMICAL SHIELDINGS',
+      CALL TITLER(
+     &     'ABACUS - SPIN_ORBIT CORRECTIONS TO CHEMICAL SHIELDINGS',
      &     '*',124)
       IF (FC1SUM .GT. THRZER) THEN
          CALL HEADER('FC(1) contribution to shielding tensors '//
@@ -4259,12 +4266,13 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "codata.h"
-      DIMENSION CSTRA(*), SCTRA(*)
-      DIMENSION SPNFC1(MXCOOR,MXCOOR), SPNFC2(MXCOOR,MXCOOR),
-     &          SPNFC(MXCOOR,MXCOOR), SPNSD1(MXCOOR,MXCOOR),
-     &          SPNSD2(MXCOOR,MXCOOR), SPNSD(MXCOOR,MXCOOR),
-     &          SPNSU1(MXCOOR,MXCOOR), SPNSU2(MXCOOR,MXCOOR),
-     &          SPNSU(MXCOOR,MXCOOR)
+      REAL*8    CSTRA(*), SCTRA(*)
+      ! next group of arrays are (MXCORR,MXCORR) elsewhere
+      REAL*8    SPNFC1(MXCOOR*MXCOOR), SPNFC2(MXCOOR*MXCOOR),
+     &          SPNFC(MXCOOR*MXCOOR),  SPNSD1(MXCOOR*MXCOOR),
+     &          SPNSD2(MXCOOR*MXCOOR), SPNSD(MXCOOR*MXCOOR),
+     &          SPNSU1(MXCOOR*MXCOOR), SPNSU2(MXCOOR*MXCOOR),
+     &          SPNSU(MXCOOR*MXCOOR)
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -4273,40 +4281,39 @@ C
 C
       FC1SUM = DNRM2(MXCOOR**2,SPNFC1,1)
       FC2SUM = DNRM2(MXCOOR**2,SPNFC2,1)
-      FCSUM = DNRM2(MXCOOR**2,SPNFC,1)
+      FCSUM  = DNRM2(MXCOOR**2,SPNFC,1)
       SD1SUM = DNRM2(MXCOOR**2,SPNSD1,1)
       SD2SUM = DNRM2(MXCOOR**2,SPNSD2,1)
-      SDSUM = DNRM2(MXCOOR**2,SPNSD,1)
+      SDSUM  = DNRM2(MXCOOR**2,SPNSD,1)
       FS1SUM = DNRM2(MXCOOR**2,SPNSU1,1)
       FS2SUM = DNRM2(MXCOOR**2,SPNSU2,1)
-      FSSUM = DNRM2(MXCOOR**2,SPNSU,1)
-      DO I = 1, 8
-         DOSYM(I) = .TRUE.
-      END DO
+      FSSUM  = DNRM2(MXCOOR**2,SPNSU,1)
+      DOSYM(1:8) = .TRUE.
 C
       IF (FCSUM .LT. THRZER .AND. (FC1SUM .GT. THRZER .AND. 
      &                             FC2SUM .GT. THRZER)) THEN
          DO I = 1, MXCOOR*MXCOOR
-            SPNFC(I,1) = SPNFC1(I,1) + SPNFC2(I,1)
+            SPNFC(I) = SPNFC1(I) + SPNFC2(I)
          END DO
-         FCSUM = DNRM2(MXCOOR**2,SPNFC,1)
+         FCSUM = DNRM2(MXCOOR**2,SPNFC)
       END IF
       IF (SDSUM .LT. THRZER .AND. (SD1SUM .GT. THRZER .AND. 
      &                             SD2SUM .GT. THRZER)) THEN
          DO I = 1, MXCOOR*MXCOOR
-            SPNSD(I,1) = SPNSD1(I,1) + SPNSD2(I,1)
+            SPNSD(I) = SPNSD1(I) + SPNSD2(I)
          END DO
          SDSUM = DNRM2(MXCOOR**2,SPNSD,1)
       END IF
       IF (FSSUM .LT. THRZER .AND. (FS1SUM .GT. THRZER .AND. 
      &                             FS2SUM .GT. THRZER)) THEN
          DO I = 1, MXCOOR*MXCOOR
-            SPNSU(I,1) = SPNSU1(I,1) + SPNSU2(I,1)
+            SPNSU(I) = SPNSU1(I) + SPNSU2(I)
          END DO
          FSSUM = DNRM2(MXCOOR**2,SPNSU,1)
       END IF
 C
-      CALL TITLER('ABACUS - SO CORRECTIONS TO REDUCED J COUPLINGS',
+      CALL TITLER(
+     &     'ABACUS - SPIN-ORBIT CORRECTIONS TO REDUCED J COUPLINGS',
      &     '*',124)
       IF (FC1SUM .GT. THRZER) THEN
          CALL HEADER('FC(1) contribution to reduced J couplings ',-1)
