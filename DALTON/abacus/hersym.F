@@ -257,13 +257,13 @@ C ::: The new symmetry is added. :::
  200     CONTINUE
 C ::: The input file is modified to include symmetry. :::
 C ::: If there's any Angstrom mark, it's removed.    :::
-         TMPLN = MLINE(NMLAU)
+         TMPLN = MLINE(NMLINE_4)
          CALL UPCASE(TMPLN)
          IF (INDEX(TMPLN,'ATO') .EQ. 0) THEN
-            WRITE(MLINE(NMLAU)(10:10), '(I1)') NSYMOP
-            WRITE(MLINE(NMLAU)(11:20), '(A9,A1)') SYMM, ' '
+            WRITE(MLINE(NMLINE_4)(10:10), '(I1)') NSYMOP
+            WRITE(MLINE(NMLINE_4)(11:20), '(A9,A1)') SYMM, ' '
          ELSE
-            CALL LINE4(MLINE(NMLAU),NONTYP2,NSMOP2,CRT,KCHARG,THRS,
+            CALL LINE4(MLINE(NMLINE_4),NONTYP2,NSMOP2,CRT,KCHARG,THRS,
      &                 ADDSYM,KASYM,ID3,DOCART,DOOWN)
             AUTOSY = .FALSE.
             NOSYM  = .FALSE.
@@ -275,7 +275,7 @@ C ::: If there's any Angstrom mark, it's removed.    :::
                END DO
             END DO
             ID3 = ' '
-            CALL LINE4W(MLINE(NMLAU),NONTYP,NSYMOP,KCHARG,THRS,
+            CALL LINE4W(MLINE(NMLINE_4),NONTYP,NSYMOP,KCHARG,THRS,
      &                  AUTOSY,NOSYM,KASYM,ID3,DOCART,DOOWN)
          END IF
          IF (NSYMOP .EQ. 0) THEN

@@ -4597,12 +4597,7 @@ C     earlier but ends up with the same energy, we're having trouble.
 C     This is brutally resolved by removing all symmetry, that is the
 C     molecule has to be minimized withim the C1 point group.
 C
-      TMPLN = MLINE(1)
-      CALL UPCASE(TMPLN)
-      BASIS = (TMPLN(1:5) .EQ. 'BASIS')
-      I = 4
-      IF (BASIS) I = 5
-      TMPLN = MLINE(I)
+      BASIS = NMLINE_basis .gt. 0
       II = 0
       DO 49 J = 0, ITRNMR-1
          IF ((GEINFO(J,3) .LT. -0.5D0) .AND.
@@ -4623,7 +4618,7 @@ C
          WRITE(TMPLN(10:20), '(A11)') '           '
          IF (BRKALS) WRITE(TMPLN(10:20), '(A11)') '0          '
       END IF
-      MLINE(I) = TMPLN
+      MLINE(NMLINE_4) = TMPLN
 C
       IATOM = 1
       I = NCLINE(IATOM)-1
