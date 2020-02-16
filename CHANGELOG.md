@@ -32,7 +32,8 @@
 - Added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
 
 ### Fixed
-- Compilation errors with gfortran-9.2.0 and 64-bit integers
+- Compilation with 64-bit integer and linking with a 32-bit integer MPI. (H. J. Aa. Jensen)
+- Compilation errors with gfortran-9.2.0 and 64-bit integers.
 - Errors when running DFT with 64-bit integers and MPI. (P. Reinholdt and H. J. Aa. Jensen)
 - Errors for Fermi-contact (FC) labels on APROPER and therefore FC properties in \*\*RESPONS when more than 99 atoms (H. J. Aa. Jensen)
 - Error for \*ESR spin-dipole properties when more than 33 atoms (H. J. Aa. Jensen)
