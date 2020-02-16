@@ -169,15 +169,10 @@ detailed description of possible options.
 %with the appropriate preprocessor directives for an MPI
 %installation\index{MPI}.
 %
-%, or the construction of a slave program for
-%the PVM installation\index{PVM}.
 %If MPI\index{MPI} is used as message passing\index{message passing}
 %interface, no further keywords are
 %needed, as the number of nodes will be set equal to the number of
-%nodes asked for when submitting the job. However, if PVM\index{PVM} is used as
-%message passing interface, the number of nodes needs to be given in the
-%\Sec{PARALLEL} submodule input, and this number have to be equal to
-%the number of nodes asked for when submitting the job.
+%nodes asked for when submitting the job.
 %Note that in order to evaluate the parallelization efficiency\index{parallel efficiency},
 %a print level of at least 2 is needed in the \Sec{PARALLEL} submodule.
 
@@ -898,10 +893,6 @@ version\index{parallel calculation}
 of \dalton . The implementation has been described
 elsewhere~\cite{pndjhapdkrthhkcpl253}. \dalton\ only supports MPI as
 message passing interface in the current release.
-%When PVM\index{PVM} is used as
-%message passing interface\index{message passing}, the
-%keyword \Key{NODES} is required, otherwise all keywords are
-%optional.
 
 \begin{description}
 
@@ -921,59 +912,6 @@ as the process of giving batches to {\em all} slaves. The default is
 integral evaluation, which will give a reasonable control with the
 idle time of each slave.
 
-%\item[\Key{ENCODE}]\verb| |\newline
-%\verb|READ (LUCMD, '(A7)') WORD|
-%
-%This keyword only applies if PVM\index{PVM} has been chosen as message passing
-%interface. Three different options exists:
-%
-%\begin{list}{--}{}
-%\item\verb|PVMDEFA|
-%\item\verb|PVMRAW|
-%\item\verb|PVMINPL|
-%\end{list}
-%
-%The default is \verb|PVMDEFA|. We refer to PVM\index{PVM} manuals for a
-%closer description of the different ways of encoding the transfer of
-%data between nodes.
-
-\item[\Key{NODES}]\verb| |\newline
-\verb|READ (LUCMD,*) NODES|
-
-When MPI\index{MPI} is used as message passing interface, the
-default value is the number of nodes that has been assigned to the
-job, and these nodes will be partitioned into one master\index{master} and
-\verb|NODES-1| slaves\index{slave}. In most cases the program will
-find the number of nodes from the run-shell environment and setting
-equal to the number of nodes requested when submitting the MPI job minus 1.
-%When PVM is used for message
-%passing\index{message passing}, the default is 0,  and it is
-%therefore required to specify the number of nodes to be used in the
-%calculation when PVM is used. \verb|NODES| will in such calculations
-%correspond to the number of slaves the user would like to use in the
-%calculation. Note that this number may often have to be adjusted in
-%accordance with limits in the queuing system of various computers.
-
-%\item[\Key{NTASK}]\verb| |\newline
-%\verb|READ (LUCMD,*) NTASK|
-%
-%The number of tasks to send to each node when distributing the
-%calculation of two-electron integrals\index{two-electron
-%integral}. The default is 1. A task is
-%defined as a shell of atomic integrals\index{basis functions, shell
-%of}, a shell being an input
-%block. One may therefore increase the number of shells given to each
-%node in order to reduce the amount of communication. However, the
-%program uses dynamical allocation of work to each
-%node, and thus this option should be used with some care, as too large
-%tasks may cause the dynamical load balancing to fail\index{load
-%balancing}, giving an
-%overall decrease in efficiency\index{parallel efficiency}. The
-%parallelization is also very
-%coarse grained, so that the amount of
-%communication\index{communication} seldom represents
-%any significant problem. Will be come obsolete, and replaced by \Key{DEGREE}.
-%
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD, *) IPRPAR|
 

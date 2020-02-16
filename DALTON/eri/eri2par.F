@@ -41,7 +41,6 @@ C
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "iratdef.h"
 C
       LOGICAL FIRST
@@ -50,10 +49,9 @@ C
 C
 C Used from common blocks
 C
-C MXORB  : MXSHEL (for INFPAR)
 C GNRINF : NEWBAS, NEWGEO
 C INFORB : N2BASX
-C INFPAR : NODEID(), NODTOT, NCODE, NTASK
+C INFPAR : NODTOT, NCODE, NTASK
 C
 #include "gnrinf.h"
 #include "inforb.h"
@@ -89,15 +87,6 @@ C
 C     Number of (class|class) integrals
 C
       MXCLS2 = NODCLS*(NODCLS + 1)/2
-C
-      IF (MXCLS2 .GT. MAXTSK) THEN
-         WRITE(LUPRI,'(/1X,A,/1X,A,/1X,2(A,I5))')
-     &      'Number of actual (class1|class2) integrals too large.',
-     &      'Recompilation necessary!',
-     &      'MXCLS2 =',MXCLS2,' MAXTSK =',MAXTSK
-         CALL RECOMPI
-         CALL QUIT('ERROR: MXCLS2 greater than MAXTSK in ERI_PARDRV')
-      END IF
 C
 C     Dimension of array INDEX
 C
@@ -164,7 +153,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "mtags.h"
 C
       LOGICAL FIRST
@@ -173,8 +161,7 @@ C
 C Used from common blocks
 C
 C MXCENT : MXCENT (for MOLINP)
-C MXORB  : MXSHEL (for INFPAR)
-C GNRINF : NEWBAS, NEWGEO (PVM: BASDIR, LENBAS)
+C GNRINF : NEWBAS, NEWGEO
 C MOLINP : NMLINE
 C MOLINC : MLINE()
 C INFORB : *
@@ -232,67 +219,29 @@ C  comr12
       CALL MPIXBCAST(IFCTYP,NDMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(DMAT,N2BASX ,'DOUBLE' ,MASTER)
 #endif
-#if defined (VAR_PVM)
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(FIRST ,1,'LOGICAL')
-      CALL PVMXPACK(NEWBAS,1,'LOGICAL')
-      CALL PVMXPACK(NEWGEO,1,'LOGICAL')
-      CALL PVMXPACK(BASDIR,60,'STRING')
-      CALL PVMXPACK(LENBAS,1,'INTEGER')
-C
-C     Send  /MOLINC/, /MOLINP/, /INFORB/, /INFPAR/ and /CBIERI/
-C
-      IF (FIRST .OR. NEWBAS .OR. NEWGEO) THEN
-         IF (IPRINT .GT. 3) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
-     &        ' Sending new orbital inf.',
-     &        ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
-C   /molinp/
-         CALL PVMXPACK(NMLINE,1,'INTEGER')
-C   /molinc/
-         CALL PVMXPACK(MLINE ,len_MLINE*NMLINE,'STRING')
-C   /inforb/
-         CALL PVMXPACK(MULD2H,NINFI,'INTEGER')
-C   /infpar/
-         CALL PVMXPACK(NODTOT,NPARI,'INTEGER')
-C   /cbieri/
-         CALL PVMXPACK(NDMAT ,NCBII,'INTEGER')
-         CALL PVMXPACK(RUNERI,NCBIL,'LOGICAL')
-C  comr12
-         CALL PVMXBCAST(R12INT,NR12L,'LOGICAL')
-         CALL PVMXBCAST(INTGAC,NR12I,'INTEGER')
-      END IF
-      CALL PVMXPACK(ISYMDM,NDMAT,'INTEGER')
-      CALL PVMXPACK(IFCTYP,NDMAT,'INTEGER')
-      CALL PVMXPACK(DMAT,N2BASX,'DOUBLE')
-      CALL PVMXMCAST(NODTOT,NODEID(1),MTAG3)
-#endif
 C
       RETURN
       END
 C  /* Deck eri_rvcls */
       SUBROUTINE ERI_RVCLS(NODCLS,IPRINT)
 C
+C     Receive number of OD classes from node 1. (Letting Master
+C     calculate it is waste of CPU time). Also get NTASK
+C
 #include "implicit.h"
-#include "maxorb.h"
 #include "mtags.h"
 C
 C Used from common blocks
 C
-C  MXORB : MXSHEL (for INFPAR)
-C  INFPAR: NODEID(1), NTASK
+C  INFPAR: NTASK
 C
 #include "infpar.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_RVCLS','*',103)
 C
 #if defined (VAR_MPI)
-      CALL MPIXRECV(NODCLS,1,'INTEGER',NODEID(1),MTAG4)
-      CALL MPIXRECV(NTASK ,1,'INTEGER',NODEID(1),MTAG4)
-#endif
-#if defined (VAR_PVM)
-      CALL PVMXRECV(NODEID(1),MTAG4)
-      CALL PVMXUNPACK(NODCLS,1,'INTEGER')
-      CALL PVMXUNPACK(NTASK ,1,'INTEGER')
+      CALL MPIXRECV(NODCLS,1,'INTEGER',1,MTAG4)
+      CALL MPIXRECV(NTASK ,1,'INTEGER',1,MTAG4)
 #endif
 C
       RETURN
@@ -304,7 +253,6 @@ C  /* Deck eri_pardr1 */
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mtags.h"
 C
 Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
@@ -315,9 +263,8 @@ Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
 C
 C Used from common blocks
 C
-C MXORB  : MXSHEL (for INFPAR)
 C GNRINF : NEWBAS, NEWGEO
-C INFPAR : NODTOT, NTASK, TIMING, MAXTSK
+C INFPAR : NODTOT, NTASK, TIMING
 C
 #include "gnrinf.h"
 #include "infpar.h"
@@ -327,8 +274,9 @@ Cef end
 C
 C     NPOS must be saved and therefore statically allocated.
 C
-      DIMENSION NPOS(0:MAXTSK+1)
-      SAVE NPOS
+#include "maxorb.h"
+      INTEGER, PARAMETER :: MAXTSK = MXSHEL*(MXSHEL+1)/2
+      INTEGER, SAVE      :: NPOS(0:MAXTSK+1)
 C
       CALL QENTER('ERI_PARDR1')
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_PARDR1','*',103)
@@ -377,7 +325,6 @@ Cef begin
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mtags.h"
 #include "incore.h"
 C
@@ -392,8 +339,7 @@ C
 C
 C Used from common blocks
 C
-C  MXORB  : MXSHEL (for INFPAR)
-C  INFPAR : NODTOT, NODEID(), NTASK, NCODE
+C  INFPAR : NODTOT, NTASK, NCODE
 C
 #include "infpar.h"
 C
@@ -451,7 +397,7 @@ C         CALL MPI_BARRIER(MPI_COMM_WORLD)
             INDEX(3,IPLAC2) = ISAVED
          END IF
 C
-C     Send (I|J) batch to NODEID
+C     Send (I|J) batch
 C
          IF (IPLACE .GT. NBATCH .AND. NQUEUE(NWHO) .EQ. 0) THEN
             TDONE = .TRUE.
@@ -506,17 +452,6 @@ C     Tell the unemployed node to try again
          END IF
 C
 #endif
-#if defined (VAR_PVM)
-         CALL PVMXRECV(-1,MTAG5)
-         CALL PVMXUNPACK(NWHO,1,'INTEGER')
-C
-C        Send (I|J) batch to NODEID
-C
-         CALL PVMXINITSEND(NCODE)
-         CALL PVMXPACK(DONE,1,'LOGICAL')
-         CALL PVMXPACK(INDEX(1,IPLACE),NTASK,'INTEGER')
-         CALL PVMXSEND(NODEID(NWHO),MTAG6)
-#endif
 C
 C        Who-got-the-last-batch statistics
 C
@@ -542,7 +477,7 @@ C
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
 C
-C        Send (I|J) batch to NODEID
+C        Send (I|J) batch
 C
          CALL MPIXRECV(IPLAC2,1,'INTEGER',NWHO,MTAG51)
 C
@@ -552,14 +487,6 @@ C
          END IF
          CALL MPIXSEND(DONE,1,'LOGICAL',NWHO,MTAG6)
 C         CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMXRECV(-1,MTAG5)
-         CALL PVMXUNPACK(NWHO,1,'INTEGER')
-C
-         CALL PVMXINITSEND(NCODE)
-         CALL PVMXPACK(DONE,1,'LOGICAL')
-         CALL PVMXSEND(NODEID(NWHO),MTAG6)
 #endif
  210  CONTINUE
 C
@@ -587,22 +514,11 @@ C
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
 C
-C        Send (I|J) batch to NODEID
+C        Send (I|J) batch
 C
          CALL MPIXSEND(DONE,1,'LOGICAL',NWHO,MTAG6)
          CALL MPIXSEND(INDEX(MOD(IPLACE-1,3)+1,INT((IPLACE-1)/3)+1),
      &        NTASK,'INTEGER',NWHO,MTAG6)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMXRECV(-1,MTAG5)
-         CALL PVMXUNPACK(NWHO,1,'INTEGER')
-C
-C     Send (I|J) batch to NODEID
-C
-         CALL PVMXINITSEND(NCODE)
-         CALL PVMXPACK(DONE,1,'LOGICAL')
-         CALL PVMXPACK(INDEX(1,IPLACE),NTASK,'INTEGER')
-         CALL PVMXSEND(NODEID(NWHO),MTAG6)
 #endif
 C
 C        Who-got-the-last-batch statistics
@@ -630,14 +546,6 @@ C
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
          CALL MPIXSEND(DONE,1,'LOGICAL',NWHO,MTAG6)
 #endif
-#if defined (VAR_PVM)
-         CALL PVMXRECV(-1,MTAG5)
-         CALL PVMXUNPACK(NWHO,1,'INTEGER')
-C
-         CALL PVMXINITSEND(NCODE)
-         CALL PVMXPACK(DONE,1,'LOGICAL')
-         CALL PVMXSEND(NODEID(NWHO),MTAG6)
-#endif
   200 CONTINUE
 C  ENDIF below ends if-test on AOSAVE
       END IF
@@ -655,7 +563,6 @@ C
 #include "implicit.h"
 #include "mtags.h"
 #include "priunit.h"
-#include "maxorb.h"
       PARAMETER (D0=0.0D0,D1 = 1.0D0)
       LOGICAL NOTMEM
       DIMENSION FMAT(N2BASX), TMPMAT(N2BASX), TIMES(MXCLS2),
@@ -663,7 +570,6 @@ C
 C
 C Used from common blocks
 C
-C MXORB  : MXSHEL (for INFPAR)
 C INFPAR : NODTOT
 C INFORB : N2BASX
 C ERIMEM : *
@@ -712,34 +618,6 @@ C
             NOTMEM = .TRUE.
          END IF
 #endif
-#if defined (VAR_PVM)
-         CALL PVMXRECV(-1,MTAG7)
-         CALL PVMXUNPACK(MEMOK,1,'LOGICAL')
-         IF (MEMOK) THEN
-            CALL DZERO(TMPMAT,N2BASX)
-            CALL PVMXUNPACK(TMPMAT,N2BASX,'DOUBLE')
-            CALL PVMXUNPACK(IJS,1,'INTEGER')
-            IF (TIMING) THEN
-               CALL PVMXUNPACK(IWHICH,IJS,'INTEGER')
-               CALL PVMXUNPACK(CLSCPU,IJS,'DOUBLE')
-               DO 200, J=1,IJS
-                  TIMES(IWHICH(J)) = CLSCPU(J)
-  200           CONTINUE
-            END IF
-            CALL DAXPY(N2BASX,D1,TMPMAT,1,FMAT,1)
-            IJSTOT = IJSTOT + IJS
-         ELSE
-            CALL PVMXUNPACK(MEMADD,3,'INTEGER')
-            CALL PVMXUNPACK(LWORK ,1,'INTEGER')
-            IF (MEMADD .GT. MAXADD) THEN
-               IABMAX = MODAB
-               ICDMAX = MODCD
-               IWORK  = LWORK
-               MAXADD = MEMADD
-            END IF
-            NOTMEM = .TRUE.
-         END IF
-#endif
  100  CONTINUE
 C
       IF (NOTMEM) THEN
@@ -777,15 +655,14 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
 #include "aovec.h"
+#include "maxorb.h"
 C
       PARAMETER (MXDMAT = 100)
       DIMENSION WORK(LWORK), ISYMDM(MXDMAT), IFCTYP(MXDMAT)
 C
 C Used from common blocks
 C
-C MXORB  : MXSHEL (for INFPAR)
 C INFPAR : SLAVE
 C INFORB : N2BASX
 C
@@ -862,7 +739,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "mtags.h"
 C
       LOGICAL FIRST, TSTINP
@@ -873,8 +749,7 @@ C
 C Used from common blocks
 C
 C MXCENT : MXCENT (for MOLINP)
-C MXORB  : MXSHEL (for INFPAR)
-C GNRINF : NEWBAS, NEWGEO, (PVM: BASDIR, BASLEN), RELCAL
+C GNRINF : NEWBAS, NEWGEO,, RELCAL
 C MOLINP : NMLINE
 C MOLINC : MLINE()
 C INFORB : *
@@ -930,45 +805,6 @@ C  comr12
       END IF
       CALL MPIXBCAST(ISYMDM,NDMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NDMAT,'INTEGER',MASTER)
-#elif defined (VAR_PVM)
-C
-C     Receive initialization.
-C
-      CALL PVMXRECV(MASTER,MTAG3)
-      CALL PVMXUNPACK(FIRST ,1,'LOGICAL')
-      CALL PVMXUNPACK(NEWBAS,1,'LOGICAL')
-      CALL PVMXUNPACK(NEWGEO,1,'LOGICAL')
-      CALL PVMXUNPACK(BASDIR,60,'STRING')
-      CALL PVMXUNPACK(LENBAS,1,'INTEGER')
-C
-      TIMING = FIRST .OR. NEWBAS
-C
-C     Receive /MOLINC/,/MOLINP/, /INFORB/, /INFPAR/ and /CBIERI/
-C
-      IF (TIMING .OR. NEWGEO) THEN
-         IF (IPRINT .GT. 3) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
-     &        ' Receiving new orbital inf.',
-     &        ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
-C   /molinp/
-         CALL PVMXUNPACK(NMLINE,1,'INTEGER')
-C   /molinc/
-         CALL PVMXUNPACK(MLINE,len_MLINE*NMLINE,'STRING')
-C   /inforb/
-         CALL PVMXUNPACK(MULD2H,NINFI,'INTEGER')
-C   /infpar/
-         CALL PVMXUNPACK(NODTOT,NPARI,'INTEGER')
-         DO 100, I=1, NODTOT
-            IF (NODEID(I) .EQ. MYTID) MYNUM = I
- 100     CONTINUE
-C   /cbieri/
-         CALL PVMXUNPACK(NDMAT ,NCBII,'INTEGER')
-         CALL PVMXUNPACK(RUNERI,NCBIL,'LOGICAL')
-C  comr12
-         CALL PVMXBCAST(R12INT,NR12L,'LOGICAL')
-         CALL PVMXBCAST(INTGAC,NR12I,'INTEGER')
-      END IF
-      CALL PVMXUNPACK(ISYMDM,NDMAT,'INTEGER')
-      CALL PVMXUNPACK(IFCTYP,NDMAT,'INTEGER')
 #else
 !     to remove compiler warnings for sequential builds
       FIRST = .TRUE.
@@ -1000,9 +836,6 @@ C
 #if defined (VAR_MPI)
       CALL MPIXBCAST(WORK,N2BASX,'DOUBLE',MASTER)
 #endif
-#if defined (VAR_PVM)
-      CALL PVMXUNPACK(WORK,N2BASX,'DOUBLE')
-#endif
 C
       RETURN
       END
@@ -1021,9 +854,9 @@ C  /* Deck eri_noddrv */
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "eribuf.h"
 #include "dummy.h"
 #include "mtags.h"
@@ -1191,20 +1024,6 @@ C
       CALL MPIXRECV(DONE,1,'LOGICAL',MASTER,MTAG6)
       IF (DONE) GOTO 500
       CALL MPIXRECV(IJS,NTASK,'INTEGER',MASTER,MTAG6)
-#endif
-#if defined (VAR_PVM)
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(MYNUM,1,'INTEGER')
-      CALL PVMXSEND(MASTER,MTAG5)
-C
-C     Receive IJ labels for NTASK new (class|class) integrals
-C
-      CALL IZERO(IJS,NTASK)
-C
-      CALL PVMXRECV(MASTER,MTAG6)
-      CALL PVMXUNPACK(DONE,1,'LOGICAL')
-      IF (DONE) GOTO 500
-      CALL PVMXUNPACK(IJS,NTASK,'INTEGER')
 #endif
       IF (IPRINT .GT. 4) THEN
          WRITE(LUPRI,'(5X,A,I5,A)')
@@ -1461,12 +1280,10 @@ C  /* Deck eri_sdcls */
       SUBROUTINE ERI_SDCLS(NODCLS,IPRINT)
 C
 #include "implicit.h"
-#include "maxorb.h"
 #include "mtags.h"
 C
 C Used from common blocks
 C
-C  MXORB : MXSHEL (for INFPAR)
 C  INFPAR: MASTER
 C
 #include "infpar.h"
@@ -1477,12 +1294,6 @@ C
       CALL MPIXSEND(NODCLS,1,'INTEGER',MASTER,MTAG4)
       CALL MPIXSEND(NTASK ,1,'INTEGER',MASTER,MTAG4)
 #endif
-#if defined (VAR_PVM)
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(NODCLS,1,'INTEGER')
-      CALL PVMXPACK(NTASK ,1,'INTEGER')
-      CALL PVMXSEND(MASTER,MTAG4)
-#endif
 C
       RETURN
       END
@@ -1492,14 +1303,12 @@ C  /* Deck sdres */
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mtags.h"
 C
       DIMENSION DMAT(*), FMAT(*), CLSCPU(IJSTOT), IWHICH(IJSTOT)
 C
 C Used from common blocks
 C
-C  MXORB  : MXSHEL (for INFPAR)
 C  INFPAR : NCODE, MASTER, MYNUM, TIMING
 C  ERIMEM : *
 C  CBIERI : NDMAT
@@ -1540,23 +1349,6 @@ C
          CALL MPIXSEND(MEMOK ,1,'LOGICAL',MASTER,MTAG7)
          CALL MPIXSEND(MEMADD,3,'INTEGER',MASTER,MTAG7)
          CALL MPIXSEND(LWORK ,1,'INTEGER',MASTER,MTAG7)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMXINITSEND(NCODE)
-         CALL PVMXPACK(MEMOK,1,'LOGICAL')
-         CALL PVMXPACK(FMAT,NBASE*NBASE,'DOUBLE')
-         CALL PVMXPACK(IJSTOT,1,'INTEGER')
-         IF (TIMING) THEN
-            CALL PVMXPACK(IWHICH,IJSTOT,'INTEGER')
-            CALL PVMXPACK(CLSCPU,IJSTOT,'DOUBLE')
-         END IF
-         CALL PVMXSEND(MASTER,MTAG7)
-      ELSE
-         CALL PVMXINITSEND(NCODE)
-         CALL PVMXPACK(MEMOK ,1,'LOGICAL')
-         CALL PVMXPACK(MEMADD,3,'INTEGER')
-         CALL PVMXPACK(LWORK ,1,'INTEGER')
-         CALL PVMXSEND(MASTER,MTAG7)
 #endif
       END IF
 C

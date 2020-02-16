@@ -23,22 +23,17 @@
 #endif
 
 #if defined(__CVERSION__)
-#ifdef COMMENT
-! NOTE : MXSHEL should have value of MXSHEL in maxorb.h
-#endif
-#define MXSHEL 1500
 #define MAXNOD 9999
-#define NPARI  ((MAXNOD + 1) + 6)
-#define MAXTSK ( MXSHEL * (MXSHEL + 1) / 2 )
+#define NPARI  7
 extern struct common_infpar {
 #if defined (VAR_INT64)
-    long iprpar, ntask, ncode, ndegdi, master, mynum, mytid;
-    long nodtot, nodeid[MAXNOD+1], nfmat, mtottk, parher, debug, pario;
+    long iprpar, ntask, ndegdi, master, mynum, mytid;
+    long nodtot, nfmat, mtottk, parher, debug, pario;
     long timing, slave, rma_model;
 #else
-    int  iprpar, ntask, ncode, ndegdi, master, mynum, mytid;
-    int  nodtot, nodeid[MAXNOD+1], nfmat, mtottk, parher, debug, pario;
-    int  timing, slave, rma_model;
+    int  iprpar, ntask, ndegdi, master, mynum, mytid;
+    int  nodtot, nfmat, mtottk, parher, debug, pario;
+    int  rma_model, timing, slave;
 #endif
     char nodnam[MAXNOD][20], myname[20];
 } daltoninfpar_;
@@ -52,18 +47,15 @@ extern struct common_infpar {
 !           Character (NODNAM,MYNAME) should NOT be sent to slaves
 !     THUS: NPARI is length from NODTOT,...,PARIO,rma_model
 !
-      INTEGER   MAXNOD, NPARI, MAXTSK
-      PARAMETER ( MAXNOD = 9999, NPARI = (MAXNOD + 1) + 7 )
-! NOTE : MXSHEL should have value of MXSHEL in maxorb.h
-!     PARAMETER ( MAXTSK = (MXSHEL * (MXSHEL + 1))/2 )
-      PARAMETER ( MAXTSK = (1500 * (1500 + 1))/2 )
-      INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID
-      INTEGER NODTOT, NODEID(0:MAXNOD), NFMAT, MTOTTK
+      INTEGER   MAXNOD, NPARI
+      PARAMETER ( MAXNOD = 9999, NPARI = 7 )
+      INTEGER IPRPAR, NTASK, NDEGDI, MASTER, MYNUM, MYTID
+      INTEGER NODTOT, NFMAT, MTOTTK
       LOGICAL PARHER, PARIO, INFPAR_DEBUG, TIMING, SLAVE, rma_model
       CHARACTER*20   NODNAM(0:MAXNOD), MYNAME
       COMMON /DALTONINFPAR/                                              &
-     &        IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID         &
-     &       ,NODTOT, NODEID, NFMAT, MTOTTK, PARHER, INFPAR_DEBUG, PARIO &
+     &        IPRPAR, NTASK, NDEGDI, MASTER, MYNUM, MYTID                &
+     &       ,NODTOT, NFMAT, MTOTTK, PARHER, INFPAR_DEBUG, PARIO         &
      &       ,rma_model, TIMING, SLAVE , NODNAM, MYNAME
 
 ! -- end of infpar.h --

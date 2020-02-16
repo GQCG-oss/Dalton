@@ -470,7 +470,7 @@ C
       IF (ESG) CALL GETESG_DENMAT(WORK(KDMAT),NDMAT,WORK(KLAST),
      &               LWRK)
 C
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
          IF (PARHER_IS_OK) THEN
             IF ((NASHT .GT. 0) .AND. (.NOT.(HSROHF.OR.DFTADD)))
      &         CALL QUIT(' ERROR in TWOEXP: PARHER only'// 
@@ -569,7 +569,7 @@ cfrj-end
                IF (IPRINT .GE. 2)
      &         CALL TIMER('TWOEXP/TWOINT',TIMSTR,TIMEND)
             END IF
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
             PARHER = PARHER_SAVE
          END IF
 #endif

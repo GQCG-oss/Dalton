@@ -4729,7 +4729,8 @@ C     Cosine and sine coefficients
 C     ----------------------------
 C
       CALL DZERO(COSSIN(0,0),LVAL1*LVAL1)
-      DO 200 M = 0, LVAL
+      COSSIN(0,0) = D1
+      DO 200 M = 1, LVAL
          COSSIN(M,0) = D1
          DO 210 K = 1, M
             COSSIN(M,K) = COSSIN(M-1,K-1)*((-1.0D0)**(K-1))
