@@ -815,7 +815,7 @@ C
                K2INT  = KLAST
                L2INT  = LWORK - K2INT + 1
 C
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
                IF (PARHER .AND. DDFOCK) THEN
 C
                   KNSTAT = KLAST
@@ -901,7 +901,7 @@ C    &                          .FALSE.,.TRUE.,
 C    &                          IPRINT,WORK(KCCFBT),WORK(KINDXB),
 C    &                          WORK(KLAST),LWRK)
 C                END IF
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
                END IF
 #endif
                IF(DDFOCK) THEN

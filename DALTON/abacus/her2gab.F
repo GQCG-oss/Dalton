@@ -19,7 +19,7 @@ C
 #ifdef REV_LOG
 ========================================================================
 Revision 1.2  2001/01/31 17:51:20  vebjornb
-Parallel modifications from pdahle, MPI and PVM
+Parallel modifications from pdahle
 
 Revision 1.3  2000/05/04 12:26:07  hjj
 (1) merged with Dirac version:

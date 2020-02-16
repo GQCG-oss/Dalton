@@ -381,17 +381,6 @@ C
 #if defined (VAR_MPI)
       CALL MPIXSEND(MYNAME,20,'STRING',MASTER,MTAG8)
 #endif
-#if defined (VAR_PVM)
-C
-C     NCODE is the first variable PVM-slaves must receive
-C
-      CALL PVMXRECV(MASTER,MTAG0)
-      CALL PVMXUNPACK(NCODE,1,'INTEGER')
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(MYTID,1,'INTEGER')
-      CALL PVMXPACK(MYNAME,20,'STRING')
-      CALL PVMXSEND(NASTER,MTAG8)
-#endif
 C
       RETURN
       END
@@ -405,14 +394,6 @@ C
       CHARACTER NAME*20
 #include "infpar.h"
 C
-#if defined (VAR_PVM)
-C
-C     NCODE must be the first variable PVM-slaves must receive
-C
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(NCODE,1,'INTEGER')
-      CALL PVMXMCAST(NODTOT,NODEID(1),MTAG0)
-#endif
 C     Get my name
 C
       CALL GETNAME(MYNAME)
@@ -424,15 +405,6 @@ C
 #if defined (VAR_MPI)
          NWHO = -1
          CALL MPIXRECV(NAME,20 ,'STRING',NWHO,MTAG8)
-         NODNAM(NWHO) = NAME
-#endif
-#if defined (VAR_PVM)
-         CALL PVMXRECV(-1,MTAG8)
-         CALL PVMXUNPACK(NTID,1,'INTEGER')
-         CALL PVMXUNPACK(NAME,20,'STRING')
-         DO J=1, NODTOT
-            IF (NODEID(J) .EQ. NTID) NWHO = J
-         END DO
          NODNAM(NWHO) = NAME
 #endif
       END DO
@@ -468,12 +440,6 @@ C
 #if defined (VAR_MPI)
       CALL MPIXSEND(TMGARR,2 ,'DOUBLE',MASTER,MTAG8)
 #endif
-#if defined (VAR_PVM)
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(MYNUM ,1,'INTEGER')
-      CALL PVMXPACK(TMGARR,2,'DOUBLE')
-      CALL PVMXSEND(MASTER,MTAG8)
-#endif
 C
       RETURN
       END
@@ -497,10 +463,6 @@ C
 #if defined (VAR_MPI)
          NWHO = -1
          CALL MPIXRECV(TMGARR,2,'DOUBLE',NWHO,MTAG8)
-#elif defined (VAR_PVM)
-         CALL PVMXRECV(-1,MTAG8)
-         CALL PVMXUNPACK(NWHO  ,1,'INTEGER')
-         CALL PVMXUNPACK(TMGARR,2,'DOUBLE')
 #else
          NWHO = I
 #endif
@@ -598,16 +560,10 @@ C
      &      'Print level on nodes is',IPRNOD
       END IF
 C
-C     Tell nodes whether this is an ERI or HERMIT run. Send IPRNOD (PVM: NCODE)
+C     Tell nodes whether this is an ERI or HERMIT run. Send IPRNOD
 C
 #if defined (VAR_MPI)
       CALL DALTON_PARCTL(IPRTYP,IPRNOD)
-#endif
-#if defined (VAR_PVM)
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(IPRTYP,1,'INTEGER')
-      CALL PVMXPACK(IPRNOD,1,'INTEGER')
-      CALL PVMXMCAST(NODTOT,NODEID(1),MTAG1)
 #endif
       IF (IPRTYP.EQ.HER_WORK) THEN
          if (iprint .gt. 3)

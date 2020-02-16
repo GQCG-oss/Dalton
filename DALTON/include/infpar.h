@@ -27,11 +27,11 @@
 #define NPARI  7
 extern struct common_infpar {
 #if defined (VAR_INT64)
-    long iprpar, ntask, ncode, ndegdi, master, mynum, mytid;
+    long iprpar, ntask, ndegdi, master, mynum, mytid;
     long nodtot, nfmat, mtottk, parher, debug, pario;
     long timing, slave, rma_model;
 #else
-    int  iprpar, ntask, ncode, ndegdi, master, mynum, mytid;
+    int  iprpar, ntask, ndegdi, master, mynum, mytid;
     int  nodtot, nfmat, mtottk, parher, debug, pario;
     int  rma_model, timing, slave;
 #endif
@@ -49,12 +49,12 @@ extern struct common_infpar {
 !
       INTEGER   MAXNOD, NPARI
       PARAMETER ( MAXNOD = 9999, NPARI = 7 )
-      INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID
+      INTEGER IPRPAR, NTASK, NDEGDI, MASTER, MYNUM, MYTID
       INTEGER NODTOT, NFMAT, MTOTTK
       LOGICAL PARHER, PARIO, INFPAR_DEBUG, TIMING, SLAVE, rma_model
       CHARACTER*20   NODNAM(0:MAXNOD), MYNAME
       COMMON /DALTONINFPAR/                                              &
-     &        IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID         &
+     &        IPRPAR, NTASK, NDEGDI, MASTER, MYNUM, MYTID                &
      &       ,NODTOT, NFMAT, MTOTTK, PARHER, INFPAR_DEBUG, PARIO         &
      &       ,rma_model, TIMING, SLAVE , NODNAM, MYNAME
 

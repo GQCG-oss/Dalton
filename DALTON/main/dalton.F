@@ -552,9 +552,7 @@ C        Read general input for Dalton
 C
          CALL DALTON_GNRLINP
 
-#if !defined (VAR_MPI)
-      END IF ! mynum .eq. master
-#else /* VAR_MPI */
+#if defined (VAR_MPI)
          CALL RECVNAMES
 
          CALL MOLDEN_HEAD
@@ -669,19 +667,9 @@ C
 C     All below is not relevant for MPI as all proc. has stopped
 C     with CALL MPI_FINALIZE(err_mpi)
 C
-#endif /* VAR_MPI */
-#if defined (VAR_PVM)
-C
-C     Spawn all PVM processes, as we now know how many there are
-C
-      IF (PARCAL) THEN
-         CALL PVMXMYTID(MYTID)
-         CALL PVMXSPAWN('node.x',NODTOT,NODEID(1))
-         CALL RECVNAMES
-         NODEID(0) = MYTID
-      END IF
-#endif
-#if !defined (VAR_MPI)
+#else /* VAR_MPI */
+!     sequential build
+      END IF ! mynum .eq. master
 
       CALL MOLDEN_HEAD
 
@@ -710,19 +698,6 @@ C...  added by Bin Gao, Oct. 2, 2011
 C...  terminates Gen1Int interface
       call gen1int_host_finalize()
 #endif
-#endif
-#if defined (VAR_PVM)
-      IF (PARCAL) THEN
-C
-C        Tell slaves to quit.
-C        --------------------
-C
-         IPRTYP = ENDING_SIGNAL
-         CALL PVMXINITSEND(NCODE)
-         CALL PVMXPACK(IPRTYP,1,'INTEGER')
-         CALL PVMXMCAST(NODTOT,NODEID(1),MTAG1)
-         CALL PVMXEXIT
-      END IF
 #endif
 
 

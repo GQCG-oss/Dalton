@@ -18,8 +18,7 @@ C
 C File: herpar.F
 C
 C Some history:
-C Original : PVM
-C June 1995: ported to MPI by Kenneth Ruud
+C Original : PVM, June 1995: ported to MPI by Kenneth Ruud
 C
 C  /* Deck her_pardrv */
       SUBROUTINE HER_PARDRV(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
@@ -179,7 +178,7 @@ C
 C
 C      NEW LABELS:
 C
-C      10 - Tell nodes this is a HERMIT run, send NCODE and IPRINT
+C      10 - Tell nodes this is a HERMIT run, send IPRINT
 C      30 - Send initialization to nodes.
 C      40   >Label used in ERI only<
 C      50 - Receive (IJ|**) request from node
@@ -196,7 +195,6 @@ C      30 - Send batch to node.
 C      40 - Receive final results from nodes.
 C      50 - Get timing results from nodes.
 C
-C           NCODE  - PVM-message encoding option.
 C           ITYPE  - Calc. type: 2 = expectation values.
 C                                3 = fock matrices.
 C                               -5 = Integrals derivated with respect
@@ -600,7 +598,7 @@ C
 C MXCENT : MXCENT (for DORPS, etc.)
 C MXORB  : MXSHEL (for INFPAR)
 C MAXAQN : *      (for SYMMET)
-C GNRINF : NEWGEO (PVM: BASDIR, LENBAS)
+C GNRINF : NEWGEO
 C INFORB : N2BASX
 C MOLINP : NMLINE, MLINE()
 C CBIREA : UNCONT
@@ -813,62 +811,6 @@ C
         CALL MPIXBCAST(DMRAO,N2RED*NDMAT,'DOUBLE',MASTER)
         CALL MPIXBCAST(GABRAO,N2RED,'DOUBLE',MASTER)
       ENDIF
-#endif
-#if defined (VAR_PVM)
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(FIRST ,1,'LOGICAL')
-      CALL PVMXPACK(NEWBAS,1,'LOGICAL')
-      CALL PVMXPACK(NEWGEO,1,'LOGICAL')
-      CALL PVMXPACK(BASDIR,60,'STRING')
-      CALL PVMXPACK(LENBAS,1,'INTEGER')
-C
-      IF (FIRST .OR. NEWBAS .OR. NEWGEO) THEN
-         IF (IPRINT .GT. 3) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
-     &        ' Sending new orbital inf.',
-     &        ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
-C  /molinc/
-         CALL PVMXPACK(NMLINE,1,'INTEGER')
-C  /molinp/
-         CALL PVMXPACK(MLINE,len_MLINE*NMLINE,'STRING')
-C  /inforb/
-         CALL PVMXPACK(MULD2H,NINFI,'INTEGER')
-C  /infpar/
-         CALL PVMXPACK(NODTOT,NPARI,'INTEGER')
-C  /dorps/
-         CALL PVMXPACK(DOREPS(0),NDORL,'LOGICAL')
-C  dosym()
-         CALL PVMXPACK(DOSYM,NSYML,'LOGICAL')
-C  comr12
-         CALL PVMXBCAST(R12INT,NR12L,'LOGICAL')
-         CALL PVMXBCAST(INTGAC,NR12I,'INTEGER')
-      END IF
-C  /parint/
-      CALL PVMXPACK(JATOM,NINTI,'INTEGER')
-      CALL PVMXPACK(JNODV,NINTL,'LOGICAL')
-C
-C     Pack the density matrices, their symmetries and the Fock matrix types.
-C
-      call quit('pvm version of Dalton SCF not working - '//
-     &          'ask s. knecht at stefan.knecht@phys.chem.ethz.ch '//
-     &          'for help.')
-      CALL PVMXPACK(NDMAT,1,'INTEGER')
-      CALL PVMXPACK(DMAT,N2BASX*NDMAT,'DOUBLE')
-      CALL PVMXPACK(ISYMDM,NFMAT,'INTEGER')
-      CALL PVMXPACK(IFCTYP,NFMAT,'INTEGER')
-C
-      IF(ITYPE.EQ.3) THEN
-        N2RED = NSYMBL*NSYMBL
-        CALL PVMXPACK(N2RED,1,'INTEGER')
-        CALL PVMXPACK(DMRAO,N2RED*NDMAT,'DOUBLE')
-        CALL PVMXPACK(GABRAO,N2RED,'DOUBLE')
-      ENDIF
-C
-C     -----------------------------------
-C     Multicast initialization to nodes.
-C     -----------------------------------
-C
-      CALL PVMXMCAST(NODTOT,NODEID(1),MTAG3)
-C
 #endif
       CALL QEXIT('HER_SDINIT')
       RETURN
@@ -1141,41 +1083,6 @@ C
          IF (TIMING) THEN
             CALL MPIXRECV(IWHICH(ICOUNT+1),ITASKS,'INTEGER',NWHO,MTAG7)
             CALL MPIXRECV(TSKCPU(ICOUNT+1),ITASKS,'DOUBLE' ,NWHO,MTAG7)
-            DO 200 J=1,ITASKS
-               K = IWHICH(J)
-               IF (K .GT. 0) TIMES(K) = TSKCPU(J)
- 200        CONTINUE
-         END IF
-C
-         ICOUNT = ICOUNT + ITASKS
-#endif
-#if defined (VAR_PVM)
-         CALL PVMXRECV(-1,MTAG7)
-         CALL PVMXUNPACK(TMPMAT,L_TMPMT,'DOUBLE')
-C
-         IF (ITYPE .EQ. 2) THEN
-            CALL DAXPY(L_GRA,D1,TMPMAT(1),1,GRADEE,1)
-            CALL DAXPY(L_HES,D1,TMPMAT(L_GRA+1),1,HESSEE,1)
-C
-         ELSE IF (ITYPE .EQ. 3) THEN
-            CALL DAXPY(L_FCK,D1,TMPMAT,1,FMAT,1)
-            CALL DAXPY(8,D1,TMPMAT(L_FCK+1),1,DINTSKP,1)
-C
-         ELSE IF (ITYPE .EQ. 8) THEN
-            CALL DAXPY(L_TMPMT,D1,TMPMAT(1),1,FMAT,1)
-         ELSE IF (ITYPE .EQ. -5) THEN
-            CALL DAXPY(3*N2BASX,D1,TMPMAT(1),1,FMAT,1)
-            CALL DAXPY(L_SUS,D1,TMPMAT(3*N2BASX+1),1,SUS2EL,1)
-         END IF
-C
-C        Unpack the number of tasks received by the node.
-C
-         CALL PVMXUNPACK(ITASKS,1,'INTEGER')
-C
-         IF (TIMING) THEN
-            CALL PVMXUNPACK(IWHICH(ICOUNT+1),ITASKS,'INTEGER')
-            CALL PVMXUNPACK(TSKCPU(ICOUNT+1),ITASKS,'DOUBLE')
-C
             DO 200 J=1,ITASKS
                K = IWHICH(J)
                IF (K .GT. 0) TIMES(K) = TSKCPU(J)
@@ -1695,7 +1602,7 @@ C
 C MXCENT : MXCENT (for DORPS, etc.)
 C MXORB  : MXSHEL (for INFPAR)
 C MAXAQN : *      (for SYMMET)
-C GNRINF : NEWBAS, NEWGEO, (PVM: BASDIR, LENBAS),
+C GNRINF : NEWBAS, NEWGEO
 C INFORB : N2BASX
 C MOLINP : NMLINE, MLINE()
 C CBIREA : UNCONT
@@ -1824,48 +1731,6 @@ C  /parint/
 
 !       rma_model
         CALL MPIXBCAST(rma_model,1,'LOGICAL',MASTER)
-#endif
-#if defined (VAR_PVM)
-        CALL PVMXRECV(MASTER,MTAG3)
-        CALL PVMXUNPACK(FIRST ,1,'LOGICAL')
-        CALL PVMXUNPACK(NEWBAS,1,'LOGICAL')
-        CALL PVMXUNPACK(NEWGEO,1,'LOGICAL')
-        CALL PVMXUNPACK(BASDIR,60,'STRING')
-        CALL PVMXUNPACK(LENBAS,1,'INTEGER')
-C
-C       --------------------------------------------------
-C       Unpack common block MOLINP and INFORB (only once).
-C       --------------------------------------------------
-C
-        TIMING = FIRST .OR. NEWBAS .OR. NEWGEO
-C
-        IF (TIMING) THEN
-           IF (IPRINT .GE. 2) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
-     &          ' Receiving new orbital inf.',
-     &          ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
-C  /molinp/
-           CALL PVMXUNPACK(NMLINE,1,'INTEGER')
-C  /molinc/
-           CALL PVMXUNPACK(MLINE,len_MLINE*NMLINE,'STRING')
-C  /inforb/
-           CALL PVMXUNPACK(MULD2H,NINFI,'INTEGER')
-C  /infpar/
-           CALL PVMXUNPACK(NODTOT,NPARI,'INTEGER')
-C
-           DO 100 I = 1, NODTOT
-              IF (NODEID(I) .EQ. MYTID) MYNUM = I
- 100       CONTINUE
-C  /dorps/ DOREPS, DOCOOR (NDORL covers both)
-           CALL PVMXUNPACK(DOREPS(0),NDORL,'LOGICAL')
-C  dosym()
-           CALL PVMXUNPACK(DOSYM,NSYML,'LOGICAL')
-C  comr12
-           CALL PVMXBCAST(R12INT,NR12L,'LOGICAL')
-           CALL PVMXBCAST(INTGAC,NR12I,'INTEGER')
-        END IF
-C  /parint/
-        CALL PVMXUNPACK(JATOM,NINTI,'INTEGER')
-        CALL PVMXUNPACK(JNODV,NINTL,'LOGICAL')
 #endif
 C
 C       In case of QM3 calculation, update number of atom types
@@ -2021,33 +1886,6 @@ C
         CALL MEMGET('REAL',KGABAO,      N2RED,WORK,KFREE,LFREE)
         CALL MPIXBCAST(WORK(KDMRAO),NDMAT*N2RED,'DOUBLE',MASTER)
         CALL MPIXBCAST(WORK(KGABAO),N2RED,'DOUBLE',MASTER)
-      ELSE
-        KDMRAO = KFREE
-        KGABAO = KFREE
-      ENDIF
-      KDMRSO = KFREE
-#endif
-#if defined (VAR_PVM)
-      call quit('pvm version of Dalton SCF not working - '//
-     &          'ask s. knecht at stefan.knecht@phys.chem.ethz.ch '//
-     &          'for help.')
-C     Unpack density matrices.
-C
-      CALL PVMXUNPACK(NDMAT,1,'INTEGER')
-      CALL MEMGET('REAL',KDMAT,NDMAT*N2BASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFMAT,NFMAT*N2BASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
-      CALL PVMXUNPACK(WORK(KDMAT),N2BASX*NDMAT,'DOUBLE')
-      CALL PVMXUNPACK(ISYMDM,NFMAT,'INTEGER')
-      CALL PVMXUNPACK(IFCTYP,NFMAT,'INTEGER')
-C
-      IF(ITYPE.EQ.3) THEN
-        CALL PVMXUNPACK(N2RED,1,'INTEGER')
-        CALL MEMGET('REAL',KDMRAO,NDMAT*N2RED,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KGABAO,N2RED,WORK,KFREE,LFREE)
-        CALL PVMXUNPACK(WORK(KDMRAO),N2RED*NDMAT,'DOUBLE')
-        CALL PVMXUNPACK(WORK(KGABAO),N2RED,'DOUBLE')
-        KLAST  = KGABAO + N2RED
       ELSE
         KDMRAO = KFREE
         KGABAO = KFREE
@@ -2265,11 +2103,6 @@ C
          LINTSV = .FALSE.
 C
 #endif
-#if defined (VAR_PVM)
-         CALL PVMXINITSEND(NCODE)
-         CALL PVMXPACK(MYNUM,1,'INTEGER')
-         CALL PVMXSEND(MASTER,MTAG5)
-#endif
 C
 C     Receive IJ labels for NTASK new (IJ|**) integrals
 C
@@ -2294,12 +2127,6 @@ C
          CALL MPIXRECV(IPLACE,1,'INTEGER',MASTER,MTAG62)
 C
 #endif
-#if defined (VAR_PVM)
-         CALL PVMXRECV(MASTER,MTAG6)
-         CALL PVMXUNPACK(DONE,1,'LOGICAL')
-         IF (DONE) GOTO 300
-         CALL PVMXUNPACK(IJS,NTASK,'INTEGER')
-#endif
 C
 C ELSE below is for the compability to old code: AOSAVE = FALSE
 C
@@ -2307,11 +2134,6 @@ C
 C
 #if defined (VAR_MPI)
          CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG5)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMXINITSEND(NCODE)
-         CALL PVMXPACK(MYNUM,1,'INTEGER')
-         CALL PVMXSEND(MASTER,MTAG5)
 #endif
 C
 C     Receive IJ labels for NTASK new (IJ|**) integrals
@@ -2322,12 +2144,6 @@ C
          CALL MPIXRECV(DONE,1,'LOGICAL',MASTER,MTAG6)
          IF (DONE) GOTO 300
          CALL MPIXRECV(IJS,NTASK,'INTEGER',MASTER,MTAG6)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMXRECV(MASTER,MTAG6)
-         CALL PVMXUNPACK(DONE,1,'LOGICAL')
-         IF (DONE) GOTO 300
-         CALL PVMXUNPACK(IJS,NTASK,'INTEGER')
 #endif
 C
 C     END IF below corresponds to: IF (AOSAVE)... ELSE
@@ -2746,34 +2562,6 @@ C
       end if
 
 #endif
-#if defined (VAR_PVM)
-      CALL PVMXINITSEND(NCODE)
-      IF (ITYPE .EQ. 2) THEN
-         CALL PVMXPACK(GRADEE,L_GRA,'DOUBLE')
-         CALL PVMXPACK(HESSEE,L_HES,'DOUBLE')
-      ELSE IF (ITYPE .EQ. 3) THEN
-         CALL PVMXPACK(FMAT,NDMAT*N2BASX,'DOUBLE')
-         CALL PVMXPACK(DINTSKP,8,'DOUBLE')
-      ELSE IF (ITYPE .EQ. -5 .OR. ITYPE .EQ. 8) THEN
-         CALL PVMXPACK(FMAT,NFMAT*N2BASX,'DOUBLE')
-         IF (ITYPE .EQ. -5) THEN
-            CALL PVMXPACK(SUS2EL,L_SUS,'DOUBLE')
-         END IF
-      END IF
-C
-C     Pack the number of tasks received.
-C
-      CALL PVMXPACK(ICOUNT,1,'INTEGER')
-C
-C     Pack the integral-calculation times.
-C
-      IF (TIMING) THEN
-         CALL PVMXPACK(IWHICH,ICOUNT,'INTEGER')
-         CALL PVMXPACK(TSKCPU,ICOUNT,'DOUBLE')
-      END IF
-C
-      CALL PVMXSEND(MASTER,MTAG7)
-#endif
 C
       RETURN
       END
@@ -2796,15 +2584,12 @@ C  /* Deck prlinp */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "mtags.h"
-#if defined (VAR_PVM)
-      INCLUDE 'fpvm3.h'
-#endif
       PARAMETER (NTABLE = 6)
       LOGICAL FIRST, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "infpar.h"
       SAVE FIRST
-      DATA TABLE /'.NODES ','.DEGREE','.PRINT ','.ENCODE','.DEBUG ',
+      DATA TABLE /'xxxxxxx','.DEGREE','.PRINT ','xxxxxxx','.DEBUG ',
      &            '.RMA-MD'/
       DATA FIRST /.TRUE./
 C
@@ -2832,10 +2617,6 @@ C     ... this is the master in a parallel run
       NTASK  = 1
       IPRPAR = 0
       NDEGDI = 5
-#if defined (VAR_PVM)
-      NODTOT = 0
-      NCODE  = PVMDATADEFAULT
-#endif
       rma_model  = .false.
 C
       NEWDEF = (WORD .EQ. '*PARALL')
@@ -2864,18 +2645,6 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in PRLINP')
     1          CONTINUE
-                  READ(LUCMD,*) NODS
-#if defined (VAR_MPI)
-                  IF (NODS .NE. NODTOT) THEN
-                     WRITE (LUPRI,'(/A,I3,A,I3)')
-     &                 'Number of nodes in input ', NODS,
-     &                 ' .ne. nodes in MPI calculation ',NODTOT
-                     CALL QUIT('Wrong number of nodes in input')
-                  END IF
-#endif
-#if defined (VAR_PVM)
-                  NODTOT = NODS
-#endif
                GO TO 100
     2          CONTINUE
                   READ(LUCMD,*) NDEGDI
@@ -2884,24 +2653,6 @@ C
                   READ(LUCMD,*) IPRPAR
                GO TO 100
     4          CONTINUE
-#if defined (VAR_PVM)
-                  READ (LUCMD,'(A7)') WORD
-                  CALL UPCASE(WORD)
-                  IF (WORD.EQ.' DATADE') THEN
-                     NCODE = PVMDATADEFAULT
-                  ELSE IF (WORD.EQ.' DATARA') THEN
-                     NCODE = PVMDATARAW
-                  ELSE IF (WORD.EQ.' DATAIN') THEN
-                     NCODE = PVMDATAINPLACE
-                  ELSE
-                     WRITE(LUPRI,'(/1X,A,A,A//1X,A/15X,A/15X,A/)')
-     &              '.ENCODE type ',word,' unknown!!!',
-     &              'Options are : DATADEFAULT','DATARAW','DATAINPLACE'
-                     CALL QUIT('Nonexistent encoding type in input.')
-                  END IF
-#else
-                  WRITE(LUPRI,'(/1X,A)')'.ENCODE keyword is not in use.'
-#endif
                GO TO 100
     5          CONTINUE   ! .DEBUG
                   INFPAR_DEBUG = .TRUE.

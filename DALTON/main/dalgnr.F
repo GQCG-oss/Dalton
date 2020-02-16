@@ -1722,18 +1722,12 @@ C     ... default print level for statistics /hjaaj apr 2000
       END IF
 #if defined (VAR_MPI)
       IF (PARCAL) WRITE (LUPRI,'(4X,A)')'Parallel calculation using MPI'
-#endif
-#if defined (VAR_PVM)
-      IF (PARCAL) WRITE (LUPRI,'(4X,A)')'Parallel calculation using PVM'
-#endif
-#if ! defined (VAR_MPI) && ! defined (VAR_PVM)
+#else
       IF (PARCAL) THEN
          WRITE (LUPRI,'(//4X,A/4X,A)')
      &      'Parallel calculation requested, but this is not a',
      &      'parallel version. Please recompile for MPI'
          CALL QUIT('Parallel calculation requested w/o MPI activated')
-!    &      'parallel version. Please recompile for MPI or PVM'
-!        CALL QUIT('Parallel calc. requested w/o MPI or PVM activated')
       END IF
 #endif
       IF (OPTWLK) THEN
@@ -1850,13 +1844,13 @@ C
       END IF
 C     "*PARALL" input
  2    CONTINUE
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         CALL PRLINP(WORD)
 #else
         WRITE (LUPRI,'(//4X,A/4X,A)')
      &    '"*PARALL" input sprecified, but this is not a parallel',
-     &    'version. Please recompile DALTON for MPI or PVM.'
-         CALL QUIT('*PARALL input specified w/o MPI or PVM activated')
+     &    'version. Please recompile DALTON for MPI.'
+         CALL QUIT('*PARALL input specified w/o MPI activated')
 #endif
       GO TO 200
 C     "*WALK  " input
@@ -1950,7 +1944,7 @@ C
       end if
 #endif
 
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       CALL PRLINP(WORD)
 #endif
       CALL OPINPU(WORD)
