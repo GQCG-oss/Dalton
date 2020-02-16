@@ -468,7 +468,7 @@ C     ----------------------------------------------------
       OPEN(UNIT=LUWFN,FILE=FNWFN,IOSTAT=IOS,ACCESS='SEQUENTIAL',
      &     FORM='FORMATTED',ERR=990)
 
-      WRITE(LUWFN,'(A80)') MLINE(NMLAU-1)
+      WRITE(LUWFN,'(A80)') MLINE(NMLINE_4-1)
 
       WRITE(LUWFN,'(A8,I3,A9,3(I3,A17))') 'DALTON  ',
      &      NVO,   'VIRTUALS ',

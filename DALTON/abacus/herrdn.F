@@ -553,6 +553,8 @@ C
 #ifdef PRG_DIRAC
 C     In Dirac we do the readin the same way whatever KEYWRD is.
 #else
+      NMLINE_1 = NMLINE ! ID for "line 1" in .mol input
+      NMLINE_basis = 0
       IF (KEYWRD(1:5) .EQ. 'BASIS') THEN
          BASIS = .TRUE.
       ELSE IF (KEYWRD .EQ. 'ATOMBA') THEN
@@ -761,12 +763,14 @@ C***********************************************************************
          J = LNBLNK(MLINE(NMLINE)(6:))
          IF (J .eq. 0) THEN
 C     Card 1b: If basis set library, basis set info may be on next card
+C              (old format from before 2019)
             CALL RDLINE(LUINFO)
 C           Read basis set name(s), set NMULBS (WK/04-11-2002).
             CALL READ_BASMUL(MLINE(NMLINE))
          ELSE
             CALL READ_BASMUL(MLINE(NMLINE)(6:))
          END IF
+         NMLINE_basis = NMLINE
       END IF
 C     Enforce computation of Cartesian second moments (WK/UniKA/04-11-2002).
 C     Sep 09/hjaaj: moved to HERINI
@@ -806,8 +810,8 @@ C***********************************************************************
       CALL LINE4(MLINE(NMLINE),NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
      &           KASYM,ID3,DOCART,DOOWN)
 C --> Angstrom or Bohr?
-      NMLAU = NMLINE
-C     .. NMLAU indentifies input line with Angstrom or Bohr indicator.
+      NMLINE_4 = NMLINE
+C     .. NMLINE_4 indentifies input line with Angstrom or Bohr indicator. ("line4")
       IF (ID3 .NE. ' ' .or. ANGS ) THEN
         ANG = .TRUE.
         IF (IPREAD .GT. 0)
@@ -5638,10 +5642,10 @@ C     The slaves get the input transferred from the master in
 C     the common block MOLINP. /hjaaj
 C
       IF (.NOT. SLAVE .AND. NMLINE .GT. NMLN_LASTREAD) THEN
-          READ (LUINFO,'(A)',END=12,ERR=11) NEXT_INPUT_LINE
-          MLINE(NMLINE) = NEXT_INPUT_LINE
+         READ (LUINFO,'(A)',END=12,ERR=11) NEXT_INPUT_LINE
+         MLINE(NMLINE) = NEXT_INPUT_LINE
       ELSE
-          NEXT_INPUT_LINE = MLINE(NMLINE)
+         NEXT_INPUT_LINE = MLINE(NMLINE)
       END IF
 
 #ifdef VAR_DEBUG
@@ -6321,9 +6325,9 @@ C     TODO : define multiple basis sets and point charges
       ELSE
          CRT = ' '
       END IF
-      WRITE(MLINE(NMLAU),'(A1,I4,I3,I2,10X,1P,D10.2)')
+      WRITE(MLINE(NMLINE_4),'(A1,I4,I3,I2,10X,1P,D10.2)')
      &     CRT,NONTYP,KCHARG,NSYMOP,THRS
-      NMLINE = NMLAU+1
+      NMLINE = NMLINE_4+1
       NHTYP  = 0
       NSETS  = 1
       IF (DOHUCKEL) THEN
@@ -6549,7 +6553,7 @@ Chj:  ILINE must now point to line with first effective line (CARD 1)
      &   '# DALTON.BAS with INTGRL directive created ',LDATE,LTIME,
      &   '# Directive in input mol file was:',
      &   '# > ',MLINE(ILINE)(1:76)
-      IF (BASIS .AND. NMLAU.EQ.5) THEN ! old BASIS input over two lines
+      IF (NMLINE_basis .EQ. NMLINE_1+1) THEN ! old BASIS input over two lines
          WRITE (LUTMP1,'(2A)')
      &   '# > ',MLINE(ILINE+1)(1:76)
          ILINE = ILINE + 2
@@ -6565,11 +6569,11 @@ Chj:  skip any additional comment lines before title lines
       IF (DOCART) CRT = 'C'
       WRITE (LUTMP1,'(A/A/A)')
      &   'INTGRL',MLINE(ILINE),MLINE(ILINE + 1)
+      WRITE(LUSHB,'(A/A)')'$BASIS',MLINE(ILINE)
       ILINE = ILINE + 2
       WRITE (LUTMP1,'(A1,I4,I3,I2,9A1,1X,D10.2)')
      &     CRT,NONTYP,KCHARG,NSYMOP,((KASYM(I,J),I=1,3),J=1,3),THRS
       ISYCNT = 1
-      WRITE(LUSHB,'(A/A)')'$BASIS',MLINE(2)
       DO 100 I = 1, NONTYP
          WRITE (LUTMP1,'(6X,F4.0,24(I5))') CHARGE(ICENT+1),NONT(I),
      &                             IQM(I),(JCO(J,I), J=1, IQM(I))

@@ -729,7 +729,7 @@ C  /molinp/
          CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
 C Arnfinn, nov -08: Sending NONTYP_QM, numbers of atomtypes except MM
          CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
-         CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NMLINE_4,1,'INTEGER',MASTER)
 C  /molinc/
          CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 C  /cbirea/
@@ -904,7 +904,7 @@ C  /molinp/
          CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
 C Arnfinn, nov -08: Sending NONTYP_QM, numbers of atomtypes except MM
          CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
-         CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NMLINE_4,1,'INTEGER',MASTER)
 C  /molinc/
          CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 C  /cbirea/
@@ -1703,7 +1703,7 @@ C  /molinp/
               CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
 C Arnfinn nov -08: Receiving number of QM atom types:
               CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
-              CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
+              CALL MPIXBCAST(NMLINE_4,1,'INTEGER',MASTER)
 C  /molinc/
               CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 C  /cbirea/
@@ -1736,12 +1736,12 @@ C
 C       In case of QM3 calculation, update number of atom types
 C       in "line 4" in the molecule file
 C       (only # of QM atom types, not # of MM atom types)
-        CALL LINE4(MLINE(NMLAU),NONTYP,NSYMOP,CRT,KCHARG,THRS,AUTOSY,
+        CALL LINE4(MLINE(NMLINE_4),NONTYP,NSYMOP,CRT,KCHARG,THRS,AUTOSY,
      &             KASYM,ID3,DOCART,DOOWN)
         AUTOSY = .FALSE.
         NOSYM  = NSYMOP.EQ.0
 !
-        CALL LINE4W(MLINE(NMLAU),NONTYP_QM,NSYMOP,KCHARG,THRS,AUTOSY,
+        CALL LINE4W(MLINE(NMLINE_4),NONTYP_QM,NSYMOP,KCHARG,THRS,AUTOSY,
      &              NOSYM,KASYM,ID3,DOCART,DOOWN)
 
 C       set local/common block information from PARINT.

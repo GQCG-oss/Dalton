@@ -2184,17 +2184,17 @@ C
 C
 C     Coordinates written are always in atomic units
 C
-      TMP_MLINE = MLINE(NMLAU)
+      TMP_MLINE = MLINE(NMLINE_4)
       CALL UPCASE(TMP_MLINE)
       IPOS = INDEX(TMP_MLINE,'ATO')
       IF (IPOS .EQ. 0) THEN
-         MLINE(NMLAU)(20:20) = ' '
+         MLINE(NMLINE_4)(20:20) = ' '
       ELSE
          IPOS = INDEX(TMP_MLINE,'ANG')
          IF (IPOS .NE. 0) THEN
-            IPOS2 = INDEX(MLINE(NMLAU)(IPOS:),' ')
+            IPOS2 = INDEX(MLINE(NMLINE_4)(IPOS:),' ')
             DO ICHARP = IPOS, IPOS + IPOS2 - 1
-               WRITE (MLINE(NMLAU)(ICHARP:ICHARP),'(A1)') ' '
+               WRITE (MLINE(NMLINE_4)(ICHARP:ICHARP),'(A1)') ' '
             END DO
          END IF
       END IF
