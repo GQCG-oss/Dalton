@@ -451,11 +451,6 @@ if(ENABLE_QFITLIB)
     add_dalton_runtest(qfit_hf_transition_charges   "dalton;qfit;short;essential")
 endif()
 
-if(ENABLE_EFS)
-    add_dalton_test(efs_b3lyp                        "dalton;efs;unknown")
-    add_dalton_test(efs_hf                           "dalton;efs;unknown")
-endif()
-
 if(ENABLE_VPOTDAMP)
     add_dalton_runtest(qmcmm "dalton;runtest;qmcmm;short")
 endif()

@@ -1033,9 +1033,8 @@ C
          END DO
       END IF
       IF (DOSPE) THEN
-         WRITE(LUPRI,'(A)') ' Single point energy will be' //
-     &        ' calculated using the basis:'
-         WRITE(LUPRI,'(6X,A)') SPBSTX
+         WRITE(LUPRI,'(/2A)') ' Single point energy will be' //
+     &        ' calculated using the basis: ',SPBSTX
       END IF
       IF (TRSTCH) THEN
          WRITE(LUPRI,'(/A/A/,(A,F10.4))')
@@ -1500,7 +1499,7 @@ C
 C#if defined (VAR_MPI)
 C      IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
 C         IJOB = 0
-C         CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,NODEID(MASTER),
+C         CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,MASTER,
 C     &                  MPI_COMM_WORLD,IERR)
 C      END IF
 C#endif
@@ -7022,9 +7021,7 @@ C     earlier but ends up with the same energy, we're having trouble.
 C     This is brutally resolved by removing all symmetry, that is the
 C     molecule has to be minimized withim the C1 point group.
 C
-      TMPLN = MLINE(1)
-      CALL UPCASE(TMPLN)
-      BASIS = (TMPLN(1:5) .EQ. 'BASIS')
+      BASIS = NMLINE_basis .gt. 0
       II = 0
       DO 49 J = 0, ITRNMR-1
          IF ((GEINFO(J,3) .LT. -0.5D0) .AND.
@@ -7032,21 +7029,24 @@ C
  49   CONTINUE
       IF (II .GT. 0) BRKALS = .TRUE.
       NOMOVE = .TRUE. ! do not center and rotate molecule in symmetry detection routine
-      TMPLN = MLINE(NMLAU)
+      TMPLN = MLINE(NMLINE_4)
       CALL UPCASE(TMPLN)
       IF (INDEX(TMPLN,'ATO') .NE. 0) THEN
-         CALL LINE4(MLINE(NMLAU),NONTYP,NSYMOP,CRT,KCHARG,THRS,
+         CALL LINE4(MLINE(NMLINE_4),NONTYP,NSYMOP,CRT,KCHARG,THRS,
      &              ADDSYM,KASYM,ID3,DOCART,DOOWN)
          AUTOSY = .TRUE.
          NOSYM = .FALSE.
          IF (BRKALS) NOSYM = .TRUE.
          ID3 = ' '
-         CALL LINE4W(MLINE(NMLAU),NONTYP,NSYMOP,KCHARG,THRS,
+         CALL LINE4W(MLINE(NMLINE_4),NONTYP,NSYMOP,KCHARG,THRS,
      &               AUTOSY,NOSYM,KASYM,ID3,DOCART,DOOWN)
       ELSE
-         READ(MLINE(NMLAU)(1:5),'(I5)') NONTYP
-         WRITE(MLINE(NMLAU)(10:20), '(A11)') '           '
-         IF (BRKALS) WRITE(MLINE(NMLAU)(10:20), '(A11)') '0          '
+         READ(MLINE(NMLINE_4)(1:5),'(I5)') NONTYP
+         IF (BRKALS) THEN ! do not detect symmetry
+            WRITE(MLINE(NMLINE_4)(10:20), '(A11)') '0          '
+         ELSE
+            WRITE(MLINE(NMLINE_4)(10:20), '(A11)') '           '
+         END IF
       END IF
 C
       IATOM = 1
@@ -7220,8 +7220,17 @@ C
 C     Basis set library has to be used for preoptimization to work
 C
       IF (BASIS) THEN
-         TMPLIN = MLINE(2)
-         MLINE(2) = PREBTX(1)
+         TMPLIN = MLINE(NMLINE_basis)
+         IF (NMLINE_basis .eq. NMLINE_1+1) THEN
+            MLINE(NMLINE_basis) = PREBTX(1)
+         ELSE IF (NMLINE_basis .eq. NMLINE_1) THEN
+            MLINE(NMLINE_basis) = 'BASIS '//PREBTX(1)
+         ELSE
+            WRITE(LUPRI,'(/A)') '.mol file error for preopt'
+            WRITE(LUPRI,*)'Line number with basis set info',NMLINE_basis
+            IF (NMLINE_basis.gt.0) WRITE(LUPRI,*) MLINE(NMLINE_basis)
+            CALL QUIT('.mol file error for preopt')
+         END IF
          PREBTX(1) = TMPLIN
          ITRNMR = ITRNMR - 1
          CALL PNCMOL(ITRNMR,IPRINT)
@@ -7287,13 +7296,27 @@ C
       CHARACTER*1 KASYM(3,3), ID3, CRT
       LOGICAL EXHER, EXSIR, EXABA, DOCART, DOOWN, AUTOSY, NOSYM, ADDSYM
 
-      TMPLIN = MLINE(2)
+      TMPLIN = MLINE(NMLINE_basis)
+         IF (NMLINE_basis .eq. NMLINE_1+1) THEN
+            MLINE(NMLINE_basis) = PREBTX(1)
+         ELSE IF (NMLINE_basis .eq. NMLINE_1) THEN
+            MLINE(NMLINE_basis) = 'BASIS '//PREBTX(1)
+         END IF
       IF (IPRE .LT. NUMPRE) THEN
-         MLINE(2) = PREBTX(IPRE+1)
+         IF (NMLINE_basis .eq. NMLINE_1+1) THEN
+            MLINE(NMLINE_basis) = PREBTX(IPRE+1)
+         ELSE IF (NMLINE_basis .eq. NMLINE_1) THEN
+            MLINE(NMLINE_basis) = 'BASIS '//PREBTX(IPRE+1)
+         ELSE
+            WRITE(LUPRI,'(/A)') '.mol file error for preopt'
+            WRITE(LUPRI,*)'Line number with basis set info',NMLINE_basis
+            IF (NMLINE_basis.gt.0) WRITE(LUPRI,*) MLINE(NMLINE_basis)
+            CALL QUIT('.mol file error for preopt')
+         END IF
          PREBTX(IPRE+1) = PREBTX(IPRE)
          PREBTX(IPRE) = TMPLIN
       ELSE
-         MLINE(2) = PREBTX(IPRE)
+         MLINE(NMLINE_basis) = PREBTX(IPRE)
          PREBTX(IPRE) = TMPLIN
          FINPRE = .TRUE.
 C
@@ -7313,7 +7336,7 @@ C
 C     If all symmetry has been removed during preoptimization, we try
 C     to detect it again after each preoptimization phase.
 C
-      TMPLIN = MLINE(NMLAU)
+      TMPLIN = MLINE(NMLINE_4)
       IF ((MAXOPR .EQ. 0) .AND. (ITRBRK .GE. 0)) THEN
          IF (INDEX(TMPLIN,'ATO') .NE. 0) THEN
             CALL LINE4(TMPLIN,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
@@ -7326,7 +7349,7 @@ C
          ELSE
             WRITE(TMPLIN(10:20), '(A11)') '           '
          END IF
-         MLINE(NMLAU) = TMPLIN
+         MLINE(NMLINE_4) = TMPLIN
          NWSYMM = .TRUE.
       END IF
       CALL PNCMOL(ITRNMR,IPRINT)
@@ -7635,7 +7658,16 @@ C
       RDINPC = .FALSE.
       RDMLIN = .FALSE.
       HRINPC = .FALSE.
-      MLINE(2) = SPBSTX
+      IF (NMLINE_basis .eq. NMLINE_1+1) THEN
+         MLINE(NMLINE_basis) = SPBSTX
+      ELSE IF (NMLINE_basis .eq. NMLINE_1) THEN
+         MLINE(NMLINE_basis) = 'BASIS '//SPBSTX
+      ELSE
+         WRITE(LUPRI,'(/A)') '.mol file error for .SP BASIS'
+         WRITE(LUPRI,*)'Line number with basis set info',NMLINE_basis
+         IF (NMLINE_basis.gt.0) WRITE(LUPRI,*) MLINE(NMLINE_basis)
+         CALL QUIT('.mol file error for .SP BASIS')
+      END IF
 C
 C     New input files are written with desired basis. Iteration number
 C     has to be decreased first in order to write to the correct filename.

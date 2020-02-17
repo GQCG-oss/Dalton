@@ -61,7 +61,7 @@ C     The definition must match that in soppa_nodedriver
       EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
      &            (info_array(3), nnewtr),    (info_array(4),noldtr),
      &            (info_array(5), idtype), (info_array(6),imodel)
-      INTEGER(MPI_INTEGER_KIND) :: IERR
+      INTEGER(MPI_INTEGER_KIND) :: IERR, numprocs
       IDTYPE = 0
 #endif
 C

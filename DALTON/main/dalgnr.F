@@ -928,7 +928,7 @@ C
 c#if defined (VAR_MPI)
 c               IF (NODTOT .GE. 1 .AND. MYNUM .EQ. 0) THEN
 c                  IJOB = 0
-c                  CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,NODEID(MASTER),
+c                  CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,MASTER,
 c     &                           MPI_COMM_WORLD,IERR)
 c                  GOTO 87
 c               END IF
@@ -1572,7 +1572,7 @@ C
             OPTWLK = .TRUE.
             DOWALK = .TRUE.
          GO TO 100
-  111    CONTINUE  ! .MAX ITerations
+  111    CONTINUE  ! .MAX ITerations ( geometry iterations )
             READ (LUCMD,*) ITERMX
          GO TO 100
   112    CONTINUE  ! .RESPONs
@@ -1722,18 +1722,12 @@ C     ... default print level for statistics /hjaaj apr 2000
       END IF
 #if defined (VAR_MPI)
       IF (PARCAL) WRITE (LUPRI,'(4X,A)')'Parallel calculation using MPI'
-#endif
-#if defined (VAR_PVM)
-      IF (PARCAL) WRITE (LUPRI,'(4X,A)')'Parallel calculation using PVM'
-#endif
-#if ! defined (VAR_MPI) && ! defined (VAR_PVM)
+#else
       IF (PARCAL) THEN
          WRITE (LUPRI,'(//4X,A/4X,A)')
      &      'Parallel calculation requested, but this is not a',
      &      'parallel version. Please recompile for MPI'
          CALL QUIT('Parallel calculation requested w/o MPI activated')
-!    &      'parallel version. Please recompile for MPI or PVM'
-!        CALL QUIT('Parallel calc. requested w/o MPI or PVM activated')
       END IF
 #endif
       IF (OPTWLK) THEN
@@ -1850,13 +1844,13 @@ C
       END IF
 C     "*PARALL" input
  2    CONTINUE
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         CALL PRLINP(WORD)
 #else
         WRITE (LUPRI,'(//4X,A/4X,A)')
      &    '"*PARALL" input sprecified, but this is not a parallel',
-     &    'version. Please recompile DALTON for MPI or PVM.'
-         CALL QUIT('*PARALL input specified w/o MPI or PVM activated')
+     &    'version. Please recompile DALTON for MPI.'
+         CALL QUIT('*PARALL input specified w/o MPI activated')
 #endif
       GO TO 200
 C     "*WALK  " input
@@ -1950,7 +1944,7 @@ C
       end if
 #endif
 
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       CALL PRLINP(WORD)
 #endif
       CALL OPINPU(WORD)
@@ -2040,7 +2034,7 @@ C
 C
 C     We are going to do parallel I/O. Inform the slaves about this
 C
-      CALL MPI_BCAST(PARIO,1,MPI_LOGICAL,NODEID(MASTER),MPI_COMM_WORLD,
+      CALL MPI_BCAST(PARIO,1,my_MPI_LOGICAL,MASTER,MPI_COMM_WORLD,
      &               IERR)
 C
 C     Read in Dalton input. Save it temporarily MLINE
@@ -2079,9 +2073,9 @@ C
  5030    READ (LUCMD,'(A8)',END=5010) MLINE(JLINE)
          JLINE = JLINE + 1
          GOTO 5030
- 5010    CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,NODEID(MASTER),
+ 5010    CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,NODEID(MASTER),
+         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL GPCLOSE(LUCMD,'KEEP')
 C
@@ -2096,9 +2090,9 @@ C
  6030    READ (LUMOL,'(A80)',END=6010) MLINE(JLINE)
          JLINE = JLINE + 1
          GOTO 6030
- 6010    CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,NODEID(MASTER),
+ 6010    CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,NODEID(MASTER),
+         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL GPCLOSE(LUMOL,'KEEP')
       ELSE
@@ -2120,17 +2114,22 @@ C
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      INCLUDE 'mpif.h'
 #include "priunit.h"
 #include "inftap.h"
 #include "molinp.h"
 #include "infpar.h"
 #include "pario.h"
+
+      INCLUDE 'mpif.h'
 C
 C     We start by waiting for the master to tell us whether we will do
 C     parallel I/O or not
 C
-      CALL MPI_BCAST(PARIO,1,MPI_LOGICAL,NODEID(MASTER),MPI_COMM_WORLD,
+#ifdef VAR_INT64
+      call quit(
+     &'Routine PARION is not revised for int64 code and int32 mpi')
+#endif
+      CALL MPI_BCAST(PARIO,1,my_MPI_LOGICAL,MASTER,MPI_COMM_WORLD,
      &               IERR)
       IF (PARIO) THEN
          CALL GETENV('WRKDIR',WRKDIR)
@@ -2148,9 +2147,9 @@ C
      &               .FALSE.)
          CALL GPOPEN(LUMOL,'MOLECULE.INP','NEW',' ','FORMATTED',IDUMMY,
      &               .FALSE.)
-         CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,NODEID(MASTER),
+         CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,NODEID(MASTER),
+         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          REWIND (LUCMD)
          DO ILINE = 1, JLINE
@@ -2160,9 +2159,9 @@ C
 C
 C     We have written DALTON.INP. Now we collect and write MOLECULE.INP
 C
-         CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,NODEID(MASTER),
+         CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,NODEID(MASTER),
+         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          REWIND (LUMOL)
          DO ILINE = 1, JLINE

@@ -71,7 +71,7 @@ C
 #ifdef VAR_MPI
       INTEGER   CP_ISYMTR
       INTEGER :: MAXNUMJOBS
-C     This array is only there to ensure that the four above variables
+C     This array is only there to ensure that the six above variables
 C     are allocated consecutively, so that it can be send together. Only
 C     use it for this purpose.
 C     The definition must match that in soppa_nodedriver
@@ -79,7 +79,7 @@ C     The definition must match that in soppa_nodedriver
       EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
      &            (info_array(3), nnewtr),    (info_array(4),noldtr),
      &            (info_array(5), idtype), (info_array(6),imodel)
-      INTEGER(MPI_INTEGER_KIND) :: IERR
+      INTEGER(MPI_INTEGER_KIND) :: IERR, numprocs
 #endif
 C
 C------------------

@@ -31,10 +31,16 @@ module one_sided_communication_wrappers
 
   private
 #include "priunit.h"
-  integer                        :: ierr
   integer(kind=MPI_ADDRESS_KIND) :: lower_bound
   integer(kind=MPI_ADDRESS_KIND) :: size_dp
-  integer                        :: istat(mpi_status_size)
+  !---
+  integer(kind=MPI_INTEGER_KIND) :: ierr
+  integer(kind=MPI_INTEGER_KIND) :: my_win_mpi
+  integer(kind=MPI_INTEGER_KIND) :: istat(mpi_status_size)
+  integer(kind=MPI_INTEGER_KIND) :: jcount_mpi, win_lock_mode_mpi, jcount_t_mpi
+  integer(kind=MPI_INTEGER_KIND) :: itarget_mpi
+  integer(kind=MPI_INTEGER_KIND) :: datatype_out = mpi_real8
+  integer(kind=MPI_INTEGER_KIND) :: datatype_in  = mpi_real8
 
 contains
 
@@ -69,22 +75,25 @@ contains
   logical, intent(in)                        :: lock_active
   integer(kind=MPI_ADDRESS_KIND), intent(in) :: idispl
 !-------------------------------------------------------------------------------
-  integer                                    :: datatype_out = mpi_real8
-  integer                                    :: datatype_in  = mpi_real8
-!-------------------------------------------------------------------------------
 !
+      my_win_mpi        = my_win
+      win_lock_mode_mpi = win_lock_mode
+      itarget_mpi       = itarget
+      jcount_mpi        = jcount
+      jcount_t_mpi      = jcount_t
+
 !     lock window (MPI_LOCK_SHARED mode)
-      if(lock_active) call mpi_win_lock(win_lock_mode,itarget,mpi_mode_nocheck,my_win,ierr)
+      if(lock_active) call mpi_win_lock(win_lock_mode_mpi,itarget_mpi,mpi_mode_nocheck,my_win_mpi,ierr)
 
 !     print *, 'my_win, itarget, myid, jcount,idispl,jcount_t,datatype_in',&
 !               my_win, itarget, myid, jcount,idispl,jcount_t,datatype_in
         
 !
 !     transfer data     
-      call mpi_get(rbuf,jcount,datatype_out,itarget,idispl,jcount_t,datatype_in,my_win,ierr)
+      call mpi_get(rbuf,jcount_mpi,datatype_out,itarget_mpi,idispl,jcount_t_mpi,datatype_in,my_win_mpi,ierr)
 !
 !     unlock
-      if(lock_active) call mpi_win_unlock(itarget,my_win,ierr)
+      if(lock_active) call mpi_win_unlock(itarget_mpi,my_win_mpi,ierr)
 !
   end subroutine mpixget
 !*******************************************************************************
@@ -121,30 +130,35 @@ contains
   integer(kind=MPI_ADDRESS_KIND), intent(in) :: idispl
   logical, intent(in), optional              :: lock_active
 !-------------------------------------------------------------------------------
-  integer                                    :: datatype_out = mpi_real8
-  integer                                    :: datatype_in  = mpi_real8
   logical                                    :: lock
 !-------------------------------------------------------------------------------
+!
+      my_win_mpi        = my_win
+      win_lock_mode_mpi = win_lock_mode
+      itarget_mpi       = itarget
+      jcount_mpi        = jcount
+      jcount_t_mpi      = jcount_t
+
       lock = .true.
       if(present(lock_active)) lock = lock_active
 !
 !     lock window (MPI_LOCK_SHARED mode)
-      if(lock) call mpi_win_lock(win_lock_mode,itarget,mpi_mode_nocheck,my_win,ierr)
+      if(lock) call mpi_win_lock(win_lock_mode_mpi,itarget_mpi,mpi_mode_nocheck,my_win_mpi,ierr)
 
 !     accumulate data
       call mpi_accumulate(rbuf,        &
-                          jcount,      &
+                          jcount_mpi,  &
                           datatype_in, & 
-                          itarget,     &
+                          itarget_mpi, &
                           idispl,      &
-                          jcount_t,    &
+                          jcount_t_mpi,&
                           datatype_out,&
                           mpi_sum,     &
-                          my_win,      &
+                          my_win_mpi,  &
                           ierr)
 
 !     unlock window
-      if(lock) call mpi_win_unlock(itarget,my_win,ierr)
+      if(lock) call mpi_win_unlock(itarget_mpi,my_win_mpi,ierr)
 
   end subroutine mpixaccum
 !*******************************************************************************
@@ -174,9 +188,11 @@ contains
   integer, intent(in)                        :: win_info
   integer, intent(out)                       :: my_win
   integer(kind=MPI_ADDRESS_KIND), intent(in) :: nelement
-!-------------------------------------------------------------------------------
   integer(kind=MPI_ADDRESS_KIND)             :: buf_len
-  integer                                    :: size_dp_local
+!-------------------------------------------------------------------------------
+  integer(kind=MPI_INTEGER_KIND)             :: size_dp_local
+  integer(kind=MPI_INTEGER_KIND)             :: win_info_mpi
+  integer(kind=MPI_INTEGER_KIND)             :: win_comm_mpi
   integer                                    :: memory_model
   logical                                    :: flag
 !-------------------------------------------------------------------------------
@@ -187,12 +203,14 @@ contains
 !
       call mpi_type_get_extent(mpi_real8,lower_bound,size_dp,ierr)
 
-      buf_len       = 0
       buf_len       = size_dp * nelement
       size_dp_local = size_dp
+      win_info_mpi  = win_info
+      win_comm_mpi  = win_communicator
 !
 !     write(*,*) 'opening window: my_win,myid', my_win,myid
-      call mpi_win_create(rbuf,buf_len,size_dp_local,win_info,win_communicator,my_win,ierr)
+      call mpi_win_create(rbuf,buf_len,size_dp_local,win_info_mpi,win_comm_mpi,my_win_mpi,ierr)
+      my_win = my_win_mpi
 !mpi-3call mpi_win_get_attr(my_win, mpi_win_model, memory_model, flag, ierr)
 !
 !     write(*,*) ' window opened: my_win,myid', my_win,myid
@@ -214,12 +232,12 @@ contains
   integer, intent(in)    :: myid
   integer, intent(inout) :: my_win
 !-------------------------------------------------------------------------------
-!-------------------------------------------------------------------------------
 !
 !     close memory window on each process within the communication group
 !
 !     write(*,*) ' closing window', my_win,myid
-      call mpi_win_free(my_win,ierr)
+      my_win_mpi = my_win
+      call mpi_win_free(my_win_mpi,ierr)
 !
 !     write(*,*) ' window closed', my_win,myid
 !

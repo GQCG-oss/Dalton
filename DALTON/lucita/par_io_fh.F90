@@ -34,8 +34,8 @@ module file_io_model
 
   save
 
-  integer, private                       :: istat(MPI_STATUS_SIZE)
-  integer, private                       :: ierr
+  integer(kind=MPI_INTEGER_KIND)         :: istat(MPI_STATUS_SIZE)
+  integer(kind=MPI_INTEGER_KIND)         :: ierr
   integer, parameter                     :: flabel_length = 14
 
 contains 
@@ -73,7 +73,9 @@ contains
 !-------------------------------------------------------------------------------
      integer                          :: i  
      integer                          :: j  
-     integer                          :: file_info_obj
+     integer(kind=MPI_INTEGER_KIND)   :: file_info_obj
+     integer(kind=MPI_INTEGER_KIND)   :: comm_iogrp_mpi
+     integer(kind=MPI_INTEGER_KIND)   :: fh_array_mpi
      integer(kind=MPI_OFFSET_KIND)    :: displacement
      character (len=  4)              :: file_info_groupsz
      character (len=  4)              :: fstring
@@ -108,11 +110,13 @@ contains
         write(flabel,'(a5,a4,a1,a4)') file_identification,fstring,'.',gstring
       
 !       step c. open the file
-        call mpi_file_open(communicator_io_group,flabel(1:flabel_length),              &
+        comm_iogrp_mpi = communicator_io_group
+        fh_array_mpi = fh_array(i)
+        call mpi_file_open(comm_iogrp_mpi,flabel(1:flabel_length),                     &
                            MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE, &
-                           file_info_obj,fh_array(i),ierr)
+                           file_info_obj,fh_array_mpi,ierr)
 !       step d. set fileview
-        call mpi_file_set_view(fh_array(i),displacement,MPI_REAL8,MPI_REAL8,           &
+        call mpi_file_set_view(fh_array_mpi,displacement,MPI_REAL8,MPI_REAL8,           &
                                "native",file_info_obj,ierr)
       end do
 
@@ -135,10 +139,12 @@ contains
      integer, intent(inout) :: fh_array(nr_files+fh_offset)
 !-------------------------------------------------------------------------------
      integer                :: i
+     integer(kind=MPI_INTEGER_KIND)   :: fh_array_mpi
 !-------------------------------------------------------------------------------
 
       do i = 1, nr_files
-        call mpi_file_close(fh_array(i+fh_offset),ierr)
+        fh_array_mpi = fh_array(i+fh_offset)
+        call mpi_file_close(fh_array_mpi,ierr)
       end do
      
   end subroutine close_file_io_model

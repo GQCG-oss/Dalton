@@ -672,7 +672,7 @@ cC     We let the slaves wait for the Master to tell them whether to pick up
 cC     a new geometry or to end this calculation
 cC
 c      IF (MYNUM .GT. 0) THEN
-c         CALL MPI_BCAST(NTASK,1,my_MPI_INTEGER,NODEID(MASTER),
+c         CALL MPI_BCAST(NTASK,1,my_MPI_INTEGER,MASTER,
 c     &                 MPI_COMM_WORLD,IERR)
 c         IF (NTASK .EQ. 1) THEN
 c            CALL PARION
@@ -680,7 +680,7 @@ c            RDINPC = .FALSE.
 c            CALL READIN(WORK,LWORK,.FALSE.)
 c            GOTO 100
 c         ELSE IF (NTASK .EQ. 0) THEN
-c            CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
+c            CALL MPI_BCAST(FINISH,1,my_MPI_LOGICAL,MASTER,
 c     &                  MPI_COMM_WORLD,IERR)
 c            CALL MPI_FINALIZE(IERR)
 c            CALL SYSTEM('rm -f $SCRATCHDIR/*')
@@ -710,13 +710,22 @@ C        Resetting variables for property derivatives
          NAORDR = 0
          PRPONL = .TRUE.
 
-C        Setting basis set line in .mol file to property basis
-         MLINE(2) = PRPBTX
-
 C        Better tell people, what we are doing
          WRITE (LUPRI,'(//80A1/)') ('*' , I = 1,80)
          CALL TITLER('@ Calculating property derivatives.','*',124)
-         CALL TITLER( '@ Basis set changed to '//PRPBTX,'*',103)
+         CALL TITLER('@ Basis set changed to '//PRPBTX,'*',103)
+
+C        Setting basis set line in .mol file to property basis
+         IF (NMLINE_basis .eq. NMLINE_1+1) THEN
+            MLINE(NMLINE_basis) = PRPBTX
+         ELSE IF (NMLINE_basis .eq. NMLINE_1) THEN
+            MLINE(NMLINE_basis) = 'BASIS '//PRPBTX
+         ELSE
+            WRITE(LUPRI,'(/A)') '.mol file error for .P-BASIS'
+            WRITE(LUPRI,*)'Line number with basis set info',NMLINE_basis
+            IF (NMLINE_basis.gt.0) WRITE(LUPRI,*) MLINE(NMLINE_basis)
+            CALL QUIT('.mol file error for .P-BASIS')
+         END IF
 
 C        Rerun NUMDR1 + Preceeding memory allocations
          GOTO 100
@@ -1379,7 +1388,7 @@ C
       NTYPE  = 3
       LASTE  = .FALSE.
       NOSYM  = .FALSE.
-      MLINE_in_upcase = MLINE(NMLAU)
+      MLINE_in_upcase = MLINE(NMLINE_4)
       CALL UPCASE(MLINE_in_upcase)
       IPOS = INDEX(MLINE_in_upcase,'ATO')
       IF (IPOS .EQ. 0) THEN
@@ -1623,9 +1632,9 @@ c     &              FUNVAL(IPOS) = FTVAL(IPOS)
 c            END DO
 c         END DO
 c      ELSE
-c         CALL MPI_SEND(MYNUM,1,my_MPI_INTEGER,NODEID(MASTER),
+c         CALL MPI_SEND(MYNUM,1,my_MPI_INTEGER,MASTER,
 c     &                 65,MPI_COMM_WORLD,IERR)
-c         CALL MPI_SEND(FTVAL,NDIME,MPI_DOUBLE_PRECISION,NODEID(MASTER),
+c         CALL MPI_SEND(FTVAL,NDIME,MPI_DOUBLE_PRECISION,MASTER,
 c     &                 65,MPI_COMM_WORLD,IERR)
 c      END IF
 c#else
@@ -2161,23 +2170,23 @@ C
          NADD   = 0
          IATOM  = 0
          NCLAST = 0
-         MLINE_in_upcase = MLINE(NMLAU)
+         MLINE_in_upcase = MLINE(NMLINE_4)
          CALL UPCASE(MLINE_in_upcase)
          IPOS = INDEX(MLINE_in_upcase,'ATO')
          IF (IPOS .EQ. 0) THEN
-            IF (MLINE(NMLAU)(10:10).EQ.'0') THEN
-               MLINE(NMLAU)(20:20) = ' '
+            IF (MLINE(NMLINE_4)(10:10).EQ.'0') THEN
+               MLINE(NMLINE_4)(20:20) = ' '
             ELSE
-               MLINE(NMLAU)(10:20) = '           '
+               MLINE(NMLINE_4)(10:20) = '           '
             END IF
          ELSE
-            CALL LINE4(MLINE(NMLAU),NONTYP,NSYMOP,CRT,KCHARG,THRS,
+            CALL LINE4(MLINE(NMLINE_4),NONTYP,NSYMOP,CRT,KCHARG,THRS,
      &                 ADDSYM,KASYM,ID3,DOCART,DOOWN)
             AUTOSY = .TRUE.
             NOSYM = .FALSE.
             ID3 = ' '
-            CALL LINE4W(MLINE(NMLAU),NONTYP,NSYMOP,KCHARG,THRS,AUTOSY,
-     &                  NOSYM,KASYM,ID3,DOCART,DOOWN)
+            CALL LINE4W(MLINE(NMLINE_4),NONTYP,NSYMOP,KCHARG,THRS,
+     &                  AUTOSY,NOSYM,KASYM,ID3,DOCART,DOOWN)
          END IF
          DO 200 ICENT = 1, NUCIND
             ISYM   = 0
@@ -2247,7 +2256,7 @@ C
                   NAT = NAT + NUCDEG(IC)
  800           CONTINUE
                IF (NEWINP) THEN
-                  MLINE_in_upcase = MLINE(1)
+                  MLINE_in_upcase = MLINE(NMLINE_1)
                   CALL UPCASE(MLINE_in_upcase)
                   IF (MLINE_in_upcase(1:5) .EQ. 'BASIS') BASIS  = .TRUE.
                   IF (MLINE_in_upcase(1:5) .EQ. 'ATOMB') ATOMBA = .TRUE.

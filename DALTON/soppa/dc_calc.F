@@ -54,8 +54,8 @@ C     The definition must match that in soppa_nodedriver
       EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
      &            (info_array(3), nnewtr),    (info_array(4),noldtr),
      &            (info_array(5), idtype), (info_array(6),imodel)
-      INTEGER(MPI_INTEGER_KIND) :: IERR
-C      IF (NUMPROCS .GT. 1) CALL PARQUIT('RPA(D)')
+      INTEGER(MPI_INTEGER_KIND) :: ierr_mpi, numprocs_mpi
+C      IF (numprocs_mpi .GT. 1) CALL PARQUIT('RPA(D)')
       IDTYPE = 0
 #endif
 C
@@ -88,9 +88,9 @@ C     For MPI, we need some space in which to store the indices each
 C     process is to work with in so_eres.
 C------------------------------------------------------------------
 C
-      call mpi_comm_size( mpi_comm_world, numprocs, ierr)
-      maxnumjobs = soppa_nint - min(soppa_nint, numprocs) + 1
-      if ( numprocs .eq. 1 ) then
+      call mpi_comm_size( mpi_comm_world, numprocs_mpi, ierr_mpi)
+      maxnumjobs = soppa_nint - min(soppa_nint, numprocs_mpi) + 1
+      if ( numprocs_mpi .eq. 1 ) then
 C Not a real parallel job, don't bother
          lAssignedIndices = 1
          kAssignedIndices = 0
@@ -122,11 +122,11 @@ C
 C In parallel, send slaves to so_eres
 C
          call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
-     &                   mpi_comm_world, ierr )
+     &                   mpi_comm_world, ierr_mpi )
 C ISYMTR is a non-local parameter, we need to copy it to the info-array
          CP_ISYMTR = ISYMTR
          CALL MPI_BCAST( INFO_ARRAY, 6, MY_MPI_INTEGER, 0,
-     &                   MPI_COMM_WORLD, IERR)
+     &                   MPI_COMM_WORLD, ierr_mpi)
 #endif
 CPi 18.08.16: Copy from so_lrsolv
       CALL GETTIM (DUMMY,WTIMES)

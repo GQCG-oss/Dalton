@@ -136,7 +136,7 @@
                                      nary_tree_bra=nary_tree_bra,     &  !geometric derivatives on bra center
                                      nary_tree_ket=nary_tree_ket,     &  !geometric derivatives on ket center
                                      nary_tree_total=nary_tree_total, &  !total geometric derivatives
-                                     api_comm=api_comm,               &  !optional
+                                     api_comm_mpi=api_comm_mpi,       &  !optional
                                      num_ints=num_ints,               &
                                      val_ints=val_ints,               &  !optional
                                      write_ints=write_ints,           &  !optional

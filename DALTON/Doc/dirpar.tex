@@ -114,30 +114,6 @@ calculation and distribution of tasks, thus very little computation
 compared to the \verb|N-1| slaves, see
 Ref.~\cite{pndjhapdkrthhkcpl253}.
 
-%In case of PVM runs, the program will spawn the requested number of
-%slaves (enabling you to create a slave on the same machine as the
-%master process in order to provide a more efficient use of the CPU
-%power on the master machine). The number of slaves is requested
-%through the keyword \Key{NODES} in the \Sec{PARALLEL} input module, as
-%indicated in the following example: 
-%
-%\begin{verbatim}
-%**DALTON INPUT
-%.RUN PROPERTIES
-%.PARALLEL
-%*PARALLEL
-%.NODES
-% 4
-%**WAVE FUNCTIONS
-%.HF
-%**PROPERTIES
-%.SHIELD
-%**END OF DALTON INPUT
-%\end{verbatim}
-
-%Note that this input would correspond to an MPI run with 5 nodes, as
-%the master-process has to be added to the number of nodes.
-
 By default the two-electron integrals will be
 screened~\cite{krdjpnhatshjajpdthjcp108}, using an increasingly
 tighter integral screening threshold during the SCF iterations. Thus,

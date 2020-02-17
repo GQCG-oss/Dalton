@@ -31,10 +31,12 @@ C
 C  /* Deck mpixinit */
       SUBROUTINE MPIXINIT
 C
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
+
+      integer i
 C
 #if !defined (VAR_MPI)
       MYNUM  = 0
@@ -42,20 +44,23 @@ C
       NODTOT = 0
 #else
       INCLUDE 'mpif.h'
+      integer(kind=MPI_INTEGER_KIND) :: ierr_mpi, value_mpi
 C
 #ifndef VAR_CHEMSHELL
-      CALL MPI_INIT(IERR)
-      IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
+      CALL MPI_INIT(ierr_mpi)
+      IF (ierr_mpi.GT.0) CALL MPI_MYFAIL(ierr_mpi)
 #endif
 C
-      CALL MPI_COMM_RANK(MPI_COMM_WORLD,MYNUM,IERR)
+      CALL MPI_COMM_RANK(MPI_COMM_WORLD,value_mpi,ierr_mpi)
+      MYNUM = value_mpi
 #if defined(CRI_MEMTRACE)
       IF (MYNUM .LE. 1) CALL MEMTRACE(1)
 #else
-      IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
+      IF (ierr_mpi.GT.0) CALL MPI_MYFAIL(ierr_mpi)
 #endif
-      CALL MPI_COMM_SIZE(MPI_COMM_WORLD,NODTOT,IERR)
-      IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
+      CALL MPI_COMM_SIZE(MPI_COMM_WORLD,value_mpi,ierr_mpi)
+      NODTOT = value_mpi
+      IF (ierr_mpi.GT.0) CALL MPI_MYFAIL(ierr_mpi)
 C
 C     One process is lost as the master
 C
@@ -73,9 +78,6 @@ C
         CALL QUIT('MPI ERROR: Number of nodes requested is too large.')
       ENDIF
 C
-      DO I = 0, NODTOT
-         NODEID(I) = I
-      END DO
 #endif
 C
       RETURN
@@ -83,146 +85,263 @@ C
 C  /* Deck mpifinalize */
       SUBROUTINE MPIXFINALIZE
 C
-#include "implicit.h"
-#include "priunit.h"
+#ifndef VAR_CHEMSHELL
 #if defined (VAR_MPI)
+      implicit none
       INCLUDE 'mpif.h'
 C
-#ifndef VAR_CHEMSHELL
-      CALL MPI_FINALIZE(IERR)
-      IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
+      integer(kind=MPI_INTEGER_KIND) ierr_mpi
+      CALL MPI_FINALIZE(ierr_mpi)
+      IF (ierr_mpi.GT.0) CALL MPI_MYFAIL(ierr_mpi)
 #endif
 #endif
 C
       RETURN
       END
 C  /* Deck mpixbcast */
-      SUBROUTINE MPIXBCAST(BUFFER,COUNT,TYPE,ROOT)
+      SUBROUTINE MPIXBCAST(BUFFER,BUF_COUNT,TYPE_in,ROOT)
 C
-#include "implicit.h"
-#include "priunit.h"
 #if defined (VAR_MPI)
+      implicit none
+#include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
       INCLUDE 'mpif.h'
-      CHARACTER*6 TYPE
-      INTEGER COUNT, DATATYPE, ROOT
-      DIMENSION BUFFER(*)
+      CHARACTER*6 TYPE_in
+      INTEGER BUF_COUNT,  ROOT
+      INTEGER BUFFER(*) ! does not matter if wrong type here
+      integer(kind=MPI_INTEGER_KIND) buf_count_mpi, root_mpi
+      integer(kind=MPI_INTEGER_KIND) DATATYPE, ierr_mpi
 C
-      IF      (TYPE .EQ. 'INTEGE') THEN
+      IF      (TYPE_in .EQ. 'INTEGE') THEN
          DATATYPE = my_MPI_INTEGER
-      ELSE IF (TYPE .EQ. 'LOGICA') THEN
-         DATATYPE = MPI_LOGICAL
-      ELSE IF (TYPE .EQ. 'DOUBLE') THEN
+      ELSE IF (TYPE_in .EQ. 'LOGICA') THEN
+         DATATYPE = my_MPI_LOGICAL
+      ELSE IF (TYPE_in .EQ. 'DOUBLE') THEN
          DATATYPE = MPI_DOUBLE_PRECISION
-      ELSE IF (TYPE .EQ. 'STRING' .OR. TYPE .EQ. 'CHARAC') THEN
+      ELSE IF (TYPE_in .EQ. 'STRING' .OR. TYPE_in .EQ. 'CHARAC') THEN
          DATATYPE = MPI_CHARACTER
       ELSE
-         WRITE(LUPRI,*) ' TYPE :',TYPE,' does not exist!'
-         WRITE(*,*) ' TYPE :',TYPE,' does not exist!'
+         WRITE(LUPRI,*)
+     &   'MPIXBCAST: DATA TYPE ',TYPE_in,' does not exist!'
+         WRITE(*,*) 'MPIXBCAST: DATA TYPE ',TYPE_in,' does not exist!'
+         WRITE(*,*) ' TYPE :',TYPE_in,' does not exist!'
          CALL QUIT('ERROR in MPIXBCAST: Nonexisting DATATYPE')
       END IF
-      CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,ROOT,MPI_COMM_WORLD,IERR)
-      IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
+
+      buf_count_mpi = BUF_COUNT
+      root_mpi      = ROOT
+      CALL MPI_BCAST(BUFFER,BUF_COUNT_mpi,DATATYPE,ROOT_mpi,
+     &   MPI_COMM_WORLD,ierr_mpi)
+      IF (ierr_mpi.GT.0) CALL MPI_MYFAIL(ierr_mpi)
 #endif
 C
       RETURN
       END
 C  /* Deck mpixrecv */
-      SUBROUTINE MPIXRECV(BUFFER,COUNT,TYPE,SOURCE,TAG)
+      SUBROUTINE MPIXRECV(BUFFER,BUF_COUNT,TYPE_in,SOURCE,TAG)
 C
-#include "implicit.h"
-#include "priunit.h"
 #if defined (VAR_MPI)
+      implicit none
+#include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
       INCLUDE 'mpif.h'
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-      CHARACTER*6 TYPE
-      INTEGER COUNT, DATATYPE, SOURCE, TAG
-      DIMENSION BUFFER(*)
+      CHARACTER*6 TYPE_in
+      INTEGER BUF_COUNT, SOURCE, TAG
+      REAL*8  BUFFER(*)
+
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) buf_count_mpi,source_mpi,tag_mpi
+      integer(kind=MPI_INTEGER_KIND) DATATYPE,ierr_mpi
 C
-      IF      (TYPE .EQ. 'INTEGE') THEN
+      IF      (TYPE_in .EQ. 'INTEGE') THEN
          DATATYPE = my_MPI_INTEGER
-      ELSE IF (TYPE .EQ. 'LOGICA') THEN
-         DATATYPE = MPI_LOGICAL
-      ELSE IF (TYPE .EQ. 'DOUBLE') THEN
+      ELSE IF (TYPE_in .EQ. 'LOGICA') THEN
+         DATATYPE = my_MPI_LOGICAL
+      ELSE IF (TYPE_in .EQ. 'DOUBLE') THEN
          DATATYPE = MPI_DOUBLE_PRECISION
-      ELSE IF (TYPE .EQ. 'STRING' .OR. TYPE .EQ. 'CHARAC') THEN
+      ELSE IF (TYPE_in .EQ. 'STRING' .OR. TYPE_in .EQ. 'CHARAC') THEN
          DATATYPE = MPI_CHARACTER
       ELSE
-         WRITE(LUPRI,*) ' TYPE :',TYPE,' does not exist!'
+         WRITE(LUPRI,*) ' TYPE :',TYPE_in,' does not exist!'
          CALL QUIT('ERROR in MPIXRECV: Nonexisting DATATYPE')
       END IF
+      buf_count_mpi = BUF_COUNT
+      tag_mpi       = TAG
       IF (SOURCE.EQ.-1) THEN
-         CALL MPI_RECV(BUFFER,COUNT,DATATYPE,MPI_ANY_SOURCE,TAG,
-     &                 MPI_COMM_WORLD,my_STATUS,IERR)
+         CALL MPI_RECV(BUFFER,BUF_COUNT_mpi,DATATYPE,MPI_ANY_SOURCE,
+     &                 TAG_mpi,MPI_COMM_WORLD,my_STATUS,ierr_mpi)
          SOURCE = my_STATUS(MPI_SOURCE)
       ELSE
-         CALL MPI_RECV(BUFFER,COUNT,DATATYPE,SOURCE,TAG,
-     &                 MPI_COMM_WORLD,my_STATUS,IERR)
+         SOURCE_mpi = SOURCE
+         CALL MPI_RECV(BUFFER,BUF_COUNT_mpi,DATATYPE,SOURCE_mpi,
+     &                 TAG_mpi,MPI_COMM_WORLD,my_STATUS,ierr_mpi)
       END IF
-      IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
+      IF (ierr_mpi.GT.0) THEN
+         write (lupri,*) 'ERROR: problem in MPIXRECV, ierr =',ierr_mpi
+         write (lupri,*) '- count,source,tag: ',BUF_count,source_mpi,tag
+         write (lupri,*) '- calling MPI_MYFAIL ...'
+         CALL MPI_MYFAIL(ierr_mpi)
+      END IF
 #endif
 C
       RETURN
       END
 C  /* Deck mpixsend */
-      SUBROUTINE MPIXSEND(BUFFER,COUNT,TYPE,DEST,TAG)
+      SUBROUTINE MPIXSEND(BUFFER,BUF_COUNT,TYPE_in,DEST,TAG)
 C
-#include "implicit.h"
-#include "priunit.h"
 #if defined (VAR_MPI)
+      integer none
+#include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
       INCLUDE 'mpif.h'
-      CHARACTER*6 TYPE
-      INTEGER COUNT, DATATYPE, DEST, TAG
-      DIMENSION BUFFER(*)
+      CHARACTER*6 TYPE_in
+      INTEGER BUF_COUNT, DEST, TAG
+      REAL*8  BUFFER(*)
+
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) buf_count_mpi,dest_mpi,tag_mpi
+      integer(kind=MPI_INTEGER_KIND) DATATYPE,ierr_mpi
 C
-      IF      (TYPE .EQ. 'INTEGE') THEN
+      IF      (TYPE_in .EQ. 'INTEGE') THEN
          DATATYPE = my_MPI_INTEGER
-      ELSE IF (TYPE .EQ. 'LOGICA') THEN
-         DATATYPE = MPI_LOGICAL
-      ELSE IF (TYPE .EQ. 'DOUBLE') THEN
+      ELSE IF (TYPE_in .EQ. 'LOGICA') THEN
+         DATATYPE = my_MPI_LOGICAL
+      ELSE IF (TYPE_in .EQ. 'DOUBLE') THEN
          DATATYPE = MPI_DOUBLE_PRECISION
-      ELSE IF (TYPE .EQ. 'STRING' .OR. TYPE .EQ. 'CHARAC') THEN
+      ELSE IF (TYPE_in .EQ. 'STRING' .OR. TYPE_in .EQ. 'CHARAC') THEN
          DATATYPE = MPI_CHARACTER
       ELSE
-         WRITE(LUPRI,*) ' MPIXSEND : TYPE "',TYPE,'" does not exist!'
-         CALL QUIT('ERROR in MPIXBCAST: Nonexisting DATATYPE')
+         WRITE(LUPRI,*) ' MPIXSEND : TYPE "',TYPE_in,'" does not exist!'
+         CALL QUIT('ERROR in MPIXSEND: Nonexisting DATATYPE')
       END IF
-      CALL MPI_SEND(BUFFER,COUNT,DATATYPE,DEST,TAG,MPI_COMM_WORLD,IERR)
-      IF (IERR.GT.0) THEN
-         write (lupri,*) 'ERROR: problem in MPIXSEND, ierr =',IERR
-         write (lupri,*) '- count,dest,tag: ',count,dest,tag
+      buf_count_mpi = buf_count
+      dest_mpi      = DEST
+      tag_mpi       = TAG
+      CALL MPI_SEND(BUFFER,BUF_COUNT_mpi,DATATYPE,DEST_mpi,TAG_mpi,
+     &   MPI_COMM_WORLD,ierr_mpi)
+      IF (ierr_mpi.GT.0) THEN
+         write (lupri,*) 'ERROR: problem in MPIXSEND, ierr =',ierr_mpi
+         write (lupri,*) '- count,dest,tag: ',BUF_count,dest,tag
          write (lupri,*) '- calling MPI_MYFAIL ...'
-         CALL MPI_MYFAIL(IERR)
+         CALL MPI_MYFAIL(ierr_mpi)
       END IF
 #endif
+      END
+
+      SUBROUTINE MPIX_ISEND(BUFFER,BUF_COUNT,BUF_TYPE,DEST,REQUEST,TAG)
 C
-      RETURN
+#if defined (VAR_MPI)
+      implicit none
+#include "priunit.h"
+      CHARACTER*6 BUF_TYPE
+      INTEGER     BUFFER(*) ! does not matter if wrong type here
+      INTEGER     BUF_COUNT, DEST, REQUEST, TAG
+#include "maxorb.h"
+#include "infpar.h"
+      INCLUDE 'mpif.h'
+      INTEGER(kind=MPI_INTEGER_KIND) :: buf_count_MPI
+      INTEGER(kind=MPI_INTEGER_KIND) :: dest_MPI, request_MPI, tag_MPI
+      INTEGER(kind=MPI_INTEGER_KIND) :: DATATYPE, ierr_mpi
+C
+      IF      (BUF_TYPE .EQ. 'INTEGE') THEN
+         DATATYPE = my_MPI_INTEGER
+      ELSE IF (BUF_TYPE .EQ. 'LOGICA') THEN
+         DATATYPE = my_MPI_LOGICAL
+      ELSE IF (BUF_TYPE .EQ. 'DOUBLE') THEN
+         DATATYPE = MPI_DOUBLE_PRECISION
+      ELSE IF (BUF_TYPE .EQ. 'STRING' .OR. BUF_TYPE .EQ. 'CHARAC') THEN
+         DATATYPE = MPI_CHARACTER
+      ELSE
+         WRITE(LUPRI,*) ' MPIX_ISEND : DATA TYPE "',BUF_TYPE,
+     &      '" does not exist!'
+         CALL QUIT('ERROR in MPIX_ISEND: Nonexisting DATATYPE')
+      END IF
+      buf_count_MPI = BUF_COUNT
+      dest_MPI      = DEST
+      request_MPI   = REQUEST
+      tag_MPI       = TAG
+      CALL MPI_ISEND(BUFFER,buf_count_MPI,DATATYPE,dest_MPI,tag_MPI,
+     &   MPI_COMM_WORLD,request_MPI,ierr_mpi)
+      IF (ierr_mpi.GT.0) THEN
+         write (lupri,*) 'ERROR: problem in MPIX_ISEND, ierr =',ierr_mpi
+         write (lupri,*) '- count,dest,tag: ',BUF_count,dest,tag
+         write (lupri,*) '- calling MPI_MYFAIL ...'
+         CALL MPI_MYFAIL(ierr_mpi)
+      END IF
+#endif
+      END
+
+      SUBROUTINE MPIX_IRECV(BUFFER,BUF_COUNT,BUF_TYPE,
+     &                      SOURCE,REQUEST,TAG)
+C
+#if defined (VAR_MPI)
+      implicit none
+#include "priunit.h"
+      CHARACTER*6 BUF_TYPE
+      INTEGER     BUFFER(*) ! does not matter if wrong type here
+      INTEGER     BUF_COUNT, SOURCE, REQUEST, TAG
+#include "maxorb.h"
+#include "infpar.h"
+      INCLUDE 'mpif.h'
+      INTEGER(kind=MPI_INTEGER_KIND) :: buf_count_MPI
+      INTEGER(kind=MPI_INTEGER_KIND) :: source_MPI, request_MPI, tag_MPI
+      INTEGER(kind=MPI_INTEGER_KIND) :: DATATYPE, ierr_mpi
+C
+      IF      (BUF_TYPE .EQ. 'INTEGE') THEN
+         DATATYPE = my_MPI_INTEGER
+      ELSE IF (BUF_TYPE .EQ. 'LOGICA') THEN
+         DATATYPE = my_MPI_LOGICAL
+      ELSE IF (BUF_TYPE .EQ. 'DOUBLE') THEN
+         DATATYPE = MPI_DOUBLE_PRECISION
+      ELSE IF (BUF_TYPE .EQ. 'STRING' .OR. BUF_TYPE .EQ. 'CHARAC') THEN
+         DATATYPE = MPI_CHARACTER
+      ELSE
+         WRITE(LUPRI,*) ' MPIX_IRECV : DATA TYPE "',BUF_TYPE,
+     &      '" does not exist!'
+         CALL QUIT('ERROR in MPIX_IRECV: Nonexisting DATATYPE')
+      END IF
+      buf_count_MPI = BUF_COUNT
+      source_MPI    = SOURCE
+      request_MPI   = REQUEST
+      tag_MPI       = TAG
+      CALL MPI_IRECV(BUFFER,buf_count_MPI,DATATYPE,source_MPI,tag_MPI,
+     &   MPI_COMM_WORLD,request_MPI,ierr_mpi)
+      IF (ierr_mpi.GT.0) THEN
+         write (lupri,*) 'ERROR: problem in MPIX_IRECV, ierr =',ierr_mpi
+         write (lupri,*) '- count,source,tag: ',BUF_count,source,tag
+         write (lupri,*) '- calling MPI_MYFAIL ...'
+         CALL MPI_MYFAIL(ierr_mpi)
+      END IF
+#endif
       END
 
       subroutine mpixprocname(process_name,process_name_length)
 C
+#ifdef VAR_MPI
       implicit none
       character*(*) process_name
-      integer process_name_length, ierr
-#ifdef VAR_MPI
+      integer       process_name_length
       include 'mpif.h'
+      integer(kind=MPI_INTEGER_KIND) name_length_mpi, ierr_mpi
 C
-      call mpi_get_processor_name(process_name,process_name_length,ierr)
+      call mpi_get_processor_name(process_name,name_length_mpi,ierr_mpi)
+      process_name_length = name_length_mpi
 #endif
       END
 
 #if defined (VAR_MPI)
 C  /* Deck mpi_myfail */
       SUBROUTINE MPI_MYFAIL(IERR)
+! only called from other routines in mpimacro.F
 C
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
       INCLUDE 'mpif.h'
+
+      integer(kind=MPI_INTEGER_KIND) ierr,ierrcl,ierr2
       CHARACTER ERRBUF*40
 C
       CALL MPI_ERROR_CLASS(IERR,IERRCL,IERR2)

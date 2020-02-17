@@ -47,7 +47,7 @@ C     The definition must match that in soppa_nodedriver
       INTEGER   INFO_ARRAY(4)
       EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
      &            (info_array(3), nnewtr),    (info_array(4),noldtr)
-      INTEGER(MPI_INTEGER_KIND) :: IERR
+      INTEGER(MPI_INTEGER_KIND) :: ierr_mpi, numprocs_mpi
 #endif
 C
 C------------------
@@ -102,9 +102,9 @@ C     For MPI, we need som space in which to store the indices each
 C     process is to work with in so_eres.
 C------------------------------------------------------------------
 C
-      call mpi_comm_size( mpi_comm_world, numprocs, ierr)
-      maxnumjobs = mxcall - min(mxcall, numprocs) + 1
-      if ( numprocs .eq. 1 ) then
+      call mpi_comm_size( mpi_comm_world, numprocs_mpi, ierr_mpi)
+      maxnumjobs = mxcall - min(mxcall, numprocs_mpi) + 1
+      if ( numprocs_mpi .eq. 1 ) then
 C Not a real parallel job, don't bother
          lAssignedIndices = 1
          kAssignedIndices = 0
@@ -211,14 +211,14 @@ C
 C In parallel, send slaves to so_eres
 C
          call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
-     &                   mpi_comm_world, ierr )
+     &                   mpi_comm_world, ierr_mpi )
 C Pack INFO_ARRAY variables and send them off
          CP_ISYMTR = ISYMTR
          NOLDTR    = 0
          NNEWTR    = 1
          NIT       = ICOL
          CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
-     &                   MPI_COMM_WORLD, IERR)
+     &                   MPI_COMM_WORLD, ierr_mpi)
 #endif
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()

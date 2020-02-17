@@ -492,7 +492,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/gp/intf7790.F
     DALTON/gp/mempkg.F
     DALTON/gp/mpimacro.F
-    DALTON/gp/pvmmacro.F
     DALTON/gp/qpack.F
     DALTON/gp/vcraypack.F
     DALTON/lucita/ciinfo.F

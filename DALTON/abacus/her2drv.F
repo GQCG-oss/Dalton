@@ -371,7 +371,7 @@ C
 C        All integrals
 C        =============
 C
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
          IF (SLAVE .AND. PARHER) THEN
             KTKCPU = KLAST
             KWHICH = KTKCPU +  MTOTTK
@@ -403,7 +403,7 @@ C
      &           IREPDM,IFCTYP,ADISTR,I2TYP,JSTRSH,NPRIMS,NCONTS,
      &           IORBSH,ICEDIF,IFTHRS, GABRAO,DMRAO,DMRSO,
      &           DINTSKP,RELCAL_in,WORK(KTFMAT),GENCNT)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
          END IF
 #endif
       END IF

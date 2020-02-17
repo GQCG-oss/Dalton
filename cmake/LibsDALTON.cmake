@@ -8,19 +8,6 @@ if(ENABLE_VPOTDAMP)
         )
 endif()
 
-if(ENABLE_EFS)
-    include(LibsEFS)
-    set(DALTON_FIXED_FORTRAN_SOURCES
-        DALTON/abacus/efs_interface.F90
-        ${DALTON_FIXED_FORTRAN_SOURCES}
-        )
-    add_subdirectory(DALTON/efs ${CMAKE_BINARY_DIR}/efs_interface)
-    set(DALTON_LIBS
-        efs_interface
-        ${DALTON_LIBS}
-        )
-endif()
-
 if(ENABLE_CHEMSHELL)
     set(DALTON_FIXED_FORTRAN_SOURCES
         ${DALTON_FIXED_FORTRAN_SOURCES}
@@ -49,10 +36,6 @@ endif()
 
 add_dependencies(dalton generate_binary_info)
 
-if(ENABLE_EFS)
-    add_dependencies(dalton efs)
-endif()
-
 if(ENABLE_GEN1INT)
     add_subdirectory(DALTON/gen1int ${CMAKE_BINARY_DIR}/gen1int)
     add_dependencies(dalton gen1int_interface)
@@ -66,15 +49,6 @@ endif()
 include(LibsPElib)
 
 include(LibsQFITlib)
-
-if(ENABLE_QMMM_CUDA)
-    add_subdirectory(external/qmmm_cuda)
-    add_dependencies(dalton qmmm_cuda)
-    set(DALTON_LIBS
-        ${PROJECT_BINARY_DIR}/lib/libqmmm_cuda.a
-        ${DALTON_LIBS}
-        )
-endif()
 
 if(NOT ENABLE_CHEMSHELL)
     add_executable(
