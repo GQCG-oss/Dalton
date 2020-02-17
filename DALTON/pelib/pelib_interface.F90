@@ -2754,7 +2754,7 @@ logical function use_pelib()
 end function use_pelib
 
 logical function pelib_ifc_gspol()
-    call quit('using dummy PElib interface routines')
+    pelib_ifc_gspol = .false.
 end function pelib_ifc_gspol
 
 subroutine pelib_ifc_set_mixed(do_mixed)
@@ -2771,23 +2771,23 @@ logical function pelib_ifc_do_mep_noqm()
 end function pelib_ifc_do_mep_noqm
 
 logical function pelib_ifc_do_cube()
-    call quit('using dummy PElib interface routines')
+    pelib_ifc_do_cube = .false.
 end function pelib_ifc_do_cube
 
 logical function pelib_ifc_do_infld()
-    call quit('using dummy PElib interface routines')
+    pelib_ifc_do_infld = .false.
 end function pelib_ifc_do_infld
 
 logical function pelib_ifc_do_lf()
-    call quit('using dummy PElib interface routines')
+    pelib_ifc_do_lf = .false.
 end function pelib_ifc_do_lf
 
 logical function pelib_ifc_do_savden()
-    call quit('using dummy PElib interface routines')
+    pelib_ifc_do_savden = .false.
 end function pelib_ifc_do_savden
 
 logical function pelib_ifc_do_twoints()
-    call quit('using dummy PElib interface routines')
+    pelib_ifc_do_twoints = .false.
 end function pelib_ifc_do_twoints
 
 subroutine pelib_ifc_activate()

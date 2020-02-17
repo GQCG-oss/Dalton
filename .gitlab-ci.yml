@@ -347,6 +347,7 @@ gcc-8.3.1-ompi-2.1.1-int64:
     - git --version
     - cmake --version
     - python setup --int64 --mpi --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
+                   -DENABLE_PELIB=OFF
     - cd build
     - make -j 4
     - ctest --output-on-failure -L essential
@@ -378,6 +379,7 @@ gcc-9.2.1-ompi-4.0.2-int64:
     - git --version
     - cmake --version
     - python setup --int64 --mpi --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
+                   -DENABLE_PELIB=OFF
     - cd build
     - make -j 4
     - ctest --output-on-failure -L essential
@@ -409,6 +411,7 @@ gcc-9.2.1-mpich-3.2.2-int64:
     - git --version
     - cmake --version
     - python setup --int64 --mpi --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
+                   -DENABLE_PELIB=OFF
     - cd build
     - make -j 4
     - ctest --output-on-failure -L essential
@@ -504,7 +507,7 @@ nightly-mpi-int64:
     - git --version
     - cmake --version
     - python setup --int64 --mpi --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
-                   -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-mpi-int64
+                   -DENABLE_PELIB=OFF -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-mpi-int64
     - cd build
     - export CTEST_MAKE_NUM_PROCS=4
     - ctest --output-on-failure -L dalton -M Nightly -T Build -T Test -T Submit
