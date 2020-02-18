@@ -15,7 +15,9 @@
 !  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
-C
+
+! FILE sirneo.F : subroutines for restricted-step optimization of MCSCF using NEO algorithm
+
 C  /* Deck sirneo */
       SUBROUTINE SIRNEO(CREF,G,CMO,INDXCI,DV,PV,
      *                  FC,FV,FCAC,H2AC,EACTVN,IBNDX,WRK,LFREE)
@@ -2848,3 +2850,4 @@ C
       IF (NERROR .GT. 0) CALL QUIT('ERROR detected in NEORED_CHK.')
  9999 RETURN
       END
+! end of sirneo.F
