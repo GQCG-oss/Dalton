@@ -211,7 +211,7 @@ cubefast_data_new(  const real *kB,
    initialize its fields */
 
     /* Local vars */
-    integer x; int ab;
+    int x; int ab; /* int because only used for loops and addressing */
     integer ksymBC, ksymCD, ksymBD, ksymBCD;
     integer vec_size;
     integer offset = 0;
@@ -1300,7 +1300,7 @@ FSYM(dftcrcf)(real* fi, real* cmo,
     real sec, tmpsec, dummy;
     DftCallbackData cbdata[1];
     CubeFastData* data;
-    void dump_mat(char *name, real* mat, integer dimm, int dimn);
+    void dump_mat(char *name, real* mat, integer dimm, integer dimn);
 
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)dftcrcf_);       /* NO-OP in serial */
@@ -1335,7 +1335,7 @@ FSYM(dftcrcf)(real* fi, real* cmo,
 }
 
 #ifdef TEST
-void dump_mat(char *name, real* mat, integer dimm, int dimn)
+void dump_mat(char *name, real* mat, integer dimm, integer dimn)
 {
     printf("%s\n",name); 
     integer i, j;

@@ -29,12 +29,7 @@
  * type grids (i.e those that do the work in the preprocessing phase.
  * USE_PTHREADS and VAR_MPI are do not conflict.
  */
-#if !defined(SYS_AIX)
-/* for an yet unknown reason, MT-grid generation has a terrible
-   performance on regatta/AIX.
-*/
 /* #define USE_PTHREADS */
-#endif /* !defined(SYS_AIX) */
 
 #define __CVERSION__
 #if !defined(SYS_DEC)
@@ -995,7 +990,7 @@ boxify_create_index(real cell_size, real (*coor)[4], integer point_cnt,
  * code uses different initialization, save_batch and finalize
  * actions. */
 #if 0
-static integer
+static int
 comp_weight(const void *a, const void *b)
 { /* strangely, the sorting does not appear to help... */
     return ((const real*)a)[3]-((const real*)b)[3];
@@ -1504,7 +1499,7 @@ mgrid_boxify(GridGenMolGrid *mg, const char* fname,
 /* grid_generate:
    returns number of grid points.
 */
-int
+integer
 grid_generate(const char* filename, integer atom_cnt, 
               const GridGenAtom* atom_arr, real threshold,
               GridGeneratingFunc generating_function, void* arg,
