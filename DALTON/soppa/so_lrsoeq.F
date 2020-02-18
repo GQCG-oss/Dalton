@@ -136,7 +136,6 @@ C
       maxnumjobs = soppa_nint - min(soppa_nint, numprocs) + 1
       if ( numprocs .eq. 1 ) then
 C Not a real parallel job, don't bother
-         WRITE(LUPRI,*) 'This is a sequential job'
          lAssignedIndices = 1
          kAssignedIndices = 0
       else

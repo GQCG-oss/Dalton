@@ -593,7 +593,6 @@ C------------------------------------------------------------------
             DO 220 ILLLDUMMY = 1, nloopidx
                if ( numprocs .gt. 1 ) then
                   ILLL = assignedIndices(illldummy)
-                  WRITE(LUPRI,*) 'Step', ILLLDUMMY, ' index', illl
 C                 A zero indicates that we have no more work, exit loop
                   IF (ILLL .eq. 0) exit
                   if ( loadbal_dyn ) timeini = mpi_wtime()
