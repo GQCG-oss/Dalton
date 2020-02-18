@@ -15,7 +15,7 @@ C     PURPOSE: Determine "double corrected RPA" excitation energies.
 C
 #ifdef VAR_MPI
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
-     &                       soppa_nint
+     &                       soppa_nint, sop_master, one_mpi
 #endif
       use so_info, only: sop_excita, so_full_name, so_model_number
 C
@@ -95,7 +95,7 @@ C Not a real parallel job, don't bother
          lAssignedIndices = 1
          kAssignedIndices = 0
       else
-         lAssignedIndices = (maxnumjobs + 1) /IRAT
+         lAssignedIndices = (maxnumjobs + irat-1) /IRAT
          kAssignedIndices = KEND1
          KEND1 = kAssignedIndices + lAssignedIndices
          LWORK1 = LWORK - KEND1
@@ -121,12 +121,13 @@ C
 #ifdef VAR_MPI
 C In parallel, send slaves to so_eres
 C
-         call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
+         call mpi_bcast( parsoppa_do_eres, one_mpi,
+     &                   my_mpi_integer, sop_master,
      &                   mpi_comm_world, ierr_mpi )
 C ISYMTR is a non-local parameter, we need to copy it to the info-array
          CP_ISYMTR = ISYMTR
-         CALL MPI_BCAST( INFO_ARRAY, 6, MY_MPI_INTEGER, 0,
-     &                   MPI_COMM_WORLD, ierr_mpi)
+         CALL MPI_BCAST( INFO_ARRAY, 6_mpi_integer_kind, MY_MPI_INTEGER,
+     &                   sop_master, MPI_COMM_WORLD, ierr_mpi)
 #endif
 CPi 18.08.16: Copy from so_lrsolv
       CALL GETTIM (DUMMY,WTIMES)
@@ -135,7 +136,7 @@ CPi 18.08.16: Copy from so_lrsolv
      &             T2MP,LT2MP,FOCKD,LFOCKD,DENSAI,LDENSAI,1,ISYMTR,
      &             0,
 #ifdef VAR_MPI
-     &             WORK(kAssignedIndices),maxnumjobs,
+     &             WORK(kAssignedIndices), maxnumjobs,
 #endif
      &             WORK(KEND1),LWORK1)
       DTIME      = SECOND()   - DTIME

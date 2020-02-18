@@ -10,7 +10,6 @@ C     PURPOSE: Calculate second order contribution to 1p-1h part of
 C              gradient property vectors.
 C
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "ccsdsym.h"
 #include "ccorb.h"

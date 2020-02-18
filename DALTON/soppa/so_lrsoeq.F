@@ -34,7 +34,7 @@ C       LMXRED
 C
 #ifdef VAR_MPI
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
-     &                       soppa_nint
+     &                       soppa_nint, sop_master, one_mpi
 #endif
       use so_info, only: sop_linres, so_full_name, so_has_doubles,
      &                   so_needs_densai, sop_dp, sop_stat_trh,
@@ -69,7 +69,7 @@ C
 C
       INTEGER NIT, NOLDTR, NNEWTR, IDTYPE, IMODEL
 #ifdef VAR_MPI
-      INTEGER   CP_ISYMTR
+      INTEGER :: CP_ISYMTR
       INTEGER :: MAXNUMJOBS
 C     This array is only there to ensure that the six above variables
 C     are allocated consecutively, so that it can be send together. Only
@@ -136,10 +136,11 @@ C
       maxnumjobs = soppa_nint - min(soppa_nint, numprocs) + 1
       if ( numprocs .eq. 1 ) then
 C Not a real parallel job, don't bother
+         WRITE(LUPRI,*) 'This is a sequential job'
          lAssignedIndices = 1
          kAssignedIndices = 0
       else
-         lAssignedIndices = (maxnumjobs + 1) /IRAT
+         lAssignedIndices = (maxnumjobs + IRAT - 1) /IRAT
          kAssignedIndices = KEND1
          KEND1 = kAssignedIndices + lAssignedIndices
       endif
@@ -244,12 +245,13 @@ C
 #ifdef VAR_MPI
 C In parallel, send slaves to so_eres
 C
-         call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
+         call mpi_bcast( parsoppa_do_eres, one_mpi, my_mpi_integer, 
+     &                   sop_master,
      &                   mpi_comm_world, ierr )
 C ISYMTR is a non-local parameter, we need to copy it to the info-array
          CP_ISYMTR = ISYMTR
-         CALL MPI_BCAST( INFO_ARRAY, 6, MY_MPI_INTEGER, 0,
-     &                   MPI_COMM_WORLD, IERR)
+         CALL MPI_BCAST( INFO_ARRAY, 6_mpi_integer_kind, MY_MPI_INTEGER,
+     &                   sop_master, MPI_COMM_WORLD, IERR)
 #endif
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()

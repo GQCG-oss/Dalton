@@ -149,6 +149,7 @@ C
      &              LDENSIJ,DENSAB,LDENSAB,DENSAI,LDENSAI)
 C     HRPA calculations should stop here, right?
       IF (MODEL.EQ.'AOHRP') GOTO 1010
+      WRITE(LUPRI,*) 'Doubles contribution to GPVEC'
 C
 C---------------------------------
 C     2. allocation of work space.

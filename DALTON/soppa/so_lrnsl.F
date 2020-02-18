@@ -400,7 +400,7 @@ C
 
 
 
-      integer, intent(in)       :: isym ! symmetry of pt.
+      integer, intent(in)  :: isym ! symmetry of pt.
       logical, intent(in)  :: static, ! only read E part if static
      &                        doubles ! include doubles excitations
 C

@@ -16,7 +16,7 @@ C              using an AO-driven algorithm.
 C
 #ifdef VAR_MPI
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
-     &                       soppa_nint
+     &                       soppa_nint, sop_master, one_mpi
 #endif
 C
       use so_info, only: so_full_name, sop_excita, so_has_doubles,
@@ -207,12 +207,13 @@ C
 #ifdef VAR_MPI
 C In parallel, send slaves to so_eres
 C
-         call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
+         call mpi_bcast( parsoppa_do_eres, one_mpi, my_mpi_integer,
+     &                   sop_master,
      &                   mpi_comm_world, ierr )
 C ISYMTR is a non-local parameter, we need to copy it to the info-array
          CP_ISYMTR = ISYMTR
-         CALL MPI_BCAST( INFO_ARRAY, 6, MY_MPI_INTEGER, 0,
-     &                   MPI_COMM_WORLD, IERR)
+         CALL MPI_BCAST( INFO_ARRAY, 6_mpi_integer_kind, MY_MPI_INTEGER,
+     &                   sop_master, MPI_COMM_WORLD, IERR)
 #endif
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
