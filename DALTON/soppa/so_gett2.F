@@ -43,6 +43,8 @@ C     Local Variables
 C     Pointers... Do we need them?
       integer :: KT1AM, KEND1
       integer :: LWORK1
+C     Time-function.
+      real(sop_dp) :: second
 C
 C------------------
 C     Add to trace.

@@ -35,12 +35,17 @@ C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_comm_active, soppa_num_active,
      &                       soppa_nint, my_mpi_integer, sop_master
+#ifdef USE_MPI_MOD_F90
+      use mpi
+#endif
 #endif
 
 #include "implicit.h"
 
 #ifdef VAR_MPI
+#ifndef USE_MPI_MOD_F90
 #include "mpif.h"
+#endif
 #endif
 
 #include "priunit.h"
@@ -192,7 +197,8 @@ C Should probably use non-blocking collectives, where implemented
 !         MPI_IBCAST(WORK(KCMO),LCMO, my_MPI_INTEGER, 0,
 !     &              MPI_COMM_WORLD, ierr_mpi)
 !      ELSE
-      CALL MPI_BCAST(WORK(KCMO), LCMO, MPI_REAL8, SOP_MASTER,
+      count_mpi = LCMO
+      CALL MPI_BCAST(WORK(KCMO), count_mpi, MPI_REAL8, SOP_MASTER,
      &               SOPPA_COMM_ACTIVE, ierr_mpi)
 
 !      ENDIF
@@ -555,9 +561,10 @@ C           Master does the balancing
             call presortloadbal_parsoppa(AssignedIndices,   maxnumjobs,
      &                     work(kindxb), work(kend2), lwork2)
          ELSE
+            count_mpi = maxnumjobs
 C           Slaves receives the scatter, send arguments should be ignored
-            call mpi_scatter( AssignedIndices,maxnumjobs,my_mpi_integer,
-     &                        AssignedIndices,maxnumjobs,my_mpi_integer,
+            call mpi_scatter( AssignedIndices, count_mpi,my_mpi_integer,
+     &                        AssignedIndices, count_mpi,my_mpi_integer,
      &                        sop_master, soppa_comm_active, ierr_mpi )
          ENDIF
 #endif
@@ -1082,7 +1089,8 @@ C--------------------------------------
 C  Master
 C --------
 C Recieve the timings
-            call mpi_reduce( mpi_in_place, work(ktiming), soppa_nint,
+            count_mpi = soppa_nint
+            call mpi_reduce( mpi_in_place, work(ktiming), count_mpi,
      &                       MPI_REAL8, MPI_SUM, sop_master,
      &                       SOPPA_COMM_ACTIVE,
      &                       ierr_mpi)
@@ -1104,12 +1112,14 @@ C
 C   Slave
 C  ---------
 C  Send the timings
-            call mpi_reduce( work(ktiming), work(ktiming), soppa_nint,
+            count_mpi = soppa_nint
+            call mpi_reduce( work(ktiming), work(ktiming), count_mpi,
      &                       MPI_REAL8, MPI_SUM, sop_master,
      &                       SOPPA_COMM_ACTIVE, ierr_mpi)
 C  Recieve the new indices
-            call mpi_scatter( AssignedIndices,maxnumjobs,my_mpi_integer,
-     &                        AssignedIndices,maxnumjobs,my_mpi_integer,
+            count_mpi = maxnumjobs
+            call mpi_scatter( AssignedIndices,count_mpi,my_mpi_integer,
+     &                        AssignedIndices,count_mpi,my_mpi_integer,
      &                        sop_master, soppa_comm_active, ierr_mpi)
          endif
       endif
