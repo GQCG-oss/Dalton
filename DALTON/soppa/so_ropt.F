@@ -187,8 +187,6 @@ C
                     ENORM = ENORM * EVNM
               ENDIF
 C
-C            ENDIF
-C
   300    CONTINUE
 C
   400 CONTINUE

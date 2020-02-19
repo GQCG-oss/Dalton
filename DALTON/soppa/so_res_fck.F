@@ -2,7 +2,7 @@ C
 C  /* Deck so_res_fck */
       SUBROUTINE SO_RES_FCK(RES1E,LRES1E,RES1D,LRES1D,TR1E,LTR1E,TR1D,
      &                      LTR1D,FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,
-     &                      LDENSAB,ISYRES,ISYMTR)
+     &                      LDENSAB,ISYRES,ISYMTR,DO_DEX)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -20,6 +20,7 @@ C
       DIMENSION RES1E(LRES1E), RES1D(LRES1D)
       DIMENSION TR1E(LTR1E),   TR1D(LTR1D)
       DIMENSION FOCKD(LFOCKD), DENSIJ(LDENSIJ), DENSAB(LDENSAB)
+      LOGICAL, INTENT(IN) :: DO_DEX
 C
 #include "ccorb.h"
 #include "ccsdinp.h"
@@ -60,7 +61,8 @@ C
      &                  - HALF * (FOCKD(KOFF2) + FOCKD(KOFF6)) )
 C
                   RES1E(KOFF4) = RES1E(KOFF4) + EIBA * TR1E(KOFF3)
-                  RES1D(KOFF4) = RES1D(KOFF4) + EIBA * TR1D(KOFF3)
+                  IF (DO_DEX)
+     &               RES1D(KOFF4) = RES1D(KOFF4) + EIBA * TR1D(KOFF3)
 C
   400          CONTINUE
 C
@@ -98,7 +100,8 @@ C
      &                  - HALF * (FOCKD(KOFF2) + FOCKD(KOFF1)) )
 C
                   RES1E(KOFF4) = RES1E(KOFF4) + EAJI * TR1E(KOFF5)
-                  RES1D(KOFF4) = RES1D(KOFF4) + EAJI * TR1D(KOFF5)
+                  IF (DO_DEX)
+     &               RES1D(KOFF4) = RES1D(KOFF4) + EAJI * TR1D(KOFF5)
 C
  1400          CONTINUE
 C

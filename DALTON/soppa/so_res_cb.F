@@ -2,7 +2,7 @@ C  /* Deck so_res_cb */
       SUBROUTINE SO_RES_CB(RES2E,LRES2E,RES2D,LRES2D,
      &                     DSRHF,LDSRHF,BTR1E,LBTR1E,BTR1D,LBTR1D,
      &                     BTJ1E,LBTJ1E,BTJ1D,LBTJ1D,CMO,LCMO,
-     &                     IDEL,ISDEL,ISYDIS,ISYMTR,WORK,LWORK)
+     &                     IDEL,ISDEL,ISYDIS,ISYMTR,DO_DEX,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -20,6 +20,7 @@ C
       DIMENSION DSRHF(LDSRHF), BTR1E(LBTR1E), BTR1D(LBTR1D)
       DIMENSION BTJ1E(LBTJ1E), BTJ1D(LBTJ1D), CMO(LCMO)
       DIMENSION WORK(LWORK)
+      LOGICAL, INTENT(IN) :: DO_DEX
 C
 #include "ccorb.h"
 #include "ccsdinp.h"
@@ -88,11 +89,11 @@ C              delta and given symmetry of ai in KSCR2 and KSCR3 for
 C              excitations and de-excitations, respectively.
 C----------------------------------------------------------------------
 C
-               ISALFA = ISYMA
-               ISBETA = MULD2H(ISALFA,ISALBE)
+               ISBETA = ISYMA
+               ISALFA = MULD2H(ISBETA,ISALBE)
 C
-               LSCR4  = NBAS(ISALFA)*NRHF(ISYMI)
-               LSCR5  = NBAS(ISALFA)*NRHF(ISYMI)
+               LSCR4  = NBAS(ISBETA)*NRHF(ISYMI)
+               LSCR5  = NBAS(ISBETA)*NRHF(ISYMI)
 C
                KSCR4  = KEND1
                KSCR5  = KSCR4 + LSCR4
@@ -108,7 +109,7 @@ C
                NTOTA  = MAX(NVIR(ISYMA),1)
 C
                KOFF2  = KSCR1 + IAODIS(ISALFA,ISBETA)
-               KOFF3  = IT1AO(ISBETA,ISYMI) + 1
+               KOFF3  = IT1AO(ISALFA,ISYMI) + 1
                KOFF4  = ILMVIR(ISYMA) + 1
                KOFF5  = KSCR2 + IT1AM(ISYMA,ISYMI)
                KOFF6  = KSCR3 + IT1AM(ISYMA,ISYMI)
@@ -116,26 +117,36 @@ C
 C------------------------------
 C              For excitations.
 C------------------------------
+C                                                    ~
+C              (alpha, beta | * x (alpha,i) => (beta,i|
 C
-               CALL DGEMM('N','N',NBAS(ISALFA),NRHF(ISYMI),
-     &                    NBAS(ISBETA),ONE,WORK(KOFF2),NTOTAL,
-     &                    BTR1E(KOFF3),NTOTBE,ZERO,WORK(KSCR4),NTOTAL)
+               CALL DGEMM('T','N',NBAS(ISBETA),NRHF(ISYMI),
+     &                    NBAS(ISALFA),ONE,
+     &                    WORK(KOFF2),NTOTAL,
+     &                    BTR1E(KOFF3),NTOTAL,
+     &                    ZERO,WORK(KSCR4),NTOTBE)
+C                                  ~         ~
+C              c (beta,a) * (beta, i | => (a,i|
 C
                CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                    NBAS(ISALFA),ONE,CMO(KOFF4),NTOTAL,
-     &                    WORK(KSCR4),NTOTAL,ZERO,WORK(KOFF5),NTOTA)
+     &                    NBAS(ISBETA),ONE,CMO(KOFF4),NTOTBE,
+     &                    WORK(KSCR4),NTOTBE,ZERO,WORK(KOFF5),NTOTA)
 C
 C---------------------------------
 C              For de-excitations.
 C---------------------------------
 C
-               CALL DGEMM('N','N',NBAS(ISALFA),NRHF(ISYMI),
-     &                    NBAS(ISBETA),ONE,WORK(KOFF2),NTOTAL,
-     &                    BTR1D(KOFF3),NTOTBE,ZERO,WORK(KSCR5),NTOTAL)
+               IF (DO_DEX) THEN
+               CALL DGEMM('T','N',NBAS(ISBETA),NRHF(ISYMI),
+     &                    NBAS(ISALFA),ONE,
+     &                    WORK(KOFF2),NTOTAL,
+     &                    BTR1D(KOFF3),NTOTAL,
+     &                    ZERO,WORK(KSCR5),NTOTBE)
 C
                CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                    NBAS(ISALFA),ONE,CMO(KOFF4),NTOTAL,
-     &                    WORK(KSCR5),NTOTAL,ZERO,WORK(KOFF6),NTOTA)
+     &                    NBAS(ISBETA),ONE,CMO(KOFF4),NTOTBE,
+     &                    WORK(KSCR5),NTOTBE,ZERO,WORK(KOFF6),NTOTA)
+               END IF
 C
 C-----------------------------------------------------------------------
 C                                        ~ ~
@@ -144,8 +155,8 @@ C              delta and given symmetry of ai and add to KSCR2 and KSCR3
 C              for excitations and de-excitations, respectively.
 C-----------------------------------------------------------------------
 C
-               ISBETA = ISYMI
-               ISALFA = MULD2H(ISBETA,ISALBE)
+               ISALFA = ISYMI
+               ISBETA = MULD2H(ISALFA,ISALBE)
 C
                LSCR4  = NBAS(ISALFA)*NRHF(ISYMI)
 C
@@ -163,36 +174,64 @@ C
 C
                KOFF2  = KSCR1 + IAODIS(ISALFA,ISBETA)
                KOFF3  = ILMRHF(ISYMI) + 1
-               KOFF4  = IMATAV(ISALFA,ISYMA) + 1
+               KOFF4  = IMATAV(ISBETA,ISYMA) + 1
                KOFF5  = KSCR2 + IT1AM(ISYMA,ISYMI)
                KOFF6  = KSCR3 + IT1AM(ISYMA,ISYMI)
 C
-               CALL DGEMM('N','N',NBAS(ISALFA),NRHF(ISYMI),
-     &                    NBAS(ISBETA),ONE,WORK(KOFF2),NTOTAL,
-     &                    CMO(KOFF3),NTOTBE,ZERO,WORK(KSCR4),NTOTAL)
+C              ( alpha, beta | -- ) * c(alpha, i) => ( beta, i | --)
+               CALL DGEMM('T','N',NBAS(ISBETA),NRHF(ISYMI),
+     &                    NBAS(ISALFA),ONE,WORK(KOFF2),NTOTAL,
+     &                    CMO(KOFF3),NTOTAL,ZERO,WORK(KSCR4),NTOTBE)
 C
 C------------------------------
 C              For excitations.
 C------------------------------
-C
+C                                                  ~
+C              ( beta, i | -- ) * x(beta, a ) => ( a, i | --)
                CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                    NBAS(ISALFA),-ONE,BTJ1E(KOFF4),NTOTAL,
-     &                    WORK(KSCR4),NTOTAL,ONE,WORK(KOFF5),NTOTA)
+     &                    NBAS(ISBETA),-ONE,BTJ1E(KOFF4),NTOTBE,
+     &                    WORK(KSCR4),NTOTBE,ONE,WORK(KOFF5),NTOTA)
 C
 C---------------------------------
 C              For de-excitations.
 C---------------------------------
 C
+               IF (DO_DEX) THEN
                CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                    NBAS(ISALFA),-ONE,BTJ1D(KOFF4),NTOTAL,
-     &                    WORK(KSCR4),NTOTAL,ONE,WORK(KOFF6),NTOTA)
+     &                    NBAS(ISBETA),-ONE,BTJ1D(KOFF4),NTOTBE,
+     &                    WORK(KSCR4),NTOTBE,ONE,WORK(KOFF6),NTOTA)
+               END IF
 C
   300       CONTINUE
 C                       ~~
 C           Calculate ( ai, j, del)*C(del,b) => X(ai,bj)
 C
             NBJ1 = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J - 1)
-            KOFFRES = IT2AM(ISYMAI,ISYMBJ)
+            KOFFRES = IT2AM(ISYMAI,ISYMBJ) + 1
+
+            CALL OUTPACK(RES2E(KOFFRES),WORK(KCDB),WORK(KSCR2))
+            IF(DO_DEX) 
+     &         CALL OUTPACK(RES2D(KOFFRES),WORK(KCDB),WORK(KSCR3))
+
+
+  200    CONTINUE
+C
+  100 CONTINUE
+C
+C-----------------------
+C     Remove from trace.
+C-----------------------
+C
+      CALL QEXIT('SO_RES_CB')
+C
+      RETURN
+      CONTAINS
+      
+         SUBROUTINE OUTPACK(RES,CDB,SCR)!,ISYMAI,ISYMBJ,NBJ1)
+            USE SO_INFO, ONLY: SOP_DP
+            REAL(SOP_DP), INTENT(INOUT) :: RES(*)
+            REAL(SOP_DP), INTENT(IN) :: CDB(*), SCR(*)
+C            INTEGER, INTENT(IN) :: ISYMAI, ISYMBJ, NBJ1
             IF (ISYMAI.EQ.ISYMBJ) THEN
 C              Triangular storage => complicated case
 C              Calculate contributions to from ai=<bj
@@ -201,13 +240,12 @@ C              -> loop b first, then ai
                DO B = 1, NVIR(ISYMB)
 
                   NBJ   = NBJ1 + B
-                  KOFFBJ = KOFFRES + NBJ*(NBJ-1)/2
-                  FAC   = WORK(KCDB+B-1)
+                  KOFFBJ = NBJ*(NBJ-1)/2
+                  FAC   = CDB(B)
 
                   DO NAI = 1, NBJ
                      NAIBJ = KOFFBJ + NAI
-                     RES2E(NAIBJ) = RES2E(NAIBJ)+FAC*WORK(KSCR2+ NAI-1)
-                     RES2D(NAIBJ) = RES2D(NAIBJ)+FAC*WORK(KSCR3+ NAI-1)
+                     RES(NAIBJ) = RES(NAIBJ)+FAC*SCR(NAI)
                   END DO
                END DO
 C
@@ -222,17 +260,12 @@ C
                      DO A = 2, NVIR(ISYMA)
                         NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1)+A
 
-                        KOFFAI = KOFFRES + NAI*(NAI-1)/2 + NBJ1
+                        KOFFAI = NAI*(NAI-1)/2 + NBJ1
                      ! In this case B<A, The B>=A has allready been
                      ! handled
                         DO B = 1, A-1
                            NAIBJ = KOFFAI + B
-                           RES2E(NAIBJ) = RES2E(NAIBJ)+
-     &                                    WORK(KCDB-1+B)*
-     &                                              WORK(KSCR2+NAI-1)
-                           RES2D(NAIBJ) = RES2D(NAIBJ)+
-     &                                    WORK(KCDB-1+B)*
-     &                                              WORK(KSCR3+NAI-1)
+                           RES(NAIBJ) = RES(NAIBJ) + CDB(B)*SCR(NAI)
                         END DO
 
                      END DO
@@ -248,17 +281,12 @@ C
                      DO A = 1, NVIR(ISYMA)
                         NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1)+A
 
-                        KOFFAI = KOFFRES + NAI*(NAI-1)/2 + NBJ1
+                        KOFFAI = NAI*(NAI-1)/2 + NBJ1
                         ! In this case B<A, The B>=A has allready been
                         ! handled
                         DO B = 1, NVIR(ISYMB)
                            NAIBJ = KOFFAI + B
-                           RES2E(NAIBJ) = RES2E(NAIBJ)+
-     &                                    WORK(KCDB-1+B)*
-     &                                              WORK(KSCR2+NAI-1)
-                           RES2D(NAIBJ) = RES2D(NAIBJ)+
-     &                                    WORK(KCDB-1+B)*
-     &                                              WORK(KSCR3+NAI-1)
+                           RES(NAIBJ) = RES(NAIBJ) + CDB(B)*SCR(NAI)
                         END DO
                      END DO
                   END DO
@@ -271,39 +299,26 @@ C
 C              Loop B first, then AI
                DO B = 1, NVIR(ISYMB)
                   NBJ   = NBJ1 + B
-                  KOFFBJ = KOFFRES + NT1AM(ISYMAI)*(NBJ-1)
-                  FAC   =  WORK(KCDB+B-1)
+                  KOFFBJ = NT1AM(ISYMAI)*(NBJ-1)
+                  FAC   =  CDB(B)
                   DO NAI = 1, NT1AM(ISYMAI)
                      NAIBJ = KOFFBJ + NAI
-                     RES2E(NAIBJ) = RES2E(NAIBJ)+FAC*WORK(KSCR2+ NAI-1)
-                     RES2D(NAIBJ) = RES2D(NAIBJ)+FAC*WORK(KSCR3+ NAI-1)
+                     RES(NAIBJ) = RES(NAIBJ)+FAC*SCR(NAI)
                   END DO
                END DO
 
             ELSE ! ISYMAI > ISYMBJ
 C              ai > bj ensured, one term!
                DO NAI = 1, NT1AM(ISYMAI)
-                  KOFFAI = KOFFRES + NT1AM(ISYMBJ)*(NAI-1) + NBJ1
+                  KOFFAI = NT1AM(ISYMBJ)*(NAI-1) + NBJ1
                   DO B = 1, NVIR(ISYMB)
                      NAIBJ = KOFFAI + B
-                     RES2E(NAIBJ) = RES2E(NAIBJ)+WORK(KCDB-1+B)*
-     &                                              WORK(KSCR2+NAI-1)
-                     RES2D(NAIBJ) = RES2D(NAIBJ)+WORK(KCDB-1+B)*
-     &                                              WORK(KSCR3+NAI-1)
+                     RES(NAIBJ) = RES(NAIBJ)+CDB(B)*SCR(NAI)
                   END DO
                END DO
             END IF
-C
+            
+            RETURN
+         END SUBROUTINE
 
-  200    CONTINUE
-C
-  100 CONTINUE
-C
-C-----------------------
-C     Remove from trace.
-C-----------------------
-C
-      CALL QEXIT('SO_RES_CB')
-C
-      RETURN
       END

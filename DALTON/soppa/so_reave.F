@@ -5,6 +5,7 @@ C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Andrea Ligabue, december 2003
+C     Rasmus Faber, 2017 : Rewrite using linked lists
 C
 C     Read solution or residual vector from file
 C     and all the needed information related to that vector
@@ -16,60 +17,35 @@ C     LABEL      property label
 C     FREQ       frequency of the solution/residual
 C     LU         file where we have to write the property
 C
-#include<implicit.h>
+C#include<implicit.h>
+C
+      USE SO_DATA, ONLY : FILEINF
+      USE SO_INFO, ONLY : SOP_DP
+C
+      IMPLICIT NONE
+C
+      REAL(SOP_DP), INTENT(OUT) :: ARRAY(LARRAY)
+      REAL(SOP_DP), INTENT(IN) :: FREQ
+      INTEGER, INTENT(IN) :: LARRAY, ISYMTR, LU
+      CHARACTER(LEN=8) :: LABEL
+C
+      INTEGER :: POS
 #include<priunit.h>
 C
-      DIMENSION ARRAY(LARRAY)
-C
-      CHARACTER*8 LABEL,LSTARS,LB
-C
-      DATA EPSI /1.0D-8/
-C
-      READ(LU,ERR=10,END=20) LSTARS,LB,ISYM,LEN,FR
-C
-      IF (LB .NE. LABEL) THEN
-C
-         WRITE(LUPRI,'(3A,I5,/,A,A,A,A)')
-     &       ' SO_REAVE: error reading "',LABEL,'" on unit ',LU,
-     &       ' found label ',LB,' instead of ',LABEL
-         CALL QUIT('SO_REAVE: error reading label')
-C
-      ELSE IF (ISYM .NE. ISYMTR) THEN
-C
-         WRITE(LUPRI,'(3A,I5,/,A,I5,A,I5)')
-     &       ' SO_REAVE: error reading "',LABEL,'" on unit ',LU,
-     &       ' found IRREP ',ISYM,' instead of ',ISYMTR
-         CALL QUIT('SO_REAVE: error reading label')
-C
-      ELSE IF (LEN .NE. LARRAY) THEN
-C
-         WRITE(LUPRI,'(3A,I5,/,A,I5,A,I5)')
-     &       ' SO_REAVE: error reading "',LABEL,'" on unit ',LU,
-     &       ' array length is ',LEN,' instead of ',LARRAY
-         CALL QUIT('SO_REAVE: error reading label')
-C
-      ELSE IF ( (FR .LT. (FREQ-EPSI)) .OR. (FR .GT. (FREQ+EPSI)) ) THEN
-C
-         WRITE(LUPRI,'(3A,I5,/,A,F13.8,A,F13.8)')
-     &       ' SO_REAVE: error reading "',LABEL,'" on unit ',LU,
-     &       ' found frequency ',FR,' instead of ',FREQ
-         CALL QUIT('SO_REAVE: error reading label')
-C
-      ELSE
-C
-         READ(LU) ARRAY
-C
-      END IF
+      POS = FILEINF%POS(LABEL,FREQ,ISYMTR)
+C      
+      IF (POS.EQ.0) GOTO 20
+
+      READ(LU,err=10,rec=pos) ARRAY
 C
       RETURN
-
 C
  10   WRITE(LUPRI,'(3A,I5)')
      &   ' SO_REAVE: error reading "',LABEL,'" on unit ',LU
       CALL QUIT('SO_REAVE: error reading label')
 C
  20   WRITE(LUPRI,'(3A,I5)')
-     &   ' SO_REAVE: end of file while reading "',LABEL,'" on unit ',LU
+     &   ' SO_REAVE: LABEL "',LABEL,'" not fount on unit ',LU
       CALL QUIT('SO_REAVE: end of file')
 C
       END

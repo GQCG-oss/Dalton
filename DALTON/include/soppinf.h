@@ -1,6 +1,6 @@
 !PFP
-!      LOGICAL AOSOP, AORPA, SOPCHK, AOTEST, DCRPA, AOSOC
-      LOGICAL AOSOP, AORPA, AOHRP, SOPCHK, AOTEST, DCRPA, AOSOC, AOCC2
+!      LOGICAL AOSOP, AORPA, AOHRP, SOPCHK, AOTEST, DCRPA, AOSOC, AOCC2
+      LOGICAL SOPCHK, AOTEST
       LOGICAL TRIPLET
 !end-PFP
       CHARACTER*7 FNTR1E, FNTR1D, FNTR2E, FNTR2D,                       &
@@ -61,8 +61,6 @@
      &           LUBT1E, LUBT1D, LUBJ1E, LUBJ1D,                        &
      &           LURI1E, LURI1D, LURI2E, LURI2D,                        &
      &           LUSC1E, LUSC1D, LUSC2E, LUSC2D,                        &
-     &           LUSV1E, LUSV1D, LUSV2E, LUSV2D,                        &
-     &           LURV1E, LURV1D, LURV2E, LURV2D,                        &
 !    LUGPVE should be replaced by LUGPV1     
      &           LUGPVE, LUSOLA, LUGPV1, LUGPV2,                        &
      &           SOMEMO
@@ -101,7 +99,7 @@
      &                 NSAVMXORIG,                                      &
 !PFP
 !    &                 AORPA,  DCRPA,  AOSOP,  AOSOC,                   &
-     &                 AORPA,  AOHRP,  DCRPA,  AOSOP,  AOSOC, AOCC2,    &
+!    &                 AORPA,  AOHRP,  DCRPA,  AOSOP,  AOSOC, AOCC2,    &
      &                 TRIPLET,                                         &
 !end-PFP
      &                 LUTR1E, LUTR1D, LUTR2E, LUTR2D,                  &
@@ -115,8 +113,6 @@
      &                 LUBT1E, LUBT1D, LUBJ1E, LUBJ1D,                  &
      &                 LURI1E, LURI1D, LURI2E, LURI2D,                  &
      &                 LUSC1E, LUSC1D, LUSC2E, LUSC2D,                  &
-     &                 LUSV1E, LUSV1D, LUSV2E, LUSV2D,                  &
-     &                 LURV1E, LURV1D, LURV2E, LURV2D,                  &
      &                 LUGPVE, LUSOLA, LUGPV1, LUGPV2
 !
       COMMON /SOPPINF/ SOPPINFLAST

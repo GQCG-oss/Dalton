@@ -195,6 +195,8 @@ C
       END
 C  /* Deck lrsdrv */
       SUBROUTINE LRSDRV(WORK,LWORK,PASS)
+
+      use so_info, only: so_any_active_models
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -225,16 +227,22 @@ C
       END IF
 C
       PASS = .TRUE.
+      IF (SO_ANY_ACTIVE_MODELS()) THEN
+C
+C  AO-SOPPA has a seperate driver
+         CALL SO_PSODRV(WORK,LWORK)
+      ELSE
 C
 C     Allocations
 C
-      KNABAT = 1
-      KZERO  = KNABAT + (3*NUCDEP + 6 + 1)/IRAT
-      KLAST  = KZERO  + (3*NUCDEP + 6 + 1)/IRAT
-      IF (KLAST .GT. LWORK) CALL STOPIT('LRSDRV',' ',KLAST,LWORK)
-      KWRK   = KLAST
-      LWRK   = LWORK - KLAST + 1
-      CALL LRSDR1(WORK(KNABAT),WORK(KZERO),WORK(KWRK),LWRK)
+         KNABAT = 1
+         KZERO  = KNABAT + (3*NUCDEP + 6 + 1)/IRAT
+         KLAST  = KZERO  + (3*NUCDEP + 6 + 1)/IRAT
+         IF (KLAST .GT. LWORK) CALL STOPIT('LRSDRV',' ',KLAST,LWORK)
+         KWRK   = KLAST
+         LWRK   = LWORK - KLAST + 1
+         CALL LRSDR1(WORK(KNABAT),WORK(KZERO),WORK(KWRK),LWRK)
+      END IF
       IF (IPRCLC .GT. 0) CALL TIMER ('LRSDRV',TIMEIN,TIMOUT)
       PASS = .TRUE.
       IF (CUT) THEN

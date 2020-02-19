@@ -3346,6 +3346,8 @@ C
       END
 C  /* Deck psorhs */
       SUBROUTINE PSORHS(WMAT,LABINT,WORK,LWORK)
+C
+      use so_info, only: so_any_active_models
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
@@ -3370,7 +3372,7 @@ C
       IF (IPRALL .GE. 4) CALL TITLER('Output from PSORHS','*',103)
 C
       IF (SHIELD .OR. SPINRO) CALL DZERO(SIGMAS,9*NUCDEP)
-      IF (ABASOP) THEN
+      IF (ABASOP.AND..NOT.SO_ANY_ACTIVE_MODELS()) THEN
          LUDV   = NORBT * NORBT
          LPVX   = LPVMAT
       ELSE
@@ -3405,6 +3407,7 @@ C  /* Deck psorh1 */
       SUBROUTINE PSORH1(NODV,WMAT,INTADR,LABINT,INTREP,CMO,UDV,PVX,
      &                  XINDX,WORK,LWORK,PSOTST,IPRALL,DOSHI,RALLCO,
      &                  IPRINT)
+      use so_info, only: so_any_active_models
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3461,7 +3464,7 @@ C
 C
       IF (.NOT. ABASOP) THEN
          CALL GETCIX(XINDX,LSYMRF,LSYMRF,WORK,LWORK,0)
-      ELSE
+      ELSE IF (.NOT.SO_ANY_ACTIVE_MODELS()) THEN
 C
 C       SOPPA :
 C
@@ -3555,6 +3558,28 @@ C
       END IF
       NREC = 3*NUCDEP
 C
+C     For AO-SOPPA we just need to copy over labels
+      IF (SO_ANY_ACTIVE_MODELS()) THEN
+CSPAS: 03.10.2017: removing empty labels
+         ICOUNT = 0
+CKeinSPASmehr
+         DO ISYM = 1, NSYM
+            NREC = NGDVEC(ISYM,2)
+            DO LREC = 1, NREC
+               IREC = IGDREC(LREC,ISYM,2)
+               ISCOOR = IGDCOR(LREC,ISYM,2)
+CSPAS: 03.10.2017: removing empty labels
+C               IF (ISCOOR .GT. 0 ) IMGLAB(IREC) = LABINT(ISCOOR)
+               IF (ISCOOR .GT. 0 ) THEN
+                  ICOUNT = ICOUNT + 1
+                  IMGLAB(ICOUNT) = LABINT(ISCOOR)
+               END IF
+CKeinSPASmehr
+            END DO
+         END DO
+         RETURN
+      END IF
+C
 C     Construct right-hand sides and solve response equations and
 C     calculate if nescessary relaxation contributions. One symmetry
 C     at a time.
@@ -3582,6 +3607,7 @@ C
      &                        WORK,LWORK,IPRALL)
                END IF
                IMGLAB(IREC) = LABINT(ISCOOR)
+
                CALL GETGPV(LABINT(ISCOOR),DUMMY,DUMMY,CMO,UDV,PVX,XINDX,
      &                     ANTSYM,WORK,LWORK)
 C

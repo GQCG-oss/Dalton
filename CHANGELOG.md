@@ -27,6 +27,7 @@
     - J. M. H. Olsen and J. Kongsted, Adv. Quantum Chem. 61, 107 (2011)
   - Effective external field (EEF) can now be used for all dipole properties
   - Added support for AMOEBA potential
+- Added the ability to run SOPPA linear response calculations via the AOSOPPA module (R. Faber et al.)
 
 ### Added
 - Added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)

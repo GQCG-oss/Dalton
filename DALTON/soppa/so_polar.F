@@ -16,6 +16,7 @@ C              appropriate property integrals with the atomic
 C              integral direct SOPPA program.
 C
       use so_info, only: fn_rdens, sop_stat_trh
+      use so_data, only: fileinf
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -25,7 +26,8 @@ C
 #include "cbiexc.h"
 #include "absorp.h"
 #include "ccsdsym.h"
-C
+C Get irat
+#include "iratdef.h"
 C
       DIMENSION POLDD(2,3,3,NFRVAL), POLDQ(2,3,3,3,NFRVAL)
       DIMENSION POLDL(2,3,3,NFRVAL), POLDA(2,3,3,NFRVAL)
@@ -38,7 +40,7 @@ C
       CHARACTER*8 RTNLBL(2)
       DIMENSION   SNDPRP(2)
 C
-      LOGICAL   IMAGPROP
+      LOGICAL   IMAGPROP, OLDDX
       PARAMETER (DP5=0.5D0)
 C
 C------------------
@@ -69,9 +71,18 @@ C-----------------------------------------
 C     Open files with perturbed densities.
 C-----------------------------------------
 C
+      LPDENSIJ = NIJDEN(ISYMTR)
+      LPDENSAI = NAIDEN(ISYMTR)
+      IF (MODEL.EQ.'AORPA') THEN
+         LPDENSAB = 0
+         LPDENSTOT = LPDENSAI
+      ELSE
+         LPDENSAB = NABDEN(ISYMTR)
+         LPDENSTOT = LPDENSIJ + LPDENSAB + LPDENSAI
+      ENDIF
       LURDENS = -1
-      CALL GPOPEN(LURDENS, FN_RDENS, 'OLD',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.)
+      CALL GPOPEN(LURDENS, FN_RDENS, 'OLD','DIRECT','UNFORMATTED',
+     &            IRAT*LPDENSTOT,OLDDX)
 C
 C=============================================
 C     Loop over the second property operators.
@@ -115,13 +126,6 @@ C
                DO 100 IFRVAL = 1, NFRVAL
 C
 C  These allocations as such doesn't change...
-                  LPDENSIJ = NIJDEN(ISYMTR)
-                  IF (MODEL.EQ.'AORPA') THEN
-                     LPDENSAB = 0
-                  ELSE
-                     LPDENSAB = NABDEN(ISYMTR)
-                  ENDIF
-                  LPDENSAI = NAIDEN(ISYMTR)
 
                   KPDENSIJ = KEND1
                   KPDENSAB = KPDENSIJ + LPDENSIJ
@@ -137,8 +141,6 @@ C-----------------------------------------------------------
 C           Get the perturbed density matrix from file
 C-----------------------------------------------------------
 C
-                  CALL SO_FNDPOS(LABEL1,FRVAL(IFRVAL),LURDENS)
-                  LPDENSTOT = LPDENSIJ + LPDENSAB + LPDENSAI
                   IF (MODEL.EQ.'AORPA') THEN
                      CALL SO_REAVE(WORK(KPDENSAI),LPDENSAI,ISYMTR,
      &                             LABEL1,FRVAL(IFRVAL),LURDENS)
@@ -215,7 +217,8 @@ C--------------------------------------
 C           Close files with densities.
 C--------------------------------------
 C
-      CALL GPCLOSE(LURDENS,'KEEP')
+      CALL GPCLOSE(LURDENS,'DELETE')
+      call fileinf%empty() 
 C
 C-----------------------
 C     Remove from trace.

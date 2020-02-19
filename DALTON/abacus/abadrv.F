@@ -19,7 +19,7 @@ C
 C  /* Deck abactl */
       SUBROUTINE ABACTL(WORK,LWORK)
 C
-      USE SO_INFO, ONLY: SO_NUM_ACTIVE_MODELS
+      USE SO_INFO, ONLY: SO_NUM_ACTIVE_MODELS, SO_ANY_ACTIVE_MODELS
       use pelib_interface, only: use_pelib
 C
 #include "implicit.h"
@@ -52,7 +52,6 @@ C
 #include "expopt.h"
 #include "pcmlog.h"
 #include "ccinftap.h"
-#include "soppinf.h"
 #include "gnrinf.h"
 C
 C
@@ -136,7 +135,7 @@ C
          LWRK  = LWORK
       END IF
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF (.NOT. PASMAG) THEN
+      IF ((.NOT. PASMAG) .AND. (.NOT. SO_ANY_ACTIVE_MODELS())) THEN
          CALL MAGINT(WORK(KDSO),WORK(KLAST),LWRK,PASMAG)
          IF (PASMAG) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
@@ -274,6 +273,15 @@ C
       END IF
       CALL GETTIM(TIMLRS,TIMDUM)
       TIMLRS = TIMLRS - TIMSTR
+C
+C     ******************************************
+C     ***** AOSOPPA First order properties *****
+C     ******************************************
+C
+      IF (SO_ANY_ACTIVE_MODELS().AND.(SPNSPN.AND.DODSO)) THEN
+          CALL SO_ONEAVE(WORK(KDSO),WORK(KLAST),LWRK)
+      END IF
+C
 cLig added the call to CTOABA
 C
 C     *****************************
@@ -346,7 +354,7 @@ C     absorption, panor+kr-02
 C
          IF (.NOT. PASLNR) THEN
 CPi
-            IF(.NOT.(AORPA.OR.DCRPA.OR.AOSOP.OR.AOSOC.OR.AOCC2) )THEN
+            IF(.NOT.(SO_ANY_ACTIVE_MODELS()) )THEN
                KPOLDD = KLAST
                KPOLDQ = KPOLDD + 2*9*MXFR
                KPOLDL = KPOLDQ + 2*27*MXFR
@@ -408,12 +416,8 @@ C     ***** Electronic excitation energies *****
 C     ******************************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      NMODEL = 1
 CRF  2016-Jan Set NMODEL to actual AOSOPPA methods
-      IF (AORPA .OR. AOHRP .OR. DCRPA
-CPi
-     &          .OR. AOSOP .OR. AOSOC .OR. AOCC2)
-     &         NMODEL = so_num_active_models()
+      NMODEL = max(1,so_num_active_models())
       IF (DOEXCI .AND. .NOT. PASEXC) THEN
          KTRLEN = KLST1
          KTRVEL = KTRLEN + 3*NSYM*MXNEXI*NMODEL
@@ -425,10 +429,10 @@ CPi
          KBSRLO = KTRMAG + 3*NSYM*MXNEXI*NMODEL
          KEXENG = KBSRLO + 3*NSYM*MXNEXI*NMODEL
 CClark:11/01/2016
-         KBETHE = KEXENG + 3*LQ*NMODEL
-         KSTOPP = KBETHE + 3*LVEL*NMODEL
+         KBETHE = KEXENG + NSYM*MXNEXI*NMODEL
+         KSTOPP = KBETHE + 3*LQ*NMODEL
+         KSECMT = KSTOPP + 3*LVEL*2*NMODEL
 CClark:end
-         KSECMT = KSTOPP + NSYM*MXNEXI*NMODEL
          KFONAC = KSECMT + 3*NSYM*MXNEXI
          KFONA2 = KFONAC + 3*NUCDEP*NSYM*MXNEXI
          KRMLEN = KFONA2 + 3*NUCDEP*NSYM*MXNEXI
@@ -726,7 +730,8 @@ CPi Haase, 22.07.16: since the commonblocks soppinf.h (used in integral
 C direct soppa program) and infsop.h (used in molecular orbital basis
 C soppa program) contain the same triplet variables, import the necessary
 C variables from soppinf.h through the so_info module:
-      use SO_INFO, only: AORPA, AOHRP, DCRPA, AOSOP, AOSOC, AOCC2
+      use SO_INFO, only: AORPA, AOHRP, DCRPA, DCHRP, SDCHR,
+     &                   AOSOP, AOSOC, AOCC2
 C
 #include "implicit.h"
 #include "iratdef.h"
@@ -735,7 +740,7 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
-      PARAMETER (NDIR = 29, NTABLE = 62, D0 = 0.D0)
+      PARAMETER (NDIR = 29, NTABLE = 64, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP
       LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       LOGICAL   GRDINP, NO_ABACUS_INPUT
@@ -774,7 +779,6 @@ C infpar.h : PARHER
 #include "infsop.h"
 #include "infrsp.h"
 #include "infinp.h"
-C#include "soppinf.h"
 #include "locinf.h"
 #include "infpar.h"
 
@@ -831,8 +835,10 @@ C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
      &             '.VIB_G ', '.LOCALI', '.LRESC ',  ! jim May-12 for LRESC
-C                     61         62
-     &             '.TDA SI', '.TDA TR'/
+C                     61         62        63
+     &             '.TDA SI', '.TDA TR', '.RPA(D)', 
+C                     64
+     &             '.RPA   '/
 C
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
@@ -1045,7 +1051,7 @@ C
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
      &                151,152,153,154,155,156,157,158,159,160,
-     &                161,162), I
+     &                161,162,163,164), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1328,12 +1334,23 @@ C        .LOCALI
  160     CONTINUE ! jim-gesc 1.2: set RNLRSC true
          RNLRSC = .TRUE.
          GOTO 100
+C
  161     CONTINUE ! .TDA SInglet
          TDA_SINGLET = .TRUE.
          GOTO 100
+C
  162     CONTINUE ! .TDA TRiplet
          TDA_TRIPLET = .TRUE.
          GOTO 100
+CAKSP
+ 163     CONTINUE
+            DCRPA=.TRUE.!RPA(D)
+         GOTO 100
+C
+ 164     CONTINUE
+            AORPA=.TRUE.!RPA
+         GOTO 100
+C
 C
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
@@ -1506,10 +1523,10 @@ CSPAS : 26/08-2013 fixing the problem with the test jobs running MPI
 CRF Only quit if the stuff that is asked for is not yet parallelized.
             par_soppa_input_errors = .false.
 CPi 17.08.16: RF: Polarizabilities now work
-C            IF (.NOT.DOEXCI.OR.
             IF (
 C All the properties which parallel soppa currently cannot do. I.e all.
-     &      ANY( (/  SHIELD, MAGSUS, SPINRO, MOLGFA, SPNSPN, 
+C but Polarizabilities
+     &      ANY( (/  SHIELD, MAGSUS, SPINRO, MOLGFA,
      &            CTOCD /) ) 
      &         ) THEN
                WRITE(LUPRI,'(3A)')'@ ', WRDSRC, ' SOPPA can only be '
@@ -1520,12 +1537,12 @@ C All the properties which parallel soppa currently cannot do. I.e all.
 C            
 C Parallel soppa should be run using mp2 from the cc module
 C 
-            IF (DOMP2) THEN
-               WRITE(LUPRI,'(3A/A)')'@ ', WRDSRC, ' Parallel SOPPA can'
-     &             //' currently only run using the MP2 amplitudes ',
-     &               'from the CC module'
-               par_soppa_input_errors = .true. 
-            ENDIF
+C            IF (DOMP2) THEN
+C               WRITE(LUPRI,'(3A/A)')'@ ', WRDSRC, ' Parallel SOPPA can'
+C     &             //' currently only run using the MP2 amplitudes ',
+C     &               'from the CC module'
+C               par_soppa_input_errors = .true. 
+C            ENDIF
             IF (par_soppa_input_errors) 
      &         CALL PARQUIT('ABASOP')
 
@@ -1549,6 +1566,9 @@ CKeinSPASmehr
             ENDIF
 C
          ELSE
+            WRITE(LUPRI,'(//5x,A,A,/)')
+     *          ' SOPPA :',
+     *          ' Second Order Polarization Propagator Approximation'
             IF (DODRCT) THEN
                AOSOP = .TRUE.
                WRITE(LUPRI,'(//5x,A,/,5x,A,A,/,5x,A)')
@@ -1557,10 +1577,6 @@ CPi extra space to avoid test crash
      &              '    (Ref.: K. L. Bak, H. Koch, J. Oddershede,',
      &              ' O. Christiansen and S. P. A. Sauer',
      &              '     J. Chem. Phys. 112, 4173-4185 (2000))'
-            ELSE
-               WRITE(LUPRI,'(//5x,A,A,/)')
-     *             ' SOPPA :',
-     *             ' Second Order Polarization Propagator Approximation'
             END IF
          END IF
 CPi 9.8.16 SPAS: In case of ECD or OECD avoid london orbitals
@@ -2285,6 +2301,7 @@ CClark:end
 C
 C --- Final results from ABACUS ---
 C
+      use so_info, only: so_any_active_models
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -2329,7 +2346,6 @@ CClark:end
 #include "difsec.h"
 #include "expopt.h"
 #include "primit.h"
-#include "soppinf.h"
 #include "pgroup.h"
 C
 #include "trkoor.h"
@@ -2687,9 +2703,7 @@ C     Frequency-dependent linear response properties
 C     Polarizabilities and G tensors
 C
       IF (ABALNR) THEN
-         IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR.
-CPi
-     &       AOSOC .OR. AOCC2) THEN
+         IF ( SO_ANY_ACTIVE_MODELS() ) THEN
 CRF         Merging AO-SOPPA, adjust call signature           
             CALL SO_LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,
      &                     WORK,LWORK)
@@ -2704,10 +2718,7 @@ C     Excitation energies and (oriented) electronic circular dichroism
 C
       IF (DOEXCI) THEN
 CPFP-2009
-C         IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
-         IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR.
-CPi
-     &       AOSOC .OR. AOCC2) THEN
+         IF ( SO_ANY_ACTIVE_MODELS() ) THEN
 Cend-PFP
             CALL SO_EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
      &                     TTLEN,EXENG,

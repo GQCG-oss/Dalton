@@ -658,11 +658,13 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/symchk.F
     DALTON/soppa/ccsd_tcmepkx.F
     DALTON/soppa/dc_calc.F
+    DALTON/soppa/dc_backup1.F
+    DALTON/soppa/dc_backup2.F
     DALTON/soppa/dc_omec.F
     DALTON/soppa/dc_r1vec.F
     DALTON/soppa/dc_res_o.F
-    DALTON/soppa/dc_rsplex.F
     DALTON/soppa/dc_sres.F
+    DALTON/soppa/dc_lrnsl.F
     DALTON/soppa/rp_charge.F
     DALTON/soppa/rp_init.F
     DALTON/soppa/rp_newtrial.F
@@ -676,8 +678,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_anal.F
     DALTON/soppa/so_aodens.F
     DALTON/soppa/so_bcktr.F
-    DALTON/soppa/so_bextract.F
-    DALTON/soppa/so_tbextract.F
     DALTON/soppa/so_check.F
     DALTON/soppa/so_close.F
     DALTON/soppa/so_collect_tm.F
@@ -692,10 +692,11 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_excit1.F
     DALTON/soppa/so_excout.F
     DALTON/soppa/so_firgp.F
-    DALTON/soppa/so_fndpos.F
     DALTON/soppa/so_getgp.F
     DALTON/soppa/so_getmo.F
     DALTON/soppa/so_gett2.F
+    DALTON/soppa/so_iajb.F
+    DALTON/soppa/so_aibj2.F
     DALTON/soppa/so_incred.F
     DALTON/soppa/so_init.F
     DALTON/soppa/so_initial.F
@@ -707,6 +708,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_memmax.F
     DALTON/soppa/so_moenergy.F
     DALTON/soppa/so_newtrial.F
+    DALTON/soppa/so_oneave.F
     DALTON/soppa/so_onefock.F
     DALTON/soppa/so_onep.F
     DALTON/soppa/so_onepmo.F
@@ -736,11 +738,11 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_res_ovl.F
     DALTON/soppa/so_res_sym.F
     DALTON/soppa/so_res_tcb.F
-    DALTON/soppa/so_res_tcbt.F
     DALTON/soppa/so_ropt.F
     DALTON/soppa/so_rpprp1.F
     DALTON/soppa/so_rspleq.F
     DALTON/soppa/so_rsplex.F
+    DALTON/soppa/so_pkaodens.F
     DALTON/soppa/so_sdiag1.F
     DALTON/soppa/so_secgp.F
     DALTON/soppa/so_sigai.F
@@ -751,6 +753,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_stoppw.F
     DALTON/soppa/so_t2m1.F
     DALTON/soppa/so_t2mp.F
+    DALTON/soppa/so_mp2t2.F
     DALTON/soppa/so_test1.F
     DALTON/soppa/so_test.F
     DALTON/soppa/so_tfset.F
@@ -767,6 +770,9 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_write.F
     DALTON/soppa/so_writeset.F
     DALTON/soppa/so_wrtve.F
+    DALTON/soppa/so_lrnsl.F
+    DALTON/soppa/so_rspdrv.F
+    DALTON/soppa/so_rsplrs.F
     DALTON/fde/emb_quit.F
     )
 if(NOT ENABLE_CRAY_WRAPPERS)
@@ -796,6 +802,7 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/cc/dyn_index.F90
     DALTON/soppa/so_parutils.F90
     DALTON/soppa/so_info.F90
+    DALTON/soppa/so_data.F90
     DALTON/qmcmm/herqmnp.F90
     DALTON/qmcmm/fock.F90
     DALTON/qmcmm/response.F90

@@ -1,6 +1,7 @@
 C  /* Deck so_res_cd */
       SUBROUTINE SO_RES_CD(RES2E,LRES2E,RES2D,LRES2D,TR2E,LTR2E,TR2D,
-     &                     LTR2D,FOCKD,LFOCKD,ISYRES,WORK,LWORK)
+     &                     LTR2D,FOCKD,LFOCKD,ISYRES,DO_DEX,
+     &                     WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -19,6 +20,7 @@ C
       DIMENSION RES2E(LRES2E), RES2D(LRES2D)
       DIMENSION TR2E(LTR2E),   TR2D(LTR2D)
       DIMENSION FOCKD(LFOCKD), WORK(LWORK)
+      LOGICAL, INTENT(IN) :: DO_DEX
 C
 #include "ccorb.h"
 #include "ccsdinp.h"
@@ -127,15 +129,19 @@ C
             IOFF = IT2AM(ISYMAI, ISYMBJ) + 1
             CALL EXTR2_TOTSYM( TR2E(IOFF), RES2E(IOFF),
      &                         WORK(KFBJ), ISYMBJ)
-            CALL EXTR2_TOTSYM( TR2D(IOFF), RES2D(IOFF),
-     &                         WORK(KFBJ), ISYMBJ)
+            IF (DO_DEX) THEN
+               CALL EXTR2_TOTSYM( TR2D(IOFF), RES2D(IOFF),
+     &                            WORK(KFBJ), ISYMBJ)
+            END IF
          ELSE IF ( ISYMAI .LT. ISYMBJ) THEN
 C
             IOFF = IT2AM(ISYMAI,ISYMBJ) + 1
             CALL EXTR2_ASYM(TR2E(IOFF),RES2E(IOFF),WORK(KFAI),
      &                      WORK(KFBJ),ISYMAI,ISYMBJ)
-            CALL EXTR2_ASYM(TR2D(IOFF),RES2D(IOFF),WORK(KFAI),
-     &                      WORK(KFBJ),ISYMAI,ISYMBJ)
+            IF (DO_DEX) THEN
+               CALL EXTR2_ASYM(TR2D(IOFF),RES2D(IOFF),WORK(KFAI),
+     &                         WORK(KFBJ),ISYMAI,ISYMBJ)
+            END IF
          END IF
 C
   100 CONTINUE

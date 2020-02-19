@@ -12,6 +12,7 @@ C     PURPOSE: Calculate diagonale parts of the SOPPA E[2] matrix
 C              (excluding first and second order contributions in
 C              the one-particle part) and of the S[2] matrix.
 C
+      use so_info, only: so_has_doubles, so_singles_second
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -34,9 +35,7 @@ C------------------
 C
       CALL QENTER('SO_DIAG')
 C
-      DOUBLES = (MODEL.EQ.'AOSOP').OR.(MODEL.EQ.'AOSOC').OR.
-CPi
-     &          (MODEL.EQ.'AOCC2').OR.(MODEL.EQ.'DCRPA')
+      DOUBLES = SO_HAS_DOUBLES(MODEL)
 C
 C------------------------------------------------------------------
 C     Determine the symmetri of the result vector from the symmetry
@@ -51,10 +50,7 @@ C------------------------------
 C
       LDIAG1 = NT1AM(ISYMTR)
       IF (DOUBLES) THEN
-CPi 01.04.16
-C         LDIAG2 = NT2AM(ISYMTR)
          LDIAG2 = N2P2HOP(ISYMTR)
-Cend-Pi
       ELSE
          LDIAG2 = 0
       END IF
@@ -105,7 +101,7 @@ C
             CALL OUTPUT(WORK(KDIAG2),1,LDIAG2,1,1,LDIAG2,1,1,LUPRI)
          END IF
       END IF
-      IF (MODEL.NE.'AORPA' .OR. MODEL.NE.'DCRPA') THEN
+      IF (SO_SINGLES_SECOND(MODEL))THEN
 C
 C----------------------------------------------------
 C     Calculate the diagonal one particle part of the

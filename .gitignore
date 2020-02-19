@@ -16,3 +16,4 @@ DALTON/test/perl_test.*
 *~
 .DS_Store
 venv/
+tags*

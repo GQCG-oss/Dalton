@@ -33,10 +33,10 @@ C
       KEDIA1  = 1
       KEDIA2  = KEDIA1 + LEDIA1
       KEND    = KEDIA2 + LEDIA2
-      LWORK   = LWORK - KEND
+      LWORK1  = LWORK - KEND
 C
       CALL SO_MEMMAX ('DC_OMEC',LWORK1)
-      IF (LWORK .LT. 0) CALL STOPIT('DC_OMEC',' ',KEND,LWORK)
+      IF (LWORK1 .LT. 0) CALL STOPIT('DC_OMEC',' ',KEND,LWORK)
 C
 C-------------------------------------
 C     Read diagonal E[2] elements

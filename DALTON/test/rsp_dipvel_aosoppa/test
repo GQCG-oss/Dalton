@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+#    rsp_dipvel_aosoppa
+#    ---------------
+#    Molecule:         H2O
+#    Wave Function:    MP2 (AO-SOPPA module)
+#    Test Purpose:     Calculation of DIPVEL/DIPMAG response functions
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 8,
+      rel_tolerance = 1.0e-8)
+
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+      
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+# Energy
+f.add(string = 'Final HF energy',
+      rel_tolerance = 1.0e-9)
+f.add(string = 'Total MP2   energy',
+      rel_tolerance = 1.0e-9)
+
+# Property calculation
+f.add(string = 'Spin symmetry of operators: singlet')
+
+f.add(from_string = 'FREQUENCY INDEPENDENT SECOND ORDER',
+      to_string = '--------------------------------------------',
+      rel_tolerance = 1.0e-5)
+
+
+test.run(['rsp_dipvel_aosoppa.dal'], ['rsp_dipvel_aosoppa.mol'], f={'out': f},
+         )
+
+sys.exit(test.return_code)

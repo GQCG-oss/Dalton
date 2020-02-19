@@ -18,7 +18,8 @@ C              SOPPA, and SOPPA(CCSD) excitation calculations.
 C
       use so_info, only: sop_num_models, sop_mod_fullname,
      &                   sop_model_rpa, sop_model_rpad,
-     &                   so_get_active_models, so_has_doubles
+     &                   so_get_active_models, so_has_doubles,
+     &                   sop_model_hrpad, sop_model_shrpad
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -42,7 +43,7 @@ C    actual amount of space, that we use)
       DIMENSION BSRLON(3,NSYM,MXNEXI,*),
      &          EXENG(NSYM,MXNEXI,*)
 CClark:11/01/2016
-      DIMENSION BETHE(3,LQ,*),STOPP(3,LVEL,*)
+      DIMENSION BETHE(3,LQ,*),STOPP(3,LVEL,2,*)
 CClark:end
 CKeinSPASmehr
       DIMENSION FONAC(*)
@@ -81,6 +82,8 @@ C        Check if we there is a treatment of doubly excited states
 C       - RPA(D) has cannot do this!
          TREAT_DOUBLES = SO_HAS_DOUBLES(IMODEL)
      &                   .AND. (.NOT.IMODEL.EQ.SOP_MODEL_RPAD)
+     &                   .AND. (.NOT.IMODEL.EQ.SOP_MODEL_HRPAD)
+     &                   .AND. (.NOT.IMODEL.EQ.SOP_MODEL_SHRPAD)
 C
          DO ISYM = 1, NSYM
 C
@@ -116,11 +119,12 @@ C
 C
          IF (IMODEL .EQ. SOP_MODEL_RPA)
      &            CALL RP_WRITE_EXTEND(EXENG(1,1,IOUT),SECMAT)
-CPi 15.08.16: Only write stopping power to output if requested
+C
          IF (STOPPW) THEN
-            CALL STOPP_WRITE(BETHE(1,1,IOUT),STOPP(1,1,IOUT) )
-         END IF
-Cend-Pi
+C
+            CALL STOPP_WRITE(BETHE(1,1,IOUT),STOPP(1,1,1,IOUT) )
+C
+         ENDIF
 CSPAS:26/01-08:
 C     moved because otherwise we get a lot of non-sense output
 C     for the orbital extend
@@ -155,8 +159,13 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "cbiexc.h"
+#include "ccorb.h"
+#include "pi.h"
 C
-      DIMENSION BETHE(3,LQ),STOPP(3,LVEL)
+      DIMENSION BETHE(3,LQ),STOPP(3,LVEL,2)
+      REAL*8    LTWO
+      PARAMETER ( D2 = 2.0D00 )
+      PARAMETER ( D4 = 4.0D00 )
 C
 C---------------------------------------------
 C     Write Bethe sum rule and Stopping power.
@@ -172,28 +181,112 @@ C---------------------------------------------
      &   ' ------------------------------------------------------'
       WRITE(LUPRI,'(1X,A,I4,3(1X,A,G10.4))')
      &   'LQ=',LQ,'QMAX=',QMAX,'QMIN=',QMIN,'QSTEP=',QSTEP
+      WRITE(LUPRI,'(1X,A)')
+     &   ' ------------------------------------------------------'
+C
       DO IQ = 1, LQ
 C
-         WRITE(LUPRI,'(2X,G9.4,3(4X,G11.5))')
+         WRITE(LUPRI,'(2X,G8.3,3(4X,G11.5))')
      &                QMIN+(IQ-1)*QSTEP,(BETHE(K,IQ),K=1,3)
 C
       END DO
 C
       WRITE(LUPRI,'(//,1X,A)')
-     &   '         Stopping Power                 '
+     &   '       Stopping Power ( X Component )  [a.u.]           '
       WRITE(LUPRI,'(1X,A/)')
-     &   '         --------------'
+     &   '    ---------------------------------------------'
       WRITE(LUPRI,'(1X,A)')
-     &   ' Velocity     X Component    Y Component    Z Component'
+     &   ' V[a.u.] Ekinet[KeV] Full  L1  + L2   = split [a.u.]'
       WRITE(LUPRI,'(1X,A)')
-     &   ' ------------------------------------------------'
+     &   ' -----------------------------------------------------------'
 C
       DO IVEL = 1, LVEL
 C
          VELOC = VMIN+(IVEL-1)*VSTEP
 C
-         WRITE(LUPRI,'(2X,G9.4,3(4X,G11.5))')
-     &                VELOC,(STOPP(K,IVEL),K=1,3)
+C 2.0*NRFHT is the number of electrons.
+C
+         IF (VELOC*2.0 .GE. QINP) THEN
+C
+            LTWO = PI*D4*LOG(VELOC*D2/QINP)*D2*NRHFT/(VELOC*VELOC)
+C
+         ELSE
+C
+            LTWO = 0
+C
+         ENDIF
+C
+         WRITE(LUPRI,
+     &         '(1X,F5.2,1X,F7.1,1X,F8.4,5X,F7.3,2X,F7.3,2X,F8.4)')
+     &          VELOC,VELOC*VELOC*24.98,
+     &          STOPP(1,IVEL,1),STOPP(1,IVEL,2),LTWO,
+     &          STOPP(1,IVEL,2)+LTWO
+C
+      END DO
+C
+      WRITE(LUPRI,'(//,1X,A)')
+     &   '       Stopping Power ( Y Component )  [a.u.]           '
+      WRITE(LUPRI,'(1X,A/)')
+     &   '    ---------------------------------------------'
+      WRITE(LUPRI,'(1X,A)')
+     &   ' V[a.u.] Ekinet[KeV] Full  L1  + L2   = split [a.u.]'
+      WRITE(LUPRI,'(1X,A)')
+     &   ' -----------------------------------------------------------'
+C
+      DO IVEL = 1, LVEL
+C
+         VELOC = VMIN+(IVEL-1)*VSTEP
+C
+C 2.0*NRFHT is the number of electrons.
+C
+         IF (VELOC*2.0 .GE. QINP) THEN
+C
+            LTWO = PI*D4*LOG(VELOC*D2/QINP)*D2*NRHFT/(VELOC*VELOC)
+C
+         ELSE
+C
+            LTWO = 0
+C
+         ENDIF
+C
+         WRITE(LUPRI,
+     &         '(1X,F5.2,1X,F7.1,1X,F8.4,5X,F7.3,2X,F7.3,2X,F8.4)')
+     &          VELOC,VELOC*VELOC*24.98,
+     &          STOPP(2,IVEL,1),STOPP(2,IVEL,2),LTWO,
+     &          STOPP(2,IVEL,2)+LTWO
+C
+      END DO
+C
+      WRITE(LUPRI,'(//,1X,A)')
+     &   '       Stopping Power ( Z Component )  [a.u.]           '
+      WRITE(LUPRI,'(1X,A/)')
+     &   '    ---------------------------------------------'
+      WRITE(LUPRI,'(1X,A)')
+     &   ' V[a.u.] Ekinet[KeV] Full  L1  + L2   = split [a.u.]'
+      WRITE(LUPRI,'(1X,A)')
+     &   ' -----------------------------------------------------------'
+C
+      DO IVEL = 1, LVEL
+C
+         VELOC = VMIN+(IVEL-1)*VSTEP
+C
+C 2.0*NRFHT is the number of electrons.
+C
+         IF (VELOC*2.0 .GE. QINP) THEN
+C
+            LTWO = PI*D4*LOG(VELOC*D2/QINP)*D2*NRHFT/(VELOC*VELOC)
+C
+         ELSE
+C
+            LTWO = 0
+C
+         ENDIF
+C
+         WRITE(LUPRI,
+     &         '(1X,F5.2,1X,F7.1,1X,F8.4,5X,F7.3,2X,F7.3,2X,F8.4)')
+     &          VELOC,VELOC*VELOC*24.98,
+     &          STOPP(3,IVEL,1),STOPP(3,IVEL,2),LTWO,
+     &          STOPP(3,IVEL,2)+LTWO
 C
       END DO
 C

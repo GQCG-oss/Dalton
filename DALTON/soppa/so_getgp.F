@@ -31,6 +31,8 @@ C        GPVC1(LGPVC1) 1p-1h gradient, excitation part
 C        GPVC2(LGPVC2) 2p-2h gradient, excitation part (IA)
 C        IMAGPROP      Whether the property operators are imaginary
 C
+      use so_info, only: so_has_doubles
+C
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -46,9 +48,10 @@ C
       CHARACTER*5 MODEL
       LOGICAL     IMAGPROP, DOUBLES
 C
-      DOUBLES =     MODEL.EQ.'AOSOP'.OR.MODEL.EQ.'AOSOC'
+C      DOUBLES =     MODEL.EQ.'AOSOP'.OR.MODEL.EQ.'AOSOC'
 CPi
-     &          .OR.MODEL.EQ.'DCRPA'.OR.MODEL.EQ.'AOCC2'
+C     &          .OR.MODEL.EQ.'DCRPA'.OR.MODEL.EQ.'AOCC2'
+      DOUBLES = so_has_doubles(MODEL)
       LGPVC1H = LGPVC1
       IF(DOUBLES) LGPVC2H = LGPVC2
 C      SQ2 = DSQRT(TWO)

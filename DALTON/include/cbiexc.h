@@ -4,13 +4,14 @@
       LOGICAL         SKIP, CUT, DIPSTR, ROTSTR, ROTVEL, FNAC, EXCTRP,
 CPFP
 C     &        SUMRUL, OOTV
-     &        SUMRUL, OOTV, MAGPRP,
+     &                SUMRUL, OOTV, MAGPRP,
 Cend-PFP
 CClark:7/1/2016
-     &        STOPPW
+     &                STOPPW
       REAL*8          QMIN,QMAX,QSTEP
       REAL*8          VMIN,VMAX,VSTEP
       INTEGER         LQ,LVEL
+      REAL*8          QINP
 CClark:end
       PARAMETER       (MAXPP = 200)
       CHARACTER*8     LABAPP
@@ -20,6 +21,7 @@ CClark:7/1/2016
      &                QMIN,QMAX,QSTEP,
      &                VMIN,VMAX,VSTEP,
      &                LQ,LVEL,
+     &                QINP,
 CClark:end
      &                NEXCIT(8), MAXITE, MXNEXI, MXRM,
      &                MXPHP, NABAPP, IPREXC, IPR1IN,

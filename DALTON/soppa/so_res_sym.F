@@ -1,6 +1,6 @@
 C  /* Deck so_res_sym */
       SUBROUTINE SO_RES_SYM(RES1E,LRES1E,RES1D,LRES1D,AIJ,LAIJ,AAB,
-     &                      LAAB,TR1E,LTR1E,TR1D,LTR1D,ISYRES)
+     &                      LAAB,TR1E,LTR1E,TR1D,LTR1D,ISYRES,DO_DEX)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -10,11 +10,11 @@ C
 C     Rasmus Faber, 2016 : Now calculates the whole of terms (2) and (3)
 C                          of the A^(2) matrix
 C                          This this saves N^5 operations in SO_RES_A
-C         
+C
 C     PURPOSE: Calculate the symmetry corrected terms (2) and (3) of the
 C              A matrix, using the A_{i,j} and A_{a,b} intermediates
 C              calculated in SO_RES_A.
-C         
+C
 C              as expressed in eq. (44).
 C
 #include "implicit.h"
@@ -24,6 +24,7 @@ C
 C
       DIMENSION RES1E(LRES1E), RES1D(LRES1D), AIJ(LAIJ),  AAB(LAAB)
       DIMENSION TR1E(LTR1E),   TR1D(LTR1D)
+      LOGICAL, INTENT(IN) :: DO_DEX
 C
 #include "ccorb.h"
 #include "ccsdinp.h"
@@ -62,14 +63,16 @@ C
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
      &              -HALF,TR1E(KOFF1),NTOTA,AIJ(KOFF4),NTOTJ,ONE,
      &              RES1E(KOFF3),NTOTA)
+C        
+         IF (DO_DEX) THEN
+            CALL DGEMM('N','T',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
+     &                 -HALF,TR1D(KOFF1),NTOTA,AIJ(KOFF2),NTOTI,ONE,
+     &                 RES1D(KOFF3),NTOTA)
 C
-         CALL DGEMM('N','T',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
-     &              -HALF,TR1D(KOFF1),NTOTA,AIJ(KOFF2),NTOTI,ONE,
-     &              RES1D(KOFF3),NTOTA)
-C
-         CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
-     &              -HALF,TR1D(KOFF1),NTOTA,AIJ(KOFF4),NTOTJ,ONE,
-     &              RES1D(KOFF3),NTOTA)
+            CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
+     &                 -HALF,TR1D(KOFF1),NTOTA,AIJ(KOFF4),NTOTJ,ONE,
+     &                 RES1D(KOFF3),NTOTA)
+         END IF
 C
          ISYMB = ISYMA
 C
@@ -93,13 +96,15 @@ C
      &              -HALF,AAB(KOFF4),NTOTB,TR1E(KOFF2),NTOTB,ONE,
      &              RES1E(KOFF3),NTOTA)
 C
-         CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NVIR(ISYMB),
-     &              -HALF,AAB(KOFF1),NTOTA,TR1D(KOFF2),NTOTB,ONE,
-     &              RES1D(KOFF3),NTOTA)
+         IF (DO_DEX) THEN
+            CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NVIR(ISYMB),
+     &                 -HALF,AAB(KOFF1),NTOTA,TR1D(KOFF2),NTOTB,ONE,
+     &                 RES1D(KOFF3),NTOTA)
 C
-         CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NVIR(ISYMB),
-     &              -HALF,AAB(KOFF4),NTOTB,TR1D(KOFF2),NTOTB,ONE,
-     &              RES1D(KOFF3),NTOTA)
+            CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NVIR(ISYMB),
+     &                 -HALF,AAB(KOFF4),NTOTB,TR1D(KOFF2),NTOTB,ONE,
+     &                 RES1D(KOFF3),NTOTA)
+         END IF
 C
   100 CONTINUE
 C

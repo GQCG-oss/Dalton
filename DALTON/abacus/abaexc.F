@@ -143,16 +143,18 @@ CKeinSPASmehr
                GO TO 100
 CClark:7/1/2016
    17          CONTINUE
-               STOPPW = .TRUE.
-               READ (LUCMD,*) QMIN,QMAX,QSTEP
-               READ (LUCMD,*) VMIN,VMAX,VSTEP
-               LVEL = INT((VMAX-VMIN)/VSTEP+1.0001)
+                  STOPPW = .TRUE.
+                  READ (LUCMD,*) QMIN,QMAX,QSTEP
+                  READ (LUCMD,*) VMIN,VMAX,VSTEP
+                  LVEL = INT((VMAX-VMIN)/VSTEP+1.0001)
 CClark: QMAX reset by qmax=2*me*Vmax/hbar according to Bonderup)
-               WRITE (LUPRI,'(1A)')
-     &         'Qmax reset to 2*Vmax according to Bonderup'
-               QMAX = 2*VMAX
-               LQ   = INT((QMAX-QMIN)/QSTEP+1.0001)
-               ICHANG = ICHANG + 1
+                  WRITE (LUPRI,'(1A)')
+     &            'Qmax reset to 2*Vmax according to Bonderup'
+                  QMAX = 2*VMAX
+                  LQ   = INT((QMAX-QMIN)/QSTEP+1.0001)
+                  READ (LUCMD,*) QINP
+                  THREXC = 1.0D-3
+                  ICHANG = ICHANG + 1
                GO TO 100
 CClark:end
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -280,6 +282,7 @@ CClark:end
 C
 CSPAS:23/5-11: second and third moment sum rules added (in TTLEN)
 C
+      USE SO_INFO, ONLY: SO_ANY_ACTIVE_MODELS
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -287,7 +290,6 @@ C
 #include "cbiexc.h"
 #include "infrsp.h"
 #include "nuclei.h"
-#include "soppinf.h"
       LOGICAL PASS
       DIMENSION WORK(LWORK)
       DIMENSION TRLEN(3,NSYM,MXNEXI,*), TRVEL(3,NSYM,MXNEXI,*)
@@ -296,7 +298,7 @@ C
       DIMENSION TRLON(3,NSYM,MXNEXI,*), TRMAG(3,NSYM,MXNEXI,*)
       DIMENSION BSRLON(3,NSYM,MXNEXI,*),EXENG(NSYM,MXNEXI,*)
 CClark:11/01/2016
-      DIMENSION BETHE(3,LQ,*),STOPP(3,LVEL,*)
+      DIMENSION BETHE(3,LQ,*),STOPP(3,LVEL,2,*)
 CClark:end
       DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
       DIMENSION SECMAT(3,MXNEXI,NSYM)
@@ -308,9 +310,7 @@ C
 C
       IPRRSP = IPREXC
 C
-      IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP
-CPi
-     &    .OR. AOSOC .OR. AOCC2) THEN
+      IF ( SO_ANY_ACTIVE_MODELS() ) THEN
          CALL SO_EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,
      &                  BSRLON,SECMAT,EXENG,
 CClark:11/01/2016
@@ -322,7 +322,7 @@ CClark:end
      &               TRLON,TRMAG,BSRLON,EXENG,FONAC,FONA2,
      &               WORK,LWORK)
       END IF
-C
+
       CALL TIMER ('EXCITA',TIMEIN,TIMOUT)
       PASS   = .TRUE.
       IF (CUT) THEN
