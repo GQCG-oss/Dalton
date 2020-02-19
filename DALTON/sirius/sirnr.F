@@ -15,13 +15,9 @@
 !  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
-C
-#ifdef REVISION_LOG
-===========================================================================
-Revision 1.2  2000/05/01 14:05:16  hjj
-removed KAVER reference.
-===========================================================================
-#endif
+
+! FILE sirnr.F : subroutines for Newton-Raphson optimization of MCSCF
+
 C  /* Deck sirnr */
       SUBROUTINE SIRNR(CREF,G,CMO,INDXCI,DV,PV,
      *                 FC,FV,FCAC,H2AC,EACTVN,IBNDX,WRK,LFREE)
@@ -1105,7 +1101,7 @@ C
       RETURN
       END
 C  /* Deck snrprd */
-      FUNCTION SNRPRD(NREDH,REDG,REDH,SOLEQ)
+      REAL*8 FUNCTION SNRPRD(NREDH,REDG,REDH,SOLEQ)
 C
 C     May-1986 hjaaj
 C
@@ -1115,24 +1111,38 @@ C     REDG  = minus reduced gradient
 C     REDH  = reduced Hessian
 C     SOLEQ = step vector in reduced basis
 C
-#include "implicit.h"
-      DIMENSION REDG(*),REDH(*),SOLEQ(*)
+      implicit none
+! priunit.h : LUPRI
+! infpri.h  : IPRSIR
+#include "priunit.h"
+#include "infpri.h"
+      integer  nredh
+      real*8   REDG(*),REDH(*),SOLEQ(*)
+      integer  i, j, ij
+      real*8   sum1, sum2, tmp
 C
-      PARAMETER ( D0 = 0.0D0 , DP5 = 0.5D0 )
-C
-      SUM = D0
+      SUM1 = 0.0D0
+      SUM2 = 0.0D0
       IJ = 0
       DO 200 I = 1,NREDH
-         SUM1 = D0
+         TMP = 0.0D0
          DO 100 J = 1,(I-1)
             IJ = IJ + 1
-            SUM1 = SUM1 + SOLEQ(J) * REDH(IJ)
+            TMP = TMP + SOLEQ(J) * REDH(IJ)
  100     CONTINUE
          IJ = IJ + 1
-         SUM = SUM
-     *       + ( -REDG(I) + DP5*SOLEQ(I)*REDH(IJ) + SUM1 ) * SOLEQ(I)
+         SUM1 = SUM1 - REDG(I) * SOLEQ(I)
+         SUM2 = SUM2 + ( 0.5D0*SOLEQ(I)*REDH(IJ) + TMP ) * SOLEQ(I)
  200  CONTINUE
 C
-      SNRPRD = SUM
+      IF (IPRSIR .GE. 3) THEN
+         WRITE(LUPRI,'(/A,3F15.10)')
+     &   'Newton-Raphson second order prediction;'//
+     &   ' 1st order, 2nd order, total:',
+     &   SUM1, SUM2, SUM1 + SUM2
+      END IF
+C
+      SNRPRD = SUM1 + SUM2
       RETURN
       END
+! end of sirnr.F

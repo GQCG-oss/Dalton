@@ -960,6 +960,8 @@ C
 C     Test if switch to update method or switch to NR linear equations
 C     (condition: local region, defined as step .le. STPLCL*RTRUST)
 C
+      IF (.NOT. DOMCSRDFT) THEN
+      ! Oct 2019 hjaaj: DONR is not working for excited state MCsrDFT ...
       IF (.NOT.FLAG(37) .OR. .NOT.FLAG(38) .OR. .NOT.NRALW) THEN
 C     If (not noupdate or not neo_always or not nr_always) then
          LOCAL = (STPLEN .LT. STPLCL*RTRUST .AND. STPC .LT. STPO)
@@ -983,6 +985,7 @@ C              ... no reason to switch to NR for ground state
             END IF
          END IF
       END IF
+      END IF ! IF (.NOT. DOMCSRDFT) THEN
 C
 C save information for final summary print-out
 C
