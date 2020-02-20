@@ -63,11 +63,11 @@ C
 #include "implicit.h"
       LOGICAL   AO_DIRECT, DOERG, DOATR, LSRHYBR
       LOGICAL   DO_SPINDNS, DFT_SPINDNS_SAVE, TRIPLET_local
-      DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,*)
-      DIMENSION ISYMDM(NDMAT), IFCTYP(NDMAT)
-      DIMENSION ISYMDM_local(NDMAT),IFCTYP_local(NDMAT) ! automatic, temporary arrays
-      DIMENSION WRK(*)
-      DIMENSION DFCOEFF(NBAST) !density-fitting coefficients
+      REAL*8    FMAT(N2BASX,NDMAT), DMAT(N2BASX,*)
+      INTEGER   ISYMDM(NDMAT), IFCTYP(NDMAT)
+      INTEGER   ISYMDM_local(NDMAT),IFCTYP_local(NDMAT) ! automatic, temporary arrays
+      REAL*8    WRK(*)
+      INTEGER   DFCOEFF(NBAST) !density-fitting coefficients
 C
 #include "dummy.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D4 = 4.0D0,
@@ -96,8 +96,6 @@ Cholesky
 #include "sirftim.h"
 #include "choscf.h"
 Cholesky
-C
-
 C
       LOGICAL SFIRST, PREHF, IOPTVP, DO_CHOINT
       SAVE SFIRST
@@ -903,7 +901,7 @@ C                 ... copy symmetric part of DXVAO
 C           ... get total DMAT = DC + DV if NASHT .gt. 0
 C           ... spin DMAT: DS is expected in JDAO + 2
           END IF
-C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+C         SRDFT(NDMAT,EXCMAT,DMAT,ESRDFT(1:3),DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
 #if SIRFCK_DEBUG > 0
           WRITE(LUPRI,*) 'SIRFCK: calling SRDFT, DOERG,DOATR,NSRAO',
      &             DOERG,DOATR,NSRAO  !JT
@@ -932,10 +930,10 @@ C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,DOGRD,DOATR,WORK,LWORK
                 CALL DZERO(WRK(KSRAO),NSRAO*N2BASX)
                 DFT_SPINDNS_SAVE = DFT_SPINDNS
                 DFT_SPINDNS = DO_SPINDNS
-                CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),ESRDFT,EXSR,ECSR,
+                CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),ESRDFT,
      &                     DOERG,.FALSE.,DOATR,TRIPLET_local,
      &                     WRK(KLAST),LWRK,IPRSRDFT)
-C                    SRDFT(NDMAT,EXCMAT,DMAT,ESRDFT,EXSR,ECSR,
+C                    SRDFT(NDMAT,EXCMAT,DMAT,ESRDFT,
 C                          DOERG,DOGRD,DOATR,TRIPLET,WORK,LWORK,IPRINT)
                 DFT_SPINDNS = DFT_SPINDNS_SAVE
 C         IF (DOATR)
@@ -974,17 +972,19 @@ C        ... restore DC = DTOT - DV
 !
 !        Short range energy contributions:
 !           EKSR_S =  0.5*Tr( Ksr(Ds) Ds ) * HFXFAC
-!           ESRDFT = Exsr + Ecsr + EKSR_S
+!           ESRDFT(1) = Exsr + Ecsr + EKSR_S
+!           ESRDFT(2) = Exsr
+!           ESRDFT(1) = Ecsr
 !           EJSR   =  0.5*Tr( Jsr(Dtot) Dtot )
 !           EKSR   =  0.5*Tr( Ksr(Dtot) Dtot ) * HFXFAC
 !           (EJSR and EKSR are included in EMCSCF via modified FCAC and therefore not included in ESRDFTY)
 !           IF (iprsrdft .GT. 0) then
                WRITE (LUPRI,'(/A,F20.10)')
-     &            '   Ex-sr                          ',EXSR
+     &            '   Ex-sr                          ',ESRDFT(2)
                WRITE (LUPRI,'(A,F20.10)')
-     &            '   Ec-sr                          ',ECSR
+     &            '   Ec-sr                          ',ESRDFT(3)
                WRITE (LUPRI,'(A,F20.10)')
-     &            '   Ex-sr + Ec-sr                  ',ESRDFT
+     &            '   Ex-sr + Ec-sr                  ',ESRDFT(1)
                IF (EKSR .ne. 0.0D0) THEN
                   WRITE (LUPRI,'(A,F20.10)')
      &            ' + EJsr = sr Coulomb energy       ',EJSR,
@@ -1001,12 +1001,13 @@ C        ... restore DC = DTOT - DV
      &            ' + EKsr_S from spin density       ',EKSR_S
                WRITE (LUPRI,'(A,F20.10/)')
      &            ' = Total E(srDFT)                 ',
-     &            ESRDFT+EJSR+EKSR+EKSR_S
+     &            ESRDFT(1)+EJSR+EKSR+EKSR_S
                flush(lupri)
 !           end if
-            ESRDFT  = ESRDFT + EKSR_S
-            ESRDFTY = ESRDFT
-            ESRDFT  = ESRDFT + EJSR + EKSR
+            ESRDFT(1)  = ESRDFT(1) + EKSR_S
+            ESRDFTY = ESRDFT(1)
+            ESRDFT(1)  = ESRDFT(1) + EJSR + EKSR
+            ! ESRDFT and ESRDFTY are returned in common block dfterg.h
 
 !           ESRDFTY is ESRDFT + a correction energy needed because
 !           the JKsr and Vxcsr matrices are added to FC to get correct MC-srDFT gradient.

@@ -501,8 +501,8 @@ C        then set HF exchange factor to zero.
       END
 
 
-C*****************************************************************************
-      SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,
+C****************************************************************************
+      SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,ESRDFT,DOERG,
      &                 DO_MOLGRAD,DOATR,TRIPLET,WORK,LWORK,IPRINT_in)
 C*****************************************************************************
 C    Purpose : Calculate SR DFT-energy and potential contribution for
@@ -525,7 +525,9 @@ C
 C    Output:       EXCMAT(1) = charge density potential matrix
 C                  EXCMAT(2) = spin density potential matrix (DFT_SPINDNS)
 C                         or = special potential matrix (SRHYBR)
-C                  EDFTY     = srDFT energy
+C                  ESRDFT(1) = srDFT energy
+C                  ESRDFT(2) = srDFT exchange energy
+C                  ESRDFT(3) = srDFT correlation energy
 C
 C    Created: Jesper Kielberg Pedersen, Mar. 2003
 C    Modified: 17-08-09, J. Toulouse, add spin density matrix
@@ -550,7 +552,8 @@ C*****************************************************************************
       logical :: DOLND, DOGGA, do_metagga
       logical :: first_call, LSRHYBR
       DATA       first_call /.true./
-      real*8 :: EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),WORK(LWORK)
+      real*8 :: EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),ESRDFT(3)
+      real*8 :: WORK(LWORK)
       real*8 :: RESULTS(11)
 
       CALL QENTER('SRDFT')
@@ -612,7 +615,7 @@ C*****************************************************************************
          flush(lupri)
 #endif
          CALL SRDFT_PAR_MASTER(
-     &        ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,
+     &        ND_SIM,EXCMAT,DMAT,ESRDFT,
      &        DOERG,DO_MOLGRAD,DOATR,TRIPLET,
      &        WORK,LWORK,IPRINT)
 #if SRDFT_DEBUG > 4
@@ -773,11 +776,11 @@ C
       ECTOT     = RESULTS(11)
 C
       IF (DOERG) THEN
-         EDFTX = Exint
-         EDFTC = Ecint
-         EDFTY = EXint + ECint
+         ESRDFT(1) = EXint + ECint
+         ESRDFT(2) = Exint
+         ESRDFT(3) = Ecint
          IF (LSRHYBR) THEN
-            EDFTY = EDFTY + EXTOT - EXSR + ECTOT - ECSR
+            ESRDFT(1) = ESRDFT(1) + EXTOT - EXSR + ECTOT - ECSR
          END IF
          FAC = 0.5D0
       ELSE IF (DOATR) THEN
@@ -829,7 +832,7 @@ C
          WRITE (LUPRI,'(3(/A,F18.10),/A,I18)')
      & ' Exchange energy                                :',ExInt,
      & ' Correlation energy                             :',EcInt,
-     & ' DFT exchange-correlation energy                :',EDFTY,
+     & ' DFT exchange-correlation energy                :',ESRDFT(1),
      & ' Number of times RHO(2) > RHO(1)                :',NRSGTR
 
       END IF ! DOERG
@@ -2087,7 +2090,7 @@ C        ***************************
 
 
 C*****************************************************************************
-      SUBROUTINE SRFMAT(FMAT,CMO,DVREF,EJCSR,EJVSR,EDSR,EDFT,
+      SUBROUTINE SRFMAT(FMAT,CMO,DVREF,EJCSR,EJVSR,EDSR,ESRDFT,
      &                  EMYDFTAUX,UEJCVSR,WRK,LWRK,IPRINT)
 C*****************************************************************************
 C
@@ -2099,7 +2102,7 @@ C
 C     EJCSR =  0.5 * Tr (D^c . J^sr . D^c)
 C     EJVSR = -0.5 * Tr (D^{v,ref} . J^sr . D^{v,ref})
 C     EDSR  = -1.0 * Tr (V^{sr,ref}_{xc} . D^{v,ref})
-C     EDFT  = E^{sr}_{xc} [D^c+D^{v,ref}] 
+C     ESRDFT  = E^{sr}_{xc} [D^c+D^{v,ref}] 
 C
 C     23-Aug-2012 modified by Manu 
 C   
@@ -2115,7 +2118,7 @@ C     * Note that for ensemble CI-srDFT, D^{v,ref} should be, here, equal to the
 C       ensemble density matrix
 C*****************************************************************************
 #include "implicit.h"
-      REAL*8    FMAT(*), CMO(*), DVREF(*), WRK(*)
+      REAL*8    FMAT(*), CMO(*), DVREF(*), WRK(*), ESRDFT(3)
       INTEGER   ISYMDM(2), IFCTYP(2)
       LOGICAL   LSRHYBR, DFT_SPINDNS_SAVE
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
@@ -2204,8 +2207,8 @@ C     using total density matrix (stored in KDCAO)
 
       CALL DZERO(WRK(KFVAO),N2BASX)
 
-C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,DO_MOLGRAD,DOATR,WORK,LWORK,IPRINT)
-      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,EDFTX,EDFTC,
+C     SRDFT(ND_SIM,EXCMAT,DMAT,ESRDFT(1:3),DOERG,DO_MOLGRAD,DOATR,WORK,LWORK,IPRINT)
+      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),ESRDFT,
      &           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      &           WRK(KFREE),LFREE,IPRFCK)
       IF (IPRINT.GT.9) THEN
@@ -2243,7 +2246,7 @@ C         ... only exchange
           CALL DAXPY(N2BASX,DM1,WRK(KFVAO),1,WRK(KFCAO),1)
           EKTLR = DP5*DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
           EDSR = EDSR + EKVLR
-          EDFT = EDFT - EKTLR
+          ESRDFT(1) = ESRDFT(1) - EKTLR
       ENDIF
 
 C     ===============================================
@@ -2280,16 +2283,18 @@ C
 C     EJCSR =  0.5 * Tr (D^c . J^sr . D^c)
 C     EJVSR = -0.5 * Tr (D^{v,ref} . J^sr . D^{v,ref})
 C     EDSR  = -1.0 * Tr (V^{sr,ref}_{xc} . D^{v,ref})
-C     EDFT  = E^{sr}_{xc} [D^c+D^{v,ref}] 
+C     uEDFT(1)  = E^{sr}_{xc} [D^c+D^{v,ref}]
+C     uEDFT(2:3) = exchange and correlation contributions, respectively
 C
 C     !> input: ensemble density matrices D^{v,ref}, D^{v,upd} and D^{v,diff} = D^{v,upd}-D^{v,ref}
 C*****************************************************************************
  
 #include "implicit.h"
-      DIMENSION FMAT(*),CMO(*),UDVREF(*),DVREF(*),DIFFDVREF(*),WRK(*)
-      DIMENSION ISYMDM(2), IFCTYP(2)
+      REAL*8    FMAT(*),CMO(*),UDVREF(*),DVREF(*),DIFFDVREF(*),WRK(*)
+      REAL*8    uEDFT(3)
       LOGICAL   LSRHYBR, DFT_SPINDNS_SAVE
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
+      INTEGER   ISYMDM(2), IFCTYP(2)
       SAVE ISYMDM, IFCTYP
       DATA ISYMDM/1,1/, IFCTYP/999,999/
 
@@ -2325,7 +2330,7 @@ C*****************************************************************************
       CALL MEMGET('REAL',KFCAO,NF*N2BASX,WRK,KFREE,LFREE)
       KFVAO = KFCAO + N2BASX
 
-      !> start with computing uedft - requuires u_rho_ensemble
+      !> start with computing uedft - requires u_rho_ensemble
 
       CALL FCKDEN(.TRUE.,.TRUE.,
      &            WRK(KDCAO),WRK(KDVAO),CMO,UDVREF,WRK(KFREE),LFREE)
@@ -2372,8 +2377,8 @@ C     using total density matrix (stored in KDCAO)
 
       CALL DZERO(WRK(KFVAO),N2BASX)
 
-C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,DO_MOLGRAD,DOATR,WORK,LWORK,IPRINT)
-      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,EDFTX,EDFTC,
+C     SRDFT(ND_SIM,EXCMAT,DMAT,ESRDFT(1:3),DOERG,DO_MOLGRAD,DOATR,WORK,LWORK,IPRINT)
+      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),uEDFT,
      &           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      &           WRK(KFREE),LFREE,IPRFCK)
       IF (IPRINT.GT.9) THEN
@@ -2387,8 +2392,6 @@ C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,DO_MOLGRAD,DOATR,WORK,LWO
          write (lupri,*) 'WARNING, srdft-hybr exc matrix not used'
 C TODO
       END IF
-
-      uedft = edft
 
       !> part 2: compute diff_edsr / requires DVREF and DIFFDVREF
 
@@ -2440,8 +2443,8 @@ C     using total density matrix (stored in KDCAO)
 
       CALL DZERO(WRK(KFVAO),N2BASX)
 
-C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,DO_MOLGRAD,DOATR,WORK,LWORK,IPRINT)
-      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,EDFTX,EDFTC,
+C     SRDFT(ND_SIM,EXCMAT,DMAT,ESRDFT(1:3),DOERG,DO_MOLGRAD,DOATR,WORK,LWORK,IPRINT)
+      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),uEDFT,
      &           .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      &           WRK(KFREE),LFREE,IPRFCK)
       IF (IPRINT.GT.9) THEN

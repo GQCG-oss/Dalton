@@ -1317,7 +1317,7 @@ C
          GOTO 30
       ELSE
 #if !defined (VAR_SPLITFILES)
-         IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPCLOSE keep',LUNIT
+         IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPCLOSE deleting ',LUNIT
          CLOSE (LUNIT,STATUS='DELETE',ERR=20)
 #else
          INQUIRE(UNIT=LUNIT,DIRECT=IODIR,NAME=FNNAME)

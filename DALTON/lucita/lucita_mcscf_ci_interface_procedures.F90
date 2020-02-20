@@ -571,14 +571,14 @@ contains
       
       jconv_c = 0
 
+      emy_ci = einact_mc2lu + emydft_mc2lu ! inactive energy
       do i = 1, nroot
         if(jcroot(i) > 0) jconv_c = jconv_c + 1
-        energy_root(i)            = energy_root(i) - einact_mc2lu - emydft_mc2lu
+        energy_root(i)            = energy_root(i) - emy_ci
       end do
 
       ncired = nfinal_vec
 
-      emy_ci = einact_mc2lu + emydft_mc2lu! inactive energy
 
 !     type 2 - put CI start vector/ vectors on file LUCITA_CVECS.x where x refers to the present symmetry id (a,b,c,...)
 !              to file luit3 if io2io_vector_exchange_mc2lu_lu2mc == .true. 

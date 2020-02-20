@@ -243,9 +243,10 @@ C  3)  SAVE INFORMATION FOR SOPPA
 C
 #include "implicit.h"
 C
-      DIMENSION WRK(LFRSAV)
+      REAL*8    WRK(LFRSAV)
 C
-      LOGICAL FCKFRO, MP2FRZ
+      REAL*8    ESRDFTCMD(3)
+      LOGICAL   FCKFRO, MP2FRZ
       CHARACTER AO2INTFILE_LABEL_SAVE*8
       CHARACTER SR_FUNCS*80                 ! for RSDHf calculation
       INTEGER   FCKTRA_TYPE_save
@@ -609,16 +610,15 @@ C
 !                  
                   CALL DZERO(WRK(KVSRAO),N2BASX)
 
-                  ESRDFTCMD = D0
+                  ESRDFTCMD = 0.0D0
                   IPRMANU = IPRFCK
 !                 IPRMANU = 10 
                   CALL SRDFT(1,WRK(KVSRAO),WRK(KDHFAO),ESRDFTCMD,
-     &                       EXSRDFT,ECSRDFT,
      &                       .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      &                       WRK(KFREE),LFREE,IPRMANU)
 C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,
 !                            DOGRD,DOATR,WORK,LWORK,IPRINT)
-                   write(lupri,*) 'Esrcmd_dft = ', ESRDFTCMD 
+                   write(lupri,*) 'Esrcmd_dft = ', ESRDFTCMD
 !
 ! *** Compute the srHFX term ***
                   ESRHFX = D0
@@ -725,17 +725,17 @@ C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,
                   write(lupri,*) ''
                   write(lupri,*) 'checking energy contributions'
                   write(lupri,*) 'EMY =', EMY
-                  write(lupri,*) 'ESRDFT =', ESRDFT
-                  write(lupri,*) 'ESRHFX =', ESRHFX 
+                  write(lupri,*) 'ESRDFT =', ESRDFT ! from HF-srDFT
+                  write(lupri,*) 'ESRHFX =', ESRHFX
 !                 write(lupri,*) 'ELRHFX =', ELRHFX 
 !                 write(lupri,*) 'EHFX (lr+sr) =', ELRHFX+ESRHFX 
-                  write(lupri,*) 'ESRDFTCMD =', ESRDFTCMD 
-                  EHF1it = EMY-ESRDFT+ESRHFX
+                  write(lupri,*) 'ESRDFTCMD =', ESRDFTCMD ! from here
+                  EHF1it = EMY-ESRDFT(1)+ESRHFX
                   write(lupri,*) 'EHF1it', EHF1it 
 ! Manu debug e
 
-                   ERSHF = EMY - LAMSR * ESRDFT + LAMSR * ESRHFX ! RSHf energy (with factor lambda)
-     &                     + LAMSR * ESRDFTCMD 
+                   ERSHF = EMY - LAMSR * ESRDFT(1) + LAMSR * ESRHFX ! RSHf energy (with factor lambda)
+     &                     + LAMSR * ESRDFTCMD(1)
                    
                    ERSDHF = ERSHF + (D1 - LAMSR) * EMP2_LR       ! RSDHf energy (with factor lambda)
      &                     + LAMSR * (EMP2-EMP2_SR)    

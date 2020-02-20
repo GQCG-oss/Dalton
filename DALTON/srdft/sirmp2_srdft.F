@@ -902,10 +902,10 @@ C
 !!!!!! are the AOs in the "right order" (by symmetry) ?  
 C     write(LUPRI,*) ' i am entering srdft'
 C
-      CALL SRDFT(1,EXCMAT,DHFAO,DUMMY,DUMMY,DUMMY,
+      CALL SRDFT(1,EXCMAT,DHFAO,VDUMMY,
      &           .FALSE.,.FALSE.,.TRUE.,.FALSE.,
      &           WRK(KFREE),LFREE,IPRFCK)
-C          SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+C          SRDFT(ND_SIM,EXCMAT,DMAT,EDFT(1:3),DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
 C
 C     WRITE(LUPRI,*) 'print EXCMAT after calling srdft'
 C     CALL OUTPUT(WRK(KEXCMAT),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)

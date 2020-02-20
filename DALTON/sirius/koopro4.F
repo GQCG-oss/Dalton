@@ -4967,10 +4967,8 @@ C#include "priunit.h"
       integer a,b,ac,bc,acd,bcd
 C Manu: needed for the NEVPT2-srDFT ...
 C
-      DIMENSION DV(*)
-      DOUBLE PRECISION EDFT
-      INTEGER LFREE
-      PARAMETER (D1 = 1.0D0)
+      REAL*8   DV(*), ESRDFT(3)
+      INTEGER  LFREE
 C
       indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 
@@ -5142,7 +5140,7 @@ C Manu e
 
 C        make total density matrix (in the AO basis) in WORK(KDAO)
 
-         CALL DAXPY(N2BASX,D1,WRK(KDVAO),1,WRK(KDAO),1)
+         CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDAO),1)
 C
 
 C        Release memory allocated for DVAO
@@ -5187,11 +5185,11 @@ C        Calculate the srxc potential for the MCSCF-srDFT density
 
          IPRFCK = 0
 
-         CALL SRDFT(1,WRK(KVSRAO),WRK(KDAO),EDFT,EXDFT,ECDFT,
+         CALL SRDFT(1,WRK(KVSRAO),WRK(KDAO),ESRDFT,
      &              .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      &              WRK(KFREE),LFREE,IPRFCK)
 
-C Comment Manu: we do not care about the energy contribution EDFT. It
+C Comment Manu: we do not care about the energy contribution ESRDFT. It
 C is just that it is calculated with the srxc potential ...
 
 C manu b

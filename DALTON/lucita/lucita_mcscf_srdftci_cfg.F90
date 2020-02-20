@@ -38,7 +38,7 @@ module lucita_mcscf_srdftci_cfg
   real(8),              public :: ejcsr_mc2lu                  =  0.0d0
   real(8),              public :: ejvsr_mc2lu                  =  0.0d0
   real(8),              public :: edsr_mc2lu                   =  0.0d0
-  real(8),              public :: edft_mc2lu                   =  0.0d0
+  real(8),              public :: edft_mc2lu(3)                =  0.0d0
 
 
 end module

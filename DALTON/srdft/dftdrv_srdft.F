@@ -34,7 +34,6 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
 C 
       PARAMETER (FACTHR = 1.0D-8) 
@@ -572,9 +571,9 @@ C HFSRDFT --------------------------------------------------------
 C        SRDFT ...
          IF (.NOT. DOHFSRDFT) CALL QUIT('DOHFSRDFT false in DFTATR')
          IF (NASHT.GT.0) CALL QUIT('NASHT .gt. 0 for SRDFT in DFTATR')
-C        CALL SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+C        CALL SRDFT(ND_SIM,EXCMAT,DMAT,EDFT(1:3),DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
 !         WRITE(LUPRI,*) 'DFTATR: calling SRDFT'  !JT
-         CALL SRDFT(1,WORK(KFAO),WORK(KDAO),DUMMY,DUMMY,DUMMY,
+         CALL SRDFT(1,WORK(KFAO),WORK(KDAO),VDUMMY,
      &              .FALSE.,.FALSE.,.TRUE.,.FALSE.,
      &              WORK(KLST),LWRK,IPRINT)
 C-------------------------------------------------------------------

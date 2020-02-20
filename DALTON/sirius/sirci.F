@@ -266,7 +266,7 @@ C
       character (len=6) :: keywrd
       integer           :: xctype1, xctype2, spindens_lvl_save
 C
-      double precision  :: EMYDFTAUX, EENSEMB, ESRDV_ens
+      real*8            :: EMYDFTAUX, EENSEMB, ESRDV_ens, ESRDFT(3)
       character(len=12) :: myciruntype
       EMYDFTAUX = 0.0D0 ! initialization
       EENSEMB = 0.0D0 
@@ -504,7 +504,7 @@ C
         kvec_generic = KEVEC    ! for a unique interface to CISAVE
         
         CALL CIOPT(EMY_CI,JCONV,ICICTL,NCROOT,MAXITC,CMO,INDXCI,
-     &             EJCSR,EJVSR,EDSR,EDFT,EMYDFT,EMYDFTAUX,
+     &             EJCSR,EJVSR,EDSR,ESRDFT,EMYDFT,EMYDFTAUX,
      &             NCLIN,ITCI,
      &             TIMLIN,TIMCIT,NCONF4,LSVECS,MAXSIM,
      &             residual_croot,energy_root,
@@ -532,7 +532,7 @@ C      write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
           EJCSR        = ejcsr_mc2lu
           EJVSR        = ejvsr_mc2lu
           EDSR         = edsr_mc2lu
-          EDFT         = edft_mc2lu
+          ESRDFT(1:3)  = edft_mc2lu(1:3)
           EMYDFTAUX    = emydftaux_mc2lu
           spindens_lvl = spindens_lvl_save
           if(spindens_lvl > 0)then
@@ -553,7 +553,7 @@ C      write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
         WRITE(LUPRI,'(A/)') '-------------------------------------'
         WRITE(LUPRI,805) '  SR core    Hartree energy   :',EJCSR
         WRITE(LUPRI,805) '- SR valence Hartree energy   :',EJVSR
-        WRITE(LUPRI,805) '+ SR Exchange-correlation     :',EDFT
+        WRITE(LUPRI,805) '+ SR Exchange-correlation     :',ESRDFT(1)
         WRITE(LUPRI,805) '- SR Exchange-correlation pot.:',EDSR
         WRITE(LUPRI,806) '= Total eff. SR 0-el. energy  :',EMYDFT
 C
@@ -620,7 +620,7 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
      &        ' *****************************************'
 
            veensemb = eensemb
-           call  get_sc_ensemble_energy(veensemb,EDFT,
+           call  get_sc_ensemble_energy(veensemb,ESRDFT,
      &                                 cmo,nnashx,nnorbt,
      &                                 ncroot,weights,lupri,
      &                                 wrk(kw2),lw2)
@@ -2915,7 +2915,7 @@ C
 !******************************************************************************
 
       SUBROUTINE CIOPT(EMY,JCONV,ICICTL,NCROOT,MAXITC,CMO,INDXCI,
-     &                 EJCSR,EJVSR,EDSR,EDFT,EMYDFT,EMYDFTAUX,
+     &                 EJCSR,EJVSR,EDSR,ESRDFT,EMYDFT,EMYDFTAUX,
      &                 NCLIN,ITCI,
      &                 TIMLIN,TIMCIT,NCONF4,LSVECS,MAXSIM,
      &                 residual_c,energy_c,
@@ -2930,6 +2930,7 @@ C                  auxiliary long-range interacting energies
 
 #include <implicit.h>
       DIMENSION CMO(*), INDXCI(*), WRK(*), residual_c(*), energy_c(*)
+      REAL*8    ESRDFT(3)
 C
 #include <iratdef.h>
 #include <thrldp.h>
@@ -3048,10 +3049,10 @@ C
      &                     INDXCI,WRK(KW2A),LW2A)
          END IF
 C
-         CALL SRFMAT(WRK(KFSR),CMO,WRK(KDVREF),EJCSR,EJVSR,EDSR,EDFT,
+         CALL SRFMAT(WRK(KFSR),CMO,WRK(KDVREF),EJCSR,EJVSR,EDSR,ESRDFT,
      &               EMYDFTAUX,UEJCVSR,WRK(KW2A),LW2A,IPRI6)
 C        ... Correct EMY and CI diagonal
-         EMYDFT = EJCSR + EJVSR + EDSR + EDFT
+         EMYDFT = EJCSR + EJVSR + EDSR + ESRDFT(1)
 C       write(lupri,*) 'just after srfmat'  
 C       write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
          EMY = EMY + EMYDFT

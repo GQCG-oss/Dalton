@@ -28,7 +28,7 @@
 
 C*****************************************************************************
 #ifdef VAR_MPI
-      SUBROUTINE SRDFT_PAR_MASTER(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,
+      SUBROUTINE SRDFT_PAR_MASTER(ND_SIM,EXCMAT,DMAT,EDFT,
      &                 DOERG,DO_MOLGRAD,DOATR,TRIPLET,
      &                 WORK,LWORK,IPRINT_in)
 C*****************************************************************************
@@ -45,7 +45,7 @@ C*****************************************************************************
       implicit none
       logical :: DOERG,DO_MOLGRAD,DOATR,TRIPLET
       integer :: ND_SIM, LWORK, IPRINT_in
-      real*8 :: EXCMAT(N2BASX,*),DMAT(N2BASX,*),EDFTY,EDFTX,EDFTC,
+      real*8 :: EXCMAT(N2BASX,*),DMAT(N2BASX,*),EDFT(3)
      &          WORK(LWORK)
 
 #include "priunit.h"
@@ -181,7 +181,7 @@ C*****************************************************************************
       logical :: DOERG,DO_MOLGRAD,DOATR,TRIPLET
       integer :: ND_SIM, NDMAT, NEXCMAT, NDMAT_in, IPRINT
       integer :: KFREE, LFREE, KDMAT, KEXCMAT
-      real*8 :: EDFTY, EDFTX, EDFTC
+      real*8 :: EDFT(3)
 
       logical, save :: first_call
       DATA      first_call/.true./
@@ -319,13 +319,13 @@ C     variables for SRCPBERI
 !     ==================
 
       ND_SIM = 1 
-      EDFTY  = 0.0D0
+      EDFT(1:3)  = 0.0D0
       CALL DZERO(WORK(KEXCMAT),NEXCMAT*N2BASX)
       CALL SRDFT(
-     &      ND_SIM,WORK(KEXCMAT),WORK(KDMAT),EDFTY,EDFTX,EDFTC,
+     &      ND_SIM,WORK(KEXCMAT),WORK(KDMAT),EDFT,
      &      DOERG,DO_MOLGRAD,DOATR,TRIPLET,
      &      WORK(KFREE),LFREE,IPRINT)
-!     SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,DO_MOLGRAD,DOATR,
+!     SUBROUTINE SRDFT(ND_SIM,EXCMAT,DMAT,EDFT(1:3),DOERG,DO_MOLGRAD,DOATR,
 !    &                 WORK,LWORK,IPRINT)
 
       if (iprint .ge. 5) then

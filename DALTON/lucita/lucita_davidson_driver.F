@@ -298,8 +298,8 @@
       integer, intent(in) :: ispnden, idensi
 C
 C
-      DIMENSION VEC1(*),VEC2(*),C2(*)
-      PARAMETER( LLWRK = 500000)
+      REAL*8   VEC1(*),VEC2(*),C2(*)
+      INTEGER, PARAMETER    :: LLWRK = 500000
       integer, allocatable  :: iscr1(:)
       real(8), allocatable  :: scr1(:)
       real(8), allocatable  :: fsr(:)
@@ -649,7 +649,7 @@ C
          if(luci_myproc == luci_master)then
 !          ... Correct EMY/eigshf and CI diagonal
            EMYDFT_mc2lu = 
-     &            EJCSR_mc2lu + EJVSR_mc2lu + EDSR_mc2lu + EDFT_mc2lu
+     &            EJCSR_mc2lu + EJVSR_mc2lu + EDSR_mc2lu + EDFT_mc2lu(1)
 
 !          write(luwrt,*) 'eigshf before',eigshf
 !          in lucita: emy is eigshf at this point in the code

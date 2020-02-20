@@ -19,7 +19,7 @@
       integer                :: kw2, KW2A, KUDVREF, KDVREF
       integer                :: LW2A, ist
       real*8                 :: uESRDV, uEDSR, uEJVSR, uEJCSR
-      real*8                 :: uEMYDFTAUX, uedft
+      real*8                 :: uEMYDFTAUX, uedft(3)
       real*8                 :: UEJCVSR
       real*8                 :: diff_ejvsr,diff_edsr
 
@@ -61,7 +61,8 @@
      &                      diff_ejvsr,diff_edsr,uEDFT,                 &
      &                      wrk(kw2),lwrk,0)
 
-      VEENSEMB = VEENSEMB + uEDFT - EDFT_orig + diff_edsr - diff_ejvsr
+      VEENSEMB = VEENSEMB + uEDFT(1) - EDFT_orig                        &
+     &                    + diff_edsr - diff_ejvsr
 
 #ifdef DEBUG
       write(lupri,*) 'contributions to the variational ensemble energy'
@@ -117,7 +118,7 @@
       integer                :: kw2, KW2A, KUDVREF
       integer                :: LW2A, ist
       real*8                 :: uESRDV, uEDSR, uEJVSR, uEJCSR
-      real*8                 :: uEMYDFTAUX, uedft
+      real*8                 :: uEMYDFTAUX, uedft(3)
       real*8                 :: UEJCVSR
       real*8                 :: VEENSEMB
 
@@ -160,8 +161,8 @@
 
       uESRDV   = DDOT(NNASHX,u_rho_ensemble,1,srac_orig,1)
 
-      VEENSEMB = eensemb_orig + uEDFT  - EDFT_orig - EDSR_orig + uEJCVSR&
-     &         - uESRDV       - uEJVSR - EJVSR_orig
+      VEENSEMB = eensemb_orig + uEDFT(1)  - EDFT_orig - EDSR_orig       &
+     &         + uEJCVSR - uESRDV       - uEJVSR - EJVSR_orig
 
       write(lupri,*) 'contributions to the variational ensemble energy'
       write(lupri,*) '------------------------------------------------'
