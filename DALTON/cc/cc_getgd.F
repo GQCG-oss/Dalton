@@ -35,6 +35,7 @@ C     changes for CCr12 response, Christof Haettig, Summer 2003
 C
 C----------------------------------------------------------------------
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -218,15 +219,15 @@ C       -------------------------------------------------------------
            END IF
          END IF
 
-         IF (CCSLV) THEN
+         IF (CCSLV.OR.USE_PELIB()) THEN
             IF (CCSDT) CALL QUIT('Solvent not implemented for triples')
             IF (CCR12) CALL QUIT('Solvent not implemented for CCR12')
             IF (CCTPA.AND.(.NOT.TPOLDW)) THEN
                WRITE(LUPRI,*) 'No SC SLV/PE response for TPA'
             ELSE IF (.NOT.(CCTPA.AND.(.NOT.TPOLDW))) THEN
                CALL CC_PTB(GD,LRTLBL(ILSTNR),ISYLRT(ILSTNR),
-     *                  FRQLRT(ILSTNR),LORXLRT(ILSTNR),
-     *                  WORK,LWORK)
+     &                  FRQLRT(ILSTNR),LORXLRT(ILSTNR),
+     &                  WORK,LWORK)
             END IF
          ENDIF
          IF (LOCDBG) THEN
@@ -1367,6 +1368,7 @@ C     Transform eigen-vectors with F-matrix and write to file.
 C
 C     ISYMV is symmetry of vector and transformed vector.
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -1410,7 +1412,7 @@ CCH
          CALL CC_FTRAN('LE ',IE,'RE ',IE,WORK,LWORK)
 CCH      CALL CC_FGL('LE',IE,'RE',IE,'--',0,.TRUE.,WORK,LWORK)
 CCH
-         IF (.NOT. (CCSLV)) THEN
+         IF (.NOT. (CCSLV.OR.USE_PELIB())) THEN
            KVEC  = 1
            KGD   = KVEC  + NTAMP
            KEND1 = KGD   + NTAMP
@@ -1858,6 +1860,7 @@ C             t-bar*P
 c    Ove Christiansen, 13-5-1998.
 c
 c=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB, PELIB_IFC_TRANSFORMER
 #include "implicit.h"
 #include "maxorb.h"
 #include "ccorb.h"
@@ -1926,20 +1929,22 @@ C     Make P-transformation.
 C---------------------------
 C
        LR = 'P'
-       IF (.NOT. CCMM) CALL CCSL_LTRB(GD(1),GD(1+NT1AM(ISY)),WORK(K1),
-     *                 WORK(K2),ISY,LR,WORK(KWRK1),LWRK1)
+       IF (.NOT. (CCMM .OR. USE_PELIB())) CALL CCSL_LTRB(GD(1),
+     &      GD(1+NT1AM(ISY)),WORK(K1),WORK(K2),ISY,LR,WORK(KWRK1),LWRK1)
        IF (CCMM) THEN
           IF (.NOT. NYQMMM) THEN 
              CALL CCMM_LTRB(GD(1),GD(1+NT1AM(ISY)),WORK(K1),
-     *                   WORK(K2),ISY,LR,WORK(KWRK1),LWRK1)
+     &                   WORK(K2),ISY,LR,WORK(KWRK1),LWRK1)
           ELSE IF (NYQMMM) THEN
              CALL CCMM_TRANSFORMER(GD(1),GD(1+NT1AM(ISY)),WORK(K1),
-     *                     WORK(K2),MODEL,ISY,LR,WORK(KWRK1),LWRK1)
-C             CALL CCMM_TGTBAR(GD(1),GD(1+NT1AM(ISY)),WORK(K1),WORK(K2),
-C     *                       MODEL,ISY,LR,WORK(KWRK1),LWRK1)
+     &                     WORK(K2),MODEL,ISY,LR,WORK(KWRK1),LWRK1)
           END IF
        END IF
 C
+       IF (USE_PELIB().AND.(.NOT.HFFLD)) THEN
+           CALL PELIB_IFC_TRANSFORMER(GD(1),GD(1+NT1AM(ISY)),WORK(K1),
+     &                       WORK(K2),MODEL,ISY,LR,WORK(KWRK1),LWRK1)
+       END IF
 C
       END
 

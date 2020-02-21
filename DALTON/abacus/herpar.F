@@ -1,4 +1,4 @@
-
+#define HERPAR_DEBUG -1
 !  Dalton, a molecular electronic structure program
 !  Copyright (C) 2018 by the authors of Dalton.
 !
@@ -18,8 +18,7 @@ C
 C File: herpar.F
 C
 C Some history:
-C Original : PVM
-C June 1995: ported to MPI by Kenneth Ruud
+C Original : PVM, June 1995: ported to MPI by Kenneth Ruud
 C
 C  /* Deck her_pardrv */
       SUBROUTINE HER_PARDRV(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
@@ -29,11 +28,6 @@ C  /* Deck her_pardrv */
      &                      DINTSKP,RELCALC,GENCTR)
 
 C  Hermit parallel driver.  Only called from PARDRV (checked Nov. 2016).
-
-C Note Nov. 2016 hjaaj: GENCTR is apparently related to some BUILD_OPENRSP
-C work, but no comment explains the meaning. Was introduced in Jan. 2014
-C according to "git blame".  Currently it is **UNDEFINED** in the calls of PARDRV !!!
-
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -73,15 +67,6 @@ C     Determine total number of tasks - MTOTTK.
 C
       MTOTTK = MAXSHL*(MAXSHL+1)/2
 C
-      IF (MTOTTK .GT. MAXTSK) THEN
-         WRITE(LUPRI,'(//5X,A,/5X,A,/5X,2(A,I5))')
-     &    'ERROR : Number of tasks greater than maximum.',
-     &    'Recompilation will be necessary',
-     &    'MTOTTK =',MTOTTK, 'MAXTSK =',MAXTSK
-         CALL RECOMPI
-         CALL QUIT('ERROR: MTOTTK greater than MAXTSK in HER_PARDRV')
-      ENDIF
-C
 C     Determine dimension of array TMPMAT
 C
 C     Expectation values of differentiated integrals (all atoms)
@@ -105,11 +90,6 @@ C     Derivatives with respect to magnetic field(DDFOCK=T)
 C         L_TMPMT = 3*N2BASX + L_SUS
 C modified by Bin Gao, June 3, 2009, from linsca
          NFMAT = 3*NDMAT
-#ifdef BUILD_OPENRSP
-         IF (USE_OPENRSP) THEN
-            IF (MAXDER .EQ. 2 .AND. .NOT.GENCTR) NFMAT = 6*NDMAT
-         END IF
-#endif
          L_FCK = NFMAT*N2BASX
          L_TMPMT = L_FCK + L_SUS
       ELSE IF (ITYPE .EQ. 8) THEN
@@ -198,7 +178,7 @@ C
 C
 C      NEW LABELS:
 C
-C      10 - Tell nodes this is a HERMIT run, send NCODE and IPRINT
+C      10 - Tell nodes this is a HERMIT run, send IPRINT
 C      30 - Send initialization to nodes.
 C      40   >Label used in ERI only<
 C      50 - Receive (IJ|**) request from node
@@ -215,7 +195,6 @@ C      30 - Send batch to node.
 C      40 - Receive final results from nodes.
 C      50 - Get timing results from nodes.
 C
-C           NCODE  - PVM-message encoding option.
 C           ITYPE  - Calc. type: 2 = expectation values.
 C                                3 = fock matrices.
 C                               -5 = Integrals derivated with respect
@@ -291,11 +270,11 @@ Cef begin
 Cef end
 C
 Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
-      LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME,GENCTR
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,GENCTR
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), TMPMAT(L_TMPMT), INDEX(3,NINDEX),
      &          TIMES(MTOTTK), TSKCPU(MTOTTK), IWHICH(MTOTTK),
-     &          WORK(LWORK), NPOS(0:MAXTSK+1), HESSEE(*), SORTING(*)
+     &          WORK(LWORK), HESSEE(*), SORTING(*)
 CTROND
       DIMENSION GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
 CTROND
@@ -303,14 +282,17 @@ CTROND
       integer, parameter             :: dummy_buff = 2
       integer(kind=MPI_ADDRESS_KIND) :: nelement
       integer(kind=MPI_OFFSET_KIND)  :: displacement
+      integer(kind=MPI_INTEGER_KIND) :: ierr, istat(mpi_status_size)
+      integer(kind=MPI_INTEGER_KIND) :: comm_intra
+      integer(kind=MPI_INTEGER_KIND) :: fh_dmat_mpi, nelement_mpi
       character(len=16)              :: shared_dmat_file
-      integer                        :: istat(mpi_status_size)
 #endif
 C
 C     NB! NPOS cannot be allocated from WORK due to the SAVEing below.
 C
-      SAVE FIRST,NPOS
-      DATA FIRST/.TRUE./
+      INTEGER, PARAMETER :: MAXTSK = MXSHEL*(MXSHEL+1)/2
+      INTEGER, SAVE      :: NPOS(0:MAXTSK+1)
+      LOGICAL, SAVE      :: FIRST = .TRUE.
 C
       CALL QENTER('HER_PARDRV_1')
       IF (IPRINT .GT. 4) CALL TITLER('Output from HER_PARDRV_1','*',103)
@@ -361,7 +343,7 @@ C
         rma_win_info%dmat_win = -1
         rma_win_info%fmat_win = -1
 
-        nelement            = n2basx*ndmat ! for itype == 3: ndmat == nfmat
+        nelement    = n2basx*ndmat ! for itype == 3: ndmat == nfmat
 
 
 !       sknecht: idea for RMA window on master: assign shmem-MASTER to some other member of the master group (via key-value in comm_split)
@@ -371,23 +353,26 @@ C
 
 
 #ifdef VAR_MPI
+
+        ! set MPI_INTEGER_KIND variables
+        comm_intra  = communication_info_mpi%communication_intranode
+
 !       test dmat on shared file
         write(shared_dmat_file,'(a12,i4)')
      &  'dmat_shared.',communication_info_mpi%intra_node_group_id
-        call mpi_file_open(
-     &                     communication_info_mpi%
-     &                     communication_intranode,
+
+        fh_dmat_mpi  = rma_win_info%dmat_fh
+        call mpi_file_open(comm_intra,
      &                     shared_dmat_file,
      &                     mpi_mode_CREATE +
      &                     mpi_mode_RDWR   +
      &                     mpi_mode_DELETE_ON_CLOSE,
      &                     mpi_info_null,
-     &                     rma_win_info%dmat_fh,
+     &                     fh_dmat_mpi,
      &                     ierr
      &                    )
         displacement = 0
-        call mpi_file_set_view(
-     &                         rma_win_info%dmat_fh,
+        call mpi_file_set_view(fh_dmat_mpi,
      &                         displacement,
      &                         mpi_real8,
      &                         mpi_real8,
@@ -396,18 +381,16 @@ C
      &                         ierr
      &                        )
         if(communication_info_mpi%my_intra_node_id == 0)then
-          nelement4 = nelement
-          call mpi_file_write(
-     &                        rma_win_info%dmat_fh,
+          nelement_mpi = nelement
+          call mpi_file_write(fh_dmat_mpi,
      &                        dmat,
-     &                        nelement4,
+     &                        nelement_mpi,
      &                        mpi_real8,
      &                        istat,
      &                        ierr
      &                       )
         end if
-        call mpi_barrier(communication_info_mpi%
-     &                   communication_intranode,ierr)
+        call mpi_barrier(comm_intra,ierr)
 !       end test dmat on shared file
 
 
@@ -418,7 +401,6 @@ C
      &                      communication_info_mpi%
      &                      communication_shmemnode,
      &                      rma_win_info%fmat_win,
-!    &                      .true.,
      &                      .false.,
      &                      'no_locks',
      &                      'true')
@@ -458,7 +440,8 @@ C           workspace for array SORTED.
 !       call free_rma_window(rma_win_info%dmat_win,master)
         call free_rma_window(rma_win_info%fmat_win,master)
 !       test dmat on shared file
-        call mpi_file_close(rma_win_info%dmat_fh,ierr)
+        fh_dmat_mpi  = rma_win_info%dmat_fh
+        call mpi_file_close(fh_dmat_mpi,ierr)
 !       end test dmat on shared file
 #endif
       end if
@@ -606,11 +589,9 @@ C
 #include "expopt.h"
 C
       LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR,FIRST,GENCTR
-      DIMENSION DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*)
-CTROND
-CKR      DIMENSION GABRAO(*), DMRAO(*), DMRSO(*), DINTSKP(*)
-      DIMENSION GABRAO(*), DMRAO(*), DMRSO(*)
-CTROND
+      REAL*8  DMAT(N2BASX,NDMAT)
+      INTEGER ISYMDM(*), IFCTYP(*)
+      REAL*8  GABRAO(*), DMRAO(*), DMRSO(*)
 #include "infpar.h"
 C
 C Used from common blocks:
@@ -618,7 +599,7 @@ C
 C MXCENT : MXCENT (for DORPS, etc.)
 C MXORB  : MXSHEL (for INFPAR)
 C MAXAQN : *      (for SYMMET)
-C GNRINF : NEWGEO (PVM: BASDIR, LENBAS)
+C GNRINF : NEWGEO
 C INFORB : N2BASX
 C MOLINP : NMLINE, MLINE()
 C CBIREA : UNCONT
@@ -650,6 +631,10 @@ Cef begin
 #include "incore.h"
 Cef end
       character(len=6) :: nmat_wo_win_env
+#ifdef VAR_MPI
+      integer(kind=MPI_INTEGER_KIND) :: i_MPI, j_MPI, k_MPI, ierr
+      integer(kind=MPI_INTEGER_KIND), parameter :: zero_mpi = 0
+#endif
 
       CALL QENTER('HER_SDINIT')
       IF (IPRINT .GT. 3) THEN
@@ -666,15 +651,6 @@ C
          NFMAT = NDMAT
       ELSE IF (ITYPE .EQ. -5) THEN
          NFMAT = 3*NDMAT
-#ifdef BUILD_OPENRSP
-!radovan: this breaks dft_camb3lyp_magsus test on master
-!         after the problem is fixed, remove the ifdef!
-        IF (USE_OPENRSP) THEN
-C added by Bin Gao, June 3, 2009
-         IF (MAXDIF .EQ. 2 .AND. .NOT. GENCTR)
-     &      NFMAT = 6*NDMAT
-        END IF
-#endif
       ELSE IF (ITYPE .EQ. 8) THEN
          NFMAT = 3*NDMAT*NUCDEG(IATOM)
       ELSE
@@ -724,9 +700,6 @@ C
       CALL MPIXBCAST(ERFEXP(0),3,'LOGICAL',MASTER)
       CALL MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(EXPGRA,1,'LOGICAL',MASTER)
-#ifdef BUILD_OPENRSP
-      CALL MPIXBCAST(USE_OPENRSP,1,'LOGICAL',MASTER)
-#endif
 C
 Cef begin
       IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
@@ -757,7 +730,7 @@ C  /molinp/
          CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
 C Arnfinn, nov -08: Sending NONTYP_QM, numbers of atomtypes except MM
          CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
-         CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NMLINE_4,1,'INTEGER',MASTER)
 C  /molinc/
          CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 C  /cbirea/
@@ -811,16 +784,15 @@ C
 
 #ifdef VAR_MPI
 !       distribute density matrix(ces) among node masters
-        call mpi_bcast(dmat,n2basx*ndmat,mpi_real8,master,
-     &                 communication_info_mpi%communication_internode,
-     &                 ierr)
+        i_mpi = n2basx*ndmat
+        j_mpi = communication_info_mpi%communication_internode
+        k_mpi = master
+        call mpi_bcast(dmat,i_mpi,mpi_real8,k_mpi,j_mpi,ierr)
 !       distribute density matrix(ces) among node/NUMA node slaves
-        call mpi_bcast(dmat,
-     &                 n2basx*rma_win_info%nmat_max_wo_win,
-     &                 mpi_real8,
-     &                 0,
-     &                 communication_info_mpi%communication_shmemnode,
-     &                 ierr)
+        i_mpi = n2basx*rma_win_info%nmat_max_wo_win
+        j_mpi = communication_info_mpi%communication_shmemnode
+        call mpi_bcast(dmat, i_mpi,
+     &                 mpi_real8, zero_mpi, j_mpi, ierr)
 #endif
 
       else
@@ -840,62 +812,6 @@ C
         CALL MPIXBCAST(DMRAO,N2RED*NDMAT,'DOUBLE',MASTER)
         CALL MPIXBCAST(GABRAO,N2RED,'DOUBLE',MASTER)
       ENDIF
-#endif
-#if defined (VAR_PVM)
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(FIRST ,1,'LOGICAL')
-      CALL PVMXPACK(NEWBAS,1,'LOGICAL')
-      CALL PVMXPACK(NEWGEO,1,'LOGICAL')
-      CALL PVMXPACK(BASDIR,60,'STRING')
-      CALL PVMXPACK(LENBAS,1,'INTEGER')
-C
-      IF (FIRST .OR. NEWBAS .OR. NEWGEO) THEN
-         IF (IPRINT .GT. 3) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
-     &        ' Sending new orbital inf.',
-     &        ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
-C  /molinc/
-         CALL PVMXPACK(NMLINE,1,'INTEGER')
-C  /molinp/
-         CALL PVMXPACK(MLINE,len_MLINE*NMLINE,'STRING')
-C  /inforb/
-         CALL PVMXPACK(MULD2H,NINFI,'INTEGER')
-C  /infpar/
-         CALL PVMXPACK(NODTOT,NPARI,'INTEGER')
-C  /dorps/
-         CALL PVMXPACK(DOREPS(0),NDORL,'LOGICAL')
-C  dosym()
-         CALL PVMXPACK(DOSYM,NSYML,'LOGICAL')
-C  comr12
-         CALL PVMXBCAST(R12INT,NR12L,'LOGICAL')
-         CALL PVMXBCAST(INTGAC,NR12I,'INTEGER')
-      END IF
-C  /parint/
-      CALL PVMXPACK(JATOM,NINTI,'INTEGER')
-      CALL PVMXPACK(JNODV,NINTL,'LOGICAL')
-C
-C     Pack the density matrices, their symmetries and the Fock matrix types.
-C
-      call quit('pvm version of Dalton SCF not working - '//
-     &          'ask s. knecht at stefan.knecht@phys.chem.ethz.ch '//
-     &          'for help.')
-      CALL PVMXPACK(NDMAT,1,'INTEGER')
-      CALL PVMXPACK(DMAT,N2BASX*NDMAT,'DOUBLE')
-      CALL PVMXPACK(ISYMDM,NFMAT,'INTEGER')
-      CALL PVMXPACK(IFCTYP,NFMAT,'INTEGER')
-C
-      IF(ITYPE.EQ.3) THEN
-        N2RED = NSYMBL*NSYMBL
-        CALL PVMXPACK(N2RED,1,'INTEGER')
-        CALL PVMXPACK(DMRAO,N2RED*NDMAT,'DOUBLE')
-        CALL PVMXPACK(GABRAO,N2RED,'DOUBLE')
-      ENDIF
-C
-C     -----------------------------------
-C     Multicast initialization to nodes.
-C     -----------------------------------
-C
-      CALL PVMXMCAST(NODTOT,NODEID(1),MTAG3)
-C
 #endif
       CALL QEXIT('HER_SDINIT')
       RETURN
@@ -992,7 +908,7 @@ C  /molinp/
          CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
 C Arnfinn, nov -08: Sending NONTYP_QM, numbers of atomtypes except MM
          CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
-         CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NMLINE_4,1,'INTEGER',MASTER)
 C  /molinc/
          CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 C  /cbirea/
@@ -1030,7 +946,7 @@ C
 C
 C        Other defaults for the slaves
 C
-         USE_OPENRSP = .FALSE.
+         ! place other defaults here
 C
 C        Set basis set information always (with NEWGEO .true.)
 C
@@ -1094,7 +1010,8 @@ C
 #ifndef USE_MPI_MOD_F90
 #include "mpif.h"
 #endif
-       integer (kind=mpi_offset_kind) :: offset_mat
+      integer(kind=mpi_offset_kind)  :: offset_mat
+      integer(kind=MPI_INTEGER_KIND) :: i_MPI, j_MPI, k_MPI, l_MPI, ierr
 #endif
 C
       CALL QENTER('HER_RVRES')
@@ -1121,20 +1038,7 @@ C modified by Bin Gao, December 24, 2009
          CALL BIN_SUM(8, DINTSKP)
 #endif
       ELSE IF (ITYPE .EQ. -5) THEN
-#ifdef BUILD_OPENRSP
-!radovan: this breaks dft_camb3lyp_magsus test on master
-!         after the problem is fixed, remove the ifdef!
-
-C modified by Bin Gao, December 21, 2009
-        IF (USE_OPENRSP) THEN
-         CALL DZERO(FMAT,L_FCK)
-         CALL DZERO(SUS2EL,L_SUS)
-        ELSE
-#endif
          CALL DZERO(FMAT,3*N2BASX)
-#ifdef BUILD_OPENRSP
-        END IF
-#endif
 COBL/AMT
 C for CAMB3LYP, we must not zero the susceptibilities the second run in TWOLOP
          IF (.NOT. DONETWOLOP)THEN
@@ -1175,19 +1079,8 @@ C
             CALL MPIXRECV(TMPMAT(1),L_TMPMT,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(L_TMPMT,D1,TMPMAT,1,FMAT,1)
          ELSE IF (ITYPE .EQ. -5) THEN
-#ifdef BUILD_OPENRSP
-!radovan: this breaks dft_camb3lyp_magsus test on master
-!         after the problem is fixed, remove the ifdef!
-           IF (USE_OPENRSP) THEN
-            CALL MPIXRECV(TMPMAT(1),L_FCK,'DOUBLE',NWHO,MTAG7)
-            CALL DAXPY(L_FCK,D1,TMPMAT,1,FMAT,1)
-           ELSE
-#endif
             CALL MPIXRECV(TMPMAT(1),3*N2BASX,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(3*N2BASX,D1,TMPMAT,1,FMAT,1)
-#ifdef BUILD_OPENRSP
-           END IF
-#endif
             CALL MPIXRECV(TMPMAT(1),L_SUS,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(L_SUS,D1,TMPMAT,1,SUS2EL,1)
          END IF
@@ -1205,85 +1098,51 @@ C
 C
          ICOUNT = ICOUNT + ITASKS
 #endif
-#if defined (VAR_PVM)
-         CALL PVMXRECV(-1,MTAG7)
-         CALL PVMXUNPACK(TMPMAT,L_TMPMT,'DOUBLE')
-C
-         IF (ITYPE .EQ. 2) THEN
-            CALL DAXPY(L_GRA,D1,TMPMAT(1),1,GRADEE,1)
-            CALL DAXPY(L_HES,D1,TMPMAT(L_GRA+1),1,HESSEE,1)
-C
-         ELSE IF (ITYPE .EQ. 3) THEN
-            CALL DAXPY(L_FCK,D1,TMPMAT,1,FMAT,1)
-            CALL DAXPY(8,D1,TMPMAT(L_FCK+1),1,DINTSKP,1)
-C
-         ELSE IF (ITYPE .EQ. 8) THEN
-            CALL DAXPY(L_TMPMT,D1,TMPMAT(1),1,FMAT,1)
-         ELSE IF (ITYPE .EQ. -5) THEN
-            CALL DAXPY(3*N2BASX,D1,TMPMAT(1),1,FMAT,1)
-            CALL DAXPY(L_SUS,D1,TMPMAT(3*N2BASX+1),1,SUS2EL,1)
-         END IF
-C
-C        Unpack the number of tasks received by the node.
-C
-         CALL PVMXUNPACK(ITASKS,1,'INTEGER')
-C
-         IF (TIMING) THEN
-            CALL PVMXUNPACK(IWHICH(ICOUNT+1),ITASKS,'INTEGER')
-            CALL PVMXUNPACK(TSKCPU(ICOUNT+1),ITASKS,'DOUBLE')
-C
-            DO 200 J=1,ITASKS
-               K = IWHICH(J)
-               IF (K .GT. 0) TIMES(K) = TSKCPU(J)
- 200        CONTINUE
-         END IF
-C
-         ICOUNT = ICOUNT + ITASKS
-#endif
   100 CONTINUE
 
 !     collect data for rma_model (only itask == 3 at present)
       if(rma_model)then
 
 #ifdef VAR_MPI
+        j_mpi = communication_info_mpi%communication_glb_world
+        k_mpi = 8
+        l_mpi = master
         call mpi_reduce(mpi_in_place,
      &                  dintskp,
-     &                  8,
+     &                  k_mpi,
      &                  mpi_real8,
      &                  mpi_sum,
-     &                  master,
-     &                  communication_info_mpi%
-     &                  communication_glb_world,
+     &                  l_mpi,
+     &                  j_mpi,
      &                  ierr)
 
 !       all fmatS outside the RMA window...
+        i_mpi = rma_win_info%nmat_max_wo_win * n2basx
         call mpi_reduce(
      &                  mpi_in_place,
      &                  fmat,
-     &                  rma_win_info%nmat_max_wo_win * n2basx,
+     &                  i_mpi,
      &                  mpi_real8,
      &                  mpi_sum,
-     &                  master,
-     &                  communication_info_mpi%
-     &                  communication_glb_world,
+     &                  l_mpi,
+     &                  j_mpi,
      &                  ierr)
 
 !       now all fmatS inside the RMA window... if any
         if(rma_win_info%nmat_max_wo_win < jnfmat )then
-          call mpi_barrier(communication_info_mpi%
-     &                     communication_shmemnode,
-     &                     ierr)
+          i_mpi =communication_info_mpi%communication_shmemnode
+          call mpi_barrier(i_mpi, ierr)
+          i_mpi =communication_info_mpi%communication_internode
+          j_mpi = (jnfmat - rma_win_info% nmat_max_wo_win) * n2basx
           call mpi_reduce(
      &                    mpi_in_place,
      &                    fmat(1 + rma_win_info%
      &                    nmat_max_wo_win * n2basx),
-     &                    (jnfmat - rma_win_info%
-     &                    nmat_max_wo_win) * n2basx,
+     &                    j_mpi,
      &                    mpi_real8,
      &                    mpi_sum,
-     &                    master,
-     &                    communication_info_mpi%
-     &                    communication_internode,
+     &                    l_mpi,
+     &                    i_mpi,
      &                    ierr)
         end if
 #endif
@@ -1374,7 +1233,7 @@ C
       RETURN
       END
 C  /* Deck her_nodstr */
-      SUBROUTINE HER_NODSTR(LWORK_save,wrkdlm,IPRINT)
+      SUBROUTINE HER_NODSTR(LWORK_save,wrkdlm,IPRINT_in)
 C
 C    *****************************************************************
 C    *    This is the node program for the construction of fock-     *
@@ -1399,12 +1258,12 @@ C
 #include "dummy.h"
 C
       PARAMETER (MXDMAT = 2*MXCOOR)
-      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,GENCTR
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,GENCTR
       DIMENSION ISYMDM(MXDMAT), IFCTYP(MXDMAT),
      &          DINTSKP(2,4)
       real(8), allocatable :: work(:)
-      integer, intent(in)  :: lwork_save
-      integer              :: lwork
+      integer, intent(in)  :: lwork_save, iprint_in
+      integer              :: lwork, iprint
 C
 C Used from common blocks
 C
@@ -1435,7 +1294,8 @@ C
       pointer                        (dmat_p, dmat_buff)
       pointer                        (fmat_p, fmat_buff)
       character(len=16)              :: shared_dmat_file
-      integer                        :: istat(mpi_status_size)
+      integer(kind=MPI_INTEGER_KIND) :: istat(mpi_status_size)
+      integer(kind=MPI_INTEGER_KIND) :: i_MPI, j_MPI, k_MPI, l_MPI, ierr
 #endif
       integer, allocatable           :: JSTRS(:)
       integer, allocatable           :: NPRIM(:)
@@ -1450,6 +1310,8 @@ C     This is a slave in a parallel run; check for programming error
       END IF
 
       CALL QENTER('HER_NODSTR')
+
+      IPRINT = max(HERPAR_DEBUG,iprint_in)
 
       IF (IPRINT .GE. 2) THEN
          CALL TITLER('Output from HER_NODSTR','*',103)
@@ -1574,7 +1436,6 @@ C     ===================
 !    &                      communication_info_mpi%
 !    &                      communication_shmemnode,
 !    &                      rma_win_info%dmat_win,
-!!   &                      .true.,
 !    &                      .false.,
 !    &                      'no_locks',
 !    &                      'true')
@@ -1582,19 +1443,18 @@ C     ===================
 !       test dmat on shared file
         write(shared_dmat_file,'(a12,i4)')
      &  'dmat_shared.',communication_info_mpi%intra_node_group_id
-        call mpi_file_open(
-     &                     communication_info_mpi%
-     &                     communication_intranode,
+        i_mpi = communication_info_mpi%communication_intranode
+        j_mpi = rma_win_info%dmat_fh
+        call mpi_file_open(i_mpi,
      &                     shared_dmat_file,
      &                     mpi_mode_CREATE +
      &                     mpi_mode_RDWR   +
      &                     mpi_mode_DELETE_ON_CLOSE,
      &                     mpi_info_null,
-     &                     rma_win_info%dmat_fh,
+     &                     j_mpi,
      &                     ierr )
         displacement = 0
-        call mpi_file_set_view(
-     &                         rma_win_info%dmat_fh,
+        call mpi_file_set_view(j_mpi,
      &                         displacement,
      &                         mpi_real8,
      &                         mpi_real8,
@@ -1602,33 +1462,30 @@ C     ===================
      &                         mpi_info_null,
      &                         ierr )
         if(communication_info_mpi%my_intra_node_id == 0)then
-          nelement4 = nelement
-          call mpi_file_write(
-     &                        rma_win_info%dmat_fh,
+          i_mpi = nelement
+          call mpi_file_write(j_mpi,
      &                        dmat_buff,
-     &                        nelement4,
+     &                        i_mpi,
      &                        mpi_real8,
      &                        istat,
      &                        ierr )
         end if
-        call mpi_barrier(communication_info_mpi%
-     &                   communication_intranode,ierr)
+        k_mpi = communication_info_mpi%communication_intranode
+        call mpi_barrier(k_mpi, ierr)
 !       end test dmat on shared file
 
         nelement            = n2basx*nfmat
         if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
         call set_rma_window(
-     &                      fmat_buff,
-     &                      nelement,
-     &                      communication_info_mpi%my_shmem_node_id,
-     &                      communication_info_mpi%
-     &                      communication_shmemnode,
-     &                      rma_win_info%fmat_win,
-!    &                      .true.,
-     &                      .false.,
-     &                      'no_locks',
-     &                      'true')
+     &     fmat_buff,
+     &     nelement,
+     &     communication_info_mpi%my_shmem_node_id,
+     &     communication_info_mpi%communication_shmemnode,
+     &     rma_win_info%fmat_win,
+     &     .false.,
+     &     'no_locks',
+     &     'true')
 #endif
 !       print *, 'fmat_win, dmat_win',rma_win_info%fmat_win,
 !    &            rma_win_info%dmat_win,mynum
@@ -1668,10 +1525,10 @@ C
 !------------------------
       if(rma_model)then
 #ifdef VAR_MPI
-!       call free_rma_window(rma_win_info%dmat_win,master)
         call free_rma_window(rma_win_info%fmat_win,master)
 !       test dmat on shared file
-        call mpi_file_close(rma_win_info%dmat_fh,ierr)
+        i_mpi = rma_win_info%dmat_fh
+        call mpi_file_close(i_mpi,ierr)
 !       end test dmat on shared file
 #endif
       end if
@@ -1753,7 +1610,7 @@ C
 C MXCENT : MXCENT (for DORPS, etc.)
 C MXORB  : MXSHEL (for INFPAR)
 C MAXAQN : *      (for SYMMET)
-C GNRINF : NEWBAS, NEWGEO, (PVM: BASDIR, LENBAS),
+C GNRINF : NEWBAS, NEWGEO
 C INFORB : N2BASX
 C MOLINP : NMLINE, MLINE()
 C CBIREA : UNCONT
@@ -1782,6 +1639,10 @@ C
 #include "cbisol.h"
 #include "incore.h"
 C
+#ifdef VAR_MPI
+      integer(kind=MPI_INTEGER_KIND) :: i_MPI, j_MPI, k_MPI, l_MPI, ierr
+#endif
+
       IF (IPRINT .GT. 2) THEN
          CALL TITLER('Output from HER_RVINIT','*',103)
          WRITE(LUPRI,*) 'Set Common blocks is ',set_cb_blocks
@@ -1813,9 +1674,6 @@ C
         CALL MPIXBCAST(ERFEXP(0),3,'LOGICAL',MASTER)
         CALL MPIXBCAST(CHIVAL,   1,'DOUBLE' ,MASTER)
         CALL MPIXBCAST(EXPGRA,   1,'LOGICAL',MASTER)
-#ifdef BUILD_OPENRSP
-        CALL MPIXBCAST(USE_OPENRSP,1,'LOGICAL',MASTER)
-#endif
 C
 C       IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
 C                               ELSE calculate g_lr(R12)
@@ -1853,7 +1711,7 @@ C  /molinp/
               CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
 C Arnfinn nov -08: Receiving number of QM atom types:
               CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
-              CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
+              CALL MPIXBCAST(NMLINE_4,1,'INTEGER',MASTER)
 C  /molinc/
               CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 C  /cbirea/
@@ -1882,58 +1740,16 @@ C  /parint/
 !       rma_model
         CALL MPIXBCAST(rma_model,1,'LOGICAL',MASTER)
 #endif
-#if defined (VAR_PVM)
-        CALL PVMXRECV(MASTER,MTAG3)
-        CALL PVMXUNPACK(FIRST ,1,'LOGICAL')
-        CALL PVMXUNPACK(NEWBAS,1,'LOGICAL')
-        CALL PVMXUNPACK(NEWGEO,1,'LOGICAL')
-        CALL PVMXUNPACK(BASDIR,60,'STRING')
-        CALL PVMXUNPACK(LENBAS,1,'INTEGER')
-C
-C       --------------------------------------------------
-C       Unpack common block MOLINP and INFORB (only once).
-C       --------------------------------------------------
-C
-        TIMING = FIRST .OR. NEWBAS .OR. NEWGEO
-C
-        IF (TIMING) THEN
-           IF (IPRINT .GE. 2) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
-     &          ' Receiving new orbital inf.',
-     &          ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
-C  /molinp/
-           CALL PVMXUNPACK(NMLINE,1,'INTEGER')
-C  /molinc/
-           CALL PVMXUNPACK(MLINE,len_MLINE*NMLINE,'STRING')
-C  /inforb/
-           CALL PVMXUNPACK(MULD2H,NINFI,'INTEGER')
-C  /infpar/
-           CALL PVMXUNPACK(NODTOT,NPARI,'INTEGER')
-C
-           DO 100 I = 1, NODTOT
-              IF (NODEID(I) .EQ. MYTID) MYNUM = I
- 100       CONTINUE
-C  /dorps/ DOREPS, DOCOOR (NDORL covers both)
-           CALL PVMXUNPACK(DOREPS(0),NDORL,'LOGICAL')
-C  dosym()
-           CALL PVMXUNPACK(DOSYM,NSYML,'LOGICAL')
-C  comr12
-           CALL PVMXBCAST(R12INT,NR12L,'LOGICAL')
-           CALL PVMXBCAST(INTGAC,NR12I,'INTEGER')
-        END IF
-C  /parint/
-        CALL PVMXUNPACK(JATOM,NINTI,'INTEGER')
-        CALL PVMXUNPACK(JNODV,NINTL,'LOGICAL')
-#endif
 C
 C       In case of QM3 calculation, update number of atom types
 C       in "line 4" in the molecule file
 C       (only # of QM atom types, not # of MM atom types)
-        CALL LINE4(MLINE(NMLAU),NONTYP,NSYMOP,CRT,KCHARG,THRS,AUTOSY,
+        CALL LINE4(MLINE(NMLINE_4),NONTYP,NSYMOP,CRT,KCHARG,THRS,AUTOSY,
      &             KASYM,ID3,DOCART,DOOWN)
         AUTOSY = .FALSE.
         NOSYM  = NSYMOP.EQ.0
 !
-        CALL LINE4W(MLINE(NMLAU),NONTYP_QM,NSYMOP,KCHARG,THRS,AUTOSY,
+        CALL LINE4W(MLINE(NMLINE_4),NONTYP_QM,NSYMOP,KCHARG,THRS,AUTOSY,
      &              NOSYM,KASYM,ID3,DOCART,DOOWN)
 
 C       set local/common block information from PARINT.
@@ -2043,18 +1859,19 @@ C
 
         if(communication_info_mpi%my_shmem_node_id == 0)then
 !         distribute density matrix(ces) among NUMA/node masters
-          call mpi_bcast(dmat_buff,n2basx*ndmat,mpi_real8,master,
-     &                   communication_info_mpi%communication_internode,
-     &                   ierr)
+          i_mpi = n2basx*ndmat
+          j_mpi = master
+          k_mpi = communication_info_mpi%communication_internode
+          call mpi_bcast(dmat_buff,i_mpi,mpi_real8,j_mpi,k_mpi,ierr)
         end if
 
 !       distribute density matrix(ces) among node/NUMA node slaves
+        i_mpi = n2basx*rma_win_info%nmat_max_wo_win
+        j_mpi = 0
+        k_mpi = communication_info_mpi%communication_shmemnode
         call mpi_bcast(dmat_buff,
-     &                 n2basx*rma_win_info%nmat_max_wo_win,
-     &                 mpi_real8,
-     &                 0,
-     &                 communication_info_mpi%communication_shmemnode,
-     &                 ierr)
+     &                 i_mpi, mpi_real8,
+     &                 j_mpi, k_mpi, ierr)
 
 
       else
@@ -2077,33 +1894,6 @@ C
         CALL MEMGET('REAL',KGABAO,      N2RED,WORK,KFREE,LFREE)
         CALL MPIXBCAST(WORK(KDMRAO),NDMAT*N2RED,'DOUBLE',MASTER)
         CALL MPIXBCAST(WORK(KGABAO),N2RED,'DOUBLE',MASTER)
-      ELSE
-        KDMRAO = KFREE
-        KGABAO = KFREE
-      ENDIF
-      KDMRSO = KFREE
-#endif
-#if defined (VAR_PVM)
-      call quit('pvm version of Dalton SCF not working - '//
-     &          'ask s. knecht at stefan.knecht@phys.chem.ethz.ch '//
-     &          'for help.')
-C     Unpack density matrices.
-C
-      CALL PVMXUNPACK(NDMAT,1,'INTEGER')
-      CALL MEMGET('REAL',KDMAT,NDMAT*N2BASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFMAT,NFMAT*N2BASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
-      CALL PVMXUNPACK(WORK(KDMAT),N2BASX*NDMAT,'DOUBLE')
-      CALL PVMXUNPACK(ISYMDM,NFMAT,'INTEGER')
-      CALL PVMXUNPACK(IFCTYP,NFMAT,'INTEGER')
-C
-      IF(ITYPE.EQ.3) THEN
-        CALL PVMXUNPACK(N2RED,1,'INTEGER')
-        CALL MEMGET('REAL',KDMRAO,NDMAT*N2RED,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KGABAO,N2RED,WORK,KFREE,LFREE)
-        CALL PVMXUNPACK(WORK(KDMRAO),N2RED*NDMAT,'DOUBLE')
-        CALL PVMXUNPACK(WORK(KGABAO),N2RED,'DOUBLE')
-        KLAST  = KGABAO + N2RED
       ELSE
         KDMRAO = KFREE
         KGABAO = KFREE
@@ -2321,11 +2111,6 @@ C
          LINTSV = .FALSE.
 C
 #endif
-#if defined (VAR_PVM)
-         CALL PVMXINITSEND(NCODE)
-         CALL PVMXPACK(MYNUM,1,'INTEGER')
-         CALL PVMXSEND(MASTER,MTAG5)
-#endif
 C
 C     Receive IJ labels for NTASK new (IJ|**) integrals
 C
@@ -2350,12 +2135,6 @@ C
          CALL MPIXRECV(IPLACE,1,'INTEGER',MASTER,MTAG62)
 C
 #endif
-#if defined (VAR_PVM)
-         CALL PVMXRECV(MASTER,MTAG6)
-         CALL PVMXUNPACK(DONE,1,'LOGICAL')
-         IF (DONE) GOTO 300
-         CALL PVMXUNPACK(IJS,NTASK,'INTEGER')
-#endif
 C
 C ELSE below is for the compability to old code: AOSAVE = FALSE
 C
@@ -2363,11 +2142,6 @@ C
 C
 #if defined (VAR_MPI)
          CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG5)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMXINITSEND(NCODE)
-         CALL PVMXPACK(MYNUM,1,'INTEGER')
-         CALL PVMXSEND(MASTER,MTAG5)
 #endif
 C
 C     Receive IJ labels for NTASK new (IJ|**) integrals
@@ -2378,12 +2152,6 @@ C
          CALL MPIXRECV(DONE,1,'LOGICAL',MASTER,MTAG6)
          IF (DONE) GOTO 300
          CALL MPIXRECV(IJS,NTASK,'INTEGER',MASTER,MTAG6)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMXRECV(MASTER,MTAG6)
-         CALL PVMXUNPACK(DONE,1,'LOGICAL')
-         IF (DONE) GOTO 300
-         CALL PVMXUNPACK(IJS,NTASK,'INTEGER')
 #endif
 C
 C     END IF below corresponds to: IF (AOSAVE)... ELSE
@@ -2713,7 +2481,8 @@ C
 #ifndef USE_MPI_MOD_F90
 #include "mpif.h"
 #endif
-       integer (kind=mpi_offset_kind) :: offset_mat
+      integer(kind=mpi_offset_kind)  :: offset_mat
+      integer(kind=MPI_INTEGER_KIND) :: i_MPI, j_MPI, k_MPI, l_MPI, ierr
 #endif
 C
       IF (IPRINT .GT. 3) THEN
@@ -2758,77 +2527,48 @@ C
 
 !     collect data for rma_model
       if(rma_model)then
+        i_mpi = 8
+        j_mpi = master
+        k_mpi = communication_info_mpi%communication_glb_world
         call mpi_reduce(dintskp,
      &                  mpi_in_place,
-     &                  8,
+     &                  i_mpi,
      &                  mpi_real8,
      &                  mpi_sum,
-     &                  master,
-     &                  communication_info_mpi%
-     &                  communication_glb_world,
+     &                  j_mpi,
+     &                  k_mpi,
      &                  ierr)
 !       all fmatS outside the RMA window...
+        i_mpi = rma_win_info%nmat_max_wo_win * n2basx
         call mpi_reduce(fmat,
      &                  mpi_in_place,
-     &                  rma_win_info%nmat_max_wo_win * n2basx,
+     &                  i_mpi,
      &                  mpi_real8,
      &                  mpi_sum,
-     &                  master,
-     &                  communication_info_mpi%
-     &                  communication_glb_world,
+     &                  j_mpi,
+     &                  k_mpi,
      &                  ierr)
 
 !       now all fmatS inside the RMA window... if any
         if(rma_win_info%nmat_max_wo_win < ndmat)then
 
-          call mpi_barrier(communication_info_mpi%
-     &                     communication_shmemnode,
-     &                     ierr)
+          k_mpi = communication_info_mpi%communication_shmemnode
+          call mpi_barrier(k_mpi, ierr)
           if(communication_info_mpi%my_shmem_node_id == 0)then
 
-            call mpi_reduce(fmat(1 + rma_win_info%
-     &                      nmat_max_wo_win * n2basx),
-     &                      mpi_in_place,
-     &                      (ndmat - rma_win_info%
-     &                      nmat_max_wo_win) * n2basx,
+            i_mpi = (ndmat - rma_win_info%nmat_max_wo_win) * n2basx
+            k_mpi = communication_info_mpi%communication_internode
+            call mpi_reduce(fmat(1 +
+     &                      rma_win_info%nmat_max_wo_win * n2basx),
+     &                      mpi_in_place, i_mpi,
      &                      mpi_real8,
      &                      mpi_sum,
-     &                      master,
-     &                      communication_info_mpi%
-     &                      communication_internode,
+     &                      j_mpi, k_mpi,
      &                      ierr)
           end if
         end if
       end if
 
-#endif
-#if defined (VAR_PVM)
-      CALL PVMXINITSEND(NCODE)
-      IF (ITYPE .EQ. 2) THEN
-         CALL PVMXPACK(GRADEE,L_GRA,'DOUBLE')
-         CALL PVMXPACK(HESSEE,L_HES,'DOUBLE')
-      ELSE IF (ITYPE .EQ. 3) THEN
-         CALL PVMXPACK(FMAT,NDMAT*N2BASX,'DOUBLE')
-         CALL PVMXPACK(DINTSKP,8,'DOUBLE')
-      ELSE IF (ITYPE .EQ. -5 .OR. ITYPE .EQ. 8) THEN
-         CALL PVMXPACK(FMAT,NFMAT*N2BASX,'DOUBLE')
-         IF (ITYPE .EQ. -5) THEN
-            CALL PVMXPACK(SUS2EL,L_SUS,'DOUBLE')
-         END IF
-      END IF
-C
-C     Pack the number of tasks received.
-C
-      CALL PVMXPACK(ICOUNT,1,'INTEGER')
-C
-C     Pack the integral-calculation times.
-C
-      IF (TIMING) THEN
-         CALL PVMXPACK(IWHICH,ICOUNT,'INTEGER')
-         CALL PVMXPACK(TSKCPU,ICOUNT,'DOUBLE')
-      END IF
-C
-      CALL PVMXSEND(MASTER,MTAG7)
 #endif
 C
       RETURN
@@ -2852,15 +2592,12 @@ C  /* Deck prlinp */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "mtags.h"
-#if defined (VAR_PVM)
-      INCLUDE 'fpvm3.h'
-#endif
       PARAMETER (NTABLE = 6)
       LOGICAL FIRST, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "infpar.h"
       SAVE FIRST
-      DATA TABLE /'.NODES ','.DEGREE','.PRINT ','.ENCODE','.DEBUG ',
+      DATA TABLE /'xxxxxxx','.DEGREE','.PRINT ','xxxxxxx','.DEBUG ',
      &            '.RMA-MD'/
       DATA FIRST /.TRUE./
 C
@@ -2888,10 +2625,6 @@ C     ... this is the master in a parallel run
       NTASK  = 1
       IPRPAR = 0
       NDEGDI = 5
-#if defined (VAR_PVM)
-      NODTOT = 0
-      NCODE  = PVMDATADEFAULT
-#endif
       rma_model  = .false.
 C
       NEWDEF = (WORD .EQ. '*PARALL')
@@ -2920,18 +2653,6 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in PRLINP')
     1          CONTINUE
-                  READ(LUCMD,*) NODS
-#if defined (VAR_MPI)
-                  IF (NODS .NE. NODTOT) THEN
-                     WRITE (LUPRI,'(/A,I3,A,I3)')
-     &                 'Number of nodes in input ', NODS,
-     &                 ' .ne. nodes in MPI calculation ',NODTOT
-                     CALL QUIT('Wrong number of nodes in input')
-                  END IF
-#endif
-#if defined (VAR_PVM)
-                  NODTOT = NODS
-#endif
                GO TO 100
     2          CONTINUE
                   READ(LUCMD,*) NDEGDI
@@ -2940,24 +2661,6 @@ C
                   READ(LUCMD,*) IPRPAR
                GO TO 100
     4          CONTINUE
-#if defined (VAR_PVM)
-                  READ (LUCMD,'(A7)') WORD
-                  CALL UPCASE(WORD)
-                  IF (WORD.EQ.' DATADE') THEN
-                     NCODE = PVMDATADEFAULT
-                  ELSE IF (WORD.EQ.' DATARA') THEN
-                     NCODE = PVMDATARAW
-                  ELSE IF (WORD.EQ.' DATAIN') THEN
-                     NCODE = PVMDATAINPLACE
-                  ELSE
-                     WRITE(LUPRI,'(/1X,A,A,A//1X,A/15X,A/15X,A/)')
-     &              '.ENCODE type ',word,' unknown!!!',
-     &              'Options are : DATADEFAULT','DATARAW','DATAINPLACE'
-                     CALL QUIT('Nonexistent encoding type in input.')
-                  END IF
-#else
-                  WRITE(LUPRI,'(/1X,A)')'.ENCODE keyword is not in use.'
-#endif
                GO TO 100
     5          CONTINUE   ! .DEBUG
                   INFPAR_DEBUG = .TRUE.

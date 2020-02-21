@@ -1,8 +1,0 @@
-ATOMBASIS
-ECP test on H2O
-----------------
-Atomtypes=2 Generators=2 X Y
-Charge=8.0 Atoms=1 Basis=ecp-sdd-DZ ECP=ecp-sdd-DZ
-O       0.000000000000           0.0000000000           -0.1161156955
-Charge=1.0 Atoms=1 Basis=6-31G*
-H       0.000000000000           1.3457079896            0.9214202268

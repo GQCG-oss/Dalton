@@ -327,7 +327,6 @@ C   INFORB: MULD2H()
 C   INFVAR: MAXOCC,NWOPT,NVAR,NWOPH,NVARH,JWOP(2,*),JWOPSY
 C   INFLIN: LSYMRF,LSYMPT,LSYMST,NCONST,NWOPPT,NVARPT
 C   INFDIM: NWOPDI,NWOPMA,NCONMA,NVARMA
-C   INFPRI: NWARN
 C
 #include "maxorb.h"
 #include "priunit.h"
@@ -335,7 +334,6 @@ C
 #include "infvar.h"
 #include "inflin.h"
 #include "infdim.h"
-#include "infpri.h"
 C
       LOGICAL FNDLAB
 C
@@ -1529,7 +1527,7 @@ C
       !> read MOs from SIRIUS.RST 
       !> a. if HF these are the final HF orbitals
       !> b. if MC these are the final MCSCF orbitals
-      call readmo(cmo,9,vdummy,0)
+      call readmo(cmo,9)
 
       select case(trim(density))
 
@@ -1675,7 +1673,6 @@ C Used from common blocks:
 C  gnrinf.h: DOSRIN
 C  INFORB  : NBAST,N2BASX
 C  INFTAP  : LUSUPM
-C  PRIUNIT : IPRSTAT
 C  CBIHRS  : parameters for FORMSUP
 C  frame.h : POTNUC
 C  DFTCOM  : HFXFAC
@@ -1683,14 +1680,14 @@ C
 #include "gnrinf.h"
 #include "inforb.h"
 #include "inftap.h"
-#include "infpri.h"
 #include "cbihrs.h"
 #include "frame.h"
 #include "dftcom.h"
 C
 C     Local variables:
 C
-      LOGICAL FNDLAB, FNSUPM_OK, NOSYM, F_EXIST, DOSRIN_save
+      LOGICAL      FNDLAB, FNSUPM_OK, F_EXIST, DOSRIN_save
+      LOGICAL*4    NOSYM
       character*8  FNSUPM_local
 
       CALL QENTER('RDSUPM')
@@ -1699,7 +1696,7 @@ C
 C     ... special code for AOSUPMAT not to be used
          WRITE (LUPRI,'(/A/A)')
      &      'PROGRAMMING ERROR: RDSUPM called with LUSUPM = -1',
-     &      'Please report to dalton-admin.'
+     &      'Please report on Dalton forum.'
          CALL QTRACE(LUPRI)
          CALL QUIT('Programming ERROR: RDSUPM called with LUSUPM.eq.-1')
       END IF
@@ -1821,10 +1818,11 @@ C
 #include "inforb.h"
 #include "infind.h"
 #include "inftap.h"
-#include "infpri.h"
 C
-      LOGICAL NOSYM
-      INTEGER MBAS(8)
+! always *4 on LUSUPM
+      LOGICAL*4 NOSYM
+      INTEGER*4 MSYM, MBAS(8)
+      INTEGER*4 ITYP,NP1,NQ1,NPL,NQL,NPQRS_4
 C
       CALL QENTER('RDSUPP')
       REWIND(LUSUPM)
@@ -1872,7 +1870,8 @@ C
       IREC2 = 0
   100 CONTINUE
          IREC = IREC + 1
-         READ (LUSUPM) ITYP,NP1,NQ1,NPL,NQL,NPQRS
+         READ (LUSUPM) ITYP,NP1,NQ1,NPL,NQL,NPQRS_4
+         NPQRS = NPQRS_4 ! in case default is integer*8
          IF (IPRSTAT .GT. 20) THEN
             WRITE (LUERR,*) 'ITYP,NP1,NQ1,NPL,NQL,NPQRS'
             WRITE (LUERR,'(7I10)') ITYP,NP1,NQ1,NPL,NQL,NPQRS
@@ -1948,7 +1947,7 @@ C                    note NRS = IPQ
             LENP  = 3*NPQRS ! real*8 P + integer*4 INDP
             IF (LENP .GT. LFREE) GO TO 820
             CALL READI4(LUSUPM,LENP,IWORK)
-            INDP  = 2*NPQRS ! 2 because IWORK is always integer*4
+            INDP  = 2*NPQRS ! "2" as IWORK is always integer*4
             IPQ   = IROW(NP1) + NQ1
             DO 380 ISIM = 1,NSIM
                DPQ = DMAT(IPQ,ISIM)
@@ -2324,7 +2323,6 @@ C
 #include "infinp.h"
 #include "infvar.h"
 #include "inftap.h"
-#include "infpri.h"
 C
       logical, intent(in) :: set_cref_xc_flag_lucita
       CHARACTER*8 RTNLBL(2), STAR8

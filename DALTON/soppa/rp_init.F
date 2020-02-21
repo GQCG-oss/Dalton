@@ -58,6 +58,7 @@ C
       ISYMOP = 1
 C
       KEEPAOIN  = .TRUE.
+      KEEPAOTWO = 2
 CKeinSPASmehr
 C
 C     Use LABEL (WK/UniKA/04-11-2002).

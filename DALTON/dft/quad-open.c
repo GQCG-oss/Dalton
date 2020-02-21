@@ -20,7 +20,7 @@
 
 void FSYM(deq27)(const real* cmo, const real* ubo, const real* dv,
                  real* dxcao, real* dxvao, real* wrk, integer* lfrsav);
-int isetksymop_(const integer *new_ksymop);
+integer FSYM(isetksymop)(const integer *new_ksymop);
 
 typedef struct {
     real *dmata, *dmatb;       /* Denisty matrices                      */
@@ -55,10 +55,6 @@ typedef struct {
     real *prefc2a;             /* precomputed prefactors for grip points*/
     real *prefc2b;             /* precomputed prefactors for grip points*/
 } Quad_Open_Data;
-
-static __inline__ real
-min(real a, real b)
-{ return a>b ? b : a; }
 
 static void
 quad_open_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
@@ -175,7 +171,6 @@ quad_open_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
                 jblocks = BASBLOCK(grid,jsym);
                 jbl_cnt = grid->bas_bl_cnt[jsym];
                 for(jbl=0; jbl<jbl_cnt; jbl++) {
-                    integer jtop = min(jblocks[jbl][1],i+1);
                     for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) {
                         real * RESTRICT aosj = aos + j*bllen;
                         real sa = 0;
@@ -193,7 +188,6 @@ quad_open_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
                 jblocks = BASBLOCK(grid,jsym);
                 jbl_cnt = grid->bas_bl_cnt[jsym];
                 for(jbl=0; jbl<jbl_cnt; jbl++) {
-                    integer jtop = min(jblocks[jbl][1],i+1);
                     for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) {
                         real * RESTRICT aosj = aos + j*bllen;
                         real sa = 0;
@@ -211,7 +205,6 @@ quad_open_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
                 jblocks = BASBLOCK(grid,jsym);
                 jbl_cnt = grid->bas_bl_cnt[jsym];
                 for(jbl=0; jbl<jbl_cnt; jbl++) {
-                    integer jtop = min(jblocks[jbl][1],i+1);
                     for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) {
                         real * RESTRICT aosj = aos + j*bllen;
                         real sa = 0;
@@ -813,8 +806,6 @@ Quad_Open_Data
 quad_open_init(real *cmo, real *kappaY, real *kappaZ, 
                integer *symY, integer *symZ, integer *spinY, integer *spinZ)
 {
-    integer isym;
-    real *dv;
     Quad_Open_Data data; 
 
     /* Initialize repsonse data */
@@ -1032,8 +1023,6 @@ FSYM2(dft_qr_ab)(real * fi, real * fo, real *cmo,
     static const real DP5R  =  0.5;
     static const real MDP5R = -0.5;
     static const real ONER  =  1.0;
-    static const real MONER = -1.0;
-    static const real TWOR  =  2.0;
     integer i, j, isymsav; 
     real * dv;
     struct tms starttm, endtm; clock_t utm;
@@ -1082,7 +1071,7 @@ FSYM2(dft_qr_ab)(real * fi, real * fo, real *cmo,
     free(tmp);
     free(kappa_yz);
     /* Integrate VXC[3] */
-    electrons = dft_integrate_ao_bl(2, qr_data.dmata, work, lwork, iprint, 0,
+    electrons = dft_integrate_ao_bl( 2, qr_data.dmata, work, lwork, iprint,  0,
                                      (DftBlockCallback)(selected_func->is_gga() ? 
                                       quad_open_gga_cb:quad_open_lda_cb),
                                      &qr_data); 

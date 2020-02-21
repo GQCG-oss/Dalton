@@ -1,8 +1,0 @@
-   cc_rsp_lanczos_alpha
-   --------------------
-   Molecule:         H2O in C2v
-   Wave Functions:   CCSD / 3-21G
-   Test Purpose:     Frequency-dependent real and imaginary 
-                     polarizabilities using Lanczos solver (damping =/0)
-                     Jchain = full space
-

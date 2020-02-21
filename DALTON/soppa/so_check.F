@@ -47,7 +47,7 @@ C     The definition must match that in soppa_nodedriver
       INTEGER   INFO_ARRAY(4)
       EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
      &            (info_array(3), nnewtr),    (info_array(4),noldtr)
-      INTEGER(MPI_INTEGER_KIND) :: IERR
+      INTEGER(MPI_INTEGER_KIND) :: ierr_mpi, numprocs_mpi
 #endif
 C
 C------------------
@@ -66,10 +66,7 @@ C     and trial vectors.
 C-----------------------------------------------------
 C
       IF (DOUBLES) THEN
-CPi 01.04.16
-C         NVAR   = 2 * (NT1AM(ISYMTR)+NT2AM(ISYMTR))
          NVAR   = 2 * (NT1AM(ISYMTR)+N2P2HOP(ISYMTR))
-Cend-Pi
       ELSE
          NVAR = 2*NT1AM(ISYMTR)
       END IF
@@ -82,12 +79,8 @@ CPi 04.04.16
 C      LDENSAI = NT1AM(1)
 Cend-Pi
       IF (DOUBLES) THEN
-CPi 01.04.16
-C         LTR2E  = NT2AM(ISYMTR)
-C         LTR2D  = NT2AM(ISYMTR)
          LTR2E  = N2P2HOP(ISYMTR)
          LTR2D  = N2P2HOP(ISYMTR)
-Cend-Pi
       ELSE
          LTR2E  = 0
          LTR2D  = 0
@@ -109,9 +102,9 @@ C     For MPI, we need som space in which to store the indices each
 C     process is to work with in so_eres.
 C------------------------------------------------------------------
 C
-      call mpi_comm_size( mpi_comm_world, numprocs, ierr)
-      maxnumjobs = mxcall - min(mxcall, numprocs) + 1
-      if ( numprocs .eq. 1 ) then
+      call mpi_comm_size( mpi_comm_world, numprocs_mpi, ierr_mpi)
+      maxnumjobs = mxcall - min(mxcall, numprocs_mpi) + 1
+      if ( numprocs_mpi .eq. 1 ) then
 C Not a real parallel job, don't bother
          lAssignedIndices = 1
          kAssignedIndices = 0
@@ -145,10 +138,6 @@ C
          LRESO1E = NT1AM(ISYMTR)
          LRESO1D = NT1AM(ISYMTR)
          IF (DOUBLES) THEN
-C            LRES2E  = NT2AM(ISYMTR)
-C            LRES2D  = NT2AM(ISYMTR)
-C            LRESO2E = NT2AM(ISYMTR)
-C            LRESO2D = NT2AM(ISYMTR)
             LRES2E  = N2P2HOP(ISYMTR)
             LRES2D  = N2P2HOP(ISYMTR)
             LRESO2E = N2P2HOP(ISYMTR)
@@ -222,20 +211,21 @@ C
 C In parallel, send slaves to so_eres
 C
          call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
-     &                   mpi_comm_world, ierr )
+     &                   mpi_comm_world, ierr_mpi )
 C Pack INFO_ARRAY variables and send them off
          CP_ISYMTR = ISYMTR
          NOLDTR    = 0
          NNEWTR    = 1
          NIT       = ICOL
          CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
-     &                   MPI_COMM_WORLD, IERR)
+     &                   MPI_COMM_WORLD, ierr_mpi)
 #endif
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
          CALL SO_ERES(MODEL,0, 1, DENSIJ, LDENSIJ, DENSAB, LDENSAB,
      &               T2MP, LT2MP,  FOCKD,   LFOCKD,
      &               DENSAI, LDENSAI, ICOL, ISYMTR,
+     &               0,
 #ifdef VAR_MPI
      &               WORK(kAssignedIndices),lAssignedIndices,
 #endif

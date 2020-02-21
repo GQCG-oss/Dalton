@@ -18,9 +18,8 @@
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,           &
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
      &        CHI1ST, DKHINT,                                           &
-     &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM,   QFIT,             &
-     &        USE_LSLIB, USE_OPENRSP, SIR_INPPRC,     NEWGEO, DOFDE
-
+     &        EMBEDDING, QM3, QMMM,   QMNPMM, QFIT,   USE_LSLIB,        &
+     &        SIR_INPPRC, NEWGEO, DOFDE
       REAL*8  GRADML, PANAS,  CHIVAL, THR_REDFAC
 
 ! srDFT variables
@@ -43,8 +42,8 @@
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,           &
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT, COMLAM,           &
-     &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM,   QFIT,             &
-     &        USE_LSLIB, USE_OPENRSP, SIR_INPPRC,     NEWGEO, DOFDE
+     &        EMBEDDING, QM3, QMMM,   QMNPMM, QFIT,   USE_LSLIB,        &
+     &        SIR_INPPRC, NEWGEO, DOFDE
       COMMON /GNRINF/ GNRINFlast
       ! Very important: Always keep GNRINFlast as the last variable in the common block.
       ! See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.

@@ -284,9 +284,6 @@ C  /* Deck DIIS_CTL */
      *                    CVEC,TNLM,WRK,KFRSAV,LFRSAV,
      *                    IPR_DIIS,ICONV)
 
-#ifdef ENABLE_EFS
-      use efs_interface
-#endif
 C
 C L.r. 5-May-1994 hjaaj / 1-Apr-1997
 C
@@ -295,18 +292,16 @@ C
 C
       use qmcmm, only: getdim_relmat, comp_relmat, write_relmat,
      &                 getdim_mmmat, comp_mmrelmat
-#ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: xcint_integrate_rks_scf,
-     &                                  xcint_uses_own_grid,
-     &                                  xcint_is_active
-#endif
       use qmcmm_fock, only: qmnpmm_fock
 #ifdef HAS_PCMSOLVER
       use pcm_scf
       use pcm_config, only: pcm_configuration, pcm_cfg
 #endif
       use pelib_interface, only: use_pelib, pelib_ifc_fock,
-     &                           pelib_ifc_energy
+     &                           pelib_ifc_energy, pelib_ifc_mep,
+     &                           pelib_ifc_do_mep, pelib_ifc_do_infld,
+     &                           pelib_ifc_infld, pelib_ifc_do_savden,
+     &                           pelib_ifc_save_density
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), GVEC(*), BMAT(*), H1AO(*)
@@ -314,16 +309,6 @@ C
       DIMENSION SMOAO(*), DCAO(*), FCAO(*), DAOSAV(NNBAST,*), CVEC(*)
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
-
-#ifdef ENABLE_XCINT
-      real(8)              :: xc_energy(1)
-      real(8), allocatable :: dmat_ao(:)
-      real(8), allocatable :: xc_mat(:)
-      real(8), allocatable :: buffer1(:)
-      real(8), allocatable :: buffer2(:)
-      real(8), allocatable :: xc_mat_tri(:)
-      logical              :: file_exists
-#endif
 
 #ifdef HAS_PCMSOLVER
       real(8), allocatable :: density_ao(:), density_ao_symm(:)
@@ -568,9 +553,6 @@ C------------------
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
      &     .AND. .NOT.AOSAVE   .AND. .NOT.CHOINT
      &     .AND. .NOT.EMBEDDING
-#ifdef ENABLE_EFS
-     &     .AND. .NOT. use_efs
-#endif
 C
 #ifdef HAS_PCMSOLVER
       if (pcm_cfg%do_pcm) then
@@ -796,18 +778,7 @@ C
 
          CALL GETTIM(t1_fck,w1_fck)
 
-#if defined ENABLE_EFS
-         if (use_efs) then
-            call mpixbcast (const_fock_update, 1, 'INTEGER', 0)
-            iprint = 0
-            call mpixbcast (iprint, 1, 'INTEGER', 0)
-            call efs_add_2efock (FCAO, DCAO, IFTHRS)
-         else
-#endif
          CALL FCK2AO(ONLYFC,FCAO,DCAO,WRK,KFREE,LFREE)
-#if defined ENABLE_EFS
-         end if
-#endif
 
          IF (DIRFCK .AND. IFTHRS.LT.20) THEN
             IF (IPR_DIIS .GE. 0) THEN
@@ -889,56 +860,9 @@ C
                CALL DAXPY(N2BASX,-D1,DCAO(1+N2BASX),1,DCAO,1)
             END IF
 
-#ifdef ENABLE_XCINT
-            if (xcint_is_active()) then
-               if (.not. xcint_uses_own_grid()) then
-                  ! ulgy hack to get dalton grid, we don't care about the integrated result
-                  inquire(file='num_grid', exist=file_exists)
-                  if (.not. file_exists) then
-                     allocate(buffer1(nbast*nbast))
-                     allocate(buffer2(nbast*nbast))
-                     dummy_energy = 0.0d0
-                     call dft_add_ks(onlyfc, dummy_energy, dcao, ndmat,
-     &                               buffer1, buffer2,
-     &                               wrk(kfree), lfree, ipr_diis)
-                     deallocate(buffer1)
-                     deallocate(buffer2)
-                  end if
-               end if
-
-               allocate(dmat_ao(nbast*nbast))
-               allocate(xc_mat(nbast*nbast))
-               allocate(xc_mat_tri(nnbast))
-
-               dmat_ao     = 0.0d0
-               xc_mat     = 0.0d0
-               xc_mat_tri = 0.0d0
-               xc_energy   = 0.0d0
-               xc_num_electrons = 0.0d0
-               call daxpy(nbast*nbast, 0.5d0, dcao, 1,
-     &                    dmat_ao, 1)
-
-               call xcint_integrate_rks_scf(dmat_ao,
-     &                                xc_energy,
-     &                                xc_mat,
-     &                                xc_num_electrons)
-               emy = emy + xc_energy(1)
-
-               call dgetsp(nbast, xc_mat, xc_mat_tri)
-               call daxpy(nnbast, 1.0d0, xc_mat_tri, 1,
-     &                    faosav(1, indevc, 1), 1)
-
-               deallocate(dmat_ao)
-               deallocate(xc_mat)
-               deallocate(xc_mat_tri)
-            else
-#endif /* ENABLE_XCINT */
                CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
      &                    FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                    WRK(KFREE),LFREE,IPR_DIIS)
-#ifdef ENABLE_XCINT
-            end if
-#endif
          END IF
 
 CAMT If calculated add the empirical dispersion energy correction
@@ -1793,6 +1717,31 @@ C
             PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
         END IF
         CALL PELIB_IFC_ENERGY(PE_DENMAT)
+        IF (PELIB_IFC_DO_INFLD()) THEN
+            CALL PELIB_IFC_INFLD()
+        END IF
+        DEALLOCATE(PE_DENMAT)
+      END IF
+      IF (PELIB_IFC_DO_MEP()) THEN
+        ALLOCATE(PE_DENMAT(NNBASX))
+        IF (NASHT == 0 .OR. HSROHF) THEN
+            PE_DENMAT = DAOSAV(:,1)
+        ELSE
+            PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
+        END IF
+        CALL PELIB_IFC_MEP(PE_DENMAT)
+        DEALLOCATE(PE_DENMAT)
+      END IF
+      IF (PELIB_IFC_DO_SAVDEN()) THEN
+        ALLOCATE(PE_DENMAT(NNBASX))
+        IF (NASHT == 0 .OR. HSROHF) THEN
+            PE_DENMAT = DAOSAV(:,1)
+        ELSE
+            PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
+        END IF
+        CALL PELIB_IFC_SAVE_DENSITY(PE_DENMAT,
+     &                              FCAO(1:NORBT*(NORBT+1)/2),
+     &                              CMO(1:NBAST*NORBT))
         DEALLOCATE(PE_DENMAT)
       END IF
 C

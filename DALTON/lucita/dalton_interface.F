@@ -608,7 +608,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 #include "infpar.h"
 #ifdef VAR_MPI
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "mxpdim.inc"
 #include "orbinp.inc"
@@ -2449,11 +2449,12 @@ C
 #ifdef VAR_MPI
 #ifdef USE_MPI_MOD_F90
       use mpi
+#include "implicit.h"
 #else
+#include "implicit.h"
 #include "mpif.h"
 #endif
 #endif
-#include "implicit.h"
 #include "parluci.h"
 
       real(8), intent(in)    :: rho1lu(*)
@@ -2566,11 +2567,12 @@ C
 #ifdef VAR_MPI
 #ifdef USE_MPI_MOD_F90
       use mpi
+#include "implicit.h"
 #else
+#include "implicit.h"
 #include "mpif.h"
 #endif
 #endif
-#include "implicit.h"
 #include "parluci.h"
 
       real(8), intent(in)    :: rho1slu(*)

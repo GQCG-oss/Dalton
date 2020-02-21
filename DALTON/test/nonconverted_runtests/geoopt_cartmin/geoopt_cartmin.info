@@ -1,8 +1,0 @@
-   geoopt_cartmin
-   --------------
-   Molecule:         C6H5CHO
-   Wave Function:    SCF / STO-3G
-   Test Purpose:     Minimization in Cartesian coordinates. The initial
-                     Hessian is calculated, then updated using the
-                     PSB-formula. The rational function method determines
-                     the step and Baker's convergence criteria are used

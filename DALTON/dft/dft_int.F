@@ -114,24 +114,6 @@ C
       EXTERNAL DFT_ISGGA
       DIMENSION IORIDX(KMAX,2,8)
 
-#ifdef ENABLE_XCINT
-#define EXPORT_GRID
-#endif
-#ifdef EXPORT_GRID
-      integer              :: nr_points_export
-      integer, parameter   :: max_export_grid_length = 1000000
-      integer, parameter   :: lunit_export = 137
-      real(8), allocatable :: rx(:)
-      real(8), allocatable :: ry(:)
-      real(8), allocatable :: rz(:)
-      real(8), allocatable :: rw(:)
-      logical              :: export_file_exists
-      integer              :: irank, ierr, nr_proc
-#ifdef VAR_MPI
-      integer              :: status_array(MPI_STATUS_SIZE)
-#endif
-#endif /* EXPORT_GRID */
-
       ELECTRONS = 0.D0
       DOGGA = DFT_ISGGA() ! C code
       IGEODRV = NGEODRV
@@ -145,56 +127,12 @@ CAMT Require higher derivatives for explicit potential construction
       NPOINTS = 0
       CALL CONSTRUCT_IORIDX(IORIDX)
 
-#ifdef EXPORT_GRID
-      irank   = 0
-      nr_proc = 1
-#ifdef VAR_MPI
-      call mpi_comm_rank(mpi_comm_world, irank, ierr)
-      call mpi_comm_size(mpi_comm_world, nr_proc, ierr)
-#endif
-      if (irank == 0) then
-         inquire(file='num_grid', exist=export_file_exists)
-      end if
-#ifdef VAR_MPI
-      if (nr_proc > 1) then
-         call mpi_bcast(export_file_exists, 1, mpi_logical,
-     &                  0, mpi_comm_world, ierr)
-      end if
-#endif
-      if (.not. export_file_exists) then
-         nr_points_export = 0
-         allocate(rx(max_export_grid_length))
-         allocate(ry(max_export_grid_length))
-         allocate(rz(max_export_grid_length))
-         allocate(rw(max_export_grid_length))
-      end if
-#endif /* EXPORT_GRID */
-
  100  CONTINUE
          CALL REAQUA(NSHELL,NSHLBLCK,NBUFLEN,COOR,WEIGHT,NLEN) ! C code
          if (nlen .le. 0) then
            go to 200
          end if
          NPOINTS = NPOINTS + NLEN
-
-#ifdef EXPORT_GRID
-         if (.not. export_file_exists) then
-            if ((nr_points_export + nlen) > max_export_grid_length) then
-               print *, 'ERROR in grid export, array too small'
-               call quit('ERROR in grid export, array too small')
-            end if
-            do i = 1, nlen
-               rx(nr_points_export + i) = coor(1, i)
-               ry(nr_points_export + i) = coor(2, i)
-               rz(nr_points_export + i) = coor(3, i)
-               rw(nr_points_export + i) = weight(i)
-               if (dabs(rw(nr_points_export + i)) < 1.0e-40) then
-                  rw(nr_points_export + i) = 0.0d0
-              end if
-            enddo
-            nr_points_export = nr_points_export + nlen
-         end if
-#endif /* EXPORT_GRID */
 
          DO IPT = 1, NLEN, MXBLLEN
             NCURLEN=MIN(MXBLLEN,NLEN-IPT+1)
@@ -256,83 +194,6 @@ CAMT Require higher derivatives for explicit potential construction
          END DO
          GO TO 100
  200     CONTINUE
-
-#ifdef EXPORT_GRID
-      if (.not. export_file_exists) then
-         if (irank == 0) then
-            open(lunit_export,
-     &           form   = 'formatted',
-     &           status = 'new',
-     &           access = 'sequential',
-     &           file   = 'num_grid')
-            rewind lunit_export
-            write(lunit_export, *) nr_proc
-
-            ! write points from master
-            write(lunit_export, *) nr_points_export
-            do i = 1, nr_points_export
-               write(lunit_export, '(e20.12)') rx(i)
-               write(lunit_export, '(e20.12)') ry(i)
-               write(lunit_export, '(e20.12)') rz(i)
-               write(lunit_export, '(e20.12)') rw(i)
-            enddo
-         end if
-
-#ifdef VAR_MPI
-         ! write points from workers
-         if (nr_proc > 1) then
-            do iworker = 1, nr_proc-1
-               if (irank == iworker) then
-                  call mpi_send(nr_points_export, 1, mpi_integer,
-     &                          0, 92, mpi_comm_world, ierr)
-                  call mpi_send(rx, nr_points_export, mpi_real8,
-     &                          0, 93, mpi_comm_world, ierr)
-                  call mpi_send(ry, nr_points_export, mpi_real8,
-     &                          0, 94, mpi_comm_world, ierr)
-                  call mpi_send(rz, nr_points_export, mpi_real8,
-     &                          0, 95, mpi_comm_world, ierr)
-                  call mpi_send(rw, nr_points_export, mpi_real8,
-     &                          0, 96, mpi_comm_world, ierr)
-               end if
-               if (irank == 0) then
-                  call mpi_recv(nr_points_export, 1, mpi_integer,
-     &                          iworker, 92, mpi_comm_world,
-     &                          status_array, ierr)
-                  call mpi_recv(rx, nr_points_export, mpi_real8,
-     &                          iworker, 93, mpi_comm_world,
-     &                          status_array, ierr)
-                  call mpi_recv(ry, nr_points_export, mpi_real8,
-     &                          iworker, 94, mpi_comm_world,
-     &                          status_array, ierr)
-                  call mpi_recv(rz, nr_points_export, mpi_real8,
-     &                          iworker, 95, mpi_comm_world,
-     &                          status_array, ierr)
-                  call mpi_recv(rw, nr_points_export, mpi_real8,
-     &                          iworker, 96, mpi_comm_world,
-     &                          status_array, ierr)
-
-                  write(lunit_export, *) nr_points_export
-                  do i = 1, nr_points_export
-                     write(lunit_export, '(e20.12)') rx(i)
-                     write(lunit_export, '(e20.12)') ry(i)
-                     write(lunit_export, '(e20.12)') rz(i)
-                     write(lunit_export, '(e20.12)') rw(i)
-                  enddo
-               end if
-            end do
-         end if
-#endif
-
-         if (irank == 0) then
-            close(lunit_export, status = 'keep')
-         end if
-
-         deallocate(rx)
-         deallocate(ry)
-         deallocate(rz)
-         deallocate(rw)
-      end if
-#endif /* EXPORT_GRID */
 
       CALL CLSQUA !C code
 C
@@ -523,7 +384,7 @@ c     /XYZPOW/
       CALL MPI_Bcast(nval, MXAQNM, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
 c     /DFTCOM/
-      CALL MPI_Bcast(DFTADD,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+      CALL MPI_Bcast(DFTADD,1,my_MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
 
 !     sync thresholds
       call mpi_bcast(dfthr0, 1, mpi_double_precision,
@@ -534,10 +395,10 @@ c     /DFTCOM/
      &                       0, mpi_comm_world, ie)
 
 c     /DFTASC/
-      CALL MPI_Bcast(DFTASC,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(DOMPOLE,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(DOLB94,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(LDFTVXC,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+      CALL MPI_Bcast(DFTASC,1,my_MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+      CALL MPI_Bcast(DOMPOLE,1,my_MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+      CALL MPI_Bcast(DOLB94,1,my_MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+      CALL MPI_Bcast(LDFTVXC,1,my_MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
 
 c     sync functionals, too.
 !     print *, 'calling DFTFUNCSYNC for mytid',mytid, NODTOT
@@ -547,9 +408,9 @@ c
       END
 c
       SUBROUTINE DFTINTCOLLECT(ELECTRONS)
+#include "implicit.h"
 #ifdef VAR_MPI
 c
-#include "implicit.h"
 #include "mpif.h"
 #include "maxorb.h"
 #include "infpar.h"

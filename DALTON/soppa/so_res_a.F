@@ -2,7 +2,7 @@ C  /* Deck so_res_a */
       SUBROUTINE SO_RES_A(RES1E,LRES1E,RES1D,LRES1D,TR1E,LTR1E,TR1D,
      &                    LTR1D,DSRHF,LDSRHF,CMO,LCMO,T2M1,LT2M1,
      &                    AIJ,LAIJ,AAB,LAAB,INEWTR,ISDEL,ISYDIS,ISYRES,
-     &                    ISYMTR,WORK,LWORK)
+     &                    ISYMTR,DO_DEX,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -32,6 +32,7 @@ C
       DIMENSION RES1E(LRES1E), RES1D(LRES1D), TR1E(LTR1E), TR1D(LTR1D)
       DIMENSION DSRHF(LDSRHF), CMO(LCMO), T2M1(LT2M1), WORK(LWORK)
       DIMENSION AIJ(LAIJ),     AAB(LAAB)
+      LOGICAL, INTENT(IN) :: DO_DEX
 C
 #include "ccorb.h"
 #include "ccsdinp.h"
@@ -172,9 +173,10 @@ C
 C
                ISYMI  = MULD2H(ISYMA,ISYRES)
 C
-C==================================
+C=============================================
 C              1. term in Eq. (34):
-C==================================
+C              Or term 3 of the SOPPA B-matrix
+C=============================================
 C
                ISYMD  = MULD2H(ISYMI,ISYMCK)
 C
@@ -191,41 +193,24 @@ C
                NTOTA  = MAX(NVIR(ISYMA),1)
                NTOTD  = MAX(NVIR(ISYMD),1)
 C
-C---------------------------------------------------------------
-C              MO-integrals times trial-vector to get 1. part of
-C                ~ ~
-C              ( a d | k delta).
-C---------------------------------------------------------------
-C
-C               ISYMJ  = MULD2H(ISYMA,ISYMTR)
-C
-C               KOFF6  = IT1AM(ISYMA,ISYMJ) + 1
-C               KOFF7  = KSCR2 + IT1AM(ISYMD,ISYMJ)
-C
-C               CALL DGEMM('N','T',NVIR(ISYMA),NVIR(ISYMD),NRHF(ISYMJ),
-C     &                    ONE,TR1E(KOFF6),NTOTA,WORK(KOFF7),NTOTD,
-C     &                    ZERO,WORK(KSCR4),NTOTA)
-C
-C---------------------------------------------------------------
-C              MO-integrals times trial-vector to get 2. part of
-C                ~ ~
-C              ( a d | k delta).
-C---------------------------------------------------------------
+C              Calculate                          ~
+C              ( a j | k delta ) *  x( d, j) => ( d a | k delta)
 C
                ISYMJ  = MULD2H(ISYMD,ISYMTR)
 C
                KOFF8  = KSCR2 + IT1AM(ISYMA,ISYMJ)
                KOFF9  = IT1AM(ISYMD,ISYMJ) + 1
 C
-               CALL DGEMM('N','T',NVIR(ISYMA),NVIR(ISYMD),NRHF(ISYMJ),
-     &                    -ONE,WORK(KOFF8),NTOTA,TR1D(KOFF9),NTOTD,
-C     &                    ONE,WORK(KSCR4),NTOTA)
-     &                    ZERO,WORK(KSCR4),NTOTA)
+               CALL DGEMM('N','T',NVIR(ISYMD),NVIR(ISYMA),NRHF(ISYMJ),
+     &                    -ONE,TR1D(KOFF9),NTOTD,
+     &                    WORK(KOFF8),NTOTA,
+     &                    ZERO,WORK(KSCR4),NTOTD)
 C
-C--------------------------------------------------
-C                         ~ ~
-C              Multiply ( a d | k delta) with T2M1.
-C--------------------------------------------------
+C---------------------------------------------------------------
+C              Calculate
+C                ~
+C              ( d a | k delta) * T2M1( d i, k delta) => y (a,i)
+C---------------------------------------------------------------
 C
                ISYMDI = MULD2H(ISYMD,ISYMI)
 C
@@ -233,13 +218,14 @@ C
      &                + IT1AM(ISYMD,ISYMI) + 1
                KOFF11 = IT1AM(ISYMA,ISYMI) + 1
 C
-               CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                    NVIR(ISYMD),-ONE,WORK(KSCR4),NTOTA,
+               CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
+     &                    NVIR(ISYMD),-ONE,WORK(KSCR4),NTOTD,
      &                    T2M1(KOFF10),NTOTD,ONE,RES1E(KOFF11),NTOTA)
 C
-C==================================
+C======================================
 C              2. term in Eq. (34):
-C==================================
+C              Term 4 of SOPPA B-matrix
+C======================================
 C
                ISYML  = MULD2H(ISYMA,ISYMCK)
 C
@@ -256,9 +242,9 @@ C
                NTOTL  = MAX(NRHF(ISYML),1)
 C
 C---------------------------------------------------------------
-C              MO-integrals times trial-vector to get 1. part of
-C                ~ ~
-C              ( l i | k delta).
+C              MO-integrals times trial-vector to get
+C                                               ~
+C              ( a i| k delta) * x( a, l)  => ( l i | k delta).
 C---------------------------------------------------------------
 C
                ISYMB  = MULD2H(ISYML,ISYMTR)
@@ -272,27 +258,11 @@ C
      &                    ONE,TR1D(KOFF12),NTOTB,WORK(KOFF13),NTOTB,
      &                    ZERO,WORK(KSCR4),NTOTL)
 C
-C---------------------------------------------------------------
-C              MO-integrals times trial-vector to get 2. part of
-C                ~ ~
-C              ( l i | k delta).
-C---------------------------------------------------------------
-C
-C               ISYMB  = MULD2H(ISYMI,ISYMTR)
-C
-C               NTOTB  = MAX(NVIR(ISYMB),1)
-C
-C               KOFF14 = KSCR2 + IT1AM(ISYMB,ISYML)
-C               KOFF15 = IT1AM(ISYMB,ISYMI) + 1
-C
-C               CALL DGEMM('T','N',NRHF(ISYML),NRHF(ISYMI),NVIR(ISYMB),
-C     &                    -ONE,WORK(KOFF14),NTOTB,TR1E(KOFF15),NTOTB,
-C     &                    ONE,WORK(KSCR4),NTOTL)
-C
-C--------------------------------------------------
-C                                   ~ ~
-C              Multiply T2M1 with ( l i | k delta).
-C--------------------------------------------------
+C------------------------------------------------------------------
+C              Multiply two-particle intermediate with MP amplitude
+C                ~
+C              ( l i | k delta) * T2M1( a l, k delta) => y( a,i)
+C------------------------------------------------------------------
 C
                ISYAL  = MULD2H(ISYMA,ISYML)
 C
@@ -302,6 +272,10 @@ C
                CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
      &                    NRHF(ISYML),ONE,T2M1(KOFF16),NTOTA,
      &                    WORK(KSCR4),NTOTL,ONE,RES1E(KOFF11),NTOTA)
+C
+C              The following is the B*{1E}x => {1D}x part
+C              Skip for static properties
+               IF(.NOT.DO_DEX) GOTO 400
 C
 C==================================
 C              1. term in Eq. (35):
@@ -313,8 +287,8 @@ C
                NTOTD  = MAX(NVIR(ISYMD),1)
 C
 C---------------------------------------------------------------
-C              MO-integrals times trial-vector to get 1. part of
-C                ~ ~
+C              MO-integrals times trial-vector to get
+C                ~
 C              ( d a | k delta).
 C---------------------------------------------------------------
 C
@@ -327,23 +301,8 @@ C
      &                    ONE,TR1E(KOFF17),NTOTD,WORK(KOFF18),NTOTA,
      &                    ZERO,WORK(KSCR4),NTOTD)
 C
-C---------------------------------------------------------------
-C              MO-integrals times trial-vector to get 2. part of
-C                ~ ~
-C              ( d a | k delta).
-C---------------------------------------------------------------
-C
-               ISYMJ  = MULD2H(ISYMA,ISYMTR)
-C
-               KOFF19 = KSCR2 + IT1AM(ISYMD,ISYMJ)
-               KOFF20 = IT1AM(ISYMA,ISYMJ) + 1
-C
-C               CALL DGEMM('N','T',NVIR(ISYMD),NVIR(ISYMA),NRHF(ISYMJ),
-C     &                    -ONE,WORK(KOFF19),NTOTD,TR1D(KOFF20),NTOTA,
-C     &                    ONE,WORK(KSCR4),NTOTD)
-C
 C--------------------------------------------------
-C                         ~ ~
+C                         ~
 C              Multiply ( d a | k delta) with T2M1.
 C--------------------------------------------------
 C
@@ -363,29 +322,13 @@ C
                ISYML  = MULD2H(ISYMA,ISYMCK)
 C
                NTOTI  = MAX(NRHF(ISYMI),1)
+               NTOTL  = MAX(NRHF(ISYML),1)
 C
-C---------------------------------------------------------------
-C              MO-integrals times trial-vector to get 1. part of
-C                ~ ~
-C              ( i l | k delta).
-C---------------------------------------------------------------
-C
-               ISYMB  = MULD2H(ISYMI,ISYMTR)
-C
-               NTOTB  = MAX(NVIR(ISYMB),1)
-C
-               KOFF22 = IT1AM(ISYMB,ISYMI) + 1
-               KOFF23 = KSCR2 + IT1AM(ISYMB,ISYML)
-C
-C               CALL DGEMM('T','N',NRHF(ISYMI),NRHF(ISYML),NVIR(ISYMB),
-C     &                    ONE,TR1D(KOFF22),NTOTB,WORK(KOFF23),NTOTB,
-C     &                    ZERO,WORK(KSCR4),NTOTI)
-C
-C---------------------------------------------------------------
-C              MO-integrals times trial-vector to get 2. part of
-C                ~ ~
-C              ( i l | k delta).
-C---------------------------------------------------------------
+C----------------------------------------------------
+C              MO-integrals times trial-vector to get
+C                ~
+C              ( l i | k delta).
+C----------------------------------------------------
 C
                ISYMB  = MULD2H(ISYML,ISYMTR)
 C
@@ -394,14 +337,15 @@ C
                KOFF24 = KSCR2 + IT1AM(ISYMB,ISYMI)
                KOFF25 = IT1AM(ISYMB,ISYML) + 1
 C
-               CALL DGEMM('T','N',NRHF(ISYMI),NRHF(ISYML),NVIR(ISYMB),
-     &                    -ONE,WORK(KOFF24),NTOTB,TR1E(KOFF25),NTOTB,
-C     &                    ONE,WORK(KSCR4),NTOTI)
-     &                    ZERO,WORK(KSCR4),NTOTI)
+               CALL DGEMM('T','N',NRHF(ISYML),NRHF(ISYMI),NVIR(ISYMB),
+     &                    ONE,
+     &                    TR1E(KOFF25),NTOTB,
+     &                    WORK(KOFF24),NTOTB,
+     &                    ZERO,WORK(KSCR4),NTOTL)
 C
 C--------------------------------------------------
-C                                   ~ ~
-C              Multiply T2M1 with ( i l | k delta).
+C                                   ~
+C              Multiply T2M1 with ( l i | k delta).
 C--------------------------------------------------
 C
                ISYAL  = MULD2H(ISYMA,ISYML)
@@ -409,9 +353,9 @@ C
                KOFF26 = IT2BCD(ISYAL,ISYMK) + NT1AM(ISYAL)*(K-1)
      &                + IT1AM(ISYMA,ISYML) + 1
 C
-               CALL DGEMM('N','T',NVIR(ISYMA),NRHF(ISYMI),
-     &                    NRHF(ISYML),-ONE,T2M1(KOFF26),NTOTA,
-     &                    WORK(KSCR4),NTOTI,ONE,RES1D(KOFF11),NTOTA)
+               CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
+     &                    NRHF(ISYML),ONE,T2M1(KOFF26),NTOTA,
+     &                    WORK(KSCR4),NTOTL,ONE,RES1D(KOFF11),NTOTA)
 C
   400       CONTINUE
 C

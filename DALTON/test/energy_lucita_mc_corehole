@@ -378,14 +378,14 @@ CTRL[4]=1
 ERROR[4]="MCSCF ENERGY NOT CORRECT"
 
 # Occupancy
-CRIT1=`$GREP "2\.000000000 * 2\.000000000 * 1\.000000000 * 1\.973575.* 1\.982977.*" $log | wc -l`
-CRIT2=`$GREP "0*\.012295.* 0*\.026173.*" $log | wc -l`
-CRIT3=`$GREP "1\.977380.* 1\.021666.*" $log | wc -l`
-CRIT4=`$GREP "1\.927751.* 0*\.078179.*" $log | wc -l`
-CRIT5=`$GREP "No occupied orbitals" $log | wc -l`
+CRIT1=`$GREP -l "2\.000000000 * 2\.000000000 * 1\.000000000 * 1\.973575.* 1\.982977.*" $log | wc -l`
+CRIT2=`$GREP -l "0*\.012295.* 0*\.026173.*" $log | wc -l`
+CRIT3=`$GREP -l "1\.977380.* 1\.021666.*" $log | wc -l`
+CRIT4=`$GREP -l "1\.927751.* 0*\.078179.*" $log | wc -l`
+CRIT5=`$GREP -l "No occupied orbitals" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 # crit4 is found three times on master branch
-CTRL[5]=9
+CTRL[5]=5
 ERROR[5]="NO OCCUPANCIES NOT CORRECT"
 
 PASSED=1

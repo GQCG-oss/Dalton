@@ -29,15 +29,16 @@ c /* deck cclr_setup */
 *
 *    Purpose: set up for CC linear response section:
 *         - list of F matrix transformations with Cauchy vectors
-*         - list of XKSI and ETA vector calculations 
+*         - list of XKSI and ETA vector calculations
 *         - list of X intermediate contributions
 *         - list of second-order reortho./relax. contributions
 *
-*     Written by Christof Haettig, may 1999 based on CCCM_SETUP 
+*     Written by Christof Haettig, may 1999 based on CCCM_SETUP
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #if defined (IMPLICIT_NONE)
-      IMPLICIT NONE  
+      IMPLICIT NONE
 #else
 #  include "implicit.h"
 #endif
@@ -152,8 +153,8 @@ c /* deck cclr_setup */
       NXITRAN = 0
       NRTRAN  = 0
       NXETRAN = 0
- 
-      MFVEC   = 0 
+
+      MFVEC   = 0
       MJVEC   = 0
       MXIVEC  = 0
       MXRVEC  = 0
@@ -190,7 +191,7 @@ c /* deck cclr_setup */
            SIGN = DBLE(ISIGN)
 
 *---------------------------------------------------------------------*
-*          in all cases we need Eta{A} x R1^B 
+*          in all cases we need Eta{A} x R1^B
 *---------------------------------------------------------------------*
            IR1VECB = IR1TAMP(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
 C          IEATA1A =   IETA1(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
@@ -199,7 +200,7 @@ C          IEATA1A =   IETA1(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
            ELSE
              IKAPA = 0
            END IF
-     
+
            CALL CC_SETXE('Eta',IXETRAN,IEDOTS,MXTRAN,MXVEC,
      &                   0,IOPERA,IKAPA,0,0,0,IR1VECB,ITRAN,IVEC)
            NXETRAN = MAX(NXETRAN,ITRAN)
@@ -227,10 +228,10 @@ C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
                  MFVEC  = MAX(MFVEC, IVEC)
                  WF     = FCONS(IVEC,ITRAN)
 C
-                 IF (CCSLV) THEN
+                 IF (CCSLV.OR.USE_PELIB()) THEN
                  IL1VECA = IL1ZETA(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
                  IL1VECB = IL1ZETA(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
-C                Here, we substitute amplitudes <-> multipilers 
+C                Here, we substitute amplitudes <-> multipilers
                    CALL CCQR_SETF(IJTRAN,IJDOTS,MXTRAN,MXVEC,
      &                            0,IL1VECA,IL1VECB,ITRAN,IVEC)
                    NJTRAN = MAX(NJTRAN,ITRAN)
@@ -267,7 +268,7 @@ C                Here, we substitute amplitudes <-> multipilers
 *---------------------------------------------------------------------*
 *          for orbital relaxed second-order properties or if we have
 *          perturbation-dependent basis sets involved add the contrib.
-*          from the first-order effective Fock matrix times the 
+*          from the first-order effective Fock matrix times the
 *          Q matrix (kappa + R) :
 *---------------------------------------------------------------------*
            WXI1 = ZERO
@@ -302,7 +303,7 @@ C                Here, we substitute amplitudes <-> multipilers
            END IF
 
 *---------------------------------------------------------------------*
-*          for derivatives we might need to include coupling between 
+*          for derivatives we might need to include coupling between
 *          relaxation and reorthonormalization:
 *---------------------------------------------------------------------*
            IF ( (LPDBSA .AND. LORXB) .OR. (LPDBSB .AND. LORXA) ) THEN
@@ -356,7 +357,7 @@ C                Here, we substitute amplitudes <-> multipilers
                  WRITE (LUPRI,*) 'IDX = ',IDX
                  WRITE (LUPRI,*) 'WSTAT,WNUCL:',WSTAT,WNUCL
                  WRITE (LUPRI,*) 'WXI1,WXI2,WREO:', WXI1, WXI2, WREO
-                 WRITE (LUPRI,*) 'WXE1, WXE2, WF, WJ :', 
+                 WRITE (LUPRI,*) 'WXE1, WXE2, WF, WJ :',
      &                            WXE1, WXE2, WF, WJ
                  WRITE (LUPRI,*) 'RESULT:',RESULT(IDX)
               END IF
@@ -385,18 +386,18 @@ C                Here, we substitute amplitudes <-> multipilers
       END IF
 
 *---------------------------------------------------------------------*
-* print the lists: 
+* print the lists:
 *---------------------------------------------------------------------*
 * general statistics:
       IF ((.NOT.LADD) .OR. LOCDBG) THEN
        WRITE(LUPRI,'(/,/3X,A,I3,A)') 'For the requested',NBSOP,
      &      ' second-order properties'
-       WRITE(LUPRI,'((8X,A,I3,A))') 
+       WRITE(LUPRI,'((8X,A,I3,A))')
      & ' - ',NFTRAN,' F matrix transformations with R1 vectors',
      & ' - ',NJTRAN,' J matrix transformations with L1 vectors',
      & ' - ',NXETRAN,' ETA and XKSI vector calculations ',
      & ' - ',NXITRAN,' X intermediate calculations ',
-     & ' - ',NRTRAN, ' 2. order reortho./relax. contributions' 
+     & ' - ',NRTRAN, ' 2. order reortho./relax. contributions'
        WRITE(LUPRI,'(3X,A,/,/)') 'will be performed.'
       END IF
 

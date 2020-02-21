@@ -52,16 +52,11 @@ C
       use lucita_orbital_spaces, only: set_inforb_lucita
       use lucita_setup, only: setup_lucita_mcci_wrkspc_dimensions
       use lucita_mcscf_ci_interface_procedures
-#ifdef ENABLE_EFS
-      use efs_interface
-#endif
 #ifdef HAS_PCMSOLVER
       use pcm_config, only: pcm_configuration, pcm_cfg
 #endif
-#ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: xcint_is_active, xcint_init
-#endif
-
+      use pelib_interface, only: pelib_ifc_do_twoints,
+     &                           pelib_ifc_twoints
 #include "implicit.h"
 C
       DIMENSION WORK(LWORK)
@@ -133,6 +128,14 @@ C
       CALL FLSHFO(LUW4)
       CALL FLSHFO(LUPRI)
       CALL FLSHFO(LUSTAT)
+! ************************************************************************
+! *** Compute intermolecular part of two-electron Fock matrix and quit ***
+! ************************************************************************
+      IF (PELIB_IFC_DO_TWOINTS()) THEN
+          CALL PELIB_IFC_TWOINTS(WORK, LWORK)
+          ICONV = 1
+          GOTO 8000
+      END IF
 C
 C ***************************************************
 C *** Optimize for RHF, MP2, CI, MCSCF wave functions
@@ -176,15 +179,6 @@ Cbm initialized PCM_save
       IF (PCM) THEN
          CALL PCMSOLVNT(WORK,LWORK)
       END IF
-
-
-#ifdef ENABLE_XCINT
-      if (xcint_is_active()) then
-        ! initialize XCint interface
-        call xcint_init()
-      end if
-#endif
-
 C
 C
 C ***************************************************
@@ -306,23 +300,7 @@ C
 C        Also high-spin Fock matrices for all open-shell calcs with dft
          HSROHF = HSROHF .OR. (DODFT .AND. NASHT .GE. 1)
 C
-Ck
          CALL GETTIM(TSTART,WSTART)
-
-#ifdef ENABLE_EFS
-         if (use_efs) then
-            call mpixbcast (const_generate_basis, 1, 'INTEGER', 0)
-            iprint = 0
-            call mpixbcast (iprint, 1, 'INTEGER', 0)
-            call efs_generate_basis_product(THRQ2) ! gaussian product threshold
-
-            call mpixbcast (const_init_2efock  , 1, 'INTEGER', 0)
-            iprint = 0
-            call mpixbcast (iprint, 1, 'INTEGER', 0)
-            call efs_init_2efock(HFXFAC)
-         end if
-#endif
-
 C
 C        Modifications for open-shell HF-srDFT ...
 C        (do not switch off DIIS if DFT_SPINDNS but NASHT.eq.0, i.e. closed-shell SCF)

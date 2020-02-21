@@ -8,17 +8,7 @@
 !
 module communicator_type_module
 
-#ifdef VAR_MPI
-#ifdef USE_MPI_MOD_F90
-  use mpi
   implicit none
-#else
-  implicit none
-#include "mpif.h"
-#endif
-#else
-  implicit none
-#endif
 
   public communicator_type
   public communicator_init_lucipar

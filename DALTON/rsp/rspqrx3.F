@@ -400,7 +400,7 @@ C
       END IF
 
       IF (USE_PELIB()) THEN
-         IF (.NOT. TDHF) THEN
+         IF (.NOT. TDHF .AND. .NOT. TRPLET) THEN 
             CALL QUIT('ERROR: PE-MCSCF quadratic response not'//
      &                ' implemented using the PE library.')
          ELSE IF (NASHT > 0) THEN
@@ -411,10 +411,10 @@ C
      &                ' response using the PE library.')
          ENDIF
          IF (.NOT. PELIB_IFC_GSPOL()) THEN
-          CALL PELIB_IFC_QRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB),
-     &                       WRK(KZYMC), UDV, WRK(KFREE), LFREE,
-     &                       KZYVA, KZYVB, KZYVC, ISYMA, ISYMB,
-     &                       ISYMC, CMO, MJWOP)
+            CALL PELIB_IFC_QRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB),
+     &                         WRK(KZYMC), UDV, WRK(KFREE), LFREE,
+     &                         KZYVA, KZYVB, KZYVC, ISYMA, ISYMB,
+     &                         ISYMC, CMO, MJWOP)
          END IF
       END IF
 

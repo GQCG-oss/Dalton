@@ -539,10 +539,13 @@ C
          IF (QMMM) WRITE(LUPRI,'(/A)')
      &      ' QM/MM response calculation, type .QMMM'
 
-         IF (PEQM) WRITE(LUPRI,'(/A/A)')
+         IF (use_pelib()) THEN
+            WRITE(LUPRI,'(/A/A)')
      &      ' Polarizable embedding response calculation, type .PEQM',
      &      ' Environment is modeled using'//
      &         ' the polarizable embedding scheme (PE library)'
+         END IF
+
          IF (QMNPMM) THEN
             WRITE(LUPRI,'(/A)') ' Heterogeneous environment is '// 
      &                          ' modeled using the QM/NP/MM scheme'
@@ -578,14 +581,6 @@ C
      *      ' Test of contributions from A2 terms.'
          IF (X2TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from X2 terms.'
-         IF (USE_PELIB()) THEN
-            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
-     &                  ' the polarizable embedding scheme (PE library)'
-         END IF
-         IF (QMNPMM) THEN
-            WRITE(LUPRI,'(/A)') ' Heterogeneous environment is '// 
-     &                          ' modeled using the QM/NP/MM scheme'
-         END IF
       END IF
 C
 C *** END OF HYPINP
@@ -597,7 +592,7 @@ C  /* Deck smoinp */
 C
 C Sonia: added MCDBTE section (1999)
 C
-      use pelib_interface, only: use_pelib, pelib_ifc_dolf
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -614,7 +609,7 @@ C
 #include "maxorb.h"
 #include "infinp.h"
 #include "inftap.h"
-! gnrinf.h: QM3, THR_REDFAC, PEQM
+! gnrinf.h: QM3, THR_REDFAC
 #include "gnrinf.h"
 C
       LOGICAL NEWDEF
@@ -947,39 +942,15 @@ C                 B operators
                GO TO 100
  24            CONTINUE
                   TWOPHO = .TRUE.
-                  IF (USE_PELIB()) THEN
-                     IF (PELIB_IFC_DOLF()) THEN
-                        LABEL='XLFDIPLN'
-                        ASMOP( INDPRP(LABEL)) = .TRUE.
-                        BSMOP( INDPRP(LABEL)) = .TRUE.
-                        LABEL='YLFDIPLN'
-                        ASMOP( INDPRP(LABEL)) = .TRUE.
-                        BSMOP( INDPRP(LABEL)) = .TRUE.
-                        LABEL='ZLFDIPLN'
-                        ASMOP( INDPRP(LABEL)) = .TRUE.
-                        BSMOP( INDPRP(LABEL)) = .TRUE.
-                     ELSE
-                        LABEL='XDIPLEN'
-                        ASMOP( INDPRP(LABEL)) = .TRUE.
-                        BSMOP( INDPRP(LABEL)) = .TRUE.
-                        LABEL='YDIPLEN'
-                        ASMOP( INDPRP(LABEL)) = .TRUE.
-                        BSMOP( INDPRP(LABEL)) = .TRUE.
-                        LABEL='ZDIPLEN'
-                        ASMOP( INDPRP(LABEL)) = .TRUE.
-                        BSMOP( INDPRP(LABEL)) = .TRUE.
-                     END IF
-                  ELSE
-                     LABEL='XDIPLEN'
-                     ASMOP( INDPRP(LABEL)) = .TRUE.
-                     BSMOP( INDPRP(LABEL)) = .TRUE.
-                     LABEL='YDIPLEN'
-                     ASMOP( INDPRP(LABEL)) = .TRUE.
-                     BSMOP( INDPRP(LABEL)) = .TRUE.
-                     LABEL='ZDIPLEN'
-                     ASMOP( INDPRP(LABEL)) = .TRUE.
-                     BSMOP( INDPRP(LABEL)) = .TRUE.
-                  END IF
+                  LABEL='XDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
  25            CONTINUE
                   MCDCAL=.TRUE.
@@ -1157,7 +1128,7 @@ C
          IF (QMMM) WRITE(LUPRI,'(/A)')
      &      ' QM/MM response calculation, type .QMMM'
 
-         IF (PEQM) WRITE(LUPRI,'(/A/A)')
+         IF (use_pelib()) WRITE(LUPRI,'(/A/A)')
      &      ' Polarizable embedding response calculation, type .PEQM',
      &      ' Environment is modeled using'//
      &         ' the polarizable embedding scheme (PE library)'
@@ -1193,10 +1164,6 @@ C
      *      ,MAXITO
          IF (E3TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from E3 and S3 terms.'
-         IF (USE_PELIB()) THEN
-            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
-     &                  ' the polarizable embedding scheme (PE library)'
-         END IF
       END IF
 C
 C *** END OF SMOINP

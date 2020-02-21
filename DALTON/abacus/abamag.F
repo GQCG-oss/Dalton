@@ -1564,6 +1564,7 @@ C     contributions (FC and SD) to spin-spin-relaxation terms
 C
 C     K.Ruud, Sept. 1992
 C
+      use so_info, only: so_any_active_models
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1615,6 +1616,7 @@ C
       KPVX   = KUDV   + LUDV
       KLAST  = KPVX   + LPVX
       LWRK   = LWORK  - KLAST + 1
+      IF (KLAST .GT. LWORK) CALL STOPIT('TRPDRV','RHS',KLAST,LWORK)
 C
 C     Allocate necessary work space to TRPRS1
 C
@@ -1622,7 +1624,6 @@ C
       KNABAT = KZERNR + (10*NUCDEP + 1)/IRAT
       KLAST2   = KNABAT + (10*NUCDEP + 1)/IRAT
       LWRK2 = LWORK - KLAST2 + 1
-      IF (KLAST .GT. LWORK) CALL STOPIT('TRPDRV','RHS',KLAST,LWORK)
       IF (KLAST2 .GT. LWORK) CALL STOPIT('TRPDRV','RSP',KLAST2,LWORK)
 C
 C     Call routine for constructing right-hand sides
@@ -1633,7 +1634,9 @@ C
 C
 C     Call routine for solving response equations
 C
-      IF (TRPRSP) THEN
+      IF (TRPRSP.AND.SO_ANY_ACTIVE_MODELS()) THEN
+         CALL SO_FCSDDRV(WORK,LWORK)
+      ELSE IF (TRPRSP) THEN
          CALL TRPRS1(WORK(KZERNR),WORK(KNABAT),
      &               WORK(KLAST2),LWRK2)
       END IF
@@ -1649,6 +1652,9 @@ C
 C  /* Deck trprh1 */
       SUBROUTINE TRPRH1(SDLAB,ISDREP,FCLAB,IFCREP,INTADR,XINDX,
      &                  CMO,UDV,PV,WORK,LWORK)
+C
+      use so_info, only : so_any_active_models
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1702,11 +1708,11 @@ C
       IF (.NOT. ABASOP) CALL GETCIX(XINDX,LSYMRF,LSYMRF,WORK,LWORK,0)
 C
 C
-C     SOPPA :
+C     MO-SOPPA :
 C     reads second order one particle density matrix
 C     and doubles correlation coefficients.
 C
-      IF (ABASOP) THEN
+      IF (ABASOP.AND.(.NOT.SO_ANY_ACTIVE_MODELS())) THEN
 C
 C        Initialize XINDX
 C
@@ -1867,39 +1873,42 @@ C
                ICOOR1 = ICOOR/3
                ICOOR2 = MOD(ICOOR,3)
             END IF
-C
-            CALL GETGPV(LABEL(1),DUMMY,DUMMY,CMO,UDV,PV,XINDX,
-     &                  ANTSYM,WORK,LWORK)
-C
             TRPLAB(IREC) = LABEL(1)
-            CALL DSCAL(KZVAR,DM1,WORK,1)
-            IF (IPRTRP .GE. 05) THEN
-               IF (ICOOR .GT. 0) THEN
-                  WRITE (LUPRI,'(//A,2I2,A,I2,A)')
-     &                 ' SD-Gradient for Coordinate',
-     &                 ICOOR1,ICOOR2,
-     &                 ', and symmetry',ISYM,':'
-               ELSE
-                  WRITE (LUPRI,'(//A,I3,A,I2,A)')
-     &                 ' FC-Gradient for Atom',
-     &                 ABS(ICOOR),', and symmetry',ISYM,':'
-               END IF
-               IF (IPRTRP .GE. 20) THEN
-                  WRITE (LUPRI,'(/,A,/)')
+C
+C           Calculate GP-vector, skip for AO-SOPPA
+            IF (.NOT.SO_ANY_ACTIVE_MODELS()) THEN
+               CALL GETGPV(LABEL(1),DUMMY,DUMMY,CMO,UDV,PV,XINDX,
+     &                     ANTSYM,WORK,LWORK)
+C
+               CALL DSCAL(KZVAR,DM1,WORK,1)
+               IF (IPRTRP .GE. 05) THEN
+                  IF (ICOOR .GT. 0) THEN
+                     WRITE (LUPRI,'(//A,2I2,A,I2,A)')
+     &                  ' SD-Gradient for Coordinate',
+     &                  ICOOR1,ICOOR2,
+     &                  ', and symmetry',ISYM,':'
+                  ELSE
+                     WRITE (LUPRI,'(//A,I3,A,I2,A)')
+     &                  ' FC-Gradient for Atom',
+     &                  ABS(ICOOR),', and symmetry',ISYM,':'
+                  END IF
+                  IF (IPRTRP .GE. 20) THEN
+                     WRITE (LUPRI,'(/,A,/)')
      &                 ' CSF part of gradient'
-                  WRITE (LUPRI,'(6F12.6)')
-     &                 (WORK(J), J = 1, NCONST)
+                     WRITE (LUPRI,'(6F12.6)')
+     &                  (WORK(J), J = 1, NCONST)
+                  END IF
+                  WRITE (LUPRI,'(//,A)')
+     &                 ' Orbital part of gradient'
+                  IF (IPRTRP .GE. 20) THEN
+                     PRFAC = 0.0D0
+                  ELSE
+                     PRFAC = 0.1D0
+                  END IF
+                  CALL PRKAP(NWOPPT,WORK(NCONST + 1),PRFAC,LUPRI)
                END IF
-               WRITE (LUPRI,'(//,A)')
-     &              ' Orbital part of gradient'
-               IF (IPRTRP .GE. 20) THEN
-                  PRFAC = 0.0D0
-               ELSE
-                  PRFAC = 0.1D0
-               END IF
-               CALL PRKAP(NWOPPT,WORK(NCONST + 1),PRFAC,LUPRI)
+               CALL WRITDX(LUGDT,IREC,IRAT*NVARPT,WORK)
             END IF
-            CALL WRITDX(LUGDT,IREC,IRAT*NVARPT,WORK)
  200     CONTINUE
  100  CONTINUE
 C

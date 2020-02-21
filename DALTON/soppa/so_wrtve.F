@@ -17,15 +17,19 @@ C     LABEL      property label
 C     FREQ       frequency of the solution/residual
 C     LU         file where we have to write the property
 C
-#include "implicit.h"
+      USE SO_DATA, ONLY : FILEINF
+      USE SO_INFO, ONLY : SOP_DP
+      IMPLICIT NONE
 C
-      DIMENSION ARRAY(LARRAY)
+      REAL(SOP_DP), INTENT(IN) :: ARRAY(LARRAY), FREQ
+      INTEGER, INTENT(IN) :: LARRAY, ISYMTR, LU
+      CHARACTER(LEN=8), INTENT(IN) :: LABEL
 C
-      CHARACTER*8 LABEL,LSTARS
-      DATA LSTARS /'********'/
+      INTEGER :: POS
 C
-      WRITE(LU) LSTARS,LABEL,ISYMTR,LARRAY,FREQ
-      WRITE(LU) ARRAY
+      POS = FILEINF%NEW(LABEL,FREQ,ISYMTR)
+C
+      WRITE(LU,REC=POS) ARRAY
 C
       RETURN
 C

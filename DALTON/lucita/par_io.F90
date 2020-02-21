@@ -27,8 +27,8 @@ module par_mcci_io
 
   save
 
-  integer, private                       :: istat(MPI_STATUS_SIZE)
-  integer, private                       :: ierr
+  integer(kind=MPI_INTEGER_KIND)         :: istat(MPI_STATUS_SIZE)
+  integer(kind=MPI_INTEGER_KIND)         :: ierr
 
 contains 
 
@@ -191,10 +191,13 @@ contains
      integer, intent(in)                          :: luinlist_offset
      integer, intent(in)                          :: luoutlist_offset
 !------------------------------------------------------------------------------
-     integer(kind=MPI_OFFSET_KIND)  :: blk_len
+     integer(kind=MPI_INTEGER_KIND) :: blk_len
      integer                        :: mem_off
      integer                        :: is_blk
+     integer(kind=MPI_INTEGER_KIND) :: luin_mpi
 !******************************************************************************
+
+      luin_mpi = luin
 
       do is_blk = 1, num_blocks_in_batch
 
@@ -208,16 +211,16 @@ contains
           if(luinlist(luinlist_offset+num_blk_cnt_act-1) > 0)then
 
 !           write length into file array for output file
-            luoutlist(luoutlist_offset+is_blk-1) = batch_info(8,is_blk)
+            luoutlist(luoutlist_offset+is_blk-1) = blk_len
 
 !           set memory offset
             mem_off = batch_info(6,is_blk)
 
 !           read vector
-            call mpi_file_read_at(luin,                    &
+            call mpi_file_read_at(luin_mpi,                &
                                   ioff_luin,               &
                                   xmat(mem_off),           &
-                                  batch_info(8,is_blk),    &
+                                  blk_len,                 &
                                   MPI_REAL8,               &
                                   istat,                   &
                                   ierr)
@@ -269,25 +272,28 @@ contains
      integer(kind=MPI_OFFSET_KIND), intent(inout) :: ioff_luout_special
      integer, intent(in)                          :: luoutlist_offset
 !------------------------------------------------------------------------------
-     integer(kind=MPI_OFFSET_KIND)  :: blk_len
+     integer(kind=MPI_INTEGER_KIND) :: blk_len
      integer                        :: mem_off
      integer                        :: is_blk
+     integer(kind=MPI_INTEGER_KIND) :: luout_mpi
 !******************************************************************************
+
+      luout_mpi = luout
 
       do is_blk = 1, num_blocks_in_batch
 
         blk_len = luoutlist(luoutlist_offset+is_blk-1)
 
-        if(luoutlist(luoutlist_offset+is_blk-1) > 0)then
+        if(blk_len > 0)then
 
 !           set memory offset
             mem_off = batch_info(6,is_blk)
 
 !           write vector
-            call mpi_file_write_at(luout,                                   &
+            call mpi_file_write_at(luout_mpi,                               &
                                    ioff_luout,                              &
                                    xmat(mem_off),                           &
-                                   luoutlist(luoutlist_offset+is_blk-1),    &
+                                   blk_len,                                 &
                                    MPI_REAL8,                               &
                                    istat,                                   &
                                    ierr)

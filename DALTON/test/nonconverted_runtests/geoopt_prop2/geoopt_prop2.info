@@ -1,7 +1,0 @@
-   geoopt_prop2
-   ------------
-   Molecule:         H2O
-   Wave Function:    SCF / 6-311++G**
-   Test Purpose:     Geometry optimization using .OPTIMIZE module
-                     (2nd order) with a calculation of Third-Harmonic
-                     generation at the optimized geometry

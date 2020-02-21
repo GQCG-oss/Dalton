@@ -30,13 +30,10 @@ C=========================================================================
 #ifdef VAR_CHEMSHELL
       subroutine dalton
 #else
-      PROGRAM DALTON2017_DALTON
+      PROGRAM DALTON2020_DALTON
 #endif
 C
       use parallel_models_mpi
-#ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: xcint_is_active, xcint_finalize
-#endif
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -52,7 +49,8 @@ C
 
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
-      LOGICAL FINISH
+      LOGICAL(kind=MPI_INTEGER_KIND) :: FINISH
+      INTEGER(kind=MPI_INTEGER_KIND) :: ierr_mpi
 #endif
 #ifdef VAR_OMP
       INTEGER omp_get_num_procs
@@ -416,6 +414,8 @@ C
      &  'France','(Frozen density embedding model)',
      *'Bernd Schimmelpfennig,','Forschungszentrum Karlsruhe,',
      &  'Germany','(AMFI module)',
+     *'Anna K. Schnack-Petersen,','University of Copenhagen,',
+     &'Denmark','(RPA(D) and HRPA(D) properties in AOSOPPA)',
      *'Kristian Sneskov,','Aarhus University,','Denmark',
      &  '(Polarizable embedding model, QM/MM)',
      *'Arnfinn H. Steindal,','UiT The Arctic U. of Norway,',
@@ -554,9 +554,7 @@ C        Read general input for Dalton
 C
          CALL DALTON_GNRLINP
 
-#if !defined (VAR_MPI)
-      END IF ! mynum .eq. master
-#else /* VAR_MPI */
+#if defined (VAR_MPI)
          CALL RECVNAMES
 
          CALL MOLDEN_HEAD
@@ -591,13 +589,18 @@ C
          CALL GPCLOSE(LUSTAT,'KEEP')
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
-C     (only print on first 10 slaves)
-!        IF (MYNUM .LE. 10) THEN
+C ahs only print if number of cores are less than 16
+!        IF (NODTOT .LE. 15) THEN
+!        hjaaj May 2017: instead print from max 15 slaves
+!           spaced evenly out among all slaves 1..NODTOT
+!        ITEST = (NODTOT-1)/15 + 1
+!        IF (MYNUM .EQ. 1 .OR. MOD(MYNUM,ITEST) .EQ. 0) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
            WRITE(LUPRI,'(/A)') ' * Release: '//
      &     DALTON_VERSION
-           WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
+           WRITE(LUPRI,'(/A,I0,A,I0)')
+     &     ' * Output from slave no. ',MYNUM,' out of ',NODTOT
            CALL TSTAMP('INIT',LUPRI)
            IF (GBYTES .GE. 1.D0) THEN
              WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
@@ -635,8 +638,10 @@ C
 C     Send ending signal to slaves
 C
             FINISH = .TRUE.
-            CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
-     &           MPI_COMM_WORLD,IERR)
+            count_mpi = 1
+            master_mpi = MASTER
+            CALL MPI_BCAST(FINISH,count_mpi,my_MPI_LOGICAL,master_mpi,
+     &           MPI_COMM_WORLD,err_mpi)
             CALL GPCLOSE(LUCME,'KEEP')
             CALL GPCLOSE(LUNDPF,'KEEP')
             CALL GPCLOSE(LUNMPF,'KEEP')
@@ -662,21 +667,11 @@ C...  terminates Gen1Int interface
       CALL MPIXFINALIZE
 C
 C     All below is not relevant for MPI as all proc. has stopped
-C     with CALL MPI_FINALIZE(IERR)
+C     with CALL MPI_FINALIZE(err_mpi)
 C
-#endif /* VAR_MPI */
-#if defined (VAR_PVM)
-C
-C     Spawn all PVM processes, as we now know how many there are
-C
-      IF (PARCAL) THEN
-         CALL PVMXMYTID(MYTID)
-         CALL PVMXSPAWN('node.x',NODTOT,NODEID(1))
-         CALL RECVNAMES
-         NODEID(0) = MYTID
-      END IF
-#endif
-#if !defined (VAR_MPI)
+#else /* VAR_MPI */
+!     sequential build
+      END IF ! mynum .eq. master
 
       CALL MOLDEN_HEAD
 
@@ -706,19 +701,6 @@ C...  terminates Gen1Int interface
       call gen1int_host_finalize()
 #endif
 #endif
-#if defined (VAR_PVM)
-      IF (PARCAL) THEN
-C
-C        Tell slaves to quit.
-C        --------------------
-C
-         IPRTYP = ENDING_SIGNAL
-         CALL PVMXINITSEND(NCODE)
-         CALL PVMXPACK(IPRTYP,1,'INTEGER')
-         CALL PVMXMCAST(NODTOT,NODEID(1),MTAG1)
-         CALL PVMXEXIT
-      END IF
-#endif
 
 
       ! radovan: close (hopefully) all open files
@@ -731,14 +713,6 @@ C
       end do
       ! clear the corresponding table and hope for the best
       call clear_iuntab()
-
-
-#ifdef ENABLE_XCINT
-      if (xcint_is_active()) then
-        call xcint_finalize()
-      end if
-#endif
-
 
       CALL QEXIT('DALTON main')
       END

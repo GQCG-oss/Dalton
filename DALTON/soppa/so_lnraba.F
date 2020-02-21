@@ -18,7 +18,11 @@ C
      &                   so_get_active_models,
      &                   so_has_doubles,
      &                   so_singles_second,
-     &                   sop_dens_label, sop_model_rpad
+     &                   sop_dens_label, sop_model_rpad,
+     &                   sop_model_rpa,
+     &                   sop_conv_thresh,
+     &                   so_needs_densai,
+     &                   sop_mp2ai_done
 C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
@@ -45,7 +49,8 @@ c#include "mxcent.h"
 c#include "nuclei.h"
 c#include "symmet.h"
 c#include "wrkrsp.h"
-C
+C NEED DOCCSD parameter from gnring.h
+#include "gnrinf.h"
 c     PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C
       DIMENSION POLDD(2,3,3,NFRVAL,*), POLDQ(2,3,3,3,NFRVAL,*)
@@ -58,16 +63,16 @@ C
 C
       integer :: num_active
       logical :: active_models(sop_num_models)
-      logical :: doubles, need_t2
+      logical :: doubles, need_t2, rpa_only
+      character(len=4) :: old_denslab, denslab
+      logical :: new_densai, imagprop
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
 ! once.
-      LOGICAL update_common_blocks, get_mxcall
-      LOGICAL so_get_herdir, herdir, so_get_direct
+      LOGICAL update_common_blocks
 
       update_common_blocks = .true.
-      get_mxcall = .false.
 #endif
 C
 C------------------
@@ -84,6 +89,18 @@ C
 C     No RPA(D) properties
       ACTIVE_MODELS(SOP_MODEL_RPAD) = .FALSE.
 C
+      RPA_ONLY = ACTIVE_MODELS(SOP_MODEL_RPA) .AND. 
+     &           (NUM_ACTIVE.EQ.1) 
+C
+C     Set the correct convergence threshold -- THCLNR from cbilnr.h
+      sop_conv_thresh = THCLNR
+C
+C     Triplet flag not initialized...
+      TRIPLET = .FALSE.
+C
+C     We have read no amplitudes
+      OLD_DENSLAB = 'NONE'
+C      
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.
 C-------------------------------------------
@@ -95,59 +112,12 @@ C
       CALL GETTIM (DUMMY,WTIME)
       TIMWTO  = WTIME
 C
-C-------------------------------------------
-C     Initializes memory statistics routine.
-C-------------------------------------------
-C
-      CALL SO_MEMMAX ('START',LWORK)
-C
-C---------------------------------------------------------------
-C     If only RPA initialize some pointers and sort AO-integrals
-C     into distributions.
-C---------------------------------------------------------------
-C     On the flip side, this cause a crash if CC has been run
-      IF ( AORPA .AND. (.NOT.DCRPA) .AND. (.NOT.AOSOP)
-     &           .AND. (.NOT.AOSOC) .AND. (.NOT.AOHRP)
-CPi
-     &           .AND. (.NOT.AOCC2) ) THEN
-         CALL RP_INIT(WORK,LWORK)
-#ifdef VAR_MPI
-C     In pure aorpa calculations, eridi has not been initialized
-         herdir = so_get_herdir()
-         get_mxcall = so_get_direct()
-#endif
-      ENDIF
-
-#ifdef VAR_MPI
-C
-C In AORPA we cannot be sure that the number of integral distributions
-C is known in advance. This is needed in order to allocate memory for
-C load-distribution later on
-C
-      if (get_mxcall) then
-         if (herdir) then
-            call herdi1(work(1), lwork, iprint)
-         else
-            kccfbt  = 1
-            kindxbt = kccfbt + mxprim*mxcont
-            kend3   = kindxbt + 8*mxshel*mxcont/irat
-            lwork3 = lwork - kend3
-            call eridi1(kodcl1, kodcl2, kodbc1, kodbc2,
-     &                  krdbc1, krdbc2, kodpp1, kodpp2,
-     &                  krdpp1, krdpp2, kfree,  lfree,
-     &                  kend3, work(kccfbt), work(kindxbt),
-     &                  work(kend3), lwork3, iprint)
-            endif
-         get_mxcall = .false.
-      endif
-#endif
-C
 C---------------------------------------------------
 C     Initialize a few pointerarrays and dimensions.
 C---------------------------------------------------
 C
       DTIME     = SECOND()
-      CALL SO_INIT
+      CALL SO_INIT(WORK,LWORK)
       DTIME     = SECOND()  - DTIME
       SOTIME(2) = SOTIME(2) + DTIME
 C
@@ -170,8 +140,8 @@ C
       KEND1   = KFOCKD  + LFOCKD
       LWORK1  = LWORK   - KEND1
 C
-CPi
-      IF (DCRPA .OR. AOSOP .OR. AOHRP .OR. AOSOC .OR. AOCC2) THEN
+C
+      IF (.NOT.RPA_ONLY) THEN
 C
          LT2AM   = NT2AMX
          LDENSIJ = NIJDEN(1)
@@ -189,14 +159,12 @@ C
          LDENSIJ = 0
          LDENSAB = 0
          LDENSAI = 0
-C        Force a crash of this is used
-         KT2AM   = LWORK + 1
-         KDENSIJ = LWORK + 1
-         KDENSAB = LWORK + 1
-         KDENSAI = LWORK + 1
+C        Force a crash if this is used
+         KT2AM   = HUGE(LWORK)
+         KDENSIJ = HUGE(LWORK)
+         KDENSAB = HUGE(LWORK)
+         KDENSAI = HUGE(LWORK)
       END IF
-C
-C
 C
       CALL SO_MEMMAX ('SO_LNRABA.1',LWORK1)
       IF (LWORK1 .LT .0) CALL STOPIT('SO_LNRABA.1',' ',KEND1,LWORK)
@@ -225,6 +193,16 @@ C      CALL DZERO(SNDPRP,2)
       CALL DZERO(POLDQ,2*27*NFRVAL*NUM_ACTIVE)
       CALL DZERO(POLDL,2*9*NFRVAL*NUM_ACTIVE)
       CALL DZERO(POLDA,2*9*NFRVAL*NUM_ACTIVE)
+C
+#ifdef VAR_MPI
+C
+C---------------------------------------------------------
+C              Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+      call soppa_initialize_slaves ( update_common_blocks, rpa_only)
+      update_common_blocks = .false.
+#endif
 C
 C==========================================
 C     Determine linear response properties.
@@ -265,10 +243,6 @@ C Do only for DIPLEN?
 CRF is there a common pattern here?
             IDIP = ICHAR(LABEL1(1:1)) - ICHAR('X') + 1
 
-C            IF (LABEL1 .EQ.'XDIPLEN') IDIP = 1
-C            IF (LABEL1 .EQ.'YDIPLEN') IDIP = 2
-C            IF (LABEL1 .EQ.'ZDIPLEN') IDIP = 3
-C
             ISYMTR = ISYM
 C
 C========================================
@@ -289,6 +263,7 @@ C
                FULLNAME = SOP_MOD_FULLNAME(IMODEL)
                DOUBLES = SO_HAS_DOUBLES(IMODEL)
                NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
+               DENSLAB = SOP_DENS_LABEL(IMODEL)
 C
                IF (IPRSOP .GE. 1) THEN
                   WRITE(LUPRI,9000)
@@ -309,35 +284,45 @@ C-----------------------------------------------------
 C              Get T2 amplitudes and density matrices.
 C-----------------------------------------------------
 C
-               IF(NEED_T2) THEN
-                  CALL SO_GETT2(sop_dens_label(imodel),
-     &                          WORK(KT2AM),LT2AM,WORK(KDENSAI),
+               IF ((NEED_T2).AND.
+     &             (DENSLAB.NE.OLD_DENSLAB)) THEN
+                  CALL SO_GETT2(DENSLAB,
+     &                          WORK(KFOCKD),LFOCKD,WORK(KT2AM),LT2AM,
+     &                          WORK(KDENSAI),
      &                          LDENSAI,WORK(KDENSIJ),LDENSIJ,
      &                          WORK(KDENSAB),LDENSAB,
      &                          WORK(KEND1),LWORK1)
-               END IF
-#ifdef VAR_MPI
+                  OLD_DENSLAB = DENSLAB
+               ENDIF
 C
-C---------------------------------------------------------
-C              Ready the slaves for parallel calculations.
-C---------------------------------------------------------
+C-----------------------------------------
+C              Initialize DENSAI if needed
+C-----------------------------------------
 C
-               call soppa_initialize_slaves ( update_common_blocks,
-     &                                       WORK(KT2AM), LT2AM, model)
-               update_common_blocks = .false.
-#endif
+               IF ( SO_NEEDS_DENSAI(MODEL) .AND.
+     &              (.NOT.SOP_MP2AI_DONE) ) THEN
+                  CALL DZERO(WORK(KDENSAI),LDENSAI)
+                  NEW_DENSAI = .TRUE.
+               ELSE
+                  NEW_DENSAI = .FALSE.
+               ENDIF
 C
 C------------------------------------------------------------------
 C              Determine SOPPA excitation energies and excitation
 C              vectors. The excitation vectors are written to file.
 C------------------------------------------------------------------
 C
-               CALL SO_RSPLEQ(MODEL,LABEL1,ISYMTR,FRVAL,NFRVAL,
+               CALL SO_RSPLEQ(MODEL,LABEL1,IMAGPROP,ISYMTR,FRVAL,NFRVAL,
      &                        WORK(KDENSIJ),LDENSIJ,
      &                        WORK(KDENSAB),LDENSAB,
      &                        WORK(KDENSAI),LDENSAI,WORK(KT2AM),
      &                        LT2AM,WORK(KFOCKD),LFOCKD,
      &                        WORK(KEND1),LWORK1)
+C
+C              Save AI density matrix, if it has been recalculated.
+               IF (NEW_DENSAI) THEN
+                  CALL SO_DUMP_DENSAI(DENSLAB,WORK(KDENSAI),LDENSAI)
+               END IF
 C
 C----------------------------------------------
 C              Calculate second order property.
@@ -350,12 +335,6 @@ C
      &                       POLDD(1,1,1,1,IOUT),POLDQ(1,1,1,1,1,IOUT),
      &                       POLDL(1,1,1,1,IOUT),POLDA(1,1,1,1,IOUT),
      &                       WORK(KEND1),LWORK1)
-#ifdef VAR_MPI
-C-------------------------------------------------------
-C              Release slaves to the global node-driver.
-C-------------------------------------------------------
-               call soppa_release_slaves()
-#endif
 C              INCREMENT OUTPUT POINTER
                IOUT = IOUT + 1
 C
@@ -365,6 +344,13 @@ C
   100    CONTINUE
 C
   200 CONTINUE
+C
+#ifdef VAR_MPI
+C-------------------------------------------------------
+C              Release slaves to the global node-driver.
+C-------------------------------------------------------
+      call soppa_release_slaves()
+#endif
 C
 C---------------------------------
 C     3. allocation of work space.

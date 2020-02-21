@@ -142,7 +142,7 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Tue Apr 24 14:09:52 2018
+     Date and time (Linux)  : Tue Apr 24 17:31:27 2018
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
@@ -182,9 +182,9 @@ Compilation information
                           | libraries_2018.1.163/linux/mkl/lib/intel64/libmkl_
                           | gf_lp64.so
  Static linking           | OFF
- Last Git revision        | 9055103dddfd9c6746ec240c40a8a01c46350288
- Git branch               | master
- Configuration time       | 2018-04-24 13:57:14.806869
+ Last Git revision        | 26cec644bc8f4a4a67f7949c9ac38d6252a2410b
+ Git branch               | pe/develop
+ Configuration time       | 2018-04-24 17:30:15.190627
 
  * Sequential calculation.
 
@@ -520,7 +520,7 @@ H              2.675323   -2.516779   -0.000673
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Apr 24 14:09:52 2018
+     Date and time (Linux)  : Tue Apr 24 17:31:27 2018
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -809,8 +809,25 @@ Calculating AOSUPINT
 
 
  --- Writing SIRIFC interface file
+      Induced dipole moments converged in  1 iterations.
 
- CPU and wall time for SCF :       0.168       0.168
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01989484     0.02419891     0.00003677
+
+
+
+                           +---------------------------+
+                           ! Writing FOCKMAT in siropt !
+                           +---------------------------+
+
+
+ CPU and wall time for SCF :       0.177       0.178
 
 
                        .-----------------------------------.
@@ -830,7 +847,7 @@ Calculating AOSUPINT
 @    Final gradient norm:           0.000009188075
 
  
-     Date and time (Linux)  : Tue Apr 24 14:09:52 2018
+     Date and time (Linux)  : Tue Apr 24 17:31:27 2018
      Host name              : foeroyar                                
 
 File label for MO orbitals:  24Apr18   FOCKDIIS
@@ -936,11 +953,11 @@ File label for MO orbitals:  24Apr18   FOCKDIIS
   23 H   :1s    -0.2205   0.5473   0.0473
   24 H   :1s     0.5319  -0.3795  -0.1527
 
-  Total CPU  time used in SIRIUS :   0.17 seconds
-  Total wall time used in SIRIUS :   0.17 seconds
+  Total CPU  time used in SIRIUS :   0.18 seconds
+  Total wall time used in SIRIUS :   0.18 seconds
 
  
-     Date and time (Linux)  : Tue Apr 24 14:09:52 2018
+     Date and time (Linux)  : Tue Apr 24 17:31:27 2018
      Host name              : foeroyar                                
 
 
@@ -952,5 +969,5 @@ File label for MO orbitals:  24Apr18   FOCKDIIS
   Total wall time used in DALTON:   0.42 seconds
 
  
-     Date and time (Linux)  : Tue Apr 24 14:09:52 2018
+     Date and time (Linux)  : Tue Apr 24 17:31:27 2018
      Host name              : foeroyar                                

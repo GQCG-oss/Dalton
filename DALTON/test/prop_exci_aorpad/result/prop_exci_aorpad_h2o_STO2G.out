@@ -4,8 +4,11 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2016.alpha
+    This is output from DALTON release Dalton2017.alpha (2016)
+         ( Web site: http://daltonprogram.org )
+
    ----------------------------------------------------------------------------
+
     NOTE:
      
     Dalton is an experimental code for the evaluation of molecular
@@ -24,13 +27,13 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
        T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
        L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
        C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
        H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
        M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
-       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
        T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
        J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
        O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
@@ -45,12 +48,12 @@
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
        and H. Agren,
        "The Dalton quantum chemistry program system",
-       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
-    
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
     and
-    
+     
        Dalton, a Molecular Electronic Structure Program,
-       Release Dalton2016.0 (2015), see http://daltonprogram.org
+       Release Dalton2017.alpha (2016), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -70,6 +73,7 @@
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
   Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -78,12 +82,14 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
   Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
   Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
   Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
   Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
@@ -105,7 +111,7 @@
   Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
-  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex frequency response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
@@ -136,13 +142,13 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Jul  1 20:10:29 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:23:40 2016
+     Host name              : sunray                                  
 
- * Work memory size             :   128000000 =  976.56 megabytes.
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/zth702/source/dalton/DALTON/test/prop_exci_aorpad
+   1) /home/zth702/source/dalton/build/test/prop_exci_aorpad
    2) /home/zth702/source/dalton/build/basis
 
 
@@ -167,51 +173,51 @@ Compilation information
  LAPACK                   | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-bas
                           | e/atlas/liblapack.so
  Static linking           | OFF
- Last Git revision        | 8db614a6b921fd5caff544304df2953ef6bb6b48
+ Last Git revision        | b02af27575a4b70d65ece557cdb82d3284d7bdf6
  Git branch               | aosoppa_devel
- Configuration time       | 2016-07-01 15:36:14.950714
+ Configuration time       | 2016-12-06 15:22:50.044960
 
 
    Content of the .dal input file
  ----------------------------------
 
-**DALTON INPUT                                    
-.RUN PROPERTIES                                   
-**WAVE FUNCTIONS                                  
-.HF                                               
-.CC                                               
-*CC INPUT                                         
-.MP2                                              
-.AO-SOPPA                                         
-**PROPERTIES                                      
-.SOPPA                                            
-.EXCITA                                           
-.PRINT                                            
- 2                                                
-*SOPPA                                            
-.AORPA                                            
-.DCRPA                                            
-*EXCITA                                           
-.DIPSTR                                           
-.ROTVEL                                           
-.NEXCITA                                          
-    5    5    5    5    0    0    0    0          
-**END OF DALTON INPUT                             
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.MP2
+.AO-SOPPA
+**PROPERTIES
+.SOPPA
+.EXCITA
+.PRINT
+ 2
+*SOPPA
+.AORPA
+.RPA(D)
+*EXCITA
+!.DIPSTR
+!.ROTVEL
+.NEXCITA
+    5    5    5    5    0    0    0    0
+**END OF DALTON INPUT
 
 
    Content of the .mol file
  ----------------------------
 
-BASIS                                                                          
-STO-2G                                                                         
-Calculation of excitation energies through ABACUS                              
-                                                                               
-Atomtypes=2 Multiplicity=1 Charge=0 Generators=2  X  Y                         
-Charge=8.0 Atoms=1                                                             
-O   0.00000             0.00000              0.1241444240                      
-Charge=1.0 Atoms=1                                                             
-H   0.00000             1.43153              -0.985265576                      
-FINISH                                                                         
+BASIS
+STO-2G
+Calculation of excitation energies through ABACUS
+
+Atomtypes=2 Multiplicity=1 Charge=0 Generators=2  X  Y
+Charge=8.0 Atoms=1
+O   0.00000             0.00000              0.1241444240
+Charge=1.0 Atoms=1
+H   0.00000             1.43153              -0.985265576
+FINISH
 
 
        *******************************************************************
@@ -488,8 +494,8 @@ FINISH
  HERMIT - Number of two-electron integrals written:         138 ( 34.0% )
  HERMIT - Megabytes written:                              0.007
 
-  Total CPU  time used in HERMIT:   0.01 seconds
-  Total wall time used in HERMIT:   0.01 seconds
+  Total CPU  time used in HERMIT:   0.00 seconds
+  Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -523,8 +529,8 @@ FINISH
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Jul  1 20:10:29 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:23:40 2016
+     Host name              : sunray                                  
 
  Title lines from ".mol" input file:
      Calculation of excitation energies through ABACUS                       
@@ -594,6 +600,7 @@ FINISH
 
  Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
+ Calculating AOSUPINT
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
 @  1  -72.6180974833       2.25D+00  -7.26D+01     3   1   1   0
@@ -650,7 +657,7 @@ FINISH
 
  --- Writing SIRIFC interface file
 
- CPU and wall time for SCF :       0.008       0.007
+ CPU and wall time for SCF :       0.004       0.003
 
 
                        .-----------------------------------.
@@ -669,12 +676,12 @@ FINISH
 @    Final gradient norm:           0.000000167954
 
  
-     Date and time (Linux)  : Fri Jul  1 20:10:29 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:23:40 2016
+     Host name              : sunray                                  
 
-File label for MO orbitals:   1Jul16   FOCKDIIS
+File label for MO orbitals:   6Dec16   FOCKDIIS
 
- (Only coefficients >0.0100 are printed.)
+ (Only coefficients > 0.0100 are printed.)
 
  Molecular orbitals for symmetry species 1  (A1 )
  ------------------------------------------------
@@ -702,8 +709,8 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
   Total wall time used in SIRIUS :   0.00 seconds
 
  
-     Date and time (Linux)  : Fri Jul  1 20:10:29 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:23:40 2016
+     Host name              : sunray                                  
 
 
                      .---------------------------------------.
@@ -798,11 +805,11 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  *******************************************************************************
 
 
- CPU and wall time for CC :       0.008       0.002
+ CPU and wall time for CC :       0.000       0.001
 
  
-     Date and time (Linux)  : Fri Jul  1 20:10:29 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:23:40 2016
+     Host name              : sunray                                  
 
 
                       .-------------------------------------.
@@ -850,8 +857,6 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  Integral print level :    2
  Convergence threshold: 1.00E-04
  Maximum iterations   :   60
- Conventional rotational strength
- Dipole strength
 
 
                                  Isotopic Masses
@@ -877,8 +882,8 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Fri Jul  1 20:10:29 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:23:40 2016
+     Host name              : sunray                                  
 
 
                             **************************
@@ -927,40 +932,12 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  as this is the full dimension of the excitation space
 
   ******************************************************************
-                   RPA  iterations, Excitation symmetry 1
+                   RPA iterations, Excitation symmetry 1
   ******************************************************************
 
   ==================================================================
              1. RPA  iteration, Excitation symmetry 1
   ==================================================================
-
-
-  1. new E[2] linear transformed trial vector 1
-       1     0.00000000         0.00000000
-       2     0.00000000         0.00000000
-       3     0.00000000         0.00000000
-       4     0.00000000         0.00000000
-
-
-  2. new E[2] linear transformed trial vector 1
-       1     0.00000000         0.00000000
-       2     0.00000000         0.00000000
-       3     0.00000000         0.00000000
-       4     0.00000000         0.00000000
-
-
-  3. new E[2] linear transformed trial vector 1
-       1     0.00000000         0.00000000
-       2     0.00000000         0.00000000
-       3     0.00000000         0.00000000
-       4     0.00000000         0.00000000
-
-
-  4. new E[2] linear transformed trial vector 1
-       1     0.00000000         0.00000000
-       2     0.00000000         0.00000000
-       3     0.00000000         0.00000000
-       4     0.00000000         0.00000000
 
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
@@ -999,7 +976,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3   3   |   1       1     |   -0.212431  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1023,7 +1000,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3   3   |   1       1     |   -0.975550  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1046,7 +1023,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3   3   |   1       1     |   -0.110841  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1068,7 +1045,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 1   1   |   1       1     |    0.999999  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1133,137 +1110,28 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  as this is the full dimension of the excitation space
 
   ******************************************************************
-               Double corrected RPA calculation, Symmetry 1
+                RPA(D) calculation, Excitation symmetry 1
   ******************************************************************
+ -----------------------------------------------------------------
+ Excitation   Energy (au)      ph(0)        ph(2)       2p2h(2)
+ -----------------------------------------------------------------
+      1        0.61878515   0.62676356   0.02133789  -0.02931630
+      2        1.08468443   1.07693288   0.02665477  -0.01890322
+      3        1.44569852   1.46733629   0.01994879  -0.04158655
+      4       19.38907167  19.49166095   0.01213559  -0.11472487
+ -----------------------------------------------------------------
 
+ --------------------------------------------------------------
 
-  1. new E[2] linear transformed trial vector 1
-       1     0.00000498        -0.00063397
-       2    -0.00064530        -0.01583095
-       3     0.00050990         0.00159937
-       4    -0.00103514        -0.00023369
-       1    -0.01442139         0.00026066
-       2     0.05771813         0.00145076
-       3     0.02590435         0.00147414
-       4     0.03711442         0.00072052
-       5     0.08340742         0.00130188
-       6     0.10718040         0.00258964
-       7    -0.00042862         0.00029523
-       8    -0.11215887        -0.00174683
-       9    -0.16282505        -0.00309965
-      10     0.00548278        -0.00107404
-      11    -0.00568992         0.00093493
-      12    -0.00340596         0.00066051
-      13    -0.00944054         0.00182360
-      14    -0.01224352         0.00241738
-      15     0.01201572         0.00126881
-      16    -0.04033470         0.00545126
-      17     0.07542184         0.00239621
-      18    -0.00469594        -0.00033438
-      19    -0.04452803        -0.00185144
-      20    -0.08203620        -0.00272605
-      21    -0.05574014         0.00153950
-      22    -0.00736908         0.00144356
-
-  2. new E[2] linear transformed trial vector 1
-       1    -0.00002547         0.00021748
-       2     0.00129350         0.00712857
-       3    -0.00124142        -0.00348298
-       4     0.00185244         0.02047989
-       1     0.00983145        -0.00188482
-       2    -0.01599549        -0.00223429
-       3    -0.00009714        -0.00391479
-       4    -0.01073783        -0.00137803
-       5    -0.02797316        -0.00141414
-       6    -0.02869745        -0.00473871
-       7    -0.00958487         0.00021814
-       8     0.03827781         0.00179700
-       9     0.03769072         0.00515337
-      10     0.02517869         0.00177441
-      11     0.01006144        -0.00319542
-      12    -0.01554219        -0.00110992
-      13    -0.04926058        -0.00266093
-      14    -0.05253321        -0.00420856
-      15    -0.02193173        -0.00241884
-      16    -0.16366626        -0.00725995
-      17    -0.01817947        -0.00506174
-      18     0.01726547         0.00012600
-      19     0.07466907         0.00090967
-      20     0.06617129         0.00343994
-      21    -0.08018305        -0.00071860
-      22    -0.03384124        -0.00238488
-
-  3. new E[2] linear transformed trial vector 1
-       1    -0.00004287        -0.00144047
-       2     0.00070373         0.00102063
-       3    -0.00100742        -0.01764373
-       4     0.00134143         0.00617609
-       1    -0.05660167        -0.00174772
-       2     0.02384817        -0.00084077
-       3    -0.05295829        -0.00287324
-       4     0.02466100        -0.00009444
-       5     0.08570668         0.00091003
-       6     0.04252804        -0.00151862
-       7     0.01022648        -0.00007147
-       8    -0.11743800        -0.00128349
-       9    -0.09574694         0.00059302
-      10     0.00286077         0.00132958
-      11    -0.08164827        -0.00307236
-      12    -0.00178206        -0.00081925
-      13     0.01103311        -0.00187355
-      14    -0.01647159        -0.00323450
-      15    -0.00348940        -0.00150188
-      16     0.06008437        -0.00499710
-      17    -0.00639593        -0.00260772
-      18    -0.02822317        -0.00031016
-      19    -0.12883886        -0.00115983
-      20    -0.10006553         0.00038957
-      21     0.05311058        -0.00071948
-      22    -0.00384500        -0.00178701
-
-  4. new E[2] linear transformed trial vector 1
-       1     0.00000438         0.00486170
-       2     0.00000529         0.00151761
-       3    -0.00000048         0.00056616
-       4     0.00001768         0.00010031
-       1    -0.37895683        -0.00030835
-       2     0.34645059         0.00028503
-       3    -0.01303290        -0.00000165
-       4    -0.21286377        -0.00018747
-       5    -0.02614452        -0.00004466
-       6     0.00139564        -0.00001385
-       7     0.42907329         0.00035402
-       8    -0.01057317         0.00002211
-       9     0.00003974         0.00002100
-      10     0.00003300         0.00002300
-      11     0.02065356         0.00003462
-      12    -0.01652959        -0.00002819
-      13     0.01035428        -0.00003780
-      14    -0.00005993        -0.00004695
-      15    -0.07762264        -0.00008332
-      16    -0.00027062        -0.00015882
-      17    -0.00009917        -0.00000489
-      18     0.10003452         0.00010266
-      19     0.01831488         0.00009001
-      20     0.01319821         0.00006959
-      21     0.00355532        -0.00008240
-      22    -0.00004435        -0.00003091
-                         ------------------------
-                         Excitation   Energy (au)
-                         ------------------------
-                              1       0.61878515
-                              2       1.08468443
-                              3       1.44569852
-                              4      19.38907167
-                         ------------------------
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  1, state no.  1
 
- DCRPA excitation energy :  0.61878515     au
-                             16.838001     eV
-                             135807.64     cm-1
-                             1624.6202     kj / mole
+     RPA(D) excitation energy :  0.61878515     au
+                                   16.838001     eV
+                                   135807.64     cm-1
+                                   1624.6202     kj / mole
 
  1p-1h + 1h-1p excitation weight:  98.68 + -0.27  =  98.41 %
  2p-2h + 2h-2p excitation weight:   1.59 + -0.00  =   1.59 %
@@ -1284,16 +1152,20 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 1 1 3 3 |   1   1   1   1 |    0.029920  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  1, state no.  2
 
- DCRPA excitation energy :   1.0846844     au
-                             29.515765     eV
-                             238060.71     cm-1
-                             2847.8385     kj / mole
+     RPA(D) excitation energy :   1.0846844     au
+                                   29.515765     eV
+                                   238060.71     cm-1
+                                   2847.8385     kj / mole
 
  1p-1h + 1h-1p excitation weight:  99.91 + -1.03  =  98.88 %
  2p-2h + 2h-2p excitation weight:   1.12 + -0.01  =   1.12 %
@@ -1315,16 +1187,20 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3 3 2 2 |   1   1   1   1 |    0.028148  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  1, state no.  3
 
- DCRPA excitation energy :   1.4456985     au
-                             39.339458     eV
-                             317294.15     cm-1
-                             3795.6809     kj / mole
+     RPA(D) excitation energy :   1.4456985     au
+                                   39.339458     eV
+                                   317294.15     cm-1
+                                   3795.6809     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.81 + -0.49  =  95.32 %
  2p-2h + 2h-2p excitation weight:   4.68 + -0.01  =   4.68 %
@@ -1339,16 +1215,20 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 1 1 2 2 |   1   1   1   1 |    0.152780  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  1, state no.  4
 
- DCRPA excitation energy :   19.389072     au
-                             527.60348     eV
-                             4255409.3     cm-1
-                             50906.000     kj / mole
+     RPA(D) excitation energy :   19.389072     au
+                                   527.60348     eV
+                                   4255409.3     cm-1
+                                   50906.000     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.20 + -0.00  =  95.20 %
  2p-2h + 2h-2p excitation weight:   4.80 + -0.00  =   4.80 %
@@ -1364,7 +1244,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3 1 3 1 |   1   1   1   1 |   -0.197441  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -1373,50 +1253,50 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.49655 +    0.05999 =   -0.43656
-   2     1.01185 +   -0.11261 =    0.89924
-   3     0.28170 +   -0.07315 =    0.20855
-   4     0.07287 +   -0.00084 =    0.07203
+   1    -0.49799 +    0.06016 =   -0.43783
+   2     1.01121 +   -0.11254 =    0.89867
+   3     0.28727 +   -0.07459 =    0.21268
+   4     0.07445 +   -0.00086 =    0.07359
  ===================================================================
 
  ZDIPVEL  RPA(D) transition moments for excitation symmetry  1
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.37844 +    0.03773 =    0.41617
-   2    -0.58420 +   -0.07381 =   -0.65802
-   3    -0.23676 +   -0.04708 =   -0.28384
-   4    -0.85574 +   -0.00116 =   -0.85689
+   1     0.37953 +    0.03784 =    0.41737
+   2    -0.58383 +   -0.07377 =   -0.65760
+   3    -0.24144 +   -0.04801 =   -0.28944
+   4    -0.87432 +   -0.00118 =   -0.87550
  ===================================================================
 
  XXSECMOM RPA(D) transition moments for excitation symmetry  1
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.16465 +   -0.01791 =    0.14673
-   2    -0.24554 +    0.03634 =   -0.20920
-   3    -0.20032 +    0.02450 =   -0.17582
-   4    -0.01849 +    0.00018 =   -0.01830
+   1     0.16512 +   -0.01796 =    0.14716
+   2    -0.24538 +    0.03632 =   -0.20907
+   3    -0.20428 +    0.02499 =   -0.17929
+   4    -0.01889 +    0.00019 =   -0.01870
  ===================================================================
 
  YYSECMOM RPA(D) transition moments for excitation symmetry  1
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.86431 +   -0.13235 =    0.73197
-   2    -1.96243 +    0.26460 =   -1.69782
-   3    -1.51046 +    0.18369 =   -1.32677
-   4    -0.04588 +    0.00146 =   -0.04442
+   1     0.86681 +   -0.13273 =    0.73408
+   2    -1.96118 +    0.26443 =   -1.69674
+   3    -1.54030 +    0.18732 =   -1.35299
+   4    -0.04688 +    0.00149 =   -0.04538
  ===================================================================
 
  ZZSECMOM RPA(D) transition moments for excitation symmetry  1
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.36778 +   -0.06909 =    0.29868
-   2    -1.00897 +    0.13966 =   -0.86931
-   3    -0.91377 +    0.09913 =   -0.81464
-   4    -0.01944 +    0.00074 =   -0.01870
+   1     0.36884 +   -0.06929 =    0.29955
+   2    -1.00833 +    0.13957 =   -0.86876
+   3    -0.93183 +    0.10109 =   -0.83074
+   4    -0.01987 +    0.00076 =   -0.01910
  ===================================================================
 
  -----------------------------------
@@ -1428,16 +1308,12 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  as this is the full dimension of the excitation space
 
   ******************************************************************
-                   RPA  iterations, Excitation symmetry 2
+                   RPA iterations, Excitation symmetry 2
   ******************************************************************
 
   ==================================================================
              1. RPA  iteration, Excitation symmetry 2
   ==================================================================
-
-
-  1. new E[2] linear transformed trial vector 1
-       1     0.00000000         0.00000000
 
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
@@ -1472,7 +1348,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 1   2   |   1       1     |    1.000855  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1515,33 +1391,25 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  as this is the full dimension of the excitation space
 
   ******************************************************************
-               Double corrected RPA calculation, Symmetry 2
+                RPA(D) calculation, Excitation symmetry 2
   ******************************************************************
+ -----------------------------------------------------------------
+ Excitation   Energy (au)      ph(0)        ph(2)       2p2h(2)
+ -----------------------------------------------------------------
+      1        0.47058221   0.48227895   0.01518729  -0.02688404
+ -----------------------------------------------------------------
 
+ --------------------------------------------------------------
 
-  1. new E[2] linear transformed trial vector 1
-       1     0.00041658         0.01007899
-       1     0.00065605         0.00002712
-       2     0.15799247         0.00653013
-       3    -0.09870867        -0.00407982
-       4     0.20609951         0.00851849
-       5    -0.01652333        -0.00068294
-       6     0.01044185         0.00043158
-       7    -0.07764415        -0.00320918
-       8     0.11881246         0.00491075
-                         ------------------------
-                         Excitation   Energy (au)
-                         ------------------------
-                              1       0.47058221
-                         ------------------------
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  2, state no.  1
 
- DCRPA excitation energy :  0.47058221     au
-                             12.805193     eV
-                             103280.86     cm-1
-                             1235.5134     kj / mole
+     RPA(D) excitation energy :  0.47058221     au
+                                   12.805193     eV
+                                   103280.86     cm-1
+                                   1235.5134     kj / mole
 
  1p-1h + 1h-1p excitation weight:  98.79 + -0.17  =  98.62 %
  2p-2h + 2h-2p excitation weight:   1.38 + -0.00  =   1.38 %
@@ -1555,7 +1423,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 1 3 2 3 |   1   1   1   1 |   -0.108096  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -1564,28 +1432,28 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.11362 +    0.00470 =   -0.10892
+   1    -0.11402 +    0.00471 =   -0.10931
  ===================================================================
 
  XDIPVEL  RPA(D) transition moments for excitation symmetry  2
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.15700 +   -0.00649 =   -0.16349
+   1    -0.15756 +   -0.00651 =   -0.16407
  ===================================================================
 
  YANGMOM  RPA(D) transition moments for excitation symmetry  2
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.53560 +   -0.02214 =   -0.55774
+   1    -0.53750 +   -0.02222 =   -0.55972
  ===================================================================
 
  XZSECMOM RPA(D) transition moments for excitation symmetry  2
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.07194 +   -0.00297 =    0.06897
+   1     0.07220 +   -0.00298 =    0.06921
  ===================================================================
 
  -----------------------------------
@@ -1597,40 +1465,12 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  as this is the full dimension of the excitation space
 
   ******************************************************************
-                   RPA  iterations, Excitation symmetry 3
+                   RPA iterations, Excitation symmetry 3
   ******************************************************************
 
   ==================================================================
              1. RPA  iteration, Excitation symmetry 3
   ==================================================================
-
-
-  1. new E[2] linear transformed trial vector 1
-       1     0.00000000         0.00000000
-       2     0.00000000         0.00000000
-       3     0.00000000         0.00000000
-       4     0.00000000         0.00000000
-
-
-  2. new E[2] linear transformed trial vector 1
-       1     0.00000000         0.00000000
-       2     0.00000000         0.00000000
-       3     0.00000000         0.00000000
-       4     0.00000000         0.00000000
-
-
-  3. new E[2] linear transformed trial vector 1
-       1     0.00000000         0.00000000
-       2     0.00000000         0.00000000
-       3     0.00000000         0.00000000
-       4     0.00000000         0.00000000
-
-
-  4. new E[2] linear transformed trial vector 1
-       1     0.00000000         0.00000000
-       2     0.00000000         0.00000000
-       3     0.00000000         0.00000000
-       4     0.00000000         0.00000000
 
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
@@ -1669,7 +1509,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3   1   |   1       3     |    0.910288  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1692,7 +1532,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3   1   |   1       3     |   -0.416171  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1714,7 +1554,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3   1   |   1       2     |   -0.999190  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1736,7 +1576,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3   1   |   1       1     |    0.999996  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -1791,117 +1631,28 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  as this is the full dimension of the excitation space
 
   ******************************************************************
-               Double corrected RPA calculation, Symmetry 3
+                RPA(D) calculation, Excitation symmetry 3
   ******************************************************************
+ -----------------------------------------------------------------
+ Excitation   Energy (au)      ph(0)        ph(2)       2p2h(2)
+ -----------------------------------------------------------------
+      1        0.72493343   0.72134970   0.02519411  -0.02161038
+      2        0.84185694   0.82980889   0.02629476  -0.01424671
+      3        1.50427780   1.52913692   0.02151634  -0.04637546
+      4       19.47040469  19.54710669   0.01278540  -0.08948740
+ -----------------------------------------------------------------
 
+ --------------------------------------------------------------
 
-  1. new E[2] linear transformed trial vector 1
-       1     0.00003438         0.00057683
-       2     0.00000723        -0.00295973
-       3     0.00054331         0.01311556
-       4     0.00069211         0.01749386
-       1     0.01727896         0.00076912
-       2    -0.01281484        -0.00065217
-       3    -0.01073742        -0.00070550
-       4    -0.00214507         0.00041180
-       5    -0.01955036        -0.00091988
-       6    -0.00403940         0.00019150
-       7    -0.01665045        -0.00142854
-       8     0.14695685         0.00735799
-       9    -0.01338776        -0.00092739
-      10     0.05835623         0.00143345
-      11    -0.16875268        -0.00812383
-      12     0.03578291         0.00345476
-      13    -0.00262179        -0.00002044
-      14    -0.04258907        -0.00092555
-      15     0.09844597         0.00428205
-      16     0.09801502         0.00343730
-      17     0.01545587         0.00108765
-
-  2. new E[2] linear transformed trial vector 1
-       1    -0.00000691        -0.00001883
-       2    -0.00086203        -0.01801934
-       3     0.00062164         0.01526148
-       4    -0.00038296        -0.00877372
-       1     0.01212259         0.00004475
-       2     0.03805440         0.00208264
-       3     0.01166817         0.00049190
-       4    -0.01628759        -0.00071401
-       5     0.02888861         0.00142625
-       6     0.06694516         0.00255260
-       7     0.05858823         0.00311500
-       8    -0.05148493        -0.00349941
-       9     0.01904646         0.00106593
-      10     0.09143810         0.00451978
-      11     0.07693575         0.00452575
-      12    -0.09209549        -0.00554799
-      13    -0.00540507        -0.00020748
-      14    -0.08841831        -0.00433701
-      15     0.01299703         0.00018452
-      16     0.11009596         0.00497423
-      17     0.03466972         0.00110500
-
-  3. new E[2] linear transformed trial vector 1
-       1    -0.00002558        -0.00091159
-       2    -0.00027016        -0.00930748
-       3    -0.00009762        -0.00436755
-       4     0.00020272         0.01749307
-       1    -0.05810955        -0.00095885
-       2     0.03219792         0.00069181
-       3    -0.00163057         0.00027925
-       4    -0.01947338        -0.00076560
-       5    -0.00058242         0.00021476
-       6    -0.10007651        -0.00169590
-       7     0.06834534         0.00184187
-       8    -0.10022391        -0.00333621
-       9     0.03043102         0.00087600
-      10     0.11076023         0.00242731
-      11     0.05579234         0.00268114
-      12    -0.22446004        -0.00541009
-      13    -0.00003225        -0.00007907
-      14    -0.08798367        -0.00201866
-      15     0.00013875        -0.00057851
-      16     0.06415547         0.00126744
-      17    -0.08088497        -0.00162161
-
-  4. new E[2] linear transformed trial vector 1
-       1     0.00000261         0.00334157
-       2    -0.00000101         0.00094683
-       3     0.00002035         0.00057665
-       4    -0.00000195         0.00017453
-       1    -0.37793901        -0.00009174
-       2     0.33043232         0.00011408
-       3    -0.22607917        -0.00009796
-       4     0.36010408         0.00015794
-       5     0.06798120         0.00002206
-       6    -0.01285456         0.00009466
-       7     0.00142999        -0.00004790
-       8     0.00771238         0.00019174
-       9    -0.06632346        -0.00005680
-      10    -0.02787302        -0.00001804
-      11     0.00114254        -0.00016235
-      12     0.01335127         0.00018368
-      13     0.08402219         0.00003086
-      14     0.00022063         0.00000293
-      15     0.00013275         0.00008914
-      16     0.00357344         0.00007296
-      17     0.02076623         0.00009877
-                         ------------------------
-                         Excitation   Energy (au)
-                         ------------------------
-                              1       0.72493343
-                              2       0.84185694
-                              3       1.50427780
-                              4      19.47040469
-                         ------------------------
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  3, state no.  1
 
- DCRPA excitation energy :  0.72493343     au
-                             19.726442     eV
-                             159104.50     cm-1
-                             1903.3124     kj / mole
+     RPA(D) excitation energy :  0.72493343     au
+                                   19.726442     eV
+                                   159104.50     cm-1
+                                   1903.3124     kj / mole
 
  1p-1h + 1h-1p excitation weight:  99.01 + -0.20  =  98.81 %
  2p-2h + 2h-2p excitation weight:   1.19 + -0.00  =   1.19 %
@@ -1916,16 +1667,20 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3 1 1 1 |   1   1   3   3 |    0.108771  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  3, state no.  2
 
- DCRPA excitation energy :  0.84185694     au
-                             22.908093     eV
-                             184766.24     cm-1
-                             2210.2950     kj / mole
+     RPA(D) excitation energy :  0.84185694     au
+                                   22.908093     eV
+                                   184766.24     cm-1
+                                   2210.2950     kj / mole
 
  1p-1h + 1h-1p excitation weight:  99.46 + -0.21  =  99.25 %
  2p-2h + 2h-2p excitation weight:   0.75 + -0.00  =   0.75 %
@@ -1947,16 +1702,20 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3 1 2 2 |   1   1   1   1 |   -0.026611  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  3, state no.  3
 
- DCRPA excitation energy :   1.5042778     au
-                             40.933481     eV
-                             330150.81     cm-1
-                             3949.4808     kj / mole
+     RPA(D) excitation energy :   1.5042778     au
+                                   40.933481     eV
+                                   330150.81     cm-1
+                                   3949.4808     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.87 + -0.05  =  95.82 %
  2p-2h + 2h-2p excitation weight:   4.18 + -0.00  =   4.18 %
@@ -1971,16 +1730,20 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3 1 2 2 |   1   1   1   1 |    0.131106  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
+
+ --------------------------------------------------------------
+
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  3, state no.  4
 
- DCRPA excitation energy :   19.470405     au
-                             529.81666     eV
-                             4273259.9     cm-1
-                             51119.540     kj / mole
+     RPA(D) excitation energy :   19.470405     au
+                                   529.81666     eV
+                                   4273259.9     cm-1
+                                   51119.540     kj / mole
 
  1p-1h + 1h-1p excitation weight:  96.31 + -0.00  =  96.31 %
  2p-2h + 2h-2p excitation weight:   3.69 + -0.00  =   3.69 %
@@ -1996,7 +1759,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 1 1 3 1 |   1   1   1   1 |   -0.160021  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
@@ -2005,40 +1768,40 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.40015 +    0.02319 =   -0.37697
-   2     1.48407 +   -0.06909 =    1.41498
-   3    -0.10139 +   -0.00830 =   -0.10969
-   4    -0.08888 +   -0.00023 =   -0.08910
+   1    -0.40032 +    0.02320 =   -0.37713
+   2     1.48063 +   -0.06893 =    1.41170
+   3    -0.10313 +   -0.00844 =   -0.11157
+   4    -0.09026 +   -0.00023 =   -0.09049
  ===================================================================
 
  YDIPVEL  RPA(D) transition moments for excitation symmetry  3
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.18439 +    0.01164 =    0.19603
-   2    -0.86956 +   -0.03937 =   -0.90893
-   3     0.15830 +   -0.00329 =    0.15501
-   4     1.11369 +    0.00019 =    1.11388
+   1     0.18447 +    0.01165 =    0.19611
+   2    -0.86755 +   -0.03928 =   -0.90683
+   3     0.16101 +   -0.00334 =    0.15767
+   4     1.13106 +    0.00019 =    1.13125
  ===================================================================
 
  XANGMOM  RPA(D) transition moments for excitation symmetry  3
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.70813 +    0.03036 =    0.73850
-   2     0.01509 +   -0.00152 =    0.01357
-   3     0.13154 +   -0.00193 =    0.12961
-   4     0.13548 +    0.00055 =    0.13603
+   1     0.70843 +    0.03038 =    0.73881
+   2     0.01506 +   -0.00152 =    0.01354
+   3     0.13380 +   -0.00197 =    0.13183
+   4     0.13759 +    0.00056 =    0.13815
  ===================================================================
 
  YZSECMOM RPA(D) transition moments for excitation symmetry  3
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1     0.12969 +   -0.00660 =    0.12308
-   2    -1.38448 +    0.06007 =   -1.32441
-   3     0.72815 +   -0.00712 =    0.72104
-   4     0.00737 +    0.00095 =    0.00832
+   1     0.12974 +   -0.00661 =    0.12314
+   2    -1.38127 +    0.05993 =   -1.32134
+   3     0.74064 +   -0.00724 =    0.73340
+   4     0.00749 +    0.00096 =    0.00845
  ===================================================================
 
  -----------------------------------
@@ -2050,16 +1813,12 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  as this is the full dimension of the excitation space
 
   ******************************************************************
-                   RPA  iterations, Excitation symmetry 4
+                   RPA iterations, Excitation symmetry 4
   ******************************************************************
 
   ==================================================================
              1. RPA  iteration, Excitation symmetry 4
   ==================================================================
-
-
-  1. new E[2] linear transformed trial vector 1
-       1     0.00000000         0.00000000
 
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
@@ -2094,7 +1853,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3   2   |   1       1     |    1.000284  |
  |-----------------------------------------------------|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
 
  --------------------------------------------------------------
 
@@ -2123,33 +1882,25 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  as this is the full dimension of the excitation space
 
   ******************************************************************
-               Double corrected RPA calculation, Symmetry 4
+                RPA(D) calculation, Excitation symmetry 4
   ******************************************************************
+ -----------------------------------------------------------------
+ Excitation   Energy (au)      ph(0)        ph(2)       2p2h(2)
+ -----------------------------------------------------------------
+      1        0.56055308   0.56295381   0.01569428  -0.01809500
+ -----------------------------------------------------------------
 
+ --------------------------------------------------------------
 
-  1. new E[2] linear transformed trial vector 1
-       1     0.00024616         0.01032573
-       1     0.00406048         0.00009680
-       2     0.09280432         0.00221242
-       3    -0.07607433        -0.00181358
-       4     0.08404543         0.00200361
-       5    -0.00247213        -0.00005893
-       6     0.11714709         0.00279274
-       7    -0.10208312        -0.00243362
-       8     0.15564885         0.00371061
-                         ------------------------
-                         Excitation   Energy (au)
-                         ------------------------
-                              1       0.56055308
-                         ------------------------
+                 Singlet Excitation Energies
 
  --------------------------------------------------------------
  Excitation symmetry  4, state no.  1
 
- DCRPA excitation energy :  0.56055308     au
-                             15.253425     eV
-                             123027.18     cm-1
-                             1471.7319     kj / mole
+     RPA(D) excitation energy :  0.56055308     au
+                                   15.253425     eV
+                                   123027.18     cm-1
+                                   1471.7319     kj / mole
 
  1p-1h + 1h-1p excitation weight:  99.12 + -0.06  =  99.06 %
  2p-2h + 2h-2p excitation weight:   0.94 + -0.00  =   0.94 %
@@ -2168,7 +1919,7 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |    exci. | 3 3 2 3 |   1   1   1   1 |   -0.079182  |
  |=====================================================|
 
- Printed all single excitation amplitudes greater than 0.100000
+ Printed all single excitation amplitudes greater than  0.100000
  Printed all double excitation amplitudes greater than 0.020000
 
  --------------------------------------------------------------
@@ -2177,14 +1928,14 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.69608 +   -0.01659 =   -0.71267
+   1    -0.69687 +   -0.01661 =   -0.71348
  ===================================================================
 
  XYSECMOM RPA(D) transition moments for excitation symmetry  4
  ===================================================================
  Exci.    1p-1h        1h-1p        Total
  -------------------------------------------------------------------
-   1    -0.09921 +    0.00237 =   -0.09685
+   1    -0.09933 +    0.00237 =   -0.09696
  ===================================================================
 
  |=====================================================| 
@@ -2202,9 +1953,8 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |=====================================================| 
  |   Routine            cpu time   of total        sum |
  |-----------------------------------------------------| 
- |   SO_RES_A            0:00:00     12.5 %     12.5 % |
- |   SO_SIGAI            0:00:00     12.5 %     25.0 % |
- |   SO_RES_TCB          0:00:00     12.5 %     37.5 % |
+ |   SO_SIGAI            0:00:00     66.7 %     66.7 % |
+ |   SO_RES_A            0:00:00     33.3 %    100.0 % |
  |-----------------------------------------------------| 
  |  Total CPU time       0:00:00                       |
  |=====================================================| 
@@ -2221,10 +1971,10 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
  |=====================================================| 
  |   Routine           wall time   of total       sum  |
  |-----------------------------------------------------| 
- |   SO_ERES             0:00:00      2.9 %      2.9 % |
- |   SO_SRES             0:00:00      0.0 %      2.9 % |
- |   SO_REDEV            0:00:00      2.9 %      5.9 % |
- |   SO_TRIAL2           0:00:00      2.9 %      8.8 % |
+ |   SO_ERES             0:00:00     50.0 %     50.0 % |
+ |   SO_SRES             0:00:00      0.0 %     50.0 % |
+ |   SO_REDEV            0:00:00      0.0 %     50.0 % |
+ |   SO_TRIAL2           0:00:00      0.0 %     50.0 % |
  |-----------------------------------------------------| 
  |   Total wall time     0: 0: 0                       |
  |=====================================================| 
@@ -2236,8 +1986,8 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Fri Jul  1 20:10:29 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:23:40 2016
+     Host name              : sunray                                  
 
 
                              Molecular geometry (au)
@@ -2407,21 +2157,6 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
     4    1    15.3188    -0.474     1.992     0.923     2.441
 
 
-          Bethe sum rule                   
-          --------------
-
-  Q value      X Component    Y Component    Z Component
-  ------------------------------------------------------
- LQ=   0 QMAX= 0.000     QMIN= 0.000     QSTEP= 0.000    
-
-
-          Stopping Power                 
-          --------------
-
-  Velocity     X Component    Y Component    Z Component
-  ------------------------------------------------
-
-
  ======================================================================
                                RPA(D) results:
  ----------------------------------------------------------------------
@@ -2457,19 +2192,19 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
 @         No.      (au)          x       y       z         x       y       z
 @==============================================================================
 @  Symmetry of excited state: 1  ( A1 )
-@           1     0.618785     0.0000  0.0000 -0.6726    0.0000  0.0000 -0.4366
-@           2     1.084684     0.0000  0.0000  0.6066    0.0000  0.0000  0.8992
-@           3     1.445699     0.0000  0.0000  0.1963    0.0000  0.0000  0.2086
-@           4    19.389072     0.0000  0.0000  0.0442    0.0000  0.0000  0.0720
+@           1     0.618785     0.0000  0.0000 -0.6745    0.0000  0.0000 -0.4378
+@           2     1.084684     0.0000  0.0000  0.6063    0.0000  0.0000  0.8987
+@           3     1.445699     0.0000  0.0000  0.2002    0.0000  0.0000  0.2127
+@           4    19.389072     0.0000  0.0000  0.0452    0.0000  0.0000  0.0736
 @------------------------------------------------------------------------------
 @  Symmetry of excited state: 2  ( B1 )
-@           1     0.470582     0.3474  0.0000  0.0000   -0.1089  0.0000  0.0000
+@           1     0.470582     0.3487  0.0000  0.0000   -0.1093  0.0000  0.0000
 @------------------------------------------------------------------------------
 @  Symmetry of excited state: 3  ( B2 )
-@           1     0.724933     0.0000 -0.2704  0.0000    0.0000 -0.3770  0.0000
-@           2     0.841857     0.0000  1.0797  0.0000    0.0000  1.4150  0.0000
-@           3     1.504278     0.0000 -0.1030  0.0000    0.0000 -0.1097  0.0000
-@           4    19.470405     0.0000 -0.0572  0.0000    0.0000 -0.0891  0.0000
+@           1     0.724933     0.0000 -0.2705  0.0000    0.0000 -0.3771  0.0000
+@           2     0.841857     0.0000  1.0772  0.0000    0.0000  1.4117  0.0000
+@           3     1.504278     0.0000 -0.1048  0.0000    0.0000 -0.1116  0.0000
+@           4    19.470405     0.0000 -0.0581  0.0000    0.0000 -0.0905  0.0000
 @------------------------------------------------------------------------------
 @  Symmetry of excited state: 4  ( A2 )
 @           1     0.560553     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
@@ -2489,14 +2224,14 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
    1      3    39.3395   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    1      4   527.6035   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   2      1    12.8052   -0.00000 -0.27887 -0.00000  -0.00000 -0.00000 -0.00000
+   2      1    12.8052   -0.00000 -0.27986 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   3      1    19.7264    0.36925 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      2    22.9081    0.00679 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      3    40.9335    0.06480 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      4   529.8167    0.06801 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      1    19.7264    0.36940 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      2    22.9081    0.00677 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      3    40.9335    0.06592 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      4   529.8167    0.06908 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   4      1    15.2534   -0.00000 -0.00000 -0.35634  -0.00000 -0.00000 -0.00000
+   4      1    15.2534   -0.00000 -0.00000 -0.35674  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
 
 
@@ -2509,35 +2244,20 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
 @ Symm.  Mode   Frequency    Oscillator-strength      Rotational-strength   
 @ ex.st.  No.     (eV)        velocity  length     velocity  length   London
 @ ==========================================================================
-@  1      1    16.8380        0.1866   0.0786      -0.000   -0.000   -0.000
-@  1      2    29.5158        0.2661   0.5847      -0.000   -0.000   -0.000
-@  1      3    39.3395        0.0372   0.0419      -0.000   -0.000   -0.000
-@  1      4   527.6035        0.0252   0.0671      -0.000   -0.000   -0.000
+@  1      1    16.8380        0.1877   0.0791      -0.000   -0.000   -0.000
+@  1      2    29.5158        0.2658   0.5840      -0.000   -0.000   -0.000
+@  1      3    39.3395        0.0386   0.0436      -0.000   -0.000   -0.000
+@  1      4   527.6035        0.0264   0.0700      -0.000   -0.000   -0.000
 @ --------------------------------------------------------------------------
-@  2      1    12.8052        0.0379   0.0037      -0.000   -0.000   -0.000
+@  2      1    12.8052        0.0381   0.0037      -0.000   -0.000   -0.000
 @ --------------------------------------------------------------------------
-@  3      1    19.7264        0.0353   0.0687      -0.000   -0.000   -0.000
-@  3      2    22.9081        0.6542   1.1237      -0.000   -0.000   -0.000
-@  3      3    40.9335        0.0106   0.0121      -0.000   -0.000   -0.000
-@  3      4   529.8167        0.0425   0.1031      -0.000   -0.000   -0.000
+@  3      1    19.7264        0.0354   0.0687      -0.000   -0.000   -0.000
+@  3      2    22.9081        0.6512   1.1185      -0.000   -0.000   -0.000
+@  3      3    40.9335        0.0110   0.0125      -0.000   -0.000   -0.000
+@  3      4   529.8167        0.0438   0.1063      -0.000   -0.000   -0.000
 @ --------------------------------------------------------------------------
 @  4      1    15.2534        0.0000   0.0000      -0.000   -0.000   -0.000
 @ --------------------------------------------------------------------------
-
-
-          Bethe sum rule                   
-          --------------
-
-  Q value      X Component    Y Component    Z Component
-  ------------------------------------------------------
- LQ=   0 QMAX= 0.000     QMIN= 0.000     QSTEP= 0.000    
-
-
-          Stopping Power                 
-          --------------
-
-  Velocity     X Component    Y Component    Z Component
-  ------------------------------------------------
 
 
    Interatomic separations (in Angstrom):
@@ -2581,17 +2301,17 @@ File label for MO orbitals:   1Jul16   FOCKDIIS
 
 
 
-  Total CPU  time used in ABACUS:   0.04 seconds
-  Total wall time used in ABACUS:   0.04 seconds
+  Total CPU  time used in ABACUS:   0.02 seconds
+  Total wall time used in ABACUS:   0.02 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
-  Total CPU  time used in DALTON:   0.07 seconds
-  Total wall time used in DALTON:   0.07 seconds
+  Total CPU  time used in DALTON:   0.03 seconds
+  Total wall time used in DALTON:   0.03 seconds
 
  
-     Date and time (Linux)  : Fri Jul  1 20:10:29 2016
-     Host name              : spasnode101                             
+     Date and time (Linux)  : Tue Dec  6 15:23:40 2016
+     Host name              : sunray                                  

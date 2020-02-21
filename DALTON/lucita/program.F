@@ -68,7 +68,7 @@
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
       INTEGER(KIND=MPI_OFFSET_KIND) ITEST_OFF
       integer                                   :: file_offset_off
       integer,                      allocatable :: file_offset_fac_i4(:)
@@ -905,7 +905,7 @@ C
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "maxorb.h"
 #include "infpar.h"
@@ -991,7 +991,7 @@ C
 #include "infpar.h"
 #ifdef VAR_MPI
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "files.inc"
@@ -1503,7 +1503,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 *./CECORE/
@@ -5371,6 +5371,8 @@ C       WRITE(6,'(5X,A)')  ' No transformation of CI vectors'
 ***********************************************************************
 #include "implicit.h"
 #include "parluci.h"
+#include "maxorb.h"
+#include "infpar.h"
 C defined parallel calculation types  
 #include "iprtyp.h"
 C
@@ -5378,8 +5380,11 @@ C     LUCITA_WORK for parallel LUCITA
 C
       iprtyp =  LUCITA_WORK
       idummy = - 1
-      call mpixbcast(iprtyp,1,'INTEGER',luci_master)
-      call mpixbcast(idummy,1,'INTEGER',luci_master)
+      if (luci_master .ne. MASTER) then
+         call quit('program error, luci_master .ne. master')
+         ! dalton_parctl uses "MASTER", lucita uses "luci_master"
+      end if
+      call dalton_parctl(iprtyp, idummy)
 C
       end
 ***********************************************************************
@@ -5395,7 +5400,7 @@ C
 !***********************************************************************
 #include "implicit.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "maxorb.h"
 #include "infpar.h"
 #include "parluci.h"
@@ -5430,7 +5435,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       dimension work_dalton(lwork_dalton)
       character lucitabasf*20, lucifiln*24

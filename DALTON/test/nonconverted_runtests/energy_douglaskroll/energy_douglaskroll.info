@@ -1,7 +1,0 @@
-   energy_douglaskroll
-   -------------------
-   Molecule:         N2
-   Wave Function:    Hartree-Fock
-   Test Purpose:     Check the construction and use of Douglas-Kroll
-                     one-electron potential for the calculation of SCF
-                     energies

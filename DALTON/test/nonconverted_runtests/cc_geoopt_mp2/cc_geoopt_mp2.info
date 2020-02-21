@@ -1,6 +1,0 @@
-   cc_geoopt_mp2
-   -------------
-   Molecule:         HF in C1
-   Wave Function:    MP2 / aug-cc-pVDZ
-   Test Purpose:     Geometry optimization using analytic gradient
-                     from the CC program and the *OPTIMIZE module

@@ -558,7 +558,7 @@
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mpif.h"
 #endif
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(MPI_INTEGER_KIND):: my_STATUS(MPI_STATUS_SIZE)
 #else
       IMPLICIT REAL*8(A-H,O-Z)
 #endif

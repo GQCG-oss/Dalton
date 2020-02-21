@@ -31,8 +31,9 @@ c /* deck CC_SOP */
 *     Written by Christof Haettig summer/fall 1999.
 *
 *=====================================================================*
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
 #if defined (IMPLICIT_NONE)
-      IMPLICIT NONE  
+      IMPLICIT NONE
 #else
 #  include "implicit.h"
 #endif
@@ -229,7 +230,7 @@ Cholesky
 *---------------------------------------------------------------------*
 * calculate J matrix contributions:
 *---------------------------------------------------------------------*
-      IF (CCSLV) THEN
+      IF (CCSLV.OR.USE_PELIB()) THEN
         TIM1 = SECOND()
 
         IOPT = 5

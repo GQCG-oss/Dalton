@@ -71,7 +71,7 @@
 
 #ifdef VAR_MPI
 #include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      integer(MPI_INTEGER_KIND):: my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "maxorb.h"
 #include "infpar.h"

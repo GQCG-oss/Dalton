@@ -253,7 +253,7 @@ c
       CHARACTER*(len) str
       WRITE(LUPRI,'(1X,A)') str
       END
-      FUNCTION ISETKSYMOP(IKSYM)
+      INTEGER FUNCTION ISETKSYMOP(IKSYM)
 #include "implicit.h"
 #include "wrkrsp.h"
       ISETKSYMOP = KSYMOP

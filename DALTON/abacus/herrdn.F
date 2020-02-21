@@ -553,6 +553,8 @@ C
 #ifdef PRG_DIRAC
 C     In Dirac we do the readin the same way whatever KEYWRD is.
 #else
+      NMLINE_1 = NMLINE ! ID for "line 1" in .mol input
+      NMLINE_basis = 0
       IF (KEYWRD(1:5) .EQ. 'BASIS') THEN
          BASIS = .TRUE.
       ELSE IF (KEYWRD .EQ. 'ATOMBA') THEN
@@ -761,12 +763,14 @@ C***********************************************************************
          J = LNBLNK(MLINE(NMLINE)(6:))
          IF (J .eq. 0) THEN
 C     Card 1b: If basis set library, basis set info may be on next card
+C              (old format from before 2019)
             CALL RDLINE(LUINFO)
 C           Read basis set name(s), set NMULBS (WK/04-11-2002).
             CALL READ_BASMUL(MLINE(NMLINE))
          ELSE
             CALL READ_BASMUL(MLINE(NMLINE)(6:))
          END IF
+         NMLINE_basis = NMLINE
       END IF
 C     Enforce computation of Cartesian second moments (WK/UniKA/04-11-2002).
 C     Sep 09/hjaaj: moved to HERINI
@@ -806,8 +810,8 @@ C***********************************************************************
       CALL LINE4(MLINE(NMLINE),NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
      &           KASYM,ID3,DOCART,DOOWN)
 C --> Angstrom or Bohr?
-      NMLAU = NMLINE
-C     .. NMLAU indentifies input line with Angstrom or Bohr indicator.
+      NMLINE_4 = NMLINE
+C     .. NMLINE_4 indentifies input line with Angstrom or Bohr indicator. ("line4")
       IF (ID3 .NE. ' ' .or. ANGS ) THEN
         ANG = .TRUE.
         IF (IPREAD .GT. 0)
@@ -2390,7 +2394,8 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
-      use pelib_interface, only: use_pelib, pelib_ifc_init
+      use pelib_interface, only: use_pelib, pelib_ifc_init,
+     &                           pelib_ifc_do_mep, pelib_ifc_do_savden
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -2631,7 +2636,9 @@ C
 
          CALL PRICAR(WORK,LWORK)
 
-         IF (USE_PELIB()) THEN
+         IF (USE_PELIB()
+     &       .OR. PELIB_IFC_DO_MEP()
+     &       .OR. PELIB_IFC_DO_SAVDEN()) THEN
             CALL PELIB_IFC_INIT()
          END IF
       END IF
@@ -3301,17 +3308,8 @@ C
 C     Process basis data
 C
 C******************************************************************************
-#ifdef ENABLE_EFS
-      use efs_interface
-#endif
 
 #include "implicit.h"
-
-#ifdef ENABLE_EFS
-      type(atom_type) :: atype
-      real(8)         :: DMthresh
-#endif
-
 #include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
@@ -3461,92 +3459,6 @@ C
          JBLOCK = JBLOCK + NBLCK(I)
    10 CONTINUE ! DO 10 I = 1,NONTYP
 C
-#ifdef ENABLE_EFS
-      call MPI_COMM_RANK(MPI_COMM_WORLD, irank, ierror)
-      if ((.not. efs_interface_is_initialized)
-     &    .and. (irank.eq.MASTER)) then
-
-        jblock = 0
-        icent  = 0
-
-        do i = 1, nontyp
-
-          ! copy list of atomic centers for current element
-          atype%nr_centers = nont(i)
-          allocate( atype%centers( nont(i) ) )
-
-          do n = 1, nont(i)
-            icent  = icent + 1
-            atype%centers(n)%x = cord(1, icent)
-            atype%centers(n)%y = cord(2, icent)
-            atype%centers(n)%z = cord(3, icent)
-          end do
-
-          ! copy basis set definition
-          nr_gtos = 0
-          do j = 1, iqm(i)
-             do k = 1, jco(j,i)
-                nr_gtos = nr_gtos + 1
-             end do
-          end do
-
-          atype%nr_gtos = nr_gtos
-          allocate(atype%gtos(nr_gtos))
-
-          lb = jblock
-
-          igto = 0
-          do j = 1, iqm(i)
-            do k = 1, jco(j, i)
-              igto = igto + 1
-              lb = lb + 1
-              atype%gtos(igto)%angular_momentum = j-1
-              atype%gtos(igto)%nr_primitives    = nuc(lb)
-              atype%gtos(igto)%nr_contractions  = nrc(lb)
-              do l = 1, nuc(lb)
-                atype%gtos(igto)%primitive_exp(l)
-     &              = alpha(l, lb)
-                do m = 1, nrc(lb)
-                  atype%gtos(igto)%contract_coef(m, l)
-     &                = cprim(l, m, lb)
-                end do
-              end do
-
-            end do
-          end do
-
-          jblock = jblock + nblck(i)
-
-          !add the atom type to the list in k4m
-#ifdef VAR_MPI
-          call mpixbcast (const_add_atomtype, 1, 'INTEGER', MASTER)
-          iprint = 0
-          call mpixbcast (iprint,             1, 'INTEGER', MASTER)
-#endif
-
-          call efs_add_atomtype( atype%centers,
-     &        atype%gtos, atype%nr_centers,
-     &        atype%nr_gtos )
-
-          !free memory
-          deallocate( atype%centers )
-          deallocate( atype%gtos )
-
-        end do
-
-        !print the atom types to check everything is ok
-        !call efs_print()
-#ifdef VAR_MPI
-        call mpixbcast (const_init, 1, 'INTEGER', MASTER)
-        iprint = 0
-        call mpixbcast (iprint,     1, 'INTEGER', MASTER)
-#endif
-        call efs_init ()
-
-        efs_interface_is_initialized = .true.
-      end if
-#endif
-
       !Add exp(0) function (needed in 2- and 3-index integrals)
       !as an extra "0" class for ATOMDF case
       IF (LCOMP .EQ. 3) THEN
@@ -5730,10 +5642,10 @@ C     The slaves get the input transferred from the master in
 C     the common block MOLINP. /hjaaj
 C
       IF (.NOT. SLAVE .AND. NMLINE .GT. NMLN_LASTREAD) THEN
-          READ (LUINFO,'(A)',END=12,ERR=11) NEXT_INPUT_LINE
-          MLINE(NMLINE) = NEXT_INPUT_LINE
+         READ (LUINFO,'(A)',END=12,ERR=11) NEXT_INPUT_LINE
+         MLINE(NMLINE) = NEXT_INPUT_LINE
       ELSE
-          NEXT_INPUT_LINE = MLINE(NMLINE)
+         NEXT_INPUT_LINE = MLINE(NMLINE)
       END IF
 
 #ifdef VAR_DEBUG
@@ -6413,9 +6325,9 @@ C     TODO : define multiple basis sets and point charges
       ELSE
          CRT = ' '
       END IF
-      WRITE(MLINE(NMLAU),'(A1,I4,I3,I2,10X,1P,D10.2)')
+      WRITE(MLINE(NMLINE_4),'(A1,I4,I3,I2,10X,1P,D10.2)')
      &     CRT,NONTYP,KCHARG,NSYMOP,THRS
-      NMLINE = NMLAU+1
+      NMLINE = NMLINE_4+1
       NHTYP  = 0
       NSETS  = 1
       IF (DOHUCKEL) THEN
@@ -6641,7 +6553,7 @@ Chj:  ILINE must now point to line with first effective line (CARD 1)
      &   '# DALTON.BAS with INTGRL directive created ',LDATE,LTIME,
      &   '# Directive in input mol file was:',
      &   '# > ',MLINE(ILINE)(1:76)
-      IF (BASIS .AND. NMLAU.EQ.5) THEN ! old BASIS input over two lines
+      IF (NMLINE_basis .EQ. NMLINE_1+1) THEN ! old BASIS input over two lines
          WRITE (LUTMP1,'(2A)')
      &   '# > ',MLINE(ILINE+1)(1:76)
          ILINE = ILINE + 2
@@ -6657,11 +6569,11 @@ Chj:  skip any additional comment lines before title lines
       IF (DOCART) CRT = 'C'
       WRITE (LUTMP1,'(A/A/A)')
      &   'INTGRL',MLINE(ILINE),MLINE(ILINE + 1)
+      WRITE(LUSHB,'(A/A)')'$BASIS',MLINE(ILINE)
       ILINE = ILINE + 2
       WRITE (LUTMP1,'(A1,I4,I3,I2,9A1,1X,D10.2)')
      &     CRT,NONTYP,KCHARG,NSYMOP,((KASYM(I,J),I=1,3),J=1,3),THRS
       ISYCNT = 1
-      WRITE(LUSHB,'(A/A)')'$BASIS',MLINE(2)
       DO 100 I = 1, NONTYP
          WRITE (LUTMP1,'(6X,F4.0,24(I5))') CHARGE(ICENT+1),NONT(I),
      &                             IQM(I),(JCO(J,I), J=1, IQM(I))

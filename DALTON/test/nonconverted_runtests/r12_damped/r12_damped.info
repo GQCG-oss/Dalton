@@ -1,5 +1,0 @@
-   r12_damped
-   ----------
-   Molecule:         Water (H2O)
-   Wave Function:    MP2-R12 / 6-31G*
-   Test Purpose:     Check R12 method with Gaussian damping

@@ -5,13 +5,14 @@
 
       INTEGER IQR2OP, IQR2ST, ISEQR2SYM, ISEQR2STA
 
-      LOGICAL QR22N1, SELQR2
+      LOGICAL QR22N1, SELQR2, LSKIPLINEQ, LEOMXOPA
 
       COMMON /INFXOPA/ IQR2ST(MXQR2ST,2),
      *                 ISEQR2SYM(MXQR2ST,2),
      *                 ISEQR2STA(MXQR2ST,2),
      *                 IQR2OP(MXQR2O),
      *                 NQR2OP,NSEQR2,NXQR2ST,
-     *                 QR22N1,SELQR2
+     *                 QR22N1,SELQR2,
+     *                 LSKIPLINEQ, LEOMXOPA
 
 

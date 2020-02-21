@@ -58,13 +58,15 @@ contains
 !
 !*******************************************************************************
 !-------------------------------------------------------------------------------
-  integer :: nr_of_process_glb
-  integer :: my_process_id_glb
-  integer :: ierr
-  logical :: is_init
-!-------------------------------------------------------------------------------
+  integer                        :: nr_of_process_glb,my_process_id_glb
+  integer                        :: communication_glb_world  ! internal global communicator handle
 
 #ifdef VAR_MPI
+  integer(kind=MPI_INTEGER_KIND) :: nr_procs_glb_mpi,my_proc_id_glb_mpi
+  integer(kind=MPI_INTEGER_KIND) :: ierr
+  logical(kind=MPI_INTEGER_KIND) :: is_init
+!-------------------------------------------------------------------------------
+
       call mpi_initialized(is_init, ierr)
       if(.not.is_init)then 
         print *, ' warning: initialization of parallel communication models requires MPI_init to be called first.'
@@ -72,8 +74,10 @@ contains
         my_process_id_glb = 0
         nr_of_process_glb = 1
       else
-        call mpi_comm_rank(mpi_comm_world, my_process_id_glb, ierr) 
-        call mpi_comm_size(mpi_comm_world, nr_of_process_glb, ierr) 
+        call mpi_comm_rank(mpi_comm_world, my_proc_id_glb_mpi, ierr) 
+        call mpi_comm_size(mpi_comm_world, nr_procs_glb_mpi, ierr) 
+        my_process_id_glb = my_proc_id_glb_mpi
+        nr_of_process_glb = nr_procs_glb_mpi
       end if
 #else
       my_process_id_glb = 0
@@ -81,10 +85,11 @@ contains
 #endif
 
 !     initialize parallel communication models
+      communication_glb_world = MPI_COMM_WORLD
       call communication_init_mpi(communication_info_mpi, &
                                   my_process_id_glb,      &
                                   nr_of_process_glb,      &
-                                  mpi_comm_world)
+                                  communication_glb_world)
 
   end subroutine parallel_models_initialize_mpi
 !*******************************************************************************

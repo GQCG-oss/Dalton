@@ -34,11 +34,13 @@ C       LMXRED
 C
 #ifdef VAR_MPI
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
-     &                       soppa_nint
+     &                       soppa_nint, sop_master, one_mpi
 #endif
       use so_info, only: sop_linres, so_full_name, so_has_doubles,
-     &                   so_needs_densai
-
+     &                   so_needs_densai, sop_dp, sop_stat_trh,
+     &                   so_model_number,
+     &                   sop_mp2ai_done
+C
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -52,6 +54,7 @@ C
 C
       LOGICAL   NONEWT,IMAGPROP, IMAGPROP2
       LOGICAL   DOUBLES
+      LOGICAL   UPDATE_GP
 C
       CHARACTER*3 CONV(LCONV)
       CHARACTER MODEL*5,LABEL*8
@@ -61,19 +64,22 @@ C
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
       DIMENSION T2MP(LT2MP),     FOCKD(LFOCKD),   WORK(LWORK)
       DIMENSION REDE(LMXRED),    REDS(LMXRED)
-
-      INTEGER NIT, NOLDTR, NNEWTR
+C
+      REAL(sop_dp), parameter :: TWO = 2.0D0, HALF = 0.5D0, ONE = 1.0D0
+C
+      INTEGER NIT, NOLDTR, NNEWTR, IDTYPE, IMODEL
 #ifdef VAR_MPI
-      INTEGER   CP_ISYMTR
-      INTEGER   MAXNUMJOBS
-C     This array is only there to ensure that the four above variables
+      INTEGER :: CP_ISYMTR
+      INTEGER :: MAXNUMJOBS
+C     This array is only there to ensure that the six above variables
 C     are allocated consecutively, so that it can be send together. Only
 C     use it for this purpose.
 C     The definition must match that in soppa_nodedriver
-      INTEGER   INFO_ARRAY(4)
+      INTEGER   INFO_ARRAY(6)
       EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
-     &            (info_array(3), nnewtr),    (info_array(4),noldtr)
-      INTEGER(MPI_INTEGER_KIND) :: IERR
+     &            (info_array(3), nnewtr),    (info_array(4),noldtr),
+     &            (info_array(5), idtype), (info_array(6),imodel)
+      INTEGER(MPI_INTEGER_KIND) :: IERR, numprocs
 #endif
 C
 C------------------
@@ -82,14 +88,20 @@ C------------------
 C
       CALL QENTER('SO_LRSOEQ')
 C
+C     Basic info on what we do here
       DOUBLES = so_has_doubles(model)
-C
       FULL_NAME = SO_FULL_NAME(MODEL)
+      IMODEL = SO_MODEL_NUMBER(MODEL)
+C
+C     Should we update the GP vector
+      UPDATE_GP = (.NOT. sop_mp2ai_done) .AND.
+     &            SO_NEEDS_DENSAI(MODEL)
 C
 C==============================================================
 C     For checking, calculate E[2] and S[2] matrices explicitly
 C     by using unit vectors as trial vectors.
 C==============================================================
+C
 C
       IF (SOPCHK) THEN
 C
@@ -127,7 +139,7 @@ C Not a real parallel job, don't bother
          lAssignedIndices = 1
          kAssignedIndices = 0
       else
-         lAssignedIndices = (maxnumjobs + 1) /IRAT
+         lAssignedIndices = (maxnumjobs + IRAT - 1) /IRAT
          kAssignedIndices = KEND1
          KEND1 = kAssignedIndices + lAssignedIndices
       endif
@@ -141,8 +153,8 @@ C     Write banner.
 C------------------
 C
       WRITE(LUPRI,'(A)') ''
-      WRITE(LUPRI,'(/,2X,A)') '*********************************'//
-     &                        '*********************************'
+C      WRITE(LUPRI,'(/,2X,A)') '*********************************'//
+C     &                        '*********************************'
       WRITE(LUPRI,9001)
       WRITE(LUPRI,'(11X,3A)') ADJUSTR(FULL_NAME),
      &        ' iterations, Property ',LABEL
@@ -191,11 +203,13 @@ C
 C
       NONEWT = .FALSE.
 C
-C     At the moment SO_ERES will allways calculate DENSAI
-C     when NIT == 1, it has no sense of "IFREQ". Zeroing it
-C     here will compensate
-      IF ( SO_NEEDS_DENSAI(MODEL) )
-     &    CALL DZERO(DENSAI, LDENSAI)
+      IF (ABS(FRVAL(IFREQ)).GT.sop_stat_trh) then
+         IDTYPE = 0
+      ELSE IF (IMAGPROP) THEN
+         IDTYPE = 2
+      ELSE
+         IDTYPE = 1
+      END IF
 C
 C----------------------------------------------------------------------
 C     Iteration loop or solving the linear equation/eigenvalue problem
@@ -230,17 +244,19 @@ C
 #ifdef VAR_MPI
 C In parallel, send slaves to so_eres
 C
-         call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
+         call mpi_bcast( parsoppa_do_eres, one_mpi, my_mpi_integer, 
+     &                   sop_master,
      &                   mpi_comm_world, ierr )
 C ISYMTR is a non-local parameter, we need to copy it to the info-array
          CP_ISYMTR = ISYMTR
-         CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
-     &                   MPI_COMM_WORLD, IERR)
+         CALL MPI_BCAST( INFO_ARRAY, 6_mpi_integer_kind, MY_MPI_INTEGER,
+     &                   sop_master, MPI_COMM_WORLD, IERR)
 #endif
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
          CALL SO_ERES(MODEL,NOLDTR,NNEWTR,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                T2MP,LT2MP,FOCKD,LFOCKD,DENSAI,LDENSAI,NIT,ISYMTR,
+     &                IDTYPE,
 #ifdef VAR_MPI
      &                WORK(kAssignedIndices),maxnumjobs,
 #endif
@@ -249,22 +265,6 @@ C ISYMTR is a non-local parameter, we need to copy it to the info-array
          SOTIME(35) = SOTIME(35) + DTIME
          CALL GETTIM (DUMMY,WTIMEE)
          SOWTIM(1)  = SOWTIM(1)  + WTIMEE - WTIMES
-C
-C--------------------------------------------------------------
-C        Make S[2] linear transformation of trialvectors giving
-C        resultvectors.
-C--------------------------------------------------------------
-C
-         CALL GETTIM (DUMMY,WTIMES)
-         DTIME      = SECOND()
-         IF (MODEL .EQ. 'AORPA') THEN
-            CALL SO_SRES(NOLDTR,NNEWTR,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-     &                   ISYMTR,WORK(KEND1),LWORK1)
-         ENDIF
-         DTIME      = SECOND()   - DTIME
-         SOTIME(40) = SOTIME(40) + DTIME
-         CALL GETTIM (DUMMY,WTIMEE)
-         SOWTIM(2)  = SOWTIM(2)  + WTIMEE - WTIMES
 C
          IF ( AOTEST ) THEN
 C
@@ -279,15 +279,15 @@ C
 C
          END IF
 C
-         IF((NIT.EQ.1).AND.(IFREQ.EQ.1).AND.
-     &                   SO_NEEDS_DENSAI(MODEL) ) THEN
+         IF (UPDATE_GP) THEN
+            UPDATE_GP = .FALSE.
 C
 C-----------------------------------------------------------------------
 C          Calculate the gradient property vectors with the right DENSAI
 C-----------------------------------------------------------------------
 C          Only the one-partcle part need to be re-done ->
 C          Maybe pass in MODEL = 'AOHRP'?
-           LGPVC1  =  NT1AM(ISYMTR)
+           LGPVC1  = NT1AM(ISYMTR)
            LGPVC2 = 0
            KGPVC1  = KEND1
            KGPVC2  = KGPVC1 + LGPVC1
@@ -403,6 +403,11 @@ C--------------------------------------------------------------
 C     Calculate and save the pertubed density matrix
 C-------------------------------------------------------------
 C
+      if (triplet.AND.doubles) THEN
+         CALL SO_TMLTR(T2MP,ONE,1)
+         CALL DSCAL(LT2MP,HALF,T2MP,1)
+      END IF
+C
       ENORMINV = 1.0D0/ENORM
       CALL SO_PERTDENS(MODEL,SOP_LINRES,1,
      &                 FRVAL(IFREQ),1,LABEL,
@@ -410,6 +415,9 @@ C
      &                 T2MP,LT2MP,DENSIJ,LDENSIJ,
      &                 DENSAB,LDENSAB,DENSAI,LDENSAI,
      &                 WORK(KEND1),LWORK1)
+C
+      if (triplet.and.doubles) CALL CCSD_TCMEPKX(T2MP,ONE,1)
+C
 C
       IF ((NNEWTR .EQ. 0) .AND. (NIT.LT.MAXIT)) THEN
 C
@@ -478,5 +486,6 @@ C
      &       '-----------------')
  9011 FORMAT(1X,'Iteration Frequency    Property (au)   Residual',
      &           '    Converged')
- 9012 FORMAT(2X,I5,4X,F8.6,2X,F15.8,1X,1P,D14.4,6X,A3)
+C Change format of Property to D15.8 (from F15.8) to avoid unreadable
+ 9012 FORMAT(2X,I5,4X,F8.6,2X,D15.8,1X,1P,D14.4,6X,A3)
       END

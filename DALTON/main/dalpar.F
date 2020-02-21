@@ -20,6 +20,7 @@ C
 C FILE: dalpar.F
 C
 C (until Jan. 2017 these subroutines were in eri/eri2par.F)
+
 C
 C  /* Deck dalton_nodedriver */
 #if defined (VAR_MPI)
@@ -66,9 +67,6 @@ C
 #ifdef MOD_CGTO_DIFF_ERI
       use eri_basis_loops
 #endif
-#ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: xcint_integrate_worker
-#endif
       use so_parutils, only: soppa_nodedriver
       use pelib_interface, only: pelib_ifc_slave
       use qfitlib_interface, only: qfitlib_ifc_slave
@@ -78,6 +76,7 @@ C
       use parallel_models_mpi, only: lucita_models_enabled
 
 #include "implicit.h"
+
 #include "priunit.h"
 #include "mtags.h"
 C infpar.h: MASTER,MYNUM, PARHER
@@ -110,39 +109,6 @@ C gnrinf.h : PARCAL, DIRCAL
 C
 C     Get calculation type (IPRTYP)
   100 CONTINUE
-#ifdef VAR_IFORT
-!     Nov 2013 hjaaj: sleep 10 millisecond before next check for a task
-!     - this saves a lot of cpu time on other cores in a sequential section
-!     - may make it possible to go into turbo mode
-!     - may make it possible to exploit e.g. parallel DGEMM in MKL in serial sections
-C      CALL SLEEP(1)
-c
-!     - only intel ifort has a sleepqq counting in milliseconds (that I know of),
-!       the more common sleep(n) sleeps in at least one second, which is too long.
-!       (One could use an interface to the C routine usleep.)
-      CALL SLEEPQQ(TEN_4)
-#endif
-#ifdef VAR_GFORTRAN
-!      CALL SLEEP(1)
-#endif
-#ifdef COPIED_FROM_NET_CHECK_IT_OUT
-! milliseconds wait
-use iso_c_binding
-implicit none
-interface
-   subroutine usleep(useconds) bind(C)
-!  integer(c_int) function usleep(useconds) bind(C)
-    use iso_c_binding
-    implicit none
-    integer(c_int32_t), value :: useconds
-!  end function
-   end subroutine
-end interface
-  print *, 'before'
-  call usleep(500000_c_int32_t) ! sleep for 1/2 s
-  print *, 'after'
-end
-#endif
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
       IF (IPRTYP.GT.0) THEN
@@ -291,11 +257,6 @@ C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.CGTO_DIFF_ERI_INIT) THEN
             CALL unopt_geodiff_loop_worker(LUPRI,IPRINT)
 #endif
-
-#ifdef ENABLE_XCINT
-         else if (iprtyp == XCINT_MPI_WAKEUP_SIGNAL) then
-            call xcint_integrate_worker(MPI_COMM_WORLD)
-#endif
          ELSE IF (IPRTYP.EQ.QMCMM_WORK) THEN
 #ifdef ENABLE_VPOTDAMP
             CALL vpotdamped_slave()
@@ -303,18 +264,6 @@ C added by Bin Gao, May 12, 2012
             call quit('VPOTDAMP not compiled in this version')
 #endif
 
-#if defined(ENABLE_EFS)
-         else if (IPRTYP.eq.efs_add_atomtype_work) then
-            call efs_add_atomtype_slave()
-         else if (IPRTYP.eq.efs_init_work) then
-            call efs_init_slave()
-         else if (IPRTYP.eq.efs_generate_basis_work) then
-            call efs_generate_basis_product_slave()
-         else if (IPRTYP.eq.efs_init_2efock_work) then
-            call efs_init_2efock_slave()
-         else if (IPRTYP.eq.efs_fock_update_work) then
-            call efs_fock_update_slave()
-#endif
 #if defined (HAS_PCMSOLVER)
          else if (iprtyp.eq.pcmsolver_npetes2_work) then
             call j1ints_pcm(work(1),mwork,iprtyp,iprint)
@@ -327,12 +276,12 @@ C added by Bin Gao, May 12, 2012
          else if (IPRTYP .eq. PAR_SRDFT_INTEGRATION ) THEN
             call SRDFT_PAR_NODE(WORK(1),MWORK,IPRINT)
          ELSE
-            WRITE(LUPRI,'(/A,I5,A,I10)')
+            WRITE(LUPRI,'(/A,I5,A,I0)')
      &         '(DALTON_NODEDRIVER) ERROR on slave',mynum,
-     &         ': Unknown calculation type request',IPRTYP
-            WRITE(*,'(/A,I5,A,I10)')
+     &         ': Unknown calculation type request ',IPRTYP
+            WRITE(*,'(/A,I5,A,I0)')
      &         '(DALTON_NODEDRIVER) ERROR on slave',mynum,
-     &         ': Unknown calculation type request',IPRTYP
+     &         ': Unknown calculation type request ',IPRTYP
             CALL QUIT('DALTON_NODEDRIVER: Unknown calculation type')
          END IF
 C
@@ -361,6 +310,59 @@ C
       RETURN
       END
 #endif
+
+C  /* Deck dalton_parctl */
+      SUBROUTINE DALTON_PARCTL(ITASK,IPRINT)
+C
+C 20-Oct-2019 Hans Joergen Aa. Jensen
+C
+C Called by master node to control parallel calculation.
+C Can be used to send slaves to sleep and to wake them up.
+C
+C ITASK .gt. 0: wake slaves and get hold of them for task ITASK
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+      implicit none
+      integer :: itask, iprint
+C
+#if defined (VAR_MPI)
+#include "maxorb.h"
+#include "infpar.h"
+      INCLUDE 'mpif.h'
+#include "mtags.h"
+
+      integer :: NODE
+      integer(kind=MPI_INTEGER_KIND), allocatable ::
+     &   my_requests(:), my_statuses(:,:), IERR, NODTOT_mpi
+      logical, save  :: first_call = .true.
+C
+
+      IF (NODTOT .EQ. 0) RETURN   ! MPI version of DALTON, but no slaves (i.e. sequential)
+
+      if (first_call) then
+         allocate ( my_requests(nodtot) )
+         allocate ( my_statuses(MPI_STATUS_SIZE,nodtot) )
+         first_call = .false.
+      end if
+      IF (ITASK .EQ. -1) THEN
+C        go back from submenu to main menu via MPI_BCAST
+!        CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+      ELSE
+C        slave should be in main menu, ready to receive task
+C        (we use point-to-point communication instead of mpi_bcast, so it can be probed with mpi_iprobe)
+         CALL MPIXBCAST(ITASK,1,'INTEGER',MASTER)
+
+         CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+      END IF
+
+#else /* not VAR_MPI */
+
+      CALL QUIT('DALTON_PARCTL called '//
+     &   'but this is a sequential DALTON version !')
+
+#endif /* VAR_MPI */
+      RETURN
+      END
 C  /* Deck sendname */
       SUBROUTINE SENDNAME(NASTER,NYTID)
 C
@@ -374,25 +376,14 @@ C
       MASTER = NASTER
       MYTID  = NYTID
 C
-C     Get my name
+C     Get name of my host machine
 C
       CALL GETNAME(MYNAME)
 C
-C     Return name to master
+C     Send name to master
 C
 #if defined (VAR_MPI)
       CALL MPIXSEND(MYNAME,20,'STRING',MASTER,MTAG8)
-#endif
-#if defined (VAR_PVM)
-C
-C     NCODE is the first variable PVM-slaves must receive
-C
-      CALL PVMXRECV(MASTER,MTAG0)
-      CALL PVMXUNPACK(NCODE,1,'INTEGER')
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(MYTID,1,'INTEGER')
-      CALL PVMXPACK(MYNAME,20,'STRING')
-      CALL PVMXSEND(NASTER,MTAG8)
 #endif
 C
       RETURN
@@ -407,14 +398,6 @@ C
       CHARACTER NAME*20
 #include "infpar.h"
 C
-#if defined (VAR_PVM)
-C
-C     NCODE must be the first variable PVM-slaves must receive
-C
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(NCODE,1,'INTEGER')
-      CALL PVMXMCAST(NODTOT,NODEID(1),MTAG0)
-#endif
 C     Get my name
 C
       CALL GETNAME(MYNAME)
@@ -426,15 +409,6 @@ C
 #if defined (VAR_MPI)
          NWHO = -1
          CALL MPIXRECV(NAME,20 ,'STRING',NWHO,MTAG8)
-         NODNAM(NWHO) = NAME
-#endif
-#if defined (VAR_PVM)
-         CALL PVMXRECV(-1,MTAG8)
-         CALL PVMXUNPACK(NTID,1,'INTEGER')
-         CALL PVMXUNPACK(NAME,20,'STRING')
-         DO J=1, NODTOT
-            IF (NODEID(J) .EQ. NTID) NWHO = J
-         END DO
          NODNAM(NWHO) = NAME
 #endif
       END DO
@@ -470,12 +444,6 @@ C
 #if defined (VAR_MPI)
       CALL MPIXSEND(TMGARR,2 ,'DOUBLE',MASTER,MTAG8)
 #endif
-#if defined (VAR_PVM)
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(MYNUM ,1,'INTEGER')
-      CALL PVMXPACK(TMGARR,2,'DOUBLE')
-      CALL PVMXSEND(MASTER,MTAG8)
-#endif
 C
       RETURN
       END
@@ -499,10 +467,6 @@ C
 #if defined (VAR_MPI)
          NWHO = -1
          CALL MPIXRECV(TMGARR,2,'DOUBLE',NWHO,MTAG8)
-#elif defined (VAR_PVM)
-         CALL PVMXRECV(-1,MTAG8)
-         CALL PVMXUNPACK(NWHO  ,1,'INTEGER')
-         CALL PVMXUNPACK(TMGARR,2,'DOUBLE')
 #else
          NWHO = I
 #endif
@@ -577,7 +541,7 @@ C
 #include "infpar.h"
 #include "iprtyp.h"
 #include "gnrinf.h"
-      DATA TOTWAL /0./
+      DATA TOTWAL /0.0D0/
       SAVE TOTWAL
 C
       CALL QENTER('PARDRV')
@@ -600,17 +564,10 @@ C
      &      'Print level on nodes is',IPRNOD
       END IF
 C
-C     Tell nodes whether this is an ERI or HERMIT run. Send IPRNOD (PVM: NCODE)
+C     Tell nodes whether this is an ERI or HERMIT run. Send IPRNOD
 C
 #if defined (VAR_MPI)
-      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(IPRNOD,1,'INTEGER',MASTER)
-#endif
-#if defined (VAR_PVM)
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(IPRTYP,1,'INTEGER')
-      CALL PVMXPACK(IPRNOD,1,'INTEGER')
-      CALL PVMXMCAST(NODTOT,NODEID(1),MTAG1)
+      CALL DALTON_PARCTL(IPRTYP,IPRNOD)
 #endif
       IF (IPRTYP.EQ.HER_WORK) THEN
          if (iprint .gt. 3)

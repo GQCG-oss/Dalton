@@ -1,7 +1,0 @@
-   cc_rsp_beta2
-   ------------
-   Molecule:         HF in C2
-   Wave Function:    CCS, CCSD / 6-31G**
-   Test Purpose:     - Parallel (beta_||) and orthogonal averages (beta_|_)
-                     - A & B coefficients 
-                     - Frozen-core approximation for hyperpolarizabilities

@@ -1,0 +1,2266 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON release Dalton2017.alpha (2016)
+         ( Web site: http://daltonprogram.org )
+
+   ----------------------------------------------------------------------------
+
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2014, 4:269–284 (doi: 10.1002/wcms.1172)
+     
+    and
+     
+       Dalton, a Molecular Electronic Structure Program,
+       Release Dalton2017.alpha (2016), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             UiT The Arctic U. of Norway,  Norway      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Rasmus Faber,             University of Copenhagen,     Denmark     (Vib.avg. NMR with SOPPA, parallel AO-SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Frederik Beyer Hansen,    University of Copenhagen,     Denmark     (Parallel AO-SOPPA)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Pi A. B. Haase,           University of Copenhagen,     Denmark     (Triplet AO-SOPPA)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex frequency response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Mon Mar 13 12:41:33 2017
+     Host name              : TESD11                                  
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/rasmus/Research/aosoppa_lrs/spnspn
+   2) /home/rasmus/source/dalton/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | rasmus
+ Host                     | TESD11
+ System                   | Linux-3.13.0-85-generic
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Ubuntu 4.8.4-2ubuntu1~14.04.3) 4.8.4
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu 4.8.4-2ubuntu1~14.04.3) 4.8.4
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (Ubuntu 4.8.4-2ubuntu1~14.04.3) 4.8.4
+ Static linking           | OFF
+ Last Git revision        | 6e5311d6280f9b169c7d7d17145a0bc1e8833068
+ Git branch               | aosoppa_devel
+ Configuration time       | 2017-03-13 12:41:15.674776
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.MP2
+.AO-SOPPA
+**PROPERTIES
+.SPIN-S
+.SOPPA
+*SPIN-S
+.ABUNDA
+ 0.04
+*SOPPA
+.AOSOP
+**END OF DALTON INPUT
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS
+cc-pVDZ
+Formaldehyde
+
+    3    2  X  Y
+       8.     1
+O1   0.0000000000            0.0000000000            0.0196594609
+       6.     1
+C1   0.0000000000            0.0000000000            2.3248507925
+       1.     1
+H1   0.0000000000            1.7597110083            3.3972521023
+
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Static molecular property section will be executed (ABACUS module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Formaldehyde                                                            
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+
+
+@ WARNING - deprecated old .mol fixed format input has been detected:
+    3    2  X  Y                                                                
+@ WARNING - this input format may not be supported in future releases.
+
+
+
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/rasmus/source/dalton/build/basis/cc-pVDZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/rasmus/source/dalton/build/basis/cc-pVDZ"
+
+  Atomic type no.    3
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/rasmus/source/dalton/build/basis/cc-pVDZ"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C2v
+
+@  * The irrep name for each symmetry:    1: A1     2: B1     3: B2     4: A2 
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O1         15.994915
+                           C1         12.000000
+                           H1  _1      1.007825
+                           H1  _2      1.007825
+
+                       Total mass:    30.010565 amu
+                       Natural abundance:  98.633 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    1.168266
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    3
+  Total number of atoms:    4
+
+  Basis set used is "cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  O1          1    8.0000    26    14      [9s4p1d|3s2p1d]                                    
+  C1          1    6.0000    26    14      [9s4p1d|3s2p1d]                                    
+  H1          2    1.0000     7     5      [4s1p|2s1p]                                        
+  ----------------------------------------------------------------------
+  total:      4   16.0000    66    38
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:   12
+  O1      :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0196594609
+  C1      :     4  x   0.0000000000    5  y   0.0000000000    6  z   2.3248507925
+  H1  / 1 :     7  x   0.0000000000    8  y   1.7597110083    9  z   3.3972521023
+  H1  / 2 :    10  x   0.0000000000   11  y  -1.7597110083   12  z   3.3972521023
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     4    3    4    1
+
+  Symmetry  A1  ( 1)
+
+    1   O1    z    3
+    2   C1    z    6
+    3   H1    y    [  8  -   11 ]/2
+    4   H1    z    [  9  +   12 ]/2
+
+  Symmetry  B1  ( 2)
+
+    5   O1    x    1
+    6   C1    x    4
+    7   H1    x    [  7  +   10 ]/2
+
+  Symmetry  B2  ( 3)
+
+    8   O1    y    2
+    9   C1    y    5
+   10   H1    y    [  8  +   11 ]/2
+   11   H1    z    [  9  -   12 ]/2
+
+  Symmetry  A2  ( 4)
+
+   12   H1    x    [  7  -   10 ]/2
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O1          C1          H1  _1      H1  _2
+            ------      ------      ------      ------
+ O1    :    0.000000
+ C1    :    1.219855    0.000000
+ H1  _1:    2.015374    1.090494    0.000000
+ H1  _2:    2.015374    1.090494    1.862398    0.000000
+
+
+  Max    interatomic separation is    2.0154 Angstrom (    3.8085 Bohr)
+  between atoms    3 and    1, "H1  _1" and "O1    ".
+
+  Min HX interatomic separation is    1.0905 Angstrom (    2.0607 Bohr)
+
+  Min YX interatomic separation is    1.2199 Angstrom (    2.3052 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  C1         O1           1.219855
+  bond distance:  H1  _1     C1           1.090494
+  bond distance:  H1  _2     C1           1.090494
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     O1         C1         H1  _1       121.359
+  bond angle:     O1         C1         H1  _2       121.359
+  bond angle:     H1  _1     C1         H1  _2       117.282
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       1.747834          0.000000    0.000000    1.000000
+   IB      13.208614          0.000000    1.000000    0.000000
+   IC      14.956448          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is planar.
+
+               A                   B                   C
+
+         289145.9453          38261.3199          33790.0428 MHz
+            9.644871            1.276260            1.127115 cm-1
+
+
+@  Nuclear repulsion energy :   31.130992984790 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          18    7   10    3
+
+
+  Symmetry  A1 ( 1)
+
+    1     O1       1s         1
+    2     O1       1s         2
+    3     O1       1s         3
+    4     O1       2pz        6
+    5     O1       2pz        9
+    6     O1       3d0       12
+    7     O1       3d2+      14
+    8     C1       1s        15
+    9     C1       1s        16
+   10     C1       1s        17
+   11     C1       2pz       20
+   12     C1       2pz       23
+   13     C1       3d0       26
+   14     C1       3d2+      28
+   15     H1       1s        29 +   30
+   16     H1       1s        31 +   32
+   17     H1       2py       35 -   36
+   18     H1       2pz       37 +   38
+
+
+  Symmetry  B1 ( 2)
+
+   19     O1       2px        4
+   20     O1       2px        7
+   21     O1       3d1+      13
+   22     C1       2px       18
+   23     C1       2px       21
+   24     C1       3d1+      27
+   25     H1       2px       33 +   34
+
+
+  Symmetry  B2 ( 3)
+
+   26     O1       2py        5
+   27     O1       2py        8
+   28     O1       3d1-      11
+   29     C1       2py       19
+   30     C1       2py       22
+   31     C1       3d1-      25
+   32     H1       1s        29 -   30
+   33     H1       1s        31 -   32
+   34     H1       2py       35 +   36
+   35     H1       2pz       37 -   38
+
+
+  Symmetry  A2 ( 4)
+
+   36     O1       3d2-      10
+   37     C1       3d2-      24
+   38     H1       2px       33 -   34
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      1.168266312748
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ HERMIT - Number of two-electron integrals written:       70449 ( 25.6% )
+ HERMIT - Megabytes written:                              0.811
+
+  Total CPU  time used in HERMIT:   0.09 seconds
+  Total wall time used in HERMIT:   0.09 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:    7    2    3    0
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.704403     -11.377182      -1.494337      -0.967020      -0.595404
+           -0.253739      -0.197434
+
+ Huckel EHT eigenvalues for symmetry :  2
+           -0.670995      -0.352105
+
+ Huckel EHT eigenvalues for symmetry :  3
+           -0.740877      -0.505424      -0.192180
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Mon Mar 13 12:41:34 2017
+     Host name              : TESD11                                  
+
+ Title lines from ".mol" input file:
+     Formaldehyde                                                            
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    (Integral direct) CC calculation.
+
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+     Wave function specification
+     ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+@    Wave function type        --- CC ---
+@    Number of closed shell electrons          16
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 4 (point group: C2v)
+@    Reference state symmetry                   1 (irrep name : A1 )
+
+     Orbital specifications
+     ======================
+@    Abelian symmetry species          All |    1    2    3    4
+@                                          |  A1   B1   B2   A2 
+                                       --- |  ---  ---  ---  ---
+@    Total number of orbitals           38 |   18    7   10    3
+@    Number of basis functions          38 |   18    7   10    3
+
+      ** Automatic occupation of RHF orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               8 |    5    1    2    0
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-06
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ MP2 Amplitudes written for atom integral direct SOPPA calculations
+  
+
+
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Automatic occupation of symmetries with  16 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+ Calculating AOSUPINT
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -113.391937444       3.11D+00  -1.13D+02     5   1   2   0
+      Virial theorem: -V/T =      1.999350
+@      MULPOP O1     -0.62; C1      0.96; H1  _1 -0.17; H1  _2 -0.17; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
+ -----------------------------------------------------------------------------
+@  2  -113.814717522       1.10D+00  -4.23D-01     5   1   2   0
+      Virial theorem: -V/T =      2.005814
+@      MULPOP O1      0.07; C1     -0.18; H1  _1  0.05; H1  _2  0.05; 
+   2  Level shift: doubly occupied orbital energies shifted by -1.00D-01
+ -----------------------------------------------------------------------------
+@  3  -113.869557296       3.10D-01  -5.48D-02     5   1   2   0
+      Virial theorem: -V/T =      1.998916
+@      MULPOP O1     -0.33; C1      0.29; H1  _1  0.02; H1  _2  0.02; 
+   3  Level shift: doubly occupied orbital energies shifted by -5.00D-02
+ -----------------------------------------------------------------------------
+@  4  -113.874343297       6.10D-02  -4.79D-03     5   1   2   0
+      Virial theorem: -V/T =      2.002332
+@      MULPOP O1     -0.30; C1      0.25; H1  _1  0.02; H1  _2  0.02; 
+   4  Level shift: doubly occupied orbital energies shifted by -1.25D-02
+ -----------------------------------------------------------------------------
+@  5  -113.874646124       1.27D-02  -3.03D-04     5   1   2   0
+      Virial theorem: -V/T =      2.001503
+@      MULPOP O1     -0.31; C1      0.25; H1  _1  0.03; H1  _2  0.03; 
+ -----------------------------------------------------------------------------
+@  6  -113.874669537       4.62D-03  -2.34D-05     5   1   2   0
+      Virial theorem: -V/T =      2.001544
+@      MULPOP O1     -0.31; C1      0.25; H1  _1  0.03; H1  _2  0.03; 
+ -----------------------------------------------------------------------------
+@  7  -113.874673249       1.29D-03  -3.71D-06     5   1   2   0
+      Virial theorem: -V/T =      2.001554
+@      MULPOP O1     -0.31; C1      0.25; H1  _1  0.03; H1  _2  0.03; 
+ -----------------------------------------------------------------------------
+@  8  -113.874673572       1.91D-04  -3.23D-07     5   1   2   0
+      Virial theorem: -V/T =      2.001558
+@      MULPOP O1     -0.31; C1      0.25; H1  _1  0.03; H1  _2  0.03; 
+ -----------------------------------------------------------------------------
+@  9  -113.874673578       2.79D-05  -6.44D-09     5   1   2   0
+      Virial theorem: -V/T =      2.001558
+@      MULPOP O1     -0.31; C1      0.25; H1  _1  0.03; H1  _2  0.03; 
+ -----------------------------------------------------------------------------
+@ 10  -113.874673578       4.86D-06  -1.02D-10     5   1   2   0
+      Virial theorem: -V/T =      2.001558
+@      MULPOP O1     -0.31; C1      0.25; H1  _1  0.03; H1  _2  0.03; 
+ -----------------------------------------------------------------------------
+@ 11  -113.874673578       6.17D-07  -3.30D-12     5   1   2   0
+
+@ *** DIIS converged in  11 iterations !
+@     Converged SCF energy, gradient:   -113.874673578114    6.17D-07
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the 20 lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   16
+ Orbital occupations :    5    1    2    0
+
+ Sym       Hartree-Fock orbital energies
+
+1 A1    -20.57538391   -11.34442313    -1.39351165    -0.87122570    -0.64136389
+          0.19048492     0.35923942     0.66733972     0.88336365     0.97235121
+          1.11516141     1.68493510     1.84511407     1.98043400     2.57905796
+          2.75403409     3.17990674     3.81652041
+
+2 B1     -0.52203131     0.13182203     0.67016940     1.29514885     1.41067671
+          1.94451657     3.41130364
+
+3 B2     -0.68971912    -0.43849726     0.25580141     0.74157271     0.82575200
+          1.32813658     1.68772046     1.96955219     2.69320482     3.71186394
+
+4 A2      1.15597867     2.01954104     3.04469455
+
+    E(LUMO) :     0.13182203 au (symmetry 2)
+  - E(HOMO) :    -0.43849726 au (symmetry 3)
+  ------------------------------------------
+    gap     :     0.57031929 au
+
+ --- Writing SIRIFC interface file
+
+ CPU and wall time for SCF :       0.013       0.013
+
+
+                       .-----------------------------------.
+                       | --- Final results from SIRIUS --- |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A1  in C2v )
+@    Total charge of molecule:    0
+
+@    Final HF energy:            -113.874673578114                 
+@    Nuclear repulsion:            31.130992984790
+@    Electronic energy:          -145.005666562904
+
+@    Final gradient norm:           0.000000617388
+
+ 
+     Date and time (Linux)  : Mon Mar 13 12:41:34 2017
+     Host name              : TESD11                                  
+
+File label for MO orbitals:  13Mar17   FOCKDIIS
+
+ (Only coefficients > 0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 O1  :1s     1.0007  -0.0001  -0.0103  -0.0011  -0.0001  -0.0008  -0.0740
+   2 O1  :1s     0.0031   0.0009   0.8060  -0.3777  -0.2902   0.0033   0.1070
+   3 O1  :1s    -0.0044  -0.0019  -0.0726  -0.0224  -0.1190   0.0170   1.6272
+   4 O1  :2pz    0.0026   0.0006   0.1924   0.2099   0.7283  -0.0837   0.1970
+   5 O1  :2pz   -0.0027  -0.0013  -0.0529  -0.0055  -0.0359  -0.0737   0.5343
+   6 O1  :3d0    0.0002   0.0001   0.0162   0.0084   0.0259   0.0003   0.0292
+   8 C1  :1s     0.0002   1.0012  -0.0155  -0.0078   0.0120  -0.0604   0.0411
+   9 C1  :1s     0.0004   0.0070   0.4207   0.6906   0.1335   0.2145  -0.0184
+  10 C1  :1s     0.0020  -0.0056  -0.1646  -0.1689  -0.1313   1.8552  -1.2088
+  11 C1  :2pz    0.0001  -0.0006  -0.2710   0.2543  -0.5723   0.2734   0.0684
+  12 C1  :2pz   -0.0014  -0.0010   0.1115  -0.0382   0.2192   0.4378   1.6992
+  13 C1  :3d0   -0.0007   0.0007   0.0401  -0.0078   0.0286   0.0055  -0.0236
+  14 C1  :3d2+  -0.0003  -0.0007   0.0094  -0.0066   0.0110  -0.0215   0.0030
+  15 H1  :1s    -0.0006  -0.0006   0.0730   0.4079  -0.2073  -0.0646  -0.0400
+  16 H1  :1s     0.0003   0.0016  -0.0375  -0.1747   0.0486  -1.3571  -0.1061
+  17 H1  :2py   -0.0000   0.0004  -0.0074  -0.0260   0.0123   0.0157  -0.0133
+  18 H1  :2pz    0.0003   0.0003  -0.0097  -0.0114  -0.0046   0.0114   0.0156
+
+    Orbital         8        9       10       11       12       13       14
+   1 O1  :1s     0.0231  -0.0350  -0.0237   0.0260  -0.0795   0.2967   0.6391
+   2 O1  :1s     0.2024  -0.3580  -0.0772   0.3775  -0.3308   1.4332   2.7103
+   3 O1  :1s    -0.0055   0.4517   0.7487   0.6166   0.5372  -1.2436  -5.1414
+   4 O1  :2pz    0.0706  -0.4797  -0.4514  -0.8052   0.1740   0.7913  -0.6837
+   5 O1  :2pz    0.1156  -0.1548   0.6479   1.8881  -0.2015  -0.8790  -0.5359
+   6 O1  :3d0    0.0046   0.0907   0.0625  -0.0209  -0.0227   0.0300   0.1028
+   7 O1  :3d2+  -0.0107   0.0028  -0.0083   0.0027  -0.1025   0.0489  -0.0154
+   8 C1  :1s     0.1419  -0.0211   0.6848  -0.4092  -0.2584   0.0763  -0.0120
+   9 C1  :1s     0.3149   0.0979   3.2463  -1.7101  -1.0008   0.1066   0.0523
+  10 C1  :1s    -1.0534   1.1045  -5.6257   0.9111   1.8187   0.1126   1.9500
+  11 C1  :2pz   -0.0178  -1.4689   0.1984   0.6008   0.0477   0.3445  -0.8424
+  12 C1  :2pz   -0.2932   1.8015  -0.4138   0.2480   0.7760   0.1706  -0.8494
+  13 C1  :3d0   -0.0055  -0.3125  -0.1976  -0.4017   0.0664  -0.2190   0.8865
+  14 C1  :3d2+  -0.2685  -0.0698   0.0923   0.0199  -0.8939   0.4639  -0.0569
+  15 H1  :1s     1.3650  -0.0572  -0.0255  -0.0444  -1.1647   0.0803  -0.1011
+  16 H1  :1s    -0.9150  -0.5699   1.1621  -0.1673   0.3486  -0.1265   0.0408
+  17 H1  :2py    0.1207   0.1314  -0.1476   0.0501  -0.0088   0.2946  -0.0291
+  18 H1  :2pz    0.0136  -0.0092  -0.1539  -0.0683  -0.3049  -0.5052  -0.0670
+
+    Orbital        15
+   1 O1  :1s    -0.2624
+   2 O1  :1s    -1.1735
+   3 O1  :1s     1.0429
+   4 O1  :2pz   -0.5038
+   5 O1  :2pz    0.3533
+   6 O1  :3d0   -0.0360
+   7 O1  :3d2+  -0.1013
+   8 C1  :1s     0.2683
+   9 C1  :1s     1.5132
+  10 C1  :1s     0.2542
+  11 C1  :2pz    0.8486
+  12 C1  :2pz    0.1134
+  13 C1  :3d0    0.7005
+  14 C1  :3d2+  -0.3380
+  15 H1  :1s    -1.1023
+  16 H1  :1s     0.0758
+  17 H1  :2py    0.9867
+  18 H1  :2pz    0.0813
+
+ Molecular orbitals for symmetry species 2  (B1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 O1  :2px    0.7057  -0.5481  -0.0180  -1.4107   0.1439   0.3440  -0.0188
+   2 O1  :2px    0.0179  -0.2628   0.0891   1.8678   0.4570  -0.2691   0.3774
+   3 O1  :3d1+   0.0298   0.0043   0.0389  -0.0283  -0.0913  -0.0732   1.0927
+   4 C1  :2px    0.5020   0.6033   1.5450   0.0953  -0.0555   0.3540  -0.2814
+   5 C1  :2px   -0.0181   0.4149  -1.7953  -0.4259  -0.4182   0.1721  -0.0148
+   6 C1  :3d1+  -0.0540   0.0399  -0.0345   0.1350   0.8656   0.6782   0.6140
+   7 H1  :2px    0.0094   0.0237   0.0483  -0.1013   0.2984  -0.7703  -0.0839
+
+ Molecular orbitals for symmetry species 3  (B2 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 O1  :2py    0.4759   0.8055  -0.1309  -0.4571  -0.0922   1.2012   0.3258
+   2 O1  :2py   -0.0239   0.0549  -0.2283  -0.1531   0.0352  -2.0062  -0.7144
+   3 O1  :3d1-   0.0195   0.0104   0.0092   0.0067   0.0308   0.0518   0.0258
+   4 C1  :2py    0.6035  -0.2893   0.5247  -0.4634   1.2193  -0.3243  -0.1199
+   5 C1  :2py   -0.1524   0.1012   1.1895   2.3835  -2.1440   1.3594   1.4845
+   6 C1  :3d1-  -0.0072  -0.0718   0.0277  -0.0784  -0.3637  -0.4354   0.1582
+   7 H1  :1s     0.4323  -0.4147   0.0880  -1.1736  -0.6150   0.0972  -0.8117
+   8 H1  :1s    -0.1442   0.0395  -1.9596  -0.1354   1.7604  -0.6481  -0.0727
+   9 H1  :2py   -0.0162   0.0049   0.0150   0.0453  -0.1794   0.0284  -0.4986
+  10 H1  :2pz   -0.0106   0.0081   0.0135  -0.0562  -0.1613  -0.0350   0.4841
+
+    Orbital         8        9       10
+   1 O1  :2py   -0.5344   0.2824   0.1100
+   2 O1  :2py    0.3779  -0.3369   0.3648
+   3 O1  :3d1-   0.1945  -0.2118   1.1026
+   4 C1  :2py    0.2676   2.0754   0.4828
+   5 C1  :2py   -0.3510   0.1431  -0.2428
+   6 C1  :3d1-  -0.8338   1.0872   1.2292
+   7 H1  :1s     0.7661  -1.9804  -1.0537
+   8 H1  :1s    -0.5974   0.3202   0.5678
+   9 H1  :2py    0.0681   0.9549   0.4501
+  10 H1  :2pz    0.4946   0.5692  -0.0103
+
+ Molecular orbitals for symmetry species 4  (A2 )
+ ------------------------------------------------
+
+    Orbital         1        2        3
+   1 O1  :3d2-   0.0397  -0.1721   0.9922
+   2 C1  :3d2-   0.6515  -0.9510  -0.3428
+   3 H1  :2px    0.3399   0.7596   0.1750
+
+  Total CPU  time used in SIRIUS :   0.02 seconds
+  Total wall time used in SIRIUS :   0.02 seconds
+
+ 
+     Date and time (Linux)  : Mon Mar 13 12:41:34 2017
+     Host name              : TESD11                                  
+
+ NOTE:    1 warnings have been issued.
+ Check output, result, and error files for "WARNING".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *----------                                             >---------*
+ *---------- OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >---------*
+ *----------                                             >---------*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        87
+          Number of t2 amplitudes                 :      8098
+          Total number of amplitudes in ccsd      :      8185
+
+ Iter.  1: Coupled cluster MP2   energy :    -114.1969720728065312
+
+
+
+
+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                  -113.8746735781
+
+            Total MP2   energy:                  -114.1969720728
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                  -113.8746735781                
+            Total MP2   energy:                  -114.1969720728                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+ CPU and wall time for CC :       0.013       0.012
+
+ 
+     Date and time (Linux)  : Mon Mar 13 12:41:34 2017
+     Host name              : TESD11                                  
+
+
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+
+
+        *****************************************************************
+        ******** Output from **PROPE input processing for ABACUS ********
+        *****************************************************************
+
+
+
+      SOPPA : Second Order Polarization Propagator Approximation
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+ Default print level:        0
+
+      Nuclear spin-spin coupling constants
+      No mass-velocity energy correction calculated
+      No Darwin energy correction calculated
+      Natural orbital connection is used
+      for perturbation dependent basis sets.
+
+
+ Changes of defaults for SPIN-S:
+ -------------------------------
+
+ Spin-spin couplings printed for atoms with abundance greater than :   0.040 %
+
+
+ Changes of defaults in SOPPA:
+ -----------------------------
+
+ AO integral driven SOPPA :
+    (Ref.: K. L. Bak, H. Koch, J. Oddershede, O. Christiansen and S. P. A. Sauer
+     J. Chem. Phys. 112, 4173-4185 (2000))
+
+ Center of mass dipole origin  :    0.000000    0.000000    1.168266
+
+ Center of mass gauge origin   :    0.000000    0.000000    1.168266
+
+
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
+
+
+ 
+     Date and time (Linux)  : Mon Mar 13 12:41:34 2017
+     Host name              : TESD11                                  
+
+
+     #######################################################################
+     ################## Solving Linear Response Equations ##################
+     #######################################################################
+
+
+ Maximum number of trial vectors for each property is  3
+
+
+
+                        **********************************
+                        *** SOPPA response calculation ***
+                        **********************************
+
+ ----------------------------------------------------------------
+ ----- Symmetry of excitation/property operator(s)    1  ( A1 )
+ ----------------------------------------------------------------
+
+ Number of excitations of this symmetry            0
+ Number of response properties of this symmetry   13
+
+ -----------------------------------
+ SOPPA:
+ Perturbation symmetry     :       1
+ p-h + h-p variables       :     174
+ 2p-2h + 2h-2p variables   :   16196
+ Total number of variables :   16370
+ -----------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 002 y
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000      90.60520039     7.3068D-01       no
+      2    0.000000     101.15457532     2.9195D-01       no
+      3    0.000000     105.99449003     1.1122D-01       no
+      4    0.000000     106.91763816     7.1781D-02       no
+      5    0.000000     107.14336466     2.0353D-02       no
+      6    0.000000     107.17070331     1.1761D-02       no
+      7    0.000000     107.17538493     3.5163D-03       no
+      8    0.000000     107.17591451     1.4293D-03       no
+      9    0.000000     107.17595890     2.5954D-04       no
+     10    0.000000     107.17596301     1.4645D-04       no
+     11    0.000000     107.17596344     2.2939D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 003 y
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000      11.88540043     7.0379D-01       no
+      2    0.000000      13.19048900     2.0879D-01       no
+      3    0.000000      13.54613459     1.1450D-01       no
+      4    0.000000      13.66252629     6.3942D-02       no
+      5    0.000000      13.69054101     2.6758D-02       no
+      6    0.000000      13.69629371     1.1868D-02       no
+      7    0.000000      13.69707035     3.9685D-03       no
+      8    0.000000      13.69717933     1.3586D-03       no
+      9    0.000000      13.69718805     4.0866D-04       no
+     10    0.000000      13.69718906     1.3881D-04       no
+     11    0.000000      13.69718912     3.1788D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 004 y
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       1.20003989     5.7737D-01       no
+      2    0.000000       1.31105691     1.7663D-01       no
+      3    0.000000       1.32991510     8.8637D-02       no
+      4    0.000000       1.33619931     5.0152D-02       no
+      5    0.000000       1.33785981     2.4641D-02       no
+      6    0.000000       1.33839090     1.1550D-02       no
+      7    0.000000       1.33845040     3.6036D-03       no
+      8    0.000000       1.33845860     1.2325D-03       no
+      9    0.000000       1.33845952     4.6644D-04       no
+     10    0.000000       1.33845961     9.9608D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 005 y
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.91518672     5.5359D-01       no
+      2    0.000000       1.02601512     1.9958D-01       no
+      3    0.000000       1.04817802     8.9139D-02       no
+      4    0.000000       1.05555196     4.7426D-02       no
+      5    0.000000       1.05712649     2.2988D-02       no
+      6    0.000000       1.05744751     7.4152D-03       no
+      7    0.000000       1.05748417     3.2623D-03       no
+      8    0.000000       1.05748957     8.6490D-04       no
+      9    0.000000       1.05749006     3.0894D-04       no
+     10    0.000000       1.05749011     7.8871D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 006 x
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000     102.37031977     8.0955D-01       no
+      2    0.000000     132.68256009     3.4095D-01       no
+      3    0.000000     144.91394780     8.2798D-02       no
+      4    0.000000     146.03341446     4.3183D-02       no
+      5    0.000000     146.24171538     1.2526D-02       no
+      6    0.000000     146.25424680     3.7245D-03       no
+      7    0.000000     146.25614462     1.5707D-03       no
+      8    0.000000     146.25638265     5.9741D-04       no
+      9    0.000000     146.25641373     1.6102D-04       no
+     10    0.000000     146.25641665     6.5696D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 007 x
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000      11.93728149     8.0131D-01       no
+      2    0.000000      15.31534007     2.8780D-01       no
+      3    0.000000      16.77192954     1.1244D-01       no
+      4    0.000000      16.96874484     4.5134D-02       no
+      5    0.000000      17.00157742     1.8079D-02       no
+      6    0.000000      17.00664531     6.3126D-03       no
+      7    0.000000      17.00714219     1.8694D-03       no
+      8    0.000000      17.00720557     8.1515D-04       no
+      9    0.000000      17.00721324     2.2154D-04       no
+     10    0.000000      17.00721397     7.5101D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 008 x
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.48721969     5.5851D-01       no
+      2    0.000000       0.53877632     1.7321D-01       no
+      3    0.000000       0.54441578     4.1154D-02       no
+      4    0.000000       0.54488734     1.8266D-02       no
+      5    0.000000       0.54496640     6.2526D-03       no
+      6    0.000000       0.54497865     3.2728D-03       no
+      7    0.000000       0.54498214     1.8483D-03       no
+      8    0.000000       0.54498371     1.0524D-03       no
+      9    0.000000       0.54498399     4.0446D-04       no
+     10    0.000000       0.54498403     9.9292D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 009 z
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000      83.18838246     8.0648D-01       no
+      2    0.000000      93.30185820     2.7671D-01       no
+      3    0.000000      97.60839927     1.2916D-01       no
+      4    0.000000      98.63495261     7.4337D-02       no
+      5    0.000000      98.85560555     2.1937D-02       no
+      6    0.000000      98.87349871     8.1345D-03       no
+      7    0.000000      98.87599621     2.6579D-03       no
+      8    0.000000      98.87633988     1.3570D-03       no
+      9    0.000000      98.87638411     2.9632D-04       no
+     10    0.000000      98.87638842     1.4127D-04       no
+     11    0.000000      98.87638876     2.0130D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 010 z
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000      11.50032145     7.8473D-01       no
+      2    0.000000      12.99222088     2.5517D-01       no
+      3    0.000000      13.60269872     1.5527D-01       no
+      4    0.000000      13.79051228     7.3051D-02       no
+      5    0.000000      13.82345806     2.0725D-02       no
+      6    0.000000      13.82653343     7.0156D-03       no
+      7    0.000000      13.82679097     1.8293D-03       no
+      8    0.000000      13.82681604     6.8943D-04       no
+      9    0.000000      13.82681889     2.4008D-04       no
+     10    0.000000      13.82681933     9.6833D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 012 z
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.56477787     6.2450D-01       no
+      2    0.000000       0.61336817     1.9032D-01       no
+      3    0.000000       0.62555235     1.2940D-01       no
+      4    0.000000       0.63151846     5.7929D-02       no
+      5    0.000000       0.63216572     1.3512D-02       no
+      6    0.000000       0.63222988     6.1008D-03       no
+      7    0.000000       0.63223767     1.7128D-03       no
+      8    0.000000       0.63223847     4.4640D-04       no
+      9    0.000000       0.63223851     1.3350D-04       no
+     10    0.000000       0.63223851     4.2941D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property FC O1 01
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000   11386.65424010     1.4752D+00       no
+      2    0.000000   11986.41236610     3.6400D-01       no
+      3    0.000000   12035.07786887     8.4479D-02       no
+      4    0.000000   12046.95542365     7.9342D-02       no
+      5    0.000000   12051.84800130     4.4881D-02       no
+      6    0.000000   12053.01411749     1.1004D-02       no
+      7    0.000000   12053.10684094     5.3742D-03       no
+      8    0.000000   12053.12166192     1.1299D-03       no
+      9    0.000000   12053.12352672     7.9870D-04       no
+     10    0.000000   12053.12387136     1.6103D-04       no
+     11    0.000000   12053.12388891     5.3360D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property FC C1 02
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000    3942.50878886     1.0855D+00       no
+      2    0.000000    4113.10902731     3.8360D-01       no
+      3    0.000000    4136.86944095     8.6390D-02       no
+      4    0.000000    4142.58858848     8.7822D-02       no
+      5    0.000000    4144.62955033     3.1568D-02       no
+      6    0.000000    4145.33042452     2.2187D-02       no
+      7    0.000000    4145.42954953     5.6355D-03       no
+      8    0.000000    4145.44416496     2.4057D-03       no
+      9    0.000000    4145.44561188     6.9797D-04       no
+     10    0.000000    4145.44574977     2.0283D-04       no
+     11    0.000000    4145.44576079     6.5660D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property FC H1 03
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000     105.24618892     5.4028D-01       no
+      2    0.000000     113.48158290     1.6280D-01       no
+      3    0.000000     114.60144659     6.2445D-02       no
+      4    0.000000     114.81995979     3.3039D-02       no
+      5    0.000000     114.87534027     1.9097D-02       no
+      6    0.000000     114.90053897     8.3164D-03       no
+      7    0.000000     114.90406984     4.4952D-03       no
+      8    0.000000     114.90495214     1.3966D-03       no
+      9    0.000000     114.90502550     5.0792D-04       no
+     10    0.000000     114.90503420     1.3435D-04       no
+     11    0.000000     114.90503481     3.7655D-05      yes
+ -------------------------------------------------------------
+ ----------------------------------------------------------------
+ ----- Symmetry of excitation/property operator(s)    2  ( B1 )
+ ----------------------------------------------------------------
+
+ Number of excitations of this symmetry            0
+ Number of response properties of this symmetry    4
+
+ -----------------------------------
+ SOPPA:
+ Perturbation symmetry     :       2
+ p-h + h-p variables       :      98
+ 2p-2h + 2h-2p variables   :   13356
+ Total number of variables :   13454
+ -----------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 009 x
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000      67.70740601     8.4301D-01       no
+      2    0.000000      79.76817020     2.6419D-01       no
+      3    0.000000      82.33079463     7.1655D-02       no
+      4    0.000000      82.47451579     2.1638D-02       no
+      5    0.000000      82.49786132     8.3273D-03       no
+      6    0.000000      82.49966259     2.6304D-03       no
+      7    0.000000      82.49977450     4.5124D-04       no
+      8    0.000000      82.49977907     1.2155D-04       no
+      9    0.000000      82.49977936     2.3678D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 010 x
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       8.36894729     8.0048D-01       no
+      2    0.000000       9.66593675     2.1091D-01       no
+      3    0.000000       9.93137808     9.4337D-02       no
+      4    0.000000       9.96471098     3.2272D-02       no
+      5    0.000000       9.97045737     1.3297D-02       no
+      6    0.000000       9.97110990     3.6044D-03       no
+      7    0.000000       9.97115408     9.5750D-04       no
+      8    0.000000       9.97115762     2.8284D-04       no
+      9    0.000000       9.97115785     7.1202D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 011 x
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.61950348     5.7405D-01       no
+      2    0.000000       0.68339566     1.6068D-01       no
+      3    0.000000       0.68930792     3.6804D-02       no
+      4    0.000000       0.68964168     1.2154D-02       no
+      5    0.000000       0.68970272     6.1403D-03       no
+      6    0.000000       0.68971834     2.1642D-03       no
+      7    0.000000       0.68971938     5.5694D-04       no
+      8    0.000000       0.68971948     1.4683D-04       no
+      9    0.000000       0.68971948     4.2532D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 012 x
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.23475078     5.8012D-01       no
+      2    0.000000       0.25433598     1.9408D-01       no
+      3    0.000000       0.25716779     4.6523D-02       no
+      4    0.000000       0.25733589     1.5809D-02       no
+      5    0.000000       0.25736690     7.6523D-03       no
+      6    0.000000       0.25737369     3.2187D-03       no
+      7    0.000000       0.25737442     8.2526D-04       no
+      8    0.000000       0.25737450     2.5311D-04       no
+      9    0.000000       0.25737451     8.5504D-05      yes
+ -------------------------------------------------------------
+ ----------------------------------------------------------------
+ ----- Symmetry of excitation/property operator(s)    3  ( B2 )
+ ----------------------------------------------------------------
+
+ Number of excitations of this symmetry            0
+ Number of response properties of this symmetry    7
+
+ -----------------------------------
+ SOPPA:
+ Perturbation symmetry     :       3
+ p-h + h-p variables       :     138
+ 2p-2h + 2h-2p variables   :   15436
+ Total number of variables :   15574
+ -----------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 001 x
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.28911645     5.7092D-01       no
+      2    0.000000       0.31611875     2.0916D-01       no
+      3    0.000000       0.32101581     6.4890D-02       no
+      4    0.000000       0.32153324     2.4313D-02       no
+      5    0.000000       0.32161823     1.0008D-02       no
+      6    0.000000       0.32162883     3.2260D-03       no
+      7    0.000000       0.32163007     8.5414D-04       no
+      8    0.000000       0.32163015     2.6743D-04       no
+      9    0.000000       0.32163016     6.4688D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 005 z
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.47318623     5.7850D-01       no
+      2    0.000000       0.50292101     1.5751D-01       no
+      3    0.000000       0.50555144     4.3305D-02       no
+      4    0.000000       0.50589734     2.4121D-02       no
+      5    0.000000       0.50598991     8.1153D-03       no
+      6    0.000000       0.50599839     2.7751D-03       no
+      7    0.000000       0.50599946     8.3436D-04       no
+      8    0.000000       0.50599957     3.5114D-04       no
+      9    0.000000       0.50599959     1.0115D-04       no
+     10    0.000000       0.50599959     3.0253D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 009 y
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000      65.77656902     7.6499D-01       no
+      2    0.000000      70.48954214     1.6011D-01       no
+      3    0.000000      71.14634246     7.0001D-02       no
+      4    0.000000      71.21407568     2.2007D-02       no
+      5    0.000000      71.22665375     1.0005D-02       no
+      6    0.000000      71.22783219     3.0743D-03       no
+      7    0.000000      71.22811266     1.8793D-03       no
+      8    0.000000      71.22814582     5.1202D-04       no
+      9    0.000000      71.22815037     2.2449D-04       no
+     10    0.000000      71.22815078     5.1797D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 010 y
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       8.75479650     7.6281D-01       no
+      2    0.000000       9.58722760     1.9182D-01       no
+      3    0.000000       9.69958620     6.9470D-02       no
+      4    0.000000       9.71541648     3.3532D-02       no
+      5    0.000000       9.71856362     1.1014D-02       no
+      6    0.000000       9.71898033     4.7696D-03       no
+      7    0.000000       9.71902444     1.1373D-03       no
+      8    0.000000       9.71902753     3.8343D-04       no
+      9    0.000000       9.71902789     1.2755D-04       no
+     10    0.000000       9.71902793     4.0024D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 011 y
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.68604154     5.7886D-01       no
+      2    0.000000       0.75187869     1.9358D-01       no
+      3    0.000000       0.76113093     6.5721D-02       no
+      4    0.000000       0.76253136     2.9027D-02       no
+      5    0.000000       0.76279180     9.1764D-03       no
+      6    0.000000       0.76281443     3.1099D-03       no
+      7    0.000000       0.76281723     9.7092D-04       no
+      8    0.000000       0.76281754     3.3942D-04       no
+      9    0.000000       0.76281756     6.6229D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 012 y
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.56516437     5.8376D-01       no
+      2    0.000000       0.61928346     1.8382D-01       no
+      3    0.000000       0.62600773     5.7122D-02       no
+      4    0.000000       0.62697823     2.7787D-02       no
+      5    0.000000       0.62713060     8.2813D-03       no
+      6    0.000000       0.62715092     3.2468D-03       no
+      7    0.000000       0.62715289     9.2330D-04       no
+      8    0.000000       0.62715312     3.2511D-04       no
+      9    0.000000       0.62715314     9.5243D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property FC H1 04
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000     115.01480477     5.4532D-01       no
+      2    0.000000     125.40014230     1.6083D-01       no
+      3    0.000000     126.82196003     6.5859D-02       no
+      4    0.000000     127.07246312     2.7679D-02       no
+      5    0.000000     127.10950913     8.8179D-03       no
+      6    0.000000     127.11418755     2.8958D-03       no
+      7    0.000000     127.11453606     7.3824D-04       no
+      8    0.000000     127.11456444     2.7490D-04       no
+      9    0.000000     127.11456734     6.5543D-05      yes
+ -------------------------------------------------------------
+ ----------------------------------------------------------------
+ ----- Symmetry of excitation/property operator(s)    4  ( A2 )
+ ----------------------------------------------------------------
+
+ Number of excitations of this symmetry            0
+ Number of response properties of this symmetry    4
+
+ -----------------------------------
+ SOPPA:
+ Perturbation symmetry     :       4
+ p-h + h-p variables       :      70
+ 2p-2h + 2h-2p variables   :   12852
+ Total number of variables :   12922
+ -----------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 002 x
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000     100.70505845     8.1124D-01       no
+      2    0.000000     146.91269022     3.6375D-01       no
+      3    0.000000     170.18665623     9.4594D-02       no
+      4    0.000000     171.85469727     2.6974D-02       no
+      5    0.000000     172.18696301     1.1510D-02       no
+      6    0.000000     172.21422736     4.1943D-03       no
+      7    0.000000     172.21627405     7.8367D-04       no
+      8    0.000000     172.21646373     4.1695D-04       no
+      9    0.000000     172.21647819     4.7031D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 003 x
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       9.24901457     7.1094D-01       no
+      2    0.000000      10.48831915     1.6493D-01       no
+      3    0.000000      10.71300125     8.0292D-02       no
+      4    0.000000      10.77183725     6.1190D-02       no
+      5    0.000000      10.81098993     3.6998D-02       no
+      6    0.000000      10.81927608     1.2477D-02       no
+      7    0.000000      10.82004421     3.5607D-03       no
+      8    0.000000      10.82010966     8.6729D-04       no
+      9    0.000000      10.82011148     1.2961D-04       no
+     10    0.000000      10.82011154     3.0865D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 004 x
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.37039138     6.0882D-01       no
+      2    0.000000       0.43316809     2.5435D-01       no
+      3    0.000000       0.45382116     1.1691D-01       no
+      4    0.000000       0.46278811     8.8079D-02       no
+      5    0.000000       0.46622573     2.9678D-02       no
+      6    0.000000       0.46651639     5.7312D-03       no
+      7    0.000000       0.46652572     1.1066D-03       no
+      8    0.000000       0.46652628     3.3171D-04       no
+      9    0.000000       0.46652632     9.7069D-05      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property SD 005 x
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.17696127     6.6652D-01       no
+      2    0.000000       0.20512784     2.3938D-01       no
+      3    0.000000       0.21136328     8.8358D-02       no
+      4    0.000000       0.21389910     8.8091D-02       no
+      5    0.000000       0.21516543     3.1817D-02       no
+      6    0.000000       0.21529477     7.0360D-03       no
+      7    0.000000       0.21530126     2.1856D-03       no
+      8    0.000000       0.21530200     5.3252D-04       no
+      9    0.000000       0.21530203     1.2753D-04       no
+     10    0.000000       0.21530203     1.7159D-05      yes
+ -------------------------------------------------------------
+
+ |=====================================================| 
+ |     Memory statistics for AO-SOPPA subroutines      |
+ |=====================================================| 
+ |   Routine                  in Words         in MB   |
+ |-----------------------------------------------------| 
+ |  START                            0           0.0   |
+ |  SO_RSPLRS.1                   8532           0.1   |
+ |  SO_PRPINT                    22033           0.2   |
+ |  SO_ONEP                      22157           0.2   |
+ |  SO_TRIAL3.2                  42204           0.3   |
+ |  SO_ORTH_TRN                  98357           0.8   |
+ |  SO_OPTVEC.1                 119985           0.9   |
+ |=====================================================| 
+
+ |=====================================================| 
+ |           Timings for AO-SOPPA subroutines          |
+ |=====================================================| 
+ |   Routine            cpu time   of total        sum |
+ |-----------------------------------------------------| 
+ |   SO_OPTVEC           0:00:12     43.7 %     43.7 % |
+ |   SO_RES_TCB          0:00:06     23.4 %     67.2 % |
+ |   SO_SIGAI            0:00:03     12.6 %     79.8 % |
+ |   SO_RES_CB           0:00:02      8.1 %     87.9 % |
+ |   SO_RES_A            0:00:01      5.5 %     93.4 % |
+ |   CCTRBT              0:00:00      1.2 %     94.6 % |
+ |   SO_T2M1             0:00:00      1.1 %     95.7 % |
+ |   SO_TRIAL2           0:00:00      1.0 %     96.7 % |
+ |   SO_INCRED           0:00:00      0.8 %     97.5 % |
+ |   CCRDAO              0:00:00      0.7 %     98.2 % |
+ |   SO_ORTH_TRN         0:00:00      0.6 %     98.8 % |
+ |   CC_AOFOCK           0:00:00      0.4 %     99.1 % |
+ |   SO_ERES             0:00:00      0.3 %     99.4 % |
+ |   SO_GETMO            0:00:00      0.1 %     99.5 % |
+ |   SO_TRIAL1           0:00:00      0.0 %     99.5 % |
+ |   SO_RES_CD           0:00:00      0.0 %     99.6 % |
+ |   SO_DENSAI           0:00:00      0.0 %     99.6 % |
+ |   SO_REDEV            0:00:00      0.0 %     99.6 % |
+ |   SO_RES_OVL          0:00:00      0.0 %     99.7 % |
+ |   SO_DIAG             0:00:00      0.0 %     99.7 % |
+ |   SO_AODENS           0:00:00      0.0 %     99.7 % |
+ |   CC_FCKMO            0:00:00      0.0 %     99.7 % |
+ |   SO_RES_SYM          0:00:00      0.0 %     99.7 % |
+ |   SO_RES_FCK          0:00:00      0.0 %     99.7 % |
+ |   SO_BCKTR            0:00:00      0.0 %     99.7 % |
+ |   SO_DENS             0:00:00      0.0 %     99.7 % |
+ |   SO_ONEFOCK          0:00:00      0.0 %     99.7 % |
+ |   SO_ROPT             0:00:00      0.0 %     99.7 % |
+ |   SO_TWOFOCK          0:00:00      0.0 %     99.7 % |
+ |   SO_T2MP             0:00:00      0.0 %     99.7 % |
+ |   SO_SRES             0:00:00      0.0 %     99.7 % |
+ |   SO_MOENERGY         0:00:00      0.0 %     99.7 % |
+ |   SO_INIT             0:00:00      0.0 %     99.7 % |
+ |-----------------------------------------------------| 
+ |  Total CPU time       0:00:27                       |
+ |=====================================================| 
+
+ |-----------------------------------------------------| 
+ |   SO_READ             0: 0: 0      0.9 %            |
+ |   SO_WRITE            0: 0: 0      0.6 %            |
+ |   SO_OPEN             0: 0: 0      0.2 %            |
+ |   SO_CLOSE            0: 0: 0      0.1 %            |
+ |-----------------------------------------------------| 
+
+ |=====================================================| 
+ |        Wall timings for AO-SOPPA subroutines        |
+ |=====================================================| 
+ |   Routine           wall time   of total       sum  |
+ |-----------------------------------------------------| 
+ |   SO_ERES             0:00:14     53.8 %     53.8 % |
+ |   SO_SRES             0:00:00      0.0 %     53.8 % |
+ |   SO_REDEV            0:00:12     44.6 %     98.4 % |
+ |   SO_TRIAL2           0:00:00      1.3 %     99.7 % |
+ |-----------------------------------------------------| 
+ |   Total wall time     0: 0:27                       |
+ |=====================================================| 
+
+
+     #######################################################################
+     ################## Solving Linear Response Equations ##################
+     #######################################################################
+
+
+ Maximum number of trial vectors for each property is  3
+
+
+
+                        **********************************
+                        *** SOPPA response calculation ***
+                        **********************************
+
+ ----------------------------------------------------------------
+ ----- Symmetry of excitation/property operator(s)    1  ( A1 )
+ ----------------------------------------------------------------
+
+ Number of excitations of this symmetry            0
+ Number of response properties of this symmetry    1
+
+ -----------------------------------
+ SOPPA:
+ Perturbation symmetry     :       1
+ p-h + h-p variables       :     174
+ 2p-2h + 2h-2p variables   :   16196
+ Total number of variables :   16370
+ -----------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property PSO 001 
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.86322455     7.3721D-01       no
+      2    0.000000       0.90464901     1.5643D-01       no
+      3    0.000000       0.91096259     9.0455D-02       no
+      4    0.000000       0.91204168     2.8369D-02       no
+      5    0.000000       0.91218445     1.0267D-02       no
+      6    0.000000       0.91219906     3.3300D-03       no
+      7    0.000000       0.91220104     1.4363D-03      yes
+ -------------------------------------------------------------
+ ----------------------------------------------------------------
+ ----- Symmetry of excitation/property operator(s)    2  ( B1 )
+ ----------------------------------------------------------------
+
+ Number of excitations of this symmetry            0
+ Number of response properties of this symmetry    4
+
+ -----------------------------------
+ SOPPA:
+ Perturbation symmetry     :       2
+ p-h + h-p variables       :      98
+ 2p-2h + 2h-2p variables   :   13356
+ Total number of variables :   13454
+ -----------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property PSO 002 
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000     162.08950278     7.6390D-01       no
+      2    0.000000     183.75705975     2.2768D-01       no
+      3    0.000000     188.21800577     6.1779D-02       no
+      4    0.000000     188.46894039     1.7731D-02       no
+      5    0.000000     188.50221784     3.9125D-03       no
+      6    0.000000     188.50331277     1.0631D-03      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property PSO 003 
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000      20.99199682     7.5483D-01       no
+      2    0.000000      23.82914173     1.8318D-01       no
+      3    0.000000      24.35558052     7.8594D-02       no
+      4    0.000000      24.41033710     2.4185D-02       no
+      5    0.000000      24.41718583     6.6061D-03       no
+      6    0.000000      24.41760363     1.8065D-03      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property PSO 004 
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.39063880     7.7473D-01       no
+      2    0.000000       0.41685947     2.0880D-01       no
+      3    0.000000       0.42323338     1.1618D-01       no
+      4    0.000000       0.42398802     2.6471D-02       no
+      5    0.000000       0.42404972     8.7621D-03       no
+      6    0.000000       0.42405339     1.6766D-03      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property PSO 005 
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.73672349     7.0550D-01       no
+      2    0.000000       0.77786083     1.6213D-01       no
+      3    0.000000       0.78387364     7.1059D-02       no
+      4    0.000000       0.78452736     2.2391D-02       no
+      5    0.000000       0.78465469     1.2328D-02       no
+      6    0.000000       0.78466943     2.1585D-03       no
+      7    0.000000       0.78467005     5.8484D-04      yes
+ -------------------------------------------------------------
+ ----------------------------------------------------------------
+ ----- Symmetry of excitation/property operator(s)    3  ( B2 )
+ ----------------------------------------------------------------
+
+ Number of excitations of this symmetry            0
+ Number of response properties of this symmetry    3
+
+ -----------------------------------
+ SOPPA:
+ Perturbation symmetry     :       3
+ p-h + h-p variables       :     138
+ 2p-2h + 2h-2p variables   :   15436
+ Total number of variables :   15574
+ -----------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property PSO 006 
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000     161.56930896     7.1066D-01       no
+      2    0.000000     171.91477705     1.4621D-01       no
+      3    0.000000     173.17909416     5.3955D-02       no
+      4    0.000000     173.28200294     1.5219D-02       no
+      5    0.000000     173.29848063     6.0869D-03       no
+      6    0.000000     173.29977165     1.8129D-03      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property PSO 007 
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000      22.47679381     7.1703D-01       no
+      2    0.000000      24.01352305     1.1952D-01       no
+      3    0.000000      24.11636017     4.4764D-02       no
+      4    0.000000      24.12593470     1.3219D-02       no
+      5    0.000000      24.12721014     3.9696D-03       no
+      6    0.000000      24.12733918     2.1289D-03       no
+      7    0.000000      24.12736547     5.3372D-04      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property PSO 008 
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.50321957     7.0351D-01       no
+      2    0.000000       0.52375215     1.3503D-01       no
+      3    0.000000       0.52578067     5.9996D-02       no
+      4    0.000000       0.52600067     1.5832D-02       no
+      5    0.000000       0.52603238     7.9871D-03       no
+      6    0.000000       0.52603608     2.1775D-03       no
+      7    0.000000       0.52603650     9.2372D-04      yes
+ -------------------------------------------------------------
+ ----------------------------------------------------------------
+ ----- Symmetry of excitation/property operator(s)    4  ( A2 )
+ ----------------------------------------------------------------
+
+ Number of excitations of this symmetry            0
+ Number of response properties of this symmetry    4
+
+ -----------------------------------
+ SOPPA:
+ Perturbation symmetry     :       4
+ p-h + h-p variables       :      70
+ 2p-2h + 2h-2p variables   :   12852
+ Total number of variables :   12922
+ -----------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property PSO 009 
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000     238.86071771     7.6402D-01       no
+      2    0.000000     327.92598394     3.5039D-01       no
+      3    0.000000     369.34041027     8.5042D-02       no
+      4    0.000000     372.00651645     2.1317D-02       no
+      5    0.000000     372.36641938     5.1840D-03       no
+      6    0.000000     372.38741836     2.2713D-03       no
+      7    0.000000     372.38926564     4.1015D-04      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property PSO 010 
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000      23.01795305     6.7877D-01       no
+      2    0.000000      25.85700635     1.4766D-01       no
+      3    0.000000      26.38114406     7.5900D-02       no
+      4    0.000000      26.52288408     5.6989D-02       no
+      5    0.000000      26.59806654     2.3401D-02       no
+      6    0.000000      26.60735495     7.6437D-03       no
+      7    0.000000      26.60820716     2.4391D-03       no
+      8    0.000000      26.60829585     4.8933D-04      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property PSO 011 
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.19700676     6.7251D-01       no
+      2    0.000000       0.21323192     1.8257D-01       no
+      3    0.000000       0.21582270     4.9141D-02       no
+      4    0.000000       0.21599392     2.1111D-02       no
+      5    0.000000       0.21605168     1.1722D-02       no
+      6    0.000000       0.21607211     9.0319D-03       no
+      7    0.000000       0.21607806     2.5097D-03       no
+      8    0.000000       0.21607855     6.2590D-04      yes
+ -------------------------------------------------------------
+
+ -------------------------------------------------------------
+                 SOPPA iterations, Property PSO 012 
+ -------------------------------------------------------------
+ Iteration Frequency    Property (au)   Residual    Converged
+ -------------------------------------------------------------
+      1    0.000000       0.25527966     5.9682D-01       no
+      2    0.000000       0.26603243     1.4626D-01       no
+      3    0.000000       0.27054493     1.3584D-01       no
+      4    0.000000       0.27198692     5.6184D-02       no
+      5    0.000000       0.27230618     1.8126D-02       no
+      6    0.000000       0.27232687     4.9060D-03       no
+      7    0.000000       0.27232902     1.3215D-03      yes
+ -------------------------------------------------------------
+
+ |=====================================================| 
+ |     Memory statistics for AO-SOPPA subroutines      |
+ |=====================================================| 
+ |   Routine                  in Words         in MB   |
+ |-----------------------------------------------------| 
+ |  START                            0           0.0   |
+ |  SO_RSPLRS.1                   8532           0.1   |
+ |  SO_PRPINT                    22033           0.2   |
+ |  SO_TRIAL3.2                  33120           0.3   |
+ |  SO_ORTH_TRN                  74133           0.6   |
+ |  SO_OPTVEC.1                  89705           0.7   |
+ |=====================================================| 
+
+ |=====================================================| 
+ |           Timings for AO-SOPPA subroutines          |
+ |=====================================================| 
+ |   Routine            cpu time   of total        sum |
+ |-----------------------------------------------------| 
+ |   SO_OPTVEC           0:00:04     58.2 %     58.2 % |
+ |   SO_SIGAI            0:00:01     13.6 %     71.8 % |
+ |   SO_RES_TCB          0:00:01      8.1 %     79.9 % |
+ |   SO_RES_A            0:00:00      6.0 %     86.0 % |
+ |   SO_RES_CB           0:00:00      5.2 %     91.2 % |
+ |   SO_T2M1             0:00:00      2.0 %     93.2 % |
+ |   CCTRBT              0:00:00      1.5 %     94.7 % |
+ |   CCRDAO              0:00:00      1.2 %     95.9 % |
+ |   SO_TRIAL2           0:00:00      0.9 %     96.8 % |
+ |   SO_ORTH_TRN         0:00:00      0.8 %     97.6 % |
+ |   SO_INCRED           0:00:00      0.7 %     98.3 % |
+ |   SO_ERES             0:00:00      0.6 %     98.9 % |
+ |   CC_AOFOCK           0:00:00      0.4 %     99.3 % |
+ |   SO_GETMO            0:00:00      0.1 %     99.4 % |
+ |   SO_TRIAL1           0:00:00      0.1 %     99.5 % |
+ |   SO_RES_CD           0:00:00      0.0 %     99.5 % |
+ |   SO_DIAG             0:00:00      0.0 %     99.6 % |
+ |   SO_RES_OVL          0:00:00      0.0 %     99.6 % |
+ |   SO_AODENS           0:00:00      0.0 %     99.6 % |
+ |   SO_RES_FCK          0:00:00      0.0 %     99.6 % |
+ |   SO_REDEV            0:00:00      0.0 %     99.6 % |
+ |   CC_FCKMO            0:00:00      0.0 %     99.6 % |
+ |   SO_DENSAI           0:00:00      0.0 %     99.6 % |
+ |   SO_RES_SYM          0:00:00      0.0 %     99.6 % |
+ |   SO_BCKTR            0:00:00      0.0 %     99.6 % |
+ |   SO_ONEFOCK          0:00:00      0.0 %     99.6 % |
+ |   SO_ROPT             0:00:00      0.0 %     99.6 % |
+ |   SO_T2MP             0:00:00      0.0 %     99.6 % |
+ |   SO_TWOFOCK          0:00:00      0.0 %     99.6 % |
+ |   SO_MOENERGY         0:00:00      0.0 %     99.6 % |
+ |   SO_SRES             0:00:00      0.0 %     99.6 % |
+ |-----------------------------------------------------| 
+ |  Total CPU time       0:00:06                       |
+ |=====================================================| 
+
+ |-----------------------------------------------------| 
+ |   SO_READ             0: 0: 0      0.7 %            |
+ |   SO_WRITE            0: 0: 0      0.6 %            |
+ |   SO_OPEN             0: 0: 0      0.2 %            |
+ |   SO_CLOSE            0: 0: 0      0.1 %            |
+ |-----------------------------------------------------| 
+
+ |=====================================================| 
+ |        Wall timings for AO-SOPPA subroutines        |
+ |=====================================================| 
+ |   Routine           wall time   of total       sum  |
+ |-----------------------------------------------------| 
+ |   SO_ERES             0:00:02     38.8 %     38.8 % |
+ |   SO_SRES             0:00:00      0.0 %     38.8 % |
+ |   SO_REDEV            0:00:04     59.1 %     98.0 % |
+ |   SO_TRIAL2           0:00:00      1.7 %     99.6 % |
+ |-----------------------------------------------------| 
+ |   Total wall time     0: 0: 6                       |
+ |=====================================================| 
+
+
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Mon Mar 13 12:42:07 2017
+     Host name              : TESD11                                  
+
+
+                             Molecular geometry (au)
+                             -----------------------
+
+ O1         0.0000000000            0.0000000000            0.0196594609
+ C1         0.0000000000            0.0000000000            2.3248507925
+ H1  _1     0.0000000000            1.7597110083            3.3972521023
+ H1  _2     0.0000000000           -1.7597110083            3.3972521023
+
+
+
+
+
+                        Molecular wave function and energy
+                        ----------------------------------
+
+     Spatial symmetry   1 ( A1  )
+     Spin multiplicity  1
+     2 * M_S            0
+     State number       1
+     Total charge       0
+
+     Total energy       -113.8746735781 au (Hartrees)
+                         -3098.68749452 eV
+                           -298977.9094 kJ/mol
+                            -71457.4353 kcal/mol
+
+
+ *******************************************************************************
+ **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
+ *******************************************************************************
+
+ Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
+
+
+
+                       +------------------------------------+
+                       ! ABACUS - Final spin-spin couplings !
+                       +------------------------------------+
+
+
+
+              Indirect spin-spin coupling between C1     and O1    :
+              ======================================================
+
+
+  Mass number atom 1:   13;   Abundance:   1.100 %;   g factor:   1.404824
+  Mass number atom 2:   17;   Abundance:   0.040 %;   g factor:  -0.757516
+
+  Isotropic coupling        :      9.5773 Hz
+  Anisotropic coupling      :     70.1097 Hz
+  Asymmetry                 :     -0.1903   
+  S parameter               :    -70.5314 Hz
+  A parameter               :     -0.0000 Hz
+  Isotropic DSO contribution:     -0.0244 Hz
+  Isotropic PSO contribution:     20.6076 Hz
+  Isotropic SD contribution :     -1.3678 Hz
+  Isotropic FC contribution :     -9.6382 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x   -18.23895      -0.000000      -0.000000    
+                y   -0.000000       56.31703      -0.000000    
+                z   -0.000000      -0.000000      -9.346336    
+
+
+              Indirect spin-spin coupling between H1  _1 and O1    :
+              ======================================================
+
+
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:   17;   Abundance:   0.040 %;   g factor:  -0.757516
+
+  Isotropic coupling        :     -1.2648 Hz
+  Anisotropic coupling      :     -9.2419 Hz
+  Asymmetry                 :      0.2473   
+  S parameter               :     -9.3357 Hz
+  A parameter               :     -2.7988 Hz
+  Isotropic DSO contribution:      0.4683 Hz
+  Isotropic PSO contribution:      3.7515 Hz
+  Isotropic SD contribution :     -0.8497 Hz
+  Isotropic FC contribution :     -4.6349 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    1.053914      -0.000000      -0.000000    
+                y   -0.000000      -6.450767      -5.766177    
+                z   -0.000000     -0.1686325       1.602510    
+
+
+              Indirect spin-spin coupling between H1  _1 and C1    :
+              ======================================================
+
+
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:   13;   Abundance:   1.100 %;   g factor:   1.404824
+
+  Isotropic coupling        :    155.1493 Hz
+  Anisotropic coupling      :    -10.1907 Hz
+  Asymmetry                 :     -0.7155   
+  S parameter               :     11.0260 Hz
+  A parameter               :      0.4974 Hz
+  Isotropic DSO contribution:      0.6568 Hz
+  Isotropic PSO contribution:     -0.9461 Hz
+  Isotropic SD contribution :      0.2548 Hz
+  Isotropic FC contribution :    155.1837 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    160.9767       0.000000       0.000000    
+                y    0.000000       151.1681      -3.232890    
+                z    0.000000      -4.227780       153.3029    
+
+
+              Indirect spin-spin coupling between H1  _2 and O1    :
+              ======================================================
+
+
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:   17;   Abundance:   0.040 %;   g factor:  -0.757516
+
+  Isotropic coupling        :     -1.2648 Hz
+  Anisotropic coupling      :     -9.2419 Hz
+  Asymmetry                 :      0.2473   
+  S parameter               :     -9.3357 Hz
+  A parameter               :     -2.7988 Hz
+  Isotropic DSO contribution:      0.4683 Hz
+  Isotropic PSO contribution:      3.7515 Hz
+  Isotropic SD contribution :     -0.8497 Hz
+  Isotropic FC contribution :     -4.6349 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    1.053914      -0.000000      -0.000000    
+                y   -0.000000      -6.450767       5.766177    
+                z   -0.000000      0.1686325       1.602510    
+
+
+              Indirect spin-spin coupling between H1  _2 and C1    :
+              ======================================================
+
+
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:   13;   Abundance:   1.100 %;   g factor:   1.404824
+
+  Isotropic coupling        :    155.1493 Hz
+  Anisotropic coupling      :    -10.1907 Hz
+  Asymmetry                 :     -0.7155   
+  S parameter               :     11.0260 Hz
+  A parameter               :      0.4974 Hz
+  Isotropic DSO contribution:      0.6568 Hz
+  Isotropic PSO contribution:     -0.9461 Hz
+  Isotropic SD contribution :      0.2548 Hz
+  Isotropic FC contribution :    155.1837 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    160.9767       0.000000       0.000000    
+                y    0.000000       151.1681       3.232890    
+                z    0.000000       4.227780       153.3029    
+
+
+              Indirect spin-spin coupling between H1  _2 and H1  _1:
+              ======================================================
+
+
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:    1;   Abundance:  99.985 %;   g factor:   5.585694
+
+  Isotropic coupling        :     32.0526 Hz
+  Anisotropic coupling      :     10.3928 Hz
+  Asymmetry                 :      0.6758   
+  S parameter               :     11.1558 Hz
+  A parameter               :      3.8458 Hz
+  Isotropic DSO contribution:     -3.6389 Hz
+  Isotropic PSO contribution:      2.4840 Hz
+  Isotropic SD contribution :      0.2677 Hz
+  Isotropic FC contribution :     32.9399 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    26.24726       0.000000       0.000000    
+                y    0.000000       38.98114      -3.845839    
+                z    0.000000       3.845839       30.92947    
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O1          C1          H1  _1      H1  _2
+            ------      ------      ------      ------
+ O1    :    0.000000
+ C1    :    1.219855    0.000000
+ H1  _1:    2.015374    1.090494    0.000000
+ H1  _2:    2.015374    1.090494    1.862398    0.000000
+
+
+  Max    interatomic separation is    2.0154 Angstrom (    3.8085 Bohr)
+  between atoms    3 and    1, "H1  _1" and "O1    ".
+
+  Min HX interatomic separation is    1.0905 Angstrom (    2.0607 Bohr)
+
+  Min YX interatomic separation is    1.2199 Angstrom (    2.3052 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  C1         O1           1.219855
+  bond distance:  H1  _1     C1           1.090494
+  bond distance:  H1  _2     C1           1.090494
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     O1         C1         H1  _1       121.359
+  bond angle:     O1         C1         H1  _2       121.359
+  bond angle:     H1  _1     C1         H1  _2       117.282
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ LINRES     00:00:06      19 %
+ TRP LR     00:00:27      80 %
+
+ TOTAL      00:00:33     100 %
+
+
+  Total CPU  time used in ABACUS:  33.20 seconds
+  Total wall time used in ABACUS:  33.25 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
+
+  Total CPU  time used in DALTON:  33.33 seconds
+  Total wall time used in DALTON:  33.38 seconds
+
+ 
+     Date and time (Linux)  : Mon Mar 13 12:42:07 2017
+     Host name              : TESD11                                  

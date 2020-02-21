@@ -10,7 +10,9 @@ module lucita_mcscf_vector_exchange
    use file_type_module, only : file_info, file_type
    use vector_xc_file_type
 #ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
    use mpi
+#endif
    use parallel_task_distribution_type_module
    use sync_coworkers
    use lucita_cfg
@@ -18,10 +20,13 @@ module lucita_mcscf_vector_exchange
 
    implicit none
 
-   public vector_exchange_driver
 #ifdef VAR_MPI
+#ifndef USE_MPI_MOD_F90
+#include "mpif.h"
+#endif
    public vector_exchange_interface_cw
 #endif
+   public vector_exchange_driver
 
    private
    integer, parameter, private :: mc_offset = 4 ! offset to mc types in exchange_f... ==> must be equal to max #/2 (1/2 <= lucita; 1/2 >  mcscf)
@@ -642,7 +647,7 @@ contains
     if(allocated(B%fh_lu))then
     A%present_fh_par          = B%fh_lu(A%present_vector_type)
     else
-    call quit('access attempt to non-open MPI file')
+    call quit('LUCITA: access attempt to non-open MPI file')
     end if
 #endif
 

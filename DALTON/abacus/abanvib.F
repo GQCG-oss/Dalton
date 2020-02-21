@@ -39,6 +39,7 @@ C     ************************************************
 #include "cbinum.h"
 #include "abainf.h"
 #include "cbiwlk.h"
+#include "cbirea.h"
 #include "molinp.h"
 C
       DATA TABLE /'.EFFECT','.HARM-P','.ANHA-P','.SPIN-S','.MODE A',
@@ -63,10 +64,10 @@ C
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             GO TO 100
          END IF
-         WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *        '" not recognized in NVBINP.'
+         WRITE (LUPRI,'(/4A/)') ' Keyword "',WORD,
+     *        '" not recognized in '//WORD1
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal keyword in NVBINP.')
+         CALL QUIT('Illegal keyword in '//WORD1)
  1       CONTINUE  ! .EFFECT
             NUMVIB = .TRUE.
             ANALZ1 = .TRUE.
@@ -128,14 +129,22 @@ CRF 12/11 - 12 Test keywords for splitting force field from property derivatives
             GOTO 100
  8       CONTINUE  ! .P-BASIS
 CRF This only works if basis set library is used
-            IF (MLINE(1)(1:5) .NE. 'BASIS') THEN
-               WRITE(LUPRI,'(/A,/A)')
+            IF (NMLINE_basis .le. 0) THEN
+               WRITE(LUPRI,'(/A/A)')
      &           '*** ERROR *** ' //
      &           'Keyword .P-BASIS only works when ' //
      &           'basis set library is used.',
      &           'The calculation can be split manually ' //
      &           'using the .CUBIC and .ONLY-P keywords'
-               CALL QUIT('Input ERROR in NVBINP')
+               CALL QUIT('Input ERROR in '//WORD1)
+            END IF
+            IF (LMULBS) THEN
+               WRITE(LUPRI,'(/A/A)')
+     &           '*** ERROR *** ' //
+     &           'Keyword .P-BASIS does not work ' //
+     &           'for .R12AUX multiple basis sets.'
+               CALL QUIT('ERROR: '//
+     &         '.P-BASIS does not work for .R12AUX multiple basis sets')
             END IF
             REUHES = .TRUE.
             NRMCRD = .TRUE.
@@ -149,10 +158,10 @@ CRFend
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
       ELSE
-         WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in NVBINP.'
+         WRITE (LUPRI,'(/4A/)') ' Prompt "',WORD,
+     *            '" not recognized in '//WORD1
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal prompt in NVBINP.')
+         CALL QUIT('Illegal prompt in '//WORD1)
       END IF
   300 CONTINUE
 CRF We save a few variables in case of PRPBAS
@@ -207,7 +216,7 @@ C            END IF
          END IF
          IF (PRPBAS) THEN
             WRITE (LUPRI,'(5X,2A)') 'Basis set used in force field '//
-     &            'calculation: ' , TRIM (MLINE(2)) 
+     &            'calculation: ' , TRIM( MLINE(NMLINE_basis) ) 
             WRITE (LUPRI,'(5X,2A)') 'Basis set used in calculation '//
      &            'of property derivatives: ', TRIM( PRPBTX )
          END IF

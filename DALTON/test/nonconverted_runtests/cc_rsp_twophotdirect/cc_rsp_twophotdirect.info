@@ -1,6 +1,0 @@
-   cc_rsp_twophotdirect
-   --------------------
-   Molecule:         HF in C2v
-   Wave Functions:   CCS, CC2, CCSD / 6-31G**
-   Test Purpose:     Integral-direct calculation of twophoton
-                     transition moments

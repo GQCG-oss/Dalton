@@ -1,7 +1,6 @@
-set(reorder_definitions "")
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     add_definitions(-DVAR_GFORTRAN)
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DVAR_GFORTRAN -ffloat-store -fcray-pointer -std=legacy")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffloat-store -fcray-pointer -std=legacy")
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "i386")
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -m32"
@@ -12,8 +11,8 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
             "${CMAKE_Fortran_FLAGS} -m64"
             )
     endif()
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -fbacktrace -fcray-pointer -Wuninitialized")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-Og -g -fbacktrace -fcray-pointer -Wuninitialized")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -Wno-argument-mismatch -Wno-unused-variable -Wno-unused-dummy-argument -Wno-maybe-uninitialized")
     set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_STATIC_LINKING)
         set(CMAKE_Fortran_FLAGS
@@ -69,7 +68,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
             )
     endif()
-    set(reorder_definitions " --nocollapse ${reorder_definitions}")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
@@ -82,7 +80,7 @@ set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DVAR_PGI")
        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mcmodel=medium")
     endif()
 
-# Simen: added to include c++ libraries needed for the final linking 
+# Simen: added to include c++ libraries needed for the final linking
     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -pgc++libs")
 
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe -traceback")
@@ -130,14 +128,10 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
 
 endif()
 
-if(CMAKE_Fortran_COMPILER_ID MATCHES Cray) 
+if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
     add_definitions(-DVAR_CRAY)
 
     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DVAR_CRAY -eZ")
-    # Patrick: For cray we want to use the system allocator since it is faster and has less memory requirements than the cray allocator
-    #if(ENABLE_TITANBUILD)
-    #   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -hsystem_alloc")
-    #endif()
 
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE " ")

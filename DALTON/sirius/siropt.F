@@ -967,6 +967,8 @@ C
 C     Test if switch to update method or switch to NR linear equations
 C     (condition: local region, defined as step .le. STPLCL*RTRUST)
 C
+      IF (.NOT. DOMCSRDFT) THEN
+      ! Oct 2019 hjaaj: DONR is not working for excited state MCsrDFT ...
       IF (.NOT.FLAG(37) .OR. .NOT.FLAG(38) .OR. .NOT.NRALW) THEN
 C     If (not noupdate or not neo_always or not nr_always) then
          LOCAL = (STPLEN .LT. STPLCL*RTRUST .AND. STPC .LT. STPO)
@@ -990,6 +992,7 @@ C              ... no reason to switch to NR for ground state
             END IF
          END IF
       END IF
+      END IF ! IF (.NOT. DOMCSRDFT) THEN
 C
 C save information for final summary print-out
 C
@@ -2655,6 +2658,7 @@ C
 #include "cbirea.h"
 #include "r12int.h"
 #include "qmmm.h"
+#include "qm3.h"
 #include "gnrinf.h"
 #include "dftcom.h"
 C
@@ -3040,7 +3044,7 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          CALL WRITT (LUSIFC,MMORBT,WRK(KMATMO))
       END IF
 
-      IF (USE_PELIB() .AND. (NCONF > 1)) THEN
+      IF (USE_PELIB()) THEN
          ! Calculate ground-state PE contribution which is subtracted from
          ! the full Fock matrix in response for MCSCF and CI wavefunction
          KFCKMO = KWRK1
@@ -3062,6 +3066,10 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          END IF
          CALL DGEFSP(NBAST, WRK(KDCAO), WRK(KFDTAO))
          CALL PELIB_IFC_FOCK(WRK(KFDTAO), WRK(KFCKAO), WRK(KENR))
+         CALL AROUND('Writing FOCKMAT in siropt')
+         IF (.NOT.HFFLD) CALL PUT_TO_FILE('FOCKMAT',NNBASX,
+     &                                         WRK(KFCKAO))
+         CALL PUT_TO_FILE('FOCKMHF',NNBASX,WRK(KFCKAO))
          CALL UTHU(WRK(KFCKAO), WRK(KFCKMO), CMO, WRK(KWRK2),
      &             NBAST, NORBT)
          WRITE (LUSIFC) LAB123, TABLE(12)

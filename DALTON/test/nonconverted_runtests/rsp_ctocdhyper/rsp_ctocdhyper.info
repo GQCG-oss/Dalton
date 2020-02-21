@@ -1,6 +1,0 @@
-   rsp_ctocdhyper
-   --------------
-   Molecule:         H2O
-   Wave Function:    SCF
-   Test Purpose:     Calculation of CTOCD-DZ diamagnetic part of
-   		     hypermagnetizability through RESPONSE

@@ -514,7 +514,7 @@ C
          CALL HERFCK_1(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &               ICEDIF,IFTHRS,WORK(KFREE),LFREE)
       ELSE
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
          IF (PARHER) THEN
             if (iprfck .gt. 1) write (lupri,'(/A)')
      &      ' Direct Fock matrices using parallel ERI'; flush(lupri)
@@ -541,7 +541,7 @@ C
            CALL ERIFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &                 WORK(KFREE),LFREE)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
          END IF
 #endif
          CALL MEMREL('ERIFCK',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -720,7 +720,7 @@ C     Calculate fock matrices.
 C--------------------------------
 C
       CALL GETTIM(CPU1,WALL1)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       IF (PARHER) THEN
          IATOM = 0
          CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)
@@ -838,7 +838,7 @@ C
             HFXFAC = HFXFC0
          END IF
          IF (IPRINT .GT. 0) CALL TIMER('HERFCK_1/TWOINT',TIMSTR,TIMEND)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       END IF
 #endif
 #if HERFCK_DEBUG > 1

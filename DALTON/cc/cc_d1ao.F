@@ -259,7 +259,7 @@ C
          ISYML = 1
          IOPT = 3
          CALL CC_RDRSP(LLIST,ILLNR,ISYML,IOPT,MODDUM,
-     *                 WORK(KZ1AM),WORK(KT2AM))
+     &                 WORK(KZ1AM),WORK(KT2AM))
          IF ( IPRINT .GT. 10 ) THEN
             RHO1N = DDOT(NT1AM(ISYML),WORK(KZ1AM),1,WORK(KZ1AM),1)
             RHO2N = DDOT(NT2AM(ISYML),WORK(KT2AM),1,WORK(KT2AM),1)
@@ -504,13 +504,13 @@ C
          ISYML = 1
          IOPT = 2
          CALL CC_RDRSP(LLIST,ILLNR,ISYML,IOPT,MODDUM,
-     *                 WORK(KZ1AM),WORK(KT2AM))
-!         IF ( IPRINT .GT. 10 ) THEN
-!            RHO1N = DDOT(NT1AM(ISYML),WORK(KZ1AM),1,WORK(KZ1AM),1)
-!            RHO2N = DDOT(NT2AM(ISYML),WORK(KT2AM),1,WORK(KT2AM),1)
-!            WRITE(LUPRI,*) 'CC_D1AO: Norm of L. vector :',RHO1N
-!            WRITE(LUPRI,*) 'CC_D1AO: Norm of L. vector :',RHO2N
-!         ENDIF
+     &                 WORK(KZ1AM),WORK(KT2AM))
+         IF ( IPRINT .GT. 10 ) THEN
+            RHO1N = DDOT(NT1AM(ISYML),WORK(KZ1AM),1,WORK(KZ1AM),1)
+            RHO2N = DDOT(NT2AM(ISYML),WORK(KT2AM),1,WORK(KT2AM),1)
+            WRITE(LUPRI,*) 'CC_D1AO: Norm of L. vector :',RHO1N
+            WRITE(LUPRI,*) 'CC_D1AO: Norm of L. vector :',RHO2N
+         ENDIF
 
 C
 C-----------------------------------
@@ -733,7 +733,7 @@ C
       CALL CCD1REOR(WORK(KDENFO),WORK(KONEAI),WORK(KONEAB),
      *              WORK(KONEIJ),WORK(KONEIA))
 C
-      IF (IPRINT .GT. 50) THEN
+      IF (IPRINT .GT. 10) THEN
 C
          CALL AROUND('Nondiagonalised CC one electron density')
 C

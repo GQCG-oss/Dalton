@@ -82,7 +82,6 @@ numdso_slave(real* work, integer* lwork, integer* iprint)
     integer sz, new_lwork;
     integer dsodim;
     integer nucind;            /* IN: will be synced from master */
-    real    *spndso;
     
     FSYM(getdsosz)(&dsodim); sz = dsodim*dsodim;
     if(*lwork < sz)
@@ -98,8 +97,9 @@ void FSYM(dsosyncslaves)(real *dmat,integer *nucind,real *work,integer *lwork);
 static void
 numdso_collect_info(real *spndso, real *work, integer lwork)
 {
-    integer dsodim, sz;
-    integer     sz_mpi;
+    integer dsodim;
+    integer sz;
+    int sz_mpi;
 
     MPI_Comm_size(MPI_COMM_WORLD, &sz_mpi);
     if(sz_mpi <=1) return;
@@ -117,14 +117,13 @@ numdso_collect_info(real *spndso, real *work, integer lwork)
 
 static void
 dso_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
-       integer bllen, int blstart, int blend, struct dso_data* dso)
+       integer bllen, integer blstart, integer blend, struct dso_data* dso)
 {
     extern void FSYM(dsocb)(real*, const integer*, real (*coor)[3],
                             const real*rho,const real* wght,
                             real(*rvec)[3], real*r3i);
     integer off = grid->curr_point;
-    integer bllen_copy = bllen; /* conversion needed for VAR_INT64 */
-    FSYM(dsocb)(dso->dso, &bllen_copy,
+    FSYM(dsocb)(dso->dso, &bllen,
            grid->coor+off, grid->r.rho,
            grid->weight+off, dso->rvec, dso->r3i);
 }

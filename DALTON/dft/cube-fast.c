@@ -211,7 +211,7 @@ cubefast_data_new(  const real *kB,
    initialize its fields */
 
     /* Local vars */
-    integer x; int ab;
+    int x; int ab; /* int because only used for loops and addressing */
     integer ksymBC, ksymCD, ksymBD, ksymBCD;
     integer vec_size;
     integer offset = 0;
@@ -1263,7 +1263,6 @@ dft_cr_resp_sync_slaves(real* cmo, real* kappaB, real* kappaC, real *kappaD,
     data2[5].data = symC;    data2[5].count = 1;
     data2[6].data = symD;    data2[6].count = 1;
 #endif /* C99_COMPILER */
-                                                                                       
     mpi_sync_data(sync_data, ELEMENTS(sync_data));
     mpi_sync_data(data2,     ELEMENTS(data2));
 }
@@ -1271,7 +1270,7 @@ dft_cr_resp_sync_slaves(real* cmo, real* kappaB, real* kappaC, real *kappaD,
 static __inline__ void
 dft_cr_resp_collect_info(real* fi, real*work, integer lwork)
 {
-    integer sz = 0;
+    int sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz<=1) return;
     CHECK_WRKMEM(inforb_.n2orbx, lwork);
@@ -1301,7 +1300,7 @@ FSYM(dftcrcf)(real* fi, real* cmo,
     real sec, tmpsec, dummy;
     DftCallbackData cbdata[1];
     CubeFastData* data;
-    void dump_mat(char *name, real* mat, integer dimm, int dimn);
+    void dump_mat(char *name, real* mat, integer dimm, integer dimn);
 
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)dftcrcf_);       /* NO-OP in serial */
@@ -1336,7 +1335,7 @@ FSYM(dftcrcf)(real* fi, real* cmo,
 }
 
 #ifdef TEST
-void dump_mat(char *name, real* mat, integer dimm, int dimn)
+void dump_mat(char *name, real* mat, integer dimm, integer dimn)
 {
     printf("%s\n",name); 
     integer i, j;

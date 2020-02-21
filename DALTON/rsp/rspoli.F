@@ -30,52 +30,11 @@ C
 !920721-hinne hettema: implemented RSPSUP (super symmetry averaging)
 !========================================================================
 
-#ifdef ENABLE_EFS
-C Use this hack to correctly pass the arrays to c++
-      SUBROUTINE SIREFS(FMAT, DMAT, NMAT, ITYP)
-      use efs_interface
-#include "implicit.h"
-#include "cbihr2.h"
-#include "inforb.h"
-      DIMENSION FMAT(*),DMAT(*),ITYP(*)
-      REAL*8 FMAT, DMAT
-      INTEGER NMAT, ITYP
-
-!      write (*,*) "nmat in sirk4m ", nmat
-
-      call mpixbcast (const_fock_update, 1, 'INTEGER', 0)
-      iprint = 0
-      call mpixbcast (iprint, 1, 'INTEGER', 0)
-      call efs_fock_update(FMAT, DMAT, IFTHRS, NMAT, ITYP)
-      END
-
-      SUBROUTINE SIRPRNT(FMAT, DMAT, NMAT)
-#include "implicit.h"
-#include "inforb.h"
-      DIMENSION FMAT(*),DMAT(*)
-      REAL*8 FMAT, DMAT
-      INTEGER NMAT
-
-!     write (*,*) "nmat in sirprnt ", nmat
-
-      call efs_print_matrices(FMAT, DMAT, NBAST, NMAT)
-      END
-
-#endif
-
 C  /* Deck rspoli */
       SUBROUTINE RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
      *                  FCX,FVX,QAX,QBX, FVTD,QATD,QBTD, EVECS,
      *                  XINDX,CMO,WRK,LWRK)
 
-#ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: xcint_is_active,
-     &                                  xcint_integrate_rks_lr
-#endif
-
-#ifdef ENABLE_EFS
-      use efs_interface
-#endif
 C
 C Copyright 13 FEB 1986 Poul Joergensen and Hans Joergen Aa. Jensen
 C
@@ -152,14 +111,6 @@ C
       LOGICAL   DOFXC, DOFXV, DOFTC, DOFTV
       integer, allocatable ::  ISYMDM(:), IFCTYP(:)
       DIMENSION NEEDMU(-4:6),NEEDDI(-4:6)
-
-#ifdef ENABLE_XCINT
-      real(8), allocatable :: dmat_ao(:)
-      real(8), allocatable :: xc_mat(:)
-      real(8), allocatable :: fmat_mo(:)
-      real(8)              :: num_electrons
-      logical              :: file_exists
-#endif
 
       CALL QENTER('RSPOLI')
 C
@@ -914,16 +865,8 @@ C     Change IFCTYP for all Fa matrices
 ! Manu test !!!!!!!!!!!
       DFTADX = DFTADD
       DFTADD = .FALSE.
-#if defined (ENABLE_EFS)
-      if (use_efs) then
-          call sirefs(WRK(KFXCAO),WRK(KDXCAO),NFMAT,       IFCTYP)
-      else
-#endif
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NFMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
-#if defined (ENABLE_EFS)
-      end if
-#endif
       DFTADD = DFTADX
 
 #ifdef DEBUG_RSPOLI
@@ -1111,51 +1054,8 @@ C          Special case of alpha density only (old code)
              call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
            ELSE
-#ifdef ENABLE_XCINT
-             if (xcint_is_active()) then
-
-               inquire(file='num_grid', exist=file_exists)
-               if (.not. file_exists) then
-                  call quit('ERROR: num_grid file not found')
-               end if
-
-               allocate(dmat_ao(nbast*nbast*2))
-               allocate(xc_mat(nbast*nbast))
-               allocate(fmat_mo(norbt*norbt))
-
-               do iosim = 1, nosim
-                 dmat_ao = 0.0d0
-                 xc_mat = 0.0d0
-                 fmat_mo = 0.0d0
-                 ! get unperturbed ao density matrix
-                 call dft_get_ao_dens_mat(cmo, dmat_ao,
-     &                                    wrk(kfree), lfree)
-                 ! get perturbed ao density matrix
-                 call deq27(cmo, zymat(1,iosim), (/0.0d0/),
-     &                      dmat_ao(nbast*nbast + 1),
-     &                      (/0.0d0/), wrk(kfree), lfree)
-                 ! scale density matrices
-                 call dscal(nbast*nbast*2, 0.5d0, dmat_ao, 1)
-                 call xcint_integrate_rks_lr(dmat_ao, xc_mat)
-                 ! transform ao fock matrix contribution to mo
-                 call lrao2mo(cmo, ksymop, xc_mat,
-     &                        fmat_mo, wrk(kfree), lfree)
-                 ! scale and copy on top of fcx
-                 call daxpy(norbt*norbt, 0.5d0, fmat_mo, 1,
-     &                      fcx(1,1,iosim), 1)
-               end do
-
-               deallocate(dmat_ao)
-               deallocate(xc_mat)
-               deallocate(fmat_mo)
-
-             else
-#endif /* ENABLE_XCINT */
              call dft_lin_respf(NOSIM,fcx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
-#ifdef ENABLE_XCINT
-             endif
-#endif
            ENDIF
 #ifdef DEBUG_RSPOLI
            write(lupri,*) 'DODFT: after call dft_lin_resp*'

@@ -139,10 +139,10 @@ ERROR[3]="CCSD POLARZABILITY NOT CORRECTLY WRITTEN TO PROPERTY FILE"
 #
 # Test of excited state energies
 #
-CRIT1=`$GREP " #  5 1 Sy\: 1 Sp\: 1 Exc\:  1 E_tot\: *  \-112\.3446759" $log | wc -l`
-CRIT2=`$GREP " #  6 1 Exctot   Excited state Energy =    \-112\.3446759" $log | wc -l`
-CRIT3=`$GREP " #  7 1 Sy: 1 Sp: 1 Exc:  2 E_tot:   \-112\.1269284" $log | wc -l`
-CRIT4=`$GREP " #  8 1 Exctot   Excited state Energy =    \-112\.1269284" $log | wc -l`
+CRIT1=`$GREP " #  5 1 Sy\: 1 Sp\: 1 Exc\:  1 E_tot\: *  \-112\.344675[89]" $log | wc -l`
+CRIT2=`$GREP " #  6 1 Exctot   Excited state Energy =    \-112\.344675[89]" $log | wc -l`
+CRIT3=`$GREP " #  7 1 Sy: 1 Sp: 1 Exc:  2 E_tot:   \-112\.126928." $log | wc -l`
+CRIT4=`$GREP " #  8 1 Exctot   Excited state Energy =    \-112\.126928." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
 CTRL[4]=4
 ERROR[4]="CCSD EXCITED STATE ENERGIES NOT CORRECTLY WRITTEN TO PROPERTY FILE"

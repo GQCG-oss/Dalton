@@ -1,6 +1,0 @@
-   cc3_LIH1s1p_asym_pol
-   -----------
-   Molecule:         LIH
-   Theory Level:     CC3 / (two-function basis)
-   Test Purpose:     Polarizability (in assymetric form) for 0.00 and 
-                     0.50 frequencies for non-totally symmetric operator

@@ -177,7 +177,7 @@ ERROR[9]="CC2 EXCITED STATE DIPOLE MOMENT IS NOT CORRECT"
 
 # CCSD excited state dipole moment for 1 state in symmetry 1
 # z     -0.03598914        -0.09147526        -0.30512862
-CRIT1=`$GREP "( -|-0)\.0359891. * ( -|-0)\.0914752. * ( -|-0)\.3051286." $log | wc -l`
+CRIT1=`$GREP "( -|-0)\.035989.. * ( -|-0)\.091475.. * ( -|-0)\.3051(2|3)..." $log | wc -l`
 TEST[10]=`expr $CRIT1`
 CTRL[10]=1
 ERROR[10]="CCSD EXCITED STATE DIPOLE MOMENT IS NOT CORRECT"

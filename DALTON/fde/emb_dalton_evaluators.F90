@@ -61,7 +61,6 @@ module fde_evaluators_dalton
    private 
 
    integer, save :: nba, nba_orb, nba_aux
-   integer, save :: dfcoef_unit
 
    integer, parameter :: max_irreps = 8
    integer, save :: nr_irreps
@@ -116,6 +115,7 @@ module fde_evaluators_dalton
 !
          write (*,*) 'Generating the nuclear potential over the grid'
          write (*,*) '... write me !'
+         call quit('fde error:  Hartree and nuclear potentials over the grid not implemented')
 !
 ! assemble the final electrostatic potential
 !
@@ -130,6 +130,7 @@ module fde_evaluators_dalton
       real(kind=8), allocatable, intent(out) :: dmat(:)
 
          write (*,*) '... write me !'
+         call quit('fde_dalton_get_dmat_from_dummy called, but not implented')
 
       end subroutine fde_dalton_get_dmat_from_dummy 
 
@@ -151,7 +152,7 @@ module fde_evaluators_dalton
       real(kind=8), allocatable :: dmat(:)
 
       REAL(KIND=8)::dummy,TOLS,TOLOG
-      REAL(KIND=8)::gexp=0.0,ncentc=1.0,factor=1.0
+      REAL(KIND=8)::gexp=0.0d0,ncentc=1.0d0,factor=1.0d0
 
       NDIMENSION=nba_orb
 
@@ -169,14 +170,16 @@ module fde_evaluators_dalton
 
 !     Initialize the matrices to zero.
 
-      GAO  = 0.0
-      GAO1 = 0.0
-      GAO2 = 0.0
-      BUF  = 0.0
-      NCNT = 0.0
-      GAB1 = 0.0
+      GAO  = 0.0d0
+      GAO1 = 0.0d0
+      GAO2 = 0.0d0
+      BUF  = 0.0d0
+      NCNT = 0.0d0
+      GAB1 = 0.0d0
 
       WRITE(*,*) 'Calculating the density and its derivatives.'
+      WRITE(*,*) '- not implemented, write me!'
+      call quit('fde_dalton_get_density_from_dfcoef not implemented')
 
       do i = 1, size(grid%r,2)
 
@@ -299,6 +302,7 @@ module fde_evaluators_dalton
          real(kind=8), target  :: fmat(*)
 
          write(*,*) 'write me!'
+         call quit('fde error: embedded potential via integrator not implemented')
 
       end subroutine fde_dalton_embpot_via_integrator
 
@@ -312,6 +316,7 @@ module fde_evaluators_dalton
          real(kind=8), target :: fmat(*)
 
          write(*,*) 'write me!'
+         call quit('fde error: linear response via integrator not implemented')
 
       end subroutine fde_dalton_linrsp_via_integrator
 
@@ -339,7 +344,6 @@ module fde_evaluators_dalton
 
          nba_orb       = nbast
          nba           = nba_orb
-         dfcoef_unit   = LUCOEF
          mat_dim_as_1d = nnbasx
 
          nr_irreps     = maxrep + 1

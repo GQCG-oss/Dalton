@@ -14,7 +14,7 @@
      &        IT2BGT, IFCVIR, IFCRHF,                                   &
      &        IMATAB, NMATAB, NT2AOS, IT2AOS,                           &
      &        NT2SQ, NMIJP, IMIJP, NT2ORT,                              &
-     &        IT2ORT,NT2AOIJ,IT2AOIJ,                                   &
+     &        IT2ORT,NT2AOIJ,IT2AOIJ,NT2ORT3,IT2ORT3,                   &
      &        ICKID,NCKI,ICKI,ICKITR,                                   &
      &        NTOTOC,NTRAOC,ICKASR,NCKIJ,                               &
      &        ICKAD,NCKA,ICKA,ICKALP,                                   &
@@ -79,6 +79,7 @@
      &                 IMATAB(8,8), NMATAB(8), NT2AOS(8), IT2AOS(8,8),  &
      &                 NT2SQ(8), NMIJP(8), IMIJP(8,8), NT2ORT(8),       &
      &                 IT2ORT(8,8),NT2AOIJ(8),IT2AOIJ(8,8),             &
+     &                 NT2ORT3(8),IT2ORT3(8,8),                         &
      &                 ICKID(8,8),NCKI(8),ICKI(8,8),ICKITR(8,8),        &
      &                 NTOTOC(8),NTRAOC(8),ICKASR(8,8),NCKIJ(8),        &
      &                 ICKAD(8,8),NCKA(8),ICKA(8,8),ICKALP(8,8),        &

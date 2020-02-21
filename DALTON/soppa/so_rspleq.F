@@ -1,6 +1,7 @@
 C
 C  /* Deck so_rspleq */
-      SUBROUTINE SO_RSPLEQ(MODEL,LABEL,ISYMTR,FRVAL,NFRVAL,DENSIJ,
+      SUBROUTINE SO_RSPLEQ(MODEL,LABEL,IMAGPROP,ISYMTR,
+     &                     FRVAL,NFRVAL,DENSIJ,
      &                     LDENSIJ,DENSAB,LDENSAB,DENSAI,LDENSAI,T2MP,
      &                     LT2MP,FOCKD,LFOCKD,WORK,LWORK)
 C
@@ -32,7 +33,7 @@ C
 C
       PARAMETER ( D100 = 100.0D0 )
       CHARACTER MODEL*5,LABEL*8
-      LOGICAL   IMAGPROP
+      LOGICAL, INTENT(OUT) :: IMAGPROP
       LOGICAL   DOUBLES
 C
 #include "codata.h"
@@ -63,7 +64,7 @@ C
       LGPVC1  =  NT1AM(ISYMTR)
 CPFP   2009-Jun
       IF (DOUBLES) THEN
-         LGPVC2  =  NT2AM(ISYMTR)
+         LGPVC2  =  N2P2HOP(ISYMTR)
       ELSE
          LGPVC2  = 0
       ENDIF

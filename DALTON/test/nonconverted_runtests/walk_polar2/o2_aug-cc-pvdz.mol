@@ -1,8 +1,0 @@
-BASIS
-aug-cc-pVDZ
-Geometry optimization using WALK module plus
-static and dynamic polarizabilities
-Atomtypes=1 Generators=2   Y  Z
-Charge=8.0 Atoms=2
-OS         .0000000000        0.0000000000         .0000000000             *
-OP        1.2634502500        2.0449019100         .0000000000             *

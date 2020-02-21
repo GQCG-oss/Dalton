@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(string = 'Final HF energy',
+      abs_tolerance = 1.0e-9)
+
+f.add(from_string = 'Electrostatic contributions:',
+      num_lines = 13,
+      abs_tolerance = 1.0e-8)
+
+f.add(from_string = 'CCSD Total  energy',
+      num_lines = 2,
+      abs_tolerance = 1.0e-8)
+
+f.add(from_string = 'Perturbative triples corrections',
+      num_lines = 7,
+      abs_tolerance = 1.0e-8)
+
+f.add(from_string = 'CCSD       Excitation energies',
+      num_lines = 6,
+      rel_tolerance = 5.0e-5)
+
+f.add(from_string = 'CCSD       Length   Gauge Oscillator Strength',
+      num_lines = 6,
+      abs_tolerance = 1.0e-5)
+
+f.add(from_string = 'CCSDR(3)   Excitation energies',
+      num_lines = 6,
+      rel_tolerance = 5.0e-5)
+
+test.run(['peccr3.dal'], ['formaldehyde.mol'], ['water.pot'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)
+
+
+#

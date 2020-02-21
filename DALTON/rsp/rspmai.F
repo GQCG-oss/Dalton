@@ -57,6 +57,7 @@ C  /* Deck rspdrv */
 C
 C Driver for RESPONSE.
 C
+      USE SO_INFO, ONLY: SO_ANY_ACTIVE_MODELS
       use pelib_interface, only: use_pelib
 
 #include "implicit.h"
@@ -185,6 +186,15 @@ C
       LWSYM = LWRK  - KWSYM
       IF (LWSYM.LT.0) CALL ERRWRK('RSPDRV 2',KWSYM,LWRK)
       CALL RSPSYM(WRK(KWSYM),LWSYM)
+C
+C
+C     AO-SOPPA calls it's own driver      
+      IF (SO_ANY_ACTIVE_MODELS()) THEN
+         CALL SO_RSPDRV(WRK,LWRK)
+         KFREE = 1
+         LFREE = LWRK
+         GOTO 9999
+      ENDIF
 C
 C     990505-hjaaj:
 C     Check if we only want expectation values
@@ -683,7 +693,8 @@ C
 C
 C     *******************************************
 C
-      CALL MEMREL('End of RSPDRV',WRK,1,1,KFREE,LFREE)
+      IF (.NOT.SO_ANY_ACTIVE_MODELS()) 
+     &   CALL MEMREL('End of RSPDRV',WRK,1,1,KFREE,LFREE)
 
       CALL QEXIT('RSPDRV')
       RETURN
@@ -877,6 +888,9 @@ C     Most input options are saved in infrsp.h, and the
 C     options are initialized with default values in
 C     "BLOCK DATA RSPINF"
 C
+      use SO_INFO, only: AORPA, AOHRP, DCRPA, AOSOP, AOSOC, AOCC2, 
+     &                   SO_ANY_ACTIVE_MODELS, DCHRP
+C
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -896,8 +910,8 @@ C
 #include "inforb.h"
 #include "abslrs.h"
 C
-      LOGICAL NEWDEF, SET
-      PARAMETER ( NTABLE = 25 )
+      LOGICAL NEWDEF, SET, FORCE_AOSOP
+      PARAMETER ( NTABLE = 28 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE TABLE, SET
@@ -910,9 +924,11 @@ C
      *            '.HIRPA ', '.SOPW4 ', '.SOPPA(',
      *            '.NODOIT', '.DFT-SO', '.PROP2A',
      *            '.TDA   ', '.CIS   ', '.SOPRPA',
-     *            '.TRDQF '/
+     *            '.TRDQF ', '.AO-SOP', '.RPA(D)',
+     *            '.HRPAD'/
       DATA SET /.FALSE./
 C
+      FORCE_AOSOP = .FALSE.
       IF (.NOT.SET) THEN
          SET = .TRUE.
          IF (NASHT .LE. 1 .OR. HSROHF) NOITRA = DIRFCK
@@ -937,7 +953,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,
      *                      11,12,13,14,15,16,17,18,19,20,21,22,23,
-     *                      24,25), I
+     *                      24,25,26,27,28), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -955,14 +971,15 @@ C
                   AVDIA  = .FALSE.
                GO TO 100
     3          CONTINUE ! .SOPPA
-                  SOPPA = .TRUE.
-                  IF (PARCAL) THEN
-                    CALL PARQUIT("SOPPA combined with linear response")
-                  END IF
-                  IF (SOPPA .AND. EMBEDDING) THEN
+C                  IF (PARCAL) THEN
+C                    CALL PARQUIT("SOPPA combined with linear response")
+C                  END IF
+                  IF (EMBEDDING) THEN
 cjje: change this if full solvent soppa is ever implemented
                     GO TO 24 ! go to .SOPRPA option
                   END IF
+C                  IF (DIRCAL) AOSOP = .TRUE. 
+                  SOPPA = .TRUE.
                GO TO 100
     4          CONTINUE
                GO TO 100
@@ -1010,14 +1027,16 @@ cjje: change this if full solvent soppa is ever implemented
                GO TO 100
    16          CONTINUE ! .HIRPA
                   HIRPA = .TRUE.
-                  SOPPA = .TRUE.
+C                  SOPPA = .TRUE.
+C                  IF(DIRCAL) AOHRP = .TRUE.
                GO TO 100
    17          CONTINUE ! .SOPW4
                   SOPW4 = .TRUE.
                GO TO 100
    18          CONTINUE ! .SOPPA(CCSD)
-                  SOPPA = .TRUE.
+C                  SOPPA = .TRUE.
                   CCPPA = .TRUE.
+C                  IF(DIRCAL) AOSOC = .TRUE.
                GO TO 100
    19          CONTINUE ! .NODOIT
                   DIROIT = .FALSE.
@@ -1069,6 +1088,17 @@ C              .PROP2Average
                  ENDIF
                  TRDQF = .TRUE.
                GO TO 100
+ 26            CONTINUE ! .AO-SOPPA
+                  FORCE_AOSOP = .TRUE.
+               GO TO 100
+ 27            CONTINUE ! .RPA(D)
+                  FORCE_AOSOP = .TRUE.
+                  DCRPA = .TRUE.
+               GO TO 100
+   28          CONTINUE ! .HRPAD
+                  FORCE_AOSOP = .TRUE.
+                  DCHRP = .TRUE.
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1089,20 +1119,19 @@ C              .PROP2Average
      *      CALL QUIT('TDDFT CALC WITH .CIS KEYWORD - USE .TDA INSTEAD')
          IF (CISRPA) WRITE(LUPRI,'(/A,L1)')
      *      ' CI SINGLES CALCULATION (RPA/TDA (B-matrix = 0)).'
-         IF (HIRPA)  THEN
-            WRITE(LUPRI,'(/A)')
-     *   ' Higher RPA Polarization Propagator Approximation -- HRPA'
-         ELSE IF (SOPPA .AND. .NOT. CCPPA) THEN
-            WRITE(LUPRI,'(/A)')
+         IF (SOPPA)
+     &      WRITE(LUPRI,'(/A)')
      *   ' Second Order Polarization Propagator Approximation -- SOPPA'
-         ELSE IF (SOPPA .AND. CCPPA) THEN
-            WRITE(LUPRI,'(/2A/14X,A/A)')
+         IF (HIRPA)
+     *      WRITE(LUPRI,'(/A)')
+     *   ' Higher RPA Polarization Propagator Approximation -- HRPA'
+         IF (CCPPA)
+     &      WRITE(LUPRI,'(/2A/14X,A/A)')
      &   ' SOPPA(CCSD) :',
      &   ' Second Order Polarization Propagator Approximation',
      &   ' with Coupled Cluster Singles and Doubles Amplitudes',
      &   ' Reference : S. P. A. Sauer, '//
      &      'J. Phys. B: At. Mol. Opt. Phys. 30, 3773-3780 (1997)'
-         END IF
          IF (DIRFCK) THEN
             WRITE(LUPRI,'(/A)')
      *      ' AO-direct Fock matrix calculations.'
@@ -1171,6 +1200,24 @@ C              .PROP2Average
      &      ' Input ERROR: CI response and ".SOPPA " are incompatible.'
          CALL QUIT('**RESPONSE: Input error')
       END IF
+      
+      IF (FORCE_AOSOP) THEN
+C        Set the correct AOSOPPA flags         
+         IF (HIRPA) AOHRP = .TRUE.
+         IF (SOPPA) AOSOP = .TRUE.
+         IF (CCPPA) AOSOC = .TRUE.
+C        Do RPA by default         
+         IF (.NOT.SO_ANY_ACTIVE_MODELS()) AORPA = .TRUE.
+      ENDIF
+      IF (SO_ANY_ACTIVE_MODELS()) THEN
+C        Set the response flags to false
+         HIRPA = .FALSE.
+         SOPPA = .FALSE.
+         CCPPA = .FALSE.
+      ELSEIF(HIRPA.OR.CCPPA) THEN
+         SOPPA = .TRUE.
+      ENDIF
+
 C
 C *** END OF RSPINP
 C
@@ -1357,8 +1404,7 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
-      use pelib_interface, only: use_pelib, pelib_ifc_dolf, 
-     &                                     pelib_ifc_lf
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1441,37 +1487,15 @@ C
                LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
                LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
                LPPOP( INDPRP('ZDIPLEN ')) = .TRUE.
-               IF (USE_PELIB()) THEN
-                 IF (PELIB_IFC_DOLF()) THEN
-                   LPPOP( INDPRP('XLFDIPLN')) = .TRUE.
-                   LPPOP( INDPRP('YLFDIPLN')) = .TRUE.
-                   LPPOP( INDPRP('ZLFDIPLN')) = .TRUE.
-                 END IF
-               END IF
                GO TO 100
  2             CONTINUE   ! .DIPLNX
                LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
-               IF (USE_PELIB()) THEN
-                 IF (PELIB_IFC_DOLF()) THEN
-                   LPPOP( INDPRP('XLFDIPLN')) = .TRUE.
-                 END IF
-               END IF
                GO TO 100
  3             CONTINUE   ! .DIPLNY
                LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
-               IF (USE_PELIB()) THEN
-                 IF (PELIB_IFC_DOLF()) THEN
-                   LPPOP( INDPRP('YLFDIPLN')) = .TRUE.
-                 END IF
-               END IF
                GO TO 100
  4             CONTINUE   ! .DIPLNZ
                LPPOP( INDPRP('ZDIPLEN ')) = .TRUE.
-               IF (USE_PELIB()) THEN
-                 IF (PELIB_IFC_DOLF()) THEN
-                   LPPOP( INDPRP('ZLFDIPLN')) = .TRUE.
-                 END IF
-               END IF
                GO TO 100
  5             CONTINUE   ! .DIPVEL
                LPPOP( INDPRP('XDIPVEL ')) = .TRUE.
@@ -1790,10 +1814,6 @@ C
             CALL HEADER(' Linear Response single residue calculation',0)
          END IF
 
-         IF (PEQM) WRITE(LUPRI,'(/A)')
-     &      ' Environment is modeled using'//
-     &         ' the polarizable embedding scheme (PE library)'
-
          IF (FLAG(16) .AND. .NOT.INERSI) THEN
             WRITE(LUPRI,'(A/A,F8.4)')
      &      ' Equilibrium continuum solvent model requested.',
@@ -1809,9 +1829,14 @@ C
      &      ,EPSOL
          END IF
 
-         IF (QM3 .OR. QMMM .OR. QMNPMM) THEN
-            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-         ENDIF
+         IF (QM3) WRITE(LUPRI,'(A)')
+     &      ' QM/MM response calculation (model "QM3")'
+
+         IF (QMMM) WRITE(LUPRI,'(A)')
+     &      ' QM/MM response calculation (model "QMMM")'
+
+         IF (QMNPMM) WRITE(LUPRI,'(A)')
+     &      ' QM/NP/MM response calculation'
 
          IF (USE_PELIB()) THEN
            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
@@ -1835,17 +1860,7 @@ C
      &      ,EPSINF
          END IF
 
-         IF (QM3) WRITE(LUPRI,'(A)')
-     &      ' QM/MM response calculation (model "QM3")'
-
-         IF (QMMM) WRITE(LUPRI,'(A)')
-     &      ' QM/MM response calculation (model "QMMM")'
-
-         IF (QMNPMM) WRITE(LUPRI,'(A)')
-     &      ' QM/NP/MM response calculation'
-
-C
-         IF ( (QM3 .OR. QMMM .OR. QMNPMM .OR. PCM .OR. PEQM)
+         IF ( (QM3 .OR. QMMM .OR. QMNPMM .OR. PCM .OR. use_pelib())
      &       .AND. (SOPPA .AND. .NOT. SOPRPA)) THEN
                WRITE (LUPRI,'(//A/A/A)') 'RSPPP-ERROR: Full '//
      &     'embedding model SOPPA response is not implemented.',
@@ -2393,7 +2408,7 @@ C
          END IF
 
          IF (QMMM) THEN
-           WRITE(LUPRI,'(A)') ' QM/MM response calculation'
+           WRITE(LUPRI,'(A)') ' QM/MM response calculation type "QMMM"'
          ENDIF
 
          IF (QMNPMM) THEN
@@ -2909,6 +2924,8 @@ C
       ELSE
          RSPCI = .FALSE.
       END IF
+Clilli Closing LUSIFC
+C      CALL GPCLOSE(LUSIFC,'KEEP')
 C
       NPRLBL = 0
       DO 100 I = 1,MAXLBL
@@ -5122,9 +5139,11 @@ C
      *      ,EPSOL
          END IF
 C
-         IF (QM3 .OR. QMMM) THEN
-           WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-         ENDIF
+         IF (QM3) WRITE(LUPRI,'(A)')
+     &      ' QM/MM response calculation (model "QM3")'
+
+         IF (QMMM) WRITE(LUPRI,'(A)')
+     &      ' QM/MM response calculation (model "QMMM")'
 
          IF (USE_PELIB()) THEN
             WRITE(LUPRI,'(A)') ' Environment is modeled using'//

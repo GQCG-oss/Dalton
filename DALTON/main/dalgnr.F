@@ -679,10 +679,6 @@ C
       END
 C  /* Deck dalton_exedrv */
       SUBROUTINE DALTON_EXEDRV(LMWORK, WRKDLM)
-
-#ifdef BUILD_OPENRSP
-          use openrsp_input, only: read_openrsp_input
-#endif
 C
 C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
@@ -692,8 +688,9 @@ C
       use pcm_config, only: pcm_configuration, pcm_cfg, pcm_finalize
 #endif
       use pelib_interface, only: use_pelib, pelib_ifc_finalize,
-     &                           pelib_ifc_deactivate,
-     &                           pelib_ifc_dolf, pelib_ifc_lf
+     &                           pelib_ifc_deactivate, pelib_ifc_do_mep,
+     &                           pelib_ifc_do_mep_noqm,
+     &                           pelib_ifc_mep_noqm, pelib_ifc_do_lf
 
 #include "implicit.h"
 #include "dummy.h"
@@ -747,34 +744,9 @@ C
       REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 
       real(8), allocatable :: work(:)
-      logical :: openrsp_input_found
 
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
-
-#ifdef BUILD_OPENRSP
-      ! radovan: we need to read the **OPENRSP input before we run anything
-      call gpopen(lucmd, 'DALTON.INP','OLD',' ','FORMATTED',
-     &            idummy, .false.)
-!     search **OPENRSP in input
-      rewind (lucmd)
-      openrsp_input_found = .false.
-      use_openrsp = .false.
-      do
-         read (lucmd, '(a)', end=2) word
-         if (word == '**OPENR') then
-            call read_openrsp_input('DALTON.INP', lucmd)
-            openrsp_input_found = .true.
-            use_openrsp = .true.
-            exit
-         end if
-      end do
-2     rewind(lucmd)
-      call gpclose(lucmd, 'KEEP')
-#else
-      use_openrsp = .false.
-#endif
-
 C
 !     allocate memory using f90 utilities
       allocate(work(0:lmwork+1),stat=i)
@@ -959,7 +931,7 @@ C
 c#if defined (VAR_MPI)
 c               IF (NODTOT .GE. 1 .AND. MYNUM .EQ. 0) THEN
 c                  IJOB = 0
-c                  CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,NODEID(MASTER),
+c                  CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,MASTER,
 c     &                           MPI_COMM_WORLD,IERR)
 c                  GOTO 87
 c               END IF
@@ -1138,24 +1110,6 @@ C
                GOTO 133
             END IF
  134        CONTINUE
-
-#ifdef BUILD_OPENRSP
-C added by Bin Gao, April 2, 2009
-C for response theory in atomic orbital basis
-            REWIND(LUCMD)
-C search for $RESPON in input (legacy driver)
-            DO
-               READ (LUCMD,'(A7)',END=135) WORD
-               IF (WORD .EQ. '$RESPON') THEN
-                  USE_OPENRSP = .TRUE.
-                  CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9)
-                  EXIT
-               END IF
-            END DO
- 135        CONTINUE
- 137        CONTINUE
-#endif
-
             IF (LUCMD .GT. 0) CALL GPCLOSE(LUCMD,'KEEP')
          ELSE IF (ITERNR .GT. ITERMX) THEN
             CALL TITLER('WARNING - Geometry not converged',' ',200)
@@ -1172,13 +1126,14 @@ Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
 C
 C Request effective dipole integrals using PE library
          IF (USE_PELIB()) THEN
-             IF (PELIB_IFC_DOLF()) THEN
-!                 WRITE(LUPRI,'(/A)') 'PEQM calculation includes '//
-!     &                               'effective external field effects.'
-!                 WRITE(LUPRI,'(A)') 'Reference: '//
-!     &                        'Phys. Chem. Chem. Phys. 2016, 18, 10070.'
-                 CALL PELIB_IFC_LF()
+             IF (PELIB_IFC_DO_LF()) THEN
+                 WRITE(LUPRI,'(/A)') 'PE-QM calculation includes '//
+     &                               'effective external field effects.'
              END IF
+         END IF
+Classical MEP calculations using PE library
+         IF (PELIB_IFC_DO_MEP() .AND. PELIB_IFC_DO_MEP_NOQM()) THEN
+             CALL PELIB_IFC_MEP_NOQM()
          END IF
 
 Cholesky
@@ -1231,34 +1186,6 @@ C
             CALL TITLER(
      &         'End of Dynamic Property Section (RESPONS)',' ',200)
          END IF
-
-#ifdef BUILD_OPENRSP
-C added by Bin Gao, April 2, 2009
-C for response theory in atomic orbital basis
-         IF (LUCMD .LT. 0) THEN
-            CALL GPOPEN(LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
-     &                  IDUMMY, .FALSE.)
-         END IF
-         REWIND(LUCMD)
-C search for $RESPON in input
-         DO
-            READ (LUCMD,'(A7)',END=145) WORD
-            IF (WORD .EQ. '$RESPON') then
-               USE_OPENRSP = .TRUE.
-               CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9)
-               EXIT
-            END IF
-         END DO
-
- 145     CONTINUE
-         ! radovan: it's really bad to call the driver while reading the input
-         !          we should first read all input, then sanity check, then run the code
-         if (openrsp_input_found) then
-            call openrsp_driver(work(10), lmwork-9)
-         end if
- 147     if (lucmd > 0) call gpclose(lucmd, 'KEEP')
-#endif
-
          IF (RNABAC) THEN
             CALL ABAINP('**PROPE',WORK(1),LMWORK)
             CALL WLKINI
@@ -1648,7 +1575,7 @@ C
             OPTWLK = .TRUE.
             DOWALK = .TRUE.
          GO TO 100
-  111    CONTINUE  ! .MAX ITerations
+  111    CONTINUE  ! .MAX ITerations ( geometry iterations )
             READ (LUCMD,*) ITERMX
          GO TO 100
   112    CONTINUE  ! .RESPONs
@@ -1798,18 +1725,12 @@ C     ... default print level for statistics /hjaaj apr 2000
       END IF
 #if defined (VAR_MPI)
       IF (PARCAL) WRITE (LUPRI,'(4X,A)')'Parallel calculation using MPI'
-#endif
-#if defined (VAR_PVM)
-      IF (PARCAL) WRITE (LUPRI,'(4X,A)')'Parallel calculation using PVM'
-#endif
-#if ! defined (VAR_MPI) && ! defined (VAR_PVM)
+#else
       IF (PARCAL) THEN
          WRITE (LUPRI,'(//4X,A/4X,A)')
      &      'Parallel calculation requested, but this is not a',
      &      'parallel version. Please recompile for MPI'
          CALL QUIT('Parallel calculation requested w/o MPI activated')
-!    &      'parallel version. Please recompile for MPI or PVM'
-!        CALL QUIT('Parallel calc. requested w/o MPI or PVM activated')
       END IF
 #endif
       IF (OPTWLK) THEN
@@ -1930,13 +1851,13 @@ C
       END IF
 C     "*PARALL" input
  2    CONTINUE
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         CALL PRLINP(WORD)
 #else
         WRITE (LUPRI,'(//4X,A/4X,A)')
      &    '"*PARALL" input sprecified, but this is not a parallel',
-     &    'version. Please recompile DALTON for MPI or PVM.'
-         CALL QUIT('*PARALL input specified w/o MPI or PVM activated')
+     &    'version. Please recompile DALTON for MPI.'
+         CALL QUIT('*PARALL input specified w/o MPI activated')
 #endif
       GO TO 200
 C     "*WALK  " input
@@ -2030,7 +1951,7 @@ C
       end if
 #endif
 
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       CALL PRLINP(WORD)
 #endif
       CALL OPINPU(WORD)
@@ -2120,7 +2041,7 @@ C
 C
 C     We are going to do parallel I/O. Inform the slaves about this
 C
-      CALL MPI_BCAST(PARIO,1,MPI_LOGICAL,NODEID(MASTER),MPI_COMM_WORLD,
+      CALL MPI_BCAST(PARIO,1,my_MPI_LOGICAL,MASTER,MPI_COMM_WORLD,
      &               IERR)
 C
 C     Read in Dalton input. Save it temporarily MLINE
@@ -2159,9 +2080,9 @@ C
  5030    READ (LUCMD,'(A8)',END=5010) MLINE(JLINE)
          JLINE = JLINE + 1
          GOTO 5030
- 5010    CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,NODEID(MASTER),
+ 5010    CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,NODEID(MASTER),
+         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL GPCLOSE(LUCMD,'KEEP')
 C
@@ -2176,9 +2097,9 @@ C
  6030    READ (LUMOL,'(A80)',END=6010) MLINE(JLINE)
          JLINE = JLINE + 1
          GOTO 6030
- 6010    CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,NODEID(MASTER),
+ 6010    CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,NODEID(MASTER),
+         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL GPCLOSE(LUMOL,'KEEP')
       ELSE
@@ -2200,17 +2121,22 @@ C
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      INCLUDE 'mpif.h'
 #include "priunit.h"
 #include "inftap.h"
 #include "molinp.h"
 #include "infpar.h"
 #include "pario.h"
+
+      INCLUDE 'mpif.h'
 C
 C     We start by waiting for the master to tell us whether we will do
 C     parallel I/O or not
 C
-      CALL MPI_BCAST(PARIO,1,MPI_LOGICAL,NODEID(MASTER),MPI_COMM_WORLD,
+#ifdef VAR_INT64
+      call quit(
+     &'Routine PARION is not revised for int64 code and int32 mpi')
+#endif
+      CALL MPI_BCAST(PARIO,1,my_MPI_LOGICAL,MASTER,MPI_COMM_WORLD,
      &               IERR)
       IF (PARIO) THEN
          CALL GETENV('WRKDIR',WRKDIR)
@@ -2228,9 +2154,9 @@ C
      &               .FALSE.)
          CALL GPOPEN(LUMOL,'MOLECULE.INP','NEW',' ','FORMATTED',IDUMMY,
      &               .FALSE.)
-         CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,NODEID(MASTER),
+         CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,NODEID(MASTER),
+         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          REWIND (LUCMD)
          DO ILINE = 1, JLINE
@@ -2240,9 +2166,9 @@ C
 C
 C     We have written DALTON.INP. Now we collect and write MOLECULE.INP
 C
-         CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,NODEID(MASTER),
+         CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,NODEID(MASTER),
+         CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          REWIND (LUMOL)
          DO ILINE = 1, JLINE

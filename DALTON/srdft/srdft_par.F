@@ -45,7 +45,7 @@ C*****************************************************************************
       implicit none
       logical :: DOERG,DO_MOLGRAD,DOATR,TRIPLET
       integer :: ND_SIM, LWORK, IPRINT_in
-      real*8 :: EXCMAT(N2BASX,*),DMAT(N2BASX,*),EDFT(3)
+      real*8 :: EXCMAT(N2BASX,*),DMAT(N2BASX,*),EDFT(3),
      &          WORK(LWORK)
 
 #include "priunit.h"

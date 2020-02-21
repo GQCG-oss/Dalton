@@ -2466,7 +2466,7 @@ do_test_integration(DensitySpecStruct* density, char* gridFileName)
 } /* END do_test_integration */
 
 
-int compute_grid(
+integer compute_grid(
 		 DensitySpecStruct* density,
 		 real maxerror,
 		 real boxdist,

@@ -1,5 +1,0 @@
-   r12_nosym
-   ---------
-   Molecule:         Methane (CH4)
-   Wave Function:    MP2-R12 / 6-311G**
-   Test Purpose:     Check R12 method without symmetry

@@ -13,7 +13,10 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 
 f.add(from_string = 'Polarizable embedding energy contributions:',
-      num_lines = 34,
+      num_lines = 25,
+      abs_tolerance = 1.0e-5)
+
+f.add(from_string = 'Final HF energy',
       abs_tolerance = 1.0e-5)
 
 f.add(string = 'DIIS converged in',
@@ -22,5 +25,9 @@ f.add(string = 'DIIS converged in',
 test.run(['pehf.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f}, noarch=False)
 
 test.run(['restart_iter.dal', 'restart_direct.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f}, args='-f pehf_acrolein_2h2o')
+
+test.run(['fixsol_iter.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f}, noarch=False)
+
+test.run(['restart_fixsol_iter.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f}, args='-f fixsol_iter_acrolein_2h2o')
 
 sys.exit(test.return_code)

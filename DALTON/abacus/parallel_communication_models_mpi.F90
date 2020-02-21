@@ -62,11 +62,8 @@ module parallel_communication_models_mpi
 #ifndef USE_MPI_MOD_F90
 #include "mpif.h"
 #endif
-#endif
-
-  integer                                :: ierr
-#ifdef VAR_MPI
-  integer                                :: istat(MPI_STATUS_SIZE)
+  integer(kind=MPI_INTEGER_KIND)         :: ierr_mpi
+  integer(kind=MPI_INTEGER_KIND)         :: istat(MPI_STATUS_SIZE)
 #endif
 
 #if defined (VAR_INT64)
@@ -169,7 +166,10 @@ contains
 !   ----------------------------------------------------------------------------
     type(communication_type_mpi) :: A
     integer, intent(in)          :: nr_of_process_glb
-    integer                      :: ierr
+!   ----------------------------------------------------------------------------
+#ifdef VAR_MPI
+    integer(kind=MPI_INTEGER_KIND) :: comm_mpi
+#endif
 !   ----------------------------------------------------------------------------
 
     if(.not. A%communication_type_init) return
@@ -181,9 +181,12 @@ contains
 
     if(nr_of_process_glb > 1)then
 #ifdef VAR_MPI
-      call mpi_comm_free(A%communication_intranode,  ierr)
-      call mpi_comm_free(A%communication_internode,  ierr)
-      call mpi_comm_free(A%communication_shmemnode,  ierr)
+      comm_mpi = A%communication_intranode
+      call mpi_comm_free(comm_mpi,  ierr_mpi)
+      comm_mpi = A%communication_internode
+      call mpi_comm_free(comm_mpi,  ierr_mpi)
+      comm_mpi = A%communication_shmemnode
+      call mpi_comm_free(comm_mpi,  ierr_mpi)
 #endif
     end if
 
@@ -205,14 +208,16 @@ contains
      integer                          :: process_name_length  
      integer                          :: local_counter_file_groups  
      integer                          :: current_process_id  
-     integer                          :: proc_id  
      integer                          :: finished_loop  
      character (len=255)              :: process_name
      character (len=255)              :: scr_process_name
-     integer,             allocatable :: scr_arr_name_length(:)
      character (len=255), allocatable :: scr_arr_process_name(:)
+     integer, allocatable             :: scr_arr_name_length(:)
 !-------------------------------------------------------------------------------
-                                               
+     integer(kind=MPI_INTEGER_KIND)   :: proc_id, len_mpi, comm_glb_mpi, ierr_mpi
+!-------------------------------------------------------------------------------
+
+      comm_glb_mpi = communicator_glb
       process_list_glb = -1
 
 !     find system-dependent unique process name
@@ -222,26 +227,24 @@ contains
       scr_arr_name_length = 0
 
 !     1. gather all name length
-      call mpi_allgather(process_name_length,1,my_MPI_INTEGER,         &
-     &                   scr_arr_name_length,1,my_MPI_INTEGER,         &
-     &                   communicator_glb,ierr)
+      len_mpi = 1
+      call mpi_allgather(process_name_length,len_mpi,my_MPI_INTEGER,   &
+     &                   scr_arr_name_length,len_mpi,my_MPI_INTEGER,   &
+     &                   comm_glb_mpi,ierr_mpi)
 
 !     2. collect all names in temporary storage
       allocate(scr_arr_process_name(nr_of_process_glb*255))
       scr_arr_process_name(my_process_id_glb+1) = process_name
 
-      do proc_id = 1, nr_of_process_glb
+      do proc_id = 0, nr_of_process_glb-1
 
          scr_process_name = process_name
-         call mpi_bcast(scr_process_name,                              &
-                        scr_arr_name_length(proc_id),                  &
-                        MPI_CHARACTER,                                 &
-                        proc_id-1,                                     &
-                        communicator_glb,                              &
-                        ierr)
+         len_mpi          = scr_arr_name_length(proc_id+1)
+         call mpi_bcast(scr_process_name,len_mpi, MPI_CHARACTER,       &
+                        proc_id, comm_glb_mpi, ierr_mpi)
 
-         if(my_process_id_glb /= proc_id -1)then
-           scr_arr_process_name(proc_id) = scr_process_name(1:scr_arr_name_length(proc_id))
+         if(my_process_id_glb /= proc_id)then
+           scr_arr_process_name(proc_id+1) = scr_process_name(1:scr_arr_name_length(proc_id+1))
          end if
 
       end do
@@ -485,15 +488,29 @@ contains
      integer, intent(out)   :: my_id_group
      integer, intent(out)   :: new_communication
 !-------------------------------------------------------------------------------
+     integer(kind=MPI_INTEGER_KIND)   :: old_comm_mpi
+     integer(kind=MPI_INTEGER_KIND)   :: color_mpi
+     integer(kind=MPI_INTEGER_KIND)   :: key_mpi
+     integer(kind=MPI_INTEGER_KIND)   :: group_size_mpi
+     integer(kind=MPI_INTEGER_KIND)   :: my_id_group_mpi
+     integer(kind=MPI_INTEGER_KIND)   :: new_comm_mpi, ierr_mpi
 !-------------------------------------------------------------------------------
 
-      call mpi_comm_split(old_communication,color,key,new_communication,ierr)
+      old_comm_mpi = old_communication
+      color_mpi    = color
+      key_mpi      = key
+
+      call mpi_comm_split(old_comm_mpi,color_mpi,key_mpi,new_comm_mpi,ierr_mpi)
  
 !     collect required information about each group:
 !       - group size
 !       - process id in the group
-      call mpi_comm_size(new_communication, group_size,ierr)
-      call mpi_comm_rank(new_communication,my_id_group,ierr)
+      call mpi_comm_size(new_comm_mpi,group_size_mpi,ierr_mpi)
+      call mpi_comm_rank(new_comm_mpi,my_id_group_mpi,ierr_mpi)
+
+      group_size        = group_size_mpi
+      my_id_group       = my_id_group_mpi
+      new_communication = new_comm_mpi
 
   end subroutine build_new_communication_group
 #endif

@@ -1,6 +1,0 @@
-   benchmark_eri_r12
-   -----------------
-   Molecule:         Methane (CH4)
-   Wave Function:    MP2-R12 / 6-311G**
-   Test Purpose:     Check R12 method with auxiliary basis and symmetry
-                     using ERI integral code

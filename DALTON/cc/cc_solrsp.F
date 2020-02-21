@@ -30,6 +30,7 @@ C      SLV98,OC: Self consistent solution of 1-order response equations.
 C
 C---------------------------------------------------------------------*
 C
+      USE PELIB_INTERFACE, ONLY: USE_PELIB
       IMPLICIT NONE
 #include "priunit.h"
 #include "maxorb.h"
@@ -74,6 +75,7 @@ C
 #include "leinf.h"
 #include "ccpl1rsp.h"
 #include "ccslvinf.h"
+#include "cctpainf.h"
 Cholesky
 #include "ccdeco.h"
 Cholesky
@@ -490,7 +492,7 @@ C     self-consistently otherwise continue loop.
 C     CCSLV98, OC
 C------------------------------------------------------------------
 C
-      IF (CCSLV) THEN
+      IF (CCSLV.OR.USE_PELIB()) THEN
 C
          IF (CC3) CALL QUIT('No solvent for CC3...')
 C
@@ -581,10 +583,15 @@ C
            IF (ICCSLIT.GT.MXCCSLIT) THEN
              CALL QUIT('Too many solvent iterations in CC_SOLRSP')
            ENDIF
-           WRITE(LUPRI,*)' Solvent 1-order response equations not ',
-     *               'converged in',ICCSLIT,' solvent iterations'
-           WRITE(LUPRI,*)' A New iteration starts '
-           GOTO 999
+! BUG FIX OVE DEC 2014
+           IF (CCTPA.AND.(.NOT.TPOLDW)) THEN
+              WRITE(LUPRI,*) 'NO SOLVENT ITERATION FOR TPA'
+           ELSE
+              WRITE(LUPRI,*)' Solvent 1-order response equations not ',
+     *                      'converged in',ICCSLIT,' solvent iterations'
+              WRITE(LUPRI,*)' A New iteration starts '
+              GOTO 999
+           END IF
          ENDIF
 C
       ENDIF

@@ -1,7 +1,0 @@
-   geoopt_dckerr
-   -------------
-   Molecule:         O3
-   Wave Function:    MCSCF (RAS) / aug-cc-pVDZ
-   Test Purpose:     Geometry optimization using .OPTIMIZE module
-                     (1st order) with a calculation of DC-Kerr effect
-                     at the optimized geometry

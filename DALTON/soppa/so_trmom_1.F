@@ -142,7 +142,6 @@ C-------------------------------------------------------------
 C
 CRF          Note - Label is now number within irrep!
                DLABEL = DBLE(IEXCI)
-               CALL SO_FNDPOS(PDENS_LABEL,DLABEL,LURDENSE)
                LPDENSTOT = LPDENSIJ + LPDENSAB + LPDENSAI
                IF (MODEL.EQ.'AORPA') THEN
                   CALL SO_REAVE(WORK(KPDENSAI),LPDENSAI,ISYMTR,
@@ -163,7 +162,6 @@ C----------------------------------------------------------------
 C              Calculate de-excitation part of transition moment.
 C----------------------------------------------------------------
 C
-               CALL SO_FNDPOS(PDENS_LABEL,DLABEL,LURDENSD)
                LPDENSTOT = LPDENSIJ + LPDENSAB + LPDENSAI
                IF (MODEL.EQ.'AORPA') THEN
                   CALL SO_REAVE(WORK(KPDENSAI),LPDENSAI,ISYMTR,

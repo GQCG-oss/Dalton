@@ -1,9 +1,0 @@
-   walk_polar2
-   -----------
-   Molecule:         O3
-   Wave Function:    MCSCF (CAS) / aug-cc-pVDZ
-   Test Purpose:     Geometry optimization using .WALK module (2nd order),
-                     with a calculation of static and dynamic
-                     polarizabilities using all three different ways of
-                     calculating them, vibrational analysis and Cioslowski
-                     population anaylsis

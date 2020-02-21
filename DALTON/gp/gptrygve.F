@@ -307,9 +307,6 @@ C
 C     ... define exit code to the environment for MPI_ABORT
       CALL MPI_ABORT(MPI_COMM_WORLD,IERR,IERROR)
 #endif
-#if defined (VAR_PVM)
-      CALL PVMXHALT
-#endif
 C
       CALL our_own_traceback
 

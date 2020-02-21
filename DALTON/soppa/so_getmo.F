@@ -37,7 +37,6 @@ C
 C
       CALL SO_MEMMAX('SO_GETMO        ',LWORK1)
       IF (LWORK1 .LT. 0) CALL STOPIT('SO_GETMO',' ',KEND1,LWORK)
-C
 C----------------------------------------------
 C     Read MO-coefficients from interface file.
 C----------------------------------------------

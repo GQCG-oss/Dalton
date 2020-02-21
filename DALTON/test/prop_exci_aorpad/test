@@ -41,10 +41,6 @@ f.add(string = 'AO integral driven RPA',
       rel_tolerance = 1.0e-2)
 f.add(string = 'AO integral driven Double corrected RPA',
       rel_tolerance = 1.0e-2)
-f.add(string = 'Conventional rotational strength',
-      rel_tolerance = 1.0e-2)
-f.add(string = 'Dipole strength',
-      rel_tolerance = 1.0e-2)
 
 f.add(from_string = 'Changes of defaults for .EXCITA',
       num_lines = 10,

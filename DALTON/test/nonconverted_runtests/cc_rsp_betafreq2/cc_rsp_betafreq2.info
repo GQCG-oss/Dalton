@@ -1,7 +1,0 @@
-   cc_rsp_betafreq2
-   ----------------
-   Molecule:         HF in C2
-   Wave Function:    CCS, CCSD / 6-31G**
-   Test Purpose:     First hyperpolarizabilities
-                     - ZZZ, XXZ, XZX, ZXX components
-                     - Static and for two non-zero frequencies

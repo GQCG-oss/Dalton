@@ -244,7 +244,7 @@
 *     Find smallest (MINMAX=1) or largest (MINMAX=2)
 *     absolute value of elements in integer vector IVEC
 *
-      DIMENSION IVEC(1)
+      DIMENSION IVEC(*)
 
 #include "priunit.h"
 *

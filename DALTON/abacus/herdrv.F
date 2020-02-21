@@ -1910,9 +1910,6 @@ C
       END
 C  /* Deck hr2inp */
       SUBROUTINE HR2INP(WORD)
-#ifdef ENABLE_EFS
-      use efs_interface
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1934,7 +1931,7 @@ C
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
      &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.ERF   ',
      &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.ERFGAU', '.COMLAM',
-     &            '.EFS   '/
+     &            'xXXXXXX'/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR2INP')
@@ -2102,12 +2099,7 @@ C See in srdft.F for the associated lambda-dependent density functionals.
   151          CALL QUIT('Error reading Lambda for *TWOINT/.COMLAM')
 C K. Sharkas and J. Toulouse end
    16          CONTINUE
-C&&& EFS
-#ifdef ENABLE_EFS
-               use_efs = .true.
-#else
-               call quit('.EFS not available in this version')
-#endif
+C&&& not in use
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
