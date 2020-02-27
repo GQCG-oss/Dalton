@@ -1117,7 +1117,9 @@ contains
       integer, allocatable   :: block_info_batch(:,:)
       integer, allocatable   :: blocktype(:)
       integer(8)             :: my_lu4_off_tmp
+#ifdef VAR_MPI
       integer(MPI_INTEGER_KIND):: ierr
+#endif
 !-------------------------------------------------------------------------------
 
 !#define LUCI_DEBUG
