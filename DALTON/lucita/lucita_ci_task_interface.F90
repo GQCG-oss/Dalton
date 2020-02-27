@@ -264,6 +264,7 @@ contains
       integer                  :: block_length
       integer                  :: isblk
       integer                  :: iproc
+      integer                  :: my_MPI_COMM_WORLD = MPI_COMM_WORLD
 #endif
 !-------------------------------------------------------------------------------
 
@@ -297,7 +298,7 @@ contains
                                                 file_info%current_file_nr_diag),    &
                                                 par_dist_block_list,                &
                                                 block_list,                         &
-                                                MPI_COMM_WORLD,                     &
+                                                my_MPI_COMM_WORLD,                  &
                                                 num_blocks,1,1,2)
 #endif
       end if
@@ -464,6 +465,7 @@ contains
       integer(kind=MPI_INTEGER_KIND)   :: ierr
       integer(kind=MPI_INTEGER_KIND)   :: mynew_comm_mpi
       integer(kind=MPI_OFFSET_KIND)    :: my_lu4_off_tmp
+      integer                          :: my_MPI_COMM_WORLD = MPI_COMM_WORLD
 #endif
 !-------------------------------------------------------------------------------
 
@@ -545,7 +547,7 @@ contains
                                                   file_info%current_file_nr_active1),    &
                                                   par_dist_block_list,                   &
                                                   block_list,                            &
-                                                  MPI_COMM_WORLD,                        &
+                                                  my_MPI_COMM_WORLD,                     &
                                                   NUM_BLOCKS,NROOT,1,1)
         end if
 
@@ -567,7 +569,7 @@ contains
                                                     file_info%current_file_nr_active2),  &
                                                     par_dist_block_list,                 &
                                                     block_list,                          &
-                                                    MPI_COMM_WORLD,                      &
+                                                    my_MPI_COMM_WORLD,                   &
                                                     NUM_BLOCKS,NROOT,1,1)
           end if
 
@@ -894,6 +896,7 @@ contains
       integer(kind=MPI_INTEGER_KIND)   :: mynew_comm_mpi
       integer(kind=MPI_INTEGER_KIND)   :: ierr
       integer(kind=mpi_offset_kind)    :: my_lu4_off_tmp
+      integer                          :: my_MPI_COMM_WORLD = MPI_COMM_WORLD
 #endif
 !-------------------------------------------------------------------------------
 
@@ -952,7 +955,7 @@ contains
                                                   file_info%current_file_nr_active1),    &
                                                   par_dist_block_list,                   &
                                                   block_list,                            &
-                                                  MPI_COMM_WORLD,                        &
+                                                  my_MPI_COMM_WORLD,                     &
                                                   NUM_BLOCKS,NROOT,1,1)
         end if ! not within MCSCF
       end if
@@ -1039,7 +1042,7 @@ contains
                                                   file_info%current_file_nr_active2),  &
                                                   par_dist_block_list,                 &
                                                   block_list,                          &
-                                                  MPI_COMM_WORLD,                      &
+                                                  my_MPI_COMM_WORLD,                   &
                                                   num_blocks,nroot,1,2)
 
         end if ! not within MCSCF
