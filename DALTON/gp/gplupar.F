@@ -213,6 +213,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       real(8), intent(inout) :: vec1(*) 
       integer, intent(in)    :: nblock, nvec, i_run_cplx
@@ -593,6 +594,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 !------------------------------------------------------------------------------
       real(8), intent(inout) :: vec1(*)
@@ -901,6 +903,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       real(8), intent(inout) :: vec1(*) 
       integer, intent(in)    :: ivec
@@ -921,7 +924,6 @@ C
       integer lbl
       integer ii
       integer isendtom
-      integer ierr
 !-------------------------------------------------------------------------------
 C
 C     initialize scratch offsets
@@ -1061,7 +1063,7 @@ C
 C     Read blocks of the vector from disc file LUIN to array segment
 C     and broadcast to nodes that need the block, save on diskfile luout 
 C     if necessary. 
-C     communication via communicator jcomm.
+C     Communication via communicator jcomm.
 C
 C     OUTPUT: update of LUOUT with new TTSS-c-blocks, 
 C             modified ISCALFAC_GROUP.
@@ -1079,6 +1081,8 @@ C**********************************************************************
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) jcomm_mpi
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SEGMNT(*), IBLOCKD(NBLOCK), IBLOCKL(NBLOCK)
       DIMENSION ISCALFAC(*), ISCALFAC_GROUP(*)
@@ -1172,10 +1176,11 @@ C         broadcast the nonvanishing block
           is_new_rootproc     = 0
           is_new_rootproc_tmp = 0
           IF(LUCI_MYPROC .eq. ROOTPROC) is_new_rootproc_tmp = icomm_id
+          jcomm_mpi = jcomm
           CALL MPI_ALLREDUCE(is_new_rootproc_tmp,is_new_rootproc,1,
-     &                       my_MPI_INTEGER,mpi_max,JCOMM,IERR)
+     &                       my_MPI_INTEGER,mpi_max,JCOMM_mpi,IERR)
           CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,is_new_rootproc,
-     &                   JCOMM,IERR)
+     &                   JCOMM_mpi,IERR)
 !         end of new code without mpi_comm_split
 
           bcast_time = bcast_time + MPI_WTIME() - xcast_time
@@ -1276,7 +1281,7 @@ C         decide whether it is necessary to take part in communication
           NNCOLOR = 8
           IF(ISCALFAC_GROUP(IOFF_BLOCK+IBLK) .ne. 0) NNCOLOR = 7
 
-!         CALL MPI_COMM_SPLIT(JCOMM,NNCOLOR,NNKEY,IBLOCKCOMM,IERR)
+!         CALL MPI_COMM_SPLIT(JCOMM_mpi,NNCOLOR,NNKEY,IBLOCKCOMM,IERR)
 
 !         IF( NNCOLOR .eq. 8 ) GOTO 300
 
@@ -1288,10 +1293,11 @@ C         broadcast the nonvanishing block
           is_new_rootproc     = 0
           is_new_rootproc_tmp = 0
           IF(LUCI_MYPROC .eq. ROOTPROC) is_new_rootproc_tmp = icomm_id
+          jcomm_mpi = JCOMM
           CALL MPI_ALLREDUCE(is_new_rootproc_tmp,is_new_rootproc,1,
-     &                       my_MPI_INTEGER,mpi_max,JCOMM,IERR)
+     &                       my_MPI_INTEGER,mpi_max,JCOMM_mpi,IERR)
           CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,is_new_rootproc,
-     &                   JCOMM,IERR)
+     &                   JCOMM_mpi,IERR)
 !         end of new code without mpi_comm_split
           bcast_time = bcast_time + MPI_WTIME() - xcast_time
 
@@ -1378,6 +1384,7 @@ C**********************************************************************
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 *
 * =====
@@ -1533,6 +1540,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
@@ -1650,6 +1658,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*) 
       DIMENSION IVCOFF_IN(*), IVCOFF_OUT(*)
@@ -1728,6 +1737,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
       DIMENSION IBLOCKL(*)
@@ -1792,6 +1802,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 C     INPUT
       INTEGER ICOUNTABLK, NTEST,MWEIGHT
@@ -2192,6 +2203,7 @@ CSK   END IF
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 C     -----
 C     INPUT
@@ -2451,6 +2463,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 *     ==========
 *       INPUT
@@ -2554,6 +2567,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
@@ -2749,6 +2763,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -2841,6 +2856,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -3001,6 +3017,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
       DIMENSION IBLOCKL(*)
@@ -3065,6 +3082,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -3123,6 +3141,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -3186,6 +3205,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -3249,6 +3269,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -3305,6 +3326,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), XMAT(NVEC,NVEC2)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -3359,6 +3381,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), FAC(NVEC)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -3493,6 +3516,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION SUBSPH(*), SCRRED(*), SCRRED2(*)
@@ -3689,6 +3713,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -3955,6 +3980,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION FACIN1(*), FACIN3(1)
@@ -4132,6 +4158,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION SCRRED(*)
@@ -4326,6 +4353,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 C     input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -4495,6 +4523,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION LBATC(*),LEBATC(*),I1BATC(*),IBATC(8,*)
       DIMENSION ICCTOS(NBLOCK,NBLOCK),ICWEIGHT(NBLOCK)
@@ -4585,6 +4614,8 @@ C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ncomm_mpi
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VECIN(*),VECOUT(*)
       INTEGER DATATYPE
@@ -4606,12 +4637,13 @@ CSK        DATATYPE = MPI_REAL8
         CALL quit('ERROR in REDVEC: Nonexisting DATATYPE')
       END IF
 *
+      ncomm_mpi = ncomm
       IF(NTARGET.GE.0)THEN
         CALL MPI_REDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,NTARGET,
-     &                  NCOMM,IERR)
+     &                  NCOMM_mpi,IERR)
       ELSE IF(NTARGET.LT.0)THEN
         CALL MPI_ALLREDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,
-     &                     NCOMM,IERR)
+     &                     NCOMM_mpi,IERR)
       ENDIF
 *. return since everything is reduced now!
 *
@@ -4630,7 +4662,9 @@ CSK        DATATYPE = MPI_REAL8
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
-      DIMENSION VECIN(*),VECOUT(*)
+      integer(kind=MPI_INTEGER_KIND) ncomm_mpi
+      integer(kind=MPI_INTEGER_KIND) ierr
+      real*8  VECIN(*),VECOUT(*)
       INTEGER DATATYPE
 *
       IF(NTYPE .EQ. 1) THEN
@@ -4650,12 +4684,13 @@ CSK        DATATYPE = MPI_REAL8
         CALL quit('ERROR in REDVEC: Nonexisting DATATYPE')
       END IF
 *
+      ncomm_mpi = NCOMM
       IF(NTARGET.GE.0)THEN
         CALL MPI_REDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,NTARGET,
-     &                  NCOMM,IERR)
+     &                  NCOMM_mpi,IERR)
       ELSE IF(NTARGET.LT.0)THEN
         CALL MPI_ALLREDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,
-     &                     NCOMM,IERR)
+     &                     NCOMM_mpi,IERR)
       ENDIF
 *. return since everything is reduced now!
 *
@@ -4735,6 +4770,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 *     input
       DIMENSION IPLAC(*),VAL(*),IBLOCKL(NBLOCK),IBLOCKD(NBLOCK)
@@ -4863,6 +4899,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)

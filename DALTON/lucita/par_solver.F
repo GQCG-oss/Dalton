@@ -561,8 +561,9 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
-      INTEGER IERR
+      integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) :: mynew_comm_mpi, icomm_mpi
+      integer(kind=MPI_INTEGER_KIND) :: ierr
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*),C2(*)
       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
@@ -690,7 +691,8 @@ C
 *
 *       copy c-vector to working-file ILUC
 *
-        CALL MPI_BARRIER(MYNEW_COMM,IERR)
+        mynew_comm_mpi = mynew_comm
+        CALL MPI_BARRIER(MYNEW_COMM_MPI,IERR)
 *
 *       reset LUCLIST; MY_ACT_BLK_ALL = NUMBLOCKS!
 *
@@ -976,7 +978,8 @@ csk       CSCREEN = .FALSE.
 *
 *
         xidletime = MPI_WTIME()
-        CALL MPI_BARRIER(MYNEW_COMM,IERR)
+        mynew_comm_mpi = mynew_comm
+        CALL MPI_BARRIER(MYNEW_COMM_MPI,IERR)
         xixidletime = xixidletime - xidletime + MPI_WTIME()
 *
 csk     WRITE(LUWRT,*) 'LU3LIST again:'
@@ -1401,11 +1404,12 @@ C
 C      let's synchronize all processes!
 C
  1003  DO 1004 I = 1, 2
-        CALL MPI_BARRIER(ICOMM, IERR)
+        icomm_mpi = ICOMM
+        CALL MPI_BARRIER(icomm_mpi, IERR)
         TIME1 = MPI_Wtime()
         IF( IPRT .gt. 100 ) WRITE(LUWRT,*)
      &     'I AM IN SYNC PROC., LUCI_MYPROC = ', LUCI_MYPROC
-        CALL MPI_BARRIER(ICOMM, IERR)
+        CALL MPI_BARRIER(icomm_mpi, IERR)
         TOTAL_TIME = MPI_Wtime() - TIME1
  1004  CONTINUE
 C

@@ -1512,7 +1512,9 @@ C**********************************************************************
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) :: mynew_comm_mpi
+      integer(kind=MPI_INTEGER_KIND) :: ierr
+      integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "wrkspc.inc"
       DIMENSION ISCLFAC_GROUP(*), LUCLIST(*) 
@@ -1596,8 +1598,9 @@ C     &                               IGROUPLIST,IPROCLIST,IRILP)
 C
 
         END IF
+           mynew_comm_mpi = mynew_comm
            CALL MPI_BCAST(ISCLFAC_GROUP,NUM_BLOCKS2,
-     &                    my_MPI_INTEGER,0,MYNEW_COMM,IERR)
+     &                    my_MPI_INTEGER,0,MYNEW_COMM_MPI,IERR)
 *
       ELSE
 *

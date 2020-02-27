@@ -34,12 +34,8 @@ module communication_model
 
   save
 
-  integer(kind=MPI_INTEGER_KIND)           :: istat(MPI_STATUS_SIZE)
-  integer(kind=MPI_INTEGER_KIND)           :: ierr
-  integer(kind=MPI_INTEGER_KIND)           :: intra_node_comm_mpi
-  integer(kind=MPI_INTEGER_KIND)           :: inter_node_comm_mpi
-  integer(kind=MPI_INTEGER_KIND)           :: shmem_ijkl_comm_mpi
-  integer(kind=MPI_INTEGER_KIND)           :: shmem_cvec_comm_mpi
+! integer(kind=MPI_INTEGER_KIND)           :: istat(MPI_STATUS_SIZE)
+  integer(kind=MPI_INTEGER_KIND)           :: ierr_mpi
   integer(kind=MPI_INTEGER_KIND),parameter :: one_mpi = 1
 
 contains 
@@ -196,14 +192,14 @@ contains
      integer                          :: process_name_length  
      integer                          :: local_counter_file_groups  
      integer                          :: current_process_id  
-     integer(kind=MPI_INTEGER_KIND)   :: proc_id  
+     integer                          :: proc_id  
      integer                          :: finished_loop  
      character (len=255)              :: process_name
      character (len=255)              :: scr_process_name
      integer,             allocatable :: scr_arr_name_length(:)
      character (len=255), allocatable :: scr_arr_process_name(:)
 !-------------------------------------------------------------------------------
-     integer(kind=MPI_INTEGER_KIND)   :: comm_glb_mpi, len_process_name
+     integer(kind=MPI_INTEGER_KIND)   :: proc_id_mpi, comm_glb_mpi, len_process_name_mpi
 !-------------------------------------------------------------------------------
                                                
       process_list_glb = -1
@@ -224,25 +220,26 @@ contains
       comm_glb_mpi = communicator_glb
       call mpi_allgather(process_name_length,one_mpi,my_MPI_INTEGER,  &
      &                   scr_arr_name_length,one_mpi,my_MPI_INTEGER,  &
-     &                   comm_glb_mpi,ierr)
+     &                   comm_glb_mpi,ierr_mpi)
 
 !     2. collect all names in temporary storage
       allocate(scr_arr_process_name(nr_of_process_glb*255))
       scr_arr_process_name(my_process_id_glb+1) = process_name
 
-      do proc_id = 0, nr_of_process_glb-1
+      do proc_id = 1, nr_of_process_glb
 
-         scr_process_name = process_name
-         len_process_name = scr_arr_name_length(proc_id+1)
+         scr_process_name     = process_name
+         len_process_name_mpi = scr_arr_name_length(proc_id)
+         proc_id_mpi          = proc_id - 1
          call mpi_bcast(scr_process_name,                              &
-                        len_process_name,                              &
+                        len_process_name_mpi,                          &
                         MPI_CHARACTER,                                 &
-                        proc_id,                                       &
+                        proc_id_mpi,                                   &
                         comm_glb_mpi,                                  &
-                        ierr)
+                        ierr_mpi)
 
-         if(my_process_id_glb /= proc_id )then
-           scr_arr_process_name(proc_id+1) = scr_process_name(1:scr_arr_name_length(proc_id+1))
+         if(my_process_id_glb /= proc_id_mpi )then
+           scr_arr_process_name(proc_id) = scr_process_name(1:scr_arr_name_length(proc_id))
          end if
 
       end do
@@ -363,10 +360,9 @@ contains
      integer, intent(out)   :: intra_node_group_id
      integer, intent(out)   :: intra_node_master
 !-------------------------------------------------------------------------------
-     integer                :: key
-     integer                :: color
      integer                :: tmp_group_counter
      integer                :: current_proc
+     integer                :: color, key
 !-------------------------------------------------------------------------------
 
 !     a. intra-node communicator (primarly used as I/O communicator)
@@ -468,50 +464,24 @@ contains
       old_comm_mpi = old_communicator
       color_mpi    = color
       key_mpi      = key
-      call mpi_comm_split(old_comm_mpi,color_mpi,key_mpi,new_comm_mpi,ierr)
+      call mpi_comm_split(old_comm_mpi,color_mpi,key_mpi,new_comm_mpi,ierr_mpi)
       new_communicator = new_comm_mpi
  
 !     collect required information about each group:
 !       - group size
 !       - process id in the group
-      call mpi_comm_size(new_comm_mpi, group_size_mpi,ierr)
-      call mpi_comm_rank(new_comm_mpi, my_id_group_mpi,ierr)
+      call mpi_comm_size(new_comm_mpi, group_size_mpi,ierr_mpi)
+      call mpi_comm_rank(new_comm_mpi, my_id_group_mpi,ierr_mpi)
       group_size  = group_size_mpi
       my_id_group = my_id_group_mpi
 
   end subroutine build_new_communicator_group
 !*******************************************************************************
 
-  subroutine close_communication_model(intra_node_comm,          &
-                                       inter_node_comm,          &
-                                       shmem_ijkl_comm,          &
-                                       shmem_cvec_comm)
-!*******************************************************************************
-!
-!     purpose: reset sub-group communicators.
-!
-!*******************************************************************************
-     integer, intent(inout) :: intra_node_comm
-     integer, intent(inout) :: inter_node_comm
-     integer, intent(inout) :: shmem_ijkl_comm
-     integer, intent(inout) :: shmem_cvec_comm
-!-------------------------------------------------------------------------------
-!-------------------------------------------------------------------------------
-      intra_node_comm_mpi = intra_node_comm
-      inter_node_comm_mpi = inter_node_comm
-      shmem_ijkl_comm_mpi = shmem_ijkl_comm
-      shmem_cvec_comm_mpi = shmem_cvec_comm
-
-      call mpi_comm_free(intra_node_comm_mpi,ierr)
-      call mpi_comm_free(inter_node_comm_mpi,ierr)
-      call mpi_comm_free(shmem_ijkl_comm_mpi,ierr)
-      call mpi_comm_free(shmem_cvec_comm_mpi,ierr)
- 
-  end subroutine close_communication_model
-  
 end module
 #else 
-subroutine comm_model
-! dummy routine for non-mpi compilation
-end
+  ! VAR_MPI not defined
+  subroutine comm_model
+  ! dummy routine for non-mpi compilation
+  end
 #endif

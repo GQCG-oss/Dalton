@@ -259,9 +259,9 @@ contains
 #include "maxorb.h"
 #include "infpar.h"
       integer(MPI_INTEGER_KIND):: my_STATUS(MPI_STATUS_SIZE)
+      integer(MPI_INTEGER_KIND):: ierr
       integer(MPI_OFFSET_KIND) :: offset
       integer                  :: block_length
-      integer                  :: ierr
       integer                  :: isblk
       integer                  :: iproc
 #endif
@@ -460,8 +460,9 @@ contains
       integer, allocatable             :: block_info_batch(:,:)
       integer                          :: iatp, ibtp
       integer                          :: nbatch_par, nblock_par
-      integer                          :: ierr
       integer                          :: iloop, nbatch_par_max
+      integer(kind=MPI_INTEGER_KIND)   :: ierr
+      integer(kind=MPI_INTEGER_KIND)   :: mynew_comm_mpi
       integer(kind=MPI_OFFSET_KIND)    :: my_lu4_off_tmp
 #endif
 !-------------------------------------------------------------------------------
@@ -637,7 +638,8 @@ contains
 #ifdef VAR_MPI
 !         MPI I/O --> MPI I/O node-master collection file
 !         -----------------------------------------------
-          call mpi_barrier(mynew_comm,ierr) ! probably not needed if collection of densities is in action
+          mynew_comm_mpi = mynew_comm
+          call mpi_barrier(mynew_comm_mpi,ierr) ! probably not needed if collection of densities is in action
           call izero(file_info%ilublist,file_info%max_list_length_bvec)
 
           call mcci_cp_vcd_batch(file_info%fh_lu(file_info%current_file_nr_active1),       &    
@@ -889,7 +891,8 @@ contains
       integer, allocatable             :: block_info_batch(:,:)
       integer                          :: iatp, ibtp
       integer                          :: nbatch_par, nblock_par
-      integer                          :: ierr
+      integer(kind=MPI_INTEGER_KIND)   :: mynew_comm_mpi
+      integer(kind=MPI_INTEGER_KIND)   :: ierr
       integer(kind=mpi_offset_kind)    :: my_lu4_off_tmp
 #endif
 !-------------------------------------------------------------------------------
@@ -982,7 +985,8 @@ contains
 #ifdef VAR_MPI
 !         MPI I/O --> MPI I/O node-master collection file
 !         -----------------------------------------------
-          call mpi_barrier(mynew_comm,ierr) 
+          mynew_comm_mpi = mynew_comm
+          call mpi_barrier(mynew_comm_mpi,ierr) 
           call izero(file_info%ilublist,file_info%max_list_length_bvec)
 
           call mcci_cp_vcd_batch(file_info%fh_lu(file_info%current_file_nr_active1),       &    
@@ -1113,7 +1117,7 @@ contains
       integer, allocatable   :: block_info_batch(:,:)
       integer, allocatable   :: blocktype(:)
       integer(8)             :: my_lu4_off_tmp
-      integer                :: ierr
+      integer(MPI_INTEGER_KIND):: ierr
 !-------------------------------------------------------------------------------
 
 !#define LUCI_DEBUG

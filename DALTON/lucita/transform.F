@@ -91,6 +91,7 @@
       integer, parameter     :: isigden = 1
       real(8)                :: cdummy(2), sdummy(2)
       logical                :: skip_orbital
+      integer(kind=MPI_INTEGER_KIND) :: mynew_comm_mpi, ierr
 
 !     NTEST = 1000 ! debug
       NTEST = 0000 ! default
@@ -151,7 +152,8 @@
 !       -------------------------------------------
 #ifdef VAR_MPI
         if(luci_nmproc .gt. 1)then
-          CALL MPI_BARRIER(MYNEW_COMM,IERR)
+          mynew_comm_mpi = mynew_comm
+          CALL MPI_BARRIER(myNEW_COMM_MPI,IERR)
 !
 !         reset LUCLIST
           call izero(lu_BVClst,len_iBVC)
@@ -239,7 +241,8 @@
 
 #ifdef VAR_MPI
         if(luci_nmproc .gt. 1)then
-          CALL MPI_BARRIER(MYNEW_COMM,IERR)
+          mynew_comm_mpi = mynew_comm
+          CALL MPI_BARRIER(myNEW_COMM_MPI,IERR)
 !
 !         reset LUCLIST
           call izero(lu_BVClst,len_iBVC)
