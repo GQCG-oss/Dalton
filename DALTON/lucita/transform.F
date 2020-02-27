@@ -91,7 +91,10 @@
       integer, parameter     :: isigden = 1
       real(8)                :: cdummy(2), sdummy(2)
       logical                :: skip_orbital
+#ifdef VAR_MPI
       integer(kind=MPI_INTEGER_KIND) :: mynew_comm_mpi, ierr
+      integer                :: my_MPI_COMM_WORLD = MPI_COMM_WORLD
+#endif
 
 !     NTEST = 1000 ! debug
       NTEST = 0000 ! default
@@ -125,7 +128,7 @@
      &                                          LU_inoutlst,
      &                                          par_dist_block_list,
      &                                          block_list,
-     &                                          MPI_COMM_WORLD,
+     &                                          my_MPI_COMM_WORLD,
      &                                          NUM_BLOCKS,1,1,1)
       end if
 #endif
@@ -335,7 +338,7 @@
      &                                          LU_inoutlst,
      &                                          par_dist_block_list,
      &                                          block_list,
-     &                                          MPI_COMM_WORLD,
+     &                                          my_MPI_COMM_WORLD,
      &                                          num_blocks,1,1,2)
 
       end if ! luci_nmproc > 1
