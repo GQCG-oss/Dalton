@@ -64,6 +64,7 @@ contains
      integer,    intent(in)                    :: nroot
 !-------------------------------------------------------------------------------
      integer                                   :: file_offset_off
+     integer                                   :: my_mpi_comm_world
      integer,                      allocatable :: grouplist_shared_mem(:)
      real(8),                      allocatable :: tmp_block_scaling_fac(:)
 !-------------------------------------------------------------------------------
@@ -77,6 +78,7 @@ contains
 
 !     step 1: setup the communication model
 !     -------------------------------------
+      my_mpi_comm_world = mpi_comm_world ! from MPI_INTEGER_KIND to default integer kind
       call setup_communication_model(nflgrps,                         &
                                      iiomod,                          &
                                      shared_m,                        &
@@ -85,7 +87,7 @@ contains
                                      grouplist_shared_mem,            &
                                      luci_myproc,                     &
                                      luci_nmproc,                     &
-                                     mpi_comm_world,                  &
+                                     my_mpi_comm_world,               &
                                      mynew_id,                        &
                                      icomm_id,                        &
                                      mynew_id_sm,                     &
