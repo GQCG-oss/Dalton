@@ -478,7 +478,7 @@ C
  9003 FORMAT(1X,'-------------------------')
  9004 FORMAT(1X,'The new trial vector is linearly dependent',
      &       ' on the previous one.')
- 9006 FORMAT(1X,'The property converged after, ',I3,' iterations.')
+!9006 FORMAT(1X,'The property converged after, ',I3,' iterations.')
  9007 FORMAT(1X,'Maximum number of ',I3,' iterations is reached.')
  9008 FORMAT(1X,'---------------------------------------------',
      &       '----------------',/)
