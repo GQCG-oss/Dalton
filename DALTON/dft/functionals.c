@@ -123,6 +123,7 @@ Functional* available_functionals[] = {
     &BWFunctional,
     &BFWFunctional,
     &Camb3lypFunctional,
+    &Cam_b3lypFunctional,
     &CombineFunctional,
     &DBLYPFunctional,
     &DBP86Functional,
