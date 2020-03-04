@@ -115,6 +115,20 @@ Functional Camb3lypFunctional = {
   camb3lyp_second,
   camb3lyp_third,
   camb3lyp_fourth
+}
+;
+// alias
+Functional Cam_b3lypFunctional = {
+  "Cam-b3lyp",       /* name */
+  camb3lyp_isgga,   /* gga-corrected */
+   3,
+  camb3lyp_read,
+  camb3lyp_report,
+  camb3lyp_energy,
+  camb3lyp_first,
+  camb3lyp_second,
+  camb3lyp_third,
+  camb3lyp_fourth
 };
  
 /* IMPLEMENTATION PART */

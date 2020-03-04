@@ -416,6 +416,7 @@ extern Functional BPW91Functional;
 extern Functional BWFunctional;
 extern Functional BFWFunctional;
 extern Functional Camb3lypFunctional;
+extern Functional Cam_b3lypFunctional;
 extern Functional CombineFunctional;
 extern Functional DBLYPFunctional;
 extern Functional DBP86Functional;
