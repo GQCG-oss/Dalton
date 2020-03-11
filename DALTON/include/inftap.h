@@ -12,7 +12,7 @@
      &                LUR12,  LUORDA, LUMINT, LUSRINT
       INTEGER         LUAHSO, LUCRV1, LUCRV2, LUXYVE, LUCRVE,           &
      &                LURSP3, LURSP4, LURSP5, LUMHSO, LURSP,            &
-     &		      LUE3VEC,LUX2VEC
+     &                LUE3VEC,LUX2VEC
       INTEGER         LUINTM, LUIT1,  LUIT2,  LUIT3,  LUIT5,  LUINF,    &
      &                LUH2AC, LUSIFC, LBINTM, LBINTD, LBONEL, LBINFO
       INTEGER         LUPMOM, LUMOM,  LUEIND, LUENUC, LUESITE,LUEOBAR,  &
