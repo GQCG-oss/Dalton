@@ -282,7 +282,7 @@ contains
 
 !   ----------------------------------------------------------------------------
     integer(kind=MPI_INTEGER_KIND), parameter :: len_x_mpi = 72
-    character (len=72) :: x
+    character (len=len_x_mpi) :: x
     integer            :: root_proc
     integer            :: communicator
 !   ----------------------------------------------------------------------------

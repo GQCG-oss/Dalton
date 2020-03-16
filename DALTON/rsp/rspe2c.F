@@ -3634,7 +3634,7 @@ C
 #include "dummy.h"
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
-      CHARACTER BLANK*8, PRI_LINE*80, LBLPP_1*1
+      CHARACTER BLANK*8, PRI_LINE*90, LBLPP_1*1
 C
       PARAMETER ( MAXSIM = 15, LMXFR = 1000, BLANK = '        ' )
       PARAMETER ( TOLRTT = 1.0D-12)
