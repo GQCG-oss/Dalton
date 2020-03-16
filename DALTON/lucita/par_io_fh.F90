@@ -116,10 +116,10 @@ contains
       
 !       step c. open the file
         comm_iogrp_mpi = communicator_io_group
-        fh_array_mpi = fh_array(i_relative)
         call mpi_file_open(comm_iogrp_mpi,flabel(1:flabel_length),                     &
                            MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE, &
                            file_info_obj,fh_array_mpi,ierr)
+        fh_array(i) = fh_array_mpi
 !       step d. set fileview
         call mpi_file_set_view(fh_array_mpi,displacement,MPI_REAL8,MPI_REAL8,           &
                                "native",file_info_obj,ierr)
