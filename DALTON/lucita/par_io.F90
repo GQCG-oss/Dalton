@@ -27,6 +27,7 @@ module par_mcci_io
 
   save
 
+  integer(kind=MPI_INTEGER_KIND)         :: my_MPI_REAL8 = MPI_REAL8
   integer(kind=MPI_INTEGER_KIND)         :: istat(MPI_STATUS_SIZE)
   integer(kind=MPI_INTEGER_KIND)         :: ierr
 
@@ -221,7 +222,7 @@ contains
                                   ioff_luin,               &
                                   xmat(mem_off),           &
                                   blk_len,                 &
-                                  MPI_REAL8,               &
+                                  my_MPI_REAL8,            &
                                   istat,                   &
                                   ierr)
 #ifdef LUCI_DEBUG
@@ -294,7 +295,7 @@ contains
                                    ioff_luout,                              &
                                    xmat(mem_off),                           &
                                    blk_len,                                 &
-                                   MPI_REAL8,                               &
+                                   my_MPI_REAL8,                            &
                                    istat,                                   &
                                    ierr)
 #ifdef LUCI_DEBUG

@@ -20,14 +20,6 @@ module dalton_mpi
 #include "mpif.h"
 #endif
 
-#if defined (VAR_INT64)
-#define my_MPI_INTEGER MPI_INTEGER8
-#define my_MPI_LOGICAL MPI_INTEGER8
-#else
-#define my_MPI_INTEGER MPI_INTEGER4
-#define my_MPI_LOGICAL MPI_INTEGER4
-#endif
-
   public dalton_mpi_bcast
   public dalton_mpi_reduce
   public dalton_mpi_allreduce
@@ -36,8 +28,15 @@ module dalton_mpi
 
   save 
 
-  integer(kind=MPI_INTEGER_KIND), private   :: istat(MPI_STATUS_SIZE)
-  integer(kind=MPI_INTEGER_KIND), private   :: ierr, size_x, size_y
+
+#if defined (VAR_INT64)
+  integer(kind=MPI_INTEGER_KIND), private   :: my_MPI_INTEGER = MPI_INTEGER8
+  integer(kind=MPI_INTEGER_KIND), private   :: my_MPI_LOGICAL = MPI_INTEGER8
+#else
+  integer(kind=MPI_INTEGER_KIND), private   :: my_MPI_INTEGER = MPI_INTEGER4
+  integer(kind=MPI_INTEGER_KIND), private   :: my_MPI_LOGICAL = MPI_INTEGER4
+#endif
+  integer(kind=MPI_INTEGER_KIND), private   :: ierr_mpi, size_x, size_y
   integer(kind=MPI_INTEGER_KIND), private   :: root_proc_mpi, comm_mpi
   integer(kind=MPI_INTEGER_KIND), parameter :: one_mpi = 1
 
@@ -96,7 +95,7 @@ contains
 
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, one_mpi, my_MPI_INTEGER, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, one_mpi, my_MPI_INTEGER, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -111,7 +110,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, size_x, my_MPI_INTEGER, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, size_x, my_MPI_INTEGER, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -126,7 +125,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, size_x, my_MPI_INTEGER, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, size_x, my_MPI_INTEGER, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -141,7 +140,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, size_x, my_MPI_INTEGER, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, size_x, my_MPI_INTEGER, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -156,7 +155,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, size_x, my_MPI_INTEGER, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, size_x, my_MPI_INTEGER, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -170,7 +169,7 @@ contains
 
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, one_mpi, mpi_double_precision, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, one_mpi, mpi_double_precision, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -185,7 +184,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, size_x, mpi_double_precision, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, size_x, mpi_double_precision, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -200,7 +199,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, size_x, mpi_double_precision, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, size_x, mpi_double_precision, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -215,7 +214,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, size_x, mpi_double_precision, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, size_x, mpi_double_precision, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -230,7 +229,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, size_x, mpi_double_precision, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, size_x, mpi_double_precision, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -244,7 +243,7 @@ contains
 
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, one_mpi, my_MPI_LOGICAL, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, one_mpi, my_MPI_LOGICAL, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -259,7 +258,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, size_x, my_MPI_LOGICAL, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, size_x, my_MPI_LOGICAL, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -274,7 +273,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, size_x, my_MPI_LOGICAL, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, size_x, my_MPI_LOGICAL, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -289,7 +288,7 @@ contains
 
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_bcast(x, len_x_mpi, mpi_character, root_proc_mpi, comm_mpi, ierr)
+    call mpi_bcast(x, len_x_mpi, mpi_character, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -305,7 +304,7 @@ contains
 
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_reduce(x, y, one_mpi, my_MPI_INTEGER, mpi_sum, root_proc_mpi, comm_mpi, ierr)
+    call mpi_reduce(x, y, one_mpi, my_MPI_INTEGER, mpi_sum, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -321,7 +320,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_reduce(x, y, size_x, my_MPI_INTEGER, mpi_sum, root_proc_mpi, comm_mpi, ierr)
+    call mpi_reduce(x, y, size_x, my_MPI_INTEGER, mpi_sum, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -337,7 +336,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_reduce(x, y, size_x, my_MPI_INTEGER, mpi_sum, root_proc_mpi, comm_mpi, ierr)
+    call mpi_reduce(x, y, size_x, my_MPI_INTEGER, mpi_sum, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -353,7 +352,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_reduce(x, y, size_x, my_MPI_INTEGER, mpi_sum, root_proc_mpi, comm_mpi, ierr)
+    call mpi_reduce(x, y, size_x, my_MPI_INTEGER, mpi_sum, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -369,7 +368,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_reduce(x, y, size_x, my_MPI_INTEGER, mpi_sum, root_proc_mpi, comm_mpi, ierr)
+    call mpi_reduce(x, y, size_x, my_MPI_INTEGER, mpi_sum, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -384,7 +383,7 @@ contains
 
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_reduce(x, y, one_mpi, mpi_double_precision, mpi_sum, root_proc_mpi, comm_mpi, ierr)
+    call mpi_reduce(x, y, one_mpi, mpi_double_precision, mpi_sum, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -400,7 +399,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_reduce(x, y, size_x, mpi_double_precision, mpi_sum, root_proc_mpi, comm_mpi, ierr)
+    call mpi_reduce(x, y, size_x, mpi_double_precision, mpi_sum, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -416,7 +415,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_reduce(x, y, size_x, mpi_double_precision, mpi_sum, root_proc_mpi, comm_mpi, ierr)
+    call mpi_reduce(x, y, size_x, mpi_double_precision, mpi_sum, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -432,7 +431,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_reduce(x, y, size_x, mpi_double_precision, mpi_sum, root_proc_mpi, comm_mpi, ierr)
+    call mpi_reduce(x, y, size_x, mpi_double_precision, mpi_sum, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -448,7 +447,7 @@ contains
     size_x = size(x)
     root_proc_mpi = root_proc
     comm_mpi      = communicator
-    call mpi_reduce(x, y, size_x, mpi_double_precision, mpi_sum, root_proc_mpi, comm_mpi, ierr)
+    call mpi_reduce(x, y, size_x, mpi_double_precision, mpi_sum, root_proc_mpi, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -462,7 +461,7 @@ contains
 !   ----------------------------------------------------------------------------
 
     comm_mpi      = communicator
-    call mpi_allreduce(x, y, one_mpi, my_MPI_INTEGER, mpi_sum, comm_mpi, ierr)
+    call mpi_allreduce(x, y, one_mpi, my_MPI_INTEGER, mpi_sum, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -476,7 +475,7 @@ contains
 
     size_y = size(y)
     comm_mpi      = communicator
-    call mpi_allreduce(x, y, size_y, my_MPI_INTEGER, mpi_sum, comm_mpi, ierr)
+    call mpi_allreduce(x, y, size_y, my_MPI_INTEGER, mpi_sum, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -490,7 +489,7 @@ contains
 
     size_y = size(y)
     comm_mpi      = communicator
-    call mpi_allreduce(x, y, size_y, my_MPI_INTEGER, mpi_sum, comm_mpi, ierr)
+    call mpi_allreduce(x, y, size_y, my_MPI_INTEGER, mpi_sum, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -504,7 +503,7 @@ contains
 
     size_y = size(y)
     comm_mpi      = communicator
-    call mpi_allreduce(x, y, size_y, my_MPI_INTEGER, mpi_sum, comm_mpi, ierr)
+    call mpi_allreduce(x, y, size_y, my_MPI_INTEGER, mpi_sum, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -518,7 +517,7 @@ contains
 
     size_y = size(y)
     comm_mpi      = communicator
-    call mpi_allreduce(x, y, size_y, my_MPI_INTEGER, mpi_sum, comm_mpi, ierr)
+    call mpi_allreduce(x, y, size_y, my_MPI_INTEGER, mpi_sum, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -531,7 +530,7 @@ contains
 !   ----------------------------------------------------------------------------
 
     comm_mpi      = communicator
-    call mpi_allreduce(x, y, one_mpi, mpi_double_precision, mpi_sum, comm_mpi, ierr)
+    call mpi_allreduce(x, y, one_mpi, mpi_double_precision, mpi_sum, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -545,7 +544,7 @@ contains
 
     size_y = size(y)
     comm_mpi      = communicator
-    call mpi_allreduce(x, y, size_y, mpi_double_precision, mpi_sum, comm_mpi, ierr)
+    call mpi_allreduce(x, y, size_y, mpi_double_precision, mpi_sum, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -559,7 +558,7 @@ contains
 
     size_y = size(y)
     comm_mpi      = communicator
-    call mpi_allreduce(x, y, size_y, mpi_double_precision, mpi_sum, comm_mpi, ierr)
+    call mpi_allreduce(x, y, size_y, mpi_double_precision, mpi_sum, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -573,7 +572,7 @@ contains
 
     size_y = size(y)
     comm_mpi      = communicator
-    call mpi_allreduce(x, y, size_y, mpi_double_precision, mpi_sum, comm_mpi, ierr)
+    call mpi_allreduce(x, y, size_y, mpi_double_precision, mpi_sum, comm_mpi, ierr_mpi)
 
   end subroutine
 
@@ -587,7 +586,7 @@ contains
 
     size_y = size(y)
     comm_mpi      = communicator
-    call mpi_allreduce(x, y, size_y, mpi_double_precision, mpi_sum, comm_mpi, ierr)
+    call mpi_allreduce(x, y, size_y, mpi_double_precision, mpi_sum, comm_mpi, ierr_mpi)
 
   end subroutine
 end module

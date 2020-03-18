@@ -19,12 +19,6 @@ module lucita_ci_task_interface
   implicit none
 #endif
 
-#if defined (VAR_INT64)
-#define my_MPI_INTEGER MPI_INTEGER8
-#else
-#define my_MPI_INTEGER MPI_INTEGER4
-#endif
-
   public CI_task_list_interface
   public create_CI_task_list
 
