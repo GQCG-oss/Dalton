@@ -158,6 +158,12 @@ module fde_evaluators_dalton
 
 !     DMAT does into account the occupation numbers for scf and mp2 ...
       call fde_dalton_get_dmat_from_dummy(dmat,level)
+#if 0
+
+hjaaj 19-Mar-2020:
+   this code is not used (fde_dalton_get_dmat_from_dummy quits ...)
+   and it causes compiler warnings (some compilers)
+  
 !     so we correct it for scf and mp2...
       dmat = 2.0d0*dmat
 
@@ -203,6 +209,7 @@ module fde_evaluators_dalton
       deallocate (gab1)
       deallocate (ncnt) 
       deallocate (dmat)
+#endif
 
       end subroutine fde_dalton_get_density_from_dfcoef
 

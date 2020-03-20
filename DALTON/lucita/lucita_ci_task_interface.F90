@@ -442,7 +442,7 @@ contains
       integer                          :: rhotype_spin1
       integer                          :: idum
       integer(8)                       :: kdum
-      integer(8)                       :: k_scratchsbatch
+      integer(8)                       :: k_scratchsbatch = 1 ! to avoid compiler warnings
       integer(8)                       :: k_dens2_scratch
       integer(8)                       :: k_scratch1
       integer(8)                       :: k_scratch2
